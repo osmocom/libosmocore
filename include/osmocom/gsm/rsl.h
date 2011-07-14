@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <osmocom/core/utils.h>
+#include <osmocom/core/msgb.h>
 #include <osmocom/gsm/protocol/gsm_08_58.h>
 
 void rsl_init_rll_hdr(struct abis_rsl_rll_hdr *dh, uint8_t msg_type);
@@ -23,6 +24,7 @@ const char *rsl_chan_nr_str(uint8_t chan_nr);
 
 const char *rsl_err_name(uint8_t err);
 const char *rsl_rlm_cause_name(uint8_t err);
+const char *rsl_msg_name(uint8_t err);
 
 /* Section 3.3.2.3 TS 05.02. I think this looks like a table */
 int rsl_ccch_conf_to_bs_cc_chans(int ccch_conf);
