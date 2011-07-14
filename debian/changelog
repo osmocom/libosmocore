@@ -1,3 +1,9 @@
+libosmocore (0.3.4-1) osmo-experimental; urgency=low
+
+  * New upstream version
+
+ -- Jan Lübbe <jluebbe@debian.org>  Thu, 14 Jul 2011 18:33:57 +0200
+
 libosmocore (0.3.1+deb2-1) osmo-experimental; urgency=low
 
   * New upstream snapshot
