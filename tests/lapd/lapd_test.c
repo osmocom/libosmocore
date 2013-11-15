@@ -64,7 +64,7 @@ static const uint8_t cm[] = {
 static const uint8_t ua[] = {
 	0x01, 0x73, 0x41, 0x05, 0x24, 0x31, 0x03, 0x50,
 	0x18, 0x93, 0x08, 0x29, 0x47, 0x80, 0x00, 0x00,
-	0x00, 0x00, 0x80, 0x2b, 0x2b, 0x2b, 0x2b
+	0x00, 0x00, 0x80, 0x2b,
 };
 
 static const uint8_t mm[] = {
@@ -87,6 +87,37 @@ static const uint8_t est_req_sdcch_sapi3[] = {
 static const uint8_t est_req_sacch_sapi3[] = {
 	0x02, 0x04, 0x01, 0x0b, 0x02, 0x43
 };
+
+static int check_padding(struct msgb *msg, int bts_mode)
+{
+	/* Not complete LAPDm decoding but enough for messages in this test */
+	uint8_t *data = msg->data;
+	int len = msgb_length(msg);
+	int plen, i, cnt_neq, cnt_tot;
+
+	OSMO_ASSERT(len >= 3);
+	plen = 3 + (data[2] >> 2);
+	OSMO_ASSERT(plen <= len);
+
+	if (plen == len)
+		return 0;
+
+	if (bts_mode) {
+		if (data[plen] != 0x2b)
+			return 1;
+		plen++;
+	}
+
+	cnt_tot = cnt_neq = 0;
+
+	for (i=plen; i<len; i++) {
+		cnt_tot++;
+		if (data[i] != 0x2b)
+			cnt_neq++;
+	}
+
+	return cnt_neq < (cnt_tot >> 2);
+}
 
 static struct msgb *create_cm_serv_req(void)
 {
@@ -234,6 +265,9 @@ static int ms_to_bts_l1_cb(struct osmo_prim_hdr *oph, void *_ctx)
 	struct lapdm_polling_state *state = _ctx;
 	printf("%s: MS(us) -> BTS prim message\n", __func__);
 
+	/* Check padding */
+	OSMO_ASSERT(check_padding(oph->msg, 0) == 0);
+
 	/* i stuff it into the LAPDm channel of the BTS */
 	rc = send(oph->msg, state->bts);
 	msgb_free(oph->msg);
@@ -296,12 +330,14 @@ static void test_lapdm_polling()
 
 	/* BTS to MS in polling mode */
 	lapdm_channel_init(&bts_to_ms_channel, LAPDM_MODE_BTS);
-        lapdm_channel_set_flags(&bts_to_ms_channel, LAPDM_ENT_F_POLLING_ONLY);
+	lapdm_channel_set_flags(&bts_to_ms_channel,
+		LAPDM_ENT_F_POLLING_ONLY | LAPDM_ENT_F_RANDOM_PADDING);
         lapdm_channel_set_l1(&bts_to_ms_channel, NULL, &test_state);
         lapdm_channel_set_l3(&bts_to_ms_channel, bts_to_ms_tx_cb, &test_state);
 
 	/* MS to BTS in direct mode */
 	lapdm_channel_init(&ms_to_bts_channel, LAPDM_MODE_MS);
+	lapdm_channel_set_flags(&ms_to_bts_channel, LAPDM_ENT_F_RANDOM_PADDING);
 	lapdm_channel_set_l1(&ms_to_bts_channel, ms_to_bts_l1_cb, &test_state);
 	lapdm_channel_set_l3(&ms_to_bts_channel, ms_to_bts_tx_cb, &test_state);
 
@@ -318,6 +354,7 @@ static void test_lapdm_polling()
 	rc = lapdm_phsap_dequeue_prim(&bts_to_ms_channel.lapdm_dcch, &pp);
 	CHECK_RC(rc);
 	OSMO_ASSERT(pp.oph.msg->data == pp.oph.msg->l2h);
+	OSMO_ASSERT(check_padding(pp.oph.msg, 1) == 0);
 	send(pp.oph.msg, &ms_to_bts_channel);
 	msgb_free(pp.oph.msg);
 	OSMO_ASSERT(test_state.ms_read == 1);
@@ -327,6 +364,7 @@ static void test_lapdm_polling()
 	lapdm_rslms_recvmsg(create_mm_id_req(), &bts_to_ms_channel);
 	rc = lapdm_phsap_dequeue_prim(&bts_to_ms_channel.lapdm_dcch, &pp);
 	CHECK_RC(rc);
+	OSMO_ASSERT(check_padding(pp.oph.msg, 1) == 0);
 	send(pp.oph.msg, &ms_to_bts_channel);
 	msgb_free(pp.oph.msg);
 	OSMO_ASSERT(test_state.ms_read == 2);
@@ -334,6 +372,7 @@ static void test_lapdm_polling()
 	/* verify that there is nothing more to poll */
 	rc = lapdm_phsap_dequeue_prim(&bts_to_ms_channel.lapdm_dcch, &pp);
 	OSMO_ASSERT(rc < 0);
+	OSMO_ASSERT(check_padding(pp.oph.msg, 1) == 0);
 
 	/* 3. And back to the BTS */
 	printf("\nSending back to BTS\n");
@@ -346,6 +385,7 @@ static void test_lapdm_polling()
 	OSMO_ASSERT(test_state.ms_read == 2);
 	rc = lapdm_phsap_dequeue_prim(&bts_to_ms_channel.lapdm_dcch, &pp);
 	CHECK_RC(rc);
+	OSMO_ASSERT(check_padding(pp.oph.msg, 1) == 0);
 	send(pp.oph.msg, &ms_to_bts_channel);
 	OSMO_ASSERT(test_state.ms_read == 2);
 	msgb_free(pp.oph.msg);

@@ -16,6 +16,13 @@ enum lapdm_mode {
 	LAPDM_MODE_BTS,		/*!< \brief behave like a BTS (network) */
 };
 
+/*! \brief LAPDm padding mode */
+enum lapdm_pad_mode {
+	LAPDM_PAD_MODE_LEGACY,     /*!< \brief Not randomized, use 0x2B */
+	LAPDM_PAD_MODE_RANDOM_MS,  /*!< \brief Randomized, MS-mode  */
+	LAPDM_PAD_MODE_RANDOM_BTS, /*!< \brief Randomized, BTS-mode */
+};
+
 struct lapdm_entity;
 
 /*! \brief LAPDm message context */
@@ -47,6 +54,7 @@ typedef int (*lapdm_cb_t)(struct msgb *msg, struct lapdm_entity *le, void *ctx);
 
 #define LAPDM_ENT_F_EMPTY_FRAME		0x0001
 #define LAPDM_ENT_F_POLLING_ONLY	0x0002
+#define LAPDM_ENT_F_RANDOM_PADDING	0x0004
 
 /*! \brief a LAPDm Entity */
 struct lapdm_entity {

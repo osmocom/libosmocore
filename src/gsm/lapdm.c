@@ -29,6 +29,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 #include <errno.h>
 #include <arpa/inet.h>
@@ -201,11 +202,24 @@ static inline unsigned char *msgb_pull_l2h(struct msgb *msg)
 	return ret;
 }
 
+/* Choose padding mode for a given entity */
+static enum lapdm_pad_mode lapdm_select_pad_mode(struct lapdm_entity *ent)
+{
+	if (!(ent->flags & LAPDM_ENT_F_RANDOM_PADDING))
+		return LAPDM_PAD_MODE_LEGACY;
+
+	return ent->mode == LAPDM_MODE_MS ?
+		LAPDM_PAD_MODE_RANDOM_MS :
+		LAPDM_PAD_MODE_RANDOM_BTS;
+}
+
 /* Append padding (if required) */
-static void lapdm_pad_msgb(struct msgb *msg, uint8_t n201)
+static void lapdm_pad_msgb(struct msgb *msg, uint8_t n201,
+                           enum lapdm_pad_mode mode)
 {
 	int pad_len = n201 - msgb_l2len(msg);
 	uint8_t *data;
+	int i;
 
 	if (pad_len < 0) {
 		LOGP(DLLAPD, LOGL_ERROR,
@@ -213,8 +227,27 @@ static void lapdm_pad_msgb(struct msgb *msg, uint8_t n201)
 		return;
 	}
 
+	if (!pad_len)
+		return;
+
 	data = msgb_put(msg, pad_len);
-	memset(data, 0x2B, pad_len);
+
+	switch (mode)
+	{
+	case LAPDM_PAD_MODE_LEGACY:
+		memset(data, 0x2b, pad_len);
+		break;
+
+	case LAPDM_PAD_MODE_RANDOM_MS:
+		for (i=0; i<pad_len; i++)
+			data[i] = random() & 0xff;
+		break;
+	case LAPDM_PAD_MODE_RANDOM_BTS:
+		data[0] = 0x2b;
+		for (i=1; i<pad_len; i++)
+			data[i] = random() & 0xff;
+		break;
+	}
 }
 
 /* input function that L2 calls when sending messages up to L3 */
@@ -252,7 +285,7 @@ static int tx_ph_data_enqueue(struct lapdm_datalink *dl, struct msgb *msg,
 
 	/* send the frame now */
 	le->tx_pending = 0; /* disabled flow control */
-	lapdm_pad_msgb(msg, pad);
+	lapdm_pad_msgb(msg, pad, lapdm_select_pad_mode(le));
 
 	return le->l1_prim_cb(&pp.oph, le->l1_ctx);
 }
@@ -305,7 +338,7 @@ int lapdm_phsap_dequeue_prim(struct lapdm_entity *le, struct osmo_phsap_prim *pp
 	msgb_pull(msg, 1);
 
 	/* Pad the frame, we can transmit now */
-	lapdm_pad_msgb(msg, pad);
+	lapdm_pad_msgb(msg, pad, lapdm_select_pad_mode(le));
 
 	return 0;
 }
