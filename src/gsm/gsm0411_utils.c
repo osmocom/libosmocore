@@ -7,6 +7,7 @@
  * (C) 2010-2013 by Holger Hans Peter Freyther <zecke@selfish.org>
  * (C) 2010 by On-Waves
  * (C) 2011 by Andreas Eversberg <jolly@eversberg.eu>
+ * (C) 2014 by Alexander Chemeris <Alexander.Chemeris@fairwaves.co>
  *
  * All Rights Reserved
  *
@@ -34,6 +35,7 @@
 
 #include <osmocom/gsm/gsm48.h>
 #include <osmocom/gsm/gsm_utils.h>
+#include <osmocom/gsm/gsm0411_utils.h>
 #include <osmocom/gsm/protocol/gsm_03_40.h>
 #include <osmocom/gsm/protocol/gsm_04_11.h>
 
@@ -120,21 +122,13 @@ time_t gsm340_scts(uint8_t *scts)
 	return mktime(&tm) - ofs;
 }
 
-/* Return the default validity period in minutes */
-static unsigned long gsm340_vp_default(void)
-{
-	unsigned long minutes;
-	/* Default validity: two days */
-	minutes = 24 * 60 * 2;
-	return minutes;
-}
-
-/* Decode validity period format 'relative' */
-static unsigned long gsm340_vp_relative(uint8_t *sms_vp)
+/* Decode validity period format 'relative'.
+ * Returns number of seconds relative to a current time. */
+static time_t gsm340_vp_relative(uint8_t *sms_vp)
 {
 	/* Chapter 9.2.3.12.1 */
 	uint8_t vp;
-	unsigned long minutes;
+	time_t minutes;
 
 	vp = *(sms_vp);
 	if (vp <= 143)
@@ -145,58 +139,53 @@ static unsigned long gsm340_vp_relative(uint8_t *sms_vp)
 		minutes = vp-166 * 60 * 24;
 	else
 		minutes = vp-192 * 60 * 24 * 7;
-	return minutes;
+
+	/* Convert to seconds */
+	return minutes * 60;
 }
 
-/* Decode validity period format 'absolute' */
-static unsigned long gsm340_vp_absolute(uint8_t *sms_vp)
+/* Decode validity period format 'absolute'.
+ * Returns UNIX time. */
+static time_t gsm340_vp_absolute(uint8_t *sms_vp)
 {
 	/* Chapter 9.2.3.12.2 */
-	time_t expires, now;
-	unsigned long minutes;
-
-	expires = gsm340_scts(sms_vp);
-	now = time(NULL);
-	if (expires <= now)
-		minutes = 0;
-	else
-		minutes = (expires-now)/60;
-	return minutes;
+	return gsm340_scts(sms_vp);
 }
 
-/* Decode validity period format 'relative in integer representation' */
-static unsigned long gsm340_vp_relative_integer(uint8_t *sms_vp)
+/* Decode validity period format 'relative in integer representation'.
+ * Returns number of seconds relative to a current time. */
+static time_t gsm340_vp_relative_integer(uint8_t *sms_vp)
 {
 	uint8_t vp;
-	unsigned long minutes;
 	vp = *(sms_vp);
 	if (vp == 0) {
 		LOGP(DLSMS, LOGL_ERROR,
 		     "reserved relative_integer validity period\n");
-		return gsm340_vp_default();
+#warning We should return an RP-Error here.
+		return SMS_DEFAULT_VALIDITY_PERIOD;
 	}
-	minutes = vp/60;
-	return minutes;
+	return vp;
 }
 
-/* Decode validity period format 'relative in semi-octet representation' */
-static unsigned long gsm340_vp_relative_semioctet(uint8_t *sms_vp)
+/* Decode validity period format 'relative in semi-octet representation'.
+ * Returns number of seconds relative to a current time. */
+static time_t gsm340_vp_relative_semioctet(uint8_t *sms_vp)
 {
-	unsigned long minutes;
-	minutes = gsm411_unbcdify(*sms_vp++)*60;  /* hours */
-	minutes += gsm411_unbcdify(*sms_vp++);    /* minutes */
-	minutes += gsm411_unbcdify(*sms_vp++)/60; /* seconds */
-	return minutes;
+	time_t hours, minutes, seconds;
+	hours   = gsm411_unbcdify(*sms_vp++); /* hours */
+	minutes = gsm411_unbcdify(*sms_vp++); /* minutes */
+	seconds = gsm411_unbcdify(*sms_vp++); /* seconds */
+	return hours*60*60 + minutes*60 + seconds;
 }
 
-/* decode validity period. return minutes */
-unsigned long gsm340_validity_period(uint8_t sms_vpf, uint8_t *sms_vp)
+/* Decode validity period. Returns absolute UNIX time. */
+time_t gsm340_validity_time(time_t now, uint8_t sms_vpf, uint8_t *sms_vp)
 {
 	uint8_t fi; /* functionality indicator */
 
 	switch (sms_vpf) {
 	case GSM340_TP_VPF_RELATIVE:
-		return gsm340_vp_relative(sms_vp);
+		return now + gsm340_vp_relative(sms_vp);
 	case GSM340_TP_VPF_ABSOLUTE:
 		return gsm340_vp_absolute(sms_vp);
 	case GSM340_TP_VPF_ENHANCED:
@@ -207,24 +196,32 @@ unsigned long gsm340_validity_period(uint8_t sms_vpf, uint8_t *sms_vp)
 		/* read validity period format */
 		switch (fi & 0x7) {
 		case 0x0:
-			return gsm340_vp_default(); /* no vpf specified */
+			return now + SMS_DEFAULT_VALIDITY_PERIOD; /* no vpf specified */
 		case 0x1:
-			return gsm340_vp_relative(sms_vp);
+			return now + gsm340_vp_relative(sms_vp);
 		case 0x2:
-			return gsm340_vp_relative_integer(sms_vp);
+			return now + gsm340_vp_relative_integer(sms_vp);
 		case 0x3:
-			return gsm340_vp_relative_semioctet(sms_vp);
+			return now + gsm340_vp_relative_semioctet(sms_vp);
 		default:
 			/* The GSM spec says that the SC should reject any
 			   unsupported and/or undefined values. FIXME */
 			LOGP(DLSMS, LOGL_ERROR,
 			     "Reserved enhanced validity period format\n");
-			return gsm340_vp_default();
+			return now + SMS_DEFAULT_VALIDITY_PERIOD;
 		}
 	case GSM340_TP_VPF_NONE:
 	default:
-		return gsm340_vp_default();
+		return now + SMS_DEFAULT_VALIDITY_PERIOD;
 	}
+}
+
+/* Decode validity period. return relative minutes.
+ * This behaviour is broken, but we're mimicing to it for compatibility. */
+unsigned long gsm340_validity_period(uint8_t sms_vpf, uint8_t *sms_vp)
+{
+	time_t now = time(NULL);
+	return (gsm340_validity_time(now, sms_vpf, sms_vp) - now) / 60;
 }
 
 /* determine coding alphabet dependent on GSM 03.38 Section 4 DCS */

@@ -66,6 +66,7 @@ gsm340_gen_oa;
 gsm340_gen_scts;
 gsm340_scts;
 gsm340_validity_period;
+gsm340_validity_time;
 
 gsm411_bcdify;
 gsm411_msgb_alloc;

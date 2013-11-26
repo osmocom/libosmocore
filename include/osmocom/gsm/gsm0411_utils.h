@@ -2,6 +2,10 @@
 #define _GSM0411_UTILS_H
 
 #include <time.h>
+#include <osmocom/core/defs.h>
+
+/* Default SMS validity period is 2 days */
+#define SMS_DEFAULT_VALIDITY_PERIOD	(2 * 24 * 60 * 60)
 
 /* Turn int into semi-octet representation: 98 => 0x89 */
 uint8_t gsm411_bcdify(uint8_t value);
@@ -17,8 +21,11 @@ void gsm340_gen_scts(uint8_t *scts, time_t time);
 /* Decode 03.40 TP-SCTS (into utc/gmt timestamp) */
 time_t gsm340_scts(uint8_t *scts);
 
-/* decode validity period. return minutes */
-unsigned long gsm340_validity_period(uint8_t sms_vpf, uint8_t *sms_vp);
+/* decode validity period. return absolute time */
+time_t gsm340_validity_time(time_t now, uint8_t sms_vpf, uint8_t *sms_vp);
+/* decode validity period. return relative minutes */
+unsigned long gsm340_validity_period(uint8_t sms_vpf, uint8_t *sms_vp)
+	OSMO_DEPRECATED("Use gsm340_validity_time() instead.");
 
 /* determine coding alphabet dependent on GSM 03.38 Section 4 DCS */
 enum sms_alphabet gsm338_get_sms_alphabet(uint8_t dcs);
