@@ -7,7 +7,8 @@ check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
 		 gb/bssgp_fc_test gb/gprs_ns_test                       \
 		 logging/logging_test fr/fr_test	                \
 		 loggingrb/loggingrb_test strrb/strrb_test              \
-		 vty/vty_test comp128/comp128_test utils/utils_test
+		 vty/vty_test comp128/comp128_test utils/utils_test	\
+		 auth/gsm_test
 
 if ENABLE_MSGFILE
 check_PROGRAMS += msgfile/msgfile_test
@@ -24,6 +25,9 @@ comp128_comp128_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/
 
 auth_milenage_test_SOURCES = auth/milenage_test.c
 auth_milenage_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/gsm/libosmogsm.la
+
+auth_gsm_test_SOURCES = auth/gsm_test.c
+auth_gsm_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/gsm/libosmogsm.la
 
 bits_bitrev_test_SOURCES = bits/bitrev_test.c
 bits_bitrev_test_LDADD = $(top_builddir)/src/libosmocore.la
@@ -98,7 +102,7 @@ $(srcdir)/package.m4: $(top_srcdir)/configure.ac
 EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
              timer/timer_test.ok sms/sms_test.ok ussd/ussd_test.ok	\
              smscb/smscb_test.ok bits/bitrev_test.ok a5/a5_test.ok	\
-             conv/conv_test.ok auth/milenage_test.ok			\
+             conv/conv_test.ok auth/milenage_test.ok auth/gsm_test.ok	\
              lapd/lapd_test.ok gsm0408/gsm0408_test.ok			\
              gsm0808/gsm0808_test.ok gb/bssgp_fc_tests.err		\
              gb/bssgp_fc_tests.ok gb/bssgp_fc_tests.sh			\

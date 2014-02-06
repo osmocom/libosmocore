@@ -48,10 +48,16 @@ cat $abs_srcdir/ussd/ussd_test.ok > expout
 AT_CHECK([$abs_top_builddir/tests/ussd/ussd_test], [0], [expout], [ignore])
 AT_CLEANUP
 
-AT_SETUP([auth])
-AT_KEYWORDS([auth])
+AT_SETUP([auth_milenage])
+AT_KEYWORDS([auth_milenage])
 cat $abs_srcdir/auth/milenage_test.ok > expout
 AT_CHECK([$abs_top_builddir/tests/auth/milenage_test], [0], [expout], [ignore])
+AT_CLEANUP
+
+AT_SETUP([auth_gsm])
+AT_KEYWORDS([auth_gsm])
+cat $abs_srcdir/auth/gsm_test.ok > expout
+AT_CHECK([$abs_top_builddir/tests/auth/gsm_test], [0], [expout], [ignore])
 AT_CLEANUP
 
 AT_SETUP([comp128])
