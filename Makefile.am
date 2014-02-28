@@ -1,6 +1,7 @@
 ACLOCAL_AMFLAGS = -I m4
 
-AM_CPPFLAGS = $(all_includes) -I$(top_srcdir)/include
+export AM_CPPFLAGS = -DMSGB_DISABLE_DIRECT_WRITE
+
 SUBDIRS = include src src/vty src/codec src/gsm src/gb tests utils
 
 pkgconfigdir = $(libdir)/pkgconfig

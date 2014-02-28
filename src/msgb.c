@@ -55,11 +55,11 @@ struct msgb *msgb_alloc(uint16_t size, const char *name)
 		return NULL;
 	}
 
-	msg->data_len = size;
-	msg->len = 0;
-	msg->data = msg->_data;
-	msg->head = msg->_data;
-	msg->tail = msg->_data;
+	msg->__data_len = size;
+	msg->__len = 0;
+	msg->__data = msg->_data;
+	msg->__head = msg->_data;
+	msg->__tail = msg->_data;
 
 	return msg;
 }
@@ -113,10 +113,10 @@ struct msgb *msgb_dequeue(struct llist_head *queue)
  */
 void msgb_reset(struct msgb *msg)
 {
-	msg->len = 0;
-	msg->data = msg->_data;
-	msg->head = msg->_data;
-	msg->tail = msg->_data;
+	msg->__len = 0;
+	msg->__data = msg->_data;
+	msg->__head = msg->_data;
+	msg->__tail = msg->_data;
 
 	msg->trx = NULL;
 	msg->lchan = NULL;
@@ -133,7 +133,7 @@ void msgb_reset(struct msgb *msg)
  */
 uint8_t *msgb_data(const struct msgb *msg)
 {
-	return msg->data;
+	return msg->__data;
 }
 
 /*! \brief get length of message buffer

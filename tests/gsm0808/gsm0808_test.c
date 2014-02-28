@@ -108,8 +108,7 @@ static void test_create_cipher_complete()
 	msgb_free(msg);
 
 	/* with l3 data but short */
-	l3->len -= 1;
-	l3->tail -= 1;
+	msgb_trim(l3, l3->len - 1);
 	msg = gsm0808_create_cipher_complete(l3, 4);
 	VERIFY(msg, res2, ARRAY_SIZE(res2));
 	msgb_free(msg);

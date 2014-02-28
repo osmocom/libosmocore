@@ -38,6 +38,12 @@
 
 #define MSGB_DEBUG
 
+#ifdef MSGB_DISABLE_DIRECT_WRITE
+#  define MSGB_CONST const
+#else
+#  define MSGB_CONST
+#endif
+
 /*! \brief Osmocom message buffer */
 struct msgb {
 	struct llist_head list; /*!< \brief linked list header */
@@ -58,12 +64,32 @@ struct msgb {
 
 	unsigned long cb[5]; /*!< \brief control buffer */
 
-	uint16_t data_len;   /*!< \brief length of underlying data array */
-	uint16_t len;	     /*!< \brief length of bytes used in msgb */
+	union {
+		/*! \brief length of underlying data array */
+		MSGB_CONST uint16_t data_len;
+		uint16_t __data_len;
+	};
+	union {
+		/*! \brief length of bytes used in msgb */
+		MSGB_CONST uint16_t len;
+		uint16_t __len;
+	};
+	union {
+		/*! \brief start of underlying memory buffer */
+		unsigned char * MSGB_CONST head;
+		unsigned char *__head;
+	};
+	union {
+		/*! \brief end of message in buffer */
+		unsigned char * MSGB_CONST tail;
+		unsigned char *__tail;
+	};
+	union {
+		/*! \brief start of message in buffer */
+		unsigned char * MSGB_CONST data;
+		unsigned char *__data;
+	};
 
-	unsigned char *head;	/*!< \brief start of underlying memory buffer */
-	unsigned char *tail;	/*!< \brief end of message in buffer */
-	unsigned char *data;	/*!< \brief start of message in buffer */
 	unsigned char _data[0]; /*!< \brief optional immediate data array */
 };
 
@@ -179,12 +205,12 @@ static inline int msgb_headroom(const struct msgb *msgb)
  */
 static inline unsigned char *msgb_put(struct msgb *msgb, unsigned int len)
 {
-	unsigned char *tmp = msgb->tail;
+	unsigned char *tmp = msgb->__tail;
 	if (msgb_tailroom(msgb) < (int) len)
 		MSGB_ABORT(msgb, "Not enough tailroom msgb_push (%u < %u)\n",
 			   msgb_tailroom(msgb), len);
-	msgb->tail += len;
-	msgb->len += len;
+	msgb->__tail += len;
+	msgb->__len += len;
 	return tmp;
 }
 
@@ -228,12 +254,12 @@ static inline void msgb_put_u32(struct msgb *msgb, uint32_t word)
  */
 static inline unsigned char *msgb_get(struct msgb *msgb, unsigned int len)
 {
-	unsigned char *tmp = msgb->data - len;
+	unsigned char *tmp = msgb->__data - len;
 	if (msgb_length(msgb) < len)
 		MSGB_ABORT(msgb, "msgb too small to get %u (len %u)\n",
 			   len, msgb_length(msgb));
-	msgb->tail -= len;
-	msgb->len -= len;
+	msgb->__tail -= len;
+	msgb->__len -= len;
 	return tmp;
 }
 /*! \brief remove uint8 from end of message
@@ -281,9 +307,9 @@ static inline unsigned char *msgb_push(struct msgb *msgb, unsigned int len)
 	if (msgb_headroom(msgb) < (int) len)
 		MSGB_ABORT(msgb, "Not enough headroom msgb_push (%u < %u)\n",
 			   msgb_headroom(msgb), len);
-	msgb->data -= len;
-	msgb->len += len;
-	return msgb->data;
+	msgb->__data -= len;
+	msgb->__len += len;
+	return msgb->__data;
 }
 /*! \brief remove (pull) a header from the front of the message buffer
  *  \param[in] msgb message buffer
@@ -296,8 +322,8 @@ static inline unsigned char *msgb_push(struct msgb *msgb, unsigned int len)
  */
 static inline unsigned char *msgb_pull(struct msgb *msgb, unsigned int len)
 {
-	msgb->len -= len;
-	return msgb->data += len;
+	msgb->__len -= len;
+	return msgb->__data += len;
 }
 
 /*! \brief remove (pull) all headers in front of l3h from the message buffer.
@@ -356,8 +382,8 @@ static inline uint32_t msgb_pull_u32(struct msgb *msgb)
  */
 static inline void msgb_reserve(struct msgb *msg, int len)
 {
-	msg->data += len;
-	msg->tail += len;
+	msg->__data += len;
+	msg->__tail += len;
 }
 
 /*! \brief Trim the msgb to a given absolute length
@@ -370,8 +396,8 @@ static inline int msgb_trim(struct msgb *msg, int len)
 	if (len > msg->data_len)
 		return -1;
 
-	msg->len = len;
-	msg->tail = msg->data + len;
+	msg->__len = len;
+	msg->__tail = msg->__data + len;
 
 	return 0;
 }
