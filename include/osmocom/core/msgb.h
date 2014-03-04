@@ -44,6 +44,11 @@
 #  define MSGB_CONST
 #endif
 
+/* 0: Don't check, 1: Few tests (not inlined), 2: Exhaustive tests */
+#ifndef MSGB_ENABLE_CHECKS
+#  define MSGB_ENABLE_CHECKS 0
+#endif
+
 /*! \brief Osmocom message buffer */
 struct msgb {
 	struct llist_head list; /*!< \brief linked list header */
@@ -100,6 +105,7 @@ extern struct msgb *msgb_dequeue(struct llist_head *queue);
 extern void msgb_reset(struct msgb *m);
 uint16_t msgb_length(const struct msgb *msg);
 extern const char *msgb_hexdump(const struct msgb *msg);
+static int msgb_test_invariant(const struct msgb *msg) __attribute__((pure));
 
 #ifdef MSGB_DEBUG
 #include <osmocom/core/panic.h>
@@ -110,14 +116,37 @@ extern const char *msgb_hexdump(const struct msgb *msg);
 #define MSGB_ABORT(msg, fmt, args ...)
 #endif
 
+#if MSGB_ENABLE_CHECKS == 0
+#  define MSGB_CHECK(msg) ({				\
+	typeof((msg)) __msgb_tmp __attribute__((unused))= ((msg));\
+	__msgb_tmp + (void)0;						\
+	})
+#else
+#  define MSGB_CHECK(msg) ({				\
+	typeof((msg)) __msgb_tmp __attribute__((unused))= ((msg));\
+	if (!msgb_test_invariant(__msgb_tmp))		\
+		MSGB_ABORT(__msgb_tmp, "Invariant has failed.%s", "\n");	\
+	__msgb_tmp;						\
+	})
+#endif
+
+#if MSGB_ENABLE_CHECKS >= 2
+#  define MSGB_CHECK2(msg) MSGB_CHECK((msg))
+#else
+#  define MSGB_CHECK2(msg) ({				\
+	typeof((msg)) __msgb_tmp __attribute__((unused))= ((msg));\
+	__msgb_tmp;						\
+	})
+#endif
+
 /*! \brief obtain L1 header of msgb */
-#define msgb_l1(m)	((void *)(m->l1h))
+#define msgb_l1(m)	((void *)(MSGB_CHECK2(m)->l1h))
 /*! \brief obtain L2 header of msgb */
-#define msgb_l2(m)	((void *)(m->l2h))
+#define msgb_l2(m)	((void *)(MSGB_CHECK2(m)->l2h))
 /*! \brief obtain L3 header of msgb */
-#define msgb_l3(m)	((void *)(m->l3h))
+#define msgb_l3(m)	((void *)(MSGB_CHECK2(m)->l3h))
 /*! \brief obtain SMS header of msgb */
-#define msgb_sms(m)	((void *)(m->l4h))
+#define msgb_sms(m)	((void *)(MSGB_CHECK2(m)->l4h))
 
 /*! \brief determine length of L1 message
  *  \param[in] msgb message buffer
@@ -164,6 +193,7 @@ static inline unsigned int msgb_l3len(const struct msgb *msgb)
  */
 static inline unsigned int msgb_headlen(const struct msgb *msgb)
 {
+	MSGB_CHECK2(msgb);
 	return msgb->len - msgb->data_len;
 }
 
@@ -176,6 +206,7 @@ static inline unsigned int msgb_headlen(const struct msgb *msgb)
  */
 static inline int msgb_tailroom(const struct msgb *msgb)
 {
+	MSGB_CHECK2(msgb);
 	return (msgb->head + msgb->data_len) - msgb->tail;
 }
 
@@ -188,6 +219,7 @@ static inline int msgb_tailroom(const struct msgb *msgb)
  */
 static inline int msgb_headroom(const struct msgb *msgb)
 {
+	MSGB_CHECK2(msgb);
 	return (msgb->data - msgb->head);
 }
 
@@ -322,6 +354,7 @@ static inline unsigned char *msgb_push(struct msgb *msgb, unsigned int len)
  */
 static inline unsigned char *msgb_pull(struct msgb *msgb, unsigned int len)
 {
+	MSGB_CHECK2(msgb);
 	msgb->__len -= len;
 	return msgb->__data += len;
 }
@@ -382,6 +415,7 @@ static inline uint32_t msgb_pull_u32(struct msgb *msgb)
  */
 static inline void msgb_reserve(struct msgb *msg, int len)
 {
+	MSGB_CHECK2(msg);
 	msg->__data += len;
 	msg->__tail += len;
 }
@@ -393,6 +427,7 @@ static inline void msgb_reserve(struct msgb *msg, int len)
  */
 static inline int msgb_trim(struct msgb *msg, int len)
 {
+	MSGB_CHECK2(msg);
 	if (len > msg->data_len)
 		return -1;
 
@@ -431,6 +466,41 @@ static inline struct msgb *msgb_alloc_headroom(int size, int headroom,
 	if (msg)
 		msgb_reserve(msg, headroom);
 	return msg;
+}
+
+static inline int msgb_test_invariant(const struct msgb *msg)
+{
+	const unsigned char *lbound;
+	if (!msg || !msg->data || !msg->tail ||
+	    (msg->data + msg->len != msg->tail) ||
+	    (msg->data < msg->head) ||
+	    (msg->tail > msg->head + msg->data_len))
+		return 0;
+
+	lbound = msg->head;
+
+	if (msg->l1h) {
+		if (msg->l1h < lbound)
+			return 0;
+		lbound = msg->l1h;
+	}
+	if (msg->l2h) {
+		if (msg->l2h < lbound)
+			return 0;
+		lbound = msg->l2h;
+	}
+	if (msg->l3h) {
+		if (msg->l3h < lbound)
+			return 0;
+		lbound = msg->l3h;
+	}
+	if (msg->l4h) {
+		if (msg->l4h < lbound)
+			return 0;
+		lbound = msg->l4h;
+	}
+
+	return lbound <= msg->head +  msg->data_len;
 }
 
 /* non inline functions to ease binding */

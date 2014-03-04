@@ -69,6 +69,8 @@ struct msgb *msgb_alloc(uint16_t size, const char *name)
  */
 void msgb_free(struct msgb *m)
 {
+	if (m)
+		MSGB_CHECK(m);
 	talloc_free(m);
 }
 
@@ -81,6 +83,7 @@ void msgb_free(struct msgb *m)
  */
 void msgb_enqueue(struct llist_head *queue, struct msgb *msg)
 {
+	MSGB_CHECK(msg);
 	llist_add_tail(&msg->list, queue);
 }
 
@@ -113,6 +116,8 @@ struct msgb *msgb_dequeue(struct llist_head *queue)
  */
 void msgb_reset(struct msgb *msg)
 {
+	MSGB_CHECK(msg);
+
 	msg->__len = 0;
 	msg->__data = msg->_data;
 	msg->__head = msg->_data;
@@ -133,6 +138,7 @@ void msgb_reset(struct msgb *msg)
  */
 uint8_t *msgb_data(const struct msgb *msg)
 {
+	MSGB_CHECK(msg);
 	return msg->__data;
 }
 
@@ -142,6 +148,7 @@ uint8_t *msgb_data(const struct msgb *msg)
  */
 uint16_t msgb_length(const struct msgb *msg)
 {
+	MSGB_CHECK(msg);
 	return msg->len;
 }
 
