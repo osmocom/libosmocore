@@ -26,4 +26,86 @@ Result: len(12) data(14 a1 21 43 65 87 09 21 43 65 87 19 )
 Result: len(2) data(00 91 )
 Result: len(9) data(0e d0 4f 78 d9 2d 9c 0e 01 )
 Result: len(12) data(14 d0 4f 78 d9 2d 9c 0e c3 e2 31 19 )
+
+Testing default validity time
+Expected: 1970-01-03 00:00:00
+Decoded:  1970-01-03 00:00:00
+
+Testing relative validity time
+Expected: 1970-01-01 00:30:00
+Decoded:  1970-01-01 00:30:00
+Expected: 1970-01-01 15:30:00
+Decoded:  1970-01-01 15:30:00
+Expected: 1970-01-15 00:00:00
+Decoded:  1970-01-15 00:00:00
+Expected: 1971-02-11 00:00:00
+Decoded:  1971-02-11 00:00:00
+Expected: 1970-01-01 00:31:40
+Decoded:  1970-01-01 00:31:40
+Expected: 1970-01-01 15:31:40
+Decoded:  1970-01-01 15:31:40
+Expected: 1970-01-15 00:01:40
+Decoded:  1970-01-15 00:01:40
+Expected: 1971-02-11 00:01:40
+Decoded:  1971-02-11 00:01:40
+
+Testing absolute validity time
+Expected: 2013-05-15 12:24:36
+Decoded:  2013-05-15 12:24:36
+Expected: 1984-05-15 12:24:36
+Decoded:  1984-05-15 12:24:36
+Expected: 2013-05-15 08:24:36
+Decoded:  2013-05-15 08:24:36
+Expected: 2013-12-24 12:24:36
+Decoded:  2013-12-24 12:24:36
+Expected: 2013-05-15 16:24:36
+Decoded:  2013-05-15 16:24:36
+Expected: 2013-05-15 12:24:36
+Decoded:  2013-05-15 12:24:36
+Expected: 1984-05-15 12:24:36
+Decoded:  1984-05-15 12:24:36
+Expected: 2013-05-15 08:24:36
+Decoded:  2013-05-15 08:24:36
+Expected: 2013-12-24 12:24:36
+Decoded:  2013-12-24 12:24:36
+Expected: 2013-05-15 16:24:36
+Decoded:  2013-05-15 16:24:36
+
+Testing enhanced validity time
+Expected: 1970-01-03 00:00:00
+Decoded:  1970-01-03 00:00:00
+Expected: 1970-01-01 00:30:00
+Decoded:  1970-01-01 00:30:00
+Expected: 1970-01-01 15:30:00
+Decoded:  1970-01-01 15:30:00
+Expected: 1970-01-15 00:00:00
+Decoded:  1970-01-15 00:00:00
+Expected: 1971-02-11 00:00:00
+Decoded:  1971-02-11 00:00:00
+Expected: 1970-01-01 00:30:00
+Decoded:  1970-01-01 00:30:00
+Expected: 1970-01-01 00:02:03
+Decoded:  1970-01-01 00:02:03
+Expected: 1970-01-01 02:15:23
+Decoded:  1970-01-01 02:15:23
+Expected: 1970-01-03 00:00:00
+Decoded:  1970-01-03 00:00:00
+Expected: 1970-01-03 00:16:40
+Decoded:  1970-01-03 00:16:40
+Expected: 1970-01-01 00:46:40
+Decoded:  1970-01-01 00:46:40
+Expected: 1970-01-01 15:46:40
+Decoded:  1970-01-01 15:46:40
+Expected: 1970-01-15 00:16:40
+Decoded:  1970-01-15 00:16:40
+Expected: 1971-02-11 00:16:40
+Decoded:  1971-02-11 00:16:40
+Expected: 1970-01-01 00:46:40
+Decoded:  1970-01-01 00:46:40
+Expected: 1970-01-01 00:18:43
+Decoded:  1970-01-01 00:18:43
+Expected: 1970-01-01 02:32:03
+Decoded:  1970-01-01 02:32:03
+Expected: 1970-01-03 00:16:40
+Decoded:  1970-01-03 00:16:40
 OK

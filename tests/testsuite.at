@@ -33,7 +33,7 @@ endif
 AT_SETUP([sms])
 AT_KEYWORDS([sms])
 cat $abs_srcdir/sms/sms_test.ok > expout
-AT_CHECK([$abs_top_builddir/tests/sms/sms_test], [0], [expout])
+AT_CHECK([$abs_top_builddir/tests/sms/sms_test], [0], [expout], [ignore])
 AT_CLEANUP
 
 AT_SETUP([smscb])

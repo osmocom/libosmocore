@@ -1,6 +1,7 @@
 /*
  * (C) 2008 by Daniel Willmann <daniel@totalueberwachung.de>
  * (C) 2010 by Nico Golde <nico@ngolde.de>
+ * (C) 2014 by Alexander Chemeris <Alexander.Chemeris@fairwaves.co>
  * All Rights Reserved
  *
  * This program is free software; you can redistribute it and/or modify
@@ -24,6 +25,7 @@
 #include <string.h>
 
 #include <osmocom/gsm/protocol/gsm_03_40.h>
+#include <osmocom/gsm/protocol/gsm_04_11.h>
 
 #include <osmocom/gsm/gsm_utils.h>
 #include <osmocom/gsm/gsm0411_utils.h>
@@ -268,6 +270,133 @@ static void test_gen_oa(void)
 	printf("Result: len(%d) data(%s)\n", len, osmo_hexdump(oa, len));
 }
 
+#define PRINT_VALIDITY_TIMES(expected, decoded) \
+{ \
+	char _validity_timestamp[1024]; \
+	time_t _temp_time; \
+	_temp_time = (expected); \
+	strftime(_validity_timestamp, sizeof(_validity_timestamp), \
+			 "%F %T", gmtime(&_temp_time)); \
+	printf("Expected: %s\n", _validity_timestamp); \
+	_temp_time = (decoded); \
+	strftime(_validity_timestamp, sizeof(_validity_timestamp), \
+			 "%F %T", gmtime(&_temp_time)); \
+	printf("Decoded:  %s\n", _validity_timestamp); \
+} \
+
+#define TEST_VALIDITY_DECODING(test_data, encoding) \
+{ \
+	int i; \
+	time_t valid_until; \
+	for (i=0; i<ARRAY_SIZE(test_data); i++) \
+	{ \
+		valid_until = gsm340_validity_time((test_data)[i].now, \
+			(encoding), (test_data)[i].vp); \
+		PRINT_VALIDITY_TIMES((test_data)[i].decoded, valid_until); \
+		OSMO_ASSERT(valid_until == (test_data)[i].decoded); \
+	} \
+}
+
+static void test_validity_period(void)
+{
+	time_t valid_until;
+	time_t vp_rel_default = SMS_DEFAULT_VALIDITY_PERIOD;
+
+	/* Relative data */
+	struct {
+		uint8_t vp[1];
+		time_t  now;
+		time_t  decoded;
+	} vp_rel_test[] = {
+		{{5},   0, (5 + 1) * 5 * 60},
+		{{150}, 0, (12*60 + (150-143) * 30) * 60},
+		{{180}, 0, ((180 - 166) * 60 * 24) * 60},
+		{{250}, 0, ((250 - 192) * 60 * 24 * 7) * 60},
+		/* Non-zero 'now' value should accordingly shift the decoded value */
+		{{5},   100, 100 + (5 + 1) * 5 * 60},
+		{{150}, 100, 100 + (12*60 + (150-143) * 30) * 60},
+		{{180}, 100, 100 + ((180 - 166) * 60 * 24) * 60},
+		{{250}, 100, 100 + ((250 - 192) * 60 * 24 * 7) * 60},
+	};
+
+	/* Absolute data */
+	struct {
+		uint8_t vp[8];
+		time_t  now;
+		time_t  decoded;
+	} vp_abs_test[] = {
+		/* 2013-05-15 12:24:36 UTC+0 
+		 * Basic check - no timezone offset, summer time, year after 2000 */
+		{{0x31, 0x50, 0x51, 0x21, 0x42, 0x63, 0x00|0x0, 0x0},  0, 1368620676},
+		/* 1984-05-15 12:24:36 UTC+0
+		 * Test year before 2000 */
+		{{0x48, 0x50, 0x51, 0x21, 0x42, 0x63, 0x00|0x0, 0x0},  0, 453471876},
+		/* 2013-05-15 12:24:36 UTC+4
+		 * Test positive timezone offset*/
+		{{0x31, 0x50, 0x51, 0x21, 0x42, 0x63, 0x00|0x61, 0x0}, 0, 1368606276},
+		/* 2013-12-24 12:24:36 UTC
+		 * Test winter time */
+		{{0x31, 0x21, 0x42, 0x21, 0x42, 0x63, 0x00|0x0, 0x0},  0, 1387887876},
+		/* 2013-05-15 12:24:36 UTC-4
+		 * Test negative timezone offset */
+		{{0x31, 0x50, 0x51, 0x21, 0x42, 0x63, 0x80|0x61, 0x0}, 0, 1368635076},
+		/* Adding current time should not change returned value, as it's absolute */
+		{{0x31, 0x50, 0x51, 0x21, 0x42, 0x63, 0x00|0x0, 0x0},  1000, 1368620676},
+		{{0x48, 0x50, 0x51, 0x21, 0x42, 0x63, 0x00|0x0, 0x0},  1000, 453471876},
+		{{0x31, 0x50, 0x51, 0x21, 0x42, 0x63, 0x00|0x61, 0x0}, 1000, 1368606276},
+		{{0x31, 0x21, 0x42, 0x21, 0x42, 0x63, 0x00|0x0, 0x0},  1000, 1387887876},
+		{{0x31, 0x50, 0x51, 0x21, 0x42, 0x63, 0x80|0x61, 0x0}, 1000, 1368635076}
+	};
+
+	/* Enhanced data */
+	struct {
+		uint8_t vp[5];
+		time_t  now;
+		time_t  decoded;
+	} vp_enh_test[] = {
+		/* No Validity Period specified, no extension */
+		{{0x00, 0x00, 0x00, 0x00, 0x00}, 0, SMS_DEFAULT_VALIDITY_PERIOD},
+		/* Relative case, no extension */
+		{{0x01,   5, 0x00, 0x00, 0x00},  0, (5 + 1) * 5 * 60},
+		{{0x01, 150, 0x00, 0x00, 0x00},  0, (12*60 + (150-143) * 30) * 60},
+		{{0x01, 180, 0x00, 0x00, 0x00},  0, ((180 - 166) * 60 * 24) * 60},
+		{{0x01, 250, 0x00, 0x00, 0x00},  0, ((250 - 192) * 60 * 24 * 7) * 60},
+		/* Relative case, with extension */
+		{{0x81, 0x00,   5, 0x00, 0x00},  0, (5 + 1) * 5 * 60},
+		/* Relative integer case, no extension */
+		{{0x02, 123, 0x00, 0x00, 0x00},  0, 123},
+		/* Relative semioctet case, no extension
+		 * 2:15:23 */
+		{{0x03, 0x20, 0x51, 0x32, 0x00}, 0, (2*60 + 15) * 60 + 23},
+		/* Unknown functionality indicator */
+		{{0x04, 0x00, 0x00, 0x00, 0x00}, 0, SMS_DEFAULT_VALIDITY_PERIOD},
+		/* Non-zero 'now' value should accordingly shift the decoded value */
+		{{0x00, 0x00, 0x00, 0x00, 0x00}, 1000, 1000 + SMS_DEFAULT_VALIDITY_PERIOD},
+		{{0x01,   5, 0x00, 0x00, 0x00},  1000, 1000 + (5 + 1) * 5 * 60},
+		{{0x01, 150, 0x00, 0x00, 0x00},  1000, 1000 + (12*60 + (150-143) * 30) * 60},
+		{{0x01, 180, 0x00, 0x00, 0x00},  1000, 1000 + ((180 - 166) * 60 * 24) * 60},
+		{{0x01, 250, 0x00, 0x00, 0x00},  1000, 1000 + ((250 - 192) * 60 * 24 * 7) * 60},
+		{{0x81, 0x00,   5, 0x00, 0x00},  1000, 1000 + (5 + 1) * 5 * 60},
+		{{0x02, 123, 0x00, 0x00, 0x00},  1000, 1000 + 123},
+		{{0x03, 0x20, 0x51, 0x32, 0x00}, 1000, 1000 + (2*60 + 15) * 60 + 23},
+		{{0x04, 0x00, 0x00, 0x00, 0x00}, 1000, 1000 + SMS_DEFAULT_VALIDITY_PERIOD},
+	};
+
+	printf("\nTesting default validity time\n");
+	valid_until = gsm340_validity_time(0, GSM340_TP_VPF_NONE, NULL);
+	PRINT_VALIDITY_TIMES(vp_rel_default, valid_until);
+	OSMO_ASSERT(valid_until == SMS_DEFAULT_VALIDITY_PERIOD);
+
+	printf("\nTesting relative validity time\n");
+	TEST_VALIDITY_DECODING(vp_rel_test, GSM340_TP_VPF_RELATIVE);
+
+	printf("\nTesting absolute validity time\n");
+	TEST_VALIDITY_DECODING(vp_abs_test, GSM340_TP_VPF_ABSOLUTE);
+
+	printf("\nTesting enhanced validity time\n");
+	TEST_VALIDITY_DECODING(vp_enh_test, GSM340_TP_VPF_ENHANCED);
+}
+
 int main(int argc, char** argv)
 {
 	printf("SMS testing\n");
@@ -414,6 +543,7 @@ int main(int argc, char** argv)
 
 	test_octet_return();
 	test_gen_oa();
+	test_validity_period();
 
 	printf("OK\n");
 	return 0;
