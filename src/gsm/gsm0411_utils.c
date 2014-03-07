@@ -86,7 +86,10 @@ void gsm340_gen_scts(uint8_t *scts, time_t time)
 	*scts++ = gsm411_bcdify(tm->tm_min);
 	*scts++ = gsm411_bcdify(tm->tm_sec);
 #ifdef HAVE_TM_GMTOFF_IN_TM
-	*scts++ = gsm411_bcdify(tm->tm_gmtoff/(60*15));
+	if (tm->tm_gmtoff >= 0)
+		*scts++ = gsm411_bcdify(tm->tm_gmtoff/(60*15));
+	else
+		*scts++ = gsm411_bcdify(-tm->tm_gmtoff/(60*15)) | 0x80;
 #else
 #warning find a portable way to obtain timezone offset
 	*scts++ = 0;
