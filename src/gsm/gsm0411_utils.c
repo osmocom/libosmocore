@@ -100,11 +100,13 @@ void gsm340_gen_scts(uint8_t *scts, time_t time)
 time_t gsm340_scts(uint8_t *scts)
 {
 	struct tm tm;
-	uint8_t yr = gsm411_unbcdify(*scts++);
+	uint8_t yr, tz;
 	int ofs;
+	time_t timestamp;
 
 	memset(&tm, 0x00, sizeof(struct tm));
 
+	yr = gsm411_unbcdify(*scts++);
 	if (yr <= 80)
 		tm.tm_year = 100 + yr;
 	else
@@ -114,15 +116,32 @@ time_t gsm340_scts(uint8_t *scts)
 	tm.tm_hour = gsm411_unbcdify(*scts++);
 	tm.tm_min  = gsm411_unbcdify(*scts++);
 	tm.tm_sec  = gsm411_unbcdify(*scts++);
-#ifdef HAVE_TM_GMTOFF_IN_TM
-	tm.tm_gmtoff = gsm411_unbcdify(*scts++) * 15*60;
-#endif
 
 	/* according to gsm 03.40 time zone is
 	   "expressed in quarters of an hour" */
-	ofs = gsm411_unbcdify(*scts++) * 15*60;
+	tz = *scts++;
+	ofs = gsm411_unbcdify(tz&0x7f) * 15*60;
+	if (tz&0x80)
+		ofs = -ofs;
+	/* mktime() doesn't take tm.tm_gmtoff into account. Instead, it fills this
+	 * field with the current timezone. Which means that the resulting time is
+	 * off by several hours after that. So here we're setting tm.tm_isdt to -1
+	 * to indicate that the tm time is local, but later we subtract the
+	 * offset introduced by mktime. */
+	tm.tm_isdst = -1;
 
-	return mktime(&tm) - ofs;
+	timestamp = mktime(&tm);
+	if (timestamp < 0)
+		return -1;
+
+	/* Take into account timezone offset */
+	timestamp -= ofs;
+#ifdef HAVE_TM_GMTOFF_IN_TM
+	/* Remove an artificial timezone offset, introduced by mktime() */
+	timestamp += tm.tm_gmtoff;
+#endif
+
+	return timestamp;
 }
 
 /* Decode validity period format 'relative'.
