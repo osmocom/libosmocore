@@ -234,37 +234,37 @@ static void test_octet_return()
 	printf("Done\n");
 }
 
-static void test_gen_oa(void)
+static void test_gsm340_gen_address_field(void)
 {
 	uint8_t oa[12];
 	int len;
 
-	printf("Testing gsm340_gen_oa\n");
+	printf("Testing gsm340_gen_address_field\n");
 
 	/* first try... */
-	len = gsm340_gen_oa(oa, ARRAY_SIZE(oa), GSM340_TYPE_UNKNOWN,
+	len = gsm340_gen_address_field(oa, ARRAY_SIZE(oa), GSM340_TYPE_UNKNOWN,
 			GSM340_PLAN_ISDN, "12345678901234567891");
 	OSMO_ASSERT(len == 12);
 	printf("Result: len(%d) data(%s)\n", len, osmo_hexdump(oa, len));
-	len = gsm340_gen_oa(oa, ARRAY_SIZE(oa), GSM340_TYPE_NATIONAL,
+	len = gsm340_gen_address_field(oa, ARRAY_SIZE(oa), GSM340_TYPE_NATIONAL,
 			GSM340_PLAN_ISDN, "12345678901234567891");
 	OSMO_ASSERT(len == 12);
 	printf("Result: len(%d) data(%s)\n", len, osmo_hexdump(oa, len));
 
 	/* long input.. will fail and just prints the header*/
-	len = gsm340_gen_oa(oa, ARRAY_SIZE(oa), GSM340_TYPE_INTERNATIONAL,
+	len = gsm340_gen_address_field(oa, ARRAY_SIZE(oa), GSM340_TYPE_INTERNATIONAL,
 			GSM340_PLAN_ISDN, "123456789123456789120");
 	OSMO_ASSERT(len == 2);
 	printf("Result: len(%d) data(%s)\n", len, osmo_hexdump(oa, len));
 
 	/* try the alpha numeric encoding */
-	len = gsm340_gen_oa(oa, ARRAY_SIZE(oa), GSM340_TYPE_ALPHA_NUMERIC,
+	len = gsm340_gen_address_field(oa, ARRAY_SIZE(oa), GSM340_TYPE_ALPHA_NUMERIC,
 			GSM340_PLAN_UNKNOWN, "OpenBSC");
 	OSMO_ASSERT(len == 9);
 	printf("Result: len(%d) data(%s)\n", len, osmo_hexdump(oa, len));
 
 	/* long alpha numeric text */
-	len = gsm340_gen_oa(oa, ARRAY_SIZE(oa), GSM340_TYPE_ALPHA_NUMERIC,
+	len = gsm340_gen_address_field(oa, ARRAY_SIZE(oa), GSM340_TYPE_ALPHA_NUMERIC,
 			GSM340_PLAN_UNKNOWN, "OpenBSCabcdefghijklm");
 	OSMO_ASSERT(len == 12);
 	printf("Result: len(%d) data(%s)\n", len, osmo_hexdump(oa, len));
@@ -542,7 +542,7 @@ int main(int argc, char** argv)
 	}
 
 	test_octet_return();
-	test_gen_oa();
+	test_gsm340_gen_address_field();
 	test_validity_period();
 
 	printf("OK\n");

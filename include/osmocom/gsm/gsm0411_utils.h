@@ -32,6 +32,8 @@ enum sms_alphabet gsm338_get_sms_alphabet(uint8_t dcs);
 
 /* generate a TPDU address field compliant with 03.40 sec. 9.1.2.5 */
 int gsm340_gen_oa(uint8_t *oa, unsigned int oa_len, uint8_t type,
+	uint8_t plan, const char *number) OSMO_DEPRECATED("Use gsm340_gen_address_field() instead");
+int gsm340_gen_address_field(uint8_t *oa, unsigned int oa_len, uint8_t type,
 	uint8_t plan, const char *number);
 
 /* Prefix msg with a RP header */

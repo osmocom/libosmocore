@@ -63,6 +63,7 @@ gsm0808_prepend_dtap_header;
 gsm338_get_sms_alphabet;
 
 gsm340_gen_oa;
+gsm340_gen_address_field;
 gsm340_gen_scts;
 gsm340_scts;
 gsm340_validity_period;

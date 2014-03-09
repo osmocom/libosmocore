@@ -285,7 +285,7 @@ enum sms_alphabet gsm338_get_sms_alphabet(uint8_t dcs)
 }
 
 /* generate a TPDU address field compliant with 03.40 sec. 9.1.2.5 */
-int gsm340_gen_oa(uint8_t *oa, unsigned int oa_len, uint8_t type,
+int gsm340_gen_address_field(uint8_t *oa, unsigned int oa_len, uint8_t type,
 	uint8_t plan, const char *number)
 {
 	int len_in_bytes;
@@ -312,6 +312,13 @@ int gsm340_gen_oa(uint8_t *oa, unsigned int oa_len, uint8_t type,
 	}
 
 	return len_in_bytes;
+}
+
+/* DEPRECATED: use gsm340_gen_address_field() instead */
+int gsm340_gen_oa(uint8_t *oa, unsigned int oa_len, uint8_t type,
+	uint8_t plan, const char *number)
+{
+	return gsm340_gen_address_field(oa, oa_len, type, plan, number);
 }
 
 /* Prefix msg with a RP header */
