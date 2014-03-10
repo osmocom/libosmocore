@@ -25,8 +25,10 @@
 #include <stdint.h>
 #include <string.h>
 #include <errno.h>
+#include <fcntl.h>
+
+#ifdef HAVE_NETDB_H
 #include <netdb.h>
-#include <ifaddrs.h>
 
 /*! \brief Initialize a socket (including bind/connect)
  *  \param[in] family Address Family like AF_INET, AF_INET6, AF_UNSPEC
@@ -85,7 +87,12 @@ int osmo_sock_init(uint16_t family, uint16_t type, uint8_t proto,
 		if (sfd == -1)
 			continue;
 		if (flags & OSMO_SOCK_F_NONBLOCK) {
-			if (ioctl(sfd, FIONBIO, (unsigned char *)&on) < 0) {
+#ifdef FIONBIO
+			rc = ioctl(sfd, FIONBIO, (unsigned char *)&on);
+#else
+			rc = fcntl(sfd, F_SETFL, O_NONBLOCK);
+#endif
+			if (rc < 0) {
 				perror("cannot set this socket unblocking");
 				close(sfd);
 				return -EINVAL;
@@ -127,6 +134,69 @@ int osmo_sock_init(uint16_t family, uint16_t type, uint8_t proto,
 	}
 	return sfd;
 }
+#else /* HAVE_NETDB_H */
+int osmo_sock_init(uint16_t family, uint16_t type, uint8_t proto,
+		   const char *host, uint16_t port, unsigned int flags)
+{
+	int sfd, rc, on = 1;
+	struct sockaddr_in sin;
+
+	memset(&sin, 0, sizeof(sin));
+	inet_aton(host, &sin.sin_addr);
+	sin.sin_port = htons(port);
+
+	sfd = socket(family, type, proto);
+	if (sfd == -1)
+		return -EIO;
+
+	if (flags & OSMO_SOCK_F_NONBLOCK) {
+#ifdef FIONBIO
+		rc = ioctl(sfd, FIONBIO, (unsigned char *)&on);
+#else
+		rc = fcntl(sfd, F_SETFL, O_NONBLOCK);
+#endif
+		if (rc < 0) {
+			perror("cannot set this socket unblocking");
+			close(sfd);
+			return -EINVAL;
+		}
+	}
+	if (flags & OSMO_SOCK_F_CONNECT) {
+		rc = connect(sfd, (struct sockaddr *)&sin, sizeof(sin));
+		if (rc == -1 || (rc != -1 && errno == EINPROGRESS)) {
+			close(sfd);
+			return rc;
+		}
+	} else {
+		rc = setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR,
+						&on, sizeof(on));
+		if (rc < 0) {
+			perror("cannot setsockopt socket");
+			close(sfd);
+			return rc;
+		}
+		rc = bind(sfd, &sin, sizeof(sin));
+		if (rc < 0) {
+			close(sfd);
+			return rc;
+		}
+	}
+
+	setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+
+	/* Make sure to call 'listen' on a bound, connection-oriented sock */
+	if (flags & OSMO_SOCK_F_BIND) {
+		switch (type) {
+		case SOCK_STREAM:
+		case SOCK_SEQPACKET:
+			listen(sfd, 10);
+			break;
+		}
+	}
+	return sfd;
+}
+#endif /* HAVE_NETDB_H */
+
 
 /*! \brief Initialize a socket and fill \ref osmo_fd
  *  \param[out] ofd file descriptor (will be filled in)
@@ -161,6 +231,7 @@ int osmo_sock_init_ofd(struct osmo_fd *ofd, int family, int type, int proto,
 	return sfd;
 }
 
+#ifdef HAVE_NETDB_H
 /*! \brief Initialize a socket and fill \ref sockaddr
  *  \param[out] ss socket address (will be filled in)
  *  \param[in] type Socket type like SOCK_DGRAM, SOCK_STREAM
@@ -204,6 +275,7 @@ int osmo_sock_init_sa(struct sockaddr *ss, uint16_t type,
 
 	return osmo_sock_init(ss->sa_family, type, proto, host, port, flags);
 }
+#endif /* HAVE_NETDB_H */
 
 static int sockaddr_equal(const struct sockaddr *a,
 			  const struct sockaddr *b, unsigned int len)
@@ -233,6 +305,8 @@ static int sockaddr_equal(const struct sockaddr *a,
 	return 0;
 }
 
+#ifdef HAVE_IFADDRS_H
+#include <ifaddrs.h>
 /*! \brief Determine if the given address is a local address
  *  \param[in] addr Socket Address
  *  \param[in] addrlen Length of socket address in bytes
@@ -256,6 +330,7 @@ int osmo_sockaddr_is_local(struct sockaddr *addr, unsigned int addrlen)
 
 	return 0;
 }
+#endif /* HAVE_IFADDRS_H */
 
 #endif /* HAVE_SYS_SOCKET_H */
 
