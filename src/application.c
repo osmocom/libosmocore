@@ -81,10 +81,18 @@ static void sighup_hdlr(int signal)
 void osmo_init_ignore_signals(void)
 {
 	/* Signals that by default would terminate */
+#ifdef SIGPIPE
 	signal(SIGPIPE, SIG_IGN);
+#endif
+#ifdef SIGALRM
 	signal(SIGALRM, SIG_IGN);
+#endif
+#ifdef SIGHUP
 	signal(SIGHUP, &sighup_hdlr);
+#endif
+#ifdef SIGIO
 	signal(SIGIO, SIG_IGN);
+#endif
 }
 
 /*! \brief Initialize the osmocom logging framework
