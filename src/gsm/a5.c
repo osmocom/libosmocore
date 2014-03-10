@@ -39,6 +39,12 @@
 
 #include <osmocom/gsm/a5.h>
 
+/* Some OS like Nuttx don't define ENOTSUP */
+#ifndef ENOTSUP
+#define __LOCAL_ENOTSUP
+#define ENOTSUP 1
+#endif
+
 /*! \brief Main method to generate a A5/x cipher stream
  *  \param[in] n Which A5/x method to use
  *  \param[in] key 8 byte array for the key (as received from the SIM)
@@ -77,6 +83,10 @@ osmo_a5(int n, const uint8_t *key, uint32_t fn, ubit_t *dl, ubit_t *ul)
 
 	return 0;
 }
+
+#ifdef __LOCAL_ENOTSUP
+#undef ENOTSUP
+#endif
 
 
 /* ------------------------------------------------------------------------ */
