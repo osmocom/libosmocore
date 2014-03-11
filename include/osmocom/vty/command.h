@@ -123,7 +123,7 @@ struct cmd_element {
 	unsigned int cmdsize;	/*!< \brief Command index count. */
 	char *config;		/*!< \brief Configuration string */
 	vector subconfig;	/*!< \brief Sub configuration string */
-	u_char attr;		/*!< \brief Command attributes */
+	unsigned char attr;	/*!< \brief Command attributes */
 };
 
 /*! \brief Command description structure. */
