@@ -40,6 +40,10 @@ Boston, MA 02111-1307, USA.  */
 
 #include <osmocom/core/talloc.h>
 
+#ifndef BUFSIZ
+#define BUFSIZ	512
+#endif
+
 /*! \addtogroup command
  * @{
  */
