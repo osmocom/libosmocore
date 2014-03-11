@@ -26,11 +26,36 @@
 #include <string.h>
 #include <errno.h>
 #include <stddef.h>
-#include <sys/uio.h>
 
 #include <osmocom/core/talloc.h>
 #include <osmocom/vty/buffer.h>
 #include <osmocom/vty/vty.h>
+
+#ifdef HAVE_SYS_UIO_H
+#include <sys/uio.h>
+#else
+/* some platforms (e.g. Nuttx) don't have writev(), so we reimplement it
+ * here */
+struct iovec
+{
+	void *iov_base;
+	size_t iov_len;
+};
+static ssize_t writev(int fd, const struct iovec *iovec, int count)
+{
+	int i, rc;
+	ssize_t written = 0;
+
+	for (i = 0; i < count; i++) {
+		rc = write(fd, iovec[i].iov_base, iovec[i].iov_len);
+		if (rc <= 0)
+			return rc;
+		written += rc;
+	}
+
+	return written;
+}
+#endif
 
 /* Buffer master. */
 struct buffer {
@@ -76,7 +101,11 @@ struct buffer *buffer_new(void *ctx, size_t size)
 	else {
 		static size_t default_size;
 		if (!default_size) {
+#ifdef HAVE_SYSCONF
 			long pgsz = sysconf(_SC_PAGESIZE);
+#else
+			long pgsz = 4096;
+#endif
 			default_size =
 			    ((((BUFFER_SIZE_DEFAULT - 1) / pgsz) + 1) * pgsz);
 		}
