@@ -2,6 +2,8 @@
 # Please read Chapter 6 "Library interface versions" of the libtool documentation before making any modification
 LIBVERSION=0:0:0
 
+EXTRA_DIST=arpa_telnet.h
+
 AM_CFLAGS = -Wall $(all_includes) -I$(top_srcdir)/include
 
 if ENABLE_VTY

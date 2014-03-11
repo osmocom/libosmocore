@@ -46,15 +46,40 @@
 #include <ctype.h>
 #include <termios.h>
 
+#ifdef HAVE_SYS_UTSNAME_H
 #include <sys/utsname.h>
-#include <sys/param.h>
+#endif
 
+#ifdef HAVE_SYS_PARAM_H
+#include <sys/param.h>
+#endif
+
+#ifdef HAVE_ARPA_TELNET_H
 #include <arpa/telnet.h>
+#else
+#include "arpa_telnet.h"
+#endif
+
+#if !defined(MAXPATHLEN) && defined(PATH_MAX)
+#define MAXPATHLEN PATH_MAX
+#endif
 
 #include <osmocom/vty/vty.h>
 #include <osmocom/vty/command.h>
 #include <osmocom/vty/buffer.h>
 #include <osmocom/core/talloc.h>
+
+#ifndef HAVE_CFMAKERAW
+static void cfmakeraw(struct termios *termios_p)
+{
+	termios_p->c_iflag &= ~(IGNBRK | BRKINT | PARMRK | ISTRIP
+                             | INLCR | IGNCR | ICRNL | IXON);
+	termios_p->c_oflag &= ~OPOST;
+	termios_p->c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
+	termios_p->c_cflag &= ~(CSIZE | PARENB);
+	termios_p->c_cflag |= CS8;
+}
+#endif
 
 /* \addtogroup vty
  * @{
@@ -374,14 +399,18 @@ void vty_hello(struct vty *vty)
 /* Put out prompt and wait input from user. */
 static void vty_prompt(struct vty *vty)
 {
-	struct utsname names;
 	const char *hostname;
 
 	if (vty->type == VTY_TERM) {
 		hostname = host.app_info->name;
 		if (!hostname) {
+#ifdef HAVE_UTSNAME_H
+			struct utsname names;
 			uname(&names);
 			hostname = names.nodename;
+#else
+			hostname = "localhost";
+#endif /* HAVE_UTSNAME_H */
 		}
 		vty_out(vty, cmd_prompt(vty->node), hostname);
 	}
