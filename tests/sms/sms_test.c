@@ -308,15 +308,15 @@ static void test_validity_period(void)
 		time_t  now;
 		time_t  decoded;
 	} vp_rel_test[] = {
-		{{5},   0, (5 + 1) * 5 * 60},
-		{{150}, 0, (12*60 + (150-143) * 30) * 60},
-		{{180}, 0, ((180 - 166) * 60 * 24) * 60},
-		{{250}, 0, ((250 - 192) * 60 * 24 * 7) * 60},
+		{.vp = {5},   .now = 0, .decoded = (5 + 1) * 5 * 60},
+		{.vp = {150}, .now = 0, .decoded = (12*60 + (150-143) * 30) * 60},
+		{.vp = {180}, .now = 0, .decoded = ((180 - 166) * 60 * 24) * 60},
+		{.vp = {250}, .now = 0, .decoded = ((250 - 192) * 60 * 24 * 7) * 60},
 		/* Non-zero 'now' value should accordingly shift the decoded value */
-		{{5},   100, 100 + (5 + 1) * 5 * 60},
-		{{150}, 100, 100 + (12*60 + (150-143) * 30) * 60},
-		{{180}, 100, 100 + ((180 - 166) * 60 * 24) * 60},
-		{{250}, 100, 100 + ((250 - 192) * 60 * 24 * 7) * 60},
+		{.vp = {5},   .now = 100, .decoded = 100 + (5 + 1) * 5 * 60},
+		{.vp = {150}, .now = 100, .decoded = 100 + (12*60 + (150-143) * 30) * 60},
+		{.vp = {180}, .now = 100, .decoded = 100 + ((180 - 166) * 60 * 24) * 60},
+		{.vp = {250}, .now = 100, .decoded = 100 + ((250 - 192) * 60 * 24 * 7) * 60},
 	};
 
 	/* Absolute data */
@@ -327,25 +327,35 @@ static void test_validity_period(void)
 	} vp_abs_test[] = {
 		/* 2013-05-15 12:24:36 UTC+0 
 		 * Basic check - no timezone offset, summer time, year after 2000 */
-		{{0x31, 0x50, 0x51, 0x21, 0x42, 0x63, 0x00|0x0, 0x0},  0, 1368620676},
+		{.vp = {0x31, 0x50, 0x51, 0x21, 0x42, 0x63, 0x00|0x0, 0x0},  .now = 0,
+			.decoded = 1368620676},
 		/* 1984-05-15 12:24:36 UTC+0
 		 * Test year before 2000 */
-		{{0x48, 0x50, 0x51, 0x21, 0x42, 0x63, 0x00|0x0, 0x0},  0, 453471876},
+		{.vp = {0x48, 0x50, 0x51, 0x21, 0x42, 0x63, 0x00|0x0, 0x0},  .now = 0,
+			.decoded = 453471876},
 		/* 2013-05-15 12:24:36 UTC+4
 		 * Test positive timezone offset*/
-		{{0x31, 0x50, 0x51, 0x21, 0x42, 0x63, 0x00|0x61, 0x0}, 0, 1368606276},
+		{.vp = {0x31, 0x50, 0x51, 0x21, 0x42, 0x63, 0x00|0x61, 0x0}, .now = 0,
+			.decoded = 1368606276},
 		/* 2013-12-24 12:24:36 UTC
 		 * Test winter time */
-		{{0x31, 0x21, 0x42, 0x21, 0x42, 0x63, 0x00|0x0, 0x0},  0, 1387887876},
+		{.vp = {0x31, 0x21, 0x42, 0x21, 0x42, 0x63, 0x00|0x0, 0x0},  .now = 0,
+			.decoded = 1387887876},
 		/* 2013-05-15 12:24:36 UTC-4
 		 * Test negative timezone offset */
-		{{0x31, 0x50, 0x51, 0x21, 0x42, 0x63, 0x80|0x61, 0x0}, 0, 1368635076},
+		{.vp = {0x31, 0x50, 0x51, 0x21, 0x42, 0x63, 0x80|0x61, 0x0}, .now = 0,
+			.decoded = 1368635076},
 		/* Adding current time should not change returned value, as it's absolute */
-		{{0x31, 0x50, 0x51, 0x21, 0x42, 0x63, 0x00|0x0, 0x0},  1000, 1368620676},
-		{{0x48, 0x50, 0x51, 0x21, 0x42, 0x63, 0x00|0x0, 0x0},  1000, 453471876},
-		{{0x31, 0x50, 0x51, 0x21, 0x42, 0x63, 0x00|0x61, 0x0}, 1000, 1368606276},
-		{{0x31, 0x21, 0x42, 0x21, 0x42, 0x63, 0x00|0x0, 0x0},  1000, 1387887876},
-		{{0x31, 0x50, 0x51, 0x21, 0x42, 0x63, 0x80|0x61, 0x0}, 1000, 1368635076}
+		{.vp = {0x31, 0x50, 0x51, 0x21, 0x42, 0x63, 0x00|0x0, 0x0},  .now = 1000,
+			.decoded = 1368620676},
+		{.vp = {0x48, 0x50, 0x51, 0x21, 0x42, 0x63, 0x00|0x0, 0x0},  .now = 1000,
+			.decoded = 453471876},
+		{.vp = {0x31, 0x50, 0x51, 0x21, 0x42, 0x63, 0x00|0x61, 0x0}, .now = 1000,
+			.decoded = 1368606276},
+		{.vp = {0x31, 0x21, 0x42, 0x21, 0x42, 0x63, 0x00|0x0, 0x0},  .now = 1000,
+			.decoded = 1387887876},
+		{.vp = {0x31, 0x50, 0x51, 0x21, 0x42, 0x63, 0x80|0x61, 0x0}, .now = 1000,
+			.decoded = 1368635076},
 	};
 
 	/* Enhanced data */
@@ -355,31 +365,49 @@ static void test_validity_period(void)
 		time_t  decoded;
 	} vp_enh_test[] = {
 		/* No Validity Period specified, no extension */
-		{{0x00, 0x00, 0x00, 0x00, 0x00}, 0, SMS_DEFAULT_VALIDITY_PERIOD},
+		{.vp = {0x00, 0x00, 0x00, 0x00, 0x00}, .now = 0,
+			.decoded = SMS_DEFAULT_VALIDITY_PERIOD},
 		/* Relative case, no extension */
-		{{0x01,   5, 0x00, 0x00, 0x00},  0, (5 + 1) * 5 * 60},
-		{{0x01, 150, 0x00, 0x00, 0x00},  0, (12*60 + (150-143) * 30) * 60},
-		{{0x01, 180, 0x00, 0x00, 0x00},  0, ((180 - 166) * 60 * 24) * 60},
-		{{0x01, 250, 0x00, 0x00, 0x00},  0, ((250 - 192) * 60 * 24 * 7) * 60},
+		{.vp = {0x01,   5, 0x00, 0x00, 0x00},  .now = 0,
+			.decoded = (5 + 1) * 5 * 60},
+		{.vp = {0x01, 150, 0x00, 0x00, 0x00},  .now = 0,
+			.decoded = (12*60 + (150-143) * 30) * 60},
+		{.vp = {0x01, 180, 0x00, 0x00, 0x00},  .now = 0,
+			.decoded = ((180 - 166) * 60 * 24) * 60},
+		{.vp = {0x01, 250, 0x00, 0x00, 0x00},  .now = 0,
+			.decoded = ((250 - 192) * 60 * 24 * 7) * 60},
 		/* Relative case, with extension */
-		{{0x81, 0x00,   5, 0x00, 0x00},  0, (5 + 1) * 5 * 60},
+		{.vp = {0x81, 0x00,   5, 0x00, 0x00},  .now = 0,
+			.decoded = (5 + 1) * 5 * 60},
 		/* Relative integer case, no extension */
-		{{0x02, 123, 0x00, 0x00, 0x00},  0, 123},
+		{.vp = {0x02, 123, 0x00, 0x00, 0x00},  .now = 0,
+			.decoded = 123},
 		/* Relative semioctet case, no extension
 		 * 2:15:23 */
-		{{0x03, 0x20, 0x51, 0x32, 0x00}, 0, (2*60 + 15) * 60 + 23},
+		{.vp = {0x03, 0x20, 0x51, 0x32, 0x00}, .now = 0,
+			.decoded = (2*60 + 15) * 60 + 23},
 		/* Unknown functionality indicator */
-		{{0x04, 0x00, 0x00, 0x00, 0x00}, 0, SMS_DEFAULT_VALIDITY_PERIOD},
+		{.vp = {0x04, 0x00, 0x00, 0x00, 0x00}, .now = 0,
+			.decoded = SMS_DEFAULT_VALIDITY_PERIOD},
 		/* Non-zero 'now' value should accordingly shift the decoded value */
-		{{0x00, 0x00, 0x00, 0x00, 0x00}, 1000, 1000 + SMS_DEFAULT_VALIDITY_PERIOD},
-		{{0x01,   5, 0x00, 0x00, 0x00},  1000, 1000 + (5 + 1) * 5 * 60},
-		{{0x01, 150, 0x00, 0x00, 0x00},  1000, 1000 + (12*60 + (150-143) * 30) * 60},
-		{{0x01, 180, 0x00, 0x00, 0x00},  1000, 1000 + ((180 - 166) * 60 * 24) * 60},
-		{{0x01, 250, 0x00, 0x00, 0x00},  1000, 1000 + ((250 - 192) * 60 * 24 * 7) * 60},
-		{{0x81, 0x00,   5, 0x00, 0x00},  1000, 1000 + (5 + 1) * 5 * 60},
-		{{0x02, 123, 0x00, 0x00, 0x00},  1000, 1000 + 123},
-		{{0x03, 0x20, 0x51, 0x32, 0x00}, 1000, 1000 + (2*60 + 15) * 60 + 23},
-		{{0x04, 0x00, 0x00, 0x00, 0x00}, 1000, 1000 + SMS_DEFAULT_VALIDITY_PERIOD},
+		{.vp = {0x00, 0x00, 0x00, 0x00, 0x00}, .now = 1000,
+			.decoded = 1000 + SMS_DEFAULT_VALIDITY_PERIOD},
+		{.vp = {0x01,   5, 0x00, 0x00, 0x00},  .now = 1000,
+			.decoded = 1000 + (5 + 1) * 5 * 60},
+		{.vp = {0x01, 150, 0x00, 0x00, 0x00},  .now = 1000,
+			.decoded = 1000 + (12*60 + (150-143) * 30) * 60},
+		{.vp = {0x01, 180, 0x00, 0x00, 0x00},  .now = 1000,
+			.decoded = 1000 + ((180 - 166) * 60 * 24) * 60},
+		{.vp = {0x01, 250, 0x00, 0x00, 0x00},  .now = 1000,
+			.decoded = 1000 + ((250 - 192) * 60 * 24 * 7) * 60},
+		{.vp = {0x81, 0x00,   5, 0x00, 0x00},  .now = 1000,
+			.decoded = 1000 + (5 + 1) * 5 * 60},
+		{.vp = {0x02, 123, 0x00, 0x00, 0x00},  .now = 1000,
+			.decoded = 1000 + 123},
+		{.vp = {0x03, 0x20, 0x51, 0x32, 0x00}, .now = 1000,
+			.decoded = 1000 + (2*60 + 15) * 60 + 23},
+		{.vp = {0x04, 0x00, 0x00, 0x00, 0x00}, .now = 1000,
+			.decoded = 1000 + SMS_DEFAULT_VALIDITY_PERIOD},
 	};
 
 	printf("\nTesting default validity time\n");
