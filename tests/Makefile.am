@@ -7,7 +7,8 @@ check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
 		 gb/bssgp_fc_test gb/gprs_ns_test                       \
 		 logging/logging_test fr/fr_test	                \
 		 loggingrb/loggingrb_test strrb/strrb_test              \
-		 vty/vty_test comp128/comp128_test utils/utils_test
+		 vty/vty_test comp128/comp128_test utils/utils_test	\
+		 msgb/msgb_test
 
 if ENABLE_MSGFILE
 check_PROGRAMS += msgfile/msgfile_test
@@ -39,6 +40,9 @@ gsm0408_gsm0408_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/
 
 lapd_lapd_test_SOURCES = lapd/lapd_test.c
 lapd_lapd_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/gsm/libosmogsm.la
+
+msgb_msgb_test_SOURCES = msgb/msgb_test.c
+msgb_msgb_test_LDADD = $(top_builddir)/src/libosmocore.la 
 
 msgfile_msgfile_test_SOURCES = msgfile/msgfile_test.c
 msgfile_msgfile_test_LDADD = $(top_builddir)/src/libosmocore.la
@@ -102,7 +106,7 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
              lapd/lapd_test.ok gsm0408/gsm0408_test.ok			\
              gsm0808/gsm0808_test.ok gb/bssgp_fc_tests.err		\
              gb/bssgp_fc_tests.ok gb/bssgp_fc_tests.sh			\
-             gb/gprs_ns_test.ok						\
+             gb/gprs_ns_test.ok msgb/msgb_test.ok			\
              msgfile/msgfile_test.ok msgfile/msgconfig.cfg		\
              logging/logging_test.ok logging/logging_test.err		\
              fr/fr_test.ok loggingrb/logging_test.ok			\
