@@ -105,8 +105,8 @@ static struct msgb *create_mm_id_req(void)
 
 	msg = msgb_from_array(mm, sizeof(mm));
 	msg->l2h = msg->data + 3;
-	OSMO_ASSERT(msgb_l2len(msg) == 12);
 	msg->l3h = msg->l2h + 6;
+	OSMO_ASSERT(msgb_l2len(msg) == 12);
 	OSMO_ASSERT(msgb_l3len(msg) == 6);
 	msgb_push(msg, dummy_l1_header_len);
 
