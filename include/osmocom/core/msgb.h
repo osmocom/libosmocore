@@ -374,6 +374,30 @@ static inline unsigned char *msgb_pull_to_l3(struct msgb *msg)
 	return ret;
 }
 
+/*! \brief remove (pull) all headers in front of hdr from the message buffer.
+ *  \param[in] msgb message buffer with a valid l3h
+ *  \param[in] hdr pointer to a header within a message buffer
+ *  \returns pointer to new start of msgb (l3h)
+ *
+ * This function moves the \a data pointer of the \ref msgb further back
+ * in the message, thereby shrinking the size of the message.
+ * All lXhin front of ret will be cleared.
+ */
+static inline unsigned char *msgb_pull_to(struct msgb *msg,
+					  const unsigned char *hdr)
+{
+	unsigned char *ret = msgb_pull(msg, hdr - msg->data);
+	if (msg->l1h < ret)
+		msg->l1h = NULL;
+	if (msg->l2h < ret)
+		msg->l2h = NULL;
+	if (msg->l3h < ret)
+		msg->l3h = NULL;
+	if (msg->l4h < ret)
+		msg->l4h = NULL;
+	return ret;
+}
+
 /*! \brief remove uint8 from front of message
  *  \param[in] msgb message buffer
  *  \returns 8bit value taken from end of msgb
