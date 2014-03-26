@@ -268,6 +268,78 @@ static void test_gen_oa(void)
 	printf("Result: len(%d) data(%s)\n", len, osmo_hexdump(oa, len));
 }
 
+const char *tz_list[] = {
+	"UTC",
+	"Europe/London",
+	"Europe/Berlin",
+	"Europe/Athens",
+	"Europe/Moscow",
+	"Canada/Central",
+	"America/New_York",
+	"America/Los_Angeles",
+	NULL
+};
+
+static int test_scts_id_one_tz(const char *tz1, const char *tz2)
+{
+	uint8_t scts[7];
+	time_t ts, ts_res, start_ts, end_ts;
+
+	/* 2013-01-01 00:00:00 - 2014-01-01 01:00:00 increment in 30min steps */
+	start_ts = 1356998400;
+	end_ts = 1388538000;
+	for (ts = start_ts; ts <= end_ts; ts += 1800) {
+		memset(scts, 0, sizeof(scts));
+
+		setenv("TZ", tz1, 1);
+		tzset();
+		gsm340_gen_scts(scts, ts);
+
+		setenv("TZ", tz2, 1);
+		tzset();
+		ts_res = gsm340_scts(scts);
+
+		if (ts_res != ts) {
+			printf("%li -> %s -> %li\n", ts,
+				osmo_hexdump_nospc(scts, sizeof(scts)), ts_res);
+			return ts;
+		}
+	}
+	return 0;
+}
+
+static void test_scts_id(void)
+{
+	int i;
+	time_t ts;
+	const char *tz;
+	char *old_tz = getenv("TZ");
+
+	for (i = 0; ;i++) {
+		tz = tz_list[i];
+		if (!tz)
+			break;
+
+		printf("Testing gsm340_scts(gsm340_gen_scts(ts)) == ts "
+				"for TZ %s\n", tz);
+
+		ts = test_scts_id_one_tz(tz, tz);
+		if (ts)
+			printf("Timezone %s failed at ts %li\n", tz, ts);
+	}
+	setenv("TZ", old_tz, 1);
+}
+
+static void test_scts_across_tz(const char *tz1, const char *tz2)
+{
+	time_t ts;
+
+	printf("Testing SCTS generation in TZ %s, decoding in TZ %s\n", tz1, tz2);
+	ts = test_scts_id_one_tz(tz1, tz2);
+	if (ts)
+		printf("Timezone %s->%s failed at ts %li\n",tz1, tz2, ts);
+}
+
 int main(int argc, char** argv)
 {
 	printf("SMS testing\n");
@@ -414,6 +486,11 @@ int main(int argc, char** argv)
 
 	test_octet_return();
 	test_gen_oa();
+	test_scts_id();
+	test_scts_across_tz("UTC", "Europe/Berlin");
+	test_scts_across_tz("Europe/Berlin", "UTC");
+	test_scts_across_tz("Europe/Berlin", "Canada/Central");
+	test_scts_across_tz("Canada/Central", "Europe/Berlin");
 
 	printf("OK\n");
 	return 0;
