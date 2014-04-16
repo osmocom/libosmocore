@@ -99,7 +99,7 @@ time_t gsm340_scts(uint8_t *scts)
 {
 	struct tm tm;
 	uint8_t yr, tz;
-	int ofs;
+	int ofs_min;
 	time_t timestamp;
 
 	memset(&tm, 0x00, sizeof(struct tm));
@@ -118,26 +118,17 @@ time_t gsm340_scts(uint8_t *scts)
 	/* according to gsm 03.40 time zone is
 	   "expressed in quarters of an hour" */
 	tz = *scts++;
-	ofs = gsm411_unbcdify(tz&0xf7) * 15*60;
+	ofs_min = gsm411_unbcdify(tz&0xf7) * 15;
 	if (tz&0x08)
-		ofs = -ofs;
-	/* mktime() doesn't take tm.tm_gmtoff into account. Instead, it fills this
-	 * field with the current timezone. Which means that the resulting time is
-	 * off by several hours after that. So here we're setting tm.tm_isdt to -1
-	 * to indicate that the tm time is local, but later we subtract the
-	 * offset introduced by mktime. */
-	tm.tm_isdst = -1;
+		ofs_min = -ofs_min;
 
-	timestamp = mktime(&tm);
+	/* Take into account timezone offset, timegm() can deal with
+	 * values outside of the [0, 59] range */
+	tm.tm_min -= ofs_min;
+
+	timestamp = timegm(&tm);
 	if (timestamp < 0)
 		return -1;
-
-	/* Take into account timezone offset */
-	timestamp -= ofs;
-#ifdef HAVE_TM_GMTOFF_IN_TM
-	/* Remove an artificial timezone offset, introduced by mktime() */
-	timestamp += tm.tm_gmtoff;
-#endif
 
 	return timestamp;
 }

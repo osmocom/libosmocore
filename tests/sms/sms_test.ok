@@ -28,32 +28,14 @@ Result: len(9) data(0e d0 4f 78 d9 2d 9c 0e 01 )
 Result: len(12) data(14 d0 4f 78 d9 2d 9c 0e c3 e2 31 19 )
 Testing gsm340_scts(gsm340_gen_scts(ts)) == ts for TZ UTC
 Testing gsm340_scts(gsm340_gen_scts(ts)) == ts for TZ Europe/London
-1364691600 -> 31301310000000 -> 1364695200
-Timezone Europe/London failed at ts 1364691600
 Testing gsm340_scts(gsm340_gen_scts(ts)) == ts for TZ Europe/Berlin
-1364695200 -> 31301320000000 -> 1364698800
-Timezone Europe/Berlin failed at ts 1364695200
 Testing gsm340_scts(gsm340_gen_scts(ts)) == ts for TZ Europe/Athens
-1364698800 -> 31301330000000 -> 1364702400
-Timezone Europe/Athens failed at ts 1364698800
 Testing gsm340_scts(gsm340_gen_scts(ts)) == ts for TZ Europe/Moscow
 Testing gsm340_scts(gsm340_gen_scts(ts)) == ts for TZ Canada/Central
-1362880800 -> 31300120000000 -> 1362884400
-Timezone Canada/Central failed at ts 1362880800
 Testing gsm340_scts(gsm340_gen_scts(ts)) == ts for TZ America/New_York
-1362880800 -> 31300120000000 -> 1362884400
-Timezone America/New_York failed at ts 1362880800
 Testing gsm340_scts(gsm340_gen_scts(ts)) == ts for TZ America/Los_Angeles
-1362880800 -> 31300120000000 -> 1362884400
-Timezone America/Los_Angeles failed at ts 1362880800
 Testing SCTS generation in TZ UTC, decoding in TZ Europe/Berlin
-1364695200 -> 31301320000000 -> 1364698800
-Timezone UTC->Europe/Berlin failed at ts 1364695200
 Testing SCTS generation in TZ Europe/Berlin, decoding in TZ UTC
 Testing SCTS generation in TZ Europe/Berlin, decoding in TZ Canada/Central
-1362880800 -> 31300120000000 -> 1362884400
-Timezone Europe/Berlin->Canada/Central failed at ts 1362880800
 Testing SCTS generation in TZ Canada/Central, decoding in TZ Europe/Berlin
-1364695200 -> 31301320000000 -> 1364698800
-Timezone Canada/Central->Europe/Berlin failed at ts 1364695200
 OK
