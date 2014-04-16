@@ -51,6 +51,31 @@ AC_COMPILE_IFELSE([AC_LANG_SOURCE([char foo;])],
 CFLAGS="$saved_CFLAGS"
 AC_SUBST(SYMBOL_VISIBILITY)
 
+AC_DEFUN([CHECK_HAVE_TIMEGM], [
+  AC_CACHE_CHECK(
+    [whether timegm function is present],
+    osmo_cv_have_timegm,
+    [AC_LINK_IFELSE([
+      AC_LANG_PROGRAM([
+        #include <time.h>
+      ], [
+        time_t t = time(NULL);
+        struct tm* lt = gmtime(&t);
+        t = timegm(lt);
+      ])
+    ],
+    osmo_cv_have_timegm=yes,
+    osmo_cv_have_timegm=no
+    )]
+  )
+  if test "x$osmo_cv_have_timegm" = xyes; then
+    AC_DEFINE(HAVE_TIMEGM, 1,
+              [Define if timegm function is present.])
+  fi
+])
+
+CHECK_HAVE_TIMEGM
+
 AC_DEFUN([CHECK_TM_INCLUDES_TM_GMTOFF], [
   AC_CACHE_CHECK(
     [whether struct tm has tm_gmtoff member],

@@ -150,11 +150,19 @@ time_t gsm340_scts(uint8_t *scts)
 	if (tz&0x08)
 		ofs_min = -ofs_min;
 
-	/* Take into account timezone offset, timegm() can deal with
+	/* Take into account timezone offset from SCTS, timegm() can deal with
 	 * values outside of the [0, 59] range */
 	tm.tm_min -= ofs_min;
-
+#ifdef HAVE_TIMEGM
 	timestamp = timegm(&tm);
+#else
+#warning gsm340_scts() without timegm() assumes that DST offset is one hour
+	tm.tm_isdst = 0;
+	timestamp = mktime(&tm);
+	timestamp += time_gmtoff(timestamp);
+	if (tm.tm_isdst)
+		timestamp -= 3600;
+#endif
 	if (timestamp < 0)
 		return -1;
 
