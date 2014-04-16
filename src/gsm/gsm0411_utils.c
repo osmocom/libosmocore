@@ -72,13 +72,42 @@ uint8_t gsm411_unbcdify(uint8_t value)
 	return ret;
 }
 
+/* Get the local timezone offset from GMT of the unix time provided.
+ * For this the unix time is converted to a struct tm representation once
+ * as localtime and once as UTC. As there are no portable functions to
+ * calculate the differerence of two struct tm convert them both back to
+ * a unix timestamp and calculate the difference. */
+static time_t time_gmtoff(time_t time)
+{
+	struct tm tm_local, tm_utc;
+	time_t ts_local, ts_utc;
+
+	tzset();
+	localtime_r(&time, &tm_local);
+	gmtime_r(&time, &tm_utc);
+
+	/* tm_local is already in local time with DST offset included. For the
+	 * conversion back reset DST flag to 0. */
+	tm_local.tm_isdst = 0;
+	tm_utc.tm_isdst = 0;
+	ts_local = mktime(&tm_local);
+	ts_utc = mktime(&tm_utc);
+
+	return ts_local - ts_utc;
+}
+
 /* Generate 03.40 TP-SCTS */
 void gsm340_gen_scts(uint8_t *scts, time_t time)
 {
 	struct tm tm;
+	int gmt_offset;
 
+	/* The reentrant function require tzset() to be called */
 	tzset();
 	localtime_r(&time, &tm);
+
+	/* Get the gmt offset */
+	gmt_offset = time_gmtoff(time);
 
 	*scts++ = gsm411_bcdify(tm.tm_year % 100);
 	*scts++ = gsm411_bcdify(tm.tm_mon + 1);
@@ -87,15 +116,10 @@ void gsm340_gen_scts(uint8_t *scts, time_t time)
 	*scts++ = gsm411_bcdify(tm.tm_min);
 	*scts++ = gsm411_bcdify(tm.tm_sec);
 
-#ifdef HAVE_TM_GMTOFF_IN_TM
-	if (tm.tm_gmtoff >= 0)
-		*scts++ = gsm411_bcdify(tm.tm_gmtoff/(60*15));
+	if (gmt_offset >= 0)
+		*scts++ = gsm411_bcdify(gmt_offset/(60*15));
 	else
-		*scts++ = gsm411_bcdify(-tm.tm_gmtoff/(60*15)) | 0x08;
-#else
-#warning find a portable way to obtain timezone offset
-	*scts++ = 0;
-#endif
+		*scts++ = gsm411_bcdify(-gmt_offset/(60*15)) | 0x08;
 }
 
 /* Decode 03.40 TP-SCTS (into utc/gmt timestamp) */
