@@ -75,19 +75,23 @@ uint8_t gsm411_unbcdify(uint8_t value)
 /* Generate 03.40 TP-SCTS */
 void gsm340_gen_scts(uint8_t *scts, time_t time)
 {
-	struct tm *tm = gmtime(&time);
+	struct tm tm;
 
-	*scts++ = gsm411_bcdify(tm->tm_year % 100);
-	*scts++ = gsm411_bcdify(tm->tm_mon + 1);
-	*scts++ = gsm411_bcdify(tm->tm_mday);
-	*scts++ = gsm411_bcdify(tm->tm_hour);
-	*scts++ = gsm411_bcdify(tm->tm_min);
-	*scts++ = gsm411_bcdify(tm->tm_sec);
+	tzset();
+	localtime_r(&time, &tm);
+
+	*scts++ = gsm411_bcdify(tm.tm_year % 100);
+	*scts++ = gsm411_bcdify(tm.tm_mon + 1);
+	*scts++ = gsm411_bcdify(tm.tm_mday);
+	*scts++ = gsm411_bcdify(tm.tm_hour);
+	*scts++ = gsm411_bcdify(tm.tm_min);
+	*scts++ = gsm411_bcdify(tm.tm_sec);
+
 #ifdef HAVE_TM_GMTOFF_IN_TM
-	if (tm->tm_gmtoff >= 0)
-		*scts++ = gsm411_bcdify(tm->tm_gmtoff/(60*15));
+	if (tm.tm_gmtoff >= 0)
+		*scts++ = gsm411_bcdify(tm.tm_gmtoff/(60*15));
 	else
-		*scts++ = gsm411_bcdify(-tm->tm_gmtoff/(60*15)) | 0x08;
+		*scts++ = gsm411_bcdify(-tm.tm_gmtoff/(60*15)) | 0x08;
 #else
 #warning find a portable way to obtain timezone offset
 	*scts++ = 0;
