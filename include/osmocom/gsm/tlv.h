@@ -214,6 +214,19 @@ static inline uint8_t *msgb_l16tv_put(struct msgb *msg, uint16_t len, uint8_t ta
 	return buf + len;
 }
 
+/*! \brief put (append) a T7L9 field to \ref msgb */
+static inline uint8_t *msgb_t7l9_put(struct msgb *msg, uint8_t tag, uint16_t len)
+{
+	uint16_t tl;
+
+	tl = tag << 9;
+	tl |= len & 0x1FF;
+
+	msgb_put_u16(msg, tl);
+
+	return msg->tail;
+}
+
 /*! \brief put (append) a V field */
 static inline uint8_t *v_put(uint8_t *buf, uint8_t val)
 {
@@ -377,6 +390,7 @@ enum tlv_type {
 	TLV_TYPE_TvLV,		/*!< \brief tag, variable length, value */
 	TLV_TYPE_SINGLE_TV,	/*!< \brief tag and value (both 4 bit) in 1 byte */
 	TLV_TYPE_vTvLV_GAN,	/*!< \brief variable-length tag, variable-length length */
+	TLV_TYPE_T7L9V,		/*!< \brief 7 bit tag, 9 bit length, value */
 };
 
 /*! \brief Definition of a single IE (Information Element) */

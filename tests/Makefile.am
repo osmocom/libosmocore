@@ -7,7 +7,8 @@ check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
 		 gb/bssgp_fc_test gb/gprs_ns_test                       \
 		 logging/logging_test fr/fr_test	                \
 		 loggingrb/loggingrb_test strrb/strrb_test              \
-		 vty/vty_test comp128/comp128_test utils/utils_test
+		 vty/vty_test comp128/comp128_test utils/utils_test     \
+		 tlv/tlv_test
 
 if ENABLE_MSGFILE
 check_PROGRAMS += msgfile/msgfile_test
@@ -76,6 +77,9 @@ strrb_strrb_test_LDADD = $(top_builddir)/src/libosmocore.la
 vty_vty_test_SOURCES = vty/vty_test.c
 vty_vty_test_LDADD = $(top_builddir)/src/vty/libosmovty.la $(top_builddir)/src/libosmocore.la
 
+tlv_tlv_test_SOURCES = tlv/tlv_test.c
+tlv_tlv_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/gsm/libosmogsm.la
+
 
 # The `:;' works around a Bash 3.2 bug when the output is not writeable.
 $(srcdir)/package.m4: $(top_srcdir)/configure.ac
@@ -108,7 +112,7 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
              fr/fr_test.ok loggingrb/logging_test.ok			\
              loggingrb/logging_test.err	strrb/strrb_test.ok		\
 	     vty/vty_test.ok comp128/comp128_test.ok			\
-	     utils/utils_test.ok
+	     utils/utils_test.ok tlv/tlv_test.ok
 
 DISTCLEANFILES = atconfig
 

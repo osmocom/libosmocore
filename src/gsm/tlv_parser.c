@@ -51,6 +51,25 @@ int tlv_parse_one(uint8_t *o_tag, uint16_t *o_len, const uint8_t **o_val,
 		return 1;
 	}
 
+	/*
+	 * Check if this could be a T7L9V tag. Do it by
+	 * shifting it to the right once. Note that this
+	 * means that mixing T7L9V with other tags is not
+	 * possible.
+	 */
+	if (def->def[tag >> 1].type == TLV_TYPE_T7L9V)  {
+		*o_tag = tag >> 1;
+		if (buf + 1 > buf + buf_len)
+			return -1;
+		*o_len = (tag & 0x1) << 8;
+		*o_len |= *(buf + 1);
+		*o_val = buf + 2;
+		len = *o_len + 2;
+		if (len > buf_len)
+			return -2;
+		return len;
+	}
+
 	/* FIXME: use tables for knwon IEI */
 	switch (def->def[tag].type) {
 	case TLV_TYPE_T:
