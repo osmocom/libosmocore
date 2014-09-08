@@ -252,9 +252,7 @@ static void vty_print_logtarget(struct vty *vty, const struct log_info *info,
 		tgt->filter_map & LOG_FILTER_ALL ? "Enabled" : "Disabled",
 		VTY_NEWLINE);
 
-	/* print application specific filters */
-	if (info->print_fn)
-		info->print_fn(vty, info, tgt);
+	/* FIXME: print application specific filters */
 }
 
 #define SHOW_LOG_STR "Show current logging configuration\n"
@@ -619,9 +617,7 @@ static int config_write_log_single(struct vty *vty, struct log_target *tgt)
 
 	vty_out(vty, "  logging filter all %u%s",
 		tgt->filter_map & LOG_FILTER_ALL ? 1 : 0, VTY_NEWLINE);
-	/* save filters outside of libosmocore, i.e. in app code */
-	if (osmo_log_info->save_fn)
-		osmo_log_info->save_fn(vty, osmo_log_info, tgt);
+	/* FIXME: how to do this for filters outside of libosmocore? */
 
 	vty_out(vty, "  logging color %u%s", tgt->use_color ? 1 : 0,
 		VTY_NEWLINE);
