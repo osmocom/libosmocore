@@ -1,8 +1,12 @@
-libosmocore (0.7.0) UNRELEASED; urgency=medium
+libosmocore (0.7.0+onw1) UNRELEASED; urgency=medium
 
+  [ Harald Welte ]
   * New upstream release of libosmocore.
 
- -- Harald Welte <laforge@gnumonks.org>  Thu, 21 Aug 2014 15:52:00 +0200
+  [ Holger Hans Peter Freyther ]
+  * GPRS fixes
+
+ -- Holger Hans Peter Freyther <holger@freyther.de>  Thu, 25 Sep 2014 14:27:45 +0200
 
 libosmocore (0.6.6) UNRELEASED; urgency=medium
 
