@@ -1,6 +1,7 @@
 nobase_include_HEADERS = \
                        osmocom/codec/codec.h \
                        osmocom/core/application.h \
+                       osmocom/core/ares.h \
                        osmocom/core/backtrace.h \
                        osmocom/core/bit16gen.h \
                        osmocom/core/bit32gen.h \

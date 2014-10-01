@@ -2,11 +2,11 @@
 # Please read Chapter 6 "Library interface versions" of the libtool documentation before making any modification
 LIBVERSION=5:0:0
 
-AM_CFLAGS = -Wall $(all_includes) -I$(top_srcdir)/include -I$(top_builddir)/include
+AM_CFLAGS = -Wall $(all_includes) -I$(top_srcdir)/include -I$(top_builddir)/include -I$(LIBCARES_CFLAGS)
 
 lib_LTLIBRARIES = libosmocore.la
 
-libosmocore_la_LIBADD = $(BACKTRACE_LIB)
+libosmocore_la_LIBADD = $(BACKTRACE_LIB) $(LIBCARES_LIBS)
 libosmocore_la_SOURCES = timer.c select.c signal.c msgb.c bits.c \
 			 bitvec.c statistics.c \
 			 write_queue.c utils.c socket.c \
@@ -14,7 +14,7 @@ libosmocore_la_SOURCES = timer.c select.c signal.c msgb.c bits.c \
 			 gsmtap_util.c crc16.c panic.c backtrace.c \
 			 conv.c application.c rbtree.c strrb.c \
 			 loggingrb.c crc8gen.c crc16gen.c crc32gen.c crc64gen.c \
-			 macaddr.c
+			 macaddr.c ares.c
 
 BUILT_SOURCES = crc8gen.c crc16gen.c crc32gen.c crc64gen.c
 

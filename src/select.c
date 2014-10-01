@@ -22,9 +22,12 @@
 #include <fcntl.h>
 #include <stdio.h>
 
+#include <ares.h>
+
 #include <osmocom/core/select.h>
 #include <osmocom/core/linuxlist.h>
 #include <osmocom/core/timer.h>
+#include <osmocom/core/ares.h>
 
 #include "../config.h"
 
@@ -103,7 +106,7 @@ int osmo_select_main(int polling)
 	struct osmo_fd *ufd, *tmp;
 	fd_set readset, writeset, exceptset;
 	int work = 0, rc;
-	struct timeval no_time = {0, 0};
+	struct timeval *final_tv, no_time = {0, 0};
 
 	FD_ZERO(&readset);
 	FD_ZERO(&writeset);
@@ -121,13 +124,38 @@ int osmo_select_main(int polling)
 			FD_SET(ufd->fd, &exceptset);
 	}
 
+	if (osmo_ares_channel) {
+		/* patch in the socket file descripturs used by c-ares library */
+		rc = ares_fds(osmo_ares_channel, &readset, &writeset);
+		if (rc > maxfd)
+			maxfd = rc;
+	}
+
 	osmo_timers_check();
 
-	if (!polling)
+	if (!polling) {
+		struct timeval *timer_tv;
+		struct timeval tv;
+
 		osmo_timers_prepare();
-	rc = select(maxfd+1, &readset, &writeset, &exceptset, polling ? &no_time : osmo_timers_nearest());
+		/* obtain nearest timer timeout */
+		timer_tv = osmo_timers_nearest();
+		/* determine if ares has a nearer timeout */
+		if (osmo_ares_channel)
+			final_tv = ares_timeout(osmo_ares_channel, timer_tv, &tv);
+		else
+			final_tv = timer_tv;
+	} else
+		final_tv = &no_time;
+
+	rc = select(maxfd+1, &readset, &writeset, &exceptset, final_tv);
 	if (rc < 0)
 		return 0;
+
+	/* process any c-ares filedescriptors (if any) and take care of
+	 * timeouts */
+	if (osmo_ares_channel)
+		ares_process(osmo_ares_channel, &readset, &writeset);
 
 	/* fire timers */
 	osmo_timers_update();

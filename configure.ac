@@ -17,6 +17,8 @@ LT_INIT([pic-only])
 
 AC_CONFIG_MACRO_DIR([m4])
 
+PKG_CHECK_MODULES(LIBCARES, libcares)
+
 dnl check os: some linker flags not available on osx
 case $host in
 *-darwin*)
