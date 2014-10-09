@@ -1,10 +1,11 @@
-libosmocore (0.7.0+onw1) UNRELEASED; urgency=medium
+libosmocore (0.7.0+onw2) UNRELEASED; urgency=medium
 
   [ Harald Welte ]
   * New upstream release of libosmocore.
 
   [ Holger Hans Peter Freyther ]
   * GPRS fixes
+  * GPRS-NS reset fixes from Jacob
 
  -- Holger Hans Peter Freyther <holger@freyther.de>  Thu, 25 Sep 2014 14:27:45 +0200
 
