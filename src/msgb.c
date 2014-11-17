@@ -33,6 +33,7 @@
 //#include <openbsc/gsm_data.h>
 #include <osmocom/core/talloc.h>
 //#include <openbsc/debug.h>
+#include "config.h"
 
 void *tall_msgb_ctx;
 
@@ -48,7 +49,11 @@ struct msgb *msgb_alloc(uint16_t size, const char *name)
 {
 	struct msgb *msg;
 
+#ifdef EMBEDDED
+	msg = malloc(sizeof(*msg) + size);
+#else
 	msg = _talloc_zero(tall_msgb_ctx, sizeof(*msg) + size, name);
+#endif
 
 	if (!msg) {
 		//LOGP(DRSL, LOGL_FATAL, "unable to allocate msgb\n");
@@ -69,7 +74,11 @@ struct msgb *msgb_alloc(uint16_t size, const char *name)
  */
 void msgb_free(struct msgb *m)
 {
+#ifdef EMBEDDED
+	free(m);
+#else
 	talloc_free(m);
+#endif
 }
 
 /*! \brief Enqueue message buffer to tail of a queue
