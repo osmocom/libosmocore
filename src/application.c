@@ -72,10 +72,12 @@
 
 struct log_target *osmo_stderr_target;
 
+#ifdef SIGHUP
 static void sighup_hdlr(int signal)
 {
 	log_targets_reopen();
 }
+#endif
 
 /*! \brief Ignore \ref SIGPIPE, \ref SIGALRM, \ref SIGHUP and \ref SIGIO */
 void osmo_init_ignore_signals(void)
