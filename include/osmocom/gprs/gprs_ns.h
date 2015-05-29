@@ -61,6 +61,11 @@ enum gprs_ns_cs {
 	GPRS_NS_CS_ERROR,       /*!< Failed to process message */
 };
 
+enum gprs_ns_spec {
+	GPRS_NS_TS_08_16 = 0,
+	GPRS_NS_TS_48_016,
+};
+
 struct gprs_nsvc;
 /*! \brief Osmocom GPRS callback function type */
 typedef int gprs_ns_cb_t(enum gprs_ns_evt event, struct gprs_nsvc *nsvc,
@@ -119,10 +124,13 @@ struct gprs_nsvc {
 	struct osmo_timer_list timer;
 	enum nsvc_timer_mode timer_mode;
 	int alive_retries;
+	enum gprs_ns_spec compliance;
 
 	unsigned int remote_end_is_sgsn:1;
 	unsigned int persistent:1;
 	unsigned int nsvci_is_valid:1;
+	unsigned int static_config:1;
+	unsigned int config_completed:1;
 
 	struct rate_ctr_group *ctrg;
 

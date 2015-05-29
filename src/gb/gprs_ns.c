@@ -126,10 +126,27 @@ static const struct rate_ctr_group_desc nsvc_ctrg_desc = {
 	.ctr_desc = nsvc_ctr_description,
 };
 
+static void nsvc_start_timer(struct gprs_nsvc *nsvc, enum nsvc_timer_mode mode);
+
 #define CHECK_TX_RC(rc, nsvc) \
 		if (rc < 0)							\
 			LOGP(DNS, LOGL_ERROR, "TX failed (%d) to peer %s\n",	\
 				rc, gprs_ns_ll_str(nsvc));
+
+static int enable_reset_block_proc(const struct gprs_nsvc *nsvc)
+{
+	return nsvc->compliance != GPRS_NS_TS_48_016 ||
+		!nsvc->static_config ||
+		nsvc->ll != GPRS_NS_LL_UDP;
+}
+
+static int continue_test_proc(const struct gprs_nsvc *nsvc)
+{
+	return nsvc->compliance == GPRS_NS_TS_48_016 &&
+		nsvc->static_config &&
+		nsvc->ll == GPRS_NS_LL_UDP &&
+		nsvc->remote_end_is_sgsn;
+}
 
 struct msgb *gprs_ns_msgb_alloc(void)
 {
@@ -552,16 +569,24 @@ static void gprs_ns_timer_cb(void *data)
 		nsvc->alive_retries++;
 		if (nsvc->alive_retries >
 			nsvc->nsi->timeout[NS_TOUT_TNS_ALIVE_RETRIES]) {
-			/* mark as dead and blocked */
-			nsvc->state = NSE_S_BLOCKED;
-			rate_ctr_inc(&nsvc->ctrg->ctr[NS_CTR_BLOCKED]);
-			rate_ctr_inc(&nsvc->ctrg->ctr[NS_CTR_DEAD]);
 			LOGP(DNS, LOGL_NOTICE,
 				"NSEI=%u Tns-alive expired more then "
 				"%u times, blocking NS-VC\n", nsvc->nsei,
 				nsvc->nsi->timeout[NS_TOUT_TNS_ALIVE_RETRIES]);
+			/* mark as dead */
+			nsvc->state = nsvc->state & ~NSE_S_ALIVE;
+			rate_ctr_inc(&nsvc->ctrg->ctr[NS_CTR_DEAD]);
 			ns_osmo_signal_dispatch(nsvc, S_NS_ALIVE_EXP, 0);
-			ns_osmo_signal_dispatch(nsvc, S_NS_BLOCK, NS_CAUSE_NSVC_BLOCKED);
+
+			if (continue_test_proc(nsvc)) {
+				nsvc_start_timer(nsvc, NSVC_TIMER_TNS_TEST);
+			} else if (enable_reset_block_proc(nsvc)) {
+				/* mark as blocked */
+				nsvc->state = NSE_S_BLOCKED;
+				rate_ctr_inc(&nsvc->ctrg->ctr[NS_CTR_BLOCKED]);
+				ns_osmo_signal_dispatch(nsvc, S_NS_BLOCK,
+						NS_CAUSE_NSVC_BLOCKED);
+			}
 			return;
 		}
 		/* Tns-test case: send NS-ALIVE PDU */
@@ -1064,6 +1089,14 @@ int gprs_ns_rcvmsg(struct gprs_ns_inst *nsi, struct msgb *msg,
 			return rc;
 
 		rc = 0;
+	} else if (nsvc->static_config && !nsvc->config_completed) {
+
+		if (!enable_reset_block_proc(nsvc)) {
+			nsvc->state = NSE_S_ALIVE;
+			nsvc_start_timer(nsvc, NSVC_TIMER_TNS_TEST);
+		}
+
+		nsvc->config_completed = 1;
 	}
 
 	if (nsvc)
@@ -1266,10 +1299,18 @@ int gprs_ns_process_msg(struct gprs_ns_inst *nsi, struct msgb *msg,
 		 * NS-ALIVE out of the blue, we might have been re-started
 		 * and should send a NS-RESET to make sure everything recovers
 		 * fine. */
-		if ((*nsvc)->state == NSE_S_BLOCKED)
+		if ((*nsvc)->state == NSE_S_BLOCKED) {
 			rc = gprs_nsvc_reset((*nsvc), NS_CAUSE_PDU_INCOMP_PSTATE);
-		else if (!((*nsvc)->state & NSE_S_RESET))
+		} else if (!((*nsvc)->state & NSE_S_RESET)) {
 			rc = gprs_ns_tx_alive_ack(*nsvc);
+			if (!enable_reset_block_proc(*nsvc) &&
+				!((*nsvc)->state & NSE_S_ALIVE))
+			{
+				/* start the test procedure */
+				gprs_ns_tx_simple((*nsvc), NS_PDUT_ALIVE);
+				nsvc_start_timer((*nsvc), NSVC_TIMER_TNS_TEST);
+			}
+		}
 		break;
 	case NS_PDUT_ALIVE_ACK:
 		/* stop Tns-alive and start Tns-test */
@@ -1557,7 +1598,12 @@ struct gprs_nsvc *gprs_ns_nsip_connect(struct gprs_ns_inst *nsi,
 	nsvc->nsei = nsei;
 	nsvc->remote_end_is_sgsn = 1;
 
-	gprs_nsvc_reset(nsvc, NS_CAUSE_OM_INTERVENTION);
+	if (enable_reset_block_proc(nsvc)) {
+		gprs_nsvc_reset(nsvc, NS_CAUSE_OM_INTERVENTION);
+	} else if (continue_test_proc(nsvc)) {
+		nsvc->state = NSE_S_ALIVE;
+		nsvc_start_timer(nsvc, NSVC_TIMER_TNS_TEST);
+	}
 	return nsvc;
 }
 

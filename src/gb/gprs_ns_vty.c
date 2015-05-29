@@ -91,6 +91,11 @@ static int config_write_ns(struct vty *vty)
 		vty_out(vty, " nse %u remote-role %s%s",
 			nsvc->nsei, nsvc->remote_end_is_sgsn ? "sgsn" : "bss",
 			VTY_NEWLINE);
+		vty_out(vty, " nse %u compliance %s%s",
+			nsvc->nsei,
+			nsvc->compliance == GPRS_NS_TS_08_16 ?
+				"ts08.16" : "ts48.016",
+			VTY_NEWLINE);
 		switch (nsvc->ll) {
 		case GPRS_NS_LL_UDP:
 			vty_out(vty, " nse %u encapsulation udp%s", nsvc->nsei,
@@ -255,6 +260,7 @@ DEFUN(cfg_nse_nsvc, cfg_nse_nsvci_cmd,
 	if (!nsvc) {
 		nsvc = gprs_nsvc_create(vty_nsi, nsvci);
 		nsvc->nsei = nsei;
+		nsvc->static_config = 1;
 	}
 	nsvc->nsvci = nsvci;
 	/* All NSVCs that are explicitly configured by VTY are
@@ -383,6 +389,30 @@ DEFUN(cfg_nse_remoterole, cfg_nse_remoterole_cmd,
 		nsvc->remote_end_is_sgsn = 1;
 	else
 		nsvc->remote_end_is_sgsn = 0;
+
+	return CMD_SUCCESS;
+}
+
+DEFUN(cfg_nse_compliance, cfg_nse_compliance_cmd,
+	"nse <0-65535> compliance (ts08.16|ts48.016)",
+	NSE_CMD_STR
+	"Set protocol compliance\n"
+	"Use 3GPP TS 08.16\n"
+	"Use 3GPP TS 48.016\n")
+{
+	uint16_t nsei = atoi(argv[0]);
+	struct gprs_nsvc *nsvc;
+
+	nsvc = gprs_nsvc_by_nsei(vty_nsi, nsei);
+	if (!nsvc) {
+		vty_out(vty, "No such NSE (%u)%s", nsei, VTY_NEWLINE);
+		return CMD_WARNING;
+	}
+
+	if (!strcmp(argv[1], "ts08.16"))
+		nsvc->compliance = GPRS_NS_TS_08_16;
+	else
+		nsvc->compliance = GPRS_NS_TS_48_016;
 
 	return CMD_SUCCESS;
 }
@@ -591,6 +621,7 @@ int gprs_ns_vty_init(struct gprs_ns_inst *nsi)
 	install_element(L_NS_NODE, &cfg_nse_fr_dlci_cmd);
 	install_element(L_NS_NODE, &cfg_nse_encaps_cmd);
 	install_element(L_NS_NODE, &cfg_nse_remoterole_cmd);
+	install_element(L_NS_NODE, &cfg_nse_compliance_cmd);
 	install_element(L_NS_NODE, &cfg_no_nse_cmd);
 	install_element(L_NS_NODE, &cfg_ns_timer_cmd);
 	install_element(L_NS_NODE, &cfg_nsip_local_ip_cmd);
