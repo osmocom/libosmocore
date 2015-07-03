@@ -267,9 +267,10 @@ static int bssgp_rx_bvc_reset(struct msgb *msg, struct tlv_parsed *tp,
 		/* actually extract RAC / CID */
 		bctx->cell_id = bssgp_parse_cell_id(&bctx->ra_id,
 						TLVP_VAL(tp, BSSGP_IE_CELL_ID));
-		LOGP(DBSSGP, LOGL_NOTICE, "Cell %u-%u-%u-%u CI %u on BVCI %u\n",
-			bctx->ra_id.mcc, bctx->ra_id.mnc, bctx->ra_id.lac,
-			bctx->ra_id.rac, bctx->cell_id, bvci);
+		LOGP(DBSSGP, LOGL_NOTICE, "Cell %u-%0*u-%u-%u CI %u on BVCI %u\n",
+			bctx->ra_id.mcc,
+			bctx->ra_id.mnc.two_digits ? 2 : 3, bctx->ra_id.mnc.network_code,
+			bctx->ra_id.lac, bctx->ra_id.rac, bctx->cell_id, bvci);
 	}
 
 	/* Send NM_BVC_RESET.ind to NM */
@@ -587,7 +588,7 @@ static int fc_queue_timer_cfg(struct bssgp_flow_control *fc)
 	if (llist_empty(&fc->queue))
 		return 0;
 
-	fcqe = llist_entry(&fc->queue.next, struct bssgp_fc_queue_element,
+	fcqe = llist_entry(fc->queue.next, struct bssgp_fc_queue_element,
 			   list);
 
 	if (fc->bucket_leak_rate != 0) {

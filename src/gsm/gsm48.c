@@ -265,7 +265,7 @@ static void to_bcd(uint8_t *bcd, uint16_t val)
 }
 
 void gsm48_generate_lai(struct gsm48_loc_area_id *lai48, uint16_t mcc,
-			uint16_t mnc, uint16_t lac)
+			gsm_mnc_t mnc, uint16_t lac)
 {
 	uint8_t bcd[3];
 
@@ -273,9 +273,8 @@ void gsm48_generate_lai(struct gsm48_loc_area_id *lai48, uint16_t mcc,
 	lai48->digits[0] = bcd[0] | (bcd[1] << 4);
 	lai48->digits[1] = bcd[2];
 
-	to_bcd(bcd, mnc);
-	/* FIXME: do we need three-digit MNC? See Table 10.5.3 */
-	if (mnc > 99) {
+	to_bcd(bcd, mnc.network_code);
+	if (!mnc.two_digits) {
 		lai48->digits[1] |= bcd[2] << 4;
 		lai48->digits[2] = bcd[0] | (bcd[1] << 4);
 	} else {
@@ -288,19 +287,21 @@ void gsm48_generate_lai(struct gsm48_loc_area_id *lai48, uint16_t mcc,
 
 /* Attention: this function retunrs true integers, not hex! */
 int gsm48_decode_lai(struct gsm48_loc_area_id *lai, uint16_t *mcc,
-		     uint16_t *mnc, uint16_t *lac)
+		     gsm_mnc_t *mnc, uint16_t *lac)
 {
 	*mcc = (lai->digits[0] & 0x0f) * 100
 	     + (lai->digits[0] >> 4) * 10
 	     + (lai->digits[1] & 0x0f);
 
 	if ((lai->digits[1] & 0xf0) == 0xf0) {
-		*mnc = (lai->digits[2] & 0x0f) * 10
-		     + (lai->digits[2] >> 4);
+		mnc->two_digits = true;
+		mnc->network_code = (lai->digits[2] & 0x0f) * 10
+		     | (lai->digits[2] >> 4);
 	} else {
-		*mnc = (lai->digits[2] & 0x0f) * 100
-		     + (lai->digits[2] >> 4) * 10
-		     + (lai->digits[1] >> 4);
+		mnc->two_digits = false;
+		mnc->network_code = (lai->digits[2] & 0x0f) * 100
+		     | (lai->digits[2] >> 4) * 10
+		     | (lai->digits[1] >> 4);
 	}
 	*lac = ntohs(lai->lac);
 
@@ -401,12 +402,14 @@ void gsm48_parse_ra(struct gprs_ra_id *raid, const uint8_t *buf)
 	/* I wonder who came up with the stupidity of encoding the MNC
 	 * differently depending on how many digits its decimal number has! */
 	if ((buf[1] >> 4) == 0xf) {
-		raid->mnc = (buf[2] & 0xf) * 10;
-		raid->mnc += (buf[2] >> 4) * 1;
+		raid->mnc.two_digits = true;
+		raid->mnc.network_code = (buf[2] & 0xf) * 10;
+		raid->mnc.network_code |= (buf[2] >> 4) * 1;
 	} else {
-		raid->mnc = (buf[2] & 0xf) * 100;
-		raid->mnc += (buf[2] >> 4) * 10;
-		raid->mnc += (buf[1] >> 4) * 1;
+		raid->mnc.two_digits = false;
+		raid->mnc.network_code = (buf[2] & 0xf) * 100;
+		raid->mnc.network_code |= (buf[2] >> 4) * 10;
+		raid->mnc.network_code |= (buf[1] >> 4) * 1;
 	}
 
 	raid->lac = ntohs(*(uint16_t *)(buf + 3));
@@ -415,21 +418,21 @@ void gsm48_parse_ra(struct gprs_ra_id *raid, const uint8_t *buf)
 
 int gsm48_construct_ra(uint8_t *buf, const struct gprs_ra_id *raid)
 {
-	uint16_t mcc = raid->mcc;
-	uint16_t mnc = raid->mnc;
-	uint16_t _lac;
+	uint16_t  mcc = raid->mcc;
+	gsm_mnc_t mnc = raid->mnc;
+	uint16_t  _lac;
 
 	buf[0] = ((mcc / 100) % 10) | (((mcc / 10) % 10) << 4);
 	buf[1] = (mcc % 10);
 
 	/* I wonder who came up with the stupidity of encoding the MNC
 	 * differently depending on how many digits its decimal number has! */
-	if (mnc < 100) {
+	if (mnc.two_digits) {
 		buf[1] |= 0xf0;
-		buf[2] = ((mnc / 10) % 10) | ((mnc % 10) << 4);
+		buf[2] = ((mnc.network_code / 10) % 10) | ((mnc.network_code % 10) << 4);
 	} else {
-		buf[1] |= (mnc % 10) << 4;
-		buf[2] = ((mnc / 100) % 10) | (((mnc / 10) % 10) << 4);
+		buf[1] |= (mnc.network_code % 10) << 4;
+		buf[2] = ((mnc.network_code / 100) % 10) | (((mnc.network_code / 10) % 10) << 4);
 	}
 
 	_lac = htons(raid->lac);

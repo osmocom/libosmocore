@@ -83,9 +83,10 @@ DEFUN(cfg_bssgp, cfg_bssgp_cmd,
 
 static void dump_bvc(struct vty *vty, struct bssgp_bvc_ctx *bvc, int stats)
 {
-	vty_out(vty, "NSEI %5u, BVCI %5u, RA-ID: %u-%u-%u-%u, CID: %u, "
+	vty_out(vty, "NSEI %5u, BVCI %5u, RA-ID: %u-%0*u-%u-%u, CID: %u, "
 		"STATE: %s%s", bvc->nsei, bvc->bvci, bvc->ra_id.mcc,
-		bvc->ra_id.mnc, bvc->ra_id.lac, bvc->ra_id.rac, bvc->cell_id,
+		bvc->ra_id.mnc.two_digits ? 2 : 3, bvc->ra_id.mnc.network_code,
+		bvc->ra_id.lac, bvc->ra_id.rac, bvc->cell_id,
 		bvc->state & BVC_S_BLOCKED ? "BLOCKED" : "UNBLOCKED",
 		VTY_NEWLINE);
 

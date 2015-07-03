@@ -27,7 +27,7 @@
 #define BSSMAP_MSG_SIZE 512
 #define BSSMAP_MSG_HEADROOM 128
 
-struct msgb *gsm0808_create_layer3(struct msgb *msg_l3, uint16_t nc, uint16_t cc, int lac, uint16_t _ci)
+struct msgb *gsm0808_create_layer3(struct msgb *msg_l3, gsm_mnc_t nc, uint16_t cc, int lac, uint16_t _ci)
 {
 	struct msgb* msg;
 	struct {

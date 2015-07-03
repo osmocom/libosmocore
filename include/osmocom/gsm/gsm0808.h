@@ -21,10 +21,11 @@
 #define OSMOCORE_GSM0808_H
 
 #include "tlv.h"
+#include "gsm48.h"
 
 struct msgb;
 
-struct msgb *gsm0808_create_layer3(struct msgb *msg, uint16_t netcode, uint16_t countrycode, int lac, uint16_t ci);
+struct msgb *gsm0808_create_layer3(struct msgb *msg, gsm_mnc_t netcode, uint16_t countrycode, int lac, uint16_t ci);
 struct msgb *gsm0808_create_reset(void);
 struct msgb *gsm0808_create_reset_ack(void);
 struct msgb *gsm0808_create_clear_command(uint8_t reason);
