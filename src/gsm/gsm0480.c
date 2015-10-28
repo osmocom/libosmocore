@@ -254,12 +254,6 @@ int gsm0480_decode_ss_request(const struct gsm48_hdr *hdr, uint16_t len,
 				struct ss_request *req)
 {
 	int rc = 0;
-
-	if (len < sizeof(*hdr) + 2) {
-		LOGP(0, LOGL_DEBUG, "SS Request is too short.\n");
-		return 0;
-	}
-
 	if (gsm48_hdr_pdisc(hdr) == GSM48_PDISC_NC_SS) {
 		req->transaction_id = hdr->proto_discr & 0x70;
 		rc = parse_ss(hdr, len, req);
