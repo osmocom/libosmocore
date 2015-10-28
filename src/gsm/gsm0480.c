@@ -249,11 +249,18 @@ int gsm0480_decode_ussd_request(const struct gsm48_hdr *hdr, uint16_t len,
 int gsm0480_decode_ss_request(const struct gsm48_hdr *hdr, uint16_t len,
 				struct ss_request *req)
 {
+	uint8_t msg_type = hdr->msg_type & 0x3F;
 	int rc = 0;
 
-	if (len < sizeof(*hdr) + 2) {
-		LOGP(0, LOGL_DEBUG, "SS Request is too short.\n");
-		return 0;
+	/**
+	 * GSM 04.80 Section 2.5 'Release complete' Table 2.5
+	 * payload is optional for 'RELEASE COMPLETE' message
+	 */
+	if (msg_type != GSM0480_MTYPE_RELEASE_COMPLETE) {
+		if (len < sizeof(*hdr) + 2) {
+			LOGP(0, LOGL_DEBUG, "SS Request is too short.\n");
+			return 0;
+		}
 	}
 
 	if (gsm48_hdr_pdisc(hdr) == GSM48_PDISC_NC_SS) {
