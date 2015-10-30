@@ -31,8 +31,8 @@ struct ss_request {
 		uint8_t problem_code;   /**< Problem code        3.6.7 */
 	};
 
-	uint8_t ussd_text_language;
 	uint8_t ussd_text_len;
+	uint8_t ussd_text_language;
 	uint8_t ussd_text[MAX_LEN_USSD_STRING + 1];
 
 	uint8_t ss_code;       /**< parameters of a Interrogate/Activate/DeactivateSS Request */
