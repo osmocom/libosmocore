@@ -537,7 +537,7 @@ static int parse_process_uss_req(const uint8_t *uss_req_data, uint16_t length,
 				 struct ss_request *req)
 {
 	int rc = 0;
-	int num_chars;
+	int num_chars, nc;
 	uint8_t dcs;
 
 
@@ -555,12 +555,12 @@ static int parse_process_uss_req(const uint8_t *uss_req_data, uint16_t length,
 				/* Prevent a mobile-originated buffer-overrun! */
 				if (num_chars > MAX_LEN_USSD_STRING)
 					num_chars = MAX_LEN_USSD_STRING;
-				gsm_7bit_decode_n_ussd((char *)req->ussd_text,
+				nc = gsm_7bit_decode_n_ussd((char *)req->ussd_text,
 							sizeof(req->ussd_text),
 							&(uss_req_data[7]), num_chars);
 
-				req->ussd_text_language = 1;
-				req->ussd_text_len = num_chars;
+				req->ussd_text_language = 0x80;
+				req->ussd_text_len = nc;
 				rc = 1;
 			} else if (uss_req_data[5] == ASN1_OCTET_STRING_TAG) {
 				num_chars = uss_req_data[6];
