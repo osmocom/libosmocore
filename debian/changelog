@@ -1,4 +1,4 @@
-libosmocore (0.9.3) unstable; urgency=medium
+libosmocore (0.9.3~bpo1) unstable; urgency=medium
 
   * Send all stats values after re-configuration.
   * Fix using an empty prefix.
