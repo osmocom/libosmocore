@@ -559,6 +559,12 @@ static void gprs_ns_timer_cb(void *data)
 		nsvc_start_timer(nsvc, NSVC_TIMER_TNS_ALIVE);
 		break;
 	case NSVC_TIMER_TNS_RESET:
+		if (!(nsvc->state & NSE_S_RESET))
+			LOGP(DNS, LOGL_NOTICE,
+				"NSEI=%u Reset timed out but RESET flag is not set\n",
+				nsvc->nsei);
+		/* Mark NS-VC locally as blocked and dead */
+		nsvc->state = NSE_S_BLOCKED | NSE_S_RESET;
 		/* Chapter 7.3: Re-send the RESET */
 		gprs_ns_tx_reset(nsvc, NS_CAUSE_OM_INTERVENTION);
 		/* Re-start Tns-reset timer */
