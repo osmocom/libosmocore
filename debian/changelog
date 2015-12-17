@@ -1,3 +1,9 @@
+libosmocore (0.9.3~bpo2) unstable; urgency=medium
+
+  * Backport d8dd911de66e10c87e4b8f0fa0e26f1be832eb82 for memory fix
+
+ -- Holger Hans Peter Freyther <holger@moiji-mobile.com>  Thu, 17 Dec 2015 10:50:00 +0100
+
 libosmocore (0.9.3~bpo1) unstable; urgency=medium
 
   * Send all stats values after re-configuration.
