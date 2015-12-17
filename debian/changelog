@@ -1,3 +1,9 @@
+libosmocore (0.9.3~bpo3) unstable; urgency=medium
+
+  * Backport cc6ac4cdc4103cb68a3e161deb49dfb64c931adf for stuck NS reset
+
+ -- Holger Hans Peter Freyther <holger@moiji-mobile.com>  Thu, 17 Dec 2015 14:18:54 +0100
+
 libosmocore (0.9.3~bpo2) unstable; urgency=medium
 
   * Backport d8dd911de66e10c87e4b8f0fa0e26f1be832eb82 for memory fix
