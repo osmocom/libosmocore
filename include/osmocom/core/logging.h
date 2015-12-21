@@ -11,6 +11,8 @@
 #include <stdarg.h>
 #include <osmocom/core/linuxlist.h>
 
+struct log_target;
+
 /*! \brief Maximum number of logging contexts */
 #define LOG_MAX_CTX		8
 /*! \brief Maximum number of logging filters */
@@ -18,17 +20,21 @@
 
 #define DEBUG
 
+
+
 #ifdef DEBUG
 #define DEBUGP(ss, fmt, args...) \
 	do { \
-		if (log_check_level(ss, LOGL_DEBUG)) \
-			logp(ss, __FILE__, __LINE__, 0, fmt, ## args); \
+		struct log_target *osmo_log_tgt; \
+		if (log_check_level(ss, LOGL_DEBUG, &osmo_log_tgt)) \
+			logp(ss, __FILE__, __LINE__, 0, osmo_log_tgt, fmt, ## args); \
 	} while(0)
 
 #define DEBUGPC(ss, fmt, args...) \
 	do { \
-		if (log_check_level(ss, LOGL_DEBUG)) \
-			logp(ss, __FILE__, __LINE__, 1, fmt, ## args); \
+		struct log_target *osmo_log_tgt; \
+		if (log_check_level(ss, LOGL_DEBUG, &osmo_log_tgt)) \
+			logp(ss, __FILE__, __LINE__, 1, osmo_log_tgt, fmt, ## args); \
 	} while(0)
 
 #else
@@ -38,9 +44,10 @@
 
 
 void osmo_vlogp(int subsys, int level, const char *file, int line,
-		int cont, const char *format, va_list ap);
+		int cont, struct log_target *initial_target,
+		const char *format, va_list ap);
 
-void logp(int subsys, const char *file, int line, int cont, const char *format, ...) __attribute__ ((format (printf, 5, 6)));
+void logp(int subsys, const char *file, int line, int cont, struct log_target *initial_target, const char *format, ...) __attribute__ ((format (printf, 6, 7)));
 
 /*! \brief Log a new message through the Osmocom logging framework
  *  \param[in] ss logging subsystem (e.g. \ref DLGLOBAL)
@@ -50,8 +57,9 @@ void logp(int subsys, const char *file, int line, int cont, const char *format, 
  */
 #define LOGP(ss, level, fmt, args...) \
 	do { \
-		if (log_check_level(ss, level)) \
-			logp2(ss, level, __FILE__, __LINE__, 0, fmt, ##args); \
+		struct log_target *osmo_log_tgt; \
+		if (log_check_level(ss, level, &osmo_log_tgt)) \
+			logp2(ss, level, __FILE__, __LINE__, 0, osmo_log_tgt, fmt, ##args); \
 	} while(0)
 
 /*! \brief Continue a log message through the Osmocom logging framework
@@ -62,8 +70,9 @@ void logp(int subsys, const char *file, int line, int cont, const char *format, 
  */
 #define LOGPC(ss, level, fmt, args...) \
 	do { \
-		if (log_check_level(ss, level)) \
-			logp2(ss, level, __FILE__, __LINE__, 1, fmt, ##args); \
+		struct log_target *osmo_log_tgt; \
+		if (log_check_level(ss, level, &osmo_log_tgt)) \
+			logp2(ss, level, __FILE__, __LINE__, 1, osmo_log_tgt, fmt, ##args); \
 	} while(0)
 
 /*! \brief different log levels */
@@ -106,8 +115,6 @@ struct log_info_cat {
 struct log_context {
 	void *ctx[LOG_MAX_CTX+1];
 };
-
-struct log_target;
 
 /*! \brief Log filter function */
 typedef int log_filter(const struct log_context *ctx,
@@ -211,10 +218,11 @@ struct log_target {
 
 /* use the above macros */
 void logp2(int subsys, unsigned int level, const char *file,
-	   int line, int cont, const char *format, ...)
-				__attribute__ ((format (printf, 6, 7)));
+	   int line, int cont, struct log_target *iniial_target,
+	   const char *format, ...)
+				__attribute__ ((format (printf, 7, 8)));
 int log_init(const struct log_info *inf, void *talloc_ctx);
-int log_check_level(int subsys, unsigned int level);
+int log_check_level(int subsys, unsigned int level, struct log_target **out_tar);
 
 /* context management */
 void log_reset_context(void);

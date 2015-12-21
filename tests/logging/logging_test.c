@@ -68,6 +68,7 @@ const struct log_info log_info = {
 int main(int argc, char **argv)
 {
 	struct log_target *stderr_target;
+	struct log_target *select_target;
 
 	log_init(&log_info, NULL);
 	stderr_target = log_target_create_stderr();
@@ -78,24 +79,31 @@ int main(int argc, char **argv)
 	log_parse_category_mask(stderr_target, "DRLL:DCC");
 	log_parse_category_mask(stderr_target, "DRLL");
 	DEBUGP(DCC, "You should not see this\n");
-	if (log_check_level(DMM, LOGL_DEBUG) != 0)
+	if (log_check_level(DMM, LOGL_DEBUG, &select_target) != 0)
 		fprintf(stderr, "log_check_level did not catch this case\n");
+	OSMO_ASSERT(select_target == NULL);
 
 	log_parse_category_mask(stderr_target, "DRLL:DCC");
 	DEBUGP(DRLL, "You should see this\n");
-	OSMO_ASSERT(log_check_level(DRLL, LOGL_DEBUG) != 0);
+	select_target = NULL;
+	OSMO_ASSERT(log_check_level(DRLL, LOGL_DEBUG, &select_target) != 0);
+	OSMO_ASSERT(select_target == stderr_target);
 	DEBUGP(DCC, "You should see this\n");
-	OSMO_ASSERT(log_check_level(DCC, LOGL_DEBUG) != 0);
+	select_target = NULL;
+	OSMO_ASSERT(log_check_level(DCC, LOGL_DEBUG, &select_target) != 0);
+	OSMO_ASSERT(select_target == stderr_target);
 	DEBUGP(DMM, "You should not see this\n");
-	if (log_check_level(DMM, LOGL_DEBUG) != 0)
+	select_target = NULL;
+	if (log_check_level(DMM, LOGL_DEBUG, &select_target) != 0)
 		fprintf(stderr, "log_check_level did not catch this case\n");
+	OSMO_ASSERT(select_target == NULL);
 
 	OSMO_ASSERT(filter_called == 0);
 
 	log_set_all_filter(stderr_target, 0);
 	DEBUGP(DRLL, "You should not see this and filter is called\n");
 	OSMO_ASSERT(filter_called == 1);
-	if (log_check_level(DRLL, LOGL_DEBUG) != 0)
+	if (log_check_level(DRLL, LOGL_DEBUG, &select_target) != 0)
 		fprintf(stderr,
 			"log_check_level did not catch this case (filter)\n");
 
