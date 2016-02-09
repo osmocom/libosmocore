@@ -45,12 +45,18 @@ static int parse_ussd(const uint8_t *_data, int len)
 	uint8_t *data;
 	int rc;
 	struct ss_request req;
+	struct ss_header reqhdr;
 	struct gsm48_hdr *hdr;
 
 	data = malloc(len);
 	memcpy(data, _data, len);
 	hdr = (struct gsm48_hdr *) &data[0];
-	rc = gsm0480_decode_ss_request(hdr, len, &req);
+	rc = gsm0480_decode_ss_request(hdr, len, &reqhdr);
+	if (rc) {
+		rc = gsm0480_parse_ss_facility(hdr->data + reqhdr.component_offset,
+					       reqhdr.component_length,
+					       &req);
+	}
 	free(data);
 
 	return rc;
@@ -61,13 +67,20 @@ static int parse_mangle_ussd(const uint8_t *_data, int len)
 	uint8_t *data;
 	int rc;
 	struct ss_request req;
+	struct ss_header reqhdr;
 	struct gsm48_hdr *hdr;
 
 	data = malloc(len);
 	memcpy(data, _data, len);
 	hdr = (struct gsm48_hdr *) &data[0];
 	hdr->data[1] = len - sizeof(*hdr) - 2;
-	rc = gsm0480_decode_ss_request(hdr, len, &req);
+	rc = gsm0480_decode_ss_request(hdr, len, &reqhdr);
+	if (rc) {
+		rc = gsm0480_parse_ss_facility(hdr->data + reqhdr.component_offset,
+					       reqhdr.component_length,
+					       &req);
+	}
+
 	free(data);
 
 	return rc;
@@ -120,18 +133,29 @@ static void test_7bit_ussd(const char *text, const char *encoded_hex, const char
 int main(int argc, char **argv)
 {
 	struct ss_request req;
+	struct ss_header reqhdr;
 	const int size = sizeof(ussd_request);
+	const int size_ss = sizeof(interrogate_ss);
 	int i;
 	struct msgb *msg;
+	struct gsm48_hdr *hdr;
+	char ussd_text[MAX_LEN_USSD_STRING + 1];
 
 	osmo_init_logging(&info);
 
+	memset(&reqhdr, 0, sizeof(reqhdr));
 	memset(&req, 0, sizeof(req));
-	gsm0480_decode_ss_request((struct gsm48_hdr *) ussd_request, size, &req);
-	printf("Tested if it still works. Text was: %s\n", req.ussd_text);
+	hdr = (struct gsm48_hdr *) &ussd_request[0];
+	gsm0480_decode_ss_request(hdr, size, &reqhdr);
+	gsm0480_parse_ss_facility(hdr->data + reqhdr.component_offset, reqhdr.component_length, &req);
+	gsm_7bit_decode_n_ussd(ussd_text, sizeof(ussd_text), req.ussd_text, req.ussd_text_len);
+	printf("Tested if it still works. Text was: %s\n", ussd_text);
 
+	memset(&reqhdr, 0, sizeof(reqhdr));
 	memset(&req, 0, sizeof(req));
-	gsm0480_decode_ss_request((struct gsm48_hdr *) interrogate_ss, size, &req);
+	hdr = (struct gsm48_hdr *) &interrogate_ss[0];
+	gsm0480_decode_ss_request(hdr, size_ss, &reqhdr);
+	gsm0480_parse_ss_facility(hdr->data + reqhdr.component_offset, reqhdr.component_length, &req);
 	OSMO_ASSERT(strlen((char *) req.ussd_text) == 0);
 	OSMO_ASSERT(req.ss_code == 33);
 	printf("interrogateSS CFU text..'%s' code %d\n", req.ussd_text, req.ss_code);

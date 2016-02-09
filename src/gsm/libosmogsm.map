@@ -73,6 +73,7 @@ gsm0480_create_ussd_notify;
 gsm0480_create_ussd_release_complete;
 gsm0480_decode_ussd_request;
 gsm0480_decode_ss_request;
+gsm0480_parse_ss_facility;
 gsm0480_wrap_facility;
 gsm0480_wrap_invoke;
 

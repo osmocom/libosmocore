@@ -193,11 +193,12 @@ struct msgb *gsm0480_create_notifySS(const char *text)
 
 /* Forward declarations */
 static int parse_ss(const struct gsm48_hdr *hdr,
-		    uint16_t len, struct ss_request *req);
+		    uint16_t len, struct ss_header *req);
 static int parse_ss_info_elements(const uint8_t *ussd_ie, uint16_t len,
-				  struct ss_request *req);
+				  struct ss_header *req);
 static int parse_ss_facility(const uint8_t *ss_facility, uint16_t len,
-			     struct ss_request *req);
+			     struct ss_header *req);
+
 static int parse_facility_ie(const uint8_t *facility_ie, uint16_t length,
 			     struct ss_request *req);
 static int parse_ss_invoke(const uint8_t *invoke_data, uint16_t length,
@@ -212,10 +213,26 @@ static int parse_ss_for_bs_req(const uint8_t *ss_req_data,
 				     uint16_t length,
 				     struct ss_request *req);
 
+static const uint8_t *parse_asn1_small_len(const uint8_t *codedlen, uint16_t available,
+					   uint8_t *out_len)
+{
+	uint8_t lenb = codedlen[0];
+	if (lenb < 0x80 && available > 0) {
+		*out_len = lenb;
+		return &codedlen[1];
+	} else if (lenb == 0x81 && available > 1) {
+		*out_len = codedlen[1];
+		return &codedlen[2];
+	}
+
+	return NULL;
+}
+
 /* Decode a mobile-originated USSD-request message */
 int gsm0480_decode_ussd_request(const struct gsm48_hdr *hdr, uint16_t len,
 				struct ussd_request *req)
 {
+	struct ss_header  sshdr;
 	struct ss_request ss;
 	int rc = 0;
 
@@ -229,16 +246,31 @@ int gsm0480_decode_ussd_request(const struct gsm48_hdr *hdr, uint16_t len,
 	if (gsm48_hdr_pdisc(hdr) == GSM48_PDISC_NC_SS) {
 		req->transaction_id = hdr->proto_discr & 0x70;
 
-		ss.transaction_id = req->transaction_id;
-		rc = parse_ss(hdr, len, &ss);
+		sshdr.transaction_id = req->transaction_id;
+		rc = parse_ss(hdr, len, &sshdr);
+		if (rc) {
+			/* this if block was inside parse_ss() */
+			if (sshdr.message_type == GSM0480_MTYPE_RELEASE_COMPLETE) {
+				/* could also parse out the optional Cause/Facility data */
+				ss.ussd_text[0] = 0xFF;
+			}
+			rc = gsm0480_parse_ss_facility(hdr->data + sshdr.component_offset,
+						       sshdr.component_length,
+						       &ss);
+		}
 
 		/* convert from ss_request to legacy ussd_request */
-		req->transaction_id = ss.transaction_id;
+		req->transaction_id = sshdr.transaction_id;
 		req->invoke_id = ss.invoke_id;
-		if (ss.ussd_text[0] == 0xFF)
+		if (ss.ussd_text_language != 0x0f ||
+			ss.opcode != GSM0480_OP_CODE_PROCESS_USS_REQ) {
+
 			req->text[0] = '\0';
-		else {
-			memcpy(req->text, ss.ussd_text, sizeof(req->text));
+		} else {
+			gsm_7bit_decode_n_ussd(req->text,
+					       sizeof(req->text),
+					       ss.ussd_text, ss.ussd_text_len);
+
 			req->text[sizeof(req->text)-1] = '\0';
 		}
 	}
@@ -251,7 +283,7 @@ int gsm0480_decode_ussd_request(const struct gsm48_hdr *hdr, uint16_t len,
 
 /* Decode a mobile-originated SS request message */
 int gsm0480_decode_ss_request(const struct gsm48_hdr *hdr, uint16_t len,
-				struct ss_request *req)
+				struct ss_header *req)
 {
 	int rc = 0;
 	if (gsm48_hdr_pdisc(hdr) == GSM48_PDISC_NC_SS) {
@@ -265,17 +297,17 @@ int gsm0480_decode_ss_request(const struct gsm48_hdr *hdr, uint16_t len,
 	return rc;
 }
 
-static int parse_ss(const struct gsm48_hdr *hdr, uint16_t len, struct ss_request *req)
+static int parse_ss(const struct gsm48_hdr *hdr, uint16_t len, struct ss_header *req)
 {
 	int rc = 1;
 	uint8_t msg_type = hdr->msg_type & 0x3F;  /* message-type - section 3.4 */
 
 	req->message_type = msg_type;
+	req->component_offset = 0;
+
 	switch (msg_type) {
 	case GSM0480_MTYPE_RELEASE_COMPLETE:
 		LOGP(0, LOGL_DEBUG, "SS Release Complete\n");
-		/* could also parse out the optional Cause/Facility data */
-		req->ussd_text[0] = 0xFF;
 		break;
 	case GSM0480_MTYPE_REGISTER:
 		rc &= parse_ss_info_elements(&hdr->data[0], len - sizeof(*hdr), req);
@@ -294,7 +326,7 @@ static int parse_ss(const struct gsm48_hdr *hdr, uint16_t len, struct ss_request
 }
 
 static int parse_ss_facility(const uint8_t *ss_facility, uint16_t len,
-			     struct ss_request *req)
+			     struct ss_header *req)
 {
 	uint8_t facility_length;
 
@@ -302,13 +334,16 @@ static int parse_ss_facility(const uint8_t *ss_facility, uint16_t len,
 	if (len - 1 < facility_length)
 		return 0;
 
-	return parse_facility_ie(ss_facility + 1, facility_length, req);
+	//return parse_facility_ie(ss_facility + 1, facility_length, req);
+	req->component_offset += 1;
+	req->component_length = facility_length;
+	return 1;
 }
 
 static int parse_ss_info_elements(const uint8_t *ss_ie, uint16_t len,
-				  struct ss_request *req)
+				  struct ss_header *req)
 {
-	int rc = -1;
+	int rc = 1;
 	/* Information Element Identifier - table 3.2 & GSM 04.08 section 10.5 */
 	uint8_t iei;
 	uint8_t iei_length;
@@ -324,7 +359,9 @@ static int parse_ss_info_elements(const uint8_t *ss_ie, uint16_t len,
 	case GSM48_IE_CAUSE:
 		break;
 	case GSM0480_IE_FACILITY:
-		rc = parse_facility_ie(ss_ie + 2, iei_length, req);
+		//rc = parse_facility_ie(ss_ie + 2, iei_length, req);
+		req->component_offset += 2;
+		req->component_length = iei_length;
 		break;
 	case GSM0480_IE_SS_VERSION:
 		break;
@@ -338,6 +375,11 @@ static int parse_ss_info_elements(const uint8_t *ss_ie, uint16_t len,
 	return rc;
 }
 
+int gsm0480_parse_ss_facility(const uint8_t* data, uint8_t len, struct ss_request *out)
+{
+	return parse_facility_ie(data, len, out);
+}
+
 static int parse_facility_ie(const uint8_t *facility_ie, uint16_t length,
 			     struct ss_request *req)
 {
@@ -347,10 +389,14 @@ static int parse_facility_ie(const uint8_t *facility_ie, uint16_t length,
 	while (offset + 2 <= length) {
 		/* Component Type tag - table 3.7 */
 		uint8_t component_type = facility_ie[offset];
-		uint8_t component_length = facility_ie[offset+1];
+		uint8_t component_length = 0; // = facility_ie[offset+1];
 
+		const uint8_t *nxt = parse_asn1_small_len(facility_ie + offset + 1,
+							  length - offset - 1,
+							  &component_length);
 		/* size check */
-		if (offset + 2 + component_length > length) {
+		offset = nxt - facility_ie;
+		if (nxt == NULL || offset + component_length > length) {
 			LOGP(0, LOGL_ERROR, "Component does not fit.\n");
 			return 0;
 		}
@@ -359,21 +405,21 @@ static int parse_facility_ie(const uint8_t *facility_ie, uint16_t length,
 
 		switch (component_type) {
 		case GSM0480_CTYPE_INVOKE:
-			rc &= parse_ss_invoke(facility_ie+2,
+			rc &= parse_ss_invoke(nxt, //facility_ie+2,
 					      component_length,
 					      req);
 			break;
 		case GSM0480_CTYPE_RETURN_RESULT:
-			rc &= parse_ss_return_result(facility_ie+2,
+			rc &= parse_ss_return_result(nxt, //facility_ie+2,
 						     component_length,
 						     req);
 			break;
 		case GSM0480_CTYPE_RETURN_ERROR:
-			// TODO Error codes
+			/* TODO Error codes */
 			LOGP(0, LOGL_DEBUG, "Ignored GSM0480_CTYPE_RETURN_ERROR");
 			break;
 		case GSM0480_CTYPE_REJECT:
-			// TODO rejects
+			/* TODO rejects */
 			LOGP(0, LOGL_DEBUG, "Ignored GSM0480_CTYPE_REJECT");
 			break;
 		default:
@@ -382,7 +428,8 @@ static int parse_facility_ie(const uint8_t *facility_ie, uint16_t length,
 			rc = 0;
 			break;
 		}
-		offset += (component_length+2);
+		//offset += (component_length+2);
+		offset += component_length;
 	};
 
 	return rc;
@@ -523,8 +570,8 @@ static int parse_process_uss_data(const uint8_t *uss_req_data, uint16_t length,
 	num_chars = uss_req_data[1];
 	if (num_chars > length - 2)
 		return 0;
-	if (num_chars > MAX_LEN_USSD_STRING)
-		num_chars = MAX_LEN_USSD_STRING;
+	if (num_chars > MAX_ASN1_LEN_USSD_STRING)
+		num_chars = MAX_ASN1_LEN_USSD_STRING;
 
 	req->ussd_text_language = 1;
 	req->ussd_text_len = num_chars;
@@ -537,40 +584,37 @@ static int parse_process_uss_req(const uint8_t *uss_req_data, uint16_t length,
 				 struct ss_request *req)
 {
 	int rc = 0;
-	int num_chars, nc;
-	uint8_t dcs;
-
-
+	uint8_t dcs, seq_block_len, num_chars;
+	const uint8_t *next_ptr;
 	/* we need at least that much */
 	if (length < 8)
 		return 0;
 
 
 	if (uss_req_data[0] == GSM_0480_SEQUENCE_TAG) {
-		if (uss_req_data[2] == ASN1_OCTET_STRING_TAG) {
-			dcs = uss_req_data[4];
-			if ((dcs == 0x0F) &&
-			    (uss_req_data[5] == ASN1_OCTET_STRING_TAG)) {
-				num_chars = (uss_req_data[6] * 8) / 7;
-				/* Prevent a mobile-originated buffer-overrun! */
-				if (num_chars > MAX_LEN_USSD_STRING)
-					num_chars = MAX_LEN_USSD_STRING;
-				nc = gsm_7bit_decode_n_ussd((char *)req->ussd_text,
-							sizeof(req->ussd_text),
-							&(uss_req_data[7]), num_chars);
+		next_ptr = parse_asn1_small_len(&uss_req_data[1], length - 1, &seq_block_len);
+		if (next_ptr == NULL || seq_block_len < 6)
+			return 0;
 
-				req->ussd_text_language = 0x80;
-				req->ussd_text_len = nc;
-				rc = 1;
-			} else if (uss_req_data[5] == ASN1_OCTET_STRING_TAG) {
-				num_chars = uss_req_data[6];
+		if (next_ptr[0] == ASN1_OCTET_STRING_TAG) {
+			if (next_ptr[1] != 1)
+				return 0;
+
+			dcs = next_ptr[2];
+
+			if (next_ptr[3] == ASN1_OCTET_STRING_TAG) {
+				next_ptr = parse_asn1_small_len(&next_ptr[4],
+								seq_block_len - 4, &num_chars);
+				if (next_ptr == NULL)
+					return 0;
+
 				/* Prevent a mobile-originated buffer-overrun! */
-				if (num_chars > MAX_LEN_USSD_STRING)
-					num_chars = MAX_LEN_USSD_STRING;
+				if (num_chars > MAX_ASN1_LEN_USSD_STRING)
+					num_chars = MAX_ASN1_LEN_USSD_STRING;
 
 				req->ussd_text_language = dcs;
 				req->ussd_text_len = num_chars;
-				memcpy(req->ussd_text, &(uss_req_data[7]), num_chars);
+				memcpy(req->ussd_text, next_ptr, num_chars);
 				rc = 1;
 			}
 		}
