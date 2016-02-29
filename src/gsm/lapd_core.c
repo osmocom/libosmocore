@@ -379,9 +379,7 @@ static int send_dl_l3(uint8_t prim, uint8_t op, struct lapd_msg_ctx *lctx,
 static inline int send_dl_simple(uint8_t prim, uint8_t op,
 	struct lapd_msg_ctx *lctx)
 {
-	struct msgb *msg = lapd_msgb_alloc(0, "DUMMY");
-
-	return send_dl_l3(prim, op, lctx, msg);
+	return send_dl_l3(prim, op, lctx, NULL);
 }
 
 /* send MDL-ERROR INDICATION */

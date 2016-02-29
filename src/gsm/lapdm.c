@@ -414,11 +414,6 @@ static int send_rslms_dlsap(struct osmo_dlsap_prim *dp,
 
 	switch (OSMO_PRIM_HDR(&dp->oph)) {
 	case OSMO_PRIM(PRIM_DL_EST, PRIM_OP_INDICATION):
-		if (dp->oph.msg && dp->oph.msg->len == 0) {
-			/* omit L3 info by freeing message */
-			msgb_free(dp->oph.msg);
-			dp->oph.msg = NULL;
-		}
 		rll_msg = RSL_MT_EST_IND;
 		break;
 	case OSMO_PRIM(PRIM_DL_EST, PRIM_OP_CONFIRM):

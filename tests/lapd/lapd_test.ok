@@ -7,7 +7,7 @@ BTS: Verifying CM request.
 Confirming
 Took message from DCCH queue: L2 header size 3, L3 size 20, SAP 0x1000000, 0/0, Link 0x00
 Message: [L2]> 01 73 41 [L3]> 05 24 31 03 50 18 93 08 29 47 80 00 00 00 00 80 2b 2b 2b 2b 
-ms_to_bts_tx_cb: BTS->MS(us) message 9
+ms_to_bts_tx_cb: BTS->MS(us) message 6
 MS: Verifying incoming primitive.
 
 Sending back to MS

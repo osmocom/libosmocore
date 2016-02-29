@@ -350,19 +350,13 @@ static int ms_to_bts_tx_cb(struct msgb *msg, struct lapdm_entity *le, void *_ctx
 		struct abis_rsl_rll_hdr hdr;
 
 		printf("MS: Verifying incoming primitive.\n");
-		OSMO_ASSERT(msg->len == sizeof(struct abis_rsl_rll_hdr) + 3);
+		OSMO_ASSERT(msg->len == sizeof(struct abis_rsl_rll_hdr));
 
 		/* verify the header */
 		memset(&hdr, 0, sizeof(hdr));
 		rsl_init_rll_hdr(&hdr, RSL_MT_EST_CONF);
 		hdr.c.msg_discr |= ABIS_RSL_MDISC_TRANSP;
 		OSMO_ASSERT(memcmp(msg->data, &hdr, sizeof(hdr)) == 0);
-
-		/* Verify the added RSL_IE_L3_INFO but we have a bug here */
-		OSMO_ASSERT(msg->data[6] == RSL_IE_L3_INFO);
-		#pragma message ("RSL_IE_L3_INFO 16 bit length is wrong")
-		/* This should be okay but it is actually 0x0, 0x9c on ia-32 */
-		/* OSMO_ASSERT(msg->data[7] == 0x0 && msg->data[8] == 0x0); */
 	} else if (state->ms_read == 1) {
 		printf("MS: Verifying incoming MM message: %d\n", msgb_l3len(msg));
 		OSMO_ASSERT(msgb_l3len(msg) == 3);
