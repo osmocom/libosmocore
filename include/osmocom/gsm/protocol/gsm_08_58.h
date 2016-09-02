@@ -170,6 +170,9 @@ enum abis_rsl_msgtype {
 	RSL_MT_IPAC_DISC_MUX		= 0x56,
 	RSL_MT_IPAC_DISC_MUX_ACK,
 	RSL_MT_IPAC_DISC_MUX_NACK,
+	RSL_MT_IPAC_MEAS_PREPROC_DFT 	= 0x60,		/*Extented Common Channel Management */
+	RSL_MT_IPAC_HO_CAN_ENQ 		= 0x61,
+	RSL_MT_IPAC_HO_CAN_RES 		= 0x62,
 	RSL_MT_IPAC_CRCX		= 0x70,		/* Bind to local BTS RTP port */
 	RSL_MT_IPAC_CRCX_ACK,
 	RSL_MT_IPAC_CRCX_NACK,
@@ -295,6 +298,41 @@ enum abis_rsl_ie {
 	RSL_IE_IPAC_RTP_MPLEX_ID= 0xfe,
 };
 
+/* IPAC MEAS_PREPROC AVERAGING METHOD */
+enum {
+	IPAC_UNWEIGHTED_AVE = 0,
+	IPAC_WEIGHTED_AVE,
+	IPAC_MEDIAN_AVE
+};
+
+/* IPAC MEAS_PREPROC AVERAGING PARAMID */
+enum {
+	IPAC_RXLEV_AVE = 0,
+	IPAC_RXQUAL_AVE,
+	IPAC_MS_BTS_DIS_AVE
+};
+
+/* IPAC MEAS_PREPROC HO CAUSES */
+enum {
+	IPAC_HO_RQD_CAUSE_L_RXLEV_UL_H = 0x01,
+	IPAC_HO_RQD_CAUSE_L_RXLEV_DL_H,
+	IPAC_HO_RQD_CAUSE_L_RXQUAL_UL_H,
+	IPAC_HO_RQD_CAUSE_L_RXQUAL_DL_H,
+	IPAC_HO_RQD_CAUSE_RXLEV_UL_IH,
+	IPAC_HO_RQD_CAUSE_RXLEV_DL_IH,
+	IPAC_HO_RQD_CAUSE_MAX_MS_RANGE,
+	IPAC_HO_RQD_CAUSE_POWER_BUDGET,
+	IPAC_HO_RQD_CAUSE_ENQUIRY,
+	IPAC_HO_RQD_CAUSE_ENQUIRY_FAILED,
+	IPAC_HO_RQD_CAUSE_NORMAL3G,
+	IPAC_HO_RQD_CAUSE_EMERGENCY3G,
+	IPAC_HO_RQD_CAUSE_SERVICE_PREFERRED3G,
+	IPAC_HO_RQD_CAUSE_O_M_SHUTDOWN,
+	IPAC_HO_RQD_CAUSE_QUALITY_PROMOTION,
+	IPAC_HO_RQD_CAUSE_LOAD_PROMOTION,
+	IPAC_HO_RQD_CAUSE_LOAD_DEMOTION,
+	IPAC_HO_RQD_CAUSE_MAX,
+};
 /* Chapter 9.3.1 */
 #define RSL_CHAN_NR_MASK	0xf8
 #define RSL_CHAN_NR_1		0x08	/*< bit to add for 2nd,... lchan */
@@ -603,6 +641,89 @@ enum rsl_ipac_embedded_ie {
 	RSL_IPAC_EIE_NCELL_LIST_EXT	= 0x13,
 	RSL_IPAC_EIE_MASTER_KEY		= 0x14,
 	RSL_IPAC_EIE_MASTER_SALT	= 0x15,
+	/* additional IPAC measurement pre-processing related IEI */
+	RSL_IPAC_EIE_MEAS_TRANS_RES	= 0x16,
+	RSL_IPAC_EIE_3G_HO_PARAM	= 0x17,
+	RSL_IPAC_EIE_3G_NCELL_LIST	= 0x18,
+	RSL_IPAC_EIE_SDCCH_CTL_PARAM	= 0x1a,
+	RSL_IPAC_EIE_AMR_CONV_THRESH 	= 0x1b,
+
+};
+
+struct ipac_preproc_ave_cfg {
+	uint8_t h_reqave:5,
+		param_id:2,
+		reserved:1;
+	uint8_t h_reqt:5,
+		ave_method:3;
+}__attribute__ ((packed));
+
+struct ipac_preproc_ho_thresh {
+	uint8_t l_rxlev_ul_h:6,
+		reserved_l_rxlev_ul:2;
+	uint8_t l_rxlev_dl_h:6,
+		reserved_l_rxlev_dl:2;
+	uint8_t rxlev_ul_ih:6,
+		reserved_rxlev_ul:2;
+	uint8_t rxlev_dl_ih:6,
+		reserved_rxlev_dl:2;
+	uint8_t l_rxqual_ul_h:3,
+		reserved_rxlqual_ul:1,
+		l_rxqual_dl_h:3,
+		reserved_rxqual_dl:1;
+	uint8_t ms_range_max:6,
+		reserved_ms_range:2;
+}__attribute__ ((packed));
+
+struct ipac_preproc_ho_comp {
+	uint8_t p5:5,
+		reserved_p5:3;
+	uint8_t n5:5,
+		reserved_n5:3;
+	uint8_t p6:5,
+		reserved_p6:3;
+	uint8_t n6:5,
+		reserved_n6:3;
+	uint8_t p7:5,
+		reserved_p7:3;
+	uint8_t n7:5,
+		reserved_n7:3;
+	uint8_t p8:5,
+		reserved_p8:3;
+	uint8_t n8:5,
+		reserved_n8:3;
+	uint8_t ho_interval:5,
+		reserved_ho:3;
+	uint8_t reserved;
+
+}__attribute__ ((packed));
+
+struct ipac_preproc_ho_candidates {
+	uint8_t bsic:6,
+		reserved0:2;
+	uint8_t bcch_freq:5,
+		ba_used:1,
+		s:1,
+		reserved1:1;
+}__attribute__ ((packed));
+
+struct ipac_preproc_ncell_dflts {
+	uint8_t rxlev_min_def:6,
+		reserved_rxlev_min_def:2;
+	uint8_t ho_margin_def:5,
+		reserved_ho_margin_def:3;
+	uint8_t ms_txpwr_max_def:5,
+		reserved_ms_txpwr_max_def:3;
+}__attribute__ ((packed));
+
+struct ipac_preproc_cfg {
+	uint8_t meas_rep_mode;
+	uint32_t meas_mode_flags;
+	struct ipac_preproc_ave_cfg ms_ave_cfg[3];
+	struct ipac_preproc_ave_cfg ave_cfg;
+	struct ipac_preproc_ho_thresh ho_thresh;
+	struct ipac_preproc_ho_comp ho_comp;
+	struct ipac_preproc_ncell_dflts ncell_dflts;
 };
 
 /*! @} */
