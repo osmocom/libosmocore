@@ -85,6 +85,8 @@ gsm0503_rach;
 gsm0503_sch;
 gsm0503_cs2;
 gsm0503_cs3;
+gsm0503_cs2_np;
+gsm0503_cs3_np;
 gsm0503_tch_fr;
 gsm0503_tch_hr;
 gsm0503_tch_afs_12_2;

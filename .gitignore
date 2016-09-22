@@ -36,6 +36,7 @@ Doxyfile.core
 Doxyfile.gsm
 Doxyfile.vty
 Doxyfile.codec
+Doxyfile.coding
 
 debian/autoreconf.after
 debian/autoreconf.before
@@ -73,6 +74,7 @@ tests/bits/bitrev_test
 tests/a5/a5_test
 tests/comp128/comp128_test
 tests/auth/milenage_test
+tests/coding/coding_test
 tests/conv/conv_test
 tests/lapd/lapd_test
 tests/gsm0808/gsm0808_test
@@ -105,6 +107,7 @@ utils/osmo-auc-gen
 utils/osmo-sim-test
 
 doc/codec
+doc/coding
 doc/core
 doc/vty/latex
 doc/vty/html

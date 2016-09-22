@@ -42,6 +42,7 @@ case $host in
 *)
 	LTLDFLAGS_OSMOGB='-Wl,--version-script=$(srcdir)/libosmogb.map'
 	LTLDFLAGS_OSMOGSM='-Wl,--version-script=$(srcdir)/libosmogsm.map'
+	LTLDFLAGS_OSMOCODING='-Wl,--version-script=$(srcdir)/libosmocoding.map'
 	;;
 esac
 AC_SUBST(LTLDFLAGS_OSMOGB)
@@ -228,6 +229,7 @@ fi
 AC_OUTPUT(
 	libosmocore.pc
 	libosmocodec.pc
+	libosmocoding.pc
 	libosmovty.pc
 	libosmogsm.pc
 	libosmogb.pc
@@ -237,6 +239,7 @@ AC_OUTPUT(
 	src/Makefile
 	src/vty/Makefile
 	src/codec/Makefile
+	src/coding/Makefile
 	src/sim/Makefile
 	src/gsm/Makefile
 	src/gb/Makefile
@@ -248,4 +251,5 @@ AC_OUTPUT(
 	Doxyfile.gsm
 	Doxyfile.vty
 	Doxyfile.codec
+	Doxyfile.coding
 	Makefile)

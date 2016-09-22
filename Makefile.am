@@ -1,11 +1,11 @@
 ACLOCAL_AMFLAGS = -I m4
 
 AM_CPPFLAGS = $(all_includes) -I$(top_srcdir)/include
-SUBDIRS = include src src/vty src/codec src/gsm src/gb src/ctrl src/sim tests utils
+SUBDIRS = include src src/vty src/codec src/gsm src/coding src/gb src/ctrl src/sim tests utils
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libosmocore.pc libosmocodec.pc libosmovty.pc libosmogsm.pc \
-		 libosmogb.pc libosmoctrl.pc
+		 libosmogb.pc libosmoctrl.pc libosmocoding.pc
 
 BUILT_SOURCES = $(top_srcdir)/.version
 $(top_srcdir)/.version:
@@ -22,7 +22,8 @@ html_DATA = $(top_builddir)/doc/html.tar
 $(html_DATA): $(top_builddir)/doc/core/html/index.html \
 		  $(top_builddir)/doc/gsm/html/index.html \
 		  $(top_builddir)/doc/vty/html/index.html \
-		  $(top_builddir)/doc/codec/html/index.html
+		  $(top_builddir)/doc/codec/html/index.html \
+		  $(top_builddir)/doc/coding/html/index.html
 	cd $(top_builddir)/doc && tar cf html.tar */html
 
 $(top_builddir)/doc/core/html/index.html: $(SOURCES) Doxyfile.core
@@ -44,13 +45,18 @@ $(top_builddir)/doc/codec/html/index.html: $(SOURCES) Doxyfile.codec
 	mkdir -p doc/codec
 	$(DOXYGEN) Doxyfile.codec
 
+$(top_builddir)/doc/coding/html/index.html: Doxyfile.coding
+	@rm -rf doc/coding
+	mkdir -p doc/coding
+	$(DOXYGEN) Doxyfile.coding
+
 install-data-hook:
 	cd $(DESTDIR)$(htmldir) && tar xf html.tar && rm -f html.tar
 
 uninstall-hook:
-	cd $(DESTDIR)$(htmldir) && rm -rf {core,gsm,vty,codec}
+	cd $(DESTDIR)$(htmldir) && rm -rf {core,gsm,vty,codec,coding}
 
-DX_CLEAN = doc/{core,gsm,vty,codec}/html/search/* doc/{core,gsm,vty,codec}/{html,latex}/* doc/html.tar doc/{core,gsm,vty,codec}/doxygen_sqlite3.db doc/*.tag
+DX_CLEAN = doc/{core,gsm,vty,codec,coding}/html/search/* doc/{core,gsm,vty,codec,coding}/{html,latex}/* doc/html.tar doc/{core,gsm,vty,codec,coding}/doxygen_sqlite3.db doc/*.tag
 endif
 
 MOSTLYCLEANFILES = $(DX_CLEAN)

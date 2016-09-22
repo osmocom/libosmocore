@@ -111,6 +111,30 @@ conv_codes = [
 		]
 	),
 
+	# CS2 definition (non-punctured)
+	ConvolutionalCode(
+		290,
+		shared_polys["xcch"],
+		name = "cs2_np",
+		description = [
+			"CS2 convolutional code (non-punctured):",
+			"G0 = 1 + D3 + D4",
+			"G1 = 1 + D + D3 + D4",
+		]
+	),
+
+	# CS3 definition (non-punctured)
+	ConvolutionalCode(
+		334,
+		shared_polys["xcch"],
+		name = "cs3_np",
+		description = [
+			"CS3 convolutional code (non-punctured):",
+			"G0 = 1 + D3 + D4",
+			"G1 = 1 + D + D3 + D4",
+		]
+	),
+
 	# TCH_AFS_12_2 definition
 	ConvolutionalCode(
 		250,

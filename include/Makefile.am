@@ -69,6 +69,11 @@ nobase_include_HEADERS = \
                        osmocom/gsm/gsm0480.h \
                        osmocom/gsm/gsm0502.h \
                        osmocom/gsm/gsm0503.h \
+                       osmocom/coding/gsm0503_tables.h \
+                       osmocom/coding/gsm0503_parity.h \
+                       osmocom/coding/gsm0503_mapping.h \
+                       osmocom/coding/gsm0503_interleaving.h \
+                       osmocom/coding/gsm0503_coding.h \
                        osmocom/gsm/gsm0808.h \
                        osmocom/gsm/gsm23003.h \
                        osmocom/gsm/gsm48.h \

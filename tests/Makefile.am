@@ -14,7 +14,8 @@ check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
 		 smscb/gsm0341_test stats/stats_test ctrl/ctrl_test	\
 		 bitvec/bitvec_test msgb/msgb_test bits/bitcomp_test	\
 		 tlv/tlv_test gsup/gsup_test oap/oap_test fsm/fsm_test	\
-		 write_queue/wqueue_test socket/socket_test
+		 write_queue/wqueue_test socket/socket_test		\
+		 coding/coding_test
 
 if ENABLE_MSGFILE
 check_PROGRAMS += msgfile/msgfile_test
@@ -146,6 +147,13 @@ write_queue_wqueue_test_LDADD = $(top_builddir)/src/libosmocore.la
 socket_socket_test_SOURCES = socket/socket_test.c
 socket_socket_test_LDADD = $(top_builddir)/src/libosmocore.la
 
+coding_coding_test_SOURCES = coding/coding_test.c
+coding_coding_test_LDADD = \
+  $(top_builddir)/src/libosmocore.la \
+  $(top_builddir)/src/gsm/libosmogsm.la \
+  $(top_builddir)/src/codec/libosmocodec.la \
+  $(top_builddir)/src/coding/libosmocoding.la
+
 # The `:;' works around a Bash 3.2 bug when the output is not writeable.
 $(srcdir)/package.m4: $(top_srcdir)/configure.ac
 	:;{ \
@@ -184,7 +192,7 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
 	     gsup/gsup_test.ok gsup/gsup_test.err			\
 	     oap/oap_test.ok fsm/fsm_test.ok fsm/fsm_test.err		\
 	     write_queue/wqueue_test.ok socket/socket_test.ok		\
-	     socket/socket_test.err
+	     socket/socket_test.err coding/coding_test.ok
 
 DISTCLEANFILES = atconfig atlocal
 noinst_HEADERS = conv/conv.h

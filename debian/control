@@ -25,6 +25,7 @@ Section: libs
 Architecture: any
 Multi-Arch: foreign
 Depends: libosmocodec0 (= ${binary:Version}),
+         libosmocoding0 (= ${binary:Version}),
          libosmocore8 (= ${binary:Version}),
          libosmogb4 (= ${binary:Version}),
          libosmogsm7 (= ${binary:Version}),
@@ -76,6 +77,38 @@ Description: Documentation for the osmo codec library
  .
  This package contains the documentation for the libosmocodec library.
 
+Package: libosmocoding0
+Section: libs
+Architecture: any
+Multi-Arch: same
+Depends: ${shlibs:Depends},
+         ${misc:Depends}
+Pre-Depends: ${misc:Pre-Depends}
+Description: Osmo coding library
+ This is part of the libosmocore "meta"-library. The libosmocore library
+ contains various utility functions that were originally developed as part of
+ the OpenBSC project, but which are of a more generic nature and thus useful to
+ (at least) other programs that are developed in the sphere of Free Software /
+ Open Source mobile communication.
+ .
+ The libosmocoding library in particular contains the implementation of
+ GSM, GPRS and EDGE transcoding routines, migrated from OsmoBTS.
+
+Package: libosmocoding-doc
+Architecture: all
+Section: doc
+Depends: ${misc:Depends},
+         libosmocoding0,
+         libjs-jquery
+Description: Documentation for the osmo coding library
+ This is part of the libosmocore "meta"-library. The libosmocore library
+ contains various utility functions that were originally developed as part of
+ the OpenBSC project, but which are of a more generic nature and thus useful to
+ (at least) other programs that are developed in the sphere of Free Software /
+ Open Source mobile communication.
+ .
+ This package contains the documentation for the libosmocoding library.
+
 Package: libosmocore8
 Section: libs
 Architecture: any
@@ -100,6 +133,7 @@ Depends: ${misc:Depends},
          libosmocore8,
          libjs-jquery,
          libosmocodec-doc,
+         libosmocoding-doc,
          libosmogsm-doc,
          libosmovty-doc
 Description: Documentation for the Osmo Core library
