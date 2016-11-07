@@ -42,8 +42,6 @@
 
 #include "common_vty.h"
 
-static struct gprs_ns_inst *vty_nsi = NULL;
-
 /* FIXME: this should go to some common file as it is copied
  * in vty_interface.c of the BSC */
 static const struct value_string gprs_ns_timer_strs[] = {
@@ -80,8 +78,9 @@ static int config_write_ns(struct vty *vty)
 	struct gprs_nsvc *nsvc;
 	unsigned int i;
 	struct in_addr ia;
+	struct gprs_ns_inst *vty_nsi = vty->index;
 
-	vty_out(vty, "ns%s", VTY_NEWLINE);
+	vty_out(vty, "ns %u%s", vty_nsi->nr, VTY_NEWLINE);
 
 	llist_for_each_entry(nsvc, &vty_nsi->gprs_nsvcs, list) {
 		if (!nsvc->persistent)
@@ -147,16 +146,33 @@ static int config_write_ns(struct vty *vty)
 }
 
 DEFUN(cfg_ns, cfg_ns_cmd,
-      "ns",
+      "ns [<0-255>]",
       "Configure the GPRS Network Service")
 {
+	struct gprs_ns_inst *nsi;
+	int inst_nr;
+
+	if (argc < 1) {
+		vty_out(vty, "Implicitly selecting NS Instance 0%s",
+			VTY_NEWLINE);
+		inst_nr = 0;
+	} else
+		inst_nr = atoi(argv[0]);
+	nsi = gprs_ns_instance_by_id(inst_nr);
+	if (!nsi) {
+		vty_out(vty, "No such NS Instance%s", VTY_NEWLINE);
+		return CMD_WARNING;
+	}
+
 	vty->node = L_NS_NODE;
+	vty->index = nsi;
+
 	return CMD_SUCCESS;
 }
 
 static void dump_nse(struct vty *vty, struct gprs_nsvc *nsvc, int stats)
 {
-	vty_out(vty, "NSEI %5u, NS-VC %5u, Remote: %-4s, %5s %9s",
+	vty_out(vty, " NSEI %5u, NS-VC %5u, Remote: %-4s, %5s %9s",
 		nsvc->nsei, nsvc->nsvci,
 		nsvc->remote_end_is_sgsn ? "SGSN" : "BSS",
 		nsvc->state & NSE_S_ALIVE ? "ALIVE" : "DEAD",
@@ -178,12 +194,13 @@ static void dump_ns(struct vty *vty, struct gprs_ns_inst *nsi, int stats)
 	struct gprs_nsvc *nsvc;
 	struct in_addr ia;
 
-	ia.s_addr = htonl(vty_nsi->nsip.local_ip);
-	vty_out(vty, "Encapsulation NS-UDP-IP     Local IP: %s, UDP Port: %u%s",
-		inet_ntoa(ia), vty_nsi->nsip.local_port, VTY_NEWLINE);
+	ia.s_addr = htonl(nsi->nsip.local_ip);
+	vty_out(vty, "NS Instance %u%s", nsi->nr, VTY_NEWLINE);
+	vty_out(vty, " Encapsulation NS-UDP-IP     Local IP: %s, UDP Port: %u%s",
+		inet_ntoa(ia), nsi->nsip.local_port, VTY_NEWLINE);
 
-	ia.s_addr = htonl(vty_nsi->frgre.local_ip);
-	vty_out(vty, "Encapsulation NS-FR-GRE-IP  Local IP: %s%s",
+	ia.s_addr = htonl(nsi->frgre.local_ip);
+	vty_out(vty, " Encapsulation NS-FR-GRE-IP  Local IP: %s%s",
 		inet_ntoa(ia), VTY_NEWLINE);
 
 	llist_for_each_entry(nsvc, &nsi->gprs_nsvcs, list) {
@@ -193,37 +210,65 @@ static void dump_ns(struct vty *vty, struct gprs_ns_inst *nsi, int stats)
 	}
 }
 
-DEFUN(show_ns, show_ns_cmd, "show ns",
-	SHOW_STR "Display information about the NS protocol")
-{
-	struct gprs_ns_inst *nsi = vty_nsi;
-	dump_ns(vty, nsi, 0);
-	return CMD_SUCCESS;
-}
-
-DEFUN(show_ns_stats, show_ns_stats_cmd, "show ns stats",
-	SHOW_STR
-	"Display information about the NS protocol\n"
+DEFUN(show_ns, show_ns_cmd, "show ns all [stats]",
+	SHOW_STR "Display information about the NS protocol\n"
+	"Display information about all NS protocol instances\n"
 	"Include statistics\n")
 {
-	struct gprs_ns_inst *nsi = vty_nsi;
-	dump_ns(vty, nsi, 1);
+	struct gprs_ns_inst *nsi;
+	int stats = 0;
+	unsigned int i;
+
+	if (argc > 0)
+		stats = 1;
+
+	for (i = 0; i < 256; i++) {
+		nsi = gprs_ns_instance_by_id(i);
+		if (nsi)
+			dump_ns(vty, nsi, stats);
+	}
 	return CMD_SUCCESS;
 }
 
-DEFUN(show_nse, show_nse_cmd, "show ns (nsei|nsvc) <0-65535> [stats]",
+DEFUN(show_ns_stats, show_ns_stats_cmd, "show ns <0-255> [stats]",
 	SHOW_STR "Display information about the NS protocol\n"
+	"Information about one given NS Instance Number\n"
+	"Include statistics\n")
+{
+	struct gprs_ns_inst *nsi;
+	int stats = 0;
+
+	if (argc > 1)
+		stats = 1;
+
+	nsi = gprs_ns_instance_by_id(atoi(argv[0]));
+	if (!nsi) {
+		vty_out(vty, "No such NS Instance%s", VTY_NEWLINE);
+		return CMD_WARNING;
+	}
+	dump_ns(vty, nsi, stats);
+	return CMD_SUCCESS;
+}
+
+DEFUN(show_nse, show_nse_cmd, "show ns <0-255> (nsei|nsvc) <0-65535> [stats]",
+	SHOW_STR "Display information about the NS protocol\n"
+	"NS Protocol Instance Number\n"
 	"Select one NSE by its NSE Identifier\n"
 	"Select one NSE by its NS-VC Identifier\n"
 	"The Identifier of selected type\n"
 	"Include Statistics\n")
 {
-	struct gprs_ns_inst *nsi = vty_nsi;
+	struct gprs_ns_inst *nsi = gprs_ns_instance_by_id(atoi(argv[0]));
 	struct gprs_nsvc *nsvc;
-	uint16_t id = atoi(argv[1]);
+	uint16_t id = atoi(argv[2]);
 	int show_stats = 0;
 
-	if (!strcmp(argv[0], "nsei"))
+	if (!nsi) {
+		vty_out(vty, "No such NS Instance%s", VTY_NEWLINE);
+		return CMD_WARNING;
+	}
+
+	if (!strcmp(argv[1], "nsei"))
 		nsvc = gprs_nsvc_by_nsei(nsi, id);
 	else
 		nsvc = gprs_nsvc_by_nsvci(nsi, id);
@@ -249,6 +294,7 @@ DEFUN(cfg_nse_nsvc, cfg_nse_nsvci_cmd,
 	"NS Virtual Connection ID (NSVCI)\n"
 	)
 {
+	struct gprs_ns_inst *vty_nsi = vty->index;
 	uint16_t nsei = atoi(argv[0]);
 	uint16_t nsvci = atoi(argv[1]);
 	struct gprs_nsvc *nsvc;
@@ -273,6 +319,7 @@ DEFUN(cfg_nse_remoteip, cfg_nse_remoteip_cmd,
 	"Remote IP Address\n"
 	"Remote IP Address\n")
 {
+	struct gprs_ns_inst *vty_nsi = vty->index;
 	uint16_t nsei = atoi(argv[0]);
 	struct gprs_nsvc *nsvc;
 
@@ -293,6 +340,7 @@ DEFUN(cfg_nse_remoteport, cfg_nse_remoteport_cmd,
 	"Remote UDP Port\n"
 	"Remote UDP Port Number\n")
 {
+	struct gprs_ns_inst *vty_nsi = vty->index;
 	uint16_t nsei = atoi(argv[0]);
 	uint16_t port = atoi(argv[1]);
 	struct gprs_nsvc *nsvc;
@@ -320,6 +368,7 @@ DEFUN(cfg_nse_fr_dlci, cfg_nse_fr_dlci_cmd,
 	"Frame Relay DLCI\n"
 	"Frame Relay DLCI Number\n")
 {
+	struct gprs_ns_inst *vty_nsi = vty->index;
 	uint16_t nsei = atoi(argv[0]);
 	uint16_t dlci = atoi(argv[1]);
 	struct gprs_nsvc *nsvc;
@@ -347,6 +396,7 @@ DEFUN(cfg_nse_encaps, cfg_nse_encaps_cmd,
 	"Encapsulation for NS\n"
 	"UDP/IP Encapsulation\n" "Frame-Relay/GRE/IP Encapsulation\n")
 {
+	struct gprs_ns_inst *vty_nsi = vty->index;
 	uint16_t nsei = atoi(argv[0]);
 	struct gprs_nsvc *nsvc;
 
@@ -372,6 +422,7 @@ DEFUN(cfg_nse_remoterole, cfg_nse_remoterole_cmd,
 	"Remote Peer is SGSN\n"
 	"Remote Peer is BSS\n")
 {
+	struct gprs_ns_inst *vty_nsi = vty->index;
 	uint16_t nsei = atoi(argv[0]);
 	struct gprs_nsvc *nsvc;
 
@@ -394,6 +445,7 @@ DEFUN(cfg_no_nse, cfg_no_nse_cmd,
 	"Delete Persistent NS Entity\n"
 	"Delete " NSE_CMD_STR)
 {
+	struct gprs_ns_inst *vty_nsi = vty->index;
 	uint16_t nsei = atoi(argv[0]);
 	struct gprs_nsvc *nsvc;
 
@@ -419,6 +471,7 @@ DEFUN(cfg_ns_timer, cfg_ns_timer_cmd,
 	"Network Service Timer\n"
 	NS_TIMERS_HELP "Timer Value\n")
 {
+	struct gprs_ns_inst *vty_nsi = vty->index;
 	int idx = get_string_value(gprs_ns_timer_strs, argv[0]);
 	int val = atoi(argv[1]);
 
@@ -438,6 +491,7 @@ DEFUN(cfg_nsip_local_ip, cfg_nsip_local_ip_cmd,
 	"Set the IP address on which we listen for NS/UDP\n"
 	"IP Address\n")
 {
+	struct gprs_ns_inst *vty_nsi = vty->index;
 	struct in_addr ia;
 
 	inet_aton(argv[0], &ia);
@@ -452,6 +506,7 @@ DEFUN(cfg_nsip_local_port, cfg_nsip_local_port_cmd,
 	"Set the UDP port on which we listen for NS/UDP\n"
 	"UDP port number\n")
 {
+	struct gprs_ns_inst *vty_nsi = vty->index;
 	unsigned int port = atoi(argv[0]);
 
 	vty_nsi->nsip.local_port = port;
@@ -464,6 +519,7 @@ DEFUN(cfg_nsip_dscp, cfg_nsip_dscp_cmd,
 	ENCAPS_STR "NS over UDP Encapsulation\n"
 	"Set DSCP/TOS on the UDP socket\n" "DSCP Value\n")
 {
+	struct gprs_ns_inst *vty_nsi = vty->index;
 	int dscp = atoi(argv[0]);
 	vty_nsi->nsip.dscp = dscp;
 	return CMD_SUCCESS;
@@ -475,6 +531,7 @@ DEFUN(cfg_frgre_local_ip, cfg_frgre_local_ip_cmd,
 	"Set the IP address on which we listen for NS/FR/GRE\n"
 	"IP Address\n")
 {
+	struct gprs_ns_inst *vty_nsi = vty->index;
 	struct in_addr ia;
 
 	if (!vty_nsi->frgre.enabled) {
@@ -493,6 +550,7 @@ DEFUN(cfg_frgre_enable, cfg_frgre_enable_cmd,
 	"Enable or disable Frame Relay over GRE\n"
 	"Enable\n" "Disable\n")
 {
+	struct gprs_ns_inst *vty_nsi = vty->index;
 	int enabled = atoi(argv[0]);
 
 	vty_nsi->frgre.enabled = enabled;
@@ -501,8 +559,9 @@ DEFUN(cfg_frgre_enable, cfg_frgre_enable_cmd,
 }
 
 DEFUN(nsvc_nsei, nsvc_nsei_cmd,
-	"nsvc (nsei|nsvci) <0-65535> (block|unblock|reset)",
+	"ns <0-255> nsvc (nsei|nsvci) <0-65535> (block|unblock|reset)",
 	"Perform an operation on a NSVC\n"
+	"NS Protocol Instance Number\n"
 	"NSEI to identify NS-VC Identifier (NS-VCI)\n"
 	"NS-VC Identifier (NS-VCI)\n"
 	"The NSEI\n"
@@ -510,15 +569,21 @@ DEFUN(nsvc_nsei, nsvc_nsei_cmd,
 	"Initiate UNBLOCK procedure\n"
 	"Initiate RESET procedure\n")
 {
-	const char *id_type = argv[0];
-	uint16_t id = atoi(argv[1]);
-	const char *operation = argv[2];
+	struct gprs_ns_inst *nsi = gprs_ns_instance_by_id(atoi(argv[0]));
+	const char *id_type = argv[1];
+	uint16_t id = atoi(argv[2]);
+	const char *operation = argv[3];
 	struct gprs_nsvc *nsvc;
 
+	if (!nsi) {
+		vty_out(vty, "No such NS Instance%s", VTY_NEWLINE);
+		return CMD_WARNING;
+	}
+
 	if (!strcmp(id_type, "nsei"))
-		nsvc = gprs_nsvc_by_nsei(vty_nsi, id);
+		nsvc = gprs_nsvc_by_nsei(nsi, id);
 	else if (!strcmp(id_type, "nsvci"))
-		nsvc = gprs_nsvc_by_nsvci(vty_nsi, id);
+		nsvc = gprs_nsvc_by_nsvci(nsi, id);
 	else {
 		vty_out(vty, "%%No such id_type '%s'%s", id_type, VTY_NEWLINE);
 		return CMD_WARNING;
@@ -543,24 +608,31 @@ DEFUN(nsvc_nsei, nsvc_nsei_cmd,
 
 DEFUN(logging_fltr_nsvc,
       logging_fltr_nsvc_cmd,
-      "logging filter nsvc (nsei|nsvci) <0-65535>",
+      "logging filter nsvc <0-255> (nsei|nsvci) <0-65535>",
 	LOGGING_STR FILTER_STR
 	"Filter based on NS Virtual Connection\n"
+	"Ns Instance Number\n"
 	"Identify NS-VC by NSEI\n"
 	"Identify NS-VC by NSVCI\n"
 	"Numeric identifier\n")
 {
+	struct gprs_ns_inst *nsi = gprs_ns_instance_by_id(atoi(argv[0]));
 	struct log_target *tgt = osmo_log_vty2tgt(vty);
 	struct gprs_nsvc *nsvc;
-	uint16_t id = atoi(argv[1]);
+	uint16_t id = atoi(argv[2]);
+
+	if (!nsi) {
+		vty_out(vty, "No such NS Instance%s", VTY_NEWLINE);
+		return CMD_WARNING;
+	}
 
 	if (!tgt)
 		return CMD_WARNING;
 
-	if (!strcmp(argv[0], "nsei"))
-		nsvc = gprs_nsvc_by_nsei(vty_nsi, id);
+	if (!strcmp(argv[1], "nsei"))
+		nsvc = gprs_nsvc_by_nsei(nsi, id);
 	else
-		nsvc = gprs_nsvc_by_nsvci(vty_nsi, id);
+		nsvc = gprs_nsvc_by_nsvci(nsi, id);
 
 	if (!nsvc) {
 		vty_out(vty, "No NS-VC by that identifier%s", VTY_NEWLINE);
@@ -573,8 +645,6 @@ DEFUN(logging_fltr_nsvc,
 
 int gprs_ns_vty_init(struct gprs_ns_inst *nsi)
 {
-	vty_nsi = nsi;
-
 	install_element_ve(&show_ns_cmd);
 	install_element_ve(&show_ns_stats_cmd);
 	install_element_ve(&show_nse_cmd);

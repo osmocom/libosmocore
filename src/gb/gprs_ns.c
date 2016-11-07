@@ -85,6 +85,9 @@
 
 #include "common_vty.h"
 
+/* array of NS instance pointers */
+static struct gprs_ns_inst *g_ns_instances[256];
+
 static const struct tlv_definition ns_att_tlvdef = {
 	.def = {
 		[NS_IE_CAUSE]	= { TLV_TYPE_TvLV, 0 },
@@ -1372,6 +1375,22 @@ int gprs_ns_process_msg(struct gprs_ns_inst *nsi, struct msgb *msg,
 	return rc;
 }
 
+static int find_next_free_instance_id(void)
+{
+	unsigned int i;
+
+	for (i = 0; i < ARRAY_SIZE(g_ns_instances); i++) {
+		if (!g_ns_instances[i])
+			return i;
+	}
+	return -1;
+}
+
+struct gprs_ns_inst *gprs_ns_instance_by_id(uint8_t id)
+{
+	return g_ns_instances[id];
+}
+
 /*! \brief Create a new GPRS NS instance
  *  \param[in] cb Call-back function for incoming BSSGP data
  *  \returns dynamically allocated gprs_ns_inst
@@ -1379,7 +1398,14 @@ int gprs_ns_process_msg(struct gprs_ns_inst *nsi, struct msgb *msg,
 struct gprs_ns_inst *gprs_ns_instantiate(gprs_ns_cb_t *cb, void *ctx)
 {
 	struct gprs_ns_inst *nsi = talloc_zero(ctx, struct gprs_ns_inst);
+	int rc;
 
+	rc = find_next_free_instance_id();
+	if (rc < 0) {
+		talloc_free(nsi);
+		return NULL;
+	}
+	nsi->nr = rc;
 	nsi->cb = cb;
 	INIT_LLIST_HEAD(&nsi->gprs_nsvcs);
 	nsi->timeout[NS_TOUT_TNS_BLOCK] = 3;
@@ -1427,6 +1453,9 @@ void gprs_ns_close(struct gprs_ns_inst *nsi)
 void gprs_ns_destroy(struct gprs_ns_inst *nsi)
 {
 	gprs_ns_close(nsi);
+	/* remove from global array of NS instances */
+	OSMO_ASSERT(g_ns_instances[nsi->nr] == nsi);
+	g_ns_instances[nsi->nr] = NULL;
 	/* free the NSI */
 	talloc_free(nsi);
 }

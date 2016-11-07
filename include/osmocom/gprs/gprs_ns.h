@@ -69,6 +69,9 @@ typedef int gprs_ns_cb_t(enum gprs_ns_evt event, struct gprs_nsvc *nsvc,
 
 /*! \brief An instance of the NS protocol stack */
 struct gprs_ns_inst {
+	/*! \brief the unique instance number of this NS instance */
+	uint8_t nr;
+
 	/*! \brief callback to the user for incoming UNIT DATA IND */
 	gprs_ns_cb_t *cb;
 
@@ -144,6 +147,9 @@ struct gprs_nsvc {
 
 /* Create a new NS protocol instance */
 struct gprs_ns_inst *gprs_ns_instantiate(gprs_ns_cb_t *cb, void *ctx);
+
+/* Obtain a NS instance of a given ID */
+struct gprs_ns_inst *gprs_ns_instance_by_id(uint8_t inst_nr);
 
 /* Close a NS protocol instance */
 void gprs_ns_close(struct gprs_ns_inst *nsi);
