@@ -27,10 +27,10 @@
 
 uint8_t *bssgp_msgb_tlli_put(struct msgb *msg, uint32_t tlli);
 
-int bssgp_tx_suspend(uint16_t nsei, uint32_t tlli,
-		     const struct gprs_ra_id *ra_id);
+int bssgp_tx_suspend(struct gprs_ns_inst *nsi, uint16_t nsei,
+		     uint32_t tlli, const struct gprs_ra_id *ra_id);
 
-int bssgp_tx_resume(uint16_t nsei, uint32_t tlli,
+int bssgp_tx_resume(struct gprs_ns_inst *nsi, uint16_t nsei, uint32_t tlli,
 		    const struct gprs_ra_id *ra_id, uint8_t suspend_ref);
 
 int bssgp_tx_ra_capa_upd(struct bssgp_bvc_ctx *bctx, uint32_t tlli, uint8_t tag);

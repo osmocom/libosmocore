@@ -109,7 +109,8 @@ struct bssgp_bvc_ctx *btsctx_alloc(uint16_t bvci, uint16_t nsei)
 }
 
 /* Chapter 10.4.5: Flow Control BVC ACK */
-static int bssgp_tx_fc_bvc_ack(uint16_t nsei, uint8_t tag, uint16_t ns_bvci)
+static int bssgp_tx_fc_bvc_ack(struct gprs_ns_inst *nsi, uint16_t nsei,
+			       uint8_t tag, uint16_t ns_bvci)
 {
 	struct msgb *msg = bssgp_msgb_alloc();
 	struct bssgp_normal_hdr *bgph =
@@ -121,12 +122,13 @@ static int bssgp_tx_fc_bvc_ack(uint16_t nsei, uint8_t tag, uint16_t ns_bvci)
 	bgph->pdu_type = BSSGP_PDUT_FLOW_CONTROL_BVC_ACK;
 	msgb_tvlv_put(msg, BSSGP_IE_TAG, 1, &tag);
 
-	return gprs_ns_sendmsg(bssgp_nsi, msg);
+	return gprs_ns_sendmsg(nsi, msg);
 }
 
 /* 10.3.7 SUSPEND-ACK PDU */
-int bssgp_tx_suspend_ack(uint16_t nsei, uint32_t tlli,
-			 const struct gprs_ra_id *ra_id, uint8_t suspend_ref)
+int bssgp_tx_suspend_ack(struct gprs_ns_inst *nsi, uint16_t nsei,
+			 uint32_t tlli, const struct gprs_ra_id *ra_id,
+			 uint8_t suspend_ref)
 {
 	struct msgb *msg = bssgp_msgb_alloc();
 	struct bssgp_normal_hdr *bgph =
@@ -144,12 +146,12 @@ int bssgp_tx_suspend_ack(uint16_t nsei, uint32_t tlli,
 	msgb_tvlv_put(msg, BSSGP_IE_ROUTEING_AREA, 6, ra);
 	msgb_tvlv_put(msg, BSSGP_IE_SUSPEND_REF_NR, 1, &suspend_ref);
 
-	return gprs_ns_sendmsg(bssgp_nsi, msg);
+	return gprs_ns_sendmsg(nsi, msg);
 }
 
 /* 10.3.8 SUSPEND-NACK PDU */
-int bssgp_tx_suspend_nack(uint16_t nsei, uint32_t tlli,
-			  const struct gprs_ra_id *ra_id,
+int bssgp_tx_suspend_nack(struct gprs_ns_inst *nsi, uint16_t nsei,
+			  uint32_t tlli, const struct gprs_ra_id *ra_id,
 			  uint8_t *cause)
 {
 	struct msgb *msg = bssgp_msgb_alloc();
@@ -169,12 +171,12 @@ int bssgp_tx_suspend_nack(uint16_t nsei, uint32_t tlli,
 	if (cause)
 		msgb_tvlv_put(msg, BSSGP_IE_CAUSE, 1, cause);
 
-	return gprs_ns_sendmsg(bssgp_nsi, msg);
+	return gprs_ns_sendmsg(nsi, msg);
 }
 
 /* 10.3.10 RESUME-ACK PDU */
-int bssgp_tx_resume_ack(uint16_t nsei, uint32_t tlli,
-			const struct gprs_ra_id *ra_id)
+int bssgp_tx_resume_ack(struct gprs_ns_inst *nsi, uint16_t nsei,
+			uint32_t tlli, const struct gprs_ra_id *ra_id)
 {
 	struct msgb *msg = bssgp_msgb_alloc();
 	struct bssgp_normal_hdr *bgph =
@@ -191,12 +193,13 @@ int bssgp_tx_resume_ack(uint16_t nsei, uint32_t tlli,
 	gsm48_construct_ra(ra, ra_id);
 	msgb_tvlv_put(msg, BSSGP_IE_ROUTEING_AREA, 6, ra);
 
-	return gprs_ns_sendmsg(bssgp_nsi, msg);
+	return gprs_ns_sendmsg(nsi, msg);
 }
 
 /* 10.3.11 RESUME-NACK PDU */
-int bssgp_tx_resume_nack(uint16_t nsei, uint32_t tlli,
-			 const struct gprs_ra_id *ra_id, uint8_t *cause)
+int bssgp_tx_resume_nack(struct gprs_ns_inst *nsi, uint16_t nsei,
+			 uint32_t tlli, const struct gprs_ra_id *ra_id,
+			 uint8_t *cause)
 {
 	struct msgb *msg = bssgp_msgb_alloc();
 	struct bssgp_normal_hdr *bgph =
@@ -215,7 +218,7 @@ int bssgp_tx_resume_nack(uint16_t nsei, uint32_t tlli,
 	if (cause)
 		msgb_tvlv_put(msg, BSSGP_IE_CAUSE, 1, cause);
 
-	return gprs_ns_sendmsg(bssgp_nsi, msg);
+	return gprs_ns_sendmsg(nsi, msg);
 }
 
 uint16_t bssgp_parse_cell_id(struct gprs_ra_id *raid, const uint8_t *buf)
@@ -242,6 +245,7 @@ int bssgp_create_cell_id(uint8_t *buf, const struct gprs_ra_id *raid,
 static int bssgp_rx_bvc_reset(struct msgb *msg, struct tlv_parsed *tp,	
 			      uint16_t ns_bvci)
 {
+	struct gprs_ns_inst *nsi = msg->dst;
 	struct osmo_bssgp_prim nmp;
 	struct bssgp_bvc_ctx *bctx;
 	uint16_t nsei = msgb_nsei(msg);
@@ -281,18 +285,20 @@ static int bssgp_rx_bvc_reset(struct msgb *msg, struct tlv_parsed *tp,
 	nmp.bvci = bvci;
 	nmp.tp = tp;
 	nmp.ra_id = &bctx->ra_id;
+	nmp.nsi = nsi;
 	osmo_prim_init(&nmp.oph, SAP_BSSGP_NM, PRIM_NM_BVC_RESET,
 			PRIM_OP_INDICATION, msg);
 	bssgp_prim_cb(&nmp.oph, NULL);
 
 	/* Acknowledge the RESET to the BTS */
-	bssgp_tx_simple_bvci(BSSGP_PDUT_BVC_RESET_ACK,
+	bssgp_tx_simple_bvci(nsi, BSSGP_PDUT_BVC_RESET_ACK,
 			     nsei, bvci, ns_bvci);
 	return 0;
 }
 
 static int bssgp_rx_bvc_block(struct msgb *msg, struct tlv_parsed *tp)
 {
+	struct gprs_ns_inst *nsi = msg->dst;
 	struct osmo_bssgp_prim nmp;
 	uint16_t bvci;
 	struct bssgp_bvc_ctx *ptp_ctx;
@@ -310,7 +316,7 @@ static int bssgp_rx_bvc_block(struct msgb *msg, struct tlv_parsed *tp)
 
 	ptp_ctx = btsctx_by_bvci_nsei(bvci, msgb_nsei(msg));
 	if (!ptp_ctx)
-		return bssgp_tx_status(BSSGP_CAUSE_UNKNOWN_BVCI, &bvci, msg);
+		return bssgp_tx_status(nsi, BSSGP_CAUSE_UNKNOWN_BVCI, &bvci, msg);
 
 	ptp_ctx->state |= BVC_S_BLOCKED;
 	rate_ctr_inc(&ptp_ctx->ctrg->ctr[BSSGP_CTR_BLOCKED]);
@@ -320,17 +326,19 @@ static int bssgp_rx_bvc_block(struct msgb *msg, struct tlv_parsed *tp)
 	nmp.nsei = msgb_nsei(msg);
 	nmp.bvci = bvci;
 	nmp.tp = tp;
+	nmp.nsi = nsi;
 	osmo_prim_init(&nmp.oph, SAP_BSSGP_NM, PRIM_NM_BVC_BLOCK,
 			PRIM_OP_INDICATION, msg);
 	bssgp_prim_cb(&nmp.oph, NULL);
 
 	/* We always acknowledge the BLOCKing */
-	return bssgp_tx_simple_bvci(BSSGP_PDUT_BVC_BLOCK_ACK, msgb_nsei(msg),
+	return bssgp_tx_simple_bvci(nsi, BSSGP_PDUT_BVC_BLOCK_ACK, msgb_nsei(msg),
 				    bvci, msgb_bvci(msg));
 };
 
 static int bssgp_rx_bvc_unblock(struct msgb *msg, struct tlv_parsed *tp)
 {
+	struct gprs_ns_inst *nsi = msg->dst;
 	struct osmo_bssgp_prim nmp;
 	uint16_t bvci;
 	struct bssgp_bvc_ctx *ptp_ctx;
@@ -348,7 +356,7 @@ static int bssgp_rx_bvc_unblock(struct msgb *msg, struct tlv_parsed *tp)
 
 	ptp_ctx = btsctx_by_bvci_nsei(bvci, msgb_nsei(msg));
 	if (!ptp_ctx)
-		return bssgp_tx_status(BSSGP_CAUSE_UNKNOWN_BVCI, &bvci, msg);
+		return bssgp_tx_status(nsi, BSSGP_CAUSE_UNKNOWN_BVCI, &bvci, msg);
 
 	ptp_ctx->state &= ~BVC_S_BLOCKED;
 
@@ -357,12 +365,13 @@ static int bssgp_rx_bvc_unblock(struct msgb *msg, struct tlv_parsed *tp)
 	nmp.nsei = msgb_nsei(msg);
 	nmp.bvci = bvci;
 	nmp.tp = tp;
+	nmp.nsi = nsi;
 	osmo_prim_init(&nmp.oph, SAP_BSSGP_NM, PRIM_NM_BVC_UNBLOCK,
 			PRIM_OP_INDICATION, msg);
 	bssgp_prim_cb(&nmp.oph, NULL);
 
 	/* We always acknowledge the unBLOCKing */
-	return bssgp_tx_simple_bvci(BSSGP_PDUT_BVC_UNBLOCK_ACK, msgb_nsei(msg),
+	return bssgp_tx_simple_bvci(nsi, BSSGP_PDUT_BVC_UNBLOCK_ACK, msgb_nsei(msg),
 				    bvci, msgb_bvci(msg));
 };
 
@@ -370,6 +379,7 @@ static int bssgp_rx_bvc_unblock(struct msgb *msg, struct tlv_parsed *tp)
 static int bssgp_rx_ul_ud(struct msgb *msg, struct tlv_parsed *tp,
 			  struct bssgp_bvc_ctx *ctx)
 {
+	struct gprs_ns_inst *nsi = msg->dst;
 	struct osmo_bssgp_prim gbp;
 	struct bssgp_ud_hdr *budh = (struct bssgp_ud_hdr *) msgb_bssgph(msg);
 
@@ -383,7 +393,7 @@ static int bssgp_rx_ul_ud(struct msgb *msg, struct tlv_parsed *tp,
 	    !TLVP_PRESENT(tp, BSSGP_IE_LLC_PDU)) {
 		LOGP(DBSSGP, LOGL_ERROR, "BSSGP TLLI=0x%08x Rx UL-UD "
 			"missing mandatory IE\n", msgb_tlli(msg));
-		return bssgp_tx_status(BSSGP_CAUSE_MISSING_MAND_IE, NULL, msg);
+		return bssgp_tx_status(ctx->nsi, BSSGP_CAUSE_MISSING_MAND_IE, NULL, msg);
 	}
 
 	/* store pointer to LLC header and CELL ID in msgb->cb */
@@ -396,6 +406,7 @@ static int bssgp_rx_ul_ud(struct msgb *msg, struct tlv_parsed *tp,
 	gbp.bvci = ctx->bvci;
 	gbp.tlli = msgb_tlli(msg);
 	gbp.tp = tp;
+	gbp.nsi = nsi;
 	osmo_prim_init(&gbp.oph, SAP_BSSGP_LL, PRIM_BSSGP_UL_UD,
 			PRIM_OP_INDICATION, msg);
 	return bssgp_prim_cb(&gbp.oph, NULL);
@@ -403,6 +414,7 @@ static int bssgp_rx_ul_ud(struct msgb *msg, struct tlv_parsed *tp,
 
 static int bssgp_rx_suspend(struct msgb *msg, struct tlv_parsed *tp)
 {
+	struct gprs_ns_inst *nsi = msg->dst;
 	struct osmo_bssgp_prim gbp;
 	struct gprs_ra_id raid;
 	uint32_t tlli;
@@ -413,7 +425,7 @@ static int bssgp_rx_suspend(struct msgb *msg, struct tlv_parsed *tp)
 	    !TLVP_PRESENT(tp, BSSGP_IE_ROUTEING_AREA)) {
 		LOGP(DBSSGP, LOGL_ERROR, "BSSGP BVCI=%u Rx SUSPEND "
 			"missing mandatory IE\n", ns_bvci);
-		return bssgp_tx_status(BSSGP_CAUSE_MISSING_MAND_IE, NULL, msg);
+		return bssgp_tx_status(nsi, BSSGP_CAUSE_MISSING_MAND_IE, NULL, msg);
 	}
 
 	tlli = ntohl(tlvp_val32_unal(tp, BSSGP_IE_TLLI));
@@ -429,20 +441,22 @@ static int bssgp_rx_suspend(struct msgb *msg, struct tlv_parsed *tp)
 	gbp.bvci = ns_bvci;
 	gbp.tlli = tlli;
 	gbp.ra_id = &raid;
+	gbp.nsi = nsi;
 	osmo_prim_init(&gbp.oph, SAP_BSSGP_GMM, PRIM_BSSGP_GMM_SUSPEND,
 			PRIM_OP_REQUEST, msg);
 
 	rc = bssgp_prim_cb(&gbp.oph, NULL);
 	if (rc < 0)
-		return bssgp_tx_suspend_nack(msgb_nsei(msg), tlli, &raid, NULL);
+		return bssgp_tx_suspend_nack(nsi, msgb_nsei(msg), tlli, &raid, NULL);
 
-	bssgp_tx_suspend_ack(msgb_nsei(msg), tlli, &raid, 0);
+	bssgp_tx_suspend_ack(nsi, msgb_nsei(msg), tlli, &raid, 0);
 
 	return 0;
 }
 
 static int bssgp_rx_resume(struct msgb *msg, struct tlv_parsed *tp)
 {
+	struct gprs_ns_inst *nsi = msg->dst;
 	struct osmo_bssgp_prim gbp;
 	struct gprs_ra_id raid;
 	uint32_t tlli;
@@ -455,7 +469,7 @@ static int bssgp_rx_resume(struct msgb *msg, struct tlv_parsed *tp)
 	    !TLVP_PRESENT(tp, BSSGP_IE_SUSPEND_REF_NR)) {
 		LOGP(DBSSGP, LOGL_ERROR, "BSSGP BVCI=%u Rx RESUME "
 			"missing mandatory IE\n", ns_bvci);
-		return bssgp_tx_status(BSSGP_CAUSE_MISSING_MAND_IE, NULL, msg);
+		return bssgp_tx_status(nsi, BSSGP_CAUSE_MISSING_MAND_IE, NULL, msg);
 	}
 
 	tlli = ntohl(tlvp_val32_unal(tp, BSSGP_IE_TLLI));
@@ -471,16 +485,17 @@ static int bssgp_rx_resume(struct msgb *msg, struct tlv_parsed *tp)
 	gbp.bvci = ns_bvci;
 	gbp.tlli = tlli;
 	gbp.ra_id = &raid;
+	gbp.nsi = nsi;
 	gbp.u.resume.suspend_ref = suspend_ref;
 	osmo_prim_init(&gbp.oph, SAP_BSSGP_GMM, PRIM_BSSGP_GMM_RESUME,
 			PRIM_OP_REQUEST, msg);
 
 	rc = bssgp_prim_cb(&gbp.oph, NULL);
 	if (rc < 0)
-		return bssgp_tx_resume_nack(msgb_nsei(msg), tlli, &raid,
-					    NULL);
+		return bssgp_tx_resume_nack(nsi, msgb_nsei(msg), tlli,
+					    &raid, NULL);
 
-	bssgp_tx_resume_ack(msgb_nsei(msg), tlli, &raid);
+	bssgp_tx_resume_ack(nsi, msgb_nsei(msg), tlli, &raid);
 	return 0;
 }
 
@@ -488,6 +503,7 @@ static int bssgp_rx_resume(struct msgb *msg, struct tlv_parsed *tp)
 static int bssgp_rx_llc_disc(struct msgb *msg, struct tlv_parsed *tp,
 			     struct bssgp_bvc_ctx *ctx)
 {
+	struct gprs_ns_inst *nsi = msg->dst;
 	struct osmo_bssgp_prim nmp;
 	uint32_t tlli = 0;
 
@@ -513,6 +529,7 @@ static int bssgp_rx_llc_disc(struct msgb *msg, struct tlv_parsed *tp,
 	nmp.bvci = ctx->bvci;
 	nmp.tlli = tlli;
 	nmp.tp = tp;
+	nmp.nsi = nsi;
 	osmo_prim_init(&nmp.oph, SAP_BSSGP_NM, PRIM_NM_LLC_DISCARDED,
 			PRIM_OP_INDICATION, msg);
 
@@ -522,6 +539,7 @@ static int bssgp_rx_llc_disc(struct msgb *msg, struct tlv_parsed *tp,
 int bssgp_rx_status(struct msgb *msg, struct tlv_parsed *tp,
 	uint16_t bvci, struct bssgp_bvc_ctx *bctx)
 {
+	struct gprs_ns_inst *nsi = msg->dst;
 	struct osmo_bssgp_prim nmp;
 	enum gprs_bssgp_cause cause;
 
@@ -552,6 +570,7 @@ int bssgp_rx_status(struct msgb *msg, struct tlv_parsed *tp,
 	nmp.nsei = msgb_nsei(msg);
 	nmp.bvci = bvci;
 	nmp.tp = tp;
+	nmp.nsi = nsi;
 	osmo_prim_init(&nmp.oph, SAP_BSSGP_NM, PRIM_NM_STATUS,
 			PRIM_OP_INDICATION, msg);
 
@@ -724,7 +743,8 @@ pass:
 static int _bssgp_tx_dl_ud(struct bssgp_flow_control *fc, struct msgb *msg,
 			   uint32_t llc_pdu_len, void *priv)
 {
-	return gprs_ns_sendmsg(bssgp_nsi, msg);
+	struct gprs_ns_inst *nsi = msg->dst;
+	return gprs_ns_sendmsg(nsi, msg);
 }
 
 /* input function of the flow control implementation, called first
@@ -803,7 +823,7 @@ static int bssgp_rx_fc_bvc(struct msgb *msg, struct tlv_parsed *tp,
 	    !TLVP_PRESENT(tp, BSSGP_IE_R_DEFAULT_MS)) {
 		LOGP(DBSSGP, LOGL_ERROR, "BSSGP BVCI=%u Rx FC BVC "
 			"missing mandatory IE\n", bctx->bvci);
-		return bssgp_tx_status(BSSGP_CAUSE_MISSING_MAND_IE, NULL, msg);
+		return bssgp_tx_status(bctx->nsi, BSSGP_CAUSE_MISSING_MAND_IE, NULL, msg);
 	}
 
 	/* 11.3.5 Bucket Size in 100 octets unit */
@@ -837,7 +857,7 @@ static int bssgp_rx_fc_bvc(struct msgb *msg, struct tlv_parsed *tp,
 	fc_queue_timer_cfg(bctx->fc);
 
 	/* Send FLOW_CONTROL_BVC_ACK */
-	return bssgp_tx_fc_bvc_ack(msgb_nsei(msg), *TLVP_VAL(tp, BSSGP_IE_TAG),
+	return bssgp_tx_fc_bvc_ack(msg->dst, msgb_nsei(msg), *TLVP_VAL(tp, BSSGP_IE_TAG),
 				   msgb_bvci(msg));
 }
 
@@ -857,7 +877,7 @@ static int bssgp_rx_ptp(struct msgb *msg, struct tlv_parsed *tp,
 	 * BVC Blocked) shall be sent to the peer entity on the signalling BVC */
 	if (bctx->state & BVC_S_BLOCKED) {
 		uint16_t bvci = msgb_bvci(msg);
-		return bssgp_tx_status(BSSGP_CAUSE_BVCI_BLOCKED, &bvci, msg);
+		return bssgp_tx_status(bctx->nsi, BSSGP_CAUSE_BVCI_BLOCKED, &bvci, msg);
 	}
 
 	switch (pdu_type) {
@@ -898,7 +918,7 @@ static int bssgp_rx_ptp(struct msgb *msg, struct tlv_parsed *tp,
 	case BSSGP_PDUT_DELETE_BSS_PFC_ACK:
 		DEBUGP(DBSSGP, "BSSGP BVCI=%u Rx PDU type %s not [yet] "
 		       "implemented\n", bctx->bvci, bssgp_pdu_str(pdu_type));
-		rc = bssgp_tx_status(BSSGP_CAUSE_PDU_INCOMP_FEAT, NULL, msg);
+		rc = bssgp_tx_status(bctx->nsi, BSSGP_CAUSE_PDU_INCOMP_FEAT, NULL, msg);
 		break;
 	/* those only exist in the SGSN -> BSS direction */
 	case BSSGP_PDUT_DL_UNITDATA:
@@ -909,13 +929,13 @@ static int bssgp_rx_ptp(struct msgb *msg, struct tlv_parsed *tp,
 	case BSSGP_PDUT_FLOW_CONTROL_MS_ACK:
 		DEBUGP(DBSSGP, "BSSGP BVCI=%u PDU type %s only exists in DL\n",
 		       bctx->bvci, bssgp_pdu_str(pdu_type));
-		bssgp_tx_status(BSSGP_CAUSE_PROTO_ERR_UNSPEC, NULL, msg);
+		bssgp_tx_status(bctx->nsi, BSSGP_CAUSE_PROTO_ERR_UNSPEC, NULL, msg);
 		rc = -EINVAL;
 		break;
 	default:
 		DEBUGP(DBSSGP, "BSSGP BVCI=%u PDU type %s unknown\n",
 		       bctx->bvci, bssgp_pdu_str(pdu_type));
-		rc = bssgp_tx_status(BSSGP_CAUSE_PROTO_ERR_UNSPEC, NULL, msg);
+		rc = bssgp_tx_status(bctx->nsi, BSSGP_CAUSE_PROTO_ERR_UNSPEC, NULL, msg);
 		break;
 	}
 
@@ -1001,24 +1021,25 @@ static int bssgp_rx_sign(struct msgb *msg, struct tlv_parsed *tp,
 	case BSSGP_PDUT_SGSN_INVOKE_TRACE:
 		DEBUGP(DBSSGP, "BSSGP BVCI=%u Rx PDU type %s only exists in DL\n",
 		       bvci, bssgp_pdu_str(pdu_type));
-		bssgp_tx_status(BSSGP_CAUSE_PROTO_ERR_UNSPEC, NULL, msg);
+		bssgp_tx_status(bctx->nsi, BSSGP_CAUSE_PROTO_ERR_UNSPEC, NULL, msg);
 		rc = -EINVAL;
 		break;
 	default:
 		DEBUGP(DBSSGP, "BSSGP BVCI=%u Rx PDU type %s unknown\n",
 			bvci, bssgp_pdu_str(pdu_type));
-		rc = bssgp_tx_status(BSSGP_CAUSE_PROTO_ERR_UNSPEC, NULL, msg);
+		rc = bssgp_tx_status(bctx->nsi, BSSGP_CAUSE_PROTO_ERR_UNSPEC, NULL, msg);
 		break;
 	}
 
 	return rc;
 err_mand_ie:
-	return bssgp_tx_status(BSSGP_CAUSE_MISSING_MAND_IE, NULL, msg);
+	return bssgp_tx_status(bctx->nsi, BSSGP_CAUSE_MISSING_MAND_IE, NULL, msg);
 }
 
 /* We expect msgb_bssgph() to point to the BSSGP header */
 int bssgp_rcvmsg(struct msgb *msg)
 {
+	struct gprs_ns_inst *nsi = msg->dst;
 	struct bssgp_normal_hdr *bgph =
 			(struct bssgp_normal_hdr *) msgb_bssgph(msg);
 	struct bssgp_ud_hdr *budh = (struct bssgp_ud_hdr *) msgb_bssgph(msg);
@@ -1029,6 +1050,8 @@ int bssgp_rcvmsg(struct msgb *msg)
 	uint16_t bvci = ns_bvci;
 	int data_len;
 	int rc = 0;
+
+	OSMO_ASSERT(nsi);
 
 	/* Identifiers from DOWN: NSEI, BVCI (both in msg->cb) */
 
@@ -1068,13 +1091,13 @@ int bssgp_rcvmsg(struct msgb *msg)
 		LOGP(DBSSGP, LOGL_NOTICE, "NSEI=%u/BVCI=%u Rejecting PDU "
 			"type %s for unknown BVCI\n", msgb_nsei(msg), bvci,
 			bssgp_pdu_str(pdu_type));
-		return bssgp_tx_status(BSSGP_CAUSE_UNKNOWN_BVCI, &bvci, msg);
+		return bssgp_tx_status(nsi, BSSGP_CAUSE_UNKNOWN_BVCI, &bvci, msg);
 	}
 
 	if (ns_bvci == BVCI_SIGNALLING)
 		rc = bssgp_rx_sign(msg, &tp, bctx);
 	else if (ns_bvci == BVCI_PTM)
-		rc = bssgp_tx_status(BSSGP_CAUSE_PDU_INCOMP_FEAT, NULL, msg);
+		rc = bssgp_tx_status(nsi, BSSGP_CAUSE_PDU_INCOMP_FEAT, NULL, msg);
 	else if (bctx)
 		rc = bssgp_rx_ptp(msg, &tp, bctx);
 	else
@@ -1183,8 +1206,8 @@ int bssgp_tx_dl_ud(struct msgb *msg, uint16_t pdu_lifetime,
 }
 
 /* Send a single GMM-PAGING.req to a given NSEI/NS-BVCI */
-int bssgp_tx_paging(uint16_t nsei, uint16_t ns_bvci,
-		     struct bssgp_paging_info *pinfo)
+int bssgp_tx_paging(struct gprs_ns_inst *nsi, uint16_t nsei,
+		    uint16_t ns_bvci, struct bssgp_paging_info *pinfo)
 {
 	struct msgb *msg = bssgp_msgb_alloc();
 	struct bssgp_normal_hdr *bgph =
@@ -1242,7 +1265,7 @@ int bssgp_tx_paging(uint16_t nsei, uint16_t ns_bvci,
 		msgb_tvlv_put(msg, BSSGP_IE_TMSI, 4, (uint8_t *) &ptmsi);
 	}
 
-	return gprs_ns_sendmsg(bssgp_nsi, msg);
+	return gprs_ns_sendmsg(nsi, msg);
 }
 
 void bssgp_set_log_ss(int ss)

@@ -16,10 +16,10 @@ struct msgb *bssgp_msgb_copy(const struct msgb *msg, const char *name);
 const char *bssgp_cause_str(enum gprs_bssgp_cause cause);
 const char *bssgp_pdu_str(enum bssgp_pdu_type pdu);
 /* Transmit a simple response such as BLOCK/UNBLOCK/RESET ACK/NACK */
-int bssgp_tx_simple_bvci(uint8_t pdu_type, uint16_t nsei,
+int bssgp_tx_simple_bvci(struct gprs_ns_inst *nsi, uint8_t pdu_type, uint16_t nsei,
 			 uint16_t bvci, uint16_t ns_bvci);
 /* Chapter 10.4.14: Status */
-int bssgp_tx_status(uint8_t cause, uint16_t *bvci, struct msgb *orig_msg);
+int bssgp_tx_status(struct gprs_ns_inst *nsi, uint8_t cause, uint16_t *bvci, struct msgb *orig_msg);
 
 enum bssgp_prim {
 	PRIM_BSSGP_DL_UD,
@@ -45,6 +45,7 @@ struct osmo_bssgp_prim {
 	uint16_t nsei;
 	uint16_t bvci;
 	uint32_t tlli;
+	struct gprs_ns_inst *nsi;
 	struct tlv_parsed *tp;
 	struct gprs_ra_id *ra_id;
 
@@ -86,6 +87,7 @@ struct bssgp_bvc_ctx {
 	struct gprs_ra_id ra_id; /*!< parsed RA ID of the remote BTS */
 	uint16_t cell_id; /*!< Cell ID of the remote BTS */
 
+	struct gprs_ns_inst *nsi;
 	/* NSEI and BVCI of underlying Gb link.  Together they
 	 * uniquely identify a link to a BTS (5.4.4) */
 	uint16_t bvci;
@@ -185,8 +187,8 @@ struct bssgp_paging_info {
 };
 
 /* Send a single GMM-PAGING.req to a given NSEI/NS-BVCI */
-int bssgp_tx_paging(uint16_t nsei, uint16_t ns_bvci,
-		    struct bssgp_paging_info *pinfo);
+int bssgp_tx_paging(struct gprs_ns_inst *nsi, uint16_t nsei,
+		    uint16_t ns_bvci, struct bssgp_paging_info *pinfo);
 
 void bssgp_fc_init(struct bssgp_flow_control *fc,
 		   uint32_t bucket_size_max, uint32_t bucket_leak_rate,

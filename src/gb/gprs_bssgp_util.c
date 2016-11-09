@@ -32,8 +32,6 @@
 
 #include "common_vty.h"
 
-struct gprs_ns_inst *bssgp_nsi;
-
 /* BSSGP Protocol specific, not implementation specific */
 /* FIXME: This needs to go into libosmocore after finished */
 
@@ -156,8 +154,8 @@ struct msgb *bssgp_msgb_copy(const struct msgb *msg, const char *name)
 }
 
 /* Transmit a simple response such as BLOCK/UNBLOCK/RESET ACK/NACK */
-int bssgp_tx_simple_bvci(uint8_t pdu_type, uint16_t nsei,
-			 uint16_t bvci, uint16_t ns_bvci)
+int bssgp_tx_simple_bvci(struct gprs_ns_inst *nsi, uint8_t pdu_type,
+			 uint16_t nsei, uint16_t bvci, uint16_t ns_bvci)
 {
 	struct msgb *msg = bssgp_msgb_alloc();
 	struct bssgp_normal_hdr *bgph =
@@ -171,11 +169,12 @@ int bssgp_tx_simple_bvci(uint8_t pdu_type, uint16_t nsei,
 	_bvci = htons(bvci);
 	msgb_tvlv_put(msg, BSSGP_IE_BVCI, 2, (uint8_t *) &_bvci);
 
-	return gprs_ns_sendmsg(bssgp_nsi, msg);
+	return gprs_ns_sendmsg(nsi, msg);
 }
 
 /* Chapter 10.4.14: Status */
-int bssgp_tx_status(uint8_t cause, uint16_t *bvci, struct msgb *orig_msg)
+int bssgp_tx_status(struct gprs_ns_inst *nsi, uint8_t cause,
+		    uint16_t *bvci, struct msgb *orig_msg)
 {
 	struct msgb *msg = bssgp_msgb_alloc();
 	struct bssgp_normal_hdr *bgph =
@@ -209,5 +208,5 @@ int bssgp_tx_status(uint8_t cause, uint16_t *bvci, struct msgb *orig_msg)
 	msgb_tvlv_put(msg, BSSGP_IE_PDU_IN_ERROR,
 		      msgb_bssgp_len(orig_msg), msgb_bssgph(orig_msg));
 
-	return gprs_ns_sendmsg(bssgp_nsi, msg);
+	return gprs_ns_sendmsg(nsi, msg);
 }
