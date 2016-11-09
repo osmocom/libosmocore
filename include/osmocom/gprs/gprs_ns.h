@@ -187,7 +187,7 @@ struct gprs_nsvc *gprs_nsvc_by_nsvci(struct gprs_ns_inst *nsi, uint16_t nsvci);
 int gprs_nsvc_reset(struct gprs_nsvc *nsvc, uint8_t cause);
 
 /* Add NS-specific VTY stuff */
-int gprs_ns_vty_init(struct gprs_ns_inst *nsi);
+int gprs_ns_vty_init(void);
 
 /* Resturn peer info as string (NOTE: the buffer is allocated statically) */
 const char *gprs_ns_ll_str(struct gprs_nsvc *nsvc);

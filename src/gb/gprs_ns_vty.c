@@ -643,7 +643,7 @@ DEFUN(logging_fltr_nsvc,
 	return CMD_SUCCESS;
 }
 
-int gprs_ns_vty_init(struct gprs_ns_inst *nsi)
+int gprs_ns_vty_init(void)
 {
 	install_element_ve(&show_ns_cmd);
 	install_element_ve(&show_ns_stats_cmd);
