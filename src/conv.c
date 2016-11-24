@@ -238,6 +238,11 @@ osmo_conv_encode(const struct osmo_conv_code *code,
 
 #define MAX_AE 0x00ffffff
 
+/* Forward declaration for accerlated decoding with certain codes */
+int
+osmo_conv_decode_acc(const struct osmo_conv_code *code,
+                     const sbit_t *input, ubit_t *output);
+
 void
 osmo_conv_decode_init(struct osmo_conv_decoder *decoder,
                       const struct osmo_conv_code *code, int len, int start_state)
@@ -605,6 +610,10 @@ osmo_conv_decode(const struct osmo_conv_code *code,
 {
 	struct osmo_conv_decoder decoder;
 	int rv, l;
+
+	/* Use accelerated implementation for supported codes */
+	if ((code->N <= 4) && ((code->K == 5) || (code->K == 7)))
+		return osmo_conv_decode_acc(code, input, output);
 
 	osmo_conv_decode_init(&decoder, code, 0, 0);
 

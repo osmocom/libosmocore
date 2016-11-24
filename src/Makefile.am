@@ -16,7 +16,8 @@ libosmocore_la_SOURCES = timer.c timer_gettimeofday.c select.c signal.c msgb.c b
 			 gsmtap_util.c crc16.c panic.c backtrace.c \
 			 conv.c application.c rbtree.c strrb.c \
 			 loggingrb.c crc8gen.c crc16gen.c crc32gen.c crc64gen.c \
-			 macaddr.c stat_item.c stats.c stats_statsd.c prim.c
+			 macaddr.c stat_item.c stats.c stats_statsd.c prim.c \
+			 viterbi.c viterbi_gen.c
 
 BUILT_SOURCES = crc8gen.c crc16gen.c crc32gen.c crc64gen.c
 
