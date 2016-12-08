@@ -556,11 +556,6 @@ static void lapd_t200_cb(void *data)
 	case LAPD_STATE_SABM_SENT:
 		/* 5.4.1.3 */
 		if (dl->retrans_ctr + 1 >= dl->n200_est_rel + 1) {
-			/* send RELEASE INDICATION to L3 */
-			send_dl_simple(PRIM_DL_REL, PRIM_OP_INDICATION,
-				&dl->lctx);
-			/* send MDL ERROR INIDCATION to L3 */
-			mdl_error(MDL_CAUSE_T200_EXPIRED, &dl->lctx);
 			/* flush tx and send buffers */
 			lapd_dl_flush_tx(dl);
 			lapd_dl_flush_send(dl);
@@ -569,6 +564,11 @@ static void lapd_t200_cb(void *data)
 			/* NOTE: we must not change any other states or buffers
 			 * and queues, since we may reconnect after handover
 			 * failure. the buffered messages is replaced there */
+			/* send RELEASE INDICATION to L3 */
+			send_dl_simple(PRIM_DL_REL, PRIM_OP_INDICATION,
+				&dl->lctx);
+			/* send MDL ERROR INIDCATION to L3 */
+			mdl_error(MDL_CAUSE_T200_EXPIRED, &dl->lctx);
 			break;
 		}
 		/* retransmit SABM command */
