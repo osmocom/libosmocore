@@ -1,6 +1,7 @@
 #pragma once
 
 #include <osmocom/core/linuxlist.h>
+#include <stdbool.h>
 
 /*! \defgroup select Select loop abstraction
  *  @{
@@ -35,6 +36,7 @@ struct osmo_fd {
 	unsigned int priv_nr;
 };
 
+bool osmo_fd_is_registered(struct osmo_fd *fd);
 int osmo_fd_register(struct osmo_fd *fd);
 void osmo_fd_unregister(struct osmo_fd *fd);
 int osmo_select_main(int polling);

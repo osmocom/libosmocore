@@ -23,6 +23,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 #include <sys/select.h>
 
 #include <osmocom/core/select.h>
@@ -44,6 +45,23 @@
 static int maxfd = 0;
 static LLIST_HEAD(osmo_fds);
 static int unregistered_count;
+
+
+/*! \brief Check if a file descriptor is already registered
+ *  \param[in] fd osmocom file descriptor to be checked
+ *  \returns true if registered; otherwise false
+ */
+bool osmo_fd_is_registered(struct osmo_fd *fd)
+{
+	struct osmo_fd *entry;
+	llist_for_each_entry(entry, &osmo_fds, list) {
+		if (entry == fd) {
+			return true;
+		}
+	}
+
+	return false;
+}
 
 /*! \brief Register a new file descriptor with select loop abstraction
  *  \param[in] fd osmocom file descriptor to be registered
@@ -76,12 +94,9 @@ int osmo_fd_register(struct osmo_fd *fd)
 		maxfd = fd->fd;
 
 #ifdef BSC_FD_CHECK
-	struct osmo_fd *entry;
-	llist_for_each_entry(entry, &osmo_fds, list) {
-		if (entry == fd) {
-			fprintf(stderr, "Adding a osmo_fd that is already in the list.\n");
-			return 0;
-		}
+	if (osmo_fd_is_registered(fd)) {
+		fprintf(stderr, "Adding a osmo_fd that is already in the list.\n");
+		return 0;
 	}
 #endif
 
@@ -95,6 +110,9 @@ int osmo_fd_register(struct osmo_fd *fd)
  */
 void osmo_fd_unregister(struct osmo_fd *fd)
 {
+	/* Note: when fd is inside the osmo_fds list (not registered before)
+	 * this function will crash! If in doubt, check file descriptor with
+	 * osmo_fd_is_registered() */
 	unregistered_count++;
 	llist_del(&fd->list);
 }
