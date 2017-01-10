@@ -351,6 +351,22 @@ static inline void llist_splice_init(struct llist_head *llist,
 	for ((pos) = (pos)->next, prefetch((pos)->next); (pos) != (head); \
         	(pos) = (pos)->next, ({ smp_read_barrier_depends(); 0;}), prefetch((pos)->next))
 
+/*! \brief count nr of llist items by iterating.
+ *  \param head The llist head to count items of.
+ *  \returns Number of items.
+ *
+ * This function is not efficient, mostly useful for small lists and non time
+ * critical cases like unit tests.
+ */
+static inline unsigned int llist_count(struct llist_head *head)
+{
+	struct llist_head *entry;
+	unsigned int i = 0;
+	llist_for_each(entry, head)
+		i++;
+	return i;
+}
+
 /*!
  *  }@
  */
