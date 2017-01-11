@@ -187,4 +187,28 @@ static int verify_##cmdname(struct ctrl_cmd *cmd, const char *value, void *data)
 }									\
 CTRL_CMD_DEFINE_STRUCT(cmdname, cmdstr, verify_##cmdname)
 
+#define CTRL_CMD_DEFINE_WO(cmdname, cmdstr)					\
+static int set_##cmdname(struct ctrl_cmd *cmd, void *data);			\
+static int get_##cmdname(struct ctrl_cmd *cmd, void *data)			\
+{										\
+	cmd->reply = "Write Only attribute";					\
+	return CTRL_CMD_ERROR;							\
+}										\
+static int verify_##cmdname(struct ctrl_cmd *cmd, const char *val, void *data);	\
+CTRL_CMD_DEFINE_STRUCT(cmdname, cmdstr, verify_##cmdname)
+
+
+#define CTRL_CMD_DEFINE_WO_NOVRF(cmdname, cmdstr)				\
+static int set_##cmdname(struct ctrl_cmd *cmd, void *data);			\
+static int get_##cmdname(struct ctrl_cmd *cmd, void *data)			\
+{										\
+	cmd->reply = "Write Only attribute";					\
+	return CTRL_CMD_ERROR;							\
+}										\
+static int verify_##cmdname(struct ctrl_cmd *cmd, const char *val, void *data)	\
+{					      					\
+	return 0;								\
+}										\
+CTRL_CMD_DEFINE_STRUCT(cmdname, cmdstr, verify_##cmdname)
+
 struct gsm_network;
