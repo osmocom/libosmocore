@@ -275,6 +275,8 @@ enum abis_mm_event_causes {
 	OSMO_EVT_MIN_PAG_TAB_FULL	= 0x0401,
 	/* Warning causes */
 	OSMO_EVT_WARN_SW_WARN		= 0x0001,
+	/* External causes */
+	OSMO_EVT_EXT_ALARM		= 0xfeed,
 };
 
 extern const struct value_string abis_mm_event_cause_names[];

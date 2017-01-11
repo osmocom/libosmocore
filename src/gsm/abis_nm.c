@@ -161,6 +161,7 @@ const struct value_string abis_mm_event_cause_names[] = {
 	{ OSMO_EVT_MAJ_NET_CONGEST,	"Network congestion" },
 	{ OSMO_EVT_MIN_PAG_TAB_FULL,	"Paging table full" },
 	{ OSMO_EVT_WARN_SW_WARN,	"Software warning" },
+	{ OSMO_EVT_EXT_ALARM,		"External alarm" },
 	{ 0, NULL }
 };
 
