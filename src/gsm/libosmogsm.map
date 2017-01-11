@@ -26,7 +26,7 @@ abis_nm_sw_load_msgs;
 abis_nm_test_name;
 abis_nm_osmo_magic;
 abis_nm_ipa_magic;
-abis_nm_event_cause_names;
+abis_mm_event_cause_names;
 abis_nm_pcause_type_names;
 
 osmo_sitype_strs;
