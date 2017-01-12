@@ -35,6 +35,6 @@ EXTRA_DIST = libosmogsm.map
 
 # Convolutional codes generation
 gsm0503_conv.c:
-	$(AM_V_GEN)python2 $(top_srcdir)/utils/conv_gen.py
+	$(AM_V_GEN)python2 $(top_srcdir)/utils/conv_gen.py gen_codes gsm
 
 CLEANFILES = gsm0503_conv.c

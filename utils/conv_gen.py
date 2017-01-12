@@ -23,7 +23,7 @@ mod_license = """
  */
 """
 
-import sys, os, math
+import sys, os, math, argparse
 from functools import reduce
 import conv_codes_gsm
 
@@ -254,12 +254,14 @@ def print_shared(fi, shared_polys):
 		code = ConvolutionalCode(0, polys, name = name)
 		code.print_state_and_output(fi)
 
-def generate_codes(codes, path, prefix):
+def generate_codes(codes, path, prefix, name):
 	# Open a new file for writing
-	f = open(os.path.join(path, prefix + "_conv.c"), 'w')
+	f = open(os.path.join(path, name), 'w')
 	f.write(mod_license + "\n")
 	f.write("#include <stdint.h>\n")
 	f.write("#include <osmocom/core/conv.h>\n\n")
+
+	sys.stderr.write("Generating convolutional codes...\n")
 
 	# Print shared tables first
 	if hasattr(codes, "shared_polys"):
@@ -279,12 +281,40 @@ def generate_codes(codes, path, prefix):
 
 		code.gen_tables(prefix, f, shared_tables = shared)
 
+def parse_argv():
+	parser = argparse.ArgumentParser()
+
+	# Positional arguments
+	parser.add_argument("action",
+		help = "what to generate",
+		choices = ["gen_codes"])
+	parser.add_argument("family",
+		help = "convolutional code family",
+		choices = ["gsm"])
+
+	# Optional arguments
+	parser.add_argument("-p", "--prefix",
+		help = "internal naming prefix")
+	parser.add_argument("-n", "--target-name",
+		help = "target name for generated file")
+	parser.add_argument("-P", "--target-path",
+		help = "target path for generated file")
+
+	return parser.parse_args()
+
 if __name__ == '__main__':
-	path = sys.argv[1] if len(sys.argv) > 1 else os.getcwd()
+	# Parse and verify arguments
+	argv = parse_argv()
+	path = argv.target_path or os.getcwd()
 
-	sys.stderr.write("Generating convolutional codes...\n")
+	# Determine convolutional code family
+	if argv.family == "gsm":
+		codes = conv_codes_gsm
+		prefix = argv.prefix or "gsm0503"
 
-	# Generate GSM specific codes
-	generate_codes(conv_codes_gsm, path, "gsm0503")
+	# What to generate?
+	if argv.action == "gen_codes":
+		name = argv.target_name or prefix + "_conv.c"
+		generate_codes(codes, path, prefix, name)
 
 	sys.stderr.write("Generation complete.\n")
