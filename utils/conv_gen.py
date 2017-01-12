@@ -30,13 +30,16 @@ import conv_codes_gsm
 class ConvolutionalCode(object):
 
 	def __init__(self, block_len, polys, name,
-			description = None, puncture = [], term_type = None):
+			description = None, puncture = [], term_type = None,
+			vec_in = None, vec_out = None):
 		# Save simple params
 		self.block_len = block_len
 		self.k = 1
 		self.puncture = puncture
 		self.rate_inv = len(polys)
 		self.term_type = term_type
+		self.vec_in = vec_in
+		self.vec_out = vec_out
 
 		# Infos
 		self.name = name
@@ -226,6 +229,44 @@ class ConvolutionalCode(object):
 			fi.write("\t.puncture = %s_puncture,\n" % self.name)
 		fi.write("};\n\n")
 
+	def calc_out_len(self):
+		out_len = self.block_len * self.rate_inv
+
+		# By default CONV_TERM_FLUSH
+		if self.term_type is None:
+			out_len += self.rate_inv * (self.k - 1)
+
+		if len(self.puncture):
+			out_len -= len(self.puncture) - 1
+
+		return out_len
+
+	def gen_test_vector(self, fi, prefix):
+		code_name = "%s_%s" % (prefix, self.name)
+
+		fi.write("\t{\n")
+		fi.write("\t\t.name = \"%s\",\n" % code_name)
+		fi.write("\t\t.code = &%s,\n" % code_name)
+
+		fi.write("\t\t.in_len  = %d,\n" % self.block_len)
+		fi.write("\t\t.out_len = %d,\n" % self.calc_out_len())
+
+		# Print pre computed vectors if preset
+		if self.vec_in is not None and self.vec_out is not None:
+			fi.write("\t\t.has_vec = 1,\n")
+			fi.write("\t\t.vec_in  = {\n")
+			print_formatted(self.vec_in, "0x%02x, ", 8, fi, indent = "\t\t\t")
+			fi.write("\t\t},\n")
+			fi.write("\t\t.vec_out  = {\n")
+			print_formatted(self.vec_out, "0x%02x, ", 8, fi, indent = "\t\t\t")
+			fi.write("\t\t},\n")
+		else:
+			fi.write("\t\t.has_vec = 0,\n")
+			fi.write("\t\t.vec_in  = { },\n")
+			fi.write("\t\t.vec_out = { },\n")
+
+		fi.write("\t},\n")
+
 poly = lambda *args: sum([(1 << x) for x in args])
 
 def combine(src, sel, nb):
@@ -281,13 +322,41 @@ def generate_codes(codes, path, prefix, name):
 
 		code.gen_tables(prefix, f, shared_tables = shared)
 
+def generate_vectors(codes, path, prefix, name, inc = None):
+	# Open a new file for writing
+	f = open(os.path.join(path, name), 'w')
+	f.write(mod_license + "\n")
+
+	# Print includes
+	if inc is not None:
+		for item in inc:
+			f.write("%s\n" % item)
+	f.write("#include <osmocom/core/conv.h>\n")
+	f.write("#include \"conv.h\"\n\n")
+
+	sys.stderr.write("Generating test vectors...\n")
+
+	vec_count = len(codes.conv_codes)
+	f.write("const int %s_vectors_len = %d;\n\n"
+		% (prefix, vec_count))
+
+	f.write("const struct conv_test_vector %s_vectors[%d] = {\n"
+		% (prefix, vec_count))
+
+	# Generate the vectors one by one
+	for code in codes.conv_codes:
+		sys.stderr.write("Generate '%s' test vector\n" % code.name)
+		code.gen_test_vector(f, prefix)
+
+	f.write("};\n")
+
 def parse_argv():
 	parser = argparse.ArgumentParser()
 
 	# Positional arguments
 	parser.add_argument("action",
 		help = "what to generate",
-		choices = ["gen_codes"])
+		choices = ["gen_codes", "gen_vectors"])
 	parser.add_argument("family",
 		help = "convolutional code family",
 		choices = ["gsm"])
@@ -306,15 +375,20 @@ if __name__ == '__main__':
 	# Parse and verify arguments
 	argv = parse_argv()
 	path = argv.target_path or os.getcwd()
+	inc = None
 
 	# Determine convolutional code family
 	if argv.family == "gsm":
 		codes = conv_codes_gsm
 		prefix = argv.prefix or "gsm0503"
+		inc = [ "#include <osmocom/gsm/gsm0503.h>" ]
 
 	# What to generate?
 	if argv.action == "gen_codes":
 		name = argv.target_name or prefix + "_conv.c"
 		generate_codes(codes, path, prefix, name)
+	elif argv.action == "gen_vectors":
+		name = argv.target_name or prefix + "_test_vectors.c"
+		generate_vectors(codes, path, prefix, name, inc)
 
 	sys.stderr.write("Generation complete.\n")
