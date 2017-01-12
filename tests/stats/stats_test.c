@@ -27,6 +27,7 @@
 #include <osmocom/core/stats.h>
 
 #include <stdio.h>
+#include <inttypes.h>
 
 enum test_ctr {
 	TEST_A_CTR,
@@ -251,9 +252,9 @@ static int stats_reporter_test_send_counter(struct osmo_stats_reporter *srep,
 
 static int stats_reporter_test_send_item(struct osmo_stats_reporter *srep,
 	const struct osmo_stat_item_group *statg,
-	const struct osmo_stat_item_desc *desc, int value)
+	const struct osmo_stat_item_desc *desc, int64_t value)
 {
-	printf("  %s: item p=%s g=%s i=%u n=%s v=%d u=%s\n",
+	printf("  %s: item p=%s g=%s i=%u n=%s v=%"PRId64" u=%s\n",
 		srep->name,
 		srep->name_prefix ? srep->name_prefix : "",
 		statg->desc->group_name_prefix, statg->idx,
