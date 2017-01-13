@@ -10,6 +10,7 @@
 #include <stdint.h>
 #include <stdarg.h>
 #include <stdbool.h>
+#include <osmocom/core/defs.h>
 #include <osmocom/core/linuxlist.h>
 
 /*! \brief Maximum number of logging contexts */
@@ -25,18 +26,8 @@
  *  \param[in] fmt format string
  *  \param[in] args variable argument list
  */
-#define DEBUGP(ss, fmt, args...) \
-	do { \
-		if (log_check_level(ss, LOGL_DEBUG)) \
-			logp(ss, __BASE_FILE__, __LINE__, 0, fmt, ## args); \
-	} while(0)
-
-#define DEBUGPC(ss, fmt, args...) \
-	do { \
-		if (log_check_level(ss, LOGL_DEBUG)) \
-			logp(ss, __BASE_FILE__, __LINE__, 1, fmt, ## args); \
-	} while(0)
-
+#define DEBUGP(ss, fmt, args...) LOGP(ss, LOGL_DEBUG, fmt, ##args)
+#define DEBUGPC(ss, fmt, args...) LOGPC(ss, LOGL_DEBUG, fmt, ##args)
 #else
 #define DEBUGP(xss, fmt, args...)
 #define DEBUGPC(ss, fmt, args...)
@@ -46,7 +37,7 @@
 void osmo_vlogp(int subsys, int level, const char *file, int line,
 		int cont, const char *format, va_list ap);
 
-void logp(int subsys, const char *file, int line, int cont, const char *format, ...) __attribute__ ((format (printf, 5, 6)));
+void logp(int subsys, const char *file, int line, int cont, const char *format, ...) OSMO_DEPRECATED("Use DEBUGP* macros instead");
 
 /*! \brief Log a new message through the Osmocom logging framework
  *  \param[in] ss logging subsystem (e.g. \ref DLGLOBAL)
