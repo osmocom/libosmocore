@@ -597,6 +597,7 @@ enum gsm_phys_chan_config abis_nm_pchan4chcomb(uint8_t chcomb)
 
 /* this is just for compatibility reasons, it is now a macro */
 #undef abis_nm_debugp_foh
+OSMO_DEPRECATED("Use abis_nm_debugp_foh macro instead")
 void abis_nm_debugp_foh(int ss, struct abis_om_fom_hdr *foh)
 {
 	DEBUGP(ss, "OC=%s(%02x) INST=(%02x,%02x,%02x) ",
