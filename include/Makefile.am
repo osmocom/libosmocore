@@ -143,3 +143,9 @@ osmocom/core/bit%gen.h: osmocom/core/bitXXgen.h.tpl
 osmocom/core/crc%gen.h: osmocom/core/crcXXgen.h.tpl
 	$(AM_V_GEN)$(MKDIR_P) $(dir $@)
 	$(AM_V_GEN)sed -e's/XX/$*/g' $< > $@
+
+osmocom/gsm/gsm0503.h:
+	$(AM_V_GEN)python2 $(top_srcdir)/utils/conv_gen.py gen_header gsm \
+		--target-path $(top_srcdir)/include/osmocom/gsm/
+
+CLEANFILES = osmocom/gsm/gsm0503.h
