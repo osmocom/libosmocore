@@ -338,7 +338,6 @@ uint8_t *osmo_encode_big_endian(uint64_t value, size_t data_len)
 	osmo_store64be_ext(value, buf, data_len);
 	return buf;
 }
-/*! @} */
 
 /*! \brief Copy a C-string into a sized buffer
  *  \param[in] src source string
@@ -361,3 +360,5 @@ size_t osmo_strlcpy(char *dst, const char *src, size_t siz)
 	}
 	return ret;
 }
+
+/*! @} */
