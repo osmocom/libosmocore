@@ -168,6 +168,20 @@ class ConvolutionalCode(object):
 		# Up to 12 numbers should be placed per line
 		print_formatted(self.puncture, "%3d, ", 12, fi)
 
+	def print_description(self, fi, brief = False):
+		if brief is True:
+			fi.write("/*! \\brief ")
+			fi.write("structure describing %s\n"
+				% self.description[0])
+			for line in self.description[1:]:
+				fi.write(" * %s\n" % line)
+		else:
+			fi.write("/**\n")
+			for line in self.description:
+				fi.write(" * %s\n" % line)
+
+		fi.write(" */\n")
+
 	def print_state_and_output(self, fi):
 		pack = lambda n: \
 			sum([x << (self.rate_inv - i - 1) for i, x in enumerate(n)])
@@ -205,10 +219,7 @@ class ConvolutionalCode(object):
 
 		# Write description as a multi-line comment
 		if self.description is not None:
-			fi.write("/**\n")
-			for line in self.description:
-				fi.write(" * %s\n" % line)
-			fi.write(" */\n")
+			self.print_description(fi)
 
 		# Print a final convolutional code definition
 		fi.write("const struct osmo_conv_code %s_%s = {\n" % (pref, self.name))
@@ -350,13 +361,38 @@ def generate_vectors(codes, path, prefix, name, inc = None):
 
 	f.write("};\n")
 
+def generate_header(codes, path, prefix, name, description = None):
+	# Open a new file for writing
+	f = open(os.path.join(path, name), 'w')
+
+	# Print license and includes
+	f.write(mod_license + "\n")
+	f.write("#pragma once\n\n")
+	f.write("#include <stdint.h>\n")
+	f.write("#include <osmocom/core/conv.h>\n\n")
+
+	# Print general file description if preset
+	if description is not None:
+		f.write("/*! \\file %s.h\n" % prefix)
+		f.write(" * %s\n" % description)
+		f.write(" */\n\n")
+
+	sys.stderr.write("Generating header file...\n")
+
+	# Generate declarations one by one
+	for code in codes.conv_codes:
+		sys.stderr.write("Generate '%s' declaration\n" % code.name)
+		code.print_description(f, True)
+		f.write("extern const struct osmo_conv_code %s_%s;\n\n"
+			% (prefix, code.name))
+
 def parse_argv():
 	parser = argparse.ArgumentParser()
 
 	# Positional arguments
 	parser.add_argument("action",
 		help = "what to generate",
-		choices = ["gen_codes", "gen_vectors"])
+		choices = ["gen_codes", "gen_vectors", "gen_header"])
 	parser.add_argument("family",
 		help = "convolutional code family",
 		choices = ["gsm"])
@@ -390,5 +426,8 @@ if __name__ == '__main__':
 	elif argv.action == "gen_vectors":
 		name = argv.target_name or prefix + "_test_vectors.c"
 		generate_vectors(codes, path, prefix, name, inc)
+	elif argv.action == "gen_header":
+		name = argv.target_name or prefix + ".h"
+		generate_header(codes, path, prefix, name)
 
 	sys.stderr.write("Generation complete.\n")
