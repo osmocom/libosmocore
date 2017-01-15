@@ -5,6 +5,7 @@ LIBVERSION=0:0:0
 
 AM_CFLAGS = -Wall $(all_includes) -I$(top_srcdir)/include -I$(top_builddir)/include $(TALLOC_CFLAGS)
 
+if ENABLE_CTRL
 lib_LTLIBRARIES = libosmoctrl.la
 
 libosmoctrl_la_SOURCES = control_cmd.c control_if.c
@@ -17,4 +18,6 @@ libosmoctrl_la_LIBADD = \
 
 if ENABLE_VTY
 libosmoctrl_la_SOURCES += control_vty.c
+endif
+
 endif

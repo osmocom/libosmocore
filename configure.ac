@@ -185,6 +185,14 @@ AC_ARG_ENABLE(gb,
         [enable_gb=$enableval], [enable_gb="yes"])
 AM_CONDITIONAL(ENABLE_GB, test x"$enable_gb" = x"yes")
 
+AC_ARG_ENABLE(ctrl,
+        [AS_HELP_STRING(
+                [--disable-ctrl],
+                [Disable building CTRL library],
+        )],
+        [enable_ctrl=$enableval], [enable_ctrl="yes"])
+AM_CONDITIONAL(ENABLE_CTRL, test x"$enable_ctrl" = x"yes")
+
 AC_ARG_ENABLE(embedded,
 	[AS_HELP_STRING(
 		[--enable-embedded],
@@ -198,6 +206,7 @@ then
 	AM_CONDITIONAL(ENABLE_MSGFILE, false)
 	AM_CONDITIONAL(ENABLE_SERIAL, false)
 	AM_CONDITIONAL(ENABLE_VTY, false)
+	AM_CONDITIONAL(ENABLE_CTRL, false)
 	AM_CONDITIONAL(ENABLE_UTILITIES, false)
 	AM_CONDITIONAL(ENABLE_GB, false)
 	AC_DEFINE([PANIC_INFLOOP],[1],[Use infinite loop on panic rather than fprintf/abort])
