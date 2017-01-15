@@ -21,6 +21,7 @@
 #define OSMO_VALUE_STRING(x) { x, OSMO_STRINGIFY(x) }
 
 #include <stdint.h>
+#include <stdio.h>
 
 /*! \brief A mapping between human-readable string and numeric value */
 struct value_string {
