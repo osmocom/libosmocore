@@ -26,6 +26,8 @@
 
 /*! \file loggingrb.c */
 
+#include "config.h"
+
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
@@ -103,6 +105,8 @@ int osmo_get_macaddr(uint8_t *mac_out, const char *dev_name)
 
 #else
 
+#if (!EMBEDDED)
+
 #include <sys/ioctl.h>
 #include <net/if.h>
 #include <netinet/in.h>
@@ -134,6 +138,8 @@ int osmo_get_macaddr(uint8_t *mac_out, const char *dev_name)
 
 	return 0;
 }
+#endif /* !EMBEDDED */
+
 #endif
 
 /*! @} */

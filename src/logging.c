@@ -584,12 +584,14 @@ void log_set_category_filter(struct log_target *target, int category,
 	target->categories[category].loglevel = level;
 }
 
+#if (!EMBEDDED)
 static void _file_output(struct log_target *target, unsigned int level,
 			 const char *log)
 {
 	fprintf(target->tgt_file.out, "%s", log);
 	fflush(target->tgt_file.out);
 }
+#endif
 
 /*! \brief Create a new log target skeleton
  *  \returns dynamically-allocated log target
@@ -654,6 +656,7 @@ struct log_target *log_target_create_stderr(void)
 #endif /* stderr */
 }
 
+#if (!EMBEDDED)
 /*! \brief Create a new file-based log target
  *  \param[in] fname File name of the new log file
  *  \returns Log target in case of success, NULL otherwise
@@ -677,6 +680,7 @@ struct log_target *log_target_create_file(const char *fname)
 
 	return target;
 }
+#endif
 
 /*! \brief Find a registered log target
  *  \param[in] type Log target type
@@ -707,6 +711,7 @@ void log_target_destroy(struct log_target *target)
 	/* just in case, to make sure we don't have any references */
 	log_del_target(target);
 
+#if (!EMBEDDED)
 	if (target->output == &_file_output) {
 /* since C89/C99 says stderr is a macro, we can safely do this! */
 #ifdef stderr
@@ -718,6 +723,7 @@ void log_target_destroy(struct log_target *target)
 			target->tgt_file.out = NULL;
 		}
 	}
+#endif
 
 	talloc_free(target);
 }
