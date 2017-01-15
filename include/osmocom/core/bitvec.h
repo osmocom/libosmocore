@@ -41,7 +41,7 @@
  */
 
 #include <stdint.h>
-#include <talloc.h>
+#include <osmocom/core/talloc.h>
 #include <stdbool.h>
 
 /*! \brief A single GSM bit

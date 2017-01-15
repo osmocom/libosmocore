@@ -21,7 +21,7 @@
  */
 
 #include <stdlib.h>
-#include <talloc.h>
+#include <osmocom/core/talloc.h>
 #include <osmocom/ctrl/control_vty.h>
 #include <osmocom/vty/command.h>
 
