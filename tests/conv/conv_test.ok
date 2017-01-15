@@ -42,6 +42,14 @@
 [..] Encoding / Decoding cycle : OK
 [..] Encoding / Decoding cycle : OK
 
+[+] Testing: LTE PBCH (non-recursive, tail-biting, non-punctured)
+[.] Input length  : ret =  40  exp =  40 -> OK
+[.] Output length : ret = 120  exp = 120 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
 [+] Testing: ??? (non-recursive, direct truncation, not punctured)
 [.] Input length  : ret = 224  exp = 224 -> OK
 [.] Output length : ret = 448  exp = 448 -> OK
