@@ -209,6 +209,7 @@ then
 	AM_CONDITIONAL(ENABLE_CTRL, false)
 	AM_CONDITIONAL(ENABLE_UTILITIES, false)
 	AM_CONDITIONAL(ENABLE_GB, false)
+	AM_CONDITIONAL(ENABLE_PCSC, false)
 	AC_DEFINE([PANIC_INFLOOP],[1],[Use infinite loop on panic rather than fprintf/abort])
 fi
 
