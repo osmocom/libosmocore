@@ -21,6 +21,9 @@
  *
  */
 
+#include "config.h"
+#if !defined(EMBEDDED)
+
 #include <osmocom/core/stats.h>
 
 #include <string.h>
@@ -167,3 +170,4 @@ static int osmo_stats_reporter_statsd_send_item(struct osmo_stats_reporter *srep
 		statg->idx,
 		desc->name, value, unit);
 }
+#endif /* !EMBEDDED */

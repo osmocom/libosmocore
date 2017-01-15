@@ -19,7 +19,15 @@
  */
 #pragma once
 
+/* a bit of a crude way to disable building/using this on (bare iron)
+ * embedded systems.  We cannot use the autoconf-defined HAVE_... macros
+ * here, as that only works at library compile time, not at application
+ * compile time */
+#ifdef unix
+
 #include <sys/socket.h>
+#include <arpa/inet.h>
+
 #include <osmocom/core/linuxlist.h>
 
 #include <stdint.h>
@@ -119,3 +127,5 @@ int osmo_stats_reporter_send(struct osmo_stats_reporter *srep, const char *data,
 int osmo_stats_reporter_send_buffer(struct osmo_stats_reporter *srep);
 int osmo_stats_reporter_udp_open(struct osmo_stats_reporter *srep);
 int osmo_stats_reporter_udp_close(struct osmo_stats_reporter *srep);
+
+#endif /* unix */

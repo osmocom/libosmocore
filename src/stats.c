@@ -21,6 +21,9 @@
  *
  */
 
+#include "config.h"
+#if !defined(EMBEDDED)
+
 #include <osmocom/core/byteswap.h>
 #include <osmocom/core/stats.h>
 
@@ -30,9 +33,12 @@
 #include <errno.h>
 #include <stdio.h>
 #include <sys/types.h>
+
+#ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#endif
 
 #include <osmocom/core/utils.h>
 #include <osmocom/core/logging.h>
@@ -163,6 +169,8 @@ struct osmo_stats_reporter *osmo_stats_reporter_find(enum osmo_stats_reporter_ty
 	return NULL;
 }
 
+#ifdef HAVE_SYS_SOCKET_H
+
 int osmo_stats_reporter_set_remote_addr(struct osmo_stats_reporter *srep, const char *addr)
 {
 	int rc;
@@ -240,6 +248,7 @@ int osmo_stats_reporter_set_mtu(struct osmo_stats_reporter *srep, int mtu)
 
 	return update_srep_config(srep);
 }
+#endif /* HAVE_SYS_SOCKETS_H */
 
 int osmo_stats_reporter_set_max_class(struct osmo_stats_reporter *srep,
 	enum osmo_stats_class class_id)
@@ -288,6 +297,8 @@ int osmo_stats_reporter_disable(struct osmo_stats_reporter *srep)
 }
 
 /*** i/o helper functions ***/
+
+#ifdef HAVE_SYS_SOCKET_H
 
 int osmo_stats_reporter_udp_open(struct osmo_stats_reporter *srep)
 {
@@ -381,6 +392,7 @@ int osmo_stats_reporter_send_buffer(struct osmo_stats_reporter *srep)
 
 	return rc;
 }
+#endif /* HAVE_SYS_SOCKET_H */
 
 /*** log reporter ***/
 
@@ -611,3 +623,5 @@ int osmo_stats_report()
 
 	return 0;
 }
+
+#endif /* !EMBEDDED */
