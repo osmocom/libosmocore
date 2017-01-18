@@ -1,16 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <time.h>
 
-#include <osmocom/core/bits.h>
 #include <osmocom/core/conv.h>
-#include <osmocom/core/utils.h>
 #include <osmocom/gsm/gsm0503.h>
 
-#define MAX_LEN_BITS	512
-#define MAX_LEN_BYTES	(512/8)
-
+#include "conv.h"
 
 /* ------------------------------------------------------------------------ */
 /* Test codes                                                               */
@@ -172,38 +166,15 @@ const struct osmo_conv_code conv_lte_pbch = {
 };
 
 /* ------------------------------------------------------------------------ */
-/* Test vectors                                                             */
-/* ------------------------------------------------------------------------ */
-
-struct conv_test_vector {
-	const char *name;
-	const struct osmo_conv_code *code;
-	int in_len;
-	int out_len;
-	int has_vec;
-	pbit_t vec_in[MAX_LEN_BYTES];
-	pbit_t vec_out[MAX_LEN_BYTES];
-};
-
-/* ------------------------------------------------------------------------ */
 /* Main                                                                     */
 /* ------------------------------------------------------------------------ */
 
-static void
-fill_random(ubit_t *b, int n)
-{
-	int i;
-	for (i=0; i<n; i++)
-		b[i] = random() & 1;
-}
-
 int main(int argc, char *argv[])
 {
-	const struct conv_test_vector *tst;
-	ubit_t *bu0, *bu1;
-	sbit_t *bs;
+	const struct conv_test_vector *test;
+	int rc;
 
-/* Random code -> Non recursive code, direct truncation, non-punctured */
+	/* Random code -> Non recursive code, direct truncation, non-punctured */
 	const struct osmo_conv_code conv_trunc = {
 		.N = 2,
 		.K = 5,
@@ -300,126 +271,11 @@ int main(int argc, char *argv[])
 		{ /* end */ },
 	};
 
-	srandom(time(NULL));
-
-	bu0 = malloc(sizeof(ubit_t) * MAX_LEN_BITS);
-	bu1 = malloc(sizeof(ubit_t) * MAX_LEN_BITS);
-	bs  = malloc(sizeof(sbit_t) * MAX_LEN_BITS);
-
-	for (tst=tests; tst->name; tst++)
-	{
-		int i,l;
-
-		/* Test name */
-		printf("[+] Testing: %s\n", tst->name);
-
-		/* Check length */
-		l = osmo_conv_get_input_length(tst->code, 0);
-		printf("[.] Input length  : ret = %3d  exp = %3d -> %s\n",
-			l, tst->in_len, l == tst->in_len ? "OK" : "Bad !");
-
-		if (l != tst->in_len) {
-			fprintf(stderr, "[!] Failure for input length computation\n");
-			return -1;
-		}
-
-		l = osmo_conv_get_output_length(tst->code, 0);
-		printf("[.] Output length : ret = %3d  exp = %3d -> %s\n",
-			l, tst->out_len, l == tst->out_len ? "OK" : "Bad !");
-
-		if (l != tst->out_len) {
-			fprintf(stderr, "[!] Failure for output length computation\n");
-			return -1;
-		}
-
-		/* Check pre-computed vector */
-		if (tst->has_vec) {
-			printf("[.] Pre computed vector checks:\n");
-
-			printf("[..] Encoding: ");
-
-			osmo_pbit2ubit(bu0, tst->vec_in, tst->in_len);
-
-			l = osmo_conv_encode(tst->code, bu0, bu1);
-			if (l != tst->out_len) {
-				printf("ERROR !\n");
-				fprintf(stderr, "[!] Failed encoding length check\n");
-				return -1;
-			}
-
-			osmo_pbit2ubit(bu0, tst->vec_out, tst->out_len);
-
-			if (memcmp(bu0, bu1, tst->out_len)) {
-				printf("ERROR !\n");
-				fprintf(stderr, "[!] Failed encoding: Results don't match\n");
-				return -1;
-			};
-
-			printf("OK\n");
-
-
-			printf("[..] Decoding: ");
-
-			osmo_ubit2sbit(bs, bu0, l);
-
-			l = osmo_conv_decode(tst->code, bs, bu1);
-			if (l != 0) {
-				printf("ERROR !\n");
-				fprintf(stderr, "[!] Failed decoding: non-zero path (%d)\n", l);
-				return -1;
-			}
-
-			osmo_pbit2ubit(bu0, tst->vec_in, tst->in_len);
-
-			if (memcmp(bu0, bu1, tst->in_len)) {
-				printf("ERROR !\n");
-				fprintf(stderr, "[!] Failed decoding: Results don't match\n");
-				return -1;
-			}
-
-			printf("OK\n");
-		}
-
-		/* Check random vector */
-		printf("[.] Random vector checks:\n");
-
-		for (i=0; i<3; i++) {
-			printf("[..] Encoding / Decoding cycle : ");
-
-			fill_random(bu0, tst->in_len);
-
-			l = osmo_conv_encode(tst->code, bu0, bu1);
-			if (l != tst->out_len) {
-				printf("ERROR !\n");
-				fprintf(stderr, "[!] Failed encoding length check\n");
-				return -1;
-			}
-
-			osmo_ubit2sbit(bs, bu1, l);
-
-			l = osmo_conv_decode(tst->code, bs, bu1);
-			if (l != 0) {
-				printf("ERROR !\n");
-				fprintf(stderr, "[!] Failed decoding: non-zero path (%d)\n", l);
-				return -1;
-			}
-
-			if (memcmp(bu0, bu1, tst->in_len)) {
-				printf("ERROR !\n");
-				fprintf(stderr, "[!] Failed decoding: Results don't match\n");
-				return -1;
-			}
-
-			printf("OK\n");
-		}
-
-		/* Spacing */
-		printf("\n");
+	for (test = tests; test->name; test++) {
+		rc = do_check(test);
+		if (rc)
+			return rc;
 	}
-
-	free(bs);
-	free(bu1);
-	free(bu0);
 
 	return 0;
 }

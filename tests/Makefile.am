@@ -57,7 +57,7 @@ bitvec_bitvec_test_LDADD = $(top_builddir)/src/libosmocore.la
 bits_bitcomp_test_SOURCES = bits/bitcomp_test.c
 bits_bitcomp_test_LDADD = $(top_builddir)/src/libosmocore.la
 
-conv_conv_test_SOURCES = conv/conv_test.c
+conv_conv_test_SOURCES = conv/conv_test.c conv/conv.c
 conv_conv_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/gsm/libgsmint.la
 
 gsm0808_gsm0808_test_SOURCES = gsm0808/gsm0808_test.c
@@ -187,6 +187,7 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
 	     socket/socket_test.err
 
 DISTCLEANFILES = atconfig atlocal
+noinst_HEADERS = conv/conv.h
 
 TESTSUITE = $(srcdir)/testsuite
 
