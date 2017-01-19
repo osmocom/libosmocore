@@ -1,7 +1,7 @@
 #pragma once
 
-#define MAX_LEN_BITS	512
-#define MAX_LEN_BYTES	(512/8)
+#define MAX_LEN_BITS	2048
+#define MAX_LEN_BYTES	(2048 / 8)
 
 struct conv_test_vector {
 	const char *name;

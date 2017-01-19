@@ -51,6 +51,12 @@ cat $abs_srcdir/conv/conv_test.ok > expout
 AT_CHECK([$abs_top_builddir/tests/conv/conv_test], [0], [expout])
 AT_CLEANUP
 
+AT_SETUP([conv_gsm0503])
+AT_KEYWORDS([conv_gsm0503])
+cat $abs_srcdir/conv/conv_gsm0503_test.ok > expout
+AT_CHECK([$abs_top_builddir/tests/conv/conv_gsm0503_test], [0], [expout])
+AT_CLEANUP
+
 AT_SETUP([coding])
 AT_KEYWORDS([coding])
 cat $abs_srcdir/coding/coding_test.ok > expout

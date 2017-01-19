@@ -15,7 +15,8 @@ check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
 		 bitvec/bitvec_test msgb/msgb_test bits/bitcomp_test	\
 		 tlv/tlv_test gsup/gsup_test oap/oap_test fsm/fsm_test	\
 		 write_queue/wqueue_test socket/socket_test		\
-		 coding/coding_test abis/abis_test
+		 coding/coding_test conv/conv_gsm0503_test		\
+		 abis/abis_test
 
 if ENABLE_MSGFILE
 check_PROGRAMS += msgfile/msgfile_test
@@ -63,6 +64,10 @@ bits_bitcomp_test_LDADD = $(top_builddir)/src/libosmocore.la
 
 conv_conv_test_SOURCES = conv/conv_test.c conv/conv.c
 conv_conv_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/gsm/libgsmint.la
+
+conv_conv_gsm0503_test_SOURCES = conv/conv_gsm0503_test.c conv/conv.c conv/gsm0503_test_vectors.c
+conv_conv_gsm0503_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/gsm/libgsmint.la
+conv_conv_gsm0503_test_CPPFLAGS = $(AM_CPPFLAGS) -I$(top_srcdir)/tests/conv
 
 gsm0808_gsm0808_test_SOURCES = gsm0808/gsm0808_test.c
 gsm0808_gsm0808_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/gsm/libosmogsm.la
@@ -198,9 +203,11 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
 	     socket/socket_test.err coding/coding_test.ok		\
 	     osmo-auc-gen/osmo-auc-gen_test.sh				\
 	     osmo-auc-gen/osmo-auc-gen_test.ok				\
-	     osmo-auc-gen/osmo-auc-gen_test.err
+	     osmo-auc-gen/osmo-auc-gen_test.err				\
+	     conv/conv_gsm0503_test.ok
 
-DISTCLEANFILES = atconfig atlocal
+DISTCLEANFILES = atconfig atlocal conv/gsm0503_test_vectors.c
+BUILT_SOURCES = conv/gsm0503_test_vectors.c
 noinst_HEADERS = conv/conv.h
 
 TESTSUITE = $(srcdir)/testsuite
@@ -221,3 +228,7 @@ AUTOTEST = $(AUTOM4TE) --language=autotest
 $(TESTSUITE): $(srcdir)/testsuite.at $(srcdir)/package.m4
 	$(AUTOTEST) -I '$(srcdir)' -o $@.tmp $@.at
 	mv $@.tmp $@
+
+conv/gsm0503_test_vectors.c: $(top_srcdir)/utils/conv_gen.py $(top_srcdir)/utils/conv_codes_gsm.py
+	$(AM_V_GEN)python2 $(top_srcdir)/utils/conv_gen.py gen_vectors gsm \
+		--target-path $(builddir)/conv

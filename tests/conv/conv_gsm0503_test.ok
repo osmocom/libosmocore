@@ -1,0 +1,304 @@
+[+] Testing: gsm0503_xcch
+[.] Input length  : ret = 224  exp = 224 -> OK
+[.] Output length : ret = 456  exp = 456 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
+[+] Testing: gsm0503_rach
+[.] Input length  : ret =  14  exp =  14 -> OK
+[.] Output length : ret =  36  exp =  36 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
+[+] Testing: gsm0503_sch
+[.] Input length  : ret =  35  exp =  35 -> OK
+[.] Output length : ret =  78  exp =  78 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
+[+] Testing: gsm0503_cs2
+[.] Input length  : ret = 290  exp = 290 -> OK
+[.] Output length : ret = 456  exp = 456 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
+[+] Testing: gsm0503_cs3
+[.] Input length  : ret = 334  exp = 334 -> OK
+[.] Output length : ret = 456  exp = 456 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
+[+] Testing: gsm0503_cs2_np
+[.] Input length  : ret = 290  exp = 290 -> OK
+[.] Output length : ret = 588  exp = 588 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
+[+] Testing: gsm0503_cs3_np
+[.] Input length  : ret = 334  exp = 334 -> OK
+[.] Output length : ret = 676  exp = 676 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
+[+] Testing: gsm0503_tch_afs_12_2
+[.] Input length  : ret = 250  exp = 250 -> OK
+[.] Output length : ret = 448  exp = 448 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
+[+] Testing: gsm0503_tch_afs_10_2
+[.] Input length  : ret = 210  exp = 210 -> OK
+[.] Output length : ret = 448  exp = 448 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
+[+] Testing: gsm0503_tch_afs_7_95
+[.] Input length  : ret = 165  exp = 165 -> OK
+[.] Output length : ret = 448  exp = 448 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
+[+] Testing: gsm0503_tch_afs_7_4
+[.] Input length  : ret = 154  exp = 154 -> OK
+[.] Output length : ret = 448  exp = 448 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
+[+] Testing: gsm0503_tch_afs_6_7
+[.] Input length  : ret = 140  exp = 140 -> OK
+[.] Output length : ret = 448  exp = 448 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
+[+] Testing: gsm0503_tch_afs_5_9
+[.] Input length  : ret = 124  exp = 124 -> OK
+[.] Output length : ret = 448  exp = 448 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
+[+] Testing: gsm0503_tch_afs_5_15
+[.] Input length  : ret = 109  exp = 109 -> OK
+[.] Output length : ret = 448  exp = 448 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
+[+] Testing: gsm0503_tch_afs_4_75
+[.] Input length  : ret = 101  exp = 101 -> OK
+[.] Output length : ret = 448  exp = 448 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
+[+] Testing: gsm0503_tch_fr
+[.] Input length  : ret = 185  exp = 185 -> OK
+[.] Output length : ret = 378  exp = 378 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
+[+] Testing: gsm0503_tch_hr
+[.] Input length  : ret =  98  exp =  98 -> OK
+[.] Output length : ret = 211  exp = 211 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
+[+] Testing: gsm0503_tch_ahs_7_95
+[.] Input length  : ret = 129  exp = 129 -> OK
+[.] Output length : ret = 188  exp = 188 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
+[+] Testing: gsm0503_tch_ahs_7_4
+[.] Input length  : ret = 126  exp = 126 -> OK
+[.] Output length : ret = 196  exp = 196 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
+[+] Testing: gsm0503_tch_ahs_6_7
+[.] Input length  : ret = 116  exp = 116 -> OK
+[.] Output length : ret = 200  exp = 200 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
+[+] Testing: gsm0503_tch_ahs_5_9
+[.] Input length  : ret = 108  exp = 108 -> OK
+[.] Output length : ret = 208  exp = 208 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
+[+] Testing: gsm0503_tch_ahs_5_15
+[.] Input length  : ret =  97  exp =  97 -> OK
+[.] Output length : ret = 212  exp = 212 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
+[+] Testing: gsm0503_tch_ahs_4_75
+[.] Input length  : ret =  89  exp =  89 -> OK
+[.] Output length : ret = 212  exp = 212 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
+[+] Testing: gsm0503_mcs1_dl_hdr
+[.] Input length  : ret =  36  exp =  36 -> OK
+[.] Output length : ret = 108  exp = 108 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
+[+] Testing: gsm0503_mcs1_ul_hdr
+[.] Input length  : ret =  39  exp =  39 -> OK
+[.] Output length : ret = 117  exp = 117 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
+[+] Testing: gsm0503_mcs1
+[.] Input length  : ret = 190  exp = 190 -> OK
+[.] Output length : ret = 588  exp = 588 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
+[+] Testing: gsm0503_mcs2
+[.] Input length  : ret = 238  exp = 238 -> OK
+[.] Output length : ret = 732  exp = 732 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
+[+] Testing: gsm0503_mcs3
+[.] Input length  : ret = 310  exp = 310 -> OK
+[.] Output length : ret = 948  exp = 948 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
+[+] Testing: gsm0503_mcs4
+[.] Input length  : ret = 366  exp = 366 -> OK
+[.] Output length : ret = 1116  exp = 1116 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
+[+] Testing: gsm0503_mcs5_dl_hdr
+[.] Input length  : ret =  33  exp =  33 -> OK
+[.] Output length : ret =  99  exp =  99 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
+[+] Testing: gsm0503_mcs5_ul_hdr
+[.] Input length  : ret =  45  exp =  45 -> OK
+[.] Output length : ret = 135  exp = 135 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
+[+] Testing: gsm0503_mcs5
+[.] Input length  : ret = 462  exp = 462 -> OK
+[.] Output length : ret = 1404  exp = 1404 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
+[+] Testing: gsm0503_mcs6
+[.] Input length  : ret = 606  exp = 606 -> OK
+[.] Output length : ret = 1836  exp = 1836 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
+[+] Testing: gsm0503_mcs7_dl_hdr
+[.] Input length  : ret =  45  exp =  45 -> OK
+[.] Output length : ret = 135  exp = 135 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
+[+] Testing: gsm0503_mcs7_ul_hdr
+[.] Input length  : ret =  54  exp =  54 -> OK
+[.] Output length : ret = 162  exp = 162 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
+[+] Testing: gsm0503_mcs7
+[.] Input length  : ret = 462  exp = 462 -> OK
+[.] Output length : ret = 1404  exp = 1404 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
+[+] Testing: gsm0503_mcs8
+[.] Input length  : ret = 558  exp = 558 -> OK
+[.] Output length : ret = 1692  exp = 1692 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
+[+] Testing: gsm0503_mcs9
+[.] Input length  : ret = 606  exp = 606 -> OK
+[.] Output length : ret = 1836  exp = 1836 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+

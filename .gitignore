@@ -122,6 +122,7 @@ src/gsm/gsm0503_conv.c
 include/osmocom/core/crc*gen.h
 include/osmocom/core/bit*gen.h
 include/osmocom/gsm/gsm0503.h
+tests/conv/gsm0503_test_vectors.c
 
 # vi files
 *.sw?
