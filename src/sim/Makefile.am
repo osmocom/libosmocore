@@ -21,6 +21,7 @@ libosmosim_la_LDFLAGS = -version-info $(LIBVERSION)
 libosmosim_la_LIBADD = \
 	$(top_builddir)/src/libosmocore.la \
 	$(top_builddir)/src/gsm/libosmogsm.la \
+	$(TALLOC_LIBS) \
 	$(PCSC_LIBS)
 
 endif
