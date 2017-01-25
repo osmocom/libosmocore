@@ -1,5 +1,5 @@
 /*
- * (C) 2011 by Harald Welte <laforge@gnumonks.org>
+ * (C) 2011-2017 by Harald Welte <laforge@gnumonks.org>
  *
  * All Rights Reserved
  *
@@ -34,6 +34,7 @@
 #include <osmocom/core/logging.h>
 #include <osmocom/core/select.h>
 #include <osmocom/core/socket.h>
+#include <osmocom/core/talloc.h>
 
 #include <sys/ioctl.h>
 #include <sys/socket.h>
@@ -391,6 +392,47 @@ int osmo_sock_unix_init_ofd(struct osmo_fd *ofd, uint16_t type, uint8_t proto,
 			    const char *socket_path, unsigned int flags)
 {
 	return osmo_fd_init_ofd(ofd, osmo_sock_unix_init(type, proto, socket_path, flags));
+}
+
+/*! \brief Get address/port information on soocket in dyn-alloc string
+ *  \param[in] ctx talloc context from which to allocate string buffer
+ *  \param[in] fd file descriptor of socket
+ *  \returns string identifying the connection of this socket
+ */
+char *osmo_sock_get_name(void *ctx, int fd)
+{
+	struct sockaddr sa_l, sa_r;
+	socklen_t sa_len_l = sizeof(sa_l);
+	socklen_t sa_len_r = sizeof(sa_r);
+	char hostbuf_l[64], hostbuf_r[64];
+	char portbuf_l[16], portbuf_r[16];
+	int rc;
+
+	rc = getsockname(fd, &sa_l, &sa_len_l);
+	if (rc < 0)
+		return NULL;
+
+	rc = getnameinfo(&sa_l, sa_len_l, hostbuf_l, sizeof(hostbuf_l),
+			 portbuf_l, sizeof(portbuf_l),
+			 NI_NUMERICHOST | NI_NUMERICSERV);
+	if (rc < 0)
+		return NULL;
+
+	rc = getpeername(fd, &sa_r, &sa_len_r);
+	if (rc < 0)
+		goto local_only;
+
+	rc = getnameinfo(&sa_r, sa_len_r, hostbuf_r, sizeof(hostbuf_r),
+			 portbuf_r, sizeof(portbuf_r),
+			 NI_NUMERICHOST | NI_NUMERICSERV);
+	if (rc < 0)
+		goto local_only;
+
+	return talloc_asprintf(ctx, "(%s:%s<->%s:%s)", hostbuf_r, portbuf_r,
+				hostbuf_l, portbuf_l);
+
+local_only:
+	return talloc_asprintf(ctx, "(NULL<->%s:%s)", hostbuf_l, portbuf_l);
 }
 
 #endif /* HAVE_SYS_SOCKET_H */

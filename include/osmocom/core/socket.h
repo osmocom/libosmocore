@@ -38,4 +38,6 @@ int osmo_sock_unix_init(uint16_t type, uint8_t proto,
 int osmo_sock_unix_init_ofd(struct osmo_fd *ofd, uint16_t type, uint8_t proto,
 			    const char *socket_path, unsigned int flags);
 
+char *osmo_sock_get_name(void *ctx, int fd);
+
 /*! @} */
