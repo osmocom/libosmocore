@@ -228,3 +228,11 @@ cat $abs_srcdir/oap/oap_test.ok > expout
 touch experr
 AT_CHECK([$abs_top_builddir/tests/oap/oap_test], [0], [expout], [experr])
 AT_CLEANUP
+
+AT_SETUP([socket])
+AT_KEYWORDS([socket])
+cat $abs_srcdir/socket/socket_test.ok > expout
+cat $abs_srcdir/socket/socket_test.err > experr
+touch experr
+AT_CHECK([$abs_top_builddir/tests/socket/socket_test], [0], [expout], [experr])
+AT_CLEANUP

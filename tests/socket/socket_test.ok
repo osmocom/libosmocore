@@ -1,0 +1,3 @@
+Checking osmo_sock_init() with bind to a random local UDP port
+Checking for OSMO_SOCK_F_NONBLOCK
+Checking for invalid flags
