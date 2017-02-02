@@ -1116,6 +1116,7 @@ void gsm48_set_dtx(struct gsm48_cell_options *op, enum gsm48_dtx_mode full,
 #define GSM48_MT_MM_AUTH_REJ		0x11
 #define GSM48_MT_MM_AUTH_REQ		0x12
 #define GSM48_MT_MM_AUTH_RESP		0x14
+#define GSM48_MT_MM_AUTH_FAIL		0x1c
 #define GSM48_MT_MM_ID_REQ		0x18
 #define GSM48_MT_MM_ID_RESP		0x19
 #define GSM48_MT_MM_TMSI_REALL_CMD	0x1a
@@ -1302,6 +1303,8 @@ void gsm48_set_dtx(struct gsm48_cell_options *op, enum gsm48_dtx_mode full,
 /* Additional MM elements */
 #define GSM48_IE_LOCATION_AREA	0x13
 #define GSM48_IE_AUTN		0x20
+#define GSM48_IE_AUTH_RES_EXT	0x21
+#define GSM48_IE_AUTS		0x22
 #define GSM48_IE_PRIORITY_LEV	0x80
 #define GSM48_IE_FOLLOW_ON_PROC	0xa1
 #define GSM48_IE_CTS_PERMISSION	0xa2
@@ -1418,6 +1421,7 @@ enum gsm48_reject_value {
 	GSM48_REJECT_LOC_NOT_ALLOWED		= 12,
 	GSM48_REJECT_ROAMING_NOT_ALLOWED	= 13,
 	GSM48_REJECT_NETWORK_FAILURE		= 17,
+	GSM48_REJECT_SYNCH_FAILURE		= 21,
 	GSM48_REJECT_CONGESTION			= 22,
 	GSM48_REJECT_SRV_OPT_NOT_SUPPORTED	= 32,
 	GSM48_REJECT_RQD_SRV_OPT_NOT_SUPPORTED	= 33,
