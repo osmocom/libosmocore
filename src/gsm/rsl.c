@@ -380,6 +380,7 @@ static const struct value_string rsl_ipac_msgt_names[] = {
 	{ RSL_MT_IPAC_DLCX,		"IPAC_DLCX" },
 	{ RSL_MT_IPAC_DLCX_ACK,		"IPAC_DLCX_ACK" },
 	{ RSL_MT_IPAC_DLCX_NACK,	"IPAC_DLCX_NACK" },
+	{ RSL_MT_IPAC_DIR_RETR_ENQ,	"IPAC_DIR_RETR_ENQ" },
 	{ 0, NULL }
 };
 
