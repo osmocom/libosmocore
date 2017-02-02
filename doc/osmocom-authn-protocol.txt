@@ -181,7 +181,7 @@ Client -> Server
 
   IEI	Info Element		Type			Pres.	Format	Length
 	Message type		4.2.1			M	V	1
-  20	AUTS			octet string (16)	M	TLV	18
+  20	AUTS			octet string (14)	M	TLV	16
 
 3.2.8. Sync Error
 

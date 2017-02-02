@@ -8,3 +8,6 @@
 # If any interfaces have been removed or changed since the last public release: c:r:0.
 #library	what			description / commit summary line
 libosmocore	new function		osmo_sock_get_name()
+libosmogsm/gsup	ABI change		fix AUTS length to 14, not 16 (length is implicit)
+libosmogsm/oap	ABI change		fix AUTS length to 14, not 16 (length is implicit)
+osmo-auc-gen	UI change		fix AUTS length to 14, not 16 (length is implicit)

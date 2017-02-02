@@ -87,7 +87,7 @@ int main(int argc, char **argv)
 {
 	struct osmo_auth_vector _vec;
 	struct osmo_auth_vector *vec = &_vec;
-	uint8_t _rand[16], _auts[16];
+	uint8_t _rand[16], _auts[14];
 	int rc, option_index;
 	int rand_is_set = 0;
 	int auts_is_set = 0;

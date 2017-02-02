@@ -497,7 +497,7 @@ void osmo_gsup_encode(struct msgb *msg, const struct osmo_gsup_message *gsup_msg
 	}
 
 	if (gsup_msg->auts)
-		msgb_tlv_put(msg, OSMO_GSUP_AUTS_IE, 16, gsup_msg->auts);
+		msgb_tlv_put(msg, OSMO_GSUP_AUTS_IE, 14, gsup_msg->auts);
 
 	if (gsup_msg->rand)
 		msgb_tlv_put(msg, OSMO_GSUP_RAND_IE, 16, gsup_msg->rand);

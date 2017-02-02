@@ -155,8 +155,8 @@ static void test_oap_messages_dec_enc(void)
 	printf("- Sync Request\n");
 	CLEAR();
 	oap_msg.message_type = OAP_MSGT_SYNC_REQUEST;
-	osmo_hexparse("102030405060708090a0b0c0d0e0f001",
-		      oap_msg.auts, 16);
+	osmo_hexparse("102030405060708090a0b0c0d0e0",
+		      oap_msg.auts, 14);
 	oap_msg.auts_present = 1;
 	CHECK();
 

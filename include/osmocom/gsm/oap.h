@@ -64,7 +64,7 @@ struct osmo_oap_message {
 	int xres_present;
 	uint8_t xres[8];
 	int auts_present;
-	uint8_t auts[16];
+	uint8_t auts[14];
 };
 
 int osmo_oap_decode(struct osmo_oap_message *oap_msg, const uint8_t *data,
