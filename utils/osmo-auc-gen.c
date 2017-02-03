@@ -70,6 +70,7 @@ static struct osmo_sub_auth_data test_aud = {
 
 static void help()
 {
+	int alg;
 	printf( "-2  --2g\tUse 2G (GSM) authentication\n"
 		"-3  --3g\tUse 3G (UMTS) authentication\n"
 		"-a  --algorithm\tSpecify name of the algorithm\n"
@@ -81,6 +82,11 @@ static void help()
 		"-A  --auts\tSpecify AUTS (only for 3G)\n"
 		"-r  --rand\tSpecify random value\n"
 		"-I  --ipsec\tOutput in triplets.dat format for strongswan\n");
+
+	fprintf(stderr, "\nAvailable algorithms for option -a:\n");
+	for (alg = 1; alg < _OSMO_AUTH_ALG_NUM; alg++)
+		fprintf(stderr, "  %s\n",
+			osmo_auth_alg_name(alg));
 }
 
 int main(int argc, char **argv)
@@ -209,7 +215,8 @@ int main(int argc, char **argv)
 		}
 
 		if (rc < 0) {
-			fprintf(stderr, "Error parsing argument of option `%c'\n", c);
+			help();
+			fprintf(stderr, "\nError parsing argument of option `%c'\n", c);
 			exit(2);
 		}
 	}
@@ -229,6 +236,8 @@ int main(int argc, char **argv)
 	if (test_aud.type == OSMO_AUTH_TYPE_NONE ||
 	    test_aud.algo == OSMO_AUTH_ALG_NONE) {
 		help();
+		fprintf(stderr, "\nError: you need to pass at least"
+			" -2 or -3, as well as an algorithm to use.\n");
 		exit(2);
 	}
 
