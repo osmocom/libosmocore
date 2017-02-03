@@ -74,7 +74,7 @@ struct osmo_auth_impl {
 	/* \brief callback for generationg auth vectors + re-sync */
 	int (*gen_vec_auts)(struct osmo_auth_vector *vec,
 			    struct osmo_sub_auth_data *aud,
-			    const uint8_t *rand_auts, const uint8_t *auts,
+			    const uint8_t *auts, const uint8_t *rand_auts,
 			    const uint8_t *_rand);
 };
 
@@ -83,7 +83,7 @@ int osmo_auth_gen_vec(struct osmo_auth_vector *vec,
 
 int osmo_auth_gen_vec_auts(struct osmo_auth_vector *vec,
 			   struct osmo_sub_auth_data *aud,
-			   const uint8_t *rand_auts, const uint8_t *auts,
+			   const uint8_t *auts, const uint8_t *rand_auts,
 			   const uint8_t *_rand);
 
 int osmo_auth_register(struct osmo_auth_impl *impl);

@@ -170,8 +170,8 @@ int osmo_auth_gen_vec(struct osmo_auth_vector *vec,
 /*! \brief Generate authentication vector and re-sync sequence
  *  \param[out] vec Generated authentication vector
  *  \param[in] aud Subscriber-specific key material
- *  \param[in] rand_auts RAND value sent by the SIM/MS
  *  \param[in] auts AUTS value sent by the SIM/MS
+ *  \param[in] rand_auts RAND value sent by the SIM/MS
  *  \param[in] _rand Random challenge to be used to generate vector
  *  \returns 0 on success, negative error on failure
  *
@@ -184,7 +184,7 @@ int osmo_auth_gen_vec(struct osmo_auth_vector *vec,
  */
 int osmo_auth_gen_vec_auts(struct osmo_auth_vector *vec,
 			   struct osmo_sub_auth_data *aud,
-			   const uint8_t *rand_auts, const uint8_t *auts,
+			   const uint8_t *auts, const uint8_t *rand_auts,
 			   const uint8_t *_rand)
 {
 	struct osmo_auth_impl *impl = selected_auths[aud->algo];
@@ -192,7 +192,7 @@ int osmo_auth_gen_vec_auts(struct osmo_auth_vector *vec,
 	if (!impl || !impl->gen_vec_auts)
 		return -ENOENT;
 
-	return impl->gen_vec_auts(vec, aud, rand_auts, auts, _rand);
+	return impl->gen_vec_auts(vec, aud, auts, rand_auts, _rand);
 }
 
 static const struct value_string auth_alg_vals[] = {
