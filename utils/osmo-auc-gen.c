@@ -251,8 +251,21 @@ int main(int argc, char **argv)
 	else
 		dump_auth_vec(vec);
 
+	/* Print SQN from AUTS. It makes sense to print actually three SQN
+	 * to clarify:
+	 * After recovering SQN.MS from AUTS, milenage_gen_vec_auts() does:
+	 *   aud->u.umts.sqn = 1 + (osmo_load64be_ext(sqn_out, 6) >> 16);
+	 * Then calls milenage_gen_vec(), which, after it is done, does:
+	 *   aud->u.umts.sqn++;
+	 */
 	if (auts_is_set)
-		printf("AUTS success: SEQ.MS = %" PRIu64 "\n", test_aud.u.umts.sqn);
+		printf("AUTS success: SQN.MS = %" PRIu64
+		       ", generated vector with SQN = %" PRIu64
+		       ", next SQN = %" PRIu64 "\n",
+		       test_aud.u.umts.sqn - 2,
+		       test_aud.u.umts.sqn - 1,
+		       test_aud.u.umts.sqn
+		       );
 
 	exit(0);
 }
