@@ -70,6 +70,12 @@ static void test_fc(uint32_t bucket_size_max, uint32_t bucket_leak_rate,
 	struct bssgp_flow_control *fc = talloc_zero(NULL, struct bssgp_flow_control);
 	int i;
 
+	osmo_gettimeofday_override_time = (struct timeval){
+		.tv_sec = 1486385000,
+		.tv_usec = 423423,
+	};
+	osmo_gettimeofday_override = true;
+
 	bssgp_fc_init(fc, bucket_size_max, bucket_leak_rate, max_queue_depth,
 		      fc_out_cb);
 
@@ -83,7 +89,8 @@ static void test_fc(uint32_t bucket_size_max, uint32_t bucket_leak_rate,
 	}
 
 	while (1) {
-		usleep(100000);
+		osmo_gettimeofday_override_add(0, 100000);
+
 		osmo_timers_check();
 		osmo_timers_prepare();
 		osmo_timers_update();
