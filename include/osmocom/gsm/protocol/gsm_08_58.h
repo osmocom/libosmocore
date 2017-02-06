@@ -739,6 +739,12 @@ struct ipac_preproc_ncell_dflts {
 		reserved_ms_txpwr_max_def:3;
 }__attribute__ ((packed));
 
+struct ipac_preproc_ho_ctl_param {
+	uint8_t sdcch_ho_gsm:1,
+		sdcch_ho_umts:1,
+		reserved:6;
+}__attribute__ ((packed));
+
 struct ipac_preproc_cfg {
 	uint8_t meas_rep_mode;
 	uint32_t meas_mode_flags;
@@ -747,6 +753,7 @@ struct ipac_preproc_cfg {
 	struct ipac_preproc_ho_thresh ho_thresh;
 	struct ipac_preproc_ho_comp ho_comp;
 	struct ipac_preproc_ncell_dflts ncell_dflts;
+	struct ipac_preproc_ho_ctl_param ho_ctl_param;
 };
 
 /*! @} */
