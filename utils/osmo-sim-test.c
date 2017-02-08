@@ -37,7 +37,7 @@ static struct msgb *_select_file(struct osim_chan_hdl *st, uint8_t p1, uint8_t p
 			const uint8_t *data, uint8_t data_len)
 {
 	struct msgb *msg, *resp;
-	char *dst;
+	uint8_t *dst;
 
 	msg = osim_new_apdumsg(0x00, 0xA4, p1, p2, data_len, 256);
 	dst = msgb_put(msg, data_len);
@@ -65,7 +65,7 @@ static struct msgb *select_file(struct osim_chan_hdl *st, uint16_t fid)
 }
 
 /* 11.1.9 */
-static int verify_pin(struct osim_chan_hdl *st, uint8_t pin_nr, uint8_t *pin)
+static int verify_pin(struct osim_chan_hdl *st, uint8_t pin_nr, char *pin)
 {
 	struct msgb *msg;
 	char *pindst;
@@ -75,7 +75,7 @@ static int verify_pin(struct osim_chan_hdl *st, uint8_t pin_nr, uint8_t *pin)
 		return -EINVAL;
 
 	msg = osim_new_apdumsg(0x00, 0x20, 0x00, pin_nr, 8, 0);
-	pindst = msgb_put(msg, 8);
+	pindst = (char *) msgb_put(msg, 8);
 	memset(pindst, 0xFF, 8);
 	strncpy(pindst, pin, strlen(pin));
 

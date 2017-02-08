@@ -131,7 +131,7 @@ int ctrl_cmd_send_trap(struct ctrl_handle *ctrl, const char *name, char *value)
 		return -ENOMEM;
 
 	cmd->id = "0"; /* It's a TRAP! */
-	cmd->variable = name;
+	cmd->variable = (char *) name;
 	cmd->reply = value;
 	r = ctrl_cmd_send_to_all(ctrl, cmd);
 	talloc_free(cmd);

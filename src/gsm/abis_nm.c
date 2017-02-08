@@ -571,7 +571,7 @@ struct msgb *abis_nm_fail_evt_vrep(enum abis_nm_event_type t,
 		return NULL;
 	}
 	if (len)
-		msgb_tl16v_put(nmsg, NM_ATT_ADD_TEXT, len, add_text);
+		msgb_tl16v_put(nmsg, NM_ATT_ADD_TEXT, len, (const uint8_t *) add_text);
 
 	return nmsg;
 }
