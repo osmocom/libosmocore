@@ -363,6 +363,7 @@ osmo_apn_from_str;
 
 osmo_gsup_encode;
 osmo_gsup_decode;
+osmo_gsup_message_type_names;
 
 osmo_oap_encode;
 osmo_oap_decode;
