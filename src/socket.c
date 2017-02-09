@@ -73,7 +73,7 @@ int osmo_sock_init(uint16_t family, uint16_t type, uint8_t proto,
 
 	if ((flags & (OSMO_SOCK_F_BIND | OSMO_SOCK_F_CONNECT)) ==
 		     (OSMO_SOCK_F_BIND | OSMO_SOCK_F_CONNECT)) {
-		fprintf(stderr, "invalid: both bind and connect flags set:"
+		LOGP(DLGLOBAL, LOGL_ERROR, "invalid: both bind and connect flags set:"
 			" %s:%u\n", host, port);
 		return -EINVAL;
 	}
@@ -97,7 +97,7 @@ int osmo_sock_init(uint16_t family, uint16_t type, uint8_t proto,
 
 	rc = getaddrinfo(host, portbuf, &hints, &result);
 	if (rc != 0) {
-		fprintf(stderr, "getaddrinfo returned NULL: %s:%u: %s\n",
+		LOGP(DLGLOBAL, LOGL_ERROR, "getaddrinfo returned NULL: %s:%u: %s\n",
 			host, port, strerror(errno));
 		return -EINVAL;
 	}
@@ -114,7 +114,7 @@ int osmo_sock_init(uint16_t family, uint16_t type, uint8_t proto,
 			continue;
 		if (flags & OSMO_SOCK_F_NONBLOCK) {
 			if (ioctl(sfd, FIONBIO, (unsigned char *)&on) < 0) {
-				fprintf(stderr,
+				LOGP(DLGLOBAL, LOGL_ERROR,
 					"cannot set this socket unblocking:"
 					" %s:%u: %s\n",
 					host, port, strerror(errno));
@@ -131,7 +131,7 @@ int osmo_sock_init(uint16_t family, uint16_t type, uint8_t proto,
 			rc = setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR,
 							&on, sizeof(on));
 			if (rc < 0) {
-				fprintf(stderr,
+				LOGP(DLGLOBAL, LOGL_ERROR,
 					"cannot setsockopt socket:"
 					" %s:%u: %s\n",
 					host, port, strerror(errno));
@@ -145,7 +145,7 @@ int osmo_sock_init(uint16_t family, uint16_t type, uint8_t proto,
 	freeaddrinfo(result);
 
 	if (rp == NULL) {
-		fprintf(stderr, "unable to connect/bind socket: %s:%u: %s\n",
+		LOGP(DLGLOBAL, LOGL_ERROR, "unable to connect/bind socket: %s:%u: %s\n",
 			host, port, strerror(errno));
 		return -ENODEV;
 	}
@@ -247,7 +247,8 @@ int osmo_sock_init_sa(struct sockaddr *ss, uint16_t type,
 	s = getnameinfo(ss, sa_len, host, NI_MAXHOST,
 			NULL, 0, NI_NUMERICHOST);
 	if (s != 0) {
-		perror("getnameinfo failed");
+		LOGP(DLGLOBAL, LOGL_ERROR, "getnameinfo failed:"
+		     " %s\n", strerror(errno));
 		return s;
 	}
 
@@ -292,7 +293,8 @@ int osmo_sockaddr_is_local(struct sockaddr *addr, unsigned int addrlen)
 	struct ifaddrs *ifaddr, *ifa;
 
 	if (getifaddrs(&ifaddr) == -1) {
-		perror("getifaddrs");
+		LOGP(DLGLOBAL, LOGL_ERROR, "getifaddrs:"
+		     " %s\n", strerror(errno));
 		return -EIO;
 	}
 
@@ -359,7 +361,9 @@ int osmo_sock_unix_init(uint16_t type, uint8_t proto,
 
 	if (flags & OSMO_SOCK_F_NONBLOCK) {
 		if (ioctl(sfd, FIONBIO, (unsigned char *)&on) < 0) {
-			perror("cannot set this socket unblocking");
+			LOGP(DLGLOBAL, LOGL_ERROR,
+			     "cannot set this socket unblocking: %s\n",
+			     strerror(errno));
 			close(sfd);
 			return -EINVAL;
 		}

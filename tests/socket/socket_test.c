@@ -28,8 +28,10 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 
+#include <osmocom/core/application.h>
 #include <osmocom/core/utils.h>
 #include <osmocom/core/socket.h>
+#include <osmocom/core/logging.h>
 
 #include "../config.h"
 
@@ -71,8 +73,21 @@ static int test_sockinit(void)
 	return 0;
 }
 
+const struct log_info_cat default_categories[] = {
+};
+
+static struct log_info info = {
+	.cat = default_categories,
+	.num_cat = ARRAY_SIZE(default_categories),
+};
+
 int main(int argc, char *argv[])
 {
+	osmo_init_logging(&info);
+	log_set_use_color(osmo_stderr_target, 0);
+	log_set_print_filename(osmo_stderr_target, 0);
+
 	test_sockinit();
-	return 0;
+
+	return EXIT_SUCCESS;
 }
