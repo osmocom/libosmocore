@@ -124,6 +124,31 @@ static void hexparse_test(void)
 	for (i = 0; i < sizeof(data); i++)
 		OSMO_ASSERT(data[i] == i);
 
+	printf("Hexparse 0..255 with whitespace\n");
+	memset(data, 0, sizeof(data));
+	rc = osmo_hexparse(
+		"00 01\t02\r030405060708090A0B0C0D0 E  0    F\n"
+		"10 11\t12\r131415161718191A1B1C1D1 E  1    F\n"
+		"20 21\t22\r232425262728292A2B2C2D2 E  2    F\n"
+		"30 31\t32\r333435363738393a3b3c3d3 e  3    f\n"
+		"40 41\t42\r434445464748494A4B4C4D4 E  4    F\n"
+		"50 51\t52\r535455565758595a5b5c5d5 e  5    f\n"
+		"60 61\t62\r636465666768696A6B6C6D6 E  6    F\n"
+		"70 71\t72\r737475767778797A7B7C7D7 E  7    F\n"
+		"80 81\t82\r838485868788898A8B8C8D8 E  8    F\n"
+		"90 91\t92\r939495969798999A9B9C9D9 E  9    F\n"
+		"A0 A1\tA2\rA3a4a5a6a7a8a9AAABACADA E  A    F\n"
+		"B0 B1\tB2\rB3b4b5b6b7b8b9BABBBCBDB E  B    F\n"
+		"C0 C1\tC2\rC3c4c5c6c7c8c9CACBCCCDC E  C    F \n"
+		"D0 D1\tD2\rD3d4d5d6d7d8d9DADBDCDDD E  D    F\t\n"
+		"E0 E1\tE2\rE3e4e5e6e7e8e9EAEBECEDE E  E    F \t\n"
+		"F0 F1\tF2\rF3f4f5f6f7f8f9FAFBFCFDF E  F    F \t\r\n"
+		, data, sizeof(data));
+	printf("rc = %d\n", rc);
+	printf("--> %s\n\n", osmo_hexdump(data, sizeof(data)));
+	for (i = 0; i < sizeof(data); i++)
+		OSMO_ASSERT(data[i] == i);
+
 	printf("Hexparse with buffer too short\n");
 	memset(data, 0, sizeof(data));
 	rc = osmo_hexparse("000102030405060708090a0b0c0d0e0f", data, 15);

@@ -127,16 +127,22 @@ uint8_t osmo_char2bcd(char c)
 int osmo_hexparse(const char *str, uint8_t *b, int max_len)
 
 {
-	int i, l, v;
-
-	l = strlen(str);
-	if ((l&1) || ((l>>1) > max_len))
-		return -1;
+	char c;
+	uint8_t v;
+	const char *strpos;
+	unsigned int nibblepos = 0;
 
 	memset(b, 0x00, max_len);
 
-	for (i=0; i<l; i++) {
-		char c = str[i];
+	for (strpos = str; (c = *strpos); strpos++) {
+		/* skip whitespace */
+		if (c == ' ' || c == '\t' || c == '\n' || c == '\r')
+			continue;
+
+		/* If the buffer is too small, error out */
+		if (nibblepos >= (max_len << 1))
+			return -1;
+
 		if (c >= '0' && c <= '9')
 			v = c - '0';
 		else if (c >= 'a' && c <= 'f')
@@ -145,10 +151,17 @@ int osmo_hexparse(const char *str, uint8_t *b, int max_len)
 			v = 10 + (c - 'A');
 		else
 			return -1;
-		b[i>>1] |= v << (i&1 ? 0 : 4);
+
+		b[nibblepos >> 1] |= v << (nibblepos & 1 ? 0 : 4);
+		nibblepos ++;
 	}
 
-	return i>>1;
+	/* In case of uneven amount of digits, the last byte is not complete
+	 * and that's an error. */
+	if (nibblepos & 1)
+		return -1;
+
+	return nibblepos >> 1;
 }
 
 static char hexd_buff[4096];
