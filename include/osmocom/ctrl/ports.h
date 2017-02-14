@@ -16,4 +16,5 @@
 #define OSMO_CTRL_PORT_CSCN	4255
 /* 4256 used by VTY interface */
 #define OSMO_CTRL_PORT_GGSN	4257
+#define OSMO_CTRL_PORT_HLR	4259
 /* When adding/changing port numbers, keep docs and wiki in sync. See above. */
