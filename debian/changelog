@@ -1,3 +1,9 @@
+libosmocore (0.9.6-fw.1) unstable; urgency=medium
+
+  * New release of libosmocore for fairwaves build.
+
+ -- Ivan Klyuchnikov <kluchnikovi@gmail.com>  Tue, 14 Feb 2017 12:30:45 +0200
+
 libosmocore (0.9.6) unstable; urgency=medium
 
   * doc: osmocom-authn-protocol.txt: fix numbering, mark unused sync msgs
