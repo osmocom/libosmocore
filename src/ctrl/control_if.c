@@ -654,6 +654,14 @@ struct ctrl_handle *ctrl_interface_setup(void *data, uint16_t port,
 	return ctrl_interface_setup_dynip(data, "127.0.0.1", port, lookup);
 }
 
+/*! \brief Setup CTRL interface on a given address
+ *  \param[in] data Pointer which will be made available to each
+               set_..() get_..() verify_..() control command function
+ *  \param[in] bind_addr Address on which CTRL socket shall listen
+ *  \param[in] port Port on which CTRL socket shall listen
+ *  \param[in] lookup Lookup function pointer, can be NULL
+ *  \returns ctrl_handle pointer or NULL in case of errors
+ */
 struct ctrl_handle *ctrl_interface_setup_dynip(void *data,
 					       const char *bind_addr,
 					       uint16_t port,
