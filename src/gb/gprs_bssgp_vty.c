@@ -49,7 +49,7 @@ static void log_set_bvc_filter(struct log_target *target,
 	if (bctx) {
 		target->filter_map |= (1 << FLT_BVC);
 		target->filter_data[FLT_BVC] = bctx;
-	} else if (target->filter_data[FLT_NSVC]) {
+	} else if (target->filter_data[FLT_BVC]) {
 		target->filter_map = ~(1 << FLT_BVC);
 		target->filter_data[FLT_BVC] = NULL;
 	}
