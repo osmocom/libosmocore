@@ -1049,7 +1049,7 @@ int bssgp_rcvmsg(struct msgb *msg)
 	bctx = btsctx_by_bvci_nsei(bvci, msgb_nsei(msg));
 
 	if (bctx) {
-		log_set_context(GPRS_CTX_BVC, bctx);
+		log_set_context(LOGGING_CTX_GB_BVC, bctx);
 		rate_ctr_inc(&bctx->ctrg->ctr[BSSGP_CTR_PKTS_IN]);
 		rate_ctr_add(&bctx->ctrg->ctr[BSSGP_CTR_BYTES_IN],
 			     msgb_bssgp_len(msg));

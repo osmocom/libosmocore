@@ -89,8 +89,6 @@ void logp(int subsys, const char *file, int line, int cont, const char *format, 
 #define LOGL_ERROR	7	/*!< \brief error condition, requires user action */
 #define LOGL_FATAL	8	/*!< \brief fatal, program aborted */
 
-#define LOG_FILTER_ALL	0x0001
-
 /* logging levels defined by the library itself */
 #define DLGLOBAL	-1	/*!< global logging */
 #define DLLAPD		-2	/*!< LAPD implementation */
@@ -124,6 +122,23 @@ struct log_info_cat {
 /*! \brief Log context information, passed to filter */
 struct log_context {
 	void *ctx[LOG_MAX_CTX+1];
+};
+
+enum logging_ctx_items {
+	LOGGING_CTX_GB_NSVC,
+	LOGGING_CTX_GB_BVC,
+	LOGGING_CTX_BSC_SUBSCR,
+	LOGGING_CTX_VLR_SUBSCR,
+	_LOGGING_CTX_COUNT
+};
+
+enum logging_filters {
+	LOGGING_FILTER_ALL,
+	LOGGING_FILTER_GB_NSVC,
+	LOGGING_FILTER_GB_BVC,
+	LOGGING_FILTER_BSC_SUBSCR,
+	LOGGING_FILTER_VLR_SUBSCR,
+	_LOGGING_FILTER_COUNT
 };
 
 struct log_target;

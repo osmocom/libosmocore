@@ -70,17 +70,17 @@ gDEFUN(libgb_end,
 int gprs_log_filter_fn(const struct log_context *ctx,
 			struct log_target *tar)
 {
-	const struct gprs_nsvc *nsvc = ctx->ctx[GPRS_CTX_NSVC];
-	const struct gprs_bvc *bvc = ctx->ctx[GPRS_CTX_BVC];
+	const struct gprs_nsvc *nsvc = ctx->ctx[LOGGING_CTX_GB_NSVC];
+	const struct gprs_bvc *bvc = ctx->ctx[LOGGING_CTX_GB_BVC];
 
 	/* Filter on the NS Virtual Connection */
-	if ((tar->filter_map & (1 << FLT_NSVC)) != 0
-	    && nsvc && (nsvc == tar->filter_data[FLT_NSVC]))
+	if ((tar->filter_map & (1 << LOGGING_FILTER_GB_NSVC)) != 0
+	    && nsvc && (nsvc == tar->filter_data[LOGGING_FILTER_GB_NSVC]))
 		return 1;
 
 	/* Filter on the NS Virtual Connection */
-	if ((tar->filter_map & (1 << FLT_BVC)) != 0
-	    && bvc && (bvc == tar->filter_data[FLT_BVC]))
+	if ((tar->filter_map & (1 << LOGGING_FILTER_GB_BVC)) != 0
+	    && bvc && (bvc == tar->filter_data[LOGGING_FILTER_GB_BVC]))
 		return 1;
 
 	return 0;

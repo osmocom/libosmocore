@@ -26,10 +26,6 @@ struct libgb_msgb_cb {
 #define msgb_bcid(__x)		LIBGB_MSGB_CB(__x)->bssgp_cell_id
 #define msgb_llch(__x)		LIBGB_MSGB_CB(__x)->llch
 
-/* logging contexts */
-#define GPRS_CTX_NSVC	0
-#define GPRS_CTX_BVC	1
-
 #include <osmocom/core/logging.h>
 int gprs_log_filter_fn(const struct log_context *ctx,
 			struct log_target *tar);

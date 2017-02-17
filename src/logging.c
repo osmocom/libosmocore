@@ -48,6 +48,13 @@
 
 #include <osmocom/vty/logging.h>	/* for LOGGING_STR. */
 
+osmo_static_assert(_LOGGING_CTX_COUNT <= ARRAY_SIZE(((struct log_context*)NULL)->ctx),
+		   enum_logging_ctx_items_fit_in_struct_log_context);
+osmo_static_assert(_LOGGING_FILTER_COUNT <= ARRAY_SIZE(((struct log_target*)NULL)->filter_data),
+		   enum_logging_filters_fit_in_log_target_filter_data);
+osmo_static_assert(_LOGGING_FILTER_COUNT <= 8*sizeof(((struct log_target*)NULL)->filter_map),
+		   enum_logging_filters_fit_in_log_target_filter_map);
+
 struct log_info *osmo_log_info;
 
 static struct log_context log_context;
@@ -374,7 +381,7 @@ static inline int check_log_to_target(struct log_target *tar, int subsys, int le
 	/* Apply filters here... if that becomes messy we will
 	 * need to put filters in a list and each filter will
 	 * say stop, continue, output */
-	if ((tar->filter_map & LOG_FILTER_ALL) != 0)
+	if ((tar->filter_map & (1 << LOGGING_FILTER_ALL)) != 0)
 		return 1;
 
 	if (osmo_log_info->filter_fn)
@@ -492,20 +499,20 @@ int log_set_context(uint8_t ctx_nr, void *value)
 	return 0;
 }
 
-/*! \brief Enable the \ref LOG_FILTER_ALL log filter
+/*! \brief Enable the \ref LOGGING_FILTER_ALL log filter
  *  \param[in] target Log target to be affected
  *  \param[in] all enable (1) or disable (0) the ALL filter
  *
- * When the \ref LOG_FILTER_ALL filter is enabled, all log messages will
- * be printed.  It acts as a wildcard.  Setting it to \a 1 means there
- * is no filtering.
+ * When the \ref LOGGING_FILTER_ALL filter is enabled, all log messages will be
+ * printed.  It acts as a wildcard.  Setting it to \a 1 means there is no
+ * filtering.
  */
 void log_set_all_filter(struct log_target *target, int all)
 {
 	if (all)
-		target->filter_map |= LOG_FILTER_ALL;
+		target->filter_map |= (1 << LOGGING_FILTER_ALL);
 	else
-		target->filter_map &= ~LOG_FILTER_ALL;
+		target->filter_map &= ~(1 << LOGGING_FILTER_ALL);
 }
 
 /*! \brief Enable or disable the use of colored output
