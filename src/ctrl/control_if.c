@@ -368,7 +368,13 @@ static int control_write_cb(struct osmo_fd *bfd, struct msgb *msg)
 	return rc;
 }
 
-static struct ctrl_connection *ctrl_connection_alloc(void *ctx)
+/*! \brief Allocate CTRL connection
+ *  \param[in] ctx Context from which talloc should allocate it
+ *  \param[in] data caller's private data parameter which should assigned to
+               write queue's file descriptor data parameter.
+ *  \return Allocated CTRL connection structure or NULL in case of errors
+ */
+struct ctrl_connection *osmo_ctrl_conn_alloc(void *ctx, void *data)
 {
 	struct ctrl_connection *ccon = talloc_zero(ctx, struct ctrl_connection);
 	if (!ccon)
@@ -379,6 +385,9 @@ static struct ctrl_connection *ctrl_connection_alloc(void *ctx)
 
 	INIT_LLIST_HEAD(&ccon->cmds);
 	INIT_LLIST_HEAD(&ccon->def_cmds);
+
+	ccon->write_queue.bfd.data = data;
+	ccon->write_queue.write_cb = control_write_cb;
 
 	return ccon;
 }
@@ -412,19 +421,17 @@ static int listen_fd_cb(struct osmo_fd *listen_bfd, unsigned int what)
 		return ret;
 	}
 #endif
-	ccon = ctrl_connection_alloc(listen_bfd->data);
+	ctrl = listen_bfd->data;
+	ccon = osmo_ctrl_conn_alloc(listen_bfd->data, ctrl);
 	if (!ccon) {
 		LOGP(DLCTRL, LOGL_ERROR, "Failed to allocate.\n");
 		close(fd);
 		return -1;
 	}
 
-	ctrl = listen_bfd->data;
-	ccon->write_queue.bfd.data = ctrl;
 	ccon->write_queue.bfd.fd = fd;
 	ccon->write_queue.bfd.when = BSC_FD_READ;
 	ccon->write_queue.read_cb = handle_control_read;
-	ccon->write_queue.write_cb = control_write_cb;
 
 	ret = osmo_fd_register(&ccon->write_queue.bfd);
 	if (ret < 0) {
@@ -646,6 +653,45 @@ static int set_counter(struct ctrl_cmd *cmd, void *data)
 static int verify_counter(struct ctrl_cmd *cmd, const char *value, void *data)
 {
 	return 0;
+}
+
+/*! \brief Setup CTRL interface connection to a given address
+ *  \param[in] data Pointer which will be made available to each
+               set_..() get_..() verify_..() control command function
+ *  \param[in] addr Address to which we shall connect
+ *  \param[in] port Port to which we shall connect
+ *  \param[in] lookup Lookup function pointer, can be NULL
+ *  \returns ctrl_handle pointer or NULL in case of errors
+ */
+struct ctrl_handle *ctrl_interface_connect(void *data, const char *addr,
+					   uint16_t port,
+					   ctrl_cmd_lookup lookup)
+{
+	int ret;
+	struct ctrl_handle *ctrl;
+
+	ctrl = talloc_zero(data, struct ctrl_handle);
+	if (!ctrl)
+		return NULL;
+
+	INIT_LLIST_HEAD(&ctrl->ccon_list);
+
+	ctrl->data = data;
+	ctrl->lookup = lookup;
+
+	ctrl->listen_fd.cb = NULL;
+	ctrl->listen_fd.data = ctrl;
+	ret = osmo_sock_init_ifd(&ctrl->listen_fd, AF_INET, SOCK_STREAM,
+				 IPPROTO_TCP, addr, port, OSMO_SOCK_F_CONNECT);
+	if (ret < 0) {
+		LOGP(DLCTRL, LOGL_ERROR, "Cannot connect to CTRL at %s:%u\n",
+		     addr, port);
+		talloc_free(ctrl);
+		return NULL;
+	}
+	LOGP(DLCTRL, LOGL_NOTICE, "CTRL connected to %s:%u\n", addr, port);
+
+	return ctrl;
 }
 
 struct ctrl_handle *ctrl_interface_setup(void *data, uint16_t port,
