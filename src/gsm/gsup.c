@@ -339,9 +339,9 @@ int osmo_gsup_decode(const uint8_t *const_data, size_t data_len,
 			break;
 
 		case OSMO_GSUP_AUTS_IE:
-			if (value_len != 16) {
+			if (value_len != 14) {
 				LOGP(DLGSUP, LOGL_ERROR,
-					"AUTS length != 16 received\n");
+					"AUTS length != 14 received\n");
 				return -GMM_CAUSE_COND_IE_ERR;
 			}
 			gsup_msg->auts = value;
