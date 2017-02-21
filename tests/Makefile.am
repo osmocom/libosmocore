@@ -177,7 +177,8 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
 	     vty/vty_test.ok comp128/comp128_test.ok			\
 	     utils/utils_test.ok stats/stats_test.ok			\
 	     bitvec/bitvec_test.ok msgb/msgb_test.ok bits/bitcomp_test.ok \
-	     sim/sim_test.ok tlv/tlv_test.ok gsup/gsup_test.ok		\
+	     sim/sim_test.ok tlv/tlv_test.ok				\
+	     gsup/gsup_test.ok gsup/gsup_test.err			\
 	     oap/oap_test.ok fsm/fsm_test.ok fsm/fsm_test.err		\
 	     write_queue/wqueue_test.ok socket/socket_test.ok		\
 	     socket/socket_test.err

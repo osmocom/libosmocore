@@ -134,9 +134,9 @@ static void test_gsup_messages_dec_enc(void)
 			0x25, 0x10, /* AUTN (UMTS) */
 				0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
 				0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10,
-			0x25, 0x08, /* RES (UMTS) */
+			0x27, 0x08, /* RES (UMTS) */
 				0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
-		0x03, 0x22, /* Auth tuple */
+		0x03, 0x62, /* Auth tuple */
 			0x20, 0x10, /* rand */
 				0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7, 0xa8,
 				0xa9, 0xaa, 0xab, 0xac, 0xad, 0xae, 0xaf, 0x10,
@@ -153,17 +153,17 @@ static void test_gsup_messages_dec_enc(void)
 			0x25, 0x10, /* AUTN (UMTS) */
 				0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8,
 				0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe, 0xff, 0xf0,
-			0x25, 0x08, /* RES (UMTS) */
+			0x27, 0x08, /* RES (UMTS) */
 				0x91, 0x92, 0x93, 0x94, 0x95, 0x96, 0x97, 0x98,
 	};
 
 	static const uint8_t send_auth_info_req_auts[] = {
 		0x08,
 		TEST_IMSI_IE,
-		0x26, 0x0e,
+		0x26, 0x0e, /* AUTS (UMTS) */
 			0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
 			0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e,
-		0x20, 0x10,
+		0x20, 0x10, /* rand */
 			0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
 			0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10,
 	};
@@ -198,7 +198,7 @@ static void test_gsup_messages_dec_enc(void)
 		{"Purge MS Result",
 			purge_ms_res, sizeof(purge_ms_res)},
 		{"Send Authentication Info Result with IK, CK, AUTN and RES (UMTS)",
-			send_auth_info_req_auts, sizeof(send_auth_info_req_auts)},
+			send_auth_info_res_umts, sizeof(send_auth_info_res_umts)},
 		{"Send Authentication Info Request with AUTS and RAND (UMTS)",
 			send_auth_info_req_auts, sizeof(send_auth_info_req_auts)},
 	};
@@ -264,6 +264,10 @@ static void test_gsup_messages_dec_enc(void)
 			test_idx, counter, parse_err);
 	}
 
+	/* Don't log thousands of message modification errors */
+	LOGP(DLGSUP, LOGL_NOTICE, "Stopping DLGSUP logging\n");
+	log_set_category_filter(osmo_stderr_target, DLGSUP, 0, 0);
+
 	/* message modification test (relies on ASAN or valgrind being used) */
 	for (test_idx = 0; test_idx < ARRAY_SIZE(test_messages); test_idx++) {
 		int j;
@@ -309,6 +313,10 @@ static struct log_info info = {
 int main(int argc, char **argv)
 {
 	osmo_init_logging(&info);
+	log_set_print_filename(osmo_stderr_target, 0);
+	log_set_print_timestamp(osmo_stderr_target, 0);
+	log_set_use_color(osmo_stderr_target, 0);
+	log_set_print_category(osmo_stderr_target, 1);
 
 	test_gsup_messages_dec_enc();
 
