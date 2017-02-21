@@ -618,14 +618,16 @@ struct gsm48_cell_sel_par {
 		 acs:1;
 } __attribute__ ((packed));
 
-/* Section 10.5.2.11 Control Channel Description , Figure 10.5.33 */
+/* 3GPP TS 44.018 Section 10.5.2.11 Control Channel Description */
 struct gsm48_control_channel_descr {
 	uint8_t ccch_conf :3,
 		bs_ag_blks_res :3,
 		att :1,
-		spare1 :1;
+		mscr :1;
 	uint8_t bs_pa_mfrms : 3,
-		spare2 :5;
+		spare_1 :2,
+		cbq3 :2,
+		spare_2 :1;
 	uint8_t t3212;
 } __attribute__ ((packed));
 
