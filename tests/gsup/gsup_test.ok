@@ -11,4 +11,6 @@ Test GSUP message decoding/encoding
   Testing Purge MS Request
   Testing Purge MS Error
   Testing Purge MS Result
+  Testing Send Authentication Info Result with IK, CK, AUTN and RES (UMTS)
+  Testing Send Authentication Info Request with AUTS and RAND (UMTS)
 Done.
