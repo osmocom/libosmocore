@@ -188,11 +188,18 @@ int osmo_auth_gen_vec_auts(struct osmo_auth_vector *vec,
 			   const uint8_t *_rand)
 {
 	struct osmo_auth_impl *impl = selected_auths[aud->algo];
+	int rc;
 
 	if (!impl || !impl->gen_vec_auts)
 		return -ENOENT;
 
-	return impl->gen_vec_auts(vec, aud, auts, rand_auts, _rand);
+	rc = impl->gen_vec_auts(vec, aud, auts, rand_auts, _rand);
+	if (rc < 0)
+		return rc;
+
+	memcpy(vec->rand, _rand, sizeof(vec->rand));
+
+	return 0;
 }
 
 static const struct value_string auth_alg_vals[] = {
