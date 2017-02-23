@@ -287,7 +287,7 @@ static void vty_print_logtarget(struct vty *vty, const struct log_info *info,
 	}
 
 	vty_out(vty, " Log Filter 'ALL': %s%s",
-		tgt->filter_map & (1 << LOGGING_FILTER_ALL) ? "Enabled" : "Disabled",
+		tgt->filter_map & (1 << LOG_FLT_ALL) ? "Enabled" : "Disabled",
 		VTY_NEWLINE);
 
 	/* print application specific filters */
@@ -687,7 +687,7 @@ static int config_write_log_single(struct vty *vty, struct log_target *tgt)
 	}
 
 	vty_out(vty, "  logging filter all %u%s",
-		tgt->filter_map & (1 << LOGGING_FILTER_ALL) ? 1 : 0, VTY_NEWLINE);
+		tgt->filter_map & (1 << LOG_FLT_ALL) ? 1 : 0, VTY_NEWLINE);
 	/* save filters outside of libosmocore, i.e. in app code */
 	if (osmo_log_info->save_fn)
 		osmo_log_info->save_fn(vty, osmo_log_info, tgt);

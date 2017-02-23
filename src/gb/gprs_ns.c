@@ -325,7 +325,7 @@ static int gprs_ns_tx(struct gprs_nsvc *nsvc, struct msgb *msg)
 {
 	int ret;
 
-	log_set_context(LOGGING_CTX_GB_NSVC, nsvc);
+	log_set_context(LOG_CTX_GB_NSVC, nsvc);
 
 	/* Increment number of Uplink bytes */
 	rate_ctr_inc(&nsvc->ctrg->ctr[NS_CTR_PKTS_OUT]);
@@ -360,7 +360,7 @@ static int gprs_ns_tx_simple(struct gprs_nsvc *nsvc, uint8_t pdu_type)
 	struct msgb *msg = gprs_ns_msgb_alloc();
 	struct gprs_ns_hdr *nsh;
 
-	log_set_context(LOGGING_CTX_GB_NSVC, nsvc);
+	log_set_context(LOG_CTX_GB_NSVC, nsvc);
 
 	if (!msg)
 		return -ENOMEM;
@@ -384,7 +384,7 @@ int gprs_ns_tx_reset(struct gprs_nsvc *nsvc, uint8_t cause)
 	uint16_t nsvci = htons(nsvc->nsvci);
 	uint16_t nsei = htons(nsvc->nsei);
 
-	log_set_context(LOGGING_CTX_GB_NSVC, nsvc);
+	log_set_context(LOG_CTX_GB_NSVC, nsvc);
 
 	if (!msg)
 		return -ENOMEM;
@@ -416,7 +416,7 @@ int gprs_ns_tx_status(struct gprs_nsvc *nsvc, uint8_t cause,
 	struct gprs_ns_hdr *nsh;
 	uint16_t nsvci = htons(nsvc->nsvci);
 
-	log_set_context(LOGGING_CTX_GB_NSVC, nsvc);
+	log_set_context(LOG_CTX_GB_NSVC, nsvc);
 
 	bvci = htons(bvci);
 
@@ -469,7 +469,7 @@ int gprs_ns_tx_block(struct gprs_nsvc *nsvc, uint8_t cause)
 	struct gprs_ns_hdr *nsh;
 	uint16_t nsvci = htons(nsvc->nsvci);
 
-	log_set_context(LOGGING_CTX_GB_NSVC, nsvc);
+	log_set_context(LOG_CTX_GB_NSVC, nsvc);
 
 	if (!msg)
 		return -ENOMEM;
@@ -497,7 +497,7 @@ int gprs_ns_tx_block(struct gprs_nsvc *nsvc, uint8_t cause)
  */
 int gprs_ns_tx_unblock(struct gprs_nsvc *nsvc)
 {
-	log_set_context(LOGGING_CTX_GB_NSVC, nsvc);
+	log_set_context(LOG_CTX_GB_NSVC, nsvc);
 	LOGP(DNS, LOGL_INFO, "NSEI=%u Tx NS UNBLOCK (NSVCI=%u)\n",
 		nsvc->nsei, nsvc->nsvci);
 
@@ -510,7 +510,7 @@ int gprs_ns_tx_unblock(struct gprs_nsvc *nsvc)
  */
 int gprs_ns_tx_alive(struct gprs_nsvc *nsvc)
 {
-	log_set_context(LOGGING_CTX_GB_NSVC, nsvc);
+	log_set_context(LOG_CTX_GB_NSVC, nsvc);
 	LOGP(DNS, LOGL_DEBUG, "NSEI=%u Tx NS ALIVE (NSVCI=%u)\n",
 		nsvc->nsei, nsvc->nsvci);
 
@@ -523,7 +523,7 @@ int gprs_ns_tx_alive(struct gprs_nsvc *nsvc)
  */
 int gprs_ns_tx_alive_ack(struct gprs_nsvc *nsvc)
 {
-	log_set_context(LOGGING_CTX_GB_NSVC, nsvc);
+	log_set_context(LOG_CTX_GB_NSVC, nsvc);
 	LOGP(DNS, LOGL_DEBUG, "NSEI=%u Tx NS ALIVE_ACK (NSVCI=%u)\n",
 		nsvc->nsei, nsvc->nsvci);
 
@@ -548,7 +548,7 @@ static void nsvc_start_timer(struct gprs_nsvc *nsvc, enum nsvc_timer_mode mode)
 	enum ns_timeout tout = timer_mode_tout[mode];
 	unsigned int seconds = nsvc->nsi->timeout[tout];
 
-	log_set_context(LOGGING_CTX_GB_NSVC, nsvc);
+	log_set_context(LOG_CTX_GB_NSVC, nsvc);
 	DEBUGP(DNS, "NSEI=%u Starting timer in mode %s (%u seconds)\n",
 		nsvc->nsei, get_value_string(timer_mode_strs, mode),
 		seconds);
@@ -576,7 +576,7 @@ static void gprs_ns_timer_cb(void *data)
 	enum ns_timeout tout = timer_mode_tout[nsvc->timer_mode];
 	unsigned int seconds = nsvc->nsi->timeout[tout];
 
-	log_set_context(LOGGING_CTX_GB_NSVC, nsvc);
+	log_set_context(LOG_CTX_GB_NSVC, nsvc);
 	DEBUGP(DNS, "NSEI=%u Timer expired in mode %s (%u seconds)\n",
 		nsvc->nsei, get_value_string(timer_mode_strs, nsvc->timer_mode),
 		seconds);
@@ -638,7 +638,7 @@ static int gprs_ns_tx_reset_ack(struct gprs_nsvc *nsvc)
 	struct gprs_ns_hdr *nsh;
 	uint16_t nsvci, nsei;
 
-	log_set_context(LOGGING_CTX_GB_NSVC, nsvc);
+	log_set_context(LOG_CTX_GB_NSVC, nsvc);
 	if (!msg)
 		return -ENOMEM;
 
@@ -692,7 +692,7 @@ int gprs_ns_sendmsg(struct gprs_ns_inst *nsi, struct msgb *msg)
 		msgb_free(msg);
 		return rc;
 	}
-	log_set_context(LOGGING_CTX_GB_NSVC, nsvc);
+	log_set_context(LOG_CTX_GB_NSVC, nsvc);
 
 	msg->l2h = msgb_push(msg, sizeof(*nsh) + 3);
 	nsh = (struct gprs_ns_hdr *) msg->l2h;
@@ -1099,7 +1099,7 @@ int gprs_ns_rcvmsg(struct gprs_ns_inst *nsi, struct msgb *msg,
 		struct gprs_nsvc *fallback_nsvc;
 
 		fallback_nsvc = nsi->unknown_nsvc;
-		log_set_context(LOGGING_CTX_GB_NSVC, fallback_nsvc);
+		log_set_context(LOG_CTX_GB_NSVC, fallback_nsvc);
 		fallback_nsvc->ip.bts_addr = *saddr;
 		fallback_nsvc->ll = ll;
 
@@ -1215,7 +1215,7 @@ int gprs_ns_vc_create(struct gprs_ns_inst *nsi, struct msgb *msg,
 	/* Only the RESET procedure creates a new NSVC */
 	if (nsh->pdu_type != NS_PDUT_RESET) {
 		/* Since we have no NSVC, we have to use a fake */
-		log_set_context(LOGGING_CTX_GB_NSVC, fallback_nsvc);
+		log_set_context(LOG_CTX_GB_NSVC, fallback_nsvc);
 		LOGP(DNS, LOGL_INFO, "Rejecting NS PDU type 0x%0x "
 		     "from %s for non-existing NS-VC\n",
 		     nsh->pdu_type, gprs_ns_ll_str(fallback_nsvc));
@@ -1256,7 +1256,7 @@ int gprs_ns_vc_create(struct gprs_ns_inst *nsi, struct msgb *msg,
 	if (!existing_nsvc) {
 		*new_nsvc = gprs_nsvc_create(nsi, 0xffff);
 		(*new_nsvc)->nsvci_is_valid = 0;
-		log_set_context(LOGGING_CTX_GB_NSVC, *new_nsvc);
+		log_set_context(LOG_CTX_GB_NSVC, *new_nsvc);
 		gprs_ns_ll_copy(*new_nsvc, fallback_nsvc);
 		LOGP(DNS, LOGL_INFO, "Creating NS-VC for BSS at %s\n",
 		     gprs_ns_ll_str(fallback_nsvc));
@@ -1299,7 +1299,7 @@ int gprs_ns_process_msg(struct gprs_ns_inst *nsi, struct msgb *msg,
 
 	msgb_nsei(msg) = (*nsvc)->nsei;
 
-	log_set_context(LOGGING_CTX_GB_NSVC, *nsvc);
+	log_set_context(LOG_CTX_GB_NSVC, *nsvc);
 
 	/* Increment number of Incoming bytes */
 	rate_ctr_inc(&(*nsvc)->ctrg->ctr[NS_CTR_PKTS_IN]);

@@ -47,11 +47,11 @@ static void log_set_bvc_filter(struct log_target *target,
 				struct bssgp_bvc_ctx *bctx)
 {
 	if (bctx) {
-		target->filter_map |= (1 << LOGGING_FILTER_GB_BVC);
-		target->filter_data[LOGGING_FILTER_GB_BVC] = bctx;
-	} else if (target->filter_data[LOGGING_FILTER_GB_BVC]) {
-		target->filter_map = ~(1 << LOGGING_FILTER_GB_BVC);
-		target->filter_data[LOGGING_FILTER_GB_BVC] = NULL;
+		target->filter_map |= (1 << LOG_FLT_GB_BVC);
+		target->filter_data[LOG_FLT_GB_BVC] = bctx;
+	} else if (target->filter_data[LOG_FLT_GB_BVC]) {
+		target->filter_map = ~(1 << LOG_FLT_GB_BVC);
+		target->filter_data[LOG_FLT_GB_BVC] = NULL;
 	}
 }
 

@@ -126,32 +126,34 @@ struct log_context {
 
 /*! \brief Indexes to indicate the object currently acted upon.
  * Array indexes for the global \a log_context array. */
-enum logging_ctx_items {
-	LOGGING_CTX_GB_NSVC,
-	LOGGING_CTX_GB_BVC,
-	LOGGING_CTX_BSC_SUBSCR,
-	LOGGING_CTX_VLR_SUBSCR,
-	_LOGGING_CTX_COUNT
+enum log_ctx_index {
+	LOG_CTX_GB_NSVC,
+	LOG_CTX_GB_BVC,
+	LOG_CTX_BSC_SUBSCR,
+	LOG_CTX_VLR_SUBSCR,
+	_LOG_CTX_COUNT
 };
 
 /*! \brief Indexes to indicate objects that should be logged.
  * Array indexes to log_target->filter_data and bit indexes for
  * log_target->filter_map. */
-enum logging_filters {
-	LOGGING_FILTER_ALL,
-	LOGGING_FILTER_GB_NSVC,
-	LOGGING_FILTER_GB_BVC,
-	LOGGING_FILTER_BSC_SUBSCR,
-	LOGGING_FILTER_VLR_SUBSCR,
-	_LOGGING_FILTER_COUNT
+enum log_filter_index {
+	LOG_FLT_ALL,
+	LOG_FLT_GB_NSVC,
+	LOG_FLT_GB_BVC,
+	LOG_FLT_BSC_SUBSCR,
+	LOG_FLT_VLR_SUBSCR,
+	_LOG_FLT_COUNT
 };
 
 /*! \brief Compatibility with older libosmocore versions */
-#define LOG_FILTER_ALL (1<<LOGGING_FILTER_ALL)
+#define LOG_FILTER_ALL (1<<LOG_FLT_ALL)
 /*! \brief Compatibility with older libosmocore versions */
-#define GPRS_CTX_NSVC LOGGING_CTX_GB_NSVC
+#define GPRS_CTX_NSVC LOG_CTX_GB_NSVC
 /*! \brief Compatibility with older libosmocore versions */
-#define GPRS_CTX_BVC LOGGING_CTX_GB_BVC
+#define GPRS_CTX_BVC LOG_CTX_GB_BVC
+/*! \brief Indexes to indicate the object currently acted upon.
+ * Array indexes for the global \a log_context array. */
 
 struct log_target;
 

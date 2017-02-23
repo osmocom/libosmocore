@@ -61,11 +61,11 @@ static void log_set_nsvc_filter(struct log_target *target,
 				struct gprs_nsvc *nsvc)
 {
 	if (nsvc) {
-		target->filter_map |= (1 << LOGGING_FILTER_GB_NSVC);
-		target->filter_data[LOGGING_FILTER_GB_NSVC] = nsvc;
-	} else if (target->filter_data[LOGGING_FILTER_GB_NSVC]) {
-		target->filter_map = ~(1 << LOGGING_FILTER_GB_NSVC);
-		target->filter_data[LOGGING_FILTER_GB_NSVC] = NULL;
+		target->filter_map |= (1 << LOG_FLT_GB_NSVC);
+		target->filter_data[LOG_FLT_GB_NSVC] = nsvc;
+	} else if (target->filter_data[LOG_FLT_GB_NSVC]) {
+		target->filter_map = ~(1 << LOG_FLT_GB_NSVC);
+		target->filter_data[LOG_FLT_GB_NSVC] = NULL;
 	}
 }
 
