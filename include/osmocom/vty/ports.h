@@ -20,7 +20,7 @@
 /* 4249-4251 used by control interface */
 #define OSMO_VTY_PORT_BTSMGR	4252
 #define OSMO_VTY_PORT_GTPHUB	4253
-#define OSMO_VTY_PORT_CSCN	4254
+#define OSMO_VTY_PORT_MSC	4254
 /* 4255 used by control interface */
 #define OSMO_VTY_PORT_MNCC_SIP	4256
 /* 4257 used by control interface */

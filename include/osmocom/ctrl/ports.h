@@ -13,7 +13,7 @@
 #define OSMO_CTRL_PORT_BSC_NAT	4250
 #define OSMO_CTRL_PORT_SGSN	4251
 /* 4252-4254 used by VTY interface */
-#define OSMO_CTRL_PORT_CSCN	4255
+#define OSMO_CTRL_PORT_MSC	4255
 /* 4256 used by VTY interface */
 #define OSMO_CTRL_PORT_GGSN	4257
 #define OSMO_CTRL_PORT_HLR	4259
