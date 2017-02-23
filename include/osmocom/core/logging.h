@@ -141,6 +141,13 @@ enum logging_filters {
 	_LOGGING_FILTER_COUNT
 };
 
+/*! \brief Compatibility with older libosmocore versions */
+#define LOG_FILTER_ALL (1<<LOGGING_FILTER_ALL)
+/*! \brief Compatibility with older libosmocore versions */
+#define GPRS_CTX_NSVC LOGGING_CTX_GB_NSVC
+/*! \brief Compatibility with older libosmocore versions */
+#define GPRS_CTX_BVC LOGGING_CTX_GB_BVC
+
 struct log_target;
 
 /*! \brief Log filter function */
