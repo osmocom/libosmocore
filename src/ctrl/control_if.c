@@ -681,7 +681,7 @@ struct ctrl_handle *ctrl_interface_connect(void *data, const char *addr,
 
 	ctrl->listen_fd.cb = NULL;
 	ctrl->listen_fd.data = ctrl;
-	ret = osmo_sock_init_ifd(&ctrl->listen_fd, AF_INET, SOCK_STREAM,
+	ret = osmo_sock_init_ofd(&ctrl->listen_fd, AF_INET, SOCK_STREAM,
 				 IPPROTO_TCP, addr, port, OSMO_SOCK_F_CONNECT);
 	if (ret < 0) {
 		LOGP(DLCTRL, LOGL_ERROR, "Cannot connect to CTRL at %s:%u\n",
