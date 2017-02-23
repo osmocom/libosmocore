@@ -124,6 +124,8 @@ struct log_context {
 	void *ctx[LOG_MAX_CTX+1];
 };
 
+/*! \brief Indexes to indicate the object currently acted upon.
+ * Array indexes for the global \a log_context array. */
 enum logging_ctx_items {
 	LOGGING_CTX_GB_NSVC,
 	LOGGING_CTX_GB_BVC,
@@ -132,6 +134,9 @@ enum logging_ctx_items {
 	_LOGGING_CTX_COUNT
 };
 
+/*! \brief Indexes to indicate objects that should be logged.
+ * Array indexes to log_target->filter_data and bit indexes for
+ * log_target->filter_map. */
 enum logging_filters {
 	LOGGING_FILTER_ALL,
 	LOGGING_FILTER_GB_NSVC,
