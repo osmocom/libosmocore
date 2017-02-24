@@ -9,6 +9,12 @@ cat $abs_srcdir/a5/a5_test.ok > expout
 AT_CHECK([$abs_top_builddir/tests/a5/a5_test], [0], [expout])
 AT_CLEANUP
 
+AT_SETUP([ctrl])
+AT_KEYWORDS([ctrl])
+cat $abs_srcdir/ctrl/ctrl_test.ok > expout
+AT_CHECK([$abs_top_builddir/tests/ctrl/ctrl_test], [0], [expout])
+AT_CLEANUP
+
 AT_SETUP([kasumi])
 AT_KEYWORDS([kasumi])
 cat $abs_srcdir/kasumi/kasumi_test.ok > expout

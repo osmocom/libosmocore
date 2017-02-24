@@ -1,0 +1,9 @@
+Checking ctrl types...
+ctrl type 0 is unknown 0x0 [PARSE FAILED]
+ctrl type 1 is GET -> 1 OK
+ctrl type 2 is SET -> 2 OK
+ctrl type 3 is GET_REPLY -> 3 OK
+ctrl type 4 is SET_REPLY -> 4 OK
+ctrl type 5 is TRAP -> 5 OK
+ctrl type 6 is ERROR -> 6 OK
+ctrl type 64 is unknown 0x40 [PARSE FAILED]

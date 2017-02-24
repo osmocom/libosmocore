@@ -11,7 +11,7 @@ check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
 		 logging/logging_test fr/fr_test codec/codec_test	\
 		 loggingrb/loggingrb_test strrb/strrb_test              \
 		 vty/vty_test comp128/comp128_test utils/utils_test	\
-		 smscb/gsm0341_test stats/stats_test			\
+		 smscb/gsm0341_test stats/stats_test ctrl/ctrl_test	\
 		 bitvec/bitvec_test msgb/msgb_test bits/bitcomp_test	\
 		 tlv/tlv_test gsup/gsup_test oap/oap_test fsm/fsm_test	\
 		 write_queue/wqueue_test socket/socket_test
@@ -41,6 +41,9 @@ comp128_comp128_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/
 
 auth_milenage_test_SOURCES = auth/milenage_test.c
 auth_milenage_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/gsm/libosmogsm.la
+
+ctrl_ctrl_test_SOURCES = ctrl/ctrl_test.c
+ctrl_ctrl_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/ctrl/libosmoctrl.la
 
 gea_gea_test_SOURCES = gea/gea_test.c
 gea_gea_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/gsm/libosmogsm.la
@@ -164,7 +167,7 @@ $(srcdir)/package.m4: $(top_srcdir)/configure.ac
 EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
              timer/timer_test.ok sms/sms_test.ok ussd/ussd_test.ok	\
              smscb/smscb_test.ok bits/bitrev_test.ok a5/a5_test.ok	\
-             conv/conv_test.ok auth/milenage_test.ok			\
+             conv/conv_test.ok auth/milenage_test.ok ctrl/ctrl_test.ok	\
              lapd/lapd_test.ok gsm0408/gsm0408_test.ok			\
              gsm0808/gsm0808_test.ok gb/bssgp_fc_tests.err		\
              gb/bssgp_fc_tests.ok gb/bssgp_fc_tests.sh			\

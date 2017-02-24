@@ -4,7 +4,7 @@
 #include <osmocom/core/talloc.h>
 #include <osmocom/core/write_queue.h>
 #include <osmocom/core/logging.h>
-
+#include <osmocom/core/utils.h>
 #include <osmocom/vty/vector.h>
 
 #define CTRL_CMD_ERROR		-1
@@ -22,7 +22,7 @@ enum ctrl_node_type {
 };
 
 enum ctrl_type {
-	CTRL_TYPE_UNKNOWN,
+	CTRL_TYPE_UNKNOWN = 0,
 	CTRL_TYPE_GET,
 	CTRL_TYPE_SET,
 	CTRL_TYPE_GET_REPLY,
@@ -30,6 +30,8 @@ enum ctrl_type {
 	CTRL_TYPE_TRAP,
 	CTRL_TYPE_ERROR
 };
+
+extern const struct value_string ctrl_type_vals[];
 
 struct ctrl_connection {
 	struct llist_head list_entry;

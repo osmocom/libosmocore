@@ -33,41 +33,21 @@
 
 #include <osmocom/core/msgb.h>
 #include <osmocom/core/talloc.h>
-
+#include <osmocom/core/utils.h>
 #include <osmocom/vty/command.h>
 #include <osmocom/vty/vector.h>
 
 extern vector ctrl_node_vec;
 
-static struct ctrl_cmd_map ccm[] = {
-	{"GET", CTRL_TYPE_GET},
-	{"SET", CTRL_TYPE_SET},
-	{"GET_REPLY", CTRL_TYPE_GET_REPLY},
-	{"SET_REPLY", CTRL_TYPE_SET_REPLY},
-	{"TRAP", CTRL_TYPE_TRAP},
-	{"ERROR", CTRL_TYPE_ERROR},
-	{NULL}
+const struct value_string ctrl_type_vals[] = {
+	{ CTRL_TYPE_GET,	"GET" },
+	{ CTRL_TYPE_SET,	"SET" },
+	{ CTRL_TYPE_GET_REPLY,	"GET_REPLY" },
+	{ CTRL_TYPE_SET_REPLY,	"SET_REPLY" },
+	{ CTRL_TYPE_TRAP,	"TRAP" },
+	{ CTRL_TYPE_ERROR,	"ERROR" },
+	{ CTRL_TYPE_UNKNOWN,	NULL }
 };
-
-static int ctrl_cmd_str2type(char *s)
-{
-	int i;
-	for (i=0; ccm[i].cmd != NULL; i++) {
-		if (strcasecmp(s, ccm[i].cmd) == 0)
-			return ccm[i].type;
-	}
-	return CTRL_TYPE_UNKNOWN;
-}
-
-static char *ctrl_cmd_type2str(int type)
-{
-	int i;
-	for (i=0; ccm[i].cmd != NULL; i++) {
-		if (ccm[i].type == type)
-			return ccm[i].cmd;
-	}
-	return NULL;
-}
 
 /* Functions from libosmocom */
 extern vector cmd_make_descvec(const char *string, const char *descstr);
@@ -308,7 +288,7 @@ struct ctrl_cmd *ctrl_cmd_parse(void *ctx, struct msgb *msg)
 		goto err;
 	}
 
-	cmd->type = ctrl_cmd_str2type(tmp);
+	cmd->type = get_string_value(ctrl_type_vals, tmp);
 	if (cmd->type == CTRL_TYPE_UNKNOWN) {
 		cmd->type = CTRL_TYPE_ERROR;
 		cmd->id = "err";
@@ -403,7 +383,8 @@ err:
 struct msgb *ctrl_cmd_make(struct ctrl_cmd *cmd)
 {
 	struct msgb *msg;
-	char *type, *tmp;
+	const char *type;
+	char *tmp;
 
 	if (!cmd->id)
 		return NULL;
@@ -412,7 +393,7 @@ struct msgb *ctrl_cmd_make(struct ctrl_cmd *cmd)
 	if (!msg)
 		return NULL;
 
-	type = ctrl_cmd_type2str(cmd->type);
+	type = get_value_string(ctrl_type_vals, cmd->type);
 
 	switch (cmd->type) {
 	case CTRL_TYPE_GET:
