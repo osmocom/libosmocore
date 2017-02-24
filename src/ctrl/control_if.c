@@ -186,6 +186,23 @@ int ctrl_cmd_handle(struct ctrl_handle *ctrl, struct ctrl_cmd *cmd,
 
 	vector vline, cmdvec, cmds_vec;
 
+	if (cmd->type == CTRL_TYPE_SET_REPLY ||
+	    cmd->type == CTRL_TYPE_GET_REPLY) {
+		if (strncmp(cmd->reply, "OK", 2) == 0) {
+			LOGP(DLCTRL, LOGL_DEBUG, "%s <%s> for %s is OK\n",
+			     get_value_string(ctrl_type_vals, cmd->type),
+			     cmd->id, cmd->variable);
+			return CTRL_CMD_HANDLED;
+		}
+	}
+
+	if (cmd->type == CTRL_TYPE_ERROR) {
+			LOGP(DLCTRL, LOGL_ERROR, "%s <%s> for %s is %s\n",
+			     get_value_string(ctrl_type_vals, cmd->type),
+			     cmd->id, cmd->variable, cmd->reply);
+			return CTRL_CMD_HANDLED;
+	}
+
 	ret = CTRL_CMD_ERROR;
 	cmd->reply = NULL;
 	node = CTRL_NODE_ROOT;
