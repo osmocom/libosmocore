@@ -34,6 +34,8 @@ osmo_sitype_strs;
 osmo_c4;
 bitvec_add_range1024;
 comp128;
+comp128v2;
+comp128v3;
 dbm2rxlev;
 
 osmo_earfcn_add;
