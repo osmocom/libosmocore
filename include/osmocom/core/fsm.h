@@ -152,6 +152,10 @@ const char *osmo_fsm_event_name(struct osmo_fsm *fsm, uint32_t event);
 const char *osmo_fsm_inst_name(struct osmo_fsm_inst *fi);
 const char *osmo_fsm_state_name(struct osmo_fsm *fsm, uint32_t state);
 
+/*! \brief return the name of the state the FSM instance is currently in. */
+static inline const char *osmo_fsm_inst_state_name(struct osmo_fsm_inst *fi)
+{ return osmo_fsm_state_name(fi->fsm, fi->state); }
+
 /*! \brief perform a state change of the given FSM instance
  *
  *  This is a macro that calls _osmo_fsm_inst_state_chg() with the given
