@@ -852,10 +852,16 @@ static int rslms_rx_rll_udata_req(struct msgb *msg, struct lapdm_datalink *dl)
 	struct abis_rsl_rll_hdr *rllh = msgb_l2(msg);
 	uint8_t chan_nr = rllh->chan_nr;
 	uint8_t link_id = rllh->link_id;
-	int ui_bts = (le->mode == LAPDM_MODE_BTS && (link_id & 0x40));
 	uint8_t sapi = link_id & 7;
 	struct tlv_parsed tv;
-	int length;
+	int length, ui_bts;
+
+	if (!le) {
+		LOGP(DLLAPD, LOGL_ERROR, "lapdm_datalink without entity error\n");
+		msgb_free(msg);
+		return -EMLINK;
+	}
+	ui_bts = (le->mode == LAPDM_MODE_BTS && (link_id & 0x40));
 
 	/* check if the layer3 message length exceeds N201 */
 
