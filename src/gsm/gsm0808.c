@@ -540,6 +540,7 @@ const char *gsm0808_bssmap_name(uint8_t msg_type)
 static const struct value_string gsm0808_bssap_names[] = {
 	{ BSSAP_MSG_BSS_MANAGEMENT, 		"MANAGEMENT" },
 	{ BSSAP_MSG_DTAP,			"DTAP" },
+	{ 0, NULL }
 };
 
 const char *gsm0808_bssap_name(uint8_t msg_type)
