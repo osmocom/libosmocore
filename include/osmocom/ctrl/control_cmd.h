@@ -22,7 +22,7 @@ enum ctrl_node_type {
 };
 
 enum ctrl_type {
-	CTRL_TYPE_UNKNOWN = 0,
+	CTRL_TYPE_UNKNOWN,
 	CTRL_TYPE_GET,
 	CTRL_TYPE_SET,
 	CTRL_TYPE_GET_REPLY,

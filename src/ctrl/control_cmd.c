@@ -40,13 +40,14 @@
 extern vector ctrl_node_vec;
 
 const struct value_string ctrl_type_vals[] = {
+	{ CTRL_TYPE_UNKNOWN,	"(unknown)" },
 	{ CTRL_TYPE_GET,	"GET" },
 	{ CTRL_TYPE_SET,	"SET" },
 	{ CTRL_TYPE_GET_REPLY,	"GET_REPLY" },
 	{ CTRL_TYPE_SET_REPLY,	"SET_REPLY" },
 	{ CTRL_TYPE_TRAP,	"TRAP" },
 	{ CTRL_TYPE_ERROR,	"ERROR" },
-	{ CTRL_TYPE_UNKNOWN,	NULL }
+	{ 0, NULL }
 };
 
 /* Functions from libosmocom */
