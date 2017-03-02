@@ -307,6 +307,9 @@ void lapd_dl_init(struct lapd_datalink *dl, uint8_t k, uint8_t v_range,
 /* reset to IDLE state */
 void lapd_dl_reset(struct lapd_datalink *dl)
 {
+	LOGP(DLLAPD, LOGL_INFO, "Resetting LAPDm instance\n");
+	/* enter idle state (and remove eventual cont_res) */
+	lapd_dl_newstate(dl, LAPD_STATE_IDLE);
 	/* flush buffer */
 	lapd_dl_flush_tx(dl);
 	lapd_dl_flush_send(dl);
