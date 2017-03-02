@@ -97,6 +97,7 @@ struct info_time_ind_param {
 /*! \brief for MEAS MPH-INFO.ind */
 struct info_meas_ind_param {
 	uint8_t chan_nr;	/*!< \brief Channel Number (Like RSL) */
+	uint32_t fn;		/*!< \brief GSM Frame Number */
 	uint16_t ber10k;	/*!< \brief BER in units of 0.01% */
 	int16_t ta_offs_qbits;	/*!< \brief timing advance offset (in qbits) */
 	int16_t c_i_cb;		/*!< \brief C/I ratio in 0.1 dB */
