@@ -180,7 +180,7 @@ int osmo_auth_gen_vec(struct osmo_auth_vector *vec,
  * based on the permanent subscriber data, a random value as well as the
  * AUTS and RAND values returned by the SIM/MS.  This special variant is
  * needed if the sequence numbers between MS and AUC have for some
- * reason become diffrent.
+ * reason become different.
  */
 int osmo_auth_gen_vec_auts(struct osmo_auth_vector *vec,
 			   struct osmo_sub_auth_data *aud,

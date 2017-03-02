@@ -342,7 +342,7 @@ DEFUN(show_alarms,
 
 gDEFUN(cfg_description, cfg_description_cmd,
 	"description .TEXT",
-	"Save human-readable decription of the object\n"
+	"Save human-readable description of the object\n"
 	"Text until the end of the line\n")
 {
 	char **dptr = vty->index_sub;

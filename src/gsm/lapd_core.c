@@ -861,7 +861,7 @@ static int lapd_rx_u(struct msgb *msg, struct lapd_msg_ctx *lctx)
 				if (memcmp(dl->cont_res->data, msg->data,
 								length)) {
 					LOGP(DLLAPD, LOGL_INFO, "Another SABM "
-					     "with diffrent content - "
+					     "with different content - "
 					     "ignoring! (dl=%p)\n", dl);
 					msgb_free(msg);
 					return 0;

@@ -138,7 +138,7 @@ enum ns_stat {
 };
 
 static const struct osmo_stat_item_desc nsvc_stat_description[] = {
-	{ "alive.delay", "ALIVE reponse time        ", "ms", 16, 0 },
+	{ "alive.delay", "ALIVE response time        ", "ms", 16, 0 },
 };
 
 static const struct osmo_stat_item_group_desc nsvc_statg_desc = {

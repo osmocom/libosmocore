@@ -269,7 +269,7 @@ int ctrl_cmd_handle(struct ctrl_handle *ctrl, struct ctrl_cmd *cmd,
 err:
 	if (!cmd->reply) {
 		if (ret == CTRL_CMD_ERROR) {
-			cmd->reply = "An error has occured.";
+			cmd->reply = "An error has occurred.";
 			LOGP(DLCTRL, LOGL_NOTICE,
 			     "%s: cmd->reply has not been set (ERROR).\n",
 			     cmd->variable);
