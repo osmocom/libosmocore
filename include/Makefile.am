@@ -1,3 +1,5 @@
+BUILT_SOURCES = osmocom/gsm/gsm0503.h
+
 nobase_include_HEADERS = \
                        osmocom/codec/codec.h \
                        osmocom/core/application.h \
@@ -149,7 +151,7 @@ osmocom/core/crc%gen.h: osmocom/core/crcXXgen.h.tpl
 	$(AM_V_GEN)$(MKDIR_P) $(dir $@)
 	$(AM_V_GEN)sed -e's/XX/$*/g' $< > $@
 
-osmocom/gsm/gsm0503.h:
+osmocom/gsm/gsm0503.h: $(top_srcdir)/utils/conv_gen.py $(top_srcdir)/utils/conv_codes_gsm.py
 	$(AM_V_GEN)python2 $(top_srcdir)/utils/conv_gen.py gen_header gsm \
 		--target-path $(builddir)/osmocom/gsm
 

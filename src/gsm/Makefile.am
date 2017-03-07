@@ -14,6 +14,8 @@ noinst_HEADERS = milenage/aes.h milenage/aes_i.h milenage/aes_wrap.h \
 noinst_LTLIBRARIES = libgsmint.la
 lib_LTLIBRARIES = libosmogsm.la
 
+BUILT_SOURCES = gsm0503_conv.c
+
 libgsmint_la_SOURCES =  a5.c rxlev_stat.c tlv_parser.c comp128.c comp128v23.c \
 			gsm_utils.c rsl.c gsm48.c gsm48_ie.c gsm0808.c sysinfo.c \
 			gprs_cipher_core.c gprs_rlc.c gsm0480.c abis_nm.c gsm0502.c \
@@ -34,7 +36,7 @@ libosmogsm_la_LIBADD = libgsmint.la
 EXTRA_DIST = libosmogsm.map
 
 # Convolutional codes generation
-gsm0503_conv.c:
+gsm0503_conv.c: $(top_srcdir)/utils/conv_gen.py $(top_srcdir)/utils/conv_codes_gsm.py
 	$(AM_V_GEN)python2 $(top_srcdir)/utils/conv_gen.py gen_codes gsm
 
 CLEANFILES = gsm0503_conv.c
