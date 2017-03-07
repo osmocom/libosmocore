@@ -151,6 +151,6 @@ osmocom/core/crc%gen.h: osmocom/core/crcXXgen.h.tpl
 
 osmocom/gsm/gsm0503.h:
 	$(AM_V_GEN)python2 $(top_srcdir)/utils/conv_gen.py gen_header gsm \
-		--target-path $(top_srcdir)/include/osmocom/gsm/
+		--target-path $(builddir)/osmocom/gsm
 
 CLEANFILES = osmocom/gsm/gsm0503.h
