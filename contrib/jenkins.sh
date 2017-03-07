@@ -10,3 +10,15 @@ $MAKE $PARALLEL_MAKE check \
   || cat-testlogs.sh
 $MAKE distcheck \
   || cat-testlogs.sh
+
+# verify build in dir other than source tree
+rm -rf *
+git checkout .
+autoreconf --install --force
+mkdir builddir
+cd builddir
+../configure --enable-static
+$MAKE $PARALLEL_MAKE check \
+  || cat-testlogs.sh
+$MAKE distcheck \
+  || cat-testlogs.sh
