@@ -117,10 +117,18 @@ void osmo_fd_unregister(struct osmo_fd *fd)
 	llist_del(&fd->list);
 }
 
+/*! \brief Populate the fd_sets and return the highest fd number
+ *  \param[in] _rset The readfds to populate
+ *  \param[in] _wset The wrtiefds to populate
+ *  \param[in] _eset The errorfds to populate
+ *
+ *  \returns The highest file descriptor seen or 0 on an empty list
+ */
 inline int osmo_fd_fill_fds(void *_rset, void *_wset, void *_eset)
 {
 	fd_set *readset = _rset, *writeset = _wset, *exceptset = _eset;
 	struct osmo_fd *ufd;
+	int highfd = 0;
 
 	llist_for_each_entry(ufd, &osmo_fds, list) {
 		if (ufd->when & BSC_FD_READ)
@@ -131,9 +139,12 @@ inline int osmo_fd_fill_fds(void *_rset, void *_wset, void *_eset)
 
 		if (ufd->when & BSC_FD_EXCEPT)
 			FD_SET(ufd->fd, exceptset);
+
+		if (ufd->fd > highfd)
+			highfd = ufd->fd;
 	}
 
-	return maxfd;
+	return highfd;
 }
 
 inline int osmo_fd_disp_fds(void *_rset, void *_wset, void *_eset)
