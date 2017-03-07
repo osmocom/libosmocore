@@ -2,6 +2,8 @@ if ENABLE_UTILITIES
 AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include $(TALLOC_CFLAGS)
 AM_CFLAGS = -Wall
 
+EXTRA_DIST = conv_gen.py conv_codes_gsm.py
+
 bin_PROGRAMS = osmo-arfcn osmo-auc-gen
 
 osmo_arfcn_SOURCES = osmo-arfcn.c
