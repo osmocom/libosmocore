@@ -5,6 +5,7 @@ LIBVERSION = 0:0:0
 
 AM_CPPFLAGS = \
 	-I"$(top_srcdir)/include" \
+	-I"$(top_builddir)/include" \
 	$(TALLOC_CFLAGS)
 AM_CFLAGS = -Wall
 
