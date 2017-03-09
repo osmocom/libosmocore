@@ -1180,6 +1180,11 @@ void gsm48_set_dtx(struct gsm48_cell_options *op, enum gsm48_dtx_mode full,
 #define GSM48_MT_CC_START_DTMF_REJ	0x37
 #define GSM48_MT_CC_FACILITY		0x3a
 
+extern const struct value_string gsm48_rr_msgtype_names[];
+extern const struct value_string gsm48_mm_msgtype_names[];
+extern const struct value_string gsm48_cc_msgtype_names[];
+const char *gsm48_pdisc_msgtype_name(uint8_t pdisc, uint8_t msg_type);
+
 /* FIXME: Table 10.4 / 10.4a (GPRS) */
 
 /* Section 10.5.3.3 CM service type */

@@ -218,6 +218,10 @@ gsm48_mcc_mnc_from_bcd;
 gsm48_chan_mode_names;
 gsm_chan_t_names;
 gsm48_pdisc_names;
+gsm48_rr_msgtype_names;
+gsm48_mm_msgtype_names;
+gsm48_cc_msgtype_names;
+gsm48_pdisc_msgtype_name;
 
 gsm_7bit_decode;
 gsm_7bit_decode_ussd;
