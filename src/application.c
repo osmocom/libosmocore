@@ -156,9 +156,16 @@ int osmo_daemonize(void)
 	/* Redirect stdio to /dev/null */
 /* since C89/C99 says stderr is a macro, we can safely do this! */
 #ifdef stderr
+/*
+ * it does not make sense to check the return code here, so we just
+ * ignore the compiler warning from gcc
+ */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-result"
 	freopen("/dev/null", "r", stdin);
 	freopen("/dev/null", "w", stdout);
 	freopen("/dev/null", "w", stderr);
+#pragma GCC diagnostic pop
 #endif
 
 	return 0;
