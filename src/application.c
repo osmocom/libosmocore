@@ -124,7 +124,7 @@ int osmo_daemonize(void)
 
 	/* Check if parent PID == init, in which case we are already a daemon */
 	if (getppid() == 1)
-		return -EEXIST;
+		return 0;
 
 	/* Fork from the parent process */
 	pid = fork();
