@@ -39,6 +39,8 @@ struct osmo_sub_auth_data {
 			uint8_t amf[2];
 			uint64_t sqn;	/*!< sequence number */
 			int opc_is_op;	/*!< is the OPC field OPC (0) or OP (1) ? */
+			unsigned int ind_bitlen; /*!< nr of bits not in SEQ, only SQN */
+			unsigned int ind; /*!< SQN slot, i.e. (SEQ << ind_bitlen) + ind */
 		} umts;
 		struct {
 			uint8_t ki[16];	/*!< secret key */

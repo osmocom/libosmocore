@@ -32,10 +32,73 @@ static int milenage_gen_vec(struct osmo_auth_vector *vec,
 	size_t res_len = sizeof(vec->res);
 	uint64_t next_sqn;
 	uint8_t sqn[6];
+	uint64_t ind_mask;
+	uint64_t seq_1;
 	int rc;
 
+	/* Determine next SQN, according to 3GPP TS 33.102:
+	 * SQN consists of SEQ and a lower significant part of IND bits:
+	 *
+	 * |----------SEQ------------|
+	 * |------------------------SQN-----------|
+	 *                           |-----IND----|
+	 *
+	 * The IND part is used as "slots": e.g. a given HLR client will always
+	 * get the same IND part, called ind here, with incrementing SEQ. In
+	 * the USIM, each IND slot enforces that its SEQ are used in ascending
+	 * order -- as long as that constraint is satisfied, the SQN may jump
+	 * forwards and backwards. For example, for ind_bitlen == 5, asking the
+	 * USIM for SQN = 32, 64, 33 is allowed, because 32 and 64 are
+	 * SEQ || (ind == 0), and though 33 is below 64, it is ind == 1 and
+	 * allowed.  Not allowed would be 32, 96, 64, because 64 would go
+	 * backwards after 96, both being ind == 0.
+	 *
+	 * From the last used SQN, we want to increment SEQ + 1, and then pick
+	 * the matching IND part.
+	 *
+	 * IND size is suggested in TS 33.102 as 5 bits. SQN is 48 bits long.
+	 * If ind_bitlen is passed too large here, the algorithms will break
+	 * down. But at which point should we return an error? A sane limit
+	 * seems to be ind_bitlen == 10, but to protect against failure,
+	 * limiting ind_bitlen to 28 is enough, 28 being the number of bits
+	 * suggested for the delta in 33.102, which is discussed to still
+	 * require 2^15 > 32000 authentications to wrap the SQN back to the
+	 * start.
+	 *
+	 * Note that if a caller with ind == 1 generates N vectors, the SQN
+	 * stored after this will reflect SEQ + N. If then another caller with
+	 * ind == 2 generates another N vectors, this will then use SEQ + N
+	 * onwards and end up with SEQ + N + N. In other words, most of each
+	 * SEQ's IND slots will remain unused. When looking at SQN being 48
+	 * bits wide, after dropping ind_bitlen (say 5) from it, we will still
+	 * have a sequence range of 2^43 = 8.8e12, eight trillion sequences,
+	 * which is large enough to not bother further. With the maximum
+	 * ind_bitlen of 28 enforced below, we still get more than 1 million
+	 * sequences, which is also sufficiently large.
+	 *
+	 * An ind_bitlen of zero may be passed from legacy callers that are not
+	 * aware of the IND extension. For these, below algorithm works out as
+	 * before, simply incrementing SQN by 1.
+	 *
+	 * This is also a mechanism for tools like the osmo-auc-gen to directly
+	 * request a given SQN to be used. With ind_bitlen == 0 the caller can
+	 * be sure that this code will increment SQN by exactly one before
+	 * generating a tuple, thus a caller would simply pass
+	 * { .ind_bitlen = 0, .ind = 0, .sqn = (desired_sqn - 1) }
+	 */
+
+	if (aud->u.umts.ind_bitlen > 28)
+		return -2;
+
+	seq_1 = 1LL << aud->u.umts.ind_bitlen;
+	ind_mask = ~(seq_1 - 1);
+
+	/* the ind index must not affect the SEQ part */
+	if (aud->u.umts.ind > seq_1)
+		return -3;
+
 	/* keep the incremented SQN local until gsm_milenage() succeeded. */
-	next_sqn = aud->u.umts.sqn + 1;
+	next_sqn = ((aud->u.umts.sqn + seq_1) & ind_mask) + aud->u.umts.ind;
 
 	osmo_store64be_ext(next_sqn, sqn, 6);
 	milenage_generate(aud->u.umts.opc, aud->u.umts.amf, aud->u.umts.k,
@@ -78,6 +141,8 @@ static int milenage_gen_vec_auts(struct osmo_auth_vector *vec,
 	if (rc < 0)
 		return rc;
 
+	/* Update our "largest used SQN" from the USIM -- milenage_gen_vec()
+	 * below will increment SQN. */
 	aud->u.umts.sqn = osmo_load64be_ext(sqn_out, 6) >> 16;
 
 	return milenage_gen_vec(vec, aud, _rand);

@@ -37,6 +37,8 @@ static struct osmo_sub_auth_data test_aud = {
 			 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f },
 		.amf = { 0x00, 0x00 },
 		.sqn = 0x21,
+		.ind_bitlen = 0,
+		.ind = 0,
 	},
 };
 
@@ -79,6 +81,9 @@ int main(int argc, char **argv)
 #endif
 	memset(vec, 0, sizeof(*vec));
 
+	/* ind_bitlen == 0 uses the legacy mode of incrementing SQN by 1.
+	 * sqn == 0x21 == 33, so the SQN used to generate the vector is
+	 * sqn + 1 == 34. */
 	rc = osmo_auth_gen_vec(vec, &test_aud, _rand);
 	if (rc < 0) {
 		fprintf(stderr, "error generating auth vector\n");
@@ -90,6 +95,7 @@ int main(int argc, char **argv)
 	const uint8_t auts[14] = { 0x87, 0x11, 0xa0, 0xec, 0x9e, 0x16, 0x37, 0xdf,
 			     0x17, 0xf8, 0x0b, 0x38, 0x4e, 0xe4 };
 
+	/* Invoking with ind_bitlen == 0, the next SQN after 31 is 32. */
 	rc = osmo_auth_gen_vec_auts(vec, &test_aud, auts, _rand, _rand);
 	if (rc < 0) {
 		printf("AUTS failed\n");
