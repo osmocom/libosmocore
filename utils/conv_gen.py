@@ -306,9 +306,15 @@ def print_shared(fi, shared_polys):
 		code = ConvolutionalCode(0, polys, name = name)
 		code.print_state_and_output(fi)
 
+def open_for_writing(parent_dir, base_name):
+	path = os.path.join(parent_dir, base_name)
+	if not os.path.isdir(parent_dir):
+		os.makedirs(parent_dir)
+	return open(path, 'w')
+
 def generate_codes(codes, path, prefix, name):
 	# Open a new file for writing
-	f = open(os.path.join(path, name), 'w')
+	f = open_for_writing(path, name)
 	f.write(mod_license + "\n")
 	f.write("#include <stdint.h>\n")
 	f.write("#include <osmocom/core/conv.h>\n\n")
@@ -335,7 +341,7 @@ def generate_codes(codes, path, prefix, name):
 
 def generate_vectors(codes, path, prefix, name, inc = None):
 	# Open a new file for writing
-	f = open(os.path.join(path, name), 'w')
+	f = open_for_writing(path, name)
 	f.write(mod_license + "\n")
 
 	# Print includes
@@ -363,7 +369,7 @@ def generate_vectors(codes, path, prefix, name, inc = None):
 
 def generate_header(codes, path, prefix, name, description = None):
 	# Open a new file for writing
-	f = open(os.path.join(path, name), 'w')
+	f = open_for_writing(path, name)
 
 	# Print license and includes
 	f.write(mod_license + "\n")
