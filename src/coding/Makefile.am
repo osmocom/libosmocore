@@ -3,7 +3,9 @@
 # documentation before making any modification
 LIBVERSION = 0:0:0
 
-AM_CPPFLAGS = -I$(top_srcdir)/include $(TALLOC_CFLAGS)
+AM_CPPFLAGS = \
+	-I"$(top_srcdir)/include" \
+	$(TALLOC_CFLAGS)
 AM_CFLAGS = -Wall
 
 lib_LTLIBRARIES = libosmocoding.la
