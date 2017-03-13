@@ -198,6 +198,10 @@ int main(int argc, char **argv)
 			}
 			ul = strtoul(optarg, 0, 10);
 			test_aud.u.umts.sqn = ul;
+			/* Before calculating the UMTS auth vector,
+			 * osmo_auth_gen_vec() increments the SQN. SQN-1 here
+			 * to end up with the SQN the user requested. */
+			test_aud.u.umts.sqn--;
 			break;
 		case 'r':
 			rc = osmo_hexparse(optarg, _rand, sizeof(_rand));
@@ -260,16 +264,14 @@ int main(int argc, char **argv)
 	else {
 		dump_auth_vec(vec);
 		if (test_aud.type == OSMO_AUTH_TYPE_UMTS)
-			/* After generating, SQN is incremented, so -1 */
-			printf("SQN:\t%" PRIu64 "\n", test_aud.u.umts.sqn - 1);
+			printf("SQN:\t%" PRIu64 "\n", test_aud.u.umts.sqn);
 	}
 
 	/* After recovering SQN.MS from AUTS, milenage_gen_vec_auts() does
-	 * aud->u.umts.sqn++, and after vector generation milenage_gen_vec()
-	 * does another ++, so to show SQN.MS we need to -2 */
+	 * aud->u.umts.sqn++, so to show SQN.MS we need to -1 */
 	if (auts_is_set)
 		printf("AUTS success: SQN.MS = %" PRIu64 "\n",
-		       test_aud.u.umts.sqn - 2);
+		       test_aud.u.umts.sqn - 1);
 
 	exit(0);
 }

@@ -30,10 +30,14 @@ static int milenage_gen_vec(struct osmo_auth_vector *vec,
 			    const uint8_t *_rand)
 {
 	size_t res_len = sizeof(vec->res);
+	uint64_t next_sqn;
 	uint8_t sqn[6];
 	int rc;
 
-	osmo_store64be_ext(aud->u.umts.sqn, sqn, 6);
+	/* keep the incremented SQN local until gsm_milenage() succeeded. */
+	next_sqn = aud->u.umts.sqn + 1;
+
+	osmo_store64be_ext(next_sqn, sqn, 6);
 	milenage_generate(aud->u.umts.opc, aud->u.umts.amf, aud->u.umts.k,
 			  sqn, _rand,
 			  vec->autn, vec->ik, vec->ck, vec->res, &res_len);
@@ -43,7 +47,9 @@ static int milenage_gen_vec(struct osmo_auth_vector *vec,
 		return rc;
 
 	vec->auth_types = OSMO_AUTH_TYPE_UMTS | OSMO_AUTH_TYPE_GSM;
-	aud->u.umts.sqn++;
+
+	/* for storage in the caller's AUC database */
+	aud->u.umts.sqn = next_sqn;
 
 	return 0;
 }
@@ -72,7 +78,7 @@ static int milenage_gen_vec_auts(struct osmo_auth_vector *vec,
 	if (rc < 0)
 		return rc;
 
-	aud->u.umts.sqn = 1 + (osmo_load64be_ext(sqn_out, 6) >> 16);
+	aud->u.umts.sqn = osmo_load64be_ext(sqn_out, 6) >> 16;
 
 	return milenage_gen_vec(vec, aud, _rand);
 }
