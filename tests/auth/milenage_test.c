@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <errno.h>
 #include <string.h>
+#include <inttypes.h>
 
 #include <osmocom/crypt/auth.h>
 #include <osmocom/core/utils.h>
@@ -93,7 +94,8 @@ int main(int argc, char **argv)
 	if (rc < 0) {
 		printf("AUTS failed\n");
 	} else {
-		printf("AUTS success: SEQ.MS = %llu\n", (unsigned long long)test_aud.u.umts.sqn);
+		printf("AUTS success: tuple generated with SQN = %" PRIu64 "\n",
+		       test_aud.u.umts.sqn);
 	}
 
 	opc_test(&test_aud);
