@@ -104,6 +104,34 @@ int main(int argc, char **argv)
 		       test_aud.u.umts.sqn);
 	}
 
+	/* Now test SQN incrementing scheme using SEQ and IND parts:
+	 * with ind_bitlen == 5 and ind == 10, the next SQN after 31 is
+	 * 32 + 10 == 42. */
+	test_aud.u.umts.ind_bitlen = 5;
+	test_aud.u.umts.ind = 10;
+	rc = osmo_auth_gen_vec_auts(vec, &test_aud, auts, _rand, _rand);
+	if (rc < 0)
+		printf("AUTS failed\n");
+	else
+		printf("AUTS success: tuple generated with SQN = %" PRIu64 "\n",
+		       test_aud.u.umts.sqn);
+
+	/* And the one after that is 64 + 10 == 74 */
+	rc = osmo_auth_gen_vec(vec, &test_aud, _rand);
+	if (rc < 0)
+		printf("generating vector failed\n");
+	else
+		printf("tuple generated with SQN = %" PRIu64 "\n",
+		       test_aud.u.umts.sqn);
+
+	/* And the one after *that* is 96 + 10 == 106 */
+	rc = osmo_auth_gen_vec(vec, &test_aud, _rand);
+	if (rc < 0)
+		printf("generating vector failed\n");
+	else
+		printf("tuple generated with SQN = %" PRIu64 "\n",
+		       test_aud.u.umts.sqn);
+
 	opc_test(&test_aud);
 
 	exit(0);
