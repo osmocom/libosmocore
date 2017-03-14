@@ -63,6 +63,15 @@ static int opc_test(const struct osmo_sub_auth_data *aud)
 	return rc;
 }
 
+#define RECALC_AUTS 0
+#if RECALC_AUTS
+typedef uint8_t u8;
+extern int milenage_f2345(const u8 *opc, const u8 *k, const u8 *_rand,
+			  u8 *res, u8 *ck, u8 *ik, u8 *ak, u8 *akstar);
+extern int milenage_f1(const u8 *opc, const u8 *k, const u8 *_rand,
+		       const u8 *sqn, const u8 *amf, u8 *mac_a, u8 *mac_s);
+#endif
+
 int main(int argc, char **argv)
 {
 	struct osmo_auth_vector _vec;
@@ -91,6 +100,53 @@ int main(int argc, char **argv)
 	}
 
 	dump_auth_vec(vec);
+
+	/* The USIM generates an AUTS to tell us it is at SQN == 31:
+	 *
+	 * SQN_MS = 00000000001f
+	 *
+	 * AUTS = Conc(SQN_MS) || MAC-S
+	 * Conc(SQN_MS) = SQN_MS ⊕ f5*[K](RAND)
+	 * MAC-S = f1*[K] (SQN MS || RAND || AMF)
+	 *
+	 *    K = 000102030405060708090a0b0c0d0e0f
+	 * RAND = 00000000000000000000000000000000
+	 *
+	 * f5*--> Conc(SQN_MS) = SQN_MS ^ f5*(K,RAND)
+	 *                     = 00000000001f ^ 8711a0ec9e09
+	 *                     = 8711a0ec9e16
+	 * AMF = 0000 (TS 33.102 v7.0.0, 6.3.3)
+	 * MAC-S = f1*[K] (SQN MS || RAND || AMF)
+	 *       = f1*[K] (00000000001f || 00000000000000000000000000000000 || 0000)
+	 *       = 37df17f80b384ee4
+	 *
+	 * AUTS = 8711a0ec9e16 || 37df17f80b384ee4
+	 */
+#if RECALC_AUTS
+	uint8_t ak[6];
+	uint8_t akstar[6];
+	uint8_t opc[16];
+	uint8_t k[16];
+	uint8_t rand[16];
+	osmo_hexparse("000102030405060708090a0b0c0d0e0f", k, sizeof(k));
+	osmo_hexparse("000102030405060708090a0b0c0d0e0f", opc, sizeof(opc));
+	osmo_hexparse("00000000000000000000000000000000", rand, sizeof(rand));
+	milenage_f2345(opc, k, rand, NULL, NULL, NULL, ak, akstar);
+	printf("ak = %s\n", osmo_hexdump_nospc(ak, sizeof(ak)));
+	printf("akstar = %s\n", osmo_hexdump_nospc(akstar, sizeof(akstar)));
+
+	uint8_t sqn_ms[6] = { 0, 0, 0, 0, 0, 31 };
+	uint8_t amf[2] = {};
+	uint8_t mac_s[8];
+	milenage_f1(opc, k, rand, sqn_ms, amf, NULL, mac_s);
+	printf("mac_s = %s\n", osmo_hexdump_nospc(mac_s, sizeof(mac_s)));
+	/* verify valid AUTS resulting in SQN 31 with:
+	   osmo-auc-gen -3 -a milenage -k 000102030405060708090a0b0c0d0e0f \
+	                -o 000102030405060708090a0b0c0d0e0f \
+	                -r 00000000000000000000000000000000 \
+	                -A 8711a0ec9e1637df17f80b384ee4
+	 */
+#endif
 
 	const uint8_t auts[14] = { 0x87, 0x11, 0xa0, 0xec, 0x9e, 0x16, 0x37, 0xdf,
 			     0x17, 0xf8, 0x0b, 0x38, 0x4e, 0xe4 };
