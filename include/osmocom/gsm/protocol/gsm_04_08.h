@@ -1466,6 +1466,7 @@ enum chreq_type {
 	CHREQ_T_RESERVED_IGNORE,
 	CHREQ_T_PDCH_ONE_PHASE,
 	CHREQ_T_PDCH_TWO_PHASE,
+	_NUM_CHREQ_T,
 };
 
 /* Chapter 11.3 */
