@@ -215,6 +215,36 @@ static inline void llist_splice_init(struct llist_head *llist,
 #define llist_entry(ptr, type, member) \
 	container_of(ptr, type, member)
 
+/*! \brief Get the first element from a list
+ *  \param ptr    the list head to take the element from.
+ *  \param type   the type of the struct this is embedded in.
+ *  \param member the name of the list_head within the struct.
+ *
+ * Note, that list is expected to be not empty.
+ */
+#define llist_first_entry(ptr, type, member) \
+	llist_entry((ptr)->next, type, member)
+
+/*! \brief Get the last element from a list
+ *  \param ptr    the list head to take the element from.
+ *  \param type   the type of the struct this is embedded in.
+ *  \param member the name of the llist_head within the struct.
+ *
+ * Note, that list is expected to be not empty.
+ */
+#define llist_last_entry(ptr, type, member) \
+	llist_entry((ptr)->prev, type, member)
+
+/*! \brief Get the first element from a list, or NULL
+ *  \param ptr    the list head to take the element from.
+ *  \param type   the type of the struct this is embedded in.
+ *  \param member the name of the list_head within the struct.
+ *
+ * Note that if the list is empty, it returns NULL.
+ */
+#define llist_first_entry_or_null(ptr, type, member) \
+	(!llist_empty(ptr) ? llist_first_entry(ptr, type, member) : NULL)
+
 /*! \brief Iterate over a linked list
  *  \param pos 	The \ref llist_head to use as a loop counter
  *  \param head The head of the list over which to iterate
