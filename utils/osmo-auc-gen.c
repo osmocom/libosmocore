@@ -106,7 +106,6 @@ int main(int argc, char **argv)
 
 	while (1) {
 		int c;
-		unsigned long ul;
 		static struct option long_options[] = {
 			{ "2g", 0, 0, '2' },
 			{ "3g", 0, 0, '3' },
@@ -196,8 +195,7 @@ int main(int argc, char **argv)
 				fprintf(stderr, "Only UMTS has SQN\n");
 				exit(2);
 			}
-			ul = strtoul(optarg, 0, 10);
-			test_aud.u.umts.sqn = ul;
+			test_aud.u.umts.sqn = strtoull(optarg, 0, 10);
 			/* Before calculating the UMTS auth vector,
 			 * osmo_auth_gen_vec() increments the SQN. SQN-1 here
 			 * to end up with the SQN the user requested. */
