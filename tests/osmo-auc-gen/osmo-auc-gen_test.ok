@@ -11,6 +11,7 @@ CK:	f0b29f50a7d873f30336473bdc35d04f
 RES:	f511d3a7f06e6a30
 SRES:	057fb997
 Kc:	60524000cc5e5407
+SQN:	0
 
 
 > osmo-auc-gen -3 -a milenage -r 6a61050765caa32c90371370e5d6dc2d -k 1dc4f974325cce611e54f516dc1fec56 -o 2a48162ff3edca4adf0b7b5e527d6c16 -s 1
@@ -24,6 +25,7 @@ CK:	f0b29f50a7d873f30336473bdc35d04f
 RES:	f511d3a7f06e6a30
 SRES:	057fb997
 Kc:	60524000cc5e5407
+SQN:	1
 
 
 > osmo-auc-gen -3 -a milenage -r 6a61050765caa32c90371370e5d6dc2d -k 1dc4f974325cce611e54f516dc1fec56 -o 2a48162ff3edca4adf0b7b5e527d6c16 -s 23
@@ -37,6 +39,7 @@ CK:	f0b29f50a7d873f30336473bdc35d04f
 RES:	f511d3a7f06e6a30
 SRES:	057fb997
 Kc:	60524000cc5e5407
+SQN:	23
 
 
 > osmo-auc-gen -3 -a milenage -r 1dc4f974325cce611e54f516dc1fec56 -k 2a48162ff3edca4adf0b7b5e527d6c16 -o 6a61050765caa32c90371370e5d6dc2d -s 42
@@ -50,6 +53,7 @@ CK:	c350653d72f7a5bac3a27422e5186019
 RES:	912cdfaadd7b0154
 SRES:	4c57defe
 Kc:	169d78081b24c007
+SQN:	42
 
 
 > osmo-auc-gen -3 -a milenage -r 2a48162ff3edca4adf0b7b5e527d6c16 -k 6a61050765caa32c90371370e5d6dc2d -o 1dc4f974325cce611e54f516dc1fec56 -s 99
@@ -63,6 +67,7 @@ CK:	9c38d9089265ed5ea164e190a65c200d
 RES:	fd40205be2c9c7b2
 SRES:	1f89e7e9
 Kc:	d2d5361395b9b74a
+SQN:	99
 
 
 > osmo-auc-gen -3 -a milenage -r 6a61050765caa32c90371370e5d6dc2d -k 2a48162ff3edca4adf0b7b5e527d6c16 -o 1dc4f974325cce611e54f516dc1fec56 -s 281474976710655
@@ -76,6 +81,7 @@ CK:	e740c156278705a14e1a99ba6d31334f
 RES:	7c04e86a67967fcd
 SRES:	1b9297a7
 Kc:	10687b71e4eb94c5
+SQN:	281474976710655
 
 
 > osmo-auc-gen -3 -a milenage -r 39fa2f4e3d523d8619a73b4f65c3e14d -k EB215756028D60E3275E613320AEC880 -o FB2A3D1B360F599ABAB99DB8669F8308 -A 979498b1f72d3e28c59fa2e72f9c
@@ -89,4 +95,5 @@ CK:	f64735036e5871319c679f4742a75ea1
 RES:	e229c19e791f2e41
 SRES:	9b36efdf
 Kc:	059a4f668f6fbe39
-AUTS success: SQN.MS = 23, generated vector with SQN = 24, next SQN = 25
+SQN:	24
+AUTS success: SQN.MS = 23

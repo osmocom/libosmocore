@@ -257,24 +257,19 @@ int main(int argc, char **argv)
 
 	if (fmt_triplets_dat)
 		dump_triplets_dat(vec);
-	else
+	else {
 		dump_auth_vec(vec);
+		if (test_aud.type == OSMO_AUTH_TYPE_UMTS)
+			/* After generating, SQN is incremented, so -1 */
+			printf("SQN:\t%" PRIu64 "\n", test_aud.u.umts.sqn - 1);
+	}
 
-	/* Print SQN from AUTS. It makes sense to print actually three SQN
-	 * to clarify:
-	 * After recovering SQN.MS from AUTS, milenage_gen_vec_auts() does:
-	 *   aud->u.umts.sqn = 1 + (osmo_load64be_ext(sqn_out, 6) >> 16);
-	 * Then calls milenage_gen_vec(), which, after it is done, does:
-	 *   aud->u.umts.sqn++;
-	 */
+	/* After recovering SQN.MS from AUTS, milenage_gen_vec_auts() does
+	 * aud->u.umts.sqn++, and after vector generation milenage_gen_vec()
+	 * does another ++, so to show SQN.MS we need to -2 */
 	if (auts_is_set)
-		printf("AUTS success: SQN.MS = %" PRIu64
-		       ", generated vector with SQN = %" PRIu64
-		       ", next SQN = %" PRIu64 "\n",
-		       test_aud.u.umts.sqn - 2,
-		       test_aud.u.umts.sqn - 1,
-		       test_aud.u.umts.sqn
-		       );
+		printf("AUTS success: SQN.MS = %" PRIu64 "\n",
+		       test_aud.u.umts.sqn - 2);
 
 	exit(0);
 }
