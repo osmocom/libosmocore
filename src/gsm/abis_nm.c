@@ -162,6 +162,7 @@ const struct value_string abis_mm_event_cause_names[] = {
 	{ OSMO_EVT_MIN_PAG_TAB_FULL,	"Paging table full" },
 	{ OSMO_EVT_WARN_SW_WARN,	"Software warning" },
 	{ OSMO_EVT_EXT_ALARM,		"External alarm" },
+	{ OSMO_EVT_PCU_VERS,		"PCU version report" },
 	{ 0, NULL }
 };
 
