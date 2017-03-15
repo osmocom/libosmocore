@@ -192,7 +192,10 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
 	     gsup/gsup_test.ok gsup/gsup_test.err			\
 	     oap/oap_test.ok fsm/fsm_test.ok fsm/fsm_test.err		\
 	     write_queue/wqueue_test.ok socket/socket_test.ok		\
-	     socket/socket_test.err coding/coding_test.ok
+	     socket/socket_test.err coding/coding_test.ok		\
+	     osmo-auc-gen/osmo-auc-gen_test.sh				\
+	     osmo-auc-gen/osmo-auc-gen_test.ok				\
+	     osmo-auc-gen/osmo-auc-gen_test.err
 
 DISTCLEANFILES = atconfig atlocal
 noinst_HEADERS = conv/conv.h
