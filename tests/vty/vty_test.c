@@ -318,7 +318,7 @@ int main(int argc, char **argv)
 	vty_init(&vty_info);
 
 	/* Setup VTY commands */
-	logging_vty_add_cmds(&log_info);
+	logging_vty_add_cmds();
 	osmo_stats_vty_add_cmds();
 
 	test_cmd_string_from_valstr();

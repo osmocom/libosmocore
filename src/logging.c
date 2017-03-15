@@ -164,7 +164,7 @@ static const struct log_info_cat internal_cat[OSMO_NUM_DLIB] = {
 
 /*! \brief descriptive string for each log level */
 /* You have to keep this in sync with the structure loglevel_strs. */
-const char *loglevel_descriptions[LOGLEVEL_DEFS+1] = {
+static const char *loglevel_descriptions[LOGLEVEL_DEFS+1] = {
 	"Don't use. It doesn't log anything",
 	"Log debug messages and higher levels",
 	"Log informational messages and higher levels",
@@ -392,7 +392,8 @@ static inline int map_subsys(int subsys)
 	return subsys;
 }
 
-static inline int check_log_to_target(struct log_target *tar, int subsys, int level)
+static inline bool should_log_to_target(struct log_target *tar, int subsys,
+					int level)
 {
 	struct log_category *category;
 
@@ -400,28 +401,28 @@ static inline int check_log_to_target(struct log_target *tar, int subsys, int le
 
 	/* subsystem is not supposed to be logged */
 	if (!category->enabled)
-		return 0;
+		return false;
 
 	/* Check the global log level */
 	if (tar->loglevel != 0 && level < tar->loglevel)
-		return 0;
+		return false;
 
 	/* Check the category log level */
 	if (tar->loglevel == 0 && category->loglevel != 0 &&
 	    level < category->loglevel)
-		return 0;
+		return false;
 
 	/* Apply filters here... if that becomes messy we will
 	 * need to put filters in a list and each filter will
 	 * say stop, continue, output */
 	if ((tar->filter_map & (1 << LOG_FLT_ALL)) != 0)
-		return 1;
+		return true;
 
 	if (osmo_log_info->filter_fn)
 		return osmo_log_info->filter_fn(&log_context, tar);
 
 	/* TODO: Check the filter/selector too? */
-	return 1;
+	return true;
 }
 
 /*! \brief vararg version of logging function
@@ -442,7 +443,7 @@ void osmo_vlogp(int subsys, int level, const char *file, int line,
 	llist_for_each_entry(tar, &osmo_log_target_list, entry) {
 		va_list bp;
 
-		if (!check_log_to_target(tar, subsys, level))
+		if (!should_log_to_target(tar, subsys, level))
 			continue;
 
 		/* According to the manpage, vsnprintf leaves the value of ap
@@ -811,7 +812,7 @@ int log_targets_reopen(void)
  *  \param[in] unused_info Deprecated parameter, no longer used!
  *  \returns vty command string for use by VTY command node
  */
-const char *log_vty_command_string(const struct log_info *unused_info)
+const char *log_vty_command_string()
 {
 	struct log_info *info = osmo_log_info;
 	int len = 0, offset = 0, ret, i, rem;
@@ -891,7 +892,7 @@ err:
  *  \param[in] unused_info Deprecated parameter, no longer used!
  *  \returns logging command description for use by VTY command node
  */
-const char *log_vty_command_description(const struct log_info *unused_info)
+const char *log_vty_command_description()
 {
 	struct log_info *info = osmo_log_info;
 	char *str;
@@ -1026,7 +1027,7 @@ int log_check_level(int subsys, unsigned int level)
 	/* TODO: The following could/should be cached (update on config) */
 
 	llist_for_each_entry(tar, &osmo_log_target_list, entry) {
-		if (!check_log_to_target(tar, subsys, level))
+		if (!should_log_to_target(tar, subsys, level))
 			continue;
 
 		/* This might get logged (ignoring filters) */

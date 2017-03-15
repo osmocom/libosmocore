@@ -332,8 +332,8 @@ void log_add_target(struct log_target *target);
 void log_del_target(struct log_target *target);
 
 /* Generate command string for VTY use */
-const char *log_vty_command_string(const struct log_info *info);
-const char *log_vty_command_description(const struct log_info *info);
+const char *log_vty_command_string() OSMO_DEPRECATED("For internal use inside libosmocore only.");
+const char *log_vty_command_description() OSMO_DEPRECATED("For internal use inside libosmocore only.");
 
 struct log_target *log_target_find(int type, const char *fname);
 extern struct llist_head osmo_log_target_list;

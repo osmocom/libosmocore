@@ -737,7 +737,7 @@ static int config_write_log(struct vty *vty)
 	return 1;
 }
 
-void logging_vty_add_cmds(const struct log_info *cat)
+void logging_vty_add_cmds()
 {
 	install_element_ve(&enable_logging_cmd);
 	install_element_ve(&disable_logging_cmd);
@@ -750,8 +750,8 @@ void logging_vty_add_cmds(const struct log_info *cat)
 	install_element_ve(&logging_set_category_mask_old_cmd);
 
 	/* Logging level strings are generated dynamically. */
-	logging_level_cmd.string = log_vty_command_string(cat);
-	logging_level_cmd.doc = log_vty_command_description(cat);
+	logging_level_cmd.string = log_vty_command_string();
+	logging_level_cmd.doc = log_vty_command_description();
 	install_element_ve(&logging_level_cmd);
 	install_element_ve(&show_logging_vty_cmd);
 	install_element_ve(&show_alarms_cmd);
