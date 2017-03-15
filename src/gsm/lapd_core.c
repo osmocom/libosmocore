@@ -180,18 +180,23 @@ static void lapd_dl_flush_tx(struct lapd_datalink *dl)
 }
 
 /* Figure B.2/Q.921 */
-const char *lapd_state_names[] = {
-	"LAPD_STATE_NULL",
-	"LAPD_STATE_TEI_UNASS",
-	"LAPD_STATE_ASS_TEI_WAIT",
-	"LAPD_STATE_EST_TEI_WAIT",
-	"LAPD_STATE_IDLE",
-	"LAPD_STATE_SABM_SENT",
-	"LAPD_STATE_DISC_SENT",
-	"LAPD_STATE_MF_EST",
-	"LAPD_STATE_TIMER_RECOV",
-
+const struct value_string lapd_state_names[] = {
+	OSMO_VALUE_STRING(LAPD_STATE_NULL),
+	OSMO_VALUE_STRING(LAPD_STATE_TEI_UNASS),
+	OSMO_VALUE_STRING(LAPD_STATE_ASS_TEI_WAIT),
+	OSMO_VALUE_STRING(LAPD_STATE_EST_TEI_WAIT),
+	OSMO_VALUE_STRING(LAPD_STATE_IDLE),
+	OSMO_VALUE_STRING(LAPD_STATE_SABM_SENT),
+	OSMO_VALUE_STRING(LAPD_STATE_DISC_SENT),
+	OSMO_VALUE_STRING(LAPD_STATE_MF_EST),
+	OSMO_VALUE_STRING(LAPD_STATE_TIMER_RECOV),
+	{ 0, NULL }
 };
+
+static inline const char *lapd_state_name(enum lapd_state state)
+{
+	return get_value_string(lapd_state_names, state);
+}
 
 static void lapd_start_t200(struct lapd_datalink *dl)
 {
@@ -228,7 +233,7 @@ static void lapd_stop_t203(struct lapd_datalink *dl)
 static void lapd_dl_newstate(struct lapd_datalink *dl, uint32_t state)
 {
 	LOGP(DLLAPD, LOGL_INFO, "new state %s -> %s (dl=%p)\n",
-		lapd_state_names[dl->state], lapd_state_names[state], dl);
+		lapd_state_name(dl->state), lapd_state_name(state), dl);
 
 	if (state != LAPD_STATE_MF_EST && dl->state == LAPD_STATE_MF_EST) {
 		/* stop T203 on leaving MF EST state, if running */
@@ -381,7 +386,7 @@ static int mdl_error(uint8_t cause, struct lapd_msg_ctx *lctx)
 
 	LOGP(DLLAPD, LOGL_NOTICE,
 	     "sending MDL-ERROR-IND cause %d from state %s (dl=%p)\n",
-	     cause, lapd_state_names[dl->state], dl);
+	     cause, lapd_state_name(dl->state), dl);
 	osmo_prim_init(&dp.oph, 0, PRIM_MDL_ERROR, PRIM_OP_INDICATION, NULL);
 	dp.u.error_ind.cause = cause;
 	return dl->send_dlsap(&dp, lctx);
@@ -550,7 +555,7 @@ static void lapd_t200_cb(void *data)
 	struct lapd_datalink *dl = data;
 
 	LOGP(DLLAPD, LOGL_INFO, "Timeout T200 state=%s (dl=%p)\n",
-		lapd_state_names[dl->state], dl);
+		lapd_state_name(dl->state), dl);
 
 	switch (dl->state) {
 	case LAPD_STATE_SABM_SENT:
@@ -669,7 +674,7 @@ static void lapd_t200_cb(void *data)
 		break;
 	default:
 		LOGP(DLLAPD, LOGL_INFO, "T200 expired in unexpected "
-			"dl->state %s (dl=%p)\n", lapd_state_names[dl->state], dl);
+			"dl->state %s (dl=%p)\n", lapd_state_name(dl->state), dl);
 	}
 }
 
@@ -679,7 +684,7 @@ static void lapd_t203_cb(void *data)
 	struct lapd_datalink *dl = data;
 
 	LOGP(DLLAPD, LOGL_INFO, "Timeout T203 state=%s (dl=%p)\n",
-	     lapd_state_names[dl->state], dl);
+	     lapd_state_name(dl->state), dl);
 
 	if (dl->state != LAPD_STATE_MF_EST) {
 		LOGP(DLLAPD, LOGL_ERROR, "T203 fired outside MF EST state, "
@@ -796,7 +801,7 @@ static int lapd_rx_u(struct msgb *msg, struct lapd_msg_ctx *lctx)
 		op = PRIM_OP_INDICATION;
 
 		LOGP(DLLAPD, LOGL_INFO, "SABM(E) received in state %s (dl=%p)\n",
-			lapd_state_names[dl->state], dl);
+			lapd_state_name(dl->state), dl);
 		/* 5.7.1 */
 		dl->seq_err_cond = 0;
 		/* G.2.2 Wrong value of the C/R bit */
@@ -843,7 +848,7 @@ static int lapd_rx_u(struct msgb *msg, struct lapd_msg_ctx *lctx)
 			if (!dl->cont_res) {
 				LOGP(DLLAPD, LOGL_INFO, "SABM command not "
 				     "allowed in state %s (dl=%p)\n",
-				     lapd_state_names[dl->state], dl);
+				     lapd_state_name(dl->state), dl);
 				mdl_error(MDL_CAUSE_SABM_MF, lctx);
 				msgb_free(msg);
 				return 0;
@@ -881,7 +886,7 @@ static int lapd_rx_u(struct msgb *msg, struct lapd_msg_ctx *lctx)
 			if (dl->tx_hist[0].msg && dl->tx_hist[0].msg->len) {
 				LOGP(DLLAPD, LOGL_NOTICE, "SABM not allowed "
 				     "during contention resolution (state=%s, dl=%p)\n",
-				     lapd_state_names[dl->state], dl);
+				     lapd_state_name(dl->state), dl);
 				mdl_error(MDL_CAUSE_SABM_INFO_NOTALL, lctx);
 			}
 			lapd_send_ua(lctx, length, msg->l3h);
@@ -923,7 +928,7 @@ static int lapd_rx_u(struct msgb *msg, struct lapd_msg_ctx *lctx)
 		break;
 	case LAPD_U_DM:
 		LOGP(DLLAPD, LOGL_INFO, "DM received in state %s (dl=%p)\n",
-			lapd_state_names[dl->state], dl);
+			lapd_state_name(dl->state), dl);
 		/* G.2.2 Wrong value of the C/R bit */
 		if (lctx->cr == dl->cr.rem2loc.cmd) {
 			LOGP(DLLAPD, LOGL_ERROR,
@@ -1046,7 +1051,7 @@ static int lapd_rx_u(struct msgb *msg, struct lapd_msg_ctx *lctx)
 		op = PRIM_OP_INDICATION;
 
 		LOGP(DLLAPD, LOGL_INFO, "DISC received in state %s (dl=%p)\n",
-			lapd_state_names[dl->state], dl);
+			lapd_state_name(dl->state), dl);
 		/* flush tx and send buffers */
 		lapd_dl_flush_tx(dl);
 		lapd_dl_flush_send(dl);
@@ -1119,7 +1124,7 @@ static int lapd_rx_u(struct msgb *msg, struct lapd_msg_ctx *lctx)
 		break;
 	case LAPD_U_UA:
 		LOGP(DLLAPD, LOGL_INFO, "UA received in state %s (dl=%p)\n",
-			lapd_state_names[dl->state], dl);
+			lapd_state_name(dl->state), dl);
 		/* G.2.2 Wrong value of the C/R bit */
 		if (lctx->cr == dl->cr.rem2loc.cmd) {
 			LOGP(DLLAPD, LOGL_ERROR, "UA indicates command "
@@ -1279,7 +1284,7 @@ static int lapd_rx_s(struct msgb *msg, struct lapd_msg_ctx *lctx)
 	switch (lctx->s_u) {
 	case LAPD_S_RR:
 		LOGP(DLLAPD, LOGL_INFO, "RR received in state %s (dl=%p)\n",
-			lapd_state_names[dl->state], dl);
+			lapd_state_name(dl->state), dl);
 		/* 5.5.3.1: Acknowlege all tx frames up the the N(R)-1 */
 		lapd_acknowledge(lctx);
 
@@ -1323,7 +1328,7 @@ static int lapd_rx_s(struct msgb *msg, struct lapd_msg_ctx *lctx)
 		break;
 	case LAPD_S_RNR:
 		LOGP(DLLAPD, LOGL_INFO, "RNR received in state %s (dl=%p)\n",
-			lapd_state_names[dl->state], dl);
+			lapd_state_name(dl->state), dl);
 		/* 5.5.3.1: Acknowlege all tx frames up the the N(R)-1 */
 		lapd_acknowledge(lctx);
 
@@ -1367,7 +1372,7 @@ static int lapd_rx_s(struct msgb *msg, struct lapd_msg_ctx *lctx)
 		break;
 	case LAPD_S_REJ:
 		LOGP(DLLAPD, LOGL_INFO, "REJ received in state %s (dl=%p)\n",
-			lapd_state_names[dl->state], dl);
+			lapd_state_name(dl->state), dl);
 		/* 5.5.3.1: Acknowlege all tx frames up the the N(R)-1 */
 		lapd_acknowledge(lctx);
 
@@ -1491,7 +1496,7 @@ static int lapd_rx_i(struct msgb *msg, struct lapd_msg_ctx *lctx)
 	int rc;
 
 	LOGP(DLLAPD, LOGL_INFO, "I received in state %s on SAPI(%u) (dl=%p)\n",
-		lapd_state_names[dl->state], lctx->sapi, dl);
+		lapd_state_name(dl->state), lctx->sapi, dl);
 		
 	/* G.2.2 Wrong value of the C/R bit */
 	if (lctx->cr == dl->cr.rem2loc.resp) {
@@ -2223,13 +2228,13 @@ int lapd_recv_dlsap(struct osmo_dlsap_prim *dp, struct lapd_msg_ctx *lctx)
 	if (i == L2DOWNSLLEN) {
 		LOGP(DLLAPD, LOGL_NOTICE, "Message %u/%u unhandled at this "
 			"state %s. (dl=%p)\n", dp->oph.primitive,
-			dp->oph.operation, lapd_state_names[dl->state], dl);
+			dp->oph.operation, lapd_state_name(dl->state), dl);
 		msgb_free(msg);
 		return 0;
 	}
 
 	LOGP(DLLAPD, LOGL_INFO, "Message %s received in state %s (dl=%p)\n",
-		l2downstatelist[i].name, lapd_state_names[dl->state], dl);
+		l2downstatelist[i].name, lapd_state_name(dl->state), dl);
 
 	rc = l2downstatelist[i].rout(dp, lctx);
 
