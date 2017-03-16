@@ -13,7 +13,7 @@ $(top_srcdir)/.version:
 dist-hook:
 	echo $(VERSION) > $(distdir)/.tarball-version
 
-EXTRA_DIST = git-version-gen .version
+EXTRA_DIST = git-version-gen .version README.md
 
 if HAVE_DOXYGEN
 
