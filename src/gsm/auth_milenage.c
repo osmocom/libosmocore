@@ -94,7 +94,7 @@ static int milenage_gen_vec(struct osmo_auth_vector *vec,
 	ind_mask = ~(seq_1 - 1);
 
 	/* the ind index must not affect the SEQ part */
-	if (aud->u.umts.ind > seq_1)
+	if (aud->u.umts.ind >= seq_1)
 		return -3;
 
 	/* keep the incremented SQN local until gsm_milenage() succeeded. */
