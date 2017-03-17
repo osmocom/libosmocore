@@ -35,7 +35,7 @@ Homepage
 --------
 
 The official homepage of the project is
-https://osmocom.org/projects/libosmocore/wiki/Libosmocore
+<https://osmocom.org/projects/libosmocore/wiki/Libosmocore>
 
 GIT Repository
 --------------
@@ -44,21 +44,21 @@ You can clone from the official libosmocore.git repository using
 
 	git clone git://git.osmocom.org/libosmocore.git
 
-There is a cgit interface at http://git.osmocom.org/libosmocore/
+There is a cgit interface at <http://git.osmocom.org/libosmocore/>
 
 Documentation
 -------------
 
 Doxygen-generated API documentation is generated during the build
 process, but also available online for each of the sub-libraries at
-http://ftp.osmocom.org/api/latest/libosmocore/
+<http://ftp.osmocom.org/api/latest/libosmocore/>
 
 Mailing List
 ------------
 
 Discussions related to libosmocore are happening on the
 openbsc@lists.osmocom.org mailing list, please see
-https://lists.osmocom.org/mailman/listinfo/openbsc for subscription
+<https://lists.osmocom.org/mailman/listinfo/openbsc> for subscription
 options and the list archive.
 
 Please observe the [Osmocom Mailing List
@@ -69,12 +69,12 @@ Contributing
 ------------
 
 Our coding standards are described at
-https://osmocom.org/projects/cellular-infrastructure/wiki/Coding_standards
+<https://osmocom.org/projects/cellular-infrastructure/wiki/Coding_standards>
 
 We us a gerrit based patch submission/review process for managing
 contributions.  Please see
-https://osmocom.org/projects/cellular-infrastructure/wiki/Gerrit for
+<https://osmocom.org/projects/cellular-infrastructure/wiki/Gerrit> for
 more details
 
 The current patch queue for libosmocore can be seen at
-https://gerrit.osmocom.org/#/q/project:libosmocore+status:open
+<https://gerrit.osmocom.org/#/q/project:libosmocore+status:open>
