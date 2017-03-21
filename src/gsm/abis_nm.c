@@ -261,6 +261,77 @@ const uint8_t abis_nm_t200_ms[] = {
 	[T200_SACCH_TCH_SAPI3]	= 10
 };
 
+/*! \brief 3GPP TS 52.021 §9.4 Attributes and Parameters */
+const struct value_string abis_nm_att_names[] = {
+	{ NM_ATT_ABIS_CHANNEL,		"Abis Channel" },			/* §9.4.1 */
+	{ NM_ATT_ADD_INFO,		"Additional Info" },			/* §9.4.2 */
+	{ NM_ATT_ADD_TEXT,		"Additional Text" },			/* §9.4.3 */
+	{ NM_ATT_ADM_STATE,		"Administrative State" },		/* §9.4.4 */
+	{ NM_ATT_ARFCN_LIST,		"ARFCN List" },				/* §9.4.5 */
+	{ NM_ATT_AUTON_REPORT,		"Autonomously Report" },		/* §9.4.6 */
+	{ NM_ATT_AVAIL_STATUS,		"Availability Status" },		/* §9.4.7 */
+	{ NM_ATT_BCCH_ARFCN,		"BCCH ARFCN" },				/* §9.4.8 */
+	{ NM_ATT_BSIC,			"BSIC" },				/* §9.4.9 */
+	{ NM_ATT_BTS_AIR_TIMER,		"BTS Air Timer" },			/* §9.4.10 */
+	{ NM_ATT_CCCH_L_I_P,		"CCCH Load Indication Period" },	/* §9.4.11 */
+	{ NM_ATT_CCCH_L_T,		"CCCH Load Threshold" },		/* §9.4.12 */
+	{ NM_ATT_CHAN_COMB,		"Channel Combination" },		/* §9.4.13 */
+	{ NM_ATT_CONN_FAIL_CRIT,	"Connection Failure Criterion" },	/* §9.4.14 */
+	{ NM_ATT_DEST,			"Destination" },			/* §9.4.15 */
+	{ NM_ATT_EVENT_TYPE,		"Event Type" },				/* §9.4.16 */
+	{ NM_ATT_FILE_DATA,		"File Data" },				/* §9.4.17 */
+	{ NM_ATT_FILE_ID,		"File Id" },				/* §9.4.18 */
+	{ NM_ATT_FILE_VERSION,		"File Version" },			/* §9.4.19 */
+	{ NM_ATT_GSM_TIME,		"GSM Time" },				/* §9.4.20 */
+	{ NM_ATT_HSN,			"HSN" },				/* §9.4.21 */
+	{ NM_ATT_HW_CONFIG,		"HW Configuration" },			/* §9.4.22 */
+	{ NM_ATT_HW_DESC,		"HW Description" },			/* §9.4.23 */
+	{ NM_ATT_INTAVE_PARAM,		"Intave Parameter" },			/* §9.4.24 */
+	{ NM_ATT_INTERF_BOUND,		"Interference level Boundaries" },	/* §9.4.25 */
+	{ NM_ATT_LIST_REQ_ATTR,		"List of Required Attributes" },	/* §9.4.26 */
+	{ NM_ATT_MAIO,			"MAIO" },				/* §9.4.27 */
+	{ NM_ATT_MANUF_STATE,		"Manufacturer Dependent State" },	/* §9.4.28 */
+	{ NM_ATT_MANUF_THRESH,		"Manufacturer Dependent Thresholds" },	/* §9.4.29 */
+	{ NM_ATT_MANUF_ID,		"Manufacturer Id" },			/* §9.4.30 */
+	{ NM_ATT_MAX_TA,		"Max Timing Advance" },			/* §9.4.31 */
+	{ NM_ATT_MEAS_RES,		"Measurement Result" },			/* §9.4.32 */
+	{ NM_ATT_MEAS_TYPE,		"Measurement Type" },			/* §9.4.33 */
+	{ NM_ATT_MDROP_LINK,		"Multi-drop BSC Link" },		/* §9.4.34 */
+	{ NM_ATT_MDROP_NEXT,		"Multi-drop next BTS Link" },		/* §9.4.35 */
+	{ NM_ATT_NACK_CAUSES,		"Nack Causes" },			/* §9.4.36 */
+	{ NM_ATT_NY1,			"Ny1" },				/* §9.4.37 */
+	{ NM_ATT_OPER_STATE,		"Operational State" },			/* §9.4.38 */
+	{ NM_ATT_OVERL_PERIOD,		"Overload Period" },			/* §9.4.39 */
+	{ NM_ATT_PHYS_CONF,		"Physical Config" },			/* §9.4.40 */
+	{ NM_ATT_POWER_CLASS,		"Power Class" },			/* §9.4.41 */
+	{ NM_ATT_POWER_THRESH,		"Power Output Thresholds" },		/* §9.4.42 */
+	{ NM_ATT_PROB_CAUSE,		"Probable Cause" },			/* §9.4.43 */
+	{ NM_ATT_RACH_B_THRESH,		"RACH Busy Threshold" },		/* §9.4.44 */
+	{ NM_ATT_LDAVG_SLOTS,		"RACH Load Averaging Slots" },		/* §9.4.45 */
+	{ NM_ATT_RAD_SUBC,		"Radio Sub Channel" },			/* §9.4.46 */
+	{ NM_ATT_RF_MAXPOWR_R,		"RF Max Power Reduction" },		/* §9.4.47 */
+	{ NM_ATT_SITE_INPUTS,		"Site Inputs" },			/* §9.4.48 */
+	{ NM_ATT_SITE_OUTPUTS,		"Site Outputs" },			/* §9.4.49 */
+	{ NM_ATT_SOURCE,		"Source" },				/* §9.4.50 */
+	{ NM_ATT_SPEC_PROB,		"Specific Problems" },			/* §9.4.51 */
+	{ NM_ATT_START_TIME,		"Starting Time" },			/* §9.4.52 */
+	{ NM_ATT_T200,			"T200" },				/* §9.4.53 */
+	{ NM_ATT_TEI,			"TEI" },				/* §9.4.54 */
+	{ NM_ATT_TEST_DUR,		"Test Duration" },			/* §9.4.55 */
+	{ NM_ATT_TEST_NO,		"Test No" },				/* §9.4.56 */
+	{ NM_ATT_TEST_REPORT,		"Test Report Info" },			/* §9.4.57 */
+	{ NM_ATT_VSWR_THRESH,		"VSWR Thresholds" },			/* §9.4.58 */
+	{ NM_ATT_WINDOW_SIZE,		"Window Size" },			/* §9.4.59 */
+	{ NM_ATT_TSC,			"TSC" },				/* §9.4.60 */
+	{ NM_ATT_SW_CONFIG,		"SW Configuration" },			/* §9.4.61 */
+	{ NM_ATT_SW_DESCR,		"SW Description" },			/* §9.4.62 */
+	{ NM_ATT_SEVERITY,		"Perceived Severity" },			/* §9.4.63 */
+	{ NM_ATT_GET_ARI,		"Get Attribute Response Info" },	/* §9.4.64 */
+	{ NM_ATT_OUTST_ALARM,		"Outstanding Alarm Sequence" },		/* §9.4.65 */
+	{ NM_ATT_HW_CONF_CHG,		"HW Conf Change Info" },		/* §9.4.66 */
+	{ 0, NULL }
+};
+
 /*! \brief Attributes that the BSC can set, not only get, according to Section 9.4 */
 const enum abis_nm_attr abis_nm_att_settable[] = {
 	NM_ATT_ADD_INFO,

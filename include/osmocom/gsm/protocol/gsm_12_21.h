@@ -595,6 +595,7 @@ enum abis_nm_pcause_type {
 };
 
 extern const struct value_string abis_nm_pcause_type_names[];
+extern const struct value_string abis_nm_att_names[];
 
 /*! \brief NACK causes (Section 9.4.36) */
 enum abis_nm_nack_cause {
