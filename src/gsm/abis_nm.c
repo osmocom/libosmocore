@@ -261,6 +261,109 @@ const uint8_t abis_nm_t200_ms[] = {
 	[T200_SACCH_TCH_SAPI3]	= 10
 };
 
+/*! \brief 3GPP TS 52.021 §9.1 Message Types */
+const struct value_string abis_nm_msgtype_names[] = {
+	{ NM_MT_LOAD_INIT,		"Load Data Initiate" },				/* §8.3.1 */
+	{ NM_MT_LOAD_INIT_ACK,		"Load Data Initiate Ack" },
+	{ NM_MT_LOAD_INIT_NACK,		"Load Data Initiate Nack" },
+	{ NM_MT_LOAD_SEG,		"Load Data Segment" },				/* §8.3.2 */
+	{ NM_MT_LOAD_SEG_ACK,		"Load Data Segment Ack" },
+	{ NM_MT_LOAD_ABORT,		"Load Data Abort" },				/* §8.3.3 */
+	{ NM_MT_LOAD_END,		"Load Data End" },				/* §8.3.4 */
+	{ NM_MT_LOAD_END_ACK,		"Load Data End Ack" },
+	{ NM_MT_LOAD_END_NACK,		"Load Data End Nack" },
+	{ NM_MT_SW_ACT_REQ,		"SW Activate Request" },			/* §8.3.5 */
+	{ NM_MT_SW_ACT_REQ_ACK,		"SW Activate Request Ack" },
+	{ NM_MT_SW_ACT_REQ_NACK,	"SW Activate Request Nack" },
+	{ NM_MT_ACTIVATE_SW,		"Activate SW" },				/* §8.3.6 */
+	{ NM_MT_ACTIVATE_SW_ACK,	"Activate SW Ack" },
+	{ NM_MT_ACTIVATE_SW_NACK,	"Activate SW Nack" },
+	{ NM_MT_SW_ACTIVATED_REP,	"SW Activated Report" },			/* §8.3.7 */
+	{ NM_MT_ESTABLISH_TEI,		"Establish TEI" },				/* §8.4.1 */
+	{ NM_MT_ESTABLISH_TEI_ACK,	"Establish TEI Ack" },
+	{ NM_MT_ESTABLISH_TEI_NACK,	"Establish TEI Nack" },
+	{ NM_MT_CONN_TERR_SIGN,		"Connect Terrestrial Signalling" },		/* §8.4.2 */
+	{ NM_MT_CONN_TERR_SIGN_ACK,	"Connect Terrestrial Signalling Ack" },
+	{ NM_MT_CONN_TERR_SIGN_NACK,	"Connect Terrestrial Signalling Nack" },
+	{ NM_MT_DISC_TERR_SIGN,		"Disconnect Terrestrial Signalling" },		/* §8.4.3 */
+	{ NM_MT_DISC_TERR_SIGN_ACK,	"Disconnect Terrestrial Signalling Ack" },
+	{ NM_MT_DISC_TERR_SIGN_NACK,	"Disconnect Terrestrial Signalling Nack" },
+	{ NM_MT_CONN_TERR_TRAF,		"Connect Terrestrial Traffic" },		/* §8.4.4 */
+	{ NM_MT_CONN_TERR_TRAF_ACK,	"Connect Terrestrial Traffic Ack" },
+	{ NM_MT_CONN_TERR_TRAF_NACK,	"Connect Terrestrial Traffic Nack" },
+	{ NM_MT_DISC_TERR_TRAF,		"Disconnect Terrestrial Traffic" },		/* §8.4.5 */
+	{ NM_MT_DISC_TERR_TRAF_ACK,	"Disconnect Terrestrial Traffic Ack" },
+	{ NM_MT_DISC_TERR_TRAF_NACK,	"Disconnect Terrestrial Traffic Nack" },
+	{ NM_MT_CONN_MDROP_LINK,	"Connect Multi-Drop Link" },			/* §8.5.1 */
+	{ NM_MT_CONN_MDROP_LINK_ACK,	"Connect Multi-Drop Link Ack" },
+	{ NM_MT_CONN_MDROP_LINK_NACK,	"Connect Multi-Drop Link Nack" },
+	{ NM_MT_DISC_MDROP_LINK,	"Disconnect Multi-Drop Link" },			/* §8.5.2 */
+	{ NM_MT_DISC_MDROP_LINK_ACK,	"Disconnect Multi-Drop Link Ack" },
+	{ NM_MT_DISC_MDROP_LINK_NACK,	"Disconnect Multi-Drop Link Nack" },
+	{ NM_MT_SET_BTS_ATTR,		"Set BTS Attributes" },				/* §8.6.1 */
+	{ NM_MT_SET_BTS_ATTR_ACK,	"Set BTS Attributes Ack" },
+	{ NM_MT_SET_BTS_ATTR_NACK,	"Set BTS Attributes Nack" },
+	{ NM_MT_SET_RADIO_ATTR,		"Set Radio Carrier Attributes" },		/* §8.6.2 */
+	{ NM_MT_SET_RADIO_ATTR_ACK,	"Set Radio Carrier Attributes Ack" },
+	{ NM_MT_SET_RADIO_ATTR_NACK,	"Set Radio Carrier Attributes Nack" },
+	{ NM_MT_SET_CHAN_ATTR,		"Set Channel Attributes" },			/* §8.6.3 */
+	{ NM_MT_SET_CHAN_ATTR_ACK,	"Set Channel Attributes Ack" },
+	{ NM_MT_SET_CHAN_ATTR_NACK,	"Set Channel Attributes Nack" },
+	{ NM_MT_PERF_TEST,		"Perform Test" },				/* §8.7.1 */
+	{ NM_MT_PERF_TEST_ACK,		"Perform Test Ack" },
+	{ NM_MT_PERF_TEST_NACK,		"Perform Test Nack" },
+	{ NM_MT_TEST_REP,		"Test Report" },				/* §8.7.2 */
+	{ NM_MT_SEND_TEST_REP,		"Send Test Report" },				/* §8.7.3 */
+	{ NM_MT_SEND_TEST_REP_ACK,	"Send Test Report Ack" },
+	{ NM_MT_SEND_TEST_REP_NACK,	"Send Test Report Nack" },
+	{ NM_MT_STOP_TEST,		"Stop Test" },					/* §8.7.4 */
+	{ NM_MT_STOP_TEST_ACK,		"Stop Test Ack" },
+	{ NM_MT_STOP_TEST_NACK,		"Stop Test Nack" },
+	{ NM_MT_STATECHG_EVENT_REP,	"State Changed Event Report" },			/* §8.8.1 */
+	{ NM_MT_FAILURE_EVENT_REP,	"Failure Event Report" },			/* §8.8.2 */
+	{ NM_MT_STOP_EVENT_REP,		"Stop Sending Event Reports" },			/* §8.8.3 */
+	{ NM_MT_STOP_EVENT_REP_ACK,	"Stop Sending Event Reports Ack" },
+	{ NM_MT_STOP_EVENT_REP_NACK,	"Stop Sending Event Reports Nack" },
+	{ NM_MT_REST_EVENT_REP,		"Restart Sending Event Reports" },		/* §8.8.4 */
+	{ NM_MT_REST_EVENT_REP_ACK,	"Restart Sending Event Reports Ack" },
+	{ NM_MT_REST_EVENT_REP_NACK,	"Restart Sending Event Reports Nack" },
+	{ NM_MT_CHG_ADM_STATE,		"Change Administrative State" },		/* §8.8.5 */
+	{ NM_MT_CHG_ADM_STATE_ACK,	"Change Administrative State Ack" },
+	{ NM_MT_CHG_ADM_STATE_NACK,	"Change Administrative State Nack" },
+	{ NM_MT_CHG_ADM_STATE_REQ,	"Change Administrative State Request" },	/* §8.8.6 */
+	{ NM_MT_CHG_ADM_STATE_REQ_ACK,	"Change Administrative State Request Ack" },
+	{ NM_MT_CHG_ADM_STATE_REQ_NACK,	"Change Administrative State Request Nack" },
+	{ NM_MT_REP_OUTST_ALARMS,	"Report Outstanding Alarms" },			/* §8.8.7 */
+	{ NM_MT_REP_OUTST_ALARMS_ACK,	"Report Outstanding Alarms Ack" },
+	{ NM_MT_REP_OUTST_ALARMS_NACK,	"Report Outstanding Alarms Nack" },
+	{ NM_MT_CHANGEOVER,		"Changeover" },					/* §8.9.1 */
+	{ NM_MT_CHANGEOVER_ACK,		"Changeover Ack" },
+	{ NM_MT_CHANGEOVER_NACK,	"Changeover Nack" },
+	{ NM_MT_OPSTART,		"Opstart" },					/* §8.9.2 */
+	{ NM_MT_OPSTART_ACK,		"Opstart Ack" },
+	{ NM_MT_OPSTART_NACK,		"Opstart Nack" },
+	{ NM_MT_REINIT,			"Reinitialize" },				/* §8.9.3 */
+	{ NM_MT_REINIT_ACK,		"Reinitialize Ack" },
+	{ NM_MT_REINIT_NACK,		"Reinitialize Nack" },
+	{ NM_MT_SET_SITE_OUT,		"Set Site Outputs" },				/* §8.9.4 */
+	{ NM_MT_SET_SITE_OUT_ACK,	"Set Site Outputs Ack" },
+	{ NM_MT_SET_SITE_OUT_NACK,	"Set Site Outputs Nack" },
+	{ NM_MT_CHG_HW_CONF,		"Change HW Configuration" },			/* §8.9.5 */
+	{ NM_MT_CHG_HW_CONF_ACK,	"Change HW Configuration Ack" },
+	{ NM_MT_CHG_HW_CONF_NACK,	"Change HW Configuration Nack" },
+	{ NM_MT_MEAS_RES_REQ,		"Measurement Result Request" },			/* §8.10.1 */
+	{ NM_MT_MEAS_RES_RESP,		"Measurement Result Response" },		/* §8.10.2 */
+	{ NM_MT_STOP_MEAS,		"Stop Measurement" },				/* §8.10.4 */
+	{ NM_MT_START_MEAS,		"Start Measurement" },				/* §8.10.3 */
+	{ NM_MT_GET_ATTR,		"Get Attributes" },				/* §8.11.1 */
+	{ NM_MT_GET_ATTR_RESP,		"Get Attributes Response" },			/* §8.11.3 */
+	{ NM_MT_GET_ATTR_NACK,		"Get Attributes Nack" },
+	{ NM_MT_SET_ALARM_THRES,	"Set Alarm Threshold" },			/* §8.11.2 */
+	{ NM_MT_SET_ALARM_THRES_ACK,	"Set Alarm Threshold Ack" },
+	{ NM_MT_SET_ALARM_THRES_NACK,	"Set Alarm Threshold Nack" },
+	{ 0, NULL }
+};
+
 /*! \brief 3GPP TS 52.021 §9.4 Attributes and Parameters */
 const struct value_string abis_nm_att_names[] = {
 	{ NM_ATT_ABIS_CHANNEL,		"Abis Channel" },			/* §9.4.1 */
