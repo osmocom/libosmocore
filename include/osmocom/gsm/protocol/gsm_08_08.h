@@ -3,6 +3,9 @@
 #pragma once
 
 #include <stdlib.h>
+#include <stdbool.h>
+#include <stdint.h>
+#include <osmocom/core/linuxlist.h>
 
 /*
  * this is from GSM 03.03 CGI but is copied in GSM 08.08
@@ -415,4 +418,23 @@ enum gsm0808_paging_info {
 	GSM0808_PAGINF_FOR_MT_CALL	= 0x00,
 	GSM0808_PAGINF_FOR_SMS		= 0x01,
 	GSM0808_PAGINF_FOR_USSD		= 0x02,
+};
+
+/* 3GPP TS 48.008 3.2.2.104 Speech Codec */
+struct gsm0808_speech_codec {
+	bool fi;
+	bool pi;
+	bool pt;
+	bool tf;
+	uint8_t type;
+	uint16_t cfg;
+	bool type_extended;
+	bool cfg_present;
+};
+
+/* 3GPP TS 48.008 3.2.2.103 Speech Codec List */
+#define SPEECH_CODEC_MAXLEN 255
+struct gsm0808_speech_codec_list {
+	struct gsm0808_speech_codec codec[SPEECH_CODEC_MAXLEN];
+	uint8_t len;
 };

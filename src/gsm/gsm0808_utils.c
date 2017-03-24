@@ -31,6 +31,7 @@
 #define IP_V6_ADDR_LEN 16
 #define IP_PORT_LEN 2
 
+
 /* Encode AoIP transport address element */
 uint8_t gsm0808_enc_aoip_trasp_addr(struct msgb *msg,
 				    const struct sockaddr_storage *ss)
@@ -116,6 +117,191 @@ int gsm0808_dec_aoip_trasp_addr(struct sockaddr_storage *ss,
 		/* Malformed element! */
 		return -EINVAL;
 		break;
+	}
+
+	return (int)(elem - old_elem);
+}
+
+/* Helper function for gsm0808_enc_speech_codec()
+ * and gsm0808_enc_speech_codec_list() */
+static uint8_t enc_speech_codec(struct msgb *msg,
+				const struct gsm0808_speech_codec *sc)
+{
+	/* See also 3GPP TS 48.008 3.2.2.103 Speech Codec List */
+	uint8_t header = 0;
+	uint8_t *old_tail;
+
+	old_tail = msg->tail;
+
+	if (sc->fi)
+		header |= (1 << 7);
+	if (sc->pi)
+		header |= (1 << 6);
+	if (sc->pt)
+		header |= (1 << 5);
+	if (sc->tf)
+		header |= (1 << 4);
+	if (sc->type_extended) {
+		header |= 0x0f;
+		msgb_put_u8(msg, header);
+	} else {
+		OSMO_ASSERT(sc->type < 0x0f);
+		header |= sc->type;
+		msgb_put_u8(msg, header);
+		return (uint8_t) (msg->tail - old_tail);
+	}
+
+	msgb_put_u8(msg, sc->type);
+
+	if (sc->cfg_present)
+		msgb_put_u16(msg, sc->cfg);
+
+	return (uint8_t) (msg->tail - old_tail);
+}
+
+/* Encode Speech Codec element */
+uint8_t gsm0808_enc_speech_codec(struct msgb *msg,
+				 const struct gsm0808_speech_codec *sc)
+{
+	uint8_t *old_tail;
+	uint8_t *tlv_len;
+
+	OSMO_ASSERT(msg);
+	OSMO_ASSERT(sc);
+
+	msgb_put_u8(msg, GSM0808_IE_SPEECH_CODEC);
+	tlv_len = msgb_put(msg, 1);
+	old_tail = msg->tail;
+
+	enc_speech_codec(msg, sc);
+
+	*tlv_len = (uint8_t) (msg->tail - old_tail);
+	return *tlv_len + 2;
+}
+
+/* Decode Speech Codec element */
+int gsm0808_dec_speech_codec(struct gsm0808_speech_codec *sc,
+			     const uint8_t *elem, uint8_t len)
+{
+	/* See also 3GPP TS 48.008 3.2.2.103 Speech Codec List */
+	uint8_t header;
+	const uint8_t *old_elem = elem;
+
+	OSMO_ASSERT(sc);
+	if (!elem)
+		return -EINVAL;
+	if (len <= 0)
+		return -EINVAL;
+
+	memset(sc, 0, sizeof(*sc));
+
+	header = *elem;
+
+	/* Malformed elements */
+	if ((header & 0x0F) == 0x0F && len < 2)
+		return -EINVAL;
+	else if ((header & 0x0F) != 0x0F && len < 1)
+		return -EINVAL;
+
+	elem++;
+	len--;
+
+	if (header & (1 << 7))
+		sc->fi = true;
+	if (header & (1 << 6))
+		sc->pi = true;
+	if (header & (1 << 5))
+		sc->pt = true;
+	if (header & (1 << 4))
+		sc->tf = true;
+
+	if ((header & 0x0F) != 0x0F) {
+		sc->type = (header & 0x0F);
+		return (int)(elem - old_elem);
+	}
+
+	sc->type = *elem;
+	elem++;
+	len--;
+
+	sc->type_extended = true;
+
+	if (len < 2)
+		return (int)(elem - old_elem);
+
+	sc->cfg = osmo_load16be(elem);
+	elem += 2;
+	sc->cfg_present = true;
+
+	return (int)(elem - old_elem);
+}
+
+/* Encode Speech Codec list */
+uint8_t gsm0808_enc_speech_codec_list(struct msgb *msg,
+				      const struct gsm0808_speech_codec_list *scl)
+{
+	uint8_t *old_tail;
+	uint8_t *tlv_len;
+	unsigned int i;
+	uint8_t rc;
+	unsigned int bytes_used = 0;
+
+	OSMO_ASSERT(msg);
+	OSMO_ASSERT(scl);
+
+	/* Empty list */
+	OSMO_ASSERT(scl->len >= 1);
+
+	msgb_put_u8(msg, GSM0808_IE_SPEECH_CODEC_LIST);
+	tlv_len = msgb_put(msg, 1);
+	old_tail = msg->tail;
+
+	for (i = 0; i < scl->len; i++) {
+		rc = enc_speech_codec(msg, &scl->codec[i]);
+		OSMO_ASSERT(rc >= 1);
+		bytes_used += rc;
+		OSMO_ASSERT(bytes_used <= 255);
+	}
+
+	*tlv_len = (uint8_t) (msg->tail - old_tail);
+	return *tlv_len + 2;
+}
+
+/* Decode Speech Codec list */
+int gsm0808_dec_speech_codec_list(struct gsm0808_speech_codec_list *scl,
+				  const uint8_t *elem, uint8_t len)
+{
+	const uint8_t *old_elem = elem;
+	unsigned int i;
+	int rc;
+	uint8_t decoded = 0;
+
+	OSMO_ASSERT(scl);
+	if (!elem)
+		return -EINVAL;
+	if (len <= 0)
+		return -EINVAL;
+
+	memset(scl, 0, sizeof(*scl));
+
+	for (i = 0; i < ARRAY_SIZE(scl->codec); i++) {
+		if (len <= 0)
+			break;
+
+		rc = gsm0808_dec_speech_codec(&scl->codec[i], elem, len);
+		if (rc < 1)
+			return -EINVAL;
+
+		elem+=rc;
+		len -= rc;
+		decoded++;
+	}
+
+	scl->len = decoded;
+
+	/* Empty list */
+	if (decoded < 1) {
+		return -EINVAL;
 	}
 
 	return (int)(elem - old_elem);
