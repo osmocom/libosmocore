@@ -137,6 +137,8 @@ gsm0808_create_layer3;
 gsm0808_create_reset;
 gsm0808_create_sapi_reject;
 gsm0808_prepend_dtap_header;
+gsm0808_enc_aoip_trasp_addr;
+gsm0808_dec_aoip_trasp_addr;
 
 gsm0858_rsl_ul_meas_enc;
 

@@ -19,9 +19,14 @@
  */
 
 #include <osmocom/gsm/gsm0808.h>
+#include <osmocom/gsm/gsm0808_utils.h>
+#include <osmocom/gsm/protocol/gsm_08_08.h>
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 #define VERIFY(msg, data, len) 						\
 	if (msgb_l3len(msg) != len) {					\
@@ -247,6 +252,63 @@ static void test_prepend_dtap()
 	msgb_free(in_msg);
 }
 
+static void test_enc_dec_aoip_trasp_addr_v4()
+{
+	struct sockaddr_storage enc_addr;
+	struct sockaddr_storage dec_addr;
+	struct sockaddr_in enc_addr_in;
+	struct msgb *msg;
+	uint8_t rc_enc;
+	int rc_dec;
+
+	memset(&enc_addr_in, 0, sizeof(enc_addr_in));
+	enc_addr_in.sin_family = AF_INET;
+	enc_addr_in.sin_port = htons(1234);
+	inet_aton("255.0.255.255", &enc_addr_in.sin_addr);
+
+	memset(&enc_addr, 0, sizeof(enc_addr));
+	memcpy(&enc_addr, &enc_addr_in, sizeof(enc_addr_in));
+
+	msg = msgb_alloc(1024, "output buffer");
+	rc_enc = gsm0808_enc_aoip_trasp_addr(msg, &enc_addr);
+	OSMO_ASSERT(rc_enc == 8);
+	rc_dec =
+	    gsm0808_dec_aoip_trasp_addr(&dec_addr, msg->data + 2, msg->len - 2);
+	OSMO_ASSERT(rc_dec == 6);
+	OSMO_ASSERT(memcmp(&enc_addr, &dec_addr, sizeof(enc_addr)) == 0);
+
+	msgb_free(msg);
+}
+
+static void test_enc_dec_aoip_trasp_addr_v6()
+{
+	struct sockaddr_storage enc_addr;
+	struct sockaddr_storage dec_addr;
+	struct sockaddr_in6 enc_addr_in;
+	struct msgb *msg;
+	uint8_t rc_enc;
+	int rc_dec;
+
+	memset(&enc_addr_in, 0, sizeof(enc_addr_in));
+	enc_addr_in.sin6_family = AF_INET6;
+	enc_addr_in.sin6_port = htons(4567);
+	inet_pton(AF_INET6, "2001:0db8:85a3:08d3:1319:8a2e:0370:7344",
+		  &enc_addr_in.sin6_addr);
+
+	memset(&enc_addr, 0, sizeof(enc_addr));
+	memcpy(&enc_addr, &enc_addr_in, sizeof(enc_addr_in));
+
+	msg = msgb_alloc(1024, "output buffer");
+	rc_enc = gsm0808_enc_aoip_trasp_addr(msg, &enc_addr);
+	OSMO_ASSERT(rc_enc == 20);
+	rc_dec =
+	    gsm0808_dec_aoip_trasp_addr(&dec_addr, msg->data + 2, msg->len - 2);
+	OSMO_ASSERT(rc_dec == 18);
+	OSMO_ASSERT(memcmp(&enc_addr, &dec_addr, sizeof(enc_addr)) == 0);
+
+	msgb_free(msg);
+}
+
 int main(int argc, char **argv)
 {
 	printf("Testing generation of GSM0808 messages\n");
@@ -263,6 +325,8 @@ int main(int argc, char **argv)
 	test_create_clear_rqst();
 	test_create_dtap();
 	test_prepend_dtap();
+	test_enc_dec_aoip_trasp_addr_v4();
+	test_enc_dec_aoip_trasp_addr_v6();
 
 	printf("Done\n");
 	return EXIT_SUCCESS;
