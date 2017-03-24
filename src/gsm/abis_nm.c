@@ -751,6 +751,161 @@ struct msgb *abis_nm_fail_evt_vrep(enum abis_nm_event_type t,
 	return nmsg;
 }
 
+/*! \brief Compute length of given 3GPP TS 52.021 §9.4.62 SW Description.
+ *  \param[in] sw SW Description struct
+ *  \param[in] put_sw_descr boolean, whether to put NM_ATT_SW_DESCR IE or not
+ *  \returns length of buffer space necessary to store sw
+ */
+uint16_t abis_nm_sw_desc_len(const struct abis_nm_sw_desc *sw, bool put_sw_desc)
+{
+	/* +3: type is 1-byte, length is 2-byte */
+	return (put_sw_desc ? 1 : 0) + (sw->file_id_len + 3) + (sw->file_version_len + 3);
+}
+
+/*! \brief Put given 3GPP TS 52.021 §9.4.62 SW Description into msgb.
+ *  \param[out] msg message buffer
+ *  \param[in] sw SW Description struct
+ *  \param[in] put_sw_descr boolean, whether to put NM_ATT_SW_DESCR IE or not
+ *  \returns length of buffer space necessary to store sw
+ */
+uint16_t abis_nm_put_sw_desc(struct msgb *msg, const struct abis_nm_sw_desc *sw, bool put_sw_desc)
+{
+	if (put_sw_desc)
+		msgb_v_put(msg, NM_ATT_SW_DESCR);
+
+	msgb_tl16v_put(msg, NM_ATT_FILE_ID, sw->file_id_len, sw->file_id);
+	msgb_tl16v_put(msg, NM_ATT_FILE_VERSION, sw->file_version_len, sw->file_version);
+
+	return abis_nm_sw_desc_len(sw, put_sw_desc);
+}
+
+/*! \brief Put given file ID/Version pair as 3GPP TS 52.021 §9.4.62 SW Description into msgb.
+ *  \param[out] msg message buffer
+ *  \param[in] id File ID part of SW Description
+ *  \param[in] id File Version part of SW Description
+ *  \param[in] put_sw_descr boolean, whether to put NM_ATT_SW_DESCR IE or not
+ *  \returns length of buffer space necessary to store sw
+ */
+uint16_t abis_nm_put_sw_file(struct msgb *msg, const char *id, const char *ver, bool put_sw_desc)
+{
+	struct abis_nm_sw_desc sw = {
+		.file_id_len = strlen(id),
+		.file_version_len = strlen(ver),
+	};
+
+	memcpy(sw.file_id, id, sw.file_id_len);
+	memcpy(sw.file_version, ver, sw.file_version_len);
+
+	return abis_nm_put_sw_desc(msg, &sw, put_sw_desc);
+}
+
+/*! \brief Get length of first 3GPP TS 52.021 §9.4.62 SW Description from buffer.
+ *  \param[in] buf buffer, may contain several SW Descriptions
+ *  \param[in] len buffer length
+ *  \returns length if parsing succeeded, 0 otherwise
+ */
+uint32_t abis_nm_get_sw_desc_len(const uint8_t *buf, size_t len)
+{
+	uint16_t sw = 2; /* 1-byte SW tag + 1-byte FILE_* tag */
+
+	if (buf[0] != NM_ATT_SW_DESCR)
+		sw = 1; /* 1-byte FILE_* tag */
+
+	if (buf[sw - 1] != NM_ATT_FILE_ID && buf[sw - 1] != NM_ATT_FILE_VERSION)
+		return 0;
+
+	/* + length of 1st FILE_* element + 1-byte tag + 2-byte length field of
+	   1st FILE_* element */
+	sw += (osmo_load16be(buf + sw) + 3);
+
+	/* + length of 2nd FILE_* element */
+	sw += osmo_load16be(buf + sw);
+
+	return sw + 2; /* +  2-byte length field of 2nd FILE_* element */
+}
+
+/*! \brief Parse single 3GPP TS 52.021 §9.4.62 SW Description from buffer.
+ *  \param[out] sw SW Description struct
+ *  \param[in] buf buffer
+ *  \param[in] len buffer length
+ *  \returns 0 if parsing succeeded, negative error code otherwise
+ */
+static inline int abis_nm_get_sw_desc(struct abis_nm_sw_desc *sw, const uint8_t *buf, size_t length)
+{
+	int rc;
+	uint32_t len = abis_nm_get_sw_desc_len(buf, length);
+	static struct tlv_parsed tp;
+	const struct tlv_definition sw_tlvdef = {
+		.def = {
+			[NM_ATT_SW_DESCR] =		{ TLV_TYPE_TV },
+			[NM_ATT_FILE_ID] =		{ TLV_TYPE_TL16V },
+			[NM_ATT_FILE_VERSION] =		{ TLV_TYPE_TL16V },
+		},
+	};
+
+	/* Basic sanity check */
+	if (len > length)
+		return -EFBIG;
+
+	/* Note: current implementation of TLV parser fails on multilpe SW Descr:
+	   we will only parse the first one */
+	if (!len)
+		return -EINVAL;
+
+	/* Note: the return value is ignored here because SW Description tag
+	   itself is considered optional. */
+	tlv_parse(&tp, &sw_tlvdef, buf, len, 0, 0);
+
+	/* Parsing SW Description is tricky for current implementation of TLV
+	   parser which fails to properly handle TV when V has following
+	   structure: | TL16V | TL16V |. Hence, the need for 2nd call: */
+	rc = tlv_parse(&tp, &sw_tlvdef, buf + TLVP_LEN(&tp, NM_ATT_SW_DESCR), len - TLVP_LEN(&tp, NM_ATT_SW_DESCR),
+		       0, 0);
+
+	if (rc < 0)
+		return rc;
+
+	if (!TLVP_PRESENT(&tp, NM_ATT_FILE_ID))
+		return -EBADF;
+
+	if (!TLVP_PRESENT(&tp, NM_ATT_FILE_VERSION))
+		return -EBADMSG;
+
+	sw->file_id_len = TLVP_LEN(&tp, NM_ATT_FILE_ID);
+	sw->file_version_len = TLVP_LEN(&tp, NM_ATT_FILE_VERSION);
+
+	memcpy(sw->file_id, TLVP_VAL(&tp, NM_ATT_FILE_ID), sw->file_id_len);
+	memcpy(sw->file_version, TLVP_VAL(&tp, NM_ATT_FILE_VERSION), sw->file_version_len);
+
+	return 0;
+}
+
+/*! \brief Parse 3GPP TS 52.021 §9.4.61 SW Configuration from buffer.
+ *  \param[in] buf buffer
+ *  \param[in] buf_len buffer length
+ *  \param[out] sw SW Description struct array
+ *  \param[in] sw_len Expected number of SW Description entries
+ *  \returns 0 if parsing succeeded, negative error code otherwise
+ */
+int abis_nm_get_sw_conf(const uint8_t * buf, size_t buf_len, struct abis_nm_sw_desc *sw, uint16_t sw_len)
+{
+	int rc;
+	uint16_t len = 0, i;
+	for (i = 0; i < sw_len; i++) {
+		memset(&sw[i], 0, sizeof(sw[i]));
+		rc = abis_nm_get_sw_desc(&sw[i], buf + len, buf_len - len);
+		if (rc < 0)
+			return rc;
+
+		len += abis_nm_get_sw_desc_len(buf + len, buf_len - len);
+
+		if (len >= buf_len)
+			return i + 1;
+	}
+
+	return i;
+}
+
 /*! \brief Obtain OML Channel Combination for phnsical channel config */
 int abis_nm_chcomb4pchan(enum gsm_phys_chan_config pchan)
 {

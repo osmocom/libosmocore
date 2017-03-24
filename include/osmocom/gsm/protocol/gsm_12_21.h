@@ -29,6 +29,7 @@
 /*! \file gsm_12_21.h */
 
 #include <stdint.h>
+#include <stdbool.h>
 #include <osmocom/gsm/tlv.h>
 
 /*! \brief generic header in front of every OML message according to TS 08.59 */
@@ -790,6 +791,21 @@ enum ipac_bcch_info_type {
 	IPAC_BINF_NEIGH_BA_SI2ter	= (1 << 1),
 	IPAC_BINF_CELL_ALLOC		= (1 << 2),
 };
+
+/*! \brief 3GPP TS 52.021 §9.4.62 SW Description */
+struct abis_nm_sw_desc {
+	uint8_t file_id[UINT8_MAX];
+	uint8_t file_id_len;
+
+	uint8_t file_version[UINT8_MAX];
+	uint8_t file_version_len;
+};
+
+uint16_t abis_nm_sw_desc_len(const struct abis_nm_sw_desc *sw, bool put_sw_descr);
+uint16_t abis_nm_put_sw_desc(struct msgb *msg, const struct abis_nm_sw_desc *sw, bool put_sw_descr);
+uint16_t abis_nm_put_sw_file(struct msgb *msg, const char *id, const char *ver, bool put_sw_desc);
+uint32_t abis_nm_get_sw_desc_len(const uint8_t * buf, size_t len);
+int abis_nm_get_sw_conf(const uint8_t * buf, size_t buf_len, struct abis_nm_sw_desc *sw, uint16_t sw_len);
 
 struct msgb *abis_nm_fail_evt_rep(enum abis_nm_event_type t,
 				  enum abis_nm_severity s,

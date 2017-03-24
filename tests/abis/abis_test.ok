@@ -1,0 +1,41 @@
+Testing SW Description (de)serialization...
+msgb[4096] :: {msgb->len} 45 == 45 {len}  - ok]:
+	SW DESCR (with header)
+	length: {extracted} 45 = 45 {expected} - OK, failsafe - OK
+	FILE ID [8 == 8 -> 1, ok] 0 => OK
+	FILE VERSION [30 == 30 -> 1, ok] 0 => OK
+msgb[4096] :: {msgb->len} 44 == 44 {len}  - ok]:
+	SW DESCR (without header)
+	length: {extracted} 44 = 44 {expected} - OK, failsafe - OK
+	FILE ID [8 == 8 -> 1, ok] 0 => OK
+	FILE VERSION [30 == 30 -> 1, ok] 0 => OK
+msgb[4096] :: {msgb->len} 89 == 45 {len}  - fail]:
+	SW DESCR (expected failure)
+	length: {extracted} 44 = 89 {expected} - FAIL, failsafe - OK
+	FILE ID [8 == 8 -> 1, ok] 0 => OK
+	FILE VERSION [30 == 30 -> 1, ok] 0 => OK
+parsing chained 42 12 00 03 01 02 03 13 00 03 03 04 05  <1st: 13, total: 13>
+	SW Descr (half)
+	FILE ID: [3] 01 02 03  => OK
+	FILE VERSION: [3] 03 04 05  => OK
+parsing chained 42 12 00 03 01 02 03 13 00 03 03 04 05 42 12 00 03 09 07 05 13 00 03 06 07 08  <1st: 13, total: 26>
+	SW Descr (full)
+	FILE ID: [3] 01 02 03  => OK
+	FILE VERSION: [3] 03 04 05  => OK
+parsing chained 42 12 00 03 09 07 05 13 00 03 06 07 08  <1st: 13, total: 13>
+	SW Descr ( 2nd)
+	FILE ID: [3] 09 07 05  => OK
+	FILE VERSION: [3] 06 07 08  => OK
+len: 13
+file_id:  01 02 03 
+file_ver: 03 04 05 
+test_simple_sw_config(): OK
+test_simple_sw_short(): OK
+len: 13
+file_id:  01 02 03 
+file_ver: 03 04 05 
+len: 13
+file_id:  09 07 05 
+file_ver: 06 07 08 
+test_dual_sw_config(): OK
+OK.

@@ -60,6 +60,7 @@ tests/package.m4
 tests/testsuite
 tests/testsuite.dir/
 tests/testsuite.log
+tests/abis/abis_test
 tests/ctrl/ctrl_test
 tests/utils/utils_test
 tests/stats/stats_test

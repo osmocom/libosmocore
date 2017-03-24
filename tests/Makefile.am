@@ -15,7 +15,7 @@ check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
 		 bitvec/bitvec_test msgb/msgb_test bits/bitcomp_test	\
 		 tlv/tlv_test gsup/gsup_test oap/oap_test fsm/fsm_test	\
 		 write_queue/wqueue_test socket/socket_test		\
-		 coding/coding_test
+		 coding/coding_test abis/abis_test
 
 if ENABLE_MSGFILE
 check_PROGRAMS += msgfile/msgfile_test
@@ -42,6 +42,9 @@ comp128_comp128_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/
 
 auth_milenage_test_SOURCES = auth/milenage_test.c
 auth_milenage_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/gsm/libosmogsm.la
+
+abis_abis_test_SOURCES = abis/abis_test.c
+abis_abis_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/gsm/libosmogsm.la
 
 ctrl_ctrl_test_SOURCES = ctrl/ctrl_test.c
 ctrl_ctrl_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/ctrl/libosmoctrl.la
@@ -188,7 +191,7 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
 	     vty/vty_test.ok comp128/comp128_test.ok			\
 	     utils/utils_test.ok stats/stats_test.ok			\
 	     bitvec/bitvec_test.ok msgb/msgb_test.ok bits/bitcomp_test.ok \
-	     sim/sim_test.ok tlv/tlv_test.ok				\
+	     sim/sim_test.ok tlv/tlv_test.ok abis/abis_test.ok		\
 	     gsup/gsup_test.ok gsup/gsup_test.err			\
 	     oap/oap_test.ok fsm/fsm_test.ok fsm/fsm_test.err		\
 	     write_queue/wqueue_test.ok socket/socket_test.ok		\

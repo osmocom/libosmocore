@@ -31,6 +31,11 @@ abis_mm_event_cause_names;
 abis_nm_pcause_type_names;
 abis_nm_msgtype_names;
 abis_nm_att_names;
+abis_nm_sw_desc_len;
+abis_nm_put_sw_desc;
+abis_nm_put_sw_file;
+abis_nm_get_sw_conf;
+abis_nm_get_sw_desc_len;
 
 osmo_sitype_strs;
 osmo_c4;
