@@ -1,5 +1,6 @@
 Testing generation of GSM0808 messages
 Testing creating Layer3
+Testing creating Layer3 (AoIP)
 Testing creating Reset
 Testing creating Clear Command
 Testing creating Clear Complete
@@ -8,7 +9,9 @@ Testing creating Cipher Reject
 Testing creating CM U
 Testing creating SAPI Reject
 Testing creating Assignment Complete
+Testing creating Assignment Complete (AoIP)
 Testing creating Assignment Failure
+Testing creating Assignment Failure (AoIP)
 Testing creating Clear Request
 Testing creating DTAP
 Testing prepend DTAP

@@ -19,6 +19,7 @@
  */
 
 #include <osmocom/gsm/gsm0808.h>
+#include <osmocom/gsm/gsm0808_utils.h>
 #include <osmocom/gsm/protocol/gsm_08_08.h>
 #include <osmocom/gsm/gsm48.h>
 
@@ -27,7 +28,10 @@
 #define BSSMAP_MSG_SIZE 512
 #define BSSMAP_MSG_HEADROOM 128
 
-struct msgb *gsm0808_create_layer3(struct msgb *msg_l3, uint16_t nc, uint16_t cc, int lac, uint16_t _ci)
+struct msgb *gsm0808_create_layer3_aoip(const struct msgb *msg_l3, uint16_t nc,
+					uint16_t cc, int lac, uint16_t _ci,
+					const struct gsm0808_speech_codec_list
+					*scl)
 {
 	struct msgb* msg;
 	struct {
@@ -55,10 +59,20 @@ struct msgb *gsm0808_create_layer3(struct msgb *msg_l3, uint16_t nc, uint16_t cc
 	msgb_tlv_put(msg, GSM0808_IE_LAYER_3_INFORMATION,
 		     msgb_l3len(msg_l3), msg_l3->l3h);
 
+	/* AoIP: add Codec List (BSS Supported) 3.2.2.103 */
+	if (scl)
+		gsm0808_enc_speech_codec_list(msg, scl);
+
 	/* push the bssmap header */
 	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
 
 	return msg;
+}
+
+struct msgb *gsm0808_create_layer3(struct msgb *msg_l3, uint16_t nc,
+				   uint16_t cc, int lac, uint16_t _ci)
+{
+	return gsm0808_create_layer3_aoip(msg_l3, nc, cc, lac, _ci, NULL);
 }
 
 struct msgb *gsm0808_create_reset(void)
@@ -191,9 +205,12 @@ struct msgb *gsm0808_create_sapi_reject(uint8_t link_id)
 	return msg;
 }
 
-struct msgb *gsm0808_create_assignment_completed(uint8_t rr_cause,
-						 uint8_t chosen_channel, uint8_t encr_alg_id,
-						 uint8_t speech_mode)
+struct msgb *gsm0808_create_ass_compl(uint8_t rr_cause, uint8_t chosen_channel,
+				      uint8_t encr_alg_id, uint8_t speech_mode,
+				      const struct sockaddr_storage *ss,
+				      const struct gsm0808_speech_codec *sc,
+				      const struct gsm0808_speech_codec_list
+				      *scl)
 {
 	struct msgb *msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM,
 						"bssmap: ass compl");
@@ -218,6 +235,18 @@ struct msgb *gsm0808_create_assignment_completed(uint8_t rr_cause,
 	if (speech_mode != 0)
 		msgb_tv_put(msg, GSM0808_IE_SPEECH_VERSION, speech_mode);
 
+	/* AoIP: AoIP Transport Layer Address (BSS) 3.2.2.102 */
+	if (ss)
+		gsm0808_enc_aoip_trasp_addr(msg, ss);
+
+	/* AoIP: Speech Codec (Chosen) 3.2.2.104 */
+	if (sc)
+		gsm0808_enc_speech_codec(msg, sc);
+
+	/* AoIP: add Codec List (BSS Supported) 3.2.2.103 */
+	if (scl)
+		gsm0808_enc_speech_codec_list(msg, scl);
+
 	/* write LSA identifier 3.2.2.15 */
 
 	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
@@ -225,7 +254,18 @@ struct msgb *gsm0808_create_assignment_completed(uint8_t rr_cause,
 	return msg;
 }
 
-struct msgb *gsm0808_create_assignment_failure(uint8_t cause, uint8_t *rr_cause)
+struct msgb *gsm0808_create_assignment_completed(uint8_t rr_cause,
+						 uint8_t chosen_channel,
+						 uint8_t encr_alg_id,
+						 uint8_t speech_mode)
+{
+	return gsm0808_create_ass_compl(rr_cause, chosen_channel, encr_alg_id,
+					speech_mode, NULL, NULL, NULL);
+}
+
+struct msgb *gsm0808_create_ass_fail(uint8_t cause, const uint8_t *rr_cause,
+				     const struct gsm0808_speech_codec_list
+				     *scl)
 {
 	struct msgb *msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM,
 					       "bssmap: ass fail");
@@ -242,10 +282,20 @@ struct msgb *gsm0808_create_assignment_failure(uint8_t cause, uint8_t *rr_cause)
 	/* Circuit pool 3.22.45 */
 	/* Circuit pool list 3.2.2.46 */
 
+	/* AoIP: add Codec List (BSS Supported) 3.2.2.103 */
+	if (scl)
+		gsm0808_enc_speech_codec_list(msg, scl);
+
 	/* update the size */
 	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
 
 	return msg;
+}
+
+struct msgb *gsm0808_create_assignment_failure(uint8_t cause,
+					       uint8_t *rr_cause)
+{
+	return gsm0808_create_ass_fail(cause, rr_cause, NULL);
 }
 
 struct msgb *gsm0808_create_clear_rqst(uint8_t cause)

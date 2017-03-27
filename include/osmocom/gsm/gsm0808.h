@@ -20,10 +20,17 @@
 #pragma once
 
 #include "tlv.h"
+#include <osmocom/gsm/protocol/gsm_08_08.h>
+#include <sys/socket.h>
 
 struct msgb;
 
-struct msgb *gsm0808_create_layer3(struct msgb *msg, uint16_t netcode, uint16_t countrycode, int lac, uint16_t ci);
+struct msgb *gsm0808_create_layer3(struct msgb *msg_l3, uint16_t nc,
+				   uint16_t cc, int lac, uint16_t _ci);
+struct msgb *gsm0808_create_layer3_aoip(const struct msgb *msg_l3, uint16_t nc,
+					uint16_t cc, int lac, uint16_t _ci,
+					const struct gsm0808_speech_codec_list
+					*scl);
 struct msgb *gsm0808_create_reset(void);
 struct msgb *gsm0808_create_reset_ack(void);
 struct msgb *gsm0808_create_clear_command(uint8_t reason);
@@ -33,9 +40,19 @@ struct msgb *gsm0808_create_cipher_reject(uint8_t cause);
 struct msgb *gsm0808_create_classmark_update(const uint8_t *cm2, uint8_t cm2_len,
 					     const uint8_t *cm3, uint8_t cm3_len);
 struct msgb *gsm0808_create_sapi_reject(uint8_t link_id);
+struct msgb *gsm0808_create_ass_compl(uint8_t rr_cause, uint8_t chosen_channel,
+				      uint8_t encr_alg_id, uint8_t speech_mode,
+				      const struct sockaddr_storage *ss,
+				      const struct gsm0808_speech_codec *sc,
+				      const struct gsm0808_speech_codec_list
+				      *scl);
 struct msgb *gsm0808_create_assignment_completed(uint8_t rr_cause,
-						 uint8_t chosen_channel, uint8_t encr_alg_id,
+						 uint8_t chosen_channel,
+						 uint8_t encr_alg_id,
 						 uint8_t speech_mode);
+struct msgb *gsm0808_create_ass_fail(uint8_t cause, const uint8_t *rr_cause,
+				     const struct gsm0808_speech_codec_list
+				     *scl);
 struct msgb *gsm0808_create_assignment_failure(uint8_t cause, uint8_t *rr_cause);
 struct msgb *gsm0808_create_clear_rqst(uint8_t cause);
 

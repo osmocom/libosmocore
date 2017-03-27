@@ -41,6 +41,29 @@
 		abort();						\
 	}
 
+/* Setup a fake codec list for testing */
+static void setup_codec_list(struct gsm0808_speech_codec_list *scl)
+{
+	memset(scl, 0, sizeof(*scl));
+
+	scl->codec[0].pi = true;
+	scl->codec[0].tf = true;
+	scl->codec[0].type = 0xab;
+	scl->codec[0].type_extended  = true;
+	scl->codec[0].cfg_present = true;
+	scl->codec[0].cfg = 0xcdef;
+
+	scl->codec[1].fi = true;
+	scl->codec[1].pt = true;
+	scl->codec[1].type = 0x05;
+
+	scl->codec[2].fi = true;
+	scl->codec[2].tf = true;
+	scl->codec[2].type = 0xf2;
+	scl->codec[2].type_extended = true;
+
+	scl->len = 3;
+}
 
 static void test_create_layer3(void)
 {
@@ -56,6 +79,34 @@ static void test_create_layer3(void)
 
 	msg = gsm0808_create_layer3(in_msg, 0x1122, 0x2244, 0x3366, 0x4488);
 	VERIFY(msg, res, ARRAY_SIZE(res));
+	msgb_free(msg);
+	msgb_free(in_msg);
+}
+
+static void test_create_layer3_aoip()
+{
+	static const uint8_t res[] = {
+		0x00, 0x17, 0x57, 0x05, 0x08, 0x00, 0x77, 0x62,
+		0x83, 0x33, 0x66, 0x44, 0x88, 0x17, 0x01, 0x23,
+		    GSM0808_IE_SPEECH_CODEC_LIST, 0x07, 0x5f, 0xab, 0xcd, 0xef,
+		    0xa5, 0x9f, 0xf2
+	};
+
+	struct msgb *msg, *in_msg;
+	struct gsm0808_speech_codec_list sc_list;
+	printf("Testing creating Layer3 (AoIP)\n");
+
+	setup_codec_list(&sc_list);
+
+	in_msg = msgb_alloc_headroom(512, 128, "foo");
+	in_msg->l3h = in_msg->data;
+	msgb_v_put(in_msg, 0x23);
+
+	msg =
+	    gsm0808_create_layer3_aoip(in_msg, 0x1122, 0x2244, 0x3366, 0x4488,
+				       &sc_list);
+	VERIFY(msg, res, ARRAY_SIZE(res));
+
 	msgb_free(msg);
 	msgb_free(in_msg);
 }
@@ -189,6 +240,42 @@ static void test_create_ass_compl()
 	msgb_free(msg);
 }
 
+static void test_create_ass_compl_aoip()
+{
+	struct sockaddr_storage ss;
+	struct sockaddr_in sin;
+	struct gsm0808_speech_codec sc;
+	struct gsm0808_speech_codec_list sc_list;
+	static const uint8_t res[] =
+	    { 0x00, 0x1d, 0x02, 0x15, 0x23, 0x21, 0x42, 0x2c, 0x11, 0x40, 0x22,
+	      GSM0808_IE_AOIP_TRASP_ADDR, 0x06, 0xc0, 0xa8, 0x64, 0x17, 0x04,
+	      0xd2, GSM0808_IE_SPEECH_CODEC, 0x01, 0x9a,
+	      GSM0808_IE_SPEECH_CODEC_LIST, 0x07, 0x5f, 0xab, 0xcd, 0xef, 0xa5,
+	      0x9f, 0xf2 };
+	struct msgb *msg;
+
+	memset(&sin, 0, sizeof(sin));
+	sin.sin_family = AF_INET;
+	sin.sin_port = htons(1234);
+	inet_aton("192.168.100.23", &sin.sin_addr);
+
+	memset(&ss, 0, sizeof(ss));
+	memcpy(&ss, &sin, sizeof(sin));
+
+	memset(&sc, 0, sizeof(sc));
+	sc.fi = true;
+	sc.tf = true;
+	sc.type = 0x0a;
+
+	setup_codec_list(&sc_list);
+
+	printf("Testing creating Assignment Complete (AoIP)\n");
+	msg = gsm0808_create_ass_compl(0x23, 0x42, 0x11, 0x22,
+				       &ss, &sc, &sc_list);
+	VERIFY(msg, res, ARRAY_SIZE(res));
+	msgb_free(msg);
+}
+
 static void test_create_ass_fail()
 {
 	static const uint8_t res1[] = { 0x00, 0x04, 0x03, 0x04, 0x01, 0x23 };
@@ -203,6 +290,31 @@ static void test_create_ass_fail()
 	msgb_free(msg);
 
 	msg = gsm0808_create_assignment_failure(0x23, &rr_res);
+	VERIFY(msg, res2, ARRAY_SIZE(res2));
+	msgb_free(msg);
+}
+
+static void test_create_ass_fail_aoip()
+{
+	static const uint8_t res1[] =
+	    { 0x00, 0x0d, 0x03, 0x04, 0x01, 0x23, GSM0808_IE_SPEECH_CODEC_LIST,
+		0x07, 0x5f, 0xab, 0xcd, 0xef, 0xa5, 0x9f, 0xf2 };
+	static const uint8_t res2[] =
+	    { 0x00, 0x0f, 0x03, 0x04, 0x01, 0x23, 0x15, 0x02,
+		GSM0808_IE_SPEECH_CODEC_LIST, 0x07, 0x5f, 0xab,
+		0xcd, 0xef, 0xa5, 0x9f, 0xf2 };
+	uint8_t rr_res = 2;
+	struct msgb *msg;
+	struct gsm0808_speech_codec_list sc_list;
+
+	setup_codec_list(&sc_list);
+
+	printf("Testing creating Assignment Failure (AoIP)\n");
+	msg = gsm0808_create_ass_fail(0x23, NULL, &sc_list);
+	VERIFY(msg, res1, ARRAY_SIZE(res1));
+	msgb_free(msg);
+
+	msg = gsm0808_create_ass_fail(0x23, &rr_res, &sc_list);
 	VERIFY(msg, res2, ARRAY_SIZE(res2));
 	msgb_free(msg);
 }
@@ -433,6 +545,7 @@ int main(int argc, char **argv)
 {
 	printf("Testing generation of GSM0808 messages\n");
 	test_create_layer3();
+	test_create_layer3_aoip();
 	test_create_reset();
 	test_create_clear_command();
 	test_create_clear_complete();
@@ -441,7 +554,9 @@ int main(int argc, char **argv)
 	test_create_cm_u();
 	test_create_sapi_reject();
 	test_create_ass_compl();
+	test_create_ass_compl_aoip();
 	test_create_ass_fail();
+	test_create_ass_fail_aoip();
 	test_create_clear_rqst();
 	test_create_dtap();
 	test_prepend_dtap();
