@@ -148,6 +148,8 @@ gsm0808_enc_speech_codec_list;
 gsm0808_dec_speech_codec_list;
 gsm0808_enc_channel_type;
 gsm0808_dec_channel_type;
+gsm0808_enc_encrypt_info;
+gsm0808_dec_encrypt_info;
 
 gsm0858_rsl_ul_meas_enc;
 

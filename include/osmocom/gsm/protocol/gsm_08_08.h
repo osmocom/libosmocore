@@ -447,3 +447,13 @@ struct gsm0808_channel_type {
 	uint8_t perm_spch[CH_TYPE_PERM_SPCH_MAXLEN];
 	unsigned int perm_spch_len;
 };
+
+/* 3GPP TS 48.008 3.2.2.10 Encryption Information */
+#define ENCRY_INFO_KEY_MAXLEN 252
+#define ENCRY_INFO_PERM_ALGO_MAXLEN 8
+struct gsm0808_encrypt_info {
+	uint8_t perm_algo[ENCRY_INFO_PERM_ALGO_MAXLEN];
+	unsigned int perm_algo_len;
+	uint8_t key[ENCRY_INFO_KEY_MAXLEN];
+	unsigned int key_len;
+};

@@ -33,6 +33,7 @@
 
 #define CHANNEL_TYPE_ELEMENT_MAXLEN 11
 #define CHANNEL_TYPE_ELEMENT_MINLEN 3
+#define ENCRYPT_INFO_ELEMENT_MINLEN 1
 
 /* Encode AoIP transport address element */
 uint8_t gsm0808_enc_aoip_trasp_addr(struct msgb *msg,
@@ -376,6 +377,76 @@ int gsm0808_dec_channel_type(struct gsm0808_channel_type *ct,
 			break;
 	}
 	ct->perm_spch_len = i + 1;
+
+	return (int)(elem - old_elem);
+}
+
+/* Encode Encryption Information element */
+uint8_t gsm0808_enc_encrypt_info(struct msgb *msg,
+				 const struct gsm0808_encrypt_info *ei)
+{
+	unsigned int i;
+	uint8_t perm_algo = 0;
+	uint8_t *ptr;
+	uint8_t *old_tail;
+	uint8_t *tlv_len;
+
+	OSMO_ASSERT(msg);
+	OSMO_ASSERT(ei);
+	OSMO_ASSERT(ei->key_len <= ARRAY_SIZE(ei->key));
+	OSMO_ASSERT(ei->perm_algo_len <= ENCRY_INFO_PERM_ALGO_MAXLEN);
+
+	msgb_put_u8(msg, GSM0808_IE_ENCRYPTION_INFORMATION);
+	tlv_len = msgb_put(msg, 1);
+	old_tail = msg->tail;
+
+	for (i = 0; i < ei->perm_algo_len; i++) {
+		/* Note: gsm_08_08.h defines the permitted algorithms
+		 * as an enum which ranges from 0x01 to 0x08 */
+		OSMO_ASSERT(ei->perm_algo[i] != 0);
+		OSMO_ASSERT(ei->perm_algo[i] <= ENCRY_INFO_PERM_ALGO_MAXLEN);
+		perm_algo |= (1 << (ei->perm_algo[i] - 1));
+	}
+
+	msgb_put_u8(msg, perm_algo);
+	ptr = msgb_put(msg, ei->key_len);
+	memcpy(ptr, ei->key, ei->key_len);
+
+	*tlv_len = (uint8_t) (msg->tail - old_tail);
+	return *tlv_len + 2;
+}
+
+/* Decode Encryption Information element */
+int gsm0808_dec_encrypt_info(struct gsm0808_encrypt_info *ei,
+			     const uint8_t *elem, uint8_t len)
+{
+	uint8_t perm_algo;
+	unsigned int i;
+	unsigned int perm_algo_len = 0;
+	const uint8_t *old_elem = elem;
+
+	OSMO_ASSERT(ei);
+	if (!elem)
+		return -EINVAL;
+	if (len <= 0)
+		return -EINVAL;
+
+	memset(ei, 0, sizeof(*ei));
+
+	perm_algo = *elem;
+	elem++;
+
+	for (i = 0; i < ENCRY_INFO_PERM_ALGO_MAXLEN; i++) {
+		if (perm_algo & (1 << i)) {
+			ei->perm_algo[perm_algo_len] = i + 1;
+			perm_algo_len++;
+		}
+	}
+	ei->perm_algo_len = perm_algo_len;
+
+	ei->key_len = len - 1;
+	memcpy(ei->key, elem, ei->key_len);
+	elem+=ei->key_len;
 
 	return (int)(elem - old_elem);
 }

@@ -55,3 +55,11 @@ uint8_t gsm0808_enc_channel_type(struct msgb *msg,
 /* Decode Channel Type element */
 int gsm0808_dec_channel_type(struct gsm0808_channel_type *ct,
 			     const uint8_t *elem, uint8_t len);
+
+/* Encode Encryption Information element */
+uint8_t gsm0808_enc_encrypt_info(struct msgb *msg,
+				 const struct gsm0808_encrypt_info *ei);
+
+/* Decode Encryption Information element */
+int gsm0808_dec_encrypt_info(struct gsm0808_encrypt_info *ei,
+			     const uint8_t *elem, uint8_t len);
