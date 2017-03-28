@@ -438,3 +438,12 @@ struct gsm0808_speech_codec_list {
 	struct gsm0808_speech_codec codec[SPEECH_CODEC_MAXLEN];
 	uint8_t len;
 };
+
+/* 3GPP TS 48.008 3.2.2.11 Channel Type */
+#define CH_TYPE_PERM_SPCH_MAXLEN 9
+struct gsm0808_channel_type {
+	uint8_t ch_indctr;
+	uint8_t ch_rate_type;
+	uint8_t perm_spch[CH_TYPE_PERM_SPCH_MAXLEN];
+	unsigned int perm_spch_len;
+};

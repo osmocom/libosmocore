@@ -47,3 +47,11 @@ uint8_t gsm0808_enc_speech_codec_list(struct msgb *msg,
 /* Decode Speech Codec list */
 int gsm0808_dec_speech_codec_list(struct gsm0808_speech_codec_list *scl,
 				  const uint8_t *elem, uint8_t len);
+
+/* Encode Channel Type element */
+uint8_t gsm0808_enc_channel_type(struct msgb *msg,
+				 const struct gsm0808_channel_type *ct);
+
+/* Decode Channel Type element */
+int gsm0808_dec_channel_type(struct gsm0808_channel_type *ct,
+			     const uint8_t *elem, uint8_t len);

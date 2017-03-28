@@ -541,6 +541,36 @@ static void test_gsm0808_enc_dec_speech_codec_list()
 	msgb_free(msg);
 }
 
+static void test_gsm0808_enc_dec_channel_type()
+{
+	struct gsm0808_channel_type enc_ct;
+	struct gsm0808_channel_type dec_ct;
+	struct msgb *msg;
+	uint8_t ct_enc_expected[] = { GSM0808_IE_CHANNEL_TYPE,
+		0x04, 0x01, 0x0b, 0xa1, 0x25
+	};
+	uint8_t rc_enc;
+	int rc_dec;
+
+	memset(&enc_ct, 0, sizeof(enc_ct));
+	enc_ct.ch_indctr = GSM0808_CHAN_SPEECH;
+	enc_ct.ch_rate_type = GSM0808_SPEECH_HALF_PREF;
+	enc_ct.perm_spch[0] = GSM0808_PERM_FR3;
+	enc_ct.perm_spch[1] = GSM0808_PERM_HR3;
+	enc_ct.perm_spch_len = 2;
+
+	msg = msgb_alloc(1024, "output buffer");
+	rc_enc = gsm0808_enc_channel_type(msg, &enc_ct);
+	OSMO_ASSERT(rc_enc == 6);
+	OSMO_ASSERT(memcmp(ct_enc_expected, msg->data, msg->len) == 0);
+
+	rc_dec = gsm0808_dec_channel_type(&dec_ct, msg->data + 2, msg->len - 2);
+	OSMO_ASSERT(rc_dec == 4);
+	OSMO_ASSERT(memcmp(&enc_ct, &dec_ct, sizeof(enc_ct)) == 0);
+
+	msgb_free(msg);
+}
+
 int main(int argc, char **argv)
 {
 	printf("Testing generation of GSM0808 messages\n");
@@ -566,6 +596,7 @@ int main(int argc, char **argv)
 	test_gsm0808_enc_dec_speech_codec_ext();
 	test_gsm0808_enc_dec_speech_codec_ext_with_cfg();
 	test_gsm0808_enc_dec_speech_codec_list();
+	test_gsm0808_enc_dec_channel_type();
 
 	printf("Done\n");
 	return EXIT_SUCCESS;
