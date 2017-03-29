@@ -347,6 +347,58 @@ struct msgb *gsm0808_create_clear_rqst(uint8_t cause)
 	return msg;
 }
 
+struct msgb *gsm0808_create_paging(const char *imsi, const uint32_t *tmsi,
+				   const struct gsm0808_cell_id_list *cil,
+				   const uint8_t *chan_needed)
+{
+	struct msgb *msg;
+	uint8_t mid_buf[GSM48_MI_SIZE + 2];
+	int mid_len;
+	uint32_t tmsi_sw;
+
+	/* Mandatory emelents! */
+	OSMO_ASSERT(imsi);
+	OSMO_ASSERT(cil);
+
+	/* Malformed IMSI */
+	OSMO_ASSERT(strlen(imsi) <= GSM48_MI_SIZE);
+
+	msg =
+	    msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "paging");
+	if (!msg)
+		return NULL;
+
+	/* Message Type 3.2.2.1 */
+	msgb_v_put(msg, BSS_MAP_MSG_PAGING);
+
+	/* IMSI 3.2.2.6 */
+	mid_len = gsm48_generate_mid_from_imsi(mid_buf, imsi);
+	msgb_tlv_put(msg, GSM0808_IE_IMSI, mid_len - 2, mid_buf + 2);
+
+	/* TMSI 3.2.2.7 */
+	if (tmsi) {
+		tmsi_sw = htonl(*tmsi);
+		msgb_tlv_put(msg, GSM0808_IE_TMSI, sizeof(*tmsi),
+			     (uint8_t *) & tmsi_sw);
+	}
+
+	/* Cell Identifier List 3.2.2.27 */
+	if (cil)
+		gsm0808_enc_cell_id_list(msg, cil);
+
+	/* Channel Needed 3.2.2.36 */
+	if (chan_needed) {
+		msgb_tv_put(msg, GSM0808_IE_CHANNEL_NEEDED,
+			    (*chan_needed) & 0x03);
+	}
+
+	/* pre-pend the header */
+	msg->l3h =
+	    msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
+
+	return msg;
+}
+
 void gsm0808_prepend_dtap_header(struct msgb *msg, uint8_t link_id)
 {
 	uint8_t *hh = msgb_push(msg, 3);

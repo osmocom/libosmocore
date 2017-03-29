@@ -135,6 +135,7 @@ gsm0808_create_classmark_update;
 gsm0808_create_clear_command;
 gsm0808_create_clear_complete;
 gsm0808_create_clear_rqst;
+gsm0808_create_paging;
 gsm0808_create_dtap;
 gsm0808_create_layer3;
 gsm0808_create_layer3_aoip;

@@ -21,6 +21,7 @@
 #include <osmocom/gsm/gsm0808.h>
 #include <osmocom/gsm/gsm0808_utils.h>
 #include <osmocom/gsm/protocol/gsm_08_08.h>
+#include <osmocom/gsm/protocol/gsm_08_58.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -367,6 +368,46 @@ static void test_create_clear_rqst()
 	printf("Testing creating Clear Request\n");
 	msg = gsm0808_create_clear_rqst(0x23);
 	VERIFY(msg, res, ARRAY_SIZE(res));
+	msgb_free(msg);
+}
+
+static void test_create_paging()
+{
+	static const uint8_t res[] =
+	    { 0x00, 0x10, 0x52, 0x08, 0x08, 0x09, 0x10, 0x10, 0x00, 0x00, 0x00,
+	      0x21, 0x43, 0x1a, 0x03, 0x05, 0x23, 0x42 };
+	static const uint8_t res2[] =
+	    { 0x00, 0x16, 0x52, 0x08, 0x08, 0x09, 0x10, 0x10, 0x00, 0x00, 0x00,
+	      0x21, 0x43, GSM0808_IE_TMSI, 0x04, 0x12, 0x34, 0x56, 0x78, 0x1a,
+	      0x03, 0x05, 0x23, 0x42 };
+	static const uint8_t res3[] =
+	    { 0x00, 0x18, 0x52, 0x08, 0x08, 0x09, 0x10, 0x10, 0x00, 0x00, 0x00,
+	      0x21, 0x43, GSM0808_IE_TMSI, 0x04, 0x12, 0x34, 0x56, 0x78, 0x1a,
+	      0x03, 0x05, 0x23, 0x42, GSM0808_IE_CHANNEL_NEEDED,
+	      RSL_CHANNEED_TCH_ForH };
+
+	struct msgb *msg;
+	struct gsm0808_cell_id_list cil;
+	uint32_t tmsi = 0x12345678;
+	uint8_t chan_needed = RSL_CHANNEED_TCH_ForH;
+
+	char imsi[] = "001010000001234";
+
+	cil.id_discr = CELL_IDENT_LAC;
+	cil.id_list_lac[0] = 0x2342;
+	cil.id_list_len = 1;
+
+	printf("Testing creating Paging Request\n");
+	msg = gsm0808_create_paging(imsi, NULL, &cil, NULL);
+	VERIFY(msg, res, ARRAY_SIZE(res));
+	msgb_free(msg);
+
+	msg = gsm0808_create_paging(imsi, &tmsi, &cil, NULL);
+	VERIFY(msg, res2, ARRAY_SIZE(res2));
+	msgb_free(msg);
+
+	msg = gsm0808_create_paging(imsi, &tmsi, &cil, &chan_needed);
+	VERIFY(msg, res3, ARRAY_SIZE(res3));
 	msgb_free(msg);
 }
 
@@ -750,6 +791,7 @@ int main(int argc, char **argv)
 	test_create_ass_fail();
 	test_create_ass_fail_aoip();
 	test_create_clear_rqst();
+	test_create_paging();
 	test_create_dtap();
 	test_prepend_dtap();
 	test_enc_dec_aoip_trasp_addr_v4();
