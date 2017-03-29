@@ -262,6 +262,55 @@ static void test_create_sapi_reject()
 	msgb_free(msg);
 }
 
+static void test_create_ass()
+{
+	static const uint8_t res1[] =
+	    { 0x00, 0x0a, 0x01, 0x0b, 0x04, 0x01, 0x0b, 0xa1, 0x25, 0x01, 0x00,
+	      0x04 };
+	static const uint8_t res2[] =
+	    { 0x00, 0x20, 0x01, 0x0b, 0x04, 0x01, 0x0b, 0xa1, 0x25, 0x01, 0x00,
+	      0x04, GSM0808_IE_AOIP_TRASP_ADDR, 0x06, 0xc0, 0xa8, 0x64, 0x17,
+	      0x04, 0xd2, GSM0808_IE_SPEECH_CODEC_LIST, 0x07, 0x5f, 0xab, 0xcd,
+	      0xef, 0xa5, 0x9f, 0xf2, GSM0808_IE_CALL_ID, 0xaa, 0xbb, 0xcc,
+	      0xdd };
+
+	struct msgb *msg;
+	struct gsm0808_channel_type ct;
+	uint16_t cic = 0004;
+	struct sockaddr_storage ss;
+	struct sockaddr_in sin;
+	struct gsm0808_speech_codec_list sc_list;
+	uint32_t call_id = 0xAABBCCDD;
+
+	memset(&ct, 0, sizeof(ct));
+	ct.ch_indctr = GSM0808_CHAN_SPEECH;
+	ct.ch_rate_type = GSM0808_SPEECH_HALF_PREF;
+	ct.perm_spch[0] = GSM0808_PERM_FR3;
+	ct.perm_spch[1] = GSM0808_PERM_HR3;
+	ct.perm_spch_len = 2;
+
+	memset(&sin, 0, sizeof(sin));
+	sin.sin_family = AF_INET;
+	sin.sin_port = htons(1234);
+	inet_aton("192.168.100.23", &sin.sin_addr);
+
+	memset(&ss, 0, sizeof(ss));
+	memcpy(&ss, &sin, sizeof(sin));
+
+	setup_codec_list(&sc_list);
+
+	printf("Testing creating Assignment Request\n");
+	msg = gsm0808_create_ass(&ct, &cic, NULL, NULL, NULL);
+	OSMO_ASSERT(msg);
+	VERIFY(msg, res1, ARRAY_SIZE(res1));
+	msgb_free(msg);
+
+	msg = gsm0808_create_ass(&ct, &cic, &ss, &sc_list, &call_id);
+	OSMO_ASSERT(msg);
+	VERIFY(msg, res2, ARRAY_SIZE(res2));
+	msgb_free(msg);
+}
+
 static void test_create_ass_compl()
 {
 	static const uint8_t res1[] = {
@@ -786,6 +835,7 @@ int main(int argc, char **argv)
 	test_create_cipher_reject();
 	test_create_cm_u();
 	test_create_sapi_reject();
+	test_create_ass();
 	test_create_ass_compl();
 	test_create_ass_compl_aoip();
 	test_create_ass_fail();

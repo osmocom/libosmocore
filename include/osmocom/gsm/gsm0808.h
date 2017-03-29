@@ -42,6 +42,11 @@ struct msgb *gsm0808_create_cipher_reject(uint8_t cause);
 struct msgb *gsm0808_create_classmark_update(const uint8_t *cm2, uint8_t cm2_len,
 					     const uint8_t *cm3, uint8_t cm3_len);
 struct msgb *gsm0808_create_sapi_reject(uint8_t link_id);
+struct msgb *gsm0808_create_ass(const struct gsm0808_channel_type *ct,
+				const uint16_t *cic,
+				const struct sockaddr_storage *ss,
+				const struct gsm0808_speech_codec_list *scl,
+				const uint32_t *ci);
 struct msgb *gsm0808_create_ass_compl(uint8_t rr_cause, uint8_t chosen_channel,
 				      uint8_t encr_alg_id, uint8_t speech_mode,
 				      const struct sockaddr_storage *ss,

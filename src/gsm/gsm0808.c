@@ -238,6 +238,62 @@ struct msgb *gsm0808_create_sapi_reject(uint8_t link_id)
 	return msg;
 }
 
+struct msgb *gsm0808_create_ass(const struct gsm0808_channel_type *ct,
+				const uint16_t *cic,
+				const struct sockaddr_storage *ss,
+				const struct gsm0808_speech_codec_list *scl,
+				const uint32_t *ci)
+{
+	/* See also: 3GPP TS 48.008 3.2.1.1 ASSIGNMENT REQUEST */
+	struct msgb *msg;
+	uint16_t cic_sw;
+	uint32_t ci_sw;
+
+	/* Mandatory emelent! */
+	OSMO_ASSERT(ct);
+
+	msg =
+	    msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM,
+				"bssmap: ass req");
+	if (!msg)
+		return NULL;
+
+	/* Message Type 3.2.2.1 */
+	msgb_v_put(msg, BSS_MAP_MSG_ASSIGMENT_RQST);
+
+	/* Channel Type 3.2.2.11 */
+	gsm0808_enc_channel_type(msg, ct);
+
+	/* Circuit Identity Code 3.2.2.2  */
+	if (cic) {
+		cic_sw = htons(*cic);
+		msgb_tv_fixed_put(msg, GSM0808_IE_CIRCUIT_IDENTITY_CODE,
+				  sizeof(cic_sw), (uint8_t *) & cic_sw);
+	}
+
+	/* AoIP: AoIP Transport Layer Address (MGW) 3.2.2.102 */
+	if (ss) {
+		gsm0808_enc_aoip_trasp_addr(msg, ss);
+	}
+
+	/* AoIP: Codec List (MSC Preferred) 3.2.2.103 */
+	if (scl)
+		gsm0808_enc_speech_codec_list(msg, scl);
+
+	/* AoIP: Call Identifier 3.2.2.105 */
+	if (ci) {
+		ci_sw = htonl(*ci);
+		msgb_tv_fixed_put(msg, GSM0808_IE_CALL_ID, sizeof(ci_sw),
+				  (uint8_t *) & ci_sw);
+	}
+
+	/* push the bssmap header */
+	msg->l3h =
+	    msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
+
+	return msg;
+}
+
 struct msgb *gsm0808_create_ass_compl(uint8_t rr_cause, uint8_t chosen_channel,
 				      uint8_t encr_alg_id, uint8_t speech_mode,
 				      const struct sockaddr_storage *ss,
