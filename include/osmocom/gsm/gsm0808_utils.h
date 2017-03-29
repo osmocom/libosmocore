@@ -63,3 +63,11 @@ uint8_t gsm0808_enc_encrypt_info(struct msgb *msg,
 /* Decode Encryption Information element */
 int gsm0808_dec_encrypt_info(struct gsm0808_encrypt_info *ei,
 			     const uint8_t *elem, uint8_t len);
+
+/* Encode Cell Identifier List element */
+uint8_t gsm0808_enc_cell_id_list(struct msgb *msg,
+				 const struct gsm0808_cell_id_list *cil);
+
+/* Decode Cell Identifier List element */
+int gsm0808_dec_cell_id_list(struct gsm0808_cell_id_list *cil,
+			     const uint8_t *elem, uint8_t len);

@@ -450,3 +450,81 @@ int gsm0808_dec_encrypt_info(struct gsm0808_encrypt_info *ei,
 
 	return (int)(elem - old_elem);
 }
+
+/* Encode Cell Identifier List element */
+uint8_t gsm0808_enc_cell_id_list(struct msgb *msg,
+				 const struct gsm0808_cell_id_list *cil)
+{
+	uint8_t *old_tail;
+	uint8_t *tlv_len;
+	unsigned int i;
+
+	OSMO_ASSERT(msg);
+	OSMO_ASSERT(cil);
+
+	msgb_put_u8(msg, GSM0808_IE_CELL_IDENTIFIER_LIST);
+	tlv_len = msgb_put(msg, 1);
+	old_tail = msg->tail;
+
+	msgb_put_u8(msg, cil->id_discr & 0x0f);
+
+	switch (cil->id_discr) {
+	case CELL_IDENT_LAC:
+		OSMO_ASSERT(cil->id_list_len <= CELL_ID_LIST_LAC_MAXLEN)
+		for (i=0;i<cil->id_list_len;i++) {
+			msgb_put_u16(msg, cil->id_list_lac[i]);
+		}
+		break;
+	case CELL_IDENT_BSS:
+		/* Does not have any list items */
+		break;
+	default:
+		/* FIXME: Implement support for all identifier list elements */
+		OSMO_ASSERT(false);
+	}
+
+	*tlv_len = (uint8_t) (msg->tail - old_tail);
+	return *tlv_len + 2;
+}
+
+/* Decode Cell Identifier List element */
+int gsm0808_dec_cell_id_list(struct gsm0808_cell_id_list *cil,
+			     const uint8_t *elem, uint8_t len)
+{
+	uint8_t id_discr;
+	const uint8_t *old_elem = elem;
+	unsigned int item_count = 0;
+
+	OSMO_ASSERT(cil);
+	if (!elem)
+		return -EINVAL;
+	if (len <= 0)
+		return -EINVAL;
+
+	memset(cil, 0, sizeof(*cil));
+
+	id_discr = *elem & 0x0f;
+	elem++;
+	len--;
+
+	cil->id_discr = id_discr;
+
+	switch (id_discr) {
+	case CELL_IDENT_LAC:
+		while (len >= 2) {
+			cil->id_list_lac[item_count] = osmo_load16be(elem);
+			elem += 2;
+			item_count++;
+			len -= 2;
+		}
+	case CELL_IDENT_BSS:
+		/* Does not have any list items */
+		break;
+	default:
+		/* FIXME: Implement support for all identifier list elements */
+		return -EINVAL;
+	}
+
+	cil->id_list_len = item_count;
+	return (int)(elem - old_elem);
+}
