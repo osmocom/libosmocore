@@ -144,6 +144,46 @@ static void test_create_clear_complete()
 	msgb_free(msg);
 }
 
+static void test_create_cipher()
+{
+	static const uint8_t res[] =
+	    { 0x00, 0x0c, 0x53, 0x0a, 0x09, 0x03, 0xaa,
+	      0xbb, 0xcc, 0xdd, 0xee, 0xff, 0x23, 0x42 };
+	static const uint8_t res2[] =
+	    { 0x00, 0x0e, 0x53, 0x0a, 0x09, 0x03, 0xaa,
+	      0xbb, 0xcc, 0xdd, 0xee, 0xff, 0x23, 0x42,
+	      GSM0808_IE_CIPHER_RESPONSE_MODE, 0x01 };
+	struct msgb *msg;
+	struct gsm0808_encrypt_info ei;
+	uint8_t include_imeisv;
+
+	memset(&ei, 0, sizeof(ei));
+	ei.perm_algo[0] = GSM0808_ALG_ID_A5_0;
+	ei.perm_algo[1] = GSM0808_ALG_ID_A5_1;
+	ei.perm_algo_len = 2;
+	ei.key[0] = 0xaa;
+	ei.key[1] = 0xbb;
+	ei.key[2] = 0xcc;
+	ei.key[3] = 0xdd;
+	ei.key[4] = 0xee;
+	ei.key[5] = 0xff;
+	ei.key[6] = 0x23;
+	ei.key[7] = 0x42;
+	ei.key_len = 8;
+	include_imeisv = 1;
+
+	printf("Testing creating Chipher Mode Command\n");
+	msg = gsm0808_create_cipher(&ei, NULL);
+	OSMO_ASSERT(msg);
+	VERIFY(msg, res, ARRAY_SIZE(res));
+	msgb_free(msg);
+
+	msg = gsm0808_create_cipher(&ei, &include_imeisv);
+	OSMO_ASSERT(msg);
+	VERIFY(msg, res2, ARRAY_SIZE(res2));
+	msgb_free(msg);
+}
+
 static void test_create_cipher_complete()
 {
 	static const uint8_t res1[] = {
@@ -700,6 +740,7 @@ int main(int argc, char **argv)
 	test_create_reset();
 	test_create_clear_command();
 	test_create_clear_complete();
+	test_create_cipher();
 	test_create_cipher_complete();
 	test_create_cipher_reject();
 	test_create_cm_u();

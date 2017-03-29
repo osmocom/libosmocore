@@ -4,6 +4,7 @@ Testing creating Layer3 (AoIP)
 Testing creating Reset
 Testing creating Clear Command
 Testing creating Clear Complete
+Testing creating Chipher Mode Command
 Testing creating Cipher Complete
 Testing creating Cipher Reject
 Testing creating CM U

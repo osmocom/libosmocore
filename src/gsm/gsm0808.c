@@ -131,6 +131,39 @@ struct msgb *gsm0808_create_clear_command(uint8_t reason)
 	return msg;
 }
 
+struct msgb *gsm0808_create_cipher(const struct gsm0808_encrypt_info *ei,
+				   const uint8_t *cipher_response_mode)
+{
+	/* See also: 3GPP TS 48.008 3.2.1.30 CIPHER MODE COMMAND */
+	struct msgb *msg;
+
+	/* Mandatory emelent! */
+	OSMO_ASSERT(ei);
+
+	msg =
+	    msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM,
+				"cipher-mode-command");
+	if (!msg)
+		return NULL;
+
+	/* Message Type 3.2.2.1 */
+	msgb_v_put(msg, BSS_MAP_MSG_CIPHER_MODE_CMD);
+
+	/* Encryption Information 3.2.2.10 */
+	gsm0808_enc_encrypt_info(msg, ei);
+
+	/* Cipher Response Mode 3.2.2.34 */
+	if (cipher_response_mode)
+		msgb_tv_put(msg, GSM0808_IE_CIPHER_RESPONSE_MODE,
+			    *cipher_response_mode);
+
+	/* pre-pend the header */
+	msg->l3h =
+	    msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
+
+	return msg;
+}
+
 struct msgb *gsm0808_create_cipher_complete(struct msgb *layer3, uint8_t alg_id)
 {
 	struct msgb *msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM,

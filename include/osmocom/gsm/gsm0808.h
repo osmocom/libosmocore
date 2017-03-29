@@ -35,6 +35,8 @@ struct msgb *gsm0808_create_reset(void);
 struct msgb *gsm0808_create_reset_ack(void);
 struct msgb *gsm0808_create_clear_command(uint8_t reason);
 struct msgb *gsm0808_create_clear_complete(void);
+struct msgb *gsm0808_create_cipher(const struct gsm0808_encrypt_info *ei,
+				   const uint8_t *cipher_response_mode);
 struct msgb *gsm0808_create_cipher_complete(struct msgb *layer3, uint8_t alg_id);
 struct msgb *gsm0808_create_cipher_reject(uint8_t cause);
 struct msgb *gsm0808_create_classmark_update(const uint8_t *cm2, uint8_t cm2_len,
