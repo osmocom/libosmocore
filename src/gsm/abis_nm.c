@@ -580,6 +580,7 @@ const struct tlv_definition abis_nm_att_tlvdef = {
 		[NM_ATT_HW_CONF_CHG] = 		{ TLV_TYPE_TL16V },
 		[NM_ATT_OUTST_ALARM] =		{ TLV_TYPE_TV },
 		[NM_ATT_MEAS_RES] =		{ TLV_TYPE_TL16V },
+		[NM_ATT_MEAS_TYPE] = 		{ TLV_TYPE_TV },
 	},
 };
 
