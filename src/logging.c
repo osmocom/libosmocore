@@ -140,6 +140,26 @@ static const struct log_info_cat internal_cat[OSMO_NUM_DLIB] = {
 		.description = "Osmocom Authentication Protocol",
 		.enabled = 1, .loglevel = LOGL_NOTICE,
 	},
+	[INT2IDX(DLSS7)] = {
+		.name = "DLSS7",
+		.description = "libosmo-sigtran Signalling System 7",
+		.enabled = 1, .loglevel = LOGL_NOTICE,
+	},
+	[INT2IDX(DLSCCP)] = {
+		.name = "DLSCCP",
+		.description = "libosmo-sigtran SCCP Implementation",
+		.enabled = 1, .loglevel = LOGL_NOTICE,
+	},
+	[INT2IDX(DLSUA)] = {
+		.name = "DLSUA",
+		.description = "libosmo-sigtran SCCP User Adaptation",
+		.enabled = 1, .loglevel = LOGL_NOTICE,
+	},
+	[INT2IDX(DLM3UA)] = {
+		.name = "DLM3UA",
+		.description = "libosmo-sigtran MTP3 User Adaptation",
+		.enabled = 1, .loglevel = LOGL_NOTICE,
+	},
 };
 
 /*! \brief descriptive string for each log level */
