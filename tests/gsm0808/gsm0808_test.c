@@ -123,6 +123,18 @@ static void test_create_reset()
 	msgb_free(msg);
 }
 
+static void test_create_reset_ack()
+{
+	static const uint8_t res[] = { 0x00, 0x01, 0x31 };
+	struct msgb *msg;
+
+	printf("Testing creating Reset Ack\n");
+	msg = gsm0808_create_reset_ack();
+	VERIFY(msg, res, ARRAY_SIZE(res));
+	msgb_free(msg);
+}
+
+
 static void test_create_clear_command()
 {
 	static const uint8_t res[] = { 0x20, 0x04, 0x01, 0x23 };
@@ -828,6 +840,7 @@ int main(int argc, char **argv)
 	test_create_layer3();
 	test_create_layer3_aoip();
 	test_create_reset();
+	test_create_reset_ack();
 	test_create_clear_command();
 	test_create_clear_complete();
 	test_create_cipher();

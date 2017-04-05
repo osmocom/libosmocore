@@ -2,6 +2,7 @@ Testing generation of GSM0808 messages
 Testing creating Layer3
 Testing creating Layer3 (AoIP)
 Testing creating Reset
+Testing creating Reset Ack
 Testing creating Clear Command
 Testing creating Clear Complete
 Testing creating Chipher Mode Command
