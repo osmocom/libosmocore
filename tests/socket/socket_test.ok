@@ -1,3 +1,7 @@
 Checking osmo_sock_init() with bind to a random local UDP port
 Checking for OSMO_SOCK_F_NONBLOCK
 Checking for invalid flags
+Checking osmo_sock_init2() with bind to a random local UDP port
+Checking osmo_sock_init2() for OSMO_SOCK_F_NONBLOCK
+Checking osmo_sock_init2() for invalid flags
+Checking osmo_sock_init2() for combined BIND + CONNECT
