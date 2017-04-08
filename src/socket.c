@@ -51,6 +51,188 @@
 #include <netdb.h>
 #include <ifaddrs.h>
 
+static struct addrinfo *addrinfo_helper(uint16_t family, uint16_t type, uint8_t proto,
+					const char *host, uint16_t port, bool passive)
+{
+	struct addrinfo hints, *result;
+	char portbuf[16];
+	int rc;
+
+	snprintf(portbuf, sizeof(portbuf), "%u", port);
+	memset(&hints, 0, sizeof(struct addrinfo));
+	hints.ai_family = family;
+	if (type == SOCK_RAW) {
+		/* Workaround for glibc, that returns EAI_SERVICE (-8) if
+		 * SOCK_RAW and IPPROTO_GRE is used.
+		 */
+		hints.ai_socktype = SOCK_DGRAM;
+		hints.ai_protocol = IPPROTO_UDP;
+	} else {
+		hints.ai_socktype = type;
+		hints.ai_protocol = proto;
+	}
+
+	if (passive)
+		hints.ai_flags |= AI_PASSIVE;
+
+	rc = getaddrinfo(host, portbuf, &hints, &result);
+	if (rc != 0) {
+		LOGP(DLGLOBAL, LOGL_ERROR, "getaddrinfo returned NULL: %s:%u: %s\n",
+			host, port, strerror(errno));
+		return NULL;
+	}
+
+	return result;
+}
+
+static int socket_helper(const struct addrinfo *rp, unsigned int flags)
+{
+	int sfd, on = 1;
+
+	sfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+	if (sfd == -1)
+		return sfd;
+	if (flags & OSMO_SOCK_F_NONBLOCK) {
+		if (ioctl(sfd, FIONBIO, (unsigned char *)&on) < 0) {
+			LOGP(DLGLOBAL, LOGL_ERROR,
+				"cannot set this socket unblocking: %s\n",
+				strerror(errno));
+			close(sfd);
+			sfd = -EINVAL;
+		}
+	}
+	return sfd;
+}
+
+
+/*! \brief Initialize a socket (including bind and/or connect)
+ *  \param[in] family Address Family like AF_INET, AF_INET6, AF_UNSPEC
+ *  \param[in] type Socket type like SOCK_DGRAM, SOCK_STREAM
+ *  \param[in] proto Protocol like IPPROTO_TCP, IPPROTO_UDP
+ *  \param[in] local_host local host name or IP address in string form
+ *  \param[in] local_port local port number in host byte order
+ *  \param[in] remote_host remote host name or IP address in string form
+ *  \param[in] remote_port remote port number in host byte order
+ *  \param[in] flags flags like \ref OSMO_SOCK_F_CONNECT
+ *  \returns socket file descriptor on success; negative on error
+ *
+ * This function creates a new socket of the designated \a family, \a
+ * type and \a proto and optionally binds it to the \a local_host and \a
+ * local_port as well as optionally connects it to the \a remote_host
+ * and \q remote_port, depending on the value * of \a flags parameter.
+ *
+ * As opposed to \ref osmo_sock_init(), this function allows to combine
+ * the \ref OSMO_SOCK_F_BIND and \ref OSMO_SOCK_F_CONNECT flags.  This
+ * is useful if you want to connect to a remote host/port, but still
+ * want to bind that socket to either a specific local alias IP and/or a
+ * specific local source port.
+ *
+ * You must specify either \ref OSMO_SOCK_F_BIND, or \ref
+ * OSMO_SOCK_F_CONNECT, or both.
+ *
+ * If \ref OSMO_SOCK_F_NONBLOCK is specified, the socket will be set to
+ * non-blocking mode.
+ */
+int osmo_sock_init2(uint16_t family, uint16_t type, uint8_t proto,
+		   const char *local_host, uint16_t local_port,
+		   const char *remote_host, uint16_t remote_port, unsigned int flags)
+{
+	struct addrinfo *result, *rp;
+	int sfd = -1, rc, on = 1;
+
+	if ((flags & (OSMO_SOCK_F_BIND | OSMO_SOCK_F_CONNECT)) == 0) {
+		LOGP(DLGLOBAL, LOGL_ERROR, "invalid: you have to specify either "
+			"BIND or CONNECT flags\n");
+		return -EINVAL;
+	}
+
+	/* figure out local side of socket */
+	if (flags & OSMO_SOCK_F_BIND) {
+		result = addrinfo_helper(family, type, proto, local_host, local_port, true);
+		if (!result)
+			return -EINVAL;
+
+		for (rp = result; rp != NULL; rp = rp->ai_next) {
+			/* Workaround for glibc again */
+			if (type == SOCK_RAW) {
+				rp->ai_socktype = SOCK_RAW;
+				rp->ai_protocol = proto;
+			}
+
+			sfd = socket_helper(rp, flags);
+			if (sfd < 0)
+				continue;
+
+			rc = setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR,
+							&on, sizeof(on));
+			if (rc < 0) {
+				LOGP(DLGLOBAL, LOGL_ERROR,
+					"cannot setsockopt socket:"
+					" %s:%u: %s\n",
+					local_host, local_port, strerror(errno));
+				break;
+			}
+			if (bind(sfd, rp->ai_addr, rp->ai_addrlen) != -1)
+				break;
+			close(sfd);
+		}
+		freeaddrinfo(result);
+		if (rp == NULL) {
+			LOGP(DLGLOBAL, LOGL_ERROR, "unable to bind socket: %s:%u: %s\n",
+				local_host, local_port, strerror(errno));
+			return -ENODEV;
+		}
+	}
+
+	/* figure out remote side of socket */
+	if (flags & OSMO_SOCK_F_CONNECT) {
+		result = addrinfo_helper(family, type, proto, remote_host, remote_port, false);
+		if (!result) {
+			close(sfd);
+			return -EINVAL;
+		}
+
+		for (rp = result; rp != NULL; rp = rp->ai_next) {
+			/* Workaround for glibc again */
+			if (type == SOCK_RAW) {
+				rp->ai_socktype = SOCK_RAW;
+				rp->ai_protocol = proto;
+			}
+
+			if (!sfd) {
+				sfd = socket_helper(rp, flags);
+				if (sfd < 0)
+					continue;
+			}
+
+			rc = connect(sfd, rp->ai_addr, rp->ai_addrlen);
+			if (rc != -1 || (rc == -1 && errno == EINPROGRESS))
+				break;
+
+			close(sfd);
+			sfd = -1;
+		}
+		freeaddrinfo(result);
+		if (rp == NULL) {
+			LOGP(DLGLOBAL, LOGL_ERROR, "unable to connect socket: %s:%u: %s\n",
+				remote_host, remote_port, strerror(errno));
+			return -ENODEV;
+		}
+	}
+
+	/* Make sure to call 'listen' on a bound, connection-oriented sock */
+	if ((flags & (OSMO_SOCK_F_BIND|OSMO_SOCK_F_CONNECT)) == OSMO_SOCK_F_BIND) {
+		switch (type) {
+		case SOCK_STREAM:
+		case SOCK_SEQPACKET:
+			listen(sfd, 10);
+			break;
+		}
+	}
+	return sfd;
+}
+
+
 /*! \brief Initialize a socket (including bind/connect)
  *  \param[in] family Address Family like AF_INET, AF_INET6, AF_UNSPEC
  *  \param[in] type Socket type like SOCK_DGRAM, SOCK_STREAM
@@ -67,9 +249,8 @@
 int osmo_sock_init(uint16_t family, uint16_t type, uint8_t proto,
 		   const char *host, uint16_t port, unsigned int flags)
 {
-	struct addrinfo hints, *result, *rp;
+	struct addrinfo *result, *rp;
 	int sfd, rc, on = 1;
-	char portbuf[16];
 
 	if ((flags & (OSMO_SOCK_F_BIND | OSMO_SOCK_F_CONNECT)) ==
 		     (OSMO_SOCK_F_BIND | OSMO_SOCK_F_CONNECT)) {
@@ -78,25 +259,8 @@ int osmo_sock_init(uint16_t family, uint16_t type, uint8_t proto,
 		return -EINVAL;
 	}
 
-	sprintf(portbuf, "%u", port);
-	memset(&hints, 0, sizeof(struct addrinfo));
-	hints.ai_family = family;
-	if (type == SOCK_RAW) {
-		/* Workaround for glibc, that returns EAI_SERVICE (-8) if
-		 * SOCK_RAW and IPPROTO_GRE is used.
-		 */
-		hints.ai_socktype = SOCK_DGRAM;
-		hints.ai_protocol = IPPROTO_UDP;
-	} else {
-		hints.ai_socktype = type;
-		hints.ai_protocol = proto;
-	}
-
-	if (flags & OSMO_SOCK_F_BIND)
-		hints.ai_flags |= AI_PASSIVE;
-
-	rc = getaddrinfo(host, portbuf, &hints, &result);
-	if (rc != 0) {
+	result = addrinfo_helper(family, type, proto, host, port, flags & OSMO_SOCK_F_BIND);
+	if (!result) {
 		LOGP(DLGLOBAL, LOGL_ERROR, "getaddrinfo returned NULL: %s:%u: %s\n",
 			host, port, strerror(errno));
 		return -EINVAL;
@@ -109,20 +273,10 @@ int osmo_sock_init(uint16_t family, uint16_t type, uint8_t proto,
 			rp->ai_protocol = proto;
 		}
 
-		sfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+		sfd = socket_helper(rp, flags);
 		if (sfd == -1)
 			continue;
-		if (flags & OSMO_SOCK_F_NONBLOCK) {
-			if (ioctl(sfd, FIONBIO, (unsigned char *)&on) < 0) {
-				LOGP(DLGLOBAL, LOGL_ERROR,
-					"cannot set this socket unblocking:"
-					" %s:%u: %s\n",
-					host, port, strerror(errno));
-				close(sfd);
-				freeaddrinfo(result);
-				return -EINVAL;
-			}
-		}
+
 		if (flags & OSMO_SOCK_F_CONNECT) {
 			rc = connect(sfd, rp->ai_addr, rp->ai_addrlen);
 			if (rc != -1 || (rc == -1 && errno == EINPROGRESS))

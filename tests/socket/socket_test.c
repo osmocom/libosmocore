@@ -73,6 +73,52 @@ static int test_sockinit(void)
 	return 0;
 }
 
+static int test_sockinit2(void)
+{
+	int fd, rc;
+	char *name;
+
+	printf("Checking osmo_sock_init2() with bind to a random local UDP port\n");
+	fd = osmo_sock_init2(AF_INET, SOCK_DGRAM, IPPROTO_UDP,
+			    "0.0.0.0", 0, NULL, 0, OSMO_SOCK_F_BIND);
+	OSMO_ASSERT(fd >= 0);
+	name = osmo_sock_get_name(NULL, fd);
+	/* expect it to be not connected. We cannot match on INADDR_ANY,
+	 * as apparently that won't work on FreeBSD if there's only one
+	 * address (e.g. 127.0.0.1) assigned to the entire system, like
+	 * the Osmocom FreeBSD build slaves */
+	OSMO_ASSERT(!strncmp(name, "(NULL<->", 7));
+	talloc_free(name);
+	/* expect it to be blocking */
+	rc = fcntl(fd, F_GETFL);
+	OSMO_ASSERT(!(rc & O_NONBLOCK));
+	close(fd);
+
+	printf("Checking osmo_sock_init2() for OSMO_SOCK_F_NONBLOCK\n");
+	fd = osmo_sock_init2(AF_INET, SOCK_DGRAM, IPPROTO_UDP,
+			    "0.0.0.0", 0, NULL, 0, OSMO_SOCK_F_BIND|OSMO_SOCK_F_NONBLOCK);
+	OSMO_ASSERT(fd >= 0);
+	/* expect it to be blocking */
+	rc = fcntl(fd, F_GETFL);
+	OSMO_ASSERT(rc & O_NONBLOCK);
+	close(fd);
+
+	printf("Checking osmo_sock_init2() for invalid flags\n");
+	fd = osmo_sock_init2(AF_INET, SOCK_DGRAM, IPPROTO_UDP, "0.0.0.0", 0, NULL, 0, 0);
+	OSMO_ASSERT(fd < 0);
+
+	printf("Checking osmo_sock_init2() for combined BIND + CONNECT\n");
+	fd = osmo_sock_init2(AF_INET, SOCK_DGRAM, IPPROTO_UDP, "127.0.0.1", 0, "127.0.0.1", 53,
+			     OSMO_SOCK_F_BIND|OSMO_SOCK_F_CONNECT);
+	OSMO_ASSERT(fd >= 0);
+	name = osmo_sock_get_name(NULL, fd);
+	OSMO_ASSERT(!strncmp(name, "(127.0.0.1:53<->127.0.0.1", 25));
+	talloc_free(name);
+
+	return 0;
+}
+
+
 const struct log_info_cat default_categories[] = {
 };
 
@@ -88,6 +134,7 @@ int main(int argc, char *argv[])
 	log_set_print_filename(osmo_stderr_target, 0);
 
 	test_sockinit();
+	test_sockinit2();
 
 	return EXIT_SUCCESS;
 }
