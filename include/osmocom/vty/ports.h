@@ -9,6 +9,7 @@
  */
 
 /* 4238 used by osmo-bts control interface */
+#define OSMO_VTY_PORT_STP	4239
 #define OSMO_VTY_PORT_PCU	4240	/* also: osmo_pcap_client */
 #define OSMO_VTY_PORT_BTS	4241	/* also: osmo_pcap_server */
 #define OSMO_VTY_PORT_NITB_BSC	4242
