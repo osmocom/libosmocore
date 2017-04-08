@@ -10,3 +10,21 @@ const struct value_string osmo_prim_op_names[5] = {
 	{ PRIM_OP_CONFIRM,			"confirm" },
 	{ 0, NULL }
 };
+
+/*! \brief resolve the (fsm) event for a given primitive using a map
+ *  \param[in] oph primitive header used as key for match
+ *  \param[in] maps list of mappings from primitive to event
+ *  \returns event determined by map; \ref OSMO_NO_EVENT if no match */
+uint32_t osmo_event_for_prim(const struct osmo_prim_hdr *oph,
+			     const struct osmo_prim_event_map *maps)
+{
+	const struct osmo_prim_event_map *map;
+
+	for (map = maps; map->event != OSMO_NO_EVENT; map++) {
+		if (map->sap == oph->sap &&
+		    map->primitive == oph->primitive &&
+		    map->operation == oph->operation)
+			return map->event;
+	}
+	return OSMO_NO_EVENT;
+}

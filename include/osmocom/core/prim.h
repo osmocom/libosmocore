@@ -57,4 +57,18 @@ osmo_prim_init(struct osmo_prim_hdr *oph, unsigned int sap,
 /*! \brief primitive handler callback type */
 typedef int (*osmo_prim_cb)(struct osmo_prim_hdr *oph, void *ctx);
 
+/*! \brief magic value to be used as final record of \ref
+ * osmo_prim_event_map */
+#define OSMO_NO_EVENT	0xFFFFFFFF
+
+/*! \brief single entry in a SAP/PRIM/OP -> EVENT map */
+struct osmo_prim_event_map {
+	unsigned int sap;	/*!< SAP to match */
+	unsigned int primitive;	/*!< primtiive to match */
+	enum osmo_prim_operation operation; /*!< operation to match */
+	uint32_t event;		/*!< event as result if above match */
+};
+
+uint32_t osmo_event_for_prim(const struct osmo_prim_hdr *oph,
+			     const struct osmo_prim_event_map *maps);
 /*! @} */
