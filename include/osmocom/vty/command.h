@@ -85,6 +85,14 @@ enum node_type {
 	L_BSSGP_NODE,		/*!< \brief BSSGP node in libosmo-gb. */
 	L_CTRL_NODE,		/*!< \brief Control interface node. */
 
+	L_CS7_NODE,		/*!< \brief SS7 root node */
+	L_CS7_AS_NODE,		/*!< \brief SS7 Application Server */
+	L_CS7_ASP_NODE,		/*!< \brief SS7 Application Server Process */
+	L_CS7_XUA_NODE,		/*!< \brief SS7 xUA Listener */
+	L_CS7_RTABLE_NODE,	/*!< \brief SS7 Routing Table */
+	L_CS7_LINK_NODE,	/*!< \brief SS7 Link */
+	L_CS7_LINKSET_NODE,	/*!< \brief SS7 Linkset */
+
 	/*
 	 * When adding new nodes to the libosmocore project, these nodes can be
 	 * used to avoid ABI changes for unrelated projects.
