@@ -37,6 +37,13 @@ int ipa_parse_unitid(const char *str, struct ipaccess_unit *unit_data);
 int ipa_ccm_tlv_to_unitdata(struct ipaccess_unit *ud,
 			     const struct tlv_parsed *tp);
 
+
+struct msgb *ipa_ccm_make_id_resp(const struct ipaccess_unit *dev,
+				  const uint8_t *ies_req, unsigned int num_ies_req);
+
+struct msgb *ipa_ccm_make_id_resp_from_req(const struct ipaccess_unit *dev,
+					   const uint8_t *data, unsigned int len);
+
 /* Send an IPA message to the given FD */
 int ipa_send(int fd, const void *msg, size_t msglen);
 

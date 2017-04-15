@@ -1,6 +1,6 @@
 /* OpenBSC Abis input driver for ip.access */
 
-/* (C) 2009 by Harald Welte <laforge@gnumonks.org>
+/* (C) 2009-2017 by Harald Welte <laforge@gnumonks.org>
  * (C) 2010 by Holger Hans Peter Freyther
  * (C) 2010 by On-Waves
  *
@@ -203,6 +203,123 @@ int ipa_ccm_tlv_to_unitdata(struct ipaccess_unit *ud,
 
 out:
 	return rc;
+}
+
+#define IPA_STRING_MAX 64
+
+/*! \brief Generate IPA CCM ID RESP based on list of IEs
+ *  \param[in] dev Descriptor describing identity data for response
+ *  \param[in] ies_req List of IEIs to include in response
+ *  \param[in] num_ies_req Number of IEIs in \a ies_req
+ *  \returns Message buffer with IPA CCM ID RESP */
+struct msgb *ipa_ccm_make_id_resp(const struct ipaccess_unit *dev,
+				  const uint8_t *ies_req, unsigned int num_ies_req)
+{
+	struct msgb *msg = ipa_msg_alloc(16);
+	char str[IPA_STRING_MAX];
+	unsigned int i;
+
+	if (!msg)
+		return NULL;
+
+	*msgb_put(msg, 1) = IPAC_MSGT_ID_RESP;
+
+	for (i = 0; i < num_ies_req; i++) {
+		uint8_t *tag;
+
+		str[0] = '\0';
+		switch (ies_req[i]) {
+		case IPAC_IDTAG_UNIT:
+			snprintf(str, sizeof(str), "%u/%u/%u",
+				dev->site_id, dev->bts_id, dev->trx_id);
+			break;
+		case IPAC_IDTAG_MACADDR:
+			snprintf(str, sizeof(str),
+				 "%02x:%02x:%02x:%02x:%02x:%02x",
+				 dev->mac_addr[0], dev->mac_addr[1],
+				 dev->mac_addr[2], dev->mac_addr[3],
+				 dev->mac_addr[4], dev->mac_addr[5]);
+			break;
+		case IPAC_IDTAG_LOCATION1:
+			if (dev->location1)
+				strncpy(str, dev->location1, IPA_STRING_MAX);
+			break;
+		case IPAC_IDTAG_LOCATION2:
+			if (dev->location2)
+				strncpy(str, dev->location2, IPA_STRING_MAX);
+			break;
+		case IPAC_IDTAG_EQUIPVERS:
+			if (dev->equipvers)
+				strncpy(str, dev->equipvers, IPA_STRING_MAX);
+			break;
+		case IPAC_IDTAG_SWVERSION:
+			if (dev->swversion)
+				strncpy(str, dev->swversion, IPA_STRING_MAX);
+			break;
+		case IPAC_IDTAG_UNITNAME:
+			if (dev->unit_name) {
+				snprintf(str, sizeof(str), dev->unit_name, IPA_STRING_MAX);
+			} else {
+				snprintf(str, sizeof(str),
+					 "%02x-%02x-%02x-%02x-%02x-%02x",
+					 dev->mac_addr[0], dev->mac_addr[1],
+					 dev->mac_addr[2], dev->mac_addr[3],
+					 dev->mac_addr[4], dev->mac_addr[5]);
+			}
+			break;
+		case IPAC_IDTAG_SERNR:
+			if (dev->serno)
+				strncpy(str, dev->serno, IPA_STRING_MAX);
+			break;
+		default:
+			LOGP(DLINP, LOGL_NOTICE,
+				"Unknown ipaccess tag 0x%02x\n", ies_req[i]);
+			msgb_free(msg);
+			return NULL;
+		}
+		str[IPA_STRING_MAX-1] = '\0';
+
+		LOGP(DLINP, LOGL_INFO, " tag %d: %s\n", ies_req[i], str);
+		tag = msgb_put(msg, 3 + strlen(str) + 1);
+		tag[0] = 0x00;
+		tag[1] = 1 + strlen(str) + 1;
+		tag[2] = ies_req[1];
+		memcpy(tag + 3, str, strlen(str) + 1);
+	}
+	ipa_prepend_header(msg, IPAC_PROTO_IPACCESS);
+	return msg;
+}
+
+/*! \brief Generate IPA CCM ID RESP based on requets payload
+ *  \param[in] dev Descriptor describing identity data for response
+ *  \param[in] data Payload of the IPA CCM ID GET request
+ *  \param[in] len Length of \a data in octets
+ *  \returns Message buffer with IPA CCM ID RESP */
+struct msgb *ipa_ccm_make_id_resp_from_req(const struct ipaccess_unit *dev,
+					   const uint8_t *data, unsigned int len)
+{
+	uint8_t ies[len/2];
+	unsigned int num_ies = 0;
+	const uint8_t *cur = data;
+
+	/* build a array of the IEIs */
+	while (len >= 2) {
+		uint8_t t_len, t_tag;
+		len -= 2;
+		t_len = *cur++;
+		t_tag = *cur++;
+
+		if (t_len > len + 1) {
+			LOGP(DLINP, LOGL_ERROR, "IPA CCM tage 0x%02x does not fit\n", t_tag);
+			break;
+		}
+
+		ies[num_ies++] = t_tag;
+
+		cur += t_len;
+		len -= t_len;
+	}
+	return ipa_ccm_make_id_resp(dev, ies, num_ies);
 }
 
 int ipa_send(int fd, const void *msg, size_t msglen)
