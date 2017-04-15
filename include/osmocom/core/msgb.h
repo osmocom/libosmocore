@@ -350,6 +350,21 @@ static inline unsigned char *msgb_pull_to_l3(struct msgb *msg)
 	return ret;
 }
 
+/*! \brief remove (pull) all headers in front of l2h from the message buffer.
+ *  \param[in] msgb message buffer with a valid l2h
+ *  \returns pointer to new start of msgb (l2h)
+ *
+ * This function moves the \a data pointer of the \ref msgb further back
+ * in the message, thereby shrinking the size of the message.
+ * l1h will be cleared.
+ */
+static inline unsigned char *msgb_pull_to_l2(struct msgb *msg)
+{
+	unsigned char *ret = msgb_pull(msg, msg->l2h - msg->data);
+	msg->l1h = NULL;
+	return ret;
+}
+
 /*! \brief remove uint8 from front of message
  *  \param[in] msgb message buffer
  *  \returns 8bit value taken from end of msgb
