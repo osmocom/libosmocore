@@ -8,6 +8,7 @@
 #include <osmocom/core/select.h>
 #include <osmocom/core/logging.h>
 #include <osmocom/core/fsm.h>
+#include <osmocom/ctrl/control_if.h>
 
 enum {
 	DMAIN,
@@ -83,15 +84,38 @@ static struct osmo_fsm_state test_fsm_states[] = {
 };
 
 static struct osmo_fsm fsm = {
-	.name = "Test FSM",
+	.name = "Test_FSM",
 	.states = test_fsm_states,
 	.num_states = ARRAY_SIZE(test_fsm_states),
 	.log_subsys = DMAIN,
 };
 
+static struct ctrl_handle *g_ctrl;
+
+static struct ctrl_cmd *exec_ctrl_cmd(const char *cmdstr)
+{
+	struct ctrl_cmd *cmd;
+	return ctrl_cmd_exec_from_string(g_ctrl, cmdstr);
+	OSMO_ASSERT(cmd);
+	return cmd;
+}
+
+static void assert_cmd_reply(const char *cmdstr, const char *expres)
+{
+	struct ctrl_cmd *cmd;
+
+	cmd = exec_ctrl_cmd(cmdstr);
+	if (strcmp(cmd->reply, expres)) {
+		fprintf(stderr, "Reply '%s' doesn't match expected '%s'\n", cmd->reply, expres);
+		OSMO_ASSERT(0);
+	}
+	talloc_free(cmd);
+}
+
 static struct osmo_fsm_inst *foo(void)
 {
 	struct osmo_fsm_inst *fi;
+	struct ctrl_cmd *cmd;
 
 	LOGP(DMAIN, LOGL_INFO, "Checking FSM allocation\n");
 	fi = osmo_fsm_inst_alloc(&fsm, g_ctx, NULL, LOGL_DEBUG, "my_id");
@@ -100,20 +124,30 @@ static struct osmo_fsm_inst *foo(void)
 	OSMO_ASSERT(!strncmp(osmo_fsm_inst_name(fi), fsm.name, strlen(fsm.name)));
 	OSMO_ASSERT(fi->state == ST_NULL);
 	OSMO_ASSERT(fi->log_level == LOGL_DEBUG);
+	assert_cmd_reply("GET 1 fsm.Test_FSM.id.my_id.state", "NULL");
+	assert_cmd_reply("GET 1 fsm.Test_FSM.id.my_id.timer", "0,0,0");
 
 	/* Try invalid state transition */
 	osmo_fsm_inst_dispatch(fi, EV_B, (void *) 42);
 	OSMO_ASSERT(fi->state == ST_NULL);
+	assert_cmd_reply("GET 1 fsm.Test_FSM.id.my_id.state", "NULL");
+
 
 	/* Legitimate state transition */
 	osmo_fsm_inst_dispatch(fi, EV_A, (void *) 23);
 	OSMO_ASSERT(fi->state == ST_ONE);
+	assert_cmd_reply("GET 1 fsm.Test_FSM.id.my_id.state", "ONE");
 
 	/* Legitimate transition with timer */
 	fsm.timer_cb = test_fsm_tmr_cb;
 	osmo_fsm_inst_dispatch(fi, EV_B, (void *) 42);
 	OSMO_ASSERT(fi->state == ST_TWO);
+	assert_cmd_reply("GET 1 fsm.Test_FSM.id.my_id.state", "TWO");
 
+	cmd = exec_ctrl_cmd("GET 2 fsm.Test_FSM.id.my_id.dump");
+	const char *exp = "'Test_FSM(my_id)','my_id','DEBUG','TWO',2342,timeout_sec=";
+	OSMO_ASSERT(!strncmp(cmd->reply, exp, strlen(exp)));
+	talloc_free(cmd);
 
 	return fi;
 }
@@ -142,7 +176,7 @@ int main(int argc, char **argv)
 	stderr_target = log_target_create_stderr();
 	log_add_target(stderr_target);
 	log_set_print_filename(stderr_target, 0);
-
+	g_ctrl = ctrl_handle_alloc(NULL, NULL, NULL);
 
 	g_ctx = NULL;
 	OSMO_ASSERT(osmo_fsm_find_by_name(fsm.name) == NULL);
@@ -152,7 +186,7 @@ int main(int argc, char **argv)
 	OSMO_ASSERT(osmo_fsm_inst_find_by_name(&fsm, "my_id") == NULL);
 	finst = foo();
 	OSMO_ASSERT(osmo_fsm_inst_find_by_id(&fsm, "my_id") == finst);
-	OSMO_ASSERT(osmo_fsm_inst_find_by_name(&fsm, "Test FSM(my_id)") == finst);
+	OSMO_ASSERT(osmo_fsm_inst_find_by_name(&fsm, "Test_FSM(my_id)") == finst);
 
 	while (1) {
 		osmo_select_main(0);

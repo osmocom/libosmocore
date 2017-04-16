@@ -8,7 +8,7 @@ AM_CFLAGS = -Wall $(all_includes) -I$(top_srcdir)/include -I$(top_builddir)/incl
 if ENABLE_CTRL
 lib_LTLIBRARIES = libosmoctrl.la
 
-libosmoctrl_la_SOURCES = control_cmd.c control_if.c
+libosmoctrl_la_SOURCES = control_cmd.c control_if.c fsm_ctrl_commands.c
 
 libosmoctrl_la_LDFLAGS = $(LTLDFLAGS_OSMOCTRL) $(TALLOC_LIBS) -version-info $(LIBVERSION) -no-undefined
 libosmoctrl_la_LIBADD = \

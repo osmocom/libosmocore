@@ -1,11 +1,11 @@
 Checking FSM allocation
-[0;mTest FSM(my_id){NULL}: Allocated
-[0;mTest FSM(my_id){NULL}: Received Event 1
-[0;mTest FSM(my_id){NULL}: Event 1 not permitted
-[0;mTest FSM(my_id){NULL}: Received Event 0
-[0;mTest FSM(my_id){NULL}: state_chg to ONE
-[0;mTest FSM(my_id){ONE}: Received Event 1
-[0;mTest FSM(my_id){ONE}: state_chg to TWO
-[0;mTest FSM(my_id){TWO}: Timeout of T2342
+[0;mTest_FSM(my_id){NULL}: Allocated
+[0;mTest_FSM(my_id){NULL}: Received Event 1
+[0;mTest_FSM(my_id){NULL}: Event 1 not permitted
+[0;mTest_FSM(my_id){NULL}: Received Event 0
+[0;mTest_FSM(my_id){NULL}: state_chg to ONE
+[0;mTest_FSM(my_id){ONE}: Received Event 1
+[0;mTest_FSM(my_id){ONE}: state_chg to TWO
+[0;mTest_FSM(my_id){TWO}: Timeout of T2342
 [0;mTimer
 [0;m

@@ -18,6 +18,8 @@ enum ctrl_node_type {
 	CTRL_NODE_BTS,	/* BTS specific (net.btsN.) */
 	CTRL_NODE_TRX,	/* TRX specific (net.btsN.trxM.) */
 	CTRL_NODE_TS,	/* TS specific (net.btsN.trxM.tsI.) */
+	CTRL_NODE_FSM,	/* Finite State Machine (description) */
+	CTRL_NODE_FSM_INST,	/* Finite State Machine (instance) */
 	_LAST_CTRL_NODE
 };
 

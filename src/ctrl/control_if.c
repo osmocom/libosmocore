@@ -717,6 +717,10 @@ static int ctrl_init(void)
 	if (ret)
 		goto err_vec;
 
+	ret = osmo_fsm_ctrl_cmds_install();
+	if (ret)
+		goto err_vec;
+
 	ctrl_initialized = 1;
 	return 0;
 
