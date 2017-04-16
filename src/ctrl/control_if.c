@@ -61,6 +61,13 @@
 
 vector ctrl_node_vec;
 
+/* global list of control interface lookup helpers */
+struct lookup_helper {
+	struct llist_head list;
+	ctrl_cmd_lookup lookup;
+};
+static LLIST_HEAD(ctrl_lookup_helpers);
+
 int ctrl_parse_get_num(vector vline, int i, long *num)
 {
 	char *token, *tmp;
@@ -225,12 +232,21 @@ int ctrl_cmd_handle(struct ctrl_handle *ctrl, struct ctrl_cmd *cmd,
 	}
 
 	for (i=0;i<vector_active(vline);i++) {
+		struct lookup_helper *lh;
 		int rc;
 
 		if (ctrl->lookup)
 			rc = ctrl->lookup(data, vline, &node, &cmd->node, &i);
 		else
 			rc = 0;
+
+		if (!rc) {
+			llist_for_each_entry(lh, &ctrl_lookup_helpers, list) {
+				rc = lh->lookup(data, vline, &node, &cmd->node, &i);
+				if (rc)
+					break;
+			}
+		}
 
 		if (rc == 1) {
 			/* do nothing */
@@ -732,4 +748,29 @@ err:
 	     bind_addr, port);
 	talloc_free(ctrl);
 	return NULL;
+}
+
+/*! \brief Install a lookup helper function for control nodes
+ *  This function is used by e.g. library code to install lookup helpers
+ *  for additional nodes in the control interface.
+ *  \param[in] lookup The lookup helper function
+ *  \retuns - on success; negative on error.
+ */
+int ctrl_lookup_register(ctrl_cmd_lookup lookup)
+{
+	struct lookup_helper *lh;
+
+	/* avoid double registration */
+	llist_for_each_entry(lh, &ctrl_lookup_helpers, list) {
+		if (lh->lookup == lookup)
+			return -EEXIST;
+	}
+
+	lh = talloc_zero(NULL, struct lookup_helper);
+	if (!lh)
+		return -ENOMEM;
+
+	lh->lookup = lookup;
+	llist_add_tail(&lh->list, &ctrl_lookup_helpers);
+	return 0;
 }
