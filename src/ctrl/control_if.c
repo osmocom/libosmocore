@@ -59,6 +59,8 @@
 #include <osmocom/vty/command.h>
 #include <osmocom/vty/vector.h>
 
+extern int osmo_fsm_ctrl_cmds_install(void);
+
 vector ctrl_node_vec;
 
 /* global list of control interface lookup helpers */
@@ -694,6 +696,62 @@ struct ctrl_handle *ctrl_interface_setup(void *data, uint16_t port,
 	return ctrl_interface_setup_dynip(data, "127.0.0.1", port, lookup);
 }
 
+static int ctrl_initialized = 0;
+
+/* global ctrl initialization */
+static int ctrl_init(void)
+{
+	int ret;
+
+	if (ctrl_initialized)
+		return 0;
+
+	ctrl_node_vec = vector_init(5);
+	if (!ctrl_node_vec)
+		goto err;
+
+	ret = ctrl_cmd_install(CTRL_NODE_ROOT, &cmd_rate_ctr);
+	if (ret)
+		goto err_vec;
+	ret = ctrl_cmd_install(CTRL_NODE_ROOT, &cmd_counter);
+	if (ret)
+		goto err_vec;
+
+	ctrl_initialized = 1;
+	return 0;
+
+err_vec:
+	vector_free(ctrl_node_vec);
+	ctrl_node_vec = NULL;
+err:
+	return -1;
+}
+
+/*! \brief Allocate a CTRL interface handle
+ *  \param[in] ctx Tallo callocation context to be used
+ *  \param[in] data Pointer which will be made available to each
+               set_..() get_..() verify_..() control command function
+ *  \param[in] lookup Lookup function pointer, can be NULL
+ *  \returns ctrl_handle pointer or NULL in case of errors
+ */
+struct ctrl_handle *ctrl_handle_alloc(void *ctx, void *data, ctrl_cmd_lookup lookup)
+{
+	struct ctrl_handle *ctrl;
+
+	ctrl_init();
+
+	ctrl = talloc_zero(ctx, struct ctrl_handle);
+	if (!ctrl)
+		return NULL;
+
+	INIT_LLIST_HEAD(&ctrl->ccon_list);
+
+	ctrl->data = data;
+	ctrl->lookup = lookup;
+
+	return ctrl;
+}
+
 /*! \brief Setup CTRL interface on a given address
  *  \param[in] data Pointer which will be made available to each
                set_..() get_..() verify_..() control command function
@@ -710,44 +768,22 @@ struct ctrl_handle *ctrl_interface_setup_dynip(void *data,
 	int ret;
 	struct ctrl_handle *ctrl;
 
-	ctrl = talloc_zero(data, struct ctrl_handle);
+	ctrl = ctrl_handle_alloc(data, data, lookup);
 	if (!ctrl)
 		return NULL;
-
-	INIT_LLIST_HEAD(&ctrl->ccon_list);
-
-	ctrl->data = data;
-	ctrl->lookup = lookup;
-
-	ctrl_node_vec = vector_init(5);
-	if (!ctrl_node_vec)
-		goto err;
 
 	/* Listen for control connections */
 	ctrl->listen_fd.cb = listen_fd_cb;
 	ctrl->listen_fd.data = ctrl;
 	ret = osmo_sock_init_ofd(&ctrl->listen_fd, AF_INET, SOCK_STREAM, IPPROTO_TCP,
 				 bind_addr, port, OSMO_SOCK_F_BIND);
-	if (ret < 0)
-		goto err_vec;
-
-	ret = ctrl_cmd_install(CTRL_NODE_ROOT, &cmd_rate_ctr);
-	if (ret)
-		goto err_vec;
-	ret = ctrl_cmd_install(CTRL_NODE_ROOT, &cmd_counter);
-	if (ret)
-		goto err_vec;
+	if (ret < 0) {
+		talloc_free(ctrl);
+		return NULL;
+	}
 
 	LOGP(DLCTRL, LOGL_NOTICE, "CTRL at %s %u\n", bind_addr, port);
 	return ctrl;
-err_vec:
-	vector_free(ctrl_node_vec);
-	ctrl_node_vec = NULL;
-err:
-	LOGP(DLCTRL, LOGL_ERROR, "Cannot bind CTRL at %s %u\n",
-	     bind_addr, port);
-	talloc_free(ctrl);
-	return NULL;
 }
 
 /*! \brief Install a lookup helper function for control nodes
