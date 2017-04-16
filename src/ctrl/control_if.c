@@ -706,7 +706,7 @@ static int ctrl_init(void)
 	if (ctrl_initialized)
 		return 0;
 
-	ctrl_node_vec = vector_init(5);
+	ctrl_node_vec = vector_init(_LAST_CTRL_NODE);
 	if (!ctrl_node_vec)
 		goto err;
 
