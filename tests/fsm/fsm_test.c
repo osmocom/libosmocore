@@ -94,7 +94,7 @@ static struct osmo_fsm_inst *foo(void)
 	struct osmo_fsm_inst *fi;
 
 	LOGP(DMAIN, LOGL_INFO, "Checking FSM allocation\n");
-	fi = osmo_fsm_inst_alloc(&fsm, g_ctx, NULL, LOGL_DEBUG, NULL);
+	fi = osmo_fsm_inst_alloc(&fsm, g_ctx, NULL, LOGL_DEBUG, "my_id");
 	OSMO_ASSERT(fi);
 	OSMO_ASSERT(fi->fsm == &fsm);
 	OSMO_ASSERT(!strncmp(osmo_fsm_inst_name(fi), fsm.name, strlen(fsm.name)));
@@ -143,10 +143,16 @@ int main(int argc, char **argv)
 	log_add_target(stderr_target);
 	log_set_print_filename(stderr_target, 0);
 
-	g_ctx = NULL;
-	osmo_fsm_register(&fsm);
 
+	g_ctx = NULL;
+	OSMO_ASSERT(osmo_fsm_find_by_name(fsm.name) == NULL);
+	osmo_fsm_register(&fsm);
+	OSMO_ASSERT(osmo_fsm_find_by_name(fsm.name) == &fsm);
+
+	OSMO_ASSERT(osmo_fsm_inst_find_by_name(&fsm, "my_id") == NULL);
 	finst = foo();
+	OSMO_ASSERT(osmo_fsm_inst_find_by_id(&fsm, "my_id") == finst);
+	OSMO_ASSERT(osmo_fsm_inst_find_by_name(&fsm, "Test FSM(my_id)") == finst);
 
 	while (1) {
 		osmo_select_main(0);

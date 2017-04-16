@@ -141,6 +141,10 @@ void osmo_fsm_log_addr(bool log_addr);
 int osmo_fsm_register(struct osmo_fsm *fsm);
 void osmo_fsm_unregister(struct osmo_fsm *fsm);
 struct osmo_fsm *osmo_fsm_find_by_name(const char *name);
+struct osmo_fsm_inst *osmo_fsm_inst_find_by_name(const struct osmo_fsm *fsm,
+						 const char *name);
+struct osmo_fsm_inst *osmo_fsm_inst_find_by_id(const struct osmo_fsm *fsm,
+						const char *id);
 struct osmo_fsm_inst *osmo_fsm_inst_alloc(struct osmo_fsm *fsm, void *ctx, void *priv,
 					  int log_level, const char *id);
 struct osmo_fsm_inst *osmo_fsm_inst_alloc_child(struct osmo_fsm *fsm,

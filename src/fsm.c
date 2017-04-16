@@ -113,6 +113,30 @@ struct osmo_fsm *osmo_fsm_find_by_name(const char *name)
 	return NULL;
 }
 
+struct osmo_fsm_inst *osmo_fsm_inst_find_by_name(const struct osmo_fsm *fsm,
+						 const char *name)
+{
+	struct osmo_fsm_inst *fi;
+
+	llist_for_each_entry(fi, &fsm->instances, list) {
+		if (!strcmp(name, fi->name))
+			return fi;
+	}
+	return NULL;
+}
+
+struct osmo_fsm_inst *osmo_fsm_inst_find_by_id(const struct osmo_fsm *fsm,
+						const char *id)
+{
+	struct osmo_fsm_inst *fi;
+
+	llist_for_each_entry(fi, &fsm->instances, list) {
+		if (!strcmp(id, fi->id))
+			return fi;
+	}
+	return NULL;
+}
+
 /*! \brief register a FSM with the core
  *
  *  A FSM descriptor needs to be registered with the core before any
