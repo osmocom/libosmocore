@@ -178,13 +178,16 @@ static void fsm_tmr_cb(void *data)
 
 	if (fsm->timer_cb) {
 		int rc = fsm->timer_cb(fi);
-		if (rc != 1)
+		if (rc != 1) {
+			fi->T = 0;
 			return;
+		}
 		LOGPFSM(fi, "timer_cb requested termination\n");
 	} else
 		LOGPFSM(fi, "No timer_cb, automatic termination\n");
 
 	/* if timer_cb returns 1 or there is no timer_cb */
+	fi->T = 0;
 	osmo_fsm_inst_term(fi, OSMO_FSM_TERM_TIMEOUT, &T);
 }
 
