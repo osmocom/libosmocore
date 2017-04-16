@@ -810,3 +810,31 @@ int ctrl_lookup_register(ctrl_cmd_lookup lookup)
 	llist_add_tail(&lh->list, &ctrl_lookup_helpers);
 	return 0;
 }
+
+/*! \brief Helper for "local execution" of a CTRL command from a string
+ *  The function will parse + execute the given control command string
+ *  and return a corresponding ctrl_cmd.  Caller is responsible to
+ *  talloc_free() the return value.
+ *  \param[in] Control Interface Command String
+ *  \returns parsed command, including reply; NULL on error */
+struct ctrl_cmd *ctrl_cmd_exec_from_string(struct ctrl_handle *ch, const char *cmdstr)
+{
+	struct msgb *msg = msgb_alloc(1024, "ctrl-cmd");
+	struct ctrl_cmd *cmd;
+
+	if (!msg)
+		return NULL;
+	msg->l2h = msg->data;
+	osmo_strlcpy((char *)msg->data, cmdstr, msgb_tailroom(msg));
+	msgb_put(msg, strlen(cmdstr));
+
+	cmd = ctrl_cmd_parse(ch, msg);
+	msgb_free(msg);
+	if (!cmd)
+		return NULL;
+	if (ctrl_cmd_handle(ch, cmd, NULL) < 0) {
+		talloc_free(cmd);
+		return NULL;
+	}
+	return cmd;
+}

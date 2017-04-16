@@ -30,5 +30,6 @@ struct ctrl_handle *ctrl_interface_setup_dynip(void *data,
 					       ctrl_cmd_lookup lookup);
 struct ctrl_connection *osmo_ctrl_conn_alloc(void *ctx, void *data);
 int ctrl_cmd_handle(struct ctrl_handle *ctrl, struct ctrl_cmd *cmd, void *data);
+struct ctrl_cmd *ctrl_cmd_exec_from_string(struct ctrl_handle *ch, const char *cmdstr);
 
 int ctrl_lookup_register(ctrl_cmd_lookup lookup);

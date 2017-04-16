@@ -139,7 +139,7 @@ oap_oap_test_SOURCES = oap/oap_test.c
 oap_oap_test_LDADD = $(top_builddir)/src/gsm/libosmogsm.la $(top_builddir)/src/libosmocore.la
 
 fsm_fsm_test_SOURCES = fsm/fsm_test.c
-fsm_fsm_test_LDADD = $(top_builddir)/src/libosmocore.la
+fsm_fsm_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/ctrl/libosmoctrl.la
 
 write_queue_wqueue_test_SOURCES = write_queue/wqueue_test.c
 write_queue_wqueue_test_LDADD = $(top_builddir)/src/libosmocore.la
