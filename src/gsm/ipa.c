@@ -302,6 +302,8 @@ struct msgb *ipa_ccm_make_id_resp_from_req(const struct ipaccess_unit *dev,
 	unsigned int num_ies = 0;
 	const uint8_t *cur = data;
 
+	memset(ies, 0, sizeof(ies));
+
 	/* build a array of the IEIs */
 	while (len >= 2) {
 		uint8_t t_len, t_tag;
