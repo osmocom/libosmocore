@@ -23,6 +23,12 @@ libosmocore_la_SOURCES = timer.c timer_gettimeofday.c select.c signal.c msgb.c b
 			 macaddr.c stat_item.c stats.c stats_statsd.c prim.c \
 			 viterbi.c viterbi_gen.c sercomm.c
 
+if HAVE_SSE3
+libosmocore_la_SOURCES += viterbi_sse.c
+# Per-object flags hack
+viterbi_sse.lo : CFLAGS += $(SIMD_FLAGS)
+endif
+
 BUILT_SOURCES = crc8gen.c crc16gen.c crc32gen.c crc64gen.c
 
 if ENABLE_PLUGIN

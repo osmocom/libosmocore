@@ -24,11 +24,34 @@
 #include <string.h>
 #include <errno.h>
 
-#include <osmocom/core/conv.h>
 #include "config.h"
+
+#include <osmocom/core/conv.h>
 
 #define BIT2NRZ(REG,N)	(((REG >> N) & 0x01) * 2 - 1) * -1
 #define NUM_STATES(K)	(K == 7 ? 64 : 16)
+
+static int init_complete = 0;
+
+__attribute__ ((visibility("hidden"))) int avx2_supported = 0;
+__attribute__ ((visibility("hidden"))) int sse3_supported = 0;
+__attribute__ ((visibility("hidden"))) int sse41_supported = 0;
+
+/**
+ * This pointers will be initialized by the osmo_conv_init()
+ * depending on supported SIMD extensions.
+ */
+static int16_t *(*vdec_malloc)(size_t n);
+static void (*vdec_free)(int16_t *ptr);
+
+/* Forward malloc wrappers */
+int16_t *osmo_conv_vdec_malloc(size_t n);
+void osmo_conv_vdec_free(int16_t *ptr);
+
+#ifdef HAVE_SSE3
+int16_t *osmo_conv_vdec_malloc_sse3(size_t n);
+void osmo_conv_vdec_free_sse3(int16_t *ptr);
+#endif
 
 /* Forward Metric Units */
 void osmo_conv_gen_metrics_k5_n2(const int8_t *seq, const int16_t *out,
@@ -43,6 +66,21 @@ void osmo_conv_gen_metrics_k7_n3(const int8_t *seq, const int16_t *out,
 	int16_t *sums, int16_t *paths, int norm);
 void osmo_conv_gen_metrics_k7_n4(const int8_t *seq, const int16_t *out,
 	int16_t *sums, int16_t *paths, int norm);
+
+#ifdef HAVE_SSE3
+void osmo_conv_gen_metrics_k5_n2_sse(const int8_t *seq, const int16_t *out,
+	int16_t *sums, int16_t *paths, int norm);
+void osmo_conv_gen_metrics_k5_n3_sse(const int8_t *seq, const int16_t *out,
+	int16_t *sums, int16_t *paths, int norm);
+void osmo_conv_gen_metrics_k5_n4_sse(const int8_t *seq, const int16_t *out,
+	int16_t *sums, int16_t *paths, int norm);
+void osmo_conv_gen_metrics_k7_n2_sse(const int8_t *seq, const int16_t *out,
+	int16_t *sums, int16_t *paths, int norm);
+void osmo_conv_gen_metrics_k7_n3_sse(const int8_t *seq, const int16_t *out,
+	int16_t *sums, int16_t *paths, int norm);
+void osmo_conv_gen_metrics_k7_n4_sse(const int8_t *seq, const int16_t *out,
+	int16_t *sums, int16_t *paths, int norm);
+#endif
 
 /* Trellis State
  * state - Internal lshift register value
@@ -89,12 +127,6 @@ struct vdecoder {
 	void (*metric_func)(const int8_t *, const int16_t *,
 		int16_t *, int16_t *, int);
 };
-
-/* Non-aligned Memory Allocator */
-static int16_t *vdec_malloc(size_t n)
-{
-	return (int16_t *) malloc(sizeof(int16_t) * n);
-}
 
 /* Accessor calls */
 static inline int conv_code_recursive(const struct osmo_conv_code *code)
@@ -294,9 +326,9 @@ static void free_trellis(struct vtrellis *trellis)
 	if (!trellis)
 		return;
 
+	vdec_free(trellis->outputs);
+	vdec_free(trellis->sums);
 	free(trellis->vals);
-	free(trellis->outputs);
-	free(trellis->sums);
 	free(trellis);
 }
 
@@ -430,7 +462,7 @@ static void free_vdec(struct vdecoder *dec)
 	if (!dec)
 		return;
 
-	free(dec->paths[0]);
+	vdec_free(dec->paths[0]);
 	free(dec->paths);
 	free_trellis(dec->trellis);
 	free(dec);
@@ -456,13 +488,31 @@ static struct vdecoder *alloc_vdec(const struct osmo_conv_code *code)
 	if (dec->k == 5) {
 		switch (dec->n) {
 		case 2:
+		#ifdef HAVE_SSE3
+			dec->metric_func = !sse3_supported ?
+				osmo_conv_gen_metrics_k5_n2 :
+				osmo_conv_gen_metrics_k5_n2_sse;
+		#else
 			dec->metric_func = osmo_conv_gen_metrics_k5_n2;
+		#endif
 			break;
 		case 3:
+		#ifdef HAVE_SSE3
+			dec->metric_func = !sse3_supported ?
+				osmo_conv_gen_metrics_k5_n3 :
+				osmo_conv_gen_metrics_k5_n3_sse;
+		#else
 			dec->metric_func = osmo_conv_gen_metrics_k5_n3;
+		#endif
 			break;
 		case 4:
+		#ifdef HAVE_SSE3
+			dec->metric_func = !sse3_supported ?
+				osmo_conv_gen_metrics_k5_n4 :
+				osmo_conv_gen_metrics_k5_n4_sse;
+		#else
 			dec->metric_func = osmo_conv_gen_metrics_k5_n4;
+		#endif
 			break;
 		default:
 			goto fail;
@@ -470,13 +520,31 @@ static struct vdecoder *alloc_vdec(const struct osmo_conv_code *code)
 	} else if (dec->k == 7) {
 		switch (dec->n) {
 		case 2:
+		#ifdef HAVE_SSE3
+			dec->metric_func = !sse3_supported ?
+				osmo_conv_gen_metrics_k7_n2 :
+				osmo_conv_gen_metrics_k7_n2_sse;
+		#else
 			dec->metric_func = osmo_conv_gen_metrics_k7_n2;
+		#endif
 			break;
 		case 3:
+		#ifdef HAVE_SSE3
+			dec->metric_func = !sse3_supported ?
+				osmo_conv_gen_metrics_k7_n3 :
+				osmo_conv_gen_metrics_k7_n3_sse;
+		#else
 			dec->metric_func = osmo_conv_gen_metrics_k7_n3;
+		#endif
 			break;
 		case 4:
+		#ifdef HAVE_SSE3
+			dec->metric_func = !sse3_supported ?
+				osmo_conv_gen_metrics_k7_n4 :
+				osmo_conv_gen_metrics_k7_n4_sse;
+		#else
 			dec->metric_func = osmo_conv_gen_metrics_k7_n4;
+		#endif
 			break;
 		default:
 			goto fail;
@@ -569,12 +637,45 @@ static int conv_decode(struct vdecoder *dec, const int8_t *seq,
 	return traceback(dec, out, term, len);
 }
 
+static void osmo_conv_init(void)
+{
+	init_complete = 1;
+
+#ifdef HAVE___BUILTIN_CPU_SUPPORTS
+	/* Detect CPU capabilities */
+	#ifdef HAVE_AVX2
+		avx2_supported = __builtin_cpu_supports("avx2");
+	#endif
+
+	#ifdef HAVE_SSE3
+		sse3_supported = __builtin_cpu_supports("sse3");
+	#endif
+
+	#ifdef HAVE_SSE4_1
+		sse41_supported = __builtin_cpu_supports("sse4.1");
+	#endif
+#endif
+
+#ifdef HAVE_SSE3
+	vdec_malloc = !sse3_supported ?
+		&osmo_conv_vdec_malloc : &osmo_conv_vdec_malloc_sse3;
+	vdec_free = !sse3_supported ?
+		&osmo_conv_vdec_free : &osmo_conv_vdec_free_sse3;
+#else
+	vdec_malloc = &osmo_conv_vdec_malloc;
+	vdec_free = &osmo_conv_vdec_free;
+#endif
+}
+
 /* All-in-one Viterbi decoding  */
 int osmo_conv_decode_acc(const struct osmo_conv_code *code,
 	const sbit_t *input, ubit_t *output)
 {
 	int rc;
 	struct vdecoder *vdec;
+
+	if (!init_complete)
+		osmo_conv_init();
 
 	if ((code->N < 2) || (code->N > 4) || (code->len < 1) ||
 		((code->K != 5) && (code->K != 7)))

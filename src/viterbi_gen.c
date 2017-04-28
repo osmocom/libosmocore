@@ -20,6 +20,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -124,6 +125,19 @@ static void gen_path_metrics(int num_states, int16_t *sums,
 	}
 
 	memcpy(sums, new_sums, num_states * sizeof(int16_t));
+}
+
+/* Not-aligned Memory Allocator */
+__attribute__ ((visibility("hidden")))
+int16_t *osmo_conv_vdec_malloc(size_t n)
+{
+	return (int16_t *) malloc(sizeof(int16_t) * n);
+}
+
+__attribute__ ((visibility("hidden")))
+void osmo_conv_vdec_free(int16_t *ptr)
+{
+	free(ptr);
 }
 
 /* 16-state branch-path metrics units (K=5) */
