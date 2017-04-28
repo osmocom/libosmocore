@@ -200,10 +200,9 @@ int gsm0808_dec_speech_codec(struct gsm0808_speech_codec *sc,
 
 	header = *elem;
 
-	/* Malformed elements */
+	/* An extended codec type needs at least two fields,
+	 * bail if the input data length is not sufficient. */
 	if ((header & 0x0F) == 0x0F && len < 2)
-		return -EINVAL;
-	else if ((header & 0x0F) != 0x0F && len < 1)
 		return -EINVAL;
 
 	elem++;
