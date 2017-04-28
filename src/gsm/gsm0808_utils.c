@@ -104,7 +104,7 @@ int gsm0808_dec_aoip_trasp_addr(struct sockaddr_storage *ss,
 	OSMO_ASSERT(ss);
 	if (!elem)
 		return -EINVAL;
-	if (len <= 0)
+	if (len == 0)
 		return -EINVAL;
 
 	memset(ss, 0, sizeof(*ss));
@@ -261,7 +261,7 @@ int gsm0808_dec_speech_codec(struct gsm0808_speech_codec *sc,
 	OSMO_ASSERT(sc);
 	if (!elem)
 		return -EINVAL;
-	if (len <= 0)
+	if (len == 0)
 		return -EINVAL;
 
 	memset(sc, 0, sizeof(*sc));
@@ -377,7 +377,7 @@ int gsm0808_dec_speech_codec_list(struct gsm0808_speech_codec_list *scl,
 	OSMO_ASSERT(scl);
 	if (!elem)
 		return -EINVAL;
-	if (len <= 0)
+	if (len == 0)
 		return -EINVAL;
 
 	memset(scl, 0, sizeof(*scl));
@@ -461,7 +461,7 @@ int gsm0808_dec_channel_type(struct gsm0808_channel_type *ct,
 	OSMO_ASSERT(ct);
 	if (!elem)
 		return -EINVAL;
-	if (len <= 0)
+	if (len < 3 || len > 11)
 		return -EINVAL;
 
 	memset(ct, 0, sizeof(*ct));
@@ -537,7 +537,7 @@ int gsm0808_dec_encrypt_info(struct gsm0808_encrypt_info *ei,
 	OSMO_ASSERT(ei);
 	if (!elem)
 		return -EINVAL;
-	if (len <= 0)
+	if (len == 0)
 		return -EINVAL;
 
 	memset(ei, 0, sizeof(*ei));
@@ -614,7 +614,7 @@ int gsm0808_dec_cell_id_list(struct gsm0808_cell_id_list *cil,
 	OSMO_ASSERT(cil);
 	if (!elem)
 		return -EINVAL;
-	if (len <= 0)
+	if (len == 0)
 		return -EINVAL;
 
 	memset(cil, 0, sizeof(*cil));
