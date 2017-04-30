@@ -21,37 +21,62 @@ enum sercomm_dlci {
 	_SC_DLCI_MAX
 };
 
+struct sercomm_inst;
+typedef void (*dlci_cb_t)(struct sercomm_inst *sercomm, uint8_t dlci, struct msgb *msg);
+
+struct sercomm_inst {
+	int initialized;
+	int uart_id;
+
+	/* transmit side */
+	struct {
+		struct llist_head dlci_queues[_SC_DLCI_MAX];
+		struct msgb *msg;
+		int state;
+		uint8_t *next_char;
+	} tx;
+
+	/* receive side */
+	struct {
+		dlci_cb_t dlci_handler[_SC_DLCI_MAX];
+		struct msgb *msg;
+		int state;
+		uint8_t dlci;
+		uint8_t ctrl;
+	} rx;
+};
+
+
 #ifndef HOST_BUILD
 #include <uart.h>
 /* helper functions for target */
-void sercomm_bind_uart(int uart);
-int sercomm_get_uart(void);
-void sercomm_change_speed(enum uart_baudrate bdrt);
+void sercomm_bind_uart(struct sercomm_inst *sercomm, int uart);
+int sercomm_get_uart(struct sercomm_inst *sercomm);
+void sercomm_change_speed(struct sercomm_inst *sercomm, enum uart_baudrate bdrt);
 #endif
 
-void sercomm_init(void);
-int sercomm_initialized(void);
+void sercomm_init(struct sercomm_inst *sercomm);
+int sercomm_initialized(struct sercomm_inst *sercomm);
 
 /* User Interface: Tx */
 
 /* user interface for transmitting messages for a given DLCI */
-void sercomm_sendmsg(uint8_t dlci, struct msgb *msg);
+void sercomm_sendmsg(struct sercomm_inst *sercomm, uint8_t dlci, struct msgb *msg);
 /* how deep is the Tx queue for a given DLCI */
-unsigned int sercomm_tx_queue_depth(uint8_t dlci);
+unsigned int sercomm_tx_queue_depth(struct sercomm_inst *sercomm, uint8_t dlci);
 
 /* User Interface: Rx */
 
 /* receiving messages for a given DLCI */
-typedef void (*dlci_cb_t)(uint8_t dlci, struct msgb *msg);
-int sercomm_register_rx_cb(uint8_t dlci, dlci_cb_t cb);
+int sercomm_register_rx_cb(struct sercomm_inst *sercomm, uint8_t dlci, dlci_cb_t cb);
 
 /* Driver Interface */
 
 /* fetch one octet of to-be-transmitted serial data. returns 0 if no more data */
-int sercomm_drv_pull(uint8_t *ch);
+int sercomm_drv_pull(struct sercomm_inst *sercomm, uint8_t *ch);
 /* the driver has received one byte, pass it into sercomm layer.
    returns 1 in case of success, 0 in case of unrecognized char */
-int sercomm_drv_rx_char(uint8_t ch);
+int sercomm_drv_rx_char(struct sercomm_inst *sercomm, uint8_t ch);
 
 static inline struct msgb *sercomm_alloc_msgb(unsigned int len)
 {
