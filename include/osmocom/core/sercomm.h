@@ -39,6 +39,7 @@ struct osmo_sercomm_inst {
 	/* receive side */
 	struct {
 		dlci_cb_t dlci_handler[_SC_DLCI_MAX];
+		unsigned int msg_size;
 		struct msgb *msg;
 		int state;
 		uint8_t dlci;

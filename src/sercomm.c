@@ -28,7 +28,7 @@
 
 #ifdef HOST_BUILD
 
-# define SERCOMM_RX_MSG_SIZE	2048
+# define DEFAULT_RX_MSG_SIZE	2048
 # ifndef ARRAY_SIZE
 #  define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
 # endif
@@ -39,7 +39,7 @@ static inline void sercomm_unlock(unsigned long __attribute__((unused)) *flags) 
 
 #else
 
-# define SERCOMM_RX_MSG_SIZE	256
+# define DEFAULT_RX_MSG_SIZE	256
 # include <debug.h>
 # include <osmocom/core/linuxlist.h>
 # include <asm/system.h>
@@ -87,6 +87,8 @@ void osmo_sercomm_init(struct osmo_sercomm_inst *sercomm)
 		INIT_LLIST_HEAD(&sercomm->tx.dlci_queues[i]);
 
 	sercomm->rx.msg = NULL;
+	if (!sercomm->rx.msg_size)
+		sercomm->rx.msg_size = DEFAULT_RX_MSG_SIZE;
 	sercomm->initialized = 1;
 
 	/* set up the echo dlci */
@@ -262,12 +264,12 @@ int osmo_sercomm_drv_rx_char(struct osmo_sercomm_inst *sercomm, uint8_t ch)
 	 * which means that any data structures we use need to be for
 	 * our exclusive access */
 	if (!sercomm->rx.msg)
-		sercomm->rx.msg = osmo_sercomm_alloc_msgb(SERCOMM_RX_MSG_SIZE);
+		sercomm->rx.msg = osmo_sercomm_alloc_msgb(sercomm->rx.msg_size);
 
 	if (msgb_tailroom(sercomm->rx.msg) == 0) {
 		//cons_puts("sercomm_drv_rx_char() overflow!\n");
 		msgb_free(sercomm->rx.msg);
-		sercomm->rx.msg = osmo_sercomm_alloc_msgb(SERCOMM_RX_MSG_SIZE);
+		sercomm->rx.msg = osmo_sercomm_alloc_msgb(sercomm->rx.msg_size);
 		sercomm->rx.state = RX_ST_WAIT_START;
 		return 0;
 	}
