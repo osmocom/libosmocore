@@ -25,6 +25,7 @@
 #include <errno.h>
 
 #include <osmocom/core/msgb.h>
+#include <osmocom/core/sercomm.h>
 
 #ifdef HOST_BUILD
 
@@ -32,7 +33,6 @@
 # ifndef ARRAY_SIZE
 #  define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
 # endif
-# include <sercomm.h>
 
 static inline void sercomm_lock(unsigned long __attribute__((unused)) *flags) {}
 static inline void sercomm_unlock(unsigned long __attribute__((unused)) *flags) {}
@@ -54,7 +54,6 @@ static inline void sercomm_unlock(unsigned long *flags)
 	local_irq_restore(*flags);
 }
 
-# include <comm/sercomm.h>
 # include <uart.h>
 
 #endif
