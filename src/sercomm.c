@@ -69,18 +69,18 @@ enum rx_state {
 
 
 #ifndef HOST_BUILD
-void sercomm_bind_uart(struct sercomm_inst *sercomm, int uart)
+void osmo_sercomm_bind_uart(struct osmo_sercomm_inst *sercomm, int uart)
 {
 	sercomm->uart_id = uart;
 }
 
-int sercomm_get_uart(struct sercomm_inst *sercomm)
+int osmo_sercomm_get_uart(struct osmo_sercomm_inst *sercomm)
 {
 	return sercomm->uart_id;
 }
 #endif
 
-void sercomm_init(struct sercomm_inst *sercomm)
+void osmo_sercomm_init(struct osmo_sercomm_inst *sercomm)
 {
 	unsigned int i;
 	for (i = 0; i < ARRAY_SIZE(sercomm->tx.dlci_queues); i++)
@@ -90,16 +90,16 @@ void sercomm_init(struct sercomm_inst *sercomm)
 	sercomm->initialized = 1;
 
 	/* set up the echo dlci */
-	sercomm_register_rx_cb(sercomm, SC_DLCI_ECHO, &sercomm_sendmsg);
+	osmo_sercomm_register_rx_cb(sercomm, SC_DLCI_ECHO, &osmo_sercomm_sendmsg);
 }
 
-int sercomm_initialized(struct sercomm_inst *sercomm)
+int osmo_sercomm_initialized(struct osmo_sercomm_inst *sercomm)
 {
 	return sercomm->initialized;
 }
 
 /* user interface for transmitting messages for a given DLCI */
-void sercomm_sendmsg(struct sercomm_inst *sercomm, uint8_t dlci, struct msgb *msg)
+void osmo_sercomm_sendmsg(struct osmo_sercomm_inst *sercomm, uint8_t dlci, struct msgb *msg)
 {
 	unsigned long flags;
 	uint8_t *hdr;
@@ -122,7 +122,7 @@ void sercomm_sendmsg(struct sercomm_inst *sercomm, uint8_t dlci, struct msgb *ms
 }
 
 /* how deep is the Tx queue for a given DLCI */
-unsigned int sercomm_tx_queue_depth(struct sercomm_inst *sercomm, uint8_t dlci)
+unsigned int osmo_sercomm_tx_queue_depth(struct osmo_sercomm_inst *sercomm, uint8_t dlci)
 {
 	struct llist_head *le;
 	unsigned int num = 0;
@@ -137,7 +137,7 @@ unsigned int sercomm_tx_queue_depth(struct sercomm_inst *sercomm, uint8_t dlci)
 #ifndef HOST_BUILD
 /* wait until everything has been transmitted, then grab the lock and
  * change the baud rate as requested */
-void sercomm_change_speed(struct sercomm_inst *sercomm, enum uart_baudrate bdrt)
+void osmo_sercomm_change_speed(struct osmo_sercomm_inst *sercomm, enum uart_baudrate bdrt)
 {
 	unsigned int i, count;
 	unsigned long flags;
@@ -168,7 +168,7 @@ void sercomm_change_speed(struct sercomm_inst *sercomm, enum uart_baudrate bdrt)
 #endif
 
 /* fetch one octet of to-be-transmitted serial data */
-int sercomm_drv_pull(struct sercomm_inst *sercomm, uint8_t *ch)
+int osmo_sercomm_drv_pull(struct osmo_sercomm_inst *sercomm, uint8_t *ch)
 {
 	unsigned long flags;
 
@@ -230,7 +230,7 @@ int sercomm_drv_pull(struct sercomm_inst *sercomm, uint8_t *ch)
 }
 
 /* register a handler for a given DLCI */
-int sercomm_register_rx_cb(struct sercomm_inst *sercomm, uint8_t dlci, dlci_cb_t cb)
+int osmo_sercomm_register_rx_cb(struct osmo_sercomm_inst *sercomm, uint8_t dlci, dlci_cb_t cb)
 {
 	if (dlci >= ARRAY_SIZE(sercomm->rx.dlci_handler))
 		return -EINVAL;
@@ -243,7 +243,7 @@ int sercomm_register_rx_cb(struct sercomm_inst *sercomm, uint8_t dlci, dlci_cb_t
 }
 
 /* dispatch an incoming message once it is completely received */
-static void dispatch_rx_msg(struct sercomm_inst *sercomm, uint8_t dlci, struct msgb *msg)
+static void dispatch_rx_msg(struct osmo_sercomm_inst *sercomm, uint8_t dlci, struct msgb *msg)
 {
 	if (dlci >= ARRAY_SIZE(sercomm->rx.dlci_handler) ||
 	    !sercomm->rx.dlci_handler[dlci]) {
@@ -254,7 +254,7 @@ static void dispatch_rx_msg(struct sercomm_inst *sercomm, uint8_t dlci, struct m
 }
 
 /* the driver has received one byte, pass it into sercomm layer */
-int sercomm_drv_rx_char(struct sercomm_inst *sercomm, uint8_t ch)
+int osmo_sercomm_drv_rx_char(struct osmo_sercomm_inst *sercomm, uint8_t ch)
 {
 	uint8_t *ptr;
 
@@ -262,12 +262,12 @@ int sercomm_drv_rx_char(struct sercomm_inst *sercomm, uint8_t ch)
 	 * which means that any data structures we use need to be for
 	 * our exclusive access */
 	if (!sercomm->rx.msg)
-		sercomm->rx.msg = sercomm_alloc_msgb(SERCOMM_RX_MSG_SIZE);
+		sercomm->rx.msg = osmo_sercomm_alloc_msgb(SERCOMM_RX_MSG_SIZE);
 
 	if (msgb_tailroom(sercomm->rx.msg) == 0) {
 		//cons_puts("sercomm_drv_rx_char() overflow!\n");
 		msgb_free(sercomm->rx.msg);
-		sercomm->rx.msg = sercomm_alloc_msgb(SERCOMM_RX_MSG_SIZE);
+		sercomm->rx.msg = osmo_sercomm_alloc_msgb(SERCOMM_RX_MSG_SIZE);
 		sercomm->rx.state = RX_ST_WAIT_START;
 		return 0;
 	}
