@@ -226,6 +226,22 @@ then
 	CPPFLAGS+=" -fsanitize=address -fsanitize=undefined"
 fi
 
+AC_ARG_ENABLE(simd,
+	[AS_HELP_STRING(
+		[--disable-simd],
+		[Disable SIMD support]
+	)],
+	[simd=$enableval], [simd="yes"])
+if test x"$simd" = x"yes"
+then
+	# Find and define supported SIMD extensions
+	AX_CHECK_SIMD
+else
+	AM_CONDITIONAL(HAVE_AVX2, false)
+	AM_CONDITIONAL(HAVE_SSE3, false)
+	AM_CONDITIONAL(HAVE_SSE4_1, false)
+fi
+
 AC_OUTPUT(
 	libosmocore.pc
 	libosmocodec.pc

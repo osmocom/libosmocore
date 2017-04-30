@@ -12,6 +12,7 @@ aclocal.m4
 acinclude.m4
 aminclude.am
 m4/*.m4
+!m4/ax_*.m4
 autom4te.cache
 config.cache
 config.h*
