@@ -29,7 +29,6 @@
 
 #define BIT2NRZ(REG,N)	(((REG >> N) & 0x01) * 2 - 1) * -1
 #define NUM_STATES(K)	(K == 7 ? 64 : 16)
-#define SSE_ALIGN	16
 
 /* Forward Metric Units */
 void osmo_conv_gen_metrics_k5_n2(const int8_t *seq, const int16_t *out,
@@ -91,18 +90,10 @@ struct vdecoder {
 		int16_t *, int16_t *, int);
 };
 
-/* Aligned Memory Allocator
- * SSE requires 16-byte memory alignment. We store relevant trellis values
- * (accumulated sums, outputs, and path decisions) as 16 bit signed integers
- * so the allocated memory is casted as such.
- */
+/* Non-aligned Memory Allocator */
 static int16_t *vdec_malloc(size_t n)
 {
-#ifdef HAVE_SSE3
-	return (int16_t *) memalign(SSE_ALIGN, sizeof(int16_t) * n);
-#else
 	return (int16_t *) malloc(sizeof(int16_t) * n);
-#endif
 }
 
 /* Accessor calls */
