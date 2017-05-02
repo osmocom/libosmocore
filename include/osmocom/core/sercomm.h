@@ -61,8 +61,6 @@ struct osmo_sercomm_inst {
 #ifndef HOST_BUILD
 #include <uart.h>
 /* helper functions for target */
-void osmo_sercomm_bind_uart(struct osmo_sercomm_inst *sercomm, int uart);
-int osmo_sercomm_get_uart(struct osmo_sercomm_inst *sercomm);
 void osmo_sercomm_change_speed(struct osmo_sercomm_inst *sercomm, enum uart_baudrate bdrt);
 #endif
 

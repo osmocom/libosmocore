@@ -73,19 +73,6 @@ enum rx_state {
 	RX_ST_ESCAPE,
 };
 
-
-#ifndef HOST_BUILD
-void osmo_sercomm_bind_uart(struct osmo_sercomm_inst *sercomm, int uart)
-{
-	sercomm->uart_id = uart;
-}
-
-int osmo_sercomm_get_uart(struct osmo_sercomm_inst *sercomm)
-{
-	return sercomm->uart_id;
-}
-#endif
-
 void osmo_sercomm_init(struct osmo_sercomm_inst *sercomm)
 {
 	unsigned int i;
