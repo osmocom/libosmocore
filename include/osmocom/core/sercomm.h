@@ -3,13 +3,6 @@
 
 #include <osmocom/core/msgb.h>
 
-#define HDLC_FLAG	0x7E
-#define HDLC_ESCAPE	0x7D
-
-#define HDLC_C_UI	0x03
-#define HDLC_C_P_BIT	(1 << 4)
-#define HDLC_C_F_BIT	(1 << 4)
-
 /* a low sercomm_dlci means high priority.  A high DLCI means low priority */
 enum sercomm_dlci {
 	SC_DLCI_HIGHEST = 0,

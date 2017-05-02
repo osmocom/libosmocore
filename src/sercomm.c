@@ -58,6 +58,13 @@ static inline void sercomm_unlock(unsigned long *flags)
 
 #endif
 
+#define HDLC_FLAG	0x7E
+#define HDLC_ESCAPE	0x7D
+
+#define HDLC_C_UI	0x03
+#define HDLC_C_P_BIT	(1 << 4)
+#define HDLC_C_F_BIT	(1 << 4)
+
 enum rx_state {
 	RX_ST_WAIT_START,
 	RX_ST_ADDR,
