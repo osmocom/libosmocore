@@ -27,10 +27,10 @@ static int fsm_ctrl_node_lookup(void *data, vector vline, int *node_type,
 			(*i)++;
 			fsm_name = vector_lookup(vline, *i);
 			if (!fsm_name)
-				goto err_index;
+				return -ERANGE;
 			fsm = osmo_fsm_find_by_name(fsm_name);
 			if (!fsm)
-				goto err_missing;
+				return -ENODEV;
 			*node_data = fsm;
 			*node_type = CTRL_NODE_FSM;
 		} else
@@ -43,10 +43,10 @@ static int fsm_ctrl_node_lookup(void *data, vector vline, int *node_type,
 			(*i)++;
 			inst_name = vector_lookup(vline, *i);
 			if (!inst_name)
-				goto err_index;
+				return -ERANGE;
 			fi = osmo_fsm_inst_find_by_name(fsm, inst_name);
 			if (!fi)
-				goto err_missing;
+				return -ENODEV;
 			*node_data = fi;
 			*node_type = CTRL_NODE_FSM_INST;
 		} else if (!strcmp(token, "id")) {
@@ -54,10 +54,10 @@ static int fsm_ctrl_node_lookup(void *data, vector vline, int *node_type,
 			(*i)++;
 			inst_id = vector_lookup(vline, *i);
 			if (!inst_id)
-				goto err_index;
+				return -ERANGE;
 			fi = osmo_fsm_inst_find_by_id(fsm, inst_id);
 			if (!fi)
-				goto err_missing;
+				return -ENODEV;
 			*node_data = fi;
 			*node_type = CTRL_NODE_FSM_INST;
 		}
@@ -67,11 +67,6 @@ static int fsm_ctrl_node_lookup(void *data, vector vline, int *node_type,
 	}
 
 	return 1;
-
-err_index:
-	return -ERANGE;
-err_missing:
-	return -ENODEV;
 }
 
 static int get_fsm_inst_state(struct ctrl_cmd *cmd, void *data)

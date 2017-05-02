@@ -192,7 +192,7 @@ int ctrl_cmd_handle(struct ctrl_handle *ctrl, struct ctrl_cmd *cmd,
 {
 	char *request;
 	int i, j, ret, node;
-
+	bool break_cycle = false;
 	vector vline, cmdvec, cmds_vec;
 
 	if (cmd->type == CTRL_TYPE_SET_REPLY ||
@@ -250,14 +250,20 @@ int ctrl_cmd_handle(struct ctrl_handle *ctrl, struct ctrl_cmd *cmd,
 			}
 		}
 
-		if (rc == 1) {
-			/* do nothing */
-		} else if (rc == -ENODEV)
-			goto err_missing;
-		else if (rc == -ERANGE)
-			goto err_index;
-		else {
-			/* If we're here the rest must be the command */
+		switch (rc) {
+		case 1: /* do nothing */
+			break;
+		case -ENODEV:
+			cmd_free_strvec(vline);
+			cmd->type = CTRL_TYPE_ERROR;
+			cmd->reply = "Error while resolving object";
+			return ret;
+		case -ERANGE:
+			cmd_free_strvec(vline);
+			cmd->type = CTRL_TYPE_ERROR;
+			cmd->reply = "Error while parsing the index.";
+			return ret;
+		default: /* If we're here the rest must be the command */
 			cmdvec = vector_init(vector_active(vline)-i);
 			for (j=i; j<vector_active(vline); j++) {
 				vector_set(cmdvec, vector_slot(vline, j));
@@ -273,10 +279,13 @@ int ctrl_cmd_handle(struct ctrl_handle *ctrl, struct ctrl_cmd *cmd,
 			}
 
 			ret = ctrl_cmd_exec(cmdvec, cmd, cmds_vec, data);
-
 			vector_free(cmdvec);
+			break_cycle = true;
 			break;
 		}
+
+		if (break_cycle)
+			break;
 
 		if (i+1 == vector_active(vline))
 			cmd->reply = "Command not present.";
@@ -303,17 +312,6 @@ err:
 
 	if (ret == CTRL_CMD_ERROR)
 		cmd->type = CTRL_TYPE_ERROR;
-	return ret;
-
-err_missing:
-	cmd_free_strvec(vline);
-	cmd->type = CTRL_TYPE_ERROR;
-	cmd->reply = "Error while resolving object";
-	return ret;
-err_index:
-	cmd_free_strvec(vline);
-	cmd->type = CTRL_TYPE_ERROR;
-	cmd->reply = "Error while parsing the index.";
 	return ret;
 }
 
