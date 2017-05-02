@@ -33,7 +33,8 @@ static int fsm_ctrl_node_lookup(void *data, vector vline, int *node_type,
 				goto err_missing;
 			*node_data = fsm;
 			*node_type = CTRL_NODE_FSM;
-		}
+		} else
+			return 0;
 		break;
 	case CTRL_NODE_FSM:
 		fsm = *node_data;
