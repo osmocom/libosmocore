@@ -22,27 +22,44 @@ enum sercomm_dlci {
 };
 
 struct osmo_sercomm_inst;
+/*! \brief call-back function for per-DLC receive handler
+ *  \param[in] sercomm instance on which msg was received
+ *  \param[in] dlci DLC Identifier of received msg
+ *  \param[in] msg received message that needs to be processed */
 typedef void (*dlci_cb_t)(struct osmo_sercomm_inst *sercomm, uint8_t dlci, struct msgb *msg);
 
+/*! \brief one instance of a sercomm multiplex/demultiplex */
 struct osmo_sercomm_inst {
+	/*! \brief Has this instance been initialized? */
 	int initialized;
+	/*! \brief UART Identifier */
 	int uart_id;
 
-	/* transmit side */
+	/*! \brief transmit side */
 	struct {
+		/*! \brief per-DLC queue of pending transmit msgbs */
 		struct llist_head dlci_queues[_SC_DLCI_MAX];
+		/*! \brief msgb currently being transmitted */
 		struct msgb *msg;
+		/*! \brief transmit state */
 		int state;
+		/*! \brief next to-be-transmitted char in msg */
 		uint8_t *next_char;
 	} tx;
 
-	/* receive side */
+	/*! \brief receive side */
 	struct {
+		/*! \brief per-DLC handler call-back functions */
 		dlci_cb_t dlci_handler[_SC_DLCI_MAX];
+		/*! \brief msgb allocation size for rx msgs */
 		unsigned int msg_size;
+		/*! \brief currently received msgb */
 		struct msgb *msg;
+		/*! \brief receive state */
 		int state;
+		/*! \brief DLCI of currently received msgb */
 		uint8_t dlci;
+		/*! \brief CTRL of currently received msgb */
 		uint8_t ctrl;
 	} rx;
 };
@@ -60,23 +77,15 @@ void osmo_sercomm_init(struct osmo_sercomm_inst *sercomm);
 int osmo_sercomm_initialized(struct osmo_sercomm_inst *sercomm);
 
 /* User Interface: Tx */
-
-/* user interface for transmitting messages for a given DLCI */
 void osmo_sercomm_sendmsg(struct osmo_sercomm_inst *sercomm, uint8_t dlci, struct msgb *msg);
-/* how deep is the Tx queue for a given DLCI */
 unsigned int osmo_sercomm_tx_queue_depth(struct osmo_sercomm_inst *sercomm, uint8_t dlci);
 
 /* User Interface: Rx */
-
-/* receiving messages for a given DLCI */
 int osmo_sercomm_register_rx_cb(struct osmo_sercomm_inst *sercomm, uint8_t dlci, dlci_cb_t cb);
 
 /* Driver Interface */
 
-/* fetch one octet of to-be-transmitted serial data. returns 0 if no more data */
 int osmo_sercomm_drv_pull(struct osmo_sercomm_inst *sercomm, uint8_t *ch);
-/* the driver has received one byte, pass it into sercomm layer.
-   returns 1 in case of success, 0 in case of unrecognized char */
 int osmo_sercomm_drv_rx_char(struct osmo_sercomm_inst *sercomm, uint8_t ch);
 
 static inline struct msgb *osmo_sercomm_alloc_msgb(unsigned int len)

@@ -168,7 +168,10 @@ void osmo_sercomm_change_speed(struct osmo_sercomm_inst *sercomm, enum uart_baud
 }
 #endif
 
-/* fetch one octet of to-be-transmitted serial data */
+/*! \brief fetch one octet of to-be-transmitted serial data
+ *  \param[in] sercomm Sercomm Instance from which to fetch pending data
+ *  \param[out] ch pointer to caller-allocaed output memory
+ *  \returns 1 in case of succss; 0 if no data available; negative on error */
 int osmo_sercomm_drv_pull(struct osmo_sercomm_inst *sercomm, uint8_t *ch)
 {
 	unsigned long flags;
@@ -230,7 +233,11 @@ int osmo_sercomm_drv_pull(struct osmo_sercomm_inst *sercomm, uint8_t *ch)
 	return 1;
 }
 
-/* register a handler for a given DLCI */
+/*! \brief Register a handler for a given DLCI
+ *  \param sercomm Sercomm Instance in which caller wishes to register
+ *  \param[in] dlci Data Ling Connection Identifier to register
+ *  \param[in] cb Callback function for \a dlci
+ *  \returns 0 on success; negative on error */
 int osmo_sercomm_register_rx_cb(struct osmo_sercomm_inst *sercomm, uint8_t dlci, dlci_cb_t cb)
 {
 	if (dlci >= ARRAY_SIZE(sercomm->rx.dlci_handler))
@@ -254,7 +261,10 @@ static void dispatch_rx_msg(struct osmo_sercomm_inst *sercomm, uint8_t dlci, str
 	sercomm->rx.dlci_handler[dlci](sercomm, dlci, msg);
 }
 
-/* the driver has received one byte, pass it into sercomm layer */
+/*! \brief the driver has received one byte, pass it into sercomm layer
+ *  \param[in] sercomm Sercomm Instance for which a byte was received
+ *  \param[in] ch byte that was received from line for said instance
+ *  \returns 1 on success; 0 on unrecognized char; negative on error */
 int osmo_sercomm_drv_rx_char(struct osmo_sercomm_inst *sercomm, uint8_t ch)
 {
 	uint8_t *ptr;
