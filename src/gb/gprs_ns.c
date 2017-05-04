@@ -296,6 +296,30 @@ static void ns_osmo_signal_dispatch_replaced(struct gprs_nsvc *nsvc, struct gprs
 	osmo_signal_dispatch(SS_L_NS, S_NS_REPLACED, &nssd);
 }
 
+const struct value_string gprs_ns_pdu_strings[] = {
+	/* 3GPP TS 48.016 §9.2 Network Service Control PDUs */
+	{ NS_PDUT_UNITDATA,	"NS-UNITDATA" },	/* §9.2.1 */
+	{ NS_PDUT_RESET,	"NS-RESET" },		/* §9.2.5 */
+	{ NS_PDUT_RESET_ACK,	"NS-RESET-ACK" },	/* §9.2.6 */
+	{ NS_PDUT_BLOCK,	"NS-BLOCK" },		/* §9.2.3 */
+	{ NS_PDUT_BLOCK_ACK,	"NS-BLOCK-ACK" },	/* §9.2.4 */
+	{ NS_PDUT_UNBLOCK,	"NS-UNBLOCK" },		/* §9.2.8 */
+	{ NS_PDUT_UNBLOCK_ACK,	"NS-UNBLOCK-ACK" },	/* §9.2.9 */
+	{ NS_PDUT_STATUS,	"NS-STATUS" },		/* §9.2.7 */
+	{ NS_PDUT_ALIVE,	"NS-ALIVE" },		/* §9.2.1 */
+	{ NS_PDUT_ALIVE_ACK,	"NS-ALIVE-ACK" },	/* §9.2.2 */
+	/* 3GPP TS 48.016 §9.3 Sub-Network Service Control PDUs */
+	{ SNS_PDUT_ACK,			"SNS-ACK" },		/* §9.3.1 */
+	{ SNS_PDUT_ADD,			"SNS-ADD" },		/* §9.3.2 */
+	{ SNS_PDUT_CHANGE_WEIGHT,	"SNS-CHANGEWEIGHT" },	/* §9.3.3 */
+	{ SNS_PDUT_CONFIG,		"SNS-CONFIG" },		/* §9.3.4 */
+	{ SNS_PDUT_CONFIG_ACK,		"SNS-CONFIG-ACK" },	/* §9.3.5 */
+	{ SNS_PDUT_DELETE,		"SNS-DELETE" },		/* §9.3.6 */
+	{ SNS_PDUT_SIZE,		"SNS-SIZE" },		/* §9.3.7 */
+	{ SNS_PDUT_SIZE_ACK,		"SNS-SIZE-ACK" },	/* §9.3.8 */
+	{ 0, NULL }
+};
+
 /* Section 10.3.2, Table 13 */
 static const struct value_string ns_cause_str[] = {
 	{ NS_CAUSE_TRANSIT_FAIL,	"Transit network failure" },
@@ -1216,9 +1240,9 @@ int gprs_ns_vc_create(struct gprs_ns_inst *nsi, struct msgb *msg,
 	if (nsh->pdu_type != NS_PDUT_RESET) {
 		/* Since we have no NSVC, we have to use a fake */
 		log_set_context(LOG_CTX_GB_NSVC, fallback_nsvc);
-		LOGP(DNS, LOGL_INFO, "Rejecting NS PDU type 0x%0x "
+		LOGP(DNS, LOGL_INFO, "Rejecting NS PDU type %s "
 		     "from %s for non-existing NS-VC\n",
-		     nsh->pdu_type, gprs_ns_ll_str(fallback_nsvc));
+		     get_value_string(gprs_ns_pdu_strings, nsh->pdu_type), gprs_ns_ll_str(fallback_nsvc));
 		fallback_nsvc->nsvci = fallback_nsvc->nsei = 0xfffe;
 		fallback_nsvc->nsvci_is_valid = 0;
 		fallback_nsvc->state = NSE_S_ALIVE;

@@ -18,6 +18,8 @@ struct gprs_ns_hdr {
 	uint8_t data[0];	/*!< variable-length payload */
 } __attribute__((packed));
 
+extern const struct value_string gprs_ns_pdu_strings[];
+
 /*! \brief NS PDU Type (TS 08.16, Section 10.3.7, Table 14) */
 enum ns_pdu_type {
 	NS_PDUT_UNITDATA	= 0x00,

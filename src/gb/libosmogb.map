@@ -38,6 +38,7 @@ bssgp_tx_paging;
 bssgp_vty_init;
 bssgp_nsi;
 
+gprs_ns_pdu_strings;
 gprs_ns_cause_str;
 gprs_ns_destroy;
 gprs_ns_close;
