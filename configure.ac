@@ -242,6 +242,33 @@ else
 	AM_CONDITIONAL(HAVE_SSE4_1, false)
 fi
 
+dnl Check if the compiler supports specified GCC's built-in function
+AC_DEFUN([CHECK_BUILTIN_SUPPORT], [
+  AC_CACHE_CHECK(
+    [whether ${CC} has $1 built-in],
+    [osmo_cv_cc_has_builtin], [
+      AC_LINK_IFELSE([
+        AC_LANG_PROGRAM([], [
+          __builtin_cpu_supports("sse");
+        ])
+      ],
+      [AS_VAR_SET([osmo_cv_cc_has_builtin], [yes])],
+      [AS_VAR_SET([osmo_cv_cc_has_builtin], [no])])
+    ]
+  )
+
+  AS_IF([test yes = AS_VAR_GET([osmo_cv_cc_has_builtin])], [
+    AC_DEFINE_UNQUOTED(AS_TR_CPP(HAVE_$1), 1,
+      [Define to 1 if compiler has the '$1' built-in function])
+  ], [
+    AC_MSG_WARN($2)
+  ])
+])
+
+dnl Check if the compiler supports runtime SIMD detection
+CHECK_BUILTIN_SUPPORT([__builtin_cpu_supports],
+  [Runtime SIMD detection will be disabled])
+
 AC_OUTPUT(
 	libosmocore.pc
 	libosmocodec.pc
