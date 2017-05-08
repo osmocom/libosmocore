@@ -77,8 +77,7 @@ void gsm411_smr_init(struct gsm411_smr_inst *inst, uint64_t id, int network,
 	inst->rp_state = GSM411_RPS_IDLE;
 	inst->rl_recv = rl_recv;
 	inst->mn_send = mn_send;
-	inst->rp_timer.data = inst;
-	inst->rp_timer.cb = rp_timer_expired;
+	osmo_timer_setup(&inst->rp_timer, rp_timer_expired, inst);
 
 	LOGP(DLSMS, LOGL_INFO,
 		SMR_LOG_STR "instance created for %s.\n",

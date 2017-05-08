@@ -65,6 +65,8 @@ struct osmo_timer_list {
  * timer management
  */
 
+void osmo_timer_setup(struct osmo_timer_list *timer, void (*cb)(void *data), void *data);
+
 void osmo_timer_add(struct osmo_timer_list *timer);
 
 void osmo_timer_schedule(struct osmo_timer_list *timer, int seconds, int microseconds);

@@ -107,7 +107,7 @@ static int start_timer()
 	if (!is_initialised)
 		return -ESRCH;
 
-	osmo_stats_timer.cb = osmo_stats_timer_cb;
+	osmo_timer_setup(&osmo_stats_timer, osmo_stats_timer_cb, NULL);
 	osmo_timer_schedule(&osmo_stats_timer, 0, 1);
 
 	return 0;

@@ -206,8 +206,7 @@ struct osmo_fsm_inst *osmo_fsm_inst_alloc(struct osmo_fsm *fsm, void *ctx, void 
 	fi->fsm = fsm;
 	fi->priv = priv;
 	fi->log_level = log_level;
-	fi->timer.data = fi;
-	fi->timer.cb = fsm_tmr_cb;
+	osmo_timer_setup(&fi->timer, fsm_tmr_cb, fi);
 	if (id)
 		fi->id = talloc_strdup(fi, id);
 

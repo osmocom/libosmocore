@@ -184,8 +184,7 @@ static int gsm411_mmsms_send_msg(struct gsm411_smc_inst *inst)
 	/* 5.2.3.1.2: enter MO-wait for CP-ACK */
 	/* 5.2.3.2.3: enter MT-wait for CP-ACK */
 	new_cp_state(inst, GSM411_CPS_WAIT_CP_ACK);
-	inst->cp_timer.data = inst;
-	inst->cp_timer.cb = cp_timer_expired;
+	osmo_timer_setup(&inst->cp_timer, cp_timer_expired, inst);
 	/* 5.3.2.1: Set Timer TC1A */
 	osmo_timer_schedule(&inst->cp_timer, inst->cp_tc1, 0);
 	/* clone cp_msg */

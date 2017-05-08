@@ -640,8 +640,7 @@ static int fc_queue_timer_cfg(struct bssgp_flow_control *fc)
 		msecs = (fcqe->llc_pdu_len * 1000) / fc->bucket_leak_rate;
 		/* FIXME: add that time to fc->time_last_pdu and subtract it from
 		 * current time */
-		fc->timer.data = fc;
-		fc->timer.cb = &fc_timer_cb;
+		osmo_timer_setup(&fc->timer, fc_timer_cb, fc);
 		osmo_timer_schedule(&fc->timer, msecs / 1000, (msecs % 1000) * 1000);
 	} else {
 		/* If the PCU is telling us to not send any more data at all,

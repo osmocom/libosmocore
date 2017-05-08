@@ -147,7 +147,7 @@ static void rate_ctr_timer_cb(void *data)
 int rate_ctr_init(void *tall_ctx)
 {
 	tall_rate_ctr_ctx = tall_ctx;
-	rate_ctr_timer.cb = rate_ctr_timer_cb;
+	osmo_timer_setup(&rate_ctr_timer, rate_ctr_timer_cb, NULL);
 	osmo_timer_schedule(&rate_ctr_timer, 1, 0);
 
 	return 0;

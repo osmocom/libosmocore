@@ -238,8 +238,7 @@ struct gprs_nsvc *gprs_nsvc_create(struct gprs_ns_inst *nsi, uint16_t nsvci)
 	/* before RESET procedure: BLOCKED and DEAD */
 	nsvc->state = NSE_S_BLOCKED;
 	nsvc->nsi = nsi;
-	nsvc->timer.cb = gprs_ns_timer_cb;
-	nsvc->timer.data = nsvc;
+	osmo_timer_setup(&nsvc->timer, gprs_ns_timer_cb, nsvc);
 	nsvc->ctrg = rate_ctr_group_alloc(nsvc, &nsvc_ctrg_desc, nsvci);
 	nsvc->statg = osmo_stat_item_group_alloc(nsvc, &nsvc_statg_desc, nsvci);
 

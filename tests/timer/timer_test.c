@@ -39,10 +39,7 @@ static void main_timer_fired(void *data);
 static void secondary_timer_fired(void *data);
 
 static unsigned int main_timer_step = 0;
-static struct osmo_timer_list main_timer = {
-	.cb = main_timer_fired,
-	.data = &main_timer_step,
-};
+static struct osmo_timer_list main_timer;
 
 static LLIST_HEAD(timer_test_list);
 
@@ -92,8 +89,7 @@ static void main_timer_fired(void *data)
 			return;
 		}
 		osmo_gettimeofday(&v->start, NULL);
-		v->timer.cb = secondary_timer_fired;
-		v->timer.data = v;
+		osmo_timer_setup(&v->timer, secondary_timer_fired, v);
 		unsigned int seconds = (i & 0x7) + 1;
 		v->stop.tv_sec = v->start.tv_sec + seconds;
 		v->stop.tv_usec = v->start.tv_usec;
@@ -195,6 +191,7 @@ int main(int argc, char *argv[])
 	       " %d steps of %d msecs each\n",
 	       timer_nsteps, steps, TIME_BETWEEN_TIMER_CHECKS / 1000);
 
+	osmo_timer_setup(&main_timer, main_timer_fired, &main_timer_step);
 	osmo_timer_schedule(&main_timer, 1, 0);
 
 #ifdef HAVE_SYS_SELECT_H

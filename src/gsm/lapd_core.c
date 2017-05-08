@@ -267,12 +267,10 @@ void lapd_dl_init(struct lapd_datalink *dl, uint8_t k, uint8_t v_range,
 	dl->n200 = 3;
 	dl->t200_sec = 1;
 	dl->t200_usec = 0;
-	dl->t200.data = dl;
-	dl->t200.cb = &lapd_t200_cb;
+	osmo_timer_setup(&dl->t200, lapd_t200_cb, dl);
 	dl->t203_sec = 10;
 	dl->t203_usec = 0;
-	dl->t203.data = dl;
-	dl->t203.cb = &lapd_t203_cb;
+	osmo_timer_setup(&dl->t203, lapd_t203_cb, dl);
 	dl->maxf = maxf;
 	if (k > v_range - 1)
 		k = v_range - 1;

@@ -65,6 +65,18 @@ static void __add_timer(struct osmo_timer_list *timer)
         rb_insert_color(&timer->node, &timer_root);
 }
 
+/*! \brief set up timer callback and data
+ *  \param[in] timer the timer that should be added
+ *  \param[in] callback function to be called when timer expires
+ *  \param[in] pointer to data that passed to the callback function
+ */
+void osmo_timer_setup(struct osmo_timer_list *timer, void (*cb)(void *data),
+		      void *data)
+{
+	timer->cb	= cb;
+	timer->data	= data;
+}
+
 /*! \brief add a new timer to the timer management
  *  \param[in] timer the timer that should be added
  */
