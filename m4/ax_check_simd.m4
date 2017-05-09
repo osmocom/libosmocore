@@ -41,6 +41,10 @@ AC_DEFUN([AX_CHECK_SIMD],
 [
   AC_REQUIRE([AC_CANONICAL_HOST])
 
+  AM_CONDITIONAL(HAVE_AVX2, false)
+  AM_CONDITIONAL(HAVE_SSE3, false)
+  AM_CONDITIONAL(HAVE_SSE4_1, false)
+
   case $host_cpu in
     i[[3456]]86*|x86_64*|amd64*)
       AX_CHECK_COMPILE_FLAG(-mavx2, ax_cv_support_avx2_ext=yes, [])
@@ -51,7 +55,6 @@ AC_DEFUN([AX_CHECK_SIMD],
         AM_CONDITIONAL(HAVE_AVX2, true)
       else
         AC_MSG_WARN([Your compiler does not support AVX2 instructions])
-        AM_CONDITIONAL(HAVE_AVX2, false)
       fi
 
       AX_CHECK_COMPILE_FLAG(-msse3, ax_cv_support_sse3_ext=yes, [])
@@ -62,7 +65,6 @@ AC_DEFUN([AX_CHECK_SIMD],
         AM_CONDITIONAL(HAVE_SSE3, true)
       else
         AC_MSG_WARN([Your compiler does not support SSE3 instructions])
-        AM_CONDITIONAL(HAVE_SSE3, false)
       fi
 
       AX_CHECK_COMPILE_FLAG(-msse4.1, ax_cv_support_sse41_ext=yes, [])
@@ -73,7 +75,6 @@ AC_DEFUN([AX_CHECK_SIMD],
         AM_CONDITIONAL(HAVE_SSE4_1, true)
       else
         AC_MSG_WARN([Your compiler does not support SSE4.1 instructions])
-        AM_CONDITIONAL(HAVE_SSE4_1, false)
       fi
   ;;
   esac
