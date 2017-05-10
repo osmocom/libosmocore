@@ -885,7 +885,7 @@ static inline int abis_nm_get_sw_desc(struct abis_nm_sw_desc *sw, const uint8_t 
  *  \param[in] buf_len buffer length
  *  \param[out] sw SW Description struct array
  *  \param[in] sw_len Expected number of SW Description entries
- *  \returns 0 if parsing succeeded, negative error code otherwise
+ *  \returns Number fo parsed SW-Description entries, negative error code otherwise
  */
 int abis_nm_get_sw_conf(const uint8_t * buf, size_t buf_len, struct abis_nm_sw_desc *sw, uint16_t sw_len)
 {
