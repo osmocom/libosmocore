@@ -326,6 +326,10 @@ void lapd_dl_exit(struct lapd_datalink *dl)
 {
 	/* free all ressources except history buffer */
 	lapd_dl_reset(dl);
+
+	/* enter null state */
+	lapd_dl_newstate(dl, LAPD_STATE_NULL);
+
 	/* free history buffer list */
 	talloc_free(dl->tx_hist);
 	dl->tx_hist = NULL;
