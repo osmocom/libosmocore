@@ -75,6 +75,9 @@ const struct value_string *gsm48_gmm_cause_names = gsm48_gmm_cause_names_;
 
 /* 10.5.6.6 SM Cause / Table 10.5.157 */
 const struct value_string gsm48_gsm_cause_names_[] = {
+	{ GSM_CAUSE_OPER_DET_BARR, "Operator Determined Barring" },
+	{ GSM_CAUSE_MBMS_CAP_INSUF, "MBMS bearer capabilities insufficient for the service" },
+	{ GSM_CAUSE_LLC_SNDCP_FAIL, "LLC or SNDCP failure" },
 	{ GSM_CAUSE_INSUFF_RSRC, "Insufficient resources" },
 	{ GSM_CAUSE_MISSING_APN, "Missing or unknown APN" },
 	{ GSM_CAUSE_UNKNOWN_PDP, "Unknown PDP address or PDP type" },

@@ -206,6 +206,9 @@ extern const struct value_string *gsm48_gmm_cause_names;
 
 /* Chapter 10.4.6.6 / Table 10.5.157 */
 enum gsm48_gsm_cause {
+	GSM_CAUSE_OPER_DET_BARR		= 0x08,
+	GSM_CAUSE_MBMS_CAP_INSUF	= 0x18,
+	GSM_CAUSE_LLC_SNDCP_FAIL	= 0x19,
 	GSM_CAUSE_INSUFF_RSRC		= 0x1a,
 	GSM_CAUSE_MISSING_APN		= 0x1b,
 	GSM_CAUSE_UNKNOWN_PDP		= 0x1c,
