@@ -24,14 +24,14 @@ inline static void test_expansion(uint8_t * test_key, uint16_t * _KLi1, uint16_t
 {
 	_kasumi_key_expand(test_key, _KLi1, _KLi2, _KOi1, _KOi2, _KOi3, _KIi1, _KIi2, _KIi3);
 	int passed = 1;
-	passed = _compare_mem((uint8_t *)_KLi1, (uint8_t *)_KLi1_r, 16);
-	passed = _compare_mem((uint8_t *)_KLi2, (uint8_t *)_KLi2_r, 16);
-	passed = _compare_mem((uint8_t *)_KOi1, (uint8_t *)_KOi1_r, 16);
-	passed = _compare_mem((uint8_t *)_KOi2, (uint8_t *)_KOi2_r, 16);
-	passed = _compare_mem((uint8_t *)_KOi3, (uint8_t *)_KOi3_r, 16);
-	passed = _compare_mem((uint8_t *)_KIi1, (uint8_t *)_KIi1_r, 16);
-	passed = _compare_mem((uint8_t *)_KIi2, (uint8_t *)_KIi2_r, 16);
-	passed = _compare_mem((uint8_t *)_KIi3, (uint8_t *)_KIi3_r, 16);
+	passed &= _compare_mem((uint8_t *)_KLi1, (uint8_t *)_KLi1_r, 16);
+	passed &= _compare_mem((uint8_t *)_KLi2, (uint8_t *)_KLi2_r, 16);
+	passed &= _compare_mem((uint8_t *)_KOi1, (uint8_t *)_KOi1_r, 16);
+	passed &= _compare_mem((uint8_t *)_KOi2, (uint8_t *)_KOi2_r, 16);
+	passed &= _compare_mem((uint8_t *)_KOi3, (uint8_t *)_KOi3_r, 16);
+	passed &= _compare_mem((uint8_t *)_KIi1, (uint8_t *)_KIi1_r, 16);
+	passed &= _compare_mem((uint8_t *)_KIi2, (uint8_t *)_KIi2_r, 16);
+	passed &= _compare_mem((uint8_t *)_KIi3, (uint8_t *)_KIi3_r, 16);
 	printf(passed ? " OK. " : "FAILED!");
 }
 
