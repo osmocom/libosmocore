@@ -95,8 +95,10 @@ static struct ctrl_handle *g_ctrl;
 static struct ctrl_cmd *exec_ctrl_cmd(const char *cmdstr)
 {
 	struct ctrl_cmd *cmd;
-	return ctrl_cmd_exec_from_string(g_ctrl, cmdstr);
+
+	cmd = ctrl_cmd_exec_from_string(g_ctrl, cmdstr);
 	OSMO_ASSERT(cmd);
+
 	return cmd;
 }
 
