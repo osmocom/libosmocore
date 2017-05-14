@@ -29,7 +29,7 @@
 #include <osmocom/core/sercomm.h>
 #include <osmocom/core/linuxlist.h>
 
-#ifdef HOST_BUILD
+#ifndef EMBEDDED
 
 # define DEFAULT_RX_MSG_SIZE	2048
 static inline void sercomm_drv_lock(unsigned long __attribute__((unused)) *flags) {}
@@ -107,7 +107,7 @@ void osmo_sercomm_sendmsg(struct osmo_sercomm_inst *sercomm, uint8_t dlci, struc
 	msgb_enqueue(&sercomm->tx.dlci_queues[dlci], msg);
 	sercomm_drv_unlock(&flags);
 
-#ifndef HOST_BUILD
+#ifdef EMBEDDED
 	/* tell UART that we have something to send */
 	uart_irq_enable(sercomm->uart_id, UART_IRQ_TX_EMPTY, 1);
 #endif
@@ -126,7 +126,7 @@ unsigned int osmo_sercomm_tx_queue_depth(struct osmo_sercomm_inst *sercomm, uint
 	return num;
 }
 
-#ifndef HOST_BUILD
+#ifdef EMBEDDED
 /* wait until everything has been transmitted, then grab the lock and
  * change the baud rate as requested */
 void osmo_sercomm_change_speed(struct osmo_sercomm_inst *sercomm, enum uart_baudrate bdrt)

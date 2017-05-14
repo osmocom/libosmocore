@@ -36,6 +36,7 @@ nobase_include_HEADERS = \
                        osmocom/core/rate_ctr.h \
                        osmocom/core/stat_item.h \
                        osmocom/core/select.h \
+                       osmocom/core/sercomm.h \
                        osmocom/core/signal.h \
                        osmocom/core/socket.h \
                        osmocom/core/statistics.h \
