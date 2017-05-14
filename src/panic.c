@@ -28,7 +28,6 @@
  *  \brief Routines for panic handling
  */
 
-#include <osmocom/gsm/gsm_utils.h>
 #include <osmocom/core/panic.h>
 #include <osmocom/core/backtrace.h>
 
