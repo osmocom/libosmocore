@@ -68,9 +68,9 @@ static inline uint16_t VTVLV_GAN_GROSS_LEN(uint16_t tag, uint16_t len)
 	uint16_t ret;
 
 	if (len <= TVLV_MAX_ONEBYTE)
-		return TLV_GROSS_LEN(len);
+		ret = TLV_GROSS_LEN(len);
 	else
-		return TL16V_GROSS_LEN(len);
+		ret = TL16V_GROSS_LEN(len);
 
 	if (tag > TVLV_MAX_ONEBYTE)
 		ret += 1;
