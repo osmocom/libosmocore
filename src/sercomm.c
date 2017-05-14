@@ -25,31 +25,28 @@
 #include <errno.h>
 
 #include <osmocom/core/msgb.h>
+#include <osmocom/core/utils.h>
 #include <osmocom/core/sercomm.h>
+#include <osmocom/core/linuxlist.h>
 
 #ifdef HOST_BUILD
 
 # define DEFAULT_RX_MSG_SIZE	2048
-# ifndef ARRAY_SIZE
-#  define ARRAY_SIZE(x) (sizeof(x)/sizeof(x[0]))
-# endif
-
-static inline void sercomm_lock(unsigned long __attribute__((unused)) *flags) {}
-static inline void sercomm_unlock(unsigned long __attribute__((unused)) *flags) {}
+static inline void sercomm_drv_lock(unsigned long __attribute__((unused)) *flags) {}
+static inline void sercomm_drv_unlock(unsigned long __attribute__((unused)) *flags) {}
 
 #else
 
 # define DEFAULT_RX_MSG_SIZE	256
 # include <debug.h>
-# include <osmocom/core/linuxlist.h>
 # include <asm/system.h>
 
-static inline void sercomm_lock(unsigned long *flags)
+static inline void sercomm_drv_lock(unsigned long *flags)
 {
 	local_firq_save(*flags);
 }
 
-static inline void sercomm_unlock(unsigned long *flags)
+static inline void sercomm_drv_unlock(unsigned long *flags)
 {
 	local_irq_restore(*flags);
 }
@@ -106,9 +103,9 @@ void osmo_sercomm_sendmsg(struct osmo_sercomm_inst *sercomm, uint8_t dlci, struc
 
 	/* This functiion can be called from any context: FIQ, IRQ
 	 * and supervisor context.  Proper locking is important! */
-	sercomm_lock(&flags);
+	sercomm_drv_lock(&flags);
 	msgb_enqueue(&sercomm->tx.dlci_queues[dlci], msg);
-	sercomm_unlock(&flags);
+	sercomm_drv_unlock(&flags);
 
 #ifndef HOST_BUILD
 	/* tell UART that we have something to send */
@@ -150,14 +147,14 @@ void osmo_sercomm_change_speed(struct osmo_sercomm_inst *sercomm, enum uart_baud
 	while (1) {
 		/* no messages in the queue, grab the lock to ensure it
 		 * stays that way */
-		sercomm_lock(&flags);
+		sercomm_drv_lock(&flags);
 		if (!sercomm->tx.msg && !sercomm->tx.next_char) {
 			/* change speed */
 			uart_baudrate(sercomm->uart_id, bdrt);
-			sercomm_unlock(&flags);
+			sercomm_drv_unlock(&flags);
 			break;
 		}
-			sercomm_unlock(&flags);
+			sercomm_drv_unlock(&flags);
 	}
 }
 #endif
@@ -173,7 +170,7 @@ int osmo_sercomm_drv_pull(struct osmo_sercomm_inst *sercomm, uint8_t *ch)
 	/* we may be called from interrupt context, but we stiff need to lock
 	 * because sercomm could be accessed from a FIQ context ... */
 
-	sercomm_lock(&flags);
+	sercomm_drv_lock(&flags);
 
 	if (!sercomm->tx.msg) {
 		unsigned int i;
@@ -187,11 +184,11 @@ int osmo_sercomm_drv_pull(struct osmo_sercomm_inst *sercomm, uint8_t *ch)
 			/* start of a new message, send start flag octet */
 			*ch = HDLC_FLAG;
 			sercomm->tx.next_char = sercomm->tx.msg->data;
-			sercomm_unlock(&flags);
+			sercomm_drv_unlock(&flags);
 			return 1;
 		} else {
 			/* no more data avilable */
-			sercomm_unlock(&flags);
+			sercomm_drv_unlock(&flags);
 			return 0;
 		}
 	}
@@ -223,7 +220,7 @@ int osmo_sercomm_drv_pull(struct osmo_sercomm_inst *sercomm, uint8_t *ch)
 		*ch = *sercomm->tx.next_char++;
 	}
 
-	sercomm_unlock(&flags);
+	sercomm_drv_unlock(&flags);
 	return 1;
 }
 
