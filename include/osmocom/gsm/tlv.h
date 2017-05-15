@@ -4,6 +4,8 @@
 #include <string.h>
 
 #include <osmocom/core/msgb.h>
+#include <osmocom/core/bit16gen.h>
+#include <osmocom/core/bit32gen.h>
 
 /*! \defgroup tlv GSM L3 compatible TLV parser
  *  @{
@@ -435,6 +437,27 @@ static inline uint32_t tlvp_val32_unal(const struct tlv_parsed *tp, int pos)
 	memcpy(&res, TLVP_VAL(tp, pos), sizeof(res));
 	return res;
 }
+
+/*! \brief Retrieve (possibly unaligned) TLV element and convert to host byte order
+ *  \param[in] tp pointer to \ref tlv_parsed
+ *  \param[in] pos element to return
+ *  \returns aligned 16 bit value in host byte order
+ */
+static inline uint16_t tlvp_val16be(const struct tlv_parsed *tp, int pos)
+{
+	return osmo_load16be(TLVP_VAL(tp, pos));
+}
+
+/*! \brief Retrieve (possibly unaligned) TLV element and convert to host byte order
+ *  \param[in] tp pointer to \ref tlv_parsed
+ *  \param[in] pos element to return
+ *  \returns aligned 32 bit value in host byte order
+ */
+static inline uint32_t tlvp_val32be(const struct tlv_parsed *tp, int pos)
+{
+	return osmo_load32be(TLVP_VAL(tp, pos));
+}
+
 
 struct tlv_parsed *osmo_tlvp_copy(const struct tlv_parsed *tp_orig, void *ctx);
 int osmo_tlvp_merge(struct tlv_parsed *dst, const struct tlv_parsed *src);
