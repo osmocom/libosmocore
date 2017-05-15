@@ -268,3 +268,9 @@ cat $abs_srcdir/osmo-auc-gen/osmo-auc-gen_test.ok > expout
 cat $abs_srcdir/osmo-auc-gen/osmo-auc-gen_test.err > experr
 AT_CHECK([$abs_top_srcdir/tests/osmo-auc-gen/osmo-auc-gen_test.sh $abs_top_builddir/utils/osmo-auc-gen], [0], [expout], [experr])
 AT_CLEANUP
+
+AT_SETUP([endian])
+AT_KEYWORDS([endian])
+cat $abs_srcdir/endian/endian_test.ok > expout
+AT_CHECK([$abs_top_builddir/tests/endian/endian_test], [0], [expout], [ignore])
+AT_CLEANUP
