@@ -117,9 +117,11 @@ doc/vty/doxygen_sqlite3.db
 doc/gsm
 doc/html.tar
 doc/*.tag
+tags
 
 src/crc*gen.c
 src/gsm/gsm0503_conv.c
+src/gsm/*_gen.c
 include/osmocom/core/crc*gen.h
 include/osmocom/core/bit*gen.h
 include/osmocom/gsm/gsm0503.h
