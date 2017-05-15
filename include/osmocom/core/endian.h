@@ -34,7 +34,7 @@
 	#else
 		#error "Unknown endian"
 	#endif
-#else
+#elif defined(__linux__)
 #include <endian.h>
         #if __BYTE_ORDER == __LITTLE_ENDIAN
                 #define OSMO_IS_LITTLE_ENDIAN           1
@@ -45,5 +45,17 @@
         #else
                 #error "Unknown endian"
         #endif
+#else
+	/* let's try to rely on the compiler.  GCC and CLANG/LLVM seem
+	 * to support this ... */
+	#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+		#define OSMO_IS_LITTLE_ENDIAN           1
+		#define OSMO_IS_BIG_ENDIAN              0
+	#elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
+		#define OSMO_IS_LITTLE_ENDIAN           0
+		#define OSMO_IS_BIG_ENDIAN              1
+	#else
+		#error "Unknown endian"
+	#endif
 #endif
 
