@@ -30,6 +30,7 @@
 #include <string.h>
 
 #include <osmocom/core/strrb.h>
+#include <osmocom/core/talloc.h>
 
 /* Ringbuffer assumptions, invarients, and notes:
  * - start is the index of the first used index slot in the ring buffer.
