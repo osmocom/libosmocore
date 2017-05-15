@@ -1,6 +1,6 @@
 /* GPRS BSSGP protocol implementation as per 3GPP TS 08.18 */
 
-/* (C) 2009-2012 by Harald Welte <laforge@gnumonks.org>
+/* (C) 2009-2017 by Harald Welte <laforge@gnumonks.org>
  *
  * All Rights Reserved
  *
@@ -22,9 +22,8 @@
 #include <errno.h>
 #include <stdint.h>
 
-#include <netinet/in.h>
-
 #include <osmocom/core/msgb.h>
+#include <osmocom/core/byteswap.h>
 #include <osmocom/gsm/tlv.h>
 #include <osmocom/core/talloc.h>
 #include <osmocom/gprs/gprs_bssgp.h>
@@ -168,7 +167,7 @@ int bssgp_tx_simple_bvci(uint8_t pdu_type, uint16_t nsei,
 	msgb_bvci(msg) = ns_bvci;
 
 	bgph->pdu_type = pdu_type;
-	_bvci = htons(bvci);
+	_bvci = osmo_htons(bvci);
 	msgb_tvlv_put(msg, BSSGP_IE_BVCI, 2, (uint8_t *) &_bvci);
 
 	return gprs_ns_sendmsg(bssgp_nsi, msg);
@@ -203,7 +202,7 @@ int bssgp_tx_status(uint8_t cause, uint16_t *bvci, struct msgb *orig_msg)
 	bgph->pdu_type = BSSGP_PDUT_STATUS;
 	msgb_tvlv_put(msg, BSSGP_IE_CAUSE, 1, &cause);
 	if (bvci) {
-		uint16_t _bvci = htons(*bvci);
+		uint16_t _bvci = osmo_htons(*bvci);
 		msgb_tvlv_put(msg, BSSGP_IE_BVCI, 2, (uint8_t *) &_bvci);
 	}
 	msgb_tvlv_put(msg, BSSGP_IE_PDU_IN_ERROR,

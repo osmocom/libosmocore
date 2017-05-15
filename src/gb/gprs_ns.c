@@ -71,6 +71,7 @@
 #include <arpa/inet.h>
 
 #include <osmocom/core/msgb.h>
+#include <osmocom/core/byteswap.h>
 #include <osmocom/gsm/tlv.h>
 #include <osmocom/core/talloc.h>
 #include <osmocom/core/select.h>
@@ -404,8 +405,8 @@ int gprs_ns_tx_reset(struct gprs_nsvc *nsvc, uint8_t cause)
 {
 	struct msgb *msg = gprs_ns_msgb_alloc();
 	struct gprs_ns_hdr *nsh;
-	uint16_t nsvci = htons(nsvc->nsvci);
-	uint16_t nsei = htons(nsvc->nsei);
+	uint16_t nsvci = osmo_htons(nsvc->nsvci);
+	uint16_t nsei = osmo_htons(nsvc->nsei);
 
 	log_set_context(LOG_CTX_GB_NSVC, nsvc);
 
@@ -437,11 +438,11 @@ int gprs_ns_tx_status(struct gprs_nsvc *nsvc, uint8_t cause,
 {
 	struct msgb *msg = gprs_ns_msgb_alloc();
 	struct gprs_ns_hdr *nsh;
-	uint16_t nsvci = htons(nsvc->nsvci);
+	uint16_t nsvci = osmo_htons(nsvc->nsvci);
 
 	log_set_context(LOG_CTX_GB_NSVC, nsvc);
 
-	bvci = htons(bvci);
+	bvci = osmo_htons(bvci);
 
 	if (!msg)
 		return -ENOMEM;
@@ -490,7 +491,7 @@ int gprs_ns_tx_block(struct gprs_nsvc *nsvc, uint8_t cause)
 {
 	struct msgb *msg = gprs_ns_msgb_alloc();
 	struct gprs_ns_hdr *nsh;
-	uint16_t nsvci = htons(nsvc->nsvci);
+	uint16_t nsvci = osmo_htons(nsvc->nsvci);
 
 	log_set_context(LOG_CTX_GB_NSVC, nsvc);
 
@@ -665,8 +666,8 @@ static int gprs_ns_tx_reset_ack(struct gprs_nsvc *nsvc)
 	if (!msg)
 		return -ENOMEM;
 
-	nsvci = htons(nsvc->nsvci);
-	nsei = htons(nsvc->nsei);
+	nsvci = osmo_htons(nsvc->nsvci);
+	nsei = osmo_htons(nsvc->nsei);
 
 	msg->l2h = msgb_put(msg, sizeof(*nsh));
 	nsh = (struct gprs_ns_hdr *) msg->l2h;
@@ -849,8 +850,8 @@ static int gprs_ns_rx_reset(struct gprs_nsvc **nsvc, struct msgb *msg)
 	}
 
 	cause = *(uint8_t  *) TLVP_VAL(&tp, NS_IE_CAUSE);
-	nsvci = ntohs(*(uint16_t *) TLVP_VAL(&tp, NS_IE_VCI));
-	nsei  = ntohs(*(uint16_t *) TLVP_VAL(&tp, NS_IE_NSEI));
+	nsvci = tlvp_val16be(&tp, NS_IE_VCI);
+	nsei  = tlvp_val16be(&tp, NS_IE_NSEI);
 
 	LOGP(DNS, LOGL_INFO, "NSVCI=%u%s Rx NS RESET (NSEI=%u, NSVCI=%u, cause=%s)\n",
 	     (*nsvc)->nsvci, (*nsvc)->nsvci_is_valid ? "" : "(invalid)",
@@ -957,8 +958,8 @@ static int gprs_ns_rx_reset_ack(struct gprs_nsvc **nsvc, struct msgb *msg)
 		return -EINVAL;
 	}
 
-	nsvci = ntohs(tlvp_val16_unal(&tp, NS_IE_VCI));
-	nsei  = ntohs(tlvp_val16_unal(&tp, NS_IE_NSEI));
+	nsvci = tlvp_val16be(&tp, NS_IE_VCI);
+	nsei  = tlvp_val16be(&tp, NS_IE_NSEI);
 
 	LOGP(DNS, LOGL_INFO, "NSVCI=%u%s Rx NS RESET ACK (NSEI=%u, NSVCI=%u)\n",
 	     (*nsvc)->nsvci, (*nsvc)->nsvci_is_valid ? "" : "(invalid)",
@@ -1145,7 +1146,7 @@ const char *gprs_ns_ll_str(struct gprs_nsvc *nsvc)
 	static char buf[80];
 	snprintf(buf, sizeof(buf), "%s:%u",
 		 inet_ntoa(nsvc->ip.bts_addr.sin_addr),
-		 ntohs(nsvc->ip.bts_addr.sin_port));
+		 osmo_ntohs(nsvc->ip.bts_addr.sin_port));
 	buf[sizeof(buf) - 1] = '\0';
 
 	return buf;
@@ -1271,8 +1272,8 @@ int gprs_ns_vc_create(struct gprs_ns_inst *nsi, struct msgb *msg,
 		CHECK_TX_RC(rc, fallback_nsvc);
 		return -EINVAL;
 	}
-	nsvci = ntohs(*(uint16_t *) TLVP_VAL(&tp, NS_IE_VCI));
-	nsei  = ntohs(*(uint16_t *) TLVP_VAL(&tp, NS_IE_NSEI));
+	nsvci = tlvp_val16be(&tp, NS_IE_VCI);
+	nsei  = tlvp_val16be(&tp, NS_IE_NSEI);
 	/* Check if we already know this NSVCI, the remote end might
 	 * simply have changed addresses, or it is a SGSN */
 	existing_nsvc = gprs_nsvc_by_nsvci(nsi, nsvci);
@@ -1554,7 +1555,7 @@ int gprs_ns_nsip_listen(struct gprs_ns_inst *nsi)
 	struct in_addr in;
 	int ret;
 
-	in.s_addr = htonl(nsi->nsip.local_ip);
+	in.s_addr = osmo_htonl(nsi->nsip.local_ip);
 
 	nsi->nsip.fd.cb = nsip_fd_cb;
 	nsi->nsip.fd.data = nsi;

@@ -27,6 +27,7 @@
 #include <arpa/inet.h>
 
 #include <osmocom/core/msgb.h>
+#include <osmocom/core/byteswap.h>
 #include <osmocom/gsm/tlv.h>
 #include <osmocom/core/talloc.h>
 #include <osmocom/core/select.h>
@@ -100,7 +101,7 @@ static int config_write_ns(struct vty *vty)
 				inet_ntoa(nsvc->ip.bts_addr.sin_addr),
 				VTY_NEWLINE);
 			vty_out(vty, " nse %u remote-port %u%s",
-				nsvc->nsei, ntohs(nsvc->ip.bts_addr.sin_port),
+				nsvc->nsei, osmo_ntohs(nsvc->ip.bts_addr.sin_port),
 				VTY_NEWLINE);
 			break;
 		case GPRS_NS_LL_FR_GRE:
@@ -111,7 +112,7 @@ static int config_write_ns(struct vty *vty)
 				inet_ntoa(nsvc->frgre.bts_addr.sin_addr),
 				VTY_NEWLINE);
 			vty_out(vty, " nse %u fr-dlci %u%s",
-				nsvc->nsei, ntohs(nsvc->frgre.bts_addr.sin_port),
+				nsvc->nsei, osmo_ntohs(nsvc->frgre.bts_addr.sin_port),
 				VTY_NEWLINE);
 		default:
 			break;
@@ -124,7 +125,7 @@ static int config_write_ns(struct vty *vty)
 			vty_nsi->timeout[i], VTY_NEWLINE);
 
 	if (vty_nsi->nsip.local_ip) {
-		ia.s_addr = htonl(vty_nsi->nsip.local_ip);
+		ia.s_addr = osmo_htonl(vty_nsi->nsip.local_ip);
 		vty_out(vty, " encapsulation udp local-ip %s%s",
 			inet_ntoa(ia), VTY_NEWLINE);
 	}
@@ -138,7 +139,7 @@ static int config_write_ns(struct vty *vty)
 	vty_out(vty, " encapsulation framerelay-gre enabled %u%s",
 		vty_nsi->frgre.enabled ? 1 : 0, VTY_NEWLINE);
 	if (vty_nsi->frgre.local_ip) {
-		ia.s_addr = htonl(vty_nsi->frgre.local_ip);
+		ia.s_addr = osmo_htonl(vty_nsi->frgre.local_ip);
 		vty_out(vty, " encapsulation framerelay-gre local-ip %s%s",
 			inet_ntoa(ia), VTY_NEWLINE);
 	}
@@ -165,7 +166,7 @@ static void dump_nse(struct vty *vty, struct gprs_nsvc *nsvc, int stats)
 		vty_out(vty, ", %s %15s:%u",
 			nsvc->ll == GPRS_NS_LL_UDP ? "UDP   " : "FR-GRE",
 			inet_ntoa(nsvc->ip.bts_addr.sin_addr),
-			ntohs(nsvc->ip.bts_addr.sin_port));
+			osmo_ntohs(nsvc->ip.bts_addr.sin_port));
 	vty_out(vty, "%s", VTY_NEWLINE);
 	if (stats) {
 		vty_out_rate_ctr_group(vty, " ", nsvc->ctrg);
@@ -178,11 +179,11 @@ static void dump_ns(struct vty *vty, struct gprs_ns_inst *nsi, int stats)
 	struct gprs_nsvc *nsvc;
 	struct in_addr ia;
 
-	ia.s_addr = htonl(vty_nsi->nsip.local_ip);
+	ia.s_addr = osmo_htonl(vty_nsi->nsip.local_ip);
 	vty_out(vty, "Encapsulation NS-UDP-IP     Local IP: %s, UDP Port: %u%s",
 		inet_ntoa(ia), vty_nsi->nsip.local_port, VTY_NEWLINE);
 
-	ia.s_addr = htonl(vty_nsi->frgre.local_ip);
+	ia.s_addr = osmo_htonl(vty_nsi->frgre.local_ip);
 	vty_out(vty, "Encapsulation NS-FR-GRE-IP  Local IP: %s%s",
 		inet_ntoa(ia), VTY_NEWLINE);
 
@@ -309,7 +310,7 @@ DEFUN(cfg_nse_remoteport, cfg_nse_remoteport_cmd,
 		return CMD_WARNING;
 	}
 
-	nsvc->ip.bts_addr.sin_port = htons(port);
+	nsvc->ip.bts_addr.sin_port = osmo_htons(port);
 
 	return CMD_SUCCESS;
 }
@@ -336,7 +337,7 @@ DEFUN(cfg_nse_fr_dlci, cfg_nse_fr_dlci_cmd,
 		return CMD_WARNING;
 	}
 
-	nsvc->frgre.bts_addr.sin_port = htons(dlci);
+	nsvc->frgre.bts_addr.sin_port = osmo_htons(dlci);
 
 	return CMD_SUCCESS;
 }
@@ -441,7 +442,7 @@ DEFUN(cfg_nsip_local_ip, cfg_nsip_local_ip_cmd,
 	struct in_addr ia;
 
 	inet_aton(argv[0], &ia);
-	vty_nsi->nsip.local_ip = ntohl(ia.s_addr);
+	vty_nsi->nsip.local_ip = osmo_ntohl(ia.s_addr);
 
 	return CMD_SUCCESS;
 }
@@ -482,7 +483,7 @@ DEFUN(cfg_frgre_local_ip, cfg_frgre_local_ip_cmd,
 		return CMD_WARNING;
 	}
 	inet_aton(argv[0], &ia);
-	vty_nsi->frgre.local_ip = ntohl(ia.s_addr);
+	vty_nsi->frgre.local_ip = osmo_ntohl(ia.s_addr);
 
 	return CMD_SUCCESS;
 }

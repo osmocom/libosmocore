@@ -1,6 +1,6 @@
 /* GPRS BSSGP protocol implementation as per 3GPP TS 08.18 */
 
-/* (C) 2009-2012 by Harald Welte <laforge@gnumonks.org>
+/* (C) 2009-2017 by Harald Welte <laforge@gnumonks.org>
  *
  * All Rights Reserved
  *
@@ -22,9 +22,8 @@
 #include <errno.h>
 #include <stdint.h>
 
-#include <netinet/in.h>
-
 #include <osmocom/core/msgb.h>
+#include <osmocom/core/byteswap.h>
 #include <osmocom/core/rate_ctr.h>
 #include <osmocom/gsm/tlv.h>
 #include <osmocom/core/talloc.h>
@@ -38,7 +37,7 @@
 
 uint8_t *bssgp_msgb_tlli_put(struct msgb *msg, uint32_t tlli)
 {
-	uint32_t _tlli = htonl(tlli);
+	uint32_t _tlli = osmo_htonl(tlli);
 	return msgb_tvlv_put(msg, BSSGP_IE_TLLI, 4, (uint8_t *) &_tlli);
 }
 
@@ -159,7 +158,7 @@ int bssgp_tx_radio_status_tmsi(struct bssgp_bvc_ctx *bctx, uint8_t cause,
 				uint32_t tmsi)
 {
 	struct msgb *msg = common_tx_radio_status(bctx);
-	uint32_t _tmsi = htonl(tmsi);
+	uint32_t _tmsi = osmo_htonl(tmsi);
 
 	if (!msg)
 		return -ENOMEM;
@@ -196,8 +195,8 @@ int bssgp_tx_flush_ll_ack(struct bssgp_bvc_ctx *bctx, uint32_t tlli,
 	struct msgb *msg = bssgp_msgb_alloc();
 	struct bssgp_normal_hdr *bgph =
 			(struct bssgp_normal_hdr *) msgb_put(msg, sizeof(*bgph));
-	uint16_t _bvci_new = htons(bvci_new);
-	uint32_t _oct_aff = htonl(num_octets & 0xFFFFFF);
+	uint16_t _bvci_new = osmo_htons(bvci_new);
+	uint32_t _oct_aff = osmo_htonl(num_octets & 0xFFFFFF);
 
 	msgb_nsei(msg) = bctx->nsei;
 	msgb_bvci(msg) = 0; /* Signalling */
@@ -219,8 +218,8 @@ int bssgp_tx_llc_discarded(struct bssgp_bvc_ctx *bctx, uint32_t tlli,
 	struct msgb *msg = bssgp_msgb_alloc();
 	struct bssgp_normal_hdr *bgph =
 			(struct bssgp_normal_hdr *) msgb_put(msg, sizeof(*bgph));
-	uint16_t _bvci = htons(bctx->bvci);
-	uint32_t _oct_aff = htonl(num_octets & 0xFFFFFF);
+	uint16_t _bvci = osmo_htons(bctx->bvci);
+	uint32_t _oct_aff = osmo_htonl(num_octets & 0xFFFFFF);
 
 	LOGP(DBSSGP, LOGL_NOTICE, "BSSGP (BVCI=%u) Tx LLC-DISCARDED "
 	     "TLLI=0x%04x, FRAMES=%u, OCTETS=%u\n", bctx->bvci, tlli,
@@ -244,7 +243,7 @@ int bssgp_tx_bvc_block(struct bssgp_bvc_ctx *bctx, uint8_t cause)
 	struct msgb *msg = bssgp_msgb_alloc();
 	struct bssgp_normal_hdr *bgph =
 			(struct bssgp_normal_hdr *) msgb_put(msg, sizeof(*bgph));
-	uint16_t _bvci = htons(bctx->bvci);
+	uint16_t _bvci = osmo_htons(bctx->bvci);
 
 	LOGP(DBSSGP, LOGL_NOTICE, "BSSGP (BVCI=%u) Tx BVC-BLOCK "
 		"CAUSE=%s\n", bctx->bvci, bssgp_cause_str(cause));
@@ -265,7 +264,7 @@ int bssgp_tx_bvc_unblock(struct bssgp_bvc_ctx *bctx)
 	struct msgb *msg = bssgp_msgb_alloc();
 	struct bssgp_normal_hdr *bgph =
 			(struct bssgp_normal_hdr *) msgb_put(msg, sizeof(*bgph));
-	uint16_t _bvci = htons(bctx->bvci);
+	uint16_t _bvci = osmo_htons(bctx->bvci);
 
 	LOGP(DBSSGP, LOGL_NOTICE, "BSSGP (BVCI=%u) Tx BVC-BLOCK\n", bctx->bvci);
 
@@ -284,7 +283,7 @@ int bssgp_tx_bvc_reset(struct bssgp_bvc_ctx *bctx, uint16_t bvci, uint8_t cause)
 	struct msgb *msg = bssgp_msgb_alloc();
 	struct bssgp_normal_hdr *bgph =
 			(struct bssgp_normal_hdr *) msgb_put(msg, sizeof(*bgph));
-	uint16_t _bvci = htons(bvci);
+	uint16_t _bvci = osmo_htons(bvci);
 
 	LOGP(DBSSGP, LOGL_NOTICE, "BSSGP (BVCI=%u) Tx BVC-RESET "
 		"CAUSE=%s\n", bvci, bssgp_cause_str(cause));
@@ -327,19 +326,19 @@ int bssgp_tx_fc_bvc(struct bssgp_bvc_ctx *bctx, uint8_t tag,
 
 	if ((bucket_size / 100) > 0xffff)
 		return -EINVAL;
-	e_bucket_size = htons(bucket_size / 100);
+	e_bucket_size = osmo_htons(bucket_size / 100);
 
 	if ((bucket_leak_rate * 8 / 100) > 0xffff)
 		return -EINVAL;
-	e_leak_rate = htons((bucket_leak_rate * 8) / 100);
+	e_leak_rate = osmo_htons((bucket_leak_rate * 8) / 100);
 
 	if ((bmax_default_ms / 100) > 0xffff)
 		return -EINVAL;
-	e_bmax_default_ms = htons(bmax_default_ms / 100);
+	e_bmax_default_ms = osmo_htons(bmax_default_ms / 100);
 
 	if ((r_default_ms * 8 / 100) > 0xffff)
 		return -EINVAL;
-	e_r_default_ms = htons((r_default_ms * 8) / 100);
+	e_r_default_ms = osmo_htons((r_default_ms * 8) / 100);
 
 	if (queue_delay_ms) {
 		if ((*queue_delay_ms / 10) > 60000)
@@ -347,7 +346,7 @@ int bssgp_tx_fc_bvc(struct bssgp_bvc_ctx *bctx, uint8_t tag,
 		else if (*queue_delay_ms == 0xFFFFFFFF)
 			e_queue_delay = 0xFFFF;
 		else
-			e_queue_delay = htons(*queue_delay_ms / 10);
+			e_queue_delay = osmo_htons(*queue_delay_ms / 10);
 	}
 
 	msg = bssgp_msgb_alloc();
@@ -408,7 +407,7 @@ int bssgp_tx_fc_ms(struct bssgp_bvc_ctx *bctx, uint32_t tlli, uint8_t tag,
 	msgb_bvci(msg) = bctx->bvci;
 	bgph->pdu_type = BSSGP_PDUT_FLOW_CONTROL_MS;
 
-	e_tlli = htonl(tlli);
+	e_tlli = osmo_htonl(tlli);
 	msgb_tvlv_put(msg, BSSGP_IE_TLLI, sizeof(e_tlli), (uint8_t *)&e_tlli);
 	msgb_tvlv_put(msg, BSSGP_IE_TAG, sizeof(tag), (uint8_t *)&tag);
 	msgb_tvlv_put(msg, BSSGP_IE_MS_BUCKET_SIZE,
@@ -454,7 +453,7 @@ int bssgp_tx_ul_ud(struct bssgp_bvc_ctx *bctx, uint32_t tlli,
 
 	/* User Data Header */
 	budh = (struct bssgp_ud_hdr *) msgb_push(msg, sizeof(*budh));
-	budh->tlli = htonl(tlli);
+	budh->tlli = osmo_htonl(tlli);
 	memcpy(budh->qos_profile, qos_profile, 3);
 	budh->pdu_type = BSSGP_PDUT_UL_UNITDATA;
 
@@ -508,7 +507,7 @@ int bssgp_rx_paging(struct bssgp_paging_info *pinfo,
 	/* DRX Parameters */
 	if (!TLVP_PRESENT(&tp, BSSGP_IE_DRX_PARAMS))
 		goto err_mand_ie;
-	pinfo->drx_params = ntohs(*(uint16_t *)TLVP_VAL(&tp, BSSGP_IE_DRX_PARAMS));
+	pinfo->drx_params = tlvp_val16be(&tp, BSSGP_IE_DRX_PARAMS);
 
 	/* Scope */
 	if (TLVP_PRESENT(&tp, BSSGP_IE_BSS_AREA_ID)) {
@@ -525,7 +524,7 @@ int bssgp_rx_paging(struct bssgp_paging_info *pinfo,
 		gsm48_parse_ra(&pinfo->raid, ra);
 	} else if (TLVP_PRESENT(&tp, BSSGP_IE_BVCI)) {
 		pinfo->scope = BSSGP_PAGING_BVCI;
-		pinfo->bvci = ntohs(*(uint16_t *)TLVP_VAL(&tp, BSSGP_IE_BVCI));
+		pinfo->bvci = tlvp_val16be(&tp, BSSGP_IE_BVCI);
 	} else
 		return -EINVAL;
 
@@ -545,8 +544,7 @@ int bssgp_rx_paging(struct bssgp_paging_info *pinfo,
 	    TLVP_LEN(&tp, BSSGP_IE_TMSI) >= 4) {
 		if (!pinfo->ptmsi)
 			pinfo->ptmsi = talloc_zero_size(pinfo, sizeof(uint32_t));
-		*(pinfo->ptmsi) = ntohl(*(uint32_t *)
-					TLVP_VAL(&tp, BSSGP_IE_TMSI));
+		*(pinfo->ptmsi) = osmo_load32be(TLVP_VAL(&tp, BSSGP_IE_TMSI));
 	}
 
 	return 0;

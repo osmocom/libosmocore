@@ -1,6 +1,6 @@
 /* GPRS BSSGP protocol implementation as per 3GPP TS 08.18 */
 
-/* (C) 2009-2012 by Harald Welte <laforge@gnumonks.org>
+/* (C) 2009-2017 by Harald Welte <laforge@gnumonks.org>
  *
  * All Rights Reserved
  *
@@ -25,9 +25,9 @@
 #include <errno.h>
 #include <stdint.h>
 
-#include <netinet/in.h>
-
 #include <osmocom/core/msgb.h>
+#include <osmocom/core/byteswap.h>
+#include <osmocom/core/bit16gen.h>
 #include <osmocom/gsm/tlv.h>
 #include <osmocom/core/talloc.h>
 #include <osmocom/core/rate_ctr.h>
@@ -138,7 +138,7 @@ int bssgp_tx_suspend_ack(uint16_t nsei, uint32_t tlli,
 	msgb_bvci(msg) = 0; /* Signalling */
 	bgph->pdu_type = BSSGP_PDUT_SUSPEND_ACK;
 
-	_tlli = htonl(tlli);
+	_tlli = osmo_htonl(tlli);
 	msgb_tvlv_put(msg, BSSGP_IE_TLLI, 4, (uint8_t *) &_tlli);
 	gsm48_construct_ra(ra, ra_id);
 	msgb_tvlv_put(msg, BSSGP_IE_ROUTEING_AREA, 6, ra);
@@ -162,7 +162,7 @@ int bssgp_tx_suspend_nack(uint16_t nsei, uint32_t tlli,
 	msgb_bvci(msg) = 0; /* Signalling */
 	bgph->pdu_type = BSSGP_PDUT_SUSPEND_NACK;
 
-	_tlli = htonl(tlli);
+	_tlli = osmo_htonl(tlli);
 	msgb_tvlv_put(msg, BSSGP_IE_TLLI, 4, (uint8_t *) &_tlli);
 	gsm48_construct_ra(ra, ra_id);
 	msgb_tvlv_put(msg, BSSGP_IE_ROUTEING_AREA, 6, ra);
@@ -186,7 +186,7 @@ int bssgp_tx_resume_ack(uint16_t nsei, uint32_t tlli,
 	msgb_bvci(msg) = 0; /* Signalling */
 	bgph->pdu_type = BSSGP_PDUT_RESUME_ACK;
 
-	_tlli = htonl(tlli);
+	_tlli = osmo_htonl(tlli);
 	msgb_tvlv_put(msg, BSSGP_IE_TLLI, 4, (uint8_t *) &_tlli);
 	gsm48_construct_ra(ra, ra_id);
 	msgb_tvlv_put(msg, BSSGP_IE_ROUTEING_AREA, 6, ra);
@@ -208,7 +208,7 @@ int bssgp_tx_resume_nack(uint16_t nsei, uint32_t tlli,
 	msgb_bvci(msg) = 0; /* Signalling */
 	bgph->pdu_type = BSSGP_PDUT_SUSPEND_NACK;
 
-	_tlli = htonl(tlli);
+	_tlli = osmo_htonl(tlli);
 	msgb_tvlv_put(msg, BSSGP_IE_TLLI, 4, (uint8_t *) &_tlli);
 	gsm48_construct_ra(ra, ra_id);
 	msgb_tvlv_put(msg, BSSGP_IE_ROUTEING_AREA, 6, ra);
@@ -223,17 +223,16 @@ uint16_t bssgp_parse_cell_id(struct gprs_ra_id *raid, const uint8_t *buf)
 	/* 6 octets RAC */
 	gsm48_parse_ra(raid, buf);
 	/* 2 octets CID */
-	return ntohs(*(uint16_t *) (buf+6));
+	return osmo_load16be(buf+6);
 }
 
 int bssgp_create_cell_id(uint8_t *buf, const struct gprs_ra_id *raid,
 			 uint16_t cid)
 {
-	uint16_t *out_cid = (uint16_t *) (buf + 6);
 	/* 6 octets RAC */
 	gsm48_construct_ra(buf, raid);
 	/* 2 octets CID */
-	*out_cid = htons(cid);
+	osmo_store16be(cid, buf+6);
 
 	return 8;
 }
@@ -247,7 +246,7 @@ static int bssgp_rx_bvc_reset(struct msgb *msg, struct tlv_parsed *tp,
 	uint16_t nsei = msgb_nsei(msg);
 	uint16_t bvci;
 
-	bvci = ntohs(*(uint16_t *)TLVP_VAL(tp, BSSGP_IE_BVCI));
+	bvci = tlvp_val16be(tp, BSSGP_IE_BVCI);
 	DEBUGP(DBSSGP, "BSSGP BVCI=%u Rx RESET cause=%s\n", bvci,
 		bssgp_cause_str(*TLVP_VAL(tp, BSSGP_IE_CAUSE)));
 
@@ -297,7 +296,7 @@ static int bssgp_rx_bvc_block(struct msgb *msg, struct tlv_parsed *tp)
 	uint16_t bvci;
 	struct bssgp_bvc_ctx *ptp_ctx;
 
-	bvci = ntohs(*(uint16_t *)TLVP_VAL(tp, BSSGP_IE_BVCI));
+	bvci = tlvp_val16be(tp, BSSGP_IE_BVCI);
 	if (bvci == BVCI_SIGNALLING) {
 		/* 8.3.2: Signalling BVC shall never be blocked */
 		LOGP(DBSSGP, LOGL_ERROR, "NSEI=%u/BVCI=%u "
@@ -335,7 +334,7 @@ static int bssgp_rx_bvc_unblock(struct msgb *msg, struct tlv_parsed *tp)
 	uint16_t bvci;
 	struct bssgp_bvc_ctx *ptp_ctx;
 
-	bvci = ntohs(*(uint16_t *)TLVP_VAL(tp, BSSGP_IE_BVCI));
+	bvci = tlvp_val16be(tp, BSSGP_IE_BVCI);
 	if (bvci == BVCI_SIGNALLING) {
 		/* 8.3.2: Signalling BVC shall never be blocked */
 		LOGP(DBSSGP, LOGL_ERROR, "NSEI=%u/BVCI=%u "
@@ -374,7 +373,7 @@ static int bssgp_rx_ul_ud(struct msgb *msg, struct tlv_parsed *tp,
 	struct bssgp_ud_hdr *budh = (struct bssgp_ud_hdr *) msgb_bssgph(msg);
 
 	/* extract TLLI and parse TLV IEs */
-	msgb_tlli(msg) = ntohl(budh->tlli);
+	msgb_tlli(msg) = osmo_ntohl(budh->tlli);
 
 	DEBUGP(DBSSGP, "BSSGP TLLI=0x%08x Rx UPLINK-UNITDATA\n", msgb_tlli(msg));
 
@@ -416,7 +415,7 @@ static int bssgp_rx_suspend(struct msgb *msg, struct tlv_parsed *tp)
 		return bssgp_tx_status(BSSGP_CAUSE_MISSING_MAND_IE, NULL, msg);
 	}
 
-	tlli = ntohl(tlvp_val32_unal(tp, BSSGP_IE_TLLI));
+	tlli = tlvp_val32be(tp, BSSGP_IE_TLLI);
 
 	DEBUGP(DBSSGP, "BSSGP BVCI=%u TLLI=0x%08x Rx SUSPEND\n",
 		ns_bvci, tlli);
@@ -458,7 +457,7 @@ static int bssgp_rx_resume(struct msgb *msg, struct tlv_parsed *tp)
 		return bssgp_tx_status(BSSGP_CAUSE_MISSING_MAND_IE, NULL, msg);
 	}
 
-	tlli = ntohl(tlvp_val32_unal(tp, BSSGP_IE_TLLI));
+	tlli = tlvp_val32be(tp, BSSGP_IE_TLLI);
 	suspend_ref = *TLVP_VAL(tp, BSSGP_IE_SUSPEND_REF_NR);
 
 	DEBUGP(DBSSGP, "BSSGP BVCI=%u TLLI=0x%08x Rx RESUME\n", ns_bvci, tlli);
@@ -500,7 +499,7 @@ static int bssgp_rx_llc_disc(struct msgb *msg, struct tlv_parsed *tp,
 	}
 
 	if (TLVP_PRESENT(tp, BSSGP_IE_TLLI))
-		tlli = ntohl(*(uint32_t *)TLVP_VAL(tp, BSSGP_IE_TLLI));
+		tlli = tlvp_val32be(tp, BSSGP_IE_TLLI);
 
 	DEBUGP(DBSSGP, "BSSGP BVCI=%u TLLI=%08x Rx LLC DISCARDED\n",
 		ctx->bvci, tlli);
@@ -806,17 +805,13 @@ static int bssgp_rx_fc_bvc(struct msgb *msg, struct tlv_parsed *tp,
 	}
 
 	/* 11.3.5 Bucket Size in 100 octets unit */
-	bctx->fc->bucket_size_max = 100 *
-		ntohs(*(uint16_t *)TLVP_VAL(tp, BSSGP_IE_BVC_BUCKET_SIZE));
+	bctx->fc->bucket_size_max = 100 * tlvp_val16be(tp, BSSGP_IE_BVC_BUCKET_SIZE);
 	/* 11.3.4 Bucket Leak Rate in 100 bits/sec unit */
-	bctx->fc->bucket_leak_rate = 100 *
-		ntohs(*(uint16_t *)TLVP_VAL(tp, BSSGP_IE_BUCKET_LEAK_RATE)) / 8;
+	bctx->fc->bucket_leak_rate = 100 * tlvp_val16be(tp, BSSGP_IE_BUCKET_LEAK_RATE) / 8;
 	/* 11.3.2 in octets */
-	bctx->bmax_default_ms =
-		ntohs(*(uint16_t *)TLVP_VAL(tp, BSSGP_IE_BMAX_DEFAULT_MS));
+	bctx->bmax_default_ms = tlvp_val16be(tp, BSSGP_IE_BMAX_DEFAULT_MS);
 	/* 11.3.32 Bucket Leak rate in 100bits/sec unit */
-	bctx->r_default_ms = 100 *
-		ntohs(*(uint16_t *)TLVP_VAL(tp, BSSGP_IE_R_DEFAULT_MS)) / 8;
+	bctx->r_default_ms = 100 * tlvp_val16be(tp, BSSGP_IE_R_DEFAULT_MS) / 8;
 
 	if (old_leak_rate != 0 && bctx->fc->bucket_leak_rate == 0)
 		LOGP(DBSSGP, LOGL_NOTICE, "BSS instructs us to bucket leak "
@@ -1042,7 +1037,7 @@ int bssgp_rcvmsg(struct msgb *msg)
 	}
 
 	if (bvci == BVCI_SIGNALLING && TLVP_PRESENT(&tp, BSSGP_IE_BVCI))
-		bvci = ntohs(*(uint16_t *)TLVP_VAL(&tp, BSSGP_IE_BVCI));
+		bvci = tlvp_val16be(&tp, BSSGP_IE_BVCI);
 
 	/* look-up or create the BTS context for this BVC */
 	bctx = btsctx_by_bvci_nsei(bvci, msgb_nsei(msg));
@@ -1095,7 +1090,7 @@ int bssgp_tx_dl_ud(struct msgb *msg, uint16_t pdu_lifetime,
 	uint16_t msg_len = msg->len;
 	uint16_t bvci = msgb_bvci(msg);
 	uint16_t nsei = msgb_nsei(msg);
-	uint16_t _pdu_lifetime = htons(pdu_lifetime); /* centi-seconds */
+	uint16_t _pdu_lifetime = osmo_htons(pdu_lifetime); /* centi-seconds */
 	uint16_t drx_params;
 
 	OSMO_ASSERT(dup != NULL);
@@ -1134,7 +1129,7 @@ int bssgp_tx_dl_ud(struct msgb *msg, uint16_t pdu_lifetime,
 
 	/* Old TLLI to help BSS map from old->new */
 	if (dup->tlli) {
-		uint32_t tlli = htonl(*dup->tlli);
+		uint32_t tlli = osmo_htonl(*dup->tlli);
 		msgb_tvlv_push(msg, BSSGP_IE_TLLI, 4, (uint8_t *) &tlli);
 	}
 
@@ -1148,7 +1143,7 @@ int bssgp_tx_dl_ud(struct msgb *msg, uint16_t pdu_lifetime,
 	}
 
 	/* DRX parameters */
-	drx_params = htons(dup->drx_parms);
+	drx_params = osmo_htons(dup->drx_parms);
 	msgb_tvlv_push(msg, BSSGP_IE_DRX_PARAMS, 2,
 		(uint8_t *) &drx_params);
 
@@ -1165,7 +1160,7 @@ int bssgp_tx_dl_ud(struct msgb *msg, uint16_t pdu_lifetime,
 	/* prepend the QoS profile, TLLI and pdu type */
 	budh = (struct bssgp_ud_hdr *) msgb_push(msg, sizeof(*budh));
 	memcpy(budh->qos_profile, dup->qos_profile, sizeof(budh->qos_profile));
-	budh->tlli = htonl(msgb_tlli(msg));
+	budh->tlli = osmo_htonl(msgb_tlli(msg));
 	budh->pdu_type = BSSGP_PDUT_DL_UNITDATA;
 
 	rate_ctr_inc(&bctx->ctrg->ctr[BSSGP_CTR_PKTS_OUT]);
@@ -1188,7 +1183,7 @@ int bssgp_tx_paging(uint16_t nsei, uint16_t ns_bvci,
 	struct msgb *msg = bssgp_msgb_alloc();
 	struct bssgp_normal_hdr *bgph =
 			(struct bssgp_normal_hdr *) msgb_put(msg, sizeof(*bgph));
-	uint16_t drx_params = htons(pinfo->drx_params);
+	uint16_t drx_params = osmo_htons(pinfo->drx_params);
 	uint8_t mi[10];
 	int imsi_len = gsm48_generate_mid_from_imsi(mi, pinfo->imsi);
 	uint8_t ra[6];
@@ -1226,7 +1221,7 @@ int bssgp_tx_paging(uint16_t nsei, uint16_t ns_bvci,
 		break;
 	case BSSGP_PAGING_BVCI:
 		{
-			uint16_t bvci = htons(pinfo->bvci);
+			uint16_t bvci = osmo_htons(pinfo->bvci);
 			msgb_tvlv_put(msg, BSSGP_IE_BVCI, 2, (uint8_t *)&bvci);
 		}
 		break;
@@ -1237,7 +1232,7 @@ int bssgp_tx_paging(uint16_t nsei, uint16_t ns_bvci,
 
 	/* Optional (P-)TMSI */
 	if (pinfo->ptmsi) {
-		uint32_t ptmsi = htonl(*pinfo->ptmsi);
+		uint32_t ptmsi = osmo_htonl(*pinfo->ptmsi);
 		msgb_tvlv_put(msg, BSSGP_IE_TMSI, 4, (uint8_t *) &ptmsi);
 	}
 

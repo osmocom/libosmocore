@@ -32,6 +32,7 @@
 #include <arpa/inet.h>
 
 #include <osmocom/core/select.h>
+#include <osmocom/core/byteswap.h>
 #include <osmocom/core/msgb.h>
 #include <osmocom/core/talloc.h>
 #include <osmocom/core/socket.h>
@@ -121,7 +122,7 @@ static int handle_rx_gre_ipv4(struct osmo_fd *bfd, struct msgb *msg,
 	}
 
 	inner_greh = (struct gre_hdr *) ((uint8_t *)inner_iph + iph->ihl*4);
-	if (inner_greh->ptype != htons(GRE_PTYPE_KAR)) {
+	if (inner_greh->ptype != osmo_htons(GRE_PTYPE_KAR)) {
 		LOGP(DNS, LOGL_ERROR, "GRE keepalive inner GRE type != 0\n");
 		return -EIO;
 	}
@@ -187,10 +188,10 @@ static struct msgb *read_nsfrgre_msg(struct osmo_fd *bfd, int *error,
 	greh = (struct gre_hdr *) (msg->data + iph->ihl*4);
 	if (greh->flags) {
 		LOGP(DNS, LOGL_NOTICE, "Unknown GRE flags 0x%04x\n",
-			ntohs(greh->flags));
+			osmo_ntohs(greh->flags));
 	}
 
-	switch (ntohs(greh->ptype)) {
+	switch (osmo_ntohs(greh->ptype)) {
 	case GRE_PTYPE_IPv4:
 		/* IPv4 messages might be GRE keepalives */
 		*error = handle_rx_gre_ipv4(bfd, msg, iph, greh);
@@ -201,7 +202,7 @@ static struct msgb *read_nsfrgre_msg(struct osmo_fd *bfd, int *error,
 		break;
 	default:
 		LOGP(DNS, LOGL_NOTICE, "Unknown GRE protocol 0x%04x != FR\n",
-			ntohs(greh->ptype));
+			osmo_ntohs(greh->ptype));
 		*error = -EIO;
 		goto out_err;
 		break;
@@ -231,7 +232,7 @@ static struct msgb *read_nsfrgre_msg(struct osmo_fd *bfd, int *error,
 	msg->l2h = frh+2;
 
 	/* Store DLCI in NETWORK BYTEORDER in sockaddr port member */
-	saddr->sin_port = htons(dlci);
+	saddr->sin_port = osmo_htons(dlci);
 
 	return msg;
 
@@ -255,7 +256,7 @@ static int handle_nsfrgre_read(struct osmo_fd *bfd)
 	if (!msg)
 		return rc;
 
-	dlci = ntohs(saddr.sin_port);
+	dlci = osmo_ntohs(saddr.sin_port);
 	if (dlci == 0 || dlci == 1023) {
 		LOGP(DNS, LOGL_INFO, "Received FR on LMI DLCI %u - ignoring\n",
 			dlci);
@@ -281,7 +282,7 @@ int gprs_ns_frgre_sendmsg(struct gprs_nsvc *nsvc, struct msgb *msg)
 	int rc;
 	struct gprs_ns_inst *nsi = nsvc->nsi;
 	struct sockaddr_in daddr;
-	uint16_t dlci = ntohs(nsvc->frgre.bts_addr.sin_port);
+	uint16_t dlci = osmo_ntohs(nsvc->frgre.bts_addr.sin_port);
 	uint8_t *frh;
 	struct gre_hdr *greh;
 
@@ -298,7 +299,7 @@ int gprs_ns_frgre_sendmsg(struct gprs_nsvc *nsvc, struct msgb *msg)
 	/* Prepend the GRE header */
 	greh = (struct gre_hdr *) msgb_push(msg, sizeof(*greh));
 	greh->flags = 0;
-	greh->ptype = htons(GRE_PTYPE_FR);
+	greh->ptype = osmo_htons(GRE_PTYPE_FR);
 
 	rc = sendto(nsi->frgre.fd.fd, msg->data, msg->len, 0,
 		  (struct sockaddr *)&daddr, sizeof(daddr));
@@ -325,7 +326,7 @@ int gprs_ns_frgre_listen(struct gprs_ns_inst *nsi)
 	struct in_addr in;
 	int rc;
 
-	in.s_addr = htonl(nsi->frgre.local_ip);
+	in.s_addr = osmo_htonl(nsi->frgre.local_ip);
 
 	/* Make sure we close any existing socket before changing it */
 	if (nsi->frgre.fd.fd)
