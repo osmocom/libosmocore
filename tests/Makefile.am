@@ -16,7 +16,7 @@ check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
 		 tlv/tlv_test gsup/gsup_test oap/oap_test fsm/fsm_test	\
 		 write_queue/wqueue_test socket/socket_test		\
 		 coding/coding_test conv/conv_gsm0503_test		\
-		 abis/abis_test endian/endian_test
+		 abis/abis_test endian/endian_test sercomm/sercomm_test
 
 if ENABLE_MSGFILE
 check_PROGRAMS += msgfile/msgfile_test
@@ -165,6 +165,9 @@ coding_coding_test_LDADD = \
 endian_endian_test_SOURCES = endian/endian_test.c
 endian_endian_test_LDADD = $(top_builddir)/src/libosmocore.la
 
+sercomm_sercomm_test_SOURCES = sercomm/sercomm_test.c
+sercomm_sercomm_test_LDADD = $(top_builddir)/src/libosmocore.la
+
 # The `:;' works around a Bash 3.2 bug when the output is not writeable.
 $(srcdir)/package.m4: $(top_srcdir)/configure.ac
 	:;{ \
@@ -207,7 +210,8 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
 	     osmo-auc-gen/osmo-auc-gen_test.sh				\
 	     osmo-auc-gen/osmo-auc-gen_test.ok				\
 	     osmo-auc-gen/osmo-auc-gen_test.err				\
-	     conv/conv_gsm0503_test.ok endian/endian_test.ok
+	     conv/conv_gsm0503_test.ok endian/endian_test.ok 		\
+	     sercomm/sercomm_test.ok
 
 DISTCLEANFILES = atconfig atlocal conv/gsm0503_test_vectors.c
 BUILT_SOURCES = conv/gsm0503_test_vectors.c

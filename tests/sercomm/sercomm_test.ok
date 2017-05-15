@@ -1,0 +1,21 @@
+Initializing sercomm_inst
+Registering callback for invalid DLCI
+Registering callback for valid DLCI
+Checking reject of overlod of valid DLCI
+Checking Rx of incoming msg for valid DLCI
+Feeding data into sercomm: 7e 17 03 32 33 7e 
+dlci_rx_cb(): 32 33 
+Checking Rx of incoming msg for unequipped DLCI
+Feeding data into sercomm: 7e 03 03 66 6f 6f 7e 
+Checking Rx of incoming msg for valid DLCI
+Feeding data into sercomm: 7e 17 03 32 33 7e 
+dlci_rx_cb(): 32 33 
+Checking Rx of incoming msg with escaped char for valid DLCI
+Feeding data into sercomm: 7e 17 03 7d 12 33 7e 
+dlci_rx_cb(): 32 33 
+Checking that no chars are to be transmitted
+Transmitting msgb through sercomm
+Draining from UART: 0x7e 0x2a 0x03 0x4d 0x61 0x68 0x6c 0x7a 0x65 0x69 0x74 0x7e 
+Testing built-in echo DLCI
+Feeding data into sercomm: 7e 80 03 65 63 68 6f 7e 
+Draining from UART: 0x7e 0x80 0x03 0x65 0x63 0x68 0x6f 0x7e 
