@@ -36,7 +36,7 @@
 static struct msgb *_select_file(struct osim_chan_hdl *st, uint8_t p1, uint8_t p2,
 			const uint8_t *data, uint8_t data_len)
 {
-	struct msgb *msg, *resp;
+	struct msgb *msg;
 	uint8_t *dst;
 
 	msg = osim_new_apdumsg(0x00, 0xA4, p1, p2, data_len, 256);
@@ -51,8 +51,6 @@ static struct msgb *_select_file(struct osim_chan_hdl *st, uint8_t p1, uint8_t p
 /* 11.1.1 */
 static struct msgb *select_adf(struct osim_chan_hdl *st, const uint8_t *adf, uint8_t adf_len)
 {
-	int sw;
-
 	return _select_file(st, 0x04, 0x04, adf,adf_len);
 }
 
@@ -69,7 +67,6 @@ static int verify_pin(struct osim_chan_hdl *st, uint8_t pin_nr, char *pin)
 {
 	struct msgb *msg;
 	char *pindst;
-	int sw;
 
 	if (strlen(pin) > 8)
 		return -EINVAL;
@@ -373,7 +370,6 @@ int main(int argc, char **argv)
 	struct osim_card_hdl *card;
 	struct osim_chan_hdl *chan;
 	struct msgb *msg;
-	int rc;
 
 	reader = osim_reader_open(OSIM_READER_DRV_PCSC, 0, "", NULL);
 	if (!reader)
