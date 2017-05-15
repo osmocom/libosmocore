@@ -19,7 +19,7 @@
  */
 #pragma once
 
-#include <sys/socket.h>
+struct sockaddr_storage;
 
 #include <osmocom/gsm/protocol/gsm_08_08.h>
 

@@ -18,12 +18,12 @@
  *
  */
 
+#include "config.h"
+
 #include <osmocom/core/utils.h>
 #include <osmocom/core/msgb.h>
 #include <osmocom/core/byteswap.h>
 #include <string.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
 #include <errno.h>
 #include <osmocom/gsm/protocol/gsm_08_08.h>
 
@@ -35,6 +35,10 @@
 #define CHANNEL_TYPE_ELEMENT_MINLEN 3
 #define ENCRYPT_INFO_ELEMENT_MINLEN 1
 
+#ifdef HAVE_SYS_SOCKET_H
+
+#include <sys/socket.h>
+#include <netinet/in.h>
 /* Encode AoIP transport address element */
 uint8_t gsm0808_enc_aoip_trasp_addr(struct msgb *msg,
 				    const struct sockaddr_storage *ss)
@@ -124,6 +128,8 @@ int gsm0808_dec_aoip_trasp_addr(struct sockaddr_storage *ss,
 
 	return (int)(elem - old_elem);
 }
+
+#endif /* HAVE_SYS_SOCKET_H */
 
 /* Helper function for gsm0808_enc_speech_codec()
  * and gsm0808_enc_speech_codec_list() */

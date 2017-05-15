@@ -21,13 +21,14 @@
  *
  */
 
+#include "config.h"
+
 #include <unistd.h>
 #include <stdint.h>
 #include <errno.h>
 #include <stdlib.h>
 
 #include <sys/types.h>
-#include <sys/socket.h>
 
 #include <osmocom/core/byteswap.h>
 #include <osmocom/core/msgb.h>
@@ -435,6 +436,9 @@ void ipa_prepend_header(struct msgb *msg, int proto)
 	hh->proto = proto;
 }
 
+#ifdef HAVE_SYS_SOCKET_H
+#include <sys/socket.h>
+
 int ipa_msg_recv(int fd, struct msgb **rmsg)
 {
 	int rc = ipa_msg_recv_buffered(fd, rmsg, NULL);
@@ -563,6 +567,8 @@ discard_msg:
 	msgb_free(msg);
 	return ret;
 }
+
+#endif /* SYS_SOCKET_H */
 
 struct msgb *ipa_msg_alloc(int headroom)
 {

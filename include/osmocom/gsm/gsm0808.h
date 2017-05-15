@@ -21,7 +21,7 @@
 
 #include "tlv.h"
 #include <osmocom/gsm/protocol/gsm_08_08.h>
-#include <sys/socket.h>
+struct sockaddr_storage;
 
 struct msgb;
 
