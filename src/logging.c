@@ -683,7 +683,7 @@ struct log_target *log_target_create(void)
 struct log_target *log_target_create_stderr(void)
 {
 /* since C89/C99 says stderr is a macro, we can safely do this! */
-#ifdef stderr
+#if !EMBEDDED && defined(stderr)
 	struct log_target *target;
 
 	target = log_target_create();
