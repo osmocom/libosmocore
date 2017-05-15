@@ -58,12 +58,6 @@ struct osmo_sercomm_inst {
 };
 
 
-#ifdef EMBEDDED
-#include <uart.h>
-/* helper functions for target */
-void osmo_sercomm_change_speed(struct osmo_sercomm_inst *sercomm, enum uart_baudrate bdrt);
-#endif
-
 void osmo_sercomm_init(struct osmo_sercomm_inst *sercomm);
 int osmo_sercomm_initialized(struct osmo_sercomm_inst *sercomm);
 
@@ -74,10 +68,17 @@ unsigned int osmo_sercomm_tx_queue_depth(struct osmo_sercomm_inst *sercomm, uint
 /* User Interface: Rx */
 int osmo_sercomm_register_rx_cb(struct osmo_sercomm_inst *sercomm, uint8_t dlci, dlci_cb_t cb);
 
+int osmo_sercomm_change_speed(struct osmo_sercomm_inst *sercomm, uint32_t bdrt);
+
 /* Driver Interface */
 
 int osmo_sercomm_drv_pull(struct osmo_sercomm_inst *sercomm, uint8_t *ch);
 int osmo_sercomm_drv_rx_char(struct osmo_sercomm_inst *sercomm, uint8_t ch);
+
+extern void sercomm_drv_lock(unsigned long *flags);
+extern void sercomm_drv_unlock(unsigned long *flags);
+extern void sercomm_drv_start_tx(struct osmo_sercomm_inst *sercomm);
+extern int sercomm_drv_baudrate_chg(struct osmo_sercomm_inst *sercomm, uint32_t bdrt);
 
 static inline struct msgb *osmo_sercomm_alloc_msgb(unsigned int len)
 {

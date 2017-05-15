@@ -20,6 +20,8 @@
  *
  */
 
+#include "config.h"
+
 #include <stdint.h>
 #include <stdio.h>
 #include <errno.h>
@@ -30,30 +32,19 @@
 #include <osmocom/core/linuxlist.h>
 
 #ifndef EMBEDDED
-
 # define DEFAULT_RX_MSG_SIZE	2048
-static inline void sercomm_drv_lock(unsigned long __attribute__((unused)) *flags) {}
-static inline void sercomm_drv_unlock(unsigned long __attribute__((unused)) *flags) {}
-
+void sercomm_drv_lock(unsigned long __attribute__((unused)) *flags) {}
+void sercomm_drv_unlock(unsigned long __attribute__((unused)) *flags) {}
 #else
-
 # define DEFAULT_RX_MSG_SIZE	256
-# include <debug.h>
-# include <asm/system.h>
+#endif /* EMBEDDED */
 
-static inline void sercomm_drv_lock(unsigned long *flags)
+/* weak symbols to be overridden by application */
+__attribute__((weak)) void sercomm_drv_start_tx(struct osmo_sercomm_inst *sercomm) {};
+__attribute__((weak)) int sercomm_drv_baudrate_chg(struct osmo_sercomm_inst *sercomm, uint32_t bdrt)
 {
-	local_firq_save(*flags);
+	return -1;
 }
-
-static inline void sercomm_drv_unlock(unsigned long *flags)
-{
-	local_irq_restore(*flags);
-}
-
-# include <uart.h>
-
-#endif
 
 #define HDLC_FLAG	0x7E
 #define HDLC_ESCAPE	0x7D
@@ -107,10 +98,8 @@ void osmo_sercomm_sendmsg(struct osmo_sercomm_inst *sercomm, uint8_t dlci, struc
 	msgb_enqueue(&sercomm->tx.dlci_queues[dlci], msg);
 	sercomm_drv_unlock(&flags);
 
-#ifdef EMBEDDED
 	/* tell UART that we have something to send */
-	uart_irq_enable(sercomm->uart_id, UART_IRQ_TX_EMPTY, 1);
-#endif
+	sercomm_drv_start_tx(sercomm);
 }
 
 /* how deep is the Tx queue for a given DLCI */
@@ -126,10 +115,9 @@ unsigned int osmo_sercomm_tx_queue_depth(struct osmo_sercomm_inst *sercomm, uint
 	return num;
 }
 
-#ifdef EMBEDDED
 /* wait until everything has been transmitted, then grab the lock and
  * change the baud rate as requested */
-void osmo_sercomm_change_speed(struct osmo_sercomm_inst *sercomm, enum uart_baudrate bdrt)
+int osmo_sercomm_change_speed(struct osmo_sercomm_inst *sercomm, uint32_t bdrt)
 {
 	unsigned int i, count;
 	unsigned long flags;
@@ -138,7 +126,7 @@ void osmo_sercomm_change_speed(struct osmo_sercomm_inst *sercomm, enum uart_baud
 		/* count the number of pending messages */
 		count = 0;
 		for (i = 0; i < ARRAY_SIZE(sercomm->tx.dlci_queues); i++)
-			count += sercomm_tx_queue_depth(i);
+			count += osmo_sercomm_tx_queue_depth(sercomm, i);
 		/* if we still have any in the queue, restart */
 		if (count == 0)
 			break;
@@ -149,15 +137,16 @@ void osmo_sercomm_change_speed(struct osmo_sercomm_inst *sercomm, enum uart_baud
 		 * stays that way */
 		sercomm_drv_lock(&flags);
 		if (!sercomm->tx.msg && !sercomm->tx.next_char) {
+			int rc;
 			/* change speed */
-			uart_baudrate(sercomm->uart_id, bdrt);
+			rc = sercomm_drv_baudrate_chg(sercomm, bdrt);
 			sercomm_drv_unlock(&flags);
-			break;
-		}
+			return rc;
+		} else
 			sercomm_drv_unlock(&flags);
 	}
+	return -1;
 }
-#endif
 
 /*! \brief fetch one octet of to-be-transmitted serial data
  *  \param[in] sercomm Sercomm Instance from which to fetch pending data
