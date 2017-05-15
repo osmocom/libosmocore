@@ -20,6 +20,13 @@
  *
  */
 
+/*! \addtogroup sercomm
+ *  @{
+ */
+
+/*! \file sercomm.c
+ */
+
 #include "config.h"
 
 #include <stdint.h>
@@ -33,7 +40,9 @@
 
 #ifndef EMBEDDED
 # define DEFAULT_RX_MSG_SIZE	2048
+/*! \brief Protect against IRQ context */
 void sercomm_drv_lock(unsigned long __attribute__((unused)) *flags) {}
+/*! \brief Release protection against IRQ context */
 void sercomm_drv_unlock(unsigned long __attribute__((unused)) *flags) {}
 #else
 # define DEFAULT_RX_MSG_SIZE	256
@@ -61,6 +70,12 @@ enum rx_state {
 	RX_ST_ESCAPE,
 };
 
+/*! \brief Initialize an Osmocom sercomm instance
+ *  \param sercomm Caller-allocated sercomm instance to be initialized
+ *
+ *  This function initializes the sercomm instance, including the
+ *  registration of the ECHO service at the ECHO DLCI
+ */
 void osmo_sercomm_init(struct osmo_sercomm_inst *sercomm)
 {
 	unsigned int i;
@@ -76,12 +91,19 @@ void osmo_sercomm_init(struct osmo_sercomm_inst *sercomm)
 	osmo_sercomm_register_rx_cb(sercomm, SC_DLCI_ECHO, &osmo_sercomm_sendmsg);
 }
 
+/*! \brief Determine if a given Osmocom sercomm instance has been initialized
+ *  \param[in] sercomm Osmocom sercomm instance to be checked
+ *  \returns 1 in case \a sercomm was previously initialized; 0 otherwise */
 int osmo_sercomm_initialized(struct osmo_sercomm_inst *sercomm)
 {
 	return sercomm->initialized;
 }
 
-/* user interface for transmitting messages for a given DLCI */
+/*! \brief User interface for transmitting messages for a given DLCI
+ *  \param[in] sercomm Osmocom sercomm instance through which to transmit
+ *  \param[in] dlci DLCI through whcih to transmit \a msg
+ *  \param[in] msg Message buffer to be transmitted via \a dlci on \a *  sercomm
+ **/
 void osmo_sercomm_sendmsg(struct osmo_sercomm_inst *sercomm, uint8_t dlci, struct msgb *msg)
 {
 	unsigned long flags;
@@ -102,7 +124,10 @@ void osmo_sercomm_sendmsg(struct osmo_sercomm_inst *sercomm, uint8_t dlci, struc
 	sercomm_drv_start_tx(sercomm);
 }
 
-/* how deep is the Tx queue for a given DLCI */
+/*! \brief How deep is the Tx queue for a given DLCI?
+ *  \param[n] sercomm Osmocom sercomm instance on which to operate
+ *  \param[in] dlci DLCI whose queue depthy is to be determined
+ *  \returns number of elements in the per-DLCI transmit queue */
 unsigned int osmo_sercomm_tx_queue_depth(struct osmo_sercomm_inst *sercomm, uint8_t dlci)
 {
 	struct llist_head *le;
@@ -115,8 +140,12 @@ unsigned int osmo_sercomm_tx_queue_depth(struct osmo_sercomm_inst *sercomm, uint
 	return num;
 }
 
-/* wait until everything has been transmitted, then grab the lock and
- * change the baud rate as requested */
+/*! \brief wait until everything has been transmitted, then grab the lock and
+ *	   change the baud rate as requested
+ *  \param[in] sercomm Osmocom sercomm instance
+ *  \param[in] bdrt New UART Baud Rate
+ *  \returns result of the operation as provided by  sercomm_drv_baudrate_chg()
+ */
 int osmo_sercomm_change_speed(struct osmo_sercomm_inst *sercomm, uint32_t bdrt)
 {
 	unsigned int i, count;
@@ -309,3 +338,5 @@ int osmo_sercomm_drv_rx_char(struct osmo_sercomm_inst *sercomm, uint8_t ch)
 
 	return 1;
 }
+
+/*! @} */

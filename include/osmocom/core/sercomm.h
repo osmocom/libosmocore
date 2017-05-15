@@ -3,7 +3,15 @@
 
 #include <osmocom/core/msgb.h>
 
-/* a low sercomm_dlci means high priority.  A high DLCI means low priority */
+/*! \defgroup sercomm Seriall Communications (HDLC)
+ *  @{
+ */
+
+/*! \file sercomm.h
+ *  \brief Osmocom Sercomm HDLC (de)multiplex
+ */
+
+/*! \brief A low sercomm_dlci means high priority.  A high DLCI means low priority */
 enum sercomm_dlci {
 	SC_DLCI_HIGHEST = 0,
 	SC_DLCI_DEBUG   = 4,
@@ -77,12 +85,30 @@ int osmo_sercomm_drv_rx_char(struct osmo_sercomm_inst *sercomm, uint8_t ch);
 
 extern void sercomm_drv_lock(unsigned long *flags);
 extern void sercomm_drv_unlock(unsigned long *flags);
+
+/*! \brief low-level driver routine to request start of transmission
+ *  The Sercomm code calls this function to inform the low-level driver
+ *  that some data is pending for transmission, and the low-level driver
+ *  should (if not active already) start enabling tx_empty interrupts
+ *  and pull drivers out of sercomm using osmo_sercomm_drv_pull() until
+ *  the latter returns 0.
+ *  \param[in] sercomm Osmocom sercomm instance for which to change
+ */
 extern void sercomm_drv_start_tx(struct osmo_sercomm_inst *sercomm);
+
+/*! \brief low-level driver routine to execute baud-rate change
+ *  \param[in] sercomm Osmocom sercomm instance for which to change
+ *  \param[in] bdrt New Baud-Rate (integer)
+ *  \returns 0 on success; negative in case of error
+ */
 extern int sercomm_drv_baudrate_chg(struct osmo_sercomm_inst *sercomm, uint32_t bdrt);
 
+/*! \brief Sercomm msgb allocator function */
 static inline struct msgb *osmo_sercomm_alloc_msgb(unsigned int len)
 {
 	return msgb_alloc_headroom(len+4, 4, "sercomm_tx");
 }
+
+/*! @} */
 
 #endif /* _SERCOMM_H */
