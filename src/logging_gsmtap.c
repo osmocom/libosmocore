@@ -32,7 +32,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
-#include <arpa/inet.h>
 
 #ifdef HAVE_STRINGS_H
 #include <strings.h>
@@ -44,6 +43,7 @@
 #include <osmocom/core/gsmtap_util.h>
 #include <osmocom/core/logging.h>
 #include <osmocom/core/timer.h>
+#include <osmocom/core/byteswap.h>
 
 #define	GSMTAP_LOG_MAX_SIZE 4096
 
@@ -81,12 +81,12 @@ static void _gsmtap_raw_output(struct log_target *target, int subsys,
 	else
 		golh->subsys[0] = '\0';
 	osmo_strlcpy(golh->src_file.name, file, sizeof(golh->src_file.name));
-	golh->src_file.line_nr = htonl(line);
+	golh->src_file.line_nr = osmo_htonl(line);
 	golh->level = level;
 	/* we always store the timestamp in the message, irrespective
 	 * of hat prrint_[ext_]timestamp say */
-	golh->ts.sec = htonl(tv.tv_sec);
-	golh->ts.usec = htonl(tv.tv_usec);
+	golh->ts.sec = osmo_htonl(tv.tv_sec);
+	golh->ts.usec = osmo_htonl(tv.tv_usec);
 
 	rc = vsnprintf((char *) msg->tail, msgb_tailroom(msg), format, ap);
 	if (rc < 0)

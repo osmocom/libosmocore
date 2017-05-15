@@ -18,12 +18,11 @@
  *
  */
 
+#include <osmocom/core/byteswap.h>
 #include <osmocom/gsm/gsm0808.h>
 #include <osmocom/gsm/gsm0808_utils.h>
 #include <osmocom/gsm/protocol/gsm_08_08.h>
 #include <osmocom/gsm/gsm48.h>
-
-#include <arpa/inet.h>
 
 #define BSSMAP_MSG_SIZE 512
 #define BSSMAP_MSG_HEADROOM 128
@@ -51,7 +50,7 @@ struct msgb *gsm0808_create_layer3_aoip(const struct msgb *msg_l3, uint16_t nc,
 	/* create the cell header */
 	lai_ci.ident = CELL_IDENT_WHOLE_GLOBAL;
 	gsm48_generate_lai(&lai_ci.lai, cc, nc, lac);
-	lai_ci.ci = htons(_ci);
+	lai_ci.ci = osmo_htons(_ci);
 	msgb_tlv_put(msg, GSM0808_IE_CELL_IDENTIFIER, sizeof(lai_ci),
 		     (uint8_t *) &lai_ci);
 
@@ -266,7 +265,7 @@ struct msgb *gsm0808_create_ass(const struct gsm0808_channel_type *ct,
 
 	/* Circuit Identity Code 3.2.2.2  */
 	if (cic) {
-		cic_sw = htons(*cic);
+		cic_sw = osmo_htons(*cic);
 		msgb_tv_fixed_put(msg, GSM0808_IE_CIRCUIT_IDENTITY_CODE,
 				  sizeof(cic_sw), (uint8_t *) & cic_sw);
 	}
@@ -282,7 +281,7 @@ struct msgb *gsm0808_create_ass(const struct gsm0808_channel_type *ct,
 
 	/* AoIP: Call Identifier 3.2.2.105 */
 	if (ci) {
-		ci_sw = htonl(*ci);
+		ci_sw = osmo_htonl(*ci);
 		msgb_tv_fixed_put(msg, GSM0808_IE_CALL_ID, sizeof(ci_sw),
 				  (uint8_t *) & ci_sw);
 	}
@@ -433,7 +432,7 @@ struct msgb *gsm0808_create_paging(const char *imsi, const uint32_t *tmsi,
 
 	/* TMSI 3.2.2.7 */
 	if (tmsi) {
-		tmsi_sw = htonl(*tmsi);
+		tmsi_sw = osmo_htonl(*tmsi);
 		msgb_tlv_put(msg, GSM0808_IE_TMSI, sizeof(*tmsi),
 			     (uint8_t *) & tmsi_sw);
 	}

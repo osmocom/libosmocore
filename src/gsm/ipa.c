@@ -26,10 +26,10 @@
 #include <errno.h>
 #include <stdlib.h>
 
-#include <arpa/inet.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 
+#include <osmocom/core/byteswap.h>
 #include <osmocom/core/msgb.h>
 #include <osmocom/core/talloc.h>
 #include <osmocom/core/logging.h>
@@ -431,7 +431,7 @@ void ipa_prepend_header(struct msgb *msg, int proto)
 
 	/* prepend the ip.access header */
 	hh = (struct ipaccess_head *) msgb_push(msg, sizeof(*hh));
-	hh->len = htons(msg->len - sizeof(*hh));
+	hh->len = osmo_htons(msg->len - sizeof(*hh));
 	hh->proto = proto;
 }
 
@@ -502,7 +502,7 @@ int ipa_msg_recv_buffered(int fd, struct msgb **rmsg, struct msgb **tmp_msg)
 	hh = (struct ipaccess_head *) msg->data;
 
 	/* then read the length as specified in header */
-	len = ntohs(hh->len);
+	len = osmo_ntohs(hh->len);
 
 	if (len < 0 || IPA_ALLOC_SIZE < len + sizeof(*hh)) {
 		LOGP(DLINP, LOGL_ERROR, "bad message length of %d bytes, "

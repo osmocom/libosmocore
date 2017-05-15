@@ -20,10 +20,10 @@
 
 #include <osmocom/core/utils.h>
 #include <osmocom/core/msgb.h>
+#include <osmocom/core/byteswap.h>
 #include <string.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <arpa/inet.h>
 #include <errno.h>
 #include <osmocom/gsm/protocol/gsm_08_08.h>
 
@@ -58,13 +58,13 @@ uint8_t gsm0808_enc_aoip_trasp_addr(struct msgb *msg,
 	switch (ss->ss_family) {
 	case AF_INET:
 		sin = (struct sockaddr_in *)ss;
-		port = ntohs(sin->sin_port);
+		port = osmo_ntohs(sin->sin_port);
 		ptr = msgb_put(msg, IP_V4_ADDR_LEN);
 		memcpy(ptr, &sin->sin_addr.s_addr, IP_V4_ADDR_LEN);
 		break;
 	case AF_INET6:
 		sin6 = (struct sockaddr_in6 *)ss;
-		port = ntohs(sin6->sin6_port);
+		port = osmo_ntohs(sin6->sin6_port);
 		ptr = msgb_put(msg, IP_V6_ADDR_LEN);
 		memcpy(ptr, sin6->sin6_addr.s6_addr, IP_V6_ADDR_LEN);
 		break;

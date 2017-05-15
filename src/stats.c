@@ -21,6 +21,7 @@
  *
  */
 
+#include <osmocom/core/byteswap.h>
 #include <osmocom/core/stats.h>
 
 #include <unistd.h>
@@ -195,7 +196,7 @@ int osmo_stats_reporter_set_remote_port(struct osmo_stats_reporter *srep, int po
 		return -ENOTSUP;
 
 	srep->dest_port = port;
-	sock_addr->sin_port = htons(port);
+	sock_addr->sin_port = osmo_htons(port);
 
 	return update_srep_config(srep);
 }

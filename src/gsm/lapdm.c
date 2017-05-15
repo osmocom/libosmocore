@@ -31,7 +31,6 @@
 #include <stdint.h>
 #include <string.h>
 #include <errno.h>
-#include <arpa/inet.h>
 
 #include <osmocom/core/logging.h>
 #include <osmocom/core/timer.h>

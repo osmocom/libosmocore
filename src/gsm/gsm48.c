@@ -26,9 +26,11 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
-#include <arpa/inet.h>
 
 #include <osmocom/core/utils.h>
+#include <osmocom/core/byteswap.h>
+#include <osmocom/core/bit16gen.h>
+#include <osmocom/core/bit32gen.h>
 #include <osmocom/gsm/tlv.h>
 #include <osmocom/gsm/gsm48.h>
 #include <osmocom/gsm/gsm0502.h>
@@ -479,7 +481,7 @@ void gsm48_generate_lai(struct gsm48_loc_area_id *lai48, uint16_t mcc,
 			uint16_t mnc, uint16_t lac)
 {
 	gsm48_mcc_mnc_to_bcd(&lai48->digits[0], mcc, mnc);
-	lai48->lac = htons(lac);
+	lai48->lac = osmo_htons(lac);
 }
 
 /* Attention: this function returns true integers, not hex! */
@@ -487,7 +489,7 @@ int gsm48_decode_lai(struct gsm48_loc_area_id *lai, uint16_t *mcc,
 		     uint16_t *mnc, uint16_t *lac)
 {
 	gsm48_mcc_mnc_from_bcd(&lai->digits[0], mcc, mnc);
-	*lac = ntohs(lai->lac);
+	*lac = osmo_ntohs(lai->lac);
 	return 0;
 }
 
@@ -537,7 +539,7 @@ void gsm48_set_dtx(struct gsm48_cell_options *op, enum gsm48_dtx_mode full,
 
 int gsm48_generate_mid_from_tmsi(uint8_t *buf, uint32_t tmsi)
 {
-	uint32_t tmsi_be = htonl(tmsi);
+	uint32_t tmsi_be = osmo_htonl(tmsi);
 
 	buf[0] = GSM48_IE_MOBILE_ID;
 	buf[1] = GSM48_TMSI_LEN;
@@ -593,8 +595,7 @@ int gsm48_mi_to_string(char *string, const int str_len, const uint8_t *mi,
 	case GSM_MI_TYPE_TMSI:
 		/* Table 10.5.4.3, reverse generate_mid_from_tmsi */
 		if (mi_len == GSM48_TMSI_LEN && mi[0] == (0xf0 | GSM_MI_TYPE_TMSI)) {
-			memcpy(&tmsi, &mi[1], 4);
-			tmsi = ntohl(tmsi);
+			tmsi = osmo_load32be(&mi[1]);
 			return snprintf(string, str_len, "%u", tmsi);
 		}
 		break;
@@ -637,7 +638,7 @@ void gsm48_parse_ra(struct gprs_ra_id *raid, const uint8_t *buf)
 		raid->mnc += (buf[1] >> 4) * 1;
 	}
 
-	raid->lac = ntohs(*(uint16_t *)(buf + 3));
+	raid->lac = osmo_load16be(buf + 3);
 	raid->rac = buf[5];
 }
 
@@ -660,7 +661,7 @@ int gsm48_construct_ra(uint8_t *buf, const struct gprs_ra_id *raid)
 		buf[2] = ((mnc / 100) % 10) | (((mnc / 10) % 10) << 4);
 	}
 
-	_lac = htons(raid->lac);
+	_lac = osmo_htons(raid->lac);
 	memcpy(buf + 3, &_lac, 2);
 
 	buf[5] = raid->rac;

@@ -29,12 +29,11 @@
 #include <osmocom/core/talloc.h>
 #include <osmocom/core/select.h>
 #include <osmocom/core/socket.h>
+#include <osmocom/core/byteswap.h>
 #include <osmocom/gsm/protocol/gsm_04_08.h>
 #include <osmocom/gsm/rsl.h>
 
 #include <sys/types.h>
-
-#include <arpa/inet.h>
 
 #include <stdio.h>
 #include <unistd.h>
@@ -123,10 +122,10 @@ struct msgb *gsmtap_makemsg_ex(uint8_t type, uint16_t arfcn, uint8_t ts, uint8_t
 	gh->type = type;
 	gh->timeslot = ts;
 	gh->sub_slot = ss;
-	gh->arfcn = htons(arfcn);
+	gh->arfcn = osmo_htons(arfcn);
 	gh->snr_db = snr;
 	gh->signal_dbm = signal_dbm;
-	gh->frame_number = htonl(fn);
+	gh->frame_number = osmo_htonl(fn);
 	gh->sub_type = chan_type;
 	gh->antenna_nr = 0;
 
