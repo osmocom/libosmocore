@@ -190,8 +190,7 @@ static void update_nearest(struct timeval *cand, struct timeval *current)
 			timersub(cand, current, &nearest);
 		else {
 			/* loop again inmediately */
-			nearest.tv_sec = 0;
-			nearest.tv_usec = 0;
+			timerclear(&nearest);
 		}
 		nearest_p = &nearest;
 	} else {
