@@ -287,7 +287,6 @@ static int gsm411_mnsms_data_ind_tx(struct gsm411_smr_inst *inst,
 	struct gsm48_hdr *gh = (struct gsm48_hdr*)msg->l3h;
 	struct gsm411_rp_hdr *rp_data = (struct gsm411_rp_hdr*)&gh->data;
 	uint8_t msg_type =  rp_data->msg_type & 0x07;
-	int rc;
 
 	/* check direction */
 	if (inst->network == (msg_type & 1)) {
@@ -329,7 +328,7 @@ static int gsm411_mnsms_data_ind_tx(struct gsm411_smr_inst *inst,
 		return -EINVAL;
 	}
 
-	return rc;
+	return 0;
 }
 
 static int gsm411_mnsms_error_ind_tx(struct gsm411_smr_inst *inst,
