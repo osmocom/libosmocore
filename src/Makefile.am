@@ -6,6 +6,10 @@ LIBVERSION=8:0:0
 AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include
 AM_CFLAGS = -Wall $(TALLOC_CFLAGS)
 
+if ENABLE_PSEUDOTALLOC
+AM_CPPFLAGS += -I$(top_srcdir)/src/pseudotalloc
+endif
+
 lib_LTLIBRARIES = libosmocore.la
 
 libosmocore_la_LIBADD = $(BACKTRACE_LIB) $(TALLOC_LIBS)

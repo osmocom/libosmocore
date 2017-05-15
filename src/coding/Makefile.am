@@ -9,6 +9,10 @@ AM_CPPFLAGS = \
 	$(TALLOC_CFLAGS)
 AM_CFLAGS = -Wall
 
+if ENABLE_PSEUDOTALLOC
+AM_CPPFLAGS += -I$(top_srcdir)/src/pseudotalloc
+endif
+
 lib_LTLIBRARIES = libosmocoding.la
 
 libosmocoding_la_SOURCES = \

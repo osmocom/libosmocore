@@ -6,6 +6,10 @@ LIBVERSION=7:0:1
 AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include $(TALLOC_CFLAGS)
 AM_CFLAGS = -Wall ${GCC_FVISIBILITY_HIDDEN}
 
+if ENABLE_PSEUDOTALLOC
+AM_CPPFLAGS += -I$(top_srcdir)/src/pseudotalloc
+endif
+
 # FIXME: this should eventually go into a milenage/Makefile.am
 noinst_HEADERS = milenage/aes.h milenage/aes_i.h milenage/aes_wrap.h \
 		 milenage/common.h milenage/crypto.h milenage/includes.h \

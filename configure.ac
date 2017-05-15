@@ -194,6 +194,14 @@ AC_ARG_ENABLE(ctrl,
         [enable_ctrl=$enableval], [enable_ctrl="yes"])
 AM_CONDITIONAL(ENABLE_CTRL, test x"$enable_ctrl" = x"yes")
 
+AC_ARG_ENABLE(pseudotalloc,
+        [AS_HELP_STRING(
+                [--enable-pseudotalloc],
+                [Enable building pseudotalloc library],
+        )],
+        [enable_pseudotalloc=$enableval], [enable_pseudotalloc="no"])
+AM_CONDITIONAL(ENABLE_PSEUDOTALLOC, test x"$enable_pseudotalloc" = x"yes")
+
 AC_ARG_ENABLE(embedded,
 	[AS_HELP_STRING(
 		[--enable-embedded],
@@ -211,6 +219,7 @@ then
 	AM_CONDITIONAL(ENABLE_UTILITIES, false)
 	AM_CONDITIONAL(ENABLE_GB, false)
 	AM_CONDITIONAL(ENABLE_PCSC, false)
+	AM_CONDITIONAL(ENABLE_PSEUDOTALLOC, true)
 	AC_DEFINE([PANIC_INFLOOP],[1],[Use infinite loop on panic rather than fprintf/abort])
 fi
 
@@ -287,6 +296,7 @@ AC_OUTPUT(
 	src/gsm/Makefile
 	src/gb/Makefile
 	src/ctrl/Makefile
+	src/pseudotalloc/Makefile
 	tests/Makefile
 	tests/atlocal
 	utils/Makefile

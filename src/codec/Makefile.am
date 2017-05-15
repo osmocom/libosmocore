@@ -6,6 +6,11 @@ LIBVERSION=0:0:0
 AM_CPPFLAGS = -I$(top_srcdir)/include $(TALLOC_CFLAGS)
 AM_CFLAGS = -Wall
 
+if ENABLE_PSEUDOTALLOC
+AM_CPPFLAGS += -I$(top_srcdir)/src/pseudotalloc
+endif
+
+
 lib_LTLIBRARIES = libosmocodec.la
 
 libosmocodec_la_SOURCES = gsm610.c gsm620.c gsm660.c gsm690.c
