@@ -24,7 +24,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
-#include <sys/select.h>
 
 #include <osmocom/core/select.h>
 #include <osmocom/core/linuxlist.h>
@@ -33,6 +32,7 @@
 #include "../config.h"
 
 #ifdef HAVE_SYS_SELECT_H
+#include <sys/select.h>
 
 /*! \addtogroup select
  *  @{
