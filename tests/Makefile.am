@@ -6,17 +6,16 @@ check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
                  smscb/smscb_test bits/bitrev_test a5/a5_test		\
                  conv/conv_test auth/milenage_test lapd/lapd_test	\
                  gsm0808/gsm0808_test gsm0408/gsm0408_test		\
-		 gb/bssgp_fc_test gb/gprs_bssgp_test gb/gprs_ns_test	\
 		 gprs/gprs_test	kasumi/kasumi_test gea/gea_test		\
 		 logging/logging_test fr/fr_test codec/codec_test	\
 		 loggingrb/loggingrb_test strrb/strrb_test              \
-		 vty/vty_test comp128/comp128_test utils/utils_test	\
-		 smscb/gsm0341_test stats/stats_test ctrl/ctrl_test	\
+		 comp128/comp128_test smscb/gsm0341_test		\
 		 bitvec/bitvec_test msgb/msgb_test bits/bitcomp_test	\
 		 tlv/tlv_test gsup/gsup_test oap/oap_test fsm/fsm_test	\
 		 write_queue/wqueue_test socket/socket_test		\
 		 coding/coding_test conv/conv_gsm0503_test		\
-		 abis/abis_test endian/endian_test sercomm/sercomm_test
+		 abis/abis_test endian/endian_test sercomm/sercomm_test	\
+		 stats/stats_test
 
 if ENABLE_MSGFILE
 check_PROGRAMS += msgfile/msgfile_test
@@ -24,6 +23,22 @@ endif
 
 if ENABLE_PCSC
 check_PROGRAMS += sim/sim_test
+endif
+
+if ENABLE_UTILITIES
+check_PROGRAMS += utils/utils_test
+endif
+
+if ENABLE_VTY
+check_PROGRAMS += vty/vty_test
+endif
+
+if ENABLE_CTRL
+check_PROGRAMS += ctrl/ctrl_test
+endif
+
+if ENABLE_GB
+check_PROGRAMS += gb/bssgp_fc_test gb/gprs_bssgp_test gb/gprs_ns_test
 endif
 
 utils_utils_test_SOURCES = utils/utils_test.c
