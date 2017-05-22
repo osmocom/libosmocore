@@ -24,6 +24,7 @@
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
+#include <errno.h>
 
 #include <osmocom/core/bits.h>
 #include <osmocom/core/conv.h>
@@ -820,15 +821,17 @@ int gsm0503_pdtch_egprs_decode(uint8_t *l2_data, sbit_t *bursts, uint16_t nbits,
 	if ((nbits != GSM0503_GPRS_BURSTS_NBITS) &&
 		(nbits != GSM0503_EGPRS_BURSTS_NBITS)) {
 		/* Invalid EGPRS bit length */
-		return -1;
+		return -EOVERFLOW;
 	}
 
 	hdr = (union gprs_rlc_ul_hdr_egprs *) l2_data;
 	type = egprs_decode_hdr(hdr, bursts, nbits);
 	if (egprs_parse_ul_cps(&cps, hdr, type) < 0)
-		return -1;
+		return -EIO;
 
 	switch (cps.mcs) {
+	case EGPRS_MCS0:
+		return -ENOTSUP;
 	case EGPRS_MCS1:
 	case EGPRS_MCS2:
 	case EGPRS_MCS3:
@@ -846,7 +849,7 @@ int gsm0503_pdtch_egprs_decode(uint8_t *l2_data, sbit_t *bursts, uint16_t nbits,
 		break;
 	default:
 		/* Invalid MCS-X */
-		return -1;
+		return -EINVAL;
 	}
 
 	/* Decode MCS-X block, where X = cps.mcs */
@@ -854,19 +857,19 @@ int gsm0503_pdtch_egprs_decode(uint8_t *l2_data, sbit_t *bursts, uint16_t nbits,
 		rc = egprs_decode_data(l2_data, dc, cps.mcs, cps.p[0],
 			0, n_errors, n_bits_total);
 		if (rc < 0)
-			return -1;
+			return -EFAULT;
 	} else {
 		/* MCS-7,8,9 block 1 */
 		rc = egprs_decode_data(l2_data, c1, cps.mcs, cps.p[0],
 			0, n_errors, n_bits_total);
 		if (rc < 0)
-			return -1;
+			return -EFAULT;
 
 		/* MCS-7,8,9 block 2 */
 		rc = egprs_decode_data(l2_data, c2, cps.mcs, cps.p[1],
 			1, n_errors, n_bits_total);
 		if (rc < 0)
-			return -1;
+			return -EFAULT;
 	}
 
 	return rc;
