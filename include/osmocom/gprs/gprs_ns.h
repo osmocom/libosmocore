@@ -203,6 +203,8 @@ enum signal_ns {
 	S_NS_MISMATCH, /* got an unexpected IE (sets msg, pdu_type, ie_type) */
 };
 
+extern const struct value_string gprs_ns_signal_ns_names[];
+
 struct ns_signal_data {
 	struct gprs_nsvc *nsvc;
 	struct gprs_nsvc *old_nsvc;

@@ -150,6 +150,16 @@ static const struct osmo_stat_item_group_desc nsvc_statg_desc = {
 	.class_id = OSMO_STATS_CLASS_PEER,
 };
 
+const struct value_string gprs_ns_signal_ns_names[] = {
+	{ S_NS_RESET,		"NS-RESET" },
+	{ S_NS_BLOCK,		"NS-BLOCK" },
+	{ S_NS_UNBLOCK,		"NS-UNBLOCK" },
+	{ S_NS_ALIVE_EXP,	"NS-ALIVE expired" },
+	{ S_NS_REPLACED,	"NSVC replaced" },
+	{ S_NS_MISMATCH,	"Unexpected IE" },
+	{ 0, NULL }
+};
+
 #define CHECK_TX_RC(rc, nsvc) \
 		if (rc < 0)							\
 			LOGP(DNS, LOGL_ERROR, "TX failed (%d) to peer %s\n",	\
