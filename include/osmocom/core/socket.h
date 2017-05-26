@@ -31,6 +31,10 @@ int osmo_sock_init2(uint16_t family, uint16_t type, uint8_t proto,
 int osmo_sock_init_ofd(struct osmo_fd *ofd, int family, int type, int proto,
 			const char *host, uint16_t port, unsigned int flags);
 
+int osmo_sock_init2_ofd(struct osmo_fd *ofd, int family, int type, int proto,
+			const char *local_host, uint16_t local_port,
+			const char *remote_host, uint16_t remote_port, unsigned int flags);
+
 int osmo_sock_init_sa(struct sockaddr *ss, uint16_t type,
 		      uint8_t proto, unsigned int flags);
 

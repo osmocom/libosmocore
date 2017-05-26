@@ -363,6 +363,29 @@ int osmo_sock_init_ofd(struct osmo_fd *ofd, int family, int type, int proto,
 	return osmo_fd_init_ofd(ofd, osmo_sock_init(family, type, proto, host, port, flags));
 }
 
+/*! \brief Initialize a socket and fill \ref osmo_fd
+ *  \param[out] ofd file descriptor (will be filled in)
+ *  \param[in] family Address Family like AF_INET, AF_INET6, AF_UNSPEC
+ *  \param[in] type Socket type like SOCK_DGRAM, SOCK_STREAM
+ *  \param[in] proto Protocol like IPPROTO_TCP, IPPROTO_UDP
+ *  \param[in] local_host local host name or IP address in string form
+ *  \param[in] local_port local port number in host byte order
+ *  \param[in] remote_host remote host name or IP address in string form
+ *  \param[in] remote_port remote port number in host byte order
+ *  \param[in] flags flags like \ref OSMO_SOCK_F_CONNECT
+ *  \returns socket fd on success; negative on error
+ *
+ * This function creates (and optionall binds/connects) a socket using
+ * \ref osmo_sock_init2, but also fills the \a ofd structure.
+ */
+int osmo_sock_init2_ofd(struct osmo_fd *ofd, int family, int type, int proto,
+			const char *local_host, uint16_t local_port,
+			const char *remote_host, uint16_t remote_port, unsigned int flags)
+{
+	return osmo_fd_init_ofd(ofd, osmo_sock_init2(family, type, proto, local_host,
+					local_port, remote_host, remote_port, flags));
+}
+
 /*! \brief Initialize a socket and fill \ref sockaddr
  *  \param[out] ss socket address (will be filled in)
  *  \param[in] type Socket type like SOCK_DGRAM, SOCK_STREAM
