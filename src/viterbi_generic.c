@@ -129,13 +129,13 @@ static void gen_path_metrics(int num_states, int16_t *sums,
 
 /* Not-aligned Memory Allocator */
 __attribute__ ((visibility("hidden")))
-int16_t *osmo_conv_vdec_malloc(size_t n)
+int16_t *osmo_conv_gen_vdec_malloc(size_t n)
 {
 	return (int16_t *) malloc(sizeof(int16_t) * n);
 }
 
 __attribute__ ((visibility("hidden")))
-void osmo_conv_vdec_free(int16_t *ptr)
+void osmo_conv_gen_vdec_free(int16_t *ptr)
 {
 	free(ptr);
 }

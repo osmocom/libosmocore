@@ -31,6 +31,18 @@
 #define BIT2NRZ(REG,N)	(((REG >> N) & 0x01) * 2 - 1) * -1
 #define NUM_STATES(K)	(K == 7 ? 64 : 16)
 
+#define INIT_POINTERS(simd) \
+{ \
+	osmo_conv_metrics_k5_n2 = osmo_conv_##simd##_metrics_k5_n2; \
+	osmo_conv_metrics_k5_n3 = osmo_conv_##simd##_metrics_k5_n3; \
+	osmo_conv_metrics_k5_n4 = osmo_conv_##simd##_metrics_k5_n4; \
+	osmo_conv_metrics_k7_n2 = osmo_conv_##simd##_metrics_k7_n2; \
+	osmo_conv_metrics_k7_n3 = osmo_conv_##simd##_metrics_k7_n3; \
+	osmo_conv_metrics_k7_n4 = osmo_conv_##simd##_metrics_k7_n4; \
+	vdec_malloc = &osmo_conv_##simd##_vdec_malloc; \
+	vdec_free = &osmo_conv_##simd##_vdec_free; \
+}
+
 static int init_complete = 0;
 
 __attribute__ ((visibility("hidden"))) int avx2_supported = 0;
@@ -38,19 +50,37 @@ __attribute__ ((visibility("hidden"))) int sse3_supported = 0;
 __attribute__ ((visibility("hidden"))) int sse41_supported = 0;
 
 /**
- * This pointers will be initialized by the osmo_conv_init()
- * depending on supported SIMD extensions.
+ * These pointers are being initialized at runtime by the
+ * osmo_conv_init() depending on supported SIMD extensions.
  */
 static int16_t *(*vdec_malloc)(size_t n);
 static void (*vdec_free)(int16_t *ptr);
 
-/* Forward malloc wrappers */
-int16_t *osmo_conv_vdec_malloc(size_t n);
-void osmo_conv_vdec_free(int16_t *ptr);
+void (*osmo_conv_metrics_k5_n2)(const int8_t *seq,
+	const int16_t *out, int16_t *sums, int16_t *paths, int norm);
+void (*osmo_conv_metrics_k5_n3)(const int8_t *seq,
+	const int16_t *out, int16_t *sums, int16_t *paths, int norm);
+void (*osmo_conv_metrics_k5_n4)(const int8_t *seq,
+	const int16_t *out, int16_t *sums, int16_t *paths, int norm);
+void (*osmo_conv_metrics_k7_n2)(const int8_t *seq,
+	const int16_t *out, int16_t *sums, int16_t *paths, int norm);
+void (*osmo_conv_metrics_k7_n3)(const int8_t *seq,
+	const int16_t *out, int16_t *sums, int16_t *paths, int norm);
+void (*osmo_conv_metrics_k7_n4)(const int8_t *seq,
+	const int16_t *out, int16_t *sums, int16_t *paths, int norm);
 
-#ifdef HAVE_SSE3
-int16_t *osmo_conv_vdec_malloc_sse3(size_t n);
-void osmo_conv_vdec_free_sse3(int16_t *ptr);
+/* Forward malloc wrappers */
+int16_t *osmo_conv_gen_vdec_malloc(size_t n);
+void osmo_conv_gen_vdec_free(int16_t *ptr);
+
+#if defined(HAVE_SSE3)
+int16_t *osmo_conv_sse_vdec_malloc(size_t n);
+void osmo_conv_sse_vdec_free(int16_t *ptr);
+#endif
+
+#if defined(HAVE_SSE3) && defined(HAVE_AVX2)
+int16_t *osmo_conv_sse_avx_vdec_malloc(size_t n);
+void osmo_conv_sse_avx_vdec_free(int16_t *ptr);
 #endif
 
 /* Forward Metric Units */
@@ -67,18 +97,33 @@ void osmo_conv_gen_metrics_k7_n3(const int8_t *seq, const int16_t *out,
 void osmo_conv_gen_metrics_k7_n4(const int8_t *seq, const int16_t *out,
 	int16_t *sums, int16_t *paths, int norm);
 
-#ifdef HAVE_SSE3
-void osmo_conv_gen_metrics_k5_n2_sse(const int8_t *seq, const int16_t *out,
+#if defined(HAVE_SSE3)
+void osmo_conv_sse_metrics_k5_n2(const int8_t *seq, const int16_t *out,
 	int16_t *sums, int16_t *paths, int norm);
-void osmo_conv_gen_metrics_k5_n3_sse(const int8_t *seq, const int16_t *out,
+void osmo_conv_sse_metrics_k5_n3(const int8_t *seq, const int16_t *out,
 	int16_t *sums, int16_t *paths, int norm);
-void osmo_conv_gen_metrics_k5_n4_sse(const int8_t *seq, const int16_t *out,
+void osmo_conv_sse_metrics_k5_n4(const int8_t *seq, const int16_t *out,
 	int16_t *sums, int16_t *paths, int norm);
-void osmo_conv_gen_metrics_k7_n2_sse(const int8_t *seq, const int16_t *out,
+void osmo_conv_sse_metrics_k7_n2(const int8_t *seq, const int16_t *out,
 	int16_t *sums, int16_t *paths, int norm);
-void osmo_conv_gen_metrics_k7_n3_sse(const int8_t *seq, const int16_t *out,
+void osmo_conv_sse_metrics_k7_n3(const int8_t *seq, const int16_t *out,
 	int16_t *sums, int16_t *paths, int norm);
-void osmo_conv_gen_metrics_k7_n4_sse(const int8_t *seq, const int16_t *out,
+void osmo_conv_sse_metrics_k7_n4(const int8_t *seq, const int16_t *out,
+	int16_t *sums, int16_t *paths, int norm);
+#endif
+
+#if defined(HAVE_SSE3) && defined(HAVE_AVX2)
+void osmo_conv_sse_avx_metrics_k5_n2(const int8_t *seq, const int16_t *out,
+	int16_t *sums, int16_t *paths, int norm);
+void osmo_conv_sse_avx_metrics_k5_n3(const int8_t *seq, const int16_t *out,
+	int16_t *sums, int16_t *paths, int norm);
+void osmo_conv_sse_avx_metrics_k5_n4(const int8_t *seq, const int16_t *out,
+	int16_t *sums, int16_t *paths, int norm);
+void osmo_conv_sse_avx_metrics_k7_n2(const int8_t *seq, const int16_t *out,
+	int16_t *sums, int16_t *paths, int norm);
+void osmo_conv_sse_avx_metrics_k7_n3(const int8_t *seq, const int16_t *out,
+	int16_t *sums, int16_t *paths, int norm);
+void osmo_conv_sse_avx_metrics_k7_n4(const int8_t *seq, const int16_t *out,
 	int16_t *sums, int16_t *paths, int norm);
 #endif
 
@@ -488,31 +533,13 @@ static struct vdecoder *alloc_vdec(const struct osmo_conv_code *code)
 	if (dec->k == 5) {
 		switch (dec->n) {
 		case 2:
-		#ifdef HAVE_SSE3
-			dec->metric_func = !sse3_supported ?
-				osmo_conv_gen_metrics_k5_n2 :
-				osmo_conv_gen_metrics_k5_n2_sse;
-		#else
-			dec->metric_func = osmo_conv_gen_metrics_k5_n2;
-		#endif
+			dec->metric_func = osmo_conv_metrics_k5_n2;
 			break;
 		case 3:
-		#ifdef HAVE_SSE3
-			dec->metric_func = !sse3_supported ?
-				osmo_conv_gen_metrics_k5_n3 :
-				osmo_conv_gen_metrics_k5_n3_sse;
-		#else
-			dec->metric_func = osmo_conv_gen_metrics_k5_n3;
-		#endif
+			dec->metric_func = osmo_conv_metrics_k5_n3;
 			break;
 		case 4:
-		#ifdef HAVE_SSE3
-			dec->metric_func = !sse3_supported ?
-				osmo_conv_gen_metrics_k5_n4 :
-				osmo_conv_gen_metrics_k5_n4_sse;
-		#else
-			dec->metric_func = osmo_conv_gen_metrics_k5_n4;
-		#endif
+			dec->metric_func = osmo_conv_metrics_k5_n4;
 			break;
 		default:
 			goto fail;
@@ -520,31 +547,13 @@ static struct vdecoder *alloc_vdec(const struct osmo_conv_code *code)
 	} else if (dec->k == 7) {
 		switch (dec->n) {
 		case 2:
-		#ifdef HAVE_SSE3
-			dec->metric_func = !sse3_supported ?
-				osmo_conv_gen_metrics_k7_n2 :
-				osmo_conv_gen_metrics_k7_n2_sse;
-		#else
-			dec->metric_func = osmo_conv_gen_metrics_k7_n2;
-		#endif
+			dec->metric_func = osmo_conv_metrics_k7_n2;
 			break;
 		case 3:
-		#ifdef HAVE_SSE3
-			dec->metric_func = !sse3_supported ?
-				osmo_conv_gen_metrics_k7_n3 :
-				osmo_conv_gen_metrics_k7_n3_sse;
-		#else
-			dec->metric_func = osmo_conv_gen_metrics_k7_n3;
-		#endif
+			dec->metric_func = osmo_conv_metrics_k7_n3;
 			break;
 		case 4:
-		#ifdef HAVE_SSE3
-			dec->metric_func = !sse3_supported ?
-				osmo_conv_gen_metrics_k7_n4 :
-				osmo_conv_gen_metrics_k7_n4_sse;
-		#else
-			dec->metric_func = osmo_conv_gen_metrics_k7_n4;
-		#endif
+			dec->metric_func = osmo_conv_metrics_k7_n4;
 			break;
 		default:
 			goto fail;
@@ -656,14 +665,26 @@ static void osmo_conv_init(void)
 	#endif
 #endif
 
-#ifdef HAVE_SSE3
-	vdec_malloc = !sse3_supported ?
-		&osmo_conv_vdec_malloc : &osmo_conv_vdec_malloc_sse3;
-	vdec_free = !sse3_supported ?
-		&osmo_conv_vdec_free : &osmo_conv_vdec_free_sse3;
+/**
+ * Usage of curly braces is mandatory,
+ * because we use multi-line define.
+ */
+#if defined(HAVE_SSE3) && defined(HAVE_AVX2)
+	if (sse3_supported && avx2_supported) {
+		INIT_POINTERS(sse_avx);
+	} else if (sse3_supported) {
+		INIT_POINTERS(sse);
+	} else {
+		INIT_POINTERS(gen);
+	}
+#elif defined(HAVE_SSE3)
+	if (sse3_supported) {
+		INIT_POINTERS(sse);
+	} else {
+		INIT_POINTERS(gen);
+	}
 #else
-	vdec_malloc = &osmo_conv_vdec_malloc;
-	vdec_free = &osmo_conv_vdec_free;
+	INIT_POINTERS(gen);
 #endif
 }
 
