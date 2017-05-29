@@ -909,12 +909,13 @@ struct gsm48_rr_status {
 	uint8_t rr_cause;
 } __attribute__((packed));
 
-/* Section 10.2 + GSM 04.07 12.2.3.1.1 */
+/* Section 10.2 + GSM 04.07 12.2.3.1.1 + 3GPP TS 24.007 11.2.3.1.1 */
 #define GSM48_PDISC_GROUP_CC	0x00
 #define GSM48_PDISC_BCAST_CC	0x01
-#define GSM48_PDISC_PDSS1	0x02
+#define GSM48_PDISC_PDSS1	0x02	/* 04.07 only */
 #define GSM48_PDISC_CC		0x03
-#define GSM48_PDISC_PDSS2	0x04
+#define GSM48_PDISC_PDSS2	0x04	/* 04.07 only */
+#define GSM48_PDISC_GTTP	0x04	/* 24.007 only */
 #define GSM48_PDISC_MM		0x05
 #define GSM48_PDISC_RR		0x06
 #define GSM48_PDISC_MM_GPRS	0x08
@@ -923,6 +924,7 @@ struct gsm48_rr_status {
 #define GSM48_PDISC_NC_SS	0x0b
 #define GSM48_PDISC_LOC		0x0c
 #define GSM48_PDISC_EXTEND	0x0e
+#define GSM48_PDISC_TEST	0x0f	/* as per 11.10, 04.14 */
 #define GSM48_PDISC_MASK	0x0f
 #define GSM48_PDISC_USSD	0x11
 
