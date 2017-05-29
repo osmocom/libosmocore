@@ -99,6 +99,7 @@ nobase_include_HEADERS = \
                        osmocom/gsm/protocol/gsm_04_08_gprs.h \
                        osmocom/gsm/protocol/gsm_04_11.h \
                        osmocom/gsm/protocol/gsm_04_12.h \
+                       osmocom/gsm/protocol/gsm_04_14.h \
                        osmocom/gsm/protocol/gsm_04_80.h \
                        osmocom/gsm/protocol/gsm_08_08.h \
                        osmocom/gsm/protocol/gsm_08_58.h \

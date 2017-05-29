@@ -188,6 +188,8 @@ gsm411_unbcdify;
 gsm411_cp_cause_strs;
 gsm411_rp_cause_strs;
 
+gsm414_msgt_names;
+
 gsm48_att_tlvdef;
 gsm48_cc_msg_name;
 gsm48_rr_msg_name;
