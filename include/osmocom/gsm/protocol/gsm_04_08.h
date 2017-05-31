@@ -1620,13 +1620,18 @@ enum gsm48_bcap_modem_type {
 	GSM48_BCAP_MT_AUTO_1	= 8,
 };
 
-/*! \brief GSM 04.08 Bearer Capability: Speech Version Indication */
+/*! \brief GSM 04.08 Bearer Capability: Speech Version Indication
+ *  (See also 3GPP TS 24.008, Table 10.5.103) */
 enum gsm48_bcap_speech_ver {
 	GSM48_BCAP_SV_FR	= 0,	/*!< GSM FR V1 (GSM FR) */
 	GSM48_BCAP_SV_HR	= 1,	/*!< GSM HR V1 (GSM HR) */
 	GSM48_BCAP_SV_EFR	= 2,	/*!< GSM FR V2 (GSM EFR) */
 	GSM48_BCAP_SV_AMR_F	= 4,	/*!< GSM FR V3 (FR AMR) */
 	GSM48_BCAP_SV_AMR_H	= 5,	/*!< GSM HR V3 (HR_AMR) */
+	GSM48_BCAP_SV_AMR_OFW	= 6,	/*!< GSM FR V4 (OFR AMR-WB) */
+	GSM48_BCAP_SV_AMR_OHW	= 7,	/*!< GSM HR V4 (OHR AMR-WB) */
+	GSM48_BCAP_SV_AMR_FW	= 8,	/*!< GSM FR V5 (FR AMR-WB) */
+	GSM48_BCAP_SV_AMR_OH	= 11,	/*!< GSM HR V6 (OHR AMR) */
 };
 
 #define GSM48_TMSI_LEN	5
