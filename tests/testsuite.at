@@ -147,6 +147,7 @@ AT_CLEANUP
 
 AT_SETUP([codec])
 AT_KEYWORDS([codec])
+AT_CHECK([exit 77])
 cat $abs_srcdir/codec/codec_test.ok > expout
 AT_CHECK([$abs_top_builddir/tests/codec/codec_test], [0], [expout], [ignore])
 AT_CLEANUP
