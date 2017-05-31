@@ -63,8 +63,8 @@ static inline bool osmo_amr_is_speech(enum osmo_amr_type ft)
 	}
 }
 
-bool osmo_fr_check_sid(uint8_t *rtp_payload, size_t payload_len);
-bool osmo_hr_check_sid(uint8_t *rtp_payload, size_t payload_len);
+bool osmo_fr_check_sid(const uint8_t *rtp_payload, size_t payload_len);
+bool osmo_hr_check_sid(const uint8_t *rtp_payload, size_t payload_len);
 int osmo_amr_rtp_enc(uint8_t *payload, uint8_t cmr, enum osmo_amr_type ft,
 		     enum osmo_amr_quality bfi);
 int osmo_amr_rtp_dec(const uint8_t *payload, int payload_len, uint8_t *cmr,

@@ -277,11 +277,11 @@ static inline uint16_t mask(const uint8_t msb)
  *  \param[in] payload_len Length of payload
  *  \returns true if code word is found, false otherwise
  */
-bool osmo_hr_check_sid(uint8_t *rtp_payload, size_t payload_len)
+bool osmo_hr_check_sid(const uint8_t *rtp_payload, size_t payload_len)
 {
 	uint8_t i, bits[] = { 1, 2, 8, 9, 5, 4, 9, 5, 4, 9, 5, 4, 9, 5 };
 	struct bitvec bv;
-	bv.data = rtp_payload;
+	bv.data = (uint8_t *) rtp_payload;
 	bv.data_len = payload_len;
 	bv.cur_bit = 33;
 

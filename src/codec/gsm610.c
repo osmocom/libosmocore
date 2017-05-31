@@ -303,7 +303,7 @@ const uint16_t gsm610_bitorder[260] = {
  *  \param[in] payload_len Length of payload
  *  \returns true if code word is found, false otherwise
  */
-bool osmo_fr_check_sid(uint8_t *rtp_payload, size_t payload_len)
+bool osmo_fr_check_sid(const uint8_t *rtp_payload, size_t payload_len)
 {
 	struct bitvec bv;
 	uint16_t i, z_bits[] = { 57, 58, 60, 61, 63, 64, 66, 67, 69, 70, 72, 73,
@@ -321,7 +321,7 @@ bool osmo_fr_check_sid(uint8_t *rtp_payload, size_t payload_len)
 	if ((rtp_payload[0] >> 4) != 0xD)
 		return false;
 
-	bv.data = rtp_payload;
+	bv.data = (uint8_t *) rtp_payload;
 	bv.data_len = payload_len;
 
 	/* code word is all 0 at given bits, numbered from 1 */
