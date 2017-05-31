@@ -22,6 +22,7 @@
  */
 
 #include <stdint.h>
+#include <osmocom/codec/codec.h>
 
 /* GSM EFR - subjective importance bit ordering */
 	/* This array encodes GSM 05.03 Table 6.

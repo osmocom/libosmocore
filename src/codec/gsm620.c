@@ -26,6 +26,7 @@
 
 #include <osmocom/core/bitvec.h>
 #include <osmocom/core/utils.h>
+#include <osmocom/codec/codec.h>
 
 /* GSM HR unvoiced (mode=0) frames - subjective importance bit ordering */
 	/* This array encode mapping between GSM 05.03 Table 3a (bits

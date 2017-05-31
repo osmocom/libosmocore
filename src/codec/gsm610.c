@@ -26,6 +26,7 @@
 
 #include <osmocom/core/bitvec.h>
 #include <osmocom/core/utils.h>
+#include <osmocom/codec/codec.h>
 
 /* GSM FR - subjective importance bit ordering */
 	/* This array encodes GSM 05.03 Table 2.
