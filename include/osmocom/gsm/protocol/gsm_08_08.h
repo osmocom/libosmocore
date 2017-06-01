@@ -447,8 +447,6 @@ struct gsm0808_speech_codec {
 	bool tf;
 	uint8_t type;
 	uint16_t cfg;
-	bool type_extended;
-	bool cfg_present;
 };
 
 /* 3GPP TS 48.008 3.2.2.103 Speech Codec List */

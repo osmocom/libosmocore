@@ -151,6 +151,32 @@ static uint8_t enc_speech_codec(struct msgb *msg,
 	/* See also 3GPP TS 48.008 3.2.2.103 Speech Codec List */
 	uint8_t header = 0;
 	uint8_t *old_tail;
+	bool type_extended;
+
+	/* Note: Extended codec types are codec types that require 8 instead
+	 * of 4 bit to fully specify the selected codec. In the following,
+	 * we check if we work with an extended type or not. We also check
+	 * if the codec type is valid at all. */
+	switch(sc->type) {
+	case GSM0808_SCT_FR1:
+	case GSM0808_SCT_FR2:
+	case GSM0808_SCT_FR3:
+	case GSM0808_SCT_FR4:
+	case GSM0808_SCT_FR5:
+	case GSM0808_SCT_HR1:
+	case GSM0808_SCT_HR3:
+	case GSM0808_SCT_HR4:
+	case GSM0808_SCT_HR6:
+		type_extended = false;
+		break;
+	case GSM0808_SCT_CSD:
+		type_extended = true;
+		break;
+	default:
+		/* Invalid codec type specified */
+		OSMO_ASSERT(false);
+		break;
+	}
 
 	old_tail = msg->tail;
 
@@ -162,20 +188,37 @@ static uint8_t enc_speech_codec(struct msgb *msg,
 		header |= (1 << 5);
 	if (sc->tf)
 		header |= (1 << 4);
-	if (sc->type_extended) {
+
+	if (type_extended) {
 		header |= 0x0f;
 		msgb_put_u8(msg, header);
+		msgb_put_u8(msg, sc->type);
 	} else {
 		OSMO_ASSERT(sc->type < 0x0f);
 		header |= sc->type;
 		msgb_put_u8(msg, header);
-		return (uint8_t) (msg->tail - old_tail);
 	}
 
-	msgb_put_u8(msg, sc->type);
-
-	if (sc->cfg_present)
+	/* Note: Whether a configuration is present or not depends on the
+	 * selected codec type. If present, it can either consist of one
+	 * or two octets, depending on the codec type */
+	switch (sc->type) {
+	case GSM0808_SCT_FR3:
+	case GSM0808_SCT_HR3:
+	case GSM0808_SCT_HR6:
 		msgb_put_u16(msg, sc->cfg);
+		break;
+	case GSM0808_SCT_FR4:
+	case GSM0808_SCT_FR5:
+	case GSM0808_SCT_HR4:
+	case GSM0808_SCT_CSD:
+		OSMO_ASSERT((sc->cfg & 0xff00) == 0)
+		msgb_put_u8(msg, (uint8_t) sc->cfg & 0xff);
+		break;
+	default:
+		OSMO_ASSERT(sc->cfg == 0);
+		break;
+	}
 
 	return (uint8_t) (msg->tail - old_tail);
 }
@@ -244,21 +287,42 @@ int gsm0808_dec_speech_codec(struct gsm0808_speech_codec *sc,
 
 	if ((header & 0x0F) != 0x0F) {
 		sc->type = (header & 0x0F);
-		return (int)(elem - old_elem);
+	} else {
+		sc->type = *elem;
+		elem++;
+		len--;
 	}
 
-	sc->type = *elem;
-	elem++;
-	len--;
-
-	sc->type_extended = true;
-
-	if (len < 2)
-		return (int)(elem - old_elem);
-
-	sc->cfg = osmo_load16be(elem);
-	elem += 2;
-	sc->cfg_present = true;
+	/* Note: Whether a configuration is present or not depends on the
+	 * selected codec type. If present, it can either consist of one or
+	 * two octets depending on the codec type */
+	switch (sc->type) {
+	case GSM0808_SCT_FR1:
+	case GSM0808_SCT_FR2:
+	case GSM0808_SCT_HR1:
+		break;
+	case GSM0808_SCT_HR4:
+	case GSM0808_SCT_CSD:
+	case GSM0808_SCT_FR4:
+	case GSM0808_SCT_FR5:
+		if (len < 1)
+			return -EINVAL;
+		sc->cfg = *elem;
+		elem++;
+		break;
+	case GSM0808_SCT_FR3:
+	case GSM0808_SCT_HR3:
+	case GSM0808_SCT_HR6:
+		if (len < 2)
+			return -EINVAL;
+		sc->cfg = osmo_load16be(elem);
+		elem += 2;
+		break;
+	default:
+		/* Invalid codec type => malformed speech codec element! */
+		return -EINVAL;
+		break;
+	}
 
 	return (int)(elem - old_elem);
 }
