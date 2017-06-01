@@ -397,9 +397,27 @@ enum gsm0808_permitted_speech {
 	GSM0808_PERM_FR1	= 0x01, /*!< GSM FR */
 	GSM0808_PERM_FR2	= 0x11, /*!< GSM EFR */
 	GSM0808_PERM_FR3	= 0x21, /*!< FR AMR */
+	GSM0808_PERM_FR4	= 0x41, /*!< OFR AMR-WB */
+	GSM0808_PERM_FR5	= 0x42, /*!< FR AMR-WB */
 	GSM0808_PERM_HR1	= GSM0808_PERM_FR1 | 0x4, /*!< GSM HR */
 	GSM0808_PERM_HR2	= GSM0808_PERM_FR2 | 0x4, /*!< (deprecated) */
 	GSM0808_PERM_HR3	= GSM0808_PERM_FR3 | 0x4, /*!< HR AMR */
+	GSM0808_PERM_HR4	= 0x46, /*!< OHR AMR-WB */
+	GSM0808_PERM_HR6	= 0x45, /*!< OHR AMR */
+};
+
+/*! \brief 3GPP TS 48.008, 3.2.2.103 Speech Codec Type */
+enum gsm0808_speech_codec_type {
+	GSM0808_SCT_FR1	= 0x0, /*!< GSM FR */
+	GSM0808_SCT_FR2	= 0x2, /*!< GSM EFR */
+	GSM0808_SCT_FR3	= 0x3, /*!< FR AMR */
+	GSM0808_SCT_FR4	= 0xc, /*!< OFR AMR-WB */
+	GSM0808_SCT_FR5	= 0x9, /*!< FR AMR-WB */
+	GSM0808_SCT_HR1	= 0x1, /*!< GSM_HR */
+	GSM0808_SCT_HR3	= 0x4, /*!< HR_AMR */
+	GSM0808_SCT_HR4	= 0xd, /*!< OHR AMR-WB */
+	GSM0808_SCT_HR6	= 0xb, /*!< OHR AMR */
+	GSM0808_SCT_CSD	= 0xfd, /*!< CSData (see also TS 26.103) */
 };
 
 /* GSM 08.08 3.2.2.44 Chosen Encryption Algorithm */
