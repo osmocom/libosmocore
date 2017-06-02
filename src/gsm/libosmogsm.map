@@ -163,6 +163,7 @@ gsm0808_dec_encrypt_info;
 gsm0808_enc_cell_id_list;
 gsm0808_dec_cell_id_list;
 gsm0808_convert_to_speech_codec_type;
+gsm0808_extrapolate_speech_codec;
 
 gsm0858_rsl_ul_meas_enc;
 

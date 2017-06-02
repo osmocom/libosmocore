@@ -682,4 +682,58 @@ int gsm0808_chan_type_to_speech_codec(uint8_t perm_spch)
 	return -EINVAL;
 }
 
+/*! \brief Extrapolate a speech codec field from a given permitted speech
+ *  parameter (channel type).
+ *  \param[out] sc Caller provided memory to store the resulting speech codec
+ *  \param[in] perm_spch value that is used to derive the speech codec info
+ *  (see also: enum gsm0808_speech_codec_type in gsm0808_utils.h)
+ *  \returns zero when successful; negative on error */
+int gsm0808_speech_codec_from_chan_type(struct gsm0808_speech_codec *sc,
+					uint8_t perm_spch)
+{
+	int rc;
+
+	memset(sc, 0, sizeof(*sc));
+
+	/* Determine codec type */
+	rc = gsm0808_chan_type_to_speech_codec(perm_spch);
+	if (rc < 0)
+		return -EINVAL;
+	sc->type = (uint8_t) rc;
+
+	/* Depending on the speech codec type, pick a default codec
+	 * configuration that exactly matches the configuration on the
+	 * air interface. */
+	switch (sc->type) {
+	case GSM0808_SCT_FR3:
+		sc->cfg = GSM0808_SC_CFG_DEFAULT_FR_AMR;
+		break;
+	case GSM0808_SCT_FR4:
+		sc->cfg = GSM0808_SC_CFG_DEFAULT_OFR_AMR_WB;
+		break;
+	case GSM0808_SCT_FR5:
+		sc->cfg = GSM0808_SC_CFG_DEFAULT_FR_AMR_WB;
+		break;
+	case GSM0808_SCT_HR3:
+		sc->cfg = GSM0808_SC_CFG_DEFAULT_HR_AMR;
+		break;
+	case GSM0808_SCT_HR4:
+		sc->cfg = GSM0808_SC_CFG_DEFAULT_OHR_AMR_WB;
+		break;
+	case GSM0808_SCT_HR6:
+		sc->cfg = GSM0808_SC_CFG_DEFAULT_OHR_AMR;
+		break;
+	default:
+		/* Note: Not all codec types specify a default setting,
+		 * in this case, we just set the field to zero. */
+		sc->cfg = 0;
+	}
+
+	/* Tag all codecs as "Full IP"
+	 * (see als 3GPP TS 48.008 3.2.2.103) */
+	sc->fi = true;
+
+	return 0;
+}
+
 /*! @} */
