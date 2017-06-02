@@ -645,4 +645,41 @@ int gsm0808_dec_cell_id_list(struct gsm0808_cell_id_list *cil,
 	return (int)(elem - old_elem);
 }
 
+/*! \brief Convert the representation of the permitted speech codec identifier
+ *  that is used in struct gsm0808_channel_type to the speech codec
+ *  representation we use in struct gsm0808_speech_codec.
+ *  \param[in] perm_spch to be converted (see also gsm0808_permitted_speech)
+ *  \returns GSM speech codec type; negative on error */
+int gsm0808_chan_type_to_speech_codec(uint8_t perm_spch)
+{
+	/*! The speech codec type, which is used in the channel type field to
+	 *  signal the permitted speech versions (codecs) has a different
+	 *  encoding than the type field in the speech codec type element
+	 *  (See also 3GPP TS 48.008, 3.2.2.11 and 3.2.2.103) */
+
+	switch (perm_spch) {
+	case GSM0808_PERM_FR1:
+		return GSM0808_SCT_FR1;
+	case GSM0808_PERM_FR2:
+		return GSM0808_SCT_FR2;
+	case GSM0808_PERM_FR3:
+		return GSM0808_SCT_FR3;
+	case GSM0808_PERM_FR4:
+		return GSM0808_SCT_FR4;
+	case GSM0808_PERM_FR5:
+		return GSM0808_SCT_FR5;
+	case GSM0808_PERM_HR1:
+		return GSM0808_SCT_HR1;
+	case GSM0808_PERM_HR3:
+		return GSM0808_SCT_HR3;
+	case GSM0808_PERM_HR4:
+		return GSM0808_SCT_HR4;
+	case GSM0808_PERM_HR6:
+		return GSM0808_SCT_HR6;
+	}
+
+	/* Invalid input */
+	return -EINVAL;
+}
+
 /*! @} */

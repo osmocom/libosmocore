@@ -71,3 +71,5 @@ uint8_t gsm0808_enc_cell_id_list(struct msgb *msg,
 /* Decode Cell Identifier List element */
 int gsm0808_dec_cell_id_list(struct gsm0808_cell_id_list *cil,
 			     const uint8_t *elem, uint8_t len);
+
+int gsm0808_chan_type_to_speech_code(uint8_t perm_spch);
