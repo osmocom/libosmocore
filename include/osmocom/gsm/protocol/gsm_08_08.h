@@ -449,6 +449,27 @@ struct gsm0808_speech_codec {
 	uint16_t cfg;
 };
 
+/*! \brief Default speech codec configurations: Some codecs specified with
+ *  struct gsm0808_speech_codec, require a configuration (cfg). The following
+ *  default configuration will configure the codec (RTP) to match the
+ *  configuration that is used on the air interface (Um).
+ *
+ *  Default values for FR_AMR, HR_AMR and OHR_AMR:
+ *  See also: 3GPP TS 28.062, Table 7.11.3.1.3-2: Preferred
+ *  Configurations for the Adaptive Multi-Rate Codec Types
+ *
+ *  Default values for FR_AMR_WB, OFR_AMR_WB and OHR_AMR_WB:
+ *  See also: 3GPP TS 26.103, Table 5.7-1: Allowed Configurations
+ *  for the Adaptive Multi-Rate - Wideband Codec Types */
+enum gsm0808_speech_codec_defaults {
+	GSM0808_SC_CFG_DEFAULT_FR_AMR		= 0xffff,
+	GSM0808_SC_CFG_DEFAULT_HR_AMR		= 0x073f,
+	GSM0808_SC_CFG_DEFAULT_OHR_AMR		= 0xffff,
+	GSM0808_SC_CFG_DEFAULT_FR_AMR_WB	= 0x01,
+	GSM0808_SC_CFG_DEFAULT_OFR_AMR_WB	= 0x3f,
+	GSM0808_SC_CFG_DEFAULT_OHR_AMR_WB	= 0x01,
+};
+
 /* 3GPP TS 48.008 3.2.2.103 Speech Codec List */
 #define SPEECH_CODEC_MAXLEN 255
 struct gsm0808_speech_codec_list {
