@@ -624,7 +624,7 @@ osmo_conv_decode(const struct osmo_conv_code *code,
 	l = osmo_conv_decode_scan(&decoder, input, code->len);
 
 	if (code->term == CONV_TERM_FLUSH)
-		l = osmo_conv_decode_flush(&decoder, &input[l]);
+		osmo_conv_decode_flush(&decoder, &input[l]);
 
 	rv = osmo_conv_decode_get_output(&decoder, output,
 		code->term == CONV_TERM_FLUSH,		/* has_flush */
