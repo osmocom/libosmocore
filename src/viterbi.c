@@ -394,12 +394,15 @@ static struct vtrellis *generate_trellis(const struct osmo_conv_code *code)
 	int olen = (code->N == 2) ? 2 : 4;
 
 	trellis = (struct vtrellis *) calloc(1, sizeof(struct vtrellis));
+	if (!trellis)
+		goto fail;
+
 	trellis->num_states = ns;
 	trellis->sums =	vdec_malloc(ns);
 	trellis->outputs = vdec_malloc(ns * olen);
 	trellis->vals = (uint8_t *) malloc(ns * sizeof(uint8_t));
 
-	if (!trellis->sums || !trellis->outputs)
+	if (!trellis->sums || !trellis->outputs || !trellis->vals)
 		goto fail;
 
 	/* Populate the trellis state objects */
@@ -507,9 +510,13 @@ static void free_vdec(struct vdecoder *dec)
 	if (!dec)
 		return;
 
-	vdec_free(dec->paths[0]);
-	free(dec->paths);
 	free_trellis(dec->trellis);
+
+	if (dec->paths != NULL) {
+		vdec_free(dec->paths[0]);
+		free(dec->paths);
+	}
+
 	free(dec);
 }
 
@@ -572,7 +579,13 @@ static struct vdecoder *alloc_vdec(const struct osmo_conv_code *code)
 		goto fail;
 
 	dec->paths = (int16_t **) malloc(sizeof(int16_t *) * dec->len);
+	if (!dec->paths)
+		goto fail;
+
 	dec->paths[0] = vdec_malloc(ns * dec->len);
+	if (!dec->paths[0])
+		goto fail;
+
 	for (i = 1; i < dec->len; i++)
 		dec->paths[i] = &dec->paths[0][i * ns];
 
