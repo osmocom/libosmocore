@@ -698,24 +698,17 @@ static int bssgp_fc_needs_queueing(struct bssgp_flow_control *fc, uint32_t pdu_l
 	/* ... and subtract the number of leaked bytes */
 	bucket_predicted -= leaked;
 
-	if (bucket_predicted < pdu_len) {
-		/* this is just to make sure the bucket doesn't underflow */
-		bucket_predicted = pdu_len;
-		goto pass;
-	}
+	if (bucket_predicted < pdu_len)
+		return 0;
 
 	if (bucket_predicted <= fc->bucket_size_max) {
 		/* the bucket is not full yet, we can pass the packet */
 		fc->bucket_counter = bucket_predicted;
-		goto pass;
+		return 0;
 	}
 
 	/* bucket is full, PDU needs to be delayed */
 	return 1;
-
-pass:
-	/* if we reach here, the PDU can pass */
-	return 0;
 }
 
 /* output callback for BVC flow control */
