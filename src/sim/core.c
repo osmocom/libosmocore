@@ -306,7 +306,7 @@ const struct osim_card_sw *osim_find_sw(const struct osim_card_profile *cp,
 	const struct osim_card_sw **sw_lists = cp->sws;
 	const struct osim_card_sw *sw_list, *sw;
 
-	for (sw_list = *sw_lists++; sw_list != NULL; sw = sw_list = *sw_lists++) {
+	for (sw_list = *sw_lists++; sw_list != NULL; sw_list = *sw_lists++) {
 		for (sw = sw_list; sw->code != 0 && sw->mask != 0; sw++) {
 			if ((sw_in & sw->mask) == sw->code)
 				return sw;
