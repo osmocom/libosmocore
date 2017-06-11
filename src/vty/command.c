@@ -1655,7 +1655,7 @@ cmd_describe_command_real(vector vline, struct vty *vty, int *status)
 	/* Make sure that cmd_vector is filtered based on current word */
 	command = vector_slot(vline, index);
 	if (command)
-		match = cmd_filter(command, cmd_vector, index, any_match);
+		cmd_filter(command, cmd_vector, index, any_match);
 
 	/* Make description vector. */
 	for (i = 0; i < vector_active(cmd_vector); i++) {
