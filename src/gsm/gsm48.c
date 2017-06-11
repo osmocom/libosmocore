@@ -421,7 +421,6 @@ static void to_bcd(uint8_t *bcd, uint16_t val)
 	bcd[1] = val % 10;
 	val = val / 10;
 	bcd[0] = val % 10;
-	val = val / 10;
 }
 
 /*! \brief Checks is particular message is cipherable in A/Gb mode according to
