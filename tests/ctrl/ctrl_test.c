@@ -7,7 +7,7 @@
 #include <osmocom/core/utils.h>
 #include <osmocom/ctrl/control_cmd.h>
 
-inline void check_type(enum ctrl_type c)
+static void check_type(enum ctrl_type c)
 {
 	const char *t = get_value_string(ctrl_type_vals, c);
 	int v = get_string_value(ctrl_type_vals, t);
