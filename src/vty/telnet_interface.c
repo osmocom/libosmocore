@@ -38,6 +38,12 @@
 
 /*! \addtogroup telnet_interface
  *  @{
+ *  \brief Telnet interface towards Osmocom VTY
+ *
+ *  This module contains the code implementing a telnet server for VTY
+ *  access.  This telnet server gets linked into each libosmovty-using
+ *  process in order to enable interactive command-line introspection,
+ *  interaction and configuration.
  */
 /*! \file telnet_interface.c */
 

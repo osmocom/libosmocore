@@ -28,6 +28,11 @@
 
 #include <stdint.h>
 
+/*! \addtogroup oap
+ *  @{
+ *  \brief Osmocom Authentication Protocol
+ */
+
 /*! \brief Decode OAP message data.
  * \param[out] oap_msg  Parsed data is written to this instance.
  * \param[in] data  Pointer to the data buffer containing the OAP message.
@@ -182,3 +187,5 @@ void osmo_oap_encode(struct msgb *msg, const struct osmo_oap_message *oap_msg)
 
 	msg->l2h = msg->data;
 }
+
+/*! @} */

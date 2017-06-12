@@ -23,6 +23,7 @@
 
 /*! \addtogroup lapd
  *  @{
+ *  \brief Osmocom LAPD core, used for Q.921, LAPDm and others
  */
 
 /*! \file lapd_core.c */

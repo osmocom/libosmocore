@@ -24,7 +24,9 @@
  *  @{
  */
 
-/*! \file loggingrb.c */
+/*! \file macaddr.c
+ *  \brief MAC address utility routines
+ */
 
 #include "config.h"
 

@@ -41,6 +41,11 @@
 
 #define SHOW_STATS_STR "Show statistical values\n"
 
+/*! \addtogroup stats
+ *  @{
+ *  \brief VTY interface for statsd / statistic items
+ */
+
 /* containing version info */
 extern struct host host;
 
@@ -571,6 +576,10 @@ static int config_write_stats(struct vty *vty)
 	return 1;
 }
 
+/*! \brief Add stats related commands to the VTY
+ *  Call this once during your application initialization if you would
+ *  like to have stats VTY commands enabled.
+ */
 void osmo_stats_vty_add_cmds()
 {
 	install_element_ve(&show_stats_cmd);
@@ -599,3 +608,5 @@ void osmo_stats_vty_add_cmds()
 
 	install_element_ve(&show_stats_asciidoc_table_cmd);
 }
+
+/*! @} */

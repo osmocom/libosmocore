@@ -22,6 +22,7 @@
 
 /*! \addtogroup sercomm
  *  @{
+ *  \brief Serial communications layer, based on HDLC
  */
 
 /*! \file sercomm.c

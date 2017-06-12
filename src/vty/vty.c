@@ -14,7 +14,7 @@
  * routines in libosmovty are not thread-safe.  If you must use them in
  * a multi-threaded context, you have to add your own locking.
  *
- * libosmocovty is developed as part of the Osmocom (Open Source Mobile
+ * libosmovty is developed as part of the Osmocom (Open Source Mobile
  * Communications) project, a community-based, collaborative development
  * project to create Free and Open Source implementations of mobile
  * communications systems.  For more information about Osmocom, please

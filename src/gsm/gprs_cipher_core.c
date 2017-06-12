@@ -29,6 +29,10 @@
 
 #include <osmocom/crypt/gprs_cipher.h>
 
+/*! \addtogroup crypto
+ *  @{
+ */
+
 static LLIST_HEAD(gprs_ciphers);
 
 static struct gprs_cipher_impl *selected_ciphers[_GPRS_ALGO_NUM];
@@ -125,3 +129,4 @@ uint32_t gprs_cipher_gen_input_i(uint32_t iov_i, uint32_t lfn, uint32_t oc)
 {
 	return iov_i + lfn + oc;
 }
+/*! @} */

@@ -22,6 +22,8 @@
 
 /*! \addtogroup oml
  *  @{
+ * \brief GSM Network Management (OML) messages on the A-bis interface
+ * 3GPP TS 12.21 version 8.0.0 Release 1999 / ETSI TS 100 623 V8.0.0
  */
 
 /*! \file abis_nm.c */

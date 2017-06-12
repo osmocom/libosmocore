@@ -36,11 +36,10 @@
 
 /*! \addtogroup select
  *  @{
+ *  \brief select() loop abstraction
  */
 
-/*! \file select.c
- *  \brief select loop abstraction
- */
+/*! \file select.c */
 
 static int maxfd = 0;
 static LLIST_HEAD(osmo_fds);

@@ -38,16 +38,24 @@
 #include <osmocom/gsm/protocol/gsm_03_40.h>
 #include <osmocom/gsm/protocol/gsm_04_11.h>
 
+/*! \addtogroup sms
+ *  @{
+ */
+
 #define GSM411_ALLOC_SIZE	1024
 #define GSM411_ALLOC_HEADROOM	128
 
+/*! \brief Allocate a message buffer for use as TS 04.11 message
+ *  \returns allocated message buffer */
 struct msgb *gsm411_msgb_alloc(void)
 {
 	return msgb_alloc_headroom(GSM411_ALLOC_SIZE, GSM411_ALLOC_HEADROOM,
 				   "GSM 04.11");
 }
 
-/* Turn int into semi-octet representation: 98 => 0x89 */
+/*! \brief Turn int into semi-octet representation: 98 => 0x89
+ *  \param[in] integer value representing decimal number 0..99
+ *  \returns BSC encoded as nibbles, swapped */
 uint8_t gsm411_bcdify(uint8_t value)
 {
 	uint8_t ret;
@@ -58,7 +66,9 @@ uint8_t gsm411_bcdify(uint8_t value)
 	return ret;
 }
 
-/* Turn semi-octet representation into int: 0x89 => 98 */
+/*! \brief Turn semi-octet representation into int: 0x89 => 98
+ *  \param[in] value byte containing two BCD nibbles in revere order
+ *  \returns integer representing decoded, re-ordered nibbles */
 uint8_t gsm411_unbcdify(uint8_t value)
 {
 	uint8_t ret;
@@ -73,7 +83,9 @@ uint8_t gsm411_unbcdify(uint8_t value)
 	return ret;
 }
 
-/* Generate 03.40 TP-SCTS */
+/*! \brief Generate 03.40 TP-SCTS
+ *  \param[out] scts Caller-provided buffer to store SCTS (7 octets)
+ *  \param[in] time to encode */
 void gsm340_gen_scts(uint8_t *scts, time_t time)
 {
 	struct tm *tm = gmtime(&time);
@@ -92,7 +104,9 @@ void gsm340_gen_scts(uint8_t *scts, time_t time)
 #endif
 }
 
-/* Decode 03.40 TP-SCTS (into utc/gmt timestamp) */
+/*! \brief Decode 03.40 TP-SCTS (into utc/gmt timestamp)
+ *  \param[in] scts SMS Center Time Stamp
+ *  \return time in UTC time_t format */
 time_t gsm340_scts(uint8_t *scts)
 {
 	struct tm tm;
@@ -190,7 +204,10 @@ static unsigned long gsm340_vp_relative_semioctet(uint8_t *sms_vp)
 	return minutes;
 }
 
-/* decode validity period. return minutes */
+/*! \brief decode validity period. return minutes
+ *  \param[in] sms_vpf Validity Period Format in 03.40 encoding
+ *  \param[in] sms_vp Validity Period Information Element
+ *  \returns validity period in minutes */
 unsigned long gsm340_validity_period(uint8_t sms_vpf, uint8_t *sms_vp)
 {
 	uint8_t fi; /* functionality indicator */
@@ -228,7 +245,9 @@ unsigned long gsm340_validity_period(uint8_t sms_vpf, uint8_t *sms_vp)
 	}
 }
 
-/* determine coding alphabet dependent on GSM 03.38 Section 4 DCS */
+/*! \brief determine coding alphabet dependent on GSM 03.38 Section 4 DCS
+ *  \param[in] dcs Data Coding Scheme in 03.38 encoding
+ *  \returns libosmogsm internal enum \ref sms_alphabet */
 enum sms_alphabet gsm338_get_sms_alphabet(uint8_t dcs)
 {
 	uint8_t cgbits = dcs >> 4;
@@ -266,7 +285,13 @@ enum sms_alphabet gsm338_get_sms_alphabet(uint8_t dcs)
 	return alpha;
 }
 
-/* generate a TPDU address field compliant with 03.40 sec. 9.1.2.5 */
+/*! \brief generate a TPDU address field compliant with 03.40 sec. 9.1.2.5 
+ *  \param[out] oa caller-provided output buffer
+ *  \param[in] oa_len caller-specified length of \a oa in bytes
+ *  \param[in] type GSM340_TYPE_*
+ *  \param[in] plan Numbering Plan
+ *  \param[in] number string containing number
+ *  \reurns number of bytes of \a oa that have been used */
 int gsm340_gen_oa(uint8_t *oa, unsigned int oa_len, uint8_t type,
 	uint8_t plan, const char *number)
 {
@@ -296,7 +321,11 @@ int gsm340_gen_oa(uint8_t *oa, unsigned int oa_len, uint8_t type,
 	return len_in_bytes;
 }
 
-/* Prefix msg with a RP header */
+/*! \brief Prefix \ref msgb with a RP header
+ *  \param msg Message Buffer containing message
+ *  \param[in] rp_msg_type RP Message Type
+ *  \param[in] rp_msg_ref RP Message Reference
+ *  \returns 0 */
 int gsm411_push_rp_header(struct msgb *msg, uint8_t rp_msg_type,
 	uint8_t rp_msg_ref)
 {
@@ -312,7 +341,12 @@ int gsm411_push_rp_header(struct msgb *msg, uint8_t rp_msg_type,
 	return 0;
 }
 
-/* Prefix msg with a 04.08/04.11 CP header */
+/*! \brief Prefix \ref msgb with a 04.08/04.11 CP header
+ *  \param msg Message Buffer containing message
+ *  \param[in] proto Protocol
+ *  \param[in] trans Transaction
+ *  \param[in] msg_type Message Type
+ *  \retrns 0 */
 int gsm411_push_cp_header(struct msgb *msg, uint8_t proto, uint8_t trans,
 			     uint8_t msg_type)
 {
@@ -320,3 +354,5 @@ int gsm411_push_cp_header(struct msgb *msg, uint8_t proto, uint8_t trans,
 	gsm0480_l3hdr_push(msg, proto | (trans << 4), msg_type);
 	return 0;
 }
+
+/*! @} */

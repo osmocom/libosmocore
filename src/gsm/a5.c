@@ -26,13 +26,12 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/*! \addtogroup a5
+/*! \addtogroup crypto
  *  @{
+ *  \brief Osmocom GSM/GPRS ciphering algorithm implementation
  */
 
-/*! \file gsm/a5.c
- *  \brief Osmocom GSM A5 ciphering algorithm implementation
- */
+/*! \file gsm/a5.c */
 
 #include <errno.h>
 #include <string.h>

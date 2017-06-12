@@ -30,6 +30,13 @@
 #include <stdint.h>
 #include <string.h>
 
+/*! \addtogroup crypto
+ *  @{
+ */
+
+/*! \file gsm/gea.c */
+
+
 /*! \brief Performs the GEA4 algorithm as in 3GPP TS 55.226 V9.0.0
  *  \param[in,out] out Buffer for gamma for encrypted/decrypted
  *  \param[in] len Length of out, in bytes
@@ -58,3 +65,5 @@ int gea3(uint8_t *out, uint16_t len, uint8_t *kc, uint32_t iv,
 	osmo_c4(ck, kc);
 	return gea4(out, len, ck, iv, direction);
 }
+
+/*! @} */

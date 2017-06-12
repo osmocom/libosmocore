@@ -39,6 +39,16 @@
 
 #define LOG_STR "Configure logging sub-system\n"
 
+/*! \addtogroup logging
+ *  @{
+ *  \brief Configuration of logging from VTY
+ *
+ *  This module implements functions that permit configuration of
+ *  the libosmocore logging framework from VTY commands.  This applies
+ *  both to logging to the VTY (telnet sessions), as well as logging to
+ *  other targets, such as sysslog, file, gsmtap, ...
+ */
+
 extern const struct log_info *osmo_log_info;
 
 static void _vty_output(struct log_target *tgt,
@@ -778,3 +788,5 @@ void logging_vty_add_cmds()
 #endif
 	install_element(CONFIG_NODE, &cfg_log_gsmtap_cmd);
 }
+
+/* @} */

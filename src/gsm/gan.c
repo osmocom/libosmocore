@@ -21,6 +21,10 @@
 
 #include <osmocom/gsm/protocol/gsm_44_318.h>
 
+/*! \file gan.c
+ *  \brief Generic Access Network (GAN) / UMA according to TS 44.318
+ */
+
 
 const struct value_string gan_msgt_vals[] = {
 	{ GA_MT_RC_DISCOVERY_REQUEST,	"GA-RC DISCOVERY REQUEST" },

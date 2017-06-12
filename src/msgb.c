@@ -20,10 +20,35 @@
 
 /*! \addtogroup msgb
  *  @{
+ *  \brief libosmocore message buffers, inspired by Linux kernel skbuff
+ *
+ *  Inspired by the 'struct skbuff' of the Linux kernel, we implement a
+ *  'struct msgb' which we use for handling network
+ *  packets aka messages aka PDUs.
+ *
+ *  A msgb consists of
+ *  	* a header with some metadata, such as
+ *  	  * a linked list header for message queues or the like
+ *  	  * pointers to the headers of various protocol layers inside
+ *  	    the packet
+ *  	* a data section consisting of
+ *  	  * headroom, i.e. space in front of the message, to allow
+ *  	    for additional headers being pushed in front of the current
+ *  	    data
+ *  	  * the curently occupied data for the message
+ *  	  * tailroom, i.e. space at the end of the message, to
+ *  	    allow more data to be added after the end of the current
+ *  	    data
+ *
+ *  We have plenty of utility functions around the \ref msgb:
+ *  	* allocation / release
+ *  	* enqueue / dequeue from/to message queues
+ *  	* prepending (pushing) and appending (putting) data
+ *  	* copying / resizing
+ *  	* hex-dumping to a string for debug purposes
  */
 
-/*! \file msgb.c
- */
+/*! \file msgb.c */
 
 #include <unistd.h>
 #include <string.h>

@@ -25,7 +25,22 @@
 
 /*! \addtogroup tlv
  *  @{
+ *  \brief Osmocom TLV Parser
+ *
+ *  The Osmocom TLV parser is intended to operate as a low-level C
+ *  implementation without dynamic memory allocations.  Basically, it
+ *  iterates over the IE (Information Elements) of the message and fills
+ *  an array of pointers, indexed by the IEI (IE Identifier).  The
+ *  parser output is thus an array of pointers to the start of the
+ *  respective IE inside the message.
+ *
+ *  The TLV parser is configured by a TLV parser definition, which
+ *  determines which if the IEIs for a given protocol are of which
+ *  particular type.  Types are e.g. TV (Tag + single byte value), Tag +
+ *  fixed-length value, TLV with 8bit length, TLV with 16bit length, TLV
+ *  with variable-length length field, etc.
  */
+
 /*! \file tlv_parser.c */
 
 struct tlv_definition tvlv_att_def;
@@ -262,7 +277,9 @@ int tlv_parse(struct tlv_parsed *dec, const struct tlv_definition *def,
 	return num_parsed;
 }
 
-/*! \brief take a master (src) tlvdev and fill up all empty slots in 'dst' */
+/*! \brief take a master (src) tlvdev and fill up all empty slots in 'dst'
+ *  \param dst TLV parser definition that is to be patched
+ *  \param[in] src TLV parser definition whose content is patched into \a dst */
 void tlv_def_patch(struct tlv_definition *dst, const struct tlv_definition *src)
 {
 	int i;

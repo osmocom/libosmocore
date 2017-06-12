@@ -24,11 +24,10 @@
 
 /*! \addtogroup serial
  *  @{
+ *  \brief Osmocom serial port helpers
  */
 
-/*! \file serial.c
- * Osmocom serial port helpers
- */
+/*! \file serial.c */
 
 #include <errno.h>
 #include <fcntl.h>

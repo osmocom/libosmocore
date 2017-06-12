@@ -24,6 +24,7 @@
 
 /*! \addtogroup crcgen
  *  @{
+ *  \brief Osmocom generic CRC routines
  */
 
 /*! \file crcXXgen.c

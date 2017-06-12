@@ -43,6 +43,7 @@
 
 /*! \addtogroup gsmtap
  *  @{
+ *  \brief GSMTAP utility routines. Encapsulates GSM messages over UDP
  */
 /*! \file gsmtap_util.c */
 

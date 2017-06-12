@@ -22,6 +22,7 @@
 
 /* \addtogroup logging
  * @{
+ * \brief libosmocore Logging sub-system
  */
 
 /* \file logging.c */

@@ -33,6 +33,7 @@
 
 /*! \addtogroup utils
  * @{
+ * \brief various utility routines
  */
 
 /*! \file utils.c */

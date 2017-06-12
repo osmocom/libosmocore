@@ -26,11 +26,10 @@
 
 /*! \addtogroup bits
  *  @{
- */
-
-/*! \file bits.c
  *  \brief Osmocom bit level support code
  */
+
+/*! \file bits.c */
 
 
 /*! \brief convert unpacked bits to packed bits, return length in bytes

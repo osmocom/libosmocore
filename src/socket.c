@@ -23,11 +23,10 @@
 
 /*! \addtogroup socket
  *  @{
- */
-
-/*! \file socket.c
  *  \brief Osmocom socket convenience functions
  */
+
+/*! \file socket.c */
 
 #ifdef HAVE_SYS_SOCKET_H
 

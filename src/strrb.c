@@ -21,6 +21,10 @@
  *
  */
 
+/*! \addtogroup utils
+ *  @{
+ */
+
 /*! \file strrb.c
  *  \brief Lossy string ringbuffer for logging; keeps newest messages.
  */
@@ -170,3 +174,5 @@ int osmo_strrb_add(struct osmo_strrb *rb, const char *data)
 	}
 	return ret;
 }
+
+/*! @} */

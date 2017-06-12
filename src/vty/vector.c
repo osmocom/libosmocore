@@ -27,6 +27,11 @@
 #include <osmocom/core/talloc.h>
 #include <string.h>
 
+/*! \addtogroup vector
+ *  @{
+ *  \brief Generic vector routines, used by VTY internally
+ */
+
 void *tall_vty_vec_ctx;
 
 /* Initialize vector : allocate memory and return vector. */
@@ -190,3 +195,5 @@ unsigned int vector_count(vector v)
 
 	return count;
 }
+
+/*! @} */

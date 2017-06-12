@@ -27,6 +27,22 @@
 #include <osmocom/core/talloc.h>
 #include <osmocom/gsm/protocol/gsm_03_41.h>
 
+/*! \addtogroup sms
+ *  @{
+ */
+
+/*! \brief Encode a 3GPP TS 03.41 SMS-CB message
+ *  \param[in] ctx talloc allocation context
+ *  \param[in] geo_scope Geographic Scope
+ *  \param[in] msg_code Message Code
+ *  \param[in] update Is this an update?
+ *  \param[in] msg_id Message ID
+ *  \param[in] dcs Data Coding Scheme
+ *  \param[in] page_total Total number of pages
+ *  \param[in] page_cur Current Page (up to \a page_total)
+ *  \param[in] data Message data (copied 1:1)
+ *  \param[in] len Length of \a data in bytes (up to 88)
+ *  \returns callee-allocated TS 03.41 message with encoded data */
 struct gsm341_ms_message *
 gsm0341_build_msg(void *ctx, uint8_t geo_scope, uint8_t msg_code,
 		  uint8_t update, uint16_t msg_id, uint8_t dcs,
@@ -57,3 +73,5 @@ gsm0341_build_msg(void *ctx, uint8_t geo_scope, uint8_t msg_code,
 
 	return cbmsg;
 }
+
+/*! @} */

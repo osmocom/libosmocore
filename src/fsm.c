@@ -29,9 +29,6 @@
 
 /*! \addtogroup fsm
  *  @{
- */
-
-/*! \file fsm.c
  *  \brief Finite State Machine abstraction
  *
  *  This is a generic C-language abstraction for implementing finite
@@ -84,8 +81,9 @@
  *
  *  In order to attach private state to the \ref osmo_fsm_inst, it
  *  offers an opaque priv pointer.
- *
  */
+
+/*! \file fsm.c */
 
 LLIST_HEAD(osmo_g_fsms);
 static bool fsm_log_addr = true;

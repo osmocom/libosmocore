@@ -23,6 +23,7 @@
 
 /*! \addtogroup lapdm
  *  @{
+ *  \brief GSM LAPDm (TS 04.06) implementation
  */
 
 /*! \file lapdm.c */

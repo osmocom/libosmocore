@@ -42,7 +42,8 @@ Boston, MA  02110-1301, USA. */
 #include <osmocom/core/utils.h>
 
 /*! \addtogroup command
- * @{
+ *  @{
+ *  \brief VTY command handling
  */
 /*! \file command.c */
 

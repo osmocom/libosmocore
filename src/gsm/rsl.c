@@ -30,6 +30,7 @@
 
 /*! \addtogroup rsl
  *  @{
+ *  \brief GSM Radio Signalling Link (TS 08.58)
  */
 
 /*! \file rsl.c */
@@ -39,7 +40,9 @@
 /*! \brief Headroom size for RSL \ref msgb_alloc */
 #define RSL_ALLOC_HEADROOM	56
 
-/*! \brief Initialize a RSL RLL header */
+/*! \brief Initialize a RSL RLL header
+ *  \param[out] dh Caller-allocated RSL RLL header
+ *  \param[in] msg_type Message Type */
 void rsl_init_rll_hdr(struct abis_rsl_rll_hdr *dh, uint8_t msg_type)
 {
 	dh->c.msg_discr = ABIS_RSL_MDISC_RLL;
@@ -48,7 +51,9 @@ void rsl_init_rll_hdr(struct abis_rsl_rll_hdr *dh, uint8_t msg_type)
 	dh->ie_link_id = RSL_IE_LINK_IDENT;
 }
 
-/*! \brief Initialize a RSL Common Channel header */
+/*! \brief Initialize a RSL Common Channel header
+ *  \param[out] ch Caller-allocated RSL Common Channel Header
+ *  \param[in] msg_type Message Type */
 void rsl_init_cchan_hdr(struct abis_rsl_cchan_hdr *ch, uint8_t msg_type)
 {
 	ch->c.msg_discr = ABIS_RSL_MDISC_COM_CHAN;
@@ -137,7 +142,11 @@ const struct tlv_definition rsl_att_tlvdef = {
 	},
 };
 
-/*! \brief Encode channel number as per Section 9.3.1 */
+/*! \brief Encode channel number as per Section 9.3.1
+ *  \param[in] Channel Type (RSL_CHAN_...)
+ *  \param[in] subch Sub-Channel within Channel
+ *  \param[in] timeslot Air interface timeslot
+ *  \returns RSL Channel Number (TS 08.58 9.3.1) */
 uint8_t rsl_enc_chan_nr(uint8_t type, uint8_t subch, uint8_t timeslot)
 {
 	uint8_t ret;
@@ -455,7 +464,12 @@ int rsl_ccch_conf_to_bs_ccch_sdcch_comb(int ccch_conf)
 	}
 }
 
-/*! \brief Push a RSL RLL header onto an existing msgb */
+/*! \brief Push a RSL RLL header onto an existing msgb
+ *  \param msg Message Buffer to which RLL header shall be pushed
+ *  \param[in] msg_type RSL Message Type
+ *  \param[in] chan_nr RSL Channel Number
+ *  \param[in] link_id RSL Link Identifier
+ *  \param[in] transparent Transparent to BTS (1) or not (0) */
 void rsl_rll_push_hdr(struct msgb *msg, uint8_t msg_type, uint8_t chan_nr,
 		      uint8_t link_id, int transparent)
 {
@@ -472,7 +486,12 @@ void rsl_rll_push_hdr(struct msgb *msg, uint8_t msg_type, uint8_t chan_nr,
 	msg->l2h = (uint8_t *)rh;
 }
 
-/*! \brief Push a RSL RLL header with L3_INFO IE */
+/*! \brief Wrap msgb in L3 Info IE and push a RSL RLL header
+ *  \param[in] msg Message Buffer to which L3 Header shall be appended
+ *  \param[in] msg_type RSL Message Type
+ *  \param[in] chan_hr RSL Channel Number
+ *  \param[in] link_id Link Identififer
+ *  \param[in] transparent Transparent to BTS (1) or not (0) */
 void rsl_rll_push_l3(struct msgb *msg, uint8_t msg_type, uint8_t chan_nr,
 		     uint8_t link_id, int transparent)
 {
@@ -488,7 +507,12 @@ void rsl_rll_push_l3(struct msgb *msg, uint8_t msg_type, uint8_t chan_nr,
 	rsl_rll_push_hdr(msg, msg_type, chan_nr, link_id, transparent);
 }
 
-/*! \brief Create msgb with RSL RLL header */
+/*! \brief Create msgb with RSL RLL header
+ *  \param[in] msg_type RSL Message Type
+ *  \param[in] chan_nr RSL Channel Number
+ *  \param[in] link_id RSL Link Identifier
+ *  \param[in] transparent Transparent to BTS (1) or not (0)
+ *  \returns callee-allocated msgb; NULL on error */
 struct msgb *rsl_rll_simple(uint8_t msg_type, uint8_t chan_nr,
 			    uint8_t link_id, int transparent)
 {
@@ -515,6 +539,7 @@ struct msgb *rsl_rll_simple(uint8_t msg_type, uint8_t chan_nr,
 	return msg;
 }
 
+/*! \brief TLV parser definitions for IPA embedded IEs */
 const struct tlv_definition rsl_ipac_eie_tlvdef = {
 	.def = {
 		[RSL_IPAC_EIE_RXLEV]		= { TLV_TYPE_TV },
@@ -541,6 +566,7 @@ const struct tlv_definition rsl_ipac_eie_tlvdef = {
 	},
 };
 
+/*! \brief String names of RSL Channel Activation Types */
 const struct value_string rsl_act_type_names[] = {
 	{ RSL_ACT_TYPE_INITIAL,	"INITIAL" },
 	{ RSL_ACT_TYPE_REACT,	"REACT" },

@@ -39,6 +39,12 @@
 #include <osmocom/gsm/protocol/gsm_08_58.h>
 #include <osmocom/gsm/protocol/gsm_04_08_gprs.h>
 
+/*! \addtogroup gsm0408
+ *  @{
+ *  \brief GSM Mobile Radion Interface L3 messages / TS 04.08
+ */
+
+/*! \brief TLV parser definitions for TS 04.08 CC */
 const struct tlv_definition gsm48_att_tlvdef = {
 	.def = {
 		[GSM48_IE_MOBILE_ID]	= { TLV_TYPE_TLV },
@@ -80,7 +86,7 @@ const struct tlv_definition gsm48_att_tlvdef = {
 	},
 };
 
-/* RR elements */
+/*! \brief TLV parser definitions for TS 04.08 RR */
 const struct tlv_definition gsm48_rr_att_tlvdef = {
 	.def = {
 		/* NOTE: Don't add IE 17 = MOBILE_ID here, it already used. */
@@ -125,7 +131,7 @@ const struct tlv_definition gsm48_rr_att_tlvdef = {
 	},
 };
 
-/* MM elements */
+/*! \brief TLV parser definitions for TS 04.08 MM */
 const struct tlv_definition gsm48_mm_att_tlvdef = {
 	.def = {
 		[GSM48_IE_MOBILE_ID]		= { TLV_TYPE_TLV },
@@ -164,6 +170,7 @@ static const struct value_string rr_cause_names[] = {
 	{ 0,					NULL },
 };
 
+/*! \brief return string representation of RR Cause value */
 const char *rr_cause_name(uint8_t cause)
 {
 	return get_value_string(rr_cause_names, cause);
@@ -205,6 +212,7 @@ static const char *cc_state_names[32] = {
 	"illegal state 31",
 };
 
+/*! \brief return string representation of CC State */
 const char *gsm48_cc_state_name(uint8_t state)
 {
 	if (state < ARRAY_SIZE(cc_state_names))
@@ -252,6 +260,7 @@ static const struct value_string cc_msg_names[] = {
 	{ 0,				NULL }
 };
 
+/*! \brief return string representation of CC Message Type */
 const char *gsm48_cc_msg_name(uint8_t msgtype)
 {
 	return get_value_string(cc_msg_names, msgtype);
@@ -359,6 +368,7 @@ static const struct value_string rr_msg_names[] = {
 	{ 0,				NULL }
 };
 
+/*! \brief return string representation of RR Message Type */
 const char *gsm48_rr_msg_name(uint8_t msgtype)
 {
 	return get_value_string(rr_msg_names, msgtype);
@@ -398,6 +408,7 @@ static const struct value_string mi_type_names[] = {
 	{ 0,			NULL }
 };
 
+/*! \brief return string representation of Mobile Identity Type */
 const char *gsm48_mi_type_name(uint8_t mi)
 {
 	return get_value_string(mi_type_names, mi);
@@ -437,7 +448,12 @@ bool gsm48_hdr_gmm_cipherable(const struct gsm48_hdr *hdr)
 	}
 }
 
-/* Convert given mcc and mnc to BCD and write to *bcd_dst, which must be an
+/* \brief Convert MCC + MNC to BCD representation
+ * \param[out] bcd_dst caller-allocated memory for output
+ * \param[in] mcc Mobile Country Code
+ * \param[in] mnc Mobile Network Code
+ *
+ * Convert given mcc and mnc to BCD and write to *bcd_dst, which must be an
  * allocated buffer of (at least) 3 bytes length. */
 void gsm48_mcc_mnc_to_bcd(uint8_t *bcd_dst, uint16_t mcc, uint16_t mnc)
 {
@@ -477,6 +493,11 @@ void gsm48_mcc_mnc_from_bcd(uint8_t *bcd_src, uint16_t *mcc, uint16_t *mnc)
 	}
 }
 
+/*! \brief Encode TS 04.08 Location Area Identifier
+ *  \param[out] caller-provided memory for output
+ *  \param[in] mcc Mobile Country Code
+ *  \param[in] mnc Mobile Network Code
+ *  \param[in] lac Location Area Code */
 void gsm48_generate_lai(struct gsm48_loc_area_id *lai48, uint16_t mcc,
 			uint16_t mnc, uint16_t lac)
 {
@@ -484,7 +505,14 @@ void gsm48_generate_lai(struct gsm48_loc_area_id *lai48, uint16_t mcc,
 	lai48->lac = osmo_htons(lac);
 }
 
-/* Attention: this function returns true integers, not hex! */
+/*! \brief Decode TS 04.08 Location Area Identifier
+ *  \param[in] Location Area Identifier (encoded)
+ *  \param[out] mcc Mobile Country Code
+ *  \param[out] mnc Mobile Network Code
+ *  \param[out] lac Location Area Code
+ *  \returns 0
+ *
+ * Attention: this function returns true integers, not hex! */
 int gsm48_decode_lai(struct gsm48_loc_area_id *lai, uint16_t *mcc,
 		     uint16_t *mnc, uint16_t *lac)
 {
@@ -537,6 +565,10 @@ void gsm48_set_dtx(struct gsm48_cell_options *op, enum gsm48_dtx_mode full,
 	}
 }
 
+/*! \brief Generate TS 04.08 Mobile ID from TMSI
+ *  \param[out] buf Caller-provided output buffer (7 bytes)
+ *  \param[in] tmsi TMSI to be encoded
+ *  \returns number of byes encoded (always 7) */
 int gsm48_generate_mid_from_tmsi(uint8_t *buf, uint32_t tmsi)
 {
 	uint32_t tmsi_be = osmo_htonl(tmsi);
@@ -549,6 +581,10 @@ int gsm48_generate_mid_from_tmsi(uint8_t *buf, uint32_t tmsi)
 	return 7;
 }
 
+/*! \brief Generate TS 04.08 Mobile ID from IMSI
+ *  \param[out] buf Caller-provided output buffer
+ *  \param[in] imsi IMSI to be encoded
+ *  \returns number of bytes used in \a buf */
 int gsm48_generate_mid_from_imsi(uint8_t *buf, const char *imsi)
 {
 	unsigned int length = strlen(imsi), i, off = 0;
@@ -578,7 +614,12 @@ int gsm48_generate_mid_from_imsi(uint8_t *buf, const char *imsi)
 	return 2 + buf[1];
 }
 
-/* Convert Mobile Identity (10.5.1.4) to string */
+/*! \brief Convert TS 04.08 Mobile Identity (10.5.1.4) to string
+ *  \param[out] string Caller-provided buffer for output
+ *  \param[in] str_len Length of \a string in bytes
+ *  \param[in] mi Mobile Identity to be stringified
+ *  \param[in] mi_len Length of \a mi in bytes
+ *  \returns length of string written to \a string */
 int gsm48_mi_to_string(char *string, const int str_len, const uint8_t *mi,
 		       const int mi_len)
 {
@@ -621,6 +662,9 @@ int gsm48_mi_to_string(char *string, const int str_len, const uint8_t *mi,
 	return str_cur - string;
 }
 
+/*! \brief Parse TS 04.08 Routing Area Identifier
+ *  \param[out] Caller-provided memory for decoded RA ID
+ *  \param[in] buf Input buffer pointing to RAI IE value */
 void gsm48_parse_ra(struct gprs_ra_id *raid, const uint8_t *buf)
 {
 	raid->mcc = (buf[0] & 0xf) * 100;
@@ -642,6 +686,10 @@ void gsm48_parse_ra(struct gprs_ra_id *raid, const uint8_t *buf)
 	raid->rac = buf[5];
 }
 
+/*! \brief Encode a TS 04.08 Routing Area Identifier
+ *  \param[out] buf Caller-provided output buffer of 6 bytes
+ *  \param[in] raid Routing Area ID to be encoded
+ *  \returns number of bytes used in \a buf */
 int gsm48_construct_ra(uint8_t *buf, const struct gprs_ra_id *raid)
 {
 	uint16_t mcc = raid->mcc;
@@ -669,7 +717,13 @@ int gsm48_construct_ra(uint8_t *buf, const struct gprs_ra_id *raid)
 	return 6;
 }
 
-/* From Table 10.5.33 of GSM 04.08 */
+/*! \brief Determine number of paging sub-channels
+ *  \param[in] chan_desc Control Channel Description
+ *  \returns number of paging sub-channels
+ *
+ *  Uses From Table 10.5.33 of GSM 04.08 to determine the number of
+ *  paging sub-channels in the given control channel configuration
+ */
 int gsm48_number_of_paging_subchannels(struct gsm48_control_channel_descr *chan_desc)
 {
 	unsigned int n_pag_blocks = gsm0502_get_n_pag_blocks(chan_desc);
@@ -680,6 +734,7 @@ int gsm48_number_of_paging_subchannels(struct gsm48_control_channel_descr *chan_
 		return n_pag_blocks * (chan_desc->bs_pa_mfrms + 2);
 }
 
+/*! \brief TS 04.08 Protocol Descriptor names */
 const struct value_string gsm48_pdisc_names[] = {
 	OSMO_VALUE_STRING(GSM48_PDISC_GROUP_CC),
 	OSMO_VALUE_STRING(GSM48_PDISC_BCAST_CC),
@@ -699,6 +754,7 @@ const struct value_string gsm48_pdisc_names[] = {
 	{ 0, NULL }
 };
 
+/*! \brief TS 04.08 RR Message Type names */
 const struct value_string gsm48_rr_msgtype_names[] = {
 	OSMO_VALUE_STRING(GSM48_MT_RR_INIT_REQ),
 	OSMO_VALUE_STRING(GSM48_MT_RR_ADD_ASS),
@@ -791,6 +847,7 @@ const struct value_string gsm48_rr_msgtype_names[] = {
 	{ 0, NULL }
 };
 
+/*! \brief TS 04.08 MM Message Type names */
 const struct value_string gsm48_mm_msgtype_names[] = {
 	OSMO_VALUE_STRING(GSM48_MT_MM_IMSI_DETACH_IND),
 	OSMO_VALUE_STRING(GSM48_MT_MM_LOC_UPD_ACCEPT),
@@ -820,6 +877,7 @@ const struct value_string gsm48_mm_msgtype_names[] = {
 	{ 0, NULL }
 };
 
+/*! \brief TS 04.08 CC Message Type names */
 const struct value_string gsm48_cc_msgtype_names[] = {
 	OSMO_VALUE_STRING(GSM48_MT_CC_ALERTING),
 	OSMO_VALUE_STRING(GSM48_MT_CC_CALL_CONF),
@@ -862,12 +920,12 @@ const struct value_string gsm48_cc_msgtype_names[] = {
 	{ 0, NULL }
 };
 
-/*! /brief Compose a string naming the message type for given protocol.
+/*! \brief Compose a string naming the message type for given protocol.
  * If the message type string is known, return the message type name, otherwise
  * return "<protocol discriminator name>:<message type in hex>".
- * /param pdisc[in]  protocol discriminator like GSM48_PDISC_MM
- * /param msg_type[in]  message type like GSM48_MT_MM_LOC_UPD_REQUEST
- * /returns statically allocated string or string constant.
+ * \param[in] pdisc protocol discriminator like GSM48_PDISC_MM
+ * \param[in] msg_type message type like GSM48_MT_MM_LOC_UPD_REQUEST
+ * \returns statically allocated string or string constant.
  */
 const char *gsm48_pdisc_msgtype_name(uint8_t pdisc, uint8_t msg_type)
 {
@@ -896,3 +954,5 @@ const char *gsm48_pdisc_msgtype_name(uint8_t pdisc, uint8_t msg_type)
 		 gsm48_pdisc_name(pdisc), msg_type);
 	return namebuf;
 }
+
+/*! @} */

@@ -33,6 +33,16 @@
 #include <osmocom/core/logging.h>
 #include <osmocom/core/linuxlist.h>
 
+/*! \addtogroup fsm
+ *  @{
+ *  \brief VTY interface for Osmocom FSM
+ *
+ *  This is code implementing generic VTY access to Osmocom FSMs from
+ *  libosmocore.  This means that any application can expose all state
+ *  of all instances of all registered FSM classes by calling a single
+ *  command during startup: \ref osmo_fsm_vty_add_cmds
+ */
+
 /* we don't want to add this to a public header file; this is simply
  * exported by libosmocore and used by libmsomvty but not for public
  * consumption. */
@@ -175,3 +185,5 @@ void osmo_fsm_vty_add_cmds(void)
 	install_element_ve(&show_fsm_inst_cmd);
 	install_element_ve(&show_fsm_insts_cmd);
 }
+
+/*! @} */

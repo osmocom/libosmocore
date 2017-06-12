@@ -1648,4 +1648,4 @@ void gprs_ns_set_log_ss(int ss)
 	DNS = ss;
 }
 
-/*! }@ */
+/*! @} */

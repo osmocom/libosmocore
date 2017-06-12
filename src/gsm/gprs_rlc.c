@@ -5,6 +5,10 @@
 #include <osmocom/coding/gsm0503_coding.h>
 #include <osmocom/gprs/protocol/gsm_04_60.h>
 
+/*! \file gsm/gprs_rlc.c
+ *  \brief helper functions for (E)GPRS RLC according to 3GPP TS 44.060
+ */
+
 #define EGPRS_CPS_TYPE1_TBL_SZ		29
 #define EGPRS_CPS_TYPE2_TBL_SZ		8
 #define EGPRS_CPS_TYPE3_TBL_SZ		16

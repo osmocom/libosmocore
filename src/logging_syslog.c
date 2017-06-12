@@ -23,7 +23,9 @@
  *  @{
  */
 
-/*! \file logging_syslog.c */
+/*! \file logging_syslog.c
+ *  \brief libosmocore logging output via syslog
+ */
 
 #include "../config.h"
 

@@ -27,7 +27,9 @@
 
 /*! \addtogroup signal
  *  @{
+ *  \brief Generic signalling/notification infrastructure
  */
+
 /*! \file signal.c */
 
 

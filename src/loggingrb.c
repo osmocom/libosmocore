@@ -23,7 +23,9 @@
  *  @{
  */
 
-/*! \file loggingrb.c */
+/*! \file loggingrb.c
+ *  \brief libosmocore logging backend for a ring-buffer of last log messages
+ */
 
 #include <osmocom/core/strrb.h>
 #include <osmocom/core/logging.h>

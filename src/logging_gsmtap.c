@@ -23,7 +23,13 @@
  *  @{
  */
 
-/*! \file logging_gsmtap.c */
+/*! \file logging_gsmtap.c
+ *  \brief libosmocore log output encapsulated in GSMTAP
+ *
+ *  Encapsulating the log output inside GSMTAP frames allows us to
+ *  observer protocol traces (of Um, Abis, A or any other interface in
+ *  the Osmocom world) with synchronous interspersed log messages.
+ */
 
 #include "../config.h"
 

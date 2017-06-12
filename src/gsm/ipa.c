@@ -41,6 +41,11 @@
 #include <osmocom/gsm/protocol/ipaccess.h>
 #include <osmocom/gsm/ipa.h>
 
+/*! \addtogroup ipa
+ *  @{
+ *  \brief IPA Multiplex utility routines
+ */
+
 #define IPA_ALLOC_SIZE 1200
 
 /*
@@ -581,3 +586,5 @@ struct msgb *ipa_msg_alloc(int headroom)
 		return NULL;
 	return nmsg;
 }
+
+/*! @} */

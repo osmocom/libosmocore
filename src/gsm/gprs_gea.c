@@ -27,6 +27,10 @@
 
 #include <stdint.h>
 
+/*! \addtogroup crypto
+ *  @{
+ */
+
 static struct gprs_cipher_impl gea3_impl = {
 	.algo = GPRS_ALGO_GEA3,
 	.name = "GEA3 (libosmogsm built-in)",
@@ -46,3 +50,5 @@ static __attribute__((constructor)) void on_dso_load_gea(void)
 	gprs_cipher_register(&gea3_impl);
 	gprs_cipher_register(&gea4_impl);
 }
+
+/*! @} */

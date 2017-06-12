@@ -134,7 +134,10 @@ static int gsm_septet_lookup(uint8_t ch)
 	return -1;
 }
 
-/* Compute the number of octets from the number of septets, for instance: 47 septets needs 41,125 = 42 octets */
+/*! \brife Compute number of octets from number of septets,
+ *  for instance: 47 septets needs 41,125 = 42 octets
+ *  \param[in sept_len Number of Septets
+ *  \returns Number of octets required */
 uint8_t gsm_get_octet_len(const uint8_t sept_len){
 	int octet_len = (sept_len * 7) / 8;
 	if ((sept_len * 7) % 8 != 0)
@@ -143,7 +146,13 @@ uint8_t gsm_get_octet_len(const uint8_t sept_len){
 	return octet_len;
 }
 
-/* GSM 03.38 6.2.1 Character unpacking */
+/*! \brief TS 03.38 7-bit Character unpacking (6.2.1)
+ *  \param[out] text Caller-provided output text buffer
+ *  \param[in] n Length of \a text
+ *  \param[in] user_data Input Data (septets)
+ *  \param[in] septet_l Number of septets in \a user_data
+ *  \param[in] ud_hdr_ind User Data Header present in data
+ *  \returns number of bytes written to \a text */
 int gsm_7bit_decode_n_hdr(char *text, size_t n, const uint8_t *user_data, uint8_t septet_l, uint8_t ud_hdr_ind)
 {
 	unsigned shift = 0;
@@ -201,11 +210,13 @@ int gsm_7bit_decode_n_hdr(char *text, size_t n, const uint8_t *user_data, uint8_
 	return text - text_buf_begin;
 }
 
+/*! \brief Decode 7bit GSM Alphabet */
 int gsm_7bit_decode_n(char *text, size_t n, const uint8_t *user_data, uint8_t septet_l)
 {
 	return gsm_7bit_decode_n_hdr(text, n, user_data, septet_l, 0);
 }
 
+/*! \brief Decode 7bit GSM Alphabet (USSD) */
 int gsm_7bit_decode_n_ussd(char *text, size_t n, const uint8_t *user_data, uint8_t length)
 {
 	int nchars;
@@ -218,7 +229,15 @@ int gsm_7bit_decode_n_ussd(char *text, size_t n, const uint8_t *user_data, uint8
 	return nchars;
 }
 
-/* GSM 03.38 6.2.1 Prepare character packing */
+/*! \brief Encode a ASCII characterrs as 7-bit GSM alphabet (TS 03.38)
+ *
+ *  This function converts a zero-terminated input string \a data from
+ *  ASCII into octet-aligned 7-bit GSM characters. No packing is
+ *  performed.
+ *
+ *  \param[out] result caller-allocated output buffer
+ *  \param[in] data input data, ASCII
+ *  \returns number of octets used in \a result */
 int gsm_septet_encode(uint8_t *result, const char *data)
 {
 	int i, y = 0;
@@ -247,7 +266,12 @@ int gsm_septet_encode(uint8_t *result, const char *data)
 	return y;
 }
 
-/* 7bit to octet packing */
+/*! \brief GSM Default Alphabet 7bit to octet packing
+ *  \param[out] result Caller-provided output buffer
+ *  \param[in] rdata Input data septets
+ *  \param[in] septet_len Length of \a rdata
+ *  \param[in] padding padding bits at start
+ *  \returns number of bytes used in \a result */
 int gsm_septets2octets(uint8_t *result, const uint8_t *rdata, uint8_t septet_len, uint8_t padding)
 {
 	int i = 0, z = 0;
@@ -293,7 +317,12 @@ int gsm_septets2octets(uint8_t *result, const uint8_t *rdata, uint8_t septet_len
 	return z;
 }
 
-/* GSM 03.38 6.2.1 Character packing */
+/*! \brief GSM 7-bit alphabet TS 03.38 6.2.1 Character packing
+ *  \param[out] result Caller-provided output buffer
+ *  \param[in] n Maximum length of \a result in bytes
+ *  \param[in] data octet-aligned string
+ *  \param[out] octets Number of octets encoded
+ *  \returns number of septets encoded */
 int gsm_7bit_encode_n(uint8_t *result, size_t n, const char *data, int *octets)
 {
 	int y = 0;
@@ -332,6 +361,12 @@ int gsm_7bit_encode_n(uint8_t *result, size_t n, const char *data, int *octets)
 	return y;
 }
 
+/*! \brief Encode according to GSM 7-bit alphabet (TS 03.38 6.2.1) for USSD
+ *  \param[out] result Caller-provided output buffer
+ *  \param[in] n Maximum length of \a result in bytes
+ *  \param[in] data octet-aligned string
+ *  \param[out] octets Number of octets encoded
+ *  \returns number of septets encoded */
 int gsm_7bit_encode_n_ussd(uint8_t *result, size_t n, const char *data, int *octets)
 {
 	int y;
@@ -368,7 +403,10 @@ size_t gsm0858_rsl_ul_meas_enc(struct gsm_meas_rep_unidir *mru, bool dtxd_used,
 	return 3;
 }
 
-/* convert power class to dBm according to GSM TS 05.05 */
+/*! \brief Convert power class to dBm according to GSM TS 05.05
+ *  \param[in] band GSM frequency band
+ *  \param[in] class GSM power class
+ *  \returns maximum transmit power of power class in dBm */
 unsigned int ms_class_gmsk_dbm(enum gsm_band band, int class)
 {
 	switch (band) {
@@ -409,8 +447,11 @@ unsigned int ms_class_gmsk_dbm(enum gsm_band band, int class)
 	return -EINVAL;
 }
 
-/* determine power control level for given dBm value, as indicated
- * by the tables in chapter 4.1.1 of GSM TS 05.05 */
+/*! \brief determine power control level for given dBm value, as indicated
+ *  by the tables in chapter 4.1.1 of GSM TS 05.05
+ *  \param[in] GSM frequency band
+ *  \param[in] dbm RF power value in dBm
+ *  \returns TS 05.05 power control level */
 int ms_pwr_ctl_lvl(enum gsm_band band, unsigned int dbm)
 {
 	switch (band) {
@@ -459,6 +500,10 @@ int ms_pwr_ctl_lvl(enum gsm_band band, unsigned int dbm)
 	return -EINVAL;
 }
 
+/*! \brief Convert TS 05.05 power level to absolute dBm value
+ *  \param[in] band GSM frequency band
+ *  \param[in] lvl TS 05.05 power control level
+ *  \returns RF power level in dBm */
 int ms_pwr_dbm(enum gsm_band band, uint8_t lvl)
 {
 	lvl &= 0x1f;
@@ -497,7 +542,9 @@ int ms_pwr_dbm(enum gsm_band band, uint8_t lvl)
 	return -EINVAL;
 }
 
-/* According to TS 05.08 Chapter 8.1.4 */
+/*! \brief Convert TS 05.08 RxLev to dBm (TS 05.08 Chapter 8.1.4)
+ *  \param[in] rxlev TS 05.08 RxLev value
+ *  \returns Received RF power in dBm */
 int rxlev2dbm(uint8_t rxlev)
 {
 	if (rxlev > 63)
@@ -506,7 +553,9 @@ int rxlev2dbm(uint8_t rxlev)
 	return -110 + rxlev;
 }
 
-/* According to TS 05.08 Chapter 8.1.4 */
+/*! \brief Convert RF signal level in dBm to TS 05.08 RxLev (TS 05.08 Chapter 8.1.4)
+ *  \param[in] dbm RF signal level in dBm
+ *  \returns TS 05.08 RxLev value */
 uint8_t dbm2rxlev(int dbm)
 {
 	int rxlev = dbm + 110;
@@ -519,6 +568,7 @@ uint8_t dbm2rxlev(int dbm)
 	return rxlev;
 }
 
+/*! \brief Return string name of a given GSM Band */
 const char *gsm_band_name(enum gsm_band band)
 {
 	switch (band) {
@@ -542,6 +592,7 @@ const char *gsm_band_name(enum gsm_band band)
 	return "invalid";
 }
 
+/*! \brief Parse string name of a GSM band */
 enum gsm_band gsm_band_parse(const char* mhz)
 {
 	while (*mhz && !isdigit(*mhz))
@@ -572,6 +623,10 @@ enum gsm_band gsm_band_parse(const char* mhz)
 	}
 }
 
+/*! \brief Resolve GSM band from ARFCN
+ *  In Osmocom, we use the highest bit of the \a arfcn to indicate PCS
+ *  \param[in] arfcn Osmocom ARFCN, highest bit determines PCS mode
+ *  \returns GSM Band */
 enum gsm_band gsm_arfcn2band(uint16_t arfcn)
 {
 	int is_pcs = arfcn & ARFCN_PCS;
@@ -621,7 +676,10 @@ static struct gsm_freq_range gsm_ranges[] = {
 	{ /* Guard */ }
 };
 
-/* Convert an ARFCN to the frequency in MHz * 10 */
+/*! \brief Convert an ARFCN to the frequency in MHz * 10
+ *  \param[in] arfcn GSM ARFCN to convert
+ *  \param[in] uplink Uplink (1) or Downlink (0) frequency
+ *  \returns Frequency in units of 1/10ths of MHz (100kHz) */
 uint16_t gsm_arfcn2freq10(uint16_t arfcn, int uplink)
 {
 	struct gsm_freq_range *r;
@@ -645,7 +703,10 @@ uint16_t gsm_arfcn2freq10(uint16_t arfcn, int uplink)
 	return uplink ? freq10_ul : freq10_dl;
 }
 
-/* Convert a Frequency in MHz * 10 to ARFCN */
+/*! \brief Convert a Frequency in MHz * 10 to ARFCN
+ *  \param[in] freq10 Frequency in units of 1/10ths of MHz (100kHz)
+ *  \param[in] uplink Frequency is Uplink (1) or Downlink (0)
+ *  \returns ARFCN in case of success; 0xffff on error */
 uint16_t gsm_freq102arfcn(uint16_t freq10, int uplink)
 {
 	struct gsm_freq_range *r;
@@ -675,6 +736,9 @@ uint16_t gsm_freq102arfcn(uint16_t freq10, int uplink)
 	return arfcn;
 }
 
+/*! \brief Parse GSM Frame Number into struct \ref gsm_time
+ *  \param[out] time Caller-provided memory for \ref gsm_time
+ *  \param[in] fn GSM Frame Number */
 void gsm_fn2gsmtime(struct gsm_time *time, uint32_t fn)
 {
 	time->fn = fn;
@@ -684,13 +748,18 @@ void gsm_fn2gsmtime(struct gsm_time *time, uint32_t fn)
 	time->tc = (time->fn / 51) % 8;
 }
 
+/*! \brief Encode decoded \ref gsm_time to Frame Number
+ *  \param[in] time GSM Time in decoded structure
+ *  \returns GSM Frame Number */
 uint32_t gsm_gsmtime2fn(struct gsm_time *time)
 {
 	/* TS 05.02 Chapter 4.3.3 TDMA frame number */
 	return (51 * ((time->t3 - time->t2 + 26) % 26) + time->t3 + (26 * 51 * time->t1));
 }
 
-/*! \brief append range1024 encoded data to bit vector */
+/*! \brief append range1024 encoded data to bit vector
+ *  \param[out] bv Caller-provided output bit-vector
+ *  \param[in] r Input Range1024 sructure */
 void bitvec_add_range1024(struct bitvec *bv, const struct gsm48_range_1024 *r)
 {
 	bitvec_set_uint(bv, r->w1_hi, 2);
@@ -724,7 +793,7 @@ void bitvec_add_range1024(struct bitvec *bv, const struct gsm48_range_1024 *r)
 	bitvec_set_uint(bv, r->w16, 6);
 }
 
-/* TS 23.003 Chapter 2.6 */
+/*! \brief Determine GPRS TLLI Type (TS 23.003 Chapter 2.6) */
 int gprs_tlli_type(uint32_t tlli)
 {
 	if ((tlli & 0xc0000000) == 0xc0000000)
@@ -743,6 +812,10 @@ int gprs_tlli_type(uint32_t tlli)
 	return TLLI_RESERVED;
 }
 
+/*! \brief Determine TLLI from P-TMSI
+ *  \param[in] p_tmsi P-TMSI
+ *  \param[in] type TLLI Type we want to derive from \a p_tmsi
+ *  \returns TLLI of given type */
 uint32_t gprs_tmsi2tlli(uint32_t p_tmsi, enum gprs_tlli_type type)
 {
 	uint32_t tlli;

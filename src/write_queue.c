@@ -27,6 +27,7 @@
 
 /*! \addtogroup write_queue
  *  @{
+ *  \brief write queue for writing \ref msgb to sockets/fd's
  */
 
 /*! \file write_queue.c */

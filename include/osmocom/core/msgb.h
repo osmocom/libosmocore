@@ -29,13 +29,7 @@
  *  @{
  */
 
-/*! \file msgb.h
- *  \brief Osmocom message buffers
- * The Osmocom message buffers are modelled after the 'struct skb'
- * inside the Linux kernel network stack.  As they exist in userspace,
- * they are much simplified.  However, terminology such as headroom,
- * tailroom, push/pull/put etc. remains the same.
- */
+/*! \file msgb.h */
 
 #define MSGB_DEBUG
 

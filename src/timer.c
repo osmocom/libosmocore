@@ -26,10 +26,10 @@
 
 /*! \addtogroup timer
  *  @{
+ *  \brief Osmocom timer abstraction; modelled after linux kernel timers
  */
 
-/*! \file timer.c
- */
+/*! \file timer.c */
 
 #include <assert.h>
 #include <string.h>

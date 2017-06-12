@@ -31,6 +31,11 @@
 
 #include <stdint.h>
 
+/*! \addtogroup gsup
+ *  @{
+ *  \brief Osmocom Generic Subscriber Update Protocol
+ */
+
 const struct value_string osmo_gsup_message_type_names[] = {
 	OSMO_VALUE_STRING(OSMO_GSUP_MSGT_UPDATE_LOCATION_REQUEST),
 	OSMO_VALUE_STRING(OSMO_GSUP_MSGT_UPDATE_LOCATION_ERROR),
@@ -536,3 +541,5 @@ void osmo_gsup_encode(struct msgb *msg, const struct osmo_gsup_message *gsup_msg
 		msgb_tlv_put(msg, OSMO_GSUP_CN_DOMAIN_IE, 1, &dn);
 	}
 }
+
+/*! @} */

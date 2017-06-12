@@ -60,6 +60,11 @@
 #include <osmocom/gsm/gsm0411_smc.h>
 #include <osmocom/gsm/protocol/gsm_04_08.h>
 
+/*! \addtogroup sms
+ *  @{
+ *  \brief Point-to-Point (PP) Short Message Service (SMS) as per TS 04.11
+ */
+
 static void cp_timer_expired(void *data);
 
 #define MAX_SMS_RETRY 2
@@ -569,3 +574,5 @@ int gsm411_smc_recv(struct gsm411_smc_inst *inst, int msg_type,
 
 	return rc;
 }
+
+/*! @} */

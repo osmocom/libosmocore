@@ -25,6 +25,10 @@
 #include "milenage/common.h"
 #include "milenage/milenage.h"
 
+/*! \addtogroup auth
+ *  @{
+ */
+
 static int milenage_gen_vec(struct osmo_auth_vector *vec,
 			    struct osmo_sub_auth_data *aud,
 			    const uint8_t *_rand)
@@ -160,3 +164,5 @@ static __attribute__((constructor)) void on_dso_load_milenage(void)
 {
 	osmo_auth_register(&milenage_alg);
 }
+
+/*! @} */

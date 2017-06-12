@@ -68,6 +68,14 @@
 #include <string.h>
 #include <stdint.h>
 
+/*! \addtogroup auth
+ *  @{
+ */
+
+/*! \file comp128.c
+ *  \brief COMP128 v1; common/old GSM Authentication Algorithm (A3/A8)
+ */
+
 /* The compression tables (just copied ...) */
 static const uint8_t table_0[512] = {
  102, 177, 186, 162,   2, 156, 112,  75,  55,  25,   8,  12, 251, 193, 246, 188,
@@ -184,6 +192,11 @@ _comp128_permutation(uint8_t *x, uint8_t *bits)
 		x[(i>>3)+16] |= bits[(i*17) & 127] << (7-(i&7));
 }
 
+/*! \brief Perform COMP128v1 algorithm
+ *  \param[in] ki Secret Key K(i) of subscriber
+ *  \param[in] rand Random Challenge
+ *  \param[out] sres user-supplied buffer for storing computed SRES value
+ *  \param[out] kc user-supplied buffer for storing computed Kc value */
 void
 comp128v1(const uint8_t *ki, const uint8_t *rand, uint8_t *sres, uint8_t *kc)
 {
@@ -228,8 +241,16 @@ comp128v1(const uint8_t *ki, const uint8_t *rand, uint8_t *sres, uint8_t *kc)
 	kc[7] = 0;
 }
 
+
+/*! \brief Perform COMP128v1 algorithm
+ *  \param[in] ki Secret Key K(i) of subscriber
+ *  \param[in] rand Random Challenge
+ *  \param[out] sres user-supplied buffer for storing computed SRES value
+ *  \param[out] kc user-supplied buffer for storing computed Kc value */
 void
 comp128(const uint8_t *ki, const uint8_t *rand, uint8_t *sres, uint8_t *kc)
 {
     comp128v1(ki, rand, sres, kc);
 }
+
+/*! @} */

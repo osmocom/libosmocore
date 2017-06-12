@@ -24,11 +24,10 @@
 
 /*! \addtogroup conv
  *  @{
+ *  \brief Osmocom convolutional encoder and decoder
  */
 
-/*! \file conv.c
- * Osmocom convolutional encoder and decoder
- */
+/*! \file conv.c */
 #include "config.h"
 #ifdef HAVE_ALLOCA_H
 #include <alloca.h>

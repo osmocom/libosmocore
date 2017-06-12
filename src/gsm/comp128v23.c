@@ -28,6 +28,14 @@
 #include <stdint.h>
 #include <string.h>
 
+/*! \addtogroup auth
+ *  @{
+ */
+
+/*! \file comp128v23.c
+ *  \brief COMP128 v2 / v3; Common Algorithm used for GSM Authentication (A3/A8)
+ */
+
 static const uint8_t table0[256] = {
 	197, 235, 60, 151, 98, 96, 3, 100, 248, 118, 42, 117, 172, 211, 181, 203, 61,
 	126, 156, 87, 149, 224, 55, 132, 186, 63, 238, 255, 85, 83, 152, 33, 160,
@@ -101,6 +109,12 @@ _comp128v23_internal(uint8_t *output, const uint8_t *kxor, const uint8_t *rand)
 	}
 }
 
+/*! \brief Perform COMP128v3 algorithm
+ *  \param[in] ki Secret Key K(i) of subscriber
+ *  \param[in] rand Random Challenge
+ *  \param[out] sres user-supplied buffer for storing computed SRES value
+ *  \param[out] kc user-supplied buffer for storing computed Kc value
+ *  \returns 0 */
 int
 comp128v3(const uint8_t *ki, const uint8_t *rand, uint8_t *sres, uint8_t *kc)
 {
@@ -147,6 +161,12 @@ comp128v3(const uint8_t *ki, const uint8_t *rand, uint8_t *sres, uint8_t *kc)
 	return 0;
 }
 
+/*! \brief Perform COMP128v2 algorithm
+ *  \param[in] ki Secret Key K(i) of subscriber
+ *  \param[in] rand Random Challenge
+ *  \param[out] sres user-supplied buffer for storing computed SRES value
+ *  \param[out] kc user-supplied buffer for storing computed Kc value
+ *  \returns 0 */
 int
 comp128v2(const uint8_t *ki, const uint8_t *rand, uint8_t *sres, uint8_t *kc)
 {
@@ -155,3 +175,5 @@ comp128v2(const uint8_t *ki, const uint8_t *rand, uint8_t *sres, uint8_t *kc)
 	kc[6] &= 0xfc;
 	return r;
 }
+
+/*! @} */

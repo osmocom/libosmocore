@@ -24,11 +24,10 @@
 
 /*! \addtogroup bitvec
  *  @{
- */
-
-/*! \file bitvec.c
  *  \brief Osmocom bit vector abstraction
  */
+
+/*! \file bitvec.c */
 
 #include <errno.h>
 #include <stdint.h>

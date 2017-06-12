@@ -24,6 +24,10 @@
 #include <osmocom/crypt/auth.h>
 #include <osmocom/gsm/comp128.h>
 
+/*! \addtogroup auth
+ *  @{
+ */
+
 static int c128v1_gen_vec(struct osmo_auth_vector *vec,
 			  struct osmo_sub_auth_data *aud,
 			  const uint8_t *_rand)
@@ -45,3 +49,5 @@ static __attribute__((constructor)) void on_dso_load_c128(void)
 {
 	osmo_auth_register(&c128v1_alg);
 }
+
+/*! @} */

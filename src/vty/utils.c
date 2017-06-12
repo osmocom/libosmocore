@@ -82,6 +82,33 @@ void vty_out_rate_ctr_group(struct vty *vty, const char *prefix,
 	rate_ctr_for_each_counter(ctrg, rate_ctr_handler, &vctx);
 }
 
+static int rate_ctr_group_handler(struct rate_ctr_group *ctrg, void *vctx_)
+{
+	struct vty_out_context *vctx = vctx_;
+	struct vty *vty = vctx->vty;
+
+	if (ctrg->desc->class_id > vctx->max_level)
+		return 0;
+
+	if (ctrg->idx)
+		vty_out(vty, "%s%s (%d):%s", vctx->prefix,
+			ctrg->desc->group_description, ctrg->idx, VTY_NEWLINE);
+	else
+		vty_out(vty, "%s%s:%s", vctx->prefix,
+			ctrg->desc->group_description, VTY_NEWLINE);
+
+	rate_ctr_for_each_counter(ctrg, rate_ctr_handler, vctx);
+
+	return 0;
+}
+
+/*! @} */
+
+
+/*! \addtogroup stats
+ *  @{
+ */
+
 static int osmo_stat_item_handler(
 	struct osmo_stat_item_group *statg, struct osmo_stat_item *item, void *vctx_)
 {
@@ -135,25 +162,11 @@ static int osmo_stat_item_group_handler(struct osmo_stat_item_group *statg, void
 	return 0;
 }
 
-static int rate_ctr_group_handler(struct rate_ctr_group *ctrg, void *vctx_)
-{
-	struct vty_out_context *vctx = vctx_;
-	struct vty *vty = vctx->vty;
+/*! @} */
 
-	if (ctrg->desc->class_id > vctx->max_level)
-		return 0;
-
-	if (ctrg->idx)
-		vty_out(vty, "%s%s (%d):%s", vctx->prefix,
-			ctrg->desc->group_description, ctrg->idx, VTY_NEWLINE);
-	else
-		vty_out(vty, "%s%s:%s", vctx->prefix,
-			ctrg->desc->group_description, VTY_NEWLINE);
-
-	rate_ctr_for_each_counter(ctrg, rate_ctr_handler, vctx);
-
-	return 0;
-}
+/*! \addtogroup vty
+ *  @{
+ */
 
 static int handle_counter(struct osmo_counter *counter, void *vctx_)
 {
@@ -238,6 +251,5 @@ err:
 	str[size-1] = '\0';
 	return str;
 }
-
 
 /*! @} */

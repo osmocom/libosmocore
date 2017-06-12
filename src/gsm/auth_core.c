@@ -32,10 +32,10 @@
 
 /*! \addtogroup auth
  *  @{
+ *  \brief GSM/GPRS/3G authentication core infrastructure
  */
 
-/* \file auth_core.c
- */
+/* \file auth_core.c */
 
 static LLIST_HEAD(osmo_auths);
 

@@ -62,6 +62,10 @@
 
 #define SMR_LOG_STR "SMR(%" PRIu64 ") "
 
+/*! \addtogroup sms
+ *  @{
+ */
+
 static void rp_timer_expired(void *data);
 
 /* init a new instance */
@@ -484,3 +488,5 @@ int gsm411_smr_recv(struct gsm411_smr_inst *inst, int msg_type,
 
 	return rc;
 }
+
+/*! @} */

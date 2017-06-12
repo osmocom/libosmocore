@@ -22,6 +22,7 @@
 
 /*! \addtogroup rate_ctr
  *  @{
+ *  \brief conters about events and their event rates
  */
 
 /*! \file rate_ctr.c */

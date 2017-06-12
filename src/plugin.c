@@ -20,6 +20,10 @@
  *
  */
 
+/*! \addtogroup utils
+ *  @{
+ */
+
 /*! \file plugin.c
  *  \brief Routines for loading and managing shared library plug-ins.
  */
@@ -69,3 +73,5 @@ int osmo_plugin_load_all(const char *directory)
 	return 0;
 }
 #endif /* HAVE_DLFCN_H */
+
+/*! @} */
