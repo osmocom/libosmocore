@@ -76,7 +76,7 @@ void gsm0503_xcch_deinterleave(sbit_t *cB, const sbit_t *iB)
 /*! \brief Interleave burst bits according to TS 05.03 4.1.4
  *  \param[out] iB caller-allocated output buffer for 456 soft interleaved bits
  *  \param[in] cB 456 soft input coded bits */
-void gsm0503_xcch_interleave(ubit_t *cB, ubit_t *iB)
+void gsm0503_xcch_interleave(const ubit_t *cB, ubit_t *iB)
 {
 	int j, k, B;
 
@@ -608,7 +608,7 @@ void gsm0503_mcs8_dl_deinterleave(sbit_t *hc, sbit_t *c1, sbit_t *c2,
 /*! \brief GSM TCH FR/EFR/AFS De-Interleaving and burst mapping
  *  \param[out] cB caller-allocated buffer for 456 unpacked output bits
  *  \param[in] iB 456 unpacked interleaved input bits */
-void gsm0503_tch_fr_deinterleave(sbit_t *cB, sbit_t *iB)
+void gsm0503_tch_fr_deinterleave(sbit_t *cB, const sbit_t *iB)
 {
 	int j, k, B;
 
@@ -622,7 +622,7 @@ void gsm0503_tch_fr_deinterleave(sbit_t *cB, sbit_t *iB)
 /*! \brief GSM TCH FR/EFR/AFS Interleaving and burst mapping
  *  \param[in] cB caller-allocated buffer for 456 unpacked input bits
  *  \param[out] iB 456 unpacked interleaved output bits */
-void gsm0503_tch_fr_interleave(ubit_t *cB, ubit_t *iB)
+void gsm0503_tch_fr_interleave(const ubit_t *cB, ubit_t *iB)
 {
 	int j, k, B;
 
@@ -660,7 +660,7 @@ void gsm0503_tch_fr_interleave(ubit_t *cB, ubit_t *iB)
 /*! \brief GSM TCH HR/AHS De-Interleaving and burst mapping
  *  \param[out] cB caller-allocated buffer for 228 unpacked output bits
  *  \param[in] iB 228 unpacked interleaved input bits */
-void gsm0503_tch_hr_deinterleave(sbit_t *cB, sbit_t *iB)
+void gsm0503_tch_hr_deinterleave(sbit_t *cB, const sbit_t *iB)
 {
 	int j, k, B;
 
@@ -674,7 +674,7 @@ void gsm0503_tch_hr_deinterleave(sbit_t *cB, sbit_t *iB)
 /*! \brief GSM TCH HR/AHS Interleaving and burst mapping
  *  \param[in] cB caller-allocated buffer for 228 unpacked input bits
  *  \param[out] iB 228 unpacked interleaved output bits */
-void gsm0503_tch_hr_interleave(ubit_t *cB, ubit_t *iB)
+void gsm0503_tch_hr_interleave(const ubit_t *cB, ubit_t *iB)
 {
 	int j, k, B;
 

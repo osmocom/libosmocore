@@ -11,13 +11,13 @@
  */
 
 void gsm0503_xcch_deinterleave(sbit_t *cB, const sbit_t *iB);
-void gsm0503_xcch_interleave(ubit_t *cB, ubit_t *iB);
+void gsm0503_xcch_interleave(const ubit_t *cB, ubit_t *iB);
 
-void gsm0503_tch_fr_deinterleave(sbit_t *cB, sbit_t *iB);
-void gsm0503_tch_fr_interleave(ubit_t *cB, ubit_t *iB);
+void gsm0503_tch_fr_deinterleave(sbit_t *cB, const sbit_t *iB);
+void gsm0503_tch_fr_interleave(const ubit_t *cB, ubit_t *iB);
 
-void gsm0503_tch_hr_deinterleave(sbit_t *cB, sbit_t *iB);
-void gsm0503_tch_hr_interleave(ubit_t *cB, ubit_t *iB);
+void gsm0503_tch_hr_deinterleave(sbit_t *cB, const sbit_t *iB);
+void gsm0503_tch_hr_interleave(const ubit_t *cB, ubit_t *iB);
 
 void gsm0503_mcs1_ul_deinterleave(sbit_t *hc, sbit_t *dc, const sbit_t *iB);
 void gsm0503_mcs1_ul_interleave(const ubit_t *hc,
