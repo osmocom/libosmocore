@@ -41,6 +41,12 @@
  * routines in libosmogsm are not thread-safe.  If you must use them in
  * a multi-threaded context, you have to add your own locking.
  *
+ * libosmogsm is developed as part of the Osmocom (Open Source Mobile
+ * Communications) project, a community-based, collaborative development
+ * project to create Free and Open Source implementations of mobile
+ * communications systems.  For more information about Osmocom, please
+ * see https://osmocom.org/
+ *
  * \section sec_copyright Copyright and License
  * Copyright © 2008-2011 - Harald Welte, Holger Freyther and contributors\n
  * All rights reserved. \n\n
@@ -54,6 +60,13 @@
  * ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND
  * FITNESS FOR A PARTICULAR PURPOSE.
  * \n\n
+ *
+ * \section sec_tracker Homepage + Issue Tracker
+ * libosmogsm is distributed as part of libosmocore and shares its
+ * project page at http://osmocom.org/projects/libosmocore
+ *
+ * An Issue Tracker can be found at
+ * https://osmocom.org/projects/libosmocore/issues
  *
  * \section sec_contact Contact and Support
  * Community-based support is available at the OpenBSC mailing list

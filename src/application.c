@@ -34,6 +34,12 @@
  * generic plugin interface, statistics counters, memory allocator,
  * socket abstraction, message buffers, etc.
  * \n\n
+ * libosmocodec is developed as part of the Osmocom (Open Source Mobile
+ * Communications) project, a community-based, collaborative development
+ * project to create Free and Open Source implementations of mobile
+ * communications systems.  For more information about Osmocom, please
+ * see https://osmocom.org/
+ *
  * Please note that C language projects inside Osmocom are typically
  * single-threaded event-loop state machine designs.  As such,
  * routines in libosmocore are not thread-safe.  If you must use them in
@@ -52,6 +58,13 @@
  * ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND
  * FITNESS FOR A PARTICULAR PURPOSE.
  * \n\n
+ *
+ * \section sec_tracker Homepage + Issue Tracker
+ * The libosmocore project home page can be found at
+ * https://osmocom.org/projects/libosmocore
+ *
+ * An Issue Tracker can be found at
+ * https://osmocom.org/projects/libosmocore/issues
  *
  * \section sec_contact Contact and Support
  * Community-based support is available at the OpenBSC mailing list
