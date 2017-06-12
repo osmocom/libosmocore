@@ -490,7 +490,7 @@ static int osmo_conv_decode_ber(const struct osmo_conv_code *code,
 	return res;
 }
 
-static int _xcch_decode_cB(uint8_t *l2_data, sbit_t *cB,
+static int _xcch_decode_cB(uint8_t *l2_data, const sbit_t *cB,
 	int *n_errors, int *n_bits_total)
 {
 	ubit_t conv[224];
@@ -509,7 +509,7 @@ static int _xcch_decode_cB(uint8_t *l2_data, sbit_t *cB,
 	return 0;
 }
 
-static int _xcch_encode_cB(ubit_t *cB, uint8_t *l2_data)
+static int _xcch_encode_cB(ubit_t *cB, const uint8_t *l2_data)
 {
 	ubit_t conv[224];
 
@@ -525,7 +525,7 @@ static int _xcch_encode_cB(ubit_t *cB, uint8_t *l2_data)
 /*
  * GSM xCCH block transcoding
  */
-int gsm0503_xcch_decode(uint8_t *l2_data, sbit_t *bursts,
+int gsm0503_xcch_decode(uint8_t *l2_data, const sbit_t *bursts,
 	int *n_errors, int *n_bits_total)
 {
 	sbit_t iB[456], cB[456];
@@ -539,7 +539,7 @@ int gsm0503_xcch_decode(uint8_t *l2_data, sbit_t *bursts,
 	return _xcch_decode_cB(l2_data, cB, n_errors, n_bits_total);
 }
 
-int gsm0503_xcch_encode(ubit_t *bursts, uint8_t *l2_data)
+int gsm0503_xcch_encode(ubit_t *bursts, const uint8_t *l2_data)
 {
 	ubit_t iB[456], cB[456], hl = 1, hn = 1;
 	int i;
@@ -748,7 +748,7 @@ static int egprs_parse_ul_cps(struct egprs_cps *cps,
  * 3. CRC check
  * 4. Block combining (MCS-7,8,9 only)
  */
-static int egprs_decode_data(uint8_t *l2_data, sbit_t *c,
+static int egprs_decode_data(uint8_t *l2_data, const sbit_t *c,
 	int mcs, int p, int blk, int *n_errors, int *n_bits_total)
 {
 	ubit_t u[EGPRS_DATA_U_MAX];
@@ -809,7 +809,7 @@ static int egprs_decode_data(uint8_t *l2_data, sbit_t *c,
  * 3. Burst unmapping and deinterleaving
  * 4. Data section decoding
  */
-int gsm0503_pdtch_egprs_decode(uint8_t *l2_data, sbit_t *bursts, uint16_t nbits,
+int gsm0503_pdtch_egprs_decode(uint8_t *l2_data, const sbit_t *bursts, uint16_t nbits,
 	uint8_t *usf_p, int *n_errors, int *n_bits_total)
 {
 	sbit_t dc[EGPRS_DATA_DC_MAX];
@@ -879,7 +879,7 @@ int gsm0503_pdtch_egprs_decode(uint8_t *l2_data, sbit_t *bursts, uint16_t nbits,
  * GSM PDTCH block transcoding
  */
 
-int gsm0503_pdtch_decode(uint8_t *l2_data, sbit_t *bursts, uint8_t *usf_p,
+int gsm0503_pdtch_decode(uint8_t *l2_data, const sbit_t *bursts, uint8_t *usf_p,
 	int *n_errors, int *n_bits_total)
 {
 	sbit_t iB[456], cB[676], hl_hn[8];
@@ -1031,7 +1031,7 @@ int gsm0503_pdtch_decode(uint8_t *l2_data, sbit_t *bursts, uint8_t *usf_p,
 /*
  * EGPRS PDTCH UL block encoding
  */
-static int egprs_type3_map(ubit_t *bursts, ubit_t *hc, ubit_t *dc, int usf)
+static int egprs_type3_map(ubit_t *bursts, const ubit_t *hc, const ubit_t *dc, int usf)
 {
 	int i;
 	ubit_t iB[456];
@@ -1047,7 +1047,7 @@ static int egprs_type3_map(ubit_t *bursts, ubit_t *hc, ubit_t *dc, int usf)
 	return 0;
 }
 
-static int egprs_type2_map(ubit_t *bursts, ubit_t *hc, ubit_t *dc, int usf)
+static int egprs_type2_map(ubit_t *bursts, const ubit_t *hc, const ubit_t *dc, int usf)
 {
 	int i;
 	const ubit_t *up;
@@ -1065,8 +1065,8 @@ static int egprs_type2_map(ubit_t *bursts, ubit_t *hc, ubit_t *dc, int usf)
 	return 0;
 }
 
-static int egprs_type1_map(ubit_t *bursts, ubit_t *hc,
-	ubit_t *c1, ubit_t *c2, int usf, int mcs)
+static int egprs_type1_map(ubit_t *bursts, const ubit_t *hc,
+	const ubit_t *c1, const ubit_t *c2, int usf, int mcs)
 {
 	int i;
 	const ubit_t *up;
@@ -1088,7 +1088,7 @@ static int egprs_type1_map(ubit_t *bursts, ubit_t *hc,
 	return 0;
 }
 
-static int egprs_encode_hdr(ubit_t *hc, uint8_t *l2_data, int mcs)
+static int egprs_encode_hdr(ubit_t *hc, const uint8_t *l2_data, int mcs)
 {
 	int i, j;
 	ubit_t upp[EGPRS_HDR_UPP_MAX], C[EGPRS_HDR_C_MAX];
@@ -1122,7 +1122,7 @@ static int egprs_encode_hdr(ubit_t *hc, uint8_t *l2_data, int mcs)
 	return 0;
 }
 
-static int egprs_encode_data(ubit_t *c, uint8_t *l2_data,
+static int egprs_encode_data(ubit_t *c, const uint8_t *l2_data,
 	int mcs, int p, int blk)
 {
 	int i, j, data_len;
@@ -1168,7 +1168,7 @@ static int egprs_encode_data(ubit_t *c, uint8_t *l2_data,
  * Type 3 - MCS-1,2,3,4
  */
 static int egprs_parse_dl_cps(struct egprs_cps *cps,
-	union gprs_rlc_dl_hdr_egprs *hdr, int type)
+	const union gprs_rlc_dl_hdr_egprs *hdr, int type)
 {
 	uint8_t bits;
 
@@ -1193,7 +1193,7 @@ static int egprs_parse_dl_cps(struct egprs_cps *cps,
  * EGPRS DL message encoding
  */
 int gsm0503_pdtch_egprs_encode(ubit_t *bursts,
-	uint8_t *l2_data, uint8_t l2_len)
+	const uint8_t *l2_data, uint8_t l2_len)
 {
 	ubit_t hc[EGPRS_DATA_C_MAX], dc[EGPRS_DATA_DC_MAX];
 	ubit_t c1[EGPRS_DATA_C1], c2[EGPRS_DATA_C2];
@@ -1282,7 +1282,7 @@ bad_header:
 	return -1;
 }
 
-int gsm0503_pdtch_encode(ubit_t *bursts, uint8_t *l2_data, uint8_t l2_len)
+int gsm0503_pdtch_encode(ubit_t *bursts, const uint8_t *l2_data, uint8_t l2_len)
 {
 	ubit_t iB[456], cB[676];
 	const ubit_t *hl_hn;
@@ -1367,7 +1367,7 @@ int gsm0503_pdtch_encode(ubit_t *bursts, uint8_t *l2_data, uint8_t l2_len)
  */
 
 static void tch_fr_reassemble(uint8_t *tch_data,
-	ubit_t *b_bits, int net_order)
+	const ubit_t *b_bits, int net_order)
 {
 	int i, j, k, l, o;
 
@@ -1399,7 +1399,7 @@ static void tch_fr_reassemble(uint8_t *tch_data,
 }
 
 static void tch_fr_disassemble(ubit_t *b_bits,
-	uint8_t *tch_data, int net_order)
+	const uint8_t *tch_data, int net_order)
 {
 	int i, j, k, l, o;
 
@@ -1426,7 +1426,7 @@ static void tch_fr_disassemble(ubit_t *b_bits,
 	}
 }
 
-static void tch_hr_reassemble(uint8_t *tch_data, ubit_t *b_bits)
+static void tch_hr_reassemble(uint8_t *tch_data, const ubit_t *b_bits)
 {
 	int i, j;
 
@@ -1437,7 +1437,7 @@ static void tch_hr_reassemble(uint8_t *tch_data, ubit_t *b_bits)
 		tch_data[j >> 3] |= (b_bits[i] << (7 - (j & 7)));
 }
 
-static void tch_hr_disassemble(ubit_t *b_bits, uint8_t *tch_data)
+static void tch_hr_disassemble(ubit_t *b_bits, const uint8_t *tch_data)
 {
 	int i, j;
 
@@ -1445,7 +1445,7 @@ static void tch_hr_disassemble(ubit_t *b_bits, uint8_t *tch_data)
 		b_bits[i] = (tch_data[j >> 3] >> (7 - (j & 7))) & 1;
 }
 
-static void tch_efr_reassemble(uint8_t *tch_data, ubit_t *b_bits)
+static void tch_efr_reassemble(uint8_t *tch_data, const ubit_t *b_bits)
 {
 	int i, j;
 
@@ -1456,7 +1456,7 @@ static void tch_efr_reassemble(uint8_t *tch_data, ubit_t *b_bits)
 		tch_data[j >> 3] |= (b_bits[i] << (7 - (j & 7)));
 }
 
-static void tch_efr_disassemble(ubit_t *b_bits, uint8_t *tch_data)
+static void tch_efr_disassemble(ubit_t *b_bits, const uint8_t *tch_data)
 {
 	int i, j;
 
@@ -1464,7 +1464,7 @@ static void tch_efr_disassemble(ubit_t *b_bits, uint8_t *tch_data)
 		b_bits[i] = (tch_data[j >> 3] >> (7 - (j & 7))) & 1;
 }
 
-static void tch_amr_reassemble(uint8_t *tch_data, ubit_t *d_bits, int len)
+static void tch_amr_reassemble(uint8_t *tch_data, const ubit_t *d_bits, int len)
 {
 	int i, j;
 
@@ -1474,7 +1474,7 @@ static void tch_amr_reassemble(uint8_t *tch_data, ubit_t *d_bits, int len)
 		tch_data[j >> 3] |= (d_bits[i] << (7 - (j & 7)));
 }
 
-static void tch_amr_disassemble(ubit_t *d_bits, uint8_t *tch_data, int len)
+static void tch_amr_disassemble(ubit_t *d_bits, const uint8_t *tch_data, int len)
 {
 	int i, j;
 
@@ -1482,7 +1482,7 @@ static void tch_amr_disassemble(ubit_t *d_bits, uint8_t *tch_data, int len)
 		d_bits[i] = (tch_data[j >> 3] >> (7 - (j & 7))) & 1;
 }
 
-static void tch_fr_d_to_b(ubit_t *b_bits, ubit_t *d_bits)
+static void tch_fr_d_to_b(ubit_t *b_bits, const ubit_t *d_bits)
 {
 	int i;
 
@@ -1490,7 +1490,7 @@ static void tch_fr_d_to_b(ubit_t *b_bits, ubit_t *d_bits)
 		b_bits[gsm610_bitorder[i]] = d_bits[i];
 }
 
-static void tch_fr_b_to_d(ubit_t *d_bits, ubit_t *b_bits)
+static void tch_fr_b_to_d(ubit_t *d_bits, const ubit_t *b_bits)
 {
 	int i;
 
@@ -1498,7 +1498,7 @@ static void tch_fr_b_to_d(ubit_t *d_bits, ubit_t *b_bits)
 		d_bits[i] = b_bits[gsm610_bitorder[i]];
 }
 
-static void tch_hr_d_to_b(ubit_t *b_bits, ubit_t *d_bits)
+static void tch_hr_d_to_b(ubit_t *b_bits, const ubit_t *d_bits)
 {
 	int i;
 
@@ -1513,7 +1513,7 @@ static void tch_hr_d_to_b(ubit_t *b_bits, ubit_t *d_bits)
 		b_bits[map[i]] = d_bits[i];
 }
 
-static void tch_hr_b_to_d(ubit_t *d_bits, ubit_t *b_bits)
+static void tch_hr_b_to_d(ubit_t *d_bits, const ubit_t *b_bits)
 {
 	int i;
 	const uint16_t *map;
@@ -1527,7 +1527,7 @@ static void tch_hr_b_to_d(ubit_t *d_bits, ubit_t *b_bits)
 		d_bits[i] = b_bits[map[i]];
 }
 
-static void tch_efr_d_to_w(ubit_t *b_bits, ubit_t *d_bits)
+static void tch_efr_d_to_w(ubit_t *b_bits, const ubit_t *d_bits)
 {
 	int i;
 
@@ -1535,7 +1535,7 @@ static void tch_efr_d_to_w(ubit_t *b_bits, ubit_t *d_bits)
 		b_bits[gsm660_bitorder[i]] = d_bits[i];
 }
 
-static void tch_efr_w_to_d(ubit_t *d_bits, ubit_t *b_bits)
+static void tch_efr_w_to_d(ubit_t *d_bits, const ubit_t *b_bits)
 {
 	int i;
 
@@ -1543,7 +1543,7 @@ static void tch_efr_w_to_d(ubit_t *d_bits, ubit_t *b_bits)
 		d_bits[i] = b_bits[gsm660_bitorder[i]];
 }
 
-static void tch_efr_protected(ubit_t *s_bits, ubit_t *b_bits)
+static void tch_efr_protected(const ubit_t *s_bits, ubit_t *b_bits)
 {
 	int i;
 
@@ -1551,7 +1551,7 @@ static void tch_efr_protected(ubit_t *s_bits, ubit_t *b_bits)
 		b_bits[i] = s_bits[gsm0503_gsm_efr_protected_bits[i] - 1];
 }
 
-static void tch_fr_unreorder(ubit_t *d, ubit_t *p, ubit_t *u)
+static void tch_fr_unreorder(ubit_t *d, ubit_t *p, const ubit_t *u)
 {
 	int i;
 
@@ -1564,7 +1564,7 @@ static void tch_fr_unreorder(ubit_t *d, ubit_t *p, ubit_t *u)
 		p[i] = u[91 + i];
 }
 
-static void tch_fr_reorder(ubit_t *u, ubit_t *d, ubit_t *p)
+static void tch_fr_reorder(ubit_t *u, const ubit_t *d, const ubit_t *p)
 {
 	int i;
 
@@ -1577,19 +1577,19 @@ static void tch_fr_reorder(ubit_t *u, ubit_t *d, ubit_t *p)
 		u[91 + i] = p[i];
 }
 
-static void tch_hr_unreorder(ubit_t *d, ubit_t *p, ubit_t *u)
+static void tch_hr_unreorder(ubit_t *d, ubit_t *p, const ubit_t *u)
 {
 	memcpy(d, u, 95);
 	memcpy(p, u + 95, 3);
 }
 
-static void tch_hr_reorder(ubit_t *u, ubit_t *d, ubit_t *p)
+static void tch_hr_reorder(ubit_t *u, const ubit_t *d, const ubit_t *p)
 {
 	memcpy(u, d, 95);
 	memcpy(u + 95, p, 3);
 }
 
-static void tch_efr_reorder(ubit_t *w, ubit_t *s, ubit_t *p)
+static void tch_efr_reorder(ubit_t *w, const ubit_t *s, const ubit_t *p)
 {
 	memcpy(w, s, 71);
 	w[71] = w[72] = s[69];
@@ -1603,7 +1603,7 @@ static void tch_efr_reorder(ubit_t *w, ubit_t *s, ubit_t *p)
 	memcpy(w + 252, p, 8);
 }
 
-static void tch_efr_unreorder(ubit_t *s, ubit_t *p, ubit_t *w)
+static void tch_efr_unreorder(ubit_t *s, ubit_t *p, const ubit_t *w)
 {
 	int sum;
 
@@ -1623,22 +1623,21 @@ static void tch_efr_unreorder(ubit_t *s, ubit_t *p, ubit_t *w)
 	memcpy(p, w + 252, 8);
 }
 
-static void tch_amr_merge(ubit_t *u, ubit_t *d, ubit_t *p, int len, int prot)
+static void tch_amr_merge(ubit_t *u, const ubit_t *d, const ubit_t *p, int len, int prot)
 {
 	memcpy(u, d, prot);
 	memcpy(u + prot, p, 6);
 	memcpy(u + prot + 6, d + prot, len - prot);
 }
 
-static void tch_amr_unmerge(ubit_t *d, ubit_t *p,
-	ubit_t *u, int len, int prot)
+static void tch_amr_unmerge(ubit_t *d, ubit_t *p, const ubit_t *u, int len, int prot)
 {
 	memcpy(d, u, prot);
 	memcpy(p, u + prot, 6);
 	memcpy(d + prot, u + prot + 6, len - prot);
 }
 
-int gsm0503_tch_fr_decode(uint8_t *tch_data, sbit_t *bursts,
+int gsm0503_tch_fr_decode(uint8_t *tch_data, const sbit_t *bursts,
 	int net_order, int efr, int *n_errors, int *n_bits_total)
 {
 	sbit_t iB[912], cB[456], h;
@@ -1703,7 +1702,7 @@ int gsm0503_tch_fr_decode(uint8_t *tch_data, sbit_t *bursts,
 	return len;
 }
 
-int gsm0503_tch_fr_encode(ubit_t *bursts, uint8_t *tch_data,
+int gsm0503_tch_fr_encode(ubit_t *bursts, const uint8_t *tch_data,
 	int len, int net_order)
 {
 	ubit_t iB[912], cB[456], h;
@@ -1761,7 +1760,7 @@ coding_efr_fr:
 	return 0;
 }
 
-int gsm0503_tch_hr_decode(uint8_t *tch_data, sbit_t *bursts, int odd,
+int gsm0503_tch_hr_decode(uint8_t *tch_data, const sbit_t *bursts, int odd,
 	int *n_errors, int *n_bits_total)
 {
 	sbit_t iB[912], cB[456], h;
@@ -1831,7 +1830,7 @@ int gsm0503_tch_hr_decode(uint8_t *tch_data, sbit_t *bursts, int odd,
 	return 15;
 }
 
-int gsm0503_tch_hr_encode(ubit_t *bursts, uint8_t *tch_data, int len)
+int gsm0503_tch_hr_encode(ubit_t *bursts, const uint8_t *tch_data, int len)
 {
 	ubit_t iB[912], cB[456], h;
 	ubit_t conv[98], b[112], d[112], p[3];
@@ -1886,7 +1885,7 @@ int gsm0503_tch_hr_encode(ubit_t *bursts, uint8_t *tch_data, int len)
 	return 0;
 }
 
-int gsm0503_tch_afs_decode(uint8_t *tch_data, sbit_t *bursts,
+int gsm0503_tch_afs_decode(uint8_t *tch_data, const sbit_t *bursts,
 	int codec_mode_req, uint8_t *codec, int codecs, uint8_t *ft,
 	uint8_t *cmr, int *n_errors, int *n_bits_total)
 {
@@ -2081,7 +2080,7 @@ int gsm0503_tch_afs_decode(uint8_t *tch_data, sbit_t *bursts,
 	return len;
 }
 
-int gsm0503_tch_afs_encode(ubit_t *bursts, uint8_t *tch_data, int len,
+int gsm0503_tch_afs_encode(ubit_t *bursts, const uint8_t *tch_data, int len,
 	int codec_mode_req, uint8_t *codec, int codecs, uint8_t ft,
 	uint8_t cmr)
 {
@@ -2241,7 +2240,7 @@ invalid_length:
 	return -1;
 }
 
-int gsm0503_tch_ahs_decode(uint8_t *tch_data, sbit_t *bursts, int odd,
+int gsm0503_tch_ahs_decode(uint8_t *tch_data, const sbit_t *bursts, int odd,
 	int codec_mode_req, uint8_t *codec, int codecs, uint8_t *ft,
 	uint8_t *cmr, int *n_errors, int *n_bits_total)
 {
@@ -2444,7 +2443,7 @@ int gsm0503_tch_ahs_decode(uint8_t *tch_data, sbit_t *bursts, int odd,
 	return len;
 }
 
-int gsm0503_tch_ahs_encode(ubit_t *bursts, uint8_t *tch_data, int len,
+int gsm0503_tch_ahs_encode(ubit_t *bursts, const uint8_t *tch_data, int len,
 	int codec_mode_req, uint8_t *codec, int codecs, uint8_t ft,
 	uint8_t cmr)
 {
@@ -2618,7 +2617,7 @@ static int rach_apply_bsic(ubit_t *d, uint8_t bsic)
 	return 0;
 }
 
-int gsm0503_rach_decode(uint8_t *ra, sbit_t *burst, uint8_t bsic)
+int gsm0503_rach_decode(uint8_t *ra, const sbit_t *burst, uint8_t bsic)
 {
 	ubit_t conv[14];
 	int rv;
@@ -2636,7 +2635,7 @@ int gsm0503_rach_decode(uint8_t *ra, sbit_t *burst, uint8_t bsic)
 	return 0;
 }
 
-int gsm0503_rach_encode(ubit_t *burst, uint8_t *ra, uint8_t bsic)
+int gsm0503_rach_encode(ubit_t *burst, const uint8_t *ra, uint8_t bsic)
 {
 	ubit_t conv[14];
 
@@ -2654,7 +2653,7 @@ int gsm0503_rach_encode(ubit_t *burst, uint8_t *ra, uint8_t bsic)
 /*
  * GSM SCH transcoding
  */
-int gsm0503_sch_decode(uint8_t *sb_info, sbit_t *burst)
+int gsm0503_sch_decode(uint8_t *sb_info, const sbit_t *burst)
 {
 	ubit_t conv[35];
 	int rv;
@@ -2670,7 +2669,7 @@ int gsm0503_sch_decode(uint8_t *sb_info, sbit_t *burst)
 	return 0;
 }
 
-int gsm0503_sch_encode(ubit_t *burst, uint8_t *sb_info)
+int gsm0503_sch_encode(ubit_t *burst, const uint8_t *sb_info)
 {
 	ubit_t conv[35];
 

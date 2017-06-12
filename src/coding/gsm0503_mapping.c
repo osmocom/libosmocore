@@ -38,7 +38,7 @@ void gsm0503_xcch_burst_unmap(sbit_t *iB, const sbit_t *eB,
 		*hn = eB[58];
 }
 
-void gsm0503_xcch_burst_map(ubit_t *iB, ubit_t *eB, const ubit_t *hl,
+void gsm0503_xcch_burst_map(const ubit_t *iB, ubit_t *eB, const ubit_t *hl,
 	const ubit_t *hn)
 {
 	memcpy(eB,      iB,      57);
@@ -50,7 +50,7 @@ void gsm0503_xcch_burst_map(ubit_t *iB, ubit_t *eB, const ubit_t *hl,
 		eB[58] = *hn;
 }
 
-void gsm0503_tch_burst_unmap(sbit_t *iB, sbit_t *eB, sbit_t *h, int odd)
+void gsm0503_tch_burst_unmap(sbit_t *iB, const sbit_t *eB, sbit_t *h, int odd)
 {
 	int i;
 
@@ -70,7 +70,7 @@ void gsm0503_tch_burst_unmap(sbit_t *iB, sbit_t *eB, sbit_t *h, int odd)
 	}
 }
 
-void gsm0503_tch_burst_map(ubit_t *iB, ubit_t *eB, const ubit_t *h, int odd)
+void gsm0503_tch_burst_map(const ubit_t *iB, ubit_t *eB, const ubit_t *h, int odd)
 {
 	int i;
 
