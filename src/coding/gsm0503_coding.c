@@ -186,7 +186,7 @@ struct gsm0503_mcs_code {
 /*
  * EGPRS UL coding parameters
  */
-struct gsm0503_mcs_code gsm0503_mcs_ul_codes[EGPRS_NUM_MCS] = {
+const struct gsm0503_mcs_code gsm0503_mcs_ul_codes[EGPRS_NUM_MCS] = {
 	{
 		.mcs = EGPRS_MCS0,
 	},
@@ -357,7 +357,7 @@ struct gsm0503_mcs_code gsm0503_mcs_ul_codes[EGPRS_NUM_MCS] = {
 /*
  * EGPRS DL coding parameters
  */
-struct gsm0503_mcs_code gsm0503_mcs_dl_codes[EGPRS_NUM_MCS] = {
+const struct gsm0503_mcs_code gsm0503_mcs_dl_codes[EGPRS_NUM_MCS] = {
 	{
 		.mcs = EGPRS_MCS0,
 	},
@@ -743,7 +743,7 @@ static int _egprs_decode_hdr(const sbit_t *hc, int mcs,
 	sbit_t C[EGPRS_HDR_C_MAX];
 	ubit_t upp[EGPRS_HDR_UPP_MAX];
 	int i, j, rc;
-	struct gsm0503_mcs_code *code;
+	const struct gsm0503_mcs_code *code;
 
 	code = &gsm0503_mcs_ul_codes[mcs];
 
@@ -858,7 +858,7 @@ static int egprs_decode_data(uint8_t *l2_data, const sbit_t *c,
 	sbit_t C[EGPRS_DATA_C_MAX];
 
 	int i, j, rc, data_len;
-	struct gsm0503_mcs_code *code;
+	const struct gsm0503_mcs_code *code;
 
 	if (blk && mcs < EGPRS_MCS7) {
 		/* Invalid MCS-X block state */
@@ -1206,7 +1206,7 @@ static int egprs_encode_hdr(ubit_t *hc, const uint8_t *l2_data, int mcs)
 {
 	int i, j;
 	ubit_t upp[EGPRS_HDR_UPP_MAX], C[EGPRS_HDR_C_MAX];
-	struct gsm0503_mcs_code *code;
+	const struct gsm0503_mcs_code *code;
 
 	code = &gsm0503_mcs_dl_codes[mcs];
 
@@ -1241,7 +1241,7 @@ static int egprs_encode_data(ubit_t *c, const uint8_t *l2_data,
 {
 	int i, j, data_len;
 	ubit_t u[EGPRS_DATA_U_MAX], C[EGPRS_DATA_C_MAX];
-	struct gsm0503_mcs_code *code;
+	const struct gsm0503_mcs_code *code;
 
 	code = &gsm0503_mcs_dl_codes[mcs];
 
