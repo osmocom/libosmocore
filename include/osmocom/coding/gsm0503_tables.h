@@ -3,6 +3,14 @@
 #include <stdint.h>
 #include <osmocom/core/bits.h>
 
+/*! \addtogroup tables
+ *  @{
+ */
+
+/*! \file gsm0503_tables.h
+ *  \brief GSM TS 05.03 tables
+ */
+
 extern const ubit_t gsm0503_pdtch_hl_hn_ubit[4][8];
 extern const ubit_t gsm0503_pdtch_edge_hl_hn_ubit[3][8];
 extern const sbit_t gsm0503_pdtch_hl_hn_sbit[4][8];
@@ -48,3 +56,5 @@ extern const ubit_t gsm0503_ahs_ic_ubit[4][4];
 extern const sbit_t gsm0503_ahs_ic_sbit[4][4];
 extern const uint8_t gsm0503_tch_hr_interleaving[228][2];
 extern const ubit_t gsm0503_mcs5_usf_precode_table[8][36];
+
+/*! @} */

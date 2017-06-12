@@ -2,6 +2,14 @@
 
 #include <osmocom/core/bits.h>
 
+/*! \addtogroup mapping
+ *  @{
+ */
+
+/*! \file gsm0503_mapping.c
+ *  \brief GSM TS 05.03 burst mapping
+ */
+
 void gsm0503_xcch_burst_unmap(sbit_t *iB, const sbit_t *eB,
 	sbit_t *hl, sbit_t *hn);
 void gsm0503_xcch_burst_map(const ubit_t *iB, ubit_t *eB, const ubit_t *hl,
@@ -31,3 +39,5 @@ void gsm0503_mcs7_dl_burst_unmap(sbit_t *di, const sbit_t *eB,
 	sbit_t *hi, sbit_t *up, int B);
 
 void gsm0503_mcs5_burst_swap(sbit_t *eB);
+
+/*! @} */

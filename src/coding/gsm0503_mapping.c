@@ -25,6 +25,17 @@
 #include <osmocom/core/bits.h>
 #include <osmocom/coding/gsm0503_mapping.h>
 
+/*! \addtogroup mapping
+ *  @{
+ *
+ *  \brief GSM TS 05.03 burst mapping
+ *
+ *  This module contains burst mapping routines as specified in 3GPP TS
+ *  05.03 / 45.003.
+ */
+
+/*! \file gsm0503_mapping.c */
+
 void gsm0503_xcch_burst_unmap(sbit_t *iB, const sbit_t *eB,
 	sbit_t *hl, sbit_t *hn)
 {
@@ -289,3 +300,5 @@ void gsm0503_mcs5_burst_swap(sbit_t *eB)
 	eB[191] = t[12];
 	eB[194] = t[13];
 }
+
+/*! @} */

@@ -2,6 +2,7 @@
  * (C) 2013 by Andreas Eversberg <jolly@eversberg.eu>
  * (C) 2015 by Alexander Chemeris <Alexander.Chemeris@fairwaves.co>
  * (C) 2016 by Tom Tsou <tom.tsou@ettus.com>
+ * (C) 2017 by Harald Welte <laforge@gnumonks.org>
  *
  * All Rights Reserved
  *
@@ -45,6 +46,64 @@
 #include <osmocom/coding/gsm0503_coding.h>
 #include <osmocom/coding/gsm0503_parity.h>
 
+/*! \mainpage libosmocoding Documentation
+ *
+ * \section sec_intro Introduction
+ * This library is a collection of definitions, tables and functions
+ * implementing the GSM/GPRS/EGPRS channel coding (and decoding) as
+ * specified in 3GPP TS 05.03 / 45.003.
+ *
+ * libosmocodec is developed as part of the Osmocom (Open Source Mobile
+ * Communications) project, a community-based, collaborative development
+ * project to create Free and Open Source implementations of mobile
+ * communications systems.  For more information about Osmocom, please
+ * see https://osmocom.org/
+ *
+ * \section sec_copyright Copyright and License
+ * Copyright © 2013 by Andreas Eversberg\n
+ * Copyright © 2015 by Alexander Chemeris\n
+ * Copyright © 2016 by Tom Tsou\n
+ * Documentation Copyright © 2017 by Harald Welte\n
+ * All rights reserved. \n\n
+ * The source code of libosmocoding is licensed under the terms of the GNU
+ * General Public License as published by the Free Software Foundation;
+ * either version 2 of the License, or (at your option) any later
+ * version.\n
+ * See <http://www.gnu.org/licenses/> or COPYING included in the source
+ * code package istelf.\n
+ * The information detailed here is provided AS IS with NO WARRANTY OF
+ * ANY KIND, INCLUDING THE WARRANTY OF DESIGN, MERCHANTABILITY AND
+ * FITNESS FOR A PARTICULAR PURPOSE.
+ * \n\n
+ *
+ * \section sec_tracker Homepage + Issue Tracker
+ * libosmocoding is distributed as part of libosmocore and shares its
+ * project page at http://osmocom.org/projects/libosmocore
+ *
+ * An Issue Tracker can be found at
+ * https://osmocom.org/projects/libosmocore/issues
+ *
+ * \section sec_contact Contact and Support
+ * Community-based support is available at the OpenBSC mailing list
+ * <http://lists.osmocom.org/mailman/listinfo/openbsc>\n
+ * Commercial support options available upon request from
+ * <http://sysmocom.de/>
+ */
+
+
+/*! \addtogroup coding
+ *  @{
+ *
+ *  \brief GSM TS 05.03 coding
+ *
+ *  This module is the "master module" of libosmocoding. It uses the
+ *  various other modules (mapping, parity, interleaving) in order to
+ *  implement the complete channel coding (and decoding) chain for the
+ *  various channel types as defined in TS 05.03 / 45.003.
+ */
+
+/*! \file gsm0503_coding.c */
+
 /*
  * EGPRS coding limits
  */
@@ -78,34 +137,49 @@
 /* TS 101318 Chapter 5.3: 244 bits + 4bit sig */
 #define GSM_EFR_BYTES	31
 
+/*! \brief union across the three different EGPRS Uplink header types */
 union gprs_rlc_ul_hdr_egprs {
 	struct gprs_rlc_ul_header_egprs_1 type1;
 	struct gprs_rlc_ul_header_egprs_2 type2;
 	struct gprs_rlc_ul_header_egprs_3 type3;
 };
 
+/*! \brief union across the three different EGPRS Downlink header types */
 union gprs_rlc_dl_hdr_egprs {
 	struct gprs_rlc_dl_header_egprs_1 type1;
 	struct gprs_rlc_dl_header_egprs_2 type2;
 	struct gprs_rlc_dl_header_egprs_3 type3;
 };
 
+/*! \brief Structure describing a Modulation and Coding Scheme */
 struct gsm0503_mcs_code {
+	/*! \brief Modulation and Coding Scheme (MSC) number */
 	uint8_t mcs;
+	/*! \brief Length of Uplink Stealing Flag (USF) in bits */
 	uint8_t usf_len;
 
 	/* Header coding */
+	/*! \brief Length of header (bits) */
 	uint8_t hdr_len;
+	/*! \brief Length of header convolutional code */
 	uint8_t hdr_code_len;
+	/*! \brief Length of header code puncturing sequence */
 	uint8_t hdr_punc_len;
+	/*! \brief header convolutional code */
 	const struct osmo_conv_code *hdr_conv;
+	/*! \brief header puncturing sequence */
 	const uint8_t *hdr_punc;
 
 	/* Data coding */
+	/*! \brief length of data (bits) */
 	uint16_t data_len;
+	/*! \brief length of data convolutional code */
 	uint16_t data_code_len;
+	/*! \brief length of data code puncturing sequence */
 	uint16_t data_punc_len;
+	/*! \brief data convolutional code */
 	const struct osmo_conv_code *data_conv;
+	/*! \brief data puncturing sequences */
 	const uint8_t *data_punc[3];
 };
 
@@ -460,6 +534,13 @@ struct gsm0503_mcs_code gsm0503_mcs_dl_codes[EGPRS_NUM_MCS] = {
 	},
 };
 
+/*! \brief Convolutional Decode + compute BER
+ *  \param[in] code Description of Convolutional Code
+ *  \param[in] input Input soft-bits (-127...127)
+ *  \param[out] output bits
+ *  \param[out] n_errors Number of bit-errors
+ *  \param[out] n_bits_total Number of bits
+ */
 static int osmo_conv_decode_ber(const struct osmo_conv_code *code,
 	const sbit_t *input, ubit_t *output,
 	int *n_errors, int *n_bits_total)
@@ -490,6 +571,12 @@ static int osmo_conv_decode_ber(const struct osmo_conv_code *code,
 	return res;
 }
 
+/*! \brief convenience wrapper for decoding coded bits
+ *  \param[out] l2_data caller-allocated buffer for L2 Frame
+ *  \param[in] cB 456 coded (soft) bits as per TS 05.03 4.1.3
+ *  \param[out] n_errors Number of detected errors
+ *  \param[out] n_bits_total Number of total coded bits
+ *  \returns 0 on success; -1 on CRC error */
 static int _xcch_decode_cB(uint8_t *l2_data, const sbit_t *cB,
 	int *n_errors, int *n_bits_total)
 {
@@ -509,6 +596,10 @@ static int _xcch_decode_cB(uint8_t *l2_data, const sbit_t *cB,
 	return 0;
 }
 
+/*! \brief convenience wrapper for encoding to coded bits
+ *  \param[out] cB caller-allocated buffer for 456 coded bits as per TS 05.03 4.1.3
+ *  \param[out] l2_data to-be-encoded L2 Frame
+ *  \returns 0 */
 static int _xcch_encode_cB(ubit_t *cB, const uint8_t *l2_data)
 {
 	ubit_t conv[224];
@@ -525,6 +616,13 @@ static int _xcch_encode_cB(ubit_t *cB, const uint8_t *l2_data)
 /*
  * GSM xCCH block transcoding
  */
+
+/*! \brief Decoding of xCCH data from bursts to L2 frame
+ *  \param[out] l2_data caller-allocated output data buffer
+ *  \param[in] bursts four GSM bursts in soft-bits
+ *  \param[out] n_errors Number of detected errors
+ *  \param[out] n_bits_total Number of total coded bits
+ */
 int gsm0503_xcch_decode(uint8_t *l2_data, const sbit_t *bursts,
 	int *n_errors, int *n_bits_total)
 {
@@ -539,6 +637,11 @@ int gsm0503_xcch_decode(uint8_t *l2_data, const sbit_t *bursts,
 	return _xcch_decode_cB(l2_data, cB, n_errors, n_bits_total);
 }
 
+/*! \brief Encoding of xCCH data from L2 frame to bursts
+ *  \param[out] bursts caller-allocated burst data (unpacked bits)
+ *  \param[in] l2_data L2 input data (MAC block)
+ *  \returns 0
+ */
 int gsm0503_xcch_encode(ubit_t *bursts, const uint8_t *l2_data)
 {
 	ubit_t iB[456], cB[456], hl = 1, hn = 1;
@@ -801,14 +904,18 @@ static int egprs_decode_data(uint8_t *l2_data, const sbit_t *c,
 	return NUM_BYTES(code->hdr_len + code->data_len);
 }
 
-/*
- * Decode EGPRS UL message
- *
- * 1. Header section decoding
- * 2. Extract CPS settings
- * 3. Burst unmapping and deinterleaving
- * 4. Data section decoding
- */
+/*! \brief Decode EGPRS UL message
+ * 	1. Header section decoding
+ * 	2. Extract CPS settings
+ * 	3. Burst unmapping and deinterleaving
+ * 	4. Data section decoding
+ *  \param[out] l2_data caller-allocated buffer for L2 Frame
+ *  \param[in] bursts burst input data as soft unpacked bits
+ *  \param[in] nbits number of bits in \a bursts
+ *  \param usf_p unused argument ?!?
+ *  \param[out] n_errors number of detected bit-errors
+ *  \param[out] n_bits_total total number of dcoded bits
+ *  \returns 0 on success; negative on error */
 int gsm0503_pdtch_egprs_decode(uint8_t *l2_data, const sbit_t *bursts, uint16_t nbits,
 	uint8_t *usf_p, int *n_errors, int *n_bits_total)
 {
@@ -879,6 +986,13 @@ int gsm0503_pdtch_egprs_decode(uint8_t *l2_data, const sbit_t *bursts, uint16_t 
  * GSM PDTCH block transcoding
  */
 
+/*! \brief Decode GPRS PDTCH
+ *  \param[out] l2_data caller-allocated buffer for L2 Frame
+ *  \param[in] bursts burst input data as soft unpacked bits
+ *  \param[out] usf_p uplink stealing flag
+ *  \param[out] n_errors number of detected bit-errors
+ *  \param[out] n_bits_total total number of dcoded bits
+ *  \returns 0 on success; negative on error */
 int gsm0503_pdtch_decode(uint8_t *l2_data, const sbit_t *bursts, uint8_t *usf_p,
 	int *n_errors, int *n_bits_total)
 {
@@ -1189,9 +1303,11 @@ static int egprs_parse_dl_cps(struct egprs_cps *cps,
 	return egprs_get_cps(cps, type, bits);
 }
 
-/*
- * EGPRS DL message encoding
- */
+/*! \brief EGPRS DL message encoding
+ *  \param[out] bursts caller-allocated buffer for unpacked burst bits
+ *  \param[in] l2_data L2 (MAC) block to be encoded
+ *  \param[in] l2_len length of l2_data in bytes, used to determine MCS
+ *  \returns 0 on success; negative on error */
 int gsm0503_pdtch_egprs_encode(ubit_t *bursts,
 	const uint8_t *l2_data, uint8_t l2_len)
 {
@@ -1282,6 +1398,11 @@ bad_header:
 	return -1;
 }
 
+/*! \brief GPRS DL message encoding
+ *  \param[out] bursts caller-allocated buffer for unpacked burst bits
+ *  \param[in] l2_data L2 (MAC) block to be encoded
+ *  \param[in] l2_len length of l2_data in bytes, used to determine CS
+ *  \returns 0 on success; negative on error */
 int gsm0503_pdtch_encode(ubit_t *bursts, const uint8_t *l2_data, uint8_t l2_len)
 {
 	ubit_t iB[456], cB[676];
@@ -1366,6 +1487,10 @@ int gsm0503_pdtch_encode(ubit_t *bursts, const uint8_t *l2_data, uint8_t l2_len)
  * GSM TCH/F FR/EFR transcoding
  */
 
+/*! \brief assemble a FR codec frame in format as used inside RTP
+ *  \param[out] tch_data Codec frame in RTP format
+ *  \param[in] b_bits Codec frame in 'native' format
+ *  \param[in] net_order FIXME */
 static void tch_fr_reassemble(uint8_t *tch_data,
 	const ubit_t *b_bits, int net_order)
 {
@@ -1426,6 +1551,7 @@ static void tch_fr_disassemble(ubit_t *b_bits,
 	}
 }
 
+/* assemble a HR codec frame in format as used inside RTP */
 static void tch_hr_reassemble(uint8_t *tch_data, const ubit_t *b_bits)
 {
 	int i, j;
@@ -1445,6 +1571,7 @@ static void tch_hr_disassemble(ubit_t *b_bits, const uint8_t *tch_data)
 		b_bits[i] = (tch_data[j >> 3] >> (7 - (j & 7))) & 1;
 }
 
+/* assemble a EFR codec frame in format as used inside RTP */
 static void tch_efr_reassemble(uint8_t *tch_data, const ubit_t *b_bits)
 {
 	int i, j;
@@ -1464,6 +1591,7 @@ static void tch_efr_disassemble(ubit_t *b_bits, const uint8_t *tch_data)
 		b_bits[i] = (tch_data[j >> 3] >> (7 - (j & 7))) & 1;
 }
 
+/* assemble a AMR codec frame in format as used inside RTP */
 static void tch_amr_reassemble(uint8_t *tch_data, const ubit_t *d_bits, int len)
 {
 	int i, j;
@@ -1482,6 +1610,7 @@ static void tch_amr_disassemble(ubit_t *d_bits, const uint8_t *tch_data, int len
 		d_bits[i] = (tch_data[j >> 3] >> (7 - (j & 7))) & 1;
 }
 
+/* re-arrange according to TS 05.03 Table 2 (receiver) */
 static void tch_fr_d_to_b(ubit_t *b_bits, const ubit_t *d_bits)
 {
 	int i;
@@ -1490,6 +1619,7 @@ static void tch_fr_d_to_b(ubit_t *b_bits, const ubit_t *d_bits)
 		b_bits[gsm610_bitorder[i]] = d_bits[i];
 }
 
+/* re-arrange according to TS 05.03 Table 2 (transmitter) */
 static void tch_fr_b_to_d(ubit_t *d_bits, const ubit_t *b_bits)
 {
 	int i;
@@ -1498,6 +1628,7 @@ static void tch_fr_b_to_d(ubit_t *d_bits, const ubit_t *b_bits)
 		d_bits[i] = b_bits[gsm610_bitorder[i]];
 }
 
+/* re-arrange according to TS 05.03 Table 3a (receiver) */
 static void tch_hr_d_to_b(ubit_t *b_bits, const ubit_t *d_bits)
 {
 	int i;
@@ -1513,6 +1644,7 @@ static void tch_hr_d_to_b(ubit_t *b_bits, const ubit_t *d_bits)
 		b_bits[map[i]] = d_bits[i];
 }
 
+/* re-arrange according to TS 05.03 Table 3a (transmitter) */
 static void tch_hr_b_to_d(ubit_t *d_bits, const ubit_t *b_bits)
 {
 	int i;
@@ -1527,6 +1659,7 @@ static void tch_hr_b_to_d(ubit_t *d_bits, const ubit_t *b_bits)
 		d_bits[i] = b_bits[map[i]];
 }
 
+/* re-arrange according to TS 05.03 Table 6 (receiver) */
 static void tch_efr_d_to_w(ubit_t *b_bits, const ubit_t *d_bits)
 {
 	int i;
@@ -1535,6 +1668,7 @@ static void tch_efr_d_to_w(ubit_t *b_bits, const ubit_t *d_bits)
 		b_bits[gsm660_bitorder[i]] = d_bits[i];
 }
 
+/* re-arrange according to TS 05.03 Table 6 (transmitter) */
 static void tch_efr_w_to_d(ubit_t *d_bits, const ubit_t *b_bits)
 {
 	int i;
@@ -1543,6 +1677,7 @@ static void tch_efr_w_to_d(ubit_t *d_bits, const ubit_t *b_bits)
 		d_bits[i] = b_bits[gsm660_bitorder[i]];
 }
 
+/* extract the 65 protected class1a+1b bits */
 static void tch_efr_protected(const ubit_t *s_bits, ubit_t *b_bits)
 {
 	int i;
@@ -1637,6 +1772,14 @@ static void tch_amr_unmerge(ubit_t *d, ubit_t *p, const ubit_t *u, int len, int 
 	memcpy(d + prot, u + prot + 6, len - prot);
 }
 
+/*! \brief Perform channel decoding of a FR/EFR channel according TS 05.03
+ *  \param[out] tch_data Codec frame in RTP payload format
+ *  \param[in] bursts buffer containing the symbols of 8 bursts
+ *  \param[in] net_order FIXME
+ *  \param[in] efr Is this channel using EFR (1) or FR (0)
+ *  \param[out] n_errors Number of detected bit errors
+ *  \param[out] n_bits_total Total number of bits
+ *  \returns length of bytes used in \a tch_data output buffer */
 int gsm0503_tch_fr_decode(uint8_t *tch_data, const sbit_t *bursts,
 	int net_order, int efr, int *n_errors, int *n_bits_total)
 {
@@ -1644,13 +1787,17 @@ int gsm0503_tch_fr_decode(uint8_t *tch_data, const sbit_t *bursts,
 	ubit_t conv[185], s[244], w[260], b[65], d[260], p[8];
 	int i, rv, len, steal = 0;
 
+	/* map from 8 bursts to interleaved data bits (iB) */
 	for (i = 0; i < 8; i++) {
 		gsm0503_tch_burst_unmap(&iB[i * 114],
 			&bursts[i * 116], &h, i >> 2);
 		steal -= h;
 	}
+	/* we now have the bits of the four bursts (interface 4 in
+	 * Figure 1a of TS 05.03 */
 
 	gsm0503_tch_fr_deinterleave(cB, iB);
+	/* we now have the coded bits c(B): interface 3 in Fig. 1a */
 
 	if (steal > 0) {
 		rv = _xcch_decode_cB(tch_data, cB, n_errors, n_bits_total);
@@ -1663,12 +1810,15 @@ int gsm0503_tch_fr_decode(uint8_t *tch_data, const sbit_t *bursts,
 	}
 
 	osmo_conv_decode_ber(&gsm0503_tch_fr, cB, conv, n_errors, n_bits_total);
+	/* we now have the data bits 'u': interface 2 in Fig. 1a */
 
+	/* input: 'conv', output: d[ata] + p[arity] */
 	tch_fr_unreorder(d, p, conv);
 
 	for (i = 0; i < 78; i++)
 		d[i + 182] = (cB[i + 378] < 0) ? 1 : 0;
 
+	/* check if parity of first 50 (class 1) 'd'-bits match 'p' */
 	rv = osmo_crc8gen_check_bits(&gsm0503_tch_fr_crc3, d, 50, p);
 	if (rv) {
 		/* Error checking CRC8 for the FR part of an EFR/FR frame */
@@ -1677,11 +1827,17 @@ int gsm0503_tch_fr_decode(uint8_t *tch_data, const sbit_t *bursts,
 
 	if (efr) {
 		tch_efr_d_to_w(w, d);
+		/* we now have the preliminary-coded bits w(k) */
 
 		tch_efr_unreorder(s, p, w);
+		/* we now have the data delivered to the preliminary
+		 * channel encoding unit s(k) */
 
+		/* extract the 65 most important bits according TS 05.03 3.1.1.1 */
 		tch_efr_protected(s, b);
 
+		/* perform CRC-8 on 65 most important bits (50 bits of
+		 * class 1a + 15 bits of class 1b) */
 		rv = osmo_crc8gen_check_bits(&gsm0503_tch_efr_crc8, b, 65, p);
 		if (rv) {
 			/* Error checking CRC8 for the EFR part of an EFR frame */
@@ -1702,6 +1858,12 @@ int gsm0503_tch_fr_decode(uint8_t *tch_data, const sbit_t *bursts,
 	return len;
 }
 
+/*! \brief Perform channel encoding on a TCH/FS channel according to TS 05.03
+ *  \param[out] bursts caller-allocated output buffer for bursts bits
+ *  \param[in] tch_data Codec input data in RTP payload format
+ *  \param[in] len Length of \a tch_data in bytes
+ *  \param[in] net_order FIXME
+ *  \returns 0 in case of success; negative on error */
 int gsm0503_tch_fr_encode(ubit_t *bursts, const uint8_t *tch_data,
 	int len, int net_order)
 {
@@ -1760,6 +1922,13 @@ coding_efr_fr:
 	return 0;
 }
 
+/*! \brief Perform channel decoding of a HR(v1) channel according TS 05.03
+ *  \param[out] tch_data Codec frame in RTP payload format
+ *  \param[in] bursts buffer containing the symbols of 8 bursts
+ *  \param[in] odd Odd (1) or even (0) frame number
+ *  \param[out] n_errors Number of detected bit errors
+ *  \param[out] n_bits_total Total number of bits
+ *  \returns length of bytes used in \a tch_data output buffer */
 int gsm0503_tch_hr_decode(uint8_t *tch_data, const sbit_t *bursts, int odd,
 	int *n_errors, int *n_bits_total)
 {
@@ -1830,6 +1999,11 @@ int gsm0503_tch_hr_decode(uint8_t *tch_data, const sbit_t *bursts, int odd,
 	return 15;
 }
 
+/*! \brief Perform channel encoding on a TCH/HS channel according to TS 05.03
+ *  \param[out] bursts caller-allocated output buffer for bursts bits
+ *  \param[in] tch_data Codec input data in RTP payload format
+ *  \param[in] len Length of \a tch_data in bytes
+ *  \returns 0 in case of success; negative on error */
 int gsm0503_tch_hr_encode(ubit_t *bursts, const uint8_t *tch_data, int len)
 {
 	ubit_t iB[912], cB[456], h;
@@ -1885,6 +2059,17 @@ int gsm0503_tch_hr_encode(ubit_t *bursts, const uint8_t *tch_data, int len)
 	return 0;
 }
 
+/*! \brief Perform channel decoding of a TCH/AFS channel according TS 05.03
+ *  \param[out] tch_data Codec frame in RTP payload format
+ *  \param[in] bursts buffer containing the symbols of 8 bursts
+ *  \param[in] codec_mode_req is this CMR (1) or CMC (0)
+ *  \param[in] codec array of active codecs (active codec set)
+ *  \param[in] codecs number of codecs in \a codec
+ *  \param ft Frame Type; Input if \a codec_mode_req = 1, Output *  otherwise
+ *  \param[out] cmr Output in \a codec_mode_req = 1
+ *  \param[out] n_errors Number of detected bit errors
+ *  \param[out] n_bits_total Total number of bits
+ *  \returns length of bytes used in \a tch_data output buffer */
 int gsm0503_tch_afs_decode(uint8_t *tch_data, const sbit_t *bursts,
 	int codec_mode_req, uint8_t *codec, int codecs, uint8_t *ft,
 	uint8_t *cmr, int *n_errors, int *n_bits_total)
@@ -2080,6 +2265,16 @@ int gsm0503_tch_afs_decode(uint8_t *tch_data, const sbit_t *bursts,
 	return len;
 }
 
+/*! \brief Perform channel encoding on a TCH/AFS channel according to TS 05.03
+ *  \param[out] bursts caller-allocated output buffer for bursts bits
+ *  \param[in] tch_data Codec input data in RTP payload format
+ *  \param[in] len Length of \a tch_data in bytes
+ *  \param[in] codec_mode_req Use CMR (1) or FT (0)
+ *  \param[in] codec Array of codecs (active codec set)
+ *  \param[in] codecs Number of entries in \a codec
+ *  \param[in] ft Frame Type to be used for encoding (index to \a codec)
+ *  \param[in] cmr Codec Mode Request (used in codec_mode_req = 1 only)
+ *  \returns 0 in case of success; negative on error */
 int gsm0503_tch_afs_encode(ubit_t *bursts, const uint8_t *tch_data, int len,
 	int codec_mode_req, uint8_t *codec, int codecs, uint8_t ft,
 	uint8_t cmr)
@@ -2240,6 +2435,18 @@ invalid_length:
 	return -1;
 }
 
+/*! \brief Perform channel decoding of a TCH/AFS channel according TS 05.03
+ *  \param[out] tch_data Codec frame in RTP payload format
+ *  \param[in] bursts buffer containing the symbols of 8 bursts
+ *  \param[in] odd Is this an odd (1) or even (0) frame number?
+ *  \param[in] codec_mode_req is this CMR (1) or CMC (0)
+ *  \param[in] codec array of active codecs (active codec set)
+ *  \param[in] codecs number of codecs in \a codec
+ *  \param ft Frame Type; Input if \a codec_mode_req = 1, Output *  otherwise
+ *  \param[out] cmr Output in \a codec_mode_req = 1
+ *  \param[out] n_errors Number of detected bit errors
+ *  \param[out] n_bits_total Total number of bits
+ *  \returns length of bytes used in \a tch_data output buffer */
 int gsm0503_tch_ahs_decode(uint8_t *tch_data, const sbit_t *bursts, int odd,
 	int codec_mode_req, uint8_t *codec, int codecs, uint8_t *ft,
 	uint8_t *cmr, int *n_errors, int *n_bits_total)
@@ -2443,6 +2650,16 @@ int gsm0503_tch_ahs_decode(uint8_t *tch_data, const sbit_t *bursts, int odd,
 	return len;
 }
 
+/*! \brief Perform channel encoding on a TCH/AHS channel according to TS 05.03
+ *  \param[out] bursts caller-allocated output buffer for bursts bits
+ *  \param[in] tch_data Codec input data in RTP payload format
+ *  \param[in] len Length of \a tch_data in bytes
+ *  \param[in] codec_mode_req Use CMR (1) or FT (0)
+ *  \param[in] codec Array of codecs (active codec set)
+ *  \param[in] codecs Number of entries in \a codec
+ *  \param[in] ft Frame Type to be used for encoding (index to \a codec)
+ *  \param[in] cmr Codec Mode Request (used in codec_mode_req = 1 only)
+ *  \returns 0 in case of success; negative on error */
 int gsm0503_tch_ahs_encode(ubit_t *bursts, const uint8_t *tch_data, int len,
 	int codec_mode_req, uint8_t *codec, int codecs, uint8_t ft,
 	uint8_t cmr)
@@ -2617,6 +2834,11 @@ static int rach_apply_bsic(ubit_t *d, uint8_t bsic)
 	return 0;
 }
 
+/*! \brief Decode the (8-bit) RACH according to TS 05.03
+ *  \param[out] ra output buffer for RACH data
+ *  \param[in] burst Input burst data
+ *  \param[in] bsic BSIC used in this cell
+ *  \returns 0 on success; negative on error (e.g. CRC error) */
 int gsm0503_rach_decode(uint8_t *ra, const sbit_t *burst, uint8_t bsic)
 {
 	ubit_t conv[14];
@@ -2635,6 +2857,11 @@ int gsm0503_rach_decode(uint8_t *ra, const sbit_t *burst, uint8_t bsic)
 	return 0;
 }
 
+/*! \brief Encode the (8-bit) RACH according to TS 05.03
+ *  \param[out] burst Caller-allocated output burst buffer
+ *  \param[in] ra Input RACH data
+ *  \param[in] bsic BSIC used in this cell
+ *  \returns 0 on success; negative on error */
 int gsm0503_rach_encode(ubit_t *burst, const uint8_t *ra, uint8_t bsic)
 {
 	ubit_t conv[14];
@@ -2653,6 +2880,11 @@ int gsm0503_rach_encode(ubit_t *burst, const uint8_t *ra, uint8_t bsic)
 /*
  * GSM SCH transcoding
  */
+
+/*! \brief Decode the SCH according to TS 05.03
+ *  \param[out] sb_info output buffer for SCH data
+ *  \param[in] burst Input burst data
+ *  \returns 0 on success; negative on error (e.g. CRC error) */
 int gsm0503_sch_decode(uint8_t *sb_info, const sbit_t *burst)
 {
 	ubit_t conv[35];
@@ -2669,6 +2901,10 @@ int gsm0503_sch_decode(uint8_t *sb_info, const sbit_t *burst)
 	return 0;
 }
 
+/*! \brief Encode the SCH according to TS 05.03
+ *  \param[out] burst Caller-allocated output burst buffer
+ *  \param[in] sb_info Input SCH data
+ *  \returns 0 on success; negative on error */
 int gsm0503_sch_encode(ubit_t *burst, const uint8_t *sb_info)
 {
 	ubit_t conv[35];
@@ -2681,3 +2917,5 @@ int gsm0503_sch_encode(ubit_t *burst, const uint8_t *sb_info)
 
 	return 0;
 }
+
+/*! @} */

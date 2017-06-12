@@ -24,6 +24,18 @@
 #include <osmocom/core/bits.h>
 #include <osmocom/coding/gsm0503_tables.h>
 
+/*! \addtogroup tables
+ *  @{
+ *
+ *  \brief GSM TS 05.03 tables
+ *
+ *  This module contains various tables defining parts of 3GPP TS 05.03
+ *  / 45.003, primarily for the purpose of (de)puncturing, interleaving,
+ *  etc.
+ */
+
+/*! \file gsm0503_tables.c */
+
 const ubit_t gsm0503_pdtch_hl_hn_ubit[4][8] = {
 	{ 1,1, 1,1, 1,1, 1,1 },
 	{ 1,1, 0,0, 1,0, 0,0 },
@@ -1730,3 +1742,5 @@ const ubit_t gsm0503_mcs5_usf_precode_table[8][36] = {
 	{ 0,0,1,0,0,1,1,0,1, 1,0,1,1,1,1,1,1,1, 0,1,1,0,1,0,0,0,1, 0,0,1,1,1,0,1,0,0, },
 	{ 0,1,1,0,1,0,1,1,1, 0,1,0,1,0,1,1,1,1, 0,0,0,1,1,1,1,1,0, 0,1,0,0,1,0,0,1,1, },
 };
+
+/*! @} */

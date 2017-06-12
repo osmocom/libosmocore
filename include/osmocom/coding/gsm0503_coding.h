@@ -3,6 +3,14 @@
 #include <stdint.h>
 #include <osmocom/core/bits.h>
 
+/*! \addtogroup coding
+ *  @{
+ */
+
+/*! \file gsm0503_coding.h
+ *  \brief GSM TS 05.03 coding
+ */
+
 #define GSM0503_GPRS_BURSTS_NBITS	(116 * 4)
 #define GSM0503_EGPRS_BURSTS_NBITS	(348 * 4)
 #define NUM_BYTES(N) ((N + 8 - 1) / 8)
@@ -61,3 +69,5 @@ int gsm0503_rach_decode(uint8_t *ra, const sbit_t *burst, uint8_t bsic);
 
 int gsm0503_sch_encode(ubit_t *burst, const uint8_t *sb_info);
 int gsm0503_sch_decode(uint8_t *sb_info, const sbit_t *burst);
+
+/*! @} */

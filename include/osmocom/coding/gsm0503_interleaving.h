@@ -2,6 +2,14 @@
 
 #include <osmocom/core/bits.h>
 
+/*! \addtogroup interleaving
+ *  @{
+ */
+
+/*! \file gsm0503_interleaving.h
+ *  \brief GSM TS 05.03 interleaving
+ */
+
 void gsm0503_xcch_deinterleave(sbit_t *cB, const sbit_t *iB);
 void gsm0503_xcch_interleave(ubit_t *cB, ubit_t *iB);
 
@@ -49,3 +57,5 @@ void gsm0503_mcs8_dl_deinterleave(sbit_t *hc, sbit_t *c1, sbit_t *c2,
 	const sbit_t *hi, const sbit_t *di);
 void gsm0503_mcs8_dl_interleave(const ubit_t *hc, const ubit_t *c1,
 	const ubit_t *c2, ubit_t *hi, ubit_t *di);
+
+/*! @} */
