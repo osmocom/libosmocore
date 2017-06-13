@@ -901,7 +901,7 @@ static int egprs_decode_data(uint8_t *l2_data, const sbit_t *c,
 		u, 0, data_len, 1);
 
 	/* Return the number of bytes required for the bit message */
-	return NUM_BYTES(code->hdr_len + code->data_len);
+	return OSMO_BYTES_FOR_BITS(code->hdr_len + code->data_len);
 }
 
 /*! \brief Decode EGPRS UL message

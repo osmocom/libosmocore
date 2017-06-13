@@ -13,7 +13,6 @@
 
 #define GSM0503_GPRS_BURSTS_NBITS	(116 * 4)
 #define GSM0503_EGPRS_BURSTS_NBITS	(348 * 4)
-#define NUM_BYTES(N) ((N + 8 - 1) / 8)
 
 enum gsm0503_egprs_mcs {
 	EGPRS_MCS0,

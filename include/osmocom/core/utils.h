@@ -19,6 +19,8 @@
 #define OSMO_STRINGIFY(x) #x
 /*! \brief Make a value_string entry from an enum value name */
 #define OSMO_VALUE_STRING(x) { x, #x }
+/*! \brief Number of bytes necessary to store given BITS */
+#define OSMO_BYTES_FOR_BITS(BITS) ((BITS + 8 - 1) / 8)
 
 #include <stdint.h>
 #include <stdio.h>
