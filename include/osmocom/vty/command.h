@@ -92,13 +92,13 @@ enum node_type {
 	L_CS7_RTABLE_NODE,	/*!< \brief SS7 Routing Table */
 	L_CS7_LINK_NODE,	/*!< \brief SS7 Link */
 	L_CS7_LINKSET_NODE,	/*!< \brief SS7 Linkset */
+	L_CS7_SCCPADDR_NODE,	/*!< \brief SS7 SCCP Address */
+	L_CS7_SCCPADDR_GT_NODE,	/*!< \brief SS7 SCCP Global Title */
 
 	/*
 	 * When adding new nodes to the libosmocore project, these nodes can be
 	 * used to avoid ABI changes for unrelated projects.
 	 */
-	RESERVED1_NODE,		/*!< \brief Reserved for later extensions */
-	RESERVED2_NODE,		/*!< \brief Reserved for later extensions */
 	RESERVED3_NODE,		/*!< \brief Reserved for later extensions */
 
 	_LAST_OSMOVTY_NODE

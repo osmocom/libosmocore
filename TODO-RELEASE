@@ -11,3 +11,4 @@ libosmocore	new function		osmo_sock_get_name()
 libosmogsm/gsup	ABI change		fix AUTS length to 14, not 16 (length is implicit)
 libosmogsm/oap	ABI change		fix AUTS length to 14, not 16 (length is implicit)
 osmo-auc-gen	UI change		fix AUTS length to 14, not 16 (length is implicit)
+libosmovty	ABI change		redefine _LAST_OSMOVTY_NODE as a high number to increase node space
