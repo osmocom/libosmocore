@@ -391,14 +391,15 @@ enum gsm0808_chan_rate_type_speech {
 	GSM0808_SPEECH_PERM_NO_CHANGE = 0x1f,
 };
 
-/* GSM 08.08 3.2.2.11 Channel Type */
+/*! \brief GSM 08.08 3.2.2.11 Channel Type
+ *  (see also 3GPP TS 48.008, section 3.2.2.11) */
 enum gsm0808_permitted_speech {
-	GSM0808_PERM_FR1	= 0x01,
-	GSM0808_PERM_FR2	= 0x11,
-	GSM0808_PERM_FR3	= 0x21,
-	GSM0808_PERM_HR1	= GSM0808_PERM_FR1 | 0x4,
-	GSM0808_PERM_HR2	= GSM0808_PERM_FR2 | 0x4,
-	GSM0808_PERM_HR3	= GSM0808_PERM_FR3 | 0x4,
+	GSM0808_PERM_FR1	= 0x01, /*!< GSM FR */
+	GSM0808_PERM_FR2	= 0x11, /*!< GSM EFR */
+	GSM0808_PERM_FR3	= 0x21, /*!< FR AMR */
+	GSM0808_PERM_HR1	= GSM0808_PERM_FR1 | 0x4, /*!< GSM HR */
+	GSM0808_PERM_HR2	= GSM0808_PERM_FR2 | 0x4, /*!< (deprecated) */
+	GSM0808_PERM_HR3	= GSM0808_PERM_FR3 | 0x4, /*!< HR AMR */
 };
 
 /* GSM 08.08 3.2.2.44 Chosen Encryption Algorithm */
