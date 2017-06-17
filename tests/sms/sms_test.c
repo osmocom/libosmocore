@@ -288,16 +288,6 @@ int main(int argc, char** argv)
 
 	/* test 7-bit encoding */
 	for (i = 0; i < ARRAY_SIZE(test_encode); ++i) {
-		/* Test legacy function (return value only) */
-		septet_length = gsm_7bit_encode(coded,
-						(const char *) test_encode[i].input);
-		printf("Legacy encode case %d: "
-		       "septet length %d (expected %d)\n"
-		       , i
-		       , septet_length, test_encode[i].expected_septet_length
-		      );
-		OSMO_ASSERT (septet_length == test_encode[i].expected_septet_length);
-
 		/* Test new function */
 		memset(coded, 0x42, sizeof(coded));
 		septet_length = gsm_7bit_encode_n(coded, sizeof(coded),
@@ -377,15 +367,6 @@ int main(int argc, char** argv)
 
 	/* test 7-bit decoding */
 	for (i = 0; i < ARRAY_SIZE(test_decode); ++i) {
-		/* Test legacy function (return value only) */
-		if (!test_decode[i].ud_hdr_ind) {
-			nchars = gsm_7bit_decode(result, test_decode[i].input,
-						 test_decode[i].expected_septet_length);
-			printf("Legacy decode case %d: "
-			       "return value %d (expected %d)\n",
-			       i, nchars, test_decode[i].expected_septet_length);
-		}
-
 		/* Test new function */
 		memset(result, 0x42, sizeof(result));
 		nchars = gsm_7bit_decode_n_hdr(result, sizeof(result), test_decode[i].input,
