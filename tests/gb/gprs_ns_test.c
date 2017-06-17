@@ -178,61 +178,12 @@ static void setup_bssgp(struct gprs_ns_inst *nsi, struct sockaddr_in *src_addr,
 	send_bssgp_reset(nsi, src_addr, bvci);
 }
 
-/* GPRS Network Service, PDU type: NS_RESET,
- * Cause: O&M intervention, NS VCI: 0x1122, NSEI 0x1122
- */
-static const unsigned char gprs_ns_reset[12] = {
-	0x02, 0x00, 0x81, 0x01, 0x01, 0x82, 0x11, 0x22,
-	0x04, 0x82, 0x11, 0x22
-};
-
-/* GPRS Network Service, PDU type: NS_RESET,
- * Cause: O&M intervention, NS VCI: 0x3344, NSEI 0x1122
- */
-static const unsigned char gprs_ns_reset_vci2[12] = {
-	0x02, 0x00, 0x81, 0x01, 0x01, 0x82, 0x33, 0x44,
-	0x04, 0x82, 0x11, 0x22
-};
-
-/* GPRS Network Service, PDU type: NS_RESET,
- * Cause: O&M intervention, NS VCI: 0x1122, NSEI 0x3344
- */
-static const unsigned char gprs_ns_reset_nsei2[12] = {
-	0x02, 0x00, 0x81, 0x01, 0x01, 0x82, 0x11, 0x22,
-	0x04, 0x82, 0x33, 0x44
-};
-
-/* GPRS Network Service, PDU type: NS_ALIVE */
-static const unsigned char gprs_ns_alive[1] = {
-	0x0a
-};
-
 /* GPRS Network Service, PDU type: NS_STATUS,
  * Cause: PDU not compatible with the protocol state
  * PDU: NS_ALIVE
  */
 static const unsigned char gprs_ns_status_invalid_alive[7] = {
 	0x08, 0x00, 0x81, 0x0a, 0x02, 0x81, 0x0a
-};
-
-/* GPRS Network Service, PDU type: NS_ALIVE_ACK */
-static const unsigned char gprs_ns_alive_ack[1] = {
-	0x0b
-};
-
-/* GPRS Network Service, PDU type: NS_UNBLOCK */
-static const unsigned char gprs_ns_unblock[1] = {
-	0x06
-};
-
-
-/* GPRS Network Service, PDU type: NS_STATUS,
- * Cause: PDU not compatible with the protocol state
- * PDU: NS_RESET_ACK, NS VCI: 0x1122, NSEI 0x1122
- */
-static const unsigned char gprs_ns_status_invalid_reset_ack[15] = {
-	0x08, 0x00, 0x81, 0x0a, 0x02, 0x89, 0x03, 0x01,
-	0x82, 0x11, 0x22, 0x04, 0x82, 0x11, 0x22
 };
 
 /* GPRS Network Service, PDU type: NS_UNITDATA, BVCI 0 */
