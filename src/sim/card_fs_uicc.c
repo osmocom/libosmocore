@@ -205,4 +205,4 @@ const struct tlv_definition ts102221_fcp_tlv_def = {
 };
 
 /* Annex E - TS 101 220 */
-static const uint8_t adf_uicc_aid[] = { 0xA0, 0x00, 0x00, 0x00, 0x87, 0x10, 0x01 };
+static const uint8_t __attribute__((__unused__)) adf_uicc_aid[] = { 0xA0, 0x00, 0x00, 0x00, 0x87, 0x10, 0x01 };
