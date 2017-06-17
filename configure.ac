@@ -235,6 +235,9 @@ then
 	CPPFLAGS+=" -fsanitize=address -fsanitize=undefined"
 fi
 
+CFLAGS+=" -DBUILDING_LIBOSMOCORE"
+CPPFLAGS+=" -DBUILDING_LIBOSMOCORE"
+
 AC_ARG_ENABLE(simd,
 	[AS_HELP_STRING(
 		[--disable-simd],
