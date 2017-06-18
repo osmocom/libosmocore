@@ -21,6 +21,7 @@
 #include <errno.h>
 #include <stdbool.h>
 #include <string.h>
+#include <inttypes.h>
 
 #include <osmocom/core/fsm.h>
 #include <osmocom/core/talloc.h>
@@ -284,7 +285,7 @@ const char *osmo_fsm_event_name(struct osmo_fsm *fsm, uint32_t event)
 {
 	static char buf[32];
 	if (!fsm->event_names) {
-		snprintf(buf, sizeof(buf), "%u", event);
+		snprintf(buf, sizeof(buf), "%"PRIu32, event);
 		return buf;
 	} else
 		return get_value_string(fsm->event_names, event);
@@ -314,7 +315,7 @@ const char *osmo_fsm_state_name(struct osmo_fsm *fsm, uint32_t state)
 {
 	static char buf[32];
 	if (state >= fsm->num_states) {
-		snprintf(buf, sizeof(buf), "unknown %u", state);
+		snprintf(buf, sizeof(buf), "unknown %"PRIu32, state);
 		return buf;
 	} else
 		return fsm->states[state].name;
@@ -408,7 +409,7 @@ int _osmo_fsm_inst_dispatch(struct osmo_fsm_inst *fi, uint32_t event, void *data
 
 	if (!fi) {
 		LOGPSRC(DLGLOBAL, LOGL_ERROR, file, line,
-			"Trying to dispatch event %u to non-existent"
+			"Trying to dispatch event %"PRIu32" to non-existent"
 			" FSM instance!\n", event);
 		osmo_log_backtrace(DLGLOBAL, LOGL_ERROR);
 		return -ENODEV;
