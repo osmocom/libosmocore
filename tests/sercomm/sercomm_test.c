@@ -133,4 +133,5 @@ static void test_sercomm(void)
 int main(int argc, char **argv)
 {
 	test_sercomm();
+	return 0;
 }
