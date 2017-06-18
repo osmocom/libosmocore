@@ -358,7 +358,7 @@ static int ms_to_bts_tx_cb(struct msgb *msg, struct lapdm_entity *le, void *_ctx
 
 		/* Verify the added RSL_IE_L3_INFO but we have a bug here */
 		OSMO_ASSERT(msg->data[6] == RSL_IE_L3_INFO);
-		#warning "RSL_IE_L3_INFO 16 bit length is wrong"
+		#pragma message ("RSL_IE_L3_INFO 16 bit length is wrong")
 		/* This should be okay but it is actually 0x0, 0x9c on ia-32 */
 		/* OSMO_ASSERT(msg->data[7] == 0x0 && msg->data[8] == 0x0); */
 	} else if (state->ms_read == 1) {
