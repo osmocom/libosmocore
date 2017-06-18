@@ -91,22 +91,6 @@ static struct msgb *read_record_nr(struct osim_chan_hdl *st, uint8_t rec_nr, uin
 	return msg;
 }
 
-/* 11.1.6 */
-static struct msgb *update_record_nr(struct osim_chan_hdl *st, uint8_t rec_nr,
-				     const uint8_t *data, uint16_t rec_size)
-{
-	struct msgb *msg;
-	uint8_t *cur;
-
-	msg = osim_new_apdumsg(0x00, 0xDC, rec_nr, 0x04, rec_size, 0);
-	cur = msgb_put(msg, rec_size);
-	memcpy(cur, data, rec_size);
-
-	osim_transceive_apdu(st, msg);
-
-	return msg;
-}
-
 /* 11.1.3 */
 static struct msgb *read_binary(struct osim_chan_hdl *st, uint16_t offset, uint16_t len)
 {
@@ -121,27 +105,6 @@ static struct msgb *read_binary(struct osim_chan_hdl *st, uint16_t offset, uint1
 
 	return msg;
 }
-
-/* 11.1.4 */
-static struct msgb *update_binary(struct osim_chan_hdl *st, uint16_t offset,
-				  const uint8_t *data, uint16_t len)
-{
-	struct msgb *msg;
-	uint8_t *cur;
-
-	if (offset > 0x7fff || len > 256)
-		return NULL;
-
-	msg = osim_new_apdumsg(0x00, 0xD6, offset >> 8, offset & 0xff, len & 0xff, 0);
-	cur = msgb_put(msg, len);
-	memcpy(cur, data, len);
-
-	osim_transceive_apdu(st, msg);
-
-	return msg;
-}
-
-
 
 static int dump_fcp_template(struct tlv_parsed *tp)
 {
