@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include <inttypes.h>
 
 #include <osmocom/core/utils.h>
 #include <osmocom/core/byteswap.h>
@@ -637,7 +638,7 @@ int gsm48_mi_to_string(char *string, const int str_len, const uint8_t *mi,
 		/* Table 10.5.4.3, reverse generate_mid_from_tmsi */
 		if (mi_len == GSM48_TMSI_LEN && mi[0] == (0xf0 | GSM_MI_TYPE_TMSI)) {
 			tmsi = osmo_load32be(&mi[1]);
-			return snprintf(string, str_len, "%u", tmsi);
+			return snprintf(string, str_len, "%"PRIu32, tmsi);
 		}
 		break;
 	case GSM_MI_TYPE_IMSI:
