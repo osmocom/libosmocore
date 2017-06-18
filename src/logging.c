@@ -847,7 +847,7 @@ const char *log_vty_command_string()
 			char name[name_len];
 
 			for (j = 0; j < name_len; j++)
-				name[j] = tolower(info->cat[i].name[j]);
+				name[j] = tolower((unsigned char)info->cat[i].name[j]);
 
 			name[name_len-1] = '\0';
 			ret = snprintf(str + offset, rem, "%s|", name+1);
@@ -869,7 +869,7 @@ const char *log_vty_command_string()
 		char loglevel_str[loglevel_str_len];
 
 		for (j = 0; j < loglevel_str_len; j++)
-			loglevel_str[j] = tolower(loglevel_strs[i].str[j]);
+			loglevel_str[j] = tolower((unsigned char)loglevel_strs[i].str[j]);
 
 		loglevel_str[loglevel_str_len-1] = '\0';
 		ret = snprintf(str + offset, rem, "%s|", loglevel_str);

@@ -596,7 +596,7 @@ const char *gsm_band_name(enum gsm_band band)
 /*! Parse string name of a GSM band */
 enum gsm_band gsm_band_parse(const char* mhz)
 {
-	while (*mhz && !isdigit(*mhz))
+	while (*mhz && !isdigit((unsigned char)*mhz))
 		mhz++;
 
 	if (*mhz == '\0')

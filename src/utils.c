@@ -274,7 +274,7 @@ void osmo_str2lower(char *out, const char *in)
 	unsigned int i;
 
 	for (i = 0; i < strlen(in); i++)
-		out[i] = tolower(in[i]);
+		out[i] = tolower((const unsigned char)in[i]);
 	out[strlen(in)] = '\0';
 }
 
@@ -287,7 +287,7 @@ void osmo_str2upper(char *out, const char *in)
 	unsigned int i;
 
 	for (i = 0; i < strlen(in); i++)
-		out[i] = toupper(in[i]);
+		out[i] = toupper((const unsigned char)in[i]);
 	out[strlen(in)] = '\0';
 }
 #endif /* HAVE_CTYPE_H */
