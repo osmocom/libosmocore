@@ -100,7 +100,7 @@ void gsm340_gen_scts(uint8_t *scts, time_t time)
 #ifdef HAVE_TM_GMTOFF_IN_TM
 	*scts++ = gsm411_bcdify(tm->tm_gmtoff/(60*15));
 #else
-#warning find a portable way to obtain timezone offset
+#pragma message ("find a portable way to obtain timezone offset")
 	*scts++ = 0;
 #endif
 }
@@ -258,7 +258,7 @@ enum sms_alphabet gsm338_get_sms_alphabet(uint8_t dcs)
 		if (cgbits & 2) {
 			LOGP(DLSMS, LOGL_NOTICE,
 			     "Compressed SMS not supported yet\n");
-			return 0xffffffff;
+			return -1;
 		}
 
 		switch ((dcs >> 2)&0x03) {
