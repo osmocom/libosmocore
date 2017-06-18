@@ -164,7 +164,7 @@ struct vdecoder {
 	int len;
 	int recursive;
 	int intrvl;
-	struct vtrellis *trellis;
+	struct vtrellis trellis;
 	int16_t **paths;
 
 	void (*metric_func)(const int8_t *, const int16_t *,
@@ -372,41 +372,38 @@ static void free_trellis(struct vtrellis *trellis)
 	vdec_free(trellis->outputs);
 	vdec_free(trellis->sums);
 	free(trellis->vals);
-	free(trellis);
 }
 
-/* Allocate and initialize the trellis object
+/* Initialize the trellis object
  * Initialization consists of generating the outputs and output value of a
  * given state. Due to trellis symmetry and anti-symmetry, only one of the
  * transition paths is utilized by the butterfly operation in the forward
  * recursion, so only one set of N outputs is required per state variable.
  */
-static struct vtrellis *generate_trellis(const struct osmo_conv_code *code)
+static int generate_trellis(struct vdecoder *dec,
+	const struct osmo_conv_code *code)
 {
-	int i, rc = -1;
-	struct vtrellis *trellis;
+	struct vtrellis *trellis = &dec->trellis;
 	int16_t *outputs;
+	int i, rc;
 
 	int ns = NUM_STATES(code->K);
-	int recursive = conv_code_recursive(code);
 	int olen = (code->N == 2) ? 2 : 4;
-
-	trellis = (struct vtrellis *) calloc(1, sizeof(struct vtrellis));
-	if (!trellis)
-		goto fail;
 
 	trellis->num_states = ns;
 	trellis->sums =	vdec_malloc(ns);
 	trellis->outputs = vdec_malloc(ns * olen);
 	trellis->vals = (uint8_t *) malloc(ns * sizeof(uint8_t));
 
-	if (!trellis->sums || !trellis->outputs || !trellis->vals)
+	if (!trellis->sums || !trellis->outputs || !trellis->vals) {
+		rc = -ENOMEM;
 		goto fail;
+	}
 
 	/* Populate the trellis state objects */
 	for (i = 0; i < ns; i++) {
 		outputs = &trellis->outputs[olen * i];
-		if (recursive) {
+		if (dec->recursive) {
 			rc = gen_recursive_state_info(&trellis->vals[i],
 				i, outputs, code);
 		} else {
@@ -429,11 +426,11 @@ static struct vtrellis *generate_trellis(const struct osmo_conv_code *code)
 	if (code->term != CONV_TERM_TAIL_BITING)
 		trellis->sums[0] = INT8_MAX * code->N * code->K;
 
-	return trellis;
+	return 0;
 
 fail:
 	free_trellis(trellis);
-	return NULL;
+	return rc;
 }
 
 static void _traceback(struct vdecoder *dec,
@@ -444,7 +441,7 @@ static void _traceback(struct vdecoder *dec,
 
 	for (i = len - 1; i >= 0; i--) {
 		path = dec->paths[i][state] + 1;
-		out[i] = dec->trellis->vals[state];
+		out[i] = dec->trellis.vals[state];
 		state = vstate_lshift(state, dec->k, path);
 	}
 }
@@ -457,7 +454,7 @@ static void _traceback_rec(struct vdecoder *dec,
 
 	for (i = len - 1; i >= 0; i--) {
 		path = dec->paths[i][state] + 1;
-		out[i] = path ^ dec->trellis->vals[state];
+		out[i] = path ^ dec->trellis.vals[state];
 		state = vstate_lshift(state, dec->k, path);
 	}
 }
@@ -472,8 +469,8 @@ static int traceback(struct vdecoder *dec, uint8_t *out, int term, int len)
 	unsigned path, state = 0;
 
 	if (term != CONV_TERM_FLUSH) {
-		for (i = 0; i < dec->trellis->num_states; i++) {
-			sum = dec->trellis->sums[i];
+		for (i = 0; i < dec->trellis.num_states; i++) {
+			sum = dec->trellis.sums[i];
 			if (sum > max) {
 				max = sum;
 				state = i;
@@ -503,7 +500,7 @@ static void vdec_deinit(struct vdecoder *dec)
 	if (!dec)
 		return;
 
-	free_trellis(dec->trellis);
+	free_trellis(&dec->trellis);
 
 	if (dec->paths != NULL) {
 		vdec_free(dec->paths[0]);
@@ -517,7 +514,7 @@ static void vdec_deinit(struct vdecoder *dec)
  */
 static int vdec_init(struct vdecoder *dec, const struct osmo_conv_code *code)
 {
-	int i, ns;
+	int i, ns, rc;
 
 	ns = NUM_STATES(code->K);
 
@@ -563,9 +560,9 @@ static int vdec_init(struct vdecoder *dec, const struct osmo_conv_code *code)
 	else
 		dec->len = code->len;
 
-	dec->trellis = generate_trellis(code);
-	if (!dec->trellis)
-		goto enomem;
+	rc = generate_trellis(dec, code);
+	if (rc)
+		return rc;
 
 	dec->paths = (int16_t **) malloc(sizeof(int16_t *) * dec->len);
 	if (!dec->paths)
@@ -610,13 +607,12 @@ static int depuncture(const int8_t *in, const int *punc, int8_t *out, int len)
  */
 static void forward_traverse(struct vdecoder *dec, const int8_t *seq)
 {
-	struct vtrellis *trellis = dec->trellis;
 	int i;
 
 	for (i = 0; i < dec->len; i++) {
 		dec->metric_func(&seq[dec->n * i],
-			trellis->outputs,
-			trellis->sums,
+			dec->trellis.outputs,
+			dec->trellis.sums,
 			dec->paths[i],
 			!(i % dec->intrvl));
 	}
