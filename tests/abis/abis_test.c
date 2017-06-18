@@ -122,7 +122,8 @@ static inline void print_chk(const char *what, uint8_t len1, uint8_t len2, const
 
 static inline void chk_raw(const char *what, const uint8_t *data, uint16_t len)
 {
-	struct abis_nm_sw_desc sw = { 0 };
+	/* = { 0 } triggers a warning in some gcc versions due to a bug: gcc issue #53119 */
+	struct abis_nm_sw_desc sw = { {0} };
 	int res = abis_nm_get_sw_conf(data, len, &sw, 1);
 	uint16_t xlen = abis_nm_get_sw_desc_len(data, len);
 
@@ -144,7 +145,8 @@ static inline void chk_descr(struct msgb *msg, const char *f_id, const char *f_v
 {
 	int res;
 	uint16_t len;
-	struct abis_nm_sw_desc sw = { 0 }, put = {
+	/* = { 0 } triggers a warning in some gcc versions due to a bug: gcc issue #53119 */
+	struct abis_nm_sw_desc sw = { {0} }, put = {
 		.file_id_len = strlen(f_id),
 		.file_version_len = strlen(f_ver),
 	};
