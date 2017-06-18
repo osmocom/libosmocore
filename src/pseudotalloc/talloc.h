@@ -39,4 +39,4 @@ void *_talloc_zero_array(const void *ctx,
 			 size_t el_size,
 			 unsigned count,
 			 const char *name);
-
+char *talloc_asprintf(const void *ctx, const char *fmt, ...);

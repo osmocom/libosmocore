@@ -5,6 +5,7 @@
 
 #include "talloc.h"
 #include <string.h>
+#include <stdio.h>
 
 void *_talloc_zero(const void *ctx, size_t size, const char *name)
 {
@@ -60,4 +61,19 @@ void *_talloc_array(const void *ctx, size_t el_size, unsigned count, const char 
 void *_talloc_zero_array(const void *ctx, size_t el_size, unsigned count, const char *name)
 {
 	return talloc_zero_size(ctx, el_size * count);
+}
+
+char *talloc_asprintf(const void *ctx, const char *fmt, ...)
+{
+	char *buf;
+	size_t len = 128;
+	va_list args;
+	va_start(args, fmt);
+
+	buf = talloc_size(ctx, len);
+	if (len < vsnprintf(buf, len, fmt, args))
+		strcpy(&buf[len-6], "[...]");
+
+	va_end(args);
+	return buf;
 }
