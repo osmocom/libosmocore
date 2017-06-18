@@ -498,7 +498,7 @@ static int traceback(struct vdecoder *dec, uint8_t *out, int term, int len)
 }
 
 /* Release decoder object */
-static void free_vdec(struct vdecoder *dec)
+static void vdec_deinit(struct vdecoder *dec)
 {
 	if (!dec)
 		return;
@@ -509,22 +509,18 @@ static void free_vdec(struct vdecoder *dec)
 		vdec_free(dec->paths[0]);
 		free(dec->paths);
 	}
-
-	free(dec);
 }
 
-/* Allocate decoder object
+/* Initialize decoder object with code specific params
  * Subtract the constraint length K on the normalization interval to
  * accommodate the initialization path metric at state zero.
  */
-static struct vdecoder *alloc_vdec(const struct osmo_conv_code *code)
+static int vdec_init(struct vdecoder *dec, const struct osmo_conv_code *code)
 {
 	int i, ns;
-	struct vdecoder *dec;
 
 	ns = NUM_STATES(code->K);
 
-	dec = (struct vdecoder *) calloc(1, sizeof(struct vdecoder));
 	dec->n = code->N;
 	dec->k = code->K;
 	dec->recursive = conv_code_recursive(code);
@@ -542,7 +538,7 @@ static struct vdecoder *alloc_vdec(const struct osmo_conv_code *code)
 			dec->metric_func = osmo_conv_metrics_k5_n4;
 			break;
 		default:
-			goto fail;
+			return -EINVAL;
 		}
 	} else if (dec->k == 7) {
 		switch (dec->n) {
@@ -556,10 +552,10 @@ static struct vdecoder *alloc_vdec(const struct osmo_conv_code *code)
 			dec->metric_func = osmo_conv_metrics_k7_n4;
 			break;
 		default:
-			goto fail;
+			return -EINVAL;
 		}
 	} else {
-		goto fail;
+		return -EINVAL;
 	}
 
 	if (code->term == CONV_TERM_FLUSH)
@@ -569,24 +565,24 @@ static struct vdecoder *alloc_vdec(const struct osmo_conv_code *code)
 
 	dec->trellis = generate_trellis(code);
 	if (!dec->trellis)
-		goto fail;
+		goto enomem;
 
 	dec->paths = (int16_t **) malloc(sizeof(int16_t *) * dec->len);
 	if (!dec->paths)
-		goto fail;
+		goto enomem;
 
 	dec->paths[0] = vdec_malloc(ns * dec->len);
 	if (!dec->paths[0])
-		goto fail;
+		goto enomem;
 
 	for (i = 1; i < dec->len; i++)
 		dec->paths[i] = &dec->paths[0][i * ns];
 
-	return dec;
+	return 0;
 
-fail:
-	free_vdec(dec);
-	return NULL;
+enomem:
+	vdec_deinit(dec);
+	return -ENOMEM;
 }
 
 /* Depuncture sequence with nagative value terminated puncturing matrix */
@@ -697,7 +693,7 @@ int osmo_conv_decode_acc(const struct osmo_conv_code *code,
 	const sbit_t *input, ubit_t *output)
 {
 	int rc;
-	struct vdecoder *vdec;
+	struct vdecoder dec;
 
 	if (!init_complete)
 		osmo_conv_init();
@@ -706,14 +702,14 @@ int osmo_conv_decode_acc(const struct osmo_conv_code *code,
 		((code->K != 5) && (code->K != 7)))
 		return -EINVAL;
 
-	vdec = alloc_vdec(code);
-	if (!vdec)
-		return -EFAULT;
+	rc = vdec_init(&dec, code);
+	if (rc)
+		return rc;
 
-	rc = conv_decode(vdec, input, code->puncture,
+	rc = conv_decode(&dec, input, code->puncture,
 		output, code->len, code->term);
 
-	free_vdec(vdec);
+	vdec_deinit(&dec);
 
 	return rc;
 }
