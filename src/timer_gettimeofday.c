@@ -29,6 +29,7 @@
 
 #include <stdbool.h>
 #include <sys/time.h>
+#include <osmocom/core/timer_compat.h>
 
 bool osmo_gettimeofday_override = false;
 struct timeval osmo_gettimeofday_override_time = { 23, 424242 };
