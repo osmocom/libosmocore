@@ -156,7 +156,6 @@ struct vtrellis {
  * recursive - Set to '1' if the code is recursive
  * intrvl    - Normalization interval
  * trellis   - Trellis object
- * punc      - Puncturing sequence
  * paths     - Trellis paths
  */
 struct vdecoder {
@@ -166,7 +165,6 @@ struct vdecoder {
 	int recursive;
 	int intrvl;
 	struct vtrellis *trellis;
-	int *punc;
 	int16_t **paths;
 
 	void (*metric_func)(const int8_t *, const int16_t *,
