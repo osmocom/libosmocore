@@ -413,32 +413,27 @@ static struct vtrellis *generate_trellis(const struct osmo_conv_code *code)
 			rc = gen_state_info(&trellis->vals[i],
 				i, outputs, code);
 		}
+
+		if (rc < 0)
+			goto fail;
+
+		/* Set accumulated path metrics to zero */
+		trellis->sums[i] = 0;
 	}
 
-	if (rc < 0)
-		goto fail;
+	/**
+	 * For termination other than tail-biting, initialize the zero state
+	 * as the encoder starting state. Initialize with the maximum
+	 * accumulated sum at length equal to the constraint length.
+	 */
+	if (code->term != CONV_TERM_TAIL_BITING)
+		trellis->sums[0] = INT8_MAX * code->N * code->K;
 
 	return trellis;
 
 fail:
 	free_trellis(trellis);
 	return NULL;
-}
-
-/* Reset decoder
- * Set accumulated path metrics to zero. For termination other than
- * tail-biting, initialize the zero state as the encoder starting state.
- * Initialize with the maximum accumulated sum at length equal to the
- * constraint length.
- */
-static void reset_decoder(struct vdecoder *dec, int term)
-{
-	int ns = dec->trellis->num_states;
-
-	memset(dec->trellis->sums, 0, sizeof(int16_t) * ns);
-
-	if (term != CONV_TERM_TAIL_BITING)
-		dec->trellis->sums[0] = INT8_MAX * dec->n * dec->k;
 }
 
 static void _traceback(struct vdecoder *dec,
@@ -640,8 +635,6 @@ static int conv_decode(struct vdecoder *dec, const int8_t *seq,
 	const int *punc, uint8_t *out, int len, int term)
 {
 	int8_t depunc[dec->len * dec->n];
-
-	reset_decoder(dec, term);
 
 	if (punc) {
 		depuncture(seq, punc, depunc, dec->len * dec->n);
