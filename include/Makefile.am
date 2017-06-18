@@ -31,6 +31,7 @@ nobase_include_HEADERS = \
                        osmocom/core/macaddr.h \
                        osmocom/core/msgb.h \
                        osmocom/core/panic.h \
+                       osmocom/core/prbs.h \
                        osmocom/core/prim.h \
                        osmocom/core/process.h \
                        osmocom/core/rate_ctr.h \

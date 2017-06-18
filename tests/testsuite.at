@@ -280,3 +280,9 @@ AT_KEYWORDS([sercomm])
 cat $abs_srcdir/sercomm/sercomm_test.ok > expout
 AT_CHECK([$abs_top_builddir/tests/sercomm/sercomm_test], [0], [expout], [ignore])
 AT_CLEANUP
+
+AT_SETUP([prbs])
+AT_KEYWORDS([prbs])
+cat $abs_srcdir/prbs/prbs_test.ok > expout
+AT_CHECK([$abs_top_builddir/tests/prbs/prbs_test], [0], [expout], [ignore])
+AT_CLEANUP
