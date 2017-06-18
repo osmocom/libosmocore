@@ -10,7 +10,7 @@ autoreconf --install --force
 	--host=arm-none-eabi \
 	--enable-embedded \
 	--disable-shared \
-	CFLAGS="-Os -ffunction-sections -fdata-sections -nostartfiles -nodefaultlibs"
+	CFLAGS="-Os -ffunction-sections -fdata-sections -nostartfiles -nodefaultlibs -Werror"
 
 $MAKE $PARALLEL_MAKE \
 	|| cat-testlogs.sh
@@ -27,7 +27,7 @@ cd builddir
 	--host=arm-none-eabi \
 	--enable-embedded \
 	--disable-shared \
-	CFLAGS="-Os -ffunction-sections -fdata-sections -nostartfiles -nodefaultlibs"
+	CFLAGS="-Os -ffunction-sections -fdata-sections -nostartfiles -nodefaultlibs -Werror"
 
 $MAKE $PARALLEL_MAKE \
 	|| cat-testlogs.sh

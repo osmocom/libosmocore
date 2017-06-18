@@ -11,7 +11,7 @@ else
 fi
 
 autoreconf --install --force
-./configure --enable-static $ENABLE_SANITIZE
+./configure --enable-static $ENABLE_SANITIZE CFLAGS="-Werror" CPPFLAGS="-Werror"
 $MAKE $PARALLEL_MAKE check \
   || cat-testlogs.sh
 $MAKE distcheck \
@@ -23,7 +23,7 @@ git checkout .
 autoreconf --install --force
 mkdir builddir
 cd builddir
-../configure --enable-static
+../configure --enable-static CFLAGS="-Werror" CPPFLAGS="-Werror"
 $MAKE $PARALLEL_MAKE check \
   || cat-testlogs.sh
 $MAKE distcheck \
