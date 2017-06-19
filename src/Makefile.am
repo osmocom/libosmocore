@@ -21,28 +21,28 @@ libosmocore_la_SOURCES = timer.c timer_gettimeofday.c select.c signal.c msgb.c b
 			 conv.c application.c rbtree.c strrb.c \
 			 loggingrb.c crc8gen.c crc16gen.c crc32gen.c crc64gen.c \
 			 macaddr.c stat_item.c stats.c stats_statsd.c prim.c \
-			 viterbi.c viterbi_generic.c sercomm.c
+			 conv_acc.c conv_acc_generic.c sercomm.c
 
 if HAVE_SSE3
-libosmocore_la_SOURCES += viterbi_sse.c
+libosmocore_la_SOURCES += conv_acc_sse.c
 if HAVE_SSE4_1
-viterbi_sse.lo : CFLAGS += -msse3 -msse4.1
+conv_acc_sse.lo : CFLAGS += -msse3 -msse4.1
 else
-viterbi_sse.lo : CFLAGS += -msse3
+conv_acc_sse.lo : CFLAGS += -msse3
 endif
 
 if HAVE_AVX2
-libosmocore_la_SOURCES += viterbi_sse_avx.c
+libosmocore_la_SOURCES += conv_acc_sse_avx.c
 if HAVE_SSE4_1
-viterbi_sse_avx.lo : CFLAGS += -msse3 -mavx2 -msse4.1
+conv_acc_sse_avx.lo : CFLAGS += -msse3 -mavx2 -msse4.1
 else
-viterbi_sse_avx.lo : CFLAGS += -msse3 -mavx2
+conv_acc_sse_avx.lo : CFLAGS += -msse3 -mavx2
 endif
 endif
 endif
 
 BUILT_SOURCES = crc8gen.c crc16gen.c crc32gen.c crc64gen.c
-EXTRA_DIST = viterbi_sse_common.h
+EXTRA_DIST = conv_acc_sse_impl.h
 
 if ENABLE_PLUGIN
 libosmocore_la_SOURCES += plugin.c

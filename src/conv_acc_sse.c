@@ -55,7 +55,7 @@
 /**
  * Include common SSE implementation
  */
-#include <viterbi_sse_common.h>
+#include <conv_acc_sse_impl.h>
 
 /* Aligned Memory Allocator
  * SSE requires 16-byte memory alignment. We store relevant trellis values
