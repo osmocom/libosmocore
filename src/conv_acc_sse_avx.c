@@ -1,5 +1,6 @@
 /*
- * Intel SSE + AVX Viterbi decoder
+ * Accelerated Viterbi decoder implementation
+ * for architectures with both SSE3 and AVX2 support
  *
  * Copyright (C) 2013, 2014 Thomas Tsou <tom@tsou.cc>
  *

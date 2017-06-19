@@ -1,5 +1,5 @@
 /*
- * Viterbi decoder
+ * Accelerated Viterbi decoder implementation
  *
  * Copyright (C) 2013, 2014 Thomas Tsou <tom@tsou.cc>
  *

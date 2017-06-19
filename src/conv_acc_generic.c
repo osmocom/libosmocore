@@ -1,5 +1,6 @@
 /*
- * Viterbi decoder
+ * Accelerated Viterbi decoder implementation
+ * for generic architectures without SSE support
  *
  * Copyright (C) 2013, 2014 Thomas Tsou <tom@tsou.cc>
  *

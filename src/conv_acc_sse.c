@@ -1,5 +1,6 @@
 /*
- * Intel SSE Viterbi decoder
+ * Accelerated Viterbi decoder implementation
+ * for architectures with only SSE3 available
  *
  * Copyright (C) 2013, 2014 Thomas Tsou <tom@tsou.cc>
  *
