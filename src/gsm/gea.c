@@ -37,7 +37,7 @@
 /*! \file gsm/gea.c */
 
 
-/*! \brief Performs the GEA4 algorithm as in 3GPP TS 55.226 V9.0.0
+/*! Performs the GEA4 algorithm as in 3GPP TS 55.226 V9.0.0
  *  \param[in,out] out Buffer for gamma for encrypted/decrypted
  *  \param[in] len Length of out, in bytes
  *  \param[in] kc Buffer with the ciphering key
@@ -51,7 +51,7 @@ int gea4(uint8_t *out, uint16_t len, uint8_t *kc, uint32_t iv,
 	return 0;
 }
 
-/*! \brief Performs the GEA3 algorithm as in 3GPP TS 55.216 V6.2.0
+/*! Performs the GEA3 algorithm as in 3GPP TS 55.216 V6.2.0
  *  \param[in,out] out Buffer for gamma for encrypted/decrypted
  *  \param[in] len Length of out, in bytes
  *  \param[in] kc Buffer with the ciphering key

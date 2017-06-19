@@ -27,7 +27,7 @@
 /*! \addtogroup tables
  *  @{
  *
- *  \brief GSM TS 05.03 tables
+ *  GSM TS 05.03 tables
  *
  *  This module contains various tables defining parts of 3GPP TS 05.03
  *  / 45.003, primarily for the purpose of (de)puncturing, interleaving,

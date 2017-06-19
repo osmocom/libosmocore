@@ -33,7 +33,7 @@
  */
 
 /*! \file comp128v23.c
- *  \brief COMP128 v2 / v3; Common Algorithm used for GSM Authentication (A3/A8)
+ *  COMP128 v2 / v3; Common Algorithm used for GSM Authentication (A3/A8)
  */
 
 static const uint8_t table0[256] = {
@@ -109,7 +109,7 @@ _comp128v23_internal(uint8_t *output, const uint8_t *kxor, const uint8_t *rand)
 	}
 }
 
-/*! \brief Perform COMP128v3 algorithm
+/*! Perform COMP128v3 algorithm
  *  \param[in] ki Secret Key K(i) of subscriber
  *  \param[in] rand Random Challenge
  *  \param[out] sres user-supplied buffer for storing computed SRES value
@@ -161,7 +161,7 @@ comp128v3(const uint8_t *ki, const uint8_t *rand, uint8_t *sres, uint8_t *kc)
 	return 0;
 }
 
-/*! \brief Perform COMP128v2 algorithm
+/*! Perform COMP128v2 algorithm
  *  \param[in] ki Secret Key K(i) of subscriber
  *  \param[in] rand Random Challenge
  *  \param[out] sres user-supplied buffer for storing computed SRES value

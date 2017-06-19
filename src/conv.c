@@ -24,7 +24,7 @@
 
 /*! \addtogroup conv
  *  @{
- *  \brief Osmocom convolutional encoder and decoder
+ *  Osmocom convolutional encoder and decoder
  */
 
 /*! \file conv.c */
@@ -78,7 +78,7 @@ osmo_conv_get_output_length(const struct osmo_conv_code *code, int len)
 /* Encoding                                                                 */
 /* ------------------------------------------------------------------------ */
 
-/*! \brief Initialize a convolutional encoder
+/*! Initialize a convolutional encoder
  *  \param[in,out] encoder Encoder state to initialize
  *  \param[in] code Description of convolutional code
  */
@@ -198,7 +198,7 @@ osmo_conv_encode_flush(struct osmo_conv_encoder *encoder,
 	return o_idx;
 }
 
-/*! \brief All-in-one convolutional encoding function
+/*! All-in-one convolutional encoding function
  *  \param[in] code description of convolutional code to be used
  *  \param[in] input array of unpacked bits (uncoded)
  *  \param[out] output array of unpacked bits (encoded)
@@ -593,7 +593,7 @@ osmo_conv_decode_get_output(struct osmo_conv_decoder *decoder,
 	return min_ae;
 }
 
-/*! \brief All-in-one convolutional decoding function
+/*! All-in-one convolutional decoding function
  *  \param[in] code description of convolutional code to be used
  *  \param[in] input array of soft bits (coded)
  *  \param[out] output array of unpacked bits (decoded)

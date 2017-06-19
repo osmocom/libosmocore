@@ -25,7 +25,7 @@
 
 /*! \addtogroup tlv
  *  @{
- *  \brief Osmocom TLV Parser
+ *  Osmocom TLV Parser
  *
  *  The Osmocom TLV parser is intended to operate as a low-level C
  *  implementation without dynamic memory allocations.  Basically, it
@@ -46,7 +46,7 @@
 struct tlv_definition tvlv_att_def;
 struct tlv_definition vtvlv_gan_att_def;
 
-/*! \brief Dump pasred TLV structure to stdout */
+/*! Dump pasred TLV structure to stdout */
 int tlv_dump(struct tlv_parsed *dec)
 {
 	int i;
@@ -59,7 +59,7 @@ int tlv_dump(struct tlv_parsed *dec)
 	return 0;
 }
 
-/*! \brief Copy \ref tlv_parsed using given talloc context
+/*! Copy \ref tlv_parsed using given talloc context
  *  \param[in] tp_orig Parsed TLV structure
  *  \param[in] ctx Talloc context for allocations
  *  \returns NULL on errors, \ref tlv_parsed pointer otherwise
@@ -94,7 +94,7 @@ struct tlv_parsed *osmo_tlvp_copy(const struct tlv_parsed *tp_orig, void *ctx)
 	return tp_out;
 }
 
-/*! \brief Merge all \ref tlv_parsed attributes of 'src' into 'dst'
+/*! Merge all \ref tlv_parsed attributes of 'src' into 'dst'
  *  \param[in] dst Parsed TLV structure to merge into
  *  \param[in] src Parsed TLV structure to merge from
  *  \returns 0 on success, negative on error
@@ -118,7 +118,7 @@ int osmo_tlvp_merge(struct tlv_parsed *dst, const struct tlv_parsed *src)
 	return 0;
 }
 
-/*! \brief Parse a single TLV encoded IE
+/*! Parse a single TLV encoded IE
  *  \param[out] o_tag the tag of the IE that was found
  *  \param[out] o_len length of the IE that was found
  *  \param[out] o_val pointer to the data of the IE that was found
@@ -218,7 +218,7 @@ tlv:		/* GSM TS 04.07 11.2.4: Type 4 TLV */
 	return len;
 }
 
-/*! \brief Parse an entire buffer of TLV encoded Information Elements
+/*! Parse an entire buffer of TLV encoded Information Elements
  *  \param[out] dec caller-allocated pointer to \ref tlv_parsed
  *  \param[in] def structure defining the valid TLV tags / configurations
  *  \param[in] buf the input data buffer to be parsed
@@ -277,7 +277,7 @@ int tlv_parse(struct tlv_parsed *dec, const struct tlv_definition *def,
 	return num_parsed;
 }
 
-/*! \brief take a master (src) tlvdev and fill up all empty slots in 'dst'
+/*! take a master (src) tlvdev and fill up all empty slots in 'dst'
  *  \param dst TLV parser definition that is to be patched
  *  \param[in] src TLV parser definition whose content is patched into \a dst */
 void tlv_def_patch(struct tlv_definition *dst, const struct tlv_definition *src)

@@ -1,7 +1,7 @@
 #include <osmocom/core/utils.h>
 #include <osmocom/core/prim.h>
 
-/*! \brief human-readable string mapping for
+/*! human-readable string mapping for
  *  \ref osmo_prim_operation */
 const struct value_string osmo_prim_op_names[5] = {
 	{ PRIM_OP_REQUEST,			"request" },
@@ -11,7 +11,7 @@ const struct value_string osmo_prim_op_names[5] = {
 	{ 0, NULL }
 };
 
-/*! \brief resolve the (fsm) event for a given primitive using a map
+/*! resolve the (fsm) event for a given primitive using a map
  *  \param[in] oph primitive header used as key for match
  *  \param[in] maps list of mappings from primitive to event
  *  \returns event determined by map; \ref OSMO_NO_EVENT if no match */

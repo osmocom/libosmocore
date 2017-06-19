@@ -957,7 +957,7 @@ static inline uint8_t gsm48_hdr_trans_id(const struct gsm48_hdr *hdr)
 
 #define GSM48_TA_INVALID 220
 
-/*! \brief Check if TA is valid according to 3GPP TS 44.018 § 10.5.2.40
+/*! Check if TA is valid according to 3GPP TS 44.018 § 10.5.2.40
  *  \param[in] ta Timing Advance value
  *  \returns true if ta is valid, false otherwise
  *  Note: Rules for GSM400 band are ignored as it's not implemented in practice.
@@ -1620,7 +1620,7 @@ enum gsm48_bcap_modem_type {
 	GSM48_BCAP_MT_AUTO_1	= 8,
 };
 
-/*! \brief GSM 04.08 Bearer Capability: Speech Version Indication
+/*! GSM 04.08 Bearer Capability: Speech Version Indication
  *  (See also 3GPP TS 24.008, Table 10.5.103) */
 enum gsm48_bcap_speech_ver {
 	GSM48_BCAP_SV_FR	= 0,	/*!< GSM FR V1 (GSM FR) */

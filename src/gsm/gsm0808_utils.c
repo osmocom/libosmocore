@@ -44,7 +44,7 @@
  *  @{
  */
 
-/*! \brief Encode TS 08.08 AoIP transport address IE
+/*! Encode TS 08.08 AoIP transport address IE
  *  \param[out] msg Message Buffer to which to append IE
  *  \param[in] ss Socket Address to be used in IE
  *  \returns number of bytes added to \a msg */
@@ -88,7 +88,7 @@ uint8_t gsm0808_enc_aoip_trasp_addr(struct msgb *msg,
 	return *tlv_len + 2;
 }
 
-/*! \brief Decode TS 08.08 AoIP transport address IE
+/*! Decode TS 08.08 AoIP transport address IE
  *  \param[out] ss Caller-provided memory where decoded socket addr is stored
  *  \param[in] elem pointer to IE value
  *  \param[in] len length of \a elem in bytes
@@ -223,7 +223,7 @@ static uint8_t enc_speech_codec(struct msgb *msg,
 	return (uint8_t) (msg->tail - old_tail);
 }
 
-/*! \brief Encode TS 08.08 Speech Codec IE
+/*! Encode TS 08.08 Speech Codec IE
  *  \param[out] msg Message Buffer to which IE will be appended
  *  \param[in] sc Speech Codec to be encoded into IE
  *  \returns number of bytes appended to \a msg */
@@ -247,7 +247,7 @@ uint8_t gsm0808_enc_speech_codec(struct msgb *msg,
 	return *tlv_len + 2;
 }
 
-/*! \brief Decode TS 08.08 Speech Codec IE
+/*! Decode TS 08.08 Speech Codec IE
  *  \param[out] sc Caller-allocated memory for Speech Codec
  *  \param[in] elem IE value to be decoded
  *  \param[in] len Length of \a elem in bytes
@@ -328,7 +328,7 @@ int gsm0808_dec_speech_codec(struct gsm0808_speech_codec *sc,
 	return (int)(elem - old_elem);
 }
 
-/*! \brief Encode TS 08.08 Speech Codec list
+/*! Encode TS 08.08 Speech Codec list
  *  \param[out] msg  Message Buffer to which IE is to be appended
  *  \param[in] scl Speech Codec List to be encoded into IE
  *  \returns number of bytes added to \a msg */
@@ -363,7 +363,7 @@ uint8_t gsm0808_enc_speech_codec_list(struct msgb *msg,
 	return *tlv_len + 2;
 }
 
-/*! \brief Decode TS 08.08 Speech Codec list IE
+/*! Decode TS 08.08 Speech Codec list IE
  *  \param[out] scl Caller-provided memory to store codec list
  *  \param[in] elem IE value to be decoded
  *  \param[in] len Length of \a elem in bytes
@@ -408,7 +408,7 @@ int gsm0808_dec_speech_codec_list(struct gsm0808_speech_codec_list *scl,
 	return (int)(elem - old_elem);
 }
 
-/*! \brief Encode TS 08.08 Channel Type IE
+/*! Encode TS 08.08 Channel Type IE
  *  \param[out] msg Message Buffer to which IE is to be appended
  *  \param[in] ct Channel Type to be encoded
  *  \returns number of bytes added to \a msg */
@@ -450,7 +450,7 @@ uint8_t gsm0808_enc_channel_type(struct msgb *msg,
 	return *tlv_len + 2;
 }
 
-/*! \brief Decode TS 08.08 Channel Type IE
+/*! Decode TS 08.08 Channel Type IE
  *  \param[out] ct Caller-provided memory to store channel type
  *  \param[in] elem IE Value to be decoded
  *  \param[in] len Length of \a elem in bytes
@@ -488,7 +488,7 @@ int gsm0808_dec_channel_type(struct gsm0808_channel_type *ct,
 	return (int)(elem - old_elem);
 }
 
-/*! \brief Encode TS 08.08 Encryption Information IE
+/*! Encode TS 08.08 Encryption Information IE
  *  \param[out] msg Message Buffer to which IE is to be appended
  *  \param[in] ei Encryption Information to be encoded
  *  \returns number of bytes appended to \a msg */
@@ -526,7 +526,7 @@ uint8_t gsm0808_enc_encrypt_info(struct msgb *msg,
 	return *tlv_len + 2;
 }
 
-/*! \brief Decode TS 08.08 Encryption Information IE
+/*! Decode TS 08.08 Encryption Information IE
  *  \param[out] ei Caller-provided memory to store encryption information
  *  \param[in] elem IE value to be decoded
  *  \param[in] len Length of \a elem in bytes
@@ -565,7 +565,7 @@ int gsm0808_dec_encrypt_info(struct gsm0808_encrypt_info *ei,
 	return (int)(elem - old_elem);
 }
 
-/*! \brief Encode TS 08.08 Cell Identifier List IE
+/*! Encode TS 08.08 Cell Identifier List IE
  *  \param[out] msg Message Buffer to which IE is to be appended
  *  \param[in] cil Cell ID List to be encoded
  *  \returns number of bytes appended to \a msg */
@@ -604,7 +604,7 @@ uint8_t gsm0808_enc_cell_id_list(struct msgb *msg,
 	return *tlv_len + 2;
 }
 
-/*! \brief Decode Cell Identifier List IE
+/*! Decode Cell Identifier List IE
  *  \param[out] cil Caller-provided memory to store Cell ID list
  *  \param[in] elem IE value to be decoded
  *  \param[in] len Length of \a elem in bytes
@@ -650,7 +650,7 @@ int gsm0808_dec_cell_id_list(struct gsm0808_cell_id_list *cil,
 	return (int)(elem - old_elem);
 }
 
-/*! \brief Convert the representation of the permitted speech codec identifier
+/*! Convert the representation of the permitted speech codec identifier
  *  that is used in struct gsm0808_channel_type to the speech codec
  *  representation we use in struct gsm0808_speech_codec.
  *  \param[in] perm_spch to be converted (see also gsm0808_permitted_speech)
@@ -687,7 +687,7 @@ int gsm0808_chan_type_to_speech_codec(uint8_t perm_spch)
 	return -EINVAL;
 }
 
-/*! \brief Extrapolate a speech codec field from a given permitted speech
+/*! Extrapolate a speech codec field from a given permitted speech
  *  parameter (channel type).
  *  \param[out] sc Caller provided memory to store the resulting speech codec
  *  \param[in] perm_spch value that is used to derive the speech codec info

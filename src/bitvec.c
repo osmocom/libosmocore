@@ -24,7 +24,7 @@
 
 /*! \addtogroup bitvec
  *  @{
- *  \brief Osmocom bit vector abstraction
+ *  Osmocom bit vector abstraction
  */
 
 /*! \file bitvec.c */
@@ -71,7 +71,7 @@ static uint8_t bitval2mask(enum bit_value bit, uint8_t bitnum)
 	return bitval;
 }
 
-/*! \brief check if the bit is 0 or 1 for a given position inside a bitvec
+/*! check if the bit is 0 or 1 for a given position inside a bitvec
  *  \param[in] bv the bit vector on which to check
  *  \param[in] bitnr the bit number inside the bit vector to check
  *  \return value of the requested bit
@@ -93,7 +93,7 @@ enum bit_value bitvec_get_bit_pos(const struct bitvec *bv, unsigned int bitnr)
 	return ZERO;
 }
 
-/*! \brief check if the bit is L or H for a given position inside a bitvec
+/*! check if the bit is L or H for a given position inside a bitvec
  *  \param[in] bv the bit vector on which to check
  *  \param[in] bitnr the bit number inside the bit vector to check
  *  \return value of the requested bit
@@ -116,7 +116,7 @@ enum bit_value bitvec_get_bit_pos_high(const struct bitvec *bv,
 	return L;
 }
 
-/*! \brief get the Nth set bit inside the bit vector
+/*! get the Nth set bit inside the bit vector
  *  \param[in] bv the bit vector to use
  *  \param[in] n the bit number to get
  *  \returns the bit number (offset) of the Nth set bit in \a bv
@@ -136,7 +136,7 @@ unsigned int bitvec_get_nth_set_bit(const struct bitvec *bv, unsigned int n)
 	return 0;
 }
 
-/*! \brief set a bit at given position in a bit vector
+/*! set a bit at given position in a bit vector
  *  \param[in] bv bit vector on which to operate
  *  \param[in] bitnr number of bit to be set
  *  \param[in] bit value to which the bit is to be set
@@ -163,7 +163,7 @@ inline int bitvec_set_bit_pos(struct bitvec *bv, unsigned int bitnr,
 	return 0;
 }
 
-/*! \brief set the next bit inside a bitvec
+/*! set the next bit inside a bitvec
  *  \param[in] bv bit vector to be used
  *  \param[in] bit value of the bit to be set
  *  \returns 0 on success, negative value on error
@@ -179,7 +179,7 @@ inline int bitvec_set_bit(struct bitvec *bv, enum bit_value bit)
 	return rc;
 }
 
-/*! \brief get the next bit (low/high) inside a bitvec
+/*! get the next bit (low/high) inside a bitvec
  *  \return value of th next bit in the vector */
 int bitvec_get_bit_high(struct bitvec *bv)
 {
@@ -192,7 +192,7 @@ int bitvec_get_bit_high(struct bitvec *bv)
 	return rc;
 }
 
-/*! \brief set multiple bits (based on array of bitvals) at current pos
+/*! set multiple bits (based on array of bitvals) at current pos
  *  \param[in] bv bit vector
  *  \param[in] bits array of \ref bit_value
  *  \param[in] count number of bits to set
@@ -210,7 +210,7 @@ int bitvec_set_bits(struct bitvec *bv, const enum bit_value *bits, unsigned int 
 	return 0;
 }
 
-/*! \brief set multiple bits (based on numeric value) at current pos
+/*! set multiple bits (based on numeric value) at current pos
  *  \return 0 in case of success; negative in case of error */
 int bitvec_set_uint(struct bitvec *bv, unsigned int ui, unsigned int num_bits)
 {
@@ -228,7 +228,7 @@ int bitvec_set_uint(struct bitvec *bv, unsigned int ui, unsigned int num_bits)
 	return 0;
 }
 
-/*! \brief get multiple bits (num_bits) from beginning of vector (MSB side)
+/*! get multiple bits (num_bits) from beginning of vector (MSB side)
  *  \return 16bit signed integer retrieved from bit vector */
 int16_t bitvec_get_int16_msb(const struct bitvec *bv, unsigned int num_bits)
 {
@@ -241,7 +241,7 @@ int16_t bitvec_get_int16_msb(const struct bitvec *bv, unsigned int num_bits)
 	return osmo_load16be(bv->data) >> (16 - num_bits);
 }
 
-/*! \brief get multiple bits (based on numeric value) from current pos
+/*! get multiple bits (based on numeric value) from current pos
  *  \return integer value retrieved from bit vector */
 int bitvec_get_uint(struct bitvec *bv, unsigned int num_bits)
 {
@@ -260,7 +260,7 @@ int bitvec_get_uint(struct bitvec *bv, unsigned int num_bits)
 	return ui;
 }
 
-/*! \brief fill num_bits with \fill starting from the current position
+/*! fill num_bits with \fill starting from the current position
  *  \return 0 on success; negative otherwise (out of vector boundary)
  */
 int bitvec_fill(struct bitvec *bv, unsigned int num_bits, enum bit_value fill)
@@ -273,7 +273,7 @@ int bitvec_fill(struct bitvec *bv, unsigned int num_bits, enum bit_value fill)
 	return 0;
 }
 
-/*! \brief pad all remaining bits up to num_bits
+/*! pad all remaining bits up to num_bits
  *  \return 0 on success; negative otherwise */
 int bitvec_spare_padding(struct bitvec *bv, unsigned int up_to_bit)
 {
@@ -284,7 +284,7 @@ int bitvec_spare_padding(struct bitvec *bv, unsigned int up_to_bit)
 	return bitvec_fill(bv, n, L);
 }
 
-/*! \brief find first bit set in bit vector
+/*! find first bit set in bit vector
  *  \return 0 on success; negative otherwise */
 int bitvec_find_bit_pos(const struct bitvec *bv, unsigned int n,
 			enum bit_value val)
@@ -299,7 +299,7 @@ int bitvec_find_bit_pos(const struct bitvec *bv, unsigned int n,
 	return -1;
 }
 
-/*! \brief get multiple bytes from current pos
+/*! get multiple bytes from current pos
  *  Assumes MSB first encoding.
  *  \param[in] bv bit vector
  *  \param[in] bytes array
@@ -335,7 +335,7 @@ int bitvec_get_bytes(struct bitvec *bv, uint8_t *bytes, unsigned int count)
 	return 0;
 }
 
-/*! \brief set multiple bytes at current pos
+/*! set multiple bytes at current pos
  *  Assumes MSB first encoding.
  *  \param[in] bv bit vector
  *  \param[in] bytes array
@@ -375,7 +375,7 @@ int bitvec_set_bytes(struct bitvec *bv, const uint8_t *bytes, unsigned int count
 	return 0;
 }
 
-/*! \brief Allocate a bit vector
+/*! Allocate a bit vector
  *  \param[in] size Number of bits in the vector
  *  \param[in] ctx Context from which to allocate
  *  \return pointer to allocated vector; NULL in case of error */
@@ -396,7 +396,7 @@ struct bitvec *bitvec_alloc(unsigned int size, TALLOC_CTX *ctx)
 	return bv;
 }
 
-/*! \brief Free a bit vector (release its memory)
+/*! Free a bit vector (release its memory)
  *  \param[in] bit vector to free */
 void bitvec_free(struct bitvec *bv)
 {
@@ -404,7 +404,7 @@ void bitvec_free(struct bitvec *bv)
 	talloc_free(bv);
 }
 
-/*! \brief Export a bit vector to a buffer
+/*! Export a bit vector to a buffer
  *  \param[in] bitvec (unpacked bits)
  *  \param[out] buffer for the unpacked bits
  *  \return number of bytes (= bits) copied */
@@ -417,7 +417,7 @@ unsigned int bitvec_pack(const struct bitvec *bv, uint8_t *buffer)
 	return i;
 }
 
-/*! \brief Copy buffer of unpacked bits into bit vector
+/*! Copy buffer of unpacked bits into bit vector
  *  \param[in] buffer unpacked input bits
  *  \param[out] bv unpacked bit vector
  *  \return number of bytes (= bits) copied */
@@ -430,7 +430,7 @@ unsigned int bitvec_unpack(struct bitvec *bv, const uint8_t *buffer)
 	return i;
 }
 
-/*! \brief read hexadecimap string into a bit vector
+/*! read hexadecimap string into a bit vector
  *  \param[in] src string containing hex digits
  *  \param[out] bv unpacked bit vector
  *  \return 0 in case of success; 1 in case of error
@@ -451,7 +451,7 @@ int bitvec_unhex(struct bitvec *bv, const char *src)
 	return 0;
 }
 
-/*! \brief read part of the vector
+/*! read part of the vector
  *  \param[in] bv The boolean vector to work on
  *  \param[in,out] read_index Where reading supposed to start in the vector
  *  \param[in] len How many bits to read from vector
@@ -475,7 +475,7 @@ uint64_t bitvec_read_field(struct bitvec *bv, unsigned int *read_index, unsigned
 	return ui;
 }
 
-/*! \brief write into the vector
+/*! write into the vector
  *  \param[in] bv The boolean vector to work on
  *  \param[in,out] write_index Where writing supposed to start in the vector
  *  \param[in] len How many bits to write
@@ -498,7 +498,7 @@ int bitvec_write_field(struct bitvec *bv, unsigned int *write_index, uint64_t va
 	return 0;
 }
 
-/*! \brief convert enum to corresponding character
+/*! convert enum to corresponding character
  *  \param v input value (bit)
  *  \return single character, either 0, 1, L or H */
 char bit_value_to_char(enum bit_value v)
@@ -512,7 +512,7 @@ char bit_value_to_char(enum bit_value v)
 	}
 }
 
-/*! \brief prints bit vector to provided string
+/*! prints bit vector to provided string
  * It's caller's responsibility to ensure that we won't shoot him in the foot:
  * the provided buffer should be at lest cur_bit + 1 bytes long
  */
@@ -551,14 +551,14 @@ static inline unsigned leading_bits(uint8_t x, bool b)
 	}
 	return 7;
 }
-/*! \brief force bit vector to all 0 and current bit to the beginnig of the vector */
+/*! force bit vector to all 0 and current bit to the beginnig of the vector */
 void bitvec_zero(struct bitvec *bv)
 {
 	bv->cur_bit = 0;
 	memset(bv->data, 0, bv->data_len);
 }
 
-/*! \brief Return number (bits) of uninterrupted bit run in vector starting from the MSB
+/*! Return number (bits) of uninterrupted bit run in vector starting from the MSB
  *  \param[in] bv The boolean vector to work on
  *  \param[in] b The boolean, sequence of which is looked at from the vector start
  *  \returns Number of consecutive bits of \p b in \p bv
@@ -574,7 +574,7 @@ unsigned bitvec_rl(const struct bitvec *bv, bool b)
 	return bv->cur_bit;
 }
 
-/*! \brief Return number (bits) of uninterrupted bit run in vector
+/*! Return number (bits) of uninterrupted bit run in vector
  *   starting from the current bit
  *  \param[in] bv The boolean vector to work on
  *  \param[in] b The boolean, sequence of 1's or 0's to be checked
@@ -619,7 +619,7 @@ unsigned bitvec_rl_curbit(struct bitvec *bv, bool b, int max_bits)
 	return (bv->cur_bit - readIndex + temp_res);
 }
 
-/*! \brief Shifts bitvec to the left, n MSB bits lost */
+/*! Shifts bitvec to the left, n MSB bits lost */
 void bitvec_shiftl(struct bitvec *bv, unsigned n)
 {
 	if (0 == n)
@@ -643,7 +643,7 @@ void bitvec_shiftl(struct bitvec *bv, unsigned n)
 	bv->cur_bit -= n;
 }
 
-/*! \brief Add given array to bitvec
+/*! Add given array to bitvec
  *  \param[in,out] bv bit vector to work with
  *  \param[in] array elements to be added
  *  \param[in] array_len length of array

@@ -22,7 +22,7 @@
 
 /*! \addtogroup oml
  *  @{
- * \brief GSM Network Management (OML) messages on the A-bis interface
+ * GSM Network Management (OML) messages on the A-bis interface
  * 3GPP TS 12.21 version 8.0.0 Release 1999 / ETSI TS 100 623 V8.0.0
  */
 
@@ -41,7 +41,7 @@
 const char abis_nm_ipa_magic[13] = "com.ipaccess";
 const char abis_nm_osmo_magic[12] = "org.osmocom";
 
-/*! \brief unidirectional messages from BTS to BSC */
+/*! unidirectional messages from BTS to BSC */
 const enum abis_nm_msgtype abis_nm_reports[4] = {
 	NM_MT_SW_ACTIVATED_REP,
 	NM_MT_TEST_REP,
@@ -49,14 +49,14 @@ const enum abis_nm_msgtype abis_nm_reports[4] = {
 	NM_MT_FAILURE_EVENT_REP,
 };
 
-/*! \brief messages without ACK/NACK */
+/*! messages without ACK/NACK */
 const enum abis_nm_msgtype abis_nm_no_ack_nack[3] = {
 	NM_MT_MEAS_RES_REQ,
 	NM_MT_STOP_MEAS,
 	NM_MT_START_MEAS,
 };
 
-/*! \brief messages related to software load */
+/*! messages related to software load */
 const enum abis_nm_msgtype abis_nm_sw_load_msgs[9] = {
 	NM_MT_LOAD_INIT_ACK,
 	NM_MT_LOAD_INIT_NACK,
@@ -70,7 +70,7 @@ const enum abis_nm_msgtype abis_nm_sw_load_msgs[9] = {
 	NM_MT_SW_ACTIVATED_REP,
 };
 
-/*! \brief All NACKs (negative acknowledgements */
+/*! All NACKs (negative acknowledgements */
 const enum abis_nm_msgtype abis_nm_nacks[33] = {
 	NM_MT_LOAD_INIT_NACK,
 	NM_MT_LOAD_END_NACK,
@@ -145,7 +145,7 @@ static const struct value_string nack_names[] = {
 	{ 0,				NULL }
 };
 
-/*! \brief Get human-readable string for OML NACK message type */
+/*! Get human-readable string for OML NACK message type */
 const char *abis_nm_nack_name(uint8_t nack)
 {
 	return get_value_string(nack_names, nack);
@@ -214,7 +214,7 @@ static const struct value_string nack_cause_names[] = {
 	{ 0,				NULL }
 };
 
-/*! \brief Get human-readable string for NACK cause */
+/*! Get human-readable string for NACK cause */
 const char *abis_nm_nack_cause_name(uint8_t cause)
 {
 	return get_value_string(nack_cause_names, cause);
@@ -230,7 +230,7 @@ static const struct value_string event_type_names[] = {
 	{ 0,				NULL }
 };
 
-/*! \brief Get human-readable string for OML event type */
+/*! Get human-readable string for OML event type */
 const char *abis_nm_event_type_name(uint8_t cause)
 {
 	return get_value_string(event_type_names, cause);
@@ -247,13 +247,13 @@ static const struct value_string severity_names[] = {
 	{ 0,				NULL }
 };
 
-/*! \brief Get human-readable string for perceived OML severity */
+/*! Get human-readable string for perceived OML severity */
 const char *abis_nm_severity_name(uint8_t cause)
 {
 	return get_value_string(severity_names, cause);
 }
 
-/*! \brief 3GPP TS 12.21 9.4.53 T200 values (in msec) */
+/*! 3GPP TS 12.21 9.4.53 T200 values (in msec) */
 const uint8_t abis_nm_t200_ms[] = {
 	[T200_SDCCH]		= 5,
 	[T200_FACCH_F]		= 5,
@@ -264,7 +264,7 @@ const uint8_t abis_nm_t200_ms[] = {
 	[T200_SACCH_TCH_SAPI3]	= 10
 };
 
-/*! \brief 3GPP TS 52.021 §9.1 Message Types */
+/*! 3GPP TS 52.021 §9.1 Message Types */
 const struct value_string abis_nm_msgtype_names[] = {
 	{ NM_MT_LOAD_INIT,		"Load Data Initiate" },				/* §8.3.1 */
 	{ NM_MT_LOAD_INIT_ACK,		"Load Data Initiate Ack" },
@@ -367,7 +367,7 @@ const struct value_string abis_nm_msgtype_names[] = {
 	{ 0, NULL }
 };
 
-/*! \brief 3GPP TS 52.021 §9.4 Attributes and Parameters */
+/*! 3GPP TS 52.021 §9.4 Attributes and Parameters */
 const struct value_string abis_nm_att_names[] = {
 	{ NM_ATT_ABIS_CHANNEL,		"Abis Channel" },			/* §9.4.1 */
 	{ NM_ATT_ADD_INFO,		"Additional Info" },			/* §9.4.2 */
@@ -438,7 +438,7 @@ const struct value_string abis_nm_att_names[] = {
 	{ 0, NULL }
 };
 
-/*! \brief Attributes that the BSC can set, not only get, according to Section 9.4 */
+/*! Attributes that the BSC can set, not only get, according to Section 9.4 */
 const enum abis_nm_attr abis_nm_att_settable[] = {
 	NM_ATT_ADD_INFO,
 	NM_ATT_ADD_TEXT,
@@ -467,7 +467,7 @@ const enum abis_nm_attr abis_nm_att_settable[] = {
 	NM_ATT_MEAS_TYPE,
 };
 
-/*! \brief GSM A-bis OML IPA TLV parser definition */
+/*! GSM A-bis OML IPA TLV parser definition */
 const struct tlv_definition abis_nm_att_tlvdef_ipa = {
 	.def = {
 		/* ip.access specifics */
@@ -516,7 +516,7 @@ const struct tlv_definition abis_nm_att_tlvdef_ipa = {
 	},
 };
 
-/*! \brief GSM A-bis OML TLV parser definition */
+/*! GSM A-bis OML TLV parser definition */
 const struct tlv_definition abis_nm_att_tlvdef = {
 	.def = {
 		[NM_ATT_ABIS_CHANNEL] =		{ TLV_TYPE_FIXED, 3 },
@@ -586,14 +586,14 @@ const struct tlv_definition abis_nm_att_tlvdef = {
 	},
 };
 
-/*! \brief org.osmocom GSM A-bis OML TLV parser definition */
+/*! org.osmocom GSM A-bis OML TLV parser definition */
 const struct tlv_definition abis_nm_osmo_att_tlvdef = {
 	.def = {
 		[NM_ATT_OSMO_REDUCEPOWER] =	{ TLV_TYPE_TV },
 	},
 };
 
-/*! \brief Human-readable strings for A-bis OML Object Class */
+/*! Human-readable strings for A-bis OML Object Class */
 const struct value_string abis_nm_msg_disc_names[] = {
 	{ ABIS_OM_MDISC_FOM,	"FOM" },
 	{ ABIS_OM_MDISC_MMI,	"MMI" },
@@ -602,7 +602,7 @@ const struct value_string abis_nm_msg_disc_names[] = {
 	{ 0, NULL }
 };
 
-/*! \brief Human-readable strings for A-bis OML Object Class */
+/*! Human-readable strings for A-bis OML Object Class */
 const struct value_string abis_nm_obj_class_names[] = {
 	{ NM_OC_SITE_MANAGER,	"SITE-MANAGER" },
 	{ NM_OC_BTS,		"BTS" },
@@ -624,7 +624,7 @@ const struct value_string abis_nm_obj_class_names[] = {
 	{ 0,			NULL }
 };
 
-/*! \brief Get human-readable string for OML Operational State */
+/*! Get human-readable string for OML Operational State */
 const char *abis_nm_opstate_name(uint8_t os)
 {
 	switch (os) {
@@ -653,7 +653,7 @@ static const struct value_string avail_names[] = {
 	{ 0,	NULL }
 };
 
-/*! \brief Get human-readable string for OML Availability State */
+/*! Get human-readable string for OML Availability State */
 const char *abis_nm_avail_name(uint8_t avail)
 {
 	return get_value_string(avail_names, avail);
@@ -671,13 +671,13 @@ static const struct value_string test_names[] = {
 	{ 0, NULL }
 };
 
-/*! \brief Get human-readable string for OML test */
+/*! Get human-readable string for OML test */
 const char *abis_nm_test_name(uint8_t test)
 {
 	return get_value_string(test_names, test);
 }
 
-/*! \brief Human-readable names for OML administrative state */
+/*! Human-readable names for OML administrative state */
 const struct value_string abis_nm_adm_state_names[] = {
 	{ NM_STATE_LOCKED,	"Locked" },
 	{ NM_STATE_UNLOCKED,	"Unlocked" },
@@ -702,7 +702,7 @@ static const enum abis_nm_chan_comb chcomb4pchan[] = {
 	/* FIXME: bounds check */
 };
 
-/*! \brief Pack 3GPP TS 12.21 § 8.8.2 Failure Event Report into msgb */
+/*! Pack 3GPP TS 12.21 § 8.8.2 Failure Event Report into msgb */
 struct msgb *abis_nm_fail_evt_rep(enum abis_nm_event_type t,
 				  enum abis_nm_severity s,
 				  enum abis_nm_pcause_type ct,
@@ -718,7 +718,7 @@ struct msgb *abis_nm_fail_evt_rep(enum abis_nm_event_type t,
 	return nmsg;
 }
 
-/*! \brief Pack 3GPP TS 12.21 § 8.8.2 Failure Event Report into msgb */
+/*! Pack 3GPP TS 12.21 § 8.8.2 Failure Event Report into msgb */
 struct msgb *abis_nm_fail_evt_vrep(enum abis_nm_event_type t,
 				   enum abis_nm_severity s,
 				   enum abis_nm_pcause_type ct,
@@ -753,7 +753,7 @@ struct msgb *abis_nm_fail_evt_vrep(enum abis_nm_event_type t,
 	return nmsg;
 }
 
-/*! \brief Compute length of given 3GPP TS 52.021 §9.4.62 SW Description.
+/*! Compute length of given 3GPP TS 52.021 §9.4.62 SW Description.
  *  \param[in] sw SW Description struct
  *  \param[in] put_sw_descr boolean, whether to put NM_ATT_SW_DESCR IE or not
  *  \returns length of buffer space necessary to store sw
@@ -764,7 +764,7 @@ uint16_t abis_nm_sw_desc_len(const struct abis_nm_sw_desc *sw, bool put_sw_desc)
 	return (put_sw_desc ? 1 : 0) + (sw->file_id_len + 3) + (sw->file_version_len + 3);
 }
 
-/*! \brief Put given 3GPP TS 52.021 §9.4.62 SW Description into msgb.
+/*! Put given 3GPP TS 52.021 §9.4.62 SW Description into msgb.
  *  \param[out] msg message buffer
  *  \param[in] sw SW Description struct
  *  \param[in] put_sw_descr boolean, whether to put NM_ATT_SW_DESCR IE or not
@@ -781,7 +781,7 @@ uint16_t abis_nm_put_sw_desc(struct msgb *msg, const struct abis_nm_sw_desc *sw,
 	return abis_nm_sw_desc_len(sw, put_sw_desc);
 }
 
-/*! \brief Put given file ID/Version pair as 3GPP TS 52.021 §9.4.62 SW Description into msgb.
+/*! Put given file ID/Version pair as 3GPP TS 52.021 §9.4.62 SW Description into msgb.
  *  \param[out] msg message buffer
  *  \param[in] id File ID part of SW Description
  *  \param[in] id File Version part of SW Description
@@ -801,7 +801,7 @@ uint16_t abis_nm_put_sw_file(struct msgb *msg, const char *id, const char *ver, 
 	return abis_nm_put_sw_desc(msg, &sw, put_sw_desc);
 }
 
-/*! \brief Get length of first 3GPP TS 52.021 §9.4.62 SW Description from buffer.
+/*! Get length of first 3GPP TS 52.021 §9.4.62 SW Description from buffer.
  *  \param[in] buf buffer, may contain several SW Descriptions
  *  \param[in] len buffer length
  *  \returns length if parsing succeeded, 0 otherwise
@@ -826,7 +826,7 @@ uint32_t abis_nm_get_sw_desc_len(const uint8_t *buf, size_t len)
 	return sw + 2; /* +  2-byte length field of 2nd FILE_* element */
 }
 
-/*! \brief Parse single 3GPP TS 52.021 §9.4.62 SW Description from buffer.
+/*! Parse single 3GPP TS 52.021 §9.4.62 SW Description from buffer.
  *  \param[out] sw SW Description struct
  *  \param[in] buf buffer
  *  \param[in] len buffer length
@@ -882,7 +882,7 @@ static inline int abis_nm_get_sw_desc(struct abis_nm_sw_desc *sw, const uint8_t 
 	return 0;
 }
 
-/*! \brief Parse 3GPP TS 52.021 §9.4.61 SW Configuration from buffer.
+/*! Parse 3GPP TS 52.021 §9.4.61 SW Configuration from buffer.
  *  \param[in] buf buffer
  *  \param[in] buf_len buffer length
  *  \param[out] sw SW Description struct array
@@ -908,7 +908,7 @@ int abis_nm_get_sw_conf(const uint8_t * buf, size_t buf_len, struct abis_nm_sw_d
 	return i;
 }
 
-/*! \brief Obtain OML Channel Combination for phnsical channel config */
+/*! Obtain OML Channel Combination for phnsical channel config */
 int abis_nm_chcomb4pchan(enum gsm_phys_chan_config pchan)
 {
 	if (pchan < ARRAY_SIZE(chcomb4pchan))
@@ -917,7 +917,7 @@ int abis_nm_chcomb4pchan(enum gsm_phys_chan_config pchan)
 	return -EINVAL;
 }
 
-/*! \brief Obtain physical channel config for OML Channel Combination */
+/*! Obtain physical channel config for OML Channel Combination */
 enum gsm_phys_chan_config abis_nm_pchan4chcomb(uint8_t chcomb)
 {
 	int i;

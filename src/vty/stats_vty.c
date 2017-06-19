@@ -43,7 +43,7 @@
 
 /*! \addtogroup stats
  *  @{
- *  \brief VTY interface for statsd / statistic items
+ *  VTY interface for statsd / statistic items
  */
 
 /* containing version info */
@@ -576,7 +576,7 @@ static int config_write_stats(struct vty *vty)
 	return 1;
 }
 
-/*! \brief Add stats related commands to the VTY
+/*! Add stats related commands to the VTY
  *  Call this once during your application initialization if you would
  *  like to have stats VTY commands enabled.
  */

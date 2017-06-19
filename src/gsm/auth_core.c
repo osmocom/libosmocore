@@ -32,7 +32,7 @@
 
 /*! \addtogroup auth
  *  @{
- *  \brief GSM/GPRS/3G authentication core infrastructure
+ *  GSM/GPRS/3G authentication core infrastructure
  */
 
 /* \file auth_core.c */
@@ -41,7 +41,7 @@ static LLIST_HEAD(osmo_auths);
 
 static struct osmo_auth_impl *selected_auths[_OSMO_AUTH_ALG_NUM];
 
-/*! \brief Register an authentication algorithm implementation with the core
+/*! Register an authentication algorithm implementation with the core
  *  \param[in] impl Structure describing implementation and it's callbacks
  *  \returns 0 on success, or a negative error code on failure
  *
@@ -63,7 +63,7 @@ int osmo_auth_register(struct osmo_auth_impl *impl)
 	return 0;
 }
 
-/*! \brief Load all available authentication plugins from the given path
+/*! Load all available authentication plugins from the given path
  *  \param[in] path Path name of the directory containing the plugins
  *  \returns number of plugins loaded in case of success, negative in case of error
  *
@@ -75,7 +75,7 @@ int osmo_auth_load(const char *path)
 	return osmo_plugin_load_all(path);
 }
 
-/*! \brief Determine if a given authentication algorithm is supported
+/*! Determine if a given authentication algorithm is supported
  *  \param[in] algo Algorithm which should be checked
  *  \returns 1 if algo is supported, 0 if not, negative error on failure
  *
@@ -112,7 +112,7 @@ void osmo_c4(uint8_t *ck, const uint8_t *kc)
 	memcpy(ck+8, kc, 8);
 }
 
-/*! \brief Generate 3G CK + IK from 2G authentication vector
+/*! Generate 3G CK + IK from 2G authentication vector
  *  \param vec Authentication Vector to be modified
  *  \returns 1 if the vector was changed, 0 otherwise
  *
@@ -136,7 +136,7 @@ int osmo_auth_3g_from_2g(struct osmo_auth_vector *vec)
 	return 0;
 }
 
-/*! \brief Generate authentication vector
+/*! Generate authentication vector
  *  \param[out] vec Generated authentication vector
  *  \param[in] aud Subscriber-specific key material
  *  \param[in] _rand Random challenge to be used
@@ -167,7 +167,7 @@ int osmo_auth_gen_vec(struct osmo_auth_vector *vec,
 	return 0;
 }
 
-/*! \brief Generate authentication vector and re-sync sequence
+/*! Generate authentication vector and re-sync sequence
  *  \param[out] vec Generated authentication vector
  *  \param[in] aud Subscriber-specific key material
  *  \param[in] auts AUTS value sent by the SIM/MS
@@ -212,13 +212,13 @@ static const struct value_string auth_alg_vals[] = {
 	{ 0, NULL }
 };
 
-/*! \brief Get human-readable name of authentication algorithm */
+/*! Get human-readable name of authentication algorithm */
 const char *osmo_auth_alg_name(enum osmo_auth_algo alg)
 {
 	return get_value_string(auth_alg_vals, alg);
 }
 
-/*! \brief Parse human-readable name of authentication algorithm */
+/*! Parse human-readable name of authentication algorithm */
 enum osmo_auth_algo osmo_auth_alg_parse(const char *name)
 {
 	return get_string_value(auth_alg_vals, name);

@@ -25,21 +25,21 @@
 
 */
 
-/*! \brief gross length of a LV type field */
+/*! gross length of a LV type field */
 #define LV_GROSS_LEN(x)		(x+1)
-/*! \brief gross length of a TLV type field */
+/*! gross length of a TLV type field */
 #define TLV_GROSS_LEN(x)	(x+2)
-/*! \brief gross length of a TLV16 type field */
+/*! gross length of a TLV16 type field */
 #define TLV16_GROSS_LEN(x)	((2*x)+2)
-/*! \brief gross length of a TL16V type field */
+/*! gross length of a TL16V type field */
 #define TL16V_GROSS_LEN(x)	(x+3)
-/*! \brief gross length of a L16TV type field */
+/*! gross length of a L16TV type field */
 #define L16TV_GROSS_LEN(x)	(x+3)
 
-/*! \brief maximum length of TLV of one byte length */
+/*! maximum length of TLV of one byte length */
 #define TVLV_MAX_ONEBYTE	0x7f
 
-/*! \brief gross length of a TVLV type field */
+/*! gross length of a TVLV type field */
 static inline uint16_t TVLV_GROSS_LEN(uint16_t len)
 {
 	if (len <= TVLV_MAX_ONEBYTE)
@@ -48,7 +48,7 @@ static inline uint16_t TVLV_GROSS_LEN(uint16_t len)
 		return TL16V_GROSS_LEN(len);
 }
 
-/*! \brief gross length of vTvL header (tag+len) */
+/*! gross length of vTvL header (tag+len) */
 static inline uint16_t VTVL_GAN_GROSS_LEN(uint16_t tag, uint16_t len)
 {
 	uint16_t ret = 2;
@@ -62,7 +62,7 @@ static inline uint16_t VTVL_GAN_GROSS_LEN(uint16_t tag, uint16_t len)
 	return ret;
 }
 
-/*! \brief gross length of vTvLV (tag+len+val) */
+/*! gross length of vTvLV (tag+len+val) */
 static inline uint16_t VTVLV_GAN_GROSS_LEN(uint16_t tag, uint16_t len)
 {
 	uint16_t ret;
@@ -80,7 +80,7 @@ static inline uint16_t VTVLV_GAN_GROSS_LEN(uint16_t tag, uint16_t len)
 
 /* TLV generation */
 
-/*! \brief put (append) a LV field */
+/*! put (append) a LV field */
 static inline uint8_t *lv_put(uint8_t *buf, uint8_t len,
 				const uint8_t *val)
 {
@@ -89,7 +89,7 @@ static inline uint8_t *lv_put(uint8_t *buf, uint8_t len,
 	return buf + len;
 }
 
-/*! \brief put (append) a TLV field */
+/*! put (append) a TLV field */
 static inline uint8_t *tlv_put(uint8_t *buf, uint8_t tag, uint8_t len,
 				const uint8_t *val)
 {
@@ -99,7 +99,7 @@ static inline uint8_t *tlv_put(uint8_t *buf, uint8_t tag, uint8_t len,
 	return buf + len;
 }
 
-/*! \brief put (append) a TLV16 field */
+/*! put (append) a TLV16 field */
 static inline uint8_t *tlv16_put(uint8_t *buf, uint8_t tag, uint8_t len,
 				const uint16_t *val)
 {
@@ -109,7 +109,7 @@ static inline uint8_t *tlv16_put(uint8_t *buf, uint8_t tag, uint8_t len,
 	return buf + len*2;
 }
 
-/*! \brief put (append) a TL16V field */
+/*! put (append) a TL16V field */
 static inline uint8_t *tl16v_put(uint8_t *buf, uint8_t tag, uint16_t len,
 				const uint8_t *val)
 {
@@ -120,7 +120,7 @@ static inline uint8_t *tl16v_put(uint8_t *buf, uint8_t tag, uint16_t len,
 	return buf + len*2;
 }
 
-/*! \brief put (append) a TvLV field */
+/*! put (append) a TvLV field */
 static inline uint8_t *tvlv_put(uint8_t *buf, uint8_t tag, uint16_t len,
 				 const uint8_t *val)
 {
@@ -135,7 +135,7 @@ static inline uint8_t *tvlv_put(uint8_t *buf, uint8_t tag, uint16_t len,
 	return ret;
 }
 
-/*! \brief put (append) a variable-length tag or variable-length length * */
+/*! put (append) a variable-length tag or variable-length length * */
 static inline uint8_t *vt_gan_put(uint8_t *buf, uint16_t tag)
 {
 	if (tag > TVLV_MAX_ONEBYTE) {
@@ -148,7 +148,7 @@ static inline uint8_t *vt_gan_put(uint8_t *buf, uint16_t tag)
 	return buf;
 }
 
-/* \brief put (append) vTvL (GAN) field (tag + length)*/
+/* put (append) vTvL (GAN) field (tag + length)*/
 static inline uint8_t *vtvl_gan_put(uint8_t *buf, uint16_t tag, uint16_t len)
 {
 	uint8_t *ret;
@@ -157,7 +157,7 @@ static inline uint8_t *vtvl_gan_put(uint8_t *buf, uint16_t tag, uint16_t len)
 	return vt_gan_put(ret, len);
 }
 
-/* \brief put (append) vTvLV (GAN) field (tag + length + val) */
+/* put (append) vTvLV (GAN) field (tag + length + val) */
 static inline uint8_t *vtvlv_gan_put(uint8_t *buf, uint16_t tag, uint16_t len,
 				      const uint8_t *val)
 {
@@ -171,14 +171,14 @@ static inline uint8_t *vtvlv_gan_put(uint8_t *buf, uint16_t tag, uint16_t len,
 	return ret;
 }
 
-/*! \brief put (append) a TLV16 field to \ref msgb */
+/*! put (append) a TLV16 field to \ref msgb */
 static inline uint8_t *msgb_tlv16_put(struct msgb *msg, uint8_t tag, uint8_t len, const uint16_t *val)
 {
 	uint8_t *buf = msgb_put(msg, TLV16_GROSS_LEN(len));
 	return tlv16_put(buf, tag, len, val);
 }
 
-/*! \brief put (append) a TL16V field to \ref msgb */
+/*! put (append) a TL16V field to \ref msgb */
 static inline uint8_t *msgb_tl16v_put(struct msgb *msg, uint8_t tag, uint16_t len,
 					const uint8_t *val)
 {
@@ -186,7 +186,7 @@ static inline uint8_t *msgb_tl16v_put(struct msgb *msg, uint8_t tag, uint16_t le
 	return tl16v_put(buf, tag, len, val);
 }
 
-/*! \brief put (append) a TvLV field to \ref msgb */
+/*! put (append) a TvLV field to \ref msgb */
 static inline uint8_t *msgb_tvlv_put(struct msgb *msg, uint8_t tag, uint16_t len,
 				      const uint8_t *val)
 {
@@ -194,7 +194,7 @@ static inline uint8_t *msgb_tvlv_put(struct msgb *msg, uint8_t tag, uint16_t len
 	return tvlv_put(buf, tag, len, val);
 }
 
-/*! \brief put (append) a vTvLV field to \ref msgb */
+/*! put (append) a vTvLV field to \ref msgb */
 static inline uint8_t *msgb_vtvlv_gan_put(struct msgb *msg, uint16_t tag,
 					  uint16_t len, const uint8_t *val)
 {
@@ -202,7 +202,7 @@ static inline uint8_t *msgb_vtvlv_gan_put(struct msgb *msg, uint16_t tag,
 	return vtvlv_gan_put(buf, tag, len, val);
 }
 
-/*! \brief put (append) a L16TV field to \ref msgb */
+/*! put (append) a L16TV field to \ref msgb */
 static inline uint8_t *msgb_l16tv_put(struct msgb *msg, uint16_t len, uint8_t tag,
                                        const uint8_t *val)
 {
@@ -215,14 +215,14 @@ static inline uint8_t *msgb_l16tv_put(struct msgb *msg, uint16_t len, uint8_t ta
 	return buf + len;
 }
 
-/*! \brief put (append) a V field */
+/*! put (append) a V field */
 static inline uint8_t *v_put(uint8_t *buf, uint8_t val)
 {
 	*buf++ = val;
 	return buf;
 }
 
-/*! \brief put (append) a TV field */
+/*! put (append) a TV field */
 static inline uint8_t *tv_put(uint8_t *buf, uint8_t tag, 
 				uint8_t val)
 {
@@ -231,7 +231,7 @@ static inline uint8_t *tv_put(uint8_t *buf, uint8_t tag,
 	return buf;
 }
 
-/*! \brief put (append) a TVfixed field */
+/*! put (append) a TVfixed field */
 static inline uint8_t *tv_fixed_put(uint8_t *buf, uint8_t tag,
 				    unsigned int len, const uint8_t *val)
 {
@@ -240,7 +240,7 @@ static inline uint8_t *tv_fixed_put(uint8_t *buf, uint8_t tag,
 	return buf + len;
 }
 
-/*! \brief put (append) a TV16 field
+/*! put (append) a TV16 field
  *  \param[in,out] buf data buffer
  *  \param[in] tag Tag value
  *  \param[in] val Value (in host byte order!)
@@ -254,7 +254,7 @@ static inline uint8_t *tv16_put(uint8_t *buf, uint8_t tag,
 	return buf;
 }
 
-/*! \brief put (append) a LV field to a \ref msgb
+/*! put (append) a LV field to a \ref msgb
  *  \returns pointer to first byte after newly-put information */
 static inline uint8_t *msgb_lv_put(struct msgb *msg, uint8_t len, const uint8_t *val)
 {
@@ -262,7 +262,7 @@ static inline uint8_t *msgb_lv_put(struct msgb *msg, uint8_t len, const uint8_t 
 	return lv_put(buf, len, val);
 }
 
-/*! \brief put (append) a TLV field to a \ref msgb
+/*! put (append) a TLV field to a \ref msgb
  *  \returns pointer to first byte after newly-put information */
 static inline uint8_t *msgb_tlv_put(struct msgb *msg, uint8_t tag, uint8_t len, const uint8_t *val)
 {
@@ -270,7 +270,7 @@ static inline uint8_t *msgb_tlv_put(struct msgb *msg, uint8_t tag, uint8_t len, 
 	return tlv_put(buf, tag, len, val);
 }
 
-/*! \brief put (append) a TV field to a \ref msgb
+/*! put (append) a TV field to a \ref msgb
  *  \returns pointer to first byte after newly-put information */
 static inline uint8_t *msgb_tv_put(struct msgb *msg, uint8_t tag, uint8_t val)
 {
@@ -278,7 +278,7 @@ static inline uint8_t *msgb_tv_put(struct msgb *msg, uint8_t tag, uint8_t val)
 	return tv_put(buf, tag, val);
 }
 
-/*! \brief put (append) a TVfixed field to a \ref msgb
+/*! put (append) a TVfixed field to a \ref msgb
  *  \returns pointer to first byte after newly-put information */
 static inline uint8_t *msgb_tv_fixed_put(struct msgb *msg, uint8_t tag,
 					unsigned int len, const uint8_t *val)
@@ -287,7 +287,7 @@ static inline uint8_t *msgb_tv_fixed_put(struct msgb *msg, uint8_t tag,
 	return tv_fixed_put(buf, tag, len, val);
 }
 
-/*! \brief put (append) a V field to a \ref msgb
+/*! put (append) a V field to a \ref msgb
  *  \returns pointer to first byte after newly-put information */
 static inline uint8_t *msgb_v_put(struct msgb *msg, uint8_t val)
 {
@@ -295,7 +295,7 @@ static inline uint8_t *msgb_v_put(struct msgb *msg, uint8_t val)
 	return v_put(buf, val);
 }
 
-/*! \brief put (append) a TV16 field to a \ref msgb
+/*! put (append) a TV16 field to a \ref msgb
  *  \returns pointer to first byte after newly-put information */
 static inline uint8_t *msgb_tv16_put(struct msgb *msg, uint8_t tag, uint16_t val)
 {
@@ -303,7 +303,7 @@ static inline uint8_t *msgb_tv16_put(struct msgb *msg, uint8_t tag, uint16_t val
 	return tv16_put(buf, tag, val);
 }
 
-/*! \brief push (prepend) a TLV field to a \ref msgb
+/*! push (prepend) a TLV field to a \ref msgb
  *  \returns pointer to first byte of newly-pushed information */
 static inline uint8_t *msgb_tlv_push(struct msgb *msg, uint8_t tag, uint8_t len, const uint8_t *val)
 {
@@ -312,7 +312,7 @@ static inline uint8_t *msgb_tlv_push(struct msgb *msg, uint8_t tag, uint8_t len,
 	return buf;
 }
 
-/*! \brief push (prepend) a TV field to a \ref msgb
+/*! push (prepend) a TV field to a \ref msgb
  *  \returns pointer to first byte of newly-pushed information */
 static inline uint8_t *msgb_tv_push(struct msgb *msg, uint8_t tag, uint8_t val)
 {
@@ -321,7 +321,7 @@ static inline uint8_t *msgb_tv_push(struct msgb *msg, uint8_t tag, uint8_t val)
 	return buf;
 }
 
-/*! \brief push (prepend) a TV16 field to a \ref msgb
+/*! push (prepend) a TV16 field to a \ref msgb
  *  \returns pointer to first byte of newly-pushed information */
 static inline uint8_t *msgb_tv16_push(struct msgb *msg, uint8_t tag, uint16_t val)
 {
@@ -330,7 +330,7 @@ static inline uint8_t *msgb_tv16_push(struct msgb *msg, uint8_t tag, uint16_t va
 	return buf;
 }
 
-/*! \brief push (prepend) a TvLV field to a \ref msgb
+/*! push (prepend) a TvLV field to a \ref msgb
  *  \returns pointer to first byte of newly-pushed information */
 static inline uint8_t *msgb_tvlv_push(struct msgb *msg, uint8_t tag, uint16_t len,
 				      const uint8_t *val)
@@ -340,7 +340,7 @@ static inline uint8_t *msgb_tvlv_push(struct msgb *msg, uint8_t tag, uint16_t le
 	return buf;
 }
 
-/* \brief push (prepend) a vTvL header to a \ref msgb
+/* push (prepend) a vTvL header to a \ref msgb
  */
 static inline uint8_t *msgb_vtvl_gan_push(struct msgb *msg, uint16_t tag,
 					   uint16_t len)
@@ -361,37 +361,37 @@ static inline uint8_t *msgb_vtvlv_gan_push(struct msgb *msg, uint16_t tag,
 
 /* TLV parsing */
 
-/*! \brief Entry in a TLV parser array */
+/*! Entry in a TLV parser array */
 struct tlv_p_entry {
-	uint16_t len;		/*!< \brief length */
-	const uint8_t *val;	/*!< \brief pointer to value */
+	uint16_t len;		/*!< length */
+	const uint8_t *val;	/*!< pointer to value */
 };
 
-/*! \brief TLV type */
+/*! TLV type */
 enum tlv_type {
-	TLV_TYPE_NONE,		/*!< \brief no type */
-	TLV_TYPE_FIXED,		/*!< \brief fixed-length value-only */
-	TLV_TYPE_T,		/*!< \brief tag-only */
-	TLV_TYPE_TV,		/*!< \brief tag-value (8bit) */
-	TLV_TYPE_TLV,		/*!< \brief tag-length-value */
-	TLV_TYPE_TL16V,		/*!< \brief tag, 16 bit length, value */
-	TLV_TYPE_TvLV,		/*!< \brief tag, variable length, value */
-	TLV_TYPE_SINGLE_TV,	/*!< \brief tag and value (both 4 bit) in 1 byte */
-	TLV_TYPE_vTvLV_GAN,	/*!< \brief variable-length tag, variable-length length */
+	TLV_TYPE_NONE,		/*!< no type */
+	TLV_TYPE_FIXED,		/*!< fixed-length value-only */
+	TLV_TYPE_T,		/*!< tag-only */
+	TLV_TYPE_TV,		/*!< tag-value (8bit) */
+	TLV_TYPE_TLV,		/*!< tag-length-value */
+	TLV_TYPE_TL16V,		/*!< tag, 16 bit length, value */
+	TLV_TYPE_TvLV,		/*!< tag, variable length, value */
+	TLV_TYPE_SINGLE_TV,	/*!< tag and value (both 4 bit) in 1 byte */
+	TLV_TYPE_vTvLV_GAN,	/*!< variable-length tag, variable-length length */
 };
 
-/*! \brief Definition of a single IE (Information Element) */
+/*! Definition of a single IE (Information Element) */
 struct tlv_def {
-	enum tlv_type type;	/*!< \brief TLV type */
-	uint8_t fixed_len;	/*!< \brief length in case of \ref TLV_TYPE_FIXED */
+	enum tlv_type type;	/*!< TLV type */
+	uint8_t fixed_len;	/*!< length in case of \ref TLV_TYPE_FIXED */
 };
 
-/*! \brief Definition of All 256 IE / TLV */
+/*! Definition of All 256 IE / TLV */
 struct tlv_definition {
 	struct tlv_def def[256];
 };
 
-/*! \brief result of the TLV parser */
+/*! result of the TLV parser */
 struct tlv_parsed {
 	struct tlv_p_entry lv[256];
 };
@@ -414,7 +414,7 @@ void tlv_def_patch(struct tlv_definition *dst, const struct tlv_definition *src)
 #define TLVP_PRES_LEN(tp, tag, min_len) \
 	(TLVP_PRESENT(tp, tag) && TLVP_LEN(tp, tag) >= min_len)
 
-/*! \brief Align given TLV element with 16 bit value to an even address
+/*! Align given TLV element with 16 bit value to an even address
  *  \param[in] tp pointer to \ref tlv_parsed
  *  \param[in] pos element to return
  *  \returns aligned 16 bit value
@@ -426,7 +426,7 @@ static inline uint16_t tlvp_val16_unal(const struct tlv_parsed *tp, int pos)
 	return res;
 }
 
-/*! \brief Align given TLV element with 32 bit value to an address that is a multiple of 4
+/*! Align given TLV element with 32 bit value to an address that is a multiple of 4
  *  \param[in] tp pointer to \ref tlv_parsed
  *  \param[in] pos element to return
  *  \returns aligned 32 bit value
@@ -438,7 +438,7 @@ static inline uint32_t tlvp_val32_unal(const struct tlv_parsed *tp, int pos)
 	return res;
 }
 
-/*! \brief Retrieve (possibly unaligned) TLV element and convert to host byte order
+/*! Retrieve (possibly unaligned) TLV element and convert to host byte order
  *  \param[in] tp pointer to \ref tlv_parsed
  *  \param[in] pos element to return
  *  \returns aligned 16 bit value in host byte order
@@ -448,7 +448,7 @@ static inline uint16_t tlvp_val16be(const struct tlv_parsed *tp, int pos)
 	return osmo_load16be(TLVP_VAL(tp, pos));
 }
 
-/*! \brief Retrieve (possibly unaligned) TLV element and convert to host byte order
+/*! Retrieve (possibly unaligned) TLV element and convert to host byte order
  *  \param[in] tp pointer to \ref tlv_parsed
  *  \param[in] pos element to return
  *  \returns aligned 32 bit value in host byte order

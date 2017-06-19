@@ -31,7 +31,7 @@
  *  @{
  */
 
-/*! \brief Encode a 3GPP TS 03.41 SMS-CB message
+/*! Encode a 3GPP TS 03.41 SMS-CB message
  *  \param[in] ctx talloc allocation context
  *  \param[in] geo_scope Geographic Scope
  *  \param[in] msg_code Message Code

@@ -8,17 +8,17 @@
  */
 
 /*! \file select.h
- *  \brief select loop abstraction
+ *  select loop abstraction
  */
 
-/*! \brief Indicate interest in reading from the file descriptor */
+/*! Indicate interest in reading from the file descriptor */
 #define BSC_FD_READ	0x0001
-/*! \brief Indicate interest in writing to the file descriptor */
+/*! Indicate interest in writing to the file descriptor */
 #define BSC_FD_WRITE	0x0002
-/*! \brief Indicate interest in exceptions from the file descriptor */
+/*! Indicate interest in exceptions from the file descriptor */
 #define BSC_FD_EXCEPT	0x0004
 
-/*! \brief Structure representing a file dsecriptor */
+/*! Structure representing a file dsecriptor */
 struct osmo_fd {
 	/*! linked list for internal management */
 	struct llist_head list;	

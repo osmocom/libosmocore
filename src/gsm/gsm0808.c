@@ -26,13 +26,13 @@
 
 /*! \addtogroup gsm0808
  *  @{
- *  \brief Helper functions regarding the TS 08.08 / 48.008 A interface
+ *  Helper functions regarding the TS 08.08 / 48.008 A interface
  */
 
 #define BSSMAP_MSG_SIZE 512
 #define BSSMAP_MSG_HEADROOM 128
 
-/*! \brief Create "Complete L3 Info" for AoIP
+/*! Create "Complete L3 Info" for AoIP
  *  \param[in] msg_l3 msgb containing Layer 3 Message
  *  \param[in] nc Mobile Network Code
  *  \param[in] cc Mobile Country Code
@@ -81,7 +81,7 @@ struct msgb *gsm0808_create_layer3_aoip(const struct msgb *msg_l3, uint16_t nc,
 	return msg;
 }
 
-/*! \brief Create "Complete L3 Info" for A
+/*! Create "Complete L3 Info" for A
  *  \param[in] msg_l3 msgb containing Layer 3 Message
  *  \param[in] nc Mobile Network Code
  *  \param[in] cc Mobile Country Code
@@ -94,7 +94,7 @@ struct msgb *gsm0808_create_layer3(struct msgb *msg_l3, uint16_t nc,
 	return gsm0808_create_layer3_aoip(msg_l3, nc, cc, lac, _ci, NULL);
 }
 
-/*! \brief Create BSSMAP RESET message
+/*! Create BSSMAP RESET message
  *  \returns callee-allocated msgb with BSSMAP Reset message */
 struct msgb *gsm0808_create_reset(void)
 {
@@ -111,7 +111,7 @@ struct msgb *gsm0808_create_reset(void)
 	return msg;
 }
 
-/*! \brief Create BSSMAP RESET ACK message
+/*! Create BSSMAP RESET ACK message
  *  \returns callee-allocated msgb with BSSMAP Reset ACK message */
 struct msgb *gsm0808_create_reset_ack(void)
 {
@@ -126,7 +126,7 @@ struct msgb *gsm0808_create_reset_ack(void)
 	return msg;
 }
 
-/*! \brief Create BSSMAP Clear Complete message
+/*! Create BSSMAP Clear Complete message
  *  \returns callee-allocated msgb with BSSMAP Clear Complete message */
 struct msgb *gsm0808_create_clear_complete(void)
 {
@@ -142,7 +142,7 @@ struct msgb *gsm0808_create_clear_complete(void)
 	return msg;
 }
 
-/*! \brief Create BSSMAP Clear Command message
+/*! Create BSSMAP Clear Command message
  *  \param[in] reason TS 08.08 cause value
  *  \returns callee-allocated msgb with BSSMAP Clear Command message */
 struct msgb *gsm0808_create_clear_command(uint8_t reason)
@@ -159,7 +159,7 @@ struct msgb *gsm0808_create_clear_command(uint8_t reason)
 	return msg;
 }
 
-/*! \brief Create BSSMAP Cipher Mode Command message
+/*! Create BSSMAP Cipher Mode Command message
  *  \param[in] ei Mandatory Encryption Information
  *  \param[in] cipher_response_mode optional 1-byte Cipher Response Mode
  *  \returns callee-allocated msgb with BSSMAP Cipher Mode Command message */
@@ -196,7 +196,7 @@ struct msgb *gsm0808_create_cipher(const struct gsm0808_encrypt_info *ei,
 	return msg;
 }
 
-/*! \brief Create BSSMAP Cipher Mode Complete message
+/*! Create BSSMAP Cipher Mode Complete message
  *  \param[in] layer3 L3 Message to be included
  *  \param[in] alg_id Chosen Encrpytion Algorithm
  *  \returns callee-allocated msgb with BSSMAP Cipher Mode Complete message */
@@ -225,7 +225,7 @@ struct msgb *gsm0808_create_cipher_complete(struct msgb *layer3, uint8_t alg_id)
 	return msg;
 }
 
-/*! \brief Create BSSMAP Cipher Mode Reject message
+/*! Create BSSMAP Cipher Mode Reject message
  *  \param[in] reason TS 08.08 cause value
  *  \returns callee-allocated msgb with BSSMAP Cipher Mode Reject message */
 struct msgb *gsm0808_create_cipher_reject(uint8_t cause)
@@ -242,7 +242,7 @@ struct msgb *gsm0808_create_cipher_reject(uint8_t cause)
 	return msg;
 }
 
-/*! \brief Create BSSMAP Classmark Update message
+/*! Create BSSMAP Classmark Update message
  *  \param[in] cm2 Classmark 2
  *  \param[in] cm2_len length (in octets) of \a cm2
  *  \param[in] cm3 Classmark 3
@@ -267,7 +267,7 @@ struct msgb *gsm0808_create_classmark_update(const uint8_t *cm2, uint8_t cm2_len
 	return msg;
 }
 
-/*! \brief Create BSSMAP SAPI N Reject message
+/*! Create BSSMAP SAPI N Reject message
  *  \param[in] link_id Link Identifier
  *  \returns callee-allocated msgb with BSSMAP SAPI N Reject message */
 struct msgb *gsm0808_create_sapi_reject(uint8_t link_id)
@@ -286,7 +286,7 @@ struct msgb *gsm0808_create_sapi_reject(uint8_t link_id)
 	return msg;
 }
 
-/*! \brief Create BSSMAP Assignment Request message
+/*! Create BSSMAP Assignment Request message
  *  \param[in] ct Channel Type
  *  \param[in] cic Circuit Identity Code (Classic A only)
  *  \param[in] ss Socket Address of MSC-side RTP socket (AoIP only)
@@ -349,7 +349,7 @@ struct msgb *gsm0808_create_ass(const struct gsm0808_channel_type *ct,
 	return msg;
 }
 
-/*! \brief Create BSSMAP Assignment Completed message
+/*! Create BSSMAP Assignment Completed message
  *  \param[in] rr_cause GSM 04.08 RR Cause value
  *  \param[in] chosen_channel Chosen Channel
  *  \param[in] encr_alg_id Encryption Algorithm ID
@@ -407,7 +407,7 @@ struct msgb *gsm0808_create_ass_compl(uint8_t rr_cause, uint8_t chosen_channel,
 	return msg;
 }
 
-/*! \brief Create BSSMAP Assignment Completed message
+/*! Create BSSMAP Assignment Completed message
  *  \param[in] rr_cause GSM 04.08 RR Cause value
  *  \param[in] chosen_channel Chosen Channel
  *  \param[in] encr_alg_id Encryption Algorithm ID
@@ -422,7 +422,7 @@ struct msgb *gsm0808_create_assignment_completed(uint8_t rr_cause,
 					speech_mode, NULL, NULL, NULL);
 }
 
-/*! \brief Create BSSMAP Assignment Failure message
+/*! Create BSSMAP Assignment Failure message
  *  \param[in] cause BSSMAP Cause value
  *  \param[in] rr_cause GSM 04.08 RR Cause value
  *  \param[in] scl Optional Speech Cdec List (AoIP)
@@ -456,7 +456,7 @@ struct msgb *gsm0808_create_ass_fail(uint8_t cause, const uint8_t *rr_cause,
 	return msg;
 }
 
-/*! \brief Create BSSMAP Assignment Failure message
+/*! Create BSSMAP Assignment Failure message
  *  \param[in] cause BSSMAP Cause value
  *  \param[in] rr_cause GSM 04.08 RR Cause value
  *  \returns callee-allocated msgb with BSSMAP Assignment Failure message */
@@ -466,7 +466,7 @@ struct msgb *gsm0808_create_assignment_failure(uint8_t cause,
 	return gsm0808_create_ass_fail(cause, rr_cause, NULL);
 }
 
-/*! \brief Create BSSMAP Clear Request message
+/*! Create BSSMAP Clear Request message
  *  \param[in] cause BSSMAP Cause value
  *  \returns callee-allocated msgb with BSSMAP Clear Request message */
 struct msgb *gsm0808_create_clear_rqst(uint8_t cause)
@@ -485,7 +485,7 @@ struct msgb *gsm0808_create_clear_rqst(uint8_t cause)
 	return msg;
 }
 
-/*! \brief Create BSSMAP PAGING message
+/*! Create BSSMAP PAGING message
  *  \param[in] imsi Mandatory paged IMSI in string representation
  *  \param[in] tmsi Optional paged TMSI
  *  \param[in] cil Cell Identity List (where to page)
@@ -543,7 +543,7 @@ struct msgb *gsm0808_create_paging(const char *imsi, const uint32_t *tmsi,
 	return msg;
 }
 
-/*! \brief Prepend a DTAP header to given Message Buffer
+/*! Prepend a DTAP header to given Message Buffer
  *  \param[in] msgb Message Buffer
  *  \param[in] link_id Link Identifier */
 void gsm0808_prepend_dtap_header(struct msgb *msg, uint8_t link_id)
@@ -554,7 +554,7 @@ void gsm0808_prepend_dtap_header(struct msgb *msg, uint8_t link_id)
 	hh[2] = msg->len - 3;
 }
 
-/*! \brief Create BSSMAP DTAP message
+/*! Create BSSMAP DTAP message
  *  \param[in] msg_l3 Messge Buffer containing Layer3 message
  *  \param[in] link_id Link Identifier
  *  \returns callee-allocated msgb with BSSMAP DTAP message */
@@ -818,7 +818,7 @@ static const struct value_string gsm0808_msgt_names[] = {
 	{ 0, NULL }
 };
 
-/*! \brief Return string name of BSSMAP Message Type */
+/*! Return string name of BSSMAP Message Type */
 const char *gsm0808_bssmap_name(uint8_t msg_type)
 {
 	return get_value_string(gsm0808_msgt_names, msg_type);
@@ -830,7 +830,7 @@ static const struct value_string gsm0808_bssap_names[] = {
 	{ 0, NULL }
 };
 
-/*! \brief Return string name of BSSAP Message Type */
+/*! Return string name of BSSAP Message Type */
 const char *gsm0808_bssap_name(uint8_t msg_type)
 {
 	return get_value_string(gsm0808_bssap_names, msg_type);

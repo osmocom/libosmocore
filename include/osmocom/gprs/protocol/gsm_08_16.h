@@ -12,7 +12,7 @@
 
 /*! \file gprs_ns.h */
 
-/*! \brief Common header of GPRS NS */
+/*! Common header of GPRS NS */
 struct gprs_ns_hdr {
 	uint8_t pdu_type;	/*!< NS PDU type */
 	uint8_t data[0];	/*!< variable-length payload */
@@ -20,7 +20,7 @@ struct gprs_ns_hdr {
 
 extern const struct value_string gprs_ns_pdu_strings[];
 
-/*! \brief NS PDU Type (TS 08.16, Section 10.3.7, Table 14) */
+/*! NS PDU Type (TS 08.16, Section 10.3.7, Table 14) */
 enum ns_pdu_type {
 	NS_PDUT_UNITDATA	= 0x00,
 	NS_PDUT_RESET		= 0x02,
@@ -43,7 +43,7 @@ enum ns_pdu_type {
 	SNS_PDUT_SIZE_ACK	= 0x13,
 };
 
-/*! \brief NS Control IE (TS 08.16, Section 10.3, Table 12) */
+/*! NS Control IE (TS 08.16, Section 10.3, Table 12) */
 enum ns_ctrl_ie {
 	NS_IE_CAUSE		= 0x00,
 	NS_IE_VCI		= 0x01,
@@ -60,7 +60,7 @@ enum ns_ctrl_ie {
 	NS_IE_IP_ADDR		= 0x0b,
 };
 
-/*! \brief NS Cause (TS 08.16, Section 10.3.2, Table 13) */
+/*! NS Cause (TS 08.16, Section 10.3.2, Table 13) */
 enum ns_cause {
 	NS_CAUSE_TRANSIT_FAIL		= 0x00,
 	NS_CAUSE_OM_INTERVENTION	= 0x01,

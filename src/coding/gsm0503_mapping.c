@@ -28,7 +28,7 @@
 /*! \addtogroup mapping
  *  @{
  *
- *  \brief GSM TS 05.03 burst mapping
+ *  GSM TS 05.03 burst mapping
  *
  *  This module contains burst mapping routines as specified in 3GPP TS
  *  05.03 / 45.003.

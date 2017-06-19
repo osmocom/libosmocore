@@ -24,7 +24,7 @@
  */
 
 /*! \file logging_gsmtap.c
- *  \brief libosmocore log output encapsulated in GSMTAP
+ *  libosmocore log output encapsulated in GSMTAP
  *
  *  Encapsulating the log output inside GSMTAP frames allows us to
  *  observer protocol traces (of Um, Abis, A or any other interface in
@@ -102,7 +102,7 @@ static void _gsmtap_raw_output(struct log_target *target, int subsys,
 	gsmtap_sendmsg(target->tgt_gsmtap.gsmtap_inst, msg);
 }
 
-/*! \brief Create a new logging target for GSMTAP logging
+/*! Create a new logging target for GSMTAP logging
  *  \param[in] ident string identifier
  *  \returns Log target in case of success, NULL in case of error
  */

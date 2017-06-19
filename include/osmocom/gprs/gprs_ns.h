@@ -41,19 +41,19 @@ enum ns_timeout {
 #define NSE_S_ALIVE	0x0002
 #define NSE_S_RESET	0x0004
 
-/*! \brief Osmocom NS link layer types */
+/*! Osmocom NS link layer types */
 enum gprs_ns_ll {
 	GPRS_NS_LL_UDP,		/*!< NS/UDP/IP */
 	GPRS_NS_LL_E1,		/*!< NS/E1 */
 	GPRS_NS_LL_FR_GRE,	/*!< NS/FR/GRE/IP */
 };
 
-/*! \brief Osmoco NS events */
+/*! Osmoco NS events */
 enum gprs_ns_evt {
 	GPRS_NS_EVT_UNIT_DATA,
 };
 
-/*! \brief Osmocom NS VC create status */
+/*! Osmocom NS VC create status */
 enum gprs_ns_cs {
 	GPRS_NS_CS_CREATED,     /*!< A NSVC object has been created */
 	GPRS_NS_CS_FOUND,       /*!< A NSVC object has been found */
@@ -63,32 +63,32 @@ enum gprs_ns_cs {
 };
 
 struct gprs_nsvc;
-/*! \brief Osmocom GPRS callback function type */
+/*! Osmocom GPRS callback function type */
 typedef int gprs_ns_cb_t(enum gprs_ns_evt event, struct gprs_nsvc *nsvc,
 			 struct msgb *msg, uint16_t bvci);
 
-/*! \brief An instance of the NS protocol stack */
+/*! An instance of the NS protocol stack */
 struct gprs_ns_inst {
-	/*! \brief callback to the user for incoming UNIT DATA IND */
+	/*! callback to the user for incoming UNIT DATA IND */
 	gprs_ns_cb_t *cb;
 
-	/*! \brief linked lists of all NSVC in this instance */
+	/*! linked lists of all NSVC in this instance */
 	struct llist_head gprs_nsvcs;
 
-	/*! \brief a NSVC object that's needed to deal with packets for
+	/*! a NSVC object that's needed to deal with packets for
 	 * 	   unknown NSVC */
 	struct gprs_nsvc *unknown_nsvc;
 
 	uint16_t timeout[NS_TIMERS_COUNT];
 
-	/*! \brief NS-over-IP specific bits */
+	/*! NS-over-IP specific bits */
 	struct {
 		struct osmo_fd fd;
 		uint32_t local_ip;
 		uint16_t local_port;
 		int dscp;
 	} nsip;
-	/*! \brief NS-over-FR-over-GRE-over-IP specific bits */
+	/*! NS-over-FR-over-GRE-over-IP specific bits */
 	struct {
 		struct osmo_fd fd;
 		uint32_t local_ip;
@@ -104,15 +104,15 @@ enum nsvc_timer_mode {
 	_NSVC_TIMER_NR,
 };
 
-/*! \brief Structure representing a single NS-VC */
+/*! Structure representing a single NS-VC */
 struct gprs_nsvc {
-	/*! \brief list of NS-VCs within NS Instance */
+	/*! list of NS-VCs within NS Instance */
 	struct llist_head list;
-	/*! \brief pointer to NS Instance */
+	/*! pointer to NS Instance */
 	struct gprs_ns_inst *nsi;
 
-	uint16_t nsei;	/*! \brief end-to-end significance */
-	uint16_t nsvci;	/*! \brief uniquely identifies NS-VC at SGSN */
+	uint16_t nsei;	/*! end-to-end significance */
+	uint16_t nsvci;	/*! uniquely identifies NS-VC at SGSN */
 
 	uint32_t state;
 	uint32_t remote_state;
@@ -129,7 +129,7 @@ struct gprs_nsvc {
 	struct rate_ctr_group *ctrg;
 	struct osmo_stat_item_group *statg;
 
-	/*! \brief which link-layer are we based on? */
+	/*! which link-layer are we based on? */
 	enum gprs_ns_ll ll;
 
 	union {

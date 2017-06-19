@@ -24,7 +24,7 @@
 
 /*! \addtogroup serial
  *  @{
- *  \brief Osmocom serial port helpers
+ *  Osmocom serial port helpers
  */
 
 /*! \file serial.c */
@@ -50,7 +50,7 @@
 # define dbg_perror(x) do { } while (0)
 #endif
 
-/*! \brief Open serial device and does base init
+/*! Open serial device and does base init
  *  \param[in] dev Path to the device node to open
  *  \param[in] baudrate Baudrate constant (speed_t: B9600, B...)
  *  \returns >=0 file descriptor in case of success or negative errno.
@@ -149,7 +149,7 @@ _osmo_serial_set_baudrate(int fd, speed_t baudrate)
 	return 0;
 }
 
-/*! \brief Change current baudrate
+/*! Change current baudrate
  *  \param[in] fd File descriptor of the open device
  *  \param[in] baudrate Baudrate constant (speed_t: B9600, B...)
  *  \returns 0 for success or negative errno.
@@ -161,7 +161,7 @@ osmo_serial_set_baudrate(int fd, speed_t baudrate)
 	return _osmo_serial_set_baudrate(fd, baudrate);
 }
 
-/*! \brief Change current baudrate to a custom one using OS specific method
+/*! Change current baudrate to a custom one using OS specific method
  *  \param[in] fd File descriptor of the open device
  *  \param[in] baudrate Baudrate as integer
  *  \returns 0 for success or negative errno.
@@ -210,7 +210,7 @@ osmo_serial_set_custom_baudrate(int fd, int baudrate)
 #endif
 }
 
-/*! \brief Clear any custom baudrate
+/*! Clear any custom baudrate
  *  \param[in] fd File descriptor of the open device
  *  \returns 0 for success or negative errno.
  *

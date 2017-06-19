@@ -8,10 +8,10 @@
 
 /*!
  * \file sim.h
- * \brief Routines for helping with SIM (ISO/IEC 7816-4 more generally) communication.
+ * Routines for helping with SIM (ISO/IEC 7816-4 more generally) communication.
  */
 
-/*! \brief command-response pairs cases
+/*! command-response pairs cases
  *
  * Enumeration used to identify the APDU structure based on command-response pair case , as specified in ISO/IEC 7816-3:2006(E) §12.1.
  */
@@ -25,7 +25,7 @@ enum osim_apdu_case {
 	APDU_CASE_4E /*!< command header, command data field (extended), response data field (extended) */
 };
 
-/*! \brief APDU/TPDU command header
+/*! APDU/TPDU command header
  *
  * This structure encode an APDU/TPDU command header, as specified in ISO/IEC 7816-3:2006(E) §12.2 and §12.3.
  * The APDU (application layer) can be encoded as different TPDUs (transport layer), depending on the transport protocol used.
@@ -44,7 +44,7 @@ struct osim_apdu_cmd_hdr {
 
 #define msgb_apdu_dr(__x)
 
-/*! \brief APDU command body
+/*! APDU command body
  *
  * This structure encode a command body, as specified in ISO/IEC 7816-3:2006(E) §12.1.
  * The data and response contents should be provided along with this structure.
@@ -56,12 +56,12 @@ struct osim_msgb_cb {
 	uint16_t sw; /*!< status word, composed of SW1 and SW2 bytes */
 } __attribute__((__may_alias__));
 #define OSIM_MSGB_CB(__msgb)	((struct osim_msgb_cb *)&((__msgb)->cb[0]))
-/*! \brief status word from msgb->cb */
+/*! status word from msgb->cb */
 #define msgb_apdu_case(__x)	OSIM_MSGB_CB(__x)->apduc
 #define msgb_apdu_lc(__x)	OSIM_MSGB_CB(__x)->lc
 #define msgb_apdu_le(__x)	OSIM_MSGB_CB(__x)->le
 #define msgb_apdu_sw(__x)	OSIM_MSGB_CB(__x)->sw
-/*! \brief pointer to the command header of the APDU */
+/*! pointer to the command header of the APDU */
 #define msgb_apdu_h(__x)	((struct osim_apdu_cmd_hdr *)(__x)->l2h)
 
 #define msgb_apdu_dc(__x)	((__x)->l2h + sizeof(struct osim_apdu_cmd_hdr))
@@ -73,7 +73,7 @@ struct osim_file;
 struct osim_file_desc;
 struct osim_decoded_data;
 
-/*! \brief Operations for a given File */
+/*! Operations for a given File */
 struct osim_file_ops {
 	/*! Parse binary file data into osim_decoded_data */
 	int (*parse)(struct osim_decoded_data *dd,
@@ -102,7 +102,7 @@ enum osim_element_repr {
 	ELEM_REPR_HEX,
 };
 
-/*! \brief A single decoded element inside a file */
+/*! A single decoded element inside a file */
 struct osim_decoded_element {
 	struct llist_head list;
 
@@ -176,7 +176,7 @@ struct osim_file_desc {
 	} size;
 };
 
-/*! \brief A single instance of a file: Descriptor and contents */
+/*! A single instance of a file: Descriptor and contents */
 struct osim_file {
 	/*! Descriptor for the file */
 	const struct osim_file_desc *desc;
@@ -282,7 +282,7 @@ struct osim_card_sw {
 	.class = SW_CLS_NONE, .u.str = NULL		\
 }
 
-/*! \brief A card profile (e.g. SIM card */
+/*! A card profile (e.g. SIM card */
 struct osim_card_profile {
 	const char *name;
 	/*! Descriptor for the MF (root directory */
@@ -343,33 +343,33 @@ struct osim_reader_ops {
 };
 
 struct osim_reader_hdl {
-	/*! \brief member in global list of readers */
+	/*! member in global list of readers */
 	struct llist_head list;
 	const struct osim_reader_ops *ops;
 	uint32_t proto_supported;
 	void *priv;
-	/*! \brief current card, if any */
+	/*! current card, if any */
 	struct osim_card_hdl *card;
 };
 
 struct osim_card_hdl {
-	/*! \brief member in global list of cards */
+	/*! member in global list of cards */
 	struct llist_head list;
-	/*! \brief reader through which card is accessed */
+	/*! reader through which card is accessed */
 	struct osim_reader_hdl *reader;
-	/*! \brief card profile */
+	/*! card profile */
 	struct osim_card_profile *prof;
-	/*! \brief card protocol */
+	/*! card protocol */
 	enum osim_proto proto;
 
-	/*! \brief list of channels for this card */
+	/*! list of channels for this card */
 	struct llist_head channels;
 };
 
 struct osim_chan_hdl {
-	/*! \brief linked to card->channels */
+	/*! linked to card->channels */
 	struct llist_head list;
-	/*! \brief card to which this channel belongs */
+	/*! card to which this channel belongs */
 	struct osim_card_hdl *card;
 	const struct osim_file_desc *cwd;
 };

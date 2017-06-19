@@ -35,12 +35,12 @@
 #include <osmocom/core/bits.h>
 
 
-/*! \brief structure describing a given CRC code of max XX bits */
+/*! structure describing a given CRC code of max XX bits */
 struct osmo_crcXXgen_code {
-	int bits;           /*!< \brief Actual number of bits of the CRC */
-	uintXX_t poly;      /*!< \brief Polynom (normal representation, MSB omitted */
-	uintXX_t init;      /*!< \brief Initialization value of the CRC state */
-	uintXX_t remainder; /*!< \brief Remainder of the CRC (final XOR) */
+	int bits;           /*!< Actual number of bits of the CRC */
+	uintXX_t poly;      /*!< Polynom (normal representation, MSB omitted */
+	uintXX_t init;      /*!< Initialization value of the CRC state */
+	uintXX_t remainder; /*!< Remainder of the CRC (final XOR) */
 };
 
 uintXX_t osmo_crcXXgen_compute_bits(const struct osmo_crcXXgen_code *code,

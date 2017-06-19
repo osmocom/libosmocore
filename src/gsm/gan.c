@@ -22,7 +22,7 @@
 #include <osmocom/gsm/protocol/gsm_44_318.h>
 
 /*! \file gan.c
- *  \brief Generic Access Network (GAN) / UMA according to TS 44.318
+ *  Generic Access Network (GAN) / UMA according to TS 44.318
  */
 
 

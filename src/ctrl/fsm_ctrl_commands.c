@@ -6,7 +6,7 @@
 #include <osmocom/ctrl/control_cmd.h>
 #include <osmocom/ctrl/control_if.h>
 
-/*! \brief control interface lookup function for FSM's
+/*! control interface lookup function for FSM's
  * \param[in] data Private data passed to controlif_setup()
  * \param[in] vline Vector of the line holding the command string
  * \param[out] node_type type (CTRL_NODE_) that was determined

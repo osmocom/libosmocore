@@ -29,7 +29,7 @@
 
 /*! \addtogroup interleaving
  *  @{
- *  \brief GSM TS 05.03 interleaving
+ *  GSM TS 05.03 interleaving
  *
  *  This module contains interleaving / de-interleaving routines for
  *  various channel types, as defined in 3GPP TS 05.03 / 45.003
@@ -59,7 +59,7 @@
  * Where hl(B) and hn(B) are bits in burst B indicating flags.
  */
 
-/*! \brief De-Interleave burst bits according to TS 05.03 4.1.4
+/*! De-Interleave burst bits according to TS 05.03 4.1.4
  *  \param[out] cB caller-allocated output buffer for 456 soft coded bits
  *  \param[in] iB 456 soft input bits */
 void gsm0503_xcch_deinterleave(sbit_t *cB, const sbit_t *iB)
@@ -73,7 +73,7 @@ void gsm0503_xcch_deinterleave(sbit_t *cB, const sbit_t *iB)
 	}
 }
 
-/*! \brief Interleave burst bits according to TS 05.03 4.1.4
+/*! Interleave burst bits according to TS 05.03 4.1.4
  *  \param[out] iB caller-allocated output buffer for 456 soft interleaved bits
  *  \param[in] cB 456 soft input coded bits */
 void gsm0503_xcch_interleave(const ubit_t *cB, ubit_t *iB)
@@ -87,7 +87,7 @@ void gsm0503_xcch_interleave(const ubit_t *cB, ubit_t *iB)
 	}
 }
 
-/*! \brief De-Interleave MCS1 DL burst bits according to TS 05.03 5.1.5.1.5
+/*! De-Interleave MCS1 DL burst bits according to TS 05.03 5.1.5.1.5
  *  \param[out] u caller-allocated output buffer for 12 soft coded bits
  *  \param[out] hc caller-allocated output buffer for 68 soft coded bits
  *  \param[out] dc caller-allocated output buffer for 372 soft coded bits
@@ -128,7 +128,7 @@ void gsm0503_mcs1_dl_deinterleave(sbit_t *u, sbit_t *hc,
 	}
 }
 
-/*! \brief Interleave MCS1 DL burst bits according to TS 05.03 5.1.5.1.5
+/*! Interleave MCS1 DL burst bits according to TS 05.03 5.1.5.1.5
  *  \param[in] up 12 input soft coded bits (usf)
  *  \param[in] hc 68 input soft coded bits (header)
  *  \param[in] dc 372 input soft bits (data)
@@ -166,7 +166,7 @@ void gsm0503_mcs1_dl_interleave(const ubit_t *up, const ubit_t *hc,
 	gsm0503_xcch_interleave(cp, iB);
 }
 
-/*! \brief Interleave MCS1 UL burst bits according to TS 05.03 5.1.5.2.4
+/*! Interleave MCS1 UL burst bits according to TS 05.03 5.1.5.2.4
  *  \param[out] hc caller-allocated output buffer for 80 soft coded header bits
  *  \param[out] dc caller-allocated output buffer for 372 soft coded data bits
  *  \param[in] iB 456 interleaved soft input bits */
@@ -200,7 +200,7 @@ void gsm0503_mcs1_ul_deinterleave(sbit_t *hc, sbit_t *dc, const sbit_t *iB)
 	}
 }
 
-/*! \brief Interleave MCS1 DL burst bits according to TS 05.03 5.1.5.2.4
+/*! Interleave MCS1 DL burst bits according to TS 05.03 5.1.5.2.4
  *  \param[in] hc 80 input coded bits (header)
  *  \param[in] dc 372 input bits (data)
  *  \param[out] iB 456 interleaved output bits */
@@ -234,7 +234,7 @@ void gsm0503_mcs1_ul_interleave(const ubit_t *hc, const ubit_t *dc, ubit_t *iB)
 	gsm0503_xcch_interleave(cp, iB);
 }
 
-/*! \brief Interleave MCS5 UL burst bits according to TS 05.03 5.1.9.2.4
+/*! Interleave MCS5 UL burst bits according to TS 05.03 5.1.9.2.4
  *  \param[in] hc 136 soft coded header input bits
  *  \param[in] dc 1248 soft coded data input bits
  *  \param[out] hi 136 interleaved header output bits
@@ -257,7 +257,7 @@ void gsm0503_mcs5_ul_interleave(const ubit_t *hc, const ubit_t *dc,
 	}
 }
 
-/*! \brief De-Interleave MCS5 UL burst bits according to TS 05.03 5.1.9.2.4
+/*! De-Interleave MCS5 UL burst bits according to TS 05.03 5.1.9.2.4
  *  \param[out] hc caller-allocated output buffer for 136 soft coded header bits
  *  \param[out] dc caller-allocated output buffer for 1248 soft coded data bits
  *  \param[in] iB interleaved soft input bits */
@@ -283,7 +283,7 @@ void gsm0503_mcs5_ul_deinterleave(sbit_t *hc, sbit_t *dc,
 	}
 }
 
-/*! \brief Interleave MCS5 DL burst bits according to TS 05.03 5.1.9.1.5
+/*! Interleave MCS5 DL burst bits according to TS 05.03 5.1.9.1.5
  *  \param[in] hc 100 soft coded header input bits
  *  \param[in] dc 1248 soft coded data input bits
  *  \param[out] hi 100 interleaved header output bits
@@ -306,7 +306,7 @@ void gsm0503_mcs5_dl_interleave(const ubit_t *hc, const ubit_t *dc,
 	}
 }
 
-/*! \brief De-Interleave MCS5 UL burst bits according to TS 05.03 5.1.9.1.5
+/*! De-Interleave MCS5 UL burst bits according to TS 05.03 5.1.9.1.5
  *  \param[out] hc caller-allocated output buffer for 100 soft coded header bits
  *  \param[out] dc caller-allocated output buffer for 1248 soft coded data bits
  *  \param[in] iB interleaved soft input bits */
@@ -332,7 +332,7 @@ void gsm0503_mcs5_dl_deinterleave(sbit_t *hc, sbit_t *dc,
 	}
 }
 
-/*! \brief Interleave MCS7 DL burst bits according to TS 05.03 5.1.11.1.5
+/*! Interleave MCS7 DL burst bits according to TS 05.03 5.1.11.1.5
  *  \param[in] hc 124 soft coded header input bits
  *  \param[in] c1 612 soft coded data input bits
  *  \param[in] c2 612 soft coded data input bits
@@ -361,7 +361,7 @@ void gsm0503_mcs7_dl_interleave(const ubit_t *hc, const ubit_t *c1,
 	}
 }
 
-/*! \brief De-Interleave MCS7 DL burst bits according to TS 05.03 5.1.11.1.5
+/*! De-Interleave MCS7 DL burst bits according to TS 05.03 5.1.11.1.5
  *  \param[out] hc caller-allocated output buffer for 124 soft coded header bits
  *  \param[out] c1 caller-allocated output buffer for 612 soft coded data bits
  *  \param[out] c2 caller-allocated output buffer for 612 soft coded data bits
@@ -394,7 +394,7 @@ void gsm0503_mcs7_dl_deinterleave(sbit_t *hc, sbit_t *c1, sbit_t *c2,
 	}
 }
 
-/*! \brief Interleave MCS7 UL burst bits according to TS 05.03 5.1.11.2.4
+/*! Interleave MCS7 UL burst bits according to TS 05.03 5.1.11.2.4
  *  \param[in] hc 124 soft coded header input bits
  *  \param[in] c1 612 soft coded data input bits
  *  \param[in] c2 612 soft coded data input bits
@@ -423,7 +423,7 @@ void gsm0503_mcs7_ul_interleave(const ubit_t *hc, const ubit_t *c1,
 	}
 }
 
-/*! \brief De-Interleave MCS7 UL burst bits according to TS 05.03 5.1.11.2.4
+/*! De-Interleave MCS7 UL burst bits according to TS 05.03 5.1.11.2.4
  *  \param[out] hc caller-allocated output buffer for 160 soft coded header bits
  *  \param[out] c1 caller-allocated output buffer for 612 soft coded data bits
  *  \param[out] c2 caller-allocated output buffer for 612 soft coded data bits
@@ -456,7 +456,7 @@ void gsm0503_mcs7_ul_deinterleave(sbit_t *hc, sbit_t *c1, sbit_t *c2,
 	}
 }
 
-/*! \brief Interleave MCS8 UL burst bits according to TS 05.03 5.1.12.2.4
+/*! Interleave MCS8 UL burst bits according to TS 05.03 5.1.12.2.4
  *  \param[in] hc 160 soft coded header input bits
  *  \param[in] c1 612 soft coded data input bits
  *  \param[in] c2 612 soft coded data input bits
@@ -486,7 +486,7 @@ void gsm0503_mcs8_ul_interleave(const ubit_t *hc, const ubit_t *c1,
 }
 
 
-/*! \brief De-Interleave MCS8 UL burst bits according to TS 05.03 5.1.12.2.4
+/*! De-Interleave MCS8 UL burst bits according to TS 05.03 5.1.12.2.4
  *  \param[out] hc caller-allocated output buffer for 160 soft coded header bits
  *  \param[out] c1 caller-allocated output buffer for 612 soft coded data bits
  *  \param[out] c2 caller-allocated output buffer for 612 soft coded data bits
@@ -519,7 +519,7 @@ void gsm0503_mcs8_ul_deinterleave(sbit_t *hc, sbit_t *c1, sbit_t *c2,
 	}
 }
 
-/*! \brief Interleave MCS8 DL burst bits according to TS 05.03 5.1.12.1.5
+/*! Interleave MCS8 DL burst bits according to TS 05.03 5.1.12.1.5
  *  \param[in] hc 124 soft coded header input bits
  *  \param[in] c1 612 soft coded data input bits
  *  \param[in] c2 612 soft coded data input bits
@@ -548,7 +548,7 @@ void gsm0503_mcs8_dl_interleave(const ubit_t *hc, const ubit_t *c1,
 	}
 }
 
-/*! \brief De-Interleave MCS8 DL burst bits according to TS 05.03 5.1.12.1.5
+/*! De-Interleave MCS8 DL burst bits according to TS 05.03 5.1.12.1.5
  *  \param[out] hc caller-allocated output buffer for 124 soft coded header bits
  *  \param[out] c1 caller-allocated output buffer for 612 soft coded data bits
  *  \param[out] c2 caller-allocated output buffer for 612 soft coded data bits
@@ -605,7 +605,7 @@ void gsm0503_mcs8_dl_deinterleave(sbit_t *hc, sbit_t *c1, sbit_t *c2,
  * Where hl(B) and hn(B) are bits in burst B indicating flags.
  */
 
-/*! \brief GSM TCH FR/EFR/AFS De-Interleaving and burst mapping
+/*! GSM TCH FR/EFR/AFS De-Interleaving and burst mapping
  *  \param[out] cB caller-allocated buffer for 456 unpacked output bits
  *  \param[in] iB 456 unpacked interleaved input bits */
 void gsm0503_tch_fr_deinterleave(sbit_t *cB, const sbit_t *iB)
@@ -619,7 +619,7 @@ void gsm0503_tch_fr_deinterleave(sbit_t *cB, const sbit_t *iB)
 	}
 }
 
-/*! \brief GSM TCH FR/EFR/AFS Interleaving and burst mapping
+/*! GSM TCH FR/EFR/AFS Interleaving and burst mapping
  *  \param[in] cB caller-allocated buffer for 456 unpacked input bits
  *  \param[out] iB 456 unpacked interleaved output bits */
 void gsm0503_tch_fr_interleave(const ubit_t *cB, ubit_t *iB)
@@ -657,7 +657,7 @@ void gsm0503_tch_fr_interleave(const ubit_t *cB, ubit_t *iB)
  * Where hl(B) and hn(B) are bits in burst B indicating flags.
  */
 
-/*! \brief GSM TCH HR/AHS De-Interleaving and burst mapping
+/*! GSM TCH HR/AHS De-Interleaving and burst mapping
  *  \param[out] cB caller-allocated buffer for 228 unpacked output bits
  *  \param[in] iB 228 unpacked interleaved input bits */
 void gsm0503_tch_hr_deinterleave(sbit_t *cB, const sbit_t *iB)
@@ -671,7 +671,7 @@ void gsm0503_tch_hr_deinterleave(sbit_t *cB, const sbit_t *iB)
 	}
 }
 
-/*! \brief GSM TCH HR/AHS Interleaving and burst mapping
+/*! GSM TCH HR/AHS Interleaving and burst mapping
  *  \param[in] cB caller-allocated buffer for 228 unpacked input bits
  *  \param[out] iB 228 unpacked interleaved output bits */
 void gsm0503_tch_hr_interleave(const ubit_t *cB, ubit_t *iB)

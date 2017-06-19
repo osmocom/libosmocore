@@ -22,7 +22,7 @@
 
 /* \addtogroup logging
  * @{
- * \brief libosmocore Logging sub-system
+ * libosmocore Logging sub-system
  */
 
 /* \file logging.c */
@@ -163,7 +163,7 @@ static const struct log_info_cat internal_cat[OSMO_NUM_DLIB] = {
 	},
 };
 
-/*! \brief descriptive string for each log level */
+/*! descriptive string for each log level */
 /* You have to keep this in sync with the structure loglevel_strs. */
 static const char *loglevel_descriptions[LOGLEVEL_DEFS+1] = {
 	"Don't use. It doesn't log anything",
@@ -190,7 +190,7 @@ static int subsys_lib2index(int subsys)
 	return (subsys * -1) + (osmo_log_info->num_cat_user-1);
 }
 
-/*! \brief Parse a human-readable log level into a numeric value
+/*! Parse a human-readable log level into a numeric value
  *  \param lvl[in] zero-terminated string containing log level name
  *  \returns numeric log level
  */
@@ -199,7 +199,7 @@ int log_parse_level(const char *lvl)
 	return get_string_value(loglevel_strs, lvl);
 }
 
-/*! \brief convert a numeric log level into human-readable string
+/*! convert a numeric log level into human-readable string
  *  \param lvl[in] numeric log level
  *  \returns zero-terminated string (log level name)
  */
@@ -208,7 +208,7 @@ const char *log_level_str(unsigned int lvl)
 	return get_value_string(loglevel_strs, lvl);
 }
 
-/*! \brief parse a human-readable log category into numeric form
+/*! parse a human-readable log category into numeric form
  *  \param[in] category human-readable log category name
  *  \returns numeric category value, or -EINVAL otherwise
  */
@@ -228,7 +228,7 @@ int log_parse_category(const char *category)
 	return -EINVAL;
 }
 
-/*! \brief parse the log category mask
+/*! parse the log category mask
  *  \param[in] target log target to be configured
  *  \param[in] _mask log category mask string
  *
@@ -426,7 +426,7 @@ static inline bool should_log_to_target(struct log_target *tar, int subsys,
 	return true;
 }
 
-/*! \brief vararg version of logging function
+/*! vararg version of logging function
  *  \param[in] subsys Logging sub-system
  *  \param[in] level Log level
  *  \param[in] file name of source code file
@@ -459,7 +459,7 @@ void osmo_vlogp(int subsys, int level, const char *file, int line,
 	}
 }
 
-/*! \brief logging function used by DEBUGP() macro
+/*! logging function used by DEBUGP() macro
  *  \param[in] subsys Logging sub-system
  *  \param[in] file name of source code file
  *  \param[in] cont continuation (1) or new line (0)
@@ -475,7 +475,7 @@ void logp(int subsys, const char *file, int line, int cont,
 	va_end(ap);
 }
 
-/*! \brief logging function used by LOGP() macro
+/*! logging function used by LOGP() macro
  *  \param[in] subsys Logging sub-system
  *  \param[in] level Log level
  *  \param[in] file name of source code file
@@ -491,7 +491,7 @@ void logp2(int subsys, unsigned int level, const char *file, int line, int cont,
 	va_end(ap);
 }
 
-/*! \brief Register a new log target with the logging core
+/*! Register a new log target with the logging core
  *  \param[in] target Log target to be registered
  */
 void log_add_target(struct log_target *target)
@@ -499,7 +499,7 @@ void log_add_target(struct log_target *target)
 	llist_add_tail(&target->entry, &osmo_log_target_list);
 }
 
-/*! \brief Unregister a log target from the logging core
+/*! Unregister a log target from the logging core
  *  \param[in] target Log target to be unregistered
  */
 void log_del_target(struct log_target *target)
@@ -507,13 +507,13 @@ void log_del_target(struct log_target *target)
 	llist_del(&target->entry);
 }
 
-/*! \brief Reset (clear) the logging context */
+/*! Reset (clear) the logging context */
 void log_reset_context(void)
 {
 	memset(&log_context, 0, sizeof(log_context));
 }
 
-/*! \brief Set the logging context
+/*! Set the logging context
  *  \param[in] ctx_nr logging context number
  *  \param[in] value value to which the context is to be set
  *  \returns 0 in case of success; negative otherwise
@@ -534,7 +534,7 @@ int log_set_context(uint8_t ctx_nr, void *value)
 	return 0;
 }
 
-/*! \brief Enable the \ref LOG_FLT_ALL log filter
+/*! Enable the \ref LOG_FLT_ALL log filter
  *  \param[in] target Log target to be affected
  *  \param[in] all enable (1) or disable (0) the ALL filter
  *
@@ -550,7 +550,7 @@ void log_set_all_filter(struct log_target *target, int all)
 		target->filter_map &= ~(1 << LOG_FLT_ALL);
 }
 
-/*! \brief Enable or disable the use of colored output
+/*! Enable or disable the use of colored output
  *  \param[in] target Log target to be affected
  *  \param[in] use_color Use color (1) or don't use color (0)
  */
@@ -559,7 +559,7 @@ void log_set_use_color(struct log_target *target, int use_color)
 	target->use_color = use_color;
 }
 
-/*! \brief Enable or disable printing of timestamps while logging
+/*! Enable or disable printing of timestamps while logging
  *  \param[in] target Log target to be affected
  *  \param[in] print_timestamp Enable (1) or disable (0) timestamps
  */
@@ -568,7 +568,7 @@ void log_set_print_timestamp(struct log_target *target, int print_timestamp)
 	target->print_timestamp = print_timestamp;
 }
 
-/*! \brief Enable or disable printing of extended timestamps while logging
+/*! Enable or disable printing of extended timestamps while logging
  *  \param[in] target Log target to be affected
  *  \param[in] print_timestamp Enable (1) or disable (0) timestamps
  *
@@ -581,7 +581,7 @@ void log_set_print_extended_timestamp(struct log_target *target, int print_times
 	target->print_ext_timestamp = print_timestamp;
 }
 
-/*! \brief Enable or disable printing of the filename while logging
+/*! Enable or disable printing of the filename while logging
  *  \param[in] target Log target to be affected
  *  \param[in] print_filename Enable (1) or disable (0) filenames
  */
@@ -590,7 +590,7 @@ void log_set_print_filename(struct log_target *target, int print_filename)
 	target->print_filename = print_filename;
 }
 
-/*! \brief Enable or disable printing of the category name
+/*! Enable or disable printing of the category name
  *  \param[in] target Log target to be affected
  *  \param[in] print_catname Enable (1) or disable (0) filenames
  *
@@ -601,7 +601,7 @@ void log_set_print_category(struct log_target *target, int print_category)
 	target->print_category = print_category;
 }
 
-/*! \brief Set the global log level for a given log target
+/*! Set the global log level for a given log target
  *  \param[in] target Log target to be affected
  *  \param[in] log_level New global log level
  */
@@ -610,7 +610,7 @@ void log_set_log_level(struct log_target *target, int log_level)
 	target->loglevel = log_level;
 }
 
-/*! \brief Set a category filter on a given log target
+/*! Set a category filter on a given log target
  *  \param[in] target Log target to be affected
  *  \param[in] category Log category to be affected
  *  \param[in] enable whether to enable or disable the filter
@@ -635,7 +635,7 @@ static void _file_output(struct log_target *target, unsigned int level,
 }
 #endif
 
-/*! \brief Create a new log target skeleton
+/*! Create a new log target skeleton
  *  \returns dynamically-allocated log target
  *  This funcition allocates a \ref log_target and initializes it
  *  with some default values.  The newly created target is not
@@ -679,7 +679,7 @@ struct log_target *log_target_create(void)
 	return target;
 }
 
-/*! \brief Create the STDERR log target
+/*! Create the STDERR log target
  *  \returns dynamically-allocated \ref log_target for STDERR */
 struct log_target *log_target_create_stderr(void)
 {
@@ -701,7 +701,7 @@ struct log_target *log_target_create_stderr(void)
 }
 
 #if (!EMBEDDED)
-/*! \brief Create a new file-based log target
+/*! Create a new file-based log target
  *  \param[in] fname File name of the new log file
  *  \returns Log target in case of success, NULL otherwise
  */
@@ -726,7 +726,7 @@ struct log_target *log_target_create_file(const char *fname)
 }
 #endif
 
-/*! \brief Find a registered log target
+/*! Find a registered log target
  *  \param[in] type Log target type
  *  \param[in] fname File name
  *  \returns Log target (if found), NULL otherwise
@@ -747,7 +747,7 @@ struct log_target *log_target_find(int type, const char *fname)
 	return NULL;
 }
 
-/*! \brief Unregister, close and delete a log target
+/*! Unregister, close and delete a log target
  *  \param target[in] log target to unregister, close and delete */
 void log_target_destroy(struct log_target *target)
 {
@@ -772,7 +772,7 @@ void log_target_destroy(struct log_target *target)
 	talloc_free(target);
 }
 
-/*! \brief close and re-open a log file (for log file rotation)
+/*! close and re-open a log file (for log file rotation)
  *  \param[in] target log target to re-open
  *  \returns 0 in case of success; negative otherwise */
 int log_target_file_reopen(struct log_target *target)
@@ -788,7 +788,7 @@ int log_target_file_reopen(struct log_target *target)
 	return 0;
 }
 
-/*! \brief close and re-open all log files (for log file rotation)
+/*! close and re-open all log files (for log file rotation)
  *  \returns 0 in case of success; negative otherwise */
 int log_targets_reopen(void)
 {
@@ -809,7 +809,7 @@ int log_targets_reopen(void)
 	return rc;
 }
 
-/*! \brief Generates the logging command string for VTY
+/*! Generates the logging command string for VTY
  *  \param[in] unused_info Deprecated parameter, no longer used!
  *  \returns vty command string for use by VTY command node
  */
@@ -889,7 +889,7 @@ err:
 	return str;
 }
 
-/*! \brief Generates the logging command description for VTY
+/*! Generates the logging command description for VTY
  *  \param[in] unused_info Deprecated parameter, no longer used!
  *  \returns logging command description for use by VTY command node
  */
@@ -952,7 +952,7 @@ err:
 	return str;
 }
 
-/*! \brief Initialize the Osmocom logging core
+/*! Initialize the Osmocom logging core
  *  \param[in] inf Information regarding logging categories
  *  \param[in] ctx \ref talloc context for logging allocations
  *  \returns 0 in case of success, negative in case of error
@@ -1000,7 +1000,7 @@ int log_init(const struct log_info *inf, void *ctx)
 	return 0;
 }
 
-/* \brief De-initialize the Osmocom logging core
+/* De-initialize the Osmocom logging core
  * This function destroys all targets and releases associated memory */
 void log_fini(void)
 {
@@ -1015,7 +1015,7 @@ void log_fini(void)
 	tall_log_ctx = NULL;
 }
 
-/*! \brief Check whether a log entry will be generated.
+/*! Check whether a log entry will be generated.
  *  \returns != 0 if a log entry might get generated by at least one target */
 int log_check_level(int subsys, unsigned int level)
 {

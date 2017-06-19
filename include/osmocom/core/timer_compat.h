@@ -23,7 +23,7 @@
  */
 
 /*! \file timer_compat.h
- *  \brief Compatibility header with some helpers
+ *  Compatibility header with some helpers
  */
 
 #pragma once

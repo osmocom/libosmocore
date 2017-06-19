@@ -43,7 +43,7 @@
 
 /*! \addtogroup ipa
  *  @{
- *  \brief IPA Multiplex utility routines
+ *  IPA Multiplex utility routines
  */
 
 #define IPA_ALLOC_SIZE 1200
@@ -213,7 +213,7 @@ out:
 
 #define IPA_STRING_MAX 64
 
-/*! \brief Generate IPA CCM ID RESP based on list of IEs
+/*! Generate IPA CCM ID RESP based on list of IEs
  *  \param[in] dev Descriptor describing identity data for response
  *  \param[in] ies_req List of IEIs to include in response
  *  \param[in] num_ies_req Number of IEIs in \a ies_req
@@ -296,7 +296,7 @@ struct msgb *ipa_ccm_make_id_resp(const struct ipaccess_unit *dev,
 	return msg;
 }
 
-/*! \brief Generate IPA CCM ID RESP based on requets payload
+/*! Generate IPA CCM ID RESP based on requets payload
  *  \param[in] dev Descriptor describing identity data for response
  *  \param[in] data Payload of the IPA CCM ID GET request
  *  \param[in] len Length of \a data in octets

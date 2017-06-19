@@ -30,7 +30,7 @@
 
 /*! \addtogroup fsm
  *  @{
- *  \brief Finite State Machine abstraction
+ *  Finite State Machine abstraction
  *
  *  This is a generic C-language abstraction for implementing finite
  *  state machines within the Osmocom framework.  It is intended to
@@ -89,7 +89,7 @@
 LLIST_HEAD(osmo_g_fsms);
 static bool fsm_log_addr = true;
 
-/*! \brief specify if FSM instance addresses should be logged or not
+/*! specify if FSM instance addresses should be logged or not
  *
  *  By default, the FSM name includes the pointer address of the \ref
  *  osmo_fsm_inst.  This behavior can be disabled (and re-enabled)
@@ -136,7 +136,7 @@ struct osmo_fsm_inst *osmo_fsm_inst_find_by_id(const struct osmo_fsm *fsm,
 	return NULL;
 }
 
-/*! \brief register a FSM with the core
+/*! register a FSM with the core
  *
  *  A FSM descriptor needs to be registered with the core before any
  *  instances can be created for it.
@@ -154,7 +154,7 @@ int osmo_fsm_register(struct osmo_fsm *fsm)
 	return 0;
 }
 
-/*! \brief unregister a FSM from the core
+/*! unregister a FSM from the core
  *
  *  Once the FSM descriptor is unregistered, active instances can still
  *  use it, but no new instances may be created for it.
@@ -190,7 +190,7 @@ static void fsm_tmr_cb(void *data)
 	osmo_fsm_inst_term(fi, OSMO_FSM_TERM_TIMEOUT, &T);
 }
 
-/*! \brief allocate a new instance of a specified FSM
+/*! allocate a new instance of a specified FSM
  *  \param[in] fsm Descriptor of the FSM
  *  \param[in] ctx talloc context from which to allocate memory
  *  \param[in] priv private data reference store in fsm instance
@@ -231,7 +231,7 @@ struct osmo_fsm_inst *osmo_fsm_inst_alloc(struct osmo_fsm *fsm, void *ctx, void 
 	return fi;
 }
 
-/*! \brief allocate a new instance of a specified FSM as child of
+/*! allocate a new instance of a specified FSM as child of
  *  other FSM instance
  *
  *  This is like \ref osmo_fsm_inst_alloc but using the parent FSM as
@@ -265,7 +265,7 @@ struct osmo_fsm_inst *osmo_fsm_inst_alloc_child(struct osmo_fsm *fsm,
 	return fi;
 }
 
-/*! \brief delete a given instance of a FSM
+/*! delete a given instance of a FSM
  *  \param[in] fsm The FSM to be un-registered and deleted
  */
 void osmo_fsm_inst_free(struct osmo_fsm_inst *fi)
@@ -276,7 +276,7 @@ void osmo_fsm_inst_free(struct osmo_fsm_inst *fi)
 	talloc_free(fi);
 }
 
-/*! \brief get human-readable name of FSM event
+/*! get human-readable name of FSM event
  *  \param[in] fsm FSM descriptor of event
  *  \param[in] event Event integer value
  *  \returns string rendering of the event
@@ -291,7 +291,7 @@ const char *osmo_fsm_event_name(struct osmo_fsm *fsm, uint32_t event)
 		return get_value_string(fsm->event_names, event);
 }
 
-/*! \brief get human-readable name of FSM instance
+/*! get human-readable name of FSM instance
  *  \param[in] fi FSM instance
  *  \returns string rendering of the FSM identity
  */
@@ -306,7 +306,7 @@ const char *osmo_fsm_inst_name(struct osmo_fsm_inst *fi)
 		return fi->fsm->name;
 }
 
-/*! \brief get human-readable name of FSM instance
+/*! get human-readable name of FSM instance
  *  \param[in] fsm FSM descriptor
  *  \param[in] state FSM state number
  *  \returns string rendering of the FSM state
@@ -321,7 +321,7 @@ const char *osmo_fsm_state_name(struct osmo_fsm *fsm, uint32_t state)
 		return fsm->states[state].name;
 }
 
-/*! \brief perform a state change of the given FSM instance
+/*! perform a state change of the given FSM instance
  *
  *  Best invoke via the osmo_fsm_inst_state_chg() macro which logs the source
  *  file where the state change was effected. Alternatively, you may pass \a
@@ -384,7 +384,7 @@ int _osmo_fsm_inst_state_chg(struct osmo_fsm_inst *fi, uint32_t new_state,
 	return 0;
 }
 
-/*! \brief dispatch an event to an osmocom finite state machine instance
+/*! dispatch an event to an osmocom finite state machine instance
  *
  *  Best invoke via the osmo_fsm_inst_dispatch() macro which logs the source
  *  file where the event was effected. Alternatively, you may pass \a file as
@@ -438,7 +438,7 @@ int _osmo_fsm_inst_dispatch(struct osmo_fsm_inst *fi, uint32_t event, void *data
 	return 0;
 }
 
-/*! \brief Terminate FSM instance with given cause
+/*! Terminate FSM instance with given cause
  *
  *  This safely terminates the given FSM instance by first iterating
  *  over all children and sending them a termination event.  Next, it
@@ -489,7 +489,7 @@ void _osmo_fsm_inst_term(struct osmo_fsm_inst *fi,
 					file, line);
 }
 
-/*! \brief Terminate all child FSM instances of an FSM instance.
+/*! Terminate all child FSM instances of an FSM instance.
  *
  *  Iterate over all children and send them a termination event, with the given
  *  cause. Pass OSMO_FSM_TERM_PARENT to avoid dispatching events from the

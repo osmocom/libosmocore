@@ -22,7 +22,7 @@
 
 /*! \addtogroup rate_ctr
  *  @{
- *  \brief conters about events and their event rates
+ *  conters about events and their event rates
  */
 
 /*! \file rate_ctr.c */
@@ -41,7 +41,7 @@ static LLIST_HEAD(rate_ctr_groups);
 
 static void *tall_rate_ctr_ctx;
 
-/*! \brief Allocate a new group of counters according to description
+/*! Allocate a new group of counters according to description
  *  \param[in] ctx \ref talloc context
  *  \param[in] desc Rate counter group description
  *  \param[in] idx Index of new counter group
@@ -71,20 +71,20 @@ struct rate_ctr_group *rate_ctr_group_alloc(void *ctx,
 	return group;
 }
 
-/*! \brief Free the memory for the specified group of counters */
+/*! Free the memory for the specified group of counters */
 void rate_ctr_group_free(struct rate_ctr_group *grp)
 {
 	llist_del(&grp->list);
 	talloc_free(grp);
 }
 
-/*! \brief Add a number to the counter */
+/*! Add a number to the counter */
 void rate_ctr_add(struct rate_ctr *ctr, int inc)
 {
 	ctr->current += inc;
 }
 
-/*! \brief Return the counter difference since the last call to this function */
+/*! Return the counter difference since the last call to this function */
 int64_t rate_ctr_difference(struct rate_ctr *ctr)
 {
 	int64_t result = ctr->current - ctr->previous;
@@ -144,7 +144,7 @@ static void rate_ctr_timer_cb(void *data)
 	osmo_timer_schedule(&rate_ctr_timer, 1, 0);
 }
 
-/*! \brief Initialize the counter module */
+/*! Initialize the counter module */
 int rate_ctr_init(void *tall_ctx)
 {
 	tall_rate_ctr_ctx = tall_ctx;
@@ -154,7 +154,7 @@ int rate_ctr_init(void *tall_ctx)
 	return 0;
 }
 
-/*! \brief Search for counter group based on group name and index
+/*! Search for counter group based on group name and index
  *  \param[in] name Name of the counter group you're looking for
  *  \param[in] idx Index inside the counter group
  *  \returns \ref rate_ctr_group or NULL in case of error */
@@ -174,7 +174,7 @@ struct rate_ctr_group *rate_ctr_get_group_by_name_idx(const char *name, const un
 	return NULL;
 }
 
-/*! \brief Search for counter based on group + name
+/*! Search for counter based on group + name
  *  \param[in] ctrg pointer to \ref rate_ctr_group
  *  \param[in] name name of counter inside group
  *  \returns \ref rate_ctr or NULL in caes of error
@@ -197,7 +197,7 @@ const struct rate_ctr *rate_ctr_get_by_name(const struct rate_ctr_group *ctrg, c
 	return NULL;
 }
 
-/*! \brief Iterate over each counter in group and call function
+/*! Iterate over each counter in group and call function
  *  \param[in] counter group over whose counter to iterate
  *  \param[in] handle_counter function pointer
  *  \param[in] data Data to hand transparently to \ref handle_counter
@@ -220,7 +220,7 @@ int rate_ctr_for_each_counter(struct rate_ctr_group *ctrg,
 	return rc;
 }
 
-/*! \brief Iterate over all counter groups
+/*! Iterate over all counter groups
  *  \param[in] handle_group function pointer of callback function
  *  \param[in] data Data to hand transparently to \ref handle_group
  *  \returns 0 on success; negative otherwise

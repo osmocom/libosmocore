@@ -5,10 +5,10 @@
  */
 
 /*! \file defs.h
- *  \brief General definitions that are meant to be included from header files.
+ *  General definitions that are meant to be included from header files.
  */
 
-/*! \brief Check for gcc and version.
+/*! Check for gcc and version.
  *
  * \note Albeit glibc provides a features.h file that contains a similar
  *       definition (__GNUC_PREREQ), this definition has been copied from there
@@ -23,7 +23,7 @@
 # define OSMO_GNUC_PREREQ(maj, min) 0
 #endif
 
-/*! \brief Set the deprecated attribute with a message.
+/*! Set the deprecated attribute with a message.
  */
 #if defined(__clang__)
 # define _OSMO_HAS_ATTRIBUTE_DEPRECATED __has_attribute(deprecated)

@@ -35,7 +35,7 @@
 
 /*! \addtogroup fsm
  *  @{
- *  \brief VTY interface for Osmocom FSM
+ *  VTY interface for Osmocom FSM
  *
  *  This is code implementing generic VTY access to Osmocom FSMs from
  *  libosmocore.  This means that any application can expose all state
@@ -48,7 +48,7 @@
  * consumption. */
 extern struct llist_head osmo_g_fsms;
 
-/*! \brief Print information about a FSM [class] to the given VTY
+/*! Print information about a FSM [class] to the given VTY
  *  \param vty The VTY to which to print
  *  \param[in] fsm The FSM class to print
  */
@@ -74,7 +74,7 @@ void vty_out_fsm(struct vty *vty, struct osmo_fsm *fsm)
 	}
 }
 
-/*! \brief Print a FSM instance to the given VTY
+/*! Print a FSM instance to the given VTY
  *  \param vty The VTY to which to print
  *  \param[in] fsmi The FSM instance to print
  */
@@ -174,7 +174,7 @@ DEFUN(show_fsm_inst, show_fsm_inst_cmd,
 	return CMD_SUCCESS;
 }
 
-/*! \brief Install VTY commands for FSM introspection
+/*! Install VTY commands for FSM introspection
  *  This installs a couple of VTY commands for introspection of FSM
  *  classes as well as FSM instances. Call this once from your
  *  application if you want to support those commands. */

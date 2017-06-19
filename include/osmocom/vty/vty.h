@@ -25,7 +25,7 @@
 #define VTY_BUFSIZ 512
 #define VTY_MAXHIST 20
 
-/*! \brief VTY events */
+/*! VTY events */
 enum event {
 	VTY_SERV,
 	VTY_READ,
@@ -48,92 +48,92 @@ enum vty_type {
 
 /*! Internal representation of a single VTY */
 struct vty {
-	/*! \brief underlying file (if any) */
+	/*! underlying file (if any) */
 	FILE *file;
 
-	/*! \brief private data, specified by creator */
+	/*! private data, specified by creator */
 	void *priv;
 
-	/*! \brief File descripter of this vty. */
+	/*! File descripter of this vty. */
 	int fd;
 
-	/*! \brief Is this vty connect to file or not */
+	/*! Is this vty connect to file or not */
 	enum vty_type type;
 
-	/*! \brief Node status of this vty */
+	/*! Node status of this vty */
 	int node;
 
-	/*! \brief Failure count */
+	/*! Failure count */
 	int fail;
 
-	/*! \brief Output buffer. */
+	/*! Output buffer. */
 	struct buffer *obuf;
 
-	/*! \brief Command input buffer */
+	/*! Command input buffer */
 	char *buf;
 
-	/*! \brief Command cursor point */
+	/*! Command cursor point */
 	int cp;
 
-	/*! \brief Command length */
+	/*! Command length */
 	int length;
 
-	/*! \brief Command max length. */
+	/*! Command max length. */
 	int max;
 
-	/*! \brief Histry of command */
+	/*! Histry of command */
 	char *hist[VTY_MAXHIST];
 
-	/*! \brief History lookup current point */
+	/*! History lookup current point */
 	int hp;
 
-	/*! \brief History insert end point */
+	/*! History insert end point */
 	int hindex;
 
-	/*! \brief For current referencing point of interface, route-map,
+	/*! For current referencing point of interface, route-map,
 	   access-list etc... */
 	void *index;
 
-	/*! \brief For multiple level index treatment such as key chain and key. */
+	/*! For multiple level index treatment such as key chain and key. */
 	void *index_sub;
 
-	/*! \brief For escape character. */
+	/*! For escape character. */
 	unsigned char escape;
 
-	/*! \brief Current vty status. */
+	/*! Current vty status. */
 	enum { VTY_NORMAL, VTY_CLOSE, VTY_MORE, VTY_MORELINE } status;
 
-	/*! \brief IAC handling
+	/*! IAC handling
 	 *
 	 * IAC handling: was the last character received the IAC
 	 * (interpret-as-command) escape character (and therefore the next
 	 * character will be the command code)?  Refer to Telnet RFC 854. */
 	unsigned char iac;
 
-	/*! \brief IAC SB (option subnegotiation) handling */
+	/*! IAC SB (option subnegotiation) handling */
 	unsigned char iac_sb_in_progress;
 	/* At the moment, we care only about the NAWS (window size) negotiation,
 	 * and that requires just a 5-character buffer (RFC 1073):
 	 * <NAWS char> <16-bit width> <16-bit height> */
 #define TELNET_NAWS_SB_LEN 5
-	/*! \brief sub-negotiation buffer */
+	/*! sub-negotiation buffer */
 	unsigned char sb_buf[TELNET_NAWS_SB_LEN];
-	/*! \brief How many subnegotiation characters have we received?  
+	/*! How many subnegotiation characters have we received?  
 	 *
 	 * We just drop those that do not fit in the buffer. */
 	size_t sb_len;
 
-	/*! \brief Window width */
+	/*! Window width */
 	int width;
-	/*! \brief Widnow height */
+	/*! Widnow height */
 	int height;
 
-	/*! \brief Configure lines. */
+	/*! Configure lines. */
 	int lines;
 
 	int monitor;
 
-	/*! \brief In configure mode. */
+	/*! In configure mode. */
 	int config;
 };
 
@@ -147,19 +147,19 @@ static inline const char *vty_newline(struct vty *vty)
 
 /*! Information an application registers with the VTY */
 struct vty_app_info {
-	/*! \brief name of the application */
+	/*! name of the application */
 	const char *name;
-	/*! \brief version string of the application */
+	/*! version string of the application */
 	const char *version;
-	/*! \brief copyright string of the application */
+	/*! copyright string of the application */
 	const char *copyright;
-	/*! \brief \ref talloc context */
+	/*! \ref talloc context */
 	void *tall_ctx;
-	/*! \brief call-back for returning to parent n ode */
+	/*! call-back for returning to parent n ode */
 	int (*go_parent_cb)(struct vty *vty);
-	/*! \brief call-back to determine if node is config node */
+	/*! call-back to determine if node is config node */
 	int (*is_config_node)(struct vty *vty, int node);
-	/*! \brief Check if the config is consistent before write */
+	/*! Check if the config is consistent before write */
 	int (*config_is_consistent)(struct vty *vty);
 };
 

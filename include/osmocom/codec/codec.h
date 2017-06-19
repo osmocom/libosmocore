@@ -42,7 +42,7 @@ enum osmo_amr_quality {
        AMR_GOOD = 1
 };
 
-/*! \brief Check if given AMR Frame Type is a speech frame
+/*! Check if given AMR Frame Type is a speech frame
  *  \param[in] ft AMR Frame Type
  *  \returns true if AMR with given Frame Type contains voice, false otherwise
  */

@@ -23,7 +23,7 @@
 
 /*! \addtogroup lapd
  *  @{
- *  \brief Osmocom LAPD core, used for Q.921, LAPDm and others
+ *  Osmocom LAPD core, used for Q.921, LAPDm and others
  */
 
 /*! \file lapd_core.c */
@@ -332,7 +332,7 @@ void lapd_dl_exit(struct lapd_datalink *dl)
 	dl->tx_hist = NULL;
 }
 
-/*! \brief Set the \ref lapdm_mode of a LAPDm entity */
+/*! Set the \ref lapdm_mode of a LAPDm entity */
 int lapd_set_mode(struct lapd_datalink *dl, enum lapd_mode mode)
 {
 	switch (mode) {

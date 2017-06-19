@@ -20,7 +20,7 @@
 
 /*! \addtogroup msgb
  *  @{
- *  \brief libosmocore message buffers, inspired by Linux kernel skbuff
+ *  libosmocore message buffers, inspired by Linux kernel skbuff
  *
  *  Inspired by the 'struct skbuff' of the Linux kernel, we implement a
  *  'struct msgb' which we use for handling network
@@ -62,7 +62,7 @@
 
 void *tall_msgb_ctx = NULL;
 
-/*! \brief Allocate a new message buffer
+/*! Allocate a new message buffer
  * \param[in] size Length in octets, including headroom
  * \param[in] name Human-readable name to be associated with msgb
  * \returns dynamically-allocated \ref msgb
@@ -91,7 +91,7 @@ struct msgb *msgb_alloc(uint16_t size, const char *name)
 	return msg;
 }
 
-/*! \brief Release given message buffer
+/*! Release given message buffer
  * \param[in] m Message buffer to be free'd
  */
 void msgb_free(struct msgb *m)
@@ -99,7 +99,7 @@ void msgb_free(struct msgb *m)
 	talloc_free(m);
 }
 
-/*! \brief Enqueue message buffer to tail of a queue
+/*! Enqueue message buffer to tail of a queue
  * \param[in] queue linked list header of queue
  * \param[in] msg message buffer to be added to the queue
  *
@@ -111,7 +111,7 @@ void msgb_enqueue(struct llist_head *queue, struct msgb *msg)
 	llist_add_tail(&msg->list, queue);
 }
 
-/*! \brief Dequeue message buffer from head of queue
+/*! Dequeue message buffer from head of queue
  * \param[in] queue linked list header of queue
  * \returns message buffer (if any) or NULL if queue empty
  *
@@ -134,7 +134,7 @@ struct msgb *msgb_dequeue(struct llist_head *queue)
 		return NULL;
 }
 
-/*! \brief Re-set all message buffer pointers
+/*! Re-set all message buffer pointers
  *  \param[in] msg message buffer that is to be resetted
  *
  * This will re-set the various internal pointers into the underlying
@@ -157,7 +157,7 @@ void msgb_reset(struct msgb *msg)
 	memset(&msg->cb, 0, sizeof(msg->cb));
 }
 
-/*! \brief get pointer to data section of message buffer
+/*! get pointer to data section of message buffer
  *  \param[in] msg message buffer
  *  \returns pointer to data section of message buffer
  */
@@ -166,7 +166,7 @@ uint8_t *msgb_data(const struct msgb *msg)
 	return msg->data;
 }
 
-/*! \brief get length of message buffer
+/*! get length of message buffer
  *  \param[in] msg message buffer
  *  \returns length of data section in message buffer
  */
@@ -175,7 +175,7 @@ uint16_t msgb_length(const struct msgb *msg)
 	return msg->len;
 }
 
-/*! \brief Set the talloc context for \ref msgb_alloc
+/*! Set the talloc context for \ref msgb_alloc
  * Deprecated, use msgb_talloc_ctx_init() instead.
  *  \param[in] ctx talloc context to be used as root for msgb allocations
  */
@@ -184,7 +184,7 @@ void msgb_set_talloc_ctx(void *ctx)
 	tall_msgb_ctx = ctx;
 }
 
-/*! \brief Initialize a msgb talloc context for \ref msgb_alloc.
+/*! Initialize a msgb talloc context for \ref msgb_alloc.
  * Create a talloc context called "msgb". If \a pool_size is 0, create a named
  * const as msgb talloc context. If \a pool_size is nonzero, create a talloc
  * pool, possibly for faster msgb allocations (see talloc_pool()).
@@ -202,7 +202,7 @@ void *msgb_talloc_ctx_init(void *root_ctx, unsigned int pool_size)
 	return tall_msgb_ctx;
 }
 
-/*! \brief Copy an msgb.
+/*! Copy an msgb.
  *
  *  This function allocates a new msgb, copies the data buffer of msg,
  *  and adjusts the pointers (incl l1h-l4h) accordingly. The cb part
@@ -239,7 +239,7 @@ struct msgb *msgb_copy(const struct msgb *msg, const char *name)
 	return new_msg;
 }
 
-/*! \brief Resize an area within an msgb
+/*! Resize an area within an msgb
  *
  *  This resizes a sub area of the msgb data and adjusts the pointers (incl
  *  l1h-l4h) accordingly. The cb part is not updated. If the area is extended,
@@ -293,7 +293,7 @@ int msgb_resize_area(struct msgb *msg, uint8_t *area,
 }
 
 
-/*! \brief Return a (static) buffer containing a hexdump of the msg
+/*! Return a (static) buffer containing a hexdump of the msg
  * \param[in] msg message buffer
  * \returns a pointer to a static char array
  */

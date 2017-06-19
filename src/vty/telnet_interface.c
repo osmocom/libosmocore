@@ -38,7 +38,7 @@
 
 /*! \addtogroup telnet_interface
  *  @{
- *  \brief Telnet interface towards Osmocom VTY
+ *  Telnet interface towards Osmocom VTY
  *
  *  This module contains the code implementing a telnet server for VTY
  *  access.  This telnet server gets linked into each libosmovty-using
@@ -61,7 +61,7 @@ static struct osmo_fd server_socket = {
 	.priv_nr    = 0,
 };
 
-/*! \brief Initialize telnet based VTY interface listening to 127.0.0.1
+/*! Initialize telnet based VTY interface listening to 127.0.0.1
  *  \param[in] tall_ctx \ref talloc context
  *  \param[in] priv private data to be passed to callback
  *  \param[in] port UDP port number
@@ -71,7 +71,7 @@ int telnet_init(void *tall_ctx, void *priv, int port)
 	return telnet_init_dynif(tall_ctx, priv, "127.0.0.1", port);
 }
 
-/*! \brief Initialize telnet based VTY interface
+/*! Initialize telnet based VTY interface
  *  \param[in] tall_ctx \ref talloc context
  *  \param[in] priv private data to be passed to callback
  *  \param[in] ip IP to listen to ('::1' for localhost, '::0' for all, ...)
@@ -104,7 +104,7 @@ int telnet_init_dynif(void *tall_ctx, void *priv, const char *ip, int port)
 
 extern struct host host;
 
-/*! \brief close a telnet connection */
+/*! close a telnet connection */
 int telnet_close_client(struct osmo_fd *fd)
 {
 	struct telnet_connection *conn = (struct telnet_connection*)fd->data;
@@ -182,7 +182,7 @@ static int telnet_new_connection(struct osmo_fd *fd, unsigned int what)
 	return 0;
 }
 
-/*! \brief callback from core VTY code about VTY related events */
+/*! callback from core VTY code about VTY related events */
 void vty_event(enum event event, int sock, struct vty *vty)
 {
 	struct vty_signal_data sig_data = { 0, };

@@ -24,7 +24,7 @@
 
 /*! \addtogroup crcgen
  *  @{
- *  \brief Osmocom generic CRC routines
+ *  Osmocom generic CRC routines
  */
 
 /*! \file crcXXgen.c
@@ -37,7 +37,7 @@
 #include <osmocom/core/crcXXgen.h>
 
 
-/*! \brief Compute the CRC value of a given array of hard-bits
+/*! Compute the CRC value of a given array of hard-bits
  *  \param[in] code The CRC code description to apply
  *  \param[in] in Array of hard bits
  *  \param[in] len Length of the array of hard bits
@@ -69,7 +69,7 @@ osmo_crcXXgen_compute_bits(const struct osmo_crcXXgen_code *code,
 }
 
 
-/*! \brief Checks the CRC value of a given array of hard-bits
+/*! Checks the CRC value of a given array of hard-bits
  *  \param[in] code The CRC code description to apply
  *  \param[in] in Array of hard bits
  *  \param[in] len Length of the array of hard bits
@@ -95,7 +95,7 @@ osmo_crcXXgen_check_bits(const struct osmo_crcXXgen_code *code,
 }
 
 
-/*! \brief Computes and writes the CRC value of a given array of bits
+/*! Computes and writes the CRC value of a given array of bits
  *  \param[in] code The CRC code description to apply
  *  \param[in] in Array of hard bits
  *  \param[in] len Length of the array of hard bits

@@ -43,7 +43,7 @@ static const char bcd_num_digits[] = {
 	'8', '9', '*', '#', 'a', 'b', 'c', '\0'
 };
 
-/*! \brief decode a 'called/calling/connect party BCD number' as in 10.5.4.7
+/*! decode a 'called/calling/connect party BCD number' as in 10.5.4.7
  *  \param[out] Caller-provided output buffer
  *  \param[in] bcd_lv Length-Value portion of to-be-decoded IE
  *  \param[in] h_len Length of an optional heder between L and V portion
@@ -73,7 +73,7 @@ int gsm48_decode_bcd_number(char *output, int output_len,
 	return 0;
 }
 
-/*! \brief convert a single ASCII character to call-control BCD */
+/*! convert a single ASCII character to call-control BCD */
 static int asc_to_bcd(const char asc)
 {
 	int i;
@@ -85,7 +85,7 @@ static int asc_to_bcd(const char asc)
 	return -EINVAL;
 }
 
-/*! \brief convert a ASCII phone number to 'called/calling/connect party BCD number'
+/*! convert a ASCII phone number to 'called/calling/connect party BCD number'
  *  \param[out] bcd_lv Caller-provided output buffer
  *  \param[in] max_len Maximum Length of \a bcd_lv
  *  \param[in] h_len Length of an optional heder between L and V portion
@@ -123,7 +123,7 @@ int gsm48_encode_bcd_number(uint8_t *bcd_lv, uint8_t max_len,
 	return (bcd_cur - bcd_lv);
 }
 
-/*! \brief Decode TS 04.08 Bearer Capability IE (10.5.4.5)
+/*! Decode TS 04.08 Bearer Capability IE (10.5.4.5)
  *  \param[out] Caller-provided memory for decoded output
  *  \[aram[in] LV portion of TS 04.08 Bearer Capability
  *  \returns 0 on success; negative on error */
@@ -235,7 +235,7 @@ int gsm48_decode_bearer_cap(struct gsm_mncc_bearer_cap *bcap,
 	return 0;
 }
 
-/*! \brief Encode TS 04.08 Bearer Capability IE (10.5.4.5)
+/*! Encode TS 04.08 Bearer Capability IE (10.5.4.5)
  *  \param[out] msg Message Buffer to which IE is to be appended
  *  \param[in] lv_only Write only LV portion (1) or TLV (0)
  *  \param[in] bcap Decoded Bearer Capability to be encoded
@@ -294,7 +294,7 @@ int gsm48_encode_bearer_cap(struct msgb *msg, int lv_only,
 	return 0;
 }
 
-/*! \brief Decode TS 04.08 Call Control Capabilities IE (10.5.4.5a)
+/*! Decode TS 04.08 Call Control Capabilities IE (10.5.4.5a)
  *  \param[out] Caller-provided memory for decoded CC capabilities
  *  \param[in] lv Length-Value of IE
  *  \retursns 0 on success; negative on error */
@@ -312,7 +312,7 @@ int gsm48_decode_cccap(struct gsm_mncc_cccap *ccap, const uint8_t *lv)
 	return 0;
 }
 
-/*! \brief Encodoe TS 04.08 Call Control Capabilities (10.5.4.5a)
+/*! Encodoe TS 04.08 Call Control Capabilities (10.5.4.5a)
  *  \param[out] msg Message Buffer to which to append IE (as TLV)
  *  \param[in] ccap Decoded CC Capabilities to be encoded
  *  \returns 0 on success; negative on error */
@@ -333,7 +333,7 @@ int gsm48_encode_cccap(struct msgb *msg,
 	return 0;
 }
 
-/*! \brief Decode TS 04.08 Called Party BCD Number IE (10.5.4.7)
+/*! Decode TS 04.08 Called Party BCD Number IE (10.5.4.7)
  *  \param[out] called Caller-provided memory for decoded number
  *  \param[in] lv Length-Value portion of IE
  *  \returns 0 on success; negative on error */
@@ -355,7 +355,7 @@ int gsm48_decode_called(struct gsm_mncc_number *called,
 	return 0;
 }
 
-/*! \brief Encode TS 04.08 Called Party IE (10.5.4.7)
+/*! Encode TS 04.08 Called Party IE (10.5.4.7)
  *  \param[out] msg Mesage Buffer to which to append IE (as TLV)
  *  \param[in] called MNCC Number to encode/append
  *  \returns 0 on success; negative on error */
@@ -380,7 +380,7 @@ int gsm48_encode_called(struct msgb *msg,
 	return 0;
 }
 
-/*! \brief Decode TS 04.08 Caller ID
+/*! Decode TS 04.08 Caller ID
  *  \param[out] called Caller-provided memory for decoded number
  *  \param[in] lv Length-Value portion of IE
  *  \returns 0 on success; negative on error */
@@ -410,7 +410,7 @@ int gsm48_decode_callerid(struct gsm_mncc_number *callerid,
 	return 0;
 }
 
-/*! \brief Encode TS 04.08 Caller ID IE
+/*! Encode TS 04.08 Caller ID IE
  *  \param[out] msg Mesage Buffer to which to append IE (as TLV)
  *  \param[in] ie IE Identifier (tag)
  *  \param[in] max_len maximum generated output in bytes
@@ -446,7 +446,7 @@ int gsm48_encode_callerid(struct msgb *msg, int ie, int max_len,
 	return 0;
 }
 
-/*! \brief Decode TS 04.08 Cause IE (10.5.4.11)
+/*! Decode TS 04.08 Cause IE (10.5.4.11)
  *  \param[out] cause Caller-provided memory for output
  *  \param[in] lv LV portion of Cause IE
  *  \returns 0 on success; negative on error */
@@ -492,7 +492,7 @@ int gsm48_decode_cause(struct gsm_mncc_cause *cause,
 	return 0;
 }
 
-/*! \brief Encode TS 04.08 Cause IE (10.5.4.11)
+/*! Encode TS 04.08 Cause IE (10.5.4.11)
  *  \param[out] msg Message Buffer to which to append IE
  *  \param[in] lv_only Encode as LV (1) or TLV (0)
  *  \param[in] cause Cause value to be encoded
@@ -536,49 +536,49 @@ int gsm48_encode_cause(struct msgb *msg, int lv_only,
 	return 0;
 }
 
-/*! \brief Decode TS 04.08 Calling Number IE (10.5.4.9) */
+/*! Decode TS 04.08 Calling Number IE (10.5.4.9) */
 int gsm48_decode_calling(struct gsm_mncc_number *calling,
 			 const uint8_t *lv)
 {
 	return gsm48_decode_callerid(calling, lv);
 }
 
-/*! \brief Encode TS 04.08 Calling Number IE (10.5.4.9) */
+/*! Encode TS 04.08 Calling Number IE (10.5.4.9) */
 int gsm48_encode_calling(struct msgb *msg, 
 			  const struct gsm_mncc_number *calling)
 {
 	return gsm48_encode_callerid(msg, GSM48_IE_CALLING_BCD, 14, calling);
 }
 
-/*! \brief Decode TS 04.08 Connected Number IE (10.5.4.13) */
+/*! Decode TS 04.08 Connected Number IE (10.5.4.13) */
 int gsm48_decode_connected(struct gsm_mncc_number *connected,
 			 const uint8_t *lv)
 {
 	return gsm48_decode_callerid(connected, lv);
 }
 
-/*! \brief Encode TS 04.08 Connected Number IE (10.5.4.13) */
+/*! Encode TS 04.08 Connected Number IE (10.5.4.13) */
 int gsm48_encode_connected(struct msgb *msg,
 			    const struct gsm_mncc_number *connected)
 {
 	return gsm48_encode_callerid(msg, GSM48_IE_CONN_BCD, 14, connected);
 }
 
-/*! \brief Decode TS 04.08 Redirecting Number IE (10.5.4.21b) */
+/*! Decode TS 04.08 Redirecting Number IE (10.5.4.21b) */
 int gsm48_decode_redirecting(struct gsm_mncc_number *redirecting,
 			 const uint8_t *lv)
 {
 	return gsm48_decode_callerid(redirecting, lv);
 }
 
-/*! \brief Encode TS 04.08 Redirecting Number IE (10.5.4.21b) */
+/*! Encode TS 04.08 Redirecting Number IE (10.5.4.21b) */
 int gsm48_encode_redirecting(struct msgb *msg,
 			      const struct gsm_mncc_number *redirecting)
 {
 	return gsm48_encode_callerid(msg, GSM48_IE_REDIR_BCD, 19, redirecting);
 }
 
-/*! \brief Decode TS 04.08 Facility IE (10.5.4.15) */
+/*! Decode TS 04.08 Facility IE (10.5.4.15) */
 int gsm48_decode_facility(struct gsm_mncc_facility *facility,
 			   const uint8_t *lv)
 {
@@ -596,7 +596,7 @@ int gsm48_decode_facility(struct gsm_mncc_facility *facility,
 	return 0;
 }
 
-/*! \brief Encode TS 04.08 Facility IE (10.5.4.15) */
+/*! Encode TS 04.08 Facility IE (10.5.4.15) */
 int gsm48_encode_facility(struct msgb *msg, int lv_only,
 			   const struct gsm_mncc_facility *facility)
 {
@@ -615,7 +615,7 @@ int gsm48_encode_facility(struct msgb *msg, int lv_only,
 	return 0;
 }
 
-/*! \brief Decode TS 04.08 Notify IE (10.5.4.20) */
+/*! Decode TS 04.08 Notify IE (10.5.4.20) */
 int gsm48_decode_notify(int *notify, const uint8_t *v)
 {
 	*notify = v[0] & 0x7f;
@@ -623,7 +623,7 @@ int gsm48_decode_notify(int *notify, const uint8_t *v)
 	return 0;
 }
 
-/*! \brief Encode TS 04.08 Notify IE (10.5.4.20) */
+/*! Encode TS 04.08 Notify IE (10.5.4.20) */
 int gsm48_encode_notify(struct msgb *msg, int notify)
 {
 	msgb_v_put(msg, notify | 0x80);
@@ -631,7 +631,7 @@ int gsm48_encode_notify(struct msgb *msg, int notify)
 	return 0;
 }
 
-/*! \brief Decode TS 04.08 Signal IE (10.5.4.23) */
+/*! Decode TS 04.08 Signal IE (10.5.4.23) */
 int gsm48_decode_signal(int *signal, const uint8_t *v)
 {
 	*signal = v[0];
@@ -639,7 +639,7 @@ int gsm48_decode_signal(int *signal, const uint8_t *v)
 	return 0;
 }
 
-/*! \brief Encode TS 04.08 Signal IE (10.5.4.23) */
+/*! Encode TS 04.08 Signal IE (10.5.4.23) */
 int gsm48_encode_signal(struct msgb *msg, int signal)
 {
 	msgb_tv_put(msg, GSM48_IE_SIGNAL, signal);
@@ -647,7 +647,7 @@ int gsm48_encode_signal(struct msgb *msg, int signal)
 	return 0;
 }
 
-/*! \brief Decode TS 04.08 Keypad IE (10.5.4.17) */
+/*! Decode TS 04.08 Keypad IE (10.5.4.17) */
 int gsm48_decode_keypad(int *keypad, const uint8_t *lv)
 {
 	uint8_t in_len = lv[0];
@@ -660,7 +660,7 @@ int gsm48_decode_keypad(int *keypad, const uint8_t *lv)
 	return 0;
 }
 
-/*! \brief Encode TS 04.08 Keypad IE (10.5.4.17) */
+/*! Encode TS 04.08 Keypad IE (10.5.4.17) */
 int gsm48_encode_keypad(struct msgb *msg, int keypad)
 {
 	msgb_tv_put(msg, GSM48_IE_KPD_FACILITY, keypad);
@@ -668,7 +668,7 @@ int gsm48_encode_keypad(struct msgb *msg, int keypad)
 	return 0;
 }
 
-/*! \brief Decode TS 04.08 Progress IE (10.5.4.21) */
+/*! Decode TS 04.08 Progress IE (10.5.4.21) */
 int gsm48_decode_progress(struct gsm_mncc_progress *progress,
 			   const uint8_t *lv)
 {
@@ -684,7 +684,7 @@ int gsm48_decode_progress(struct gsm_mncc_progress *progress,
 	return 0;
 }
 
-/*! \brief Encode TS 04.08 Progress IE (10.5.4.21) */
+/*! Encode TS 04.08 Progress IE (10.5.4.21) */
 int gsm48_encode_progress(struct msgb *msg, int lv_only,
 			   const struct gsm_mncc_progress *p)
 {
@@ -701,7 +701,7 @@ int gsm48_encode_progress(struct msgb *msg, int lv_only,
 	return 0;
 }
 
-/*! \brief Decode TS 04.08 User-User IE (10.5.4.25) */
+/*! Decode TS 04.08 User-User IE (10.5.4.25) */
 int gsm48_decode_useruser(struct gsm_mncc_useruser *uu,
 			   const uint8_t *lv)
 {
@@ -727,7 +727,7 @@ int gsm48_decode_useruser(struct gsm_mncc_useruser *uu,
 	return 0;
 }
 
-/*! \brief Encode TS 04.08 User-User IE (10.5.4.25) */
+/*! Encode TS 04.08 User-User IE (10.5.4.25) */
 int gsm48_encode_useruser(struct msgb *msg, int lv_only,
 			   const struct gsm_mncc_useruser *uu)
 {
@@ -747,7 +747,7 @@ int gsm48_encode_useruser(struct msgb *msg, int lv_only,
 	return 0;
 }
 
-/*! \brief Decode TS 04.08 SS Version IE (10.5.4.24) */
+/*! Decode TS 04.08 SS Version IE (10.5.4.24) */
 int gsm48_decode_ssversion(struct gsm_mncc_ssversion *ssv,
 			    const uint8_t *lv)
 {
@@ -762,7 +762,7 @@ int gsm48_decode_ssversion(struct gsm_mncc_ssversion *ssv,
 	return 0;
 }
 
-/*! \brief Encode TS 04.08 SS Version IE (10.5.4.24) */
+/*! Encode TS 04.08 SS Version IE (10.5.4.24) */
 int gsm48_encode_ssversion(struct msgb *msg,
 			   const struct gsm_mncc_ssversion *ssv)
 {
@@ -780,7 +780,7 @@ int gsm48_encode_ssversion(struct msgb *msg,
 
 /* decode 'more data' does not require a function, because it has no value */
 
-/*! \brief Encode TS 04.08 More Data IE (10.5.4.19) */
+/*! Encode TS 04.08 More Data IE (10.5.4.19) */
 int gsm48_encode_more(struct msgb *msg)
 {
 	uint8_t *ie;
@@ -803,7 +803,7 @@ static int32_t smod(int32_t n, int32_t m)
 	return res;
 }
 
-/*! \brief Decode TS 04.08 Cell Channel Description IE (10.5.2.1b) and other frequency lists
+/*! Decode TS 04.08 Cell Channel Description IE (10.5.2.1b) and other frequency lists
  *  \param[out] f Caller-provided output memory
  *  \param[in] cd Cell Channel Description IE
  *  \param[in] len Length of \a cd in bytes

@@ -34,7 +34,7 @@
 bool osmo_gettimeofday_override = false;
 struct timeval osmo_gettimeofday_override_time = { 23, 424242 };
 
-/*! \brief shim around gettimeofday to be able to set the time manually.
+/*! shim around gettimeofday to be able to set the time manually.
  * To override, set osmo_gettimeofday_override == true and set the desired
  * current time in osmo_gettimeofday_override_time. */
 int osmo_gettimeofday(struct timeval *tv, struct timezone *tz)
@@ -47,7 +47,7 @@ int osmo_gettimeofday(struct timeval *tv, struct timezone *tz)
 	return gettimeofday(tv, tz);
 }
 
-/*! \brief convenience function to advance the fake time.
+/*! convenience function to advance the fake time.
  * Add the given values to osmo_gettimeofday_override_time. */
 void osmo_gettimeofday_override_add(time_t secs, suseconds_t usecs)
 {

@@ -88,7 +88,7 @@ int gprs_cipher_run(uint8_t *out, uint16_t len, enum gprs_ciph_algo algo,
 	return selected_ciphers[algo]->run(out, len, kc, iv, dir);
 }
 
-/*! \brief Obtain key lenght for given GPRS cipher
+/*! Obtain key lenght for given GPRS cipher
  *  \param[in] algo Enum representive GPRS cipher
  *  \returns unsigned integer key length for supported algorithms,
  *  for GEA0 and unknown ciphers will return 0

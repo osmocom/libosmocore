@@ -26,7 +26,7 @@
 #include <osmocom/core/msgb.h>
 #include <osmocom/gsm/protocol/gsm_04_08_gprs.h>
 
-/*! \brief Information Element Identifiers for OAP IEs.
+/*! Information Element Identifiers for OAP IEs.
  * They match osmo_gsup_iei (so far). */
 enum osmo_oap_iei {
 	OAP_CAUSE_IE			= 0x02,
@@ -37,7 +37,7 @@ enum osmo_oap_iei {
 	OAP_CLIENT_ID_IE		= 0x30,
 };
 
-/*! \brief OAP message types */
+/*! OAP message types */
 enum osmo_oap_message_type {
 	OAP_MSGT_REGISTER_REQUEST	= 0b00000100,
 	OAP_MSGT_REGISTER_ERROR		= 0b00000101,
@@ -52,7 +52,7 @@ enum osmo_oap_message_type {
 	OAP_MSGT_SYNC_RESULT		= 0b00001110,
 };
 
-/*! \brief Parsed/decoded OAP protocol message */
+/*! Parsed/decoded OAP protocol message */
 struct osmo_oap_message {
 	enum osmo_oap_message_type message_type;
 	enum gsm48_gmm_cause cause;

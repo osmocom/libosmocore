@@ -26,7 +26,7 @@
  */
 
 /*! \file strrb.c
- *  \brief Lossy string ringbuffer for logging; keeps newest messages.
+ *  Lossy string ringbuffer for logging; keeps newest messages.
  */
 
 #include <stdio.h>
@@ -49,7 +49,7 @@
  * is the case unless this is the first time the ringbuffer becomes full).
 */
 
-/*! \brief Create an empty, initialized osmo_strrb.
+/*! Create an empty, initialized osmo_strrb.
  *  \param[in] ctx The talloc memory context which should own this.
  *  \param[in] rb_size The number of message slots the osmo_strrb can hold.
  *  \returns A struct osmo_strrb* on success, NULL in case of error.
@@ -87,7 +87,7 @@ alloc_error:			/* talloc_free(NULL) is safe */
 	return NULL;
 }
 
-/*! \brief Check if an osmo_strrb is empty.
+/*! Check if an osmo_strrb is empty.
  *  \param[in] rb The osmo_strrb to check.
  *  \returns True if the osmo_strrb is empty, false otherwise.
  */
@@ -96,7 +96,7 @@ bool osmo_strrb_is_empty(const struct osmo_strrb *rb)
 	return rb->end == rb->start;
 }
 
-/*! \brief Return a pointer to the Nth string in the osmo_strrb.
+/*! Return a pointer to the Nth string in the osmo_strrb.
  * \param[in] rb The osmo_strrb to search.
  * \param[in] string_index The index sought (N), zero-indexed.
  *
@@ -130,7 +130,7 @@ bool _osmo_strrb_is_bufindex_valid(const struct osmo_strrb *rb,
 	return (bufi < rb->end) || (bufi >= rb->start);
 }
 
-/*! \brief Count the number of log messages in an osmo_strrb.
+/*! Count the number of log messages in an osmo_strrb.
  *  \param[in] rb The osmo_strrb to count the elements of.
  *
  *  \returns The number of log messages in the osmo_strrb.
@@ -143,7 +143,7 @@ size_t osmo_strrb_elements(const struct osmo_strrb *rb)
 	return rb->end - rb->start;
 }
 
-/*! \brief Add a string to the osmo_strrb.
+/*! Add a string to the osmo_strrb.
  * \param[in] rb The osmo_strrb to add to.
  * \param[in] data The string to add.
  *

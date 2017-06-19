@@ -27,7 +27,7 @@
 /*! \addtogroup parity
  *  @{
  *
- *  \brief GSM TS 05.03 parity
+ *  GSM TS 05.03 parity
  *
  *  This module contains parity/crc code definitions for the various
  *  parity/crc schemes as defined in 3GPP TS 05.03 / 45.003
@@ -35,7 +35,7 @@
 
 /*! \file gsm0503_parity.c */
 
-/*! \brief GSM (SACCH) parity (FIRE code)
+/*! GSM (SACCH) parity (FIRE code)
  *
  * g(x) = (x^23 + 1)(x^17 + x^3 + 1)
  *      = x^40 + x^26 + x^23 + x^17 + x^3 + a1
@@ -47,7 +47,7 @@ const struct osmo_crc64gen_code gsm0503_fire_crc40 = {
 	.remainder = 0xffffffffffULL,
 };
 
-/*! \brief GSM PDTCH CS-2, CS-3, CS-4 parity
+/*! GSM PDTCH CS-2, CS-3, CS-4 parity
  *
  * g(x) = x^16 + x^12 + x^5 + 1
  */
@@ -58,7 +58,7 @@ const struct osmo_crc16gen_code gsm0503_cs234_crc16 = {
 	.remainder = 0xffff,
 };
 
-/*! \brief EDGE MCS header parity
+/*! EDGE MCS header parity
  *
  */
 const struct osmo_crc8gen_code gsm0503_mcs_crc8_hdr = {
@@ -68,7 +68,7 @@ const struct osmo_crc8gen_code gsm0503_mcs_crc8_hdr = {
 	.remainder = 0xff,
 };
 
-/*! \brief EDGE MCS data parity
+/*! EDGE MCS data parity
  *
  */
 const struct osmo_crc16gen_code gsm0503_mcs_crc12 = {
@@ -78,7 +78,7 @@ const struct osmo_crc16gen_code gsm0503_mcs_crc12 = {
 	.remainder = 0x0fff,
 };
 
-/*! \brief GSM RACH parity
+/*! GSM RACH parity
  *
  * g(x) = x^6 + x^5 + x^3 + x^2 + x^1 + 1
  */
@@ -89,7 +89,7 @@ const struct osmo_crc8gen_code gsm0503_rach_crc6 = {
 	.remainder = 0x3f,
 };
 
-/*! \brief GSM SCH parity
+/*! GSM SCH parity
  *
  * g(x) = x^10 + x^8 + x^6 + x^5 + x^4 + x^2 + 1
  */
@@ -100,7 +100,7 @@ const struct osmo_crc16gen_code gsm0503_sch_crc10 = {
 	.remainder = 0x3ff,
 };
 
-/*! \brief GSM TCH FR/HR/EFR parity
+/*! GSM TCH FR/HR/EFR parity
  *
  * g(x) = x^3 + x + 1
  */
@@ -111,7 +111,7 @@ const struct osmo_crc8gen_code gsm0503_tch_fr_crc3 = {
 	.remainder = 0x7,
 };
 
-/*! \brief GSM TCH EFR parity
+/*! GSM TCH EFR parity
  *
  * g(x) = x^8 + x^4 + x^3 + x^2 + 1
  */
@@ -122,7 +122,7 @@ const struct osmo_crc8gen_code gsm0503_tch_efr_crc8 = {
 	.remainder = 0x00,
 };
 
-/*! \brief GSM AMR parity
+/*! GSM AMR parity
  *
  * g(x) = x^6 + x^5 + x^3 + x^2 + x^1 + 1
  */

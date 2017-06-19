@@ -2,11 +2,11 @@
 
 #include <stdint.h>
 
-/*! \brief Fixed BVCI definitions (Section 5.4.1) */
+/*! Fixed BVCI definitions (Section 5.4.1) */
 #define BVCI_SIGNALLING	0x0000
 #define BVCI_PTM	0x0001
 
-/*! \brief BSSGP PDU types (Section 11.3.26 / Table 11.27) */
+/*! BSSGP PDU types (Section 11.3.26 / Table 11.27) */
 enum bssgp_pdu_type {
 	/* PDUs between RL and BSSGP SAPs */
 	BSSGP_PDUT_DL_UNITDATA		= 0x00,
@@ -52,7 +52,7 @@ enum bssgp_pdu_type {
 	BSSGP_PDUT_DELETE_BSS_PFC_ACK	= 0x57,
 };
 
-/*! \brief BSSGP User-Data header (Section 10.2.1 and 10.2.2) */
+/*! BSSGP User-Data header (Section 10.2.1 and 10.2.2) */
 struct bssgp_ud_hdr {
 	uint8_t pdu_type;	/*!< BSSGP PDU type */
 	uint32_t tlli;		/*!< Temporary Link-Local Identifier */
@@ -60,13 +60,13 @@ struct bssgp_ud_hdr {
 	uint8_t data[0];	/* optional/conditional IEs as TLVs */
 } __attribute__((packed));
 
-/*! \brief BSSGP normal header */
+/*! BSSGP normal header */
 struct bssgp_normal_hdr {
 	uint8_t pdu_type;	/*!< BSSGP PDU type */
 	uint8_t data[0];	/*!< optional/conditional IEs as TLVs */
 };
 
-/*! \brief BSSGP Information Element Identifiers */
+/*! BSSGP Information Element Identifiers */
 enum bssgp_iei_type {
 	BSSGP_IE_ALIGNMENT		= 0x00,
 	BSSGP_IE_BMAX_DEFAULT_MS	= 0x01,
@@ -116,7 +116,7 @@ enum bssgp_iei_type {
 	BSSGP_IE_SERVICE_UTRAN_CCO	= 0x3d,
 };
 
-/*! \brief Cause coding (Section 11.3.8 / Table 11.10) */
+/*! Cause coding (Section 11.3.8 / Table 11.10) */
 enum gprs_bssgp_cause {
 	BSSGP_CAUSE_PROC_OVERLOAD	= 0x00,
 	BSSGP_CAUSE_EQUIP_FAIL		= 0x01,

@@ -17,13 +17,13 @@ void rsl_init_cchan_hdr(struct abis_rsl_cchan_hdr *ch, uint8_t msg_type);
 
 extern const struct tlv_definition rsl_att_tlvdef;
 
-/*! \brief Parse RSL TLV structure using \ref tlv_parse */
+/*! Parse RSL TLV structure using \ref tlv_parse */
 #define rsl_tlv_parse(dec, buf, len)     \
 			tlv_parse(dec, &rsl_att_tlvdef, buf, len, 0, 0)
 
 extern const struct tlv_definition rsl_ipac_eie_tlvdef;
 
-/*! \brief Parse RSL IPAC EIE TLV structure using \ref tlv_parse */
+/*! Parse RSL IPAC EIE TLV structure using \ref tlv_parse */
 #define rsl_ipac_eie_tlv_parse(dec, buf, len)     \
 			tlv_parse(dec, &rsl_ipac_eie_tlvdef, buf, len, 0, 0)
 
@@ -58,7 +58,7 @@ struct msgb *rsl_rll_simple(uint8_t msg_type, uint8_t chan_nr,
 
 extern const struct value_string rsl_act_type_names[];
 
-/*! \brief Return a human readable name for GSM 08.58 RSL_ACT_* constants. */
+/*! Return a human readable name for GSM 08.58 RSL_ACT_* constants. */
 static inline const char *rsl_act_type_name(uint8_t act_type)
 {
 	return get_value_string(rsl_act_type_names, act_type);

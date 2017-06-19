@@ -23,7 +23,7 @@
  */
 
 /*! \file timer.h
- *  \brief Osmocom timer handling routines
+ *  Osmocom timer handling routines
  */
 
 #pragma once
@@ -50,15 +50,15 @@
  *        remove the timers.
  *
  */
-/*! \brief A structure representing a single instance of a timer */
+/*! A structure representing a single instance of a timer */
 struct osmo_timer_list {
-	struct rb_node node;	  /*!< \brief rb-tree node header */
-	struct llist_head list;   /*!< \brief internal list header */
-	struct timeval timeout;   /*!< \brief expiration time */
-	unsigned int active  : 1; /*!< \brief is it active? */
+	struct rb_node node;	  /*!< rb-tree node header */
+	struct llist_head list;   /*!< internal list header */
+	struct timeval timeout;   /*!< expiration time */
+	unsigned int active  : 1; /*!< is it active? */
 
-	void (*cb)(void*);	  /*!< \brief call-back called at timeout */
-	void *data;		  /*!< \brief user data for callback */
+	void (*cb)(void*);	  /*!< call-back called at timeout */
+	void *data;		  /*!< user data for callback */
 };
 
 /**

@@ -7,7 +7,7 @@
 /*!
  * \file linuxlist.h
  *
- * \brief Simple doubly linked list implementation.
+ * Simple doubly linked list implementation.
  *
  * Some of the internal functions ("__xxx") are useful when
  * manipulating whole llists rather than single entries, as
@@ -24,7 +24,7 @@
 
 static inline void prefetch(const void *x) {;}
 
-/*! \brief cast a member of a structure out to the containing structure
+/*! cast a member of a structure out to the containing structure
  *
  * \param[in] ptr the pointer to the member.
  * \param[in] type the type of the container struct this is embedded in.
@@ -43,15 +43,15 @@ static inline void prefetch(const void *x) {;}
 #define LLIST_POISON1  ((void *) 0x00100100)
 #define LLIST_POISON2  ((void *) 0x00200200)
 
-/*! \brief (double) linked list header structure */
+/*! (double) linked list header structure */
 struct llist_head {
-	/*! \brief Pointer to next and previous item */
+	/*! Pointer to next and previous item */
 	struct llist_head *next, *prev;
 };
 
 #define LLIST_HEAD_INIT(name) { &(name), &(name) }
 
-/*! \brief define a statically-initialized \ref llist_head
+/*! define a statically-initialized \ref llist_head
  *  \param[in] name Variable name
  *
  * This is a helper macro that will define a named variable of type
@@ -59,12 +59,12 @@ struct llist_head {
 #define LLIST_HEAD(name) \
 	struct llist_head name = LLIST_HEAD_INIT(name)
 
-/*! \brief initialize a \ref llist_head to point back to self */
+/*! initialize a \ref llist_head to point back to self */
 #define INIT_LLIST_HEAD(ptr) do { \
 	(ptr)->next = (ptr); (ptr)->prev = (ptr); \
 } while (0)
 
-/*! \brief Insert a new entry between two known consecutive entries. 
+/*! Insert a new entry between two known consecutive entries. 
  *
  * This is only for internal llist manipulation where we know
  * the prev/next entries already!
@@ -79,7 +79,7 @@ static inline void __llist_add(struct llist_head *_new,
 	prev->next = _new;
 }
 
-/*! \brief add a new entry into a linked list (at head)
+/*! add a new entry into a linked list (at head)
  *  \param _new New entry to be added
  *  \param head \ref llist_head to add it after
  *
@@ -91,7 +91,7 @@ static inline void llist_add(struct llist_head *_new, struct llist_head *head)
 	__llist_add(_new, head, head->next);
 }
 
-/*! \brief add a new entry into a linked list (at tail)
+/*! add a new entry into a linked list (at tail)
  *  \param _new  New entry to be added
  *  \param head  Head of linked list to whose tail we shall add \a _new
  *
@@ -116,7 +116,7 @@ static inline void __llist_del(struct llist_head * prev, struct llist_head * nex
 	prev->next = next;
 }
 
-/*! \brief Delete entry from linked list
+/*! Delete entry from linked list
  *  \param entry  The element to delete from the llist
  *
  * Note: llist_empty on entry does not return true after this, the entry is
@@ -129,7 +129,7 @@ static inline void llist_del(struct llist_head *entry)
 	entry->prev = (struct llist_head *)LLIST_POISON2;
 }
 
-/*! \brief Delete entry from linked list and reinitialize it
+/*! Delete entry from linked list and reinitialize it
  *  \param entry  The element to delete from the list
  */
 static inline void llist_del_init(struct llist_head *entry)
@@ -138,7 +138,7 @@ static inline void llist_del_init(struct llist_head *entry)
 	INIT_LLIST_HEAD(entry); 
 }
 
-/*! \brief Delete from one llist and add as another's head
+/*! Delete from one llist and add as another's head
  *  \param llist The entry to move
  *  \param head	The head that will precede our entry
  */
@@ -148,7 +148,7 @@ static inline void llist_move(struct llist_head *llist, struct llist_head *head)
         llist_add(llist, head);
 }
 
-/*! \brief Delete from one llist and add as another's tail
+/*! Delete from one llist and add as another's tail
  *  \param llist The entry to move
  *  \param head The head that will follow our entry
  */
@@ -159,7 +159,7 @@ static inline void llist_move_tail(struct llist_head *llist,
         llist_add_tail(llist, head);
 }
 
-/*! \brief Test whether a linked list is empty
+/*! Test whether a linked list is empty
  *  \param[in] head  The llist to test.
  *  \returns 1 if the list is empty, 0 otherwise
  */
@@ -182,7 +182,7 @@ static inline void __llist_splice(struct llist_head *llist,
 	at->prev = last;
 }
 
-/*! \brief Join two llists
+/*! Join two llists
  *  \param llist The new linked list to add
  *  \param head The place to add \a llist in the other list
  */
@@ -192,7 +192,7 @@ static inline void llist_splice(struct llist_head *llist, struct llist_head *hea
 		__llist_splice(llist, head);
 }
 
-/*! \brief join two llists and reinitialise the emptied llist.
+/*! join two llists and reinitialise the emptied llist.
  * \param llist The new linked list to add.
  * \param head  The place to add it in the first llist.
  *
@@ -207,7 +207,7 @@ static inline void llist_splice_init(struct llist_head *llist,
 	}
 }
 
-/*! \brief Get the struct containing this list entry
+/*! Get the struct containing this list entry
  *  \param ptr The \ref llist_head pointer
  *  \param type The type of the struct this is embedded in
  *  \param @member The name of the \ref llist_head within the struct
@@ -215,7 +215,7 @@ static inline void llist_splice_init(struct llist_head *llist,
 #define llist_entry(ptr, type, member) \
 	container_of(ptr, type, member)
 
-/*! \brief Get the first element from a list
+/*! Get the first element from a list
  *  \param ptr    the list head to take the element from.
  *  \param type   the type of the struct this is embedded in.
  *  \param member the name of the list_head within the struct.
@@ -225,7 +225,7 @@ static inline void llist_splice_init(struct llist_head *llist,
 #define llist_first_entry(ptr, type, member) \
 	llist_entry((ptr)->next, type, member)
 
-/*! \brief Get the last element from a list
+/*! Get the last element from a list
  *  \param ptr    the list head to take the element from.
  *  \param type   the type of the struct this is embedded in.
  *  \param member the name of the llist_head within the struct.
@@ -235,7 +235,7 @@ static inline void llist_splice_init(struct llist_head *llist,
 #define llist_last_entry(ptr, type, member) \
 	llist_entry((ptr)->prev, type, member)
 
-/*! \brief Get the first element from a list, or NULL
+/*! Get the first element from a list, or NULL
  *  \param ptr    the list head to take the element from.
  *  \param type   the type of the struct this is embedded in.
  *  \param member the name of the list_head within the struct.
@@ -245,7 +245,7 @@ static inline void llist_splice_init(struct llist_head *llist,
 #define llist_first_entry_or_null(ptr, type, member) \
 	(!llist_empty(ptr) ? llist_first_entry(ptr, type, member) : NULL)
 
-/*! \brief Iterate over a linked list
+/*! Iterate over a linked list
  *  \param pos 	The \ref llist_head to use as a loop counter
  *  \param head The head of the list over which to iterate
  */
@@ -253,7 +253,7 @@ static inline void llist_splice_init(struct llist_head *llist,
 	for (pos = (head)->next, prefetch(pos->next); pos != (head); \
         	pos = pos->next, prefetch(pos->next))
 
-/*! \brief Iterate over a llist (no prefetch)
+/*! Iterate over a llist (no prefetch)
  *  \param pos 	The \ref llist_head to use as a loop counter
  *  \param head The head of the list over which to iterate
  *
@@ -265,7 +265,7 @@ static inline void llist_splice_init(struct llist_head *llist,
 #define __llist_for_each(pos, head) \
 	for (pos = (head)->next; pos != (head); pos = pos->next)
 
-/*! \brief Iterate over a llist backwards
+/*! Iterate over a llist backwards
  *  \param pos 	The \ref llist_head to use as a loop counter
  *  \param head The head of the list over which to iterate
  */
@@ -273,7 +273,7 @@ static inline void llist_splice_init(struct llist_head *llist,
 	for (pos = (head)->prev, prefetch(pos->prev); pos != (head); \
         	pos = pos->prev, prefetch(pos->prev))
 
-/*! \brief Iterate over a list; safe against removal of llist entry
+/*! Iterate over a list; safe against removal of llist entry
  *  \param pos 	The \ref llist_head to use as a loop counter
  *  \param n Another \ref llist_head to use as temporary storage
  *  \param head The head of the list over which to iterate
@@ -282,7 +282,7 @@ static inline void llist_splice_init(struct llist_head *llist,
 	for (pos = (head)->next, n = pos->next; pos != (head); \
 		pos = n, n = pos->next)
 
-/*! \brief Iterate over llist of given type
+/*! Iterate over llist of given type
  *  \param pos The 'type *' to use as a loop counter
  *  \param head The head of the list over which to iterate
  *  \param member The name of the \ref llist_head within struct \a pos
@@ -294,7 +294,7 @@ static inline void llist_splice_init(struct llist_head *llist,
 	     pos = llist_entry(pos->member.next, typeof(*pos), member),	\
 		     prefetch(pos->member.next))
 
-/*! \brief Iterate backwards over llist of given type.
+/*! Iterate backwards over llist of given type.
  *  \param pos The 'type *' to use as a loop counter
  *  \param head The head of the list over which to iterate
  *  \param member The name of the \ref llist_head within struct \a pos
@@ -306,7 +306,7 @@ static inline void llist_splice_init(struct llist_head *llist,
 	     pos = llist_entry(pos->member.prev, typeof(*pos), member),	\
 		     prefetch(pos->member.prev))
 
-/*! \brief iterate over llist of given type continuing after existing
+/*! iterate over llist of given type continuing after existing
  * point
  *  \param pos The 'type *' to use as a loop counter
  *  \param head The head of the list over which to iterate
@@ -319,7 +319,7 @@ static inline void llist_splice_init(struct llist_head *llist,
 	     pos = llist_entry(pos->member.next, typeof(*pos), member),	\
 		     prefetch(pos->member.next))
 
-/*! \brief iterate over llist of given type, safe against removal of
+/*! iterate over llist of given type, safe against removal of
  * non-consecutive(!) llist entries
  *  \param pos The 'type *' to use as a loop counter
  *  \param n Another type * to use as temporary storage
@@ -381,7 +381,7 @@ static inline void llist_splice_init(struct llist_head *llist,
 	for ((pos) = (pos)->next, prefetch((pos)->next); (pos) != (head); \
         	(pos) = (pos)->next, ({ smp_read_barrier_depends(); 0;}), prefetch((pos)->next))
 
-/*! \brief count nr of llist items by iterating.
+/*! count nr of llist items by iterating.
  *  \param head The llist head to count items of.
  *  \returns Number of items.
  *

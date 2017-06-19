@@ -13,7 +13,7 @@
 #define OSMO_SIGNAL_SS_APPS		0
 #define OSMO_SIGNAL_SS_RESERVED		2147483648u
 
-/*! \brief signal subsystems */
+/*! signal subsystems */
 enum {
 	SS_L_GLOBAL		= OSMO_SIGNAL_SS_RESERVED,
 	SS_L_INPUT,
@@ -25,7 +25,7 @@ enum {
 #define OSMO_SIGNAL_T_APPS		0
 #define OSMO_SIGNAL_T_RESERVED		2147483648u
 
-/*! \brief signal types. */
+/*! signal types. */
 enum {
 	S_L_GLOBAL_SHUTDOWN	= OSMO_SIGNAL_T_RESERVED,
 };

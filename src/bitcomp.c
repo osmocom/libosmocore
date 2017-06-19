@@ -25,7 +25,7 @@
  */
 
 /*! \file bitcomp.c
- *  \brief Osmocom bit compression routines
+ *  Osmocom bit compression routines
  */
 
 #include <stdint.h>
@@ -222,7 +222,7 @@ static const unsigned t4_make_up[2][15] = {
 	 }
 };
 
-/*! \brief Make-up codes for a given length
+/*! Make-up codes for a given length
  *
  *  \return Return proper make-up code word for an uninterrupted
  *  sequence of b bits of length len according to modified ITU-T T.4
@@ -307,7 +307,7 @@ static inline int t4_rle(struct bitvec *bv, unsigned len, bool b)
 	return bitvec_set_uint(bv, t4_term[b][len], t4_term_length[b][len]);
 }
 
-/*! \brief encode bit vector in-place using T4 encoding
+/*! encode bit vector in-place using T4 encoding
  *  Assumes MSB first encoding.
  *  \param[in] bv bit vector to be encoded
  *  \return color code (if the encoding started with 0 or 1) or -1 on

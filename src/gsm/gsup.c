@@ -33,7 +33,7 @@
 
 /*! \addtogroup gsup
  *  @{
- *  \brief Osmocom Generic Subscriber Update Protocol
+ *  Osmocom Generic Subscriber Update Protocol
  */
 
 const struct value_string osmo_gsup_message_type_names[] = {

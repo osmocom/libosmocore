@@ -41,7 +41,7 @@
 
 /*! \addtogroup logging
  *  @{
- *  \brief Configuration of logging from VTY
+ *  Configuration of logging from VTY
  *
  *  This module implements functions that permit configuration of
  *  the libosmocore logging framework from VTY commands.  This applies

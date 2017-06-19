@@ -60,7 +60,7 @@ const char *gsm_band_name(enum gsm_band band);
 enum gsm_band gsm_band_parse(const char *mhz);
 
 /*!
- * \brief Decode a sequence of GSM 03.38 encoded 7 bit characters.
+ * Decode a sequence of GSM 03.38 encoded 7 bit characters.
  *
  * \param decoded	The destination buffer for the decoded characters.
  * \param n		A maximum of n chars is written (incl. terminating \0).
@@ -76,14 +76,14 @@ enum gsm_band gsm_band_parse(const char *mhz);
 int gsm_7bit_decode_n(char *decoded, size_t n, const uint8_t *user_data, uint8_t length);
 
 /*!
- * \brief Decode a sequence of 7 bit characters (USSD encoding).
+ * Decode a sequence of 7 bit characters (USSD encoding).
  *
  * \see gsm_7bit_encode_n()
  */
 int gsm_7bit_decode_n_ussd(char *decoded, size_t n, const uint8_t *user_data, uint8_t length);
 
 /*!
- * \brief Encode a text string into GSM 03.38 encoded 7 bit characters.
+ * Encode a text string into GSM 03.38 encoded 7 bit characters.
  *
  * \param result	The destination buffer for the packed 7 bit sequence.
  * \param n		A maximum of n octets is written.
@@ -97,7 +97,7 @@ int gsm_7bit_decode_n_ussd(char *decoded, size_t n, const uint8_t *user_data, ui
 int gsm_7bit_encode_n(uint8_t *result, size_t n, const char *data, int *octets_written);
 
 /*!
- * \brief Encode a text string into GSM 03.38 encoded 7 bit characters (USSD encoding).
+ * Encode a text string into GSM 03.38 encoded 7 bit characters (USSD encoding).
  *
  * \see gsm_7bit_decode_n()
  */

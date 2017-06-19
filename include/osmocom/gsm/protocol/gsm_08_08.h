@@ -391,7 +391,7 @@ enum gsm0808_chan_rate_type_speech {
 	GSM0808_SPEECH_PERM_NO_CHANGE = 0x1f,
 };
 
-/*! \brief GSM 08.08 3.2.2.11 Channel Type
+/*! GSM 08.08 3.2.2.11 Channel Type
  *  (see also 3GPP TS 48.008, section 3.2.2.11) */
 enum gsm0808_permitted_speech {
 	GSM0808_PERM_FR1	= 0x01, /*!< GSM FR */
@@ -406,7 +406,7 @@ enum gsm0808_permitted_speech {
 	GSM0808_PERM_HR6	= 0x45, /*!< OHR AMR */
 };
 
-/*! \brief 3GPP TS 48.008, 3.2.2.103 Speech Codec Type */
+/*! 3GPP TS 48.008, 3.2.2.103 Speech Codec Type */
 enum gsm0808_speech_codec_type {
 	GSM0808_SCT_FR1	= 0x0, /*!< GSM FR */
 	GSM0808_SCT_FR2	= 0x2, /*!< GSM EFR */
@@ -449,7 +449,7 @@ struct gsm0808_speech_codec {
 	uint16_t cfg;
 };
 
-/*! \brief Default speech codec configurations: Some codecs specified with
+/*! Default speech codec configurations: Some codecs specified with
  *  struct gsm0808_speech_codec, require a configuration (cfg). The following
  *  default configuration will configure the codec (RTP) to match the
  *  configuration that is used on the air interface (Um).

@@ -73,7 +73,7 @@
  */
 
 /*! \file comp128.c
- *  \brief COMP128 v1; common/old GSM Authentication Algorithm (A3/A8)
+ *  COMP128 v1; common/old GSM Authentication Algorithm (A3/A8)
  */
 
 /* The compression tables (just copied ...) */
@@ -192,7 +192,7 @@ _comp128_permutation(uint8_t *x, uint8_t *bits)
 		x[(i>>3)+16] |= bits[(i*17) & 127] << (7-(i&7));
 }
 
-/*! \brief Perform COMP128v1 algorithm
+/*! Perform COMP128v1 algorithm
  *  \param[in] ki Secret Key K(i) of subscriber
  *  \param[in] rand Random Challenge
  *  \param[out] sres user-supplied buffer for storing computed SRES value
@@ -242,7 +242,7 @@ comp128v1(const uint8_t *ki, const uint8_t *rand, uint8_t *sres, uint8_t *kc)
 }
 
 
-/*! \brief Perform COMP128v1 algorithm
+/*! Perform COMP128v1 algorithm
  *  \param[in] ki Secret Key K(i) of subscriber
  *  \param[in] rand Random Challenge
  *  \param[out] sres user-supplied buffer for storing computed SRES value

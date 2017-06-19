@@ -8,10 +8,10 @@
  */
 
 /*! \file sercomm.h
- *  \brief Osmocom Sercomm HDLC (de)multiplex
+ *  Osmocom Sercomm HDLC (de)multiplex
  */
 
-/*! \brief A low sercomm_dlci means high priority.  A high DLCI means low priority */
+/*! A low sercomm_dlci means high priority.  A high DLCI means low priority */
 enum sercomm_dlci {
 	SC_DLCI_HIGHEST = 0,
 	SC_DLCI_DEBUG   = 4,
@@ -23,44 +23,44 @@ enum sercomm_dlci {
 };
 
 struct osmo_sercomm_inst;
-/*! \brief call-back function for per-DLC receive handler
+/*! call-back function for per-DLC receive handler
  *  \param[in] sercomm instance on which msg was received
  *  \param[in] dlci DLC Identifier of received msg
  *  \param[in] msg received message that needs to be processed */
 typedef void (*dlci_cb_t)(struct osmo_sercomm_inst *sercomm, uint8_t dlci, struct msgb *msg);
 
-/*! \brief one instance of a sercomm multiplex/demultiplex */
+/*! one instance of a sercomm multiplex/demultiplex */
 struct osmo_sercomm_inst {
-	/*! \brief Has this instance been initialized? */
+	/*! Has this instance been initialized? */
 	int initialized;
-	/*! \brief UART Identifier */
+	/*! UART Identifier */
 	int uart_id;
 
-	/*! \brief transmit side */
+	/*! transmit side */
 	struct {
-		/*! \brief per-DLC queue of pending transmit msgbs */
+		/*! per-DLC queue of pending transmit msgbs */
 		struct llist_head dlci_queues[_SC_DLCI_MAX];
-		/*! \brief msgb currently being transmitted */
+		/*! msgb currently being transmitted */
 		struct msgb *msg;
-		/*! \brief transmit state */
+		/*! transmit state */
 		int state;
-		/*! \brief next to-be-transmitted char in msg */
+		/*! next to-be-transmitted char in msg */
 		uint8_t *next_char;
 	} tx;
 
-	/*! \brief receive side */
+	/*! receive side */
 	struct {
-		/*! \brief per-DLC handler call-back functions */
+		/*! per-DLC handler call-back functions */
 		dlci_cb_t dlci_handler[_SC_DLCI_MAX];
-		/*! \brief msgb allocation size for rx msgs */
+		/*! msgb allocation size for rx msgs */
 		unsigned int msg_size;
-		/*! \brief currently received msgb */
+		/*! currently received msgb */
 		struct msgb *msg;
-		/*! \brief receive state */
+		/*! receive state */
 		int state;
-		/*! \brief DLCI of currently received msgb */
+		/*! DLCI of currently received msgb */
 		uint8_t dlci;
-		/*! \brief CTRL of currently received msgb */
+		/*! CTRL of currently received msgb */
 		uint8_t ctrl;
 	} rx;
 };
@@ -86,7 +86,7 @@ int osmo_sercomm_drv_rx_char(struct osmo_sercomm_inst *sercomm, uint8_t ch);
 extern void sercomm_drv_lock(unsigned long *flags);
 extern void sercomm_drv_unlock(unsigned long *flags);
 
-/*! \brief low-level driver routine to request start of transmission
+/*! low-level driver routine to request start of transmission
  *  The Sercomm code calls this function to inform the low-level driver
  *  that some data is pending for transmission, and the low-level driver
  *  should (if not active already) start enabling tx_empty interrupts
@@ -96,14 +96,14 @@ extern void sercomm_drv_unlock(unsigned long *flags);
  */
 extern void sercomm_drv_start_tx(struct osmo_sercomm_inst *sercomm);
 
-/*! \brief low-level driver routine to execute baud-rate change
+/*! low-level driver routine to execute baud-rate change
  *  \param[in] sercomm Osmocom sercomm instance for which to change
  *  \param[in] bdrt New Baud-Rate (integer)
  *  \returns 0 on success; negative in case of error
  */
 extern int sercomm_drv_baudrate_chg(struct osmo_sercomm_inst *sercomm, uint32_t bdrt);
 
-/*! \brief Sercomm msgb allocator function */
+/*! Sercomm msgb allocator function */
 static inline struct msgb *osmo_sercomm_alloc_msgb(unsigned int len)
 {
 	return msgb_alloc_headroom(len+4, 4, "sercomm_tx");

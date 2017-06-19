@@ -12,18 +12,18 @@
  */
 
 /*! \file bits.h
- *  \brief Osmocom bit level support code
+ *  Osmocom bit level support code
  *
  *  NOTE on the endianess of pbit_t:
  *  Bits in a pbit_t are ordered MSB first, i.e. 0x80 is the first bit.
  *  Bit i in a pbit_t array is array[i/8] & (1<<(7-i%8))
  */
 
-typedef int8_t  sbit_t;		/*!< \brief soft bit (-127...127) */
-typedef uint8_t ubit_t;		/*!< \brief unpacked bit (0 or 1) */
-typedef uint8_t pbit_t;		/*!< \brief packed bis (8 bits in a byte) */
+typedef int8_t  sbit_t;		/*!< soft bit (-127...127) */
+typedef uint8_t ubit_t;		/*!< unpacked bit (0 or 1) */
+typedef uint8_t pbit_t;		/*!< packed bis (8 bits in a byte) */
 
-/*! \brief determine how many bytes we would need for \a num_bits packed bits
+/*! determine how many bytes we would need for \a num_bits packed bits
  *  \param[in] num_bits Number of packed bits
  *  \returns number of bytes needed for \a num_bits packed bits
  */
@@ -81,31 +81,31 @@ int osmo_pbit2ubit_ext(ubit_t *out, unsigned int out_ofs,
 
 /* BIT REVERSAL */
 
-/*! \brief bit-reversal mode for osmo_bit_reversal() */
+/*! bit-reversal mode for osmo_bit_reversal() */
 enum osmo_br_mode {
-	/*! \brief reverse all bits in a 32bit dword */
+	/*! reverse all bits in a 32bit dword */
 	OSMO_BR_BITS_IN_DWORD	= 31,
-	/*! \brief reverse byte order in a 32bit dword */
+	/*! reverse byte order in a 32bit dword */
 	OSMO_BR_BYTES_IN_DWORD	= 24,
-	/*! \brief reverse bits of each byte in a 32bit dword */
+	/*! reverse bits of each byte in a 32bit dword */
 	OSMO_BR_BITS_IN_BYTE	= 7,
-	/*! \brief swap the two 16bit words in a 32bit dword */
+	/*! swap the two 16bit words in a 32bit dword */
 	OSMO_BR_WORD_SWAP	= 16,
 };
 
-/*! \brief generic bit reversal function */
+/*! generic bit reversal function */
 uint32_t osmo_bit_reversal(uint32_t x, enum osmo_br_mode k);
 
-/* \brief reverse the bits within each byte of a 32bit word */
+/* reverse the bits within each byte of a 32bit word */
 uint32_t osmo_revbytebits_32(uint32_t x);
 
-/* \brief reverse the bits within a byte */
+/* reverse the bits within a byte */
 uint32_t osmo_revbytebits_8(uint8_t x);
 
-/* \brief reverse the bits of each byte in a given buffer */
+/* reverse the bits of each byte in a given buffer */
 void osmo_revbytebits_buf(uint8_t *buf, int len);
 
-/*! \brief left circular shift
+/*! left circular shift
  *  \param[in] in The 16 bit unsigned integer to be rotated
  *  \param[in] shift Number of bits to shift \a in to, [0;16] bits
  *  \returns shifted value

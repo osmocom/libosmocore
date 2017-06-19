@@ -29,7 +29,7 @@
 
 /*! \addtogroup vector
  *  @{
- *  \brief Generic vector routines, used by VTY internally
+ *  Generic vector routines, used by VTY internally
  */
 
 void *tall_vty_vec_ctx;

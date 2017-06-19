@@ -235,7 +235,7 @@ const struct value_string osmo_amr_type_names[] = {
 	{ 0,			NULL },
 };
 
-/*! \brief Decode various AMR parameters from RTP payload (RFC 4867) acording to
+/*! Decode various AMR parameters from RTP payload (RFC 4867) acording to
  *         3GPP TS 26.101
  *  \param[in] rtppayload Payload from RTP packet
  *  \param[in] payload_len length of rtppayload
@@ -284,7 +284,7 @@ int osmo_amr_rtp_dec(const uint8_t *rtppayload, int payload_len, uint8_t *cmr,
 	return 2 + amr_len_by_ft[type];
 }
 
-/*! \brief Encode various AMR parameters from RTP payload (RFC 4867)
+/*! Encode various AMR parameters from RTP payload (RFC 4867)
  *  \param[out] payload Payload for RTP packet, contains speech data (if any)
  *              except for have 2 first bytes where header will be built
  *  \param[in] cmr AMR codec Mode Request

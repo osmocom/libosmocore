@@ -31,17 +31,17 @@
 
 /*! \file telnet_interface.h */
 
-/*! \brief A telnet connection */
+/*! A telnet connection */
 struct telnet_connection {
-	/*! \brief linked list header for internal management */
+	/*! linked list header for internal management */
 	struct llist_head entry;
-	/*! \brief private data pointer passed through */
+	/*! private data pointer passed through */
 	void *priv;
-	/*! \brief filedsecriptor (socket ) */
+	/*! filedsecriptor (socket ) */
 	struct osmo_fd fd;
-	/*! \brief VTY instance associated with telnet connection */
+	/*! VTY instance associated with telnet connection */
 	struct vty *vty;
-	/*! \brief logging target associated with this telnet connection */
+	/*! logging target associated with this telnet connection */
 	struct log_target *dbg;
 };
 

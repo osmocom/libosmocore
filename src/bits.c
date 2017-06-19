@@ -26,13 +26,13 @@
 
 /*! \addtogroup bits
  *  @{
- *  \brief Osmocom bit level support code
+ *  Osmocom bit level support code
  */
 
 /*! \file bits.c */
 
 
-/*! \brief convert unpacked bits to packed bits, return length in bytes
+/*! convert unpacked bits to packed bits, return length in bytes
  *  \param[out] out output buffer of packed bits
  *  \param[in] in input buffer of unpacked bits
  *  \param[in] num_bits number of bits
@@ -60,7 +60,7 @@ int osmo_ubit2pbit(pbit_t *out, const ubit_t *in, unsigned int num_bits)
 	return outptr - out;
 }
 
-/*! \brief Shift unaligned input to octet-aligned output
+/*! Shift unaligned input to octet-aligned output
  *  \param[out] out output buffer, unaligned
  *  \param[in] in input buffer, octet-aligned
  *  \param[in] num_nibbles number of nibbles
@@ -87,7 +87,7 @@ void osmo_nibble_shift_right(uint8_t *out, const uint8_t *in,
 		out[i] = (in[i - 1] & 0xF) << 4;
 }
 
-/*! \brief Shift unaligned input to octet-aligned output
+/*! Shift unaligned input to octet-aligned output
  *  \param[out] out output buffer, octet-aligned
  *  \param[in] in input buffer, unaligned
  *  \param[in] num_nibbles number of nibbles
@@ -108,7 +108,7 @@ void osmo_nibble_shift_left_unal(uint8_t *out, const uint8_t *in,
 		out[i] = (in[i] & 0xF) << 4;
 }
 
-/*! \brief convert unpacked bits to soft bits
+/*! convert unpacked bits to soft bits
  *  \param[out] out output buffer of soft bits
  *  \param[in] in input buffer of unpacked bits
  *  \param[in] num_bits number of bits
@@ -120,7 +120,7 @@ void osmo_ubit2sbit(sbit_t *out, const ubit_t *in, unsigned int num_bits)
 		out[i] = in[i] ? -127 : 127;
 }
 
-/*! \brief convert soft bits to unpacked bits
+/*! convert soft bits to unpacked bits
  *  \param[out] out output buffer of unpacked bits
  *  \param[in] in input buffer of soft bits
  *  \param[in] num_bits number of bits
@@ -132,7 +132,7 @@ void osmo_sbit2ubit(ubit_t *out, const sbit_t *in, unsigned int num_bits)
 		out[i] = in[i] < 0;
 }
 
-/*! \brief convert packed bits to unpacked bits, return length in bytes
+/*! convert packed bits to unpacked bits, return length in bytes
  *  \param[out] out output buffer of unpacked bits
  *  \param[in] in input buffer of packed bits
  *  \param[in] num_bits number of bits
@@ -174,7 +174,7 @@ int osmo_pbit2ubit(ubit_t *out, const pbit_t *in, unsigned int num_bits)
 	return cur - out;
 }
 
-/*! \brief convert unpacked bits to packed bits (extended options)
+/*! convert unpacked bits to packed bits (extended options)
  *  \param[out] out output buffer of packed bits
  *  \param[in] out_ofs offset into output buffer
  *  \param[in] in input buffer of unpacked bits
@@ -199,7 +199,7 @@ int osmo_ubit2pbit_ext(pbit_t *out, unsigned int out_ofs,
 	return ((out_ofs + num_bits - 1) >> 3) + 1;
 }
 
-/*! \brief convert packed bits to unpacked bits (extended options)
+/*! convert packed bits to unpacked bits (extended options)
  *  \param[out] out output buffer of unpacked bits
  *  \param[in] out_ofs offset into output buffer
  *  \param[in] in input buffer of packed bits
@@ -221,7 +221,7 @@ int osmo_pbit2ubit_ext(ubit_t *out, unsigned int out_ofs,
 	return out_ofs + num_bits;
 }
 
-/*! \brief generalized bit reversal function
+/*! generalized bit reversal function
  *  \param[in] x the 32bit value to be reversed
  *  \param[in] k the type of reversal requested
  *  \returns the reversed 32bit dword
@@ -242,7 +242,7 @@ uint32_t osmo_bit_reversal(uint32_t x, enum osmo_br_mode k)
 	return x;
 }
 
-/*! \brief reverse the bit-order in each byte of a dword
+/*! reverse the bit-order in each byte of a dword
  *  \param[in] x 32bit input value
  *  \returns 32bit value where bits of each byte have been reversed
  *
@@ -257,7 +257,7 @@ uint32_t osmo_revbytebits_32(uint32_t x)
 	return x;
 }
 
-/*! \brief reverse the bit order in a byte
+/*! reverse the bit order in a byte
  *  \param[in] x 8bit input value
  *  \returns 8bit value where bits order has been reversed
  *
@@ -272,7 +272,7 @@ uint32_t osmo_revbytebits_8(uint8_t x)
 	return x;
 }
 
-/*! \brief reverse bit-order of each byte in a buffer
+/*! reverse bit-order of each byte in a buffer
  *  \param[in] buf buffer containing bytes to be bit-reversed
  *  \param[in] len length of buffer in bytes
  *

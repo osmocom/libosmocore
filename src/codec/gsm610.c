@@ -298,7 +298,7 @@ const uint16_t gsm610_bitorder[260] = {
 	29,	/* LARc5:0 */
 };
 
-/*! \brief Check whether RTP frame contains FR SID code word according to
+/*! Check whether RTP frame contains FR SID code word according to
  *  TS 101 318 §5.1.2
  *  \param[in] rtp_payload Buffer with RTP payload
  *  \param[in] payload_len Length of payload

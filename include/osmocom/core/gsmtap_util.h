@@ -19,14 +19,14 @@ struct msgb *gsmtap_makemsg(uint16_t arfcn, uint8_t ts, uint8_t chan_type,
 			    uint8_t ss, uint32_t fn, int8_t signal_dbm,
 			    uint8_t snr, const uint8_t *data, unsigned int len);
 
-/*! \brief one gsmtap instance */
+/*! one gsmtap instance */
 struct gsmtap_inst {
-	int ofd_wq_mode;	/*!< \brief wait queue mode? */
-	struct osmo_wqueue wq;	/*!< \brief the wait queue */
-	struct osmo_fd sink_ofd;/*!< \brief file descriptor */
+	int ofd_wq_mode;	/*!< wait queue mode? */
+	struct osmo_wqueue wq;	/*!< the wait queue */
+	struct osmo_fd sink_ofd;/*!< file descriptor */
 };
 
-/*! \brief obtain the file descriptor associated with a gsmtap instance
+/*! obtain the file descriptor associated with a gsmtap instance
  *  \param[in] gti GSMTAP instance
  *  \returns file descriptor of GSMTAP instance */
 static inline int gsmtap_inst_fd(struct gsmtap_inst *gti)

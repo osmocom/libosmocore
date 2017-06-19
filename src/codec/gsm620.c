@@ -272,7 +272,7 @@ static inline uint16_t mask(const uint8_t msb)
 	return (m - 1) ^ m;
 }
 
-/*! \brief Check whether RTP frame contains HR SID code word according to
+/*! Check whether RTP frame contains HR SID code word according to
  *  TS 101 318 §5.2.2
  *  \param[in] rtp_payload Buffer with RTP payload
  *  \param[in] payload_len Length of payload

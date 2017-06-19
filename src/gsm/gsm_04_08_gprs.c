@@ -30,7 +30,7 @@
  *  @{
  */
 
-/*! \brief 10.5.5.14 GPRS MM Cause / Table 10.5.147 */
+/*! 10.5.5.14 GPRS MM Cause / Table 10.5.147 */
 const struct value_string gsm48_gmm_cause_names_[] = {
 	{ GMM_CAUSE_IMSI_UNKNOWN,	"IMSI unknown in HLR" },
 	{ GMM_CAUSE_ILLEGAL_MS,		"Illegal MS" },
@@ -75,7 +75,7 @@ const struct value_string gsm48_gmm_cause_names_[] = {
 
 const struct value_string *gsm48_gmm_cause_names = gsm48_gmm_cause_names_;
 
-/*! \brief 10.5.6.6 SM Cause / Table 10.5.157 */
+/*! 10.5.6.6 SM Cause / Table 10.5.157 */
 const struct value_string gsm48_gsm_cause_names_[] = {
 	{ GSM_CAUSE_OPER_DET_BARR, "Operator Determined Barring" },
 	{ GSM_CAUSE_MBMS_CAP_INSUF, "MBMS bearer capabilities insufficient for the service" },
@@ -115,7 +115,7 @@ const struct value_string gsm48_gsm_cause_names_[] = {
 
 const struct value_string *gsm48_gsm_cause_names = gsm48_gsm_cause_names_;
 
-/*! \brief Check if MS supports particular version of GEA by inspecting
+/*! Check if MS supports particular version of GEA by inspecting
  *         MS network capability IE specified in 3GPP TS 24.008
  *  \param[in] ms_net_cap Buffer with raw MS network capability IE value,
  *                        3 - 10 bytes
@@ -142,7 +142,7 @@ bool gprs_ms_net_cap_gea_supported(const uint8_t *ms_net_cap, uint8_t cap_len,
 	}
 }
 
-/*! \brief String names of GMM message types */
+/*! String names of GMM message types */
 const struct value_string gprs_msgt_gmm_names[] = {
 	{ GSM48_MT_GMM_ATTACH_REQ,		"ATTACH REQUEST" },
 	{ GSM48_MT_GMM_ATTACH_ACK,		"ATTACH ACK" },
@@ -167,7 +167,7 @@ const struct value_string gprs_msgt_gmm_names[] = {
 	{ 0, NULL }
 };
 
-/*! \brief String names of GPRS Attach types according to 10.5.5.2 */
+/*! String names of GPRS Attach types according to 10.5.5.2 */
 const struct value_string gprs_att_t_strs_[] = {
 	{ GPRS_ATT_T_ATTACH,		"GPRS attach" },
 	{ GPRS_ATT_T_ATT_WHILE_IMSI,	"GPRS attach while IMSI attached" },
@@ -177,7 +177,7 @@ const struct value_string gprs_att_t_strs_[] = {
 
 const struct value_string *gprs_att_t_strs = gprs_att_t_strs_;
 
-/*! \brief String names of GPRS Location Update Types */
+/*! String names of GPRS Location Update Types */
 const struct value_string gprs_upd_t_strs_[] = {
 	{ GPRS_UPD_T_RA,		"RA updating" },
 	{ GPRS_UPD_T_RA_LA,		"combined RA/LA updating" },
@@ -188,7 +188,7 @@ const struct value_string gprs_upd_t_strs_[] = {
 
 const struct value_string *gprs_upd_t_strs = gprs_upd_t_strs_;
 
-/*! \brief String names of GMM MO Detach Types according to 10.5.5.5 */
+/*! String names of GMM MO Detach Types according to 10.5.5.5 */
 const struct value_string gprs_det_t_mo_strs_[] = {
 	{ GPRS_DET_T_MO_GPRS,		"GPRS detach" },
 	{ GPRS_DET_T_MO_IMSI,		"IMSI detach" },
@@ -198,7 +198,7 @@ const struct value_string gprs_det_t_mo_strs_[] = {
 
 const struct value_string *gprs_det_t_mo_strs = gprs_det_t_mo_strs_;
 
-/*! \brief String names of GMM MT Detach Types according to 10.5.5.5 */
+/*! String names of GMM MT Detach Types according to 10.5.5.5 */
 const struct value_string gprs_det_t_mt_strs_[] = {
 	{ GPRS_DET_T_MT_REATT_REQ,	"re-attach required" },
 	{ GPRS_DET_T_MT_REATT_NOTREQ,	"re-attach not required" },
@@ -208,7 +208,7 @@ const struct value_string gprs_det_t_mt_strs_[] = {
 
 const struct value_string *gprs_det_t_mt_strs = gprs_det_t_mt_strs_;
 
-/*! \brief String names of GMM Service Types */
+/*! String names of GMM Service Types */
 const struct value_string gprs_service_t_strs_[] = {
 	{ GPRS_SERVICE_T_SIGNALLING,	"signalling" },
 	{ GPRS_SERVICE_T_DATA,		"data" },

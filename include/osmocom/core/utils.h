@@ -9,26 +9,26 @@
 
 /*! \file utils.h */
 
-/*! \brief Determine number of elements in an array of static size */
+/*! Determine number of elements in an array of static size */
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
-/*! \brief Return the maximum of two specified values */
+/*! Return the maximum of two specified values */
 #define OSMO_MAX(a, b) ((a) >= (b) ? (a) : (b))
-/*! \brief Return the minimum of two specified values */
+/*! Return the minimum of two specified values */
 #define OSMO_MIN(a, b) ((a) >= (b) ? (b) : (a))
-/*! \brief Stringify the contents of a macro, e.g. a port number */
+/*! Stringify the contents of a macro, e.g. a port number */
 #define OSMO_STRINGIFY(x) #x
-/*! \brief Make a value_string entry from an enum value name */
+/*! Make a value_string entry from an enum value name */
 #define OSMO_VALUE_STRING(x) { x, #x }
-/*! \brief Number of bytes necessary to store given BITS */
+/*! Number of bytes necessary to store given BITS */
 #define OSMO_BYTES_FOR_BITS(BITS) ((BITS + 8 - 1) / 8)
 
 #include <stdint.h>
 #include <stdio.h>
 
-/*! \brief A mapping between human-readable string and numeric value */
+/*! A mapping between human-readable string and numeric value */
 struct value_string {
-	unsigned int value;	/*!< \brief numeric value */
-	const char *str;	/*!< \brief human-readable string */
+	unsigned int value;	/*!< numeric value */
+	const char *str;	/*!< human-readable string */
 };
 
 const char *get_value_string(const struct value_string *vs, uint32_t val);

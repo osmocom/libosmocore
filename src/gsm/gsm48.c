@@ -41,10 +41,10 @@
 
 /*! \addtogroup gsm0408
  *  @{
- *  \brief GSM Mobile Radion Interface L3 messages / TS 04.08
+ *  GSM Mobile Radion Interface L3 messages / TS 04.08
  */
 
-/*! \brief TLV parser definitions for TS 04.08 CC */
+/*! TLV parser definitions for TS 04.08 CC */
 const struct tlv_definition gsm48_att_tlvdef = {
 	.def = {
 		[GSM48_IE_MOBILE_ID]	= { TLV_TYPE_TLV },
@@ -86,7 +86,7 @@ const struct tlv_definition gsm48_att_tlvdef = {
 	},
 };
 
-/*! \brief TLV parser definitions for TS 04.08 RR */
+/*! TLV parser definitions for TS 04.08 RR */
 const struct tlv_definition gsm48_rr_att_tlvdef = {
 	.def = {
 		/* NOTE: Don't add IE 17 = MOBILE_ID here, it already used. */
@@ -131,7 +131,7 @@ const struct tlv_definition gsm48_rr_att_tlvdef = {
 	},
 };
 
-/*! \brief TLV parser definitions for TS 04.08 MM */
+/*! TLV parser definitions for TS 04.08 MM */
 const struct tlv_definition gsm48_mm_att_tlvdef = {
 	.def = {
 		[GSM48_IE_MOBILE_ID]		= { TLV_TYPE_TLV },
@@ -170,7 +170,7 @@ static const struct value_string rr_cause_names[] = {
 	{ 0,					NULL },
 };
 
-/*! \brief return string representation of RR Cause value */
+/*! return string representation of RR Cause value */
 const char *rr_cause_name(uint8_t cause)
 {
 	return get_value_string(rr_cause_names, cause);
@@ -212,7 +212,7 @@ static const char *cc_state_names[32] = {
 	"illegal state 31",
 };
 
-/*! \brief return string representation of CC State */
+/*! return string representation of CC State */
 const char *gsm48_cc_state_name(uint8_t state)
 {
 	if (state < ARRAY_SIZE(cc_state_names))
@@ -260,7 +260,7 @@ static const struct value_string cc_msg_names[] = {
 	{ 0,				NULL }
 };
 
-/*! \brief return string representation of CC Message Type */
+/*! return string representation of CC Message Type */
 const char *gsm48_cc_msg_name(uint8_t msgtype)
 {
 	return get_value_string(cc_msg_names, msgtype);
@@ -368,7 +368,7 @@ static const struct value_string rr_msg_names[] = {
 	{ 0,				NULL }
 };
 
-/*! \brief return string representation of RR Message Type */
+/*! return string representation of RR Message Type */
 const char *gsm48_rr_msg_name(uint8_t msgtype)
 {
 	return get_value_string(rr_msg_names, msgtype);
@@ -408,7 +408,7 @@ static const struct value_string mi_type_names[] = {
 	{ 0,			NULL }
 };
 
-/*! \brief return string representation of Mobile Identity Type */
+/*! return string representation of Mobile Identity Type */
 const char *gsm48_mi_type_name(uint8_t mi)
 {
 	return get_value_string(mi_type_names, mi);
@@ -423,7 +423,7 @@ static void to_bcd(uint8_t *bcd, uint16_t val)
 	bcd[0] = val % 10;
 }
 
-/*! \brief Checks is particular message is cipherable in A/Gb mode according to
+/*! Checks is particular message is cipherable in A/Gb mode according to
  *         3GPP TS 24.008 § 4.7.1.2
  *  \param[in] hdr Message header
  *  \return true if message can be encrypted, false otherwise
@@ -447,7 +447,7 @@ bool gsm48_hdr_gmm_cipherable(const struct gsm48_hdr *hdr)
 	}
 }
 
-/* \brief Convert MCC + MNC to BCD representation
+/* Convert MCC + MNC to BCD representation
  * \param[out] bcd_dst caller-allocated memory for output
  * \param[in] mcc Mobile Country Code
  * \param[in] mnc Mobile Network Code
@@ -492,7 +492,7 @@ void gsm48_mcc_mnc_from_bcd(uint8_t *bcd_src, uint16_t *mcc, uint16_t *mnc)
 	}
 }
 
-/*! \brief Encode TS 04.08 Location Area Identifier
+/*! Encode TS 04.08 Location Area Identifier
  *  \param[out] caller-provided memory for output
  *  \param[in] mcc Mobile Country Code
  *  \param[in] mnc Mobile Network Code
@@ -504,7 +504,7 @@ void gsm48_generate_lai(struct gsm48_loc_area_id *lai48, uint16_t mcc,
 	lai48->lac = osmo_htons(lac);
 }
 
-/*! \brief Decode TS 04.08 Location Area Identifier
+/*! Decode TS 04.08 Location Area Identifier
  *  \param[in] Location Area Identifier (encoded)
  *  \param[out] mcc Mobile Country Code
  *  \param[out] mnc Mobile Network Code
@@ -520,7 +520,7 @@ int gsm48_decode_lai(struct gsm48_loc_area_id *lai, uint16_t *mcc,
 	return 0;
 }
 
-/*! \brief Set DTX mode in Cell Options IE (3GPP TS 44.018)
+/*! Set DTX mode in Cell Options IE (3GPP TS 44.018)
  *  \param[in] op Cell Options structure in which DTX parameters will be set
  *  \param[in] full Mode for full-rate channels
  *  \param[in] half Mode for half-rate channels
@@ -564,7 +564,7 @@ void gsm48_set_dtx(struct gsm48_cell_options *op, enum gsm48_dtx_mode full,
 	}
 }
 
-/*! \brief Generate TS 04.08 Mobile ID from TMSI
+/*! Generate TS 04.08 Mobile ID from TMSI
  *  \param[out] buf Caller-provided output buffer (7 bytes)
  *  \param[in] tmsi TMSI to be encoded
  *  \returns number of byes encoded (always 7) */
@@ -580,7 +580,7 @@ int gsm48_generate_mid_from_tmsi(uint8_t *buf, uint32_t tmsi)
 	return 7;
 }
 
-/*! \brief Generate TS 04.08 Mobile ID from IMSI
+/*! Generate TS 04.08 Mobile ID from IMSI
  *  \param[out] buf Caller-provided output buffer
  *  \param[in] imsi IMSI to be encoded
  *  \returns number of bytes used in \a buf */
@@ -613,7 +613,7 @@ int gsm48_generate_mid_from_imsi(uint8_t *buf, const char *imsi)
 	return 2 + buf[1];
 }
 
-/*! \brief Convert TS 04.08 Mobile Identity (10.5.1.4) to string
+/*! Convert TS 04.08 Mobile Identity (10.5.1.4) to string
  *  \param[out] string Caller-provided buffer for output
  *  \param[in] str_len Length of \a string in bytes
  *  \param[in] mi Mobile Identity to be stringified
@@ -661,7 +661,7 @@ int gsm48_mi_to_string(char *string, const int str_len, const uint8_t *mi,
 	return str_cur - string;
 }
 
-/*! \brief Parse TS 04.08 Routing Area Identifier
+/*! Parse TS 04.08 Routing Area Identifier
  *  \param[out] Caller-provided memory for decoded RA ID
  *  \param[in] buf Input buffer pointing to RAI IE value */
 void gsm48_parse_ra(struct gprs_ra_id *raid, const uint8_t *buf)
@@ -685,7 +685,7 @@ void gsm48_parse_ra(struct gprs_ra_id *raid, const uint8_t *buf)
 	raid->rac = buf[5];
 }
 
-/*! \brief Encode a TS 04.08 Routing Area Identifier
+/*! Encode a TS 04.08 Routing Area Identifier
  *  \param[out] buf Caller-provided output buffer of 6 bytes
  *  \param[in] raid Routing Area ID to be encoded
  *  \returns number of bytes used in \a buf */
@@ -716,7 +716,7 @@ int gsm48_construct_ra(uint8_t *buf, const struct gprs_ra_id *raid)
 	return 6;
 }
 
-/*! \brief Determine number of paging sub-channels
+/*! Determine number of paging sub-channels
  *  \param[in] chan_desc Control Channel Description
  *  \returns number of paging sub-channels
  *
@@ -733,7 +733,7 @@ int gsm48_number_of_paging_subchannels(struct gsm48_control_channel_descr *chan_
 		return n_pag_blocks * (chan_desc->bs_pa_mfrms + 2);
 }
 
-/*! \brief TS 04.08 Protocol Descriptor names */
+/*! TS 04.08 Protocol Descriptor names */
 const struct value_string gsm48_pdisc_names[] = {
 	OSMO_VALUE_STRING(GSM48_PDISC_GROUP_CC),
 	OSMO_VALUE_STRING(GSM48_PDISC_BCAST_CC),
@@ -753,7 +753,7 @@ const struct value_string gsm48_pdisc_names[] = {
 	{ 0, NULL }
 };
 
-/*! \brief TS 04.08 RR Message Type names */
+/*! TS 04.08 RR Message Type names */
 const struct value_string gsm48_rr_msgtype_names[] = {
 	OSMO_VALUE_STRING(GSM48_MT_RR_INIT_REQ),
 	OSMO_VALUE_STRING(GSM48_MT_RR_ADD_ASS),
@@ -846,7 +846,7 @@ const struct value_string gsm48_rr_msgtype_names[] = {
 	{ 0, NULL }
 };
 
-/*! \brief TS 04.08 MM Message Type names */
+/*! TS 04.08 MM Message Type names */
 const struct value_string gsm48_mm_msgtype_names[] = {
 	OSMO_VALUE_STRING(GSM48_MT_MM_IMSI_DETACH_IND),
 	OSMO_VALUE_STRING(GSM48_MT_MM_LOC_UPD_ACCEPT),
@@ -876,7 +876,7 @@ const struct value_string gsm48_mm_msgtype_names[] = {
 	{ 0, NULL }
 };
 
-/*! \brief TS 04.08 CC Message Type names */
+/*! TS 04.08 CC Message Type names */
 const struct value_string gsm48_cc_msgtype_names[] = {
 	OSMO_VALUE_STRING(GSM48_MT_CC_ALERTING),
 	OSMO_VALUE_STRING(GSM48_MT_CC_CALL_CONF),
@@ -919,7 +919,7 @@ const struct value_string gsm48_cc_msgtype_names[] = {
 	{ 0, NULL }
 };
 
-/*! \brief Compose a string naming the message type for given protocol.
+/*! Compose a string naming the message type for given protocol.
  * If the message type string is known, return the message type name, otherwise
  * return "<protocol discriminator name>:<message type in hex>".
  * \param[in] pdisc protocol discriminator like GSM48_PDISC_MM

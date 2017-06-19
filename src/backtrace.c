@@ -21,7 +21,7 @@
  */
 
 /*! \file backtrace.c
- *  \brief Routines realted to generating call back traces
+ *  Routines realted to generating call back traces
  */
 
 #include <stdio.h>
@@ -60,7 +60,7 @@ static void _osmo_backtrace(int use_printf, int subsys, int level)
 	free(strings);
 }
 
-/*! \brief Generate and print a call back-trace
+/*! Generate and print a call back-trace
  *
  * This function will generate a function call back-trace of the
  * current process and print it to stdout. */
@@ -69,7 +69,7 @@ void osmo_generate_backtrace(void)
 	_osmo_backtrace(1, 0, 0);
 }
 
-/*! \brief Generate and log a call back-trace
+/*! Generate and log a call back-trace
  *  \param[in] subsys Logging sub-system
  *  \param[in] level Logging level
  *

@@ -103,7 +103,7 @@ static void vty_clear_buf(struct vty *vty)
 	memset(vty->buf, 0, vty->max);
 }
 
-/*! \brief Allocate a new vty interface structure */
+/*! Allocate a new vty interface structure */
 struct vty *vty_new(void)
 {
 	struct vty *new = talloc_zero(tall_vty_ctx, struct vty);
@@ -196,7 +196,7 @@ static void vty_auth(struct vty *vty, char *buf)
 	}
 }
 
-/*! \brief Close a given vty interface. */
+/*! Close a given vty interface. */
 void vty_close(struct vty *vty)
 {
 	int i;
@@ -237,14 +237,14 @@ void vty_close(struct vty *vty)
 	talloc_free(vty);
 }
 
-/*! \brief Return if this VTY is a shell or not */
+/*! Return if this VTY is a shell or not */
 int vty_shell(struct vty *vty)
 {
 	return vty->type == VTY_SHELL ? 1 : 0;
 }
 
 
-/*! \brief VTY standard output function
+/*! VTY standard output function
  *  \param[in] vty VTY to which we should print
  *  \param[in] format variable-length format string
  */
@@ -304,7 +304,7 @@ int vty_out(struct vty *vty, const char *format, ...)
 	return len;
 }
 
-/*! \brief print a newline on the given VTY */
+/*! print a newline on the given VTY */
 int vty_out_newline(struct vty *vty)
 {
 	const char *p = vty_newline(vty);
@@ -312,19 +312,19 @@ int vty_out_newline(struct vty *vty)
 	return 0;
 }
 
-/*! \brief return the current index of a given VTY */
+/*! return the current index of a given VTY */
 void *vty_current_index(struct vty *vty)
 {
 	return vty->index;
 }
 
-/*! \brief return the current node of a given VTY */
+/*! return the current node of a given VTY */
 int vty_current_node(struct vty *vty)
 {
 	return vty->node;
 }
 
-/*! \brief Lock the configuration to a given VTY
+/*! Lock the configuration to a given VTY
  *  \param[in] vty VTY to which the config shall be locked
  *  \returns 1 on success, 0 on error
  *
@@ -339,7 +339,7 @@ int vty_config_lock(struct vty *vty)
 	return vty->config;
 }
 
-/*! \brief Unlock the configuration from a given VTY
+/*! Unlock the configuration from a given VTY
  *  \param[in] vty VTY from which the configuration shall be unlocked
  *  \returns 0 in case of success
  */
@@ -1272,7 +1272,7 @@ static void vty_buffer_reset(struct vty *vty)
 	vty_redraw_line(vty);
 }
 
-/*! \brief Read data via vty socket. */
+/*! Read data via vty socket. */
 int vty_read(struct vty *vty)
 {
 	int i;
@@ -1492,7 +1492,7 @@ vty_read_file(FILE *confp, void *priv)
 	return 0;
 }
 
-/*! \brief Create new vty structure. */
+/*! Create new vty structure. */
 struct vty *
 vty_create (int vty_sock, void *priv)
 {
@@ -1702,7 +1702,7 @@ struct cmd_node vty_node = {
 	1,
 };
 
-/*! \brief Reset all VTY status. */
+/*! Reset all VTY status. */
 void vty_reset(void)
 {
 	unsigned int i;
@@ -1760,7 +1760,7 @@ void vty_init_vtysh(void)
 
 extern void *tall_bsc_ctx;
 
-/*! \brief Initialize VTY layer
+/*! Initialize VTY layer
  *  \param[in] app_info application information
  */
 /* Install vty's own commands like `who' command. */
@@ -1797,7 +1797,7 @@ void vty_init(struct vty_app_info *app_info)
 	install_element(VTY_NODE, &vty_bind_cmd);
 }
 
-/*! \brief Read the configuration file using the VTY code
+/*! Read the configuration file using the VTY code
  *  \param[in] file_name file name of the configuration file
  *  \param[in] priv private data to be passed to \ref vty_read_file
  */

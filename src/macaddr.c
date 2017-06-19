@@ -25,7 +25,7 @@
  */
 
 /*! \file macaddr.c
- *  \brief MAC address utility routines
+ *  MAC address utility routines
  */
 
 #include "config.h"
@@ -35,7 +35,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-/*! \brief Parse a MAC address from human-readable notation
+/*! Parse a MAC address from human-readable notation
  *  This function parses an ethernet MAC address in the commonly-used
  *  hex/colon notation (00:00:00:00:00:00) and generates the binary
  *  representation from it.
@@ -70,7 +70,7 @@ int osmo_macaddr_parse(uint8_t *out, const char *in)
 #include <net/if_dl.h>
 #include <net/if_types.h>
 
-/*! \brief Obtain the MAC address of a given network device
+/*! Obtain the MAC address of a given network device
  *  \param[out] mac_out pointer to caller-allocated buffer of 6 bytes
  *  \param[in] dev_name string name of the network device
  *  \returns 0 in case of success; negative otherwise
@@ -114,7 +114,7 @@ int osmo_get_macaddr(uint8_t *mac_out, const char *dev_name)
 #include <netinet/in.h>
 #include <netinet/ip.h>
 
-/*! \brief Obtain the MAC address of a given network device
+/*! Obtain the MAC address of a given network device
  *  \param[out] mac_out pointer to caller-allocated buffer of 6 bytes
  *  \param[in] dev_name string name of the network device
  *  \returns 0 in case of success; negative otherwise

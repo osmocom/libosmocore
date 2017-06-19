@@ -2,51 +2,51 @@
 
 #include <osmocom/core/prim.h>
 
-/*! \brief PH-SAP related primitives (L1<->L2 SAP) */
+/*! PH-SAP related primitives (L1<->L2 SAP) */
 enum osmo_ph_prim {
-	PRIM_PH_DATA,		/*!< \brief PH-DATA */
-	PRIM_PH_RACH,		/*!< \brief PH-RANDOM_ACCESS */
-	PRIM_PH_CONN,		/*!< \brief PH-CONNECT */
-	PRIM_PH_EMPTY_FRAME,	/*!< \brief PH-EMPTY_FRAME */
-	PRIM_PH_RTS,		/*!< \brief PH-RTS */
-	PRIM_MPH_INFO,		/*!< \brief MPH-INFO */
-	PRIM_TCH,		/*!< \brief TCH */
-	PRIM_TCH_RTS,		/*!< \brief TCH */
+	PRIM_PH_DATA,		/*!< PH-DATA */
+	PRIM_PH_RACH,		/*!< PH-RANDOM_ACCESS */
+	PRIM_PH_CONN,		/*!< PH-CONNECT */
+	PRIM_PH_EMPTY_FRAME,	/*!< PH-EMPTY_FRAME */
+	PRIM_PH_RTS,		/*!< PH-RTS */
+	PRIM_MPH_INFO,		/*!< MPH-INFO */
+	PRIM_TCH,		/*!< TCH */
+	PRIM_TCH_RTS,		/*!< TCH */
 };
 
 extern const struct value_string osmo_ph_prim_names[];
 
-/*! \brief PH-SAP related primitives (L1<->L2 SAP) */
+/*! PH-SAP related primitives (L1<->L2 SAP) */
 enum osmo_mph_info_type {
-	PRIM_INFO_TIME,		/*!< \brief Current GSM time */
-	PRIM_INFO_MEAS,		/*!< \brief Measurement indication */
-	PRIM_INFO_ACTIVATE,	/*!< \brief Activation of channel */
-	PRIM_INFO_DEACTIVATE,	/*!< \brief Deactivation of channel */
-	PRIM_INFO_MODIFY,	/*!< \brief Mode Modify of channel */
-	PRIM_INFO_ACT_CIPH,	/*!< \brief Activation of ciphering */
-	PRIM_INFO_DEACT_CIPH,	/*!< \brief Deactivation of ciphering */
+	PRIM_INFO_TIME,		/*!< Current GSM time */
+	PRIM_INFO_MEAS,		/*!< Measurement indication */
+	PRIM_INFO_ACTIVATE,	/*!< Activation of channel */
+	PRIM_INFO_DEACTIVATE,	/*!< Deactivation of channel */
+	PRIM_INFO_MODIFY,	/*!< Mode Modify of channel */
+	PRIM_INFO_ACT_CIPH,	/*!< Activation of ciphering */
+	PRIM_INFO_DEACT_CIPH,	/*!< Deactivation of ciphering */
 };
 
-/*! \brief PH-DATA presence information */
+/*! PH-DATA presence information */
 enum osmo_ph_pres_info_type {
-	PRES_INFO_INVALID = 0,	/*!< \brief Data is invalid */
-	PRES_INFO_HEADER  = 1,	/*!< \brief Only header is present and valid */
-	PRES_INFO_FIRST   = 3,	/*!< \brief First half of data + header are valid (2nd half may be present but invalid) */
-	PRES_INFO_SECOND  = 5,	/*!< \brief Second half of data + header are valid (1st halfmay be present but invalid) */
-	PRES_INFO_BOTH    = 7,	/*!< \brief Both parts + header are present and valid */
+	PRES_INFO_INVALID = 0,	/*!< Data is invalid */
+	PRES_INFO_HEADER  = 1,	/*!< Only header is present and valid */
+	PRES_INFO_FIRST   = 3,	/*!< First half of data + header are valid (2nd half may be present but invalid) */
+	PRES_INFO_SECOND  = 5,	/*!< Second half of data + header are valid (1st halfmay be present but invalid) */
+	PRES_INFO_BOTH    = 7,	/*!< Both parts + header are present and valid */
 	PRES_INFO_UNKNOWN
 };
 
-/*! \brief for PH-RANDOM_ACCESS.req */
+/*! for PH-RANDOM_ACCESS.req */
 struct ph_rach_req_param {
-	uint8_t ra;		/*!< \brief Random Access */
-	uint8_t ta;		/*!< \brief Timing Advance */
-	uint8_t tx_power;	/*!< \brief Transmit Power */
-	uint8_t is_combined_ccch;/*!< \brief Are we using a combined CCCH? */
-	uint16_t offset;	/*!< \brief Timing Offset */
+	uint8_t ra;		/*!< Random Access */
+	uint8_t ta;		/*!< Timing Advance */
+	uint8_t tx_power;	/*!< Transmit Power */
+	uint8_t is_combined_ccch;/*!< Are we using a combined CCCH? */
+	uint16_t offset;	/*!< Timing Offset */
 };
 
-/*! \brief for PH_RA_IND burstType inforamtion */
+/*! for PH_RA_IND burstType inforamtion */
 enum ph_burst_type {
 	GSM_L1_BURST_TYPE_NONE = 0,
 	GSM_L1_BURST_TYPE_ACCESS_0,
@@ -54,79 +54,79 @@ enum ph_burst_type {
 	GSM_L1_BURST_TYPE_ACCESS_2
 };
 
-/*! \brief for PH-RANDOM_ACCESS.ind */
+/*! for PH-RANDOM_ACCESS.ind */
 struct ph_rach_ind_param {
-	uint8_t chan_nr;	/*!< \brief Channel Number (Like RSL) */
-	uint16_t ra;		/*!< \brief Random Access */
-	uint8_t acc_delay;	/*!< \brief Delay in bit periods */
-	uint32_t fn;		/*!< \brief GSM Frame Number at time of RA */
-	uint8_t is_11bit;	/*!< \brief no.of bits in RACH*/
-	enum ph_burst_type burst_type; /*!< \brief type of burst*/
+	uint8_t chan_nr;	/*!< Channel Number (Like RSL) */
+	uint16_t ra;		/*!< Random Access */
+	uint8_t acc_delay;	/*!< Delay in bit periods */
+	uint32_t fn;		/*!< GSM Frame Number at time of RA */
+	uint8_t is_11bit;	/*!< no.of bits in RACH*/
+	enum ph_burst_type burst_type; /*!< type of burst*/
 };
 
-/*! \brief for PH-[UNIT]DATA.{req,ind} | PH-RTS.ind */
+/*! for PH-[UNIT]DATA.{req,ind} | PH-RTS.ind */
 struct ph_data_param {
-	uint8_t link_id;	/*!< \brief Link Identifier (Like RSL) */
-	uint8_t chan_nr;	/*!< \brief Channel Number (Like RSL) */
-	uint32_t fn;		/*!< \brief GSM Frame Number */
-	int8_t rssi;		/*!< \brief RSSI of receivedindication */
-	uint16_t ber10k;	/*!< \brief BER in units of 0.01% */
-	int16_t ta_offs_qbits;	/* !< \brief Burst TA Offset in quarter bits */
-	int16_t lqual_cb;	/* !< \brief Link quality in centiBel */
-	enum osmo_ph_pres_info_type pdch_presence_info; /*!< \brief Info regarding presence/validity of header and data parts */
+	uint8_t link_id;	/*!< Link Identifier (Like RSL) */
+	uint8_t chan_nr;	/*!< Channel Number (Like RSL) */
+	uint32_t fn;		/*!< GSM Frame Number */
+	int8_t rssi;		/*!< RSSI of receivedindication */
+	uint16_t ber10k;	/*!< BER in units of 0.01% */
+	int16_t ta_offs_qbits;	/* !< Burst TA Offset in quarter bits */
+	int16_t lqual_cb;	/* !< Link quality in centiBel */
+	enum osmo_ph_pres_info_type pdch_presence_info; /*!< Info regarding presence/validity of header and data parts */
 };
 
-/*! \brief for TCH.{req,ind} | TCH-RTS.ind */
+/*! for TCH.{req,ind} | TCH-RTS.ind */
 struct ph_tch_param {
-	uint8_t chan_nr;	/*!< \brief Channel Number (Like RSL) */
-	uint32_t fn;		/*!< \brief GSM Frame Number */
-	int8_t rssi;		/*!< \brief RSSI of received indication */
-	uint8_t marker;		/*!< \brief RTP Marker bit (speech onset indicator) */
+	uint8_t chan_nr;	/*!< Channel Number (Like RSL) */
+	uint32_t fn;		/*!< GSM Frame Number */
+	int8_t rssi;		/*!< RSSI of received indication */
+	uint8_t marker;		/*!< RTP Marker bit (speech onset indicator) */
 };
 
-/*! \brief for PH-CONN.ind */
+/*! for PH-CONN.ind */
 struct ph_conn_ind_param {
-	uint32_t fn;		/*!< \brief GSM Frame Number */
+	uint32_t fn;		/*!< GSM Frame Number */
 };
 
-/*! \brief for TIME MPH-INFO.ind */
+/*! for TIME MPH-INFO.ind */
 struct info_time_ind_param {
-	uint32_t fn;		/*!< \brief GSM Frame Number */
+	uint32_t fn;		/*!< GSM Frame Number */
 };
 
-/*! \brief for MEAS MPH-INFO.ind */
+/*! for MEAS MPH-INFO.ind */
 struct info_meas_ind_param {
-	uint8_t chan_nr;	/*!< \brief Channel Number (Like RSL) */
-	uint32_t fn;		/*!< \brief GSM Frame Number */
-	uint16_t ber10k;	/*!< \brief BER in units of 0.01% */
-	int16_t ta_offs_qbits;	/*!< \brief timing advance offset (in qbits) */
-	int16_t c_i_cb;		/*!< \brief C/I ratio in 0.1 dB */
-	uint8_t is_sub:1;	/*!< \brief flags */
-	uint8_t inv_rssi;	/*!< \brief RSSI in dBm * -1 */
+	uint8_t chan_nr;	/*!< Channel Number (Like RSL) */
+	uint32_t fn;		/*!< GSM Frame Number */
+	uint16_t ber10k;	/*!< BER in units of 0.01% */
+	int16_t ta_offs_qbits;	/*!< timing advance offset (in qbits) */
+	int16_t c_i_cb;		/*!< C/I ratio in 0.1 dB */
+	uint8_t is_sub:1;	/*!< flags */
+	uint8_t inv_rssi;	/*!< RSSI in dBm * -1 */
 };
 
-/*! \brief for {ACTIVATE,DEACTIVATE,MODIFY} MPH-INFO.req */
+/*! for {ACTIVATE,DEACTIVATE,MODIFY} MPH-INFO.req */
 struct info_act_req_param {
-	uint8_t chan_nr;	/*!< \brief Channel Number (Like RSL) */
+	uint8_t chan_nr;	/*!< Channel Number (Like RSL) */
 	uint8_t sacch_only;	/*!< \breif Only deactivate SACCH */
 };
 
-/*! \brief for {ACTIVATE,DEACTIVATE} MPH-INFO.cnf */
+/*! for {ACTIVATE,DEACTIVATE} MPH-INFO.cnf */
 struct info_act_cnf_param {
-	uint8_t chan_nr;	/*!< \brief Channel Number (Like RSL) */
-	uint8_t cause;		/*!< \brief RSL cause in case of nack */
+	uint8_t chan_nr;	/*!< Channel Number (Like RSL) */
+	uint8_t cause;		/*!< RSL cause in case of nack */
 };
 
-/*! \brief for {ACTIVATE,DEACTIVATE} MPH-INFO.{req,cnf} */
+/*! for {ACTIVATE,DEACTIVATE} MPH-INFO.{req,cnf} */
 struct info_ciph_req_param {
-	uint8_t chan_nr;	/*!< \brief Channel Number (Like RSL) */
-	uint8_t downlink;	/*!< \brief Apply to downlink */
-	uint8_t uplink;		/*!< \brief Apply to uplink */
+	uint8_t chan_nr;	/*!< Channel Number (Like RSL) */
+	uint8_t downlink;	/*!< Apply to downlink */
+	uint8_t uplink;		/*!< Apply to uplink */
 };
 
-/*! \brief for MPH-INFO.ind */
+/*! for MPH-INFO.ind */
 struct mph_info_param {
-	enum osmo_mph_info_type type; /*!< \brief Info message type */
+	enum osmo_mph_info_type type; /*!< Info message type */
 	union {
 		struct info_time_ind_param time_ind;
 		struct info_meas_ind_param meas_ind;
@@ -136,9 +136,9 @@ struct mph_info_param {
 	} u;
 };
 
-/*! \brief primitive header for PH-SAP primitives */
+/*! primitive header for PH-SAP primitives */
 struct osmo_phsap_prim {
-	struct osmo_prim_hdr oph; /*!< \brief generic primitive header */
+	struct osmo_prim_hdr oph; /*!< generic primitive header */
 	union {
 		struct ph_data_param data;
 		struct ph_tch_param tch;
@@ -146,5 +146,5 @@ struct osmo_phsap_prim {
 		struct ph_rach_ind_param rach_ind;
 		struct ph_conn_ind_param conn_ind;
 		struct mph_info_param info;
-	} u;			/*!< \brief request-specific data */
+	} u;			/*!< request-specific data */
 };

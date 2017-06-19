@@ -34,7 +34,7 @@
 
 #include <osmocom/core/bits.h>
 
-/*! \brief possibe termination types
+/*! possibe termination types
  *
  *  The termination type will determine which state the encoder/decoder
  *  can start/end with. This is mostly taken care of in the high level API
@@ -42,31 +42,31 @@
  *  proper calls yourself.
  */
 enum osmo_conv_term {
-	CONV_TERM_FLUSH = 0,	/*!< \brief Flush encoder state */
-	CONV_TERM_TRUNCATION,	/*!< \brief Direct truncation */
-	CONV_TERM_TAIL_BITING,	/*!< \brief Tail biting */
+	CONV_TERM_FLUSH = 0,	/*!< Flush encoder state */
+	CONV_TERM_TRUNCATION,	/*!< Direct truncation */
+	CONV_TERM_TAIL_BITING,	/*!< Tail biting */
 };
 
-/*! \brief structure describing a given convolutional code
+/*! structure describing a given convolutional code
  *
  *  The only required fields are N,K and the next_output/next_state arrays. The
  *  other can be left to default value of zero depending on what the code does.
  *  If 'len' is left at 0 then only the low level API can be used.
  */
 struct osmo_conv_code {
-	int N;				/*!< \brief Inverse of code rate */
-	int K;				/*!< \brief Constraint length */
-	int len;			/*!< \brief # of data bits */
+	int N;				/*!< Inverse of code rate */
+	int K;				/*!< Constraint length */
+	int len;			/*!< # of data bits */
 
-	enum osmo_conv_term term;	/*!< \brief Termination type */
+	enum osmo_conv_term term;	/*!< Termination type */
 
-	const uint8_t (*next_output)[2];/*!< \brief Next output array */
-	const uint8_t (*next_state)[2];	/*!< \brief Next state array  */
+	const uint8_t (*next_output)[2];/*!< Next output array */
+	const uint8_t (*next_state)[2];	/*!< Next state array  */
 
-	const uint8_t *next_term_output;/*!< \brief Flush termination output */
-	const uint8_t *next_term_state;	/*!< \brief Flush termination state  */
+	const uint8_t *next_term_output;/*!< Flush termination output */
+	const uint8_t *next_term_state;	/*!< Flush termination state  */
 
-	const int *puncture;		/*!< \brief Punctured bits indexes */
+	const int *puncture;		/*!< Punctured bits indexes */
 };
 
 
@@ -80,12 +80,12 @@ int osmo_conv_get_output_length(const struct osmo_conv_code *code, int len);
 
 	/* Low level API */
 
-/*! \brief convolutional encoder state */
+/*! convolutional encoder state */
 struct osmo_conv_encoder {
-	const struct osmo_conv_code *code; /*!< \brief for which code? */
-	int i_idx;	/*!< \brief Next input bit index */
-	int p_idx;	/*!< \brief Current puncture index */
-	uint8_t state;	/*!< \brief Current state */
+	const struct osmo_conv_code *code; /*!< for which code? */
+	int i_idx;	/*!< Next input bit index */
+	int p_idx;	/*!< Current puncture index */
+	uint8_t state;	/*!< Current state */
 };
 
 void osmo_conv_encode_init(struct osmo_conv_encoder *encoder,
@@ -105,20 +105,20 @@ int  osmo_conv_encode(const struct osmo_conv_code *code,
 
 	/* Low level API */
 
-/*! \brief convolutional decoder state */
+/*! convolutional decoder state */
 struct osmo_conv_decoder {
-	const struct osmo_conv_code *code; /*!< \brief for which code? */
+	const struct osmo_conv_code *code; /*!< for which code? */
 
-	int n_states;		/*!< \brief number of states */
+	int n_states;		/*!< number of states */
 
-	int len;		/*!< \brief Max o_idx (excl. termination) */
+	int len;		/*!< Max o_idx (excl. termination) */
 
-	int o_idx;		/*!< \brief output index */
-	int p_idx;		/*!< \brief puncture index */
+	int o_idx;		/*!< output index */
+	int p_idx;		/*!< puncture index */
 
-	unsigned int *ae;	/*!< \brief accumulated error */
-	unsigned int *ae_next;	/*!< \brief next accumulated error (tmp in scan) */
-	uint8_t *state_history;	/*!< \brief state history [len][n_states] */
+	unsigned int *ae;	/*!< accumulated error */
+	unsigned int *ae_next;	/*!< next accumulated error (tmp in scan) */
+	uint8_t *state_history;	/*!< state history [len][n_states] */
 };
 
 void osmo_conv_decode_init(struct osmo_conv_decoder *decoder,

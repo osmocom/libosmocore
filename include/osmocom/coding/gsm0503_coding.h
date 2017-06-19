@@ -8,7 +8,7 @@
  */
 
 /*! \file gsm0503_coding.h
- *  \brief GSM TS 05.03 coding
+ *  GSM TS 05.03 coding
  */
 
 #define GSM0503_GPRS_BURSTS_NBITS	(116 * 4)

@@ -22,7 +22,7 @@
  */
 
 /*! \file application.c
- *  \brief Routines for helping with the osmocom application setup.
+ *  Routines for helping with the osmocom application setup.
  */
 
 /*! \mainpage libosmocore Documentation
@@ -90,7 +90,7 @@ static void sighup_hdlr(int signal)
 	log_targets_reopen();
 }
 
-/*! \brief Ignore \ref SIGPIPE, \ref SIGALRM, \ref SIGHUP and \ref SIGIO */
+/*! Ignore \ref SIGPIPE, \ref SIGALRM, \ref SIGHUP and \ref SIGIO */
 void osmo_init_ignore_signals(void)
 {
 	/* Signals that by default would terminate */
@@ -106,7 +106,7 @@ void osmo_init_ignore_signals(void)
 #endif
 }
 
-/*! \brief Initialize the osmocom logging framework
+/*! Initialize the osmocom logging framework
  *  \param[in] log_info Array of available logging sub-systems
  *  \returns 0 on success, -1 in case of error
  *
@@ -125,7 +125,7 @@ int osmo_init_logging(const struct log_info *log_info)
 	return 0;
 }
 
-/*! \brief Turn the current process into a background daemon
+/*! Turn the current process into a background daemon
  *
  * This function will fork the process, exit the parent and set umask,
  * create a new session, close stdin/stdout/stderr and chdir to /tmp

@@ -30,10 +30,10 @@
 
 /*! \addtogroup oap
  *  @{
- *  \brief Osmocom Authentication Protocol
+ *  Osmocom Authentication Protocol
  */
 
-/*! \brief Decode OAP message data.
+/*! Decode OAP message data.
  * \param[out] oap_msg  Parsed data is written to this instance.
  * \param[in] data  Pointer to the data buffer containing the OAP message.
  * \param[in] data_len  Length of the OAP message data.
@@ -152,7 +152,7 @@ int osmo_oap_decode(struct osmo_oap_message *oap_msg,
 	return 0;
 }
 
-/*! \brief Compose OAP message data.
+/*! Compose OAP message data.
  * \param[out] msg  OAP message data is appended to this message buffer.
  * \param[in] oap_msg  Elements to encode in the message data.
  */

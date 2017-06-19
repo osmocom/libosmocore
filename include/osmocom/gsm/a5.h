@@ -32,10 +32,10 @@
  */
 
 /*! \file gsm/a5.h
- *  \brief Osmocom GSM A5 ciphering algorithm header
+ *  Osmocom GSM A5 ciphering algorithm header
  */
 
-/*! \brief Converts a frame number into the 22 bit number used in A5/x
+/*! Converts a frame number into the 22 bit number used in A5/x
  *  \param[in] fn The true framenumber
  *  \return 22 bit word
  */

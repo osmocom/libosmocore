@@ -36,7 +36,7 @@ const char *abis_nm_test_name(uint8_t test);
 extern const struct tlv_definition abis_nm_osmo_att_tlvdef;
 extern const struct tlv_definition abis_nm_att_tlvdef_ipa;
 
-/*! \brief write a human-readable OML header to the debug log
+/*! write a human-readable OML header to the debug log
  *  \param[in] ss Logging sub-system
  *  \param[in] foh A-bis OML FOM header
  */

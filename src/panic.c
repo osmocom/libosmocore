@@ -25,7 +25,7 @@
  */
 
 /*! \file panic.c
- *  \brief Routines for panic handling
+ *  Routines for panic handling
  */
 
 #include <osmocom/core/panic.h>
@@ -59,7 +59,7 @@ static void osmo_panic_default(const char *fmt, va_list args)
 #endif
 
 
-/*! \brief Terminate the current program with a panic
+/*! Terminate the current program with a panic
  *
  * You can call this function in case some severely unexpected situation
  * is detected and the program is supposed to terminate in a way that
@@ -87,7 +87,7 @@ void osmo_panic(const char *fmt, ...)
 }
  
 
-/*! \brief Set the panic handler
+/*! Set the panic handler
  *  \param[in] h New panic handler function
  *
  *  This changes the panic handling function from the currently active

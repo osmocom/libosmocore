@@ -27,12 +27,12 @@
 
 /*! \addtogroup write_queue
  *  @{
- *  \brief write queue for writing \ref msgb to sockets/fd's
+ *  write queue for writing \ref msgb to sockets/fd's
  */
 
 /*! \file write_queue.c */
 
-/*! \brief Select loop function for write queue handling
+/*! Select loop function for write queue handling
  *  \param[in] fd osmocom file descriptor
  *  \param[in] what bit-mask of events that have happened
  *  \returns 0 on success; negative on error
@@ -85,7 +85,7 @@ err_badfd:
 	return 0;
 }
 
-/*! \brief Initialize a \ref osmo_wqueue structure
+/*! Initialize a \ref osmo_wqueue structure
  *  \param[in] queue Write queue to operate on
  *  \param[in] max_length Maximum length of write queue
  */
@@ -100,7 +100,7 @@ void osmo_wqueue_init(struct osmo_wqueue *queue, int max_length)
 	INIT_LLIST_HEAD(&queue->msg_queue);
 }
 
-/*! \brief Enqueue a new \ref msgb into a write queue
+/*! Enqueue a new \ref msgb into a write queue
  *  \param[in] queue Write queue to be used
  *  \param[in] data to-be-enqueued message buffer
  *  \returns 0 on success; negative on error
@@ -120,7 +120,7 @@ int osmo_wqueue_enqueue(struct osmo_wqueue *queue, struct msgb *data)
 	return 0;
 }
 
-/*! \brief Clear a \ref osmo_wqueue
+/*! Clear a \ref osmo_wqueue
  *  \param[in] queue Write queue to be cleared
  *
  * This function will clear (remove/release) all messages in it.

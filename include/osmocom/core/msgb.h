@@ -33,33 +33,33 @@
 
 #define MSGB_DEBUG
 
-/*! \brief Osmocom message buffer */
+/*! Osmocom message buffer */
 struct msgb {
-	struct llist_head list; /*!< \brief linked list header */
+	struct llist_head list; /*!< linked list header */
 
 
 	/* Part of which TRX logical channel we were received / transmitted */
 	/* FIXME: move them into the control buffer */
 	union {
-		void *dst; /*!< \brief reference of origin/destination */
+		void *dst; /*!< reference of origin/destination */
 		struct gsm_bts_trx *trx;
 	};
-	struct gsm_lchan *lchan; /*!< \brief logical channel */
+	struct gsm_lchan *lchan; /*!< logical channel */
 
-	unsigned char *l1h; /*!< \brief pointer to Layer1 header (if any) */
-	unsigned char *l2h; /*!< \brief pointer to A-bis layer 2 header: OML, RSL(RLL), NS */
-	unsigned char *l3h; /*!< \brief pointer to Layer 3 header. For OML: FOM; RSL: 04.08; GPRS: BSSGP */
-	unsigned char *l4h; /*!< \brief pointer to layer 4 header */
+	unsigned char *l1h; /*!< pointer to Layer1 header (if any) */
+	unsigned char *l2h; /*!< pointer to A-bis layer 2 header: OML, RSL(RLL), NS */
+	unsigned char *l3h; /*!< pointer to Layer 3 header. For OML: FOM; RSL: 04.08; GPRS: BSSGP */
+	unsigned char *l4h; /*!< pointer to layer 4 header */
 
-	unsigned long cb[5]; /*!< \brief control buffer */
+	unsigned long cb[5]; /*!< control buffer */
 
-	uint16_t data_len;   /*!< \brief length of underlying data array */
-	uint16_t len;	     /*!< \brief length of bytes used in msgb */
+	uint16_t data_len;   /*!< length of underlying data array */
+	uint16_t len;	     /*!< length of bytes used in msgb */
 
-	unsigned char *head;	/*!< \brief start of underlying memory buffer */
-	unsigned char *tail;	/*!< \brief end of message in buffer */
-	unsigned char *data;	/*!< \brief start of message in buffer */
-	unsigned char _data[0]; /*!< \brief optional immediate data array */
+	unsigned char *head;	/*!< start of underlying memory buffer */
+	unsigned char *tail;	/*!< end of message in buffer */
+	unsigned char *data;	/*!< start of message in buffer */
+	unsigned char _data[0]; /*!< optional immediate data array */
 };
 
 extern struct msgb *msgb_alloc(uint16_t size, const char *name);
@@ -83,16 +83,16 @@ static int msgb_test_invariant(const struct msgb *msg) __attribute__((pure));
 #define MSGB_ABORT(msg, fmt, args ...)
 #endif
 
-/*! \brief obtain L1 header of msgb */
+/*! obtain L1 header of msgb */
 #define msgb_l1(m)	((void *)(m->l1h))
-/*! \brief obtain L2 header of msgb */
+/*! obtain L2 header of msgb */
 #define msgb_l2(m)	((void *)(m->l2h))
-/*! \brief obtain L3 header of msgb */
+/*! obtain L3 header of msgb */
 #define msgb_l3(m)	((void *)(m->l3h))
-/*! \brief obtain SMS header of msgb */
+/*! obtain SMS header of msgb */
 #define msgb_sms(m)	((void *)(m->l4h))
 
-/*! \brief determine length of L1 message
+/*! determine length of L1 message
  *  \param[in] msgb message buffer
  *  \returns size of L1 message in bytes
  *
@@ -104,7 +104,7 @@ static inline unsigned int msgb_l1len(const struct msgb *msgb)
 	return msgb->tail - (uint8_t *)msgb_l1(msgb);
 }
 
-/*! \brief determine length of L2 message
+/*! determine length of L2 message
  *  \param[in] msgb message buffer
  *  \returns size of L2 message in bytes
  *
@@ -116,7 +116,7 @@ static inline unsigned int msgb_l2len(const struct msgb *msgb)
 	return msgb->tail - (uint8_t *)msgb_l2(msgb);
 }
 
-/*! \brief determine length of L3 message
+/*! determine length of L3 message
  *  \param[in] msgb message buffer
  *  \returns size of L3 message in bytes
  *
@@ -128,7 +128,7 @@ static inline unsigned int msgb_l3len(const struct msgb *msgb)
 	return msgb->tail - (uint8_t *)msgb_l3(msgb);
 }
 
-/*! \brief determine the length of the header
+/*! determine the length of the header
  *  \param[in] msgb message buffer
  *  \returns number of bytes between start of buffer and start of msg
  *
@@ -140,7 +140,7 @@ static inline unsigned int msgb_headlen(const struct msgb *msgb)
 	return msgb->len - msgb->data_len;
 }
 
-/*! \brief determine how much tail room is left in msgb
+/*! determine how much tail room is left in msgb
  *  \param[in] msgb message buffer
  *  \returns number of bytes remaining at end of msgb
  *
@@ -152,7 +152,7 @@ static inline int msgb_tailroom(const struct msgb *msgb)
 	return (msgb->head + msgb->data_len) - msgb->tail;
 }
 
-/*! \brief determine the amount of headroom in msgb
+/*! determine the amount of headroom in msgb
  *  \param[in] msgb message buffer
  *  \returns number of bytes left ahead of message start in msgb
  *
@@ -164,7 +164,7 @@ static inline int msgb_headroom(const struct msgb *msgb)
 	return (msgb->data - msgb->head);
 }
 
-/*! \brief append data to end of message buffer
+/*! append data to end of message buffer
  *  \param[in] msgb message buffer
  *  \param[in] len number of bytes to append to message
  *  \returns pointer to start of newly-appended data
@@ -187,7 +187,7 @@ static inline unsigned char *msgb_put(struct msgb *msgb, unsigned int len)
 	return tmp;
 }
 
-/*! \brief append a uint8 value to the end of the message
+/*! append a uint8 value to the end of the message
  *  \param[in] msgb message buffer
  *  \param[in] word unsigned 8bit byte to be appended
  */
@@ -197,7 +197,7 @@ static inline void msgb_put_u8(struct msgb *msgb, uint8_t word)
 	space[0] = word & 0xFF;
 }
 
-/*! \brief append a uint16 value to the end of the message
+/*! append a uint16 value to the end of the message
  *  \param[in] msgb message buffer
  *  \param[in] word unsigned 16bit byte to be appended
  */
@@ -207,7 +207,7 @@ static inline void msgb_put_u16(struct msgb *msgb, uint16_t word)
 	osmo_store16be(word, space);
 }
 
-/*! \brief append a uint32 value to the end of the message
+/*! append a uint32 value to the end of the message
  *  \param[in] msgb message buffer
  *  \param[in] word unsigned 32bit byte to be appended
  */
@@ -217,7 +217,7 @@ static inline void msgb_put_u32(struct msgb *msgb, uint32_t word)
 	osmo_store32be(word, space);
 }
 
-/*! \brief remove data from end of message
+/*! remove data from end of message
  *  \param[in] msgb message buffer
  *  \param[in] len number of bytes to remove from end
  */
@@ -232,7 +232,7 @@ static inline unsigned char *msgb_get(struct msgb *msgb, unsigned int len)
 	return tmp;
 }
 
-/*! \brief remove uint8 from end of message
+/*! remove uint8 from end of message
  *  \param[in] msgb message buffer
  *  \returns 8bit value taken from end of msgb
  */
@@ -242,7 +242,7 @@ static inline uint8_t msgb_get_u8(struct msgb *msgb)
 	return space[0];
 }
 
-/*! \brief remove uint16 from end of message
+/*! remove uint16 from end of message
  *  \param[in] msgb message buffer
  *  \returns 16bit value taken from end of msgb
  */
@@ -252,7 +252,7 @@ static inline uint16_t msgb_get_u16(struct msgb *msgb)
 	return osmo_load16be(space);
 }
 
-/*! \brief remove uint32 from end of message
+/*! remove uint32 from end of message
  *  \param[in] msgb message buffer
  *  \returns 32bit value taken from end of msgb
  */
@@ -262,7 +262,7 @@ static inline uint32_t msgb_get_u32(struct msgb *msgb)
 	return osmo_load32be(space);
 }
 
-/*! \brief prepend (push) some data to start of message
+/*! prepend (push) some data to start of message
  *  \param[in] msgb message buffer
  *  \param[in] len number of bytes to pre-pend
  *  \returns pointer to newly added portion at start of \a msgb
@@ -284,7 +284,7 @@ static inline unsigned char *msgb_push(struct msgb *msgb, unsigned int len)
 	return msgb->data;
 }
 
-/*! \brief prepend a uint8 value to the head of the message
+/*! prepend a uint8 value to the head of the message
  *  \param[in] msgb message buffer
  *  \param[in] word unsigned 8bit byte to be prepended
  */
@@ -294,7 +294,7 @@ static inline void msgb_push_u8(struct msgb *msg, uint8_t word)
 	space[0] = word;
 }
 
-/*! \brief prepend a uint16 value to the head of the message
+/*! prepend a uint16 value to the head of the message
  *  \param[in] msgb message buffer
  *  \param[in] word unsigned 16bit byte to be prepended
  */
@@ -304,7 +304,7 @@ static inline void msgb_push_u16(struct msgb *msg, uint16_t word)
 	osmo_store16be(word, space);
 }
 
-/*! \brief prepend a uint32 value to the head of the message
+/*! prepend a uint32 value to the head of the message
  *  \param[in] msgb message buffer
  *  \param[in] word unsigned 32bit byte to be prepended
  */
@@ -314,7 +314,7 @@ static inline void msgb_push_u32(struct msgb *msg, uint32_t word)
 	osmo_store32be(word, space);
 }
 
-/*! \brief remove (pull) a header from the front of the message buffer
+/*! remove (pull) a header from the front of the message buffer
  *  \param[in] msgb message buffer
  *  \param[in] len number of octets to be pulled
  *  \returns pointer to new start of msgb
@@ -329,7 +329,7 @@ static inline unsigned char *msgb_pull(struct msgb *msgb, unsigned int len)
 	return msgb->data += len;
 }
 
-/*! \brief remove (pull) all headers in front of l3h from the message buffer.
+/*! remove (pull) all headers in front of l3h from the message buffer.
  *  \param[in] msgb message buffer with a valid l3h
  *  \returns pointer to new start of msgb (l3h)
  *
@@ -344,7 +344,7 @@ static inline unsigned char *msgb_pull_to_l3(struct msgb *msg)
 	return ret;
 }
 
-/*! \brief remove (pull) all headers in front of l2h from the message buffer.
+/*! remove (pull) all headers in front of l2h from the message buffer.
  *  \param[in] msgb message buffer with a valid l2h
  *  \returns pointer to new start of msgb (l2h)
  *
@@ -359,7 +359,7 @@ static inline unsigned char *msgb_pull_to_l2(struct msgb *msg)
 	return ret;
 }
 
-/*! \brief remove uint8 from front of message
+/*! remove uint8 from front of message
  *  \param[in] msgb message buffer
  *  \returns 8bit value taken from end of msgb
  */
@@ -369,7 +369,7 @@ static inline uint8_t msgb_pull_u8(struct msgb *msgb)
 	return space[0];
 }
 
-/*! \brief remove uint16 from front of message
+/*! remove uint16 from front of message
  *  \param[in] msgb message buffer
  *  \returns 16bit value taken from end of msgb
  */
@@ -379,7 +379,7 @@ static inline uint16_t msgb_pull_u16(struct msgb *msgb)
 	return osmo_load16be(space);
 }
 
-/*! \brief remove uint32 from front of message
+/*! remove uint32 from front of message
  *  \param[in] msgb message buffer
  *  \returns 32bit value taken from end of msgb
  */
@@ -389,7 +389,7 @@ static inline uint32_t msgb_pull_u32(struct msgb *msgb)
 	return osmo_load32be(space);
 }
 
-/*! \brief Increase headroom of empty msgb, reducing the tailroom
+/*! Increase headroom of empty msgb, reducing the tailroom
  *  \param[in] msg message buffer
  *  \param[in] len amount of extra octets to be reserved as headroom
  *
@@ -406,7 +406,7 @@ static inline void msgb_reserve(struct msgb *msg, int len)
 	msg->tail += len;
 }
 
-/*! \brief Trim the msgb to a given absolute length
+/*! Trim the msgb to a given absolute length
  *  \param[in] msg message buffer
  *  \param[in] len new total length of buffer
  *  \returns 0 in case of success, negative in case of error
@@ -424,7 +424,7 @@ static inline int msgb_trim(struct msgb *msg, int len)
 	return 0;
 }
 
-/*! \brief Trim the msgb to a given layer3 length
+/*! Trim the msgb to a given layer3 length
  *  \param[in] msg message buffer
  *  \param[in] l3len new layer3 length
  *  \returns 0 in case of success, negative in case of error
@@ -434,7 +434,7 @@ static inline int msgb_l3trim(struct msgb *msg, int l3len)
 	return msgb_trim(msg, (msg->l3h - msg->data) + l3len);
 }
 
-/*! \brief Allocate message buffer with specified headroom
+/*! Allocate message buffer with specified headroom
  *  \param[in] size size in bytes, including headroom
  *  \param[in] headroom headroom in bytes
  *  \param[in] name human-readable name
@@ -455,7 +455,7 @@ static inline struct msgb *msgb_alloc_headroom(int size, int headroom,
 	return msg;
 }
 
-/*! \brief Check a message buffer for consistency
+/*! Check a message buffer for consistency
  *  \param[in] msg message buffer
  *  \returns 0 (false) if inconsistent, != 0 (true) otherwise
  */

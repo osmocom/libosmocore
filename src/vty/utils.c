@@ -67,7 +67,7 @@ static int rate_ctr_handler(
 	return 0;
 }
 
-/*! \brief print a rate counter group to given VTY
+/*! print a rate counter group to given VTY
  *  \param[in] vty The VTY to which it should be printed
  *  \param[in] prefix Any additional log prefix ahead of each line
  *  \param[in] ctrg Rate counter group to be printed
@@ -126,7 +126,7 @@ static int osmo_stat_item_handler(
 	return 0;
 }
 
-/*! \brief print a stat item group to given VTY
+/*! print a stat item group to given VTY
  *  \param[in] vty The VTY to which it should be printed
  *  \param[in] prefix Any additional log prefix ahead of each line
  *  \param[in] statg Stat item group to be printed
@@ -200,7 +200,7 @@ void vty_out_statistics_full(struct vty *vty, const char *prefix)
 	vty_out_statistics_partial(vty, prefix, INT_MAX);
 }
 
-/*! \brief Generate a VTY command string from value_string */
+/*! Generate a VTY command string from value_string */
 char *vty_cmd_string_from_valstr(void *ctx, const struct value_string *vals,
 				 const char *prefix, const char *sep,
 				 const char *end, int do_lower)

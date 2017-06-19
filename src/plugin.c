@@ -25,7 +25,7 @@
  */
 
 /*! \file plugin.c
- *  \brief Routines for loading and managing shared library plug-ins.
+ *  Routines for loading and managing shared library plug-ins.
  */
 
 
@@ -41,7 +41,7 @@
 
 #include <osmocom/core/plugin.h>
 
-/*! \brief Load all plugins available in given directory
+/*! Load all plugins available in given directory
  *  \param[in] directory full path name of directory containing plug-ins
  *  \returns number of plugins loaded in case of success, negative in case of error
  */

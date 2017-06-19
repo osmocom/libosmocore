@@ -27,7 +27,7 @@
 
 /*! \addtogroup signal
  *  @{
- *  \brief Generic signalling/notification infrastructure
+ *  Generic signalling/notification infrastructure
  */
 
 /*! \file signal.c */
@@ -44,7 +44,7 @@ struct signal_handler {
 };
 
 
-/*! \brief Register a new signal handler
+/*! Register a new signal handler
  *  \param[in] subsys Subsystem number
  *  \param[in] cbfn Callback function
  *  \param[in] data Data passed through to callback
@@ -72,7 +72,7 @@ int osmo_signal_register_handler(unsigned int subsys,
 	return 0;
 }
 
-/*! \brief Unregister signal handler
+/*! Unregister signal handler
  *  \param[in] subsys Subsystem number
  *  \param[in] cbfn Callback function
  *  \param[in] data Data passed through to callback
@@ -92,7 +92,7 @@ void osmo_signal_unregister_handler(unsigned int subsys,
 	}
 }
 
-/*! \brief dispatch (deliver) a new signal to all registered handlers
+/*! dispatch (deliver) a new signal to all registered handlers
  *  \param[in] subsys Subsystem number
  *  \param[in] signal Signal number,
  *  \param[in] signal_data Data to be passed along to handlers

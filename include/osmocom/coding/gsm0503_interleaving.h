@@ -7,7 +7,7 @@
  */
 
 /*! \file gsm0503_interleaving.h
- *  \brief GSM TS 05.03 interleaving
+ *  GSM TS 05.03 interleaving
  */
 
 void gsm0503_xcch_deinterleave(sbit_t *cB, const sbit_t *iB);

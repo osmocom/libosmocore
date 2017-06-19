@@ -28,7 +28,7 @@
 
 /*! \addtogroup crypto
  *  @{
- *  \brief Osmocom GSM/GPRS ciphering algorithm implementation
+ *  Osmocom GSM/GPRS ciphering algorithm implementation
  */
 
 /*! \file gsm/a5.c */
@@ -50,7 +50,7 @@
 /* A5/3&4                                                                   */
 /* ------------------------------------------------------------------------ */
 
-/*! \brief Generate a GSM A5/4 cipher stream
+/*! Generate a GSM A5/4 cipher stream
  *  \param[in] key 16 byte array for the key (as received from the SIM)
  *  \param[in] fn Frame number
  *  \param[out] dl Pointer to array of ubits to return Downlink cipher stream
@@ -79,7 +79,7 @@ _a5_4(const uint8_t *ck, uint32_t fn, ubit_t *dl, ubit_t *ul, bool fn_correct)
        }
 }
 
-/*! \brief Generate a GSM A5/3 cipher stream
+/*! Generate a GSM A5/3 cipher stream
  *  \param[in] key 8 byte array for the key (as received from the SIM)
  *  \param[in] fn Frame number
  *  \param[out] dl Pointer to array of ubits to return Downlink cipher stream
@@ -119,7 +119,7 @@ _a5_3(const uint8_t *key, uint32_t fn, ubit_t *dl, ubit_t *ul, bool fn_correct)
 #define A5_R3_TAPS	0x700080 /* x^23 + x^22 + x^21 + x^8 + 1 */
 #define A5_R4_TAPS	0x010800 /* x^17 + x^12 + 1 */
 
-/*! \brief Computes parity of a 32-bit word
+/*! Computes parity of a 32-bit word
  *  \param[in] x 32 bit word
  *  \return Parity bit (xor of all bits) as 0 or 1
  */
@@ -133,7 +133,7 @@ _a5_12_parity(uint32_t x)
 	return (0x6996 >> x) & 1;
 }
 
-/*! \brief Compute majority bit from 3 taps
+/*! Compute majority bit from 3 taps
  *  \param[in] v1 LFSR state ANDed with tap-bit
  *  \param[in] v2 LFSR state ANDed with tap-bit
  *  \param[in] v3 LFSR state ANDed with tap-bit
@@ -145,7 +145,7 @@ _a5_12_majority(uint32_t v1, uint32_t v2, uint32_t v3)
 	return (!!v1 + !!v2 + !!v3) >= 2;
 }
 
-/*! \brief Compute the next LFSR state
+/*! Compute the next LFSR state
  *  \param[in] r Current state
  *  \param[in] mask LFSR mask
  *  \param[in] taps LFSR taps
@@ -166,7 +166,7 @@ _a5_12_clock(uint32_t r, uint32_t mask, uint32_t taps)
 #define A51_R2_CLKBIT	0x000400
 #define A51_R3_CLKBIT	0x000400
 
-/*! \brief GSM A5/1 Clocking function
+/*! GSM A5/1 Clocking function
  *  \param[in] r Register state
  *  \param[in] force Non-zero value disable conditional clocking
  */
@@ -191,7 +191,7 @@ _a5_1_clock(uint32_t r[], int force)
 		r[2] = _a5_12_clock(r[2], A5_R3_MASK, A5_R3_TAPS);
 }
 
-/*! \brief GSM A5/1 Output function
+/*! GSM A5/1 Output function
  *  \param[in] r Register state
  *  \return The A5/1 output function bit
  */
@@ -203,7 +203,7 @@ _a5_1_get_output(uint32_t r[])
 		(r[2] >> (A5_R3_LEN-1));
 }
 
-/*! \brief Generate a GSM A5/1 cipher stream
+/*! Generate a GSM A5/1 cipher stream
  *  \param[in] key 8 byte array for the key (as received from the SIM)
  *  \param[in] fn Frame number
  *  \param[out] dl Pointer to array of ubits to return Downlink cipher stream
@@ -278,7 +278,7 @@ void osmo_a5_1(const uint8_t *key, uint32_t fn, ubit_t *dl, ubit_t *ul)
 #define A52_R4_CLKBIT1	0x000008
 #define A52_R4_CLKBIT2	0x000080
 
-/*! \brief GSM A5/2 Clocking function
+/*! GSM A5/2 Clocking function
  *  \param[in] r Register state
  *  \param[in] force Non-zero value disable conditional clocking
  */
@@ -305,7 +305,7 @@ _a5_2_clock(uint32_t r[], int force)
 	r[3] = _a5_12_clock(r[3], A5_R4_MASK, A5_R4_TAPS);
 }
 
-/*! \brief GSM A5/2 Output function
+/*! GSM A5/2 Output function
  *  \param[in] r Register state
  *  \return The A5/2 output function bit
  */
@@ -324,7 +324,7 @@ _a5_2_get_output(uint32_t r[])
 	return b;
 }
 
-/*! \brief Generate a GSM A5/1 cipher stream
+/*! Generate a GSM A5/1 cipher stream
  *  \param[in] key 8 byte array for the key (as received from the SIM)
  *  \param[in] fn Frame number
  *  \param[out] dl Pointer to array of ubits to return Downlink cipher stream
@@ -398,7 +398,7 @@ void osmo_a5_2(const uint8_t *key, uint32_t fn, ubit_t *dl, ubit_t *ul)
 	osmo_a5(2, key, fn, dl, ul);
 }
 
-/*! \brief Main method to generate a A5/x cipher stream
+/*! Main method to generate a A5/x cipher stream
  *  \param[in] n Which A5/x method to use
  *  \param[in] key 8 or 16 (for a5/4) byte array for the key (as received from the SIM)
  *  \param[in] fn Frame number

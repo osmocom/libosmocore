@@ -58,7 +58,7 @@ struct osmo_bssgp_prim {
 
 /* gprs_bssgp.c */
 
-/*! \brief BSSGP flow control (SGSN side) According to Section 8.2 */
+/*! BSSGP flow control (SGSN side) According to Section 8.2 */
 struct bssgp_flow_control {
 	uint32_t bucket_size_max;	/*!< maximum size of the bucket (octets) */
 	uint32_t bucket_leak_rate; 	/*!< leak rate of the bucket (octets/sec) */
@@ -158,13 +158,13 @@ static inline int bssgp_tlv_parse(struct tlv_parsed *tp, uint8_t *buf, int len)
 	return tlv_parse(tp, &tvlv_att_def, buf, len, 0, 0);
 }
 
-/*! \brief BSSGP Paging mode */
+/*! BSSGP Paging mode */
 enum bssgp_paging_mode {
 	BSSGP_PAGING_PS,
 	BSSGP_PAGING_CS,
 };
 
-/*! \brief BSSGP Paging scope */
+/*! BSSGP Paging scope */
 enum bssgp_paging_scope {
 	BSSGP_PAGING_BSS_AREA,		/*!< all cells in BSS */
 	BSSGP_PAGING_LOCATION_AREA,	/*!< all cells in LA */
@@ -172,7 +172,7 @@ enum bssgp_paging_scope {
 	BSSGP_PAGING_BVCI,		/*!< one cell */
 };
 
-/*! \brief BSSGP paging information */
+/*! BSSGP paging information */
 struct bssgp_paging_info {
 	enum bssgp_paging_mode mode;	/*!< CS or PS paging */
 	enum bssgp_paging_scope scope;	/*!< bssgp_paging_scope */

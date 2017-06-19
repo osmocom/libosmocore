@@ -22,7 +22,7 @@
 
 #pragma once
 
-/*! \brief load unaligned n-byte integer (little-endian encoding) into uintXX_t
+/*! load unaligned n-byte integer (little-endian encoding) into uintXX_t
  *  \param[in] p Buffer where integer is stored
  *  \param[in] n Number of bytes stored in p
  *  \returns XX bit unsigned integer
@@ -36,7 +36,7 @@ static inline uintXX_t osmo_loadXXle_ext(const void *p, uint8_t n)
 	return r;
 }
 
-/*! \brief load unaligned n-byte integer (big-endian encoding) into uintXX_t
+/*! load unaligned n-byte integer (big-endian encoding) into uintXX_t
  *  \param[in] p Buffer where integer is stored
  *  \param[in] n Number of bytes stored in p
  *  \returns XX bit unsigned integer
@@ -51,7 +51,7 @@ static inline uintXX_t osmo_loadXXbe_ext(const void *p, uint8_t n)
 }
 
 
-/*! \brief store unaligned n-byte integer (little-endian encoding) from uintXX_t
+/*! store unaligned n-byte integer (little-endian encoding) from uintXX_t
  *  \param[in] x unsigned XX bit integer
  *  \param[out] p Buffer to store integer
  *  \param[in] n Number of bytes to store
@@ -63,7 +63,7 @@ static inline void osmo_storeXXle_ext(uintXX_t x, void *p, uint8_t n)
 	for(i = 0; i < n; q[i] = (x >> i * 8) & 0xFF, i++);
 }
 
-/*! \brief store unaligned n-byte integer (big-endian encoding) from uintXX_t
+/*! store unaligned n-byte integer (big-endian encoding) from uintXX_t
  *  \param[in] x unsigned XX bit integer
  *  \param[out] p Buffer to store integer
  *  \param[in] n Number of bytes to store
@@ -79,26 +79,26 @@ static inline void osmo_storeXXbe_ext(uintXX_t x, void *p, uint8_t n)
 /* Convenience function for most-used cases */
 
 
-/*! \brief load unaligned XX-bit integer (little-endian encoding) */
+/*! load unaligned XX-bit integer (little-endian encoding) */
 static inline uintXX_t osmo_loadXXle(const void *p)
 {
 	return osmo_loadXXle_ext(p, XX / 8);
 }
 
-/*! \brief load unaligned XX-bit integer (big-endian encoding) */
+/*! load unaligned XX-bit integer (big-endian encoding) */
 static inline uintXX_t osmo_loadXXbe(const void *p)
 {
 	return osmo_loadXXbe_ext(p, XX / 8);
 }
 
 
-/*! \brief store unaligned XX-bit integer (little-endian encoding) */
+/*! store unaligned XX-bit integer (little-endian encoding) */
 static inline void osmo_storeXXle(uintXX_t x, void *p)
 {
 	osmo_storeXXle_ext(x, p, XX / 8);
 }
 
-/*! \brief store unaligned XX-bit integer (big-endian encoding) */
+/*! store unaligned XX-bit integer (big-endian encoding) */
 static inline void osmo_storeXXbe(uintXX_t x, void *p)
 {
 	osmo_storeXXbe_ext(x, p, XX / 8);

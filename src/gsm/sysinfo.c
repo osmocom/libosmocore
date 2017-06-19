@@ -125,7 +125,7 @@ const struct value_string osmo_sitype_strs[_MAX_SYSINFO_TYPE] = {
 	{ 0, NULL }
 };
 
-/*! \brief Add pair of arfcn and measurement bandwith value to earfcn struct
+/*! Add pair of arfcn and measurement bandwith value to earfcn struct
  *  \param[in,out] e earfcn struct
  *  \param[in] arfcn EARFCN value, 16 bits
  *  \param[in] meas_bw measurement bandwith value
@@ -144,7 +144,7 @@ int osmo_earfcn_add(struct osmo_earfcn_si2q *e, uint16_t arfcn, uint8_t meas_bw)
 	return -ENOMEM;
 }
 
-/*! \brief Return number of bits necessary to represent earfcn struct as
+/*! Return number of bits necessary to represent earfcn struct as
  *  Repeated E-UTRAN Neighbour Cells IE from 3GPP TS 44.018 Table 10.5.2.33b.1
  *  \param[in,out] e earfcn struct
  *  \returns number of bits
@@ -154,7 +154,7 @@ size_t osmo_earfcn_bit_size(const struct osmo_earfcn_si2q *e)
 	return osmo_earfcn_bit_size_ext(e, 0);
 }
 
-/*! \brief Return number of bits necessary to represent earfcn struct as
+/*! Return number of bits necessary to represent earfcn struct as
  *  Repeated E-UTRAN Neighbour Cells IE from 3GPP TS 44.018 Table 10.5.2.33b.1
  *  \param[in,out] e earfcn struct
  *  \param[in] offset into earfcn struct: how many EARFCNs to skip while estimating size
@@ -183,7 +183,7 @@ size_t osmo_earfcn_bit_size_ext(const struct osmo_earfcn_si2q *e, size_t offset)
 	return bits;
 }
 
-/*! \brief Delete arfcn (and corresponding measurement bandwith) from earfcn
+/*! Delete arfcn (and corresponding measurement bandwith) from earfcn
  *  struct
  *  \param[in,out] e earfcn struct
  *  \param[in] arfcn EARFCN value, 16 bits
@@ -202,7 +202,7 @@ int osmo_earfcn_del(struct osmo_earfcn_si2q *e, uint16_t arfcn)
 	return -ENOENT;
 }
 
-/*! \brief Initialize earfcn struct
+/*! Initialize earfcn struct
  *  \param[in,out] e earfcn struct
  */
 void osmo_earfcn_init(struct osmo_earfcn_si2q *e)

@@ -34,21 +34,21 @@
 
 /*! write queue instance */
 struct osmo_wqueue {
-	/*! \brief osmocom file descriptor */
+	/*! osmocom file descriptor */
 	struct osmo_fd bfd;
-	/*! \brief maximum length of write queue */
+	/*! maximum length of write queue */
 	unsigned int max_length;
-	/*! \brief current length of write queue */
+	/*! current length of write queue */
 	unsigned int current_length;
 
-	/*! \brief actual linked list implementing the queue */
+	/*! actual linked list implementing the queue */
 	struct llist_head msg_queue;
 
-	/*! \brief call-back in case qeueue is readable */
+	/*! call-back in case qeueue is readable */
 	int (*read_cb)(struct osmo_fd *fd);
-	/*! \brief call-back in case qeueue is writable */
+	/*! call-back in case qeueue is writable */
 	int (*write_cb)(struct osmo_fd *fd, struct msgb *msg);
-	/*! \brief call-back in case qeueue has exceptions */
+	/*! call-back in case qeueue has exceptions */
 	int (*except_cb)(struct osmo_fd *fd);
 };
 

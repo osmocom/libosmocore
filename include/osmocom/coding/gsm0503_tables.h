@@ -8,7 +8,7 @@
  */
 
 /*! \file gsm0503_tables.h
- *  \brief GSM TS 05.03 tables
+ *  GSM TS 05.03 tables
  */
 
 extern const ubit_t gsm0503_pdtch_hl_hn_ubit[4][8];

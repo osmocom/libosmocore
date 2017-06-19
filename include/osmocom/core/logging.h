@@ -13,15 +13,15 @@
 #include <osmocom/core/defs.h>
 #include <osmocom/core/linuxlist.h>
 
-/*! \brief Maximum number of logging contexts */
+/*! Maximum number of logging contexts */
 #define LOG_MAX_CTX		8
-/*! \brief Maximum number of logging filters */
+/*! Maximum number of logging filters */
 #define LOG_MAX_FILTERS	8
 
 #define DEBUG
 
 #ifdef DEBUG
-/*! \brief Log a debug message through the Osmocom logging framework
+/*! Log a debug message through the Osmocom logging framework
  *  \param[in] ss logging subsystem (e.g. \ref DLGLOBAL)
  *  \param[in] fmt format string
  *  \param[in] args variable argument list
@@ -39,7 +39,7 @@ void osmo_vlogp(int subsys, int level, const char *file, int line,
 
 void logp(int subsys, const char *file, int line, int cont, const char *format, ...) OSMO_DEPRECATED("Use DEBUGP* macros instead");
 
-/*! \brief Log a new message through the Osmocom logging framework
+/*! Log a new message through the Osmocom logging framework
  *  \param[in] ss logging subsystem (e.g. \ref DLGLOBAL)
  *  \param[in] level logging level (e.g. \ref LOGL_NOTICE)
  *  \param[in] fmt format string
@@ -48,7 +48,7 @@ void logp(int subsys, const char *file, int line, int cont, const char *format, 
 #define LOGP(ss, level, fmt, args...) \
 	LOGPSRC(ss, level, NULL, 0, fmt, ## args)
 
-/*! \brief Continue a log message through the Osmocom logging framework
+/*! Continue a log message through the Osmocom logging framework
  *  \param[in] ss logging subsystem (e.g. \ref DLGLOBAL)
  *  \param[in] level logging level (e.g. \ref LOGL_NOTICE)
  *  \param[in] fmt format string
@@ -60,7 +60,7 @@ void logp(int subsys, const char *file, int line, int cont, const char *format, 
 			logp2(ss, level, __BASE_FILE__, __LINE__, 1, fmt, ##args); \
 	} while(0)
 
-/*! \brief Log through the Osmocom logging framework with explicit source.
+/*! Log through the Osmocom logging framework with explicit source.
  *  If caller_file is passed as NULL, __BASE_FILE__ and __LINE__ are used
  *  instead of caller_file and caller_line (so that this macro here defines
  *  both cases in the same place, and to catch cases where callers fail to pass
@@ -82,12 +82,12 @@ void logp(int subsys, const char *file, int line, int cont, const char *format, 
 		}\
 	} while(0)
 
-/*! \brief different log levels */
-#define LOGL_DEBUG	1	/*!< \brief debugging information */
-#define LOGL_INFO	3	/*!< \brief general information */
-#define LOGL_NOTICE	5	/*!< \brief abnormal/unexpected condition */
-#define LOGL_ERROR	7	/*!< \brief error condition, requires user action */
-#define LOGL_FATAL	8	/*!< \brief fatal, program aborted */
+/*! different log levels */
+#define LOGL_DEBUG	1	/*!< debugging information */
+#define LOGL_INFO	3	/*!< general information */
+#define LOGL_NOTICE	5	/*!< abnormal/unexpected condition */
+#define LOGL_ERROR	7	/*!< error condition, requires user action */
+#define LOGL_FATAL	8	/*!< fatal, program aborted */
 
 /* logging levels defined by the library itself */
 #define DLGLOBAL	-1	/*!< global logging */
@@ -114,7 +114,7 @@ struct log_category {
 	uint8_t enabled;	/*!< is logging enabled? */
 };
 
-/*! \brief Information regarding one logging category */
+/*! Information regarding one logging category */
 struct log_info_cat {
 	const char *name;		/*!< name of category */
 	const char *color;		/*!< color string for cateyory */
@@ -123,12 +123,12 @@ struct log_info_cat {
 	uint8_t enabled;		/*!< is this category enabled or not */
 };
 
-/*! \brief Log context information, passed to filter */
+/*! Log context information, passed to filter */
 struct log_context {
 	void *ctx[LOG_MAX_CTX+1];
 };
 
-/*! \brief Indexes to indicate the object currently acted upon.
+/*! Indexes to indicate the object currently acted upon.
  * Array indexes for the global \a log_context array. */
 enum log_ctx_index {
 	LOG_CTX_GB_NSVC,
@@ -138,7 +138,7 @@ enum log_ctx_index {
 	_LOG_CTX_COUNT
 };
 
-/*! \brief Indexes to indicate objects that should be logged.
+/*! Indexes to indicate objects that should be logged.
  * Array indexes to log_target->filter_data and bit indexes for
  * log_target->filter_map. */
 enum log_filter_index {
@@ -150,18 +150,18 @@ enum log_filter_index {
 	_LOG_FLT_COUNT
 };
 
-/*! \brief Compatibility with older libosmocore versions */
+/*! Compatibility with older libosmocore versions */
 #define LOG_FILTER_ALL (1<<LOG_FLT_ALL)
-/*! \brief Compatibility with older libosmocore versions */
+/*! Compatibility with older libosmocore versions */
 #define GPRS_CTX_NSVC LOG_CTX_GB_NSVC
-/*! \brief Compatibility with older libosmocore versions */
+/*! Compatibility with older libosmocore versions */
 #define GPRS_CTX_BVC LOG_CTX_GB_BVC
-/*! \brief Indexes to indicate the object currently acted upon.
+/*! Indexes to indicate the object currently acted upon.
  * Array indexes for the global \a log_context array. */
 
 struct log_target;
 
-/*! \brief Log filter function */
+/*! Log filter function */
 typedef int log_filter(const struct log_context *ctx,
 		       struct log_target *target);
 
@@ -177,60 +177,60 @@ typedef void log_save_filters(struct vty *vty,
 			      const struct log_info *info,
 			      const struct log_target *tgt);
 
-/*! \brief Logging configuration, passed to \ref log_init */
+/*! Logging configuration, passed to \ref log_init */
 struct log_info {
-	/* \brief filter callback function */
+	/* filter callback function */
 	log_filter *filter_fn;
 
-	/*! \brief per-category information */
+	/*! per-category information */
 	const struct log_info_cat *cat;
-	/*! \brief total number of categories */
+	/*! total number of categories */
 	unsigned int num_cat;
-	/*! \brief total number of user categories (not library) */
+	/*! total number of user categories (not library) */
 	unsigned int num_cat_user;
 
-	/*! \brief filter saving function */
+	/*! filter saving function */
 	log_save_filters *save_fn;
-	/*! \brief filter saving function */
+	/*! filter saving function */
 	log_print_filters *print_fn;
 };
 
-/*! \brief Type of logging target */
+/*! Type of logging target */
 enum log_target_type {
-	LOG_TGT_TYPE_VTY,	/*!< \brief VTY logging */
-	LOG_TGT_TYPE_SYSLOG,	/*!< \brief syslog based logging */
-	LOG_TGT_TYPE_FILE,	/*!< \brief text file logging */
-	LOG_TGT_TYPE_STDERR,	/*!< \brief stderr logging */
-	LOG_TGT_TYPE_STRRB,	/*!< \brief osmo_strrb-backed logging */
-	LOG_TGT_TYPE_GSMTAP,	/*!< \brief GSMTAP network logging */
+	LOG_TGT_TYPE_VTY,	/*!< VTY logging */
+	LOG_TGT_TYPE_SYSLOG,	/*!< syslog based logging */
+	LOG_TGT_TYPE_FILE,	/*!< text file logging */
+	LOG_TGT_TYPE_STDERR,	/*!< stderr logging */
+	LOG_TGT_TYPE_STRRB,	/*!< osmo_strrb-backed logging */
+	LOG_TGT_TYPE_GSMTAP,	/*!< GSMTAP network logging */
 };
 
-/*! \brief structure representing a logging target */
+/*! structure representing a logging target */
 struct log_target {
-        struct llist_head entry;		/*!< \brief linked list */
+        struct llist_head entry;		/*!< linked list */
 
-	/*! \brief Internal data for filtering */
+	/*! Internal data for filtering */
 	int filter_map;
-	/*! \brief Internal data for filtering */
+	/*! Internal data for filtering */
 	void *filter_data[LOG_MAX_FILTERS+1];
 
-	/*! \brief logging categories */
+	/*! logging categories */
 	struct log_category *categories;
 
-	/*! \brief global log level */
+	/*! global log level */
 	uint8_t loglevel;
-	/*! \brief should color be used when printing log messages? */
+	/*! should color be used when printing log messages? */
 	unsigned int use_color:1;
-	/*! \brief should log messages be prefixed with a timestamp? */
+	/*! should log messages be prefixed with a timestamp? */
 	unsigned int print_timestamp:1;
-	/*! \brief should log messages be prefixed with a filename? */
+	/*! should log messages be prefixed with a filename? */
 	unsigned int print_filename:1;
-	/*! \brief should log messages be prefixed with a category name? */
+	/*! should log messages be prefixed with a category name? */
 	unsigned int print_category:1;
-	/*! \brief should log messages be prefixed with an extended timestamp? */
+	/*! should log messages be prefixed with an extended timestamp? */
 	unsigned int print_ext_timestamp:1;
 
-	/*! \brief the type of this log taget */
+	/*! the type of this log taget */
 	enum log_target_type type;
 
 	union {
@@ -259,7 +259,7 @@ struct log_target {
 		} tgt_gsmtap;
 	};
 
-	/*! \brief call-back function to be called when the logging framework
+	/*! call-back function to be called when the logging framework
 	 *	   wants to log a fully formatted string
 	 *  \param[in] target logging target
 	 *  \param[in] level log level of currnet message
@@ -268,7 +268,7 @@ struct log_target {
         void (*output) (struct log_target *target, unsigned int level,
 			const char *string);
 
-	/*! \brief alternative call-back function to which the logging
+	/*! alternative call-back function to which the logging
 	 *	   framework passes the unfortmatted input arguments,
 	 *	   i.e. bypassing the internal string formatter
 	 *  \param[in] target logging target

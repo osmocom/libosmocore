@@ -7,7 +7,7 @@
  */
 
 /*! \file gsm0503_mapping.c
- *  \brief GSM TS 05.03 burst mapping
+ *  GSM TS 05.03 burst mapping
  */
 
 void gsm0503_xcch_burst_unmap(sbit_t *iB, const sbit_t *eB,

@@ -42,7 +42,7 @@ static int32_t global_value_id = 0;
 
 static void *tall_stat_item_ctx;
 
-/*! \brief Allocate a new group of counters according to description
+/*! Allocate a new group of counters according to description
  *  \param[in] ctx \ref talloc context
  *  \param[in] desc Statistics item group description
  *  \param[in] idx Index of new stat item group
@@ -114,7 +114,7 @@ struct osmo_stat_item_group *osmo_stat_item_group_alloc(void *ctx,
 	return group;
 }
 
-/*! \brief Free the memory for the specified group of counters */
+/*! Free the memory for the specified group of counters */
 void osmo_stat_item_group_free(struct osmo_stat_item_group *grp)
 {
 	llist_del(&grp->list);
@@ -172,7 +172,7 @@ int osmo_stat_item_get_next(const struct osmo_stat_item *item, int32_t *next_idx
 	return idx_delta;
 }
 
-/*! \brief Skip all values of this item and update idx accordingly */
+/*! Skip all values of this item and update idx accordingly */
 int osmo_stat_item_discard(const struct osmo_stat_item *item, int32_t *idx)
 {
 	int discarded = item->values[item->last_offs].id + 1 - *idx;
@@ -181,7 +181,7 @@ int osmo_stat_item_discard(const struct osmo_stat_item *item, int32_t *idx)
 	return discarded;
 }
 
-/*! \brief Skip all values of all items and update idx accordingly */
+/*! Skip all values of all items and update idx accordingly */
 int osmo_stat_item_discard_all(int32_t *idx)
 {
 	int discarded = global_value_id + 1 - *idx;
@@ -190,7 +190,7 @@ int osmo_stat_item_discard_all(int32_t *idx)
 	return discarded;
 }
 
-/*! \brief Initialize the stat item module */
+/*! Initialize the stat item module */
 int osmo_stat_item_init(void *tall_ctx)
 {
 	tall_stat_item_ctx = tall_ctx;
@@ -198,7 +198,7 @@ int osmo_stat_item_init(void *tall_ctx)
 	return 0;
 }
 
-/*! \brief Search for item group based on group name and index */
+/*! Search for item group based on group name and index */
 struct osmo_stat_item_group *osmo_stat_item_get_group_by_name_idx(
 	const char *name, const unsigned int idx)
 {
@@ -215,7 +215,7 @@ struct osmo_stat_item_group *osmo_stat_item_get_group_by_name_idx(
 	return NULL;
 }
 
-/*! \brief Search for item group based on group name */
+/*! Search for item group based on group name */
 const struct osmo_stat_item *osmo_stat_item_get_by_name(
 	const struct osmo_stat_item_group *statg, const char *name)
 {

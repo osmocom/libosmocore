@@ -45,7 +45,7 @@
 #define GSM411_ALLOC_SIZE	1024
 #define GSM411_ALLOC_HEADROOM	128
 
-/*! \brief Allocate a message buffer for use as TS 04.11 message
+/*! Allocate a message buffer for use as TS 04.11 message
  *  \returns allocated message buffer */
 struct msgb *gsm411_msgb_alloc(void)
 {
@@ -53,7 +53,7 @@ struct msgb *gsm411_msgb_alloc(void)
 				   "GSM 04.11");
 }
 
-/*! \brief Turn int into semi-octet representation: 98 => 0x89
+/*! Turn int into semi-octet representation: 98 => 0x89
  *  \param[in] integer value representing decimal number 0..99
  *  \returns BSC encoded as nibbles, swapped */
 uint8_t gsm411_bcdify(uint8_t value)
@@ -66,7 +66,7 @@ uint8_t gsm411_bcdify(uint8_t value)
 	return ret;
 }
 
-/*! \brief Turn semi-octet representation into int: 0x89 => 98
+/*! Turn semi-octet representation into int: 0x89 => 98
  *  \param[in] value byte containing two BCD nibbles in revere order
  *  \returns integer representing decoded, re-ordered nibbles */
 uint8_t gsm411_unbcdify(uint8_t value)
@@ -83,7 +83,7 @@ uint8_t gsm411_unbcdify(uint8_t value)
 	return ret;
 }
 
-/*! \brief Generate 03.40 TP-SCTS
+/*! Generate 03.40 TP-SCTS
  *  \param[out] scts Caller-provided buffer to store SCTS (7 octets)
  *  \param[in] time to encode */
 void gsm340_gen_scts(uint8_t *scts, time_t time)
@@ -104,7 +104,7 @@ void gsm340_gen_scts(uint8_t *scts, time_t time)
 #endif
 }
 
-/*! \brief Decode 03.40 TP-SCTS (into utc/gmt timestamp)
+/*! Decode 03.40 TP-SCTS (into utc/gmt timestamp)
  *  \param[in] scts SMS Center Time Stamp
  *  \return time in UTC time_t format */
 time_t gsm340_scts(uint8_t *scts)
@@ -204,7 +204,7 @@ static unsigned long gsm340_vp_relative_semioctet(uint8_t *sms_vp)
 	return minutes;
 }
 
-/*! \brief decode validity period. return minutes
+/*! decode validity period. return minutes
  *  \param[in] sms_vpf Validity Period Format in 03.40 encoding
  *  \param[in] sms_vp Validity Period Information Element
  *  \returns validity period in minutes */
@@ -245,7 +245,7 @@ unsigned long gsm340_validity_period(uint8_t sms_vpf, uint8_t *sms_vp)
 	}
 }
 
-/*! \brief determine coding alphabet dependent on GSM 03.38 Section 4 DCS
+/*! determine coding alphabet dependent on GSM 03.38 Section 4 DCS
  *  \param[in] dcs Data Coding Scheme in 03.38 encoding
  *  \returns libosmogsm internal enum \ref sms_alphabet */
 enum sms_alphabet gsm338_get_sms_alphabet(uint8_t dcs)
@@ -285,7 +285,7 @@ enum sms_alphabet gsm338_get_sms_alphabet(uint8_t dcs)
 	return alpha;
 }
 
-/*! \brief generate a TPDU address field compliant with 03.40 sec. 9.1.2.5 
+/*! generate a TPDU address field compliant with 03.40 sec. 9.1.2.5 
  *  \param[out] oa caller-provided output buffer
  *  \param[in] oa_len caller-specified length of \a oa in bytes
  *  \param[in] type GSM340_TYPE_*
@@ -321,7 +321,7 @@ int gsm340_gen_oa(uint8_t *oa, unsigned int oa_len, uint8_t type,
 	return len_in_bytes;
 }
 
-/*! \brief Prefix \ref msgb with a RP header
+/*! Prefix \ref msgb with a RP header
  *  \param msg Message Buffer containing message
  *  \param[in] rp_msg_type RP Message Type
  *  \param[in] rp_msg_ref RP Message Reference
@@ -341,7 +341,7 @@ int gsm411_push_rp_header(struct msgb *msg, uint8_t rp_msg_type,
 	return 0;
 }
 
-/*! \brief Prefix \ref msgb with a 04.08/04.11 CP header
+/*! Prefix \ref msgb with a 04.08/04.11 CP header
  *  \param msg Message Buffer containing message
  *  \param[in] proto Protocol
  *  \param[in] trans Transaction

@@ -24,7 +24,7 @@
  */
 
 /*! \file strrb.h
- *  \brief Osmocom string ringbuffer handling routines
+ *  Osmocom string ringbuffer handling routines
  */
 
 #include <unistd.h>
@@ -33,14 +33,14 @@
 
 #include <osmocom/core/talloc.h>
 
-/*! \brief A structure representing an osmocom string ringbuffer */
+/*! A structure representing an osmocom string ringbuffer */
 
 #define RB_MAX_MESSAGE_SIZE 240
 struct osmo_strrb {
-	uint16_t start;		/*!< \brief index of the first slot */
-	uint16_t end;		/*!< \brief index of the last slot */
-	uint16_t size;		/*!< \brief max number of messages to store */
-	char **buffer;		/*!< \brief storage for messages */
+	uint16_t start;		/*!< index of the first slot */
+	uint16_t end;		/*!< index of the last slot */
+	uint16_t size;		/*!< max number of messages to store */
+	char **buffer;		/*!< storage for messages */
 };
 
 struct osmo_strrb *osmo_strrb_create(TALLOC_CTX * ctx, size_t rb_size);

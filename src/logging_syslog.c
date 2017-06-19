@@ -24,7 +24,7 @@
  */
 
 /*! \file logging_syslog.c
- *  \brief libosmocore logging output via syslog
+ *  libosmocore logging output via syslog
  */
 
 #include "../config.h"
@@ -65,7 +65,7 @@ static void _syslog_output(struct log_target *target,
 	syslog(logp2syslog_level(level), "%s", log);
 }
 
-/*! \brief Create a new logging target for syslog logging
+/*! Create a new logging target for syslog logging
  *  \param[in] ident syslog string identifier
  *  \param[in] option syslog options
  *  \param[in] facility syslog facility

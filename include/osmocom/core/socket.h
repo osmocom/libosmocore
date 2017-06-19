@@ -5,7 +5,7 @@
  */
 
 /*! \file socket.h
- *  \brief Osmocom socket convenience functions
+ *  Osmocom socket convenience functions
  */
 
 #include <stdint.h>

@@ -10,7 +10,7 @@
 
 #include <osmocom/core/crc16.h>
 
-/*! \brief CRC table for the CRC-16. The poly is 0x8005 (x^16 + x^15 + x^2 + 1) */
+/*! CRC table for the CRC-16. The poly is 0x8005 (x^16 + x^15 + x^2 + 1) */
 uint16_t const osmo_crc16_table[256] = {
 	0x0000, 0xC0C1, 0xC181, 0x0140, 0xC301, 0x03C0, 0x0280, 0xC241,
 	0xC601, 0x06C0, 0x0780, 0xC741, 0x0500, 0xC5C1, 0xC481, 0x0440,
@@ -46,7 +46,7 @@ uint16_t const osmo_crc16_table[256] = {
 	0x8201, 0x42C0, 0x4380, 0x8341, 0x4100, 0x81C1, 0x8081, 0x4040
 };
 
-/*! \brief compute the CRC-16 for the data buffer
+/*! compute the CRC-16 for the data buffer
  *  \param crc[in] previous CRC value
  *  \param buffer[in] data pointer
  *  \param len[in] number of bytes in input \ref buffer

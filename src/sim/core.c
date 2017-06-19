@@ -210,7 +210,7 @@ osim_file_desc_find_sfid(struct osim_file_desc *parent, uint8_t sfid)
 }
 
 
-/*! \brief Generate an APDU message and initialize APDU command header
+/*! Generate an APDU message and initialize APDU command header
  *  \param[in] cla CLASS byte
  *  \param[in] ins INSTRUCTION byte
  *  \param[in] p1 Parameter 1 byte

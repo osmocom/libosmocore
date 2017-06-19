@@ -22,7 +22,7 @@
 
 /*! \addtogroup sercomm
  *  @{
- *  \brief Serial communications layer, based on HDLC
+ *  Serial communications layer, based on HDLC
  */
 
 /*! \file sercomm.c
@@ -41,9 +41,9 @@
 
 #ifndef EMBEDDED
 # define DEFAULT_RX_MSG_SIZE	2048
-/*! \brief Protect against IRQ context */
+/*! Protect against IRQ context */
 void sercomm_drv_lock(unsigned long __attribute__((unused)) *flags) {}
-/*! \brief Release protection against IRQ context */
+/*! Release protection against IRQ context */
 void sercomm_drv_unlock(unsigned long __attribute__((unused)) *flags) {}
 #else
 # define DEFAULT_RX_MSG_SIZE	256
@@ -71,7 +71,7 @@ enum rx_state {
 	RX_ST_ESCAPE,
 };
 
-/*! \brief Initialize an Osmocom sercomm instance
+/*! Initialize an Osmocom sercomm instance
  *  \param sercomm Caller-allocated sercomm instance to be initialized
  *
  *  This function initializes the sercomm instance, including the
@@ -92,7 +92,7 @@ void osmo_sercomm_init(struct osmo_sercomm_inst *sercomm)
 	osmo_sercomm_register_rx_cb(sercomm, SC_DLCI_ECHO, &osmo_sercomm_sendmsg);
 }
 
-/*! \brief Determine if a given Osmocom sercomm instance has been initialized
+/*! Determine if a given Osmocom sercomm instance has been initialized
  *  \param[in] sercomm Osmocom sercomm instance to be checked
  *  \returns 1 in case \a sercomm was previously initialized; 0 otherwise */
 int osmo_sercomm_initialized(struct osmo_sercomm_inst *sercomm)
@@ -100,7 +100,7 @@ int osmo_sercomm_initialized(struct osmo_sercomm_inst *sercomm)
 	return sercomm->initialized;
 }
 
-/*! \brief User interface for transmitting messages for a given DLCI
+/*! User interface for transmitting messages for a given DLCI
  *  \param[in] sercomm Osmocom sercomm instance through which to transmit
  *  \param[in] dlci DLCI through whcih to transmit \a msg
  *  \param[in] msg Message buffer to be transmitted via \a dlci on \a *  sercomm
@@ -125,7 +125,7 @@ void osmo_sercomm_sendmsg(struct osmo_sercomm_inst *sercomm, uint8_t dlci, struc
 	sercomm_drv_start_tx(sercomm);
 }
 
-/*! \brief How deep is the Tx queue for a given DLCI?
+/*! How deep is the Tx queue for a given DLCI?
  *  \param[n] sercomm Osmocom sercomm instance on which to operate
  *  \param[in] dlci DLCI whose queue depthy is to be determined
  *  \returns number of elements in the per-DLCI transmit queue */
@@ -141,7 +141,7 @@ unsigned int osmo_sercomm_tx_queue_depth(struct osmo_sercomm_inst *sercomm, uint
 	return num;
 }
 
-/*! \brief wait until everything has been transmitted, then grab the lock and
+/*! wait until everything has been transmitted, then grab the lock and
  *	   change the baud rate as requested
  *  \param[in] sercomm Osmocom sercomm instance
  *  \param[in] bdrt New UART Baud Rate
@@ -178,7 +178,7 @@ int osmo_sercomm_change_speed(struct osmo_sercomm_inst *sercomm, uint32_t bdrt)
 	return -1;
 }
 
-/*! \brief fetch one octet of to-be-transmitted serial data
+/*! fetch one octet of to-be-transmitted serial data
  *  \param[in] sercomm Sercomm Instance from which to fetch pending data
  *  \param[out] ch pointer to caller-allocaed output memory
  *  \returns 1 in case of succss; 0 if no data available; negative on error */
@@ -243,7 +243,7 @@ int osmo_sercomm_drv_pull(struct osmo_sercomm_inst *sercomm, uint8_t *ch)
 	return 1;
 }
 
-/*! \brief Register a handler for a given DLCI
+/*! Register a handler for a given DLCI
  *  \param sercomm Sercomm Instance in which caller wishes to register
  *  \param[in] dlci Data Ling Connection Identifier to register
  *  \param[in] cb Callback function for \a dlci
@@ -271,7 +271,7 @@ static void dispatch_rx_msg(struct osmo_sercomm_inst *sercomm, uint8_t dlci, str
 	sercomm->rx.dlci_handler[dlci](sercomm, dlci, msg);
 }
 
-/*! \brief the driver has received one byte, pass it into sercomm layer
+/*! the driver has received one byte, pass it into sercomm layer
  *  \param[in] sercomm Sercomm Instance for which a byte was received
  *  \param[in] ch byte that was received from line for said instance
  *  \returns 1 on success; 0 on unrecognized char; negative on error */

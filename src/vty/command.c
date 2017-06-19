@@ -43,7 +43,7 @@ Boston, MA  02110-1301, USA. */
 
 /*! \addtogroup command
  *  @{
- *  \brief VTY command handling
+ *  VTY command handling
  */
 /*! \file command.c */
 
@@ -88,7 +88,7 @@ struct cmd_node config_node = {
 /* Default motd string. */
 const char *default_motd = "";
 
-/*! \brief print the version (and optionally copyright) information
+/*! print the version (and optionally copyright) information
  *
  * This is called from main when a daemon is invoked with -v or --version. */
 void print_version(int print_copyright)
@@ -123,7 +123,7 @@ char *argv_concat(const char **argv, int argc, int shift)
 	return str;
 }
 
-/*! \brief Install top node of command vector. */
+/*! Install top node of command vector. */
 void install_node(struct cmd_node *node, int (*func) (struct vty *))
 {
 	vector_set_index(cmdvec, node->node, node);
@@ -160,7 +160,7 @@ static int is_config_child(struct vty *vty)
 		return vty->node > CONFIG_NODE;
 }
 
-/*! \brief Sort each node's command element according to command string. */
+/*! Sort each node's command element according to command string. */
 void sort_node(void)
 {
 	unsigned int i, j;
@@ -240,7 +240,7 @@ vector cmd_make_strvec(const char *string)
 	}
 }
 
-/*! \brief Free allocated string vector. */
+/*! Free allocated string vector. */
 void cmd_free_strvec(vector v)
 {
 	unsigned int i;
@@ -256,7 +256,7 @@ void cmd_free_strvec(vector v)
 	vector_free(v);
 }
 
-/*! \brief Fetch next description.  Used in \ref cmd_make_descvec(). */
+/*! Fetch next description.  Used in \ref cmd_make_descvec(). */
 static char *cmd_desc_str(const char **string)
 {
 	const char *cp, *start;
@@ -291,7 +291,7 @@ static char *cmd_desc_str(const char **string)
 	return token;
 }
 
-/*! \brief New string vector. */
+/*! New string vector. */
 static vector cmd_make_descvec(const char *string, const char *descstr)
 {
 	int multiple = 0;
@@ -394,7 +394,7 @@ static int cmd_cmdsize(vector strvec)
 	return size;
 }
 
-/*! \brief Return prompt character of specified node. */
+/*! Return prompt character of specified node. */
 const char *cmd_prompt(enum node_type node)
 {
 	struct cmd_node *cnode;
@@ -404,7 +404,7 @@ const char *cmd_prompt(enum node_type node)
 }
 
 /*!
- * \brief escape all special asciidoc symbols
+ * escape all special asciidoc symbols
  * \param unsafe string
  * \return a new talloc char *
  */
@@ -595,7 +595,7 @@ static int vty_dump_nodes(struct vty *vty)
 	return 0;
 }
 
-/* \brief Check if a command with given string exists at given node */
+/* Check if a command with given string exists at given node */
 static int check_element_exists(struct cmd_node *cnode, const char *cmdstring)
 {
 	int i;
@@ -611,7 +611,7 @@ static int check_element_exists(struct cmd_node *cnode, const char *cmdstring)
 	return 0;
 }
 
-/*! \brief Install a command into a node
+/*! Install a command into a node
  *  \param[in] ntype Node Type
  *  \param[cmd] element to be installed
  */
@@ -3406,7 +3406,7 @@ void vty_install_default(int node)
 }
 
 /**
- * \brief Write the current running config to a given file
+ * Write the current running config to a given file
  * \param[in] vty the vty of the code
  * \param[in] filename where to store the file
  * \return 0 in case of success.
@@ -3426,7 +3426,7 @@ int osmo_vty_write_config_file(const char *filename)
 }
 
 /**
- * \brief Save the current state to the config file
+ * Save the current state to the config file
  * \return 0 in case of success.
  *
  * If the filename already exists create a filename.sav

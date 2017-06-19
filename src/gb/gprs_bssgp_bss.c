@@ -41,7 +41,7 @@ uint8_t *bssgp_msgb_tlli_put(struct msgb *msg, uint32_t tlli)
 	return msgb_tvlv_put(msg, BSSGP_IE_TLLI, 4, (uint8_t *) &_tlli);
 }
 
-/*! \brief GMM-SUSPEND.req (Chapter 10.3.6) */
+/*! GMM-SUSPEND.req (Chapter 10.3.6) */
 int bssgp_tx_suspend(uint16_t nsei, uint32_t tlli,
 		     const struct gprs_ra_id *ra_id)
 {
@@ -64,7 +64,7 @@ int bssgp_tx_suspend(uint16_t nsei, uint32_t tlli,
 	return gprs_ns_sendmsg(bssgp_nsi, msg);
 }
 
-/*! \brief GMM-RESUME.req (Chapter 10.3.9) */
+/*! GMM-RESUME.req (Chapter 10.3.9) */
 int bssgp_tx_resume(uint16_t nsei, uint32_t tlli,
 		    const struct gprs_ra_id *ra_id, uint8_t suspend_ref)
 {
@@ -89,7 +89,7 @@ int bssgp_tx_resume(uint16_t nsei, uint32_t tlli,
 	return gprs_ns_sendmsg(bssgp_nsi, msg);
 }
 
-/*! \brief Transmit RA-CAPABILITY-UPDATE (10.3.3) */
+/*! Transmit RA-CAPABILITY-UPDATE (10.3.3) */
 int bssgp_tx_ra_capa_upd(struct bssgp_bvc_ctx *bctx, uint32_t tlli, uint8_t tag)
 {
 	struct msgb *msg = bssgp_msgb_alloc();
@@ -139,7 +139,7 @@ static int common_tx_radio_status2(struct msgb *msg, uint8_t cause)
 	return gprs_ns_sendmsg(bssgp_nsi, msg);
 }
 
-/*! \brief Transmit RADIO-STATUS for TLLI (10.3.5) */
+/*! Transmit RADIO-STATUS for TLLI (10.3.5) */
 int bssgp_tx_radio_status_tlli(struct bssgp_bvc_ctx *bctx, uint8_t cause,
 				uint32_t tlli)
 {
@@ -153,7 +153,7 @@ int bssgp_tx_radio_status_tlli(struct bssgp_bvc_ctx *bctx, uint8_t cause,
 	return common_tx_radio_status2(msg, cause);
 }
 
-/*! \brief Transmit RADIO-STATUS for TMSI (10.3.5) */
+/*! Transmit RADIO-STATUS for TMSI (10.3.5) */
 int bssgp_tx_radio_status_tmsi(struct bssgp_bvc_ctx *bctx, uint8_t cause,
 				uint32_t tmsi)
 {
@@ -168,7 +168,7 @@ int bssgp_tx_radio_status_tmsi(struct bssgp_bvc_ctx *bctx, uint8_t cause,
 	return common_tx_radio_status2(msg, cause);
 }
 
-/*! \brief Transmit RADIO-STATUS for IMSI (10.3.5) */
+/*! Transmit RADIO-STATUS for IMSI (10.3.5) */
 int bssgp_tx_radio_status_imsi(struct bssgp_bvc_ctx *bctx, uint8_t cause,
 				const char *imsi)
 {
@@ -187,7 +187,7 @@ int bssgp_tx_radio_status_imsi(struct bssgp_bvc_ctx *bctx, uint8_t cause,
 	return common_tx_radio_status2(msg, cause);
 }
 
-/*! \brief Transmit FLUSH-LL-ACK (Chapter 10.4.2) */
+/*! Transmit FLUSH-LL-ACK (Chapter 10.4.2) */
 int bssgp_tx_flush_ll_ack(struct bssgp_bvc_ctx *bctx, uint32_t tlli,
 			   uint8_t action, uint16_t bvci_new,
 			   uint32_t num_octets)
@@ -211,7 +211,7 @@ int bssgp_tx_flush_ll_ack(struct bssgp_bvc_ctx *bctx, uint32_t tlli,
 	return gprs_ns_sendmsg(bssgp_nsi, msg);
 }
 
-/*! \brief Transmit LLC-DISCARDED (Chapter 10.4.3) */
+/*! Transmit LLC-DISCARDED (Chapter 10.4.3) */
 int bssgp_tx_llc_discarded(struct bssgp_bvc_ctx *bctx, uint32_t tlli,
 			   uint8_t num_frames, uint32_t num_octets)
 {
@@ -237,7 +237,7 @@ int bssgp_tx_llc_discarded(struct bssgp_bvc_ctx *bctx, uint32_t tlli,
 	return gprs_ns_sendmsg(bssgp_nsi, msg);
 }
 
-/*! \brief Transmit a BVC-BLOCK message (Chapter 10.4.8) */
+/*! Transmit a BVC-BLOCK message (Chapter 10.4.8) */
 int bssgp_tx_bvc_block(struct bssgp_bvc_ctx *bctx, uint8_t cause)
 {
 	struct msgb *msg = bssgp_msgb_alloc();
@@ -258,7 +258,7 @@ int bssgp_tx_bvc_block(struct bssgp_bvc_ctx *bctx, uint8_t cause)
 	return gprs_ns_sendmsg(bssgp_nsi, msg);
 }
 
-/*! \brief Transmit a BVC-UNBLOCK message (Chapter 10.4.10) */
+/*! Transmit a BVC-UNBLOCK message (Chapter 10.4.10) */
 int bssgp_tx_bvc_unblock(struct bssgp_bvc_ctx *bctx)
 {
 	struct msgb *msg = bssgp_msgb_alloc();
@@ -277,7 +277,7 @@ int bssgp_tx_bvc_unblock(struct bssgp_bvc_ctx *bctx)
 	return gprs_ns_sendmsg(bssgp_nsi, msg);
 }
 
-/*! \brief Transmit a BVC-RESET message (Chapter 10.4.12) */
+/*! Transmit a BVC-RESET message (Chapter 10.4.12) */
 int bssgp_tx_bvc_reset(struct bssgp_bvc_ctx *bctx, uint16_t bvci, uint8_t cause)
 {
 	struct msgb *msg = bssgp_msgb_alloc();
@@ -304,7 +304,7 @@ int bssgp_tx_bvc_reset(struct bssgp_bvc_ctx *bctx, uint16_t bvci, uint8_t cause)
 	return gprs_ns_sendmsg(bssgp_nsi, msg);
 }
 
-/*! \brief Transmit a FLOW_CONTROL-BVC (Chapter 10.4.4)
+/*! Transmit a FLOW_CONTROL-BVC (Chapter 10.4.4)
  *  \param[in] bctx BVC Context
  *  \param[in] tag Additional tag to identify acknowledge
  *  \param[in] bucket_size Maximum bucket size in octets
@@ -376,7 +376,7 @@ int bssgp_tx_fc_bvc(struct bssgp_bvc_ctx *bctx, uint8_t tag,
 	return gprs_ns_sendmsg(bssgp_nsi, msg);
 }
 
-/*! \brief Transmit a FLOW_CONTROL-MS (Chapter 10.4.6)
+/*! Transmit a FLOW_CONTROL-MS (Chapter 10.4.6)
  *  \param[in] bctx BVC Context
  *  \param[in] tlli TLLI to identify MS
  *  \param[in] tag Additional tag to identify acknowledge
@@ -421,7 +421,7 @@ int bssgp_tx_fc_ms(struct bssgp_bvc_ctx *bctx, uint32_t tlli, uint8_t tag,
 	return gprs_ns_sendmsg(bssgp_nsi, msg);
 }
 
-/*! \brief RL-UL-UNITDATA.req (Chapter 10.2.2)
+/*! RL-UL-UNITDATA.req (Chapter 10.2.2)
  *  \param[in] bctx BVC Context
  *  \param[in] tlli TLLI to identify MS
  *  \param[in] qos_profile Pointer to three octests of QoS profile

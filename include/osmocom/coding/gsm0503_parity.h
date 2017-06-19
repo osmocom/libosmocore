@@ -7,7 +7,7 @@
  */
 
 /*! \file gsm0503_parity.h
- *  \brief GSM TS 05.03 parity
+ *  GSM TS 05.03 parity
  */
 
 const struct osmo_crc64gen_code gsm0503_fire_crc40;

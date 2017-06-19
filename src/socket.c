@@ -23,7 +23,7 @@
 
 /*! \addtogroup socket
  *  @{
- *  \brief Osmocom socket convenience functions
+ *  Osmocom socket convenience functions
  */
 
 /*! \file socket.c */
@@ -104,7 +104,7 @@ static int socket_helper(const struct addrinfo *rp, unsigned int flags)
 }
 
 
-/*! \brief Initialize a socket (including bind and/or connect)
+/*! Initialize a socket (including bind and/or connect)
  *  \param[in] family Address Family like AF_INET, AF_INET6, AF_UNSPEC
  *  \param[in] type Socket type like SOCK_DGRAM, SOCK_STREAM
  *  \param[in] proto Protocol like IPPROTO_TCP, IPPROTO_UDP
@@ -232,7 +232,7 @@ int osmo_sock_init2(uint16_t family, uint16_t type, uint8_t proto,
 }
 
 
-/*! \brief Initialize a socket (including bind/connect)
+/*! Initialize a socket (including bind/connect)
  *  \param[in] family Address Family like AF_INET, AF_INET6, AF_UNSPEC
  *  \param[in] type Socket type like SOCK_DGRAM, SOCK_STREAM
  *  \param[in] proto Protocol like IPPROTO_TCP, IPPROTO_UDP
@@ -317,7 +317,7 @@ int osmo_sock_init(uint16_t family, uint16_t type, uint8_t proto,
 	return sfd;
 }
 
-/*! \brief fill \ref osmo_fd for a give sfd
+/*! fill \ref osmo_fd for a give sfd
  *  \param[out] ofd file descriptor (will be filled in)
  *  \param[in] sfd socket file descriptor
  *  \returns socket fd on success; negative on error
@@ -343,7 +343,7 @@ static inline int osmo_fd_init_ofd(struct osmo_fd *ofd, int sfd)
 	return sfd;
 }
 
-/*! \brief Initialize a socket and fill \ref osmo_fd
+/*! Initialize a socket and fill \ref osmo_fd
  *  \param[out] ofd file descriptor (will be filled in)
  *  \param[in] family Address Family like AF_INET, AF_INET6, AF_UNSPEC
  *  \param[in] type Socket type like SOCK_DGRAM, SOCK_STREAM
@@ -362,7 +362,7 @@ int osmo_sock_init_ofd(struct osmo_fd *ofd, int family, int type, int proto,
 	return osmo_fd_init_ofd(ofd, osmo_sock_init(family, type, proto, host, port, flags));
 }
 
-/*! \brief Initialize a socket and fill \ref osmo_fd
+/*! Initialize a socket and fill \ref osmo_fd
  *  \param[out] ofd file descriptor (will be filled in)
  *  \param[in] family Address Family like AF_INET, AF_INET6, AF_UNSPEC
  *  \param[in] type Socket type like SOCK_DGRAM, SOCK_STREAM
@@ -385,7 +385,7 @@ int osmo_sock_init2_ofd(struct osmo_fd *ofd, int family, int type, int proto,
 					local_port, remote_host, remote_port, flags));
 }
 
-/*! \brief Initialize a socket and fill \ref sockaddr
+/*! Initialize a socket and fill \ref sockaddr
  *  \param[out] ss socket address (will be filled in)
  *  \param[in] type Socket type like SOCK_DGRAM, SOCK_STREAM
  *  \param[in] proto Protocol like IPPROTO_TCP, IPPROTO_UDP
@@ -459,7 +459,7 @@ static int sockaddr_equal(const struct sockaddr *a,
 	return 0;
 }
 
-/*! \brief Determine if the given address is a local address
+/*! Determine if the given address is a local address
  *  \param[in] addr Socket Address
  *  \param[in] addrlen Length of socket address in bytes
  *  \returns 1 if address is local, 0 otherwise.
@@ -484,7 +484,7 @@ int osmo_sockaddr_is_local(struct sockaddr *addr, unsigned int addrlen)
 	return 0;
 }
 
-/*! \brief Initialize a unix domain socket (including bind/connect)
+/*! Initialize a unix domain socket (including bind/connect)
  *  \param[in] type Socket type like SOCK_DGRAM, SOCK_STREAM
  *  \param[in] proto Protocol like IPPROTO_TCP, IPPROTO_UDP
  *  \param[in] socket_path path to identify the socket
@@ -557,7 +557,7 @@ err:
 	return -1;
 }
 
-/*! \brief Initialize a unix domain socket and fill \ref osmo_fd
+/*! Initialize a unix domain socket and fill \ref osmo_fd
  *  \param[out] ofd file descriptor (will be filled in)
  *  \param[in] type Socket type like SOCK_DGRAM, SOCK_STREAM
  *  \param[in] proto Protocol like IPPROTO_TCP, IPPROTO_UDP
@@ -574,7 +574,7 @@ int osmo_sock_unix_init_ofd(struct osmo_fd *ofd, uint16_t type, uint8_t proto,
 	return osmo_fd_init_ofd(ofd, osmo_sock_unix_init(type, proto, socket_path, flags));
 }
 
-/*! \brief Get address/port information on soocket in dyn-alloc string
+/*! Get address/port information on soocket in dyn-alloc string
  *  \param[in] ctx talloc context from which to allocate string buffer
  *  \param[in] fd file descriptor of socket
  *  \returns string identifying the connection of this socket

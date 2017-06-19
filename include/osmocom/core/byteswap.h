@@ -2,7 +2,7 @@
 #include <stdint.h>
 #include <osmocom/core/endian.h>
 
-/*! \brief byte-swap a 32bit word
+/*! byte-swap a 32bit word
  *  \param[in] in to be swapped 32bit word
  *  \returns byte-swapped 32bit word */
 static inline uint32_t osmo_swab32(uint32_t in)
@@ -17,7 +17,7 @@ static inline uint32_t osmo_swab32(uint32_t in)
 	return out;
 }
 
-/*! \brief byte-swap a 16bit word
+/*! byte-swap a 16bit word
  *  \param[in] in to be swapped 16bit word
  *  \returns byte-swapped 16bit word */
 static inline uint16_t osmo_swab16(uint16_t in)

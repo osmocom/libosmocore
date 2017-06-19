@@ -27,7 +27,7 @@
  */
 
 /*! \file bitcomp.h
- *  \brief Osmocom bit compression routines
+ *  Osmocom bit compression routines
  */
 
 #include <stdint.h>

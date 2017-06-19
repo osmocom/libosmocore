@@ -29,7 +29,7 @@
  */
 
 /*! \file bitvec.h
- *  \brief Osmocom bit vector abstraction
+ *  Osmocom bit vector abstraction
  *
  *  These functions assume a MSB (most significant bit) first layout of the
  *  bits, so that for instance the 5 bit number abcde (a is MSB) can be
@@ -44,22 +44,22 @@
 #include <osmocom/core/talloc.h>
 #include <stdbool.h>
 
-/*! \brief A single GSM bit
+/*! A single GSM bit
  *
  * In GSM mac blocks, every bit can be 0 or 1, or L or H.  L/H are
  * defined relative to the 0x2b padding pattern */
 enum bit_value {
-	ZERO	= 0, 	/*!< \brief A zero (0) bit */
-	ONE	= 1,	/*!< \brief A one (1) bit */
-	L	= 2,	/*!< \brief A CSN.1 "L" bit */
-	H	= 3,	/*!< \brief A CSN.1 "H" bit */
+	ZERO	= 0, 	/*!< A zero (0) bit */
+	ONE	= 1,	/*!< A one (1) bit */
+	L	= 2,	/*!< A CSN.1 "L" bit */
+	H	= 3,	/*!< A CSN.1 "H" bit */
 };
 
-/*! \brief structure describing a bit vector */
+/*! structure describing a bit vector */
 struct bitvec {
-	unsigned int cur_bit;	/*!< \brief cursor to the next unused bit */
-	unsigned int data_len;	/*!< \brief length of data array in bytes */
-	uint8_t *data;		/*!< \brief pointer to data array */
+	unsigned int cur_bit;	/*!< cursor to the next unused bit */
+	unsigned int data_len;	/*!< length of data array in bytes */
+	uint8_t *data;		/*!< pointer to data array */
 };
 
 enum bit_value bitvec_get_bit_pos(const struct bitvec *bv, unsigned int bitnr);

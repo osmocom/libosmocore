@@ -26,7 +26,7 @@
 
 /*! \addtogroup timer
  *  @{
- *  \brief Osmocom timer abstraction; modelled after linux kernel timers
+ *  Osmocom timer abstraction; modelled after linux kernel timers
  */
 
 /*! \file timer.c */
@@ -65,7 +65,7 @@ static void __add_timer(struct osmo_timer_list *timer)
         rb_insert_color(&timer->node, &timer_root);
 }
 
-/*! \brief set up timer callback and data
+/*! set up timer callback and data
  *  \param[in] timer the timer that should be added
  *  \param[in] callback function to be called when timer expires
  *  \param[in] pointer to data that passed to the callback function
@@ -77,7 +77,7 @@ void osmo_timer_setup(struct osmo_timer_list *timer, void (*cb)(void *data),
 	timer->data	= data;
 }
 
-/*! \brief add a new timer to the timer management
+/*! add a new timer to the timer management
  *  \param[in] timer the timer that should be added
  */
 void osmo_timer_add(struct osmo_timer_list *timer)
@@ -88,7 +88,7 @@ void osmo_timer_add(struct osmo_timer_list *timer)
 	__add_timer(timer);
 }
 
-/*! \brief schedule a timer at a given future relative time
+/*! schedule a timer at a given future relative time
  *  \param[in] timer the to-be-added timer
  *  \param[in] seconds number of seconds from now
  *  \param[in] microseconds number of microseconds from now
@@ -110,7 +110,7 @@ osmo_timer_schedule(struct osmo_timer_list *timer, int seconds, int microseconds
 	osmo_timer_add(timer);
 }
 
-/*! \brief delete a timer from timer management
+/*! delete a timer from timer management
  *  \param[in] timer the to-be-deleted timer
  *
  * This function can be used to delete a previously added/scheduled
@@ -127,7 +127,7 @@ void osmo_timer_del(struct osmo_timer_list *timer)
 	}
 }
 
-/*! \brief check if given timer is still pending
+/*! check if given timer is still pending
  *  \param[in] timer the to-be-checked timer
  *  \return 1 if pending, 0 otherwise
  *
@@ -139,7 +139,7 @@ int osmo_timer_pending(struct osmo_timer_list *timer)
 	return timer->active;
 }
 
-/*! \brief compute the remaining time of a timer
+/*! compute the remaining time of a timer
  *  \param[in] timer the to-be-checked timer
  *  \param[in] now the current time (NULL if not known)
  *  \param[out] remaining remaining time until timer fires
@@ -167,7 +167,7 @@ int osmo_timer_remaining(const struct osmo_timer_list *timer,
 	return 0;
 }
 
-/*! \brief Determine time between now and the nearest timer
+/*! Determine time between now and the nearest timer
  *  \returns pointer to timeval of nearest timer, NULL if there is none
  *
  * if we have a nearest time return the delta between the current
@@ -198,7 +198,7 @@ static void update_nearest(struct timeval *cand, struct timeval *current)
 	}
 }
 
-/*! \brief Find the nearest time and update nearest_p */
+/*! Find the nearest time and update nearest_p */
 void osmo_timers_prepare(void)
 {
 	struct rb_node *node;
@@ -216,7 +216,7 @@ void osmo_timers_prepare(void)
 	}
 }
 
-/*! \brief fire all timers... and remove them */
+/*! fire all timers... and remove them */
 int osmo_timers_update(void)
 {
 	struct timeval current_time;
@@ -261,7 +261,7 @@ restart:
 	return work;
 }
 
-/*! \brief Check how many timers we have in the system
+/*! Check how many timers we have in the system
  *  \returns number of \ref osmo_timer_list registered */
 int osmo_timers_check(void)
 {

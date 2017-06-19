@@ -24,7 +24,7 @@
  */
 
 /*! \file loggingrb.c
- *  \brief libosmocore logging backend for a ring-buffer of last log messages
+ *  libosmocore logging backend for a ring-buffer of last log messages
  */
 
 #include <osmocom/core/strrb.h>
@@ -37,7 +37,7 @@ static void _rb_output(struct log_target *target,
 	osmo_strrb_add(target->tgt_rb.rb, log);
 }
 
-/*! \brief Return the number of log strings in the osmo_strrb-backed target.
+/*! Return the number of log strings in the osmo_strrb-backed target.
  *  \param[in] target The target to search.
  *
  *  \return The number of log strings in the osmo_strrb-backed target.
@@ -47,7 +47,7 @@ size_t log_target_rb_used_size(struct log_target const *target)
 	return osmo_strrb_elements(target->tgt_rb.rb);
 }
 
-/*! \brief Return the capacity of the osmo_strrb-backed target.
+/*! Return the capacity of the osmo_strrb-backed target.
  *  \param[in] target The target to search.
  *
  * Note that this is the capacity (aka max number of messages).
@@ -60,7 +60,7 @@ size_t log_target_rb_avail_size(struct log_target const *target)
 	return rb->size - 1;
 }
 
-/*! \brief Return the nth log entry in a target.
+/*! Return the nth log entry in a target.
  *  \param[in] target The target to search.
  *  \param[in] logindex The index of the log entry/error message.
  *
@@ -71,7 +71,7 @@ const char *log_target_rb_get(struct log_target const *target, size_t logindex)
 	return osmo_strrb_get_nth(target->tgt_rb.rb, logindex);
 }
 
-/*! \brief Create a new logging target for ringbuffer-backed logging.
+/*! Create a new logging target for ringbuffer-backed logging.
  *  \param[in] size The capacity (number of messages) of the logging target.
  *  \returns A log target in case of success, NULL in case of error.
  */

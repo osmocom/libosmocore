@@ -170,8 +170,7 @@ class ConvolutionalCode(object):
 
 	def print_description(self, fi, brief = False):
 		if brief is True:
-			fi.write("/*! \\brief ")
-			fi.write("structure describing %s\n"
+			fi.write("/*! structure describing %s.\n"
 				% self.description[0])
 			for line in self.description[1:]:
 				fi.write(" * %s\n" % line)

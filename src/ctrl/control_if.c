@@ -126,7 +126,7 @@ int ctrl_cmd_send(struct osmo_wqueue *queue, struct ctrl_cmd *cmd)
 	return ret;
 }
 
-/*! \brief Send TRAP over given Control Interface
+/*! Send TRAP over given Control Interface
  *  \param[in] ctrl Control Interface over which TRAP will be sent
  *  \param[in] name Name of the TRAP variable
  *  \param[in] value Value of the TRAP variable
@@ -401,7 +401,7 @@ static int control_write_cb(struct osmo_fd *bfd, struct msgb *msg)
 	return rc;
 }
 
-/*! \brief Allocate CTRL connection
+/*! Allocate CTRL connection
  *  \param[in] ctx Context from which talloc should allocate it
  *  \param[in] data caller's private data parameter which should assigned to
                write queue's file descriptor data parameter.
@@ -729,7 +729,7 @@ err:
 	return -1;
 }
 
-/*! \brief Allocate a CTRL interface handle
+/*! Allocate a CTRL interface handle
  *  \param[in] ctx Tallo callocation context to be used
  *  \param[in] data Pointer which will be made available to each
                set_..() get_..() verify_..() control command function
@@ -754,7 +754,7 @@ struct ctrl_handle *ctrl_handle_alloc(void *ctx, void *data, ctrl_cmd_lookup loo
 	return ctrl;
 }
 
-/*! \brief Setup CTRL interface on a given address
+/*! Setup CTRL interface on a given address
  *  \param[in] data Pointer which will be made available to each
                set_..() get_..() verify_..() control command function
  *  \param[in] bind_addr Address on which CTRL socket shall listen
@@ -788,7 +788,7 @@ struct ctrl_handle *ctrl_interface_setup_dynip(void *data,
 	return ctrl;
 }
 
-/*! \brief Install a lookup helper function for control nodes
+/*! Install a lookup helper function for control nodes
  *  This function is used by e.g. library code to install lookup helpers
  *  for additional nodes in the control interface.
  *  \param[in] lookup The lookup helper function
@@ -813,7 +813,7 @@ int ctrl_lookup_register(ctrl_cmd_lookup lookup)
 	return 0;
 }
 
-/*! \brief Helper for "local execution" of a CTRL command from a string
+/*! Helper for "local execution" of a CTRL command from a string
  *  The function will parse + execute the given control command string
  *  and return a corresponding ctrl_cmd.  Caller is responsible to
  *  talloc_free() the return value.

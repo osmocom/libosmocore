@@ -10,14 +10,14 @@
 
 #include <osmocom/core/linuxlist.h>
 
-/*! \brief Authentication Type (GSM/UMTS) */
+/*! Authentication Type (GSM/UMTS) */
 enum osmo_sub_auth_type {
 	OSMO_AUTH_TYPE_NONE	= 0x00,
 	OSMO_AUTH_TYPE_GSM	= 0x01,
 	OSMO_AUTH_TYPE_UMTS	= 0x02,
 };
 
-/*! \brief Authentication Algorithm */
+/*! Authentication Algorithm */
 enum osmo_auth_algo {
 	OSMO_AUTH_ALG_NONE,
 	OSMO_AUTH_ALG_COMP128v1,
@@ -28,7 +28,7 @@ enum osmo_auth_algo {
 	_OSMO_AUTH_ALG_NUM,
 };
 
-/*! \brief permanent (secret) subscriber auth data */
+/*! permanent (secret) subscriber auth data */
 struct osmo_sub_auth_data {
 	enum osmo_sub_auth_type type;
 	enum osmo_auth_algo algo;
@@ -61,19 +61,19 @@ struct osmo_auth_vector {
 	uint32_t auth_types;	/*!< bitmask of OSMO_AUTH_TYPE_* */
 };
 
-/* \brief An implementation of an authentication algorithm */
+/* An implementation of an authentication algorithm */
 struct osmo_auth_impl {
 	struct llist_head list;
 	enum osmo_auth_algo algo; /*!< algorithm we implement */
 	const char *name;	/*!< name of the implementation */
 	unsigned int priority;	/*!< priority value (resp. othe implementations */
 
-	/*! \brief callback for generate authentication vectors */
+	/*! callback for generate authentication vectors */
 	int (*gen_vec)(struct osmo_auth_vector *vec,
 			struct osmo_sub_auth_data *aud,
 			const uint8_t *_rand);
 
-	/* \brief callback for generationg auth vectors + re-sync */
+	/* callback for generationg auth vectors + re-sync */
 	int (*gen_vec_auts)(struct osmo_auth_vector *vec,
 			    struct osmo_sub_auth_data *aud,
 			    const uint8_t *auts, const uint8_t *rand_auts,

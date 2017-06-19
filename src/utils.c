@@ -33,14 +33,14 @@
 
 /*! \addtogroup utils
  * @{
- * \brief various utility routines
+ * various utility routines
  */
 
 /*! \file utils.c */
 
 static char namebuf[255];
 
-/*! \brief get human-readable string for given value
+/*! get human-readable string for given value
  *  \param[in] vs Array of value_string tuples
  *  \param[in] val Value to be converted
  *  \returns pointer to human-readable string
@@ -60,7 +60,7 @@ const char *get_value_string(const struct value_string *vs, uint32_t val)
 	return namebuf;
 }
 
-/*! \brief get human-readable string or NULL for given value
+/*! get human-readable string or NULL for given value
  *  \param[in] vs Array of value_string tuples
  *  \param[in] val Value to be converted
  *  \returns pointer to human-readable string or NULL if val is not found
@@ -80,7 +80,7 @@ const char *get_value_string_or_null(const struct value_string *vs,
 	return NULL;
 }
 
-/*! \brief get numeric value for given human-readable string
+/*! get numeric value for given human-readable string
  *  \param[in] vs Array of value_string tuples
  *  \param[in] str human-readable string
  *  \returns numeric value (>0) or negative numer in case of error
@@ -98,7 +98,7 @@ int get_string_value(const struct value_string *vs, const char *str)
 	return -EINVAL;
 }
 
-/*! \brief Convert BCD-encoded digit into printable character
+/*! Convert BCD-encoded digit into printable character
  *  \param[in] bcd A single BCD-encoded digit
  *  \returns single printable character
  */
@@ -110,7 +110,7 @@ char osmo_bcd2char(uint8_t bcd)
 		return 'A' + (bcd - 0xa);
 }
 
-/*! \brief Convert number in ASCII to BCD value
+/*! Convert number in ASCII to BCD value
  *  \param[in] c ASCII character
  *  \returns BCD encoded value of character
  */
@@ -119,7 +119,7 @@ uint8_t osmo_char2bcd(char c)
 	return c - 0x30;
 }
 
-/*! \brief Parse a string containing hexadecimal digits
+/*! Parse a string containing hexadecimal digits
  *  \param[in] str string containing ASCII encoded hexadecimal digits
  *  \param[out] b output buffer
  *  \param[in] max_len maximum space in output buffer
@@ -194,7 +194,7 @@ static char *_osmo_hexdump(const unsigned char *buf, int len, char *delim)
 	return hexd_buff;
 }
 
-/*! \brief Convert a sequence of unpacked bits to ASCII string
+/*! Convert a sequence of unpacked bits to ASCII string
  * \param[in] bits A sequence of unpacked bits
  * \param[in] len Length of bits
  */
@@ -228,7 +228,7 @@ char *osmo_ubit_dump(const uint8_t *bits, unsigned int len)
 	return hexd_buff;
 }
 
-/*! \brief Convert binary sequence to hexadecimal ASCII string
+/*! Convert binary sequence to hexadecimal ASCII string
  *  \param[in] buf pointer to sequence of bytes
  *  \param[in] len length of buf in number of bytes
  *  \returns pointer to zero-terminated string
@@ -241,7 +241,7 @@ char *osmo_hexdump(const unsigned char *buf, int len)
 	return _osmo_hexdump(buf, len, " ");
 }
 
-/*! \brief Convert binary sequence to hexadecimal ASCII string
+/*! Convert binary sequence to hexadecimal ASCII string
  *  \param[in] buf pointer to sequence of bytes
  *  \param[in] len length of buf in number of bytes
  *  \returns pointer to zero-terminated string
@@ -265,7 +265,7 @@ char *osmo_osmo_hexdump_nospc(const unsigned char *buf, int len)
 #include "../config.h"
 #ifdef HAVE_CTYPE_H
 #include <ctype.h>
-/*! \brief Convert an entire string to lower case
+/*! Convert an entire string to lower case
  *  \param[out] out output string, caller-allocated
  *  \param[in] in input string
  */
@@ -278,7 +278,7 @@ void osmo_str2lower(char *out, const char *in)
 	out[strlen(in)] = '\0';
 }
 
-/*! \brief Convert an entire string to upper case
+/*! Convert an entire string to upper case
  *  \param[out] out output string, caller-allocated
  *  \param[in] in input string
  */
@@ -292,7 +292,7 @@ void osmo_str2upper(char *out, const char *in)
 }
 #endif /* HAVE_CTYPE_H */
 
-/*! \brief Wishful thinking to generate a constant time compare
+/*! Wishful thinking to generate a constant time compare
  *  \param[in] exp Expected data
  *  \param[in] rel Comparison value
  *  \param[in] count Number of bytes to compare
@@ -313,7 +313,7 @@ int osmo_constant_time_cmp(const uint8_t *exp, const uint8_t *rel, const int cou
 	return x? 1 : 0;
 }
 
-/*! \brief Generic retrieval of 1..8 bytes as big-endian uint64_t
+/*! Generic retrieval of 1..8 bytes as big-endian uint64_t
  *  \param[in] data Input data as byte-array
  *  \param[in] data_len Length of \a data in octets
  *  \returns uint64_t of \a data interpreted as big-endian
@@ -337,7 +337,7 @@ uint64_t osmo_decode_big_endian(const uint8_t *data, size_t data_len)
 	return value;
 }
 
-/*! \brief Generic big-endian encoding of big endian number up to 64bit
+/*! Generic big-endian encoding of big endian number up to 64bit
  *  \param[in] value unsigned integer value to be stored
  *  \param[in] data_len number of octets 
  *  \returns static buffer containing big-endian stored value
@@ -353,7 +353,7 @@ uint8_t *osmo_encode_big_endian(uint64_t value, size_t data_len)
 	return buf;
 }
 
-/*! \brief Copy a C-string into a sized buffer
+/*! Copy a C-string into a sized buffer
  *  \param[in] src source string
  *  \param[out] dst destination string
  *  \param[in] siz size of the \a dst buffer

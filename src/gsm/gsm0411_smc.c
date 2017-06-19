@@ -62,7 +62,7 @@
 
 /*! \addtogroup sms
  *  @{
- *  \brief Point-to-Point (PP) Short Message Service (SMS) as per TS 04.11
+ *  Point-to-Point (PP) Short Message Service (SMS) as per TS 04.11
  */
 
 static void cp_timer_expired(void *data);

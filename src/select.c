@@ -36,7 +36,7 @@
 
 /*! \addtogroup select
  *  @{
- *  \brief select() loop abstraction
+ *  select() loop abstraction
  */
 
 /*! \file select.c */
@@ -46,7 +46,7 @@ static LLIST_HEAD(osmo_fds);
 static int unregistered_count;
 
 
-/*! \brief Check if a file descriptor is already registered
+/*! Check if a file descriptor is already registered
  *  \param[in] fd osmocom file descriptor to be checked
  *  \returns true if registered; otherwise false
  */
@@ -62,7 +62,7 @@ bool osmo_fd_is_registered(struct osmo_fd *fd)
 	return false;
 }
 
-/*! \brief Register a new file descriptor with select loop abstraction
+/*! Register a new file descriptor with select loop abstraction
  *  \param[in] fd osmocom file descriptor to be registered
  *  \returns 0 on success; negative in case of error
  */
@@ -104,7 +104,7 @@ int osmo_fd_register(struct osmo_fd *fd)
 	return 0;
 }
 
-/*! \brief Unregister a file descriptor from select loop abstraction
+/*! Unregister a file descriptor from select loop abstraction
  *  \param[in] fd osmocom file descriptor to be unregistered
  */
 void osmo_fd_unregister(struct osmo_fd *fd)
@@ -116,7 +116,7 @@ void osmo_fd_unregister(struct osmo_fd *fd)
 	llist_del(&fd->list);
 }
 
-/*! \brief Populate the fd_sets and return the highest fd number
+/*! Populate the fd_sets and return the highest fd number
  *  \param[in] _rset The readfds to populate
  *  \param[in] _wset The wrtiefds to populate
  *  \param[in] _eset The errorfds to populate
@@ -187,7 +187,7 @@ restart:
 	return work;
 }
 
-/*! \brief select main loop integration
+/*! select main loop integration
  *  \param[in] polling should we pollonly (1) or block on select (0)
  *  \returns 0 if no fd handled; 1 if fd handled; negative in case of error
  */
@@ -217,7 +217,7 @@ int osmo_select_main(int polling)
 	return osmo_fd_disp_fds(&readset, &writeset, &exceptset);
 }
 
-/*! \brief find an osmo_fd based on the integer fd
+/*! find an osmo_fd based on the integer fd
  *  \param[in] fd file descriptor to use as search key
  *  \returns \ref osmo_fd for \ref fd; NULL in case it doesn't exist */
 struct osmo_fd *osmo_fd_get_by_fd(int fd)
