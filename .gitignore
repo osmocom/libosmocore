@@ -38,6 +38,7 @@ Doxyfile.gsm
 Doxyfile.vty
 Doxyfile.codec
 Doxyfile.coding
+Doxyfile.gb
 
 debian/autoreconf.after
 debian/autoreconf.before
@@ -115,6 +116,7 @@ doc/vty/latex
 doc/vty/html
 doc/vty/doxygen_sqlite3.db
 doc/gsm
+doc/gb
 doc/html.tar
 doc/*.tag
 tags

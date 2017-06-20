@@ -308,4 +308,5 @@ AC_OUTPUT(
 	Doxyfile.vty
 	Doxyfile.codec
 	Doxyfile.coding
+	Doxyfile.gb
 	Makefile)
