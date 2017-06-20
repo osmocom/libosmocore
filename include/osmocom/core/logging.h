@@ -108,7 +108,7 @@ void logp(int subsys, const char *file, int line, int cont, const char *format, 
 #define DLM3UA		-16	/*!< Osmocom M3UA */
 #define OSMO_NUM_DLIB	16	/*!< Number of logging sub-systems in libraries */
 
-/*! Configuration of singgle log category / sub-system */
+/*! Configuration of single log category / sub-system */
 struct log_category {
 	uint8_t loglevel;	/*!< configured log-level */
 	uint8_t enabled;	/*!< is logging enabled? */
