@@ -34,9 +34,8 @@
 /*! \addtogroup utils
  * @{
  * various utility routines
- */
-
-/*! \file utils.c */
+ *
+ * \file utils.c */
 
 static char namebuf[255];
 

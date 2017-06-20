@@ -1,3 +1,5 @@
+/*! \file rxlev_stat.h */
+
 #pragma once
 
 #define NUM_RXLEVS 32

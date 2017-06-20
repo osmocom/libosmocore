@@ -1,6 +1,7 @@
-/* utility routines for keeping conters about events and the event rates */
-
-/* (C) 2015 by Sysmocom s.f.m.c. GmbH
+/*! \file stat_item.c
+ * utility routines for keeping conters about events and the event rates. */
+/*
+ * (C) 2015 by Sysmocom s.f.m.c. GmbH
  * (C) 2009-2010 by Harald Welte <laforge@gnumonks.org>
  *
  * All Rights Reserved
@@ -23,10 +24,7 @@
 
 /*! \addtogroup osmo_stat_item
  *  @{
- */
-
-/*! \file stat_item.c */
-
+ * \file stat_item.c */
 
 #include <stdint.h>
 #include <string.h>

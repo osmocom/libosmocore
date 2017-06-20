@@ -1,5 +1,7 @@
-/* Generic signalling/notification infrastructure */
-/* (C) 2009 by Holger Hans Peter Freyther <zecke@selfish.org>
+/*! \file signal.c
+ * Generic signalling/notification infrastructure. */
+/*
+ * (C) 2009 by Holger Hans Peter Freyther <zecke@selfish.org>
  * All Rights Reserved
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,10 +29,9 @@
 
 /*! \addtogroup signal
  *  @{
- *  Generic signalling/notification infrastructure
- */
-
-/*! \file signal.c */
+ *  Generic signalling/notification infrastructure.
+ *
+ * \file signal.c */
 
 
 void *tall_sigh_ctx;

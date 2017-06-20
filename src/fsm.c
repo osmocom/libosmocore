@@ -1,5 +1,6 @@
-/* Osmocom generic Finite State Machine implementation
- *
+/*! \file fsm.c
+ * Osmocom generic Finite State Machine implementation. */
+/*
  * (C) 2016 by Harald Welte <laforge@gnumonks.org>
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -82,9 +83,8 @@
  *
  *  In order to attach private state to the \ref osmo_fsm_inst, it
  *  offers an opaque priv pointer.
- */
-
-/*! \file fsm.c */
+ *
+ * \file fsm.c */
 
 LLIST_HEAD(osmo_g_fsms);
 static bool fsm_log_addr = true;

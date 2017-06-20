@@ -1,3 +1,5 @@
+/*! \file meas_rep.h */
+
 #pragma once
 
 #include <stdint.h>

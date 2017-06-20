@@ -1,6 +1,7 @@
-/* utility routines for printing common objects in the Osmocom world */
-
-/* (C) 2009-2010 by Harald Welte <laforge@gnumonks.org>
+/*! \file utils.c
+ * Utility routines for printing common objects in the Osmocom world. */
+/*
+ * (C) 2009-2010 by Harald Welte <laforge@gnumonks.org>
  *
  * All Rights Reserved
  *
@@ -35,8 +36,6 @@
 #include <osmocom/core/statistics.h>
 
 #include <osmocom/vty/vty.h>
-
-/* \file utils.c */
 
 /*! \addtogroup rate_ctr
  *  @{

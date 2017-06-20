@@ -1,6 +1,7 @@
-/* GSM LAPDm (TS 04.06) implementation */
-
-/* (C) 2010-2011 by Harald Welte <laforge@gnumonks.org>
+/*! \file lapdm.c
+ * GSM LAPDm (TS 04.06) implementation. */
+/*
+ * (C) 2010-2011 by Harald Welte <laforge@gnumonks.org>
  * (C) 2010-2011 by Andreas Eversberg <jolly@eversberg.eu>
  *
  * All Rights Reserved
@@ -23,10 +24,7 @@
 
 /*! \addtogroup lapdm
  *  @{
- *  GSM LAPDm (TS 04.06) implementation
- */
-
-/*! \file lapdm.c */
+ * \file lapdm.c */
 
 #include <stdio.h>
 #include <stdint.h>

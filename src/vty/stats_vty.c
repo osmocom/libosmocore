@@ -1,5 +1,7 @@
-/* OpenBSC stats helper for the VTY */
-/* (C) 2009-2010 by Harald Welte <laforge@gnumonks.org>
+/*! \file stats_vty.c
+ * OpenBSC stats helper for the VTY. */
+/*
+ * (C) 2009-2010 by Harald Welte <laforge@gnumonks.org>
  * (C) 2009-2014 by Holger Hans Peter Freyther
  * (C) 2015      by Sysmocom s.f.m.c. GmbH
  * All Rights Reserved

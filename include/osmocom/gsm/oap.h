@@ -1,6 +1,7 @@
-/* Osmocom Authentication Protocol message encoder/decoder */
-
-/* (C) 2015-2016 by sysmocom s.f.m.c. GmbH
+/*! \file oap.h
+ * Osmocom Authentication Protocol message encoder/decoder. */
+/*
+ * (C) 2015-2016 by sysmocom s.f.m.c. GmbH
  * All Rights Reserved
  *
  * Author: Neels Hofmeyr

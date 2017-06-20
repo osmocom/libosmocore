@@ -1,5 +1,6 @@
+/*! \file buffer.c
+ * Buffering of output and input. */
 /*
- * Buffering of output and input.
  * Copyright (C) 1998 Kunihiro Ishiguro
  *
  * This file is part of GNU Zebra.

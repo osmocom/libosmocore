@@ -1,3 +1,5 @@
+/*! \file ipaccess.h */
+
 #pragma once
 
 #include <stdint.h>

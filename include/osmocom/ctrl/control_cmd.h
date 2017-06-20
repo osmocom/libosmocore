@@ -1,3 +1,5 @@
+/*! \file control_cmd.h */
+
 #pragma once
 
 #include <osmocom/core/msgb.h>

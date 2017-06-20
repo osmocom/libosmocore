@@ -1,3 +1,5 @@
+/*! \file gprs_ns.h */
+
 #pragma once
 
 #include <stdint.h>

@@ -1,4 +1,5 @@
-/* Utility functions to setup applications */
+/*! \file application.c
+ *  Routines for helping with the osmocom application setup. */
 /*
  * (C) 2010 by Harald Welte <laforge@gnumonks.org>
  * (C) 2011 by Holger Hans Peter Freyther
@@ -19,10 +20,6 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- */
-
-/*! \file application.c
- *  Routines for helping with the osmocom application setup.
  */
 
 /*! \mainpage libosmocore Documentation

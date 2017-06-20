@@ -1,5 +1,3 @@
-/* Serial communications layer, based on HDLC */
-
 /* (C) 2010,2017 by Harald Welte <laforge@gnumonks.org>
  *
  * All Rights Reserved
@@ -22,11 +20,9 @@
 
 /*! \addtogroup sercomm
  *  @{
- *  Serial communications layer, based on HDLC
- */
-
-/*! \file sercomm.c
- */
+ *  Serial communications layer, based on HDLC.
+ *
+ * \file sercomm.c */
 
 #include "config.h"
 

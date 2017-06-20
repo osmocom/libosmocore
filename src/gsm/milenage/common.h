@@ -1,3 +1,4 @@
+/*! \file common.h */
 
 #include <stdint.h>
 #include <stdlib.h>

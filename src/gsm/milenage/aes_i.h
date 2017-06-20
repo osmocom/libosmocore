@@ -1,5 +1,6 @@
+/*! \file aes_i.h
+ * AES (Rijndael) cipher. */
 /*
- * AES (Rijndael) cipher
  * Copyright (c) 2003-2005, Jouni Malinen <j@w1.fi>
  *
  * This program is free software; you can redistribute it and/or modify

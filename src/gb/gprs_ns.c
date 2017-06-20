@@ -1,7 +1,8 @@
-/* GPRS Networks Service (NS) messages on the Gb interface
- * 3GPP TS 08.16 version 8.0.1 Release 1999 / ETSI TS 101 299 V8.0.1 (2002-05) */
-
-/* (C) 2009-2012 by Harald Welte <laforge@gnumonks.org>
+/*! \file gprs_ns.c
+ * GPRS Networks Service (NS) messages on the Gb interface.
+ * 3GPP TS 08.16 version 8.0.1 Release 1999 / ETSI TS 101 299 V8.0.1 (2002-05). */
+/*
+ * (C) 2009-2012 by Harald Welte <laforge@gnumonks.org>
  *
  * All Rights Reserved
  *
@@ -22,11 +23,7 @@
 
 /*! \addtogroup libgb
  *  @{
- */
-
-/*! \file gprs_ns.c */
-
-/*!
+ *
  * GPRS Networks Service (NS) messages on the Gb interface
  * 3GPP TS 08.16 version 8.0.1 Release 1999 / ETSI TS 101 299 V8.0.1 (2002-05) 
  *
@@ -36,30 +33,31 @@
  * do much, apart from providing congestion notification and status indication.
  *
  * Terms:
- * 	NS		Network Service
- *	NSVC		NS Virtual Connection
- *	NSEI		NS Entity Identifier
- *	NSVL		NS Virtual Link
- *	NSVLI		NS Virtual Link Identifier
- *	BVC		BSSGP Virtual Connection
- *	BVCI		BSSGP Virtual Connection Identifier
- *	NSVCG		NS Virtual Connection Goup
- *	Blocked		NS-VC cannot be used for user traffic
- *	Alive		Ability of a NS-VC to provide communication
  *
- *  There can be multiple BSSGP virtual connections over one (group of) NSVC's.  BSSGP will
+ * 	NS		Network Service
+ * 	NSVC		NS Virtual Connection
+ * 	NSEI		NS Entity Identifier
+ * 	NSVL		NS Virtual Link
+ * 	NSVLI		NS Virtual Link Identifier
+ * 	BVC		BSSGP Virtual Connection
+ * 	BVCI		BSSGP Virtual Connection Identifier
+ * 	NSVCG		NS Virtual Connection Goup
+ * 	Blocked		NS-VC cannot be used for user traffic
+ * 	Alive		Ability of a NS-VC to provide communication
+ *
+ * There can be multiple BSSGP virtual connections over one (group of) NSVC's.  BSSGP will
  * therefore identify the BSSGP virtual connection by a BVCI passed down to NS.
  * NS then has to firgure out which NSVC's are responsible for this BVCI.
  * Those mappings are administratively configured.
- */
-
-/* This implementation has the following limitations:
- *  o Only one NS-VC for each NSE: No load-sharing function
- *  o NSVCI 65535 and 65534 are reserved for internal use
- *  o Only UDP is supported as of now, no frame relay support
- *  o The IP Sub-Network-Service (SNS) as specified in 48.016 is not implemented
- *  o There are no BLOCK and UNBLOCK timers (yet?)
- */
+ *
+ * This implementation has the following limitations:
+ * - Only one NS-VC for each NSE: No load-sharing function
+ * - NSVCI 65535 and 65534 are reserved for internal use
+ * - Only UDP is supported as of now, no frame relay support
+ * - The IP Sub-Network-Service (SNS) as specified in 48.016 is not implemented
+ * - There are no BLOCK and UNBLOCK timers (yet?)
+ *
+ * \file gprs_ns.c */
 
 #include <stdlib.h>
 #include <unistd.h>

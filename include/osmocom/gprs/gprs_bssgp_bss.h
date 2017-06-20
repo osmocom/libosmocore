@@ -1,11 +1,7 @@
-#pragma once
-
-#include <osmocom/core/msgb.h>
-#include <osmocom/gprs/gprs_bssgp.h>
-
-/* GPRS BSSGP protocol implementation as per 3GPP TS 08.18 */
-
-/* (C) 2009-2012 by Harald Welte <laforge@gnumonks.org>
+/*! \file gprs_bssgp_bss.h
+ * GPRS BSSGP protocol implementation as per 3GPP TS 08.18 */
+/*
+ * (C) 2009-2012 by Harald Welte <laforge@gnumonks.org>
  *
  * All Rights Reserved
  *
@@ -24,6 +20,10 @@
  *
  */
 
+#pragma once
+
+#include <osmocom/core/msgb.h>
+#include <osmocom/gprs/gprs_bssgp.h>
 
 uint8_t *bssgp_msgb_tlli_put(struct msgb *msg, uint32_t tlli);
 

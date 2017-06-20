@@ -1,3 +1,5 @@
+/*! \file control_vty.h */
+
 #pragma once
 
 /* Add the 'ctrl' section to VTY, containing the 'bind' command. */

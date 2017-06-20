@@ -1,5 +1,5 @@
-/*
- * COMP128v23 header
+/*! \file comp128v23.h
+ * COMP128v23 header.
  *
  * See comp128v23.c for details
  */

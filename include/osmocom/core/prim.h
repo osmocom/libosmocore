@@ -2,9 +2,7 @@
 
 /*! \defgroup prim Osmocom primitives
  *  @{
- */
-
-/*! \file prim.h */
+ * \file prim.h */
 
 #include <stdint.h>
 #include <osmocom/core/msgb.h>

@@ -1,5 +1,7 @@
-/* minimalistic telnet/network interface it might turn into a wire interface */
-/* (C) 2009 by Holger Hans Peter Freyther <zecke@selfish.org>
+/*! \file telnet_interface.h
+ * minimalistic telnet/network interface it might turn into a wire interface */
+/*
+ * (C) 2009 by Holger Hans Peter Freyther <zecke@selfish.org>
  * All Rights Reserved
  *
  * This program is free software; you can redistribute it and/or modify
@@ -27,9 +29,7 @@
 
 /*! \defgroup telnet_interface Telnet Interface
  *  @{
- */
-
-/*! \file telnet_interface.h */
+ * \file telnet_interface.h */
 
 /*! A telnet connection */
 struct telnet_connection {

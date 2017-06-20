@@ -1,6 +1,12 @@
-/* GSMTAP network logging support code */
-
-/* (C) 2016 by Harald Welte <laforge@gnumonks.org>
+/*! \file logging_gsmtap.c
+ *  libosmocore log output encapsulated in GSMTAP.
+ *
+ *  Encapsulating the log output inside GSMTAP frames allows us to
+ *  observer protocol traces (of Um, Abis, A or any other interface in
+ *  the Osmocom world) with synchronous interspersed log messages.
+ */
+/*
+ * (C) 2016 by Harald Welte <laforge@gnumonks.org>
  * All Rights Reserved
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,15 +27,7 @@
 
 /*! \addtogroup logging
  *  @{
- */
-
-/*! \file logging_gsmtap.c
- *  libosmocore log output encapsulated in GSMTAP
- *
- *  Encapsulating the log output inside GSMTAP frames allows us to
- *  observer protocol traces (of Um, Abis, A or any other interface in
- *  the Osmocom world) with synchronous interspersed log messages.
- */
+ * \file logging_gsmtap.c */
 
 #include "../config.h"
 

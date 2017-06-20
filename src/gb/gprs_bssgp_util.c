@@ -1,6 +1,7 @@
-/* GPRS BSSGP protocol implementation as per 3GPP TS 08.18 */
-
-/* (C) 2009-2017 by Harald Welte <laforge@gnumonks.org>
+/*! \file gprs_bssgp_util.c
+ * GPRS BSSGP protocol implementation as per 3GPP TS 08.18. */
+/*
+ * (C) 2009-2017 by Harald Welte <laforge@gnumonks.org>
  *
  * All Rights Reserved
  *

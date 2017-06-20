@@ -1,3 +1,5 @@
+/*! \file gsm0480.h */
+
 #pragma once
 
 #include <osmocom/core/defs.h>

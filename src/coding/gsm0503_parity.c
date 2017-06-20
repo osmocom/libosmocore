@@ -31,9 +31,8 @@
  *
  *  This module contains parity/crc code definitions for the various
  *  parity/crc schemes as defined in 3GPP TS 05.03 / 45.003
- */
-
-/*! \file gsm0503_parity.c */
+ *
+ * \file gsm0503_parity.c */
 
 /*! GSM (SACCH) parity (FIRE code)
  *

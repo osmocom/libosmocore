@@ -1,5 +1,6 @@
+/*! \file buffer.h
+ * Buffering to output and input. */
 /*
- * Buffering to output and input.
  * Copyright (C) 1998 Kunihiro Ishiguro
  *
  * This file is part of GNU Zebra.

@@ -1,3 +1,5 @@
+/*! \file gsm0411_smr.h */
+
 #pragma once
 
 #include <osmocom/gsm/protocol/gsm_04_11.h>

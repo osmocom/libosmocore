@@ -1,3 +1,5 @@
+/*! \file gsm48_ie.h */
+
 #pragma once
 
 #include <stdint.h>

@@ -1,3 +1,7 @@
+/*! \file select.h
+ *  select loop abstraction.
+ */
+
 #pragma once
 
 #include <osmocom/core/linuxlist.h>
@@ -5,11 +9,7 @@
 
 /*! \defgroup select Select loop abstraction
  *  @{
- */
-
-/*! \file select.h
- *  select loop abstraction
- */
+ * \file select.h */
 
 /*! Indicate interest in reading from the file descriptor */
 #define BSC_FD_READ	0x0001

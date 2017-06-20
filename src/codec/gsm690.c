@@ -1,5 +1,5 @@
-/* GSM 06.90 - GSM AMR Codec */
-
+/*! \file gsm690.c
+ * GSM 06.90 - GSM AMR Codec. */
 /*
  * (C) 2010 Sylvain Munaut <tnt@246tNt.com>
  *

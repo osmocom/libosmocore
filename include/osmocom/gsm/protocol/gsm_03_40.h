@@ -1,6 +1,7 @@
-#pragma once
+/*! \file gsm_03_40.h
+ * GSM TS 03.40. */
 
-/* GSM TS 03.40 */
+#pragma once
 
 /**
  * 9.1.2.5 Type Of Number

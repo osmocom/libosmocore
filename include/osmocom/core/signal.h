@@ -4,8 +4,7 @@
 
 /*! \defgroup signal Intra-application signals
  *  @{
- */
-/*! \file signal.h */
+ * \file signal.h */
 
 /*! subsystem signaling numbers: we split the numberspace for
  * applications and libraries: from 0 to UINT_MAX/2 for applications,

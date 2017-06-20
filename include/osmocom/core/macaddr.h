@@ -1,3 +1,5 @@
+/*! \file macaddr.h */
+
 #pragma once
 
 int osmo_macaddr_parse(uint8_t *out, const char *in);

@@ -1,3 +1,5 @@
+/*! \file gsm_08_18.h */
+
 #pragma once
 
 #include <stdint.h>

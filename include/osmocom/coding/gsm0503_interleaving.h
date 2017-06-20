@@ -1,14 +1,14 @@
+/*! \file gsm0503_interleaving.h
+ *  GSM TS 05.03 interleaving.
+ */
+
 #pragma once
 
 #include <osmocom/core/bits.h>
 
 /*! \addtogroup interleaving
  *  @{
- */
-
-/*! \file gsm0503_interleaving.h
- *  GSM TS 05.03 interleaving
- */
+ * \file gsm0503_interleaving.h */
 
 void gsm0503_xcch_deinterleave(sbit_t *cB, const sbit_t *iB);
 void gsm0503_xcch_interleave(const ubit_t *cB, ubit_t *iB);

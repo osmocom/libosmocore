@@ -1,9 +1,8 @@
-#pragma once
-
-/* GSM Radio Signalling Link messages on the A-bis interface 
+/*! \file gsm_08_58.h
+ * GSM Radio Signalling Link messages on the A-bis interface.
  * 3GPP TS 08.58 version 8.6.0 Release 1999 / ETSI TS 100 596 V8.6.0 */
-
-/* (C) 2008 by Harald Welte <laforge@gnumonks.org>
+/*
+ * (C) 2008 by Harald Welte <laforge@gnumonks.org>
  * All Rights Reserved
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,13 +21,13 @@
  *
  */
 
+#pragma once
+
 #include <stdint.h>
 
 /*! \addtogroup rsl
  *  @{
- */
-
-/*! \file gsm_08_58.h */
+ * \file gsm_08_58.h */
 
 /*! RSL common header */
 struct abis_rsl_common_hdr {

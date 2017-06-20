@@ -1,5 +1,3 @@
-#pragma once
-
 /* (C) 2012-2013 by Katerina Barone-Adesi <kat.obsc@gmail.com>
  * All Rights Reserved
  *
@@ -19,13 +17,11 @@
  *
  */
 
+#pragma once
 
 /*! \defgroup loggingrb Osmocom ringbuffer-backed logging
  *  @{
- */
-
-/*! \file loggingrb.h
- */
+ * \file loggingrb.h */
 
 struct log_info;
 

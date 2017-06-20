@@ -1,3 +1,5 @@
+/*! \file timer.h
+ *  Osmocom timer handling routines. */
 /*
  * (C) 2008, 2009 by Holger Hans Peter Freyther <zecke@selfish.org>
  * All Rights Reserved
@@ -33,11 +35,7 @@
  *      - osmo_timers_update() will call the callbacks and
  *        remove the timers.
  *  @{
- */
-
-/*! \file timer.h
- *  Osmocom timer handling routines.
- */
+ * \file timer.h */
 
 #pragma once
 

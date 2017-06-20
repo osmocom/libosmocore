@@ -1,6 +1,7 @@
-/* OpenBSC Abis input driver for ip.access */
-
-/* (C) 2009-2017 by Harald Welte <laforge@gnumonks.org>
+/*! \file ipa.c
+ * OpenBSC Abis input driver for ip.access */
+/*
+ * (C) 2009-2017 by Harald Welte <laforge@gnumonks.org>
  * (C) 2010 by Holger Hans Peter Freyther
  * (C) 2010 by On-Waves
  *

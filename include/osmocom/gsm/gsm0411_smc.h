@@ -1,3 +1,5 @@
+/*! \file gsm0411_smc.h */
+
 #pragma once
 
 #include <osmocom/core/timer.h>

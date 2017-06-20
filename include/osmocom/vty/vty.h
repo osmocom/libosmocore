@@ -5,8 +5,7 @@
 
 /*! \defgroup vty VTY (Virtual TTY) interface
  *  @{
- */
-/*! \file vty.h */
+ * \file vty.h */
 
 /* GCC have printf type attribute check.  */
 #ifdef __GNUC__

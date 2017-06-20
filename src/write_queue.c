@@ -1,4 +1,3 @@
-/* Generic write queue implementation */
 /*
  * (C) 2010-2016 by Holger Hans Peter Freyther
  * (C) 2010 by On-Waves
@@ -27,10 +26,9 @@
 
 /*! \addtogroup write_queue
  *  @{
- *  write queue for writing \ref msgb to sockets/fd's
- */
-
-/*! \file write_queue.c */
+ *  Write queue for writing \ref msgb to sockets/fds.
+ *
+ * \file write_queue.c */
 
 /*! Select loop function for write queue handling
  *  \param[in] fd osmocom file descriptor

@@ -32,9 +32,8 @@
  *
  *  This module contains burst mapping routines as specified in 3GPP TS
  *  05.03 / 45.003.
- */
-
-/*! \file gsm0503_mapping.c */
+ *
+ * \file gsm0503_mapping.c */
 
 void gsm0503_xcch_burst_unmap(sbit_t *iB, const sbit_t *eB,
 	sbit_t *hl, sbit_t *hn)

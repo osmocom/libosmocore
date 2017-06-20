@@ -1,5 +1,5 @@
-/* Format functions for GSM 04.80 */
-
+/*! \file gsm0480.c
+ * Format functions for GSM 04.80. */
 /*
  * (C) 2010 by Holger Hans Peter Freyther <zecke@selfish.org>
  * (C) 2009 by Mike Haben <michael.haben@btinternet.com>

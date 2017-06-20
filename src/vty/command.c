@@ -44,8 +44,8 @@ Boston, MA  02110-1301, USA. */
 /*! \addtogroup command
  *  @{
  *  VTY command handling
- */
-/*! \file command.c */
+ *
+ * \file command.c */
 
 #define CONFIGFILE_MASK 022
 

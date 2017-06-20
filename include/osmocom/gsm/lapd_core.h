@@ -1,3 +1,6 @@
+/*! \file lapd_core.h
+ * primitive related stuff
+ */
 #pragma once
 
 #include <stdint.h>
@@ -8,10 +11,7 @@
 
 /*! \defgroup lapd LAPD implementation common part
  *  @{
- */
-
-/*! \file lapd_core.h
- * primitive related stuff
+ * \file lapd_core.h
  */
 
 /*! LAPD related primitives (L2<->L3 SAP)*/

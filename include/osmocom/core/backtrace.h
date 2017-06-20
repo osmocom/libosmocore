@@ -1,3 +1,5 @@
+/*! \file backtrace.h */
+
 #pragma once
 
 void osmo_generate_backtrace(void);

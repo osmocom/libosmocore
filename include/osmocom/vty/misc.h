@@ -1,3 +1,5 @@
+/*! \file misc.h */
+
 #pragma once
 
 #include <osmocom/vty/vty.h>

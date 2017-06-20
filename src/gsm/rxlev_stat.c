@@ -1,6 +1,7 @@
-/* Rx Level statistics */
-
-/* (C) 2010 by Harald Welte <laforge@gnumonks.org>
+/*! \file rxlev_stat.c
+ * Rx Level statistics */
+/*
+ * (C) 2010 by Harald Welte <laforge@gnumonks.org>
  *
  * All Rights Reserved
  *

@@ -1,6 +1,7 @@
-/* Ringbuffer-backed logging support code */
-
-/* (C) 2012-2013 by Katerina Barone-Adesi
+/*! \file loggingrb.c
+ * Ringbuffer-backed logging support code. */
+/*
+ * (C) 2012-2013 by Katerina Barone-Adesi
  * All Rights Reserved
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,11 +22,7 @@
 
 /*! \addtogroup logging
  *  @{
- */
-
-/*! \file loggingrb.c
- *  libosmocore logging backend for a ring-buffer of last log messages
- */
+ * \file loggingrb.c */
 
 #include <osmocom/core/strrb.h>
 #include <osmocom/core/logging.h>

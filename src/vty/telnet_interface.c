@@ -1,4 +1,5 @@
-/* minimalistic telnet/network interface it might turn into a wire interface */
+/*! \file telnet_interface.c
+ * minimalistic telnet/network interface it might turn into a wire interface */
 /* (C) 2009 by Holger Hans Peter Freyther <zecke@selfish.org>
  * All Rights Reserved
  *
@@ -44,8 +45,8 @@
  *  access.  This telnet server gets linked into each libosmovty-using
  *  process in order to enable interactive command-line introspection,
  *  interaction and configuration.
- */
-/*! \file telnet_interface.c */
+ *
+ * \file telnet_interface.c */
 
 /* per connection data */
 LLIST_HEAD(active_connections);

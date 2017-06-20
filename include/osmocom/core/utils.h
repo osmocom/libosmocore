@@ -5,9 +5,7 @@
 
 /*! \defgroup utils General-purpose utility functions
  *  @{
- */
-
-/*! \file utils.h */
+ * \file utils.h */
 
 /*! Determine number of elements in an array of static size */
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))

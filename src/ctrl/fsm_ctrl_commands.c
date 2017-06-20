@@ -1,3 +1,5 @@
+/*! \file fsm_ctrl_commands.c */
+
 #include <string.h>
 #include <errno.h>
 

@@ -1,5 +1,6 @@
-/* SNMP-like status interface
- *
+/*! \file control_cmd.c
+ * SNMP-like status interface. */
+/*
  * (C) 2010-2011 by Daniel Willmann <daniel@totalueberwachung.de>
  * (C) 2010-2011 by On-Waves
  *

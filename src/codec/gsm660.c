@@ -1,5 +1,5 @@
-/* GSM 06.60 - GSM EFR Codec */
-
+/*! \file gsm660.c
+ * GSM 06.60 - GSM EFR Codec. */
 /*
  * (C) 2010 Sylvain Munaut <tnt@246tNt.com>
  *

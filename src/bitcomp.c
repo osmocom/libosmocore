@@ -1,6 +1,7 @@
-/* bit compression routines */
-
-/* (C) 2016 sysmocom s.f.m.c. GmbH by Max Suraev <msuraev@sysmocom.de>
+/*! \file bitcomp.c
+ * Osmocom bit compression routines */
+/*
+ * (C) 2016 sysmocom s.f.m.c. GmbH by Max Suraev <msuraev@sysmocom.de>
  *
  * All Rights Reserved
  *
@@ -22,11 +23,7 @@
 
 /*! \defgroup bitcomp Bit compression
  *  @{
- */
-
-/*! \file bitcomp.c
- *  Osmocom bit compression routines
- */
+ * \file bitcomp.c */
 
 #include <stdint.h>
 #include <stdbool.h>

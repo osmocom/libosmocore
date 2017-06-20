@@ -26,11 +26,9 @@
 
 /*! \addtogroup bits
  *  @{
- *  Osmocom bit level support code
- */
-
-/*! \file bits.c */
-
+ *  Osmocom bit level support code.
+ *
+ * \file bits.c */
 
 /*! convert unpacked bits to packed bits, return length in bytes
  *  \param[out] out output buffer of packed bits

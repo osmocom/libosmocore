@@ -1,7 +1,5 @@
-/* GSM Radio Signalling Link messages on the A-bis interface 
- * 3GPP TS 08.58 version 8.6.0 Release 1999 / ETSI TS 100 596 V8.6.0 */
-
-/* (C) 2008-2010 by Harald Welte <laforge@gnumonks.org>
+/*
+ * (C) 2008-2010 by Harald Welte <laforge@gnumonks.org>
  *
  * All Rights Reserved
  *
@@ -30,10 +28,10 @@
 
 /*! \addtogroup rsl
  *  @{
- *  GSM Radio Signalling Link (TS 08.58)
- */
-
-/*! \file rsl.c */
+ * GSM Radio Signalling Link messages on the A-bis interface.
+ * 3GPP TS 08.58 version 8.6.0 Release 1999 / ETSI TS 100 596 V8.6.0.
+ *
+ * \file rsl.c */
 
 /*! Size for RSL \ref msgb_alloc */
 #define RSL_ALLOC_SIZE		200

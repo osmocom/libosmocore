@@ -1,7 +1,9 @@
-/* select filedescriptor handling, taken from:
+/*! \file select.c
+ * select filedescriptor handling.
+ * Taken from:
  * userspace logging daemon for the iptables ULOG target
- * of the linux 2.4 netfilter subsystem.
- *
+ * of the linux 2.4 netfilter subsystem. */
+/*
  * (C) 2000-2009 by Harald Welte <laforge@gnumonks.org>
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -37,9 +39,8 @@
 /*! \addtogroup select
  *  @{
  *  select() loop abstraction
- */
-
-/*! \file select.c */
+ *
+ * \file select.c */
 
 static int maxfd = 0;
 static LLIST_HEAD(osmo_fds);

@@ -1,5 +1,5 @@
-/*
- * COMP128 header
+/*! \file comp128.h
+ * COMP128 header.
  *
  * See comp128.c for details
  */

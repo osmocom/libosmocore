@@ -1,6 +1,7 @@
-#pragma once
-
-/* (C) 2012-2013 by Katerina Barone-Adesi <kat.obsc@gmail.com>
+/*! \file strrb.h
+ * Osmocom string ringbuffer handling routines. */
+/*
+ * (C) 2012-2013 by Katerina Barone-Adesi <kat.obsc@gmail.com>
  * All Rights Reserved
  *
  * This program is free software; you can redistribute it and/or modify
@@ -19,13 +20,11 @@
  *
  */
 
+#pragma once
+
 /*! \defgroup osmo_strrb Osmocom ringbuffers for log strings
  *  @{
- */
-
-/*! \file strrb.h
- *  Osmocom string ringbuffer handling routines
- */
+ * \file strrb.h */
 
 #include <unistd.h>
 #include <stdbool.h>

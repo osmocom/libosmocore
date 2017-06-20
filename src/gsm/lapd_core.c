@@ -1,6 +1,7 @@
-/* LAPD core implementation */
-
-/* (C) 2010-2011 by Harald Welte <laforge@gnumonks.org>
+/*! \file lapd_core.c
+ * LAPD core implementation */
+/*
+ * (C) 2010-2011 by Harald Welte <laforge@gnumonks.org>
  * (C) 2010-2011 by Andreas Eversberg <jolly@eversberg.eu>
  *
  * All Rights Reserved
@@ -23,12 +24,9 @@
 
 /*! \addtogroup lapd
  *  @{
- *  Osmocom LAPD core, used for Q.921, LAPDm and others
- */
-
-/*! \file lapd_core.c */
-
-/*!
+ *
+ * Osmocom LAPD core, used for Q.921, LAPDm and others.
+ *
  * Notes on Buffering: rcv_buffer, tx_queue, tx_hist, send_buffer, send_queue
  *
  * RX data is stored in the rcv_buffer (pointer). If the message is complete, it
@@ -62,6 +60,7 @@
  * will not trigger T200. It will be stoped, when T200 is started in MF EST
  * state. It will also be stoped when leaving MF EST state.
  *
+ * \file lapd_core.c
  */
 
 /* Enable this to test content resolution on network side:

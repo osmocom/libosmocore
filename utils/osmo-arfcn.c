@@ -1,4 +1,5 @@
-/* Utility program for ARFCN / frequency calculations */
+/*! \file osmo-arfcn.c
+ * Utility program for ARFCN / frequency calculations. */
 /*
  * (C) 2011 by Harald Welte <laforge@gnumonks.org>
  *

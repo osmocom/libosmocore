@@ -1,4 +1,6 @@
-/* Generic vector interface routine
+/*! \file vector.c
+ * Generic vector interface routine. */
+/*
  * Copyright (C) 1997 Kunihiro Ishiguro
  *
  * This file is part of GNU Zebra.

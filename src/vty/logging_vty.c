@@ -1,5 +1,7 @@
-/* OpenBSC logging helper for the VTY */
-/* (C) 2009-2010 by Harald Welte <laforge@gnumonks.org>
+/*! \file logging_vty.c
+ * OpenBSC logging helper for the VTY. */
+/*
+ * (C) 2009-2010 by Harald Welte <laforge@gnumonks.org>
  * (C) 2009-2014 by Holger Hans Peter Freyther
  * All Rights Reserved
  *

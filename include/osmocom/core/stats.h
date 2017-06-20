@@ -1,4 +1,6 @@
-/* (C) 2015 by Sysmocom s.f.m.c. GmbH
+/*! \file stats.h */
+/*
+ * (C) 2015 by Sysmocom s.f.m.c. GmbH
  *
  * All Rights Reserved
  *

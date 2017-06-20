@@ -1,6 +1,6 @@
+/*! \file conv_acc.c
+ * Accelerated Viterbi decoder implementation. */
 /*
- * Accelerated Viterbi decoder implementation
- *
  * Copyright (C) 2013, 2014 Thomas Tsou <tom@tsou.cc>
  *
  * All Rights Reserved

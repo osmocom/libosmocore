@@ -100,9 +100,8 @@
  *  various other modules (mapping, parity, interleaving) in order to
  *  implement the complete channel coding (and decoding) chain for the
  *  various channel types as defined in TS 05.03 / 45.003.
- */
-
-/*! \file gsm0503_coding.c */
+ *
+ * \file gsm0503_coding.c */
 
 /*
  * EGPRS coding limits

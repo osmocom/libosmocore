@@ -1,8 +1,9 @@
-/* Point-to-Point (PP) Short Message Service (SMS)
+/*! \file gsm0411_smc.c
+ * Point-to-Point (PP) Short Message Service (SMS).
  * Support on Mobile Radio Interface
- * 3GPP TS 04.11 version 7.1.0 Release 1998 / ETSI TS 100 942 V7.1.0 */
-
-/* (C) 2008 by Daniel Willmann <daniel@totalueberwachung.de>
+ * 3GPP TS 04.11 version 7.1.0 Release 1998 / ETSI TS 100 942 V7.1.0. */
+/*
+ * (C) 2008 by Daniel Willmann <daniel@totalueberwachung.de>
  * (C) 2009 by Harald Welte <laforge@gnumonks.org>
  * (C) 2010 by Holger Hans Peter Freyther <zecke@selfish.org>
  * (C) 2010 by On-Waves

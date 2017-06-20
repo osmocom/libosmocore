@@ -1,3 +1,6 @@
+/*! \file timer_compat.h
+ *  Compatibility header with some helpers
+ */
 /*
  * (C) 2011 Sylvain Munaut <tnt@246tNt.com>
  * All Rights Reserved
@@ -20,11 +23,7 @@
 
 /*! \defgroup timer Osmocom timers
  *  @{
- */
-
-/*! \file timer_compat.h
- *  Compatibility header with some helpers
- */
+ * \file timer_compat.h */
 
 #pragma once
 

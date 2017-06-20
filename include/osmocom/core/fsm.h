@@ -1,3 +1,7 @@
+/*! \file fsm.h
+ *  Finite State Machine
+ */
+
 #pragma once
 
 #include <stdint.h>
@@ -9,11 +13,7 @@
 
 /*! \defgroup fsm Finite State Machine abstraction
  *  @{
- */
-
-/*! \file fsm.h
- *  Finite State Machine
- */
+ * \file fsm.h */
 
 struct osmo_fsm_inst;
 

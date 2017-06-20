@@ -2,9 +2,7 @@
 
 /*! \defgroup rate_ctr Rate counters
  *  @{
- */
-
-/*! \file rate_ctr.h */
+ * \file rate_ctr.h */
 
 #include <stdint.h>
 

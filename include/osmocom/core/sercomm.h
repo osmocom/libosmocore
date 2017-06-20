@@ -1,3 +1,7 @@
+/*! \file sercomm.h
+ *  Osmocom Sercomm HDLC (de)multiplex.
+ */
+
 #ifndef _SERCOMM_H
 #define _SERCOMM_H
 
@@ -5,11 +9,7 @@
 
 /*! \defgroup sercomm Seriall Communications (HDLC)
  *  @{
- */
-
-/*! \file sercomm.h
- *  Osmocom Sercomm HDLC (de)multiplex
- */
+ * \file sercomm.h */
 
 /*! A low sercomm_dlci means high priority.  A high DLCI means low priority */
 enum sercomm_dlci {

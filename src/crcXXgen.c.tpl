@@ -1,8 +1,6 @@
+/*! \file crcXXgen.c
+ * Osmocom generic CRC routines (for max XX bits poly). */
 /*
- * crcXXgen.c
- *
- * Generic CRC routines (for max XX bits poly)
- *
  * Copyright (C) 2011  Sylvain Munaut <tnt@246tNt.com>
  *
  * All Rights Reserved
@@ -24,12 +22,9 @@
 
 /*! \addtogroup crcgen
  *  @{
- *  Osmocom generic CRC routines
- */
-
-/*! \file crcXXgen.c
- * Osmocom generic CRC routines (for max XX bits poly)
- */
+ *  Osmocom generic CRC routines (for max XX bits poly).
+ *
+ *  \file crcXXgen.c.tpl */
 
 #include <stdint.h>
 

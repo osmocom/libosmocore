@@ -1,7 +1,7 @@
-
-/* GSM/GPRS/3G authentication core infrastructure */
-
-/* (C) 2010-2011 by Harald Welte <laforge@gnumonks.org>
+/*! \file auth_comp128v1.c
+ * GSM/GPRS/3G authentication core infrastructure */
+/*
+ * (C) 2010-2011 by Harald Welte <laforge@gnumonks.org>
  *
  * All Rights Reserved
  *

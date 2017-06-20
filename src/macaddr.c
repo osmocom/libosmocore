@@ -1,3 +1,5 @@
+/*! \file macaddr.c
+ *  MAC address utility routines. */
 /*
  * (C) 2013-2014 by Harald Welte <laforge@gnumonks.org>
  * (C) 2014 by Holger Hans Peter Freyther
@@ -22,11 +24,7 @@
 
 /*! \addtogroup utils
  *  @{
- */
-
-/*! \file macaddr.c
- *  MAC address utility routines
- */
+ * \file macaddr.c */
 
 #include "config.h"
 

@@ -1,5 +1,6 @@
-/* simtrace - tables determining APDU case for card emulation
- *
+/*! \file class_tables.c
+ * simtrace - tables determining APDU case for card emulation. */
+/*
  * (C) 2016 by Harald Welte <laforge@gnumonks.org>
  *
  *  This program is free software; you can redistribute it and/or modify

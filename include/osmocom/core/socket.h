@@ -1,12 +1,11 @@
+/*! \file socket.h
+ *  Osmocom socket convenience functions. */
+
 #pragma once
 
 /*! \defgroup socket Socket convenience functions
  *  @{
- */
-
-/*! \file socket.h
- *  Osmocom socket convenience functions
- */
+ *  \file socket.h */
 
 #include <stdint.h>
 

@@ -1,3 +1,5 @@
+/*! \file gsm0341.h */
+
 #pragma once
 
 #include <osmocom/gsm/protocol/gsm_03_41.h>

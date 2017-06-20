@@ -1,4 +1,5 @@
-/* GSMTAP support code in libmsomcore */
+/*! \file gsmtap_util.c
+ * GSMTAP support code in libosmocore. */
 /*
  * (C) 2010-2011 by Harald Welte <laforge@gnumonks.org>
  *
@@ -43,9 +44,9 @@
 
 /*! \addtogroup gsmtap
  *  @{
- *  GSMTAP utility routines. Encapsulates GSM messages over UDP
- */
-/*! \file gsmtap_util.c */
+ *  GSMTAP utility routines. Encapsulates GSM messages over UDP.
+ *
+ * \file gsmtap_util.c */
 
 
 /*! convert RSL channel number to GSMTAP channel type

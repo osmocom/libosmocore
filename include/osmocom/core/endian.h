@@ -1,6 +1,5 @@
-#pragma once
-
-/**
+/*! \file endian.h
+ *
  * GNU and FreeBSD have various ways to express the
  * endianess but none of them is similiar enough. This
  * will create two defines that allows to decide on the
@@ -11,6 +10,8 @@
  *      OSMO_IS_BIG_ENDIAN
  *
  */
+
+#pragma once
 
 #if defined(__FreeBSD__)
 #include <sys/endian.h>

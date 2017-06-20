@@ -1,8 +1,7 @@
-#pragma once
-
-/* bit compression routines */
-
-/* (C) 2016 sysmocom s.f.m.c. GmbH by Max Suraev <msuraev@sysmocom.de>
+/*! \file bitcomp.h
+ *  Osmocom bit compression routines. */
+/*
+ * (C) 2016 sysmocom s.f.m.c. GmbH by Max Suraev <msuraev@sysmocom.de>
  *
  * All Rights Reserved
  *
@@ -22,13 +21,11 @@
  *
  */
 
+#pragma once
+
 /*! \defgroup bitcomp Bit compression
  *  @{
- */
-
-/*! \file bitcomp.h
- *  Osmocom bit compression routines
- */
+ * \file bitcomp.h */
 
 #include <stdint.h>
 #include <stdbool.h>

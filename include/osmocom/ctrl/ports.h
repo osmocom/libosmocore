@@ -1,12 +1,12 @@
-#pragma once
-
-/*
+/*! \file ports.h
  * TCP port numbers used for CTRL interfaces in osmocom projects. See also the
  * osmocom wiki as well as the osmo-gsm-manuals, which should all be kept in
  * sync with this file:
  * https://osmocom.org/projects/cellular-infrastructure/wiki/PortNumbers
  * https://git.osmocom.org/osmo-gsm-manuals/tree/common/chapters/port_numbers.adoc
  */
+
+#pragma once
 
 #define OSMO_CTRL_PORT_BTS	4238
 #define OSMO_CTRL_PORT_NITB_BSC	4249

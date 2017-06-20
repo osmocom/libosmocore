@@ -1,3 +1,5 @@
+/*! \file gsm_int.h */
+
 #include <sys/types.h>
 #include <osmocom/sim/sim.h>
 

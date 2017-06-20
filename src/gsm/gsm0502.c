@@ -1,6 +1,7 @@
-/* Paging helper code */
-
-/* (C) 2009 by Holger Hans Peter Freyther <zecke@selfish.org>
+/*! \file gsm0502.c
+ * Paging helper code */
+/*
+ * (C) 2009 by Holger Hans Peter Freyther <zecke@selfish.org>
  * All Rights Reserved
  *
  * This program is free software; you can redistribute it and/or modify

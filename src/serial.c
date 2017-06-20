@@ -1,8 +1,6 @@
+/*! \file serial.c
+ * Utility functions to deal with serial ports */
 /*
- * serial.c
- *
- * Utility functions to deal with serial ports
- *
  * Copyright (C) 2011  Sylvain Munaut <tnt@246tNt.com>
  *
  * All Rights Reserved
@@ -25,9 +23,8 @@
 /*! \addtogroup serial
  *  @{
  *  Osmocom serial port helpers
- */
-
-/*! \file serial.c */
+ *
+ * \file serial.c */
 
 #include <errno.h>
 #include <fcntl.h>

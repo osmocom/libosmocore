@@ -1,6 +1,6 @@
+/*! \file serial.h
+ * Osmocom serial port helpers. */
 /*
- * serial.h
- *
  * Copyright (C) 2011  Sylvain Munaut <tnt@246tNt.com>
  *
  * All Rights Reserved
@@ -22,11 +22,7 @@
 
 /*! \defgroup serial Utility functions to deal with serial ports
  *  @{
- */
-
-/*! \file serial.h
- * Osmocom serial port helpers
- */
+ * \file serial.h */
 
 #pragma once
 

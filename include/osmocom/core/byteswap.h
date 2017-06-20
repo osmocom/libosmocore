@@ -1,3 +1,5 @@
+/*! \file byteswap.h */
+
 #pragma once
 #include <stdint.h>
 #include <osmocom/core/endian.h>

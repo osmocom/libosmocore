@@ -2,9 +2,7 @@
 
 /*! \defgroup osmo_stat_item Statistics value item
  *  @{
- */
-
-/*! \file stat_item.h */
+ * \file stat_item.h */
 
 #include <stdint.h>
 

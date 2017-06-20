@@ -1,4 +1,5 @@
-/* ETSI UICC specific structures / routines */
+/*! \file card_fs_uicc.c
+ * ETSI UICC specific structures / routines. */
 /*
  * (C) 2012 by Harald Welte <laforge@gnumonks.org>
  *

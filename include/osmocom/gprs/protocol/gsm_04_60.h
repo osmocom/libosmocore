@@ -1,9 +1,10 @@
-#pragma once
-
-/* General Packet Radio Service (GPRS)
+/*! \file gsm_04_60.h
+ * General Packet Radio Service (GPRS).
  * Radio Link Control / Medium Access Control (RLC/MAC) protocol
  * 3GPP TS 04.60 version 8.27.0 Release 1999
  */
+
+#pragma once
 
 #include <stdint.h>
 

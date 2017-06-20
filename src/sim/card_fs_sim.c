@@ -1,4 +1,5 @@
-/* classic SIM card specific structures/routines */
+/*! \file card_fs_sim.c
+ * classic SIM card specific structures/routines. */
 /*
  * (C) 2012-2014 by Harald Welte <laforge@gnumonks.org>
  *

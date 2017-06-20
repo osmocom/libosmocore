@@ -1,6 +1,7 @@
-/* Syslog logging support code */
-
-/* (C) 2011 by Harald Welte <laforge@gnumonks.org>
+/*! \file logging_syslog.c
+ * Syslog logging support code. */
+/*
+ * (C) 2011 by Harald Welte <laforge@gnumonks.org>
  * All Rights Reserved
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,11 +22,7 @@
 
 /*! \addtogroup logging
  *  @{
- */
-
-/*! \file logging_syslog.c
- *  libosmocore logging output via syslog
- */
+ * \file logging_syslog.c */
 
 #include "../config.h"
 

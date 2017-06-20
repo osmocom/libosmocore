@@ -1,3 +1,5 @@
+/*! \file sim_int.h */
+
 #ifndef _SIM_INT_H
 
 #include <osmocom/sim/sim.h>

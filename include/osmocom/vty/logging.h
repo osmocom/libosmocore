@@ -1,3 +1,5 @@
+/*! \file logging.h */
+
 #pragma once
 
 #define LOGGING_STR	"Configure log message to this terminal\n"

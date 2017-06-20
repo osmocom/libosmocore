@@ -1,4 +1,5 @@
-/* Generic write queue implementation */
+/*! \file write_queue.h
+ * Generic write queue implementation */
 /*
  * (C) 2010 by Holger Hans Peter Freyther
  * (C) 2010 by On-Waves
@@ -24,10 +25,7 @@
 
 /*! \defgroup write_queue Osmocom msgb write queues
  *  @{
- */
-
-/*! \file write_queue.h
- */
+ * \file write_queue.h */
 
 #include <osmocom/core/select.h>
 #include <osmocom/core/msgb.h>

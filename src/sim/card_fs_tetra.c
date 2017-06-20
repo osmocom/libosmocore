@@ -1,4 +1,5 @@
-/* TETRA SIM card specific structures/routines */
+/*! \file card_fs_tetra.c
+ * TETRA SIM card specific structures/routines. */
 /*
  * (C) 2014 by Harald Welte <laforge@gnumonks.org>
  *

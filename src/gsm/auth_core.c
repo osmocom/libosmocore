@@ -1,5 +1,3 @@
-/* GSM/GPRS/3G authentication core infrastructure */
-
 /* (C) 2010-2012 by Harald Welte <laforge@gnumonks.org>
  *
  * All Rights Reserved
@@ -33,9 +31,8 @@
 /*! \addtogroup auth
  *  @{
  *  GSM/GPRS/3G authentication core infrastructure
- */
-
-/* \file auth_core.c */
+ *
+ * \file auth_core.c */
 
 static LLIST_HEAD(osmo_auths);
 

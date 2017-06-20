@@ -1,5 +1,5 @@
-/* GSM 06.20 - GSM HR codec */
-
+/*! \file gsm620.c
+ * GSM 06.20 - GSM HR codec. */
 /*
  * (C) 2010 Sylvain Munaut <tnt@246tNt.com>
  *

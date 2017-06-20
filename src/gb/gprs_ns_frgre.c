@@ -1,9 +1,9 @@
-/* GPRS Networks Service (NS) messages on the Gb interface
- * 3GPP TS 08.16 version 8.0.1 Release 1999 / ETSI TS 101 299 V8.0.1 (2002-05) */
-
-/* NS-over-FR-over-GRE implementation */
-
-/* (C) 2009-2010 by Harald Welte <laforge@gnumonks.org>
+/*! \file gprs_ns_frgre.c
+ * NS-over-FR-over-GRE implementation.
+ * GPRS Networks Service (NS) messages on the Gb interface,
+ * 3GPP TS 08.16 version 8.0.1 Release 1999 / ETSI TS 101 299 V8.0.1 (2002-05). */
+/*
+ * (C) 2009-2010 by Harald Welte <laforge@gnumonks.org>
  *
  * All Rights Reserved
  *

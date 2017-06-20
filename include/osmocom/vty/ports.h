@@ -1,12 +1,12 @@
-#pragma once
-
-/*
+/*! \file ports.h
  * TCP port numbers used for VTY interfaces in osmocom projects. See also the
  * osmocom wiki as well as the osmo-gsm-manuals, which should all be kept in
  * sync with this file:
  * https://osmocom.org/projects/cellular-infrastructure/wiki/PortNumbers
  * https://git.osmocom.org/osmo-gsm-manuals/tree/common/chapters/port_numbers.adoc
  */
+
+#pragma once
 
 /* 4238 used by osmo-bts control interface */
 #define OSMO_VTY_PORT_STP	4239

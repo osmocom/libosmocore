@@ -1,4 +1,5 @@
-/* PC/SC Card reader backend for libosmosim */
+/*! \file reader_pcsc.c
+ * PC/SC Card reader backend for libosmosim. */
 /*
  * (C) 2012 by Harald Welte <laforge@gnumonks.org>
  *

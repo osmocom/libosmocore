@@ -1,14 +1,14 @@
+/*! \file gsm0503_parity.h
+ *  GSM TS 05.03 parity.
+ */
+
 #pragma once
 
 #include <osmocom/core/crcgen.h>
 
 /*! \addtogroup parity
  *  @{
- */
-
-/*! \file gsm0503_parity.h
- *  GSM TS 05.03 parity
- */
+ * \file gsm0503_parity.h */
 
 const struct osmo_crc64gen_code gsm0503_fire_crc40;
 const struct osmo_crc16gen_code gsm0503_cs234_crc16;

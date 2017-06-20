@@ -2,9 +2,7 @@
 
 /*! \addtogroup auth
  *  @{
- */
-
-/*! \file auth.h */
+ * \file auth.h */
 
 #include <stdint.h>
 

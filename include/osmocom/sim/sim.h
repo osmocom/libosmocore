@@ -1,3 +1,7 @@
+/*! \file sim.h
+ * Routines for helping with SIM (ISO/IEC 7816-4 more generally) communication.
+ */
+
 #ifndef _OSMOCOM_SIM_H
 #define _OSMOCOM_SIM_H
 
@@ -5,11 +9,6 @@
 #include <osmocom/core/linuxlist.h>
 
 #define APDU_HDR_LEN	5
-
-/*!
- * \file sim.h
- * Routines for helping with SIM (ISO/IEC 7816-4 more generally) communication.
- */
 
 /*! command-response pairs cases
  *

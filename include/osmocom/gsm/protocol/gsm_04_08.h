@@ -1,3 +1,6 @@
+/*! \file gsm_04_08.h
+ * GSM TS 04.08  definitions. */
+
 #pragma once
 
 #include <stdint.h>
@@ -6,7 +9,6 @@
 #include <osmocom/core/utils.h>
 #include <osmocom/core/endian.h>
 
-/* GSM TS 04.08  definitions */
 struct gsm_lchan;
 
 /* Chapter 10.5.1.5 */

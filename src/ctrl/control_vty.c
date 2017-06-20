@@ -1,5 +1,6 @@
-/* VTY configuration for Control interface
- *
+/*! \file control_vty.c
+ * VTY configuration for Control interface. */
+/*
  * (C) 2016 by sysmocom s.m.f.c. GmbH <info@sysmocom.de>
  *
  * All Rights Reserved

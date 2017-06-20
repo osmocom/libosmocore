@@ -1,6 +1,7 @@
-/* Debugging/Logging support code */
-
-/* (C) 2008-2010 by Harald Welte <laforge@gnumonks.org>
+/*! \file logging.c
+ * Debugging/Logging support code. */
+/*
+ * (C) 2008-2010 by Harald Welte <laforge@gnumonks.org>
  * (C) 2008 by Holger Hans Peter Freyther <zecke@selfish.org>
  * All Rights Reserved
  *
@@ -23,9 +24,8 @@
 /* \addtogroup logging
  * @{
  * libosmocore Logging sub-system
- */
-
-/* \file logging.c */
+ *
+ * \file logging.c */
 
 #include "../config.h"
 

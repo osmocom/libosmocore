@@ -1,3 +1,5 @@
+/*! \file sysinfo.h */
+
 #pragma once
 
 #include <stdbool.h>

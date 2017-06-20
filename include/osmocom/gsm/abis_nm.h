@@ -1,14 +1,12 @@
 #pragma once
 
-/*! \defgroup oml A-bis OML
- *  @{
- */
-
 #include <osmocom/gsm/tlv.h>
 #include <osmocom/gsm/gsm_utils.h>
 #include <osmocom/gsm/protocol/gsm_12_21.h>
 
-/*! \file abis_nm.h */
+/*! \defgroup oml A-bis OML
+ *  @{
+ * \file abis_nm.h */
 
 extern const char abis_nm_ipa_magic[13];
 extern const char abis_nm_osmo_magic[12];

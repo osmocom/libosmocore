@@ -1,7 +1,8 @@
+/*! \file gsm_09_02.h
+ * GSM TS 09.02  definitions (MAP). */
+
 #ifndef PROTO_GSM_09_02_H
 #define PROTO_GSM_09_02_H
-
-/* GSM TS 09.02  definitions (MAP) */
 
 /* Section 17.7.4 */
 /* SS-Status */

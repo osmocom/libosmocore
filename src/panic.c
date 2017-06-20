@@ -1,4 +1,5 @@
-/* Panic handling */
+/*! \file panic.c
+ *  Routines for panic handling. */
 /*
  * (C) 2010 by Sylvain Munaut <tnt@246tNt.com>
  *
@@ -22,11 +23,7 @@
 
 /*! \addtogroup utils
  *  @{
- */
-
-/*! \file panic.c
- *  Routines for panic handling
- */
+ * \file panic.c */
 
 #include <osmocom/core/panic.h>
 #include <osmocom/core/backtrace.h>

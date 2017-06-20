@@ -2,9 +2,7 @@
 
 /*! \addtogroup utils
  *  @{
- */
-
-/*! \file panic.h */
+ * \file panic.h */
 
 #include <stdarg.h>
 

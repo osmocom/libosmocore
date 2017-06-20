@@ -1,4 +1,4 @@
-/*
+/*! \file crc16.h
  * This was copied from the linux kernel and adjusted for our types.
  */
 /*

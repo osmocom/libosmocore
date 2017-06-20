@@ -1,6 +1,6 @@
+/*! \file crcgen.h
+ * Osmocom generic CRC routines global header. */
 /*
- * crcgen.h
- *
  * Copyright (C) 2011  Sylvain Munaut <tnt@246tNt.com>
  *
  * All Rights Reserved
@@ -24,11 +24,7 @@
 
 /*! \defgroup crcgen Osmocom generic CRC routines
  *  @{
- */
-
-/*! \file crcgen.h
- * Osmocom generic CRC routines global header
- */
+ * \file crcgen.h */
 
 #include <osmocom/core/crc8gen.h>
 #include <osmocom/core/crc16gen.h>

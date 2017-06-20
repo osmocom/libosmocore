@@ -1,3 +1,7 @@
+/*! \file gsm0503_tables.h
+ *  GSM TS 05.03 tables.
+ */
+
 #pragma once
 
 #include <stdint.h>
@@ -5,11 +9,7 @@
 
 /*! \addtogroup tables
  *  @{
- */
-
-/*! \file gsm0503_tables.h
- *  GSM TS 05.03 tables
- */
+ * \file gsm0503_tables.h */
 
 extern const ubit_t gsm0503_pdtch_hl_hn_ubit[4][8];
 extern const ubit_t gsm0503_pdtch_edge_hl_hn_ubit[3][8];

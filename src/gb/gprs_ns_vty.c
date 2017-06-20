@@ -1,6 +1,7 @@
-/* VTY interface for our GPRS Networks Service (NS) implementation */
-
-/* (C) 2009-2010 by Harald Welte <laforge@gnumonks.org>
+/*! \file gprs_ns_vty.c
+ * VTY interface for our GPRS Networks Service (NS) implementation. */
+/*
+ * (C) 2009-2010 by Harald Welte <laforge@gnumonks.org>
  *
  * All Rights Reserved
  *

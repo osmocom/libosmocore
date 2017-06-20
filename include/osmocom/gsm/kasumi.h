@@ -1,5 +1,5 @@
-/*
- * KASUMI header
+/*! \file kasumi.h
+ * KASUMI header.
  *
  * See kasumi.c for details
  * The parameters are described in TS 135 202.

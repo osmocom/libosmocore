@@ -1,16 +1,15 @@
-#pragma once
-
-/* GPRS Networks Service (NS) messages on the Gb interface
+/*! \file gsm_08_16.h
+ * GPRS Networks Service (NS) messages on the Gb interface.
  * 3GPP TS 08.16 version 8.0.1 Release 1999 / ETSI TS 101 299 V8.0.1 (2002-05)
  * 3GPP TS 48.016 version 6.5.0 Release 6 / ETSI TS 148 016 V6.5.0 (2005-11) */
+
+#pragma once
 
 #include <stdint.h>
 
 /*! \addtogroup libgb
  *  @{
- */
-
-/*! \file gprs_ns.h */
+ * \file gprs_ns.h */
 
 /*! Common header of GPRS NS */
 struct gprs_ns_hdr {

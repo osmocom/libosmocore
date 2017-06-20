@@ -7,9 +7,7 @@
 
 /*! \defgroup rsl RSL
  *  @{
- */
-
-/*! \file rsl.h */
+ * \file rsl.h */
 
 void rsl_init_rll_hdr(struct abis_rsl_rll_hdr *dh, uint8_t msg_type);
 

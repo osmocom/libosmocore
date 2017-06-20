@@ -1,4 +1,5 @@
-/* GSM utility functions, e.g. coding and decoding */
+/*! \file gsm_utils.h
+ * GSM utility functions, e.g. coding and decoding. */
 /*
  * (C) 2008 by Daniel Willmann <daniel@totalueberwachung.de>
  * (C) 2009 by Holger Hans Peter Freyther <zecke@selfish.org>

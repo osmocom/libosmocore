@@ -1,7 +1,8 @@
-/* GSM Mobile Radio Interface Layer 3 messages
+/*! \file gsm48.c
+ * GSM Mobile Radio Interface Layer 3 messages
  * 3GPP TS 04.08 version 7.21.0 Release 1998 / ETSI TS 100 940 V7.21.0 */
-
-/* (C) 2008-2010 by Harald Welte <laforge@gnumonks.org>
+/*
+ * (C) 2008-2010 by Harald Welte <laforge@gnumonks.org>
  * (C) 2008, 2009 by Holger Hans Peter Freyther <zecke@selfish.org>
  *
  * All Rights Reserved

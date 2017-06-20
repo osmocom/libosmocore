@@ -1,4 +1,5 @@
-/* Card reader abstraction for libosmosim */
+/*! \file reader.c
+ * Card reader abstraction for libosmosim. */
 /*
  * (C) 2012 by Harald Welte <laforge@gnumonks.org>
  *

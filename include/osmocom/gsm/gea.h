@@ -1,5 +1,5 @@
-/*
- * GEA3 header
+/*! \file gea.h
+ * GEA3 header.
  *
  * See gea.c for details
  */

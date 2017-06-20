@@ -1,5 +1,7 @@
+/*! \file smpp34_osmocom.h
+ * Osmocom SMPP extensions. */
+
 #pragma once
-/* Osmocom SMPP extensions */
 
 /* Osmocom specific new TLV definitions */
 

@@ -1,4 +1,7 @@
+/*! \file gsm23003.h */
+
 #pragma once
+
 #include <stdint.h>
 
 /* 23.003 Chapter 12.1 */

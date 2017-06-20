@@ -1,5 +1,6 @@
+/*! \file vector.h
+ * Generic vector interface header. */
 /*
- * Generic vector interface header.
  * Copyright (C) 1997, 98 Kunihiro Ishiguro
  *
  * This file is part of GNU Zebra.

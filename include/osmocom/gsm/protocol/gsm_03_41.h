@@ -1,3 +1,6 @@
+/*! \file gsm_03_41.h
+ * GSM TS 03.41 definitions also TS 23.041. */
+
 #pragma once
 
 #include <stdint.h>
@@ -8,8 +11,6 @@
 #ifndef OSMO_IS_LITTLE_ENDIAN
  #define OSMO_IS_LITTLE_ENDIAN 0
 #endif
-
-/* GSM TS 03.41 definitions also TS 23.041*/
 
 #define GSM341_MAX_PAYLOAD	(GSM412_MSG_LEN-sizeof(struct gsm341_ms_message))
 #define GSM341_MAX_CHARS	(GSM341_MAX_PAYLOAD*8/7)

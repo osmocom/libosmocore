@@ -1,6 +1,7 @@
-/* Kasumi cipher and KGcore functions */
-
-/* (C) 2013 by Max <Max.Suraev@fairwaves.ru>
+/*! \file kasumi.c
+ * Kasumi cipher and KGcore functions. */
+/*
+ * (C) 2013 by Max <Max.Suraev@fairwaves.ru>
  *
  * All Rights Reserved
  *

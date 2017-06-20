@@ -1,11 +1,4 @@
-#pragma once
-
-/*! \defgroup linuxlist Simple doubly linked list implementation
- *  @{
- */
-
-/*!
- * \file linuxlist.h
+/*! \file linuxlist.h
  *
  * Simple doubly linked list implementation.
  *
@@ -15,6 +8,12 @@
  * generate better code by using them directly rather than
  * using the generic single-entry routines.
  */
+
+#pragma once
+
+/*! \defgroup linuxlist Simple doubly linked list implementation
+ *  @{
+ * \file linuxlist.h */
 
 #include <stddef.h>
 

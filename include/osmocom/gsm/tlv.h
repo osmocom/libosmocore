@@ -9,8 +9,7 @@
 
 /*! \defgroup tlv GSM L3 compatible TLV parser
  *  @{
- */
-/*! \file tlv.h */
+ * \file tlv.h */
 
 /* Terminology / wording
 		tag	length		value	(in bits)

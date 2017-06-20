@@ -1,3 +1,5 @@
+/*! \file control_if.h */
+
 #pragma once
 
 #include <osmocom/core/write_queue.h>

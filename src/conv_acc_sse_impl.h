@@ -1,8 +1,8 @@
-/*
- * Accelerated Viterbi decoder implementation
+/*! \file conv_acc_sse_impl.h
+ * Accelerated Viterbi decoder implementation:
  * Actual definitions which are being included
- * from both conv_acc_sse.c and conv_acc_sse_avx.c
- *
+ * from both conv_acc_sse.c and conv_acc_sse_avx.c. */
+/*
  * Copyright (C) 2013, 2014 Thomas Tsou <tom@tsou.cc>
  *
  * All Rights Reserved

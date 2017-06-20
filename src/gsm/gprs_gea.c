@@ -1,8 +1,6 @@
+/*! \file gprs_gea.c
+ * GEA 3 & 4 plugin */
 /*
- * gprs_gea.c
- *
- * GEA 3 & 4 plugin
- *
  * Copyright (C) 2016 by Sysmocom s.f.m.c. GmbH
  *
  * All Rights Reserved

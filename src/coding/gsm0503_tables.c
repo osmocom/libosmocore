@@ -27,14 +27,13 @@
 /*! \addtogroup tables
  *  @{
  *
- *  GSM TS 05.03 tables
+ *  GSM TS 05.03 tables.
  *
  *  This module contains various tables defining parts of 3GPP TS 05.03
  *  / 45.003, primarily for the purpose of (de)puncturing, interleaving,
  *  etc.
- */
-
-/*! \file gsm0503_tables.c */
+ *
+ * \file gsm0503_tables.c */
 
 const ubit_t gsm0503_pdtch_hl_hn_ubit[4][8] = {
 	{ 1,1, 1,1, 1,1, 1,1 },

@@ -1,8 +1,9 @@
+/*! \file gsm_04_12.h
+ * GSM TS 04.12 definitions for Short Message Service Cell Broadcast. */
+
 #pragma once
 
 #include <stdint.h>
-
-/* GSM TS 04.12 definitions for Short Message Service Cell Broadcast */
 
 #define GSM412_MSG_LEN		88	/* TS 04.12 Section 3.1 */
 #define GSM412_BLOCK_LEN	22	/* TS 04.12 Section 3.1 */

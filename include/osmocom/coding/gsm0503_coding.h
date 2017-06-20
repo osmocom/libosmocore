@@ -1,3 +1,7 @@
+/*! \file gsm0503_coding.h
+ *  GSM TS 05.03 coding
+ */
+
 #pragma once
 
 #include <stdint.h>
@@ -5,11 +9,7 @@
 
 /*! \addtogroup coding
  *  @{
- */
-
-/*! \file gsm0503_coding.h
- *  GSM TS 05.03 coding
- */
+ * \file gsm0503_coding.h */
 
 #define GSM0503_GPRS_BURSTS_NBITS	(116 * 4)
 #define GSM0503_EGPRS_BURSTS_NBITS	(348 * 4)

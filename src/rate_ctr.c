@@ -1,5 +1,3 @@
-/* utility routines for keeping conters about events and the event rates */
-
 /* (C) 2009-2010 by Harald Welte <laforge@gnumonks.org>
  *
  * All Rights Reserved
@@ -22,11 +20,9 @@
 
 /*! \addtogroup rate_ctr
  *  @{
- *  conters about events and their event rates
- */
-
-/*! \file rate_ctr.c */
-
+ *  Counters about events and their event rates.
+ *
+ * \file rate_ctr.c */
 
 #include <stdint.h>
 #include <string.h>

@@ -22,10 +22,7 @@
 
 /*! \addtogroup timer
  *  @{
- */
-
-/*! \file timer_gettimeofday.c
- */
+ * \file timer_gettimeofday.c */
 
 #include <stdbool.h>
 #include <sys/time.h>

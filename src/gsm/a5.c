@@ -1,12 +1,11 @@
-/*
- * a5.c
- *
- * Full reimplementation of A5/1,2 (split and threadsafe)
+/*! \file a5.c
+ * Full reimplementation of A5/1,2 (split and threadsafe).
  *
  * The logic behind the algorithm is taken from "A pedagogical implementation
  * of the GSM A5/1 and A5/2 "voice privacy" encryption algorithms." by
  * Marc Briceno, Ian Goldberg, and David Wagner.
- *
+ */
+/*
  * Copyright (C) 2011  Sylvain Munaut <tnt@246tNt.com>
  *
  * All Rights Reserved
@@ -29,9 +28,8 @@
 /*! \addtogroup crypto
  *  @{
  *  Osmocom GSM/GPRS ciphering algorithm implementation
- */
-
-/*! \file gsm/a5.c */
+ *
+ * \file gsm/a5.c */
 
 #include <errno.h>
 #include <string.h>

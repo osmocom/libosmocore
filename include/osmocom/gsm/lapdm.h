@@ -5,9 +5,7 @@
 
 /*! \defgroup lapdm LAPDm implementation according to GSM TS 04.06
  *  @{
- */
-
-/*! \file lapdm.h */
+ * \file lapdm.h */
 
 /*! LAPDm mode/role */
 enum lapdm_mode {

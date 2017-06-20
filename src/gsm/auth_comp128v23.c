@@ -1,9 +1,8 @@
-/* registers COMP128 version 2 and 3 A3/A8 algorithms for the
- * GSM/GPRS/3G authentication core infrastructure
- *
- */
-
-/* (C) 2010-2011 by Harald Welte <laforge@gnumonks.org>
+/*! \file auth_comp128v23.c
+ * registers COMP128 version 2 and 3 A3/A8 algorithms for the
+ * GSM/GPRS/3G authentication core infrastructure. */
+/*
+ * (C) 2010-2011 by Harald Welte <laforge@gnumonks.org>
  * (C) 2013 by Kévin Redon <kevredon@mail.tsaitgaist.info>
  *
  * All Rights Reserved

@@ -1,3 +1,5 @@
+/*! \file gsm0411_utils.h */
+
 #pragma once
 
 #include <time.h>

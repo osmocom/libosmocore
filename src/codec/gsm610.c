@@ -1,5 +1,5 @@
-/* GSM 06.10 - GSM FR codec */
-
+/*! \file gsm610.c
+ * GSM 06.10 - GSM FR codec. */
 /*
  * (C) 2010 Sylvain Munaut <tnt@246tNt.com>
  *

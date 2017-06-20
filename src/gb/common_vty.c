@@ -1,5 +1,7 @@
-/* OpenBSC VTY common helpers */
-/* (C) 2009-2012 by Harald Welte <laforge@gnumonks.org>
+/*! \file common_vty.c
+ * OpenBSC VTY common helpers. */
+/*
+ * (C) 2009-2012 by Harald Welte <laforge@gnumonks.org>
  * (C) 2009-2010 by Holger Hans Peter Freyther
  * All Rights Reserved
  *

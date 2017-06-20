@@ -1,6 +1,6 @@
+/*! \file gsm/a5.h
+ *  Osmocom GSM A5 ciphering algorithm header. */
 /*
- * a5.h
- *
  * Copyright (C) 2011  Sylvain Munaut <tnt@246tNt.com>
  *
  * All Rights Reserved
@@ -29,11 +29,7 @@
 
 /*! \defgroup a5 GSM A5 ciphering algorithm
  *  @{
- */
-
-/*! \file gsm/a5.h
- *  Osmocom GSM A5 ciphering algorithm header
- */
+ * \file a5.h */
 
 /*! Converts a frame number into the 22 bit number used in A5/x
  *  \param[in] fn The true framenumber

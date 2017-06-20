@@ -1,5 +1,7 @@
+/*! \file milenage.h
+ * UMTS AKA - Milenage algorithm (3GPP TS 35.205, .206, .207, .208).
+ */
 /*
- * UMTS AKA - Milenage algorithm (3GPP TS 35.205, .206, .207, .208)
  * Copyright (c) 2006-2007 <j@w1.fi>
  *
  * This program is free software; you can redistribute it and/or modify

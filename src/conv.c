@@ -1,8 +1,6 @@
+/*! \file conv.c
+ * Generic convolutional encoding / decoding. */
 /*
- * conv.c
- *
- * Generic convolutional encoding / decoding
- *
  * Copyright (C) 2011  Sylvain Munaut <tnt@246tNt.com>
  *
  * All Rights Reserved
@@ -24,10 +22,10 @@
 
 /*! \addtogroup conv
  *  @{
- *  Osmocom convolutional encoder and decoder
- */
+ *  Osmocom convolutional encoder and decoder.
+ *
+ * \file conv.c */
 
-/*! \file conv.c */
 #include "config.h"
 #ifdef HAVE_ALLOCA_H
 #include <alloca.h>

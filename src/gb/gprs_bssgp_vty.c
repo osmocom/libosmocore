@@ -1,6 +1,7 @@
-/* VTY interface for our GPRS BSS Gateway Protocol (BSSGP) implementation */
-
-/* (C) 2010 by Harald Welte <laforge@gnumonks.org>
+/*! \file gprs_bssgp_vty.c
+ * VTY interface for our GPRS BSS Gateway Protocol (BSSGP) implementation. */
+/*
+ * (C) 2010 by Harald Welte <laforge@gnumonks.org>
  *
  * All Rights Reserved
  *

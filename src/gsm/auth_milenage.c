@@ -1,6 +1,7 @@
-/* GSM/GPRS/3G authentication core infrastructure */
-
-/* (C) 2011 by Harald Welte <laforge@gnumonks.org>
+/*! \file auth_milenage.c
+ * GSM/GPRS/3G authentication core infrastructure */
+/*
+ * (C) 2011 by Harald Welte <laforge@gnumonks.org>
  *
  * All Rights Reserved
  *

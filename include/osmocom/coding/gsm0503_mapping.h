@@ -1,14 +1,14 @@
+/*! \file gsm0503_mapping.c
+ *  GSM TS 05.03 burst mapping.
+ */
+
 #pragma once
 
 #include <osmocom/core/bits.h>
 
 /*! \addtogroup mapping
  *  @{
- */
-
-/*! \file gsm0503_mapping.c
- *  GSM TS 05.03 burst mapping
- */
+ * \file gsm0503_mapping.h */
 
 void gsm0503_xcch_burst_unmap(sbit_t *iB, const sbit_t *eB,
 	sbit_t *hl, sbit_t *hn);

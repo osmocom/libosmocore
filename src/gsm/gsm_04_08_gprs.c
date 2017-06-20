@@ -1,4 +1,6 @@
-/* (C) 2009-2016 by Harald Welte <laforge@gnumonks.org>
+/*! \file gsm_04_08_gprs.c */
+/*
+ * (C) 2009-2016 by Harald Welte <laforge@gnumonks.org>
  * (C) 2010      by On-Waves
  * (C) 2014-2015 by Sysmocom s.f.m.c. GmbH
  *

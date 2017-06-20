@@ -1,4 +1,7 @@
-/* (C) 2012 by Harald Welte <laforge@gnumonks.org>
+/*! \file gan.c
+ *  Generic Access Network (GAN) / UMA according to TS 44.318. */
+/*
+ * (C) 2012 by Harald Welte <laforge@gnumonks.org>
  * All Rights Reserved
  *
  * This program is free software; you can redistribute it and/or modify
@@ -20,11 +23,6 @@
 #include <osmocom/core/utils.h>
 
 #include <osmocom/gsm/protocol/gsm_44_318.h>
-
-/*! \file gan.c
- *  Generic Access Network (GAN) / UMA according to TS 44.318
- */
-
 
 const struct value_string gan_msgt_vals[] = {
 	{ GA_MT_RC_DISCOVERY_REQUEST,	"GA-RC DISCOVERY REQUEST" },

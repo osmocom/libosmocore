@@ -1,4 +1,6 @@
-/* (C) 2016 by Sysmocom s.f.m.c. GmbH
+/*! \file gsm0808_utils.c */
+/*
+ * (C) 2016 by Sysmocom s.f.m.c. GmbH
  * All Rights Reserved
  *
  * Author: Philipp Maier

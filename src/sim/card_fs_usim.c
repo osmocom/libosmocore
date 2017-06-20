@@ -1,4 +1,5 @@
-/* 3GPP USIM specific structures / routines */
+/*! \file card_fs_usim.c
+ * 3GPP USIM specific structures / routines. */
 /*
  * (C) 2012-2014 by Harald Welte <laforge@gnumonks.org>
  *

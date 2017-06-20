@@ -1,11 +1,11 @@
-/* COMP128 version 2 and 3 implementation
+/*! \file comp128v23.c
+ * COMP128 version 2 and 3 implementation, common algorithm used for GSM Authentication (A3/A8).
  *
  * This code is a C conversion of the original code from
  * http://www.hackingprojects.net/
- *
  */
-
-/* (C) 2013 by Kévin Redon <kevredon@mail.tsaitgaist.info>
+/*
+ * (C) 2013 by Kévin Redon <kevredon@mail.tsaitgaist.info>
  *
  * All Rights Reserved
  *
@@ -30,11 +30,7 @@
 
 /*! \addtogroup auth
  *  @{
- */
-
-/*! \file comp128v23.c
- *  COMP128 v2 / v3; Common Algorithm used for GSM Authentication (A3/A8)
- */
+ * \file comp128v23.c */
 
 static const uint8_t table0[256] = {
 	197, 235, 60, 151, 98, 96, 3, 100, 248, 118, 42, 117, 172, 211, 181, 203, 61,

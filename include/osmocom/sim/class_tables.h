@@ -1,7 +1,6 @@
-#pragma once
-
-/* simtrace - tables determining APDU case for card emulation
- *
+/*! \file class_tables.h
+ * simtrace - tables determining APDU case for card emulation. */
+/*
  * (C) 2016 by Harald Welte <laforge@gnumonks.org>
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -17,6 +16,8 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+
+#pragma once
 
 #include <stdint.h>
 

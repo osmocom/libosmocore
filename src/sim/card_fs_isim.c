@@ -1,4 +1,5 @@
-/* 3GPP ISIM specific structures / routines */
+/*! \file card_fs_isim.c
+ * 3GPP ISIM specific structures / routines. */
 /*
  * (C) 2014 by Harald Welte <laforge@gnumonks.org>
  *

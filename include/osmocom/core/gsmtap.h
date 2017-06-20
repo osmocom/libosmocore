@@ -1,8 +1,6 @@
-#pragma once
-
-/* gsmtap header, pseudo-header in front of the actua GSM payload */
-
-/* GSMTAP is a generic header format for GSM protocol captures,
+/*! \file gsmtap.h
+ * gsmtap header, pseudo-header in front of the actua GSM payload.
+ * GSMTAP is a generic header format for GSM protocol captures,
  * it uses the IANA-assigned UDP port number 4729 and carries
  * payload in various formats of GSM interfaces such as Um MAC
  * blocks or Um bursts.
@@ -10,6 +8,8 @@
  * Example programs generating GSMTAP data are airprobe
  * (http://airprobe.org/) or OsmocomBB (http://bb.osmocom.org/)
  */
+
+#pragma once
 
 #include <stdint.h>
 

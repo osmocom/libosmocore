@@ -2,9 +2,7 @@
 
 /*! \defgroup logging Osmocom logging framework
  *  @{
- */
-
-/*! \file logging.h */
+ * \file logging.h */
 
 #include <stdio.h>
 #include <stdint.h>

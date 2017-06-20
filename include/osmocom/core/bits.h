@@ -1,3 +1,11 @@
+/*! \file bits.h
+ *  Osmocom bit level support code.
+ *
+ *  NOTE on the endianess of pbit_t:
+ *  Bits in a pbit_t are ordered MSB first, i.e. 0x80 is the first bit.
+ *  Bit i in a pbit_t array is array[i/8] & (1<<(7-i%8))
+ */
+
 #pragma once
 
 #include <stdint.h>
@@ -9,15 +17,7 @@
 
 /*! \defgroup bits soft, unpacked and packed bits
  *  @{
- */
-
-/*! \file bits.h
- *  Osmocom bit level support code
- *
- *  NOTE on the endianess of pbit_t:
- *  Bits in a pbit_t are ordered MSB first, i.e. 0x80 is the first bit.
- *  Bit i in a pbit_t array is array[i/8] & (1<<(7-i%8))
- */
+ * \file bits.h */
 
 typedef int8_t  sbit_t;		/*!< soft bit (-127...127) */
 typedef uint8_t ubit_t;		/*!< unpacked bit (0 or 1) */

@@ -1,3 +1,5 @@
+/*! \file gprs_msgb.h */
+
 #pragma once
 
 #include <stdint.h>

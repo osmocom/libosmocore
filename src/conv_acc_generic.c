@@ -1,7 +1,7 @@
-/*
+/*! \file conv_acc_generic.c
  * Accelerated Viterbi decoder implementation
- * for generic architectures without SSE support
- *
+ * for generic architectures without SSE support. */
+/*
  * Copyright (C) 2013, 2014 Thomas Tsou <tom@tsou.cc>
  *
  * All Rights Reserved

@@ -1,3 +1,5 @@
+/*! \file prim.h */
+
 #pragma once
 
 #include <osmocom/core/prim.h>

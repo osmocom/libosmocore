@@ -29,16 +29,12 @@
 
 /*! \addtogroup interleaving
  *  @{
- *  GSM TS 05.03 interleaving
+ * GSM TS 05.03 interleaving
  *
- *  This module contains interleaving / de-interleaving routines for
- *  various channel types, as defined in 3GPP TS 05.03 / 45.003
- */
-
-/*! \file gsm0503_interleaving.c */
-
-/*
- * GSM xCCH interleaving and burst mapping
+ * This module contains interleaving / de-interleaving routines for
+ * various channel types, as defined in 3GPP TS 05.03 / 45.003.
+ *
+ * GSM xCCH interleaving and burst mapping:
  *
  * Interleaving:
  *
@@ -57,7 +53,30 @@
  *      e(B, 58) = h_n(B)
  *
  * Where hl(B) and hn(B) are bits in burst B indicating flags.
- */
+ *
+ * GSM TCH HR/AHS interleaving and burst mapping:
+ *
+ * Interleaving:
+ *
+ * Given 288 coded input bits, form 4 blocks of 114 bits,
+ * where even bits of the first 2 blocks and odd bits of the last 2 blocks
+ * are used:
+ *
+ *      i(B, j) = c(n, k)       k = 0, ..., 227
+ *                              n = 0, ..., N, N + 1, ...
+ *                              B = B_0 + 2n + b
+ *                              j, b = table[k];
+ *
+ * Mapping on Burst:
+ *
+ *      e(B, j) = i(B, j)
+ *      e(B, 59 + j) = i(B, 57 + j)     j = 0, ..., 56
+ *      e(B, 57) = h_l(B)
+ *      e(B, 58) = h_n(B)
+ *
+ * Where hl(B) and hn(B) are bits in burst B indicating flags.
+ *
+ * \file gsm0503_interleaving.c */
 
 /*! De-Interleave burst bits according to TS 05.03 4.1.4
  *  \param[out] cB caller-allocated output buffer for 456 soft coded bits
@@ -632,30 +651,6 @@ void gsm0503_tch_fr_interleave(const ubit_t *cB, ubit_t *iB)
 		iB[B * 114 + j] = cB[k];
 	}
 }
-
-/*
- * GSM TCH HR/AHS interleaving and burst mapping
- *
- * Interleaving:
- *
- * Given 288 coded input bits, form 4 blocks of 114 bits,
- * where even bits of the first 2 blocks and odd bits of the last 2 blocks
- * are used:
- *
- *      i(B, j) = c(n, k)       k = 0, ..., 227
- *                              n = 0, ..., N, N + 1, ...
- *                              B = B_0 + 2n + b
- *                              j, b = table[k];
- *
- * Mapping on Burst:
- *
- *      e(B, j) = i(B, j)
- *      e(B, 59 + j) = i(B, 57 + j)     j = 0, ..., 56
- *      e(B, 57) = h_l(B)
- *      e(B, 58) = h_n(B)
- *
- * Where hl(B) and hn(B) are bits in burst B indicating flags.
- */
 
 /*! GSM TCH HR/AHS De-Interleaving and burst mapping
  *  \param[out] cB caller-allocated buffer for 228 unpacked output bits

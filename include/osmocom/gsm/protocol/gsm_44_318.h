@@ -1,8 +1,9 @@
+/*! \file gsm_44_318.h
+ * Definitions according to 3GPP TS 44.318 6.8.0 Release 6. */
+
 #pragma once
 
 #include <stdint.h>
-
-/* Definitions according to 3GPP TS 44.318 6.8.0 Release 6 */
 
 /* Table 11.1.1.2.1: Protocol Discriminator */
 enum gan_pdisc {

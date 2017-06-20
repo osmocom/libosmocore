@@ -1,3 +1,5 @@
+/*! \file gsm0502.h */
+
 #pragma once
 
 #include <stdint.h>

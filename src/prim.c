@@ -1,3 +1,5 @@
+/*! \file prim.c */
+
 #include <osmocom/core/utils.h>
 #include <osmocom/core/prim.h>
 

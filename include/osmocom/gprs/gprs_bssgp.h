@@ -1,3 +1,5 @@
+/*! \file gprs_bssgp.h */
+
 #pragma once
 
 #include <stdint.h>

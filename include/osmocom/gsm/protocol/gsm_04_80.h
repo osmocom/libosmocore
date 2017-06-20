@@ -1,6 +1,7 @@
-#pragma once
+/*! \file gsm_04_80.h
+ * GSM TS 04.80  definitions (Supplementary Services Specification, Formats and Coding). */
 
-/* GSM TS 04.80  definitions (Supplementary Services Specification, Formats and Coding) */
+#pragma once
 
 /* Section 3.4 */
 #define GSM0480_MTYPE_RELEASE_COMPLETE	0x2A

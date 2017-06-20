@@ -1,6 +1,7 @@
-/* GSM/GPRS/3G authentication testing tool */
-
-/* (C) 2010-2012 by Harald Welte <laforge@gnumonks.org>
+/*! \file osmo-auc-gen.c
+ * GSM/GPRS/3G authentication testing tool. */
+/*
+ * (C) 2010-2012 by Harald Welte <laforge@gnumonks.org>
  *
  * All Rights Reserved
  *

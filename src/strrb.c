@@ -1,7 +1,21 @@
-/* Ringbuffer implementation, tailored for logging.
+/*! \file strrb.c
+ * Ringbuffer implementation, tailored for logging.
  * This is a lossy ringbuffer. It keeps up to N of the newest messages,
  * overwriting the oldest as newer ones come in.
  *
+ * Ringbuffer assumptions, invarients, and notes:
+ * - start is the index of the first used index slot in the ring buffer.
+ * - end is the index of the next index slot in the ring buffer.
+ * - start == end => buffer is empty
+ * - Consequence: the buffer can hold at most size - 1 messages
+ *   (if this were not the case, full and empty buffers would be indistinguishable
+ *   given the conventions in this implementation).
+ * - Whenever the ringbuffer is full, start is advanced. The second oldest
+ *   message becomes unreachable by valid indexes (end is not a valid index)
+ *   and the oldest message is overwritten (if there was a message there, which
+ *   is the case unless this is the first time the ringbuffer becomes full).
+ */
+/*
  * (C) 2012-2013, Katerina Barone-Adesi <kat.obsc@gmail.com>
  * All Rights Reserved
  *
@@ -23,11 +37,7 @@
 
 /*! \addtogroup utils
  *  @{
- */
-
-/*! \file strrb.c
- *  Lossy string ringbuffer for logging; keeps newest messages.
- */
+ * \file strrb.c */
 
 #include <stdio.h>
 #include <string.h>
@@ -35,19 +45,6 @@
 
 #include <osmocom/core/strrb.h>
 #include <osmocom/core/talloc.h>
-
-/* Ringbuffer assumptions, invarients, and notes:
- * - start is the index of the first used index slot in the ring buffer.
- * - end is the index of the next index slot in the ring buffer.
- * - start == end => buffer is empty
- * - Consequence: the buffer can hold at most size - 1 messages
- * (if this were not the case, full and empty buffers would be indistinguishable
- * given the conventions in this implementation).
- * - Whenever the ringbuffer is full, start is advanced. The second oldest
- * message becomes unreachable by valid indexes (end is not a valid index)
- * and the oldest message is overwritten (if there was a message there, which
- * is the case unless this is the first time the ringbuffer becomes full).
-*/
 
 /*! Create an empty, initialized osmo_strrb.
  *  \param[in] ctx The talloc memory context which should own this.
@@ -57,7 +54,6 @@
  * This function creates and initializes a ringbuffer.
  * Note that the ringbuffer stores at most rb_size - 1 messages.
  */
-
 struct osmo_strrb *osmo_strrb_create(TALLOC_CTX * ctx, size_t rb_size)
 {
 	struct osmo_strrb *rb = NULL;

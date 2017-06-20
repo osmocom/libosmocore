@@ -1,3 +1,5 @@
+/*! \file gan.h */
+
 #pragma once
 
 #include <osmocom/core/utils.h>

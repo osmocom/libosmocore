@@ -1,5 +1,6 @@
+/*! \file command.h
+ * Zebra configuration command interface routine. */
 /*
- * Zebra configuration command interface routine
  * Copyright (C) 1997, 98 Kunihiro Ishiguro
  *
  * This file is part of GNU Zebra.
@@ -28,8 +29,7 @@
 
 /*! \defgroup command VTY Command
  *  @{
- */
-/*! \file command.h */
+ * \file command.h */
 
 /*! Host configuration variable */
 struct host {

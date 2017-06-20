@@ -1,7 +1,7 @@
-/*
+/*! \file conv_acc_sse_avx.c
  * Accelerated Viterbi decoder implementation
- * for architectures with both SSE3 and AVX2 support
- *
+ * for architectures with both SSE3 and AVX2 support. */
+/*
  * Copyright (C) 2013, 2014 Thomas Tsou <tom@tsou.cc>
  *
  * All Rights Reserved

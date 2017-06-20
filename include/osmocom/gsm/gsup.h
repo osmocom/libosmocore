@@ -1,6 +1,7 @@
-/* Osmocom Generic Subscriber Update Protocol message encoder/decoder */
-
-/* (C) 2014 by sysmocom s.f.m.c. GmbH, Author: Jacob Erlbeck
+/*! \file gsup.h
+ * Osmocom Generic Subscriber Update Protocol message encoder/decoder. */
+/*
+ * (C) 2014 by sysmocom s.f.m.c. GmbH, Author: Jacob Erlbeck
  * (C) 2016 by Harald Welte <laforge@gnumonks.org>
  * All Rights Reserved
  *

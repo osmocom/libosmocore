@@ -39,9 +39,8 @@
  *  particular type.  Types are e.g. TV (Tag + single byte value), Tag +
  *  fixed-length value, TLV with 8bit length, TLV with 16bit length, TLV
  *  with variable-length length field, etc.
- */
-
-/*! \file tlv_parser.c */
+ *
+ * \file tlv_parser.c */
 
 struct tlv_definition tvlv_att_def;
 struct tlv_definition vtvlv_gan_att_def;

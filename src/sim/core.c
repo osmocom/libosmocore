@@ -1,4 +1,5 @@
-/* Core routines for SIM/UICC/USIM access */
+/*! \file core.c
+ * Core routines for SIM/UICC/USIM access. */
 /*
  * (C) 2012 by Harald Welte <laforge@gnumonks.org>
  *

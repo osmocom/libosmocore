@@ -1,7 +1,5 @@
-/* GSM Network Management (OML) messages on the A-bis interface
- * 3GPP TS 12.21 version 8.0.0 Release 1999 / ETSI TS 100 623 V8.0.0 */
-
-/* (C) 2008-2011 by Harald Welte <laforge@gnumonks.org>
+/*
+ * (C) 2008-2011 by Harald Welte <laforge@gnumonks.org>
  *
  * All Rights Reserved
  *
@@ -22,11 +20,10 @@
 
 /*! \addtogroup oml
  *  @{
- * GSM Network Management (OML) messages on the A-bis interface
+ * GSM Network Management (OML) messages on the A-bis interface.
  * 3GPP TS 12.21 version 8.0.0 Release 1999 / ETSI TS 100 623 V8.0.0
- */
-
-/*! \file abis_nm.c */
+ *
+ * \file abis_nm.c */
 
 #include <stdint.h>
 #include <errno.h>

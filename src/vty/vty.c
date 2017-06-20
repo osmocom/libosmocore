@@ -68,8 +68,7 @@
 
 /* \addtogroup vty
  * @{
- */
-/*! \file vty.c */
+ * \file vty.c */
 
 #define SYSCONFDIR "/usr/local/etc"
 

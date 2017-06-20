@@ -6,8 +6,7 @@
 
 /*! \defgroup gsmtap GSMTAP
  *  @{
- */
-/*! \file gsmtap_util.h */
+ * \file gsmtap_util.h */
 
 uint8_t chantype_rsl2gsmtap(uint8_t rsl_chantype, uint8_t rsl_link_id);
 

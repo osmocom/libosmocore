@@ -1,3 +1,4 @@
+/*! \file msgfile.h */
 /*
  * (C) 2010 by Holger Hans Peter Freyther
  * (C) 2010 by On-Waves

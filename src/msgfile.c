@@ -1,6 +1,6 @@
+/*! \file msgfile.c
+ * Parse a simple file with messages, e.g used for USSD messages. */
 /*
- * Parse a simple file with messages, e.g used for USSD messages
- *
  * (C) 2010 by Holger Hans Peter Freyther
  * (C) 2010 by On-Waves
  * All Rights Reserved

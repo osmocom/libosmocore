@@ -1,6 +1,7 @@
-/* utility routines for keeping some statistics */
-
-/* (C) 2009 by Harald Welte <laforge@gnumonks.org>
+/*! \file statistics.c
+ * utility routines for keeping some statistics. */
+/*
+ * (C) 2009 by Harald Welte <laforge@gnumonks.org>
  *
  * All Rights Reserved
  *

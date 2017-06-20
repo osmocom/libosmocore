@@ -20,6 +20,7 @@
 
 /*! \addtogroup msgb
  *  @{
+ *
  *  libosmocore message buffers, inspired by Linux kernel skbuff
  *
  *  Inspired by the 'struct skbuff' of the Linux kernel, we implement a
@@ -46,9 +47,9 @@
  *  	* prepending (pushing) and appending (putting) data
  *  	* copying / resizing
  *  	* hex-dumping to a string for debug purposes
+ *
+ * \file msgb.c
  */
-
-/*! \file msgb.c */
 
 #include <unistd.h>
 #include <string.h>

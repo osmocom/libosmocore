@@ -1,3 +1,5 @@
+/*! \file backtrace.c
+ *  Routines related to generating call back traces. */
 /*
  * (C) 2009 by Holger Hans Peter Freyther <zecke@selfish.org>
  * (C) 2012 by Harald Welte <laforge@gnumonks.org>
@@ -18,10 +20,6 @@
  * with this program; if not, write to the Free Software Foundation, Inc.,
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
- */
-
-/*! \file backtrace.c
- *  Routines realted to generating call back traces
  */
 
 #include <stdio.h>

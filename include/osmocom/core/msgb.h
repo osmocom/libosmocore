@@ -27,9 +27,7 @@
 
 /*! \defgroup msgb Message buffers
  *  @{
- */
-
-/*! \file msgb.h */
+ * \file msgb.h */
 
 #define MSGB_DEBUG
 

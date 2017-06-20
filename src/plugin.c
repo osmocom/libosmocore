@@ -1,6 +1,7 @@
-/* plugin infrastructure */
-
-/* (C) 2010 by Harald Welte <laforge@gnumonks.org>
+/*! \file plugin.c
+ *  Routines for loading and managing shared library plug-ins. */
+/*
+ * (C) 2010 by Harald Welte <laforge@gnumonks.org>
  *
  * All Rights Reserved
  *
@@ -22,12 +23,7 @@
 
 /*! \addtogroup utils
  *  @{
- */
-
-/*! \file plugin.c
- *  Routines for loading and managing shared library plug-ins.
- */
-
+ * \file plugin.c */
 
 #include "../config.h"
 

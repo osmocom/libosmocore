@@ -1,7 +1,3 @@
-#pragma once
-
-/* bit vector utility routines */
-
 /* (C) 2009 by Harald Welte <laforge@gnumonks.org>
  * (C) 2012 Ivan Klyuchnikov
  * (C) 2015 Sysmocom s.f.m.c. GmbH
@@ -24,21 +20,11 @@
  *
  */
 
+#pragma once
+
 /*! \defgroup bitvec Bit vectors
  *  @{
- */
-
-/*! \file bitvec.h
- *  Osmocom bit vector abstraction
- *
- *  These functions assume a MSB (most significant bit) first layout of the
- *  bits, so that for instance the 5 bit number abcde (a is MSB) can be
- *  embedded into a byte sequence like in xxxxxxab cdexxxxx. The bit count
- *  starts with the MSB, so the bits in a byte are numbered (MSB) 01234567 (LSB).
- *  Note that there are other incompatible encodings, like it is used
- *  for the EGPRS RLC data block headers (there the bits are numbered from LSB
- *  to MSB).
- */
+ * \file bitvec.h */
 
 #include <stdint.h>
 #include <osmocom/core/talloc.h>

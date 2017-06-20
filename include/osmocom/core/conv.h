@@ -1,6 +1,6 @@
+/*! \file conv.h
+ * Osmocom convolutional encoder and decoder. */
 /*
- * conv.h
- *
  * Copyright (C) 2011  Sylvain Munaut <tnt@246tNt.com>
  *
  * All Rights Reserved
@@ -22,11 +22,7 @@
 
 /*! \defgroup conv Convolutional encoding and decoding routines
  *  @{
- */
-
-/*! \file conv.h
- * Osmocom convolutional encoder and decoder
- */
+ * \file conv.h */
 
 #pragma once
 

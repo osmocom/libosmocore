@@ -1,12 +1,12 @@
+/*! \file defs.h
+ *  General definitions that are meant to be included from header files.
+ */
+
 #pragma once
 
 /*! \defgroup utils General-purpose utility functions
  *  @{
- */
-
-/*! \file defs.h
- *  General definitions that are meant to be included from header files.
- */
+ * \file defs.h */
 
 /*! Check for gcc and version.
  *

@@ -1,9 +1,5 @@
-#pragma once
-
-/* GSM Network Management messages on the A-bis interface 
- * 3GPP TS 12.21 version 8.0.0 Release 1999 / ETSI TS 100 623 V8.0.0 */
-
-/* (C) 2008-2009 by Harald Welte <laforge@gnumonks.org>
+/*
+ * (C) 2008-2009 by Harald Welte <laforge@gnumonks.org>
  * All Rights Reserved
  *
  * This program is free software; you can redistribute it and/or modify
@@ -22,11 +18,11 @@
  *
  */
 
+#pragma once
+
 /*! \addtogroup oml
  *  @{
- */
-
-/*! \file gsm_12_21.h */
+ * \file gsm_12_21.h */
 
 #include <stdint.h>
 #include <stdbool.h>

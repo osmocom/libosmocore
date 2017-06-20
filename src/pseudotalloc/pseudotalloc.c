@@ -1,7 +1,7 @@
-/* overly simplistic talloc replacement for deeply embedded
+/*! \file pseudotalloc.c
+ * overly simplistic talloc replacement for deeply embedded
  * microcontrollers.  Obviously this has none of the properties of real
- * talloc, it is particualrly not hierarchical at all */
-
+ * talloc, it is particualrly not hierarchical at all. */
 
 #include "talloc.h"
 #include <string.h>
