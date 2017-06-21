@@ -49,7 +49,7 @@ static int test_sockinit(void)
 	 * as apparently that won't work on FreeBSD if there's only one
 	 * address (e.g. 127.0.0.1) assigned to the entire system, like
 	 * the Osmocom FreeBSD build slaves */
-	OSMO_ASSERT(!strncmp(name, "(NULL<->", 7));
+	OSMO_ASSERT(!strncmp(name, "(r=NULL<->", 9));
 	talloc_free(name);
 	/* expect it to be blocking */
 	rc = fcntl(fd, F_GETFL);
@@ -87,7 +87,7 @@ static int test_sockinit2(void)
 	 * as apparently that won't work on FreeBSD if there's only one
 	 * address (e.g. 127.0.0.1) assigned to the entire system, like
 	 * the Osmocom FreeBSD build slaves */
-	OSMO_ASSERT(!strncmp(name, "(NULL<->", 7));
+	OSMO_ASSERT(!strncmp(name, "(r=NULL<->", 9));
 	talloc_free(name);
 	/* expect it to be blocking */
 	rc = fcntl(fd, F_GETFL);
@@ -116,7 +116,7 @@ static int test_sockinit2(void)
 	/* For some reason, on the jenkins.osmocom.org build slave with
 	 * FreeBSD 10 inside a jail, it fails.  Works fine on laforge's
 	 * FreeBSD 10 or 11 VM at home */
-	OSMO_ASSERT(!strncmp(name, "(127.0.0.1:53<->127.0.0.1", 25));
+	OSMO_ASSERT(!strncmp(name, "(r=127.0.0.1:53<->l=127.0.0.1", 29));
 #endif
 	talloc_free(name);
 

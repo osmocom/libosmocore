@@ -607,11 +607,11 @@ char *osmo_sock_get_name(void *ctx, int fd)
 	if (rc < 0)
 		goto local_only;
 
-	return talloc_asprintf(ctx, "(%s:%s<->%s:%s)", hostbuf_r, portbuf_r,
+	return talloc_asprintf(ctx, "(r=%s:%s<->l=%s:%s)", hostbuf_r, portbuf_r,
 				hostbuf_l, portbuf_l);
 
 local_only:
-	return talloc_asprintf(ctx, "(NULL<->%s:%s)", hostbuf_l, portbuf_l);
+	return talloc_asprintf(ctx, "(r=NULL<->l=%s:%s)", hostbuf_l, portbuf_l);
 }
 
 #endif /* HAVE_SYS_SOCKET_H */
