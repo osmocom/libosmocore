@@ -230,6 +230,7 @@ static uint8_t enc_speech_codec(struct msgb *msg,
 uint8_t gsm0808_enc_speech_codec(struct msgb *msg,
 				 const struct gsm0808_speech_codec *sc)
 {
+	/*! See also 3GPP TS 48.008 3.2.2.103 Speech Codec List */
 	uint8_t *old_tail;
 	uint8_t *tlv_len;
 
@@ -334,6 +335,7 @@ int gsm0808_dec_speech_codec(struct gsm0808_speech_codec *sc,
 uint8_t gsm0808_enc_speech_codec_list(struct msgb *msg,
 				      const struct gsm0808_speech_codec_list *scl)
 {
+	/*! See also 3GPP TS 48.008 3.2.2.103 Speech Codec List */
 	uint8_t *old_tail;
 	uint8_t *tlv_len;
 	unsigned int i;
@@ -369,6 +371,7 @@ uint8_t gsm0808_enc_speech_codec_list(struct msgb *msg,
 int gsm0808_dec_speech_codec_list(struct gsm0808_speech_codec_list *scl,
 				  const uint8_t *elem, uint8_t len)
 {
+	/*! See also 3GPP TS 48.008 3.2.2.103 Speech Codec List */
 	const uint8_t *old_elem = elem;
 	unsigned int i;
 	int rc;
@@ -412,6 +415,7 @@ int gsm0808_dec_speech_codec_list(struct gsm0808_speech_codec_list *scl,
 uint8_t gsm0808_enc_channel_type(struct msgb *msg,
 				 const struct gsm0808_channel_type *ct)
 {
+	/*! See also 3GPP TS 48.008 3.2.2.11 Channel Type */
 	unsigned int i;
 	uint8_t byte;
 	uint8_t *old_tail;
@@ -454,6 +458,7 @@ uint8_t gsm0808_enc_channel_type(struct msgb *msg,
 int gsm0808_dec_channel_type(struct gsm0808_channel_type *ct,
 			     const uint8_t *elem, uint8_t len)
 {
+	/*! See also 3GPP TS 48.008 3.2.2.11 Channel Type */
 	unsigned int i;
 	uint8_t byte;
 	const uint8_t *old_elem = elem;
