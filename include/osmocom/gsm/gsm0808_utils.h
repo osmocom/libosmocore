@@ -50,6 +50,6 @@ uint8_t gsm0808_enc_cell_id_list(struct msgb *msg,
 				 const struct gsm0808_cell_id_list *cil);
 int gsm0808_dec_cell_id_list(struct gsm0808_cell_id_list *cil,
 			     const uint8_t *elem, uint8_t len);
-int gsm0808_chan_type_to_speech_code(uint8_t perm_spch);
+int gsm0808_chan_type_to_speech_codec(uint8_t perm_spch);
 int gsm0808_speech_codec_from_chan_type(struct gsm0808_speech_codec *sc,
 					uint8_t perm_spch);
