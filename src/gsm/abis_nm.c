@@ -98,10 +98,10 @@ const enum abis_nm_msgtype abis_nm_nacks[33] = {
 	NM_MT_CHG_HW_CONF_NACK,
 	NM_MT_GET_ATTR_NACK,
 	NM_MT_SET_ALARM_THRES_NACK,
-	NM_MT_BS11_BEGIN_DB_TX_NACK,
-	NM_MT_BS11_END_DB_TX_NACK,
-	NM_MT_BS11_CREATE_OBJ_NACK,
-	NM_MT_BS11_DELETE_OBJ_NACK,
+	(enum abis_nm_msgtype) NM_MT_BS11_BEGIN_DB_TX_NACK,
+	(enum abis_nm_msgtype) NM_MT_BS11_END_DB_TX_NACK,
+	(enum abis_nm_msgtype) NM_MT_BS11_CREATE_OBJ_NACK,
+	(enum abis_nm_msgtype) NM_MT_BS11_DELETE_OBJ_NACK,
 };
 
 static const struct value_string nack_names[] = {
