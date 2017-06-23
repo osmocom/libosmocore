@@ -4,8 +4,14 @@ set -ex
 
 ./contrib/verify_value_string_arrays_are_terminated.py $(find . -name "*.[hc]")
 
+if [ "x$label" = "xFreeBSD_amd64" ]; then
+        ENABLE_SANITIZE=""
+else
+        ENABLE_SANITIZE="--enable-sanitize"
+fi
+
 autoreconf --install --force
-./configure --enable-static --enable-sanitize
+./configure --enable-static $ENABLE_SANITIZE
 $MAKE $PARALLEL_MAKE check \
   || cat-testlogs.sh
 $MAKE distcheck \
