@@ -231,12 +231,12 @@ AC_ARG_ENABLE(sanitize,
 	[sanitize=$enableval], [sanitize="no"])
 if test x"$sanitize" = x"yes"
 then
-	CFLAGS+=" -fsanitize=address -fsanitize=undefined"
-	CPPFLAGS+=" -fsanitize=address -fsanitize=undefined"
+	CFLAGS="$CFLAGS -fsanitize=address -fsanitize=undefined"
+	CPPFLAGS="$CPPFLAGS -fsanitize=address -fsanitize=undefined"
 fi
 
-CFLAGS+=" -DBUILDING_LIBOSMOCORE -Wall"
-CPPFLAGS+=" -DBUILDING_LIBOSMOCORE -Wall"
+CFLAGS="$CFLAGS -DBUILDING_LIBOSMOCORE -Wall"
+CPPFLAGS="$CPPFLAGS -DBUILDING_LIBOSMOCORE -Wall"
 
 AC_ARG_ENABLE(simd,
 	[AS_HELP_STRING(
