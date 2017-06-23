@@ -202,7 +202,7 @@ osmo_serial_set_custom_baudrate(int fd, int baudrate)
 	}
 	return 0;
 #else
-#warning osmo_serial_set_custom_baudrate: unsupported platform
+#pragma message ("osmo_serial_set_custom_baudrate: unsupported platform")
 	return 0;
 #endif
 }
