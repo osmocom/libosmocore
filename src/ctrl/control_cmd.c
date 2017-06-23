@@ -291,7 +291,7 @@ struct ctrl_cmd *ctrl_cmd_parse(void *ctx, struct msgb *msg)
 	}
 
 	cmd->type = get_string_value(ctrl_type_vals, tmp);
-	if (cmd->type < 0 || cmd->type == CTRL_TYPE_UNKNOWN) {
+	if ((int)cmd->type < 0 || cmd->type == CTRL_TYPE_UNKNOWN) {
 		cmd->type = CTRL_TYPE_ERROR;
 		cmd->id = "err";
 		cmd->reply = "Request type unknown";
