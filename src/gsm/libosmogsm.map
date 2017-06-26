@@ -272,6 +272,7 @@ gsm_freq102arfcn;
 gsm_band_name;
 gsm_band_parse;
 gsm_fn2gsmtime;
+gsm_fn_as_gsmtime_str;
 gsm_get_octet_len;
 gsm_gsmtime2fn;
 osmo_dump_gsmtime;

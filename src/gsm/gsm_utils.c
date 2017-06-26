@@ -750,6 +750,17 @@ void gsm_fn2gsmtime(struct gsm_time *time, uint32_t fn)
 	time->tc = (time->fn / 51) % 8;
 }
 
+/*! Parse GSM Frame Number into printable string
+ *  \param[in] fn GSM Frame Number
+ *  \returns pointer to printable string */
+char *gsm_fn_as_gsmtime_str(uint32_t fn)
+{
+	struct gsm_time time;
+
+	gsm_fn2gsmtime(&time, fn);
+	return osmo_dump_gsmtime(&time);
+}
+
 /*! Encode decoded \ref gsm_time to Frame Number
  *  \param[in] time GSM Time in decoded structure
  *  \returns GSM Frame Number */

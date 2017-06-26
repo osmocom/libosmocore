@@ -165,6 +165,9 @@ uint16_t gsm_freq102arfcn(uint16_t freq10, int uplink);
 /* Convert from frame number to GSM time */
 void gsm_fn2gsmtime(struct gsm_time *time, uint32_t fn);
 
+/* Parse GSM Frame Number into printable string */
+char *gsm_fn_as_gsmtime_str(uint32_t fn);
+
 /* Convert from GSM time to frame number */
 uint32_t gsm_gsmtime2fn(struct gsm_time *time);
 
