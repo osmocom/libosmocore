@@ -162,6 +162,21 @@ Description: Osmo GPRS GB library
  The libosmogb library in particular contains a GPRS BSSGP protocol
  implementation.
 
+Package: libosmogb-doc
+Architecture: all
+Section: doc
+Depends: ${misc:Depends},
+         libosmogb4,
+         libjs-jquery
+Description: Documentation for the Osmo GPRS Gb library
+ This is part of the libosmocore "meta"-library. The libosmocore library
+ contains various utility functions that were originally developed as part of
+ the OpenBSC project, but which are of a more generic nature and thus useful to
+ (at least) other programs that are developed in the sphere of Free Software /
+ Open Source mobile communication.
+ .
+ This package contains the documentation for the libosmogb library.
+
 Package: libosmogsm7
 Section: libs
 Architecture: any

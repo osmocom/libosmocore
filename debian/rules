@@ -53,5 +53,6 @@ override_dh_clean:
 	$(RM) -r doc/codec/
 	$(RM) -r doc/core/
 	$(RM) -r doc/gsm/
+	$(RM) -r doc/gb/
 	$(RM) -r doc/vty/html/
 	$(RM) -r doc/vty/latex/
