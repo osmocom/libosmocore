@@ -963,6 +963,9 @@ static int bssgp_rx_sign(struct msgb *msg, struct tlv_parsed *tp,
 		}
 		rc = bssgp_rx_bvc_unblock(msg, tp);
 		break;
+	case BSSGP_PDUT_BVC_RESET_ACK:
+		LOGP(DBSSGP, LOGL_ERROR, "BSSGP BVCI=%u Rx BVC-RESET-ACK\n", bvci);
+		break;
 	case BSSGP_PDUT_BVC_RESET:
 		/* BSS tells us that BVC init is required */
 		if (!TLVP_PRESENT(tp, BSSGP_IE_BVCI) ||
