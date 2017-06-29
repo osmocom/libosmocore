@@ -35,6 +35,7 @@
 #include <osmocom/core/stats.h>
 
 #include <osmocom/gprs/gprs_bssgp.h>
+#include <osmocom/gprs/gprs_bssgp_bss.h>
 #include <osmocom/gprs/gprs_ns.h>
 
 #include "common_vty.h"
@@ -75,6 +76,31 @@ struct bssgp_bvc_ctx *btsctx_by_raid_cid(const struct gprs_ra_id *raid, uint16_t
 			return bctx;
 	}
 	return NULL;
+}
+
+/*! Initiate reset procedure for all PTP BVC on a given NSEI.
+ *
+ *  This function initiates reset procedure for all PTP BVC with a given cause.
+ *  \param[in] nsei NSEI to which PTP BVC should belong to
+ *  \param[in] cause Cause of BVC RESET
+ *  \returns 0 on success, negative error code otherwise
+ */
+int bssgp_tx_bvc_ptp_reset(uint16_t nsei, enum gprs_bssgp_cause cause)
+{
+	int rc;
+	struct bssgp_bvc_ctx *bctx;
+
+	llist_for_each_entry(bctx, &bssgp_bvc_ctxts, list) {
+		if (bctx->nsei == nsei && bctx->bvci != BVCI_SIGNALLING) {
+			LOGP(DBSSGP, LOGL_DEBUG, "NSEI=%u/BVCI=%u RESET due to %s\n",
+			     nsei, bctx->bvci, bssgp_cause_str(cause));
+			rc = bssgp_tx_bvc_reset(bctx, bctx->bvci, cause);
+			if (rc < 0)
+				return rc;
+		}
+	}
+
+	return 0;
 }
 
 /* Find a BTS context based on BVCI+NSEI tuple */

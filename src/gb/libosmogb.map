@@ -34,6 +34,7 @@ bssgp_rcvmsg;
 bssgp_rx_paging;
 bssgp_set_log_ss;
 bssgp_tx_dl_ud;
+bssgp_tx_bvc_ptp_reset;
 bssgp_tx_paging;
 bssgp_vty_init;
 bssgp_nsi;
