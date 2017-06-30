@@ -84,6 +84,8 @@ struct ph_tch_param {
 	uint32_t fn;		/*!< GSM Frame Number */
 	int8_t rssi;		/*!< RSSI of received indication */
 	uint8_t marker;		/*!< RTP Marker bit (speech onset indicator) */
+	uint16_t ber10k;	/*!< BER in units of 0.01% */
+	int16_t lqual_cb;	/* !< Link quality in centiBel */
 };
 
 /*! for PH-CONN.ind */
