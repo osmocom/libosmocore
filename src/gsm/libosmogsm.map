@@ -274,6 +274,7 @@ gsm_band_parse;
 gsm_fn2gsmtime;
 gsm_get_octet_len;
 gsm_gsmtime2fn;
+osmo_dump_gsmtime;
 
 gsm_milenage;
 gsm_septet_encode;
