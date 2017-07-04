@@ -7,13 +7,20 @@ pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libosmocore.pc libosmocodec.pc libosmovty.pc libosmogsm.pc \
 		 libosmogb.pc libosmoctrl.pc libosmocoding.pc
 
+@RELMAKE@
+
+relengdir = $(includedir)
+releng_DATA = osmo-release.mk
+
+osmo-release.mk: git-version-gen
+
 BUILT_SOURCES = $(top_srcdir)/.version
 $(top_srcdir)/.version:
 	echo $(VERSION) > $@-t && mv $@-t $@
 dist-hook:
 	echo $(VERSION) > $(distdir)/.tarball-version
 
-EXTRA_DIST = git-version-gen .version README.md
+EXTRA_DIST = git-version-gen .version README.md osmo-release.mk
 
 if HAVE_DOXYGEN
 

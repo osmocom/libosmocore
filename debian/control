@@ -281,6 +281,7 @@ Architecture: any
 Multi-Arch: same
 Section: libdevel
 Depends: libosmocore,
+         bumpversion,
          libtalloc-dev,
          ${misc:Depends}
 Description: Development headers for Open Source MObile COMmunications CORE library
