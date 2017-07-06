@@ -59,8 +59,14 @@ AC_SUBST(LIBRARY_DL)
 AC_CHECK_LIB(execinfo, backtrace, BACKTRACE_LIB=-lexecinfo, BACKTRACE_LIB=)
 AC_SUBST(BACKTRACE_LIB)
 
+AC_ARG_ENABLE(doxygen,
+	[AS_HELP_STRING(
+		[--disable-doxygen],
+		[Disable generation of documentation using doxygen],
+	)],
+	[doxygen=$enableval], [doxygen="yes"])
 AC_PATH_PROG(DOXYGEN,doxygen,false)
-AM_CONDITIONAL(HAVE_DOXYGEN, test $DOXYGEN != false)
+AM_CONDITIONAL(HAVE_DOXYGEN, test $DOXYGEN != false && test "x$doxygen" = "xyes")
 
 # The following test is taken from WebKit's webkit.m4
 saved_CFLAGS="$CFLAGS"
