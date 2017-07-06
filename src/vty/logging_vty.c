@@ -213,6 +213,11 @@ DEFUN(logging_level,
 		return CMD_WARNING;
 	}
 
+	if (strcmp(argv[1], "everything") == 0) { /* FIXME: remove this check once 'everything' is phased out */
+		vty_out(vty, "%% Ignoring deprecated logging level %s%s", argv[1], VTY_NEWLINE);
+		return CMD_SUCCESS;
+	}
+
 	/* Check for special case where we want to set global log level */
 	if (!strcmp(argv[0], "all")) {
 		log_set_log_level(tgt, level);
@@ -730,8 +735,10 @@ static int config_write_log_single(struct vty *vty, struct log_target *tgt)
 		osmo_str2lower(cat_lower, osmo_log_info->cat[i].name+1);
 		osmo_str2lower(level_lower, log_level_str(cat->loglevel));
 
-		vty_out(vty, "  logging level %s %s%s", cat_lower, level_lower,
-			VTY_NEWLINE);
+		if (strcmp(level_lower, "everything") != 0) /* FIXME: remove this check once 'everything' is phased out */
+			vty_out(vty, "  logging level %s %s%s", cat_lower, level_lower, VTY_NEWLINE);
+		else
+			LOGP(DLSTATS, LOGL_ERROR, "logging level everything is deprecated and should not be used\n");
 	}
 
 	/* FIXME: levels */
