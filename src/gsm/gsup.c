@@ -103,6 +103,11 @@ static int decode_pdp_info(uint8_t *data, size_t data_len,
 			pdp_info->qos_enc_len = value_len;
 			break;
 
+		case OSMO_GSUP_CHARG_CHAR_IE:
+			pdp_info->pdp_charg_enc = value;
+			pdp_info->pdp_charg_enc_len = value_len;
+			break;
+
 		default:
 			LOGP(DLGSUP, LOGL_ERROR,
 			     "GSUP IE type %d not expected in PDP info\n", iei);
@@ -375,6 +380,11 @@ int osmo_gsup_decode(const uint8_t *const_data, size_t data_len,
 			gsup_msg->cn_domain = *value;
 			break;
 
+		case OSMO_GSUP_CHARG_CHAR_IE:
+			gsup_msg->pdp_charg_enc = value;
+			gsup_msg->pdp_charg_enc_len = value_len;
+			break;
+
 		default:
 			LOGP(DLGSUP, LOGL_NOTICE,
 			     "GSUP IE type %d unknown\n", iei);
@@ -413,6 +423,11 @@ static void encode_pdp_info(struct msgb *msg, enum osmo_gsup_iei iei,
 	if (pdp_info->qos_enc) {
 		msgb_tlv_put(msg, OSMO_GSUP_PDP_QOS_IE,
 				pdp_info->qos_enc_len, pdp_info->qos_enc);
+	}
+
+	if (pdp_info->pdp_charg_enc) {
+		msgb_tlv_put(msg, OSMO_GSUP_CHARG_CHAR_IE,
+				pdp_info->pdp_charg_enc_len, pdp_info->pdp_charg_enc);
 	}
 
 	/* Update length field */
@@ -539,6 +554,11 @@ void osmo_gsup_encode(struct msgb *msg, const struct osmo_gsup_message *gsup_msg
 	if (gsup_msg->cn_domain) {
 		uint8_t dn = gsup_msg->cn_domain;
 		msgb_tlv_put(msg, OSMO_GSUP_CN_DOMAIN_IE, 1, &dn);
+	}
+
+	if (gsup_msg->pdp_charg_enc) {
+		msgb_tlv_put(msg, OSMO_GSUP_CHARG_CHAR_IE,
+				gsup_msg->pdp_charg_enc_len, gsup_msg->pdp_charg_enc);
 	}
 }
 

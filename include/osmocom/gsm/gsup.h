@@ -51,6 +51,7 @@ enum osmo_gsup_iei {
 	OSMO_GSUP_PDP_TYPE_IE			= 0x11,
 	OSMO_GSUP_ACCESS_POINT_NAME_IE		= 0x12,
 	OSMO_GSUP_PDP_QOS_IE			= 0x13,
+	OSMO_GSUP_CHARG_CHAR_IE			= 0x14,
 	OSMO_GSUP_RAND_IE			= 0x20,
 	OSMO_GSUP_SRES_IE			= 0x21,
 	OSMO_GSUP_KC_IE				= 0x22,
@@ -127,6 +128,11 @@ struct osmo_gsup_pdp_info {
 	const uint8_t			*qos_enc;
 	/*! length (in octets) of qos_enc */
 	size_t				qos_enc_len;
+	/*! PDP Charging Characteristics, still in encoded form. Can be NULL if no
+	 * PDP Charging Characteristics */
+	const uint8_t			*pdp_charg_enc;
+	/*! length (in octets) of pdp_charg_enc */
+	size_t				pdp_charg_enc_len;
 };
 
 /*! parsed/decoded GSUP protocol message */
@@ -148,6 +154,8 @@ struct osmo_gsup_message {
 	const uint8_t			*auts;
 	const uint8_t			*rand;
 	enum osmo_gsup_cn_domain	cn_domain;
+	const uint8_t			*pdp_charg_enc;
+	size_t				pdp_charg_enc_len;
 };
 
 int osmo_gsup_decode(const uint8_t *data, size_t data_len,
