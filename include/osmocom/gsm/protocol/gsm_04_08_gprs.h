@@ -112,6 +112,7 @@ enum gsm48_gprs_ie_sm {
 
 	/* Fake IEs that are not present on the Layer3 air interface,
 	 * but which we use to simplify internal APIs */
+	OSMO_IE_GSM_CHARG_CHAR		= 0xfc,
 	OSMO_IE_GSM_REQ_QOS		= 0xfd,
 	OSMO_IE_GSM_REQ_PDP_ADDR	= 0xfe,
 	OSMO_IE_GSM_SUB_QOS		= 0xff,
