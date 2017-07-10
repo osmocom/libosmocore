@@ -34,6 +34,7 @@
 
 #include <osmocom/crypt/auth.h>
 #include <osmocom/core/utils.h>
+#include <osmocom/gsm/gsm_utils.h>
 
 static void dump_triplets_dat(struct osmo_auth_vector *vec)
 {
@@ -247,14 +248,11 @@ int main(int argc, char **argv)
 	}
 
 	if (!rand_is_set) {
-		int i;
-		printf("WARNING: We're using really weak random numbers!\n\n");
-		srand(time(NULL));
-
-		for (i = 0; i < 4; ++i) {
-			uint32_t r;
-			r = rand();
-			memcpy(&_rand[i*4], &r, 4);
+		rc = osmo_get_rand_id(_rand, 16);
+		if (rc < 0) {
+			fprintf(stderr, "\nError: unable to obtain secure random numbers: %s!\n",
+				strerror(-rc));
+			exit(3);
 		}
 	}
 

@@ -91,8 +91,17 @@
 #include <errno.h>
 #include <ctype.h>
 #include <inttypes.h>
+#include <time.h>
+#include <unistd.h>
 
 #include "../../config.h"
+
+/* FIXME: this can be removed once we bump glibc requirements to 2.25: */
+#if defined(__GLIBC__) && (__GLIBC__ >= 2) && (__GLIBC_MINOR__ >= 25)
+#include <linux/random.h>
+#elif HAVE_DECL_SYS_GETRANDOM
+#include <sys/syscall.h>
+#endif
 
 /* ETSI GSM 03.38 6.2.1 and 6.2.1.1 default alphabet
  * Greek symbols at hex positions 0x10 and 0x12-0x1a
@@ -385,6 +394,45 @@ int gsm_7bit_encode_n_ussd(uint8_t *result, size_t n, const char *data, int *oct
 	}
 
 	return y;
+}
+
+/*! Generate random identifier
+ *  We use /dev/urandom (default when GRND_RANDOM flag is not set).
+ *  Both /dev/(u)random numbers are coming from the same CSPRNG anyway (at least on GNU/Linux >= 4.8).
+ *  See also RFC4086.
+ *  \param[out] out Buffer to be filled with random data
+ *  \param[in] len Number of random bytes required
+ *  \returns 0 on success, or a negative error code on error.
+ */
+int osmo_get_rand_id(uint8_t *out, size_t len)
+{
+	int rc;
+
+	/* this function is intended for generating short identifiers only, not arbitrary-length random data */
+	if (len > OSMO_MAX_RAND_ID_LEN)
+               return -E2BIG;
+
+#if defined(__GLIBC__) && (__GLIBC__ >= 2) && (__GLIBC_MINOR__ >= 25)
+	rc = getrandom(out, len, GRND_NONBLOCK);
+#elif HAVE_DECL_SYS_GETRANDOM
+#pragma message ("Using direct syscall access for getrandom(): consider upgrading to glibc >= 2.25")
+	/* FIXME: this can be removed once we bump glibc requirements to 2.25: */
+	rc = syscall(SYS_getrandom, out, len, GRND_NONBLOCK);
+#else
+#pragma message ("Secure random unavailable: calls to osmo_get_rand_id() will always fail!")
+	return -ENOTSUP;
+#endif
+	/* getrandom() failed entirely: */
+	if (rc < 0)
+		return -errno;
+
+	/* getrandom() failed partially due to signal interruption:
+	   this should never happen (according to getrandom(2)) as long as OSMO_MAX_RAND_ID_LEN < 256
+	   because we do not set GRND_RANDOM but it's better to be paranoid and check anyway */
+	if (rc != len)
+               return -EAGAIN;
+
+	return 0;
 }
 
 /*! Build the RSL uplink measurement IE (3GPP TS 08.58 § 9.3.25)

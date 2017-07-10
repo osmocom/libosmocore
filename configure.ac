@@ -73,6 +73,9 @@ AC_ARG_ENABLE(doxygen,
 AC_PATH_PROG(DOXYGEN,doxygen,false)
 AM_CONDITIONAL(HAVE_DOXYGEN, test $DOXYGEN != false && test "x$doxygen" = "xyes")
 
+# check for syscal fallback on glibc < 2.25 - can be removed once glibc version requirement is bumped
+AC_CHECK_DECLS([SYS_getrandom], [], [], [[#include <sys/syscall.h>]])
+
 # The following test is taken from WebKit's webkit.m4
 saved_CFLAGS="$CFLAGS"
 CFLAGS="$CFLAGS -fvisibility=hidden "

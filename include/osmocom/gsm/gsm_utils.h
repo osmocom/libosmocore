@@ -38,6 +38,9 @@
 
 #define GSM_MAX_FN	(26*51*2048)
 
+/* Max length of random identifier which can be requested via osmo_get_rand_id() */
+#define OSMO_MAX_RAND_ID_LEN 16
+
 struct gsm_time {
 	uint32_t	fn;	/* FN count */
 	uint16_t	t1;	/* FN div (26*51) */
@@ -59,6 +62,8 @@ enum gsm_band {
 
 const char *gsm_band_name(enum gsm_band band);
 enum gsm_band gsm_band_parse(const char *mhz);
+
+int osmo_get_rand_id(uint8_t *out, size_t len);
 
 /*!
  * Decode a sequence of GSM 03.38 encoded 7 bit characters.
