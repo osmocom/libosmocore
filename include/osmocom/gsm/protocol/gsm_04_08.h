@@ -529,6 +529,14 @@ struct gsm48_frq_redef {
 	uint8_t mob_alloc[0];
 } __attribute__((packed));
 
+/* Chapter 9.1.13b GPRS suspension request */
+struct gsm48_gprs_susp_req {
+	uint32_t tlli;
+	uint8_t ra_id[6];
+	uint8_t cause;
+	uint8_t options[0];
+} __attribute__ ((packed));
+
 /* Chapter 10.5.2.2 */
 struct gsm48_cell_desc {
 	uint8_t bcc:3,
