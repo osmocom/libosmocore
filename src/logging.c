@@ -161,6 +161,11 @@ static const struct log_info_cat internal_cat[OSMO_NUM_DLIB] = {
 		.description = "libosmo-sigtran MTP3 User Adaptation",
 		.enabled = 1, .loglevel = LOGL_NOTICE,
 	},
+	[INT2IDX(DLMGCP)] = {
+		.name = "DLMGCP",
+		.description = "libosmo-mgcp Media Gateway Control Protocol",
+		.enabled = 1, .loglevel = LOGL_NOTICE,
+	},
 };
 
 /*! descriptive string for each log level */

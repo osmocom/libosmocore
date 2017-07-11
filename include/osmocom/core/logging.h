@@ -104,7 +104,8 @@ void logp(int subsys, const char *file, int line, int cont, const char *format, 
 #define DLSCCP		-14	/*!< Osmocom SCCP */
 #define DLSUA		-15	/*!< Osmocom SUA */
 #define DLM3UA		-16	/*!< Osmocom M3UA */
-#define OSMO_NUM_DLIB	16	/*!< Number of logging sub-systems in libraries */
+#define DLMGCP		-17	/*!< Osmocom MGCP */
+#define OSMO_NUM_DLIB	17	/*!< Number of logging sub-systems in libraries */
 
 /*! Configuration of single log category / sub-system */
 struct log_category {
