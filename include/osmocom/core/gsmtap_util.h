@@ -9,6 +9,7 @@
  * \file gsmtap_util.h */
 
 uint8_t chantype_rsl2gsmtap(uint8_t rsl_chantype, uint8_t rsl_link_id);
+void chantype_gsmtap2rsl(uint8_t gsmtap_chantype, uint8_t *rsl_chantype, uint8_t *link_id);
 
 struct msgb *gsmtap_makemsg_ex(uint8_t type, uint16_t arfcn, uint8_t ts, uint8_t chan_type,
 			    uint8_t ss, uint32_t fn, int8_t signal_dbm,

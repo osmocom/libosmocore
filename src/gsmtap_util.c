@@ -1,7 +1,7 @@
 /*! \file gsmtap_util.c
  * GSMTAP support code in libosmocore. */
 /*
- * (C) 2010-2011 by Harald Welte <laforge@gnumonks.org>
+ * (C) 2010-2017 by Harald Welte <laforge@gnumonks.org>
  *
  * All Rights Reserved
  *
@@ -87,6 +87,45 @@ uint8_t chantype_rsl2gsmtap(uint8_t rsl_chantype, uint8_t link_id)
 		ret |= GSMTAP_CHANNEL_ACCH;
 
 	return ret;
+}
+
+/*! convert GSMTAP channel type to RSL channel number + Link ID
+ *  \param[in] gsmtap_chantype GSMTAP channel type
+ *  \param[out] rsl_chantype RSL channel mumber
+ *  \param[out] link_id RSL link identifier
+ */
+void chantype_gsmtap2rsl(uint8_t gsmtap_chantype, uint8_t *rsl_chantype,
+                         uint8_t *link_id)
+{
+	switch (gsmtap_chantype & ~GSMTAP_CHANNEL_ACCH & 0xff) {
+	case GSMTAP_CHANNEL_TCH_F: // TCH/F, FACCH/F
+		*rsl_chantype = RSL_CHAN_Bm_ACCHs;
+		break;
+	case GSMTAP_CHANNEL_TCH_H: // TCH/H, FACCH/H
+		*rsl_chantype = RSL_CHAN_Lm_ACCHs;
+		break;
+	case GSMTAP_CHANNEL_SDCCH4: // SDCCH/4
+		*rsl_chantype = RSL_CHAN_SDCCH4_ACCH;
+		break;
+	case GSMTAP_CHANNEL_SDCCH8: // SDCCH/8
+		*rsl_chantype = RSL_CHAN_SDCCH8_ACCH;
+		break;
+	case GSMTAP_CHANNEL_BCCH: // BCCH
+		*rsl_chantype = RSL_CHAN_BCCH;
+		break;
+	case GSMTAP_CHANNEL_RACH: // RACH
+		*rsl_chantype = RSL_CHAN_RACH;
+		break;
+	case GSMTAP_CHANNEL_PCH: // PCH
+	case GSMTAP_CHANNEL_AGCH: // AGCH
+		*rsl_chantype = RSL_CHAN_PCH_AGCH;
+		break;
+	case GSMTAP_CHANNEL_PDCH:
+		*rsl_chantype = GSMTAP_CHANNEL_PDCH;
+		break;
+	}
+
+	*link_id = gsmtap_chantype & GSMTAP_CHANNEL_ACCH ? 0x40 : 0x00;
 }
 
 /*! create an arbitrary type GSMTAP message
