@@ -55,4 +55,7 @@ int gsmtap_send(struct gsmtap_inst *gti, uint16_t arfcn, uint8_t ts,
 		int8_t signal_dbm, uint8_t snr, const uint8_t *data,
 		unsigned int len);
 
+extern const struct value_string gsmtap_gsm_channel_names[];
+extern const struct value_string gsmtap_type_names[];
+
 /*! @} */

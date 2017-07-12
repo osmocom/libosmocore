@@ -436,4 +436,49 @@ struct gsmtap_inst *gsmtap_source_init(const char *host, uint16_t port,
 
 #endif /* HAVE_SYS_SOCKET_H */
 
+const struct value_string gsmtap_gsm_channel_names[] = {
+	{ GSMTAP_CHANNEL_UNKNOWN,	"UNKNOWN" },
+	{ GSMTAP_CHANNEL_BCCH,		"BCCH" },
+	{ GSMTAP_CHANNEL_CCCH,		"CCCH" },
+	{ GSMTAP_CHANNEL_RACH,		"RACH" },
+	{ GSMTAP_CHANNEL_AGCH,		"AGCH" },
+	{ GSMTAP_CHANNEL_PCH,		"PCH" },
+	{ GSMTAP_CHANNEL_SDCCH,		"SDCCH" },
+	{ GSMTAP_CHANNEL_SDCCH4,	"SDCCH/4" },
+	{ GSMTAP_CHANNEL_SDCCH8,	"SDCCH/8" },
+	{ GSMTAP_CHANNEL_TCH_F,		"TCH/F/FACCH/F" },
+	{ GSMTAP_CHANNEL_TCH_H,		"TCH/H/FACCH/H" },
+	{ GSMTAP_CHANNEL_PACCH,		"PACCH" },
+	{ GSMTAP_CHANNEL_CBCH52,	"CBCH" },
+	{ GSMTAP_CHANNEL_PDCH,		"PDCH" } ,
+	{ GSMTAP_CHANNEL_PTCCH,		"PTTCH" },
+	{ GSMTAP_CHANNEL_CBCH51,	"CBCH" },
+	{ GSMTAP_CHANNEL_ACCH | GSMTAP_CHANNEL_SDCCH, "LSACCH" },
+	{ GSMTAP_CHANNEL_ACCH | GSMTAP_CHANNEL_SDCCH4, "SACCH/4" },
+	{ GSMTAP_CHANNEL_ACCH | GSMTAP_CHANNEL_SDCCH8, "SACCH/8" },
+	{ GSMTAP_CHANNEL_ACCH | GSMTAP_CHANNEL_TCH_F, "SACCH/F" },
+	{ GSMTAP_CHANNEL_ACCH | GSMTAP_CHANNEL_TCH_H, "SACCH/H" },
+	{ 0, NULL }
+};
+
+/* for debugging */
+const struct value_string gsmtap_type_names[] = {
+	{ GSMTAP_TYPE_UM,		"GSM Um (MS<->BTS)" },
+	{ GSMTAP_TYPE_ABIS,		"GSM Abis (BTS<->BSC)" },
+	{ GSMTAP_TYPE_UM_BURST,		"GSM Um burst (MS<->BTS)" },
+	{ GSMTAP_TYPE_SIM,		"SIM Card" },
+	{ GSMTAP_TYPE_TETRA_I1,		"TETRA V+D"  },
+	{ GSMTAP_TYPE_TETRA_I1_BURST,	"TETRA bursts" },
+	{ GSMTAP_TYPE_WMX_BURST,	"WiMAX burst" },
+	{ GSMTAP_TYPE_GMR1_UM,		"GMR-1 air interfeace (MES-MS<->GTS)"},
+	{ GSMTAP_TYPE_UMTS_RLC_MAC,	"UMTS RLC/MAC" },
+	{ GSMTAP_TYPE_UMTS_RRC,		"UMTS RRC" },
+	{ GSMTAP_TYPE_LTE_RRC,		"LTE RRC" },
+	{ GSMTAP_TYPE_LTE_MAC,		"LTE MAC" },
+	{ GSMTAP_TYPE_LTE_MAC_FRAMED,	"LTE MAC with context hdr" },
+	{ GSMTAP_TYPE_OSMOCORE_LOG,	"libosmocore logging" },
+	{ GSMTAP_TYPE_QC_DIAG,		"Qualcomm DIAG" },
+	{ 0, NULL }
+};
+
 /*! @} */
