@@ -40,6 +40,7 @@
 #include <sys/un.h>
 
 #include <netinet/in.h>
+#include <arpa/inet.h>
 
 #include <stdio.h>
 #include <unistd.h>
@@ -612,6 +613,140 @@ char *osmo_sock_get_name(void *ctx, int fd)
 
 local_only:
 	return talloc_asprintf(ctx, "(r=NULL<->l=%s:%s)", hostbuf_l, portbuf_l);
+}
+
+static int sock_get_domain(int fd)
+{
+	int domain;
+#ifdef SO_DOMAIN
+	socklen_t dom_len = sizeof(domain);
+	int rc;
+
+	rc = getsockopt(fd, SOL_SOCKET, SO_DOMAIN, &domain, &dom_len);
+	if (rc < 0)
+		return rc;
+#else
+	/* This of course sucks, but what shall we do on OSs like
+	 * FreeBSD that don't seem to expose a method by which one can
+	 * learn the address family of a socket? */
+	domain = AF_INET;
+#endif
+	return domain;
+}
+
+
+/*! Activate or de-activate local loop-back of transmitted multicast packets
+ *  \param[in] fd file descriptor of related socket
+ *  \param[in] enable Enable (true) or disable (false) loop-back
+ *  \returns 0 on success; negative otherwise */
+int osmo_sock_mcast_loop_set(int fd, bool enable)
+{
+	int domain, loop = 0;
+
+	if (enable)
+		loop = 1;
+
+	domain = sock_get_domain(fd);
+	if (domain < 0)
+		return domain;
+
+	switch (domain) {
+	case AF_INET:
+		return setsockopt(fd, IPPROTO_IP, IP_MULTICAST_LOOP, &loop, sizeof(loop));
+	case AF_INET6:
+		return setsockopt(fd, IPPROTO_IPV6, IPV6_MULTICAST_LOOP, &loop, sizeof(loop));
+	default:
+		return -EINVAL;
+	}
+}
+
+/*! Set the TTL of outbound multicast packets
+ *  \param[in] fd file descriptor of related socket
+ *  \param[in] ttl TTL of to-be-sent multicast packets
+ *  \returns 0 on success; negative otherwise */
+int osmo_sock_mcast_ttl_set(int fd,  uint8_t ttl)
+{
+	int domain, ttli = ttl;
+
+	domain = sock_get_domain(fd);
+	if (domain < 0)
+		return domain;
+
+	switch (domain) {
+	case AF_INET:
+		return setsockopt(fd, IPPROTO_IP, IP_MULTICAST_TTL, &ttli, sizeof(ttli));
+	case AF_INET6:
+		return setsockopt(fd, IPPROTO_IPV6, IPV6_MULTICAST_HOPS, &ttli, sizeof(ttli));
+	default:
+		return -EINVAL;
+	}
+}
+
+/*! Enable/disable receiving all multicast packets, even for non-subscribed groups
+ *  \param[in] fd file descriptor of related socket
+ *  \param[in] enable Enable or Disable receiving of all packets
+ *  \returns 0 on success; negative otherwise */
+int osmo_sock_mcast_all_set(int fd, bool enable)
+{
+	int domain, all = 0;
+
+	if (enable)
+		all = 1;
+
+	domain = sock_get_domain(fd);
+	if (domain < 0)
+		return domain;
+
+	switch (domain) {
+	case AF_INET:
+#ifdef IP_MULTICAST_ALL
+		return setsockopt(fd, IPPROTO_IP, IP_MULTICAST_ALL, &all, sizeof(all));
+#endif
+	case AF_INET6:
+		/* there seems no equivalent ?!? */
+	default:
+		return -EINVAL;
+	}
+}
+
+/* FreeBSD calls the socket option differently */
+#if !defined(IPV6_ADD_MEMBERSHIP) && defined(IPV6_JOIN_GROUP)
+#define IPV6_ADD_MEMBERSHIP IPV6_JOIN_GROUP
+#endif
+
+/*! Subscribe to the given IP multicast group
+ *  \param[in] fd file descriptor of related scoket
+ *  \param[in] grp_addr ASCII representation of the multicast group address
+ *  \returns 0 on success; negative otherwise */
+int osmo_sock_mcast_subscribe(int fd, const char *grp_addr)
+{
+	int rc, domain;
+	struct ip_mreq mreq;
+	struct ipv6_mreq mreq6;
+	struct in6_addr i6a;
+
+	domain = sock_get_domain(fd);
+	if (domain < 0)
+		return domain;
+
+	switch (domain) {
+	case AF_INET:
+		memset(&mreq, 0, sizeof(mreq));
+		mreq.imr_multiaddr.s_addr = inet_addr(grp_addr);
+		mreq.imr_interface.s_addr = htonl(INADDR_ANY);
+		return setsockopt(fd, IPPROTO_IP, IP_ADD_MEMBERSHIP, &mreq, sizeof(mreq));
+#ifdef IPV6_ADD_MEMBERSHIP
+	case AF_INET6:
+		memset(&mreq6, 0, sizeof(mreq6));
+		rc = inet_pton(AF_INET6, grp_addr, (void *)&i6a);
+		if (rc < 0)
+			return -EINVAL;
+		mreq6.ipv6mr_multiaddr = i6a;
+		return setsockopt(fd, IPPROTO_IPV6, IPV6_ADD_MEMBERSHIP, &mreq6, sizeof(mreq6));
+#endif
+	default:
+		return -EINVAL;
+	}
 }
 
 #endif /* HAVE_SYS_SOCKET_H */
