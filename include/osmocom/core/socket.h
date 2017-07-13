@@ -20,6 +20,8 @@ struct osmo_fd;
 #define OSMO_SOCK_F_BIND	(1 << 1)
 /*! switch socket to non-blocking mode */
 #define OSMO_SOCK_F_NONBLOCK	(1 << 2)
+/*! disable multiast loop (IP_MULTICAST_LOOP) */
+#define OSMO_SOCK_F_NO_MCAST_LOOP (1 << 3)
 
 int osmo_sock_init(uint16_t family, uint16_t type, uint8_t proto,
 		   const char *host, uint16_t port, unsigned int flags);

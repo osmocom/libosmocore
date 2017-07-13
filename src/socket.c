@@ -106,7 +106,7 @@ static int socket_helper(const struct addrinfo *rp, unsigned int flags)
 
 static int osmo_sock_init_tail(int fd, uint16_t type, unsigned int flags)
 {
-	int rc = 0;
+	int rc;
 
 	/* Make sure to call 'listen' on a bound, connection-oriented sock */
 	if ((flags & (OSMO_SOCK_F_BIND|OSMO_SOCK_F_CONNECT)) == OSMO_SOCK_F_BIND) {
@@ -114,13 +114,25 @@ static int osmo_sock_init_tail(int fd, uint16_t type, unsigned int flags)
 		case SOCK_STREAM:
 		case SOCK_SEQPACKET:
 			rc = listen(fd, 10);
+			if (rc < 0) {
+				LOGP(DLGLOBAL, LOGL_ERROR, "unable to listen on socket: %s\n",
+					strerror(errno));
+				return rc;
+			}
+			break;
 		}
 	}
 
-	if (rc < 0)
-		LOGP(DLGLOBAL, LOGL_ERROR, "unable to listen on socket: %s\n", strerror(errno));
+	if (flags & OSMO_SOCK_F_NO_MCAST_LOOP) {
+		rc = osmo_sock_mcast_loop_set(fd, false);
+		if (rc < 0) {
+			LOGP(DLGLOBAL, LOGL_ERROR, "unable to disable multicast loop: %s\n",
+				strerror(errno));
+			return rc;
+		}
+	}
 
-	return rc;
+	return 0;
 }
 
 /*! Initialize a socket (including bind and/or connect)
