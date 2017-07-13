@@ -132,6 +132,16 @@ static int osmo_sock_init_tail(int fd, uint16_t type, unsigned int flags)
 		}
 	}
 
+	if (flags & OSMO_SOCK_F_NO_MCAST_ALL) {
+		rc = osmo_sock_mcast_all_set(fd, false);
+		if (rc < 0) {
+			LOGP(DLGLOBAL, LOGL_ERROR, "unable to disable receive of all multicast: %s\n",
+				strerror(errno));
+			/* do not abort here, as this is just an
+			 * optional additional optimization that only
+			 * exists on Linux only */
+		}
+	}
 	return 0;
 }
 
