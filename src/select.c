@@ -24,6 +24,7 @@
 
 #include <fcntl.h>
 #include <stdio.h>
+#include <unistd.h>
 #include <string.h>
 #include <stdbool.h>
 
@@ -115,6 +116,22 @@ void osmo_fd_unregister(struct osmo_fd *fd)
 	 * osmo_fd_is_registered() */
 	unregistered_count++;
 	llist_del(&fd->list);
+}
+
+/*! Close a file descriptor, mark it as closed + unregister from select loop abstraction
+ *  \param[in] fd osmocom file descriptor to be unregistered + closed
+ *
+ *  If \a fd is registered, we unregister it from the select() loop
+ *  abstraction.  We then close the fd and set it to -1, as well as
+ *  unsetting any 'when' flags */
+void osmo_fd_close(struct osmo_fd *fd)
+{
+	if (osmo_fd_is_registered(fd))
+		osmo_fd_unregister(fd);
+	if (fd->fd != -1)
+		close(fd->fd);
+	fd->fd = -1;
+	fd->when = 0;
 }
 
 /*! Populate the fd_sets and return the highest fd number
