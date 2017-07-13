@@ -104,6 +104,25 @@ static int socket_helper(const struct addrinfo *rp, unsigned int flags)
 }
 
 
+static int osmo_sock_init_tail(int fd, uint16_t type, unsigned int flags)
+{
+	int rc = 0;
+
+	/* Make sure to call 'listen' on a bound, connection-oriented sock */
+	if ((flags & (OSMO_SOCK_F_BIND|OSMO_SOCK_F_CONNECT)) == OSMO_SOCK_F_BIND) {
+		switch (type) {
+		case SOCK_STREAM:
+		case SOCK_SEQPACKET:
+			rc = listen(fd, 10);
+		}
+	}
+
+	if (rc < 0)
+		LOGP(DLGLOBAL, LOGL_ERROR, "unable to listen on socket: %s\n", strerror(errno));
+
+	return rc;
+}
+
 /*! Initialize a socket (including bind and/or connect)
  *  \param[in] family Address Family like AF_INET, AF_INET6, AF_UNSPEC
  *  \param[in] type Socket type like SOCK_DGRAM, SOCK_STREAM
@@ -219,15 +238,12 @@ int osmo_sock_init2(uint16_t family, uint16_t type, uint8_t proto,
 		}
 	}
 
-	/* Make sure to call 'listen' on a bound, connection-oriented sock */
-	if ((flags & (OSMO_SOCK_F_BIND|OSMO_SOCK_F_CONNECT)) == OSMO_SOCK_F_BIND) {
-		switch (type) {
-		case SOCK_STREAM:
-		case SOCK_SEQPACKET:
-			listen(sfd, 10);
-			break;
-		}
+	rc = osmo_sock_init_tail(sfd, type, flags);
+	if (rc < 0) {
+		close(sfd);
+		sfd = -1;
 	}
+
 	return sfd;
 }
 
@@ -305,15 +321,12 @@ int osmo_sock_init(uint16_t family, uint16_t type, uint8_t proto,
 
 	setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
 
-	/* Make sure to call 'listen' on a bound, connection-oriented sock */
-	if (flags & OSMO_SOCK_F_BIND) {
-		switch (type) {
-		case SOCK_STREAM:
-		case SOCK_SEQPACKET:
-			listen(sfd, 10);
-			break;
-		}
+	rc = osmo_sock_init_tail(sfd, type, flags);
+	if (rc < 0) {
+		close(sfd);
+		sfd = -1;
 	}
+
 	return sfd;
 }
 
@@ -545,10 +558,10 @@ int osmo_sock_unix_init(uint16_t type, uint8_t proto,
 		}
 	}
 
-	if (flags & OSMO_SOCK_F_BIND) {
-		rc = listen(sfd, 10);
-		if (rc < 0)
-			goto err;
+	rc = osmo_sock_init_tail(sfd, type, flags);
+	if (rc < 0) {
+		close(sfd);
+		sfd = -1;
 	}
 
 	return sfd;
