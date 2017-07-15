@@ -36,7 +36,12 @@ enum osmo_sysinfo_type {
 	SYSINFO_TYPE_5ter,
 	SYSINFO_TYPE_EMO,
 	SYSINFO_TYPE_MEAS_INFO,
-	/* FIXME all the various bis and ter */
+	SYSINFO_TYPE_13alt,
+	SYSINFO_TYPE_15,
+	SYSINFO_TYPE_2n,
+	SYSINFO_TYPE_21,
+	SYSINFO_TYPE_22,
+	SYSINFO_TYPE_23,
 	_MAX_SYSINFO_TYPE
 };
 
