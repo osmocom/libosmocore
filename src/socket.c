@@ -239,7 +239,7 @@ int osmo_sock_init2(uint16_t family, uint16_t type, uint8_t proto,
 				rp->ai_protocol = proto;
 			}
 
-			if (!sfd) {
+			if (sfd < 0) {
 				sfd = socket_helper(rp, flags);
 				if (sfd < 0)
 					continue;
