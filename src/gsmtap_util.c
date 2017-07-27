@@ -81,6 +81,9 @@ uint8_t chantype_rsl2gsmtap(uint8_t rsl_chantype, uint8_t link_id)
 		/* it could also be AGCH... */
 		ret = GSMTAP_CHANNEL_PCH;
 		break;
+	case RSL_CHAN_OSMO_PDCH:
+		ret = GSMTAP_CHANNEL_PDCH;
+		break;
 	}
 
 	if (link_id & 0x40)
@@ -121,7 +124,7 @@ void chantype_gsmtap2rsl(uint8_t gsmtap_chantype, uint8_t *rsl_chantype,
 		*rsl_chantype = RSL_CHAN_PCH_AGCH;
 		break;
 	case GSMTAP_CHANNEL_PDCH:
-		*rsl_chantype = GSMTAP_CHANNEL_PDCH;
+		*rsl_chantype = RSL_CHAN_OSMO_PDCH;
 		break;
 	}
 
