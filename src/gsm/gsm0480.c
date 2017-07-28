@@ -196,6 +196,8 @@ struct msgb *gsm0480_create_notifySS(const char *text)
 /* Forward declarations */
 static int parse_ss(const struct gsm48_hdr *hdr,
 		    uint16_t len, struct ss_request *req);
+static int parse_ss_facility(const uint8_t *ss_facility, uint16_t len,
+			     struct ss_request *req);
 static int parse_ss_info_elements(const uint8_t *ussd_ie, uint16_t len,
 				  struct ss_request *req);
 static int parse_facility_ie(const uint8_t *facility_ie, uint16_t length,
@@ -286,8 +288,10 @@ static int parse_ss(const struct gsm48_hdr *hdr, uint16_t len, struct ss_request
 		req->ussd_text[0] = 0xFF;
 		break;
 	case GSM0480_MTYPE_REGISTER:
-	case GSM0480_MTYPE_FACILITY:
 		rc &= parse_ss_info_elements(&hdr->data[0], len - sizeof(*hdr), req);
+		break;
+	case GSM0480_MTYPE_FACILITY:
+		rc &= parse_ss_facility(&hdr->data[0], len - sizeof(*hdr), req);
 		break;
 	default:
 		LOGP(0, LOGL_DEBUG, "Unknown GSM 04.80 message-type field 0x%02x\n",
@@ -297,6 +301,18 @@ static int parse_ss(const struct gsm48_hdr *hdr, uint16_t len, struct ss_request
 	}
 
 	return rc;
+}
+
+static int parse_ss_facility(const uint8_t *ss_facility, uint16_t len,
+			     struct ss_request *req)
+{
+	uint8_t facility_length;
+
+	facility_length = ss_facility[0];
+	if (len - 1 < facility_length)
+		return 0;
+
+	return parse_facility_ie(ss_facility + 1, facility_length, req);
 }
 
 static int parse_ss_info_elements(const uint8_t *ss_ie, uint16_t len,
