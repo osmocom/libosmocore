@@ -439,33 +439,34 @@ static int parse_ss_invoke(const uint8_t *invoke_data, uint16_t length,
 static int parse_process_uss_req(const uint8_t *uss_req_data, uint16_t length,
 				 struct ss_request *req)
 {
-	int rc = 0;
-	int num_chars;
+	uint8_t num_chars;
 	uint8_t dcs;
-
 
 	/* we need at least that much */
 	if (length < 8)
 		return 0;
 
+	if (uss_req_data[0] != GSM_0480_SEQUENCE_TAG)
+		return 0;
 
-	if (uss_req_data[0] == GSM_0480_SEQUENCE_TAG) {
-		if (uss_req_data[2] == ASN1_OCTET_STRING_TAG) {
-			dcs = uss_req_data[4];
-			if ((dcs == 0x0F) &&
-			    (uss_req_data[5] == ASN1_OCTET_STRING_TAG)) {
-				num_chars = (uss_req_data[6] * 8) / 7;
-				/* Prevent a mobile-originated buffer-overrun! */
-				if (num_chars > GSM0480_USSD_7BIT_STRING_LEN)
-					num_chars = GSM0480_USSD_7BIT_STRING_LEN;
-				gsm_7bit_decode_n_ussd((char *)req->ussd_text,
-							sizeof(req->ussd_text),
-							&(uss_req_data[7]), num_chars);
-				rc = 1;
-			}
-		}
+	/* Both 2th and 5th should be equal to ASN1_OCTET_STRING_TAG */
+	if ((uss_req_data[2] & uss_req_data[5]) != ASN1_OCTET_STRING_TAG)
+		return 0;
+
+	dcs = uss_req_data[4];
+	if (dcs == 0x0F) {
+		num_chars = (uss_req_data[6] * 8) / 7;
+		/* Prevent a mobile-originated buffer-overrun! */
+		if (num_chars > GSM0480_USSD_7BIT_STRING_LEN)
+			num_chars = GSM0480_USSD_7BIT_STRING_LEN;
+
+		gsm_7bit_decode_n_ussd((char *)req->ussd_text,
+			sizeof(req->ussd_text), &(uss_req_data[7]), num_chars);
+
+		return 1;
 	}
-	return rc;
+
+	return 0;
 }
 
 /* Parse the parameters of a Interrogate/Activate/DeactivateSS Request */
