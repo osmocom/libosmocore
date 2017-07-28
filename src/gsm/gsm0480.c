@@ -204,6 +204,10 @@ static int parse_facility_ie(const uint8_t *facility_ie, uint16_t length,
 			     struct ss_request *req);
 static int parse_ss_invoke(const uint8_t *invoke_data, uint16_t length,
 					struct ss_request *req);
+static int parse_ss_return_result(const uint8_t *rr_data, uint16_t length,
+				  struct ss_request *req);
+static int parse_process_uss_data(const uint8_t *uss_req_data, uint16_t length,
+				  struct ss_request *req);
 static int parse_process_uss_req(const uint8_t *uss_req_data, uint16_t length,
 					struct ss_request *req);
 static int parse_ss_for_bs_req(const uint8_t *ss_req_data,
@@ -372,6 +376,9 @@ static int parse_facility_ie(const uint8_t *facility_ie, uint16_t length,
 					      req);
 			break;
 		case GSM0480_CTYPE_RETURN_RESULT:
+			rc &= parse_ss_return_result(facility_ie+2,
+						     component_length,
+						     req);
 			break;
 		case GSM0480_CTYPE_RETURN_ERROR:
 			break;
@@ -449,6 +456,81 @@ static int parse_ss_invoke(const uint8_t *invoke_data, uint16_t length,
 	}
 
 	return rc;
+}
+
+/* Parse a Return Result component - see table 3.4 */
+static int parse_ss_return_result(const uint8_t *rr_data, uint16_t length,
+				  struct ss_request *req)
+{
+	uint8_t operation_code;
+	uint8_t offset;
+
+	if (length < 3)
+		return 0;
+
+	/* Mandatory part */
+	if (rr_data[0] != GSM0480_COMPIDTAG_INVOKE_ID) {
+		LOGP(0, LOGL_DEBUG, "Unexpected GSM 04.80 Component-ID tag "
+		     "0x%02x (expecting Invoke ID tag)\n", rr_data[0]);
+		return 0;
+	}
+
+	offset = rr_data[1] + 2;
+	req->invoke_id = rr_data[2];
+
+	if (offset >= length)
+		return 0;
+
+	if (rr_data[offset] != GSM_0480_SEQUENCE_TAG)
+		return 0;
+
+	if (offset + 2 > length)
+		return 0;
+
+	offset += 2;
+	operation_code = rr_data[offset + 2];
+	req->opcode = operation_code;
+
+	switch (operation_code) {
+	case GSM0480_OP_CODE_USS_NOTIFY:
+	case GSM0480_OP_CODE_USS_REQUEST:
+	case GSM0480_OP_CODE_PROCESS_USS_REQ:
+		return parse_process_uss_req(rr_data + offset + 3,
+			length - offset - 3, req);
+	case GSM0480_OP_CODE_PROCESS_USS_DATA:
+		return parse_process_uss_data(rr_data + offset + 3,
+			length - offset - 3, req);
+	default:
+		LOGP(0, LOGL_DEBUG, "GSM 04.80 operation code 0x%02x "
+			"is not yet handled\n", operation_code);
+		return 0;
+	}
+
+	return 1;
+}
+
+static int parse_process_uss_data(const uint8_t *uss_req_data, uint16_t length,
+				  struct ss_request *req)
+{
+	uint8_t num_chars;
+
+	/* we need at least that much */
+	if (length < 3)
+		return 0;
+
+	if (uss_req_data[0] != ASN1_IA5_STRING_TAG)
+		return 0;
+
+	num_chars = uss_req_data[1];
+	if (num_chars > length - 2)
+		return 0;
+
+	if (num_chars > GSM0480_USSD_OCTET_STRING_LEN)
+		num_chars = GSM0480_USSD_OCTET_STRING_LEN;
+
+	memcpy(req->ussd_text, uss_req_data + 2, num_chars);
+
+	return 1;
 }
 
 /* Parse the parameters of a Process UnstructuredSS Request */
