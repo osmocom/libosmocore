@@ -437,6 +437,11 @@ static int parse_ss_invoke(const uint8_t *invoke_data, uint16_t length,
 						   length - offset - 3,
 						   req);
 			break;
+		case GSM0480_OP_CODE_PROCESS_USS_DATA:
+			rc = parse_process_uss_data(invoke_data + offset + 3,
+						    length - offset - 3,
+						    req);
+			break;
 		case GSM0480_OP_CODE_ACTIVATE_SS:
 		case GSM0480_OP_CODE_DEACTIVATE_SS:
 		case GSM0480_OP_CODE_INTERROGATE_SS:
