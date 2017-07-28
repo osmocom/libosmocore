@@ -453,15 +453,35 @@ static int parse_process_uss_req(const uint8_t *uss_req_data, uint16_t length,
 	if ((uss_req_data[2] & uss_req_data[5]) != ASN1_OCTET_STRING_TAG)
 		return 0;
 
+	/* Get DCS (Data Coding Scheme) */
 	dcs = uss_req_data[4];
+
+	/**
+	 * According to GSM 04.08, 4.4.2 "ASN.1 data types":
+	 * the USSD-DataCodingScheme shall indicate use of
+	 * the default alphabet using the 0x0F value.
+	 */
 	if (dcs == 0x0F) {
+		/* Calculate the amount of 7-bit characters */
 		num_chars = (uss_req_data[6] * 8) / 7;
+
 		/* Prevent a mobile-originated buffer-overrun! */
 		if (num_chars > GSM0480_USSD_7BIT_STRING_LEN)
 			num_chars = GSM0480_USSD_7BIT_STRING_LEN;
 
 		gsm_7bit_decode_n_ussd((char *)req->ussd_text,
 			sizeof(req->ussd_text), &(uss_req_data[7]), num_chars);
+
+		return 1;
+	} else {
+		/* Get the amount of 8-bit characters */
+		num_chars = uss_req_data[6];
+
+		/* Prevent a mobile-originated buffer-overrun! */
+		if (num_chars > GSM0480_USSD_OCTET_STRING_LEN)
+			num_chars = GSM0480_USSD_OCTET_STRING_LEN;
+
+		memcpy(req->ussd_text, &(uss_req_data[7]), num_chars);
 
 		return 1;
 	}
