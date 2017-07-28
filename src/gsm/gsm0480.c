@@ -430,6 +430,8 @@ static int parse_ss_invoke(const uint8_t *invoke_data, uint16_t length,
 		uint8_t operation_code = invoke_data[offset+2];
 		req->opcode = operation_code;
 		switch (operation_code) {
+		case GSM0480_OP_CODE_USS_NOTIFY:
+		case GSM0480_OP_CODE_USS_REQUEST:
 		case GSM0480_OP_CODE_PROCESS_USS_REQ:
 			rc = parse_process_uss_req(invoke_data + offset + 3,
 						   length - offset - 3,
