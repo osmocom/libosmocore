@@ -85,7 +85,9 @@
 #define GSMTAP_CHANNEL_TCH_H	0x0a
 #define GSMTAP_CHANNEL_PACCH	0x0b
 #define GSMTAP_CHANNEL_CBCH52	0x0c
-#define GSMTAP_CHANNEL_PDCH	0x0d
+#define GSMTAP_CHANNEL_PDTCH	0x0d
+/* for legacy reasons we use a mis-spelled name. PDCH is really the physical channel, but we use it as PDTCH */
+#define GSMTAP_CHANNEL_PDCH	GSMTAP_CHANNEL_PDTCH
 #define GSMTAP_CHANNEL_PTCCH	0x0e
 #define GSMTAP_CHANNEL_CBCH51	0x0f
 
