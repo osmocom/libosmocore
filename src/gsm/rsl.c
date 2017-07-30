@@ -202,6 +202,9 @@ int rsl_dec_chan_nr(uint8_t chan_nr, uint8_t *type, uint8_t *subch, uint8_t *tim
 	} else if ((chan_nr & 0xf8) == RSL_CHAN_PCH_AGCH) {
 		*type = RSL_CHAN_PCH_AGCH;
 		*subch = 0;
+	} else if ((chan_nr & 0xf8) == RSL_CHAN_OSMO_PDCH) {
+		*type = RSL_CHAN_OSMO_PDCH;
+		*subch = 0;
 	} else
 		return -EINVAL;
 
