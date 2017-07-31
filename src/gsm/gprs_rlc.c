@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <string.h>
 
+#include <osmocom/core/utils.h>
 #include <osmocom/gprs/gprs_rlc.h>
 #include <osmocom/coding/gsm0503_coding.h>
 #include <osmocom/gprs/protocol/gsm_04_60.h>
@@ -108,4 +109,93 @@ int egprs_get_cps(struct egprs_cps *cps, uint8_t type, uint8_t bits)
 	memcpy(cps, table_cps, sizeof *cps);
 
 	return 0;
+}
+
+struct gprs_cs_desc {
+	struct {
+		uint8_t bytes;
+		uint8_t bits;
+	} uplink, downlink;
+};
+
+const struct gprs_cs_desc gprs_cs_desc[_NUM_OSMO_GPRS_CS] = {
+	[OSMO_GPRS_CS1]		= { {23, 0},	{23, 0} },
+	[OSMO_GPRS_CS2]		= { {33, 7},	{33, 7} },
+	[OSMO_GPRS_CS3]		= { {39, 3},	{39, 3} },
+	[OSMO_GPRS_CS4]		= { {53, 7}, 	{53, 7} },
+
+	[OSMO_GPRS_MCS1]	= { {26, 1}, 	{26, 1} },
+	[OSMO_GPRS_MCS2]	= { {32, 1}, 	{32, 1} },
+	[OSMO_GPRS_MCS3]	= { {41, 1}, 	{41, 1} },
+	[OSMO_GPRS_MCS4]	= { {48, 1}, 	{48, 1} },
+
+	[OSMO_GPRS_MCS5]	= { {60, 7}, 	{59, 6} },
+	[OSMO_GPRS_MCS6]	= { {78, 7}, 	{77, 6} },
+	[OSMO_GPRS_MCS7]	= { {118, 2}, 	{117, 4} },
+	[OSMO_GPRS_MCS8]	= { {142, 2}, 	{141, 4} },
+	[OSMO_GPRS_MCS9]	= { {154, 2}, 	{153, 4} },
+};
+
+/*! Return size of (E)GPRS uplink block for given coding scheme in bits */
+int osmo_gprs_ul_block_size_bits(enum osmo_gprs_cs cs)
+{
+	if (cs >= ARRAY_SIZE(gprs_cs_desc))
+		return -EINVAL;
+	return gprs_cs_desc[cs].uplink.bytes * 8 + gprs_cs_desc[cs].uplink.bits;
+}
+
+/*! Return size of (E)GPRS downlink block for given coding scheme in bits */
+int osmo_gprs_dl_block_size_bits(enum osmo_gprs_cs cs)
+{
+	if (cs >= ARRAY_SIZE(gprs_cs_desc))
+		return -EINVAL;
+	return gprs_cs_desc[cs].downlink.bytes * 8 + gprs_cs_desc[cs].downlink.bits;
+}
+
+/*! Return size of (E)GPRS uplink block for given coding scheme in bytes */
+int osmo_gprs_ul_block_size_bytes(enum osmo_gprs_cs cs)
+{
+	int rc;
+	if (cs >= ARRAY_SIZE(gprs_cs_desc))
+		return -EINVAL;
+	rc = gprs_cs_desc[cs].uplink.bytes;
+	if (gprs_cs_desc[cs].uplink.bits)
+		rc++;
+	return rc;
+}
+
+/*! Return size of (E)GPRS downlink block for given coding scheme in bytes */
+int osmo_gprs_dl_block_size_bytes(enum osmo_gprs_cs cs)
+{
+	int rc;
+	if (cs >= ARRAY_SIZE(gprs_cs_desc))
+		return -EINVAL;
+	rc = gprs_cs_desc[cs].downlink.bytes;
+	if (gprs_cs_desc[cs].downlink.bits)
+		rc++;
+	return rc;
+}
+
+/*! Return coding scheme for given (E)GPRS uplink block size */
+enum osmo_gprs_cs osmo_gprs_ul_cs_by_block_bytes(uint8_t block_size)
+{
+	unsigned int i;
+
+	for (i = 0; i < ARRAY_SIZE(gprs_cs_desc); i++) {
+		if (block_size == osmo_gprs_ul_block_size_bytes(i))
+			return i;
+	}
+	return OSMO_GPRS_CS_NONE;
+}
+
+/*! Return coding scheme for given (E)GPRS downlink block size */
+enum osmo_gprs_cs osmo_gprs_dl_cs_by_block_bytes(uint8_t block_size)
+{
+	unsigned int i;
+
+	for (i = 0; i < ARRAY_SIZE(gprs_cs_desc); i++) {
+		if (block_size == osmo_gprs_dl_block_size_bytes(i))
+			return i;
+	}
+	return OSMO_GPRS_CS_NONE;
 }

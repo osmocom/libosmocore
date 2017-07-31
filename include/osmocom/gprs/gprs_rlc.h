@@ -26,4 +26,29 @@ enum egprs_hdr_type {
         EGPRS_HDR_TYPE3,
 };
 
+enum osmo_gprs_cs {
+	OSMO_GPRS_CS_NONE,
+	OSMO_GPRS_CS1,
+	OSMO_GPRS_CS2,
+	OSMO_GPRS_CS3,
+	OSMO_GPRS_CS4,
+	OSMO_GPRS_MCS1,
+	OSMO_GPRS_MCS2,
+	OSMO_GPRS_MCS3,
+	OSMO_GPRS_MCS4,
+	OSMO_GPRS_MCS5,
+	OSMO_GPRS_MCS6,
+	OSMO_GPRS_MCS7,
+	OSMO_GPRS_MCS8,
+	OSMO_GPRS_MCS9,
+	_NUM_OSMO_GPRS_CS
+};
+
 int egprs_get_cps(struct egprs_cps *cps, uint8_t type, uint8_t bits);
+
+int osmo_gprs_ul_block_size_bits(enum osmo_gprs_cs cs);
+int osmo_gprs_dl_block_size_bits(enum osmo_gprs_cs cs);
+int osmo_gprs_ul_block_size_bytes(enum osmo_gprs_cs cs);
+int osmo_gprs_dl_block_size_bytes(enum osmo_gprs_cs cs);
+enum osmo_gprs_cs osmo_gprs_ul_cs_by_block_bytes(uint8_t block_size);
+enum osmo_gprs_cs osmo_gprs_dl_cs_by_block_bytes(uint8_t block_size);

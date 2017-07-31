@@ -65,6 +65,12 @@ gprs_ms_net_cap_gea_supported;
 gprs_msgt_gmm_names;
 
 egprs_get_cps;
+osmo_gprs_ul_block_size_bits;
+osmo_gprs_dl_block_size_bits;
+osmo_gprs_ul_block_size_bytes;
+osmo_gprs_dl_block_size_bytes;
+osmo_gprs_ul_cs_by_block_bytes;
+osmo_gprs_dl_cs_by_block_bytes;
 
 gsm48_gmm_cause_names;
 gsm48_gsm_cause_names;
