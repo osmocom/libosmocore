@@ -21,7 +21,7 @@
 	TLV16	8	8		N * 16
 	 TvLV	8	8/16		N * 8
 	vTvLV	8/16	8/16		N * 8
-
+	T16LV	16	8		N * 8
 */
 
 /*! gross length of a LV type field */
@@ -34,6 +34,8 @@
 #define TL16V_GROSS_LEN(x)	(x+3)
 /*! gross length of a L16TV type field */
 #define L16TV_GROSS_LEN(x)	(x+3)
+/*! gross length of a T16LV type field */
+#define T16LV_GROSS_LEN(x)	(x+3)
 
 /*! maximum length of TLV of one byte length */
 #define TVLV_MAX_ONEBYTE	0x7f
@@ -119,6 +121,17 @@ static inline uint8_t *tl16v_put(uint8_t *buf, uint8_t tag, uint16_t len,
 	return buf + len*2;
 }
 
+/*! put (append) a TL16V field */
+static inline uint8_t *t16lv_put(uint8_t *buf, uint16_t tag, uint8_t len,
+				const uint8_t *val)
+{
+	*buf++ = tag >> 8;
+	*buf++ = tag & 0xff;
+	*buf++ = len;
+	memcpy(buf, val, len);
+	return buf + len + 2;
+}
+
 /*! put (append) a TvLV field */
 static inline uint8_t *tvlv_put(uint8_t *buf, uint8_t tag, uint16_t len,
 				 const uint8_t *val)
@@ -183,6 +196,12 @@ static inline uint8_t *msgb_tl16v_put(struct msgb *msg, uint8_t tag, uint16_t le
 {
 	uint8_t *buf = msgb_put(msg, TL16V_GROSS_LEN(len));
 	return tl16v_put(buf, tag, len, val);
+}
+
+static inline uint8_t *msgb_t16lv_put(struct msgb *msg, uint16_t tag, uint8_t len, const uint8_t *val)
+{
+	uint8_t *buf = msgb_put(msg, T16LV_GROSS_LEN(len));
+	return t16lv_put(buf, tag, len, val);
 }
 
 /*! put (append) a TvLV field to \ref msgb */
