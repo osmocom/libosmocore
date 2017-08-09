@@ -7,7 +7,27 @@
 #include <osmocom/gsm/protocol/gsm_04_08.h>
 #include <osmocom/gsm/protocol/gsm_04_80.h>
 
-#define MAX_LEN_USSD_STRING	31
+/**
+ * According to the GSM 04.80 (version 5.0.0) specification Annex A
+ * "Expanded ASN.1 Module "SS-Protocol", the maximum size of a USSD
+ * OCTET STRING field is 160 bytes.
+ */
+#define GSM0480_USSD_OCTET_STRING_LEN	160
+
+/**
+ * Thus according to ETSI TS 123 038 (version 10.0.0) specification
+ * 6.1.2.3 "USSD packing of 7 bit characters", in 160 octets, it's
+ * possible to pack (160 * 8) / 7 = 182.8, that is 182 characters.
+ * The remaining 6 bits are set to zero.
+ */
+#define GSM0480_USSD_7BIT_STRING_LEN	182
+
+/**
+ * DEPRECATED: this definition doesn't follow any specification,
+ * so we only keep it for compatibility reasons. It's strongly
+ * recommended to use correct definitions above.
+ */
+#define MAX_LEN_USSD_STRING		31
 
 /* deprecated */
 struct ussd_request {
@@ -23,7 +43,7 @@ int gsm0480_decode_ussd_request(const struct gsm48_hdr *hdr, uint16_t len,
 struct ss_request {
 	uint8_t opcode;
 	uint8_t ss_code;
-	uint8_t ussd_text[MAX_LEN_USSD_STRING + 1];
+	uint8_t ussd_text[GSM0480_USSD_OCTET_STRING_LEN];
 	uint8_t transaction_id;
 	uint8_t invoke_id;
 };

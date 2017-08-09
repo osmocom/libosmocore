@@ -456,8 +456,8 @@ static int parse_process_uss_req(const uint8_t *uss_req_data, uint16_t length,
 			    (uss_req_data[5] == ASN1_OCTET_STRING_TAG)) {
 				num_chars = (uss_req_data[6] * 8) / 7;
 				/* Prevent a mobile-originated buffer-overrun! */
-				if (num_chars > MAX_LEN_USSD_STRING)
-					num_chars = MAX_LEN_USSD_STRING;
+				if (num_chars > GSM0480_USSD_7BIT_STRING_LEN)
+					num_chars = GSM0480_USSD_7BIT_STRING_LEN;
 				gsm_7bit_decode_n_ussd((char *)req->ussd_text,
 							sizeof(req->ussd_text),
 							&(uss_req_data[7]), num_chars);
