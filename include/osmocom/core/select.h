@@ -36,6 +36,10 @@ struct osmo_fd {
 	unsigned int priv_nr;
 };
 
+void osmo_fd_setup(struct osmo_fd *ofd, int fd, unsigned int when,
+		   int (*cb)(struct osmo_fd *fd, unsigned int what),
+		   void *data, unsigned int priv_nr);
+
 bool osmo_fd_is_registered(struct osmo_fd *fd);
 int osmo_fd_register(struct osmo_fd *fd);
 void osmo_fd_unregister(struct osmo_fd *fd);

@@ -47,6 +47,24 @@ static int maxfd = 0;
 static LLIST_HEAD(osmo_fds);
 static int unregistered_count;
 
+/*! Set up an osmo-fd. Will not register it.
+ *  \param[inout] ofd Osmo FD to be set-up
+ *  \param[in] fd OS-level file descriptor number
+ *  \param[in] when bit-mask of BSC_FD_{READ,WRITE,EXECEPT}
+ *  \param[in] cb Call-back function to be called
+ *  \param[in] data Private context pointer
+ *  \param[in] priv_nr Private number
+ */
+void osmo_fd_setup(struct osmo_fd *ofd, int fd, unsigned int when,
+		   int (*cb)(struct osmo_fd *fd, unsigned int what),
+		   void *data, unsigned int priv_nr)
+{
+	ofd->fd = fd;
+	ofd->when = when;
+	ofd->cb = cb;
+	ofd->data = data;
+	ofd->priv_nr = priv_nr;
+}
 
 /*! Check if a file descriptor is already registered
  *  \param[in] fd osmocom file descriptor to be checked
