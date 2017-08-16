@@ -26,4 +26,6 @@
 #define OSMO_VTY_PORT_MNCC_SIP	4256
 /* 4257 used by control interface */
 #define OSMO_VTY_PORT_HLR	4258
+/* 4259 used by control interface */
+#define OSMO_VTY_PORT_GGSN	4260
 /* When adding/changing port numbers, keep docs and wiki in sync. See above. */
