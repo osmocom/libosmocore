@@ -30,16 +30,36 @@
  *  @{
  */
 
+static const uint8_t *gen_opc_if_needed(const struct osmo_sub_auth_data *aud, uint8_t *gen_opc)
+{
+	int rc;
+
+	/* Check if we only know OP and compute OPC if required */
+	if (aud->type == OSMO_AUTH_TYPE_UMTS && aud->u.umts.opc_is_op) {
+		rc = milenage_opc_gen(gen_opc, aud->u.umts.k, aud->u.umts.opc);
+		if (rc < 0)
+			return NULL;
+		return gen_opc;
+	} else
+		return aud->u.umts.opc;
+}
+
 static int milenage_gen_vec(struct osmo_auth_vector *vec,
 			    struct osmo_sub_auth_data *aud,
 			    const uint8_t *_rand)
 {
 	size_t res_len = sizeof(vec->res);
 	uint64_t next_sqn;
+	uint8_t gen_opc[16];
+	const uint8_t *opc;
 	uint8_t sqn[6];
 	uint64_t ind_mask;
 	uint64_t seq_1;
 	int rc;
+
+	opc = gen_opc_if_needed(aud, gen_opc);
+	if (!opc)
+		return -1;
 
 	/* Determine next SQN, according to 3GPP TS 33.102:
 	 * SQN consists of SEQ and a lower significant part of IND bits:
@@ -106,11 +126,11 @@ static int milenage_gen_vec(struct osmo_auth_vector *vec,
 	next_sqn = ((aud->u.umts.sqn + seq_1) & ind_mask) + aud->u.umts.ind;
 
 	osmo_store64be_ext(next_sqn, sqn, 6);
-	milenage_generate(aud->u.umts.opc, aud->u.umts.amf, aud->u.umts.k,
+	milenage_generate(opc, aud->u.umts.amf, aud->u.umts.k,
 			  sqn, _rand,
 			  vec->autn, vec->ik, vec->ck, vec->res, &res_len);
 	vec->res_len = res_len;
-	rc = gsm_milenage(aud->u.umts.opc, aud->u.umts.k, _rand, vec->sres, vec->kc);
+	rc = gsm_milenage(opc, aud->u.umts.k, _rand, vec->sres, vec->kc);
 	if (rc < 0)
 		return rc;
 
@@ -129,18 +149,10 @@ static int milenage_gen_vec_auts(struct osmo_auth_vector *vec,
 {
 	uint8_t sqn_out[6];
 	uint8_t gen_opc[16];
-	uint8_t *opc;
+	const uint8_t *opc;
 	int rc;
 
-	/* Check if we only know OP and compute OPC if required */
-	if (aud->type == OSMO_AUTH_TYPE_UMTS && aud->u.umts.opc_is_op) {
-		rc = milenage_opc_gen(gen_opc, aud->u.umts.k,
-				      aud->u.umts.opc);
-		if (rc < 0)
-			return rc;
-		opc = gen_opc;
-	} else
-		opc = aud->u.umts.opc;
+	opc = gen_opc_if_needed(aud, gen_opc);
 
 	rc = milenage_auts(opc, aud->u.umts.k, rand_auts, auts, sqn_out);
 	if (rc < 0)
