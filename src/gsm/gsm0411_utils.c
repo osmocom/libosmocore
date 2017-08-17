@@ -89,7 +89,7 @@ uint8_t gsm411_unbcdify(uint8_t value)
  *  \param[in] time to encode */
 void gsm340_gen_scts(uint8_t *scts, time_t time)
 {
-	struct tm *tm = gmtime(&time);
+	struct tm *tm = localtime(&time);
 
 	*scts++ = gsm411_bcdify(tm->tm_year % 100);
 	*scts++ = gsm411_bcdify(tm->tm_mon + 1);
