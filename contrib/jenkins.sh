@@ -1,8 +1,9 @@
-#!/usr/bin/env bash
+#!/bin/sh
+# jenkins build helper script for libosmo-sccp.  This is how we build on jenkins.osmocom.org
 
 set -ex
 
-./contrib/verify_value_string_arrays_are_terminated.py $(find . -name "*.[hc]")
+verify_value_string_arrays_are_terminated.py $(find . -name "*.[hc]")
 
 if [ "x$label" = "xFreeBSD_amd64" ]; then
         ENABLE_SANITIZE=""
