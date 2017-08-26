@@ -1,6 +1,12 @@
 #!/bin/sh
 osmo_auc_gen="$1"
 
+if [ -z "$osmo_auc_gen" ]; then
+	echo 'Error: pass a path to the osmo-auc-gen binary as argument:'
+	echo '       ./osmo-auc-gen_test.sh /path/to/osmo-auc-gen'
+	exit 1
+fi
+
 set -e
 
 # run the osmo-auc-gen binary verbosely without showing its absolute path
