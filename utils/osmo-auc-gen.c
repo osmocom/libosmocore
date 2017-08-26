@@ -95,9 +95,11 @@ int main(int argc, char **argv)
 	struct osmo_auth_vector _vec;
 	struct osmo_auth_vector *vec = &_vec;
 	uint8_t _rand[16], _auts[14];
+	uint64_t sqn;
 	int rc, option_index;
 	int rand_is_set = 0;
 	int auts_is_set = 0;
+	int sqn_is_set = 0;
 	int fmt_triplets_dat = 0;
 
 	printf("osmo-auc-gen (C) 2011-2012 by Harald Welte\n");
@@ -196,11 +198,8 @@ int main(int argc, char **argv)
 				fprintf(stderr, "Only UMTS has SQN\n");
 				exit(2);
 			}
-			test_aud.u.umts.sqn = strtoull(optarg, 0, 10);
-			/* Before calculating the UMTS auth vector,
-			 * osmo_auth_gen_vec() increments the SQN. SQN-1 here
-			 * to end up with the SQN the user requested. */
-			test_aud.u.umts.sqn--;
+			sqn = strtoull(optarg, 0, 10);
+			sqn_is_set = 1;
 			break;
 		case 'r':
 			rc = osmo_hexparse(optarg, _rand, sizeof(_rand));
@@ -245,6 +244,19 @@ int main(int argc, char **argv)
 	}
 
 	memset(vec, 0, sizeof(*vec));
+
+	if (test_aud.type == OSMO_AUTH_TYPE_UMTS) {
+		uint64_t seq_1 = 1LL << test_aud.u.umts.ind_bitlen;
+		uint64_t ind_mask = seq_1 - 1;
+
+		if (sqn_is_set) {
+			/* Before calculating the UMTS auth vector, osmo_auth_gen_vec() increments SEQ.
+			 * To end up with the SQN passed in by the user, we need to pass in SEQ-1, and
+			 * indicate which IND slot to target. */
+			test_aud.u.umts.sqn = sqn - seq_1;
+			test_aud.u.umts.ind = sqn & ind_mask;
+		}
+	}
 
 	if (!auts_is_set)
 		rc = osmo_auth_gen_vec(vec, &test_aud, _rand);
