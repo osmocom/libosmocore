@@ -317,6 +317,8 @@ int main(int argc, char **argv)
 		if (test_aud.type == OSMO_AUTH_TYPE_UMTS) {
 			printf("SQN:\t%" PRIu64 "\n", test_aud.u.umts.sqn);
 			printf("IND:\t%u\n", (unsigned int)(test_aud.u.umts.sqn & ind_mask));
+			if (auts_is_set)
+				printf("SQN.MS:\t%" PRIu64 "\n", test_aud.u.umts.sqn_ms);
 		}
 	}
 

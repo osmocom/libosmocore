@@ -158,9 +158,10 @@ static int milenage_gen_vec_auts(struct osmo_auth_vector *vec,
 	if (rc < 0)
 		return rc;
 
+	aud->u.umts.sqn_ms = osmo_load64be_ext(sqn_out, 6) >> 16;
 	/* Update our "largest used SQN" from the USIM -- milenage_gen_vec()
 	 * below will increment SQN. */
-	aud->u.umts.sqn = osmo_load64be_ext(sqn_out, 6) >> 16;
+	aud->u.umts.sqn = aud->u.umts.sqn_ms;
 
 	return milenage_gen_vec(vec, aud, _rand);
 }
