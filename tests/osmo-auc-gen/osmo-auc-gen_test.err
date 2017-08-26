@@ -7,3 +7,6 @@ Requested --ind 32 is too large for IND bitlen of 5
 expecting error:
 > osmo-auc-gen -3 -a milenage -r 39fa2f4e3d523d8619a73b4f65c3e14d -k EB215756028D60E3275E613320AEC880 -o FB2A3D1B360F599ABAB99DB8669F8308 -A 979498b1f72d3e28c59fa2e72f9c --ind 42
 Requested --ind 42 is too large for IND bitlen of 5
+expecting error:
+> osmo-auc-gen -3 -a milenage -r 39fa2f4e3d523d8619a73b4f65c3e14d -k EB215756028D60E3275E613320AEC880 -o FB2A3D1B360F599ABAB99DB8669F8308 -A 979498b1f72d3e28c59fa2e72f9c --ind-len 0 --ind 1
+Requested --ind 1 is too large for IND bitlen of 0

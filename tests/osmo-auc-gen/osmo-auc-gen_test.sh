@@ -48,7 +48,15 @@ invoke -3 -a milenage -r $rand -k $k -o $opc -A $auts --ind 5
 invoke -3 -a milenage -r $rand -k $k -o $opc -A $auts --ind 23
 invoke -3 -a milenage -r $rand -k $k -o $opc -A $auts --ind 31
 
+invoke -3 -a milenage -r $rand -k $k -o $opc -A $auts --ind-len 0
+invoke -3 -a milenage -r $rand -k $k -o $opc -A $auts --ind-len 1
+invoke -3 -a milenage -r $rand -k $k -o $opc -A $auts --ind-len 1 --ind 1
+invoke -3 -a milenage -r $rand -k $k -o $opc -A $auts --ind-len 8
+invoke -3 -a milenage -r $rand -k $k -o $opc -A $auts --ind-len 8 --ind 1
+
 # expect error: IND is too large for IND-bitlen of 5 (max 31)
 invoke_err -3 -a milenage -r $rand -k $k -o $opc -A $auts --ind -1
 invoke_err -3 -a milenage -r $rand -k $k -o $opc -A $auts --ind 32
 invoke_err -3 -a milenage -r $rand -k $k -o $opc -A $auts --ind 42
+
+invoke_err -3 -a milenage -r $rand -k $k -o $opc -A $auts --ind-len 0 --ind 1

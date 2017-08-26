@@ -81,6 +81,7 @@ static void help()
 		"-f  --amf\tSpecify AMF (only for 3G)\n"
 		"-s  --sqn\tSpecify SQN (only for 3G)\n"
 		"-i  --ind\tSpecify IND slot for new SQN after AUTS (only for 3G)\n"
+		"-l  --ind-len\tSpecify IND bit length (default=5) (only for 3G)\n"
 		"-A  --auts\tSpecify AUTS (only for 3G)\n"
 		"-r  --rand\tSpecify random value\n"
 		"-I  --ipsec\tOutput in triplets.dat format for strongswan\n");
@@ -122,6 +123,7 @@ int main(int argc, char **argv)
 			{ "amf", 1, 0, 'f' },
 			{ "sqn", 1, 0, 's' },
 			{ "ind", 1, 0, 'i' },
+			{ "ind-len", 1, 0, 'l' },
 			{ "rand", 1, 0, 'r' },
 			{ "auts", 1, 0, 'A' },
 			{ "help", 0, 0, 'h' },
@@ -130,7 +132,7 @@ int main(int argc, char **argv)
 
 		rc = 0;
 
-		c = getopt_long(argc, argv, "23a:k:o:f:s:i:r:hO:A:I", long_options,
+		c = getopt_long(argc, argv, "23a:k:o:f:s:i:l:r:hO:A:I", long_options,
 				&option_index);
 
 		if (c == -1)
@@ -213,6 +215,13 @@ int main(int argc, char **argv)
 			}
 			ind = atoi(optarg);
 			ind_is_set = 1;
+			break;
+		case 'l':
+			if (test_aud.type != OSMO_AUTH_TYPE_UMTS) {
+				fprintf(stderr, "Only UMTS has IND bitlen\n");
+				exit(2);
+			}
+			test_aud.u.umts.ind_bitlen = atoi(optarg);
 			break;
 		case 'r':
 			rc = osmo_hexparse(optarg, _rand, sizeof(_rand));
