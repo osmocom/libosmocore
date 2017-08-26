@@ -80,6 +80,7 @@ static void help()
 		"-O  --op\tSpecify OP (only for 3G)\n"
 		"-f  --amf\tSpecify AMF (only for 3G)\n"
 		"-s  --sqn\tSpecify SQN (only for 3G)\n"
+		"-i  --ind\tSpecify IND slot for new SQN after AUTS (only for 3G)\n"
 		"-A  --auts\tSpecify AUTS (only for 3G)\n"
 		"-r  --rand\tSpecify random value\n"
 		"-I  --ipsec\tOutput in triplets.dat format for strongswan\n");
@@ -96,10 +97,12 @@ int main(int argc, char **argv)
 	struct osmo_auth_vector *vec = &_vec;
 	uint8_t _rand[16], _auts[14];
 	uint64_t sqn;
+	unsigned int ind;
 	int rc, option_index;
 	int rand_is_set = 0;
 	int auts_is_set = 0;
 	int sqn_is_set = 0;
+	int ind_is_set = 0;
 	int fmt_triplets_dat = 0;
 
 	printf("osmo-auc-gen (C) 2011-2012 by Harald Welte\n");
@@ -118,6 +121,7 @@ int main(int argc, char **argv)
 			{ "op", 1, 0, 'O' },
 			{ "amf", 1, 0, 'f' },
 			{ "sqn", 1, 0, 's' },
+			{ "ind", 1, 0, 'i' },
 			{ "rand", 1, 0, 'r' },
 			{ "auts", 1, 0, 'A' },
 			{ "help", 0, 0, 'h' },
@@ -126,7 +130,7 @@ int main(int argc, char **argv)
 
 		rc = 0;
 
-		c = getopt_long(argc, argv, "23a:k:o:f:s:r:hO:A:I", long_options,
+		c = getopt_long(argc, argv, "23a:k:o:f:s:i:r:hO:A:I", long_options,
 				&option_index);
 
 		if (c == -1)
@@ -202,6 +206,14 @@ int main(int argc, char **argv)
 			sqn = strtoull(optarg, 0, 10);
 			sqn_is_set = 1;
 			break;
+		case 'i':
+			if (test_aud.type != OSMO_AUTH_TYPE_UMTS) {
+				fprintf(stderr, "Only UMTS has IND\n");
+				exit(2);
+			}
+			ind = atoi(optarg);
+			ind_is_set = 1;
+			break;
 		case 'r':
 			rc = osmo_hexparse(optarg, _rand, sizeof(_rand));
 			rand_is_set = 1;
@@ -256,6 +268,22 @@ int main(int argc, char **argv)
 			 * indicate which IND slot to target. */
 			test_aud.u.umts.sqn = sqn - seq_1;
 			test_aud.u.umts.ind = sqn & ind_mask;
+		}
+
+		if (sqn_is_set && ind_is_set) {
+			fprintf(stderr, "Requesting --sqn %"PRIu64" implies IND=%u,"
+				" so no further --ind argument is allowed.\n",
+				sqn, test_aud.u.umts.ind);
+			exit(2);
+		}
+
+		if (ind_is_set) {
+			if (ind >= (1 << test_aud.u.umts.ind_bitlen)) {
+				fprintf(stderr, "Requested --ind %u is too large for IND bitlen of %u\n",
+					ind, test_aud.u.umts.ind_bitlen);
+				exit(2);
+			}
+			test_aud.u.umts.ind = ind;
 		}
 	}
 
