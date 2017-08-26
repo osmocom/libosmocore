@@ -138,6 +138,7 @@ int main(int argc, char **argv)
 			break;
 		case '3':
 			test_aud.type = OSMO_AUTH_TYPE_UMTS;
+			test_aud.u.umts.ind_bitlen = 5;
 			break;
 		case 'a':
 			rc = osmo_auth_alg_parse(optarg);
