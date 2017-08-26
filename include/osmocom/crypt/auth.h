@@ -35,10 +35,10 @@ struct osmo_sub_auth_data {
 			uint8_t opc[16]; /*!< operator invariant value */
 			uint8_t k[16];	/*!< secret key of the subscriber */
 			uint8_t amf[2];
-			uint64_t sqn;	/*!< sequence number */
+			uint64_t sqn;	/*!< sequence number (in: prev sqn; out: used sqn) */
 			int opc_is_op;	/*!< is the OPC field OPC (0) or OP (1) ? */
 			unsigned int ind_bitlen; /*!< nr of bits not in SEQ, only SQN */
-			unsigned int ind; /*!< SQN slot, i.e. (SEQ << ind_bitlen) + ind */
+			unsigned int ind; /*!< which IND slot to use an SQN from */
 		} umts;
 		struct {
 			uint8_t ki[16];	/*!< secret key */
