@@ -266,11 +266,5 @@ int main(int argc, char **argv)
 			printf("SQN:\t%" PRIu64 "\n", test_aud.u.umts.sqn);
 	}
 
-	/* After recovering SQN.MS from AUTS, milenage_gen_vec_auts() does
-	 * aud->u.umts.sqn++, so to show SQN.MS we need to -1 */
-	if (auts_is_set)
-		printf("AUTS success: SQN.MS = %" PRIu64 "\n",
-		       test_aud.u.umts.sqn - 1);
-
 	exit(0);
 }
