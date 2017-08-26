@@ -105,6 +105,8 @@ int main(int argc, char **argv)
 	int sqn_is_set = 0;
 	int ind_is_set = 0;
 	int fmt_triplets_dat = 0;
+	uint64_t seq_1;
+	uint64_t ind_mask;
 
 	printf("osmo-auc-gen (C) 2011-2012 by Harald Welte\n");
 	printf("This is FREE SOFTWARE with ABSOLUTELY NO WARRANTY\n\n");
@@ -268,8 +270,8 @@ int main(int argc, char **argv)
 	memset(vec, 0, sizeof(*vec));
 
 	if (test_aud.type == OSMO_AUTH_TYPE_UMTS) {
-		uint64_t seq_1 = 1LL << test_aud.u.umts.ind_bitlen;
-		uint64_t ind_mask = seq_1 - 1;
+		seq_1 = 1LL << test_aud.u.umts.ind_bitlen;
+		ind_mask = seq_1 - 1;
 
 		if (sqn_is_set) {
 			/* Before calculating the UMTS auth vector, osmo_auth_gen_vec() increments SEQ.
@@ -312,8 +314,10 @@ int main(int argc, char **argv)
 		dump_triplets_dat(vec);
 	else {
 		dump_auth_vec(vec);
-		if (test_aud.type == OSMO_AUTH_TYPE_UMTS)
+		if (test_aud.type == OSMO_AUTH_TYPE_UMTS) {
 			printf("SQN:\t%" PRIu64 "\n", test_aud.u.umts.sqn);
+			printf("IND:\t%u\n", (unsigned int)(test_aud.u.umts.sqn & ind_mask));
+		}
 	}
 
 	exit(0);
