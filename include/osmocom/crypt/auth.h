@@ -8,6 +8,8 @@
 
 #include <osmocom/core/linuxlist.h>
 
+#define OSMO_A5_MAX_KEY_LEN_BYTES (128/8)
+
 /*! Authentication Type (GSM/UMTS) */
 enum osmo_sub_auth_type {
 	OSMO_AUTH_TYPE_NONE	= 0x00,
@@ -42,7 +44,7 @@ struct osmo_sub_auth_data {
 			uint64_t sqn_ms; /*!< sqn from AUTS (output value only) */
 		} umts;
 		struct {
-			uint8_t ki[16];	/*!< secret key */
+			uint8_t ki[OSMO_A5_MAX_KEY_LEN_BYTES];	/*!< secret key */
 		} gsm;
 	} u;
 };
