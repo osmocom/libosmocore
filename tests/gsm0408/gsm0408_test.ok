@@ -1,3 +1,11 @@
 Test `CSD 9600/V.110/transparent' passed
 Test `Speech, all codecs' passed
 Simple TMSI encoding test....passed
+Constructed RA: 6 - OK
+RA: MNC=121, MCC=77, LAC=666, RAC=5
+RA: MNC=121, MCC=77, LAC=666, RAC=5
+RA test...passed
+Constructed RA: 6 - OK
+RA: MNC=98, MCC=84, LAC=11, RAC=89
+RA: MNC=98, MCC=84, LAC=11, RAC=89
+RA test...passed

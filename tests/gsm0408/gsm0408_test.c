@@ -130,6 +130,54 @@ static int test_bearer_cap()
 	return 0;
 }
 
+static inline void dump_ra(const struct gprs_ra_id *raid)
+{
+	printf("RA: MNC=%u, MCC=%u, LAC=%u, RAC=%u\n", raid->mnc, raid->mcc, raid->lac, raid->rac);
+}
+
+static inline void check_ra(const struct gprs_ra_id *raid)
+{
+	uint8_t buf[6];
+	int res;
+	struct gprs_ra_id raid0 = {
+		.mnc = 0,
+		.mcc = 0,
+		.lac = 0,
+		.rac = 0,
+	};
+
+	res = gsm48_construct_ra(buf, raid);
+	printf("Constructed RA: %d - %s\n", res, res != sizeof(buf) ? "FAIL" : "OK");
+
+	gsm48_parse_ra(&raid0, buf);
+	dump_ra(raid);
+	dump_ra(&raid0);
+	printf("RA test...");
+	if (raid->mnc != raid0.mnc || raid->mcc != raid0.mcc || raid->lac != raid0.lac || raid->rac != raid0.rac)
+		printf("FAIL\n");
+	else
+		printf("passed\n");
+}
+
+static void test_ra_cap(void)
+{
+	struct gprs_ra_id raid1 = {
+		.mnc = 121,
+		.mcc = 77,
+		.lac = 666,
+		.rac = 5,
+	};
+	struct gprs_ra_id raid2 = {
+		.mnc = 98,
+		.mcc = 84,
+		.lac = 11,
+		.rac = 89,
+	};
+
+	check_ra(&raid1);
+	check_ra(&raid2);
+}
+
 static void test_mid_from_tmsi(void)
 {
 	static const uint8_t res[] = { 0x17, 0x05, 0xf4, 0xaa, 0xbb, 0xcc, 0xdd };
@@ -152,6 +200,7 @@ int main(int argc, char **argv)
 	msgb_talloc_ctx_init(NULL, 0);
 	test_bearer_cap();
 	test_mid_from_tmsi();
+	test_ra_cap();
 
 	return EXIT_SUCCESS;
 }
