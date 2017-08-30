@@ -74,9 +74,9 @@ void logp(int subsys, const char *file, int line, int cont, const char *format, 
 	do { \
 		if (log_check_level(ss, level)) {\
 			if (caller_file) \
-				logp2(ss, level, caller_file, caller_line, 0, fmt, ##args); \
+				logp2(ss, level, caller_file, caller_line, 0, "%s() " fmt, __func__, ##args); \
 			else \
-				logp2(ss, level, __BASE_FILE__, __LINE__, 0, fmt, ##args); \
+				logp2(ss, level, __BASE_FILE__, __LINE__, 0, "%s() " fmt, __func__, ##args); \
 		}\
 	} while(0)
 
