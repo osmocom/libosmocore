@@ -22,6 +22,7 @@ libosmocoding_la_SOURCES = \
 	gsm0503_parity.c \
 	gsm0503_coding.c
 libosmocoding_la_LDFLAGS = \
+	$(LTLDFLAGS_OSMOCODING) \
 	-version-info \
 	$(LIBVERSION) \
 	-no-undefined \
