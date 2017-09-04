@@ -2,12 +2,17 @@ ifndef REL
 	REL := patch
 endif
 
+BUMPVER := $(shell bumpversion)
 NEW_VER := $(shell bumpversion --list --current-version $(VERSION) $(REL) --allow-dirty | awk -F '=' '{ print $$2 }')
 LIBVERS := $(shell git grep -n LIBVERSION | grep  '=' | grep am | grep -v LDFLAGS)
 MAKEMOD := $(shell git diff -GLIBVERSION --stat | grep Makefile.am)
 ISODATE := $(shell date -I)
 
 release:
+
+ifeq ($(BUMPVER),)
+	@$(error Unable to find 'bumpversion' command.)
+endif
 
 ifeq ($(NEW_VER),)
 	@$(error Please fix versioning to match http://semver.org/ spec (current is $(VERSION)) before proceeding.)
