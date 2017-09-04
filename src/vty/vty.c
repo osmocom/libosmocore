@@ -1481,7 +1481,7 @@ vty_read_file(FILE *confp, void *priv)
 			fprintf(stderr, "There is no such command.\n");
 			break;
 		}
-		fprintf(stderr, "Error occurred during reading below "
+		fprintf(stderr, "Error occurred during reading the below "
 			"line:\n%s\n", vty->buf);
 		vty_close(vty);
 		return -EINVAL;
