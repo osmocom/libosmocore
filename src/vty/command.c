@@ -2111,12 +2111,10 @@ int
 cmd_execute_command(vector vline, struct vty *vty, struct cmd_element **cmd,
 		    int vtysh)
 {
-	int ret, saved_ret, tried = 0;
+	int ret;
 	enum node_type onode;
-	void *oindex;
 
 	onode = vty->node;
-	oindex = vty->index;
 
 	if (cmd_try_do_shortcut(vty->node, vector_slot(vline, 0))) {
 		vector shifted_vline;
@@ -2139,29 +2137,7 @@ cmd_execute_command(vector vline, struct vty *vty, struct cmd_element **cmd,
 		return ret;
 	}
 
-	saved_ret = ret = cmd_execute_command_real(vline, vty, cmd);
-
-	if (vtysh)
-		return saved_ret;
-
-	/* Go to parent for config nodes to attempt to find the right command */
-	while (ret != CMD_SUCCESS && ret != CMD_WARNING
-	       && is_config_child(vty)) {
-		vty_go_parent(vty);
-		ret = cmd_execute_command_real(vline, vty, cmd);
-		tried = 1;
-		if (ret == CMD_SUCCESS || ret == CMD_WARNING) {
-			/* succesfull command, leave the node as is */
-			return ret;
-		}
-	}
-	/* no command succeeded, reset the vty to the original node and
-	   return the error for this node */
-	if (tried) {
-		vty->node = onode;
-		vty->index = oindex;
-	}
-	return saved_ret;
+	return cmd_execute_command_real(vline, vty, cmd);
 }
 
 /* Execute command by argument readline. */

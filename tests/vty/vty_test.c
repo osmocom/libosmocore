@@ -155,14 +155,12 @@ static void test_node_tree_structure(void)
 	OSMO_ASSERT(vty->node == ENABLE_NODE);
 
 
-	/* Check searching the parents nodes for matching commands. */
+	/* Check for not searching the parent node for matching commands. */
 	OSMO_ASSERT(do_vty_command(vty, "configure terminal") == CMD_SUCCESS);
 	OSMO_ASSERT(vty->node == CONFIG_NODE);
 	OSMO_ASSERT(do_vty_command(vty, "log stderr") == CMD_SUCCESS);
 	OSMO_ASSERT(vty->node == CFG_LOG_NODE);
-	OSMO_ASSERT(do_vty_command(vty, "line vty") == CMD_SUCCESS);
-	OSMO_ASSERT(vty->node == VTY_NODE);
-	OSMO_ASSERT(do_vty_command(vty, "log stderr") == CMD_SUCCESS);
+	OSMO_ASSERT(do_vty_command(vty, "line vty") == CMD_ERR_NO_MATCH);
 	OSMO_ASSERT(vty->node == CFG_LOG_NODE);
 	OSMO_ASSERT(do_vty_command(vty, "end") == CMD_SUCCESS);
 	OSMO_ASSERT(vty->node == ENABLE_NODE);
