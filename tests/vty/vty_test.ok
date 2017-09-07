@@ -108,4 +108,24 @@ Going to execute 'no stats reporter log'
 Returned: 0, Current node: 4 '%s(config)# '
 Going to execute 'no stats reporter statsd'
 Returned: 0, Current node: 4 '%s(config)# '
+reading file ok.cfg, expecting rc=0
+got rc=0
+reading file ok_more_spaces.cfg, expecting rc=0
+got rc=0
+reading file ok_tabs.cfg, expecting rc=0
+got rc=0
+reading file ok_tabs_and_spaces.cfg, expecting rc=0
+got rc=0
+reading file ok_ignore_comment.cfg, expecting rc=0
+got rc=0
+reading file ok_ignore_blank.cfg, expecting rc=0
+got rc=0
+reading file fail_not_de-indented.cfg, expecting rc=-22
+got rc=-22
+reading file fail_too_much_indent.cfg, expecting rc=-22
+got rc=-22
+reading file fail_tabs_and_spaces.cfg, expecting rc=-22
+got rc=-22
+reading file ok_indented_root.cfg, expecting rc=0
+got rc=0
 All tests passed

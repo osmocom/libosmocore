@@ -19,6 +19,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -288,6 +289,15 @@ static void test_stats_vty(void)
 	destroy_test_vty(&test, vty);
 }
 
+void test_exit_by_indent(const char *fname, int expect_rc)
+{
+	int rc;
+	printf("reading file %s, expecting rc=%d\n", fname, expect_rc);
+	rc = vty_read_config_file(fname, NULL);
+	printf("got rc=%d\n", rc);
+	OSMO_ASSERT(rc == expect_rc);
+}
+
 int main(int argc, char **argv)
 {
 	struct vty_app_info vty_info = {
@@ -322,6 +332,16 @@ int main(int argc, char **argv)
 	test_cmd_string_from_valstr();
 	test_node_tree_structure();
 	test_stats_vty();
+	test_exit_by_indent("ok.cfg", 0);
+	test_exit_by_indent("ok_more_spaces.cfg", 0);
+	test_exit_by_indent("ok_tabs.cfg", 0);
+	test_exit_by_indent("ok_tabs_and_spaces.cfg", 0);
+	test_exit_by_indent("ok_ignore_comment.cfg", 0);
+	test_exit_by_indent("ok_ignore_blank.cfg", 0);
+	test_exit_by_indent("fail_not_de-indented.cfg", -EINVAL);
+	test_exit_by_indent("fail_too_much_indent.cfg", -EINVAL);
+	test_exit_by_indent("fail_tabs_and_spaces.cfg", -EINVAL);
+	test_exit_by_indent("ok_indented_root.cfg", 0);
 
 	/* Leak check */
 	OSMO_ASSERT(talloc_total_blocks(stats_ctx) == 1);

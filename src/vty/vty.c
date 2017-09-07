@@ -110,6 +110,8 @@ struct vty *vty_new(void)
 	if (!new)
 		goto out;
 
+	INIT_LLIST_HEAD(&new->parent_nodes);
+
 	new->obuf = buffer_new(new, 0);	/* Use default buffer size. */
 	if (!new->obuf)
 		goto out_new;
@@ -1479,6 +1481,12 @@ vty_read_file(FILE *confp, void *priv)
 			break;
 		case CMD_ERR_NO_MATCH:
 			fprintf(stderr, "There is no such command.\n");
+			break;
+		case CMD_ERR_INVALID_INDENT:
+			fprintf(stderr,
+				"Inconsistent indentation -- leading whitespace must match adjacent lines, and\n"
+				"indentation must reflect child node levels. A mix of tabs and spaces is\n"
+				"allowed, but their sequence must not change within a child block.\n");
 			break;
 		}
 		fprintf(stderr, "Error occurred during reading the below "

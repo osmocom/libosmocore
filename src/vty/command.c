@@ -190,31 +190,56 @@ void sort_node(void)
 		}
 }
 
-/*! Breaking up string into each command piece. I assume given
-   character is separated by a space character. Return value is a
-   vector which includes char ** data element. */
-vector cmd_make_strvec(const char *string)
+/*! Break up string in command tokens. Return leading indents.
+ * \param[in] string  String to split.
+ * \param[out] indent  If not NULL, return a talloc_strdup of indent characters.
+ * \param[out] strvec_p  Returns vector of split tokens, must not be NULL.
+ * \returns CMD_SUCCESS or CMD_ERR_INVALID_INDENT
+ *
+ * If \a indent is passed non-NULL, only simple space ' ' indents are allowed,
+ * so that \a indent can simply return the count of leading spaces.
+ * Otherwise any isspace() characters are allowed for indenting (backwards compat).
+ */
+int cmd_make_strvec2(const char *string, char **indent, vector *strvec_p)
 {
 	const char *cp, *start;
 	char *token;
 	int strlen;
 	vector strvec;
 
+	*strvec_p = NULL;
+	if (indent)
+		*indent = 0;
+
 	if (string == NULL)
-		return NULL;
+		return CMD_SUCCESS;
 
 	cp = string;
 
 	/* Skip white spaces. */
-	while (isspace((int)*cp) && *cp != '\0')
+	while (isspace((int)*cp) && *cp != '\0') {
+		/* if we're counting indents, we need to be strict about them */
+		if (indent && (*cp != ' ') && (*cp != '\t')) {
+			/* Ignore blank lines, they appear as leading whitespace with line breaks. */
+			if (*cp == '\n' || *cp == '\r') {
+				cp++;
+				string = cp;
+				continue;
+			}
+			return CMD_ERR_INVALID_INDENT;
+		}
 		cp++;
+	}
+
+	if (indent)
+		*indent = talloc_strndup(tall_vty_cmd_ctx, string, cp - string);
 
 	/* Return if there is only white spaces */
 	if (*cp == '\0')
-		return NULL;
+		return CMD_SUCCESS;
 
 	if (*cp == '!' || *cp == '#')
-		return NULL;
+		return CMD_SUCCESS;
 
 	/* Prepare return vector. */
 	strvec = vector_init(VECTOR_MIN_SIZE);
@@ -236,8 +261,21 @@ vector cmd_make_strvec(const char *string)
 			cp++;
 
 		if (*cp == '\0')
-			return strvec;
+			break;
 	}
+
+	*strvec_p = strvec;
+	return CMD_SUCCESS;
+}
+
+/*! Breaking up string into each command piece. I assume given
+   character is separated by a space character. Return value is a
+   vector which includes char ** data element. */
+vector cmd_make_strvec(const char *string)
+{
+	vector strvec;
+	cmd_make_strvec2(string, NULL, &strvec);
+	return strvec;
 }
 
 /*! Free allocated string vector. */
@@ -1947,6 +1985,33 @@ char **cmd_complete_command(vector vline, struct vty *vty, int *status)
 	return cmd_complete_command_real(vline, vty, status);
 }
 
+static struct vty_parent_node *vty_parent(struct vty *vty)
+{
+	return llist_first_entry_or_null(&vty->parent_nodes,
+					 struct vty_parent_node,
+					 entry);
+}
+
+static bool vty_pop_parent(struct vty *vty)
+{
+	struct vty_parent_node *parent = vty_parent(vty);
+	if (!parent)
+		return false;
+	llist_del(&parent->entry);
+	vty->node = parent->node;
+	vty->priv = parent->priv;
+	if (vty->indent)
+		talloc_free(vty->indent);
+	vty->indent = parent->indent;
+	talloc_free(parent);
+	return true;
+}
+
+static void vty_clear_parents(struct vty *vty)
+{
+	while (vty_pop_parent(vty));
+}
+
 /* return parent node */
 /*
  * This function MUST eventually converge on a node when called repeatedly,
@@ -1969,24 +2034,33 @@ int vty_go_parent(struct vty *vty)
 		case VIEW_NODE:
 		case ENABLE_NODE:
 		case CONFIG_NODE:
+			vty_clear_parents(vty);
 			break;
 
 		case AUTH_ENABLE_NODE:
 			vty->node = VIEW_NODE;
+			vty_clear_parents(vty);
 			break;
 
 		case CFG_LOG_NODE:
 		case VTY_NODE:
 			vty->node = CONFIG_NODE;
+			vty_clear_parents(vty);
 			break;
 
 		default:
-			if (host.app_info->go_parent_cb)
+			if (host.app_info->go_parent_cb) {
 				host.app_info->go_parent_cb(vty);
-			else if (is_config_child(vty))
+				vty_pop_parent(vty);
+			}
+			else if (is_config_child(vty)) {
 				vty->node = CONFIG_NODE;
-			else
+				vty_clear_parents(vty);
+			}
+			else {
 				vty->node = VIEW_NODE;
+				vty_clear_parents(vty);
+			}
 			break;
 	}
 
@@ -2252,36 +2326,130 @@ cmd_execute_command_strict(vector vline, struct vty *vty,
 	return (*matched_element->func) (matched_element, vty, argc, argv);
 }
 
+static inline size_t len(const char *str)
+{
+	return str? strlen(str) : 0;
+}
+
+static int indent_cmp(const char *a, const char *b)
+{
+	size_t al, bl;
+	al = len(a);
+	bl = len(b);
+	if (al > bl) {
+		if (bl && strncmp(a, b, bl) != 0)
+			return EINVAL;
+		return 1;
+	}
+	/* al <= bl */
+	if (al && strncmp(a, b, al) != 0)
+		return EINVAL;
+	return (al < bl)? -1 : 0;
+}
+
 /* Configration make from file. */
 int config_from_file(struct vty *vty, FILE * fp)
 {
 	int ret;
 	vector vline;
+	char *indent;
+	int cmp;
+	struct vty_parent_node this_node;
+	struct vty_parent_node *parent;
 
 	while (fgets(vty->buf, VTY_BUFSIZ, fp)) {
-		vline = cmd_make_strvec(vty->buf);
+		indent = NULL;
+		vline = NULL;
+		ret = cmd_make_strvec2(vty->buf, &indent, &vline);
 
-		/* In case of comment line */
-		if (vline == NULL)
+		if (ret != CMD_SUCCESS)
+			goto return_invalid_indent;
+
+		/* In case of comment or empty line */
+		if (vline == NULL) {
+			if (indent) {
+				talloc_free(indent);
+				indent = NULL;
+			}
 			continue;
-		/* Execute configuration command : this is strict match */
-		ret = cmd_execute_command_strict(vline, vty, NULL);
-
-		/* Try again with setting node to CONFIG_NODE */
-		while (ret != CMD_SUCCESS && ret != CMD_WARNING
-		       && ret != CMD_ERR_NOTHING_TODO
-		       && is_config_child(vty)) {
-			vty_go_parent(vty);
-			ret = cmd_execute_command_strict(vline, vty, NULL);
 		}
 
+		/* We have a nonempty line. This might be the first on a deeper indenting level, so let's
+		 * remember this indent if we don't have one yet. */
+		if (!vty->indent)
+			vty->indent = talloc_strdup(vty, indent);
+
+		cmp = indent_cmp(indent, vty->indent);
+		if (cmp == EINVAL)
+			goto return_invalid_indent;
+
+		/* Less indent: go up the parent nodes to find matching amount of less indent. When this
+		 * loop exits, we want to have found an exact match, i.e. cmp == 0. */
+		while (cmp < 0) {
+			vty_go_parent(vty);
+			cmp = indent_cmp(indent, vty->indent);
+			if (cmp == EINVAL)
+				goto return_invalid_indent;
+		}
+
+		/* More indent without having entered a child node level? Either the parent node's indent
+		 * wasn't hit exactly (e.g. there's a space more than the parent level had further above)
+		 * or the indentation increased even though the vty command didn't enter a child. */
+		if (cmp > 0)
+			goto return_invalid_indent;
+
+		/* Remember the current node before the command possibly changes it. */
+		this_node = (struct vty_parent_node){
+				.node = vty->node,
+				.priv = vty->priv,
+				.indent = vty->indent,
+			};
+
+		parent = vty_parent(vty);
+		ret = cmd_execute_command_strict(vline, vty, NULL);
 		cmd_free_strvec(vline);
 
 		if (ret != CMD_SUCCESS && ret != CMD_WARNING
-		    && ret != CMD_ERR_NOTHING_TODO)
+		    && ret != CMD_ERR_NOTHING_TODO) {
+			if (indent) {
+				talloc_free(indent);
+				indent = NULL;
+			}
 			return ret;
+		}
+
+		/* If we have stepped down into a child node, push a parent frame.
+		 * The causality is such: we don't expect every single node entry implementation to push
+		 * a parent node entry onto vty->parent_nodes. Instead we expect vty_go_parent() to *pop*
+		 * a parent node. Hence if the node changed without the parent node changing, we must
+		 * have stepped into a child node (and now expect a deeper indent). */
+		if (vty->node != this_node.node && parent == vty_parent(vty)) {
+			/* Push the parent node. */
+			parent = talloc_zero(vty, struct vty_parent_node);
+			*parent = this_node;
+			llist_add(&parent->entry, &vty->parent_nodes);
+
+			/* The current talloc'ed vty->indent string will now be owned by this parent
+			 * struct. Indicate that we don't know what deeper indent characters the user
+			 * will choose. */
+			vty->indent = NULL;
+		}
+
+		if (indent) {
+			talloc_free(indent);
+			indent = NULL;
+		}
 	}
 	return CMD_SUCCESS;
+
+return_invalid_indent:
+	if (vline)
+		cmd_free_strvec(vline);
+	if (indent) {
+		talloc_free(indent);
+		indent = NULL;
+	}
+	return CMD_ERR_INVALID_INDENT;
 }
 
 /* Configration from terminal */

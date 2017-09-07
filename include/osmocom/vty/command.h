@@ -161,6 +161,7 @@ struct desc {
 #define CMD_COMPLETE_MATCH       8
 #define CMD_COMPLETE_LIST_MATCH  9
 #define CMD_SUCCESS_DAEMON      10
+#define CMD_ERR_INVALID_INDENT  11
 
 /* Argc max counts. */
 #define CMD_ARGC_MAX   256
@@ -368,6 +369,7 @@ void vty_install_default(int node_type);
 char *argv_concat(const char **argv, int argc, int shift);
 
 vector cmd_make_strvec(const char *);
+int cmd_make_strvec2(const char *string, char **indent, vector *strvec_p);
 void cmd_free_strvec(vector);
 vector cmd_describe_command();
 char **cmd_complete_command();

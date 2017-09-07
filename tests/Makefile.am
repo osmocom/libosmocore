@@ -217,7 +217,18 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
              logging/logging_test.ok logging/logging_test.err		\
              fr/fr_test.ok loggingrb/logging_test.ok			\
              loggingrb/logging_test.err	strrb/strrb_test.ok		\
-	     vty/vty_test.ok comp128/comp128_test.ok			\
+	     vty/vty_test.ok \
+	     vty/fail_not_de-indented.cfg \
+	     vty/fail_tabs_and_spaces.cfg \
+	     vty/fail_too_much_indent.cfg \
+	     vty/ok.cfg \
+	     vty/ok_ignore_blank.cfg \
+	     vty/ok_ignore_comment.cfg \
+	     vty/ok_indented_root.cfg \
+	     vty/ok_more_spaces.cfg \
+	     vty/ok_tabs_and_spaces.cfg \
+	     vty/ok_tabs.cfg \
+	     comp128/comp128_test.ok					\
 	     utils/utils_test.ok stats/stats_test.ok			\
 	     bitvec/bitvec_test.ok msgb/msgb_test.ok bits/bitcomp_test.ok \
 	     sim/sim_test.ok tlv/tlv_test.ok abis/abis_test.ok		\
