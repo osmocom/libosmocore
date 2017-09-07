@@ -582,7 +582,7 @@ struct msgb *ipa_msg_alloc(int headroom)
 
 	headroom += sizeof(struct ipaccess_head);
 
-	nmsg = msgb_alloc_headroom(1200 + headroom, headroom, "Abis/IP");
+	nmsg = msgb_alloc_headroom(1200 + headroom, headroom, "IPA Multiplex");
 	if (!nmsg)
 		return NULL;
 	return nmsg;
