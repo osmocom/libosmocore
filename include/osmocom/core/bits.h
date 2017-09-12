@@ -69,15 +69,17 @@ int osmo_pbit2ubit_ext(ubit_t *out, unsigned int out_ofs,
   (byte & 0x01 ? 1 : 0)
 
 #define OSMO_BIT_SPEC "%c%c%c%c%c%c%c%c"
-#define OSMO_BIT_PRINT(byte)  \
-  (byte & 0x80 ? '1' : '.'), \
-  (byte & 0x40 ? '1' : '.'), \
-  (byte & 0x20 ? '1' : '.'), \
-  (byte & 0x10 ? '1' : '.'), \
-  (byte & 0x08 ? '1' : '.'), \
-  (byte & 0x04 ? '1' : '.'), \
-  (byte & 0x02 ? '1' : '.'), \
-  (byte & 0x01 ? '1' : '.')
+#define OSMO_BIT_PRINT_EX(byte, ch)		\
+  (byte & 0x80 ? ch : '.'), \
+  (byte & 0x40 ? ch : '.'), \
+  (byte & 0x20 ? ch : '.'), \
+  (byte & 0x10 ? ch : '.'), \
+  (byte & 0x08 ? ch : '.'), \
+  (byte & 0x04 ? ch : '.'), \
+  (byte & 0x02 ? ch : '.'), \
+  (byte & 0x01 ? ch : '.')
+
+#define OSMO_BIT_PRINT(byte)  OSMO_BIT_PRINT_EX(byte, '1')
 
 /* BIT REVERSAL */
 
