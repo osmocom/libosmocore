@@ -98,15 +98,14 @@ int main(int argc, char **argv)
 	struct osmo_auth_vector *vec = &_vec;
 	uint8_t _rand[16], _auts[14];
 	uint64_t sqn;
-	unsigned int ind;
+	unsigned int ind = 0;
 	int rc, option_index;
 	int rand_is_set = 0;
 	int auts_is_set = 0;
 	int sqn_is_set = 0;
 	int ind_is_set = 0;
 	int fmt_triplets_dat = 0;
-	uint64_t seq_1;
-	uint64_t ind_mask;
+	uint64_t ind_mask = 0;
 
 	printf("osmo-auc-gen (C) 2011-2012 by Harald Welte\n");
 	printf("This is FREE SOFTWARE with ABSOLUTELY NO WARRANTY\n\n");
@@ -270,7 +269,7 @@ int main(int argc, char **argv)
 	memset(vec, 0, sizeof(*vec));
 
 	if (test_aud.type == OSMO_AUTH_TYPE_UMTS) {
-		seq_1 = 1LL << test_aud.u.umts.ind_bitlen;
+		uint64_t seq_1 = 1LL << test_aud.u.umts.ind_bitlen;
 		ind_mask = seq_1 - 1;
 
 		if (sqn_is_set) {
