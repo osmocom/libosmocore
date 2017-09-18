@@ -123,6 +123,11 @@ struct cmd_node {
 
 	/*! Vector of this node's command list. */
 	vector cmd_vector;
+
+	/*! Human-readable ID of this node. Should only contain alphanumeric
+	 * plus '-' and '_' characters (is used as XML ID for 'show
+	 * online-help'). If left NUL, this is derived from the prompt.*/
+	char name[64];
 };
 
 enum {

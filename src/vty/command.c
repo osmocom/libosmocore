@@ -123,12 +123,40 @@ char *argv_concat(const char **argv, int argc, int shift)
 	return str;
 }
 
+/* Strip all characters from a string (prompt) except for alnum, '-' and '_'.
+ * For example used to derive a node->name from node->prompt if the user didn't provide a name;
+ * in turn, this name us used for XML IDs in 'show online-help'. */
+static const char *node_name_from_prompt(const char *prompt, char *name_buf, size_t name_buf_size)
+{
+	const char *pos;
+	int dest = 0;
+
+	if (!prompt || !*prompt)
+		return "";
+
+	for (pos = prompt; *pos && dest < (name_buf_size-1); pos++) {
+		if (pos[0] == '%' && pos[1]) {
+			/* skip "%s"; loop pos++ does the second one. */
+			pos++;
+			continue;
+		}
+		if (!(isalnum(pos[0]) || pos[0] == '-' || pos[0] == '_'))
+			continue;
+		name_buf[dest] = pos[0];
+		dest++;
+	}
+	name_buf[dest] = '\0';
+	return name_buf;
+}
+
 /*! Install top node of command vector. */
 void install_node(struct cmd_node *node, int (*func) (struct vty *))
 {
 	vector_set_index(cmdvec, node->node, node);
 	node->func = func;
 	node->cmd_vector = vector_init(VECTOR_MIN_SIZE);
+	if (!*node->name)
+		node_name_from_prompt(node->prompt, node->name, sizeof(node->name));
 }
 
 /* Compare two command's string.  Used in sort_node (). */
@@ -608,6 +636,7 @@ static int vty_dump_element(struct cmd_element *cmd, struct vty *vty)
 static int vty_dump_nodes(struct vty *vty)
 {
 	int i, j;
+	int same_name_count;
 
 	vty_out(vty, "<vtydoc xmlns='urn:osmocom:xml:libosmocore:vty:doc:1.0'>%s", VTY_NEWLINE);
 
@@ -617,7 +646,23 @@ static int vty_dump_nodes(struct vty *vty)
 		if (!cnode)
 			continue;
 
-		vty_out(vty, "  <node id='%d'>%s", cnode->node, VTY_NEWLINE);
+		/* De-dup node IDs: how many times has this same name been used before? Count the first
+		 * occurence as _1 and omit that first suffix, so that the first occurence is called
+		 * 'name', the second becomes 'name_2', then 'name_3', ... */
+		same_name_count = 1;
+		for (j = 0; j < i; ++j) {
+			struct cmd_node *cnode2;
+			cnode2 = vector_slot(cmdvec, j);
+			if (!cnode2)
+				continue;
+			if (strcmp(cnode->name, cnode2->name) == 0)
+				same_name_count ++;
+		}
+
+		vty_out(vty, "  <node id='%s", cnode->name);
+		if (same_name_count > 1 || !*cnode->name)
+			vty_out(vty, "_%d", same_name_count);
+		vty_out(vty, "'>%s", VTY_NEWLINE);
 
 		for (j = 0; j < vector_active(cnode->cmd_vector); ++j) {
 			struct cmd_element *elem;
