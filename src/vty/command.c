@@ -617,7 +617,7 @@ static int vty_dump_nodes(struct vty *vty)
 		if (!cnode)
 			continue;
 
-		vty_out(vty, "  <node id='%d'>%s", i, VTY_NEWLINE);
+		vty_out(vty, "  <node id='%d'>%s", cnode->node, VTY_NEWLINE);
 
 		for (j = 0; j < vector_active(cnode->cmd_vector); ++j) {
 			struct cmd_element *elem;
