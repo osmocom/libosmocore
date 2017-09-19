@@ -128,4 +128,6 @@ reading file fail_tabs_and_spaces.cfg, expecting rc=-22
 got rc=-22
 reading file ok_indented_root.cfg, expecting rc=0
 got rc=0
+reading file ok_empty_parent.cfg, expecting rc=0
+got rc=0
 All tests passed

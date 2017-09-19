@@ -342,6 +342,7 @@ int main(int argc, char **argv)
 	test_exit_by_indent("fail_too_much_indent.cfg", -EINVAL);
 	test_exit_by_indent("fail_tabs_and_spaces.cfg", -EINVAL);
 	test_exit_by_indent("ok_indented_root.cfg", 0);
+	test_exit_by_indent("ok_empty_parent.cfg", 0);
 
 	/* Leak check */
 	OSMO_ASSERT(talloc_total_blocks(stats_ctx) == 1);

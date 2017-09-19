@@ -2374,14 +2374,39 @@ int config_from_file(struct vty *vty, FILE * fp)
 			continue;
 		}
 
-		/* We have a nonempty line. This might be the first on a deeper indenting level, so let's
-		 * remember this indent if we don't have one yet. */
-		if (!vty->indent)
-			vty->indent = talloc_strdup(vty, indent);
+		/* We have a nonempty line. */
+		if (!vty->indent) {
+			/* We have just entered a node and expecting the first child to come up; but we
+			 * may also skip right back to a parent or ancestor level. */
+			parent = vty_parent(vty);
 
-		cmp = indent_cmp(indent, vty->indent);
-		if (cmp == EINVAL)
-			goto return_invalid_indent;
+			/* If there is no parent, record any indentation we encounter. */
+			cmp = parent ? indent_cmp(indent, parent->indent) : 1;
+
+			if (cmp == EINVAL)
+				goto return_invalid_indent;
+
+			if (cmp <= 0) {
+				/* We have gone right back to the parent level or higher, we are skipping
+				 * this child node level entirely. Pop the parent to go back to a node
+				 * that was actually there (to reinstate vty->indent) and re-use below
+				 * go-parent while-loop to find an accurate match of indent in the node
+				 * ancestry. */
+				vty_go_parent(vty);
+			} else {
+				/* The indent is deeper than the just entered parent, record the new
+				 * indentation characters. */
+				vty->indent = talloc_strdup(vty, indent);
+				/* This *is* the new indentation. */
+				cmp = 0;
+			}
+		} else {
+			/* There is a known indentation for this node level, validate and detect node
+			 * exits. */
+			cmp = indent_cmp(indent, vty->indent);
+			if (cmp == EINVAL)
+				goto return_invalid_indent;
+		}
 
 		/* Less indent: go up the parent nodes to find matching amount of less indent. When this
 		 * loop exits, we want to have found an exact match, i.e. cmp == 0. */
