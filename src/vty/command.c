@@ -2331,6 +2331,10 @@ static inline size_t len(const char *str)
 	return str? strlen(str) : 0;
 }
 
+/*! Make sure the common length of strings a and b is identical, then compare their lengths. I.e., if a
+ * is longer than b, a must start with exactly b, and vice versa.
+ * \returns EINVAL on mismatch, -1 for a < b, 0 for a == b, 1 for a > b.
+ */
 static int indent_cmp(const char *a, const char *b)
 {
 	size_t al, bl;
