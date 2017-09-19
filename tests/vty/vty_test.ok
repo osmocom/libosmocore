@@ -109,25 +109,181 @@ Returned: 0, Current node: 4 '%s(config)# '
 Going to execute 'no stats reporter statsd'
 Returned: 0, Current node: 4 '%s(config)# '
 reading file ok.cfg, expecting rc=0
+called level1 node a
+called level1 child cmd a
+called level2 node a
+called level2 child cmd a
+called level3 node a
+called level3 child cmd a
+called level1 node b
+called level1 child cmd b
+called level2 node b
+called level2 child cmd b
+called level1 node c
+called level1 child cmd c
+called level2 node c
+called level2 child cmd c
+called level3 node c
+called level3 child cmd c
+called level2 node d
+called level2 child cmd d
+called level1 node e
+called level1 child cmd e
+called level2 node e
+called level2 child cmd e
+called level2 node f
+called level2 child cmd f
+called level1 node g
+called level1 child cmd g
+called level1 node h
+called level1 child cmd h
 got rc=0
 reading file ok_more_spaces.cfg, expecting rc=0
+called level1 node a
+called level1 child cmd a
+called level2 node a
+called level2 child cmd a
+called level3 node a
+called level3 child cmd a
+called level1 node b
+called level1 child cmd b
+called level2 node b
+called level2 child cmd b
+called level1 node c
+called level1 child cmd c
+called level2 node c
+called level2 child cmd c
+called level3 node c
+called level3 child cmd c
+called level2 node d
+called level2 child cmd d
+called level1 node e
+called level1 child cmd e
+called level2 node e
+called level2 child cmd e
+called level2 node f
+called level2 child cmd f
+called level1 node g
+called level1 child cmd g
+called level1 node h
+called level1 child cmd h
 got rc=0
 reading file ok_tabs.cfg, expecting rc=0
+called level1 node a
+called level1 child cmd a
+called level2 node a
+called level2 child cmd a
+called level3 node a
+called level3 child cmd a
+called level1 node b
+called level1 child cmd b
+called level2 node b
+called level2 child cmd b
+called level1 node c
+called level1 child cmd c
+called level2 node c
+called level2 child cmd c
+called level3 node c
+called level3 child cmd c
+called level2 node d
+called level2 child cmd d
+called level1 node e
+called level1 child cmd e
+called level2 node e
+called level2 child cmd e
+called level2 node f
+called level2 child cmd f
+called level1 node g
+called level1 child cmd g
+called level1 node h
+called level1 child cmd h
 got rc=0
 reading file ok_tabs_and_spaces.cfg, expecting rc=0
+called level1 node a
+called level1 child cmd a
+called level2 node a
+called level2 child cmd a
+called level3 node a
+called level3 child cmd a
+called level1 node b
+called level1 child cmd b
+called level2 node b
+called level2 child cmd b
+called level1 node c
+called level1 child cmd c
+called level2 node c
+called level2 child cmd c
+called level3 node c
+called level3 child cmd c
+called level2 node d
+called level2 child cmd d
+called level1 node e
+called level1 child cmd e
+called level2 node e
+called level2 child cmd e
+called level2 node f
+called level2 child cmd f
+called level1 node g
+called level1 child cmd g
+called level1 node h
+called level1 child cmd h
 got rc=0
 reading file ok_ignore_comment.cfg, expecting rc=0
+called level1 node 
+called level1 child cmd 
+called level2 node 
+called level2 child cmd 
+called level1 node 
 got rc=0
 reading file ok_ignore_blank.cfg, expecting rc=0
+called level1 node 
+called level2 node 
+called level2 child cmd 
+called level3 node 
+called level3 child cmd 
+called level1 node 
 got rc=0
 reading file fail_not_de-indented.cfg, expecting rc=-22
+called level1 node a
+called level1 child cmd a
 got rc=-22
 reading file fail_too_much_indent.cfg, expecting rc=-22
+called level1 node a
+called level1 child cmd a
 got rc=-22
 reading file fail_tabs_and_spaces.cfg, expecting rc=-22
+called level1 node a
+called level1 child cmd a
 got rc=-22
 reading file ok_indented_root.cfg, expecting rc=0
+called level1 node a
+called level1 child cmd 
+called level2 node 
+called level2 child cmd 
+called level1 node b
 got rc=0
 reading file ok_empty_parent.cfg, expecting rc=0
+called level1 node a
+called level2 node a
+called level3 node a
+called level1 node b
+called level2 node b
+called level1 node c
+called level1 node d
+called level2 node e
+called level2 node f
+called level3 node f
+called level3 node g
+called level2 node g
+called level2 node h
+called level1 node h
+called level1 node i
+called level1 node j
+called level2 node j
+called level1 child cmd j
+called level1 node k
+called level2 node k
+called level3 node k
+called level1 child cmd k
 got rc=0
 All tests passed

@@ -298,12 +298,128 @@ void test_exit_by_indent(const char *fname, int expect_rc)
 	OSMO_ASSERT(rc == expect_rc);
 }
 
+enum test_nodes {
+	LEVEL1_NODE = _LAST_OSMOVTY_NODE + 1,
+	LEVEL2_NODE,
+	LEVEL3_NODE,
+};
+
+struct cmd_node level1_node = {
+	LEVEL1_NODE,
+	"%s(config-level1)# ",
+	1
+};
+
+struct cmd_node level2_node = {
+	LEVEL2_NODE,
+	"%s(config-level1-level2)# ",
+	1
+};
+
+struct cmd_node level3_node = {
+	LEVEL3_NODE,
+	"%s(config-level1-level2-level3)# ",
+	1
+};
+
+DEFUN(cfg_level1, cfg_level1_cmd,
+	"level1 [MARKER]",
+	"Level 1 node for VTY testing purposes\n"
+	"optional string to mark the line for test debugging\n")
+{
+	vty->index = NULL;
+	vty->node = LEVEL1_NODE;
+	printf("called level1 node %s\n", argc? argv[0] : "");
+	return CMD_SUCCESS;
+}
+
+DEFUN(cfg_level1_child, cfg_level1_child_cmd,
+	"child1 [MARKER]",
+	"Level 1 child cmd for VTY testing purposes\n"
+	"optional string to mark the line for test debugging\n")
+{
+	printf("called level1 child cmd %s\n", argc? argv[0] : "");
+	return CMD_SUCCESS;
+}
+
+DEFUN(cfg_level2, cfg_level2_cmd,
+	"level2 [MARKER]",
+	"Level 2 node for VTY testing purposes\n"
+	"optional string to mark the line for test debugging\n")
+{
+	vty->index = NULL;
+	vty->node = LEVEL2_NODE;
+	printf("called level2 node %s\n", argc? argv[0] : "");
+	return CMD_SUCCESS;
+}
+
+DEFUN(cfg_level2_child, cfg_level2_child_cmd,
+	"child2 [MARKER]",
+	"Level 2 child cmd for VTY testing purposes\n"
+	"optional string to mark the line for test debugging\n")
+{
+	printf("called level2 child cmd %s\n", argc? argv[0] : "");
+	return CMD_SUCCESS;
+}
+
+DEFUN(cfg_level3, cfg_level3_cmd,
+	"level3 [MARKER]",
+	"Level 3 node for VTY testing purposes\n"
+	"optional string to mark the line for test debugging\n")
+{
+	vty->index = NULL;
+	vty->node = LEVEL3_NODE;
+	printf("called level3 node %s\n", argc? argv[0] : "");
+	return CMD_SUCCESS;
+}
+
+DEFUN(cfg_level3_child, cfg_level3_child_cmd,
+	"child3 [MARKER]",
+	"Level 3 child cmd for VTY testing purposes\n"
+	"optional string to mark the line for test debugging\n")
+{
+	printf("called level3 child cmd %s\n", argc? argv[0] : "");
+	return CMD_SUCCESS;
+}
+
+void test_vty_add_cmds()
+{
+	install_element(CONFIG_NODE, &cfg_level1_cmd);
+	install_node(&level1_node, NULL);
+	vty_install_default(LEVEL1_NODE);
+	install_element(LEVEL1_NODE, &cfg_level1_child_cmd);
+	install_element(LEVEL1_NODE, &cfg_level2_cmd);
+
+	install_node(&level2_node, NULL);
+	vty_install_default(LEVEL2_NODE);
+	install_element(LEVEL2_NODE, &cfg_level2_child_cmd);
+	install_element(LEVEL2_NODE, &cfg_level3_cmd);
+
+	install_node(&level3_node, NULL);
+	vty_install_default(LEVEL3_NODE);
+	install_element(LEVEL3_NODE, &cfg_level3_child_cmd);
+}
+
+static int go_parent_cb(struct vty *vty)
+{
+	/*
+	 * - For the interactive VTY tests above, it is expected to bounce back to
+	 *   the CONFIG_NODE. Hence do so in go_parent_cb().
+	 * - In the config file parsing tests, setting vty->node in go_parent_cb() has no
+	 *   effect, because we will subsequently pop a parent node from the parent stack
+	 *   and override to go to the node that was recorded as the actual parent.
+	 */
+	vty->node = CONFIG_NODE;
+	vty->index = NULL;
+	return 0;
+}
+
 int main(int argc, char **argv)
 {
 	struct vty_app_info vty_info = {
 		.name		= "VtyTest",
 		.version	= 0,
-		.go_parent_cb	= NULL,
+		.go_parent_cb	= go_parent_cb,
 		.is_config_node	= NULL,
 	};
 
@@ -328,6 +444,8 @@ int main(int argc, char **argv)
 	/* Setup VTY commands */
 	logging_vty_add_cmds();
 	osmo_stats_vty_add_cmds();
+
+	test_vty_add_cmds();
 
 	test_cmd_string_from_valstr();
 	test_node_tree_structure();
