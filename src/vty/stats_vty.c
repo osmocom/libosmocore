@@ -594,7 +594,6 @@ void osmo_stats_vty_add_cmds()
 	install_element(CONFIG_NODE, &cfg_stats_interval_cmd);
 
 	install_node(&cfg_stats_node, config_write_stats);
-	vty_install_default(CFG_STATS_NODE);
 
 	install_element(CFG_STATS_NODE, &cfg_stats_reporter_local_ip_cmd);
 	install_element(CFG_STATS_NODE, &cfg_no_stats_reporter_local_ip_cmd);

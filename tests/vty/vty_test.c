@@ -386,17 +386,14 @@ void test_vty_add_cmds()
 {
 	install_element(CONFIG_NODE, &cfg_level1_cmd);
 	install_node(&level1_node, NULL);
-	vty_install_default(LEVEL1_NODE);
 	install_element(LEVEL1_NODE, &cfg_level1_child_cmd);
 	install_element(LEVEL1_NODE, &cfg_level2_cmd);
 
 	install_node(&level2_node, NULL);
-	vty_install_default(LEVEL2_NODE);
 	install_element(LEVEL2_NODE, &cfg_level2_child_cmd);
 	install_element(LEVEL2_NODE, &cfg_level3_cmd);
 
 	install_node(&level3_node, NULL);
-	vty_install_default(LEVEL3_NODE);
 	install_element(LEVEL3_NODE, &cfg_level3_child_cmd);
 }
 

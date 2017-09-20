@@ -27,6 +27,8 @@
 #include <sys/types.h>
 #include "vector.h"
 
+#include <osmocom/core/defs.h>
+
 /*! \defgroup command VTY Command
  *  @{
  * \file command.h */
@@ -363,9 +365,6 @@ void install_element(int node_type, struct cmd_element *);
 void install_element_ve(struct cmd_element *cmd);
 void sort_node(void);
 
-/* This is similar to install_default() but it also creates
- * 'exit' and 'end' commands.
- */
 void vty_install_default(int node_type);
 
 /* Concatenates argv[shift] through argv[argc-1] into a single NUL-terminated

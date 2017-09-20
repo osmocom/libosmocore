@@ -149,14 +149,23 @@ static const char *node_name_from_prompt(const char *prompt, char *name_buf, siz
 	return name_buf;
 }
 
-/*! Install top node of command vector. */
-void install_node(struct cmd_node *node, int (*func) (struct vty *))
+static void install_basic_node_commands(int node);
+
+/*! Install top node of command vector, without adding basic node commands. */
+static void install_node_bare(struct cmd_node *node, int (*func) (struct vty *))
 {
 	vector_set_index(cmdvec, node->node, node);
 	node->func = func;
 	node->cmd_vector = vector_init(VECTOR_MIN_SIZE);
 	if (!*node->name)
 		node_name_from_prompt(node->prompt, node->name, sizeof(node->name));
+}
+
+/*! Install top node of command vector. */
+void install_node(struct cmd_node *node, int (*func) (struct vty *))
+{
+	install_node_bare(node, func);
+	install_basic_node_commands(node->node);
 }
 
 /* Compare two command's string.  Used in sort_node (). */
@@ -3599,7 +3608,22 @@ void host_config_set(const char *filename)
 	host.config = talloc_strdup(tall_vty_cmd_ctx, filename);
 }
 
+/*! Deprecated, now happens implicitly when calling install_node().
+ * Users of the API may still attempt to call this function, hence
+ * leave it here as a no-op. */
 void install_default(int node)
+{
+}
+
+/*! Deprecated, now happens implicitly when calling install_node().
+ * Users of the API may still attempt to call this function, hence
+ * leave it here as a no-op. */
+void vty_install_default(int node)
+{
+}
+
+/*! Install common commands like 'exit' and 'list'. */
+static void install_basic_node_commands(int node)
 {
 	install_element(node, &config_help_cmd);
 	install_element(node, &config_list_cmd);
@@ -3609,11 +3633,6 @@ void install_default(int node)
 	install_element(node, &config_write_memory_cmd);
 	install_element(node, &config_write_cmd);
 	install_element(node, &show_running_config_cmd);
-}
-
-void vty_install_default(int node)
-{
-	install_default(node);
 
 	install_element(node, &config_exit_cmd);
 
@@ -3681,10 +3700,10 @@ void cmd_init(int terminal)
 	host.motdfile = NULL;
 
 	/* Install top nodes. */
-	install_node(&view_node, NULL);
+	install_node_bare(&view_node, NULL);
 	install_node(&enable_node, NULL);
-	install_node(&auth_node, NULL);
-	install_node(&auth_enable_node, NULL);
+	install_node_bare(&auth_node, NULL);
+	install_node_bare(&auth_enable_node, NULL);
 	install_node(&config_node, config_write_host);
 
 	/* Each node's basic commands. */
@@ -3701,7 +3720,6 @@ void cmd_init(int terminal)
 	}
 
 	if (terminal) {
-		vty_install_default(ENABLE_NODE);
 		install_element(ENABLE_NODE, &config_disable_cmd);
 		install_element(ENABLE_NODE, &config_terminal_cmd);
 		install_element (ENABLE_NODE, &copy_runningconfig_startupconfig_cmd);
@@ -3714,8 +3732,6 @@ void cmd_init(int terminal)
 		install_element(ENABLE_NODE, &config_terminal_length_cmd);
 		install_element(ENABLE_NODE, &config_terminal_no_length_cmd);
 		install_element(ENABLE_NODE, &echo_cmd);
-
-		vty_install_default(CONFIG_NODE);
 	}
 
 	install_element(CONFIG_NODE, &hostname_cmd);

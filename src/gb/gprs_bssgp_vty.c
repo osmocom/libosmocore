@@ -211,7 +211,6 @@ int bssgp_vty_init(void)
 
 	install_element(CONFIG_NODE, &cfg_bssgp_cmd);
 	install_node(&bssgp_node, config_write_bssgp);
-	vty_install_default(L_BSSGP_NODE);
 
 	return 0;
 }
