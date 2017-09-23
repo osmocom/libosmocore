@@ -28,6 +28,7 @@ struct osmo_fsm_inst;
 void vty_out_fsm(struct vty *vty, struct osmo_fsm *fsm);
 void vty_out_fsm_inst(struct vty *vty, struct osmo_fsm_inst *fsmi);
 void osmo_fsm_vty_add_cmds(void);
+void osmo_talloc_vty_add_cmds(void);
 
 
 int osmo_vty_write_config_file(const char *filename);
