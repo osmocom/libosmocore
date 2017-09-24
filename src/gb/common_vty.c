@@ -35,40 +35,6 @@
 
 #include "common_vty.h"
 
-/* Down vty node level. */
-gDEFUN(libgb_exit,
-       libgb_exit_cmd, "exit", "Exit current mode and down to previous mode\n")
-{
-	switch (vty->node) {
-	case L_NS_NODE:
-	case L_BSSGP_NODE:
-		vty->node = CONFIG_NODE;
-		vty->index = NULL;
-		break;
-	default:
-		break;
-	}
-	return CMD_SUCCESS;
-}
-
-/* End of configuration. */
-gDEFUN(libgb_end,
-       libgb_end_cmd, "end", "End current mode and change to enable mode.")
-{
-	switch (vty->node) {
-	case L_NS_NODE:
-	case L_BSSGP_NODE:
-		vty_config_unlock(vty);
-		vty->node = ENABLE_NODE;
-		vty->index = NULL;
-		vty->index_sub = NULL;
-		break;
-	default:
-		break;
-	}
-	return CMD_SUCCESS;
-}
-
 int gprs_log_filter_fn(const struct log_context *ctx,
 			struct log_target *tar)
 {

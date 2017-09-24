@@ -5,6 +5,3 @@
 
 extern int DNS, DBSSGP;
 
-extern struct cmd_element libgb_exit_cmd;
-extern struct cmd_element libgb_end_cmd;
-
