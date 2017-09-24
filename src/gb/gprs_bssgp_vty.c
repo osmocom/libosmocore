@@ -58,7 +58,7 @@ static void log_set_bvc_filter(struct log_target *target,
 
 static struct cmd_node bssgp_node = {
 	L_BSSGP_NODE,
-	"%s(bssgp)#",
+	"%s(config-bssgp)# ",
 	1,
 };
 
