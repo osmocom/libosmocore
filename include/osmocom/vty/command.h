@@ -360,12 +360,12 @@ struct desc {
 
 /* Prototypes. */
 void install_node(struct cmd_node *, int (*)(struct vty *));
-void install_default(int node_type);
+void install_default(int node_type) OSMO_DEPRECATED("Now happens implicitly with install_node()");
 void install_element(int node_type, struct cmd_element *);
 void install_element_ve(struct cmd_element *cmd);
 void sort_node(void);
 
-void vty_install_default(int node_type);
+void vty_install_default(int node_type) OSMO_DEPRECATED("Now happens implicitly with install_node()");
 
 /* Concatenates argv[shift] through argv[argc-1] into a single NUL-terminated
    string with a space between each element (allocated using
