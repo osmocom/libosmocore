@@ -45,6 +45,11 @@
 #include <osmocom/core/linuxlist.h>
 #include <osmocom/core/linuxrbtree.h>
 
+/* convert absolute time (in seconds) to elapsed days/hours/minutes */
+#define OSMO_SEC2MIN(sec) ((sec % (60 * 60)) / 60)
+#define OSMO_SEC2HRS(sec) ((sec % (60 * 60 * 24)) / (60 * 60))
+#define OSMO_SEC2DAY(sec) ((sec % (60 * 60 * 24 * 365)) / (60 * 60 * 24)) /* we ignore leap year for simplicity */
+
 /*! A structure representing a single instance of a timer */
 struct osmo_timer_list {
 	struct rb_node node;	  /*!< rb-tree node header */
