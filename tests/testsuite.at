@@ -18,7 +18,7 @@ AT_CLEANUP
 AT_SETUP([ctrl])
 AT_KEYWORDS([ctrl])
 cat $abs_srcdir/ctrl/ctrl_test.ok > expout
-AT_CHECK([$abs_top_builddir/tests/ctrl/ctrl_test], [0], [expout])
+AT_CHECK([$abs_top_builddir/tests/ctrl/ctrl_test], [0], [expout], [ignore])
 AT_CLEANUP
 
 AT_SETUP([kasumi])

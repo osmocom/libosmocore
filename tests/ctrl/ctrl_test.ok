@@ -19,7 +19,7 @@ ok
 test: 'GET 1 variable\n'
 parsing:
 id = '1'
-variable = 'variable\n'
+variable = 'variable'
 value = '(null)'
 reply = '(null)'
 handling:
@@ -28,65 +28,51 @@ ok
 test: 'GET 1 var\ni\nable'
 parsing:
 id = '1'
-variable = 'var\ni\nable'
-value = '(null)'
-reply = '(null)'
+reply = 'GET with trailing characters'
 handling:
-replied: 'ERROR 1 Command not found'
+replied: 'ERROR 1 GET with trailing characters'
 ok
 test: 'GET 1 var\ti\table'
 parsing:
 id = '1'
-variable = 'var\ti\table'
-value = '(null)'
-reply = '(null)'
+reply = 'GET variable contains invalid characters'
 handling:
-replied: 'ERROR 1 Command not found'
+replied: 'ERROR 1 GET variable contains invalid characters'
 ok
 test: 'GET 1 var\ri\rable'
 parsing:
 id = '1'
-variable = 'var\ri\rable'
-value = '(null)'
-reply = '(null)'
+reply = 'GET variable contains invalid characters'
 handling:
-replied: 'ERROR 1 Command not found'
+replied: 'ERROR 1 GET variable contains invalid characters'
 ok
 test: 'GET 1 variable value'
 parsing:
 id = '1'
-variable = 'variable'
-value = '(null)'
-reply = '(null)'
+reply = 'GET with trailing characters'
 handling:
-replied: 'ERROR 1 Command not found'
+replied: 'ERROR 1 GET with trailing characters'
 ok
 test: 'GET 1 variable value\n'
 parsing:
 id = '1'
-variable = 'variable'
-value = '(null)'
-reply = '(null)'
+reply = 'GET with trailing characters'
 handling:
-replied: 'ERROR 1 Command not found'
+replied: 'ERROR 1 GET with trailing characters'
 ok
 test: 'GET 1 variable multiple value tokens'
 parsing:
 id = '1'
-variable = 'variable'
-value = '(null)'
-reply = '(null)'
+reply = 'GET with trailing characters'
 handling:
-replied: 'ERROR 1 Command not found'
+replied: 'ERROR 1 GET with trailing characters'
 ok
 test: 'GET 1 variable multiple value tokens\n'
 parsing:
 id = '1'
-variable = 'variable'
-value = '(null)'
-reply = '(null)'
+reply = 'GET with trailing characters'
 handling:
-replied: 'ERROR 1 Command not found'
+replied: 'ERROR 1 GET with trailing characters'
 ok
 test: 'SET 1 variable value'
 parsing:
@@ -108,21 +94,17 @@ replied: 'ERROR 1 Command not found'
 ok
 test: 'SET weird_id variable value'
 parsing:
-id = 'weird_id'
-variable = 'variable'
-value = 'value'
-reply = '(null)'
+id = 'err'
+reply = 'Invalid message ID number'
 handling:
-replied: 'ERROR weird_id Command not found'
+replied: 'ERROR err Invalid message ID number'
 ok
 test: 'SET weird_id variable value\n'
 parsing:
-id = 'weird_id'
-variable = 'variable'
-value = 'value'
-reply = '(null)'
+id = 'err'
+reply = 'Invalid message ID number'
 handling:
-replied: 'ERROR weird_id Command not found'
+replied: 'ERROR err Invalid message ID number'
 ok
 test: 'SET 1 variable multiple value tokens'
 parsing:
@@ -162,21 +144,17 @@ replied: 'ERROR 1 Command not found'
 ok
 test: 'SET \n special_char_id value'
 parsing:
-id = '\n'
-variable = 'special_char_id'
-value = 'value'
-reply = '(null)'
+id = 'err'
+reply = 'Invalid message ID number'
 handling:
-replied: 'ERROR \n Command not found'
+replied: 'ERROR err Invalid message ID number'
 ok
 test: 'SET \t special_char_id value'
 parsing:
-id = '\t'
-variable = 'special_char_id'
-value = 'value'
-reply = '(null)'
+id = 'err'
+reply = 'Invalid message ID number'
 handling:
-replied: 'ERROR \t Command not found'
+replied: 'ERROR err Invalid message ID number'
 ok
 test: 'GET_REPLY 1 variable OK'
 parsing:

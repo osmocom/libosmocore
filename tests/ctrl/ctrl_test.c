@@ -79,14 +79,19 @@ static void assert_test(struct ctrl_handle *ctrl, struct ctrl_connection *ccon, 
 	cmd = ctrl_cmd_parse2(ctx, msg);
 	OSMO_ASSERT(cmd);
 
-	OSMO_ASSERT(t->expect_parsed.type == cmd->type);
+	if (t->expect_parsed.type != cmd->type) {
+		printf("type mismatch: got %s\n", get_value_string(ctrl_type_vals, cmd->type));
+		OSMO_ASSERT(t->expect_parsed.type == cmd->type);
+	}
 
 #define ASSERT_SAME_STR(field) \
 	assert_same_str(#field, t->expect_parsed.field, cmd->field)
 
 	ASSERT_SAME_STR(id);
-	ASSERT_SAME_STR(variable);
-	ASSERT_SAME_STR(value);
+	if (t->expect_parsed.type != CTRL_TYPE_ERROR) {
+		ASSERT_SAME_STR(variable);
+		ASSERT_SAME_STR(value);
+	}
 	ASSERT_SAME_STR(reply);
 
 	talloc_free(cmd);
@@ -140,75 +145,66 @@ static const struct one_test test_messages_list[] = {
 		{
 			.type = CTRL_TYPE_GET,
 			.id = "1",
-			.variable = "variable\n", /* current bug */
+			.variable = "variable",
 		},
 		"ERROR 1 Command not found",
 
 	},
 	{ "GET 1 var\ni\nable",
 		{
-			.type = CTRL_TYPE_GET,
+			.type = CTRL_TYPE_ERROR,
 			.id = "1",
-			.variable = "var\ni\nable", /* current bug */
+			.reply = "GET with trailing characters",
 		},
-		"ERROR 1 Command not found",
-
+		"ERROR 1 GET with trailing characters",
 	},
 	{ "GET 1 var\ti\table",
 		{
-			.type = CTRL_TYPE_GET,
+			.type = CTRL_TYPE_ERROR,
 			.id = "1",
-			.variable = "var\ti\table", /* current bug */
+			.reply = "GET variable contains invalid characters",
 		},
-		"ERROR 1 Command not found",
+		"ERROR 1 GET variable contains invalid characters",
 	},
 	{ "GET 1 var\ri\rable",
 		{
-			.type = CTRL_TYPE_GET,
+			.type = CTRL_TYPE_ERROR,
 			.id = "1",
-			.variable = "var\ri\rable", /* current bug */
+			.reply = "GET variable contains invalid characters",
 		},
-		"ERROR 1 Command not found",
+		"ERROR 1 GET variable contains invalid characters",
 	},
 	{ "GET 1 variable value",
 		{
-			.type = CTRL_TYPE_GET,
+			.type = CTRL_TYPE_ERROR,
 			.id = "1",
-			.variable = "variable",
-			.value = NULL,
+			.reply = "GET with trailing characters",
 		},
-		"ERROR 1 Command not found",
-
+		"ERROR 1 GET with trailing characters",
 	},
 	{ "GET 1 variable value\n",
 		{
-			.type = CTRL_TYPE_GET,
+			.type = CTRL_TYPE_ERROR,
 			.id = "1",
-			.variable = "variable",
-			.value = NULL,
+			.reply = "GET with trailing characters",
 		},
-		"ERROR 1 Command not found",
-
+		"ERROR 1 GET with trailing characters",
 	},
 	{ "GET 1 variable multiple value tokens",
 		{
-			.type = CTRL_TYPE_GET,
+			.type = CTRL_TYPE_ERROR,
 			.id = "1",
-			.variable = "variable",
-			.value = NULL,
+			.reply = "GET with trailing characters",
 		},
-		"ERROR 1 Command not found",
-
+		"ERROR 1 GET with trailing characters",
 	},
 	{ "GET 1 variable multiple value tokens\n",
 		{
-			.type = CTRL_TYPE_GET,
+			.type = CTRL_TYPE_ERROR,
 			.id = "1",
-			.variable = "variable",
-			.value = NULL,
+			.reply = "GET with trailing characters",
 		},
-		"ERROR 1 Command not found",
-
+		"ERROR 1 GET with trailing characters",
 	},
 	{ "SET 1 variable value",
 		{
@@ -218,7 +214,6 @@ static const struct one_test test_messages_list[] = {
 			.value = "value",
 		},
 		"ERROR 1 Command not found",
-
 	},
 	{ "SET 1 variable value\n",
 		{
@@ -228,27 +223,22 @@ static const struct one_test test_messages_list[] = {
 			.value = "value",
 		},
 		"ERROR 1 Command not found",
-
 	},
 	{ "SET weird_id variable value",
 		{
-			.type = CTRL_TYPE_SET,
-			.id = "weird_id",
-			.variable = "variable",
-			.value = "value",
+			.type = CTRL_TYPE_ERROR,
+			.id = "err",
+			.reply = "Invalid message ID number",
 		},
-		"ERROR weird_id Command not found",
-
+		"ERROR err Invalid message ID number",
 	},
 	{ "SET weird_id variable value\n",
 		{
-			.type = CTRL_TYPE_SET,
-			.id = "weird_id",
-			.variable = "variable",
-			.value = "value",
+			.type = CTRL_TYPE_ERROR,
+			.id = "err",
+			.reply = "Invalid message ID number",
 		},
-		"ERROR weird_id Command not found",
-
+		"ERROR err Invalid message ID number",
 	},
 	{ "SET 1 variable multiple value tokens",
 		{
@@ -278,7 +268,6 @@ static const struct one_test test_messages_list[] = {
 			.value = "value_with_trailing_spaces  ",
 		},
 		"ERROR 1 Command not found",
-
 	},
 	{ "SET 1 variable value_with_trailing_spaces  \n",
 		{
@@ -288,27 +277,22 @@ static const struct one_test test_messages_list[] = {
 			.value = "value_with_trailing_spaces  ",
 		},
 		"ERROR 1 Command not found",
-
 	},
 	{ "SET \n special_char_id value",
 		{
-			.type = CTRL_TYPE_SET,
-			.id = "\n",
-			.variable = "special_char_id",
-			.value = "value",
+			.type = CTRL_TYPE_ERROR,
+			.id = "err",
+			.reply = "Invalid message ID number",
 		},
-		"ERROR \n Command not found",
-
+		"ERROR err Invalid message ID number",
 	},
 	{ "SET \t special_char_id value",
 		{
-			.type = CTRL_TYPE_SET,
-			.id = "\t",
-			.variable = "special_char_id",
-			.value = "value",
+			.type = CTRL_TYPE_ERROR,
+			.id = "err",
+			.reply = "Invalid message ID number",
 		},
-		"ERROR \t Command not found",
-
+		"ERROR err Invalid message ID number",
 	},
 	{ "GET_REPLY 1 variable OK",
 		{
@@ -317,7 +301,6 @@ static const struct one_test test_messages_list[] = {
 			.variable = "variable",
 			.reply = "OK",
 		},
-		.reply_str = NULL,
 	},
 	{ "SET_REPLY 1 variable OK",
 		{
@@ -326,7 +309,6 @@ static const struct one_test test_messages_list[] = {
 			.variable = "variable",
 			.reply = "OK",
 		},
-		.reply_str = NULL,
 	},
 
 };

@@ -281,6 +281,15 @@ struct ctrl_cmd *ctrl_cmd_parse(void *ctx, struct msgb *msg)
 	return res;
 }
 
+static bool id_str_valid(const char *str)
+{
+	for (;*str;str++) {
+		if (!isdigit(*str))
+			return false;
+	}
+	return true;
+}
+
 /*! Parse CTRL command struct from msgb, return ctrl->type == CTRL_TYPE_ERROR and an error message in
  * ctrl->reply on any error.
  * The caller is responsible to talloc_free() the returned struct pointer. */
@@ -306,6 +315,7 @@ struct ctrl_cmd *ctrl_cmd_parse2(void *ctx, struct msgb *msg)
 		cmd->type = CTRL_TYPE_ERROR;
 		cmd->id = "err";
 		cmd->reply = "Request malformed";
+		LOGP(DLCTRL, LOGL_NOTICE, "Malformed request: \"%s\"\n", osmo_escape_str(str, -1));
 		goto err;
 	}
 
@@ -314,6 +324,7 @@ struct ctrl_cmd *ctrl_cmd_parse2(void *ctx, struct msgb *msg)
 		cmd->type = CTRL_TYPE_ERROR;
 		cmd->id = "err";
 		cmd->reply = "Request type unknown";
+		LOGP(DLCTRL, LOGL_NOTICE, "Request type unknown: \"%s\"\n", osmo_escape_str(str, -1));
 		goto err;
 	}
 
@@ -323,6 +334,15 @@ struct ctrl_cmd *ctrl_cmd_parse2(void *ctx, struct msgb *msg)
 		cmd->type = CTRL_TYPE_ERROR;
 		cmd->id = "err";
 		cmd->reply = "Missing ID";
+		LOGP(DLCTRL, LOGL_NOTICE, "Missing ID: \"%s\"\n", osmo_escape_str(str, -1));
+		goto err;
+	}
+
+	if (!id_str_valid(tmp)) {
+		cmd->type = CTRL_TYPE_ERROR;
+		cmd->id = "err";
+		cmd->reply = "Invalid message ID number";
+		LOGP(DLCTRL, LOGL_NOTICE, "Invalid message ID number: \"%s\"\n", osmo_escape_str(tmp, -1));
 		goto err;
 	}
 	cmd->id = talloc_strdup(cmd, tmp);
@@ -331,14 +351,30 @@ struct ctrl_cmd *ctrl_cmd_parse2(void *ctx, struct msgb *msg)
 
 	switch (cmd->type) {
 		case CTRL_TYPE_GET:
-			var = strtok_r(NULL, " ", &saveptr);
+			var = strtok_r(NULL, " \n", &saveptr);
 			if (!var) {
 				cmd->type = CTRL_TYPE_ERROR;
 				cmd->reply = "GET incomplete";
-				LOGP(DLCTRL, LOGL_NOTICE, "GET Command incomplete\n");
+				LOGP(DLCTRL, LOGL_NOTICE, "GET Command incomplete: \"%s\"\n",
+				     osmo_escape_str(str, -1));
+				goto err;
+			}
+			if (!osmo_separated_identifiers_valid(var, ".")) {
+				cmd->type = CTRL_TYPE_ERROR;
+				cmd->reply = "GET variable contains invalid characters";
+				LOGP(DLCTRL, LOGL_NOTICE, "GET variable contains invalid characters: \"%s\"\n",
+				     osmo_escape_str(var, -1));
 				goto err;
 			}
 			cmd->variable = talloc_strdup(cmd, var);
+			var = strtok_r(NULL, "", &saveptr);
+			if (var) {
+				cmd->type = CTRL_TYPE_ERROR;
+				cmd->reply = "GET with trailing characters";
+				LOGP(DLCTRL, LOGL_NOTICE, "GET with trailing characters: \"%s\"\n",
+				     osmo_escape_str(var, -1));
+				goto err;
+			}
 			LOGP(DLCTRL, LOGL_DEBUG, "Command: GET %s\n", cmd->variable);
 			break;
 		case CTRL_TYPE_SET:
@@ -350,31 +386,57 @@ struct ctrl_cmd *ctrl_cmd_parse2(void *ctx, struct msgb *msg)
 				LOGP(DLCTRL, LOGL_NOTICE, "SET Command incomplete\n");
 				goto err;
 			}
+			if (!osmo_separated_identifiers_valid(var, ".")) {
+				cmd->type = CTRL_TYPE_ERROR;
+				cmd->reply = "SET variable contains invalid characters";
+				LOGP(DLCTRL, LOGL_NOTICE, "SET variable contains invalid characters: \"%s\"\n",
+				     osmo_escape_str(var, -1));
+				goto err;
+			}
 			cmd->variable = talloc_strdup(cmd, var);
 			cmd->value = talloc_strdup(cmd, val);
 			if (!cmd->variable || !cmd->value)
 				goto oom;
-			LOGP(DLCTRL, LOGL_DEBUG, "Command: SET %s = %s\n", cmd->variable, cmd->value);
+
+			var = strtok_r(NULL, "", &saveptr);
+			if (var) {
+				cmd->type = CTRL_TYPE_ERROR;
+				cmd->reply = "SET with trailing characters";
+				LOGP(DLCTRL, LOGL_NOTICE, "SET with trailing characters: \"%s\"\n",
+				     osmo_escape_str(var, -1));
+				goto err;
+			}
+
+			LOGP(DLCTRL, LOGL_DEBUG, "Command: SET %s = \"%s\"\n", cmd->variable,
+			     osmo_escape_str(cmd->value, -1));
 			break;
 		case CTRL_TYPE_GET_REPLY:
 		case CTRL_TYPE_SET_REPLY:
 		case CTRL_TYPE_TRAP:
 			var = strtok_r(NULL, " ", &saveptr);
-			val = strtok_r(NULL, " ", &saveptr);
+			val = strtok_r(NULL, "", &saveptr);
 			if (!var || !val) {
 				cmd->type = CTRL_TYPE_ERROR;
 				cmd->reply = "Trap/Reply incomplete";
 				LOGP(DLCTRL, LOGL_NOTICE, "Trap/Reply incomplete\n");
 				goto err;
 			}
+			if (!osmo_separated_identifiers_valid(var, ".")) {
+				cmd->type = CTRL_TYPE_ERROR;
+				cmd->reply = "Trap/Reply variable contains invalid characters";
+				LOGP(DLCTRL, LOGL_NOTICE, "Trap/Reply variable contains invalid characters: \"%s\"\n",
+				     osmo_escape_str(var, -1));
+				goto err;
+			}
 			cmd->variable = talloc_strdup(cmd, var);
 			cmd->reply = talloc_strdup(cmd, val);
 			if (!cmd->variable || !cmd->reply)
 				goto oom;
-			LOGP(DLCTRL, LOGL_DEBUG, "Command: TRAP/REPLY %s: %s\n", cmd->variable, cmd->reply);
+			LOGP(DLCTRL, LOGL_DEBUG, "Command: TRAP/REPLY %s: \"%s\"\n", cmd->variable,
+			     osmo_escape_str(cmd->reply, -1));
 			break;
 		case CTRL_TYPE_ERROR:
-			var = strtok_r(NULL, "\0", &saveptr);
+			var = strtok_r(NULL, "", &saveptr);
 			if (!var) {
 				cmd->reply = "";
 				goto err;
@@ -382,7 +444,8 @@ struct ctrl_cmd *ctrl_cmd_parse2(void *ctx, struct msgb *msg)
 			cmd->reply = talloc_strdup(cmd, var);
 			if (!cmd->reply)
 				goto oom;
-			LOGP(DLCTRL, LOGL_DEBUG, "Command: ERROR %s\n", cmd->reply);
+			LOGP(DLCTRL, LOGL_DEBUG, "Command: ERROR \"%s\"\n",
+			     osmo_escape_str(cmd->reply, -1));
 			break;
 		case CTRL_TYPE_UNKNOWN:
 		default:
