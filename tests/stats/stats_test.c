@@ -35,12 +35,12 @@ enum test_ctr {
 };
 
 static const struct rate_ctr_desc ctr_description[] = {
-	[TEST_A_CTR] = { "ctr.a", "The A counter value"},
-	[TEST_B_CTR] = { "ctr.b", "The B counter value"},
+	[TEST_A_CTR] = { "ctr:a", "The A counter value"},
+	[TEST_B_CTR] = { "ctr:b", "The B counter value"},
 };
 
 static const struct rate_ctr_group_desc ctrg_desc = {
-	.group_name_prefix = "ctr-test.one",
+	.group_name_prefix = "ctr-test:one",
 	.group_description = "Counter test number 1",
 	.num_ctr = ARRAY_SIZE(ctr_description),
 	.ctr_desc = ctr_description,

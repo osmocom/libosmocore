@@ -115,22 +115,22 @@ enum ns_ctr {
 };
 
 static const struct rate_ctr_desc nsvc_ctr_description[] = {
-	{ "packets.in", "Packets at NS Level  ( In)" },
-	{ "packets.out","Packets at NS Level  (Out)" },
-	{ "bytes.in",	"Bytes at NS Level    ( In)" },
-	{ "bytes.out",	"Bytes at NS Level    (Out)" },
+	{ "packets:in", "Packets at NS Level  ( In)" },
+	{ "packets:out","Packets at NS Level  (Out)" },
+	{ "bytes:in",	"Bytes at NS Level    ( In)" },
+	{ "bytes:out",	"Bytes at NS Level    (Out)" },
 	{ "blocked",	"NS-VC Block count         " },
 	{ "dead",	"NS-VC gone dead count     " },
 	{ "replaced",	"NS-VC replaced other count" },
 	{ "nsei-chg",	"NS-VC changed NSEI count  " },
 	{ "inv-nsvci",	"NS-VCI was invalid count  " },
 	{ "inv-nsei",	"NSEI was invalid count    " },
-	{ "lost.alive",	"ALIVE ACK missing count   " },
-	{ "lost.reset",	"RESET ACK missing count   " },
+	{ "lost:alive",	"ALIVE ACK missing count   " },
+	{ "lost:reset",	"RESET ACK missing count   " },
 };
 
 static const struct rate_ctr_group_desc nsvc_ctrg_desc = {
-	.group_name_prefix = "ns.nsvc",
+	.group_name_prefix = "ns:nsvc",
 	.group_description = "NSVC Peer Statistics",
 	.num_ctr = ARRAY_SIZE(nsvc_ctr_description),
 	.ctr_desc = nsvc_ctr_description,

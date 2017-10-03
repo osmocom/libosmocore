@@ -43,17 +43,17 @@
 void *bssgp_tall_ctx = NULL;
 
 static const struct rate_ctr_desc bssgp_ctr_description[] = {
-	{ "packets.in",	"Packets at BSSGP Level ( In)" },
-	{ "packets.out","Packets at BSSGP Level (Out)" },
-	{ "bytes.in",	"Bytes at BSSGP Level   ( In)" },
-	{ "bytes.out",	"Bytes at BSSGP Level   (Out)" },
+	{ "packets:in",	"Packets at BSSGP Level ( In)" },
+	{ "packets:out","Packets at BSSGP Level (Out)" },
+	{ "bytes:in",	"Bytes at BSSGP Level   ( In)" },
+	{ "bytes:out",	"Bytes at BSSGP Level   (Out)" },
 	{ "blocked",	"BVC Blocking count" },
 	{ "discarded",	"BVC LLC Discarded count" },
 	{ "status",	"BVC Status count" },
 };
 
 static const struct rate_ctr_group_desc bssgp_ctrg_desc = {
-	.group_name_prefix = "bssgp.bss_ctx",
+	.group_name_prefix = "bssgp:bss_ctx",
 	.group_description = "BSSGP Peer Statistics",
 	.num_ctr = ARRAY_SIZE(bssgp_ctr_description),
 	.ctr_desc = bssgp_ctr_description,
