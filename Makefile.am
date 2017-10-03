@@ -12,6 +12,8 @@ pkgconfig_DATA = libosmocore.pc libosmocodec.pc libosmovty.pc libosmogsm.pc \
 relengdir = $(includedir)
 releng_DATA = osmo-release.mk
 
+dist_bin_SCRIPTS = osmo-release.sh
+
 osmo-release.mk: git-version-gen
 
 BUILT_SOURCES = $(top_srcdir)/.version
@@ -20,7 +22,7 @@ $(top_srcdir)/.version:
 dist-hook:
 	echo $(VERSION) > $(distdir)/.tarball-version
 
-EXTRA_DIST = git-version-gen .version README.md osmo-release.mk
+EXTRA_DIST = git-version-gen .version README.md osmo-release.mk osmo-release.sh
 
 if HAVE_DOXYGEN
 
