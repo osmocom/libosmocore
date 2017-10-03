@@ -22,6 +22,7 @@
 /*! Number of bytes necessary to store given BITS */
 #define OSMO_BYTES_FOR_BITS(BITS) ((BITS + 8 - 1) / 8)
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 
@@ -111,5 +112,7 @@ size_t osmo_strlcpy(char *dst, const char *src, size_t siz);
 
 bool osmo_is_hexstr(const char *str, int min_digits, int max_digits,
 		    bool require_even);
+
+bool osmo_identifier_valid(const char *str);
 
 /*! @} */

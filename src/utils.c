@@ -22,6 +22,7 @@
  */
 
 
+#include <stdbool.h>
 #include <string.h>
 #include <stdint.h>
 #include <errno.h>
@@ -411,6 +412,33 @@ bool osmo_is_hexstr(const char *str, int min_digits, int max_digits,
 		return false;
 	if (require_even && (len & 1))
 		return false;
+
+	return true;
+}
+
+/*! Determine if a given identifier is valid, i.e. doesn't contain illegal chars
+ *  \param[in] str String to validate
+ *  \returns true in case string contains valid identifier, false otherwise
+ */
+bool osmo_identifier_valid(const char *str)
+{
+	/* characters that are illegal in names */
+	static const char illegal_chars[] = "., {}[]()<>|~\\^`'\"?=;/+*&%$#!";
+	unsigned int i;
+
+	/* an empty string is not a valid identifier */
+	if (!str || strlen(str) == 0)
+		return false;
+
+	for (i = 0; i < strlen(str); i++) {
+		/* check for 7-bit ASCII */
+		if (str[i] & 0x80)
+			return false;
+		/* check for some explicit reserved control characters */
+		if (strchr(illegal_chars, str[i]))
+			return false;
+	}
+
 	return true;
 }
 
