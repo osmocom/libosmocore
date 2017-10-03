@@ -146,6 +146,10 @@ struct osmo_fsm_inst *osmo_fsm_inst_find_by_id(const struct osmo_fsm *fsm,
  */
 int osmo_fsm_register(struct osmo_fsm *fsm)
 {
+	if (!osmo_identifier_valid(fsm->name)) {
+		LOGP(DLGLOBAL, LOGL_ERROR, "Attempting to register FSM with illegal identifier '%s'\n", fsm->name);
+		return -EINVAL;
+	}
 	if (osmo_fsm_find_by_name(fsm->name))
 		return -EEXIST;
 	llist_add_tail(&fsm->list, &osmo_g_fsms);
@@ -206,8 +210,15 @@ struct osmo_fsm_inst *osmo_fsm_inst_alloc(struct osmo_fsm *fsm, void *ctx, void 
 	fi->priv = priv;
 	fi->log_level = log_level;
 	osmo_timer_setup(&fi->timer, fsm_tmr_cb, fi);
-	if (id)
+	if (id) {
+		if (!osmo_identifier_valid(id)) {
+			LOGP(DLGLOBAL, LOGL_ERROR, "Attempting to allocate FSM instance of type '%s'"
+			     " with illegal identifier '%s'\n", fsm->name, id);
+			talloc_free(fi);
+			return NULL;
+		}
 		fi->id = talloc_strdup(fi, id);
+	}
 
 	if (!fsm_log_addr) {
 		if (id)
