@@ -1,4 +1,4 @@
-/* (C) 2009-2010 by Harald Welte <laforge@gnumonks.org>
+/* (C) 2009-2017 by Harald Welte <laforge@gnumonks.org>
  *
  * All Rights Reserved
  *
@@ -55,6 +55,7 @@
  *
  * \file rate_ctr.c */
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
 
@@ -63,10 +64,116 @@
 #include <osmocom/core/talloc.h>
 #include <osmocom/core/timer.h>
 #include <osmocom/core/rate_ctr.h>
+#include <osmocom/core/logging.h>
 
 static LLIST_HEAD(rate_ctr_groups);
 
 static void *tall_rate_ctr_ctx;
+
+
+static bool rate_ctrl_group_desc_validate(const struct rate_ctr_group_desc *desc, bool quiet)
+{
+	unsigned int i;
+	const struct rate_ctr_desc *ctr_desc = desc->ctr_desc;
+
+	if (!desc) {
+		LOGP(DLGLOBAL, LOGL_ERROR, "NULL is not a valid counter group descriptor\n");
+		return false;
+	}
+
+	DEBUGP(DLGLOBAL, "validating counter group %p(%s) with %u counters\n", desc,
+		desc->group_name_prefix, desc->num_ctr);
+
+	if (!osmo_identifier_valid(desc->group_name_prefix)) {
+		if (!quiet)
+			LOGP(DLGLOBAL, LOGL_ERROR, "'%s' is not a valid counter group identifier\n",
+				desc->group_name_prefix);
+		return false;
+	}
+
+	for (i = 0; i < desc->num_ctr; i++) {
+		if (!osmo_identifier_valid(ctr_desc[i].name)) {
+			if (!quiet)
+				LOGP(DLGLOBAL, LOGL_ERROR, "'%s' is not a valid counter identifier\n",
+					ctr_desc[i].name);
+			return false;
+		}
+	}
+
+	return true;
+}
+
+/* return 'in' if it doesn't contaon any '.'; otherwise allocate a copy and
+ * replace all '.' with ':' */
+static char *mangle_identifier_ifneeded(const void *ctx, const char *in)
+{
+	char *out;
+	unsigned int i;
+
+	if (!in)
+		return NULL;
+
+	if (!strchr(in, '.'))
+		return (char *)in;
+
+	out = talloc_strdup(ctx, in);
+	OSMO_ASSERT(out);
+
+	for (i = 0; i < strlen(out); i++) {
+		if (out[i] == '.')
+			out[i] = ':';
+	}
+
+	return out;
+}
+
+/* "mangle" a rate counter group descriptor, i.e. replace any '.' with ':' */
+static struct rate_ctr_group_desc *
+rate_ctr_group_desc_mangle(void *ctx, const struct rate_ctr_group_desc *desc)
+{
+	struct rate_ctr_group_desc *desc_new = talloc_zero(ctx, struct rate_ctr_group_desc);
+	int i;
+
+	OSMO_ASSERT(desc_new);
+
+	/* mangle the name_prefix but copy/keep the rest */
+	desc_new->group_name_prefix = mangle_identifier_ifneeded(desc_new, desc->group_name_prefix);
+	desc_new->group_description = desc->group_description;
+	desc_new->class_id = desc->class_id;
+	desc_new->num_ctr = desc->num_ctr;
+	desc_new->ctr_desc = talloc_array(desc_new, struct rate_ctr_desc, desc_new->num_ctr);
+	OSMO_ASSERT(desc_new->ctr_desc);
+
+	for (i = 0; i < desc->num_ctr; i++) {
+		struct rate_ctr_desc *ctrd_new = (struct rate_ctr_desc *) desc_new->ctr_desc;
+		const struct rate_ctr_desc *ctrd = desc->ctr_desc;
+
+		if (!ctrd[i].name) {
+			LOGP(DLGLOBAL, LOGL_ERROR, "counter group '%s'[%d] == NULL, aborting\n",
+				desc->group_name_prefix, i);
+			goto err_free;
+		}
+
+		ctrd_new[i].name = mangle_identifier_ifneeded(desc_new->ctr_desc, ctrd[i].name);
+		ctrd_new[i].description = ctrd[i].description;
+	}
+
+	if (!rate_ctrl_group_desc_validate(desc_new, false)) {
+		/* simple mangling of identifiers ('.' -> ':') was not sufficient to render a valid
+		 * descriptor, we have to bail out */
+		LOGP(DLGLOBAL, LOGL_ERROR, "counter group '%s' still invalid after mangling\n",
+			desc->group_name_prefix);
+		goto err_free;
+	}
+
+	LOGP(DLGLOBAL, LOGL_INFO, "Needed to mangle ounter group '%s' names still using '.' as "
+		"separator, please consider updating the application\n", desc->group_name_prefix);
+
+	return desc_new;
+err_free:
+	talloc_free(desc_new);
+	return NULL;
+}
 
 /*! Allocate a new group of counters according to description
  *  \param[in] ctx \ref talloc context
@@ -79,6 +186,15 @@ struct rate_ctr_group *rate_ctr_group_alloc(void *ctx,
 {
 	unsigned int size;
 	struct rate_ctr_group *group;
+
+	/* attempt to mangle all '.' in identifiers to ':' for backwards compat */
+	if (!rate_ctrl_group_desc_validate(desc, true)) {
+		/* don't use 'ctx' here as it would screw up memory leak debugging e.g.
+		 * in osmo-msc */
+		desc = rate_ctr_group_desc_mangle(NULL, desc);
+		if (!desc)
+			return NULL;
+	}
 
 	size = sizeof(struct rate_ctr_group) +
 			desc->num_ctr * sizeof(struct rate_ctr);

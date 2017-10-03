@@ -48,7 +48,7 @@ struct rate_ctr_group_desc {
 	/*! The class to which this group belongs */
 	int class_id;
 	/*! The number of counters in this group */
-	const unsigned int num_ctr;
+	unsigned int num_ctr;
 	/*! Pointer to array of counter names */
 	const struct rate_ctr_desc *ctr_desc;
 };
