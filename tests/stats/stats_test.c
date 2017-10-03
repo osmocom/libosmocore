@@ -47,6 +47,19 @@ static const struct rate_ctr_group_desc ctrg_desc = {
 	.class_id = OSMO_STATS_CLASS_SUBSCRIBER,
 };
 
+static const struct rate_ctr_desc ctr_description_dot[] = {
+	[TEST_A_CTR] = { "ctr.a", "The A counter value with ."},
+	[TEST_B_CTR] = { "ctr.b", "The B counter value with ."},
+};
+
+static const struct rate_ctr_group_desc ctrg_desc_dot = {
+	.group_name_prefix = "ctr-test.one_dot",
+	.group_description = "Counter test number 1dot",
+	.num_ctr = ARRAY_SIZE(ctr_description_dot),
+	.ctr_desc = ctr_description_dot,
+	.class_id = OSMO_STATS_CLASS_SUBSCRIBER,
+};
+
 enum test_items {
 	TEST_A_ITEM,
 	TEST_B_ITEM,
@@ -296,7 +309,7 @@ static void test_reporting()
 {
 	struct osmo_stats_reporter *srep1, *srep2, *srep;
 	struct osmo_stat_item_group *statg1, *statg2;
-	struct rate_ctr_group *ctrg1, *ctrg2;
+	struct rate_ctr_group *ctrg1, *ctrg2, *ctrg3;
 	void *stats_ctx = talloc_named_const(NULL, 1, "stats test context");
 
 	int rc;
@@ -312,6 +325,8 @@ static void test_reporting()
 	OSMO_ASSERT(ctrg1 != NULL);
 	ctrg2 = rate_ctr_group_alloc(stats_ctx, &ctrg_desc, 2);
 	OSMO_ASSERT(ctrg2 != NULL);
+	ctrg3 = rate_ctr_group_alloc(stats_ctx, &ctrg_desc_dot, 3);
+	OSMO_ASSERT(ctrg3 != NULL);
 
 	srep1 = stats_reporter_create_test("test1");
 	OSMO_ASSERT(srep1 != NULL);
@@ -339,7 +354,7 @@ static void test_reporting()
 	printf("report (initial):\n");
 	send_count = 0;
 	osmo_stats_report();
-	OSMO_ASSERT(send_count == 16);
+	OSMO_ASSERT(send_count == 20);
 
 	printf("report (srep1 global):\n");
 	/* force single flush */
@@ -348,7 +363,7 @@ static void test_reporting()
 	srep2->force_single_flush = 1;
 	send_count = 0;
 	osmo_stats_report();
-	OSMO_ASSERT(send_count == 8);
+	OSMO_ASSERT(send_count == 10);
 
 	printf("report (srep1 peer):\n");
 	/* force single flush */
@@ -357,7 +372,7 @@ static void test_reporting()
 	srep2->force_single_flush = 1;
 	send_count = 0;
 	osmo_stats_report();
-	OSMO_ASSERT(send_count == 12);
+	OSMO_ASSERT(send_count == 14);
 
 	printf("report (srep1 subscriber):\n");
 	/* force single flush */
@@ -366,7 +381,7 @@ static void test_reporting()
 	srep2->force_single_flush = 1;
 	send_count = 0;
 	osmo_stats_report();
-	OSMO_ASSERT(send_count == 16);
+	OSMO_ASSERT(send_count == 20);
 
 	printf("report (srep2 disabled):\n");
 	/* force single flush */
@@ -376,14 +391,14 @@ static void test_reporting()
 	OSMO_ASSERT(rc >= 0);
 	send_count = 0;
 	osmo_stats_report();
-	OSMO_ASSERT(send_count == 8);
+	OSMO_ASSERT(send_count == 10);
 
 	printf("report (srep2 enabled, no flush forced):\n");
 	rc = osmo_stats_reporter_enable(srep2);
 	OSMO_ASSERT(rc >= 0);
 	send_count = 0;
 	osmo_stats_report();
-	OSMO_ASSERT(send_count == 8);
+	OSMO_ASSERT(send_count == 10);
 
 	printf("report (should be empty):\n");
 	send_count = 0;
@@ -410,7 +425,7 @@ static void test_reporting()
 	rate_ctr_group_free(ctrg1);
 	send_count = 0;
 	osmo_stats_report();
-	OSMO_ASSERT(send_count == 8);
+	OSMO_ASSERT(send_count == 12);
 
 	printf("report (remove srep1):\n");
 	/* force single flush */
@@ -419,7 +434,7 @@ static void test_reporting()
 	osmo_stats_reporter_free(srep1);
 	send_count = 0;
 	osmo_stats_report();
-	OSMO_ASSERT(send_count == 4);
+	OSMO_ASSERT(send_count == 6);
 
 	printf("report (remove statg2):\n");
 	/* force single flush */
@@ -427,7 +442,7 @@ static void test_reporting()
 	osmo_stat_item_group_free(statg2);
 	send_count = 0;
 	osmo_stats_report();
-	OSMO_ASSERT(send_count == 2);
+	OSMO_ASSERT(send_count == 4);
 
 	printf("report (remove srep2):\n");
 	/* force single flush */
@@ -442,6 +457,8 @@ static void test_reporting()
 	send_count = 0;
 	osmo_stats_report();
 	OSMO_ASSERT(send_count == 0);
+
+	rate_ctr_group_free(ctrg3);
 
 	/* Leak check */
 	OSMO_ASSERT(talloc_total_blocks(stats_ctx) == 1);

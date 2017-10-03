@@ -2,6 +2,10 @@ Start test: test_reporting
   test1: open
   test2: open
 report (initial):
+  test2: counter p= g=ctr-test:one_dot i=3 n=ctr:a v=0 d=0
+  test1: counter p= g=ctr-test:one_dot i=3 n=ctr:a v=0 d=0
+  test2: counter p= g=ctr-test:one_dot i=3 n=ctr:b v=0 d=0
+  test1: counter p= g=ctr-test:one_dot i=3 n=ctr:b v=0 d=0
   test2: counter p= g=ctr-test:one i=2 n=ctr:a v=0 d=0
   test1: counter p= g=ctr-test:one i=2 n=ctr:a v=0 d=0
   test2: counter p= g=ctr-test:one i=2 n=ctr:b v=0 d=0
@@ -19,6 +23,8 @@ report (initial):
   test2: item p= g=test.one i=1 n=item.b v=-1 u=kb
   test1: item p= g=test.one i=1 n=item.b v=-1 u=kb
 report (srep1 global):
+  test2: counter p= g=ctr-test:one_dot i=3 n=ctr:a v=0 d=0
+  test2: counter p= g=ctr-test:one_dot i=3 n=ctr:b v=0 d=0
   test2: counter p= g=ctr-test:one i=2 n=ctr:a v=0 d=0
   test2: counter p= g=ctr-test:one i=2 n=ctr:b v=0 d=0
   test2: counter p= g=ctr-test:one i=1 n=ctr:a v=0 d=0
@@ -28,6 +34,8 @@ report (srep1 global):
   test2: item p= g=test.one i=1 n=item.a v=-1 u=ma
   test2: item p= g=test.one i=1 n=item.b v=-1 u=kb
 report (srep1 peer):
+  test2: counter p= g=ctr-test:one_dot i=3 n=ctr:a v=0 d=0
+  test2: counter p= g=ctr-test:one_dot i=3 n=ctr:b v=0 d=0
   test2: counter p= g=ctr-test:one i=2 n=ctr:a v=0 d=0
   test2: counter p= g=ctr-test:one i=2 n=ctr:b v=0 d=0
   test2: counter p= g=ctr-test:one i=1 n=ctr:a v=0 d=0
@@ -41,6 +49,10 @@ report (srep1 peer):
   test2: item p= g=test.one i=1 n=item.b v=-1 u=kb
   test1: item p= g=test.one i=1 n=item.b v=-1 u=kb
 report (srep1 subscriber):
+  test2: counter p= g=ctr-test:one_dot i=3 n=ctr:a v=0 d=0
+  test1: counter p= g=ctr-test:one_dot i=3 n=ctr:a v=0 d=0
+  test2: counter p= g=ctr-test:one_dot i=3 n=ctr:b v=0 d=0
+  test1: counter p= g=ctr-test:one_dot i=3 n=ctr:b v=0 d=0
   test2: counter p= g=ctr-test:one i=2 n=ctr:a v=0 d=0
   test1: counter p= g=ctr-test:one i=2 n=ctr:a v=0 d=0
   test2: counter p= g=ctr-test:one i=2 n=ctr:b v=0 d=0
@@ -59,6 +71,8 @@ report (srep1 subscriber):
   test1: item p= g=test.one i=1 n=item.b v=-1 u=kb
 report (srep2 disabled):
   test2: close
+  test1: counter p= g=ctr-test:one_dot i=3 n=ctr:a v=0 d=0
+  test1: counter p= g=ctr-test:one_dot i=3 n=ctr:b v=0 d=0
   test1: counter p= g=ctr-test:one i=2 n=ctr:a v=0 d=0
   test1: counter p= g=ctr-test:one i=2 n=ctr:b v=0 d=0
   test1: counter p= g=ctr-test:one i=1 n=ctr:a v=0 d=0
@@ -69,6 +83,8 @@ report (srep2 disabled):
   test1: item p= g=test.one i=1 n=item.b v=-1 u=kb
 report (srep2 enabled, no flush forced):
   test2: open
+  test2: counter p= g=ctr-test:one_dot i=3 n=ctr:a v=0 d=0
+  test2: counter p= g=ctr-test:one_dot i=3 n=ctr:b v=0 d=0
   test2: counter p= g=ctr-test:one i=2 n=ctr:a v=0 d=0
   test2: counter p= g=ctr-test:one i=2 n=ctr:b v=0 d=0
   test2: counter p= g=ctr-test:one i=1 n=ctr:a v=0 d=0
@@ -85,6 +101,10 @@ report (group 1, item 1 update):
   test2: item p= g=test.one i=1 n=item.a v=10 u=ma
   test1: item p= g=test.one i=1 n=item.a v=10 u=ma
 report (remove statg1, ctrg1):
+  test2: counter p= g=ctr-test:one_dot i=3 n=ctr:a v=0 d=0
+  test1: counter p= g=ctr-test:one_dot i=3 n=ctr:a v=0 d=0
+  test2: counter p= g=ctr-test:one_dot i=3 n=ctr:b v=0 d=0
+  test1: counter p= g=ctr-test:one_dot i=3 n=ctr:b v=0 d=0
   test2: counter p= g=ctr-test:one i=2 n=ctr:a v=0 d=0
   test1: counter p= g=ctr-test:one i=2 n=ctr:a v=0 d=0
   test2: counter p= g=ctr-test:one i=2 n=ctr:b v=0 d=0
@@ -95,11 +115,15 @@ report (remove statg1, ctrg1):
   test1: item p= g=test.one i=2 n=item.b v=-1 u=kb
 report (remove srep1):
   test1: close
+  test2: counter p= g=ctr-test:one_dot i=3 n=ctr:a v=0 d=0
+  test2: counter p= g=ctr-test:one_dot i=3 n=ctr:b v=0 d=0
   test2: counter p= g=ctr-test:one i=2 n=ctr:a v=0 d=0
   test2: counter p= g=ctr-test:one i=2 n=ctr:b v=0 d=0
   test2: item p= g=test.one i=2 n=item.a v=-1 u=ma
   test2: item p= g=test.one i=2 n=item.b v=-1 u=kb
 report (remove statg2):
+  test2: counter p= g=ctr-test:one_dot i=3 n=ctr:a v=0 d=0
+  test2: counter p= g=ctr-test:one_dot i=3 n=ctr:b v=0 d=0
   test2: counter p= g=ctr-test:one i=2 n=ctr:a v=0 d=0
   test2: counter p= g=ctr-test:one i=2 n=ctr:b v=0 d=0
 report (remove srep2):
