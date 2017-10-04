@@ -287,3 +287,9 @@ AT_KEYWORDS([prbs])
 cat $abs_srcdir/prbs/prbs_test.ok > expout
 AT_CHECK([$abs_top_builddir/tests/prbs/prbs_test], [0], [expout], [ignore])
 AT_CLEANUP
+
+AT_SETUP([gsm23003])
+AT_KEYWORDS([gsm23003])
+cat $abs_srcdir/gsm23003/gsm23003_test.ok > expout
+AT_CHECK([$abs_top_builddir/tests/gsm23003/gsm23003_test], [0], [expout], [ignore])
+AT_CLEANUP

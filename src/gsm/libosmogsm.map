@@ -418,5 +418,8 @@ osmo_gsup_message_type_names;
 osmo_oap_encode;
 osmo_oap_decode;
 
+osmo_imsi_str_valid;
+osmo_msisdn_str_valid;
+
 local: *;
 };

@@ -3,6 +3,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <stdbool.h>
 
 /* 23.003 Chapter 12.1 */
 struct osmo_plmn_id {
@@ -81,3 +82,6 @@ struct osmo_guti {
 	struct osmo_gummei gummei;
 	uint32_t mtmsi;
 };
+
+bool osmo_imsi_str_valid(const char *imsi);
+bool osmo_msisdn_str_valid(const char *msisdn);

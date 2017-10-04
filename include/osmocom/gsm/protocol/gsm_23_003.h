@@ -4,6 +4,7 @@
 
 /* Chapter 2.2 */
 #define GSM23003_IMSI_MAX_DIGITS	15
+#define GSM23003_IMSI_MIN_DIGITS	6
 /* Chapter 2.4 */
 #define GSM23003_TMSI_NUM_BYTES		4
 /* Chapter 2.5 */
