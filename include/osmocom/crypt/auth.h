@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include <osmocom/core/linuxlist.h>
+#include <osmocom/core/utils.h>
 
 #define OSMO_A5_MAX_KEY_LEN_BYTES (128/8)
 
@@ -17,7 +18,12 @@ enum osmo_sub_auth_type {
 	OSMO_AUTH_TYPE_UMTS	= 0x02,
 };
 
-/*! Authentication Algorithm */
+extern const struct value_string osmo_sub_auth_type_names[];
+static inline const char *osmo_sub_auth_type_name(enum osmo_sub_auth_type val)
+{ return get_value_string(osmo_sub_auth_type_names, val); }
+
+/*! Authentication Algorithm.
+ * See also osmo_auth_alg_name() and osmo_auth_alg_parse(). */
 enum osmo_auth_algo {
 	OSMO_AUTH_ALG_NONE,
 	OSMO_AUTH_ALG_COMP128v1,

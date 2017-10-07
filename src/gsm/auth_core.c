@@ -221,4 +221,11 @@ enum osmo_auth_algo osmo_auth_alg_parse(const char *name)
 	return get_string_value(auth_alg_vals, name);
 }
 
+const struct value_string osmo_sub_auth_type_names[] = {
+	{ OSMO_AUTH_TYPE_NONE, "None" },
+	{ OSMO_AUTH_TYPE_GSM, "GSM" },
+	{ OSMO_AUTH_TYPE_UMTS, "UMTS" },
+	{ 0, NULL }
+};
+
 /*! @} */
