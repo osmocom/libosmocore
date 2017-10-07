@@ -255,7 +255,7 @@ extern int sse41_supported;
  * preserved and read and written into the same memory location. Normalize
  * sums if requires.
  */
-__always_inline static void _sse_metrics_k5_n2(const int16_t *val,
+static void _sse_metrics_k5_n2(const int16_t *val,
 	const int16_t *out, int16_t *sums, int16_t *paths, int norm)
 {
 	__m128i m0, m1, m2, m3, m4, m5, m6;
@@ -297,7 +297,7 @@ __always_inline static void _sse_metrics_k5_n2(const int16_t *val,
  * than 1/4. Normally only rates 1/3 and 1/4 are used as there is a
  * dedicated implementation of rate 1/2.
  */
-__always_inline static void _sse_metrics_k5_n4(const int16_t *val,
+static void _sse_metrics_k5_n4(const int16_t *val,
 	const int16_t *out, int16_t *sums, int16_t *paths, int norm)
 {
 	__m128i m0, m1, m2, m3, m4, m5, m6;
@@ -337,7 +337,7 @@ __always_inline static void _sse_metrics_k5_n4(const int16_t *val,
  * metrics requires usage of the full SSE register file, so separate sums
  * before computing branch metrics to avoid register spilling.
  */
-__always_inline static void _sse_metrics_k7_n2(const int16_t *val,
+static void _sse_metrics_k7_n2(const int16_t *val,
 	const int16_t *out, int16_t *sums, int16_t *paths, int norm)
 {
 	__m128i m0, m1, m2, m3, m4, m5, m6, m7, m8,
@@ -412,7 +412,7 @@ __always_inline static void _sse_metrics_k7_n2(const int16_t *val,
  * trellis. 32 butterfly operations are computed. Deinterleave path
  * metrics before computing branch metrics as in the half rate case.
  */
-__always_inline static void _sse_metrics_k7_n4(const int16_t *val,
+static void _sse_metrics_k7_n4(const int16_t *val,
 	const int16_t *out, int16_t *sums, int16_t *paths, int norm)
 {
 	__m128i m0, m1, m2, m3, m4, m5, m6, m7;
