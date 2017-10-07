@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdbool.h>
+
 #include <osmocom/core/backtrace.h>
 #include <osmocom/core/talloc.h>
 
@@ -88,5 +90,8 @@ uint64_t osmo_decode_big_endian(const uint8_t *data, size_t data_len);
 uint8_t *osmo_encode_big_endian(uint64_t value, size_t data_len);
 
 size_t osmo_strlcpy(char *dst, const char *src, size_t siz);
+
+bool osmo_is_hexstr(const char *str, int min_digits, int max_digits,
+		    bool require_even);
 
 /*! @} */

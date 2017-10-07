@@ -26,3 +26,34 @@ Hexparse with uneven amount of digits
 rc = -1
 Hexparse with invalid char
 rc = -1
+
+----- test_is_hexstr
+ 0: pass str='(null)' min=0 max=10 even=0 expect=valid
+ 1: pass str='(null)' min=1 max=10 even=0 expect=invalid
+ 2: pass str='' min=0 max=10 even=0 expect=valid
+ 3: pass str='' min=1 max=10 even=0 expect=invalid
+ 4: pass str=' ' min=0 max=10 even=0 expect=invalid
+ 5: pass str='1' min=0 max=10 even=0 expect=valid
+ 6: pass str='1' min=1 max=10 even=0 expect=valid
+ 7: pass str='1' min=1 max=10 even=1 expect=invalid
+ 8: pass str='1' min=2 max=10 even=0 expect=invalid
+ 9: pass str='123' min=1 max=10 even=0 expect=valid
+10: pass str='123' min=1 max=10 even=1 expect=invalid
+11: pass str='123' min=4 max=10 even=0 expect=invalid
+12: pass str='1234' min=4 max=10 even=1 expect=valid
+13: pass str='12345' min=4 max=10 even=1 expect=invalid
+14: pass str='123456' min=4 max=10 even=1 expect=valid
+15: pass str='1234567' min=4 max=10 even=1 expect=invalid
+16: pass str='12345678' min=4 max=10 even=1 expect=valid
+17: pass str='123456789' min=4 max=10 even=1 expect=invalid
+18: pass str='123456789a' min=4 max=10 even=1 expect=valid
+19: pass str='123456789ab' min=4 max=10 even=1 expect=invalid
+20: pass str='123456789abc' min=4 max=10 even=1 expect=invalid
+21: pass str='123456789ab' min=4 max=10 even=0 expect=invalid
+22: pass str='123456789abc' min=4 max=10 even=0 expect=invalid
+23: pass str='0123456789abcdefABCDEF' min=0 max=100 even=0 expect=valid
+24: pass str='0123456789 abcdef ABCDEF' min=0 max=100 even=0 expect=invalid
+25: pass str='foobar' min=0 max=100 even=0 expect=invalid
+26: pass str='BeadedBeeAced1EbbedDefacedFacade' min=32 max=32 even=1 expect=valid
+27: pass str='C01ffedC1cadaeAc1d1f1edAcac1aB0a' min=32 max=32 even=0 expect=valid
+28: pass str='DeafBeddedBabeAcceededFadedDecaff' min=32 max=32 even=0 expect=invalid

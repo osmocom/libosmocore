@@ -219,6 +219,68 @@ static void test_idtag_parsing(void)
 	OSMO_ASSERT(!TLVP_PRESENT(&tvp, 0x25));
 }
 
+static struct {
+	const char *str;
+	int min_digits;
+	int max_digits;
+	bool require_even;
+	bool expect_ok;
+} test_hexstrs[] = {
+	{ NULL, 0, 10, false, true },
+	{ NULL, 1, 10, false, false },
+	{ "", 0, 10, false, true },
+	{ "", 1, 10, false, false },
+	{ " ", 0, 10, false, false },
+	{ "1", 0, 10, false, true },
+	{ "1", 1, 10, false, true },
+	{ "1", 1, 10, true, false },
+	{ "1", 2, 10, false, false },
+	{ "123", 1, 10, false, true },
+	{ "123", 1, 10, true, false },
+	{ "123", 4, 10, false, false },
+	{ "1234", 4, 10, true, true },
+	{ "12345", 4, 10, true, false },
+	{ "123456", 4, 10, true, true },
+	{ "1234567", 4, 10, true, false },
+	{ "12345678", 4, 10, true, true },
+	{ "123456789", 4, 10, true, false },
+	{ "123456789a", 4, 10, true, true },
+	{ "123456789ab", 4, 10, true, false },
+	{ "123456789abc", 4, 10, true, false },
+	{ "123456789ab", 4, 10, false, false },
+	{ "123456789abc", 4, 10, false, false },
+	{ "0123456789abcdefABCDEF", 0, 100, false, true },
+	{ "0123456789 abcdef ABCDEF", 0, 100, false, false },
+	{ "foobar", 0, 100, false, false },
+	{ "BeadedBeeAced1EbbedDefacedFacade", 32, 32, true, true },
+	{ "C01ffedC1cadaeAc1d1f1edAcac1aB0a", 32, 32, false, true },
+	{ "DeafBeddedBabeAcceededFadedDecaff", 32, 32, false, false },
+};
+
+bool test_is_hexstr()
+{
+	int i;
+	bool pass = true;
+	bool ok = true;
+	printf("\n----- %s\n", __func__);
+
+	for (i = 0; i < ARRAY_SIZE(test_hexstrs); i++) {
+		ok = osmo_is_hexstr(test_hexstrs[i].str,
+				    test_hexstrs[i].min_digits,
+				    test_hexstrs[i].max_digits,
+				    test_hexstrs[i].require_even);
+		pass = pass && (ok == test_hexstrs[i].expect_ok);
+		printf("%2d: %s str='%s' min=%d max=%d even=%d expect=%s\n",
+		       i, test_hexstrs[i].expect_ok == ok ? "pass" : "FAIL",
+		       test_hexstrs[i].str,
+		       test_hexstrs[i].min_digits,
+		       test_hexstrs[i].max_digits,
+		       test_hexstrs[i].require_even,
+		       test_hexstrs[i].expect_ok ? "valid" : "invalid");
+	}
+	return pass;
+}
+
 int main(int argc, char **argv)
 {
 	static const struct log_info log_info = {};
@@ -227,5 +289,6 @@ int main(int argc, char **argv)
 	hexdump_test();
 	hexparse_test();
 	test_idtag_parsing();
+	test_is_hexstr();
 	return 0;
 }

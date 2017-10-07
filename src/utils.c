@@ -375,4 +375,37 @@ size_t osmo_strlcpy(char *dst, const char *src, size_t siz)
 	return ret;
 }
 
+/*! Validate that a given string is a hex string within given size limits.
+ * Note that each hex digit amounts to a nibble, so if checking for a hex
+ * string to result in N bytes, pass amount of digits as 2*N.
+ * \param str  A nul-terminated string to validate, or NULL.
+ * \param min_digits  least permitted amount of digits.
+ * \param max_digits  most permitted amount of digits.
+ * \param require_even  if true, require an even amount of digits.
+ * \returns true when the hex_str contains only hexadecimal digits (no
+ *          whitespace) and matches the requested length; also true
+ *          when min_digits <= 0 and str is NULL.
+ */
+bool osmo_is_hexstr(const char *str, int min_digits, int max_digits,
+		    bool require_even)
+{
+	int len;
+	/* Use unsigned char * to avoid a compiler warning of
+	 * "error: array subscript has type 'char' [-Werror=char-subscripts]" */
+	const unsigned char *pos = (const unsigned char*)str;
+	if (!pos)
+		return min_digits < 1;
+	for (len = 0; *pos && len < max_digits; len++, pos++)
+		if (!isxdigit(*pos))
+			return false;
+	if (len < min_digits)
+		return false;
+	/* With not too many digits, we should have reached *str == nul */
+	if (*pos)
+		return false;
+	if (require_even && (len & 1))
+		return false;
+	return true;
+}
+
 /*! @} */
