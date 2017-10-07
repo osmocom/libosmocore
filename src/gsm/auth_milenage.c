@@ -112,7 +112,7 @@ static int milenage_gen_vec(struct osmo_auth_vector *vec,
 	 * { .ind_bitlen = 0, .ind = 0, .sqn = (desired_sqn - 1) }
 	 */
 
-	if (aud->u.umts.ind_bitlen > 28)
+	if (aud->u.umts.ind_bitlen > OSMO_MILENAGE_IND_BITLEN_MAX)
 		return -2;
 
 	seq_1 = 1LL << aud->u.umts.ind_bitlen;

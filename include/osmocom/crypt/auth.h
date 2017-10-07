@@ -10,6 +10,7 @@
 #include <osmocom/core/utils.h>
 
 #define OSMO_A5_MAX_KEY_LEN_BYTES (128/8)
+#define OSMO_MILENAGE_IND_BITLEN_MAX 28
 
 /*! Authentication Type (GSM/UMTS) */
 enum osmo_sub_auth_type {
