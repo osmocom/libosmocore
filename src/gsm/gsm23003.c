@@ -33,6 +33,8 @@ static bool is_n_digits(const char *str, int min_digits, int max_digits)
 	/* Use unsigned char * to avoid a compiler warning of
 	 * "error: array subscript has type 'char' [-Werror=char-subscripts]" */
 	const unsigned char *pos = (const unsigned char *)str;
+	if (!pos)
+		return min_digits < 1;
 	for (len = 0; *pos && len < max_digits; len++, pos++)
 		if (!isdigit(*pos))
 			return false;

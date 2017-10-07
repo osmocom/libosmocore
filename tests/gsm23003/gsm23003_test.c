@@ -50,6 +50,7 @@ static struct {
 	{ "1234567\n123456", false },
 	{ "123456\t123456", false },
 	{ "123456\r123456", false },
+	{ NULL, false },
 };
 
 bool test_valid_imsi()
@@ -92,6 +93,7 @@ static struct {
 	{ "1234567\n123456", false },
 	{ "123456\t123456", false },
 	{ "123456\r123456", false },
+	{ NULL, false },
 };
 
 bool test_valid_msisdn()

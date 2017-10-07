@@ -19,6 +19,7 @@
 123456'
 17: expect=false result=false imsi='123456	123456'
 18: expect=false result=false imsi='123456123456'
+19: expect=false result=false imsi='(null)'
 ----- test_valid_msisdn
  0: expect=false result=false msisdn=''
  1: expect=false result=false msisdn=' '
@@ -40,3 +41,4 @@
 123456'
 17: expect=false result=false msisdn='123456	123456'
 18: expect=false result=false msisdn='123456123456'
+19: expect=false result=false msisdn='(null)'
