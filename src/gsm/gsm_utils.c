@@ -101,6 +101,9 @@
 #include <linux/random.h>
 #elif HAVE_DECL_SYS_GETRANDOM
 #include <sys/syscall.h>
+#ifndef GRND_NONBLOCK
+#define GRND_NONBLOCK 0x0001
+#endif
 #endif
 
 /* ETSI GSM 03.38 6.2.1 and 6.2.1.1 default alphabet
