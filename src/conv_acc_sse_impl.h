@@ -22,6 +22,12 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+/* Some distributions (notably Alpine Linux) for some strange reason
+ * don't have this #define */
+#ifndef __always_inline
+#define __always_inline         inline __attribute__((always_inline))
+#endif
+
 extern int sse41_supported;
 
 /* Octo-Viterbi butterfly
