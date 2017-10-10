@@ -277,6 +277,110 @@ static void test_msgb_resize_area()
 	osmo_set_panic_handler(NULL);
 }
 
+static void test_msgb_printf()
+{
+	struct msgb *msg;
+	struct msgb *msg_ref;
+	int rc;
+	int total_len;
+
+	msg = msgb_alloc(80, "data");
+
+	/* Add normal text: */
+	printf("Add normal text:\n");
+	rc = msgb_printf(msg, "|this is a test %i, %s, %16x|", 4711, "testme",
+			 0x4711);
+	total_len = msgb_length(msg);
+	printf("#1: rc=%i, total_len=%i, msg->data=%s\n", rc, total_len,
+	       msg->data);
+	OSMO_ASSERT(rc == 0);
+	OSMO_ASSERT(msgb_tailroom(msg) == 33);
+
+	/* Add normal text: */
+	rc = msgb_printf(msg, "|some more text|");
+	total_len = msgb_length(msg);
+	printf("#2: rc=%i, total_len=%i, msg->data=%s\n", rc, total_len,
+	       msg->data);
+	OSMO_ASSERT(rc == 0);
+	OSMO_ASSERT(msgb_tailroom(msg) == 17);
+
+	/* Add normal text which will not fit: */
+	rc = msgb_printf(msg, "|more %i %x %s|", 23, 0xfee,
+			 "text will not fit");
+	total_len = msgb_length(msg);
+	printf("#3: rc=%i, total_len=%i, msg->data=%s\n", rc, total_len,
+	       msg->data);
+	OSMO_ASSERT(rc == -EINVAL);
+
+	/* Check if we got the right amount of characters in the message buffer
+	 * until here, so that we can be sure that the following cornercase
+	 * tests yield plausible results */
+	OSMO_ASSERT(msgb_tailroom(msg) == 17);
+
+	/* Add normal text which just does not fit by one character, this should not
+	 * alter the message buffers tail pointer */
+	rc = msgb_printf(msg, "|more 123456 ABC|");
+	total_len = msgb_length(msg);
+	printf("#4: rc=%i, total_len=%i, msg->data=%s\n", rc, total_len,
+	       msg->data);
+	OSMO_ASSERT(rc == -EINVAL);
+
+	/* Make sure the tailroom, nor the contained string length did change */
+	OSMO_ASSERT(msgb_tailroom(msg) == 17);
+	OSMO_ASSERT(msgb_length(msg) == 63);
+
+	/* Add normal text which just fits */
+	rc = msgb_printf(msg, "|more 123456 AB|");
+	total_len = msgb_length(msg);
+	printf("#5: rc=%i, total_len=%i, msg->data=%s\n", rc, total_len,
+	       msg->data);
+	OSMO_ASSERT(rc == 0);
+
+	/* Make sure that the string in the bufer takes up all available Space.
+	 * Also make sure that the available tailroom has space for one byte,
+	 * which actually holds the string terminator */
+	OSMO_ASSERT(msgb_tailroom(msg) == 1);
+	OSMO_ASSERT(msgb_length(msg) == 79);
+
+	/* Try to add a nullstring to the already full buffer, this should
+	 * be ok, since we still have one byte tailroom */
+	rc = msgb_printf(msg, "");
+	total_len = msgb_length(msg);
+	printf("#6: rc=%i, total_len=%i, msg->data=%s\n", rc, total_len,
+	       msg->data);
+	OSMO_ASSERT(rc == 0);
+
+	/* Make sure that we still have the same conditions as before */
+	OSMO_ASSERT(msgb_tailroom(msg) == 1);
+	OSMO_ASSERT(msgb_length(msg) == 79);
+
+	msgb_free(msg);
+
+	/* Test behaviour when a completely full buffer is passed to
+	 * msgb_printf(). We should get rc == -EINVAL and the message
+	 * buffer must not be changed at all */
+	msg = msgb_alloc(15, "data");
+	msg_ref = msgb_alloc(msgb_tailroom(msg), "data");
+	memset(msg->data, 0x41, msgb_tailroom(msg));
+	memset(msg_ref->data, 0x41, msgb_tailroom(msg_ref));
+	msgb_put(msg, msgb_tailroom(msg));
+	msgb_put(msg_ref, msgb_tailroom(msg_ref));
+
+	printf("#7: before: %s", msgb_hexdump(msg));
+	rc = msgb_printf(msg, "ABCDEF");
+	printf(" after: rc=%i, %s", rc, msgb_hexdump(msg));
+	if (memcmp(msg->data, msg_ref->data, msgb_length(msg)) == 0)
+		printf(" ==> ok, no change\n");
+	else
+		printf(" ==> error, change detected\n");
+	OSMO_ASSERT(rc == -EINVAL);
+	OSMO_ASSERT(msgb_tailroom(msg) == 0);
+	OSMO_ASSERT(msgb_length(msg) == msgb_length(msg_ref));
+
+	msgb_free(msg);
+	msgb_free(msg_ref);
+}
+
 static struct log_info info = {};
 
 int main(int argc, char **argv)
@@ -287,6 +391,7 @@ int main(int argc, char **argv)
 	test_msgb_api_errors();
 	test_msgb_copy();
 	test_msgb_resize_area();
+	test_msgb_printf();
 
 	printf("Success.\n");
 

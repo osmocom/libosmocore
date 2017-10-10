@@ -55,6 +55,9 @@
 #include <string.h>
 #include <stdlib.h>
 #include <inttypes.h>
+#include <stdarg.h>
+#include <errno.h>
+
 
 #include <osmocom/core/msgb.h>
 //#include <openbsc/gsm_data.h>
@@ -374,6 +377,51 @@ const char *msgb_hexdump(const struct msgb *msg)
 	}
 
 	return buf;
+}
+
+
+/*! Print a string to the end of message buffer.
+ * \param[in] msg message buffer
+ * \returns 0 on success, -EINVAL on error
+ *
+ * The resulting string is printed to the msgb without a trailing nul
+ * character. A nul following the data tail may be written as an implementation
+ * detail, but a trailing nul is never part of the msgb data in terms of
+ * msgb_length().
+ *
+ * Note: the tailroom must always be one byte longer than the string to be
+ * written. The msgb is filled only up to tailroom=1. This is an implementation
+ * detail that allows leaving a nul character behind the valid data.
+ *
+ * In case of error, the msgb remains unchanged, though data may have been
+ * written to the (unused) memory after the tail pointer.
+ */
+int msgb_printf(struct msgb *msgb, const char *format, ...)
+{
+	va_list args;
+	int str_len;
+	int rc = 0;
+
+	OSMO_ASSERT(msgb);
+	OSMO_ASSERT(format);
+
+	/* Regardless of what we plan to add to the buffer, we must at least
+	 * be able to store a string terminator (nullstring) */
+	if (msgb_tailroom(msgb) < 1)
+		return -EINVAL;
+
+	va_start(args, format);
+
+	str_len =
+	    vsnprintf((char *)msgb->tail, msgb_tailroom(msgb), format, args);
+
+	if (str_len >= msgb_tailroom(msgb) || str_len < 0) {
+		rc = -EINVAL;
+	} else
+		msgb_put(msgb, str_len);
+
+	va_end(args);
+	return rc;
 }
 
 /*! @} */
