@@ -1,5 +1,5 @@
 /*! \file stat_item.c
- * utility routines for keeping conters about events and the event rates. */
+ * utility routines for keeping statistical values */
 /*
  * (C) 2015 by Sysmocom s.f.m.c. GmbH
  * (C) 2009-2010 by Harald Welte <laforge@gnumonks.org>
@@ -24,7 +24,31 @@
 
 /*! \addtogroup osmo_stat_item
  *  @{
- * \file stat_item.c */
+ *
+ *  This osmo_stat_item module adds instrumentation capabilities to
+ *  gather measurement and statistical values in a similar fashion to
+ *  what we have as \ref osmo_counter_group.
+ *
+ *  As opposed to counters, osmo_stat_item do not increment but consist
+ *  of a configurable-sized FIFO, which can store not only the current
+ *  (most recent) value, but also historic values.
+ *
+ *  The only supported value type is an int32_t.
+ *
+ *  Getting values from the osmo_stat_item does not modify its state to
+ *  allow for multiple independent back-ends retrieving values (e.g. VTY
+ *  and statd).
+ *
+ *  Each value stored in the FIFO of an osmo_stat_item has an associated
+ *  value_id.  The value_id is derived from an application-wide globally
+ *  incrementing counter, so (until the counter wraps) more recent
+ *  values will have higher values.
+ *
+ *  When a new value is set, the oldest value in the FIFO gets silently
+ *  overwritten.  Lost values are skipped when getting values from the
+ *  item.
+ *
+ */
 
 #include <stdint.h>
 #include <string.h>
@@ -35,12 +59,17 @@
 #include <osmocom/core/timer.h>
 #include <osmocom/core/stat_item.h>
 
+/*! global list of stat_item groups */
 static LLIST_HEAD(osmo_stat_item_groups);
+/*! counter for assigning globally unique value identifiers */
 static int32_t global_value_id = 0;
 
+/*! talloc context from which we allocate */
 static void *tall_stat_item_ctx;
 
-/*! Allocate a new group of counters according to description
+/*! Allocate a new group of counters according to description.
+ *  Allocate a group of stat items described in \a desc from talloc context \a ctx,
+ *  giving the new group the index \a idx.
  *  \param[in] ctx \ref talloc context
  *  \param[in] desc Statistics item group description
  *  \param[in] idx Index of new stat item group
@@ -112,13 +141,19 @@ struct osmo_stat_item_group *osmo_stat_item_group_alloc(void *ctx,
 	return group;
 }
 
-/*! Free the memory for the specified group of counters */
+/*! Free the memory for the specified group of stat items */
 void osmo_stat_item_group_free(struct osmo_stat_item_group *grp)
 {
 	llist_del(&grp->list);
 	talloc_free(grp);
 }
 
+/*! Set the a given stat_item to the given value.
+ *  This function adds a new value for the given stat_item at the end of
+ *  the FIFO.
+ *  \param[in] item The stat_item whose \a value we want to set
+ *  \param[in] value The numeric value we want to store at end of FIFO
+ */
 void osmo_stat_item_set(struct osmo_stat_item *item, int32_t value)
 {
 	item->last_offs += 1;
@@ -133,6 +168,22 @@ void osmo_stat_item_set(struct osmo_stat_item *item, int32_t value)
 	item->values[item->last_offs].id    = global_value_id;
 }
 
+/*! Retrieve the next value from the osmo_stat_item object.
+ * If a new value has been set, it is returned. The idx is used to decide
+ * which value to return.
+ * On success, *idx is updated to refer to the next unread value. If
+ * values have been missed due to FIFO overflow, *idx is incremented by
+ * (1 + num_lost).
+ * This way, the osmo_stat_item object can be kept stateless from the reader's
+ * perspective and therefore be used by several backends simultaneously.
+ *
+ * \param val	the osmo_stat_item object
+ * \param idx	identifies the next value to be read
+ * \param value	a pointer to store the value
+ * \returns  the increment of the index (0: no value has been read,
+ *           1: one value has been taken,
+ *           (1+n): n values have been skipped, one has been taken)
+ */
 int osmo_stat_item_get_next(const struct osmo_stat_item *item, int32_t *next_idx,
 	int32_t *value)
 {
@@ -170,7 +221,7 @@ int osmo_stat_item_get_next(const struct osmo_stat_item *item, int32_t *next_idx
 	return idx_delta;
 }
 
-/*! Skip all values of this item and update idx accordingly */
+/*! Skip/discard all values of this item and update \a idx accordingly */
 int osmo_stat_item_discard(const struct osmo_stat_item *item, int32_t *idx)
 {
 	int discarded = item->values[item->last_offs].id + 1 - *idx;
@@ -179,7 +230,7 @@ int osmo_stat_item_discard(const struct osmo_stat_item *item, int32_t *idx)
 	return discarded;
 }
 
-/*! Skip all values of all items and update idx accordingly */
+/*! Skip all values of all items and update \a idx accordingly */
 int osmo_stat_item_discard_all(int32_t *idx)
 {
 	int discarded = global_value_id + 1 - *idx;
@@ -188,7 +239,8 @@ int osmo_stat_item_discard_all(int32_t *idx)
 	return discarded;
 }
 
-/*! Initialize the stat item module */
+/*! Initialize the stat item module. Call this once from your program.
+ *  \param[in] tall_ctx Talloc context from which this module allocates */
 int osmo_stat_item_init(void *tall_ctx)
 {
 	tall_stat_item_ctx = tall_ctx;
@@ -196,7 +248,10 @@ int osmo_stat_item_init(void *tall_ctx)
 	return 0;
 }
 
-/*! Search for item group based on group name and index */
+/*! Search for item group based on group name and index
+ *  \param[in] name Name of stats_item_group we want to find
+ *  \param[in] idx Index of the group we want to find
+ *  \returns pointer to group, if found; NULL otherwise */
 struct osmo_stat_item_group *osmo_stat_item_get_group_by_name_idx(
 	const char *name, const unsigned int idx)
 {
@@ -213,7 +268,10 @@ struct osmo_stat_item_group *osmo_stat_item_get_group_by_name_idx(
 	return NULL;
 }
 
-/*! Search for item group based on group name */
+/*! Search for item based on group + item name
+ *  \param[in] statg group in which to search for the item
+ *  \param[in] name name of item to search within \a statg
+ *  \returns pointer to item, if found; NULL otherwise */
 const struct osmo_stat_item *osmo_stat_item_get_by_name(
 	const struct osmo_stat_item_group *statg, const char *name)
 {
@@ -233,6 +291,11 @@ const struct osmo_stat_item *osmo_stat_item_get_by_name(
 	return NULL;
 }
 
+/*! Iterate over all items in group, call user-supplied function on each
+ *  \param[in] statg stat_item group over whose items to iterate
+ *  \param[in] handle_item Call-back function, aborts if rc < 0
+ *  \param[in] data Private data handed through to \a handle_item
+ */
 int osmo_stat_item_for_each_item(struct osmo_stat_item_group *statg,
 	osmo_stat_item_handler_t handle_item, void *data)
 {
@@ -249,6 +312,10 @@ int osmo_stat_item_for_each_item(struct osmo_stat_item_group *statg,
 	return rc;
 }
 
+/*! Iterate over all stat_item groups in system, call user-supplied function on each
+ *  \param[in] handle_group Call-back function, aborts if rc < 0
+ *  \param[in] data Private data handed through to \a handle_group
+ */
 int osmo_stat_item_for_each_group(osmo_stat_item_group_handler_t handle_group, void *data)
 {
 	struct osmo_stat_item_group *statg;

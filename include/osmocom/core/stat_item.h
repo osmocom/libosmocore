@@ -13,32 +13,34 @@ struct osmo_stat_item_desc;
 #define OSMO_STAT_ITEM_NOVALUE_ID 0
 #define OSMO_STAT_ITEM_NO_UNIT NULL
 
+/*! Individual entry in value FIFO */
 struct osmo_stat_item_value {
-	int32_t id;
-	int32_t value;
+	int32_t id;		/*!< identifier of value */
+	int32_t value;		/*!< actual value */
 };
 
-/*! data we keep for each actual value */
+/*! data we keep for each actual item */
 struct osmo_stat_item {
+	/*! back-reference to the item description */
 	const struct osmo_stat_item_desc *desc;
 	/*! the index of the freshest value */
 	int32_t last_value_index;
-	/*! offset to the freshest value in the value fifo */
+	/*! offset to the freshest value in the value FIFO */
 	int16_t last_offs;
-	/*! value fifo */
+	/*! value FIFO */
 	struct osmo_stat_item_value values[0];
 };
 
-/*! statistics value description */
+/*! Statistics item description */
 struct osmo_stat_item_desc {
 	const char *name;	/*!< name of the item */
 	const char *description;/*!< description of the item */
 	const char *unit;	/*!< unit of a value */
-	unsigned int num_values;/*!< number of values to store */
-	int32_t default_value;
+	unsigned int num_values;/*!< number of values to store in FIFO */
+	int32_t default_value;	/*!< default value */
 };
 
-/*! description of a statistics value group */
+/*! Description of a statistics item group */
 struct osmo_stat_item_group_desc {
 	/*! The prefix to the name of all values in this group */
 	const char *group_name_prefix;
@@ -46,9 +48,9 @@ struct osmo_stat_item_group_desc {
 	const char *group_description;
 	/*! The class to which this group belongs */
 	int class_id;
-	/*! The number of values in this group */
+	/*! The number of values in this group (size of item_desc) */
 	const unsigned int num_items;
-	/*! Pointer to array of value names */
+	/*! Pointer to array of value names, length as per num_items */
 	const struct osmo_stat_item_desc *item_desc;
 };
 
@@ -87,31 +89,13 @@ struct osmo_stat_item_group *osmo_stat_item_get_group_by_name_idx(
 const struct osmo_stat_item *osmo_stat_item_get_by_name(
 	const struct osmo_stat_item_group *statg, const char *name);
 
-/*! Retrieve the next value from the osmo_stat_item object.
- * If a new value has been set, it is returned. The idx is used to decide
- * which value to return.
- * On success, *idx is updated to refer to the next unread value. If
- * values have been missed due to FIFO overflow, *idx is incremented by
- * (1 + num_lost).
- * This way, the osmo_stat_item object can be kept stateless from the reader's
- * perspective and therefore be used by several backends simultaneously.
- *
- * \param val	the osmo_stat_item object
- * \param idx	identifies the next value to be read
- * \param value	a pointer to store the value
- * \returns  the increment of the index (0: no value has been read,
- *           1: one value has been taken,
- *           (1+n): n values have been skipped, one has been taken)
- */
 int osmo_stat_item_get_next(const struct osmo_stat_item *item, int32_t *idx, int32_t *value);
 
 /*! Get the last (freshest) value */
 static int32_t osmo_stat_item_get_last(const struct osmo_stat_item *item);
 
-/*! Skip all values of the item and update idx accordingly */
 int osmo_stat_item_discard(const struct osmo_stat_item *item, int32_t *idx);
 
-/*! Skip all values of all items and update idx accordingly */
 int osmo_stat_item_discard_all(int32_t *idx);
 
 typedef int (*osmo_stat_item_handler_t)(
@@ -119,10 +103,6 @@ typedef int (*osmo_stat_item_handler_t)(
 
 typedef int (*osmo_stat_item_group_handler_t)(struct osmo_stat_item_group *, void *);
 
-/*! Iteate over all items
- *  \param[in] handle_item Call-back function, aborts if rc < 0
- *  \param[in] data Private data handed through to \a handle_item
- */
 int osmo_stat_item_for_each_item(struct osmo_stat_item_group *statg,
 	osmo_stat_item_handler_t handle_item, void *data);
 
