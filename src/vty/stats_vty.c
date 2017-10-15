@@ -35,7 +35,7 @@
 #include <osmocom/vty/misc.h>
 
 #include <osmocom/core/stats.h>
-#include <osmocom/core/statistics.h>
+#include <osmocom/core/counter.h>
 #include <osmocom/core/rate_ctr.h>
 
 #define CFG_STATS_STR "Configure stats sub-system\n"

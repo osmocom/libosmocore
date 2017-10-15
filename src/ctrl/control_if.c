@@ -50,7 +50,7 @@
 #include <osmocom/core/msgb.h>
 #include <osmocom/core/rate_ctr.h>
 #include <osmocom/core/select.h>
-#include <osmocom/core/statistics.h>
+#include <osmocom/core/counter.h>
 #include <osmocom/core/talloc.h>
 #include <osmocom/core/socket.h>
 

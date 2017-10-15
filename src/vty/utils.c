@@ -33,7 +33,7 @@
 #include <osmocom/core/rate_ctr.h>
 #include <osmocom/core/stat_item.h>
 #include <osmocom/core/utils.h>
-#include <osmocom/core/statistics.h>
+#include <osmocom/core/counter.h>
 
 #include <osmocom/vty/vty.h>
 

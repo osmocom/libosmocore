@@ -1,4 +1,4 @@
-/*! \file statistics.c
+/*! \file counter.c
  * utility routines for keeping some statistics. */
 /*
  * (C) 2009 by Harald Welte <laforge@gnumonks.org>
@@ -25,7 +25,7 @@
 
 #include <osmocom/core/linuxlist.h>
 #include <osmocom/core/talloc.h>
-#include <osmocom/core/statistics.h>
+#include <osmocom/core/counter.h>
 
 static LLIST_HEAD(counters);
 

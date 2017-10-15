@@ -12,6 +12,7 @@ nobase_include_HEADERS = \
                        osmocom/core/bitcomp.h \
                        osmocom/core/byteswap.h \
                        osmocom/core/conv.h \
+                       osmocom/core/counter.h \
                        osmocom/core/crc16.h \
                        osmocom/core/crc16gen.h \
                        osmocom/core/crc32gen.h \
