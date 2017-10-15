@@ -3,7 +3,7 @@
 /*! \file counter.h
  *  Common routines regarding counter handling */
 
-/*! structure representing a single counter */
+/*! Structure representing a single counter */
 struct osmo_counter {
 	struct llist_head list;		/*!< internal list head */
 	const char *name;		/*!< human-readable name */
@@ -12,13 +12,15 @@ struct osmo_counter {
 	unsigned long previous;		/*!< previous value */
 };
 
-/*! Decrement counter */
+/*! Decrement given counter by one
+ *  \param[in] ctr Counter that's to be decremented */
 static inline void osmo_counter_dec(struct osmo_counter *ctr)
 {
 	ctr->value--;
 }
 
-/*! Increment counter */
+/*! Increment counter by one.
+ *  \param[in] Counter that's to be incremented */
 static inline void osmo_counter_inc(struct osmo_counter *ctr)
 {
 	ctr->value++;
@@ -36,25 +38,12 @@ static inline void osmo_counter_reset(struct osmo_counter *ctr)
 	ctr->value = 0;
 }
 
-/*! Allocate a new counter */
 struct osmo_counter *osmo_counter_alloc(const char *name);
 
-/*! Free the specified counter
- *  \param[in] ctr Counter
- */
 void osmo_counter_free(struct osmo_counter *ctr);
 
-/*! Iterate over all counters
- *  \param[in] handle_counter Call-back function, aborts if rc < 0
- *  \param[in] data Private dtata handed through to \a handle_counter
- */
 int osmo_counters_for_each(int (*handle_counter)(struct osmo_counter *, void *), void *data);
 
-/*! Resolve counter by human-readable name
- *  \param[in] name human-readable name of counter
- *  \returns pointer to counter (\ref osmo_counter) or NULL otherwise
- */
 struct osmo_counter *osmo_counter_get_by_name(const char *name);
 
-/*! Return the counter difference since the last call to this function */
 int osmo_counter_difference(struct osmo_counter *ctr);
