@@ -1,4 +1,3 @@
-/*! \file stats_statsd.c */
 /*
  * (C) 2015 by Sysmocom s.f.m.c. GmbH
  *
@@ -21,6 +20,10 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  */
+
+/*! \addtogroup stats
+ *  @{
+ *  \file stats_statsd.c */
 
 #include "config.h"
 #if !defined(EMBEDDED)
@@ -46,6 +49,10 @@ static int osmo_stats_reporter_statsd_send_item(struct osmo_stats_reporter *srep
 	const struct osmo_stat_item_group *statg,
 	const struct osmo_stat_item_desc *desc, int64_t value);
 
+/*! Create a stats_reporter reporting to statsd.  This creates a stats_reporter
+ *  instance which reports the related statistics data to statsd.
+ *  \param[in] name Name of the to-be-created stats_reporter
+ *  \returns stats_reporter on success; NULL on error */
 struct osmo_stats_reporter *osmo_stats_reporter_create_statsd(const char *name)
 {
 	struct osmo_stats_reporter *srep;
@@ -172,3 +179,5 @@ static int osmo_stats_reporter_statsd_send_item(struct osmo_stats_reporter *srep
 		desc->name, value, unit);
 }
 #endif /* !EMBEDDED */
+
+/* @} */

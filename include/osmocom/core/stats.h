@@ -1,4 +1,3 @@
-/*! \file stats.h */
 /*
  * (C) 2015 by Sysmocom s.f.m.c. GmbH
  *
@@ -21,6 +20,10 @@
  */
 #pragma once
 
+/*! \defgroup stats Statistics reporting
+ *  @{
+ *  \file stats.h */
+
 /* a bit of a crude way to disable building/using this on (bare iron)
  * embedded systems.  We cannot use the autoconf-defined HAVE_... macros
  * here, as that only works at library compile time, not at application
@@ -40,42 +43,50 @@ struct osmo_stat_item_desc;
 struct rate_ctr_group;
 struct rate_ctr_desc;
 
+/*! Statistics Class definitions */
 enum osmo_stats_class {
-	OSMO_STATS_CLASS_UNKNOWN,
-	OSMO_STATS_CLASS_GLOBAL,
-	OSMO_STATS_CLASS_PEER,
-	OSMO_STATS_CLASS_SUBSCRIBER,
+	OSMO_STATS_CLASS_UNKNOWN,	/*!< unknown class */
+	OSMO_STATS_CLASS_GLOBAL,	/*!< global counter/stat_item */
+	OSMO_STATS_CLASS_PEER,		/*!< peer in a communications link */
+	OSMO_STATS_CLASS_SUBSCRIBER,	/*!< subscriber */
 };
 
+/*! Statistics Reporter Type */
 enum osmo_stats_reporter_type {
-	OSMO_STATS_REPORTER_LOG,
-	OSMO_STATS_REPORTER_STATSD,
+	OSMO_STATS_REPORTER_LOG,	/*!< libosmocore logging */
+	OSMO_STATS_REPORTER_STATSD,	/*!< statsd backend */
 };
 
+/*! One statistics reporter instance. */
 struct osmo_stats_reporter {
+	/*! Type of the reporter (log, statsd) */
 	enum osmo_stats_reporter_type type;
+	/*! Human-readable name of this reporter */
 	char *name;
 
 	unsigned int have_net_config : 1;
 
 	/* config */
-	int enabled;
-	char *name_prefix;
-	char *dest_addr_str;
-	char *bind_addr_str;
-	int dest_port;
-	int mtu;
+	int enabled;		/*!< is this reporter enabled */
+	char *name_prefix;	/*!< prefix for counter names */
+	char *dest_addr_str;	/*!< destination IP address */
+	char *bind_addr_str;	/*!< local bind IP address */
+	int dest_port;		/*!< destination (UDP) port */
+	int mtu;		/*!< Maximum Transmission Unit */
+
+	/*! Maximum class/index to report. FIXME: More details! */
 	enum osmo_stats_class max_class;
 
 	/* state */
-	int running;
-	struct sockaddr dest_addr;
-	int dest_addr_len;
-	struct sockaddr bind_addr;
-	int bind_addr_len;
-	int fd;
-	struct msgb *buffer;
-	int agg_enabled;
+
+	int running;			/*!< is this reporter running */
+	struct sockaddr dest_addr;	/*!< destination address of socket */
+	int dest_addr_len;		/*!< length of \a dest_addr in bytes */
+	struct sockaddr bind_addr;	/*!< local bind address of socket */
+	int bind_addr_len;		/*!< length of \a bind_addr in bytes */
+	int fd;				/*!< file descriptor of socket */
+	struct msgb *buffer;		/*!< message buffer for log output */
+	int agg_enabled;		/*!< is aggregation enabled? */
 	int force_single_flush;
 
 	struct llist_head list;
@@ -131,3 +142,4 @@ int osmo_stats_reporter_udp_open(struct osmo_stats_reporter *srep);
 int osmo_stats_reporter_udp_close(struct osmo_stats_reporter *srep);
 
 #endif /* unix */
+/*! @} */

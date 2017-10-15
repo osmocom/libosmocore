@@ -22,6 +22,46 @@
  *
  */
 
+/*! \addtogroup stats
+ *  @{
+ *
+ * This module implements periodic reporting of statistics / counters.
+ * It supports the notion of multiple \ref osmo_stats_reporter objects
+ * which independently of each other can report statistics at different
+ * configurable intervals to different destinations.
+ *
+ * In order to use this facility, you have to call \ref
+ * osmo_stats_init() once at application start-up and then create one or
+ * more \ref osmo_stats_reporter, either using the direct API functions
+ * or by using the optional VTY bindings:
+ *
+ * - reporting to any of the libosmocore log targets
+ *   \ref osmo_stats_reporter_create_log() creates a new stats_reporter
+ *   which reports to the libosmcoore \ref logging subsystem.
+ *
+ * - reporting to statsd (a front-end proxy for the Graphite/Carbon
+ *   metrics server
+ *   \ref osmo_stats_reporter_create_statsd() creates a new stats_reporter
+ *   which reports via UDP to statsd.
+ *
+ * You can either use the above API functions directly to create \ref
+ * osmo_stats_reporter instances, or you can use the VTY support
+ * contained in libosmovty.  See the "stats" configuration node
+ * installed by osmo_stats_vty_Add_cmds().
+ *
+ * An \ref osmo_stats_reporter reports statistics on all of the following
+ * libosmocore internal counter/statistics objects:
+ * - \ref osmo_counter
+ * - \ref rate_ctr
+ * - \ref osmo_stat_item
+ *
+ * You do not need to do anything in particular to expose a given
+ * counter or stat_item, they are all exported automatically via any
+ * \ref osmo_stats_reporter.  If you have multiple \ref
+ * osmo_stats_reporter, they will each report all counters/stat_items.
+ *
+ * \file stats.c */
+
 #include "config.h"
 #if !defined(EMBEDDED)
 
@@ -137,6 +177,8 @@ struct osmo_stats_reporter *osmo_stats_reporter_alloc(enum osmo_stats_reporter_t
 	return srep;
 }
 
+/*! Destroy a given stats_reporter. Takes care of first disabling it.
+ *  \param[in] srep stats_reporter that shall be disabled + destroyed */
 void osmo_stats_reporter_free(struct osmo_stats_reporter *srep)
 {
 	osmo_stats_reporter_disable(srep);
@@ -144,6 +186,8 @@ void osmo_stats_reporter_free(struct osmo_stats_reporter *srep)
 	talloc_free(srep);
 }
 
+/*! Initilize the stats reporting module; call this once in your program
+ *  \param[in] ctx Talloc context from which stats related memory is allocated */
 void osmo_stats_init(void *ctx)
 {
 	osmo_stats_ctx = ctx;
@@ -153,6 +197,10 @@ void osmo_stats_init(void *ctx)
 	start_timer();
 }
 
+/*! Find a stats_reporter of given \a type and \a name.
+ *  \param[in] type Type of stats_reporter to find
+ *  \param[in] name Name of stats_reporter to find
+ *  \returns stats_reporter matching \a type and \a name; NULL otherwise */
 struct osmo_stats_reporter *osmo_stats_reporter_find(enum osmo_stats_reporter_type type,
 	const char *name)
 {
@@ -172,6 +220,10 @@ struct osmo_stats_reporter *osmo_stats_reporter_find(enum osmo_stats_reporter_ty
 
 #ifdef HAVE_SYS_SOCKET_H
 
+/*! Set the remote (IP) address of a given stats_reporter.
+ *  \param[in] srep stats_reporter whose remote address is to be set
+ *  \param[in] addr String representation of remote IPv4 address
+ *  \returns 0 on success; negative on error */
 int osmo_stats_reporter_set_remote_addr(struct osmo_stats_reporter *srep, const char *addr)
 {
 	int rc;
@@ -197,6 +249,10 @@ int osmo_stats_reporter_set_remote_addr(struct osmo_stats_reporter *srep, const 
 	return update_srep_config(srep);
 }
 
+/*! Set the remote (UDP) port of a given stats_reporter
+ *  \param[in] srep stats_reporter whose remote address is to be set
+ *  \param[in] port UDP port of remote statsd to which we report
+ *  \returns 0 on success; negative on error */
 int osmo_stats_reporter_set_remote_port(struct osmo_stats_reporter *srep, int port)
 {
 	struct sockaddr_in *sock_addr = (struct sockaddr_in *)&srep->dest_addr;
@@ -210,6 +266,10 @@ int osmo_stats_reporter_set_remote_port(struct osmo_stats_reporter *srep, int po
 	return update_srep_config(srep);
 }
 
+/*! Set the local (IP) address of a given stats_reporter.
+ *  \param[in] srep stats_reporter whose remote address is to be set
+ *  \param[in] addr String representation of local IP address
+ *  \returns 0 on success; negative on error */
 int osmo_stats_reporter_set_local_addr(struct osmo_stats_reporter *srep, const char *addr)
 {
 	int rc;
@@ -237,6 +297,10 @@ int osmo_stats_reporter_set_local_addr(struct osmo_stats_reporter *srep, const c
 	return update_srep_config(srep);
 }
 
+/*! Set the maximum transmission unit of a given stats_reporter.
+ *  \param[in] srep stats_reporter whose remote address is to be set
+ *  \param[in] mtu Maximum Transmission Unit of \a srep
+ *  \returns 0 on success; negative on error */
 int osmo_stats_reporter_set_mtu(struct osmo_stats_reporter *srep, int mtu)
 {
 	if (!srep->have_net_config)
@@ -262,6 +326,10 @@ int osmo_stats_reporter_set_max_class(struct osmo_stats_reporter *srep,
 	return 0;
 }
 
+/*! Set the reporting interval of a given stats_reporter (in seconds).
+ *  \param[in] srep stats_reporter whose remote address is to be set
+ *  \param[in] interval Reporting interval in seconds
+ *  \returns 0 on success; negative on error */
 int osmo_stats_set_interval(int interval)
 {
 	if (interval <= 0)
@@ -274,6 +342,10 @@ int osmo_stats_set_interval(int interval)
 	return 0;
 }
 
+/*! Set the name prefix of a given stats_reporter.
+ *  \param[in] srep stats_reporter whose name prefix is to be set
+ *  \param[in] prefix NAme perfix to pre-pend for any reported value
+ *  \returns 0 on success; negative on error */
 int osmo_stats_reporter_set_name_prefix(struct osmo_stats_reporter *srep, const char *prefix)
 {
 	talloc_free(srep->name_prefix);
@@ -283,6 +355,10 @@ int osmo_stats_reporter_set_name_prefix(struct osmo_stats_reporter *srep, const 
 	return update_srep_config(srep);
 }
 
+
+/*! Enable the given stats_reporter.
+ *  \param[in] srep stats_reporter who is to be enabled
+ *  \returns 0 on success; negative on error */
 int osmo_stats_reporter_enable(struct osmo_stats_reporter *srep)
 {
 	srep->enabled = 1;
@@ -290,6 +366,9 @@ int osmo_stats_reporter_enable(struct osmo_stats_reporter *srep)
 	return update_srep_config(srep);
 }
 
+/*! Disable the given stats_reporter.
+ *  \param[in] srep stats_reporter who is to be disabled
+ *  \returns 0 on success; negative on error */
 int osmo_stats_reporter_disable(struct osmo_stats_reporter *srep)
 {
 	srep->enabled = 0;
@@ -301,6 +380,9 @@ int osmo_stats_reporter_disable(struct osmo_stats_reporter *srep)
 
 #ifdef HAVE_SYS_SOCKET_H
 
+/*! Open the UDP socket for given stats_reporter.
+ *  \param[in] srep stats_reporter whose UDP socket is to be opened
+ *  ]returns 0 on success; negative otherwise */
 int osmo_stats_reporter_udp_open(struct osmo_stats_reporter *srep)
 {
 	int sock;
@@ -346,6 +428,9 @@ failed:
 	return rc;
 }
 
+/*! Closee the UDP socket for given stats_reporter.
+ *  \param[in] srep stats_reporter whose UDP socket is to be closed
+ *  ]returns 0 on success; negative otherwise */
 int osmo_stats_reporter_udp_close(struct osmo_stats_reporter *srep)
 {
 	int rc;
@@ -361,6 +446,11 @@ int osmo_stats_reporter_udp_close(struct osmo_stats_reporter *srep)
 	return rc == -1 ? -errno : 0;
 }
 
+/*! Send given date to given stats_reporter.
+ *  \param[in] srep stats_reporter whose UDP socket is to be opened
+ *  \param[in] data string data to be sent
+ *  \param[in] data_len Length of \a data in bytes
+ *  \returns number of bytes on success; negative otherwise */
 int osmo_stats_reporter_send(struct osmo_stats_reporter *srep, const char *data,
 	int data_len)
 {
@@ -379,6 +469,9 @@ int osmo_stats_reporter_send(struct osmo_stats_reporter *srep, const char *data,
 	return rc;
 }
 
+/*! Send current accumulated buffer to given stats_reporter.
+ *  \param[in] srep stats_reporter whose UDP socket is to be opened
+ *  \returns number of bytes on success; negative otherwise */
 int osmo_stats_reporter_send_buffer(struct osmo_stats_reporter *srep)
 {
 	int rc;
@@ -397,6 +490,13 @@ int osmo_stats_reporter_send_buffer(struct osmo_stats_reporter *srep)
 
 /*** log reporter ***/
 
+/*! Create a stats_reporter that logs via libosmocore logging.
+ *  A stats_reporter created via this function will simply print the statistics
+ *  via the libosmocore logging framework, using DLSTATS subsystem and LOGL_INFO
+ *  priority.  The configuration of the libosmocore log targets define where this
+ *  information will end up (ignored, text file, stderr, syslog, ...).
+ *  \param[in] name Name of the to-be-created stats_reporter
+ *  \returns stats_reporter on success; NULL on error */
 struct osmo_stats_reporter *osmo_stats_reporter_create_log(const char *name)
 {
 	struct osmo_stats_reporter *srep;
@@ -626,3 +726,5 @@ int osmo_stats_report()
 }
 
 #endif /* !EMBEDDED */
+
+/*! @} */
