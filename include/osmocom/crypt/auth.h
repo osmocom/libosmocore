@@ -1,6 +1,6 @@
 #pragma once
 
-/*! \addtogroup auth
+/*! \defgroup auth GSM/GPRS/3G Authentication
  *  @{
  * \file auth.h */
 
