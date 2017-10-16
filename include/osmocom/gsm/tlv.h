@@ -7,7 +7,7 @@
 #include <osmocom/core/bit16gen.h>
 #include <osmocom/core/bit32gen.h>
 
-/*! \defgroup tlv GSM L3 compatible TLV parser
+/*! \defgroup tlv TLV parser
  *  @{
  * \file tlv.h */
 
