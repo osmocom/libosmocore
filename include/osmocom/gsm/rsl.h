@@ -5,7 +5,7 @@
 #include <osmocom/core/msgb.h>
 #include <osmocom/gsm/protocol/gsm_08_58.h>
 
-/*! \defgroup rsl RSL
+/*! \defgroup rsl A-bis RSL
  *  @{
  * \file rsl.h */
 
