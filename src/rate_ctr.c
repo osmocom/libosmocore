@@ -22,6 +22,37 @@
  *  @{
  *  Counters about events and their event rates.
  *
+ *  As \ref osmo_counter and \ref osmo_stat_item are concerned only with
+ *  a single given value that may be increased/decreased, or the difference
+ *  to one given previous value, this module adds some support for keeping
+ *  long term information about a given event rate.
+ *
+ *  A \ref rate_ctr keeps information on the amount of events per second,
+ *  per minute, per hour and per day.
+ *
+ *  \ref rate_ctr come in groups: An application describes a group of counters
+ *  with their names and identities once in a (typically const) \ref
+ *  rate_ctr_group_desc.
+ *
+ *  As objects (such as e.g. a subscriber or a PDP context) are
+ *  allocated dynamically at runtime, the application calls \ref
+ *  rate_ctr_group_alloc with a refernce to the \ref
+ *  rate_ctr_group_desc, which causes the library to allocate one set of
+ *  \ref rate_ctr: One for each in the group.
+ *
+ *  The application then uses functions like \ref rate_ctr_add or \ref
+ *  rate_ctr_inc to increment the value as certain events (e.g. location
+ *  update) happens.
+ *
+ *  The library internally keeps a timer once per second which iterates
+ *  over all registered counters and which updates the per-second,
+ *  per-minute, per-hour and per-day averages based on the current
+ *  value.
+ *
+ *  The counters can be reported using \ref stats or by VTY
+ *  introspection, as well as by any application-specific code accessing
+ *  the \ref rate_ctr.intv array directly.
+ *
  * \file rate_ctr.c */
 
 #include <stdint.h>
@@ -140,7 +171,9 @@ static void rate_ctr_timer_cb(void *data)
 	osmo_timer_schedule(&rate_ctr_timer, 1, 0);
 }
 
-/*! Initialize the counter module */
+/*! Initialize the counter module. Call this once from your application.
+ *  \param[in] tall_ctx Talloc context from which rate_ctr_group will be allocated
+ *  \returns 0 on success; negative on error */
 int rate_ctr_init(void *tall_ctx)
 {
 	tall_rate_ctr_ctx = tall_ctx;
@@ -173,7 +206,7 @@ struct rate_ctr_group *rate_ctr_get_group_by_name_idx(const char *name, const un
 /*! Search for counter based on group + name
  *  \param[in] ctrg pointer to \ref rate_ctr_group
  *  \param[in] name name of counter inside group
- *  \returns \ref rate_ctr or NULL in caes of error
+ *  \returns \ref rate_ctr or NULL in case of error
  */
 const struct rate_ctr *rate_ctr_get_by_name(const struct rate_ctr_group *ctrg, const char *name)
 {
