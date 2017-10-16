@@ -397,5 +397,5 @@ static inline unsigned int llist_count(struct llist_head *head)
 }
 
 /*!
- *  }@
+ *  @}
  */

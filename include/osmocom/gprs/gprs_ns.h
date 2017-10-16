@@ -218,4 +218,4 @@ struct ns_signal_data {
 
 void gprs_ns_set_log_ss(int ss);
 
-/*! }@ */
+/*! @} */
