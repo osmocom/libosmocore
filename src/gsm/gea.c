@@ -1,5 +1,3 @@
-/*! \file gea.c
- * Implementation of GEA3 and GEA4. */
 /*
  * Copyright (C) 2016 by Sysmocom s.f.m.c. GmbH
  *
@@ -28,9 +26,10 @@
 #include <stdint.h>
 #include <string.h>
 
-/*! \addtogroup crypto
+/*! \addtogroup gea
  *  @{
- * \file gsm/gea.c */
+ *  Implementation of GPRS Ciphers GEA3 and GEA4.
+ * \file gea.c */
 
 /*! Performs the GEA4 algorithm as in 3GPP TS 55.226 V9.0.0
  *  \param[in,out] out Buffer for gamma for encrypted/decrypted

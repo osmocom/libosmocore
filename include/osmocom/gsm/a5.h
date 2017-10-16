@@ -1,5 +1,3 @@
-/*! \file gsm/a5.h
- *  Osmocom GSM A5 ciphering algorithm header. */
 /*
  * Copyright (C) 2011  Sylvain Munaut <tnt@246tNt.com>
  *

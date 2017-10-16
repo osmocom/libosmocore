@@ -1,5 +1,8 @@
-/*! \file gea.h
- * GEA3 header.
+/*! \defgroup gea GPRS GEA3/GEA4 ciphering algorithm
+ *  @{
+ *  \file gea.h
+ *
+ * GEA3/GEA4 header.
  *
  * See gea.c for details
  */
@@ -15,3 +18,5 @@ int gea3(uint8_t *out, uint16_t len, uint8_t *kc, uint32_t iv,
 
 int gea4(uint8_t *out, uint16_t len, uint8_t *kc, uint32_t iv,
 	 enum gprs_cipher_direction direct);
+
+/*! @} */
