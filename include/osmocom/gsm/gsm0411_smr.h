@@ -1,4 +1,6 @@
-/*! \file gsm0411_smr.h */
+/*! \addtogroup sms
+ *  @{
+ * \file gsm0411_smr.h */
 
 #pragma once
 
@@ -42,3 +44,5 @@ int gsm411_smr_send(struct gsm411_smr_inst *inst, int msg_type,
 /* message from lower layer */
 int gsm411_smr_recv(struct gsm411_smr_inst *inst, int msg_type,
 	struct msgb *msg);
+
+/*! @} */

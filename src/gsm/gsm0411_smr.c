@@ -1,5 +1,4 @@
-/*! \file gsm0411_smr.c
- * Point-to-Point (PP) Short Message Service (SMS).
+/* Point-to-Point (PP) Short Message Service (SMS).
  * Support on Mobile Radio Interface
  * 3GPP TS 04.11 version 7.1.0 Release 1998 / ETSI TS 100 942 V7.1.0 */
 /*
@@ -65,6 +64,7 @@
 
 /*! \addtogroup sms
  *  @{
+ *  \file gsm0411_smr.c
  */
 
 static void rp_timer_expired(void *data);

@@ -1,4 +1,3 @@
-/*! \file gsm0341.c */
 /*
  * (C) 2014 by Harald Welte <laforge@gnumonks.org>
  * All Rights Reserved
@@ -30,6 +29,7 @@
 
 /*! \addtogroup sms
  *  @{
+ *  \file gsm0341.c
  */
 
 /*! Encode a 3GPP TS 03.41 SMS-CB message
