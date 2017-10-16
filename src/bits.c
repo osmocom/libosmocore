@@ -28,6 +28,11 @@
  *  @{
  *  Osmocom bit level support code.
  *
+ *  This module implements the notion of different bit-fields, such as
+ *  - unpacked bits (\ref ubit_t), i.e. 1 bit per byte
+ *  - packed bits (\ref pbit_t), i.e. 8 bits per byte
+ *  - soft bits (\ref sbit_t), 1 bit per byte from -127 to 127
+ *
  * \file bits.c */
 
 /*! convert unpacked bits to packed bits, return length in bytes

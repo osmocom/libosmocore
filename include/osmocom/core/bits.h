@@ -1,9 +1,6 @@
 /*! \file bits.h
  *  Osmocom bit level support code.
  *
- *  NOTE on the endianess of pbit_t:
- *  Bits in a pbit_t are ordered MSB first, i.e. 0x80 is the first bit.
- *  Bit i in a pbit_t array is array[i/8] & (1<<(7-i%8))
  */
 
 #pragma once
@@ -19,9 +16,18 @@
  *  @{
  * \file bits.h */
 
-typedef int8_t  sbit_t;		/*!< soft bit (-127...127) */
-typedef uint8_t ubit_t;		/*!< unpacked bit (0 or 1) */
-typedef uint8_t pbit_t;		/*!< packed bis (8 bits in a byte) */
+/*! soft bit with value (-127...127), as commonly used in
+ * communications receivers such as [viterbi] decoders */
+typedef int8_t  sbit_t;
+
+/*! unpacked bit (0 or 1): 1 bit per byte */
+typedef uint8_t ubit_t;
+
+/*! packed bits (8 bits in a byte).
+ *  NOTE on the endian-ness of \ref pbit_t:
+ *  - Bits in a \ref pbit_t are ordered MSB first, i.e. 0x80 is the first bit.
+ *  - Bit i in a \ref pbit_t array is array[i/8] & (1<<(7-i%8)) */
+typedef uint8_t pbit_t;
 
 /*! determine how many bytes we would need for \a num_bits packed bits
  *  \param[in] num_bits Number of packed bits
@@ -95,16 +101,12 @@ enum osmo_br_mode {
 	OSMO_BR_WORD_SWAP	= 16,
 };
 
-/*! generic bit reversal function */
 uint32_t osmo_bit_reversal(uint32_t x, enum osmo_br_mode k);
 
-/* reverse the bits within each byte of a 32bit word */
 uint32_t osmo_revbytebits_32(uint32_t x);
 
-/* reverse the bits within a byte */
 uint32_t osmo_revbytebits_8(uint8_t x);
 
-/* reverse the bits of each byte in a given buffer */
 void osmo_revbytebits_buf(uint8_t *buf, int len);
 
 /*! left circular shift
