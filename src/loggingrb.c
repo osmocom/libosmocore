@@ -20,7 +20,7 @@
  *
  */
 
-/*! \addtogroup logging
+/*! \addtogroup loggingrb
  *  @{
  * \file loggingrb.c */
 
