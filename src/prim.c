@@ -1,4 +1,6 @@
-/*! \file prim.c */
+/*! \addtogroup prim
+ *  @{
+ *  \file prim.c */
 
 #include <osmocom/core/utils.h>
 #include <osmocom/core/prim.h>
@@ -30,3 +32,5 @@ uint32_t osmo_event_for_prim(const struct osmo_prim_hdr *oph,
 	}
 	return OSMO_NO_EVENT;
 }
+
+/*! @} */
