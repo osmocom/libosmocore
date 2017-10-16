@@ -235,6 +235,9 @@ char *osmo_ubit_dump(const uint8_t *bits, unsigned int len)
  *
  * This function will print a sequence of bytes as hexadecimal numbers,
  * adding one space character between each byte (e.g. "1a ef d9")
+ *
+ * The maximum size of the output buffer is 4096 bytes, i.e. the maximum
+ * number of input bytes that can be printed in one call is 1365!
  */
 char *osmo_hexdump(const unsigned char *buf, int len)
 {
@@ -248,6 +251,9 @@ char *osmo_hexdump(const unsigned char *buf, int len)
  *
  * This function will print a sequence of bytes as hexadecimal numbers,
  * without any space character between each byte (e.g. "1aefd9")
+ *
+ * The maximum size of the output buffer is 4096 bytes, i.e. the maximum
+ * number of input bytes that can be printed in one call is 2048!
  */
 char *osmo_hexdump_nospc(const unsigned char *buf, int len)
 {
