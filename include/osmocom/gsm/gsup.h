@@ -1,5 +1,20 @@
-/*! \file gsup.h
- * Osmocom Generic Subscriber Update Protocol message encoder/decoder. */
+/*! \defgroup gsup Generic Subscriber Update Protocol
+ *  @{
+ *
+ *  The Generic Subscriber Update Protocol (GSUP) is an Osmocom-specific
+ *  non-standard protocol replacing MAP as the protocol between
+ *  MSC/VLR/SGSN and HLR in a 3GPP cellular communications network.
+ *
+ *  It was designed around the same transactions and architecture as the
+ *  MAP messages/operations, but without the complexity of TCAP and MAP,
+ *  and without the need for ASN.1 encoding.
+ *
+ *  The purpose is to keep protocol complexity out of OsmoSGSN and
+ *  OsmoMSC, while providing a clean path to an external GSUP to MAP
+ *  translator.
+ *
+ *  \file gsup.h
+ *  Osmocom Generic Subscriber Update Protocol message encoder/decoder. */
 /*
  * (C) 2014 by sysmocom s.f.m.c. GmbH, Author: Jacob Erlbeck
  * (C) 2016 by Harald Welte <laforge@gnumonks.org>
@@ -163,3 +178,5 @@ struct osmo_gsup_message {
 int osmo_gsup_decode(const uint8_t *data, size_t data_len,
 		     struct osmo_gsup_message *gsup_msg);
 void osmo_gsup_encode(struct msgb *msg, const struct osmo_gsup_message *gsup_msg);
+
+/*! @} */

@@ -1,5 +1,3 @@
-/*! \file gsup.c
- * Osmocom Generic Subscriber Update Protocol message encoder/decoder. */
 /*
  * (C) 2014 by sysmocom s.f.m.c. GmbH
  * (C) 2015 by Holger Hans Peter Freyther
@@ -33,6 +31,7 @@
 
 /*! \addtogroup gsup
  *  @{
+ *  \file gsup.c
  *  Osmocom Generic Subscriber Update Protocol
  */
 
