@@ -698,14 +698,20 @@ struct ctrl_handle *ctrl_interface_setup(void *data, uint16_t port,
 static int ctrl_initialized = 0;
 
 /* global ctrl initialization */
-static int ctrl_init(void)
+static int ctrl_init(unsigned int node_count)
 {
 	int ret;
 
-	if (ctrl_initialized)
-		return 0;
+	if (!node_count)
+		node_count = _LAST_CTRL_NODE;
+	OSMO_ASSERT(node_count >= _LAST_CTRL_NODE);
 
-	ctrl_node_vec = vector_init(_LAST_CTRL_NODE);
+	if (ctrl_initialized) {
+		OSMO_ASSERT(ctrl_initialized == node_count);
+		return 0;
+	}
+
+	ctrl_node_vec = vector_init(node_count);
 	if (!ctrl_node_vec)
 		goto err;
 
@@ -720,7 +726,7 @@ static int ctrl_init(void)
 	if (ret)
 		goto err_vec;
 
-	ctrl_initialized = 1;
+	ctrl_initialized = node_count;
 	return 0;
 
 err_vec:
@@ -730,18 +736,24 @@ err:
 	return -1;
 }
 
-/*! Allocate a CTRL interface handle
- *  \param[in] ctx Tallo callocation context to be used
+/*! Allocate a CTRL interface handle.
+ *  \param[in] ctx Talloc allocation context to be used
  *  \param[in] data Pointer which will be made available to each
                set_..() get_..() verify_..() control command function
  *  \param[in] lookup Lookup function pointer, can be NULL
+ *  \param[in] node_count Number of CTRL nodes to allocate, 0 for default.
  *  \returns ctrl_handle pointer or NULL in case of errors
+ *
+ * Please see ctrl_interface_setup_dynip2() for a detailed description of \a
+ * node_count semantics.
  */
-struct ctrl_handle *ctrl_handle_alloc(void *ctx, void *data, ctrl_cmd_lookup lookup)
+struct ctrl_handle *ctrl_handle_alloc2(void *ctx, void *data,
+				       ctrl_cmd_lookup lookup,
+				       unsigned int node_count)
 {
 	struct ctrl_handle *ctrl;
 
-	ctrl_init();
+	ctrl_init(node_count);
 
 	ctrl = talloc_zero(ctx, struct ctrl_handle);
 	if (!ctrl)
@@ -755,23 +767,47 @@ struct ctrl_handle *ctrl_handle_alloc(void *ctx, void *data, ctrl_cmd_lookup loo
 	return ctrl;
 }
 
-/*! Setup CTRL interface on a given address
+/*! Allocate a CTRL interface handle.
+ *  \param[in] ctx Talloc allocation context to be used
+ *  \param[in] data Pointer which will be made available to each
+               set_..() get_..() verify_..() control command function
+ *  \param[in] lookup Lookup function pointer, can be NULL
+ *  \returns ctrl_handle pointer or NULL in case of errors
+ */
+struct ctrl_handle *ctrl_handle_alloc(void *ctx, void *data, ctrl_cmd_lookup lookup)
+{
+	return ctrl_handle_alloc2(ctx, data, lookup, 0);
+}
+
+/*! Setup CTRL interface on a given address.
  *  \param[in] data Pointer which will be made available to each
                set_..() get_..() verify_..() control command function
  *  \param[in] bind_addr Address on which CTRL socket shall listen
  *  \param[in] port Port on which CTRL socket shall listen
  *  \param[in] lookup Lookup function pointer, can be NULL
+ *  \param[in] node_count Number of CTRL nodes to allocate, 0 for default.
  *  \returns ctrl_handle pointer or NULL in case of errors
+ *
+ * Control interface nodes are identified by a node handle; some of these are
+ * defined in enum ctrl_node_type, here in libosmocore. However, applications
+ * defining own nodes may add own control nodes without having to extend the
+ * enum in libosmocore. For example, in the calling application, define an enum
+ * like "enum more_ctrl_nodes { CTRL_NODE_FOO = _LAST_CTRL_NODE, CTRL_NODE_BAR,
+ * _LAST_CTRL_NODE_EXTENDED }".  In order to provide space for the additional
+ * control nodes, pass _LAST_CTRL_NODE_EXTENDED to the \a node_count parameter.
+ * Passing 0 is identical to passing _LAST_CTRL_NODE, i.e. to not define own
+ * control nodes apart from libosmocore ones.
  */
-struct ctrl_handle *ctrl_interface_setup_dynip(void *data,
-					       const char *bind_addr,
-					       uint16_t port,
-					       ctrl_cmd_lookup lookup)
+struct ctrl_handle *ctrl_interface_setup_dynip2(void *data,
+						const char *bind_addr,
+						uint16_t port,
+						ctrl_cmd_lookup lookup,
+						unsigned int node_count)
 {
 	int ret;
 	struct ctrl_handle *ctrl;
 
-	ctrl = ctrl_handle_alloc(data, data, lookup);
+	ctrl = ctrl_handle_alloc2(data, data, lookup, node_count);
 	if (!ctrl)
 		return NULL;
 
@@ -788,6 +824,23 @@ struct ctrl_handle *ctrl_interface_setup_dynip(void *data,
 	LOGP(DLCTRL, LOGL_NOTICE, "CTRL at %s %u\n", bind_addr, port);
 	return ctrl;
 }
+
+/*! Setup CTRL interface on a given address.
+ *  \param[in] data Pointer which will be made available to each
+               set_..() get_..() verify_..() control command function
+ *  \param[in] bind_addr Address on which CTRL socket shall listen
+ *  \param[in] port Port on which CTRL socket shall listen
+ *  \param[in] lookup Lookup function pointer, can be NULL
+ *  \returns ctrl_handle pointer or NULL in case of errors
+ */
+struct ctrl_handle *ctrl_interface_setup_dynip(void *data,
+					       const char *bind_addr,
+					       uint16_t port,
+					       ctrl_cmd_lookup lookup)
+{
+	return ctrl_interface_setup_dynip2(data, bind_addr, port, lookup, 0);
+}
+
 
 /*! Install a lookup helper function for control nodes
  *  This function is used by e.g. library code to install lookup helpers
