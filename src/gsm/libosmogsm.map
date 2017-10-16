@@ -97,6 +97,7 @@ gsm0502_calc_paging_group;
 
 gsm0503_xcch;
 gsm0503_rach;
+gsm0503_rach_ext;
 gsm0503_sch;
 gsm0503_cs2;
 gsm0503_cs3;

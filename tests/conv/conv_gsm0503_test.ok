@@ -14,6 +14,14 @@
 [..] Encoding / Decoding cycle : OK
 [..] Encoding / Decoding cycle : OK
 
+[+] Testing: gsm0503_rach_ext
+[.] Input length  : ret =  17  exp =  17 -> OK
+[.] Output length : ret =  36  exp =  36 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
 [+] Testing: gsm0503_sch
 [.] Input length  : ret =  35  exp =  35 -> OK
 [.] Output length : ret =  78  exp =  78 -> OK

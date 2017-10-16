@@ -2824,13 +2824,47 @@ invalid_length:
  * b(0) = MSB of PLMN colour code
  * b(5) = LSB of BS colour code
  */
-static int rach_apply_bsic(ubit_t *d, uint8_t bsic)
+static inline void rach_apply_bsic(ubit_t *d, uint8_t bsic, uint8_t start)
 {
 	int i;
 
 	/* Apply it */
 	for (i = 0; i < 6; i++)
-		d[8 + i] ^= ((bsic >> (5 - i)) & 1);
+		d[start + i] ^= ((bsic >> (5 - i)) & 1);
+}
+
+static inline int16_t rach_decode(const sbit_t *burst, uint8_t bsic, bool is_11bit)
+{
+	ubit_t conv[17];
+	uint8_t ra[2] = { 0 }, nbits = is_11bit ? 11 : 8;
+	int rv;
+
+	osmo_conv_decode(is_11bit ? &gsm0503_rach_ext : &gsm0503_rach, burst, conv);
+
+	rach_apply_bsic(conv, bsic, nbits);
+
+	rv = osmo_crc8gen_check_bits(&gsm0503_rach_crc6, conv, nbits, conv + nbits);
+	if (rv)
+		return -1;
+
+	osmo_ubit2pbit_ext(ra, 0, conv, 0, nbits, 1);
+
+	return is_11bit ? osmo_load16le(ra) : ra[0];
+}
+
+/*! Decode the Extended (11-bit) RACH according to 3GPP TS 45.003
+ *  \param[out] ra output buffer for RACH data
+ *  \param[in] burst Input burst data
+ *  \param[in] bsic BSIC used in this cell
+ *  \returns 0 on success; negative on error (e.g. CRC error) */
+int gsm0503_rach_ext_decode(uint16_t *ra, const sbit_t *burst, uint8_t bsic)
+{
+	int16_t r = rach_decode(burst, bsic, true);
+
+	if (r < 0)
+		return r;
+
+	*ra = r;
 
 	return 0;
 }
@@ -2842,18 +2876,12 @@ static int rach_apply_bsic(ubit_t *d, uint8_t bsic)
  *  \returns 0 on success; negative on error (e.g. CRC error) */
 int gsm0503_rach_decode(uint8_t *ra, const sbit_t *burst, uint8_t bsic)
 {
-	ubit_t conv[14];
-	int rv;
+	int16_t r = rach_decode(burst, bsic, false);
 
-	osmo_conv_decode(&gsm0503_rach, burst, conv);
+	if (r < 0)
+		return r;
 
-	rach_apply_bsic(conv, bsic);
-
-	rv = osmo_crc8gen_check_bits(&gsm0503_rach_crc6, conv, 8, conv + 8);
-	if (rv)
-		return -1;
-
-	osmo_ubit2pbit_ext(ra, 0, conv, 0, 8, 1);
+	*ra = r;
 
 	return 0;
 }
@@ -2865,15 +2893,33 @@ int gsm0503_rach_decode(uint8_t *ra, const sbit_t *burst, uint8_t bsic)
  *  \returns 0 on success; negative on error */
 int gsm0503_rach_encode(ubit_t *burst, const uint8_t *ra, uint8_t bsic)
 {
-	ubit_t conv[14];
+	return gsm0503_rach_ext_encode(burst, *ra, bsic, false);
+}
 
-	osmo_pbit2ubit_ext(conv, 0, ra, 0, 8, 1);
+/*! Encode the Extended (11-bit) or regular (8-bit) RACH according to 3GPP TS 45.003
+ *  \param[out] burst Caller-allocated output burst buffer
+ *  \param[in] ra11 Input RACH data
+ *  \param[in] bsic BSIC used in this cell
+ *  \param[in] is_11bit whether given RA is 11 bit or not
+ *  \returns 0 on success; negative on error */
+int gsm0503_rach_ext_encode(ubit_t *burst, uint16_t ra11, uint8_t bsic, bool is_11bit)
+{
+	ubit_t conv[17];
+	uint8_t ra[2] = { 0 }, nbits = 8;
 
-	osmo_crc8gen_set_bits(&gsm0503_rach_crc6, conv, 8, conv + 8);
+	if (is_11bit) {
+		osmo_store16le(ra11, ra);
+		nbits = 11;
+	} else
+		ra[0] = (uint8_t)ra11;
 
-	rach_apply_bsic(conv, bsic);
+	osmo_pbit2ubit_ext(conv, 0, ra, 0, nbits, 1);
 
-	osmo_conv_encode(&gsm0503_rach, conv, burst);
+	osmo_crc8gen_set_bits(&gsm0503_rach_crc6, conv, nbits, conv + nbits);
+
+	rach_apply_bsic(conv, bsic, nbits);
+
+	osmo_conv_encode(is_11bit ? &gsm0503_rach_ext : &gsm0503_rach, conv, burst);
 
 	return 0;
 }

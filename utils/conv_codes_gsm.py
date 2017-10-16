@@ -1,5 +1,5 @@
 #!/usr/bin/python2
-
+# -*- coding: utf-8 -*-
 from conv_gen import ConvolutionalCode
 from conv_gen import poly
 
@@ -47,6 +47,15 @@ conv_codes = [
 		shared_polys["xcch"],
 		name = "rach",
 		description = ["RACH convolutional code"]
+	),
+
+        # Extended RACH definition from 3GPP TS 45.003 §5.3.2
+	ConvolutionalCode(
+		17,
+		shared_polys["xcch"],
+                puncture = [ 0, 2, 5, 37, 39, 41, -1 ],
+		name = "rach_ext",
+		description = ["Extended RACH (11 bit) convolutional code"]
 	),
 
 	# SCH definition
