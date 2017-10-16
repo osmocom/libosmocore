@@ -1,4 +1,6 @@
-/*! \file gsm0808_utils.h */
+/*! \addtogroup gsm0808
+ *  @{
+ *  \file gsm0808_utils.h */
 /*
  * (C) 2016 by Sysmocom s.f.m.c. GmbH
  * All Rights Reserved
@@ -53,3 +55,5 @@ int gsm0808_dec_cell_id_list(struct gsm0808_cell_id_list *cil,
 int gsm0808_chan_type_to_speech_codec(uint8_t perm_spch);
 int gsm0808_speech_codec_from_chan_type(struct gsm0808_speech_codec *sc,
 					uint8_t perm_spch);
+
+/*! @} */

@@ -1,4 +1,3 @@
-/*! \file gsm0808_utils.c */
 /*
  * (C) 2016 by Sysmocom s.f.m.c. GmbH
  * All Rights Reserved
@@ -44,6 +43,7 @@
 
 /*! \addtogroup gsm0808
  *  @{
+ *  \file gsm0808_utils.c
  */
 
 /*! Encode TS 08.08 AoIP transport address IE

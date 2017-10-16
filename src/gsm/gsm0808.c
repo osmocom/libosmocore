@@ -1,4 +1,3 @@
-/*! \file gsm0808.c */
 /*
  * (C) 2009,2010 by Holger Hans Peter Freyther <zecke@selfish.org>
  * (C) 2009,2010 by On-Waves
@@ -28,7 +27,9 @@
 
 /*! \addtogroup gsm0808
  *  @{
- *  Helper functions regarding the TS 08.08 / 48.008 A interface
+ *  \file gsm0808.c
+ *  Helper functions regarding the TS 08.08 / 48.008 A interface, primarily
+ *  message generation/encoding.
  */
 
 #define BSSMAP_MSG_SIZE 512

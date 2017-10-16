@@ -1,4 +1,6 @@
-/*! \file gsm0808.h */
+/*! \defgroup gsm0808 GSM 08.08 / 3GPP TS 48.008 A Interface
+ *  @{
+ *  \file gsm0808.h */
 /*
  * (C) 2009,2010 by Holger Hans Peter Freyther <zecke@selfish.org>
  * (C) 2009,2010 by On-Waves
@@ -75,3 +77,5 @@ const struct tlv_definition *gsm0808_att_tlvdef(void);
 
 const char *gsm0808_bssmap_name(uint8_t msg_type);
 const char *gsm0808_bssap_name(uint8_t msg_type);
+
+/*! @} */
