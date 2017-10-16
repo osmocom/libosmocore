@@ -1,5 +1,3 @@
-/*! \file stats_vty.c
- * OpenBSC stats helper for the VTY. */
 /*
  * (C) 2009-2010 by Harald Welte <laforge@gnumonks.org>
  * (C) 2009-2014 by Holger Hans Peter Freyther
@@ -43,9 +41,14 @@
 
 #define SHOW_STATS_STR "Show statistical values\n"
 
-/*! \addtogroup stats
- *  @{
+/*! \file stats_vty.c
  *  VTY interface for statsd / statistic items
+ *
+ *  This code allows you to register a couple of VTY commands that
+ *  permit configuration of the \ref stats functionality from the VTY.
+ *
+ *  Use \ref osmo_stats_vty_add_cmds once at application start-up to
+ *  enable related commands.
  */
 
 /* containing version info */
@@ -609,5 +612,3 @@ void osmo_stats_vty_add_cmds()
 
 	install_element_ve(&show_stats_asciidoc_table_cmd);
 }
-
-/*! @} */

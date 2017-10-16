@@ -1,5 +1,3 @@
-/*! \file logging_vty.c
- * OpenBSC logging helper for the VTY. */
 /*
  * (C) 2009-2010 by Harald Welte <laforge@gnumonks.org>
  * (C) 2009-2014 by Holger Hans Peter Freyther
@@ -41,14 +39,21 @@
 
 #define LOG_STR "Configure logging sub-system\n"
 
-/*! \addtogroup logging
- *  @{
+/*! \file logging_vty.c
  *  Configuration of logging from VTY
  *
- *  This module implements functions that permit configuration of
- *  the libosmocore logging framework from VTY commands.  This applies
- *  both to logging to the VTY (telnet sessions), as well as logging to
- *  other targets, such as sysslog, file, gsmtap, ...
+ *  This module implements
+ *  - functions that permit configuration of the libosmocore logging
+ *    framework from VTY commands in the configure -> logging node.
+ *
+ *  - functions that permit logging *to* a VTY session.  Basically each
+ *    VTY session gets its own log target, with configurable
+ *    per-subsystem log levels.  This is performed internally via the
+ *    \ref log_target_create_vty function.
+ *
+ *  You have to call \ref logging_vty_add_cmds from your application
+ *  once to enable both of the above.
+ *
  */
 
 extern const struct log_info *osmo_log_info;
@@ -756,6 +761,8 @@ static int config_write_log(struct vty *vty)
 	return 1;
 }
 
+/*! Register logging related commands to the VTY. Call this once from
+ *  your application if you want to support those commands. */
 void logging_vty_add_cmds()
 {
 	install_element_ve(&enable_logging_cmd);
@@ -796,5 +803,3 @@ void logging_vty_add_cmds()
 #endif
 	install_element(CONFIG_NODE, &cfg_log_gsmtap_cmd);
 }
-
-/* @} */

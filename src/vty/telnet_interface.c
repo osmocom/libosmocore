@@ -1,5 +1,3 @@
-/*! \file telnet_interface.c
- * minimalistic telnet/network interface it might turn into a wire interface */
 /* (C) 2009 by Holger Hans Peter Freyther <zecke@selfish.org>
  * All Rights Reserved
  *
@@ -37,8 +35,7 @@
 #include <osmocom/vty/buffer.h>
 #include <osmocom/vty/command.h>
 
-/*! \addtogroup telnet_interface
- *  @{
+/*! \file telnet_interface.c
  *  Telnet interface towards Osmocom VTY
  *
  *  This module contains the code implementing a telnet server for VTY
@@ -46,7 +43,9 @@
  *  process in order to enable interactive command-line introspection,
  *  interaction and configuration.
  *
- * \file telnet_interface.c */
+ *  You typically call \ref telnet_init or \ref telnet_init_dynif once
+ *  from your application code to enable this.
+ */
 
 /* per connection data */
 LLIST_HEAD(active_connections);
@@ -219,6 +218,7 @@ void vty_event(enum event event, int sock, struct vty *vty)
 	}
 }
 
+/*! Close all telnet connections and release the telnet socket */
 void telnet_exit(void) 
 {
 	struct telnet_connection *tc, *tc2;
@@ -230,5 +230,3 @@ void telnet_exit(void)
 	close(server_socket.fd);
 	talloc_free(tall_telnet_ctx);
 }
-
-/*! @} */

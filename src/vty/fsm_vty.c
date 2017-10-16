@@ -1,5 +1,3 @@
-/*! \file fsm_vty.c
- * Osmocom FSM introspection via VTY. */
 /*
  * (C) 2016 by Harald Welte <laforge@gnumonks.org>
  * All Rights Reserved
@@ -35,9 +33,8 @@
 #include <osmocom/core/logging.h>
 #include <osmocom/core/linuxlist.h>
 
-/*! \addtogroup fsm
- *  @{
- *  VTY interface for Osmocom FSM
+/*! \file fsm_vty.c
+ *  Osmocom FSM introspection via VTY.
  *
  *  This is code implementing generic VTY access to Osmocom FSMs from
  *  libosmocore.  This means that any application can expose all state
@@ -187,5 +184,3 @@ void osmo_fsm_vty_add_cmds(void)
 	install_element_ve(&show_fsm_inst_cmd);
 	install_element_ve(&show_fsm_insts_cmd);
 }
-
-/*! @} */
