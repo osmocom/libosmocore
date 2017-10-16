@@ -22,7 +22,7 @@
 
 #pragma once
 
-/*! \addtogroup crcgen
+/*! \addtogroup crc
  *  @{
  * \file crcXXgen.h.tpl */
 

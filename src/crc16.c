@@ -1,4 +1,6 @@
-/*! \file crc16.c
+/*! \addtogroup crc
+ *  @{
+ *  \file crc16.c
  * This was copied from the linux kernel and adjusted for our types.
  */
 /*
@@ -46,7 +48,7 @@ uint16_t const osmo_crc16_table[256] = {
 	0x8201, 0x42C0, 0x4380, 0x8341, 0x4100, 0x81C1, 0x8081, 0x4040
 };
 
-/*! compute the CRC-16 for the data buffer
+/*! Compute 16bit CCITT polynome 0x8408 (x^0 + x^5 + x^12) over given buffer.
  *  \param crc[in] previous CRC value
  *  \param buffer[in] data pointer
  *  \param len[in] number of bytes in input \ref buffer
@@ -59,6 +61,7 @@ uint16_t osmo_crc16(uint16_t crc, uint8_t const *buffer, size_t len)
 	return crc;
 }
 
+/*! CRC table for the CCITT CRC-6. The poly is 0x8408 (x^0 + x^5 + x^12) */
 uint16_t const osmo_crc16_ccitt_table[256] = {
 	0x0000, 0x1189, 0x2312, 0x329b, 0x4624, 0x57ad, 0x6536, 0x74bf,
 	0x8c48, 0x9dc1, 0xaf5a, 0xbed3, 0xca6c, 0xdbe5, 0xe97e, 0xf8f7,
@@ -94,9 +97,17 @@ uint16_t const osmo_crc16_ccitt_table[256] = {
 	0x7bc7, 0x6a4e, 0x58d5, 0x495c, 0x3de3, 0x2c6a, 0x1ef1, 0x0f78
 };
 
+
+/*! Compute 16bit CCITT polynome 0x8408 (x^0 + x^5 + x^12) over given buffer.
+ *  \param[in] crc initial value of CRC
+ *  \param[in] buffer pointer to buffer of input data
+ *  \param[in] len length of \a buffer in bytes
+ *  \returns 16bit CRC */
 uint16_t osmo_crc16_ccitt(uint16_t crc, uint8_t const *buffer, size_t len)
 {
 	while (len--)
 		crc = osmo_crc16_ccitt_byte(crc, *buffer++);
 	return crc;
 }
+
+/*! @} */

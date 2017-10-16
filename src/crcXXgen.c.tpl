@@ -20,7 +20,7 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-/*! \addtogroup crcgen
+/*! \addtogroup crc
  *  @{
  *  Osmocom generic CRC routines (for max XX bits poly).
  *

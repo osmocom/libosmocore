@@ -22,7 +22,7 @@
 
 #pragma once
 
-/*! \defgroup crcgen Osmocom generic CRC routines
+/*! \defgroup crc Osmocom CRC routines
  *  @{
  * \file crcgen.h */
 
