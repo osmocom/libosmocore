@@ -22,6 +22,13 @@
 
 /*! \addtogroup loggingrb
  *  @{
+ *  This adds a log which consist of an in-memory ring buffer.  The idea
+ *  is that the user can configure his logging in a way that critical
+ *  messages get stored in the ring buffer, and that the last few
+ *  critical messages can then always obtained by dumping the ring
+ *  buffer.  It can hence be used as a more generic version of the
+ *  "show me the last N alarms" functionality.
+ *
  * \file loggingrb.c */
 
 #include <osmocom/core/strrb.h>
