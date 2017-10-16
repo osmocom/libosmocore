@@ -21,7 +21,7 @@
  *
  */
 
-/* \addtogroup logging
+/*! \addtogroup logging
  * @{
  * libosmocore Logging sub-system
  *
