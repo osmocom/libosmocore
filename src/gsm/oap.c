@@ -1,5 +1,3 @@
-/*! \file oap.c
- * Osmocom Authentication Protocol message encoder/decoder */
 /*
  * (C) 2015-2016 by sysmocom s.f.m.c. GmbH
  * All Rights Reserved
@@ -31,6 +29,7 @@
 
 /*! \addtogroup oap
  *  @{
+ *  \file oap.c
  *  Osmocom Authentication Protocol
  */
 

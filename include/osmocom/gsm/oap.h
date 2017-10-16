@@ -1,5 +1,12 @@
-/*! \file oap.h
- * Osmocom Authentication Protocol message encoder/decoder. */
+/*! \defgroup oap Osmocom Authentication Protocol
+ *  @{
+ *
+ *  The Osmocom Authentication Protocol (OAP) is a way to use the 3GPP
+ *  AKA (Authentication and Key Agreement) as cryptographic
+ *  authentication mechanism in other protocols that don't provide
+ *  cryptographic authentication.
+ *
+ *  \file oap.h */
 /*
  * (C) 2015-2016 by sysmocom s.f.m.c. GmbH
  * All Rights Reserved
@@ -71,3 +78,5 @@ struct osmo_oap_message {
 int osmo_oap_decode(struct osmo_oap_message *oap_msg, const uint8_t *data,
 		    size_t data_len);
 void osmo_oap_encode(struct msgb *msg, const struct osmo_oap_message *oap_msg);
+
+/*! @} */
