@@ -88,6 +88,8 @@ struct gprs_ns_inst {
 		struct osmo_fd fd;
 		uint32_t local_ip;
 		uint16_t local_port;
+		uint32_t remote_ip;
+		uint16_t remote_port;
 		int dscp;
 	} nsip;
 	/*! NS-over-FR-over-GRE-over-IP specific bits */

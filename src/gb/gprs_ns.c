@@ -1561,15 +1561,37 @@ static int nsip_fd_cb(struct osmo_fd *bfd, unsigned int what)
 int gprs_ns_nsip_listen(struct gprs_ns_inst *nsi)
 {
 	struct in_addr in;
+	struct in_addr remote;
+	char remote_str[INET_ADDRSTRLEN];
 	int ret;
 
 	in.s_addr = osmo_htonl(nsi->nsip.local_ip);
+	remote.s_addr = osmo_htonl(nsi->nsip.remote_ip);
 
 	nsi->nsip.fd.cb = nsip_fd_cb;
 	nsi->nsip.fd.data = nsi;
-	ret = osmo_sock_init_ofd(&nsi->nsip.fd, AF_INET, SOCK_DGRAM,
-				 IPPROTO_UDP, inet_ntoa(in),
-				 nsi->nsip.local_port, OSMO_SOCK_F_BIND);
+
+	if (nsi->nsip.remote_ip && nsi->nsip.remote_port) {
+		/* connect to ensure only we only accept packets from the
+		 * configured remote end/peer */
+		snprintf(remote_str, sizeof(remote_str), "%s", inet_ntoa(remote));
+		ret =
+		    osmo_sock_init2_ofd(&nsi->nsip.fd, AF_INET, SOCK_DGRAM,
+					IPPROTO_UDP, inet_ntoa(in),
+					nsi->nsip.local_port, remote_str,
+					nsi->nsip.remote_port, OSMO_SOCK_F_BIND | OSMO_SOCK_F_CONNECT);
+
+		LOGP(DNS, LOGL_NOTICE,
+		     "Listening for nsip packets from %s:%u on %s:%u\n",
+		     remote_str, nsi->nsip.remote_port, inet_ntoa(in), nsi->nsip.local_port);
+	} else {
+		/* Accept UDP packets from any source IP/Port */
+		ret = osmo_sock_init_ofd(&nsi->nsip.fd, AF_INET, SOCK_DGRAM,
+					 IPPROTO_UDP, inet_ntoa(in), nsi->nsip.local_port, OSMO_SOCK_F_BIND);
+
+		LOGP(DNS, LOGL_NOTICE, "Listening for nsip packets on %s:%u\n", inet_ntoa(in), nsi->nsip.local_port);
+	}
+
 	if (ret < 0)
 		return ret;
 
