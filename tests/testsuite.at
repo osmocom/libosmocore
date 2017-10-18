@@ -45,6 +45,12 @@ cat $abs_srcdir/bits/bitcomp_test.ok > expout
 AT_CHECK([$abs_top_builddir/tests/bits/bitcomp_test], [0], [expout])
 AT_CLEANUP
 
+AT_SETUP([bitfield])
+AT_KEYWORDS([bitfield])
+cat $abs_srcdir/bits/bitfield_test.ok > expout
+AT_CHECK([$abs_top_builddir/tests/bits/bitfield_test], [0], [expout])
+AT_CLEANUP
+
 AT_SETUP([conv])
 AT_KEYWORDS([conv])
 cat $abs_srcdir/conv/conv_test.ok > expout

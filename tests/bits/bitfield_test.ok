@@ -1,0 +1,36 @@
+=== start test_bitvec_ia_octet_encode_pkt_dl_ass(0) ===
+Encoded PKT DL ASS IA Rest Octets: dd ea db ee f8 00 22 31 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 
+=== end test_bitvec_ia_octet_encode_pkt_dl_ass(0) ===
+
+=== start test_bitvec_ia_octet_encode_pkt_dl_ass(1) ===
+Encoded PKT DL ASS IA Rest Octets: dd ea db ee f8 00 22 31 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 
+=== end test_bitvec_ia_octet_encode_pkt_dl_ass(1) ===
+
+=== start test_bitdiff(22) ===
+=== total 0 bits differ ===
+=== end test_bitdiff(22) ===
+
+=== start test_bitvec_ia_octet_encode_pkt_ul_ass(0) ===
+Encoded PKT UL ASS IA Rest Octets: c0 08 0a 63 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 
+=== end test_bitvec_ia_octet_encode_pkt_ul_ass(0) ===
+
+=== start test_bitvec_ia_octet_encode_pkt_ul_ass(1) ===
+Encoded PKT UL ASS IA Rest Octets: c0 08 0a 63 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 
+=== end test_bitvec_ia_octet_encode_pkt_ul_ass(1) ===
+
+=== start test_bitdiff(22) ===
+=== total 0 bits differ ===
+=== end test_bitdiff(22) ===
+
+=== start test_bitvec_ia_octet_encode_pkt_ul_ass(0) ===
+Encoded PKT UL ASS IA Rest Octets: c8 02 10 0b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 
+=== end test_bitvec_ia_octet_encode_pkt_ul_ass(0) ===
+
+=== start test_bitvec_ia_octet_encode_pkt_ul_ass(1) ===
+Encoded PKT UL ASS IA Rest Octets: c8 02 10 0b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 
+=== end test_bitvec_ia_octet_encode_pkt_ul_ass(1) ===
+
+=== start test_bitdiff(22) ===
+=== total 0 bits differ ===
+=== end test_bitdiff(22) ===
+

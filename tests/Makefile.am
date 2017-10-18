@@ -11,6 +11,7 @@ check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
 		 loggingrb/loggingrb_test strrb/strrb_test              \
 		 comp128/comp128_test smscb/gsm0341_test		\
 		 bitvec/bitvec_test msgb/msgb_test bits/bitcomp_test	\
+		 bits/bitfield_test					\
 		 tlv/tlv_test gsup/gsup_test oap/oap_test fsm/fsm_test	\
 		 write_queue/wqueue_test socket/socket_test		\
 		 coding/coding_test conv/conv_gsm0503_test		\
@@ -76,6 +77,9 @@ bitvec_bitvec_test_LDADD = $(top_builddir)/src/libosmocore.la
 
 bits_bitcomp_test_SOURCES = bits/bitcomp_test.c
 bits_bitcomp_test_LDADD = $(top_builddir)/src/libosmocore.la
+
+bits_bitfield_test_SOURCES = bits/bitfield_test.c
+bits_bitfield_test_LDADD = $(top_builddir)/src/libosmocore.la
 
 conv_conv_test_SOURCES = conv/conv_test.c conv/conv.c
 conv_conv_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/gsm/libgsmint.la
@@ -232,7 +236,7 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
 	     vty/ok_more_spaces.cfg \
 	     vty/ok_tabs_and_spaces.cfg \
 	     vty/ok_tabs.cfg \
-	     comp128/comp128_test.ok					\
+	     comp128/comp128_test.ok bits/bitfield_test.ok		\
 	     utils/utils_test.ok stats/stats_test.ok			\
 	     bitvec/bitvec_test.ok msgb/msgb_test.ok bits/bitcomp_test.ok \
 	     sim/sim_test.ok tlv/tlv_test.ok abis/abis_test.ok		\
