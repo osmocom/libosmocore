@@ -215,22 +215,39 @@ int bitvec_set_bits(struct bitvec *bv, const enum bit_value *bits, unsigned int 
 	return 0;
 }
 
-/*! set multiple bits (based on numeric value) at current pos
- *  \return 0 in case of success; negative in case of error */
-int bitvec_set_uint(struct bitvec *bv, unsigned int ui, unsigned int num_bits)
+/*! set multiple bits (based on numeric value) at current pos.
+ *  \param[in] bv bit vector.
+ *  \param[in] v mask representing which bits needs to be set.
+ *  \param[in] num_bits number of meaningful bits in the mask.
+ *  \param[in] use_lh whether to interpret the bits as L/H values or as 0/1.
+ *  \return 0 on success; negative in case of error. */
+int bitvec_set_u64(struct bitvec *bv, uint64_t v, uint8_t num_bits, bool use_lh)
 {
-	int rc;
-	unsigned i;
+	uint8_t i;
+
+	if (num_bits > 64)
+		return -E2BIG;
+
 	for (i = 0; i < num_bits; i++) {
-		int bit = 0;
-		if (ui & (1u << (num_bits - i - 1)))
-			bit = 1;
+		int rc;
+		enum bit_value bit = use_lh ? L : 0;
+
+		if (v & ((uint64_t)1 << (num_bits - i - 1)))
+			bit = use_lh ? H : 1;
+
 		rc = bitvec_set_bit(bv, bit);
-		if (rc)
+		if (rc != 0)
 			return rc;
 	}
 
 	return 0;
+}
+
+/*! set multiple bits (based on numeric value) at current pos.
+ *  \return 0 in case of success; negative in case of error. */
+int bitvec_set_uint(struct bitvec *bv, unsigned int ui, unsigned int num_bits)
+{
+	return bitvec_set_u64(bv, ui, num_bits, false);
 }
 
 /*! get multiple bits (num_bits) from beginning of vector (MSB side)
