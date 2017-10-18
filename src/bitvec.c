@@ -505,18 +505,16 @@ uint64_t bitvec_read_field(struct bitvec *bv, unsigned int *read_index, unsigned
  */
 int bitvec_write_field(struct bitvec *bv, unsigned int *write_index, uint64_t val, unsigned int len)
 {
-	unsigned int i;
 	int rc;
+
 	bv->cur_bit = *write_index;
-	for (i = 0; i < len; i++) {
-		int bit = 0;
-		if (val & ((uint64_t)1 << (len - i - 1)))
-			bit = 1;
-		rc = bitvec_set_bit(bv, bit);
-		if (rc)
-			return rc;
-	}
+
+	rc = bitvec_set_u64(bv, val, len, false);
+	if (rc != 0)
+		return rc;
+
 	*write_index += len;
+
 	return 0;
 }
 
