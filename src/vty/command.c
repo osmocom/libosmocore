@@ -645,6 +645,8 @@ static int vty_dump_element(struct cmd_element *cmd, struct vty *vty)
 	return 0;
 }
 
+static bool vty_command_is_common(struct cmd_element *cmd);
+
 /*
  * Dump all nodes and commands associated with a given node as XML to the VTY.
  */
@@ -654,6 +656,29 @@ static int vty_dump_nodes(struct vty *vty)
 	int same_name_count;
 
 	vty_out(vty, "<vtydoc xmlns='urn:osmocom:xml:libosmocore:vty:doc:1.0'>%s", VTY_NEWLINE);
+
+	/* Only once, list all common node commands. Use the CONFIG node to find common node commands. */
+	vty_out(vty, "  <node id='_common_cmds_'>%s", VTY_NEWLINE);
+	vty_out(vty, "    <name>Common Commands</name>%s", VTY_NEWLINE);
+	vty_out(vty, "    <description>These commands are available on all VTY nodes. They are listed"
+		" here only once, to unclutter the VTY reference.</description>%s", VTY_NEWLINE);
+	for (i = 0; i < vector_active(cmdvec); ++i) {
+		struct cmd_node *cnode;
+		cnode = vector_slot(cmdvec, i);
+		if (!cnode)
+			continue;
+		if (cnode->node != CONFIG_NODE)
+			continue;
+
+		for (j = 0; j < vector_active(cnode->cmd_vector); ++j) {
+			struct cmd_element *elem;
+			elem = vector_slot(cnode->cmd_vector, j);
+			if (!vty_command_is_common(elem))
+				continue;
+			vty_dump_element(elem, vty);
+		}
+	}
+	vty_out(vty, "  </node>%s", VTY_NEWLINE);
 
 	for (i = 0; i < vector_active(cmdvec); ++i) {
 		struct cmd_node *cnode;
@@ -682,6 +707,8 @@ static int vty_dump_nodes(struct vty *vty)
 		for (j = 0; j < vector_active(cnode->cmd_vector); ++j) {
 			struct cmd_element *elem;
 			elem = vector_slot(cnode->cmd_vector, j);
+			if (vty_command_is_common(elem))
+				continue;
 			vty_dump_element(elem, vty);
 		}
 
@@ -3646,6 +3673,24 @@ static void install_basic_node_commands(int node)
 		/* It's not a top node. */
 		install_element(node, &config_end_cmd);
 	}
+}
+
+/*! Return true if a node is installed by install_basic_node_commands(), so
+ * that we can avoid repeating them for each and every node during 'show
+ * running-config' */
+static bool vty_command_is_common(struct cmd_element *cmd)
+{
+	if (cmd == &config_help_cmd
+	    || cmd == &config_list_cmd
+	    || cmd == &config_write_terminal_cmd
+	    || cmd == &config_write_file_cmd
+	    || cmd == &config_write_memory_cmd
+	    || cmd == &config_write_cmd
+	    || cmd == &show_running_config_cmd
+	    || cmd == &config_exit_cmd
+	    || cmd == &config_end_cmd)
+		return true;
+	return false;
 }
 
 /**
