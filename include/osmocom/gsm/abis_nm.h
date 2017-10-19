@@ -28,9 +28,16 @@ const char *abis_nm_nack_name(uint8_t nack);
 const char *abis_nm_event_type_name(uint8_t cause);
 const char *abis_nm_severity_name(uint8_t cause);
 extern const struct tlv_definition abis_nm_att_tlvdef;
+
 const char *abis_nm_opstate_name(uint8_t os);
 const char *abis_nm_avail_name(uint8_t avail);
 const char *abis_nm_test_name(uint8_t test);
+/*! Get human-readable string for OML administrative state */
+static inline const char *abis_nm_admin_name(uint8_t admin)
+{
+	return get_value_string(abis_nm_adm_state_names, admin);
+}
+
 extern const struct tlv_definition abis_nm_osmo_att_tlvdef;
 extern const struct tlv_definition abis_nm_att_tlvdef_ipa;
 
