@@ -53,6 +53,9 @@ char * osmo_apn_to_str(char *out_str, const uint8_t *apn_enc, size_t apn_enc_len
 	char *str = out_str;
 	size_t rest_chars = apn_enc_len;
 
+	if (!apn_enc)
+		return NULL;
+
 	while (rest_chars > 0 && apn_enc[0]) {
 		size_t label_size = apn_enc[0];
 		if (label_size + 1 > rest_chars)

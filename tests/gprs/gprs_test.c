@@ -91,6 +91,13 @@ static void test_gsm_03_03_apn(void)
 	}
 
 	{
+		/* NULL input */
+		uint8_t input[] = { 0x1, 65 };
+		char *output = "LOL";
+		OSMO_ASSERT(osmo_apn_to_str(output, NULL, ARRAY_SIZE(input) - 1) == NULL);
+	}
+
+	{
 		uint8_t input[] = { 0x3, 65, 66, 67, 0x2, 90, 122 };
 		const char *output = "ABC.Zz";
 		char tmp[strlen(output) + 1];
