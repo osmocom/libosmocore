@@ -66,6 +66,9 @@ struct ctrl_cmd {
 	char *reply;
 };
 
+#define ctrl_cmd_reply_printf(cmd, fmt, args ...) \
+	osmo_talloc_asprintf(cmd, cmd->reply, fmt, ## args)
+
 struct ctrl_cmd_struct {
 	int nr_commands;
 	char **command;

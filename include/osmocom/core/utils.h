@@ -85,6 +85,24 @@ static inline void osmo_talloc_replace_string(void *ctx, char **dst, const char 
 	*dst = talloc_strdup(ctx, newstr);
 }
 
+/*! Append to a string and re-/allocate if necessary.
+ * \param[in] ctx  Talloc context to use for initial allocation.
+ * \param[in,out] dest  char* to re-/allocate and append to.
+ * \param[in] fmt  printf-like string format.
+ * \param[in] args  Arguments for fmt.
+ *
+ * \a dest may be passed in NULL, or a string previously allocated by talloc.
+ * If an existing string is passed in, it will remain associated with whichever
+ * ctx it was allocated before, regardless whether it matches \a ctx or not.
+ */
+#define osmo_talloc_asprintf(ctx, dest, fmt, args ...) \
+	do { \
+		if (!dest) \
+			dest = talloc_asprintf(ctx, fmt, ## args); \
+		else \
+			dest = talloc_asprintf_append((char*)dest, fmt, ## args); \
+	} while (0)
+
 int osmo_constant_time_cmp(const uint8_t *exp, const uint8_t *rel, const int count);
 uint64_t osmo_decode_big_endian(const uint8_t *data, size_t data_len);
 uint8_t *osmo_encode_big_endian(uint64_t value, size_t data_len);
