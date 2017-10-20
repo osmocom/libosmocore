@@ -57,4 +57,6 @@ int osmo_sock_mcast_ttl_set(int fd, uint8_t ttl);
 int osmo_sock_mcast_all_set(int fd, bool enable);
 int osmo_sock_mcast_subscribe(int fd, const char *grp_addr);
 
+int osmo_sock_local_ip(char *local_ip, const char *remote_ip);
+
 /*! @} */

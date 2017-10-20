@@ -784,6 +784,59 @@ int osmo_sock_mcast_subscribe(int fd, const char *grp_addr)
 	}
 }
 
+/*! Determine the matching local IP-address for a given remote IP-Address.
+ *  \param[out] local_ip caller provided memory for resulting local IP-address
+ *  \param[in] remote_ip remote IP-address
+ *  \param[in] fd file descriptor of related scoket
+ *  \returns 0 on success; negative otherwise
+ *
+ *  The function accepts IPv4 and IPv6 address strings. The caller must provide
+ *  at least INET6_ADDRSTRLEN bytes for local_ip if an IPv6 is expected as
+ *  as result. For IPv4 addresses the required amount is INET_ADDRSTRLEN. */
+int osmo_sock_local_ip(char *local_ip, const char *remote_ip)
+{
+	int sfd;
+	int rc;
+	struct addrinfo addrinfo_hint;
+	struct addrinfo *addrinfo = NULL;
+	struct sockaddr_in local_addr;
+	socklen_t local_addr_len;
+	uint16_t family;
+
+	/* Find out the address family (AF_INET or AF_INET6?) */
+	memset(&addrinfo_hint, '\0', sizeof(addrinfo_hint));
+	addrinfo_hint.ai_family = PF_UNSPEC;
+	addrinfo_hint.ai_flags = AI_NUMERICHOST;
+	rc = getaddrinfo(remote_ip, NULL, &addrinfo_hint, &addrinfo);
+	if (rc)
+		return -EINVAL;
+	family = addrinfo->ai_family;
+	freeaddrinfo(addrinfo);
+
+	/* Connect a dummy socket to trick the kernel into determining the
+	 * ip-address of the interface that would be used if we would send
+	 * out an actual packet */
+	sfd = osmo_sock_init2(family, SOCK_DGRAM, IPPROTO_UDP, NULL, 0, remote_ip, 0, OSMO_SOCK_F_CONNECT);
+	if (sfd < 0)
+		return -EINVAL;
+
+	/* Request the IP address of the interface that the kernel has
+	 * actually choosen. */
+	memset(&local_addr, 0, sizeof(local_addr));
+	local_addr_len = sizeof(local_addr);
+	rc = getsockname(sfd, (struct sockaddr *)&local_addr, &local_addr_len);
+	if (rc < 0)
+		return -EINVAL;
+	if (local_addr.sin_family == AF_INET)
+		strncpy(local_ip, inet_ntoa(local_addr.sin_addr), INET_ADDRSTRLEN);
+	else if (local_addr.sin_family == AF_INET6)
+		strncpy(local_ip, inet_ntoa(local_addr.sin_addr), INET6_ADDRSTRLEN);
+	else
+		return -EINVAL;
+
+	return 0;
+}
+
 #endif /* HAVE_SYS_SOCKET_H */
 
 /*! @} */
