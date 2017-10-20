@@ -1580,6 +1580,7 @@ int gprs_ns_nsip_listen(struct gprs_ns_inst *nsi)
 			"Failed to set the DSCP to %d with ret(%d) errno(%d)\n",
 			nsi->nsip.dscp, ret, errno);
 
+	LOGP(DNS, LOGL_NOTICE, "NS UDP socket at %s:%d\n", inet_ntoa(in), nsi->nsip.local_port);
 
 	return ret;
 }
