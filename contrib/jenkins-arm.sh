@@ -1,11 +1,9 @@
 #!/bin/sh
 
-set -ex
+. $(dirname "$0")/jenkins_common.sh
 
-verify_value_string_arrays_are_terminated.py $(find . -name "*.[hc]")
-
-autoreconf --install --force
-./configure --enable-static \
+build() {
+    $1 --enable-static \
 	--prefix=/usr/local/arm-none-eabi \
 	--host=arm-none-eabi \
 	--enable-embedded \
@@ -14,20 +12,13 @@ autoreconf --install --force
 
 $MAKE $PARALLEL_MAKE \
 	|| cat-testlogs.sh
+}
 
 # verify build in dir other than source tree
-rm -rf *
-git checkout .
-autoreconf --install --force
-mkdir builddir
+mkdir -p builddir
 cd builddir
+build ../configure
 
-../configure --enable-static \
-	--prefix=/usr/local/arm-none-eabi \
-	--host=arm-none-eabi \
-	--enable-embedded \
-	--disable-shared \
-	CFLAGS="-Os -ffunction-sections -fdata-sections -nostartfiles -nodefaultlibs -Werror"
+cd ..
+build ./configure
 
-$MAKE $PARALLEL_MAKE \
-	|| cat-testlogs.sh
