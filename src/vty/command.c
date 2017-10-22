@@ -685,6 +685,8 @@ static int vty_dump_nodes(struct vty *vty)
 		cnode = vector_slot(cmdvec, i);
 		if (!cnode)
 			continue;
+		if (vector_active(cnode->cmd_vector) < 1)
+			continue;
 
 		/* De-dup node IDs: how many times has this same name been used before? Count the first
 		 * occurence as _1 and omit that first suffix, so that the first occurence is called
