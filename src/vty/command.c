@@ -705,6 +705,7 @@ static int vty_dump_nodes(struct vty *vty)
 		if (same_name_count > 1 || !*cnode->name)
 			vty_out(vty, "_%d", same_name_count);
 		vty_out(vty, "'>%s", VTY_NEWLINE);
+		vty_out(vty, "    <name>%s</name>%s", cnode->name, VTY_NEWLINE);
 
 		for (j = 0; j < vector_active(cnode->cmd_vector); ++j) {
 			struct cmd_element *elem;
