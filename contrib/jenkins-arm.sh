@@ -2,8 +2,13 @@
 
 . $(dirname "$0")/jenkins_common.sh
 
+src_dir="$PWD"
 build() {
-    $1 --enable-static \
+    build_dir="$1"
+
+    prep_build "$src_dir" "$build_dir"
+
+    "$src_dir"/configure --enable-static \
 	--prefix=/usr/local/arm-none-eabi \
 	--host=arm-none-eabi \
 	--enable-embedded \
@@ -11,15 +16,11 @@ build() {
 	--disable-shared \
 	CFLAGS="-Os -ffunction-sections -fdata-sections -nostartfiles -nodefaultlibs -Werror"
 
-$MAKE $PARALLEL_MAKE \
-	|| cat-testlogs.sh
+    $MAKE $PARALLEL_MAKE \
+        || cat-testlogs.sh
 }
 
 # verify build in dir other than source tree
-mkdir -p builddir
-cd builddir
-build ../configure
-
-cd ..
-build ./configure
-
+build builddir
+# verify build in source tree
+build .

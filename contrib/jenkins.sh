@@ -9,19 +9,23 @@ if [ "x$label" = "xFreeBSD_amd64" ]; then
         ENABLE_SANITIZE=""
 fi
 
+src_dir="$PWD"
 build() {
-    $1 --enable-static $2 CFLAGS="-Werror" CPPFLAGS="-Werror"
-$MAKE $PARALLEL_MAKE check \
-  || cat-testlogs.sh
-$MAKE distcheck \
-  || cat-testlogs.sh
+    build_dir="$1"
+
+    prep_build "$src_dir" "$build_dir"
+
+    "$src_dir"/configure --enable-static $ENABLE_SANITIZE CFLAGS="-Werror" CPPFLAGS="-Werror"
+    $MAKE $PARALLEL_MAKE check \
+        || cat-testlogs.sh
 }
 
 # verify build in dir other than source tree
-mkdir -p builddir
-cd builddir
-build ../configure $ENABLE_SANITIZE
+build builddir
+# verify build in source tree
+build .
 
-cd ..
-build ./configure $ENABLE_SANITIZE
-
+# do distcheck only once, which is fine from built source tree, since distcheck
+# is well separated from the source tree state.
+$MAKE distcheck \
+    || cat-testlogs.sh
