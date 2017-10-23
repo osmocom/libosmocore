@@ -2,6 +2,12 @@
 
 set -ex
 
+if [ -z "$MAKE" ]; then
+    set +x
+    echo "Error: you need to set \$MAKE before invoking, e.g. MAKE=make"
+    exit 1
+fi
+
 verify_value_string_arrays_are_terminated.py $(find . -name "*.[hc]")
 
 prep_build() {
