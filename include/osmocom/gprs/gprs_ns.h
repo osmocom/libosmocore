@@ -43,6 +43,10 @@ enum ns_timeout {
 #define NSE_S_ALIVE	0x0002
 #define NSE_S_RESET	0x0004
 
+#define NS_DESC_B(st) ((st) & NSE_S_BLOCKED ? "BLOCKED" : "UNBLOCKED")
+#define NS_DESC_A(st) ((st) & NSE_S_ALIVE ? "ALIVE" : "DEAD")
+#define NS_DESC_R(st) ((st) & NSE_S_RESET ? "RESET" : "UNRESET")
+
 /*! Osmocom NS link layer types */
 enum gprs_ns_ll {
 	GPRS_NS_LL_UDP,		/*!< NS/UDP/IP */

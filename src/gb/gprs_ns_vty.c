@@ -160,11 +160,11 @@ static void dump_nse(struct vty *vty, struct gprs_nsvc *nsvc, int stats)
 {
 	vty_out(vty, "NSEI %5u, NS-VC %5u, %5s %9s, Remote: %-4s, %5s %9s",
 		nsvc->nsei, nsvc->nsvci,
-		nsvc->state & NSE_S_ALIVE ? "ALIVE" : "DEAD",
-		nsvc->state & NSE_S_BLOCKED ? "BLOCKED" : "UNBLOCKED",
+		NS_DESC_A(nsvc->state),
+		NS_DESC_B(nsvc->state),
 		nsvc->remote_end_is_sgsn ? "SGSN" : "BSS",
-		nsvc->remote_state & NSE_S_ALIVE ? "ALIVE" : "DEAD",
-		nsvc->remote_state & NSE_S_BLOCKED ? "BLOCKED" : "UNBLOCKED");
+		NS_DESC_A(nsvc->remote_state),
+		NS_DESC_B(nsvc->remote_state));
 	if (nsvc->ll == GPRS_NS_LL_UDP || nsvc->ll == GPRS_NS_LL_FR_GRE)
 		vty_out(vty, ", %s %15s:%u",
 			nsvc->ll == GPRS_NS_LL_UDP ? "UDP   " : "FR-GRE",
