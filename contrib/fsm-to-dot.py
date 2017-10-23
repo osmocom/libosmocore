@@ -5,7 +5,7 @@ fsm-to-dot: convert FSM definitons to graph images
 
 Usage:
   ./fsm-to-dot.py ~/openbsc/openbsc/src/libvlr/*.c
-  for f in *.dot ; do dot -Tpng $f > $f.png; done
+  for f in *.dot ; do dot -Tpng "$f" > "$f.png"; done
   # dot comes from 'apt-get install graphviz'
 
 Looks for osmo_fsm finite state machine definitions and madly parses .c files
@@ -13,7 +13,7 @@ to draw graphs of them. This uses wild regexes that rely on coding style etc..
 No proper C parsing is done here (pycparser sucked, unfortunately).
 '''
 
-import sys, re
+import sys, re, os
 
 def err(msg):
   sys.stderr.write(msg + '\n')
@@ -63,8 +63,13 @@ class listdict(object):
     return ld
 
 re_state_start = re.compile(r'\[([A-Z_][A-Z_0-9]*)\]')
-re_event = re.compile(r'S\(([A-Z_][A-Z_0-9]*)\)')
+re_event_alternatives = [
+    re.compile(r'\(1 *<< *([A-Z_][A-Z_0-9]*)\)'),
+    re.compile(r'S\(([A-Z_][A-Z_0-9]*)\)'),
+  ]
 re_action = re.compile(r'.action *= *([a-z_][a-z_0-9]*)')
+
+re_insane_dot_name_chars = re.compile('[^a-zA-Z_]')
 
 def state_starts(line):
   m = re_state_start.search(line)
@@ -79,7 +84,10 @@ def out_state_starts(line):
   return line.find('out_state_mask') >= 0
 
 def states_or_events(line):
-  return re_event.findall(line)
+  results = []
+  for one_re in re_event_alternatives:
+    results.extend(one_re.findall(line))
+  return results
 
 def parse_action(line):
   a = re_action.findall(line)
@@ -224,13 +232,15 @@ class State:
     return 'State(name=%r,short_name=%r,out=%d)' % (state.name, state.short_name, len(state.out_edges))
 
 class Fsm:
-  def __init__(fsm, struct_name, states_struct_name, from_file=None):
+  def __init__(fsm, struct_name, string_name, states_struct_name, from_file=None):
     fsm.states = []
     fsm.struct_name = struct_name
+    fsm.string_name = string_name
     fsm.states_struct_name = states_struct_name
     fsm.from_file = from_file
     fsm.action_funcs = set()
     fsm.event_names = set()
+    fsm.dot_name = fsm.all_names_sanitized()
 
   def parse_states(fsm, src):
     state = None
@@ -462,8 +472,8 @@ class Fsm:
           edge_action = caller
           if calling_state.action == edge_action:
             edge_action = None
-          calling_fsm.add_special_state(calling_fsm.states, fsm.struct_name,
-            calling_state, kind=KIND_FSM, edge_action=edge_action, label=label)
+          calling_fsm.add_special_state(calling_fsm.states, fsm.dot_name,
+            calling_state, kind=KIND_FSM, edge_action=edge_action, label=' '.join(fsm.all_names()))
 
           label = None
           if calling_state.kind == KIND_STATE:
@@ -471,13 +481,13 @@ class Fsm:
           edge_action = caller
           if state.action == edge_action:
             edge_action = None
-          fsm.add_special_state(fsm.states, calling_fsm.struct_name, None,
+          fsm.add_special_state(fsm.states, calling_fsm.dot_name, None,
             state, kind=KIND_FSM, edge_action=edge_action,
             label=label)
 
           # meta overview
-          meta_called_fsm = fsm_meta.have_state(fsm.struct_name, KIND_FSM)
-          meta_calling_fsm = fsm_meta.have_state(calling_fsm.struct_name, KIND_FSM)
+          meta_called_fsm = fsm_meta.have_state(fsm.dot_name, KIND_FSM)
+          meta_calling_fsm = fsm_meta.have_state(calling_fsm.dot_name, KIND_FSM)
           meta_calling_fsm.add_out_edge(Edge(meta_called_fsm))
 
 
@@ -519,8 +529,23 @@ class Fsm:
 
     return '\n'.join(out)
 
+  def all_names(fsm):
+    n = []
+    if fsm.from_file:
+      n.append(os.path.basename(fsm.from_file.path))
+    if fsm.struct_name:
+      n.append(fsm.struct_name)
+    if fsm.string_name:
+      n.append(fsm.string_name)
+    return n
+
+  def all_names_sanitized(fsm, sep='_'):
+    n = sep.join(fsm.all_names())
+    n = re_insane_dot_name_chars.sub('_', n)
+    return n
+
   def write_dot_file(fsm):
-    dot_path = '%s.dot' % fsm.struct_name
+    dot_path = '%s.dot' % ('_'.join(fsm.all_names()))
     f = open(dot_path, 'w')
     f.write(fsm.to_dot())
     f.close()
@@ -528,6 +553,7 @@ class Fsm:
 
 
 re_fsm = re.compile(r'struct osmo_fsm ([a-z_][a-z_0-9]*) =')
+re_fsm_string_name = re.compile(r'\bname = "([^"]*)"')
 re_fsm_states_struct_name = re.compile(r'\bstates = ([a-z_][a-z_0-9]*)\W*,')
 re_fsm_states = re.compile(r'struct osmo_fsm_state ([a-z_][a-z_0-9]*)\[\] =')
 re_func = re.compile(r'(\b[a-z_][a-z_0-9]*\b)\([^)]*\)\W*^{', re.MULTILINE)
@@ -575,8 +601,9 @@ class CFile():
     for m in re_fsm.finditer(c_file.src):
       struct_name = m.group(1)
       struct_def = c_file.extract_block('{', '}', m.start())
+      string_name = (re_fsm_string_name.findall(struct_def) or [None])[0]
       states_struct_name = re_fsm_states_struct_name.findall(struct_def)[0]
-      fsm = Fsm(struct_name, states_struct_name, c_file)
+      fsm = Fsm(struct_name, string_name, states_struct_name, c_file)
       fsms.append(fsm)
     return fsms
 
@@ -694,7 +721,7 @@ for fsm in fsms:
   fsm.find_event_edges(c_files)
   fsm.add_fsm_alloc(c_files)
 
-fsm_meta = Fsm("meta", "meta")
+fsm_meta = Fsm("meta", None, "meta")
 for fsm in fsms:
   fsm.add_cross_fsm_links(fsms, c_files, fsm_meta)
 
