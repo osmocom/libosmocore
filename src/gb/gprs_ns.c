@@ -84,6 +84,11 @@
 
 #include "common_vty.h"
 
+#define ns_set_state(ns_, st_) ns_set_state_with_log(ns_, st_, false, __BASE_FILE__, __LINE__)
+#define ns_set_remote_state(ns_, st_) ns_set_state_with_log(ns_, st_, true, __BASE_FILE__, __LINE__)
+#define ns_mark_blocked(ns_) ns_set_state(ns_, (ns_)->state | NSE_S_BLOCKED)
+#define ns_mark_unblocked(ns_) ns_set_state(ns_, (ns_)->state & (~NSE_S_BLOCKED));
+
 static const struct tlv_definition ns_att_tlvdef = {
 	.def = {
 		[NS_IE_CAUSE]	= { TLV_TYPE_TvLV, 0 },
@@ -174,6 +179,22 @@ struct msgb *gprs_ns_msgb_alloc(void)
 	return msg;
 }
 
+/* FIXME: convert to osmo_fsm */
+static inline void ns_set_state_with_log(struct gprs_nsvc *nsvc, uint32_t state, bool is_remote,
+					 const char *file, unsigned line)
+{
+	uint32_t old_state = is_remote ? nsvc->remote_state : nsvc->state;
+
+	LOGPSRC(DNS, LOGL_DEBUG, file, line, "NSEI %d (NS-VCI=%u) setting %sstate [%s,%s,%s] -> [%s,%s,%s]\n",
+		nsvc->nsei, nsvc->nsvci, is_remote ? "remote " : "",
+		NS_DESC_A(old_state), NS_DESC_B(old_state), NS_DESC_R(old_state),
+		NS_DESC_A(state), NS_DESC_B(state), NS_DESC_R(state));
+
+	if (is_remote)
+		nsvc->remote_state = state;
+	else
+		nsvc->state = state;
+}
 
 /*! Lookup struct gprs_nsvc based on NSVCI
  *  \param[in] nsi NS instance in which to search
@@ -245,7 +266,7 @@ struct gprs_nsvc *gprs_nsvc_create(struct gprs_ns_inst *nsi, uint16_t nsvci)
 	nsvc->nsvci = nsvci;
 	nsvc->nsvci_is_valid = 1;
 	/* before RESET procedure: BLOCKED and DEAD */
-	nsvc->state = NSE_S_BLOCKED;
+	ns_set_state(nsvc, NSE_S_BLOCKED);
 	nsvc->nsi = nsi;
 	osmo_timer_setup(&nsvc->timer, gprs_ns_timer_cb, nsvc);
 	nsvc->ctrg = rate_ctr_group_alloc(nsvc, &nsvc_ctrg_desc, nsvci);
@@ -510,7 +531,7 @@ int gprs_ns_tx_block(struct gprs_nsvc *nsvc, uint8_t cause)
 		nsvc->nsei, nsvc->nsvci, gprs_ns_cause_str(cause));
 
 	/* be conservative and mark it as blocked even now! */
-	nsvc->state |= NSE_S_BLOCKED;
+	ns_mark_blocked(nsvc);
 	rate_ctr_inc(&nsvc->ctrg->ctr[NS_CTR_BLOCKED]);
 
 	msg->l2h = msgb_put(msg, sizeof(*nsh));
@@ -621,7 +642,7 @@ static void gprs_ns_timer_cb(void *data)
 		if (nsvc->alive_retries >
 			nsvc->nsi->timeout[NS_TOUT_TNS_ALIVE_RETRIES]) {
 			/* mark as dead and blocked */
-			nsvc->state = NSE_S_BLOCKED;
+			ns_set_state(nsvc, NSE_S_BLOCKED);
 			rate_ctr_inc(&nsvc->ctrg->ctr[NS_CTR_BLOCKED]);
 			rate_ctr_inc(&nsvc->ctrg->ctr[NS_CTR_DEAD]);
 			LOGP(DNS, LOGL_NOTICE,
@@ -652,7 +673,7 @@ static void gprs_ns_timer_cb(void *data)
 				"NSEI=%u Reset timed out but RESET flag is not set\n",
 				nsvc->nsei);
 		/* Mark NS-VC locally as blocked and dead */
-		nsvc->state = NSE_S_BLOCKED | NSE_S_RESET;
+		ns_set_state(nsvc, NSE_S_BLOCKED | NSE_S_RESET);
 		/* Chapter 7.3: Re-send the RESET */
 		gprs_ns_tx_reset(nsvc, NS_CAUSE_OM_INTERVENTION);
 		/* Re-start Tns-reset timer */
@@ -912,7 +933,7 @@ static int gprs_ns_rx_reset(struct gprs_nsvc **nsvc, struct msgb *msg)
 	}
 
 	/* Mark NS-VC as blocked and alive */
-	(*nsvc)->state = NSE_S_BLOCKED | NSE_S_ALIVE;
+	ns_set_state(*nsvc, NSE_S_BLOCKED | NSE_S_ALIVE);
 
 	if (orig_nsvc) {
 		rate_ctr_inc(&(*nsvc)->ctrg->ctr[NS_CTR_REPLACED]);
@@ -1052,8 +1073,8 @@ static int gprs_ns_rx_reset_ack(struct gprs_nsvc **nsvc, struct msgb *msg)
 	}
 
 	/* Mark NS-VC as blocked and alive */
-	(*nsvc)->state = NSE_S_BLOCKED | NSE_S_ALIVE;
-	(*nsvc)->remote_state = NSE_S_BLOCKED | NSE_S_ALIVE;
+	ns_set_state(*nsvc, NSE_S_BLOCKED | NSE_S_ALIVE);
+	ns_set_remote_state(*nsvc, NSE_S_BLOCKED | NSE_S_ALIVE);
 	rate_ctr_inc(&(*nsvc)->ctrg->ctr[NS_CTR_BLOCKED]);
 	if ((*nsvc)->persistent || (*nsvc)->remote_end_is_sgsn) {
 		/* stop RESET timer */
@@ -1075,7 +1096,7 @@ static int gprs_ns_rx_block(struct gprs_nsvc *nsvc, struct msgb *msg)
 
 	LOGP(DNS, LOGL_INFO, "NSEI=%u Rx NS BLOCK\n", nsvc->nsei);
 
-	nsvc->state |= NSE_S_BLOCKED;
+	ns_mark_blocked(nsvc);
 
 	rc = tlv_parse(&tp, &ns_att_tlvdef, nsh->data,
 			msgb_l2len(msg) - sizeof(*nsh), 0, 0);
@@ -1253,7 +1274,7 @@ int gprs_ns_vc_create(struct gprs_ns_inst *nsi, struct msgb *msg,
 		     get_value_string(gprs_ns_pdu_strings, nsh->pdu_type), gprs_ns_ll_str(fallback_nsvc));
 		fallback_nsvc->nsvci = fallback_nsvc->nsei = 0xfffe;
 		fallback_nsvc->nsvci_is_valid = 0;
-		fallback_nsvc->state = NSE_S_ALIVE;
+		ns_set_state(fallback_nsvc, NSE_S_ALIVE);
 
 		rc = gprs_ns_tx_status(fallback_nsvc,
 				       NS_CAUSE_PDU_INCOMP_PSTATE, 0, msg);
@@ -1376,15 +1397,15 @@ int gprs_ns_process_msg(struct gprs_ns_inst *nsi, struct msgb *msg,
 	case NS_PDUT_UNBLOCK:
 		/* Section 7.2: unblocking procedure */
 		LOGP(DNS, LOGL_INFO, "NSEI=%u Rx NS UNBLOCK\n", (*nsvc)->nsei);
-		(*nsvc)->state &= ~NSE_S_BLOCKED;
+		ns_mark_unblocked(*nsvc);
 		ns_osmo_signal_dispatch(*nsvc, S_NS_UNBLOCK, 0);
 		rc = gprs_ns_tx_simple(*nsvc, NS_PDUT_UNBLOCK_ACK);
 		break;
 	case NS_PDUT_UNBLOCK_ACK:
 		LOGP(DNS, LOGL_INFO, "NSEI=%u Rx NS UNBLOCK ACK\n", (*nsvc)->nsei);
 		/* mark NS-VC as unblocked + active */
-		(*nsvc)->state = NSE_S_ALIVE;
-		(*nsvc)->remote_state = NSE_S_ALIVE;
+		ns_set_state(*nsvc, NSE_S_ALIVE);
+		ns_set_remote_state(*nsvc, NSE_S_ALIVE);
 		ns_osmo_signal_dispatch(*nsvc, S_NS_UNBLOCK, 0);
 		break;
 	case NS_PDUT_BLOCK:
@@ -1393,7 +1414,7 @@ int gprs_ns_process_msg(struct gprs_ns_inst *nsi, struct msgb *msg,
 	case NS_PDUT_BLOCK_ACK:
 		LOGP(DNS, LOGL_INFO, "NSEI=%u Rx NS BLOCK ACK\n", (*nsvc)->nsei);
 		/* mark remote NS-VC as blocked + active */
-		(*nsvc)->remote_state = NSE_S_BLOCKED | NSE_S_ALIVE;
+		ns_set_remote_state(*nsvc, NSE_S_BLOCKED | NSE_S_ALIVE);
 		break;
 	default:
 		LOGP(DNS, LOGL_NOTICE, "NSEI=%u Rx Unknown NS PDU type 0x%02x\n",
@@ -1623,7 +1644,7 @@ int gprs_nsvc_reset(struct gprs_nsvc *nsvc, uint8_t cause)
 		nsvc->nsei);
 
 	/* Mark NS-VC locally as blocked and dead */
-	nsvc->state = NSE_S_BLOCKED | NSE_S_RESET;
+	ns_set_state(nsvc, NSE_S_BLOCKED | NSE_S_RESET);
 
 	/* Send NS-RESET PDU */
 	rc = gprs_ns_tx_reset(nsvc, cause);
