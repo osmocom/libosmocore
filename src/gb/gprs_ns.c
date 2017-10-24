@@ -1170,7 +1170,7 @@ int gprs_ns_rcvmsg(struct gprs_ns_inst *nsi, struct msgb *msg,
 	return rc;
 }
 
-const char *gprs_ns_ll_str(struct gprs_nsvc *nsvc)
+const char *gprs_ns_ll_str(const struct gprs_nsvc *nsvc)
 {
 	static char buf[80];
 

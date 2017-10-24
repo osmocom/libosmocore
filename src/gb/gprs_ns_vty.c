@@ -156,7 +156,7 @@ DEFUN(cfg_ns, cfg_ns_cmd,
 	return CMD_SUCCESS;
 }
 
-static void dump_nse(struct vty *vty, struct gprs_nsvc *nsvc, bool stats, bool persistent_only)
+static void dump_nse(struct vty *vty, const struct gprs_nsvc *nsvc, bool stats, bool persistent_only)
 {
 	if (persistent_only)
 		if (!nsvc->persistent)
@@ -186,7 +186,7 @@ static void dump_nse(struct vty *vty, struct gprs_nsvc *nsvc, bool stats, bool p
 	}
 }
 
-static void dump_ns(struct vty *vty, struct gprs_ns_inst *nsi, bool stats, bool persistent_only)
+static void dump_ns(struct vty *vty, const struct gprs_ns_inst *nsi, bool stats, bool persistent_only)
 {
 	struct gprs_nsvc *nsvc;
 	struct in_addr ia;
