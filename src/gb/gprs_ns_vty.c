@@ -165,12 +165,11 @@ static void dump_nse(struct vty *vty, struct gprs_nsvc *nsvc, int stats)
 		nsvc->remote_end_is_sgsn ? "SGSN" : "BSS",
 		NS_DESC_A(nsvc->remote_state),
 		NS_DESC_B(nsvc->remote_state));
-	if (nsvc->ll == GPRS_NS_LL_UDP || nsvc->ll == GPRS_NS_LL_FR_GRE)
-		vty_out(vty, ", %s %15s:%u",
-			nsvc->ll == GPRS_NS_LL_UDP ? "UDP   " : "FR-GRE",
-			inet_ntoa(nsvc->ip.bts_addr.sin_addr),
-			osmo_ntohs(nsvc->ip.bts_addr.sin_port));
-	vty_out(vty, "%s", VTY_NEWLINE);
+
+	vty_out(vty, ", %s %s%s",
+		nsvc->ll == GPRS_NS_LL_UDP ? "UDP   " : "FR-GRE",
+		gprs_ns_ll_str(nsvc), VTY_NEWLINE);
+
 	if (stats) {
 		vty_out_rate_ctr_group(vty, " ", nsvc->ctrg);
 		vty_out_stat_item_group(vty, " ", nsvc->statg);

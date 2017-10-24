@@ -1173,9 +1173,21 @@ int gprs_ns_rcvmsg(struct gprs_ns_inst *nsi, struct msgb *msg,
 const char *gprs_ns_ll_str(struct gprs_nsvc *nsvc)
 {
 	static char buf[80];
-	snprintf(buf, sizeof(buf), "%s:%u",
-		 inet_ntoa(nsvc->ip.bts_addr.sin_addr),
-		 osmo_ntohs(nsvc->ip.bts_addr.sin_port));
+
+	switch(nsvc->ll) {
+	case GPRS_NS_LL_UDP:
+		snprintf(buf, sizeof(buf), "%s:%u",
+			 inet_ntoa(nsvc->ip.bts_addr.sin_addr), osmo_ntohs(nsvc->ip.bts_addr.sin_port));
+		break;
+	case GPRS_NS_LL_FR_GRE:
+		snprintf(buf, sizeof(buf), "%s:%u",
+			 inet_ntoa(nsvc->frgre.bts_addr.sin_addr), osmo_ntohs(nsvc->frgre.bts_addr.sin_port));
+		break;
+	default:
+		buf[0] = '\0';
+		break;
+	}
+
 	buf[sizeof(buf) - 1] = '\0';
 
 	return buf;

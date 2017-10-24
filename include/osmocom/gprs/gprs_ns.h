@@ -140,6 +140,8 @@ struct gprs_nsvc {
 	/*! which link-layer are we based on? */
 	enum gprs_ns_ll ll;
 
+	/*! make sure to always keep bts_addr as first struct member to not break the assumption
+	  that those structs are similar */
 	union {
 		struct {
 			struct sockaddr_in bts_addr;
