@@ -35,7 +35,7 @@
 #include <osmocom/core/rate_ctr.h>
 #include <osmocom/gprs/gprs_ns.h>
 #include <osmocom/gprs/gprs_bssgp.h>
-
+#include <osmocom/core/socket.h>
 #include <osmocom/vty/vty.h>
 #include <osmocom/vty/command.h>
 #include <osmocom/vty/logging.h>
@@ -158,17 +158,23 @@ DEFUN(cfg_ns, cfg_ns_cmd,
 
 static void dump_nse(struct vty *vty, struct gprs_nsvc *nsvc, int stats)
 {
-	vty_out(vty, "NSEI %5u, NS-VC %5u, %5s %9s, Remote: %-4s, %5s %9s",
+	vty_out(vty, "NSEI %5u, NS-VC %5u, %5s %9s, ",
 		nsvc->nsei, nsvc->nsvci,
 		NS_DESC_A(nsvc->state),
-		NS_DESC_B(nsvc->state),
+		NS_DESC_B(nsvc->state));
+
+	if (nsvc->ll == GPRS_NS_LL_UDP) {
+		char local[INET6_ADDRSTRLEN + 1];
+		int rc = osmo_sock_local_ip((char *)&local, inet_ntoa(nsvc->ip.bts_addr.sin_addr));
+		vty_out(vty, "%s:%u ", (rc < 0) ? "unknown" : local, nsvc->nsi->nsip.local_port);
+	}
+
+	vty_out(vty, "Remote: %-4s, %5s %9s, %s ",
 		nsvc->remote_end_is_sgsn ? "SGSN" : "BSS",
 		NS_DESC_A(nsvc->remote_state),
-		NS_DESC_B(nsvc->remote_state));
+		NS_DESC_B(nsvc->remote_state), gprs_ns_ll_str(nsvc));
 
-	vty_out(vty, ", %s %s%s",
-		nsvc->ll == GPRS_NS_LL_UDP ? "UDP   " : "FR-GRE",
-		gprs_ns_ll_str(nsvc), VTY_NEWLINE);
+	vty_out(vty, "%s%s", nsvc->ll == GPRS_NS_LL_UDP ? "UDP" : "FR-GRE", VTY_NEWLINE);
 
 	if (stats) {
 		vty_out_rate_ctr_group(vty, " ", nsvc->ctrg);
