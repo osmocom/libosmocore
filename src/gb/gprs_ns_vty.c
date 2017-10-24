@@ -156,8 +156,12 @@ DEFUN(cfg_ns, cfg_ns_cmd,
 	return CMD_SUCCESS;
 }
 
-static void dump_nse(struct vty *vty, struct gprs_nsvc *nsvc, int stats)
+static void dump_nse(struct vty *vty, struct gprs_nsvc *nsvc, bool stats, bool persistent_only)
 {
+	if (persistent_only)
+		if (!nsvc->persistent)
+			return;
+
 	vty_out(vty, "NSEI %5u, NS-VC %5u, %5s %9s, ",
 		nsvc->nsei, nsvc->nsvci,
 		NS_DESC_A(nsvc->state),
@@ -182,7 +186,7 @@ static void dump_nse(struct vty *vty, struct gprs_nsvc *nsvc, int stats)
 	}
 }
 
-static void dump_ns(struct vty *vty, struct gprs_ns_inst *nsi, int stats)
+static void dump_ns(struct vty *vty, struct gprs_ns_inst *nsi, bool stats, bool persistent_only)
 {
 	struct gprs_nsvc *nsvc;
 	struct in_addr ia;
@@ -198,7 +202,7 @@ static void dump_ns(struct vty *vty, struct gprs_ns_inst *nsi, int stats)
 	llist_for_each_entry(nsvc, &nsi->gprs_nsvcs, list) {
 		if (nsvc == nsi->unknown_nsvc)
 			continue;
-		dump_nse(vty, nsvc, stats);
+		dump_nse(vty, nsvc, stats, persistent_only);
 	}
 }
 
@@ -206,7 +210,7 @@ DEFUN(show_ns, show_ns_cmd, "show ns",
 	SHOW_STR "Display information about the NS protocol")
 {
 	struct gprs_ns_inst *nsi = vty_nsi;
-	dump_ns(vty, nsi, 0);
+	dump_ns(vty, nsi, false, false);
 	return CMD_SUCCESS;
 }
 
@@ -216,7 +220,17 @@ DEFUN(show_ns_stats, show_ns_stats_cmd, "show ns stats",
 	"Include statistics\n")
 {
 	struct gprs_ns_inst *nsi = vty_nsi;
-	dump_ns(vty, nsi, 1);
+	dump_ns(vty, nsi, true, false);
+	return CMD_SUCCESS;
+}
+
+DEFUN(show_ns_pers, show_ns_pers_cmd, "show ns persistent",
+	SHOW_STR
+	"Display information about the NS protocol\n"
+	"Show only persistent NS\n")
+{
+	struct gprs_ns_inst *nsi = vty_nsi;
+	dump_ns(vty, nsi, true, true);
 	return CMD_SUCCESS;
 }
 
@@ -230,7 +244,7 @@ DEFUN(show_nse, show_nse_cmd, "show ns (nsei|nsvc) <0-65535> [stats]",
 	struct gprs_ns_inst *nsi = vty_nsi;
 	struct gprs_nsvc *nsvc;
 	uint16_t id = atoi(argv[1]);
-	int show_stats = 0;
+	bool show_stats = false;
 
 	if (!strcmp(argv[0], "nsei"))
 		nsvc = gprs_nsvc_by_nsei(nsi, id);
@@ -243,9 +257,9 @@ DEFUN(show_nse, show_nse_cmd, "show ns (nsei|nsvc) <0-65535> [stats]",
 	}
 
 	if (argc >= 3)
-		show_stats = 1;
+		show_stats = true;
 
-	dump_nse(vty, nsvc, show_stats);
+	dump_nse(vty, nsvc, show_stats, false);
 	return CMD_SUCCESS;
 }
 
@@ -594,6 +608,7 @@ int gprs_ns_vty_init(struct gprs_ns_inst *nsi)
 
 	install_element_ve(&show_ns_cmd);
 	install_element_ve(&show_ns_stats_cmd);
+	install_element_ve(&show_ns_pers_cmd);
 	install_element_ve(&show_nse_cmd);
 	install_element_ve(&logging_fltr_nsvc_cmd);
 
