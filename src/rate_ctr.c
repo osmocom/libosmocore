@@ -74,12 +74,13 @@ static void *tall_rate_ctr_ctx;
 static bool rate_ctrl_group_desc_validate(const struct rate_ctr_group_desc *desc, bool quiet)
 {
 	unsigned int i;
-	const struct rate_ctr_desc *ctr_desc = desc->ctr_desc;
+	const struct rate_ctr_desc *ctr_desc;
 
 	if (!desc) {
 		LOGP(DLGLOBAL, LOGL_ERROR, "NULL is not a valid counter group descriptor\n");
 		return false;
 	}
+	ctr_desc = desc->ctr_desc;
 
 	DEBUGP(DLGLOBAL, "validating counter group %p(%s) with %u counters\n", desc,
 		desc->group_name_prefix, desc->num_ctr);
