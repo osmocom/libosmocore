@@ -372,7 +372,7 @@ uint8_t *osmo_encode_big_endian(uint64_t value, size_t data_len)
  */
 size_t osmo_strlcpy(char *dst, const char *src, size_t siz)
 {
-	size_t ret = strlen(src);
+	size_t ret = src ? strlen(src) : 0;
 
 	if (siz) {
 		size_t len = (ret >= siz) ? siz - 1 : ret;
