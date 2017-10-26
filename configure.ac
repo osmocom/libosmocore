@@ -130,6 +130,20 @@ AS_IF([test "x$ENABLE_PCSC" = "xyes"], [
 AM_CONDITIONAL(ENABLE_PCSC, test "x$ENABLE_PCSC" = "xyes")
 AC_SUBST(ENABLE_PCSC)
 
+AC_ARG_ENABLE([gnutls], [AS_HELP_STRING([--disable-gnutls], [Do not use GnuTLS fallback for missing getrandom()])],
+	[ENABLE_GNUTLS=$enableval], [ENABLE_GNUTLS="yes"])
+AM_CONDITIONAL(ENABLE_GNUTLS, test x"$ENABLE_GNUTLS" = x"yes")
+AS_IF([test "x$ENABLE_GNUTLS" = "xyes"], [
+	PKG_CHECK_MODULES([LIBGNUTLS], [gnutls >= 2.12.0])
+])
+AC_SUBST(ENABLE_GNUTLS)
+if test x"$ENABLE_GNUTLS" = x"yes"
+then
+	AC_SUBST([LIBGNUTLS_CFLAGS])
+	AC_SUBST([LIBGNUTLS_LIBS])
+	AC_DEFINE([USE_GNUTLS], [1], [Use GnuTLS as a fallback for missing getrandom()])
+fi
+
 AC_ARG_ENABLE(plugin,
 	[AS_HELP_STRING(
 		[--disable-plugin],
@@ -228,12 +242,15 @@ then
 	AM_CONDITIONAL(ENABLE_PLUGIN, false)
 	AM_CONDITIONAL(ENABLE_MSGFILE, false)
 	AM_CONDITIONAL(ENABLE_SERIAL, false)
+	AM_CONDITIONAL(ENABLE_GNUTLS, false)
 	AM_CONDITIONAL(ENABLE_VTY, false)
 	AM_CONDITIONAL(ENABLE_CTRL, false)
 	AM_CONDITIONAL(ENABLE_UTILITIES, false)
 	AM_CONDITIONAL(ENABLE_GB, false)
+	AM_CONDITIONAL(ENABLE_GNUTLS, false)
 	AM_CONDITIONAL(ENABLE_PCSC, false)
 	AM_CONDITIONAL(ENABLE_PSEUDOTALLOC, true)
+	AC_DEFINE([USE_GNUTLS], [0])
 	AC_DEFINE([PANIC_INFLOOP],[1],[Use infinite loop on panic rather than fprintf/abort])
 fi
 

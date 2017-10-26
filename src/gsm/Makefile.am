@@ -38,6 +38,11 @@ libosmogsm_la_SOURCES =
 libosmogsm_la_LDFLAGS = $(LTLDFLAGS_OSMOGSM) -version-info $(LIBVERSION) -no-undefined
 libosmogsm_la_LIBADD = libgsmint.la $(TALLOC_LIBS)
 
+if ENABLE_GNUTLS
+AM_CPPFLAGS += $(LIBGNUTLS_CFLAGS)
+libosmogsm_la_LIBADD += $(LIBGNUTLS_LIBS)
+endif
+
 EXTRA_DIST = libosmogsm.map
 
 # Convolutional codes generation

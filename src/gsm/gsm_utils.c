@@ -106,6 +106,12 @@
 #endif
 #endif
 
+#if (USE_GNUTLS)
+#pragma message ("including GnuTLS for getrandom fallback.")
+#include <gnutls/gnutls.h>
+#include <gnutls/crypto.h>
+#endif
+
 /* ETSI GSM 03.38 6.2.1 and 6.2.1.1 default alphabet
  * Greek symbols at hex positions 0x10 and 0x12-0x1a
  * left out as they can't be handled with a char and
@@ -409,7 +415,7 @@ int gsm_7bit_encode_n_ussd(uint8_t *result, size_t n, const char *data, int *oct
  */
 int osmo_get_rand_id(uint8_t *out, size_t len)
 {
-	int rc;
+	int rc = -ENOTSUP;
 
 	/* this function is intended for generating short identifiers only, not arbitrary-length random data */
 	if (len > OSMO_MAX_RAND_ID_LEN)
@@ -421,13 +427,16 @@ int osmo_get_rand_id(uint8_t *out, size_t len)
 #pragma message ("Using direct syscall access for getrandom(): consider upgrading to glibc >= 2.25")
 	/* FIXME: this can be removed once we bump glibc requirements to 2.25: */
 	rc = syscall(SYS_getrandom, out, len, GRND_NONBLOCK);
-#else
-#pragma message ("Secure random unavailable: calls to osmo_get_rand_id() will always fail!")
-	return -ENOTSUP;
 #endif
+
 	/* getrandom() failed entirely: */
-	if (rc < 0)
+	if (rc < 0) {
+#if (USE_GNUTLS)
+#pragma message ("Secure random failed: using GnuTLS fallback.")
+		return gnutls_rnd(GNUTLS_RND_RANDOM, out, len);
+#endif
 		return -errno;
+	}
 
 	/* getrandom() failed partially due to signal interruption:
 	   this should never happen (according to getrandom(2)) as long as OSMO_MAX_RAND_ID_LEN < 256
