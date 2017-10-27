@@ -29,3 +29,5 @@ build .
 # is well separated from the source tree state.
 $MAKE distcheck \
     || cat-testlogs.sh
+
+osmo-clean-workspace.sh

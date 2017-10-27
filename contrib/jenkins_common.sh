@@ -8,6 +8,8 @@ if [ -z "$MAKE" ]; then
     exit 1
 fi
 
+osmo-clean-workspace.sh
+
 verify_value_string_arrays_are_terminated.py $(find . -name "*.[hc]")
 
 prep_build() {
@@ -16,11 +18,8 @@ prep_build() {
 
     cd "$_src_dir"
 
-    # a failed 'make distcheck' may leave files without write permissions
-    chmod -R a+w .
-    git clean -dxf
-    # make absolutely sure no src files have modifications
-    git checkout -f HEAD
+    # clean again before each build variant
+    osmo-clean-workspace.sh
 
     autoreconf --install --force
 

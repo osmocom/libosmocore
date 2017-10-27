@@ -24,3 +24,5 @@ build() {
 build builddir
 # verify build in source tree
 build .
+
+osmo-clean-workspace.sh
