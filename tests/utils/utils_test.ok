@@ -57,3 +57,21 @@ rc = -1
 26: pass str='BeadedBeeAced1EbbedDefacedFacade' min=32 max=32 even=1 expect=valid
 27: pass str='C01ffedC1cadaeAc1d1f1edAcac1aB0a' min=32 max=32 even=0 expect=valid
 28: pass str='DeafBeddedBabeAcceededFadedDecaff' min=32 max=32 even=0 expect=invalid
+
+Testing BCD conversion
+	val=0x0, expected=0, found=0
+	val=0x1, expected=1, found=1
+	val=0x2, expected=2, found=2
+	val=0x3, expected=3, found=3
+	val=0x4, expected=4, found=4
+	val=0x5, expected=5, found=5
+	val=0x6, expected=6, found=6
+	val=0x7, expected=7, found=7
+	val=0x8, expected=8, found=8
+	val=0x9, expected=9, found=9
+	val=0xa, expected=A, found=A
+	val=0xb, expected=B, found=B
+	val=0xc, expected=C, found=C
+	val=0xd, expected=D, found=D
+	val=0xe, expected=E, found=E
+	val=0xf, expected=F, found=F

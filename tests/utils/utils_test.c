@@ -26,6 +26,7 @@
 #include <osmocom/core/utils.h>
 
 #include <stdio.h>
+#include <ctype.h>
 
 static void hexdump_test(void)
 {
@@ -281,6 +282,47 @@ bool test_is_hexstr()
 	return pass;
 }
 
+struct bcdcheck {
+	uint8_t bcd;
+	char ch;
+};
+
+static const struct bcdcheck bcdchecks[]  = {
+	{ 0, '0' },
+	{ 1, '1' },
+	{ 2, '2' },
+	{ 3, '3' },
+	{ 4, '4' },
+	{ 5, '5' },
+	{ 6, '6' },
+	{ 7, '7' },
+	{ 8, '8' },
+	{ 9, '9' },
+	{ 0xA, 'A' },
+	{ 0xB, 'B' },
+	{ 0xC, 'C' },
+	{ 0xD, 'D' },
+	{ 0xE, 'E' },
+	{ 0xF, 'F' },
+};
+
+static void bcd_test(void)
+{
+	int i;
+
+	printf("\nTesting BCD conversion\n");
+	for (i = 0; i < ARRAY_SIZE(bcdchecks); i++) {
+		const struct bcdcheck *check = &bcdchecks[i];
+		char ch = osmo_bcd2char(check->bcd);
+		printf("\tval=0x%x, expected=%c, found=%c\n", check->bcd, check->ch, ch);
+		OSMO_ASSERT(osmo_bcd2char(check->bcd) == check->ch);
+		/* test char -> bcd back-coversion */
+		OSMO_ASSERT(osmo_char2bcd(ch) == check->bcd);
+		/* test for lowercase hex char */
+		OSMO_ASSERT(osmo_char2bcd(tolower(ch)) == check->bcd);
+	}
+}
+
 int main(int argc, char **argv)
 {
 	static const struct log_info log_info = {};
@@ -290,5 +332,6 @@ int main(int argc, char **argv)
 	hexparse_test();
 	test_idtag_parsing();
 	test_is_hexstr();
+	bcd_test();
 	return 0;
 }
