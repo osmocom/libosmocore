@@ -26,11 +26,11 @@ Architecture: any
 Multi-Arch: foreign
 Depends: libosmocodec0 (= ${binary:Version}),
          libosmocoding0 (= ${binary:Version}),
-         libosmocore8 (= ${binary:Version}),
-         libosmogb4 (= ${binary:Version}),
-         libosmogsm7 (= ${binary:Version}),
-         libosmovty3 (= ${binary:Version}),
-         libosmoctrl0 (= ${binary:Version}),
+         libosmocore9 (= ${binary:Version}),
+         libosmogb5 (= ${binary:Version}),
+         libosmogsm8 (= ${binary:Version}),
+         libosmovty4 (= ${binary:Version}),
+         libosmoctrl1 (= ${binary:Version}),
          libosmosim0 (= ${binary:Version}),
          ${misc:Depends}
 Description: Open Source MObile COMmunications CORE library (metapackage)
@@ -109,7 +109,7 @@ Description: Documentation for the osmo coding library
  .
  This package contains the documentation for the libosmocoding library.
 
-Package: libosmocore8
+Package: libosmocore9
 Section: libs
 Architecture: any
 Multi-Arch: same
@@ -123,14 +123,14 @@ Description: Osmo Core library
  (at least) other programs that are developed in the sphere of Free Software /
  Open Source mobile communication.
  .
- The libosmocore8 library in particular is a collection of common code used in
+ The libosmocore9 library in particular is a collection of common code used in
  various sub-projects inside the Osmocom family of projects.
 
 Package: libosmocore-doc
 Architecture: all
 Section: doc
 Depends: ${misc:Depends},
-         libosmocore8,
+         libosmocore9,
          libjs-jquery,
          libosmocodec-doc,
          libosmocoding-doc,
@@ -145,7 +145,7 @@ Description: Documentation for the Osmo Core library
  .
  This package contains the documentation for the libosmocore library.
 
-Package: libosmogb4
+Package: libosmogb5
 Section: libs
 Architecture: any
 Multi-Arch: same
@@ -166,7 +166,7 @@ Package: libosmogb-doc
 Architecture: all
 Section: doc
 Depends: ${misc:Depends},
-         libosmogb4,
+         libosmogb5,
          libjs-jquery
 Description: Documentation for the Osmo GPRS Gb library
  This is part of the libosmocore "meta"-library. The libosmocore library
@@ -177,7 +177,7 @@ Description: Documentation for the Osmo GPRS Gb library
  .
  This package contains the documentation for the libosmogb library.
 
-Package: libosmogsm7
+Package: libosmogsm8
 Section: libs
 Architecture: any
 Multi-Arch: same
@@ -201,7 +201,7 @@ Package: libosmogsm-doc
 Architecture: all
 Section: doc
 Depends: ${misc:Depends},
-         libosmogsm7,
+         libosmogsm8,
          libjs-jquery
 Description: Documentation for the Osmo GSM utility library
  This is part of the libosmocore "meta"-library. The libosmocore library
@@ -212,7 +212,7 @@ Description: Documentation for the Osmo GSM utility library
  .
  This package contains the documentation for the libosmogsm library.
 
-Package: libosmovty3
+Package: libosmovty4
 Section: libs
 Architecture: any
 Multi-Arch: same
@@ -233,7 +233,7 @@ Package: libosmovty-doc
 Architecture: all
 Section: doc
 Depends: ${misc:Depends},
-         libosmovty3,
+         libosmovty4,
          libjs-jquery
 Description: Documentation for the Osmo VTY library
  This is part of the libosmocore "meta"-library. The libosmocore library
@@ -244,7 +244,7 @@ Description: Documentation for the Osmo VTY library
  .
  This package contains the documentation for the libosmovty library.
 
-Package: libosmoctrl0
+Package: libosmoctrl1
 Section: libs
 Architecture: any
 Multi-Arch: same
@@ -258,7 +258,7 @@ Description: Osmo control library
  (at least) other programs that are developed in the sphere of Free Software /
  Open Source mobile communication.
  .
- The libosmoctrl library in particular contains an SNMP-like status interface.
+ The libosmoctrl1 library in particular contains an SNMP-like status interface.
 
 Package: libosmosim0
 Section: libs
