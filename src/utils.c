@@ -117,7 +117,14 @@ char osmo_bcd2char(uint8_t bcd)
  */
 uint8_t osmo_char2bcd(char c)
 {
-	return c - 0x30;
+	if (c >= '0' && c <= '9')
+		return c - 0x30;
+	else if (c >= 'A' && c <= 'F')
+		return 0xa + (c - 'A');
+	else if (c >= 'a' && c <= 'f')
+		return 0xa + (c - 'a');
+	else
+		return 0;
 }
 
 /*! Parse a string containing hexadecimal digits
