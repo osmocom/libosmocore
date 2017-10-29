@@ -112,6 +112,12 @@ void osmo_init_ignore_signals(void)
  */
 int osmo_init_logging(const struct log_info *log_info)
 {
+	static int logging_initialized = 0;
+
+	if (logging_initialized)
+		return -EEXIST;
+
+	logging_initialized = 1;
 	log_init(log_info, NULL);
 	osmo_stderr_target = log_target_create_stderr();
 	if (!osmo_stderr_target)
