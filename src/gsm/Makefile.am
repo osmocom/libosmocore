@@ -35,8 +35,8 @@ libgsmint_la_LDFLAGS = -no-undefined
 libgsmint_la_LIBADD = $(top_builddir)/src/libosmocore.la
 
 libosmogsm_la_SOURCES =
-libosmogsm_la_LDFLAGS = $(LTLDFLAGS_OSMOGSM) -version-info $(LIBVERSION) -no-undefined $(TALLOC_LIBS)
-libosmogsm_la_LIBADD = libgsmint.la
+libosmogsm_la_LDFLAGS = $(LTLDFLAGS_OSMOGSM) -version-info $(LIBVERSION) -no-undefined
+libosmogsm_la_LIBADD = libgsmint.la $(TALLOC_LIBS)
 
 EXTRA_DIST = libosmogsm.map
 

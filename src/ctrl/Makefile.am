@@ -10,8 +10,8 @@ lib_LTLIBRARIES = libosmoctrl.la
 
 libosmoctrl_la_SOURCES = control_cmd.c control_if.c fsm_ctrl_commands.c
 
-libosmoctrl_la_LDFLAGS = $(LTLDFLAGS_OSMOCTRL) $(TALLOC_LIBS) -version-info $(LIBVERSION) -no-undefined
-libosmoctrl_la_LIBADD = \
+libosmoctrl_la_LDFLAGS = $(LTLDFLAGS_OSMOCTRL) -version-info $(LIBVERSION) -no-undefined
+libosmoctrl_la_LIBADD = $(TALLOC_LIBS) \
 	$(top_builddir)/src/libosmocore.la \
 	$(top_builddir)/src/gsm/libosmogsm.la \
 	$(top_builddir)/src/vty/libosmovty.la

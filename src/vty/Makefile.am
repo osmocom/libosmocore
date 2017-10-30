@@ -12,6 +12,6 @@ lib_LTLIBRARIES = libosmovty.la
 libosmovty_la_SOURCES = buffer.c command.c vty.c vector.c utils.c \
 			telnet_interface.c logging_vty.c stats_vty.c \
 			fsm_vty.c talloc_ctx_vty.c
-libosmovty_la_LDFLAGS = -version-info $(LIBVERSION) -no-undefined $(TALLOC_LIBS)
-libosmovty_la_LIBADD = $(top_builddir)/src/libosmocore.la
+libosmovty_la_LDFLAGS = -version-info $(LIBVERSION) -no-undefined
+libosmovty_la_LIBADD = $(top_builddir)/src/libosmocore.la $(TALLOC_LIBS)
 endif

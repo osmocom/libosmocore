@@ -1,6 +1,7 @@
 AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include
 AM_CFLAGS = -Wall $(TALLOC_CFLAGS)
-AM_LDFLAGS = $(TALLOC_LIBS)
+AM_LDFLAGS =
+LDADD = $(top_builddir)/src/libosmocore.la $(TALLOC_LIBS)
 
 check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
                  smscb/smscb_test bits/bitrev_test a5/a5_test		\
@@ -43,155 +44,140 @@ check_PROGRAMS += gb/bssgp_fc_test gb/gprs_bssgp_test gb/gprs_ns_test
 endif
 
 utils_utils_test_SOURCES = utils/utils_test.c
-utils_utils_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/gsm/libosmogsm.la
+utils_utils_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 
 stats_stats_test_SOURCES = stats/stats_test.c
-stats_stats_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/gsm/libosmogsm.la
+stats_stats_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 
 a5_a5_test_SOURCES = a5/a5_test.c
-a5_a5_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/gsm/libgsmint.la
+a5_a5_test_LDADD = $(top_builddir)/src/gsm/libgsmint.la
 
 kasumi_kasumi_test_SOURCES = kasumi/kasumi_test.c
-kasumi_kasumi_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/gsm/libgsmint.la
+kasumi_kasumi_test_LDADD = $(top_builddir)/src/gsm/libgsmint.la
 
 comp128_comp128_test_SOURCES = comp128/comp128_test.c
-comp128_comp128_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/gsm/libosmogsm.la
+comp128_comp128_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 
 auth_milenage_test_SOURCES = auth/milenage_test.c
-auth_milenage_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/gsm/libosmogsm.la
+auth_milenage_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 
 abis_abis_test_SOURCES = abis/abis_test.c
-abis_abis_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/gsm/libosmogsm.la
+abis_abis_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 
 ctrl_ctrl_test_SOURCES = ctrl/ctrl_test.c
-ctrl_ctrl_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/ctrl/libosmoctrl.la
+ctrl_ctrl_test_LDADD = $(LDADD) $(top_builddir)/src/ctrl/libosmoctrl.la
 
 gea_gea_test_SOURCES = gea/gea_test.c
-gea_gea_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/gsm/libosmogsm.la
+gea_gea_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 
 bits_bitrev_test_SOURCES = bits/bitrev_test.c
-bits_bitrev_test_LDADD = $(top_builddir)/src/libosmocore.la
 
 bitvec_bitvec_test_SOURCES = bitvec/bitvec_test.c
-bitvec_bitvec_test_LDADD = $(top_builddir)/src/libosmocore.la
 
 bits_bitcomp_test_SOURCES = bits/bitcomp_test.c
-bits_bitcomp_test_LDADD = $(top_builddir)/src/libosmocore.la
 
 bits_bitfield_test_SOURCES = bits/bitfield_test.c
-bits_bitfield_test_LDADD = $(top_builddir)/src/libosmocore.la
 
 conv_conv_test_SOURCES = conv/conv_test.c conv/conv.c
-conv_conv_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/gsm/libgsmint.la
+conv_conv_test_LDADD = $(top_builddir)/src/gsm/libgsmint.la
 
 conv_conv_gsm0503_test_SOURCES = conv/conv_gsm0503_test.c conv/conv.c conv/gsm0503_test_vectors.c
-conv_conv_gsm0503_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/gsm/libgsmint.la
+conv_conv_gsm0503_test_LDADD = $(top_builddir)/src/gsm/libgsmint.la
 conv_conv_gsm0503_test_CPPFLAGS = $(AM_CPPFLAGS) -I$(top_srcdir)/tests/conv
 
 gsm0808_gsm0808_test_SOURCES = gsm0808/gsm0808_test.c
-gsm0808_gsm0808_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/gsm/libosmogsm.la
+gsm0808_gsm0808_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 
 gsm0408_gsm0408_test_SOURCES = gsm0408/gsm0408_test.c
-gsm0408_gsm0408_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/gsm/libosmogsm.la
+gsm0408_gsm0408_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 
 gprs_gprs_test_SOURCES = gprs/gprs_test.c
-gprs_gprs_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/gsm/libosmogsm.la
+gprs_gprs_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 
 lapd_lapd_test_SOURCES = lapd/lapd_test.c
-lapd_lapd_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/gsm/libosmogsm.la
+lapd_lapd_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 
 msgb_msgb_test_SOURCES = msgb/msgb_test.c
-msgb_msgb_test_LDADD = $(top_builddir)/src/libosmocore.la
 
 msgfile_msgfile_test_SOURCES = msgfile/msgfile_test.c
-msgfile_msgfile_test_LDADD = $(top_builddir)/src/libosmocore.la
 
 smscb_smscb_test_SOURCES = smscb/smscb_test.c
-smscb_smscb_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/gsm/libosmogsm.la
+smscb_smscb_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 
 smscb_gsm0341_test_SOURCES = smscb/gsm0341_test.c
-smscb_gsm0341_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/gsm/libosmogsm.la
+smscb_gsm0341_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 
 sms_sms_test_SOURCES = sms/sms_test.c
-sms_sms_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/gsm/libosmogsm.la
+sms_sms_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 
 timer_timer_test_SOURCES = timer/timer_test.c
-timer_timer_test_LDADD = $(top_builddir)/src/libosmocore.la
 
 ussd_ussd_test_SOURCES = ussd/ussd_test.c
-ussd_ussd_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/gsm/libosmogsm.la
+ussd_ussd_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 
 gb_bssgp_fc_test_SOURCES = gb/bssgp_fc_test.c
-gb_bssgp_fc_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/gb/libosmogb.la \
+gb_bssgp_fc_test_LDADD = $(LDADD) $(top_builddir)/src/gb/libosmogb.la \
 			 $(top_builddir)/src/gsm/libosmogsm.la
 
 gb_gprs_bssgp_test_SOURCES = gb/gprs_bssgp_test.c
-gb_gprs_bssgp_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/gb/libosmogb.la $(LIBRARY_DL) \
+gb_gprs_bssgp_test_LDADD = $(LDADD) $(top_builddir)/src/gb/libosmogb.la $(LIBRARY_DL) \
 			   $(top_builddir)/src/gsm/libosmogsm.la
 
 gb_gprs_ns_test_SOURCES = gb/gprs_ns_test.c
-gb_gprs_ns_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/gb/libosmogb.la $(LIBRARY_DL) \
+gb_gprs_ns_test_LDADD = $(LDADD) $(top_builddir)/src/gb/libosmogb.la $(LIBRARY_DL) \
 			$(top_builddir)/src/gsm/libosmogsm.la
 
 logging_logging_test_SOURCES = logging/logging_test.c
-logging_logging_test_LDADD = $(top_builddir)/src/libosmocore.la
 
 fr_fr_test_SOURCES = fr/fr_test.c
-fr_fr_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/gb/libosmogb.la $(LIBRARY_DL) \
+fr_fr_test_LDADD = $(LDADD) $(top_builddir)/src/gb/libosmogb.la $(LIBRARY_DL) \
 		   $(top_builddir)/src/gsm/libosmogsm.la
 
 codec_codec_test_SOURCES = codec/codec_test.c
-codec_codec_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/codec/libosmocodec.la
+codec_codec_test_LDADD = $(LDADD) $(top_builddir)/src/codec/libosmocodec.la
 
 loggingrb_loggingrb_test_SOURCES = loggingrb/loggingrb_test.c
-loggingrb_loggingrb_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/vty/libosmovty.la
+loggingrb_loggingrb_test_LDADD = $(LDADD) $(top_builddir)/src/vty/libosmovty.la
 
 strrb_strrb_test_SOURCES = strrb/strrb_test.c
-strrb_strrb_test_LDADD = $(top_builddir)/src/libosmocore.la
 
 vty_vty_test_SOURCES = vty/vty_test.c
-vty_vty_test_LDADD = $(top_builddir)/src/vty/libosmovty.la $(top_builddir)/src/libosmocore.la
+vty_vty_test_LDADD = $(LDADD) $(top_builddir)/src/vty/libosmovty.la
 
 sim_sim_test_SOURCES = sim/sim_test.c
-sim_sim_test_LDADD = $(top_builddir)/src/sim/libosmosim.la $(top_builddir)/src/libosmocore.la \
+sim_sim_test_LDADD = $(LDADD) $(top_builddir)/src/sim/libosmosim.la \
 		     $(top_builddir)/src/gsm/libosmogsm.la
 
 tlv_tlv_test_SOURCES = tlv/tlv_test.c
-tlv_tlv_test_LDADD = $(top_builddir)/src/gsm/libosmogsm.la $(top_builddir)/src/libosmocore.la
+tlv_tlv_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 
 gsup_gsup_test_SOURCES = gsup/gsup_test.c
-gsup_gsup_test_LDADD = $(top_builddir)/src/gsm/libosmogsm.la $(top_builddir)/src/libosmocore.la
+gsup_gsup_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 
 oap_oap_test_SOURCES = oap/oap_test.c
-oap_oap_test_LDADD = $(top_builddir)/src/gsm/libosmogsm.la $(top_builddir)/src/libosmocore.la
+oap_oap_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 
 fsm_fsm_test_SOURCES = fsm/fsm_test.c
-fsm_fsm_test_LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/ctrl/libosmoctrl.la
+fsm_fsm_test_LDADD = $(LDADD) $(top_builddir)/src/ctrl/libosmoctrl.la
 
 write_queue_wqueue_test_SOURCES = write_queue/wqueue_test.c
-write_queue_wqueue_test_LDADD = $(top_builddir)/src/libosmocore.la
 
 socket_socket_test_SOURCES = socket/socket_test.c
-socket_socket_test_LDADD = $(top_builddir)/src/libosmocore.la
 
 coding_coding_test_SOURCES = coding/coding_test.c
 coding_coding_test_LDADD = \
-  $(top_builddir)/src/libosmocore.la \
   $(top_builddir)/src/gsm/libosmogsm.la \
   $(top_builddir)/src/codec/libosmocodec.la \
   $(top_builddir)/src/coding/libosmocoding.la
 
 endian_endian_test_SOURCES = endian/endian_test.c
-endian_endian_test_LDADD = $(top_builddir)/src/libosmocore.la
 
 sercomm_sercomm_test_SOURCES = sercomm/sercomm_test.c
-sercomm_sercomm_test_LDADD = $(top_builddir)/src/libosmocore.la
 
 prbs_prbs_test_SOURCES = prbs/prbs_test.c
-prbs_prbs_test_LDADD = $(top_builddir)/src/libosmocore.la
 
 gsm23003_gsm23003_test_SOURCES = gsm23003/gsm23003_test.c
-gsm23003_gsm23003_test_LDADD = $(top_builddir)/src/gsm/libosmogsm.la $(top_builddir)/src/libosmocore.la
+gsm23003_gsm23003_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 
 # The `:;' works around a Bash 3.2 bug when the output is not writeable.
 $(srcdir)/package.m4: $(top_srcdir)/configure.ac

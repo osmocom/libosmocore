@@ -44,11 +44,11 @@ endif
 BUILT_SOURCES = crc8gen.c crc16gen.c crc32gen.c crc64gen.c
 EXTRA_DIST = conv_acc_sse_impl.h
 
+libosmocore_la_LDFLAGS = -version-info $(LIBVERSION) -no-undefined
+
 if ENABLE_PLUGIN
 libosmocore_la_SOURCES += plugin.c
-libosmocore_la_LDFLAGS = -version-info $(LIBVERSION) $(TALLOC_LIBS) $(LIBRARY_DL) -no-undefined
-else
-libosmocore_la_LDFLAGS = -version-info $(LIBVERSION) $(TALLOC_LIBS) -no-undefined
+libosmocore_la_LIBADD += $(LIBRARY_DL)
 endif
 
 if ENABLE_MSGFILE
