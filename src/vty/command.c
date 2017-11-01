@@ -1950,7 +1950,7 @@ static char **cmd_complete_command_real(vector vline, struct vty *vty,
 
 		/* In case of 'command \t' pattern.  Do you need '?' command at
 		   the end of the line. */
-		if (*(char *)vector_slot(vline, index) == '\0')
+		if (vector_slot(vline, index) == '\0')
 			*status = CMD_ERR_NOTHING_TODO;
 		else
 			*status = CMD_ERR_NO_MATCH;
