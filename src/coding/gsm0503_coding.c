@@ -1743,16 +1743,16 @@ static void tch_efr_unreorder(ubit_t *s, ubit_t *p, const ubit_t *w)
 
 	memcpy(s, w, 71);
 	sum = s[69] + w[71] + w[72];
-	s[69] = (sum > 2);
+	s[69] = (sum >= 2);
 	memcpy(s + 71, w + 73, 50);
 	sum = s[119] + w[123] + w[124];
-	s[119] = (sum > 2);
+	s[119] = (sum >= 2);
 	memcpy(s + 121, w + 125, 53);
 	sum = s[172] + w[178] + w[179];
 	s[172] = (sum > 2);
 	memcpy(s + 174, w + 180, 50);
 	sum = s[222] + w[230] + w[231];
-	s[222] = (sum > 2);
+	s[222] = (sum >= 2);
 	memcpy(s + 224, w + 232, 20);
 	memcpy(p, w + 252, 8);
 }
