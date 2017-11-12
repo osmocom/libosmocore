@@ -1,8 +1,10 @@
 /* (C) 2009 by Harald Welte <laforge@gnumonks.org>
  * (C) 2012 Ivan Klyuchnikov
- * (C) 2015 by Sysmocom s.f.m.c. GmbH
+ * (C) 2015 by sysmocom - s.f.m.c. GmbH
  *
  * All Rights Reserved
+ *
+ * SPDX-License-Identifier: GPL-2.0+
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

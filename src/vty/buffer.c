@@ -3,6 +3,8 @@
 /*
  * Copyright (C) 1998 Kunihiro Ishiguro
  *
+ * SPDX-License-Identifier: GPL-2.0+
+ *
  * This file is part of GNU Zebra.
  *
  * GNU Zebra is free software; you can redistribute it and/or modify

@@ -1,8 +1,10 @@
 /*
  * (C) 2011 by Holger Hans Peter Freyther
  * (C) 2011 by On-Waves
- * (C) 2014 by Daniel Willmann <dwillmann@sysmocom.de>
+ * (C) 2014 by sysmocom - s.f.m.c. GmbH, Author: Daniel Willmann <dwillmann@sysmocom.de>
  * All Rights Reserved
+ *
+ * SPDX-License-Identifier: GPL-2.0+
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

@@ -11,11 +11,6 @@ Copyright: 2008      Daniel Willmann <daniel@totalueberwachung.de>
            2010      Nico Golde <nico@ngolde.de>
 License: GPL-2+
 
-Files: src/talloc.c include/osmocom/core/talloc.h
-Copyright: 2004 Andrew Tridgell
-           2006 Stefan Metzmacher
-License: LGPL-3+
-
 Files: include/osmocom/core/loggingrb.h
        include/osmocom/core/strrb.h
        src/strrb.c
@@ -30,8 +25,9 @@ Copyright: 1999 Andrea Arcangeli <andrea@suse.de>
 License: GPL-2+
 
 Files: include/osmocom/core/crc16.h
+       src/crc16.c
 Copyright: 2005 Ben Gardner <bgardner@wabtec.com>
-License: GPL-2+
+License: GPL-2
 
 Files: src/utils.c
 Copyright: 2011 Harald Welte <laforge@gnumonks.org>
@@ -110,7 +106,7 @@ Files: include/osmocom/core/stats.h
        tests/stats/stats_test.c
 Copyright: 2009-2010 by Harald Welte <laforge@gnumonks.org>
            2009-2014 by Holger Hans Peter Freyther
-           2015 Sysmocom s.f.m.c. GmbH
+           2015 sysmocom - s.f.m.c. GmbH
 License: GPL-2+
 
 Files: tests/gb/gprs_ns_test.c
@@ -176,25 +172,6 @@ License: GPL-3+
  .
  On Debian systems, the complete text of the GNU General
  Public License version 3 can be found in "/usr/share/common-licenses/GPL-3".
-
-
-License: LGPL-3+
- This library is free software; you can redistribute it and/or
- modify it under the terms of the GNU Lesser General Public
- License as published by the Free Software Foundation; either
- version 3 of the License, or (at your option) any later version.
- .
- This library is distributed in the hope that it will be useful,
- but WITHOUT ANY WARRANTY; without even the implied warranty of
- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- Lesser General Public License for more details.
- .
- You should have received a copy of the GNU Lesser General Public
- License along with this library; if not, see <http://www.gnu.org/licenses/>.
- .
- On Debian systems, the complete text of the GNU Lesser General
- Public License version 3 can be found in "/usr/share/common-licenses/LGPL-3".
-
 
 License: AGPL-3+
  This program is free software; you can redistribute it and/or modify

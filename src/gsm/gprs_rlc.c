@@ -1,5 +1,12 @@
 /*! \file gsm/gprs_rlc.c
  *  helper functions for (E)GPRS RLC according to 3GPP TS 44.060.
+ *
+ *  (C) 2016 by Thomas Thou
+ *  (C) 2016-2017 by sysmocom - s.f.m.c. GmbH
+ *  (C) 2017 by Harald Welte <laforge@gnumonks.org>
+ *  All Rights Reserved.
+ *
+ *  SPDX-License-Identifier: GPL-2.0+
  */
 
 #include <errno.h>

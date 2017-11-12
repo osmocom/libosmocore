@@ -2,8 +2,9 @@
  * Kasumi cipher and KGcore functions. */
 /*
  * (C) 2013 by Max <Max.Suraev@fairwaves.ru>
- *
  * All Rights Reserved
+ *
+ * SPDX-License-Identifier: GPL-2.0+
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

@@ -17,6 +17,8 @@
  * Alternatively, this software may be distributed under the terms of BSD
  * license.
  *
+ * SPDX-License-Identifier: GPL-2.0 OR BSD-3-Clause
+ *
  * See README and COPYING for more details.
  */
 

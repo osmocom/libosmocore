@@ -3,6 +3,8 @@
 /*
  * (C) 2016 by Harald Welte <laforge@gnumonks.org>
  *
+ * SPDX-License-Identifier: GPL-2.0+
+ *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2, or
  *  any later version as published by the Free Software Foundation.

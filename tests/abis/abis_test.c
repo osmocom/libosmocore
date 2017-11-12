@@ -1,6 +1,6 @@
 /*
  * (C) 2012 by Holger Hans Peter Freyther <zecke@selfish.org>
- * (C) 2017 by sysmocom s.m.f.c. GmbH <info@sysmocom.de>
+ * (C) 2017 by sysmocom - s.m.f.c. GmbH <info@sysmocom.de>
  * All Rights Reserved
  *
  * This program is free software; you can redistribute it and/or modify

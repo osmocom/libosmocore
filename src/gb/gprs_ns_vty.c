@@ -1,9 +1,12 @@
 /*! \file gprs_ns_vty.c
  * VTY interface for our GPRS Networks Service (NS) implementation. */
 /*
- * (C) 2009-2010 by Harald Welte <laforge@gnumonks.org>
+ * (C) 2009-2014 by Harald Welte <laforge@gnumonks.org>
+ * (C) 2016-2017 by sysmocom - s.f.m.c. GmbH
  *
  * All Rights Reserved
+ *
+ * SPDX-License-Identifier: GPL-2.0+
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

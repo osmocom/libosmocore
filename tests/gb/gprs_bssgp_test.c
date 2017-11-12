@@ -1,10 +1,12 @@
 /* Test routines for the BSSGP implementation in libosmogb
  *
- * (C) 2014 by sysmocom s.f.m.c. GmbH
+ * (C) 2014 by sysmocom - s.f.m.c. GmbH
  * Author: Jacob Erlbeck <jerlbeck@sysmocom.de>
  *
  * Skeleton based on bssgp_fc_test.c
  * (C) 2012 by Harald Welte <laforge@gnumonks.org>
+ *
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #undef _GNU_SOURCE

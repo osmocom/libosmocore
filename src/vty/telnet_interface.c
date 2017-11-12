@@ -1,5 +1,8 @@
-/* (C) 2009 by Holger Hans Peter Freyther <zecke@selfish.org>
+/* (C) 2009-2010 by Holger Hans Peter Freyther <zecke@selfish.org>
+ * (C) 2010 by Sylvain Munaut <tnt@246tNt.com>
  * All Rights Reserved
+ *
+ * SPDX-License-Identifier: GPL-2.0+
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

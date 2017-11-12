@@ -5,6 +5,9 @@
  * of the linux 2.4 netfilter subsystem. */
 /*
  * (C) 2000-2009 by Harald Welte <laforge@gnumonks.org>
+ * All Rights Reserverd.
+ *
+ * SPDX-License-Identifier: GPL-2.0+
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by

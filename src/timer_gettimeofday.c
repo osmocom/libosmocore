@@ -1,8 +1,9 @@
 /*
- * (C) 2016 by sysmocom s.f.m.c. GmbH <info@sysmocom.de>
+ * (C) 2016 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
+ * Authors: Neels Hofmeyr <nhofmeyr@sysmocom.de>
  * All Rights Reserved
  *
- * Authors: Neels Hofmeyr <nhofmeyr@sysmocom.de>
+ * SPDX-License-Identifier: GPL-2.0+
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

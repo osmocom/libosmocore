@@ -1,6 +1,8 @@
 /* (C) 2012-2013 by Katerina Barone-Adesi <kat.obsc@gmail.com>
  * All Rights Reserved
  *
+ * SPDX-License-Identifier: GPL-3.0+
+ *
  * This program is iree software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 3 of the License, or

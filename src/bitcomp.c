@@ -1,9 +1,12 @@
 /*! \file bitcomp.c
  * Osmocom bit compression routines */
 /*
- * (C) 2016 sysmocom s.f.m.c. GmbH by Max Suraev <msuraev@sysmocom.de>
+ * (C) 2016 by sysmocom - s.f.m.c. GmbH
+ * Author: Max Suraev <msuraev@sysmocom.de>
  *
  * All Rights Reserved
+ *
+ * SPDX-License-Identifier: GPL-2.0+
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

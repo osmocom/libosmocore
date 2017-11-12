@@ -1,5 +1,11 @@
 /*! \file fsm_ctrl_commands.c */
 
+/* (C) 2017 by Harald Welte <laforge@gnumonks.org>
+ * All Rights Reserved
+ *
+ * SPDX-License-Identifier: GPL-2.0+
+ */
+
 #include <string.h>
 #include <errno.h>
 

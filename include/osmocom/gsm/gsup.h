@@ -16,9 +16,11 @@
  *  \file gsup.h
  *  Osmocom Generic Subscriber Update Protocol message encoder/decoder. */
 /*
- * (C) 2014 by sysmocom s.f.m.c. GmbH, Author: Jacob Erlbeck
+ * (C) 2014 by sysmocom - s.f.m.c. GmbH, Author: Jacob Erlbeck
  * (C) 2016 by Harald Welte <laforge@gnumonks.org>
  * All Rights Reserved
+ *
+ * SPDX-License-Identifier: GPL-2.0+
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

@@ -1,10 +1,13 @@
 /*! \file lapdm.c
  * GSM LAPDm (TS 04.06) implementation. */
 /*
- * (C) 2010-2011 by Harald Welte <laforge@gnumonks.org>
+ * (C) 2010-2017 by Harald Welte <laforge@gnumonks.org>
  * (C) 2010-2011 by Andreas Eversberg <jolly@eversberg.eu>
+ * (C) 2014-2016 by sysmocom - s.f.m.c GmbH
  *
  * All Rights Reserved
+ *
+ * SPDX-License-Identifier: GPL-2.0+
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

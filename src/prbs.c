@@ -1,5 +1,9 @@
 /* Osmocom implementation of pseudo-random bit sequence generation */
-/* (C) 2017 by Harald Welte <laforge@gnumonks.org> */
+/* (C) 2017 by Harald Welte <laforge@gnumonks.org> 
+ * All Rights Reserved
+ *
+ * SPDX-License-Identifier: GPL-2.0+
+ * */
 
 #include <stdint.h>
 #include <string.h>

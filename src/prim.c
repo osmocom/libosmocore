@@ -1,4 +1,10 @@
-/*! \addtogroup prim
+/*! 
+ * (C) 2015-2017 by Harald Welte <laforge@gnumonks.org>
+ * All Rights Reserved
+ *
+ * SPDX-License-Identifier: GPL-2.0+
+ *
+ * \addtogroup prim
  *  @{
  *  \file prim.c */
 

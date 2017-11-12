@@ -1,6 +1,8 @@
 /* test routines for NS connection handling
- * (C) 2013 by sysmocom s.f.m.c. GmbH
+ * (C) 2013 by sysmocom - s.f.m.c. GmbH
  * Author: Jacob Erlbeck <jerlbeck@sysmocom.de>
+ *
+ * SPDX-License-Identifier: GPL-2.0+
  */
 
 #undef _GNU_SOURCE

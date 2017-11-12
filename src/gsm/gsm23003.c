@@ -1,10 +1,11 @@
 /*! \file gsm23003.c
  * Utility function implementations related to 3GPP TS 23.003 */
 /*
- * (C) 2017 sysmocom s.f.m.c. GmbH <info@sysmocom.de>
+ * (C) 2017 sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
+ * Author: Neels Hofmeyr <nhofmeyr@sysmocom.de>
  * All Rights Reserved
  *
- * Author: Neels Hofmeyr <nhofmeyr@sysmocom.de>
+ * SPDX-License-Identifier: GPL-2.0+
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

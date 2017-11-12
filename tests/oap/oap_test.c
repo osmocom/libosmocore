@@ -1,9 +1,9 @@
 /* Test Osmocom Authentication Protocol */
 /*
- * (C) 2016 by sysmocom s.f.m.c. GmbH
+ * (C) 2016 by sysmocom - s.f.m.c. GmbH
+ * Author: Neels Hofmeyr
  * All Rights Reserved
  *
- * Author: Neels Hofmeyr
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

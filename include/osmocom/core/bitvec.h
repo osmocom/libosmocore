@@ -1,6 +1,6 @@
 /* (C) 2009 by Harald Welte <laforge@gnumonks.org>
  * (C) 2012 Ivan Klyuchnikov
- * (C) 2015 Sysmocom s.f.m.c. GmbH
+ * (C) 2015 sysmocom - s.f.m.c. GmbH
  *
  * All Rights Reserved
  *

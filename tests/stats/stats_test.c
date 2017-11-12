@@ -1,8 +1,10 @@
 /* tests for statistics */
 /*
- * (C) 2015 Sysmocom s.m.f.c. GmbH
+ * (C) 2015 sysmocom - s.m.f.c. GmbH
  *
  * All Rights Reserved
+ *
+ * SPDX-License-Identifier: GPL-2.0+
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

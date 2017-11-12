@@ -12,6 +12,8 @@
  *
  * See README and COPYING for more details.
  *
+ * SPDX-License-Identifier: GPL-2.0 OR BSD-3-Clause
+ *
  * This file implements an example authentication algorithm defined for 3GPP
  * AKA. This can be used to implement a simple HLR/AuC into hlr_auc_gw to allow
  * EAP-AKA to be tested properly with real USIM cards.

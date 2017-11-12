@@ -3,6 +3,12 @@
 
    Command interpreter routine for virtual terminal [aka TeletYpe]
    Copyright (C) 1997, 98, 99 Kunihiro Ishiguro
+   Copyright (C) 2010-2011 Holger Hans Peter Freyther <zecke@selfish.org>
+   Copyright (C) 2012 Sylvain Munaut <tnt@246tNt.com>
+   Copyright (C) 2013,2015 Harald Welte <laforge@gnumonks.org>
+   Copyright (C) 2013,2017 sysmocom - s.f.m.c. GmbH
+
+   SPDX-License-Identifier: GPL-2.0+
 
 This file is part of GNU Zebra.
 

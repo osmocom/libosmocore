@@ -1,7 +1,11 @@
 /*
- * (C) 2008-2010 by Harald Welte <laforge@gnumonks.org>
+ * (C) 2008-2017 by Harald Welte <laforge@gnumonks.org>
+ * (C) 2013 by Holger Freyther <holger@freyther.de>
+ * (C) 2014-2016 by sysmocom - s.f.m.c. GmbH
  *
  * All Rights Reserved
+ *
+ * SPDX-License-Identifier: GPL-2.0+
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by

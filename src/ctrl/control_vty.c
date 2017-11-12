@@ -1,9 +1,11 @@
 /*! \file control_vty.c
  * VTY configuration for Control interface. */
 /*
- * (C) 2016 by sysmocom s.m.f.c. GmbH <info@sysmocom.de>
+ * (C) 2016 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
  *
  * All Rights Reserved
+ *
+ * SPDX-License-Identifier: GPL-2.0+
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
