@@ -56,7 +56,7 @@ size-max=100 oct, leak-rate=100 oct/s, queue-len=5 msgs, pdu_len=10 oct, pdu_cnt
 30: FC OUT Nr 13
 40: FC OUT Nr 14
 50: FC OUT Nr 15
-msgb ctx: 685 b in 6 blocks (0 b in 1 block == just the context)
+msgb ctx: 0 b in 1 blocks (0 b in 1 block == just the context)
 ===== BSSGP flow-control test END
 
 ===== BSSGP flow-control test START
@@ -229,6 +229,6 @@ size-max=100 oct, leak-rate=100 oct/s, queue-len=5 msgs, pdu_len=10 oct, pdu_cnt
 30: FC OUT Nr 13
 40: FC OUT Nr 14
 50: FC OUT Nr 15
-msgb ctx: 685 b in 6 blocks (0 b in 1 block == just the context)
+msgb ctx: 0 b in 1 blocks (0 b in 1 block == just the context)
 ===== BSSGP flow-control test END
 

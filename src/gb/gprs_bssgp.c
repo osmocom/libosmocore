@@ -764,7 +764,11 @@ int bssgp_fc_in(struct bssgp_flow_control *fc, struct msgb *msg,
 	}
 
 	if (bssgp_fc_needs_queueing(fc, llc_pdu_len)) {
-		return fc_enqueue(fc, msg, llc_pdu_len, priv);
+		int rc;
+		rc = fc_enqueue(fc, msg, llc_pdu_len, priv);
+		if (rc)
+			msgb_free(msg);
+		return rc;
 	} else {
 		/* record the time we transmitted this PDU */
 		osmo_gettimeofday(&time_now, NULL);

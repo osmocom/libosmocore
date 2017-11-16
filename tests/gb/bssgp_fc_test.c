@@ -190,7 +190,8 @@ int main(int argc, char **argv)
 	printf("msgb ctx: %zu b in %zu blocks (0 b in 1 block == just the context)\n",
 	       talloc_total_size(tall_msgb_ctx),
 	       talloc_total_blocks(tall_msgb_ctx));
-	/* KNOWN BUG: expecting 0b in 1 block, but a full queue is still a mem leak */
+	OSMO_ASSERT(talloc_total_size(tall_msgb_ctx) == 0);
+	OSMO_ASSERT(talloc_total_blocks(tall_msgb_ctx) == 1);
 	talloc_free(tall_msgb_ctx);
 	printf("===== BSSGP flow-control test END\n\n");
 
