@@ -100,7 +100,7 @@
 
 /* FIXME: this can be removed once we bump glibc requirements to 2.25: */
 #if defined(__GLIBC__) && (__GLIBC__ >= 2) && (__GLIBC_MINOR__ >= 25)
-#include <linux/random.h>
+#include <sys/random.h>
 #elif HAVE_DECL_SYS_GETRANDOM
 #include <sys/syscall.h>
 #ifndef GRND_NONBLOCK
