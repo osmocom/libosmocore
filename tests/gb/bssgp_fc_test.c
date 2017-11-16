@@ -29,19 +29,10 @@ int get_centisec_diff(void)
 	return tv.tv_sec * 100 + tv.tv_usec/10000;
 }
 
-/* round to deciseconds to make sure test output is always consistent */
-int round_decisec(int csec_in)
-{
-	int tmp = csec_in / 10;
-
-	return tmp * 10;
-}
-
 static int fc_out_cb(struct bssgp_flow_control *fc, struct msgb *msg,
 		     uint32_t llc_pdu_len, void *priv)
 {
 	unsigned int csecs = get_centisec_diff();
-	csecs = round_decisec(csecs);
 
 	printf("%u: FC OUT Nr %lu\n", csecs, (unsigned long) msg->cb[0]);
 	msgb_free(msg);
@@ -52,7 +43,6 @@ static int fc_in(struct bssgp_flow_control *fc, unsigned int pdu_len)
 {
 	struct msgb *msg;
 	unsigned int csecs = get_centisec_diff();
-	csecs = round_decisec(csecs);
 
 	msg = msgb_alloc(1, "fc test");
 	msg->cb[0] = in_ctr++;
