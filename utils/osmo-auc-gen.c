@@ -98,7 +98,7 @@ int main(int argc, char **argv)
 	struct osmo_auth_vector _vec;
 	struct osmo_auth_vector *vec = &_vec;
 	uint8_t _rand[16], _auts[14];
-	uint64_t sqn;
+	uint64_t sqn = 0;
 	unsigned int ind = 0;
 	int rc, option_index;
 	int rand_is_set = 0;
