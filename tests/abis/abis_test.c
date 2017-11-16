@@ -193,6 +193,8 @@ static void test_sw_descr()
 	/* check multiple, chained SW-descr: */
 	chk_raw("half", chain, sizeof(chain) / 2);
 	chk_raw("full", chain, sizeof(chain));
+
+	msgb_free(msg);
 }
 
 int main(int argc, char **argv)
