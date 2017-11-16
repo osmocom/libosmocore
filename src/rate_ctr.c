@@ -190,15 +190,6 @@ struct rate_ctr_group *rate_ctr_group_alloc(void *ctx,
 	unsigned int size;
 	struct rate_ctr_group *group;
 
-	/* attempt to mangle all '.' in identifiers to ':' for backwards compat */
-	if (!rate_ctrl_group_desc_validate(desc, true)) {
-		/* don't use 'ctx' here as it would screw up memory leak debugging e.g.
-		 * in osmo-msc */
-		desc = rate_ctr_group_desc_mangle(NULL, desc);
-		if (!desc)
-			return NULL;
-	}
-
 	size = sizeof(struct rate_ctr_group) +
 			desc->num_ctr * sizeof(struct rate_ctr);
 
@@ -208,6 +199,15 @@ struct rate_ctr_group *rate_ctr_group_alloc(void *ctx,
 	group = talloc_zero_size(ctx, size);
 	if (!group)
 		return NULL;
+
+	/* attempt to mangle all '.' in identifiers to ':' for backwards compat */
+	if (!rate_ctrl_group_desc_validate(desc, true)) {
+		desc = rate_ctr_group_desc_mangle(group, desc);
+		if (!desc) {
+			talloc_free(group);
+			return NULL;
+		}
+	}
 
 	group->desc = desc;
 	group->idx = idx;
