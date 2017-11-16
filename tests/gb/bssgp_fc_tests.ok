@@ -3,34 +3,54 @@ size-max=100 oct, leak-rate=100 oct/s, queue-len=5 msgs, pdu_len=10 oct, pdu_cnt
 
 0: FC IN Nr 1
 0: FC OUT Nr 1
+ -> 0: ok
 0: FC IN Nr 2
 0: FC OUT Nr 2
+ -> 0: ok
 0: FC IN Nr 3
 0: FC OUT Nr 3
+ -> 0: ok
 0: FC IN Nr 4
 0: FC OUT Nr 4
+ -> 0: ok
 0: FC IN Nr 5
 0: FC OUT Nr 5
+ -> 0: ok
 0: FC IN Nr 6
 0: FC OUT Nr 6
+ -> 0: ok
 0: FC IN Nr 7
 0: FC OUT Nr 7
+ -> 0: ok
 0: FC IN Nr 8
 0: FC OUT Nr 8
+ -> 0: ok
 0: FC IN Nr 9
 0: FC OUT Nr 9
+ -> 0: ok
 0: FC IN Nr 10
 0: FC OUT Nr 10
+ -> 0: ok
 0: FC IN Nr 11
+ -> 0: ok
 0: FC IN Nr 12
+ -> 0: ok
 0: FC IN Nr 13
+ -> 0: ok
 0: FC IN Nr 14
+ -> 0: ok
 0: FC IN Nr 15
+ -> 0: ok
 0: FC IN Nr 16
+ -> -28: queue full, msg dropped.
 0: FC IN Nr 17
+ -> -28: queue full, msg dropped.
 0: FC IN Nr 18
+ -> -28: queue full, msg dropped.
 0: FC IN Nr 19
+ -> -28: queue full, msg dropped.
 0: FC IN Nr 20
+ -> -28: queue full, msg dropped.
 10: FC OUT Nr 11
 20: FC OUT Nr 12
 30: FC OUT Nr 13
@@ -43,34 +63,54 @@ size-max=100 oct, leak-rate=100 oct/s, queue-len=100 msgs, pdu_len=10 oct, pdu_c
 
 0: FC IN Nr 1
 0: FC OUT Nr 1
+ -> 0: ok
 0: FC IN Nr 2
 0: FC OUT Nr 2
+ -> 0: ok
 0: FC IN Nr 3
 0: FC OUT Nr 3
+ -> 0: ok
 0: FC IN Nr 4
 0: FC OUT Nr 4
+ -> 0: ok
 0: FC IN Nr 5
 0: FC OUT Nr 5
+ -> 0: ok
 0: FC IN Nr 6
 0: FC OUT Nr 6
+ -> 0: ok
 0: FC IN Nr 7
 0: FC OUT Nr 7
+ -> 0: ok
 0: FC IN Nr 8
 0: FC OUT Nr 8
+ -> 0: ok
 0: FC IN Nr 9
 0: FC OUT Nr 9
+ -> 0: ok
 0: FC IN Nr 10
 0: FC OUT Nr 10
+ -> 0: ok
 0: FC IN Nr 11
+ -> 0: ok
 0: FC IN Nr 12
+ -> 0: ok
 0: FC IN Nr 13
+ -> 0: ok
 0: FC IN Nr 14
+ -> 0: ok
 0: FC IN Nr 15
+ -> 0: ok
 0: FC IN Nr 16
+ -> 0: ok
 0: FC IN Nr 17
+ -> 0: ok
 0: FC IN Nr 18
+ -> 0: ok
 0: FC IN Nr 19
+ -> 0: ok
 0: FC IN Nr 20
+ -> 0: ok
 10: FC OUT Nr 11
 20: FC OUT Nr 12
 30: FC OUT Nr 13
@@ -87,25 +127,45 @@ size-max=100 oct, leak-rate=100 oct/s, queue-len=100 msgs, pdu_len=10 oct, pdu_c
 size-max=100 oct, leak-rate=100 oct/s, queue-len=5 msgs, pdu_len=1000 oct, pdu_cnt=20
 
 0: FC IN Nr 1
+ -> -5: PDU too large, msg dropped.
 0: FC IN Nr 2
+ -> -5: PDU too large, msg dropped.
 0: FC IN Nr 3
+ -> -5: PDU too large, msg dropped.
 0: FC IN Nr 4
+ -> -5: PDU too large, msg dropped.
 0: FC IN Nr 5
+ -> -5: PDU too large, msg dropped.
 0: FC IN Nr 6
+ -> -5: PDU too large, msg dropped.
 0: FC IN Nr 7
+ -> -5: PDU too large, msg dropped.
 0: FC IN Nr 8
+ -> -5: PDU too large, msg dropped.
 0: FC IN Nr 9
+ -> -5: PDU too large, msg dropped.
 0: FC IN Nr 10
+ -> -5: PDU too large, msg dropped.
 0: FC IN Nr 11
+ -> -5: PDU too large, msg dropped.
 0: FC IN Nr 12
+ -> -5: PDU too large, msg dropped.
 0: FC IN Nr 13
+ -> -5: PDU too large, msg dropped.
 0: FC IN Nr 14
+ -> -5: PDU too large, msg dropped.
 0: FC IN Nr 15
+ -> -5: PDU too large, msg dropped.
 0: FC IN Nr 16
+ -> -5: PDU too large, msg dropped.
 0: FC IN Nr 17
+ -> -5: PDU too large, msg dropped.
 0: FC IN Nr 18
+ -> -5: PDU too large, msg dropped.
 0: FC IN Nr 19
+ -> -5: PDU too large, msg dropped.
 0: FC IN Nr 20
+ -> -5: PDU too large, msg dropped.
 ===== BSSGP flow-control test END
 
 ===== BSSGP flow-control test START
@@ -113,34 +173,54 @@ size-max=100 oct, leak-rate=100 oct/s, queue-len=5 msgs, pdu_len=10 oct, pdu_cnt
 
 0: FC IN Nr 1
 0: FC OUT Nr 1
+ -> 0: ok
 0: FC IN Nr 2
 0: FC OUT Nr 2
+ -> 0: ok
 0: FC IN Nr 3
 0: FC OUT Nr 3
+ -> 0: ok
 0: FC IN Nr 4
 0: FC OUT Nr 4
+ -> 0: ok
 0: FC IN Nr 5
 0: FC OUT Nr 5
+ -> 0: ok
 0: FC IN Nr 6
 0: FC OUT Nr 6
+ -> 0: ok
 0: FC IN Nr 7
 0: FC OUT Nr 7
+ -> 0: ok
 0: FC IN Nr 8
 0: FC OUT Nr 8
+ -> 0: ok
 0: FC IN Nr 9
 0: FC OUT Nr 9
+ -> 0: ok
 0: FC IN Nr 10
 0: FC OUT Nr 10
+ -> 0: ok
 0: FC IN Nr 11
+ -> 0: ok
 0: FC IN Nr 12
+ -> 0: ok
 0: FC IN Nr 13
+ -> 0: ok
 0: FC IN Nr 14
+ -> 0: ok
 0: FC IN Nr 15
+ -> 0: ok
 0: FC IN Nr 16
+ -> -28: queue full, msg dropped.
 0: FC IN Nr 17
+ -> -28: queue full, msg dropped.
 0: FC IN Nr 18
+ -> -28: queue full, msg dropped.
 0: FC IN Nr 19
+ -> -28: queue full, msg dropped.
 0: FC IN Nr 20
+ -> -28: queue full, msg dropped.
 10: FC OUT Nr 11
 20: FC OUT Nr 12
 30: FC OUT Nr 13

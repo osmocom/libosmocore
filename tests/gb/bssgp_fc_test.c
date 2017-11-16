@@ -39,17 +39,31 @@ static int fc_out_cb(struct bssgp_flow_control *fc, struct msgb *msg,
 	return 0;
 }
 
-static int fc_in(struct bssgp_flow_control *fc, unsigned int pdu_len)
+static void fc_in(struct bssgp_flow_control *fc, unsigned int pdu_len)
 {
 	struct msgb *msg;
 	unsigned int csecs = get_centisec_diff();
+	int rc;
 
 	msg = msgb_alloc(1, "fc test");
 	msg->cb[0] = in_ctr++;
 
 	printf("%u: FC IN Nr %lu\n", csecs, msg->cb[0]);
-	bssgp_fc_in(fc, msg, pdu_len, NULL);
-	return 0;
+	rc = bssgp_fc_in(fc, msg, pdu_len, NULL);
+	switch (rc) {
+	case 0:
+		printf(" -> %d: ok\n", rc);
+		break;
+	case -ENOSPC:
+		printf(" -> %d: queue full, msg dropped.\n", rc);
+		break;
+	case -EIO:
+		printf(" -> %d: PDU too large, msg dropped.\n", rc);
+		break;
+	default:
+		printf(" -> %d: error, msg dropped.\n", rc);
+		break;
+	}
 }
 
 
@@ -71,6 +85,8 @@ static void test_fc(uint32_t bucket_size_max, uint32_t bucket_leak_rate,
 
 	osmo_gettimeofday(&tv_start, NULL);
 
+	/* Fill the queue with PDUs, possibly beyond the queue being full. If it is full, additional PDUs
+	 * are discarded. */
 	for (i = 0; i < pdu_count; i++) {
 		fc_in(fc, pdu_len);
 		osmo_timers_check();
