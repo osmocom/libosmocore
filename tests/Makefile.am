@@ -244,6 +244,7 @@ noinst_HEADERS = conv/conv.h
 TESTSUITE = $(srcdir)/testsuite
 
 check-local: atconfig $(TESTSUITE)
+	cat /proc/cpuinfo
 	$(SHELL) '$(TESTSUITE)' $(TESTSUITEFLAGS)
 
 installcheck-local: atconfig $(TESTSUITE)
