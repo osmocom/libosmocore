@@ -498,6 +498,7 @@ static void test_lapdm_contention_resolution()
 	rc = dequeue_prim(&bts_to_ms_channel.lapdm_dcch, &pp, "DCCH");
 	CHECK_RC(rc);
 	OSMO_ASSERT(memcmp(pp.oph.msg->l2h, ua, ARRAY_SIZE(ua)) == 0);
+	msgb_free(pp.oph.msg);
 
 	/* Send SABM MS 2, we must get nothing, due to collision */
 	cm2 = malloc(sizeof(cm));
@@ -513,6 +514,7 @@ static void test_lapdm_contention_resolution()
 	rc = dequeue_prim(&bts_to_ms_channel.lapdm_dcch, &pp, "DCCH");
 	CHECK_RC(rc);
 	OSMO_ASSERT(memcmp(pp.oph.msg->l2h, ua, ARRAY_SIZE(ua)) == 0);
+	msgb_free(pp.oph.msg);
 
 	/* clean up */
 	lapdm_channel_exit(&bts_to_ms_channel);
@@ -597,6 +599,7 @@ static void lapdm_establish(const uint8_t *est_req, size_t est_req_size)
 
 	/* idempotent */
 	lapdm_channel_exit(&bts_to_ms_channel);
+	msgb_free(msg);
 }
 
 static void test_lapdm_establishment()
@@ -702,6 +705,7 @@ static void test_lapdm_desync()
 	rc = dequeue_prim(&bts_to_ms_channel.lapdm_dcch, &pp, "DCCH");
 	CHECK_RC(rc);
 	OSMO_ASSERT(memcmp(pp.oph.msg->l2h, ua, ARRAY_SIZE(ua)) == 0);
+	msgb_free(pp.oph.msg);
 
 	printf("\nSending Classmark Change\n");
 	send_buf(cm_chg, sizeof(cm_chg), &bts_to_ms_channel);
@@ -718,6 +722,7 @@ static void test_lapdm_desync()
 	printf("\nSending GPRS Suspend Request\n");
 	send_buf(gprs_susp, sizeof(gprs_susp), &bts_to_ms_channel);
 	dump_queue(&dl->dl.tx_queue);
+	msgb_free(pp.oph.msg);
 
 	rc = dequeue_prim(&bts_to_ms_channel.lapdm_dcch, &pp, "DCCH");
 	CHECK_RC(rc);
@@ -726,10 +731,12 @@ static void test_lapdm_desync()
 	printf("\nSending Cipher Mode Complete\n");
 	send_buf(cipher_compl, sizeof(cipher_compl), &bts_to_ms_channel);
 	dump_queue(&dl->dl.tx_queue);
+	msgb_free(pp.oph.msg);
 
 	rc = dequeue_prim(&bts_to_ms_channel.lapdm_dcch, &pp, "DCCH");
 	CHECK_RC(rc);
 	OSMO_ASSERT(memcmp(pp.oph.msg->l2h, cipher_compl_ack, ARRAY_SIZE(cipher_compl_ack)) == 0);
+	msgb_free(pp.oph.msg);
 
 	printf("\nEstablishing SAPI=3\n");
 	send_sabm(&bts_to_ms_channel, 3, NULL, 0);
@@ -738,6 +745,7 @@ static void test_lapdm_desync()
 	rc = dequeue_prim(&bts_to_ms_channel.lapdm_dcch, &pp, "DCCH");
 	CHECK_RC(rc);
 	OSMO_ASSERT(memcmp(pp.oph.msg->l2h, ua_sms, ARRAY_SIZE(ua_sms)) == 0);
+	msgb_free(pp.oph.msg);
 
 	printf("\nSending CP-DATA\n");
 	send_buf(cp_data_1, sizeof(cp_data_1), &bts_to_ms_channel);
@@ -746,6 +754,7 @@ static void test_lapdm_desync()
 	rc = dequeue_prim(&bts_to_ms_channel.lapdm_dcch, &pp, "DCCH");
 	CHECK_RC(rc);
 	OSMO_ASSERT(memcmp(pp.oph.msg->l2h, cp_data_1_ack, ARRAY_SIZE(cp_data_1_ack)) == 0);
+	msgb_free(pp.oph.msg);
 
 	/* clean up */
 	lapdm_channel_exit(&bts_to_ms_channel);
