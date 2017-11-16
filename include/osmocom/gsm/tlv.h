@@ -90,13 +90,24 @@ static inline uint8_t *lv_put(uint8_t *buf, uint8_t len,
 	return buf + len;
 }
 
-/*! put (append) a TLV field */
+/*! Append a TLV field, a Tag-Length-Value field.
+ * \param[out] buf  Location in a buffer to append TLV at.
+ * \param[in] tag  Tag id to write.
+ * \param[in] len  Length field to write and amount of bytes to append.
+ * \param[in] val  Pointer to data to append, or NULL to append zero data.
+ * Always append tag and length. Append \a len bytes read from \a val. If val is NULL, append \a len zero
+ * bytes instead. If \a len is zero, do not append any data apart from tag and length. */
 static inline uint8_t *tlv_put(uint8_t *buf, uint8_t tag, uint8_t len,
 				const uint8_t *val)
 {
 	*buf++ = tag;
 	*buf++ = len;
-	memcpy(buf, val, len);
+	if (len) {
+		if (val)
+			memcpy(buf, val, len);
+		else
+			memset(buf, 0, len);
+	}
 	return buf + len;
 }
 
