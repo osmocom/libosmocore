@@ -256,6 +256,8 @@ static void test_create_cm_u()
 	msg = gsm0808_create_classmark_update(&cm2, 1, &cm3, 1);
 	VERIFY(msg, res, ARRAY_SIZE(res));
 
+	msgb_free(msg);
+
 	msg = gsm0808_create_classmark_update(&cm2, 1, NULL, 0);
 	VERIFY(msg, res2o, ARRAY_SIZE(res2o));
 
