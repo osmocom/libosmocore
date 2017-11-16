@@ -47,6 +47,7 @@ static void rx_ser_data(struct osmo_sercomm_inst *sc, const uint8_t *data, unsig
 static void dlci_rx_cb(struct osmo_sercomm_inst *sercomm, uint8_t dlci, struct msgb *msg)
 {
 	printf("%s(): %s\n", __func__, msgb_hexdump(msg));
+	msgb_free(msg);
 }
 
 static struct msgb *create_mahlzeit_msg(void)
