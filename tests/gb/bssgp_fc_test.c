@@ -104,6 +104,8 @@ static void test_fc(uint32_t bucket_size_max, uint32_t bucket_leak_rate,
 		if (llist_empty(&fc->queue))
 			break;
 	}
+
+	talloc_free(fc);
 }
 
 static void help(void)
