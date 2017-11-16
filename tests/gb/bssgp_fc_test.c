@@ -130,6 +130,7 @@ int main(int argc, char **argv)
 	uint32_t pdu_length = 10; /* octets */
 	uint32_t pdu_count = 20; /* messages */
 	int c;
+	void *tall_msgb_ctx;
 
 	static const struct option long_options[] = {
 		{ "bucket-size-max", 1, 0, 's' },
@@ -144,6 +145,8 @@ int main(int argc, char **argv)
 	osmo_init_logging(&info);
 	log_set_use_color(osmo_stderr_target, 0);
 	log_set_print_filename(osmo_stderr_target, 0);
+
+	tall_msgb_ctx = msgb_talloc_ctx_init(NULL, 0);
 
 	while ((c = getopt_long(argc, argv, "s:r:d:l:c:",
 				long_options, NULL)) != -1) {
@@ -184,6 +187,11 @@ int main(int argc, char **argv)
 		bucket_leak_rate, max_queue_depth, pdu_length, pdu_count);
 	test_fc(bucket_size_max, bucket_leak_rate, max_queue_depth,
 		pdu_length, pdu_count);
+	printf("msgb ctx: %zu b in %zu blocks (0 b in 1 block == just the context)\n",
+	       talloc_total_size(tall_msgb_ctx),
+	       talloc_total_blocks(tall_msgb_ctx));
+	/* KNOWN BUG: expecting 0b in 1 block, but a full queue is still a mem leak */
+	talloc_free(tall_msgb_ctx);
 	printf("===== BSSGP flow-control test END\n\n");
 
 	exit(EXIT_SUCCESS);
