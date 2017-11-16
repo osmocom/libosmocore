@@ -119,9 +119,10 @@ struct osmo_config_list *osmo_config_list_parse(void *ctx, const char *filename)
 	line = NULL;
         while (getline(&line, &n, file) != -1) {
 		handle_line(entries, line);
-		free(line);
-		line = NULL;
 	}
+	/* The returned getline() buffer needs to be freed even if it failed. It can simply re-use the
+	 * buffer that was allocated on the first call. */
+	free(line);
 
 	fclose(file);
 	return entries;
