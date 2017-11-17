@@ -16,7 +16,7 @@ build() {
     prep_build "$src_dir" "$build_dir"
 
     "$src_dir"/configure --enable-static $ENABLE_SANITIZE CFLAGS="-Werror" CPPFLAGS="-Werror"
-    $MAKE $PARALLEL_MAKE check \
+    $MAKE V=1 $PARALLEL_MAKE check \
         || cat-testlogs.sh
 }
 
