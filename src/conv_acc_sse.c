@@ -1,6 +1,6 @@
 /*! \file conv_acc_sse.c
  * Accelerated Viterbi decoder implementation
- * for architectures with only SSE3 available. */
+ * for architectures with only SSSE3 available. */
 /*
  * Copyright (C) 2013, 2014 Thomas Tsou <tom@tsou.cc>
  *

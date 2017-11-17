@@ -48,7 +48,7 @@
 static int init_complete = 0;
 
 __attribute__ ((visibility("hidden"))) int avx2_supported = 0;
-__attribute__ ((visibility("hidden"))) int sse3_supported = 0;
+__attribute__ ((visibility("hidden"))) int ssse3_supported = 0;
 __attribute__ ((visibility("hidden"))) int sse41_supported = 0;
 
 /**
@@ -75,12 +75,12 @@ void (*osmo_conv_metrics_k7_n4)(const int8_t *seq,
 int16_t *osmo_conv_gen_vdec_malloc(size_t n);
 void osmo_conv_gen_vdec_free(int16_t *ptr);
 
-#if defined(HAVE_SSE3)
+#if defined(HAVE_SSSE3)
 int16_t *osmo_conv_sse_vdec_malloc(size_t n);
 void osmo_conv_sse_vdec_free(int16_t *ptr);
 #endif
 
-#if defined(HAVE_SSE3) && defined(HAVE_AVX2)
+#if defined(HAVE_SSSE3) && defined(HAVE_AVX2)
 int16_t *osmo_conv_sse_avx_vdec_malloc(size_t n);
 void osmo_conv_sse_avx_vdec_free(int16_t *ptr);
 #endif
@@ -99,7 +99,7 @@ void osmo_conv_gen_metrics_k7_n3(const int8_t *seq, const int16_t *out,
 void osmo_conv_gen_metrics_k7_n4(const int8_t *seq, const int16_t *out,
 	int16_t *sums, int16_t *paths, int norm);
 
-#if defined(HAVE_SSE3)
+#if defined(HAVE_SSSE3)
 void osmo_conv_sse_metrics_k5_n2(const int8_t *seq, const int16_t *out,
 	int16_t *sums, int16_t *paths, int norm);
 void osmo_conv_sse_metrics_k5_n3(const int8_t *seq, const int16_t *out,
@@ -114,7 +114,7 @@ void osmo_conv_sse_metrics_k7_n4(const int8_t *seq, const int16_t *out,
 	int16_t *sums, int16_t *paths, int norm);
 #endif
 
-#if defined(HAVE_SSE3) && defined(HAVE_AVX2)
+#if defined(HAVE_SSSE3) && defined(HAVE_AVX2)
 void osmo_conv_sse_avx_metrics_k5_n2(const int8_t *seq, const int16_t *out,
 	int16_t *sums, int16_t *paths, int norm);
 void osmo_conv_sse_avx_metrics_k5_n3(const int8_t *seq, const int16_t *out,
@@ -654,8 +654,8 @@ static void osmo_conv_init(void)
 		avx2_supported = __builtin_cpu_supports("avx2");
 	#endif
 
-	#ifdef HAVE_SSE3
-		sse3_supported = __builtin_cpu_supports("sse3");
+	#ifdef HAVE_SSSE3
+		ssse3_supported = __builtin_cpu_supports("ssse3");
 	#endif
 
 	#ifdef HAVE_SSE4_1
@@ -667,16 +667,16 @@ static void osmo_conv_init(void)
  * Usage of curly braces is mandatory,
  * because we use multi-line define.
  */
-#if defined(HAVE_SSE3) && defined(HAVE_AVX2)
-	if (sse3_supported && avx2_supported) {
+#if defined(HAVE_SSSE3) && defined(HAVE_AVX2)
+	if (ssse3_supported && avx2_supported) {
 		INIT_POINTERS(sse_avx);
-	} else if (sse3_supported) {
+	} else if (ssse3_supported) {
 		INIT_POINTERS(sse);
 	} else {
 		INIT_POINTERS(gen);
 	}
-#elif defined(HAVE_SSE3)
-	if (sse3_supported) {
+#elif defined(HAVE_SSSE3)
+	if (ssse3_supported) {
 		INIT_POINTERS(sse);
 	} else {
 		INIT_POINTERS(gen);

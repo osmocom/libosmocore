@@ -19,7 +19,7 @@
 #
 #   And defines:
 #
-#      HAVE_AVX3 / HAVE_SSE3 / HAVE_SSE4.1
+#      HAVE_AVX3 / HAVE_SSSE3 / HAVE_SSE4.1
 #
 # LICENSE
 #
@@ -42,7 +42,7 @@ AC_DEFUN([AX_CHECK_SIMD],
   AC_REQUIRE([AC_CANONICAL_HOST])
 
   AM_CONDITIONAL(HAVE_AVX2, false)
-  AM_CONDITIONAL(HAVE_SSE3, false)
+  AM_CONDITIONAL(HAVE_SSSE3, false)
   AM_CONDITIONAL(HAVE_SSE4_1, false)
 
   case $host_cpu in
@@ -57,14 +57,14 @@ AC_DEFUN([AX_CHECK_SIMD],
         AC_MSG_WARN([Your compiler does not support AVX2 instructions])
       fi
 
-      AX_CHECK_COMPILE_FLAG(-msse3, ax_cv_support_sse3_ext=yes, [])
-      if test x"$ax_cv_support_sse3_ext" = x"yes"; then
-        SIMD_FLAGS="$SIMD_FLAGS -msse3"
-        AC_DEFINE(HAVE_SSE3,,
-          [Support SSE3 (Streaming SIMD Extensions 3) instructions])
-        AM_CONDITIONAL(HAVE_SSE3, true)
+      AX_CHECK_COMPILE_FLAG(-mssse3, ax_cv_support_ssse3_ext=yes, [])
+      if test x"$ax_cv_support_ssse3_ext" = x"yes"; then
+        SIMD_FLAGS="$SIMD_FLAGS -mssse3"
+        AC_DEFINE(HAVE_SSSE3,,
+          [Support SSSE3 (Supplemental Streaming SIMD Extensions 3) instructions])
+        AM_CONDITIONAL(HAVE_SSSE3, true)
       else
-        AC_MSG_WARN([Your compiler does not support SSE3 instructions])
+        AC_MSG_WARN([Your compiler does not support SSSE3 instructions])
       fi
 
       AX_CHECK_COMPILE_FLAG(-msse4.1, ax_cv_support_sse41_ext=yes, [])

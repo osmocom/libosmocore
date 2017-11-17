@@ -23,20 +23,20 @@ libosmocore_la_SOURCES = timer.c timer_gettimeofday.c select.c signal.c msgb.c b
 			 macaddr.c stat_item.c stats.c stats_statsd.c prim.c \
 			 conv_acc.c conv_acc_generic.c sercomm.c prbs.c
 
-if HAVE_SSE3
+if HAVE_SSSE3
 libosmocore_la_SOURCES += conv_acc_sse.c
 if HAVE_SSE4_1
-conv_acc_sse.lo : AM_CFLAGS += -msse3 -msse4.1
+conv_acc_sse.lo : AM_CFLAGS += -mssse3 -msse4.1
 else
-conv_acc_sse.lo : AM_CFLAGS += -msse3
+conv_acc_sse.lo : AM_CFLAGS += -mssse3
 endif
 
 if HAVE_AVX2
 libosmocore_la_SOURCES += conv_acc_sse_avx.c
 if HAVE_SSE4_1
-conv_acc_sse_avx.lo : AM_CFLAGS += -msse3 -mavx2 -msse4.1
+conv_acc_sse_avx.lo : AM_CFLAGS += -mssse3 -mavx2 -msse4.1
 else
-conv_acc_sse_avx.lo : AM_CFLAGS += -msse3 -mavx2
+conv_acc_sse_avx.lo : AM_CFLAGS += -mssse3 -mavx2
 endif
 endif
 endif
