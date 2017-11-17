@@ -14,6 +14,7 @@
 #define OSMO_VTY_PORT_BTS	4241	/* also: osmo_pcap_server */
 #define OSMO_VTY_PORT_NITB_BSC	4242
 #define OSMO_VTY_PORT_BSC_MGCP	4243
+#define OSMO_VTY_PORT_MGW	OSMO_VTY_PORT_BSC_MGCP
 #define OSMO_VTY_PORT_BSC_NAT	4244
 #define OSMO_VTY_PORT_SGSN	4245
 #define OSMO_VTY_PORT_GBPROXY	4246
@@ -28,5 +29,4 @@
 #define OSMO_VTY_PORT_HLR	4258
 /* 4259 used by control interface */
 #define OSMO_VTY_PORT_GGSN	4260
-#define OSMO_VTY_PORT_MGW	4261
 /* When adding/changing port numbers, keep docs and wiki in sync. See above. */
