@@ -183,16 +183,17 @@ static void fsm_tmr_cb(void *data)
 
 	if (fsm->timer_cb) {
 		int rc = fsm->timer_cb(fi);
-		if (rc != 1) {
-			fi->T = 0;
+		if (rc != 1)
+			/* We don't actually know whether fi exists anymore.
+			 * Make sure to not access it and return right away. */
 			return;
-		}
+		/* The timer_cb told us to terminate, so we can safely assume
+		 * that fi still exists. */
 		LOGPFSM(fi, "timer_cb requested termination\n");
 	} else
 		LOGPFSM(fi, "No timer_cb, automatic termination\n");
 
 	/* if timer_cb returns 1 or there is no timer_cb */
-	fi->T = 0;
 	osmo_fsm_inst_term(fi, OSMO_FSM_TERM_TIMEOUT, &T);
 }
 
