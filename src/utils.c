@@ -385,7 +385,8 @@ size_t osmo_strlcpy(char *dst, const char *src, size_t siz)
 
 	if (siz) {
 		size_t len = (ret >= siz) ? siz - 1 : ret;
-		memcpy(dst, src, len);
+		if (src)
+			memcpy(dst, src, len);
 		dst[len] = '\0';
 	}
 	return ret;
