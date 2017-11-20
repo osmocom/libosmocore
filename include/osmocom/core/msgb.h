@@ -72,6 +72,15 @@ extern int msgb_resize_area(struct msgb *msg, uint8_t *area,
 extern struct msgb *msgb_copy(const struct msgb *msg, const char *name);
 static int msgb_test_invariant(const struct msgb *msg) __attribute__((pure));
 
+/*! Free all msgbs from a queue built with msgb_enqueue().
+ * \param[in] queue  list head of a msgb queue.
+ */
+static inline void msgb_queue_free(struct llist_head *queue)
+{
+	struct msgb *msg;
+	while ((msg = msgb_dequeue(queue))) msgb_free(msg);
+}
+
 #ifdef MSGB_DEBUG
 #include <osmocom/core/panic.h>
 #define MSGB_ABORT(msg, fmt, args ...) do {		\
