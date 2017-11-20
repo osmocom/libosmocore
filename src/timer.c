@@ -60,10 +60,10 @@ static void __add_timer(struct osmo_timer_list *timer)
 			new = &((*new)->rb_left);
 		else
 			new = &((*new)->rb_right);
-        }
+	}
 
-        rb_link_node(&timer->node, parent, new);
-        rb_insert_color(&timer->node, &timer_root);
+	rb_link_node(&timer->node, parent, new);
+	rb_insert_color(&timer->node, &timer_root);
 }
 
 /*! set up timer callback and data
