@@ -534,6 +534,19 @@ oom:
 	return CTRL_CMD_ERROR;
 }
 
+static int ctrl_rate_ctr_group_handler(struct rate_ctr_group *ctrg, void *data)
+{
+	struct ctrl_cmd *cmd = data;
+
+	cmd->reply = talloc_asprintf_append(cmd->reply, "%s.%u;", ctrg->desc->group_name_prefix, ctrg->idx);
+	if (!cmd->reply) {
+		cmd->reply = "OOM";
+		return -1;
+	}
+
+	return 0;
+}
+
 /* rate_ctr */
 CTRL_CMD_DEFINE(rate_ctr, "rate_ctr *");
 static int get_rate_ctr(struct ctrl_cmd *cmd, void *data)
@@ -574,6 +587,11 @@ static int get_rate_ctr(struct ctrl_cmd *cmd, void *data)
 		intv = RATE_CTR_INTV_HOUR;
 	} else if (!strcmp(interval, "per_day")) {
 		intv = RATE_CTR_INTV_DAY;
+	} else if (!strcmp(interval, "*")) {
+		intv = rate_ctr_for_each_group(ctrl_rate_ctr_group_handler, cmd);
+		if (intv < 0)
+			return CTRL_CMD_ERROR;
+		return CTRL_CMD_REPLY;
 	} else {
 		talloc_free(dup);
 		cmd->reply = "Wrong interval.";
