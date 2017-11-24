@@ -499,42 +499,19 @@ static uint64_t get_rate_ctr_value(const struct rate_ctr *ctr, int intv, const c
 	}
 }
 
-static char *get_all_rate_ctr_in_group(void *ctx, const struct rate_ctr_group *ctrg, int intv)
-{
-	int i;
-	char *counters = talloc_strdup(ctx, "");
-	if (!counters)
-		return NULL;
-
-	for (i=0;i<ctrg->desc->num_ctr;i++) {
-		counters = talloc_asprintf_append(counters, "\n%s.%u.%s %"PRIu64,
-			ctrg->desc->group_name_prefix, ctrg->idx,
-			ctrg->desc->ctr_desc[i].name,
-			get_rate_ctr_value(&ctrg->ctr[i], intv, ctrg->desc->group_name_prefix));
-		if (!counters)
-			return NULL;
-	}
-	return counters;
-}
-
 static int get_rate_ctr_group_idx(const struct rate_ctr_group *ctrg, int intv, struct ctrl_cmd *cmd)
 {
-	char *counters;
-
-	counters = get_all_rate_ctr_in_group(cmd, ctrg, intv);
-	if (!counters)
-		goto oom;
-
-	cmd->reply = talloc_asprintf(cmd, "All counters in %s.%u%s",
-			ctrg->desc->group_name_prefix, ctrg->idx, counters);
-	talloc_free(counters);
-	if (!cmd->reply)
-		goto oom;
+	unsigned int i;
+	for (i = 0; i < ctrg->desc->num_ctr; i++) {
+		ctrl_cmd_reply_printf(cmd, "%s %"PRIu64";", ctrg->desc->ctr_desc[i].name,
+				      get_rate_ctr_value(&ctrg->ctr[i], intv, ctrg->desc->group_name_prefix));
+		if (!cmd->reply) {
+			cmd->reply = "OOM";
+			return CTRL_CMD_ERROR;
+		}
+	}
 
 	return CTRL_CMD_REPLY;
-oom:
-	cmd->reply = "OOM.";
-	return CTRL_CMD_ERROR;
 }
 
 static int ctrl_rate_ctr_group_handler(struct rate_ctr_group *ctrg, void *data)
