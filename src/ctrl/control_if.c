@@ -483,10 +483,13 @@ static int listen_fd_cb(struct osmo_fd *listen_bfd, unsigned int what)
 	return ret;
 }
 
-static uint64_t get_rate_ctr_value(const struct rate_ctr *ctr, int intv)
+static uint64_t get_rate_ctr_value(const struct rate_ctr *ctr, int intv, const char *grp)
 {
-	if (intv >= RATE_CTR_INTV_NUM)
+	if (intv >= RATE_CTR_INTV_NUM) {
+		LOGP(DLCTRL, LOGL_ERROR, "Unexpected interval value %d while trying to get rate counter value in %s\n",
+		     intv, grp);
 		return 0;
+	}
 
 	/* Absolute value */
 	if (intv == -1) {
@@ -507,7 +510,7 @@ static char *get_all_rate_ctr_in_group(void *ctx, const struct rate_ctr_group *c
 		counters = talloc_asprintf_append(counters, "\n%s.%u.%s %"PRIu64,
 			ctrg->desc->group_name_prefix, ctrg->idx,
 			ctrg->desc->ctr_desc[i].name,
-			get_rate_ctr_value(&ctrg->ctr[i], intv));
+			get_rate_ctr_value(&ctrg->ctr[i], intv, ctrg->desc->group_name_prefix));
 		if (!counters)
 			return NULL;
 	}
@@ -630,7 +633,7 @@ static int get_rate_ctr(struct ctrl_cmd *cmd, void *data)
 
 	talloc_free(dup);
 
-	cmd->reply = talloc_asprintf(cmd, "%"PRIu64, get_rate_ctr_value(ctr, intv));
+	cmd->reply = talloc_asprintf(cmd, "%"PRIu64, get_rate_ctr_value(ctr, intv, ctrg->desc->group_name_prefix));
 	if (!cmd->reply)
 		goto oom;
 
