@@ -597,7 +597,7 @@ static int get_rate_ctr(struct ctrl_cmd *cmd, void *data)
 		return CTRL_CMD_REPLY;
 	} else {
 		talloc_free(dup);
-		cmd->reply = "Wrong interval.";
+		cmd->reply = "Wrong interval. Expecting 'per_sec', 'per_min', 'per_hour', 'per_day' or 'abs' value.";
 		goto err;
 	}
 
