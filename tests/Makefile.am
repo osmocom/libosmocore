@@ -165,7 +165,7 @@ write_queue_wqueue_test_SOURCES = write_queue/wqueue_test.c
 socket_socket_test_SOURCES = socket/socket_test.c
 
 coding_coding_test_SOURCES = coding/coding_test.c
-coding_coding_test_LDADD = \
+coding_coding_test_LDADD = $(LDADD) \
   $(top_builddir)/src/gsm/libosmogsm.la \
   $(top_builddir)/src/codec/libosmocodec.la \
   $(top_builddir)/src/coding/libosmocoding.la

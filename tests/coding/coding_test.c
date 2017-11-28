@@ -40,27 +40,6 @@
 /* set condition to 1, to show debugging */
 #define printd if (0) printf
 
-static int ubits2sbits(ubit_t *ubits, sbit_t *sbits, int count)
-{
-	int i;
-
-	for (i = 0; i < count; i++) {
-		if (*ubits == 0x23) {
-			ubits++;
-			sbits++;
-			continue;
-		}
-
-		if ((*ubits++) & 1) {
-			*sbits++ = -127;
-		} else {
-			*sbits++ = 127;
-		}
-	}
-
-	return count;
-}
-
 static void test_xcch(uint8_t *l2)
 {
 	uint8_t result[23];
@@ -73,21 +52,17 @@ static void test_xcch(uint8_t *l2)
 	gsm0503_xcch_encode(bursts_u, l2);
 
 	/* Prepare soft-bits */
-	ubits2sbits(bursts_u, bursts_s, 116 * 4);
+	osmo_ubit2sbit(bursts_s, bursts_u, 116 * 4);
 
 	printd("U-Bits:\n");
-	printd("%s %02x  %02x  ", osmo_hexdump(bursts_u, 57),
-		bursts_u[57], bursts_u[58]);
-	printd("%s\n", osmo_hexdump(bursts_u + 59, 57));
-	printd("%s %02x  %02x  ", osmo_hexdump(bursts_u + 116, 57),
-		bursts_u[57 + 116], bursts_u[58 + 116]);
-	printd("%s\n", osmo_hexdump(bursts_u + 59 + 116, 57));
-	printd("%s %02x  %02x  ", osmo_hexdump(bursts_u + 232, 57),
-		bursts_u[57 + 232], bursts_u[58 + 232]);
-	printd("%s\n", osmo_hexdump(bursts_u + 59 + 232, 57));
-	printd("%s %02x  %02x  ", osmo_hexdump(bursts_u + 348, 57),
-		bursts_u[57 + 348], bursts_u[58 + 348]);
-	printd("%s\n", osmo_hexdump(bursts_u + 59 + 348, 57));
+	printd("%s %02x  %02x  ", osmo_ubit_dump(bursts_u, 57), bursts_u[57], bursts_u[58]);
+	printd("%s\n",            osmo_ubit_dump(bursts_u + 59, 57));
+	printd("%s %02x  %02x  ", osmo_ubit_dump(bursts_u + 116, 57), bursts_u[57 + 116], bursts_u[58 + 116]);
+	printd("%s\n",            osmo_ubit_dump(bursts_u + 59 + 116, 57));
+	printd("%s %02x  %02x  ", osmo_ubit_dump(bursts_u + 232, 57), bursts_u[57 + 232], bursts_u[58 + 232]);
+	printd("%s\n",            osmo_ubit_dump(bursts_u + 59 + 232, 57));
+	printd("%s %02x  %02x  ", osmo_ubit_dump(bursts_u + 348, 57), bursts_u[57 + 348], bursts_u[58 + 348]);
+	printd("%s\n",            osmo_ubit_dump(bursts_u + 59 + 348, 57));
 
 	printd("S-Bits:\n");
 	printd("%s %02x  %02x  ", osmo_hexdump((uint8_t *)bursts_s, 57),
@@ -130,13 +105,11 @@ static void test_rach(uint8_t bsic, uint8_t ra)
 	gsm0503_rach_encode(bursts_u, &ra, bsic);
 
 	/* Prepare soft-bits */
-	ubits2sbits(bursts_u, bursts_s, 36);
+	osmo_ubit2sbit(bursts_s, bursts_u, 36);
 
-	printd("U-Bits:\n");
-	printd("%s\n", osmo_hexdump(bursts_u, 36));
+	printd("U-Bits: %s\n", osmo_ubit_dump(bursts_u, 36));
 
-	printd("S-Bits:\n");
-	printd("%s\n", osmo_hexdump((uint8_t *)bursts_s, 36));
+	printd("S-Bits: %s\n", osmo_hexdump((uint8_t *)bursts_s, 36));
 
 	/* Destroy some bits */
 	memset(bursts_s + 6, 0, 8);
@@ -165,13 +138,11 @@ static void test_sch(uint8_t *info)
 	gsm0503_sch_encode(bursts_u, info);
 
 	/* Prepare soft-bits */
-	ubits2sbits(bursts_u, bursts_s, 78);
+	osmo_ubit2sbit(bursts_s, bursts_u, 78);
 
-	printd("U-Bits:\n");
-	printd("%s\n", osmo_hexdump(bursts_u, 78));
+	printd("U-Bits: %s\n", osmo_ubit_dump(bursts_u, 78));
 
-	printd("S-Bits:\n");
-	printd("%s\n", osmo_hexdump((uint8_t *)bursts_s, 78));
+	printd("S-Bits: %s\n", osmo_hexdump((uint8_t *)bursts_s, 78));
 
 	/* Destroy some bits */
 	memset(bursts_s + 6, 0, 10);
@@ -201,33 +172,25 @@ static void test_fr(uint8_t *speech, int len)
 	gsm0503_tch_fr_encode(bursts_u, speech, len, 1);
 
 	/* Prepare soft-bits */
-	ubits2sbits(bursts_u, bursts_s, 116 * 8);
+	osmo_ubit2sbit(bursts_s, bursts_u, 116 * 8);
 
 	printd("U-Bits:\n");
-	printd("%s %02x  %02x  ", osmo_hexdump(bursts_u, 57),
-		bursts_u[57], bursts_u[58]);
-	printd("%s\n", osmo_hexdump(bursts_u + 59, 57));
-	printd("%s %02x  %02x  ", osmo_hexdump(bursts_u + 116, 57),
-		bursts_u[57 + 116], bursts_u[58 + 116]);
-	printd("%s\n", osmo_hexdump(bursts_u + 59 + 116, 57));
-	printd("%s %02x  %02x  ", osmo_hexdump(bursts_u + 232, 57),
-		bursts_u[57 + 232], bursts_u[58 + 232]);
-	printd("%s\n", osmo_hexdump(bursts_u + 59 + 232, 57));
-	printd("%s %02x  %02x  ", osmo_hexdump(bursts_u + 348, 57),
-		bursts_u[57 + 348], bursts_u[58 + 348]);
-	printd("%s\n", osmo_hexdump(bursts_u + 59 + 348, 57));
-	printd("%s %02x  %02x  ", osmo_hexdump(bursts_u + 464, 57),
-		bursts_u[57 + 464], bursts_u[58 + 464]);
-	printd("%s\n", osmo_hexdump(bursts_u + 59 + 464, 57));
-	printd("%s %02x  %02x  ", osmo_hexdump(bursts_u + 580, 57),
-		bursts_u[57 + 580], bursts_u[58 + 580]);
-	printd("%s\n", osmo_hexdump(bursts_u + 59 + 580, 57));
-	printd("%s %02x  %02x  ", osmo_hexdump(bursts_u + 696, 57),
-		bursts_u[57 + 696], bursts_u[58 + 696]);
-	printd("%s\n", osmo_hexdump(bursts_u + 59 + 696, 57));
-	printd("%s %02x  %02x  ", osmo_hexdump(bursts_u + 812, 57),
-		bursts_u[57 + 812], bursts_u[58 + 812]);
-	printd("%s\n", osmo_hexdump(bursts_u + 59 + 812, 57));
+	printd("%s %02x  %02x  ", osmo_ubit_dump(bursts_u, 57), bursts_u[57], bursts_u[58]);
+	printd("%s\n",            osmo_ubit_dump(bursts_u + 59, 57));
+	printd("%s %02x  %02x  ", osmo_ubit_dump(bursts_u + 116, 57), bursts_u[57 + 116], bursts_u[58 + 116]);
+	printd("%s\n",            osmo_ubit_dump(bursts_u + 59 + 116, 57));
+	printd("%s %02x  %02x  ", osmo_ubit_dump(bursts_u + 232, 57), bursts_u[57 + 232], bursts_u[58 + 232]);
+	printd("%s\n",            osmo_ubit_dump(bursts_u + 59 + 232, 57));
+	printd("%s %02x  %02x  ", osmo_ubit_dump(bursts_u + 348, 57), bursts_u[57 + 348], bursts_u[58 + 348]);
+	printd("%s\n",            osmo_ubit_dump(bursts_u + 59 + 348, 57));
+	printd("%s %02x  %02x  ", osmo_ubit_dump(bursts_u + 464, 57), bursts_u[57 + 464], bursts_u[58 + 464]);
+	printd("%s\n",            osmo_ubit_dump(bursts_u + 59 + 464, 57));
+	printd("%s %02x  %02x  ", osmo_ubit_dump(bursts_u + 580, 57), bursts_u[57 + 580], bursts_u[58 + 580]);
+	printd("%s\n",            osmo_ubit_dump(bursts_u + 59 + 580, 57));
+	printd("%s %02x  %02x  ", osmo_ubit_dump(bursts_u + 696, 57), bursts_u[57 + 696], bursts_u[58 + 696]);
+	printd("%s\n",            osmo_ubit_dump(bursts_u + 59 + 696, 57));
+	printd("%s %02x  %02x  ", osmo_ubit_dump(bursts_u + 812, 57), bursts_u[57 + 812], bursts_u[58 + 812]);
+	printd("%s\n",            osmo_ubit_dump(bursts_u + 59 + 812, 57));
 
 	printd("S-Bits:\n");
 	printd("%s %02x  %02x  ", osmo_hexdump((uint8_t *)bursts_s, 57),
@@ -287,27 +250,21 @@ static void test_hr(uint8_t *speech, int len)
 	gsm0503_tch_hr_encode(bursts_u, speech, len);
 
 	/* Prepare soft-bits */
-	ubits2sbits(bursts_u, bursts_s, 116 * 6);
+	osmo_ubit2sbit(bursts_s, bursts_u, 116 * 6);
 
 	printd("U-Bits:\n");
-	printd("%s %02x  %02x  ", osmo_hexdump(bursts_u, 57),
-		bursts_u[57], bursts_u[58]);
-	printd("%s\n", osmo_hexdump(bursts_u + 59, 57));
-	printd("%s %02x  %02x  ", osmo_hexdump(bursts_u + 116, 57),
-		bursts_u[57 + 116], bursts_u[58 + 116]);
-	printd("%s\n", osmo_hexdump(bursts_u + 59 + 116, 57));
-	printd("%s %02x  %02x  ", osmo_hexdump(bursts_u + 232, 57),
-		bursts_u[57 + 232], bursts_u[58 + 232]);
-	printd("%s\n", osmo_hexdump(bursts_u + 59 + 232, 57));
-	printd("%s %02x  %02x  ", osmo_hexdump(bursts_u + 348, 57),
-		bursts_u[57 + 348], bursts_u[58 + 348]);
-	printd("%s\n", osmo_hexdump(bursts_u + 59 + 348, 57));
-	printd("%s %02x  %02x  ", osmo_hexdump(bursts_u + 464, 57),
-		bursts_u[57 + 464], bursts_u[58 + 464]);
-	printd("%s\n", osmo_hexdump(bursts_u + 59 + 464, 57));
-	printd("%s %02x  %02x  ", osmo_hexdump(bursts_u + 580, 57),
-		bursts_u[57 + 580], bursts_u[58 + 580]);
-	printd("%s\n", osmo_hexdump(bursts_u + 59 + 580, 57));
+	printd("%s %02x  %02x  ", osmo_ubit_dump(bursts_u, 57), bursts_u[57], bursts_u[58]);
+	printd("%s\n",            osmo_ubit_dump(bursts_u + 59, 57));
+	printd("%s %02x  %02x  ", osmo_ubit_dump(bursts_u + 116, 57), bursts_u[57 + 116], bursts_u[58 + 116]);
+	printd("%s\n",            osmo_ubit_dump(bursts_u + 59 + 116, 57));
+	printd("%s %02x  %02x  ", osmo_ubit_dump(bursts_u + 232, 57), bursts_u[57 + 232], bursts_u[58 + 232]);
+	printd("%s\n",            osmo_ubit_dump(bursts_u + 59 + 232, 57));
+	printd("%s %02x  %02x  ", osmo_ubit_dump(bursts_u + 348, 57), bursts_u[57 + 348], bursts_u[58 + 348]);
+	printd("%s\n",            osmo_ubit_dump(bursts_u + 59 + 348, 57));
+	printd("%s %02x  %02x  ", osmo_ubit_dump(bursts_u + 464, 57), bursts_u[57 + 464], bursts_u[58 + 464]);
+	printd("%s\n",            osmo_ubit_dump(bursts_u + 59 + 464, 57));
+	printd("%s %02x  %02x  ", osmo_ubit_dump(bursts_u + 580, 57), bursts_u[57 + 580], bursts_u[58 + 580]);
+	printd("%s\n",            osmo_ubit_dump(bursts_u + 59 + 580, 57));
 
 	printd("S-Bits:\n");
 	printd("%s %02x  %02x  ", osmo_hexdump((uint8_t *)bursts_s, 57),
@@ -371,21 +328,17 @@ static void test_pdtch(uint8_t *l2, int len)
 	gsm0503_pdtch_encode(bursts_u, l2, len);
 
 	/* Prepare soft-bits */
-	ubits2sbits(bursts_u, bursts_s, 116 * 4);
+	osmo_ubit2sbit(bursts_s, bursts_u, 116 * 4);
 
 	printd("U-Bits:\n");
-	printd("%s %02x  %02x  ", osmo_hexdump(bursts_u, 57),
-		bursts_u[57], bursts_u[58]);
-	printd("%s\n", osmo_hexdump(bursts_u + 59, 57));
-	printd("%s %02x  %02x  ", osmo_hexdump(bursts_u + 116, 57),
-		bursts_u[57 + 116], bursts_u[58 + 116]);
-	printd("%s\n", osmo_hexdump(bursts_u + 59 + 116, 57));
-	printd("%s %02x  %02x  ", osmo_hexdump(bursts_u + 232, 57),
-		bursts_u[57 + 232], bursts_u[58 + 232]);
-	printd("%s\n", osmo_hexdump(bursts_u + 59 + 232, 57));
-	printd("%s %02x  %02x  ", osmo_hexdump(bursts_u + 348, 57),
-		bursts_u[57 + 348], bursts_u[58 + 348]);
-	printd("%s\n", osmo_hexdump(bursts_u + 59 + 348, 57));
+	printd("%s %02x  %02x  ", osmo_ubit_dump(bursts_u, 57), bursts_u[57], bursts_u[58]);
+	printd("%s\n",            osmo_ubit_dump(bursts_u + 59, 57));
+	printd("%s %02x  %02x  ", osmo_ubit_dump(bursts_u + 116, 57), bursts_u[57 + 116], bursts_u[58 + 116]);
+	printd("%s\n",            osmo_ubit_dump(bursts_u + 59 + 116, 57));
+	printd("%s %02x  %02x  ", osmo_ubit_dump(bursts_u + 232, 57), bursts_u[57 + 232], bursts_u[58 + 232]);
+	printd("%s\n",            osmo_ubit_dump(bursts_u + 59 + 232, 57));
+	printd("%s %02x  %02x  ", osmo_ubit_dump(bursts_u + 348, 57), bursts_u[57 + 348], bursts_u[58 + 348]);
+	printd("%s\n",            osmo_ubit_dump(bursts_u + 59 + 348, 57));
 
 	printd("S-Bits:\n");
 	printd("%s %02x  %02x  ", osmo_hexdump((uint8_t *)bursts_s, 57),
