@@ -30,13 +30,6 @@
 
 #include <osmocom/coding/gsm0503_coding.h>
 
-#define ASSERT_TRUE(rc) \
-	if (!(rc)) { \
-		printf("Assert failed in %s:%d.\n",  \
-		       __FILE__, __LINE__);          \
-		abort();			     \
-	}
-
 #define DUMP_U_AT(b, x, u) do {						\
 		printf("%s %02x  %02x  ", osmo_ubit_dump(b + x, 57), b[57 + x], b[58 + x]); \
 		printf("%s\n",            osmo_ubit_dump(b + 59 + x, 57)); \
@@ -103,8 +96,8 @@ static void test_xcch(uint8_t *l2)
 	printf("xcch_decode: n_errors=%d n_bits_total=%d ber=%.2f\n",
 		n_errors, n_bits_total, (float) n_errors / n_bits_total);
 
-	ASSERT_TRUE(n_bits_total == 456);
-	ASSERT_TRUE(!memcmp(l2, result, 23));
+	OSMO_ASSERT(n_bits_total == 456);
+	OSMO_ASSERT(!memcmp(l2, result, 23));
 
 	printf("\n");
 }
@@ -133,7 +126,7 @@ static void test_rach(uint8_t bsic, uint8_t ra)
 	gsm0503_rach_decode(&result, bursts_s, bsic);
 	printf("Decoded: %02x\n", result);
 
-	ASSERT_TRUE(ra == result);
+	OSMO_ASSERT(ra == result);
 
 	printf("\n");
 }
@@ -166,7 +159,7 @@ static void test_sch(uint8_t *info)
 	gsm0503_sch_decode(result, bursts_s);
 	printf("Decoded: %s\n", osmo_hexdump(result, 4));
 
-	ASSERT_TRUE(!memcmp(info, result, 4));
+	OSMO_ASSERT(!memcmp(info, result, 4));
 
 	printf("\n");
 }
@@ -202,8 +195,8 @@ static void test_fr(uint8_t *speech, int len)
 	printf("tch_fr_decode: n_errors=%d n_bits_total=%d ber=%.2f\n",
 		n_errors, n_bits_total, (float)n_errors/n_bits_total);
 
-	ASSERT_TRUE(rc == len);
-	ASSERT_TRUE(!memcmp(speech, result, len));
+	OSMO_ASSERT(rc == len);
+	OSMO_ASSERT(!memcmp(speech, result, len));
 
 	printf("\n");
 }
@@ -239,8 +232,8 @@ static void test_hr(uint8_t *speech, int len)
 	printf("tch_hr_decode: n_errors=%d n_bits_total=%d ber=%.2f\n",
 		n_errors, n_bits_total, (float)n_errors/n_bits_total);
 
-	ASSERT_TRUE(rc == len);
-	ASSERT_TRUE(!memcmp(speech, result, len));
+	OSMO_ASSERT(rc == len);
+	OSMO_ASSERT(!memcmp(speech, result, len));
 
 	printf("\n");
 }
@@ -283,8 +276,8 @@ static void test_pdtch(uint8_t *l2, int len)
 	printf("pdtch_decode: n_errors=%d n_bits_total=%d ber=%.2f\n",
 		n_errors, n_bits_total, (float)n_errors/n_bits_total);
 
-	ASSERT_TRUE(rc == len);
-	ASSERT_TRUE(!memcmp(l2, result, len));
+	OSMO_ASSERT(rc == len);
+	OSMO_ASSERT(!memcmp(l2, result, len));
 
 	printf("\n");
 }
