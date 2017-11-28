@@ -37,6 +37,46 @@
 		abort();			     \
 	}
 
+#define DUMP_U_AT(b, x, u) do {						\
+		printf("%s %02x  %02x  ", osmo_ubit_dump(b + x, 57), b[57 + x], b[58 + x]); \
+		printf("%s\n",            osmo_ubit_dump(b + 59 + x, 57)); \
+		if (u <= x)					\
+			return;						\
+	} while(0)
+
+#define DUMP_S_AT(b, x, u) do {						\
+		printf("%s %02x  %02x  ", osmo_hexdump(b + x, 57), b[57 + x], b[58 + x]); \
+		printf("%s\n",            osmo_hexdump(b + 59 + x, 57)); \
+		if (u <= x)					\
+			return;						\
+	} while(0)
+
+inline void dump_ubits(ubit_t *bursts_u, unsigned until)
+{
+	printf("U-Bits:\n");
+	DUMP_U_AT(bursts_u, 0, until);
+	DUMP_U_AT(bursts_u, 116, until);
+	DUMP_U_AT(bursts_u, 232, until);
+	DUMP_U_AT(bursts_u, 348, until);
+	DUMP_U_AT(bursts_u, 464, until);
+	DUMP_U_AT(bursts_u, 580, until);
+	DUMP_U_AT(bursts_u, 696, until);
+	DUMP_U_AT(bursts_u, 812, until);
+}
+
+inline void dump_sbits(uint8_t *bursts_s, unsigned until)
+{
+	printf("S-Bits:\n");
+	DUMP_S_AT(bursts_s, 0, until);
+	DUMP_S_AT(bursts_s, 116, until);
+	DUMP_S_AT(bursts_s, 232, until);
+	DUMP_S_AT(bursts_s, 348, until);
+	DUMP_S_AT(bursts_s, 464, until);
+	DUMP_S_AT(bursts_s, 580, until);
+	DUMP_S_AT(bursts_s, 696, until);
+	DUMP_S_AT(bursts_s, 812, until);
+}
+
 static void test_xcch(uint8_t *l2)
 {
 	uint8_t result[23];
@@ -50,30 +90,8 @@ static void test_xcch(uint8_t *l2)
 
 	/* Prepare soft-bits */
 	osmo_ubit2sbit(bursts_s, bursts_u, 116 * 4);
-
-	printf("U-Bits:\n");
-	printf("%s %02x  %02x  ", osmo_ubit_dump(bursts_u, 57), bursts_u[57], bursts_u[58]);
-	printf("%s\n",            osmo_ubit_dump(bursts_u + 59, 57));
-	printf("%s %02x  %02x  ", osmo_ubit_dump(bursts_u + 116, 57), bursts_u[57 + 116], bursts_u[58 + 116]);
-	printf("%s\n",            osmo_ubit_dump(bursts_u + 59 + 116, 57));
-	printf("%s %02x  %02x  ", osmo_ubit_dump(bursts_u + 232, 57), bursts_u[57 + 232], bursts_u[58 + 232]);
-	printf("%s\n",            osmo_ubit_dump(bursts_u + 59 + 232, 57));
-	printf("%s %02x  %02x  ", osmo_ubit_dump(bursts_u + 348, 57), bursts_u[57 + 348], bursts_u[58 + 348]);
-	printf("%s\n",            osmo_ubit_dump(bursts_u + 59 + 348, 57));
-
-	printf("S-Bits:\n");
-	printf("%s %02x  %02x  ", osmo_hexdump((uint8_t *)bursts_s, 57),
-		(uint8_t)bursts_s[57], (uint8_t)bursts_s[58]);
-	printf("%s\n", osmo_hexdump((uint8_t *)bursts_s + 59, 57));
-	printf("%s %02x  %02x  ", osmo_hexdump((uint8_t *)bursts_s + 116, 57),
-		(uint8_t)bursts_s[57 + 116], (uint8_t)bursts_s[58 + 116]);
-	printf("%s\n", osmo_hexdump((uint8_t *)bursts_s + 59 + 116, 57));
-	printf("%s %02x  %02x  ", osmo_hexdump((uint8_t *)bursts_s + 232, 57),
-		(uint8_t)bursts_s[57 + 232], (uint8_t)bursts_s[58 + 232]);
-	printf("%s\n", osmo_hexdump((uint8_t *)bursts_s + 59 + 232, 57));
-	printf("%s %02x  %02x  ", osmo_hexdump((uint8_t *)bursts_s + 348, 57),
-		(uint8_t)bursts_s[57 + 348], (uint8_t)bursts_s[58 + 348]);
-	printf("%s\n", osmo_hexdump((uint8_t *)bursts_s + 59 + 348, 57));
+	dump_ubits(bursts_u, 348);
+	dump_sbits((uint8_t *)bursts_s, 348);
 
 	/* Destroy some bits */
 	memset(bursts_s, 0, 30);
@@ -171,49 +189,8 @@ static void test_fr(uint8_t *speech, int len)
 	/* Prepare soft-bits */
 	osmo_ubit2sbit(bursts_s, bursts_u, 116 * 8);
 
-	printf("U-Bits:\n");
-	printf("%s %02x  %02x  ", osmo_ubit_dump(bursts_u, 57), bursts_u[57], bursts_u[58]);
-	printf("%s\n",            osmo_ubit_dump(bursts_u + 59, 57));
-	printf("%s %02x  %02x  ", osmo_ubit_dump(bursts_u + 116, 57), bursts_u[57 + 116], bursts_u[58 + 116]);
-	printf("%s\n",            osmo_ubit_dump(bursts_u + 59 + 116, 57));
-	printf("%s %02x  %02x  ", osmo_ubit_dump(bursts_u + 232, 57), bursts_u[57 + 232], bursts_u[58 + 232]);
-	printf("%s\n",            osmo_ubit_dump(bursts_u + 59 + 232, 57));
-	printf("%s %02x  %02x  ", osmo_ubit_dump(bursts_u + 348, 57), bursts_u[57 + 348], bursts_u[58 + 348]);
-	printf("%s\n",            osmo_ubit_dump(bursts_u + 59 + 348, 57));
-	printf("%s %02x  %02x  ", osmo_ubit_dump(bursts_u + 464, 57), bursts_u[57 + 464], bursts_u[58 + 464]);
-	printf("%s\n",            osmo_ubit_dump(bursts_u + 59 + 464, 57));
-	printf("%s %02x  %02x  ", osmo_ubit_dump(bursts_u + 580, 57), bursts_u[57 + 580], bursts_u[58 + 580]);
-	printf("%s\n",            osmo_ubit_dump(bursts_u + 59 + 580, 57));
-	printf("%s %02x  %02x  ", osmo_ubit_dump(bursts_u + 696, 57), bursts_u[57 + 696], bursts_u[58 + 696]);
-	printf("%s\n",            osmo_ubit_dump(bursts_u + 59 + 696, 57));
-	printf("%s %02x  %02x  ", osmo_ubit_dump(bursts_u + 812, 57), bursts_u[57 + 812], bursts_u[58 + 812]);
-	printf("%s\n",            osmo_ubit_dump(bursts_u + 59 + 812, 57));
-
-	printf("S-Bits:\n");
-	printf("%s %02x  %02x  ", osmo_hexdump((uint8_t *)bursts_s, 57),
-		(uint8_t)bursts_s[57], (uint8_t)bursts_s[58]);
-	printf("%s\n", osmo_hexdump((uint8_t *)bursts_s + 59, 57));
-	printf("%s %02x  %02x  ", osmo_hexdump((uint8_t *)bursts_s + 116, 57),
-		(uint8_t)bursts_s[57 + 116], (uint8_t)bursts_s[58 + 116]);
-	printf("%s\n", osmo_hexdump((uint8_t *)bursts_s + 59 + 116, 57));
-	printf("%s %02x  %02x  ", osmo_hexdump((uint8_t *)bursts_s + 232, 57),
-		(uint8_t)bursts_s[57 + 232], (uint8_t)bursts_s[58 + 232]);
-	printf("%s\n", osmo_hexdump((uint8_t *)bursts_s + 59 + 232, 57));
-	printf("%s %02x  %02x  ", osmo_hexdump((uint8_t *)bursts_s + 348, 57),
-		(uint8_t)bursts_s[57 + 348], (uint8_t)bursts_s[58 + 348]);
-	printf("%s\n", osmo_hexdump((uint8_t *)bursts_s + 59 + 348, 57));
-	printf("%s %02x  %02x  ", osmo_hexdump((uint8_t *)bursts_s + 464, 57),
-		(uint8_t)bursts_s[57 + 464], (uint8_t)bursts_s[58 + 464]);
-	printf("%s\n", osmo_hexdump((uint8_t *)bursts_s + 59 + 464, 57));
-	printf("%s %02x  %02x  ", osmo_hexdump((uint8_t *)bursts_s + 580, 57),
-		(uint8_t)bursts_s[57 + 580], (uint8_t)bursts_s[58 + 580]);
-	printf("%s\n", osmo_hexdump((uint8_t *)bursts_s + 59 + 580, 57));
-	printf("%s %02x  %02x  ", osmo_hexdump((uint8_t *)bursts_s + 696, 57),
-		(uint8_t)bursts_s[57 + 696], (uint8_t)bursts_s[58 + 696]);
-	printf("%s\n", osmo_hexdump((uint8_t *)bursts_s + 59 + 696, 57));
-	printf("%s %02x  %02x  ", osmo_hexdump((uint8_t *)bursts_s + 812, 57),
-		(uint8_t)bursts_s[57 + 812], (uint8_t)bursts_s[58 + 812]);
-	printf("%s\n", osmo_hexdump((uint8_t *)bursts_s + 59 + 812, 57));
+	dump_ubits(bursts_u, 812);
+	dump_sbits((uint8_t *)bursts_s, 812);
 
 	/* Destroy some bits */
 	memset(bursts_s + 6, 0, 20);
@@ -249,39 +226,8 @@ static void test_hr(uint8_t *speech, int len)
 	/* Prepare soft-bits */
 	osmo_ubit2sbit(bursts_s, bursts_u, 116 * 6);
 
-	printf("U-Bits:\n");
-	printf("%s %02x  %02x  ", osmo_ubit_dump(bursts_u, 57), bursts_u[57], bursts_u[58]);
-	printf("%s\n",            osmo_ubit_dump(bursts_u + 59, 57));
-	printf("%s %02x  %02x  ", osmo_ubit_dump(bursts_u + 116, 57), bursts_u[57 + 116], bursts_u[58 + 116]);
-	printf("%s\n",            osmo_ubit_dump(bursts_u + 59 + 116, 57));
-	printf("%s %02x  %02x  ", osmo_ubit_dump(bursts_u + 232, 57), bursts_u[57 + 232], bursts_u[58 + 232]);
-	printf("%s\n",            osmo_ubit_dump(bursts_u + 59 + 232, 57));
-	printf("%s %02x  %02x  ", osmo_ubit_dump(bursts_u + 348, 57), bursts_u[57 + 348], bursts_u[58 + 348]);
-	printf("%s\n",            osmo_ubit_dump(bursts_u + 59 + 348, 57));
-	printf("%s %02x  %02x  ", osmo_ubit_dump(bursts_u + 464, 57), bursts_u[57 + 464], bursts_u[58 + 464]);
-	printf("%s\n",            osmo_ubit_dump(bursts_u + 59 + 464, 57));
-	printf("%s %02x  %02x  ", osmo_ubit_dump(bursts_u + 580, 57), bursts_u[57 + 580], bursts_u[58 + 580]);
-	printf("%s\n",            osmo_ubit_dump(bursts_u + 59 + 580, 57));
-
-	printf("S-Bits:\n");
-	printf("%s %02x  %02x  ", osmo_hexdump((uint8_t *)bursts_s, 57),
-		(uint8_t)bursts_s[57], (uint8_t)bursts_s[58]);
-	printf("%s\n", osmo_hexdump((uint8_t *)bursts_s + 59, 57));
-	printf("%s %02x  %02x  ", osmo_hexdump((uint8_t *)bursts_s + 116, 57),
-		(uint8_t)bursts_s[57 + 116], (uint8_t)bursts_s[58 + 116]);
-	printf("%s\n", osmo_hexdump((uint8_t *)bursts_s + 59 + 116, 57));
-	printf("%s %02x  %02x  ", osmo_hexdump((uint8_t *)bursts_s + 232, 57),
-		(uint8_t)bursts_s[57 + 232], (uint8_t)bursts_s[58 + 232]);
-	printf("%s\n", osmo_hexdump((uint8_t *)bursts_s + 59 + 232, 57));
-	printf("%s %02x  %02x  ", osmo_hexdump((uint8_t *)bursts_s + 348, 57),
-		(uint8_t)bursts_s[57 + 348], (uint8_t)bursts_s[58 + 348]);
-	printf("%s\n", osmo_hexdump((uint8_t *)bursts_s + 59 + 348, 57));
-	printf("%s %02x  %02x  ", osmo_hexdump((uint8_t *)bursts_s + 464, 57),
-		(uint8_t)bursts_s[57 + 464], (uint8_t)bursts_s[58 + 464]);
-	printf("%s\n", osmo_hexdump((uint8_t *)bursts_s + 59 + 464, 57));
-	printf("%s %02x  %02x  ", osmo_hexdump((uint8_t *)bursts_s + 580, 57),
-		(uint8_t)bursts_s[57 + 580], (uint8_t)bursts_s[58 + 580]);
-	printf("%s\n", osmo_hexdump((uint8_t *)bursts_s + 59 + 580, 57));
+	dump_ubits(bursts_u, 580);
+	dump_sbits((uint8_t *)bursts_s, 580);
 
 	/* Destroy some bits */
 	memset(bursts_s + 6, 0, 20);
@@ -327,29 +273,8 @@ static void test_pdtch(uint8_t *l2, int len)
 	/* Prepare soft-bits */
 	osmo_ubit2sbit(bursts_s, bursts_u, 116 * 4);
 
-	printf("U-Bits:\n");
-	printf("%s %02x  %02x  ", osmo_ubit_dump(bursts_u, 57), bursts_u[57], bursts_u[58]);
-	printf("%s\n",            osmo_ubit_dump(bursts_u + 59, 57));
-	printf("%s %02x  %02x  ", osmo_ubit_dump(bursts_u + 116, 57), bursts_u[57 + 116], bursts_u[58 + 116]);
-	printf("%s\n",            osmo_ubit_dump(bursts_u + 59 + 116, 57));
-	printf("%s %02x  %02x  ", osmo_ubit_dump(bursts_u + 232, 57), bursts_u[57 + 232], bursts_u[58 + 232]);
-	printf("%s\n",            osmo_ubit_dump(bursts_u + 59 + 232, 57));
-	printf("%s %02x  %02x  ", osmo_ubit_dump(bursts_u + 348, 57), bursts_u[57 + 348], bursts_u[58 + 348]);
-	printf("%s\n",            osmo_ubit_dump(bursts_u + 59 + 348, 57));
-
-	printf("S-Bits:\n");
-	printf("%s %02x  %02x  ", osmo_hexdump((uint8_t *)bursts_s, 57),
-		(uint8_t)bursts_s[57], (uint8_t)bursts_s[58]);
-	printf("%s\n", osmo_hexdump((uint8_t *)bursts_s + 59, 57));
-	printf("%s %02x  %02x  ", osmo_hexdump((uint8_t *)bursts_s + 116, 57),
-		(uint8_t)bursts_s[57 + 116], (uint8_t)bursts_s[58 + 116]);
-	printf("%s\n", osmo_hexdump((uint8_t *)bursts_s + 59 + 116, 57));
-	printf("%s %02x  %02x  ", osmo_hexdump((uint8_t *)bursts_s + 232, 57),
-		(uint8_t)bursts_s[57 + 232], (uint8_t)bursts_s[58 + 232]);
-	printf("%s\n", osmo_hexdump((uint8_t *)bursts_s + 59 + 232, 57));
-	printf("%s %02x  %02x  ", osmo_hexdump((uint8_t *)bursts_s + 348, 57),
-		(uint8_t)bursts_s[57 + 348], (uint8_t)bursts_s[58 + 348]);
-	printf("%s\n", osmo_hexdump((uint8_t *)bursts_s + 59 + 348, 57));
+	dump_ubits(bursts_u, 348);
+	dump_sbits((uint8_t *)bursts_s, 348);
 
 	/* Decode */
 	rc = gsm0503_pdtch_decode(result, bursts_s, NULL,
