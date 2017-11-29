@@ -71,12 +71,28 @@ void logp(int subsys, const char *file, int line, int cont, const char *format, 
  *  \param[in] args variable argument list
  */
 #define LOGPSRC(ss, level, caller_file, caller_line, fmt, args...) \
+	LOGPSRCC(ss, level, caller_file, caller_line, 0, fmt, ##args)
+
+/*! Log through the Osmocom logging framework with explicit source.
+ *  If caller_file is passed as NULL, __BASE_FILE__ and __LINE__ are used
+ *  instead of caller_file and caller_line (so that this macro here defines
+ *  both cases in the same place, and to catch cases where callers fail to pass
+ *  a non-null filename string).
+ *  \param[in] ss logging subsystem (e.g. \ref DLGLOBAL)
+ *  \param[in] level logging level (e.g. \ref LOGL_NOTICE)
+ *  \param[in] caller_file caller's source file string (e.g. __BASE_FILE__)
+ *  \param[in] caller_line caller's source line nr (e.g. __LINE__)
+ *  \param[in] cont continuation (1) or new line (0)
+ *  \param[in] fmt format string
+ *  \param[in] args variable argument list
+ */
+#define LOGPSRCC(ss, level, caller_file, caller_line, cont, fmt, args...) \
 	do { \
 		if (log_check_level(ss, level)) {\
 			if (caller_file) \
-				logp2(ss, level, caller_file, caller_line, 0, fmt, ##args); \
+				logp2(ss, level, caller_file, caller_line, cont, fmt, ##args); \
 			else \
-				logp2(ss, level, __BASE_FILE__, __LINE__, 0, fmt, ##args); \
+				logp2(ss, level, __BASE_FILE__, __LINE__, cont, fmt, ##args); \
 		}\
 	} while(0)
 
