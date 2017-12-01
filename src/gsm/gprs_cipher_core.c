@@ -23,6 +23,8 @@
  *
  */
 
+#include "config.h"
+
 #include <errno.h>
 #include <stdint.h>
 
@@ -68,9 +70,11 @@ int gprs_cipher_register(struct gprs_cipher_impl *ciph)
 /* load all available GPRS cipher plugins */
 int gprs_cipher_load(const char *path)
 {
+#if !defined(EMBEDDED)
 	/* load all plugins available from path */
 	if (path)
 		return osmo_plugin_load_all(path);
+#endif
 	return 0;
 }
 
