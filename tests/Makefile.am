@@ -8,12 +8,12 @@ check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
                  conv/conv_test auth/milenage_test lapd/lapd_test	\
                  gsm0808/gsm0808_test gsm0408/gsm0408_test		\
 		 gprs/gprs_test	kasumi/kasumi_test gea/gea_test		\
-		 logging/logging_test fr/fr_test codec/codec_test	\
+		 logging/logging_test codec/codec_test			\
 		 loggingrb/loggingrb_test strrb/strrb_test              \
 		 comp128/comp128_test smscb/gsm0341_test		\
 		 bitvec/bitvec_test msgb/msgb_test bits/bitcomp_test	\
 		 bits/bitfield_test					\
-		 tlv/tlv_test gsup/gsup_test oap/oap_test fsm/fsm_test	\
+		 tlv/tlv_test gsup/gsup_test oap/oap_test		\
 		 write_queue/wqueue_test socket/socket_test		\
 		 coding/coding_test conv/conv_gsm0503_test		\
 		 abis/abis_test endian/endian_test sercomm/sercomm_test	\
@@ -36,11 +36,11 @@ check_PROGRAMS += vty/vty_test
 endif
 
 if ENABLE_CTRL
-check_PROGRAMS += ctrl/ctrl_test
+check_PROGRAMS += ctrl/ctrl_test fsm/fsm_test
 endif
 
 if ENABLE_GB
-check_PROGRAMS += gb/bssgp_fc_test gb/gprs_bssgp_test gb/gprs_ns_test
+check_PROGRAMS += gb/bssgp_fc_test gb/gprs_bssgp_test gb/gprs_ns_test fr/fr_test
 endif
 
 utils_utils_test_SOURCES = utils/utils_test.c
@@ -137,7 +137,7 @@ codec_codec_test_SOURCES = codec/codec_test.c
 codec_codec_test_LDADD = $(LDADD) $(top_builddir)/src/codec/libosmocodec.la
 
 loggingrb_loggingrb_test_SOURCES = loggingrb/loggingrb_test.c
-loggingrb_loggingrb_test_LDADD = $(LDADD) $(top_builddir)/src/vty/libosmovty.la
+loggingrb_loggingrb_test_LDADD = $(LDADD)
 
 strrb_strrb_test_SOURCES = strrb/strrb_test.c
 
