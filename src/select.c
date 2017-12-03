@@ -30,6 +30,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdbool.h>
+#include <errno.h>
 
 #include <osmocom/core/select.h>
 #include <osmocom/core/linuxlist.h>
@@ -269,6 +270,71 @@ struct osmo_fd *osmo_fd_get_by_fd(int fd)
 	}
 	return NULL;
 }
+
+#ifdef HAVE_SYS_TIMERFD_H
+#include <sys/timerfd.h>
+
+/*! disable the osmocom-wrapped timerfd */
+int osmo_timerfd_disable(struct osmo_fd *ofd)
+{
+	const struct itimerspec its_null = {
+		.it_value = { 0, 0 },
+		.it_interval = { 0, 0 },
+	};
+	return timerfd_settime(ofd->fd, 0, &its_null, NULL);
+}
+
+/*! schedule the osmcoom-wrapped timerfd to occur first at \a first, then periodically at \a interval
+ *  \param[in] ofd Osmocom wrapped timerfd
+ *  \param[in] first Relative time at which the timer should first execute (NULL = \a interval)
+ *  \param[in] interval Time interval at which subsequent timer shall fire
+ *  \returns 0 on success; negative on error */
+int osmo_timerfd_schedule(struct osmo_fd *ofd, const struct timespec *first,
+			  const struct timespec *interval)
+{
+	struct itimerspec its;
+
+	if (ofd->fd < 0)
+		return -EINVAL;
+
+	/* first expiration */
+	if (first)
+		its.it_value = *first;
+	else
+		its.it_value = *interval;
+	/* repeating interval */
+	its.it_interval = *interval;
+
+	return timerfd_settime(ofd->fd, 0, &its, NULL);
+}
+
+/*! setup osmocom-wrapped timerfd
+ *  \param[inout] ofd Osmocom-wrapped timerfd on which to operate
+ *  \param[in] cb Call-back function called when timerfd becomes readable
+ *  \param[in] data Opaque data to be passed on to call-back
+ *  \returns 0 on success; negative on error
+ *
+ *  We simply initialize the data structures here, but do not yet
+ *  schedule the timer.
+ */
+int osmo_timerfd_setup(struct osmo_fd *ofd, int (*cb)(struct osmo_fd *, unsigned int), void *data)
+{
+	ofd->cb = cb;
+	ofd->data = data;
+	ofd->when = BSC_FD_READ;
+
+	if (ofd->fd < 0) {
+		ofd->fd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK);
+		if (ofd->fd < 0)
+			return ofd->fd;
+
+		osmo_fd_register(ofd);
+	}
+	return 0;
+}
+
+#endif /* HAVE_SYS_TIMERFD_H */
+
 
 /*! @} */
 
