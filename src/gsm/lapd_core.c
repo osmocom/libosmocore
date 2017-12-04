@@ -1505,7 +1505,7 @@ static int lapd_rx_i(struct msgb *msg, struct lapd_msg_ctx *lctx)
 	/* G.2.2 Wrong value of the C/R bit */
 	if (lctx->cr == dl->cr.rem2loc.resp) {
 		LOGP(DLLAPD, LOGL_ERROR,
-		     "I frame response not allowed (dl=%p)\n", dl);
+		     "I frame response not allowed (dl=%p state %s)\n", dl, lapd_state_name(dl->state));
 		msgb_free(msg);
 		mdl_error(MDL_CAUSE_FRM_UNIMPL, lctx);
 		return -EINVAL;
@@ -1517,7 +1517,7 @@ static int lapd_rx_i(struct msgb *msg, struct lapd_msg_ctx *lctx)
 		 * primitive with cause "I frame with incorrect length"
 		 * is sent to the mobile management entity. */
 		LOGP(DLLAPD, LOGL_ERROR,
-		     "I frame length not allowed (dl=%p)\n", dl);
+		     "I frame length not allowed (dl=%p state %s)\n", dl, lapd_state_name(dl->state));
 		msgb_free(msg);
 		mdl_error(MDL_CAUSE_IFRM_INC_LEN, lctx);
 		return -EIO;
@@ -1529,7 +1529,7 @@ static int lapd_rx_i(struct msgb *msg, struct lapd_msg_ctx *lctx)
 	 * mobile management entity. */
 	if (lctx->more && length < lctx->n201) {
 		LOGP(DLLAPD, LOGL_ERROR,
-		     "I frame with M bit too short (dl=%p)\n", dl);
+		     "I frame with M bit too short (dl=%p state %s)\n", dl, lapd_state_name(dl->state));
 		msgb_free(msg);
 		mdl_error(MDL_CAUSE_IFRM_INC_MBITS, lctx);
 		return -EIO;
@@ -1545,7 +1545,7 @@ static int lapd_rx_i(struct msgb *msg, struct lapd_msg_ctx *lctx)
 	case LAPD_STATE_SABM_SENT:
 	case LAPD_STATE_DISC_SENT:
 		LOGP(DLLAPD, LOGL_NOTICE,
-		     "I frame ignored in this state (dl=%p)\n", dl);
+		     "I frame ignored in state %s (dl=%p)\n", lapd_state_name(dl->state), dl);
 		msgb_free(msg);
 		return 0;
 	}
@@ -1553,7 +1553,7 @@ static int lapd_rx_i(struct msgb *msg, struct lapd_msg_ctx *lctx)
 	/* 5.7.1: N(s) sequence error */
 	if (ns != dl->v_recv) {
 		LOGP(DLLAPD, LOGL_NOTICE, "N(S) sequence error: N(S)=%u, "
-		     "V(R)=%u (dl=%p)\n", ns, dl->v_recv, dl);
+		     "V(R)=%u (dl=%p state %s)\n", ns, dl->v_recv, dl, lapd_state_name(dl->state));
 		/* discard data */
 		msgb_free(msg);
 		if (dl->seq_err_cond != 1) {
