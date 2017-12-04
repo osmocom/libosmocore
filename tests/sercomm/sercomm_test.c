@@ -27,6 +27,10 @@
 
 struct osmo_sercomm_inst g_osi;
 
+/* Locking details are not checked by this test anyway */
+void sercomm_drv_lock(unsigned long __attribute__((unused)) *flags) {}
+void sercomm_drv_unlock(unsigned long __attribute__((unused)) *flags) {}
+
 static const uint8_t valid_dlci3[] = { 0x7E, 3, 0x03, 'f', 'o', 'o', 0x7E };
 static const uint8_t valid_dlci23[] = { 0x7E, 23, 0x03, '2', '3', 0x7E };
 static const uint8_t valid_dlci23esc[] = { 0x7E, 23, 0x03, 0x7D, '2' ^ (1 << 5), '3', 0x7E };
