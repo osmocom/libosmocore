@@ -77,6 +77,13 @@ int osmo_counters_for_each(int (*handle_counter)(struct osmo_counter *, void *),
 	return rc;
 }
 
+/*! Counts the registered counter
+ *  \returns amount of counters */
+int osmo_counters_count()
+{
+	return llist_count(&counters);
+}
+
 /*! Find a counter by its name.
  *  \param[in] name Name used to look-up/search counter
  *  \returns Counter on success; NULL if not found */
