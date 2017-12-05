@@ -393,6 +393,13 @@ static int asciidoc_handle_counter(struct osmo_counter *counter, void *sctx_)
 
 static void asciidoc_counter_generate(struct vty *vty)
 {
+	if (osmo_counters_count() == 0)
+	{
+		vty_out(vty, "// there are no ungrouped osmo_counters%s",
+			VTY_NEWLINE);
+		return;
+	}
+
 	vty_out(vty, "// ungrouped osmo_counters%s", VTY_NEWLINE);
 	vty_out(vty, ".ungrouped osmo counters%s", VTY_NEWLINE);
 	vty_out(vty, "[options=\"header\"]%s", VTY_NEWLINE);
