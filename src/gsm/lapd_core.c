@@ -548,7 +548,7 @@ static int lapd_reestablish(struct lapd_datalink *dl)
 
 	msg = lapd_msgb_alloc(0, "DUMMY");
 	osmo_prim_init(&dp.oph, 0, PRIM_DL_EST, PRIM_OP_REQUEST, msg);
-	
+
 	return lapd_est_req(&dp, &dl->lctx);
 }
 
@@ -1500,7 +1500,7 @@ static int lapd_rx_i(struct msgb *msg, struct lapd_msg_ctx *lctx)
 
 	LOGP(DLLAPD, LOGL_INFO, "I received in state %s on SAPI(%u) (dl=%p)\n",
 		lapd_state_name(dl->state), lctx->sapi, dl);
-		
+
 	/* G.2.2 Wrong value of the C/R bit */
 	if (lctx->cr == dl->cr.rem2loc.resp) {
 		LOGP(DLLAPD, LOGL_ERROR,
@@ -1781,7 +1781,7 @@ static int lapd_est_req(struct osmo_dlsap_prim *dp, struct lapd_msg_ctx *lctx)
 	dl->tx_hist[0].more = 0;
 	/* set Vs to 0, because it is used as index when resending SABM */
 	dl->v_send = 0;
-	
+
 	/* Set states */
 	dl->own_busy = dl->peer_busy = 0;
 	dl->retrans_ctr = 0;
@@ -2008,7 +2008,7 @@ static int lapd_res_req(struct osmo_dlsap_prim *dp, struct lapd_msg_ctx *lctx)
 	LOGP(DLLAPD, LOGL_INFO,
 	     "perform re-establishment (SABM) length=%d (dl=%p)\n",
 	     msg->len, dl);
-	
+
 	/* be sure that history is empty */
 	lapd_dl_flush_hist(dl);
 
@@ -2119,7 +2119,7 @@ static int lapd_rel_req(struct osmo_dlsap_prim *dp, struct lapd_msg_ctx *lctx)
 	dl->tx_hist[0].more = 0;
 	/* set Vs to 0, because it is used as index when resending DISC */
 	dl->v_send = 0;
-	
+
 	/* Set states */
 	dl->own_busy = dl->peer_busy = 0;
 	dl->retrans_ctr = 0;
@@ -2155,7 +2155,7 @@ static const struct l2downstate {
 } l2downstatelist[] = {
 	/* create and send UI command */
 	{ALL_STATES,
-	 PRIM_DL_UNIT_DATA, PRIM_OP_REQUEST, 
+	 PRIM_DL_UNIT_DATA, PRIM_OP_REQUEST,
 	 "DL-UNIT-DATA-REQUEST", lapd_udata_req},
 
 	/* create and send SABM command */

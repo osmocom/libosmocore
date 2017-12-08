@@ -378,7 +378,7 @@ static int send_rslms_rll_l3_ui(struct lapdm_msg_ctx *mctx, struct msgb *msg)
 
 	rllh->data[2] = RSL_IE_MS_POWER;
 	rllh->data[3] = mctx->tx_power_ind;
-	
+
 	return rslms_sendmsg(msg, mctx->dl->entity);
 }
 
@@ -1086,7 +1086,7 @@ static int l2_ph_chan_conf(struct msgb *msg, struct lapdm_entity *le, uint32_t f
 	ref->t2 = tm.t2;
 	ref->t3_low = tm.t3 & 0x7;
 	ref->t3_high = tm.t3 >> 3;
-	
+
 	return rslms_sendmsg(msg, le);
 }
 
