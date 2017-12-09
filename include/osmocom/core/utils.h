@@ -15,7 +15,9 @@
 #define OSMO_MAX(a, b) ((a) >= (b) ? (a) : (b))
 /*! Return the minimum of two specified values */
 #define OSMO_MIN(a, b) ((a) >= (b) ? (b) : (a))
-/*! Stringify the contents of a macro, e.g. a port number */
+/*! Stringify the name of a macro x, e.g. an FSM event name.
+ * Note: if nested within another preprocessor macro, this will
+ * stringify the value of x instead of its name. */
 #define OSMO_STRINGIFY(x) #x
 /*! Make a value_string entry from an enum value name */
 #define OSMO_VALUE_STRING(x) { x, #x }
