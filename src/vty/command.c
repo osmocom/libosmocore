@@ -68,21 +68,25 @@ struct host host;
 struct cmd_node auth_node = {
 	AUTH_NODE,
 	"Password: ",
+	.name = "auth",
 };
 
 struct cmd_node view_node = {
 	VIEW_NODE,
 	"%s> ",
+	.name = "view",
 };
 
 struct cmd_node auth_enable_node = {
 	AUTH_ENABLE_NODE,
 	"Password: ",
+	.name = "auth-enable",
 };
 
 struct cmd_node enable_node = {
 	ENABLE_NODE,
 	"%s# ",
+	.name = "enable",
 };
 
 struct cmd_node config_node = {
