@@ -2,7 +2,7 @@
 
 #pragma once
 
-#define LOGGING_STR	"Configure log message to this terminal\n"
+#define LOGGING_STR	"Configure logging\n"
 #define FILTER_STR	"Filter log messages\n"
 
 struct log_info;
