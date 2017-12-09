@@ -19,6 +19,8 @@
  * Note: if nested within another preprocessor macro, this will
  * stringify the value of x instead of its name. */
 #define OSMO_STRINGIFY(x) #x
+/*! Stringify the value of a macro x, e.g. a port number. */
+#define OSMO_STRINGIFY_VAL(x) OSMO_STRINGIFY(x)
 /*! Make a value_string entry from an enum value name */
 #define OSMO_VALUE_STRING(x) { x, #x }
 /*! Number of bytes necessary to store given BITS */

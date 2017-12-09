@@ -247,7 +247,15 @@ DEFUN(logging_set_category_mask,
       "logging set-log-mask MASK",
 	LOGGING_STR
       "Set the logmask of this logging target\n"
-      "The logmask to use\n")
+      "List of logging categories to log, e.g. 'abc:mno:xyz'. Available log categories depend on the specific"
+      " application, refer to the 'logging level' command. Optionally add individual log levels like"
+      " 'abc,1:mno,3:xyz,5', where the level numbers are"
+      " " OSMO_STRINGIFY(LOGL_DEBUG) "=" OSMO_STRINGIFY_VAL(LOGL_DEBUG)
+      " " OSMO_STRINGIFY(LOGL_INFO) "=" OSMO_STRINGIFY_VAL(LOGL_INFO)
+      " " OSMO_STRINGIFY(LOGL_NOTICE) "=" OSMO_STRINGIFY_VAL(LOGL_NOTICE)
+      " " OSMO_STRINGIFY(LOGL_ERROR) "=" OSMO_STRINGIFY_VAL(LOGL_ERROR)
+      " " OSMO_STRINGIFY(LOGL_FATAL) "=" OSMO_STRINGIFY_VAL(LOGL_FATAL)
+      "\n")
 {
 	struct log_target *tgt = osmo_log_vty2tgt(vty);
 
@@ -263,7 +271,8 @@ ALIAS_DEPRECATED(logging_set_category_mask,
 		 "logging set log mask MASK",
 		 LOGGING_STR
 		 "Decide which categories to output.\n"
-		 "Log commands\n" "Mask commands\n" "The logmask to use\n");
+		 "Log commands\n" "Mask commands\n"
+		 "'set log mask' is deprecated, please refer to the docs of 'set-log-mask' instead\n");
 
 
 DEFUN(diable_logging,
