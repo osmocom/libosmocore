@@ -34,6 +34,24 @@ reply = '(null)'
 handling:
 replied: 'ERROR 1 Command not found'
 ok
+test: 'GET 1 var\ti\table'
+parsing:
+id = '1'
+variable = 'var\ti\table'
+value = '(null)'
+reply = '(null)'
+handling:
+replied: 'ERROR 1 Command not found'
+ok
+test: 'GET 1 var\ri\rable'
+parsing:
+id = '1'
+variable = 'var\ri\rable'
+value = '(null)'
+reply = '(null)'
+handling:
+replied: 'ERROR 1 Command not found'
+ok
 test: 'GET 1 variable value'
 parsing:
 id = '1'

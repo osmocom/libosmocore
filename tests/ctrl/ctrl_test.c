@@ -154,6 +154,22 @@ static const struct one_test test_messages_list[] = {
 		"ERROR 1 Command not found",
 
 	},
+	{ "GET 1 var\ti\table",
+		{
+			.type = CTRL_TYPE_GET,
+			.id = "1",
+			.variable = "var\ti\table", /* current bug */
+		},
+		"ERROR 1 Command not found",
+	},
+	{ "GET 1 var\ri\rable",
+		{
+			.type = CTRL_TYPE_GET,
+			.id = "1",
+			.variable = "var\ri\rable", /* current bug */
+		},
+		"ERROR 1 Command not found",
+	},
 	{ "GET 1 variable value",
 		{
 			.type = CTRL_TYPE_GET,
