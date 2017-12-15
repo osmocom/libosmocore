@@ -7,6 +7,13 @@
 
 #include <osmocom/core/utils.h>
 
+/* TS 101318 Chapter 5.1: 260 bits + 4bit sig */
+#define GSM_FR_BYTES	33
+/* TS 101318 Chapter 5.2: 112 bits, no sig */
+#define GSM_HR_BYTES	14
+/* TS 101318 Chapter 5.3: 244 bits + 4bit sig */
+#define GSM_EFR_BYTES	31
+
 extern const uint16_t gsm610_bitorder[];	/* FR */
 extern const uint16_t gsm620_unvoiced_bitorder[]; /* HR unvoiced */
 extern const uint16_t gsm620_voiced_bitorder[];   /* HR voiced */
