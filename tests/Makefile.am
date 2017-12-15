@@ -17,7 +17,8 @@ check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
 		 write_queue/wqueue_test socket/socket_test		\
 		 coding/coding_test conv/conv_gsm0503_test		\
 		 abis/abis_test endian/endian_test sercomm/sercomm_test	\
-		 stats/stats_test prbs/prbs_test gsm23003/gsm23003_test
+		 stats/stats_test prbs/prbs_test gsm23003/gsm23003_test \
+		 codec/codec_ecu_fr_test
 
 if ENABLE_MSGFILE
 check_PROGRAMS += msgfile/msgfile_test
@@ -136,6 +137,9 @@ fr_fr_test_LDADD = $(LDADD) $(top_builddir)/src/gb/libosmogb.la $(LIBRARY_DL) \
 codec_codec_test_SOURCES = codec/codec_test.c
 codec_codec_test_LDADD = $(LDADD) $(top_builddir)/src/codec/libosmocodec.la
 
+codec_codec_ecu_fr_test_SOURCES = codec/codec_ecu_fr_test.c
+codec_codec_ecu_fr_test_LDADD = $(LDADD) $(top_builddir)/src/codec/libosmocodec.la
+
 loggingrb_loggingrb_test_SOURCES = loggingrb/loggingrb_test.c
 loggingrb_loggingrb_test_LDADD = $(LDADD)
 
@@ -205,11 +209,13 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
              gsm0808/gsm0808_test.ok gb/bssgp_fc_tests.err		\
              gb/bssgp_fc_tests.ok gb/bssgp_fc_tests.sh			\
              gb/gprs_bssgp_test.ok gb/gprs_ns_test.ok gea/gea_test.ok	\
-             gprs/gprs_test.ok kasumi/kasumi_test.ok codec/codec_test.ok \
+             gprs/gprs_test.ok kasumi/kasumi_test.ok			\
              msgfile/msgfile_test.ok msgfile/msgconfig.cfg		\
              logging/logging_test.ok logging/logging_test.err		\
              fr/fr_test.ok loggingrb/logging_test.ok			\
              loggingrb/logging_test.err	strrb/strrb_test.ok		\
+             codec/codec_test.ok \
+             codec/codec_ecu_fr_test.ok \
 	     vty/vty_test.ok \
 	     vty/fail_not_de-indented.cfg \
 	     vty/fail_tabs_and_spaces.cfg \

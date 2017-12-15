@@ -1,6 +1,7 @@
 BUILT_SOURCES = osmocom/gsm/gsm0503.h
 
 nobase_include_HEADERS = \
+                       osmocom/codec/ecu.h \
                        osmocom/codec/codec.h \
                        osmocom/codec/gsm610_bits.h \
                        osmocom/core/application.h \

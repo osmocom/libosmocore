@@ -157,6 +157,12 @@ cat $abs_srcdir/codec/codec_test.ok > expout
 AT_CHECK([$abs_top_builddir/tests/codec/codec_test], [0], [expout], [ignore])
 AT_CLEANUP
 
+AT_SETUP([codec_ecu_fr])
+AT_KEYWORDS([codec_ecu_fr])
+cat $abs_srcdir/codec/codec_ecu_fr_test.ok > expout
+AT_CHECK([$abs_top_builddir/tests/codec/codec_ecu_fr_test], [0], [expout], [ignore])
+AT_CLEANUP
+
 AT_SETUP([fr])
 AT_KEYWORDS([fr])
 cat $abs_srcdir/fr/fr_test.ok > expout
