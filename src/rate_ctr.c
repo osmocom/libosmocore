@@ -190,6 +190,9 @@ struct rate_ctr_group *rate_ctr_group_alloc(void *ctx,
 	unsigned int size;
 	struct rate_ctr_group *group;
 
+	if (rate_ctr_get_group_by_name_idx(desc->group_name_prefix, idx))
+		return NULL; /* group already exist */
+
 	size = sizeof(struct rate_ctr_group) +
 			desc->num_ctr * sizeof(struct rate_ctr);
 

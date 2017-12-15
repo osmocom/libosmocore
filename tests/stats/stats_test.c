@@ -311,7 +311,7 @@ static void test_reporting()
 {
 	struct osmo_stats_reporter *srep1, *srep2, *srep;
 	struct osmo_stat_item_group *statg1, *statg2;
-	struct rate_ctr_group *ctrg1, *ctrg2, *ctrg3;
+	struct rate_ctr_group *ctrg1, *ctrg2, *ctrg3, *ctrg_dup;
 	void *stats_ctx = talloc_named_const(NULL, 1, "stats test context");
 
 	int rc;
@@ -327,6 +327,11 @@ static void test_reporting()
 	OSMO_ASSERT(ctrg1 != NULL);
 	ctrg2 = rate_ctr_group_alloc(stats_ctx, &ctrg_desc, 2);
 	OSMO_ASSERT(ctrg2 != NULL);
+
+	ctrg_dup = rate_ctr_group_alloc(stats_ctx, &ctrg_desc, 2);
+	if (ctrg_dup != NULL && ctrg2 != NULL)
+		printf("FAIL: successfully allocated already existing counter group!\n");
+
 	ctrg3 = rate_ctr_group_alloc(stats_ctx, &ctrg_desc_dot, 3);
 	OSMO_ASSERT(ctrg3 != NULL);
 
