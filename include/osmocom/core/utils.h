@@ -118,5 +118,6 @@ bool osmo_is_hexstr(const char *str, int min_digits, int max_digits,
 		    bool require_even);
 
 bool osmo_identifier_valid(const char *str);
+bool osmo_separated_identifiers_valid(const char *str, const char *sep_chars);
 
 /*! @} */

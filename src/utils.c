@@ -428,19 +428,23 @@ bool osmo_is_hexstr(const char *str, int min_digits, int max_digits,
 
 /*! Determine if a given identifier is valid, i.e. doesn't contain illegal chars
  *  \param[in] str String to validate
- *  \returns true in case string contains valid identifier, false otherwise
+ *  \param[in] sep_chars Permitted separation characters between identifiers.
+ *  \returns true in case \a str contains only valid identifiers and sep_chars, false otherwise
  */
-bool osmo_identifier_valid(const char *str)
+bool osmo_separated_identifiers_valid(const char *str, const char *sep_chars)
 {
 	/* characters that are illegal in names */
 	static const char illegal_chars[] = "., {}[]()<>|~\\^`'\"?=;/+*&%$#!";
 	unsigned int i;
+	size_t len;
 
 	/* an empty string is not a valid identifier */
-	if (!str || strlen(str) == 0)
+	if (!str || (len = strlen(str)) == 0)
 		return false;
 
-	for (i = 0; i < strlen(str); i++) {
+	for (i = 0; i < len; i++) {
+		if (sep_chars && strchr(sep_chars, str[i]))
+			continue;
 		/* check for 7-bit ASCII */
 		if (str[i] & 0x80)
 			return false;
@@ -452,6 +456,15 @@ bool osmo_identifier_valid(const char *str)
 	}
 
 	return true;
+}
+
+/*! Determine if a given identifier is valid, i.e. doesn't contain illegal chars
+ *  \param[in] str String to validate
+ *  \returns true in case \a str contains valid identifier, false otherwise
+ */
+bool osmo_identifier_valid(const char *str)
+{
+	return osmo_separated_identifiers_valid(str, NULL);
 }
 
 /*! @} */
