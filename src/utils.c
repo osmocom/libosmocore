@@ -467,4 +467,91 @@ bool osmo_identifier_valid(const char *str)
 	return osmo_separated_identifiers_valid(str, NULL);
 }
 
+/*! Return the string with all non-printable characters escaped.
+ * \param[in] str  A string that may contain any characters.
+ * \param[in] len  Pass -1 to print until nul char, or >= 0 to force a length.
+ * \param[inout] buf  string buffer to write escaped characters to.
+ * \param[in] bufsize  size of \a buf.
+ * \returns buf containing an escaped representation, possibly truncated, or str itself.
+ */
+const char *osmo_escape_str_buf(const char *str, int in_len, char *buf, size_t bufsize)
+{
+	int in_pos = 0;
+	int next_unprintable = 0;
+	int out_pos = 0;
+	char *out = buf;
+	/* -1 to leave space for a final \0 */
+	int out_len = bufsize-1;
+
+	if (!str)
+		return "(null)";
+
+	if (in_len < 0)
+		in_len = strlen(str);
+
+	while (in_pos < in_len) {
+		for (next_unprintable = in_pos;
+		     next_unprintable < in_len && isprint((int)str[next_unprintable])
+		     && str[next_unprintable] != '"'
+		     && str[next_unprintable] != '\\';
+		     next_unprintable++);
+
+		if (next_unprintable == in_len
+		    && in_pos == 0)
+			return str;
+
+		while (in_pos < next_unprintable && out_pos < out_len)
+			out[out_pos++] = str[in_pos++];
+
+		if (out_pos == out_len || in_pos == in_len)
+			goto done;
+
+		switch (str[next_unprintable]) {
+#define BACKSLASH_CASE(c, repr) \
+		case c: \
+			if (out_pos > out_len-2) \
+				goto done; \
+			out[out_pos++] = '\\'; \
+			out[out_pos++] = repr; \
+			break
+
+		BACKSLASH_CASE('\n', 'n');
+		BACKSLASH_CASE('\r', 'r');
+		BACKSLASH_CASE('\t', 't');
+		BACKSLASH_CASE('\0', '0');
+		BACKSLASH_CASE('\a', 'a');
+		BACKSLASH_CASE('\b', 'b');
+		BACKSLASH_CASE('\v', 'v');
+		BACKSLASH_CASE('\f', 'f');
+		BACKSLASH_CASE('\\', '\\');
+		BACKSLASH_CASE('"', '"');
+#undef BACKSLASH_CASE
+
+		default:
+			out_pos += snprintf(&out[out_pos], out_len - out_pos, "\\%u", (unsigned char)str[in_pos]);
+			if (out_pos > out_len) {
+				out_pos = out_len;
+				goto done;
+			}
+			break;
+		}
+		in_pos ++;
+	}
+
+done:
+	out[out_pos] = '\0';
+	return out;
+}
+
+/*! Return the string with all non-printable characters escaped.
+ * Call osmo_escape_str_buf() with a static buffer.
+ * \param[in] str  A string that may contain any characters.
+ * \param[in] len  Pass -1 to print until nul char, or >= 0 to force a length.
+ * \returns buf containing an escaped representation, possibly truncated, or str itself.
+ */
+const char *osmo_escape_str(const char *str, int in_len)
+{
+	return osmo_escape_str_buf(str, in_len, namebuf, sizeof(namebuf));
+}
+
 /*! @} */

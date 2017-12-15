@@ -323,6 +323,53 @@ static void bcd_test(void)
 	}
 }
 
+static void str_escape_test(void)
+{
+	int i;
+	int j;
+	uint8_t in_buf[32];
+	char out_buf[11];
+	const char *printable = "printable";
+	const char *res;
+
+	printf("\nTesting string escaping\n");
+	printf("- all chars from 0 to 255 in batches of 16:\n");
+	for (j = 0; j < 16; j++) {
+		for (i = 0; i < 16; i++)
+			in_buf[i] = (j << 4) | i;
+		printf("\"%s\"\n", osmo_escape_str((const char*)in_buf, 16));
+	}
+
+	printf("- nul terminated:\n");
+	printf("\"%s\"\n", osmo_escape_str("termi\nated", -1));
+
+	printf("- passthru:\n");
+	res = osmo_escape_str(printable, -1);
+	if (res != printable)
+		printf("NOT passed through! \"%s\"\n", res);
+	else
+		printf("passed through unchanged \"%s\"\n", res);
+
+	printf("- zero length:\n");
+	printf("\"%s\"\n", osmo_escape_str("omitted", 0));
+
+	printf("- truncation when too long:\n");
+	memset(in_buf, 'x', sizeof(in_buf));
+	in_buf[0] = '\a';
+	in_buf[7] = 'E';
+	memset(out_buf, 0x7f, sizeof(out_buf));
+	printf("\"%s\"\n", osmo_escape_str_buf((const char *)in_buf, sizeof(in_buf), out_buf, 10));
+	OSMO_ASSERT(out_buf[10] == 0x7f);
+
+	printf("- passthrough without truncation when no escaping needed:\n");
+	memset(in_buf, 'x', sizeof(in_buf));
+	in_buf[19] = 'E';
+	in_buf[20] = '\0';
+	memset(out_buf, 0x7f, sizeof(out_buf));
+	printf("\"%s\"\n", osmo_escape_str_buf((const char *)in_buf, -1, out_buf, 10));
+	OSMO_ASSERT(out_buf[0] == 0x7f);
+}
+
 int main(int argc, char **argv)
 {
 	static const struct log_info log_info = {};
@@ -333,5 +380,6 @@ int main(int argc, char **argv)
 	test_idtag_parsing();
 	test_is_hexstr();
 	bcd_test();
+	str_escape_test();
 	return 0;
 }

@@ -120,4 +120,7 @@ bool osmo_is_hexstr(const char *str, int min_digits, int max_digits,
 bool osmo_identifier_valid(const char *str);
 bool osmo_separated_identifiers_valid(const char *str, const char *sep_chars);
 
+const char *osmo_escape_str(const char *str, int len);
+const char *osmo_escape_str_buf(const char *str, int in_len, char *buf, size_t bufsize);
+
 /*! @} */
