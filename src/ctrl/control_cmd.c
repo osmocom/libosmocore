@@ -269,7 +269,22 @@ err:
 	return NULL;
 }
 
+/*! Parse CTRL command struct from msgb, return NULL on any error.
+ * The caller is responsible to talloc_free() the returned struct pointer. */
 struct ctrl_cmd *ctrl_cmd_parse(void *ctx, struct msgb *msg)
+{
+	struct ctrl_cmd *res = ctrl_cmd_parse2(ctx, msg);
+	if (res->type == CTRL_TYPE_ERROR) {
+		talloc_free(res);
+		return NULL;
+	}
+	return res;
+}
+
+/*! Parse CTRL command struct from msgb, return ctrl->type == CTRL_TYPE_ERROR and an error message in
+ * ctrl->reply on any error.
+ * The caller is responsible to talloc_free() the returned struct pointer. */
+struct ctrl_cmd *ctrl_cmd_parse2(void *ctx, struct msgb *msg)
 {
 	char *str, *tmp, *saveptr = NULL;
 	char *var, *val;
@@ -382,8 +397,7 @@ oom:
 	cmd->id = "err";
 	cmd->reply = "OOM";
 err:
-	talloc_free(cmd);
-	return NULL;
+	return cmd;
 }
 
 struct msgb *ctrl_cmd_make(struct ctrl_cmd *cmd)

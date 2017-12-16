@@ -103,6 +103,7 @@ int ctrl_cmd_exec(vector vline, struct ctrl_cmd *command, vector node, void *dat
 int ctrl_cmd_install(enum ctrl_node_type node, struct ctrl_cmd_element *cmd);
 int ctrl_cmd_send(struct osmo_wqueue *queue, struct ctrl_cmd *cmd);
 int ctrl_cmd_send_to_all(struct ctrl_handle *ctrl, struct ctrl_cmd *cmd);
+struct ctrl_cmd *ctrl_cmd_parse2(void *ctx, struct msgb *msg);
 struct ctrl_cmd *ctrl_cmd_parse(void *ctx, struct msgb *msg);
 struct msgb *ctrl_cmd_make(struct ctrl_cmd *cmd);
 struct ctrl_cmd *ctrl_cmd_cpy(void *ctx, struct ctrl_cmd *cmd);
