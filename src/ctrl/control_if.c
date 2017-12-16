@@ -381,14 +381,10 @@ int ctrl_handle_msg(struct ctrl_handle *ctrl, struct ctrl_connection *ccon, stru
 
 	msg->l2h = iph_ext->data;
 
-	cmd = ctrl_cmd_parse(ccon, msg);
+	cmd = ctrl_cmd_parse2(ccon, msg);
 
-	if (cmd) {
-		cmd->ccon = ccon;
-		if (ctrl_cmd_handle(ctrl, cmd, ctrl->data) != CTRL_CMD_HANDLED) {
-			ctrl_cmd_send(&ccon->write_queue, cmd);
-		}
-	} else {
+	if (!cmd) {
+		/* should never happen */
 		cmd = talloc_zero(ccon, struct ctrl_cmd);
 		if (!cmd)
 			return -ENOMEM;
@@ -396,10 +392,23 @@ int ctrl_handle_msg(struct ctrl_handle *ctrl, struct ctrl_connection *ccon, stru
 		cmd->type = CTRL_TYPE_ERROR;
 		cmd->id = "err";
 		cmd->reply = "Command parser error.";
-		ctrl_cmd_send(&ccon->write_queue, cmd);
 	}
 
-	talloc_free(cmd);
+	if (cmd->type != CTRL_TYPE_ERROR) {
+		cmd->ccon = ccon;
+		if (ctrl_cmd_handle(ctrl, cmd, ctrl->data) == CTRL_CMD_HANDLED) {
+			/* On CTRL_CMD_HANDLED, no reply needs to be sent back. */
+			talloc_free(cmd);
+			cmd = NULL;
+		}
+	}
+
+	if (cmd) {
+		/* There is a reply or error that should be reported back to the sender. */
+		ctrl_cmd_send(&ccon->write_queue, cmd);
+		talloc_free(cmd);
+	}
+
 	return 0;
 }
 
@@ -894,13 +903,16 @@ struct ctrl_cmd *ctrl_cmd_exec_from_string(struct ctrl_handle *ch, const char *c
 	osmo_strlcpy((char *)msg->data, cmdstr, msgb_tailroom(msg));
 	msgb_put(msg, strlen(cmdstr));
 
-	cmd = ctrl_cmd_parse(ch, msg);
+	cmd = ctrl_cmd_parse2(ch, msg);
 	msgb_free(msg);
 	if (!cmd)
 		return NULL;
-	if (ctrl_cmd_handle(ch, cmd, NULL) < 0) {
+	if (cmd->type == CTRL_TYPE_ERROR)
+		return cmd;
+	if (ctrl_cmd_handle(ch, cmd, NULL) == CTRL_CMD_HANDLED) {
+		/* No reply should be sent back. */
 		talloc_free(cmd);
-		return NULL;
+		cmd = NULL;
 	}
 	return cmd;
 }

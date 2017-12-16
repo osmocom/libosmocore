@@ -76,7 +76,7 @@ static void assert_test(struct ctrl_handle *ctrl, struct ctrl_connection *ccon, 
 	printf("test: '%s'\n", osmo_escape_str(t->cmd_str, -1));
 	printf("parsing:\n");
 
-	cmd = ctrl_cmd_parse(ctx, msg);
+	cmd = ctrl_cmd_parse2(ctx, msg);
 	OSMO_ASSERT(cmd);
 
 	OSMO_ASSERT(t->expect_parsed.type == cmd->type);
