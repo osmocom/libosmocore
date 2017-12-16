@@ -9,6 +9,8 @@
 #include <osmocom/core/logging.h>
 #include <osmocom/core/msgb.h>
 #include <osmocom/core/application.h>
+#include <osmocom/gsm/protocol/ipaccess.h>
+#include <osmocom/ctrl/control_if.h>
 
 static void check_type(enum ctrl_type c)
 {
@@ -24,18 +26,34 @@ static void check_type(enum ctrl_type c)
 
 struct msgb *msgb_from_string(const char *str)
 {
-	char *rc;
+	struct ipaccess_head *iph;
+	struct ipaccess_head_ext *ipx;
+	char *str_msg;
 	size_t len = strlen(str) + 1;
-	/* ctrl_cmd_parse() appends a '\0' to the msgb, allow one more byte. */
-	struct msgb *msg = msgb_alloc(len + 1, str);
-	msg->l2h = msg->head;
-	rc = (char*)msgb_put(msg, len);
-	OSMO_ASSERT(rc == (char*)msg->l2h);
-	strcpy(rc, str);
+
+	struct msgb *msg = msgb_alloc(1024, str);
+
+	iph = (void*)msgb_put(msg, sizeof(*iph));
+	iph->proto = IPAC_PROTO_OSMO;
+
+	ipx = (void*)msgb_put(msg, sizeof(*ipx));
+	ipx->proto = IPAC_PROTO_EXT_CTRL;
+
+	str_msg = (char*)msgb_put(msg, len);
+	msg->l2h = (void*)str_msg;
+	osmo_strlcpy(str_msg, str, len);
+
+	iph->len = msgb_length(msg);
 	return msg;
 }
 
 static void *ctx = NULL;
+
+struct one_test {
+	const char *cmd_str;
+	struct ctrl_cmd expect_parsed;
+	const char *reply_str;
+};
 
 void assert_same_str(const char *label, const char *expect, const char *got)
 {
@@ -49,20 +67,22 @@ void assert_same_str(const char *label, const char *expect, const char *got)
 	OSMO_ASSERT(expect == got);
 }
 
-static void assert_parsing(const char *str, const struct ctrl_cmd *expect)
+static void assert_test(struct ctrl_handle *ctrl, struct ctrl_connection *ccon, const struct one_test *t)
 {
 	struct ctrl_cmd *cmd;
-	struct msgb *msg = msgb_from_string(str);
+	struct msgb *msg = msgb_from_string(t->cmd_str);
+	int ctx_size_was;
 
-	printf("test parsing: '%s'\n", osmo_escape_str(str, -1));
+	printf("test: '%s'\n", osmo_escape_str(t->cmd_str, -1));
+	printf("parsing:\n");
 
 	cmd = ctrl_cmd_parse(ctx, msg);
 	OSMO_ASSERT(cmd);
 
-	OSMO_ASSERT(expect->type == cmd->type);
+	OSMO_ASSERT(t->expect_parsed.type == cmd->type);
 
 #define ASSERT_SAME_STR(field) \
-	assert_same_str(#field, expect->field, cmd->field)
+	assert_same_str(#field, t->expect_parsed.field, cmd->field)
 
 	ASSERT_SAME_STR(id);
 	ASSERT_SAME_STR(variable);
@@ -72,35 +92,67 @@ static void assert_parsing(const char *str, const struct ctrl_cmd *expect)
 	talloc_free(cmd);
 	msgb_free(msg);
 
+	printf("handling:\n");
+
+	ctx_size_was = talloc_total_size(ctx);
+
+	msg = msgb_from_string(t->cmd_str);
+	ctrl_handle_msg(ctrl, ccon, msg);
+
+	if (llist_empty(&ccon->write_queue.msg_queue)) {
+		if (t->reply_str) {
+			printf("Got no reply, but expected \"%s\"\n", osmo_escape_str(t->reply_str, -1));
+			OSMO_ASSERT(!t->reply_str);
+		}
+	} else {
+		struct msgb *sent_msg = msgb_dequeue(&ccon->write_queue.msg_queue);
+		OSMO_ASSERT(sent_msg);
+		msgb_put_u8(sent_msg, 0);
+
+		printf("replied: '%s'\n", osmo_escape_str((char*)msgb_l2(sent_msg), -1));
+		OSMO_ASSERT(t->reply_str);
+		OSMO_ASSERT(!strcmp(t->reply_str, (char*)msgb_l2(sent_msg)))
+		msgb_free(sent_msg);
+	}
+	osmo_wqueue_clear(&ccon->write_queue);
+
+	msgb_free(msg);
+
+	if (talloc_total_size(ctx) != ctx_size_was) {
+		printf("mem leak!\n");
+		talloc_report_full(ctx, stdout);
+		OSMO_ASSERT(false);
+	}
+
 	printf("ok\n");
 }
 
-struct one_parsing_test {
-	const char *cmd_str;
-	struct ctrl_cmd expect;
-};
-
-static const struct one_parsing_test test_parsing_list[] = {
+static const struct one_test test_messages_list[] = {
 	{ "GET 1 variable",
 		{
 			.type = CTRL_TYPE_GET,
 			.id = "1",
 			.variable = "variable",
-		}
+		},
+		"ERROR 1 Command not found",
 	},
 	{ "GET 1 variable\n",
 		{
 			.type = CTRL_TYPE_GET,
 			.id = "1",
 			.variable = "variable\n", /* current bug */
-		}
+		},
+		"ERROR 1 Command not found",
+
 	},
 	{ "GET 1 var\ni\nable",
 		{
 			.type = CTRL_TYPE_GET,
 			.id = "1",
 			.variable = "var\ni\nable", /* current bug */
-		}
+		},
+		"ERROR 1 Command not found",
+
 	},
 	{ "GET 1 variable value",
 		{
@@ -108,7 +160,9 @@ static const struct one_parsing_test test_parsing_list[] = {
 			.id = "1",
 			.variable = "variable",
 			.value = NULL,
-		}
+		},
+		"ERROR 1 Command not found",
+
 	},
 	{ "GET 1 variable value\n",
 		{
@@ -116,7 +170,9 @@ static const struct one_parsing_test test_parsing_list[] = {
 			.id = "1",
 			.variable = "variable",
 			.value = NULL,
-		}
+		},
+		"ERROR 1 Command not found",
+
 	},
 	{ "GET 1 variable multiple value tokens",
 		{
@@ -124,7 +180,9 @@ static const struct one_parsing_test test_parsing_list[] = {
 			.id = "1",
 			.variable = "variable",
 			.value = NULL,
-		}
+		},
+		"ERROR 1 Command not found",
+
 	},
 	{ "GET 1 variable multiple value tokens\n",
 		{
@@ -132,7 +190,9 @@ static const struct one_parsing_test test_parsing_list[] = {
 			.id = "1",
 			.variable = "variable",
 			.value = NULL,
-		}
+		},
+		"ERROR 1 Command not found",
+
 	},
 	{ "SET 1 variable value",
 		{
@@ -140,7 +200,9 @@ static const struct one_parsing_test test_parsing_list[] = {
 			.id = "1",
 			.variable = "variable",
 			.value = "value",
-		}
+		},
+		"ERROR 1 Command not found",
+
 	},
 	{ "SET 1 variable value\n",
 		{
@@ -148,7 +210,9 @@ static const struct one_parsing_test test_parsing_list[] = {
 			.id = "1",
 			.variable = "variable",
 			.value = "value",
-		}
+		},
+		"ERROR 1 Command not found",
+
 	},
 	{ "SET weird_id variable value",
 		{
@@ -156,7 +220,9 @@ static const struct one_parsing_test test_parsing_list[] = {
 			.id = "weird_id",
 			.variable = "variable",
 			.value = "value",
-		}
+		},
+		"ERROR weird_id Command not found",
+
 	},
 	{ "SET weird_id variable value\n",
 		{
@@ -164,7 +230,9 @@ static const struct one_parsing_test test_parsing_list[] = {
 			.id = "weird_id",
 			.variable = "variable",
 			.value = "value",
-		}
+		},
+		"ERROR weird_id Command not found",
+
 	},
 	{ "SET 1 variable multiple value tokens",
 		{
@@ -172,7 +240,9 @@ static const struct one_parsing_test test_parsing_list[] = {
 			.id = "1",
 			.variable = "variable",
 			.value = "multiple value tokens",
-		}
+		},
+		"ERROR 1 Command not found",
+
 	},
 	{ "SET 1 variable multiple value tokens\n",
 		{
@@ -180,7 +250,9 @@ static const struct one_parsing_test test_parsing_list[] = {
 			.id = "1",
 			.variable = "variable",
 			.value = "multiple value tokens",
-		}
+		},
+		"ERROR 1 Command not found",
+
 	},
 	{ "SET 1 variable value_with_trailing_spaces  ",
 		{
@@ -188,7 +260,9 @@ static const struct one_parsing_test test_parsing_list[] = {
 			.id = "1",
 			.variable = "variable",
 			.value = "value_with_trailing_spaces  ",
-		}
+		},
+		"ERROR 1 Command not found",
+
 	},
 	{ "SET 1 variable value_with_trailing_spaces  \n",
 		{
@@ -196,7 +270,9 @@ static const struct one_parsing_test test_parsing_list[] = {
 			.id = "1",
 			.variable = "variable",
 			.value = "value_with_trailing_spaces  ",
-		}
+		},
+		"ERROR 1 Command not found",
+
 	},
 	{ "SET \n special_char_id value",
 		{
@@ -204,7 +280,9 @@ static const struct one_parsing_test test_parsing_list[] = {
 			.id = "\n",
 			.variable = "special_char_id",
 			.value = "value",
-		}
+		},
+		"ERROR \n Command not found",
+
 	},
 	{ "SET \t special_char_id value",
 		{
@@ -212,17 +290,28 @@ static const struct one_parsing_test test_parsing_list[] = {
 			.id = "\t",
 			.variable = "special_char_id",
 			.value = "value",
-		}
+		},
+		"ERROR \t Command not found",
+
 	},
 };
 
-static void test_parsing()
+static void test_messages()
 {
+	struct ctrl_handle *ctrl;
+	struct ctrl_connection *ccon;
 	int i;
 
-	for (i = 0; i < ARRAY_SIZE(test_parsing_list); i++)
-		assert_parsing(test_parsing_list[i].cmd_str,
-			       &test_parsing_list[i].expect);
+	ctrl = ctrl_handle_alloc2(ctx, NULL, NULL, 0);
+	ccon = talloc_zero(ctx, struct ctrl_connection);
+
+	osmo_wqueue_init(&ccon->write_queue, 1);
+
+	for (i = 0; i < ARRAY_SIZE(test_messages_list); i++)
+		assert_test(ctrl, ccon, &test_messages_list[i]);
+
+	talloc_free(ccon);
+	talloc_free(ctrl);
 }
 
 static struct log_info_cat test_categories[] = {
@@ -249,7 +338,7 @@ int main(int argc, char **argv)
 	check_type(CTRL_TYPE_ERROR);
 	check_type(64);
 
-	test_parsing();
+	test_messages();
 
 	return 0;
 }

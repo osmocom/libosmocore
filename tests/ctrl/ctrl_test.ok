@@ -7,105 +7,156 @@ ctrl type 4 is SET_REPLY -> 4 OK
 ctrl type 5 is TRAP -> 5 OK
 ctrl type 6 is ERROR -> 6 OK
 ctrl type 64 is unknown 0x40 [PARSE FAILED]
-test parsing: 'GET 1 variable'
+test: 'GET 1 variable'
+parsing:
 id = '1'
 variable = 'variable'
 value = '(null)'
 reply = '(null)'
+handling:
+replied: 'ERROR 1 Command not found'
 ok
-test parsing: 'GET 1 variable\n'
+test: 'GET 1 variable\n'
+parsing:
 id = '1'
 variable = 'variable\n'
 value = '(null)'
 reply = '(null)'
+handling:
+replied: 'ERROR 1 Command not found'
 ok
-test parsing: 'GET 1 var\ni\nable'
+test: 'GET 1 var\ni\nable'
+parsing:
 id = '1'
 variable = 'var\ni\nable'
 value = '(null)'
 reply = '(null)'
+handling:
+replied: 'ERROR 1 Command not found'
 ok
-test parsing: 'GET 1 variable value'
+test: 'GET 1 variable value'
+parsing:
 id = '1'
 variable = 'variable'
 value = '(null)'
 reply = '(null)'
+handling:
+replied: 'ERROR 1 Command not found'
 ok
-test parsing: 'GET 1 variable value\n'
+test: 'GET 1 variable value\n'
+parsing:
 id = '1'
 variable = 'variable'
 value = '(null)'
 reply = '(null)'
+handling:
+replied: 'ERROR 1 Command not found'
 ok
-test parsing: 'GET 1 variable multiple value tokens'
+test: 'GET 1 variable multiple value tokens'
+parsing:
 id = '1'
 variable = 'variable'
 value = '(null)'
 reply = '(null)'
+handling:
+replied: 'ERROR 1 Command not found'
 ok
-test parsing: 'GET 1 variable multiple value tokens\n'
+test: 'GET 1 variable multiple value tokens\n'
+parsing:
 id = '1'
 variable = 'variable'
 value = '(null)'
 reply = '(null)'
+handling:
+replied: 'ERROR 1 Command not found'
 ok
-test parsing: 'SET 1 variable value'
+test: 'SET 1 variable value'
+parsing:
 id = '1'
 variable = 'variable'
 value = 'value'
 reply = '(null)'
+handling:
+replied: 'ERROR 1 Command not found'
 ok
-test parsing: 'SET 1 variable value\n'
+test: 'SET 1 variable value\n'
+parsing:
 id = '1'
 variable = 'variable'
 value = 'value'
 reply = '(null)'
+handling:
+replied: 'ERROR 1 Command not found'
 ok
-test parsing: 'SET weird_id variable value'
+test: 'SET weird_id variable value'
+parsing:
 id = 'weird_id'
 variable = 'variable'
 value = 'value'
 reply = '(null)'
+handling:
+replied: 'ERROR weird_id Command not found'
 ok
-test parsing: 'SET weird_id variable value\n'
+test: 'SET weird_id variable value\n'
+parsing:
 id = 'weird_id'
 variable = 'variable'
 value = 'value'
 reply = '(null)'
+handling:
+replied: 'ERROR weird_id Command not found'
 ok
-test parsing: 'SET 1 variable multiple value tokens'
+test: 'SET 1 variable multiple value tokens'
+parsing:
 id = '1'
 variable = 'variable'
 value = 'multiple value tokens'
 reply = '(null)'
+handling:
+replied: 'ERROR 1 Command not found'
 ok
-test parsing: 'SET 1 variable multiple value tokens\n'
+test: 'SET 1 variable multiple value tokens\n'
+parsing:
 id = '1'
 variable = 'variable'
 value = 'multiple value tokens'
 reply = '(null)'
+handling:
+replied: 'ERROR 1 Command not found'
 ok
-test parsing: 'SET 1 variable value_with_trailing_spaces  '
+test: 'SET 1 variable value_with_trailing_spaces  '
+parsing:
 id = '1'
 variable = 'variable'
 value = 'value_with_trailing_spaces  '
 reply = '(null)'
+handling:
+replied: 'ERROR 1 Command not found'
 ok
-test parsing: 'SET 1 variable value_with_trailing_spaces  \n'
+test: 'SET 1 variable value_with_trailing_spaces  \n'
+parsing:
 id = '1'
 variable = 'variable'
 value = 'value_with_trailing_spaces  '
 reply = '(null)'
+handling:
+replied: 'ERROR 1 Command not found'
 ok
-test parsing: 'SET \n special_char_id value'
+test: 'SET \n special_char_id value'
+parsing:
 id = '\n'
 variable = 'special_char_id'
 value = 'value'
 reply = '(null)'
+handling:
+replied: 'ERROR \n Command not found'
 ok
-test parsing: 'SET \t special_char_id value'
+test: 'SET \t special_char_id value'
+parsing:
 id = '\t'
 variable = 'special_char_id'
 value = 'value'
 reply = '(null)'
+handling:
+replied: 'ERROR \t Command not found'
 ok
