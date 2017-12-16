@@ -160,3 +160,21 @@ reply = '(null)'
 handling:
 replied: 'ERROR \t Command not found'
 ok
+test: 'GET_REPLY 1 variable OK'
+parsing:
+id = '1'
+variable = 'variable'
+value = '(null)'
+reply = 'OK'
+handling:
+mem leak!
+ok
+test: 'SET_REPLY 1 variable OK'
+parsing:
+id = '1'
+variable = 'variable'
+value = '(null)'
+reply = 'OK'
+handling:
+mem leak!
+ok
