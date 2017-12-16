@@ -387,7 +387,6 @@ int ctrl_handle_msg(struct ctrl_handle *ctrl, struct ctrl_connection *ccon, stru
 		cmd->ccon = ccon;
 		if (ctrl_cmd_handle(ctrl, cmd, ctrl->data) != CTRL_CMD_HANDLED) {
 			ctrl_cmd_send(&ccon->write_queue, cmd);
-			talloc_free(cmd);
 		}
 	} else {
 		cmd = talloc_zero(ccon, struct ctrl_cmd);
@@ -398,9 +397,9 @@ int ctrl_handle_msg(struct ctrl_handle *ctrl, struct ctrl_connection *ccon, stru
 		cmd->id = "err";
 		cmd->reply = "Command parser error.";
 		ctrl_cmd_send(&ccon->write_queue, cmd);
-		talloc_free(cmd);
 	}
 
+	talloc_free(cmd);
 	return 0;
 }
 

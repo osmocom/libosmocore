@@ -167,7 +167,6 @@ variable = 'variable'
 value = '(null)'
 reply = 'OK'
 handling:
-mem leak!
 ok
 test: 'SET_REPLY 1 variable OK'
 parsing:
@@ -176,5 +175,4 @@ variable = 'variable'
 value = '(null)'
 reply = 'OK'
 handling:
-mem leak!
 ok

@@ -120,9 +120,8 @@ static void assert_test(struct ctrl_handle *ctrl, struct ctrl_connection *ccon, 
 
 	if (talloc_total_size(ctx) != ctx_size_was) {
 		printf("mem leak!\n");
-		// hide mem leak to be fixed in subsequent patch
-		//talloc_report_full(ctx, stdout);
-		//OSMO_ASSERT(false);
+		talloc_report_full(ctx, stdout);
+		OSMO_ASSERT(false);
 	}
 
 	printf("ok\n");
