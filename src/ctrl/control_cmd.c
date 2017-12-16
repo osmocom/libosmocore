@@ -410,31 +410,34 @@ struct ctrl_cmd *ctrl_cmd_parse2(void *ctx, struct msgb *msg)
 			LOGP(DLCTRL, LOGL_DEBUG, "Command: SET %s = \"%s\"\n", cmd->variable,
 			     osmo_escape_str(cmd->value, -1));
 			break;
-		case CTRL_TYPE_GET_REPLY:
-		case CTRL_TYPE_SET_REPLY:
-		case CTRL_TYPE_TRAP:
-			var = strtok_r(NULL, " ", &saveptr);
-			val = strtok_r(NULL, "", &saveptr);
-			if (!var || !val) {
-				cmd->type = CTRL_TYPE_ERROR;
-				cmd->reply = "Trap/Reply incomplete";
-				LOGP(DLCTRL, LOGL_NOTICE, "Trap/Reply incomplete\n");
-				goto err;
-			}
-			if (!osmo_separated_identifiers_valid(var, ".")) {
-				cmd->type = CTRL_TYPE_ERROR;
-				cmd->reply = "Trap/Reply variable contains invalid characters";
-				LOGP(DLCTRL, LOGL_NOTICE, "Trap/Reply variable contains invalid characters: \"%s\"\n",
-				     osmo_escape_str(var, -1));
-				goto err;
-			}
-			cmd->variable = talloc_strdup(cmd, var);
-			cmd->reply = talloc_strdup(cmd, val);
-			if (!cmd->variable || !cmd->reply)
-				goto oom;
-			LOGP(DLCTRL, LOGL_DEBUG, "Command: TRAP/REPLY %s: \"%s\"\n", cmd->variable,
-			     osmo_escape_str(cmd->reply, -1));
-			break;
+#define REPLY_CASE(TYPE, NAME)  \
+		case TYPE: \
+			var = strtok_r(NULL, " ", &saveptr); \
+			val = strtok_r(NULL, "", &saveptr); \
+			if (!var) { \
+				cmd->type = CTRL_TYPE_ERROR; \
+				cmd->reply = NAME " incomplete"; \
+				LOGP(DLCTRL, LOGL_NOTICE, NAME " incomplete\n"); \
+				goto err; \
+			} \
+			if (!osmo_separated_identifiers_valid(var, ".")) { \
+				cmd->type = CTRL_TYPE_ERROR; \
+				cmd->reply = NAME " variable contains invalid characters"; \
+				LOGP(DLCTRL, LOGL_NOTICE, NAME " variable contains invalid characters: \"%s\"\n", \
+				     osmo_escape_str(var, -1)); \
+				goto err; \
+			} \
+			cmd->variable = talloc_strdup(cmd, var); \
+			cmd->reply = talloc_strdup(cmd, val); \
+			if (!cmd->variable || !cmd->reply) \
+				goto oom; \
+			LOGP(DLCTRL, LOGL_DEBUG, "Command: " NAME " %s: %s\n", cmd->variable, \
+			     osmo_escape_str(cmd->reply, -1)); \
+			break
+		REPLY_CASE(CTRL_TYPE_GET_REPLY, "GET REPLY");
+		REPLY_CASE(CTRL_TYPE_SET_REPLY, "SET REPLY");
+		REPLY_CASE(CTRL_TYPE_TRAP, "TRAP");
+#undef REPLY_CASE
 		case CTRL_TYPE_ERROR:
 			var = strtok_r(NULL, "", &saveptr);
 			if (!var) {
