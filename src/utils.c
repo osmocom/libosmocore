@@ -444,6 +444,8 @@ bool osmo_identifier_valid(const char *str)
 		/* check for 7-bit ASCII */
 		if (str[i] & 0x80)
 			return false;
+		if (!isprint((int)str[i]))
+			return false;
 		/* check for some explicit reserved control characters */
 		if (strchr(illegal_chars, str[i]))
 			return false;
