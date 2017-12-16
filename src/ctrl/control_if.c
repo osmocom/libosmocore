@@ -326,10 +326,7 @@ static int handle_control_read(struct osmo_fd * bfd)
 	int ret = -1;
 	struct osmo_wqueue *queue;
 	struct ctrl_connection *ccon;
-	struct ipaccess_head *iph;
-	struct ipaccess_head_ext *iph_ext;
 	struct msgb *msg = NULL;
-	struct ctrl_cmd *cmd;
 	struct ctrl_handle *ctrl = bfd->data;
 
 	queue = container_of(bfd, struct osmo_wqueue, bfd);
@@ -338,30 +335,48 @@ static int handle_control_read(struct osmo_fd * bfd)
 	ret = ipa_msg_recv_buffered(bfd->fd, &msg, &ccon->pending_msg);
 	if (ret <= 0) {
 		if (ret == -EAGAIN)
+			/* received part of a message, it is stored in ccon->pending_msg and there's
+			 * nothing left to do now. */
 			return 0;
-		if (ret == 0)
+		/* msg was already discarded. */
+		if (ret == 0) {
 			LOGP(DLCTRL, LOGL_INFO, "The control connection was closed\n");
+			ret = -EIO;
+		}
 		else
 			LOGP(DLCTRL, LOGL_ERROR, "Failed to parse ip access message: %d\n", ret);
 
-		goto err;
+		return ret;
 	}
+
+	ret = ctrl_handle_msg(ctrl, ccon, msg);
+	msgb_free(msg);
+	if (ret)
+		control_close_conn(ccon);
+	return ret;
+}
+
+int ctrl_handle_msg(struct ctrl_handle *ctrl, struct ctrl_connection *ccon, struct msgb *msg)
+{
+	struct ctrl_cmd *cmd;
+	struct ipaccess_head *iph;
+	struct ipaccess_head_ext *iph_ext;
 
 	if (msg->len < sizeof(*iph) + sizeof(*iph_ext)) {
 		LOGP(DLCTRL, LOGL_ERROR, "The message is too short.\n");
-		goto err;
+		return -EINVAL;
 	}
 
 	iph = (struct ipaccess_head *) msg->data;
 	if (iph->proto != IPAC_PROTO_OSMO) {
 		LOGP(DLCTRL, LOGL_ERROR, "Protocol mismatch. We got 0x%x\n", iph->proto);
-		goto err;
+		return -EINVAL;
 	}
 
 	iph_ext = (struct ipaccess_head_ext *) iph->data;
 	if (iph_ext->proto != IPAC_PROTO_EXT_CTRL) {
 		LOGP(DLCTRL, LOGL_ERROR, "Extended protocol mismatch. We got 0x%x\n", iph_ext->proto);
-		goto err;
+		return -EINVAL;
 	}
 
 	msg->l2h = iph_ext->data;
@@ -371,28 +386,22 @@ static int handle_control_read(struct osmo_fd * bfd)
 	if (cmd) {
 		cmd->ccon = ccon;
 		if (ctrl_cmd_handle(ctrl, cmd, ctrl->data) != CTRL_CMD_HANDLED) {
-			ctrl_cmd_send(queue, cmd);
+			ctrl_cmd_send(&ccon->write_queue, cmd);
 			talloc_free(cmd);
 		}
 	} else {
 		cmd = talloc_zero(ccon, struct ctrl_cmd);
 		if (!cmd)
-			goto err;
+			return -ENOMEM;
 		LOGP(DLCTRL, LOGL_ERROR, "Command parser error.\n");
 		cmd->type = CTRL_TYPE_ERROR;
 		cmd->id = "err";
 		cmd->reply = "Command parser error.";
-		ctrl_cmd_send(queue, cmd);
+		ctrl_cmd_send(&ccon->write_queue, cmd);
 		talloc_free(cmd);
 	}
 
-	msgb_free(msg);
 	return 0;
-
-err:
-	control_close_conn(ccon);
-	msgb_free(msg);
-	return ret;
 }
 
 static int control_write_cb(struct osmo_fd *bfd, struct msgb *msg)

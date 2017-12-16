@@ -43,3 +43,5 @@ int ctrl_cmd_handle(struct ctrl_handle *ctrl, struct ctrl_cmd *cmd, void *data);
 struct ctrl_cmd *ctrl_cmd_exec_from_string(struct ctrl_handle *ch, const char *cmdstr);
 
 int ctrl_lookup_register(ctrl_cmd_lookup lookup);
+
+int ctrl_handle_msg(struct ctrl_handle *ctrl, struct ctrl_connection *ccon, struct msgb *msg);
