@@ -37,45 +37,15 @@ struct msgb *msgb_from_string(const char *str)
 
 static void *ctx = NULL;
 
-void print_escaped(const char *str)
-{
-	if (!str) {
-		printf("NULL");
-		return;
-	}
-
-	printf("'");
-	for (;*str; str++) {
-		switch (*str) {
-		case '\n':
-			printf("\\n");
-			break;
-		case '\r':
-			printf("\\r");
-			break;
-		case '\t':
-			printf("\\t");
-			break;
-		default:
-			printf("%c", *str);
-			break;
-		}
-	}
-	printf("'");
-}
-
 void assert_same_str(const char *label, const char *expect, const char *got)
 {
 	if ((expect == got) || (expect && got && (strcmp(expect, got) == 0))) {
-		printf("%s = ", label);
-		print_escaped(got);
-		printf("\n");
+		printf("%s = '%s'\n", label, osmo_escape_str(got, -1));
 		return;
 	}
 
-	printf("MISMATCH for '%s':\ngot:      ", label); print_escaped(got);
-	printf("\nexpected: "); print_escaped(expect);
-	printf("\n");
+	printf("MISMATCH for '%s':\ngot:      %s\n", label, osmo_escape_str(got, -1));
+	printf("expected: %s\n", osmo_escape_str(expect, -1));
 	OSMO_ASSERT(expect == got);
 }
 
@@ -84,9 +54,7 @@ static void assert_parsing(const char *str, const struct ctrl_cmd *expect)
 	struct ctrl_cmd *cmd;
 	struct msgb *msg = msgb_from_string(str);
 
-	printf("test parsing: ");
-	print_escaped(str);
-	printf("\n");
+	printf("test parsing: '%s'\n", osmo_escape_str(str, -1));
 
 	cmd = ctrl_cmd_parse(ctx, msg);
 	OSMO_ASSERT(cmd);
