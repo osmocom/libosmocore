@@ -233,7 +233,7 @@ static void test_create_cipher_complete()
 
 static void test_create_cipher_reject()
 {
-	static const uint8_t res[] = { 0x00, 0x02, 0x59, 0x23 };
+	static const uint8_t res[] = { 0x00, 0x04, 0x59, 0x04, 0x01, 0x23 };
 	struct msgb *msg;
 
 	printf("Testing creating Cipher Reject\n");
