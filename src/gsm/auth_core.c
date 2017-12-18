@@ -236,4 +236,17 @@ const struct value_string osmo_sub_auth_type_names[] = {
 	{ 0, NULL }
 };
 
+/* Derive GSM AKA ciphering key Kc from UMTS AKA CK and IK (auth function c3 from 3GPP TS 33.103 §
+ * 4.6.1).
+ * \param[out] kc  GSM AKA Kc, 8 byte target buffer.
+ * \param[in] ck  UMTS AKA CK, 16 byte input buffer.
+ * \param[in] ik  UMTS AKA IK, 16 byte input buffer.
+ */
+void osmo_auth_c3(uint8_t kc[], const uint8_t ck[], const uint8_t ik[])
+{
+	int i;
+	for (i = 0; i < 8; i++)
+		kc[i] = ck[i] ^ ck[i + 8] ^ ik[i] ^ ik[i + 8];
+}
+
 /*! @} */

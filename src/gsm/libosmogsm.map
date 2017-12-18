@@ -340,6 +340,7 @@ osmo_auth_3g_from_2g;
 osmo_auth_load;
 osmo_auth_register;
 osmo_auth_supported;
+osmo_auth_c3;
 osmo_sub_auth_type_names;
 
 osmo_rsl2sitype;

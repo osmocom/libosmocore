@@ -29,7 +29,7 @@
 #include "common.h"
 #include "aes_wrap.h"
 #include "milenage.h"
-
+#include <osmocom/crypt/auth.h>
 
 /**
  * milenage_f1 - Milenage f1 and f1* algorithms
@@ -249,8 +249,7 @@ int gsm_milenage(const u8 *opc, const u8 *k, const u8 *_rand, u8 *sres, u8 *kc)
 	if (milenage_f2345(opc, k, _rand, res, ck, ik, NULL, NULL))
 		return -1;
 
-	for (i = 0; i < 8; i++)
-		kc[i] = ck[i] ^ ck[i + 8] ^ ik[i] ^ ik[i + 8];
+	osmo_auth_c3(kc, ck, ik);
 
 #ifdef GSM_MILENAGE_ALT_SRES
 	os_memcpy(sres, res, 4);

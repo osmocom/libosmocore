@@ -105,4 +105,6 @@ void osmo_c4(uint8_t *ck, const uint8_t *kc);
 const char *osmo_auth_alg_name(enum osmo_auth_algo alg);
 enum osmo_auth_algo osmo_auth_alg_parse(const char *name);
 
+void osmo_auth_c3(uint8_t kc[], const uint8_t ck[], const uint8_t ik[]);
+
 /* @} */
