@@ -324,16 +324,16 @@ static void test_reporting()
 	statg2 = osmo_stat_item_group_alloc(stats_ctx, &statg_desc, 2);
 	OSMO_ASSERT(statg2 != NULL);
 	ctrg1 = rate_ctr_group_alloc(stats_ctx, &ctrg_desc, 1);
-	OSMO_ASSERT(ctrg1 != NULL);
+	OSMO_ASSERT(ctrg1 && ctrg1->idx == 1);
 	ctrg2 = rate_ctr_group_alloc(stats_ctx, &ctrg_desc, 2);
-	OSMO_ASSERT(ctrg2 != NULL);
+	OSMO_ASSERT(ctrg2 && ctrg2->idx == 2);
 
 	ctrg_dup = rate_ctr_group_alloc(stats_ctx, &ctrg_desc, 2);
-	if (ctrg_dup != NULL && ctrg2 != NULL)
-		printf("FAIL: successfully allocated already existing counter group!\n");
+	OSMO_ASSERT(ctrg_dup && ctrg_dup->idx == 3);
+	rate_ctr_group_free(ctrg_dup);
 
 	ctrg3 = rate_ctr_group_alloc(stats_ctx, &ctrg_desc_dot, 3);
-	OSMO_ASSERT(ctrg3 != NULL);
+	OSMO_ASSERT(ctrg3 && ctrg3->idx == 3);
 
 	srep1 = stats_reporter_create_test("test1");
 	OSMO_ASSERT(srep1 != NULL);

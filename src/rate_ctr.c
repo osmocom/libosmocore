@@ -178,6 +178,27 @@ err_free:
 	return NULL;
 }
 
+/*! Find an unused index for this rate counter group.
+ *  \param[in] name Name of the counter group
+ *  \returns the largest used index number + 1, or 0 if none exist yet. */
+static unsigned int rate_ctr_get_unused_name_idx(const char *name)
+{
+	unsigned int idx = 0;
+	struct rate_ctr_group *ctrg;
+
+	llist_for_each_entry(ctrg, &rate_ctr_groups, list) {
+		if (!ctrg->desc)
+			continue;
+
+		if (strcmp(ctrg->desc->group_name_prefix, name))
+			continue;
+
+		if (idx <= ctrg->idx)
+			idx = ctrg->idx + 1;
+	}
+	return idx;
+}
+
 /*! Allocate a new group of counters according to description
  *  \param[in] ctx \ref talloc context
  *  \param[in] desc Rate counter group description
@@ -191,9 +212,11 @@ struct rate_ctr_group *rate_ctr_group_alloc(void *ctx,
 	struct rate_ctr_group *group;
 
 	if (rate_ctr_get_group_by_name_idx(desc->group_name_prefix, idx)) {
-		LOGP(DLGLOBAL, LOGL_ERROR, "counter group '%s' already exists for index %u\n",
-		     desc->group_name_prefix, idx);
-		return NULL; /* group already exist */
+		unsigned int new_idx = rate_ctr_get_unused_name_idx(desc->group_name_prefix);
+		LOGP(DLGLOBAL, LOGL_ERROR, "counter group '%s' already exists for index %u,"
+		     " instead using index %u. This is a software bug that needs fixing.\n",
+		     desc->group_name_prefix, idx, new_idx);
+		idx = new_idx;
 	}
 
 	size = sizeof(struct rate_ctr_group) +
