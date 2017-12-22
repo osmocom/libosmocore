@@ -341,6 +341,7 @@ static int handle_control_read(struct osmo_fd * bfd)
 		/* msg was already discarded. */
 		if (ret == 0) {
 			LOGP(DLCTRL, LOGL_INFO, "The control connection was closed\n");
+			control_close_conn(ccon);
 			ret = -EIO;
 		}
 		else
@@ -414,10 +415,17 @@ int ctrl_handle_msg(struct ctrl_handle *ctrl, struct ctrl_connection *ccon, stru
 
 static int control_write_cb(struct osmo_fd *bfd, struct msgb *msg)
 {
+	struct osmo_wqueue *queue;
+	struct ctrl_connection *ccon;
 	int rc;
 
+	queue = container_of(bfd, struct osmo_wqueue, bfd);
+	ccon = container_of(queue, struct ctrl_connection, write_queue);
+
 	rc = write(bfd->fd, msg->data, msg->len);
-	if (rc != msg->len)
+	if (rc == 0)
+		control_close_conn(ccon);
+	else if (rc != msg->len)
 		LOGP(DLCTRL, LOGL_ERROR, "Failed to write message to the control connection.\n");
 
 	return rc;
