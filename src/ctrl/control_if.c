@@ -168,6 +168,10 @@ struct ctrl_cmd *ctrl_cmd_trap(struct ctrl_cmd *cmd)
 static void control_close_conn(struct ctrl_connection *ccon)
 {
 	struct ctrl_cmd_def *cd, *cd2;
+	char *name = osmo_sock_get_name(ccon, ccon->write_queue.bfd.fd);
+
+	LOGP(DLCTRL, LOGL_INFO, "close()d CTRL connection %s\n", name);
+	talloc_free(name);
 
 	osmo_wqueue_clear(&ccon->write_queue);
 	close(ccon->write_queue.bfd.fd);
@@ -340,7 +344,6 @@ static int handle_control_read(struct osmo_fd * bfd)
 			return 0;
 		/* msg was already discarded. */
 		if (ret == 0) {
-			LOGP(DLCTRL, LOGL_INFO, "The control connection was closed\n");
 			control_close_conn(ccon);
 			ret = -EIO;
 		}
