@@ -429,7 +429,7 @@ static int control_write_cb(struct osmo_fd *bfd, struct msgb *msg)
 	if (rc == 0)
 		control_close_conn(ccon);
 	else if (rc != msg->len)
-		LOGP(DLCTRL, LOGL_ERROR, "Failed to write message to the control connection.\n");
+		LOGP(DLCTRL, LOGL_ERROR, "Failed to write message to the CTRL connection.\n");
 
 	return rc;
 }
@@ -464,20 +464,17 @@ static int listen_fd_cb(struct osmo_fd *listen_bfd, unsigned int what)
 	int ret, fd, on;
 	struct ctrl_handle *ctrl;
 	struct ctrl_connection *ccon;
-	struct sockaddr_in sa;
-	socklen_t sa_len = sizeof(sa);
+	char *name;
 
 
 	if (!(what & BSC_FD_READ))
 		return 0;
 
-	fd = accept(listen_bfd->fd, (struct sockaddr *) &sa, &sa_len);
+	fd = accept(listen_bfd->fd, NULL, NULL);
 	if (fd < 0) {
 		perror("accept");
 		return fd;
 	}
-	LOGP(DLCTRL, LOGL_INFO, "accept()ed new control connection from %s\n",
-		inet_ntoa(sa.sin_addr));
 
 #ifdef TCP_NODELAY
 	on = 1;
@@ -495,6 +492,9 @@ static int listen_fd_cb(struct osmo_fd *listen_bfd, unsigned int what)
 		close(fd);
 		return -1;
 	}
+
+	name = osmo_sock_get_name(ccon, fd);
+	LOGP(DLCTRL, LOGL_INFO, "accept()ed new CTRL connection from %s\n", name);
 
 	ccon->write_queue.bfd.fd = fd;
 	ccon->write_queue.bfd.when = BSC_FD_READ;
