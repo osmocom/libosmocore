@@ -92,13 +92,8 @@ void gsm0503_tch_burst_map(const ubit_t *iB, ubit_t *eB, const ubit_t *h, int od
 			eB[i] = iB[i];
 		for (i = 58 - odd; i < 114; i += 2)
 			eB[i + 2] = iB[i];
-	}
-
-	if (h) {
-		if (!odd)
-			eB[58] = *h;
-		else
-			eB[57] = *h;
+		if (h)
+			eB[odd ? 57 : 58] = *h;
 	}
 }
 
