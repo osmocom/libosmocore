@@ -82,3 +82,12 @@ enum {
 	GSM_MNCC_BCAP_OTHER_ITC = 5,
 	GSM_MNCC_BCAP_RESERVED	= 7,
 };
+
+struct msgb;
+struct msgb *osmo_mncc_stringify(const uint8_t *msg, unsigned int len);
+
+void _osmo_mncc_log(int subsys, int level, const char *file, int line, const char *prefix,
+		    const uint8_t *msg, unsigned int len);
+
+#define osmo_mncc_log(ss, level, prefix, msg, len)	\
+	_osmo_mncc_log(ss, level, __BASE_FILE__, __LINE__, prefix, msg, len);

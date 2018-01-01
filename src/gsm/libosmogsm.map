@@ -427,5 +427,8 @@ osmo_oap_decode;
 osmo_imsi_str_valid;
 osmo_msisdn_str_valid;
 
+osmo_mncc_stringify;
+_osmo_mncc_log;
+
 local: *;
 };
