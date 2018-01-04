@@ -537,7 +537,7 @@ DEFUN(cfg_log_gsmtap, cfg_log_gsmtap_cmd,
 	LOG_STR "Logging via GSMTAP\n"
 	"Host name to send the GSMTAP logging to (UDP port 4729)\n")
 {
-	const char *hostname = argv[0];
+	const char *hostname = argc ? argv[0] : "127.0.0.1";
 	struct log_target *tgt;
 
 	tgt = log_target_find(LOG_TGT_TYPE_GSMTAP, hostname);
@@ -546,8 +546,8 @@ DEFUN(cfg_log_gsmtap, cfg_log_gsmtap_cmd,
 					       host.app_info->name, false,
 					       true);
 		if (!tgt) {
-			vty_out(vty, "%% Unable to create GSMTAP log%s",
-				VTY_NEWLINE);
+			vty_out(vty, "%% Unable to create GSMTAP log for %s%s",
+				hostname, VTY_NEWLINE);
 			return CMD_WARNING;
 		}
 		log_add_target(tgt);
