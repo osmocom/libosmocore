@@ -1648,7 +1648,7 @@ enum gsm48_bcap_speech_ver {
 #define GSM48_MID_TMSI_LEN	(GSM48_TMSI_LEN + 2)
 #define GSM48_MI_SIZE 32
 
-/* Chapter 10.4.4.15 */
+/* 3GPP TS 24.008 § 10.5.5.15 Routing area identification */
 struct gsm48_ra_id {
 	uint8_t digits[3];	/* MCC + MNC BCD digits */
 	uint16_t lac;		/* Location Area Code */
