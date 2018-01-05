@@ -396,7 +396,6 @@ int bssgp_tx_fc_ms(struct bssgp_bvc_ctx *bctx, uint32_t tlli, uint8_t tag,
 	struct msgb *msg;
 	struct bssgp_normal_hdr *bgph;
 	uint16_t e_bucket_size, e_leak_rate;
-	uint32_t e_tlli;
 
 	if ((ms_bucket_size / 100) > 0xffff)
 		return -EINVAL;
@@ -412,8 +411,7 @@ int bssgp_tx_fc_ms(struct bssgp_bvc_ctx *bctx, uint32_t tlli, uint8_t tag,
 	msgb_bvci(msg) = bctx->bvci;
 	bgph->pdu_type = BSSGP_PDUT_FLOW_CONTROL_MS;
 
-	e_tlli = osmo_htonl(tlli);
-	msgb_tvlv_put(msg, BSSGP_IE_TLLI, sizeof(e_tlli), (uint8_t *)&e_tlli);
+	bssgp_msgb_tlli_put(msg, tlli);
 	msgb_tvlv_put(msg, BSSGP_IE_TAG, sizeof(tag), (uint8_t *)&tag);
 	msgb_tvlv_put(msg, BSSGP_IE_MS_BUCKET_SIZE,
 		      sizeof(e_bucket_size), (uint8_t *) &e_bucket_size);

@@ -98,11 +98,11 @@ static void msgb_bssgp_send_and_free(struct msgb *msg)
 static void send_bssgp_supend(enum bssgp_pdu_type pdu_type, uint32_t tlli)
 {
 	struct msgb *msg = bssgp_msgb_alloc();
-	uint32_t tlli_be = htonl(tlli);
 	uint8_t rai[] = {0x0f, 0xf1, 0x80, 0x20, 0x37, 0x00};
 
 	msgb_v_put(msg, pdu_type);
-	msgb_tvlv_put(msg, BSSGP_IE_TLLI, sizeof(tlli_be), (uint8_t *)&tlli_be);
+
+	bssgp_msgb_tlli_put(msg, tlli);
 	msgb_tvlv_put(msg, BSSGP_IE_ROUTEING_AREA, sizeof(rai), &rai[0]);
 
 	msgb_bssgp_send_and_free(msg);
@@ -111,12 +111,12 @@ static void send_bssgp_supend(enum bssgp_pdu_type pdu_type, uint32_t tlli)
 static void send_bssgp_resume(enum bssgp_pdu_type pdu_type, uint32_t tlli)
 {
 	struct msgb *msg = bssgp_msgb_alloc();
-	uint32_t tlli_be = htonl(tlli);
 	uint8_t rai[] = {0x0f, 0xf1, 0x80, 0x20, 0x37, 0x00};
 	uint8_t suspend_ref = 1;
 
 	msgb_v_put(msg, pdu_type);
-	msgb_tvlv_put(msg, BSSGP_IE_TLLI, sizeof(tlli_be), (uint8_t *)&tlli_be);
+
+	bssgp_msgb_tlli_put(msg, tlli);
 	msgb_tvlv_put(msg, BSSGP_IE_ROUTEING_AREA, sizeof(rai), &rai[0]);
 	msgb_tvlv_put(msg, BSSGP_IE_SUSPEND_REF_NR, 1, &suspend_ref);
 

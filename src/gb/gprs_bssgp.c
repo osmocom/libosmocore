@@ -160,14 +160,12 @@ int bssgp_tx_suspend_ack(uint16_t nsei, uint32_t tlli,
 	struct msgb *msg = bssgp_msgb_alloc();
 	struct bssgp_normal_hdr *bgph =
 		(struct bssgp_normal_hdr *) msgb_put(msg, sizeof(*bgph));
-	uint32_t _tlli;
 
 	msgb_nsei(msg) = nsei;
 	msgb_bvci(msg) = 0; /* Signalling */
 	bgph->pdu_type = BSSGP_PDUT_SUSPEND_ACK;
 
-	_tlli = osmo_htonl(tlli);
-	msgb_tvlv_put(msg, BSSGP_IE_TLLI, 4, (uint8_t *) &_tlli);
+	bssgp_msgb_tlli_put(msg, tlli);
 	bssgp_msgb_ra_put(msg, ra_id);
 	msgb_tvlv_put(msg, BSSGP_IE_SUSPEND_REF_NR, 1, &suspend_ref);
 
@@ -182,14 +180,12 @@ int bssgp_tx_suspend_nack(uint16_t nsei, uint32_t tlli,
 	struct msgb *msg = bssgp_msgb_alloc();
 	struct bssgp_normal_hdr *bgph =
 		(struct bssgp_normal_hdr *) msgb_put(msg, sizeof(*bgph));
-	uint32_t _tlli;
 
 	msgb_nsei(msg) = nsei;
 	msgb_bvci(msg) = 0; /* Signalling */
 	bgph->pdu_type = BSSGP_PDUT_SUSPEND_NACK;
 
-	_tlli = osmo_htonl(tlli);
-	msgb_tvlv_put(msg, BSSGP_IE_TLLI, 4, (uint8_t *) &_tlli);
+	bssgp_msgb_tlli_put(msg, tlli);
 	bssgp_msgb_ra_put(msg, ra_id);
 
 	if (cause)
@@ -205,14 +201,12 @@ int bssgp_tx_resume_ack(uint16_t nsei, uint32_t tlli,
 	struct msgb *msg = bssgp_msgb_alloc();
 	struct bssgp_normal_hdr *bgph =
 		(struct bssgp_normal_hdr *) msgb_put(msg, sizeof(*bgph));
-	uint32_t _tlli;
 
 	msgb_nsei(msg) = nsei;
 	msgb_bvci(msg) = 0; /* Signalling */
 	bgph->pdu_type = BSSGP_PDUT_RESUME_ACK;
 
-	_tlli = osmo_htonl(tlli);
-	msgb_tvlv_put(msg, BSSGP_IE_TLLI, 4, (uint8_t *) &_tlli);
+	bssgp_msgb_tlli_put(msg, tlli);
 	bssgp_msgb_ra_put(msg, ra_id);
 
 	return gprs_ns_sendmsg(bssgp_nsi, msg);
@@ -225,14 +219,12 @@ int bssgp_tx_resume_nack(uint16_t nsei, uint32_t tlli,
 	struct msgb *msg = bssgp_msgb_alloc();
 	struct bssgp_normal_hdr *bgph =
 		(struct bssgp_normal_hdr *) msgb_put(msg, sizeof(*bgph));
-	uint32_t _tlli;
 
 	msgb_nsei(msg) = nsei;
 	msgb_bvci(msg) = 0; /* Signalling */
 	bgph->pdu_type = BSSGP_PDUT_SUSPEND_NACK;
 
-	_tlli = osmo_htonl(tlli);
-	msgb_tvlv_put(msg, BSSGP_IE_TLLI, 4, (uint8_t *) &_tlli);
+	bssgp_msgb_tlli_put(msg, tlli);
 	bssgp_msgb_ra_put(msg, ra_id);
 
 	if (cause)
