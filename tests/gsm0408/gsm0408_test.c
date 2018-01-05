@@ -137,8 +137,7 @@ static inline void dump_ra(const struct gprs_ra_id *raid)
 
 static inline void check_ra(const struct gprs_ra_id *raid)
 {
-	uint8_t buf[6];
-	int res;
+	struct gsm48_ra_id ra;
 	struct gprs_ra_id raid0 = {
 		.mnc = 0,
 		.mcc = 0,
@@ -146,10 +145,10 @@ static inline void check_ra(const struct gprs_ra_id *raid)
 		.rac = 0,
 	};
 
-	res = gsm48_construct_ra(buf, raid);
-	printf("Constructed RA: %d - %s\n", res, res != sizeof(buf) ? "FAIL" : "OK");
+	gsm48_encode_ra(&ra, raid);
+	printf("Constructed RA:\n");
 
-	gsm48_parse_ra(&raid0, buf);
+	gsm48_parse_ra(&raid0, (const uint8_t *)&ra);
 	dump_ra(raid);
 	dump_ra(&raid0);
 	printf("RA test...");

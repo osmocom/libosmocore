@@ -161,7 +161,6 @@ int bssgp_tx_suspend_ack(uint16_t nsei, uint32_t tlli,
 	struct bssgp_normal_hdr *bgph =
 		(struct bssgp_normal_hdr *) msgb_put(msg, sizeof(*bgph));
 	uint32_t _tlli;
-	uint8_t ra[6];
 
 	msgb_nsei(msg) = nsei;
 	msgb_bvci(msg) = 0; /* Signalling */
@@ -169,8 +168,7 @@ int bssgp_tx_suspend_ack(uint16_t nsei, uint32_t tlli,
 
 	_tlli = osmo_htonl(tlli);
 	msgb_tvlv_put(msg, BSSGP_IE_TLLI, 4, (uint8_t *) &_tlli);
-	gsm48_construct_ra(ra, ra_id);
-	msgb_tvlv_put(msg, BSSGP_IE_ROUTEING_AREA, 6, ra);
+	bssgp_msgb_ra_put(msg, ra_id);
 	msgb_tvlv_put(msg, BSSGP_IE_SUSPEND_REF_NR, 1, &suspend_ref);
 
 	return gprs_ns_sendmsg(bssgp_nsi, msg);
@@ -185,7 +183,6 @@ int bssgp_tx_suspend_nack(uint16_t nsei, uint32_t tlli,
 	struct bssgp_normal_hdr *bgph =
 		(struct bssgp_normal_hdr *) msgb_put(msg, sizeof(*bgph));
 	uint32_t _tlli;
-	uint8_t ra[6];
 
 	msgb_nsei(msg) = nsei;
 	msgb_bvci(msg) = 0; /* Signalling */
@@ -193,8 +190,8 @@ int bssgp_tx_suspend_nack(uint16_t nsei, uint32_t tlli,
 
 	_tlli = osmo_htonl(tlli);
 	msgb_tvlv_put(msg, BSSGP_IE_TLLI, 4, (uint8_t *) &_tlli);
-	gsm48_construct_ra(ra, ra_id);
-	msgb_tvlv_put(msg, BSSGP_IE_ROUTEING_AREA, 6, ra);
+	bssgp_msgb_ra_put(msg, ra_id);
+
 	if (cause)
 		msgb_tvlv_put(msg, BSSGP_IE_CAUSE, 1, cause);
 
@@ -209,7 +206,6 @@ int bssgp_tx_resume_ack(uint16_t nsei, uint32_t tlli,
 	struct bssgp_normal_hdr *bgph =
 		(struct bssgp_normal_hdr *) msgb_put(msg, sizeof(*bgph));
 	uint32_t _tlli;
-	uint8_t ra[6];
 
 	msgb_nsei(msg) = nsei;
 	msgb_bvci(msg) = 0; /* Signalling */
@@ -217,8 +213,7 @@ int bssgp_tx_resume_ack(uint16_t nsei, uint32_t tlli,
 
 	_tlli = osmo_htonl(tlli);
 	msgb_tvlv_put(msg, BSSGP_IE_TLLI, 4, (uint8_t *) &_tlli);
-	gsm48_construct_ra(ra, ra_id);
-	msgb_tvlv_put(msg, BSSGP_IE_ROUTEING_AREA, 6, ra);
+	bssgp_msgb_ra_put(msg, ra_id);
 
 	return gprs_ns_sendmsg(bssgp_nsi, msg);
 }
@@ -231,7 +226,6 @@ int bssgp_tx_resume_nack(uint16_t nsei, uint32_t tlli,
 	struct bssgp_normal_hdr *bgph =
 		(struct bssgp_normal_hdr *) msgb_put(msg, sizeof(*bgph));
 	uint32_t _tlli;
-	uint8_t ra[6];
 
 	msgb_nsei(msg) = nsei;
 	msgb_bvci(msg) = 0; /* Signalling */
@@ -239,8 +233,8 @@ int bssgp_tx_resume_nack(uint16_t nsei, uint32_t tlli,
 
 	_tlli = osmo_htonl(tlli);
 	msgb_tvlv_put(msg, BSSGP_IE_TLLI, 4, (uint8_t *) &_tlli);
-	gsm48_construct_ra(ra, ra_id);
-	msgb_tvlv_put(msg, BSSGP_IE_ROUTEING_AREA, 6, ra);
+	bssgp_msgb_ra_put(msg, ra_id);
+
 	if (cause)
 		msgb_tvlv_put(msg, BSSGP_IE_CAUSE, 1, cause);
 
@@ -259,7 +253,7 @@ int bssgp_create_cell_id(uint8_t *buf, const struct gprs_ra_id *raid,
 			 uint16_t cid)
 {
 	/* 6 octets RAC */
-	gsm48_construct_ra(buf, raid);
+	gsm48_encode_ra((struct gsm48_ra_id *)buf, raid);
 	/* 2 octets CID */
 	osmo_store16be(cid, buf+6);
 
@@ -1215,7 +1209,7 @@ int bssgp_tx_paging(uint16_t nsei, uint16_t ns_bvci,
 	uint16_t drx_params = osmo_htons(pinfo->drx_params);
 	uint8_t mi[10];
 	int imsi_len = gsm48_generate_mid_from_imsi(mi, pinfo->imsi);
-	uint8_t ra[6];
+	struct gsm48_ra_id ra;
 
 	if (imsi_len < 2)
 		return -EINVAL;
@@ -1241,12 +1235,11 @@ int bssgp_tx_paging(uint16_t nsei, uint16_t ns_bvci,
 		}
 		break;
 	case BSSGP_PAGING_LOCATION_AREA:
-		gsm48_construct_ra(ra, &pinfo->raid);
-		msgb_tvlv_put(msg, BSSGP_IE_LOCATION_AREA, 4, ra);
+		gsm48_encode_ra(&ra, &pinfo->raid);
+		msgb_tvlv_put(msg, BSSGP_IE_LOCATION_AREA, 4, (const uint8_t *)&ra);
 		break;
 	case BSSGP_PAGING_ROUTEING_AREA:
-		gsm48_construct_ra(ra, &pinfo->raid);
-		msgb_tvlv_put(msg, BSSGP_IE_ROUTEING_AREA, 6, ra);
+		bssgp_msgb_ra_put(msg, &pinfo->raid);
 		break;
 	case BSSGP_PAGING_BVCI:
 		{

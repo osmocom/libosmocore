@@ -689,33 +689,34 @@ void gsm48_parse_ra(struct gprs_ra_id *raid, const uint8_t *buf)
 	raid->rac = buf[5];
 }
 
+/*! Encode a 3GPP TS 24.008 § 10.5.5.15 Routing area identification
+ *  \param[out] out Caller-provided packed struct
+ *  \param[in] raid Routing Area ID to be encoded
+ */
+void gsm48_encode_ra(struct gsm48_ra_id *out, const struct gprs_ra_id *raid)
+{
+	out->lac = osmo_htons(raid->lac);
+	out->rac = raid->rac;
+
+	out->digits[0] = ((raid->mcc / 100) % 10) | (((raid->mcc / 10) % 10) << 4);
+	out->digits[1] = raid->mcc % 10;
+
+	if (raid->mnc < 100) {
+		out->digits[1] |= 0xf0;
+		out->digits[2] = ((raid->mnc / 10) % 10) | ((raid->mnc % 10) << 4);
+	} else {
+		out->digits[1] |= (raid->mnc % 10) << 4;
+		out->digits[2] = ((raid->mnc / 100) % 10) | (((raid->mnc / 10) % 10) << 4);
+	}
+}
+
 /*! Encode a TS 04.08 Routing Area Identifier
  *  \param[out] buf Caller-provided output buffer of 6 bytes
  *  \param[in] raid Routing Area ID to be encoded
  *  \returns number of bytes used in \a buf */
 int gsm48_construct_ra(uint8_t *buf, const struct gprs_ra_id *raid)
 {
-	uint16_t mcc = raid->mcc;
-	uint16_t mnc = raid->mnc;
-	uint16_t _lac;
-
-	buf[0] = ((mcc / 100) % 10) | (((mcc / 10) % 10) << 4);
-	buf[1] = (mcc % 10);
-
-	/* I wonder who came up with the stupidity of encoding the MNC
-	 * differently depending on how many digits its decimal number has! */
-	if (mnc < 100) {
-		buf[1] |= 0xf0;
-		buf[2] = ((mnc / 10) % 10) | ((mnc % 10) << 4);
-	} else {
-		buf[1] |= (mnc % 10) << 4;
-		buf[2] = ((mnc / 100) % 10) | (((mnc / 10) % 10) << 4);
-	}
-
-	_lac = osmo_htons(raid->lac);
-	memcpy(buf + 3, &_lac, 2);
-
-	buf[5] = raid->rac;
+	gsm48_encode_ra((struct gsm48_ra_id *)buf, raid);
 
 	return 6;
 }

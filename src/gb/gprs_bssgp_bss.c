@@ -44,6 +44,14 @@ uint8_t *bssgp_msgb_tlli_put(struct msgb *msg, uint32_t tlli)
 	return msgb_tvlv_put(msg, BSSGP_IE_TLLI, 4, (uint8_t *) &_tlli);
 }
 
+uint8_t *bssgp_msgb_ra_put(struct msgb *msg, const struct gprs_ra_id *ra_id)
+{
+	struct gsm48_ra_id ra;
+
+	gsm48_encode_ra(&ra, ra_id);
+	return msgb_tvlv_put(msg, BSSGP_IE_ROUTEING_AREA, sizeof(ra), (const uint8_t *)&ra);
+}
+
 /*! GMM-SUSPEND.req (Chapter 10.3.6) */
 int bssgp_tx_suspend(uint16_t nsei, uint32_t tlli,
 		     const struct gprs_ra_id *ra_id)
@@ -51,7 +59,6 @@ int bssgp_tx_suspend(uint16_t nsei, uint32_t tlli,
 	struct msgb *msg = bssgp_msgb_alloc();
 	struct bssgp_normal_hdr *bgph =
 			(struct bssgp_normal_hdr *) msgb_put(msg, sizeof(*bgph));
-	uint8_t ra[6];
 
 	LOGP(DBSSGP, LOGL_NOTICE, "BSSGP (BVCI=0) Tx SUSPEND (TLLI=0x%04x)\n",
 		tlli);
@@ -60,9 +67,7 @@ int bssgp_tx_suspend(uint16_t nsei, uint32_t tlli,
 	bgph->pdu_type = BSSGP_PDUT_SUSPEND;
 
 	bssgp_msgb_tlli_put(msg, tlli);
-
-	gsm48_construct_ra(ra, ra_id);
-	msgb_tvlv_put(msg, BSSGP_IE_ROUTEING_AREA, 6, ra);
+	bssgp_msgb_ra_put(msg, ra_id);
 
 	return gprs_ns_sendmsg(bssgp_nsi, msg);
 }
@@ -74,7 +79,6 @@ int bssgp_tx_resume(uint16_t nsei, uint32_t tlli,
 	struct msgb *msg = bssgp_msgb_alloc();
 	struct bssgp_normal_hdr *bgph =
 			(struct bssgp_normal_hdr *) msgb_put(msg, sizeof(*bgph));
-	uint8_t ra[6];
 
 	LOGP(DBSSGP, LOGL_NOTICE, "BSSGP (BVCI=0) Tx RESUME (TLLI=0x%04x)\n",
 		tlli);
@@ -83,9 +87,7 @@ int bssgp_tx_resume(uint16_t nsei, uint32_t tlli,
 	bgph->pdu_type = BSSGP_PDUT_RESUME;
 
 	bssgp_msgb_tlli_put(msg, tlli);
-
-	gsm48_construct_ra(ra, ra_id);
-	msgb_tvlv_put(msg, BSSGP_IE_ROUTEING_AREA, 6, ra);
+	bssgp_msgb_ra_put(msg, ra_id);
 
 	msgb_tvlv_put(msg, BSSGP_IE_SUSPEND_REF_NR, 1, &suspend_ref);
 

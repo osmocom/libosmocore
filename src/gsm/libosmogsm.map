@@ -205,6 +205,7 @@ gsm48_cc_msg_name;
 gsm48_rr_msg_name;
 gsm48_cc_state_name;
 gsm48_construct_ra;
+gsm48_encode_ra;
 gsm48_hdr_gmm_cipherable;
 gsm48_decode_bcd_number;
 gsm48_decode_bearer_cap;

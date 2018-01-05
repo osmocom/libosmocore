@@ -26,6 +26,7 @@
 #include <osmocom/gprs/gprs_bssgp.h>
 
 uint8_t *bssgp_msgb_tlli_put(struct msgb *msg, uint32_t tlli);
+uint8_t *bssgp_msgb_ra_put(struct msgb *msg, const struct gprs_ra_id *ra_id);
 int bssgp_tx_bvc_ptp_reset(uint16_t nsei, enum gprs_bssgp_cause cause);
 int bssgp_tx_suspend(uint16_t nsei, uint32_t tlli,
 		     const struct gprs_ra_id *ra_id);
