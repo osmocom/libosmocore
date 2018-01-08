@@ -127,7 +127,7 @@ int osmo_tlvp_merge(struct tlv_parsed *dst, const struct tlv_parsed *src)
  *  \param[in] def structure defining the valid TLV tags / configurations
  *  \param[in] buf the input data buffer to be parsed
  *  \param[in] buf_len length of the input data buffer
- *  \returns number of bytes consumed by the TLV entry / IE parsed
+ *  \returns number of bytes consumed by the TLV entry / IE parsed; negative in case of error
  */
 int tlv_parse_one(uint8_t *o_tag, uint16_t *o_len, const uint8_t **o_val,
 		  const struct tlv_definition *def,
@@ -227,7 +227,7 @@ tlv:		/* GSM TS 04.07 11.2.4: Type 4 TLV */
  *  \param[in] buf_len length of the input data buffer
  *  \param[in] lv_tag an initial LV tag at the start of the buffer
  *  \param[in] lv_tag2 a second initial LV tag following the \a lv_tag
- *  \returns number of bytes consumed by the TLV entry / IE parsed
+ *  \returns number of bytes consumed by the TLV entry / IE parsed; negative in case of error
  */
 int tlv_parse(struct tlv_parsed *dec, const struct tlv_definition *def,
 	      const uint8_t *buf, int buf_len, uint8_t lv_tag,
@@ -244,8 +244,11 @@ int tlv_parse(struct tlv_parsed *dec, const struct tlv_definition *def,
 		dec->lv[lv_tag].val = &buf[ofs+1];
 		dec->lv[lv_tag].len = buf[ofs];
 		len = dec->lv[lv_tag].len + 1;
-		if (ofs + len > buf_len)
+		if (ofs + len > buf_len) {
+			dec->lv[lv_tag].val = NULL;
+			dec->lv[lv_tag].len = 0;
 			return -2;
+		}
 		num_parsed++;
 		ofs += len;
 	}
@@ -255,8 +258,11 @@ int tlv_parse(struct tlv_parsed *dec, const struct tlv_definition *def,
 		dec->lv[lv_tag2].val = &buf[ofs+1];
 		dec->lv[lv_tag2].len = buf[ofs];
 		len = dec->lv[lv_tag2].len + 1;
-		if (ofs + len > buf_len)
+		if (ofs + len > buf_len) {
+			dec->lv[lv_tag2].val = NULL;
+			dec->lv[lv_tag2].len = 0;
 			return -2;
+		}
 		num_parsed++;
 		ofs += len;
 	}
