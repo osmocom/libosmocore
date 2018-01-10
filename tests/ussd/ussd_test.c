@@ -140,13 +140,13 @@ int main(int argc, char **argv)
 
 	for (i = size; i > sizeof(struct gsm48_hdr); --i) {
 		int rc = parse_ussd(&ussd_request[0], i);
-		printf("Result for %d is %d\n", rc, i);
+		printf("Result for len=%d is %d\n", i, rc);
 	}
 
 	printf("Mangling the container now\n");
 	for (i = size; i > sizeof(struct gsm48_hdr) + 2; --i) {
 		int rc = parse_mangle_ussd(&ussd_request[0], i);
-		printf("Result for %d is %d\n", rc, i);
+		printf("Result for len=%d is %d\n", i, rc);
 	}
 
 	printf("<CR> case test for 7 bit encode\n");
