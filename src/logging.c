@@ -182,11 +182,11 @@ static const char *loglevel_descriptions[LOGLEVEL_DEFS+1] = {
 	NULL,
 };
 
-static void assert_loginfo(void)
+static void assert_loginfo(const char *src)
 {
 	if (!osmo_log_info) {
 		fprintf(stderr, "ERROR: osmo_log_info == NULL! "
-			"You must call log_init() before using logging!\n");
+			"You must call log_init() before using logging in %s()!\n", src);
 		OSMO_ASSERT(osmo_log_info);
 	}
 }
@@ -223,7 +223,7 @@ int log_parse_category(const char *category)
 {
 	int i;
 
-	assert_loginfo();
+	assert_loginfo(__func__);
 
 	for (i = 0; i < osmo_log_info->num_cat; ++i) {
 		if (osmo_log_info->cat[i].name == NULL)
@@ -248,7 +248,7 @@ void log_parse_category_mask(struct log_target* target, const char *_mask)
 	char *mask = strdup(_mask);
 	char *category_token = NULL;
 
-	assert_loginfo();
+	assert_loginfo(__func__);
 
 	/* Disable everything to enable it afterwards */
 	for (i = 0; i < osmo_log_info->num_cat; ++i)
@@ -653,7 +653,7 @@ struct log_target *log_target_create(void)
 	struct log_target *target;
 	unsigned int i;
 
-	assert_loginfo();
+	assert_loginfo(__func__);
 
 	target = talloc_zero(tall_log_ctx, struct log_target);
 	if (!target)
@@ -827,7 +827,7 @@ const char *log_vty_command_string()
 	int size = strlen("logging level () ()") + 1;
 	char *str;
 
-	assert_loginfo();
+	assert_loginfo(__func__);
 
 	for (i = 0; i < info->num_cat; i++) {
 		if (info->cat[i].name == NULL)
@@ -909,7 +909,7 @@ const char *log_vty_command_description()
 		strlen(LOGGING_STR
 		       "Set the log level for a specified category\n") + 1;
 
-	assert_loginfo();
+	assert_loginfo(__func__);
 
 	for (i = 0; i < info->num_cat; i++) {
 		if (info->cat[i].name == NULL)
@@ -1028,7 +1028,7 @@ int log_check_level(int subsys, unsigned int level)
 {
 	struct log_target *tar;
 
-	assert_loginfo();
+	assert_loginfo(__func__);
 
 	subsys = map_subsys(subsys);
 
