@@ -745,11 +745,18 @@ struct log_target *log_target_find(int type, const char *fname)
 	llist_for_each_entry(tgt, &osmo_log_target_list, entry) {
 		if (tgt->type != type)
 			continue;
-		if (tgt->type == LOG_TGT_TYPE_FILE) {
+		switch (tgt->type) {
+		case LOG_TGT_TYPE_FILE:
 			if (!strcmp(fname, tgt->tgt_file.fname))
 				return tgt;
-		} else
+			break;
+		case LOG_TGT_TYPE_GSMTAP:
+			if (!strcmp(fname, tgt->tgt_gsmtap.hostname))
+				return tgt;
+			break;
+		default:
 			return tgt;
+		}
 	}
 	return NULL;
 }
