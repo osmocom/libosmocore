@@ -6,6 +6,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <osmocom/core/linuxlist.h>
+#include <osmocom/core/utils.h>
 
 /*
  * this is from GSM 03.03 CGI but is copied in GSM 08.08
@@ -419,6 +420,10 @@ enum gsm0808_speech_codec_type {
 	GSM0808_SCT_HR6	= 0xb, /*!< OHR AMR */
 	GSM0808_SCT_CSD	= 0xfd, /*!< CSData (see also TS 26.103) */
 };
+
+extern const struct value_string gsm0808_speech_codec_type_names[];
+static inline const char *gsm0808_speech_codec_type_name(enum gsm0808_speech_codec_type val)
+{ return get_value_string(gsm0808_speech_codec_type_names, val); }
 
 /* GSM 08.08 3.2.2.44 Chosen Encryption Algorithm */
 enum gsm0808_chosen_enc_alg {

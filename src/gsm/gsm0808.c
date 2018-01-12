@@ -842,4 +842,18 @@ const char *gsm0808_bssap_name(uint8_t msg_type)
 	return get_value_string(gsm0808_bssap_names, msg_type);
 }
 
+const struct value_string gsm0808_speech_codec_type_names[] = {
+	{ GSM0808_SCT_FR1, "FR1" },
+	{ GSM0808_SCT_FR2, "FR2" },
+	{ GSM0808_SCT_FR3, "FR3" },
+	{ GSM0808_SCT_FR4, "FR4" },
+	{ GSM0808_SCT_FR5, "FR5" },
+	{ GSM0808_SCT_HR1, "HR1" },
+	{ GSM0808_SCT_HR3, "HR3" },
+	{ GSM0808_SCT_HR4, "HR4" },
+	{ GSM0808_SCT_HR6, "HR6" },
+	{ GSM0808_SCT_CSD, "CSD" },
+	{ 0, NULL }
+};
+
 /*! @} */
