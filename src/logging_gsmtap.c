@@ -64,6 +64,7 @@ static void _gsmtap_raw_output(struct log_target *target, int subsys,
 	const char *subsys_name = log_category_name(subsys);
 	struct timeval tv;
 	int rc;
+	const char *file_basename;
 
 	/* get timestamp ASAP */
 	osmo_gettimeofday(&tv, NULL);
@@ -86,6 +87,10 @@ static void _gsmtap_raw_output(struct log_target *target, int subsys,
 		osmo_strlcpy(golh->subsys, subsys_name+1, sizeof(golh->subsys));
 	else
 		golh->subsys[0] = '\0';
+
+	/* strip all leading path elements from file, if any. */
+	file_basename = strrchr(file, '/');
+	file = (file_basename && file_basename[1])? file_basename + 1 : file;
 	osmo_strlcpy(golh->src_file.name, file, sizeof(golh->src_file.name));
 	golh->src_file.line_nr = osmo_htonl(line);
 	golh->level = level;
