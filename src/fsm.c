@@ -272,11 +272,42 @@ struct osmo_fsm_inst *osmo_fsm_inst_alloc_child(struct osmo_fsm *fsm,
 
 	LOGPFSM(fi, "is child of %s\n", osmo_fsm_inst_name(parent));
 
-	fi->proc.parent = parent;
-	fi->proc.parent_term_event = parent_term_event;
-	llist_add(&fi->proc.child, &parent->proc.children);
+	osmo_fsm_inst_change_parent(fi, parent, parent_term_event);
 
 	return fi;
+}
+
+/*! unlink child FSM from its parent FSM.
+ *  \param[in] fi Descriptor of the child FSM to unlink.
+ *  \param[in] ctx New talloc context */
+void osmo_fsm_inst_unlink_parent(struct osmo_fsm_inst *fi, void *ctx)
+{
+	if (fi->proc.parent) {
+		talloc_steal(ctx, fi);
+		fi->proc.parent = NULL;
+		fi->proc.parent_term_event = 0;
+		llist_del(&fi->proc.child);
+	}
+}
+
+/*! change parent instance of an FSM.
+ *  \param[in] fi Descriptor of the to-be-allocated FSM.
+ *  \param[in] new_parent New parent FSM instance.
+ *  \param[in] new_parent_term_event Event to be sent to parent when terminating. */
+void osmo_fsm_inst_change_parent(struct osmo_fsm_inst *fi,
+				 struct osmo_fsm_inst *new_parent,
+				 uint32_t new_parent_term_event)
+{
+	/* Make sure a possibly existing old parent is unlinked first
+	 * (new_parent can be NULL) */
+	osmo_fsm_inst_unlink_parent(fi, new_parent);
+
+	/* Add new parent */
+	if (new_parent) {
+		fi->proc.parent = new_parent;
+		fi->proc.parent_term_event = new_parent_term_event;
+		llist_add(&fi->proc.child, &new_parent->proc.children);
+	}
 }
 
 /*! delete a given instance of a FSM

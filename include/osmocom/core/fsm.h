@@ -150,6 +150,10 @@ struct osmo_fsm_inst *osmo_fsm_inst_alloc(struct osmo_fsm *fsm, void *ctx, void 
 struct osmo_fsm_inst *osmo_fsm_inst_alloc_child(struct osmo_fsm *fsm,
 						struct osmo_fsm_inst *parent,
 						uint32_t parent_term_event);
+void osmo_fsm_inst_unlink_parent(struct osmo_fsm_inst *fi, void *ctx);
+void osmo_fsm_inst_change_parent(struct osmo_fsm_inst *fi,
+				 struct osmo_fsm_inst *new_parent,
+				 uint32_t new_parent_term_event);
 void osmo_fsm_inst_free(struct osmo_fsm_inst *fi);
 
 const char *osmo_fsm_event_name(struct osmo_fsm *fsm, uint32_t event);
