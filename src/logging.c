@@ -385,12 +385,21 @@ static void _output(struct log_target *target, unsigned int subsys,
 				goto err;
 			OSMO_SNPRINTF_RET(ret, rem, offset, len);
 		}
-		if (target->print_filename) {
-			ret = snprintf(buf + offset, rem, "<%4.4x> %s:%d ",
-					subsys, file, line);
+		if (target->print_category_hex) {
+			ret = snprintf(buf + offset, rem, "<%4.4x> ", subsys);
 			if (ret < 0)
 				goto err;
 			OSMO_SNPRINTF_RET(ret, rem, offset, len);
+		}
+		switch (target->print_filename2) {
+		case LOG_FILENAME_NONE:
+			break;
+		case LOG_FILENAME_PATH:
+			ret = snprintf(buf + offset, rem, "%s:%d ", file, line);
+			if (ret < 0)
+				goto err;
+			OSMO_SNPRINTF_RET(ret, rem, offset, len);
+			break;
 		}
 	}
 	ret = vsnprintf(buf + offset, rem, format, ap);
@@ -621,13 +630,30 @@ void log_set_print_extended_timestamp(struct log_target *target, int print_times
 	target->print_ext_timestamp = print_timestamp;
 }
 
-/*! Enable or disable printing of the filename while logging
+/*! Use log_set_print_filename2() instead.
+ * Call log_set_print_filename2() with LOG_FILENAME_PATH or LOG_FILENAME_NONE, *as well as* call
+ * log_set_print_category_hex() with the argument passed to this function. This is to mirror legacy
+ * behavior, which combined the category in hex with the filename. For example, if the category-hex
+ * output were no longer affected by log_set_print_filename(), many unit tests (in libosmocore as well as
+ * dependent projects) would fail since they expect the category to disappear along with the filename.
  *  \param[in] target Log target to be affected
  *  \param[in] print_filename Enable (1) or disable (0) filenames
  */
 void log_set_print_filename(struct log_target *target, int print_filename)
 {
-	target->print_filename = print_filename;
+	log_set_print_filename2(target, print_filename ? LOG_FILENAME_PATH : LOG_FILENAME_NONE);
+	log_set_print_category_hex(target, print_filename);
+}
+
+/*! Enable or disable printing of the filename while logging.
+ *  \param[in] target Log target to be affected.
+ *  \param[in] print_filename An LOG_FILENAME_* enum value.
+ * LOG_FILENAME_NONE omits the source file and line information from logs.
+ * LOG_FILENAME_PATH prints the entire source file path as passed to LOGP macros.
+ */
+void log_set_print_filename2(struct log_target *target, enum log_filename_type lft)
+{
+	target->print_filename2 = lft;
 }
 
 /*! Enable or disable printing of the category name
@@ -639,6 +665,15 @@ void log_set_print_filename(struct log_target *target, int print_filename)
 void log_set_print_category(struct log_target *target, int print_category)
 {
 	target->print_category = print_category;
+}
+
+/*! Enable or disable printing of the category number in hex ('<000b>').
+ *  \param[in] target Log target to be affected.
+ *  \param[in] print_category_hex Enable (1) or disable (0) hex category.
+ */
+void log_set_print_category_hex(struct log_target *target, int print_category_hex)
+{
+	target->print_category_hex = print_category_hex;
 }
 
 /*! Enable or disable printing of the log level name.
@@ -723,7 +758,8 @@ struct log_target *log_target_create(void)
 	/* global settings */
 	target->use_color = 1;
 	target->print_timestamp = 0;
-	target->print_filename = 1;
+	target->print_filename2 = LOG_FILENAME_PATH;
+	target->print_category_hex = true;
 
 	/* global log level */
 	target->loglevel = 0;

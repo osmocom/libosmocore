@@ -203,6 +203,23 @@ DEFUN(logging_prnt_cat,
 	return CMD_SUCCESS;
 }
 
+DEFUN(logging_prnt_cat_hex,
+      logging_prnt_cat_hex_cmd,
+      "logging print category-hex (0|1)",
+	LOGGING_STR "Log output settings\n"
+	"Configure log message\n"
+	"Don't prefix each log message\n"
+	"Prefix each log message with category/subsystem nr in hex ('<000b>')\n")
+{
+	struct log_target *tgt = osmo_log_vty2tgt(vty);
+
+	if (!tgt)
+		return CMD_WARNING;
+
+	log_set_print_category_hex(tgt, atoi(argv[0]));
+	return CMD_SUCCESS;
+}
+
 DEFUN(logging_prnt_level,
       logging_prnt_level_cmd,
       "logging print level (0|1)",
@@ -802,6 +819,7 @@ void logging_vty_add_cmds()
 	install_element_ve(&logging_prnt_timestamp_cmd);
 	install_element_ve(&logging_prnt_ext_timestamp_cmd);
 	install_element_ve(&logging_prnt_cat_cmd);
+	install_element_ve(&logging_prnt_cat_hex_cmd);
 	install_element_ve(&logging_prnt_level_cmd);
 	install_element_ve(&logging_set_category_mask_cmd);
 	install_element_ve(&logging_set_category_mask_old_cmd);
@@ -819,6 +837,7 @@ void logging_vty_add_cmds()
 	install_element(CFG_LOG_NODE, &logging_prnt_timestamp_cmd);
 	install_element(CFG_LOG_NODE, &logging_prnt_ext_timestamp_cmd);
 	install_element(CFG_LOG_NODE, &logging_prnt_cat_cmd);
+	install_element(CFG_LOG_NODE, &logging_prnt_cat_hex_cmd);
 	install_element(CFG_LOG_NODE, &logging_prnt_level_cmd);
 	install_element(CFG_LOG_NODE, &logging_level_cmd);
 

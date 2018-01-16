@@ -220,6 +220,12 @@ enum log_target_type {
 	LOG_TGT_TYPE_GSMTAP,	/*!< GSMTAP network logging */
 };
 
+/*! Whether/how to log the source filename (and line number). */
+enum log_filename_type {
+	LOG_FILENAME_NONE,
+	LOG_FILENAME_PATH,
+};
+
 /*! structure representing a logging target */
 struct log_target {
         struct llist_head entry;		/*!< linked list */
@@ -238,7 +244,7 @@ struct log_target {
 	unsigned int use_color:1;
 	/*! should log messages be prefixed with a timestamp? */
 	unsigned int print_timestamp:1;
-	/*! should log messages be prefixed with a filename? */
+	/*! DEPRECATED: use print_filename2 instead. */
 	unsigned int print_filename:1;
 	/*! should log messages be prefixed with a category name? */
 	unsigned int print_category:1;
@@ -301,6 +307,10 @@ struct log_target {
 
 	/* Should the log level be printed? */
 	bool print_level;
+	/* Should we print the subsys in hex like '<000b>'? */
+	bool print_category_hex;
+	/* Should we print the source file and line, and in which way? */
+	enum log_filename_type print_filename2;
 };
 
 /* use the above macros */
@@ -322,7 +332,9 @@ void log_set_use_color(struct log_target *target, int);
 void log_set_print_extended_timestamp(struct log_target *target, int);
 void log_set_print_timestamp(struct log_target *target, int);
 void log_set_print_filename(struct log_target *target, int);
+void log_set_print_filename2(struct log_target *target, enum log_filename_type lft);
 void log_set_print_category(struct log_target *target, int);
+void log_set_print_category_hex(struct log_target *target, int);
 void log_set_print_level(struct log_target *target, int);
 void log_set_log_level(struct log_target *target, int log_level);
 void log_parse_category_mask(struct log_target *target, const char* mask);
