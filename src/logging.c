@@ -323,6 +323,14 @@ const char* log_category_name(int subsys)
 	return NULL;
 }
 
+static const char *const_basename(const char *path)
+{
+	const char *bn = strrchr(path, '/');
+	if (!bn || !bn[1])
+		return path;
+	return bn + 1;
+}
+
 static void _output(struct log_target *target, unsigned int subsys,
 		    unsigned int level, const char *file, int line, int cont,
 		    const char *format, va_list ap)
@@ -396,6 +404,12 @@ static void _output(struct log_target *target, unsigned int subsys,
 			break;
 		case LOG_FILENAME_PATH:
 			ret = snprintf(buf + offset, rem, "%s:%d ", file, line);
+			if (ret < 0)
+				goto err;
+			OSMO_SNPRINTF_RET(ret, rem, offset, len);
+			break;
+		case LOG_FILENAME_BASENAME:
+			ret = snprintf(buf + offset, rem, "%s:%d ", const_basename(file), line);
 			if (ret < 0)
 				goto err;
 			OSMO_SNPRINTF_RET(ret, rem, offset, len);

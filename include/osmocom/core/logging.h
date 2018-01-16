@@ -224,6 +224,7 @@ enum log_target_type {
 enum log_filename_type {
 	LOG_FILENAME_NONE,
 	LOG_FILENAME_PATH,
+	LOG_FILENAME_BASENAME,
 };
 
 /*! structure representing a logging target */
