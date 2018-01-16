@@ -353,6 +353,12 @@ static void _output(struct log_target *target, unsigned int subsys,
 				goto err;
 			OSMO_SNPRINTF_RET(ret, rem, offset, len);
 		}
+		if (target->print_level) {
+			ret = snprintf(buf + offset, rem, "%s ", log_level_str(level));
+			if (ret < 0)
+				goto err;
+			OSMO_SNPRINTF_RET(ret, rem, offset, len);
+		}
 		if (target->print_filename) {
 			ret = snprintf(buf + offset, rem, "<%4.4x> %s:%d ",
 					subsys, file, line);
@@ -606,6 +612,17 @@ void log_set_print_filename(struct log_target *target, int print_filename)
 void log_set_print_category(struct log_target *target, int print_category)
 {
 	target->print_category = print_category;
+}
+
+/*! Enable or disable printing of the log level name.
+ *  \param[in] target Log target to be affected
+ *  \param[in] print_catname Enable (1) or disable (0) filenames
+ *
+ *  Print the log level name in front of every log message.
+ */
+void log_set_print_level(struct log_target *target, int print_level)
+{
+	target->print_level = (bool)print_level;
 }
 
 /*! Set the global log level for a given log target

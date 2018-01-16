@@ -298,6 +298,9 @@ struct log_target {
 	void (*raw_output)(struct log_target *target, int subsys,
 			   unsigned int level, const char *file, int line,
 			   int cont, const char *format, va_list ap);
+
+	/* Should the log level be printed? */
+	bool print_level;
 };
 
 /* use the above macros */
@@ -320,6 +323,7 @@ void log_set_print_extended_timestamp(struct log_target *target, int);
 void log_set_print_timestamp(struct log_target *target, int);
 void log_set_print_filename(struct log_target *target, int);
 void log_set_print_category(struct log_target *target, int);
+void log_set_print_level(struct log_target *target, int);
 void log_set_log_level(struct log_target *target, int log_level);
 void log_parse_category_mask(struct log_target *target, const char* mask);
 const char* log_category_name(int subsys);

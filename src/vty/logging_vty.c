@@ -203,6 +203,23 @@ DEFUN(logging_prnt_cat,
 	return CMD_SUCCESS;
 }
 
+DEFUN(logging_prnt_level,
+      logging_prnt_level_cmd,
+      "logging print level (0|1)",
+      LOGGING_STR "Log output settings\n"
+      "Configure log message\n"
+      "Don't prefix each log message\n"
+      "Prefix each log message with the log level name\n")
+{
+	struct log_target *tgt = osmo_log_vty2tgt(vty);
+
+	if (!tgt)
+		return CMD_WARNING;
+
+	log_set_print_level(tgt, atoi(argv[0]));
+	return CMD_SUCCESS;
+}
+
 DEFUN(logging_level,
       logging_level_cmd,
       NULL, /* cmdstr is dynamically set in logging_vty_add_cmds(). */
@@ -734,6 +751,8 @@ static int config_write_log_single(struct vty *vty, struct log_target *tgt)
 	else
 		vty_out(vty, "  logging timestamp %u%s",
 			tgt->print_timestamp ? 1 : 0, VTY_NEWLINE);
+	if (tgt->print_level)
+		vty_out(vty, "  logging print level 1%s", VTY_NEWLINE);
 
 	/* stupid old osmo logging API uses uppercase strings... */
 	osmo_str2lower(level_lower, log_level_str(tgt->loglevel));
@@ -783,6 +802,7 @@ void logging_vty_add_cmds()
 	install_element_ve(&logging_prnt_timestamp_cmd);
 	install_element_ve(&logging_prnt_ext_timestamp_cmd);
 	install_element_ve(&logging_prnt_cat_cmd);
+	install_element_ve(&logging_prnt_level_cmd);
 	install_element_ve(&logging_set_category_mask_cmd);
 	install_element_ve(&logging_set_category_mask_old_cmd);
 
@@ -799,6 +819,7 @@ void logging_vty_add_cmds()
 	install_element(CFG_LOG_NODE, &logging_prnt_timestamp_cmd);
 	install_element(CFG_LOG_NODE, &logging_prnt_ext_timestamp_cmd);
 	install_element(CFG_LOG_NODE, &logging_prnt_cat_cmd);
+	install_element(CFG_LOG_NODE, &logging_prnt_level_cmd);
 	install_element(CFG_LOG_NODE, &logging_level_cmd);
 
 	install_element(CONFIG_NODE, &cfg_log_stderr_cmd);
