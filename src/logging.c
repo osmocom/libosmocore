@@ -398,11 +398,12 @@ static void _output(struct log_target *target, unsigned int subsys,
 		goto err;
 	OSMO_SNPRINTF_RET(ret, rem, offset, len);
 
-	ret = snprintf(buf + offset, rem, "%s",
-			target->use_color ? "\033[0;m" : "");
-	if (ret < 0)
-		goto err;
-	OSMO_SNPRINTF_RET(ret, rem, offset, len);
+	if (target->use_color) {
+		ret = snprintf(buf + offset, rem, "\033[0;m");
+		if (ret < 0)
+			goto err;
+		OSMO_SNPRINTF_RET(ret, rem, offset, len);
+	}
 err:
 	buf[sizeof(buf)-1] = '\0';
 	target->output(target, level, buf);
