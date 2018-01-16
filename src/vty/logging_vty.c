@@ -261,10 +261,11 @@ DEFUN(logging_prnt_tid,
 
 DEFUN(logging_prnt_timestamp,
       logging_prnt_timestamp_cmd,
-      "logging print timestamp (none|date-packed|ctime)",
+      "logging print timestamp (none|date|date-packed|ctime)",
 	LOGGING_STR "Log output settings\n"
 	"Configure log message timestamping\n"
 	"Don't prefix each log message\n"
+	"Prefix with YYYY-MM-DD,HH:mm:ss.mmm\n"
 	"Prefix with YYYYMMDDHHmmssmmm\n"
 	"Prefix with a verbose date format as returned by ctime()\n")
 {

@@ -533,9 +533,13 @@ static int _output_buf(char *buf, int buf_len, struct log_target *target, unsign
 				OSMO_SNPRINTF_RET(ret, rem, offset, len);
 			}
 			break;
+		case LOG_TIMESTAMP_DATE:
 		case LOG_TIMESTAMP_DATE_PACKED:
 			if (get_timestamp(&tv, &tm, target) == 0) {
-				ret = snprintf(buf + offset, rem, "%04d%02d%02d%02d%02d%02d%03d ",
+				ret = snprintf(buf + offset, rem,
+					       (target->timestamp_format == LOG_TIMESTAMP_DATE) ?
+							"%04d-%02d-%02d,%02d:%02d:%02d.%03d "
+							: "%04d%02d%02d%02d%02d%02d%03d ",
 					       tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
 					       tm.tm_hour, tm.tm_min, tm.tm_sec,
 					       (int)(tv.tv_usec / 1000));
@@ -903,6 +907,7 @@ void log_set_print_extended_timestamp(struct log_target *target, int print_times
  *  \param[in] fmt LOG_TIMESTAMP_* value to indicate the format.
  *
  * LOG_TIMESTAMP_NONE switches off the timestamp output.
+ * LOG_TIMESTAMP_DATE prints YYYY-MM-DD,hh:mm:ss.nnn.
  * LOG_TIMESTAMP_DATE_PACKED prints YYYYMMDDhhmmssnnn.
  * LOG_TIMESTAMP_CTIME prints a verbose date format as returned by ctime().
  */
@@ -1580,6 +1585,7 @@ int log_check_level(int subsys, unsigned int level)
 /*! Mapping between enum log_timestamp_format and strings. */
 const struct value_string log_timestamp_format_names[] = {
 	{ LOG_TIMESTAMP_NONE, "none" },
+	{ LOG_TIMESTAMP_DATE, "date" },
 	{ LOG_TIMESTAMP_DATE_PACKED, "date-packed" },
 	{ LOG_TIMESTAMP_CTIME, "ctime" },
 	{}
