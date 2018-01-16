@@ -298,6 +298,23 @@ static const char* color(int subsys)
 	return NULL;
 }
 
+static const struct value_string level_colors[] = {
+	{ LOGL_DEBUG, "\033[1;34m" },
+	{ LOGL_INFO, "\033[1;32m" },
+	{ LOGL_NOTICE, "\033[1;33m" },
+	{ LOGL_ERROR, "\033[1;31m" },
+	{ LOGL_FATAL, "\033[1;31m" },
+	{ 0, NULL }
+};
+
+static const char *level_color(int level)
+{
+	const char *c = get_value_string_or_null(level_colors, level);
+	if (!c)
+		return get_value_string(level_colors, LOGL_FATAL);
+	return c;
+}
+
 const char* log_category_name(int subsys)
 {
 	if (subsys < osmo_log_info->num_cat)
@@ -312,12 +329,13 @@ static void _output(struct log_target *target, unsigned int subsys,
 {
 	char buf[4096];
 	int ret, len = 0, offset = 0, rem = sizeof(buf);
+	const char *c_subsys = NULL;
 
 	/* are we using color */
 	if (target->use_color) {
-		const char *c = color(subsys);
-		if (c) {
-			ret = snprintf(buf + offset, rem, "%s", c);
+		c_subsys = color(subsys);
+		if (c_subsys) {
+			ret = snprintf(buf + offset, rem, c_subsys);
 			if (ret < 0)
 				goto err;
 			OSMO_SNPRINTF_RET(ret, rem, offset, len);
@@ -354,7 +372,11 @@ static void _output(struct log_target *target, unsigned int subsys,
 			OSMO_SNPRINTF_RET(ret, rem, offset, len);
 		}
 		if (target->print_level) {
-			ret = snprintf(buf + offset, rem, "%s ", log_level_str(level));
+			ret = snprintf(buf + offset, rem, "%s%s%s%s ",
+				       target->use_color ? level_color(level) : "",
+				       log_level_str(level),
+				       target->use_color ? "\033[0;m" : "",
+				       c_subsys ? c_subsys : "");
 			if (ret < 0)
 				goto err;
 			OSMO_SNPRINTF_RET(ret, rem, offset, len);
