@@ -255,17 +255,24 @@ int gsm0480_decode_ussd_request(const struct gsm48_hdr *hdr, uint16_t len,
 int gsm0480_decode_ss_request(const struct gsm48_hdr *hdr, uint16_t len,
 				struct ss_request *req)
 {
-	int rc = 0;
+	uint8_t pdisc;
 
-	if (gsm48_hdr_pdisc(hdr) == GSM48_PDISC_NC_SS) {
-		req->transaction_id = hdr->proto_discr & 0x70;
-		rc = parse_ss(hdr, len - sizeof(*hdr), req);
+	/**
+	 * Check Protocol Discriminator
+	 * see TS GSM 04.07 and GSM 04.80
+	 */
+	pdisc = gsm48_hdr_pdisc(hdr);
+	if (pdisc != GSM48_PDISC_NC_SS) {
+		LOGP(0, LOGL_ERROR, "Dropping message with "
+			"unsupported pdisc=%02x\n", pdisc);
+		return 0;
 	}
 
-	if (!rc)
-		LOGP(0, LOGL_DEBUG, "Error occurred while parsing received SS!\n");
+	/* GSM 04.80 3.3 Transaction Identifier */
+	req->transaction_id = hdr->proto_discr & 0x70;
 
-	return rc;
+	/* Parse SS request */
+	return parse_ss(hdr, len - sizeof(*hdr), req);
 }
 
 static int parse_ss(const struct gsm48_hdr *hdr, uint16_t len, struct ss_request *req)
