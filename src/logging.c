@@ -366,7 +366,11 @@ static void _output(struct log_target *target, unsigned int subsys,
 			OSMO_SNPRINTF_RET(ret, rem, offset, len);
 		}
 		if (target->print_category) {
-			ret = snprintf(buf + offset, rem, "%s ", log_category_name(subsys));
+			ret = snprintf(buf + offset, rem, "%s%s%s%s ",
+				       target->use_color ? level_color(level) : "",
+				       log_category_name(subsys),
+				       target->use_color ? "\033[0;m" : "",
+				       c_subsys ? c_subsys : "");
 			if (ret < 0)
 				goto err;
 			OSMO_SNPRINTF_RET(ret, rem, offset, len);
