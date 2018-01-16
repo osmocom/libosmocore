@@ -304,6 +304,7 @@ enum log_timezone {
 /*! Format of the timestamp printed */
 enum log_timestamp_format {
 	LOG_TIMESTAMP_NONE,
+	LOG_TIMESTAMP_DATE,
 	LOG_TIMESTAMP_DATE_PACKED,
 	LOG_TIMESTAMP_CTIME,
 };
