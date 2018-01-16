@@ -46,7 +46,7 @@ logging_vty_test# list
   logging disable
   logging filter all (0|1)
   logging color (0|1)
-  logging print timestamp (none|date-packed|ctime)
+  logging print timestamp (none|date|date-packed|ctime)
   logging print thread-id (0|1)
   logging print category (0|1)
   logging print category-hex (0|1)
@@ -121,6 +121,7 @@ logging_vty_test# logging print ?
 
 logging_vty_test# logging print timestamp ?
   none         Don't prefix each log message
+  date         Prefix with YYYY-MM-DD,HH:mm:ss.mmm
   date-packed  Prefix with YYYYMMDDHHmmssmmm
   ctime        Prefix with a verbose date format as returned by ctime()
 
