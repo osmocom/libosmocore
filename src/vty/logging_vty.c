@@ -237,6 +237,29 @@ DEFUN(logging_prnt_level,
 	return CMD_SUCCESS;
 }
 
+DEFUN(logging_prnt_file,
+      logging_prnt_file_cmd,
+      "logging print file (0|1|basename)",
+      LOGGING_STR "Log output settings\n"
+      "Configure log message\n"
+      "Don't prefix each log message\n"
+      "Prefix each log message with the source file and line\n"
+      "Prefix each log message with the source file's basename (strip leading paths) and line\n")
+{
+	struct log_target *tgt = osmo_log_vty2tgt(vty);
+	enum log_filename_type lft;
+
+	if (!tgt)
+		return CMD_WARNING;
+
+	if (!strcmp(argv[0], "basename"))
+		lft = LOG_FILENAME_BASENAME;
+	else
+		lft = atoi(argv[0])? LOG_FILENAME_PATH : LOG_FILENAME_NONE;
+	log_set_print_filename2(tgt, lft);
+	return CMD_SUCCESS;
+}
+
 DEFUN(logging_level,
       logging_level_cmd,
       NULL, /* cmdstr is dynamically set in logging_vty_add_cmds(). */
@@ -770,6 +793,8 @@ static int config_write_log_single(struct vty *vty, struct log_target *tgt)
 			tgt->print_timestamp ? 1 : 0, VTY_NEWLINE);
 	if (tgt->print_level)
 		vty_out(vty, "  logging print level 1%s", VTY_NEWLINE);
+	if (tgt->print_filename)
+		vty_out(vty, "  logging print file 1%s", VTY_NEWLINE);
 
 	/* stupid old osmo logging API uses uppercase strings... */
 	osmo_str2lower(level_lower, log_level_str(tgt->loglevel));
@@ -821,6 +846,7 @@ void logging_vty_add_cmds()
 	install_element_ve(&logging_prnt_cat_cmd);
 	install_element_ve(&logging_prnt_cat_hex_cmd);
 	install_element_ve(&logging_prnt_level_cmd);
+	install_element_ve(&logging_prnt_file_cmd);
 	install_element_ve(&logging_set_category_mask_cmd);
 	install_element_ve(&logging_set_category_mask_old_cmd);
 
@@ -839,6 +865,7 @@ void logging_vty_add_cmds()
 	install_element(CFG_LOG_NODE, &logging_prnt_cat_cmd);
 	install_element(CFG_LOG_NODE, &logging_prnt_cat_hex_cmd);
 	install_element(CFG_LOG_NODE, &logging_prnt_level_cmd);
+	install_element(CFG_LOG_NODE, &logging_prnt_file_cmd);
 	install_element(CFG_LOG_NODE, &logging_level_cmd);
 
 	install_element(CONFIG_NODE, &cfg_log_stderr_cmd);
