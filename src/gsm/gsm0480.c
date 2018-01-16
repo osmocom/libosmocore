@@ -232,7 +232,7 @@ int gsm0480_decode_ussd_request(const struct gsm48_hdr *hdr, uint16_t len,
 		req->transaction_id = hdr->proto_discr & 0x70;
 
 		ss.transaction_id = req->transaction_id;
-		rc = parse_ss(hdr, len, &ss);
+		rc = parse_ss(hdr, len - sizeof(*hdr), &ss);
 
 		/* convert from ss_request to legacy ussd_request */
 		req->transaction_id = ss.transaction_id;
@@ -271,7 +271,7 @@ int gsm0480_decode_ss_request(const struct gsm48_hdr *hdr, uint16_t len,
 
 	if (gsm48_hdr_pdisc(hdr) == GSM48_PDISC_NC_SS) {
 		req->transaction_id = hdr->proto_discr & 0x70;
-		rc = parse_ss(hdr, len, req);
+		rc = parse_ss(hdr, len - sizeof(*hdr), req);
 	}
 
 	if (!rc)
@@ -293,10 +293,10 @@ static int parse_ss(const struct gsm48_hdr *hdr, uint16_t len, struct ss_request
 		req->ussd_text[0] = 0xFF;
 		break;
 	case GSM0480_MTYPE_REGISTER:
-		rc &= parse_ss_info_elements(&hdr->data[0], len - sizeof(*hdr), req);
+		rc &= parse_ss_info_elements(&hdr->data[0], len, req);
 		break;
 	case GSM0480_MTYPE_FACILITY:
-		rc &= parse_ss_facility(&hdr->data[0], len - sizeof(*hdr), req);
+		rc &= parse_ss_facility(&hdr->data[0], len, req);
 		break;
 	default:
 		LOGP(0, LOGL_DEBUG, "Unknown GSM 04.80 message-type field 0x%02x\n",
