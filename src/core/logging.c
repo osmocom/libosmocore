@@ -515,26 +515,37 @@ static int _output_buf(char *buf, int buf_len, struct log_target *target, unsign
 	if (!cont) {
 		struct timeval tv;
 		struct tm tm;
-		if (target->print_ext_timestamp && get_timestamp(&tv, &tm, target) == 0) {
-			ret = snprintf(buf + offset, rem, "%04d%02d%02d%02d%02d%02d%03d ",
-					tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
-					tm.tm_hour, tm.tm_min, tm.tm_sec,
-					(int)(tv.tv_usec / 1000));
-			if (ret < 0)
-				goto err;
-			OSMO_SNPRINTF_RET(ret, rem, offset, len);
-		} else if (target->print_timestamp && get_timestamp(&tv, &tm, target) == 0) {
-			/* Get human-readable representation of time.
-			   man ctime: we need at least 26 bytes in buf */
-			if (rem < 26 || !asctime_r(&tm, buf + offset))
-				goto err;
-			ret = strlen(buf + offset);
-			if (ret <= 0)
-				goto err;
-			/* Get rid of useless final '\n' added by ctime_r. We want a space instead. */
-			buf[offset + ret - 1] = ' ';
-			OSMO_SNPRINTF_RET(ret, rem, offset, len);
+
+		switch (target->timestamp_format) {
+		case LOG_TIMESTAMP_NONE:
+			break;
+		case LOG_TIMESTAMP_CTIME:
+			if (get_timestamp(&tv, &tm, target) == 0) {
+				/* Get human-readable representation of time.
+				   man ctime: we need at least 26 bytes in buf */
+				if (rem < 26 || !asctime_r(&tm, buf + offset))
+					goto err;
+				ret = strlen(buf + offset);
+				if (ret <= 0)
+					goto err;
+				/* Get rid of useless final '\n' added by ctime_r. We want a space instead. */
+				buf[offset + ret - 1] = ' ';
+				OSMO_SNPRINTF_RET(ret, rem, offset, len);
+			}
+			break;
+		case LOG_TIMESTAMP_DATE_PACKED:
+			if (get_timestamp(&tv, &tm, target) == 0) {
+				ret = snprintf(buf + offset, rem, "%04d%02d%02d%02d%02d%02d%03d ",
+					       tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
+					       tm.tm_hour, tm.tm_min, tm.tm_sec,
+					       (int)(tv.tv_usec / 1000));
+				if (ret < 0)
+					goto err;
+				OSMO_SNPRINTF_RET(ret, rem, offset, len);
+			}
+			break;
 		}
+
 		if (target->print_tid) {
 			if (logging_tid == 0)
 				logging_tid = (long int)osmo_gettid();
@@ -854,13 +865,14 @@ void log_set_use_color(struct log_target *target, int use_color)
 	target->use_color = use_color;
 }
 
-/*! Enable or disable printing of timestamps while logging
+/*! Use log_set_print_timestamp2(LOG_TIMESTAMP_CTIME) instead.
+ * Enable or disable printing of timestamps while logging.
  *  \param[in] target Log target to be affected
  *  \param[in] print_timestamp Enable (1) or disable (0) timestamps
  */
 void log_set_print_timestamp(struct log_target *target, int print_timestamp)
 {
-	target->print_timestamp = print_timestamp;
+	log_set_print_timestamp2(target, print_timestamp ? LOG_TIMESTAMP_CTIME : LOG_TIMESTAMP_NONE);
 }
 
 /*! Switch logging timezone between UTC or local time.
@@ -872,7 +884,8 @@ void log_set_timezone(struct log_target *target, enum log_timezone timezone)
 	target->timezone = timezone;
 }
 
-/*! Enable or disable printing of extended timestamps while logging
+/*! Use log_set_print_timestamp2(LOG_TIMESTAMP_DATE_PACKED) instead.
+ * Enable or disable printing of extended timestamps while logging.
  *  \param[in] target Log target to be affected
  *  \param[in] print_timestamp Enable (1) or disable (0) timestamps
  *
@@ -882,7 +895,20 @@ void log_set_timezone(struct log_target *target, enum log_timezone timezone)
  */
 void log_set_print_extended_timestamp(struct log_target *target, int print_timestamp)
 {
-	target->print_ext_timestamp = print_timestamp;
+	log_set_print_timestamp2(target, print_timestamp ? LOG_TIMESTAMP_DATE_PACKED : LOG_TIMESTAMP_NONE);
+}
+
+/*! Enable or disable printing of timestamps while logging.
+ *  \param[in] target Log target to be affected
+ *  \param[in] fmt LOG_TIMESTAMP_* value to indicate the format.
+ *
+ * LOG_TIMESTAMP_NONE switches off the timestamp output.
+ * LOG_TIMESTAMP_DATE_PACKED prints YYYYMMDDhhmmssnnn.
+ * LOG_TIMESTAMP_CTIME prints a verbose date format as returned by ctime().
+ */
+void log_set_print_timestamp2(struct log_target *target, enum log_timestamp_format fmt)
+{
+	target->timestamp_format = fmt;
 }
 
 /*! Enable or disable printing of timestamps while logging
@@ -1086,7 +1112,7 @@ struct log_target *log_target_create(void)
 
 	/* global settings */
 	target->use_color = 1;
-	target->print_timestamp = 0;
+	target->timestamp_format = LOG_TIMESTAMP_NONE;
 	target->print_tid = 0;
 	target->print_filename2 = LOG_FILENAME_PATH;
 	target->print_category_hex = true;

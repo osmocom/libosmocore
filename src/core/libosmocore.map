@@ -76,6 +76,7 @@ log_set_log_level;
 log_set_print_category;
 log_set_print_category_hex;
 log_set_print_extended_timestamp;
+log_set_print_timestamp2;
 log_set_print_filename;
 log_set_print_filename2;
 log_set_print_filename_pos;

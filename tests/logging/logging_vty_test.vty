@@ -199,23 +199,23 @@ log stderr
  logging print extended-timestamp 1
 ... !timestamp
 
-logging_vty_test(config-log)# ### 'logging timestamp 0' effect not shown while 'extended-timestamp' == 1
+logging_vty_test(config-log)# ### 'timestamp 0' also removes 'extended-timestamp 1'
 logging_vty_test(config-log)# logging timestamp 0
 logging_vty_test(config-log)# show running-config
 ...
 log stderr
 ... !timestamp
- logging print extended-timestamp 1
+ logging timestamp 0
 ... !timestamp
 
-logging_vty_test(config-log)# ### 'logging timestamp 1' remains set upon 'extended-timestamp 0'
+logging_vty_test(config-log)# ### 'extended-timestamp 0' also removes 'timestamp 1'
 logging_vty_test(config-log)# logging timestamp 1
 logging_vty_test(config-log)# logging print extended-timestamp 0
 logging_vty_test(config-log)# show running-config
 ...
 log stderr
 ... !timestamp
- logging timestamp 1
+ logging timestamp 0
 ... !timestamp
 
 logging_vty_test(config-log)# logging timestamp 0
@@ -242,12 +242,12 @@ logging_vty_test# log-test
 
 logging_vty_test# logging timestamp 0
 logging_vty_test# log-test
-19790923205500423423 DAA DEBUG :)
+DAA DEBUG :)
 
 logging_vty_test# logging timestamp 1
 logging_vty_test# logging print extended-timestamp 0
 logging_vty_test# log-test
-Sun Sep 23 20:55:00 1979 DAA DEBUG :)
+DAA DEBUG :)
 
 logging_vty_test# logging timestamp 0
 logging_vty_test# log-test
