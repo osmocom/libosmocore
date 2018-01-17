@@ -120,23 +120,27 @@ static void test_7bit_ussd(const char *text, const char *encoded_hex, const char
 int main(int argc, char **argv)
 {
 	struct ss_request req;
-	const int size = sizeof(ussd_request);
+	uint16_t size;
 	int i;
 	struct msgb *msg;
 
 	osmo_init_logging(&info);
 
 	memset(&req, 0, sizeof(req));
-	gsm0480_decode_ss_request((struct gsm48_hdr *) ussd_request, size, &req);
+	gsm0480_decode_ss_request((struct gsm48_hdr *) ussd_request,
+		sizeof(ussd_request), &req);
 	printf("Tested if it still works. Text was: %s\n", req.ussd_text);
 
 	memset(&req, 0, sizeof(req));
-	gsm0480_decode_ss_request((struct gsm48_hdr *) interrogate_ss, size, &req);
+	gsm0480_decode_ss_request((struct gsm48_hdr *) interrogate_ss,
+		sizeof(interrogate_ss), &req);
 	OSMO_ASSERT(strlen((char *) req.ussd_text) == 0);
 	OSMO_ASSERT(req.ss_code == 33);
 	printf("interrogateSS CFU text..'%s' code %d\n", req.ussd_text, req.ss_code);
 
 	printf("Testing parsing a USSD request and truncated versions\n");
+
+	size = sizeof(ussd_request);
 
 	for (i = size; i > sizeof(struct gsm48_hdr); --i) {
 		int rc = parse_ussd(&ussd_request[0], i);
