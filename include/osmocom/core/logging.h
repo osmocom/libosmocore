@@ -300,6 +300,13 @@ enum log_timezone {
 	LOG_TIMEZONE_UTC,
 };
 
+/*! Format of the timestamp printed */
+enum log_timestamp_format {
+	LOG_TIMESTAMP_NONE,
+	LOG_TIMESTAMP_DATE_PACKED,
+	LOG_TIMESTAMP_CTIME,
+};
+
 /*! structure representing a logging target */
 struct log_target {
 	struct llist_head entry;		/*!< linked list */
@@ -316,16 +323,12 @@ struct log_target {
 	uint8_t loglevel;
 	/*! should color be used when printing log messages? */
 	unsigned int use_color:1;
-	/*! should log messages be prefixed with a timestamp? */
-	unsigned int print_timestamp:1;
 	/*! should log messages be prefixed with the logger Thread ID? */
 	unsigned int print_tid:1;
 	/*! DEPRECATED: use print_filename2 instead. */
 	unsigned int print_filename:1;
 	/*! should log messages be prefixed with a category name? */
 	unsigned int print_category:1;
-	/*! should log messages be prefixed with an extended timestamp? */
-	unsigned int print_ext_timestamp:1;
 
 	/*! the type of this log taget */
 	enum log_target_type type;
@@ -399,6 +402,8 @@ struct log_target {
 
 	/* Set timezone for timestamps (if at all enabled) */
 	enum log_timezone timezone;
+	/* Timestamp format */
+	enum log_timestamp_format timestamp_format;
 };
 
 /* use the above macros */
@@ -418,9 +423,12 @@ int log_set_context(uint8_t ctx, void *value);
 void log_set_all_filter(struct log_target *target, int);
 
 void log_set_use_color(struct log_target *target, int);
-void log_set_print_extended_timestamp(struct log_target *target, int);
-void log_set_print_timestamp(struct log_target *target, int);
+void log_set_print_extended_timestamp(struct log_target *target, int flag)
+	OSMO_DEPRECATED("Use log_set_print_timestamp2(LOG_TIMESTAMP_DATE_PACKED) instead");
+void log_set_print_timestamp(struct log_target *target, int flag)
+	OSMO_DEPRECATED("Use log_set_print_timestamp2(LOG_TIMESTAMP_CTIME) instead");
 void log_set_timezone(struct log_target *target, enum log_timezone timezone);
+void log_set_print_timestamp2(struct log_target *target, enum log_timestamp_format format);
 void log_set_print_tid(struct log_target *target, int);
 void log_set_print_filename(struct log_target *target, int) OSMO_DEPRECATED("Use log_set_print_filename2() instead");
 void log_set_print_filename2(struct log_target *target, enum log_filename_type lft);

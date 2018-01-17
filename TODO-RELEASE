@@ -9,3 +9,14 @@
 #library	what			description / commit summary line
 libosmogsm  new header osmocom/gsm/protocol/gsm_44_060.h
 libosmocore ADD     new defines in osmocom/gsm/protocol/gsm_04_08.h (old ones marked deprecated)
+core		log_target.print_timestamp	Flag replaced by log_target.timestamp_format.
+		log_target.print_ext_timestamp	Flag replaced by log_target.timestamp_format.
+
+core		log_set_print_timestamp()	Replaced by log_set_print_timestamp2().
+core		log_set_print_extended_timestamp()	Replaced by log_set_print_timestamp2().
+						Since the 'print timestamp' settings are now stored as a single enum,
+						the behavior of calling log_set_print_timestamp(0) and
+						log_set_print_extended_timestamp(0) changes: when calling with zero
+						argument, logging now always snaps back to LOG_TIMSTAMP_NONE, instead of
+						maybe going to LOG_TIMSTAMP_CTIME, depending on what flags were
+						otherwise set.

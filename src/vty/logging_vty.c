@@ -217,7 +217,7 @@ DEFUN(logging_timestamp,
 
 	ACQUIRE_VTY_LOG_TGT_WITH_LOCK(vty, tgt);
 
-	log_set_print_timestamp(tgt, atoi(argv[0]));
+	log_set_print_timestamp2(tgt, atoi(argv[0]) ? LOG_TIMESTAMP_CTIME : LOG_TIMESTAMP_NONE);
 	RET_WITH_UNLOCK(CMD_SUCCESS);
 }
 
@@ -233,7 +233,7 @@ DEFUN(logging_prnt_ext_timestamp,
 
 	ACQUIRE_VTY_LOG_TGT_WITH_LOCK(vty, tgt);
 
-	log_set_print_extended_timestamp(tgt, atoi(argv[0]));
+	log_set_print_timestamp2(tgt, atoi(argv[0]) ? LOG_TIMESTAMP_DATE_PACKED : LOG_TIMESTAMP_NONE);
 	RET_WITH_UNLOCK(CMD_SUCCESS);
 }
 
@@ -529,7 +529,7 @@ static void vty_print_logtarget(struct vty *vty, const struct log_info *info,
 		log_level_str(tgt->loglevel), VTY_NEWLINE);
 	vty_out(vty, " Use color: %s, Print Timestamp: %s%s",
 		tgt->use_color ? "On" : "Off",
-		tgt->print_timestamp ? "On" : "Off", VTY_NEWLINE);
+		tgt->timestamp_format != LOG_TIMESTAMP_NONE ? "On" : "Off", VTY_NEWLINE);
 
 	vty_out(vty, " Log Level specific information:%s", VTY_NEWLINE);
 
@@ -1072,11 +1072,18 @@ static int config_write_log_single(struct vty *vty, struct log_target *tgt)
 		tgt->print_category ? 1 : 0, VTY_NEWLINE);
 	vty_out(vty, " logging print thread-id %d%s",
 		tgt->print_tid ? 1 : 0, VTY_NEWLINE);
-	if (tgt->print_ext_timestamp)
+
+	switch (tgt->timestamp_format) {
+	case LOG_TIMESTAMP_DATE_PACKED:
 		vty_out(vty, " logging print extended-timestamp 1%s", VTY_NEWLINE);
-	else
-		vty_out(vty, " logging timestamp %u%s",
-			tgt->print_timestamp ? 1 : 0, VTY_NEWLINE);
+		break;
+	case LOG_TIMESTAMP_CTIME:
+		vty_out(vty, " logging timestamp 1%s", VTY_NEWLINE);
+		break;
+	default:
+		vty_out(vty, " logging timestamp 0%s", VTY_NEWLINE);
+		break;
+	}
 
 	switch (tgt->timezone) {
 	case LOG_TIMEZONE_UTC:
