@@ -23,3 +23,12 @@ gsm		ABI change		add UI queue to struct lapdm_datalink
 gsm		ADD			gsup.h: struct osmo_gsup_pdp_info fields pdp_type_nr, pdp_type_org, deprecate pdp_type.
 gsm		ABI change			gsup.h: Add field pdp_address in struct osmo_gsup_pdp_info shifts the struct, and in turn fields in struct osmo_gsup_message.
 gsm		ABI change		gsup.h: Add field pco in struct osmo_gsup_message. Length of the struct osmo_gsup_message increase.
+libosmocore	replace API	flags log_target.print_timestamp, log_target.print_ext_timestamp replaced by log_target.timestamp_format.
+
+libosmocore	deprecate API	log_set_print_timestamp() replaced by log_set_print_timestamp2().
+libosmocore	deprecate API	log_set_print_extended_timestamp() replaced by log_set_print_timestamp2().
+						Since the 'print timestamp' settings are now stored as a single enum,
+						the behavior of calling log_set_print_timestamp(0) and
+						log_set_print_extended_timestamp(0) changes: when calling with zero
+						argument, logging now always snaps back to LOG_TIMSTAMP_NONE, instead of
+						the current behavior: maybe go to LOG_TIMSTAMP_CTIME, depending on what flags were otherwise set.
