@@ -198,7 +198,7 @@ static int parse_ss(const struct gsm48_hdr *hdr,
 		    uint16_t len, struct ss_request *req);
 static int parse_ss_facility(const uint8_t *ss_facility, uint16_t len,
 			     struct ss_request *req);
-static int parse_ss_info_elements(const uint8_t *ussd_ie, uint16_t len,
+static int parse_ss_info_elements(const uint8_t *ss_ie, uint16_t len,
 				  struct ss_request *req);
 static int parse_facility_ie(const uint8_t *facility_ie, uint16_t length,
 			     struct ss_request *req);
