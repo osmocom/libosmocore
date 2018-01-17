@@ -334,11 +334,15 @@ static int parse_ss_info_elements(const uint8_t *ss_ie, uint16_t len,
 	uint8_t iei;
 	uint8_t iei_length;
 
+	/* We need at least two bytes */
+	if (len < 2)
+		return 0;
+
 	iei = ss_ie[0];
 	iei_length = ss_ie[1];
 
 	/* If the data does not fit, report an error */
-	if (len - 2 < iei_length)
+	if (iei_length + 2 > len)
 		return 0;
 
 	switch (iei) {
@@ -355,6 +359,11 @@ static int parse_ss_info_elements(const uint8_t *ss_ie, uint16_t len,
 		rc = 0;
 		break;
 	}
+
+	/* A message may contain multiple IEs */
+	if (iei_length + 2 + 2 < len)
+		rc &= parse_ss_info_elements(ss_ie + iei_length + 2,
+			len - iei_length - 2, req);
 
 	return rc;
 }
