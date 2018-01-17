@@ -76,7 +76,10 @@ abis_abis_test_SOURCES = abis/abis_test.c
 abis_abis_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 
 ctrl_ctrl_test_SOURCES = ctrl/ctrl_test.c
-ctrl_ctrl_test_LDADD = $(LDADD) $(top_builddir)/src/ctrl/libosmoctrl.la
+ctrl_ctrl_test_LDADD = $(LDADD) \
+	$(top_builddir)/src/ctrl/libosmoctrl.la \
+	$(top_builddir)/src/gsm/libosmogsm.la \
+	$(top_builddir)/src/vty/libosmovty.la
 
 gea_gea_test_SOURCES = gea/gea_test.c
 gea_gea_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
@@ -130,20 +133,24 @@ ussd_ussd_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 
 gb_bssgp_fc_test_SOURCES = gb/bssgp_fc_test.c
 gb_bssgp_fc_test_LDADD = $(LDADD) $(top_builddir)/src/gb/libosmogb.la \
+			 $(top_builddir)/src/vty/libosmovty.la \
 			 $(top_builddir)/src/gsm/libosmogsm.la
 
 gb_gprs_bssgp_test_SOURCES = gb/gprs_bssgp_test.c
 gb_gprs_bssgp_test_LDADD = $(LDADD) $(top_builddir)/src/gb/libosmogb.la $(LIBRARY_DLSYM) \
+			   $(top_builddir)/src/vty/libosmovty.la \
 			   $(top_builddir)/src/gsm/libosmogsm.la
 
 gb_gprs_ns_test_SOURCES = gb/gprs_ns_test.c
 gb_gprs_ns_test_LDADD = $(LDADD) $(top_builddir)/src/gb/libosmogb.la $(LIBRARY_DLSYM) \
+			$(top_builddir)/src/vty/libosmovty.la \
 			$(top_builddir)/src/gsm/libosmogsm.la
 
 logging_logging_test_SOURCES = logging/logging_test.c
 
 fr_fr_test_SOURCES = fr/fr_test.c
 fr_fr_test_LDADD = $(LDADD) $(top_builddir)/src/gb/libosmogb.la $(LIBRARY_DLSYM) \
+		   $(top_builddir)/src/vty/libosmovty.la \
 		   $(top_builddir)/src/gsm/libosmogsm.la
 
 codec_codec_test_SOURCES = codec/codec_test.c
@@ -177,7 +184,11 @@ oap_oap_client_test_SOURCES = oap/oap_client_test.c
 oap_oap_client_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 
 fsm_fsm_test_SOURCES = fsm/fsm_test.c
-fsm_fsm_test_LDADD = $(LDADD) $(top_builddir)/src/ctrl/libosmoctrl.la
+fsm_fsm_test_LDADD = \
+	$(LDADD) \
+	$(top_builddir)/src/ctrl/libosmoctrl.la \
+	$(top_builddir)/src/gsm/libosmogsm.la \
+	$(top_builddir)/src/vty/libosmovty.la
 
 write_queue_wqueue_test_SOURCES = write_queue/wqueue_test.c
 
