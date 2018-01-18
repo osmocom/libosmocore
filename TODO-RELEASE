@@ -31,4 +31,5 @@ libosmocore	deprecate API	log_set_print_extended_timestamp() replaced by log_set
 						the behavior of calling log_set_print_timestamp(0) and
 						log_set_print_extended_timestamp(0) changes: when calling with zero
 						argument, logging now always snaps back to LOG_TIMSTAMP_NONE, instead of
-						the current behavior: maybe go to LOG_TIMSTAMP_CTIME, depending on what flags were otherwise set.
+vty logging	deprecate cfg	'logging timestamp (0|1)' deprecated, replaced by 'logging print timestamp (none|ctime)'
+vty logging	deprecate cfg	'logging print extended-timestamp (0|1)' deprecated, replaced by 'logging print timestamp (none|date-packed)'
