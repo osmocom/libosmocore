@@ -17,7 +17,7 @@ check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
 		 write_queue/wqueue_test socket/socket_test		\
 		 coding/coding_test conv/conv_gsm0503_test		\
 		 abis/abis_test endian/endian_test sercomm/sercomm_test	\
-		 stats/stats_test prbs/prbs_test gsm23003/gsm23003_test \
+		 prbs/prbs_test gsm23003/gsm23003_test 			\
 		 codec/codec_ecu_fr_test
 
 if ENABLE_MSGFILE
@@ -38,6 +38,10 @@ endif
 
 if ENABLE_CTRL
 check_PROGRAMS += ctrl/ctrl_test fsm/fsm_test
+endif
+
+if ENABLE_STATS_TEST
+check_PROGRAMS += stats/stats_test
 endif
 
 if ENABLE_GB
