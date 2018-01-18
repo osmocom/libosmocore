@@ -55,7 +55,7 @@
  * implementing the GSM/GPRS/EGPRS channel coding (and decoding) as
  * specified in 3GPP TS 05.03 / 45.003.
  *
- * libosmocodec is developed as part of the Osmocom (Open Source Mobile
+ * libosmocoding is developed as part of the Osmocom (Open Source Mobile
  * Communications) project, a community-based, collaborative development
  * project to create Free and Open Source implementations of mobile
  * communications systems.  For more information about Osmocom, please
