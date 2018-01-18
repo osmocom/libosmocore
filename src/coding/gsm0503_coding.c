@@ -131,13 +131,6 @@
 #define EGPRS_DATA_C1		612
 #define EGPRS_DATA_C2		EGPRS_DATA_C1
 
-/* TS 101318 Chapter 5.1: 260 bits + 4bit sig */
-#define GSM_FR_BYTES	33
-/* TS 101318 Chapter 5.2: 112 bits, no sig */
-#define GSM_HR_BYTES	14
-/* TS 101318 Chapter 5.3: 244 bits + 4bit sig */
-#define GSM_EFR_BYTES	31
-
 /*! union across the three different EGPRS Uplink header types */
 union gprs_rlc_ul_hdr_egprs {
 	struct gprs_rlc_ul_header_egprs_1 type1;
