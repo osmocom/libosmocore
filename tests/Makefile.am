@@ -3,6 +3,11 @@ AM_CFLAGS = -Wall $(TALLOC_CFLAGS)
 AM_LDFLAGS =
 LDADD = $(top_builddir)/src/libosmocore.la $(TALLOC_LIBS)
 
+if ENABLE_SERCOM_STUB
+noinst_LIBRARIES = libsercomstub.a
+LDADD += $(top_builddir)/tests/libsercomstub.a
+endif
+
 check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
                  smscb/smscb_test bits/bitrev_test a5/a5_test		\
                  conv/conv_test auth/milenage_test lapd/lapd_test	\
@@ -55,10 +60,10 @@ stats_stats_test_SOURCES = stats/stats_test.c
 stats_stats_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 
 a5_a5_test_SOURCES = a5/a5_test.c
-a5_a5_test_LDADD = $(top_builddir)/src/gsm/libgsmint.la
+a5_a5_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libgsmint.la
 
 kasumi_kasumi_test_SOURCES = kasumi/kasumi_test.c
-kasumi_kasumi_test_LDADD = $(top_builddir)/src/gsm/libgsmint.la
+kasumi_kasumi_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libgsmint.la
 
 comp128_comp128_test_SOURCES = comp128/comp128_test.c
 comp128_comp128_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
@@ -84,10 +89,10 @@ bits_bitcomp_test_SOURCES = bits/bitcomp_test.c
 bits_bitfield_test_SOURCES = bits/bitfield_test.c
 
 conv_conv_test_SOURCES = conv/conv_test.c conv/conv.c
-conv_conv_test_LDADD = $(top_builddir)/src/gsm/libgsmint.la
+conv_conv_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libgsmint.la
 
 conv_conv_gsm0503_test_SOURCES = conv/conv_gsm0503_test.c conv/conv.c conv/gsm0503_test_vectors.c
-conv_conv_gsm0503_test_LDADD = $(top_builddir)/src/gsm/libgsmint.la
+conv_conv_gsm0503_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libgsmint.la
 conv_conv_gsm0503_test_CPPFLAGS = $(AM_CPPFLAGS) -I$(top_srcdir)/tests/conv
 
 gsm0808_gsm0808_test_SOURCES = gsm0808/gsm0808_test.c

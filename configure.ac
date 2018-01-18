@@ -238,6 +238,7 @@ AC_ARG_ENABLE(embedded,
 	[embedded=$enableval], [embedded="no"])
 
 AM_CONDITIONAL(ENABLE_STATS_TEST, true)
+AM_CONDITIONAL(ENABLE_SERCOM_STUB, false)
 
 if test x"$embedded" = x"yes"
 then
@@ -253,6 +254,7 @@ then
 	AM_CONDITIONAL(ENABLE_GNUTLS, false)
 	AM_CONDITIONAL(ENABLE_PCSC, false)
 	AM_CONDITIONAL(ENABLE_PSEUDOTALLOC, true)
+	AM_CONDITIONAL(ENABLE_SERCOM_STUB, true)
 	AM_CONDITIONAL(ENABLE_STATS_TEST, false)
 	AC_DEFINE([USE_GNUTLS], [0])
 	AC_DEFINE([PANIC_INFLOOP],[1],[Use infinite loop on panic rather than fprintf/abort])
