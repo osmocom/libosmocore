@@ -10,6 +10,7 @@
 #include <stdbool.h>
 #include <osmocom/core/defs.h>
 #include <osmocom/core/linuxlist.h>
+#include <osmocom/core/utils.h>
 
 extern struct log_info *osmo_log_info;
 
@@ -306,6 +307,19 @@ enum log_timestamp_format {
 	LOG_TIMESTAMP_DATE_PACKED,
 	LOG_TIMESTAMP_CTIME,
 };
+
+/*! Mapping between enum log_timestamp_format and strings. */
+extern const struct value_string log_timestamp_format_names[];
+/*! Map enum log_timestamp_format values to string constants. */
+static inline const char *log_timestamp_format_name(enum log_timestamp_format ltf)
+{
+	return get_value_string(log_timestamp_format_names, ltf);
+}
+/*! Map string constants to enum log_timestamp_format values. */
+static inline enum log_timestamp_format log_timestamp_format_val(const char *str)
+{
+	return (enum log_timestamp_format)get_string_value(log_timestamp_format_names, str);
+}
 
 /*! structure representing a logging target */
 struct log_target {

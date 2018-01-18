@@ -206,34 +206,40 @@ DEFUN(logging_timezone,
 	RET_WITH_UNLOCK(CMD_SUCCESS);
 }
 
-DEFUN(logging_timestamp,
+DEFUN_DEPRECATED(logging_timestamp,
       logging_timestamp_cmd,
       "logging timestamp (0|1)",
-	LOGGING_STR "Configure log message timestamping\n"
+	LOGGING_STR "Use 'logging print timestamp' instead --"
+	" Configure log message timestamping\n"
 	"Don't prefix each log message\n"
-	"Prefix each log message with current timestamp\n")
+	"Prefix each log message with a verbose date format as returned by ctime()\n")
 {
 	struct log_target *tgt;
 
 	ACQUIRE_VTY_LOG_TGT_WITH_LOCK(vty, tgt);
 
 	log_set_print_timestamp2(tgt, atoi(argv[0]) ? LOG_TIMESTAMP_CTIME : LOG_TIMESTAMP_NONE);
+	vty_out(vty, "%% Deprecated: do not use 'logging timestamp (0|1)' anymore,"
+		" instead use 'logging print timestamp (none|ctime)'%s", VTY_NEWLINE);
 	RET_WITH_UNLOCK(CMD_SUCCESS);
 }
 
-DEFUN(logging_prnt_ext_timestamp,
+DEFUN_DEPRECATED(logging_prnt_ext_timestamp,
       logging_prnt_ext_timestamp_cmd,
       "logging print extended-timestamp (0|1)",
 	LOGGING_STR "Log output settings\n"
-	"Configure log message timestamping\n"
+	"Use 'logging print timestamp' instead --"
+	" Configure log message date-packed timestamping\n"
 	"Don't prefix each log message\n"
-	"Prefix each log message with current timestamp with YYYYMMDDhhmmssnnn\n")
+	"Prefix each log message with current timestamp as YYYYMMDDhhmmssnnn\n")
 {
 	struct log_target *tgt;
 
 	ACQUIRE_VTY_LOG_TGT_WITH_LOCK(vty, tgt);
 
 	log_set_print_timestamp2(tgt, atoi(argv[0]) ? LOG_TIMESTAMP_DATE_PACKED : LOG_TIMESTAMP_NONE);
+	vty_out(vty, "%% Deprecated: do not use 'logging print extended-timestamp (0|1)' anymore,"
+		" instead use 'logging print timestamp (none|date-packed)'%s", VTY_NEWLINE);
 	RET_WITH_UNLOCK(CMD_SUCCESS);
 }
 
@@ -251,6 +257,31 @@ DEFUN(logging_prnt_tid,
 
 	log_set_print_tid(tgt, atoi(argv[0]));
 	RET_WITH_UNLOCK(CMD_SUCCESS);
+}
+
+DEFUN(logging_prnt_timestamp,
+      logging_prnt_timestamp_cmd,
+      "logging print timestamp (none|date-packed|ctime)",
+	LOGGING_STR "Log output settings\n"
+	"Configure log message timestamping\n"
+	"Don't prefix each log message\n"
+	"Prefix with YYYYMMDDHHmmssmmm\n"
+	"Prefix with a verbose date format as returned by ctime()\n")
+{
+	struct log_target *tgt = osmo_log_vty2tgt(vty);
+	unsigned int val;
+
+	if (!tgt)
+		return CMD_WARNING;
+
+	val = log_timestamp_format_val(argv[0]);
+	if (val < 0) {
+		vty_out(vty, "Could not parse argument: '%s'%s", argv[0], VTY_NEWLINE);
+		return CMD_WARNING;
+	}
+
+	log_set_print_timestamp2(tgt, val);
+	return CMD_SUCCESS;
 }
 
 DEFUN(logging_prnt_cat,
@@ -1073,17 +1104,9 @@ static int config_write_log_single(struct vty *vty, struct log_target *tgt)
 	vty_out(vty, " logging print thread-id %d%s",
 		tgt->print_tid ? 1 : 0, VTY_NEWLINE);
 
-	switch (tgt->timestamp_format) {
-	case LOG_TIMESTAMP_DATE_PACKED:
-		vty_out(vty, " logging print extended-timestamp 1%s", VTY_NEWLINE);
-		break;
-	case LOG_TIMESTAMP_CTIME:
-		vty_out(vty, " logging timestamp 1%s", VTY_NEWLINE);
-		break;
-	default:
-		vty_out(vty, " logging timestamp 0%s", VTY_NEWLINE);
-		break;
-	}
+	if (tgt->timestamp_format != LOG_TIMESTAMP_NONE)
+		vty_out(vty, " logging print timestamp %s%s",
+			log_timestamp_format_name(tgt->timestamp_format), VTY_NEWLINE);
 
 	switch (tgt->timezone) {
 	case LOG_TIMEZONE_UTC:
@@ -1237,6 +1260,7 @@ void logging_vty_add_cmds(void)
 	install_lib_element_ve(&logging_fltr_all_cmd);
 	install_lib_element_ve(&logging_use_clr_cmd);
 	install_lib_element_ve(&logging_timestamp_cmd);
+	install_lib_element_ve(&logging_prnt_timestamp_cmd);
 	install_lib_element_ve(&logging_prnt_ext_timestamp_cmd);
 	install_lib_element_ve(&logging_timezone_cmd);
 	install_lib_element_ve(&logging_prnt_tid_cmd);
@@ -1273,6 +1297,7 @@ void logging_vty_add_cmds(void)
 	install_lib_element(CFG_LOG_NODE, &logging_fltr_all_cmd);
 	install_lib_element(CFG_LOG_NODE, &logging_use_clr_cmd);
 	install_lib_element(CFG_LOG_NODE, &logging_timestamp_cmd);
+	install_lib_element(CFG_LOG_NODE, &logging_prnt_timestamp_cmd);
 	install_lib_element(CFG_LOG_NODE, &logging_prnt_ext_timestamp_cmd);
 	install_lib_element(CFG_LOG_NODE, &logging_timezone_cmd);
 	install_lib_element(CFG_LOG_NODE, &logging_prnt_tid_cmd);

@@ -20,3 +20,5 @@ core		log_set_print_extended_timestamp()	Replaced by log_set_print_timestamp2().
 						argument, logging now always snaps back to LOG_TIMSTAMP_NONE, instead of
 						maybe going to LOG_TIMSTAMP_CTIME, depending on what flags were
 						otherwise set.
+vty logging	'logging timestamp (0|1)'	deprecated, replaced by 'logging print timestamp (none|ctime)'
+vty logging	'logging print extended-timestamp (0|1)'	deprecated, replaced by 'logging print timestamp (none|date-packed)'
