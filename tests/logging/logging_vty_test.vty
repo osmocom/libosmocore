@@ -46,8 +46,7 @@ logging_vty_test# list
   logging disable
   logging filter all (0|1)
   logging color (0|1)
-  logging timestamp (0|1)
-  logging print extended-timestamp (0|1)
+  logging print timestamp (none|date-packed|ctime)
   logging timezone (localtime|utc)
   logging print thread-id (0|1)
   logging print category (0|1)
@@ -66,15 +65,14 @@ logging_vty_test# logging ?
   disable       Disables logging to this vty
   filter        Filter log messages
   color         Configure color-printing for log messages
-  timestamp     Configure log message timestamping
   print         Log output settings
   timezone      Configure time zone for log message timestamping
   set-log-mask  Set the logmask of this logging target
   level         Set the log level for a specified category
 
+logging_vty_test# ### Deprecated command's doc not shown
 logging_vty_test# logging timestamp ?
-  0  Don't prefix each log message
-  1  Prefix each log message with current timestamp
+% There is no matched command.
 
 logging_vty_test# logging timezone ?
   localtime  Log timestamps in the system's local time
@@ -120,16 +118,21 @@ logging_vty_test# logging level set-all ?
   fatal   Log only fatal messages
 
 logging_vty_test# logging print ?
-  extended-timestamp  Configure log message timestamping
-  thread-id           Configure log message logging Thread ID
-  category            Configure log message
-  category-hex        Configure log message
-  level               Configure log message
-  file                Configure log message
+  timestamp     Configure log message timestamping
+  thread-id     Configure log message logging Thread ID
+  category      Configure log message
+  category-hex  Configure log message
+  level         Configure log message
+  file          Configure log message
 
+logging_vty_test# logging print timestamp ?
+  none         Don't prefix each log message
+  date-packed  Prefix with YYYYMMDDHHmmssmmm
+  ctime        Prefix with a verbose date format as returned by ctime()
+
+logging_vty_test# ### Deprecated command's doc not shown
 logging_vty_test# logging print extended-timestamp ?
-  0  Don't prefix each log message
-  1  Prefix each log message with current timestamp with YYYYMMDDhhmmssnnn
+% There is no matched command.
 
 logging_vty_test# logging print thread-id ?
   0  Don't prefix each log message
@@ -179,51 +182,72 @@ logging_vty_test(config-log)# show running-config
 ...
 log stderr
 ... !timestamp
- logging timestamp 0
-... !timestamp
 
-logging_vty_test(config-log)# logging timestamp 1
+logging_vty_test(config-log)# logging print timestamp date-packed
 logging_vty_test(config-log)# show running-config
 ...
 log stderr
 ... !timestamp
- logging timestamp 1
+ logging print timestamp date-packed
+... !timestamp
+
+logging_vty_test(config-log)# logging print timestamp ctime
+logging_vty_test(config-log)# show running-config
+...
+log stderr
+... !timestamp
+ logging print timestamp ctime
+... !timestamp
+
+logging_vty_test(config-log)# logging print timestamp none
+logging_vty_test(config-log)# show running-config
+...
+log stderr
+... !timestamp
+
+logging_vty_test(config-log)# ### Legacy cmds still work: 'logging timestamp' and 'logging print extended-timestamp'
+logging_vty_test(config-log)# logging timestamp 1
+% Deprecated: do not use 'logging timestamp (0|1)' anymore, instead use 'logging print timestamp (none|ctime)'
+logging_vty_test(config-log)# show running-config
+...
+log stderr
+... !timestamp
+ logging print timestamp ctime
 ... !timestamp
 
 logging_vty_test(config-log)# ### with 'extended-timestamp 1', 'logging timestamp' is not shown
 logging_vty_test(config-log)# logging print extended-timestamp 1
+% Deprecated: do not use 'logging print extended-timestamp (0|1)' anymore, instead use 'logging print timestamp (none|date-packed)'
 logging_vty_test(config-log)# show running-config
 ...
 log stderr
 ... !timestamp
- logging print extended-timestamp 1
+ logging print timestamp date-packed
 ... !timestamp
 
 logging_vty_test(config-log)# ### 'timestamp 0' also removes 'extended-timestamp 1'
 logging_vty_test(config-log)# logging timestamp 0
+% Deprecated: do not use 'logging timestamp (0|1)' anymore, instead use 'logging print timestamp (none|ctime)'
 logging_vty_test(config-log)# show running-config
 ...
 log stderr
-... !timestamp
- logging timestamp 0
 ... !timestamp
 
 logging_vty_test(config-log)# ### 'extended-timestamp 0' also removes 'timestamp 1'
 logging_vty_test(config-log)# logging timestamp 1
+% Deprecated: do not use 'logging timestamp (0|1)' anymore, instead use 'logging print timestamp (none|ctime)'
 logging_vty_test(config-log)# logging print extended-timestamp 0
+% Deprecated: do not use 'logging print extended-timestamp (0|1)' anymore, instead use 'logging print timestamp (none|date-packed)'
 logging_vty_test(config-log)# show running-config
 ...
 log stderr
-... !timestamp
- logging timestamp 0
 ... !timestamp
 
 logging_vty_test(config-log)# logging timestamp 0
+% Deprecated: do not use 'logging timestamp (0|1)' anymore, instead use 'logging print timestamp (none|ctime)'
 logging_vty_test(config-log)# show running-config
 ...
 log stderr
-... !timestamp
- logging timestamp 0
 ... !timestamp
 
 logging_vty_test(config-log)# exit
@@ -232,24 +256,46 @@ logging_vty_test(config)# exit
 
 logging_vty_test# logging timezone utc
 
+logging_vty_test# log-test
+DAA DEBUG :)
+
+logging_vty_test# logging print timestamp ctime
+logging_vty_test# log-test
+Sun Sep 23 20:55:00 1979 DAA DEBUG :)
+
+logging_vty_test# logging print timestamp date-packed
+logging_vty_test# log-test
+19790923205500423423 DAA DEBUG :)
+
+logging_vty_test# logging print timestamp none
+logging_vty_test# log-test
+DAA DEBUG :)
+
+logging_vty_test# ### Legacy cmds still work: 'logging timestamp' and 'logging print extended-timestamp'
 logging_vty_test# logging timestamp 1
+% Deprecated: do not use 'logging timestamp (0|1)' anymore, instead use 'logging print timestamp (none|ctime)'
 logging_vty_test# log-test
 Sun Sep 23 20:55:00 1979 DAA DEBUG :)
 
 logging_vty_test# logging print extended-timestamp 1
+% Deprecated: do not use 'logging print extended-timestamp (0|1)' anymore, instead use 'logging print timestamp (none|date-packed)'
 logging_vty_test# log-test
 19790923205500423423 DAA DEBUG :)
 
 logging_vty_test# logging timestamp 0
+% Deprecated: do not use 'logging timestamp (0|1)' anymore, instead use 'logging print timestamp (none|ctime)'
 logging_vty_test# log-test
 DAA DEBUG :)
 
 logging_vty_test# logging timestamp 1
+% Deprecated: do not use 'logging timestamp (0|1)' anymore, instead use 'logging print timestamp (none|ctime)'
 logging_vty_test# logging print extended-timestamp 0
+% Deprecated: do not use 'logging print extended-timestamp (0|1)' anymore, instead use 'logging print timestamp (none|date-packed)'
 logging_vty_test# log-test
 DAA DEBUG :)
 
 logging_vty_test# logging timestamp 0
+% Deprecated: do not use 'logging timestamp (0|1)' anymore, instead use 'logging print timestamp (none|ctime)'
 logging_vty_test# log-test
 DAA DEBUG :)
 

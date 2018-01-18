@@ -1577,4 +1577,12 @@ int log_check_level(int subsys, unsigned int level)
 	return 0;
 }
 
+/*! Mapping between enum log_timestamp_format and strings. */
+const struct value_string log_timestamp_format_names[] = {
+	{ LOG_TIMESTAMP_NONE, "none" },
+	{ LOG_TIMESTAMP_DATE_PACKED, "date-packed" },
+	{ LOG_TIMESTAMP_CTIME, "ctime" },
+	{}
+};
+
 /*! @} */
