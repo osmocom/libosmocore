@@ -15,9 +15,9 @@ build() {
 
     prep_build "$src_dir" "$build_dir"
 
-    "$src_dir"/configure --enable-static $ENABLE_SANITIZE CFLAGS="-Werror" CPPFLAGS="-Werror"
-    $MAKE V=1 $PARALLEL_MAKE check \
-        || cat-testlogs.sh
+    "$src_dir"/configure  --disable-silent-rules --enable-static $ENABLE_SANITIZE CFLAGS="-Werror" CPPFLAGS="-Werror"
+
+    run_make
 }
 
 # verify build in dir other than source tree

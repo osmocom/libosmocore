@@ -16,8 +16,7 @@ build() {
 	--disable-shared \
 	CFLAGS="-Os -ffunction-sections -fdata-sections -nostartfiles -nodefaultlibs -Werror"
 
-    $MAKE $PARALLEL_MAKE \
-        || cat-testlogs.sh
+    run_make
 }
 
 # verify build in dir other than source tree

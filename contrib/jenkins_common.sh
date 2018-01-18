@@ -26,3 +26,7 @@ prep_build() {
     mkdir -p "$_build_dir"
     cd "$_build_dir"
 }
+
+run_make() {
+    $MAKE $PARALLEL_MAKE check || cat-testlogs.sh
+}
