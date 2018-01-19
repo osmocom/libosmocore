@@ -90,8 +90,7 @@ static void test_7bit_ussd(const char *text, const char *encoded_hex, const char
 	OSMO_ASSERT(strcmp(encoded_hex, osmo_hexdump_nospc(coded, octets_written)) == 0);
 
 	gsm_7bit_decode_n_ussd(decoded, sizeof(decoded), coded, octets_written * 8 / 7);
-	octets_written = strlen(decoded);
-	printf("decoded = %s\n\n", osmo_hexdump((uint8_t *)decoded, octets_written));
+	printf("decoded = %s\n\n", osmo_hexdump((uint8_t *)decoded, strlen(decoded)));
 
 	OSMO_ASSERT(strncmp(text, decoded, strlen(text)) == 0);
 	OSMO_ASSERT(strcmp(appended_after_decode, decoded + strlen(text)) == 0);
