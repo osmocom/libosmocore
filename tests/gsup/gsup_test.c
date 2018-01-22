@@ -212,21 +212,33 @@ static void test_gsup_messages_dec_enc(void)
 		const struct test *t = &test_messages[test_idx];
 		struct osmo_gsup_message gm = {0};
 		struct msgb *msg = msgb_alloc(4096, "gsup_test");
+		bool passed = true;
 
 		printf("  Testing %s\n", t->name);
 
 		rc = osmo_gsup_decode(t->data, t->data_len, &gm);
-		OSMO_ASSERT(rc >= 0);
+		if (rc < 0)
+			passed = false;
 
 		osmo_gsup_encode(msg, &gm);
 
 		fprintf(stderr, "  generated message: %s\n", msgb_hexdump(msg));
 		fprintf(stderr, "  original message:  %s\n", osmo_hexdump(t->data, t->data_len));
 		fprintf(stderr, "  IMSI:              %s\n", gm.imsi);
-		OSMO_ASSERT(strcmp(gm.imsi, TEST_IMSI_STR) == 0);
-		OSMO_ASSERT(msgb_length(msg) == t->data_len);
-		OSMO_ASSERT(memcmp(msgb_data(msg), t->data, t->data_len) == 0);
 
+		if (strcmp(gm.imsi, TEST_IMSI_STR) != 0 ||
+		    msgb_length(msg) != t->data_len ||
+		    memcmp(msgb_data(msg), t->data, t->data_len) != 0)
+			passed = false;
+
+		if (passed)
+			printf("          %s OK\n", t->name);
+		else
+			printf("          %s FAILED: %d<%s> [%u,%u,%zu,%u]\n",
+			       t->name, rc, strerror(-rc),
+			       strcmp(gm.imsi, TEST_IMSI_STR),
+			       msgb_length(msg), t->data_len,
+			       memcmp(msgb_data(msg), t->data, t->data_len));
 		msgb_free(msg);
 	}
 

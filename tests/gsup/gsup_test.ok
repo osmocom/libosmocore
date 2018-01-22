@@ -1,16 +1,30 @@
 Test GSUP message decoding/encoding
   Testing Send Authentication Info Request
+          Send Authentication Info Request OK
   Testing Send Authentication Info Error
+          Send Authentication Info Error OK
   Testing Send Authentication Info Result
+          Send Authentication Info Result OK
   Testing Update Location Request
+          Update Location Request OK
   Testing Update Location Error
+          Update Location Error OK
   Testing Update Location Result
+          Update Location Result OK
   Testing Location Cancellation Request
+          Location Cancellation Request OK
   Testing Location Cancellation Error
+          Location Cancellation Error OK
   Testing Location Cancellation Result
+          Location Cancellation Result OK
   Testing Purge MS Request
+          Purge MS Request OK
   Testing Purge MS Error
+          Purge MS Error OK
   Testing Purge MS Result
+          Purge MS Result OK
   Testing Send Authentication Info Result with IK, CK, AUTN and RES (UMTS)
+          Send Authentication Info Result with IK, CK, AUTN and RES (UMTS) OK
   Testing Send Authentication Info Request with AUTS and RAND (UMTS)
+          Send Authentication Info Request with AUTS and RAND (UMTS) OK
 Done.
