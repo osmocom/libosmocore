@@ -827,6 +827,7 @@ int osmo_sock_local_ip(char *local_ip, const char *remote_ip)
 	memset(&local_addr, 0, sizeof(local_addr));
 	local_addr_len = sizeof(local_addr);
 	rc = getsockname(sfd, (struct sockaddr *)&local_addr, &local_addr_len);
+	close(sfd);
 	if (rc < 0)
 		return -EINVAL;
 	if (local_addr.sin_family == AF_INET)
