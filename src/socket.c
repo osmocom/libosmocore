@@ -831,9 +831,9 @@ int osmo_sock_local_ip(char *local_ip, const char *remote_ip)
 	if (rc < 0)
 		return -EINVAL;
 	if (local_addr.sin_family == AF_INET)
-		strncpy(local_ip, inet_ntoa(local_addr.sin_addr), INET_ADDRSTRLEN);
+		inet_ntop(AF_INET, &local_addr.sin_addr, local_ip, INET_ADDRSTRLEN);
 	else if (local_addr.sin_family == AF_INET6)
-		strncpy(local_ip, inet_ntoa(local_addr.sin_addr), INET6_ADDRSTRLEN);
+		inet_ntop(AF_INET6, &local_addr.sin_addr, local_ip, INET6_ADDRSTRLEN);
 	else
 		return -EINVAL;
 
