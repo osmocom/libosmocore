@@ -45,4 +45,10 @@ int gsm411_smr_send(struct gsm411_smr_inst *inst, int msg_type,
 int gsm411_smr_recv(struct gsm411_smr_inst *inst, int msg_type,
 	struct msgb *msg);
 
+extern const struct value_string gsm411_rp_state_names[];
+
+static inline const char *gsm411_rp_state_name(enum gsm411_rp_state rp_state) {
+	return get_value_string(gsm411_rp_state_names, rp_state);
+}
+
 /*! @} */

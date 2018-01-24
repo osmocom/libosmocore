@@ -64,4 +64,9 @@ int gsm411_smc_send(struct gsm411_smc_inst *inst, int msg_type,
 int gsm411_smc_recv(struct gsm411_smc_inst *inst, int msg_type,
 	struct msgb *msg, int cp_msg_type);
 
+extern const struct value_string gsm411_cp_state_names[];
+
+static inline const char *gsm411_cp_state_name(enum gsm411_cp_state cp_state) {
+	return get_value_string(gsm411_cp_state_names, cp_state);
+}
 /*! @} */

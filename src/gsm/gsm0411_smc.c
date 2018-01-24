@@ -578,4 +578,11 @@ int gsm411_smc_recv(struct gsm411_smc_inst *inst, int msg_type,
 	return rc;
 }
 
+const struct value_string gsm411_cp_state_names[] = {
+	{ GSM411_CPS_IDLE,		"IDLE" },
+	{ GSM411_CPS_MM_CONN_PENDING,	"MM_CONN_PENDING" },
+	{ GSM411_CPS_WAIT_CP_ACK,	"WAIT_CP_ACK" },
+	{ GSM411_CPS_MM_ESTABLISHED,	"ESTABLISHD" },
+	{ 0, NULL }
+};
 /*! @} */

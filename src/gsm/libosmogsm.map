@@ -197,7 +197,9 @@ gsm411_smr_recv;
 gsm411_smr_send;
 gsm411_unbcdify;
 gsm411_cp_cause_strs;
+gsm411_cp_state_names;
 gsm411_rp_cause_strs;
+gsm411_rp_state_names;
 
 gsm414_msgt_names;
 

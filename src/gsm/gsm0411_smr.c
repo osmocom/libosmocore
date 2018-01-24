@@ -492,4 +492,11 @@ int gsm411_smr_recv(struct gsm411_smr_inst *inst, int msg_type,
 	return rc;
 }
 
+const struct value_string gsm411_rp_state_names[] = {
+	{ GSM411_RPS_IDLE,		"IDLE" },
+	{ GSM411_RPS_WAIT_FOR_RP_ACK,	"WAIT_FOR_RP_ACK" },
+	{ GSM411_RPS_WAIT_TO_TX_RP_ACK,	"WAIT_TO_TX_RP_ACK" },
+	{ GSM411_RPS_WAIT_FOR_RETRANS_T,"WAIT_FOR_RETRANS_T" },
+	{ 0, NULL }
+};
 /*! @} */
