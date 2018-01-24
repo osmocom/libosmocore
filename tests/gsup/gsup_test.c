@@ -220,7 +220,9 @@ static void test_gsup_messages_dec_enc(void)
 		if (rc < 0)
 			passed = false;
 
-		osmo_gsup_encode(msg, &gm);
+		rc = osmo_gsup_encode(msg, &gm);
+		if (rc < 0)
+			passed = false;
 
 		fprintf(stderr, "  generated message: %s\n", msgb_hexdump(msg));
 		fprintf(stderr, "  original message:  %s\n", osmo_hexdump(t->data, t->data_len));

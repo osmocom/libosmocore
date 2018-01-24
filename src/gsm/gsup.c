@@ -475,8 +475,9 @@ static void encode_auth_info(struct msgb *msg, enum osmo_gsup_iei iei,
 /*! Encode a GSUP message
  *  \param[out] msg message buffer to which encoded message is written
  *  \param[in] gsup_msg \ref osmo_gsup_message data to be encoded
+ *  \returns 0 on success; negative otherwise
  */
-void osmo_gsup_encode(struct msgb *msg, const struct osmo_gsup_message *gsup_msg)
+int osmo_gsup_encode(struct msgb *msg, const struct osmo_gsup_message *gsup_msg)
 {
 	uint8_t u8;
 	int idx;
@@ -484,14 +485,16 @@ void osmo_gsup_encode(struct msgb *msg, const struct osmo_gsup_message *gsup_msg
 	size_t bcd_len;
 
 	/* generic part */
-	OSMO_ASSERT(gsup_msg->message_type);
+	if(!gsup_msg->message_type)
+		return -ENOMEM;
+
 	msgb_v_put(msg, gsup_msg->message_type);
 
 	bcd_len = gsm48_encode_bcd_number(bcd_buf, sizeof(bcd_buf), 0,
 					  gsup_msg->imsi);
 
-	OSMO_ASSERT(bcd_len > 1);
-	OSMO_ASSERT(bcd_len <= sizeof(bcd_buf));
+	if (bcd_len <= 0 || bcd_len > sizeof(bcd_buf))
+		return -EINVAL;
 
 	/* Note that gsm48_encode_bcd_number puts the length into the first
 	 * octet. Since msgb_tlv_put will add this length byte, we'll have to
@@ -560,6 +563,8 @@ void osmo_gsup_encode(struct msgb *msg, const struct osmo_gsup_message *gsup_msg
 		msgb_tlv_put(msg, OSMO_GSUP_CHARG_CHAR_IE,
 				gsup_msg->pdp_charg_enc_len, gsup_msg->pdp_charg_enc);
 	}
+
+	return 0;
 }
 
 /*! @} */

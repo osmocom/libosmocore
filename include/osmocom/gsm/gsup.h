@@ -179,6 +179,6 @@ struct osmo_gsup_message {
 
 int osmo_gsup_decode(const uint8_t *data, size_t data_len,
 		     struct osmo_gsup_message *gsup_msg);
-void osmo_gsup_encode(struct msgb *msg, const struct osmo_gsup_message *gsup_msg);
+int osmo_gsup_encode(struct msgb *msg, const struct osmo_gsup_message *gsup_msg);
 
 /*! @} */
