@@ -1495,14 +1495,14 @@ enum chreq_type {
 #define GSM48_T303	30, 0
 #define GSM48_T305	30, 0
 #define GSM48_T306	30, 0
-#define GSM48_T308	10, 0
-#define GSM48_T310	180, 0
-#define GSM48_T313	30, 0
+#define GSM48_T308	10, 0		/* no spec default */
+#define GSM48_T310	180, 0		/* no spec default */
+#define GSM48_T313	30, 0		/* no spec default */
 #define GSM48_T323	30, 0
-#define GSM48_T331	30, 0
-#define GSM48_T333	30, 0
-#define GSM48_T334	25, 0 /* min 15 */
-#define GSM48_T338	30, 0
+#define GSM48_T331	30, 0		/* no spec default */
+#define GSM48_T333	30, 0		/* no spec default */
+#define GSM48_T334	25, 0 /* min 15s */
+#define GSM48_T338	30, 0		/* no spec default */
 #define GSM48_T303_MS	30, 0
 #define GSM48_T305_MS	30, 0
 #define GSM48_T308_MS	30, 0
