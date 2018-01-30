@@ -81,17 +81,16 @@ static void _gsmtap_raw_output(struct log_target *target, int subsys,
 
 	/* Logging header */
 	golh = (struct gsmtap_osmocore_log_hdr *) msgb_put(msg, sizeof(*golh));
-	osmo_strlcpy(golh->proc_name, target->tgt_gsmtap.ident,
-		     sizeof(golh->proc_name));
+	OSMO_STRLCPY_ARRAY(golh->proc_name, target->tgt_gsmtap.ident);
 	if (subsys_name)
-		osmo_strlcpy(golh->subsys, subsys_name+1, sizeof(golh->subsys));
+		OSMO_STRLCPY_ARRAY(golh->subsys, subsys_name + 1);
 	else
 		golh->subsys[0] = '\0';
 
 	/* strip all leading path elements from file, if any. */
 	file_basename = strrchr(file, '/');
 	file = (file_basename && file_basename[1])? file_basename + 1 : file;
-	osmo_strlcpy(golh->src_file.name, file, sizeof(golh->src_file.name));
+	OSMO_STRLCPY_ARRAY(golh->src_file.name, file);
 	golh->src_file.line_nr = osmo_htonl(line);
 	golh->level = level;
 	/* we always store the timestamp in the message, irrespective
