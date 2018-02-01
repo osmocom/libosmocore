@@ -334,6 +334,7 @@ static void str_escape_test(void)
 
 	printf("\nTesting string escaping\n");
 	printf("- all chars from 0 to 255 in batches of 16:\n");
+	in_buf[16] = '\0';
 	for (j = 0; j < 16; j++) {
 		for (i = 0; i < 16; i++)
 			in_buf[i] = (j << 4) | i;
