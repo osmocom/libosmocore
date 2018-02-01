@@ -44,7 +44,7 @@
 			return;						\
 	} while(0)
 
-inline void dump_ubits(ubit_t *bursts_u, unsigned until)
+static inline void dump_ubits(ubit_t *bursts_u, unsigned until)
 {
 	printf("U-Bits:\n");
 	DUMP_U_AT(bursts_u, 0, until);
@@ -57,7 +57,7 @@ inline void dump_ubits(ubit_t *bursts_u, unsigned until)
 	DUMP_U_AT(bursts_u, 812, until);
 }
 
-inline void dump_sbits(uint8_t *bursts_s, unsigned until)
+static inline void dump_sbits(uint8_t *bursts_s, unsigned until)
 {
 	printf("S-Bits:\n");
 	DUMP_S_AT(bursts_s, 0, until);
