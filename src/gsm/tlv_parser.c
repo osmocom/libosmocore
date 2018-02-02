@@ -276,8 +276,13 @@ int tlv_parse(struct tlv_parsed *dec, const struct tlv_definition *def,
 		                   &buf[ofs], buf_len-ofs);
 		if (rv < 0)
 			return rv;
-		dec->lv[tag].val = val;
-		dec->lv[tag].len = len;
+		/* Most GSM related protocols clearly indicate that in case of duplicate
+		 * IEs, only the first occurrence shall be used, while any further occurrences
+		 * shall be ignored.  See e.g. 3GPP TS 24.008 Section 8.6.3 */
+		if (dec->lv[tag].val == NULL) {
+			dec->lv[tag].val = val;
+			dec->lv[tag].len = len;
+		}
 		ofs += rv;
 		num_parsed++;
 	}
