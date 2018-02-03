@@ -1001,7 +1001,7 @@ static inline uint8_t gsm48_hdr_msg_type_r98(const struct gsm48_hdr *hdr)
 	case GSM48_PDISC_GROUP_CC:
 	case GSM48_PDISC_BCAST_CC:
 	case GSM48_PDISC_LOC:
-		return hdr->msg_type & 0xbf;
+		return hdr->msg_type & 0x3f;
 	default:
 		return hdr->msg_type;
 	}
@@ -1022,7 +1022,7 @@ static inline uint8_t gsm48_hdr_msg_type_r99(const struct gsm48_hdr *hdr)
 	case GSM48_PDISC_GROUP_CC:
 	case GSM48_PDISC_BCAST_CC:
 	case GSM48_PDISC_LOC:
-		return hdr->msg_type & 0xbf;
+		return hdr->msg_type & 0x3f;
 	default:
 		return hdr->msg_type;
 	}
