@@ -1017,8 +1017,8 @@ static inline uint8_t gsm48_hdr_msg_type_r99(const struct gsm48_hdr *hdr)
 	switch (gsm48_hdr_pdisc(hdr)) {
 	case GSM48_PDISC_MM:
 	case GSM48_PDISC_CC:
-		return hdr->msg_type & 0x3f;
 	case GSM48_PDISC_NC_SS:
+		return hdr->msg_type & 0x3f;
 	case GSM48_PDISC_GROUP_CC:
 	case GSM48_PDISC_BCAST_CC:
 	case GSM48_PDISC_LOC:
