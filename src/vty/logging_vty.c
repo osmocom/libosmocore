@@ -237,6 +237,13 @@ DEFUN(logging_prnt_level,
 	return CMD_SUCCESS;
 }
 
+static const struct value_string logging_print_file_args[] = {
+	{ LOG_FILENAME_NONE, "0" },
+	{ LOG_FILENAME_PATH, "1" },
+	{ LOG_FILENAME_BASENAME, "basename" },
+	{ 0, NULL }
+};
+
 DEFUN(logging_prnt_file,
       logging_prnt_file_cmd,
       "logging print file (0|1|basename)",
@@ -247,16 +254,11 @@ DEFUN(logging_prnt_file,
       "Prefix each log message with the source file's basename (strip leading paths) and line\n")
 {
 	struct log_target *tgt = osmo_log_vty2tgt(vty);
-	enum log_filename_type lft;
 
 	if (!tgt)
 		return CMD_WARNING;
 
-	if (!strcmp(argv[0], "basename"))
-		lft = LOG_FILENAME_BASENAME;
-	else
-		lft = atoi(argv[0])? LOG_FILENAME_PATH : LOG_FILENAME_NONE;
-	log_set_print_filename2(tgt, lft);
+	log_set_print_filename2(tgt, get_string_value(logging_print_file_args, argv[0]));
 	return CMD_SUCCESS;
 }
 
@@ -793,8 +795,9 @@ static int config_write_log_single(struct vty *vty, struct log_target *tgt)
 			tgt->print_timestamp ? 1 : 0, VTY_NEWLINE);
 	if (tgt->print_level)
 		vty_out(vty, "  logging print level 1%s", VTY_NEWLINE);
-	if (tgt->print_filename)
-		vty_out(vty, "  logging print file 1%s", VTY_NEWLINE);
+	vty_out(vty, "  logging print file %s%s",
+		get_value_string(logging_print_file_args, tgt->print_filename2),
+		VTY_NEWLINE);
 
 	/* stupid old osmo logging API uses uppercase strings... */
 	osmo_str2lower(level_lower, log_level_str(tgt->loglevel));
