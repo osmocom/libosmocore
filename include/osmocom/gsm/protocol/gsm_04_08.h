@@ -460,10 +460,51 @@ struct gsm48_rach_control {
 		 cell_bar :1,
 		 tx_integer :4,
 		 max_trans :2;
-	uint8_t t2;
-	uint8_t t3;
+	uint8_t t2; /* ACC 8-15 barred flags */
+	uint8_t t3; /* ACC 0-7 barred flags */
 } __attribute__ ((packed));
 
+/*
+ * Mark an Access Control Class as barred.
+ *  \param[in] rach_control A Rach Control Information Element.
+ *  \param[in] acc Access Control Class number (0 - 15) which shall be barred.
+ */
+static inline void gsm48_barr_acc(struct gsm48_rach_control *rach_control, unsigned int acc)
+{
+	OSMO_ASSERT(acc >= 0 && acc <= 15);
+	if (acc >= 8)
+		rach_control->t2 |= (1 << (acc - 8));
+	else
+		rach_control->t3 |= (1 << (acc));
+}
+
+/*
+ * Mark an Access Control Class as allowed.
+ *  \param[in] rach_control A Rach Control Information Element.
+ *  \param[in] acc Access Control Class number (0 - 15) which shall be allowed.
+ */
+static inline void gsm48_allow_acc(struct gsm48_rach_control *rach_control, unsigned int acc)
+{
+	OSMO_ASSERT(acc >= 0 && acc <= 15);
+	if (acc >= 8)
+		rach_control->t2 &= ~(1 << (acc - 8));
+	else
+		rach_control->t3 &= ~(1 << (acc));
+}
+
+/*
+ * Indicate whether an Access Control Class is barred.
+ *  \param[in] rach_control A Rach Control Information Element.
+ *  \param[in] acc Access Control Class number (0 - 15).
+ *  \returns true if the Access Control class is barred, false otherwise
+ */
+static inline bool gsm48_acc_is_barred(struct gsm48_rach_control *rach_control, unsigned int acc)
+{
+	OSMO_ASSERT(acc >= 0 && acc <= 15);
+	if (acc >= 8)
+		return (rach_control->t2 & (1 << (acc - 8))) != 0;
+	return (rach_control->t3 & (1 << (acc))) != 0;
+}
 
 /* Chapter 10.5.2.30 */
 struct gsm48_req_ref {
