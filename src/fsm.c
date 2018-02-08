@@ -197,11 +197,32 @@ static void fsm_tmr_cb(void *data)
 	osmo_fsm_inst_term(fi, OSMO_FSM_TERM_TIMEOUT, &T);
 }
 
+/*! Change id of the FSM instance
+ * \param[in] fi FSM instance
+ * \param[in] id new ID
+ * \returns 0 if the ID was updated, otherwise -EINVAL
+ */
+int osmo_fsm_inst_update_id(struct osmo_fsm_inst *fi, const char *id)
+{
+	if (id) {
+		if (!osmo_identifier_valid(id)) {
+			LOGP(DLGLOBAL, LOGL_ERROR, "Attempting to allocate FSM instance of type '%s'"
+			     " with illegal identifier '%s'\n", fi->fsm->name, id);
+			return -EINVAL;
+		}
+		osmo_talloc_replace_string(fi, (char **)&fi->id, id);
+
+		return 0;
+	}
+	return -EINVAL;
+}
+
 /*! allocate a new instance of a specified FSM
  *  \param[in] fsm Descriptor of the FSM
  *  \param[in] ctx talloc context from which to allocate memory
  *  \param[in] priv private data reference store in fsm instance
  *  \param[in] log_level The log level for events of this FSM
+ *  \param[in] id The name/ID of the FSM instance
  *  \returns newly-allocated, initialized and registered FSM instance
  */
 struct osmo_fsm_inst *osmo_fsm_inst_alloc(struct osmo_fsm *fsm, void *ctx, void *priv,
@@ -213,14 +234,12 @@ struct osmo_fsm_inst *osmo_fsm_inst_alloc(struct osmo_fsm *fsm, void *ctx, void 
 	fi->priv = priv;
 	fi->log_level = log_level;
 	osmo_timer_setup(&fi->timer, fsm_tmr_cb, fi);
+
 	if (id) {
-		if (!osmo_identifier_valid(id)) {
-			LOGP(DLGLOBAL, LOGL_ERROR, "Attempting to allocate FSM instance of type '%s'"
-			     " with illegal identifier '%s'\n", fsm->name, id);
-			talloc_free(fi);
-			return NULL;
+		if (osmo_fsm_inst_update_id(fi, id) < 0) {
+				talloc_free(fi);
+				return NULL;
 		}
-		fi->id = talloc_strdup(fi, id);
 	}
 
 	if (!fsm_log_addr) {

@@ -156,6 +156,8 @@ void osmo_fsm_inst_change_parent(struct osmo_fsm_inst *fi,
 				 uint32_t new_parent_term_event);
 void osmo_fsm_inst_free(struct osmo_fsm_inst *fi);
 
+int osmo_fsm_inst_update_id(struct osmo_fsm_inst *fi, const char *id);
+
 const char *osmo_fsm_event_name(struct osmo_fsm *fsm, uint32_t event);
 const char *osmo_fsm_inst_name(struct osmo_fsm_inst *fi);
 const char *osmo_fsm_state_name(struct osmo_fsm *fsm, uint32_t state);
