@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/python2
 # -*- coding: utf-8 -*-
 from conv_gen import ConvolutionalCode
 from conv_gen import poly
