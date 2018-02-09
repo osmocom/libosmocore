@@ -513,14 +513,14 @@ static inline const char *msgb_hexdump_l2(const struct msgb *msg)
 {
 	if (!msgb_l2(msg) || !(msgb_l2len(msg)))
 		return "[]";
-	return osmo_hexdump(msgb_l2(msg), msgb_l2len(msg));
+	return osmo_hexdump((const unsigned char *) msgb_l2(msg), msgb_l2len(msg));
 }
 
 static inline const char *msgb_hexdump_l3(const struct msgb *msg)
 {
 	if (!msgb_l3(msg) || !(msgb_l3len(msg)))
 		return "[]";
-	return osmo_hexdump(msgb_l3(msg), msgb_l3len(msg));
+	return osmo_hexdump((const unsigned char*) msgb_l3(msg), msgb_l3len(msg));
 }
 
 /*! @} */
