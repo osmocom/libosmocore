@@ -509,4 +509,18 @@ void *msgb_talloc_ctx_init(void *root_ctx, unsigned int pool_size);
 void msgb_set_talloc_ctx(void *ctx) OSMO_DEPRECATED("Use msgb_talloc_ctx_init() instead");
 int msgb_printf(struct msgb *msgb, const char *format, ...);
 
+static inline const char *msgb_hexdump_l2(const struct msgb *msg)
+{
+	if (!msgb_l2(msg) || !(msgb_l2len(msg)))
+		return "[]";
+	return osmo_hexdump(msgb_l2(msg), msgb_l2len(msg));
+}
+
+static inline const char *msgb_hexdump_l3(const struct msgb *msg)
+{
+	if (!msgb_l3(msg) || !(msgb_l3len(msg)))
+		return "[]";
+	return osmo_hexdump(msgb_l3(msg), msgb_l3len(msg));
+}
+
 /*! @} */
