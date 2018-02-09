@@ -1659,3 +1659,25 @@ struct gsm48_ra_id {
 
 #define GSM_MACBLOCK_LEN	23
 #define GSM_MACBLOCK_PADDING	0x2b
+
+/* Table 10.5.118 / 3GPP TS 24.008 Section 10.5.4.7 */
+enum gsm48_type_of_number {
+	GSM48_TON_UNKNOWN	= 0,
+	GSM48_TON_INTERNATIONAL	= 1,
+	GSM48_TON_NATIONAL	= 2,
+	GSM48_TON_NET_SPEC	= 3,
+	GSM48_TON_SHORT_CODE	= 4,
+	/* reserved */
+};
+
+/* Table 10.5.118 / 3GPP TS 24.008 Section 10.5.4.7 */
+enum gsm48_numbering_plan {
+	GSM48_NPI_UNKNOWN	= 0,
+	GSM48_NPI_ISDN_E164	= 1,
+	GSM48_NPI_DATA_X121	= 3,
+	GSM48_NPI_TELEX_F69	= 4,
+	GSM48_NPI_NATIONAL	= 8,
+	GSM48_NPI_PRIVATE	= 9,
+	GSM48_NPI_CTS		= 11,
+	/* reserved */
+};
