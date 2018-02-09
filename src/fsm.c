@@ -509,6 +509,9 @@ void _osmo_fsm_inst_term(struct osmo_fsm_inst *fi,
 	LOGPFSMSRC(fi, file, line, "Terminating (cause = %s)\n",
 		   osmo_fsm_term_cause_name(cause));
 
+	_osmo_fsm_inst_term_children(fi, OSMO_FSM_TERM_PARENT, NULL,
+				     file, line);
+
 	/* delete ourselves from the parent */
 	parent = fi->proc.parent;
 	if (parent) {
@@ -521,10 +524,6 @@ void _osmo_fsm_inst_term(struct osmo_fsm_inst *fi,
 	if (fi->fsm->cleanup)
 		fi->fsm->cleanup(fi, cause);
 
-	/* terminate all children */
-	_osmo_fsm_inst_term_children(fi, OSMO_FSM_TERM_PARENT, NULL,
-				     file, line);
-	
 	LOGPFSMSRC(fi, file, line, "Freeing instance\n");
 	/* Fetch parent again in case it has changed. */
 	parent = fi->proc.parent;
