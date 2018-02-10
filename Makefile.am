@@ -5,7 +5,7 @@ SUBDIRS = include src src/vty src/codec src/gsm src/coding src/gb src/ctrl src/s
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libosmocore.pc libosmocodec.pc libosmovty.pc libosmogsm.pc \
-		 libosmogb.pc libosmoctrl.pc libosmocoding.pc
+		 libosmogb.pc libosmoctrl.pc libosmocoding.pc libosmosim.pc
 
 @RELMAKE@
 
