@@ -298,7 +298,11 @@ struct osmo_fsm_inst *osmo_fsm_inst_alloc_child(struct osmo_fsm *fsm,
 
 /*! unlink child FSM from its parent FSM.
  *  \param[in] fi Descriptor of the child FSM to unlink.
- *  \param[in] ctx New talloc context */
+ *  \param[in] ctx New talloc context
+ *
+ * Never call this function from the cleanup callback, because at that time
+ * the child FSMs will already be terminated. If unlinking should be performed
+ * on FSM termination, use the grace callback instead. */
 void osmo_fsm_inst_unlink_parent(struct osmo_fsm_inst *fi, void *ctx)
 {
 	if (fi->proc.parent) {
@@ -312,7 +316,10 @@ void osmo_fsm_inst_unlink_parent(struct osmo_fsm_inst *fi, void *ctx)
 /*! change parent instance of an FSM.
  *  \param[in] fi Descriptor of the to-be-allocated FSM.
  *  \param[in] new_parent New parent FSM instance.
- *  \param[in] new_parent_term_event Event to be sent to parent when terminating. */
+ *  \param[in] new_parent_term_event Event to be sent to parent when terminating.
+ *
+ * Never call this function from the cleanup callback!
+ * (see also osmo_fsm_inst_unlink_parent()).*/
 void osmo_fsm_inst_change_parent(struct osmo_fsm_inst *fi,
 				 struct osmo_fsm_inst *new_parent,
 				 uint32_t new_parent_term_event)
@@ -527,6 +534,10 @@ void _osmo_fsm_inst_term(struct osmo_fsm_inst *fi,
 
 	LOGPFSMSRC(fi, file, line, "Terminating (cause = %s)\n",
 		   osmo_fsm_term_cause_name(cause));
+
+	/* graceful exit (optional) */
+	if (fi->fsm->pre_term)
+		fi->fsm->pre_term(fi, cause);
 
 	_osmo_fsm_inst_term_children(fi, OSMO_FSM_TERM_PARENT, NULL,
 				     file, line);

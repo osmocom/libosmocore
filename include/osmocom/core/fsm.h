@@ -78,6 +78,8 @@ struct osmo_fsm {
 	int log_subsys;
 	/*! human-readable names of events */
 	const struct value_string *event_names;
+	/*! graceful exit function, called at the beginning of termination */
+	void (*pre_term)(struct osmo_fsm_inst *fi, enum osmo_fsm_term_cause cause);
 };
 
 /*! a single instanceof an osmocom finite state machine */
