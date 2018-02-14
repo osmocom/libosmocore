@@ -175,7 +175,7 @@ static void talloc_ctx_walk(const char *ctx, const char *depth,
 	"All contexts, if NULL-context tracking is enabled\n" \
 	"Display a full talloc memory hierarchy\n" \
 	"Display a brief talloc memory hierarchy\n" \
-	"Specify required maximal depth value"
+	"Specify required maximal depth value\n"
 
 DEFUN(show_talloc_ctx, show_talloc_ctx_cmd,
 	BASE_CMD_STR, BASE_CMD_DESCR)
@@ -202,7 +202,7 @@ DEFUN(show_talloc_ctx, show_talloc_ctx_cmd,
 DEFUN(show_talloc_ctx_filter, show_talloc_ctx_filter_cmd,
 	BASE_CMD_STR " filter REGEXP", BASE_CMD_DESCR
 	"Filter chunks using regular expression\n"
-	"Regular expression")
+	"Regular expression\n")
 {
 	struct walk_cb_params *params;
 	int rc;
@@ -236,7 +236,7 @@ DEFUN(show_talloc_ctx_filter, show_talloc_ctx_filter_cmd,
 DEFUN(show_talloc_ctx_tree, show_talloc_ctx_tree_cmd,
 	BASE_CMD_STR " tree ADDRESS", BASE_CMD_DESCR
 	"Display only a specific memory chunk\n"
-	"Chunk address (e.g. 0xdeadbeef)")
+	"Chunk address (e.g. 0xdeadbeef)\n")
 {
 	struct walk_cb_params *params;
 	int rc;
