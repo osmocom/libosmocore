@@ -4,7 +4,7 @@
 
 arch="$1"
 
-if [ "x$arch" == "x" ]; then
+if [ "x$arch" = "x" ]; then
 	echo "Error: You have to specify the architecture as first argument, e.g. $0 amd64"
 	exit 2
 fi
@@ -22,8 +22,8 @@ case "$arch" in
     ./contrib/jenkins_amd64.sh
   ;;
 
-  arch)
-    ./contrib/jenkins_arch.sh
+  arm)
+    ./contrib/jenkins_arm.sh
   ;;
 
   *)
