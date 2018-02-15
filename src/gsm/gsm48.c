@@ -584,37 +584,40 @@ int gsm48_generate_mid_from_tmsi(uint8_t *buf, uint32_t tmsi)
 	return 7;
 }
 
+/*! Generate TS 24.008 §10.5.1.4 Mobile ID
+ *  \param[out] buf Caller-provided output buffer
+ *  \param[in] id Identity to be encoded
+ *  \returns number of bytes used in \a buf */
+uint8_t gsm48_generate_mid(uint8_t *buf, const char *id, uint8_t mi_type)
+{
+	uint8_t length = strnlen(id, 255), i, off = 0, odd = (length & 1) == 1;
+
+	buf[0] = GSM48_IE_MOBILE_ID;
+	buf[2] = osmo_char2bcd(id[0]) << 4 | mi_type | (odd << 3);
+
+	/* if the length is even we will fill half of the last octet */
+	buf[1] = (length + (odd ? 1 : 2)) >> 1;
+
+	for (i = 1; i < buf[1]; ++i) {
+		uint8_t upper, lower = osmo_char2bcd(id[++off]);
+		if (!odd && off + 1 == length)
+			upper = 0x0f;
+		else
+			upper = osmo_char2bcd(id[++off]) & 0x0f;
+
+		buf[2 + i] = (upper << 4) | lower;
+	}
+
+	return 2 + buf[1];
+}
+
 /*! Generate TS 04.08 Mobile ID from IMSI
  *  \param[out] buf Caller-provided output buffer
  *  \param[in] imsi IMSI to be encoded
  *  \returns number of bytes used in \a buf */
 int gsm48_generate_mid_from_imsi(uint8_t *buf, const char *imsi)
 {
-	unsigned int length = strlen(imsi), i, off = 0;
-	uint8_t odd = (length & 0x1) == 1;
-
-	buf[0] = GSM48_IE_MOBILE_ID;
-	buf[2] = osmo_char2bcd(imsi[0]) << 4 | GSM_MI_TYPE_IMSI | (odd << 3);
-
-	/* if the length is even we will fill half of the last octet */
-	if (odd)
-		buf[1] = (length + 1) >> 1;
-	else
-		buf[1] = (length + 2) >> 1;
-
-	for (i = 1; i < buf[1]; ++i) {
-		uint8_t lower, upper;
-
-		lower = osmo_char2bcd(imsi[++off]);
-		if (!odd && off + 1 == length)
-			upper = 0x0f;
-		else
-			upper = osmo_char2bcd(imsi[++off]) & 0x0f;
-
-		buf[2 + i] = (upper << 4) | lower;
-	}
-
-	return 2 + buf[1];
+	return gsm48_generate_mid(buf, imsi, GSM_MI_TYPE_IMSI);
 }
 
 /*! Convert TS 04.08 Mobile Identity (10.5.1.4) to string

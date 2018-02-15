@@ -31,6 +31,7 @@ void gsm48_generate_lai(struct gsm48_loc_area_id *lai48, uint16_t mcc,
 			uint16_t mnc, uint16_t lac);
 int gsm48_generate_mid_from_tmsi(uint8_t *buf, uint32_t tmsi);
 int gsm48_generate_mid_from_imsi(uint8_t *buf, const char *imsi);
+uint8_t gsm48_generate_mid(uint8_t *buf, const char *id, uint8_t mi_type);
 
 /* Convert Mobile Identity (10.5.1.4) to string */
 int gsm48_mi_to_string(char *string, const int str_len,

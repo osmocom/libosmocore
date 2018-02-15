@@ -246,6 +246,7 @@ gsm48_encode_signal;
 gsm48_encode_ssversion;
 gsm48_encode_useruser;
 gsm48_generate_lai;
+gsm48_generate_mid;
 gsm48_generate_mid_from_imsi;
 gsm48_generate_mid_from_tmsi;
 gsm48_mi_to_string;
