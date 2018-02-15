@@ -194,10 +194,23 @@ static void test_mid_from_tmsi(void)
 	printf("passed\n");
 }
 
+static void test_mid_from_imsi(void)
+{
+	char *imsi = "901700000004620";
+	uint8_t buf[10], len;
+
+	printf("Simple IMSI encoding test....");
+
+	len = gsm48_generate_mid_from_imsi(buf, imsi);
+
+	printf("passed: [%u] %s\n", len, osmo_hexdump(buf, len));
+}
+
 int main(int argc, char **argv)
 {
 	test_bearer_cap();
 	test_mid_from_tmsi();
+	test_mid_from_imsi();
 	test_ra_cap();
 
 	return EXIT_SUCCESS;
