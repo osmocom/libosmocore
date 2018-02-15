@@ -26,6 +26,27 @@
 struct sockaddr_storage;
 
 #include <osmocom/gsm/protocol/gsm_08_08.h>
+#include <osmocom/gsm/gsm23003.h>
+
+ /*! (225-1)/2 is the maximum number of elements in a cell identifier list. */
+#define GSM0808_CELL_ID_LIST2_MAXLEN		127
+
+/*! Parsed representation of a cell identifier list IE. */
+struct gsm0808_cell_id_list2 {
+	enum CELL_IDENT id_discr;
+	union {
+		/*!
+		 * All elements of these arrays contain parsed representations of the
+		 * data in the corresponding IE, in host-byte order.
+		 */
+		struct osmo_cell_global_id		global;
+		struct osmo_lac_and_ci_id		lac_and_ci;
+		uint16_t				ci;
+		struct osmo_location_area_id		lai_and_lac;
+		uint16_t				lac;
+	} id_list[GSM0808_CELL_ID_LIST2_MAXLEN];
+	unsigned int id_list_len;
+};
 
 uint8_t gsm0808_enc_aoip_trasp_addr(struct msgb *msg,
 				    const struct sockaddr_storage *ss);
@@ -48,10 +69,14 @@ uint8_t gsm0808_enc_encrypt_info(struct msgb *msg,
 				 const struct gsm0808_encrypt_info *ei);
 int gsm0808_dec_encrypt_info(struct gsm0808_encrypt_info *ei,
 			     const uint8_t *elem, uint8_t len);
+uint8_t gsm0808_enc_cell_id_list2(struct msgb *msg, const struct gsm0808_cell_id_list2 *cil);
 uint8_t gsm0808_enc_cell_id_list(struct msgb *msg,
-				 const struct gsm0808_cell_id_list *cil);
+				 const struct gsm0808_cell_id_list *cil)
+				 OSMO_DEPRECATED("use gsm0808_enc_cell_id_list2 instead");
+int gsm0808_dec_cell_id_list2(struct gsm0808_cell_id_list2 *cil, const uint8_t *elem, uint8_t len);
 int gsm0808_dec_cell_id_list(struct gsm0808_cell_id_list *cil,
-			     const uint8_t *elem, uint8_t len);
+			     const uint8_t *elem, uint8_t len)
+			     OSMO_DEPRECATED("use gsm0808_dec_cell_id_list2 instead");
 int gsm0808_chan_type_to_speech_codec(uint8_t perm_spch);
 int gsm0808_speech_codec_from_chan_type(struct gsm0808_speech_codec *sc,
 					uint8_t perm_spch);

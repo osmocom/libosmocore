@@ -501,8 +501,13 @@ struct gsm0808_encrypt_info {
 	unsigned int key_len;
 };
 
-/* 3GPP TS 48.008 3.2.2.27 Cell Identifier List */
 #define CELL_ID_LIST_LAC_MAXLEN 127
+/*!
+ * DEPRECATED: This definition of the cell identifier list is
+ * insufficient. It cannot support all types of cell identifiers.
+ * Use struct gsm0808_cell_id_list2 in gsm0808_utils.h instead.
+ *
+ * 3GPP TS 48.008 3.2.2.27 Cell Identifier List */
 struct gsm0808_cell_id_list {
 	uint8_t id_discr;
 	uint16_t id_list_lac[CELL_ID_LIST_LAC_MAXLEN];

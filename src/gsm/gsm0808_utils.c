@@ -27,6 +27,8 @@
 #include <string.h>
 #include <errno.h>
 #include <osmocom/gsm/protocol/gsm_08_08.h>
+#include <osmocom/gsm/gsm48.h>
+#include <osmocom/gsm/gsm0808_utils.h>
 
 #define IP_V4_ADDR_LEN 4
 #define IP_V6_ADDR_LEN 16
@@ -571,6 +573,75 @@ int gsm0808_dec_encrypt_info(struct gsm0808_encrypt_info *ei,
  *  \param[out] msg Message Buffer to which IE is to be appended
  *  \param[in] cil Cell ID List to be encoded
  *  \returns number of bytes appended to \a msg */
+uint8_t gsm0808_enc_cell_id_list2(struct msgb *msg,
+				  const struct gsm0808_cell_id_list2 *cil)
+{
+	uint8_t *old_tail;
+	uint8_t *tlv_len;
+	unsigned int i;
+
+	OSMO_ASSERT(msg);
+	OSMO_ASSERT(cil);
+
+	msgb_put_u8(msg, GSM0808_IE_CELL_IDENTIFIER_LIST);
+	tlv_len = msgb_put(msg, 1);
+	old_tail = msg->tail;
+
+	msgb_put_u8(msg, cil->id_discr & 0x0f);
+
+	OSMO_ASSERT(cil->id_list_len <= GSM0808_CELL_ID_LIST2_MAXLEN)
+	switch (cil->id_discr) {
+	case CELL_IDENT_WHOLE_GLOBAL:
+		for (i = 0; i < cil->id_list_len; i++) {
+			const struct osmo_cell_global_id *id = &cil->id_list[i].global;
+			struct gsm48_loc_area_id lai;
+			gsm48_generate_lai(&lai, id->lai.plmn.mcc, id->lai.plmn.mnc, id->lai.lac);
+			memcpy(msgb_put(msg, sizeof(lai)), &lai, sizeof(lai));
+			msgb_put_u16(msg, id->cell_identity);
+		}
+		break;
+	case CELL_IDENT_LAC_AND_CI:
+		for (i = 0; i < cil->id_list_len; i++) {
+			const struct osmo_lac_and_ci_id *id = &cil->id_list[i].lac_and_ci;
+			msgb_put_u16(msg, id->lac);
+			msgb_put_u16(msg, id->ci);
+		}
+		break;
+	case CELL_IDENT_CI:
+		for (i = 0; i < cil->id_list_len; i++)
+			msgb_put_u16(msg, cil->id_list[i].ci);
+		break;
+	case CELL_IDENT_LAI_AND_LAC:
+		for (i = 0; i < cil->id_list_len; i++) {
+			const struct osmo_location_area_id *id = &cil->id_list[i].lai_and_lac;
+			struct gsm48_loc_area_id lai;
+			gsm48_generate_lai(&lai, id->plmn.mcc, id->plmn.mnc, id->lac);
+			memcpy(msgb_put(msg, sizeof(lai)), &lai, sizeof(lai));
+		}
+		break;
+	case CELL_IDENT_LAC:
+		for (i = 0; i < cil->id_list_len; i++)
+			msgb_put_u16(msg, cil->id_list[i].lac);
+		break;
+	case CELL_IDENT_BSS:
+	case CELL_IDENT_NO_CELL:
+		/* Does not have any list items */
+		break;
+	default:
+		/* Support for other identifier list types is not implemented. */
+		OSMO_ASSERT(false);
+	}
+
+	*tlv_len = (uint8_t) (msg->tail - old_tail);
+	return *tlv_len + 2;
+}
+
+/*! DEPRECATED: Use gsm0808_enc_cell_id_list2 instead.
+ *
+ * Encode TS 08.08 Cell Identifier List IE
+ *  \param[out] msg Message Buffer to which IE is to be appended
+ *  \param[in] cil Cell ID List to be encoded
+ *  \returns number of bytes appended to \a msg */
 uint8_t gsm0808_enc_cell_id_list(struct msgb *msg,
 				 const struct gsm0808_cell_id_list *cil)
 {
@@ -606,7 +677,194 @@ uint8_t gsm0808_enc_cell_id_list(struct msgb *msg,
 	return *tlv_len + 2;
 }
 
+/* Decode 5-byte LAI list element data (see TS 08.08 3.2.2.27) into MCC/MNC/LAC.
+ * Return 0 if successful, negative on error. */
+static int decode_lai(const uint8_t *data, uint16_t *mcc, uint16_t *mnc, uint16_t *lac)
+{
+	struct gsm48_loc_area_id lai;
+
+	/* Copy data to stack to prevent unaligned access in gsm48_decode_lai(). */
+	memcpy(&lai, data, sizeof(lai)); /* don't byte swap yet */
+
+	return gsm48_decode_lai(&lai, mcc, mnc, lac) ? -1 : 0;
+}
+
+static int parse_cell_id_global_list(struct osmo_cell_global_id *id_list, const uint8_t *data, size_t remain,
+				     size_t *consumed)
+{
+	struct osmo_cell_global_id *id;
+	uint16_t *ci_be;
+	size_t lai_offset;
+	int i = 0;
+	const size_t elemlen = sizeof(struct gsm48_loc_area_id) + sizeof(*ci_be);
+
+	*consumed = 0;
+	while (remain >= elemlen) {
+		if (i >= GSM0808_CELL_ID_LIST2_MAXLEN)
+			return -ENOSPC;
+		id = &id_list[i];
+		lai_offset = 1 + i * elemlen;
+		if (decode_lai(&data[lai_offset], &id->lai.plmn.mcc, &id->lai.plmn.mnc, &id->lai.lac) != 0)
+			return -EINVAL;
+		ci_be = (uint16_t *)(&data[lai_offset + sizeof(struct gsm48_loc_area_id)]);
+		id->cell_identity = osmo_load16be(ci_be);
+		*consumed += elemlen;
+		remain -= elemlen;
+		i++;
+	}
+
+	return i;
+}
+
+static int parse_cell_id_lac_and_ci_list(struct osmo_lac_and_ci_id *id_list, const uint8_t *data, size_t remain,
+					 size_t *consumed)
+{
+	uint16_t *lacp_be, *ci_be;
+	struct osmo_lac_and_ci_id *id;
+	int i = 0;
+	const size_t elemlen = sizeof(*lacp_be) + sizeof(*ci_be);
+
+	*consumed = 0;
+
+	if (remain < elemlen)
+		return -EINVAL;
+
+	lacp_be = (uint16_t *)(&data[0]);
+	ci_be = (uint16_t *)(&data[2]);
+	while (remain >= elemlen) {
+		if (i >= GSM0808_CELL_ID_LIST2_MAXLEN)
+			return -ENOSPC;
+		id = &id_list[i];
+		id->lac = osmo_load16be(lacp_be);
+		id->ci = osmo_load16be(ci_be);
+		*consumed += elemlen;
+		remain -= elemlen;
+		lacp_be++;
+		ci_be++;
+	}
+
+	return i;
+}
+
+static int parse_cell_id_ci_list(uint16_t *id_list, const uint8_t *data, size_t remain, size_t *consumed)
+{
+	const uint16_t *ci_be = (const uint16_t *)data;
+	int i = 0;
+	const size_t elemlen = sizeof(*ci_be);
+
+	*consumed = 0;
+	while (remain >= elemlen) {
+		if (i >= GSM0808_CELL_ID_LIST2_MAXLEN)
+			return -ENOSPC;
+		id_list[i++] = osmo_load16be(ci_be++);
+		consumed += elemlen;
+		remain -= elemlen;
+	}
+	return i;
+}
+
+static int parse_cell_id_lai_and_lac(struct osmo_location_area_id *id_list, const uint8_t *data, size_t remain,
+				     size_t *consumed)
+{
+	struct osmo_location_area_id *id;
+	int i = 0;
+	const size_t elemlen = sizeof(struct gsm48_loc_area_id);
+
+	*consumed = 0;
+	while (remain >= elemlen) {
+		if (i >= GSM0808_CELL_ID_LIST2_MAXLEN)
+			return -ENOSPC;
+		id = &id_list[i];
+		if (decode_lai(&data[1 + i * elemlen], &id->plmn.mcc, &id->plmn.mnc, &id->lac) != 0)
+			return -EINVAL;
+		*consumed += elemlen;
+		remain -= elemlen;
+		i++;
+	}
+
+	return i;
+}
+
+static int parse_cell_id_lac_list(uint16_t *id_list, const uint8_t *data, size_t remain, size_t *consumed)
+{
+	const uint16_t *lac_be = (const uint16_t *)data;
+	int i = 0;
+	const size_t elemlen = sizeof(*lac_be);
+
+	*consumed = 0;
+	while (remain >= elemlen) {
+		if (i >= GSM0808_CELL_ID_LIST2_MAXLEN)
+			return -ENOSPC;
+		id_list[i++] = osmo_load16be(lac_be++);
+		*consumed += elemlen;
+		remain -= elemlen;
+	}
+	return i;
+}
+
 /*! Decode Cell Identifier List IE
+ *  \param[out] cil Caller-provided memory to store Cell ID list
+ *  \param[in] elem IE value to be decoded
+ *  \param[in] len Length of \a elem in bytes
+ *  \returns number of bytes parsed; negative on error */
+int gsm0808_dec_cell_id_list2(struct gsm0808_cell_id_list2 *cil,
+			      const uint8_t *elem, uint8_t len)
+{
+	uint8_t id_discr;
+	size_t bytes_elem = 0;
+	int list_len = 0;
+
+	OSMO_ASSERT(cil);
+	if (!elem)
+		return -EINVAL;
+	if (len == 0)
+		return -EINVAL;
+
+	memset(cil, 0, sizeof(*cil));
+
+	id_discr = *elem & 0x0f;
+	elem++;
+	len--;
+
+	switch (id_discr) {
+	case CELL_IDENT_WHOLE_GLOBAL:
+		list_len = parse_cell_id_global_list(&cil->id_list[0].global, elem, len, &bytes_elem);
+		break;
+	case CELL_IDENT_LAC_AND_CI:
+		list_len = parse_cell_id_lac_and_ci_list(&cil->id_list[0].lac_and_ci, elem, len, &bytes_elem);
+		break;
+	case CELL_IDENT_CI:
+		list_len = parse_cell_id_ci_list(&cil->id_list[0].ci, elem, len, &bytes_elem);
+		break;
+	case CELL_IDENT_LAI_AND_LAC:
+		list_len = parse_cell_id_lai_and_lac(&cil->id_list[0].lai_and_lac, elem, len, &bytes_elem);
+		break;
+	case CELL_IDENT_LAC:
+		list_len = parse_cell_id_lac_list(&cil->id_list[0].lac, elem, len, &bytes_elem);
+		break;
+	case CELL_IDENT_BSS:
+	case CELL_IDENT_NO_CELL:
+		/* Does not have any list items */
+		break;
+	default:
+		/* Remaining cell identification types are not implemented. */
+		return -EINVAL;
+	}
+
+	if (list_len < 0) /* parsing error */
+		return list_len;
+
+	cil->id_discr = id_discr;
+	cil->id_list_len = list_len;
+
+	/* One byte for the cell ID discriminator + any remaining bytes in
+	 * the IE which were consumed by the parser functions above. */
+	return 1 + (int)bytes_elem;
+}
+
+/*! DEPRECATED: Use gsm0808_dec_cell_id_list2 instead.
+ *
+ * Decode Cell Identifier List IE
  *  \param[out] cil Caller-provided memory to store Cell ID list
  *  \param[in] elem IE value to be decoded
  *  \param[in] len Length of \a elem in bytes

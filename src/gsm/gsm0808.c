@@ -521,16 +521,16 @@ struct msgb *gsm0808_create_clear_rqst(uint8_t cause)
  *  \param[in] cil Cell Identity List (where to page)
  *  \param[in] chan_needed Channel Type needed
  *  \returns callee-allocated msgb with BSSMAP PAGING message */
-struct msgb *gsm0808_create_paging(const char *imsi, const uint32_t *tmsi,
-				   const struct gsm0808_cell_id_list *cil,
-				   const uint8_t *chan_needed)
+struct msgb *gsm0808_create_paging2(const char *imsi, const uint32_t *tmsi,
+				    const struct gsm0808_cell_id_list2 *cil,
+				    const uint8_t *chan_needed)
 {
 	struct msgb *msg;
 	uint8_t mid_buf[GSM48_MI_SIZE + 2];
 	int mid_len;
 	uint32_t tmsi_sw;
 
-	/* Mandatory emelents! */
+	/* Mandatory elements! */
 	OSMO_ASSERT(imsi);
 	OSMO_ASSERT(cil);
 
@@ -558,7 +558,7 @@ struct msgb *gsm0808_create_paging(const char *imsi, const uint32_t *tmsi,
 
 	/* Cell Identifier List 3.2.2.27 */
 	if (cil)
-		gsm0808_enc_cell_id_list(msg, cil);
+		gsm0808_enc_cell_id_list2(msg, cil);
 
 	/* Channel Needed 3.2.2.36 */
 	if (chan_needed) {
@@ -571,6 +571,32 @@ struct msgb *gsm0808_create_paging(const char *imsi, const uint32_t *tmsi,
 	    msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
 
 	return msg;
+}
+
+/*! DEPRECATED: Use gsm0808_create_paging2 instead.
+ * Create BSSMAP PAGING message.
+ *  \param[in] imsi Mandatory paged IMSI in string representation
+ *  \param[in] tmsi Optional paged TMSI
+ *  \param[in] cil Cell Identity List (where to page)
+ *  \param[in] chan_needed Channel Type needed
+ *  \returns callee-allocated msgb with BSSMAP PAGING message */
+struct msgb *gsm0808_create_paging(const char *imsi, const uint32_t *tmsi,
+				   const struct gsm0808_cell_id_list *cil,
+				   const uint8_t *chan_needed)
+{
+	struct gsm0808_cell_id_list2 cil2 = {};
+
+	/* Mandatory emelents! */
+	OSMO_ASSERT(cil);
+
+	if (cil->id_list_len > GSM0808_CELL_ID_LIST2_MAXLEN)
+		return NULL;
+
+	cil2.id_discr = cil->id_discr;
+	memcpy(cil2.id_list, cil->id_list_lac, cil->id_list_len * sizeof(cil2.id_list[0].lac));
+	cil2.id_list_len = cil->id_list_len;
+
+	return gsm0808_create_paging2(imsi, tmsi, &cil2, chan_needed);
 }
 
 /*! Prepend a DTAP header to given Message Buffer

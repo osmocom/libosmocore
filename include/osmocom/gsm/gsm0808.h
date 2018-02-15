@@ -30,6 +30,7 @@
 struct sockaddr_storage;
 
 struct msgb;
+struct gsm0808_cell_id_list2;
 
 struct msgb *gsm0808_create_layer3(struct msgb *msg_l3, uint16_t nc,
 				   uint16_t cc, int lac, uint16_t _ci);
@@ -70,9 +71,13 @@ struct msgb *gsm0808_create_ass_fail(uint8_t cause, const uint8_t *rr_cause,
 				     *scl);
 struct msgb *gsm0808_create_assignment_failure(uint8_t cause, uint8_t *rr_cause);
 struct msgb *gsm0808_create_clear_rqst(uint8_t cause);
+struct msgb *gsm0808_create_paging2(const char *imsi, const uint32_t *tmsi,
+				   const struct gsm0808_cell_id_list2 *cil,
+				   const uint8_t *chan_needed);
 struct msgb *gsm0808_create_paging(const char *imsi, const uint32_t *tmsi,
 				   const struct gsm0808_cell_id_list *cil,
-				   const uint8_t *chan_needed);
+				   const uint8_t *chan_needed)
+				   OSMO_DEPRECATED("use gsm0808_create_paging2 instead");
 
 struct msgb *gsm0808_create_dtap(struct msgb *msg, uint8_t link_id);
 void gsm0808_prepend_dtap_header(struct msgb *msg, uint8_t link_id);

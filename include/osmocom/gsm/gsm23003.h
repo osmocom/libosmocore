@@ -30,6 +30,13 @@ struct osmo_cell_global_id {
 	uint16_t cell_identity;
 };
 
+/* Actually defined in 3GPP TS 48.008 3.2.2.27 Cell Identifier List,
+ * but conceptually belongs with the above structures. */
+struct osmo_lac_and_ci_id {
+	uint16_t lac;
+	uint16_t ci;
+};
+
 /* 12.5 */
 struct osmo_service_area_id {
 	struct osmo_location_area_id lai;

@@ -451,26 +451,26 @@ static void test_create_paging()
 	      RSL_CHANNEED_TCH_ForH };
 
 	struct msgb *msg;
-	struct gsm0808_cell_id_list cil;
+	struct gsm0808_cell_id_list2 cil;
 	uint32_t tmsi = 0x12345678;
 	uint8_t chan_needed = RSL_CHANNEED_TCH_ForH;
 
 	char imsi[] = "001010000001234";
 
 	cil.id_discr = CELL_IDENT_LAC;
-	cil.id_list_lac[0] = 0x2342;
+	cil.id_list[0].lac = 0x2342;
 	cil.id_list_len = 1;
 
 	printf("Testing creating Paging Request\n");
-	msg = gsm0808_create_paging(imsi, NULL, &cil, NULL);
+	msg = gsm0808_create_paging2(imsi, NULL, &cil, NULL);
 	VERIFY(msg, res, ARRAY_SIZE(res));
 	msgb_free(msg);
 
-	msg = gsm0808_create_paging(imsi, &tmsi, &cil, NULL);
+	msg = gsm0808_create_paging2(imsi, &tmsi, &cil, NULL);
 	VERIFY(msg, res2, ARRAY_SIZE(res2));
 	msgb_free(msg);
 
-	msg = gsm0808_create_paging(imsi, &tmsi, &cil, &chan_needed);
+	msg = gsm0808_create_paging2(imsi, &tmsi, &cil, &chan_needed);
 	VERIFY(msg, res3, ARRAY_SIZE(res3));
 	msgb_free(msg);
 }
@@ -751,25 +751,24 @@ static void test_gsm0808_enc_dec_encrypt_info()
 
 static void test_gsm0808_enc_dec_cell_id_list_lac()
 {
-	struct gsm0808_cell_id_list enc_cil;
-	struct gsm0808_cell_id_list dec_cil;
+	struct gsm0808_cell_id_list2 enc_cil;
+	struct gsm0808_cell_id_list2 dec_cil;
 	struct msgb *msg;
 	uint8_t rc_enc;
 	int rc_dec;
 
 	memset(&enc_cil, 0, sizeof(enc_cil));
 	enc_cil.id_discr = CELL_IDENT_LAC;
-	enc_cil.id_list_lac[0] = 0x0124;
-	enc_cil.id_list_lac[1] = 0xABCD;
-	enc_cil.id_list_lac[2] = 0x5678;
+	enc_cil.id_list[0].lac = 0x0124;
+	enc_cil.id_list[0].lac = 0xABCD;
+	enc_cil.id_list[0].lac = 0x5678;
 	enc_cil.id_list_len = 3;
 
 	msg = msgb_alloc(1024, "output buffer");
-	rc_enc = gsm0808_enc_cell_id_list(msg, &enc_cil);
+	rc_enc = gsm0808_enc_cell_id_list2(msg, &enc_cil);
 	OSMO_ASSERT(rc_enc == 9);
 
-	rc_dec = gsm0808_dec_cell_id_list(&dec_cil, msg->data + 2,
-					  msg->len - 2);
+	rc_dec = gsm0808_dec_cell_id_list2(&dec_cil, msg->data + 2, msg->len - 2);
 	OSMO_ASSERT(rc_dec == 7);
 
 	OSMO_ASSERT(memcmp(&enc_cil, &dec_cil, sizeof(enc_cil)) == 0);
@@ -779,8 +778,8 @@ static void test_gsm0808_enc_dec_cell_id_list_lac()
 
 static void test_gsm0808_enc_dec_cell_id_list_single_lac()
 {
-	struct gsm0808_cell_id_list enc_cil;
-	struct gsm0808_cell_id_list dec_cil;
+	struct gsm0808_cell_id_list2 enc_cil;
+	struct gsm0808_cell_id_list2 dec_cil;
 	struct msgb *msg;
 	uint8_t cil_enc_expected[] = { GSM0808_IE_CELL_IDENTIFIER_LIST, 0x03,
 		0x05, 0x23, 0x42
@@ -790,16 +789,15 @@ static void test_gsm0808_enc_dec_cell_id_list_single_lac()
 
 	memset(&enc_cil, 0, sizeof(enc_cil));
 	enc_cil.id_discr = CELL_IDENT_LAC;
-	enc_cil.id_list_lac[0] = 0x2342;
+	enc_cil.id_list[0].lac = 0x2342;
 	enc_cil.id_list_len = 1;
 
 	msg = msgb_alloc(1024, "output buffer");
-	rc_enc = gsm0808_enc_cell_id_list(msg, &enc_cil);
+	rc_enc = gsm0808_enc_cell_id_list2(msg, &enc_cil);
 	OSMO_ASSERT(rc_enc == 5);
 	OSMO_ASSERT(memcmp(cil_enc_expected, msg->data, msg->len) == 0);
 
-	rc_dec = gsm0808_dec_cell_id_list(&dec_cil, msg->data + 2,
-					  msg->len - 2);
+	rc_dec = gsm0808_dec_cell_id_list2(&dec_cil, msg->data + 2, msg->len - 2);
 	OSMO_ASSERT(rc_dec == 3);
 
 	OSMO_ASSERT(memcmp(&enc_cil, &dec_cil, sizeof(enc_cil)) == 0);
@@ -809,21 +807,20 @@ static void test_gsm0808_enc_dec_cell_id_list_single_lac()
 
 static void test_gsm0808_enc_dec_cell_id_list_bss()
 {
-	struct gsm0808_cell_id_list enc_cil;
-	struct gsm0808_cell_id_list dec_cil;
+	struct gsm0808_cell_id_list2 enc_cil;
+	struct gsm0808_cell_id_list2 dec_cil;
 	struct msgb *msg;
 	uint8_t rc_enc;
 	int rc_dec;
 
 	memset(&enc_cil, 0, sizeof(enc_cil));
-	enc_cil.id_discr = CELL_IDENT_LAC;
+	enc_cil.id_discr = CELL_IDENT_BSS;
 
 	msg = msgb_alloc(1024, "output buffer");
-	rc_enc = gsm0808_enc_cell_id_list(msg, &enc_cil);
+	rc_enc = gsm0808_enc_cell_id_list2(msg, &enc_cil);
 	OSMO_ASSERT(rc_enc == 3);
 
-	rc_dec = gsm0808_dec_cell_id_list(&dec_cil, msg->data + 2,
-					  msg->len - 2);
+	rc_dec = gsm0808_dec_cell_id_list2(&dec_cil, msg->data + 2, msg->len - 2);
 	OSMO_ASSERT(rc_dec == 1);
 
 	OSMO_ASSERT(memcmp(&enc_cil, &dec_cil, sizeof(enc_cil)) == 0);
