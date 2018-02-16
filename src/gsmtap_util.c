@@ -282,7 +282,7 @@ int gsmtap_sendmsg(struct gsmtap_inst *gti, struct msgb *msg)
 		int rc;
 
 		rc = write(gsmtap_inst_fd(gti), msg->data, msg->len);
-		if (rc <= 0) {
+		if (rc < 0) {
 			return rc;
 		} else if (rc >= msg->len) {
 			msgb_free(msg);
