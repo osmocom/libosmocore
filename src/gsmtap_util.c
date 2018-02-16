@@ -303,6 +303,7 @@ int gsmtap_send_ex(struct gsmtap_inst *gti, uint8_t type, uint16_t arfcn, uint8_
 		unsigned int len)
 {
 	struct msgb *msg;
+	int rc;
 
 	if (!gti)
 		return -ENODEV;
@@ -312,7 +313,10 @@ int gsmtap_send_ex(struct gsmtap_inst *gti, uint8_t type, uint16_t arfcn, uint8_
 	if (!msg)
 		return -ENOMEM;
 
-	return gsmtap_sendmsg(gti, msg);
+	rc = gsmtap_sendmsg(gti, msg);
+	if (rc)
+		msgb_free(msg);
+	return rc;
 }
 
 /*! send a message from L1/L2 through GSMTAP.

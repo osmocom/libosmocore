@@ -103,7 +103,9 @@ static void _gsmtap_raw_output(struct log_target *target, int subsys,
 		return;
 	msgb_put(msg, rc);
 
-	gsmtap_sendmsg(target->tgt_gsmtap.gsmtap_inst, msg);
+	rc = gsmtap_sendmsg(target->tgt_gsmtap.gsmtap_inst, msg);
+	if (rc)
+		msgb_free(msg);
 }
 
 /*! Create a new logging target for GSMTAP logging
