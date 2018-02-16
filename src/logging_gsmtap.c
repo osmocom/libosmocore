@@ -99,8 +99,10 @@ static void _gsmtap_raw_output(struct log_target *target, int subsys,
 	golh->ts.usec = osmo_htonl(tv.tv_usec);
 
 	rc = vsnprintf((char *) msg->tail, msgb_tailroom(msg), format, ap);
-	if (rc < 0)
+	if (rc < 0) {
+		msgb_free(msg);
 		return;
+	}
 	msgb_put(msg, rc);
 
 	rc = gsmtap_sendmsg(target->tgt_gsmtap.gsmtap_inst, msg);
