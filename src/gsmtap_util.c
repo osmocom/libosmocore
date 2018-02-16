@@ -266,6 +266,9 @@ int gsmtap_source_add_sink_fd(int gsmtap_fd)
  *  \param[in] gti GSMTAP instance
  *  \param[in] msg message buffer
  *  \return 0 in case of success; negative in case of error
+ * NOTE: in case of nonzero return value, the *caller* must free the msg!
+ * (This enables the caller to attempt re-sending the message.)
+ * If 0 is returned, the msgb was freed by this function.
  */
 int gsmtap_sendmsg(struct gsmtap_inst *gti, struct msgb *msg)
 {
