@@ -22,6 +22,8 @@
  */
 
 #include <stdio.h>
+#include <errno.h>
+#include <strings.h>
 
 #include <osmocom/gsm/gsm23003.h>
 #include <osmocom/core/utils.h>
@@ -114,12 +116,65 @@ bool test_valid_msisdn()
 	return pass;
 }
 
+struct test_mnc_from_str_result {
+	int rc;
+	uint16_t mnc;
+	bool mnc_3_digits;
+};
+
+struct test_mnc_from_str {
+	const char *mnc_str;
+	struct test_mnc_from_str_result expect;
+};
+
+static struct test_mnc_from_str test_mnc_from_strs[] = {
+	{ "0",	 { 0, 0, false } },
+	{ "00",	 { 0, 0, false } },
+	{ "000", { 0, 0, true } },
+	{ "1",	 { 0, 1, false } },
+	{ "01",	 { 0, 1, false } },
+	{ "001", { 0, 1, true } },
+	{ "",	 { -EINVAL, 0, false } },
+	{ " ",	 { -EINVAL, 0, false } },
+	{ "-1",	 { -EINVAL, 65535, false } },
+	{ "1000", { -EINVAL, 1000, true } },
+	{ "0x",	 { -EINVAL, 0, false } },
+	{ " 23", { -EINVAL, 23, true } }, /* technically not a 3-digit MNC, but it's EINVAL anyway */
+	{ "23 ", { -EINVAL, 23, true } },
+	{ " 023", { -EINVAL, 23, true } },
+	{ "023 ", { -EINVAL, 23, true } },
+	{ "023 ", { -EINVAL, 23, true } },
+};
+
+static bool test_mnc_from_str()
+{
+	int i;
+	bool pass = true;
+	printf("----- %s\n", __func__);
+
+	for (i = 0; i < ARRAY_SIZE(test_mnc_from_strs); i++) {
+		struct test_mnc_from_str *t = &test_mnc_from_strs[i];
+		struct test_mnc_from_str_result result;
+		bool ok;
+
+		result.rc = osmo_mnc_from_str(t->mnc_str, &result.mnc,
+						     &result.mnc_3_digits);
+		ok = !bcmp(&result, &t->expect, sizeof(result));
+		printf("%2d: \"%s\" rc=%d mnc=%u mnc_3_digits=%u %s\n",
+		       i, osmo_escape_str(t->mnc_str, -1), result.rc, result.mnc, result.mnc_3_digits,
+		       ok ? "pass" : "FAIL");
+		pass = pass && ok;
+	}
+	return pass;
+}
+
 int main(int argc, char **argv)
 {
 	bool pass = true;
 
 	pass = pass && test_valid_imsi();
 	pass = pass && test_valid_msisdn();
+	pass = pass && test_mnc_from_str();
 
 	OSMO_ASSERT(pass);
 

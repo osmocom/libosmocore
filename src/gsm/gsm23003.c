@@ -25,6 +25,9 @@
 
 #include <ctype.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <errno.h>
+#include <string.h>
 
 #include <osmocom/gsm/gsm23003.h>
 #include <osmocom/gsm/protocol/gsm_23_003.h>
@@ -194,4 +197,78 @@ void osmo_plmn_from_bcd(const uint8_t *bcd_src, struct osmo_plmn_id *plmn)
 			  + (bcd_src[1] >> 4);
 		plmn->mnc_3_digits = true;
 	}
+}
+
+/* Convert string to MNC, detecting 3-digit MNC with leading zeros.
+ * Return mnc_3_digits as false if the MNC's most significant digit is encoded as 0xF, true
+ * otherwise; i.e. true if MNC > 99 or if it is represented with leading zeros instead of 0xF.
+ * \param mnc_str[in]	String representation of an MNC, with or without leading zeros.
+ * \param mnc[out]	MNC result buffer, or NULL.
+ * \param[out] mnc_3_digits	Result buffer for 3-digit flag, or NULL.
+ * \returns zero on success, -EINVAL in case of surplus characters, negative errno in case of conversion
+ *          errors.
+ */
+int osmo_mnc_from_str(const char *mnc_str, uint16_t *mnc, bool *mnc_3_digits)
+{
+	long int _mnc = 0;
+	bool _mnc_3_digits = false;
+	char *endptr;
+	int rc = 0;
+
+	if (!mnc_str || !isdigit(mnc_str[0]) || strlen(mnc_str) > 3) {
+		/* return invalid, but give strtol a shot anyway, for callers that don't want to be
+		 * strict */
+		rc = -EINVAL;
+	}
+	errno = 0;
+	_mnc = strtol(mnc_str, &endptr, 10);
+	if (errno)
+		rc = -errno;
+	else if (*endptr)
+		rc = -EINVAL;
+	if (_mnc < 0 || _mnc > 999)
+		rc = -EINVAL;
+	_mnc_3_digits = strlen(mnc_str) > 2;
+
+	if (mnc)
+		*mnc = (uint16_t)_mnc;
+	if (mnc_3_digits)
+		*mnc_3_digits = _mnc_3_digits;
+	return rc;
+}
+
+/* Compare two MNC with three-digit flag.
+ * The mnc_3_digits flags passed in only have an effect if the MNC are < 100, i.e. if they would amount
+ * to a change in leading zeros in a BCD representation. An MNC >= 100 implies three digits, and the flag
+ * is actually ignored.
+ * \param a_mnc[in]		"Left" side MNC.
+ * \param a_mnc_3_digits[in]	"Left" side three-digits flag.
+ * \param b_mnc[in]		"Right" side MNC.
+ * \param b_mnc_3_digits[in]	"Right" side three-digits flag.
+ * \returns 0 if the MNC are equal, -1 if a < b or a shorter, 1 if a > b or a longer. */
+int osmo_mnc_cmp(uint16_t a_mnc, bool a_mnc_3_digits, uint16_t b_mnc, bool b_mnc_3_digits)
+{
+	if (a_mnc < b_mnc)
+		return -1;
+	if (a_mnc > b_mnc)
+		return 1;
+	/* a_mnc == b_mnc, but same amount of leading zeros? */
+	if (a_mnc < 100 && a_mnc_3_digits != b_mnc_3_digits)
+		return a_mnc_3_digits ? 1 : -1;
+	return 0;
+}
+
+/* Compare two PLMN.
+ * \param a[in]  "Left" side PLMN.
+ * \param b[in]  "Right" side PLMN.
+ * \returns 0 if the PLMN are equal, -1 if a < b or a shorter, 1 if a > b or a longer. */
+int osmo_plmn_cmp(const struct osmo_plmn_id *a, const struct osmo_plmn_id *b)
+{
+	if (a == b)
+		return 0;
+	if (a->mcc < b->mcc)
+		return -1;
+	if (a->mcc > b->mcc)
+		return 1;
+	return osmo_mnc_cmp(a->mnc, a->mnc_3_digits, b->mnc, b->mnc_3_digits);
 }

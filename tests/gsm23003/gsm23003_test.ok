@@ -42,3 +42,20 @@
 17: expect=false result=false msisdn='123456	123456'
 18: expect=false result=false msisdn='123456123456'
 19: expect=false result=false msisdn='(null)'
+----- test_mnc_from_str
+ 0: "0" rc=0 mnc=0 mnc_3_digits=0 pass
+ 1: "00" rc=0 mnc=0 mnc_3_digits=0 pass
+ 2: "000" rc=0 mnc=0 mnc_3_digits=1 pass
+ 3: "1" rc=0 mnc=1 mnc_3_digits=0 pass
+ 4: "01" rc=0 mnc=1 mnc_3_digits=0 pass
+ 5: "001" rc=0 mnc=1 mnc_3_digits=1 pass
+ 6: "" rc=-22 mnc=0 mnc_3_digits=0 pass
+ 7: " " rc=-22 mnc=0 mnc_3_digits=0 pass
+ 8: "-1" rc=-22 mnc=65535 mnc_3_digits=0 pass
+ 9: "1000" rc=-22 mnc=1000 mnc_3_digits=1 pass
+10: "0x" rc=-22 mnc=0 mnc_3_digits=0 pass
+11: " 23" rc=-22 mnc=23 mnc_3_digits=1 pass
+12: "23 " rc=-22 mnc=23 mnc_3_digits=1 pass
+13: " 023" rc=-22 mnc=23 mnc_3_digits=1 pass
+14: "023 " rc=-22 mnc=23 mnc_3_digits=1 pass
+15: "023 " rc=-22 mnc=23 mnc_3_digits=1 pass
