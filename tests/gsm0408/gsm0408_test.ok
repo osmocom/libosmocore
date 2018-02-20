@@ -5,7 +5,7 @@ Simple IMSI encoding test....passed: [10] 17 08 99 10 07 00 00 00 64 02
 Constructed RA:
 077-121-666-5
 MCC+MNC in BCD: 70 17 21 
-077-121-666-5
+077-121-666-5 (3-digit MNC)
 RA test...passed
 Constructed RA:
 084-98-11-89
@@ -20,7 +20,7 @@ RA test...passed
 Constructed RA:
 999-999-65535-255
 MCC+MNC in BCD: 99 99 99 
-999-999-65535-255
+999-999-65535-255 (3-digit MNC)
 RA test...passed
 - gsm48_generate_lai() from 077-121-666-0
   Encoded 70 17 21 02 9a 

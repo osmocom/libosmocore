@@ -132,7 +132,7 @@ static int test_bearer_cap()
 
 static inline void dump_ra(const struct gprs_ra_id *raid)
 {
-	printf("%03u-%02u-%u-%u\n", raid->mcc, raid->mnc, raid->lac, raid->rac);
+	printf("%s%s\n", osmo_rai_name(raid), raid->mnc_3_digits ? " (3-digit MNC)" : "");
 }
 
 static inline void check_ra(const struct gprs_ra_id *raid)
@@ -153,7 +153,8 @@ static inline void check_ra(const struct gprs_ra_id *raid)
 	printf("MCC+MNC in BCD: %s\n", osmo_hexdump(ra.digits, sizeof(ra.digits)));
 	dump_ra(&raid0);
 	printf("RA test...");
-	if (raid->mnc != raid0.mnc || raid->mcc != raid0.mcc || raid->lac != raid0.lac || raid->rac != raid0.rac)
+	if (raid->mnc != raid0.mnc || raid->mcc != raid0.mcc || raid->lac != raid0.lac || raid->rac != raid0.rac
+	    || (raid->mnc_3_digits || raid->mnc > 99) != raid0.mnc_3_digits)
 		printf("FAIL\n");
 	else
 		printf("passed\n");
