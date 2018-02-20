@@ -238,12 +238,70 @@ static struct gprs_ra_id test_ra_cap_items[] = {
 		.mnc = 0,
 		.lac = 0,
 		.rac = 0,
+		.mnc_3_digits = false,
+		/* expecting 000-00, BCD = 00 f0 00 */
+	},
+	{
+		.mcc = 0,
+		.mnc = 0,
+		.lac = 0,
+		.rac = 0,
+		.mnc_3_digits = true,
+		/* expecting 000-000, BCD = 00 00 00 */
 	},
 	{
 		.mcc = 999,
 		.mnc = 999,
 		.lac = 65535,
 		.rac = 255,
+	},
+	{
+		.mcc = 1,
+		.mnc = 2,
+		.lac = 23,
+		.rac = 42,
+		.mnc_3_digits = false,
+		/* expecting 001-02, BCD = 00 f1 20 */
+	},
+	{
+		.mcc = 1,
+		.mnc = 2,
+		.lac = 23,
+		.rac = 42,
+		.mnc_3_digits = true,
+		/* expecting 001-002, BCD = 00 21 00 */
+	},
+	{
+		.mcc = 12,
+		.mnc = 34,
+		.lac = 56,
+		.rac = 78,
+		.mnc_3_digits = false,
+		/* expecting 012-34, BCD = 10 f2 43 */
+	},
+	{
+		.mcc = 12,
+		.mnc = 34,
+		.lac = 23,
+		.rac = 42,
+		.mnc_3_digits = true,
+		/* expecting 012-034, BCD = 10 42 30 */
+	},
+	{
+		.mcc = 123,
+		.mnc = 456,
+		.lac = 23,
+		.rac = 42,
+		.mnc_3_digits = false,
+		/* expecting 123-456, BCD = 21 63 54 (false flag has no effect) */
+	},
+	{
+		.mcc = 123,
+		.mnc = 456,
+		.lac = 23,
+		.rac = 42,
+		.mnc_3_digits = true,
+		/* expecting 123-456, BCD = 21 63 54 (same) */
 	},
 };
 

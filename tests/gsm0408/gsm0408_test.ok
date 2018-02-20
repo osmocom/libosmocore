@@ -18,9 +18,44 @@ MCC+MNC in BCD: 00 f0 00
 000-00-0-0
 RA test...passed
 Constructed RA:
+000-000-0-0 (3-digit MNC)
+MCC+MNC in BCD: 00 00 00 
+000-000-0-0 (3-digit MNC)
+RA test...passed
+Constructed RA:
 999-999-65535-255
 MCC+MNC in BCD: 99 99 99 
 999-999-65535-255 (3-digit MNC)
+RA test...passed
+Constructed RA:
+001-02-23-42
+MCC+MNC in BCD: 00 f1 20 
+001-02-23-42
+RA test...passed
+Constructed RA:
+001-002-23-42 (3-digit MNC)
+MCC+MNC in BCD: 00 21 00 
+001-002-23-42 (3-digit MNC)
+RA test...passed
+Constructed RA:
+012-34-56-78
+MCC+MNC in BCD: 10 f2 43 
+012-34-56-78
+RA test...passed
+Constructed RA:
+012-034-23-42 (3-digit MNC)
+MCC+MNC in BCD: 10 42 30 
+012-034-23-42 (3-digit MNC)
+RA test...passed
+Constructed RA:
+123-456-23-42
+MCC+MNC in BCD: 21 63 54 
+123-456-23-42 (3-digit MNC)
+RA test...passed
+Constructed RA:
+123-456-23-42 (3-digit MNC)
+MCC+MNC in BCD: 21 63 54 
+123-456-23-42 (3-digit MNC)
 RA test...passed
 - gsm48_generate_lai() from 077-121-666-0
   Encoded 70 17 21 02 9a 
@@ -46,6 +81,14 @@ RA test...passed
   Encoded 00 f0 00 00 00 
   gsm48_decode_lai2() gives  000-00-0
   passed
+- gsm48_generate_lai() from 000-000-0-0 (3-digit MNC)
+  Encoded 00 f0 00 00 00 
+  gsm48_decode_lai() gives  000-00-0-0
+  passed
+- gsm48_generate_lai2() from 000-000-0 (3-digit MNC)
+  Encoded 00 00 00 00 00 
+  gsm48_decode_lai2() gives  000-000-0 (3-digit MNC)
+  passed
 - gsm48_generate_lai() from 999-999-65535-0
   Encoded 99 99 99 ff ff 
   gsm48_decode_lai() gives  999-999-65535-0
@@ -53,4 +96,52 @@ RA test...passed
 - gsm48_generate_lai2() from 999-999-65535
   Encoded 99 99 99 ff ff 
   gsm48_decode_lai2() gives  999-999-65535 (3-digit MNC)
+  passed
+- gsm48_generate_lai() from 001-02-23-0
+  Encoded 00 f1 20 00 17 
+  gsm48_decode_lai() gives  001-02-23-0
+  passed
+- gsm48_generate_lai2() from 001-02-23
+  Encoded 00 f1 20 00 17 
+  gsm48_decode_lai2() gives  001-02-23
+  passed
+- gsm48_generate_lai() from 001-002-23-0 (3-digit MNC)
+  Encoded 00 f1 20 00 17 
+  gsm48_decode_lai() gives  001-02-23-0
+  passed
+- gsm48_generate_lai2() from 001-002-23 (3-digit MNC)
+  Encoded 00 21 00 00 17 
+  gsm48_decode_lai2() gives  001-002-23 (3-digit MNC)
+  passed
+- gsm48_generate_lai() from 012-34-56-0
+  Encoded 10 f2 43 00 38 
+  gsm48_decode_lai() gives  012-34-56-0
+  passed
+- gsm48_generate_lai2() from 012-34-56
+  Encoded 10 f2 43 00 38 
+  gsm48_decode_lai2() gives  012-34-56
+  passed
+- gsm48_generate_lai() from 012-034-23-0 (3-digit MNC)
+  Encoded 10 f2 43 00 17 
+  gsm48_decode_lai() gives  012-34-23-0
+  passed
+- gsm48_generate_lai2() from 012-034-23 (3-digit MNC)
+  Encoded 10 42 30 00 17 
+  gsm48_decode_lai2() gives  012-034-23 (3-digit MNC)
+  passed
+- gsm48_generate_lai() from 123-456-23-0
+  Encoded 21 63 54 00 17 
+  gsm48_decode_lai() gives  123-456-23-0
+  passed
+- gsm48_generate_lai2() from 123-456-23
+  Encoded 21 63 54 00 17 
+  gsm48_decode_lai2() gives  123-456-23 (3-digit MNC)
+  passed
+- gsm48_generate_lai() from 123-456-23-0 (3-digit MNC)
+  Encoded 21 63 54 00 17 
+  gsm48_decode_lai() gives  123-456-23-0
+  passed
+- gsm48_generate_lai2() from 123-456-23 (3-digit MNC)
+  Encoded 21 63 54 00 17 
+  gsm48_decode_lai2() gives  123-456-23 (3-digit MNC)
   passed
