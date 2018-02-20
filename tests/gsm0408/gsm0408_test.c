@@ -158,23 +158,27 @@ static inline void check_ra(const struct gprs_ra_id *raid)
 		printf("passed\n");
 }
 
-static void test_ra_cap(void)
-{
-	struct gprs_ra_id raid1 = {
+static struct gprs_ra_id test_ra_cap_items[] = {
+	{
 		.mnc = 121,
 		.mcc = 77,
 		.lac = 666,
 		.rac = 5,
-	};
-	struct gprs_ra_id raid2 = {
+	},
+	{
 		.mnc = 98,
 		.mcc = 84,
 		.lac = 11,
 		.rac = 89,
-	};
+	},
+};
 
-	check_ra(&raid1);
-	check_ra(&raid2);
+static void test_ra_cap(void)
+{
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(test_ra_cap_items); i++)
+		check_ra(&test_ra_cap_items[i]);
 }
 
 static void test_mid_from_tmsi(void)
