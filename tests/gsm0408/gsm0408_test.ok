@@ -22,3 +22,19 @@ Constructed RA:
 MCC+MNC in BCD: 99 99 99 
 999-999-65535-255
 RA test...passed
+- gsm48_generate_lai() from 077-121-666-0
+  Encoded 70 17 21 02 9a 
+  gsm48_decode_lai() gives  077-121-666-0
+  passed
+- gsm48_generate_lai() from 084-98-11-0
+  Encoded 80 f4 89 00 0b 
+  gsm48_decode_lai() gives  084-98-11-0
+  passed
+- gsm48_generate_lai() from 000-00-0-0
+  Encoded 00 f0 00 00 00 
+  gsm48_decode_lai() gives  000-00-0-0
+  passed
+- gsm48_generate_lai() from 999-999-65535-0
+  Encoded 99 99 99 ff ff 
+  gsm48_decode_lai() gives  999-999-65535-0
+  passed
