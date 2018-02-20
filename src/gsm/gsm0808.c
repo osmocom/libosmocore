@@ -37,7 +37,8 @@
 #define BSSMAP_MSG_SIZE 512
 #define BSSMAP_MSG_HEADROOM 128
 
-/*! Create "Complete L3 Info" for AoIP
+/*! Create "Complete L3 Info" for AoIP, legacy implementation.
+ * Instead use gsm0808_create_layer3_aoip2(), which is capable of three-digit MNC with leading zeros.
  *  \param[in] msg_l3 msgb containing Layer 3 Message
  *  \param[in] nc Mobile Network Code
  *  \param[in] cc Mobile Country Code
@@ -49,6 +50,27 @@ struct msgb *gsm0808_create_layer3_aoip(const struct msgb *msg_l3, uint16_t nc,
 					uint16_t cc, int lac, uint16_t _ci,
 					const struct gsm0808_speech_codec_list
 					*scl)
+{
+	struct osmo_cell_global_id cgi = {
+		.lai = {
+			.plmn = {
+				.mcc = cc,
+				.mnc = nc,
+			},
+			.lac = lac,
+		},
+		.cell_identity = _ci,
+	};
+	return gsm0808_create_layer3_2(msg_l3, &cgi, scl);
+}
+
+/*! Create "Complete L3 Info" for AoIP.
+ *  \param[in] msg_l3 msgb containing Layer 3 Message -- not modified by this call.
+ *  \param[in] cell  MCC, MNC, LAC, CI to identify the cell.
+ *  \param[in] scl Speech Codec List, optional.
+ *  \returns newly allocated msgb with Complete L3 Info message */
+struct msgb *gsm0808_create_layer3_2(const struct msgb *msg_l3, const struct osmo_cell_global_id *cell,
+				     const struct gsm0808_speech_codec_list *scl)
 {
 	struct msgb* msg;
 	struct {
@@ -67,8 +89,8 @@ struct msgb *gsm0808_create_layer3_aoip(const struct msgb *msg_l3, uint16_t nc,
 
 	/* create the cell header */
 	lai_ci.ident = CELL_IDENT_WHOLE_GLOBAL;
-	gsm48_generate_lai(&lai_ci.lai, cc, nc, lac);
-	lai_ci.ci = osmo_htons(_ci);
+	gsm48_generate_lai2(&lai_ci.lai, &cell->lai);
+	lai_ci.ci = osmo_htons(cell->cell_identity);
 	msgb_tlv_put(msg, GSM0808_IE_CELL_IDENTIFIER, sizeof(lai_ci),
 		     (uint8_t *) &lai_ci);
 
@@ -86,7 +108,9 @@ struct msgb *gsm0808_create_layer3_aoip(const struct msgb *msg_l3, uint16_t nc,
 	return msg;
 }
 
-/*! Create "Complete L3 Info" for A
+/*! Create "Complete L3 Info" for A, legacy implementation.
+ * Instead use gsm0808_create_layer3_2() with the scl parameter passed as NULL,
+ * which is capable of three-digit MNC with leading zeros.
  *  \param[in] msg_l3 msgb containing Layer 3 Message
  *  \param[in] nc Mobile Network Code
  *  \param[in] cc Mobile Country Code

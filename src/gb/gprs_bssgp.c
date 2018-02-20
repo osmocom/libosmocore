@@ -284,9 +284,8 @@ static int bssgp_rx_bvc_reset(struct msgb *msg, struct tlv_parsed *tp,
 		/* actually extract RAC / CID */
 		bctx->cell_id = bssgp_parse_cell_id(&bctx->ra_id,
 						TLVP_VAL(tp, BSSGP_IE_CELL_ID));
-		LOGP(DBSSGP, LOGL_NOTICE, "Cell %u-%u-%u-%u CI %u on BVCI %u\n",
-			bctx->ra_id.mcc, bctx->ra_id.mnc, bctx->ra_id.lac,
-			bctx->ra_id.rac, bctx->cell_id, bvci);
+		LOGP(DBSSGP, LOGL_NOTICE, "Cell %s CI %u on BVCI %u\n",
+		     osmo_rai_name(&bctx->ra_id), bctx->cell_id, bvci);
 	}
 
 	/* Send NM_BVC_RESET.ind to NM */

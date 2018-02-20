@@ -2,17 +2,21 @@
 
 #pragma once
 
+#include <stdbool.h>
+
 #include <osmocom/gsm/tlv.h>
 #include <osmocom/gsm/protocol/gsm_04_08.h>
 #include <osmocom/gsm/gsm48_ie.h>
+#include <osmocom/gsm/gsm23003.h>
 
 /* reserved according to GSM 03.03 § 2.4 */
 #define GSM_RESERVED_TMSI   0xFFFFFFFF
 
 /* A parsed GPRS routing area */
 struct gprs_ra_id {
-	uint16_t	mnc;
 	uint16_t	mcc;
+	uint16_t	mnc;
+	bool		mnc_3_digits;
 	uint16_t	lac;
 	uint8_t		rac;
 };
@@ -24,11 +28,15 @@ const char *gsm48_cc_state_name(uint8_t state);
 const char *gsm48_cc_msg_name(uint8_t msgtype);
 const char *gsm48_rr_msg_name(uint8_t msgtype);
 const char *rr_cause_name(uint8_t cause);
+const char *osmo_rai_name(const struct gprs_ra_id *rai);
 
 int gsm48_decode_lai(struct gsm48_loc_area_id *lai, uint16_t *mcc,
 		     uint16_t *mnc, uint16_t *lac);
+void gsm48_decode_lai2(const struct gsm48_loc_area_id *lai, struct osmo_location_area_id *decoded);
 void gsm48_generate_lai(struct gsm48_loc_area_id *lai48, uint16_t mcc,
 			uint16_t mnc, uint16_t lac);
+void gsm48_generate_lai2(struct gsm48_loc_area_id *lai48, const struct osmo_location_area_id *lai);
+
 int gsm48_generate_mid_from_tmsi(uint8_t *buf, uint32_t tmsi);
 int gsm48_generate_mid_from_imsi(uint8_t *buf, const char *imsi);
 uint8_t gsm48_generate_mid(uint8_t *buf, const char *id, uint8_t mi_type);

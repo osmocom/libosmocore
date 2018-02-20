@@ -30,6 +30,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <inttypes.h>
+#include <ctype.h>
 
 #include <osmocom/core/utils.h>
 #include <osmocom/core/byteswap.h>
@@ -178,6 +179,19 @@ static const struct value_string rr_cause_names[] = {
 const char *rr_cause_name(uint8_t cause)
 {
 	return get_value_string(rr_cause_names, cause);
+}
+
+/*! Return MCC-MNC-LAC-RAC as string, in a static buffer.
+ * \param[in] rai  RAI to encode.
+ * \returns Static string buffer.
+ */
+const char *osmo_rai_name(const struct gprs_ra_id *rai)
+{
+	static char buf[32];
+	snprintf(buf, sizeof(buf), "%s-%s-%u-%u",
+		 osmo_mcc_name(rai->mcc), osmo_mnc_name(rai->mnc, rai->mnc_3_digits), rai->lac,
+		 rai->rac);
+	return buf;
 }
 
 /* FIXME: convert to value_string */
@@ -418,15 +432,6 @@ const char *gsm48_mi_type_name(uint8_t mi)
 	return get_value_string(mi_type_names, mi);
 }
 
-static void to_bcd(uint8_t *bcd, uint16_t val)
-{
-	bcd[2] = val % 10;
-	val = val / 10;
-	bcd[1] = val % 10;
-	val = val / 10;
-	bcd[0] = val % 10;
-}
-
 /*! Checks is particular message is cipherable in A/Gb mode according to
  *         3GPP TS 24.008 § 4.7.1.2
  *  \param[in] hdr Message header
@@ -451,64 +456,61 @@ bool gsm48_hdr_gmm_cipherable(const struct gsm48_hdr *hdr)
 	}
 }
 
-/* Convert MCC + MNC to BCD representation
- * \param[out] bcd_dst caller-allocated memory for output
- * \param[in] mcc Mobile Country Code
- * \param[in] mnc Mobile Network Code
- *
- * Convert given mcc and mnc to BCD and write to *bcd_dst, which must be an
- * allocated buffer of (at least) 3 bytes length. */
+/* Convert MCC + MNC to BCD representation, legacy implementation.
+ * Instead use osmo_plmn_to_bcd(), which is also capable of converting
+ * 3-digit MNC that have leading zeros. For parameters, also see there. */
 void gsm48_mcc_mnc_to_bcd(uint8_t *bcd_dst, uint16_t mcc, uint16_t mnc)
 {
-	uint8_t bcd[3];
-
-	to_bcd(bcd, mcc);
-	bcd_dst[0] = bcd[0] | (bcd[1] << 4);
-	bcd_dst[1] = bcd[2];
-
-	to_bcd(bcd, mnc);
-	/* FIXME: do we need three-digit MNC? See Table 10.5.3 */
-	if (mnc > 99) {
-		bcd_dst[1] |= bcd[2] << 4;
-		bcd_dst[2] = bcd[0] | (bcd[1] << 4);
-	} else {
-		bcd_dst[1] |= 0xf << 4;
-		bcd_dst[2] = bcd[1] | (bcd[2] << 4);
-	}
+	const struct osmo_plmn_id plmn = {
+		.mcc = mcc,
+		.mnc = mnc,
+		.mnc_3_digits = false,
+	};
+	osmo_plmn_to_bcd(bcd_dst, &plmn);
 }
 
-/* Convert given 3-byte BCD buffer to integers and write results to *mcc and
- * *mnc. The first three BCD digits result in the MCC and the remaining ones in
- * the MNC. */
+/* Convert given 3-byte BCD buffer to integers, legacy implementation.
+ * Instead use osmo_plmn_from_bcd(), which is also capable of converting
+ * 3-digit MNC that have leading zeros. For parameters, also see there. */
 void gsm48_mcc_mnc_from_bcd(uint8_t *bcd_src, uint16_t *mcc, uint16_t *mnc)
 {
-	*mcc = (bcd_src[0] & 0x0f) * 100
-	     + (bcd_src[0] >> 4) * 10
-	     + (bcd_src[1] & 0x0f);
-
-	if ((bcd_src[1] & 0xf0) == 0xf0) {
-		*mnc = (bcd_src[2] & 0x0f) * 10
-		     + (bcd_src[2] >> 4);
-	} else {
-		*mnc = (bcd_src[2] & 0x0f) * 100
-		     + (bcd_src[2] >> 4) * 10
-		     + (bcd_src[1] >> 4);
-	}
+	struct osmo_plmn_id plmn;
+	osmo_plmn_from_bcd(bcd_src, &plmn);
+	*mcc = plmn.mcc;
+	*mnc = plmn.mnc;
 }
 
-/*! Encode TS 04.08 Location Area Identifier
- *  \param[out] caller-provided memory for output
+/*! Encode TS 04.08 Location Area Identifier, legacy implementation.
+ * Instead use gsm48_generate_lai2(), which is capable of three-digit MNC with leading zeros.
+ *  \param[out] lai48 caller-provided memory for output
  *  \param[in] mcc Mobile Country Code
  *  \param[in] mnc Mobile Network Code
  *  \param[in] lac Location Area Code */
 void gsm48_generate_lai(struct gsm48_loc_area_id *lai48, uint16_t mcc,
 			uint16_t mnc, uint16_t lac)
 {
-	gsm48_mcc_mnc_to_bcd(&lai48->digits[0], mcc, mnc);
-	lai48->lac = osmo_htons(lac);
+	const struct osmo_location_area_id lai = {
+		.plmn = {
+			.mcc = mcc,
+			.mnc = mnc,
+			.mnc_3_digits = false,
+		},
+		.lac = lac,
+	};
+	gsm48_generate_lai2(lai48, &lai);
 }
 
-/*! Decode TS 04.08 Location Area Identifier
+/*! Encode TS 04.08 Location Area Identifier.
+ *  \param[out] lai48 caller-provided memory for output.
+ *  \param[in] lai input of MCC-MNC-LAC. */
+void gsm48_generate_lai2(struct gsm48_loc_area_id *lai48, const struct osmo_location_area_id *lai)
+{
+	osmo_plmn_to_bcd(&lai48->digits[0], &lai->plmn);
+	lai48->lac = osmo_htons(lai->lac);
+}
+
+/*! Decode TS 04.08 Location Area Identifier, legacy implementation.
+ * Instead use gsm48_decode_lai2(), which is capable of three-digit MNC with leading zeros.
  *  \param[in] Location Area Identifier (encoded)
  *  \param[out] mcc Mobile Country Code
  *  \param[out] mnc Mobile Network Code
@@ -519,9 +521,23 @@ void gsm48_generate_lai(struct gsm48_loc_area_id *lai48, uint16_t mcc,
 int gsm48_decode_lai(struct gsm48_loc_area_id *lai, uint16_t *mcc,
 		     uint16_t *mnc, uint16_t *lac)
 {
-	gsm48_mcc_mnc_from_bcd(&lai->digits[0], mcc, mnc);
-	*lac = osmo_ntohs(lai->lac);
+	struct osmo_location_area_id decoded;
+	gsm48_decode_lai2(lai, &decoded);
+	*mcc = decoded.plmn.mcc;
+	*mnc = decoded.plmn.mnc;
+	*lac = decoded.lac;
 	return 0;
+}
+
+/*! Decode TS 04.08 Location Area Identifier.
+ *  \param[in] Location Area Identifier (encoded).
+ *  \param[out] decoded Target buffer to write decoded values of MCC-MNC-LAC.
+ *
+ * Attention: this function returns true integers, not hex! */
+void gsm48_decode_lai2(const struct gsm48_loc_area_id *lai, struct osmo_location_area_id *decoded)
+{
+	osmo_plmn_from_bcd(&lai->digits[0], &decoded->plmn);
+	decoded->lac = osmo_ntohs(lai->lac);
 }
 
 /*! Set DTX mode in Cell Options IE (3GPP TS 44.018)
@@ -682,10 +698,12 @@ void gsm48_parse_ra(struct gprs_ra_id *raid, const uint8_t *buf)
 	if ((buf[1] >> 4) == 0xf) {
 		raid->mnc = (buf[2] & 0xf) * 10;
 		raid->mnc += (buf[2] >> 4) * 1;
+		raid->mnc_3_digits = false;
 	} else {
 		raid->mnc = (buf[2] & 0xf) * 100;
 		raid->mnc += (buf[2] >> 4) * 10;
 		raid->mnc += (buf[1] >> 4) * 1;
+		raid->mnc_3_digits = true;
 	}
 
 	raid->lac = osmo_load16be(buf + 3);
@@ -704,7 +722,7 @@ void gsm48_encode_ra(struct gsm48_ra_id *out, const struct gprs_ra_id *raid)
 	out->digits[0] = ((raid->mcc / 100) % 10) | (((raid->mcc / 10) % 10) << 4);
 	out->digits[1] = raid->mcc % 10;
 
-	if (raid->mnc < 100) {
+	if (raid->mnc < 100 && !raid->mnc_3_digits) {
 		out->digits[1] |= 0xf0;
 		out->digits[2] = ((raid->mnc / 10) % 10) | ((raid->mnc % 10) << 4);
 	} else {

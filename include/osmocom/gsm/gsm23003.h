@@ -9,6 +9,7 @@
 struct osmo_plmn_id {
 	uint16_t mcc;
 	uint16_t mnc;
+	bool mnc_3_digits; /*< ignored and implied true if mnc > 99, otherwise defines leading zeros. */
 };
 
 /* 4.1 */
@@ -85,3 +86,12 @@ struct osmo_guti {
 
 bool osmo_imsi_str_valid(const char *imsi);
 bool osmo_msisdn_str_valid(const char *msisdn);
+
+const char *osmo_mcc_name(uint16_t mcc);
+const char *osmo_mnc_name(uint16_t mnc, bool mnc_3_digits);
+const char *osmo_plmn_name(const struct osmo_plmn_id *plmn);
+const char *osmo_plmn_name2(const struct osmo_plmn_id *plmn);
+const char *osmo_lai_name(const struct osmo_location_area_id *lai);
+
+void osmo_plmn_to_bcd(uint8_t *bcd_dst, const struct osmo_plmn_id *plmn);
+void osmo_plmn_from_bcd(const uint8_t *bcd_src, struct osmo_plmn_id *plmn);

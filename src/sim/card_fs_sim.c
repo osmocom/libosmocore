@@ -216,6 +216,7 @@ static int gsm_plmnsel_decode(struct osim_decoded_data *dd,
 
 		mnc = element_alloc_sub(elem, "MNC", ELEM_T_UINT16, ELEM_REPR_DEC);
 		mnc->u.u16 = ra_id.mnc;
+		/* TODO: what about ra_id.mnc_3_digits? */
 	}
 
 	return 0;
