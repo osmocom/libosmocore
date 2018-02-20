@@ -187,6 +187,39 @@ static inline void check_lai(const struct gprs_ra_id *raid)
 		printf("  FAIL\n");
 }
 
+static inline void dump_lai(const struct osmo_location_area_id *lai)
+{
+	printf("%s%s\n", osmo_lai_name(lai), lai->plmn.mnc_3_digits ? " (3-digit MNC)" : "");
+}
+
+static inline void check_lai2(const struct gprs_ra_id *raid)
+{
+	struct gsm48_loc_area_id lai = {};
+	struct osmo_location_area_id decoded = {};
+	struct osmo_location_area_id laid = {
+		.plmn = {
+			.mcc = raid->mcc,
+			.mnc = raid->mnc,
+			.mnc_3_digits = raid->mnc_3_digits,
+		},
+		.lac = raid->lac,
+	};
+
+	printf("- gsm48_generate_lai2() from "); dump_lai(&laid);
+
+	gsm48_generate_lai2(&lai, &laid);
+	printf("  Encoded %s\n", osmo_hexdump((unsigned char*)&lai, sizeof(lai)));
+	gsm48_decode_lai2(&lai, &decoded);
+	printf("  gsm48_decode_lai2() gives  "); dump_lai(&decoded);
+	if (decoded.plmn.mcc == laid.plmn.mcc
+	    && decoded.plmn.mnc == laid.plmn.mnc
+	    && decoded.lac == laid.lac
+	    && decoded.plmn.mnc_3_digits == (laid.plmn.mnc_3_digits || laid.plmn.mnc > 99))
+		printf("  passed\n");
+	else
+		printf("  FAIL\n");
+}
+
 static struct gprs_ra_id test_ra_cap_items[] = {
 	{
 		.mcc = 77,
@@ -228,6 +261,7 @@ static void test_lai_encode_decode(void)
 
 	for (i = 0; i < ARRAY_SIZE(test_ra_cap_items); i++) {
 		check_lai(&test_ra_cap_items[i]);
+		check_lai2(&test_ra_cap_items[i]);
 	}
 }
 
