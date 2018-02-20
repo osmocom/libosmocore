@@ -12,3 +12,13 @@ Constructed RA:
 MCC+MNC in BCD: 80 f4 89 
 084-98-11-89
 RA test...passed
+Constructed RA:
+000-00-0-0
+MCC+MNC in BCD: 00 f0 00 
+000-00-0-0
+RA test...passed
+Constructed RA:
+999-999-65535-255
+MCC+MNC in BCD: 99 99 99 
+999-999-65535-255
+RA test...passed

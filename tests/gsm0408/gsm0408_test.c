@@ -172,6 +172,18 @@ static struct gprs_ra_id test_ra_cap_items[] = {
 		.lac = 11,
 		.rac = 89,
 	},
+	{
+		.mcc = 0,
+		.mnc = 0,
+		.lac = 0,
+		.rac = 0,
+	},
+	{
+		.mcc = 999,
+		.mnc = 999,
+		.lac = 65535,
+		.rac = 255,
+	},
 };
 
 static void test_ra_cap(void)
