@@ -132,7 +132,7 @@ static int test_bearer_cap()
 
 static inline void dump_ra(const struct gprs_ra_id *raid)
 {
-	printf("RA: MCC=%u, MNC=%u, LAC=%u, RAC=%u\n", raid->mcc, raid->mnc, raid->lac, raid->rac);
+	printf("%03u-%02u-%u-%u\n", raid->mcc, raid->mnc, raid->lac, raid->rac);
 }
 
 static inline void check_ra(const struct gprs_ra_id *raid)
@@ -150,6 +150,7 @@ static inline void check_ra(const struct gprs_ra_id *raid)
 
 	gsm48_parse_ra(&raid0, (const uint8_t *)&ra);
 	dump_ra(raid);
+	printf("MCC+MNC in BCD: %s\n", osmo_hexdump(ra.digits, sizeof(ra.digits)));
 	dump_ra(&raid0);
 	printf("RA test...");
 	if (raid->mnc != raid0.mnc || raid->mcc != raid0.mcc || raid->lac != raid0.lac || raid->rac != raid0.rac)
