@@ -3,10 +3,10 @@ Test `Speech, all codecs' passed
 Simple TMSI encoding test....passed
 Simple IMSI encoding test....passed: [10] 17 08 99 10 07 00 00 00 64 02 
 Constructed RA:
-RA: MNC=121, MCC=77, LAC=666, RAC=5
-RA: MNC=121, MCC=77, LAC=666, RAC=5
+RA: MCC=77, MNC=121, LAC=666, RAC=5
+RA: MCC=77, MNC=121, LAC=666, RAC=5
 RA test...passed
 Constructed RA:
-RA: MNC=98, MCC=84, LAC=11, RAC=89
-RA: MNC=98, MCC=84, LAC=11, RAC=89
+RA: MCC=84, MNC=98, LAC=11, RAC=89
+RA: MCC=84, MNC=98, LAC=11, RAC=89
 RA test...passed

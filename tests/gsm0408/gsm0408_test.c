@@ -132,7 +132,7 @@ static int test_bearer_cap()
 
 static inline void dump_ra(const struct gprs_ra_id *raid)
 {
-	printf("RA: MNC=%u, MCC=%u, LAC=%u, RAC=%u\n", raid->mnc, raid->mcc, raid->lac, raid->rac);
+	printf("RA: MCC=%u, MNC=%u, LAC=%u, RAC=%u\n", raid->mcc, raid->mnc, raid->lac, raid->rac);
 }
 
 static inline void check_ra(const struct gprs_ra_id *raid)
@@ -160,14 +160,14 @@ static inline void check_ra(const struct gprs_ra_id *raid)
 
 static struct gprs_ra_id test_ra_cap_items[] = {
 	{
-		.mnc = 121,
 		.mcc = 77,
+		.mnc = 121,
 		.lac = 666,
 		.rac = 5,
 	},
 	{
-		.mnc = 98,
 		.mcc = 84,
+		.mnc = 98,
 		.lac = 11,
 		.rac = 89,
 	},
