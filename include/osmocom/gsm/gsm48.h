@@ -12,6 +12,10 @@
 /* reserved according to GSM 03.03 § 2.4 */
 #define GSM_RESERVED_TMSI   0xFFFFFFFF
 
+/* Valid MCC and MNC range from 0 to 999.
+ * To mark an invalid / unset MNC, this value shall be used. */
+#define GSM_MCC_MNC_INVALID 0xFFFF
+
 /* A parsed GPRS routing area */
 struct gprs_ra_id {
 	uint16_t	mcc;
