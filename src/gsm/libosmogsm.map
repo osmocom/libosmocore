@@ -245,7 +245,6 @@ gsm48_encode_redirecting;
 gsm48_encode_signal;
 gsm48_encode_ssversion;
 gsm48_encode_useruser;
-gsm48_encode_classmark1;
 gsm48_generate_lai;
 gsm48_generate_mid;
 gsm48_generate_mid_from_imsi;

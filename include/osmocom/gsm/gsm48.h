@@ -29,7 +29,6 @@ int gsm48_decode_lai(struct gsm48_loc_area_id *lai, uint16_t *mcc,
 		     uint16_t *mnc, uint16_t *lac);
 void gsm48_generate_lai(struct gsm48_loc_area_id *lai48, uint16_t mcc,
 			uint16_t mnc, uint16_t lac);
-void gsm48_encode_classmark1(struct gsm48_classmark1 *cm, uint8_t rev_lv, bool es_ind, bool a5_1, uint8_t rf_pwr);
 int gsm48_generate_mid_from_tmsi(uint8_t *buf, uint32_t tmsi);
 int gsm48_generate_mid_from_imsi(uint8_t *buf, const char *imsi);
 uint8_t gsm48_generate_mid(uint8_t *buf, const char *id, uint8_t mi_type);

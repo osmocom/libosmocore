@@ -508,22 +508,6 @@ void gsm48_generate_lai(struct gsm48_loc_area_id *lai48, uint16_t mcc,
 	lai48->lac = osmo_htons(lac);
 }
 
-/*! Encode TS 24.008 §10.5.1.5 Mobile Station Classmark 1
- *  \param[out] cm caller-provided memory for output
- *  \param[in] rev_lv Revision level
- *  \param[in] es_ind ES IND "Controlled Early Classmark Sending" option
- *  \param[in] a5_1 A5/1 algorithm supported
- *  \param[in] pwr_lv RF power capability
- */
-void gsm48_encode_classmark1(struct gsm48_classmark1 *cm, uint8_t rev_lv, bool es_ind, bool a5_1, uint8_t rf_pwr)
-{
-	memset(cm, 0, sizeof(*cm));
-	cm->rev_lev = rev_lv;
-	cm->es_ind = es_ind;
-	cm->a5_1 = !a5_1;
-	cm->pwr_lev = rf_pwr;
-}
-
 /*! Decode TS 04.08 Location Area Identifier
  *  \param[in] Location Area Identifier (encoded)
  *  \param[out] mcc Mobile Country Code
