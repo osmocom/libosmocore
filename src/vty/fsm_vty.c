@@ -181,8 +181,20 @@ DEFUN(show_fsm_inst, show_fsm_inst_cmd,
  *  application if you want to support those commands. */
 void osmo_fsm_vty_add_cmds(void)
 {
+	static bool osmo_fsm_vty_cmds_installed;
+
+	/* Make sure FSM commands get installed only once.
+	 * We might be called from libraries or from an application.
+	 * An application might be oblivious to the fact that one or
+	 * more of its libaries are using osmo_fsm. And likewise,
+	 * any given library will not know if another library has
+	 * already installled these commands. */
+	if (osmo_fsm_vty_cmds_installed)
+		return;
+
 	install_element_ve(&show_fsm_cmd);
 	install_element_ve(&show_fsms_cmd);
 	install_element_ve(&show_fsm_inst_cmd);
 	install_element_ve(&show_fsm_insts_cmd);
+	osmo_fsm_vty_cmds_installed = true;
 }
