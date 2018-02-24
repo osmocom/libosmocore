@@ -88,6 +88,15 @@ static inline void rate_ctr_inc(struct rate_ctr *ctr)
 	rate_ctr_add(ctr, 1);
 }
 
+/*! Increment the counter by 1
+ *  \param ctrg \ref rate_ctr_group of counter
+ *  \param idx index into \a ctrg counter group */
+static inline void rate_ctr_inc2(struct rate_ctr_group *ctrg, unsigned int idx)
+{
+	rate_ctr_inc(&ctrg->ctr[idx]);
+}
+
+
 /*! Return the counter difference since the last call to this function */
 int64_t rate_ctr_difference(struct rate_ctr *ctr);
 
