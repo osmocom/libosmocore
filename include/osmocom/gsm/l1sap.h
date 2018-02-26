@@ -64,6 +64,10 @@ struct ph_rach_ind_param {
 	uint32_t fn;		/*!< GSM Frame Number at time of RA */
 	uint8_t is_11bit;	/*!< no.of bits in RACH*/
 	enum ph_burst_type burst_type; /*!< type of burst*/
+	/* elements added on 2018-02-26 */
+	int8_t rssi;		/*!< RSSI of RACH indication */
+	uint16_t ber10k;	/*!< BER in units of 0.01% */
+	int16_t acc_delay_256bits;/* !< Burst TA Offset in 1/256th bits */
 };
 
 /*! for PH-[UNIT]DATA.{req,ind} | PH-RTS.ind */
