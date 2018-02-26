@@ -61,10 +61,14 @@ void vty_out_fsm(struct vty *vty, struct osmo_fsm *fsm)
 	vty_out(vty, "FSM Name: '%s', Log Subsys: '%s'%s", fsm->name,
 		log_category_name(fsm->log_subsys), VTY_NEWLINE);
 	/* list the events */
-	for (evt_name = fsm->event_names; evt_name->str != NULL; evt_name++) {
-		vty_out(vty, " Event %02u (0x%08x): '%s'%s", evt_name->value,
-			(1 << evt_name->value), evt_name->str, VTY_NEWLINE);
-	}
+	if (fsm->event_names) {
+		for (evt_name = fsm->event_names; evt_name->str != NULL; evt_name++) {
+			vty_out(vty, " Event %02u (0x%08x): '%s'%s", evt_name->value,
+				(1 << evt_name->value), evt_name->str, VTY_NEWLINE);
+		}
+	} else
+		vty_out(vty, " No event names are defined for this FSM! Please fix!%s", VTY_NEWLINE);
+
 	/* list the states */
 	vty_out(vty, " Number of States: %u%s", fsm->num_states, VTY_NEWLINE);
 	for (i = 0; i < fsm->num_states; i++) {
