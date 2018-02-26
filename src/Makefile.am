@@ -13,7 +13,8 @@ endif
 lib_LTLIBRARIES = libosmocore.la
 
 libosmocore_la_LIBADD = $(BACKTRACE_LIB) $(TALLOC_LIBS)
-libosmocore_la_SOURCES = timer.c timer_gettimeofday.c select.c signal.c msgb.c bits.c \
+libosmocore_la_SOURCES = timer.c timer_gettimeofday.c timer_clockgettime.c \
+			 select.c signal.c msgb.c bits.c \
 			 bitvec.c bitcomp.c counter.c fsm.c \
 			 write_queue.c utils.c socket.c \
 			 logging.c logging_syslog.c logging_gsmtap.c rate_ctr.c \

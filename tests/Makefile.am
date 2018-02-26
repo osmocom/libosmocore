@@ -23,7 +23,7 @@ check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
 		 coding/coding_test conv/conv_gsm0503_test		\
 		 abis/abis_test endian/endian_test sercomm/sercomm_test	\
 		 prbs/prbs_test gsm23003/gsm23003_test 			\
-		 codec/codec_ecu_fr_test
+		 codec/codec_ecu_fr_test timer/clk_override_test
 
 if ENABLE_MSGFILE
 check_PROGRAMS += msgfile/msgfile_test
@@ -121,6 +121,8 @@ sms_sms_test_SOURCES = sms/sms_test.c
 sms_sms_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 
 timer_timer_test_SOURCES = timer/timer_test.c
+
+timer_clk_override_test_SOURCES = timer/clk_override_test.c
 
 ussd_ussd_test_SOURCES = ussd/ussd_test.c
 ussd_ussd_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
@@ -250,7 +252,8 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
 	     osmo-auc-gen/osmo-auc-gen_test.err				\
 	     conv/conv_gsm0503_test.ok endian/endian_test.ok 		\
 	     sercomm/sercomm_test.ok prbs/prbs_test.ok			\
-	     gsm23003/gsm23003_test.ok
+	     gsm23003/gsm23003_test.ok                                 \
+	     timer/clk_override_test.ok
 
 DISTCLEANFILES = atconfig atlocal conv/gsm0503_test_vectors.c
 BUILT_SOURCES = conv/gsm0503_test_vectors.c

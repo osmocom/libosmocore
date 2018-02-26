@@ -1,0 +1,8 @@
+Non implemented clocks work fine
+Monotonic clock is working fine by default
+Monotonic clock override enabled
+Monotonic override is cleared by default
+Monotonic clock can be overriden
+osmo_clock_override_add works fine.
+Monotonic clock override disabled
+Monotonic clock is working fine after enable+disable.

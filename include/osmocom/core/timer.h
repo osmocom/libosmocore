@@ -40,6 +40,7 @@
 #pragma once
 
 #include <sys/time.h>
+#include <time.h>
 #include <stdbool.h>
 
 #include <osmocom/core/linuxlist.h>
@@ -87,6 +88,7 @@ int osmo_timers_update(void);
 int osmo_timers_check(void);
 
 int osmo_gettimeofday(struct timeval *tv, struct timezone *tz);
+int osmo_clock_gettime(clockid_t clk_id, struct timespec *tp);
 
 /*
  * timer override
@@ -95,5 +97,9 @@ int osmo_gettimeofday(struct timeval *tv, struct timezone *tz);
 extern bool osmo_gettimeofday_override;
 extern struct timeval osmo_gettimeofday_override_time;
 void osmo_gettimeofday_override_add(time_t secs, suseconds_t usecs);
+
+void osmo_clock_override_enable(clockid_t clk_id, bool enable);
+void osmo_clock_override_add(clockid_t clk_id, time_t secs, long nsecs);
+struct timespec *osmo_clock_override_gettimespec(clockid_t clk_id);
 
 /*! @} */

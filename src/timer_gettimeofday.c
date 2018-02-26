@@ -39,7 +39,7 @@ struct timeval osmo_gettimeofday_override_time = { 23, 424242 };
  * N. B: gettimeofday() is affected by discontinuous jumps in the system time
  *       (e.g., if the system administrator manually changes the system time).
  *       Hence this should NEVER be used for elapsed time computation.
- *       Instead, clock_gettime(CLOCK_MONOTONIC, ..) should be used for that (with similar shim if necessary).
+ *       Instead, osmo_clock_gettime() with CLOCK_MONOTONIC should be used for that.
  */
 int osmo_gettimeofday(struct timeval *tv, struct timezone *tz)
 {
