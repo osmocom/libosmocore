@@ -28,6 +28,12 @@ enum test_fsm_evt {
 	EV_B,
 };
 
+static const struct value_string test_fsm_event_names[] = {
+	OSMO_VALUE_STRING(EV_A),
+	OSMO_VALUE_STRING(EV_B),
+	{ 0, NULL }
+};
+
 static void test_fsm_null(struct osmo_fsm_inst *fi, uint32_t event, void *data)
 {
 	switch (event) {
@@ -88,6 +94,7 @@ static struct osmo_fsm fsm = {
 	.states = test_fsm_states,
 	.num_states = ARRAY_SIZE(test_fsm_states),
 	.log_subsys = DMAIN,
+	.event_names = test_fsm_event_names,
 };
 
 static struct ctrl_handle *g_ctrl;

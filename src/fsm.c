@@ -154,6 +154,8 @@ int osmo_fsm_register(struct osmo_fsm *fsm)
 	}
 	if (osmo_fsm_find_by_name(fsm->name))
 		return -EEXIST;
+	if (fsm->event_names == NULL)
+		LOGP(DLGLOBAL, LOGL_ERROR, "FSM '%s' has no event names! Please fix!\n", fsm->name);
 	llist_add_tail(&fsm->list, &osmo_g_fsms);
 	INIT_LLIST_HEAD(&fsm->instances);
 
