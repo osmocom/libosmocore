@@ -47,6 +47,7 @@ nobase_include_HEADERS = \
                        osmocom/core/strrb.h \
                        osmocom/core/talloc.h \
                        osmocom/core/timer.h \
+                       osmocom/core/timer_compat.h \
                        osmocom/core/utils.h \
                        osmocom/core/write_queue.h \
                        osmocom/crypt/auth.h \
@@ -148,7 +149,6 @@ nobase_include_HEADERS += \
 endif
 
 noinst_HEADERS = \
-	osmocom/core/timer_compat.h \
 	osmocom/gsm/kasumi.h osmocom/gsm/gea.h
 
 osmocom/core/bit%gen.h: osmocom/core/bitXXgen.h.tpl

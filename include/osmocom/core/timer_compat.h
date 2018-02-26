@@ -71,5 +71,49 @@
   } while (0)
 #endif
 
+/* Convenience macros for operations on timespecs.
+   NOTE: `timercmp' does not work for >= or <=.  */
+
+#ifndef timespecisset
+# define timespecisset(tvp)	((tvp)->tv_sec || (tvp)->tv_nsec)
+#endif
+
+#ifndef timespecclear
+# define timespecclear(tvp)	((tvp)->tv_sec = (tvp)->tv_nsec = 0)
+#endif
+
+#ifndef timespeccmp
+# define timespeccmp(a, b, CMP) 				              \
+  (((a)->tv_sec == (b)->tv_sec) ? 					      \
+   ((a)->tv_nsec CMP (b)->tv_nsec) : 					      \
+   ((a)->tv_sec CMP (b)->tv_sec))
+#endif
+
+#ifndef timespecadd
+# define timespecadd(a, b, result)					      \
+  do {									      \
+    (result)->tv_sec = (a)->tv_sec + (b)->tv_sec;			      \
+    (result)->tv_nsec = (a)->tv_nsec + (b)->tv_nsec;			      \
+    if ((result)->tv_nsec >= 1000000000)			              \
+      {									      \
+	++(result)->tv_sec;						      \
+	(result)->tv_nsec -= 1000000000;				      \
+      }									      \
+  } while (0)
+#endif
+
+#ifndef timespecsub
+# define timespecsub(a, b, result)					      \
+  do {									      \
+    (result)->tv_sec = (a)->tv_sec - (b)->tv_sec;			      \
+    (result)->tv_nsec = (a)->tv_nsec - (b)->tv_nsec;			      \
+    if ((result)->tv_nsec < 0) {					      \
+      --(result)->tv_sec;						      \
+      (result)->tv_nsec += 1000000000;					      \
+    }									      \
+  } while (0)
+#endif
+
+
 
 /*! @} */
