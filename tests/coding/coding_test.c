@@ -123,7 +123,7 @@ static void test_rach(uint8_t bsic, uint8_t ra)
 	memset(bursts_s + 6, 0, 8);
 
 	/* Decode, correcting errors */
-	gsm0503_rach_decode(&result, bursts_s, bsic);
+	gsm0503_rach_decode_ber(&result, bursts_s, bsic, NULL, NULL);
 	printf("Decoded: %02x\n", result);
 
 	if (ra != result)
@@ -153,7 +153,7 @@ static void test_rach_ext(uint8_t bsic, uint16_t ra)
 	memset(bursts_s + 9, 0, 8);
 
 	/* Decode, correcting errors */
-	gsm0503_rach_ext_decode(&result, bursts_s, bsic);
+	gsm0503_rach_ext_decode_ber(&result, bursts_s, bsic, NULL, NULL);
 	printf("Decoded: %02x\n", result);
 
 	if (ra != result)

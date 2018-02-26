@@ -2826,13 +2826,15 @@ static inline void rach_apply_bsic(ubit_t *d, uint8_t bsic, uint8_t start)
 		d[start + i] ^= ((bsic >> (5 - i)) & 1);
 }
 
-static inline int16_t rach_decode(const sbit_t *burst, uint8_t bsic, bool is_11bit)
+static inline int16_t rach_decode_ber(const sbit_t *burst, uint8_t bsic, bool is_11bit,
+				      int *n_errors, int *n_bits_total)
 {
 	ubit_t conv[17];
 	uint8_t ra[2] = { 0 }, nbits = is_11bit ? 11 : 8;
 	int rv;
 
-	osmo_conv_decode(is_11bit ? &gsm0503_rach_ext : &gsm0503_rach, burst, conv);
+	osmo_conv_decode_ber(is_11bit ? &gsm0503_rach_ext : &gsm0503_rach, burst, conv,
+			     n_errors, n_bits_total);
 
 	rach_apply_bsic(conv, bsic, nbits);
 
@@ -2852,7 +2854,7 @@ static inline int16_t rach_decode(const sbit_t *burst, uint8_t bsic, bool is_11b
  *  \returns 0 on success; negative on error (e.g. CRC error) */
 int gsm0503_rach_ext_decode(uint16_t *ra, const sbit_t *burst, uint8_t bsic)
 {
-	int16_t r = rach_decode(burst, bsic, true);
+	int16_t r = rach_decode_ber(burst, bsic, true, NULL, NULL);
 
 	if (r < 0)
 		return r;
@@ -2869,7 +2871,43 @@ int gsm0503_rach_ext_decode(uint16_t *ra, const sbit_t *burst, uint8_t bsic)
  *  \returns 0 on success; negative on error (e.g. CRC error) */
 int gsm0503_rach_decode(uint8_t *ra, const sbit_t *burst, uint8_t bsic)
 {
-	int16_t r = rach_decode(burst, bsic, false);
+	int16_t r = rach_decode_ber(burst, bsic, false, NULL, NULL);
+	if (r < 0)
+		return r;
+
+	*ra = r;
+	return 0;
+}
+
+/*! Decode the Extended (11-bit) RACH according to 3GPP TS 45.003
+ *  \param[out] ra output buffer for RACH data
+ *  \param[in] burst Input burst data
+ *  \param[in] bsic BSIC used in this cell
+ *  \param[out] n_errors Number of detected bit errors
+ *  \param[out] n_bits_total Total number of bits
+ *  \returns 0 on success; negative on error (e.g. CRC error) */
+int gsm0503_rach_ext_decode_ber(uint16_t *ra, const sbit_t *burst, uint8_t bsic,
+				int *n_errors, int *n_bits_total)
+{
+	int16_t r = rach_decode_ber(burst, bsic, true, n_errors, n_bits_total);
+	if (r < 0)
+		return r;
+
+	*ra = r;
+	return 0;
+}
+
+/*! Decode the (8-bit) RACH according to TS 05.03
+ *  \param[out] ra output buffer for RACH data
+ *  \param[in] burst Input burst data
+ *  \param[in] bsic BSIC used in this cell
+ *  \param[out] n_errors Number of detected bit errors
+ *  \param[out] n_bits_total Total number of bits
+ *  \returns 0 on success; negative on error (e.g. CRC error) */
+int gsm0503_rach_decode_ber(uint8_t *ra, const sbit_t *burst, uint8_t bsic,
+			    int *n_errors, int *n_bits_total)
+{
+	int16_t r = rach_decode_ber(burst, bsic, false, n_errors, n_bits_total);
 
 	if (r < 0)
 		return r;

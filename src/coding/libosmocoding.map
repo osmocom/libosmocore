@@ -110,8 +110,10 @@ gsm0503_tch_ahs_encode;
 gsm0503_tch_ahs_decode;
 gsm0503_rach_ext_encode;
 gsm0503_rach_ext_decode;
+gsm0503_rach_ext_decode_ber;
 gsm0503_rach_encode;
 gsm0503_rach_decode;
+gsm0503_rach_decode_ber;
 gsm0503_sch_encode;
 gsm0503_sch_decode;
 
