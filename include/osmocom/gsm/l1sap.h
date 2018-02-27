@@ -77,7 +77,10 @@ struct ph_data_param {
 	uint32_t fn;		/*!< GSM Frame Number */
 	int8_t rssi;		/*!< RSSI of receivedindication */
 	uint16_t ber10k;	/*!< BER in units of 0.01% */
-	int16_t ta_offs_qbits;	/* !< Burst TA Offset in quarter bits */
+	union {
+		int16_t ta_offs_qbits;	/* !< Burst TA Offset in quarter bits */
+		int16_t ta_offs_256bits;/*!< timing advance offset (in 1/256th bits) */
+	};
 	int16_t lqual_cb;	/* !< Link quality in centiBel */
 	enum osmo_ph_pres_info_type pdch_presence_info; /*!< Info regarding presence/validity of header and data parts */
 };
@@ -107,7 +110,10 @@ struct info_meas_ind_param {
 	uint8_t chan_nr;	/*!< Channel Number (Like RSL) */
 	uint32_t fn;		/*!< GSM Frame Number */
 	uint16_t ber10k;	/*!< BER in units of 0.01% */
-	int16_t ta_offs_qbits;	/*!< timing advance offset (in qbits) */
+	union {
+		int16_t ta_offs_qbits;	/*!< timing advance offset (in qbits) */
+		int16_t ta_offs_256bits;/*!< timing advance offset (in 1/256th bits) */
+	};
 	int16_t c_i_cb;		/*!< C/I ratio in 0.1 dB */
 	uint8_t is_sub:1;	/*!< flags */
 	uint8_t inv_rssi;	/*!< RSSI in dBm * -1 */
