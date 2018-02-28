@@ -23,7 +23,23 @@
 
 /*! \addtogroup timer
  *  @{
- * \file timer_gettimeofday.c */
+ * \file timer_gettimeofday.c
+ * Overriding Time: osmo_gettimeofday()
+ *      - Useful to write and reproduce tests that depend on specific time
+ *        factors. This API allows to fake the timeval provided by `gettimeofday()`
+ *        by using a small shim osmo_gettimeofday().
+ *      - If the clock override is disabled (default) for a given clock,
+ *        osmo_gettimeofday() will do the same as regular `gettimeofday()`.
+ *      - If you want osmo_gettimeofday() to provide a specific time, you must
+ *        enable time override by setting the global variable
+ *        osmo_gettimeofday_override (`osmo_gettimeofday_override = true`), then
+ *        set the global struct timeval osmo_gettimeofday_override_time wih the
+ *        desired value. Next time osmo_gettimeofday() is called, it will return
+ *        the values previously set.
+ *      - A helper osmo_gettimeofday_override_add() is provided to easily
+ *        increment osmo_gettimeofday_override_time with a specific amount of
+ *        time.
+ */
 
 #include <stdbool.h>
 #include <sys/time.h>
