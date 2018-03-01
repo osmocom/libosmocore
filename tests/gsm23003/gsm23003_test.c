@@ -159,7 +159,9 @@ static bool test_mnc_from_str()
 
 		result.rc = osmo_mnc_from_str(t->mnc_str, &result.mnc,
 						     &result.mnc_3_digits);
-		ok = !bcmp(&result, &t->expect, sizeof(result));
+		ok = (result.rc == t->expect.rc)
+		     && (result.mnc == t->expect.mnc)
+		     && (result.mnc_3_digits == t->expect.mnc_3_digits);
 		printf("%2d: \"%s\" rc=%d mnc=%u mnc_3_digits=%u %s\n",
 		       i, osmo_escape_str(t->mnc_str, -1), result.rc, result.mnc, result.mnc_3_digits,
 		       ok ? "pass" : "FAIL");
