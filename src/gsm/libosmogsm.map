@@ -262,6 +262,8 @@ gsm48_mcc_mnc_to_bcd;
 gsm48_mcc_mnc_from_bcd;
 gsm48_generate_lai2;
 gsm48_decode_lai2;
+osmo_bts_features_descs;
+osmo_bts_feature_name;
 osmo_plmn_to_bcd;
 osmo_plmn_from_bcd;
 osmo_mcc_name;
