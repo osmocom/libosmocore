@@ -27,7 +27,7 @@ fi
 echo "Releasing $VERSION -> $NEW_VER..."
 
 if [ "z$LIBVERS" = "z" ]; then
-	gbp dch --debian-tag='%(version)s' --auto --meta --git-author --multimaint-merge --ignore-branch
+	gbp dch --debian-tag='%(version)s' --auto --meta --git-author --multimaint-merge --ignore-branch --new-version="$NEW_VER"
 else
 	echo "You should NOT be doing this unless you've read and understood following article:"
 	echo "https://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html#Updating-version-info"
