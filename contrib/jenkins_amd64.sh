@@ -15,7 +15,7 @@ build() {
 
     prep_build "$src_dir" "$build_dir"
 
-    "$src_dir"/configure  --disable-silent-rules --enable-static $ENABLE_SANITIZE CFLAGS="-Werror" CPPFLAGS="-Werror"
+    "$src_dir"/configure  --disable-silent-rules --enable-static $ENABLE_SANITIZE --enable-werror
 
     run_make
 }
