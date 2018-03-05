@@ -136,14 +136,14 @@ static struct test_mnc_from_str test_mnc_from_strs[] = {
 	{ "001", { 0, 1, true } },
 	{ "",	 { -EINVAL, 0, false } },
 	{ " ",	 { -EINVAL, 0, false } },
-	{ "-1",	 { -EINVAL, 65535, false } },
-	{ "1000", { -EINVAL, 1000, true } },
+	{ "-1",	 { -EINVAL, 0, false } },
+	{ "1000", { -EINVAL, 0, false } },
 	{ "0x",	 { -EINVAL, 0, false } },
-	{ " 23", { -EINVAL, 23, true } }, /* technically not a 3-digit MNC, but it's EINVAL anyway */
-	{ "23 ", { -EINVAL, 23, true } },
-	{ " 023", { -EINVAL, 23, true } },
-	{ "023 ", { -EINVAL, 23, true } },
-	{ "023 ", { -EINVAL, 23, true } },
+	{ " 23", { -EINVAL, 0, false } },
+	{ "23 ", { -EINVAL, 0, false } },
+	{ " 023", { -EINVAL, 0, false } },
+	{ "023 ", { -EINVAL, 0, false } },
+	{ "023 ", { -EINVAL, 0, false } },
 };
 
 static bool test_mnc_from_str()
@@ -154,7 +154,7 @@ static bool test_mnc_from_str()
 
 	for (i = 0; i < ARRAY_SIZE(test_mnc_from_strs); i++) {
 		struct test_mnc_from_str *t = &test_mnc_from_strs[i];
-		struct test_mnc_from_str_result result;
+		struct test_mnc_from_str_result result = {};
 		bool ok;
 
 		result.rc = osmo_mnc_from_str(t->mnc_str, &result.mnc,

@@ -206,7 +206,7 @@ void osmo_plmn_from_bcd(const uint8_t *bcd_src, struct osmo_plmn_id *plmn)
  * \param mnc[out]	MNC result buffer, or NULL.
  * \param[out] mnc_3_digits	Result buffer for 3-digit flag, or NULL.
  * \returns zero on success, -EINVAL in case of surplus characters, negative errno in case of conversion
- *          errors.
+ *          errors. In case of error, do not modify the out-arguments.
  */
 int osmo_mnc_from_str(const char *mnc_str, uint16_t *mnc, bool *mnc_3_digits)
 {
@@ -215,19 +215,17 @@ int osmo_mnc_from_str(const char *mnc_str, uint16_t *mnc, bool *mnc_3_digits)
 	char *endptr;
 	int rc = 0;
 
-	if (!mnc_str || !isdigit(mnc_str[0]) || strlen(mnc_str) > 3) {
-		/* return invalid, but give strtol a shot anyway, for callers that don't want to be
-		 * strict */
-		rc = -EINVAL;
-	}
+	if (!mnc_str || !isdigit(mnc_str[0]) || strlen(mnc_str) > 3)
+		return -EINVAL;
+
 	errno = 0;
 	_mnc = strtol(mnc_str, &endptr, 10);
 	if (errno)
 		rc = -errno;
 	else if (*endptr)
-		rc = -EINVAL;
+		return -EINVAL;
 	if (_mnc < 0 || _mnc > 999)
-		rc = -EINVAL;
+		return -ERANGE;
 	_mnc_3_digits = strlen(mnc_str) > 2;
 
 	if (mnc)
