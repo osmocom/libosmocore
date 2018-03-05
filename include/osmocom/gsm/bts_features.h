@@ -30,13 +30,13 @@ extern const struct value_string osmo_bts_features_descs[];
 
 const char *osmo_bts_feature_name(enum osmo_bts_features feature);
 
-inline int osmo_bts_set_feature(struct bitvec *features, enum osmo_bts_features feature)
+static inline int osmo_bts_set_feature(struct bitvec *features, enum osmo_bts_features feature)
 {
 	OSMO_ASSERT(_NUM_BTS_FEAT < MAX_BTS_FEATURES);
 	return bitvec_set_bit_pos(features, feature, 1);
 }
 
-inline bool osmo_bts_has_feature(const struct bitvec *features, enum osmo_bts_features feature)
+static inline bool osmo_bts_has_feature(const struct bitvec *features, enum osmo_bts_features feature)
 {
 	OSMO_ASSERT(_NUM_BTS_FEAT < MAX_BTS_FEATURES);
 	return bitvec_get_bit_pos(features, feature);
