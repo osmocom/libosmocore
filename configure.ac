@@ -272,6 +272,24 @@ then
 	CPPFLAGS="$CPPFLAGS -fsanitize=address -fsanitize=undefined"
 fi
 
+AC_ARG_ENABLE(werror,
+	[AS_HELP_STRING(
+		[--enable-werror],
+		[Turn all compiler warnings into errors, with exceptions:
+		 a) deprecation (allow upstream to mark deprecation without breaking builds);
+		 b) "#warning" pragmas (allow to remind ourselves of errors without breaking builds)
+		]
+	)],
+	[werror=$enableval], [werror="no"])
+if test x"$werror" = x"yes"
+then
+	WERROR_FLAGS="-Werror"
+	WERROR_FLAGS+=" -Wno-error=deprecated -Wno-error=deprecated-declarations"
+	WERROR_FLAGS+=" -Wno-error=cpp" # "#warning"
+	CFLAGS="$CFLAGS $WERROR_FLAGS"
+	CPPFLAGS="$CPPFLAGS $WERROR_FLAGS"
+fi
+
 CFLAGS="$CFLAGS -DBUILDING_LIBOSMOCORE -Wall"
 CPPFLAGS="$CPPFLAGS -DBUILDING_LIBOSMOCORE -Wall"
 
@@ -317,6 +335,9 @@ AC_DEFUN([CHECK_BUILTIN_SUPPORT], [
 dnl Check if the compiler supports runtime SIMD detection
 CHECK_BUILTIN_SUPPORT([__builtin_cpu_supports],
   [Runtime SIMD detection will be disabled])
+
+AC_MSG_RESULT([CFLAGS="$CFLAGS"])
+AC_MSG_RESULT([CPPFLAGS="$CPPFLAGS"])
 
 AC_OUTPUT(
 	libosmocore.pc
