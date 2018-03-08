@@ -79,13 +79,15 @@ struct msgb *msgb_alloc(uint16_t size, const char *name)
 {
 	struct msgb *msg;
 
-	msg = _talloc_zero(tall_msgb_ctx, sizeof(*msg) + size, name);
-
+	msg = talloc_named_const(tall_msgb_ctx, sizeof(*msg) + size, name);
 	if (!msg) {
 		LOGP(DLGLOBAL, LOGL_FATAL, "Unable to allocate a msgb: "
 			"name='%s', size=%u\n", name, size);
 		return NULL;
 	}
+
+	/* Manually zero-initialize allocated memory */
+	memset(msg, 0x00, sizeof(*msg) + size);
 
 	msg->data_len = size;
 	msg->len = 0;
