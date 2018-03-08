@@ -38,7 +38,7 @@
  *  	  * headroom, i.e. space in front of the message, to allow
  *  	    for additional headers being pushed in front of the current
  *  	    data
- *  	  * the curently occupied data for the message
+ *  	  * the currently occupied data for the message
  *  	  * tailroom, i.e. space at the end of the message, to
  *  	    allow more data to be added after the end of the current
  *  	    data
@@ -98,7 +98,7 @@ struct msgb *msgb_alloc(uint16_t size, const char *name)
 }
 
 /*! Release given message buffer
- * \param[in] m Message buffer to be free'd
+ * \param[in] m Message buffer to be freed
  */
 void msgb_free(struct msgb *m)
 {
@@ -144,7 +144,7 @@ struct msgb *msgb_dequeue(struct llist_head *queue)
  *  \param[in] msg message buffer that is to be resetted
  *
  * This will re-set the various internal pointers into the underlying
- * message buffer, i.e. remvoe all headroom and treat the msgb as
+ * message buffer, i.e. remove all headroom and treat the msgb as
  * completely empty.  It also initializes the control buffer to zero.
  */
 void msgb_reset(struct msgb *msg)
