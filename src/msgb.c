@@ -62,6 +62,7 @@
 
 #include <osmocom/core/msgb.h>
 #include <osmocom/core/talloc.h>
+#include <osmocom/core/logging.h>
 
 void *tall_msgb_ctx = NULL;
 
@@ -81,7 +82,8 @@ struct msgb *msgb_alloc(uint16_t size, const char *name)
 	msg = _talloc_zero(tall_msgb_ctx, sizeof(*msg) + size, name);
 
 	if (!msg) {
-		//LOGP(DRSL, LOGL_FATAL, "unable to allocate msgb\n");
+		LOGP(DLGLOBAL, LOGL_FATAL, "Unable to allocate a msgb: "
+			"name='%s', size=%u\n", name, size);
 		return NULL;
 	}
 
