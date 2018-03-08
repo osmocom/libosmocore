@@ -60,11 +60,8 @@
 #include <stdarg.h>
 #include <errno.h>
 
-
 #include <osmocom/core/msgb.h>
-//#include <openbsc/gsm_data.h>
 #include <osmocom/core/talloc.h>
-//#include <openbsc/debug.h>
 
 void *tall_msgb_ctx = NULL;
 
