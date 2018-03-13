@@ -609,6 +609,76 @@ struct msgb *gsm0808_create_paging(const char *imsi, const uint32_t *tmsi,
 	return gsm0808_create_paging2(imsi, tmsi, &cil2, chan_needed);
 }
 
+static uint8_t put_old_bss_to_new_bss_information(struct msgb *msg,
+						  const struct gsm0808_old_bss_to_new_bss_info *i)
+{
+	uint8_t *old_tail;
+	uint8_t *tlv_len;
+
+	msgb_put_u8(msg, GSM0808_IE_OLD_BSS_TO_NEW_BSS_INFORMATION);
+	tlv_len = msgb_put(msg, 1);
+	old_tail = msg->tail;
+
+	if (i->extra_information_present) {
+		uint8_t val = 0;
+		if (i->extra_information.prec)
+			val |= 1 << 0;
+		if (i->extra_information.lcs)
+			val |= 1 << 1;
+		if (i->extra_information.ue_prob)
+			val |= 1 << 2;
+		msgb_tlv_put(msg, GSM0808_FE_IE_EXTRA_INFORMATION, 1, &val);
+	}
+
+	if (i->current_channel_type_2_present) {
+		uint8_t val[2] = {
+			i->current_channel_type_2.mode,
+			i->current_channel_type_2.field,
+		};
+		msgb_tlv_put(msg, GSM0808_FE_IE_CURRENT_CHANNEL_TYPE_2, 2, val);
+	}
+
+	*tlv_len = (uint8_t) (msg->tail - old_tail);
+	return *tlv_len + 2;
+}
+
+/*! Create BSSMAP HANDOVER REQUIRED message.
+ * \param[in] params  All information to be encoded.
+ * \returns newly allocated msgb with BSSMAP REQUIRED message. */
+struct msgb *gsm0808_create_handover_required(const struct gsm0808_handover_required *params)
+{
+	struct msgb *msg;
+
+	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "BSSMAP-HANDOVER-REQUIRED");
+	if (!msg)
+		return NULL;
+
+	/* Message Type, 3.2.2.1 */
+	msgb_v_put(msg, BSS_MAP_MSG_HANDOVER_REQUIRED);
+
+	/* Cause, 3.2.2.5 */
+	msgb_tlv_put(msg, GSM0808_IE_CAUSE, params->cause & 0x80? 2 : 1, (const uint8_t*)&params->cause);
+
+	/* Cell Identifier List, 3.2.2.27 */
+	gsm0808_enc_cell_id_list2(msg, &params->cil);
+
+	/* Current Channel Type 1, 3.2.2.49 */
+	if (params->current_channel_type_1_present)
+		msgb_tv_fixed_put(msg, GSM0808_IE_CURRENT_CHANNEL_TYPE_1, 1, &params->current_channel_type_1);
+
+	/* Speech Version (Used), 3.2.2.51 */
+	if (params->speech_version_used_present)
+		msgb_tv_fixed_put(msg, GSM0808_IE_SPEECH_VERSION, 1, &params->speech_version_used);
+
+	if (params->old_bss_to_new_bss_info_present)
+		put_old_bss_to_new_bss_information(msg, &params->old_bss_to_new_bss_info);
+
+	/* pre-pend the header */
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
+
+	return msg;
+}
+
 /*! Prepend a DTAP header to given Message Buffer
  *  \param[in] msgb Message Buffer
  *  \param[in] link_id Link Identifier */

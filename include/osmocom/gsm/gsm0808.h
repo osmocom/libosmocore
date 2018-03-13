@@ -25,6 +25,7 @@
 
 #include "tlv.h"
 #include <osmocom/gsm/protocol/gsm_08_08.h>
+#include <osmocom/gsm/gsm0808_utils.h>
 #include <osmocom/gsm/gsm23003.h>
 
 struct sockaddr_storage;
@@ -79,6 +80,42 @@ struct msgb *gsm0808_create_paging(const char *imsi, const uint32_t *tmsi,
 				   const struct gsm0808_cell_id_list *cil,
 				   const uint8_t *chan_needed)
 				   OSMO_DEPRECATED("use gsm0808_create_paging2 instead");
+
+/*! 3GPP TS 48.008 §3.2.2.5.8 Old BSS to New BSS information */
+struct gsm0808_old_bss_to_new_bss_info {
+	bool extra_information_present;
+	struct {
+		bool prec;
+		bool lcs;
+		bool ue_prob;
+	} extra_information;
+
+	bool current_channel_type_2_present;
+	struct {
+		uint8_t mode;
+		uint8_t field;
+	} current_channel_type_2;
+
+	/* more items are defined in the spec and may be added later */
+};
+
+/*! 3GPP TS 48.008 §3.2.1.9 HANDOVER REQUIRED */
+struct gsm0808_handover_required {
+	uint16_t cause;
+	struct gsm0808_cell_id_list2 cil;
+
+	bool current_channel_type_1_present;
+	uint8_t current_channel_type_1;
+
+	bool speech_version_used_present;
+	uint8_t speech_version_used;
+
+	bool old_bss_to_new_bss_info_present;
+	struct gsm0808_old_bss_to_new_bss_info old_bss_to_new_bss_info;
+
+	/* more items are defined in the spec and may be added later */
+};
+struct msgb *gsm0808_create_handover_required(const struct gsm0808_handover_required *params);
 
 struct msgb *gsm0808_create_dtap(struct msgb *msg, uint8_t link_id);
 void gsm0808_prepend_dtap_header(struct msgb *msg, uint8_t link_id);
