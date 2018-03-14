@@ -703,7 +703,7 @@ static int parse_cell_id_global_list(struct osmo_cell_global_id *id_list, const 
 		if (i >= GSM0808_CELL_ID_LIST2_MAXLEN)
 			return -ENOSPC;
 		id = &id_list[i];
-		lai_offset = 1 + i * elemlen;
+		lai_offset = i * elemlen;
 		if (decode_lai(&data[lai_offset], &id->lai.plmn.mcc, &id->lai.plmn.mnc, &id->lai.lac) != 0)
 			return -EINVAL;
 		ci_be = (uint16_t *)(&data[lai_offset + sizeof(struct gsm48_loc_area_id)]);
@@ -775,7 +775,7 @@ static int parse_cell_id_lai_and_lac(struct osmo_location_area_id *id_list, cons
 		if (i >= GSM0808_CELL_ID_LIST2_MAXLEN)
 			return -ENOSPC;
 		id = &id_list[i];
-		if (decode_lai(&data[1 + i * elemlen], &id->plmn.mcc, &id->plmn.mnc, &id->lac) != 0)
+		if (decode_lai(&data[i * elemlen], &id->plmn.mcc, &id->plmn.mnc, &id->lac) != 0)
 			return -EINVAL;
 		*consumed += elemlen;
 		remain -= elemlen;
