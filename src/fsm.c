@@ -214,9 +214,30 @@ int osmo_fsm_inst_update_id(struct osmo_fsm_inst *fi, const char *id)
 		}
 		osmo_talloc_replace_string(fi, (char **)&fi->id, id);
 
+		if (fi->name)
+			talloc_free((void*)fi->name);
+
+		if (!fsm_log_addr) {
+			fi->name = talloc_asprintf(fi, "%s(%s)", fi->fsm->name, id);
+		} else {
+			fi->name = talloc_asprintf(fi, "%s(%s)[%p]", fi->fsm->name, id, fi);
+		}
+
 		return 0;
 	}
-	return -EINVAL;
+
+	if (fi->id)
+		talloc_free((void*)fi->id);
+	fi->id = NULL;
+	if (fi->name)
+		talloc_free((void*)fi->name);
+
+	if (!fsm_log_addr) {
+		fi->name = talloc_asprintf(fi, "%s", fi->fsm->name);
+	} else {
+		fi->name = talloc_asprintf(fi, "%s[%p]", fi->fsm->name, fi);
+	}
+	return 0;
 }
 
 /*! allocate a new instance of a specified FSM
@@ -242,19 +263,6 @@ struct osmo_fsm_inst *osmo_fsm_inst_alloc(struct osmo_fsm *fsm, void *ctx, void 
 				talloc_free(fi);
 				return NULL;
 		}
-	}
-
-	if (!fsm_log_addr) {
-		if (id)
-			fi->name = talloc_asprintf(fi, "%s(%s)", fsm->name, id);
-		else
-			fi->name = talloc_asprintf(fi, "%s", fsm->name);
-	} else {
-		if (id)
-			fi->name = talloc_asprintf(fi, "%s(%s)[%p]", fsm->name,
-						   id, fi);
-		else
-			fi->name = talloc_asprintf(fi, "%s[%p]", fsm->name, fi);
 	}
 
 	INIT_LLIST_HEAD(&fi->proc.children);

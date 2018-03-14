@@ -196,6 +196,10 @@ int main(int argc, char **argv)
 	finst = foo();
 	OSMO_ASSERT(osmo_fsm_inst_find_by_id(&fsm, "my_id") == finst);
 	OSMO_ASSERT(osmo_fsm_inst_find_by_name(&fsm, "Test_FSM(my_id)") == finst);
+	OSMO_ASSERT(osmo_fsm_inst_update_id(finst, "another_id") == 0);
+	OSMO_ASSERT(osmo_fsm_inst_find_by_id(&fsm, "another_id") == finst);
+	OSMO_ASSERT(osmo_fsm_inst_find_by_name(&fsm, "Test_FSM(another_id)") == finst);
+	OSMO_ASSERT(osmo_fsm_inst_update_id(finst, "my_id") == 0);
 
 	while (1) {
 		osmo_select_main(0);
