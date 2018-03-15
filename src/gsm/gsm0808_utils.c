@@ -689,7 +689,7 @@ static int decode_lai(const uint8_t *data, uint16_t *mcc, uint16_t *mnc, uint16_
 	return gsm48_decode_lai(&lai, mcc, mnc, lac) ? -1 : 0;
 }
 
-static int parse_cell_id_global_list(struct osmo_cell_global_id *id_list, const uint8_t *data, size_t remain,
+static int parse_cell_id_global_list(struct gsm0808_cell_id_list2 *cil, const uint8_t *data, size_t remain,
 				     size_t *consumed)
 {
 	struct osmo_cell_global_id *id;
@@ -702,7 +702,7 @@ static int parse_cell_id_global_list(struct osmo_cell_global_id *id_list, const 
 	while (remain >= elemlen) {
 		if (i >= GSM0808_CELL_ID_LIST2_MAXLEN)
 			return -ENOSPC;
-		id = &id_list[i];
+		id = &cil->id_list[i].global;
 		lai_offset = i * elemlen;
 		if (decode_lai(&data[lai_offset], &id->lai.plmn.mcc, &id->lai.plmn.mnc, &id->lai.lac) != 0)
 			return -EINVAL;
@@ -716,7 +716,7 @@ static int parse_cell_id_global_list(struct osmo_cell_global_id *id_list, const 
 	return i;
 }
 
-static int parse_cell_id_lac_and_ci_list(struct osmo_lac_and_ci_id *id_list, const uint8_t *data, size_t remain,
+static int parse_cell_id_lac_and_ci_list(struct gsm0808_cell_id_list2 *cil, const uint8_t *data, size_t remain,
 					 size_t *consumed)
 {
 	uint16_t *lacp_be, *ci_be;
@@ -734,7 +734,7 @@ static int parse_cell_id_lac_and_ci_list(struct osmo_lac_and_ci_id *id_list, con
 	while (remain >= elemlen) {
 		if (i >= GSM0808_CELL_ID_LIST2_MAXLEN)
 			return -ENOSPC;
-		id = &id_list[i];
+		id = &cil->id_list[i].lac_and_ci;
 		id->lac = osmo_load16be(lacp_be);
 		id->ci = osmo_load16be(ci_be);
 		*consumed += elemlen;
@@ -746,7 +746,8 @@ static int parse_cell_id_lac_and_ci_list(struct osmo_lac_and_ci_id *id_list, con
 	return i;
 }
 
-static int parse_cell_id_ci_list(uint16_t *id_list, const uint8_t *data, size_t remain, size_t *consumed)
+static int parse_cell_id_ci_list(struct gsm0808_cell_id_list2 *cil, const uint8_t *data, size_t remain,
+    size_t *consumed)
 {
 	const uint16_t *ci_be = (const uint16_t *)data;
 	int i = 0;
@@ -756,14 +757,14 @@ static int parse_cell_id_ci_list(uint16_t *id_list, const uint8_t *data, size_t 
 	while (remain >= elemlen) {
 		if (i >= GSM0808_CELL_ID_LIST2_MAXLEN)
 			return -ENOSPC;
-		id_list[i++] = osmo_load16be(ci_be++);
+		cil->id_list[i++].ci = osmo_load16be(ci_be++);
 		consumed += elemlen;
 		remain -= elemlen;
 	}
 	return i;
 }
 
-static int parse_cell_id_lai_and_lac(struct osmo_location_area_id *id_list, const uint8_t *data, size_t remain,
+static int parse_cell_id_lai_and_lac(struct gsm0808_cell_id_list2 *cil, const uint8_t *data, size_t remain,
 				     size_t *consumed)
 {
 	struct osmo_location_area_id *id;
@@ -774,7 +775,7 @@ static int parse_cell_id_lai_and_lac(struct osmo_location_area_id *id_list, cons
 	while (remain >= elemlen) {
 		if (i >= GSM0808_CELL_ID_LIST2_MAXLEN)
 			return -ENOSPC;
-		id = &id_list[i];
+		id = &cil->id_list[i].lai_and_lac;
 		if (decode_lai(&data[i * elemlen], &id->plmn.mcc, &id->plmn.mnc, &id->lac) != 0)
 			return -EINVAL;
 		*consumed += elemlen;
@@ -785,7 +786,7 @@ static int parse_cell_id_lai_and_lac(struct osmo_location_area_id *id_list, cons
 	return i;
 }
 
-static int parse_cell_id_lac_list(uint16_t *id_list, const uint8_t *data, size_t remain, size_t *consumed)
+static int parse_cell_id_lac_list(struct gsm0808_cell_id_list2 *cil, const uint8_t *data, size_t remain, size_t *consumed)
 {
 	const uint16_t *lac_be = (const uint16_t *)data;
 	int i = 0;
@@ -795,7 +796,7 @@ static int parse_cell_id_lac_list(uint16_t *id_list, const uint8_t *data, size_t
 	while (remain >= elemlen) {
 		if (i >= GSM0808_CELL_ID_LIST2_MAXLEN)
 			return -ENOSPC;
-		id_list[i++] = osmo_load16be(lac_be++);
+		cil->id_list[i++].lac = osmo_load16be(lac_be++);
 		*consumed += elemlen;
 		remain -= elemlen;
 	}
@@ -828,19 +829,19 @@ int gsm0808_dec_cell_id_list2(struct gsm0808_cell_id_list2 *cil,
 
 	switch (id_discr) {
 	case CELL_IDENT_WHOLE_GLOBAL:
-		list_len = parse_cell_id_global_list(&cil->id_list[0].global, elem, len, &bytes_elem);
+		list_len = parse_cell_id_global_list(cil, elem, len, &bytes_elem);
 		break;
 	case CELL_IDENT_LAC_AND_CI:
-		list_len = parse_cell_id_lac_and_ci_list(&cil->id_list[0].lac_and_ci, elem, len, &bytes_elem);
+		list_len = parse_cell_id_lac_and_ci_list(cil, elem, len, &bytes_elem);
 		break;
 	case CELL_IDENT_CI:
-		list_len = parse_cell_id_ci_list(&cil->id_list[0].ci, elem, len, &bytes_elem);
+		list_len = parse_cell_id_ci_list(cil, elem, len, &bytes_elem);
 		break;
 	case CELL_IDENT_LAI_AND_LAC:
-		list_len = parse_cell_id_lai_and_lac(&cil->id_list[0].lai_and_lac, elem, len, &bytes_elem);
+		list_len = parse_cell_id_lai_and_lac(cil, elem, len, &bytes_elem);
 		break;
 	case CELL_IDENT_LAC:
-		list_len = parse_cell_id_lac_list(&cil->id_list[0].lac, elem, len, &bytes_elem);
+		list_len = parse_cell_id_lac_list(cil, elem, len, &bytes_elem);
 		break;
 	case CELL_IDENT_BSS:
 	case CELL_IDENT_NO_CELL:
