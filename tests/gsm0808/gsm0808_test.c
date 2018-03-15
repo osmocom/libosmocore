@@ -864,6 +864,62 @@ static void test_gsm0808_enc_dec_cell_id_list_bss()
 	msgb_free(msg);
 }
 
+static void test_gsm0808_enc_dec_cell_id_list_multi_lai_and_lac()
+{
+	struct gsm0808_cell_id_list2 enc_cil;
+	struct gsm0808_cell_id_list2 dec_cil;
+	struct osmo_location_area_id id;
+	struct msgb *msg;
+	uint8_t cil_enc_expected[] = { GSM0808_IE_CELL_IDENTIFIER_LIST, 0x10, 0x04,
+		0x92, 0x61, 0x54, 0x23, 0x42,
+		0x92, 0x72, 0x54, 0x24, 0x43,
+		0x92, 0x83, 0x54, 0x25, 0x44
+	};
+	uint8_t rc_enc;
+	int rc_dec, i;
+
+	memset(&enc_cil, 0, sizeof(enc_cil));
+	enc_cil.id_discr = CELL_IDENT_LAI_AND_LAC;
+
+	id.plmn.mcc = 0x123;
+	osmo_mnc_from_str("456", &id.plmn.mnc, &id.plmn.mnc_3_digits);
+	id.lac = 0x2342;
+	memcpy(&enc_cil.id_list[0].lai_and_lac, &id, sizeof(id));
+
+	id.plmn.mcc = 0x124;
+	osmo_mnc_from_str("457", &id.plmn.mnc, &id.plmn.mnc_3_digits);
+	id.lac = 0x2443;
+	memcpy(&enc_cil.id_list[1].lai_and_lac, &id, sizeof(id));
+
+	id.plmn.mcc = 0x125;
+	osmo_mnc_from_str("458", &id.plmn.mnc, &id.plmn.mnc_3_digits);
+	id.lac = 0x2544;
+	memcpy(&enc_cil.id_list[2].lai_and_lac, &id, sizeof(id));
+
+	enc_cil.id_list_len = 3;
+
+	msg = msgb_alloc(1024, "output buffer");
+	rc_enc = gsm0808_enc_cell_id_list2(msg, &enc_cil);
+	OSMO_ASSERT(rc_enc == sizeof(cil_enc_expected));
+	OSMO_ASSERT(memcmp(cil_enc_expected, msg->data, msg->len) == 0);
+
+	rc_dec = gsm0808_dec_cell_id_list2(&dec_cil, msg->data + 2, msg->len - 2);
+	OSMO_ASSERT(rc_dec == msg->len - 2);
+
+	OSMO_ASSERT(dec_cil.id_list_len == 3);
+	/* Check MAXLEN elements to ensure everything has been initialized. */
+	for (i = 0; i < GSM0808_CELL_ID_LIST2_MAXLEN; i++) {
+		struct osmo_location_area_id *enc_id;
+		struct osmo_location_area_id *dec_id;
+		enc_id = &enc_cil.id_list[i].lai_and_lac;
+		dec_id = &dec_cil.id_list[i].lai_and_lac;
+		OSMO_ASSERT(osmo_plmn_cmp(&enc_id->plmn, &dec_id->plmn) == 0);
+		OSMO_ASSERT(enc_id->lac == dec_id->lac);
+	}
+
+	msgb_free(msg);
+}
+
 int main(int argc, char **argv)
 {
 	printf("Testing generation of GSM0808 messages\n");
@@ -899,6 +955,7 @@ int main(int argc, char **argv)
 	test_gsm0808_enc_dec_cell_id_list_single_lac();
 	test_gsm0808_enc_dec_cell_id_list_multi_lac();
 	test_gsm0808_enc_dec_cell_id_list_bss();
+	test_gsm0808_enc_dec_cell_id_list_multi_lai_and_lac();
 
 	printf("Done\n");
 	return EXIT_SUCCESS;

@@ -677,16 +677,15 @@ uint8_t gsm0808_enc_cell_id_list(struct msgb *msg,
 	return *tlv_len + 2;
 }
 
-/* Decode 5-byte LAI list element data (see TS 08.08 3.2.2.27) into MCC/MNC/LAC.
- * Return 0 if successful, negative on error. */
-static int decode_lai(const uint8_t *data, uint16_t *mcc, uint16_t *mnc, uint16_t *lac)
+/* Decode 5-byte LAI list element data (see TS 08.08 3.2.2.27) into MCC/MNC/LAC. */
+static void decode_lai(const uint8_t *data, struct osmo_location_area_id *decoded)
 {
 	struct gsm48_loc_area_id lai;
 
-	/* Copy data to stack to prevent unaligned access in gsm48_decode_lai(). */
+	/* Copy data to stack to prevent unaligned access in gsm48_decode_lai2(). */
 	memcpy(&lai, data, sizeof(lai)); /* don't byte swap yet */
 
-	return gsm48_decode_lai(&lai, mcc, mnc, lac) ? -1 : 0;
+	gsm48_decode_lai2(&lai, decoded);
 }
 
 static int parse_cell_id_global_list(struct gsm0808_cell_id_list2 *cil, const uint8_t *data, size_t remain,
@@ -704,8 +703,7 @@ static int parse_cell_id_global_list(struct gsm0808_cell_id_list2 *cil, const ui
 			return -ENOSPC;
 		id = &cil->id_list[i].global;
 		lai_offset = i * elemlen;
-		if (decode_lai(&data[lai_offset], &id->lai.plmn.mcc, &id->lai.plmn.mnc, &id->lai.lac) != 0)
-			return -EINVAL;
+		decode_lai(&data[lai_offset], &id->lai);
 		ci_be = (uint16_t *)(&data[lai_offset + sizeof(struct gsm48_loc_area_id)]);
 		id->cell_identity = osmo_load16be(ci_be);
 		*consumed += elemlen;
@@ -776,8 +774,7 @@ static int parse_cell_id_lai_and_lac(struct gsm0808_cell_id_list2 *cil, const ui
 		if (i >= GSM0808_CELL_ID_LIST2_MAXLEN)
 			return -ENOSPC;
 		id = &cil->id_list[i].lai_and_lac;
-		if (decode_lai(&data[i * elemlen], &id->plmn.mcc, &id->plmn.mnc, &id->lac) != 0)
-			return -EINVAL;
+		decode_lai(&data[i * elemlen], id);
 		*consumed += elemlen;
 		remain -= elemlen;
 		i++;
