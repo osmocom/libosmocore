@@ -756,7 +756,7 @@ static int parse_cell_id_ci_list(struct gsm0808_cell_id_list2 *cil, const uint8_
 		if (i >= GSM0808_CELL_ID_LIST2_MAXLEN)
 			return -ENOSPC;
 		cil->id_list[i++].ci = osmo_load16be(ci_be++);
-		consumed += elemlen;
+		*consumed += elemlen;
 		remain -= elemlen;
 	}
 	return i;
