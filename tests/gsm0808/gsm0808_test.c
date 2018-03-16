@@ -995,6 +995,66 @@ static void test_gsm0808_enc_dec_cell_id_list_multi_lac_and_ci()
 	msgb_free(msg);
 }
 
+static void test_gsm0808_enc_dec_cell_id_list_multi_global()
+{
+	struct gsm0808_cell_id_list2 enc_cil;
+	struct gsm0808_cell_id_list2 dec_cil;
+	struct msgb *msg;
+	uint8_t cil_enc_expected[] = { GSM0808_IE_CELL_IDENTIFIER_LIST, 0x16, 0x00,
+		0x92,  0x61,  0x54,  0x23,  0x42,  0x00,  0x1,
+		0x92,  0x72,  0x54,  0x24,  0x43,  0x00,  0x2,
+		0x92,  0x83,  0x54,  0x25,  0x44,  0x00,  0x77
+	};
+	struct osmo_cell_global_id id;
+	uint8_t rc_enc;
+	int rc_dec, i;
+
+	memset(&enc_cil, 0, sizeof(enc_cil));
+
+	enc_cil.id_discr = CELL_IDENT_WHOLE_GLOBAL;
+
+	id.lai.plmn.mcc = 0x123;
+	osmo_mnc_from_str("456", &id.lai.plmn.mnc, &id.lai.plmn.mnc_3_digits);
+	id.lai.lac = 0x2342;
+	id.cell_identity = 1;
+	memcpy(&enc_cil.id_list[0].global, &id, sizeof(id));
+
+	id.lai.plmn.mcc = 0x124;
+	osmo_mnc_from_str("457", &id.lai.plmn.mnc, &id.lai.plmn.mnc_3_digits);
+	id.lai.lac = 0x2443;
+	id.cell_identity = 2;
+	memcpy(&enc_cil.id_list[1].global, &id, sizeof(id));
+
+	id.lai.plmn.mcc = 0x125;
+	osmo_mnc_from_str("458", &id.lai.plmn.mnc, &id.lai.plmn.mnc_3_digits);
+	id.lai.lac = 0x2544;
+	id.cell_identity = 119;
+	memcpy(&enc_cil.id_list[2].global, &id, sizeof(id));
+
+	enc_cil.id_list_len = 3;
+
+	msg = msgb_alloc(1024, "output buffer");
+	rc_enc = gsm0808_enc_cell_id_list2(msg, &enc_cil);
+	OSMO_ASSERT(rc_enc == sizeof(cil_enc_expected));
+	OSMO_ASSERT(memcmp(cil_enc_expected, msg->data, msg->len) == 0);
+
+	rc_dec = gsm0808_dec_cell_id_list2(&dec_cil, msg->data + 2, msg->len - 2);
+	OSMO_ASSERT(rc_dec == msg->len - 2);
+
+	/* Check MAXLEN elements to ensure everything has been initialized. */
+	for (i = 0; i < GSM0808_CELL_ID_LIST2_MAXLEN; i++) {
+		struct osmo_cell_global_id *enc_id;
+		struct osmo_cell_global_id *dec_id;
+		enc_id = &enc_cil.id_list[i].global;
+		dec_id = &dec_cil.id_list[i].global;
+		OSMO_ASSERT(osmo_plmn_cmp(&enc_id->lai.plmn, &dec_id->lai.plmn) == 0);
+		OSMO_ASSERT(enc_id->lai.lac == dec_id->lai.lac);
+		OSMO_ASSERT(enc_id->cell_identity == dec_id->cell_identity);
+	}
+
+	msgb_free(msg);
+}
+
 int main(int argc, char **argv)
 {
 	printf("Testing generation of GSM0808 messages\n");
@@ -1033,6 +1093,7 @@ int main(int argc, char **argv)
 	test_gsm0808_enc_dec_cell_id_list_multi_lai_and_lac();
 	test_gsm0808_enc_dec_cell_id_list_multi_ci();
 	test_gsm0808_enc_dec_cell_id_list_multi_lac_and_ci();
+	test_gsm0808_enc_dec_cell_id_list_multi_global();
 
 	printf("Done\n");
 	return EXIT_SUCCESS;
