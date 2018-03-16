@@ -48,7 +48,7 @@
 struct tlv_definition tvlv_att_def;
 struct tlv_definition vtvlv_gan_att_def;
 
-/*! Dump pasred TLV structure to stdout */
+/*! Dump parsed TLV structure to stdout */
 int tlv_dump(struct tlv_parsed *dec)
 {
 	int i;
@@ -227,7 +227,7 @@ tlv:		/* GSM TS 04.07 11.2.4: Type 4 TLV */
  *  \param[in] buf_len length of the input data buffer
  *  \param[in] lv_tag an initial LV tag at the start of the buffer
  *  \param[in] lv_tag2 a second initial LV tag following the \a lv_tag
- *  \returns number of bytes consumed by the TLV entry / IE parsed; negative in case of error
+ *  \returns number of TLV entries parsed; negative in case of error
  */
 int tlv_parse(struct tlv_parsed *dec, const struct tlv_definition *def,
 	      const uint8_t *buf, int buf_len, uint8_t lv_tag,

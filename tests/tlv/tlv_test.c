@@ -245,11 +245,42 @@ static void test_tlv_shift_functions()
 	}
 }
 
+/* Most GSM related protocols clearly indicate that in case of duplicate
+ * IEs, only the first occurrence shall be used, while any further occurrences
+ * shall be ignored.  See e.g. 3GPP TS 24.008 Section 8.6.3 */
+static void test_tlv_repeated_ie()
+{
+	uint8_t test_data[768];
+	int i, rc;
+	const uint8_t tag = 0x1a;
+	struct tlv_parsed dec;
+	struct tlv_definition def;
+
+	memset(&def, 0, sizeof(def));
+
+	/* tag:1:255, tag:1:254, tag:1:253, ..., tag:1:3, tag:1:2, tag:1:1, tag:1:0 */
+	for (i = 0; i < ARRAY_SIZE(test_data) - 1; i += 3) {
+		test_data[i] = tag;
+		test_data[i + 1] = 1;
+		test_data[i + 2] = (uint8_t)(0xff - i/2);
+	}
+
+	def.def[tag].type = TLV_TYPE_TLV;
+
+	rc = tlv_parse(&dec, &def, &test_data[1], sizeof(test_data) - 1, tag, 0);
+	OSMO_ASSERT(rc == i/3);
+	OSMO_ASSERT(dec.lv[tag].len == 1);
+	/* Value pointer should point at first value in test data array. */
+	OSMO_ASSERT(dec.lv[tag].val == &test_data[2]);
+	OSMO_ASSERT(*dec.lv[tag].val == test_data[2]);
+}
+
 int main(int argc, char **argv)
 {
 	//osmo_init_logging(&info);
 
 	test_tlv_shift_functions();
+	test_tlv_repeated_ie();
 
 	printf("Done.\n");
 	return EXIT_SUCCESS;
