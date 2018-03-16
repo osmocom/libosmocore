@@ -719,7 +719,7 @@ static int parse_cell_id_lac_and_ci_list(struct gsm0808_cell_id_list2 *cil, cons
 {
 	uint16_t *lacp_be, *ci_be;
 	struct osmo_lac_and_ci_id *id;
-	int i = 0;
+	int i = 0, j = 0;
 	const size_t elemlen = sizeof(*lacp_be) + sizeof(*ci_be);
 
 	*consumed = 0;
@@ -727,18 +727,19 @@ static int parse_cell_id_lac_and_ci_list(struct gsm0808_cell_id_list2 *cil, cons
 	if (remain < elemlen)
 		return -EINVAL;
 
-	lacp_be = (uint16_t *)(&data[0]);
-	ci_be = (uint16_t *)(&data[2]);
+	lacp_be = (uint16_t *)(&data[j]);
+	ci_be = (uint16_t *)(&data[j + elemlen/2]);
 	while (remain >= elemlen) {
 		if (i >= GSM0808_CELL_ID_LIST2_MAXLEN)
 			return -ENOSPC;
-		id = &cil->id_list[i].lac_and_ci;
+		id = &cil->id_list[i++].lac_and_ci;
 		id->lac = osmo_load16be(lacp_be);
 		id->ci = osmo_load16be(ci_be);
 		*consumed += elemlen;
 		remain -= elemlen;
-		lacp_be++;
-		ci_be++;
+		j += elemlen;
+		lacp_be = (uint16_t *)(&data[j]);
+		ci_be = (uint16_t *)(&data[j + elemlen/2]);
 	}
 
 	return i;
