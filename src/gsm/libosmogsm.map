@@ -8,6 +8,7 @@ abis_nm_fail_evt_rep;
 abis_nm_fail_evt_vrep;
 abis_nm_chcomb4pchan;
 abis_nm_debugp_foh;
+abis_nm_dump_foh;
 abis_nm_event_type_name;
 abis_nm_nack_cause_name;
 abis_nm_nack_name;

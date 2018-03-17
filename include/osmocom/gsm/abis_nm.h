@@ -41,16 +41,14 @@ static inline const char *abis_nm_admin_name(uint8_t admin)
 extern const struct tlv_definition abis_nm_osmo_att_tlvdef;
 extern const struct tlv_definition abis_nm_att_tlvdef_ipa;
 
+const char *abis_nm_dump_foh(const struct abis_om_fom_hdr *foh);
+
 /*! write a human-readable OML header to the debug log
  *  \param[in] ss Logging sub-system
  *  \param[in] foh A-bis OML FOM header
  */
 #define abis_nm_debugp_foh(ss, foh)					    \
-	DEBUGP(ss, "OC=%s(%02x) INST=(%02x,%02x,%02x) ",		    \
-		get_value_string(abis_nm_obj_class_names, (foh)->obj_class),  \
-		(foh)->obj_class, (foh)->obj_inst.bts_nr, (foh)->obj_inst.trx_nr, \
-		(foh)->obj_inst.ts_nr)
-
+	DEBUGP(ss, "%s ", abis_nm_dump_foh(foh))
 
 int abis_nm_chcomb4pchan(enum gsm_phys_chan_config pchan);
 enum gsm_phys_chan_config abis_nm_pchan4chcomb(uint8_t chcomb);

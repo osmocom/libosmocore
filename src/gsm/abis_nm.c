@@ -928,15 +928,22 @@ enum gsm_phys_chan_config abis_nm_pchan4chcomb(uint8_t chcomb)
 	return GSM_PCHAN_NONE;
 }
 
+const char *abis_nm_dump_foh(const struct abis_om_fom_hdr *foh)
+{
+	static char foh_buf[128];
+	snprintf(foh_buf, sizeof(foh_buf), "OC=%s(%02x) INST=(%02x,%02x,%02x)",
+		get_value_string(abis_nm_obj_class_names, foh->obj_class),
+		foh->obj_class, foh->obj_inst.bts_nr, foh->obj_inst.trx_nr,
+		foh->obj_inst.ts_nr);
+	return foh_buf;
+}
+
 /* this is just for compatibility reasons, it is now a macro */
 #undef abis_nm_debugp_foh
 OSMO_DEPRECATED("Use abis_nm_debugp_foh macro instead")
 void abis_nm_debugp_foh(int ss, struct abis_om_fom_hdr *foh)
 {
-	DEBUGP(ss, "OC=%s(%02x) INST=(%02x,%02x,%02x) ",
-		get_value_string(abis_nm_obj_class_names, foh->obj_class),
-		foh->obj_class, foh->obj_inst.bts_nr, foh->obj_inst.trx_nr,
-		foh->obj_inst.ts_nr);
+	DEBUGP(ss, "%s ", abis_nm_dump_foh(foh));
 }
 
 /*! @} */
