@@ -133,6 +133,33 @@ const char *osmo_lai_name(const struct osmo_location_area_id *lai)
 	return buf;
 }
 
+static const char *_cgi_name(const struct osmo_cell_global_id *cgi, char *buf, size_t buflen)
+{
+	snprintf(buf, buflen, "%s-%u", osmo_lai_name(&cgi->lai), cgi->cell_identity);
+	return buf;
+}
+
+/*! Return MCC-MNC-LAC-CI as string, in a static buffer.
+ * \param[in] cgi  CGI to encode.
+ * \returns Static string buffer.
+ */
+const char *osmo_cgi_name(const struct osmo_cell_global_id *cgi)
+{
+	static char buf[32];
+	return _cgi_name(cgi, buf, sizeof(buf));
+}
+
+/*! Same as osmo_cgi_name(), but uses a different static buffer.
+ * Useful for printing two distinct CGIs in the same printf format.
+ * \param[in] cgi  CGI to encode.
+ * \returns Static string buffer.
+ */
+const char *osmo_cgi_name2(const struct osmo_cell_global_id *cgi)
+{
+	static char buf[32];
+	return _cgi_name(cgi, buf, sizeof(buf));
+}
+
 static void to_bcd(uint8_t *bcd, uint16_t val)
 {
 	bcd[2] = val % 10;

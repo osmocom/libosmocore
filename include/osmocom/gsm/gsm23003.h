@@ -99,6 +99,8 @@ const char *osmo_mnc_name(uint16_t mnc, bool mnc_3_digits);
 const char *osmo_plmn_name(const struct osmo_plmn_id *plmn);
 const char *osmo_plmn_name2(const struct osmo_plmn_id *plmn);
 const char *osmo_lai_name(const struct osmo_location_area_id *lai);
+const char *osmo_cgi_name(const struct osmo_cell_global_id *cgi);
+const char *osmo_cgi_name2(const struct osmo_cell_global_id *cgi);
 
 void osmo_plmn_to_bcd(uint8_t *bcd_dst, const struct osmo_plmn_id *plmn);
 void osmo_plmn_from_bcd(const uint8_t *bcd_src, struct osmo_plmn_id *plmn);

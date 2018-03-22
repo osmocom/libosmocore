@@ -277,6 +277,8 @@ osmo_plmn_name;
 osmo_plmn_name2;
 osmo_lai_name;
 osmo_rai_name;
+osmo_cgi_name;
+osmo_cgi_name2;
 osmo_mnc_from_str;
 osmo_mnc_cmp;
 osmo_plmn_cmp;
