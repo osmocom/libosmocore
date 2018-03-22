@@ -33,11 +33,12 @@ struct msgb;
 struct gsm0808_cell_id_list2;
 
 struct msgb *gsm0808_create_layer3(struct msgb *msg_l3, uint16_t nc,
-				   uint16_t cc, int lac, uint16_t _ci);
+				   uint16_t cc, int lac, uint16_t _ci)
+	OSMO_DEPRECATED("Use gsm0808_create_layer3_2() instead, to not lose leading zeros in the MNC");
 struct msgb *gsm0808_create_layer3_aoip(const struct msgb *msg_l3, uint16_t nc,
 					uint16_t cc, int lac, uint16_t _ci,
-					const struct gsm0808_speech_codec_list
-					*scl);
+					const struct gsm0808_speech_codec_list *scl)
+	OSMO_DEPRECATED("Use gsm0808_create_layer3_2() instead, to not lose leading zeros in the MNC");
 struct msgb *gsm0808_create_layer3_2(const struct msgb *msg_l3, const struct osmo_cell_global_id *cell,
 				     const struct gsm0808_speech_codec_list *scl);
 struct msgb *gsm0808_create_reset(void);

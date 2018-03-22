@@ -35,10 +35,12 @@ const char *rr_cause_name(uint8_t cause);
 const char *osmo_rai_name(const struct gprs_ra_id *rai);
 
 int gsm48_decode_lai(struct gsm48_loc_area_id *lai, uint16_t *mcc,
-		     uint16_t *mnc, uint16_t *lac);
+		     uint16_t *mnc, uint16_t *lac)
+	OSMO_DEPRECATED("Use gsm48_decode_lai2() instead, to not lose leading zeros in the MNC");
 void gsm48_decode_lai2(const struct gsm48_loc_area_id *lai, struct osmo_location_area_id *decoded);
 void gsm48_generate_lai(struct gsm48_loc_area_id *lai48, uint16_t mcc,
-			uint16_t mnc, uint16_t lac);
+			uint16_t mnc, uint16_t lac)
+	OSMO_DEPRECATED("Use gsm48_generate_lai2() instead, to not lose leading zeros in the MNC");
 void gsm48_generate_lai2(struct gsm48_loc_area_id *lai48, const struct osmo_location_area_id *lai);
 
 int gsm48_generate_mid_from_tmsi(uint8_t *buf, uint32_t tmsi);
@@ -57,5 +59,7 @@ int gsm48_construct_ra(uint8_t *buf, const struct gprs_ra_id *raid) OSMO_DEPRECA
 
 int gsm48_number_of_paging_subchannels(struct gsm48_control_channel_descr *chan_desc);
 
-void gsm48_mcc_mnc_to_bcd(uint8_t *bcd_dst, uint16_t mcc, uint16_t mnc);
-void gsm48_mcc_mnc_from_bcd(uint8_t *bcd_src, uint16_t *mcc, uint16_t *mnc);
+void gsm48_mcc_mnc_to_bcd(uint8_t *bcd_dst, uint16_t mcc, uint16_t mnc)
+	OSMO_DEPRECATED("Use osmo_plmn_to_bcd() instead, to not lose leading zeros in the MNC");
+void gsm48_mcc_mnc_from_bcd(uint8_t *bcd_src, uint16_t *mcc, uint16_t *mnc)
+	OSMO_DEPRECATED("Use osmo_plmn_from_bcd() instead, to not lose leading zeros in the MNC");
