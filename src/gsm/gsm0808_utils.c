@@ -210,7 +210,7 @@ static uint8_t enc_speech_codec(struct msgb *msg,
 	case GSM0808_SCT_FR3:
 	case GSM0808_SCT_HR3:
 	case GSM0808_SCT_HR6:
-		msgb_put_u16(msg, sc->cfg);
+		msgb_put_u16(msg, osmo_ntohs(sc->cfg));
 		break;
 	case GSM0808_SCT_FR4:
 	case GSM0808_SCT_FR5:
@@ -320,7 +320,7 @@ int gsm0808_dec_speech_codec(struct gsm0808_speech_codec *sc,
 	case GSM0808_SCT_HR6:
 		if (len < 2)
 			return -EINVAL;
-		sc->cfg = osmo_load16be(elem);
+		sc->cfg = osmo_load16le(elem);
 		elem += 2;
 		break;
 	default:
