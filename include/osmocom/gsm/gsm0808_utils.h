@@ -77,6 +77,7 @@ int gsm0808_dec_cell_id_list2(struct gsm0808_cell_id_list2 *cil, const uint8_t *
 int gsm0808_dec_cell_id_list(struct gsm0808_cell_id_list *cil,
 			     const uint8_t *elem, uint8_t len)
 			     OSMO_DEPRECATED("use gsm0808_dec_cell_id_list2 instead");
+int gsm0808_cell_id_list_add(struct gsm0808_cell_id_list2 *dst, const struct gsm0808_cell_id_list2 *src);
 int gsm0808_chan_type_to_speech_codec(uint8_t perm_spch);
 int gsm0808_speech_codec_from_chan_type(struct gsm0808_speech_codec *sc,
 					uint8_t perm_spch);

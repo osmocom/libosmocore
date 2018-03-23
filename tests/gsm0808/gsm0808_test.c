@@ -28,6 +28,7 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <errno.h>
 
 #define VERIFY(msg, data, len) 						\
 	if (msgb_l3len(msg) != len) {					\
@@ -1063,6 +1064,198 @@ static void test_gsm0808_enc_dec_cell_id_list_multi_global()
 	msgb_free(msg);
 }
 
+static void print_cil(const struct gsm0808_cell_id_list2 *cil)
+{
+	unsigned int i;
+	if (!cil) {
+		printf("     cell_id_list == NULL\n");
+		return;
+	}
+	switch (cil->id_discr) {
+	case CELL_IDENT_WHOLE_GLOBAL:
+		printf("     cell_id_list cgi[%u] = {\n", cil->id_list_len);
+		for (i = 0; i < cil->id_list_len; i++)
+			printf("       %2d: %s\n", i, osmo_cgi_name(&cil->id_list[i].global));
+		printf("     }\n");
+		break;
+	case CELL_IDENT_LAC:
+		printf("     cell_id_list lac[%u] = {\n", cil->id_list_len);
+		for (i = 0; i < cil->id_list_len; i++)
+			printf("      %2d: %u\n", i, cil->id_list[i].lac);
+		printf("     }\n");
+		break;
+	case CELL_IDENT_BSS:
+		printf("     cell_id_list bss[%u]\n", cil->id_list_len);
+		break;
+	case CELL_IDENT_NO_CELL:
+		printf("     cell_id_list no_cell[%u]\n", cil->id_list_len);
+		break;
+	default:
+		printf("     Unimplemented id_disc\n");
+	}
+}
+
+void test_cell_id_list_add() {
+	const struct gsm0808_cell_id_list2 cgi1 = {
+		.id_discr = CELL_IDENT_WHOLE_GLOBAL,
+		.id_list_len = 1,
+		.id_list = {
+			{
+				.global = {
+					.lai = {
+						.plmn = { .mcc = 1, .mnc = 2, .mnc_3_digits = false },
+						.lac = 3,
+					},
+					.cell_identity = 4,
+				}
+			},
+		},
+	};
+
+	const struct gsm0808_cell_id_list2 cgi2 = {
+		.id_discr = CELL_IDENT_WHOLE_GLOBAL,
+		.id_list_len = 2,
+		.id_list = {
+			{
+				.global = {
+					.lai = {
+						.plmn = { .mcc = 1, .mnc = 2, .mnc_3_digits = true },
+						.lac = 3,
+					},
+					.cell_identity = 4,
+				}
+			},
+			{
+				.global = {
+					.lai = {
+						.plmn = { .mcc = 5, .mnc = 6, .mnc_3_digits = true },
+						.lac = 7,
+					},
+					.cell_identity = 8,
+				}
+			},
+		},
+	};
+
+	const struct gsm0808_cell_id_list2 cgi2a = {
+		.id_discr = CELL_IDENT_WHOLE_GLOBAL,
+		.id_list_len = 2,
+		.id_list = {
+			{
+				.global = cgi2.id_list[0].global
+			},
+			{
+				.global = {
+					.lai = {
+						.plmn = { .mcc = 9, .mnc = 10, .mnc_3_digits = true },
+						.lac = 11,
+					},
+					.cell_identity = 12,
+				}
+			},
+		},
+	};
+
+	const struct gsm0808_cell_id_list2 cgi3 = {
+		.id_discr = CELL_IDENT_WHOLE_GLOBAL,
+		.id_list_len = 2,
+		.id_list = {
+			{
+				.global = {
+					.lai = {
+						.plmn = { .mcc = 13, .mnc = 14, .mnc_3_digits = true },
+						.lac = 15,
+					},
+					.cell_identity = 16,
+				}
+			},
+			{
+				.global = {
+					.lai = {
+						.plmn = { .mcc = 16, .mnc = 17, .mnc_3_digits = true },
+						.lac = 18,
+					},
+					.cell_identity = 19,
+				}
+			},
+		},
+	};
+
+
+	const struct gsm0808_cell_id_list2 lac1 = {
+		.id_discr = CELL_IDENT_LAC,
+		.id_list_len = 1,
+		.id_list = {
+			{
+				.lac = 123
+			},
+		},
+	};
+
+	const struct gsm0808_cell_id_list2 lac2 = {
+		.id_discr = CELL_IDENT_LAC,
+		.id_list_len = 2,
+		.id_list = {
+			{
+				.lac = 456
+			},
+			{
+				.lac = 789
+			},
+		},
+	};
+
+	struct gsm0808_cell_id_list2 cil = {};
+
+	printf("------- %s\n", __func__);
+
+	print_cil(&cil);
+
+#define ADD_QUIET(other_cil, expect_rc) do { \
+		int rc = gsm0808_cell_id_list_add(&cil, &other_cil); \
+		printf("\ngsm0808_cell_id_list_add(&cil, &" #other_cil ") --> rc = %d\n", rc); \
+		OSMO_ASSERT(rc == expect_rc); \
+	} while(0)
+
+#define ADD(other_cil, expect_rc) ADD_QUIET(other_cil, expect_rc); print_cil(&cil)
+
+	ADD(lac1, 1);
+	ADD(lac1, 0);
+	ADD(lac2, 2);
+	ADD(lac2, 0);
+	ADD(cil, 0);
+	ADD(cgi1, -EINVAL);
+
+	printf("\ncan't add to BSS list\n");
+	cil.id_list_len = 0;
+	cil.id_discr = CELL_IDENT_BSS;
+	print_cil(&cil);
+	ADD(lac1, -EINVAL);
+
+	printf("\nother types (including NO_CELL) take on new type iff empty\n");
+	cil.id_list_len = 0;
+	cil.id_discr = CELL_IDENT_NO_CELL;
+	print_cil(&cil);
+	ADD(cgi1, 1);
+	ADD(cgi1, 0);
+	ADD(cgi2, 2);
+	ADD(cgi2, 0);
+
+	cil.id_list_len = GSM0808_CELL_ID_LIST2_MAXLEN - 1;
+	printf("\ncil.id_list_len = %u", cil.id_list_len);
+	ADD_QUIET(cgi2a, 1);
+	printf("cil.id_list_len = %u\n", cil.id_list_len);
+
+	cil.id_list_len = GSM0808_CELL_ID_LIST2_MAXLEN - 1;
+	printf("\ncil.id_list_len = %u", cil.id_list_len);
+	ADD_QUIET(cgi3, -ENOSPC);
+	printf("cil.id_list_len = %u", cil.id_list_len);
+	ADD_QUIET(cgi2a, -ENOSPC);
+	printf("cil.id_list_len = %u\n", cil.id_list_len);
+
+	printf("------- %s done\n", __func__);
+}
+
 int main(int argc, char **argv)
 {
 	printf("Testing generation of GSM0808 messages\n");
@@ -1102,6 +1295,8 @@ int main(int argc, char **argv)
 	test_gsm0808_enc_dec_cell_id_list_multi_ci();
 	test_gsm0808_enc_dec_cell_id_list_multi_lac_and_ci();
 	test_gsm0808_enc_dec_cell_id_list_multi_global();
+
+	test_cell_id_list_add();
 
 	printf("Done\n");
 	return EXIT_SUCCESS;

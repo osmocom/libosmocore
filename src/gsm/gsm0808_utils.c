@@ -909,6 +909,85 @@ int gsm0808_dec_cell_id_list(struct gsm0808_cell_id_list *cil,
 	return (int)(elem - old_elem);
 }
 
+static bool same_cell_id_list_entries(const struct gsm0808_cell_id_list2 *a, int ai,
+				      const struct gsm0808_cell_id_list2 *b, int bi)
+{
+	struct gsm0808_cell_id_list2 tmp = {
+		.id_discr = a->id_discr,
+		.id_list_len = 1,
+	};
+	uint8_t buf_a[32 + sizeof(struct msgb)];
+	uint8_t buf_b[32 + sizeof(struct msgb)];
+	struct msgb *msg_a = (void*)buf_a;
+	struct msgb *msg_b = (void*)buf_b;
+
+	msg_a->data_len = 32;
+	msg_b->data_len = 32;
+	msgb_reset(msg_a);
+	msgb_reset(msg_b);
+
+	if (a->id_discr != b->id_discr)
+		return false;
+	if (ai >= a->id_list_len
+	    || bi >= b->id_list_len)
+		return false;
+
+	tmp.id_list[0] = a->id_list[ai];
+	gsm0808_enc_cell_id_list2(msg_a, &tmp);
+
+	tmp.id_list[0] = b->id_list[bi];
+	gsm0808_enc_cell_id_list2(msg_b, &tmp);
+
+	if (msg_a->len != msg_b->len)
+		return false;
+	if (memcmp(msg_a->data, msg_b->data, msg_a->len))
+		return false;
+
+	return true;
+}
+
+/*! Append entries from one Cell Identifier List to another.
+ * The cell identifier types must be identical between the two lists.
+ * \param dst[out]  Append entries to this list.
+ * \param src[in]   Append these entries to \a dst.
+ * \returns the nr of items added, or negative on error: -EINVAL if the id_discr mismatch
+ *   between the lists, -ENOSPC if the destination list does not have enough space. If an error is
+ *   returned, \a dst may have already been changed (particularly on -ENOSPC). Note that a return value
+ *   of zero may occur when the src->id_list_len is zero, or when all entries from \a src already exist
+ *   in \a dst, and does not indicate error per se. */
+int gsm0808_cell_id_list_add(struct gsm0808_cell_id_list2 *dst, const struct gsm0808_cell_id_list2 *src)
+{
+	int i, j;
+	int added = 0;
+
+	if (dst->id_list_len == 0
+	    && dst->id_discr != CELL_IDENT_BSS)
+		dst->id_discr = src->id_discr;
+	else if (dst->id_discr != src->id_discr)
+		return -EINVAL;
+
+	for (i = 0; i < src->id_list_len; i++) {
+		/* don't add duplicate entries */
+		bool skip = false;
+		for (j = 0; j < dst->id_list_len; j++) {
+			if (same_cell_id_list_entries(dst, j, src, i)) {
+				skip = true;
+				break;
+			}
+		}
+		if (skip)
+			continue;
+
+		if (dst->id_list_len >= ARRAY_SIZE(dst->id_list))
+			return -ENOSPC;
+
+		dst->id_list[dst->id_list_len++] = src->id_list[i];
+		added ++;
+	}
+
+	return added;
+}
+
 /*! Convert the representation of the permitted speech codec identifier
  *  that is used in struct gsm0808_channel_type to the speech codec
  *  representation we use in struct gsm0808_speech_codec.

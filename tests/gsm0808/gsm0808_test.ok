@@ -19,4 +19,89 @@ Testing creating Clear Request
 Testing creating Paging Request
 Testing creating DTAP
 Testing prepend DTAP
+------- test_cell_id_list_add
+     cell_id_list cgi[0] = {
+     }
+
+gsm0808_cell_id_list_add(&cil, &lac1) --> rc = 1
+     cell_id_list lac[1] = {
+       0: 123
+     }
+
+gsm0808_cell_id_list_add(&cil, &lac1) --> rc = 0
+     cell_id_list lac[1] = {
+       0: 123
+     }
+
+gsm0808_cell_id_list_add(&cil, &lac2) --> rc = 2
+     cell_id_list lac[3] = {
+       0: 123
+       1: 456
+       2: 789
+     }
+
+gsm0808_cell_id_list_add(&cil, &lac2) --> rc = 0
+     cell_id_list lac[3] = {
+       0: 123
+       1: 456
+       2: 789
+     }
+
+gsm0808_cell_id_list_add(&cil, &cil) --> rc = 0
+     cell_id_list lac[3] = {
+       0: 123
+       1: 456
+       2: 789
+     }
+
+gsm0808_cell_id_list_add(&cil, &cgi1) --> rc = -22
+     cell_id_list lac[3] = {
+       0: 123
+       1: 456
+       2: 789
+     }
+
+can't add to BSS list
+     cell_id_list bss[0]
+
+gsm0808_cell_id_list_add(&cil, &lac1) --> rc = -22
+     cell_id_list bss[0]
+
+other types (including NO_CELL) take on new type iff empty
+     cell_id_list no_cell[0]
+
+gsm0808_cell_id_list_add(&cil, &cgi1) --> rc = 1
+     cell_id_list cgi[1] = {
+        0: 001-02-3-4
+     }
+
+gsm0808_cell_id_list_add(&cil, &cgi1) --> rc = 0
+     cell_id_list cgi[1] = {
+        0: 001-02-3-4
+     }
+
+gsm0808_cell_id_list_add(&cil, &cgi2) --> rc = 2
+     cell_id_list cgi[3] = {
+        0: 001-02-3-4
+        1: 001-002-3-4
+        2: 005-006-7-8
+     }
+
+gsm0808_cell_id_list_add(&cil, &cgi2) --> rc = 0
+     cell_id_list cgi[3] = {
+        0: 001-02-3-4
+        1: 001-002-3-4
+        2: 005-006-7-8
+     }
+
+cil.id_list_len = 126
+gsm0808_cell_id_list_add(&cil, &cgi2a) --> rc = 1
+cil.id_list_len = 127
+
+cil.id_list_len = 126
+gsm0808_cell_id_list_add(&cil, &cgi3) --> rc = -28
+cil.id_list_len = 127
+gsm0808_cell_id_list_add(&cil, &cgi2a) --> rc = -28
+cil.id_list_len = 127
+------- test_cell_id_list_add done
 Done
