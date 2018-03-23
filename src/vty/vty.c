@@ -362,7 +362,7 @@ void vty_hello(struct vty *vty)
 	if (host.app_info->name)
 		app_name = host.app_info->name;
 
-	vty_out(vty, "Welcome to the %s control interface%s%s",
+	vty_out(vty, "Welcome to the %s VTY interface%s%s",
 		app_name, VTY_NEWLINE, VTY_NEWLINE);
 
 	if (host.app_info->copyright)
