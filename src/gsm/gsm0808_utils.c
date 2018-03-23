@@ -595,7 +595,7 @@ uint8_t gsm0808_enc_cell_id_list2(struct msgb *msg,
 		for (i = 0; i < cil->id_list_len; i++) {
 			const struct osmo_cell_global_id *id = &cil->id_list[i].global;
 			struct gsm48_loc_area_id lai;
-			gsm48_generate_lai(&lai, id->lai.plmn.mcc, id->lai.plmn.mnc, id->lai.lac);
+			gsm48_generate_lai2(&lai, &id->lai);
 			memcpy(msgb_put(msg, sizeof(lai)), &lai, sizeof(lai));
 			msgb_put_u16(msg, id->cell_identity);
 		}
@@ -615,7 +615,7 @@ uint8_t gsm0808_enc_cell_id_list2(struct msgb *msg,
 		for (i = 0; i < cil->id_list_len; i++) {
 			const struct osmo_location_area_id *id = &cil->id_list[i].lai_and_lac;
 			struct gsm48_loc_area_id lai;
-			gsm48_generate_lai(&lai, id->plmn.mcc, id->plmn.mnc, id->lac);
+			gsm48_generate_lai2(&lai, id);
 			memcpy(msgb_put(msg, sizeof(lai)), &lai, sizeof(lai));
 		}
 		break;
