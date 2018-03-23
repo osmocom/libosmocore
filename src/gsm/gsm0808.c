@@ -120,7 +120,17 @@ struct msgb *gsm0808_create_layer3_2(const struct msgb *msg_l3, const struct osm
 struct msgb *gsm0808_create_layer3(struct msgb *msg_l3, uint16_t nc,
 				   uint16_t cc, int lac, uint16_t _ci)
 {
-	return gsm0808_create_layer3_aoip(msg_l3, nc, cc, lac, _ci, NULL);
+	struct osmo_cell_global_id cgi = {
+		.lai = {
+			.plmn = {
+				.mcc = cc,
+				.mnc = nc,
+			},
+			.lac = lac,
+		},
+		.cell_identity = _ci,
+	};
+	return gsm0808_create_layer3_2(msg_l3, &cgi, NULL);
 }
 
 /*! Create BSSMAP RESET message
