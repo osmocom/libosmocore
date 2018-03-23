@@ -1005,37 +1005,45 @@ static void test_gsm0808_enc_dec_cell_id_list_multi_global()
 		0x92,  0x72,  0x54,  0x24,  0x43,  0x00,  0x2,
 		0x92,  0x83,  0x54,  0x25,  0x44,  0x00,  0x77
 	};
-	struct osmo_cell_global_id id;
 	uint8_t rc_enc;
 	int rc_dec, i;
 
-	memset(&enc_cil, 0, sizeof(enc_cil));
-
-	enc_cil.id_discr = CELL_IDENT_WHOLE_GLOBAL;
-
-	id.lai.plmn.mcc = 0x123;
-	osmo_mnc_from_str("456", &id.lai.plmn.mnc, &id.lai.plmn.mnc_3_digits);
-	id.lai.lac = 0x2342;
-	id.cell_identity = 1;
-	memcpy(&enc_cil.id_list[0].global, &id, sizeof(id));
-
-	id.lai.plmn.mcc = 0x124;
-	osmo_mnc_from_str("457", &id.lai.plmn.mnc, &id.lai.plmn.mnc_3_digits);
-	id.lai.lac = 0x2443;
-	id.cell_identity = 2;
-	memcpy(&enc_cil.id_list[1].global, &id, sizeof(id));
-
-	id.lai.plmn.mcc = 0x125;
-	osmo_mnc_from_str("458", &id.lai.plmn.mnc, &id.lai.plmn.mnc_3_digits);
-	id.lai.lac = 0x2544;
-	id.cell_identity = 119;
-	memcpy(&enc_cil.id_list[2].global, &id, sizeof(id));
-
-	enc_cil.id_list_len = 3;
+	enc_cil = (struct gsm0808_cell_id_list2){
+		.id_discr = CELL_IDENT_WHOLE_GLOBAL,
+		.id_list_len = 3,
+		.id_list = {
+			{
+				.global = {
+					.lai = { .plmn = { .mcc = 0x123, .mnc = 456 },
+						 .lac = 0x2342 },
+					.cell_identity = 1,
+				}
+			},
+			{
+				.global = {
+					.lai = { .plmn = { .mcc = 0x124, .mnc = 457 },
+						 .lac = 0x2443 },
+					.cell_identity = 2,
+				}
+			},
+			{
+				.global = {
+					.lai = { .plmn = { .mcc = 0x125, .mnc = 458 },
+						 .lac = 0x2544 },
+					.cell_identity = 119,
+				}
+			},
+		}
+	};
 
 	msg = msgb_alloc(1024, "output buffer");
 	rc_enc = gsm0808_enc_cell_id_list2(msg, &enc_cil);
 	OSMO_ASSERT(rc_enc == sizeof(cil_enc_expected));
+	if (memcmp(cil_enc_expected, msg->data, msg->len)) {
+		printf("   got: %s\n", osmo_hexdump(msg->data, msg->len));
+		printf("expect: %s\n", osmo_hexdump(cil_enc_expected, sizeof(cil_enc_expected)));
+		OSMO_ASSERT(false);
+	}
 	OSMO_ASSERT(memcmp(cil_enc_expected, msg->data, msg->len) == 0);
 
 	rc_dec = gsm0808_dec_cell_id_list2(&dec_cil, msg->data + 2, msg->len - 2);
