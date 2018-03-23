@@ -1001,9 +1001,9 @@ static void test_gsm0808_enc_dec_cell_id_list_multi_global()
 	struct gsm0808_cell_id_list2 dec_cil;
 	struct msgb *msg;
 	uint8_t cil_enc_expected[] = { GSM0808_IE_CELL_IDENTIFIER_LIST, 0x16, 0x00,
-		0x92,  0x61,  0x54,  0x23,  0x42,  0x00,  0x1,
-		0x92,  0x72,  0x54,  0x24,  0x43,  0x00,  0x2,
-		0x92,  0x83,  0x54,  0x25,  0x44,  0x00,  0x77
+		0x21,  0x63,  0x54,  0x23,  0x42,  0x00,  0x1,
+		0x21,  0x74,  0x54,  0x24,  0x43,  0x00,  0x2,
+		0x21,  0x85,  0x54,  0x25,  0x44,  0x00,  0x77
 	};
 	uint8_t rc_enc;
 	int rc_dec, i;
@@ -1014,21 +1014,21 @@ static void test_gsm0808_enc_dec_cell_id_list_multi_global()
 		.id_list = {
 			{
 				.global = {
-					.lai = { .plmn = { .mcc = 0x123, .mnc = 456 },
+					.lai = { .plmn = { .mcc = 123, .mnc = 456 },
 						 .lac = 0x2342 },
 					.cell_identity = 1,
 				}
 			},
 			{
 				.global = {
-					.lai = { .plmn = { .mcc = 0x124, .mnc = 457 },
+					.lai = { .plmn = { .mcc = 124, .mnc = 457 },
 						 .lac = 0x2443 },
 					.cell_identity = 2,
 				}
 			},
 			{
 				.global = {
-					.lai = { .plmn = { .mcc = 0x125, .mnc = 458 },
+					.lai = { .plmn = { .mcc = 125, .mnc = 458 },
 						 .lac = 0x2544 },
 					.cell_identity = 119,
 				}
