@@ -1045,7 +1045,6 @@ static void test_gsm0808_enc_dec_cell_id_list_multi_global()
 		printf("expect: %s\n", osmo_hexdump(cil_enc_expected, sizeof(cil_enc_expected)));
 		OSMO_ASSERT(false);
 	}
-	OSMO_ASSERT(memcmp(cil_enc_expected, msg->data, msg->len) == 0);
 
 	rc_dec = gsm0808_dec_cell_id_list2(&dec_cil, msg->data + 2, msg->len - 2);
 	OSMO_ASSERT(rc_dec == msg->len - 2);
