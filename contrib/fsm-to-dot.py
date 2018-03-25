@@ -205,9 +205,11 @@ class State:
           out_edge.add_events(edge.events)
           out_edge.add_actions(edge.actions)
           return
-      # sanity
-      if out_edge.to_state.get_label() == edge.to_state.get_label():
-        raise Exception('Two distinct states exist with identical labels.')
+      elif out_edge.to_state.get_label() == edge.to_state.get_label():
+        # sanity: there already is an edge to a state that a) is not identical to the target state of the
+        # newly added edge but b) has the same label.
+        raise Exception('Two distinct states exist with identical label: %r: states %r and %r.'
+                        % (out_edge.to_state.get_label(), out_edge.to_state, edge.to_state))
     state.out_edges.append(edge)
 
   def get_label(state):
