@@ -137,10 +137,11 @@ class Event:
     return cmp(event.name, other.name)
 
 class Edge:
-  def __init__(edge, to_state, event_name=None, style=None, action=None, color=None):
+  def __init__(edge, to_state, event_name=None, style=None, action=None, color=None, arrow_head=None):
     edge.to_state = to_state
     edge.style = style
     edge.color = color
+    edge.arrow_head = arrow_head
     edge.events = []
     edge.actions = []
     edge.add_event_name(event_name)
@@ -330,7 +331,8 @@ class Fsm:
 
   def add_special_state(fsm, additional_states, name, in_state=None,
                         out_state=None, event_name=None, kind=KIND_FUNC,
-                        state_action=None, label=None, edge_action=None):
+                        state_action=None, label=None, edge_action=None,
+                        style='dotted', arrow_head=None):
     additional_state = None
     for s in additional_states:
       if s.short_name == name:
@@ -356,13 +358,13 @@ class Fsm:
 
     if out_state:
       additional_state.out_state_names.append(out_state.name)
-      additional_state.add_out_edge(Edge(out_state, event_name, 'dotted',
-                                         action=edge_action))
+      additional_state.add_out_edge(Edge(out_state, event_name, style=style,
+                                         action=edge_action, arrow_head=arrow_head))
 
     if in_state:
       in_state.out_state_names.append(additional_state.name)
-      in_state.add_out_edge(Edge(additional_state, event_name, 'dotted',
-                                 action=edge_action))
+      in_state.add_out_edge(Edge(additional_state, event_name, style=style,
+                                 action=edge_action, arrow_head=arrow_head))
 
 
   def find_event_edges(fsm, c_files):
@@ -425,7 +427,8 @@ class Fsm:
         # them to the graph as well
         additional_funcs = [f for f in funcs_for_in_event if f not in fsm.action_funcs]
         for af in additional_funcs:
-          fsm.add_special_state(additional_states, af, None, state, in_event_name)
+          fsm.add_special_state(additional_states, af, None, state, in_event_name,
+                                arrow_head='halfopen')
 
     fsm.states.extend(additional_states)
 
@@ -540,6 +543,8 @@ class Fsm:
           attrs.append('style=%s'% out_edge.style)
         if out_edge.color:
           attrs.append('color=%s'% out_edge.color)
+        if out_edge.arrow_head:
+          attrs.append('arrowhead=%s'% out_edge.arrow_head)
         attrs_str = ''
         if attrs:
           attrs_str = ' [%s]' % (','.join(attrs))
