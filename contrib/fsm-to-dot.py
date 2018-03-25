@@ -532,7 +532,10 @@ class Fsm:
         if out_edge.actions:
           labels.extend(out_edge.action_labels())
         if labels:
-          attrs.append('label="%s"' % (r'\n'.join(labels)))
+          label = r'\n'.join(labels)
+        else:
+          label = '-'
+        attrs.append('label="%s"' % label)
         if out_edge.style:
           attrs.append('style=%s'% out_edge.style)
         if out_edge.color:
