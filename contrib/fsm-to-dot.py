@@ -15,6 +15,10 @@ No proper C parsing is done here (pycparser sucked, unfortunately).
 
 import sys, re, os
 
+if '-h' in sys.argv or '--help' in sys.argv:
+  print(__doc__)
+  exit(0)
+
 def err(msg):
   sys.stderr.write(msg + '\n')
 
