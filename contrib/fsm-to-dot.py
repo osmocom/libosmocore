@@ -566,6 +566,8 @@ re_func = re.compile(r'(\b[a-z_][a-z_0-9]*\b)\([^)]*\)\W*^{', re.MULTILINE)
 re_state_trigger = re.compile(r'osmo_fsm_inst_state_chg\([^,]+,\W*([A-Z_][A-Z_0-9]*)\W*,', re.M)
 re_fsm_alloc = re.compile(r'osmo_fsm_inst_alloc[_child]*\(\W*&([a-z_][a-z_0-9]*),', re.M)
 re_fsm_event_dispatch = re.compile(r'osmo_fsm_inst_dispatch\(\W*[^,]+,\W*([A-Z_][A-Z_0-9]*)\W*,', re.M)
+re_comment_multiline = re.compile(r'/\*.*?\*/', re.M | re.S)
+re_comment_single_line = re.compile(r'//.*$', re.M | re.S)
 
 class CFile():
   def __init__(c_file, path):
@@ -625,6 +627,8 @@ class CFile():
     for m in re_func.finditer(c_file.src):
       name = m.group(1)
       func_src = c_file.extract_block('{', '}', m.start())
+      func_src = ''.join(re_comment_multiline.split(func_src))
+      func_src = ''.join(re_comment_single_line.split(func_src))
       funcs[name] = func_src
     c_file.funcs = funcs
     c_file.find_fsm_allocators()
