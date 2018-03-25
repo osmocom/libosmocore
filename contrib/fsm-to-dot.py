@@ -137,9 +137,10 @@ class Event:
     return cmp(event.name, other.name)
 
 class Edge:
-  def __init__(edge, to_state, event_name=None, style=None, action=None):
+  def __init__(edge, to_state, event_name=None, style=None, action=None, color=None):
     edge.to_state = to_state
     edge.style = style
+    edge.color = color
     edge.events = []
     edge.actions = []
     edge.add_event_name(event_name)
@@ -379,9 +380,17 @@ class Fsm:
       for to_state_name, event_name in transitions:
         if not event_name:
           continue
+        found = False
         for out_edge in state.out_edges:
           if out_edge.to_state.name == to_state_name:
             out_edge.add_event_name(event_name)
+            found = True
+        if not found:
+          sys.stderr.write(
+            "ERROR: %s() triggers a transition to %s, but this is not allowed by the FSM definition\n"
+            % (state.action, to_state_name))
+          state.add_out_edge(Edge(fsm.find_state_by_name(to_state_name, True), event_name,
+                                  color='red'))
 
     additional_states = []
 
@@ -526,6 +535,8 @@ class Fsm:
           attrs.append('label="%s"' % (r'\n'.join(labels)))
         if out_edge.style:
           attrs.append('style=%s'% out_edge.style)
+        if out_edge.color:
+          attrs.append('color=%s'% out_edge.color)
         attrs_str = ''
         if attrs:
           attrs_str = ' [%s]' % (','.join(attrs))
