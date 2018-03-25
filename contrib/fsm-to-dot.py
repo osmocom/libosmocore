@@ -587,6 +587,7 @@ re_fsm_alloc = re.compile(r'osmo_fsm_inst_alloc[_child]*\(\W*&([a-z_][a-z_0-9]*)
 re_fsm_event_dispatch = re.compile(r'osmo_fsm_inst_dispatch\(\W*[^,]+,\W*([A-Z_][A-Z_0-9]*)\W*,', re.M)
 re_comment_multiline = re.compile(r'/\*.*?\*/', re.M | re.S)
 re_comment_single_line = re.compile(r'//.*$', re.M | re.S)
+re_break = re.compile(r'^\W*\bbreak;', re.M)
 
 class CFile():
   def __init__(c_file, path):
@@ -669,7 +670,9 @@ class CFile():
 
   def find_state_transitions(c_file, event_names):
     TO_STATE = 'TO_STATE'
-    EVENT = 'EVENT'
+    IF_EVENT = 'IF_EVENT'
+    CASE_EVENT = 'CASE_EVENT'
+    BREAK = 'BREAK'
     func_to_state_transitions = listdict()
 
     for func_name, src in c_file.funcs.items():
@@ -680,19 +683,37 @@ class CFile():
         found_tokens.append((m.start(), TO_STATE, to_state))
 
       for event in event_names:
-        re_event = re.compile(r'\b(' + event + r')\b')
+        re_event = re.compile(r'\bif\w*\(.*\b(' + event + r')\b')
         for m in re_event.finditer(src):
           event = m.group(1)
-          found_tokens.append((m.start(), EVENT, event))
+          found_tokens.append((m.start(), IF_EVENT, event))
+
+        re_event = re.compile(r'^\W*case\W\W*\b(' + event + r'):', re.M)
+        for m in re_event.finditer(src):
+          event = m.group(1)
+          found_tokens.append((m.start(), CASE_EVENT, event))
+
+      for m in re_break.finditer(src):
+        found_tokens.append((m.start(), BREAK, 'break'))
 
       found_tokens = sorted(found_tokens)
 
-      last_event = None
+      last_events = []
+      saw_break = True
       for start, kind, name in found_tokens:
-        if kind == EVENT:
-          last_event = name
-        else:
-          func_to_state_transitions.add(func_name, (name, last_event))
+        if kind == IF_EVENT:
+          last_events = [name]
+          saw_break = True
+        elif kind == CASE_EVENT:
+          if saw_break:
+            last_events = []
+            saw_break = False
+          last_events.append(name)
+        elif kind == BREAK:
+          saw_break = True
+        elif kind == TO_STATE:
+          for event in (last_events or [None]):
+            func_to_state_transitions.add(func_name, (name, event))
 
     return func_to_state_transitions
 
