@@ -262,7 +262,7 @@ class Fsm:
   def __str__(fsm):
     return 'Fsm(%r,%r)' % (fsm.struct_name, fsm.from_file)
 
-  def parse_states(fsm, src):
+  def parse_states(fsm, src, c_file):
     state = None
     started = None
 
@@ -274,6 +274,15 @@ class Fsm:
     for line in lines:
       state_name = state_starts(line)
       if state_name:
+        state = fsm.find_state_by_name(state_name)
+        if state is not None:
+          if c_file is fsm.from_file:
+            print('ERROR: fsm %r has multiple definitions of state %r' % (fsm, state_name))
+          else:
+            print('ERROR: it appears two FSMs with identical name %r exist in %r and %r'
+                  % (fsm.struct_name, fsm.from_file, c_file))
+          state = None
+          continue
         state = State()
         fsm.states.append(state)
         started = None
@@ -664,7 +673,7 @@ class CFile():
       states_struct_name = m.group(1)
       for fsm in fsms:
         if states_struct_name == fsm.states_struct_name:
-          fsm.parse_states(c_file.extract_block('{', '}', m.start()))
+          fsm.parse_states(c_file.extract_block('{', '}', m.start()), c_file)
 
   def parse_functions(c_file):
     funcs = {}
@@ -786,6 +795,14 @@ for c_file in c_files:
 fsms = []
 for c_file in c_files:
   fsms.extend(c_file.find_fsms())
+
+for fsm1 in fsms:
+  for fsm2 in fsms:
+    if fsm1 is fsm2:
+      continue
+    if fsm1.states_struct_name == fsm2.states_struct_name:
+      print('ERROR: two distinct FSMs share the same states-struct name: %r and %r both use %r'
+            % (fsm1, fsm2, fsm1.states_struct_name))
 
 for c_file in c_files:
   c_file.find_fsm_states(fsms)
