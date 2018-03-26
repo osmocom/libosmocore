@@ -193,6 +193,7 @@ class State:
   out_state_names = None
   out_edges = None
   kind = None
+  color = None
 
   def __init__(state):
     state.in_event_names = []
@@ -236,6 +237,11 @@ class State:
       return ''
     return ',shape=%s' % shape
 
+  def color_str(state):
+    if state.color is None:
+      return ''
+    return ',color="%s"' % state.color
+
   def __repr__(state):
     return 'State(name=%r,short_name=%r,out=%d)' % (state.name, state.short_name, len(state.out_edges))
 
@@ -249,6 +255,12 @@ class Fsm:
     fsm.action_funcs = set()
     fsm.event_names = set()
     fsm.dot_name = fsm.all_names_sanitized()
+
+  def __repr__(fsm):
+    return str(fsm)
+
+  def __str__(fsm):
+    return 'Fsm(%r,%r)' % (fsm.struct_name, fsm.from_file)
 
   def parse_states(fsm, src):
     state = None
@@ -312,8 +324,13 @@ class Fsm:
 
   def ref_out_states(fsm):
     for state in fsm.states:
-      for e in [Edge(fsm.find_state_by_name(n, True)) for n in state.out_state_names]:
-        state.add_out_edge(e)
+      for out_state_name in state.out_state_names:
+        out_state = fsm.find_state_by_name(out_state_name, False)
+        if out_state is None:
+          print('ERROR: fsm %r has a transition to state not part of the FSM: %r'
+                % (fsm, out_state_name))
+          out_state = fsm.have_state(out_state_name, KIND_STATE, color='red')
+        state.add_out_edge(Edge(out_state))
 
   def find_state_by_name(fsm, name, strict=False):
     for state in fsm.states:
@@ -509,13 +526,14 @@ class Fsm:
           meta_calling_fsm.add_out_edge(Edge(meta_called_fsm))
 
 
-  def have_state(fsm, name, kind=KIND_STATE):
+  def have_state(fsm, name, kind=KIND_STATE, color=None):
     state = fsm.find_state_by_name(name)
     if not state:
       state = State()
       state.name = name
       state.short_name = name
       state.kind = kind
+      state.color = color
       fsm.states.append(state)
     return state
 
@@ -523,8 +541,8 @@ class Fsm:
     out = ['digraph G {', 'rankdir=LR;']
 
     for state in fsm.states:
-      out.append('%s [label="%s"%s]' % (state.short_name, state.get_label(),
-                  state.shape_str()))
+      out.append('%s [label="%s"%s%s]' % (state.short_name, state.get_label(),
+                  state.shape_str(), state.color_str()))
 
     for state in fsm.states:
       for out_edge in state.out_edges:
@@ -595,6 +613,12 @@ class CFile():
     c_file.src = open(path).read()
     c_file.funcs = {}
     c_file.fsm_allocators = listdict()
+
+  def __repr__(c_file):
+    return str(c_file)
+
+  def __str__(c_file):
+    return 'CFile(%r)' % c_file.path
 
   def extract_block(c_file, brace_open, brace_close, start):
     pos = 0
