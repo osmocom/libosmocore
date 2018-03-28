@@ -2728,16 +2728,26 @@ static int write_config_file(const char *config_file, char **outpath)
 
 	*outpath = NULL;
 
+	/* The string composition code here would be a case for talloc_asprintf(), but the pseudotalloc.c
+	 * talloc_asprintf() implementation would truncate a too-long path with "[...]", so doing it
+	 * manually instead. */
+
 	/* Check and see if we are operating under vtysh configuration */
 	config_file_sav =
 	    _talloc_zero(tall_vty_cmd_ctx,
 			 strlen(config_file) + strlen(CONF_BACKUP_EXT) + 1,
 			 "config_file_sav");
+	if (!config_file_sav)
+		return -1;
 	strcpy(config_file_sav, config_file);
 	strcat(config_file_sav, CONF_BACKUP_EXT);
 
 	config_file_tmp = _talloc_zero(tall_vty_cmd_ctx, strlen(config_file) + 8,
-					"config_file_tmp");
+				       "config_file_tmp");
+	if (!config_file_tmp) {
+		talloc_free(config_file_sav);
+		return -1;
+	}
 	sprintf(config_file_tmp, "%s.XXXXXX", config_file);
 
 	/* Open file to configuration write. */
