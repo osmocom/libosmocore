@@ -86,5 +86,6 @@ const struct tlv_definition *gsm0808_att_tlvdef(void);
 
 const char *gsm0808_bssmap_name(uint8_t msg_type);
 const char *gsm0808_bssap_name(uint8_t msg_type);
+const char *gsm0808_cause_name(uint8_t cause);
 
 /*! @} */
