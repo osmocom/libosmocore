@@ -62,6 +62,11 @@ const struct value_string osmo_gsup_message_type_names[] = {
 	OSMO_VALUE_STRING(OSMO_GSUP_MSGT_LOCATION_CANCEL_REQUEST),
 	OSMO_VALUE_STRING(OSMO_GSUP_MSGT_LOCATION_CANCEL_ERROR),
 	OSMO_VALUE_STRING(OSMO_GSUP_MSGT_LOCATION_CANCEL_RESULT),
+
+	OSMO_VALUE_STRING(OSMO_GSUP_MSGT_PROC_SS_REQUEST),
+	OSMO_VALUE_STRING(OSMO_GSUP_MSGT_PROC_SS_ERROR),
+	OSMO_VALUE_STRING(OSMO_GSUP_MSGT_PROC_SS_RESULT),
+
 	{ 0, NULL }
 };
 
@@ -393,6 +398,11 @@ int osmo_gsup_decode(const uint8_t *const_data, size_t data_len,
 			gsup_msg->session_state = *value;
 			break;
 
+		case OSMO_GSUP_SS_INFO_IE:
+			gsup_msg->ss_info = value;
+			gsup_msg->ss_info_len = value_len;
+			break;
+
 		default:
 			LOGP(DLGSUP, LOGL_NOTICE,
 			     "GSUP IE type %d unknown\n", iei);
@@ -578,6 +588,11 @@ int osmo_gsup_encode(struct msgb *msg, const struct osmo_gsup_message *gsup_msg)
 
 		msgb_tlv_put(msg, OSMO_GSUP_SESSION_ID_IE, len, sid);
 		msgb_tlv_put(msg, OSMO_GSUP_SESSION_STATE_IE, sizeof(u8), &u8);
+	}
+
+	if (gsup_msg->ss_info) {
+		msgb_tlv_put(msg, OSMO_GSUP_SS_INFO_IE,
+				gsup_msg->ss_info_len, gsup_msg->ss_info);
 	}
 
 	return 0;

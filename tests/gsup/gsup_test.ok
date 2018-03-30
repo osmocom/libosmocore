@@ -29,4 +29,8 @@ Test GSUP message decoding/encoding
           Send Authentication Info Request with AUTS and RAND (UMTS) OK
   Testing Dummy message with session IEs
           Dummy message with session IEs OK
+  Testing SS/USSD processUnstructuredSS-Request / Invoke
+          SS/USSD processUnstructuredSS-Request / Invoke OK
+  Testing SS/USSD processUnstructuredSS-Request / ReturnResult
+          SS/USSD processUnstructuredSS-Request / ReturnResult OK
 Done.

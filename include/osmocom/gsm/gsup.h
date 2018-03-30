@@ -85,6 +85,9 @@ enum osmo_gsup_iei {
 
 	OSMO_GSUP_SESSION_ID_IE			= 0x30,
 	OSMO_GSUP_SESSION_STATE_IE		= 0x31,
+
+	/*! Supplementary Services payload */
+	OSMO_GSUP_SS_INFO_IE			= 0x35,
 };
 
 /*! GSUP message type */
@@ -114,6 +117,10 @@ enum osmo_gsup_message_type {
 	OSMO_GSUP_MSGT_LOCATION_CANCEL_REQUEST	= 0b00011100,
 	OSMO_GSUP_MSGT_LOCATION_CANCEL_ERROR	= 0b00011101,
 	OSMO_GSUP_MSGT_LOCATION_CANCEL_RESULT	= 0b00011110,
+
+	OSMO_GSUP_MSGT_PROC_SS_REQUEST		= 0b00100000,
+	OSMO_GSUP_MSGT_PROC_SS_ERROR		= 0b00100001,
+	OSMO_GSUP_MSGT_PROC_SS_RESULT		= 0b00100010,
 };
 
 #define OSMO_GSUP_IS_MSGT_REQUEST(msgt) (((msgt) & 0b00000011) == 0b00)
@@ -197,6 +204,10 @@ struct osmo_gsup_message {
 	/*! Unique session identifier and origination flag.
          * Encoded only when \ref session_state != 0x00 */
 	uint32_t			session_id;
+
+	/*! ASN.1 encoded MAP payload for Supplementary Services */
+	uint8_t				*ss_info;
+	size_t				ss_info_len;
 };
 
 int osmo_gsup_decode(const uint8_t *data, size_t data_len,

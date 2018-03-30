@@ -9,3 +9,4 @@
 #library	what			description / commit summary line
 gsup		gsup.h				the 'osmo_gsup_message' struct extended with
 						session information => ABI changed
+						SS/USSD information => ABI changed

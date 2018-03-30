@@ -180,6 +180,43 @@ static void test_gsup_messages_dec_enc(void)
 		0x31, 0x01, 0x01,
 	};
 
+	static const uint8_t send_ussd_req[] = {
+		0x20, /* OSMO_GSUP_MSGT_PROC_SS_REQUEST */
+		TEST_IMSI_IE,
+
+		/* Session ID and state */
+		0x30, 0x04, 0xde, 0xad, 0xbe, 0xef,
+		0x31, 0x01, 0x01,
+
+		/* SS/USSD information IE */
+		0x35, 0x14,
+			/* ASN.1 encoded MAP payload */
+			0xa1, 0x12,
+				0x02, 0x01, /* Component: invoke */
+				0x01, /* invokeID = 1 */
+				/* opCode: processUnstructuredSS-Request */
+				0x02, 0x01, 0x3b, 0x30, 0x0a, 0x04, 0x01, 0x0f,
+				0x04, 0x05, 0xaa, 0x18, 0x0c, 0x36, 0x02,
+	};
+
+	static const uint8_t send_ussd_res[] = {
+		0x22, /* OSMO_GSUP_MSGT_PROC_SS_RESULT */
+		TEST_IMSI_IE,
+
+		/* Session ID and state */
+		0x30, 0x04, 0xde, 0xad, 0xbe, 0xef,
+		0x31, 0x01, 0x03,
+
+		/* SS/USSD information IE */
+		0x35, 0x08,
+			/* ASN.1 encoded MAP payload */
+			0xa3, 0x06,
+				0x02, 0x01, /* Component: returnError */
+				0x01, /* invokeID = 1 */
+				/* localValue: unknownAlphabet */
+				0x02, 0x01, 0x47,
+	};
+
 	static const struct test {
 		char *name;
 		const uint8_t *data;
@@ -215,6 +252,10 @@ static void test_gsup_messages_dec_enc(void)
 			send_auth_info_req_auts, sizeof(send_auth_info_req_auts)},
 		{"Dummy message with session IEs",
 			dummy_session_ies, sizeof(dummy_session_ies)},
+		{"SS/USSD processUnstructuredSS-Request / Invoke",
+			send_ussd_req, sizeof(send_ussd_req)},
+		{"SS/USSD processUnstructuredSS-Request / ReturnResult",
+			send_ussd_res, sizeof(send_ussd_res)},
 	};
 
 	printf("Test GSUP message decoding/encoding\n");
@@ -278,7 +319,11 @@ static void test_gsup_messages_dec_enc(void)
 					osmo_hexdump(t->data + j, ie_end - j));
 
 				OSMO_ASSERT(j <= ie_end - 2);
-				OSMO_ASSERT(t->data[j+0] <= OSMO_GSUP_SESSION_STATE_IE);
+				/**
+				 * FIXME: share the maximal IE value somehow
+				 * in order to avoid manual updating of this
+				 */
+				OSMO_ASSERT(t->data[j+0] <= OSMO_GSUP_SS_INFO_IE);
 				OSMO_ASSERT(t->data[j+1] <= ie_end - j - 2);
 
 				ie_end = j;
