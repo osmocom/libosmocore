@@ -211,38 +211,61 @@ static void fsm_tmr_cb(void *data)
  */
 int osmo_fsm_inst_update_id(struct osmo_fsm_inst *fi, const char *id)
 {
-	if (id) {
+	if (!id)
+		return osmo_fsm_inst_update_id_f(fi, NULL);
+	else
+		return osmo_fsm_inst_update_id_f(fi, "%s", id);
+}
+
+static void update_name(struct osmo_fsm_inst *fi)
+{
+	if (fi->name)
+		talloc_free((char*)fi->name);
+
+	if (!fsm_log_addr) {
+		if (fi->id)
+			fi->name = talloc_asprintf(fi, "%s(%s)", fi->fsm->name, fi->id);
+		else
+			fi->name = talloc_asprintf(fi, "%s", fi->fsm->name);
+	} else {
+		if (fi->id)
+			fi->name = talloc_asprintf(fi, "%s(%s)[%p]", fi->fsm->name, fi->id, fi);
+		else
+			fi->name = talloc_asprintf(fi, "%s[%p]", fi->fsm->name, fi);
+	}
+}
+
+/*! Change id of the FSM instance using a string format.
+ * \param[in] fi FSM instance.
+ * \param[in] fmt format string to compose new ID.
+ * \param[in] ... variable argument list for format string.
+ * \returns 0 if the ID was updated, otherwise -EINVAL.
+ */
+int osmo_fsm_inst_update_id_f(struct osmo_fsm_inst *fi, const char *fmt, ...)
+{
+	char *id = NULL;
+
+	if (fmt) {
+		va_list ap;
+
+		va_start(ap, fmt);
+		id = talloc_vasprintf(fi, fmt, ap);
+		va_end(ap);
+
 		if (!osmo_identifier_valid(id)) {
 			LOGP(DLGLOBAL, LOGL_ERROR,
 			     "Attempting to set illegal id for FSM instance of type '%s': %s\n",
 			     fi->fsm->name, osmo_quote_str(id, -1));
+			talloc_free(id);
 			return -EINVAL;
 		}
-		osmo_talloc_replace_string(fi, (char **)&fi->id, id);
-
-		if (fi->name)
-			talloc_free((void*)fi->name);
-
-		if (!fsm_log_addr) {
-			fi->name = talloc_asprintf(fi, "%s(%s)", fi->fsm->name, id);
-		} else {
-			fi->name = talloc_asprintf(fi, "%s(%s)[%p]", fi->fsm->name, id, fi);
-		}
-
-		return 0;
 	}
 
 	if (fi->id)
-		talloc_free((void*)fi->id);
-	fi->id = NULL;
-	if (fi->name)
-		talloc_free((void*)fi->name);
+		talloc_free((char*)fi->id);
+	fi->id = id;
 
-	if (!fsm_log_addr) {
-		fi->name = talloc_asprintf(fi, "%s", fi->fsm->name);
-	} else {
-		fi->name = talloc_asprintf(fi, "%s[%p]", fi->fsm->name, fi);
-	}
+	update_name(fi);
 	return 0;
 }
 

@@ -237,6 +237,30 @@ do { \
 
 	test_id("invalid.id", -EINVAL, "(arbitrary_id)");
 
+	fprintf(stderr, "--- id format tests...\n");
+/* Update the id, assert the proper rc, and expect a resulting fsm inst name + lookup */
+#define test_id_f(expect_rc, expect_name_suffix, new_id_fmt, args...) do { \
+		int rc; \
+		fprintf(stderr, "osmo_fsm_inst_update_id_f(%s, " #args ")\n", \
+			osmo_quote_str(new_id_fmt, -1)); \
+		rc = osmo_fsm_inst_update_id_f(fi, new_id_fmt, ## args); \
+		fprintf(stderr, "    rc == %d", rc); \
+		if (rc == (expect_rc)) \
+			fprintf(stderr, ", ok\n"); \
+		else { \
+			fprintf(stderr, ", ERROR: expected rc == %d\n", expect_rc); \
+			OSMO_ASSERT(rc == expect_rc); \
+		} \
+		assert_name("Test_FSM" expect_name_suffix); \
+	}while (0)
+
+	test_id_f(-EINVAL, "(arbitrary_id)", "format%cid", '.');
+	test_id_f(-EINVAL, "(arbitrary_id)", "%s", "");
+	test_id_f(0, "(format23id42)", "format%xid%d", 0x23, 42);
+	test_id_f(0, "", NULL);
+	test_id_f(0, "", NULL);
+	test_id_f(0, "(arbitrary_id)", "%s%c%s", "arbitrary", '_', "id");
+
 	fprintf(stderr, "\n--- %s() done\n\n", __func__);
 
 	osmo_fsm_inst_term(fi, OSMO_FSM_TERM_REQUEST, NULL);
