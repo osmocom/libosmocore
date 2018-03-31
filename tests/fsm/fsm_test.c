@@ -221,20 +221,7 @@ do { \
 	/* allocate FSM instance without id, there should be a name without id */
 	fi = osmo_fsm_inst_alloc(&fsm, g_ctx, NULL, LOGL_DEBUG, NULL);
 	OSMO_ASSERT(fi);
-	/* CURRENT BUG: here I want to just do
 	assert_name("Test_FSM");
-	 * but when allocated with a NULL id, the fsm's name remains unset. Hence: */
-	{
-		const char *expected_name = "Test_FSM";
-		const char *name = osmo_fsm_inst_name(fi);
-		fprintf(stderr, "  osmo_fsm_inst_name() == %s\n", osmo_quote_str(name, -1));
-		if (safe_strcmp(name, expected_name)) {
-			fprintf(stderr, "    ERROR: expected %s\n", osmo_quote_str(expected_name, -1));
-			OSMO_ASSERT(false);
-		}
-		OSMO_ASSERT(osmo_fsm_inst_find_by_name(&fsm, "Test_FSM") == NULL); /* <- ERROR */
-		fprintf(stderr, "  osmo_fsm_inst_find_by_name(%s) == NULL\n", osmo_quote_str(expected_name, -1));
-	}
 
 	change_id("my_id");
 	change_id("another_id");

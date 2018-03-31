@@ -263,11 +263,9 @@ struct osmo_fsm_inst *osmo_fsm_inst_alloc(struct osmo_fsm *fsm, void *ctx, void 
 	fi->log_level = log_level;
 	osmo_timer_setup(&fi->timer, fsm_tmr_cb, fi);
 
-	if (id) {
-		if (osmo_fsm_inst_update_id(fi, id) < 0) {
-				talloc_free(fi);
-				return NULL;
-		}
+	if (osmo_fsm_inst_update_id(fi, id) < 0) {
+			talloc_free(fi);
+			return NULL;
 	}
 
 	INIT_LLIST_HEAD(&fi->proc.children);

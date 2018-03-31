@@ -13,7 +13,7 @@ Checking FSM allocation
 --- test_id_api()
 Test_FSM{NULL}: Allocated
 [0;m  osmo_fsm_inst_name() == "Test_FSM"
-  osmo_fsm_inst_find_by_name("Test_FSM") == NULL
+  osmo_fsm_inst_find_by_name("Test_FSM") == fi
 osmo_fsm_inst_update_id("my_id")
     rc == 0, ok
   osmo_fsm_inst_name() == "Test_FSM(my_id)"
