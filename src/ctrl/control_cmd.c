@@ -566,6 +566,7 @@ ctrl_cmd_def_make(const void *ctx, struct ctrl_cmd *cmd, void *data, unsigned in
 
 	cd = talloc_zero(ctx, struct ctrl_cmd_def);
 
+	cmd->defer = cd;
 	cd->cmd = cmd;
 	cd->data = data;
 

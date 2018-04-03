@@ -401,8 +401,6 @@ static void test_deferred_cmd()
 	/* Expecting a ctrl_cmd_def as well as the cmd to still be allocated */
 	if (talloc_total_size(ctx) <= ctx_size_before_defer) {
 		printf("deferred command apparently deallocated too soon\n");
-		/* ERROR -- showing current bug in handling deallocated cmds, hence exiting early */
-		goto exit_early;
 		talloc_report_full(ctx, stdout);
 		OSMO_ASSERT(false);
 	}
@@ -416,8 +414,6 @@ static void test_deferred_cmd()
 		talloc_report_full(ctx, stdout);
 		OSMO_ASSERT(false);
 	}
-
-exit_early:
 
 	talloc_free(ccon);
 	talloc_free(ctrl);

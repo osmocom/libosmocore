@@ -176,5 +176,6 @@ ok
 test_deferred_cmd
 get_test_defer called
 ctrl_handle_msg() returned 0
-deferred command apparently deallocated too soon
+invoking ctrl_test_defer_cb() asynchronously
+ctrl_test_defer_cb called
 success

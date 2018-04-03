@@ -56,6 +56,8 @@ struct ctrl_connection {
 	struct llist_head def_cmds;
 };
 
+struct ctrl_cmd_def;
+
 struct ctrl_cmd {
 	struct ctrl_connection *ccon;
 	enum ctrl_type type;
@@ -64,6 +66,7 @@ struct ctrl_cmd {
 	char *variable;
 	char *value;
 	char *reply;
+	struct ctrl_cmd_def *defer;
 };
 
 #define ctrl_cmd_reply_printf(cmd, fmt, args ...) \

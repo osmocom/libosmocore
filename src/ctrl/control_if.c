@@ -401,6 +401,13 @@ int ctrl_handle_msg(struct ctrl_handle *ctrl, struct ctrl_connection *ccon, stru
 	if (cmd->type != CTRL_TYPE_ERROR) {
 		cmd->ccon = ccon;
 		if (ctrl_cmd_handle(ctrl, cmd, ctrl->data) == CTRL_CMD_HANDLED) {
+
+			if (cmd->defer) {
+				/* The command is still stored as ctrl_cmd_def.cmd, in the def_cmds list.
+				 * Just leave hanging for deferred handling. Reply will happen later. */
+				return 0;
+			}
+
 			/* On CTRL_CMD_HANDLED, no reply needs to be sent back. */
 			talloc_free(cmd);
 			cmd = NULL;
