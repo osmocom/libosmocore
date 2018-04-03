@@ -365,6 +365,7 @@ int ctrl_handle_msg(struct ctrl_handle *ctrl, struct ctrl_connection *ccon, stru
 	struct ctrl_cmd *cmd;
 	struct ipaccess_head *iph;
 	struct ipaccess_head_ext *iph_ext;
+	int result;
 
 	if (msg->len < sizeof(*iph) + sizeof(*iph_ext)) {
 		LOGP(DLCTRL, LOGL_ERROR, "The message is too short.\n");
@@ -398,28 +399,29 @@ int ctrl_handle_msg(struct ctrl_handle *ctrl, struct ctrl_connection *ccon, stru
 		cmd->reply = "Command parser error.";
 	}
 
-	if (cmd->type != CTRL_TYPE_ERROR) {
-		cmd->ccon = ccon;
-		if (ctrl_cmd_handle(ctrl, cmd, ctrl->data) == CTRL_CMD_HANDLED) {
+	/* In case of error, reply with the error message right away. */
+	if (cmd->type == CTRL_TYPE_ERROR)
+		goto send_reply;
 
-			if (cmd->defer) {
-				/* The command is still stored as ctrl_cmd_def.cmd, in the def_cmds list.
-				 * Just leave hanging for deferred handling. Reply will happen later. */
-				return 0;
-			}
+	cmd->ccon = ccon;
+	result = ctrl_cmd_handle(ctrl, cmd, ctrl->data);
 
-			/* On CTRL_CMD_HANDLED, no reply needs to be sent back. */
-			talloc_free(cmd);
-			cmd = NULL;
-		}
+
+	if (cmd->defer) {
+		/* The command is still stored as ctrl_cmd_def.cmd, in the def_cmds list.
+		 * Just leave hanging for deferred handling. Reply will happen later. */
+		return 0;
 	}
 
-	if (cmd) {
-		/* There is a reply or error that should be reported back to the sender. */
-		ctrl_cmd_send(&ccon->write_queue, cmd);
-		talloc_free(cmd);
-	}
+	/* On CTRL_CMD_HANDLED, no reply needs to be sent back. */
+	if (result == CTRL_CMD_HANDLED)
+		goto just_free;
 
+send_reply:
+	/* There is a reply or error that should be reported back to the sender. */
+	ctrl_cmd_send(&ccon->write_queue, cmd);
+just_free:
+	talloc_free(cmd);
 	return 0;
 }
 
