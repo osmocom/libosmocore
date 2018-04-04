@@ -67,6 +67,18 @@ struct ss_request {
 	uint8_t ussd_text[GSM0480_USSD_OCTET_STRING_LEN];
 
 	/**
+	 * Represents the data of either an INVOKE, either
+	 * a RETURN_RESULT component 'as is'. Useful when
+	 * decoding is not supported or not desired.
+	 *
+	 * Shall be always followed by its length (in bytes)
+	 * and DCS (Data Coding Scheme).
+	 */
+	uint8_t ussd_data[GSM0480_USSD_OCTET_STRING_LEN];
+	uint8_t ussd_data_len; /* Length in bytes */
+	uint8_t ussd_data_dcs; /* Data Coding Scheme */
+
+	/**
 	 * GSM TS 04.80, section 3.3 "Transaction identifier"
 	 * See GSM TS 04.07, section 11.2.3 for details.
 	 */

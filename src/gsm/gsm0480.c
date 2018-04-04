@@ -557,6 +557,11 @@ static int parse_process_uss_data(const uint8_t *uss_req_data, uint16_t length,
 
 	memcpy(req->ussd_text, uss_req_data + 2, num_chars);
 
+	/* Copy the data 'as is' */
+	memcpy(req->ussd_data, uss_req_data + 2, num_chars);
+	req->ussd_data_len = num_chars;
+	req->ussd_data_dcs = 0x00;
+
 	return 1;
 }
 
@@ -580,6 +585,17 @@ static int parse_process_uss_req(const uint8_t *uss_req_data, uint16_t length,
 
 	/* Get DCS (Data Coding Scheme) */
 	dcs = uss_req_data[4];
+	/* Get the amount of bytes */
+	num_chars = uss_req_data[6];
+
+	/* Prevent a mobile-originated buffer-overrun! */
+	if (num_chars > GSM0480_USSD_OCTET_STRING_LEN)
+		num_chars = GSM0480_USSD_OCTET_STRING_LEN;
+
+	/* Copy the data 'as is' */
+	memcpy(req->ussd_data, uss_req_data + 7, num_chars);
+	req->ussd_data_len = num_chars;
+	req->ussd_data_dcs = dcs;
 
 	/**
 	 * According to GSM 04.08, 4.4.2 "ASN.1 data types":
@@ -588,7 +604,7 @@ static int parse_process_uss_req(const uint8_t *uss_req_data, uint16_t length,
 	 */
 	if (dcs == 0x0F) {
 		/* Calculate the amount of 7-bit characters */
-		num_chars = (uss_req_data[6] * 8) / 7;
+		num_chars = (num_chars * 8) / 7;
 
 		/* Prevent a mobile-originated buffer-overrun! */
 		if (num_chars > GSM0480_USSD_7BIT_STRING_LEN)
@@ -599,15 +615,7 @@ static int parse_process_uss_req(const uint8_t *uss_req_data, uint16_t length,
 
 		return 1;
 	} else {
-		/* Get the amount of 8-bit characters */
-		num_chars = uss_req_data[6];
-
-		/* Prevent a mobile-originated buffer-overrun! */
-		if (num_chars > GSM0480_USSD_OCTET_STRING_LEN)
-			num_chars = GSM0480_USSD_OCTET_STRING_LEN;
-
 		memcpy(req->ussd_text, &(uss_req_data[7]), num_chars);
-
 		return 1;
 	}
 

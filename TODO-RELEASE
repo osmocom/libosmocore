@@ -11,3 +11,5 @@ core		msgb_queue_free()	add inline func to msgb.h
 coding		gsm0503_rach_ext-encode()	add func to gsm0503_coding.h
 codec		ecu.c / ecu.h			implement ECU for FR (Error Concealment Unit)
 fsm		fsmc / fsm.h			added callback for graceful exit => ABI changed
+gsm		gsm0480.c / gsm0480.h		the 'ss_request' struct extended with ussd_data,
+						ussd_data_len, and ussd_data_dcs => ABI changed
