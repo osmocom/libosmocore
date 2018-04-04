@@ -40,11 +40,42 @@ struct ussd_request {
 int gsm0480_decode_ussd_request(const struct gsm48_hdr *hdr, uint16_t len,
 				struct ussd_request *request) OSMO_DEPRECATED("Use gsm0480_decode_ss_request() instead");
 
+/**
+ * This structure represents some meaningful parts of
+ * a decoded and/or to be encoded GSM 04.80 message.
+ */
 struct ss_request {
+	/**
+	 * GSM TS 04.80, section 3.6.4 "Operation code"
+	 * See GSM0480_OP_CODE_* for possible values.
+	 */
 	uint8_t opcode;
+	/**
+	 * GSM TS 04.80, section 4.4.3.9 "ss-Code"
+	 * The ss-Code identifier refers to the code which identify
+	 * a supplementary service or a group of supplementary services.
+	 */
 	uint8_t ss_code;
+
+	/**
+	 * A rudiment of deprecated 'ussd_request' structure.
+	 * Represents the data of either an INVOKE, either
+	 * a RETURN_RESULT component, encoded as ASCII in
+	 * case if DCS is 0x0f (i.e. decoded by the code
+	 * itself), otherwise raw bytes 'as is'.
+	 */
 	uint8_t ussd_text[GSM0480_USSD_OCTET_STRING_LEN];
+
+	/**
+	 * GSM TS 04.80, section 3.3 "Transaction identifier"
+	 * See GSM TS 04.07, section 11.2.3 for details.
+	 */
 	uint8_t transaction_id;
+	/**
+	 * GSM TS 04.80, section 3.6.3 "Component ID tag"
+	 * The term Component ID refers to the Invoke ID or
+	 * the Linked ID.
+	 */
 	uint8_t invoke_id;
 };
 
