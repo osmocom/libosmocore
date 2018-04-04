@@ -296,11 +296,15 @@ static int parse_ss(const struct gsm48_hdr *hdr, uint16_t len, struct ss_request
 	case GSM0480_MTYPE_RELEASE_COMPLETE:
 		LOGP(0, LOGL_DEBUG, "SS Release Complete\n");
 
+		/**
+		 * Indicates that there is no decoded message.
+		 * To be overwriten by the message otherwise.
+		 */
+		req->ussd_text[0] = 0xFF;
+
 		/* Parse optional Cause and/or Facility data */
 		if (len >= 2)
 			rc &= parse_ss_info_elements(&hdr->data[0], len, req);
-
-		req->ussd_text[0] = 0xFF;
 		break;
 	case GSM0480_MTYPE_REGISTER:
 		rc &= parse_ss_info_elements(&hdr->data[0], len, req);
