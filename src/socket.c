@@ -91,8 +91,11 @@ static int socket_helper(const struct addrinfo *rp, unsigned int flags)
 	int sfd, on = 1;
 
 	sfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
-	if (sfd == -1)
+	if (sfd == -1) {
+		LOGP(DLGLOBAL, LOGL_ERROR,
+			"unable to create socket: %s\n", strerror(errno));
 		return sfd;
+	}
 	if (flags & OSMO_SOCK_F_NONBLOCK) {
 		if (ioctl(sfd, FIONBIO, (unsigned char *)&on) < 0) {
 			LOGP(DLGLOBAL, LOGL_ERROR,
@@ -212,19 +215,28 @@ int osmo_sock_init2(uint16_t family, uint16_t type, uint8_t proto,
 					"cannot setsockopt socket:"
 					" %s:%u: %s\n",
 					local_host, local_port, strerror(errno));
-				break;
+				close(sfd);
+				continue;
 			}
-			if (bind(sfd, rp->ai_addr, rp->ai_addrlen) != -1)
-				break;
-			close(sfd);
+			if (bind(sfd, rp->ai_addr, rp->ai_addrlen) == -1) {
+				LOGP(DLGLOBAL, LOGL_ERROR, "unable to bind socket: %s:%u: %s\n",
+					local_host, local_port, strerror(errno));
+				close(sfd);
+				continue;
+			}
+			break;
 		}
 		freeaddrinfo(result);
 		if (rp == NULL) {
-			LOGP(DLGLOBAL, LOGL_ERROR, "unable to bind socket: %s:%u: %s\n",
-				local_host, local_port, strerror(errno));
+			LOGP(DLGLOBAL, LOGL_ERROR, "no suitable local addr found for: %s:%u\n",
+				local_host, local_port);
 			return -ENODEV;
 		}
 	}
+
+	/* Reached this point, if OSMO_SOCK_F_BIND then sfd is valid (>=0) or it
+	   was already closed and func returned. If OSMO_SOCK_F_BIND is not
+	   set, then sfd = -1 */
 
 	/* figure out remote side of socket */
 	if (flags & OSMO_SOCK_F_CONNECT) {
