@@ -339,8 +339,10 @@ int osmo_sock_init(uint16_t family, uint16_t type, uint8_t proto,
 
 		if (flags & OSMO_SOCK_F_CONNECT) {
 			rc = connect(sfd, rp->ai_addr, rp->ai_addrlen);
-			if (rc != -1 || (rc == -1 && errno == EINPROGRESS))
-				break;
+			if (rc != 0 && errno != EINPROGRESS) {
+				close(sfd);
+				continue;
+			}
 		} else {
 			rc = setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR,
 							&on, sizeof(on));
@@ -349,18 +351,24 @@ int osmo_sock_init(uint16_t family, uint16_t type, uint8_t proto,
 					"cannot setsockopt socket:"
 					" %s:%u: %s\n",
 					host, port, strerror(errno));
-				break;
+				close(sfd);
+				continue;
 			}
-			if (bind(sfd, rp->ai_addr, rp->ai_addrlen) != -1)
-				break;
+			if (bind(sfd, rp->ai_addr, rp->ai_addrlen) == -1) {
+				LOGP(DLGLOBAL, LOGL_ERROR, "unable to bind socket:"
+					"%s:%u: %s\n",
+					host, port, strerror(errno));
+				close(sfd);
+				continue;
+			}
 		}
-		close(sfd);
+		break;
 	}
 	freeaddrinfo(result);
 
 	if (rp == NULL) {
-		LOGP(DLGLOBAL, LOGL_ERROR, "unable to connect/bind socket: %s:%u: %s\n",
-			host, port, strerror(errno));
+		LOGP(DLGLOBAL, LOGL_ERROR, "no suitable addr found for: %s:%u\n",
+			host, port);
 		return -ENODEV;
 	}
 
