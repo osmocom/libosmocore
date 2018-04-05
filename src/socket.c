@@ -242,7 +242,8 @@ int osmo_sock_init2(uint16_t family, uint16_t type, uint8_t proto,
 	if (flags & OSMO_SOCK_F_CONNECT) {
 		result = addrinfo_helper(family, type, proto, remote_host, remote_port, false);
 		if (!result) {
-			close(sfd);
+			if (sfd >= 0)
+				close(sfd);
 			return -EINVAL;
 		}
 
@@ -260,16 +261,24 @@ int osmo_sock_init2(uint16_t family, uint16_t type, uint8_t proto,
 			}
 
 			rc = connect(sfd, rp->ai_addr, rp->ai_addrlen);
-			if (rc != -1 || (rc == -1 && errno == EINPROGRESS))
-				break;
-
-			close(sfd);
-			sfd = -1;
+			if (rc != 0 && errno != EINPROGRESS) {
+				LOGP(DLGLOBAL, LOGL_ERROR, "unable to connect socket: %s:%u: %s\n",
+					remote_host, remote_port, strerror(errno));
+				/* We want to maintain the bind socket if bind was enabled */
+				if (!(flags & OSMO_SOCK_F_BIND)) {
+					close(sfd);
+					sfd = -1;
+				}
+				continue;
+			}
+			break;
 		}
 		freeaddrinfo(result);
 		if (rp == NULL) {
-			LOGP(DLGLOBAL, LOGL_ERROR, "unable to connect socket: %s:%u: %s\n",
-				remote_host, remote_port, strerror(errno));
+			LOGP(DLGLOBAL, LOGL_ERROR, "no suitable remote addr found for: %s:%u\n",
+				remote_host, remote_port);
+			if (sfd >= 0)
+				close(sfd);
 			return -ENODEV;
 		}
 	}
