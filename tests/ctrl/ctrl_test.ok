@@ -172,3 +172,9 @@ value = '(null)'
 reply = 'OK'
 handling:
 ok
+
+test_deferred_cmd
+get_test_defer called
+ctrl_handle_msg() returned 0
+deferred command apparently deallocated too soon
+success

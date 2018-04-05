@@ -331,6 +331,106 @@ static void test_messages()
 	talloc_free(ctrl);
 }
 
+CTRL_CMD_DEFINE(test_defer, "test-defer");
+static void ctrl_test_defer_cb(void *data)
+{
+	struct ctrl_cmd_def *cd = data;
+	struct ctrl_cmd *cmd = cd->cmd;
+	static int i = 0;
+	printf("%s called\n", __func__);
+
+	if (ctrl_cmd_def_is_zombie(cd)) {
+		printf("Is Zombie\n");
+		return;
+	}
+
+	cmd->reply = talloc_asprintf(cmd, "Test Defer #%d", i++);
+
+	ctrl_cmd_def_send(cd);
+	return;
+}
+
+static struct ctrl_cmd_def *test_defer_cd = NULL;
+static int get_test_defer(struct ctrl_cmd *cmd, void *data)
+{
+	void *ctx = cmd->node;
+	printf("%s called\n", __func__);
+
+	test_defer_cd = ctrl_cmd_def_make(ctx, cmd, NULL, 10);
+
+	return CTRL_CMD_HANDLED;
+}
+static int set_test_defer(struct ctrl_cmd *cmd, void *data)
+{
+	return CTRL_CMD_HANDLED;
+}
+static int verify_test_defer(struct ctrl_cmd *cmd, const char *value, void *data)
+{
+	return 0;
+}
+
+static void test_deferred_cmd()
+{
+	struct ctrl_handle *ctrl;
+	struct ctrl_connection *ccon;
+	struct msgb *msg;
+	int result;
+	int ctx_size_was;
+	int ctx_size_before_defer;
+
+	printf("\n%s\n", __func__);
+	ctx_size_was = talloc_total_size(ctx);
+
+	ctrl = ctrl_handle_alloc2(ctx, NULL, NULL, 0);
+	ccon = talloc_zero(ctx, struct ctrl_connection);
+	INIT_LLIST_HEAD(&ccon->def_cmds);
+
+	osmo_wqueue_init(&ccon->write_queue, 1);
+
+	ctrl_cmd_install(CTRL_NODE_ROOT, &cmd_test_defer);
+
+	ctx_size_before_defer = talloc_total_size(ctx);
+
+	msg = msgb_from_string("GET 123 test-defer");
+
+	result = ctrl_handle_msg(ctrl, ccon, msg);
+	printf("ctrl_handle_msg() returned %d\n", result);
+
+	OSMO_ASSERT(result == CTRL_CMD_HANDLED);
+
+	/* Expecting a ctrl_cmd_def as well as the cmd to still be allocated */
+	if (talloc_total_size(ctx) <= ctx_size_before_defer) {
+		printf("deferred command apparently deallocated too soon\n");
+		/* ERROR -- showing current bug in handling deallocated cmds, hence exiting early */
+		goto exit_early;
+		talloc_report_full(ctx, stdout);
+		OSMO_ASSERT(false);
+	}
+
+	printf("invoking ctrl_test_defer_cb() asynchronously\n");
+	ctrl_test_defer_cb(test_defer_cd);
+
+	/* And now the deferred cmd should be cleaned up completely. */
+	if (talloc_total_size(ctx) != ctx_size_before_defer) {
+		printf("mem leak!\n");
+		talloc_report_full(ctx, stdout);
+		OSMO_ASSERT(false);
+	}
+
+exit_early:
+
+	talloc_free(ccon);
+	talloc_free(ctrl);
+
+	if (talloc_total_size(ctx) != ctx_size_was) {
+		printf("mem leak!\n");
+		talloc_report_full(ctx, stdout);
+		OSMO_ASSERT(false);
+	}
+
+	printf("success\n");
+}
+
 static struct log_info_cat test_categories[] = {
 };
 
@@ -356,6 +456,8 @@ int main(int argc, char **argv)
 	check_type(64);
 
 	test_messages();
+
+	test_deferred_cmd();
 
 	return 0;
 }
