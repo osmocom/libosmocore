@@ -41,6 +41,7 @@
 #include <osmocom/vty/stats.h>
 
 static enum event last_vty_connection_event = -1;
+void *ctx = NULL;
 
 static void test_cmd_string_from_valstr(void)
 {
@@ -55,7 +56,7 @@ static void test_cmd_string_from_valstr(void)
 
 	/* check against character strings that could break printf */
 
-	cmd = vty_cmd_string_from_valstr (NULL, printf_seq_vs, "[prefix%s%s%s%s%s]", "[sep%s%s%s%s%s]", "[end%s%s%s%s%s]", 1);
+	cmd = vty_cmd_string_from_valstr (ctx, printf_seq_vs, "[prefix%s%s%s%s%s]", "[sep%s%s%s%s%s]", "[end%s%s%s%s%s]", 1);
 	printf ("Tested with %%s-strings, resulting cmd = '%s'\n", cmd);
 	talloc_free (cmd);
 }
@@ -428,12 +429,15 @@ int main(int argc, char **argv)
 		.cat = default_categories,
 		.num_cat = ARRAY_SIZE(default_categories),
 	};
-	void *stats_ctx = talloc_named_const(NULL, 1, "stats test context");
+	void *stats_ctx;
+
+	ctx = talloc_named_const(NULL, 0, "stats test context");
+	stats_ctx = talloc_named_const(ctx, 1, "stats test context");
 
 	osmo_signal_register_handler(SS_L_VTY, vty_event_cb, NULL);
 
 	/* Fake logging. */
-	osmo_init_logging(&log_info);
+	osmo_init_logging2(ctx, &log_info);
 
 	/* Init stats */
 	osmo_stats_init(stats_ctx);

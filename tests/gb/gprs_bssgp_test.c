@@ -294,10 +294,13 @@ static struct log_info info = {};
 int main(int argc, char **argv)
 {
 	struct sockaddr_in bss_peer= {0};
+	void *ctx = talloc_named_const(NULL, 0, "gprs_bssgp_test");
 
-	osmo_init_logging(&info);
+	osmo_init_logging2(ctx, &info);
 	log_set_use_color(osmo_stderr_target, 0);
 	log_set_print_filename(osmo_stderr_target, 0);
+
+	msgb_talloc_ctx_init(ctx, 0);
 
 	bssgp_nsi = gprs_ns_instantiate(gprs_ns_callback, NULL);
 

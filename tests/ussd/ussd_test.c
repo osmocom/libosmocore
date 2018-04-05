@@ -122,8 +122,9 @@ int main(int argc, char **argv)
 	uint16_t size;
 	int i;
 	struct msgb *msg;
+	void *ctx = talloc_named_const(NULL, 0, "ussd_test");
 
-	osmo_init_logging(&info);
+	osmo_init_logging2(ctx, &info);
 
 	memset(&req, 0, sizeof(req));
 	gsm0480_decode_ss_request((struct gsm48_hdr *) ussd_request,

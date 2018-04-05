@@ -277,7 +277,7 @@ static void test_tlv_repeated_ie()
 
 int main(int argc, char **argv)
 {
-	//osmo_init_logging(&info);
+	//osmo_init_logging2(ctx, &info);
 
 	test_tlv_shift_functions();
 	test_tlv_repeated_ie();

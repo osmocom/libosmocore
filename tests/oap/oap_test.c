@@ -173,7 +173,9 @@ static struct log_info info = {
 
 int main(int argc, char **argv)
 {
-	osmo_init_logging(&info);
+	void *ctx = talloc_named_const(NULL, 0, "oap_test");
+	osmo_init_logging2(ctx, &info);
+	msgb_talloc_ctx_init(ctx, 0);
 
 	test_oap_messages_dec_enc();
 

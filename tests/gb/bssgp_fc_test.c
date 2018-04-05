@@ -17,6 +17,7 @@
 
 static unsigned long in_ctr = 1;
 static struct timeval tv_start;
+void *ctx = NULL;
 
 int get_centisec_diff(void)
 {
@@ -71,7 +72,7 @@ static void test_fc(uint32_t bucket_size_max, uint32_t bucket_leak_rate,
 		    uint32_t max_queue_depth, uint32_t pdu_len,
 		    uint32_t pdu_count)
 {
-	struct bssgp_flow_control *fc = talloc_zero(NULL, struct bssgp_flow_control);
+	struct bssgp_flow_control *fc = talloc_zero(ctx, struct bssgp_flow_control);
 	int i;
 
 	osmo_gettimeofday_override_time = (struct timeval){
@@ -133,6 +134,7 @@ int main(int argc, char **argv)
 	uint32_t pdu_count = 20; /* messages */
 	int c;
 	void *tall_msgb_ctx;
+	ctx = talloc_named_const(NULL, 0, "bssgp_fc_test");
 
 	static const struct option long_options[] = {
 		{ "bucket-size-max", 1, 0, 's' },
@@ -144,11 +146,11 @@ int main(int argc, char **argv)
 		{ 0, 0, 0, 0 }
 	};
 
-	osmo_init_logging(&info);
+	osmo_init_logging2(ctx, &info);
 	log_set_use_color(osmo_stderr_target, 0);
 	log_set_print_filename(osmo_stderr_target, 0);
 
-	tall_msgb_ctx = msgb_talloc_ctx_init(NULL, 0);
+	tall_msgb_ctx = msgb_talloc_ctx_init(ctx, 0);
 
 	while ((c = getopt_long(argc, argv, "s:r:d:l:c:",
 				long_options, NULL)) != -1) {

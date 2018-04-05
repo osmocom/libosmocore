@@ -29,6 +29,7 @@
 #include <osmocom/gsm/rsl.h>
 
 #include <errno.h>
+#include <talloc.h>
 
 #include <string.h>
 
@@ -759,7 +760,10 @@ static void test_lapdm_desync()
 
 int main(int argc, char **argv)
 {
-	osmo_init_logging(&info);
+	void *ctx = talloc_named_const(NULL, 0, "lapd_test");
+	osmo_init_logging2(ctx, &info);
+
+	msgb_talloc_ctx_init(ctx, 0);
 
 	/* Prevent the test from segfaulting */
 	dummy_l1_header_len = 0;

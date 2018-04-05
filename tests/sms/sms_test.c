@@ -282,9 +282,10 @@ int main(int argc, char** argv)
 	uint8_t septet_data[256];
 	int nchars;
 	char result[256];
+	void *ctx = talloc_named_const(NULL, 0, "sms_test");
 
 	/* Fake logging. */
-	osmo_init_logging(&fake_log_info);
+	osmo_init_logging2(ctx, &fake_log_info);
 
 	/* test 7-bit encoding */
 	for (i = 0; i < ARRAY_SIZE(test_encode); ++i) {

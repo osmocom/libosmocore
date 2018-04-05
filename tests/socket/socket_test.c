@@ -35,6 +35,8 @@
 
 #include "../config.h"
 
+void *ctx = NULL;
+
 static int test_sockinit(void)
 {
 	int fd, rc;
@@ -44,7 +46,7 @@ static int test_sockinit(void)
 	fd = osmo_sock_init(AF_INET, SOCK_DGRAM, IPPROTO_UDP,
 			    "0.0.0.0", 0, OSMO_SOCK_F_BIND);
 	OSMO_ASSERT(fd >= 0);
-	name = osmo_sock_get_name(NULL, fd);
+	name = osmo_sock_get_name(ctx, fd);
 	/* expect it to be not connected. We cannot match on INADDR_ANY,
 	 * as apparently that won't work on FreeBSD if there's only one
 	 * address (e.g. 127.0.0.1) assigned to the entire system, like
@@ -82,7 +84,7 @@ static int test_sockinit2(void)
 	fd = osmo_sock_init2(AF_INET, SOCK_DGRAM, IPPROTO_UDP,
 			    "0.0.0.0", 0, NULL, 0, OSMO_SOCK_F_BIND);
 	OSMO_ASSERT(fd >= 0);
-	name = osmo_sock_get_name(NULL, fd);
+	name = osmo_sock_get_name(ctx, fd);
 	/* expect it to be not connected. We cannot match on INADDR_ANY,
 	 * as apparently that won't work on FreeBSD if there's only one
 	 * address (e.g. 127.0.0.1) assigned to the entire system, like
@@ -111,7 +113,7 @@ static int test_sockinit2(void)
 	fd = osmo_sock_init2(AF_INET, SOCK_DGRAM, IPPROTO_UDP, "127.0.0.1", 0, "127.0.0.1", 53,
 			     OSMO_SOCK_F_BIND|OSMO_SOCK_F_CONNECT);
 	OSMO_ASSERT(fd >= 0);
-	name = osmo_sock_get_name(NULL, fd);
+	name = osmo_sock_get_name(ctx, fd);
 #ifndef __FreeBSD__
 	/* For some reason, on the jenkins.osmocom.org build slave with
 	 * FreeBSD 10 inside a jail, it fails.  Works fine on laforge's
@@ -134,7 +136,8 @@ static struct log_info info = {
 
 int main(int argc, char *argv[])
 {
-	osmo_init_logging(&info);
+	ctx = talloc_named_const(NULL, 0, "socket_test");
+	osmo_init_logging2(ctx, &info);
 	log_set_use_color(osmo_stderr_target, 0);
 	log_set_print_filename(osmo_stderr_target, 0);
 

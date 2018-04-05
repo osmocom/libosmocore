@@ -199,7 +199,8 @@ static void test_sw_descr()
 
 int main(int argc, char **argv)
 {
-	osmo_init_logging(&info);
+	void *ctx = talloc_named_const(NULL, 0, "abis_test");
+	osmo_init_logging2(ctx, &info);
 
 	test_sw_descr();
 	test_simple_sw_config();
