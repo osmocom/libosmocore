@@ -397,6 +397,7 @@ static void test_deferred_cmd()
 	printf("ctrl_handle_msg() returned %d\n", result);
 
 	OSMO_ASSERT(result == CTRL_CMD_HANDLED);
+	talloc_free(msg);
 
 	/* Expecting a ctrl_cmd_def as well as the cmd to still be allocated */
 	if (talloc_total_size(ctx) <= ctx_size_before_defer) {
@@ -407,6 +408,9 @@ static void test_deferred_cmd()
 
 	printf("invoking ctrl_test_defer_cb() asynchronously\n");
 	ctrl_test_defer_cb(test_defer_cd);
+
+	/* simulate sending of the reply */
+	osmo_wqueue_clear(&ccon->write_queue);
 
 	/* And now the deferred cmd should be cleaned up completely. */
 	if (talloc_total_size(ctx) != ctx_size_before_defer) {
@@ -438,7 +442,8 @@ static struct log_info info = {
 int main(int argc, char **argv)
 {
 	ctx = talloc_named_const(NULL, 1, "ctrl_test");
-	osmo_init_logging(&info);
+	osmo_init_logging2(ctx, &info);
+	msgb_talloc_ctx_init(ctx, 0);
 
 	printf("Checking ctrl types...\n");
 
@@ -454,6 +459,12 @@ int main(int argc, char **argv)
 	test_messages();
 
 	test_deferred_cmd();
+
+	/* Expecting root ctx + msgb root ctx + 5 logging elements */
+	if (talloc_total_blocks(ctx) != 7) {
+		talloc_report_full(ctx, stdout);
+		OSMO_ASSERT(false);
+	}
 
 	return 0;
 }
