@@ -171,6 +171,15 @@ static void test_gsup_messages_dec_enc(void)
 			0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10,
 	};
 
+	static const uint8_t dummy_session_ies[] = {
+		0x2b, /* Dummy value, we only interested in IE coding */
+		TEST_IMSI_IE,
+
+		/* Session ID and state */
+		0x30, 0x04, 0xde, 0xad, 0xbe, 0xef,
+		0x31, 0x01, 0x01,
+	};
+
 	static const struct test {
 		char *name;
 		const uint8_t *data;
@@ -204,6 +213,8 @@ static void test_gsup_messages_dec_enc(void)
 			send_auth_info_res_umts, sizeof(send_auth_info_res_umts)},
 		{"Send Authentication Info Request with AUTS and RAND (UMTS)",
 			send_auth_info_req_auts, sizeof(send_auth_info_req_auts)},
+		{"Dummy message with session IEs",
+			dummy_session_ies, sizeof(dummy_session_ies)},
 	};
 
 	printf("Test GSUP message decoding/encoding\n");
@@ -267,7 +278,7 @@ static void test_gsup_messages_dec_enc(void)
 					osmo_hexdump(t->data + j, ie_end - j));
 
 				OSMO_ASSERT(j <= ie_end - 2);
-				OSMO_ASSERT(t->data[j+0] <= OSMO_GSUP_CN_DOMAIN_IE);
+				OSMO_ASSERT(t->data[j+0] <= OSMO_GSUP_SESSION_STATE_IE);
 				OSMO_ASSERT(t->data[j+1] <= ie_end - j - 2);
 
 				ie_end = j;

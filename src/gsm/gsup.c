@@ -385,6 +385,14 @@ int osmo_gsup_decode(const uint8_t *const_data, size_t data_len,
 			gsup_msg->pdp_charg_enc_len = value_len;
 			break;
 
+		case OSMO_GSUP_SESSION_ID_IE:
+			gsup_msg->session_id = osmo_decode_big_endian(value, value_len);
+			break;
+
+		case OSMO_GSUP_SESSION_STATE_IE:
+			gsup_msg->session_state = *value;
+			break;
+
 		default:
 			LOGP(DLGSUP, LOGL_NOTICE,
 			     "GSUP IE type %d unknown\n", iei);
@@ -562,6 +570,14 @@ int osmo_gsup_encode(struct msgb *msg, const struct osmo_gsup_message *gsup_msg)
 	if (gsup_msg->pdp_charg_enc) {
 		msgb_tlv_put(msg, OSMO_GSUP_CHARG_CHAR_IE,
 				gsup_msg->pdp_charg_enc_len, gsup_msg->pdp_charg_enc);
+	}
+
+	if ((u8 = gsup_msg->session_state)) {
+		size_t len = sizeof(gsup_msg->session_id);
+		uint8_t *sid = osmo_encode_big_endian(gsup_msg->session_id, len);
+
+		msgb_tlv_put(msg, OSMO_GSUP_SESSION_ID_IE, len, sid);
+		msgb_tlv_put(msg, OSMO_GSUP_SESSION_STATE_IE, sizeof(u8), &u8);
 	}
 
 	return 0;

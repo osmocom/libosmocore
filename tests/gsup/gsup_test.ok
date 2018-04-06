@@ -27,4 +27,6 @@ Test GSUP message decoding/encoding
           Send Authentication Info Result with IK, CK, AUTN and RES (UMTS) OK
   Testing Send Authentication Info Request with AUTS and RAND (UMTS)
           Send Authentication Info Request with AUTS and RAND (UMTS) OK
+  Testing Dummy message with session IEs
+          Dummy message with session IEs OK
 Done.

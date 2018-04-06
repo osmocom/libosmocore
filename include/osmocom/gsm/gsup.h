@@ -82,6 +82,9 @@ enum osmo_gsup_iei {
 	OSMO_GSUP_AUTS_IE			= 0x26,
 	OSMO_GSUP_RES_IE			= 0x27,
 	OSMO_GSUP_CN_DOMAIN_IE			= 0x28,
+
+	OSMO_GSUP_SESSION_ID_IE			= 0x30,
+	OSMO_GSUP_SESSION_STATE_IE		= 0x31,
 };
 
 /*! GSUP message type */
@@ -132,6 +135,18 @@ enum osmo_gsup_cn_domain {
 	OSMO_GSUP_CN_DOMAIN_CS			= 2,
 };
 
+/*! TCAP-like session state */
+enum osmo_gsup_session_state {
+	/*! Undefined session state */
+	OSMO_GSUP_SESSION_STATE_NONE		= 0x00,
+	/*! Initiation of a new session */
+	OSMO_GSUP_SESSION_STATE_BEGIN		= 0x01,
+	/*! Communication of an existing session */
+	OSMO_GSUP_SESSION_STATE_CONTINUE	= 0x02,
+	/*! Indication of the session end */
+	OSMO_GSUP_SESSION_STATE_END		= 0x03,
+};
+
 /*! parsed/decoded PDP context information */
 struct osmo_gsup_pdp_info {
 	unsigned int			context_id;
@@ -176,6 +191,12 @@ struct osmo_gsup_message {
 	enum osmo_gsup_cn_domain	cn_domain;
 	const uint8_t			*pdp_charg_enc;
 	size_t				pdp_charg_enc_len;
+
+	/*! Session state \ref osmo_gsup_session_state */
+	enum osmo_gsup_session_state	session_state;
+	/*! Unique session identifier and origination flag.
+         * Encoded only when \ref session_state != 0x00 */
+	uint32_t			session_id;
 };
 
 int osmo_gsup_decode(const uint8_t *data, size_t data_len,
