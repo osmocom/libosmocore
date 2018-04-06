@@ -287,6 +287,7 @@ gsm48_rr_msgtype_names;
 gsm48_mm_msgtype_names;
 gsm48_cc_msgtype_names;
 gsm48_pdisc_msgtype_name;
+gsm48_reject_value_names;
 
 gsm_7bit_decode;
 gsm_7bit_decode_ussd;

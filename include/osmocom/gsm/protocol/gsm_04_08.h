@@ -1509,6 +1509,10 @@ enum gsm48_reject_value {
 	GSM48_REJECT_MSC_TMP_NOT_REACHABLE	= 16,
 };
 
+extern const struct value_string gsm48_reject_value_names[];
+static inline const char *gsm48_reject_value_name(enum gsm48_reject_value val)
+{ return get_value_string(gsm48_reject_value_names, val); }
+
 enum chreq_type {
 	CHREQ_T_EMERG_CALL,
 	CHREQ_T_CALL_REEST_TCH_F,
