@@ -32,7 +32,7 @@ static inline uint16_t osmo_swab16(uint16_t in)
 	return out;
 }
 
-#ifdef OSMO_IS_LITTLE_ENDIAN
+#if OSMO_IS_LITTLE_ENDIAN == 1
 #define osmo_ntohl(x)	osmo_swab32(x)
 #define osmo_ntohs(x)	osmo_swab16(x)
 #define osmo_htonl(x)	osmo_swab32(x)
