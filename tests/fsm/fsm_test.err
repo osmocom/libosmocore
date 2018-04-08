@@ -8,4 +8,5 @@ Checking FSM allocation
 [0;mTest_FSM(my_id){ONE}: state_chg to TWO
 [0;mTest_FSM(my_id){TWO}: Timeout of T2342
 [0;mTimer
+[0;mTest_FSM(my_id){TWO}: Deallocated
 [0;m

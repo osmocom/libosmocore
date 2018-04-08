@@ -60,13 +60,17 @@ static void test_fsm_one(struct osmo_fsm_inst *fi, uint32_t event, void *data)
 	}
 }
 
+static bool main_loop_run = true;
+
 static int test_fsm_tmr_cb(struct osmo_fsm_inst *fi)
 {
 	OSMO_ASSERT(fi->T == 2342);
 	OSMO_ASSERT(fi->state == ST_TWO);
 	LOGP(DMAIN, LOGL_INFO, "Timer\n");
 
-	exit(0);
+	main_loop_run = false;
+
+	return 0;
 }
 
 static struct osmo_fsm_state test_fsm_states[] = {
@@ -201,7 +205,7 @@ int main(int argc, char **argv)
 	OSMO_ASSERT(osmo_fsm_inst_find_by_name(&fsm, "Test_FSM(another_id)") == finst);
 	OSMO_ASSERT(osmo_fsm_inst_update_id(finst, "my_id") == 0);
 
-	while (1) {
+	while (main_loop_run) {
 		osmo_select_main(0);
 	}
 	osmo_fsm_inst_free(finst);
