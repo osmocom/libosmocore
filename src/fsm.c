@@ -119,7 +119,12 @@ struct osmo_fsm_inst *osmo_fsm_inst_find_by_name(const struct osmo_fsm *fsm,
 {
 	struct osmo_fsm_inst *fi;
 
+	if (!name)
+		return NULL;
+
 	llist_for_each_entry(fi, &fsm->instances, list) {
+		if (!fi->name)
+			continue;
 		if (!strcmp(name, fi->name))
 			return fi;
 	}
