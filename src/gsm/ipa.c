@@ -321,7 +321,7 @@ struct msgb *ipa_ccm_make_id_resp_from_req(const struct ipaccess_unit *dev,
 		t_tag = *cur++;
 
 		if (t_len > len + 1) {
-			LOGP(DLINP, LOGL_ERROR, "IPA CCM tage 0x%02x does not fit\n", t_tag);
+			LOGP(DLINP, LOGL_ERROR, "IPA CCM tag 0x%02x does not fit\n", t_tag);
 			break;
 		}
 

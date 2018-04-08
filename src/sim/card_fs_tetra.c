@@ -46,7 +46,7 @@ static const struct osim_card_sw tsim_sw[] = {
 		.u.str = "SIM Application Toolkit is busy, command cannot be executed at present",
 	}, {
 		0x9200, 0xfff0, SW_TYPE_STR, SW_CLS_WARN,
-		.u.str = "Memory management - Command successful but after using an internal updat retry X times",
+		.u.str = "Memory management - Command successful but after using an internal update retry X times",
 	}, {
 		0x9240, 0xffff, SW_TYPE_STR, SW_CLS_ERROR,
 		.u.str = "Memory management - Memory problem",
