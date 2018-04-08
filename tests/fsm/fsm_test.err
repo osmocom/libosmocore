@@ -10,3 +10,47 @@ Checking FSM allocation
 [0;mTimer
 [0;mTest_FSM(my_id){TWO}: Deallocated
 [0;m
+--- test_id_api()
+Test_FSM{NULL}: Allocated
+[0;m  osmo_fsm_inst_name() == "Test_FSM"
+  osmo_fsm_inst_find_by_name("Test_FSM") == NULL
+osmo_fsm_inst_update_id("my_id")
+    rc == 0, ok
+  osmo_fsm_inst_name() == "Test_FSM(my_id)"
+  osmo_fsm_inst_find_by_name("Test_FSM(my_id)") == fi
+  osmo_fsm_inst_find_by_id("my_id") == fi
+osmo_fsm_inst_update_id("another_id")
+    rc == 0, ok
+  osmo_fsm_inst_name() == "Test_FSM(another_id)"
+  osmo_fsm_inst_find_by_name("Test_FSM(another_id)") == fi
+  osmo_fsm_inst_find_by_id("another_id") == fi
+osmo_fsm_inst_update_id(NULL)
+    rc == 0, ok
+  osmo_fsm_inst_name() == "Test_FSM"
+  osmo_fsm_inst_find_by_name("Test_FSM") == fi
+osmo_fsm_inst_update_id(NULL)
+    rc == 0, ok
+  osmo_fsm_inst_name() == "Test_FSM"
+  osmo_fsm_inst_find_by_name("Test_FSM") == fi
+osmo_fsm_inst_update_id("arbitrary_id")
+    rc == 0, ok
+  osmo_fsm_inst_name() == "Test_FSM(arbitrary_id)"
+  osmo_fsm_inst_find_by_name("Test_FSM(arbitrary_id)") == fi
+  osmo_fsm_inst_find_by_id("arbitrary_id") == fi
+osmo_fsm_inst_update_id("")
+Attempting to allocate FSM instance of type 'Test_FSM' with illegal identifier ''
+[0;m    rc == -22, ok
+  osmo_fsm_inst_name() == "Test_FSM(arbitrary_id)"
+  osmo_fsm_inst_find_by_name("Test_FSM(arbitrary_id)") == fi
+osmo_fsm_inst_update_id("invalid.id")
+Attempting to allocate FSM instance of type 'Test_FSM' with illegal identifier 'invalid.id'
+[0;m    rc == -22, ok
+  osmo_fsm_inst_name() == "Test_FSM(arbitrary_id)"
+  osmo_fsm_inst_find_by_name("Test_FSM(arbitrary_id)") == fi
+
+--- test_id_api() done
+
+Test_FSM(arbitrary_id){NULL}: Terminating (cause = OSMO_FSM_TERM_REQUEST)
+[0;mTest_FSM(arbitrary_id){NULL}: Freeing instance
+[0;mTest_FSM(arbitrary_id){NULL}: Deallocated
+[0;m

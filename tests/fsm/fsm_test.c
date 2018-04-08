@@ -3,6 +3,7 @@
 #include <stdarg.h>
 #include <unistd.h>
 #include <string.h>
+#include <errno.h>
 
 #include <osmocom/core/utils.h>
 #include <osmocom/core/select.h>
@@ -16,6 +17,12 @@ enum {
 
 static void *g_ctx;
 
+static int safe_strcmp(const char *a, const char *b)
+{
+	if (!a || !b)
+		return a == b ? 0 : 1;
+	return strcmp(a, b);
+}
 
 enum test_fsm_states {
 	ST_NULL = 0,
@@ -118,7 +125,7 @@ static void assert_cmd_reply(const char *cmdstr, const char *expres)
 	struct ctrl_cmd *cmd;
 
 	cmd = exec_ctrl_cmd(cmdstr);
-	if (strcmp(cmd->reply, expres)) {
+	if (safe_strcmp(cmd->reply, expres)) {
 		fprintf(stderr, "Reply '%s' doesn't match expected '%s'\n", cmd->reply, expres);
 		OSMO_ASSERT(0);
 	}
@@ -165,6 +172,89 @@ static struct osmo_fsm_inst *foo(void)
 	return fi;
 }
 
+static void test_id_api()
+{
+	struct osmo_fsm_inst *fi;
+
+	fprintf(stderr, "\n--- %s()\n", __func__);
+
+/* Assert the instance has this name and can be looked up by it */
+#define assert_name(expected_name) \
+do { \
+	const char *name = osmo_fsm_inst_name(fi); \
+	fprintf(stderr, "  osmo_fsm_inst_name() == %s\n", osmo_quote_str(name, -1)); \
+	if (safe_strcmp(name, expected_name)) { \
+		fprintf(stderr, "    ERROR: expected %s\n", osmo_quote_str(expected_name, -1)); \
+		OSMO_ASSERT(false); \
+	} \
+	OSMO_ASSERT(osmo_fsm_inst_find_by_name(&fsm, expected_name) == fi); \
+	fprintf(stderr, "  osmo_fsm_inst_find_by_name(%s) == fi\n", osmo_quote_str(expected_name, -1)); \
+} while(0)
+
+/* Assert the instance can be looked up by this id string */
+#define assert_id(expected_id) \
+do { \
+	OSMO_ASSERT(osmo_fsm_inst_find_by_id(&fsm, expected_id) == fi); \
+	fprintf(stderr, "  osmo_fsm_inst_find_by_id(%s) == fi\n", osmo_quote_str(expected_id, -1)); \
+} while(0)
+
+/* Update the id, assert the proper rc, and expect a resulting fsm inst name + lookup */
+#define test_id(new_id, expect_rc, expect_name_suffix) do { \
+		int rc; \
+		fprintf(stderr, "osmo_fsm_inst_update_id(%s)\n", osmo_quote_str(new_id, -1)); \
+		rc = osmo_fsm_inst_update_id(fi, new_id); \
+		fprintf(stderr, "    rc == %d", rc); \
+		if (rc == (expect_rc)) \
+			fprintf(stderr, ", ok\n"); \
+		else { \
+			fprintf(stderr, ", ERROR: expected rc == %d\n", expect_rc); \
+			OSMO_ASSERT(rc == expect_rc); \
+		} \
+		assert_name("Test_FSM" expect_name_suffix); \
+	}while (0)
+
+/* Successfully set a new id, along with name and id lookup assertions */
+#define change_id(new_id) \
+		test_id(new_id, 0, "(" new_id ")"); \
+		assert_id(new_id)
+
+	/* allocate FSM instance without id, there should be a name without id */
+	fi = osmo_fsm_inst_alloc(&fsm, g_ctx, NULL, LOGL_DEBUG, NULL);
+	OSMO_ASSERT(fi);
+	/* CURRENT BUG: here I want to just do
+	assert_name("Test_FSM");
+	 * but when allocated with a NULL id, the fsm's name remains unset. Hence: */
+	{
+		const char *expected_name = "Test_FSM";
+		const char *name = osmo_fsm_inst_name(fi);
+		fprintf(stderr, "  osmo_fsm_inst_name() == %s\n", osmo_quote_str(name, -1));
+		if (safe_strcmp(name, expected_name)) {
+			fprintf(stderr, "    ERROR: expected %s\n", osmo_quote_str(expected_name, -1));
+			OSMO_ASSERT(false);
+		}
+		OSMO_ASSERT(osmo_fsm_inst_find_by_name(&fsm, "Test_FSM") == NULL); /* <- ERROR */
+		fprintf(stderr, "  osmo_fsm_inst_find_by_name(%s) == NULL\n", osmo_quote_str(expected_name, -1));
+	}
+
+	change_id("my_id");
+	change_id("another_id");
+
+	test_id(NULL, 0, "");
+	/* clear already cleared id */
+	test_id(NULL, 0, "");
+
+	change_id("arbitrary_id");
+
+	/* clear id by empty string doesn't work */
+	test_id("", -EINVAL, "(arbitrary_id)");
+
+	test_id("invalid.id", -EINVAL, "(arbitrary_id)");
+
+	fprintf(stderr, "\n--- %s() done\n\n", __func__);
+
+	osmo_fsm_inst_term(fi, OSMO_FSM_TERM_REQUEST, NULL);
+}
+
 static const struct log_info_cat default_categories[] = {
 	[DMAIN] = {
 		.name = "DMAIN",
@@ -198,17 +288,14 @@ int main(int argc, char **argv)
 
 	OSMO_ASSERT(osmo_fsm_inst_find_by_name(&fsm, "my_id") == NULL);
 	finst = foo();
-	OSMO_ASSERT(osmo_fsm_inst_find_by_id(&fsm, "my_id") == finst);
-	OSMO_ASSERT(osmo_fsm_inst_find_by_name(&fsm, "Test_FSM(my_id)") == finst);
-	OSMO_ASSERT(osmo_fsm_inst_update_id(finst, "another_id") == 0);
-	OSMO_ASSERT(osmo_fsm_inst_find_by_id(&fsm, "another_id") == finst);
-	OSMO_ASSERT(osmo_fsm_inst_find_by_name(&fsm, "Test_FSM(another_id)") == finst);
-	OSMO_ASSERT(osmo_fsm_inst_update_id(finst, "my_id") == 0);
 
 	while (main_loop_run) {
 		osmo_select_main(0);
 	}
 	osmo_fsm_inst_free(finst);
+
+	test_id_api();
+
 	osmo_fsm_unregister(&fsm);
 	exit(0);
 }
