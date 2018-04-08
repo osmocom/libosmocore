@@ -371,6 +371,60 @@ static void str_escape_test(void)
 	OSMO_ASSERT(out_buf[0] == 0x7f);
 }
 
+static void str_quote_test(void)
+{
+	int i;
+	int j;
+	uint8_t in_buf[32];
+	char out_buf[11];
+	const char *printable = "printable";
+	const char *res;
+
+	printf("\nTesting string quoting\n");
+	printf("- all chars from 0 to 255 in batches of 16:\n");
+	in_buf[16] = '\0';
+	for (j = 0; j < 16; j++) {
+		for (i = 0; i < 16; i++)
+			in_buf[i] = (j << 4) | i;
+		printf("'%s'\n", osmo_quote_str((const char*)in_buf, 16));
+	}
+
+	printf("- nul terminated:\n");
+	printf("'%s'\n", osmo_quote_str("termi\nated", -1));
+
+	printf("- never passthru:\n");
+	res = osmo_quote_str(printable, -1);
+	if (res != printable)
+		printf("NOT passed through. '%s'\n", res);
+	else
+		printf("passed through unchanged '%s'\n", res);
+
+	printf("- zero length:\n");
+	printf("'%s'\n", osmo_quote_str("omitted", 0));
+
+	printf("- truncation when too long:\n");
+	memset(in_buf, 'x', sizeof(in_buf));
+	in_buf[0] = '\a';
+	in_buf[5] = 'E';
+	memset(out_buf, 0x7f, sizeof(out_buf));
+	printf("'%s'\n", osmo_quote_str_buf((const char *)in_buf, sizeof(in_buf), out_buf, 10));
+	OSMO_ASSERT(out_buf[10] == 0x7f);
+
+	printf("- always truncation, even when no escaping needed:\n");
+	memset(in_buf, 'x', sizeof(in_buf));
+	in_buf[6] = 'E'; /* dst has 10, less 2 quotes and nul, leaves 7, i.e. in[6] is last */
+	in_buf[20] = '\0';
+	memset(out_buf, 0x7f, sizeof(out_buf));
+	printf("'%s'\n", osmo_quote_str_buf((const char *)in_buf, -1, out_buf, 10));
+	OSMO_ASSERT(out_buf[0] == '"');
+
+	printf("- try to feed too little buf for quoting:\n");
+	printf("'%s'\n", osmo_quote_str_buf("", -1, out_buf, 2));
+
+	printf("- NULL string becomes a \"NULL\" literal:\n");
+	printf("'%s'\n", osmo_quote_str_buf(NULL, -1, out_buf, 10));
+}
+
 int main(int argc, char **argv)
 {
 	static const struct log_info log_info = {};
@@ -382,5 +436,6 @@ int main(int argc, char **argv)
 	test_is_hexstr();
 	bcd_test();
 	str_escape_test();
+	str_quote_test();
 	return 0;
 }

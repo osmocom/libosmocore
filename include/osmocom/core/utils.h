@@ -125,5 +125,7 @@ bool osmo_separated_identifiers_valid(const char *str, const char *sep_chars);
 
 const char *osmo_escape_str(const char *str, int len);
 const char *osmo_escape_str_buf(const char *str, int in_len, char *buf, size_t bufsize);
+const char *osmo_quote_str(const char *str, int in_len);
+const char *osmo_quote_str_buf(const char *str, int in_len, char *buf, size_t bufsize);
 
 /*! @} */
