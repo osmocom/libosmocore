@@ -38,12 +38,12 @@ osmo_fsm_inst_update_id("arbitrary_id")
   osmo_fsm_inst_find_by_name("Test_FSM(arbitrary_id)") == fi
   osmo_fsm_inst_find_by_id("arbitrary_id") == fi
 osmo_fsm_inst_update_id("")
-Attempting to allocate FSM instance of type 'Test_FSM' with illegal identifier ''
+Attempting to set illegal id for FSM instance of type 'Test_FSM': ""
 [0;m    rc == -22, ok
   osmo_fsm_inst_name() == "Test_FSM(arbitrary_id)"
   osmo_fsm_inst_find_by_name("Test_FSM(arbitrary_id)") == fi
 osmo_fsm_inst_update_id("invalid.id")
-Attempting to allocate FSM instance of type 'Test_FSM' with illegal identifier 'invalid.id'
+Attempting to set illegal id for FSM instance of type 'Test_FSM': "invalid.id"
 [0;m    rc == -22, ok
   osmo_fsm_inst_name() == "Test_FSM(arbitrary_id)"
   osmo_fsm_inst_find_by_name("Test_FSM(arbitrary_id)") == fi

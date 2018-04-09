@@ -213,8 +213,9 @@ int osmo_fsm_inst_update_id(struct osmo_fsm_inst *fi, const char *id)
 {
 	if (id) {
 		if (!osmo_identifier_valid(id)) {
-			LOGP(DLGLOBAL, LOGL_ERROR, "Attempting to allocate FSM instance of type '%s'"
-			     " with illegal identifier '%s'\n", fi->fsm->name, id);
+			LOGP(DLGLOBAL, LOGL_ERROR,
+			     "Attempting to set illegal id for FSM instance of type '%s': %s\n",
+			     fi->fsm->name, osmo_quote_str(id, -1));
 			return -EINVAL;
 		}
 		osmo_talloc_replace_string(fi, (char **)&fi->id, id);
