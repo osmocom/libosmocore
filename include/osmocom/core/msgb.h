@@ -230,13 +230,12 @@ static inline void msgb_put_u32(struct msgb *msgb, uint32_t word)
  */
 static inline unsigned char *msgb_get(struct msgb *msgb, unsigned int len)
 {
-	unsigned char *tmp = msgb->tail - len;
 	if (msgb_length(msgb) < len)
 		MSGB_ABORT(msgb, "msgb too small to get %u (len %u)\n",
 			   len, msgb_length(msgb));
 	msgb->tail -= len;
 	msgb->len -= len;
-	return tmp;
+	return msgb->tail;
 }
 
 /*! remove uint8 from end of message
