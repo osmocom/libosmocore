@@ -331,6 +331,9 @@ static inline void msgb_push_u32(struct msgb *msg, uint32_t word)
  */
 static inline unsigned char *msgb_pull(struct msgb *msgb, unsigned int len)
 {
+	if (msgb_length(msgb) < len)
+		MSGB_ABORT(msgb, "msgb too small to pull %u (len %u)\n",
+			   len, msgb_length(msgb));
 	msgb->len -= len;
 	return msgb->data += len;
 }
