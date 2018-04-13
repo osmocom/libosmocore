@@ -768,13 +768,13 @@ static void test_gsm0808_enc_dec_cell_id_list_lac()
 	memset(&enc_cil, 0, sizeof(enc_cil));
 	enc_cil.id_discr = CELL_IDENT_LAC;
 	enc_cil.id_list[0].lac = 0x0124;
-	enc_cil.id_list[0].lac = 0xABCD;
-	enc_cil.id_list[0].lac = 0x5678;
+	enc_cil.id_list[1].lac = 0xABCD;
+	enc_cil.id_list[2].lac = 0x5678;
 	enc_cil.id_list_len = 3;
 
 	msg = msgb_alloc(1024, "output buffer");
 	rc_enc = gsm0808_enc_cell_id_list2(msg, &enc_cil);
-	EXPECT_ENCODED("1a 07 05 56 78 00 00 00 00");
+	EXPECT_ENCODED("1a 07 05 01 24 ab cd 56 78");
 
 	rc_dec = gsm0808_dec_cell_id_list2(&dec_cil, msg->data + 2, msg->len - 2);
 	OSMO_ASSERT(rc_dec == 7);
