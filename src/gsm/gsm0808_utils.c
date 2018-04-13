@@ -988,6 +988,57 @@ int gsm0808_cell_id_list_add(struct gsm0808_cell_id_list2 *dst, const struct gsm
 	return added;
 }
 
+/*! Encode Cell Identifier IE (3GPP TS 48.008 3.2.2.17).
+ *  \param[out] msg Message Buffer to which IE is to be appended
+ *  \param[in] ci Cell ID to be encoded
+ *  \returns number of bytes appended to \a msg */
+uint8_t gsm0808_enc_cell_id(struct msgb *msg, const struct gsm0808_cell_id *ci)
+{
+	uint8_t rc;
+	uint8_t *ie_tag;
+	struct gsm0808_cell_id_list2 cil = {
+		.id_discr = ci->id_discr,
+		.id_list = { ci->id },
+		.id_list_len = 1,
+	};
+
+	OSMO_ASSERT(msg);
+	OSMO_ASSERT(ci);
+
+	ie_tag = msg->tail;
+	rc = gsm0808_enc_cell_id_list2(msg, &cil);
+
+	if (rc <= 0)
+		return rc;
+
+	*ie_tag = GSM0808_IE_CELL_IDENTIFIER;
+	return rc;
+}
+
+/*! Decode Cell Identifier IE (3GPP TS 48.008 3.2.2.17).
+ *  \param[out] ci Caller-provided memory to store Cell ID.
+ *  \param[in] elem IE value to be decoded.
+ *  \param[in] len Length of \a elem in bytes.
+ *  \returns number of bytes parsed; negative on error */
+int gsm0808_dec_cell_id(struct gsm0808_cell_id *ci, const uint8_t *elem, uint8_t len)
+{
+	struct gsm0808_cell_id_list2 cil;
+	int rc;
+	rc = gsm0808_dec_cell_id_list2(&cil, elem, len);
+	if (rc < 0)
+		return rc;
+	if (cil.id_discr == CELL_IDENT_BSS || cil.id_discr == CELL_IDENT_NO_CELL) {
+		if (cil.id_list_len != 0)
+			return -EINVAL;
+	} else {
+		if (cil.id_list_len != 1)
+			return -EINVAL;
+	}
+	ci->id_discr = cil.id_discr;
+	ci->id = cil.id_list[0];
+	return rc;
+}
+
 /*! Convert the representation of the permitted speech codec identifier
  *  that is used in struct gsm0808_channel_type to the speech codec
  *  representation we use in struct gsm0808_speech_codec.

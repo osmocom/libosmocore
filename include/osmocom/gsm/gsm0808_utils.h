@@ -31,20 +31,27 @@ struct sockaddr_storage;
  /*! (225-1)/2 is the maximum number of elements in a cell identifier list. */
 #define GSM0808_CELL_ID_LIST2_MAXLEN		127
 
-/*! Parsed representation of a cell identifier list IE. */
+/*! Instead of this, use either struct gsm0808_cell_id or gsm0808_cell_id_list2.
+ * All elements contain parsed representations of the data in the corresponding IE, in host-byte order.
+ */
+union gsm0808_cell_id_u {
+	struct osmo_cell_global_id		global;
+	struct osmo_lac_and_ci_id		lac_and_ci;
+	uint16_t				ci;
+	struct osmo_location_area_id		lai_and_lac;
+	uint16_t				lac;
+};
+
+/*! Parsed representation of Cell Identifier IE (3GPP TS 48.008 3.2.2.17) */
+struct gsm0808_cell_id {
+	enum CELL_IDENT id_discr;
+	union gsm0808_cell_id_u id;
+};
+
+/*! Parsed representation of a Cell Identifier List IE (3GPP TS 48.008 3.2.2.27). */
 struct gsm0808_cell_id_list2 {
 	enum CELL_IDENT id_discr;
-	union {
-		/*!
-		 * All elements of these arrays contain parsed representations of the
-		 * data in the corresponding IE, in host-byte order.
-		 */
-		struct osmo_cell_global_id		global;
-		struct osmo_lac_and_ci_id		lac_and_ci;
-		uint16_t				ci;
-		struct osmo_location_area_id		lai_and_lac;
-		uint16_t				lac;
-	} id_list[GSM0808_CELL_ID_LIST2_MAXLEN];
+	union gsm0808_cell_id_u id_list[GSM0808_CELL_ID_LIST2_MAXLEN];
 	unsigned int id_list_len;
 };
 
@@ -78,6 +85,8 @@ int gsm0808_dec_cell_id_list(struct gsm0808_cell_id_list *cil,
 			     const uint8_t *elem, uint8_t len)
 			     OSMO_DEPRECATED("use gsm0808_dec_cell_id_list2 instead");
 int gsm0808_cell_id_list_add(struct gsm0808_cell_id_list2 *dst, const struct gsm0808_cell_id_list2 *src);
+uint8_t gsm0808_enc_cell_id(struct msgb *msg, const struct gsm0808_cell_id *ci);
+int gsm0808_dec_cell_id(struct gsm0808_cell_id *ci, const uint8_t *elem, uint8_t len);
 int gsm0808_chan_type_to_speech_codec(uint8_t perm_spch);
 int gsm0808_speech_codec_from_chan_type(struct gsm0808_speech_codec *sc,
 					uint8_t perm_spch);

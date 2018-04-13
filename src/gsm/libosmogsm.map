@@ -177,6 +177,8 @@ gsm0808_enc_cell_id_list2;
 gsm0808_dec_cell_id_list;
 gsm0808_dec_cell_id_list2;
 gsm0808_cell_id_list_add;
+gsm0808_enc_cell_id;
+gsm0808_dec_cell_id;
 gsm0808_chan_type_to_speech_codec;
 gsm0808_speech_codec_from_chan_type;
 gsm0808_speech_codec_type_names;

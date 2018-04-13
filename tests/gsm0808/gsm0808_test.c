@@ -1256,6 +1256,196 @@ void test_cell_id_list_add() {
 	printf("------- %s done\n", __func__);
 }
 
+#define EXPECT_ENCODED(hexstr) do { \
+		const char *enc_str = msgb_hexdump(msg); \
+		printf("%s: encoded: %s(rc = %u)\n", __func__, enc_str, rc_enc); \
+		OSMO_ASSERT(strcmp(enc_str, hexstr " ") == 0); \
+		OSMO_ASSERT(rc_enc == msg->len); \
+	} while(0)
+
+static void test_gsm0808_enc_dec_cell_id_lac()
+{
+	struct gsm0808_cell_id enc_ci = {
+		.id_discr = CELL_IDENT_LAC,
+		.id.lac = 0x0124,
+	};
+	struct gsm0808_cell_id dec_ci;
+	struct msgb *msg;
+	uint8_t rc_enc;
+	int rc_dec;
+
+	memset(&dec_ci, 0xa5, sizeof(dec_ci));
+
+	msg = msgb_alloc(1024, "output buffer");
+	rc_enc = gsm0808_enc_cell_id(msg, &enc_ci);
+	EXPECT_ENCODED("05 03 05 01 24");
+
+	rc_dec = gsm0808_dec_cell_id(&dec_ci, msg->data + 2, msg->len - 2);
+	OSMO_ASSERT(rc_dec == 3);
+
+	OSMO_ASSERT(enc_ci.id_discr == dec_ci.id_discr
+		    && enc_ci.id.lac == dec_ci.id.lac);
+
+	msgb_free(msg);
+}
+
+static void test_gsm0808_enc_dec_cell_id_bss()
+{
+	struct gsm0808_cell_id enc_ci = {
+		.id_discr = CELL_IDENT_BSS,
+	};
+	struct gsm0808_cell_id dec_ci;
+	struct msgb *msg;
+	uint8_t rc_enc;
+	int rc_dec;
+
+	msg = msgb_alloc(1024, "output buffer");
+	rc_enc = gsm0808_enc_cell_id(msg, &enc_ci);
+	EXPECT_ENCODED("05 01 06");
+
+	rc_dec = gsm0808_dec_cell_id(&dec_ci, msg->data + 2, msg->len - 2);
+	OSMO_ASSERT(rc_dec == 1);
+
+	OSMO_ASSERT(enc_ci.id_discr == dec_ci.id_discr);
+
+	msgb_free(msg);
+}
+
+static void test_gsm0808_enc_dec_cell_id_no_cell()
+{
+	struct gsm0808_cell_id enc_ci = {
+		.id_discr = CELL_IDENT_NO_CELL,
+	};
+	struct gsm0808_cell_id dec_ci;
+	struct msgb *msg;
+	uint8_t rc_enc;
+	int rc_dec;
+
+	msg = msgb_alloc(1024, "output buffer");
+	rc_enc = gsm0808_enc_cell_id(msg, &enc_ci);
+	EXPECT_ENCODED("05 01 03");
+
+	rc_dec = gsm0808_dec_cell_id(&dec_ci, msg->data + 2, msg->len - 2);
+	OSMO_ASSERT(rc_dec == 1);
+
+	OSMO_ASSERT(enc_ci.id_discr == dec_ci.id_discr);
+
+	msgb_free(msg);
+}
+
+static void test_gsm0808_enc_dec_cell_id_lai_and_lac()
+{
+	struct gsm0808_cell_id enc_ci = {
+		.id_discr = CELL_IDENT_LAI_AND_LAC,
+		.id.lai_and_lac = {
+			.plmn = {
+				.mcc = 123,
+				.mnc = 456,
+			},
+			.lac = 0x2342,
+		},
+	};
+	struct gsm0808_cell_id dec_ci;
+	struct msgb *msg;
+	uint8_t rc_enc;
+	int rc_dec;
+
+	msg = msgb_alloc(1024, "output buffer");
+	rc_enc = gsm0808_enc_cell_id(msg, &enc_ci);
+	EXPECT_ENCODED("05 06 04 21 63 54 23 42");
+
+	memset(&dec_ci, 0xa5, sizeof(dec_ci));
+	rc_dec = gsm0808_dec_cell_id(&dec_ci, msg->data + 2, msg->len - 2);
+	OSMO_ASSERT(rc_dec == msg->len - 2);
+
+	OSMO_ASSERT(enc_ci.id_discr == dec_ci.id_discr
+		    && osmo_plmn_cmp(&enc_ci.id.lai_and_lac.plmn, &dec_ci.id.lai_and_lac.plmn) == 0
+		    && enc_ci.id.lai_and_lac.lac == dec_ci.id.lai_and_lac.lac);
+	msgb_free(msg);
+}
+
+static void test_gsm0808_enc_dec_cell_id_ci()
+{
+	struct gsm0808_cell_id enc_ci = {
+		.id_discr = CELL_IDENT_CI,
+		.id.ci = 0x423,
+	};
+	struct gsm0808_cell_id dec_ci;
+	struct msgb *msg;
+	uint8_t rc_enc;
+	int rc_dec;
+
+	msg = msgb_alloc(1024, "output buffer");
+	rc_enc = gsm0808_enc_cell_id(msg, &enc_ci);
+	EXPECT_ENCODED("05 03 02 04 23");
+
+	rc_dec = gsm0808_dec_cell_id(&dec_ci, msg->data + 2, msg->len - 2);
+	OSMO_ASSERT(rc_dec == msg->len - 2);
+	OSMO_ASSERT(enc_ci.id_discr == dec_ci.id_discr
+		    && enc_ci.id.ci == dec_ci.id.ci);
+
+	msgb_free(msg);
+}
+
+static void test_gsm0808_enc_dec_cell_id_lac_and_ci()
+{
+	struct gsm0808_cell_id enc_ci = {
+		.id_discr = CELL_IDENT_LAC_AND_CI,
+		.id.lac_and_ci = {
+			.lac = 0x423,
+			.ci = 0x235,
+		},
+	};
+	struct gsm0808_cell_id dec_ci;
+	struct msgb *msg;
+	uint8_t rc_enc;
+	int rc_dec;
+
+	msg = msgb_alloc(1024, "output buffer");
+	rc_enc = gsm0808_enc_cell_id(msg, &enc_ci);
+	EXPECT_ENCODED("05 05 01 04 23 02 35");
+
+	rc_dec = gsm0808_dec_cell_id(&dec_ci, msg->data + 2, msg->len - 2);
+	OSMO_ASSERT(rc_dec == msg->len - 2);
+	OSMO_ASSERT(enc_ci.id_discr == dec_ci.id_discr
+		    && enc_ci.id.lac_and_ci.lac == dec_ci.id.lac_and_ci.lac
+		    && enc_ci.id.lac_and_ci.ci == dec_ci.id.lac_and_ci.ci);
+
+	msgb_free(msg);
+}
+
+static void test_gsm0808_enc_dec_cell_id_global()
+{
+	struct gsm0808_cell_id enc_ci = {
+		.id_discr = CELL_IDENT_WHOLE_GLOBAL,
+		.id.global = {
+			.lai = {
+				.plmn = { .mcc = 123, .mnc = 456 },
+				.lac = 0x2342
+			},
+			.cell_identity = 0x423,
+		}
+	};
+	struct gsm0808_cell_id dec_ci;
+	struct msgb *msg;
+	uint8_t rc_enc;
+	int rc_dec;
+
+	msg = msgb_alloc(1024, "output buffer");
+	rc_enc = gsm0808_enc_cell_id(msg, &enc_ci);
+	EXPECT_ENCODED("05 08 00 21 63 54 23 42 04 23");
+
+	rc_dec = gsm0808_dec_cell_id(&dec_ci, msg->data + 2, msg->len - 2);
+	OSMO_ASSERT(rc_dec == msg->len - 2);
+
+	OSMO_ASSERT(enc_ci.id_discr == dec_ci.id_discr
+		    && osmo_plmn_cmp(&enc_ci.id.global.lai.plmn,
+				     &dec_ci.id.global.lai.plmn) == 0
+		    && enc_ci.id.global.lai.lac == dec_ci.id.global.lai.lac
+		    && enc_ci.id.global.cell_identity == dec_ci.id.global.cell_identity);
+	msgb_free(msg);
+}
+
 int main(int argc, char **argv)
 {
 	printf("Testing generation of GSM0808 messages\n");
@@ -1287,6 +1477,7 @@ int main(int argc, char **argv)
 	test_gsm0808_enc_dec_speech_codec_list();
 	test_gsm0808_enc_dec_channel_type();
 	test_gsm0808_enc_dec_encrypt_info();
+
 	test_gsm0808_enc_dec_cell_id_list_lac();
 	test_gsm0808_enc_dec_cell_id_list_single_lac();
 	test_gsm0808_enc_dec_cell_id_list_multi_lac();
@@ -1297,6 +1488,14 @@ int main(int argc, char **argv)
 	test_gsm0808_enc_dec_cell_id_list_multi_global();
 
 	test_cell_id_list_add();
+
+	test_gsm0808_enc_dec_cell_id_lac();
+	test_gsm0808_enc_dec_cell_id_bss();
+	test_gsm0808_enc_dec_cell_id_no_cell();
+	test_gsm0808_enc_dec_cell_id_lai_and_lac();
+	test_gsm0808_enc_dec_cell_id_ci();
+	test_gsm0808_enc_dec_cell_id_lac_and_ci();
+	test_gsm0808_enc_dec_cell_id_global();
 
 	printf("Done\n");
 	return EXIT_SUCCESS;
