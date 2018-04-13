@@ -446,6 +446,27 @@ void tlv_def_patch(struct tlv_definition *dst, const struct tlv_definition *src)
 #define TLVP_PRES_LEN(tp, tag, min_len) \
 	(TLVP_PRESENT(tp, tag) && TLVP_LEN(tp, tag) >= min_len)
 
+/*! Return pointer to a TLV element if it is present.
+ * Usage:
+ *   struct tlv_p_entry *e = TVLP_GET(&tp, TAG);
+ *   if (!e)
+ *         return -ENOENT;
+ *   hexdump(e->val, e->len);
+ * \param[in] _tp  pointer to \ref tlv_parsed.
+ * \param[in] tag  IE tag to return.
+ * \returns struct tlv_p_entry pointer, or NULL if not present.
+ */
+#define TLVP_GET(_tp, tag)	(TLVP_PRESENT(_tp, tag)? &(_tp)->lv[tag] : NULL)
+
+/*! Like TLVP_GET(), but enforcing a minimum val length.
+ * \param[in] _tp  pointer to \ref tlv_parsed.
+ * \param[in] tag  IE tag to return.
+ * \param[in] min_len  Minimum value length in bytes.
+ * \returns struct tlv_p_entry pointer, or NULL if not present or too short.
+ */
+#define TLVP_GET_MINLEN(_tp, tag, min_len) \
+	(TLVP_PRES_LEN(_tp, tag, min_len)? &(_tp)->lv[tag] : NULL)
+
 /*! Align given TLV element with 16 bit value to an even address
  *  \param[in] tp pointer to \ref tlv_parsed
  *  \param[in] pos element to return
