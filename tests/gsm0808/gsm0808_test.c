@@ -750,6 +750,13 @@ static void test_gsm0808_enc_dec_encrypt_info()
 	msgb_free(msg);
 }
 
+#define EXPECT_ENCODED(hexstr) do { \
+		const char *enc_str = msgb_hexdump(msg); \
+		printf("%s: encoded: %s(rc = %u)\n", __func__, enc_str, rc_enc); \
+		OSMO_ASSERT(strcmp(enc_str, hexstr " ") == 0); \
+		OSMO_ASSERT(rc_enc == msg->len); \
+	} while(0)
+
 static void test_gsm0808_enc_dec_cell_id_list_lac()
 {
 	struct gsm0808_cell_id_list2 enc_cil;
@@ -767,7 +774,7 @@ static void test_gsm0808_enc_dec_cell_id_list_lac()
 
 	msg = msgb_alloc(1024, "output buffer");
 	rc_enc = gsm0808_enc_cell_id_list2(msg, &enc_cil);
-	OSMO_ASSERT(rc_enc == 9);
+	EXPECT_ENCODED("1a 07 05 56 78 00 00 00 00");
 
 	rc_dec = gsm0808_dec_cell_id_list2(&dec_cil, msg->data + 2, msg->len - 2);
 	OSMO_ASSERT(rc_dec == 7);
@@ -1255,13 +1262,6 @@ void test_cell_id_list_add() {
 
 	printf("------- %s done\n", __func__);
 }
-
-#define EXPECT_ENCODED(hexstr) do { \
-		const char *enc_str = msgb_hexdump(msg); \
-		printf("%s: encoded: %s(rc = %u)\n", __func__, enc_str, rc_enc); \
-		OSMO_ASSERT(strcmp(enc_str, hexstr " ") == 0); \
-		OSMO_ASSERT(rc_enc == msg->len); \
-	} while(0)
 
 static void test_gsm0808_enc_dec_cell_id_lac()
 {
