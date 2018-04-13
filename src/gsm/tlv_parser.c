@@ -220,7 +220,12 @@ tlv:		/* GSM TS 04.07 11.2.4: Type 4 TLV */
 	return len;
 }
 
-/*! Parse an entire buffer of TLV encoded Information Elements
+/*! Parse an entire buffer of TLV encoded Information Elements.
+ * In case of multiple occurences of an IE, keep only the first occurence.
+ * Most GSM related protocols clearly indicate that in case of duplicate
+ * IEs, only the first occurrence shall be used, while any further occurrences
+ * shall be ignored.  See e.g. 3GPP TS 24.008 Section 8.6.3.
+ * For multiple occurences, use tlv_parse2().
  *  \param[out] dec caller-allocated pointer to \ref tlv_parsed
  *  \param[in] def structure defining the valid TLV tags / configurations
  *  \param[in] buf the input data buffer to be parsed
@@ -233,38 +238,77 @@ int tlv_parse(struct tlv_parsed *dec, const struct tlv_definition *def,
 	      const uint8_t *buf, int buf_len, uint8_t lv_tag,
 	      uint8_t lv_tag2)
 {
+	return tlv_parse2(dec, 1, def, buf, buf_len, lv_tag, lv_tag2);
+}
+
+/*! Like tlv_parse(), but capable of decoding multiple occurences of the same IE.
+ * Parse an entire buffer of TLV encoded Information Elements.
+ * To decode multiple occurences of IEs, provide in dec an _array_ of tlv_parsed, and
+ * pass the size of that array in dec_multiples. The first occurence of each IE
+ * is stored in dec[0], the second in dec[1] and so forth. If there are more
+ * occurences than the array length given in dec_multiples, the remaining
+ * occurences are dropped.
+ *  \param[out] dec caller-allocated pointer to \ref tlv_parsed
+ *  \param[in] dec_multiples length of the tlv_parsed[] in \a dec.
+ *  \param[in] def structure defining the valid TLV tags / configurations
+ *  \param[in] buf the input data buffer to be parsed
+ *  \param[in] buf_len length of the input data buffer
+ *  \param[in] lv_tag an initial LV tag at the start of the buffer
+ *  \param[in] lv_tag2 a second initial LV tag following the \a lv_tag
+ *  \returns number of TLV entries parsed; negative in case of error
+ */
+int tlv_parse2(struct tlv_parsed *dec, int dec_multiples,
+	       const struct tlv_definition *def, const uint8_t *buf, int buf_len,
+	       uint8_t lv_tag, uint8_t lv_tag2)
+{
 	int ofs = 0, num_parsed = 0;
 	uint16_t len;
+	int dec_i;
 
-	memset(dec, 0, sizeof(*dec));
+	for (dec_i = 0; dec_i < dec_multiples; dec_i++)
+		memset(&dec[dec_i], 0, sizeof(*dec));
 
 	if (lv_tag) {
+		const uint8_t *val;
+		uint16_t parsed_len;
 		if (ofs > buf_len)
 			return -1;
-		dec->lv[lv_tag].val = &buf[ofs+1];
-		dec->lv[lv_tag].len = buf[ofs];
-		len = dec->lv[lv_tag].len + 1;
-		if (ofs + len > buf_len) {
-			dec->lv[lv_tag].val = NULL;
-			dec->lv[lv_tag].len = 0;
+		val = &buf[ofs+1];
+		len = buf[ofs];
+		parsed_len = len + 1;
+		if (ofs + parsed_len > buf_len)
 			return -2;
-		}
 		num_parsed++;
-		ofs += len;
+		ofs += parsed_len;
+		/* store the resulting val and len */
+		for (dec_i = 0; dec_i < dec_multiples; dec_i++) {
+			if (dec[dec_i].lv[lv_tag].val != NULL)
+				continue;
+			dec->lv[lv_tag].val = val;
+			dec->lv[lv_tag].len = len;
+			break;
+		}
 	}
 	if (lv_tag2) {
+		const uint8_t *val;
+		uint16_t parsed_len;
 		if (ofs > buf_len)
 			return -1;
-		dec->lv[lv_tag2].val = &buf[ofs+1];
-		dec->lv[lv_tag2].len = buf[ofs];
-		len = dec->lv[lv_tag2].len + 1;
-		if (ofs + len > buf_len) {
-			dec->lv[lv_tag2].val = NULL;
-			dec->lv[lv_tag2].len = 0;
+		val = &buf[ofs+1];
+		len = buf[ofs];
+		parsed_len = len + 1;
+		if (ofs + parsed_len > buf_len)
 			return -2;
-		}
 		num_parsed++;
-		ofs += len;
+		ofs += parsed_len;
+		/* store the resulting val and len */
+		for (dec_i = 0; dec_i < dec_multiples; dec_i++) {
+			if (dec[dec_i].lv[lv_tag2].val != NULL)
+				continue;
+			dec->lv[lv_tag2].val = val;
+			dec->lv[lv_tag2].len = len;
+			break;
+		}
 	}
 
 	while (ofs < buf_len) {
@@ -276,12 +320,12 @@ int tlv_parse(struct tlv_parsed *dec, const struct tlv_definition *def,
 		                   &buf[ofs], buf_len-ofs);
 		if (rv < 0)
 			return rv;
-		/* Most GSM related protocols clearly indicate that in case of duplicate
-		 * IEs, only the first occurrence shall be used, while any further occurrences
-		 * shall be ignored.  See e.g. 3GPP TS 24.008 Section 8.6.3 */
-		if (dec->lv[tag].val == NULL) {
-			dec->lv[tag].val = val;
-			dec->lv[tag].len = len;
+		for (dec_i = 0; dec_i < dec_multiples; dec_i++) {
+			if (dec[dec_i].lv[tag].val != NULL)
+				continue;
+			dec[dec_i].lv[tag].val = val;
+			dec[dec_i].lv[tag].len = len;
+			break;
 		}
 		ofs += rv;
 		num_parsed++;

@@ -433,6 +433,9 @@ int tlv_parse_one(uint8_t *o_tag, uint16_t *o_len, const uint8_t **o_val,
                   const uint8_t *buf, int buf_len);
 int tlv_parse(struct tlv_parsed *dec, const struct tlv_definition *def,
 	      const uint8_t *buf, int buf_len, uint8_t lv_tag, uint8_t lv_tag2);
+int tlv_parse2(struct tlv_parsed *dec, int dec_multiples,
+	       const struct tlv_definition *def, const uint8_t *buf, int buf_len,
+	       uint8_t lv_tag, uint8_t lv_tag2);
 /* take a master (src) tlv def and fill up all empty slots in 'dst' */
 void tlv_def_patch(struct tlv_definition *dst, const struct tlv_definition *src);
 

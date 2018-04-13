@@ -254,6 +254,7 @@ static void test_tlv_repeated_ie()
 	int i, rc;
 	const uint8_t tag = 0x1a;
 	struct tlv_parsed dec;
+	struct tlv_parsed dec3[3];
 	struct tlv_definition def;
 
 	memset(&def, 0, sizeof(def));
@@ -273,6 +274,16 @@ static void test_tlv_repeated_ie()
 	/* Value pointer should point at first value in test data array. */
 	OSMO_ASSERT(dec.lv[tag].val == &test_data[2]);
 	OSMO_ASSERT(*dec.lv[tag].val == test_data[2]);
+
+	/* Accept three decodings, pointing at first, second and third val */
+	rc = tlv_parse2(dec3, 3, &def, &test_data[1], sizeof(test_data) - 1, tag, 0);
+	OSMO_ASSERT(rc == i/3);
+	OSMO_ASSERT(dec3[0].lv[tag].len == 1);
+	OSMO_ASSERT(dec3[0].lv[tag].val == &test_data[2]);
+	OSMO_ASSERT(dec3[1].lv[tag].len == 1);
+	OSMO_ASSERT(dec3[1].lv[tag].val == &test_data[2 + 3]);
+	OSMO_ASSERT(dec3[2].lv[tag].len == 1);
+	OSMO_ASSERT(dec3[2].lv[tag].val == &test_data[2 + 3 + 3]);
 }
 
 int main(int argc, char **argv)
