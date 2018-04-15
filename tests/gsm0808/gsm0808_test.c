@@ -595,16 +595,16 @@ static void test_gsm0808_enc_dec_speech_codec()
 
 static void test_gsm0808_enc_dec_speech_codec_with_cfg()
 {
-	struct gsm0808_speech_codec enc_sc;
-	struct gsm0808_speech_codec dec_sc;
+	struct gsm0808_speech_codec enc_sc = {
+		.pi = true,
+		.tf = true,
+		.type = GSM0808_SCT_FR3,
+		.cfg = 0xabcd,
+	};
+	struct gsm0808_speech_codec dec_sc = {};
 	struct msgb *msg;
 	uint8_t rc_enc;
 	int rc_dec;
-
-	enc_sc.pi = true;
-	enc_sc.tf = true;
-	enc_sc.type = GSM0808_SCT_FR3;
-	enc_sc.cfg = 0xabcd;
 
 	msg = msgb_alloc(1024, "output buffer");
 	rc_enc = gsm0808_enc_speech_codec(msg, &enc_sc);
