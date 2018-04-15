@@ -169,8 +169,9 @@ rate_ctr_group_desc_mangle(void *ctx, const struct rate_ctr_group_desc *desc)
 		goto err_free;
 	}
 
-	LOGP(DLGLOBAL, LOGL_INFO, "Needed to mangle ounter group '%s' names still using '.' as "
-		"separator, please consider updating the application\n", desc->group_name_prefix);
+	LOGP(DLGLOBAL, LOGL_INFO, "Needed to mangle counter group '%s' names: it is still using '.' as "
+		"separator, which is not allowed. please consider updating the application\n",
+		desc->group_name_prefix);
 
 	return desc_new;
 err_free:
