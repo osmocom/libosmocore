@@ -162,6 +162,7 @@ gsm0808_create_reset;
 gsm0808_create_reset_ack;
 gsm0808_create_sapi_reject;
 gsm0808_create_handover_required;
+gsm0808_create_handover_request_ack;
 gsm0808_prepend_dtap_header;
 gsm0808_enc_aoip_trasp_addr;
 gsm0808_dec_aoip_trasp_addr;

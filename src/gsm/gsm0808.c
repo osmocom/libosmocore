@@ -679,6 +679,31 @@ struct msgb *gsm0808_create_handover_required(const struct gsm0808_handover_requ
 	return msg;
 }
 
+/*! Create BSSMAP HANDOVER REQUEST ACKNOWLEDGE message, 3GPP TS 48.008 3.2.1.10. */
+struct msgb *gsm0808_create_handover_request_ack(const uint8_t *l3_info, uint8_t l3_info_len,
+						 uint8_t chosen_channel, uint8_t chosen_encr_alg,
+						 uint8_t chosen_speech_version)
+{
+	struct msgb *msg;
+
+	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "BSSMAP-HANDOVER-ACCEPT-ACK");
+	if (!msg)
+		return NULL;
+
+	/* Message Type, 3.2.2.1 */
+	msgb_v_put(msg, BSS_MAP_MSG_HANDOVER_RQST_ACKNOWLEDGE);
+
+	/* Layer 3 Information, 3.2.2.24 */
+	msgb_tlv_put(msg, GSM0808_IE_LAYER_3_INFORMATION, l3_info_len, l3_info);
+
+	msgb_tv_put(msg, GSM0808_IE_CHOSEN_CHANNEL, chosen_channel);
+	msgb_tv_put(msg, GSM0808_IE_CHOSEN_ENCR_ALG, chosen_encr_alg);
+	if (chosen_speech_version != 0)
+		msgb_tv_put(msg, GSM0808_IE_SPEECH_VERSION, chosen_speech_version);
+
+	return msg;
+}
+
 /*! Prepend a DTAP header to given Message Buffer
  *  \param[in] msgb Message Buffer
  *  \param[in] link_id Link Identifier */
