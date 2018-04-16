@@ -1273,4 +1273,13 @@ const char *gsm0808_cell_id_list_name(const struct gsm0808_cell_id_list2 *cil)
 #undef APPEND_STR
 #undef APPEND_CELL_ID_U
 
+const char *gsm0808_channel_type_name(const struct gsm0808_channel_type *ct)
+{
+	static char buf[128];
+	snprintf(buf, sizeof(buf), "ch_indctr=0x%x ch_rate_type=0x%x perm_spch=%s",
+		 ct->ch_indctr, ct->ch_rate_type,
+		 osmo_hexdump(ct->perm_spch, ct->perm_spch_len));
+	return buf;
+}
+
 /*! @} */

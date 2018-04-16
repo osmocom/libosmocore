@@ -26,7 +26,9 @@
 struct sockaddr_storage;
 
 #include <osmocom/gsm/protocol/gsm_08_08.h>
+#include <osmocom/gsm/protocol/gsm_04_08.h>
 #include <osmocom/gsm/gsm23003.h>
+#include <osmocom/gsm/gsm_utils.h>
 
  /*! (225-1)/2 is the maximum number of elements in a cell identifier list. */
 #define GSM0808_CELL_ID_LIST2_MAXLEN		127
@@ -101,5 +103,110 @@ int gsm0808_dec_cell_id(struct gsm0808_cell_id *ci, const uint8_t *elem, uint8_t
 int gsm0808_chan_type_to_speech_codec(uint8_t perm_spch);
 int gsm0808_speech_codec_from_chan_type(struct gsm0808_speech_codec *sc,
 					uint8_t perm_spch);
+
+/*! Return 3GPP TS 48.008 3.2.2.49 Current Channel Type 1 from enum gsm_chan_t. */
+static inline uint8_t gsm0808_current_channel_type_1(enum gsm_chan_t type)
+{
+	switch (type) {
+	default:
+		return 0;
+	case GSM_LCHAN_SDCCH:
+		return 0x01;
+	case GSM_LCHAN_TCH_F:
+		return 0x18;
+	case GSM_LCHAN_TCH_H:
+		return 0x19;
+	}
+}
+
+/*! Return 3GPP TS 48.008 3.2.2.51 Speech Version aka permitted speech version indication in 3.2.2.11
+ * Channel Type. */
+static inline enum gsm0808_permitted_speech gsm0808_permitted_speech(enum gsm_chan_t type,
+								     enum gsm48_chan_mode mode)
+{
+	switch (mode) {
+	case GSM48_CMODE_SPEECH_V1:
+		switch (type) {
+		case GSM_LCHAN_TCH_F:
+			return GSM0808_PERM_FR1;
+		case GSM_LCHAN_TCH_H:
+			return GSM0808_PERM_HR1;
+		default:
+			return 0;
+		}
+	case GSM48_CMODE_SPEECH_EFR:
+		switch (type) {
+		case GSM_LCHAN_TCH_F:
+			return GSM0808_PERM_FR2;
+		case GSM_LCHAN_TCH_H:
+			return GSM0808_PERM_HR2;
+		default:
+			return 0;
+		}
+	case GSM48_CMODE_SPEECH_AMR:
+		switch (type) {
+		case GSM_LCHAN_TCH_F:
+			return GSM0808_PERM_HR3;
+		case GSM_LCHAN_TCH_H:
+			return GSM0808_PERM_HR3;
+		default:
+			return 0;
+		}
+	default:
+		return 0;
+	}
+}
+
+/*! Return 3GPP TS 48.008 3.2.2.33 Chosen Channel. */
+static inline uint8_t gsm0808_chosen_channel(enum gsm_chan_t type, enum gsm48_chan_mode mode)
+{
+	uint8_t channel_mode = 0, channel = 0;
+
+	switch (mode) {
+	case GSM48_CMODE_SPEECH_V1:
+	case GSM48_CMODE_SPEECH_EFR:
+	case GSM48_CMODE_SPEECH_AMR:
+		channel_mode = 0x9;
+		break;
+	case GSM48_CMODE_SIGN:
+		channel_mode = 0x8;
+		break;
+	case GSM48_CMODE_DATA_14k5:
+		channel_mode = 0xe;
+		break;
+	case GSM48_CMODE_DATA_12k0:
+		channel_mode = 0xb;
+		break;
+	case GSM48_CMODE_DATA_6k0:
+		channel_mode = 0xc;
+		break;
+	case GSM48_CMODE_DATA_3k6:
+		channel_mode = 0xd;
+		break;
+	default:
+		return 0;
+	}
+
+	switch (type) {
+	case GSM_LCHAN_NONE:
+		channel = 0x0;
+		break;
+	case GSM_LCHAN_SDCCH:
+		channel = 0x1;
+		break;
+	case GSM_LCHAN_TCH_F:
+		channel = 0x8;
+		break;
+	case GSM_LCHAN_TCH_H:
+		channel = 0x9;
+		break;
+	default:
+		return 0;
+	}
+
+	return channel_mode << 4 | channel;
+}
+
+const char *gsm0808_channel_type_name(const struct gsm0808_channel_type *ct);
 
 /*! @} */
