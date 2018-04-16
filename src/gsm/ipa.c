@@ -328,7 +328,12 @@ struct msgb *ipa_ccm_make_id_resp_from_req(const struct ipaccess_unit *dev,
 		ies[num_ies++] = t_tag;
 
 		cur += t_len;
-		len -= t_len;
+		/* prevent any unsigned integer underflow due to somebody sending us
+		 * messages with wrong length values */
+		if (len <= t_len)
+			len -= t_len;
+		else
+			len = 0;
 	}
 	return ipa_ccm_make_id_resp(dev, ies, num_ies);
 }
