@@ -113,6 +113,7 @@ int osmo_get_macaddr(uint8_t *mac_out, const char *dev_name)
 #include <net/if.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
+#include <errno.h>
 
 /*! Obtain the MAC address of a given network device
  *  \param[out] mac_out pointer to caller-allocated buffer of 6 bytes
@@ -121,15 +122,19 @@ int osmo_get_macaddr(uint8_t *mac_out, const char *dev_name)
  */
 int osmo_get_macaddr(uint8_t *mac_out, const char *dev_name)
 {
-	int fd, rc;
+	int fd, rc, dev_len;
 	struct ifreq ifr;
+
+	dev_len = strlen(dev_name);
+	if (dev_len >= sizeof(ifr.ifr_name))
+		return -EINVAL;
 
 	fd = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
 	if (fd < 0)
 		return fd;
 
 	memset(&ifr, 0, sizeof(ifr));
-	memcpy(&ifr.ifr_name, dev_name, sizeof(ifr.ifr_name));
+	memcpy(&ifr.ifr_name, dev_name, dev_len + 1);
 	rc = ioctl(fd, SIOCGIFHWADDR, &ifr);
 	close(fd);
 
