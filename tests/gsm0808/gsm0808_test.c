@@ -1073,36 +1073,12 @@ static void test_gsm0808_enc_dec_cell_id_list_multi_global()
 
 static void print_cil(const struct gsm0808_cell_id_list2 *cil)
 {
-	unsigned int i;
-	if (!cil) {
-		printf("     cell_id_list == NULL\n");
-		return;
-	}
-	switch (cil->id_discr) {
-	case CELL_IDENT_WHOLE_GLOBAL:
-		printf("     cell_id_list cgi[%u] = {\n", cil->id_list_len);
-		for (i = 0; i < cil->id_list_len; i++)
-			printf("       %2d: %s\n", i, osmo_cgi_name(&cil->id_list[i].global));
-		printf("     }\n");
-		break;
-	case CELL_IDENT_LAC:
-		printf("     cell_id_list lac[%u] = {\n", cil->id_list_len);
-		for (i = 0; i < cil->id_list_len; i++)
-			printf("      %2d: %u\n", i, cil->id_list[i].lac);
-		printf("     }\n");
-		break;
-	case CELL_IDENT_BSS:
-		printf("     cell_id_list bss[%u]\n", cil->id_list_len);
-		break;
-	case CELL_IDENT_NO_CELL:
-		printf("     cell_id_list no_cell[%u]\n", cil->id_list_len);
-		break;
-	default:
-		printf("     Unimplemented id_disc\n");
-	}
+	printf("     cell_id_list == %s\n", gsm0808_cell_id_list_name(cil));
 }
 
 void test_cell_id_list_add() {
+	size_t zu;
+
 	const struct gsm0808_cell_id_list2 cgi1 = {
 		.id_discr = CELL_IDENT_WHOLE_GLOBAL,
 		.id_list_len = 1,
@@ -1220,7 +1196,7 @@ void test_cell_id_list_add() {
 
 #define ADD_QUIET(other_cil, expect_rc) do { \
 		int rc = gsm0808_cell_id_list_add(&cil, &other_cil); \
-		printf("\ngsm0808_cell_id_list_add(&cil, &" #other_cil ") --> rc = %d\n", rc); \
+		printf("gsm0808_cell_id_list_add(&cil, &" #other_cil ") --> rc = %d\n", rc); \
 		OSMO_ASSERT(rc == expect_rc); \
 	} while(0)
 
@@ -1233,13 +1209,13 @@ void test_cell_id_list_add() {
 	ADD(cil, 0);
 	ADD(cgi1, -EINVAL);
 
-	printf("\ncan't add to BSS list\n");
+	printf("* can't add to BSS list\n");
 	cil.id_list_len = 0;
 	cil.id_discr = CELL_IDENT_BSS;
 	print_cil(&cil);
 	ADD(lac1, -EINVAL);
 
-	printf("\nother types (including NO_CELL) take on new type iff empty\n");
+	printf("* other types (including NO_CELL) take on new type iff empty\n");
 	cil.id_list_len = 0;
 	cil.id_discr = CELL_IDENT_NO_CELL;
 	print_cil(&cil);
@@ -1248,15 +1224,34 @@ void test_cell_id_list_add() {
 	ADD(cgi2, 2);
 	ADD(cgi2, 0);
 
+	printf("* test gsm0808_cell_id_list_name_buf()'s return val\n");
+	zu = strlen(gsm0808_cell_id_list_name(&cil));
+	printf("  strlen(gsm0808_cell_id_list_name(cil)) == %zu\n", zu);
+	zu ++;
+	while (1) {
+		char buf[128] = "?";
+		int rc;
+		OSMO_ASSERT(zu < sizeof(buf));
+		buf[zu] = '#';
+		rc = gsm0808_cell_id_list_name_buf(buf, zu, &cil);
+		printf("  gsm0808_cell_id_list_name_buf(buf, %zu, cil)) == %d \"%s\"\n",
+		       zu, rc, buf);
+		OSMO_ASSERT(buf[zu] == '#');
+		if (!zu)
+			break;
+		zu /= 2;
+	}
+
+	printf("* list-full behavior\n");
 	cil.id_list_len = GSM0808_CELL_ID_LIST2_MAXLEN - 1;
-	printf("\ncil.id_list_len = %u", cil.id_list_len);
+	printf("cil.id_list_len = %u\n", cil.id_list_len);
 	ADD_QUIET(cgi2a, 1);
 	printf("cil.id_list_len = %u\n", cil.id_list_len);
 
 	cil.id_list_len = GSM0808_CELL_ID_LIST2_MAXLEN - 1;
-	printf("\ncil.id_list_len = %u", cil.id_list_len);
+	printf("cil.id_list_len = %u\n", cil.id_list_len);
 	ADD_QUIET(cgi3, -ENOSPC);
-	printf("cil.id_list_len = %u", cil.id_list_len);
+	printf("cil.id_list_len = %u\n", cil.id_list_len);
 	ADD_QUIET(cgi2a, -ENOSPC);
 	printf("cil.id_list_len = %u\n", cil.id_list_len);
 

@@ -21,84 +21,46 @@ Testing creating DTAP
 Testing prepend DTAP
 test_gsm0808_enc_dec_cell_id_list_lac: encoded: 1a 07 05 01 24 ab cd 56 78 (rc = 9)
 ------- test_cell_id_list_add
-     cell_id_list cgi[0] = {
-     }
-
+     cell_id_list == CGI[0]:{}
 gsm0808_cell_id_list_add(&cil, &lac1) --> rc = 1
-     cell_id_list lac[1] = {
-       0: 123
-     }
-
+     cell_id_list == LAC[1]:{123}
 gsm0808_cell_id_list_add(&cil, &lac1) --> rc = 0
-     cell_id_list lac[1] = {
-       0: 123
-     }
-
+     cell_id_list == LAC[1]:{123}
 gsm0808_cell_id_list_add(&cil, &lac2) --> rc = 2
-     cell_id_list lac[3] = {
-       0: 123
-       1: 456
-       2: 789
-     }
-
+     cell_id_list == LAC[3]:{123, 456, 789}
 gsm0808_cell_id_list_add(&cil, &lac2) --> rc = 0
-     cell_id_list lac[3] = {
-       0: 123
-       1: 456
-       2: 789
-     }
-
+     cell_id_list == LAC[3]:{123, 456, 789}
 gsm0808_cell_id_list_add(&cil, &cil) --> rc = 0
-     cell_id_list lac[3] = {
-       0: 123
-       1: 456
-       2: 789
-     }
-
+     cell_id_list == LAC[3]:{123, 456, 789}
 gsm0808_cell_id_list_add(&cil, &cgi1) --> rc = -22
-     cell_id_list lac[3] = {
-       0: 123
-       1: 456
-       2: 789
-     }
-
-can't add to BSS list
-     cell_id_list bss[0]
-
+     cell_id_list == LAC[3]:{123, 456, 789}
+* can't add to BSS list
+     cell_id_list == BSS[0]
 gsm0808_cell_id_list_add(&cil, &lac1) --> rc = -22
-     cell_id_list bss[0]
-
-other types (including NO_CELL) take on new type iff empty
-     cell_id_list no_cell[0]
-
+     cell_id_list == BSS[0]
+* other types (including NO_CELL) take on new type iff empty
+     cell_id_list == NO-CELL[0]
 gsm0808_cell_id_list_add(&cil, &cgi1) --> rc = 1
-     cell_id_list cgi[1] = {
-        0: 001-02-3-4
-     }
-
+     cell_id_list == CGI[1]:{001-02-3-4}
 gsm0808_cell_id_list_add(&cil, &cgi1) --> rc = 0
-     cell_id_list cgi[1] = {
-        0: 001-02-3-4
-     }
-
+     cell_id_list == CGI[1]:{001-02-3-4}
 gsm0808_cell_id_list_add(&cil, &cgi2) --> rc = 2
-     cell_id_list cgi[3] = {
-        0: 001-02-3-4
-        1: 001-002-3-4
-        2: 005-006-7-8
-     }
-
+     cell_id_list == CGI[3]:{001-02-3-4, 001-002-3-4, 005-006-7-8}
 gsm0808_cell_id_list_add(&cil, &cgi2) --> rc = 0
-     cell_id_list cgi[3] = {
-        0: 001-02-3-4
-        1: 001-002-3-4
-        2: 005-006-7-8
-     }
-
+     cell_id_list == CGI[3]:{001-02-3-4, 001-002-3-4, 005-006-7-8}
+* test gsm0808_cell_id_list_name_buf()'s return val
+  strlen(gsm0808_cell_id_list_name(cil)) == 45
+  gsm0808_cell_id_list_name_buf(buf, 46, cil)) == 45 "CGI[3]:{001-02-3-4, 001-002-3-4, 005-006-7-8}"
+  gsm0808_cell_id_list_name_buf(buf, 23, cil)) == 45 "CGI[3]:{001-02-3-4, 00"
+  gsm0808_cell_id_list_name_buf(buf, 11, cil)) == 45 "CGI[3]:{00"
+  gsm0808_cell_id_list_name_buf(buf, 5, cil)) == 45 "CGI["
+  gsm0808_cell_id_list_name_buf(buf, 2, cil)) == 45 "C"
+  gsm0808_cell_id_list_name_buf(buf, 1, cil)) == 45 ""
+  gsm0808_cell_id_list_name_buf(buf, 0, cil)) == 45 "#"
+* list-full behavior
 cil.id_list_len = 126
 gsm0808_cell_id_list_add(&cil, &cgi2a) --> rc = 1
 cil.id_list_len = 127
-
 cil.id_list_len = 126
 gsm0808_cell_id_list_add(&cil, &cgi3) --> rc = -28
 cil.id_list_len = 127

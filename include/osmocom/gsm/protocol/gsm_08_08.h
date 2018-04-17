@@ -10,7 +10,8 @@
 
 /*
  * this is from GSM 03.03 CGI but is copied in GSM 08.08
- * in § 3.2.2.27 for Cell Identifier List
+ * in § 3.2.2.27 for Cell Identifier List.
+ * See gsm0808_cell_id_discr_name() for a human readable representation.
  */
 enum CELL_IDENT {
 	CELL_IDENT_WHOLE_GLOBAL		= 0,

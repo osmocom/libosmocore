@@ -1130,4 +1130,147 @@ int gsm0808_speech_codec_from_chan_type(struct gsm0808_speech_codec *sc,
 	return 0;
 }
 
+/*! Print a human readable name of the cell identifier to the char buffer.
+ * This is useful both for struct gsm0808_cell_id and struct gsm0808_cell_id_list2.
+ * See also gsm0808_cell_id_name() and gsm0808_cell_id_list_name().
+ * \param[out] buf  Destination buffer to write string representation to.
+ * \param[in] buflen  Amount of memory available in \a buf.
+ * \param[in] id_discr  Cell Identifier type.
+ * \param[in] u  Cell Identifer value.
+ * \returns Like snprintf(): the amount of characters (excluding terminating nul) written,
+ *          or that would have been written if the buffer were large enough.
+ */
+int gsm0808_cell_id_u_name(char *buf, size_t buflen,
+			   enum CELL_IDENT id_discr, const union gsm0808_cell_id_u *u)
+{
+	switch (id_discr) {
+	case CELL_IDENT_LAC:
+		return snprintf(buf, buflen, "%u", u->lac);
+	case CELL_IDENT_CI:
+		return snprintf(buf, buflen, "%u", u->ci);
+	case CELL_IDENT_LAC_AND_CI:
+		return snprintf(buf, buflen, "%u-%u", u->lac_and_ci.lac, u->lac_and_ci.ci);
+	case CELL_IDENT_LAI_AND_LAC:
+		return snprintf(buf, buflen, "%s", osmo_lai_name(&u->lai_and_lac));
+	case CELL_IDENT_WHOLE_GLOBAL:
+		return snprintf(buf, buflen, "%s", osmo_cgi_name(&u->global));
+	default:
+		/* For CELL_IDENT_BSS and CELL_IDENT_NO_CELL, just print the discriminator.
+		 * Same for kinds we have no string representation of yet. */
+		return snprintf(buf, buflen, "%s", gsm0808_cell_id_discr_name(id_discr));
+	}
+}
+
+/*! value_string[] for enum CELL_IDENT. */
+const struct value_string gsm0808_cell_id_discr_names[] = {
+	{ CELL_IDENT_WHOLE_GLOBAL, "CGI" },
+	{ CELL_IDENT_LAC_AND_CI, "LAC-CI" },
+	{ CELL_IDENT_CI, "CI" },
+	{ CELL_IDENT_NO_CELL, "NO-CELL" },
+	{ CELL_IDENT_LAI_AND_LAC, "LAI" },
+	{ CELL_IDENT_LAC, "LAC" },
+	{ CELL_IDENT_BSS, "BSS" },
+	{ CELL_IDENT_UTRAN_PLMN_LAC_RNC, "UTRAN-PLMN-LAC-RNC" },
+	{ CELL_IDENT_UTRAN_RNC, "UTRAN-RNC" },
+	{ CELL_IDENT_UTRAN_LAC_RNC, "UTRAN-LAC-RNC" },
+	{ 0, NULL }
+};
+
+#define APPEND_THING(func, args...) do { \
+		int remain = buflen - (pos - buf); \
+		int l = func(pos, remain, ##args); \
+		if (l < 0 || l > remain) \
+			pos = buf + buflen; \
+		else \
+			pos += l; \
+		if (l > 0) \
+			total_len += l; \
+	} while(0)
+#define APPEND_STR(fmt, args...) APPEND_THING(snprintf, fmt, ##args)
+#define APPEND_CELL_ID_U(DISCR, U) APPEND_THING(gsm0808_cell_id_u_name, DISCR, U)
+
+static const char *gsm0808_cell_id_name_buf(const struct gsm0808_cell_id *cid,
+					    char *buf, size_t buflen)
+{
+	char *pos = buf;
+	int total_len = 0;
+	APPEND_STR("%s:", gsm0808_cell_id_discr_name(cid->id_discr));
+	APPEND_CELL_ID_U(cid->id_discr, &cid->id);
+	return buf;
+}
+
+/*! Return a human readable representation of a Cell Identifier, like "LAC:123"
+ * or "CGI:001-01-42-23".
+ * \param[in] cid  Cell Identifer.
+ * \returns String in a static buffer.
+ */
+const char *gsm0808_cell_id_name(const struct gsm0808_cell_id *cid)
+{
+	static char buf[64];
+	return gsm0808_cell_id_name_buf(cid, buf, sizeof(buf));
+}
+
+/*! Like gsm0808_cell_id_name() but uses a different static buffer.
+ * \param[in] cid  Cell Identifer.
+ * \returns String in a static buffer.
+ */
+const char *gsm0808_cell_id_name2(const struct gsm0808_cell_id *cid)
+{
+	static char buf[64];
+	return gsm0808_cell_id_name_buf(cid, buf, sizeof(buf));
+}
+
+/*! Return a human readable representation of the Cell Identifier List, like
+ * "LAC[2]:{123, 456}".
+ * The return value semantics are like snprintf() and thus allow ensuring a complete
+ * untruncated string by determining the required string length from the return value.
+ * If buflen > 0, always nul-terminate the string in buf, also when it is truncated.
+ * If buflen == 0, do not modify buf, just return the would-be length.
+ * \param[out] buf  Destination buffer to write string representation to.
+ * \param[in] buflen  Amount of memory available in \a buf.
+ * \param[in] cil  Cell Identifer List.
+ * \returns Like snprintf(): the amount of characters (excluding terminating nul) written,
+ *          or that would have been written if the buffer were large enough.
+ */
+int gsm0808_cell_id_list_name_buf(char *buf, size_t buflen, const struct gsm0808_cell_id_list2 *cil)
+{
+	char *pos = buf;
+	int total_len = 0;
+	int i;
+
+	APPEND_STR("%s[%u]", gsm0808_cell_id_discr_name(cil->id_discr), cil->id_list_len);
+
+	switch (cil->id_discr) {
+	case CELL_IDENT_BSS:
+	case CELL_IDENT_NO_CELL:
+		return total_len;
+	default:
+		break;
+	}
+
+	APPEND_STR(":{");
+
+	for (i = 0; i < cil->id_list_len; i++) {
+		if (i)
+			APPEND_STR(", ");
+		APPEND_CELL_ID_U(cil->id_discr, &cil->id_list[i]);
+	}
+
+	APPEND_STR("}");
+	return total_len;
+}
+
+/*! Return a human-readable representation of \a cil in a static buffer.
+ * If the list is too long, the output may be truncated.
+ * See also gsm0808_cell_id_list_name_buf(). */
+const char *gsm0808_cell_id_list_name(const struct gsm0808_cell_id_list2 *cil)
+{
+	static char buf[1024];
+	gsm0808_cell_id_list_name_buf(buf, sizeof(buf), cil);
+	return buf;
+}
+
+#undef APPEND_STR
+#undef APPEND_CELL_ID_U
+
 /*! @} */
