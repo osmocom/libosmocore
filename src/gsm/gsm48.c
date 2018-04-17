@@ -41,6 +41,7 @@
 #include <osmocom/gsm/gsm0502.h>
 #include <osmocom/gsm/gsm_utils.h>
 #include <osmocom/gsm/protocol/gsm_04_08.h>
+#include <osmocom/gsm/protocol/gsm_04_80.h>
 #include <osmocom/gsm/protocol/gsm_08_58.h>
 #include <osmocom/gsm/protocol/gsm_04_08_gprs.h>
 
@@ -944,6 +945,14 @@ const struct value_string gsm48_cc_msgtype_names[] = {
 	{ 0, NULL }
 };
 
+/*! TS 04.80, section 3.4 Messages for supplementary services control */
+const struct value_string gsm48_nc_ss_msgtype_names[] = {
+	OSMO_VALUE_STRING(GSM0480_MTYPE_RELEASE_COMPLETE),
+	OSMO_VALUE_STRING(GSM0480_MTYPE_FACILITY),
+	OSMO_VALUE_STRING(GSM0480_MTYPE_REGISTER),
+	{ 0, NULL }
+};
+
 /*! Compose a string naming the message type for given protocol.
  * If the message type string is known, return the message type name, otherwise
  * return "<protocol discriminator name>:<message type in hex>".
@@ -965,6 +974,9 @@ const char *gsm48_pdisc_msgtype_name(uint8_t pdisc, uint8_t msg_type)
 		break;
 	case GSM48_PDISC_CC:
 		msgt_names = gsm48_cc_msgtype_names;
+		break;
+	case GSM48_PDISC_NC_SS:
+		msgt_names = gsm48_nc_ss_msgtype_names;
 		break;
 	default:
 		msgt_names = NULL;
