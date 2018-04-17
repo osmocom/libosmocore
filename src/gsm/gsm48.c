@@ -775,7 +775,6 @@ const struct value_string gsm48_pdisc_names[] = {
 	{ GSM48_PDISC_LOC,		"LCS" },
 	{ GSM48_PDISC_EXTEND,		"EXTD" },
 	{ GSM48_PDISC_MASK,		"MASK" },
-	{ GSM48_PDISC_USSD,		"USSD" },
 	{ 0, NULL }
 };
 

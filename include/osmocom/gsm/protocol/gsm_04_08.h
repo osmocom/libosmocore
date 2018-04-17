@@ -977,7 +977,6 @@ struct gsm48_rr_status {
 #define GSM48_PDISC_EXTEND	0x0e
 #define GSM48_PDISC_TEST	0x0f	/* as per 11.10, 04.14 */
 #define GSM48_PDISC_MASK	0x0f
-#define GSM48_PDISC_USSD	0x11
 
 extern const struct value_string gsm48_pdisc_names[];
 static inline const char *gsm48_pdisc_name(uint8_t val)
