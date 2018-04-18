@@ -543,10 +543,13 @@ int osmo_sockaddr_is_local(struct sockaddr *addr, unsigned int addrlen)
 	for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
 		if (!ifa->ifa_addr)
 			continue;
-		if (sockaddr_equal(ifa->ifa_addr, addr, addrlen))
+		if (sockaddr_equal(ifa->ifa_addr, addr, addrlen)) {
+			freeifaddrs(ifaddr);
 			return 1;
+		}
 	}
 
+	freeifaddrs(ifaddr);
 	return 0;
 }
 
