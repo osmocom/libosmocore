@@ -356,7 +356,6 @@ static int ms_to_bts_tx_cb(struct msgb *msg, struct lapdm_entity *le, void *_ctx
 		/* verify the header */
 		memset(&hdr, 0, sizeof(hdr));
 		rsl_init_rll_hdr(&hdr, RSL_MT_EST_CONF);
-		hdr.c.msg_discr |= ABIS_RSL_MDISC_TRANSP;
 		OSMO_ASSERT(memcmp(msg->data, &hdr, sizeof(hdr)) == 0);
 	} else if (state->ms_read == 1) {
 		printf("MS: Verifying incoming MM message: %d\n", msgb_l3len(msg));

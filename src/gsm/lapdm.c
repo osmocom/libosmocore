@@ -349,12 +349,29 @@ static int l2_ph_data_conf(struct msgb *msg, struct lapdm_entity *le)
 	return le->l1_prim_cb(&pp.oph, le->l1_ctx);
 }
 
+/* Is a given msg_type "transparent" as per TS 48.058 Section 8.1 */
+static int rsl_is_transparent(uint8_t msg_type)
+{
+	switch (msg_type) {
+	case RSL_MT_DATA_IND:
+	case RSL_MT_UNIT_DATA_IND:
+		return 1;
+	case RSL_MT_DATA_REQ:
+	case RSL_MT_UNIT_DATA_REQ:
+		return 1;
+	default:
+		return 0;
+	}
+}
+
 /* Create RSLms various RSLms messages */
 static int send_rslms_rll_l3(uint8_t msg_type, struct lapdm_msg_ctx *mctx,
 			     struct msgb *msg)
 {
+	int transparent = rsl_is_transparent(msg_type);
+
 	/* Add the RSL + RLL header */
-	rsl_rll_push_l3(msg, msg_type, mctx->chan_nr, mctx->link_id, 1);
+	rsl_rll_push_l3(msg, msg_type, mctx->chan_nr, mctx->link_id, transparent);
 
 	/* send off the RSLms message to L3 */
 	return rslms_sendmsg(msg, mctx->dl->entity);
@@ -385,8 +402,9 @@ static int send_rslms_rll_l3_ui(struct lapdm_msg_ctx *mctx, struct msgb *msg)
 static int send_rll_simple(uint8_t msg_type, struct lapdm_msg_ctx *mctx)
 {
 	struct msgb *msg;
+	int transparent = rsl_is_transparent(msg_type);
 
-	msg = rsl_rll_simple(msg_type, mctx->chan_nr, mctx->link_id, 1);
+	msg = rsl_rll_simple(msg_type, mctx->chan_nr, mctx->link_id, transparent);
 
 	/* send off the RSLms message to L3 */
 	return rslms_sendmsg(msg, mctx->dl->entity);
@@ -397,7 +415,7 @@ static int rsl_rll_error(uint8_t cause, struct lapdm_msg_ctx *mctx)
 	struct msgb *msg;
 
 	LOGP(DLLAPD, LOGL_NOTICE, "sending MDL-ERROR-IND %d\n", cause);
-	msg = rsl_rll_simple(RSL_MT_ERROR_IND, mctx->chan_nr, mctx->link_id, 1);
+	msg = rsl_rll_simple(RSL_MT_ERROR_IND, mctx->chan_nr, mctx->link_id, 0);
 	msgb_tlv_put(msg, RSL_IE_RLM_CAUSE, 1, &cause);
 	return rslms_sendmsg(msg, mctx->dl->entity);
 }
