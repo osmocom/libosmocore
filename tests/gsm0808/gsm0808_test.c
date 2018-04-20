@@ -569,16 +569,15 @@ static void test_enc_dec_aoip_trasp_addr_v6()
 
 static void test_gsm0808_enc_dec_speech_codec()
 {
-	struct gsm0808_speech_codec enc_sc;
-	struct gsm0808_speech_codec dec_sc;
+	struct gsm0808_speech_codec enc_sc = {
+		.pi = true,
+		.tf = true,
+		.type = GSM0808_SCT_FR2,
+	};
+	struct gsm0808_speech_codec dec_sc = {};
 	struct msgb *msg;
 	uint8_t rc_enc;
 	int rc_dec;
-
-	memset(&enc_sc, 0, sizeof(enc_sc));
-	enc_sc.fi = true;
-	enc_sc.pt = true;
-	enc_sc.type = GSM0808_SCT_FR2;
 
 	msg = msgb_alloc(1024, "output buffer");
 	rc_enc = gsm0808_enc_speech_codec(msg, &enc_sc);
@@ -620,16 +619,16 @@ static void test_gsm0808_enc_dec_speech_codec_with_cfg()
 
 static void test_gsm0808_enc_dec_speech_codec_ext_with_cfg()
 {
-	struct gsm0808_speech_codec enc_sc;
-	struct gsm0808_speech_codec dec_sc;
+	struct gsm0808_speech_codec enc_sc = {
+		.pi = true,
+		.tf = true,
+		.type = GSM0808_SCT_CSD,
+		.cfg = 0xc0,
+	};
+	struct gsm0808_speech_codec dec_sc = {};
 	struct msgb *msg;
 	uint8_t rc_enc;
 	int rc_dec;
-
-	enc_sc.pi = true;
-	enc_sc.tf = true;
-	enc_sc.type = GSM0808_SCT_CSD;
-	enc_sc.cfg = 0xc0;
 
 	msg = msgb_alloc(1024, "output buffer");
 	rc_enc = gsm0808_enc_speech_codec(msg, &enc_sc);
@@ -645,29 +644,34 @@ static void test_gsm0808_enc_dec_speech_codec_ext_with_cfg()
 
 static void test_gsm0808_enc_dec_speech_codec_list()
 {
-	struct gsm0808_speech_codec_list enc_scl;
-	struct gsm0808_speech_codec_list dec_scl;
+	struct gsm0808_speech_codec_list enc_scl = {
+		.codec = {
+			{
+				.pi = true,
+				.tf = true,
+				.type = GSM0808_SCT_FR3,
+				.cfg = 0xcdef,
+			},
+
+			{
+				.fi = true,
+				.pt = true,
+				.type = GSM0808_SCT_FR2,
+			},
+
+			{
+				.fi = true,
+				.tf = true,
+				.type = GSM0808_SCT_CSD,
+				.cfg = 0xc0,
+			},
+		},
+		.len = 3,
+	};
+	struct gsm0808_speech_codec_list dec_scl = {};
 	struct msgb *msg;
 	uint8_t rc_enc;
 	int rc_dec;
-
-	memset(&enc_scl, 0, sizeof(enc_scl));
-
-	enc_scl.codec[0].pi = true;
-	enc_scl.codec[0].tf = true;
-	enc_scl.codec[0].type = GSM0808_SCT_FR3;
-	enc_scl.codec[0].cfg = 0xcdef;
-
-	enc_scl.codec[1].fi = true;
-	enc_scl.codec[1].pt = true;
-	enc_scl.codec[1].type = GSM0808_SCT_FR2;
-
-	enc_scl.codec[2].fi = true;
-	enc_scl.codec[2].tf = true;
-	enc_scl.codec[2].type = GSM0808_SCT_CSD;
-	enc_scl.codec[2].cfg = 0xc0;
-
-	enc_scl.len = 3;
 
 	msg = msgb_alloc(1024, "output buffer");
 	rc_enc = gsm0808_enc_speech_codec_list(msg, &enc_scl);
@@ -683,21 +687,19 @@ static void test_gsm0808_enc_dec_speech_codec_list()
 
 static void test_gsm0808_enc_dec_channel_type()
 {
-	struct gsm0808_channel_type enc_ct;
-	struct gsm0808_channel_type dec_ct;
+	struct gsm0808_channel_type enc_ct = {
+		.ch_indctr = GSM0808_CHAN_SPEECH,
+		.ch_rate_type = GSM0808_SPEECH_HALF_PREF,
+		.perm_spch = { GSM0808_PERM_FR3, GSM0808_PERM_HR3 },
+		.perm_spch_len = 2,
+	};
+	struct gsm0808_channel_type dec_ct = {};
 	struct msgb *msg;
 	uint8_t ct_enc_expected[] = { GSM0808_IE_CHANNEL_TYPE,
 		0x04, 0x01, 0x0b, 0xa1, 0x25
 	};
 	uint8_t rc_enc;
 	int rc_dec;
-
-	memset(&enc_ct, 0, sizeof(enc_ct));
-	enc_ct.ch_indctr = GSM0808_CHAN_SPEECH;
-	enc_ct.ch_rate_type = GSM0808_SPEECH_HALF_PREF;
-	enc_ct.perm_spch[0] = GSM0808_PERM_FR3;
-	enc_ct.perm_spch[1] = GSM0808_PERM_HR3;
-	enc_ct.perm_spch_len = 2;
 
 	msg = msgb_alloc(1024, "output buffer");
 	rc_enc = gsm0808_enc_channel_type(msg, &enc_ct);
@@ -713,8 +715,13 @@ static void test_gsm0808_enc_dec_channel_type()
 
 static void test_gsm0808_enc_dec_encrypt_info()
 {
-	struct gsm0808_encrypt_info enc_ei;
-	struct gsm0808_encrypt_info dec_ei;
+	struct gsm0808_encrypt_info enc_ei = {
+		.perm_algo = { GSM0808_ALG_ID_A5_0, GSM0808_ALG_ID_A5_1 },
+		.perm_algo_len = 2,
+		.key = { 0xaa, 0xbb, 0xcc, 0xdd, 0xee, 0xff, 0x23, 0x42, },
+		.key_len = 8,
+	};
+	struct gsm0808_encrypt_info dec_ei = {};
 	struct msgb *msg;
 	uint8_t ei_enc_expected[] =
 	    { GSM0808_IE_ENCRYPTION_INFORMATION, 0x09, 0x03, 0xaa, 0xbb,
@@ -722,20 +729,6 @@ static void test_gsm0808_enc_dec_encrypt_info()
 	};
 	uint8_t rc_enc;
 	int rc_dec;
-
-	memset(&enc_ei, 0, sizeof(enc_ei));
-	enc_ei.perm_algo[0] = GSM0808_ALG_ID_A5_0;
-	enc_ei.perm_algo[1] = GSM0808_ALG_ID_A5_1;
-	enc_ei.perm_algo_len = 2;
-	enc_ei.key[0] = 0xaa;
-	enc_ei.key[1] = 0xbb;
-	enc_ei.key[2] = 0xcc;
-	enc_ei.key[3] = 0xdd;
-	enc_ei.key[4] = 0xee;
-	enc_ei.key[5] = 0xff;
-	enc_ei.key[6] = 0x23;
-	enc_ei.key[7] = 0x42;
-	enc_ei.key_len = 8;
 
 	msg = msgb_alloc(1024, "output buffer");
 	rc_enc = gsm0808_enc_encrypt_info(msg, &enc_ei);
