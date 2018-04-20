@@ -71,13 +71,23 @@ static void test_create_layer3(void)
 		0x00, 0x0e, 0x57, 0x05, 0x08, 0x00, 0x77, 0x62,
 		0x83, 0x33, 0x66, 0x44, 0x88, 0x17, 0x01, 0x23 };
 	struct msgb *msg, *in_msg;
+	struct osmo_cell_global_id cgi = {
+		.lai = {
+			.plmn = {
+				.mcc = 0x2244,
+				.mnc = 0x1122,
+			},
+			.lac = 0x3366,
+		},
+		.cell_identity = 0x4488,
+	};
 	printf("Testing creating Layer3\n");
 
 	in_msg = msgb_alloc_headroom(512, 128, "foo");
 	in_msg->l3h = in_msg->data;
 	msgb_v_put(in_msg, 0x23);
 
-	msg = gsm0808_create_layer3(in_msg, 0x1122, 0x2244, 0x3366, 0x4488);
+	msg = gsm0808_create_layer3_2(in_msg, &cgi, NULL);
 	VERIFY(msg, res, ARRAY_SIZE(res));
 	msgb_free(msg);
 	msgb_free(in_msg);
