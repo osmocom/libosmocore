@@ -304,6 +304,7 @@ enum abis_rsl_ie {
 
 /* Ericsson specific IEs, clash with above partially, so they're not
  * part of the enum */
+#define RSL_IE_ERIC_PAGING_GROUP	0x0e
 #define RSL_IE_ERIC_INST_NR		0x48
 #define RSL_IE_ERIC_PGSL_TIMERS		0x49
 #define RSL_IE_ERIC_REPEAT_DL_FACCH	0x4a
