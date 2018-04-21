@@ -204,6 +204,11 @@ enum abis_rsl_msgtype_siemens {
 	RSL_MT_SIEMENS_MODIF_COND_IND	= 0x50,
 };
 
+/*! Ericsson vendor-specific RSL message types */
+enum abis_rsl_msgtype_ericsson {
+	RSL_MT_ERICSSON_IMM_ASS_SENT	= 0x10,
+};
+
 /*! RSL Information Element Identifiers (Chapter 9.3) */
 enum abis_rsl_ie {
 	RSL_IE_CHAN_NR			= 0x01,
