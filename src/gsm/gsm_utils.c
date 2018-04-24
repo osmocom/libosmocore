@@ -112,6 +112,25 @@
 #pragma message ("including GnuTLS for getrandom fallback.")
 #include <gnutls/gnutls.h>
 #include <gnutls/crypto.h>
+
+/* gnutls < 3.3.0 requires global init.
+ * gnutls >= 3.3.0 does it automatic.
+ * It doesn't hurt calling it twice,
+ * as long it's not done at the same time (threads).
+ */
+__attribute__((constructor))
+static void on_dso_load_gnutls(void)
+{
+	if (!gnutls_check_version("3.3.0"))
+		gnutls_global_init();
+}
+
+__attribute__((destructor))
+static void on_dso_unload_gnutls(void)
+{
+	if (!gnutls_check_version("3.3.0"))
+		gnutls_global_deinit();
+}
 #endif
 
 /* ETSI GSM 03.38 6.2.1 and 6.2.1.1 default alphabet
