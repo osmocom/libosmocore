@@ -68,6 +68,10 @@ AC_SUBST(LIBRARY_DLSYM)
 AC_CHECK_LIB(execinfo, backtrace, BACKTRACE_LIB=-lexecinfo, BACKTRACE_LIB=)
 AC_SUBST(BACKTRACE_LIB)
 
+# check for old glibc < 2.17 to get clock_gettime
+AC_SEARCH_LIBS([clock_gettime], [rt posix4], [LIBRARY_RT="$LIBS";LIBS=""])
+AC_SUBST(LIBRARY_RT)
+
 AC_ARG_ENABLE(doxygen,
 	[AS_HELP_STRING(
 		[--disable-doxygen],
