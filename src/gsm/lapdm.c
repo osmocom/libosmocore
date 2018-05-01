@@ -48,6 +48,8 @@
 #include <osmocom/gsm/protocol/gsm_04_08.h>
 #include <osmocom/gsm/protocol/gsm_08_58.h>
 
+#define LAPD_U_SABM 0x7
+
 /* TS 04.06 Figure 4 / Section 3.2 */
 #define LAPDm_LPD_NORMAL  0
 #define LAPDm_LPD_SMSCB	  1
@@ -537,6 +539,42 @@ static int update_pending_frames(struct lapd_msg_ctx *lctx)
 	return rc;
 }
 
+/* determine if receiving a given LAPDm message is not permitted */
+static int lapdm_rx_not_permitted(const struct lapdm_entity *le,
+				  const struct lapd_msg_ctx *lctx)
+{
+	/* we currently only implement SABM related checks here */
+	if (lctx->format != LAPD_FORM_U || lctx->s_u != LAPD_U_SABM)
+		return 0;
+
+	if (le->mode == LAPDM_MODE_BTS) {
+		if (le == &le->lapdm_ch->lapdm_acch) {
+			/* no contention resolution on SACCH */
+			if (lctx->length > 0)
+				return RLL_CAUSE_SABM_INFO_NOTALL;
+		} else {
+			switch (lctx->sapi) {
+			case 0:
+				/* SAPI0 must use contention resolution, i.e. L3 payload must exist */
+				if (lctx->length == 0)
+					return RLL_CAUSE_UFRM_INC_PARAM;
+				break;
+			case 3:
+				/* SAPI3 doesn't support contention resolution */
+				if (lctx->length > 0)
+					return RLL_CAUSE_SABM_INFO_NOTALL;
+				break;
+			}
+		}
+	} else if (le->mode == LAPDM_MODE_MS) {
+		/* contention resolution (L3 present) is only sent by MS, but
+		 * never received by it */
+		if (lctx->length > 0)
+			return RLL_CAUSE_SABM_INFO_NOTALL;
+	}
+	return 0;
+}
+
 /* input into layer2 (from layer 1) */
 static int l2_ph_data_ind(struct msgb *msg, struct lapdm_entity *le,
 	uint8_t chan_nr, uint8_t link_id)
@@ -674,6 +712,13 @@ static int l2_ph_data_ind(struct msgb *msg, struct lapdm_entity *le,
 		}
 		/* store context for messages from lapd */
 		memcpy(&mctx.dl->mctx, &mctx, sizeof(mctx.dl->mctx));
+		rc =lapdm_rx_not_permitted(le, &lctx);
+		if (rc > 0) {
+			LOGP(DLLAPD, LOGL_NOTICE, "received message not permitted");
+			msgb_free(msg);
+			rsl_rll_error(rc, &mctx);
+			return -EINVAL;
+		}
 		/* send to LAPD */
 		rc = lapd_ph_data_ind(msg, &lctx);
 		break;
