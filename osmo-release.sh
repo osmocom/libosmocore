@@ -42,6 +42,7 @@ else
 		fi
 	fi
 	xargs -a TODO-RELEASE.entries -r -d'\n' -I entry dch -m -v $NEW_VER "entry"
+	rm TODO-RELEASE.entries
 fi
 dch -r -m --distribution "unstable" ""
 git add -u
