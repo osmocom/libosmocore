@@ -32,6 +32,11 @@ else
 	echo "You should NOT be doing this unless you've read and understood following article:"
 	echo "https://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html#Updating-version-info"
 	grep -v '#' TODO-RELEASE | sed 's/\t\+/: /g' > TODO-RELEASE.entries
+	if [ "$(wc -l <TODO-RELEASE.entries 2>/dev/null)" -eq "0" ]; then
+		rm TODO-RELEASE.entries
+		echo "TODO-RELEASE must contain at least one line with change descriptions"
+		exit 1
+	fi
 	grep '#' TODO-RELEASE > TODO-RELEASE.clean
 	mv TODO-RELEASE.clean TODO-RELEASE
 	if [ "z$MAKEMOD" = "z" ]; then
