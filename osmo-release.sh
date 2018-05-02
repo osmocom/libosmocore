@@ -40,11 +40,8 @@ else
 	grep '#' TODO-RELEASE > TODO-RELEASE.clean
 	mv TODO-RELEASE.clean TODO-RELEASE
 	if [ "z$MAKEMOD" = "z" ]; then
-		git status -s -uno TODO-RELEASE
-		if [ $? -ne 0 ]; then
-			echo "Before releasing, please modify some of the libversions: $LIBVERS"
-			exit 1
-		fi
+		echo "Before releasing, please modify some of the libversions: $LIBVERS"
+		exit 1
 	fi
 	xargs -a TODO-RELEASE.entries -r -d'\n' -I entry dch -m -v $NEW_VER "entry"
 	rm TODO-RELEASE.entries
