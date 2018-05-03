@@ -52,6 +52,7 @@
 #define OSMO_GSUP_MAX_NUM_AUTH_INFO		5
 /*! Maximum number of octets encoding MSISDN in BCD format */
 #define OSMO_GSUP_MAX_MSISDN_LEN		9
+#define OSMO_GSUP_MAX_CALLED_PARTY_BCD_LEN	43 /* TS 24.008 10.5.4.7 */
 
 #define OSMO_GSUP_PDP_TYPE_SIZE			2
 
