@@ -27,7 +27,7 @@ Architecture: any
 Multi-Arch: foreign
 Depends: libosmocodec0 (= ${binary:Version}),
          libosmocoding0 (= ${binary:Version}),
-         libosmocore9 (= ${binary:Version}),
+         libosmocore10 (= ${binary:Version}),
          libosmogb6 (= ${binary:Version}),
          libosmogsm9 (= ${binary:Version}),
          libosmovty4 (= ${binary:Version}),
@@ -110,7 +110,7 @@ Description: Documentation for the osmo coding library
  .
  This package contains the documentation for the libosmocoding library.
 
-Package: libosmocore9
+Package: libosmocore10
 Section: libs
 Architecture: any
 Multi-Arch: same
@@ -124,14 +124,14 @@ Description: Osmo Core library
  (at least) other programs that are developed in the sphere of Free Software /
  Open Source mobile communication.
  .
- The libosmocore9 library in particular is a collection of common code used in
+ The libosmocore10 library in particular is a collection of common code used in
  various sub-projects inside the Osmocom family of projects.
 
 Package: libosmocore-doc
 Architecture: all
 Section: doc
 Depends: ${misc:Depends},
-         libosmocore9,
+         libosmocore10,
          libjs-jquery,
          libosmocodec-doc,
          libosmocoding-doc,
