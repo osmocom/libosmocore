@@ -43,5 +43,6 @@ gbp dch --debian-tag='%(version)s' --auto --meta --git-author --multimaint-merge
 dch -r -m --distribution "unstable" ""
 git add debian/changelog
 bumpversion --current-version $VERSION $REL --tag --commit --tag-name $NEW_VER --allow-dirty
+git commit --amend # let the user add extra information to the release commit.
 git tag -s $NEW_VER -f -m "Release v$NEW_VER on $ISODATE."
 echo "Release $NEW_VER prepared, tagged and signed."
