@@ -31,7 +31,7 @@ Depends: libosmocodec0 (= ${binary:Version}),
          libosmogb6 (= ${binary:Version}),
          libosmogsm9 (= ${binary:Version}),
          libosmovty4 (= ${binary:Version}),
-         libosmoctrl1 (= ${binary:Version}),
+         libosmoctrl0 (= ${binary:Version}),
          libosmosim0 (= ${binary:Version}),
          ${misc:Depends}
 Description: Open Source MObile COMmunications CORE library (metapackage)
@@ -245,7 +245,7 @@ Description: Documentation for the Osmo VTY library
  .
  This package contains the documentation for the libosmovty library.
 
-Package: libosmoctrl1
+Package: libosmoctrl0
 Section: libs
 Architecture: any
 Multi-Arch: same
@@ -259,7 +259,7 @@ Description: Osmo control library
  (at least) other programs that are developed in the sphere of Free Software /
  Open Source mobile communication.
  .
- The libosmoctrl1 library in particular contains an SNMP-like status interface.
+ The libosmoctrl library in particular contains an SNMP-like status interface.
 
 Package: libosmosim0
 Section: libs
