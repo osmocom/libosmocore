@@ -3,20 +3,20 @@ libosmocore (0.10.2) unstable; urgency=medium
   * Revert "vty: Fix bad use of vector_slot()"
   * New upstream release of libosmocore
 
- -- Harald Welte <lafore@gnumonks.org>  Thu, 02 Nov 2017 18:51:02 +0100
+ -- Harald Welte <laforge@gnumonks.org>  Thu, 02 Nov 2017 18:51:02 +0100
 
 libosmocore (0.10.1) unstable; urgency=medium
 
   * New upstream release of libosmocore
 
- -- Harald Welte <lafore@gnumonks.org>  Sun, 29 Oct 2017 10:46:47 +0100
+ -- Harald Welte <laforge@gnumonks.org>  Sun, 29 Oct 2017 10:46:47 +0100
 
 libosmocore (0.10.0+nmu1) UNRELEASED; urgency=medium
 
   * Non-maintainer upload.
   * New upstream release of libosmocore
 
- -- Harald Welte <lafore@gnumonks.org>  Fri, 27 Oct 2017 19:45:00 +0200
+ -- Harald Welte <laforge@gnumonks.org>  Fri, 27 Oct 2017 19:45:00 +0200
 
 libosmocore (0.9.6) unstable; urgency=medium
 
@@ -148,7 +148,7 @@ libosmocore (0.5.3+git1-6) unstable; urgency=low
 
 libosmocore (0.5.3+git1-2) unstable; urgency=low
 
-  * New upstream version 
+  * New upstream version
 
  -- Holger Hans Peter Freyther <holger@freyther.de>  Mon, 05 Nov 2012 21:35:57 +0100
 
