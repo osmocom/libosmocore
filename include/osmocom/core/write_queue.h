@@ -42,11 +42,11 @@ struct osmo_wqueue {
 	/*! actual linked list implementing the queue */
 	struct llist_head msg_queue;
 
-	/*! call-back in case qeueue is readable */
+	/*! call-back in case qeueue is readable. Return -EBADF if fd is freed inside cb. */
 	int (*read_cb)(struct osmo_fd *fd);
-	/*! call-back in case qeueue is writable */
+	/*! call-back in case qeueue is writable. Return -EBADF if fd is freed inside cb. */
 	int (*write_cb)(struct osmo_fd *fd, struct msgb *msg);
-	/*! call-back in case qeueue has exceptions */
+	/*! call-back in case qeueue has exceptions. Return -EBADF if fd is freed inside cb. */
 	int (*except_cb)(struct osmo_fd *fd);
 };
 

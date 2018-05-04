@@ -327,7 +327,7 @@ err:
 
 static int handle_control_read(struct osmo_fd * bfd)
 {
-	int ret = -1;
+	int ret;
 	struct osmo_wqueue *queue;
 	struct ctrl_connection *ccon;
 	struct msgb *msg = NULL;
@@ -337,27 +337,28 @@ static int handle_control_read(struct osmo_fd * bfd)
 	ccon = container_of(queue, struct ctrl_connection, write_queue);
 
 	ret = ipa_msg_recv_buffered(bfd->fd, &msg, &ccon->pending_msg);
-	if (ret <= 0) {
-		if (ret == -EAGAIN)
-			/* received part of a message, it is stored in ccon->pending_msg and there's
-			 * nothing left to do now. */
-			return 0;
+	if (ret == 0) {
 		/* msg was already discarded. */
-		if (ret == 0) {
-			control_close_conn(ccon);
-			ret = -EIO;
-		}
-		else
-			LOGP(DLCTRL, LOGL_ERROR, "Failed to parse ip access message: %d\n", ret);
-
-		return ret;
+		goto close_fd;
+	} else if (ret == -EAGAIN) {
+		/* received part of a message, it is stored in ccon->pending_msg and there's
+		 * nothing left to do now. */
+		return 0;
+	} else if (ret < 0) {
+		LOGP(DLCTRL, LOGL_ERROR, "Failed to parse ip access message: %d\n", ret);
+		return 0;
 	}
 
 	ret = ctrl_handle_msg(ctrl, ccon, msg);
 	msgb_free(msg);
 	if (ret)
-		control_close_conn(ccon);
-	return ret;
+		goto close_fd;
+
+	return 0;
+
+close_fd:
+	control_close_conn(ccon);
+	return -EBADF;
 }
 
 int ctrl_handle_msg(struct ctrl_handle *ctrl, struct ctrl_connection *ccon, struct msgb *msg)
@@ -435,12 +436,14 @@ static int control_write_cb(struct osmo_fd *bfd, struct msgb *msg)
 	ccon = container_of(queue, struct ctrl_connection, write_queue);
 
 	rc = write(bfd->fd, msg->data, msg->len);
-	if (rc == 0)
+	if (rc == 0) {
 		control_close_conn(ccon);
-	else if (rc != msg->len)
+		return -EBADF;
+	}
+	if (rc != msg->len)
 		LOGP(DLCTRL, LOGL_ERROR, "Failed to write message to the CTRL connection.\n");
 
-	return rc;
+	return 0;
 }
 
 /*! Allocate CTRL connection
