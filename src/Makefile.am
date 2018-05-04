@@ -49,7 +49,7 @@ libosmocore_la_LDFLAGS = -version-info $(LIBVERSION) -no-undefined
 
 if ENABLE_PLUGIN
 libosmocore_la_SOURCES += plugin.c
-libosmocore_la_LIBADD += $(LIBRARY_DL)
+libosmocore_la_LIBADD += $(LIBRARY_DLOPEN)
 endif
 
 if ENABLE_MSGFILE

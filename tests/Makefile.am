@@ -132,17 +132,17 @@ gb_bssgp_fc_test_LDADD = $(LDADD) $(top_builddir)/src/gb/libosmogb.la \
 			 $(top_builddir)/src/gsm/libosmogsm.la
 
 gb_gprs_bssgp_test_SOURCES = gb/gprs_bssgp_test.c
-gb_gprs_bssgp_test_LDADD = $(LDADD) $(top_builddir)/src/gb/libosmogb.la $(LIBRARY_DL) \
+gb_gprs_bssgp_test_LDADD = $(LDADD) $(top_builddir)/src/gb/libosmogb.la $(LIBRARY_DLSYM) \
 			   $(top_builddir)/src/gsm/libosmogsm.la
 
 gb_gprs_ns_test_SOURCES = gb/gprs_ns_test.c
-gb_gprs_ns_test_LDADD = $(LDADD) $(top_builddir)/src/gb/libosmogb.la $(LIBRARY_DL) \
+gb_gprs_ns_test_LDADD = $(LDADD) $(top_builddir)/src/gb/libosmogb.la $(LIBRARY_DLSYM) \
 			$(top_builddir)/src/gsm/libosmogsm.la
 
 logging_logging_test_SOURCES = logging/logging_test.c
 
 fr_fr_test_SOURCES = fr/fr_test.c
-fr_fr_test_LDADD = $(LDADD) $(top_builddir)/src/gb/libosmogb.la $(LIBRARY_DL) \
+fr_fr_test_LDADD = $(LDADD) $(top_builddir)/src/gb/libosmogb.la $(LIBRARY_DLSYM) \
 		   $(top_builddir)/src/gsm/libosmogsm.la
 
 codec_codec_test_SOURCES = codec/codec_test.c

@@ -58,8 +58,10 @@ AC_HEADER_STDC
 AC_CHECK_HEADERS(execinfo.h sys/select.h sys/socket.h syslog.h ctype.h netinet/tcp.h)
 # for src/conv.c
 AC_FUNC_ALLOCA
-AC_SEARCH_LIBS([dlopen], [dl dld], [LIBRARY_DL="$LIBS";LIBS=""])
-AC_SUBST(LIBRARY_DL)
+AC_SEARCH_LIBS([dlopen], [dl dld], [LIBRARY_DLOPEN="$LIBS";LIBS=""])
+AC_SUBST(LIBRARY_DLOPEN)
+AC_SEARCH_LIBS([dlsym], [dl dld], [LIBRARY_DLSYM="$LIBS";LIBS=""])
+AC_SUBST(LIBRARY_DLSYM)
 # for src/backtrace.c
 AC_CHECK_LIB(execinfo, backtrace, BACKTRACE_LIB=-lexecinfo, BACKTRACE_LIB=)
 AC_SUBST(BACKTRACE_LIB)
