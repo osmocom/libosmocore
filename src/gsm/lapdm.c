@@ -169,8 +169,10 @@ void lapdm_entity_init(struct lapdm_entity *le, enum lapdm_mode mode, int t200)
 void lapdm_channel_init(struct lapdm_channel *lc, enum lapdm_mode mode)
 {
 	lapdm_entity_init(&lc->lapdm_acch, mode, 2);
+	lc->lapdm_acch.lapdm_ch = lc;
 	/* FIXME: this depends on chan type */
 	lapdm_entity_init(&lc->lapdm_dcch, mode, 1);
+	lc->lapdm_dcch.lapdm_ch = lc;
 }
 
 /*! flush and release all resoures in LAPDm entity */
