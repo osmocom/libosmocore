@@ -389,9 +389,11 @@ static int send_rslms_rll_l3_ui(struct lapdm_msg_ctx *mctx, struct msgb *msg)
 	/* Add the RSL + RLL header */
 	msgb_tv16_push(msg, RSL_IE_L3_INFO, l3_len);
 
-	/* Add two IEs carrying MS power and TA values */
-	msgb_tv_push(msg, RSL_IE_MS_POWER, mctx->tx_power_ind);
-	msgb_tv_push(msg, RSL_IE_TIMING_ADVANCE, mctx->ta_ind);
+	/* Add two non-standard IEs carrying MS power and TA values for B4 (SACCH) */
+	if (mctx->lapdm_fmt == LAPDm_FMT_B4) {
+		msgb_tv_push(msg, RSL_IE_MS_POWER, mctx->tx_power_ind);
+		msgb_tv_push(msg, RSL_IE_TIMING_ADVANCE, mctx->ta_ind);
+	}
 
 	rsl_rll_push_hdr(msg, RSL_MT_UNIT_DATA_IND, mctx->chan_nr,
 		mctx->link_id, 1);
