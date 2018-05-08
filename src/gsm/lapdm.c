@@ -385,20 +385,16 @@ static int send_rslms_rll_l3(uint8_t msg_type, struct lapdm_msg_ctx *mctx,
 static int send_rslms_rll_l3_ui(struct lapdm_msg_ctx *mctx, struct msgb *msg)
 {
 	uint8_t l3_len = msg->tail - (uint8_t *)msgb_l3(msg);
-	struct abis_rsl_rll_hdr *rllh;
 
 	/* Add the RSL + RLL header */
 	msgb_tv16_push(msg, RSL_IE_L3_INFO, l3_len);
-	msgb_push(msg, 2 + 2);
+
+	/* Add two IEs carrying MS power and TA values */
+	msgb_tv_push(msg, RSL_IE_MS_POWER, mctx->tx_power_ind);
+	msgb_tv_push(msg, RSL_IE_TIMING_ADVANCE, mctx->ta_ind);
+
 	rsl_rll_push_hdr(msg, RSL_MT_UNIT_DATA_IND, mctx->chan_nr,
 		mctx->link_id, 1);
-	rllh = (struct abis_rsl_rll_hdr *)msgb_l2(msg);
-
-	rllh->data[0] = RSL_IE_TIMING_ADVANCE;
-	rllh->data[1] = mctx->ta_ind;
-
-	rllh->data[2] = RSL_IE_MS_POWER;
-	rllh->data[3] = mctx->tx_power_ind;
 
 	return rslms_sendmsg(msg, mctx->dl->entity);
 }
