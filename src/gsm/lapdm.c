@@ -552,15 +552,12 @@ static int lapdm_rx_not_permitted(const struct lapdm_entity *le,
 				return RLL_CAUSE_SABM_INFO_NOTALL;
 		} else {
 			switch (lctx->sapi) {
-			case 0:
-				/* SAPI0 must use contention resolution, i.e. L3 payload must exist */
-				if (lctx->length == 0)
-					return RLL_CAUSE_UFRM_INC_PARAM;
-				break;
 			case 3:
 				/* SAPI3 doesn't support contention resolution */
 				if (lctx->length > 0)
 					return RLL_CAUSE_SABM_INFO_NOTALL;
+				break;
+			default:
 				break;
 			}
 		}
