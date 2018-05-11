@@ -7,6 +7,8 @@
  *	2001	Frode Isaksen		<fisaksen@bewan.com>
  *      2001	Kai Germaschewski	<kai.germaschewski@gmx.de>
  *
+ * slightly adapted for use in userspace / osmocom envrionment by Harald Welte
+ *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation; either version 2 of the License, or
@@ -22,21 +24,11 @@
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <linux/module.h>
-#include <linux/init.h>
-#include <linux/crc-ccitt.h>
-#include <linux/isdn/hdlc.h>
-#include <linux/bitrev.h>
+#include <string.h>
 
-/*-------------------------------------------------------------------*/
-
-MODULE_AUTHOR("Wolfgang Mües <wolfgang@iksw-muees.de>, "
-	      "Frode Isaksen <fisaksen@bewan.com>, "
-	      "Kai Germaschewski <kai.germaschewski@gmx.de>");
-MODULE_DESCRIPTION("General purpose ISDN HDLC decoder");
-MODULE_LICENSE("GPL");
-
-/*-------------------------------------------------------------------*/
+#include <osmocom/core/crc16.h>
+#include <osmocom/core/bits.h>
+#include <osmocom/core/isdnhdlc.h>
 
 enum {
 	HDLC_FAST_IDLE, HDLC_GET_FLAG_B0, HDLC_GETFLAG_B1A6, HDLC_GETFLAG_B7,
@@ -50,21 +42,22 @@ enum {
 	HDLC_SENDFLAG_B1A6, HDLC_SENDFLAG_B7, STOPPED, HDLC_SENDFLAG_ONE
 };
 
-void isdnhdlc_rcv_init(struct isdnhdlc_vars *hdlc, u32 features)
+#define crc_ccitt_byte osmo_crc16_ccitt_byte
+
+void osmo_isdnhdlc_rcv_init(struct osmo_isdnhdlc_vars *hdlc, uint32_t features)
 {
-	memset(hdlc, 0, sizeof(struct isdnhdlc_vars));
+	memset(hdlc, 0, sizeof(*hdlc));
 	hdlc->state = HDLC_GET_DATA;
-	if (features & HDLC_56KBIT)
+	if (features & OSMO_HDLC_F_56KBIT)
 		hdlc->do_adapt56 = 1;
-	if (features & HDLC_BITREVERSE)
+	if (features & OSMO_HDLC_F_BITREVERSE)
 		hdlc->do_bitreverse = 1;
 }
-EXPORT_SYMBOL(isdnhdlc_out_init);
 
-void isdnhdlc_out_init(struct isdnhdlc_vars *hdlc, u32 features)
+void osmo_isdnhdlc_out_init(struct osmo_isdnhdlc_vars *hdlc, uint32_t features)
 {
-	memset(hdlc, 0, sizeof(struct isdnhdlc_vars));
-	if (features & HDLC_DCHANNEL) {
+	memset(hdlc, 0, sizeof(*hdlc));
+	if (features & OSMO_HDLC_F_DCHANNEL) {
 		hdlc->dchannel = 1;
 		hdlc->state = HDLC_SEND_FIRST_FLAG;
 	} else {
@@ -73,25 +66,24 @@ void isdnhdlc_out_init(struct isdnhdlc_vars *hdlc, u32 features)
 		hdlc->ffvalue = 0x7e;
 	}
 	hdlc->cbin = 0x7e;
-	if (features & HDLC_56KBIT) {
+	if (features & OSMO_HDLC_F_56KBIT) {
 		hdlc->do_adapt56 = 1;
 		hdlc->state = HDLC_SENDFLAG_B0;
 	} else
 		hdlc->data_bits = 8;
-	if (features & HDLC_BITREVERSE)
+	if (features & OSMO_HDLC_F_BITREVERSE)
 		hdlc->do_bitreverse = 1;
 }
-EXPORT_SYMBOL(isdnhdlc_rcv_init);
 
 static int
-check_frame(struct isdnhdlc_vars *hdlc)
+check_frame(struct osmo_isdnhdlc_vars *hdlc)
 {
 	int status;
 
 	if (hdlc->dstpos < 2)	/* too small - framing error */
-		status = -HDLC_FRAMING_ERROR;
+		status = -OSMO_HDLC_FRAMING_ERROR;
 	else if (hdlc->crc != 0xf0b8)	/* crc error */
-		status = -HDLC_CRC_ERROR;
+		status = -OSMO_HDLC_CRC_ERROR;
 	else {
 		/* remove CRC */
 		hdlc->dstpos -= 2;
@@ -101,8 +93,7 @@ check_frame(struct isdnhdlc_vars *hdlc)
 	return status;
 }
 
-/*
-  isdnhdlc_decode - decodes HDLC frames from a transparent bit stream.
+/*! decodes HDLC frames from a transparent bit stream.
 
   The source buffer is scanned for valid HDLC frames looking for
   flags (01111110) to indicate the start of a frame. If the start of
@@ -114,22 +105,21 @@ check_frame(struct isdnhdlc_vars *hdlc)
   If the beginning of a valid frame is found, the function returns
   the length.
   If a framing error is found (too many 1s and not a flag) the function
-  returns the length with the bit HDLC_FRAMING_ERROR set.
+  returns the length with the bit OSMO_HDLC_FRAMING_ERROR set.
   If a CRC error is found the function returns the length with the
-  bit HDLC_CRC_ERROR set.
+  bit OSMO_HDLC_CRC_ERROR set.
   If the frame length exceeds the destination buffer size, the function
-  returns the length with the bit HDLC_LENGTH_ERROR set.
+  returns the length with the bit OSMO_HDLC_LENGTH_ERROR set.
 
-  src - source buffer
-  slen - source buffer length
-  count - number of bytes removed (decoded) from the source buffer
-  dst _ destination buffer
-  dsize - destination buffer size
-  returns - number of decoded bytes in the destination buffer and status
-  flag.
+  \param[in] src source buffer
+  \param[in] slen source buffer length
+  \param[out] count number of bytes removed (decoded) from the source buffer
+  \param[out] dst destination buffer
+  \param[in] dsize destination buffer size
+  \returns number of decoded bytes in the destination buffer and status flag.
 */
-int isdnhdlc_decode(struct isdnhdlc_vars *hdlc, const u8 *src, int slen,
-		    int *count, u8 *dst, int dsize)
+int osmo_isdnhdlc_decode(struct osmo_isdnhdlc_vars *hdlc, const uint8_t *src, int slen,
+			 int *count, uint8_t *dst, int dsize)
 {
 	int status = 0;
 
@@ -175,7 +165,7 @@ int isdnhdlc_decode(struct isdnhdlc_vars *hdlc, const u8 *src, int slen,
 		if (hdlc->bit_shift == 0) {
 			/* the code is for bitreverse streams */
 			if (hdlc->do_bitreverse == 0)
-				hdlc->cbin = bitrev8(*src++);
+				hdlc->cbin = osmo_revbytebits_8(*src++);
 			else
 				hdlc->cbin = *src++;
 			slen--;
@@ -242,7 +232,7 @@ int isdnhdlc_decode(struct isdnhdlc_vars *hdlc, const u8 *src, int slen,
 				case 7:
 					if (hdlc->data_received)
 						/* bad frame */
-						status = -HDLC_FRAMING_ERROR;
+						status = -OSMO_HDLC_FRAMING_ERROR;
 					if (!hdlc->do_adapt56) {
 						if (hdlc->cbin == fast_abort
 						    [hdlc->bit_shift + 1]) {
@@ -302,7 +292,7 @@ int isdnhdlc_decode(struct isdnhdlc_vars *hdlc, const u8 *src, int slen,
 					dst[hdlc->dstpos++] = hdlc->shift_reg;
 				else {
 					/* frame too long */
-					status = -HDLC_LENGTH_ERROR;
+					status = -OSMO_HDLC_LENGTH_ERROR;
 					hdlc->dstpos = 0;
 				}
 			}
@@ -331,9 +321,7 @@ int isdnhdlc_decode(struct isdnhdlc_vars *hdlc, const u8 *src, int slen,
 	*count -= slen;
 	return 0;
 }
-EXPORT_SYMBOL(isdnhdlc_decode);
-/*
-  isdnhdlc_encode - encodes HDLC frames to a transparent bit stream.
+/*! encodes HDLC frames to a transparent bit stream.
 
   The bit stream starts with a beginning flag (01111110). After
   that each byte is added to the bit stream with bit stuffing added
@@ -344,15 +332,15 @@ EXPORT_SYMBOL(isdnhdlc_decode);
   If this function is called with empty source buffer (slen=0), flags or
   idle character will be generated.
 
-  src - source buffer
-  slen - source buffer length
-  count - number of bytes removed (encoded) from source buffer
-  dst _ destination buffer
-  dsize - destination buffer size
-  returns - number of encoded bytes in the destination buffer
+  \param[in] src source buffer
+  \param[in] slen source buffer length
+  \param[out] count number of bytes removed (encoded) from source buffer
+  \param[out] dst destination buffer
+  \param[in] dsize destination buffer size
+  \returns - number of encoded bytes in the destination buffer
 */
-int isdnhdlc_encode(struct isdnhdlc_vars *hdlc, const u8 *src, u16 slen,
-		    int *count, u8 *dst, int dsize)
+int osmo_isdnhdlc_encode(struct osmo_isdnhdlc_vars *hdlc, const uint8_t *src, uint16_t slen,
+			 int *count, uint8_t *dst, int dsize)
 {
 	static const unsigned char xfast_flag_value[] = {
 		0x7e, 0x3f, 0x9f, 0xcf, 0xe7, 0xf3, 0xf9, 0xfc, 0x7e
@@ -403,7 +391,7 @@ int isdnhdlc_encode(struct isdnhdlc_vars *hdlc, const u8 *src, u16 slen,
 			if (slen == 0) {
 				/* the code is for bitreverse streams */
 				if (hdlc->do_bitreverse == 0)
-					*dst++ = bitrev8(hdlc->ffvalue);
+					*dst++ = osmo_revbytebits_8(hdlc->ffvalue);
 				else
 					*dst++ = hdlc->ffvalue;
 				len++;
@@ -593,7 +581,7 @@ int isdnhdlc_encode(struct isdnhdlc_vars *hdlc, const u8 *src, u16 slen,
 			} else {
 				/* the code is for bitreverse streams */
 				if (hdlc->do_bitreverse == 0)
-					*dst++ = bitrev8(hdlc->cbin);
+					*dst++ = osmo_revbytebits_8(hdlc->cbin);
 				else
 					*dst++ = hdlc->cbin;
 				hdlc->bit_shift = 0;
@@ -615,7 +603,7 @@ int isdnhdlc_encode(struct isdnhdlc_vars *hdlc, const u8 *src, u16 slen,
 		if (hdlc->data_bits == 8) {
 			/* the code is for bitreverse streams */
 			if (hdlc->do_bitreverse == 0)
-				*dst++ = bitrev8(hdlc->cbin);
+				*dst++ = osmo_revbytebits_8(hdlc->cbin);
 			else
 				*dst++ = hdlc->cbin;
 			hdlc->data_bits = 0;
@@ -627,4 +615,3 @@ int isdnhdlc_encode(struct isdnhdlc_vars *hdlc, const u8 *src, u16 slen,
 
 	return len;
 }
-EXPORT_SYMBOL(isdnhdlc_encode);

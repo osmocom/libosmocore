@@ -22,7 +22,8 @@ libosmocore_la_SOURCES = timer.c timer_gettimeofday.c timer_clockgettime.c \
 			 conv.c application.c rbtree.c strrb.c \
 			 loggingrb.c crc8gen.c crc16gen.c crc32gen.c crc64gen.c \
 			 macaddr.c stat_item.c stats.c stats_statsd.c prim.c \
-			 conv_acc.c conv_acc_generic.c sercomm.c prbs.c
+			 conv_acc.c conv_acc_generic.c sercomm.c prbs.c \
+			 isdnhdlc.c
 
 if HAVE_SSSE3
 libosmocore_la_SOURCES += conv_acc_sse.c

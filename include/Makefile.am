@@ -26,6 +26,7 @@ nobase_include_HEADERS = \
                        osmocom/core/fsm.h \
                        osmocom/core/gsmtap.h \
                        osmocom/core/gsmtap_util.h \
+                       osmocom/core/isdnhdlc.h \
                        osmocom/core/linuxlist.h \
                        osmocom/core/linuxrbtree.h \
                        osmocom/core/logging.h \
