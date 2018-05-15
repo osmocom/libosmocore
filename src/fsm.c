@@ -541,7 +541,9 @@ int _osmo_fsm_inst_dispatch(struct osmo_fsm_inst *fi, uint32_t event, void *data
 			    osmo_fsm_event_name(fsm, event));
 		return -1;
 	}
-	fs->action(fi, event, data);
+
+	if (fs->action)
+		fs->action(fi, event, data);
 
 	return 0;
 }
