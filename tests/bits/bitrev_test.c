@@ -299,10 +299,11 @@ int main(int argc, char **argv)
 	for (offs = 0; offs < 13; offs++) {
 		sh_chk(in1, ARRAY_SIZE(in1), offs, true);
 		sh_chk(in1, ARRAY_SIZE(in1), offs, false);
-		sh_chk(in2, ARRAY_SIZE(in2), offs, true);
 		/* in2 is too short to shift left 12 nibbles */
-		if (offs < 12)
+		if (offs < 12) {
+			sh_chk(in2, ARRAY_SIZE(in2), offs, true);
 			sh_chk(in2, ARRAY_SIZE(in2), offs, false);
+		}
 	}
 	return 0;
 }
