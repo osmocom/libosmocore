@@ -48,7 +48,9 @@ static inline bool print_a5(int n, int k, const char * dir, const ubit_t * out, 
 	osmo_hexparse(block, res, len);
 	osmo_ubit2pbit(buf, out, 114);
 	if (0 != memcmp(buf, res, len)) {
-		printf("FAIL\nGOT: [%d] %s\nEXP: [%d] %s\n", k, osmo_hexdump_nospc(buf, len), k, osmo_hexdump_nospc(res, len));
+		printf("FAIL:\n");
+		printf("GOT: [%d] %s\n", k, osmo_hexdump_nospc(buf, len));
+		printf("EXP: [%d] %s\n", k, osmo_hexdump_nospc(res, len));
 		return false;
 	}
 	printf("OK\n");
