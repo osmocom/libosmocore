@@ -23,9 +23,9 @@ static inline void print_check(char *res, uint8_t *out, uint16_t len)
 static inline void test_gea(bool v4, char *kc, uint32_t iv, int dir,
 			    uint16_t len, char *res)
 {
-    uint8_t out[len], ck[256];
+    uint8_t out[len], ck[16];
     printf("len %d, dir %d, INPUT 0x%X -> ", len, dir, iv);
-    osmo_hexparse(kc, ck, len);
+    osmo_hexparse(kc, ck, sizeof(ck));
     int t = gprs_cipher_run(out, len, v4 ? GPRS_ALGO_GEA4 : GPRS_ALGO_GEA3, ck,
 			    iv, dir);
     printf("%s ", t < 0 ? strerror(-t) : "OK");
