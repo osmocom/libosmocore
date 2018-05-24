@@ -527,6 +527,22 @@ DEFUN(show_stats_asciidoc_table,
 	return CMD_SUCCESS;
 }
 
+static int rate_ctr_group_handler(struct rate_ctr_group *ctrg, void *sctx_)
+{
+	struct vty *vty = sctx_;
+	vty_out_rate_ctr_group_fmt(vty, "%25n: %10c (%S/s %M/m %H/h %D/d) %d", ctrg);
+	return 0;
+}
+
+DEFUN(show_rate_counters,
+      show_rate_counters_cmd,
+      "show rate-counters",
+      SHOW_STR "Show all rate counters\n")
+{
+	rate_ctr_for_each_group(rate_ctr_group_handler, vty);
+	return CMD_SUCCESS;
+}
+
 static int config_write_stats_reporter(struct vty *vty, struct osmo_stats_reporter *srep)
 {
 	if (srep == NULL)
@@ -620,4 +636,5 @@ void osmo_stats_vty_add_cmds()
 	install_element(CFG_STATS_NODE, &cfg_stats_reporter_disable_cmd);
 
 	install_element_ve(&show_stats_asciidoc_table_cmd);
+	install_element_ve(&show_rate_counters_cmd);
 }
