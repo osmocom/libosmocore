@@ -84,6 +84,142 @@ void vty_out_rate_ctr_group(struct vty *vty, const char *prefix,
 	rate_ctr_for_each_counter(ctrg, rate_ctr_handler, &vctx);
 }
 
+static char *
+pad_append_str(char *s, const char *a, int minwidth)
+{
+	s = talloc_asprintf_append(s, "%*s", minwidth, a);
+	OSMO_ASSERT(s);
+	return s;
+}
+
+static char *
+pad_append_ctr(char *s, uint64_t ctr, int minwidth, void *ctx)
+{
+	s = talloc_asprintf_append(s, "%*" PRIu64, minwidth, ctr);
+	OSMO_ASSERT(s);
+	return s;
+}
+
+static int rate_ctr_handler_fmt(
+	struct rate_ctr_group *ctrg, struct rate_ctr *ctr,
+	const struct rate_ctr_desc *desc, void *vctx_)
+{
+	struct vty_out_context *vctx = vctx_;
+	struct vty *vty = vctx->vty;
+	const char *fmt = vctx->prefix;
+	char *s = talloc_strdup(vty, "");
+	OSMO_ASSERT(s);
+
+	while (*fmt) {
+		int ch, minwidth = 0, sign = 1;
+		char *p = strchr(fmt, '%');
+
+		if (p == NULL) {
+			/* No further % directives in format string. Copy rest verbatim and exit. */
+			s = talloc_strdup_append_buffer(s, fmt);
+			OSMO_ASSERT(s);
+			break;
+		} else {
+			ptrdiff_t len;
+
+			OSMO_ASSERT(p >= fmt);
+			len = p - fmt;
+			if (len) {
+				/* Copy bytes verbatim until next '%' byte. */
+				s = talloc_strndup_append_buffer(s, fmt, len);
+				OSMO_ASSERT(s);
+			}
+			fmt = (const char *)(p + 1); /* skip past '%' */
+			if (*fmt == '\0')
+				break;
+		}
+
+		ch = *fmt++;
+		if (ch == '-' && isdigit(*fmt)) {
+			sign = -1;
+			ch = *fmt++;
+		}
+		while (isdigit(ch) && *fmt != '\0') {
+			minwidth *= 10;
+			minwidth += (ch - '0');
+			ch = *fmt++;
+		}
+		minwidth *= sign;
+
+		switch (ch) {
+		case '%':
+			s = talloc_asprintf_append(s, "%c", ch);
+			OSMO_ASSERT(s);
+			break;
+		case 'd':
+			s = pad_append_str(s, desc->description, minwidth);
+			break;
+		case 'n':
+			s = pad_append_str(s, desc->name, minwidth);
+			break;
+		case 'c':
+			s = pad_append_ctr(s, ctr->current, minwidth, vty);
+			break;
+		case 'p':
+			s = pad_append_ctr(s, ctr->previous, minwidth, vty);
+			break;
+		case 'S':
+			s = pad_append_ctr(s, ctr->intv[RATE_CTR_INTV_SEC].rate, minwidth, vty);
+			break;
+		case 'M':
+			s = pad_append_ctr(s, ctr->intv[RATE_CTR_INTV_MIN].rate, minwidth, vty);
+			break;
+		case 'H':
+			s = pad_append_ctr(s, ctr->intv[RATE_CTR_INTV_HOUR].rate, minwidth, vty);
+			break;
+		case 'D':
+			s = pad_append_ctr(s, ctr->intv[RATE_CTR_INTV_DAY].rate, minwidth, vty);
+			break;
+		default:
+			break;
+		}
+	}
+
+	vty_out(vty, "%s%s", s, VTY_NEWLINE);
+	talloc_free(s);
+
+	return 0;
+}
+
+/*! print a rate counter group to given VTY, formatting the line for each counter according to a format string.
+ *
+ * The following format string directives are supported:
+ * - %d: The description of the counter
+ * - %n: The name of the counter
+ * - %c: The current value of the counter
+ * - %p: The previous value of the counter
+ * - %S: The interval of the counter in seconds
+ * - %M: The interval of the counter in minutes
+ * - %H: The interval of the counter in hours
+ * - %D: The interval of the counter in days
+ * - %%: Print a literal %.
+ *
+ * An optional number between % and the letter in a format directive may be used to set a minimum field width.
+ * If the expanded format directive is smaller than this width (according to strlen()) the string will be
+ * left-padded (if the number is positive) or right-padded (if the number is negative) with spaces.
+ * For example, "%25n" prints the counter name left-padded up to a minimum width of 25 columns.
+ *
+ * VTY_NEWLINE will be appended to the format string when it is printed.
+ *
+ *  \param[in] vty The VTY to which it should be printed
+ *  \param[in] ctrg Rate counter group to be printed
+ *  \param[in] fmt A format which may contain the above directives.
+ */
+void vty_out_rate_ctr_group_fmt(struct vty *vty, const char *fmt,
+				struct rate_ctr_group *ctrg)
+{
+	struct vty_out_context vctx = {vty, fmt};
+
+	vty_out(vty, "%s:%s", ctrg->desc->group_description, VTY_NEWLINE);
+
+	rate_ctr_for_each_counter(ctrg, rate_ctr_handler_fmt, &vctx);
+}
+
 static int rate_ctr_group_handler(struct rate_ctr_group *ctrg, void *vctx_)
 {
 	struct vty_out_context *vctx = vctx_;

@@ -14,6 +14,8 @@ char *vty_cmd_string_from_valstr(void *ctx, const struct value_string *vals,
 
 void vty_out_rate_ctr_group(struct vty *vty, const char *prefix,
 			    struct rate_ctr_group *ctrg);
+void vty_out_rate_ctr_group_fmt(struct vty *vty, const char *fmt,
+			    struct rate_ctr_group *ctrg);
 
 void vty_out_stat_item_group(struct vty *vty, const char *prefix,
 			     struct osmo_stat_item_group *statg);
