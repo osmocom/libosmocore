@@ -91,3 +91,8 @@ void _osmo_mncc_log(int subsys, int level, const char *file, int line, const cha
 
 #define osmo_mncc_log(ss, level, prefix, msg, len)	\
 	_osmo_mncc_log(ss, level, __BASE_FILE__, __LINE__, prefix, msg, len);
+
+extern const struct value_string osmo_mncc_names[];
+static inline const char *osmo_mncc_name(uint32_t msg_type) {
+	return get_value_string(osmo_mncc_names, msg_type);
+}

@@ -244,10 +244,6 @@ const struct value_string osmo_mncc_names[] = {
 	{ 0, NULL },
 };
 
-static inline const char *osmo_mncc_name(uint32_t msg_type) {
-	return get_value_string(osmo_mncc_names, msg_type);
-}
-
 static void mncc_dump_rtp(struct msgb *str, const uint8_t *msg, unsigned int len)
 {
 	const struct gsm_mncc_rtp *rtp = (const struct gsm_mncc_rtp *) msg;
