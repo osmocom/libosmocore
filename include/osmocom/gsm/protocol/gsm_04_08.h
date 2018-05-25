@@ -1387,6 +1387,14 @@ enum gsm48_signal_val {
 	GSM48_SIGNAL_ALERT_OFF	= 0x4f,
 };
 
+/* Section 10.5.4.11 / Table 10.5.122 */
+enum gsm48_cause_coding {
+	GSM48_CAUSE_CODING_CCITT_Q931	= 0x00,
+	GSM48_CAUSE_CODING_RESERVED	= 0x01,
+	GSM48_CAUSE_CODING_NATIONAL	= 0x02,
+	GSM48_CAUSE_CODING_GSM		= 0x03,
+};
+
 enum gsm48_cause_loc {
 	GSM48_CAUSE_LOC_USER		= 0x00,
 	GSM48_CAUSE_LOC_PRN_S_LU	= 0x01,
