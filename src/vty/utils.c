@@ -93,7 +93,7 @@ pad_append_str(char *s, const char *a, int minwidth)
 }
 
 static char *
-pad_append_ctr(char *s, uint64_t ctr, int minwidth, void *ctx)
+pad_append_ctr(char *s, uint64_t ctr, int minwidth)
 {
 	s = talloc_asprintf_append(s, "%*" PRIu64, minwidth, ctr);
 	OSMO_ASSERT(s);
@@ -158,22 +158,22 @@ static int rate_ctr_handler_fmt(
 			s = pad_append_str(s, desc->name, minwidth);
 			break;
 		case 'c':
-			s = pad_append_ctr(s, ctr->current, minwidth, vty);
+			s = pad_append_ctr(s, ctr->current, minwidth);
 			break;
 		case 'p':
-			s = pad_append_ctr(s, ctr->previous, minwidth, vty);
+			s = pad_append_ctr(s, ctr->previous, minwidth);
 			break;
 		case 'S':
-			s = pad_append_ctr(s, ctr->intv[RATE_CTR_INTV_SEC].rate, minwidth, vty);
+			s = pad_append_ctr(s, ctr->intv[RATE_CTR_INTV_SEC].rate, minwidth);
 			break;
 		case 'M':
-			s = pad_append_ctr(s, ctr->intv[RATE_CTR_INTV_MIN].rate, minwidth, vty);
+			s = pad_append_ctr(s, ctr->intv[RATE_CTR_INTV_MIN].rate, minwidth);
 			break;
 		case 'H':
-			s = pad_append_ctr(s, ctr->intv[RATE_CTR_INTV_HOUR].rate, minwidth, vty);
+			s = pad_append_ctr(s, ctr->intv[RATE_CTR_INTV_HOUR].rate, minwidth);
 			break;
 		case 'D':
-			s = pad_append_ctr(s, ctr->intv[RATE_CTR_INTV_DAY].rate, minwidth, vty);
+			s = pad_append_ctr(s, ctr->intv[RATE_CTR_INTV_DAY].rate, minwidth);
 			break;
 		default:
 			break;
