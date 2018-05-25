@@ -81,3 +81,23 @@ Test_FSM(arbitrary_id){NULL}: Terminating (cause = OSMO_FSM_TERM_REQUEST)
 [0;mTest_FSM(arbitrary_id){NULL}: Freeing instance
 [0;mTest_FSM(arbitrary_id){NULL}: Deallocated
 [0;m
+--- test_state_chg_keep_timer()
+Test_FSM{NULL}: Allocated
+[0;mTest_FSM{NULL}: state_chg to ONE
+[0;mTest_FSM{ONE}: state_chg to TWO
+[0;mTest_FSM{TWO}: Terminating (cause = OSMO_FSM_TERM_REQUEST)
+[0;mTest_FSM{TWO}: Freeing instance
+[0;mTest_FSM{TWO}: Deallocated
+[0;mTotal time passed: 0.000000 s
+Test_FSM{NULL}: Allocated
+[0;mTest_FSM{NULL}: state_chg to ONE
+[0;mTotal time passed: 2.000342 s
+Test_FSM{ONE}: state_chg to TWO
+[0;mTotal time passed: 2.000342 s
+Total time passed: 9.999999 s
+Total time passed: 10.000000 s
+Test_FSM{TWO}: Timeout of T10
+[0;mTest_FSM{TWO}: Terminating (cause = OSMO_FSM_TERM_REQUEST)
+[0;mTest_FSM{TWO}: Freeing instance
+[0;mTest_FSM{TWO}: Deallocated
+[0;m--- test_state_chg_keep_timer() done

@@ -429,15 +429,56 @@ const char *osmo_fsm_state_name(struct osmo_fsm *fsm, uint32_t state)
 		return fsm->states[state].name;
 }
 
+static int state_chg(struct osmo_fsm_inst *fi, uint32_t new_state,
+		     bool keep_timer, unsigned long timeout_secs, int T,
+		     const char *file, int line)
+{
+	struct osmo_fsm *fsm = fi->fsm;
+	uint32_t old_state = fi->state;
+	const struct osmo_fsm_state *st = &fsm->states[fi->state];
+
+	/* validate if new_state is a valid state */
+	if (!(st->out_state_mask & (1 << new_state))) {
+		LOGPFSMLSRC(fi, LOGL_ERROR, file, line,
+			    "transition to state %s not permitted!\n",
+			    osmo_fsm_state_name(fsm, new_state));
+		return -EPERM;
+	}
+
+	if (!keep_timer) {
+		/* delete the old timer */
+		osmo_timer_del(&fi->timer);
+	}
+
+	if (st->onleave)
+		st->onleave(fi, new_state);
+
+	LOGPFSMSRC(fi, file, line, "state_chg to %s\n",
+		   osmo_fsm_state_name(fsm, new_state));
+	fi->state = new_state;
+	st = &fsm->states[new_state];
+
+	if (!keep_timer && timeout_secs) {
+		fi->T = T;
+		osmo_timer_schedule(&fi->timer, timeout_secs, 0);
+	}
+
+	/* Call 'onenter' last, user might terminate FSM from there */
+	if (st->onenter)
+		st->onenter(fi, old_state);
+
+	return 0;
+}
+
 /*! perform a state change of the given FSM instance
  *
  *  Best invoke via the osmo_fsm_inst_state_chg() macro which logs the source
  *  file where the state change was effected. Alternatively, you may pass \a
  *  file as NULL to use the normal file/line indication instead.
  *
- *  All changes to the FSM instance state must be made via this
+ *  All changes to the FSM instance state must be made via an osmo_fsm_inst_state_chg_*
  *  function.  It verifies that the existing state actually permits a
- *  transiiton to new_state.
+ *  transition to new_state.
  *
  *  timeout_secs and T are optional parameters, and only have any effect
  *  if timeout_secs is not 0.  If the timeout function is used, then the
@@ -457,39 +498,32 @@ int _osmo_fsm_inst_state_chg(struct osmo_fsm_inst *fi, uint32_t new_state,
 			     unsigned long timeout_secs, int T,
 			     const char *file, int line)
 {
-	struct osmo_fsm *fsm = fi->fsm;
-	uint32_t old_state = fi->state;
-	const struct osmo_fsm_state *st = &fsm->states[fi->state];
+	return state_chg(fi, new_state, false, timeout_secs, T, file, line);
+}
 
-	/* validate if new_state is a valid state */
-	if (!(st->out_state_mask & (1 << new_state))) {
-		LOGPFSMLSRC(fi, LOGL_ERROR, file, line,
-			    "transition to state %s not permitted!\n",
-			    osmo_fsm_state_name(fsm, new_state));
-		return -EPERM;
-	}
-
-	/* delete the old timer */
-	osmo_timer_del(&fi->timer);
-
-	if (st->onleave)
-		st->onleave(fi, new_state);
-
-	LOGPFSMSRC(fi, file, line, "state_chg to %s\n",
-		   osmo_fsm_state_name(fsm, new_state));
-	fi->state = new_state;
-	st = &fsm->states[new_state];
-
-	if (timeout_secs) {
-		fi->T = T;
-		osmo_timer_schedule(&fi->timer, timeout_secs, 0);
-	}
-
-	/* Call 'onenter' last, user might terminate FSM from there */
-	if (st->onenter)
-		st->onenter(fi, old_state);
-
-	return 0;
+/*! perform a state change while keeping the current timer running.
+ *
+ *  This is useful to keep a timeout across several states (without having to round the
+ *  remaining time to seconds).
+ *
+ *  Best invoke via the osmo_fsm_inst_state_chg_keep_timer() macro which logs the source
+ *  file where the state change was effected. Alternatively, you may pass \a
+ *  file as NULL to use the normal file/line indication instead.
+ *
+ *  All changes to the FSM instance state must be made via an osmo_fsm_inst_state_chg_*
+ *  function.  It verifies that the existing state actually permits a
+ *  transition to new_state.
+ *
+ *  \param[in] fi FSM instance whose state is to change
+ *  \param[in] new_state The new state into which we should change
+ *  \param[in] file Calling source file (from osmo_fsm_inst_state_chg macro)
+ *  \param[in] line Calling source line (from osmo_fsm_inst_state_chg macro)
+ *  \returns 0 on success; negative on error
+ */
+int _osmo_fsm_inst_state_chg_keep_timer(struct osmo_fsm_inst *fi, uint32_t new_state,
+					const char *file, int line)
+{
+	return state_chg(fi, new_state, true, 0, 0, file, line);
 }
 
 /*! dispatch an event to an osmocom finite state machine instance

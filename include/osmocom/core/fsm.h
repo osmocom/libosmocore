@@ -182,6 +182,21 @@ int _osmo_fsm_inst_state_chg(struct osmo_fsm_inst *fi, uint32_t new_state,
 			     unsigned long timeout_secs, int T,
 			     const char *file, int line);
 
+/*! perform a state change while keeping the current timer running.
+ *
+ *  This is useful to keep a timeout across several states (without having to round the
+ *  remaining time to seconds).
+ *
+ *  This is a macro that calls _osmo_fsm_inst_state_chg_keep_timer() with the given
+ *  parameters as well as the caller's source file and line number for logging
+ *  purposes. See there for documentation.
+ */
+#define osmo_fsm_inst_state_chg_keep_timer(fi, new_state) \
+	_osmo_fsm_inst_state_chg_keep_timer(fi, new_state, \
+				 __BASE_FILE__, __LINE__)
+int _osmo_fsm_inst_state_chg_keep_timer(struct osmo_fsm_inst *fi, uint32_t new_state,
+					const char *file, int line);
+
 /*! dispatch an event to an osmocom finite state machine instance
  *
  *  This is a macro that calls _osmo_fsm_inst_dispatch() with the given

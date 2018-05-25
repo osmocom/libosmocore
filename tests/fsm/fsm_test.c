@@ -266,6 +266,89 @@ do { \
 	osmo_fsm_inst_term(fi, OSMO_FSM_TERM_REQUEST, NULL);
 }
 
+const struct timeval fake_time_start_time = { 123, 456 };
+
+#define fake_time_passes(secs, usecs) do \
+{ \
+	struct timeval diff; \
+	osmo_gettimeofday_override_add(secs, usecs); \
+	osmo_clock_override_add(CLOCK_MONOTONIC, secs, usecs * 1000); \
+	timersub(&osmo_gettimeofday_override_time, &fake_time_start_time, &diff); \
+	fprintf(stderr, "Total time passed: %d.%06d s\n", \
+		(int)diff.tv_sec, (int)diff.tv_usec); \
+	osmo_timers_prepare(); \
+	osmo_timers_update(); \
+} while (0)
+
+void fake_time_start()
+{
+	struct timespec *clock_override;
+
+	osmo_gettimeofday_override_time = fake_time_start_time;
+	osmo_gettimeofday_override = true;
+	clock_override = osmo_clock_override_gettimespec(CLOCK_MONOTONIC);
+	OSMO_ASSERT(clock_override);
+	clock_override->tv_sec = fake_time_start_time.tv_sec;
+	clock_override->tv_nsec = fake_time_start_time.tv_usec * 1000;
+	osmo_clock_override_enable(CLOCK_MONOTONIC, true);
+	fake_time_passes(0, 0);
+}
+
+static int timeout_fired = 0;
+static int timer_cb(struct osmo_fsm_inst *fi)
+{
+	timeout_fired = fi->T;
+	return 0;
+}
+
+static void test_state_chg_keep_timer()
+{
+	struct osmo_fsm_inst *fi;
+
+	fprintf(stderr, "\n--- %s()\n", __func__);
+
+	fsm.timer_cb = timer_cb;
+
+	/* Test that no timer remains no timer */
+	fi = osmo_fsm_inst_alloc(&fsm, g_ctx, NULL, LOGL_DEBUG, NULL);
+	OSMO_ASSERT(fi);
+
+	osmo_fsm_inst_state_chg(fi, ST_ONE, 0, 0);
+	timeout_fired = -1;
+
+	osmo_fsm_inst_state_chg_keep_timer(fi, ST_TWO);
+
+	OSMO_ASSERT(timeout_fired == -1);
+	OSMO_ASSERT(fi->T == 0);
+
+	osmo_fsm_inst_term(fi, OSMO_FSM_TERM_REQUEST, NULL);
+
+	/* Test that a set time continues with exact precision */
+	fake_time_start();
+	fi = osmo_fsm_inst_alloc(&fsm, g_ctx, NULL, LOGL_DEBUG, NULL);
+	OSMO_ASSERT(fi);
+
+	osmo_fsm_inst_state_chg(fi, ST_ONE, 10, 10);
+
+	timeout_fired = -1;
+
+	fake_time_passes(2, 342);
+	osmo_fsm_inst_state_chg_keep_timer(fi, ST_TWO);
+
+	fake_time_passes(0, 0);
+	OSMO_ASSERT(timeout_fired == -1);
+
+	fake_time_passes(7, 1000000 - 342 - 1);
+	OSMO_ASSERT(timeout_fired == -1);
+
+	fake_time_passes(0, 1);
+	OSMO_ASSERT(timeout_fired == 10);
+
+	osmo_fsm_inst_term(fi, OSMO_FSM_TERM_REQUEST, NULL);
+
+	fprintf(stderr, "--- %s() done\n", __func__);
+}
+
 static const struct log_info_cat default_categories[] = {
 	[DMAIN] = {
 		.name = "DMAIN",
@@ -306,6 +389,7 @@ int main(int argc, char **argv)
 	osmo_fsm_inst_free(finst);
 
 	test_id_api();
+	test_state_chg_keep_timer();
 
 	osmo_fsm_unregister(&fsm);
 	exit(0);
