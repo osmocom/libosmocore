@@ -177,6 +177,7 @@ gsm0808_enc_cell_id_list2;
 gsm0808_dec_cell_id_list;
 gsm0808_dec_cell_id_list2;
 gsm0808_cell_id_list_add;
+gsm0808_cell_id_to_list;
 gsm0808_enc_cell_id;
 gsm0808_dec_cell_id;
 gsm0808_cell_id_name;

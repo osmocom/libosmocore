@@ -988,6 +988,37 @@ int gsm0808_cell_id_list_add(struct gsm0808_cell_id_list2 *dst, const struct gsm
 	return added;
 }
 
+/*! Convert a single Cell Identifier to a Cell Identifier List with one entry.
+ * \param dst[out]  Overwrite this list.
+ * \param src[in]   Set \a dst to contain exactly this item.
+ */
+void gsm0808_cell_id_to_list(struct gsm0808_cell_id_list2 *dst, const struct gsm0808_cell_id *src)
+{
+	if (!dst)
+		return;
+	if (!src) {
+		*dst = (struct gsm0808_cell_id_list2){
+			.id_discr = CELL_IDENT_NO_CELL,
+		};
+		return;
+	}
+
+	*dst = (struct gsm0808_cell_id_list2){
+		.id_discr = src->id_discr,
+		.id_list = { src->id },
+		.id_list_len = 1,
+	};
+
+	switch (src->id_discr) {
+	case CELL_IDENT_NO_CELL:
+	case CELL_IDENT_BSS:
+		dst->id_list_len = 0;
+		break;
+	default:
+		break;
+	}
+}
+
 /*! Encode Cell Identifier IE (3GPP TS 48.008 3.2.2.17).
  *  \param[out] msg Message Buffer to which IE is to be appended
  *  \param[in] ci Cell ID to be encoded
