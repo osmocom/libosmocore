@@ -230,7 +230,7 @@ int ctrl_cmd_handle(struct ctrl_handle *ctrl, struct ctrl_cmd *cmd,
 	if (!request)
 		goto err;
 
-	for (i=0;i<strlen(request);i++) {
+	for (i = 0; i < strlen(request); i++) {
 		if (request[i] == '.')
 			request[i] = ' ';
 	}
@@ -242,7 +242,7 @@ int ctrl_cmd_handle(struct ctrl_handle *ctrl, struct ctrl_cmd *cmd,
 		goto err;
 	}
 
-	for (i=0;i<vector_active(vline);i++) {
+	for (i = 0; i < vector_active(vline); i++) {
 		struct lookup_helper *lh;
 		int rc;
 
@@ -274,7 +274,7 @@ int ctrl_cmd_handle(struct ctrl_handle *ctrl, struct ctrl_cmd *cmd,
 			return ret;
 		default: /* If we're here the rest must be the command */
 			cmdvec = vector_init(vector_active(vline)-i);
-			for (j=i; j<vector_active(vline); j++) {
+			for (j = i; j < vector_active(vline); j++) {
 				vector_set(cmdvec, vector_slot(vline, j));
 			}
 
