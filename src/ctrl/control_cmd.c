@@ -89,6 +89,12 @@ static struct ctrl_cmd_element *ctrl_cmd_get_element_match(vector vline, vector 
 	return NULL;
 }
 
+/*! Execute a given received command
+ *  \param[in] vline vector representing the available/registered commands
+ *  \param[inout] command parsed received command to be executed
+ *  \param[in] node CTRL interface node
+ *  \param[in] data opaque data passed to verify(), get() and set() call-backs
+ *  \returns CTRL_CMD_HANDLED or CTRL_CMD_REPLY;  CTRL_CMD_ERROR on error */
 int ctrl_cmd_exec(vector vline, struct ctrl_cmd *command, vector node, void *data)
 {
 	int ret = CTRL_CMD_ERROR;
@@ -200,6 +206,10 @@ failure:
 	talloc_free(cmd->command);
 }
 
+/*! Install a given command definition at a given CTRL node.
+ *  \param[in] node CTRL node at whihc \a cmd is to be installed
+ *  \param[in] cmd command definition to be installed
+ *  \returns 0 on success; negative on error */
 int ctrl_cmd_install(enum ctrl_node_type node, struct ctrl_cmd_element *cmd)
 {
 	vector cmds_vec;
@@ -221,6 +231,10 @@ int ctrl_cmd_install(enum ctrl_node_type node, struct ctrl_cmd_element *cmd)
 	return 0;
 }
 
+/*! Allocate a control command of given \a type.
+ *  \param[in] ctx talloc context from which to allocate
+ *  \param[in] type command type to set after allocation
+ *  \returns callee-allocated \ref ctrl_cmd. Caller must talloc_free() it. */
 struct ctrl_cmd *ctrl_cmd_create(void *ctx, enum ctrl_type type)
 {
 	struct ctrl_cmd *cmd;
@@ -233,6 +247,10 @@ struct ctrl_cmd *ctrl_cmd_create(void *ctx, enum ctrl_type type)
 	return cmd;
 }
 
+/*! Perform a deepl copy of the given \a cmd, allocating memory from \a ctx.
+ *  \param[in] ctx talloc context from which to allocate
+ *  \param[in cmd CTRL command to be copied
+ *  \returns deep copy of \a cmd on success; NULL on error */
 struct ctrl_cmd *ctrl_cmd_cpy(void *ctx, struct ctrl_cmd *cmd)
 {
 	struct ctrl_cmd *cmd2;
@@ -269,7 +287,10 @@ err:
 	return NULL;
 }
 
-/*! Parse CTRL command struct from msgb, return NULL on any error.
+/*! Parse/Decode CTRL from \ref msgb into command struct.
+ *  \param[in] ctx talloc context from which to allocate
+ *  \param[in] msg message buffer containing command to be decoded
+ *  \returns callee-allocated decoded CTRL command; NULL on allocation or other failure
  * The caller is responsible to talloc_free() the returned struct pointer. */
 struct ctrl_cmd *ctrl_cmd_parse(void *ctx, struct msgb *msg)
 {
@@ -290,8 +311,11 @@ static bool id_str_valid(const char *str)
 	return true;
 }
 
-/*! Parse CTRL command struct from msgb, return ctrl->type == CTRL_TYPE_ERROR and an error message in
- * ctrl->reply on any error.
+/*! Parse/Decode CTRL from \ref msgb into command struct.
+ *  \param[in] ctx talloc context from which to allocate
+ *  \param[in] msg message buffer containing command to be decoded
+ *  \returns callee-allocated decoded CTRL command; NULL on allocation failure,
+ *  ctrl->type == CTRL_TYPE_ERROR and an error message in ctrl->reply on any error.
  * The caller is responsible to talloc_free() the returned struct pointer. */
 struct ctrl_cmd *ctrl_cmd_parse2(void *ctx, struct msgb *msg)
 {
@@ -466,6 +490,9 @@ err:
 	return cmd;
 }
 
+/*! Encode a given CTRL command from its parsed form into a message buffer.
+ *  \param[in] cmd decoded/parsed form of to-be-encoded command
+ *  \returns callee-allocated message buffer containing the encoded \a cmd; NULL on error */
 struct msgb *ctrl_cmd_make(struct ctrl_cmd *cmd)
 {
 	struct msgb *msg;
@@ -556,6 +583,15 @@ err:
 	return NULL;
 }
 
+/*! Build a deferred control command state and keep it the per-connection list of deferred commands.
+ *  This function is typically called by a ctrl command handler that wishes to defer returning a
+ *  response.  The reutnred state can later be used to check if the deferred command is still alive,
+ *  and to respond to the specific command.  This only works to defer the response to GET and SET.
+ *  \param[in] ctx talloc context from whihc to allocate the ctrl_cmd_def
+ *  \param[in] cmd the control command whose response is deferred
+ *  \param[in] data opaque, user-defined pointer
+ *  \param[in] secs number of seconds until the command times out
+ *  \returns callee-allocated ctrl_cmd_def */
 struct ctrl_cmd_def *
 ctrl_cmd_def_make(const void *ctx, struct ctrl_cmd *cmd, void *data, unsigned int secs)
 {
@@ -576,6 +612,9 @@ ctrl_cmd_def_make(const void *ctx, struct ctrl_cmd *cmd, void *data, unsigned in
 	return cd;
 }
 
+/*! Determine if the given deferred control command is still alive or a zombie.
+ *  \param[in] cd deferred ctrl command state
+ *  \returns 0 is \a cd is still alive; 1 if it's a zombie */
 int ctrl_cmd_def_is_zombie(struct ctrl_cmd_def *cd)
 {
 	/* luckily we're still alive */
@@ -589,6 +628,10 @@ int ctrl_cmd_def_is_zombie(struct ctrl_cmd_def *cd)
 	return 1;
 }
 
+/*! Send the response to a deferred ctrl command.
+ *  The command can only be a resply to a SET or a GET operation.
+ *  \param[in] cd deferred ctrl command state
+ *  \returns 0 if command sent successfully; negative on error */
 int ctrl_cmd_def_send(struct ctrl_cmd_def *cd)
 {
 	struct ctrl_cmd *cmd = cd->cmd;

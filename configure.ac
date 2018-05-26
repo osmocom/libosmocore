@@ -371,4 +371,5 @@ AC_OUTPUT(
 	Doxyfile.codec
 	Doxyfile.coding
 	Doxyfile.gb
+	Doxyfile.ctrl
 	Makefile)

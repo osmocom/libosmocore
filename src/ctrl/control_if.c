@@ -75,6 +75,11 @@ struct lookup_helper {
 };
 static LLIST_HEAD(ctrl_lookup_helpers);
 
+/*! Parse ascii-encoded decimal number at vline[i]
+ *  \param[in] vline vector containing a tokenized line
+ *  \param[in] i index into the vector \a vline
+ *  \param[out] num parsed decimal integer number at vline[i]
+ *  \returns 1 on success; 0 in case of error */
 int ctrl_parse_get_num(vector vline, int i, long *num)
 {
 	char *token, *tmp;
@@ -94,7 +99,10 @@ int ctrl_parse_get_num(vector vline, int i, long *num)
 	return 1;
 }
 
-/* Send command to all  */
+/*! Send a CTRL command to all connections.
+ *  \param[in] ctrl global control handle
+ *  \param[in] cmd command to send to all connections in \ctrl
+ *  \returns number of times the command has been sent */
 int ctrl_cmd_send_to_all(struct ctrl_handle *ctrl, struct ctrl_cmd *cmd)
 {
 	struct ctrl_connection *ccon;
@@ -109,6 +117,10 @@ int ctrl_cmd_send_to_all(struct ctrl_handle *ctrl, struct ctrl_cmd *cmd)
 	return ret;
 }
 
+/*! Encode a CTRL command and append it to the given write queue
+ *  \param[inout] queue write queue to which encoded \a cmd shall be appended
+ *  \param[in] cmd decoded command representation
+ *  \returns 0 in case of success; negative on error */
 int ctrl_cmd_send(struct osmo_wqueue *queue, struct ctrl_cmd *cmd)
 {
 	int ret;
@@ -152,6 +164,9 @@ int ctrl_cmd_send_trap(struct ctrl_handle *ctrl, const char *name, char *value)
 	return r;
 }
 
+/*! Copy given \a cmd and convert copy to CTRL_TYPE_TRAP.
+ *  \param[in] cmd command to be copied
+ *  \returns pointer to newly-allocated copy of type TRAP. Allocated as sibling of \a cmd */
 struct ctrl_cmd *ctrl_cmd_trap(struct ctrl_cmd *cmd)
 {
 	struct ctrl_cmd *trap;
@@ -361,6 +376,11 @@ close_fd:
 	return -EBADF;
 }
 
+/*! Handle a received CTRL command contained in a \ref msgb.
+ *  \param[in] ctrl CTRL interface handle
+ *  \param[in] ccon CTRL connection through which the command was received
+ *  \param[in] msg message buffer containing CTRL command including IPA+IPA_EXT headers
+ *  \returns 0 on success; negative on error */
 int ctrl_handle_msg(struct ctrl_handle *ctrl, struct ctrl_connection *ccon, struct msgb *msg)
 {
 	struct ctrl_cmd *cmd;

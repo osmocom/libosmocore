@@ -35,6 +35,7 @@ $(html_DATA): $(top_builddir)/doc/core/html/index.html \
 		  $(top_builddir)/doc/vty/html/index.html \
 		  $(top_builddir)/doc/codec/html/index.html \
 		  $(top_builddir)/doc/coding/html/index.html \
+		  $(top_builddir)/doc/ctrl/html/index.html \
 		  $(top_builddir)/doc/gb/html/index.html
 	cd $(top_builddir)/doc && tar cf html.tar */html
 
@@ -62,6 +63,11 @@ $(top_builddir)/doc/coding/html/index.html: Doxyfile.coding
 	mkdir -p doc/coding
 	$(DOXYGEN) Doxyfile.coding
 
+$(top_builddir)/doc/ctrl/html/index.html: $(SOURCES) Doxyfile.ctrl
+	@rm -rf doc/ctrl
+	mkdir -p doc/ctrl
+	$(DOXYGEN) Doxyfile.ctrl
+
 $(top_builddir)/doc/gb/html/index.html: $(SOURCES) Doxyfile.gb
 	@rm -rf doc/gb
 	mkdir -p doc/gb
@@ -71,9 +77,9 @@ install-data-hook:
 	cd $(DESTDIR)$(htmldir) && tar xf html.tar && rm -f html.tar
 
 uninstall-hook:
-	cd $(DESTDIR)$(htmldir) && rm -rf {core,gsm,vty,codec,coding,gb}
+	cd $(DESTDIR)$(htmldir) && rm -rf {core,gsm,vty,codec,coding,ctrl,gb}
 
-DX_CLEAN = doc/{core,gsm,vty,codec,coding,gb}/html/search/* doc/{core,gsm,vty,codec,coding,gb}/{html,latex}/* doc/html.tar doc/{core,gsm,vty,codec,coding,gb}/doxygen_sqlite3.db doc/*.tag
+DX_CLEAN = doc/{core,gsm,vty,codec,coding,ctrl,gb}/html/search/* doc/{core,gsm,vty,codec,coding,ctrl,gb}/{html,latex}/* doc/html.tar doc/{core,gsm,vty,codec,coding,ctrl,gb}/doxygen_sqlite3.db doc/*.tag
 endif
 
 MOSTLYCLEANFILES = $(DX_CLEAN)
