@@ -20,4 +20,6 @@ if ENABLE_VTY
 libosmoctrl_la_SOURCES += control_vty.c
 endif
 
+EXTRA_DIST = libosmoctrl.map
+
 endif

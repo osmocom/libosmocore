@@ -1,0 +1,34 @@
+LIBOSMOCTRL_1.0 {
+global:
+
+ctrl_cmd_cpy;
+ctrl_cmd_create;
+ctrl_cmd_def_is_zombie;
+ctrl_cmd_def_make;
+ctrl_cmd_def_send;
+#ctrl_cmd_exec;
+ctrl_cmd_exec_from_string;
+ctrl_cmd_handle;
+ctrl_cmd_install;
+ctrl_cmd_make;
+ctrl_cmd_parse;
+ctrl_cmd_parse2;
+ctrl_cmd_send;
+ctrl_cmd_send_to_all;
+ctrl_cmd_send_trap;
+ctrl_cmd_trap;
+ctrl_handle_alloc; /* could be removed? */
+ctrl_handle_alloc2; /* could be removed? */
+ctrl_handle_msg; /* only used in unit test */
+ctrl_interface_setup;
+ctrl_interface_setup_dynip;
+ctrl_interface_setup_dynip2;
+ctrl_lookup_register;
+ctrl_parse_get_num;
+ctrl_type_vals;
+ctrl_vty_get_bind_addr;
+ctrl_vty_init;
+osmo_ctrl_conn_alloc;
+
+local: *;
+};
