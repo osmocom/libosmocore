@@ -1372,6 +1372,18 @@ const char *gsm48_pdisc_msgtype_name(uint8_t pdisc, uint8_t msg_type);
 #define GSM48_IE_FOLLOW_ON_PROC	0xa1
 #define GSM48_IE_CTS_PERMISSION	0xa2
 
+/* Section 10.5.4.21 / Table 10.5.127 */
+
+enum gsm48_progress_desc {
+	GSM48_PROGR_NOT_E2E		= 0x00,
+	GSM48_PROGR_DEST_NOT_PLMN	= 0x02,
+	GSM48_PROGR_ORIG_NOT_PLMN	= 0x03,
+	GSM48_PROGR_RETURNED		= 0x04,
+	GSM48_PROGR_IN_BAND_AVAIL	= 0x08,
+	GSM48_PROGR_CALL_E2E		= 0x20,
+	GSM48_PROGR_QUEUEING		= 0x40,
+};
+
 /* Section 10.5.4.23 / Table 10.5.130 */
 enum gsm48_signal_val {
 	GSM48_SIGNAL_DIALTONE	= 0x00,
