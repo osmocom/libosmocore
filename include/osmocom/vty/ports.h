@@ -32,5 +32,5 @@
 /* 4259 used by control interface */
 #define OSMO_VTY_PORT_GGSN	4260
 #define OSMO_VTY_PORT_HNBGW	4261
-/* 4262 used by control interface */
+/* 4262-4263 used by control interface */
 /* When adding/changing port numbers, keep docs and wiki in sync. See above. */
