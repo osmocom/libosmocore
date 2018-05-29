@@ -80,6 +80,11 @@ struct msgb *gsm0808_create_paging(const char *imsi, const uint32_t *tmsi,
 				   const struct gsm0808_cell_id_list *cil,
 				   const uint8_t *chan_needed)
 				   OSMO_DEPRECATED("use gsm0808_create_paging2 instead");
+struct msgb *gsm0808_create_lcls_conn_ctrl(enum gsm0808_lcls_config *config,
+					   enum gsm0808_lcls_control *control);
+struct msgb *gsm0808_create_lcls_conn_ctrl_ack(enum gsm0808_lcls_status status);
+struct msgb *gsm0808_create_lcls_notification(enum gsm0808_lcls_status status, bool break_req);
+
 
 /*! 3GPP TS 48.008 §3.2.2.5.8 Old BSS to New BSS information */
 struct gsm0808_old_bss_to_new_bss_info {

@@ -282,6 +282,66 @@ struct msgb *gsm0808_create_cipher_reject(uint8_t cause)
 	return msg;
 }
 
+/*! Create BSSMAP LCLS CONNECT CONTROL message (TS 48.008 3.2.1.91).
+ *  \param[in] config LCLS Configuration
+ *  \param[in] control LCLS Connection Status Control
+ *  \returns callee-allocated msgb with BSSMAP LCLS NOTIFICATION */
+struct msgb *gsm0808_create_lcls_conn_ctrl(enum gsm0808_lcls_config *config,
+					   enum gsm0808_lcls_control *control)
+{
+	struct msgb *msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM,
+					       "bssmap: LCLS CONN CTRL");
+	if (!msg)
+		return NULL;
+
+	msgb_v_put(msg, BSS_MAP_MSG_LCLS_CONNECT_CTRL);
+	if (config)
+		msgb_tv_put(msg, GSM0808_IE_LCLS_CONFIG, *config);
+	if (control)
+		msgb_tv_put(msg, GSM0808_IE_LCLS_CONFIG, *control);
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
+
+	return msg;
+}
+
+/*! Create BSSMAP LCLS CONNECT CONTROL ACK message (TS 48.008 3.2.1.92).
+ *  \param[in] status LCLS BSS Status
+ *  \returns callee-allocated msgb with BSSMAP LCLS NOTIFICATION */
+struct msgb *gsm0808_create_lcls_conn_ctrl_ack(enum gsm0808_lcls_status status)
+{
+	struct msgb *msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM,
+					       "bssmap: LCLS CONN CTRL ACK");
+	if (!msg)
+		return NULL;
+
+	msgb_v_put(msg, BSS_MAP_MSG_LCLS_CONNECT_CTRL_ACK);
+	msgb_tv_put(msg, GSM0808_IE_LCLS_BSS_STATUS, status);
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
+
+	return msg;
+}
+
+/*! Create BSSMAP LCLS NOTIFICATION message (TS 48.008 3.2.1.93).
+ *  \param[in] status LCLS BSS Status
+ *  \param[in] break_req Include the LCLS BREAK REQ IE (true) or not (false)
+ *  \returns callee-allocated msgb with BSSMAP LCLS NOTIFICATION */
+struct msgb *gsm0808_create_lcls_notification(enum gsm0808_lcls_status status, bool break_req)
+{
+	struct msgb *msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM,
+					       "bssmap: LCLS NOTIFICATION");
+	if (!msg)
+		return NULL;
+
+	msgb_v_put(msg, BSS_MAP_MSG_LCLS_NOTIFICATION);
+	msgb_tv_put(msg, GSM0808_IE_LCLS_BSS_STATUS, status);
+	if (break_req)
+		msgb_v_put(msg, GSM0808_IE_LCLS_BREAK_REQ);
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
+
+	return msg;
+}
+
+
 /*! Create BSSMAP Classmark Update message
  *  \param[in] cm2 Classmark 2
  *  \param[in] cm2_len length (in octets) of \a cm2
