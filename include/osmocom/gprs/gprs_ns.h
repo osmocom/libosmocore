@@ -226,4 +226,6 @@ struct ns_signal_data {
 
 void gprs_ns_set_log_ss(int ss);
 
+char *gprs_nsvc_state_append(char *s, struct gprs_nsvc *nsvc);
+
 /*! @} */
