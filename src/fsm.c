@@ -90,6 +90,7 @@
 
 LLIST_HEAD(osmo_g_fsms);
 static bool fsm_log_addr = true;
+static bool fsm_log_timeouts = false;
 
 /*! specify if FSM instance addresses should be logged or not
  *
@@ -102,6 +103,26 @@ static bool fsm_log_addr = true;
 void osmo_fsm_log_addr(bool log_addr)
 {
 	fsm_log_addr = log_addr;
+}
+
+/*! Enable or disable logging of timeout values for FSM instance state changes.
+ *
+ * By default, state changes are logged by state name only, omitting the timeout. When passing true, each state change
+ * will also log the T number and the chosen timeout in seconds. osmo_fsm_inst_state_chg_keep_timer() will log remaining
+ * timeout in millisecond precision.
+ *
+ * The default for this is false to reflect legacy behavior. Since various C tests that verify logging output already
+ * existed prior to this option, keeping timeout logging off makes sure that they continue to pass. Particularly,
+ * osmo_fsm_inst_state_chg_keep_timer() may cause non-deterministic logging of remaining timeout values.
+ *
+ * For any program that does not explicitly require deterministic logging output, i.e. anything besides regression tests
+ * involving FSM instances, it is recommended to call osmo_fsm_log_timeouts(true).
+ *
+ * \param[in] log_timeouts  Pass true to log timeouts on state transitions, false to omit timeouts.
+ */
+void osmo_fsm_log_timeouts(bool log_timeouts)
+{
+	fsm_log_timeouts = log_timeouts;
 }
 
 struct osmo_fsm *osmo_fsm_find_by_name(const char *name)
@@ -436,6 +457,7 @@ static int state_chg(struct osmo_fsm_inst *fi, uint32_t new_state,
 	struct osmo_fsm *fsm = fi->fsm;
 	uint32_t old_state = fi->state;
 	const struct osmo_fsm_state *st = &fsm->states[fi->state];
+	struct timeval remaining;
 
 	/* Limit to 0x7fffffff seconds as explained by
 	 * _osmo_fsm_inst_state_chg()'s API doc. */
@@ -458,8 +480,23 @@ static int state_chg(struct osmo_fsm_inst *fi, uint32_t new_state,
 	if (st->onleave)
 		st->onleave(fi, new_state);
 
-	LOGPFSMSRC(fi, file, line, "state_chg to %s\n",
-		   osmo_fsm_state_name(fsm, new_state));
+	if (fsm_log_timeouts) {
+		if (keep_timer && fi->timer.active && (osmo_timer_remaining(&fi->timer, NULL, &remaining) == 0))
+			LOGPFSMSRC(fi, file, line, "State change to %s (keeping T%d, %ld.%03lds remaining)\n",
+				   osmo_fsm_state_name(fsm, new_state),
+				   fi->T, remaining.tv_sec, remaining.tv_usec / 1000);
+		else if (timeout_secs && !keep_timer)
+			LOGPFSMSRC(fi, file, line, "State change to %s (T%d, %lus)\n",
+				   osmo_fsm_state_name(fsm, new_state),
+				   T, timeout_secs);
+		else
+			LOGPFSMSRC(fi, file, line, "State change to %s (no timeout)\n",
+				   osmo_fsm_state_name(fsm, new_state));
+	} else {
+		LOGPFSMSRC(fi, file, line, "state_chg to %s\n",
+			   osmo_fsm_state_name(fsm, new_state));
+	}
+
 	fi->state = new_state;
 	st = &fsm->states[new_state];
 

@@ -406,6 +406,9 @@ int main(int argc, char **argv)
 
 	osmo_fsm_log_addr(false);
 
+	/* Using fake time to get deterministic timeout logging */
+	osmo_fsm_log_timeouts(true);
+
 	log_init(&log_info, NULL);
 	stderr_target = log_target_create_stderr();
 	log_add_target(stderr_target);

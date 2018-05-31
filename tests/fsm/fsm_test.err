@@ -3,9 +3,9 @@ Checking FSM allocation
 [0;mTest_FSM(my_id){NULL}: Received Event EV_B
 [0;mTest_FSM(my_id){NULL}: Event EV_B not permitted
 [0;mTest_FSM(my_id){NULL}: Received Event EV_A
-[0;mTest_FSM(my_id){NULL}: state_chg to ONE
+[0;mTest_FSM(my_id){NULL}: State change to ONE (no timeout)
 [0;mTest_FSM(my_id){ONE}: Received Event EV_B
-[0;mTest_FSM(my_id){ONE}: state_chg to TWO
+[0;mTest_FSM(my_id){ONE}: State change to TWO (T2342, 1s)
 [0;mTest_FSM(my_id){TWO}: Timeout of T2342
 [0;mTimer
 [0;mTest_FSM(my_id){TWO}: Deallocated
@@ -83,16 +83,16 @@ Test_FSM(arbitrary_id){NULL}: Terminating (cause = OSMO_FSM_TERM_REQUEST)
 [0;m
 --- test_state_chg_keep_timer()
 Test_FSM{NULL}: Allocated
-[0;mTest_FSM{NULL}: state_chg to ONE
-[0;mTest_FSM{ONE}: state_chg to TWO
+[0;mTest_FSM{NULL}: State change to ONE (no timeout)
+[0;mTest_FSM{ONE}: State change to TWO (no timeout)
 [0;mTest_FSM{TWO}: Terminating (cause = OSMO_FSM_TERM_REQUEST)
 [0;mTest_FSM{TWO}: Freeing instance
 [0;mTest_FSM{TWO}: Deallocated
 [0;mTotal time passed: 0.000000 s
 Test_FSM{NULL}: Allocated
-[0;mTest_FSM{NULL}: state_chg to ONE
+[0;mTest_FSM{NULL}: State change to ONE (T10, 10s)
 [0;mTotal time passed: 2.000342 s
-Test_FSM{ONE}: state_chg to TWO
+Test_FSM{ONE}: State change to TWO (keeping T10, 7.999s remaining)
 [0;mTotal time passed: 2.000342 s
 Total time passed: 9.999999 s
 Total time passed: 10.000000 s
@@ -104,14 +104,14 @@ Test_FSM{TWO}: Timeout of T10
 
 --- test_state_chg_T()
 Test_FSM{NULL}: Allocated
-[0;mTest_FSM{NULL}: state_chg to ONE
-[0;mTest_FSM{ONE}: state_chg to TWO
+[0;mTest_FSM{NULL}: State change to ONE (T42, 23s)
+[0;mTest_FSM{ONE}: State change to TWO (no timeout)
 [0;mTest_FSM{TWO}: Terminating (cause = OSMO_FSM_TERM_REQUEST)
 [0;mTest_FSM{TWO}: Freeing instance
 [0;mTest_FSM{TWO}: Deallocated
 [0;mTest_FSM{NULL}: Allocated
-[0;mTest_FSM{NULL}: state_chg to ONE
-[0;mTest_FSM{ONE}: state_chg to TWO
+[0;mTest_FSM{NULL}: State change to ONE (T42, 23s)
+[0;mTest_FSM{ONE}: State change to TWO (no timeout)
 [0;mTest_FSM{TWO}: Terminating (cause = OSMO_FSM_TERM_REQUEST)
 [0;mTest_FSM{TWO}: Freeing instance
 [0;mTest_FSM{TWO}: Deallocated
