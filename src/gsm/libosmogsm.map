@@ -195,6 +195,9 @@ gsm0808_chan_type_to_speech_codec;
 gsm0808_speech_codec_from_chan_type;
 gsm0808_speech_codec_type_names;
 gsm0808_channel_type_name;
+gsm0808_lcls_config_names;
+gsm0808_lcls_control_names;
+gsm0808_lcls_status_names;
 
 gsm0858_rsl_ul_meas_enc;
 

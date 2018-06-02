@@ -1144,4 +1144,37 @@ const char *gsm0808_cause_name(uint8_t cause)
 	return get_value_string(gsm0808_cause_names, cause);
 }
 
+const struct value_string gsm0808_lcls_config_names[] = {
+	{ GSM0808_LCLS_CFG_BOTH_WAY, "Connect both-way" },
+	{ GSM0808_LCLS_CFG_BOTH_WAY_AND_BICAST_UL,
+	  "Connect both-way, bi-cast UL to CN" },
+	{ GSM0808_LCLS_CFG_BOTH_WAY_AND_SEND_DL,
+	  "Connect both-way, send access DL from CN" },
+	{ GSM0808_LCLS_CFG_BOTH_WAY_AND_SEND_DL_BLOCK_LOCAL_DL,
+	  "Connect both-way, send access DL from CN, block local DL" },
+	{ GSM0808_LCLS_CFG_BOTH_WAY_AND_BICAST_UL_SEND_DL,
+	  "Connect both-way, bi-cast UL to CN, send access DL from CN" },
+	{ GSM0808_LCLS_CFG_BOTH_WAY_AND_BICAST_UL_SEND_DL_BLOCK_LOCAL_DL,
+	  "Connect both-way, bi-cast UL to CN, send access DL from CN, block local DL" },
+	{ 0, NULL }
+};
+
+const struct value_string gsm0808_lcls_control_names[] = {
+	{ GSM0808_LCLS_CSC_CONNECT,				"Connect" },
+	{ GSM0808_LCLS_CSC_DO_NOT_CONNECT,			"Do not connect" },
+	{ GSM0808_LCLS_CSC_RELEASE_LCLS,			"Release LCLS" },
+	{ GSM0808_LCLS_CSC_BICAST_UL_AT_HANDOVER,		"Bi-cast UL at Handover" },
+	{ GSM0808_LCLS_CSC_BICAST_UL_AND_RECV_DL_AT_HANDOVER,	"Bi-cast UL and receive DL at Handover" },
+	{ 0, NULL }
+};
+
+const struct value_string gsm0808_lcls_status_names[] = {
+	{ GSM0808_LCLS_STS_NOT_YET_LS,		"Call not yet locally switched" },
+	{ GSM0808_LCLS_STS_NOT_POSSIBLE_LS,	"Call not possible to be locally switched" },
+	{ GSM0808_LCLS_STS_NO_LONGER_LS,	"Call is no longer locally switched" },
+	{ GSM0808_LCLS_STS_REQ_LCLS_NOT_SUPP,	"Requested LCLS configuration is not supported" },
+	{ GSM0808_LCLS_STS_LOCALLY_SWITCHED,	"Call is locally switched with requested LCLS config" },
+	{ 0, NULL }
+};
+
 /*! @} */

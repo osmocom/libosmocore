@@ -27,6 +27,7 @@
 #include <osmocom/gsm/protocol/gsm_08_08.h>
 #include <osmocom/gsm/gsm0808_utils.h>
 #include <osmocom/gsm/gsm23003.h>
+#include <osmocom/core/utils.h>
 
 struct sockaddr_storage;
 
@@ -134,5 +135,19 @@ const struct tlv_definition *gsm0808_att_tlvdef(void);
 const char *gsm0808_bssmap_name(uint8_t msg_type);
 const char *gsm0808_bssap_name(uint8_t msg_type);
 const char *gsm0808_cause_name(uint8_t cause);
+
+extern const struct value_string gsm0808_lcls_config_names[];
+extern const struct value_string gsm0808_lcls_control_names[];
+extern const struct value_string gsm0808_lcls_status_names[];
+
+static inline const char *gsm0808_lcls_config_name(uint8_t val) {
+	return get_value_string(gsm0808_lcls_config_names, val);
+}
+static inline const char *gsm0808_lcls_control_name(uint8_t val) {
+	return get_value_string(gsm0808_lcls_control_names, val);
+}
+static inline const char *gsm0808_lcls_status_name(uint8_t val) {
+	return get_value_string(gsm0808_lcls_status_names, val);
+}
 
 /*! @} */
