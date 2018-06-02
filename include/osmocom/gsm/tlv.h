@@ -467,6 +467,16 @@ void tlv_def_patch(struct tlv_definition *dst, const struct tlv_definition *src)
 #define TLVP_GET_MINLEN(_tp, tag, min_len) \
 	(TLVP_PRES_LEN(_tp, tag, min_len)? &(_tp)->lv[tag] : NULL)
 
+/*! Like TLVP_VAL(), but enforcing a minimum val length.
+ * \param[in] _tp  pointer to \ref tlv_parsed.
+ * \param[in] tag  IE tag to return.
+ * \param[in] min_len  Minimum value length in bytes.
+ * \returns struct tlv_p_entry pointer, or NULL if not present or too short.
+ */
+#define TLVP_VAL_MINLEN(_tp, tag, min_len) \
+	(TLVP_PRES_LEN(_tp, tag, min_len)? (_tp)->lv[tag].val : NULL)
+
+
 /*! Align given TLV element with 16 bit value to an even address
  *  \param[in] tp pointer to \ref tlv_parsed
  *  \param[in] pos element to return
