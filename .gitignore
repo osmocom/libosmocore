@@ -34,6 +34,7 @@ libosmocore-*.tar.*
 *-libtool
 
 Doxyfile.core
+Doxyfile.ctrl
 Doxyfile.gsm
 Doxyfile.vty
 Doxyfile.codec
@@ -71,6 +72,7 @@ utils/osmo-sim-test
 doc/codec
 doc/coding
 doc/core
+doc/ctrl
 doc/vty/latex
 doc/vty/html
 doc/vty/doxygen_sqlite3.db
