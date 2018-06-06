@@ -137,3 +137,5 @@ NOT passed through. '"printable"'
 '<buf-too-small>'
 - NULL string becomes a "NULL" literal:
 'NULL'
+
+Testing integer square-root

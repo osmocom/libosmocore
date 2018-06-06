@@ -27,6 +27,7 @@
 
 #include <stdio.h>
 #include <ctype.h>
+#include <time.h>
 
 static void hexdump_test(void)
 {
@@ -425,6 +426,26 @@ static void str_quote_test(void)
 	printf("'%s'\n", osmo_quote_str_buf(NULL, -1, out_buf, 10));
 }
 
+static void isqrt_test(void)
+{
+	int i;
+
+	printf("\nTesting integer square-root\n");
+	srand(time(NULL));
+	for (i = 0; i < 1024; i++) {
+		uint16_t x;
+		uint32_t r = rand();
+		if (RAND_MAX < UINT16_MAX)
+			x = r * (UINT16_MAX/RAND_MAX);
+		else
+			x = r;
+		uint32_t sq = x*x;
+		uint32_t y = osmo_isqrt32(sq);
+		if (y != x)
+			printf("ERROR: x=%u, sq=%u, osmo_isqrt(%u) = %u\n", x, sq, sq, y);
+	}
+}
+
 int main(int argc, char **argv)
 {
 	static const struct log_info log_info = {};
@@ -437,5 +458,6 @@ int main(int argc, char **argv)
 	bcd_test();
 	str_escape_test();
 	str_quote_test();
+	isqrt_test();
 	return 0;
 }

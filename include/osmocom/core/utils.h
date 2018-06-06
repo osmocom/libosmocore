@@ -128,4 +128,6 @@ const char *osmo_escape_str_buf(const char *str, int in_len, char *buf, size_t b
 const char *osmo_quote_str(const char *str, int in_len);
 const char *osmo_quote_str_buf(const char *str, int in_len, char *buf, size_t bufsize);
 
+uint32_t osmo_isqrt32(uint32_t x);
+
 /*! @} */

@@ -592,4 +592,44 @@ const char *osmo_quote_str(const char *str, int in_len)
 	return osmo_quote_str_buf(str, in_len, namebuf, sizeof(namebuf));
 }
 
+/*! perform an integer square root operation on unsigned 32bit integer.
+ *  This implementation is taken from "Hacker's Delight" Figure 11-1 "Integer square root, Newton's
+ *  method", which can also be found at http://www.hackersdelight.org/hdcodetxt/isqrt.c.txt */
+uint32_t osmo_isqrt32(uint32_t x)
+{
+	uint32_t x1;
+	int s, g0, g1;
+
+	if (x <= 1)
+		return x;
+
+	s = 1;
+	x1 = x - 1;
+	if (x1 > 0xffff) {
+		s = s + 8;
+		x1 = x1 >> 16;
+	}
+	if (x1 > 0xff) {
+		s = s + 4;
+		x1 = x1 >> 8;
+	}
+	if (x1 > 0xf) {
+		s = s + 2;
+		x1 = x1 >> 4;
+	}
+	if (x1 > 0x3) {
+		s = s + 1;
+	}
+
+	g0 = 1 << s;			/* g0 = 2**s */
+	g1 = (g0 + (x >> s)) >> 1;	/* g1 = (g0 + x/g0)/2 */
+
+	/* converges after four to five divisions for arguments up to 16,785,407 */
+	while (g1 < g0) {
+		g0 = g1;
+		g1 = (g0 + (x/g0)) >> 1;
+	}
+	return g0;
+}
+
 /*! @} */
