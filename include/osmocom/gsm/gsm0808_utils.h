@@ -147,7 +147,7 @@ static inline enum gsm0808_permitted_speech gsm0808_permitted_speech(enum gsm_ch
 	case GSM48_CMODE_SPEECH_AMR:
 		switch (type) {
 		case GSM_LCHAN_TCH_F:
-			return GSM0808_PERM_HR3;
+			return GSM0808_PERM_FR3;
 		case GSM_LCHAN_TCH_H:
 			return GSM0808_PERM_HR3;
 		default:
