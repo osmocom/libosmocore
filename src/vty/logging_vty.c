@@ -836,6 +836,27 @@ static int config_write_log(struct vty *vty)
 	return 1;
 }
 
+static int log_deprecated_func(struct cmd_element *cmd, struct vty *vty, int argc, const char *argv[])
+{
+	vty_out(vty, "%% Ignoring deprecated '%s'%s", cmd->string, VTY_NEWLINE);
+	return CMD_WARNING;
+}
+
+void logging_vty_add_deprecated_subsys(void *ctx, const char *name)
+{
+	struct cmd_element *cmd = talloc_zero(ctx, struct cmd_element);
+	OSMO_ASSERT(cmd);
+	cmd->string = talloc_asprintf(cmd, "logging level %s (everything|debug|info|notice|error|fatal)",
+				    name);
+	printf("%s\n", cmd->string);
+	cmd->func = log_deprecated_func;
+	cmd->doc = "Set the log level for a specified category\n"
+		   "Deprecated Category\n";
+	cmd->attr = CMD_ATTR_DEPRECATED;
+
+	install_element(CFG_LOG_NODE, cmd);
+}
+
 /*! Register logging related commands to the VTY. Call this once from
  *  your application if you want to support those commands. */
 void logging_vty_add_cmds()
