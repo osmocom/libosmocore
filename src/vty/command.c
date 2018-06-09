@@ -679,7 +679,8 @@ static int vty_dump_nodes(struct vty *vty)
 			elem = vector_slot(cnode->cmd_vector, j);
 			if (!vty_command_is_common(elem))
 				continue;
-			vty_dump_element(elem, vty);
+			if (!elem->attr & CMD_ATTR_DEPRECATED)
+				vty_dump_element(elem, vty);
 		}
 	}
 	vty_out(vty, "  </node>%s", VTY_NEWLINE);
@@ -716,7 +717,8 @@ static int vty_dump_nodes(struct vty *vty)
 			elem = vector_slot(cnode->cmd_vector, j);
 			if (vty_command_is_common(elem))
 				continue;
-			vty_dump_element(elem, vty);
+			if (!elem->attr & CMD_ATTR_DEPRECATED)
+				vty_dump_element(elem, vty);
 		}
 
 		vty_out(vty, "  </node>%s", VTY_NEWLINE);
