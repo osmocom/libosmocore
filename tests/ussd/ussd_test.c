@@ -188,6 +188,43 @@ static void test_extract_ie_by_tag(void)
 	printf("\n");
 }
 
+static void test_parse_facility_ie(void)
+{
+	struct ss_request req;
+	uint16_t ie_len;
+	uint8_t *ie;
+	int rc;
+
+	printf("[i] Testing gsm0480_parse_facility_ie()\n");
+
+	/* Extract Facility IE from FACILITY message */
+	rc = gsm0480_extract_ie_by_tag((struct gsm48_hdr *) ussd_facility,
+		sizeof(ussd_facility), &ie, &ie_len, GSM0480_IE_FACILITY);
+	OSMO_ASSERT(rc == 0);
+	OSMO_ASSERT(ie != NULL && ie_len > 0);
+	printf("[?] FACILITY message with Facility IE "
+		"(len=%u): %s\n", ie_len, osmo_hexdump(ie, ie_len));
+
+	/* Attempt to decode */
+	memset(&req, 0x00, sizeof(req));
+	rc = gsm0480_parse_facility_ie(ie, ie_len, &req);
+	OSMO_ASSERT(rc == 0);
+
+	/* Verify expected vs decoded data */
+	printf("[?] InvokeID: expected 0x%02x, decoded 0x%02x\n",
+		0x01, req.invoke_id);
+	printf("[?] Operation code: expected 0x%02x, decoded 0x%02x\n",
+		0x3c, req.opcode);
+	printf("[?] Data Coding Scheme: expected 0x%02x, decoded 0x%02x\n",
+		0x0f, req.ussd_data_dcs);
+	printf("[?] Data length: expected 0x%02x, decoded 0x%02x\n",
+		0x01, req.ussd_data_len);
+	printf("[?] Data: expected %s, decoded %s\n", "32",
+		osmo_hexdump_nospc(req.ussd_data, req.ussd_data_len));
+
+	printf("\n");
+}
+
 int main(int argc, char **argv)
 {
 	struct ss_request req;
@@ -200,6 +237,9 @@ int main(int argc, char **argv)
 
 	/* Test gsm0480_extract_ie_by_tag() */
 	test_extract_ie_by_tag();
+
+	/* Test gsm0480_parse_facility_ie() */
+	test_parse_facility_ie();
 
 	memset(&req, 0, sizeof(req));
 	gsm0480_decode_ss_request((struct gsm48_hdr *) ussd_request,

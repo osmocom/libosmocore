@@ -201,8 +201,6 @@ static int parse_ss_facility(const uint8_t *ss_facility, uint16_t len,
 			     struct ss_request *req);
 static int parse_ss_info_elements(const uint8_t *ss_ie, uint16_t len,
 				  struct ss_request *req);
-static int parse_facility_ie(const uint8_t *facility_ie, uint16_t length,
-			     struct ss_request *req);
 static int parse_ss_invoke(const uint8_t *invoke_data, uint16_t length,
 					struct ss_request *req);
 static int parse_ss_return_result(const uint8_t *rr_data, uint16_t length,
@@ -419,7 +417,7 @@ static int parse_ss_facility(const uint8_t *ss_facility, uint16_t len,
 	if (len - 1 < facility_length)
 		return 0;
 
-	return parse_facility_ie(ss_facility + 1, facility_length, req);
+	return !gsm0480_parse_facility_ie(ss_facility + 1, facility_length, req);
 }
 
 static int parse_ss_info_elements(const uint8_t *ss_ie, uint16_t len,
@@ -445,7 +443,7 @@ static int parse_ss_info_elements(const uint8_t *ss_ie, uint16_t len,
 	case GSM48_IE_CAUSE:
 		break;
 	case GSM0480_IE_FACILITY:
-		rc = parse_facility_ie(ss_ie + 2, iei_length, req);
+		rc = !gsm0480_parse_facility_ie(ss_ie + 2, iei_length, req);
 		break;
 	case GSM0480_IE_SS_VERSION:
 		break;
@@ -464,31 +462,40 @@ static int parse_ss_info_elements(const uint8_t *ss_ie, uint16_t len,
 	return rc;
 }
 
-static int parse_facility_ie(const uint8_t *facility_ie, uint16_t length,
-			     struct ss_request *req)
+/*! Parse the components of a given Facility IE
+ * \param[in]  facility_ie  The Facility IE
+ * \param[in]  length       The length of Facility IE
+ * \param[out] req          Abstract representation of SS message
+ * \return     0 in case of success, otherwise -ERRNO
+ */
+int gsm0480_parse_facility_ie(const uint8_t *facility_ie, uint16_t length,
+			      struct ss_request *req)
 {
-	int rc = 1;
+	uint8_t component_length;
+	uint8_t component_type;
 	uint8_t offset = 0;
+	int rc = 1;
 
+	/* Iterate over components within IE */
 	while (offset + 2 <= length) {
 		/* Component Type tag - table 3.7 */
-		uint8_t component_type = facility_ie[offset];
-		uint8_t component_length = facility_ie[offset+1];
+		component_type = facility_ie[offset];
+		component_length = facility_ie[offset + 1];
 
-		/* size check */
+		/* Make sure that there is no overflow */
 		if (offset + 2 + component_length > length) {
 			LOGP(0, LOGL_ERROR, "Component does not fit.\n");
-			return 0;
+			return -EINVAL;
 		}
 
 		switch (component_type) {
 		case GSM0480_CTYPE_INVOKE:
-			rc &= parse_ss_invoke(facility_ie+2,
+			rc &= parse_ss_invoke(facility_ie + 2,
 					      component_length,
 					      req);
 			break;
 		case GSM0480_CTYPE_RETURN_RESULT:
-			rc &= parse_ss_return_result(facility_ie+2,
+			rc &= parse_ss_return_result(facility_ie + 2,
 						     component_length,
 						     req);
 			break;
@@ -502,10 +509,17 @@ static int parse_facility_ie(const uint8_t *facility_ie, uint16_t length,
 			rc = 0;
 			break;
 		}
-		offset += (component_length+2);
-	};
 
-	return rc;
+		offset += (component_length + 2);
+	}
+
+	/**
+	 * The internal functions are using inverted return
+	 * codes, where '0' means error/failure. While a
+	 * common approach is to return negative errno in
+	 * case of any failure, and '0' if all is ok.
+	 */
+	return (rc == 0) ? -EINVAL : 0;
 }
 
 /* Parse an Invoke component - see table 3.3 */

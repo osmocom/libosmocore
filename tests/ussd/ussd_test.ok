@@ -4,6 +4,14 @@
 [?] FACILITY message with Facility IE (len=18): a2 10 02 01 01 30 0b 02 01 3c 30 06 04 01 0f 04 01 32 
 [?] RELEASE COMPLETE message with Facility IE (len=8): a3 06 02 01 05 02 01 24 
 
+[i] Testing gsm0480_parse_facility_ie()
+[?] FACILITY message with Facility IE (len=18): a2 10 02 01 01 30 0b 02 01 3c 30 06 04 01 0f 04 01 32 
+[?] InvokeID: expected 0x01, decoded 0x01
+[?] Operation code: expected 0x3c, decoded 0x3c
+[?] Data Coding Scheme: expected 0x0f, decoded 0x0f
+[?] Data length: expected 0x01, decoded 0x01
+[?] Data: expected 32, decoded 32
+
 Tested if it still works. Text was: **321#
 interrogateSS CFU text..'' code 33
 Testing parsing a USSD request and truncated versions

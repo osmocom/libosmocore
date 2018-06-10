@@ -90,6 +90,7 @@ gsm0480_create_ussd_resp;
 gsm0480_create_ussd_notify;
 gsm0480_create_ussd_release_complete;
 gsm0480_extract_ie_by_tag;
+gsm0480_parse_facility_ie;
 gsm0480_decode_ussd_request;
 gsm0480_decode_ss_request;
 gsm0480_wrap_facility;
