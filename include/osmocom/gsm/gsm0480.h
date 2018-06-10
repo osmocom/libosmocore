@@ -91,6 +91,8 @@ struct ss_request {
 	uint8_t invoke_id;
 };
 
+int gsm0480_extract_ie_by_tag(const struct gsm48_hdr *hdr, uint16_t msg_len,
+			      uint8_t **ie, uint16_t *ie_len, uint8_t ie_tag);
 int gsm0480_decode_ss_request(const struct gsm48_hdr *hdr, uint16_t len,
 				struct ss_request *request);
 

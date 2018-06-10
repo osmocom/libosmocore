@@ -33,6 +33,7 @@
 #include <osmocom/gsm/protocol/gsm_04_80.h>
 
 #include <string.h>
+#include <errno.h>
 
 static inline unsigned char *msgb_wrap_with_TL(struct msgb *msgb, uint8_t tag)
 {
@@ -213,6 +214,93 @@ static int parse_process_uss_req(const uint8_t *uss_req_data, uint16_t length,
 static int parse_ss_for_bs_req(const uint8_t *ss_req_data,
 				     uint16_t length,
 				     struct ss_request *req);
+
+/*! Get pointer to the IE of a given type
+ * \param[in]  hdr      Pointer to the message starting from header
+ * \param[in]  msg_len  Length of the whole message + header
+ * \param[out] ie       External pointer to be set
+ * \param[out] ie_len   External IE length variable
+ * \param[in]  ie_tag   Tag value of the required IE
+ * \returns 0 in case of success, otherwise -ERRNO
+ *
+ * This function iterates over existing IEs within a given
+ * message (depending on its type), and looks for the one with
+ * given \ref ie_tag value. If the IE is found, the external
+ * pointer pointed by \ref ie will be set to its value part
+ * (omitting TL), and \ref ie_len will be set to the length.
+ * Otherwise, e.g. in case of parsing error, both \ref ie
+ * and \ref ie_len are set to NULL and 0 respectively.
+ */
+int gsm0480_extract_ie_by_tag(const struct gsm48_hdr *hdr, uint16_t msg_len,
+			      uint8_t **ie, uint16_t *ie_len, uint8_t ie_tag)
+{
+	uint8_t pdisc, msg_type;
+	uint8_t *tlv, len;
+
+	/* Init external variables */
+	*ie_len = 0;
+	*ie = NULL;
+
+	/* Drop incomplete / corrupted messages */
+	if (msg_len < sizeof(*hdr))
+		return -EINVAL;
+
+	pdisc = gsm48_hdr_pdisc(hdr);
+	msg_type = gsm48_hdr_msg_type(hdr);
+
+	/* Drop non-SS related messages */
+	if (pdisc != GSM48_PDISC_NC_SS)
+		return -EINVAL;
+
+	len = msg_len - sizeof(*hdr);
+	tlv = (uint8_t *) hdr->data;
+
+	/* Parse a message depending on its type */
+	switch (msg_type) {
+	/* See table 2.5: RELEASE COMPLETE message content */
+	case GSM0480_MTYPE_RELEASE_COMPLETE:
+	/* See tables 2.3 and 2.4: REGISTER message content */
+	case GSM0480_MTYPE_REGISTER:
+		/* Iterate over TLV-based IEs */
+		while (len > 2) {
+			if (tlv[0] == ie_tag) {
+				*ie_len = tlv[1];
+				*ie = tlv + 2;
+				return 0;
+			}
+
+			len -= tlv[1] + 2;
+			tlv += tlv[1] + 2;
+			continue;
+		}
+
+		/* The Facility IE is mandatory for REGISTER */
+		if (msg_type == GSM0480_MTYPE_REGISTER)
+			if (ie_tag == GSM0480_IE_FACILITY)
+				return -EINVAL;
+		break;
+
+	/* See table 2.2: FACILITY message content */
+	case GSM0480_MTYPE_FACILITY:
+		/* There is no other IEs */
+		if (ie_tag != GSM0480_IE_FACILITY)
+			break;
+
+		/* Mandatory LV-based Facility IE */
+		if (len < 2)
+			return -EINVAL;
+
+		*ie_len = tlv[0];
+		*ie = tlv + 1;
+		return 0;
+
+	default:
+		/* Wrong message type, out of specs */
+		return -EINVAL;
+	}
+
+	return 0;
+}
 
 /* Decode a mobile-originated USSD-request message */
 int gsm0480_decode_ussd_request(const struct gsm48_hdr *hdr, uint16_t len,

@@ -1,3 +1,9 @@
+[i] Testing gsm0480_extract_ie_by_tag()
+[?] REGISTER message with Facility IE (len=21): a1 13 02 01 03 02 01 3b 30 0b 04 01 0f 04 06 2a d5 4c 16 1b 01 
+[?] REGISTER message with SS version IE (len=1): 00 
+[?] FACILITY message with Facility IE (len=18): a2 10 02 01 01 30 0b 02 01 3c 30 06 04 01 0f 04 01 32 
+[?] RELEASE COMPLETE message with Facility IE (len=8): a3 06 02 01 05 02 01 24 
+
 Tested if it still works. Text was: **321#
 interrogateSS CFU text..'' code 33
 Testing parsing a USSD request and truncated versions

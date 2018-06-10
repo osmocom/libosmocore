@@ -34,6 +34,17 @@ static const uint8_t ussd_request[] = {
 	0x01, 0x7f, 0x01, 0x00
 };
 
+static const uint8_t ussd_facility[] = {
+	0x1b, 0x3a, 0x12, 0xa2, 0x10, 0x02, 0x01, 0x01,
+	0x30, 0x0b, 0x02, 0x01, 0x3c, 0x30, 0x06, 0x04,
+	0x01, 0x0f, 0x04, 0x01, 0x32
+};
+
+static const uint8_t ussd_release[] = {
+	0x8b, 0x2a, 0x1c, 0x08, 0xa3, 0x06, 0x02, 0x01,
+	0x05, 0x02, 0x01, 0x24
+};
+
 static const uint8_t interrogate_ss[] = {
 	0x0b, 0x7b, 0x1c, 0x0d, 0xa1, 0x0b, 0x02, 0x01,
 	0x03, 0x02, 0x01, 0x0e, 0x30, 0x03, 0x04, 0x01,
@@ -116,6 +127,67 @@ static void test_7bit_ussd(const char *text, const char *encoded_hex, const char
 	}
 }
 
+static void test_extract_ie_by_tag(void)
+{
+	uint16_t ie_len;
+	uint8_t *ie;
+	int rc;
+
+	printf("[i] Testing gsm0480_extract_ie_by_tag()\n");
+
+	/* REGISTER message with Facility IE */
+	rc = gsm0480_extract_ie_by_tag((struct gsm48_hdr *) ussd_request,
+		sizeof(ussd_request), &ie, &ie_len, GSM0480_IE_FACILITY);
+	OSMO_ASSERT(rc == 0);
+	OSMO_ASSERT(ie != NULL && ie_len > 0);
+	printf("[?] REGISTER message with Facility IE "
+		"(len=%u): %s\n", ie_len, osmo_hexdump(ie, ie_len));
+
+	/* REGISTER message with SS version IE */
+	rc = gsm0480_extract_ie_by_tag((struct gsm48_hdr *) ussd_request,
+		sizeof(ussd_request), &ie, &ie_len, GSM0480_IE_SS_VERSION);
+	OSMO_ASSERT(rc == 0);
+	OSMO_ASSERT(ie != NULL && ie_len > 0);
+	printf("[?] REGISTER message with SS version IE "
+		"(len=%u): %s\n", ie_len, osmo_hexdump(ie, ie_len));
+
+	/* REGISTER message with unknown IE */
+	rc = gsm0480_extract_ie_by_tag((struct gsm48_hdr *) ussd_request,
+		sizeof(ussd_request), &ie, &ie_len, 0xff);
+	OSMO_ASSERT(rc == 0);
+	OSMO_ASSERT(ie == NULL && ie_len == 0);
+
+	/* FACILITY message with Facility IE */
+	rc = gsm0480_extract_ie_by_tag((struct gsm48_hdr *) ussd_facility,
+		sizeof(ussd_facility), &ie, &ie_len, GSM0480_IE_FACILITY);
+	OSMO_ASSERT(rc == 0);
+	OSMO_ASSERT(ie != NULL && ie_len > 0);
+	printf("[?] FACILITY message with Facility IE "
+		"(len=%u): %s\n", ie_len, osmo_hexdump(ie, ie_len));
+
+	/* FACILITY message with unknown IE */
+	rc = gsm0480_extract_ie_by_tag((struct gsm48_hdr *) ussd_facility,
+		sizeof(ussd_facility), &ie, &ie_len, 0xff);
+	OSMO_ASSERT(rc == 0);
+	OSMO_ASSERT(ie == NULL && ie_len == 0);
+
+	/* RELEASE COMPLETE message with Facility IE */
+	rc = gsm0480_extract_ie_by_tag((struct gsm48_hdr *) ussd_release,
+		sizeof(ussd_release), &ie, &ie_len, GSM0480_IE_FACILITY);
+	OSMO_ASSERT(rc == 0);
+	OSMO_ASSERT(ie != NULL && ie_len > 0);
+	printf("[?] RELEASE COMPLETE message with Facility IE "
+		"(len=%u): %s\n", ie_len, osmo_hexdump(ie, ie_len));
+
+	/* RELEASE COMPLETE message without Facility IE */
+	rc = gsm0480_extract_ie_by_tag((struct gsm48_hdr *) ussd_release,
+		sizeof(struct gsm48_hdr), &ie, &ie_len, GSM0480_IE_FACILITY);
+	OSMO_ASSERT(rc == 0);
+	OSMO_ASSERT(ie == NULL && ie_len == 0);
+
+	printf("\n");
+}
+
 int main(int argc, char **argv)
 {
 	struct ss_request req;
@@ -125,6 +197,9 @@ int main(int argc, char **argv)
 	void *ctx = talloc_named_const(NULL, 0, "ussd_test");
 
 	osmo_init_logging2(ctx, &info);
+
+	/* Test gsm0480_extract_ie_by_tag() */
+	test_extract_ie_by_tag();
 
 	memset(&req, 0, sizeof(req));
 	gsm0480_decode_ss_request((struct gsm48_hdr *) ussd_request,
