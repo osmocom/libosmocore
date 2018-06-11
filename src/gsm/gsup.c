@@ -70,6 +70,29 @@ const struct value_string osmo_gsup_message_type_names[] = {
 	{ 0, NULL }
 };
 
+
+/*! return the error message type corresponding to \a type_in
+ *  \returns matching error message type; -1 on error */
+int osmo_gsup_get_err_msg_type(enum osmo_gsup_message_type type_in)
+{
+	switch (type_in) {
+	case OSMO_GSUP_MSGT_UPDATE_LOCATION_REQUEST:
+		return OSMO_GSUP_MSGT_UPDATE_LOCATION_ERROR;
+	case OSMO_GSUP_MSGT_SEND_AUTH_INFO_REQUEST:
+		return OSMO_GSUP_MSGT_SEND_AUTH_INFO_ERROR;
+	case OSMO_GSUP_MSGT_PURGE_MS_REQUEST:
+		return OSMO_GSUP_MSGT_PURGE_MS_ERROR;
+	case OSMO_GSUP_MSGT_INSERT_DATA_REQUEST:
+		return OSMO_GSUP_MSGT_INSERT_DATA_ERROR;
+	case OSMO_GSUP_MSGT_DELETE_DATA_REQUEST:
+		return OSMO_GSUP_MSGT_DELETE_DATA_ERROR;
+	case OSMO_GSUP_MSGT_LOCATION_CANCEL_REQUEST:
+		return OSMO_GSUP_MSGT_LOCATION_CANCEL_ERROR;
+	default:
+		return -1;
+	}
+}
+
 static int decode_pdp_info(uint8_t *data, size_t data_len,
 			  struct osmo_gsup_pdp_info *pdp_info)
 {
