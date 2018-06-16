@@ -3,6 +3,7 @@
 /*
  * (C) 2010 by Holger Hans Peter Freyther <zecke@selfish.org>
  * (C) 2009 by Mike Haben <michael.haben@btinternet.com>
+ * (C) 2018 by Harald Welte <laforge@gnumonks.org>
  *
  * All Rights Reserved
  *
@@ -34,6 +35,37 @@
 
 #include <string.h>
 #include <errno.h>
+
+const struct value_string gsm0480_comp_type_names[] = {
+	{ GSM0480_CTYPE_INVOKE,			"Invoke" },
+	{ GSM0480_CTYPE_RETURN_RESULT,		"ReturnResult" },
+	{ GSM0480_CTYPE_RETURN_ERROR,		"ReturnError" },
+	{ GSM0480_CTYPE_REJECT,			"Reject" },
+	{ 0, NULL }
+};
+
+const struct value_string gsm0480_op_code_names[] = {
+	{ GSM0480_OP_CODE_REGISTER_SS,			"RegisterSS" },
+	{ GSM0480_OP_CODE_ERASE_SS,			"EraseSS" },
+	{ GSM0480_OP_CODE_ACTIVATE_SS,			"ActivateSS" },
+	{ GSM0480_OP_CODE_DEACTIVATE_SS,		"DeactivateSS" },
+	{ GSM0480_OP_CODE_INTERROGATE_SS,		"IngerrogateSS" },
+	{ GSM0480_OP_CODE_NOTIFY_SS,			"NotifySS" },
+	{ GSM0480_OP_CODE_REGISTER_PASSWORD,		"RegisterPassword" },
+	{ GSM0480_OP_CODE_GET_PASSWORD,			"GetPassword" },
+	{ GSM0480_OP_CODE_PROCESS_USS_DATA,		"ProcessUSSD" },
+	{ GSM0480_OP_CODE_FORWARD_CHECK_SS_IND,		"ForwardChecckSSind" },
+	{ GSM0480_OP_CODE_PROCESS_USS_REQ,		"ProcessUssReq" },
+	{ GSM0480_OP_CODE_USS_REQUEST,			"UssRequest" },
+	{ GSM0480_OP_CODE_USS_NOTIFY,			"UssNotify" },
+	{ GSM0480_OP_CODE_FORWARD_CUG_INFO,		"ForwardCugInfo" },
+	{ GSM0480_OP_CODE_SPLIT_MPTY,			"SplitMPTY" },
+	{ GSM0480_OP_CODE_RETRIEVE_MPTY,		"RetrieveMPTY" },
+	{ GSM0480_OP_CODE_HOLD_MPTY,			"HoldMPTY" },
+	{ GSM0480_OP_CODE_BUILD_MPTY,			"BuildMPTY" },
+	{ GSM0480_OP_CODE_FORWARD_CHARGE_ADVICE,	"ForwardChargeAdvice" },
+	{ 0, NULL }
+};
 
 static inline unsigned char *msgb_wrap_with_TL(struct msgb *msgb, uint8_t tag)
 {

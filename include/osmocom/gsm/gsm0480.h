@@ -7,6 +7,16 @@
 #include <osmocom/gsm/protocol/gsm_04_08.h>
 #include <osmocom/gsm/protocol/gsm_04_80.h>
 
+extern const struct value_string gsm0480_comp_type_names[];
+static inline const char *gsm0480_comp_type_name(uint8_t comp_type) {
+	return get_value_string(gsm0480_comp_type_names, comp_type);
+}
+
+extern const struct value_string gsm0480_op_code_names[];
+static inline const char *gsm0480_op_code_name(uint8_t op_code) {
+	return get_value_string(gsm0480_op_code_names, op_code);
+}
+
 /**
  * According to the GSM 04.80 (version 5.0.0) specification Annex A
  * "Expanded ASN.1 Module "SS-Protocol", the maximum size of a USSD
