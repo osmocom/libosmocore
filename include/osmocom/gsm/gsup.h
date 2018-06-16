@@ -154,6 +154,11 @@ enum osmo_gsup_session_state {
 	OSMO_GSUP_SESSION_STATE_END		= 0x03,
 };
 
+extern const struct value_string osmo_gsup_session_state_names[];
+static inline const char *
+osmo_gsup_session_state_name(enum osmo_gsup_session_state val)
+{	return get_value_string(osmo_gsup_session_state_names, val); }
+
 /*! parsed/decoded PDP context information */
 struct osmo_gsup_pdp_info {
 	unsigned int			context_id;

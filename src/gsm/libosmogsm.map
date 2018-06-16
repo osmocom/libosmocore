@@ -469,6 +469,7 @@ osmo_apn_from_str;
 osmo_gsup_encode;
 osmo_gsup_decode;
 osmo_gsup_message_type_names;
+osmo_gsup_session_state_names;
 osmo_gsup_get_err_msg_type;
 
 osmo_oap_encode;

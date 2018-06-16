@@ -70,6 +70,14 @@ const struct value_string osmo_gsup_message_type_names[] = {
 	{ 0, NULL }
 };
 
+const struct value_string osmo_gsup_session_state_names[] = {
+	{ OSMO_GSUP_SESSION_STATE_NONE, "NONE" },
+	{ OSMO_GSUP_SESSION_STATE_BEGIN, "BEGIN" },
+	{ OSMO_GSUP_SESSION_STATE_CONTINUE, "CONTINUE" },
+	{ OSMO_GSUP_SESSION_STATE_END, "END" },
+	{ 0, NULL }
+};
+
 
 /*! return the error message type corresponding to \a type_in
  *  \returns matching error message type; -1 on error */
