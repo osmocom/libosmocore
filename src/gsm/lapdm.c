@@ -709,7 +709,7 @@ static int l2_ph_data_ind(struct msgb *msg, struct lapdm_entity *le,
 		memcpy(&mctx.dl->mctx, &mctx, sizeof(mctx.dl->mctx));
 		rc =lapdm_rx_not_permitted(le, &lctx);
 		if (rc > 0) {
-			LOGP(DLLAPD, LOGL_NOTICE, "received message not permitted");
+			LOGP(DLLAPD, LOGL_NOTICE, "received message not permitted\n");
 			msgb_free(msg);
 			rsl_rll_error(rc, &mctx);
 			return -EINVAL;
