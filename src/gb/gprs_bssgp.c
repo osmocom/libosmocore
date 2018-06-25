@@ -1049,6 +1049,11 @@ int bssgp_rcvmsg(struct msgb *msg)
 		data_len = msgb_bssgp_len(msg) - sizeof(*budh);
 		rc = bssgp_tlv_parse(&tp, budh->data, data_len);
 	}
+	if (rc < 0) {
+		LOGP(DBSSGP, LOGL_ERROR, "Failed to parse BSSGP %s message. Invalid message was: %s\n",
+		     bssgp_pdu_str(pdu_type), msgb_hexdump(msg));
+		return rc;
+	}
 
 	if (bvci == BVCI_SIGNALLING && TLVP_PRESENT(&tp, BSSGP_IE_BVCI))
 		bvci = tlvp_val16be(&tp, BSSGP_IE_BVCI);
