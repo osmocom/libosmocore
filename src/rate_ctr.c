@@ -73,7 +73,7 @@ static LLIST_HEAD(rate_ctr_groups);
 static void *tall_rate_ctr_ctx;
 
 
-static bool rate_ctrl_group_desc_validate(const struct rate_ctr_group_desc *desc, bool quiet)
+static bool rate_ctrl_group_desc_validate(const struct rate_ctr_group_desc *desc)
 {
 	unsigned int i;
 	const struct rate_ctr_desc *ctr_desc;
@@ -88,17 +88,15 @@ static bool rate_ctrl_group_desc_validate(const struct rate_ctr_group_desc *desc
 		desc->group_name_prefix, desc->num_ctr);
 
 	if (!osmo_identifier_valid(desc->group_name_prefix)) {
-		if (!quiet)
-			LOGP(DLGLOBAL, LOGL_ERROR, "'%s' is not a valid counter group identifier\n",
-				desc->group_name_prefix);
+		LOGP(DLGLOBAL, LOGL_ERROR, "'%s' is not a valid counter group identifier\n",
+			desc->group_name_prefix);
 		return false;
 	}
 
 	for (i = 0; i < desc->num_ctr; i++) {
 		if (!osmo_identifier_valid(ctr_desc[i].name)) {
-			if (!quiet)
-				LOGP(DLGLOBAL, LOGL_ERROR, "'%s' is not a valid counter identifier\n",
-					ctr_desc[i].name);
+			LOGP(DLGLOBAL, LOGL_ERROR, "'%s' is not a valid counter identifier\n",
+				ctr_desc[i].name);
 			return false;
 		}
 	}
@@ -106,12 +104,13 @@ static bool rate_ctrl_group_desc_validate(const struct rate_ctr_group_desc *desc
 	return true;
 }
 
-/* return 'in' if it doesn't contaon any '.'; otherwise allocate a copy and
+/* return 'in' if it doesn't contain any '.'; otherwise allocate a copy and
  * replace all '.' with ':' */
 static char *mangle_identifier_ifneeded(const void *ctx, const char *in)
 {
 	char *out;
 	unsigned int i;
+	bool modified = false;
 
 	if (!in)
 		return NULL;
@@ -123,9 +122,15 @@ static char *mangle_identifier_ifneeded(const void *ctx, const char *in)
 	OSMO_ASSERT(out);
 
 	for (i = 0; i < strlen(out); i++) {
-		if (out[i] == '.')
+		if (out[i] == '.') {
 			out[i] = ':';
+			modified = true;
+		}
 	}
+
+	if (modified)
+		LOGP(DLGLOBAL, LOGL_NOTICE, "counter group name mangled: '%s' -> '%s'\n",
+			in, out);
 
 	return out;
 }
@@ -138,6 +143,10 @@ rate_ctr_group_desc_mangle(void *ctx, const struct rate_ctr_group_desc *desc)
 	int i;
 
 	OSMO_ASSERT(desc_new);
+
+	LOGP(DLGLOBAL, LOGL_INFO, "Needed to mangle counter group '%s' names: it is still using '.' as "
+		"separator, which is not allowed. please consider updating the application\n",
+		desc->group_name_prefix);
 
 	/* mangle the name_prefix but copy/keep the rest */
 	desc_new->group_name_prefix = mangle_identifier_ifneeded(desc_new, desc->group_name_prefix);
@@ -161,17 +170,13 @@ rate_ctr_group_desc_mangle(void *ctx, const struct rate_ctr_group_desc *desc)
 		ctrd_new[i].description = ctrd[i].description;
 	}
 
-	if (!rate_ctrl_group_desc_validate(desc_new, false)) {
+	if (!rate_ctrl_group_desc_validate(desc_new)) {
 		/* simple mangling of identifiers ('.' -> ':') was not sufficient to render a valid
 		 * descriptor, we have to bail out */
 		LOGP(DLGLOBAL, LOGL_ERROR, "counter group '%s' still invalid after mangling\n",
 			desc->group_name_prefix);
 		goto err_free;
 	}
-
-	LOGP(DLGLOBAL, LOGL_INFO, "Needed to mangle counter group '%s' names: it is still using '.' as "
-		"separator, which is not allowed. please consider updating the application\n",
-		desc->group_name_prefix);
 
 	return desc_new;
 err_free:
@@ -231,7 +236,7 @@ struct rate_ctr_group *rate_ctr_group_alloc(void *ctx,
 		return NULL;
 
 	/* attempt to mangle all '.' in identifiers to ':' for backwards compat */
-	if (!rate_ctrl_group_desc_validate(desc, true)) {
+	if (!rate_ctrl_group_desc_validate(desc)) {
 		desc = rate_ctr_group_desc_mangle(group, desc);
 		if (!desc) {
 			talloc_free(group);
