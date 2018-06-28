@@ -29,5 +29,6 @@ case "$arch" in
   *)
     set +x
     echo "Unexpected architecture '$arch'"
+    exit 1
   ;;
 esac
