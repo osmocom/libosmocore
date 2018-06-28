@@ -44,6 +44,7 @@
 
 #include <osmocom/core/bits.h>
 #include <osmocom/core/bitvec.h>
+#include <osmocom/core/panic.h>
 
 #define BITNUM_FROM_COMP(byte, bit)	((byte*8)+bit)
 
@@ -530,7 +531,7 @@ char bit_value_to_char(enum bit_value v)
 	case ONE: return '1';
 	case L: return 'L';
 	case H: return 'H';
-	default: abort();
+	default: osmo_panic("unexpected input in bit_value_to_char"); return 'X';
 	}
 }
 
