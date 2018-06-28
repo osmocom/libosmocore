@@ -356,6 +356,7 @@ static void _output(struct log_target *target, unsigned int subsys,
 	}
 	if (!cont) {
 		if (target->print_ext_timestamp) {
+#ifdef HAVE_LOCALTIME_R
 			struct tm tm;
 			struct timeval tv;
 			osmo_gettimeofday(&tv, NULL);
@@ -367,6 +368,7 @@ static void _output(struct log_target *target, unsigned int subsys,
 			if (ret < 0)
 				goto err;
 			OSMO_SNPRINTF_RET(ret, rem, offset, len);
+#endif
 		} else if (target->print_timestamp) {
 			char *timestr;
 			time_t tm;

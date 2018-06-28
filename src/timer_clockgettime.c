@@ -44,6 +44,9 @@
 /*! \file timer_clockgettime.c
  */
 
+#include "config.h"
+#ifdef HAVE_CLOCK_GETTIME
+
 #include <stdlib.h>
 #include <stdbool.h>
 #include <sys/time.h>
@@ -134,5 +137,7 @@ void osmo_clock_override_add(clockid_t clk_id, time_t secs, long nsecs)
 	if (c)
 		timespecadd(&c->time, &val, &c->time);
 }
+
+#endif /* HAVE_CLOCK_GETTIME */
 
 /*! @} */

@@ -91,6 +91,8 @@ AC_COMPILE_IFELSE([AC_LANG_SOURCE([char foo;])],
 CFLAGS="$saved_CFLAGS"
 AC_SUBST(SYMBOL_VISIBILITY)
 
+AC_CHECK_FUNCS(clock_gettime localtime_r)
+
 AC_DEFUN([CHECK_TM_INCLUDES_TM_GMTOFF], [
   AC_CACHE_CHECK(
     [whether struct tm has tm_gmtoff member],
