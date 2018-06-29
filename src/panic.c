@@ -27,6 +27,7 @@
  *  @{
  * \file panic.c */
 
+#include <unistd.h>
 #include <osmocom/core/panic.h>
 #include <osmocom/core/backtrace.h>
 
@@ -83,8 +84,14 @@ void osmo_panic(const char *fmt, ...)
 		osmo_panic_default(fmt, args);
 
 	va_end(args);
+
+	/* not reached, but make compiler believe we really never return */
+#ifndef PANIC_INFLOOP
+	exit(2342);
+#else
+	while (1) ;
+#endif
 }
- 
 
 /*! Set the panic handler
  *  \param[in] h New panic handler function
