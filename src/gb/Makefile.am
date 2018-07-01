@@ -17,7 +17,7 @@ libosmogb_la_LIBADD = $(TALLOC_LIBS) \
 		$(top_builddir)/src/vty/libosmovty.la \
 		$(top_builddir)/src/gsm/libosmogsm.la
 
-libosmogb_la_SOURCES = gprs_ns.c gprs_ns_frgre.c gprs_ns_vty.c \
+libosmogb_la_SOURCES = gprs_ns.c gprs_ns_frgre.c gprs_ns_vty.c gprs_ns_sns.c \
 		  gprs_bssgp.c gprs_bssgp_util.c gprs_bssgp_vty.c \
 		  gprs_bssgp_bss.c common_vty.c
 endif
