@@ -66,6 +66,7 @@ enum ns_ctrl_ie {
 	NS_IE_IPv6_EP_NR	= 0x09,
 	NS_IE_RESET_FLAG	= 0x0a,
 	NS_IE_IP_ADDR		= 0x0b,
+	NS_IE_TRANS_ID	 	= 0xff,	/* osmocom. Spec has this IE but without IEI! */
 };
 
 /*! NS Cause (TS 08.16, Section 10.3.2, Table 13) */

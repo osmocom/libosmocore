@@ -14,8 +14,8 @@
 
 #include <osmocom/gprs/protocol/gsm_08_16.h>
 
-#define NS_TIMERS_COUNT 7
-#define NS_TIMERS "(tns-block|tns-block-retries|tns-reset|tns-reset-retries|tns-test|tns-alive|tns-alive-retries)"
+#define NS_TIMERS_COUNT 8
+#define NS_TIMERS "(tns-block|tns-block-retries|tns-reset|tns-reset-retries|tns-test|tns-alive|tns-alive-retries|tsns-prov)"
 #define NS_TIMERS_HELP	\
 	"(un)blocking Timer (Tns-block) timeout\n"		\
 	"(un)blocking Timer (Tns-block) number of retries\n"	\
@@ -23,7 +23,8 @@
 	"Reset Timer (Tns-reset) number of retries\n"		\
 	"Test Timer (Tns-test) timeout\n"			\
 	"Alive Timer (Tns-alive) timeout\n"			\
-	"Alive Timer (Tns-alive) number of retries\n"
+	"Alive Timer (Tns-alive) number of retries\n"		\
+	"SNS Provision Timer (Tsns-prov) timeout\n"
 
 /* Educated guess - LLC user payload is 1500 bytes plus possible headers */
 #define NS_ALLOC_SIZE	3072
@@ -37,6 +38,7 @@ enum ns_timeout {
 	NS_TOUT_TNS_TEST,
 	NS_TOUT_TNS_ALIVE,
 	NS_TOUT_TNS_ALIVE_RETRIES,
+	NS_TOUT_TSNS_PROV,
 };
 
 #define NSE_S_BLOCKED	0x0001
@@ -102,6 +104,8 @@ struct gprs_ns_inst {
 		uint32_t local_ip;
 		unsigned int enabled:1;
 	} frgre;
+
+	struct osmo_fsm_inst *bss_sns_fi;
 };
 
 enum nsvc_timer_mode {
@@ -150,6 +154,10 @@ struct gprs_nsvc {
 			struct sockaddr_in bts_addr;
 		} frgre;
 	};
+	/*! signalling weight. 0 = don't use for signalling (BVCI == 0)*/
+	uint8_t sig_weight;
+	/*! signaling weight. 0 = don't use for user data (BVCI != 0) */
+	uint8_t data_weight;
 };
 
 /* Create a new NS protocol instance */
@@ -169,6 +177,9 @@ struct gprs_nsvc *gprs_ns_nsip_connect(struct gprs_ns_inst *nsi,
 					struct sockaddr_in *dest,
 					uint16_t nsei, uint16_t nsvci);
 
+/* Establish a connection (from the BSS) to the SGSN using IP SNS */
+struct gprs_nsvc *gprs_ns_nsip_connect_sns(struct gprs_ns_inst *nsi, struct sockaddr_in *dest,
+					   uint16_t nsei, uint16_t nsvci);
 
 struct sockaddr_in;
 
@@ -185,9 +196,12 @@ int gprs_ns_tx_unblock(struct gprs_nsvc *nsvc);
 int gprs_ns_frgre_listen(struct gprs_ns_inst *nsi);
 
 struct gprs_nsvc *gprs_nsvc_create(struct gprs_ns_inst *nsi, uint16_t nsvci);
+struct gprs_nsvc *gprs_nsvc_create2(struct gprs_ns_inst *nsi, uint16_t nsvci,
+				    uint8_t sig_weight, uint8_t data_weight);
 void gprs_nsvc_delete(struct gprs_nsvc *nsvc);
 struct gprs_nsvc *gprs_nsvc_by_nsei(struct gprs_ns_inst *nsi, uint16_t nsei);
 struct gprs_nsvc *gprs_nsvc_by_nsvci(struct gprs_ns_inst *nsi, uint16_t nsvci);
+struct gprs_nsvc *gprs_nsvc_by_rem_addr(struct gprs_ns_inst *nsi, const struct sockaddr_in *sin);
 
 /* Initiate a RESET procedure (including timer start, ...)*/
 int gprs_nsvc_reset(struct gprs_nsvc *nsvc, uint8_t cause);
@@ -213,6 +227,7 @@ enum signal_ns {
 	S_NS_ALIVE_EXP,	/* Tns-alive expired more than N times */
 	S_NS_REPLACED, /* nsvc object is replaced (sets old_nsvc) */
 	S_NS_MISMATCH, /* got an unexpected IE (sets msg, pdu_type, ie_type) */
+	S_SNS_CONFIGURED, /* IP-SNS configuration completed */
 };
 
 extern const struct value_string gprs_ns_signal_ns_names[];

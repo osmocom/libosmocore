@@ -7,3 +7,6 @@
 # If any interfaces have been added since the last public release: c:r:a + 1.
 # If any interfaces have been removed or changed since the last public release: c:r:0.
 #library	what			description / commit summary line
+libosmogb	gprs_ns_inst		Adding bss_sns_fi member for IP-SNS support
+libosmogb	gprs_nsvc		Adding sig_weight and data_weight members for IP-SNS support
+libosmogb	various new symbols	Adding functions related to IP-SNS support
