@@ -6,7 +6,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include
 AM_CFLAGS = -Wall ${GCC_FVISIBILITY_HIDDEN} -fno-strict-aliasing $(TALLOC_CFLAGS)
 
 # FIXME: this should eventually go into a milenage/Makefile.am
-noinst_HEADERS = common_vty.h
+noinst_HEADERS = common_vty.h gb_internal.h
 
 if ENABLE_GB
 lib_LTLIBRARIES = libosmogb.la

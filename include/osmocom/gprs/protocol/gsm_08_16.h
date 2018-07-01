@@ -17,6 +17,15 @@ struct gprs_ns_hdr {
 	uint8_t data[0];	/*!< variable-length payload */
 } __attribute__((packed));
 
+
+/*! Section 10.3.2c List of IP4 Elements */
+struct gprs_ns_ie_ip4_elem {
+	uint32_t ip_addr;
+	uint16_t udp_port;
+	uint8_t sig_weight;
+	uint8_t data_weight;
+} __attribute__ ((packed));
+
 extern const struct value_string gprs_ns_pdu_strings[];
 
 /*! NS PDU Type (TS 08.16, Section 10.3.7, Table 14) */
