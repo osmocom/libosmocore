@@ -71,6 +71,7 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 
+#include <osmocom/core/fsm.h>
 #include <osmocom/core/msgb.h>
 #include <osmocom/core/byteswap.h>
 #include <osmocom/gsm/tlv.h>
@@ -86,6 +87,7 @@
 #include <osmocom/gprs/gprs_ns_frgre.h>
 
 #include "common_vty.h"
+#include "gb_internal.h"
 
 #define ns_set_state(ns_, st_) ns_set_state_with_log(ns_, st_, false, __FILE__, __LINE__)
 #define ns_set_remote_state(ns_, st_) ns_set_state_with_log(ns_, st_, true, __FILE__, __LINE__)
@@ -99,6 +101,12 @@ static const struct tlv_definition ns_att_tlvdef = {
 		[NS_IE_PDU]	= { TLV_TYPE_TvLV, 0 },
 		[NS_IE_BVCI]	= { TLV_TYPE_TvLV, 0 },
 		[NS_IE_NSEI]	= { TLV_TYPE_TvLV, 0 },
+		[NS_IE_IPv4_LIST] = { TLV_TYPE_TvLV, 0 },
+		[NS_IE_IPv6_LIST] = { TLV_TYPE_TvLV, 0 },
+		[NS_IE_MAX_NR_NSVC] = { TLV_TYPE_FIXED, 2 },
+		[NS_IE_IPv4_EP_NR] = { TLV_TYPE_FIXED, 2 },
+		[NS_IE_IPv6_EP_NR] = { TLV_TYPE_FIXED, 2 },
+		[NS_IE_RESET_FLAG] = { TLV_TYPE_TV, 0 },
 	},
 };
 
@@ -163,6 +171,7 @@ const struct value_string gprs_ns_signal_ns_names[] = {
 	{ S_NS_ALIVE_EXP,	"NS-ALIVE expired" },
 	{ S_NS_REPLACED,	"NSVC replaced" },
 	{ S_NS_MISMATCH,	"Unexpected IE" },
+	{ S_SNS_CONFIGURED,	"SNS Configured" },
 	{ 0, NULL }
 };
 
@@ -716,9 +725,9 @@ static int gprs_ns_tx_reset_ack(struct gprs_nsvc *nsvc)
 }
 
 /* Section 9.3.4 */
-static int gprs_ns_tx_sns_config(struct gprs_nsvc *nsvc, bool end_flag,
-				 const struct gprs_ns_ie_ip4_elem *ip4_elems,
-				 unsigned int num_ip4_elems)
+int gprs_ns_tx_sns_config(struct gprs_nsvc *nsvc, bool end_flag,
+			  const struct gprs_ns_ie_ip4_elem *ip4_elems,
+			  unsigned int num_ip4_elems)
 {
 	struct msgb *msg = gprs_ns_msgb_alloc();
 	struct gprs_ns_hdr *nsh;
@@ -747,7 +756,7 @@ static int gprs_ns_tx_sns_config(struct gprs_nsvc *nsvc, bool end_flag,
 }
 
 /* Section 9.3.5 */
-static int gprs_ns_tx_sns_config_ack(struct gprs_nsvc *nsvc, uint8_t *cause)
+int gprs_ns_tx_sns_config_ack(struct gprs_nsvc *nsvc, uint8_t *cause)
 {
 	struct msgb *msg = gprs_ns_msgb_alloc();
 	struct gprs_ns_hdr *nsh;
@@ -773,8 +782,8 @@ static int gprs_ns_tx_sns_config_ack(struct gprs_nsvc *nsvc, uint8_t *cause)
 
 
 /* Section 9.3.7 */
-static int gprs_ns_tx_sns_size(struct gprs_nsvc *nsvc, bool reset_flag, uint16_t max_nr_nsvc,
-				uint16_t *ip4_ep_nr, uint16_t *ip6_ep_nr)
+int gprs_ns_tx_sns_size(struct gprs_nsvc *nsvc, bool reset_flag, uint16_t max_nr_nsvc,
+			uint16_t *ip4_ep_nr, uint16_t *ip6_ep_nr)
 {
 	struct msgb *msg = gprs_ns_msgb_alloc();
 	struct gprs_ns_hdr *nsh;
@@ -803,7 +812,7 @@ static int gprs_ns_tx_sns_size(struct gprs_nsvc *nsvc, bool reset_flag, uint16_t
 }
 
 /* Section 9.3.8 */
-static int gprs_ns_tx_sns_size_ack(struct gprs_nsvc *nsvc, uint8_t *cause)
+int gprs_ns_tx_sns_size_ack(struct gprs_nsvc *nsvc, uint8_t *cause)
 {
 	struct msgb *msg = gprs_ns_msgb_alloc();
 	struct gprs_ns_hdr *nsh;
@@ -1475,6 +1484,7 @@ int gprs_ns_process_msg(struct gprs_ns_inst *nsi, struct msgb *msg,
 			struct gprs_nsvc **nsvc)
 {
 	struct gprs_ns_hdr *nsh = (struct gprs_ns_hdr *) msg->l2h;
+	struct tlv_parsed tp;
 	int rc = 0;
 
 	msgb_nsei(msg) = (*nsvc)->nsei;
@@ -1551,6 +1561,33 @@ int gprs_ns_process_msg(struct gprs_ns_inst *nsi, struct msgb *msg,
 		/* mark remote NS-VC as blocked + active */
 		ns_set_remote_state(*nsvc, NSE_S_BLOCKED | NSE_S_ALIVE);
 		break;
+	case SNS_PDUT_CONFIG:
+		/* one additional byte ('end flag') before the TLV part starts */
+		rc = tlv_parse(&tp, &ns_att_tlvdef, nsh->data+1,
+				msgb_l2len(msg) - sizeof(*nsh)-1, 0, 0);
+		if (rc < 0) {
+			LOGPC(DNS, LOGL_NOTICE, "Error during TLV Parse in %s\n", msgb_hexdump(msg));
+			return rc;
+		}
+		/* All sub-network service related message types */
+		rc = gprs_ns_rx_sns(nsi, msg, &tp);
+		break;
+	case SNS_PDUT_ACK:
+	case SNS_PDUT_ADD:
+	case SNS_PDUT_CHANGE_WEIGHT:
+	case SNS_PDUT_CONFIG_ACK:
+	case SNS_PDUT_DELETE:
+	case SNS_PDUT_SIZE:
+	case SNS_PDUT_SIZE_ACK:
+		rc = tlv_parse(&tp, &ns_att_tlvdef, nsh->data,
+				msgb_l2len(msg) - sizeof(*nsh), 0, 0);
+		if (rc < 0) {
+			LOGPC(DNS, LOGL_NOTICE, "Error during TLV Parse in %s\n", msgb_hexdump(msg));
+			return rc;
+		}
+		/* All sub-network service related message types */
+		rc = gprs_ns_rx_sns(nsi, msg, &tp);
+		break;
 	default:
 		LOGP(DNS, LOGL_NOTICE, "NSEI=%u Rx Unknown NS PDU type 0x%02x\n",
 			(*nsvc)->nsei, nsh->pdu_type);
@@ -1560,6 +1597,8 @@ int gprs_ns_process_msg(struct gprs_ns_inst *nsi, struct msgb *msg,
 	return rc;
 }
 
+static bool gprs_sns_fsm_registered = false;
+
 /*! Create a new GPRS NS instance
  *  \param[in] cb Call-back function for incoming BSSGP data
  *  \returns dynamically allocated gprs_ns_inst
@@ -1567,6 +1606,11 @@ int gprs_ns_process_msg(struct gprs_ns_inst *nsi, struct msgb *msg,
 struct gprs_ns_inst *gprs_ns_instantiate(gprs_ns_cb_t *cb, void *ctx)
 {
 	struct gprs_ns_inst *nsi = talloc_zero(ctx, struct gprs_ns_inst);
+
+	if (!gprs_sns_fsm_registered) {
+		gprs_sns_init();
+		gprs_sns_fsm_registered = true;
+	}
 
 	nsi->cb = cb;
 	INIT_LLIST_HEAD(&nsi->gprs_nsvcs);
@@ -1577,6 +1621,7 @@ struct gprs_ns_inst *gprs_ns_instantiate(gprs_ns_cb_t *cb, void *ctx)
 	nsi->timeout[NS_TOUT_TNS_TEST] = 30;
 	nsi->timeout[NS_TOUT_TNS_ALIVE] = 3;
 	nsi->timeout[NS_TOUT_TNS_ALIVE_RETRIES] = 10;
+	nsi->timeout[NS_TOUT_TSNS_PROV] = 3; /* 1..10 */
 
 	/* Create the dummy NSVC that we use for sending
 	 * messages to non-existant/unknown NS-VC's */
@@ -1820,6 +1865,44 @@ struct gprs_nsvc *gprs_ns_nsip_connect(struct gprs_ns_inst *nsi,
 	nsvc->remote_end_is_sgsn = 1;
 
 	gprs_nsvc_reset(nsvc, NS_CAUSE_OM_INTERVENTION);
+	return nsvc;
+}
+
+/*! Establish a NS connection (from the BSS) to the SGSN using SNS auto-configuration
+ *  \param nsi NS-instance
+ *  \param[in] dest Destination IP/Port
+ *  \param[in] nsei NSEI of the to-be-established NS-VC
+ *  \param[in] nsvci NSVCI of the to-be-established NS-VC
+ *  \returns struct gprs_nsvc representing the new NS-VC
+ *
+ * This function will establish a single NS/UDP/IP connection in uplink
+ * (BSS to SGSN) direction.  It will start with the SNS-SIZE procedure,
+ * followed by BSS-originated SNS-CONFIG, then SGSN-originated SNS-CONFIG.
+ *
+ * Once configuration completes, the user will be notified by the S_SNS_CONFIGURED signal,
+ * at which point he typically would want to initiate NS-RESET by means of gprs_nsvc_reset().
+ */
+struct gprs_nsvc *gprs_ns_nsip_connect_sns(struct gprs_ns_inst *nsi,
+				struct sockaddr_in *dest, uint16_t nsei,
+				uint16_t nsvci)
+{
+	struct gprs_nsvc *nsvc;
+
+	/* FIXME: We are getting the order wrong here.  Normally, one would want
+	 * to start the SNS FSM *before* creating any NS-VC and then create the NS-VC
+	 * after the SNS layer has established the IP/port/etc.  However, this would
+	 * require some massive code and API changes compared to existing libosmogb,
+	 * so let's keep the old logic. */
+	nsvc = nsvc_by_rem_addr(nsi, dest);
+	if (!nsvc)
+		nsvc = gprs_nsvc_create(nsi, nsvci);
+	nsvc->ip.bts_addr = *dest;
+	nsvc->nsei = nsei;
+	nsvc->remote_end_is_sgsn = 1;
+
+	if (nsi->bss_sns_fi)
+		osmo_fsm_inst_term(nsi->bss_sns_fi, OSMO_FSM_TERM_REQUEST, NULL);
+	nsi->bss_sns_fi = gprs_sns_bss_fsm_start(nsi, nsvc, "NSIP");
 	return nsvc;
 }
 

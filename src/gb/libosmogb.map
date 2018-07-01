@@ -52,6 +52,7 @@ gprs_ns_frgre_sendmsg;
 gprs_ns_instantiate;
 gprs_ns_nsip_listen;
 gprs_ns_nsip_connect;
+gprs_ns_nsip_connect_sns;
 gprs_ns_rcvmsg;
 gprs_ns_sendmsg;
 gprs_ns_set_log_ss;
