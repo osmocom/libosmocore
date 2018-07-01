@@ -2,7 +2,7 @@
  * GPRS Networks Service (NS) messages on the Gb interface.
  * 3GPP TS 08.16 version 8.0.1 Release 1999 / ETSI TS 101 299 V8.0.1 (2002-05). */
 /*
- * (C) 2009-2017 by Harald Welte <laforge@gnumonks.org>
+ * (C) 2009-2018 by Harald Welte <laforge@gnumonks.org>
  * (C) 2016-2017 sysmocom - s.f.m.c. GmbH
  *
  * All Rights Reserved
@@ -711,6 +711,118 @@ static int gprs_ns_tx_reset_ack(struct gprs_nsvc *nsvc)
 
 	msgb_tvlv_put(msg, NS_IE_VCI, 2, (uint8_t *)&nsvci);
 	msgb_tvlv_put(msg, NS_IE_NSEI, 2, (uint8_t *)&nsei);
+
+	return gprs_ns_tx(nsvc, msg);
+}
+
+/* Section 9.3.4 */
+static int gprs_ns_tx_sns_config(struct gprs_nsvc *nsvc, bool end_flag,
+				 const struct gprs_ns_ie_ip4_elem *ip4_elems,
+				 unsigned int num_ip4_elems)
+{
+	struct msgb *msg = gprs_ns_msgb_alloc();
+	struct gprs_ns_hdr *nsh;
+	uint16_t nsei;
+
+	log_set_context(LOG_CTX_GB_NSVC, nsvc);
+	if (!msg)
+		return -ENOMEM;
+
+	nsei = osmo_htons(nsvc->nsei);
+
+	msg->l2h = msgb_put(msg, sizeof(*nsh));
+	nsh = (struct gprs_ns_hdr *) msg->l2h;
+
+	nsh->pdu_type = SNS_PDUT_CONFIG;
+
+	msgb_v_put(msg, end_flag ? 0x01 : 0x00);
+	msgb_tvlv_put(msg, NS_IE_NSEI, 2, (uint8_t *)&nsei);
+
+	/* List of IP4 Elements 10.3.2c */
+	msgb_tvlv_put(msg, NS_IE_IPv4_LIST, num_ip4_elems*sizeof(struct gprs_ns_ie_ip4_elem),
+			(const uint8_t *)ip4_elems);
+	/* FIXME: List of IP6 elements 10.3.2d */
+
+	return gprs_ns_tx(nsvc, msg);
+}
+
+/* Section 9.3.5 */
+static int gprs_ns_tx_sns_config_ack(struct gprs_nsvc *nsvc, uint8_t *cause)
+{
+	struct msgb *msg = gprs_ns_msgb_alloc();
+	struct gprs_ns_hdr *nsh;
+	uint16_t nsei;
+
+	log_set_context(LOG_CTX_GB_NSVC, nsvc);
+	if (!msg)
+		return -ENOMEM;
+
+	nsei = osmo_htons(nsvc->nsei);
+
+	msg->l2h = msgb_put(msg, sizeof(*nsh));
+	nsh = (struct gprs_ns_hdr *) msg->l2h;
+
+	nsh->pdu_type = SNS_PDUT_CONFIG_ACK;
+
+	msgb_tvlv_put(msg, NS_IE_NSEI, 2, (uint8_t *)&nsei);
+	if (cause)
+		msgb_tvlv_put(msg, NS_IE_CAUSE, 1, cause);
+
+	return gprs_ns_tx(nsvc, msg);
+}
+
+
+/* Section 9.3.7 */
+static int gprs_ns_tx_sns_size(struct gprs_nsvc *nsvc, bool reset_flag, uint16_t max_nr_nsvc,
+				uint16_t *ip4_ep_nr, uint16_t *ip6_ep_nr)
+{
+	struct msgb *msg = gprs_ns_msgb_alloc();
+	struct gprs_ns_hdr *nsh;
+	uint16_t nsei;
+
+	log_set_context(LOG_CTX_GB_NSVC, nsvc);
+	if (!msg)
+		return -ENOMEM;
+
+	nsei = osmo_htons(nsvc->nsei);
+
+	msg->l2h = msgb_put(msg, sizeof(*nsh));
+	nsh = (struct gprs_ns_hdr *) msg->l2h;
+
+	nsh->pdu_type = SNS_PDUT_SIZE;
+
+	msgb_tvlv_put(msg, NS_IE_NSEI, 2, (uint8_t *)&nsei);
+	msgb_tv_put(msg, NS_IE_RESET_FLAG, reset_flag ? 0x01 : 0x00);
+	msgb_tv16_put(msg, NS_IE_MAX_NR_NSVC, max_nr_nsvc);
+	if (ip4_ep_nr)
+		msgb_tv16_put(msg, NS_IE_IPv4_EP_NR, *ip4_ep_nr);
+	if (ip6_ep_nr)
+		msgb_tv16_put(msg, NS_IE_IPv6_EP_NR, *ip6_ep_nr);
+
+	return gprs_ns_tx(nsvc, msg);
+}
+
+/* Section 9.3.8 */
+static int gprs_ns_tx_sns_size_ack(struct gprs_nsvc *nsvc, uint8_t *cause)
+{
+	struct msgb *msg = gprs_ns_msgb_alloc();
+	struct gprs_ns_hdr *nsh;
+	uint16_t nsei;
+
+	log_set_context(LOG_CTX_GB_NSVC, nsvc);
+	if (!msg)
+		return -ENOMEM;
+
+	nsei = osmo_htons(nsvc->nsei);
+
+	msg->l2h = msgb_put(msg, sizeof(*nsh));
+	nsh = (struct gprs_ns_hdr *) msg->l2h;
+
+	nsh->pdu_type = SNS_PDUT_SIZE_ACK;
+
+	msgb_tvlv_put(msg, NS_IE_NSEI, 2, (uint8_t *)&nsei);
+	if (cause)
+		msgb_tvlv_put(msg, NS_IE_CAUSE, 1, cause);
 
 	return gprs_ns_tx(nsvc, msg);
 }
