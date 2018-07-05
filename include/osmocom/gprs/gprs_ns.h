@@ -214,6 +214,7 @@ enum signal_ns {
 };
 
 extern const struct value_string gprs_ns_signal_ns_names[];
+const char *gprs_ns_cause_str(enum ns_cause cause);
 
 struct ns_signal_data {
 	struct gprs_nsvc *nsvc;
