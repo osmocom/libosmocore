@@ -463,6 +463,7 @@ enum gsm0808_chosen_enc_alg {
 	GSM0808_ALG_ID_A5_6	= 0x07,
 	GSM0808_ALG_ID_A5_7	= 0x08,
 };
+extern const struct value_string gsm0808_chosen_enc_alg_names[];
 
 /* GSM 08.08 3.2.2.85 Paging Information */
 enum gsm0808_paging_info {

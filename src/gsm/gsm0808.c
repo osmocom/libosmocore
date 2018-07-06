@@ -1167,6 +1167,18 @@ const struct value_string gsm0808_permitted_speech_names[] = {
 	{ 0, NULL }
 };
 
+const struct value_string gsm0808_chosen_enc_alg_names[] = {
+	{ GSM0808_ALG_ID_A5_0, "A5/0" },
+	{ GSM0808_ALG_ID_A5_1, "A5/1" },
+	{ GSM0808_ALG_ID_A5_2, "A5/2" },
+	{ GSM0808_ALG_ID_A5_3, "A5/3" },
+	{ GSM0808_ALG_ID_A5_4, "A5/4" },
+	{ GSM0808_ALG_ID_A5_5, "A5/5" },
+	{ GSM0808_ALG_ID_A5_6, "A5/6" },
+	{ GSM0808_ALG_ID_A5_7, "A5/7" },
+	{ 0, NULL }
+};
+
 static const struct value_string gsm0808_cause_names[] = {
 	{ GSM0808_CAUSE_RADIO_INTERFACE_MESSAGE_FAILURE, "RADIO INTERFACE MESSAGE FAILURE" },
 	{ GSM0808_CAUSE_RADIO_INTERFACE_FAILURE, "RADIO INTERFACE FAILURE" },
