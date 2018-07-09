@@ -1311,18 +1311,11 @@ cmd_deopt(const char *str)
 	 * match check for "blah"
 	 */
 	size_t len = strlen(str);
-	char *tmp;
 
 	if (len < 3)
 		return NULL;
 
-	/* tmp will hold a string of len-2 chars, so 'len' size is fine */
-	tmp = talloc_size(tall_vty_cmd_ctx, len);
-
-	memcpy(tmp, (str + 1), len - 2);
-	tmp[len - 2] = '\0';
-
-	return tmp;
+	return talloc_strndup(tall_vty_cmd_ctx, str + 1, len - 2);
 }
 
 static enum match_type
