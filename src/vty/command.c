@@ -514,7 +514,7 @@ char *osmo_asciidoc_escape(const char *inp)
 		}
 	}
 
-	out = talloc_size(NULL, len + 1);
+	out = talloc_size(tall_vty_cmd_ctx, len + 1);
 	if (!out)
 		return NULL;
 
@@ -574,7 +574,7 @@ static char *xml_escape(const char *inp)
 		}
 	}
 
-	out = talloc_size(NULL, len + 1);
+	out = talloc_size(tall_vty_cmd_ctx, len + 1);
 	if (!out)
 		return NULL;
 
@@ -1317,7 +1317,7 @@ cmd_deopt(const char *str)
 		return NULL;
 
 	/* tmp will hold a string of len-2 chars, so 'len' size is fine */
-	tmp = talloc_size(NULL, len);
+	tmp = talloc_size(tall_vty_cmd_ctx, len);
 
 	memcpy(tmp, (str + 1), len - 2);
 	tmp[len - 2] = '\0';
