@@ -385,6 +385,42 @@ DEFUN(cfg_level3_child, cfg_level3_child_cmd,
 	return CMD_SUCCESS;
 }
 
+DEFUN(cfg_ambiguous_nr_1, cfg_ambiguous_nr_1_cmd,
+	"ambiguous_nr [<0-23>]",
+	"testing is_cmd_ambiguous()\n"
+	"optional number arg\n")
+{
+	printf("Called: 'ambiguous_nr [<0-23>]' (argc=%d)\n", argc);
+	return CMD_SUCCESS;
+}
+
+DEFUN(cfg_ambiguous_nr_2, cfg_ambiguous_nr_2_cmd,
+	"ambiguous_nr <0-23> keyword",
+	"testing is_cmd_ambiguous()\n"
+	"optional number arg\n")
+{
+	printf("Called: 'ambiguous_nr <0-23> keyword'\n");
+	return CMD_SUCCESS;
+}
+
+DEFUN(cfg_ambiguous_str_1, cfg_ambiguous_str_1_cmd,
+	"ambiguous_str [ARG]",
+	"testing is_cmd_ambiguous()\n"
+	"optional string arg\n")
+{
+	printf("Called: 'ambiguous_str [ARG]' (argc=%d)\n", argc);
+	return CMD_SUCCESS;
+}
+
+DEFUN(cfg_ambiguous_str_2, cfg_ambiguous_str_2_cmd,
+	"ambiguous_str ARG keyword",
+	"testing is_cmd_ambiguous()\n"
+	"optional string arg\n")
+{
+	printf("Called: 'ambiguous_str ARG keyword'\n");
+	return CMD_SUCCESS;
+}
+
 void test_vty_add_cmds()
 {
 	install_element(CONFIG_NODE, &cfg_level1_cmd);
@@ -398,6 +434,30 @@ void test_vty_add_cmds()
 
 	install_node(&level3_node, NULL);
 	install_element(LEVEL3_NODE, &cfg_level3_child_cmd);
+
+	install_element_ve(&cfg_ambiguous_nr_1_cmd);
+	install_element_ve(&cfg_ambiguous_nr_2_cmd);
+	install_element_ve(&cfg_ambiguous_str_1_cmd);
+	install_element_ve(&cfg_ambiguous_str_2_cmd);
+}
+
+void test_is_cmd_ambiguous()
+{
+	struct vty *vty;
+	struct vty_test test;
+
+	printf("Going to test is_cmd_ambiguous()\n");
+	vty = create_test_vty(&test);
+
+	OSMO_ASSERT(do_vty_command(vty, "ambiguous_nr") == CMD_SUCCESS);
+	OSMO_ASSERT(do_vty_command(vty, "ambiguous_nr 23") == CMD_SUCCESS);
+	OSMO_ASSERT(do_vty_command(vty, "ambiguous_nr 23 keyword") == CMD_SUCCESS);
+
+	OSMO_ASSERT(do_vty_command(vty, "ambiguous_str") == CMD_SUCCESS);
+	OSMO_ASSERT(do_vty_command(vty, "ambiguous_str arg") == CMD_SUCCESS);
+	OSMO_ASSERT(do_vty_command(vty, "ambiguous_str arg keyword") == CMD_SUCCESS);
+
+	destroy_test_vty(&test, vty);
 }
 
 static int go_parent_cb(struct vty *vty)
@@ -464,6 +524,8 @@ int main(int argc, char **argv)
 	test_exit_by_indent("fail_tabs_and_spaces.cfg", -EINVAL);
 	test_exit_by_indent("ok_indented_root.cfg", 0);
 	test_exit_by_indent("ok_empty_parent.cfg", 0);
+
+	test_is_cmd_ambiguous();
 
 	/* Leak check */
 	OSMO_ASSERT(talloc_total_blocks(stats_ctx) == 1);
