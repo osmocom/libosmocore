@@ -362,7 +362,8 @@ struct ctrl_cmd *ctrl_cmd_parse2(void *ctx, struct msgb *msg)
 		goto err;
 	}
 
-	if (!id_str_valid(tmp)) {
+	if (!id_str_valid(tmp) &&
+	    !(cmd->type == CTRL_TYPE_ERROR && strcmp(tmp, "err") == 0)) {
 		LOGP(DLCTRL, LOGL_NOTICE, "Invalid %s message ID number: \"%s\"\n",
 		     get_value_string(ctrl_type_vals, cmd->type), osmo_escape_str(tmp, -1));
 		cmd->type = CTRL_TYPE_ERROR;
