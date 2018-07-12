@@ -70,18 +70,23 @@ void assert_same_str(const char *label, const char *expect, const char *got)
 static void assert_test(struct ctrl_handle *ctrl, struct ctrl_connection *ccon, const struct one_test *t)
 {
 	struct ctrl_cmd *cmd;
+	bool parse_failed;
 	struct msgb *msg = msgb_from_string(t->cmd_str);
 	int ctx_size_was;
 
 	printf("test: '%s'\n", osmo_escape_str(t->cmd_str, -1));
 	printf("parsing:\n");
 
-	cmd = ctrl_cmd_parse2(ctx, msg);
+	cmd = ctrl_cmd_parse3(ctx, msg, &parse_failed);
 	OSMO_ASSERT(cmd);
 
 	if (t->expect_parsed.type != cmd->type) {
 		printf("type mismatch: got %s\n", get_value_string(ctrl_type_vals, cmd->type));
 		OSMO_ASSERT(t->expect_parsed.type == cmd->type);
+	} else {
+		printf("type = '%s'%s\n", get_value_string(ctrl_type_vals, cmd->type),
+		       cmd->type != CTRL_TYPE_ERROR ? "" :
+		       (parse_failed ? " (parse failure)" : " (error received)"));
 	}
 
 #define ASSERT_SAME_STR(field) \
@@ -310,7 +315,20 @@ static const struct one_test test_messages_list[] = {
 			.reply = "OK",
 		},
 	},
-
+	{ "ERROR 1 some error message",
+		{
+			.type = CTRL_TYPE_ERROR,
+			.id = "1",
+			.reply = "some error message",
+		},
+	},
+	{ "ERROR err some error message",
+		{
+			.type = CTRL_TYPE_ERROR,
+			.id = "err",
+			.reply = "some error message",
+		},
+	},
 };
 
 static void test_messages()
