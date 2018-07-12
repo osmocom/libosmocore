@@ -1153,6 +1153,20 @@ const struct value_string gsm0808_speech_codec_type_names[] = {
 	{ 0, NULL }
 };
 
+const struct value_string gsm0808_permitted_speech_names[] = {
+	{ GSM0808_PERM_FR1, "FR1" },
+	{ GSM0808_PERM_FR2, "FR2" },
+	{ GSM0808_PERM_FR3, "FR3" },
+	{ GSM0808_PERM_FR4, "FR4" },
+	{ GSM0808_PERM_FR5, "FR5" },
+	{ GSM0808_PERM_HR1, "HR1" },
+	{ GSM0808_PERM_HR2, "HR2" },
+	{ GSM0808_PERM_HR3, "HR3" },
+	{ GSM0808_PERM_HR4, "HR4" },
+	{ GSM0808_PERM_HR6, "HR6" },
+	{ 0, NULL }
+};
+
 static const struct value_string gsm0808_cause_names[] = {
 	{ GSM0808_CAUSE_RADIO_INTERFACE_MESSAGE_FAILURE, "RADIO INTERFACE MESSAGE FAILURE" },
 	{ GSM0808_CAUSE_RADIO_INTERFACE_FAILURE, "RADIO INTERFACE FAILURE" },
