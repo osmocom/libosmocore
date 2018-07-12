@@ -363,10 +363,11 @@ struct ctrl_cmd *ctrl_cmd_parse2(void *ctx, struct msgb *msg)
 	}
 
 	if (!id_str_valid(tmp)) {
+		LOGP(DLCTRL, LOGL_NOTICE, "Invalid %s message ID number: \"%s\"\n",
+		     get_value_string(ctrl_type_vals, cmd->type), osmo_escape_str(tmp, -1));
 		cmd->type = CTRL_TYPE_ERROR;
 		cmd->id = "err";
 		cmd->reply = "Invalid message ID number";
-		LOGP(DLCTRL, LOGL_NOTICE, "Invalid message ID number: \"%s\"\n", osmo_escape_str(tmp, -1));
 		goto err;
 	}
 	cmd->id = talloc_strdup(cmd, tmp);
