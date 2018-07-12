@@ -384,6 +384,7 @@ close_fd:
 int ctrl_handle_msg(struct ctrl_handle *ctrl, struct ctrl_connection *ccon, struct msgb *msg)
 {
 	struct ctrl_cmd *cmd;
+	bool parse_failed;
 	struct ipaccess_head *iph;
 	struct ipaccess_head_ext *iph_ext;
 	int result;
@@ -407,7 +408,7 @@ int ctrl_handle_msg(struct ctrl_handle *ctrl, struct ctrl_connection *ccon, stru
 
 	msg->l2h = iph_ext->data;
 
-	cmd = ctrl_cmd_parse2(ccon, msg);
+	cmd = ctrl_cmd_parse3(ccon, msg, &parse_failed);
 
 	if (!cmd) {
 		/* should never happen */
@@ -421,7 +422,7 @@ int ctrl_handle_msg(struct ctrl_handle *ctrl, struct ctrl_connection *ccon, stru
 	}
 
 	/* In case of error, reply with the error message right away. */
-	if (cmd->type == CTRL_TYPE_ERROR)
+	if (cmd->type == CTRL_TYPE_ERROR && parse_failed)
 		goto send_reply;
 
 	cmd->ccon = ccon;
