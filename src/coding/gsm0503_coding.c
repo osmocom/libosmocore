@@ -938,6 +938,11 @@ int gsm0503_pdtch_egprs_decode(uint8_t *l2_data, const sbit_t *bursts, uint16_t 
 	struct egprs_cps cps;
 	union gprs_rlc_ul_hdr_egprs *hdr;
 
+	if (n_errors)
+		*n_errors = 0;
+	if (n_bits_total)
+		*n_bits_total = 0;
+
 	if ((nbits != GSM0503_GPRS_BURSTS_NBITS) &&
 		(nbits != GSM0503_EGPRS_BURSTS_NBITS)) {
 		/* Invalid EGPRS bit length */
