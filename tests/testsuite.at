@@ -205,7 +205,8 @@ AT_CLEANUP
 AT_SETUP([utils])
 AT_KEYWORDS([utils])
 cat $abs_srcdir/utils/utils_test.ok > expout
-AT_CHECK([$abs_top_builddir/tests/utils/utils_test], [0], [expout], [ignore])
+cat $abs_srcdir/utils/utils_test.err > experr
+AT_CHECK([$abs_top_builddir/tests/utils/utils_test], [0], [expout], [experr])
 AT_CLEANUP
 
 AT_SETUP([stats])
