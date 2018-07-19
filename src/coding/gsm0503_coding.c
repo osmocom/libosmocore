@@ -1792,7 +1792,7 @@ static void tch_amr_unmerge(ubit_t *d, ubit_t *p, const ubit_t *u, int len, int 
  *  \param[in] efr Is this channel using EFR (1) or FR (0)
  *  \param[out] n_errors Number of detected bit errors
  *  \param[out] n_bits_total Total number of bits
- *  \returns length of bytes used in \a tch_data output buffer */
+ *  \returns length of bytes used in \a tch_data output buffer; negative on error */
 int gsm0503_tch_fr_decode(uint8_t *tch_data, const sbit_t *bursts,
 	int net_order, int efr, int *n_errors, int *n_bits_total)
 {
@@ -1941,7 +1941,7 @@ coding_efr_fr:
  *  \param[in] odd Odd (1) or even (0) frame number
  *  \param[out] n_errors Number of detected bit errors
  *  \param[out] n_bits_total Total number of bits
- *  \returns length of bytes used in \a tch_data output buffer */
+ *  \returns length of bytes used in \a tch_data output buffer; negative on error */
 int gsm0503_tch_hr_decode(uint8_t *tch_data, const sbit_t *bursts, int odd,
 	int *n_errors, int *n_bits_total)
 {
@@ -2082,7 +2082,9 @@ int gsm0503_tch_hr_encode(ubit_t *bursts, const uint8_t *tch_data, int len)
  *  \param[out] cmr Output in \a codec_mode_req = 1
  *  \param[out] n_errors Number of detected bit errors
  *  \param[out] n_bits_total Total number of bits
- *  \returns length of bytes used in \a tch_data output buffer */
+ *  \returns (>=4) length of bytes used in \a tch_data output buffer; ([0,3])
+ *  	     codec out of range; negative on error
+ */
 int gsm0503_tch_afs_decode(uint8_t *tch_data, const sbit_t *bursts,
 	int codec_mode_req, uint8_t *codec, int codecs, uint8_t *ft,
 	uint8_t *cmr, int *n_errors, int *n_bits_total)
@@ -2459,7 +2461,9 @@ invalid_length:
  *  \param[out] cmr Output in \a codec_mode_req = 1
  *  \param[out] n_errors Number of detected bit errors
  *  \param[out] n_bits_total Total number of bits
- *  \returns length of bytes used in \a tch_data output buffer */
+ *  \returns (>=4) length of bytes used in \a tch_data output buffer; ([0,3])
+ *  	     codec out of range; negative on error
+ */
 int gsm0503_tch_ahs_decode(uint8_t *tch_data, const sbit_t *bursts, int odd,
 	int codec_mode_req, uint8_t *codec, int codecs, uint8_t *ft,
 	uint8_t *cmr, int *n_errors, int *n_bits_total)
