@@ -139,3 +139,13 @@ NOT passed through. '"printable"'
 'NULL'
 
 Testing integer square-root
+
+osmo_sockaddr_to_str_and_uint_test
+[0] 0.0.0.0:0 addr_len=20 --> 0.0.0.0:0 rc=7
+[1] 255.255.255.255:65535 addr_len=20 --> 255.255.255.255:65535 rc=15
+[2] 234.23.42.123:1234 addr_len=20 --> 234.23.42.123:1234 rc=13
+[3] 234.23.42.123:1234 addr_len=10 --> 234.23.42:1234 rc=13
+[4] 234.23.42.123:1234 (omit port) addr_len=20 --> 234.23.42.123:0 rc=13
+[5] 234.23.42.123:1234 (omit addr) addr_len=0 --> :1234 rc=0
+[6] 234.23.42.123:1234 addr_len=0 --> :1234 rc=13
+[7] 234.23.42.123:1234 (omit addr) (omit port) addr_len=0 --> :0 rc=0

@@ -44,6 +44,9 @@ int osmo_sock_init_sa(struct sockaddr *ss, uint16_t type,
 
 int osmo_sockaddr_is_local(struct sockaddr *addr, unsigned int addrlen);
 
+unsigned int osmo_sockaddr_to_str_and_uint(char *addr, unsigned int addr_len, uint16_t *port,
+					   const struct sockaddr *sa);
+
 int osmo_sock_unix_init(uint16_t type, uint8_t proto,
 			const char *socket_path, unsigned int flags);
 
