@@ -439,7 +439,7 @@ static void isqrt_test(void)
 			x = r * (UINT16_MAX/RAND_MAX);
 		else
 			x = r;
-		uint32_t sq = x*x;
+		uint32_t sq = (uint32_t)x*x;
 		uint32_t y = osmo_isqrt32(sq);
 		if (y != x)
 			printf("ERROR: x=%u, sq=%u, osmo_isqrt(%u) = %u\n", x, sq, sq, y);
