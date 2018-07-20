@@ -1,12 +1,14 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
+#include <inttypes.h>
 
 #include <osmocom/core/bitvec.h>
 #include <osmocom/core/utils.h>
 
 #include <osmocom/codec/codec.h>
 #include <osmocom/codec/ecu.h>
+#include <osmocom/codec/gsm610_bits.h>
 
 /* Set with sample full-rate voice frames and some intentional dropouts */
 static const char *fr_frames_hex[] = {
@@ -74,6 +76,28 @@ static const char *fr_frames_hex[] = {
 static const char *sample_frame_hex = \
 	"d9ec9be212901f802335598c501f805bad3d4ba01f809b69df5a501f809cd1b4da";
 
+#define GSM610_XMAXC_LEN	6
+static void parse_xmaxc_frame(uint8_t *frame, uint64_t xmaxc_res[4])
+{
+	unsigned int field_index, len;
+
+	struct bitvec *frame_bitvec = bitvec_alloc(GSM_FR_BYTES, NULL);
+	OSMO_ASSERT(frame_bitvec);
+	len = bitvec_unpack(frame_bitvec, frame);
+	OSMO_ASSERT(len == GSM_FR_BYTES);
+
+	field_index = GSM610_RTP_XMAXC00;
+	xmaxc_res[0] = bitvec_read_field(frame_bitvec, &field_index, GSM610_XMAXC_LEN);
+	field_index = GSM610_RTP_XMAXC10;
+	xmaxc_res[1] = bitvec_read_field(frame_bitvec, &field_index, GSM610_XMAXC_LEN);
+	field_index = GSM610_RTP_XMAXC20;
+	xmaxc_res[2] = bitvec_read_field(frame_bitvec, &field_index, GSM610_XMAXC_LEN);
+	field_index = GSM610_RTP_XMAXC30;
+	xmaxc_res[3] = bitvec_read_field(frame_bitvec, &field_index, GSM610_XMAXC_LEN);
+
+	bitvec_free(frame_bitvec);
+}
+
 /**
  * Start with a good voice frame and then simulate 20 consecutive bad frames,
  * watching how the error concealment decreases the XMAXC parameters.
@@ -82,23 +106,28 @@ void test_fr_concealment(void)
 {
 	struct osmo_ecu_fr_state state;
 	uint8_t frame[GSM_FR_BYTES];
+	uint64_t xmaxc[4];
 	int i, rc;
 
 	/* Parse frame from string to hex */
 	osmo_hexparse(sample_frame_hex, frame, GSM_FR_BYTES);
-
-	printf("Start with: %s\n", sample_frame_hex);
+	parse_xmaxc_frame(frame, xmaxc);
+	printf("Start with: %s, XMAXC: [%"PRIx64", %"PRIx64", %"PRIx64", %"PRIx64"]\n",
+	       sample_frame_hex, xmaxc[0], xmaxc[1], xmaxc[2], xmaxc[3]);
 
 	/* Reset the ECU with the proposed known good frame */
 	osmo_ecu_fr_reset(&state, frame);
 
 	/* Now pretend that we do not receive any good frames anymore */
 	for (i = 0; i < 20; i++) {
+
 		rc = osmo_ecu_fr_conceal(&state, frame);
 		OSMO_ASSERT(rc == 0);
+		parse_xmaxc_frame(frame, xmaxc);
 
-		printf("conceal: %02i, result: %s\n",
-			i, osmo_hexdump_nospc(frame, GSM_FR_BYTES));
+		printf("conceal: %02i, result: %s XMAXC: [%"PRIx64", %"PRIx64", %"PRIx64", %"PRIx64"]\n",
+		       i, osmo_hexdump_nospc(frame, GSM_FR_BYTES),
+		       xmaxc[0], xmaxc[1], xmaxc[2], xmaxc[3]);
 	}
 }
 
