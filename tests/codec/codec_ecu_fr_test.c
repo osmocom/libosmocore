@@ -73,8 +73,11 @@ static const char *fr_frames_hex[] = {
 };
 
 /* Example of a good frame */
-static const char *sample_frame_hex = \
-	"d9ec9be212901f802335598c501f805bad3d4ba01f809b69df5a501f809cd1b4da";
+static const char *sample_frame_hex[] = {
+	"d9ec9be212901f802335598c501f805bad3d4ba01f809b69df5a501f809cd1b4da",
+	"d9ec9be212901d802335598c5013805bad3d4ba01f809b69df5a5019809cd1b4da",
+	NULL
+};
 
 #define GSM610_XMAXC_LEN	6
 static void parse_xmaxc_frame(uint8_t *frame, uint64_t xmaxc_res[4])
@@ -108,26 +111,32 @@ void test_fr_concealment(void)
 	uint8_t frame[GSM_FR_BYTES];
 	uint64_t xmaxc[4];
 	int i, rc;
+	int j = 0;
 
-	/* Parse frame from string to hex */
-	osmo_hexparse(sample_frame_hex, frame, GSM_FR_BYTES);
-	parse_xmaxc_frame(frame, xmaxc);
-	printf("Start with: %s, XMAXC: [%"PRIx64", %"PRIx64", %"PRIx64", %"PRIx64"]\n",
-	       sample_frame_hex, xmaxc[0], xmaxc[1], xmaxc[2], xmaxc[3]);
-
-	/* Reset the ECU with the proposed known good frame */
-	osmo_ecu_fr_reset(&state, frame);
-
-	/* Now pretend that we do not receive any good frames anymore */
-	for (i = 0; i < 20; i++) {
-
-		rc = osmo_ecu_fr_conceal(&state, frame);
-		OSMO_ASSERT(rc == 0);
+	while (sample_frame_hex[j] != NULL) {
+		/* Parse frame from string to hex */
+		osmo_hexparse(sample_frame_hex[j], frame, GSM_FR_BYTES);
 		parse_xmaxc_frame(frame, xmaxc);
+		printf("Start with: %s, XMAXC: [%"PRIx64", %"PRIx64", %"PRIx64", %"PRIx64"]\n",
+		       sample_frame_hex[j], xmaxc[0], xmaxc[1], xmaxc[2], xmaxc[3]);
 
-		printf("conceal: %02i, result: %s XMAXC: [%"PRIx64", %"PRIx64", %"PRIx64", %"PRIx64"]\n",
-		       i, osmo_hexdump_nospc(frame, GSM_FR_BYTES),
-		       xmaxc[0], xmaxc[1], xmaxc[2], xmaxc[3]);
+		/* Reset the ECU with the proposed known good frame */
+		osmo_ecu_fr_reset(&state, frame);
+
+		/* Now pretend that we do not receive any good frames anymore */
+		for (i = 0; i < 20; i++) {
+
+			rc = osmo_ecu_fr_conceal(&state, frame);
+			OSMO_ASSERT(rc == 0);
+			parse_xmaxc_frame(frame, xmaxc);
+
+			printf("conceal: %02i, result: %s XMAXC: [%"PRIx64", %"PRIx64", %"PRIx64", %"PRIx64"]\n",
+			       i, osmo_hexdump_nospc(frame, GSM_FR_BYTES),
+			       xmaxc[0], xmaxc[1], xmaxc[2], xmaxc[3]);
+		}
+
+		/* Go to the next frame */
+		j++;
 	}
 }
 
