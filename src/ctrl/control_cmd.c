@@ -316,8 +316,24 @@ static bool id_str_valid(const char *str)
  *  \param[in] msg message buffer containing command to be decoded
  *  \returns callee-allocated decoded CTRL command; NULL on allocation failure,
  *  ctrl->type == CTRL_TYPE_ERROR and an error message in ctrl->reply on any error.
- * The caller is responsible to talloc_free() the returned struct pointer. */
+ * The caller is responsible to talloc_free() the returned struct pointer.
+ * If information of the origin of the ERROR cmd returned is required (received
+ * or local parsing failure), use \ref ctrl_cmd_parse3 instead. */
 struct ctrl_cmd *ctrl_cmd_parse2(void *ctx, struct msgb *msg)
+{
+	bool unused;
+	return ctrl_cmd_parse3(ctx, msg, &unused);
+}
+
+/*! Parse/Decode CTRL from \ref msgb into command struct.
+ *  \param[in] ctx talloc context from which to allocate
+ *  \param[in] msg message buffer containing command to be decoded
+ *  \param[out] parse_failed Whether returned ERROR cmd was generatd locally
+ *  		(due to parse failure) or was received.
+ *  \returns callee-allocated decoded CTRL command; NULL on allocation failure,
+ *  ctrl->type == CTRL_TYPE_ERROR and an error message in ctrl->reply on any error.
+ * The caller is responsible to talloc_free() the returned struct pointer. */
+struct ctrl_cmd *ctrl_cmd_parse3(void *ctx, struct msgb *msg, bool *parse_failed)
 {
 	char *str, *tmp, *saveptr = NULL;
 	char *var, *val;
@@ -326,6 +342,7 @@ struct ctrl_cmd *ctrl_cmd_parse2(void *ctx, struct msgb *msg)
 	cmd = talloc_zero(ctx, struct ctrl_cmd);
 	if (!cmd) {
 		LOGP(DLCTRL, LOGL_ERROR, "Failed to allocate.\n");
+		*parse_failed = true;
 		return NULL;
 	}
 
@@ -362,11 +379,13 @@ struct ctrl_cmd *ctrl_cmd_parse2(void *ctx, struct msgb *msg)
 		goto err;
 	}
 
-	if (!id_str_valid(tmp)) {
+	if (!id_str_valid(tmp) &&
+	    !(cmd->type == CTRL_TYPE_ERROR && strcmp(tmp, "err") == 0)) {
+		LOGP(DLCTRL, LOGL_NOTICE, "Invalid %s message ID number: \"%s\"\n",
+		     get_value_string(ctrl_type_vals, cmd->type), osmo_escape_str(tmp, -1));
 		cmd->type = CTRL_TYPE_ERROR;
 		cmd->id = "err";
 		cmd->reply = "Invalid message ID number";
-		LOGP(DLCTRL, LOGL_NOTICE, "Invalid message ID number: \"%s\"\n", osmo_escape_str(tmp, -1));
 		goto err;
 	}
 	cmd->id = talloc_strdup(cmd, tmp);
@@ -481,12 +500,14 @@ struct ctrl_cmd *ctrl_cmd_parse2(void *ctx, struct msgb *msg)
 			goto err;
 	}
 
+	*parse_failed = false;
 	return cmd;
 oom:
 	cmd->type = CTRL_TYPE_ERROR;
 	cmd->id = "err";
 	cmd->reply = "OOM";
 err:
+	*parse_failed = true;
 	return cmd;
 }
 

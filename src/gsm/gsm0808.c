@@ -739,14 +739,16 @@ struct msgb *gsm0808_create_handover_required(const struct gsm0808_handover_requ
 	return msg;
 }
 
-/*! Create BSSMAP HANDOVER REQUEST ACKNOWLEDGE message, 3GPP TS 48.008 3.2.1.10. */
+/*! Create BSSMAP HANDOVER REQUEST ACKNOWLEDGE message, 3GPP TS 48.008 3.2.1.10.
+ * Sent from the MT BSC back to the MSC when it has allocated an lchan to handover to.
+ * l3_info is the RR Handover Command that the MO BSC sends to the MS to move over. */
 struct msgb *gsm0808_create_handover_request_ack(const uint8_t *l3_info, uint8_t l3_info_len,
 						 uint8_t chosen_channel, uint8_t chosen_encr_alg,
 						 uint8_t chosen_speech_version)
 {
 	struct msgb *msg;
 
-	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "BSSMAP-HANDOVER-ACCEPT-ACK");
+	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "BSSMAP-HANDOVER-REQUEST-ACK");
 	if (!msg)
 		return NULL;
 
@@ -760,6 +762,86 @@ struct msgb *gsm0808_create_handover_request_ack(const uint8_t *l3_info, uint8_t
 	msgb_tv_put(msg, GSM0808_IE_CHOSEN_ENCR_ALG, chosen_encr_alg);
 	if (chosen_speech_version != 0)
 		msgb_tv_put(msg, GSM0808_IE_SPEECH_VERSION, chosen_speech_version);
+
+	return msg;
+}
+
+/*! Create BSSMAP HANDOVER DETECT message, 3GPP TS 48.008 3.2.1.40.
+ * Sent from the MT BSC back to the MSC when the MS has sent a handover RACH request and the MT BSC has
+ * received the Handover Detect message. */
+struct msgb *gsm0808_create_handover_detect()
+{
+	struct msgb *msg;
+
+	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "BSSMAP-HANDOVER-DETECT");
+	if (!msg)
+		return NULL;
+
+	/* Message Type, 3.2.2.1 */
+	msgb_v_put(msg, BSS_MAP_MSG_HANDOVER_DETECT);
+
+	return msg;
+}
+
+/*! Create BSSMAP HANDOVER COMPLETE message, 3GPP TS 48.008 3.2.1.12.
+ * Sent from the MT BSC back to the MSC when the MS has fully settled into the new lchan. */
+struct msgb *gsm0808_create_handover_complete(const struct gsm0808_handover_complete *params)
+{
+	struct msgb *msg;
+
+	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "BSSMAP-HANDOVER-COMPLETE");
+	if (!msg)
+		return NULL;
+
+	/* Message Type, 3.2.2.1 */
+	msgb_v_put(msg, BSS_MAP_MSG_HANDOVER_COMPLETE);
+
+	/* RR Cause, 3.2.2.22 */
+	if (params->rr_cause_present)
+		msgb_tlv_put(msg, GSM0808_IE_RR_CAUSE, 1, &params->rr_cause);
+
+	/* AoIP: Speech Codec (Chosen) 3.2.2.104 */
+	if (params->speech_codec_chosen_present)
+		gsm0808_enc_speech_codec(msg, &params->speech_codec_chosen);
+
+	/* AoIP: add Codec List (BSS Supported) 3.2.2.103 */
+	if (params->codec_list_bss_supported.len)
+		gsm0808_enc_speech_codec_list(msg, &params->codec_list_bss_supported);
+
+	/* Chosen Encryption Algorithm 3.2.2.44 */
+	if (params->chosen_encr_alg_present)
+		msgb_tv_put(msg, GSM0808_IE_CHOSEN_ENCR_ALG, params->chosen_encr_alg);
+
+	/* LCLS-BSS-Status 3.2.2.119 */
+	if (params->lcls_bss_status_present)
+		msgb_tv_put(msg, GSM0808_IE_LCLS_BSS_STATUS, params->lcls_bss_status);
+
+	return msg;
+}
+
+/*! Create BSSMAP HANDOVER FAILURE message, 3GPP TS 48.008 3.2.1.16.
+ * Sent from the MT BSC back to the MSC when the handover has failed. */
+struct msgb *gsm0808_create_handover_failure(const struct gsm0808_handover_failure *params)
+{
+	struct msgb *msg;
+
+	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "BSSMAP-HANDOVER-FAILURE");
+	if (!msg)
+		return NULL;
+
+	/* Message Type, 3.2.2.1 */
+	msgb_v_put(msg, BSS_MAP_MSG_HANDOVER_FAILURE);
+
+	/* Cause, 3.2.2.5 */
+	msgb_tlv_put(msg, GSM0808_IE_CAUSE, params->cause & 0x80? 2 : 1, (const uint8_t*)&params->cause);
+
+	/* RR Cause, 3.2.2.22 */
+	if (params->rr_cause_present)
+		msgb_tlv_put(msg, GSM0808_IE_RR_CAUSE, 1, &params->rr_cause);
+
+	/* AoIP: add Codec List (BSS Supported) 3.2.2.103 */
+	if (params->codec_list_bss_supported.len)
+		gsm0808_enc_speech_codec_list(msg, &params->codec_list_bss_supported);
 
 	return msg;
 }
@@ -1068,6 +1150,32 @@ const struct value_string gsm0808_speech_codec_type_names[] = {
 	{ GSM0808_SCT_HR4, "HR4" },
 	{ GSM0808_SCT_HR6, "HR6" },
 	{ GSM0808_SCT_CSD, "CSD" },
+	{ 0, NULL }
+};
+
+const struct value_string gsm0808_permitted_speech_names[] = {
+	{ GSM0808_PERM_FR1, "FR1" },
+	{ GSM0808_PERM_FR2, "FR2" },
+	{ GSM0808_PERM_FR3, "FR3" },
+	{ GSM0808_PERM_FR4, "FR4" },
+	{ GSM0808_PERM_FR5, "FR5" },
+	{ GSM0808_PERM_HR1, "HR1" },
+	{ GSM0808_PERM_HR2, "HR2" },
+	{ GSM0808_PERM_HR3, "HR3" },
+	{ GSM0808_PERM_HR4, "HR4" },
+	{ GSM0808_PERM_HR6, "HR6" },
+	{ 0, NULL }
+};
+
+const struct value_string gsm0808_chosen_enc_alg_names[] = {
+	{ GSM0808_ALG_ID_A5_0, "A5/0" },
+	{ GSM0808_ALG_ID_A5_1, "A5/1" },
+	{ GSM0808_ALG_ID_A5_2, "A5/2" },
+	{ GSM0808_ALG_ID_A5_3, "A5/3" },
+	{ GSM0808_ALG_ID_A5_4, "A5/4" },
+	{ GSM0808_ALG_ID_A5_5, "A5/5" },
+	{ GSM0808_ALG_ID_A5_6, "A5/6" },
+	{ GSM0808_ALG_ID_A5_7, "A5/7" },
 	{ 0, NULL }
 };
 

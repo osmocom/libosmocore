@@ -22,12 +22,13 @@ case "$arch" in
     ./contrib/jenkins_amd64.sh
   ;;
 
-  arm)
+  arm|arm-none-eabi)
     ./contrib/jenkins_arm.sh
   ;;
 
   *)
     set +x
     echo "Unexpected architecture '$arch'"
+    exit 1
   ;;
 esac

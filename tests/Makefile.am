@@ -240,7 +240,7 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
 	     vty/ok_tabs_and_spaces.cfg \
 	     vty/ok_tabs.cfg \
 	     comp128/comp128_test.ok bits/bitfield_test.ok		\
-	     utils/utils_test.ok stats/stats_test.ok			\
+	     utils/utils_test.ok utils/utils_test.err stats/stats_test.ok \
 	     bitvec/bitvec_test.ok msgb/msgb_test.ok bits/bitcomp_test.ok \
 	     sim/sim_test.ok tlv/tlv_test.ok abis/abis_test.ok		\
 	     gsup/gsup_test.ok gsup/gsup_test.err			\
@@ -280,5 +280,5 @@ $(TESTSUITE): $(srcdir)/testsuite.at $(srcdir)/package.m4
 	mv $@.tmp $@
 
 conv/gsm0503_test_vectors.c: $(top_srcdir)/utils/conv_gen.py $(top_srcdir)/utils/conv_codes_gsm.py
-	$(AM_V_GEN)python2 $(top_srcdir)/utils/conv_gen.py gen_vectors gsm \
+	$(AM_V_GEN)python $(top_srcdir)/utils/conv_gen.py gen_vectors gsm \
 		--target-path $(builddir)/conv

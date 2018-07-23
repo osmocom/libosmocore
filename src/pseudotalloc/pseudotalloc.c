@@ -96,3 +96,19 @@ char *talloc_asprintf(const void *ctx, const char *fmt, ...)
 	va_end(args);
 	return buf;
 }
+
+void *talloc_steal(const void *new_ctx, const void *obj)
+{
+	/* as we don't do hierarchical allocations, this is simply a NOP */
+	return (void *)obj;
+}
+
+char *talloc_vasprintf(const void *t, const char *fmt, va_list ap)
+{
+	/* we have a hard-coded maximum string length of 128 bytes in this pseudo implementation */
+	char *buf = pseudotalloc_malloc(128);
+	if (!buf)
+		return NULL;
+	vsnprintf(buf, 128, fmt, ap);
+	return buf;
+}

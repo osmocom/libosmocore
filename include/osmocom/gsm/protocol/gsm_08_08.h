@@ -430,6 +430,10 @@ enum gsm0808_permitted_speech {
 	GSM0808_PERM_HR6	= 0x45, /*!< OHR AMR */
 };
 
+extern const struct value_string gsm0808_permitted_speech_names[];
+static inline const char *gsm0808_permitted_speech_name(enum gsm0808_permitted_speech val)
+{ return get_value_string(gsm0808_permitted_speech_names, val); }
+
 /*! 3GPP TS 48.008, 3.2.2.103 Speech Codec Type */
 enum gsm0808_speech_codec_type {
 	GSM0808_SCT_FR1	= 0x0, /*!< GSM FR */
@@ -459,6 +463,7 @@ enum gsm0808_chosen_enc_alg {
 	GSM0808_ALG_ID_A5_6	= 0x07,
 	GSM0808_ALG_ID_A5_7	= 0x08,
 };
+extern const struct value_string gsm0808_chosen_enc_alg_names[];
 
 /* GSM 08.08 3.2.2.85 Paging Information */
 enum gsm0808_paging_info {

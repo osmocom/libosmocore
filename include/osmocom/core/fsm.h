@@ -120,7 +120,8 @@ struct osmo_fsm_inst {
 void osmo_fsm_log_addr(bool log_addr);
 
 #define LOGPFSML(fi, level, fmt, args...) \
-		LOGP((fi)->fsm->log_subsys, level, "%s{%s}: " fmt, \
+		LOGP((fi)->fsm->log_subsys, OSMO_MAX(level, (fi)->log_level), \
+			"%s{%s}: " fmt, \
 			osmo_fsm_inst_name(fi),				    \
 			osmo_fsm_state_name((fi)->fsm, (fi)->state), ## args)
 

@@ -24,10 +24,13 @@
 
 #include <osmocom/core/logging.h>
 #include <osmocom/core/utils.h>
+#include <osmocom/core/socket.h>
 
 #include <stdio.h>
 #include <ctype.h>
 #include <time.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 static void hexdump_test(void)
 {
@@ -439,10 +442,121 @@ static void isqrt_test(void)
 			x = r * (UINT16_MAX/RAND_MAX);
 		else
 			x = r;
-		uint32_t sq = x*x;
+		uint32_t sq = (uint32_t)x*x;
 		uint32_t y = osmo_isqrt32(sq);
 		if (y != x)
 			printf("ERROR: x=%u, sq=%u, osmo_isqrt(%u) = %u\n", x, sq, sq, y);
+	}
+}
+
+
+struct osmo_sockaddr_to_str_and_uint_test_case {
+	uint16_t port;
+	bool omit_port;
+	const char *addr;
+	unsigned int addr_len;
+	bool omit_addr;
+	unsigned int expect_rc;
+	const char *expect_returned_addr;
+};
+
+struct osmo_sockaddr_to_str_and_uint_test_case osmo_sockaddr_to_str_and_uint_test_data[] = {
+	{
+		.port = 0,
+		.addr = "0.0.0.0",
+		.addr_len = 20,
+		.expect_rc = 7,
+	},
+	{
+		.port = 65535,
+		.addr = "255.255.255.255",
+		.addr_len = 20,
+		.expect_rc = 15,
+	},
+	{
+		.port = 1234,
+		.addr = "234.23.42.123",
+		.addr_len = 20,
+		.expect_rc = 13,
+	},
+	{
+		.port = 1234,
+		.addr = "234.23.42.123",
+		.addr_len = 10,
+		.expect_rc = 13,
+		.expect_returned_addr = "234.23.42",
+	},
+	{
+		.port = 1234,
+		.omit_port = true,
+		.addr = "234.23.42.123",
+		.addr_len = 20,
+		.expect_rc = 13,
+	},
+	{
+		.port = 1234,
+		.addr = "234.23.42.123",
+		.omit_addr = true,
+		.expect_rc = 0,
+		.expect_returned_addr = "",
+	},
+	{
+		.port = 1234,
+		.addr = "234.23.42.123",
+		.addr_len = 0,
+		.expect_rc = 13,
+		.expect_returned_addr = "",
+	},
+	{
+		.port = 1234,
+		.addr = "234.23.42.123",
+		.omit_port = true,
+		.omit_addr = true,
+		.expect_rc = 0,
+		.expect_returned_addr = "",
+	},
+};
+
+static void osmo_sockaddr_to_str_and_uint_test(void)
+{
+	int i;
+	printf("\n%s\n", __func__);
+
+	for (i = 0; i < ARRAY_SIZE(osmo_sockaddr_to_str_and_uint_test_data); i++) {
+		struct osmo_sockaddr_to_str_and_uint_test_case *t =
+			&osmo_sockaddr_to_str_and_uint_test_data[i];
+
+		struct sockaddr_in sin = {
+			.sin_family = AF_INET,
+			.sin_port = htons(t->port),
+		};
+		inet_aton(t->addr, &sin.sin_addr);
+
+		char addr[20] = {};
+		uint16_t port = 0;
+		unsigned int rc;
+
+		rc = osmo_sockaddr_to_str_and_uint(
+			t->omit_addr? NULL : addr, t->addr_len,
+			t->omit_port? NULL : &port,
+			(const struct sockaddr*)&sin);
+
+		printf("[%d] %s:%u%s%s addr_len=%u --> %s:%u rc=%u\n",
+		       i,
+		       t->addr ? : "-",
+		       t->port,
+		       t->omit_addr ? " (omit addr)" : "",
+		       t->omit_port ? " (omit port)" : "",
+		       t->addr_len,
+		       addr, port, rc);
+		if (rc != t->expect_rc)
+			printf("ERROR: Expected rc = %u\n", t->expect_rc);
+		if (!t->expect_returned_addr)
+			t->expect_returned_addr = t->addr;
+		if (strcmp(t->expect_returned_addr, addr))
+			printf("ERROR: Expected addr = '%s'\n", t->expect_returned_addr);
+		if (!t->omit_port && port != t->port)
+			printf("ERROR: Expected port = %u\n", t->port);
 	}
 }
 
@@ -459,5 +573,6 @@ int main(int argc, char **argv)
 	str_escape_test();
 	str_quote_test();
 	isqrt_test();
+	osmo_sockaddr_to_str_and_uint_test();
 	return 0;
 }

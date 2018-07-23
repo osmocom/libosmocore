@@ -3,6 +3,7 @@
 /*
  * (C) 2010 by Holger Hans Peter Freyther <zecke@selfish.org>
  * (C) 2009 by Mike Haben <michael.haben@btinternet.com>
+ * (C) 2018 by Harald Welte <laforge@gnumonks.org>
  *
  * All Rights Reserved
  *
@@ -33,6 +34,38 @@
 #include <osmocom/gsm/protocol/gsm_04_80.h>
 
 #include <string.h>
+#include <errno.h>
+
+const struct value_string gsm0480_comp_type_names[] = {
+	{ GSM0480_CTYPE_INVOKE,			"Invoke" },
+	{ GSM0480_CTYPE_RETURN_RESULT,		"ReturnResult" },
+	{ GSM0480_CTYPE_RETURN_ERROR,		"ReturnError" },
+	{ GSM0480_CTYPE_REJECT,			"Reject" },
+	{ 0, NULL }
+};
+
+const struct value_string gsm0480_op_code_names[] = {
+	{ GSM0480_OP_CODE_REGISTER_SS,			"RegisterSS" },
+	{ GSM0480_OP_CODE_ERASE_SS,			"EraseSS" },
+	{ GSM0480_OP_CODE_ACTIVATE_SS,			"ActivateSS" },
+	{ GSM0480_OP_CODE_DEACTIVATE_SS,		"DeactivateSS" },
+	{ GSM0480_OP_CODE_INTERROGATE_SS,		"IngerrogateSS" },
+	{ GSM0480_OP_CODE_NOTIFY_SS,			"NotifySS" },
+	{ GSM0480_OP_CODE_REGISTER_PASSWORD,		"RegisterPassword" },
+	{ GSM0480_OP_CODE_GET_PASSWORD,			"GetPassword" },
+	{ GSM0480_OP_CODE_PROCESS_USS_DATA,		"ProcessUSSD" },
+	{ GSM0480_OP_CODE_FORWARD_CHECK_SS_IND,		"ForwardChecckSSind" },
+	{ GSM0480_OP_CODE_PROCESS_USS_REQ,		"ProcessUssReq" },
+	{ GSM0480_OP_CODE_USS_REQUEST,			"UssRequest" },
+	{ GSM0480_OP_CODE_USS_NOTIFY,			"UssNotify" },
+	{ GSM0480_OP_CODE_FORWARD_CUG_INFO,		"ForwardCugInfo" },
+	{ GSM0480_OP_CODE_SPLIT_MPTY,			"SplitMPTY" },
+	{ GSM0480_OP_CODE_RETRIEVE_MPTY,		"RetrieveMPTY" },
+	{ GSM0480_OP_CODE_HOLD_MPTY,			"HoldMPTY" },
+	{ GSM0480_OP_CODE_BUILD_MPTY,			"BuildMPTY" },
+	{ GSM0480_OP_CODE_FORWARD_CHARGE_ADVICE,	"ForwardChargeAdvice" },
+	{ 0, NULL }
+};
 
 static inline unsigned char *msgb_wrap_with_TL(struct msgb *msgb, uint8_t tag)
 {
@@ -200,8 +233,6 @@ static int parse_ss_facility(const uint8_t *ss_facility, uint16_t len,
 			     struct ss_request *req);
 static int parse_ss_info_elements(const uint8_t *ss_ie, uint16_t len,
 				  struct ss_request *req);
-static int parse_facility_ie(const uint8_t *facility_ie, uint16_t length,
-			     struct ss_request *req);
 static int parse_ss_invoke(const uint8_t *invoke_data, uint16_t length,
 					struct ss_request *req);
 static int parse_ss_return_result(const uint8_t *rr_data, uint16_t length,
@@ -213,6 +244,93 @@ static int parse_process_uss_req(const uint8_t *uss_req_data, uint16_t length,
 static int parse_ss_for_bs_req(const uint8_t *ss_req_data,
 				     uint16_t length,
 				     struct ss_request *req);
+
+/*! Get pointer to the IE of a given type
+ * \param[in]  hdr      Pointer to the message starting from header
+ * \param[in]  msg_len  Length of the whole message + header
+ * \param[out] ie       External pointer to be set
+ * \param[out] ie_len   External IE length variable
+ * \param[in]  ie_tag   Tag value of the required IE
+ * \returns 0 in case of success, otherwise -ERRNO
+ *
+ * This function iterates over existing IEs within a given
+ * message (depending on its type), and looks for the one with
+ * given \ref ie_tag value. If the IE is found, the external
+ * pointer pointed by \ref ie will be set to its value part
+ * (omitting TL), and \ref ie_len will be set to the length.
+ * Otherwise, e.g. in case of parsing error, both \ref ie
+ * and \ref ie_len are set to NULL and 0 respectively.
+ */
+int gsm0480_extract_ie_by_tag(const struct gsm48_hdr *hdr, uint16_t msg_len,
+			      uint8_t **ie, uint16_t *ie_len, uint8_t ie_tag)
+{
+	uint8_t pdisc, msg_type;
+	uint8_t *tlv, len;
+
+	/* Init external variables */
+	*ie_len = 0;
+	*ie = NULL;
+
+	/* Drop incomplete / corrupted messages */
+	if (msg_len < sizeof(*hdr))
+		return -EINVAL;
+
+	pdisc = gsm48_hdr_pdisc(hdr);
+	msg_type = gsm48_hdr_msg_type(hdr);
+
+	/* Drop non-SS related messages */
+	if (pdisc != GSM48_PDISC_NC_SS)
+		return -EINVAL;
+
+	len = msg_len - sizeof(*hdr);
+	tlv = (uint8_t *) hdr->data;
+
+	/* Parse a message depending on its type */
+	switch (msg_type) {
+	/* See table 2.5: RELEASE COMPLETE message content */
+	case GSM0480_MTYPE_RELEASE_COMPLETE:
+	/* See tables 2.3 and 2.4: REGISTER message content */
+	case GSM0480_MTYPE_REGISTER:
+		/* Iterate over TLV-based IEs */
+		while (len > 2) {
+			if (tlv[0] == ie_tag) {
+				*ie_len = tlv[1];
+				*ie = tlv + 2;
+				return 0;
+			}
+
+			len -= tlv[1] + 2;
+			tlv += tlv[1] + 2;
+			continue;
+		}
+
+		/* The Facility IE is mandatory for REGISTER */
+		if (msg_type == GSM0480_MTYPE_REGISTER)
+			if (ie_tag == GSM0480_IE_FACILITY)
+				return -EINVAL;
+		break;
+
+	/* See table 2.2: FACILITY message content */
+	case GSM0480_MTYPE_FACILITY:
+		/* There is no other IEs */
+		if (ie_tag != GSM0480_IE_FACILITY)
+			break;
+
+		/* Mandatory LV-based Facility IE */
+		if (len < 2)
+			return -EINVAL;
+
+		*ie_len = tlv[0];
+		*ie = tlv + 1;
+		return 0;
+
+	default:
+		/* Wrong message type, out of specs */
+		return -EINVAL;
+	}
+
+	return 0;
+}
 
 /* Decode a mobile-originated USSD-request message */
 int gsm0480_decode_ussd_request(const struct gsm48_hdr *hdr, uint16_t len,
@@ -331,7 +449,7 @@ static int parse_ss_facility(const uint8_t *ss_facility, uint16_t len,
 	if (len - 1 < facility_length)
 		return 0;
 
-	return parse_facility_ie(ss_facility + 1, facility_length, req);
+	return !gsm0480_parse_facility_ie(ss_facility + 1, facility_length, req);
 }
 
 static int parse_ss_info_elements(const uint8_t *ss_ie, uint16_t len,
@@ -357,7 +475,7 @@ static int parse_ss_info_elements(const uint8_t *ss_ie, uint16_t len,
 	case GSM48_IE_CAUSE:
 		break;
 	case GSM0480_IE_FACILITY:
-		rc = parse_facility_ie(ss_ie + 2, iei_length, req);
+		rc = !gsm0480_parse_facility_ie(ss_ie + 2, iei_length, req);
 		break;
 	case GSM0480_IE_SS_VERSION:
 		break;
@@ -376,31 +494,40 @@ static int parse_ss_info_elements(const uint8_t *ss_ie, uint16_t len,
 	return rc;
 }
 
-static int parse_facility_ie(const uint8_t *facility_ie, uint16_t length,
-			     struct ss_request *req)
+/*! Parse the components of a given Facility IE
+ * \param[in]  facility_ie  The Facility IE
+ * \param[in]  length       The length of Facility IE
+ * \param[out] req          Abstract representation of SS message
+ * \return     0 in case of success, otherwise -ERRNO
+ */
+int gsm0480_parse_facility_ie(const uint8_t *facility_ie, uint16_t length,
+			      struct ss_request *req)
 {
-	int rc = 1;
+	uint8_t component_length;
+	uint8_t component_type;
 	uint8_t offset = 0;
+	int rc = 1;
 
+	/* Iterate over components within IE */
 	while (offset + 2 <= length) {
 		/* Component Type tag - table 3.7 */
-		uint8_t component_type = facility_ie[offset];
-		uint8_t component_length = facility_ie[offset+1];
+		component_type = facility_ie[offset];
+		component_length = facility_ie[offset + 1];
 
-		/* size check */
+		/* Make sure that there is no overflow */
 		if (offset + 2 + component_length > length) {
 			LOGP(0, LOGL_ERROR, "Component does not fit.\n");
-			return 0;
+			return -EINVAL;
 		}
 
 		switch (component_type) {
 		case GSM0480_CTYPE_INVOKE:
-			rc &= parse_ss_invoke(facility_ie+2,
+			rc &= parse_ss_invoke(facility_ie + 2,
 					      component_length,
 					      req);
 			break;
 		case GSM0480_CTYPE_RETURN_RESULT:
-			rc &= parse_ss_return_result(facility_ie+2,
+			rc &= parse_ss_return_result(facility_ie + 2,
 						     component_length,
 						     req);
 			break;
@@ -414,10 +541,17 @@ static int parse_facility_ie(const uint8_t *facility_ie, uint16_t length,
 			rc = 0;
 			break;
 		}
-		offset += (component_length+2);
-	};
 
-	return rc;
+		offset += (component_length + 2);
+	}
+
+	/**
+	 * The internal functions are using inverted return
+	 * codes, where '0' means error/failure. While a
+	 * common approach is to return negative errno in
+	 * case of any failure, and '0' if all is ok.
+	 */
+	return (rc == 0) ? -EINVAL : 0;
 }
 
 /* Parse an Invoke component - see table 3.3 */

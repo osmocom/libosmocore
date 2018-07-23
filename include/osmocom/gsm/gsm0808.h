@@ -103,6 +103,7 @@ struct gsm0808_old_bss_to_new_bss_info {
 	} current_channel_type_2;
 
 	/* more items are defined in the spec and may be added later */
+	bool more_items; /*< always set this to false */
 };
 
 /*! 3GPP TS 48.008 §3.2.1.9 HANDOVER REQUIRED */
@@ -120,12 +121,51 @@ struct gsm0808_handover_required {
 	struct gsm0808_old_bss_to_new_bss_info old_bss_to_new_bss_info;
 
 	/* more items are defined in the spec and may be added later */
+	bool more_items; /*< always set this to false */
 };
 struct msgb *gsm0808_create_handover_required(const struct gsm0808_handover_required *params);
 
 struct msgb *gsm0808_create_handover_request_ack(const uint8_t *l3_info, uint8_t l3_info_len,
 						 uint8_t chosen_channel, uint8_t chosen_encr_alg,
 						 uint8_t chosen_speech_version);
+
+struct msgb *gsm0808_create_handover_detect();
+
+struct gsm0808_handover_complete {
+	bool rr_cause_present;
+	uint8_t rr_cause;
+
+	bool speech_codec_chosen_present;
+	struct gsm0808_speech_codec speech_codec_chosen;
+
+	struct gsm0808_speech_codec_list codec_list_bss_supported; /*< omit when .len == 0 */
+
+	bool chosen_encr_alg_present;
+	uint8_t chosen_encr_alg;
+	
+	bool chosen_channel_present;
+	uint8_t chosen_channel;
+
+	bool lcls_bss_status_present;
+	enum gsm0808_lcls_status lcls_bss_status;
+
+	/* more items are defined in the spec and may be added later */
+	bool more_items; /*< always set this to false */
+};
+struct msgb *gsm0808_create_handover_complete(const struct gsm0808_handover_complete *params);
+
+struct gsm0808_handover_failure {
+	uint16_t cause;
+
+	bool rr_cause_present;
+	uint8_t rr_cause;
+
+	struct gsm0808_speech_codec_list codec_list_bss_supported; /*< omit when .len == 0 */
+
+	/* more items are defined in the spec and may be added later */
+	bool more_items; /*< always set this to false */
+};
+struct msgb *gsm0808_create_handover_failure(const struct gsm0808_handover_failure *params);
 
 struct msgb *gsm0808_create_dtap(struct msgb *msg, uint8_t link_id);
 void gsm0808_prepend_dtap_header(struct msgb *msg, uint8_t link_id);

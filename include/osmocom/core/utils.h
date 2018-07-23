@@ -4,6 +4,7 @@
 
 #include <osmocom/core/backtrace.h>
 #include <osmocom/core/talloc.h>
+#include <osmocom/core/panic.h>
 
 /*! \defgroup utils General-purpose utility functions
  *  @{
@@ -77,9 +78,7 @@ do {								\
  */
 #define OSMO_ASSERT(exp)    \
 	if (!(exp)) { \
-		fprintf(stderr, "Assert failed %s %s:%d\n", #exp, __BASE_FILE__, __LINE__); \
-		osmo_generate_backtrace(); \
-		abort(); \
+		osmo_panic("Assert failed %s %s:%d\n", #exp, __BASE_FILE__, __LINE__); \
 	}
 
 /*! duplicate a string using talloc and release its prior content (if any)

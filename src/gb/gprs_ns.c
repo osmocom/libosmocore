@@ -1705,4 +1705,26 @@ void gprs_ns_set_log_ss(int ss)
 	DNS = ss;
 }
 
+/*! Append the nsvc state to a talloc string
+ * \param s The string to append to (allocated with talloc)
+ * \param[in] nsvc The NS-VC to print the state of
+ * \returns The new string with state information appended to it
+ *
+ * This function will append a comma-separated state of the NS-VC to the
+ * string. The string needs to be allocated with talloc (e.g. talloc_strdup)
+ */
+char *gprs_nsvc_state_append(char *s, struct gprs_nsvc *nsvc)
+{
+	s = talloc_asprintf_append(s,
+		"%u,%u,%s,%s,%s,%s,%s\n",
+		nsvc->nsei, nsvc->nsvci,
+		NS_DESC_A(nsvc->state),
+		NS_DESC_B(nsvc->state),
+		nsvc->remote_end_is_sgsn ? "SGSN" : "BSS",
+		NS_DESC_A(nsvc->remote_state),
+		NS_DESC_B(nsvc->remote_state));
+
+	return s;
+}
+
 /*! @} */

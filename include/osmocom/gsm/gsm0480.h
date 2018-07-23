@@ -7,6 +7,16 @@
 #include <osmocom/gsm/protocol/gsm_04_08.h>
 #include <osmocom/gsm/protocol/gsm_04_80.h>
 
+extern const struct value_string gsm0480_comp_type_names[];
+static inline const char *gsm0480_comp_type_name(uint8_t comp_type) {
+	return get_value_string(gsm0480_comp_type_names, comp_type);
+}
+
+extern const struct value_string gsm0480_op_code_names[];
+static inline const char *gsm0480_op_code_name(uint8_t op_code) {
+	return get_value_string(gsm0480_op_code_names, op_code);
+}
+
 /**
  * According to the GSM 04.80 (version 5.0.0) specification Annex A
  * "Expanded ASN.1 Module "SS-Protocol", the maximum size of a USSD
@@ -91,6 +101,10 @@ struct ss_request {
 	uint8_t invoke_id;
 };
 
+int gsm0480_extract_ie_by_tag(const struct gsm48_hdr *hdr, uint16_t msg_len,
+			      uint8_t **ie, uint16_t *ie_len, uint8_t ie_tag);
+int gsm0480_parse_facility_ie(const uint8_t *facility_ie, uint16_t length,
+			      struct ss_request *req);
 int gsm0480_decode_ss_request(const struct gsm48_hdr *hdr, uint16_t len,
 				struct ss_request *request);
 

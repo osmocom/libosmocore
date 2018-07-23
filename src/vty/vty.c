@@ -1506,7 +1506,7 @@ vty_create (int vty_sock, void *priv)
 {
   struct vty *vty;
 
-	struct termios t;
+	struct termios t = {};
 
 	tcgetattr(vty_sock, &t);
 	cfmakeraw(&t);

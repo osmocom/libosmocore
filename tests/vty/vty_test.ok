@@ -286,4 +286,23 @@ called level2 node k
 called level3 node k
 called level1 child cmd k
 got rc=0
+Going to test is_cmd_ambiguous()
+Going to execute 'ambiguous_nr'
+Called: 'ambiguous_nr [<0-23>]' (argc=0)
+Returned: 0, Current node: 1 '%s> '
+Going to execute 'ambiguous_nr 23'
+Called: 'ambiguous_nr [<0-23>]' (argc=1)
+Returned: 0, Current node: 1 '%s> '
+Going to execute 'ambiguous_nr 23 keyword'
+Called: 'ambiguous_nr <0-23> keyword'
+Returned: 0, Current node: 1 '%s> '
+Going to execute 'ambiguous_str'
+Called: 'ambiguous_str [ARG]' (argc=0)
+Returned: 0, Current node: 1 '%s> '
+Going to execute 'ambiguous_str arg'
+Called: 'ambiguous_str [ARG]' (argc=1)
+Returned: 0, Current node: 1 '%s> '
+Going to execute 'ambiguous_str arg keyword'
+Called: 'ambiguous_str ARG keyword'
+Returned: 0, Current node: 1 '%s> '
 All tests passed

@@ -514,7 +514,7 @@ char *osmo_asciidoc_escape(const char *inp)
 		}
 	}
 
-	out = talloc_size(NULL, len + 1);
+	out = talloc_size(tall_vty_cmd_ctx, len + 1);
 	if (!out)
 		return NULL;
 
@@ -574,7 +574,7 @@ static char *xml_escape(const char *inp)
 		}
 	}
 
-	out = talloc_size(NULL, len + 1);
+	out = talloc_size(tall_vty_cmd_ctx, len + 1);
 	if (!out)
 		return NULL;
 
@@ -679,7 +679,8 @@ static int vty_dump_nodes(struct vty *vty)
 			elem = vector_slot(cnode->cmd_vector, j);
 			if (!vty_command_is_common(elem))
 				continue;
-			vty_dump_element(elem, vty);
+			if (!elem->attr & CMD_ATTR_DEPRECATED)
+				vty_dump_element(elem, vty);
 		}
 	}
 	vty_out(vty, "  </node>%s", VTY_NEWLINE);
@@ -716,7 +717,8 @@ static int vty_dump_nodes(struct vty *vty)
 			elem = vector_slot(cnode->cmd_vector, j);
 			if (vty_command_is_common(elem))
 				continue;
-			vty_dump_element(elem, vty);
+			if (!elem->attr & CMD_ATTR_DEPRECATED)
+				vty_dump_element(elem, vty);
 		}
 
 		vty_out(vty, "  </node>%s", VTY_NEWLINE);
@@ -1302,25 +1304,17 @@ static int cmd_range_match(const char *range, const char *str)
 }
 
 /* helper to retrieve the 'real' argument string from an optional argument */
-static char *
-cmd_deopt(const char *str)
+static char *cmd_deopt(void *ctx, const char *str)
 {
 	/* we've got "[blah]". We want to strip off the []s and redo the
 	 * match check for "blah"
 	 */
 	size_t len = strlen(str);
-	char *tmp;
 
 	if (len < 3)
 		return NULL;
 
-	/* tmp will hold a string of len-2 chars, so 'len' size is fine */
-	tmp = talloc_size(NULL, len);
-
-	memcpy(tmp, (str + 1), len - 2);
-	tmp[len - 2] = '\0';
-
-	return tmp;
+	return talloc_strndup(ctx, str + 1, len - 2);
 }
 
 static enum match_type
@@ -1331,7 +1325,7 @@ cmd_match(const char *str, const char *command,
 	if (recur && CMD_OPTION(str))
 	{
 		enum match_type ret;
-		char *tmp = cmd_deopt(str);
+		char *tmp = cmd_deopt(tall_vty_cmd_ctx, str);
 
 		/* this would be a bug in a command, however handle it gracefully
 		 * as it we only discover it if a user tries to run it
@@ -1480,12 +1474,23 @@ cmd_filter(char *command, vector v, unsigned int index, enum match_type level)
 static int
 is_cmd_ambiguous(char *command, vector v, int index, enum match_type type)
 {
+	int ret = 0;
 	unsigned int i;
 	unsigned int j;
 	struct cmd_element *cmd_element;
 	const char *matched = NULL;
 	vector descvec;
 	struct desc *desc;
+
+	/* In this loop, when a match is found, 'matched' points to it. If on a later iteration, an
+	 * identical match is found, the command is ambiguous. The trickiness is that a string may be
+	 * enclosed in '[str]' square brackets, which get removed by a talloc_strndup(), via cmd_deopt().
+	 * Such a string is usually needed for one loop iteration, except when 'matched' points to it. In
+	 * that case, the string must remain allocated until this function exits or another match comes
+	 * around. This is sufficiently confusing to justify a separate talloc tree to store all of the
+	 * odd allocations, and to free them all at the end. We are not expecting too many optional args
+	 * or ambiguities to cause a noticeable memory footprint from keeping all allocations. */
+	void *cmd_deopt_ctx = NULL;
 
 	for (i = 0; i < vector_active(v); i++)
 		if ((cmd_element = vector_slot(v, i)) != NULL) {
@@ -1498,9 +1503,15 @@ is_cmd_ambiguous(char *command, vector v, int index, enum match_type type)
 					enum match_type ret;
 					const char *str = desc->cmd;
 
-					if (CMD_OPTION(str))
-						if ((str = cmd_deopt(str)) == NULL)
+					if (CMD_OPTION(str)) {
+						if (!cmd_deopt_ctx)
+							cmd_deopt_ctx =
+								talloc_named_const(tall_vty_cmd_ctx, 0,
+										   __func__);
+						str = cmd_deopt(cmd_deopt_ctx, str);
+						if (str == NULL)
 							continue;
+					}
 
 					switch (type) {
 					case exact_match:
@@ -1514,9 +1525,10 @@ is_cmd_ambiguous(char *command, vector v, int index, enum match_type type)
 						{
 							if (matched
 							    && strcmp(matched,
-								      str) != 0)
-								return 1;	/* There is ambiguous match. */
-							else
+								      str) != 0) {
+								ret = 1; /* There is ambiguous match. */
+								goto free_and_return;
+							} else
 								matched = str;
 							match++;
 						}
@@ -1526,9 +1538,10 @@ is_cmd_ambiguous(char *command, vector v, int index, enum match_type type)
 						    (str, command)) {
 							if (matched
 							    && strcmp(matched,
-								      str) != 0)
-								return 1;
-							else
+								      str) != 0) {
+								ret = 1;
+								goto free_and_return;
+							} else
 								matched = str;
 							match++;
 						}
@@ -1542,8 +1555,10 @@ is_cmd_ambiguous(char *command, vector v, int index, enum match_type type)
 						if ((ret =
 						     cmd_ipv6_prefix_match
 						     (command)) != no_match) {
-							if (ret == partly_match)
-								return 2;	/* There is incomplete match. */
+							if (ret == partly_match) {
+								ret = 2;	/* There is incomplete match. */
+								goto free_and_return;
+							}
 
 							match++;
 						}
@@ -1557,8 +1572,10 @@ is_cmd_ambiguous(char *command, vector v, int index, enum match_type type)
 						if ((ret =
 						     cmd_ipv4_prefix_match
 						     (command)) != no_match) {
-							if (ret == partly_match)
-								return 2;	/* There is incomplete match. */
+							if (ret == partly_match) {
+								ret = 2;	/* There is incomplete match. */
+								goto free_and_return;
+							}
 
 							match++;
 						}
@@ -1571,14 +1588,15 @@ is_cmd_ambiguous(char *command, vector v, int index, enum match_type type)
 					default:
 						break;
 					}
-
-					if (CMD_OPTION(desc->cmd))
-						talloc_free((void*)str);
 				}
 			if (!match)
 				vector_slot(v, i) = NULL;
 		}
-	return 0;
+
+free_and_return:
+	if (cmd_deopt_ctx)
+		talloc_free(cmd_deopt_ctx);
+	return ret;
 }
 
 /* If src matches dst return dst string, otherwise return NULL */

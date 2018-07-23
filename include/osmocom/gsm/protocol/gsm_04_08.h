@@ -553,6 +553,8 @@ enum gsm48_chan_mode {
 };
 
 extern const struct value_string gsm48_chan_mode_names[];
+static inline const char *gsm48_chan_mode_name(enum gsm48_chan_mode val)
+{ return get_value_string(gsm48_chan_mode_names, val); }
 
 /* Chapter 9.1.2 */
 struct gsm48_ass_cmd {

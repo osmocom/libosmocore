@@ -528,16 +528,18 @@ const struct gsm0503_mcs_code gsm0503_mcs_dl_codes[EGPRS_NUM_MCS] = {
 	},
 };
 
-/*! Convolutional Decode + compute BER
+/*! Convolutional Decode + compute BER for punctured codes
  *  \param[in] code Description of Convolutional Code
  *  \param[in] input Input soft-bits (-127...127)
  *  \param[out] output bits
  *  \param[out] n_errors Number of bit-errors
  *  \param[out] n_bits_total Number of bits
+ *  \param[in] data_punc Puncturing mask array. Can be NULL.
  */
-static int osmo_conv_decode_ber(const struct osmo_conv_code *code,
+static int osmo_conv_decode_ber_punctured(const struct osmo_conv_code *code,
 	const sbit_t *input, ubit_t *output,
-	int *n_errors, int *n_bits_total)
+	int *n_errors, int *n_bits_total,
+	const uint8_t *data_punc)
 {
 	int res, i, coded_len;
 	ubit_t recoded[EGPRS_DATA_C_MAX];
@@ -553,7 +555,8 @@ static int osmo_conv_decode_ber(const struct osmo_conv_code *code,
 	if (n_errors) {
 		*n_errors = 0;
 		for (i = 0; i < coded_len; i++) {
-			if (!((recoded[i] && input[i] < 0) ||
+			if (((!data_punc) || (data_punc && !data_punc[i])) &&
+				!((recoded[i] && input[i] < 0) ||
 					(!recoded[i] && input[i] > 0)) )
 						*n_errors += 1;
 		}
@@ -563,6 +566,21 @@ static int osmo_conv_decode_ber(const struct osmo_conv_code *code,
 		*n_bits_total = coded_len;
 
 	return res;
+}
+
+/*! Convolutional Decode + compute BER for non-punctured codes
+ *  \param[in] code Description of Convolutional Code
+ *  \param[in] input Input soft-bits (-127...127)
+ *  \param[out] output bits
+ *  \param[out] n_errors Number of bit-errors
+ *  \param[out] n_bits_total Number of bits
+ */
+static int osmo_conv_decode_ber(const struct osmo_conv_code *code,
+	const sbit_t *input, ubit_t *output,
+	int *n_errors, int *n_bits_total)
+{
+	return osmo_conv_decode_ber_punctured(code, input, output,
+		n_errors, n_bits_total, NULL);
 }
 
 /*! convenience wrapper for decoding coded bits
@@ -884,7 +902,8 @@ static int egprs_decode_data(uint8_t *l2_data, const sbit_t *c,
 			C[i] = 0;
 	}
 
-	osmo_conv_decode_ber(code->data_conv, C, u, n_errors, n_bits_total);
+	osmo_conv_decode_ber_punctured(code->data_conv, C, u,
+		n_errors, n_bits_total, code->data_punc[p]);
 	rc = osmo_crc16gen_check_bits(&gsm0503_mcs_crc12, u,
 		data_len, u + data_len);
 	if (rc)
@@ -908,7 +927,7 @@ static int egprs_decode_data(uint8_t *l2_data, const sbit_t *c,
  *  \param[in] nbits number of bits in \a bursts
  *  \param usf_p unused argument ?!?
  *  \param[out] n_errors number of detected bit-errors
- *  \param[out] n_bits_total total number of dcoded bits
+ *  \param[out] n_bits_total total number of decoded bits
  *  \returns 0 on success; negative on error */
 int gsm0503_pdtch_egprs_decode(uint8_t *l2_data, const sbit_t *bursts, uint16_t nbits,
 	uint8_t *usf_p, int *n_errors, int *n_bits_total)
@@ -1773,7 +1792,7 @@ static void tch_amr_unmerge(ubit_t *d, ubit_t *p, const ubit_t *u, int len, int 
  *  \param[in] efr Is this channel using EFR (1) or FR (0)
  *  \param[out] n_errors Number of detected bit errors
  *  \param[out] n_bits_total Total number of bits
- *  \returns length of bytes used in \a tch_data output buffer */
+ *  \returns length of bytes used in \a tch_data output buffer; negative on error */
 int gsm0503_tch_fr_decode(uint8_t *tch_data, const sbit_t *bursts,
 	int net_order, int efr, int *n_errors, int *n_bits_total)
 {
@@ -1922,7 +1941,7 @@ coding_efr_fr:
  *  \param[in] odd Odd (1) or even (0) frame number
  *  \param[out] n_errors Number of detected bit errors
  *  \param[out] n_bits_total Total number of bits
- *  \returns length of bytes used in \a tch_data output buffer */
+ *  \returns length of bytes used in \a tch_data output buffer; negative on error */
 int gsm0503_tch_hr_decode(uint8_t *tch_data, const sbit_t *bursts, int odd,
 	int *n_errors, int *n_bits_total)
 {
@@ -2063,7 +2082,9 @@ int gsm0503_tch_hr_encode(ubit_t *bursts, const uint8_t *tch_data, int len)
  *  \param[out] cmr Output in \a codec_mode_req = 1
  *  \param[out] n_errors Number of detected bit errors
  *  \param[out] n_bits_total Total number of bits
- *  \returns length of bytes used in \a tch_data output buffer */
+ *  \returns (>=4) length of bytes used in \a tch_data output buffer; ([0,3])
+ *  	     codec out of range; negative on error
+ */
 int gsm0503_tch_afs_decode(uint8_t *tch_data, const sbit_t *bursts,
 	int codec_mode_req, uint8_t *codec, int codecs, uint8_t *ft,
 	uint8_t *cmr, int *n_errors, int *n_bits_total)
@@ -2440,7 +2461,9 @@ invalid_length:
  *  \param[out] cmr Output in \a codec_mode_req = 1
  *  \param[out] n_errors Number of detected bit errors
  *  \param[out] n_bits_total Total number of bits
- *  \returns length of bytes used in \a tch_data output buffer */
+ *  \returns (>=4) length of bytes used in \a tch_data output buffer; ([0,3])
+ *  	     codec out of range; negative on error
+ */
 int gsm0503_tch_ahs_decode(uint8_t *tch_data, const sbit_t *bursts, int odd,
 	int codec_mode_req, uint8_t *codec, int codecs, uint8_t *ft,
 	uint8_t *cmr, int *n_errors, int *n_bits_total)

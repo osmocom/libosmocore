@@ -13,6 +13,7 @@ ctrl_cmd_install;
 ctrl_cmd_make;
 ctrl_cmd_parse;
 ctrl_cmd_parse2;
+ctrl_cmd_parse3;
 ctrl_cmd_send;
 ctrl_cmd_send_to_all;
 ctrl_cmd_send_trap;

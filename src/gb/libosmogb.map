@@ -70,6 +70,7 @@ gprs_nsvc_delete;
 gprs_nsvc_reset;
 gprs_nsvc_by_nsvci;
 gprs_nsvc_by_nsei;
+gprs_nsvc_state_append;
 
 gprs_log_filter_fn;
 

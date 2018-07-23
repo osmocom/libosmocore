@@ -64,16 +64,12 @@ static bool reduce_xmaxcr(struct bitvec *frame_bitvec,
  */
 static bool reduce_xmaxcr_all(struct bitvec *frame_bitvec)
 {
-	bool silent = false;
+	bool silent = true;
 
-	if (reduce_xmaxcr(frame_bitvec, GSM610_RTP_XMAXC00))
-		silent = true;
-	if (reduce_xmaxcr(frame_bitvec, GSM610_RTP_XMAXC10))
-		silent = true;
-	if (reduce_xmaxcr(frame_bitvec, GSM610_RTP_XMAXC20))
-		silent = true;
-	if (reduce_xmaxcr(frame_bitvec, GSM610_RTP_XMAXC30))
-		silent = true;
+	silent &= reduce_xmaxcr(frame_bitvec, GSM610_RTP_XMAXC00);
+	silent &= reduce_xmaxcr(frame_bitvec, GSM610_RTP_XMAXC10);
+	silent &= reduce_xmaxcr(frame_bitvec, GSM610_RTP_XMAXC20);
+	silent &= reduce_xmaxcr(frame_bitvec, GSM610_RTP_XMAXC30);
 
 	return silent;
 }
