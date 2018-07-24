@@ -814,14 +814,8 @@ static int config_write_log_single(struct vty *vty, struct log_target *tgt)
 		/* stupid old osmo logging API uses uppercase strings... */
 		osmo_str2lower(cat_lower, osmo_log_info->cat[i].name+1);
 		osmo_str2lower(level_lower, log_level_str(cat->loglevel));
-
-		if (strcmp(level_lower, "everything") != 0) /* FIXME: remove this check once 'everything' is phased out */
-			vty_out(vty, "  logging level %s %s%s", cat_lower, level_lower, VTY_NEWLINE);
-		else
-			LOGP(DLSTATS, LOGL_ERROR, "logging level everything is deprecated and should not be used\n");
+		vty_out(vty, "  logging level %s %s%s", cat_lower, level_lower, VTY_NEWLINE);
 	}
-
-	/* FIXME: levels */
 
 	return 1;
 }
