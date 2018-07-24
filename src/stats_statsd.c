@@ -68,6 +68,25 @@ struct osmo_stats_reporter *osmo_stats_reporter_create_statsd(const char *name)
 	return srep;
 }
 
+/*! Replace all illegal ':' in the stats name, but not when used as value seperator.
+ *  ':' is used as seperator between the name and the value in the statsd protocol.
+ *  \param[inout] buf is a null terminated string containing name, value, unit. */
+static void osmo_stats_reporter_sanitize_name(char *buf)
+{
+	/* e.g. msc.loc_update_type:normal:1|c -> msc.loc_update_type.normal:1|c
+	 * last is the seperator between name and value */
+	char *last = strrchr(buf, ':');
+	char *tmp = strchr(buf, ':');
+
+	if (!last)
+		return;
+
+	while (tmp < last) {
+		*tmp = '.';
+		tmp = strchr(buf, ':');
+	}
+}
+
 static int osmo_stats_reporter_statsd_send(struct osmo_stats_reporter *srep,
 	const char *name1, unsigned int index1, const char *name2, int64_t value,
 	const char *unit)
@@ -134,8 +153,10 @@ static int osmo_stats_reporter_statsd_send(struct osmo_stats_reporter *srep,
 			return -EMSGSIZE;
 	}
 
-	if (nchars > 0)
+	if (nchars > 0) {
+		osmo_stats_reporter_sanitize_name(buf);
 		msgb_trim(srep->buffer, msgb_length(srep->buffer) + nchars);
+	}
 
 	if (!srep->agg_enabled)
 		rc = osmo_stats_reporter_send_buffer(srep);
