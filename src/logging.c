@@ -932,7 +932,7 @@ const char *log_vty_command_string()
 {
 	struct log_info *info = osmo_log_info;
 	int len = 0, offset = 0, ret, i, rem;
-	int size = strlen("logging level () ()") + 1;
+	int size = strlen("logging level (all|) ()") + 1;
 	char *str;
 
 	assert_loginfo(__func__);
