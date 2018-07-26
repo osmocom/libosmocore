@@ -596,8 +596,7 @@ int osmo_sock_unix_init(uint16_t type, uint8_t proto,
 		return -EINVAL;
 
 	local.sun_family = AF_UNIX;
-	strncpy(local.sun_path, socket_path, sizeof(local.sun_path));
-	local.sun_path[sizeof(local.sun_path) - 1] = '\0';
+	osmo_strlcpy(local.sun_path, socket_path, sizeof(local.sun_path));
 
 #if defined(BSD44SOCKETS) || defined(__UNIXWARE__)
 	local.sun_len = strlen(local.sun_path);
