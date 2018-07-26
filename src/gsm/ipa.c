@@ -251,23 +251,23 @@ struct msgb *ipa_ccm_make_id_resp(const struct ipaccess_unit *dev,
 			break;
 		case IPAC_IDTAG_LOCATION1:
 			if (dev->location1)
-				strncpy(str, dev->location1, IPA_STRING_MAX);
+				osmo_strlcpy(str, dev->location1, sizeof(str));
 			break;
 		case IPAC_IDTAG_LOCATION2:
 			if (dev->location2)
-				strncpy(str, dev->location2, IPA_STRING_MAX);
+				osmo_strlcpy(str, dev->location2, sizeof(str));
 			break;
 		case IPAC_IDTAG_EQUIPVERS:
 			if (dev->equipvers)
-				strncpy(str, dev->equipvers, IPA_STRING_MAX);
+				osmo_strlcpy(str, dev->equipvers, sizeof(str));
 			break;
 		case IPAC_IDTAG_SWVERSION:
 			if (dev->swversion)
-				strncpy(str, dev->swversion, IPA_STRING_MAX);
+				osmo_strlcpy(str, dev->swversion, sizeof(str));
 			break;
 		case IPAC_IDTAG_UNITNAME:
 			if (dev->unit_name) {
-				snprintf(str, sizeof(str), dev->unit_name, IPA_STRING_MAX);
+				snprintf(str, sizeof(str), "%s", dev->unit_name);
 			} else {
 				snprintf(str, sizeof(str),
 					 "%02x-%02x-%02x-%02x-%02x-%02x",
@@ -278,7 +278,7 @@ struct msgb *ipa_ccm_make_id_resp(const struct ipaccess_unit *dev,
 			break;
 		case IPAC_IDTAG_SERNR:
 			if (dev->serno)
-				strncpy(str, dev->serno, IPA_STRING_MAX);
+				osmo_strlcpy(str, dev->serno, sizeof(str));
 			break;
 		default:
 			LOGP(DLINP, LOGL_NOTICE,
@@ -286,7 +286,6 @@ struct msgb *ipa_ccm_make_id_resp(const struct ipaccess_unit *dev,
 			msgb_free(msg);
 			return NULL;
 		}
-		str[IPA_STRING_MAX-1] = '\0';
 
 		LOGP(DLINP, LOGL_INFO, " tag %d: %s\n", ies_req[i], str);
 		tag = msgb_put(msg, 3 + strlen(str) + 1);
