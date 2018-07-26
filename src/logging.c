@@ -759,7 +759,7 @@ struct log_target *log_target_create(void)
 	if (!target)
 		return NULL;
 
-	target->categories = talloc_zero_array(target, 
+	target->categories = talloc_zero_array(target,
 						struct log_category,
 						osmo_log_info->num_cat);
 	if (!target->categories) {
