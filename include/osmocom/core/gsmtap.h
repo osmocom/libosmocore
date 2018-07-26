@@ -33,7 +33,7 @@
 #define GSMTAP_TYPE_UM		0x01
 #define GSMTAP_TYPE_ABIS	0x02
 #define GSMTAP_TYPE_UM_BURST	0x03	/* raw burst bits */
-#define GSMTAP_TYPE_SIM		0x04
+#define GSMTAP_TYPE_SIM		0x04	/* ISO 7816 smart card interface */
 #define GSMTAP_TYPE_TETRA_I1		0x05	/* tetra air interface */
 #define GSMTAP_TYPE_TETRA_I1_BURST	0x06	/* tetra air interface */
 #define GSMTAP_TYPE_WMX_BURST	0x07    /* WiMAX burst */
@@ -100,6 +100,18 @@
 #define GSMTAP_GPRS_MCS(N)	(GSMTAP_GPRS_MCS_BASE + N)
 
 #define GSMTAP_CHANNEL_ACCH	0x80
+
+/* ====== DO NOT MAKE UNAPPROVED MODIFICATIONS HERE ===== */
+
+/* sub-types for GSMTAP_TYPE_SIM */
+#define GSMTAP_SIM_APDU		0x00 /* APDU data (complete APDU) */
+#define GSMTAP_SIM_ATR		0x01 /* card ATR data */
+#define GSMTAP_SIM_PPS_REQ		0x02 /* PPS request data */
+#define GSMTAP_SIM_PPS_RSP		0x03 /* PPS response data */
+#define GSMTAP_SIM_TPDU_HDR		0x04 /* TPDU command header */
+#define GSMTAP_SIM_TPDU_CMD		0x05 /* TPDU command body */
+#define GSMTAP_SIM_TPDU_RSP		0x06 /* TPDU response body */
+#define GSMTAP_SIM_TPDU_SW		0x07 /* TPDU response trailer */
 
 /* ====== DO NOT MAKE UNAPPROVED MODIFICATIONS HERE ===== */
 
