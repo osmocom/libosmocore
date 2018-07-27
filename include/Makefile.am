@@ -93,6 +93,7 @@ nobase_include_HEADERS = \
                        osmocom/gsm/gsm48.h \
                        osmocom/gsm/gsm48_arfcn_range_encode.h \
                        osmocom/gsm/gsm48_ie.h \
+                       osmocom/gsm/gsm48_rest_octets.h \
                        osmocom/gsm/gsm_utils.h \
                        osmocom/gsm/gsup.h \
                        osmocom/gsm/gsup_sms.h \

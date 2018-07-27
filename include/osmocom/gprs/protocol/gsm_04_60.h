@@ -312,3 +312,42 @@ struct gprs_rlc_dl_header_egprs_3 {
 #endif
 } __attribute__ ((packed));
 #endif
+
+/* TS 03.60 Chapter 6.3.3.1: Network Mode of Operation */
+enum osmo_gprs_nmo {
+	GPRS_NMO_I	= 0,	/* CS pagin on GPRS paging or traffic channel */
+	GPRS_NMO_II	= 1,	/* all paging on CCCH */
+	GPRS_NMO_III	= 2,	/* no paging coordination */
+};
+
+/* TS 04.60 12.24 */
+struct osmo_gprs_cell_options {
+	enum osmo_gprs_nmo nmo;
+	/* T3168: wait for packet uplink assignment message */
+	uint32_t t3168;	/* in milliseconds */
+	/* T3192: wait for release of the TBF after reception of the final block */
+	uint32_t t3192;	/* in milliseconds */
+	uint32_t drx_timer_max;/* in seconds */
+	uint32_t bs_cv_max;
+	uint8_t  supports_egprs_11bit_rach;
+	bool ctrl_ack_type_use_block; /* use PACKET CONTROL ACKNOWLEDGMENT */
+
+	uint8_t ext_info_present;
+	struct {
+		uint8_t egprs_supported;
+		uint8_t use_egprs_p_ch_req;
+		uint8_t bep_period;
+		uint8_t pfc_supported;
+		uint8_t dtm_supported;
+		uint8_t bss_paging_coordination;
+	} ext_info;
+};
+
+/* TS 04.60 Table 12.9.2 */
+struct osmo_gprs_power_ctrl_pars {
+	uint8_t alpha;
+	uint8_t t_avg_w;
+	uint8_t t_avg_t;
+	uint8_t pc_meas_chan;
+	uint8_t n_avg_i;
+};
