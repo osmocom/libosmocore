@@ -282,3 +282,67 @@ RA test...passed
   Encoded 21 63 54 00 17 
   gsm48_decode_lai2() gives  123-456-23 (3-digit MNC)
   passed
+Element is: 2 => freqs[i] = 121
+Element is: 2 => freqs[i] = 1
+Element is: 0 => freqs[i] = 68
+w[0]=122
+w[1]=2
+w[2]=69
+w[3]=204
+w[4]=75
+w[5]=66
+w[6]=60
+w[7]=70
+w[8]=83
+w[9]=3
+w[10]=24
+w[11]=67
+w[12]=54
+w[13]=64
+w[14]=70
+w[15]=9
+Range512: 89 4b 2a 95 65 95 55 2c a9 55 aa 55 6a 95 59 55 
+Range test 0: range 511, num ARFCNs 12
+range=511, arfcns_used=11, f0=1, f0_included=1
+chan_list = 88 00 98 34 85 36 7c 50 22 dc 5e ec 00 00 00 00 
+Decoded freqs 12 (expected 12)
+Decoded: 1 12 31 51 57 91 97 98 113 117 120 125 
+Range test 1: range 511, num ARFCNs 17
+range=511, arfcns_used=16, f0=1, f0_included=1
+chan_list = 88 00 82 7f 01 3f 7e 04 0b ff ff fc 10 41 07 e0 
+Decoded freqs 17 (expected 17)
+Decoded: 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 
+Range test 2: range 511, num ARFCNs 18
+range=511, arfcns_used=17, f0=1, f0_included=1
+chan_list = 88 00 82 7f 01 7f 7e 04 0b ff ff fc 10 41 07 ff 
+Decoded freqs 18 (expected 18)
+Decoded: 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 
+Range test 3: range 511, num ARFCNs 18
+range=511, arfcns_used=17, f0=1, f0_included=1
+chan_list = 88 00 94 3a 44 32 d7 2a 43 2a 13 94 e5 38 39 f6 
+Decoded freqs 18 (expected 18)
+Decoded: 1 17 31 45 58 79 81 97 113 127 213 277 287 311 331 391 417 511 
+Range test 4: range 511, num ARFCNs 6
+range=511, arfcns_used=5, f0=1, f0_included=1
+chan_list = 88 00 8b 3c 88 b9 6b 00 00 00 00 00 00 00 00 00 
+Decoded freqs 6 (expected 6)
+Decoded: 1 17 31 45 58 79 
+Range test 5: range 511, num ARFCNs 6
+range=511, arfcns_used=5, f0=10, f0_included=1
+chan_list = 88 05 08 fc 88 b9 6b 00 00 00 00 00 00 00 00 00 
+Decoded freqs 6 (expected 6)
+Decoded: 10 17 31 45 58 79 
+Range test 6: range 1023, num ARFCNs 17
+range=1023, arfcns_used=16, f0=0, f0_included=1
+chan_list = 84 71 e4 ab b9 58 05 cb 39 17 fd b0 75 62 0f 2f 
+Decoded freqs 17 (expected 17)
+Decoded: 0 17 31 45 58 79 81 97 113 127 213 277 287 311 331 391 1023 
+Range test 7: range 1023, num ARFCNs 16
+range=1023, arfcns_used=16, f0=0, f0_included=0
+chan_list = 80 71 e4 ab b9 58 05 cb 39 17 fd b0 75 62 0f 2f 
+Decoded freqs 16 (expected 16)
+Decoded: 17 31 45 58 79 81 97 113 127 213 277 287 311 331 391 1023 
+Random range test: range 127, max num ARFCNs 29
+Random range test: range 255, max num ARFCNs 22
+Random range test: range 511, max num ARFCNs 18
+Random range test: range 1023, max num ARFCNs 16

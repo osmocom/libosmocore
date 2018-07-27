@@ -25,6 +25,7 @@
 #include <osmocom/gsm/protocol/gsm_04_08.h>
 #include <osmocom/gsm/gsm48_ie.h>
 #include <osmocom/gsm/gsm48.h>
+#include <osmocom/gsm/gsm48_arfcn_range_encode.h>
 #include <osmocom/gsm/mncc.h>
 #include <osmocom/core/backtrace.h>
 #include <osmocom/core/utils.h>
@@ -609,6 +610,338 @@ static void test_mid_decode_zero_length(void)
 	printf("\n");
 }
 
+struct {
+	int range;
+	int arfcns_num;
+	int arfcns[OSMO_GSM48_RANGE_ENC_MAX_ARFCNS];
+} arfcn_test_ranges[] = {
+	{OSMO_GSM48_ARFCN_RANGE_512, 12,
+		{ 1, 12, 31, 51, 57, 91, 97, 98, 113, 117, 120, 125 }},
+	{OSMO_GSM48_ARFCN_RANGE_512, 17,
+		{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17 }},
+	{OSMO_GSM48_ARFCN_RANGE_512, 18,
+		{ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 }},
+	{OSMO_GSM48_ARFCN_RANGE_512, 18,
+		{ 1, 17, 31, 45, 58, 79, 81, 97,
+		  113, 127, 213, 277, 287, 311, 331, 391,
+		  417, 511 }},
+	{OSMO_GSM48_ARFCN_RANGE_512, 6,
+		{ 1, 17, 31, 45, 58, 79 }},
+	{OSMO_GSM48_ARFCN_RANGE_512, 6,
+		{ 10, 17, 31, 45, 58, 79 }},
+	{OSMO_GSM48_ARFCN_RANGE_1024, 17,
+		{ 0, 17, 31, 45, 58, 79, 81, 97,
+		  113, 127, 213, 277, 287, 311, 331, 391,
+		  1023 }},
+	{OSMO_GSM48_ARFCN_RANGE_1024, 16,
+		{ 17, 31, 45, 58, 79, 81, 97, 113,
+		  127, 213, 277, 287, 311, 331, 391, 1023 }},
+	{-1}
+};
+
+static int test_single_range_encoding(int range, const int *orig_arfcns, int arfcns_num, int silent)
+{
+	int arfcns[OSMO_GSM48_RANGE_ENC_MAX_ARFCNS];
+	int w[OSMO_GSM48_RANGE_ENC_MAX_ARFCNS];
+	int f0_included = 0;
+	int rc, f0;
+	uint8_t chan_list[16] = {0};
+	struct gsm_sysinfo_freq dec_freq[1024] = {{0}};
+	int dec_arfcns[OSMO_GSM48_RANGE_ENC_MAX_ARFCNS] = {0};
+	int dec_arfcns_count = 0;
+	int arfcns_used = 0;
+	int i;
+
+	arfcns_used = arfcns_num;
+	memmove(arfcns, orig_arfcns, sizeof(arfcns));
+
+	f0 = range == OSMO_GSM48_ARFCN_RANGE_1024 ? 0 : arfcns[0];
+	/*
+	 * Manipulate the ARFCN list according to the rules in J4 depending
+	 * on the selected range.
+	 */
+	arfcns_used = osmo_gsm48_range_enc_filter_arfcns(arfcns, arfcns_used, f0, &f0_included);
+
+	memset(w, 0, sizeof(w));
+	osmo_gsm48_range_enc_arfcns(range, arfcns, arfcns_used, w, 0);
+
+	if (!silent)
+		printf("range=%d, arfcns_used=%d, f0=%d, f0_included=%d\n", range, arfcns_used, f0, f0_included);
+
+	/* Select the range and the amount of bits needed */
+	switch (range) {
+	case OSMO_GSM48_ARFCN_RANGE_128:
+		osmo_gsm48_range_enc_128(chan_list, f0, w);
+		break;
+	case OSMO_GSM48_ARFCN_RANGE_256:
+		osmo_gsm48_range_enc_256(chan_list, f0, w);
+		break;
+	case OSMO_GSM48_ARFCN_RANGE_512:
+		osmo_gsm48_range_enc_512(chan_list, f0, w);
+		break;
+	case OSMO_GSM48_ARFCN_RANGE_1024:
+		osmo_gsm48_range_enc_1024(chan_list, f0, f0_included, w);
+		break;
+	default:
+		return 1;
+	};
+
+	if (!silent)
+		printf("chan_list = %s\n",
+		       osmo_hexdump(chan_list, sizeof(chan_list)));
+
+	rc = gsm48_decode_freq_list(dec_freq, chan_list, sizeof(chan_list),
+				    0xfe, 1);
+	if (rc != 0) {
+		printf("Cannot decode freq list, rc = %d\n", rc);
+		return 1;
+	}
+
+	for (i = 0; i < ARRAY_SIZE(dec_freq); i++) {
+		if (dec_freq[i].mask &&
+		    dec_arfcns_count < ARRAY_SIZE(dec_arfcns))
+			dec_arfcns[dec_arfcns_count++] = i;
+	}
+
+	if (!silent) {
+		printf("Decoded freqs %d (expected %d)\n",
+		       dec_arfcns_count, arfcns_num);
+		printf("Decoded: ");
+		for (i = 0; i < dec_arfcns_count; i++) {
+			printf("%d ", dec_arfcns[i]);
+			if (dec_arfcns[i] != orig_arfcns[i])
+				printf("(!= %d) ", orig_arfcns[i]);
+		}
+		printf("\n");
+	}
+
+	if (dec_arfcns_count != arfcns_num) {
+		printf("Wrong number of arfcns\n");
+		return 1;
+	}
+
+	if (memcmp(dec_arfcns, orig_arfcns, sizeof(dec_arfcns)) != 0) {
+		printf("Decoding error, got wrong freqs\n");
+		printf(" w = ");
+		for (i = 0; i < ARRAY_SIZE(w); i++)
+			printf("%d ", w[i]);
+		printf("\n");
+		return 1;
+	}
+
+	return 0;
+}
+
+static void test_random_range_encoding(int range, int max_arfcn_num)
+{
+	int arfcns_num = 0;
+	int test_idx;
+	int rc, max_count;
+	int num_tests = 1024;
+
+	printf("Random range test: range %d, max num ARFCNs %d\n",
+	       range, max_arfcn_num);
+
+	srandom(1);
+
+	for (max_count = 1; max_count < max_arfcn_num; max_count++) {
+		for (test_idx = 0; test_idx < num_tests; test_idx++) {
+			int count;
+			int i;
+			int min_freq = 0;
+
+			int rnd_arfcns[OSMO_GSM48_RANGE_ENC_MAX_ARFCNS] = {0};
+			char rnd_arfcns_set[1024] = {0};
+
+			if (range < OSMO_GSM48_ARFCN_RANGE_1024)
+				min_freq = random() % (1023 - range);
+
+			for (count = max_count; count; ) {
+				int arfcn = min_freq + random() % (range + 1);
+				OSMO_ASSERT(arfcn < ARRAY_SIZE(rnd_arfcns_set));
+
+				if (!rnd_arfcns_set[arfcn]) {
+					rnd_arfcns_set[arfcn] = 1;
+					count -= 1;
+				}
+			}
+
+			arfcns_num = 0;
+			for (i = 0; i < ARRAY_SIZE(rnd_arfcns_set); i++)
+				if (rnd_arfcns_set[i])
+					rnd_arfcns[arfcns_num++] = i;
+
+			rc = test_single_range_encoding(range, rnd_arfcns,
+							arfcns_num, 1);
+			if (rc != 0) {
+				printf("Failed on test %d, range %d, num ARFCNs %d\n",
+				       test_idx, range, max_count);
+				test_single_range_encoding(range, rnd_arfcns,
+							   arfcns_num, 0);
+				return;
+			}
+		}
+	}
+}
+
+static void test_range_encoding()
+{
+	int *arfcns;
+	int arfcns_num = 0;
+	int test_idx;
+	int range;
+
+	for (test_idx = 0; arfcn_test_ranges[test_idx].arfcns_num > 0; test_idx++)
+	{
+		arfcns_num = arfcn_test_ranges[test_idx].arfcns_num;
+		arfcns = &arfcn_test_ranges[test_idx].arfcns[0];
+		range = arfcn_test_ranges[test_idx].range;
+
+		printf("Range test %d: range %d, num ARFCNs %d\n",
+		       test_idx, range, arfcns_num);
+
+		test_single_range_encoding(range, arfcns, arfcns_num, 0);
+	}
+
+	test_random_range_encoding(OSMO_GSM48_ARFCN_RANGE_128, 29);
+	test_random_range_encoding(OSMO_GSM48_ARFCN_RANGE_256, 22);
+	test_random_range_encoding(OSMO_GSM48_ARFCN_RANGE_512, 18);
+	test_random_range_encoding(OSMO_GSM48_ARFCN_RANGE_1024, 16);
+}
+
+static int freqs1[] = {
+	12, 70, 121, 190, 250, 320, 401, 475, 520, 574, 634, 700, 764, 830, 905, 980
+};
+
+static int freqs2[] = {
+	402, 460, 1, 67, 131, 197, 272, 347,
+};
+
+static int freqs3[] = {
+	68, 128, 198, 279, 353, 398, 452,
+
+};
+
+static int w_out[] = {
+	122, 2, 69, 204, 75, 66, 60, 70, 83, 3, 24, 67, 54, 64, 70, 9,
+};
+
+static int range128[] = {
+	1, 1 + 127,
+};
+
+static int range256[] = {
+	1, 1 + 128,
+};
+
+static int range512[] = {
+	1, 1+ 511,
+};
+
+
+#define VERIFY(res, cmp, wanted)					\
+	if (!(res cmp wanted)) {					\
+		printf("ASSERT failed: %s:%d Wanted: %d %s %d\n",	\
+			__FILE__, __LINE__, (int) res, # cmp, (int) wanted);	\
+	}
+
+static void test_arfcn_filter()
+{
+	int arfcns[50], i, res, f0_included;
+	for (i = 0; i < ARRAY_SIZE(arfcns); ++i)
+		arfcns[i] = (i + 1) * 2;
+
+	/* check that the arfcn is taken out. f0_included is only set for Range1024 */
+	f0_included = 24;
+	res = osmo_gsm48_range_enc_filter_arfcns(arfcns, ARRAY_SIZE(arfcns), arfcns[0], &f0_included);
+	VERIFY(res, ==, ARRAY_SIZE(arfcns) - 1);
+	VERIFY(f0_included, ==, 1);
+	for (i = 0; i < res; ++i)
+		VERIFY(arfcns[i], ==, ((i+2) * 2) - (2+1));
+
+	/* check with range1024, ARFCN 0 is included */
+	for (i = 0; i < ARRAY_SIZE(arfcns); ++i)
+		arfcns[i] = i * 2;
+	res = osmo_gsm48_range_enc_filter_arfcns(arfcns, ARRAY_SIZE(arfcns), 0, &f0_included);
+	VERIFY(res, ==, ARRAY_SIZE(arfcns) - 1);
+	VERIFY(f0_included, ==, 1);
+	for (i = 0; i < res; ++i)
+		VERIFY(arfcns[i], ==, (i + 1) * 2 - 1);
+
+	/* check with range1024, ARFCN 0 not included */
+	for (i = 0; i < ARRAY_SIZE(arfcns); ++i)
+		arfcns[i] = (i + 1) * 2;
+	res = osmo_gsm48_range_enc_filter_arfcns(arfcns, ARRAY_SIZE(arfcns), 0, &f0_included);
+	VERIFY(res, ==, ARRAY_SIZE(arfcns));
+	VERIFY(f0_included, ==, 0);
+	for (i = 0; i < res; ++i)
+		VERIFY(arfcns[i], ==, ((i + 1) * 2) - 1);
+}
+
+static void test_print_encoding()
+{
+	int rc;
+	int w[17];
+	uint8_t chan_list[16];
+	memset(chan_list, 0x23, sizeof(chan_list));
+
+	for (rc = 0; rc < ARRAY_SIZE(w); ++rc)
+		switch (rc % 3) {
+		case 0:
+			w[rc] = 0xAAAA;
+			break;
+		case 1:
+			w[rc] = 0x5555;
+			break;
+		case 2:
+			w[rc] = 0x9696;
+			break;
+		}
+
+	osmo_gsm48_range_enc_512(chan_list, (1 << 9) | 0x96, w);
+
+	printf("Range512: %s\n", osmo_hexdump(chan_list, ARRAY_SIZE(chan_list)));
+}
+
+static void test_si_range_helpers()
+{
+	int ws[(sizeof(freqs1)/sizeof(freqs1[0]))];
+	int i, f0 = 0xFFFFFF;
+
+	memset(&ws[0], 0x23, sizeof(ws));
+
+	i = osmo_gsm48_range_enc_find_index(1023, freqs1, ARRAY_SIZE(freqs1));
+	printf("Element is: %d => freqs[i] = %d\n", i, i >= 0 ? freqs1[i] : -1);
+	VERIFY(i, ==, 2);
+
+	i = osmo_gsm48_range_enc_find_index(511, freqs2, ARRAY_SIZE(freqs2));
+	printf("Element is: %d => freqs[i] = %d\n", i,  i >= 0 ? freqs2[i] : -1);
+	VERIFY(i, ==, 2);
+
+	i = osmo_gsm48_range_enc_find_index(511, freqs3, ARRAY_SIZE(freqs3));
+	printf("Element is: %d => freqs[i] = %d\n", i,  i >= 0 ? freqs3[i] : -1);
+	VERIFY(i, ==, 0);
+
+	osmo_gsm48_range_enc_arfcns(1023, freqs1, ARRAY_SIZE(freqs1), ws, 0);
+
+	for (i = 0; i < sizeof(freqs1)/sizeof(freqs1[0]); ++i) {
+		printf("w[%d]=%d\n", i, ws[i]);
+		VERIFY(ws[i], ==, w_out[i]);
+	}
+
+	i = osmo_gsm48_range_enc_determine_range(range128, ARRAY_SIZE(range128), &f0);
+	VERIFY(i, ==, OSMO_GSM48_ARFCN_RANGE_128);
+	VERIFY(f0, ==, 1);
+
+	i = osmo_gsm48_range_enc_determine_range(range256, ARRAY_SIZE(range256), &f0);
+	VERIFY(i, ==, OSMO_GSM48_ARFCN_RANGE_256);
+	VERIFY(f0, ==, 1);
+
+	i = osmo_gsm48_range_enc_determine_range(range512, ARRAY_SIZE(range512), &f0);
+	VERIFY(i, ==, OSMO_GSM48_ARFCN_RANGE_512);
+	VERIFY(f0, ==, 1);
+}
+
 int main(int argc, char **argv)
 {
 	test_bearer_cap();
@@ -618,6 +951,11 @@ int main(int argc, char **argv)
 	test_mid_decode_zero_length();
 	test_ra_cap();
 	test_lai_encode_decode();
+
+	test_si_range_helpers();
+	test_arfcn_filter();
+	test_print_encoding();
+	test_range_encoding();
 
 	return EXIT_SUCCESS;
 }

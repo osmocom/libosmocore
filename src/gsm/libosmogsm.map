@@ -518,6 +518,15 @@ osmo_apn_qualify_from_imsi;
 osmo_apn_to_str;
 osmo_apn_from_str;
 
+osmo_gsm48_range_enc_determine_range;
+osmo_gsm48_range_enc_arfcns;
+osmo_gsm48_range_enc_find_index;
+osmo_gsm48_range_enc_filter_arfcns;
+osmo_gsm48_range_enc_128;
+osmo_gsm48_range_enc_256;
+osmo_gsm48_range_enc_512;
+osmo_gsm48_range_enc_1024;
+
 osmo_gsup_encode;
 osmo_gsup_decode;
 osmo_gsup_message_type_names;
