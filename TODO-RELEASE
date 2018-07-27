@@ -7,6 +7,3 @@
 # If any interfaces have been added since the last public release: c:r:a + 1.
 # If any interfaces have been removed or changed since the last public release: c:r:0.
 #library	what			description / commit summary line
-gsup		gsup.h				the 'osmo_gsup_message' struct extended with
-						session information => ABI changed
-						SS/USSD information => ABI changed

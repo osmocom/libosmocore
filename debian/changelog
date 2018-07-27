@@ -1,3 +1,120 @@
+libosmocore (0.12.0) unstable; urgency=medium
+
+  [ Pau Espin Pedrol ]
+  * control_if: Avoid heap-use-after-free in osmo_wqueue_bfd_cb
+  * configure: Check separately for lib implementing dlopen and dlsym
+  * tests: bitrev_test: Fix dynamic-stack-buffer-overflow
+  * tests: gea_test: Use correct max size for key in buffer
+  * tests: a5_test: Print wrong buffer correctly on error
+  * gsm: kasumi: Fix dynamic-stack-buffer-overflow on out buffers not multiple of 64 bits
+  * gsm: lapdm.c: Add missing new line char in notice log string
+  * ctrl: Log CMD TYPE on invalid ID number
+  * ctrl: Fix parsing of ERROR recvd msgs with id=err
+  * gsm0808: Add value_string for encryption algorithms
+  * ctrl: Introduce ctrl_cmd_parse3 API
+  * ctrl: ctrl_handle_msg: Avoid sending back received ERROR msgs
+  * tests: ctrl: Test received ERROR messages are handled correctly
+  * libosmocoding: clarify return values for TCH decoding functions
+  * libosmocodec: FR err concealment: Fix too many silent frames generated
+  * tests: codec: ecu_fr: Print XMAXC fields
+  * tests: codec: ecu_fr: Add buffer with unequal XMAXC values
+  * rate_ctr: Improve logging
+  * logging: log_vty_command_string: Fix undercount of buf alloc size
+  * logging_vty: Simplify code in config_write_log_single
+  * logging.c: Fix whitespace typo
+
+  [ Harald Welte ]
+  * lapdm: Fix back-pointer from lapdm_entity to lapdm_channel
+  * lapdm: Implement SABM related constraints
+  * lapdm: cleanup: send_rslms_rll_l3_ui(): Use msgb_tv_push()
+  * lapdm: send_rslms_rll_l3_ui(): Don't include B4/SACCH IE unless needed
+  * lapdm: don't enforce contention resolution on SAPI0/DCCH
+  * Add osmo_timerfd_* functions for osmo_fd-wrapped timerfd
+  * import isdn4linux HDLC code from linux kernel
+  * isdnhdlc: Port from kernel to userspace
+  * mncc: properly export osmo_mncc_name()
+  * cosmetic: Whitespace fixes in control_if.c
+  * ctrl: Introduce libosmoctrl.map to avoid unintended exports
+  * ctrl: Add doxygen API documentation; generate html from it
+  * debian: Add libosmoctrl-doc sub-package
+  * gsm_08_08.h: Add enum for LCLS config, control and status
+  * gsm0808: Add encoding functions for LCLS BSSMAP messages
+  * gsm0808: Add value_string for LCLS related IEs
+  * tlv: Add TLVP_VAL_MINLEN() to obtain value _if_ length is >= minimum
+  * Add osmo_isqrt32() to compute 32bit integer square root
+  * fsm: Change semantics of LOGPFSML() log-level
+  * vty: Don't dump deprecated commands in XML export
+  * vty: Add logging_vty_add_deprecated_subsys
+  * gsup: Add osmo_gsup_get_err_msg_type() function
+  * gsup: Add value_string for Session State IE
+  * gsm 04.80: Add value_string for component type and op code
+  * Fix embedded (arm-none-eabi) builds
+  * jenkins_arm.sh: Don't run 'make check' on embedded builds
+  * jenkins_arch.sh: Accept "arm-none-eabi" as alias for "arm"
+  * jenkins_arch.sh: Exit with error on unknown architecture
+  * Don't call abort() directly, always use osmo_panic()
+  * osmo_panic(): Annotate as __attribute__ ((noreturn))
+  * gprs_ns.h: Declare gprs_ns_cause_str() which already existed in c file
+
+  [ Stefan Sperling ]
+  * define a constant for the max length of called party BCD IE
+  * introduce vty_out_rate_ctr_group_fmt() function
+  * Add a 'show rate-counters' VTY command.
+  * remove unused argument from pad_append_ctr() helper function
+  * check bssgp_tlv_parse() return code in bssgp_rcvmsg()
+  * return error to sender upon bssgp_tlv_parse() failure
+
+  [ Neels Hofmeyr ]
+  * add gsm0808 channel enum to IE val conversion functions
+  * add gsm0808_cell_id_to_list()
+  * add support for gsm0808 HANDOVER REQUIRED message
+  * add gsm0808_create_handover_request_ack()
+  * add osmo_fsm_inst_state_chg_keep_timer()
+  * fix gsm0808_permitted_speech(): don't return HR3 for TCH_F + AMR
+  * add and tweak inter-BSC HO API
+  * vty/command.c: talloc from tall_vty_cmd_ctx, not NULL
+  * vty: cosmetic: cmd_deopt(): use talloc_strndup(), not memcpy()
+  * vty: fix use-after-free and memleaks in is_cmd_ambiguous()
+  * utils_test: fix isqrt_test calculation range
+  * utils_test: check stderr to catch sanitizer issues
+  * add osmo_sockaddr_to_str_and_uint()
+
+  [ Philipp Maier ]
+  * fsm: guard action callback
+  * gsm_04_08: add function to get value string
+  * gsm_08_08: gsm0808_permitted_speech does not have value strings
+
+  [ Thorsten Alteholz ]
+  * fix spelling
+
+  [ Keith ]
+  * Add enum gsm48_cause_coding from GSM 04.08 Section 10.5.4.11
+  * Add enum gsm48_progress_desc
+
+  [ Daniel Willmann ]
+  * ports.h: Add ctrl port for osmo-gbproxy
+  * Add function gprs_nsvc_state_append
+  * stats_vty: Add asciidoc sections between the different counters
+
+  [ Vadim Yanitskiy ]
+  * gsm0480: fix: don't overwrite the data of RELEASE_COMPLETE
+  * GSUP: implement TCAP-like session management
+  * GSUP: introduce new messages for SS/USSD payloads
+  * Doxygen: gitignore generated files for libosmoctrl
+  * gsm/gsm0480.c: introduce gsm0480_extract_ie_by_tag()
+  * gsm/gsm0480: refactor and expose gsm0480_parse_facility_ie()
+  * Don't enforce Python 2 for utilities
+
+  [ Alexander Chemeris ]
+  * coding: Fix (E)GPRS BER calculation to correctly account for puncturing.
+  * coding: Documentation typo fix.
+
+  [ Alexander Couzens ]
+  * vty: initialize termios before using it
+  * stats_statsd: sanitize statsd name
+
+ -- Pau Espin Pedrol <pespin@sysmocom.de>  Fri, 27 Jul 2018 17:31:46 +0200
+
 libosmocore (0.11.0) unstable; urgency=medium
 
   [ Max ]
