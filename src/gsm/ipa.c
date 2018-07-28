@@ -128,7 +128,7 @@ int ipa_ccm_idtag_parse_off(struct tlv_parsed *dec, unsigned char *buf, int len,
 
 		DEBUGPC(DLMI, "%s='%s' ", ipa_ccm_idtag_name(t_tag), cur);
 
-		dec->lv[t_tag].len = t_len - len_offset;
+		dec->lv[t_tag].len = t_len - 1 - len_offset;
 		dec->lv[t_tag].val = cur;
 
 		cur += t_len - len_offset;
