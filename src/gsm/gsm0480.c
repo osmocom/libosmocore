@@ -87,6 +87,15 @@ static inline unsigned char *msgb_push_TLV1(struct msgb *msgb, uint8_t tag,
 	return data;
 }
 
+static inline unsigned char *msgb_push_NULL(struct msgb *msgb)
+{
+	uint8_t *data = msgb_push(msgb, 2);
+
+	data[0] = ASN1_NULL_TYPE_TAG;
+	data[1] = 0;
+	return data;
+}
+
 /* wrap an invoke around it... the other way around
  *
  * 1.) Invoke Component tag
@@ -860,6 +869,61 @@ struct msgb *gsm0480_create_ussd_resp(uint8_t invoke_id, uint8_t trans_id, const
 			   GSM0480_MTYPE_RELEASE_COMPLETE);
 	return msg;
 }
+
+/*! Generate a ReturnError component (see section 3.6.1) and given error code (see section 3.6.6).
+ * \param[in] invoke_id		InvokeID of the request
+ * \param[in] error_code	Error code (section 4.5)
+ * \return			message buffer containing the Reject component
+ *
+ * Note: if InvokeID is not available, e.g. when message parsing failed, any incorrect vlue
+ * can be passed (0x00 > x > 0xff), so the universal NULL-tag (see table 3.6) will be used instead.
+ */
+struct msgb *gsm0480_gen_return_error(uint8_t invoke_id, uint8_t error_code)
+{
+	struct msgb *msg = gsm0480_msgb_alloc_name("TS 04.80 ReturnError");
+
+	/* First insert the problem code */
+	msgb_push_TLV1(msg, GSM_0480_ERROR_CODE_TAG, error_code);
+
+	/* Before it, insert the invoke ID */
+	msgb_push_TLV1(msg, GSM0480_COMPIDTAG_INVOKE_ID, invoke_id);
+
+	/* Wrap this up as a Reject component */
+	msgb_wrap_with_TL(msg, GSM0480_CTYPE_RETURN_ERROR);
+
+	/* FIXME: Wrap in Facility + L3? */
+	return msg;
+}
+
+/*! Generate a Reject component (see section 3.6.1) and given error code (see section 3.6.7).
+ * \param[in] invoke_id		InvokeID of the request
+ * \param[in] problem_tag	Problem code tag (table 3.13)
+ * \param[in] problem_code	Problem code (table 3.14-3.17)
+ * \return			message buffer containing the Reject component
+ *
+ * Note: if InvokeID is not available, e.g. when message parsing failed, any incorrect vlue
+ * can be passed (0x00 > x > 0xff), so the universal NULL-tag (see table 3.6) will be used instead.
+ */
+struct msgb *gsm0480_gen_reject(int invoke_id, uint8_t problem_tag, uint8_t problem_code)
+{
+	struct msgb *msg = gsm0480_msgb_alloc_name("TS 04.80 Reject");
+
+	/* First insert the problem code */
+	msgb_push_TLV1(msg, problem_tag, problem_code);
+
+	/* If the Invoke ID is not available, Universal NULL (table 3.9) with length=0 shall be used */
+	if (invoke_id < 0 || invoke_id > 255)
+		msgb_push_NULL(msg);
+	else
+		msgb_push_TLV1(msg, GSM0480_COMPIDTAG_INVOKE_ID, invoke_id);
+
+	/* Wrap this up as a Reject component */
+	msgb_wrap_with_TL(msg, GSM0480_CTYPE_REJECT);
+
+	/* FIXME: Wrap in Facility + L3? */
+	return msg;
+}
+
 
 struct gsm48_hdr *gsm0480_l3hdr_push(struct msgb *msg, uint8_t proto_discr,
 				     uint8_t msg_type)

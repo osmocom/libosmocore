@@ -110,6 +110,8 @@ int gsm0480_decode_ss_request(const struct gsm48_hdr *hdr, uint16_t len,
 
 struct msgb *gsm0480_msgb_alloc_name(const char *name);
 struct msgb *gsm0480_gen_ussd_resp_7bit(uint8_t invoke_id, const char *text);
+struct msgb *gsm0480_gen_return_error(uint8_t invoke_id, uint8_t error_code);
+struct msgb *gsm0480_gen_reject(int invoke_id, uint8_t problem_tag, uint8_t problem_code);
 
 struct msgb *gsm0480_create_ussd_resp(uint8_t invoke_id, uint8_t trans_id, const char *text);
 struct msgb *gsm0480_create_unstructuredSS_Notify(int alertPattern, const char *text);

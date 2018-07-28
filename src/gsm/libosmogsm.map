@@ -99,6 +99,8 @@ gsm0480_comp_type_names;
 gsm0480_op_code_names;
 gsm0480_msgb_alloc_name;
 gsm0480_gen_ussd_resp_7bit;
+gsm0480_gen_return_error;
+gsm0480_gen_reject;
 
 gsm0502_calc_paging_group;
 
