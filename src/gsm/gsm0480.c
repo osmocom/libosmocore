@@ -821,6 +821,7 @@ struct msgb *gsm0480_gen_ussd_resp_7bit(uint8_t invoke_id, const char *text)
  * not only the FACILITY value, but the full L3 message including message header
  * and FACILITY IE Tag+Length.
  */
+OSMO_DEPRECATED("Use gsm0480_gen_ussd_resp_7bit() instead")
 struct msgb *gsm0480_create_ussd_resp(uint8_t invoke_id, uint8_t trans_id, const char *text)
 {
 	struct msgb *msg;
