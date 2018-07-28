@@ -787,13 +787,18 @@ static int parse_ss_for_bs_req(const uint8_t *ss_req_data,
 	return rc;
 }
 
+struct msgb *gsm0480_msgb_alloc_name(const char *name)
+{
+	return msgb_alloc_headroom(1024, 128, name);
+}
+
 struct msgb *gsm0480_create_ussd_resp(uint8_t invoke_id, uint8_t trans_id, const char *text)
 {
 	struct msgb *msg;
 	uint8_t *ptr8;
 	int response_len;
 
-	msg = msgb_alloc_headroom(1024, 128, "GSM 04.80");
+	msg = gsm0480_msgb_alloc_name("TS 04.80 USSD Resp");
 	if (!msg)
 		return NULL;
 

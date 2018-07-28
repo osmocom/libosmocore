@@ -97,6 +97,7 @@ gsm0480_wrap_facility;
 gsm0480_wrap_invoke;
 gsm0480_comp_type_names;
 gsm0480_op_code_names;
+gsm0480_msgb_alloc_name;
 
 gsm0502_calc_paging_group;
 
