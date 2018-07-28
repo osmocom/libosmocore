@@ -792,7 +792,11 @@ struct msgb *gsm0480_msgb_alloc_name(const char *name)
 	return msgb_alloc_headroom(1024, 128, name);
 }
 
-struct msgb *gsm0480_create_ussd_resp(uint8_t invoke_id, uint8_t trans_id, const char *text)
+/*! Generate a USSD ReturnResult component containing a string in default GSM alphabet.
+ * \param[in] invoke_id		InvokeID of the request to which we respond
+ * \param[in] text		USSD text in ASCII; to be encoded as GSM 7-but alphabet
+ */
+struct msgb *gsm0480_gen_ussd_resp_7bit(uint8_t invoke_id, const char *text)
 {
 	struct msgb *msg;
 	uint8_t *ptr8;
@@ -828,6 +832,23 @@ struct msgb *gsm0480_create_ussd_resp(uint8_t invoke_id, uint8_t trans_id, const
 
 	/* Wrap this up as a Return Result component */
 	msgb_wrap_with_TL(msg, GSM0480_CTYPE_RETURN_RESULT);
+
+	return msg;
+}
+
+/*! Legacy helper: Generate USSD response including FACILITY IE + L3 header.
+ *
+ * This function is just like \ref gsm0480_gen_ussd_resp_7bit, but it generates
+ * not only the FACILITY value, but the full L3 message including message header
+ * and FACILITY IE Tag+Length.
+ */
+struct msgb *gsm0480_create_ussd_resp(uint8_t invoke_id, uint8_t trans_id, const char *text)
+{
+	struct msgb *msg;
+
+	msg = gsm0480_gen_ussd_resp_7bit(invoke_id, text);
+	if (!msg)
+		return NULL;
 
 	/* Wrap the component in a Facility message */
 	msgb_wrap_with_TL(msg, GSM0480_IE_FACILITY);
