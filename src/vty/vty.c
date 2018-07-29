@@ -1766,8 +1766,6 @@ void vty_init_vtysh(void)
 	vtyvec = vector_init(VECTOR_MIN_SIZE);
 }
 
-extern void *tall_bsc_ctx;
-
 /*! Initialize VTY layer
  *  \param[in] app_info application information
  */
