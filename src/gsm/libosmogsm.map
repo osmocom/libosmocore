@@ -493,5 +493,10 @@ osmo_mncc_stringify;
 osmo_mncc_names;
 _osmo_mncc_log;
 
+oap_client_encoded;
+oap_client_handle;
+oap_client_init;
+oap_client_register;
+
 local: *;
 };
