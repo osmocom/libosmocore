@@ -30,10 +30,10 @@
 
 #include <osmocom/gsm/oap_client.h>
 
-int oap_client_init(struct oap_client_config *config,
-		    struct oap_client_state *state)
+int osmo_oap_client_init(struct osmo_oap_client_config *config,
+			 struct osmo_oap_client_state *state)
 {
-	OSMO_ASSERT(state->state == OAP_UNINITIALIZED);
+	OSMO_ASSERT(state->state == OSMO_OAP_UNINITIALIZED);
 
 	if (!config)
 		goto disable;
@@ -54,11 +54,11 @@ int oap_client_init(struct oap_client_config *config,
 	state->client_id = config->client_id;
 	memcpy(state->secret_k, config->secret_k, sizeof(state->secret_k));
 	memcpy(state->secret_opc, config->secret_opc, sizeof(state->secret_opc));
-	state->state = OAP_INITIALIZED;
+	state->state = OSMO_OAP_INITIALIZED;
 	return 0;
 
 disable:
-	state->state = OAP_DISABLED;
+	state->state = OSMO_OAP_DISABLED;
 	return 0;
 }
 
@@ -71,7 +71,7 @@ disable:
  * response message and update the state.
  * Return 0 on success; -1 if OAP is disabled; -2 if rx_random and rx_autn fail
  * the authentication check; -3 for any other errors. */
-static int oap_evaluate_challenge(const struct oap_client_state *state,
+static int oap_evaluate_challenge(const struct osmo_oap_client_state *state,
 				  const uint8_t *rx_random,
 				  const uint8_t *rx_autn,
 				  uint8_t *tx_xres)
@@ -89,8 +89,8 @@ static int oap_evaluate_challenge(const struct oap_client_state *state,
 			   == sizeof(state->secret_opc), _secret_opc_size_match);
 
 	switch (state->state) {
-	case OAP_UNINITIALIZED:
-	case OAP_DISABLED:
+	case OSMO_OAP_UNINITIALIZED:
+	case OSMO_OAP_DISABLED:
 		return -1;
 	default:
 		break;
@@ -124,7 +124,7 @@ static int oap_evaluate_challenge(const struct oap_client_state *state,
 	return 0;
 }
 
-struct msgb *oap_client_encoded(const struct osmo_oap_message *oap_msg)
+struct msgb *osmo_oap_client_encoded(const struct osmo_oap_message *oap_msg)
 {
 	struct msgb *msg = msgb_alloc_headroom(1000, 64, __func__);
 	OSMO_ASSERT(msg);
@@ -145,16 +145,16 @@ static struct msgb* oap_msg_register(uint16_t client_id)
 
 	oap_msg.message_type = OAP_MSGT_REGISTER_REQUEST;
 	oap_msg.client_id = client_id;
-	return oap_client_encoded(&oap_msg);
+	return osmo_oap_client_encoded(&oap_msg);
 }
 
-int oap_client_register(struct oap_client_state *state, struct msgb **msg_tx)
+int osmo_oap_client_register(struct osmo_oap_client_state *state, struct msgb **msg_tx)
 {
 	*msg_tx = oap_msg_register(state->client_id);
 	if (!(*msg_tx))
 		return -1;
 
-	state->state = OAP_REQUESTED_CHALLENGE;
+	state->state = OSMO_OAP_REQUESTED_CHALLENGE;
 	return 0;
 }
 
@@ -168,10 +168,10 @@ static struct msgb* oap_msg_challenge_response(uint8_t *xres)
 	oap_reply.message_type = OAP_MSGT_CHALLENGE_RESULT;
 	memcpy(oap_reply.xres, xres, sizeof(oap_reply.xres));
 	oap_reply.xres_present = 1;
-	return oap_client_encoded(&oap_reply);
+	return osmo_oap_client_encoded(&oap_reply);
 }
 
-static int handle_challenge(struct oap_client_state *state,
+static int handle_challenge(struct osmo_oap_client_state *state,
 			    struct osmo_oap_message *oap_rx,
 			    struct msgb **msg_tx)
 {
@@ -199,17 +199,17 @@ static int handle_challenge(struct oap_client_state *state,
 		goto failure;
 	}
 
-	state->state = OAP_SENT_CHALLENGE_RESULT;
+	state->state = OSMO_OAP_SENT_CHALLENGE_RESULT;
 	return 0;
 
 failure:
 	OSMO_ASSERT(rc < 0);
-	state->state = OAP_INITIALIZED;
+	state->state = OSMO_OAP_INITIALIZED;
 	return rc;
 }
 
-int oap_client_handle(struct oap_client_state *state,
-		      const struct msgb *msg_rx, struct msgb **msg_tx)
+int osmo_oap_client_handle(struct osmo_oap_client_state *state,
+			   const struct msgb *msg_rx, struct msgb **msg_tx)
 {
 	uint8_t *data = msgb_l2(msg_rx);
 	size_t data_len = msgb_l2len(msg_rx);
@@ -229,12 +229,12 @@ int oap_client_handle(struct oap_client_state *state,
 	}
 
 	switch (state->state) {
-	case OAP_UNINITIALIZED:
+	case OSMO_OAP_UNINITIALIZED:
 		LOGP(DLOAP, LOGL_ERROR,
 		     "Received OAP message %d, but the OAP client is"
 		     " not initialized\n", oap_msg.message_type);
 		return -ENOTCONN;
-	case OAP_DISABLED:
+	case OSMO_OAP_DISABLED:
 		LOGP(DLOAP, LOGL_ERROR,
 		     "Received OAP message %d, but the OAP client is"
 		     " disabled\n", oap_msg.message_type);
@@ -249,16 +249,16 @@ int oap_client_handle(struct oap_client_state *state,
 
 	case OAP_MSGT_REGISTER_RESULT:
 		/* successfully registered */
-		state->state = OAP_REGISTERED;
+		state->state = OSMO_OAP_REGISTERED;
 		break;
 
 	case OAP_MSGT_REGISTER_ERROR:
 		LOGP(DLOAP, LOGL_ERROR,
 		     "OAP registration failed\n");
-		state->state = OAP_INITIALIZED;
+		state->state = OSMO_OAP_INITIALIZED;
 		if (state->registration_failures < 3) {
 			state->registration_failures++;
-			return oap_client_register(state, msg_tx);
+			return osmo_oap_client_register(state, msg_tx);
 		}
 		return -11;
 
