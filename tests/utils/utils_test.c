@@ -175,7 +175,8 @@ static void test_idtag_parsing(void)
 	struct tlv_parsed tvp;
 	int rc;
 
-        static uint8_t data[] = {
+	/* IPA CCM IDENTITY REQUEST message: 8bit length followed by respective value */
+        static uint8_t id_get_data[] = {
 		0x01, 0x08,
 		0x01, 0x07,
 		0x01, 0x02,
@@ -188,7 +189,7 @@ static void test_idtag_parsing(void)
 		0x11, 0x24, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
         };
 
-	rc = ipa_ccm_idtag_parse_off(&tvp, data, sizeof(data), 1);
+	rc = ipa_ccm_idtag_parse_off(&tvp, id_get_data, sizeof(id_get_data), 1);
 	OSMO_ASSERT(rc == 0);
 
 	OSMO_ASSERT(TLVP_PRESENT(&tvp, 8));
