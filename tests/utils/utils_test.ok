@@ -27,6 +27,10 @@ rc = -1
 Hexparse with invalid char
 rc = -1
 
+Testing IPA CCM ID GET parsing
+
+Testing IPA CCM ID RESP parsing
+
 ----- test_is_hexstr
  0: pass str='(null)' min=0 max=10 even=0 expect=valid
  1: pass str='(null)' min=1 max=10 even=0 expect=invalid

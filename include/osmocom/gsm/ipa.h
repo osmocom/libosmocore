@@ -26,8 +26,14 @@ struct ipaccess_unit {
 /* obtain the human-readable name of an IPA CCM ID TAG */
 const char *ipa_ccm_idtag_name(uint8_t tag);
 
-/* parse a buffer of ID tags into a osmocom TLV style representation */
-int ipa_ccm_idtag_parse(struct tlv_parsed *dec, unsigned char *buf, int len);
+int ipa_ccm_idtag_parse(struct tlv_parsed *dec, unsigned char *buf, int len)
+	OSMO_DEPRECATED("Use ipa_ccm_id_{get,resp}_parse instead");
+
+/* parse payload of IPA CCM ID GET into a osmocom TLV style representation */
+int ipa_ccm_id_get_parse(struct tlv_parsed *dec, const uint8_t *buf, unsigned int len);
+
+/* parse payload of IPA CCM ID RESP into a osmocom TLV style representation */
+int ipa_ccm_id_resp_parse(struct tlv_parsed *dec, const uint8_t *buf, unsigned int len);
 
 /* Is the TAG included in the length field? */
 int ipa_ccm_idtag_parse_off(struct tlv_parsed *dec, unsigned char *buf, int len, const int len_offset);

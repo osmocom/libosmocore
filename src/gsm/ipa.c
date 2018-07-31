@@ -100,11 +100,6 @@ const char *ipa_ccm_idtag_name(uint8_t tag)
 
 int ipa_ccm_idtag_parse(struct tlv_parsed *dec, unsigned char *buf, int len)
 {
-	return ipa_ccm_idtag_parse_off(dec, buf, len, 0);
-}
-
-int ipa_ccm_idtag_parse_off(struct tlv_parsed *dec, unsigned char *buf, int len, const int len_offset)
-{
 	uint8_t t_len;
 	uint8_t t_tag;
 	uint8_t *cur = buf;
@@ -116,10 +111,43 @@ int ipa_ccm_idtag_parse_off(struct tlv_parsed *dec, unsigned char *buf, int len,
 		t_len = *cur++;
 		t_tag = *cur++;
 
-		if (t_len < len_offset) {
-			LOGP(DLMI, LOGL_ERROR, "minimal offset not included: %d < %d\n", t_len, len_offset);
+		if (t_len > len + 1) {
+			LOGP(DLMI, LOGL_ERROR, "The tag does not fit: %d > %d\n", t_len, len + 1);
 			return -EINVAL;
 		}
+
+		DEBUGPC(DLMI, "%s='%s' ", ipa_ccm_idtag_name(t_tag), cur);
+
+		dec->lv[t_tag].len = t_len;
+		dec->lv[t_tag].val = cur;
+
+		cur += t_len;
+		len -= t_len;
+	}
+	return 0;
+}
+
+/*! Parse the payload part of an IPA CCM ID GET, return \ref tlv_parsed format.
+ *  The odd payload format of those messages is structured as follows:
+ *   * 8bit length value (length of payload *and tag*)
+ *   * 8bit tag value
+ *   * optional, variable-length payload
+ *  \param[out] dec Caller-provided/allocated output structure for parsed payload
+ *  \param[in] buf Buffer containing the payload (excluding 1 byte msg_type) of the message
+ *  \param[in] len Length of \a buf in octets
+ *  \returns 0 on success; negative on error */
+int ipa_ccm_id_get_parse(struct tlv_parsed *dec, const uint8_t *buf, unsigned int len)
+{
+	uint8_t t_len;
+	uint8_t t_tag;
+	const uint8_t *cur = buf;
+
+	memset(dec, 0, sizeof(*dec));
+
+	while (len >= 2) {
+		len -= 2;
+		t_len = *cur++;
+		t_tag = *cur++;
 
 		if (t_len > len + 1) {
 			LOGP(DLMI, LOGL_ERROR, "The tag does not fit: %d > %d\n", t_len, len + 1);
@@ -128,11 +156,50 @@ int ipa_ccm_idtag_parse_off(struct tlv_parsed *dec, unsigned char *buf, int len,
 
 		DEBUGPC(DLMI, "%s='%s' ", ipa_ccm_idtag_name(t_tag), cur);
 
-		dec->lv[t_tag].len = t_len - len_offset;
+		dec->lv[t_tag].len = t_len-1;
 		dec->lv[t_tag].val = cur;
 
-		cur += t_len - len_offset;
-		len -= t_len - len_offset;
+		cur += t_len-1;
+		len -= t_len-1;
+	}
+	return 0;
+}
+
+/*! Parse the payload part of an IPA CCM ID RESP, return \ref tlv_parsed format.
+ *  The odd payload format of those messages is structured as follows:
+ *   * 16bit length value (length of payload *and tag*)
+ *   * 8bit tag value
+ *   * optional, variable-length payload
+ *  \param[out] dec Caller-provided/allocated output structure for parsed payload
+ *  \param[in] buf Buffer containing the payload (excluding 1 byte msg_type) of the message
+ *  \param[in] len Length of \a buf in octets
+ *  \returns 0 on success; negative on error */
+int ipa_ccm_id_resp_parse(struct tlv_parsed *dec, const uint8_t *buf, unsigned int len)
+{
+	uint8_t t_len;
+	uint8_t t_tag;
+	const uint8_t *cur = buf;
+
+	memset(dec, 0, sizeof(*dec));
+
+	while (len >= 3) {
+		len -= 3;
+		t_len = *cur++ << 8;
+		t_len += *cur++;
+		t_tag = *cur++;
+
+		if (t_len > len + 1) {
+			LOGP(DLMI, LOGL_ERROR, "The tag does not fit: %d > %d\n", t_len, len + 1);
+			return -EINVAL;
+		}
+
+		DEBUGPC(DLMI, "%s='%s' ", ipa_ccm_idtag_name(t_tag), cur);
+
+		dec->lv[t_tag].len = t_len-1;
+		dec->lv[t_tag].val = cur;
+
+		cur += t_len-1;
+		len -= t_len-1;
 	}
 	return 0;
 }
