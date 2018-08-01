@@ -209,16 +209,20 @@ int osmo_sock_init2(uint16_t family, uint16_t type, uint8_t proto,
 			if (sfd < 0)
 				continue;
 
-			rc = setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR,
-							&on, sizeof(on));
-			if (rc < 0) {
-				LOGP(DLGLOBAL, LOGL_ERROR,
-					"cannot setsockopt socket:"
-					" %s:%u: %s\n",
-					local_host, local_port, strerror(errno));
-				close(sfd);
-				continue;
+			if (proto != IPPROTO_UDP) {
+				rc = setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR,
+						&on, sizeof(on));
+				if (rc < 0) {
+					LOGP(DLGLOBAL, LOGL_ERROR,
+					     "cannot setsockopt socket:"
+					     " %s:%u: %s\n",
+					     local_host, local_port,
+					     strerror(errno));
+					close(sfd);
+					continue;
+				}
 			}
+
 			if (bind(sfd, rp->ai_addr, rp->ai_addrlen) == -1) {
 				LOGP(DLGLOBAL, LOGL_ERROR, "unable to bind socket: %s:%u: %s\n",
 					local_host, local_port, strerror(errno));
@@ -345,15 +349,17 @@ int osmo_sock_init(uint16_t family, uint16_t type, uint8_t proto,
 				continue;
 			}
 		} else {
-			rc = setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR,
-							&on, sizeof(on));
-			if (rc < 0) {
-				LOGP(DLGLOBAL, LOGL_ERROR,
-					"cannot setsockopt socket:"
-					" %s:%u: %s\n",
-					host, port, strerror(errno));
-				close(sfd);
-				continue;
+			if (proto != IPPROTO_UDP) {
+				rc = setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR,
+						&on, sizeof(on));
+				if (rc < 0) {
+					LOGP(DLGLOBAL, LOGL_ERROR,
+					     "cannot setsockopt socket:"
+					     " %s:%u: %s\n",
+					     host, port, strerror(errno));
+					close(sfd);
+					continue;
+				}
 			}
 			if (bind(sfd, rp->ai_addr, rp->ai_addrlen) == -1) {
 				LOGP(DLGLOBAL, LOGL_ERROR, "unable to bind socket:"
@@ -373,13 +379,15 @@ int osmo_sock_init(uint16_t family, uint16_t type, uint8_t proto,
 		return -ENODEV;
 	}
 
-	rc = setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
-	if (rc < 0) {
-		LOGP(DLGLOBAL, LOGL_ERROR,
-		     "cannot setsockopt socket: %s:%u: %s\n", host, port,
-		     strerror(errno));
-		close(sfd);
-		sfd = -1;
+	if (proto != IPPROTO_UDP) {
+		rc = setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+		if (rc < 0) {
+			LOGP(DLGLOBAL, LOGL_ERROR,
+			     "cannot setsockopt socket: %s:%u: %s\n", host,
+			     port, strerror(errno));
+			close(sfd);
+			sfd = -1;
+		}
 	}
 
 	rc = osmo_sock_init_tail(sfd, type, flags);
