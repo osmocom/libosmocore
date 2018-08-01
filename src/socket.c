@@ -373,7 +373,14 @@ int osmo_sock_init(uint16_t family, uint16_t type, uint8_t proto,
 		return -ENODEV;
 	}
 
-	setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+	rc = setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+	if (rc < 0) {
+		LOGP(DLGLOBAL, LOGL_ERROR,
+		     "cannot setsockopt socket: %s:%u: %s\n", host, port,
+		     strerror(errno));
+		close(sfd);
+		sfd = -1;
+	}
 
 	rc = osmo_sock_init_tail(sfd, type, flags);
 	if (rc < 0) {
