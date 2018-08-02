@@ -880,7 +880,11 @@ struct msgb *gsm0480_create_ussd_resp(uint8_t invoke_id, uint8_t trans_id, const
  */
 struct msgb *gsm0480_gen_return_error(uint8_t invoke_id, uint8_t error_code)
 {
-	struct msgb *msg = gsm0480_msgb_alloc_name("TS 04.80 ReturnError");
+	struct msgb *msg;
+
+	msg = gsm0480_msgb_alloc_name("TS 04.80 ReturnError");
+	if (!msg)
+		return NULL;
 
 	/* First insert the problem code */
 	msgb_push_TLV1(msg, GSM_0480_ERROR_CODE_TAG, error_code);
@@ -906,7 +910,11 @@ struct msgb *gsm0480_gen_return_error(uint8_t invoke_id, uint8_t error_code)
  */
 struct msgb *gsm0480_gen_reject(int invoke_id, uint8_t problem_tag, uint8_t problem_code)
 {
-	struct msgb *msg = gsm0480_msgb_alloc_name("TS 04.80 Reject");
+	struct msgb *msg;
+
+	msg = gsm0480_msgb_alloc_name("TS 04.80 Reject");
+	if (!msg)
+		return NULL;
 
 	/* First insert the problem code */
 	msgb_push_TLV1(msg, problem_tag, problem_code);
