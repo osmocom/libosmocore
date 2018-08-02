@@ -131,7 +131,7 @@ struct msgb *gsm0480_create_unstructuredSS_Notify(int alertPattern, const char *
 	uint8_t *seq_len_ptr, *ussd_len_ptr, *data;
 	int len;
 
-	msg = msgb_alloc_headroom(1024, 128, "GSM 04.80");
+	msg = gsm0480_msgb_alloc_name("TS 04.80 USSD Notify");
 	if (!msg)
 		return NULL;
 
@@ -177,7 +177,7 @@ struct msgb *gsm0480_create_notifySS(const char *text)
 	if (len < 1 || len > 160)
 		return NULL;
 
-	msg = msgb_alloc_headroom(1024, 128, "GSM 04.80");
+	msg = gsm0480_msgb_alloc_name("TS 04.80 NotifySS");
 	if (!msg)
 		return NULL;
 
@@ -962,7 +962,7 @@ struct msgb *gsm0480_create_ussd_release_complete(void)
 {
 	struct msgb *msg;
 
-	msg = msgb_alloc_headroom(1024, 128, "GSM 04.80 USSD REL COMPL");
+	msg = gsm0480_msgb_alloc_name("TS 04.80 USSD REL COMPL");
 	if (!msg)
 		return NULL;
 
