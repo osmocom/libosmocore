@@ -4,6 +4,8 @@
 
 #include <stdbool.h>
 
+#include <osmocom/core/msgb.h>
+
 #include <osmocom/gsm/tlv.h>
 #include <osmocom/gsm/protocol/gsm_04_08.h>
 #include <osmocom/gsm/gsm48_ie.h>
@@ -63,3 +65,9 @@ void gsm48_mcc_mnc_to_bcd(uint8_t *bcd_dst, uint16_t mcc, uint16_t mnc)
 	OSMO_DEPRECATED("Use osmo_plmn_to_bcd() instead, to not lose leading zeros in the MNC");
 void gsm48_mcc_mnc_from_bcd(uint8_t *bcd_src, uint16_t *mcc, uint16_t *mnc)
 	OSMO_DEPRECATED("Use osmo_plmn_from_bcd() instead, to not lose leading zeros in the MNC");
+
+struct gsm48_hdr *gsm48_push_l3hdr(struct msgb *msg,
+				   uint8_t pdisc, uint8_t msg_type);
+
+#define gsm48_push_l3hdr_tid(msg, pdisc, tid, msg_type) \
+	gsm48_push_l3hdr(msg, (pdisc & 0x0f) | (tid << 4), msg_type)

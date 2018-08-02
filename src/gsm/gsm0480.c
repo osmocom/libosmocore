@@ -25,6 +25,7 @@
  *
  */
 
+#include <osmocom/gsm/gsm48.h>
 #include <osmocom/gsm/gsm0480.h>
 #include <osmocom/gsm/gsm_utils.h>
 
@@ -863,10 +864,11 @@ struct msgb *gsm0480_create_ussd_resp(uint8_t invoke_id, uint8_t trans_id, const
 	msgb_wrap_with_TL(msg, GSM0480_IE_FACILITY);
 
 	/* And finally pre-pend the L3 header */
-	gsm0480_l3hdr_push(msg,
-			   GSM48_PDISC_NC_SS | trans_id
-			   | (1<<7) /* TI direction = 1 */,
-			   GSM0480_MTYPE_RELEASE_COMPLETE);
+	gsm48_push_l3hdr_tid(msg, GSM48_PDISC_NC_SS,
+			     /* FIXME: TI direction is always 1 ?!? */
+			     trans_id | (1 << 7),
+			     GSM0480_MTYPE_RELEASE_COMPLETE);
+
 	return msg;
 }
 
@@ -932,17 +934,6 @@ struct msgb *gsm0480_gen_reject(int invoke_id, uint8_t problem_tag, uint8_t prob
 	return msg;
 }
 
-
-struct gsm48_hdr *gsm0480_l3hdr_push(struct msgb *msg, uint8_t proto_discr,
-				     uint8_t msg_type)
-{
-	struct gsm48_hdr *gh;
-	gh = (struct gsm48_hdr *) msgb_push(msg, sizeof(*gh));
-	gh->proto_discr = proto_discr;
-	gh->msg_type = msg_type;
-	return gh;
-}
-
 struct msgb *gsm0480_create_ussd_notify(int level, const char *text)
 {
 	struct msgb *msg;
@@ -954,7 +945,11 @@ struct msgb *gsm0480_create_ussd_notify(int level, const char *text)
 	gsm0480_wrap_invoke(msg, GSM0480_OP_CODE_USS_NOTIFY, 0);
 	gsm0480_wrap_facility(msg);
 
-	gsm0480_l3hdr_push(msg, GSM48_PDISC_NC_SS, GSM0480_MTYPE_REGISTER);
+	/* And finally pre-pend the L3 header */
+	gsm48_push_l3hdr(msg, GSM48_PDISC_NC_SS,
+			 /* FIXME: no transactionID?!? */
+			 GSM0480_MTYPE_REGISTER);
+
 	return msg;
 }
 
@@ -966,8 +961,10 @@ struct msgb *gsm0480_create_ussd_release_complete(void)
 	if (!msg)
 		return NULL;
 
-	/* FIXME: should this set trans_id and TI direction flag? */
-	gsm0480_l3hdr_push(msg, GSM48_PDISC_NC_SS,
-			   GSM0480_MTYPE_RELEASE_COMPLETE);
+	/* And finally pre-pend the L3 header */
+	gsm48_push_l3hdr(msg, GSM48_PDISC_NC_SS,
+			 /* FIXME: no transactionID?!? */
+			 GSM0480_MTYPE_RELEASE_COMPLETE);
+
 	return msg;
 }

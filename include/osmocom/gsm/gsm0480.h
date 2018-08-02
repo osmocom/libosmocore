@@ -121,6 +121,3 @@ struct msgb *gsm0480_create_ussd_release_complete(void);
 
 int gsm0480_wrap_invoke(struct msgb *msg, int op, int link_id);
 int gsm0480_wrap_facility(struct msgb *msg);
-
-struct gsm48_hdr *gsm0480_l3hdr_push(struct msgb *msg, uint8_t proto_discr,
-				     uint8_t msg_type);

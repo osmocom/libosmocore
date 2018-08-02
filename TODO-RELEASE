@@ -7,3 +7,6 @@
 # If any interfaces have been added since the last public release: c:r:a + 1.
 # If any interfaces have been removed or changed since the last public release: c:r:0.
 #library	what			description / commit summary line
+libosmogsm	gsm0480_l3hdr_push()	removed from gsm/gsm0480.h (was not exposed)
+libosmogsm	gsm48_push_l3hdr()	(re)introduced in gsm/gsm48.h (GSM 04.08 API)
+libosmogsm	gsm48_push_l3hdr_tid()	a wrapper around gsm48_push_l3hdr()

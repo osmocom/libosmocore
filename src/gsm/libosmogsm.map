@@ -241,6 +241,7 @@ gsm411_rp_state_names;
 
 gsm414_msgt_names;
 
+gsm48_push_l3hdr;
 gsm48_att_tlvdef;
 gsm48_cc_msg_name;
 gsm48_rr_msg_name;
