@@ -1694,6 +1694,8 @@ static int vty_config_write(struct vty *vty)
 	/* login */
 	if (!password_check)
 		vty_out(vty, " no login%s", VTY_NEWLINE);
+	else
+		vty_out(vty, " login%s", VTY_NEWLINE);
 
 	/* bind */
 	if (vty_bind_addr && (strcmp(vty_bind_addr, VTY_BIND_ADDR_DEFAULT) != 0))
