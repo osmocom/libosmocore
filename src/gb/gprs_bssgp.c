@@ -1263,3 +1263,31 @@ void bssgp_set_log_ss(int ss)
 {
 	DBSSGP = ss;
 }
+
+/*!
+ * \brief Flush the queue of the bssgp_flow_control
+ * \param[in] The flow control object which holds the queue.
+ */
+void bssgp_fc_flush_queue(struct bssgp_flow_control *fc)
+{
+	struct bssgp_fc_queue_element *element, *tmp;
+
+	llist_for_each_entry_safe(element, tmp, &fc->queue, list) {
+		msgb_free(element->msg);
+		llist_del(&element->list);
+		talloc_free(element);
+	}
+}
+
+/*!
+ * \brief Flush the queues of all BSSGP contexts.
+ */
+void bssgp_flush_all_queues()
+{
+	struct bssgp_bvc_ctx *bctx;
+
+	llist_for_each_entry(bctx, &bssgp_bvc_ctxts, list) {
+		if (bctx->fc)
+			bssgp_fc_flush_queue(bctx->fc);
+	}
+}
