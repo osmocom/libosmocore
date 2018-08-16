@@ -34,6 +34,7 @@ typedef int osmo_signal_cbfn(unsigned int subsys, unsigned int signal, void *han
 
 
 /* Management */
+void *osmo_signal_talloc_ctx_init(void *root_ctx);
 int osmo_signal_register_handler(unsigned int subsys, osmo_signal_cbfn *cbfn, void *data);
 void osmo_signal_unregister_handler(unsigned int subsys, osmo_signal_cbfn *cbfn, void *data);
 
