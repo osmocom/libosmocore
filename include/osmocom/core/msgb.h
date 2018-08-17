@@ -81,6 +81,40 @@ static inline void msgb_queue_free(struct llist_head *queue)
 	while ((msg = msgb_dequeue(queue))) msgb_free(msg);
 }
 
+/*! Enqueue message buffer to tail of a queue and increment queue size counter
+ * \param[in] queue linked list header of queue
+ * \param[in] msg message buffer to be added to the queue
+ * \param[in] count pointer to variable holding size of the queue
+ *
+ * The function will append the specified message buffer \a msg to the queue
+ * implemented by \ref llist_head \a queue using function \ref msgb_enqueue_count,
+ * then increment \a count
+ */
+static inline void msgb_enqueue_count(struct llist_head *queue, struct msgb *msg,
+					unsigned int *count)
+{
+	msgb_enqueue(queue, msg);
+	(*count)++;
+}
+
+/*! Dequeue message buffer from head of queue and decrement queue size counter
+ * \param[in] queue linked list header of queue
+ * \param[in] count pointer to variable holding size of the queue
+ * \returns message buffer (if any) or NULL if queue empty
+ *
+ * The function will remove the first message buffer from the queue
+ * implemented by \ref llist_head \a queue using function \ref msgb_enqueue_count,
+ * and decrement \a count, all if queue is not empty.
+ */
+static inline struct msgb *msgb_dequeue_count(struct llist_head *queue,
+						unsigned int *count)
+{
+	struct msgb *msg = msgb_dequeue(queue);
+	if (msg)
+		(*count)--;
+	return msg;
+}
+
 #ifdef MSGB_DEBUG
 #include <osmocom/core/panic.h>
 #define MSGB_ABORT(msg, fmt, args ...) do {		\
