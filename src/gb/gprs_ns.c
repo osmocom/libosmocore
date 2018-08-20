@@ -87,8 +87,8 @@
 
 #include "common_vty.h"
 
-#define ns_set_state(ns_, st_) ns_set_state_with_log(ns_, st_, false, __BASE_FILE__, __LINE__)
-#define ns_set_remote_state(ns_, st_) ns_set_state_with_log(ns_, st_, true, __BASE_FILE__, __LINE__)
+#define ns_set_state(ns_, st_) ns_set_state_with_log(ns_, st_, false, __FILE__, __LINE__)
+#define ns_set_remote_state(ns_, st_) ns_set_state_with_log(ns_, st_, true, __FILE__, __LINE__)
 #define ns_mark_blocked(ns_) ns_set_state(ns_, (ns_)->state | NSE_S_BLOCKED)
 #define ns_mark_unblocked(ns_) ns_set_state(ns_, (ns_)->state & (~NSE_S_BLOCKED));
 

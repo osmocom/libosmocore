@@ -178,7 +178,7 @@ static inline const char *osmo_fsm_inst_state_name(struct osmo_fsm_inst *fi)
  */
 #define osmo_fsm_inst_state_chg(fi, new_state, timeout_secs, T) \
 	_osmo_fsm_inst_state_chg(fi, new_state, timeout_secs, T, \
-				 __BASE_FILE__, __LINE__)
+				 __FILE__, __LINE__)
 int _osmo_fsm_inst_state_chg(struct osmo_fsm_inst *fi, uint32_t new_state,
 			     unsigned long timeout_secs, int T,
 			     const char *file, int line);
@@ -194,7 +194,7 @@ int _osmo_fsm_inst_state_chg(struct osmo_fsm_inst *fi, uint32_t new_state,
  */
 #define osmo_fsm_inst_state_chg_keep_timer(fi, new_state) \
 	_osmo_fsm_inst_state_chg_keep_timer(fi, new_state, \
-				 __BASE_FILE__, __LINE__)
+				 __FILE__, __LINE__)
 int _osmo_fsm_inst_state_chg_keep_timer(struct osmo_fsm_inst *fi, uint32_t new_state,
 					const char *file, int line);
 
@@ -205,7 +205,7 @@ int _osmo_fsm_inst_state_chg_keep_timer(struct osmo_fsm_inst *fi, uint32_t new_s
  *  purposes. See there for documentation.
  */
 #define osmo_fsm_inst_dispatch(fi, event, data) \
-	_osmo_fsm_inst_dispatch(fi, event, data, __BASE_FILE__, __LINE__)
+	_osmo_fsm_inst_dispatch(fi, event, data, __FILE__, __LINE__)
 int _osmo_fsm_inst_dispatch(struct osmo_fsm_inst *fi, uint32_t event, void *data,
 			    const char *file, int line);
 
@@ -216,7 +216,7 @@ int _osmo_fsm_inst_dispatch(struct osmo_fsm_inst *fi, uint32_t event, void *data
  *  See there for documentation.
  */
 #define osmo_fsm_inst_term(fi, cause, data) \
-	_osmo_fsm_inst_term(fi, cause, data, __BASE_FILE__, __LINE__)
+	_osmo_fsm_inst_term(fi, cause, data, __FILE__, __LINE__)
 void _osmo_fsm_inst_term(struct osmo_fsm_inst *fi,
 			 enum osmo_fsm_term_cause cause, void *data,
 			 const char *file, int line);
@@ -228,7 +228,7 @@ void _osmo_fsm_inst_term(struct osmo_fsm_inst *fi,
  *  purposes. See there for documentation.
  */
 #define osmo_fsm_inst_term_children(fi, cause, data) \
-	_osmo_fsm_inst_term_children(fi, cause, data, __BASE_FILE__, __LINE__)
+	_osmo_fsm_inst_term_children(fi, cause, data, __FILE__, __LINE__)
 void _osmo_fsm_inst_term_children(struct osmo_fsm_inst *fi,
 				  enum osmo_fsm_term_cause cause,
 				  void *data,
