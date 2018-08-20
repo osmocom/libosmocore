@@ -1,3 +1,9 @@
+libosmocore (0.12.1) unstable; urgency=medium
+
+  * vty: Makefile: Fix LIBVERSION typo introduced in 0.12.0 release
+
+ -- Pau Espin Pedrol <pespin@sysmocom.de>  Mon, 20 Aug 2018 15:59:47 +0200
+
 libosmocore (0.12.0) unstable; urgency=medium
 
   [ Pau Espin Pedrol ]
