@@ -528,6 +528,9 @@ void ipa_prepend_header(struct msgb *msg, int proto)
 #ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
 
+/*! Read one ipa message from socket fd without caching not fully received
+ * messages. See \ref ipa_msg_recv_buffered for further information.
+ */
 int ipa_msg_recv(int fd, struct msgb **rmsg)
 {
 	int rc = ipa_msg_recv_buffered(fd, rmsg, NULL);
@@ -538,6 +541,25 @@ int ipa_msg_recv(int fd, struct msgb **rmsg)
 	return rc;
 }
 
+/*! Read one ipa message from socket fd or store part if still not fully received.
+ *  \param[in] fd The fd for the socket to read from.
+ *  \param[out] rmsg internally allocated msgb containing a fully received ipa message.
+ *  \param[inout] tmp_msg internally allocated msgb caching data for not yet fully received message.
+ *
+ *  As ipa can run on top of stream based protocols such as TCP, there's the
+ *  possibility that such lower layers split ipa messages in several low level
+ *  packets. If a low layer packet is received containing several ipa frames,
+ *  this function will pull from the socket and return only the first one
+ *  available in the stream. As the socket will remain with data, it will
+ *  trigger again during next select() and then this function will fetch the
+ *  next ipa message, and so on.
+ *
+ *  \returns -EAGAIN and allocated tmp_msg if message was not yet fully
+ *  received. Other negative values indicate an error and cached msgb will be
+ *  freed. 0 if socket is found dead. Positive value indicating l2 msgb len and
+ *  rmsg pointing to internally allocated msgb containing the ipa frame on
+ *  scucess.
+ */
 int ipa_msg_recv_buffered(int fd, struct msgb **rmsg, struct msgb **tmp_msg)
 {
 	struct msgb *msg = tmp_msg ? *tmp_msg : NULL;
