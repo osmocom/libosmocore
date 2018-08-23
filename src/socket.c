@@ -209,7 +209,7 @@ int osmo_sock_init2(uint16_t family, uint16_t type, uint8_t proto,
 			if (sfd < 0)
 				continue;
 
-			if (proto != IPPROTO_UDP) {
+			if (proto != IPPROTO_UDP || flags & OSMO_SOCK_F_UDP_REUSEADDR) {
 				rc = setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR,
 						&on, sizeof(on));
 				if (rc < 0) {
@@ -349,7 +349,7 @@ int osmo_sock_init(uint16_t family, uint16_t type, uint8_t proto,
 				continue;
 			}
 		} else {
-			if (proto != IPPROTO_UDP) {
+			if (proto != IPPROTO_UDP || flags & OSMO_SOCK_F_UDP_REUSEADDR) {
 				rc = setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR,
 						&on, sizeof(on));
 				if (rc < 0) {
@@ -379,7 +379,7 @@ int osmo_sock_init(uint16_t family, uint16_t type, uint8_t proto,
 		return -ENODEV;
 	}
 
-	if (proto != IPPROTO_UDP) {
+	if (proto != IPPROTO_UDP || flags & OSMO_SOCK_F_UDP_REUSEADDR) {
 		rc = setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
 		if (rc < 0) {
 			LOGP(DLGLOBAL, LOGL_ERROR,
