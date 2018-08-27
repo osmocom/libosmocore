@@ -763,6 +763,9 @@ struct msgb *gsm0808_create_handover_request_ack(const uint8_t *l3_info, uint8_t
 	if (chosen_speech_version != 0)
 		msgb_tv_put(msg, GSM0808_IE_SPEECH_VERSION, chosen_speech_version);
 
+	/* prepend header with final length */
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
+
 	return msg;
 }
 
@@ -779,6 +782,9 @@ struct msgb *gsm0808_create_handover_detect()
 
 	/* Message Type, 3.2.2.1 */
 	msgb_v_put(msg, BSS_MAP_MSG_HANDOVER_DETECT);
+
+	/* prepend header with final length */
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
 
 	return msg;
 }
@@ -816,6 +822,9 @@ struct msgb *gsm0808_create_handover_complete(const struct gsm0808_handover_comp
 	if (params->lcls_bss_status_present)
 		msgb_tv_put(msg, GSM0808_IE_LCLS_BSS_STATUS, params->lcls_bss_status);
 
+	/* prepend header with final length */
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
+
 	return msg;
 }
 
@@ -842,6 +851,9 @@ struct msgb *gsm0808_create_handover_failure(const struct gsm0808_handover_failu
 	/* AoIP: add Codec List (BSS Supported) 3.2.2.103 */
 	if (params->codec_list_bss_supported.len)
 		gsm0808_enc_speech_codec_list(msg, &params->codec_list_bss_supported);
+
+	/* prepend header with final length */
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
 
 	return msg;
 }
