@@ -246,12 +246,14 @@ static const struct value_string logging_print_file_args[] = {
 
 DEFUN(logging_prnt_file,
       logging_prnt_file_cmd,
-      "logging print file (0|1|basename)",
+      "logging print file (0|1|basename) [last]",
       LOGGING_STR "Log output settings\n"
       "Configure log message\n"
       "Don't prefix each log message\n"
       "Prefix each log message with the source file and line\n"
-      "Prefix each log message with the source file's basename (strip leading paths) and line\n")
+      "Prefix each log message with the source file's basename (strip leading paths) and line\n"
+      "Log source file info at the end of a log line. If omitted, log source file info just"
+      " before the log text.\n")
 {
 	struct log_target *tgt = osmo_log_vty2tgt(vty);
 
@@ -259,6 +261,10 @@ DEFUN(logging_prnt_file,
 		return CMD_WARNING;
 
 	log_set_print_filename2(tgt, get_string_value(logging_print_file_args, argv[0]));
+	if (argc > 1)
+		log_set_print_filename_pos(tgt, LOG_FILENAME_POS_LINE_END);
+	else
+		log_set_print_filename_pos(tgt, LOG_FILENAME_POS_HEADER_END);
 	return CMD_SUCCESS;
 }
 

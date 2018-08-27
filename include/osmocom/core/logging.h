@@ -228,6 +228,12 @@ enum log_filename_type {
 	LOG_FILENAME_BASENAME,
 };
 
+/*! Where on a log line source file and line should be logged. */
+enum log_filename_pos {
+	LOG_FILENAME_POS_HEADER_END,
+	LOG_FILENAME_POS_LINE_END,
+};
+
 /*! structure representing a logging target */
 struct log_target {
         struct llist_head entry;		/*!< linked list */
@@ -313,6 +319,8 @@ struct log_target {
 	bool print_category_hex;
 	/* Should we print the source file and line, and in which way? */
 	enum log_filename_type print_filename2;
+	/* Where on a log line to put the source file info. */
+	enum log_filename_pos print_filename_pos;
 };
 
 /* use the above macros */
@@ -335,6 +343,7 @@ void log_set_print_extended_timestamp(struct log_target *target, int);
 void log_set_print_timestamp(struct log_target *target, int);
 void log_set_print_filename(struct log_target *target, int);
 void log_set_print_filename2(struct log_target *target, enum log_filename_type lft);
+void log_set_print_filename_pos(struct log_target *target, enum log_filename_pos pos);
 void log_set_print_category(struct log_target *target, int);
 void log_set_print_category_hex(struct log_target *target, int);
 void log_set_print_level(struct log_target *target, int);
