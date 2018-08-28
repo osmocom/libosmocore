@@ -588,7 +588,7 @@ struct msgb *gsm0808_create_clear_rqst(uint8_t cause)
 /*! Create BSSMAP PAGING message
  *  \param[in] imsi Mandatory paged IMSI in string representation
  *  \param[in] tmsi Optional paged TMSI
- *  \param[in] cil Cell Identity List (where to page)
+ *  \param[in] cil Mandatory Cell Identity List (where to page)
  *  \param[in] chan_needed Channel Type needed
  *  \returns callee-allocated msgb with BSSMAP PAGING message */
 struct msgb *gsm0808_create_paging2(const char *imsi, const uint32_t *tmsi,
@@ -615,7 +615,7 @@ struct msgb *gsm0808_create_paging2(const char *imsi, const uint32_t *tmsi,
 	/* Message Type 3.2.2.1 */
 	msgb_v_put(msg, BSS_MAP_MSG_PAGING);
 
-	/* IMSI 3.2.2.6 */
+	/* mandatory IMSI 3.2.2.6 */
 	mid_len = gsm48_generate_mid_from_imsi(mid_buf, imsi);
 	msgb_tlv_put(msg, GSM0808_IE_IMSI, mid_len - 2, mid_buf + 2);
 
@@ -626,9 +626,8 @@ struct msgb *gsm0808_create_paging2(const char *imsi, const uint32_t *tmsi,
 			     (uint8_t *) & tmsi_sw);
 	}
 
-	/* Cell Identifier List 3.2.2.27 */
-	if (cil)
-		gsm0808_enc_cell_id_list2(msg, cil);
+	/* mandatory Cell Identifier List 3.2.2.27 */
+	gsm0808_enc_cell_id_list2(msg, cil);
 
 	/* Channel Needed 3.2.2.36 */
 	if (chan_needed) {
