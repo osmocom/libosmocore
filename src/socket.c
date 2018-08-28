@@ -605,22 +605,29 @@ int osmo_sock_unix_init(uint16_t type, uint8_t proto,
 	struct sockaddr_un local;
 	int sfd, rc, on = 1;
 	unsigned int namelen;
+	const size_t socket_path_len = strlen(socket_path);
 
 	if ((flags & (OSMO_SOCK_F_BIND | OSMO_SOCK_F_CONNECT)) ==
 		     (OSMO_SOCK_F_BIND | OSMO_SOCK_F_CONNECT))
 		return -EINVAL;
 
 	local.sun_family = AF_UNIX;
-	osmo_strlcpy(local.sun_path, socket_path, sizeof(local.sun_path));
+	if (socket_path_len == sizeof(local.sun_path)) {
+		/* Handle corner-case where sun_path is not NUL-terminated. See the unix(7) man page. */
+		memcpy(local.sun_path, socket_path, sizeof(local.sun_path));
+	} else if (osmo_strlcpy(local.sun_path, socket_path, sizeof(local.sun_path)) >= sizeof(local.sun_path)) {
+		LOGP(DLGLOBAL, LOGL_ERROR, "Socket path exceeds maximum length of %zd bytes: %s\n",
+		     sizeof(local.sun_path), socket_path);
+		return -ENOSPC;
+	}
 
 #if defined(BSD44SOCKETS) || defined(__UNIXWARE__)
-	local.sun_len = strlen(local.sun_path);
+	local.sun_len = socket_path_len;
 #endif
 #if defined(BSD44SOCKETS) || defined(SUN_LEN)
 	namelen = SUN_LEN(&local);
 #else
-	namelen = strlen(local.sun_path) +
-		  offsetof(struct sockaddr_un, sun_path);
+	namelen = socket_path_len + offsetof(struct sockaddr_un, sun_path);
 #endif
 
 	sfd = socket(AF_UNIX, type, proto);
