@@ -4,7 +4,7 @@ REL=$2
 
 if [ "z$REL" = "z" ]; then
 	echo "No REL value specified, defaulting to 'patch' release"
-	REL=patch
+	REL="patch"
 fi
 
 BUMPVER=`command -v bumpversion`
