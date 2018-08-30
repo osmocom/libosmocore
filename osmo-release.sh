@@ -7,6 +7,8 @@ if [ "z$REL" = "z" ]; then
 	REL="patch"
 fi
 
+ALLOW_NO_LIBVERSION_CHANGE="${ALLOW_NO_LIBVERSION_CHANGE:-0}"
+
 BUMPVER=`command -v bumpversion`
 
 NEW_VER=`bumpversion --list --current-version $VERSION $REL --allow-dirty | awk -F '=' '{ print $2 }'`
@@ -27,12 +29,13 @@ fi
 echo "Releasing $VERSION -> $NEW_VER..."
 
 if [ "z$LIBVERS" != "z" ]; then
-	if [ "z$MAKEMOD" = "z" ]; then
-		echo "Before releasing, please modify some of the libversions: $LIBVERS"
+	if [ "z$MAKEMOD" = "z" ] && [ "z$ALLOW_NO_LIBVERSION_CHANGE" = "z0" ]; then
+		echo "ERROR: Before releasing, please modify some of the libversions: $LIBVERS"
 		echo "You should NOT be doing this unless you've read and understood following article:"
 		echo "https://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html#Updating-version-info"
 		exit 1
 	fi
+
 	if [ -f "TODO-RELEASE" ]; then
 		grep '#' TODO-RELEASE > TODO-RELEASE.clean
 		mv TODO-RELEASE.clean TODO-RELEASE
