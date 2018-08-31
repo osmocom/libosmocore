@@ -1,3 +1,10 @@
+libosmocore (0.12.0+ow1) unstable; urgency=medium
+
+  * Version for On-Waves
+  * From commit 1a72bafa5df03718bb1c328f3d64078dc5e70feb 
+
+ -- Daniel Willmann <dwillmann@sysmocom.de>  Fri, 31 Aug 2018 17:37:47 +0200
+
 libosmocore (0.12.0) unstable; urgency=medium
 
   [ Pau Espin Pedrol ]
