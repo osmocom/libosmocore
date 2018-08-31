@@ -21,6 +21,7 @@
  */
 
 #include <osmocom/gsm/ipa.h>
+#include <osmocom/gsm/protocol/ipaccess.h>
 
 #include <osmocom/core/logging.h>
 #include <osmocom/core/utils.h>
@@ -170,12 +171,65 @@ static void hexparse_test(void)
 	printf("rc = %d\n", rc);
 }
 
-static void test_idtag_parsing(void)
+static void test_ipa_ccm_id_resp_parsing(void)
 {
 	struct tlv_parsed tvp;
 	int rc;
 
-        static uint8_t data[] = {
+	static const uint8_t id_resp_data[] = {
+		0x00, 0x13,	IPAC_IDTAG_MACADDR,
+			'0','0',':','0','2',':','9','5',':','0','0',':','6','2',':','9','e','\0',
+		0x00, 0x11,	IPAC_IDTAG_IPADDR,
+			'1','9','2','.','1','6','8','.','1','0','0','.','1','9','0','\0',
+		0x00, 0x0a,	IPAC_IDTAG_UNIT,
+			'1','2','3','4','/','0','/','0','\0',
+		0x00, 0x02,	IPAC_IDTAG_LOCATION1,
+			'\0',
+		0x00, 0x0d,	IPAC_IDTAG_LOCATION2,
+			'B','T','S','_','N','B','T','1','3','1','G','\0',
+		0x00, 0x0c,	IPAC_IDTAG_EQUIPVERS,
+			'1','6','5','a','0','2','9','_','5','5','\0',
+		0x00, 0x14,	IPAC_IDTAG_SWVERSION,
+			'1','6','8','d','4','7','2','_','v','2','0','0','b','4','1','1','d','0','\0',
+		0x00, 0x18,	IPAC_IDTAG_UNITNAME,
+			'n','b','t','s','-','0','0','-','0','2','-','9','5','-','0','0','-','6','2','-','9','E','\0',
+		0x00, 0x0a,	IPAC_IDTAG_SERNR,
+			'0','0','1','1','0','7','8','1','\0'
+	};
+
+	printf("\nTesting IPA CCM ID RESP parsing\n");
+
+	rc = ipa_ccm_id_resp_parse(&tvp, (uint8_t *) id_resp_data, sizeof(id_resp_data));
+	OSMO_ASSERT(rc == 0);
+
+	OSMO_ASSERT(TLVP_PRESENT(&tvp, IPAC_IDTAG_MACADDR));
+	OSMO_ASSERT(TLVP_LEN(&tvp, IPAC_IDTAG_MACADDR) == 0x12);
+	OSMO_ASSERT(TLVP_PRESENT(&tvp, IPAC_IDTAG_IPADDR));
+	OSMO_ASSERT(TLVP_LEN(&tvp, IPAC_IDTAG_IPADDR) == 0x10);
+	OSMO_ASSERT(TLVP_PRESENT(&tvp, IPAC_IDTAG_UNIT));
+	OSMO_ASSERT(TLVP_LEN(&tvp, IPAC_IDTAG_UNIT) == 0x09);
+	OSMO_ASSERT(TLVP_PRESENT(&tvp, IPAC_IDTAG_LOCATION1));
+	OSMO_ASSERT(TLVP_LEN(&tvp, IPAC_IDTAG_LOCATION1) == 0x01);
+	OSMO_ASSERT(TLVP_PRESENT(&tvp, IPAC_IDTAG_LOCATION2));
+	OSMO_ASSERT(TLVP_LEN(&tvp, IPAC_IDTAG_LOCATION2) == 0x0c);
+	OSMO_ASSERT(TLVP_PRESENT(&tvp, IPAC_IDTAG_EQUIPVERS));
+	OSMO_ASSERT(TLVP_LEN(&tvp, IPAC_IDTAG_EQUIPVERS) == 0x0b);
+	OSMO_ASSERT(TLVP_PRESENT(&tvp, IPAC_IDTAG_SWVERSION));
+	OSMO_ASSERT(TLVP_LEN(&tvp, IPAC_IDTAG_EQUIPVERS) == 0x0b);
+	OSMO_ASSERT(TLVP_LEN(&tvp, IPAC_IDTAG_SWVERSION) == 0x13);
+	OSMO_ASSERT(TLVP_PRESENT(&tvp, IPAC_IDTAG_UNITNAME));
+	OSMO_ASSERT(TLVP_LEN(&tvp, IPAC_IDTAG_UNITNAME) == 0x17);
+	OSMO_ASSERT(TLVP_PRESENT(&tvp, IPAC_IDTAG_SERNR));
+	OSMO_ASSERT(TLVP_LEN(&tvp, IPAC_IDTAG_SERNR) == 0x09);
+}
+
+static void test_ipa_ccm_id_get_parsing(void)
+{
+	struct tlv_parsed tvp;
+	int rc;
+
+	/* IPA CCM IDENTITY REQUEST message: 8bit length followed by respective value */
+        static const uint8_t id_get_data[] = {
 		0x01, 0x08,
 		0x01, 0x07,
 		0x01, 0x02,
@@ -188,7 +242,9 @@ static void test_idtag_parsing(void)
 		0x11, 0x24, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
         };
 
-	rc = ipa_ccm_idtag_parse_off(&tvp, data, sizeof(data), 1);
+	printf("\nTesting IPA CCM ID GET parsing\n");
+
+	rc = ipa_ccm_id_get_parse(&tvp, id_get_data, sizeof(id_get_data));
 	OSMO_ASSERT(rc == 0);
 
 	OSMO_ASSERT(TLVP_PRESENT(&tvp, 8));
@@ -567,7 +623,8 @@ int main(int argc, char **argv)
 
 	hexdump_test();
 	hexparse_test();
-	test_idtag_parsing();
+	test_ipa_ccm_id_get_parsing();
+	test_ipa_ccm_id_resp_parsing();
 	test_is_hexstr();
 	bcd_test();
 	str_escape_test();

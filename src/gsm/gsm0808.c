@@ -588,7 +588,7 @@ struct msgb *gsm0808_create_clear_rqst(uint8_t cause)
 /*! Create BSSMAP PAGING message
  *  \param[in] imsi Mandatory paged IMSI in string representation
  *  \param[in] tmsi Optional paged TMSI
- *  \param[in] cil Cell Identity List (where to page)
+ *  \param[in] cil Mandatory Cell Identity List (where to page)
  *  \param[in] chan_needed Channel Type needed
  *  \returns callee-allocated msgb with BSSMAP PAGING message */
 struct msgb *gsm0808_create_paging2(const char *imsi, const uint32_t *tmsi,
@@ -615,7 +615,7 @@ struct msgb *gsm0808_create_paging2(const char *imsi, const uint32_t *tmsi,
 	/* Message Type 3.2.2.1 */
 	msgb_v_put(msg, BSS_MAP_MSG_PAGING);
 
-	/* IMSI 3.2.2.6 */
+	/* mandatory IMSI 3.2.2.6 */
 	mid_len = gsm48_generate_mid_from_imsi(mid_buf, imsi);
 	msgb_tlv_put(msg, GSM0808_IE_IMSI, mid_len - 2, mid_buf + 2);
 
@@ -626,9 +626,8 @@ struct msgb *gsm0808_create_paging2(const char *imsi, const uint32_t *tmsi,
 			     (uint8_t *) & tmsi_sw);
 	}
 
-	/* Cell Identifier List 3.2.2.27 */
-	if (cil)
-		gsm0808_enc_cell_id_list2(msg, cil);
+	/* mandatory Cell Identifier List 3.2.2.27 */
+	gsm0808_enc_cell_id_list2(msg, cil);
 
 	/* Channel Needed 3.2.2.36 */
 	if (chan_needed) {
@@ -763,6 +762,9 @@ struct msgb *gsm0808_create_handover_request_ack(const uint8_t *l3_info, uint8_t
 	if (chosen_speech_version != 0)
 		msgb_tv_put(msg, GSM0808_IE_SPEECH_VERSION, chosen_speech_version);
 
+	/* prepend header with final length */
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
+
 	return msg;
 }
 
@@ -779,6 +781,9 @@ struct msgb *gsm0808_create_handover_detect()
 
 	/* Message Type, 3.2.2.1 */
 	msgb_v_put(msg, BSS_MAP_MSG_HANDOVER_DETECT);
+
+	/* prepend header with final length */
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
 
 	return msg;
 }
@@ -816,6 +821,9 @@ struct msgb *gsm0808_create_handover_complete(const struct gsm0808_handover_comp
 	if (params->lcls_bss_status_present)
 		msgb_tv_put(msg, GSM0808_IE_LCLS_BSS_STATUS, params->lcls_bss_status);
 
+	/* prepend header with final length */
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
+
 	return msg;
 }
 
@@ -842,6 +850,9 @@ struct msgb *gsm0808_create_handover_failure(const struct gsm0808_handover_failu
 	/* AoIP: add Codec List (BSS Supported) 3.2.2.103 */
 	if (params->codec_list_bss_supported.len)
 		gsm0808_enc_speech_codec_list(msg, &params->codec_list_bss_supported);
+
+	/* prepend header with final length */
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
 
 	return msg;
 }

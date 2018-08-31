@@ -46,6 +46,15 @@ struct signal_handler {
 	void *data;
 };
 
+/*! Initialize a signal_handler talloc context for \ref osmo_signal_register_handler.
+ * Create a talloc context called "osmo_signal".
+ *  \param[in] root_ctx talloc context used as parent for the new "osmo_signal" ctx.
+ *  \returns the new osmo_signal talloc context, e.g. for reporting
+ */
+void *osmo_signal_talloc_ctx_init(void *root_ctx) {
+	tall_sigh_ctx = talloc_named_const(tall_sigh_ctx, 0, "osmo_signal");
+	return tall_sigh_ctx;
+}
 
 /*! Register a new signal handler
  *  \param[in] subsys Subsystem number

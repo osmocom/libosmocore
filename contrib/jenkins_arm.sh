@@ -2,6 +2,10 @@
 
 . $(dirname "$0")/jenkins_common.sh
 
+
+# from ../configure.ac
+WERROR_FLAGS="-Werror -Wno-error=deprecated -Wno-error=deprecated-declarations -Wno-error=cpp"
+
 src_dir="$PWD"
 build() {
     build_dir="$1"
@@ -14,7 +18,7 @@ build() {
 	--enable-embedded \
 	--disable-doxygen \
 	--disable-shared \
-	CFLAGS="-Os -ffunction-sections -fdata-sections -nostartfiles -nodefaultlibs -Werror"
+	CFLAGS="-Os -ffunction-sections -fdata-sections -nostartfiles -nodefaultlibs $WERROR_FLAGS"
 
     $MAKE $PARALLEL_MAKE
 }

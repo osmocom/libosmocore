@@ -156,7 +156,7 @@ static int get_fsm_inst_dump(struct ctrl_cmd *cmd, void *data)
 	if (fi->proc.parent)
 		cmd->reply = talloc_asprintf_append(cmd->reply, ",parent='%s'", fi->proc.parent->name);
 
-	llist_for_each_entry(child, &fi->proc.children, list) {
+	llist_for_each_entry(child, &fi->proc.children, proc.child) {
 		cmd->reply = talloc_asprintf_append(cmd->reply, ",child='%s'", child->name);
 	}
 

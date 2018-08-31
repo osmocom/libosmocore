@@ -102,7 +102,7 @@ void vty_out_fsm_inst(struct vty *vty, struct osmo_fsm_inst *fsmi)
 					    fsmi->proc.parent_term_event),
 			VTY_NEWLINE);
 	}
-	llist_for_each_entry(child, &fsmi->proc.children, list) {
+	llist_for_each_entry(child, &fsmi->proc.children, proc.child) {
 		vty_out(vty, " Child: '%s'%s", child->name, VTY_NEWLINE);
 	}
 }

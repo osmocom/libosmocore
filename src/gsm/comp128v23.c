@@ -1,8 +1,10 @@
 /*! \file comp128v23.c
  * COMP128 version 2 and 3 implementation, common algorithm used for GSM Authentication (A3/A8).
  *
- * This code is a C conversion of the original code from
- * http://www.hackingprojects.net/
+ * This code is a C conversion of the original code by Tamas Jos <info@skelsec.com> from:
+ * - original (out of service): http://www.hackingprojects.net/
+ * - original (archive): https://web.archive.org/web/20130730113347/http://www.hackingprojects.net/
+ * - new site: https://github.com/skelsec/COMP128
  */
 /*
  * (C) 2013 by Kévin Redon <kevredon@mail.tsaitgaist.info>

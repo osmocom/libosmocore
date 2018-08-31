@@ -1024,4 +1024,24 @@ const struct value_string gsm48_reject_value_names[] = {
 	 { 0, NULL }
 };
 
+/*! Wrap a given \ref msg with \ref gsm48_hdr structure
+ * \param[out] msg      A message to be wrapped
+ * \param[in]  pdisc    GSM TS 04.07 protocol discriminator 1/2,
+ *                      sub-pdisc, trans_id or skip_ind 1/2,
+ *                      see section 11.2.3.1 for details
+ * \param[in]  msg_type GSM TS 04.08 message type
+ * @return              pointer to pushed header within \ref msg
+ */
+struct gsm48_hdr *gsm48_push_l3hdr(struct msgb *msg,
+				   uint8_t pdisc, uint8_t msg_type)
+{
+	struct gsm48_hdr *gh;
+
+	gh = (struct gsm48_hdr *) msgb_push(msg, sizeof(*gh));
+	gh->proto_discr = pdisc;
+	gh->msg_type = msg_type;
+
+	return gh;
+}
+
 /*! @} */

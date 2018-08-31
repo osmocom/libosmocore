@@ -254,7 +254,9 @@ int gsmtap_source_add_sink_fd(int gsmtap_fd)
 
 	if (osmo_sockaddr_is_local((struct sockaddr *)&ss, ss_len) == 1) {
 		rc = osmo_sock_init_sa((struct sockaddr *)&ss, SOCK_DGRAM,
-					IPPROTO_UDP, OSMO_SOCK_F_BIND);
+				       IPPROTO_UDP,
+				       OSMO_SOCK_F_BIND |
+				       OSMO_SOCK_F_UDP_REUSEADDR);
 		if (rc >= 0)
 			return rc;
 	}

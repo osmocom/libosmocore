@@ -25,6 +25,7 @@
  *
  */
 
+#include <osmocom/gsm/gsm48.h>
 #include <osmocom/gsm/gsm0480.h>
 #include <osmocom/gsm/gsm_utils.h>
 
@@ -87,6 +88,15 @@ static inline unsigned char *msgb_push_TLV1(struct msgb *msgb, uint8_t tag,
 	return data;
 }
 
+static inline unsigned char *msgb_push_NULL(struct msgb *msgb)
+{
+	uint8_t *data = msgb_push(msgb, 2);
+
+	data[0] = ASN1_NULL_TYPE_TAG;
+	data[1] = 0;
+	return data;
+}
+
 /* wrap an invoke around it... the other way around
  *
  * 1.) Invoke Component tag
@@ -122,7 +132,7 @@ struct msgb *gsm0480_create_unstructuredSS_Notify(int alertPattern, const char *
 	uint8_t *seq_len_ptr, *ussd_len_ptr, *data;
 	int len;
 
-	msg = msgb_alloc_headroom(1024, 128, "GSM 04.80");
+	msg = gsm0480_msgb_alloc_name("TS 04.80 USSD Notify");
 	if (!msg)
 		return NULL;
 
@@ -168,7 +178,7 @@ struct msgb *gsm0480_create_notifySS(const char *text)
 	if (len < 1 || len > 160)
 		return NULL;
 
-	msg = msgb_alloc_headroom(1024, 128, "GSM 04.80");
+	msg = gsm0480_msgb_alloc_name("TS 04.80 NotifySS");
 	if (!msg)
 		return NULL;
 
@@ -787,13 +797,22 @@ static int parse_ss_for_bs_req(const uint8_t *ss_req_data,
 	return rc;
 }
 
-struct msgb *gsm0480_create_ussd_resp(uint8_t invoke_id, uint8_t trans_id, const char *text)
+struct msgb *gsm0480_msgb_alloc_name(const char *name)
+{
+	return msgb_alloc_headroom(1024, 128, name);
+}
+
+/*! Generate a USSD ReturnResult component containing a string in default GSM alphabet.
+ * \param[in] invoke_id		InvokeID of the request to which we respond
+ * \param[in] text		USSD text in ASCII; to be encoded as GSM 7-but alphabet
+ */
+struct msgb *gsm0480_gen_ussd_resp_7bit(uint8_t invoke_id, const char *text)
 {
 	struct msgb *msg;
 	uint8_t *ptr8;
 	int response_len;
 
-	msg = msgb_alloc_headroom(1024, 128, "GSM 04.80");
+	msg = gsm0480_msgb_alloc_name("TS 04.80 USSD Resp");
 	if (!msg)
 		return NULL;
 
@@ -824,25 +843,95 @@ struct msgb *gsm0480_create_ussd_resp(uint8_t invoke_id, uint8_t trans_id, const
 	/* Wrap this up as a Return Result component */
 	msgb_wrap_with_TL(msg, GSM0480_CTYPE_RETURN_RESULT);
 
+	return msg;
+}
+
+/*! Legacy helper: Generate USSD response including FACILITY IE + L3 header.
+ *
+ * This function is just like \ref gsm0480_gen_ussd_resp_7bit, but it generates
+ * not only the FACILITY value, but the full L3 message including message header
+ * and FACILITY IE Tag+Length.
+ */
+struct msgb *gsm0480_create_ussd_resp(uint8_t invoke_id, uint8_t trans_id, const char *text)
+{
+	struct msgb *msg;
+
+	msg = gsm0480_gen_ussd_resp_7bit(invoke_id, text);
+	if (!msg)
+		return NULL;
+
 	/* Wrap the component in a Facility message */
 	msgb_wrap_with_TL(msg, GSM0480_IE_FACILITY);
 
 	/* And finally pre-pend the L3 header */
-	gsm0480_l3hdr_push(msg,
-			   GSM48_PDISC_NC_SS | trans_id
-			   | (1<<7) /* TI direction = 1 */,
-			   GSM0480_MTYPE_RELEASE_COMPLETE);
+	gsm48_push_l3hdr_tid(msg, GSM48_PDISC_NC_SS,
+			     /* FIXME: TI direction is always 1 ?!? */
+			     trans_id | (1 << 7),
+			     GSM0480_MTYPE_RELEASE_COMPLETE);
+
 	return msg;
 }
 
-struct gsm48_hdr *gsm0480_l3hdr_push(struct msgb *msg, uint8_t proto_discr,
-				     uint8_t msg_type)
+/*! Generate a ReturnError component (see section 3.6.1) and given error code (see section 3.6.6).
+ * \param[in] invoke_id		InvokeID of the request
+ * \param[in] error_code	Error code (section 4.5)
+ * \return			message buffer containing the Reject component
+ *
+ * Note: if InvokeID is not available, e.g. when message parsing failed, any incorrect vlue
+ * can be passed (0x00 > x > 0xff), so the universal NULL-tag (see table 3.6) will be used instead.
+ */
+struct msgb *gsm0480_gen_return_error(uint8_t invoke_id, uint8_t error_code)
 {
-	struct gsm48_hdr *gh;
-	gh = (struct gsm48_hdr *) msgb_push(msg, sizeof(*gh));
-	gh->proto_discr = proto_discr;
-	gh->msg_type = msg_type;
-	return gh;
+	struct msgb *msg;
+
+	msg = gsm0480_msgb_alloc_name("TS 04.80 ReturnError");
+	if (!msg)
+		return NULL;
+
+	/* First insert the problem code */
+	msgb_push_TLV1(msg, GSM_0480_ERROR_CODE_TAG, error_code);
+
+	/* Before it, insert the invoke ID */
+	msgb_push_TLV1(msg, GSM0480_COMPIDTAG_INVOKE_ID, invoke_id);
+
+	/* Wrap this up as a Reject component */
+	msgb_wrap_with_TL(msg, GSM0480_CTYPE_RETURN_ERROR);
+
+	/* FIXME: Wrap in Facility + L3? */
+	return msg;
+}
+
+/*! Generate a Reject component (see section 3.6.1) and given error code (see section 3.6.7).
+ * \param[in] invoke_id		InvokeID of the request
+ * \param[in] problem_tag	Problem code tag (table 3.13)
+ * \param[in] problem_code	Problem code (table 3.14-3.17)
+ * \return			message buffer containing the Reject component
+ *
+ * Note: if InvokeID is not available, e.g. when message parsing failed, any incorrect vlue
+ * can be passed (0x00 > x > 0xff), so the universal NULL-tag (see table 3.6) will be used instead.
+ */
+struct msgb *gsm0480_gen_reject(int invoke_id, uint8_t problem_tag, uint8_t problem_code)
+{
+	struct msgb *msg;
+
+	msg = gsm0480_msgb_alloc_name("TS 04.80 Reject");
+	if (!msg)
+		return NULL;
+
+	/* First insert the problem code */
+	msgb_push_TLV1(msg, problem_tag, problem_code);
+
+	/* If the Invoke ID is not available, Universal NULL (table 3.9) with length=0 shall be used */
+	if (invoke_id < 0 || invoke_id > 255)
+		msgb_push_NULL(msg);
+	else
+		msgb_push_TLV1(msg, GSM0480_COMPIDTAG_INVOKE_ID, invoke_id);
+
+	/* Wrap this up as a Reject component */
+	msgb_wrap_with_TL(msg, GSM0480_CTYPE_REJECT);
+
+	/* FIXME: Wrap in Facility + L3? */
+	return msg;
 }
 
 struct msgb *gsm0480_create_ussd_notify(int level, const char *text)
@@ -856,7 +945,11 @@ struct msgb *gsm0480_create_ussd_notify(int level, const char *text)
 	gsm0480_wrap_invoke(msg, GSM0480_OP_CODE_USS_NOTIFY, 0);
 	gsm0480_wrap_facility(msg);
 
-	gsm0480_l3hdr_push(msg, GSM48_PDISC_NC_SS, GSM0480_MTYPE_REGISTER);
+	/* And finally pre-pend the L3 header */
+	gsm48_push_l3hdr(msg, GSM48_PDISC_NC_SS,
+			 /* FIXME: no transactionID?!? */
+			 GSM0480_MTYPE_REGISTER);
+
 	return msg;
 }
 
@@ -864,12 +957,14 @@ struct msgb *gsm0480_create_ussd_release_complete(void)
 {
 	struct msgb *msg;
 
-	msg = msgb_alloc_headroom(1024, 128, "GSM 04.80 USSD REL COMPL");
+	msg = gsm0480_msgb_alloc_name("TS 04.80 USSD REL COMPL");
 	if (!msg)
 		return NULL;
 
-	/* FIXME: should this set trans_id and TI direction flag? */
-	gsm0480_l3hdr_push(msg, GSM48_PDISC_NC_SS,
-			   GSM0480_MTYPE_RELEASE_COMPLETE);
+	/* And finally pre-pend the L3 header */
+	gsm48_push_l3hdr(msg, GSM48_PDISC_NC_SS,
+			 /* FIXME: no transactionID?!? */
+			 GSM0480_MTYPE_RELEASE_COMPLETE);
+
 	return msg;
 }

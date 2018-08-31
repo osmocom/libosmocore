@@ -406,27 +406,55 @@ static void _output(struct log_target *target, unsigned int subsys,
 				goto err;
 			OSMO_SNPRINTF_RET(ret, rem, offset, len);
 		}
-		switch (target->print_filename2) {
-		case LOG_FILENAME_NONE:
-			break;
-		case LOG_FILENAME_PATH:
-			ret = snprintf(buf + offset, rem, "%s:%d ", file, line);
-			if (ret < 0)
-				goto err;
-			OSMO_SNPRINTF_RET(ret, rem, offset, len);
-			break;
-		case LOG_FILENAME_BASENAME:
-			ret = snprintf(buf + offset, rem, "%s:%d ", const_basename(file), line);
-			if (ret < 0)
-				goto err;
-			OSMO_SNPRINTF_RET(ret, rem, offset, len);
-			break;
+
+		if (target->print_filename_pos == LOG_FILENAME_POS_HEADER_END) {
+			switch (target->print_filename2) {
+			case LOG_FILENAME_NONE:
+				break;
+			case LOG_FILENAME_PATH:
+				ret = snprintf(buf + offset, rem, "%s:%d ", file, line);
+				if (ret < 0)
+					goto err;
+				OSMO_SNPRINTF_RET(ret, rem, offset, len);
+				break;
+			case LOG_FILENAME_BASENAME:
+				ret = snprintf(buf + offset, rem, "%s:%d ", const_basename(file), line);
+				if (ret < 0)
+					goto err;
+				OSMO_SNPRINTF_RET(ret, rem, offset, len);
+				break;
+			}
 		}
 	}
 	ret = vsnprintf(buf + offset, rem, format, ap);
 	if (ret < 0)
 		goto err;
 	OSMO_SNPRINTF_RET(ret, rem, offset, len);
+
+	/* For LOG_FILENAME_POS_LAST, print the source file info only when the caller ended the log
+	 * message in '\n'. If so, nip the last '\n' away, insert the source file info and re-append an
+	 * '\n'. All this to allow LOGP("start..."); LOGPC("...end\n") constructs. */
+	if (target->print_filename_pos == LOG_FILENAME_POS_LINE_END
+	    && offset > 0 && buf[offset-1] == '\n') {
+		switch (target->print_filename2) {
+		case LOG_FILENAME_NONE:
+			break;
+		case LOG_FILENAME_PATH:
+			offset --;
+			ret = snprintf(buf + offset, rem, " (%s:%d)\n", file, line);
+			if (ret < 0)
+				goto err;
+			OSMO_SNPRINTF_RET(ret, rem, offset, len);
+			break;
+		case LOG_FILENAME_BASENAME:
+			offset --;
+			ret = snprintf(buf + offset, rem, " (%s:%d)\n", const_basename(file), line);
+			if (ret < 0)
+				goto err;
+			OSMO_SNPRINTF_RET(ret, rem, offset, len);
+			break;
+		}
+	}
 
 	if (target->use_color) {
 		ret = snprintf(buf + offset, rem, "\033[0;m");
@@ -677,6 +705,17 @@ void log_set_print_filename2(struct log_target *target, enum log_filename_type l
 	target->print_filename2 = lft;
 }
 
+/*! Set the position where on a log line the source file info should be logged.
+ *  \param[in] target Log target to be affected.
+ *  \param[in] pos A LOG_FILENAME_POS_* enum value.
+ * LOG_FILENAME_POS_DEFAULT logs just before the caller supplied log message.
+ * LOG_FILENAME_POS_LAST logs only at the end of a log line, where the caller issued an '\n' to end the
+ */
+void log_set_print_filename_pos(struct log_target *target, enum log_filename_pos pos)
+{
+	target->print_filename_pos = pos;
+}
+
 /*! Enable or disable printing of the category name
  *  \param[in] target Log target to be affected
  *  \param[in] print_catname Enable (1) or disable (0) filenames
@@ -759,7 +798,7 @@ struct log_target *log_target_create(void)
 	if (!target)
 		return NULL;
 
-	target->categories = talloc_zero_array(target, 
+	target->categories = talloc_zero_array(target,
 						struct log_category,
 						osmo_log_info->num_cat);
 	if (!target->categories) {
@@ -932,7 +971,7 @@ const char *log_vty_command_string()
 {
 	struct log_info *info = osmo_log_info;
 	int len = 0, offset = 0, ret, i, rem;
-	int size = strlen("logging level () ()") + 1;
+	int size = strlen("logging level (all|) ()") + 1;
 	char *str;
 
 	assert_loginfo(__func__);

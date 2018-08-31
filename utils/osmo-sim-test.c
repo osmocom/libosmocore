@@ -74,7 +74,8 @@ static int verify_pin(struct osim_chan_hdl *st, uint8_t pin_nr, char *pin)
 	msg = osim_new_apdumsg(0x00, 0x20, 0x00, pin_nr, 8, 0);
 	pindst = (char *) msgb_put(msg, 8);
 	memset(pindst, 0xFF, 8);
-	strncpy(pindst, pin, strlen(pin));
+	/* Do not copy the terminating \0 */
+	memcpy(pindst, pin, strlen(pin));
 
 	return osim_transceive_apdu(st, msg);
 }

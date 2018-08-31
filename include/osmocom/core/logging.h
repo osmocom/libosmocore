@@ -55,17 +55,17 @@ void logp(int subsys, const char *file, int line, int cont, const char *format, 
 #define LOGPC(ss, level, fmt, args...) \
 	do { \
 		if (log_check_level(ss, level)) \
-			logp2(ss, level, __BASE_FILE__, __LINE__, 1, fmt, ##args); \
+			logp2(ss, level, __FILE__, __LINE__, 1, fmt, ##args); \
 	} while(0)
 
 /*! Log through the Osmocom logging framework with explicit source.
- *  If caller_file is passed as NULL, __BASE_FILE__ and __LINE__ are used
+ *  If caller_file is passed as NULL, __FILE__ and __LINE__ are used
  *  instead of caller_file and caller_line (so that this macro here defines
  *  both cases in the same place, and to catch cases where callers fail to pass
  *  a non-null filename string).
  *  \param[in] ss logging subsystem (e.g. \ref DLGLOBAL)
  *  \param[in] level logging level (e.g. \ref LOGL_NOTICE)
- *  \param[in] caller_file caller's source file string (e.g. __BASE_FILE__)
+ *  \param[in] caller_file caller's source file string (e.g. __FILE__)
  *  \param[in] caller_line caller's source line nr (e.g. __LINE__)
  *  \param[in] fmt format string
  *  \param[in] args variable argument list
@@ -74,13 +74,13 @@ void logp(int subsys, const char *file, int line, int cont, const char *format, 
 	LOGPSRCC(ss, level, caller_file, caller_line, 0, fmt, ##args)
 
 /*! Log through the Osmocom logging framework with explicit source.
- *  If caller_file is passed as NULL, __BASE_FILE__ and __LINE__ are used
+ *  If caller_file is passed as NULL, __FILE__ and __LINE__ are used
  *  instead of caller_file and caller_line (so that this macro here defines
  *  both cases in the same place, and to catch cases where callers fail to pass
  *  a non-null filename string).
  *  \param[in] ss logging subsystem (e.g. \ref DLGLOBAL)
  *  \param[in] level logging level (e.g. \ref LOGL_NOTICE)
- *  \param[in] caller_file caller's source file string (e.g. __BASE_FILE__)
+ *  \param[in] caller_file caller's source file string (e.g. __FILE__)
  *  \param[in] caller_line caller's source line nr (e.g. __LINE__)
  *  \param[in] cont continuation (1) or new line (0)
  *  \param[in] fmt format string
@@ -92,7 +92,7 @@ void logp(int subsys, const char *file, int line, int cont, const char *format, 
 			if (caller_file) \
 				logp2(ss, level, caller_file, caller_line, cont, fmt, ##args); \
 			else \
-				logp2(ss, level, __BASE_FILE__, __LINE__, cont, fmt, ##args); \
+				logp2(ss, level, __FILE__, __LINE__, cont, fmt, ##args); \
 		}\
 	} while(0)
 
@@ -228,6 +228,12 @@ enum log_filename_type {
 	LOG_FILENAME_BASENAME,
 };
 
+/*! Where on a log line source file and line should be logged. */
+enum log_filename_pos {
+	LOG_FILENAME_POS_HEADER_END,
+	LOG_FILENAME_POS_LINE_END,
+};
+
 /*! structure representing a logging target */
 struct log_target {
         struct llist_head entry;		/*!< linked list */
@@ -313,6 +319,8 @@ struct log_target {
 	bool print_category_hex;
 	/* Should we print the source file and line, and in which way? */
 	enum log_filename_type print_filename2;
+	/* Where on a log line to put the source file info. */
+	enum log_filename_pos print_filename_pos;
 };
 
 /* use the above macros */
@@ -335,6 +343,7 @@ void log_set_print_extended_timestamp(struct log_target *target, int);
 void log_set_print_timestamp(struct log_target *target, int);
 void log_set_print_filename(struct log_target *target, int);
 void log_set_print_filename2(struct log_target *target, enum log_filename_type lft);
+void log_set_print_filename_pos(struct log_target *target, enum log_filename_pos pos);
 void log_set_print_category(struct log_target *target, int);
 void log_set_print_category_hex(struct log_target *target, int);
 void log_set_print_level(struct log_target *target, int);

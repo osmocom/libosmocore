@@ -97,6 +97,10 @@ gsm0480_wrap_facility;
 gsm0480_wrap_invoke;
 gsm0480_comp_type_names;
 gsm0480_op_code_names;
+gsm0480_msgb_alloc_name;
+gsm0480_gen_ussd_resp_7bit;
+gsm0480_gen_return_error;
+gsm0480_gen_reject;
 
 gsm0502_calc_paging_group;
 
@@ -237,6 +241,7 @@ gsm411_rp_state_names;
 
 gsm414_msgt_names;
 
+gsm48_push_l3hdr;
 gsm48_att_tlvdef;
 gsm48_cc_msg_name;
 gsm48_rr_msg_name;
@@ -458,6 +463,8 @@ ipa_ccm_tlv_to_unitdata;
 ipa_ccm_idtag_name;
 ipa_ccm_idtag_parse;
 ipa_ccm_idtag_parse_off;
+ipa_ccm_id_get_parse;
+ipa_ccm_id_resp_parse;
 ipa_ccm_make_id_resp;
 ipa_ccm_make_id_resp_from_req;
 ipa_msg_alloc;
@@ -488,6 +495,11 @@ osmo_msisdn_str_valid;
 osmo_mncc_stringify;
 osmo_mncc_names;
 _osmo_mncc_log;
+
+osmo_oap_client_encoded;
+osmo_oap_client_handle;
+osmo_oap_client_init;
+osmo_oap_client_register;
 
 local: *;
 };

@@ -78,7 +78,7 @@ do {								\
  */
 #define OSMO_ASSERT(exp)    \
 	if (!(exp)) { \
-		osmo_panic("Assert failed %s %s:%d\n", #exp, __BASE_FILE__, __LINE__); \
+		osmo_panic("Assert failed %s %s:%d\n", #exp, __FILE__, __LINE__); \
 	}
 
 /*! duplicate a string using talloc and release its prior content (if any)

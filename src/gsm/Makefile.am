@@ -1,7 +1,7 @@
 # This is _NOT_ the library release version, it's an API version.
 # Please read chapter "Library interface versions" of the libtool documentation
 # before making any modifications: https://www.gnu.org/software/libtool/manual/html_node/Versioning.html
-LIBVERSION=9:0:0
+LIBVERSION=10:0:0
 
 AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include $(TALLOC_CFLAGS)
 AM_CFLAGS = -Wall ${GCC_FVISIBILITY_HIDDEN}
@@ -30,7 +30,7 @@ libgsmint_la_SOURCES =  a5.c rxlev_stat.c tlv_parser.c comp128.c comp128v23.c \
 			milenage/aes-internal.c milenage/aes-internal-enc.c \
 			milenage/milenage.c gan.c ipa.c gsm0341.c apn.c \
 			gsup.c gprs_gea.c gsm0503_conv.c oap.c gsm0808_utils.c \
-			gsm23003.c mncc.c bts_features.c
+			gsm23003.c mncc.c bts_features.c oap_client.c
 libgsmint_la_LDFLAGS = -no-undefined
 libgsmint_la_LIBADD = $(top_builddir)/src/libosmocore.la
 

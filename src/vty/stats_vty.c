@@ -516,12 +516,15 @@ DEFUN(show_stats_asciidoc_table,
 		host.app_info->name ? host.app_info->name : "", VTY_NEWLINE, VTY_NEWLINE);
 	/* 2x VTY_NEWLINE are intentional otherwise it would interpret the first table header
 	 * as usual text*/
+	vty_out(vty, "=== Rate Counters%s%s", VTY_NEWLINE, VTY_NEWLINE);
 	vty_out(vty, "// generating tables for rate_ctr_group%s", VTY_NEWLINE);
 	rate_ctr_for_each_group(asciidoc_rate_ctr_group_handler, vty);
 
+	vty_out(vty, "== Osmo Stat Items%s%s", VTY_NEWLINE, VTY_NEWLINE);
 	vty_out(vty, "// generating tables for osmo_stat_items%s", VTY_NEWLINE);
 	osmo_stat_item_for_each_group(asciidoc_osmo_stat_item_group_handler, vty);
 
+	vty_out(vty, "== Osmo Counters%s%s", VTY_NEWLINE, VTY_NEWLINE);
 	vty_out(vty, "// generating tables for osmo_counters%s", VTY_NEWLINE);
 	asciidoc_counter_generate(vty);
 	return CMD_SUCCESS;

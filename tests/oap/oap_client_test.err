@@ -1,0 +1,35 @@
+- make sure filling with zeros means uninitialized
+- reject messages in uninitialized state
+DLOAP Received OAP message 5, but the OAP client is not initialized
+- NULL config should disable
+- reject messages in disabled state
+DLOAP Received OAP message 5, but the OAP client is disabled
+- invalid client_id and shared secret
+- reset state
+- only client_id is invalid
+- valid id, but omitted shared_secret (1/2)
+DLOAP OAP: client ID set, but secret K missing.
+- valid id, but omitted shared_secret (2/2)
+DLOAP OAP: client ID set, but secret OPC missing.
+- mint configuration
+- Missing challenge data
+DLOAP OAP challenge incomplete (rand_present: 0, autn_present: 0)
+- AUTN missing
+DLOAP OAP challenge incomplete (rand_present: 1, autn_present: 0)
+- RAND missing
+DLOAP OAP challenge incomplete (rand_present: 0, autn_present: 1)
+- wrong autn (by one bit)
+DLOAP OAP: AUTN mismatch!
+DLOAP OAP: AUTN from server: dec4e3848a33000086781158ca40f136
+DLOAP OAP: AUTN expected:    cec4e3848a33000086781158ca40f136
+- all data correct
+- but refuse to evaluate in uninitialized state
+DLOAP Received OAP message 8, but the OAP client is not initialized
+DLOAP Received OAP message 8, but the OAP client is disabled
+- now everything is correct
+- Expect the challenge response in msg_tx
+- Receive registration error for the first time.
+DLOAP OAP registration failed
+- Receive registration error for the Nth time.
+DLOAP OAP registration failed
+- Registration success

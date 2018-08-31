@@ -24,6 +24,8 @@ struct osmo_fd;
 #define OSMO_SOCK_F_NO_MCAST_LOOP (1 << 3)
 /*! disable receiving all multiast even for non-subscribed groups */
 #define OSMO_SOCK_F_NO_MCAST_ALL  (1 << 4)
+/*! use SO_REUSEADDR on UDP ports (required for multicast) */
+#define OSMO_SOCK_F_UDP_REUSEADDR (1 << 5)
 
 int osmo_sock_init(uint16_t family, uint16_t type, uint8_t proto,
 		   const char *host, uint16_t port, unsigned int flags);

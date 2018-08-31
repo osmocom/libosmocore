@@ -6,6 +6,8 @@ bssgp_pdu_str;
 bssgp_fc_in;
 bssgp_fc_init;
 bssgp_fc_ms_init;
+bssgp_fc_flush_queue;
+bssgp_flush_all_queues;
 bssgp_msgb_alloc;
 bssgp_msgb_copy;
 bssgp_msgb_tlli_put;

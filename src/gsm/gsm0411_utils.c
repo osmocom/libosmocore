@@ -35,7 +35,6 @@
 #include <osmocom/core/logging.h>
 
 #include <osmocom/gsm/gsm48.h>
-#include <osmocom/gsm/gsm0480.h>
 #include <osmocom/gsm/gsm_utils.h>
 #include <osmocom/gsm/protocol/gsm_03_40.h>
 #include <osmocom/gsm/protocol/gsm_04_11.h>
@@ -354,7 +353,7 @@ int gsm411_push_cp_header(struct msgb *msg, uint8_t proto, uint8_t trans,
 			     uint8_t msg_type)
 {
 	/* Outgoing proto_discr needs the highest bit set */
-	gsm0480_l3hdr_push(msg, proto | (trans << 4), msg_type);
+	gsm48_push_l3hdr_tid(msg, proto, trans, msg_type);
 	return 0;
 }
 

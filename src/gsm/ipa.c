@@ -137,6 +137,83 @@ int ipa_ccm_idtag_parse_off(struct tlv_parsed *dec, unsigned char *buf, int len,
 	return 0;
 }
 
+/*! Parse the payload part of an IPA CCM ID GET, return \ref tlv_parsed format.
+ *  The odd payload format of those messages is structured as follows:
+ *   * 8bit length value (length of payload *and tag*)
+ *   * 8bit tag value
+ *   * optional, variable-length payload
+ *  \param[out] dec Caller-provided/allocated output structure for parsed payload
+ *  \param[in] buf Buffer containing the payload (excluding 1 byte msg_type) of the message
+ *  \param[in] len Length of \a buf in octets
+ *  \returns 0 on success; negative on error */
+int ipa_ccm_id_get_parse(struct tlv_parsed *dec, const uint8_t *buf, unsigned int len)
+{
+	uint8_t t_len;
+	uint8_t t_tag;
+	const uint8_t *cur = buf;
+
+	memset(dec, 0, sizeof(*dec));
+
+	while (len >= 2) {
+		len -= 2;
+		t_len = *cur++;
+		t_tag = *cur++;
+
+		if (t_len > len + 1) {
+			LOGP(DLMI, LOGL_ERROR, "The tag does not fit: %d > %d\n", t_len, len + 1);
+			return -EINVAL;
+		}
+
+		DEBUGPC(DLMI, "%s='%s' ", ipa_ccm_idtag_name(t_tag), cur);
+
+		dec->lv[t_tag].len = t_len-1;
+		dec->lv[t_tag].val = cur;
+
+		cur += t_len-1;
+		len -= t_len-1;
+	}
+	return 0;
+}
+
+/*! Parse the payload part of an IPA CCM ID RESP, return \ref tlv_parsed format.
+ *  The odd payload format of those messages is structured as follows:
+ *   * 16bit length value (length of payload *and tag*)
+ *   * 8bit tag value
+ *   * optional, variable-length payload
+ *  \param[out] dec Caller-provided/allocated output structure for parsed payload
+ *  \param[in] buf Buffer containing the payload (excluding 1 byte msg_type) of the message
+ *  \param[in] len Length of \a buf in octets
+ *  \returns 0 on success; negative on error */
+int ipa_ccm_id_resp_parse(struct tlv_parsed *dec, const uint8_t *buf, unsigned int len)
+{
+	uint8_t t_len;
+	uint8_t t_tag;
+	const uint8_t *cur = buf;
+
+	memset(dec, 0, sizeof(*dec));
+
+	while (len >= 3) {
+		len -= 3;
+		t_len = *cur++ << 8;
+		t_len += *cur++;
+		t_tag = *cur++;
+
+		if (t_len > len + 1) {
+			LOGP(DLMI, LOGL_ERROR, "The tag does not fit: %d > %d\n", t_len, len + 1);
+			return -EINVAL;
+		}
+
+		DEBUGPC(DLMI, "%s='%s' ", ipa_ccm_idtag_name(t_tag), cur);
+
+		dec->lv[t_tag].len = t_len-1;
+		dec->lv[t_tag].val = cur;
+
+		cur += t_len-1;
+		len -= t_len-1;
+	}
+	return 0;
+}
+
 int ipa_parse_unitid(const char *str, struct ipaccess_unit *unit_data)
 {
 	unsigned long ul;
@@ -251,23 +328,23 @@ struct msgb *ipa_ccm_make_id_resp(const struct ipaccess_unit *dev,
 			break;
 		case IPAC_IDTAG_LOCATION1:
 			if (dev->location1)
-				strncpy(str, dev->location1, IPA_STRING_MAX);
+				osmo_strlcpy(str, dev->location1, sizeof(str));
 			break;
 		case IPAC_IDTAG_LOCATION2:
 			if (dev->location2)
-				strncpy(str, dev->location2, IPA_STRING_MAX);
+				osmo_strlcpy(str, dev->location2, sizeof(str));
 			break;
 		case IPAC_IDTAG_EQUIPVERS:
 			if (dev->equipvers)
-				strncpy(str, dev->equipvers, IPA_STRING_MAX);
+				osmo_strlcpy(str, dev->equipvers, sizeof(str));
 			break;
 		case IPAC_IDTAG_SWVERSION:
 			if (dev->swversion)
-				strncpy(str, dev->swversion, IPA_STRING_MAX);
+				osmo_strlcpy(str, dev->swversion, sizeof(str));
 			break;
 		case IPAC_IDTAG_UNITNAME:
 			if (dev->unit_name) {
-				snprintf(str, sizeof(str), dev->unit_name, IPA_STRING_MAX);
+				snprintf(str, sizeof(str), "%s", dev->unit_name);
 			} else {
 				snprintf(str, sizeof(str),
 					 "%02x-%02x-%02x-%02x-%02x-%02x",
@@ -278,7 +355,7 @@ struct msgb *ipa_ccm_make_id_resp(const struct ipaccess_unit *dev,
 			break;
 		case IPAC_IDTAG_SERNR:
 			if (dev->serno)
-				strncpy(str, dev->serno, IPA_STRING_MAX);
+				osmo_strlcpy(str, dev->serno, sizeof(str));
 			break;
 		default:
 			LOGP(DLINP, LOGL_NOTICE,
@@ -286,7 +363,6 @@ struct msgb *ipa_ccm_make_id_resp(const struct ipaccess_unit *dev,
 			msgb_free(msg);
 			return NULL;
 		}
-		str[IPA_STRING_MAX-1] = '\0';
 
 		LOGP(DLINP, LOGL_INFO, " tag %d: %s\n", ies_req[i], str);
 		tag = msgb_put(msg, 3 + strlen(str) + 1);
@@ -452,6 +528,9 @@ void ipa_prepend_header(struct msgb *msg, int proto)
 #ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
 
+/*! Read one ipa message from socket fd without caching not fully received
+ * messages. See \ref ipa_msg_recv_buffered for further information.
+ */
 int ipa_msg_recv(int fd, struct msgb **rmsg)
 {
 	int rc = ipa_msg_recv_buffered(fd, rmsg, NULL);
@@ -462,6 +541,25 @@ int ipa_msg_recv(int fd, struct msgb **rmsg)
 	return rc;
 }
 
+/*! Read one ipa message from socket fd or store part if still not fully received.
+ *  \param[in] fd The fd for the socket to read from.
+ *  \param[out] rmsg internally allocated msgb containing a fully received ipa message.
+ *  \param[inout] tmp_msg internally allocated msgb caching data for not yet fully received message.
+ *
+ *  As ipa can run on top of stream based protocols such as TCP, there's the
+ *  possibility that such lower layers split ipa messages in several low level
+ *  packets. If a low layer packet is received containing several ipa frames,
+ *  this function will pull from the socket and return only the first one
+ *  available in the stream. As the socket will remain with data, it will
+ *  trigger again during next select() and then this function will fetch the
+ *  next ipa message, and so on.
+ *
+ *  \returns -EAGAIN and allocated tmp_msg if message was not yet fully
+ *  received. Other negative values indicate an error and cached msgb will be
+ *  freed. 0 if socket is found dead. Positive value indicating l2 msgb len and
+ *  rmsg pointing to internally allocated msgb containing the ipa frame on
+ *  scucess.
+ */
 int ipa_msg_recv_buffered(int fd, struct msgb **rmsg, struct msgb **tmp_msg)
 {
 	struct msgb *msg = tmp_msg ? *tmp_msg : NULL;
