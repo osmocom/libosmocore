@@ -1,6 +1,8 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
 
 #include <osmocom/core/backtrace.h>
 #include <osmocom/core/talloc.h>
@@ -29,9 +31,6 @@
 
 /*! Copy a C-string into a sized buffer using sizeof to detect buffer's size */
 #define OSMO_STRLCPY_ARRAY(array, src) osmo_strlcpy(array, src, sizeof(array))
-
-#include <stdint.h>
-#include <stdio.h>
 
 /*! A mapping between human-readable string and numeric value */
 struct value_string {
