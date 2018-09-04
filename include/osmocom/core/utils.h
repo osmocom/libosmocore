@@ -30,7 +30,6 @@
 /*! Copy a C-string into a sized buffer using sizeof to detect buffer's size */
 #define OSMO_STRLCPY_ARRAY(array, src) osmo_strlcpy(array, src, sizeof(array))
 
-#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 
