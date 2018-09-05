@@ -178,11 +178,13 @@ static void gprs_sns_st_config_sgsn(struct osmo_fsm_inst *fi, uint32_t event, vo
 		}
 		LOGPFSML(fi, LOGL_INFO, "Rx SNS-CONFIG: Remote IPv4 list now %u entries\n",
 			 gss->num_ip4_remote);
+		/* send CONFIG-ACK */
+		gprs_ns_tx_sns_config_ack(gss->nsvc_hack, NULL);
+
 		if (event == GPRS_SNS_EV_CONFIG_END) {
 			osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_CONFIGURED, 0, 0);
 		}
-		/* send CONFIG-ACK */
-		gprs_ns_tx_sns_config_ack(gss->nsvc_hack, NULL);
+
 		break;
 	default:
 		OSMO_ASSERT(0);

@@ -259,8 +259,7 @@ static struct gprs_nsvc *nsvc_by_rem_addr(struct gprs_ns_inst *nsi,
 	struct gprs_nsvc *nsvc;
 	llist_for_each_entry(nsvc, &nsi->gprs_nsvcs, list) {
 		if (nsvc->ip.bts_addr.sin_addr.s_addr ==
-					sin->sin_addr.s_addr &&
-		    nsvc->ip.bts_addr.sin_port == sin->sin_port)
+					sin->sin_addr.s_addr)
 			return nsvc;
 	}
 	return NULL;
@@ -444,29 +443,16 @@ static int gprs_ns_tx_simple(struct gprs_nsvc *nsvc, uint8_t pdu_type)
  */
 int gprs_ns_tx_reset(struct gprs_nsvc *nsvc, uint8_t cause)
 {
-	struct msgb *msg = gprs_ns_msgb_alloc();
-	struct gprs_ns_hdr *nsh;
-	uint16_t nsvci = osmo_htons(nsvc->nsvci);
-	uint16_t nsei = osmo_htons(nsvc->nsei);
 
-	log_set_context(LOG_CTX_GB_NSVC, nsvc);
-
-	if (!msg)
-		return -ENOMEM;
-
-	LOGP(DNS, LOGL_INFO, "NSEI=%u Tx NS RESET (NSVCI=%u, cause=%s)\n",
-		nsvc->nsei, nsvc->nsvci, gprs_ns_cause_str(cause));
-
-	msg->l2h = msgb_put(msg, sizeof(*nsh));
-	nsh = (struct gprs_ns_hdr *) msg->l2h;
-	nsh->pdu_type = NS_PDUT_RESET;
-
-	msgb_tvlv_put(msg, NS_IE_CAUSE, 1, &cause);
-	msgb_tvlv_put(msg, NS_IE_VCI, 2, (uint8_t *) &nsvci);
-	msgb_tvlv_put(msg, NS_IE_NSEI, 2, (uint8_t *) &nsei);
-
-	return gprs_ns_tx(nsvc, msg);
-
+	ns_set_state(nsvc, NSE_S_BLOCKED | NSE_S_ALIVE);
+	ns_set_remote_state(nsvc, NSE_S_BLOCKED | NSE_S_ALIVE);
+	rate_ctr_inc(&(nsvc)->ctrg->ctr[NS_CTR_BLOCKED]);
+	LOGP(DNS, LOGL_INFO, "NSEI=%u Rx NS UNBLOCK ACK\n", nsvc->nsei);
+	/* mark NS-VC as unblocked + active */
+	ns_set_state(nsvc, NSE_S_ALIVE);
+	ns_set_remote_state(nsvc, NSE_S_ALIVE);
+	ns_osmo_signal_dispatch(nsvc, S_NS_UNBLOCK, 0);
+	return 1;
 }
 
 /*! Transmit a NS-STATUS on a given NSVC
@@ -591,6 +577,8 @@ int gprs_ns_tx_alive_ack(struct gprs_nsvc *nsvc)
 	log_set_context(LOG_CTX_GB_NSVC, nsvc);
 	LOGP(DNS, LOGL_DEBUG, "NSEI=%u Tx NS ALIVE_ACK (NSVCI=%u)\n",
 		nsvc->nsei, nsvc->nsvci);
+
+	nsvc->ip.bts_addr.sin_port = htons(GB_SIGN_PORT);
 
 	return gprs_ns_tx_simple(nsvc, NS_PDUT_ALIVE_ACK);
 }
@@ -886,6 +874,51 @@ int gprs_ns_sendmsg(struct gprs_ns_inst *nsi, struct msgb *msg)
 
 	return gprs_ns_tx(nsvc, msg);
 }
+
+int gprs_ns_sendmsg_bss(struct gprs_ns_inst *nsi, struct msgb *msg, int port)
+{
+	struct gprs_nsvc *nsvc;
+	struct gprs_ns_hdr *nsh;
+	uint16_t bvci = msgb_bvci(msg);
+
+	nsvc = gprs_active_nsvc_by_nsei(nsi, msgb_nsei(msg));
+	if (!nsvc) {
+		int rc;
+		if (gprs_nsvc_by_nsei(nsi, msgb_nsei(msg))) {
+		    LOGP(DNS, LOGL_ERROR,
+			 "All NS-VCs for NSEI %u are either dead or blocked!\n",
+			 msgb_nsei(msg));
+		    rc = -EBUSY;
+		} else {
+		    LOGP(DNS, LOGL_ERROR, "Unable to resolve NSEI %u "
+			 "to NS-VC!\n", msgb_nsei(msg));
+		    rc = -EINVAL;
+		}
+
+		msgb_free(msg);
+		return rc;
+	}
+	log_set_context(LOG_CTX_GB_NSVC, nsvc);
+
+	msg->l2h = msgb_push(msg, sizeof(*nsh) + 3);
+	nsh = (struct gprs_ns_hdr *) msg->l2h;
+	if (!nsh) {
+		LOGP(DNS, LOGL_ERROR, "Not enough headroom for NS header\n");
+		msgb_free(msg);
+		return -EIO;
+	}
+
+	nsh->pdu_type = NS_PDUT_UNITDATA;
+	/* spare octet in data[0] */
+	nsh->data[1] = bvci >> 8;
+	nsh->data[2] = bvci & 0xff;
+
+	//TX BSSGP
+	nsvc->ip.bts_addr.sin_port = htons(port);
+
+	return gprs_ns_tx(nsvc, msg);
+}
+
 
 /* Section 9.2.10: receive side */
 static int gprs_ns_rx_unitdata(struct gprs_nsvc *nsvc, struct msgb *msg)
@@ -1764,26 +1797,10 @@ int gprs_ns_nsip_listen(struct gprs_ns_inst *nsi)
 	nsi->nsip.fd.cb = nsip_fd_cb;
 	nsi->nsip.fd.data = nsi;
 
-	if (nsi->nsip.remote_ip && nsi->nsip.remote_port) {
-		/* connect to ensure only we only accept packets from the
-		 * configured remote end/peer */
-		snprintf(remote_str, sizeof(remote_str), "%s", inet_ntoa(remote));
-		ret =
-		    osmo_sock_init2_ofd(&nsi->nsip.fd, AF_INET, SOCK_DGRAM,
-					IPPROTO_UDP, inet_ntoa(in),
-					nsi->nsip.local_port, remote_str,
-					nsi->nsip.remote_port, OSMO_SOCK_F_BIND | OSMO_SOCK_F_CONNECT);
+	ret = osmo_sock_init_ofd(&nsi->nsip.fd, AF_INET, SOCK_DGRAM,
+				 IPPROTO_UDP, inet_ntoa(in), nsi->nsip.local_port, OSMO_SOCK_F_BIND);
 
-		LOGP(DNS, LOGL_NOTICE,
-		     "Listening for nsip packets from %s:%u on %s:%u\n",
-		     remote_str, nsi->nsip.remote_port, inet_ntoa(in), nsi->nsip.local_port);
-	} else {
-		/* Accept UDP packets from any source IP/Port */
-		ret = osmo_sock_init_ofd(&nsi->nsip.fd, AF_INET, SOCK_DGRAM,
-					 IPPROTO_UDP, inet_ntoa(in), nsi->nsip.local_port, OSMO_SOCK_F_BIND);
-
-		LOGP(DNS, LOGL_NOTICE, "Listening for nsip packets on %s:%u\n", inet_ntoa(in), nsi->nsip.local_port);
-	}
+	LOGP(DNS, LOGL_NOTICE, "Listening for nsip packets on %s:%u\n", inet_ntoa(in), nsi->nsip.local_port);
 
 	if (ret < 0)
 		return ret;
@@ -1824,9 +1841,6 @@ int gprs_nsvc_reset(struct gprs_nsvc *nsvc, uint8_t cause)
 		LOGP(DNS, LOGL_ERROR, "NSEI=%u, error resetting NS-VC\n",
 			nsvc->nsei);
 	}
-	/* Start Tns-reset */
-	nsvc_start_timer(nsvc, NSVC_TIMER_TNS_RESET);
-
 	return rc;
 }
 

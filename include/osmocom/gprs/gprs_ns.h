@@ -49,6 +49,9 @@ enum ns_timeout {
 #define NS_DESC_A(st) ((st) & NSE_S_ALIVE ? "ALIVE" : "DEAD")
 #define NS_DESC_R(st) ((st) & NSE_S_RESET ? "RESET" : "UNRESET")
 
+#define GB_SIGN_PORT 42000
+#define GB_DATA_PORT 2100
+
 /*! Osmocom NS link layer types */
 enum gprs_ns_ll {
 	GPRS_NS_LL_UDP,		/*!< NS/UDP/IP */
@@ -181,6 +184,8 @@ struct sockaddr_in;
 
 /* main function for higher layers (BSSGP) to send NS messages */
 int gprs_ns_sendmsg(struct gprs_ns_inst *nsi, struct msgb *msg);
+int gprs_ns_sendmsg_bss(struct gprs_ns_inst *nsi, struct msgb *msg, int port);
+
 
 int gprs_ns_tx_reset(struct gprs_nsvc *nsvc, uint8_t cause);
 int gprs_ns_tx_block(struct gprs_nsvc *nsvc, uint8_t cause);
