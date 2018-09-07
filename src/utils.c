@@ -557,8 +557,8 @@ const char *osmo_escape_str(const char *str, int in_len)
 /*! Like osmo_escape_str(), but returns double-quotes around a string, or "NULL" for a NULL string.
  * This allows passing any char* value and get its C representation as string.
  * \param[in] str  A string that may contain any characters.
- * \param[in] len  Pass -1 to print until nul char, or >= 0 to force a length.
- * \returns buf containing an escaped representation, possibly truncated, or str itself.
+ * \param[in] in_len  Pass -1 to print until nul char, or >= 0 to force a length.
+ * \returns buf containing a quoted and escaped representation, possibly truncated.
  */
 const char *osmo_quote_str_buf(const char *str, int in_len, char *buf, size_t bufsize)
 {
@@ -587,6 +587,12 @@ const char *osmo_quote_str_buf(const char *str, int in_len, char *buf, size_t bu
 	return buf;
 }
 
+/*! Like osmo_quote_str_buf() but returns the result in a static buffer.
+ * The static buffer is shared with get_value_string() and osmo_escape_str().
+ * \param[in] str  A string that may contain any characters.
+ * \param[in] in_len  Pass -1 to print until nul char, or >= 0 to force a length.
+ * \returns static buffer containing a quoted and escaped representation, possibly truncated.
+ */
 const char *osmo_quote_str(const char *str, int in_len)
 {
 	return osmo_quote_str_buf(str, in_len, namebuf, sizeof(namebuf));
