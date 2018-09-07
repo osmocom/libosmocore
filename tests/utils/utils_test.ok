@@ -153,3 +153,49 @@ osmo_sockaddr_to_str_and_uint_test
 [5] 234.23.42.123:1234 (omit addr) addr_len=0 --> :1234 rc=0
 [6] 234.23.42.123:1234 addr_len=0 --> :1234 rc=13
 [7] 234.23.42.123:1234 (omit addr) (omit port) addr_len=0 --> :0 rc=0
+
+osmo_str_tolowupper_test
+osmo_str_tolower("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()")
+               = "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz!@#$%^&*()"
+osmo_str_toupper("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()")
+               = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()"
+osmo_str_tolower_buf(99, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()")
+                   = 62, "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz!@#$%^&*()"
+osmo_str_tolower_buf(99, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()", in-place)
+                   = 62, "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz!@#$%^&*()"
+osmo_str_toupper_buf(99, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()")
+                   = 62, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()"
+osmo_str_toupper_buf(99, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()", in-place)
+                   = 62, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()"
+osmo_str_tolower_buf(0, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()")
+                   = 62, "Unset"
+osmo_str_tolower_buf(0, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()", in-place)
+                   = 0, "Unset"
+osmo_str_toupper_buf(0, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()")
+                   = 62, "Unset"
+osmo_str_toupper_buf(0, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()", in-place)
+                   = 0, "Unset"
+osmo_str_tolower_buf(1, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()")
+                   = 62, ""
+osmo_str_tolower_buf(1, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()", in-place)
+                   = 0, ""
+osmo_str_toupper_buf(1, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()")
+                   = 62, ""
+osmo_str_toupper_buf(1, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()", in-place)
+                   = 0, ""
+osmo_str_tolower_buf(2, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()")
+                   = 62, "a"
+osmo_str_tolower_buf(2, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()", in-place)
+                   = 1, "a"
+osmo_str_toupper_buf(2, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()")
+                   = 62, "A"
+osmo_str_toupper_buf(2, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()", in-place)
+                   = 1, "A"
+osmo_str_tolower_buf(28, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()")
+                   = 62, "abcdefghijklmnopqrstuvwxyza"
+osmo_str_tolower_buf(28, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()", in-place)
+                   = 27, "abcdefghijklmnopqrstuvwxyza"
+osmo_str_toupper_buf(28, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()")
+                   = 62, "ABCDEFGHIJKLMNOPQRSTUVWXYZA"
+osmo_str_toupper_buf(28, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()", in-place)
+                   = 27, "ABCDEFGHIJKLMNOPQRSTUVWXYZA"

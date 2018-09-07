@@ -754,7 +754,6 @@ DEFUN(cfg_no_log_alarms, cfg_no_log_alarms_cmd,
 static int config_write_log_single(struct vty *vty, struct log_target *tgt)
 {
 	int i;
-	char level_lower[32];
 
 	switch (tgt->type) {
 	case LOG_TGT_TYPE_VTY:
@@ -806,21 +805,19 @@ static int config_write_log_single(struct vty *vty, struct log_target *tgt)
 		VTY_NEWLINE);
 
 	/* stupid old osmo logging API uses uppercase strings... */
-	osmo_str2lower(level_lower, log_level_str(tgt->loglevel));
-	vty_out(vty, "  logging level all %s%s", level_lower, VTY_NEWLINE);
+	vty_out(vty, "  logging level all %s%s", osmo_str_tolower(log_level_str(tgt->loglevel)),
+		VTY_NEWLINE);
 
 	for (i = 0; i < osmo_log_info->num_cat; i++) {
 		const struct log_category *cat = &tgt->categories[i];
-		char cat_lower[32];
 
 		/* skip empty entries in the array */
 		if (!osmo_log_info->cat[i].name)
 			continue;
 
 		/* stupid old osmo logging API uses uppercase strings... */
-		osmo_str2lower(cat_lower, osmo_log_info->cat[i].name+1);
-		osmo_str2lower(level_lower, log_level_str(cat->loglevel));
-		vty_out(vty, "  logging level %s %s%s", cat_lower, level_lower, VTY_NEWLINE);
+		vty_out(vty, "  logging level %s", osmo_str_tolower(osmo_log_info->cat[i].name+1));
+		vty_out(vty, " %s%s", osmo_str_tolower(log_level_str(cat->loglevel)), VTY_NEWLINE);
 	}
 
 	return 1;
