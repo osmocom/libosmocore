@@ -152,7 +152,10 @@ nobase_include_HEADERS += \
 endif
 
 noinst_HEADERS = \
-	osmocom/gsm/kasumi.h osmocom/gsm/gea.h
+	osmocom/gsm/kasumi.h \
+	osmocom/gsm/gea.h \
+	osmocom/core/logging_internal.h \
+	$(NULL)
 
 osmocom/core/bit%gen.h: osmocom/core/bitXXgen.h.tpl
 	$(AM_V_GEN)$(MKDIR_P) $(dir $@)

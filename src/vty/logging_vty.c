@@ -28,6 +28,7 @@
 
 #include <osmocom/core/talloc.h>
 #include <osmocom/core/logging.h>
+#include <osmocom/core/logging_internal.h>
 #include <osmocom/core/utils.h>
 #include <osmocom/core/strrb.h>
 #include <osmocom/core/loggingrb.h>
@@ -40,6 +41,19 @@
 #include <osmocom/vty/logging.h>
 
 #define LOG_STR "Configure logging sub-system\n"
+#define LEVEL_STR "Set the log level for a specified category\n"
+
+#define CATEGORY_ALL_STR "Global setting for all subsystems\n"
+
+#define LOG_LEVEL_ARGS "debug|info|notice|error|fatal"
+#define LOG_LEVEL_STRS \
+	"Log debug messages and higher levels\n" \
+	"Log informational messages and higher levels\n" \
+	"Log noticeable messages and higher levels\n" \
+	"Log error messages and higher levels\n" \
+	"Log only fatal messages\n"
+
+#define EVERYTHING_STR "Don't use. It doesn't log anything\n"
 
 /*! \file logging_vty.c
  *  Configuration of logging from VTY
@@ -57,8 +71,6 @@
  *  once to enable both of the above.
  *
  */
-
-extern const struct log_info *osmo_log_info;
 
 static void _vty_output(struct log_target *tgt,
 			unsigned int level, const char *line)
@@ -268,6 +280,47 @@ DEFUN(logging_prnt_file,
 	return CMD_SUCCESS;
 }
 
+static void add_category_strings(char **cmd_str_p, char **doc_str_p,
+				 const struct log_info *categories)
+{
+	int i;
+	for (i = 0; i < categories->num_cat; i++) {
+		if (categories->cat[i].name == NULL)
+			continue;
+		/* skip the leading 'D' in each category name, hence '+ 1' */
+		osmo_talloc_asprintf(tall_log_ctx, *cmd_str_p, "%s%s",
+				     i ? "|" : "",
+				     osmo_str_tolower(categories->cat[i].name + 1));
+		osmo_talloc_asprintf(tall_log_ctx, *doc_str_p, "%s\n",
+				     categories->cat[i].description);
+	}
+}
+
+static void gen_logging_level_cmd_strs(struct cmd_element *cmd,
+				       const char *level_args, const char *level_strs)
+{
+	char *cmd_str = NULL;
+	char *doc_str = NULL;
+
+	assert_loginfo(__func__);
+
+	OSMO_ASSERT(cmd->string == NULL);
+	OSMO_ASSERT(cmd->doc == NULL);
+
+	osmo_talloc_asprintf(tall_log_ctx, cmd_str, "logging level (all|");
+	osmo_talloc_asprintf(tall_log_ctx, doc_str,
+			     LOGGING_STR
+			     LEVEL_STR
+			     CATEGORY_ALL_STR);
+	add_category_strings(&cmd_str, &doc_str, osmo_log_info);
+	osmo_talloc_asprintf(tall_log_ctx, cmd_str, ") %s", level_args);
+	osmo_talloc_asprintf(tall_log_ctx, doc_str, "%s", level_strs);
+
+	cmd->string = cmd_str;
+	cmd->doc = doc_str;
+}
+
+/* logging level (all|<categories>) (everything|debug|...|fatal) */
 DEFUN(logging_level,
       logging_level_cmd,
       NULL, /* cmdstr is dynamically set in logging_vty_add_cmds(). */
@@ -847,7 +900,7 @@ void logging_vty_add_deprecated_subsys(void *ctx, const char *name)
 				    name);
 	printf("%s\n", cmd->string);
 	cmd->func = log_deprecated_func;
-	cmd->doc = "Set the log level for a specified category\n"
+	cmd->doc = LEVEL_STR
 		   "Deprecated Category\n";
 	cmd->attr = CMD_ATTR_DEPRECATED;
 
@@ -871,9 +924,11 @@ void logging_vty_add_cmds()
 	install_element_ve(&logging_set_category_mask_cmd);
 	install_element_ve(&logging_set_category_mask_old_cmd);
 
-	/* Logging level strings are generated dynamically. */
-	logging_level_cmd.string = log_vty_command_string();
-	logging_level_cmd.doc = log_vty_command_description();
+	/* logging level (all|<categories>) (everything|debug|...|fatal) */
+	gen_logging_level_cmd_strs(&logging_level_cmd,
+				   "(everything|" LOG_LEVEL_ARGS ")",
+				   EVERYTHING_STR LOG_LEVEL_STRS);
+
 	install_element_ve(&logging_level_cmd);
 	install_element_ve(&show_logging_vty_cmd);
 	install_element_ve(&show_alarms_cmd);
