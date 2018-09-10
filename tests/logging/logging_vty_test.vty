@@ -1,0 +1,190 @@
+logging_vty_test> enable
+
+logging_vty_test# ! Note that 'logging level all everything' is still printed!
+logging_vty_test# show running-config
+...
+log stderr
+...
+  logging level all everything
+  logging level aa debug
+  logging level bb info
+  logging level ccc notice
+  logging level dddd error
+  logging level eee fatal
+...
+
+logging_vty_test# configure terminal
+logging_vty_test(config)# no log stderr
+logging_vty_test(config)# exit
+
+logging_vty_test# logging enable
+logging_vty_test# logging filter all 1
+logging_vty_test# logging print category-hex 0
+logging_vty_test# logging print category 1
+logging_vty_test# logging print level 1
+logging_vty_test# logging color 0
+logging_vty_test# logging print file 0
+
+
+logging_vty_test# list
+... !logging
+  logging enable
+  logging disable
+  logging filter all (0|1)
+  logging color (0|1)
+  logging timestamp (0|1)
+  logging print extended-timestamp (0|1)
+  logging print category (0|1)
+  logging print category-hex (0|1)
+  logging print level (0|1)
+  logging print file (0|1|basename) [last]
+  logging set-log-mask MASK
+  logging level (all|aa|bb|ccc|dddd|eee|lglobal|llapd|linp|lmux|lmi|lmib|lsms|lctrl|lgtp|lstats|lgsup|loap|lss7|lsccp|lsua|lm3ua|lmgcp|ljibuf) (everything|debug|info|notice|error|fatal)
+  show logging vty
+... !logging
+
+logging_vty_test# logging ?
+  enable        Enables logging to this vty
+  disable       Disables logging to this vty
+  filter        Filter log messages
+  color         Configure color-printing for log messages
+  timestamp     Configure log message timestamping
+  print         Log output settings
+  set-log-mask  Set the logmask of this logging target
+  level         Set the log level for a specified category
+
+logging_vty_test# logging level ?
+  all      Global setting for all subsystems
+  aa       Antropomorphic Armadillos (AA)
+  bb       Bidirectional Breadspread (BB)
+  ccc      Chaos Communication Congress (CCC)
+  dddd     Dehydrated Dribbling Duck Dunkers (DDDD)
+  eee      Exhaustive Entropy Extraction (EEE)
+  lglobal  Library-internal global log family
+...
+
+logging_vty_test# logging level aa ?
+  everything  Don't use. It doesn't log anything
+  debug       Log debug messages and higher levels
+  info        Log informational messages and higher levels
+  notice      Log noticeable messages and higher levels
+  error       Log error messages and higher levels
+  fatal       Log only fatal messages
+
+logging_vty_test# logging level all ?
+  everything  Don't use. It doesn't log anything
+  debug       Log debug messages and higher levels
+  info        Log informational messages and higher levels
+  notice      Log noticeable messages and higher levels
+  error       Log error messages and higher levels
+  fatal       Log only fatal messages
+
+
+logging_vty_test# log-sweep
+DAA DEBUG Log message for DAA on level LOGL_DEBUG
+DAA INFO Log message for DAA on level LOGL_INFO
+DAA NOTICE Log message for DAA on level LOGL_NOTICE
+DAA ERROR Log message for DAA on level LOGL_ERROR
+DAA FATAL Log message for DAA on level LOGL_FATAL
+DBB INFO Log message for DBB on level LOGL_INFO
+DBB NOTICE Log message for DBB on level LOGL_NOTICE
+DBB ERROR Log message for DBB on level LOGL_ERROR
+DBB FATAL Log message for DBB on level LOGL_FATAL
+DCCC NOTICE Log message for DCCC on level LOGL_NOTICE
+DCCC ERROR Log message for DCCC on level LOGL_ERROR
+DCCC FATAL Log message for DCCC on level LOGL_FATAL
+DDDDD ERROR Log message for DDDDD on level LOGL_ERROR
+DDDDD FATAL Log message for DDDDD on level LOGL_FATAL
+DEEE FATAL Log message for DEEE on level LOGL_FATAL
+
+logging_vty_test# logging level all fatal
+logging_vty_test# log-sweep
+DAA FATAL Log message for DAA on level LOGL_FATAL
+DBB FATAL Log message for DBB on level LOGL_FATAL
+DCCC FATAL Log message for DCCC on level LOGL_FATAL
+DDDDD FATAL Log message for DDDDD on level LOGL_FATAL
+DEEE FATAL Log message for DEEE on level LOGL_FATAL
+
+logging_vty_test# logging level all error
+logging_vty_test# log-sweep
+DAA ERROR Log message for DAA on level LOGL_ERROR
+DAA FATAL Log message for DAA on level LOGL_FATAL
+DBB ERROR Log message for DBB on level LOGL_ERROR
+DBB FATAL Log message for DBB on level LOGL_FATAL
+DCCC ERROR Log message for DCCC on level LOGL_ERROR
+DCCC FATAL Log message for DCCC on level LOGL_FATAL
+DDDDD ERROR Log message for DDDDD on level LOGL_ERROR
+DDDDD FATAL Log message for DDDDD on level LOGL_FATAL
+DEEE ERROR Log message for DEEE on level LOGL_ERROR
+DEEE FATAL Log message for DEEE on level LOGL_FATAL
+
+logging_vty_test# logging level all notice
+logging_vty_test# log-sweep
+DAA NOTICE Log message for DAA on level LOGL_NOTICE
+DAA ERROR Log message for DAA on level LOGL_ERROR
+DAA FATAL Log message for DAA on level LOGL_FATAL
+DBB NOTICE Log message for DBB on level LOGL_NOTICE
+DBB ERROR Log message for DBB on level LOGL_ERROR
+DBB FATAL Log message for DBB on level LOGL_FATAL
+DCCC NOTICE Log message for DCCC on level LOGL_NOTICE
+DCCC ERROR Log message for DCCC on level LOGL_ERROR
+DCCC FATAL Log message for DCCC on level LOGL_FATAL
+DDDDD NOTICE Log message for DDDDD on level LOGL_NOTICE
+DDDDD ERROR Log message for DDDDD on level LOGL_ERROR
+DDDDD FATAL Log message for DDDDD on level LOGL_FATAL
+DEEE NOTICE Log message for DEEE on level LOGL_NOTICE
+DEEE ERROR Log message for DEEE on level LOGL_ERROR
+DEEE FATAL Log message for DEEE on level LOGL_FATAL
+
+logging_vty_test# logging level all debug
+logging_vty_test# log-sweep
+DAA DEBUG Log message for DAA on level LOGL_DEBUG
+DAA INFO Log message for DAA on level LOGL_INFO
+DAA NOTICE Log message for DAA on level LOGL_NOTICE
+DAA ERROR Log message for DAA on level LOGL_ERROR
+DAA FATAL Log message for DAA on level LOGL_FATAL
+DBB DEBUG Log message for DBB on level LOGL_DEBUG
+DBB INFO Log message for DBB on level LOGL_INFO
+DBB NOTICE Log message for DBB on level LOGL_NOTICE
+DBB ERROR Log message for DBB on level LOGL_ERROR
+DBB FATAL Log message for DBB on level LOGL_FATAL
+DCCC DEBUG Log message for DCCC on level LOGL_DEBUG
+DCCC INFO Log message for DCCC on level LOGL_INFO
+DCCC NOTICE Log message for DCCC on level LOGL_NOTICE
+DCCC ERROR Log message for DCCC on level LOGL_ERROR
+DCCC FATAL Log message for DCCC on level LOGL_FATAL
+DDDDD DEBUG Log message for DDDDD on level LOGL_DEBUG
+DDDDD INFO Log message for DDDDD on level LOGL_INFO
+DDDDD NOTICE Log message for DDDDD on level LOGL_NOTICE
+DDDDD ERROR Log message for DDDDD on level LOGL_ERROR
+DDDDD FATAL Log message for DDDDD on level LOGL_FATAL
+DEEE DEBUG Log message for DEEE on level LOGL_DEBUG
+DEEE INFO Log message for DEEE on level LOGL_INFO
+DEEE NOTICE Log message for DEEE on level LOGL_NOTICE
+DEEE ERROR Log message for DEEE on level LOGL_ERROR
+DEEE FATAL Log message for DEEE on level LOGL_FATAL
+
+logging_vty_test# ! 'logging level all' overrides everything, be it stronger or weaker
+logging_vty_test# logging level all notice
+logging_vty_test# logging level eee debug
+logging_vty_test# log-sweep eee
+DEEE NOTICE Log message for DEEE on level LOGL_NOTICE
+DEEE ERROR Log message for DEEE on level LOGL_ERROR
+DEEE FATAL Log message for DEEE on level LOGL_FATAL
+
+logging_vty_test# logging level all notice
+logging_vty_test# logging level eee fatal
+logging_vty_test# log-sweep eee
+DEEE NOTICE Log message for DEEE on level LOGL_NOTICE
+DEEE ERROR Log message for DEEE on level LOGL_ERROR
+DEEE FATAL Log message for DEEE on level LOGL_FATAL
+
+logging_vty_test# ! Old 'logging level all everything' has no effect
+logging_vty_test# logging level all everything
+% Ignoring deprecated logging level everything
+logging_vty_test# log-sweep eee
+DEEE NOTICE Log message for DEEE on level LOGL_NOTICE
+DEEE ERROR Log message for DEEE on level LOGL_ERROR
+DEEE FATAL Log message for DEEE on level LOGL_FATAL
+
+logging_vty_test# ! There is currently no way to remove the 'logging level all' level!
