@@ -1,11 +1,9 @@
 logging_vty_test> enable
 
-logging_vty_test# ! Note that 'logging level all everything' is still printed!
 logging_vty_test# show running-config
 ...
 log stderr
-...
-  logging level all everything
+... !logging level all
   logging level aa debug
   logging level bb info
   logging level ccc notice
@@ -39,7 +37,7 @@ logging_vty_test# list
   logging print level (0|1)
   logging print file (0|1|basename) [last]
   logging set-log-mask MASK
-  logging level (all|aa|bb|ccc|dddd|eee|lglobal|llapd|linp|lmux|lmi|lmib|lsms|lctrl|lgtp|lstats|lgsup|loap|lss7|lsccp|lsua|lm3ua|lmgcp|ljibuf) (everything|debug|info|notice|error|fatal)
+  logging level (all|aa|bb|ccc|dddd|eee|lglobal|llapd|linp|lmux|lmi|lmib|lsms|lctrl|lgtp|lstats|lgsup|loap|lss7|lsccp|lsua|lm3ua|lmgcp|ljibuf) (debug|info|notice|error|fatal)
   show logging vty
 ... !logging
 
@@ -64,20 +62,18 @@ logging_vty_test# logging level ?
 ...
 
 logging_vty_test# logging level aa ?
-  everything  Don't use. It doesn't log anything
-  debug       Log debug messages and higher levels
-  info        Log informational messages and higher levels
-  notice      Log noticeable messages and higher levels
-  error       Log error messages and higher levels
-  fatal       Log only fatal messages
+  debug   Log debug messages and higher levels
+  info    Log informational messages and higher levels
+  notice  Log noticeable messages and higher levels
+  error   Log error messages and higher levels
+  fatal   Log only fatal messages
 
 logging_vty_test# logging level all ?
-  everything  Don't use. It doesn't log anything
-  debug       Log debug messages and higher levels
-  info        Log informational messages and higher levels
-  notice      Log noticeable messages and higher levels
-  error       Log error messages and higher levels
-  fatal       Log only fatal messages
+  debug   Log debug messages and higher levels
+  info    Log informational messages and higher levels
+  notice  Log noticeable messages and higher levels
+  error   Log error messages and higher levels
+  fatal   Log only fatal messages
 
 
 logging_vty_test# log-sweep
@@ -181,7 +177,7 @@ DEEE FATAL Log message for DEEE on level LOGL_FATAL
 
 logging_vty_test# ! Old 'logging level all everything' has no effect
 logging_vty_test# logging level all everything
-% Ignoring deprecated logging level everything
+% Ignoring deprecated logging level 'everything' keyword
 logging_vty_test# log-sweep eee
 DEEE NOTICE Log message for DEEE on level LOGL_NOTICE
 DEEE ERROR Log message for DEEE on level LOGL_ERROR

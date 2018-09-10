@@ -64,7 +64,6 @@ void *tall_log_ctx = NULL;
 LLIST_HEAD(osmo_log_target_list);
 
 static const struct value_string loglevel_strs[] = {
-	{ 0,		"EVERYTHING" },
 	{ LOGL_DEBUG,	"DEBUG" },
 	{ LOGL_INFO,	"INFO" },
 	{ LOGL_NOTICE,	"NOTICE" },
