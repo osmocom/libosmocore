@@ -861,21 +861,37 @@ static int config_write_log_single(struct vty *vty, struct log_target *tgt)
 		get_value_string(logging_print_file_args, tgt->print_filename2),
 		VTY_NEWLINE);
 
-	/* stupid old osmo logging API uses uppercase strings... */
-	if (tgt->loglevel)
-		vty_out(vty, "  logging level all %s%s", osmo_str_tolower(log_level_str(tgt->loglevel)),
-			VTY_NEWLINE);
+	if (tgt->loglevel) {
+		const char *level_str = get_value_string_or_null(loglevel_strs, tgt->loglevel);
+		level_str = osmo_str_tolower(level_str);
+		if (!level_str)
+			vty_out(vty, "%% Invalid log level %u for 'all'%s", tgt->loglevel, VTY_NEWLINE);
+		else
+			vty_out(vty, "  logging level all %s%s", level_str, VTY_NEWLINE);
+	}
 
 	for (i = 0; i < osmo_log_info->num_cat; i++) {
 		const struct log_category *cat = &tgt->categories[i];
+		const char *cat_name;
+		const char *level_str;
 
 		/* skip empty entries in the array */
 		if (!osmo_log_info->cat[i].name)
 			continue;
 
-		/* stupid old osmo logging API uses uppercase strings... */
-		vty_out(vty, "  logging level %s", osmo_str_tolower(osmo_log_info->cat[i].name+1));
-		vty_out(vty, " %s%s", osmo_str_tolower(log_level_str(cat->loglevel)), VTY_NEWLINE);
+		/* Note: cat_name references the static buffer returned by osmo_str_tolower(), will
+		 * become invalid after next osmo_str_tolower() invocation. */
+		cat_name = osmo_str_tolower(osmo_log_info->cat[i].name+1);
+
+		level_str = get_value_string_or_null(loglevel_strs, cat->loglevel);
+		if (!level_str) {
+			vty_out(vty, "%% Invalid log level %u for %s%s", cat->loglevel, cat_name,
+				VTY_NEWLINE);
+			continue;
+		}
+
+		vty_out(vty, "  logging level %s", cat_name);
+		vty_out(vty, " %s%s", osmo_str_tolower(level_str), VTY_NEWLINE);
 	}
 
 	return 1;

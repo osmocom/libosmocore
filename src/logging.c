@@ -63,7 +63,7 @@ static struct log_context log_context;
 void *tall_log_ctx = NULL;
 LLIST_HEAD(osmo_log_target_list);
 
-static const struct value_string loglevel_strs[] = {
+const struct value_string loglevel_strs[] = {
 	{ LOGL_DEBUG,	"DEBUG" },
 	{ LOGL_INFO,	"INFO" },
 	{ LOGL_NOTICE,	"NOTICE" },
