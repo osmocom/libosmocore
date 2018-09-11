@@ -43,9 +43,15 @@
 #define LOG_STR "Configure logging sub-system\n"
 #define LEVEL_STR "Set the log level for a specified category\n"
 
-#define CATEGORY_ALL_STR "Global setting for all subsystems\n"
+#define CATEGORY_ALL_STR "Deprecated alias for 'force-all'\n"
+#define FORCE_ALL_STR \
+	"Globally force all logging categories to a specific level. This is released by the" \
+	" 'no logging level force-all' command. Note: any 'logging level <category> <level>'" \
+	" commands will have no visible effect after this, until the forced level is released.\n"
+#define NO_FORCE_ALL_STR \
+	"Release any globally forced log level set with 'logging level force-all <level>'\n"
 
-#define LOG_LEVEL_ARGS "debug|info|notice|error|fatal"
+#define LOG_LEVEL_ARGS "(debug|info|notice|error|fatal)"
 #define LOG_LEVEL_STRS \
 	"Log debug messages and higher levels\n" \
 	"Log informational messages and higher levels\n" \
@@ -53,7 +59,7 @@
 	"Log error messages and higher levels\n" \
 	"Log only fatal messages\n"
 
-#define EVERYTHING_STR "Don't use. It doesn't log anything\n"
+#define EVERYTHING_STR "Deprecated alias for 'no logging level force-all'\n"
 
 /*! \file logging_vty.c
  *  Configuration of logging from VTY
@@ -307,11 +313,10 @@ static void gen_logging_level_cmd_strs(struct cmd_element *cmd,
 	OSMO_ASSERT(cmd->string == NULL);
 	OSMO_ASSERT(cmd->doc == NULL);
 
-	osmo_talloc_asprintf(tall_log_ctx, cmd_str, "logging level (all|");
+	osmo_talloc_asprintf(tall_log_ctx, cmd_str, "logging level (");
 	osmo_talloc_asprintf(tall_log_ctx, doc_str,
 			     LOGGING_STR
-			     LEVEL_STR
-			     CATEGORY_ALL_STR);
+			     LEVEL_STR);
 	add_category_strings(&cmd_str, &doc_str, osmo_log_info);
 	osmo_talloc_asprintf(tall_log_ctx, cmd_str, ") %s", level_args);
 	osmo_talloc_asprintf(tall_log_ctx, doc_str, "%s", level_strs);
@@ -320,7 +325,7 @@ static void gen_logging_level_cmd_strs(struct cmd_element *cmd,
 	cmd->doc = doc_str;
 }
 
-/* logging level (all|<categories>) (debug|...|fatal) */
+/* logging level (<categories>) (debug|...|fatal) */
 DEFUN(logging_level,
       logging_level_cmd,
       NULL, /* cmdstr is dynamically set in logging_vty_add_cmds(). */
@@ -338,12 +343,6 @@ DEFUN(logging_level,
 		return CMD_WARNING;
 	}
 
-	/* Check for special case where we want to set global log level */
-	if (!strcmp(argv[0], "all")) {
-		log_set_log_level(tgt, level);
-		return CMD_SUCCESS;
-	}
-
 	if (category < 0) {
 		vty_out(vty, "Invalid category `%s'%s", argv[0], VTY_NEWLINE);
 		return CMD_WARNING;
@@ -355,7 +354,7 @@ DEFUN(logging_level,
 	return CMD_SUCCESS;
 }
 
-/* logging level (all|<categories>) everything */
+/* logging level (<categories>) everything */
 DEFUN_DEPRECATED(deprecated_logging_level_everything, deprecated_logging_level_everything_cmd,
 		 NULL, /* cmdstr is dynamically set in logging_vty_add_cmds(). */
 		 NULL) /* same thing for helpstr. */
@@ -363,6 +362,35 @@ DEFUN_DEPRECATED(deprecated_logging_level_everything, deprecated_logging_level_e
 	vty_out(vty, "%% Ignoring deprecated logging level 'everything' keyword%s", VTY_NEWLINE);
 	return CMD_SUCCESS;
 }
+
+DEFUN(logging_level_force_all, logging_level_force_all_cmd,
+      "logging level force-all " LOG_LEVEL_ARGS,
+      LOGGING_STR LEVEL_STR FORCE_ALL_STR LOG_LEVEL_STRS)
+{
+	struct log_target *tgt = osmo_log_vty2tgt(vty);
+	int level = log_parse_level(argv[0]);
+	log_set_log_level(tgt, level);
+	return CMD_SUCCESS;
+}
+
+DEFUN(no_logging_level_force_all, no_logging_level_force_all_cmd,
+      "no logging level force-all",
+      NO_STR LOGGING_STR LEVEL_STR NO_FORCE_ALL_STR)
+{
+	struct log_target *tgt = osmo_log_vty2tgt(vty);
+	log_set_log_level(tgt, 0);
+	return CMD_SUCCESS;
+}
+
+/* 'logging level all (debug|...|fatal)' */
+ALIAS_DEPRECATED(logging_level_force_all, deprecated_logging_level_all_cmd,
+		 "logging level all " LOG_LEVEL_ARGS,
+		 LOGGING_STR LEVEL_STR CATEGORY_ALL_STR LOG_LEVEL_STRS);
+
+/* 'logging level all everything' */
+ALIAS_DEPRECATED(no_logging_level_force_all, deprecated_logging_level_all_everything_cmd,
+		 "logging level all everything",
+		 LOGGING_STR LEVEL_STR CATEGORY_ALL_STR EVERYTHING_STR);
 
 DEFUN(logging_set_category_mask,
       logging_set_category_mask_cmd,
@@ -865,9 +893,10 @@ static int config_write_log_single(struct vty *vty, struct log_target *tgt)
 		const char *level_str = get_value_string_or_null(loglevel_strs, tgt->loglevel);
 		level_str = osmo_str_tolower(level_str);
 		if (!level_str)
-			vty_out(vty, "%% Invalid log level %u for 'all'%s", tgt->loglevel, VTY_NEWLINE);
+			vty_out(vty, "%% Invalid log level %u for 'force-all'%s",
+				tgt->loglevel, VTY_NEWLINE);
 		else
-			vty_out(vty, "  logging level all %s%s", level_str, VTY_NEWLINE);
+			vty_out(vty, "  logging level force-all %s%s", level_str, VTY_NEWLINE);
 	}
 
 	for (i = 0; i < osmo_log_info->num_cat; i++) {
@@ -945,16 +974,20 @@ void logging_vty_add_cmds()
 	install_element_ve(&logging_set_category_mask_cmd);
 	install_element_ve(&logging_set_category_mask_old_cmd);
 
-	/* logging level (all|<categories>) (debug|...|fatal) */
+	/* logging level (<categories>) (debug|...|fatal) */
 	gen_logging_level_cmd_strs(&logging_level_cmd,
-				   "(" LOG_LEVEL_ARGS ")",
+				   LOG_LEVEL_ARGS,
 				   LOG_LEVEL_STRS);
-	/* logging level (all|<categories>) everything */
+	/* logging level (<categories>) everything */
 	gen_logging_level_cmd_strs(&deprecated_logging_level_everything_cmd,
 				   "everything", EVERYTHING_STR);
 
 	install_element_ve(&logging_level_cmd);
+	install_element_ve(&logging_level_force_all_cmd);
+	install_element_ve(&no_logging_level_force_all_cmd);
 	install_element_ve(&deprecated_logging_level_everything_cmd);
+	install_element_ve(&deprecated_logging_level_all_cmd);
+	install_element_ve(&deprecated_logging_level_all_everything_cmd);
 	install_element_ve(&show_logging_vty_cmd);
 	install_element_ve(&show_alarms_cmd);
 
@@ -968,7 +1001,11 @@ void logging_vty_add_cmds()
 	install_element(CFG_LOG_NODE, &logging_prnt_level_cmd);
 	install_element(CFG_LOG_NODE, &logging_prnt_file_cmd);
 	install_element(CFG_LOG_NODE, &logging_level_cmd);
+	install_element(CFG_LOG_NODE, &logging_level_force_all_cmd);
+	install_element(CFG_LOG_NODE, &no_logging_level_force_all_cmd);
 	install_element(CFG_LOG_NODE, &deprecated_logging_level_everything_cmd);
+	install_element(CFG_LOG_NODE, &deprecated_logging_level_all_cmd);
+	install_element(CFG_LOG_NODE, &deprecated_logging_level_all_everything_cmd);
 
 	install_element(CONFIG_NODE, &cfg_log_stderr_cmd);
 	install_element(CONFIG_NODE, &cfg_no_log_stderr_cmd);
