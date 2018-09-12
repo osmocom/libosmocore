@@ -18,6 +18,7 @@ build() {
 	--enable-embedded \
 	--disable-doxygen \
 	--disable-shared \
+	--enable-external-tests \
 	CFLAGS="-Os -ffunction-sections -fdata-sections -nostartfiles -nodefaultlibs $WERROR_FLAGS"
 
     $MAKE $PARALLEL_MAKE
