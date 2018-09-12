@@ -354,6 +354,28 @@ DEFUN(logging_level,
 	return CMD_SUCCESS;
 }
 
+DEFUN(logging_level_set_all, logging_level_set_all_cmd,
+      "logging level set-all " LOG_LEVEL_ARGS,
+      LOGGING_STR LEVEL_STR
+      "Once-off set all categories to the given log level. There is no single command"
+      " to take back these changes -- each category is set to the given level, period.\n"
+      LOG_LEVEL_STRS)
+{
+	struct log_target *tgt = osmo_log_vty2tgt(vty);
+	int level = log_parse_level(argv[0]);
+	int i;
+	for (i = 0; i < osmo_log_info->num_cat; i++) {
+		struct log_category *cat = &tgt->categories[i];
+		/* skip empty entries in the array */
+		if (!osmo_log_info->cat[i].name)
+			continue;
+
+		cat->enabled = 1;
+		cat->loglevel = level;
+	}
+	return CMD_SUCCESS;
+}
+
 /* logging level (<categories>) everything */
 DEFUN_DEPRECATED(deprecated_logging_level_everything, deprecated_logging_level_everything_cmd,
 		 NULL, /* cmdstr is dynamically set in logging_vty_add_cmds(). */
@@ -983,6 +1005,7 @@ void logging_vty_add_cmds()
 				   "everything", EVERYTHING_STR);
 
 	install_element_ve(&logging_level_cmd);
+	install_element_ve(&logging_level_set_all_cmd);
 	install_element_ve(&logging_level_force_all_cmd);
 	install_element_ve(&no_logging_level_force_all_cmd);
 	install_element_ve(&deprecated_logging_level_everything_cmd);
@@ -1001,6 +1024,7 @@ void logging_vty_add_cmds()
 	install_element(CFG_LOG_NODE, &logging_prnt_level_cmd);
 	install_element(CFG_LOG_NODE, &logging_prnt_file_cmd);
 	install_element(CFG_LOG_NODE, &logging_level_cmd);
+	install_element(CFG_LOG_NODE, &logging_level_set_all_cmd);
 	install_element(CFG_LOG_NODE, &logging_level_force_all_cmd);
 	install_element(CFG_LOG_NODE, &no_logging_level_force_all_cmd);
 	install_element(CFG_LOG_NODE, &deprecated_logging_level_everything_cmd);

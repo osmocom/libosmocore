@@ -51,6 +51,7 @@ logging_vty_test# list
   logging print file (0|1|basename) [last]
   logging set-log-mask MASK
   logging level (aa|bb|ccc|dddd|eee|lglobal|llapd|linp|lmux|lmi|lmib|lsms|lctrl|lgtp|lstats|lgsup|loap|lss7|lsccp|lsua|lm3ua|lmgcp|ljibuf) (debug|info|notice|error|fatal)
+  logging level set-all (debug|info|notice|error|fatal)
   logging level force-all (debug|info|notice|error|fatal)
   no logging level force-all
 ... !^  logging
@@ -74,6 +75,7 @@ logging_vty_test# logging level ?
   eee        Exhaustive Entropy Extraction (EEE)
   lglobal    Library-internal global log family
 ... ! all
+  set-all    Once-off set all categories to the given log level. There is no single command to take back these changes -- each category is set to the given level, period.
   force-all  Globally force all logging categories to a specific level. This is released by the 'no logging level force-all' command. Note: any 'logging level <category> <level>' commands will have no visible effect after this, until the forced level is released.
 
 logging_vty_test# logging level aa ?
@@ -95,6 +97,13 @@ logging_vty_test# logging level force-all ?
 
 logging_vty_test# no logging level ?
   force-all  Release any globally forced log level set with 'logging level force-all <level>'
+
+logging_vty_test# logging level set-all ?
+  debug   Log debug messages and higher levels
+  info    Log informational messages and higher levels
+  notice  Log noticeable messages and higher levels
+  error   Log error messages and higher levels
+  fatal   Log only fatal messages
 
 
 logging_vty_test# log-sweep
@@ -288,6 +297,158 @@ DEEE FATAL Log message for DEEE on level LOGL_FATAL
 
 logging_vty_test# ! lift the globally forced level
 logging_vty_test# no logging level force-all
+logging_vty_test# log-sweep
+DAA DEBUG Log message for DAA on level LOGL_DEBUG
+DAA INFO Log message for DAA on level LOGL_INFO
+DAA NOTICE Log message for DAA on level LOGL_NOTICE
+DAA ERROR Log message for DAA on level LOGL_ERROR
+DAA FATAL Log message for DAA on level LOGL_FATAL
+DBB INFO Log message for DBB on level LOGL_INFO
+DBB NOTICE Log message for DBB on level LOGL_NOTICE
+DBB ERROR Log message for DBB on level LOGL_ERROR
+DBB FATAL Log message for DBB on level LOGL_FATAL
+DCCC NOTICE Log message for DCCC on level LOGL_NOTICE
+DCCC ERROR Log message for DCCC on level LOGL_ERROR
+DCCC FATAL Log message for DCCC on level LOGL_FATAL
+DDDDD ERROR Log message for DDDDD on level LOGL_ERROR
+DDDDD FATAL Log message for DDDDD on level LOGL_FATAL
+DEEE FATAL Log message for DEEE on level LOGL_FATAL
+
+
+logging_vty_test# ! test 'set-all'
+logging_vty_test# logging level set-all fatal
+logging_vty_test# log-sweep
+DAA FATAL Log message for DAA on level LOGL_FATAL
+DBB FATAL Log message for DBB on level LOGL_FATAL
+DCCC FATAL Log message for DCCC on level LOGL_FATAL
+DDDDD FATAL Log message for DDDDD on level LOGL_FATAL
+DEEE FATAL Log message for DEEE on level LOGL_FATAL
+
+logging_vty_test# logging level set-all error
+logging_vty_test# log-sweep
+DAA ERROR Log message for DAA on level LOGL_ERROR
+DAA FATAL Log message for DAA on level LOGL_FATAL
+DBB ERROR Log message for DBB on level LOGL_ERROR
+DBB FATAL Log message for DBB on level LOGL_FATAL
+DCCC ERROR Log message for DCCC on level LOGL_ERROR
+DCCC FATAL Log message for DCCC on level LOGL_FATAL
+DDDDD ERROR Log message for DDDDD on level LOGL_ERROR
+DDDDD FATAL Log message for DDDDD on level LOGL_FATAL
+DEEE ERROR Log message for DEEE on level LOGL_ERROR
+DEEE FATAL Log message for DEEE on level LOGL_FATAL
+
+logging_vty_test# logging level set-all notice
+logging_vty_test# log-sweep
+DAA NOTICE Log message for DAA on level LOGL_NOTICE
+DAA ERROR Log message for DAA on level LOGL_ERROR
+DAA FATAL Log message for DAA on level LOGL_FATAL
+DBB NOTICE Log message for DBB on level LOGL_NOTICE
+DBB ERROR Log message for DBB on level LOGL_ERROR
+DBB FATAL Log message for DBB on level LOGL_FATAL
+DCCC NOTICE Log message for DCCC on level LOGL_NOTICE
+DCCC ERROR Log message for DCCC on level LOGL_ERROR
+DCCC FATAL Log message for DCCC on level LOGL_FATAL
+DDDDD NOTICE Log message for DDDDD on level LOGL_NOTICE
+DDDDD ERROR Log message for DDDDD on level LOGL_ERROR
+DDDDD FATAL Log message for DDDDD on level LOGL_FATAL
+DEEE NOTICE Log message for DEEE on level LOGL_NOTICE
+DEEE ERROR Log message for DEEE on level LOGL_ERROR
+DEEE FATAL Log message for DEEE on level LOGL_FATAL
+
+logging_vty_test# logging level set-all info
+logging_vty_test# log-sweep
+DAA INFO Log message for DAA on level LOGL_INFO
+DAA NOTICE Log message for DAA on level LOGL_NOTICE
+DAA ERROR Log message for DAA on level LOGL_ERROR
+DAA FATAL Log message for DAA on level LOGL_FATAL
+DBB INFO Log message for DBB on level LOGL_INFO
+DBB NOTICE Log message for DBB on level LOGL_NOTICE
+DBB ERROR Log message for DBB on level LOGL_ERROR
+DBB FATAL Log message for DBB on level LOGL_FATAL
+DCCC INFO Log message for DCCC on level LOGL_INFO
+DCCC NOTICE Log message for DCCC on level LOGL_NOTICE
+DCCC ERROR Log message for DCCC on level LOGL_ERROR
+DCCC FATAL Log message for DCCC on level LOGL_FATAL
+DDDDD INFO Log message for DDDDD on level LOGL_INFO
+DDDDD NOTICE Log message for DDDDD on level LOGL_NOTICE
+DDDDD ERROR Log message for DDDDD on level LOGL_ERROR
+DDDDD FATAL Log message for DDDDD on level LOGL_FATAL
+DEEE INFO Log message for DEEE on level LOGL_INFO
+DEEE NOTICE Log message for DEEE on level LOGL_NOTICE
+DEEE ERROR Log message for DEEE on level LOGL_ERROR
+DEEE FATAL Log message for DEEE on level LOGL_FATAL
+
+logging_vty_test# logging level set-all debug
+logging_vty_test# log-sweep
+DAA DEBUG Log message for DAA on level LOGL_DEBUG
+DAA INFO Log message for DAA on level LOGL_INFO
+DAA NOTICE Log message for DAA on level LOGL_NOTICE
+DAA ERROR Log message for DAA on level LOGL_ERROR
+DAA FATAL Log message for DAA on level LOGL_FATAL
+DBB DEBUG Log message for DBB on level LOGL_DEBUG
+DBB INFO Log message for DBB on level LOGL_INFO
+DBB NOTICE Log message for DBB on level LOGL_NOTICE
+DBB ERROR Log message for DBB on level LOGL_ERROR
+DBB FATAL Log message for DBB on level LOGL_FATAL
+DCCC DEBUG Log message for DCCC on level LOGL_DEBUG
+DCCC INFO Log message for DCCC on level LOGL_INFO
+DCCC NOTICE Log message for DCCC on level LOGL_NOTICE
+DCCC ERROR Log message for DCCC on level LOGL_ERROR
+DCCC FATAL Log message for DCCC on level LOGL_FATAL
+DDDDD DEBUG Log message for DDDDD on level LOGL_DEBUG
+DDDDD INFO Log message for DDDDD on level LOGL_INFO
+DDDDD NOTICE Log message for DDDDD on level LOGL_NOTICE
+DDDDD ERROR Log message for DDDDD on level LOGL_ERROR
+DDDDD FATAL Log message for DDDDD on level LOGL_FATAL
+DEEE DEBUG Log message for DEEE on level LOGL_DEBUG
+DEEE INFO Log message for DEEE on level LOGL_INFO
+DEEE NOTICE Log message for DEEE on level LOGL_NOTICE
+DEEE ERROR Log message for DEEE on level LOGL_ERROR
+DEEE FATAL Log message for DEEE on level LOGL_FATAL
+
+logging_vty_test# logging level set-all fatal
+logging_vty_test# log-sweep
+DAA FATAL Log message for DAA on level LOGL_FATAL
+DBB FATAL Log message for DBB on level LOGL_FATAL
+DCCC FATAL Log message for DCCC on level LOGL_FATAL
+DDDDD FATAL Log message for DDDDD on level LOGL_FATAL
+DEEE FATAL Log message for DEEE on level LOGL_FATAL
+
+logging_vty_test# logging level dddd error
+logging_vty_test# log-sweep
+DAA FATAL Log message for DAA on level LOGL_FATAL
+DBB FATAL Log message for DBB on level LOGL_FATAL
+DCCC FATAL Log message for DCCC on level LOGL_FATAL
+DDDDD ERROR Log message for DDDDD on level LOGL_ERROR
+DDDDD FATAL Log message for DDDDD on level LOGL_FATAL
+DEEE FATAL Log message for DEEE on level LOGL_FATAL
+
+logging_vty_test# logging level ccc notice
+logging_vty_test# log-sweep
+DAA FATAL Log message for DAA on level LOGL_FATAL
+DBB FATAL Log message for DBB on level LOGL_FATAL
+DCCC NOTICE Log message for DCCC on level LOGL_NOTICE
+DCCC ERROR Log message for DCCC on level LOGL_ERROR
+DCCC FATAL Log message for DCCC on level LOGL_FATAL
+DDDDD ERROR Log message for DDDDD on level LOGL_ERROR
+DDDDD FATAL Log message for DDDDD on level LOGL_FATAL
+DEEE FATAL Log message for DEEE on level LOGL_FATAL
+
+logging_vty_test# logging level bb info
+logging_vty_test# log-sweep
+DAA FATAL Log message for DAA on level LOGL_FATAL
+DBB INFO Log message for DBB on level LOGL_INFO
+DBB NOTICE Log message for DBB on level LOGL_NOTICE
+DBB ERROR Log message for DBB on level LOGL_ERROR
+DBB FATAL Log message for DBB on level LOGL_FATAL
+DCCC NOTICE Log message for DCCC on level LOGL_NOTICE
+DCCC ERROR Log message for DCCC on level LOGL_ERROR
+DCCC FATAL Log message for DCCC on level LOGL_FATAL
+DDDDD ERROR Log message for DDDDD on level LOGL_ERROR
+DDDDD FATAL Log message for DDDDD on level LOGL_FATAL
+DEEE FATAL Log message for DEEE on level LOGL_FATAL
+
+logging_vty_test# logging level aa debug
 logging_vty_test# log-sweep
 DAA DEBUG Log message for DAA on level LOGL_DEBUG
 DAA INFO Log message for DAA on level LOGL_INFO
