@@ -341,6 +341,19 @@ struct msgb *gsm0808_create_lcls_notification(enum gsm0808_lcls_status status, b
 	return msg;
 }
 
+/*! Create BSSMAP Classmark Request message
+ *  \returns callee-allocated msgb with BSSMAP Classmark Request message */
+struct msgb *gsm0808_create_classmark_request()
+{
+	struct msgb *msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM,
+					       "classmark-request");
+	if (!msg)
+		return NULL;
+
+	msgb_v_put(msg, BSS_MAP_MSG_CLASSMARK_RQST);
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
+	return msg;
+}
 
 /*! Create BSSMAP Classmark Update message
  *  \param[in] cm2 Classmark 2

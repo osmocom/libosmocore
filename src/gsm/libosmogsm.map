@@ -156,6 +156,7 @@ gsm0808_create_ass_fail;
 gsm0808_create_cipher;
 gsm0808_create_cipher_complete;
 gsm0808_create_cipher_reject;
+gsm0808_create_classmark_request;
 gsm0808_create_classmark_update;
 gsm0808_create_clear_command;
 gsm0808_create_clear_complete;
