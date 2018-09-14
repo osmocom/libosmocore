@@ -503,6 +503,20 @@ enum gsm0808_speech_codec_defaults {
 	GSM0808_SC_CFG_DEFAULT_OHR_AMR_WB	= 0x01,
 };
 
+/*! Default speech codec configurations broken down by reate.
+ *  See also: 3GPP TS 28.062, Table 7.11.3.1.3-2: Preferred Configurations for
+ *  the Adaptive Multi-Rate Codec Types. */
+enum gsm0808_speech_codec_rate_defaults {
+	GSM0808_SC_CFG_DEFAULT_AMR_4_75 = 0xff03,
+	GSM0808_SC_CFG_DEFAULT_AMR_5_15 = 0x0000,
+	GSM0808_SC_CFG_DEFAULT_AMR_5_90 = 0xff06,
+	GSM0808_SC_CFG_DEFAULT_AMR_6_70 = 0x3e08,
+	GSM0808_SC_CFG_DEFAULT_AMR_7_40 = 0x0c12,
+	GSM0808_SC_CFG_DEFAULT_AMR_7_95 = 0xc020,
+	GSM0808_SC_CFG_DEFAULT_AMR_10_2 = 0x3040,
+	GSM0808_SC_CFG_DEFAULT_AMR_12_2 = 0xc082
+};
+
 /* 3GPP TS 48.008 3.2.2.103 Speech Codec List */
 #define SPEECH_CODEC_MAXLEN 255
 struct gsm0808_speech_codec_list {

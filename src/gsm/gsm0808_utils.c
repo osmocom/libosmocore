@@ -1161,6 +1161,49 @@ int gsm0808_speech_codec_from_chan_type(struct gsm0808_speech_codec *sc,
 	return 0;
 }
 
+/*! Determine a set of AMR speech codec configuration bits (S0-S15) from a
+ *  given GSM 04.08 AMR configuration struct.
+ *  \param[in] cfg AMR configuration in GSM 04.08 format.
+ *  \param[in] hint if the resulting configuration shall be used with a FR or HR TCH.
+ *  \returns configuration bits (S0-S15) */
+uint16_t gsm0808_sc_cfg_from_gsm48_mr_cfg(struct gsm48_multi_rate_conf *cfg,
+					  bool fr)
+{
+	uint16_t s15_s0 = 0;
+
+	/* Check each rate bit in the AMR multirate configuration and pick the
+	 * matching default configuration as specified in 3GPP TS 28.062,
+	 * Table 7.11.3.1.3-2. */
+	if (cfg->m4_75)
+		s15_s0 |= GSM0808_SC_CFG_DEFAULT_AMR_4_75;
+	if (cfg->m5_15)
+		s15_s0 |= GSM0808_SC_CFG_DEFAULT_AMR_5_15;
+	if (cfg->m5_90)
+		s15_s0 |= GSM0808_SC_CFG_DEFAULT_AMR_5_90;
+	if (cfg->m6_70)
+		s15_s0 |= GSM0808_SC_CFG_DEFAULT_AMR_6_70;
+	if (cfg->m7_40)
+		s15_s0 |= GSM0808_SC_CFG_DEFAULT_AMR_7_40;
+	if (cfg->m7_95)
+		s15_s0 |= GSM0808_SC_CFG_DEFAULT_AMR_7_95;
+	if (cfg->m10_2)
+		s15_s0 |= GSM0808_SC_CFG_DEFAULT_AMR_10_2;
+	if (cfg->m12_2)
+		s15_s0 |= GSM0808_SC_CFG_DEFAULT_AMR_12_2;
+
+	/* Note: 3GPP TS 48.008, chapter 3GPP TS 48.008 states that for AMR
+	 * some of the configuration bits must be coded as zeros. The applied
+	 * bitmask matches the default codec settings. See also the definition
+	 * of enum gsm0808_speech_codec_defaults in gsm_08_08.h and
+	 * 3GPP TS 28.062, Table 7.11.3.1.3-2. */
+	if (fr)
+		s15_s0 &= GSM0808_SC_CFG_DEFAULT_FR_AMR;
+	else
+		s15_s0 &= GSM0808_SC_CFG_DEFAULT_HR_AMR;
+
+	return s15_s0;
+}
+
 /*! Print a human readable name of the cell identifier to the char buffer.
  * This is useful both for struct gsm0808_cell_id and struct gsm0808_cell_id_list2.
  * See also gsm0808_cell_id_name() and gsm0808_cell_id_list_name().
