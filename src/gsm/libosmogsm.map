@@ -210,6 +210,8 @@ gsm0808_cell_id_list_name;
 gsm0808_cell_id_list_name_buf;
 gsm0808_cell_id_discr_names;
 gsm0808_cell_id_u_name;
+gsm0808_cell_ids_match;
+gsm0808_cell_id_matches_list;
 gsm0808_chan_type_to_speech_codec;
 gsm0808_speech_codec_from_chan_type;
 gsm0808_sc_cfg_from_gsm48_mr_cfg;

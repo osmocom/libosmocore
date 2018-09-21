@@ -324,6 +324,40 @@ int osmo_plmn_cmp(const struct osmo_plmn_id *a, const struct osmo_plmn_id *b)
 	return osmo_mnc_cmp(a->mnc, a->mnc_3_digits, b->mnc, b->mnc_3_digits);
 }
 
+/* Compare two LAI.
+ * The order of comparison is MCC, MNC, LAC. See also osmo_plmn_cmp().
+ * \param a[in]  "Left" side LAI.
+ * \param b[in]  "Right" side LAI.
+ * \returns 0 if the LAI are equal, -1 if a < b, 1 if a > b. */
+int osmo_lai_cmp(const struct osmo_location_area_id *a, const struct osmo_location_area_id *b)
+{
+	int rc = osmo_plmn_cmp(&a->plmn, &b->plmn);
+	if (rc)
+		return rc;
+	if (a->lac < b->lac)
+		return -1;
+	if (a->lac > b->lac)
+		return 1;
+	return 0;
+}
+
+/* Compare two CGI.
+ * The order of comparison is MCC, MNC, LAC, CI. See also osmo_lai_cmp().
+ * \param a[in]  "Left" side CGI.
+ * \param b[in]  "Right" side CGI.
+ * \returns 0 if the CGI are equal, -1 if a < b, 1 if a > b. */
+int osmo_cgi_cmp(const struct osmo_cell_global_id *a, const struct osmo_cell_global_id *b)
+{
+	int rc = osmo_lai_cmp(&a->lai, &b->lai);
+	if (rc)
+		return rc;
+	if (a->cell_identity < b->cell_identity)
+		return -1;
+	if (a->cell_identity > b->cell_identity)
+		return 1;
+	return 0;
+}
+
 /*! Generate TS 23.003 Section 19.2 Home Network Realm/Domain (text form)
  *  \param out[out] caller-provided output buffer, at least 33 bytes long
  *  \param plmn[in] Osmocom representation of PLMN ID (MCC + MNC)

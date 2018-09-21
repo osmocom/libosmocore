@@ -1391,6 +1391,151 @@ int gsm0808_cell_id_u_name(char *buf, size_t buflen,
 	}
 }
 
+/* Store individual Cell Identifier information in a CGI, without clearing the remaining ones.
+ * This is useful to supplement one CGI with information from more than one Cell Identifier,
+ * which in turn is useful to match Cell Identifiers of differing kinds to each other.
+ * Before first invocation, clear the *dst struct externally, this function does only write those members
+ * that are present in parameter u.
+ */
+static void cell_id_to_cgi(struct osmo_cell_global_id *dst,
+			   enum CELL_IDENT discr, const union gsm0808_cell_id_u *u)
+{
+	switch (discr) {
+	case CELL_IDENT_WHOLE_GLOBAL:
+		*dst = u->global;
+		return;
+
+	case CELL_IDENT_LAC_AND_CI:
+		dst->lai.lac = u->lac_and_ci.lac;
+		dst->cell_identity = u->lac_and_ci.ci;
+		return;
+
+	case CELL_IDENT_CI:
+		dst->cell_identity = u->ci;
+		return;
+
+	case CELL_IDENT_LAI_AND_LAC:
+		dst->lai = u->lai_and_lac;
+		return;
+
+	case CELL_IDENT_LAC:
+		dst->lai.lac = u->lac;
+		return;
+
+	case CELL_IDENT_NO_CELL:
+	case CELL_IDENT_BSS:
+	case CELL_IDENT_UTRAN_PLMN_LAC_RNC:
+	case CELL_IDENT_UTRAN_RNC:
+	case CELL_IDENT_UTRAN_LAC_RNC:
+		/* No values to set. */
+		return;
+	}
+}
+
+/*! Return true if the common information between the two Cell Identifiers match.
+ * For example, if a LAC+CI is compared to LAC, return true if the LAC are the same.
+ * Note that CELL_IDENT_NO_CELL will always return false.
+ * Also CELL_IDENT_BSS will always return false, since this function cannot possibly
+ * know the bounds of the BSS, so the caller must handle CELL_IDENT_BSS specially.
+ * \param[in] discr1  Cell Identifier type.
+ * \param[in] u1  Cell Identifier value.
+ * \param[in] discr2  Other Cell Identifier type.
+ * \param[in] u2  Other Cell Identifier value.
+ * \param[in] exact_match  If true, return true only if the CELL_IDENT types and all values are identical.
+ * \returns True if the common fields of the above match.
+ */
+static bool gsm0808_cell_id_u_match(enum CELL_IDENT discr1, const union gsm0808_cell_id_u *u1,
+				    enum CELL_IDENT discr2, const union gsm0808_cell_id_u *u2,
+				    bool exact_match)
+{
+	struct osmo_cell_global_id a = {};
+	struct osmo_cell_global_id b = {};
+
+	if (exact_match && discr1 != discr2)
+		return false;
+
+	/* First handle the odd wildcard like CELL_IDENT kinds. We can't really match any of these. */
+	switch (discr1) {
+	case CELL_IDENT_NO_CELL:
+	case CELL_IDENT_BSS:
+		return discr1 == discr2;
+	case CELL_IDENT_UTRAN_PLMN_LAC_RNC:
+	case CELL_IDENT_UTRAN_RNC:
+	case CELL_IDENT_UTRAN_LAC_RNC:
+		return false;
+	default:
+		break;
+	}
+	switch (discr2) {
+	case CELL_IDENT_NO_CELL:
+	case CELL_IDENT_UTRAN_PLMN_LAC_RNC:
+	case CELL_IDENT_UTRAN_RNC:
+	case CELL_IDENT_UTRAN_LAC_RNC:
+	case CELL_IDENT_BSS:
+		return false;
+	default:
+		break;
+	}
+
+	/* Enrich both sides to full CGI, then compare those. First set the *other* ID's values in case
+	 * they assign more items. For example:
+	 * u1 = LAC:42
+	 * u2 = LAC+CI:23+5
+	 * 1) a <- LAC+CI:23+5
+	 * 2) a <- LAC:42 so that a = LAC+CI:42+5
+	 * Now we can compare those two and find a mismatch. If the LAC were the same, we would get
+	 * identical LAC+CI and hence a match. */
+
+	cell_id_to_cgi(&a, discr2, u2);
+	cell_id_to_cgi(&a, discr1, u1);
+
+	cell_id_to_cgi(&b, discr1, u1);
+	cell_id_to_cgi(&b, discr2, u2);
+
+	return osmo_cgi_cmp(&a, &b) == 0;
+}
+
+/*! Return true if the common information between the two Cell Identifiers match.
+ * For example, if a LAC+CI is compared to LAC, return true if the LAC are the same.
+ * Note that CELL_IDENT_NO_CELL will always return false.
+ * Also CELL_IDENT_BSS will always return false, since this function cannot possibly
+ * know the bounds of the BSS, so the caller must handle CELL_IDENT_BSS specially.
+ * \param[in] id1  Cell Identifier.
+ * \param[in] id2  Other Cell Identifier.
+ * \param[in] exact_match  If true, return true only if the CELL_IDENT types and all values are identical.
+ * \returns True if the common fields of the above match.
+ */
+bool gsm0808_cell_ids_match(const struct gsm0808_cell_id *id1, const struct gsm0808_cell_id *id2, bool exact_match)
+{
+	return gsm0808_cell_id_u_match(id1->id_discr, &id1->id, id2->id_discr, &id2->id, exact_match);
+}
+
+/*! Find an index in a Cell Identifier list that matches a given single Cell Identifer.
+ * Compare \a id against each entry in \a list using gsm0808_cell_ids_match(), and return the list index
+ * if a match is found. \a match_nr allows iterating all matches in the list. A match_nr <= 0 returns the
+ * first match in the list, match_nr == 1 the second match, etc., and if match_nr exceeds the available
+ * matches in the list, -1 is returned.
+ * \param[in] id  Cell Identifier to match.
+ * \param[in] list  Cell Identifier list to search in.
+ * \param[in] match_nr  Ignore this many matches.
+ * \param[in] exact_match  If true, consider as match only if the CELL_IDENT types and all values are identical.
+ * \returns -1 if no match is found, list index if a match is found.
+ */
+int gsm0808_cell_id_matches_list(const struct gsm0808_cell_id *id, const struct gsm0808_cell_id_list2 *list,
+				 unsigned int match_nr, bool exact_match)
+{
+	int i;
+	for (i = 0; i < list->id_list_len; i++) {
+		if (gsm0808_cell_id_u_match(id->id_discr, &id->id, list->id_discr, &list->id_list[i], exact_match)) {
+			if (match_nr)
+				match_nr--;
+			else
+				return i;
+		}
+	}
+	return -1;
+}
+
 /*! value_string[] for enum CELL_IDENT. */
 const struct value_string gsm0808_cell_id_discr_names[] = {
 	{ CELL_IDENT_WHOLE_GLOBAL, "CGI" },

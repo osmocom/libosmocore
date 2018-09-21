@@ -122,6 +122,8 @@ static inline int osmo_mcc_from_str(const char *mcc_str, uint16_t *mcc)
 
 int osmo_mnc_cmp(uint16_t a_mnc, bool a_mnc_3_digits, uint16_t b_mnc, bool b_mnc_3_digits);
 int osmo_plmn_cmp(const struct osmo_plmn_id *a, const struct osmo_plmn_id *b);
+int osmo_lai_cmp(const struct osmo_location_area_id *a, const struct osmo_location_area_id *b);
+int osmo_cgi_cmp(const struct osmo_cell_global_id *a, const struct osmo_cell_global_id *b);
 
 int osmo_gen_home_network_domain(char *out, const struct osmo_plmn_id *plmn);
 int osmo_parse_home_network_domain(struct osmo_plmn_id *out, const char *in);

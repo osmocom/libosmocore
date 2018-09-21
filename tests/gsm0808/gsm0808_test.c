@@ -1937,6 +1937,275 @@ void test_gsm48_mr_cfg_from_gsm0808_sc_cfg()
 	    (GSM0808_SC_CFG_DEFAULT_AMR_7_95 | GSM0808_SC_CFG_DEFAULT_AMR_12_2);
 }
 
+struct test_cell_id_matching_data {
+	struct gsm0808_cell_id id;
+	struct gsm0808_cell_id match_id;
+	bool expect_match;
+	bool expect_exact_match;
+};
+
+#define lac_23 { .id_discr = CELL_IDENT_LAC, .id.lac = 23, }
+#define lac_42 { .id_discr = CELL_IDENT_LAC, .id.lac = 42, }
+#define ci_5 { .id_discr = CELL_IDENT_CI, .id.ci = 5, }
+#define ci_6 { .id_discr = CELL_IDENT_CI, .id.ci = 6, }
+#define lac_ci_23_5 { \
+		.id_discr = CELL_IDENT_LAC_AND_CI, \
+		.id.lac_and_ci = { .lac = 23, .ci = 5, }, \
+	}
+#define lac_ci_42_6 { \
+		.id_discr = CELL_IDENT_LAC_AND_CI, \
+		.id.lac_and_ci = { .lac = 42, .ci = 6, }, \
+	}
+#define lai_23_042_23 { \
+		.id_discr = CELL_IDENT_LAI_AND_LAC, \
+		.id.lai_and_lac = { .plmn = { .mcc = 23, .mnc = 42, .mnc_3_digits = true }, .lac = 23, }, \
+	}
+#define lai_23_042_42 { \
+		.id_discr = CELL_IDENT_LAI_AND_LAC, \
+		.id.lai_and_lac = { .plmn = { .mcc = 23, .mnc = 42, .mnc_3_digits = true }, .lac = 42, }, \
+	}
+#define lai_23_99_23 { \
+		.id_discr = CELL_IDENT_LAI_AND_LAC, \
+		.id.lai_and_lac = { .plmn = { .mcc = 23, .mnc = 99, .mnc_3_digits = false }, .lac = 23, }, \
+	}
+#define lai_23_42_23 { \
+		.id_discr = CELL_IDENT_LAI_AND_LAC, \
+		.id.lai_and_lac = { .plmn = { .mcc = 23, .mnc = 42, .mnc_3_digits = false }, .lac = 23, }, \
+	}
+#define cgi_23_042_23_5 { \
+		.id_discr = CELL_IDENT_WHOLE_GLOBAL, \
+		.id.global = { \
+			.lai = { .plmn = { .mcc = 23, .mnc = 42, .mnc_3_digits = true }, .lac = 23, }, \
+			.cell_identity = 5, \
+		}, \
+	}
+#define cgi_23_042_42_6 { \
+		.id_discr = CELL_IDENT_WHOLE_GLOBAL, \
+		.id.global = { \
+			.lai = { .plmn = { .mcc = 23, .mnc = 42, .mnc_3_digits = true }, .lac = 42, }, \
+			.cell_identity = 6, \
+		}, \
+	}
+#define cgi_23_99_23_5 { \
+		.id_discr = CELL_IDENT_WHOLE_GLOBAL, \
+		.id.global = { \
+			.lai = { .plmn = { .mcc = 23, .mnc = 99, .mnc_3_digits = false }, .lac = 23, }, \
+			.cell_identity = 5, \
+		}, \
+	}
+
+
+static const struct test_cell_id_matching_data test_cell_id_matching_tests[] = {
+	{ .id = lac_23, .match_id = lac_23, .expect_match = true, .expect_exact_match = true },
+	{ .id = lac_23, .match_id = lac_42, .expect_match = false, .expect_exact_match = false },
+	{ .id = lac_23, .match_id = ci_5, .expect_match = true, .expect_exact_match = false },
+	{ .id = lac_23, .match_id = ci_6, .expect_match = true, .expect_exact_match = false },
+	{ .id = lac_23, .match_id = lac_ci_23_5, .expect_match = true, .expect_exact_match = false },
+	{ .id = lac_23, .match_id = lac_ci_42_6, .expect_match = false, .expect_exact_match = false },
+	{ .id = lac_23, .match_id = lai_23_042_23, .expect_match = true, .expect_exact_match = false },
+	{ .id = lac_23, .match_id = lai_23_042_42, .expect_match = false, .expect_exact_match = false },
+	{ .id = lac_23, .match_id = lai_23_99_23, .expect_match = true, .expect_exact_match = false },
+	{ .id = lac_23, .match_id = lai_23_42_23, .expect_match = true, .expect_exact_match = false },
+	{ .id = lac_23, .match_id = cgi_23_042_23_5, .expect_match = true, .expect_exact_match = false },
+	{ .id = lac_23, .match_id = cgi_23_042_42_6, .expect_match = false, .expect_exact_match = false },
+	{ .id = lac_23, .match_id = cgi_23_99_23_5, .expect_match = true, .expect_exact_match = false },
+	{ .id = ci_5, .match_id = lac_23, .expect_match = true, .expect_exact_match = false },
+	{ .id = ci_5, .match_id = lac_42, .expect_match = true, .expect_exact_match = false },
+	{ .id = ci_5, .match_id = ci_5, .expect_match = true, .expect_exact_match = true },
+	{ .id = ci_5, .match_id = ci_6, .expect_match = false, .expect_exact_match = false },
+	{ .id = ci_5, .match_id = lac_ci_23_5, .expect_match = true, .expect_exact_match = false },
+	{ .id = ci_5, .match_id = lac_ci_42_6, .expect_match = false, .expect_exact_match = false },
+	{ .id = ci_5, .match_id = lai_23_042_23, .expect_match = true, .expect_exact_match = false },
+	{ .id = ci_5, .match_id = lai_23_042_42, .expect_match = true, .expect_exact_match = false },
+	{ .id = ci_5, .match_id = lai_23_99_23, .expect_match = true, .expect_exact_match = false },
+	{ .id = ci_5, .match_id = lai_23_42_23, .expect_match = true, .expect_exact_match = false },
+	{ .id = ci_5, .match_id = cgi_23_042_23_5, .expect_match = true, .expect_exact_match = false },
+	{ .id = ci_5, .match_id = cgi_23_042_42_6, .expect_match = false, .expect_exact_match = false },
+	{ .id = ci_5, .match_id = cgi_23_99_23_5, .expect_match = true, .expect_exact_match = false },
+	{ .id = lac_ci_23_5, .match_id = lac_23, .expect_match = true, .expect_exact_match = false },
+	{ .id = lac_ci_23_5, .match_id = lac_42, .expect_match = false, .expect_exact_match = false },
+	{ .id = lac_ci_23_5, .match_id = ci_5, .expect_match = true, .expect_exact_match = false },
+	{ .id = lac_ci_23_5, .match_id = ci_6, .expect_match = false, .expect_exact_match = false },
+	{ .id = lac_ci_23_5, .match_id = lac_ci_23_5, .expect_match = true, .expect_exact_match = true },
+	{ .id = lac_ci_23_5, .match_id = lac_ci_42_6, .expect_match = false, .expect_exact_match = false },
+	{ .id = lac_ci_23_5, .match_id = lai_23_042_23, .expect_match = true, .expect_exact_match = false },
+	{ .id = lac_ci_23_5, .match_id = lai_23_042_42, .expect_match = false, .expect_exact_match = false },
+	{ .id = lac_ci_23_5, .match_id = lai_23_99_23, .expect_match = true, .expect_exact_match = false },
+	{ .id = lac_ci_23_5, .match_id = lai_23_42_23, .expect_match = true, .expect_exact_match = false },
+	{ .id = lac_ci_23_5, .match_id = cgi_23_042_23_5, .expect_match = true, .expect_exact_match = false },
+	{ .id = lac_ci_23_5, .match_id = cgi_23_042_42_6, .expect_match = false, .expect_exact_match = false },
+	{ .id = lac_ci_23_5, .match_id = cgi_23_99_23_5, .expect_match = true, .expect_exact_match = false },
+	{ .id = lai_23_042_23, .match_id = lac_23, .expect_match = true, .expect_exact_match = false },
+	{ .id = lai_23_042_23, .match_id = lac_42, .expect_match = false, .expect_exact_match = false },
+	{ .id = lai_23_042_23, .match_id = ci_5, .expect_match = true, .expect_exact_match = false },
+	{ .id = lai_23_042_23, .match_id = ci_6, .expect_match = true, .expect_exact_match = false },
+	{ .id = lai_23_042_23, .match_id = lac_ci_23_5, .expect_match = true, .expect_exact_match = false },
+	{ .id = lai_23_042_23, .match_id = lac_ci_42_6, .expect_match = false, .expect_exact_match = false },
+	{ .id = lai_23_042_23, .match_id = lai_23_042_23, .expect_match = true, .expect_exact_match = true },
+	{ .id = lai_23_042_23, .match_id = lai_23_042_42, .expect_match = false, .expect_exact_match = false },
+	{ .id = lai_23_042_23, .match_id = lai_23_99_23, .expect_match = false, .expect_exact_match = false },
+	{ .id = lai_23_042_23, .match_id = lai_23_42_23, .expect_match = false, .expect_exact_match = false },
+	{ .id = lai_23_042_23, .match_id = cgi_23_042_23_5, .expect_match = true, .expect_exact_match = false },
+	{ .id = lai_23_042_23, .match_id = cgi_23_042_42_6, .expect_match = false, .expect_exact_match = false },
+	{ .id = lai_23_042_23, .match_id = cgi_23_99_23_5, .expect_match = false, .expect_exact_match = false },
+	{ .id = cgi_23_042_23_5, .match_id = lac_23, .expect_match = true, .expect_exact_match = false },
+	{ .id = cgi_23_042_23_5, .match_id = lac_42, .expect_match = false, .expect_exact_match = false },
+	{ .id = cgi_23_042_23_5, .match_id = ci_5, .expect_match = true, .expect_exact_match = false },
+	{ .id = cgi_23_042_23_5, .match_id = ci_6, .expect_match = false, .expect_exact_match = false },
+	{ .id = cgi_23_042_23_5, .match_id = lac_ci_23_5, .expect_match = true, .expect_exact_match = false },
+	{ .id = cgi_23_042_23_5, .match_id = lac_ci_42_6, .expect_match = false, .expect_exact_match = false },
+	{ .id = cgi_23_042_23_5, .match_id = lai_23_042_23, .expect_match = true, .expect_exact_match = false },
+	{ .id = cgi_23_042_23_5, .match_id = lai_23_042_42, .expect_match = false, .expect_exact_match = false },
+	{ .id = cgi_23_042_23_5, .match_id = lai_23_99_23, .expect_match = false, .expect_exact_match = false },
+	{ .id = cgi_23_042_23_5, .match_id = lai_23_42_23, .expect_match = false, .expect_exact_match = false },
+	{ .id = cgi_23_042_23_5, .match_id = cgi_23_042_23_5, .expect_match = true, .expect_exact_match = true },
+	{ .id = cgi_23_042_23_5, .match_id = cgi_23_042_42_6, .expect_match = false, .expect_exact_match = false },
+	{ .id = cgi_23_042_23_5, .match_id = cgi_23_99_23_5, .expect_match = false, .expect_exact_match = false },
+};
+
+static void test_cell_id_matching()
+{
+	int i;
+	bool ok = true;
+	printf("\n%s\n", __func__);
+
+	for (i = 0; i < ARRAY_SIZE(test_cell_id_matching_tests); i++) {
+		const struct test_cell_id_matching_data *d = &test_cell_id_matching_tests[i];
+		int exact_match;
+
+		for (exact_match = 0; exact_match < 2; exact_match++) {
+			bool result;
+			bool expect_result = exact_match ? d->expect_exact_match : d->expect_match;
+
+			result = gsm0808_cell_ids_match(&d->id, &d->match_id, (bool)exact_match);
+
+			printf("[%d] %s %s %s%s\n",
+			       i,
+			       gsm0808_cell_id_name(&d->id),
+			       gsm0808_cell_id_name2(&d->match_id),
+			       result ? "MATCH" : "don't match",
+			       exact_match ? " exactly" : "");
+			if (result != expect_result) {
+				printf("  ERROR: expected %s\n", d->expect_match ? "MATCH" : "no match");
+				ok = false;
+			}
+		}
+	}
+
+	OSMO_ASSERT(ok);
+}
+
+static bool test_cell_id_list_matching_discrs(bool test_match,
+					      enum CELL_IDENT id_discr,
+					      enum CELL_IDENT list_discr)
+{
+	int i, j;
+	const struct gsm0808_cell_id *id = NULL;
+	struct gsm0808_cell_id_list2 list = {};
+	int match_idx = -1;
+	int result;
+
+	for (i = 0; i < ARRAY_SIZE(test_cell_id_matching_tests); i++) {
+		const struct test_cell_id_matching_data *d = &test_cell_id_matching_tests[i];
+		if (id_discr != d->id.id_discr)
+			continue;
+		id = &d->id;
+		break;
+	}
+
+	if (!id) {
+		printf("Did not find any entry for %s\n", gsm0808_cell_id_discr_name(id_discr));
+		return true;
+	}
+
+	/* Collect those entries with exactly this id on the left, of type list_discr on the right.
+	 * Collect the mismatches first, for more interesting match indexes in the results. */
+	for (j = 0; j < 2; j++) {
+		bool collect_matches = (bool)j;
+
+		/* If we want to have a mismatching list, don't add any entries that match. */
+		if (!test_match && collect_matches)
+			continue;
+
+		for (i = 0; i < ARRAY_SIZE(test_cell_id_matching_tests); i++) {
+			const struct test_cell_id_matching_data *d = &test_cell_id_matching_tests[i];
+			struct gsm0808_cell_id_list2 add;
+
+			/* Ignore those with a different d->id */
+			if (!gsm0808_cell_ids_match(&d->id, id, true))
+				continue;
+
+			/* Ignore those with a different d->match_id discr */
+			if (d->match_id.id_discr != list_discr)
+				continue;
+
+			if (collect_matches != d->expect_match)
+				continue;
+
+			if (match_idx < 0 && d->expect_match) {
+				match_idx = list.id_list_len;
+			}
+
+			gsm0808_cell_id_to_list(&add, &d->match_id);
+			gsm0808_cell_id_list_add(&list, &add);
+		}
+	}
+
+	if (!list.id_list_len) {
+		printf("%s vs. %s: No match_id entries to test %s\n",
+		       gsm0808_cell_id_name(id),
+		       gsm0808_cell_id_discr_name(list_discr),
+		       test_match ? "MATCH" : "mismatch");
+		return true;
+	}
+
+	result = gsm0808_cell_id_matches_list(id, &list, 0, false);
+
+	printf("%s and %s: ",
+	       gsm0808_cell_id_name(id),
+	       gsm0808_cell_id_list_name(&list));
+	if (result >= 0)
+		printf("MATCH at [%d]\n", result);
+	else
+		printf("mismatch\n");
+
+	if (test_match
+	    && (result < 0 || result != match_idx)) {
+		printf("  ERROR: expected MATCH at %d\n", match_idx);
+		return false;
+	}
+
+	if (!test_match && result >= 0) {
+		printf("  ERROR: expected mismatch\n");
+		return false;
+	}
+
+	return true;
+}
+
+static void test_cell_id_list_matching(bool test_match)
+{
+	int i, j;
+	bool ok = true;
+
+	const enum CELL_IDENT discrs[] = {
+		CELL_IDENT_LAC, CELL_IDENT_CI, CELL_IDENT_LAC_AND_CI, CELL_IDENT_LAI_AND_LAC,
+		CELL_IDENT_WHOLE_GLOBAL,
+	};
+
+	printf("\n%s(%s)\n", __func__, test_match ? "test match" : "test mismatch");
+
+	/* Autogenerate Cell ID lists from above dataset, which should match / not match. */
+	for (i = 0; i < ARRAY_SIZE(discrs); i++) {
+		for (j = 0; j < ARRAY_SIZE(discrs); j++)
+			if (!test_cell_id_list_matching_discrs(test_match,
+							       discrs[i], discrs[j]))
+				ok = false;
+	}
+
+	OSMO_ASSERT(ok);
+}
+
 int main(int argc, char **argv)
 {
 	void *ctx = talloc_named_const(NULL, 0, "gsm0808 test");
@@ -2001,6 +2270,10 @@ int main(int argc, char **argv)
 
 	test_gsm0808_sc_cfg_from_gsm48_mr_cfg();
 	test_gsm48_mr_cfg_from_gsm0808_sc_cfg();
+
+	test_cell_id_matching();
+	test_cell_id_list_matching(true);
+	test_cell_id_list_matching(false);
 
 	printf("Done\n");
 	return EXIT_SUCCESS;

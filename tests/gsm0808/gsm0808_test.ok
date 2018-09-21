@@ -439,4 +439,190 @@ Output:
  m10_2= 0
  m12_2= 1
 
+
+test_cell_id_matching
+[0] LAC:23 LAC:23 MATCH
+[0] LAC:23 LAC:23 MATCH exactly
+[1] LAC:23 LAC:42 don't match
+[1] LAC:23 LAC:42 don't match exactly
+[2] LAC:23 CI:5 MATCH
+[2] LAC:23 CI:5 don't match exactly
+[3] LAC:23 CI:6 MATCH
+[3] LAC:23 CI:6 don't match exactly
+[4] LAC:23 LAC-CI:23-5 MATCH
+[4] LAC:23 LAC-CI:23-5 don't match exactly
+[5] LAC:23 LAC-CI:42-6 don't match
+[5] LAC:23 LAC-CI:42-6 don't match exactly
+[6] LAC:23 LAI:023-042-23 MATCH
+[6] LAC:23 LAI:023-042-23 don't match exactly
+[7] LAC:23 LAI:023-042-42 don't match
+[7] LAC:23 LAI:023-042-42 don't match exactly
+[8] LAC:23 LAI:023-99-23 MATCH
+[8] LAC:23 LAI:023-99-23 don't match exactly
+[9] LAC:23 LAI:023-42-23 MATCH
+[9] LAC:23 LAI:023-42-23 don't match exactly
+[10] LAC:23 CGI:023-042-23-5 MATCH
+[10] LAC:23 CGI:023-042-23-5 don't match exactly
+[11] LAC:23 CGI:023-042-42-6 don't match
+[11] LAC:23 CGI:023-042-42-6 don't match exactly
+[12] LAC:23 CGI:023-99-23-5 MATCH
+[12] LAC:23 CGI:023-99-23-5 don't match exactly
+[13] CI:5 LAC:23 MATCH
+[13] CI:5 LAC:23 don't match exactly
+[14] CI:5 LAC:42 MATCH
+[14] CI:5 LAC:42 don't match exactly
+[15] CI:5 CI:5 MATCH
+[15] CI:5 CI:5 MATCH exactly
+[16] CI:5 CI:6 don't match
+[16] CI:5 CI:6 don't match exactly
+[17] CI:5 LAC-CI:23-5 MATCH
+[17] CI:5 LAC-CI:23-5 don't match exactly
+[18] CI:5 LAC-CI:42-6 don't match
+[18] CI:5 LAC-CI:42-6 don't match exactly
+[19] CI:5 LAI:023-042-23 MATCH
+[19] CI:5 LAI:023-042-23 don't match exactly
+[20] CI:5 LAI:023-042-42 MATCH
+[20] CI:5 LAI:023-042-42 don't match exactly
+[21] CI:5 LAI:023-99-23 MATCH
+[21] CI:5 LAI:023-99-23 don't match exactly
+[22] CI:5 LAI:023-42-23 MATCH
+[22] CI:5 LAI:023-42-23 don't match exactly
+[23] CI:5 CGI:023-042-23-5 MATCH
+[23] CI:5 CGI:023-042-23-5 don't match exactly
+[24] CI:5 CGI:023-042-42-6 don't match
+[24] CI:5 CGI:023-042-42-6 don't match exactly
+[25] CI:5 CGI:023-99-23-5 MATCH
+[25] CI:5 CGI:023-99-23-5 don't match exactly
+[26] LAC-CI:23-5 LAC:23 MATCH
+[26] LAC-CI:23-5 LAC:23 don't match exactly
+[27] LAC-CI:23-5 LAC:42 don't match
+[27] LAC-CI:23-5 LAC:42 don't match exactly
+[28] LAC-CI:23-5 CI:5 MATCH
+[28] LAC-CI:23-5 CI:5 don't match exactly
+[29] LAC-CI:23-5 CI:6 don't match
+[29] LAC-CI:23-5 CI:6 don't match exactly
+[30] LAC-CI:23-5 LAC-CI:23-5 MATCH
+[30] LAC-CI:23-5 LAC-CI:23-5 MATCH exactly
+[31] LAC-CI:23-5 LAC-CI:42-6 don't match
+[31] LAC-CI:23-5 LAC-CI:42-6 don't match exactly
+[32] LAC-CI:23-5 LAI:023-042-23 MATCH
+[32] LAC-CI:23-5 LAI:023-042-23 don't match exactly
+[33] LAC-CI:23-5 LAI:023-042-42 don't match
+[33] LAC-CI:23-5 LAI:023-042-42 don't match exactly
+[34] LAC-CI:23-5 LAI:023-99-23 MATCH
+[34] LAC-CI:23-5 LAI:023-99-23 don't match exactly
+[35] LAC-CI:23-5 LAI:023-42-23 MATCH
+[35] LAC-CI:23-5 LAI:023-42-23 don't match exactly
+[36] LAC-CI:23-5 CGI:023-042-23-5 MATCH
+[36] LAC-CI:23-5 CGI:023-042-23-5 don't match exactly
+[37] LAC-CI:23-5 CGI:023-042-42-6 don't match
+[37] LAC-CI:23-5 CGI:023-042-42-6 don't match exactly
+[38] LAC-CI:23-5 CGI:023-99-23-5 MATCH
+[38] LAC-CI:23-5 CGI:023-99-23-5 don't match exactly
+[39] LAI:023-042-23 LAC:23 MATCH
+[39] LAI:023-042-23 LAC:23 don't match exactly
+[40] LAI:023-042-23 LAC:42 don't match
+[40] LAI:023-042-23 LAC:42 don't match exactly
+[41] LAI:023-042-23 CI:5 MATCH
+[41] LAI:023-042-23 CI:5 don't match exactly
+[42] LAI:023-042-23 CI:6 MATCH
+[42] LAI:023-042-23 CI:6 don't match exactly
+[43] LAI:023-042-23 LAC-CI:23-5 MATCH
+[43] LAI:023-042-23 LAC-CI:23-5 don't match exactly
+[44] LAI:023-042-23 LAC-CI:42-6 don't match
+[44] LAI:023-042-23 LAC-CI:42-6 don't match exactly
+[45] LAI:023-042-23 LAI:023-042-23 MATCH
+[45] LAI:023-042-23 LAI:023-042-23 MATCH exactly
+[46] LAI:023-042-23 LAI:023-042-42 don't match
+[46] LAI:023-042-23 LAI:023-042-42 don't match exactly
+[47] LAI:023-042-23 LAI:023-99-23 don't match
+[47] LAI:023-042-23 LAI:023-99-23 don't match exactly
+[48] LAI:023-042-23 LAI:023-42-23 don't match
+[48] LAI:023-042-23 LAI:023-42-23 don't match exactly
+[49] LAI:023-042-23 CGI:023-042-23-5 MATCH
+[49] LAI:023-042-23 CGI:023-042-23-5 don't match exactly
+[50] LAI:023-042-23 CGI:023-042-42-6 don't match
+[50] LAI:023-042-23 CGI:023-042-42-6 don't match exactly
+[51] LAI:023-042-23 CGI:023-99-23-5 don't match
+[51] LAI:023-042-23 CGI:023-99-23-5 don't match exactly
+[52] CGI:023-042-23-5 LAC:23 MATCH
+[52] CGI:023-042-23-5 LAC:23 don't match exactly
+[53] CGI:023-042-23-5 LAC:42 don't match
+[53] CGI:023-042-23-5 LAC:42 don't match exactly
+[54] CGI:023-042-23-5 CI:5 MATCH
+[54] CGI:023-042-23-5 CI:5 don't match exactly
+[55] CGI:023-042-23-5 CI:6 don't match
+[55] CGI:023-042-23-5 CI:6 don't match exactly
+[56] CGI:023-042-23-5 LAC-CI:23-5 MATCH
+[56] CGI:023-042-23-5 LAC-CI:23-5 don't match exactly
+[57] CGI:023-042-23-5 LAC-CI:42-6 don't match
+[57] CGI:023-042-23-5 LAC-CI:42-6 don't match exactly
+[58] CGI:023-042-23-5 LAI:023-042-23 MATCH
+[58] CGI:023-042-23-5 LAI:023-042-23 don't match exactly
+[59] CGI:023-042-23-5 LAI:023-042-42 don't match
+[59] CGI:023-042-23-5 LAI:023-042-42 don't match exactly
+[60] CGI:023-042-23-5 LAI:023-99-23 don't match
+[60] CGI:023-042-23-5 LAI:023-99-23 don't match exactly
+[61] CGI:023-042-23-5 LAI:023-42-23 don't match
+[61] CGI:023-042-23-5 LAI:023-42-23 don't match exactly
+[62] CGI:023-042-23-5 CGI:023-042-23-5 MATCH
+[62] CGI:023-042-23-5 CGI:023-042-23-5 MATCH exactly
+[63] CGI:023-042-23-5 CGI:023-042-42-6 don't match
+[63] CGI:023-042-23-5 CGI:023-042-42-6 don't match exactly
+[64] CGI:023-042-23-5 CGI:023-99-23-5 don't match
+[64] CGI:023-042-23-5 CGI:023-99-23-5 don't match exactly
+
+test_cell_id_list_matching(test match)
+LAC:23 and LAC[2]:{42, 23}: MATCH at [1]
+LAC:23 and CI[2]:{5, 6}: MATCH at [0]
+LAC:23 and LAC-CI[2]:{42-6, 23-5}: MATCH at [1]
+LAC:23 and LAI[4]:{023-042-42, 023-042-23, 023-99-23, 023-42-23}: MATCH at [1]
+LAC:23 and CGI[3]:{023-042-42-6, 023-042-23-5, 023-99-23-5}: MATCH at [1]
+CI:5 and LAC[2]:{23, 42}: MATCH at [0]
+CI:5 and CI[2]:{6, 5}: MATCH at [1]
+CI:5 and LAC-CI[2]:{42-6, 23-5}: MATCH at [1]
+CI:5 and LAI[4]:{023-042-23, 023-042-42, 023-99-23, 023-42-23}: MATCH at [0]
+CI:5 and CGI[3]:{023-042-42-6, 023-042-23-5, 023-99-23-5}: MATCH at [1]
+LAC-CI:23-5 and LAC[2]:{42, 23}: MATCH at [1]
+LAC-CI:23-5 and CI[2]:{6, 5}: MATCH at [1]
+LAC-CI:23-5 and LAC-CI[2]:{42-6, 23-5}: MATCH at [1]
+LAC-CI:23-5 and LAI[4]:{023-042-42, 023-042-23, 023-99-23, 023-42-23}: MATCH at [1]
+LAC-CI:23-5 and CGI[3]:{023-042-42-6, 023-042-23-5, 023-99-23-5}: MATCH at [1]
+LAI:023-042-23 and LAC[2]:{42, 23}: MATCH at [1]
+LAI:023-042-23 and CI[2]:{5, 6}: MATCH at [0]
+LAI:023-042-23 and LAC-CI[2]:{42-6, 23-5}: MATCH at [1]
+LAI:023-042-23 and LAI[4]:{023-042-42, 023-99-23, 023-42-23, 023-042-23}: MATCH at [3]
+LAI:023-042-23 and CGI[3]:{023-042-42-6, 023-99-23-5, 023-042-23-5}: MATCH at [2]
+CGI:023-042-23-5 and LAC[2]:{42, 23}: MATCH at [1]
+CGI:023-042-23-5 and CI[2]:{6, 5}: MATCH at [1]
+CGI:023-042-23-5 and LAC-CI[2]:{42-6, 23-5}: MATCH at [1]
+CGI:023-042-23-5 and LAI[4]:{023-042-42, 023-99-23, 023-42-23, 023-042-23}: MATCH at [3]
+CGI:023-042-23-5 and CGI[3]:{023-042-42-6, 023-99-23-5, 023-042-23-5}: MATCH at [2]
+
+test_cell_id_list_matching(test mismatch)
+LAC:23 and LAC[1]:{42}: mismatch
+LAC:23 vs. CI: No match_id entries to test mismatch
+LAC:23 and LAC-CI[1]:{42-6}: mismatch
+LAC:23 and LAI[1]:{023-042-42}: mismatch
+LAC:23 and CGI[1]:{023-042-42-6}: mismatch
+CI:5 vs. LAC: No match_id entries to test mismatch
+CI:5 and CI[1]:{6}: mismatch
+CI:5 and LAC-CI[1]:{42-6}: mismatch
+CI:5 vs. LAI: No match_id entries to test mismatch
+CI:5 and CGI[1]:{023-042-42-6}: mismatch
+LAC-CI:23-5 and LAC[1]:{42}: mismatch
+LAC-CI:23-5 and CI[1]:{6}: mismatch
+LAC-CI:23-5 and LAC-CI[1]:{42-6}: mismatch
+LAC-CI:23-5 and LAI[1]:{023-042-42}: mismatch
+LAC-CI:23-5 and CGI[1]:{023-042-42-6}: mismatch
+LAI:023-042-23 and LAC[1]:{42}: mismatch
+LAI:023-042-23 vs. CI: No match_id entries to test mismatch
+LAI:023-042-23 and LAC-CI[1]:{42-6}: mismatch
+LAI:023-042-23 and LAI[3]:{023-042-42, 023-99-23, 023-42-23}: mismatch
+LAI:023-042-23 and CGI[2]:{023-042-42-6, 023-99-23-5}: mismatch
+CGI:023-042-23-5 and LAC[1]:{42}: mismatch
+CGI:023-042-23-5 and CI[1]:{6}: mismatch
+CGI:023-042-23-5 and LAC-CI[1]:{42-6}: mismatch
+CGI:023-042-23-5 and LAI[3]:{023-042-42, 023-99-23, 023-42-23}: mismatch
+CGI:023-042-23-5 and CGI[2]:{023-042-42-6, 023-99-23-5}: mismatch
 Done
