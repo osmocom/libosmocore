@@ -104,7 +104,7 @@ int gsm0808_dec_cell_id(struct gsm0808_cell_id *ci, const uint8_t *elem, uint8_t
 int gsm0808_chan_type_to_speech_codec(uint8_t perm_spch);
 int gsm0808_speech_codec_from_chan_type(struct gsm0808_speech_codec *sc,
 					uint8_t perm_spch);
-uint16_t gsm0808_sc_cfg_from_gsm48_mr_cfg(struct gsm48_multi_rate_conf *cfg, bool fr);
+uint16_t gsm0808_sc_cfg_from_gsm48_mr_cfg(const struct gsm48_multi_rate_conf *cfg, bool fr);
 
 /*! Return 3GPP TS 48.008 3.2.2.49 Current Channel Type 1 from enum gsm_chan_t. */
 static inline uint8_t gsm0808_current_channel_type_1(enum gsm_chan_t type)

@@ -1166,7 +1166,7 @@ int gsm0808_speech_codec_from_chan_type(struct gsm0808_speech_codec *sc,
  *  \param[in] cfg AMR configuration in GSM 04.08 format.
  *  \param[in] hint if the resulting configuration shall be used with a FR or HR TCH.
  *  \returns configuration bits (S0-S15) */
-uint16_t gsm0808_sc_cfg_from_gsm48_mr_cfg(struct gsm48_multi_rate_conf *cfg,
+uint16_t gsm0808_sc_cfg_from_gsm48_mr_cfg(const struct gsm48_multi_rate_conf *cfg,
 					  bool fr)
 {
 	uint16_t s15_s0 = 0;
