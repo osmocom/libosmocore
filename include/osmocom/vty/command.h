@@ -132,9 +132,10 @@ struct cmd_node {
 	char name[64];
 };
 
+/*! Attributes (flags) for \ref cmd_element */
 enum {
-	CMD_ATTR_DEPRECATED = 1,
-	CMD_ATTR_HIDDEN,
+	CMD_ATTR_DEPRECATED	= (1 << 0),
+	CMD_ATTR_HIDDEN		= (1 << 1),
 };
 
 /*! Structure of a command element */
