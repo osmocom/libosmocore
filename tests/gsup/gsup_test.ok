@@ -33,4 +33,12 @@ Test GSUP message decoding/encoding
           SS/USSD processUnstructuredSS-Request / Invoke OK
   Testing SS/USSD processUnstructuredSS-Request / ReturnResult
           SS/USSD processUnstructuredSS-Request / ReturnResult OK
+  Testing MO-ForwardSM (MSC -> SMSC) Request
+          MO-ForwardSM (MSC -> SMSC) Request OK
+  Testing MT-ForwardSM (MSC -> SMSC) Request
+          MT-ForwardSM (MSC -> SMSC) Request OK
+  Testing MO-/MT-ForwardSM Response
+          MO-/MT-ForwardSM Response OK
+  Testing MO-/MT-ForwardSM Error
+          MO-/MT-ForwardSM Error OK
 Done.

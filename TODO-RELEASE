@@ -16,3 +16,6 @@ libosmogsm     gsm0808_cause_class()   getter for cause class
 libosmogsm     gsm0808_cause_ext()     check for cause extended bit
 libosmogsm     gsm0808_cause_name()    use enum as parameter
 libosmogsm     gsm0808_create_cipher_reject()          use enum as parameter
+libosmogsm	osmo_gsup_message			extended with SMS related fields
+libosmogsm	osmo_gsup_sms_{en|de}code_sm_rp_da	GSUP SM-RP-DA coding helpers
+libosmogsm	osmo_gsup_sms_{en|de}code_sm_rp_oa	GSUP SM-RP-OA coding helpers

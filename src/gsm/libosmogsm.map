@@ -523,6 +523,11 @@ osmo_gsup_message_type_names;
 osmo_gsup_session_state_names;
 osmo_gsup_get_err_msg_type;
 
+osmo_gsup_sms_encode_sm_rp_da;
+osmo_gsup_sms_decode_sm_rp_da;
+osmo_gsup_sms_encode_sm_rp_oa;
+osmo_gsup_sms_decode_sm_rp_oa;
+
 osmo_oap_encode;
 osmo_oap_decode;
 

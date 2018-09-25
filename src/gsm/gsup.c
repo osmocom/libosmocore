@@ -67,6 +67,14 @@ const struct value_string osmo_gsup_message_type_names[] = {
 	OSMO_VALUE_STRING(OSMO_GSUP_MSGT_PROC_SS_ERROR),
 	OSMO_VALUE_STRING(OSMO_GSUP_MSGT_PROC_SS_RESULT),
 
+	OSMO_VALUE_STRING(OSMO_GSUP_MSGT_MO_FORWARD_SM_REQUEST),
+	OSMO_VALUE_STRING(OSMO_GSUP_MSGT_MO_FORWARD_SM_ERROR),
+	OSMO_VALUE_STRING(OSMO_GSUP_MSGT_MO_FORWARD_SM_RESULT),
+
+	OSMO_VALUE_STRING(OSMO_GSUP_MSGT_MT_FORWARD_SM_REQUEST),
+	OSMO_VALUE_STRING(OSMO_GSUP_MSGT_MT_FORWARD_SM_ERROR),
+	OSMO_VALUE_STRING(OSMO_GSUP_MSGT_MT_FORWARD_SM_RESULT),
+
 	{ 0, NULL }
 };
 
@@ -434,6 +442,35 @@ int osmo_gsup_decode(const uint8_t *const_data, size_t data_len,
 			gsup_msg->ss_info_len = value_len;
 			break;
 
+		case OSMO_GSUP_SM_RP_MR_IE:
+			gsup_msg->sm_rp_mr = value;
+			break;
+
+		case OSMO_GSUP_SM_RP_DA_IE:
+			rc = osmo_gsup_sms_decode_sm_rp_da(gsup_msg, value, value_len);
+			if (rc)
+				return rc;
+			break;
+
+		case OSMO_GSUP_SM_RP_OA_IE:
+			rc = osmo_gsup_sms_decode_sm_rp_oa(gsup_msg, value, value_len);
+			if (rc)
+				return rc;
+			break;
+
+		case OSMO_GSUP_SM_RP_UI_IE:
+			gsup_msg->sm_rp_ui = value;
+			gsup_msg->sm_rp_ui_len = value_len;
+			break;
+
+		case OSMO_GSUP_SM_RP_MMS_IE:
+			gsup_msg->sm_rp_mms = value;
+			break;
+
+		case OSMO_GSUP_SM_RP_CAUSE_IE:
+			gsup_msg->sm_rp_cause = value;
+			break;
+
 		default:
 			LOGP(DLGSUP, LOGL_NOTICE,
 			     "GSUP IE type %d unknown\n", iei);
@@ -529,7 +566,7 @@ static void encode_auth_info(struct msgb *msg, enum osmo_gsup_iei iei,
 int osmo_gsup_encode(struct msgb *msg, const struct osmo_gsup_message *gsup_msg)
 {
 	uint8_t u8;
-	int idx;
+	int idx, rc;
 	uint8_t bcd_buf[GSM48_MI_SIZE] = {0};
 	size_t bcd_len;
 
@@ -624,6 +661,42 @@ int osmo_gsup_encode(struct msgb *msg, const struct osmo_gsup_message *gsup_msg)
 	if (gsup_msg->ss_info) {
 		msgb_tlv_put(msg, OSMO_GSUP_SS_INFO_IE,
 				gsup_msg->ss_info_len, gsup_msg->ss_info);
+	}
+
+	if (gsup_msg->sm_rp_mr) {
+		msgb_tlv_put(msg, OSMO_GSUP_SM_RP_MR_IE,
+				sizeof(*gsup_msg->sm_rp_mr), gsup_msg->sm_rp_mr);
+	}
+
+	if (gsup_msg->sm_rp_da_type) {
+		rc = osmo_gsup_sms_encode_sm_rp_da(msg, gsup_msg);
+		if (rc) {
+			LOGP(DLGSUP, LOGL_ERROR, "Failed to encode SM-RP-DA IE\n");
+			return -EINVAL;
+		}
+	}
+
+	if (gsup_msg->sm_rp_oa_type) {
+		rc = osmo_gsup_sms_encode_sm_rp_oa(msg, gsup_msg);
+		if (rc) {
+			LOGP(DLGSUP, LOGL_ERROR, "Failed to encode SM-RP-OA IE\n");
+			return -EINVAL;
+		}
+	}
+
+	if (gsup_msg->sm_rp_ui) {
+		msgb_tlv_put(msg, OSMO_GSUP_SM_RP_UI_IE,
+				gsup_msg->sm_rp_ui_len, gsup_msg->sm_rp_ui);
+	}
+
+	if (gsup_msg->sm_rp_mms) {
+		msgb_tlv_put(msg, OSMO_GSUP_SM_RP_MMS_IE,
+				sizeof(*gsup_msg->sm_rp_mms), gsup_msg->sm_rp_mms);
+	}
+
+	if (gsup_msg->sm_rp_cause) {
+		msgb_tlv_put(msg, OSMO_GSUP_SM_RP_CAUSE_IE,
+				sizeof(*gsup_msg->sm_rp_cause), gsup_msg->sm_rp_cause);
 	}
 
 	return 0;

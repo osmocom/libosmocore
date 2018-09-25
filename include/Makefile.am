@@ -94,6 +94,7 @@ nobase_include_HEADERS = \
                        osmocom/gsm/gsm48_ie.h \
                        osmocom/gsm/gsm_utils.h \
                        osmocom/gsm/gsup.h \
+                       osmocom/gsm/gsup_sms.h \
                        osmocom/gsm/ipa.h \
                        osmocom/gsm/lapd_core.h \
                        osmocom/gsm/lapdm.h \
