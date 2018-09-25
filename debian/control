@@ -315,7 +315,8 @@ Multi-Arch: same
 Description: Utilities for gsm
  This package contains a program for frequency calculation for GSM called
  'osmo-arfcn' and a program called 'osmo-auc-gen' that is used for testing GSM
- authentication.
+ authentication, as well as 'osmo-config-merge', a tool for merging Osmocom
+ configuration files.
  .
  They use the libosmocore library. The libosmocore library contain various
  utility functions that were originally developed as part of the OpenBSC
