@@ -535,7 +535,7 @@ int osmo_gsup_encode(struct msgb *msg, const struct osmo_gsup_message *gsup_msg)
 
 	/* generic part */
 	if(!gsup_msg->message_type)
-		return -ENOMEM;
+		return -EINVAL;
 
 	msgb_v_put(msg, gsup_msg->message_type);
 
