@@ -890,24 +890,24 @@ static int config_write_log_single(struct vty *vty, struct log_target *tgt)
 		break;
 	}
 
-	vty_out(vty, "  logging filter all %u%s",
+	vty_out(vty, " logging filter all %u%s",
 		tgt->filter_map & (1 << LOG_FLT_ALL) ? 1 : 0, VTY_NEWLINE);
 	/* save filters outside of libosmocore, i.e. in app code */
 	if (osmo_log_info->save_fn)
 		osmo_log_info->save_fn(vty, osmo_log_info, tgt);
 
-	vty_out(vty, "  logging color %u%s", tgt->use_color ? 1 : 0,
+	vty_out(vty, " logging color %u%s", tgt->use_color ? 1 : 0,
 		VTY_NEWLINE);
-	vty_out(vty, "  logging print category %d%s",
+	vty_out(vty, " logging print category %d%s",
 		tgt->print_category ? 1 : 0, VTY_NEWLINE);
 	if (tgt->print_ext_timestamp)
-		vty_out(vty, "  logging print extended-timestamp 1%s", VTY_NEWLINE);
+		vty_out(vty, " logging print extended-timestamp 1%s", VTY_NEWLINE);
 	else
-		vty_out(vty, "  logging timestamp %u%s",
+		vty_out(vty, " logging timestamp %u%s",
 			tgt->print_timestamp ? 1 : 0, VTY_NEWLINE);
 	if (tgt->print_level)
-		vty_out(vty, "  logging print level 1%s", VTY_NEWLINE);
-	vty_out(vty, "  logging print file %s%s",
+		vty_out(vty, " logging print level 1%s", VTY_NEWLINE);
+	vty_out(vty, " logging print file %s%s",
 		get_value_string(logging_print_file_args, tgt->print_filename2),
 		VTY_NEWLINE);
 
@@ -918,7 +918,7 @@ static int config_write_log_single(struct vty *vty, struct log_target *tgt)
 			vty_out(vty, "%% Invalid log level %u for 'force-all'%s",
 				tgt->loglevel, VTY_NEWLINE);
 		else
-			vty_out(vty, "  logging level force-all %s%s", level_str, VTY_NEWLINE);
+			vty_out(vty, " logging level force-all %s%s", level_str, VTY_NEWLINE);
 	}
 
 	for (i = 0; i < osmo_log_info->num_cat; i++) {
@@ -941,7 +941,7 @@ static int config_write_log_single(struct vty *vty, struct log_target *tgt)
 			continue;
 		}
 
-		vty_out(vty, "  logging level %s", cat_name);
+		vty_out(vty, " logging level %s", cat_name);
 		vty_out(vty, " %s%s", osmo_str_tolower(level_str), VTY_NEWLINE);
 	}
 

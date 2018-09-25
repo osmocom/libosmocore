@@ -4,11 +4,11 @@ logging_vty_test# show running-config
 ...
 log stderr
 ... !logging level all
-  logging level aa debug
-  logging level bb info
-  logging level ccc notice
-  logging level dddd error
-  logging level eee fatal
+ logging level aa debug
+ logging level bb info
+ logging level ccc notice
+ logging level dddd error
+ logging level eee fatal
 ...
 
 logging_vty_test# configure terminal
@@ -17,7 +17,7 @@ logging_vty_test(config)# log stderr
 logging_vty_test(config-log)# logging level force-all notice
 logging_vty_test(config-log)# show running-config
 ... !logging level all
-  logging level force-all notice
+ logging level force-all notice
 ... !logging level all
 
 logging_vty_test(config-log)# no logging level force-all
