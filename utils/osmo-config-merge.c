@@ -145,7 +145,8 @@ static struct node *file_read(void *ctx, const char *fname)
 			/* new child to last node */
 			n = node_alloc_child(last);
 		} else if (indent < cur_indent) {
-			for (int i = 0; i < cur_indent - indent; i++) {
+			int i;
+			for (i = 0; i < cur_indent - indent; i++) {
 				/* go to parent, add another sibling */
 				if (last->parent)
 					last = last->parent;
@@ -202,7 +203,8 @@ static void dump_node(struct node *root, FILE *out, bool print_node_depth)
 
 	if (root->line) {
 		if (print_node_depth) {
-			for (int i = 0; i < level; i++)
+			int i;
+			for (i = 0; i < level; i++)
 				fputc('*', out);
 		}
 
