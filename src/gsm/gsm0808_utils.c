@@ -1204,6 +1204,47 @@ uint16_t gsm0808_sc_cfg_from_gsm48_mr_cfg(const struct gsm48_multi_rate_conf *cf
 	return s15_s0;
 }
 
+/*! Determine a GSM 04.08 AMR configuration struct from a set of speech codec
+ *  configuration bits (S0-S15)
+ *  \param[out] cfg AMR configuration in GSM 04.08 format.
+ *  \param[in] s15_s0 configuration bits (S0-S15). */
+void gsm48_mr_cfg_from_gsm0808_sc_cfg(struct gsm48_multi_rate_conf *cfg,
+				      uint16_t s15_s0)
+{
+	memset(cfg, 0, sizeof(*cfg));
+
+	/* Strip option bits */
+	s15_s0 &= 0x00ff;
+
+	/* Rate 5,15k must always be present */
+	cfg->m5_15 = 1;
+
+	if ((s15_s0 & GSM0808_SC_CFG_DEFAULT_AMR_4_75 & 0xff) ==
+	    (GSM0808_SC_CFG_DEFAULT_AMR_4_75 & 0xff))
+		cfg->m4_75 = 1;
+	if ((s15_s0 & GSM0808_SC_CFG_DEFAULT_AMR_5_90 & 0xff) ==
+	    (GSM0808_SC_CFG_DEFAULT_AMR_5_90 & 0xff))
+		cfg->m5_90 = 1;
+	if ((s15_s0 & GSM0808_SC_CFG_DEFAULT_AMR_6_70 & 0xff) ==
+	    (GSM0808_SC_CFG_DEFAULT_AMR_6_70 & 0xff))
+		cfg->m6_70 = 1;
+	if ((s15_s0 & GSM0808_SC_CFG_DEFAULT_AMR_7_40 & 0xff) ==
+	    (GSM0808_SC_CFG_DEFAULT_AMR_7_40 & 0xff))
+		cfg->m7_40 = 1;
+	if ((s15_s0 & GSM0808_SC_CFG_DEFAULT_AMR_7_95 & 0xff) ==
+	    (GSM0808_SC_CFG_DEFAULT_AMR_7_95 & 0xff))
+		cfg->m7_95 = 1;
+	if ((s15_s0 & GSM0808_SC_CFG_DEFAULT_AMR_10_2 & 0xff) ==
+	    (GSM0808_SC_CFG_DEFAULT_AMR_10_2 & 0xff))
+		cfg->m10_2 = 1;
+	if ((s15_s0 & GSM0808_SC_CFG_DEFAULT_AMR_12_2 & 0xff) ==
+	    (GSM0808_SC_CFG_DEFAULT_AMR_12_2 & 0xff))
+		cfg->m12_2 = 1;
+
+	cfg->ver = 1;
+	cfg->icmi = 1;
+}
+
 /*! Print a human readable name of the cell identifier to the char buffer.
  * This is useful both for struct gsm0808_cell_id and struct gsm0808_cell_id_list2.
  * See also gsm0808_cell_id_name() and gsm0808_cell_id_list_name().

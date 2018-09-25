@@ -1640,6 +1640,62 @@ static void test_gsm0808_sc_cfg_from_gsm48_mr_cfg(void)
 	test_gsm0808_sc_cfg_from_gsm48_mr_cfg_single(&cfg);
 }
 
+static void test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single(uint16_t s15_s0)
+{
+	struct gsm48_multi_rate_conf cfg;
+
+	printf("Input:\n");
+	printf(" S15-S0 = %04x = 0b" OSMO_BIN_SPEC OSMO_BIN_SPEC "\n", s15_s0,
+	       OSMO_BIN_PRINT(s15_s0 >> 8), OSMO_BIN_PRINT(s15_s0));
+
+	gsm48_mr_cfg_from_gsm0808_sc_cfg(&cfg, s15_s0);
+
+	printf("Output:\n");
+	printf(" m4_75= %u   smod=  %u\n", cfg.m4_75, cfg.smod);
+	printf(" m5_15= %u   spare= %u\n", cfg.m5_15, cfg.spare);
+	printf(" m5_90= %u   icmi=  %u\n", cfg.m5_90, cfg.icmi);
+	printf(" m6_70= %u   nscb=  %u\n", cfg.m6_70, cfg.nscb);
+	printf(" m7_40= %u   ver=   %u\n", cfg.m7_40, cfg.ver);
+	printf(" m7_95= %u\n", cfg.m7_95);
+	printf(" m10_2= %u\n", cfg.m10_2);
+	printf(" m12_2= %u\n", cfg.m12_2);
+
+	printf("\n");
+}
+
+void test_gsm48_mr_cfg_from_gsm0808_sc_cfg()
+{
+	printf("Testing gsm48_mr_cfg_from_gsm0808_sc_cfg():\n");
+
+	/* Only one codec per setting */
+	test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single
+	    (GSM0808_SC_CFG_DEFAULT_AMR_4_75);
+	test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single
+	    (GSM0808_SC_CFG_DEFAULT_AMR_5_15);
+	test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single
+	    (GSM0808_SC_CFG_DEFAULT_AMR_5_90);
+	test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single
+	    (GSM0808_SC_CFG_DEFAULT_AMR_6_70);
+	test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single
+	    (GSM0808_SC_CFG_DEFAULT_AMR_7_40);
+	test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single
+	    (GSM0808_SC_CFG_DEFAULT_AMR_7_95);
+	test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single
+	    (GSM0808_SC_CFG_DEFAULT_AMR_10_2);
+	test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single
+	    (GSM0808_SC_CFG_DEFAULT_AMR_12_2);
+
+	/* Combinations */
+	test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single
+	    (GSM0808_SC_CFG_DEFAULT_AMR_4_75 | GSM0808_SC_CFG_DEFAULT_AMR_6_70 |
+	     GSM0808_SC_CFG_DEFAULT_AMR_10_2);
+	test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single
+	    (GSM0808_SC_CFG_DEFAULT_AMR_10_2 | GSM0808_SC_CFG_DEFAULT_AMR_12_2 |
+	     GSM0808_SC_CFG_DEFAULT_AMR_7_40);
+	test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single
+	    (GSM0808_SC_CFG_DEFAULT_AMR_7_95 | GSM0808_SC_CFG_DEFAULT_AMR_12_2);
+}
+
 int main(int argc, char **argv)
 {
 	printf("Testing generation of GSM0808 messages\n");
@@ -1692,6 +1748,7 @@ int main(int argc, char **argv)
 	test_gsm0808_enc_dec_cell_id_global();
 
 	test_gsm0808_sc_cfg_from_gsm48_mr_cfg();
+	test_gsm48_mr_cfg_from_gsm0808_sc_cfg();
 
 	printf("Done\n");
 	return EXIT_SUCCESS;
