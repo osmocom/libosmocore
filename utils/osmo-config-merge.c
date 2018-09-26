@@ -265,4 +265,6 @@ int main(int argc, char **argv)
 	/* make AddressSanitizer / LeakSanitizer happy by recursively freeing the trees */
 	talloc_free(patch_tree);
 	talloc_free(base_tree);
+
+	return 0;
 }
