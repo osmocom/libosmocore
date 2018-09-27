@@ -44,6 +44,7 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <errno.h>
 
 #include <osmocom/core/linuxlist.h>
 #include <osmocom/core/talloc.h>
@@ -126,8 +127,11 @@ static struct node *file_read(void *ctx, const char *fname)
 	unsigned int line_num = 0;
 
 	infile = fopen(fname, "r");
-	if (!infile)
+	if (!infile) {
+		fprintf(stderr, "Could not open file '%s': %s\n",
+			fname, strerror(errno));
 		return NULL;
+	}
 
 	root = node_alloc(ctx);
 	last = root;
@@ -140,7 +144,7 @@ static struct node *file_read(void *ctx, const char *fname)
 			if (indent > cur_indent+1) {
 				fprintf(stderr, "File '%s' isn't well-formed in line %u, aborting!\n",
 					fname, line_num);
-				exit(2);
+				return NULL;
 			}
 			/* new child to last node */
 			n = node_alloc_child(last);
@@ -229,8 +233,7 @@ int main(int argc, char **argv)
 	const char *base_fname, *patch_fname;
 	struct node *base_tree, *patch_tree;
 	bool debug_enabled = false;
-
-	void *ctx = talloc_named_const(NULL, 0, "root");
+	void *ctx;
 
 	if (argc < 3)
 		exit_usage(1);
@@ -245,8 +248,15 @@ int main(int argc, char **argv)
 			exit_usage(1);
 	}
 
+	ctx = talloc_named_const(NULL, 0, "root");
+
 	base_tree = file_read(ctx, base_fname);
 	patch_tree = file_read(ctx, patch_fname);
+
+	if (!base_tree || ! patch_tree) {
+		talloc_free(ctx);
+		return 2;
+	}
 
 	if (debug_enabled) {
 		fprintf(stderr, "====== dumping tree (base)\n");
@@ -265,6 +275,7 @@ int main(int argc, char **argv)
 	/* make AddressSanitizer / LeakSanitizer happy by recursively freeing the trees */
 	talloc_free(patch_tree);
 	talloc_free(base_tree);
+	talloc_free(ctx);
 
 	return 0;
 }
