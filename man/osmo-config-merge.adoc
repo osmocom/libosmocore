@@ -1,0 +1,64 @@
+osmo-config-merge(8)
+=====================
+
+NAME
+----
+osmo-config-merge - Merge osmocom config snippets into an existing config
+
+SYNOPSIS
+--------
+[verse]
+*osmo-config-merge* <config-file> <config-patch> [--debug]
+
+DESCRIPTION
+-----------
+This utility allows you to merge an incremental config "patch"
+into an osmocom-style config file.
+
+The patch file follows the same syntax as the original config file.
+
+It works by appending the leaf nodes of the patch file to the respective
+nodes of the input config file.
+
+This process allows configuration file changes/updates to be performed
+in a more stable/reliable way than by means of (unified) diff files,
+as they break every time the context lines break.
+
+osmo-config-merge doesn't suffer from this problem, as it understands
+the tree-like nature of VTY config files.
+
+The resulting config is printed to stdout.
+
+NOTE: This only works with configuration files that have proper
+indenting, i.e. every level in the hierarchy must be indented excatly
+one character, not multiple.
+
+OPTIONS
+-------
+*--debug*::
+	Show debugging output when parsing the config tree. Needs to be the last argument.
+
+EXAMPLE USAGE
+-------------
+[verse]
+$ osmo-config-merge osmo-msc.cfg.base osmo-msc_change_network.cfg > osmo-msc.cfg
+
+EXIT STATUS
+-----------
+Exit status is 0 if the command was successful, and 1 in case of a
+wrong/missing argument. If the tool detects an error in the patch file the
+exit status is 2.
+
+SEE ALSO
+--------
+The official Osmocom documentation including the VTY config refernce can be
+found at: http://ftp.osmocom.org/docs/latest/
+
+The Osmocom wiki is located at: http://projects.osmocom.org/
+
+
+AUTHORS
+-------
+osmo-config-merge was written by Harald Welte.
+
+The man page was written by Daniel Willmann.
