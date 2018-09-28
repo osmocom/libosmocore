@@ -77,19 +77,6 @@ AC_ARG_ENABLE(doxygen,
 AC_PATH_PROG(DOXYGEN,doxygen,false)
 AM_CONDITIONAL(HAVE_DOXYGEN, test $DOXYGEN != false && test "x$doxygen" = "xyes")
 
-AC_ARG_ENABLE([man-doc],
-	      [AS_HELP_STRING([--disable-man-doc], [Disable man page documentation])],
-	      [ BUILD_MAN=$enableval ], [ BUILD_MAN="yes" ])
-
-AS_IF([test "x$BUILD_MAN" = "xyes"], [
-      AC_CHECK_PROG(A2X, [a2x], [yes])
-      AS_IF([test "$A2X" != "yes"],
-	    [AC_MSG_ERROR([a2x not found, please install asciidoc or use the
-	     option --disable-man-doc])])
-])
-AM_CONDITIONAL(BUILD_MAN, test "x$BUILD_MAN" = "xyes")
-AC_SUBST(BUILD_MAN)
-
 # check for syscal fallback on glibc < 2.25 - can be removed once glibc version requirement is bumped
 AC_CHECK_DECLS([SYS_getrandom], [], [], [[#include <sys/syscall.h>]])
 
@@ -383,7 +370,6 @@ AC_OUTPUT(
 	libosmoctrl.pc
 	libosmosim.pc
 	include/Makefile
-	man/Makefile
 	src/Makefile
 	src/vty/Makefile
 	src/codec/Makefile
