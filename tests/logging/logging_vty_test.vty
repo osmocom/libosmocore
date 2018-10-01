@@ -28,6 +28,9 @@ logging_vty_test(config-log)# exit
 logging_vty_test(config)# no log stderr
 logging_vty_test(config)# exit
 
+logging_vty_test# logging level force-all notice
+Logging was not enabled.
+
 logging_vty_test# logging enable
 logging_vty_test# logging filter all 1
 logging_vty_test# logging print category-hex 0

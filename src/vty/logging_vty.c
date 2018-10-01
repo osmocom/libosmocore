@@ -364,6 +364,10 @@ DEFUN(logging_level_set_all, logging_level_set_all_cmd,
 	struct log_target *tgt = osmo_log_vty2tgt(vty);
 	int level = log_parse_level(argv[0]);
 	int i;
+
+	if (!tgt)
+		return CMD_WARNING;
+
 	for (i = 0; i < osmo_log_info->num_cat; i++) {
 		struct log_category *cat = &tgt->categories[i];
 		/* skip empty entries in the array */
@@ -391,6 +395,8 @@ DEFUN(logging_level_force_all, logging_level_force_all_cmd,
 {
 	struct log_target *tgt = osmo_log_vty2tgt(vty);
 	int level = log_parse_level(argv[0]);
+	if (!tgt)
+		return CMD_WARNING;
 	log_set_log_level(tgt, level);
 	return CMD_SUCCESS;
 }
@@ -400,6 +406,8 @@ DEFUN(no_logging_level_force_all, no_logging_level_force_all_cmd,
       NO_STR LOGGING_STR LEVEL_STR NO_FORCE_ALL_STR)
 {
 	struct log_target *tgt = osmo_log_vty2tgt(vty);
+	if (!tgt)
+		return CMD_WARNING;
 	log_set_log_level(tgt, 0);
 	return CMD_SUCCESS;
 }
