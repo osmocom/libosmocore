@@ -272,6 +272,14 @@ enum {
 	GSMTAP_LTE_RRC_SUB_MAX
 };
 
+/* LTE NAS message types */
+enum {
+	GSMTAP_LTE_NAS_PLAIN = 0,
+	GSMTAP_LTE_NAS_SEC_HEADER,
+
+	GSMTAP_LTE_NAS_SUB_MAX
+};
+
 /* ====== DO NOT MAKE UNAPPROVED MODIFICATIONS HERE ===== */
 /*! Structure of the GTMTAP pseudo-header */
 struct gsmtap_hdr {
