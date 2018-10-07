@@ -281,7 +281,7 @@ enum {
 };
 
 /* ====== DO NOT MAKE UNAPPROVED MODIFICATIONS HERE ===== */
-/*! Structure of the GTMTAP pseudo-header */
+/*! Structure of the GSMTAP pseudo-header */
 struct gsmtap_hdr {
 	uint8_t version;	/*!< version, set to 0x01 currently */
 	uint8_t hdr_len;	/*!< length in number of 32bit words */
@@ -301,7 +301,7 @@ struct gsmtap_hdr {
 
 } __attribute__((packed));
 
-/*! Structure of the GTMTAP libosmocore logging header */
+/*! Structure of the GSMTAP libosmocore logging header */
 struct gsmtap_osmocore_log_hdr {
 	struct {
 		uint32_t sec;
