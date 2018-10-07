@@ -114,6 +114,7 @@ nobase_include_HEADERS = \
                        osmocom/gsm/protocol/gsm_09_02.h \
                        osmocom/gsm/protocol/gsm_12_21.h \
 		       osmocom/gsm/protocol/gsm_23_003.h \
+		       osmocom/gsm/protocol/gsm_29_118.h \
                        osmocom/gsm/protocol/gsm_44_318.h \
                        osmocom/gsm/protocol/ipaccess.h \
                        osmocom/gsm/protocol/smpp34_osmocom.h \

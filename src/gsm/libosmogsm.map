@@ -505,5 +505,14 @@ osmo_oap_client_handle;
 osmo_oap_client_init;
 osmo_oap_client_register;
 
+sgsap_msg_type_names;
+sgsap_eps_lu_type_names;
+sgsap_ismi_det_eps_type_names;
+sgsap_ismi_det_noneps_type_names;
+sgsap_service_ind_names;
+sgsap_sgs_cause_names;
+sgsap_ue_emm_mode_names;
+sgsap_ie_tlvdef;
+
 local: *;
 };

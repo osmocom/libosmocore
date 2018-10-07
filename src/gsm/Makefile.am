@@ -30,7 +30,8 @@ libgsmint_la_SOURCES =  a5.c rxlev_stat.c tlv_parser.c comp128.c comp128v23.c \
 			milenage/aes-internal.c milenage/aes-internal-enc.c \
 			milenage/milenage.c gan.c ipa.c gsm0341.c apn.c \
 			gsup.c gprs_gea.c gsm0503_conv.c oap.c gsm0808_utils.c \
-			gsm23003.c mncc.c bts_features.c oap_client.c
+			gsm23003.c mncc.c bts_features.c oap_client.c \
+			gsm29118.c
 libgsmint_la_LDFLAGS = -no-undefined
 libgsmint_la_LIBADD = $(top_builddir)/src/libosmocore.la
 
