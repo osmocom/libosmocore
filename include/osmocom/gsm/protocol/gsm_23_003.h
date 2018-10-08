@@ -24,3 +24,9 @@
 					 GSM23003_IMEI_SNR_NUM_DIGITS + 1)
 #define GSM23003_IMEISV_NUM_DIGITS	(GSM23003_IMEI_TAC_NUM_DIGITS + \
 					 GSM23003_IMEI_SNR_NUM_DIGITS + 2)
+
+/* Chapter 19.2 "epc.mnc000.mcc000.3gppnetwork.org" */
+#define GSM23003_HOME_NETWORK_DOMAIN_LEN	33
+
+/* Chapter 19.4.2.4: "mmec00.mmegi0000.mme.epc.mnc000.mcc000.3gppnetwork.org" */
+#define GSM23003_MME_DOMAIN_LEN			55

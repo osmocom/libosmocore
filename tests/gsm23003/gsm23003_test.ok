@@ -59,3 +59,8 @@
 13: " 023" rc=-22 mnc=0 mnc_3_digits=0 pass
 14: "023 " rc=-22 mnc=0 mnc_3_digits=0 pass
 15: "023 " rc=-22 mnc=0 mnc_3_digits=0 pass
+901-70-a123-b1
+901-70 -> epc.mnc070.mcc901.3gppnetwork.org
+901-70-a123-b1 -> mmecb1.mmegia123.mme.epc.mnc070.mcc901.3gppnetwork.org
+epc.mnc070.mcc901.3gppnetwork.org -> 901-70
+mmec01.mmegiA001.mme.epc.mnc070.mcc901.3gppnetwork.org -> 901-70-a001-01
