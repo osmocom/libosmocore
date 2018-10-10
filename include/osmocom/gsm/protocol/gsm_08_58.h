@@ -25,9 +25,29 @@
 
 #include <stdint.h>
 
+#include <osmocom/core/endian.h>
+
 /*! \addtogroup rsl
  *  @{
  * \file gsm_08_58.h */
+
+/* Link Identifier 9.3.2 */
+union abis_rsl_link_id {
+#if OSMO_IS_BIG_ENDIAN
+		uint8_t cbits:2,
+			na:1,
+			reserved:2;
+			sapi:3;
+#elif OSMO_IS_LITTLE_ENDIAN
+		uint8_t sapi:3,
+			reserved:2,
+			na:1,
+			cbits:2;
+#endif
+		uint8_t link_id;
+} __attribute__ ((packed));
+#define ABIS_RSL_LINK_ID_CBITS_FACCH_SDCCH 0x00
+#define ABIS_RSL_LINK_ID_CBITS_SACCH 0x01
 
 /*! RSL common header */
 struct abis_rsl_common_hdr {
@@ -42,7 +62,10 @@ struct abis_rsl_rll_hdr {
 	uint8_t	ie_chan;	/*!< \ref RSL_IE_CHAN_NR (tag) */
 	uint8_t	chan_nr;	/*!< RSL channel number (value) */
 	uint8_t	ie_link_id;	/*!< \ref RSL_IE_LINK_IDENT (tag) */
-	uint8_t	link_id;	/*!< RSL link identifier (value) */
+	union {
+		uint8_t	link_id; /* API backward compat */
+		union abis_rsl_link_id link_id_fields; /*!< RSL link identifier (value) */
+	};
 	uint8_t	data[0];	/*!< message payload data */
 } __attribute__ ((packed));
 
