@@ -31,6 +31,26 @@
  *  @{
  * \file gsm_08_58.h */
 
+/* Channel Number 9.3.1 */
+union abis_rsl_chan_nr {
+#if OSMO_IS_BIG_ENDIAN
+		uint8_t cbits:5,
+			tn:3;
+#elif OSMO_IS_LITTLE_ENDIAN
+		uint8_t tn:3,
+			cbits:5;
+#endif
+		uint8_t chan_nr;
+} __attribute__ ((packed));
+#define ABIS_RSL_CHAN_NR_CBITS_Bm_ACCHs	0x01
+#define ABIS_RSL_CHAN_NR_CBITS_Lm_ACCHs(ss)	(0x02 + (ss))
+#define ABIS_RSL_CHAN_NR_CBITS_SDCCH4_ACCH(ss)	(0x04 + (ss))
+#define ABIS_RSL_CHAN_NR_CBITS_SDCCH8_ACCH(ss)	(0x08 + (ss))
+#define ABIS_RSL_CHAN_NR_CBITS_BCCH		0x10
+#define ABIS_RSL_CHAN_NR_CBITS_RACH		0x11
+#define ABIS_RSL_CHAN_NR_CBITS_PCH_AGCH	0x12
+#define ABIS_RSL_CHAN_NR_CBITS_OSMO_PDCH	0x18 /*< non-standard, for dyn TS */
+
 /* Link Identifier 9.3.2 */
 union abis_rsl_link_id {
 #if OSMO_IS_BIG_ENDIAN
@@ -60,7 +80,10 @@ struct abis_rsl_common_hdr {
 struct abis_rsl_rll_hdr {
 	struct abis_rsl_common_hdr c;
 	uint8_t	ie_chan;	/*!< \ref RSL_IE_CHAN_NR (tag) */
-	uint8_t	chan_nr;	/*!< RSL channel number (value) */
+	union {
+		uint8_t	chan_nr;	 /* API backward compat */
+		union abis_rsl_chan_nr chan_nr_fields; /*!< RSL channel number (value) */
+	};
 	uint8_t	ie_link_id;	/*!< \ref RSL_IE_LINK_IDENT (tag) */
 	union {
 		uint8_t	link_id; /* API backward compat */
@@ -73,7 +96,10 @@ struct abis_rsl_rll_hdr {
 struct abis_rsl_dchan_hdr {
 	struct abis_rsl_common_hdr c;
 	uint8_t	ie_chan;	/*!< \ref RSL_IE_CHAN_NR (tag) */
-	uint8_t	chan_nr;	/*!< RSL channel number (value) */
+	union {
+		uint8_t	chan_nr;	 /* API backward compat */
+		union abis_rsl_chan_nr chan_nr_fields; /*!< RSL channel number (value) */
+	};
 	uint8_t	data[0];	/*!< message payload data */
 } __attribute__ ((packed));
 
@@ -81,7 +107,10 @@ struct abis_rsl_dchan_hdr {
 struct abis_rsl_cchan_hdr {
 	struct abis_rsl_common_hdr c;
 	uint8_t	ie_chan;	/*!< \ref RSL_IE_CHAN_NR (tag) */
-	uint8_t	chan_nr;	/*!< RSL channel number (value) */
+	union {
+		uint8_t	chan_nr;	 /* API backward compat */
+		union abis_rsl_chan_nr chan_nr_fields; /*!< RSL channel number (value) */
+	};
 	uint8_t	data[0];	/*!< message payload data */
 } __attribute__ ((packed));
 
