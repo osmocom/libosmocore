@@ -1628,8 +1628,11 @@ int gprs_ns_nsip_listen(struct gprs_ns_inst *nsi)
 		LOGP(DNS, LOGL_NOTICE, "Listening for nsip packets on %s:%u\n", inet_ntoa(in), nsi->nsip.local_port);
 	}
 
-	if (ret < 0)
+	if (ret < 0) {
+		nsi->nsip.fd.cb = NULL;
+		nsi->nsip.fd.data = NULL;
 		return ret;
+	}
 
 	ret = setsockopt(nsi->nsip.fd.fd, IPPROTO_IP, IP_TOS,
 				&nsi->nsip.dscp, sizeof(nsi->nsip.dscp));
