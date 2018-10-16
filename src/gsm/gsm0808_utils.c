@@ -349,9 +349,6 @@ uint8_t gsm0808_enc_speech_codec_list(struct msgb *msg,
 	OSMO_ASSERT(msg);
 	OSMO_ASSERT(scl);
 
-	/* Empty list */
-	OSMO_ASSERT(scl->len >= 1);
-
 	msgb_put_u8(msg, GSM0808_IE_SPEECH_CODEC_LIST);
 	tlv_len = msgb_put(msg, 1);
 	old_tail = msg->tail;
@@ -384,8 +381,6 @@ int gsm0808_dec_speech_codec_list(struct gsm0808_speech_codec_list *scl,
 	OSMO_ASSERT(scl);
 	if (!elem)
 		return -EINVAL;
-	if (len == 0)
-		return -EINVAL;
 
 	memset(scl, 0, sizeof(*scl));
 
@@ -403,11 +398,6 @@ int gsm0808_dec_speech_codec_list(struct gsm0808_speech_codec_list *scl,
 	}
 
 	scl->len = decoded;
-
-	/* Empty list */
-	if (decoded < 1) {
-		return -EINVAL;
-	}
 
 	return (int)(elem - old_elem);
 }

@@ -695,6 +695,28 @@ static void test_gsm0808_enc_dec_speech_codec_list()
 	msgb_free(msg);
 }
 
+static void test_gsm0808_enc_dec_empty_speech_codec_list()
+{
+	struct gsm0808_speech_codec_list enc_scl = {
+		.len = 0,
+	};
+	struct gsm0808_speech_codec_list dec_scl = {};
+	struct msgb *msg;
+	uint8_t rc_enc;
+	int rc_dec;
+
+	msg = msgb_alloc(1024, "output buffer");
+	rc_enc = gsm0808_enc_speech_codec_list(msg, &enc_scl);
+	OSMO_ASSERT(rc_enc == 2);
+
+	rc_dec = gsm0808_dec_speech_codec_list(&dec_scl, msg->data + 2, msg->len - 2);
+	OSMO_ASSERT(rc_dec == 0);
+
+	OSMO_ASSERT(memcmp(&enc_scl, &dec_scl, sizeof(enc_scl)) == 0);
+
+	msgb_free(msg);
+}
+
 static void test_gsm0808_enc_dec_channel_type()
 {
 	struct gsm0808_channel_type enc_ct = {
@@ -1725,6 +1747,7 @@ int main(int argc, char **argv)
 	test_gsm0808_enc_dec_speech_codec_ext_with_cfg();
 	test_gsm0808_enc_dec_speech_codec_with_cfg();
 	test_gsm0808_enc_dec_speech_codec_list();
+	test_gsm0808_enc_dec_empty_speech_codec_list();
 	test_gsm0808_enc_dec_channel_type();
 	test_gsm0808_enc_dec_encrypt_info();
 
