@@ -144,6 +144,7 @@ static struct node *file_read(void *ctx, const char *fname)
 			if (indent > cur_indent+1) {
 				fprintf(stderr, "File '%s' isn't well-formed in line %u, aborting!\n",
 					fname, line_num);
+				fclose(infile);
 				return NULL;
 			}
 			/* new child to last node */
@@ -166,6 +167,7 @@ static struct node *file_read(void *ctx, const char *fname)
 		cur_indent = indent;
 	}
 
+	fclose(infile);
 	return root;
 }
 
