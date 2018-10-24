@@ -101,7 +101,7 @@ int telnet_init_dynif(void *tall_ctx, void *priv, const char *ip, int port)
 		return -1;
 	}
 
-	LOGP(DLGLOBAL, LOGL_NOTICE, "telnet at %s %d\n", ip, port);
+	LOGP(DLGLOBAL, LOGL_NOTICE, "Available via telnet %s %d\n", ip, port);
 	return 0;
 }
 
