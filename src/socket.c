@@ -682,7 +682,7 @@ int osmo_sock_unix_init_ofd(struct osmo_fd *ofd, uint16_t type, uint8_t proto,
 	return osmo_fd_init_ofd(ofd, osmo_sock_unix_init(type, proto, socket_path, flags));
 }
 
-/*! Get address/port information on soocket in dyn-alloc string
+/*! Get address/port information on socket in dyn-alloc string
  *  \param[in] ctx talloc context from which to allocate string buffer
  *  \param[in] fd file descriptor of socket
  *  \returns string identifying the connection of this socket
