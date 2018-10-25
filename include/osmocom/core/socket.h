@@ -9,6 +9,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 struct sockaddr;
 struct osmo_fd;
@@ -56,6 +57,11 @@ int osmo_sock_unix_init_ofd(struct osmo_fd *ofd, uint16_t type, uint8_t proto,
 			    const char *socket_path, unsigned int flags);
 
 char *osmo_sock_get_name(void *ctx, int fd);
+int osmo_sock_get_local_ip(int fd, char *host, size_t len);
+int osmo_sock_get_local_ip_port(int fd, char *port, size_t len);
+int osmo_sock_get_remote_ip(int fd, char *host, size_t len);
+int osmo_sock_get_remote_ip_port(int fd, char *port, size_t len);
+
 
 int osmo_sock_mcast_loop_set(int fd, bool enable);
 int osmo_sock_mcast_ttl_set(int fd, uint8_t ttl);
