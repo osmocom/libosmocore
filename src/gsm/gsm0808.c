@@ -265,7 +265,7 @@ struct msgb *gsm0808_create_cipher_complete(struct msgb *layer3, uint8_t alg_id)
 }
 
 /*! Create BSSMAP Cipher Mode Reject message
- *  \param[in] reason TS 08.08 cause value
+ *  \param[in] cause TS 08.08 cause value
  *  \returns callee-allocated msgb with BSSMAP Cipher Mode Reject message */
 struct msgb *gsm0808_create_cipher_reject(uint8_t cause)
 {
