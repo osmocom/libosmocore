@@ -45,7 +45,7 @@ struct msgb *gsm0808_create_layer3_2(const struct msgb *msg_l3, const struct osm
 				     const struct gsm0808_speech_codec_list *scl);
 struct msgb *gsm0808_create_reset(void);
 struct msgb *gsm0808_create_reset_ack(void);
-struct msgb *gsm0808_create_clear_command(uint8_t reason);
+struct msgb *gsm0808_create_clear_command(uint8_t cause);
 struct msgb *gsm0808_create_clear_complete(void);
 struct msgb *gsm0808_create_cipher(const struct gsm0808_encrypt_info *ei,
 				   const uint8_t *cipher_response_mode);

@@ -182,9 +182,9 @@ struct msgb *gsm0808_create_clear_complete(void)
 }
 
 /*! Create BSSMAP Clear Command message
- *  \param[in] reason TS 08.08 cause value
+ *  \param[in] cause TS 08.08 cause value
  *  \returns callee-allocated msgb with BSSMAP Clear Command message */
-struct msgb *gsm0808_create_clear_command(uint8_t reason)
+struct msgb *gsm0808_create_clear_command(uint8_t cause)
 {
 	struct msgb *msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM,
 					       "bssmap: clear command");
@@ -193,7 +193,7 @@ struct msgb *gsm0808_create_clear_command(uint8_t reason)
 
 	msg->l3h = msgb_tv_put(msg, BSSAP_MSG_BSS_MANAGEMENT, 4);
 	msgb_v_put(msg, BSS_MAP_MSG_CLEAR_CMD);
-	msgb_tlv_put(msg, GSM0808_IE_CAUSE, 1, &reason);
+	msgb_tlv_put(msg, GSM0808_IE_CAUSE, 1, &cause);
 
 	return msg;
 }
