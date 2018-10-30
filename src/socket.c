@@ -57,7 +57,7 @@ static struct addrinfo *addrinfo_helper(uint16_t family, uint16_t type, uint8_t 
 					const char *host, uint16_t port, bool passive)
 {
 	struct addrinfo hints, *result;
-	char portbuf[16];
+	char portbuf[6];
 	int rc;
 
 	snprintf(portbuf, sizeof(portbuf), "%u", port);
@@ -698,7 +698,7 @@ static int osmo_sock_get_name2(int fd, char *ip, size_t ip_len, char *port, size
 {
 	struct sockaddr sa;
 	socklen_t len = sizeof(sa);
-	char ipbuf[64], portbuf[16];
+	char ipbuf[INET6_ADDRSTRLEN], portbuf[6];
 	int rc;
 
 	rc = local ? getsockname(fd, &sa, &len) : getpeername(fd, &sa, &len);
@@ -769,8 +769,8 @@ int osmo_sock_get_remote_ip_port(int fd, char *port, size_t len)
  */
 char *osmo_sock_get_name(void *ctx, int fd)
 {
-	char hostbuf_l[64], hostbuf_r[64];
-	char portbuf_l[16], portbuf_r[16];
+	char hostbuf_l[INET6_ADDRSTRLEN], hostbuf_r[INET6_ADDRSTRLEN];
+	char portbuf_l[6], portbuf_r[6];
 
 	/* get local */
 	if (osmo_sock_get_name2(fd, hostbuf_l, sizeof(hostbuf_l), portbuf_l, sizeof(portbuf_l), true))
