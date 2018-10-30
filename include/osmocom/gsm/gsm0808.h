@@ -172,6 +172,30 @@ struct gsm0808_handover_failure {
 };
 struct msgb *gsm0808_create_handover_failure(const struct gsm0808_handover_failure *params);
 
+struct gsm0808_handover_performed {
+	uint16_t cause;
+	struct gsm0808_cell_id cell_id;
+
+	bool chosen_channel_present;
+	uint8_t chosen_channel;
+
+	bool chosen_encr_alg_present;
+	uint8_t chosen_encr_alg;
+
+	bool speech_version_chosen_present;
+	uint8_t speech_version_chosen;
+
+	bool speech_codec_chosen_present;
+	struct gsm0808_speech_codec speech_codec_chosen;
+
+	bool lcls_bss_status_present;
+	enum gsm0808_lcls_status lcls_bss_status;
+
+	/* more items are defined in the spec and may be added later */
+	bool more_items; /*< always set this to false */
+};
+struct msgb *gsm0808_create_handover_performed(const struct gsm0808_handover_performed *params);
+
 struct msgb *gsm0808_create_dtap(struct msgb *msg, uint8_t link_id);
 void gsm0808_prepend_dtap_header(struct msgb *msg, uint8_t link_id);
 

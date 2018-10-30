@@ -892,6 +892,52 @@ struct msgb *gsm0808_create_handover_failure(const struct gsm0808_handover_failu
 	return msg;
 }
 
+/*! Create BSSMAP HANDOVER PERFORMED message, 3GPP TS 48.008 3.2.1.25.
+ * \param[in] params  All information to be encoded.
+ * \returns callee-allocated msgb with BSSMAP HANDOVER PERFORMED message */
+struct msgb *gsm0808_create_handover_performed(const struct gsm0808_handover_performed *params)
+{
+	struct msgb *msg;
+
+	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "BSSMAP-HANDOVER-PERFORMED");
+	if (!msg)
+		return NULL;
+
+	/* Message Type, 3.2.2.1 */
+	msgb_v_put(msg, BSS_MAP_MSG_HANDOVER_PERFORMED);
+
+	/* Cause, 3.2.2.5 */
+	msgb_tlv_put(msg, GSM0808_IE_CAUSE, gsm0808_cause_ext(params->cause) ? 2 : 1, (const uint8_t *)&params->cause);
+
+	/* Cell Identifier, 3.2.2.17 */
+	gsm0808_enc_cell_id(msg, &params->cell_id);
+
+	/* Chosen Channel 3.2.2.33 */
+	if (params->chosen_channel_present)
+		msgb_tv_put(msg, GSM0808_IE_CHOSEN_CHANNEL, params->chosen_channel);
+
+	/* Chosen Encryption Algorithm 3.2.2.44 */
+	if (params->chosen_encr_alg_present)
+		msgb_tv_put(msg, GSM0808_IE_CHOSEN_ENCR_ALG, params->chosen_encr_alg);
+
+	/* Speech Version (chosen) 3.2.2.51 */
+	if (params->speech_version_chosen_present)
+		msgb_tv_put(msg, GSM0808_IE_SPEECH_VERSION, params->speech_version_chosen);
+
+	/* AoIP: Speech Codec (chosen) 3.2.2.104 */
+	if (params->speech_codec_chosen_present)
+		gsm0808_enc_speech_codec(msg, &params->speech_codec_chosen);
+
+	/* LCLS-BSS-Status 3.2.2.119 */
+	if (params->lcls_bss_status_present)
+		msgb_tv_put(msg, GSM0808_IE_LCLS_BSS_STATUS, params->lcls_bss_status);
+
+	/* prepend header with final length */
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
+
+	return msg;
+}
+
 /*! Prepend a DTAP header to given Message Buffer
  *  \param[in] msgb Message Buffer
  *  \param[in] link_id Link Identifier */
