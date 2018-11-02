@@ -275,6 +275,7 @@ struct msgb *gsm0808_create_cipher_reject(uint8_t cause)
 		return NULL;
 
 	msgb_v_put(msg, BSS_MAP_MSG_CIPHER_MODE_REJECT);
+	/* FIXME: support 2-byte cause value as per 3GPP TS 08.08 §3.2.2.5 */
 	msgb_tlv_put(msg, GSM0808_IE_CAUSE, 1, &cause);
 
 	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));

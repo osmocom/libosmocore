@@ -248,7 +248,7 @@ static void test_create_cipher_reject()
 	struct msgb *msg;
 
 	printf("Testing creating Cipher Reject\n");
-	msg = gsm0808_create_cipher_reject(0x23);
+	msg = gsm0808_create_cipher_reject(GSM0808_CAUSE_CCCH_OVERLOAD);
 	VERIFY(msg, res, ARRAY_SIZE(res));
 	msgb_free(msg);
 }
