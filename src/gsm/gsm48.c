@@ -604,6 +604,7 @@ int gsm48_generate_mid_from_tmsi(uint8_t *buf, uint32_t tmsi)
 /*! Generate TS 24.008 §10.5.1.4 Mobile ID
  *  \param[out] buf Caller-provided output buffer
  *  \param[in] id Identity to be encoded
+ *  \param[in] mi_type Type of identity (e.g. GSM_MI_TYPE_TMSI)
  *  \returns number of bytes used in \a buf */
 uint8_t gsm48_generate_mid(uint8_t *buf, const char *id, uint8_t mi_type)
 {
