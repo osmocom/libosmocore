@@ -102,7 +102,16 @@ static void test_create_layer3_aoip()
 		0xef, 0xcd, GSM0808_SCT_FR2 | 0xa0, 0x9f,
 		GSM0808_SCT_CSD | 0x90, 0xc0
 	};
-
+	struct osmo_cell_global_id cgi = {
+		.lai = {
+			.plmn = {
+				.mcc = 0x2244,
+				.mnc = 0x1122,
+			},
+			.lac = 0x3366,
+		},
+		.cell_identity = 0x4488,
+	};
 	struct msgb *msg, *in_msg;
 	struct gsm0808_speech_codec_list sc_list;
 	printf("Testing creating Layer3 (AoIP)\n");
@@ -113,9 +122,8 @@ static void test_create_layer3_aoip()
 	in_msg->l3h = in_msg->data;
 	msgb_v_put(in_msg, 0x23);
 
-	msg =
-	    gsm0808_create_layer3_aoip(in_msg, 0x1122, 0x2244, 0x3366, 0x4488,
-				       &sc_list);
+	msg = gsm0808_create_layer3_2(in_msg, &cgi, &sc_list);
+
 	VERIFY(msg, res, ARRAY_SIZE(res));
 
 	msgb_free(msg);
