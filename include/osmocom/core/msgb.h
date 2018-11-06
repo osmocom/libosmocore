@@ -169,6 +169,18 @@ static inline unsigned int msgb_l3len(const struct msgb *msgb)
 	return msgb->tail - (uint8_t *)msgb_l3(msgb);
 }
 
+/*! determine length of L4 message
+ *  \param[in] msgb message buffer
+ *  \returns size of L4 message in bytes
+ *
+ * This function computes the number of bytes between the tail of the
+ * message and the layer 4 header.
+ */
+static inline unsigned int msgb_l4len(const struct msgb *msgb)
+{
+	return msgb->tail - (uint8_t *)msgb_sms(msgb);
+}
+
 /*! determine the length of the header
  *  \param[in] msgb message buffer
  *  \returns number of bytes between start of buffer and start of msg
