@@ -1,5 +1,6 @@
 #pragma once
 
+#include <osmocom/core/utils.h>
 
 /* TS 29.118 Section 9.2 */
 enum sgsap_msg_type {
