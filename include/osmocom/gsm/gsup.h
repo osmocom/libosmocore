@@ -207,7 +207,7 @@ struct osmo_gsup_message {
 	/*! Session state \ref osmo_gsup_session_state */
 	enum osmo_gsup_session_state	session_state;
 	/*! Unique session identifier and origination flag.
-         * Encoded only when \ref session_state != 0x00 */
+	 * Encoded only when \ref session_state != 0x00 */
 	uint32_t			session_id;
 
 	/*! ASN.1 encoded MAP payload for Supplementary Services */
