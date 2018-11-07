@@ -265,18 +265,18 @@ struct msgb *gsm0808_create_cipher_complete(struct msgb *layer3, uint8_t alg_id)
 }
 
 /*! Create BSSMAP Cipher Mode Reject message
- *  \param[in] cause TS 08.08 cause value
+ *  \param[in] cause 3GPP TS 08.08 §3.2.2.5 cause value
  *  \returns callee-allocated msgb with BSSMAP Cipher Mode Reject message */
-struct msgb *gsm0808_create_cipher_reject(uint8_t cause)
+struct msgb *gsm0808_create_cipher_reject(enum gsm0808_cause cause)
 {
 	struct msgb *msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM,
-					       "bssmap: clear complete");
+					       "bssmap: cipher mode reject");
 	if (!msg)
 		return NULL;
 
 	msgb_v_put(msg, BSS_MAP_MSG_CIPHER_MODE_REJECT);
-	/* FIXME: support 2-byte cause value as per 3GPP TS 08.08 §3.2.2.5 */
-	msgb_tlv_put(msg, GSM0808_IE_CAUSE, 1, &cause);
+
+	msgb_tlv_put(msg, GSM0808_IE_CAUSE, 1, (const uint8_t *)&cause);
 
 	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
 
@@ -1271,8 +1271,26 @@ static const struct value_string gsm0808_cause_names[] = {
 	{ 0, NULL }
 };
 
+static const struct value_string gsm0808_cause_class_names[] = {
+	{ GSM0808_CAUSE_CLASS_NORM0,		"Normal event" },
+	{ GSM0808_CAUSE_CLASS_NORM1,		"Normal event" },
+	{ GSM0808_CAUSE_CLASS_RES_UNAVAIL,	"Resource unavailable" },
+	{ GSM0808_CAUSE_CLASS_SRV_OPT_NA,	"Service or option not available" },
+	{ GSM0808_CAUSE_CLASS_SRV_OPT_NIMPL,	"Service or option not implemented" },
+	{ GSM0808_CAUSE_CLASS_INVAL,		"Invalid message" },
+	{ GSM0808_CAUSE_CLASS_PERR,		"Protocol error" },
+	{ GSM0808_CAUSE_CLASS_INTW,		"Interworking" },
+	{ 0, NULL }
+};
+
+/*! Return string name of BSSMAP Cause Class name */
+const char *gsm0808_cause_class_name(enum gsm0808_cause_class class)
+{
+	return get_value_string(gsm0808_cause_class_names, class);
+}
+
 /*! Return string name of BSSMAP Cause name */
-const char *gsm0808_cause_name(uint8_t cause)
+const char *gsm0808_cause_name(enum gsm0808_cause cause)
 {
 	return get_value_string(gsm0808_cause_names, cause);
 }

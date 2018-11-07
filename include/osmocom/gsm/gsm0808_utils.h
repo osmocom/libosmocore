@@ -107,7 +107,20 @@ int gsm0808_speech_codec_from_chan_type(struct gsm0808_speech_codec *sc,
 uint16_t gsm0808_sc_cfg_from_gsm48_mr_cfg(const struct gsm48_multi_rate_conf *cfg, bool fr);
 void gsm48_mr_cfg_from_gsm0808_sc_cfg(struct gsm48_multi_rate_conf *cfg, uint16_t s15_s0);
 
-/*! Return 3GPP TS 48.008 3.2.2.49 Current Channel Type 1 from enum gsm_chan_t. */
+/*! \returns 3GPP TS 08.08 §3.2.2.5 Class of a given Cause */
+static inline enum gsm0808_cause_class gsm0808_cause_class(enum gsm0808_cause cause)
+{
+	return (cause << 1) >> 4;
+}
+
+/*! \returns true if 3GPP TS 08.08 §3.2.2.5 Class has extended bit set */
+static inline bool gsm0808_cause_ext(enum gsm0808_cause cause)
+{
+	/* check that cause looks like 1XXX0000 where XXX represent class */
+	return (cause & 0x80) && !(cause & 0x0F);
+}
+
+/*! \returns 3GPP TS 48.008 3.2.2.49 Current Channel Type 1 from enum gsm_chan_t. */
 static inline uint8_t gsm0808_current_channel_type_1(enum gsm_chan_t type)
 {
 	switch (type) {

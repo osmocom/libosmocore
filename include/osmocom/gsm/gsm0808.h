@@ -50,7 +50,7 @@ struct msgb *gsm0808_create_clear_complete(void);
 struct msgb *gsm0808_create_cipher(const struct gsm0808_encrypt_info *ei,
 				   const uint8_t *cipher_response_mode);
 struct msgb *gsm0808_create_cipher_complete(struct msgb *layer3, uint8_t alg_id);
-struct msgb *gsm0808_create_cipher_reject(uint8_t cause);
+struct msgb *gsm0808_create_cipher_reject(enum gsm0808_cause cause);
 struct msgb *gsm0808_create_classmark_request();
 struct msgb *gsm0808_create_classmark_update(const uint8_t *cm2, uint8_t cm2_len,
 					     const uint8_t *cm3, uint8_t cm3_len);
@@ -178,7 +178,8 @@ const struct tlv_definition *gsm0808_att_tlvdef(void);
 
 const char *gsm0808_bssmap_name(uint8_t msg_type);
 const char *gsm0808_bssap_name(uint8_t msg_type);
-const char *gsm0808_cause_name(uint8_t cause);
+const char *gsm0808_cause_name(enum gsm0808_cause cause);
+const char *gsm0808_cause_class_name(enum gsm0808_cause_class class);
 
 extern const struct value_string gsm0808_lcls_config_names[];
 extern const struct value_string gsm0808_lcls_control_names[];
