@@ -250,14 +250,55 @@ static void test_create_cipher_complete()
 	msgb_free(l3);
 }
 
+static inline void parse_cipher_reject(struct msgb *msg, uint8_t exp)
+{
+	struct tlv_parsed tp;
+	int rc;
+
+	/* skip header and message type so we can parse Cause IE directly */
+	msg->l2h = msgb_data(msg) + sizeof(struct bssmap_header) + 1;
+
+	rc = osmo_bssap_tlv_parse(&tp, msg->l2h, msgb_l2len(msg));
+	if (rc < 0)
+		printf("FIXME: failed (%d) to parse created message %s\n", rc, msgb_hexdump(msg));
+
+	rc = gsm0808_get_cipher_reject_cause(&tp);
+	if (rc < 0)
+		printf("FIXME: failed (%s) to extract Cause from created message %s\n",
+		       strerror(-rc), msgb_hexdump(msg));
+
+	if (exp != (enum gsm0808_cause)rc)
+		printf("FIXME: wrong Cause %d != %u (" OSMO_BIN_SPEC ") extracted from created message %s\n",
+		       rc, exp, OSMO_BIT_PRINT(exp), msgb_hexdump(msg));
+}
+
 static void test_create_cipher_reject()
 {
 	static const uint8_t res[] = { 0x00, 0x04, 0x59, 0x04, 0x01, 0x23 };
+	enum gsm0808_cause cause = GSM0808_CAUSE_CCCH_OVERLOAD;
 	struct msgb *msg;
 
 	printf("Testing creating Cipher Reject\n");
-	msg = gsm0808_create_cipher_reject(GSM0808_CAUSE_CCCH_OVERLOAD);
+	msg = gsm0808_create_cipher_reject(cause);
 	VERIFY(msg, res, ARRAY_SIZE(res));
+
+	parse_cipher_reject(msg, cause);
+
+	msgb_free(msg);
+}
+
+static void test_create_cipher_reject_ext()
+{
+	static const uint8_t res[] = { 0x00, 0x05, 0x59, 0x04, 0x02, 0xd0, 0xFA };
+	uint8_t cause = 0xFA;
+	struct msgb *msg;
+
+	printf("Testing creating Cipher Reject (extended)\n");
+	msg = gsm0808_create_cipher_reject_ext(GSM0808_CAUSE_CLASS_INVAL, cause);
+	VERIFY(msg, res, ARRAY_SIZE(res));
+
+	parse_cipher_reject(msg, cause);
+
 	msgb_free(msg);
 }
 
@@ -1738,6 +1779,7 @@ int main(int argc, char **argv)
 	test_create_cipher();
 	test_create_cipher_complete();
 	test_create_cipher_reject();
+	test_create_cipher_reject_ext();
 	test_create_cm_u();
 	test_create_sapi_reject();
 	test_create_ass();

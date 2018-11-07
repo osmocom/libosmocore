@@ -283,6 +283,30 @@ struct msgb *gsm0808_create_cipher_reject(enum gsm0808_cause cause)
 	return msg;
 }
 
+/*! Create BSSMAP Cipher Mode Reject message
+ *  \param[in] class 3GPP TS 08.08 §3.2.2.5 cause's class
+ *  \param[in] ext 3GPP TS 08.08 §3.2.2.5 cause value (national application extension)
+ *  \returns callee-allocated msgb with BSSMAP Cipher Mode Reject message */
+struct msgb *gsm0808_create_cipher_reject_ext(enum gsm0808_cause_class class, uint8_t ext)
+{
+	uint8_t c[2];
+	struct msgb *msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM,
+					       "bssmap: cipher mode reject");
+	if (!msg)
+		return NULL;
+
+	c[0] = 0x80 | (class << 4); /* set the high bit to indicate extended cause */
+	c[1] = ext;
+
+	msgb_v_put(msg, BSS_MAP_MSG_CIPHER_MODE_REJECT);
+
+	msgb_tlv_put(msg, GSM0808_IE_CAUSE, 2, c);
+
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
+
+	return msg;
+}
+
 /*! Create BSSMAP LCLS CONNECT CONTROL message (TS 48.008 3.2.1.91).
  *  \param[in] config LCLS Configuration
  *  \param[in] control LCLS Connection Status Control

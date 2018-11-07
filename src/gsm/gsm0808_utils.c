@@ -1235,6 +1235,22 @@ void gsm48_mr_cfg_from_gsm0808_sc_cfg(struct gsm48_multi_rate_conf *cfg,
 	cfg->icmi = 1;
 }
 
+int gsm0808_get_cipher_reject_cause(const struct tlv_parsed *tp)
+{
+	const uint8_t *buf = TLVP_VAL_MINLEN(tp, GSM0808_IE_CAUSE, 1);
+
+	if (!buf)
+		return -EBADMSG;
+
+	if (TLVP_LEN(tp, GSM0808_IE_CAUSE) > 1) {
+		if (!gsm0808_cause_ext(buf[0]))
+			return -EINVAL;
+		return buf[1];
+	}
+
+	return buf[0];
+}
+
 /*! Print a human readable name of the cell identifier to the char buffer.
  * This is useful both for struct gsm0808_cell_id and struct gsm0808_cell_id_list2.
  * See also gsm0808_cell_id_name() and gsm0808_cell_id_list_name().

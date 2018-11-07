@@ -51,6 +51,7 @@ struct msgb *gsm0808_create_cipher(const struct gsm0808_encrypt_info *ei,
 				   const uint8_t *cipher_response_mode);
 struct msgb *gsm0808_create_cipher_complete(struct msgb *layer3, uint8_t alg_id);
 struct msgb *gsm0808_create_cipher_reject(enum gsm0808_cause cause);
+struct msgb *gsm0808_create_cipher_reject_ext(enum gsm0808_cause_class class, uint8_t ext);
 struct msgb *gsm0808_create_classmark_request();
 struct msgb *gsm0808_create_classmark_update(const uint8_t *cm2, uint8_t cm2_len,
 					     const uint8_t *cm3, uint8_t cm3_len);
