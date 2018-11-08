@@ -366,6 +366,15 @@ static inline void msgb_push_u32(struct msgb *msg, uint32_t word)
 	osmo_store32be(word, space);
 }
 
+static inline unsigned char *msgb_wrap_with_TL(struct msgb *msgb, uint8_t tag)
+{
+	uint8_t *data = msgb_push(msgb, 2);
+
+	data[0] = tag;
+	data[1] = msgb->len - 2;
+	return data;
+}
+
 /*! remove (pull) a header from the front of the message buffer
  *  \param[in] msgb message buffer
  *  \param[in] len number of octets to be pulled

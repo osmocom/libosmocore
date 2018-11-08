@@ -341,6 +341,12 @@ static inline uint8_t *msgb_tlv_push(struct msgb *msg, uint8_t tag, uint8_t len,
 	return buf;
 }
 
+/*! push 1-byte tagged value */
+static inline uint8_t *msgb_tlv1_push(struct msgb *msg, uint8_t tag, uint8_t val)
+{
+	return msgb_tlv_push(msg, tag, 1, &val);
+}
+
 /*! push (prepend) a TV field to a \ref msgb
  *  \returns pointer to first byte of newly-pushed information */
 static inline uint8_t *msgb_tv_push(struct msgb *msg, uint8_t tag, uint8_t val)
