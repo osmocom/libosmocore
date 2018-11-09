@@ -98,15 +98,18 @@
 
 #include "../../config.h"
 
+#if (!EMBEDDED)
 /* FIXME: this can be removed once we bump glibc requirements to 2.25: */
-#if defined(__GLIBC__) && (__GLIBC__ >= 2) && (__GLIBC_MINOR__ >= 25)
+#if defined(__GLIBC_PREREQ) && __GLIBC_PREREQ(2,25)
+#pragma message ("glibc " OSMO_STRINGIFY_VAL(__GLIBC__) "." OSMO_STRINGIFY_VAL(__GLIBC_MINOR__) " random detected")
 #include <sys/random.h>
 #elif HAVE_DECL_SYS_GETRANDOM
 #include <sys/syscall.h>
 #ifndef GRND_NONBLOCK
 #define GRND_NONBLOCK 0x0001
-#endif
-#endif
+#endif /* ifndef GRND_NONBLOCK */
+#endif /* if __GLIBC_PREREQ */
+#endif /* !EMBEDDED */
 
 #if (USE_GNUTLS)
 #pragma message ("including GnuTLS for getrandom fallback.")
@@ -131,7 +134,8 @@ static void on_dso_unload_gnutls(void)
 	if (!gnutls_check_version("3.3.0"))
 		gnutls_global_deinit();
 }
-#endif
+
+#endif /* if (USE_GNUTLS) */
 
 /* ETSI GSM 03.38 6.2.1 and 6.2.1.1 default alphabet
  * Greek symbols at hex positions 0x10 and 0x12-0x1a
@@ -441,19 +445,19 @@ int osmo_get_rand_id(uint8_t *out, size_t len)
 	/* this function is intended for generating short identifiers only, not arbitrary-length random data */
 	if (len > OSMO_MAX_RAND_ID_LEN)
                return -E2BIG;
-
-#if defined(__GLIBC__) && (__GLIBC__ >= 2) && (__GLIBC_MINOR__ >= 25)
+#if (!EMBEDDED)
+#if defined(__GLIBC_PREREQ) && __GLIBC_PREREQ(2,25)
 	rc = getrandom(out, len, GRND_NONBLOCK);
 #elif HAVE_DECL_SYS_GETRANDOM
 #pragma message ("Using direct syscall access for getrandom(): consider upgrading to glibc >= 2.25")
 	/* FIXME: this can be removed once we bump glibc requirements to 2.25: */
 	rc = syscall(SYS_getrandom, out, len, GRND_NONBLOCK);
 #endif
+#endif /* !EMBEDDED */
 
 	/* getrandom() failed entirely: */
 	if (rc < 0) {
 #if (USE_GNUTLS)
-#pragma message ("Secure random failed: using GnuTLS fallback.")
 		return gnutls_rnd(GNUTLS_RND_RANDOM, out, len);
 #endif
 		return -errno;
