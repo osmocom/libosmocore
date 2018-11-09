@@ -103,6 +103,7 @@
 #if defined(__GLIBC_PREREQ) && __GLIBC_PREREQ(2,25)
 #pragma message ("glibc " OSMO_STRINGIFY_VAL(__GLIBC__) "." OSMO_STRINGIFY_VAL(__GLIBC_MINOR__) " random detected")
 #include <sys/random.h>
+#undef USE_GNUTLS
 #elif HAVE_DECL_SYS_GETRANDOM
 #include <sys/syscall.h>
 #ifndef GRND_NONBLOCK
