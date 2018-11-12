@@ -97,6 +97,7 @@ enum osmo_gsup_iei {
 	OSMO_GSUP_SM_RP_UI_IE			= 0x43,
 	OSMO_GSUP_SM_RP_CAUSE_IE		= 0x44,
 	OSMO_GSUP_SM_RP_MMS_IE			= 0x45,
+	OSMO_GSUP_SM_ALERT_RSN_IE		= 0x46,
 };
 
 /*! GSUP message type */
@@ -138,6 +139,10 @@ enum osmo_gsup_message_type {
 	OSMO_GSUP_MSGT_MT_FORWARD_SM_REQUEST	= 0b00101000,
 	OSMO_GSUP_MSGT_MT_FORWARD_SM_ERROR	= 0b00101001,
 	OSMO_GSUP_MSGT_MT_FORWARD_SM_RESULT	= 0b00101010,
+
+	OSMO_GSUP_MSGT_READY_FOR_SM_REQUEST	= 0b00101100,
+	OSMO_GSUP_MSGT_READY_FOR_SM_ERROR	= 0b00101101,
+	OSMO_GSUP_MSGT_READY_FOR_SM_RESULT	= 0b00101110,
 };
 
 #define OSMO_GSUP_IS_MSGT_REQUEST(msgt) (((msgt) & 0b00000011) == 0b00)
@@ -250,6 +255,8 @@ struct osmo_gsup_message {
 	const uint8_t			*sm_rp_cause;
 	/*! SM-RP-MMS (More Messages to Send), section 7.6.8.7 */
 	const uint8_t			*sm_rp_mms;
+	/*! Alert reason (see 3GPP TS 29.002, 7.6.8.8) */
+	enum osmo_gsup_sms_sm_alert_rsn_t	sm_alert_rsn;
 };
 
 int osmo_gsup_decode(const uint8_t *data, size_t data_len,

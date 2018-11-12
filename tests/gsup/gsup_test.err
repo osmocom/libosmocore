@@ -61,6 +61,9 @@
   generated message: 25 01 08 21 43 65 87 09 21 43 f5 30 04 de ad be ef 31 01 03 40 01 fa 44 01 af 
   original message:  25 01 08 21 43 65 87 09 21 43 f5 30 04 de ad be ef 31 01 03 40 01 fa 44 01 af 
   IMSI:              123456789012345
+  generated message: 2c 01 08 21 43 65 87 09 21 43 f5 46 01 02 
+  original message:  2c 01 08 21 43 65 87 09 21 43 f5 46 01 02 
+  IMSI:              123456789012345
   message 0: tested 11 truncations, 11 parse failures
   message 1: tested 14 truncations, 13 parse failures
   message 2: tested 83 truncations, 81 parse failures
@@ -82,6 +85,7 @@
   message 18: tested 44 truncations, 39 parse failures
   message 19: tested 20 truncations, 18 parse failures
   message 20: tested 26 truncations, 22 parse failures
+  message 21: tested 14 truncations, 13 parse failures
 DLGSUP Stopping DLGSUP logging
   message 0: tested 2816 modifications, 510 parse failures
   message 1: tested 3584 modifications, 770 parse failures
@@ -104,3 +108,4 @@ DLGSUP Stopping DLGSUP logging
   message 18: tested 11264 modifications, 2307 parse failures
   message 19: tested 5120 modifications, 1031 parse failures
   message 20: tested 6656 modifications, 1546 parse failures
+  message 21: tested 3584 modifications, 771 parse failures

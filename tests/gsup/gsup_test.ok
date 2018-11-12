@@ -41,4 +41,6 @@ Test GSUP message decoding/encoding
           MO-/MT-ForwardSM Response OK
   Testing MO-/MT-ForwardSM Error
           MO-/MT-ForwardSM Error OK
+  Testing ReadyForSM (MSC -> SMSC) Indication
+          ReadyForSM (MSC -> SMSC) Indication OK
 Done.

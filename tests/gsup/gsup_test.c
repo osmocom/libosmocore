@@ -280,6 +280,15 @@ static void test_gsup_messages_dec_enc(void)
 			0xde, 0xad, 0xbe, 0xef,
 	};
 
+	static const uint8_t send_ready_for_sm_ind[] = {
+		0x2c, /* OSMO_GSUP_MSGT_READY_FOR_SM_REQUEST */
+		TEST_IMSI_IE,
+
+		/* SM related IEs */
+		0x46, 0x01, /* Alert reason */
+			0x02, /* Memory Available (SMMA) */
+	};
+
 	static const struct test {
 		char *name;
 		const uint8_t *data;
@@ -327,6 +336,8 @@ static void test_gsup_messages_dec_enc(void)
 			send_mo_mt_forward_sm_rsp, sizeof(send_mo_mt_forward_sm_rsp)},
 		{"MO-/MT-ForwardSM Error",
 			send_mo_mt_forward_sm_err, sizeof(send_mo_mt_forward_sm_err)},
+		{"ReadyForSM (MSC -> SMSC) Indication",
+			send_ready_for_sm_ind, sizeof(send_ready_for_sm_ind)},
 	};
 
 	printf("Test GSUP message decoding/encoding\n");
@@ -394,7 +405,7 @@ static void test_gsup_messages_dec_enc(void)
 				 * FIXME: share the maximal IE value somehow
 				 * in order to avoid manual updating of this
 				 */
-				OSMO_ASSERT(t->data[j+0] <= OSMO_GSUP_SM_RP_MMS_IE);
+				OSMO_ASSERT(t->data[j+0] <= OSMO_GSUP_SM_ALERT_RSN_IE);
 				OSMO_ASSERT(t->data[j+1] <= ie_end - j - 2);
 
 				ie_end = j;

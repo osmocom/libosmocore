@@ -22,6 +22,13 @@ enum osmo_gsup_sms_sm_rp_oda_t {
 	OSMO_GSUP_SMS_SM_RP_ODA_NULL		= 0xff,
 };
 
+/*! Alert reason values, see 7.6.8.8 */
+enum osmo_gsup_sms_sm_alert_rsn_t {
+	OSMO_GSUP_SMS_SM_ALERT_RSN_NONE		= 0x00,
+	OSMO_GSUP_SMS_SM_ALERT_RSN_MS_PRESENT	= 0x01,
+	OSMO_GSUP_SMS_SM_ALERT_RSN_MEM_AVAIL	= 0x02,
+};
+
 struct osmo_gsup_message;
 struct msgb;
 

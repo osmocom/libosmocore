@@ -75,6 +75,10 @@ const struct value_string osmo_gsup_message_type_names[] = {
 	OSMO_VALUE_STRING(OSMO_GSUP_MSGT_MT_FORWARD_SM_ERROR),
 	OSMO_VALUE_STRING(OSMO_GSUP_MSGT_MT_FORWARD_SM_RESULT),
 
+	OSMO_VALUE_STRING(OSMO_GSUP_MSGT_READY_FOR_SM_REQUEST),
+	OSMO_VALUE_STRING(OSMO_GSUP_MSGT_READY_FOR_SM_ERROR),
+	OSMO_VALUE_STRING(OSMO_GSUP_MSGT_READY_FOR_SM_RESULT),
+
 	{ 0, NULL }
 };
 
@@ -471,6 +475,10 @@ int osmo_gsup_decode(const uint8_t *const_data, size_t data_len,
 			gsup_msg->sm_rp_cause = value;
 			break;
 
+		case OSMO_GSUP_SM_ALERT_RSN_IE:
+			gsup_msg->sm_alert_rsn = *value;
+			break;
+
 		default:
 			LOGP(DLGSUP, LOGL_NOTICE,
 			     "GSUP IE type %d unknown\n", iei);
@@ -697,6 +705,11 @@ int osmo_gsup_encode(struct msgb *msg, const struct osmo_gsup_message *gsup_msg)
 	if (gsup_msg->sm_rp_cause) {
 		msgb_tlv_put(msg, OSMO_GSUP_SM_RP_CAUSE_IE,
 				sizeof(*gsup_msg->sm_rp_cause), gsup_msg->sm_rp_cause);
+	}
+
+	if ((u8 = gsup_msg->sm_alert_rsn)) {
+		msgb_tlv_put(msg, OSMO_GSUP_SM_ALERT_RSN_IE,
+				sizeof(u8), &u8);
 	}
 
 	return 0;
