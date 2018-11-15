@@ -56,7 +56,7 @@ union abis_rsl_link_id {
 #if OSMO_IS_BIG_ENDIAN
 		uint8_t cbits:2,
 			na:1,
-			reserved:2;
+			reserved:2,
 			sapi:3;
 #elif OSMO_IS_LITTLE_ENDIAN
 		uint8_t sapi:3,
