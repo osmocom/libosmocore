@@ -807,7 +807,7 @@ static int32_t smod(int32_t n, int32_t m)
 }
 
 /*! Decode TS 04.08 Cell Channel Description IE (10.5.2.1b) and other frequency lists
- *  \param[out] f Caller-provided output memory
+ *  \param[out] f Caller-provided output memory, an array of 1024 elements
  *  \param[in] cd Cell Channel Description IE
  *  \param[in] len Length of \a cd in bytes
  *  \returns 0 on success; negative on error */
