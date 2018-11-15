@@ -25,29 +25,26 @@ enum gsm414_tch_loop_mode {
 
 #define GSM414_MT_CLOSE_MSLOT_LOOP_CMD	0x20	/* 8.4 */
 struct gsm414_close_mslot_loop_cmd {
-#if OSMO_IS_LITTLE_ENDIAN == 1
+#if OSMO_IS_LITTLE_ENDIAN
 	uint8_t chc:2,
 		loop_mech:3,
 		tn:3;
-#else
-	uint8_t tn:3,
-		loop_mech:3,
-		chc:2;
+#elif OSMO_IS_BIG_ENDIAN
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+	uint8_t tn:3, loop_mech:3, chc:2;
 #endif
 } __attribute__((packed));
 
 #define GSM414_MT_CLOSE_MSLOT_LOOP_ACK	0x21	/* 8.5 */
 struct gsm414_close_mslot_loop_ack {
-#if OSMO_IS_LITTLE_ENDIAN == 1
+#if OSMO_IS_LITTLE_ENDIAN
 	uint8_t err_ind:1,
 		loop_mech:3,
 		chc:2,
 		spare:2;
-#else
-	uint8_t spare:2,
-		chc:2,
-		loop_mech:3,
-		err_ind:1;
+#elif OSMO_IS_BIG_ENDIAN
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+	uint8_t spare:2, chc:2, loop_mech:3, err_ind:1;
 #endif
 } __attribute__((packed));
 
@@ -65,34 +62,32 @@ struct gsm414_close_mslot_loop_ack {
 
 #define GSM414_MT_GPRS_TEST_MODE_CMD	0x24	/* 8.13 */
 struct gsm414_gprs_test_mode_cmd {
-#if OSMO_IS_LITTLE_ENDIAN == 1
+#if OSMO_IS_LITTLE_ENDIAN
 	uint16_t d:12,
 		spare:3,
 		l:1;
 	uint8_t m:1,
 		dl_tx_offset:3,
 		_spare:4;
-#else
-	uint16_t l:1,
+#elif OSMO_IS_BIG_ENDIAN
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+	uint16_t d:12,
 		spare:3,
-		d:12;
-	uint8_t _spare:4,
-		dl_tx_offset:3,
-		m:1;
+		l:1;
+	uint8_t _spare:4, dl_tx_offset:3, m:1;
 #endif
 } __attribute__((packed));
 
 
 #define GSM414_MT_EGPRS_ST_RB_LOOP_CMD	0x25	/* 8.14 */
 struct gsm414_egprs_st_sb_loop_cmd {
-#if OSMO_IS_LITTLE_ENDIAN == 1
+#if OSMO_IS_LITTLE_ENDIAN
 	uint8_t _spare:4,
 		dl_tx_offset:3,
 		m:1;
-#else
-	uint8_t m:1,
-		dl_tx_offset:3,
-		_spare:4;
+#elif OSMO_IS_BIG_ENDIAN
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+	uint8_t m:1, dl_tx_offset:3, _spare:4;
 #endif
 } __attribute__((packed));
 

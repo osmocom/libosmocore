@@ -1,5 +1,6 @@
 #include <osmocom/core/byteswap.h>
 #include <osmocom/core/utils.h>
+#include <osmocom/core/endian.h>
 
 int main(int argc, char **argv)
 {

@@ -19,35 +19,34 @@
 /* Chapter 9.3.2 */
 struct gsm341_ms_message {
 	struct {
-#if OSMO_IS_LITTLE_ENDIAN == 1
+#if OSMO_IS_LITTLE_ENDIAN
 		uint8_t code_hi:6;
 		uint8_t gs:2;
 		uint8_t update:4;
 		uint8_t code_lo:4;
-#else
-		uint8_t gs:2;
-		uint8_t code_hi:6;
-		uint8_t code_lo:4;
-		uint8_t update:4;
+#elif OSMO_IS_BIG_ENDIAN
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+		uint8_t gs:2, code_hi:6;
+		uint8_t code_lo:4, update:4;
 #endif
 	} serial;
 	uint16_t msg_id;
 	struct {
-#if OSMO_IS_LITTLE_ENDIAN == 1
+#if OSMO_IS_LITTLE_ENDIAN
 		uint8_t language:4;
 		uint8_t group:4;
-#else
-		uint8_t group:4;
-		uint8_t language:4;
+#elif OSMO_IS_BIG_ENDIAN
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+		uint8_t group:4, language:4;
 #endif
 	} dcs;
 	struct {
-#if OSMO_IS_LITTLE_ENDIAN == 1
+#if OSMO_IS_LITTLE_ENDIAN
 		uint8_t total:4;
 		uint8_t current:4;
-#else
-		uint8_t current:4;
-		uint8_t total:4;
+#elif OSMO_IS_BIG_ENDIAN
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+		uint8_t current:4, total:4;
 #endif
 	} page;
 	uint8_t data[0];
@@ -56,20 +55,17 @@ struct gsm341_ms_message {
 /* Chapter 9.4.1.3 */
 struct gsm341_etws_message {
 	struct {
-#if OSMO_IS_LITTLE_ENDIAN == 1
+#if OSMO_IS_LITTLE_ENDIAN
 		uint8_t code_hi:4;
 		uint8_t popup:1;
 		uint8_t alert:1;
 		uint8_t gs:2;
 		uint8_t update:4;
 		uint8_t code_lo:4;
-#else
-		uint8_t gs:2;
-		uint8_t alert:1;
-		uint8_t popup:1;
-		uint8_t code_hi:4;
-		uint8_t code_lo:4;
-		uint8_t update:4;
+#elif OSMO_IS_BIG_ENDIAN
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+		uint8_t gs:2, alert:1, popup:1, code_hi:4;
+		uint8_t code_lo:4, update:4;
 #endif
 	} serial;
 	uint16_t msg_id;

@@ -7,6 +7,7 @@
 #include <stdbool.h>
 #include <osmocom/gsm/protocol/gsm_04_08.h>
 #include <osmocom/crypt/gprs_cipher.h>
+#include <osmocom/core/endian.h>
 
 /* Table 10.4 / 10.4a, GPRS Mobility Management (GMM) */
 #define GSM48_MT_GMM_ATTACH_REQ		0x01
@@ -120,11 +121,19 @@ enum gsm48_gprs_ie_sm {
 
 /* Chapter 9.4.15 / Table 9.4.15 */
 struct gsm48_ra_upd_ack {
+#if OSMO_IS_LITTLE_ENDIAN
 	uint8_t force_stby:4,	/* 10.5.5.7 */
 		 upd_result:4;	/* 10.5.5.17 */
 	uint8_t ra_upd_timer;	/* 10.5.7.3 */
 	struct gsm48_ra_id ra_id; /* 10.5.5.15 */
 	uint8_t data[0];
+#elif OSMO_IS_BIG_ENDIAN
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+	uint8_t upd_result:4, force_stby:4;
+	uint8_t ra_upd_timer;
+	struct gsm48_ra_id ra_id;
+	uint8_t data[0];
+#endif
 } __attribute__((packed));
 
 /* Chapter 10.5.7.3 */
@@ -140,28 +149,50 @@ enum gsm48_gprs_tmr_unit {
 
 /* Chapter 9.4.2 / Table 9.4.2 */
 struct gsm48_attach_ack {
+#if OSMO_IS_LITTLE_ENDIAN
 	uint8_t att_result:4,	/* 10.5.5.7 */
 		 force_stby:4;	/* 10.5.5.1 */
 	uint8_t ra_upd_timer;	/* 10.5.7.3 */
 	uint8_t radio_prio;	/* 10.5.7.2 */
 	struct gsm48_ra_id ra_id; /* 10.5.5.15 */
 	uint8_t data[0];
+#elif OSMO_IS_BIG_ENDIAN
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+	uint8_t force_stby:4, att_result:4;
+	uint8_t ra_upd_timer;
+	uint8_t radio_prio;
+	struct gsm48_ra_id ra_id;
+	uint8_t data[0];
+#endif
 } __attribute__((packed));
 
 /* Chapter 9.4.9 / Table 9.4.9 */
 struct gsm48_auth_ciph_req {
+#if OSMO_IS_LITTLE_ENDIAN
 	uint8_t ciph_alg:4,	/* 10.5.5.3 */
 		imeisv_req:4;	/* 10.5.5.10 */
 	uint8_t force_stby:4,	/* 10.5.5.7 */
 		ac_ref_nr:4;	/* 10.5.5.19 */
 	uint8_t data[0];
+#elif OSMO_IS_BIG_ENDIAN
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+	uint8_t imeisv_req:4, ciph_alg:4;
+	uint8_t ac_ref_nr:4, force_stby:4;
+	uint8_t data[0];
+#endif
 } __attribute__((packed));
 /* optional: TV RAND, TV CKSN */
 
 struct gsm48_auth_ciph_resp {
+#if OSMO_IS_LITTLE_ENDIAN
 	uint8_t ac_ref_nr:4,
 		spare:4;
 	uint8_t data[0];
+#elif OSMO_IS_BIG_ENDIAN
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+	uint8_t spare:4, ac_ref_nr:4;
+	uint8_t data[0];
+#endif
 } __attribute__((packed));
 
 /* Chapter 9.5.1 / Table 9.5.1 */
