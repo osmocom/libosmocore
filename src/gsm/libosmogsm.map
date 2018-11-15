@@ -512,6 +512,7 @@ osmo_oap_client_init;
 osmo_oap_client_register;
 
 sgsap_msg_type_names;
+sgsap_iei_names;
 sgsap_eps_lu_type_names;
 sgsap_ismi_det_eps_type_names;
 sgsap_ismi_det_noneps_type_names;

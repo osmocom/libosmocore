@@ -74,7 +74,10 @@ enum sgsap_iei {
 	SGSAP_IE_ADDL_PAGING_INDICATORS		= 0x26,
 	SGSAP_IE_TMSI_BASED_NRI_CONT		= 0x27,
 };
-
+const struct value_string sgsap_iei_names[];
+static inline const char *sgsap_iei_name(enum sgsap_iei iei) {
+	return get_value_string(sgsap_iei_names, iei);
+}
 
 /* TS 29.118 Section 9.4.2 */
 enum sgsap_eps_lu_type {
