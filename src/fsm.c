@@ -414,7 +414,7 @@ const char *osmo_fsm_inst_name(struct osmo_fsm_inst *fi)
 		return fi->fsm->name;
 }
 
-/*! get human-readable name of FSM instance
+/*! get human-readable name of FSM state
  *  \param[in] fsm FSM descriptor
  *  \param[in] state FSM state number
  *  \returns string rendering of the FSM state
