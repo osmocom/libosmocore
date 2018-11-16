@@ -161,7 +161,8 @@ static inline int rach_max_trans_raw2val(int raw) {
 #define	ARFCN_UPLINK	0x4000
 #define	ARFCN_FLAG_MASK	0xf000	/* Reserve the upper 5 bits for flags */
 
-enum gsm_band gsm_arfcn2band(uint16_t arfcn);
+int gsm_arfcn2band_rc(uint16_t arfcn, enum gsm_band *band);
+enum gsm_band gsm_arfcn2band(uint16_t arfcn) OSMO_DEPRECATED("Use gsm_arfcn2band_rc() instead");
 
 /* Convert an ARFCN to the frequency in MHz * 10 */
 uint16_t gsm_arfcn2freq10(uint16_t arfcn, int uplink);

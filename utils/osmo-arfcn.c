@@ -62,6 +62,7 @@ static int arfcn2freq(int arfcn)
 static int freq2arfcn(int freq10, int uplink)
 {
 	uint16_t arfcn;
+	enum gsm_band band;
 
 	if (uplink != 0 && uplink != 1) {
 		fprintf(stderr, "Need to specify uplink or downlink\n");
@@ -75,8 +76,13 @@ static int freq2arfcn(int freq10, int uplink)
 		return -EINVAL;
 	}
 
+	if (gsm_arfcn2band_rc(arfcn, &band) < 0) {
+		fprintf(stderr, "ARFCN contains no valid band\n");
+		return -EINVAL;
+	}
+
 	printf("%s: ARFCN %4d\n",
-		gsm_band_name(gsm_arfcn2band(arfcn)),
+		gsm_band_name(band),
 		arfcn & ~ARFCN_FLAG_MASK);
 	return 0;
 }

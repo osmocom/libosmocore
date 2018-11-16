@@ -349,6 +349,7 @@ gsm_7bit_decode_n_hdr;
 gsm_7bit_encode_n;
 gsm_7bit_encode_n_ussd;
 
+gsm_arfcn2band_rc;
 gsm_arfcn2band;
 gsm_arfcn2freq10;
 gsm_freq102arfcn;
