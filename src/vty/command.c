@@ -47,6 +47,11 @@ Boston, MA  02110-1301, USA. */
 #include <osmocom/core/talloc.h>
 #include <osmocom/core/utils.h>
 
+#ifndef MAXPATHLEN
+  #define MAXPATHLEN 4096
+#endif
+
+
 /*! \addtogroup command
  *  @{
  *  VTY command handling

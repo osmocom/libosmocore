@@ -67,6 +67,11 @@
 #include <osmocom/vty/buffer.h>
 #include <osmocom/core/talloc.h>
 
+#ifndef MAXPATHLEN
+  #define MAXPATHLEN 4096
+#endif
+
+
 /* \addtogroup vty
  * @{
  * \file vty.c */
