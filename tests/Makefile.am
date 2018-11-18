@@ -336,7 +336,7 @@ noinst_HEADERS = conv/conv.h
 TESTSUITE = $(srcdir)/testsuite
 
 check-local: atconfig $(TESTSUITE)
-	cat /proc/cpuinfo
+	[ -e /proc/cpuinfo ] && cat /proc/cpuinfo
 	$(SHELL) '$(TESTSUITE)' $(TESTSUITEFLAGS)
 	$(MAKE) $(AM_MAKEFLAGS) ext-tests
 
