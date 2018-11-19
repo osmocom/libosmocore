@@ -1413,8 +1413,10 @@ int gprs_ns_process_msg(struct gprs_ns_inst *nsi, struct msgb *msg,
 		/* Section 7.2: unblocking procedure */
 		LOGP(DNS, LOGL_INFO, "NSEI=%u Rx NS UNBLOCK\n", (*nsvc)->nsei);
 		ns_mark_unblocked(*nsvc);
-		ns_osmo_signal_dispatch(*nsvc, S_NS_UNBLOCK, 0);
 		rc = gprs_ns_tx_simple(*nsvc, NS_PDUT_UNBLOCK_ACK);
+		if (rc < 0)
+			break;
+		ns_osmo_signal_dispatch(*nsvc, S_NS_UNBLOCK, 0);
 		break;
 	case NS_PDUT_UNBLOCK_ACK:
 		LOGP(DNS, LOGL_INFO, "NSEI=%u Rx NS UNBLOCK ACK\n", (*nsvc)->nsei);
