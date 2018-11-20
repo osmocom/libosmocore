@@ -569,6 +569,25 @@ int osmo_sockaddr_is_local(struct sockaddr *addr, unsigned int addrlen)
 	return 0;
 }
 
+/*! Convert sockaddr_in to IP address as char string and port as uint16_t.
+ *  \param[out] addr  String buffer to write IP address to, or NULL.
+ *  \param[out] addr_len  Size of \a addr.
+ *  \param[out] port  Pointer to uint16_t to write the port number to, or NULL.
+ *  \param[in] sin  Sockaddr to convert.
+ *  \returns the required string buffer size, like osmo_strlcpy(), or 0 if \a addr is NULL.
+ */
+size_t osmo_sockaddr_in_to_str_and_uint(char *addr, unsigned int addr_len, uint16_t *port,
+					const struct sockaddr_in *sin)
+{
+	if (port)
+		*port = ntohs(sin->sin_port);
+
+	if (addr)
+		return osmo_strlcpy(addr, inet_ntoa(sin->sin_addr), addr_len);
+
+	return 0;
+}
+
 /*! Convert sockaddr to IP address as char string and port as uint16_t.
  *  \param[out] addr  String buffer to write IP address to, or NULL.
  *  \param[out] addr_len  Size of \a addr.
@@ -581,11 +600,7 @@ unsigned int osmo_sockaddr_to_str_and_uint(char *addr, unsigned int addr_len, ui
 {
 	const struct sockaddr_in *sin = (const struct sockaddr_in *)sa;
 
-	if (port)
-		*port = ntohs(sin->sin_port);
-	if (addr)
-		return osmo_strlcpy(addr, inet_ntoa(sin->sin_addr), addr_len);
-	return 0;
+	return osmo_sockaddr_in_to_str_and_uint(addr, addr_len, port, sin);
 }
 
 /*! Initialize a unix domain socket (including bind/connect)

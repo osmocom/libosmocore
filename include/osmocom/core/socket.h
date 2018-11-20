@@ -11,6 +11,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+struct sockaddr_in;
 struct sockaddr;
 struct osmo_fd;
 
@@ -49,6 +50,8 @@ int osmo_sockaddr_is_local(struct sockaddr *addr, unsigned int addrlen);
 
 unsigned int osmo_sockaddr_to_str_and_uint(char *addr, unsigned int addr_len, uint16_t *port,
 					   const struct sockaddr *sa);
+size_t osmo_sockaddr_in_to_str_and_uint(char *addr, unsigned int addr_len, uint16_t *port,
+					const struct sockaddr_in *sin);
 
 int osmo_sock_unix_init(uint16_t type, uint8_t proto,
 			const char *socket_path, unsigned int flags);
