@@ -424,12 +424,12 @@ struct msgb *gsm0808_create_sapi_reject(uint8_t link_id)
 	return msg;
 }
 
-/*! Create BSSMAP Assignment Request message
+/*! Create BSSMAP Assignment Request message, 3GPP TS 48.008 §3.2.1.1
  *  \param[in] ct Channel Type
  *  \param[in] cic Circuit Identity Code (Classic A only)
  *  \param[in] ss Socket Address of MSC-side RTP socket (AoIP only)
  *  \param[in] scl Speech Codec List (AoIP only)
- *  \param[in] ci Call Identifier (Optional, LCLS)
+ *  \param[in] ci Call Identifier (Optional), §3.2.2.105
  *  \returns callee-allocated msgb with BSSMAP Assignment Request message */
 struct msgb *gsm0808_create_ass(const struct gsm0808_channel_type *ct,
 				const uint16_t *cic,
