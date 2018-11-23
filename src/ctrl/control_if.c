@@ -360,7 +360,7 @@ static int handle_control_read(struct osmo_fd * bfd)
 		 * nothing left to do now. */
 		return 0;
 	} else if (ret < 0) {
-		LOGP(DLCTRL, LOGL_ERROR, "Failed to parse ip access message: %d\n", ret);
+		LOGP(DLCTRL, LOGL_ERROR, "Failed to parse ip access message: %d (%s)\n", ret, strerror(-ret));
 		return 0;
 	}
 
