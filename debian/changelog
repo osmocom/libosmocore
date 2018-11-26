@@ -1,3 +1,122 @@
+libosmocore (0.12.0+ow2) unstable; urgency=medium
+
+  [ Keith ]
+  * Add CC_CAUSE value_string array
+
+  [ Harald Welte ]
+  * Add RSPRO support to IPA and logging definitions
+  * Add new osmo-config-merge utility
+  * logging_vty: Ensure writing well-formed config files
+  * osmo-config-merge: Don't use C99 'for' loop initial declarations
+  * Revert "osmo-config-merge: Add manual page"
+  * osmo-config-merge: fclose() what we fopen()
+  * timerfd_create(): Fix error handling of osmo_fd_register()
+  * telnet_interface: avoid double-close of fd()
+  * vty.c: Set vty->fd to -1 after closing the FD
+  * SGsAP protocol definitions (header + C file)
+  * gsm23003: Add MME domain name related helper functions
+
+  [ Vadim Yanitskiy ]
+  * core/utils.h: drop duplicate '<stdbool.h>' include
+  * core/utils.h: move includes to the top
+  * vty/command.h: document and prettify CMD_ATTR_* flags
+  * utils/osmo-config-merge: explicitly return from main()
+  * libosmogsm/gsup.c: fix error code in osmo_gsup_encode()
+  * gsm/gsup.h: cosmetic: use tab for comment alignment
+  * core/msgb.h: introduce msgb_l4len() helper
+
+  [ Alexander Chemeris ]
+  * coding: Correctly count bits when decoding EDGE bursts with MCS >= 7.
+  * coding: Always initialize bit counters in gsm0503_pdtch_egprs_decode().
+
+  [ Neels Hofmeyr ]
+  * api doc: fix osmo_quote_str_*
+  * add osmo_str_tolower() and _toupper() with test
+  * fix tests linking: don't use system installed libs
+  * logging vty: add VTY transcript test
+  * gsm0808: implement BSSMAP Classmark Request
+  * jenkins: add --enable-external-tests
+  * logging vty: rewrite 'logging level' vty cmd generation
+  * logging vty: deprecate the 'everything' keyword
+  * logging vty: write: check logging levels validity
+  * logging vty: deprecate 'all', introduce 'force-all'
+  * Revert "gsm0808: add function to convert amr gsm0408 setings to gsm0808"
+  * logging vty: add 'logging level set-all <level>'
+  * vty reference: fix deprecation bit evaluation
+  * vty list: fix deprecation/hidden bit logic
+  * vty: omit HIDDEN from vty reference
+  * vty logging: fix crash when missing 'logging enable'
+  * jenkins: print gcc version in log
+  * gsm_44_318.h: remove #if 0 from struct gan_cch_desc_ie
+  * add contrib/struct_endianess.py
+
+  [ Philipp Maier ]
+  * gsm0808: fix wrong codec defaults for OFR_AMR_WB
+  * gsm0808: add function to convert amr gsm0408 setings to gsm0808
+  * gsm0808: add function to convert amr gsm0408 setings to gsm0808
+  * gsm0808_utils: constify parameter
+  * gsm_utils: add function to get value strings for gsm48_chan_mode
+  * gsm0808: add function to convert AMR S15-S0 to gsm0408 settings
+  * gsm0808: allow decoding of zero length speech codec lists.
+  * gsm0808: fix doxygen apidoc
+  * gsm0808: cosmetic: rename parameter "reason" to "cause"
+  * gsm48: correct apidoc for gsm48_generate_mid()
+  * gsm_29_118: add missing include to header file
+  * gsm29118: add value strings for SGSAP IEI
+  * fsm: fix apidoc of osmo_fsm_state_name()
+
+  [ Stefan Sperling ]
+  * ensure unix socket paths are NUL-terminated for bind/connect
+  * fix error handling gprs_ns_nsip_listen()
+  * add support for ipaccess messages on the ctrl interface
+  * stop printing group description in vty_out_rate_ctr_group_fmt()
+  * make 'show rate-counters' show group index
+  * send NS_POUT_UNBLOCK_ACK before signalling S_NS_UNBLOCK
+  * document unblock-ack vs. signalling in gprs_ns_process_msg()
+
+  [ Daniel Willmann ]
+  * osmo-config-merge: Fix some small issues
+  * osmo-config-merge: Add manual page
+  * stats_statsd: Send all stat_items as gauges
+
+  [ Shinjo Park ]
+  * GSMTAP: add definitions for new LTE RRC channels
+  * GSMTAP: add definitions for LTE NAS subtypes
+  * GSMTAP: fix typos in comments
+
+  [ Pau Espin Pedrol ]
+  * gsm_08_58.h: Introduce struct abis_rsl_link_id
+  * gsm_08_58.h: Introduce struct abis_rsl_chan_nr
+  * gsm48: gsm48_decode_freq_list: Improve documentation of paramter f
+  * gsm: Deprecate buggy gsm_arfcn2band API and introduce gsm_arfcn2band_rc
+
+  [ Max ]
+  * vty: adjust telnet log
+  * Update cipher reject function
+  * Fix deprecation warning in gsm0808_test
+  * Add helper wrapper for BSSAP TLV parsing
+  * Update 3GPP TS 08.08 Cause handling
+  * Update GSM0808_LCLS enums
+  * Move msgb_push helpers to public header
+  * Support cipher mode reject with extended cause
+  * Add missing header include
+  * LCLS: add 48.008 parameter structure
+  * Update gsm0808_create_ass() doxygen
+
+  [ Oliver Smith ]
+  * cosmetic: fix typo (soocket -> socket)
+  * add osmo_sock_get_{local,remote}_ip{,_port}()
+  * socket.c: fix IP and port buffer sizes
+  * merge_doc.xsl: move to osmo-gsm-manuals.git
+
+  [ Martin Hauke ]
+  * gsm/protocol/gsm_08_58.h: Fix typo
+
+  [ Daniel Willmann ]
+  * New version for On-Waves from commit 7ab5fc1f3b37
+
+ -- Daniel Willmann <daniel@totalueberwachung.de>  Mon, 26 Nov 2018 12:35:55 +0100
+
 libosmocore (0.12.0+ow1) unstable; urgency=medium
 
   * Version for On-Waves
