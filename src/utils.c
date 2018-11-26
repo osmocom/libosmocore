@@ -557,8 +557,8 @@ const char *osmo_escape_str(const char *str, int in_len)
 /*! Like osmo_escape_str(), but returns double-quotes around a string, or "NULL" for a NULL string.
  * This allows passing any char* value and get its C representation as string.
  * \param[in] str  A string that may contain any characters.
- * \param[in] len  Pass -1 to print until nul char, or >= 0 to force a length.
- * \returns buf containing an escaped representation, possibly truncated, or str itself.
+ * \param[in] in_len  Pass -1 to print until nul char, or >= 0 to force a length.
+ * \returns buf containing a quoted and escaped representation, possibly truncated.
  */
 const char *osmo_quote_str_buf(const char *str, int in_len, char *buf, size_t bufsize)
 {
@@ -587,6 +587,12 @@ const char *osmo_quote_str_buf(const char *str, int in_len, char *buf, size_t bu
 	return buf;
 }
 
+/*! Like osmo_quote_str_buf() but returns the result in a static buffer.
+ * The static buffer is shared with get_value_string() and osmo_escape_str().
+ * \param[in] str  A string that may contain any characters.
+ * \param[in] in_len  Pass -1 to print until nul char, or >= 0 to force a length.
+ * \returns static buffer containing a quoted and escaped representation, possibly truncated.
+ */
 const char *osmo_quote_str(const char *str, int in_len)
 {
 	return osmo_quote_str_buf(str, in_len, namebuf, sizeof(namebuf));
@@ -630,6 +636,92 @@ uint32_t osmo_isqrt32(uint32_t x)
 		g1 = (g0 + (x/g0)) >> 1;
 	}
 	return g0;
+}
+
+/*! Convert a string to lowercase, while checking buffer size boundaries.
+ * The result written to \a dest is guaranteed to be nul terminated if \a dest_len > 0.
+ * If dest == src, the string is converted in-place, if necessary truncated at dest_len - 1 characters
+ * length as well as nul terminated.
+ * Note: similar osmo_str2lower(), but safe to use for src strings of arbitrary length.
+ *  \param[out] dest  Target buffer to write lowercase string.
+ *  \param[in] dest_len  Maximum buffer size of dest (e.g. sizeof(dest)).
+ *  \param[in] src  String to convert to lowercase.
+ *  \returns Length of \a src, like osmo_strlcpy(), but if \a dest == \a src at most \a dest_len - 1.
+ */
+size_t osmo_str_tolower_buf(char *dest, size_t dest_len, const char *src)
+{
+	size_t rc;
+	if (dest == src) {
+		if (dest_len < 1)
+			return 0;
+		dest[dest_len - 1] = '\0';
+		rc = strlen(dest);
+	} else {
+		if (dest_len < 1)
+			return strlen(src);
+		rc = osmo_strlcpy(dest, src, dest_len);
+	}
+	for (; *dest; dest++)
+		*dest = tolower(*dest);
+	return rc;
+}
+
+/*! Convert a string to lowercase, using a static buffer.
+ * The resulting string may be truncated if the internally used static buffer is shorter than src.
+ * The internal buffer is at least 128 bytes long, i.e. guaranteed to hold at least 127 characters and a
+ * terminating nul.
+ * See also osmo_str_tolower_buf().
+ * \param[in] src  String to convert to lowercase.
+ * \returns Resulting lowercase string in a static buffer, always nul terminated.
+ */
+const char *osmo_str_tolower(const char *src)
+{
+	static char buf[128];
+	osmo_str_tolower_buf(buf, sizeof(buf), src);
+	return buf;
+}
+
+/*! Convert a string to uppercase, while checking buffer size boundaries.
+ * The result written to \a dest is guaranteed to be nul terminated if \a dest_len > 0.
+ * If dest == src, the string is converted in-place, if necessary truncated at dest_len - 1 characters
+ * length as well as nul terminated.
+ * Note: similar osmo_str2upper(), but safe to use for src strings of arbitrary length.
+ *  \param[out] dest  Target buffer to write uppercase string.
+ *  \param[in] dest_len  Maximum buffer size of dest (e.g. sizeof(dest)).
+ *  \param[in] src  String to convert to uppercase.
+ *  \returns Length of \a src, like osmo_strlcpy(), but if \a dest == \a src at most \a dest_len - 1.
+ */
+size_t osmo_str_toupper_buf(char *dest, size_t dest_len, const char *src)
+{
+	size_t rc;
+	if (dest == src) {
+		if (dest_len < 1)
+			return 0;
+		dest[dest_len - 1] = '\0';
+		rc = strlen(dest);
+	} else {
+		if (dest_len < 1)
+			return strlen(src);
+		rc = osmo_strlcpy(dest, src, dest_len);
+	}
+	for (; *dest; dest++)
+		*dest = toupper(*dest);
+	return rc;
+}
+
+/*! Convert a string to uppercase, using a static buffer.
+ * The resulting string may be truncated if the internally used static buffer is shorter than src.
+ * The internal buffer is at least 128 bytes long, i.e. guaranteed to hold at least 127 characters and a
+ * terminating nul.
+ * See also osmo_str_toupper_buf().
+ * \param[in] src  String to convert to uppercase.
+ * \returns Resulting uppercase string in a static buffer, always nul terminated.
+ */
+const char *osmo_str_toupper(const char *src)
+{
+	static char buf[128];
+	osmo_str_toupper_buf(buf, sizeof(buf), src);
+	return buf;
 }
 
 /*! @} */

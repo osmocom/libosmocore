@@ -679,7 +679,7 @@ static int vty_dump_nodes(struct vty *vty)
 			elem = vector_slot(cnode->cmd_vector, j);
 			if (!vty_command_is_common(elem))
 				continue;
-			if (!elem->attr & CMD_ATTR_DEPRECATED)
+			if (!(elem->attr & (CMD_ATTR_DEPRECATED | CMD_ATTR_HIDDEN)))
 				vty_dump_element(elem, vty);
 		}
 	}
@@ -717,7 +717,7 @@ static int vty_dump_nodes(struct vty *vty)
 			elem = vector_slot(cnode->cmd_vector, j);
 			if (vty_command_is_common(elem))
 				continue;
-			if (!elem->attr & CMD_ATTR_DEPRECATED)
+			if (!(elem->attr & (CMD_ATTR_DEPRECATED | CMD_ATTR_HIDDEN)))
 				vty_dump_element(elem, vty);
 		}
 
@@ -2728,8 +2728,7 @@ gDEFUN(config_list, config_list_cmd, "list", "Print command list\n")
 
 	for (i = 0; i < vector_active(cnode->cmd_vector); i++)
 		if ((cmd = vector_slot(cnode->cmd_vector, i)) != NULL
-		    && !(cmd->attr == CMD_ATTR_DEPRECATED
-			 || cmd->attr == CMD_ATTR_HIDDEN))
+		    && !(cmd->attr & (CMD_ATTR_DEPRECATED | CMD_ATTR_HIDDEN)))
 			vty_out(vty, "  %s%s", cmd->string, VTY_NEWLINE);
 	return CMD_SUCCESS;
 }

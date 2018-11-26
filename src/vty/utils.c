@@ -214,9 +214,6 @@ void vty_out_rate_ctr_group_fmt(struct vty *vty, const char *fmt,
 				struct rate_ctr_group *ctrg)
 {
 	struct vty_out_context vctx = {vty, fmt};
-
-	vty_out(vty, "%s:%s", ctrg->desc->group_description, VTY_NEWLINE);
-
 	rate_ctr_for_each_counter(ctrg, rate_ctr_handler_fmt, &vctx);
 }
 

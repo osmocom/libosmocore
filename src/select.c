@@ -324,11 +324,18 @@ int osmo_timerfd_setup(struct osmo_fd *ofd, int (*cb)(struct osmo_fd *, unsigned
 	ofd->when = BSC_FD_READ;
 
 	if (ofd->fd < 0) {
+		int rc;
+
 		ofd->fd = timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK);
 		if (ofd->fd < 0)
 			return ofd->fd;
 
-		osmo_fd_register(ofd);
+		rc = osmo_fd_register(ofd);
+		if (rc < 0) {
+			close(ofd->fd);
+			ofd->fd = -1;
+			return rc;
+		}
 	}
 	return 0;
 }

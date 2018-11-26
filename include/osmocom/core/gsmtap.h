@@ -245,20 +245,43 @@ enum {
 
 /* LTE RRC message types */
 enum {
-    GSMTAP_LTE_RRC_SUB_DL_CCCH_Message = 0,
-    GSMTAP_LTE_RRC_SUB_DL_DCCH_Message,
-    GSMTAP_LTE_RRC_SUB_UL_CCCH_Message,
-    GSMTAP_LTE_RRC_SUB_UL_DCCH_Message,
-    GSMTAP_LTE_RRC_SUB_BCCH_BCH_Message,
-    GSMTAP_LTE_RRC_SUB_BCCH_DL_SCH_Message,
-    GSMTAP_LTE_RRC_SUB_PCCH_Message,
-    GSMTAP_LTE_RRC_SUB_MCCH_Message,
+	GSMTAP_LTE_RRC_SUB_DL_CCCH_Message = 0,
+	GSMTAP_LTE_RRC_SUB_DL_DCCH_Message,
+	GSMTAP_LTE_RRC_SUB_UL_CCCH_Message,
+	GSMTAP_LTE_RRC_SUB_UL_DCCH_Message,
+	GSMTAP_LTE_RRC_SUB_BCCH_BCH_Message,
+	GSMTAP_LTE_RRC_SUB_BCCH_DL_SCH_Message,
+	GSMTAP_LTE_RRC_SUB_PCCH_Message,
+	GSMTAP_LTE_RRC_SUB_MCCH_Message,
+	GSMTAP_LTE_RRC_SUB_BCCH_BCH_Message_MBMS,
+	GSMTAP_LTE_RRC_SUB_BCCH_DL_SCH_Message_BR,
+	GSMTAP_LTE_RRC_SUB_BCCH_DL_SCH_Message_MBMS,
+	GSMTAP_LTE_RRC_SUB_SC_MCCH_Message,
+	GSMTAP_LTE_RRC_SUB_SBCCH_SL_BCH_Message,
+	GSMTAP_LTE_RRC_SUB_SBCCH_SL_BCH_Message_V2X,
+	GSMTAP_LTE_RRC_SUB_DL_CCCH_Message_NB,
+	GSMTAP_LTE_RRC_SUB_DL_DCCH_Message_NB,
+	GSMTAP_LTE_RRC_SUB_UL_CCCH_Message_NB,
+	GSMTAP_LTE_RRC_SUB_UL_DCCH_Message_NB,
+	GSMTAP_LTE_RRC_SUB_BCCH_BCH_Message_NB,
+	GSMTAP_LTE_RRC_SUB_BCCH_BCH_Message_TDD_NB,
+	GSMTAP_LTE_RRC_SUB_BCCH_DL_SCH_Message_NB,
+	GSMTAP_LTE_RRC_SUB_PCCH_Message_NB,
+	GSMTAP_LTE_RRC_SUB_SC_MCCH_Message_NB,
 
-    GSMTAP_LTE_RRC_SUB_MAX
+	GSMTAP_LTE_RRC_SUB_MAX
+};
+
+/* LTE NAS message types */
+enum {
+	GSMTAP_LTE_NAS_PLAIN = 0,
+	GSMTAP_LTE_NAS_SEC_HEADER,
+
+	GSMTAP_LTE_NAS_SUB_MAX
 };
 
 /* ====== DO NOT MAKE UNAPPROVED MODIFICATIONS HERE ===== */
-/*! Structure of the GTMTAP pseudo-header */
+/*! Structure of the GSMTAP pseudo-header */
 struct gsmtap_hdr {
 	uint8_t version;	/*!< version, set to 0x01 currently */
 	uint8_t hdr_len;	/*!< length in number of 32bit words */
@@ -278,7 +301,7 @@ struct gsmtap_hdr {
 
 } __attribute__((packed));
 
-/*! Structure of the GTMTAP libosmocore logging header */
+/*! Structure of the GSMTAP libosmocore logging header */
 struct gsmtap_osmocore_log_hdr {
 	struct {
 		uint32_t sec;

@@ -24,7 +24,9 @@ check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
 		 abis/abis_test endian/endian_test sercomm/sercomm_test	\
 		 prbs/prbs_test gsm23003/gsm23003_test 			\
 		 codec/codec_ecu_fr_test timer/clk_override_test	\
-		 oap/oap_client_test
+		 oap/oap_client_test					\
+		 logging/logging_vty_test				\
+		 $(NULL)
 
 if ENABLE_MSGFILE
 check_PROGRAMS += msgfile/msgfile_test
@@ -76,7 +78,10 @@ abis_abis_test_SOURCES = abis/abis_test.c
 abis_abis_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 
 ctrl_ctrl_test_SOURCES = ctrl/ctrl_test.c
-ctrl_ctrl_test_LDADD = $(LDADD) $(top_builddir)/src/ctrl/libosmoctrl.la
+ctrl_ctrl_test_LDADD = $(LDADD) \
+	$(top_builddir)/src/ctrl/libosmoctrl.la \
+	$(top_builddir)/src/gsm/libosmogsm.la \
+	$(top_builddir)/src/vty/libosmovty.la
 
 gea_gea_test_SOURCES = gea/gea_test.c
 gea_gea_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
@@ -130,20 +135,27 @@ ussd_ussd_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 
 gb_bssgp_fc_test_SOURCES = gb/bssgp_fc_test.c
 gb_bssgp_fc_test_LDADD = $(LDADD) $(top_builddir)/src/gb/libosmogb.la \
+			 $(top_builddir)/src/vty/libosmovty.la \
 			 $(top_builddir)/src/gsm/libosmogsm.la
 
 gb_gprs_bssgp_test_SOURCES = gb/gprs_bssgp_test.c
 gb_gprs_bssgp_test_LDADD = $(LDADD) $(top_builddir)/src/gb/libosmogb.la $(LIBRARY_DLSYM) \
+			   $(top_builddir)/src/vty/libosmovty.la \
 			   $(top_builddir)/src/gsm/libosmogsm.la
 
 gb_gprs_ns_test_SOURCES = gb/gprs_ns_test.c
 gb_gprs_ns_test_LDADD = $(LDADD) $(top_builddir)/src/gb/libosmogb.la $(LIBRARY_DLSYM) \
+			$(top_builddir)/src/vty/libosmovty.la \
 			$(top_builddir)/src/gsm/libosmogsm.la
 
 logging_logging_test_SOURCES = logging/logging_test.c
 
+logging_logging_vty_test_SOURCES = logging/logging_vty_test.c
+logging_logging_vty_test_LDADD = $(LDADD) $(top_builddir)/src/vty/libosmovty.la
+
 fr_fr_test_SOURCES = fr/fr_test.c
 fr_fr_test_LDADD = $(LDADD) $(top_builddir)/src/gb/libosmogb.la $(LIBRARY_DLSYM) \
+		   $(top_builddir)/src/vty/libosmovty.la \
 		   $(top_builddir)/src/gsm/libosmogsm.la
 
 codec_codec_test_SOURCES = codec/codec_test.c
@@ -177,7 +189,11 @@ oap_oap_client_test_SOURCES = oap/oap_client_test.c
 oap_oap_client_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 
 fsm_fsm_test_SOURCES = fsm/fsm_test.c
-fsm_fsm_test_LDADD = $(LDADD) $(top_builddir)/src/ctrl/libosmoctrl.la
+fsm_fsm_test_LDADD = \
+	$(LDADD) \
+	$(top_builddir)/src/ctrl/libosmoctrl.la \
+	$(top_builddir)/src/gsm/libosmogsm.la \
+	$(top_builddir)/src/vty/libosmovty.la
 
 write_queue_wqueue_test_SOURCES = write_queue/wqueue_test.c
 
@@ -269,6 +285,7 @@ TESTSUITE = $(srcdir)/testsuite
 check-local: atconfig $(TESTSUITE)
 	cat /proc/cpuinfo
 	$(SHELL) '$(TESTSUITE)' $(TESTSUITEFLAGS)
+	$(MAKE) $(AM_MAKEFLAGS) ext-tests
 
 installcheck-local: atconfig $(TESTSUITE)
 	$(SHELL) '$(TESTSUITE)' AUTOTEST_PATH='$(bindir)' \
@@ -287,3 +304,25 @@ $(TESTSUITE): $(srcdir)/testsuite.at $(srcdir)/package.m4
 conv/gsm0503_test_vectors.c: $(top_srcdir)/utils/conv_gen.py $(top_srcdir)/utils/conv_codes_gsm.py
 	$(AM_V_GEN)python $(top_srcdir)/utils/conv_gen.py gen_vectors gsm \
 		--target-path $(builddir)/conv
+
+if ENABLE_EXT_TESTS
+ext-tests:
+# don't run vty and ctrl tests concurrently so that the ports don't conflict
+	$(MAKE) vty-test
+	$(MAKE) ctrl-test
+else
+ext-tests:
+	echo "Not running python-based external tests (determined at configure-time)"
+endif
+
+# To update the VTY script from current application behavior,
+# pass -u to osmo_verify_transcript_vty.py by doing:
+#   make vty-test U=-u
+vty-test:
+	osmo_verify_transcript_vty.py -v \
+		-p 42042 \
+		-r "$(top_builddir)/tests/logging/logging_vty_test" \
+		$(U) $(srcdir)/logging/*.vty
+
+ctrl-test:
+	echo "No CTRL tests exist currently"

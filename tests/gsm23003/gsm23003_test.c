@@ -24,8 +24,10 @@
 #include <stdio.h>
 #include <errno.h>
 #include <strings.h>
+#include <string.h>
 
 #include <osmocom/gsm/gsm23003.h>
+#include <osmocom/gsm/protocol/gsm_23_003.h>
 #include <osmocom/core/utils.h>
 
 #define BOOL_STR(b) ((b)? "true" : "false")
@@ -170,6 +172,76 @@ static bool test_mnc_from_str()
 	return pass;
 }
 
+static bool test_gummei_name()
+{
+	static const struct osmo_gummei gummei = {
+		.plmn = { .mcc = 901, .mnc = 70 },
+		.mme = { .group_id = 0xA123, .code = 0xB1 }
+	};
+	const char *out;
+	bool pass = true;
+
+	out = osmo_gummei_name(&gummei);
+	printf("%s\n", out);
+	if (strcmp(out, "901-70-a123-b1"))
+		pass = false;
+
+	return pass;
+}
+
+static bool test_domain_gen()
+{
+	static const struct osmo_gummei gummei = {
+		.plmn = { .mcc = 901, .mnc = 70 },
+		.mme = { .group_id = 0xA123, .code = 0xB1 }
+	};
+	char out[GSM23003_MME_DOMAIN_LEN];
+	bool pass = true;
+	int rc;
+
+	rc = osmo_gen_home_network_domain(out, &gummei.plmn);
+	if (rc < 0)
+		pass = false;
+	printf("%s -> %s\n", osmo_plmn_name(&gummei.plmn), out);
+	if (strcmp(out, "epc.mnc070.mcc901.3gppnetwork.org"))
+		pass = false;
+
+	rc = osmo_gen_mme_domain(out, &gummei);
+	printf("%s -> %s\n", osmo_gummei_name(&gummei), out);
+	if (strcmp(out, "mmecb1.mmegia123.mme.epc.mnc070.mcc901.3gppnetwork.org"))
+		pass = false;
+
+	return pass;
+}
+
+
+static bool test_domain_parse()
+{
+	static const char *mme_dom_valid = "mmec01.mmegiA001.mme.epc.mnc070.mcc901.3gppnetwork.org";
+	static const char *home_dom_valid = "epc.mnc070.mcc901.3gppnetwork.org";
+	struct osmo_gummei gummei;
+	struct osmo_plmn_id plmn;
+	bool pass = true;
+	int rc;
+
+	rc = osmo_parse_home_network_domain(&plmn, home_dom_valid);
+	if (rc < 0)
+		pass = false;
+	printf("%s -> %s\n", home_dom_valid, osmo_plmn_name(&plmn));
+	if (plmn.mcc != 901 || plmn.mnc != 70)
+		pass = false;
+
+	rc = osmo_parse_mme_domain(&gummei, mme_dom_valid);
+	if (rc < 0)
+		pass = false;
+	printf("%s -> %s\n", mme_dom_valid, osmo_gummei_name(&gummei));
+	if (gummei.plmn.mcc != 901 || gummei.plmn.mnc != 70 ||
+	    gummei.mme.group_id != 0xA001 || gummei.mme.code != 1)
+		pass = false;
+
+	return pass;
+}
+
 int main(int argc, char **argv)
 {
 	bool pass = true;
@@ -177,6 +249,9 @@ int main(int argc, char **argv)
 	pass = pass && test_valid_imsi();
 	pass = pass && test_valid_msisdn();
 	pass = pass && test_mnc_from_str();
+	pass = pass && test_gummei_name();
+	pass = pass && test_domain_gen();
+	pass = pass && test_domain_parse();
 
 	OSMO_ASSERT(pass);
 

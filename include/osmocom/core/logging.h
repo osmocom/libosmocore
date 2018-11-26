@@ -122,7 +122,8 @@ void logp(int subsys, const char *file, int line, int cont, const char *format, 
 #define DLM3UA		-16	/*!< Osmocom M3UA */
 #define DLMGCP		-17	/*!< Osmocom MGCP */
 #define DLJIBUF		-18	/*!< Osmocom Jitter Buffer */
-#define OSMO_NUM_DLIB	18	/*!< Number of logging sub-systems in libraries */
+#define DLRSPRO		-19	/*!< Osmocom Remote SIM Protocol */
+#define OSMO_NUM_DLIB	19	/*!< Number of logging sub-systems in libraries */
 
 /*! Configuration of single log category / sub-system */
 struct log_category {
@@ -372,10 +373,6 @@ int log_targets_reopen(void);
 
 void log_add_target(struct log_target *target);
 void log_del_target(struct log_target *target);
-
-/* Generate command string for VTY use */
-const char *log_vty_command_string() OSMO_DEPRECATED_OUTSIDE_LIBOSMOCORE;
-const char *log_vty_command_description() OSMO_DEPRECATED_OUTSIDE_LIBOSMOCORE;
 
 struct log_target *log_target_find(int type, const char *fname);
 extern struct llist_head osmo_log_target_list;

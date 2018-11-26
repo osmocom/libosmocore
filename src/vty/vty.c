@@ -221,8 +221,10 @@ void vty_close(struct vty *vty)
 	vector_unset(vtyvec, vty->fd);
 
 	/* Close socket. */
-	if (vty->fd > 0)
+	if (vty->fd > 0) {
 		close(vty->fd);
+		vty->fd = -1;
+	}
 
 	if (vty->buf) {
 		talloc_free(vty->buf);

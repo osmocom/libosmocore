@@ -389,20 +389,44 @@ int ctrl_handle_msg(struct ctrl_handle *ctrl, struct ctrl_connection *ccon, stru
 	struct ipaccess_head_ext *iph_ext;
 	int result;
 
+	if (msg->len < sizeof(*iph)) {
+		LOGP(DLCTRL, LOGL_ERROR, "The message is too short.\n");
+		return -EINVAL;
+	}
+	iph = (struct ipaccess_head *) msg->data;
+	if (iph->proto == IPAC_PROTO_IPACCESS) {
+		uint8_t msg_type = *(msg->l2h);
+		switch (msg_type) {
+		case IPAC_MSGT_PING:
+			if (ipa_ccm_send_pong(ccon->write_queue.bfd.fd) < 0)
+				LOGP(DLINP, LOGL_ERROR, "Cannot send PONG message. Reason: %s\n", strerror(errno));
+			break;
+		case IPAC_MSGT_PONG:
+			break;
+		case IPAC_MSGT_ID_ACK:
+			if (ipa_ccm_send_id_ack(ccon->write_queue.bfd.fd) < 0)
+				LOGP(DLINP, LOGL_ERROR, "Cannot send ID_ACK message. Reason: %s\n", strerror(errno));
+			break;
+		default:
+			LOGP(DLCTRL, LOGL_DEBUG, "Received unhandled IPACCESS protocol message of type 0x%x: %s\n",
+			     msg_type, msgb_hexdump(msg));
+			break;
+		}
+		return 0;
+	}
+	if (iph->proto != IPAC_PROTO_OSMO) {
+		LOGP(DLCTRL, LOGL_ERROR, "Protocol mismatch. Received protocol 0x%x message: %s\n",
+		     iph->proto, msgb_hexdump(msg));
+		return -EINVAL;
+	}
 	if (msg->len < sizeof(*iph) + sizeof(*iph_ext)) {
 		LOGP(DLCTRL, LOGL_ERROR, "The message is too short.\n");
 		return -EINVAL;
 	}
-
-	iph = (struct ipaccess_head *) msg->data;
-	if (iph->proto != IPAC_PROTO_OSMO) {
-		LOGP(DLCTRL, LOGL_ERROR, "Protocol mismatch. We got 0x%x\n", iph->proto);
-		return -EINVAL;
-	}
-
 	iph_ext = (struct ipaccess_head_ext *) iph->data;
 	if (iph_ext->proto != IPAC_PROTO_EXT_CTRL) {
-		LOGP(DLCTRL, LOGL_ERROR, "Extended protocol mismatch. We got 0x%x\n", iph_ext->proto);
+		LOGP(DLCTRL, LOGL_ERROR, "Extended protocol mismatch. Received protocol 0x%x message: %s\n",
+		     iph_ext->proto, msgb_hexdump(msg));
 		return -EINVAL;
 	}
 

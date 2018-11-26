@@ -114,6 +114,7 @@ nobase_include_HEADERS = \
                        osmocom/gsm/protocol/gsm_09_02.h \
                        osmocom/gsm/protocol/gsm_12_21.h \
 		       osmocom/gsm/protocol/gsm_23_003.h \
+		       osmocom/gsm/protocol/gsm_29_118.h \
                        osmocom/gsm/protocol/gsm_44_318.h \
                        osmocom/gsm/protocol/ipaccess.h \
                        osmocom/gsm/protocol/smpp34_osmocom.h \
@@ -152,7 +153,10 @@ nobase_include_HEADERS += \
 endif
 
 noinst_HEADERS = \
-	osmocom/gsm/kasumi.h osmocom/gsm/gea.h
+	osmocom/gsm/kasumi.h \
+	osmocom/gsm/gea.h \
+	osmocom/core/logging_internal.h \
+	$(NULL)
 
 osmocom/core/bit%gen.h: osmocom/core/bitXXgen.h.tpl
 	$(AM_V_GEN)$(MKDIR_P) $(dir $@)

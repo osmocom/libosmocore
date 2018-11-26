@@ -184,20 +184,17 @@ static int osmo_stats_reporter_statsd_send_item(struct osmo_stats_reporter *srep
 	const struct osmo_stat_item_group *statg,
 	const struct osmo_stat_item_desc *desc, int64_t value)
 {
-	const char *unit = desc->unit;
-
-	if (unit == OSMO_STAT_ITEM_NO_UNIT) {
-		unit = "g";
-		if (value < 0)
-			osmo_stats_reporter_statsd_send(srep,
+	if (value < 0) {
+		return osmo_stats_reporter_statsd_send(srep,
 				statg->desc->group_name_prefix,
 				statg->idx,
-				desc->name, 0, unit);
+				desc->name, 0, "g");
+	} else {
+		return osmo_stats_reporter_statsd_send(srep,
+			statg->desc->group_name_prefix,
+			statg->idx,
+			desc->name, value, "g");
 	}
-	return osmo_stats_reporter_statsd_send(srep,
-		statg->desc->group_name_prefix,
-		statg->idx,
-		desc->name, value, unit);
 }
 #endif /* !EMBEDDED */
 

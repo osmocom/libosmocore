@@ -102,7 +102,16 @@ static void test_create_layer3_aoip()
 		0xef, 0xcd, GSM0808_SCT_FR2 | 0xa0, 0x9f,
 		GSM0808_SCT_CSD | 0x90, 0xc0
 	};
-
+	struct osmo_cell_global_id cgi = {
+		.lai = {
+			.plmn = {
+				.mcc = 0x2244,
+				.mnc = 0x1122,
+			},
+			.lac = 0x3366,
+		},
+		.cell_identity = 0x4488,
+	};
 	struct msgb *msg, *in_msg;
 	struct gsm0808_speech_codec_list sc_list;
 	printf("Testing creating Layer3 (AoIP)\n");
@@ -113,9 +122,8 @@ static void test_create_layer3_aoip()
 	in_msg->l3h = in_msg->data;
 	msgb_v_put(in_msg, 0x23);
 
-	msg =
-	    gsm0808_create_layer3_aoip(in_msg, 0x1122, 0x2244, 0x3366, 0x4488,
-				       &sc_list);
+	msg = gsm0808_create_layer3_2(in_msg, &cgi, &sc_list);
+
 	VERIFY(msg, res, ARRAY_SIZE(res));
 
 	msgb_free(msg);
@@ -242,14 +250,55 @@ static void test_create_cipher_complete()
 	msgb_free(l3);
 }
 
+static inline void parse_cipher_reject(struct msgb *msg, uint8_t exp)
+{
+	struct tlv_parsed tp;
+	int rc;
+
+	/* skip header and message type so we can parse Cause IE directly */
+	msg->l2h = msgb_data(msg) + sizeof(struct bssmap_header) + 1;
+
+	rc = osmo_bssap_tlv_parse(&tp, msg->l2h, msgb_l2len(msg));
+	if (rc < 0)
+		printf("FIXME: failed (%d) to parse created message %s\n", rc, msgb_hexdump(msg));
+
+	rc = gsm0808_get_cipher_reject_cause(&tp);
+	if (rc < 0)
+		printf("FIXME: failed (%s) to extract Cause from created message %s\n",
+		       strerror(-rc), msgb_hexdump(msg));
+
+	if (exp != (enum gsm0808_cause)rc)
+		printf("FIXME: wrong Cause %d != %u (" OSMO_BIN_SPEC ") extracted from created message %s\n",
+		       rc, exp, OSMO_BIT_PRINT(exp), msgb_hexdump(msg));
+}
+
 static void test_create_cipher_reject()
 {
 	static const uint8_t res[] = { 0x00, 0x04, 0x59, 0x04, 0x01, 0x23 };
+	enum gsm0808_cause cause = GSM0808_CAUSE_CCCH_OVERLOAD;
 	struct msgb *msg;
 
 	printf("Testing creating Cipher Reject\n");
-	msg = gsm0808_create_cipher_reject(0x23);
+	msg = gsm0808_create_cipher_reject(cause);
 	VERIFY(msg, res, ARRAY_SIZE(res));
+
+	parse_cipher_reject(msg, cause);
+
+	msgb_free(msg);
+}
+
+static void test_create_cipher_reject_ext()
+{
+	static const uint8_t res[] = { 0x00, 0x05, 0x59, 0x04, 0x02, 0xd0, 0xFA };
+	uint8_t cause = 0xFA;
+	struct msgb *msg;
+
+	printf("Testing creating Cipher Reject (extended)\n");
+	msg = gsm0808_create_cipher_reject_ext(GSM0808_CAUSE_CLASS_INVAL, cause);
+	VERIFY(msg, res, ARRAY_SIZE(res));
+
+	parse_cipher_reject(msg, cause);
+
 	msgb_free(msg);
 }
 
@@ -689,6 +738,28 @@ static void test_gsm0808_enc_dec_speech_codec_list()
 
 	rc_dec = gsm0808_dec_speech_codec_list(&dec_scl, msg->data + 2, msg->len - 2);
 	OSMO_ASSERT(rc_dec == 7);
+
+	OSMO_ASSERT(memcmp(&enc_scl, &dec_scl, sizeof(enc_scl)) == 0);
+
+	msgb_free(msg);
+}
+
+static void test_gsm0808_enc_dec_empty_speech_codec_list()
+{
+	struct gsm0808_speech_codec_list enc_scl = {
+		.len = 0,
+	};
+	struct gsm0808_speech_codec_list dec_scl = {};
+	struct msgb *msg;
+	uint8_t rc_enc;
+	int rc_dec;
+
+	msg = msgb_alloc(1024, "output buffer");
+	rc_enc = gsm0808_enc_speech_codec_list(msg, &enc_scl);
+	OSMO_ASSERT(rc_enc == 2);
+
+	rc_dec = gsm0808_dec_speech_codec_list(&dec_scl, msg->data + 2, msg->len - 2);
+	OSMO_ASSERT(rc_dec == 0);
 
 	OSMO_ASSERT(memcmp(&enc_scl, &dec_scl, sizeof(enc_scl)) == 0);
 
@@ -1444,6 +1515,258 @@ static void test_gsm0808_enc_dec_cell_id_global()
 	msgb_free(msg);
 }
 
+static void test_gsm0808_sc_cfg_from_gsm48_mr_cfg_single(struct gsm48_multi_rate_conf *cfg)
+{
+	uint16_t s15_s0;
+
+	printf("Input:\n");
+	printf(" m4_75= %u   smod=  %u\n", cfg->m4_75, cfg->smod);
+	printf(" m5_15= %u   spare= %u\n", cfg->m5_15, cfg->spare);
+	printf(" m5_90= %u   icmi=  %u\n", cfg->m5_90, cfg->icmi);
+	printf(" m6_70= %u   nscb=  %u\n", cfg->m6_70, cfg->nscb);
+	printf(" m7_40= %u   ver=   %u\n", cfg->m7_40, cfg->ver);
+	printf(" m7_95= %u\n", cfg->m7_95);
+	printf(" m10_2= %u\n", cfg->m10_2);
+	printf(" m12_2= %u\n", cfg->m12_2);
+
+	s15_s0 = gsm0808_sc_cfg_from_gsm48_mr_cfg(cfg, true);
+	printf("Result (fr):\n");
+	printf(" S15-S0 = %04x = 0b" OSMO_BIN_SPEC OSMO_BIN_SPEC "\n", s15_s0,
+	       OSMO_BIN_PRINT(s15_s0 >> 8), OSMO_BIN_PRINT(s15_s0));
+
+	s15_s0 = gsm0808_sc_cfg_from_gsm48_mr_cfg(cfg, false);
+	printf("Result (hr):\n");
+	printf(" S15-S0 = %04x = 0b" OSMO_BIN_SPEC OSMO_BIN_SPEC "\n", s15_s0,
+	       OSMO_BIN_PRINT(s15_s0 >> 8), OSMO_BIN_PRINT(s15_s0));
+
+	printf("\n");
+}
+
+static void test_gsm0808_sc_cfg_from_gsm48_mr_cfg(void)
+{
+	struct gsm48_multi_rate_conf cfg;
+
+	printf("Testing gsm0808_sc_cfg_from_gsm48_mr_cfg():\n");
+
+	memset(&cfg, 0, sizeof(cfg));
+
+	cfg.m4_75 = 0;
+	cfg.m5_15 = 0;
+	cfg.m5_90 = 0;
+	cfg.m6_70 = 0;
+	cfg.m7_40 = 0;
+	cfg.m7_95 = 0;
+	cfg.m10_2 = 0;
+	cfg.m12_2 = 0;
+	test_gsm0808_sc_cfg_from_gsm48_mr_cfg_single(&cfg);
+
+	cfg.m4_75 = 1;
+	cfg.m5_15 = 0;
+	cfg.m5_90 = 0;
+	cfg.m6_70 = 0;
+	cfg.m7_40 = 0;
+	cfg.m7_95 = 0;
+	cfg.m10_2 = 0;
+	cfg.m12_2 = 0;
+	test_gsm0808_sc_cfg_from_gsm48_mr_cfg_single(&cfg);
+
+	cfg.m4_75 = 0;
+	cfg.m5_15 = 1;
+	cfg.m5_90 = 0;
+	cfg.m6_70 = 0;
+	cfg.m7_40 = 0;
+	cfg.m7_95 = 0;
+	cfg.m10_2 = 0;
+	cfg.m12_2 = 0;
+	test_gsm0808_sc_cfg_from_gsm48_mr_cfg_single(&cfg);
+
+	cfg.m4_75 = 0;
+	cfg.m5_15 = 0;
+	cfg.m5_90 = 1;
+	cfg.m6_70 = 0;
+	cfg.m7_40 = 0;
+	cfg.m7_95 = 0;
+	cfg.m10_2 = 0;
+	cfg.m12_2 = 0;
+	test_gsm0808_sc_cfg_from_gsm48_mr_cfg_single(&cfg);
+
+	cfg.m4_75 = 0;
+	cfg.m5_15 = 0;
+	cfg.m5_90 = 0;
+	cfg.m6_70 = 1;
+	cfg.m7_40 = 0;
+	cfg.m7_95 = 0;
+	cfg.m10_2 = 0;
+	cfg.m12_2 = 0;
+	test_gsm0808_sc_cfg_from_gsm48_mr_cfg_single(&cfg);
+
+	cfg.m4_75 = 0;
+	cfg.m5_15 = 0;
+	cfg.m5_90 = 0;
+	cfg.m6_70 = 0;
+	cfg.m7_40 = 1;
+	cfg.m7_95 = 0;
+	cfg.m10_2 = 0;
+	cfg.m12_2 = 0;
+	test_gsm0808_sc_cfg_from_gsm48_mr_cfg_single(&cfg);
+
+	cfg.m4_75 = 0;
+	cfg.m5_15 = 0;
+	cfg.m5_90 = 0;
+	cfg.m6_70 = 0;
+	cfg.m7_40 = 0;
+	cfg.m7_95 = 1;
+	cfg.m10_2 = 0;
+	cfg.m12_2 = 0;
+	test_gsm0808_sc_cfg_from_gsm48_mr_cfg_single(&cfg);
+
+	cfg.m4_75 = 0;
+	cfg.m5_15 = 0;
+	cfg.m5_90 = 0;
+	cfg.m6_70 = 0;
+	cfg.m7_40 = 0;
+	cfg.m7_95 = 0;
+	cfg.m10_2 = 1;
+	cfg.m12_2 = 0;
+	test_gsm0808_sc_cfg_from_gsm48_mr_cfg_single(&cfg);
+
+	cfg.m4_75 = 0;
+	cfg.m5_15 = 0;
+	cfg.m5_90 = 0;
+	cfg.m6_70 = 0;
+	cfg.m7_40 = 0;
+	cfg.m7_95 = 0;
+	cfg.m10_2 = 0;
+	cfg.m12_2 = 1;
+	test_gsm0808_sc_cfg_from_gsm48_mr_cfg_single(&cfg);
+
+	cfg.m4_75 = 1;
+	cfg.m5_15 = 1;
+	cfg.m5_90 = 1;
+	cfg.m6_70 = 1;
+	cfg.m7_40 = 0;
+	cfg.m7_95 = 0;
+	cfg.m10_2 = 0;
+	cfg.m12_2 = 0;
+	test_gsm0808_sc_cfg_from_gsm48_mr_cfg_single(&cfg);
+
+	cfg.m4_75 = 0;
+	cfg.m5_15 = 0;
+	cfg.m5_90 = 0;
+	cfg.m6_70 = 0;
+	cfg.m7_40 = 1;
+	cfg.m7_95 = 1;
+	cfg.m10_2 = 1;
+	cfg.m12_2 = 1;
+	test_gsm0808_sc_cfg_from_gsm48_mr_cfg_single(&cfg);
+
+	cfg.m4_75 = 0;
+	cfg.m5_15 = 0;
+	cfg.m5_90 = 1;
+	cfg.m6_70 = 1;
+	cfg.m7_40 = 0;
+	cfg.m7_95 = 0;
+	cfg.m10_2 = 1;
+	cfg.m12_2 = 1;
+	test_gsm0808_sc_cfg_from_gsm48_mr_cfg_single(&cfg);
+
+	cfg.m4_75 = 1;
+	cfg.m5_15 = 1;
+	cfg.m5_90 = 0;
+	cfg.m6_70 = 0;
+	cfg.m7_40 = 1;
+	cfg.m7_95 = 1;
+	cfg.m10_2 = 0;
+	cfg.m12_2 = 0;
+	test_gsm0808_sc_cfg_from_gsm48_mr_cfg_single(&cfg);
+
+	cfg.m4_75 = 0;
+	cfg.m5_15 = 1;
+	cfg.m5_90 = 0;
+	cfg.m6_70 = 1;
+	cfg.m7_40 = 0;
+	cfg.m7_95 = 1;
+	cfg.m10_2 = 0;
+	cfg.m12_2 = 1;
+	test_gsm0808_sc_cfg_from_gsm48_mr_cfg_single(&cfg);
+
+	cfg.m4_75 = 1;
+	cfg.m5_15 = 0;
+	cfg.m5_90 = 1;
+	cfg.m6_70 = 0;
+	cfg.m7_40 = 1;
+	cfg.m7_95 = 0;
+	cfg.m10_2 = 1;
+	cfg.m12_2 = 0;
+	test_gsm0808_sc_cfg_from_gsm48_mr_cfg_single(&cfg);
+
+	cfg.m4_75 = 1;
+	cfg.m5_15 = 1;
+	cfg.m5_90 = 1;
+	cfg.m6_70 = 1;
+	cfg.m7_40 = 1;
+	cfg.m7_95 = 1;
+	cfg.m10_2 = 1;
+	cfg.m12_2 = 1;
+	test_gsm0808_sc_cfg_from_gsm48_mr_cfg_single(&cfg);
+}
+
+static void test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single(uint16_t s15_s0)
+{
+	struct gsm48_multi_rate_conf cfg;
+
+	printf("Input:\n");
+	printf(" S15-S0 = %04x = 0b" OSMO_BIN_SPEC OSMO_BIN_SPEC "\n", s15_s0,
+	       OSMO_BIN_PRINT(s15_s0 >> 8), OSMO_BIN_PRINT(s15_s0));
+
+	gsm48_mr_cfg_from_gsm0808_sc_cfg(&cfg, s15_s0);
+
+	printf("Output:\n");
+	printf(" m4_75= %u   smod=  %u\n", cfg.m4_75, cfg.smod);
+	printf(" m5_15= %u   spare= %u\n", cfg.m5_15, cfg.spare);
+	printf(" m5_90= %u   icmi=  %u\n", cfg.m5_90, cfg.icmi);
+	printf(" m6_70= %u   nscb=  %u\n", cfg.m6_70, cfg.nscb);
+	printf(" m7_40= %u   ver=   %u\n", cfg.m7_40, cfg.ver);
+	printf(" m7_95= %u\n", cfg.m7_95);
+	printf(" m10_2= %u\n", cfg.m10_2);
+	printf(" m12_2= %u\n", cfg.m12_2);
+
+	printf("\n");
+}
+
+void test_gsm48_mr_cfg_from_gsm0808_sc_cfg()
+{
+	printf("Testing gsm48_mr_cfg_from_gsm0808_sc_cfg():\n");
+
+	/* Only one codec per setting */
+	test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single
+	    (GSM0808_SC_CFG_DEFAULT_AMR_4_75);
+	test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single
+	    (GSM0808_SC_CFG_DEFAULT_AMR_5_15);
+	test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single
+	    (GSM0808_SC_CFG_DEFAULT_AMR_5_90);
+	test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single
+	    (GSM0808_SC_CFG_DEFAULT_AMR_6_70);
+	test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single
+	    (GSM0808_SC_CFG_DEFAULT_AMR_7_40);
+	test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single
+	    (GSM0808_SC_CFG_DEFAULT_AMR_7_95);
+	test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single
+	    (GSM0808_SC_CFG_DEFAULT_AMR_10_2);
+	test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single
+	    (GSM0808_SC_CFG_DEFAULT_AMR_12_2);
+
+	/* Combinations */
+	test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single
+	    (GSM0808_SC_CFG_DEFAULT_AMR_4_75 | GSM0808_SC_CFG_DEFAULT_AMR_6_70 |
+	     GSM0808_SC_CFG_DEFAULT_AMR_10_2);
+	test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single
+	    (GSM0808_SC_CFG_DEFAULT_AMR_10_2 | GSM0808_SC_CFG_DEFAULT_AMR_12_2 |
+	     GSM0808_SC_CFG_DEFAULT_AMR_7_40);
+	test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single
+	    (GSM0808_SC_CFG_DEFAULT_AMR_7_95 | GSM0808_SC_CFG_DEFAULT_AMR_12_2);
+}
+
 int main(int argc, char **argv)
 {
 	printf("Testing generation of GSM0808 messages\n");
@@ -1456,6 +1779,7 @@ int main(int argc, char **argv)
 	test_create_cipher();
 	test_create_cipher_complete();
 	test_create_cipher_reject();
+	test_create_cipher_reject_ext();
 	test_create_cm_u();
 	test_create_sapi_reject();
 	test_create_ass();
@@ -1473,6 +1797,7 @@ int main(int argc, char **argv)
 	test_gsm0808_enc_dec_speech_codec_ext_with_cfg();
 	test_gsm0808_enc_dec_speech_codec_with_cfg();
 	test_gsm0808_enc_dec_speech_codec_list();
+	test_gsm0808_enc_dec_empty_speech_codec_list();
 	test_gsm0808_enc_dec_channel_type();
 	test_gsm0808_enc_dec_encrypt_info();
 
@@ -1494,6 +1819,9 @@ int main(int argc, char **argv)
 	test_gsm0808_enc_dec_cell_id_ci();
 	test_gsm0808_enc_dec_cell_id_lac_and_ci();
 	test_gsm0808_enc_dec_cell_id_global();
+
+	test_gsm0808_sc_cfg_from_gsm48_mr_cfg();
+	test_gsm48_mr_cfg_from_gsm0808_sc_cfg();
 
 	printf("Done\n");
 	return EXIT_SUCCESS;

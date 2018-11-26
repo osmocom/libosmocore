@@ -14,7 +14,11 @@ if [ ! -d "./contrib" ]; then
   exit 1
 fi
 
-set -x -e
+set -x
+
+gcc --version
+
+set -e
 
 case "$arch" in
 

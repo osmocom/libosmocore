@@ -1495,6 +1495,10 @@ enum gsm48_cc_cause {
 	GSM48_CC_CAUSE_INTERWORKING	= 127,
 };
 
+extern const struct value_string gsm48_cc_cause_names[];
+static inline const char *gsm48_cc_cause_name(enum gsm48_cc_cause val)
+{ return get_value_string(gsm48_cc_cause_names, val); }
+
 /* Annex G, GSM specific cause values for mobility management */
 enum gsm48_reject_value {
 	GSM48_REJECT_IMSI_UNKNOWN_IN_HLR	= 2,

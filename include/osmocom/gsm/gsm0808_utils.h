@@ -29,6 +29,7 @@ struct sockaddr_storage;
 #include <osmocom/gsm/protocol/gsm_04_08.h>
 #include <osmocom/gsm/gsm23003.h>
 #include <osmocom/gsm/gsm_utils.h>
+#include <osmocom/gsm/tlv.h>
 
  /*! (225-1)/2 is the maximum number of elements in a cell identifier list. */
 #define GSM0808_CELL_ID_LIST2_MAXLEN		127
@@ -55,6 +56,14 @@ struct gsm0808_cell_id_list2 {
 	enum CELL_IDENT id_discr;
 	union gsm0808_cell_id_u id_list[GSM0808_CELL_ID_LIST2_MAXLEN];
 	unsigned int id_list_len;
+};
+
+/*! LCLS-related parameters from 3GPP TS 48.008 */
+struct osmo_lcls {
+	enum gsm0808_lcls_config config;   /* §3.2.2.116 Configuration */
+	enum gsm0808_lcls_control control; /* §3.2.2.117 Connection Status Control */
+	struct gsm0808_gcr *gcr;           /* §3.2.2.115 Global Call Reference */
+	bool corr_needed;                  /* §3.2.2.118 Correlation-Not-Needed */
 };
 
 extern const struct value_string gsm0808_cell_id_discr_names[];
@@ -104,8 +113,25 @@ int gsm0808_dec_cell_id(struct gsm0808_cell_id *ci, const uint8_t *elem, uint8_t
 int gsm0808_chan_type_to_speech_codec(uint8_t perm_spch);
 int gsm0808_speech_codec_from_chan_type(struct gsm0808_speech_codec *sc,
 					uint8_t perm_spch);
+uint16_t gsm0808_sc_cfg_from_gsm48_mr_cfg(const struct gsm48_multi_rate_conf *cfg, bool fr);
+void gsm48_mr_cfg_from_gsm0808_sc_cfg(struct gsm48_multi_rate_conf *cfg, uint16_t s15_s0);
 
-/*! Return 3GPP TS 48.008 3.2.2.49 Current Channel Type 1 from enum gsm_chan_t. */
+/*! \returns 3GPP TS 08.08 §3.2.2.5 Class of a given Cause */
+static inline enum gsm0808_cause_class gsm0808_cause_class(enum gsm0808_cause cause)
+{
+	return (cause << 1) >> 4;
+}
+
+/*! \returns true if 3GPP TS 08.08 §3.2.2.5 Class has extended bit set */
+static inline bool gsm0808_cause_ext(enum gsm0808_cause cause)
+{
+	/* check that cause looks like 1XXX0000 where XXX represent class */
+	return (cause & 0x80) && !(cause & 0x0F);
+}
+
+int gsm0808_get_cipher_reject_cause(const struct tlv_parsed *tp);
+
+/*! \returns 3GPP TS 48.008 3.2.2.49 Current Channel Type 1 from enum gsm_chan_t. */
 static inline uint8_t gsm0808_current_channel_type_1(enum gsm_chan_t type)
 {
 	switch (type) {

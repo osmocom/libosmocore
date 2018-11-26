@@ -101,7 +101,7 @@ int telnet_init_dynif(void *tall_ctx, void *priv, const char *ip, int port)
 		return -1;
 	}
 
-	LOGP(DLGLOBAL, LOGL_NOTICE, "telnet at %s %d\n", ip, port);
+	LOGP(DLGLOBAL, LOGL_NOTICE, "Available via telnet %s %d\n", ip, port);
 	return 0;
 }
 
@@ -177,7 +177,7 @@ static int telnet_new_connection(struct osmo_fd *fd, unsigned int what)
 	connection->vty = vty_create(new_connection, connection);
 	if (!connection->vty) {
 		LOGP(0, LOGL_ERROR, "couldn't create VTY\n");
-		close(new_connection);
+		/* vty_create() is already closing the fd if it returns NULL */
 		talloc_free(connection);
 		return -1;
 	}

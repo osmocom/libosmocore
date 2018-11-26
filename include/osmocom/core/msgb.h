@@ -169,6 +169,18 @@ static inline unsigned int msgb_l3len(const struct msgb *msgb)
 	return msgb->tail - (uint8_t *)msgb_l3(msgb);
 }
 
+/*! determine length of L4 message
+ *  \param[in] msgb message buffer
+ *  \returns size of L4 message in bytes
+ *
+ * This function computes the number of bytes between the tail of the
+ * message and the layer 4 header.
+ */
+static inline unsigned int msgb_l4len(const struct msgb *msgb)
+{
+	return msgb->tail - (uint8_t *)msgb_sms(msgb);
+}
+
 /*! determine the length of the header
  *  \param[in] msgb message buffer
  *  \returns number of bytes between start of buffer and start of msg
@@ -352,6 +364,15 @@ static inline void msgb_push_u32(struct msgb *msg, uint32_t word)
 {
 	uint32_t *space = (uint32_t *) msgb_push(msg, 4);
 	osmo_store32be(word, space);
+}
+
+static inline unsigned char *msgb_wrap_with_TL(struct msgb *msgb, uint8_t tag)
+{
+	uint8_t *data = msgb_push(msgb, 2);
+
+	data[0] = tag;
+	data[1] = msgb->len - 2;
+	return data;
 }
 
 /*! remove (pull) a header from the front of the message buffer

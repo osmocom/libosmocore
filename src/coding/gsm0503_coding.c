@@ -938,6 +938,11 @@ int gsm0503_pdtch_egprs_decode(uint8_t *l2_data, const sbit_t *bursts, uint16_t 
 	struct egprs_cps cps;
 	union gprs_rlc_ul_hdr_egprs *hdr;
 
+	if (n_errors)
+		*n_errors = 0;
+	if (n_bits_total)
+		*n_bits_total = 0;
+
 	if ((nbits != GSM0503_GPRS_BURSTS_NBITS) &&
 		(nbits != GSM0503_EGPRS_BURSTS_NBITS)) {
 		/* Invalid EGPRS bit length */
@@ -979,6 +984,9 @@ int gsm0503_pdtch_egprs_decode(uint8_t *l2_data, const sbit_t *bursts, uint16_t 
 		if (rc < 0)
 			return -EFAULT;
 	} else {
+		/* Bit counters for the second block */
+		int n_errors2, n_bits_total2;
+
 		/* MCS-7,8,9 block 1 */
 		rc = egprs_decode_data(l2_data, c1, cps.mcs, cps.p[0],
 			0, n_errors, n_bits_total);
@@ -987,7 +995,11 @@ int gsm0503_pdtch_egprs_decode(uint8_t *l2_data, const sbit_t *bursts, uint16_t 
 
 		/* MCS-7,8,9 block 2 */
 		rc = egprs_decode_data(l2_data, c2, cps.mcs, cps.p[1],
-			1, n_errors, n_bits_total);
+			1, &n_errors2, &n_bits_total2);
+		if (n_errors)
+			*n_errors += n_errors2;
+		if (n_bits_total)
+			*n_bits_total += n_bits_total2;
 		if (rc < 0)
 			return -EFAULT;
 	}

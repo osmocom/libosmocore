@@ -57,7 +57,7 @@ static struct addrinfo *addrinfo_helper(uint16_t family, uint16_t type, uint8_t 
 					const char *host, uint16_t port, bool passive)
 {
 	struct addrinfo hints, *result;
-	char portbuf[16];
+	char portbuf[6];
 	int rc;
 
 	snprintf(portbuf, sizeof(portbuf), "%u", port);
@@ -605,29 +605,27 @@ int osmo_sock_unix_init(uint16_t type, uint8_t proto,
 	struct sockaddr_un local;
 	int sfd, rc, on = 1;
 	unsigned int namelen;
-	const size_t socket_path_len = strlen(socket_path);
 
 	if ((flags & (OSMO_SOCK_F_BIND | OSMO_SOCK_F_CONNECT)) ==
 		     (OSMO_SOCK_F_BIND | OSMO_SOCK_F_CONNECT))
 		return -EINVAL;
 
 	local.sun_family = AF_UNIX;
-	if (socket_path_len == sizeof(local.sun_path)) {
-		/* Handle corner-case where sun_path is not NUL-terminated. See the unix(7) man page. */
-		memcpy(local.sun_path, socket_path, sizeof(local.sun_path));
-	} else if (osmo_strlcpy(local.sun_path, socket_path, sizeof(local.sun_path)) >= sizeof(local.sun_path)) {
+	/* When an AF_UNIX socket is bound, sun_path should be NUL-terminated. See unix(7) man page. */
+	if (osmo_strlcpy(local.sun_path, socket_path, sizeof(local.sun_path)) >= sizeof(local.sun_path)) {
 		LOGP(DLGLOBAL, LOGL_ERROR, "Socket path exceeds maximum length of %zd bytes: %s\n",
 		     sizeof(local.sun_path), socket_path);
 		return -ENOSPC;
 	}
 
 #if defined(BSD44SOCKETS) || defined(__UNIXWARE__)
-	local.sun_len = socket_path_len;
+	local.sun_len = strlen(local.sun_path);
 #endif
 #if defined(BSD44SOCKETS) || defined(SUN_LEN)
 	namelen = SUN_LEN(&local);
 #else
-	namelen = socket_path_len + offsetof(struct sockaddr_un, sun_path);
+	namelen = strlen(local.sun_path) +
+		  offsetof(struct sockaddr_un, sun_path);
 #endif
 
 	sfd = socket(AF_UNIX, type, proto);
@@ -684,44 +682,105 @@ int osmo_sock_unix_init_ofd(struct osmo_fd *ofd, uint16_t type, uint8_t proto,
 	return osmo_fd_init_ofd(ofd, osmo_sock_unix_init(type, proto, socket_path, flags));
 }
 
-/*! Get address/port information on soocket in dyn-alloc string
+/*! Get the IP and/or port number on socket. This is for internal usage.
+ *  Convenience wrappers: osmo_sock_get_local_ip(),
+ *  osmo_sock_get_local_ip_port(), osmo_sock_get_remote_ip(),
+ *  osmo_sock_get_remote_ip_port() and osmo_sock_get_name()
+ *  \param[in] fd file descriptor of socket
+ *  \param[out] ip IP address (will be filled in when not NULL)
+ *  \param[in] ip_len length of the ip buffer
+ *  \param[out] port number (will be filled in when not NULL)
+ *  \param[in] port_len length of the port buffer
+ *  \param[in] local (true) or remote (false) name will get looked at
+ *  \returns 0 on success; negative otherwise
+ */
+static int osmo_sock_get_name2(int fd, char *ip, size_t ip_len, char *port, size_t port_len, bool local)
+{
+	struct sockaddr sa;
+	socklen_t len = sizeof(sa);
+	char ipbuf[INET6_ADDRSTRLEN], portbuf[6];
+	int rc;
+
+	rc = local ? getsockname(fd, &sa, &len) : getpeername(fd, &sa, &len);
+	if (rc < 0)
+		return rc;
+
+	rc = getnameinfo(&sa, len, ipbuf, sizeof(ipbuf),
+			 portbuf, sizeof(portbuf),
+			 NI_NUMERICHOST | NI_NUMERICSERV);
+	if (rc < 0)
+		return rc;
+
+	if (ip)
+		strncpy(ip, ipbuf, ip_len);
+	if (port)
+		strncpy(port, portbuf, port_len);
+	return 0;
+}
+
+/*! Get local IP address on socket
+ *  \param[in] fd file descriptor of socket
+ *  \param[out] ip IP address (will be filled in)
+ *  \param[in] len length of the output buffer
+ *  \returns 0 on success; negative otherwise
+ */
+int osmo_sock_get_local_ip(int fd, char *ip, size_t len)
+{
+	return osmo_sock_get_name2(fd, ip, len, NULL, 0, true);
+}
+
+/*! Get local port on socket
+ *  \param[in] fd file descriptor of socket
+ *  \param[out] port number (will be filled in)
+ *  \param[in] len length of the output buffer
+ *  \returns 0 on success; negative otherwise
+ */
+int osmo_sock_get_local_ip_port(int fd, char *port, size_t len)
+{
+	return osmo_sock_get_name2(fd, NULL, 0, port, len, true);
+}
+
+/*! Get remote IP address on socket
+ *  \param[in] fd file descriptor of socket
+ *  \param[out] ip IP address (will be filled in)
+ *  \param[in] len length of the output buffer
+ *  \returns 0 on success; negative otherwise
+ */
+int osmo_sock_get_remote_ip(int fd, char *ip, size_t len)
+{
+	return osmo_sock_get_name2(fd, ip, len, NULL, 0, false);
+}
+
+/*! Get remote port on socket
+ *  \param[in] fd file descriptor of socket
+ *  \param[out] port number (will be filled in)
+ *  \param[in] len length of the output buffer
+ *  \returns 0 on success; negative otherwise
+ */
+int osmo_sock_get_remote_ip_port(int fd, char *port, size_t len)
+{
+	return osmo_sock_get_name2(fd, NULL, 0, port, len, false);
+}
+
+/*! Get address/port information on socket in dyn-alloc string
  *  \param[in] ctx talloc context from which to allocate string buffer
  *  \param[in] fd file descriptor of socket
  *  \returns string identifying the connection of this socket
  */
 char *osmo_sock_get_name(void *ctx, int fd)
 {
-	struct sockaddr sa_l, sa_r;
-	socklen_t sa_len_l = sizeof(sa_l);
-	socklen_t sa_len_r = sizeof(sa_r);
-	char hostbuf_l[64], hostbuf_r[64];
-	char portbuf_l[16], portbuf_r[16];
-	int rc;
+	char hostbuf_l[INET6_ADDRSTRLEN], hostbuf_r[INET6_ADDRSTRLEN];
+	char portbuf_l[6], portbuf_r[6];
 
-	rc = getsockname(fd, &sa_l, &sa_len_l);
-	if (rc < 0)
+	/* get local */
+	if (osmo_sock_get_name2(fd, hostbuf_l, sizeof(hostbuf_l), portbuf_l, sizeof(portbuf_l), true))
 		return NULL;
 
-	rc = getnameinfo(&sa_l, sa_len_l, hostbuf_l, sizeof(hostbuf_l),
-			 portbuf_l, sizeof(portbuf_l),
-			 NI_NUMERICHOST | NI_NUMERICSERV);
-	if (rc < 0)
-		return NULL;
+	/* get remote */
+	if (!osmo_sock_get_name2(fd, hostbuf_r, sizeof(hostbuf_r), portbuf_r, sizeof(portbuf_r), false))
+		return talloc_asprintf(ctx, "(r=%s:%s<->l=%s:%s)", hostbuf_r, portbuf_r, hostbuf_l, portbuf_l);
 
-	rc = getpeername(fd, &sa_r, &sa_len_r);
-	if (rc < 0)
-		goto local_only;
-
-	rc = getnameinfo(&sa_r, sa_len_r, hostbuf_r, sizeof(hostbuf_r),
-			 portbuf_r, sizeof(portbuf_r),
-			 NI_NUMERICHOST | NI_NUMERICSERV);
-	if (rc < 0)
-		goto local_only;
-
-	return talloc_asprintf(ctx, "(r=%s:%s<->l=%s:%s)", hostbuf_r, portbuf_r,
-				hostbuf_l, portbuf_l);
-
-local_only:
+	/* local only: different format */
 	return talloc_asprintf(ctx, "(r=NULL<->l=%s:%s)", hostbuf_l, portbuf_l);
 }
 

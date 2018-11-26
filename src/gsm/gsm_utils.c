@@ -706,36 +706,61 @@ enum gsm_band gsm_band_parse(const char* mhz)
 	}
 }
 
-/*! Resolve GSM band from ARFCN
+/*! Resolve GSM band from ARFCN.
  *  In Osmocom, we use the highest bit of the \a arfcn to indicate PCS
  *  \param[in] arfcn Osmocom ARFCN, highest bit determines PCS mode
- *  \returns GSM Band */
-enum gsm_band gsm_arfcn2band(uint16_t arfcn)
+ *  \param[out] band GSM Band containing \arfcn if arfcn is valid, undetermined otherwise
+ *  \returns 0 if arfcn is valid and \a band was set, negative on error */
+int gsm_arfcn2band_rc(uint16_t arfcn, enum gsm_band *band)
 {
 	int is_pcs = arfcn & ARFCN_PCS;
 
 	arfcn &= ~ARFCN_FLAG_MASK;
 
-	if (is_pcs)
-		return GSM_BAND_1900;
-	else if (arfcn <= 124)
-		return GSM_BAND_900;
-	else if (arfcn >= 955 && arfcn <= 1023)
-		return GSM_BAND_900;
-	else if (arfcn >= 128 && arfcn <= 251)
-		return GSM_BAND_850;
-	else if (arfcn >= 512 && arfcn <= 885)
-		return GSM_BAND_1800;
-	else if (arfcn >= 259 && arfcn <= 293)
-		return GSM_BAND_450;
-	else if (arfcn >= 306 && arfcn <= 340)
-		return GSM_BAND_480;
-	else if (arfcn >= 350 && arfcn <= 425)
-		return GSM_BAND_810;
-	else if (arfcn >= 438 && arfcn <= 511)
-		return GSM_BAND_750;
-	else
-		return GSM_BAND_1800;
+	if (is_pcs) {
+		*band = GSM_BAND_1900;
+		return 0;
+	} else if (arfcn <= 124) {
+		*band = GSM_BAND_900;
+		return 0;
+	} else if (arfcn >= 955 && arfcn <= 1023) {
+		*band = GSM_BAND_900;
+		return 0;
+	} else if (arfcn >= 128 && arfcn <= 251) {
+		*band = GSM_BAND_850;
+		return 0;
+	} else if (arfcn >= 512 && arfcn <= 885) {
+		*band = GSM_BAND_1800;
+		return 0;
+	} else if (arfcn >= 259 && arfcn <= 293) {
+		*band = GSM_BAND_450;
+		return 0;
+	} else if (arfcn >= 306 && arfcn <= 340) {
+		*band = GSM_BAND_480;
+		return 0;
+	} else if (arfcn >= 350 && arfcn <= 425) {
+		*band = GSM_BAND_810;
+		return 0;
+	} else if (arfcn >= 438 && arfcn <= 511) {
+		*band = GSM_BAND_750;
+		return 0;
+	}
+	return -1;
+}
+
+/*! Resolve GSM band from ARFCN, aborts process on invalid ARFCN.
+ *  In Osmocom, we use the highest bit of the \a arfcn to indicate PCS.
+ *  DEPRECATED: Use gsm_arfcn2band_rc instead.
+ *  \param[in] arfcn Osmocom ARFCN, highest bit determines PCS mode
+ *  \returns GSM Band if ARFCN is valid (part of any valid band), aborts otherwise */
+enum gsm_band gsm_arfcn2band(uint16_t arfcn)
+{
+	enum gsm_band band;
+	if (gsm_arfcn2band_rc(arfcn, &band) == 0)
+		return band;
+
+	osmo_panic("%s:%d Invalid arfcn %" PRIu16 " passed to gsm_arfcn2band\n",
+		   __FILE__, __LINE__, arfcn);
 }
 
 struct gsm_freq_range {

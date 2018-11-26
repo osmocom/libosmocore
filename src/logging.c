@@ -35,7 +35,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <ctype.h>
 
 #ifdef HAVE_STRINGS_H
 #include <strings.h>
@@ -61,13 +60,10 @@ osmo_static_assert(_LOG_FLT_COUNT <= 8*sizeof(((struct log_target*)NULL)->filter
 struct log_info *osmo_log_info;
 
 static struct log_context log_context;
-static void *tall_log_ctx = NULL;
+void *tall_log_ctx = NULL;
 LLIST_HEAD(osmo_log_target_list);
 
-#define LOGLEVEL_DEFS	6	/* Number of loglevels.*/
-
-static const struct value_string loglevel_strs[LOGLEVEL_DEFS+1] = {
-	{ 0,		"EVERYTHING" },
+const struct value_string loglevel_strs[] = {
 	{ LOGL_DEBUG,	"DEBUG" },
 	{ LOGL_INFO,	"INFO" },
 	{ LOGL_NOTICE,	"NOTICE" },
@@ -175,19 +171,7 @@ static const struct log_info_cat internal_cat[OSMO_NUM_DLIB] = {
 	},
 };
 
-/*! descriptive string for each log level */
-/* You have to keep this in sync with the structure loglevel_strs. */
-static const char *loglevel_descriptions[LOGLEVEL_DEFS+1] = {
-	"Don't use. It doesn't log anything",
-	"Log debug messages and higher levels",
-	"Log informational messages and higher levels",
-	"Log noticeable messages and higher levels",
-	"Log error messages and higher levels",
-	"Log only fatal messages",
-	NULL,
-};
-
-static void assert_loginfo(const char *src)
+void assert_loginfo(const char *src)
 {
 	if (!osmo_log_info) {
 		fprintf(stderr, "ERROR: osmo_log_info == NULL! "
@@ -961,149 +945,6 @@ int log_targets_reopen(void)
 	}
 
 	return rc;
-}
-
-/*! Generates the logging command string for VTY
- *  \param[in] unused_info Deprecated parameter, no longer used!
- *  \returns vty command string for use by VTY command node
- */
-const char *log_vty_command_string()
-{
-	struct log_info *info = osmo_log_info;
-	int len = 0, offset = 0, ret, i, rem;
-	int size = strlen("logging level (all|) ()") + 1;
-	char *str;
-
-	assert_loginfo(__func__);
-
-	for (i = 0; i < info->num_cat; i++) {
-		if (info->cat[i].name == NULL)
-			continue;
-		size += strlen(info->cat[i].name) + 1;
-	}
-
-	for (i = 0; i < LOGLEVEL_DEFS; i++)
-		size += strlen(loglevel_strs[i].str) + 1;
-
-	rem = size;
-	str = talloc_zero_size(tall_log_ctx, size);
-	if (!str)
-		return NULL;
-
-	ret = snprintf(str + offset, rem, "logging level (all|");
-	if (ret < 0)
-		goto err;
-	OSMO_SNPRINTF_RET(ret, rem, offset, len);
-
-	for (i = 0; i < info->num_cat; i++) {
-		if (info->cat[i].name) {
-			int j, name_len = strlen(info->cat[i].name)+1;
-			char name[name_len];
-
-			for (j = 0; j < name_len; j++)
-				name[j] = tolower((unsigned char)info->cat[i].name[j]);
-
-			name[name_len-1] = '\0';
-			ret = snprintf(str + offset, rem, "%s|", name+1);
-			if (ret < 0)
-				goto err;
-			OSMO_SNPRINTF_RET(ret, rem, offset, len);
-		}
-	}
-	offset--;	/* to remove the trailing | */
-	rem++;
-
-	ret = snprintf(str + offset, rem, ") (");
-	if (ret < 0)
-		goto err;
-	OSMO_SNPRINTF_RET(ret, rem, offset, len);
-
-	for (i = 0; i < LOGLEVEL_DEFS; i++) {
-		int j, loglevel_str_len = strlen(loglevel_strs[i].str)+1;
-		char loglevel_str[loglevel_str_len];
-
-		for (j = 0; j < loglevel_str_len; j++)
-			loglevel_str[j] = tolower((unsigned char)loglevel_strs[i].str[j]);
-
-		loglevel_str[loglevel_str_len-1] = '\0';
-		ret = snprintf(str + offset, rem, "%s|", loglevel_str);
-		if (ret < 0)
-			goto err;
-		OSMO_SNPRINTF_RET(ret, rem, offset, len);
-	}
-	offset--;	/* to remove the trailing | */
-	rem++;
-
-	ret = snprintf(str + offset, rem, ")");
-	if (ret < 0)
-		goto err;
-	OSMO_SNPRINTF_RET(ret, rem, offset, len);
-err:
-	str[size-1] = '\0';
-	return str;
-}
-
-/*! Generates the logging command description for VTY
- *  \param[in] unused_info Deprecated parameter, no longer used!
- *  \returns logging command description for use by VTY command node
- */
-const char *log_vty_command_description()
-{
-	struct log_info *info = osmo_log_info;
-	char *str;
-	int i, ret, len = 0, offset = 0, rem;
-	unsigned int size =
-		strlen(LOGGING_STR
-		       "Set the log level for a specified category\n") + 1;
-
-	assert_loginfo(__func__);
-
-	for (i = 0; i < info->num_cat; i++) {
-		if (info->cat[i].name == NULL)
-			continue;
-		size += strlen(info->cat[i].description) + 1;
-	}
-
-	for (i = 0; i < LOGLEVEL_DEFS; i++)
-		size += strlen(loglevel_descriptions[i]) + 1;
-
-	size += strlen("Global setting for all subsystems") + 1;
-	rem = size;
-	str = talloc_zero_size(tall_log_ctx, size);
-	if (!str)
-		return NULL;
-
-	ret = snprintf(str + offset, rem, LOGGING_STR
-			"Set the log level for a specified category\n");
-	if (ret < 0)
-		goto err;
-	OSMO_SNPRINTF_RET(ret, rem, offset, len);
-
-	ret = snprintf(str + offset, rem,
-			"Global setting for all subsystems\n");
-	if (ret < 0)
-		goto err;
-	OSMO_SNPRINTF_RET(ret, rem, offset, len);
-
-	for (i = 0; i < info->num_cat; i++) {
-		if (info->cat[i].name == NULL)
-			continue;
-		ret = snprintf(str + offset, rem, "%s\n",
-				info->cat[i].description);
-		if (ret < 0)
-			goto err;
-		OSMO_SNPRINTF_RET(ret, rem, offset, len);
-	}
-	for (i = 0; i < LOGLEVEL_DEFS; i++) {
-		ret = snprintf(str + offset, rem, "%s\n",
-				loglevel_descriptions[i]);
-		if (ret < 0)
-			goto err;
-		OSMO_SNPRINTF_RET(ret, rem, offset, len);
-	}
-err:
-	str[size-1] = '\0';
-	return str;
 }
 
 /*! Initialize the Osmocom logging core

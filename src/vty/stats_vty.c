@@ -533,6 +533,7 @@ DEFUN(show_stats_asciidoc_table,
 static int rate_ctr_group_handler(struct rate_ctr_group *ctrg, void *sctx_)
 {
 	struct vty *vty = sctx_;
+	vty_out(vty, "%s %u:%s", ctrg->desc->group_description, ctrg->idx, VTY_NEWLINE);
 	vty_out_rate_ctr_group_fmt(vty, "%25n: %10c (%S/s %M/m %H/h %D/d) %d", ctrg);
 	return 0;
 }

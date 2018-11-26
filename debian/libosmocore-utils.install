@@ -1,2 +1,3 @@
 usr/bin/osmo-arfcn
 usr/bin/osmo-auc-gen
+usr/bin/osmo-config-merge

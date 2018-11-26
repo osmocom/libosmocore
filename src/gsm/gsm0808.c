@@ -182,9 +182,9 @@ struct msgb *gsm0808_create_clear_complete(void)
 }
 
 /*! Create BSSMAP Clear Command message
- *  \param[in] reason TS 08.08 cause value
+ *  \param[in] cause TS 08.08 cause value
  *  \returns callee-allocated msgb with BSSMAP Clear Command message */
-struct msgb *gsm0808_create_clear_command(uint8_t reason)
+struct msgb *gsm0808_create_clear_command(uint8_t cause)
 {
 	struct msgb *msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM,
 					       "bssmap: clear command");
@@ -193,7 +193,7 @@ struct msgb *gsm0808_create_clear_command(uint8_t reason)
 
 	msg->l3h = msgb_tv_put(msg, BSSAP_MSG_BSS_MANAGEMENT, 4);
 	msgb_v_put(msg, BSS_MAP_MSG_CLEAR_CMD);
-	msgb_tlv_put(msg, GSM0808_IE_CAUSE, 1, &reason);
+	msgb_tlv_put(msg, GSM0808_IE_CAUSE, 1, &cause);
 
 	return msg;
 }
@@ -265,17 +265,42 @@ struct msgb *gsm0808_create_cipher_complete(struct msgb *layer3, uint8_t alg_id)
 }
 
 /*! Create BSSMAP Cipher Mode Reject message
- *  \param[in] reason TS 08.08 cause value
+ *  \param[in] cause 3GPP TS 08.08 §3.2.2.5 cause value
  *  \returns callee-allocated msgb with BSSMAP Cipher Mode Reject message */
-struct msgb *gsm0808_create_cipher_reject(uint8_t cause)
+struct msgb *gsm0808_create_cipher_reject(enum gsm0808_cause cause)
 {
 	struct msgb *msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM,
-					       "bssmap: clear complete");
+					       "bssmap: cipher mode reject");
 	if (!msg)
 		return NULL;
 
 	msgb_v_put(msg, BSS_MAP_MSG_CIPHER_MODE_REJECT);
-	msgb_tlv_put(msg, GSM0808_IE_CAUSE, 1, &cause);
+
+	msgb_tlv_put(msg, GSM0808_IE_CAUSE, 1, (const uint8_t *)&cause);
+
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
+
+	return msg;
+}
+
+/*! Create BSSMAP Cipher Mode Reject message
+ *  \param[in] class 3GPP TS 08.08 §3.2.2.5 cause's class
+ *  \param[in] ext 3GPP TS 08.08 §3.2.2.5 cause value (national application extension)
+ *  \returns callee-allocated msgb with BSSMAP Cipher Mode Reject message */
+struct msgb *gsm0808_create_cipher_reject_ext(enum gsm0808_cause_class class, uint8_t ext)
+{
+	uint8_t c[2];
+	struct msgb *msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM,
+					       "bssmap: cipher mode reject");
+	if (!msg)
+		return NULL;
+
+	c[0] = 0x80 | (class << 4); /* set the high bit to indicate extended cause */
+	c[1] = ext;
+
+	msgb_v_put(msg, BSS_MAP_MSG_CIPHER_MODE_REJECT);
+
+	msgb_tlv_put(msg, GSM0808_IE_CAUSE, 2, c);
 
 	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
 
@@ -341,6 +366,19 @@ struct msgb *gsm0808_create_lcls_notification(enum gsm0808_lcls_status status, b
 	return msg;
 }
 
+/*! Create BSSMAP Classmark Request message
+ *  \returns callee-allocated msgb with BSSMAP Classmark Request message */
+struct msgb *gsm0808_create_classmark_request()
+{
+	struct msgb *msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM,
+					       "classmark-request");
+	if (!msg)
+		return NULL;
+
+	msgb_v_put(msg, BSS_MAP_MSG_CLASSMARK_RQST);
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
+	return msg;
+}
 
 /*! Create BSSMAP Classmark Update message
  *  \param[in] cm2 Classmark 2
@@ -386,12 +424,12 @@ struct msgb *gsm0808_create_sapi_reject(uint8_t link_id)
 	return msg;
 }
 
-/*! Create BSSMAP Assignment Request message
+/*! Create BSSMAP Assignment Request message, 3GPP TS 48.008 §3.2.1.1
  *  \param[in] ct Channel Type
  *  \param[in] cic Circuit Identity Code (Classic A only)
  *  \param[in] ss Socket Address of MSC-side RTP socket (AoIP only)
  *  \param[in] scl Speech Codec List (AoIP only)
- *  \param[in] ci Call Identifier (Optional, LCLS)
+ *  \param[in] ci Call Identifier (Optional), §3.2.2.105
  *  \returns callee-allocated msgb with BSSMAP Assignment Request message */
 struct msgb *gsm0808_create_ass(const struct gsm0808_channel_type *ct,
 				const uint16_t *cic,
@@ -1257,8 +1295,26 @@ static const struct value_string gsm0808_cause_names[] = {
 	{ 0, NULL }
 };
 
+static const struct value_string gsm0808_cause_class_names[] = {
+	{ GSM0808_CAUSE_CLASS_NORM0,		"Normal event" },
+	{ GSM0808_CAUSE_CLASS_NORM1,		"Normal event" },
+	{ GSM0808_CAUSE_CLASS_RES_UNAVAIL,	"Resource unavailable" },
+	{ GSM0808_CAUSE_CLASS_SRV_OPT_NA,	"Service or option not available" },
+	{ GSM0808_CAUSE_CLASS_SRV_OPT_NIMPL,	"Service or option not implemented" },
+	{ GSM0808_CAUSE_CLASS_INVAL,		"Invalid message" },
+	{ GSM0808_CAUSE_CLASS_PERR,		"Protocol error" },
+	{ GSM0808_CAUSE_CLASS_INTW,		"Interworking" },
+	{ 0, NULL }
+};
+
+/*! Return string name of BSSMAP Cause Class name */
+const char *gsm0808_cause_class_name(enum gsm0808_cause_class class)
+{
+	return get_value_string(gsm0808_cause_class_names, class);
+}
+
 /*! Return string name of BSSMAP Cause name */
-const char *gsm0808_cause_name(uint8_t cause)
+const char *gsm0808_cause_name(enum gsm0808_cause cause)
 {
 	return get_value_string(gsm0808_cause_names, cause);
 }
@@ -1275,6 +1331,7 @@ const struct value_string gsm0808_lcls_config_names[] = {
 	  "Connect both-way, bi-cast UL to CN, send access DL from CN" },
 	{ GSM0808_LCLS_CFG_BOTH_WAY_AND_BICAST_UL_SEND_DL_BLOCK_LOCAL_DL,
 	  "Connect both-way, bi-cast UL to CN, send access DL from CN, block local DL" },
+	{ GSM0808_LCLS_CFG_NA, "Not available" },
 	{ 0, NULL }
 };
 
@@ -1284,6 +1341,7 @@ const struct value_string gsm0808_lcls_control_names[] = {
 	{ GSM0808_LCLS_CSC_RELEASE_LCLS,			"Release LCLS" },
 	{ GSM0808_LCLS_CSC_BICAST_UL_AT_HANDOVER,		"Bi-cast UL at Handover" },
 	{ GSM0808_LCLS_CSC_BICAST_UL_AND_RECV_DL_AT_HANDOVER,	"Bi-cast UL and receive DL at Handover" },
+	{ GSM0808_LCLS_CSC_NA,					"Not available" },
 	{ 0, NULL }
 };
 
@@ -1293,6 +1351,7 @@ const struct value_string gsm0808_lcls_status_names[] = {
 	{ GSM0808_LCLS_STS_NO_LONGER_LS,	"Call is no longer locally switched" },
 	{ GSM0808_LCLS_STS_REQ_LCLS_NOT_SUPP,	"Requested LCLS configuration is not supported" },
 	{ GSM0808_LCLS_STS_LOCALLY_SWITCHED,	"Call is locally switched with requested LCLS config" },
+	{ GSM0808_LCLS_STS_NA,			"Not available" },
 	{ 0, NULL }
 };
 

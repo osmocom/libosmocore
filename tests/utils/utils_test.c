@@ -616,6 +616,189 @@ static void osmo_sockaddr_to_str_and_uint_test(void)
 	}
 }
 
+struct osmo_str_tolowupper_test_data {
+	const char *in;
+	bool use_static_buf;
+	size_t buflen;
+	const char *expect_lower;
+	const char *expect_upper;
+	size_t expect_rc;
+	size_t expect_rc_inplace;
+};
+
+struct osmo_str_tolowupper_test_data osmo_str_tolowupper_tests[] = {
+	{
+		.in = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()",
+		.use_static_buf = true,
+		.expect_lower = "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz!@#$%^&*()",
+		.expect_upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()",
+	},
+	{
+		.in = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()",
+		.buflen = 99,
+		.expect_lower = "abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz!@#$%^&*()",
+		.expect_upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()",
+		.expect_rc = 62,
+		.expect_rc_inplace = 62,
+	},
+	{
+		.in = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()",
+		.buflen = 0,
+		.expect_lower = "Unset",
+		.expect_upper = "Unset",
+		.expect_rc = 62,
+		.expect_rc_inplace = 0,
+	},
+	{
+		.in = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()",
+		.buflen = 1,
+		.expect_lower = "",
+		.expect_upper = "",
+		.expect_rc = 62,
+		.expect_rc_inplace = 0,
+	},
+	{
+		.in = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()",
+		.buflen = 2,
+		.expect_lower = "a",
+		.expect_upper = "A",
+		.expect_rc = 62,
+		.expect_rc_inplace = 1,
+	},
+	{
+		.in = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()",
+		.buflen = 28,
+		.expect_lower = "abcdefghijklmnopqrstuvwxyza",
+		.expect_upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZA",
+		.expect_rc = 62,
+		.expect_rc_inplace = 27,
+	},
+};
+
+
+static void osmo_str_tolowupper_test()
+{
+	int i;
+	char buf[128];
+	bool ok = true;
+	printf("\n%s\n", __func__);
+
+	for (i = 0; i < ARRAY_SIZE(osmo_str_tolowupper_tests); i++) {
+		struct osmo_str_tolowupper_test_data *d = &osmo_str_tolowupper_tests[i];
+		size_t rc = 0;
+		const char *res;
+
+		/* tolower */
+		if (d->use_static_buf) {
+			res = osmo_str_tolower(d->in);
+			printf("osmo_str_tolower(%s)\n", osmo_quote_str(d->in, -1));
+			printf("               = %s\n", osmo_quote_str(res, -1));
+		} else {
+			OSMO_ASSERT(sizeof(buf) >= d->buflen);
+			osmo_strlcpy(buf, "Unset", sizeof(buf));
+			rc = osmo_str_tolower_buf(buf, d->buflen, d->in);
+			res = buf;
+			printf("osmo_str_tolower_buf(%zu, %s)\n", d->buflen, osmo_quote_str(d->in, -1));
+			printf("                   = %zu, %s\n", rc, osmo_quote_str(res, -1));
+		}
+
+		if (strcmp(res, d->expect_lower)) {
+			printf("ERROR: osmo_str_tolowupper_test[%d] tolower\n"
+			       "       got %s\n", i, osmo_quote_str(res, -1));
+			printf("  expected %s\n", osmo_quote_str(d->expect_lower, -1));
+			ok = false;
+		}
+
+		if (!d->use_static_buf && d->expect_rc != rc) {
+			printf("ERROR: osmo_str_tolowupper_test[%d] tolower\n"
+			       "       got rc=%zu, expected rc=%zu\n", i, rc, d->expect_rc);
+			ok = false;
+		}
+
+		/* tolower, in-place */
+		if (!d->use_static_buf) {
+			osmo_strlcpy(buf,
+				     d->buflen ? d->in : "Unset",
+				     sizeof(buf));
+			rc = osmo_str_tolower_buf(buf, d->buflen, buf);
+			res = buf;
+			printf("osmo_str_tolower_buf(%zu, %s, in-place)\n",
+			       d->buflen, osmo_quote_str(d->in, -1));
+			printf("                   = %zu, %s\n", rc, osmo_quote_str(res, -1));
+
+			if (strcmp(res, d->expect_lower)) {
+				printf("ERROR: osmo_str_tolowupper_test[%d] tolower in-place\n"
+				       "       got %s\n", i, osmo_quote_str(res, -1));
+				printf("  expected %s\n", osmo_quote_str(d->expect_lower, -1));
+				ok = false;
+			}
+
+			if (d->expect_rc_inplace != rc) {
+				printf("ERROR: osmo_str_tolowupper_test[%d] tolower in-place\n"
+				       "       got rc=%zu, expected rc=%zu\n",
+				       i, rc, d->expect_rc_inplace);
+				ok = false;
+			}
+		}
+
+		/* toupper */
+		if (d->use_static_buf) {
+			res = osmo_str_toupper(d->in);
+			printf("osmo_str_toupper(%s)\n", osmo_quote_str(d->in, -1));
+			printf("               = %s\n", osmo_quote_str(res, -1));
+		} else {
+			OSMO_ASSERT(sizeof(buf) >= d->buflen);
+			osmo_strlcpy(buf, "Unset", sizeof(buf));
+			rc = osmo_str_toupper_buf(buf, d->buflen, d->in);
+			res = buf;
+			printf("osmo_str_toupper_buf(%zu, %s)\n", d->buflen, osmo_quote_str(d->in, -1));
+			printf("                   = %zu, %s\n", rc, osmo_quote_str(res, -1));
+		}
+
+		if (strcmp(res, d->expect_upper)) {
+			printf("ERROR: osmo_str_tolowupper_test[%d] toupper\n"
+			       "       got %s\n", i, osmo_quote_str(res, -1));
+			printf("  expected %s\n", osmo_quote_str(d->expect_upper, -1));
+			ok = false;
+		}
+
+		if (!d->use_static_buf && d->expect_rc != rc) {
+			printf("ERROR: osmo_str_tolowupper_test[%d] toupper\n"
+			       "       got rc=%zu, expected rc=%zu\n", i, rc, d->expect_rc);
+			ok = false;
+		}
+
+		/* toupper, in-place */
+		if (!d->use_static_buf) {
+			osmo_strlcpy(buf,
+				     d->buflen ? d->in : "Unset",
+				     sizeof(buf));
+			rc = osmo_str_toupper_buf(buf, d->buflen, buf);
+			res = buf;
+			printf("osmo_str_toupper_buf(%zu, %s, in-place)\n",
+			       d->buflen, osmo_quote_str(d->in, -1));
+			printf("                   = %zu, %s\n", rc, osmo_quote_str(res, -1));
+
+			if (strcmp(res, d->expect_upper)) {
+				printf("ERROR: osmo_str_tolowupper_test[%d] toupper in-place\n"
+				       "       got %s\n", i, osmo_quote_str(res, -1));
+				printf("  expected %s\n", osmo_quote_str(d->expect_upper, -1));
+				ok = false;
+			}
+
+			if (d->expect_rc_inplace != rc) {
+				printf("ERROR: osmo_str_tolowupper_test[%d] toupper in-place\n"
+				       "       got rc=%zu, expected rc=%zu\n",
+				       i, rc, d->expect_rc_inplace);
+				ok = false;
+			}
+		}
+	}
+
+	OSMO_ASSERT(ok);
+}
+
+
 int main(int argc, char **argv)
 {
 	static const struct log_info log_info = {};
@@ -631,5 +814,6 @@ int main(int argc, char **argv)
 	str_quote_test();
 	isqrt_test();
 	osmo_sockaddr_to_str_and_uint_test();
+	osmo_str_tolowupper_test();
 	return 0;
 }

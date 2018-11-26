@@ -67,6 +67,7 @@ tests/*/*_test
 
 utils/osmo-arfcn
 utils/osmo-auc-gen
+utils/osmo-config-merge
 utils/osmo-sim-test
 
 doc/codec

@@ -349,9 +349,6 @@ uint8_t gsm0808_enc_speech_codec_list(struct msgb *msg,
 	OSMO_ASSERT(msg);
 	OSMO_ASSERT(scl);
 
-	/* Empty list */
-	OSMO_ASSERT(scl->len >= 1);
-
 	msgb_put_u8(msg, GSM0808_IE_SPEECH_CODEC_LIST);
 	tlv_len = msgb_put(msg, 1);
 	old_tail = msg->tail;
@@ -384,8 +381,6 @@ int gsm0808_dec_speech_codec_list(struct gsm0808_speech_codec_list *scl,
 	OSMO_ASSERT(scl);
 	if (!elem)
 		return -EINVAL;
-	if (len == 0)
-		return -EINVAL;
 
 	memset(scl, 0, sizeof(*scl));
 
@@ -403,11 +398,6 @@ int gsm0808_dec_speech_codec_list(struct gsm0808_speech_codec_list *scl,
 	}
 
 	scl->len = decoded;
-
-	/* Empty list */
-	if (decoded < 1) {
-		return -EINVAL;
-	}
 
 	return (int)(elem - old_elem);
 }
@@ -1159,6 +1149,106 @@ int gsm0808_speech_codec_from_chan_type(struct gsm0808_speech_codec *sc,
 	sc->fi = true;
 
 	return 0;
+}
+
+/*! Determine a set of AMR speech codec configuration bits (S0-S15) from a
+ *  given GSM 04.08 AMR configuration struct.
+ *  \param[in] cfg AMR configuration in GSM 04.08 format.
+ *  \param[in] hint if the resulting configuration shall be used with a FR or HR TCH.
+ *  \returns configuration bits (S0-S15) */
+uint16_t gsm0808_sc_cfg_from_gsm48_mr_cfg(const struct gsm48_multi_rate_conf *cfg,
+					  bool fr)
+{
+	uint16_t s15_s0 = 0;
+
+	/* Check each rate bit in the AMR multirate configuration and pick the
+	 * matching default configuration as specified in 3GPP TS 28.062,
+	 * Table 7.11.3.1.3-2. */
+	if (cfg->m4_75)
+		s15_s0 |= GSM0808_SC_CFG_DEFAULT_AMR_4_75;
+	if (cfg->m5_15)
+		s15_s0 |= GSM0808_SC_CFG_DEFAULT_AMR_5_15;
+	if (cfg->m5_90)
+		s15_s0 |= GSM0808_SC_CFG_DEFAULT_AMR_5_90;
+	if (cfg->m6_70)
+		s15_s0 |= GSM0808_SC_CFG_DEFAULT_AMR_6_70;
+	if (cfg->m7_40)
+		s15_s0 |= GSM0808_SC_CFG_DEFAULT_AMR_7_40;
+	if (cfg->m7_95)
+		s15_s0 |= GSM0808_SC_CFG_DEFAULT_AMR_7_95;
+	if (cfg->m10_2)
+		s15_s0 |= GSM0808_SC_CFG_DEFAULT_AMR_10_2;
+	if (cfg->m12_2)
+		s15_s0 |= GSM0808_SC_CFG_DEFAULT_AMR_12_2;
+
+	/* Note: 3GPP TS 48.008, chapter 3GPP TS 48.008 states that for AMR
+	 * some of the configuration bits must be coded as zeros. The applied
+	 * bitmask matches the default codec settings. See also the definition
+	 * of enum gsm0808_speech_codec_defaults in gsm_08_08.h and
+	 * 3GPP TS 28.062, Table 7.11.3.1.3-2. */
+	if (fr)
+		s15_s0 &= GSM0808_SC_CFG_DEFAULT_FR_AMR;
+	else
+		s15_s0 &= GSM0808_SC_CFG_DEFAULT_HR_AMR;
+
+	return s15_s0;
+}
+
+/*! Determine a GSM 04.08 AMR configuration struct from a set of speech codec
+ *  configuration bits (S0-S15)
+ *  \param[out] cfg AMR configuration in GSM 04.08 format.
+ *  \param[in] s15_s0 configuration bits (S0-S15). */
+void gsm48_mr_cfg_from_gsm0808_sc_cfg(struct gsm48_multi_rate_conf *cfg,
+				      uint16_t s15_s0)
+{
+	memset(cfg, 0, sizeof(*cfg));
+
+	/* Strip option bits */
+	s15_s0 &= 0x00ff;
+
+	/* Rate 5,15k must always be present */
+	cfg->m5_15 = 1;
+
+	if ((s15_s0 & GSM0808_SC_CFG_DEFAULT_AMR_4_75 & 0xff) ==
+	    (GSM0808_SC_CFG_DEFAULT_AMR_4_75 & 0xff))
+		cfg->m4_75 = 1;
+	if ((s15_s0 & GSM0808_SC_CFG_DEFAULT_AMR_5_90 & 0xff) ==
+	    (GSM0808_SC_CFG_DEFAULT_AMR_5_90 & 0xff))
+		cfg->m5_90 = 1;
+	if ((s15_s0 & GSM0808_SC_CFG_DEFAULT_AMR_6_70 & 0xff) ==
+	    (GSM0808_SC_CFG_DEFAULT_AMR_6_70 & 0xff))
+		cfg->m6_70 = 1;
+	if ((s15_s0 & GSM0808_SC_CFG_DEFAULT_AMR_7_40 & 0xff) ==
+	    (GSM0808_SC_CFG_DEFAULT_AMR_7_40 & 0xff))
+		cfg->m7_40 = 1;
+	if ((s15_s0 & GSM0808_SC_CFG_DEFAULT_AMR_7_95 & 0xff) ==
+	    (GSM0808_SC_CFG_DEFAULT_AMR_7_95 & 0xff))
+		cfg->m7_95 = 1;
+	if ((s15_s0 & GSM0808_SC_CFG_DEFAULT_AMR_10_2 & 0xff) ==
+	    (GSM0808_SC_CFG_DEFAULT_AMR_10_2 & 0xff))
+		cfg->m10_2 = 1;
+	if ((s15_s0 & GSM0808_SC_CFG_DEFAULT_AMR_12_2 & 0xff) ==
+	    (GSM0808_SC_CFG_DEFAULT_AMR_12_2 & 0xff))
+		cfg->m12_2 = 1;
+
+	cfg->ver = 1;
+	cfg->icmi = 1;
+}
+
+int gsm0808_get_cipher_reject_cause(const struct tlv_parsed *tp)
+{
+	const uint8_t *buf = TLVP_VAL_MINLEN(tp, GSM0808_IE_CAUSE, 1);
+
+	if (!buf)
+		return -EBADMSG;
+
+	if (TLVP_LEN(tp, GSM0808_IE_CAUSE) > 1) {
+		if (!gsm0808_cause_ext(buf[0]))
+			return -EINVAL;
+		return buf[1];
+	}
+
+	return buf[0];
 }
 
 /*! Print a human readable name of the cell identifier to the char buffer.

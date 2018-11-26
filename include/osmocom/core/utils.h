@@ -1,10 +1,13 @@
 #pragma once
 
 #include <stdbool.h>
+#include <stdint.h>
+#include <stdio.h>
 
 #include <osmocom/core/backtrace.h>
 #include <osmocom/core/talloc.h>
 #include <osmocom/core/panic.h>
+#include <osmocom/core/defs.h>
 
 /*! \defgroup utils General-purpose utility functions
  *  @{
@@ -29,10 +32,6 @@
 
 /*! Copy a C-string into a sized buffer using sizeof to detect buffer's size */
 #define OSMO_STRLCPY_ARRAY(array, src) osmo_strlcpy(array, src, sizeof(array))
-
-#include <stdbool.h>
-#include <stdint.h>
-#include <stdio.h>
 
 /*! A mapping between human-readable string and numeric value */
 struct value_string {
@@ -59,8 +58,18 @@ char *osmo_osmo_hexdump_nospc(const unsigned char *buf, int len) __attribute__((
 
 #define osmo_static_assert(exp, name) typedef int dummy##name [(exp) ? 1 : -1] __attribute__((__unused__));
 
-void osmo_str2lower(char *out, const char *in);
-void osmo_str2upper(char *out, const char *in);
+void osmo_str2lower(char *out, const char *in)
+	OSMO_DEPRECATED("Use osmo_str_tolower() or osmo_str_tolower_buf() instead,"
+			" to properly check target memory bounds");
+void osmo_str2upper(char *out, const char *in)
+	OSMO_DEPRECATED("Use osmo_str_toupper() or osmo_str_toupper_buf() instead,"
+			" to properly check target memory bounds");
+
+size_t osmo_str_tolower_buf(char *dest, size_t dest_len, const char *src);
+const char *osmo_str_tolower(const char *src);
+
+size_t osmo_str_toupper_buf(char *dest, size_t dest_len, const char *src);
+const char *osmo_str_toupper(const char *src);
 
 #define OSMO_SNPRINTF_RET(ret, rem, offset, len)		\
 do {								\
