@@ -156,7 +156,7 @@ int ctrl_cmd_send_trap(struct ctrl_handle *ctrl, const char *name, char *value)
 	if (!cmd)
 		return -ENOMEM;
 
-	cmd->id = "0"; /* It's a TRAP! */
+	cmd->id = CTRL_CMD_TRAP_ID; /* It's a TRAP! */
 	cmd->variable = (char *) name;
 	cmd->reply = value;
 	r = ctrl_cmd_send_to_all(ctrl, cmd);

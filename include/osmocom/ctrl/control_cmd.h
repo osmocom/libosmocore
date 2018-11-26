@@ -12,6 +12,7 @@
 #define CTRL_CMD_ERROR		-1
 #define CTRL_CMD_HANDLED	0
 #define CTRL_CMD_REPLY		1
+#define CTRL_CMD_TRAP_ID	"0"
 
 struct ctrl_handle;
 
