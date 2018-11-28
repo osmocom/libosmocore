@@ -847,9 +847,6 @@ struct msgb *gsm0480_create_ussd_resp(uint8_t invoke_id, uint8_t trans_id, const
  * \param[in] invoke_id		InvokeID of the request
  * \param[in] error_code	Error code (section 4.5)
  * \return			message buffer containing the Reject component
- *
- * Note: if InvokeID is not available, e.g. when message parsing failed, any incorrect vlue
- * can be passed (0x00 > x > 0xff), so the universal NULL-tag (see table 3.6) will be used instead.
  */
 struct msgb *gsm0480_gen_return_error(uint8_t invoke_id, uint8_t error_code)
 {
