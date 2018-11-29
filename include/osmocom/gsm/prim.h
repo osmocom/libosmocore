@@ -18,4 +18,7 @@ enum osmo_gsm_sap {
 	SAP_NS,
 
 	SAP_BSSGP_RIM,
+
+	SAP_IUUP_TNL,
+	SAP_IUUP_RNL,
 };

@@ -771,5 +771,16 @@ osmo_gad_raw_read;
 osmo_gad_raw_write;
 osmo_gad_type_names;
 
+osmo_iuup_compute_header_crc;
+osmo_iuup_compute_payload_crc;
+osmo_iuup_instance_alloc;
+osmo_iuup_instance_free;
+osmo_iuup_instance_set_user_prim_cb;
+osmo_iuup_instance_set_transport_prim_cb;
+osmo_iuup_tnl_prim_up;
+osmo_iuup_rnl_prim_down;
+osmo_iuup_rnl_prim_alloc;
+osmo_iuup_tnl_prim_alloc;
+
 local: *;
 };

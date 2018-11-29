@@ -45,6 +45,7 @@ check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
 		 time_cc/time_cc_test					\
 		 gsm48/rest_octets_test					\
 		 base64/base64_test					\
+		 iuup/iuup_test						\
 		 $(NULL)
 
 if ENABLE_MSGFILE
@@ -328,6 +329,9 @@ it_q_it_q_test_LDADD = $(LDADD)
 time_cc_time_cc_test_SOURCES = time_cc/time_cc_test.c
 time_cc_time_cc_test_LDADD = $(LDADD)
 
+iuup_iuup_test_SOURCES = iuup/iuup_test.c
+iuup_iuup_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
+
 # The `:;' works around a Bash 3.2 bug when the output is not writeable.
 $(srcdir)/package.m4: $(top_srcdir)/configure.ac
 	:;{ \
@@ -420,6 +424,7 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
 	     time_cc/time_cc_test.ok \
 	     gsm48/rest_octets_test.ok \
 	     base64/base64_test.ok \
+	     iuup/iuup_test.ok \
 	     $(NULL)
 
 if ENABLE_LIBSCTP
@@ -616,6 +621,8 @@ endif
 		>$(srcdir)/it_q/it_q_test.ok
 	time_cc/time_cc_test \
 		>$(srcdir)/time_cc/time_cc_test.ok
+	iuup/iuup_test \
+		>$(srcdir)/iuup/iuup_test.ok
 
 check-local: atconfig $(TESTSUITE)
 	[ -e /proc/cpuinfo ] && cat /proc/cpuinfo

@@ -125,6 +125,7 @@ nobase_include_HEADERS = \
                        osmocom/gsm/gsup_sms.h \
                        osmocom/gsm/i460_mux.h \
                        osmocom/gsm/ipa.h \
+                       osmocom/gsm/iuup.h \
                        osmocom/gsm/lapd_core.h \
                        osmocom/gsm/lapdm.h \
                        osmocom/gsm/meas_rep.h \
@@ -148,6 +149,7 @@ nobase_include_HEADERS = \
                        osmocom/gsm/protocol/gsm_12_21.h \
 		       osmocom/gsm/protocol/gsm_23_003.h \
 		       osmocom/gsm/protocol/gsm_23_041.h \
+		       osmocom/gsm/protocol/gsm_25_415.h \
 		       osmocom/gsm/protocol/gsm_29_118.h \
 		       osmocom/gsm/protocol/gsm_44_004.h \
                        osmocom/gsm/protocol/gsm_44_318.h \

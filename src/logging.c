@@ -294,6 +294,12 @@ static const struct log_info_cat internal_cat[OSMO_NUM_DLIB] = {
 		.enabled = 1, .loglevel = LOGL_NOTICE,
 		.color = "\033[38;5;63m",
 	},
+	[INT2IDX(DLIUUP)] = {
+		.name = "DLIUUP",
+		.description = "Iu UP layer",
+		.enabled = 1, .loglevel = LOGL_NOTICE,
+		.color = "\033[38;5;65m",
+	},
 };
 
 void assert_loginfo(const char *src)

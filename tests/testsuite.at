@@ -458,3 +458,9 @@ AT_KEYWORDS([time_cc])
 cat $abs_srcdir/time_cc/time_cc_test.ok > expout
 AT_CHECK([$abs_top_builddir/tests/time_cc/time_cc_test], [0], [expout], [ignore])
 AT_CLEANUP
+
+AT_SETUP([iuup])
+AT_KEYWORDS([iuup])
+cat $abs_srcdir/iuup/iuup_test.ok > expout
+AT_CHECK([$abs_top_builddir/tests/iuup/iuup_test], [0], [expout], [ignore])
+AT_CLEANUP

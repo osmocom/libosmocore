@@ -1,0 +1,45 @@
+=== start: test_crc ===
+iuup_initialization: Header CRC = 0x37
+iuup_initialization: Payload CRC = 0x399
+iuup_initialization_ack: Header CRC = 0x09
+iuup_initialization_ack: Payload CRC = 0x399
+=== end: test_crc ===
+sys={0.000000}, clock_override_set
+_tinit_timeout_retrans_transport_prim_cb()
+Transport: DL len=22: e0 00 df 99 16 00 51 67 3c 01 27 00 00 82 00 00 00 17 10 00 01 00 
+sys={1.000000}, clock_override_set
+_tinit_timeout_retrans_transport_prim_cb()
+Transport: DL len=22: e0 00 df 99 16 00 51 67 3c 01 27 00 00 82 00 00 00 17 10 00 01 00 
+sys={2.000000}, clock_override_set
+_tinit_timeout_retrans_transport_prim_cb()
+Transport: DL len=22: e0 00 df 99 16 00 51 67 3c 01 27 00 00 82 00 00 00 17 10 00 01 00 
+sys={3.000000}, clock_override_set
+_tinit_timeout_retrans_transport_prim_cb()
+Transport: DL len=22: e0 00 df 99 16 00 51 67 3c 01 27 00 00 82 00 00 00 17 10 00 01 00 
+sys={4.000000}, clock_override_set
+_tinit_timeout_retrans_user_prim_cb()
+sys={0.000000}, clock_override_set
+_init_nack_retrans_transport_prim_cb()
+Transport: DL len=22: e0 00 df 99 16 00 51 67 3c 01 27 00 00 82 00 00 00 17 10 00 01 00 
+_init_nack_retrans_transport_prim_cb()
+Transport: DL len=22: e0 00 df 99 16 00 51 67 3c 01 27 00 00 82 00 00 00 17 10 00 01 00 
+_init_nack_retrans_transport_prim_cb()
+Transport: DL len=22: e0 00 df 99 16 00 51 67 3c 01 27 00 00 82 00 00 00 17 10 00 01 00 
+_init_nack_retrans_transport_prim_cb()
+Transport: DL len=22: e0 00 df 99 16 00 51 67 3c 01 27 00 00 82 00 00 00 17 10 00 01 00 
+_init_nack_retrans_user_prim_cb()
+sys={0.000000}, clock_override_set
+_init_ack_transport_prim_cb()
+Transport: DL len=22: e0 00 df 99 16 00 51 67 3c 01 27 00 00 82 00 00 00 17 10 00 01 00 
+_init_ack_user_prim_cb()
+User: UL len=31: 08 55 6d 94 4c 71 a1 a0 81 e7 ea d2 04 24 44 80 00 0e cd 82 b8 11 18 00 00 97 c4 79 4e 77 40 
+_init_ack_transport_prim_cb()
+Transport: DL len=35: 01 00 e3 ff 08 55 6d 94 4c 71 a1 a0 81 e7 ea d2 04 24 44 80 00 0e cd 82 b8 11 18 00 00 97 c4 79 4e 77 40 
+sys={0.000000}, clock_override_set
+_passive_init_transport_prim_cb()
+Transport: DL len=4: e4 00 24 00 
+_passive_init_user_prim_cb()
+User: UL len=31: 08 55 6d 94 4c 71 a1 a0 81 e7 ea d2 04 24 44 80 00 0e cd 82 b8 11 18 00 00 97 c4 79 4e 77 40 
+_passive_init_transport_prim_cb()
+Transport: DL len=35: 01 00 e3 ff 08 55 6d 94 4c 71 a1 a0 81 e7 ea d2 04 24 44 80 00 0e cd 82 b8 11 18 00 00 97 c4 79 4e 77 40 
+OK.
