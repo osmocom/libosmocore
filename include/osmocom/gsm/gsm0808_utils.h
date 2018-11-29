@@ -60,10 +60,10 @@ struct gsm0808_cell_id_list2 {
 
 /*! LCLS-related parameters from 3GPP TS 48.008 */
 struct osmo_lcls {
-	enum gsm0808_lcls_config config;   /* §3.2.2.116 Configuration */
-	enum gsm0808_lcls_control control; /* §3.2.2.117 Connection Status Control */
-	struct gsm0808_gcr *gcr;           /* §3.2.2.115 Global Call Reference */
-	bool corr_needed;                  /* §3.2.2.118 Correlation-Not-Needed */
+	enum gsm0808_lcls_config config;   /**< §3.2.2.116 Configuration */
+	enum gsm0808_lcls_control control; /**< §3.2.2.117 Connection Status Control */
+	struct gsm29205_gcr *gcr;          /**< §3.2.2.115 Global Call Reference */
+	bool corr_needed;                  /**< §3.2.2.118 Correlation-Not-Needed */
 };
 
 extern const struct value_string gsm0808_cell_id_discr_names[];
