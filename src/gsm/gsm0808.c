@@ -34,9 +34,6 @@
  *  message generation/encoding.
  */
 
-#define BSSMAP_MSG_SIZE 512
-#define BSSMAP_MSG_HEADROOM 128
-
 /*! Create "Complete L3 Info" for AoIP, legacy implementation.
  * Instead use gsm0808_create_layer3_aoip2(), which is capable of three-digit MNC with leading zeros.
  *  \param[in] msg_l3 msgb containing Layer 3 Message

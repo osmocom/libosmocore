@@ -29,6 +29,9 @@
 #include <osmocom/gsm/gsm23003.h>
 #include <osmocom/core/utils.h>
 
+#define BSSMAP_MSG_SIZE 512
+#define BSSMAP_MSG_HEADROOM 128
+
 struct sockaddr_storage;
 
 struct msgb;
