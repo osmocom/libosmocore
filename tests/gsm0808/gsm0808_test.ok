@@ -1,4 +1,6 @@
 Testing generation of GSM0808 messages
+test_gsm0808_enc_cause: encoded: 04 01 41 (rc = 3)
+test_gsm0808_enc_cause: encoded: 04 02 80 41 (rc = 4)
 Testing creating Layer3
 Testing creating Layer3 (AoIP)
 Testing creating Reset

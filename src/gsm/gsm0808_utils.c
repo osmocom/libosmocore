@@ -48,6 +48,32 @@
  *  \file gsm0808_utils.c
  */
 
+/*! Encode TS 08.08 AoIP Cause IE
+ *  \param[out] msg Message Buffer to which to append IE
+ *  \param[in] cause Cause code to be used in IE
+ *  \returns number of bytes added to \a msg */
+uint8_t gsm0808_enc_cause(struct msgb *msg, uint16_t cause)
+{
+	/* See also 3GPP TS 48.008 3.2.2.5 Cause */
+	uint8_t *old_tail;
+	bool extended;
+
+	old_tail = msg->tail;
+
+	extended = gsm0808_cause_ext(cause >> 8);
+
+	msgb_put_u8(msg, GSM0808_IE_CAUSE);
+	if (extended) {
+		msgb_put_u8(msg, 2);
+		msgb_put_u16(msg, cause);
+	} else {
+		msgb_put_u8(msg, 1);
+		msgb_put_u8(msg, (uint8_t) (cause & 0xFF));
+	}
+
+	return (uint8_t) (msg->tail - old_tail);
+}
+
 /*! Encode TS 08.08 AoIP transport address IE
  *  \param[out] msg Message Buffer to which to append IE
  *  \param[in] ss Socket Address to be used in IE

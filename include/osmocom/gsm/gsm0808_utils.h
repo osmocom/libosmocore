@@ -77,6 +77,7 @@ int gsm0808_cell_id_list_name_buf(char *buf, size_t buflen, const struct gsm0808
 int gsm0808_cell_id_u_name(char *buf, size_t buflen,
 			   enum CELL_IDENT id_discr, const union gsm0808_cell_id_u *u);
 
+uint8_t gsm0808_enc_cause(struct msgb *msg, uint16_t cause);
 uint8_t gsm0808_enc_aoip_trasp_addr(struct msgb *msg,
 				    const struct sockaddr_storage *ss);
 int gsm0808_dec_aoip_trasp_addr(struct sockaddr_storage *ss,

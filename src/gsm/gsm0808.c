@@ -141,7 +141,7 @@ struct msgb *gsm0808_create_reset(void)
 		return NULL;
 
 	msgb_v_put(msg, BSS_MAP_MSG_RESET);
-	msgb_tlv_put(msg, GSM0808_IE_CAUSE, 1, &cause);
+	gsm0808_enc_cause(msg, cause);
 	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
 
 	return msg;
@@ -190,7 +190,7 @@ struct msgb *gsm0808_create_clear_command(uint8_t cause)
 
 	msg->l3h = msgb_tv_put(msg, BSSAP_MSG_BSS_MANAGEMENT, 4);
 	msgb_v_put(msg, BSS_MAP_MSG_CLEAR_CMD);
-	msgb_tlv_put(msg, GSM0808_IE_CAUSE, 1, &cause);
+	gsm0808_enc_cause(msg, cause);
 
 	return msg;
 }
@@ -273,7 +273,7 @@ struct msgb *gsm0808_create_cipher_reject(enum gsm0808_cause cause)
 
 	msgb_v_put(msg, BSS_MAP_MSG_CIPHER_MODE_REJECT);
 
-	msgb_tlv_put(msg, GSM0808_IE_CAUSE, 1, (const uint8_t *)&cause);
+	gsm0808_enc_cause(msg, cause);
 
 	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
 
@@ -286,18 +286,22 @@ struct msgb *gsm0808_create_cipher_reject(enum gsm0808_cause cause)
  *  \returns callee-allocated msgb with BSSMAP Cipher Mode Reject message */
 struct msgb *gsm0808_create_cipher_reject_ext(enum gsm0808_cause_class class, uint8_t ext)
 {
-	uint8_t c[2];
+	uint16_t cause;
 	struct msgb *msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM,
 					       "bssmap: cipher mode reject");
 	if (!msg)
 		return NULL;
 
-	c[0] = 0x80 | (class << 4); /* set the high bit to indicate extended cause */
-	c[1] = ext;
+	/* Set cause code class in the upper byte */
+	cause = 0x80 | (class << 4);
+	cause = cause << 8;
+
+	/* Set cause code extension in the lower byte */
+	cause |= ext;
 
 	msgb_v_put(msg, BSS_MAP_MSG_CIPHER_MODE_REJECT);
 
-	msgb_tlv_put(msg, GSM0808_IE_CAUSE, 2, c);
+	gsm0808_enc_cause(msg, cause);
 
 	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
 
@@ -572,7 +576,7 @@ struct msgb *gsm0808_create_ass_fail(uint8_t cause, const uint8_t *rr_cause,
 		return NULL;
 
 	msgb_v_put(msg, BSS_MAP_MSG_ASSIGMENT_FAILURE);
-	msgb_tlv_put(msg, GSM0808_IE_CAUSE, 1, &cause);
+	gsm0808_enc_cause(msg, cause);
 
 	/* RR cause 3.2.2.22 */
 	if (rr_cause)
@@ -614,7 +618,7 @@ struct msgb *gsm0808_create_clear_rqst(uint8_t cause)
 		return NULL;
 
 	msgb_v_put(msg, BSS_MAP_MSG_CLEAR_RQST);
-	msgb_tlv_put(msg, GSM0808_IE_CAUSE, 1, &cause);
+	gsm0808_enc_cause(msg, cause);
 	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
 
 	return msg;
@@ -751,7 +755,7 @@ struct msgb *gsm0808_create_handover_required(const struct gsm0808_handover_requ
 	msgb_v_put(msg, BSS_MAP_MSG_HANDOVER_REQUIRED);
 
 	/* Cause, 3.2.2.5 */
-	msgb_tlv_put(msg, GSM0808_IE_CAUSE, params->cause & 0x80? 2 : 1, (const uint8_t*)&params->cause);
+	gsm0808_enc_cause(msg, params->cause);
 
 	/* Cell Identifier List, 3.2.2.27 */
 	gsm0808_enc_cell_id_list2(msg, &params->cil);
@@ -876,7 +880,7 @@ struct msgb *gsm0808_create_handover_failure(const struct gsm0808_handover_failu
 	msgb_v_put(msg, BSS_MAP_MSG_HANDOVER_FAILURE);
 
 	/* Cause, 3.2.2.5 */
-	msgb_tlv_put(msg, GSM0808_IE_CAUSE, params->cause & 0x80? 2 : 1, (const uint8_t*)&params->cause);
+	gsm0808_enc_cause(msg, params->cause);
 
 	/* RR Cause, 3.2.2.22 */
 	if (params->rr_cause_present)
@@ -907,7 +911,7 @@ struct msgb *gsm0808_create_handover_performed(const struct gsm0808_handover_per
 	msgb_v_put(msg, BSS_MAP_MSG_HANDOVER_PERFORMED);
 
 	/* Cause, 3.2.2.5 */
-	msgb_tlv_put(msg, GSM0808_IE_CAUSE, gsm0808_cause_ext(params->cause) ? 2 : 1, (const uint8_t *)&params->cause);
+	gsm0808_enc_cause(msg, params->cause);
 
 	/* Cell Identifier, 3.2.2.17 */
 	gsm0808_enc_cell_id(msg, &params->cell_id);

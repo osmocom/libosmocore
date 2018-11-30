@@ -30,6 +30,13 @@
 #include <arpa/inet.h>
 #include <errno.h>
 
+#define EXPECT_ENCODED(hexstr) do { \
+		const char *enc_str = msgb_hexdump(msg); \
+		printf("%s: encoded: %s(rc = %u)\n", __func__, enc_str, rc_enc); \
+		OSMO_ASSERT(strcmp(enc_str, hexstr " ") == 0); \
+		OSMO_ASSERT(rc_enc == msg->len); \
+	} while(0)
+
 #define VERIFY(msg, data, len) 						\
 	if (msgb_l3len(msg) != len) {					\
 		printf("%s:%d Length don't match: %d vs. %d. %s\n", 	\
@@ -63,6 +70,27 @@ static void setup_codec_list(struct gsm0808_speech_codec_list *scl)
 	scl->codec[2].cfg = 0xc0;
 
 	scl->len = 3;
+}
+
+void test_gsm0808_enc_cause(void)
+{
+	/* NOTE: This must be tested early because many of the following tests
+	 * rely on the generation of a proper cause code. */
+
+	uint8_t rc_enc;
+	struct msgb *msg;
+
+	/* Test with a single byte cause code */
+	msg = msgb_alloc(1024, "output buffer");
+	rc_enc = gsm0808_enc_cause(msg, 0x41);
+	EXPECT_ENCODED("04 01 41");
+	msgb_free(msg);
+
+	/* Test with an extended (two byte) cause code */
+	msg = msgb_alloc(1024, "output buffer");
+	rc_enc = gsm0808_enc_cause(msg, 0x8041);
+	EXPECT_ENCODED("04 02 80 41");
+	msgb_free(msg);
 }
 
 static void test_create_layer3(void)
@@ -823,13 +851,6 @@ static void test_gsm0808_enc_dec_encrypt_info()
 
 	msgb_free(msg);
 }
-
-#define EXPECT_ENCODED(hexstr) do { \
-		const char *enc_str = msgb_hexdump(msg); \
-		printf("%s: encoded: %s(rc = %u)\n", __func__, enc_str, rc_enc); \
-		OSMO_ASSERT(strcmp(enc_str, hexstr " ") == 0); \
-		OSMO_ASSERT(rc_enc == msg->len); \
-	} while(0)
 
 static void test_gsm0808_enc_dec_cell_id_list_lac()
 {
@@ -1770,6 +1791,7 @@ void test_gsm48_mr_cfg_from_gsm0808_sc_cfg()
 int main(int argc, char **argv)
 {
 	printf("Testing generation of GSM0808 messages\n");
+	test_gsm0808_enc_cause();
 	test_create_layer3();
 	test_create_layer3_aoip();
 	test_create_reset();
