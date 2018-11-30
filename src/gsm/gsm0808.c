@@ -425,18 +425,22 @@ struct msgb *gsm0808_create_sapi_reject(uint8_t link_id)
 	return msg;
 }
 
-/*! Create BSSMAP Assignment Request message, 3GPP TS 48.008 §3.2.1.1
+/*! Create BSSMAP Assignment Request message, 3GPP TS 48.008 §3.2.1.1.
+ *  This is identical to gsm0808_create_ass(), but adds KC and LCLS IEs.
  *  \param[in] ct Channel Type
  *  \param[in] cic Circuit Identity Code (Classic A only)
  *  \param[in] ss Socket Address of MSC-side RTP socket (AoIP only)
  *  \param[in] scl Speech Codec List (AoIP only)
  *  \param[in] ci Call Identifier (Optional), §3.2.2.105
+ *  \param[in] kc Kc128 ciphering key (Optional, A5/4), §3.2.2.109
+ *  \param[in] lcls Optional LCLS parameters
  *  \returns callee-allocated msgb with BSSMAP Assignment Request message */
-struct msgb *gsm0808_create_ass(const struct gsm0808_channel_type *ct,
-				const uint16_t *cic,
-				const struct sockaddr_storage *ss,
-				const struct gsm0808_speech_codec_list *scl,
-				const uint32_t *ci)
+struct msgb *gsm0808_create_ass2(const struct gsm0808_channel_type *ct,
+				 const uint16_t *cic,
+				 const struct sockaddr_storage *ss,
+				 const struct gsm0808_speech_codec_list *scl,
+				 const uint32_t *ci,
+				 const uint8_t *kc, const struct osmo_lcls *lcls)
 {
 	/* See also: 3GPP TS 48.008 3.2.1.1 ASSIGNMENT REQUEST */
 	struct msgb *msg;
@@ -481,11 +485,48 @@ struct msgb *gsm0808_create_ass(const struct gsm0808_channel_type *ct,
 				  (uint8_t *) & ci_sw);
 	}
 
+	if (kc)
+		msgb_tv_fixed_put(msg, GSM0808_IE_KC_128, 16, kc);
+
+	if (lcls) {
+		/* LCLS: §3.2.2.115 Global Call Reference */
+		if (lcls->gcr)
+			gsm0808_enc_gcr(msg, lcls->gcr);
+
+		/* LCLS: §3.2.2.116 Configuration */
+		if (lcls->config != GSM0808_LCLS_CFG_NA)
+			msgb_tv_put(msg, GSM0808_IE_LCLS_CONFIG, lcls->config);
+
+		/* LCLS: §3.2.2.117 Connection Status Control */
+		if (lcls->control != GSM0808_LCLS_CSC_NA)
+			msgb_tv_put(msg, GSM0808_IE_LCLS_CONN_STATUS_CTRL, lcls->control);
+
+		/* LCLS: §3.2.2.118 Correlation-Not-Needed */
+		if (!lcls->corr_needed)
+			msgb_v_put(msg, GSM0808_IE_LCLS_CORR_NOT_NEEDED);
+	}
+
 	/* push the bssmap header */
 	msg->l3h =
 	    msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
 
 	return msg;
+}
+
+/*! Create BSSMAP Assignment Request message, 3GPP TS 48.008 §3.2.1.1.
+ *  \param[in] ct Channel Type
+ *  \param[in] cic Circuit Identity Code (Classic A only)
+ *  \param[in] ss Socket Address of MSC-side RTP socket (AoIP only)
+ *  \param[in] scl Speech Codec List (AoIP only)
+ *  \param[in] ci Call Identifier (Optional), §3.2.2.105
+ *  \returns callee-allocated msgb with BSSMAP Assignment Request message */
+struct msgb *gsm0808_create_ass(const struct gsm0808_channel_type *ct,
+				const uint16_t *cic,
+				const struct sockaddr_storage *ss,
+				const struct gsm0808_speech_codec_list *scl,
+				const uint32_t *ci)
+{
+	return gsm0808_create_ass2(ct, cic, ss, scl, ci, NULL, NULL);
 }
 
 /*! Create BSSMAP Assignment Completed message

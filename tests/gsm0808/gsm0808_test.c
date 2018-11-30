@@ -415,6 +415,83 @@ static void test_create_ass()
 	msgb_free(msg);
 }
 
+static void test_create_ass2()
+{
+	static const uint8_t res[] = {
+		BSSAP_MSG_BSS_MANAGEMENT,
+		0x45,
+		BSS_MAP_MSG_ASSIGMENT_RQST,
+		GSM0808_IE_CHANNEL_TYPE,
+		0x04, 0x01, 0x0b, 0x91, 0x15, 0x01, 0x00, 0x04,
+		GSM0808_IE_AOIP_TRASP_ADDR,
+		0x06,
+		0xac, 0x0c, 0x65, 0x0d, /* IPv4 */
+		0x02, 0x9a,
+		GSM0808_IE_SPEECH_CODEC_LIST,
+		0x07,
+		GSM0808_SCT_FR3 | 0x50,
+		0xef, 0xcd,
+		GSM0808_SCT_FR2 | 0xa0,
+		0x9f,
+		GSM0808_SCT_CSD | 0x90,
+		0xc0,
+		GSM0808_IE_CALL_ID,
+		0xde, 0xad, 0xfa, 0xce, /* CallID */
+		0x83, 0x45, 0x45, 0x45, 0x45, 0x45, 0x45, 0x45, 0x45, 0x45, 0x45, 0x45, 0x45, 0x45, 0x45, 0x45, 0x45, /* Kc */
+		GSM0808_IE_GLOBAL_CALL_REF, 0x0d, /* GCR, length */
+		0x03, 0x44, 0x44, 0x44, /* GCR, Net ID */
+		0x02, 0xfe, 0xed, /* GCR, Node ID */
+		0x05, 0x41, 0x41, 0x41, 0x41, 0x41, /* GCR, Call ref. ID */
+		GSM0808_IE_LCLS_CONFIG, GSM0808_LCLS_CFG_BOTH_WAY,
+		GSM0808_IE_LCLS_CONN_STATUS_CTRL, GSM0808_LCLS_CSC_CONNECT,
+		GSM0808_IE_LCLS_CORR_NOT_NEEDED,
+	};
+	struct msgb *msg;
+	struct gsm0808_channel_type ct;
+	uint16_t cic = 4;
+	struct sockaddr_storage ss;
+	struct sockaddr_in sin;
+	struct gsm0808_speech_codec_list sc_list;
+	uint32_t call_id = 0xDEADFACE;
+	struct osmo_gcr_parsed gcr = { .net_len = 3, .node = 0xFEED };
+	uint8_t Kc[16];
+	struct osmo_lcls lcls = {
+		.config = GSM0808_LCLS_CFG_BOTH_WAY,
+		.control = GSM0808_LCLS_CSC_CONNECT,
+		.gcr = &gcr,
+		.corr_needed = false
+	};
+
+	memset(gcr.cr, 'A', 5);
+	memset(gcr.net, 'D', gcr.net_len);
+	memset(Kc, 'E', 16);
+
+	memset(&ct, 0, sizeof(ct));
+	ct.ch_indctr = GSM0808_CHAN_SPEECH;
+	ct.ch_rate_type = GSM0808_SPEECH_HALF_PREF;
+	ct.perm_spch[0] = GSM0808_PERM_FR2;
+	ct.perm_spch[1] = GSM0808_PERM_HR2;
+	ct.perm_spch_len = 2;
+
+	memset(&sin, 0, sizeof(sin));
+	sin.sin_family = AF_INET;
+	sin.sin_port = htons(666);
+	inet_aton("172.12.101.13", &sin.sin_addr); /* IPv4 */
+
+	memset(&ss, 0, sizeof(ss));
+	memcpy(&ss, &sin, sizeof(sin));
+
+	setup_codec_list(&sc_list);
+
+	printf("Testing creating Assignment Request with Kc and LCLS\n");
+
+	msg = gsm0808_create_ass2(&ct, &cic, &ss, &sc_list, &call_id, Kc, &lcls);
+	if (!msgb_eq_l3_data_print(msg, res, ARRAY_SIZE(res)))
+		abort();
+
+	msgb_free(msg);
+}
+
 static void test_create_ass_compl()
 {
 	static const uint8_t res1[] = {
@@ -1880,6 +1957,7 @@ int main(int argc, char **argv)
 	test_create_cm_u();
 	test_create_sapi_reject();
 	test_create_ass();
+	test_create_ass2();
 	test_create_ass_compl();
 	test_create_ass_compl_aoip();
 	test_create_ass_fail();

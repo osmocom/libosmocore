@@ -150,6 +150,7 @@ gsm0808_bssmap_name;
 gsm0808_cause_name;
 gsm0808_cause_class_name;
 gsm0808_create_ass;
+gsm0808_create_ass2;
 gsm0808_create_assignment_completed;
 gsm0808_create_ass_compl;
 gsm0808_create_assignment_failure;

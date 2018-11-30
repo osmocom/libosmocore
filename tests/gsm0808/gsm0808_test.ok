@@ -14,6 +14,7 @@ Testing creating Cipher Reject (extended)
 Testing creating CM U
 Testing creating SAPI Reject
 Testing creating Assignment Request
+Testing creating Assignment Request with Kc and LCLS
 Testing creating Assignment Complete
 Testing creating Assignment Complete (AoIP)
 Testing creating Assignment Failure
