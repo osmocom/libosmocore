@@ -173,6 +173,98 @@ uint8_t *msgb_data(const struct msgb *msg)
 	return msg->data;
 }
 
+/*! Compare and print: check data in msgb against given data and print errors if any
+ *  \param[in] file text prefix, usually __FILE__, ignored if print == false
+ *  \param[in] line numeric prefix, usually __LINE__, ignored if print == false
+ *  \param[in] func text prefix, usually __func__, ignored if print == false
+ *  \param[in] level while layer (L1, L2 etc) data should be compared against
+ *  \param[in] msg message buffer
+ *  \param[in] data expected data
+ *  \param[in] len length of data
+ *  \param[in] print boolean indicating whether we should print anything to stdout
+ *  \returns boolean indicating whether msgb content is equal to a given data
+ *
+ * This function is not intended to be called directly but rather used through corresponding macro wrappers.
+ */
+bool _msgb_eq(const char *file, size_t line, const char *func, uint8_t level,
+	      const struct msgb *msg, const uint8_t *data, size_t len, bool print)
+{
+	const char *m_dump;
+	unsigned int m_len, i;
+	uint8_t *m_data;
+
+	if (!msg) {
+		if (print)
+			LOGPSRC(DLGLOBAL, LOGL_FATAL, file, line, "%s() NULL msg comparison\n", func);
+		return false;
+	}
+
+	if (!data) {
+		if (print)
+			LOGPSRC(DLGLOBAL, LOGL_FATAL, file, line, "%s() NULL comparison data\n", func);
+		return false;
+	}
+
+	switch (level) {
+	case 0:
+		m_len = msgb_length(msg);
+		m_data = msgb_data(msg);
+		m_dump = print ? msgb_hexdump(msg) : NULL;
+		break;
+	case 1:
+		m_len = msgb_l1len(msg);
+		m_data = msgb_l1(msg);
+		m_dump = print ? msgb_hexdump_l1(msg) : NULL;
+		break;
+	case 2:
+		m_len = msgb_l2len(msg);
+		m_data = msgb_l2(msg);
+		m_dump = print ? msgb_hexdump_l2(msg) : NULL;
+		break;
+	case 3:
+		m_len = msgb_l3len(msg);
+		m_data = msgb_l3(msg);
+		m_dump = print ? msgb_hexdump_l3(msg) : NULL;
+		break;
+	case 4:
+		m_len = msgb_l4len(msg);
+		m_data = msgb_l4(msg);
+		m_dump = print ? msgb_hexdump_l4(msg) : NULL;
+		break;
+	default:
+		LOGPSRC(DLGLOBAL, LOGL_FATAL, file, line,
+			"%s() FIXME: unexpected comparison level %u\n", func, level);
+		return false;
+	}
+
+	if (m_len != len) {
+		if (print)
+			LOGPSRC(DLGLOBAL, LOGL_FATAL, file, line,
+				"%s() Length mismatch: %d != %zu, %s\n", func, m_len, len, m_dump);
+		return false;
+	}
+
+	if (memcmp(m_data, data, len) == 0)
+		return true;
+
+	if (!print)
+		return false;
+
+	LOGPSRC(DLGLOBAL, LOGL_FATAL, file, line,
+		"%s() L%u data mismatch:\nexpected %s\n         ", func, level, osmo_hexdump(data, len));
+
+	for(i = 0; i < len; i++)
+		if (data[i] != m_data[i]) {
+			LOGPC(DLGLOBAL, LOGL_FATAL, "!!\n");
+			break;
+		} else
+			LOGPC(DLGLOBAL, LOGL_FATAL, ".. ");
+
+	LOGPC(DLGLOBAL, LOGL_FATAL, "    msgb %s\n", m_dump);
+
+	return false;
+}
+
 /*! get length of message buffer
  *  \param[in] msg message buffer
  *  \returns length of data section in message buffer

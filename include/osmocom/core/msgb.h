@@ -560,6 +560,145 @@ static inline int msgb_test_invariant(const struct msgb *msg)
 	return lbound <= msg->head +  msg->data_len;
 }
 
+
+/* msgb data comparison helpers */
+
+/*! Compare: check data in msgb against given data
+ *  \param[in] msg message buffer
+ *  \param[in] data expected data
+ *  \param[in] len length of data
+ *  \returns boolean indicating whether msgb content is equal to the given data
+ */
+#define msgb_eq_data(msg, data, len)				\
+	_msgb_eq(__FILE__, __LINE__, __func__, 0, msg, data, len, false)
+
+/*! Compare: check L1 data in msgb against given data
+ *  \param[in] msg message buffer
+ *  \param[in] data expected L1 data
+ *  \param[in] len length of data
+ *  \returns boolean indicating whether msgb L1 content is equal to the given data
+ */
+#define msgb_eq_l1_data(msg, data, len)				\
+	_msgb_eq(__FILE__, __LINE__, __func__, 1, msg, data, len, false)
+
+/*! Compare: check L2 data in msgb against given data
+ *  \param[in] msg message buffer
+ *  \param[in] data expected L2 data
+ *  \param[in] len length of data
+ *  \returns boolean indicating whether msgb L2 content is equal to the given data
+ */
+#define msgb_eq_l2_data(msg, data, len)				\
+	_msgb_eq(__FILE__, __LINE__, __func__, 2, msg, data, len, false)
+
+/*! Compare: check L3 data in msgb against given data
+ *  \param[in] msg message buffer
+ *  \param[in] data expected L3 data
+ *  \param[in] len length of data
+ *  \returns boolean indicating whether msgb L3 content is equal to the given data
+ */
+#define msgb_eq_l3_data(msg, data, len)				\
+	_msgb_eq(__FILE__, __LINE__, __func__, 3, msg, data, len, false)
+
+/*! Compare: check L4 data in msgb against given data
+ *  \param[in] msg message buffer
+ *  \param[in] data expected L4 data
+ *  \param[in] len length of data
+ *  \returns boolean indicating whether msgb L4 content is equal to the given data
+ */
+#define msgb_eq_l4_data(msg, data, len)				\
+	_msgb_eq(__FILE__, __LINE__, __func__, 4, msg, data, len, false)
+
+
+/* msgb test/debug helpers */
+
+/*! Compare and print: check data in msgb against given data and print errors if any
+ *  \param[in] msg message buffer
+ *  \param[in] data expected data
+ *  \param[in] len length of data
+ *  \returns boolean indicating whether msgb content is equal to the given data
+ */
+#define msgb_eq_data_print(msg, data, len)				\
+	_msgb_eq(__FILE__, __LINE__, __func__, 0, msg, data, len, true)
+
+/*! Compare and print: check L1 data in msgb against given data and print errors if any
+ *  \param[in] msg message buffer
+ *  \param[in] data expected L1 data
+ *  \param[in] len length of data
+ *  \returns boolean indicating whether msgb L1 content is equal to the given data
+ */
+#define msgb_eq_l1_data_print(msg, data, len)				\
+	_msgb_eq(__FILE__, __LINE__, __func__, 1, msg, data, len, true)
+
+/*! Compare and print: check L2 data in msgb against given data and print errors if any
+ *  \param[in] msg message buffer
+ *  \param[in] data expected L2 data
+ *  \param[in] len length of data
+ *  \returns boolean indicating whether msgb L2 content is equal to the given data
+ */
+#define msgb_eq_l2_data_print(msg, data, len)				\
+	_msgb_eq(__FILE__, __LINE__, __func__, 2, msg, data, len, true)
+
+/*! Compare and print: check L3 data in msgb against given data and print errors if any
+ *  \param[in] msg message buffer
+ *  \param[in] data expected L3 data
+ *  \param[in] len length of data
+ *  \returns boolean indicating whether msgb L3 content is equal to the given data
+ */
+#define msgb_eq_l3_data_print(msg, data, len)				\
+	_msgb_eq(__FILE__, __LINE__, __func__, 3, msg, data, len, true)
+
+
+/*! Compare and print: check L4 data in msgb against given data and print errors if any
+ *  \param[in] msg message buffer
+ *  \param[in] data expected L4 data
+ *  \param[in] len length of data
+ *  \returns boolean indicating whether msgb L4 content is equal to the given data
+ */
+#define msgb_eq_l4_data_print(msg, data, len)				\
+	_msgb_eq(__FILE__, __LINE__, __func__, 4, msg, data, len, true)
+
+bool _msgb_eq(const char *file, size_t line, const char *func, uint8_t level,
+	      const struct msgb *msg, const uint8_t *data, size_t len, bool print);
+
+
+/* msgb data comparison */
+
+/*! Compare msgbs
+ *  \param[in] msg1 message buffer
+ *  \param[in] msg2 reference message buffer
+ *  \returns boolean indicating whether msgb content is equal
+ */
+#define msgb_eq(msg1, msgb2, len) msgb_eq_data(msg1, msgb_data(msg2), msgb_length(msg2))
+
+/*! Compare msgbs L1 content
+ *  \param[in] msg1 message buffer
+ *  \param[in] msg2 reference message buffer
+ *  \returns boolean indicating whether msgb L1 content is equal
+ */
+#define msgb_eq_l1(msg1, msgb2, len) msgb_eq_l1_data(msg1, msgb_l1(msg2), msgb_l1len(msg2))
+
+/*! Compare msgbs L2 content
+ *  \param[in] msg1 message buffer
+ *  \param[in] msg2 reference message buffer
+ *  \returns boolean indicating whether msgb L2 content is equal
+ */
+#define msgb_eq_l2(msg1, msgb2, len) msgb_eq_l2_data(msg1, msgb_l2(msg2), msgb_l2len(msg2))
+
+/*! Compare msgbs L3 content
+ *  \param[in] msg1 message buffer
+ *  \param[in] msg2 reference message buffer
+ *  \returns boolean indicating whether msgb L3 content is equal
+ */
+#define msgb_eq_l3(msg1, msgb2, len) msgb_eq_l3_data(msg1, msgb_l3(msg2), msgb_l3len(msg2))
+
+/*! Compare msgbs L4 content
+ *  \param[in] msg1 message buffer
+ *  \param[in] msg2 reference message buffer
+ *  \returns boolean indicating whether msgb L4 content is equal
+ */
+#define msgb_eq_l4(msg1, msgb2, len) msgb_eq_l4_data(msg1, msgb_l4(msg2), msgb_l4len(msg2))
+
+
 /* non inline functions to ease binding */
 
 uint8_t *msgb_data(const struct msgb *msg);
