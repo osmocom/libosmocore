@@ -130,8 +130,10 @@ static inline struct msgb *msgb_dequeue_count(struct llist_head *queue,
 #define msgb_l2(m)	((void *)(m->l2h))
 /*! obtain L3 header of msgb */
 #define msgb_l3(m)	((void *)(m->l3h))
+/*! obtain L4 header of msgb */
+#define msgb_l4(m)	((void *)(m->l4h))
 /*! obtain SMS header of msgb */
-#define msgb_sms(m)	((void *)(m->l4h))
+#define msgb_sms(m)	msgb_l4(m)
 
 /*! determine length of L1 message
  *  \param[in] msgb message buffer
@@ -566,6 +568,13 @@ void *msgb_talloc_ctx_init(void *root_ctx, unsigned int pool_size);
 void msgb_set_talloc_ctx(void *ctx) OSMO_DEPRECATED("Use msgb_talloc_ctx_init() instead");
 int msgb_printf(struct msgb *msgb, const char *format, ...);
 
+static inline const char *msgb_hexdump_l1(const struct msgb *msg)
+{
+	if (!msgb_l1(msg) || !(msgb_l1len(msg)))
+		return "[]";
+	return osmo_hexdump((const unsigned char *) msgb_l1(msg), msgb_l1len(msg));
+}
+
 static inline const char *msgb_hexdump_l2(const struct msgb *msg)
 {
 	if (!msgb_l2(msg) || !(msgb_l2len(msg)))
@@ -578,6 +587,13 @@ static inline const char *msgb_hexdump_l3(const struct msgb *msg)
 	if (!msgb_l3(msg) || !(msgb_l3len(msg)))
 		return "[]";
 	return osmo_hexdump((const unsigned char*) msgb_l3(msg), msgb_l3len(msg));
+}
+
+static inline const char *msgb_hexdump_l4(const struct msgb *msg)
+{
+	if (!msgb_l4(msg) || !(msgb_l4len(msg)))
+		return "[]";
+	return osmo_hexdump((const unsigned char*) msgb_l4(msg), msgb_l4len(msg));
 }
 
 /*! @} */
