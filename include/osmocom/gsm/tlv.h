@@ -324,6 +324,18 @@ static inline uint8_t *msgb_v_put(struct msgb *msg, uint8_t val)
 	return v_put(buf, val);
 }
 
+/*! put (append) a TL fields to a \ref msgb
+ *  \returns pointer to the length field so it can be updated after adding new information under specified tag */
+static inline uint8_t *msgb_tl_put(struct msgb *msg, uint8_t tag)
+{
+	uint8_t *len = msgb_v_put(msg, tag);
+
+	/* reserve space for length, len points to this reserved space already */
+	msgb_v_put(msg, 0);
+
+	return len;
+}
+
 /*! put (append) a TV16 field to a \ref msgb
  *  \returns pointer to first byte after newly-put information */
 static inline uint8_t *msgb_tv16_put(struct msgb *msg, uint8_t tag, uint16_t val)
