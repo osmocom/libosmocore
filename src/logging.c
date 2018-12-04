@@ -948,9 +948,11 @@ int log_targets_reopen(void)
 }
 
 /*! Initialize the Osmocom logging core
- *  \param[in] inf Information regarding logging categories
+ *  \param[in] inf Information regarding logging categories, could be NULL
  *  \param[in] ctx \ref talloc context for logging allocations
  *  \returns 0 in case of success, negative in case of error
+ *
+ *  If inf is NULL then only library-internal categories are initialized.
  */
 int log_init(const struct log_info *inf, void *ctx)
 {
@@ -964,10 +966,13 @@ int log_init(const struct log_info *inf, void *ctx)
 	if (!osmo_log_info)
 		return -ENOMEM;
 
-	osmo_log_info->filter_fn = inf->filter_fn;
-	osmo_log_info->num_cat_user = inf->num_cat;
-	/* total number = number of user cat + library cat */
-	osmo_log_info->num_cat = inf->num_cat + ARRAY_SIZE(internal_cat);
+	osmo_log_info->num_cat = ARRAY_SIZE(internal_cat);
+
+	if (inf) {
+		osmo_log_info->filter_fn = inf->filter_fn;
+		osmo_log_info->num_cat_user = inf->num_cat;
+		osmo_log_info->num_cat += inf->num_cat;
+	}
 
 	osmo_log_info->cat = talloc_zero_array(osmo_log_info,
 					struct log_info_cat,
@@ -978,11 +983,11 @@ int log_init(const struct log_info *inf, void *ctx)
 		return -ENOMEM;
 	}
 
-	/* copy over the user part */
-	for (i = 0; i < inf->num_cat; i++) {
-		memcpy((struct log_info_cat *) &osmo_log_info->cat[i],
-			&inf->cat[i],
-			sizeof(struct log_info_cat));
+	if (inf) { /* copy over the user part */
+		for (i = 0; i < inf->num_cat; i++) {
+			memcpy((struct log_info_cat *) &osmo_log_info->cat[i],
+			       &inf->cat[i], sizeof(struct log_info_cat));
+		}
 	}
 
 	/* copy over the library part */
