@@ -35,7 +35,7 @@ enum sgsap_msg_type {
 	/* unassigned */
 	SGSAP_MSGT_UE_UNREACHABLE		= 0x1f,
 };
-const struct value_string sgsap_msg_type_names[];
+extern const struct value_string sgsap_msg_type_names[];
 static inline const char *sgsap_msg_type_name(enum sgsap_msg_type msgt) {
 	return get_value_string(sgsap_msg_type_names, msgt);
 }
@@ -74,7 +74,7 @@ enum sgsap_iei {
 	SGSAP_IE_ADDL_PAGING_INDICATORS		= 0x26,
 	SGSAP_IE_TMSI_BASED_NRI_CONT		= 0x27,
 };
-const struct value_string sgsap_iei_names[];
+extern const struct value_string sgsap_iei_names[];
 static inline const char *sgsap_iei_name(enum sgsap_iei iei) {
 	return get_value_string(sgsap_iei_names, iei);
 }
@@ -84,7 +84,7 @@ enum sgsap_eps_lu_type {
 	SGSAP_EPS_LUT_IMSI_ATTACH		= 0x01,
 	SGSAP_EPS_LUT_NORMAL			= 0x02,
 };
-const struct value_string sgsap_eps_lu_type_names[];
+extern const struct value_string sgsap_eps_lu_type_names[];
 static inline const char *sgsap_eps_lu_type_name(enum sgsap_eps_lu_type lut) {
 	return get_value_string(sgsap_eps_lu_type_names, lut);
 }
@@ -95,7 +95,7 @@ enum sgsap_imsi_det_eps_type {
 	SGSAP_ID_EPS_T_UE_INITIATED		= 0x02,
 	SGSAP_ID_EPS_T_EPS_NOT_ALLOWED		= 0x03,
 };
-const struct value_string sgsap_ismi_det_eps_type_names[];
+extern const struct value_string sgsap_ismi_det_eps_type_names[];
 static inline const char *sgsap_imsi_det_eps_type_name(enum sgsap_imsi_det_eps_type idt) {
 	return get_value_string(sgsap_ismi_det_eps_type_names, idt);
 }
@@ -106,7 +106,7 @@ enum sgsap_imsi_det_noneps_type {
 	SGSAP_ID_NONEPS_T_COMBINED_UE_EPS_NONEPS	= 0x02,
 	SGSAP_ID_NONEPS_T_IMPLICIT_UE_EPS_NONEPS	= 0x03,
 };
-const struct value_string sgsap_ismi_det_noneps_type_names[];
+extern const struct value_string sgsap_ismi_det_noneps_type_names[];
 static inline const char *sgsap_imsi_det_noneps_type_name(enum sgsap_imsi_det_noneps_type idt) {
 	return get_value_string(sgsap_ismi_det_noneps_type_names, idt);
 }
@@ -116,7 +116,7 @@ enum sgsap_service_ind {
 	SGSAP_SERV_IND_CS_CALL		= 0x01,
 	SGSAP_SERV_IND_SMS		= 0x02,
 };
-const struct value_string sgsap_service_ind_names[];
+extern const struct value_string sgsap_service_ind_names[];
 static inline const char *sgsap_service_ind_name(enum sgsap_service_ind si) {
 	return get_value_string(sgsap_service_ind_names, si);
 }
@@ -138,7 +138,7 @@ enum sgsap_sgs_cause {
 	SGSAP_SGS_CAUSE_MT_CSFB_REJ_USER	= 0x0d,
 	SGSAP_SGS_CAUSE_UE_TEMP_UNREACHABLE	= 0x0e,
 };
-const struct value_string sgsap_sgs_cause_names[];
+extern const struct value_string sgsap_sgs_cause_names[];
 static inline const char *sgsap_sgs_cause_name(enum sgsap_sgs_cause cause) {
 	return get_value_string(sgsap_sgs_cause_names, cause);
 }
@@ -148,7 +148,7 @@ enum sgsap_ue_emm_mode {
 	SGSAP_UE_EMM_MODE_IDLE			= 0x00,
 	SGSAP_UE_EMM_MODE_CONNECTED		= 0x01,
 };
-const struct value_string sgsap_ue_emm_mode_names[];
+extern const struct value_string sgsap_ue_emm_mode_names[];
 static inline const char *sgsap_ue_emm_mode_name(enum sgsap_ue_emm_mode mode) {
 	return get_value_string(sgsap_ue_emm_mode_names, mode);
 }
