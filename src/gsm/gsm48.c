@@ -643,7 +643,10 @@ int gsm48_generate_mid_from_imsi(uint8_t *buf, const char *imsi)
  *  \param[in] str_len Length of \a string in bytes
  *  \param[in] mi Mobile Identity to be stringified
  *  \param[in] mi_len Length of \a mi in bytes
- *  \returns length of string written to \a string */
+ *  \returns WARNING: the return value of this function is not well implemented.
+ *           Depending on the MI type and amount of output buffer, this may return
+ *           the nr of written bytes, or the written strlen(), or the snprintf()
+ *           style strlen()-if-the-buffer-were-large-enough. */
 int gsm48_mi_to_string(char *string, const int str_len, const uint8_t *mi,
 		       const int mi_len)
 {
