@@ -23,8 +23,7 @@ Testing Mobile Identity conversions
   -> MI-str="4234235" rc=8
 - IMSI 4234235
   -> MI-TLV-hex='170449322453'
-  -> MI-str="423" rc=3
-     ERROR: resulting string is not explicitly nul terminated
+  -> MI-str="423" rc=4
 - IMEI 123456789012345
   -> MI-TLV-hex='17081a32547698103254'
   -> MI-str="123456789012345" rc=16
@@ -39,8 +38,7 @@ Testing Mobile Identity conversions
   -> MI-str="987654321098765432" rc=19
 - IMEI-SV 987654321098765432
   -> MI-TLV-hex='170a937856341290785634f2'
-  -> MI-str="987654321098765" rc=15
-     ERROR: resulting string is not explicitly nul terminated
+  -> MI-str="987654321098765" rc=16
 - TMSI 305419896
   -> MI-TLV-hex='1705f412345678'
   -> MI-str="305419896" rc=9
@@ -66,14 +64,14 @@ Testing Mobile Identity conversions
 Decoding zero length Mobile Identities
 - MI type: IMSI
   - writing to zero-length string:
-    rc=1
-    ERROR: Wrote to invalid memory!
+    rc=0
+    nothing written
   - writing to 1-byte-length string:
     rc=1
-    ERROR: Wrote unexpected string "1!!!!"
+    returned empty string
   - decode zero-length mi:
-    rc=2
-    ERROR: expected empty string, got output string: "1"
+    rc=1
+    returned empty string
 - MI type: TMSI
   - writing to zero-length string:
     rc=1
@@ -96,14 +94,14 @@ Decoding zero length Mobile Identities
     returned empty string
 - MI type: IMSI | GSM_MI_ODD
   - writing to zero-length string:
-    rc=1
-    ERROR: Wrote to invalid memory!
+    rc=0
+    nothing written
   - writing to 1-byte-length string:
     rc=1
-    ERROR: Wrote unexpected string "1!!!!"
+    returned empty string
   - decode zero-length mi:
-    rc=2
-    ERROR: expected empty string, got output string: "1"
+    rc=1
+    returned empty string
 - MI type: TMSI | GSM_MI_ODD
   - writing to zero-length string:
     rc=1

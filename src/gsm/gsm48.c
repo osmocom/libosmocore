@@ -638,7 +638,8 @@ int gsm48_generate_mid_from_imsi(uint8_t *buf, const char *imsi)
 	return gsm48_generate_mid(buf, imsi, GSM_MI_TYPE_IMSI);
 }
 
-/*! Convert TS 04.08 Mobile Identity (10.5.1.4) to string
+/*! Convert TS 04.08 Mobile Identity (10.5.1.4) to string.
+ * This function does not validate the Mobile Identity digits, i.e. digits > 9 are returned as 'A'-'F'.
  *  \param[out] string Caller-provided buffer for output
  *  \param[in] str_len Length of \a string in bytes
  *  \param[in] mi Mobile Identity to be stringified
@@ -650,7 +651,7 @@ int gsm48_generate_mid_from_imsi(uint8_t *buf, const char *imsi)
 int gsm48_mi_to_string(char *string, const int str_len, const uint8_t *mi,
 		       const int mi_len)
 {
-	int i;
+	int rc;
 	uint8_t mi_type;
 	char *str_cur = string;
 	uint32_t tmsi;
@@ -670,17 +671,15 @@ int gsm48_mi_to_string(char *string, const int str_len, const uint8_t *mi,
 	case GSM_MI_TYPE_IMSI:
 	case GSM_MI_TYPE_IMEI:
 	case GSM_MI_TYPE_IMEISV:
-		*str_cur++ = osmo_bcd2char(mi[0] >> 4);
-
-                for (i = 1; i < mi_len; i++) {
-			if (str_cur + 2 >= string + str_len)
-				return str_cur - string;
-			*str_cur++ = osmo_bcd2char(mi[i] & 0xf);
-			/* skip last nibble in last input byte when GSM_EVEN */
-			if( (i != mi_len-1) || (mi[0] & GSM_MI_ODD))
-				*str_cur++ = osmo_bcd2char(mi[i] >> 4);
-		}
-		break;
+		rc = osmo_bcd2str(string, str_len, mi,
+				  1, mi_len * 2 - ((mi[0] & GSM_MI_ODD) ? 0 : 1), true);
+		/* osmo_bcd2str() returns snprintf style strlen(), this returns bytes written. */
+		if (rc < 0)
+			return 0;
+		else if (rc < str_len)
+			return rc + 1;
+		else
+			return strlen(string) + 1;
 	default:
 		break;
 	}

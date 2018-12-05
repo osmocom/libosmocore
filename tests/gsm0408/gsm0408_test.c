@@ -393,7 +393,6 @@ static const struct test_mid_encode_decode_test test_mid_encode_decode_tests[] =
 		.expect_mi_tlv_hex = "170449322453",
 		.str_size = 4,
 		.expect_str = "423",
-		.expect_rc = 3, /* exception: on truncation, gsm48_mi_to_string() returns strlen(), not bytes! */
 	},
 	{
 		.mi_type = GSM_MI_TYPE_IMEI,
@@ -421,7 +420,6 @@ static const struct test_mid_encode_decode_test test_mid_encode_decode_tests[] =
 		.expect_mi_tlv_hex = "170a937856341290785634f2",
 		.str_size = 16,
 		.expect_str = "987654321098765",
-		.expect_rc = 15, /* exception: on truncation, gsm48_mi_to_string() returns strlen(), not bytes! */
 	},
 	{
 		/* gsm48 treats TMSI as decimal string */
