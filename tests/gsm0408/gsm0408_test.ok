@@ -72,8 +72,8 @@ Decoding zero length Mobile Identities
     returned empty string
 - MI type: TMSI
   - writing to zero-length string:
-    rc=1
-    ERROR: Wrote to invalid memory!
+    rc=0
+    nothing written
   - writing to 1-byte-length string:
     rc=1
     returned empty string
@@ -82,8 +82,8 @@ Decoding zero length Mobile Identities
     returned empty string
 - MI type: NONE
   - writing to zero-length string:
-    rc=1
-    ERROR: Wrote to invalid memory!
+    rc=0
+    nothing written
   - writing to 1-byte-length string:
     rc=1
     returned empty string
@@ -102,8 +102,8 @@ Decoding zero length Mobile Identities
     returned empty string
 - MI type: TMSI | GSM_MI_ODD
   - writing to zero-length string:
-    rc=1
-    ERROR: Wrote to invalid memory!
+    rc=0
+    nothing written
   - writing to 1-byte-length string:
     rc=1
     returned empty string
@@ -112,8 +112,8 @@ Decoding zero length Mobile Identities
     returned empty string
 - MI type: NONE | GSM_MI_ODD
   - writing to zero-length string:
-    rc=1
-    ERROR: Wrote to invalid memory!
+    rc=0
+    nothing written
   - writing to 1-byte-length string:
     rc=1
     returned empty string

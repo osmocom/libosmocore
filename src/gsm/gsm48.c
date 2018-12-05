@@ -653,14 +653,11 @@ int gsm48_mi_to_string(char *string, const int str_len, const uint8_t *mi,
 {
 	int rc;
 	uint8_t mi_type;
-	char *str_cur = string;
 	uint32_t tmsi;
 
 	mi_type = mi[0] & GSM_MI_TYPE_MASK;
 
 	switch (mi_type) {
-	case GSM_MI_TYPE_NONE:
-		break;
 	case GSM_MI_TYPE_TMSI:
 		/* Table 10.5.4.3, reverse generate_mid_from_tmsi */
 		if (mi_len == GSM48_TMSI_LEN && mi[0] == (0xf0 | GSM_MI_TYPE_TMSI)) {
@@ -680,12 +677,15 @@ int gsm48_mi_to_string(char *string, const int str_len, const uint8_t *mi,
 			return rc + 1;
 		else
 			return strlen(string) + 1;
+
 	default:
 		break;
 	}
-	*str_cur++ = '\0';
 
-	return str_cur - string;
+	if (str_len < 1)
+		return 0;
+	*string = '\0';
+	return 1;
 }
 
 /*! Parse TS 04.08 Routing Area Identifier
