@@ -655,7 +655,7 @@ int gsm48_mi_to_string(char *string, const int str_len, const uint8_t *mi,
 	uint8_t mi_type;
 	uint32_t tmsi;
 
-	mi_type = mi[0] & GSM_MI_TYPE_MASK;
+	mi_type = (mi && mi_len) ? (mi[0] & GSM_MI_TYPE_MASK) : GSM_MI_TYPE_NONE;
 
 	switch (mi_type) {
 	case GSM_MI_TYPE_TMSI:
