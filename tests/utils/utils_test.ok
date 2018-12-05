@@ -80,6 +80,35 @@ Testing BCD conversion
 	val=0xe, expected=E, found=E
 	val=0xf, expected=F, found=F
 
+Testing bcd to string conversion
+- BCD-input='1a 32 54 76 98 f0' nibbles=[1..11[ str_size=64
+  rc=10
+  -> "1234567890"
+- BCD-input='1a 32 a4 cb 9d f0' nibbles=[1..11[ str_size=64
+  rc=-22
+  -> "1234ABCD90"
+- BCD-input='1a 32 a4 cb 9d f0' nibbles=[1..11[ str_size=64
+  rc=10
+  -> "1234ABCD90"
+- BCD-input='1a 32 54 76 98 f0' nibbles=[1..12[ str_size=64
+  rc=-22
+  -> "1234567890F"
+- BCD-input='1a 32 54 76 98 f0' nibbles=[1..12[ str_size=64
+  rc=11
+  -> "1234567890F"
+- BCD-input='1a 32 54 76 98 f0' nibbles=[0..12[ str_size=64
+  rc=12
+  -> "A1234567890F"
+- BCD-input='1a 32 54 76 98 f0' nibbles=[1..12[ str_size=5
+  rc=11
+  -> "1234"
+- BCD-input='' nibbles=[1..1[ str_size=64
+  rc=0
+  -> ""
+- zero output buffer
+  bcd2str(NULL, ...) -> -12
+  bcd2str(dst, 0, ...) -> -12
+
 Testing string escaping
 - all chars from 0 to 255 in batches of 16:
 "\0\1\2\3\4\5\6\a\b\t\n\v\f\r\14\15"

@@ -49,6 +49,8 @@ char osmo_bcd2char(uint8_t bcd);
 /* only works for numbers in ascci */
 uint8_t osmo_char2bcd(char c);
 
+int osmo_bcd2str(char *dst, size_t dst_size, const uint8_t *bcd, int start_nibble, int end_nibble, bool allow_hex);
+
 int osmo_hexparse(const char *str, uint8_t *b, int max_len);
 
 char *osmo_ubit_dump(const uint8_t *bits, unsigned int len);

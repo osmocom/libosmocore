@@ -32,6 +32,7 @@
 #include <time.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <errno.h>
 
 static void hexdump_test(void)
 {
@@ -381,6 +382,118 @@ static void bcd_test(void)
 		/* test for lowercase hex char */
 		OSMO_ASSERT(osmo_char2bcd(tolower(ch)) == check->bcd);
 	}
+}
+
+struct bcd2str_test {
+	const char *bcd_hex;
+	int start_nibble;
+	int end_nibble;
+	bool allow_hex;
+	size_t str_size;
+	const char *expect_str;
+	int expect_rc;
+};
+
+static const struct bcd2str_test bcd2str_tests[] = {
+	{
+		.bcd_hex = "1a 32 54 76 98 f0",
+		.start_nibble = 1,
+		.end_nibble = 11,
+		.expect_str = "1234567890",
+		.expect_rc = 10,
+	},
+	{
+		.bcd_hex = "1a 32 a4 cb 9d f0",
+		.start_nibble = 1,
+		.end_nibble = 11,
+		.expect_str = "1234ABCD90",
+		.expect_rc = -EINVAL,
+	},
+	{
+		.bcd_hex = "1a 32 a4 cb 9d f0",
+		.start_nibble = 1,
+		.end_nibble = 11,
+		.allow_hex = true,
+		.expect_str = "1234ABCD90",
+		.expect_rc = 10,
+	},
+	{
+		.bcd_hex = "1a 32 54 76 98 f0",
+		.start_nibble = 1,
+		.end_nibble = 12,
+		.expect_str = "1234567890F",
+		.expect_rc = -EINVAL,
+	},
+	{
+		.bcd_hex = "1a 32 54 76 98 f0",
+		.start_nibble = 1,
+		.end_nibble = 12,
+		.allow_hex = true,
+		.expect_str = "1234567890F",
+		.expect_rc = 11,
+	},
+	{
+		.bcd_hex = "1a 32 54 76 98 f0",
+		.start_nibble = 0,
+		.end_nibble = 12,
+		.allow_hex = true,
+		.expect_str = "A1234567890F",
+		.expect_rc = 12,
+	},
+	{
+		.bcd_hex = "1a 32 54 76 98 f0",
+		.start_nibble = 1,
+		.end_nibble = 12,
+		.str_size = 5,
+		.expect_str = "1234",
+		.expect_rc = 11,
+	},
+	{
+		.bcd_hex = "",
+		.start_nibble = 1,
+		.end_nibble = 1,
+		.expect_str = "",
+		.expect_rc = 0,
+	},
+};
+
+static void bcd2str_test(void)
+{
+	int i;
+	uint8_t bcd[64];
+	int rc;
+
+	printf("\nTesting bcd to string conversion\n");
+
+	for (i = 0; i < ARRAY_SIZE(bcd2str_tests); i++) {
+		const struct bcd2str_test *t = &bcd2str_tests[i];
+		char str[64] = {};
+		size_t str_size = t->str_size ? : sizeof(str);
+
+		osmo_hexparse(t->bcd_hex, bcd, sizeof(bcd));
+
+		printf("- BCD-input='%s' nibbles=[%d..%d[ str_size=%zu\n", t->bcd_hex,
+		       t->start_nibble, t->end_nibble, str_size);
+		rc = osmo_bcd2str(str, str_size, bcd, t->start_nibble, t->end_nibble, t->allow_hex);
+
+		printf("  rc=%d\n", rc);
+
+		OSMO_ASSERT(str[str_size-1] == '\0');
+		printf("  -> %s\n", osmo_quote_str(str, -1));
+
+		if (rc != t->expect_rc)
+			printf("    ERROR: expected rc=%d\n", t->expect_rc);
+		if (strcmp(str, t->expect_str))
+			printf("    ERROR: expected result %s\n", osmo_quote_str(t->expect_str, -1));
+	}
+
+	printf("- zero output buffer\n");
+	rc = osmo_bcd2str(NULL, 100, bcd, 1, 2, false);
+	printf("  bcd2str(NULL, ...) -> %d\n", rc);
+	OSMO_ASSERT(rc < 0);
+	rc = osmo_bcd2str((char*)23, 0, bcd, 1, 2, false);
+	printf("  bcd2str(dst, 0, ...) -> %d\n", rc);
+	OSMO_ASSERT(rc < 0);
 }
 
 static void str_escape_test(void)
@@ -810,6 +923,7 @@ int main(int argc, char **argv)
 	test_ipa_ccm_id_resp_parsing();
 	test_is_hexstr();
 	bcd_test();
+	bcd2str_test();
 	str_escape_test();
 	str_quote_test();
 	isqrt_test();

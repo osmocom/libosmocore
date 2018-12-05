@@ -129,6 +129,47 @@ uint8_t osmo_char2bcd(char c)
 		return 0;
 }
 
+/*! Convert BCD to string.
+ * The given nibble offsets are interpreted in BCD order, i.e. nibble 0 is bcd[0] & 0xf, nibble 1 is bcd[0] >> 4, nibble
+ * 3 is bcd[1] & 0xf, etc..
+ *  \param[out] dst  Output string buffer, is always nul terminated when dst_size > 0.
+ *  \param[in] dst_size  sizeof() the output string buffer.
+ *  \param[in] bcd  Binary coded data buffer.
+ *  \param[in] start_nibble  Offset to start from, in nibbles, typically 1 to skip the first nibble.
+ *  \param[in] end_nibble  Offset to stop before, in nibbles, e.g. sizeof(bcd) - (bcd[0] & GSM_MI_ODD? 0:1).
+ *  \param[in] allow_hex  If false, return error if there are digits other than 0-9. If true, return those as [A-F].
+ *  \returns The strlen that would be written if the output buffer is large enough, excluding nul byte (like
+ *           snprintf()), or -EINVAL if allow_hex is false and a digit > 9 is encountered. On -EINVAL, the conversion is
+ *           still completed as if allow_hex were passed as true. Return -ENOMEM if dst is NULL or dst_size is zero.
+ *           If end_nibble <= start_nibble, write an empty string to dst and return 0.
+ */
+int osmo_bcd2str(char *dst, size_t dst_size, const uint8_t *bcd, int start_nibble, int end_nibble, bool allow_hex)
+{
+	char *dst_end = dst + dst_size - 1;
+	int nibble_i;
+	int rc = 0;
+
+	if (!dst || dst_size < 1)
+		return -ENOMEM;
+
+	for (nibble_i = start_nibble; nibble_i < end_nibble && dst < dst_end; nibble_i++, dst++) {
+		uint8_t nibble = bcd[nibble_i >> 1];
+		if ((nibble_i & 1))
+			nibble >>= 4;
+		nibble &= 0xf;
+
+		if (!allow_hex && nibble > 9)
+			rc = -EINVAL;
+
+		*dst = osmo_bcd2char(nibble);
+	}
+	*dst = '\0';
+
+	if (rc < 0)
+		return rc;
+	return OSMO_MAX(0, end_nibble - start_nibble);
+}
+
 /*! Parse a string containing hexadecimal digits
  *  \param[in] str string containing ASCII encoded hexadecimal digits
  *  \param[out] b output buffer
