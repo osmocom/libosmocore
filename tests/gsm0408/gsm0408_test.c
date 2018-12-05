@@ -352,11 +352,246 @@ static void test_mid_from_imsi(void)
 	printf("passed: [%u] %s\n", len, osmo_hexdump(buf, len));
 }
 
+struct test_mid_encode_decode_test {
+	uint8_t mi_type;
+	const char *mi_str;
+	size_t str_size;
+	const char *expect_mi_tlv_hex;
+	const char *expect_str;
+	int expect_rc;
+};
+
+static const struct test_mid_encode_decode_test test_mid_encode_decode_tests[] = {
+	{
+		.mi_type = GSM_MI_TYPE_IMSI,
+		.mi_str = "123456789012345",
+		.expect_mi_tlv_hex = "17081932547698103254",
+	},
+	{
+		.mi_type = GSM_MI_TYPE_IMSI,
+		.mi_str = "12345678901234",
+		.expect_mi_tlv_hex = "170811325476981032f4",
+	},
+	{
+		.mi_type = GSM_MI_TYPE_IMSI,
+		.mi_str = "423423",
+		.expect_mi_tlv_hex = "1704413224f3",
+	},
+	{
+		.mi_type = GSM_MI_TYPE_IMSI | GSM_MI_ODD,
+		.mi_str = "423423",
+		.expect_mi_tlv_hex = "1704493224f3", /* encodes "odd" for even number of digits! */
+	},
+	{
+		.mi_type = GSM_MI_TYPE_IMSI,
+		.mi_str = "4234235",
+		.expect_mi_tlv_hex = "170449322453",
+	},
+	{
+		.mi_type = GSM_MI_TYPE_IMSI,
+		.mi_str = "4234235",
+		.expect_mi_tlv_hex = "170449322453",
+		.str_size = 4,
+		.expect_str = "423",
+		.expect_rc = 3, /* exception: on truncation, gsm48_mi_to_string() returns strlen(), not bytes! */
+	},
+	{
+		.mi_type = GSM_MI_TYPE_IMEI,
+		.mi_str = "123456789012345",
+		.expect_mi_tlv_hex = "17081a32547698103254",
+	},
+	{
+		.mi_type = GSM_MI_TYPE_IMEI,
+		.mi_str = "98765432109876",
+		.expect_mi_tlv_hex = "170892785634129078f6",
+	},
+	{
+		.mi_type = GSM_MI_TYPE_IMEI,
+		.mi_str = "987654321098765",
+		.expect_mi_tlv_hex = "17089a78563412907856",
+	},
+	{
+		.mi_type = GSM_MI_TYPE_IMEISV,
+		.mi_str = "987654321098765432",
+		.expect_mi_tlv_hex = "170a937856341290785634f2",
+	},
+	{
+		.mi_type = GSM_MI_TYPE_IMEISV,
+		.mi_str = "987654321098765432",
+		.expect_mi_tlv_hex = "170a937856341290785634f2",
+		.str_size = 16,
+		.expect_str = "987654321098765",
+		.expect_rc = 15, /* exception: on truncation, gsm48_mi_to_string() returns strlen(), not bytes! */
+	},
+	{
+		/* gsm48 treats TMSI as decimal string */
+		.mi_type = GSM_MI_TYPE_TMSI,
+		.mi_str = "305419896", /* 0x12345678 as decimal */
+		.expect_mi_tlv_hex = "1705f412345678",
+		.expect_rc = 9, /* exception: gsm48_mi_to_string() for TMSI returns strlen(), not bytes! */
+	},
+	{
+		.mi_type = GSM_MI_TYPE_TMSI,
+		.mi_str = "12648430", /* 0xc0ffee as decimal */
+		.expect_mi_tlv_hex = "1705f400c0ffee",
+		.expect_rc = 8, /* exception: gsm48_mi_to_string() for TMSI returns strlen(), not bytes! */
+	},
+	{
+		.mi_type = GSM_MI_TYPE_TMSI,
+		.mi_str = "0",
+		.expect_mi_tlv_hex = "1705f400000000",
+		.expect_rc = 1, /* exception: gsm48_mi_to_string() for TMSI returns strlen(), not bytes! */
+	},
+	{
+		/* gsm48 treats TMSI as decimal string */
+		.mi_type = GSM_MI_TYPE_TMSI,
+		.mi_str = "305419896", /* 0x12345678 as decimal */
+		.expect_mi_tlv_hex = "1705f412345678",
+		.str_size = 5,
+		.expect_str = "3054",
+		.expect_rc = 9, /* exception: gsm48_mi_to_string() for TMSI returns would-be strlen() like snprintf()! */
+	},
+	{
+		.mi_type = GSM_MI_TYPE_NONE,
+		.mi_str = "123",
+		.expect_mi_tlv_hex = "17021832", /* encoding invalid MI type */
+		.expect_str = "",
+	},
+	{
+		.mi_type = GSM_MI_TYPE_NONE,
+		.mi_str = "1234",
+		.expect_mi_tlv_hex = "17031032f4", /* encoding invalid MI type */
+		.expect_str = "",
+	},
+	{
+		.mi_type = GSM_MI_ODD,
+		.mi_str = "1234",
+		.expect_mi_tlv_hex = "17031832f4", /* encoding invalid MI type, and "odd" for an even number of digits */
+		.expect_str = "",
+	},
+};
+
+static void test_mid_encode_decode(void)
+{
+	int i;
+
+	printf("\nTesting Mobile Identity conversions\n");
+
+	for (i = 0; i < ARRAY_SIZE(test_mid_encode_decode_tests); i++) {
+		const struct test_mid_encode_decode_test *t = &test_mid_encode_decode_tests[i];
+		uint8_t tlv_buf[64];
+		uint8_t *mi_buf;
+		int tlv_len;
+		int mi_len;
+		const char *tlv_hex;
+		char str[64] = {};
+		size_t str_size = t->str_size ? : sizeof(str);
+		const char *expect_str = t->expect_str ? : t->mi_str;
+		int expect_rc = t->expect_rc ? : strlen(expect_str)+1;
+		int rc;
+		int str_len;
+
+		printf("- %s %s\n", gsm48_mi_type_name(t->mi_type), t->mi_str);
+		if (t->mi_type == GSM_MI_TYPE_TMSI)
+			tlv_len = gsm48_generate_mid_from_tmsi(tlv_buf, (uint32_t)atoll(t->mi_str));
+		else
+			tlv_len = gsm48_generate_mid(tlv_buf, t->mi_str, t->mi_type);
+		tlv_hex = osmo_hexdump_nospc(tlv_buf, tlv_len);
+
+		printf("  -> MI-TLV-hex='%s'\n", tlv_hex);
+		if (t->expect_mi_tlv_hex && strcmp(tlv_hex, t->expect_mi_tlv_hex)) {
+			printf("     ERROR: expected '%s'\n", t->expect_mi_tlv_hex);
+		}
+
+		/* skip the GSM48_IE_MOBILE_ID tag and length */
+		mi_buf = tlv_buf + 2;
+		mi_len = tlv_len - 2;
+
+		rc = gsm48_mi_to_string(str, str_size, mi_buf, mi_len);
+		printf("  -> MI-str=%s rc=%d\n", osmo_quote_str(str, -1), rc);
+		if (strcmp(str, expect_str))
+			printf("     ERROR: expected MI-str=%s\n", osmo_quote_str(expect_str, -1));
+		if (rc != expect_rc)
+			printf("     ERROR: expected rc=%d\n", expect_rc);
+
+		/* Now make sure the resulting string is always '\0' terminated.
+		 * The above started out with a zeroed buffer, now repeat with a tainted one. */
+		str_len = strlen(str);
+		str[str_len] = '!';
+		gsm48_mi_to_string(str, str_size, mi_buf, mi_len);
+		if (strlen(str) != str_len)
+			printf("     ERROR: resulting string is not explicitly nul terminated\n");
+	}
+}
+
+static const uint8_t test_mid_decode_zero_length_types[] = { GSM_MI_TYPE_IMSI, GSM_MI_TYPE_TMSI, GSM_MI_TYPE_NONE };
+
+static void test_mid_decode_zero_length(void)
+{
+	int odd;
+	uint8_t valid_mi[64];
+	int valid_mi_len;
+
+	printf("\nDecoding zero length Mobile Identities\n");
+
+	/* IMSI = 123456789012345 */
+	valid_mi_len = osmo_hexparse("1932547698103254", valid_mi, sizeof(valid_mi));
+
+	for (odd = 0; odd <= 1; odd++) {
+		int i;
+		for (i = 0; i < ARRAY_SIZE(test_mid_decode_zero_length_types); i++) {
+			uint8_t mi_type = test_mid_decode_zero_length_types[i] | (odd ? GSM_MI_ODD : 0);
+			char str[8] = {};
+			int rc;
+
+			printf("- MI type: %s%s\n", gsm48_mi_type_name(mi_type & GSM_MI_TYPE_MASK),
+			       odd ? " | GSM_MI_ODD":"");
+			valid_mi[0] = (valid_mi[0] & 0xf0) | mi_type;
+
+			printf("  - writing to zero-length string:\n");
+			memset(str, '!', sizeof(str) - 1);
+			rc = gsm48_mi_to_string(str, 0, valid_mi, valid_mi_len);
+			printf("    rc=%d\n", rc);
+			if (str[0] == '!')
+				printf("    nothing written\n");
+			else
+				printf("    ERROR: Wrote to invalid memory!\n");
+
+			printf("  - writing to 1-byte-length string:\n");
+			memset(str, '!', sizeof(str) - 1);
+			rc = gsm48_mi_to_string(str, 1, valid_mi, valid_mi_len);
+			printf("    rc=%d\n", rc);
+			if (str[0] == '\0')
+				printf("    returned empty string\n");
+			else if (str[0] == '!')
+				printf("    ERROR: nothing written, expected nul-terminated empty string\n");
+			else
+				printf("    ERROR: Wrote unexpected string %s\n", osmo_quote_str(str, 5));
+			if (str[1] != '!')
+				printf("    ERROR: Wrote to invalid memory!\n");
+
+			printf("  - decode zero-length mi:\n");
+			memset(str, '!', sizeof(str) - 1);
+			rc = gsm48_mi_to_string(str, sizeof(str), valid_mi, 0);
+			printf("    rc=%d\n", rc);
+			if (str[0] == '\0')
+				printf("    returned empty string\n");
+			else if (str[0] == '!')
+				printf("    ERROR: nothing written, expected nul-terminated empty string\n");
+			else
+				printf("    ERROR: expected empty string, got output string: %s\n", osmo_quote_str(str, -1));
+		}
+	}
+	printf("\n");
+}
+
 int main(int argc, char **argv)
 {
 	test_bearer_cap();
 	test_mid_from_tmsi();
 	test_mid_from_imsi();
+	test_mid_encode_decode();
+	test_mid_decode_zero_length();
 	test_ra_cap();
 	test_lai_encode_decode();
 

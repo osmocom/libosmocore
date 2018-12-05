@@ -2,6 +2,129 @@ Test `CSD 9600/V.110/transparent' passed
 Test `Speech, all codecs' passed
 Simple TMSI encoding test....passed
 Simple IMSI encoding test....passed: [10] 17 08 99 10 07 00 00 00 64 02 
+
+Testing Mobile Identity conversions
+- IMSI 123456789012345
+  -> MI-TLV-hex='17081932547698103254'
+  -> MI-str="123456789012345" rc=16
+- IMSI 12345678901234
+  -> MI-TLV-hex='170811325476981032f4'
+  -> MI-str="12345678901234" rc=15
+- IMSI 423423
+  -> MI-TLV-hex='1704413224f3'
+  -> MI-str="423423" rc=7
+- unknown 0x9 423423
+  -> MI-TLV-hex='1704493224f3'
+  -> MI-str="423423F" rc=8
+     ERROR: expected MI-str="423423"
+     ERROR: expected rc=7
+- IMSI 4234235
+  -> MI-TLV-hex='170449322453'
+  -> MI-str="4234235" rc=8
+- IMSI 4234235
+  -> MI-TLV-hex='170449322453'
+  -> MI-str="423" rc=3
+     ERROR: resulting string is not explicitly nul terminated
+- IMEI 123456789012345
+  -> MI-TLV-hex='17081a32547698103254'
+  -> MI-str="123456789012345" rc=16
+- IMEI 98765432109876
+  -> MI-TLV-hex='170892785634129078f6'
+  -> MI-str="98765432109876" rc=15
+- IMEI 987654321098765
+  -> MI-TLV-hex='17089a78563412907856'
+  -> MI-str="987654321098765" rc=16
+- IMEI-SV 987654321098765432
+  -> MI-TLV-hex='170a937856341290785634f2'
+  -> MI-str="987654321098765432" rc=19
+- IMEI-SV 987654321098765432
+  -> MI-TLV-hex='170a937856341290785634f2'
+  -> MI-str="987654321098765" rc=15
+     ERROR: resulting string is not explicitly nul terminated
+- TMSI 305419896
+  -> MI-TLV-hex='1705f412345678'
+  -> MI-str="305419896" rc=9
+- TMSI 12648430
+  -> MI-TLV-hex='1705f400c0ffee'
+  -> MI-str="12648430" rc=8
+- TMSI 0
+  -> MI-TLV-hex='1705f400000000'
+  -> MI-str="0" rc=1
+- TMSI 305419896
+  -> MI-TLV-hex='1705f412345678'
+  -> MI-str="3054" rc=9
+- NONE 123
+  -> MI-TLV-hex='17021832'
+  -> MI-str="" rc=1
+- NONE 1234
+  -> MI-TLV-hex='17031032f4'
+  -> MI-str="" rc=1
+- unknown 0x8 1234
+  -> MI-TLV-hex='17031832f4'
+  -> MI-str="" rc=1
+
+Decoding zero length Mobile Identities
+- MI type: IMSI
+  - writing to zero-length string:
+    rc=1
+    ERROR: Wrote to invalid memory!
+  - writing to 1-byte-length string:
+    rc=1
+    ERROR: Wrote unexpected string "1!!!!"
+  - decode zero-length mi:
+    rc=2
+    ERROR: expected empty string, got output string: "1"
+- MI type: TMSI
+  - writing to zero-length string:
+    rc=1
+    ERROR: Wrote to invalid memory!
+  - writing to 1-byte-length string:
+    rc=1
+    returned empty string
+  - decode zero-length mi:
+    rc=1
+    returned empty string
+- MI type: NONE
+  - writing to zero-length string:
+    rc=1
+    ERROR: Wrote to invalid memory!
+  - writing to 1-byte-length string:
+    rc=1
+    returned empty string
+  - decode zero-length mi:
+    rc=1
+    returned empty string
+- MI type: IMSI | GSM_MI_ODD
+  - writing to zero-length string:
+    rc=1
+    ERROR: Wrote to invalid memory!
+  - writing to 1-byte-length string:
+    rc=1
+    ERROR: Wrote unexpected string "1!!!!"
+  - decode zero-length mi:
+    rc=2
+    ERROR: expected empty string, got output string: "1"
+- MI type: TMSI | GSM_MI_ODD
+  - writing to zero-length string:
+    rc=1
+    ERROR: Wrote to invalid memory!
+  - writing to 1-byte-length string:
+    rc=1
+    returned empty string
+  - decode zero-length mi:
+    rc=1
+    returned empty string
+- MI type: NONE | GSM_MI_ODD
+  - writing to zero-length string:
+    rc=1
+    ERROR: Wrote to invalid memory!
+  - writing to 1-byte-length string:
+    rc=1
+    returned empty string
+  - decode zero-length mi:
+    rc=1
+    returned empty string
+
 Constructed RA:
 077-121-666-5
 MCC+MNC in BCD: 70 17 21 
