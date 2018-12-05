@@ -611,7 +611,7 @@ uint8_t gsm48_generate_mid(uint8_t *buf, const char *id, uint8_t mi_type)
 	uint8_t length = strnlen(id, 255), i, off = 0, odd = (length & 1) == 1;
 
 	buf[0] = GSM48_IE_MOBILE_ID;
-	buf[2] = osmo_char2bcd(id[0]) << 4 | mi_type | (odd << 3);
+	buf[2] = osmo_char2bcd(id[0]) << 4 | (mi_type & GSM_MI_TYPE_MASK) | (odd << 3);
 
 	/* if the length is even we will fill half of the last octet */
 	buf[1] = (length + (odd ? 1 : 2)) >> 1;

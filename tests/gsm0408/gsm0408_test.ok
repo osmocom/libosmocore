@@ -14,10 +14,8 @@ Testing Mobile Identity conversions
   -> MI-TLV-hex='1704413224f3'
   -> MI-str="423423" rc=7
 - unknown 0x9 423423
-  -> MI-TLV-hex='1704493224f3'
-  -> MI-str="423423F" rc=8
-     ERROR: expected MI-str="423423"
-     ERROR: expected rc=7
+  -> MI-TLV-hex='1704413224f3'
+  -> MI-str="423423" rc=7
 - IMSI 4234235
   -> MI-TLV-hex='170449322453'
   -> MI-str="4234235" rc=8
@@ -58,7 +56,7 @@ Testing Mobile Identity conversions
   -> MI-TLV-hex='17031032f4'
   -> MI-str="" rc=1
 - unknown 0x8 1234
-  -> MI-TLV-hex='17031832f4'
+  -> MI-TLV-hex='17031032f4'
   -> MI-str="" rc=1
 
 Decoding zero length Mobile Identities

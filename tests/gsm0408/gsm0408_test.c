@@ -380,7 +380,7 @@ static const struct test_mid_encode_decode_test test_mid_encode_decode_tests[] =
 	{
 		.mi_type = GSM_MI_TYPE_IMSI | GSM_MI_ODD,
 		.mi_str = "423423",
-		.expect_mi_tlv_hex = "1704493224f3", /* encodes "odd" for even number of digits! */
+		.expect_mi_tlv_hex = "1704413224f3",
 	},
 	{
 		.mi_type = GSM_MI_TYPE_IMSI,
@@ -464,7 +464,7 @@ static const struct test_mid_encode_decode_test test_mid_encode_decode_tests[] =
 	{
 		.mi_type = GSM_MI_ODD,
 		.mi_str = "1234",
-		.expect_mi_tlv_hex = "17031832f4", /* encoding invalid MI type, and "odd" for an even number of digits */
+		.expect_mi_tlv_hex = "17031032f4", /* encoding invalid MI type */
 		.expect_str = "",
 	},
 };
