@@ -173,4 +173,11 @@ static inline const char *sgsap_ue_emm_mode_name(enum sgsap_ue_emm_mode mode) {
 /* TS 29.118 Section 6.3 */
 #define SGS_PORT_DEFAULT 29118
 
+/* TS 29.118 Section 9.4.13 MME Name */
+#define SGS_MME_NAME_LEN 55
+
+/* TS 29.118 Section 9.4.22 VLR name
+ * See also: RFC1123 Section 2.1 Host Names and Numbers */
+#define SGS_VLR_NAME_MAXLEN 255
+
 const struct tlv_definition sgsap_ie_tlvdef;

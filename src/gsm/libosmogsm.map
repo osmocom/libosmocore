@@ -219,6 +219,21 @@ gsm0808_lcls_config_names;
 gsm0808_lcls_control_names;
 gsm0808_lcls_status_names;
 
+gsm29118_msgb_alloc;
+gsm29118_create_alert_req;
+gsm29118_create_dl_ud;
+gsm29118_create_eps_det_ack;
+gsm29118_create_imsi_det_ack;
+gsm29118_create_lu_ack;
+gsm29118_create_lu_rej;
+gsm29118_create_mm_info_req;
+gsm29118_create_paging_req;
+gsm29118_create_reset_ack;
+gsm29118_create_reset_ind;
+gsm29118_create_status;
+gsm29118_create_release_req;
+gsm29118_create_service_abort_req;
+
 gsm0858_rsl_ul_meas_enc;
 
 gsm338_get_sms_alphabet;
