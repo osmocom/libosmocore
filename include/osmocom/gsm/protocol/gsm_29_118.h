@@ -170,4 +170,7 @@ static inline const char *sgsap_ue_emm_mode_name(enum sgsap_ue_emm_mode mode) {
 #define SGS_NS10_DEFAULT	2
 #define SGS_NS12_DEFAULT	2
 
+/* TS 29.118 Section 6.3 */
+#define SGS_PORT_DEFAULT 29118
+
 const struct tlv_definition sgsap_ie_tlvdef;
