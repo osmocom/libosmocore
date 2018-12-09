@@ -27,6 +27,10 @@
 
 #pragma once
 
+/* MacOS < 10.12 Sierra does not define clockid_t */
+#if defined(__APPLE__) && (!defined(__DARWIN_C_LEVEL) || __DARWIN_C_LEVEL < 199309L)
+typedef int clockid_t;
+#endif
 
 /* Convenience macros for operations on timevals.
    NOTE: `timercmp' does not work for >= or <=.  */

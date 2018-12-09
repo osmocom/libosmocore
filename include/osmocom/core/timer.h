@@ -45,6 +45,7 @@
 
 #include <osmocom/core/linuxlist.h>
 #include <osmocom/core/linuxrbtree.h>
+#include <osmocom/core/timer_compat.h>
 
 /* convert absolute time (in seconds) to elapsed days/hours/minutes */
 #define OSMO_SEC2MIN(sec) ((sec % (60 * 60)) / 60)
