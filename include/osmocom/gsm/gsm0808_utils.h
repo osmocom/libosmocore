@@ -62,7 +62,7 @@ struct gsm0808_cell_id_list2 {
 struct osmo_lcls {
 	enum gsm0808_lcls_config config;   /**< §3.2.2.116 Configuration */
 	enum gsm0808_lcls_control control; /**< §3.2.2.117 Connection Status Control */
-	struct gsm29205_gcr *gcr;          /**< §3.2.2.115 Global Call Reference */
+	struct osmo_gcr_parsed *gcr;       /**< §3.2.2.115 Global Call Reference */
 	bool corr_needed;                  /**< §3.2.2.118 Correlation-Not-Needed */
 };
 

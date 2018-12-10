@@ -132,6 +132,12 @@ cat $abs_srcdir/gsm0808/gsm0808_test.ok > expout
 AT_CHECK([$abs_top_builddir/tests/gsm0808/gsm0808_test], [0], [expout], [ignore])
 AT_CLEANUP
 
+AT_SETUP([gsm29205])
+AT_KEYWORDS([gsm29205])
+cat $abs_srcdir/gsm29205/gsm29205_test.ok > expout
+AT_CHECK([$abs_top_builddir/tests/gsm29205/gsm29205_test], [0], [expout], [ignore])
+AT_CLEANUP
+
 AT_SETUP([gsm0408])
 AT_KEYWORDS([gsm0408])
 cat $abs_srcdir/gsm0408/gsm0408_test.ok > expout

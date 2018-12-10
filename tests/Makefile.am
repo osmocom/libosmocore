@@ -24,7 +24,7 @@ check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
 		 abis/abis_test endian/endian_test sercomm/sercomm_test	\
 		 prbs/prbs_test gsm23003/gsm23003_test 			\
 		 codec/codec_ecu_fr_test timer/clk_override_test	\
-		 oap/oap_client_test					\
+		 oap/oap_client_test gsm29205/gsm29205_test		\
 		 logging/logging_vty_test				\
 		 $(NULL)
 
@@ -103,6 +103,9 @@ conv_conv_gsm0503_test_CPPFLAGS = $(AM_CPPFLAGS) -I$(top_srcdir)/tests/conv
 
 gsm0808_gsm0808_test_SOURCES = gsm0808/gsm0808_test.c
 gsm0808_gsm0808_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
+
+gsm29205_gsm29205_test_SOURCES = gsm29205/gsm29205_test.c
+gsm29205_gsm29205_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 
 gsm0408_gsm0408_test_SOURCES = gsm0408/gsm0408_test.c
 gsm0408_gsm0408_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
@@ -272,7 +275,7 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
 	     osmo-auc-gen/osmo-auc-gen_test.err				\
 	     conv/conv_gsm0503_test.ok endian/endian_test.ok 		\
 	     sercomm/sercomm_test.ok prbs/prbs_test.ok			\
-	     gsm23003/gsm23003_test.ok                                 \
+	     gsm29205/gsm29205_test.ok gsm23003/gsm23003_test.ok        \
 	     timer/clk_override_test.ok					\
 	     oap/oap_client_test.ok oap/oap_client_test.err
 

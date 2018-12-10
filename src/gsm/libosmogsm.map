@@ -235,6 +235,9 @@ gsm29118_create_status;
 gsm29118_create_release_req;
 gsm29118_create_service_abort_req;
 
+osmo_enc_gcr;
+osmo_dec_gcr;
+
 gsm0858_rsl_ul_meas_enc;
 
 gsm338_get_sms_alphabet;
