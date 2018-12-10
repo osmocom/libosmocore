@@ -28,7 +28,7 @@
  * embedded systems.  We cannot use the autoconf-defined HAVE_... macros
  * here, as that only works at library compile time, not at application
  * compile time */
-#ifdef unix
+#if defined(unix) || defined(__APPLE__)
 
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -141,5 +141,5 @@ int osmo_stats_reporter_send_buffer(struct osmo_stats_reporter *srep);
 int osmo_stats_reporter_udp_open(struct osmo_stats_reporter *srep);
 int osmo_stats_reporter_udp_close(struct osmo_stats_reporter *srep);
 
-#endif /* unix */
+#endif /* unix || __APPLE__ */
 /*! @} */
