@@ -27,6 +27,7 @@ struct sockaddr_storage;
 
 #include <osmocom/gsm/protocol/gsm_08_08.h>
 #include <osmocom/gsm/protocol/gsm_04_08.h>
+#include <osmocom/gsm/gsm29205.h>
 #include <osmocom/gsm/gsm23003.h>
 #include <osmocom/gsm/gsm_utils.h>
 #include <osmocom/gsm/tlv.h>
@@ -82,6 +83,10 @@ uint8_t gsm0808_enc_aoip_trasp_addr(struct msgb *msg,
 				    const struct sockaddr_storage *ss);
 int gsm0808_dec_aoip_trasp_addr(struct sockaddr_storage *ss,
 				const uint8_t *elem, uint8_t len);
+
+uint8_t gsm0808_enc_gcr(struct msgb *msg, const struct osmo_gcr_parsed *g);
+int gsm0808_dec_gcr(struct osmo_gcr_parsed *g, const struct tlv_parsed *tp);
+
 uint8_t gsm0808_enc_speech_codec(struct msgb *msg,
 				 const struct gsm0808_speech_codec *sc);
 int gsm0808_dec_speech_codec(struct gsm0808_speech_codec *sc,

@@ -22,6 +22,8 @@
 #include <osmocom/gsm/gsm0808_utils.h>
 #include <osmocom/gsm/protocol/gsm_08_08.h>
 #include <osmocom/gsm/protocol/gsm_08_58.h>
+#include <osmocom/core/logging.h>
+#include <osmocom/core/application.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -595,6 +597,75 @@ static void test_prepend_dtap()
 	in_msg->l3h = in_msg->data;
 	VERIFY(in_msg, res, ARRAY_SIZE(res));
 	msgb_free(in_msg);
+}
+
+static void test_enc_dec_gcr()
+{
+	static const uint8_t res[] = {
+		GSM0808_IE_GLOBAL_CALL_REF,
+		0x0d, /* GCR length */
+		0x03, /* .net_len */
+		0xf1, 0xf2, 0xf3, /* .net */
+		0x02, /* .node length */
+		0xde, 0xad, /* .node */
+		0x05, /* length of Call. Ref. */
+		0x41, 0x42, 0x43, 0x44, 0x45 /* .cr - Call. Ref. */
+	};
+	uint8_t len;
+	struct msgb *msg;
+	struct osmo_gcr_parsed p = { 0 }, g = {
+		.net_len = 3,
+		.net = { 0xf1, 0xf2, 0xf3 },
+		.node = 0xDEAD,
+		.cr = { 0x41, 0x42, 0x43, 0x44, 0x45 },
+	};
+	int rc;
+	struct tlv_parsed tp;
+	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "global call reference");
+	if (!msg)
+		return;
+
+	len = gsm0808_enc_gcr(msg, &g);
+	printf("Testing Global Call Reference IE encoder...\n\t%d bytes added: %s\n",
+	       len, len == ARRAY_SIZE(res) ? "OK" : "FAIL");
+
+	if (!msgb_eq_data_print(msg, res, ARRAY_SIZE(res)))
+		abort();
+
+	rc = osmo_bssap_tlv_parse(&tp, msgb_data(msg), msgb_length(msg));
+	if (rc < 0) {
+		printf("parsing failed: %s [%s]\n", strerror(-rc), msgb_hexdump(msg));
+		abort();
+	}
+
+	rc = gsm0808_dec_gcr(&p, &tp);
+	if (rc < 0) {
+		printf("decoding failed: %s [%s]\n", strerror(-rc), msgb_hexdump(msg));
+		abort();
+	}
+
+	if (p.net_len != g.net_len) {
+		printf("Network ID length parsed wrong: %u != %u\n", p.net_len, g.net_len);
+		abort();
+	}
+
+	if (p.node != g.node) {
+		printf("Node ID parsed wrong: 0x%X != 0x%X\n", p.node, g.node);
+		abort();
+	}
+
+	if (memcmp(p.net, g.net, g.net_len) != 0) {
+		printf("Network ID parsed wrong: %s\n", osmo_hexdump(p.net, p.net_len));
+		abort();
+	}
+
+	if (memcmp(p.cr, g.cr, 5) != 0) {
+		printf("Call ref. ID parsed wrong: %s\n", osmo_hexdump(p.cr, 5));
+		abort();
+	}
+
+	printf("\tdecoded %d bytes: %s\n", rc, rc == len ? "OK" : "FAIL");
+	msgb_free(msg);
 }
 
 static void test_enc_dec_aoip_trasp_addr_v4()
@@ -1790,6 +1861,10 @@ void test_gsm48_mr_cfg_from_gsm0808_sc_cfg()
 
 int main(int argc, char **argv)
 {
+	void *ctx = talloc_named_const(NULL, 0, "gsm0808 test");
+	msgb_talloc_ctx_init(ctx, 0);
+	osmo_init_logging2(ctx, NULL);
+
 	printf("Testing generation of GSM0808 messages\n");
 	test_gsm0808_enc_cause();
 	test_create_layer3();
@@ -1813,6 +1888,9 @@ int main(int argc, char **argv)
 	test_create_paging();
 	test_create_dtap();
 	test_prepend_dtap();
+
+	test_enc_dec_gcr();
+
 	test_enc_dec_aoip_trasp_addr_v4();
 	test_enc_dec_aoip_trasp_addr_v6();
 	test_gsm0808_enc_dec_speech_codec();

@@ -22,6 +22,9 @@ Testing creating Clear Request
 Testing creating Paging Request
 Testing creating DTAP
 Testing prepend DTAP
+Testing Global Call Reference IE encoder...
+	15 bytes added: OK
+	decoded 15 bytes: OK
 test_gsm0808_enc_dec_cell_id_list_lac: encoded: 1a 07 05 01 24 ab cd 56 78 (rc = 9)
 ------- test_cell_id_list_add
      cell_id_list == CGI[0]:{}

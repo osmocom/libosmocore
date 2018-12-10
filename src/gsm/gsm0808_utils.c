@@ -508,6 +508,41 @@ int gsm0808_dec_channel_type(struct gsm0808_channel_type *ct,
 	return (int)(elem - old_elem);
 }
 
+/*! Create BSSMAP Global Call Reference, 3GPP TS 48.008 §3.2.2.115.
+ *  \param[out] msg Message Buffer for appending IE
+ *  \param[in] g Global Call Reference, 3GPP TS 29.205 Table B 2.1.9.1
+ *  \returns number of bytes added to \a msg or 0 on error */
+uint8_t gsm0808_enc_gcr(struct msgb *msg, const struct osmo_gcr_parsed *g)
+{
+	uint8_t enc, *len = msgb_tl_put(msg, GSM0808_IE_GLOBAL_CALL_REF);
+
+	enc = osmo_enc_gcr(msg, g);
+	if (!enc)
+		return 0;
+
+	*len = enc;
+	return enc + 2; /* type (1 byte) + length (1 byte) */
+}
+
+/*! Decode BSSMAP Global Call Reference, 3GPP TS 29.205 Table B 2.1.9.1.
+ *  \param[out] gcr Caller-provided memory to store Global Call Reference
+ *  \param[in] elem IE value to be decoded
+ *  \param[in] len Length of \a elem in bytes
+ *  \returns number of bytes parsed; negative on error */
+int gsm0808_dec_gcr(struct osmo_gcr_parsed *gcr, const struct tlv_parsed *tp)
+{
+	int ret;
+	const uint8_t *buf = TLVP_VAL_MINLEN(tp, GSM0808_IE_GLOBAL_CALL_REF, OSMO_GCR_MIN_LEN);
+	if (!buf)
+		return -EINVAL;
+
+	ret = osmo_dec_gcr(gcr, buf, TLVP_LEN(tp, GSM0808_IE_GLOBAL_CALL_REF));
+	if (ret < 0)
+		return -ENOENT;
+
+	return 2 + ret;
+}
+
 /*! Encode TS 08.08 Encryption Information IE
  *  \param[out] msg Message Buffer to which IE is to be appended
  *  \param[in] ei Encryption Information to be encoded

@@ -219,6 +219,8 @@ gsm0808_channel_type_name;
 gsm0808_lcls_config_names;
 gsm0808_lcls_control_names;
 gsm0808_lcls_status_names;
+gsm0808_enc_gcr;
+gsm0808_dec_gcr;
 
 gsm29118_msgb_alloc;
 gsm29118_create_alert_req;
