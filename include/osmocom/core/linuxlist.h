@@ -387,7 +387,7 @@ static inline void llist_splice_init(struct llist_head *llist,
  * This function is not efficient, mostly useful for small lists and non time
  * critical cases like unit tests.
  */
-static inline unsigned int llist_count(struct llist_head *head)
+static inline unsigned int llist_count(const struct llist_head *head)
 {
 	struct llist_head *entry;
 	unsigned int i = 0;
