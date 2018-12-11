@@ -136,7 +136,7 @@ uint8_t osmo_char2bcd(char c)
  *  \param[in] dst_size  sizeof() the output string buffer.
  *  \param[in] bcd  Binary coded data buffer.
  *  \param[in] start_nibble  Offset to start from, in nibbles, typically 1 to skip the first nibble.
- *  \param[in] end_nibble  Offset to stop before, in nibbles, e.g. sizeof(bcd) - (bcd[0] & GSM_MI_ODD? 0:1).
+ *  \param[in] end_nibble  Offset to stop before, in nibbles, e.g. sizeof(bcd)*2 - (bcd[0] & GSM_MI_ODD? 0:1).
  *  \param[in] allow_hex  If false, return error if there are digits other than 0-9. If true, return those as [A-F].
  *  \returns The strlen that would be written if the output buffer is large enough, excluding nul byte (like
  *           snprintf()), or -EINVAL if allow_hex is false and a digit > 9 is encountered. On -EINVAL, the conversion is
