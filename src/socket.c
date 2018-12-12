@@ -697,10 +697,7 @@ int osmo_sock_unix_init_ofd(struct osmo_fd *ofd, uint16_t type, uint8_t proto,
 	return osmo_fd_init_ofd(ofd, osmo_sock_unix_init(type, proto, socket_path, flags));
 }
 
-/*! Get the IP and/or port number on socket. This is for internal usage.
- *  Convenience wrappers: osmo_sock_get_local_ip(),
- *  osmo_sock_get_local_ip_port(), osmo_sock_get_remote_ip(),
- *  osmo_sock_get_remote_ip_port() and osmo_sock_get_name()
+/*! Get the IP and/or port number on socket in separate string buffers.
  *  \param[in] fd file descriptor of socket
  *  \param[out] ip IP address (will be filled in when not NULL)
  *  \param[in] ip_len length of the ip buffer
@@ -709,7 +706,7 @@ int osmo_sock_unix_init_ofd(struct osmo_fd *ofd, uint16_t type, uint8_t proto,
  *  \param[in] local (true) or remote (false) name will get looked at
  *  \returns 0 on success; negative otherwise
  */
-static int osmo_sock_get_name2(int fd, char *ip, size_t ip_len, char *port, size_t port_len, bool local)
+int osmo_sock_get_ip_and_port(int fd, char *ip, size_t ip_len, char *port, size_t port_len, bool local)
 {
 	struct sockaddr sa;
 	socklen_t len = sizeof(sa);
@@ -741,7 +738,7 @@ static int osmo_sock_get_name2(int fd, char *ip, size_t ip_len, char *port, size
  */
 int osmo_sock_get_local_ip(int fd, char *ip, size_t len)
 {
-	return osmo_sock_get_name2(fd, ip, len, NULL, 0, true);
+	return osmo_sock_get_ip_and_port(fd, ip, len, NULL, 0, true);
 }
 
 /*! Get local port on socket
@@ -752,7 +749,7 @@ int osmo_sock_get_local_ip(int fd, char *ip, size_t len)
  */
 int osmo_sock_get_local_ip_port(int fd, char *port, size_t len)
 {
-	return osmo_sock_get_name2(fd, NULL, 0, port, len, true);
+	return osmo_sock_get_ip_and_port(fd, NULL, 0, port, len, true);
 }
 
 /*! Get remote IP address on socket
@@ -763,7 +760,7 @@ int osmo_sock_get_local_ip_port(int fd, char *port, size_t len)
  */
 int osmo_sock_get_remote_ip(int fd, char *ip, size_t len)
 {
-	return osmo_sock_get_name2(fd, ip, len, NULL, 0, false);
+	return osmo_sock_get_ip_and_port(fd, ip, len, NULL, 0, false);
 }
 
 /*! Get remote port on socket
@@ -774,29 +771,62 @@ int osmo_sock_get_remote_ip(int fd, char *ip, size_t len)
  */
 int osmo_sock_get_remote_ip_port(int fd, char *port, size_t len)
 {
-	return osmo_sock_get_name2(fd, NULL, 0, port, len, false);
+	return osmo_sock_get_ip_and_port(fd, NULL, 0, port, len, false);
 }
 
-/*! Get address/port information on socket in dyn-alloc string
+/*! Get address/port information on socket in dyn-alloc string like "(r=1.2.3.4:5<->l=6.7.8.9:10)".
+ * Usually, it is better to use osmo_sock_get_name2() for a static string buffer or osmo_sock_get_name_buf() for a
+ * caller provided string buffer, to avoid the dynamic talloc allocation.
  *  \param[in] ctx talloc context from which to allocate string buffer
  *  \param[in] fd file descriptor of socket
- *  \returns string identifying the connection of this socket
+ *  \returns string identifying the connection of this socket, talloc'd from ctx.
  */
 char *osmo_sock_get_name(void *ctx, int fd)
 {
+	/* "r=1.2.3.4:123<->l=5.6.7.8:987" */
+	char str[2 + INET6_ADDRSTRLEN + 1 + 5 + 3 + 2 + INET6_ADDRSTRLEN + 1 + 5 + 1];
+	int rc;
+	rc = osmo_sock_get_name_buf(str, sizeof(str), fd);
+	if (rc <= 0)
+		return NULL;
+	return talloc_asprintf(ctx, "(%s)", str);
+}
+
+/*! Get address/port information on socket in provided string buffer, like "r=1.2.3.4:5<->l=6.7.8.9:10".
+ * This does not include braces like osmo_sock_get_name().
+ *  \param[out] str  Destination string buffer.
+ *  \param[in] str_len  sizeof(str).
+ *  \param[in] fd  File descriptor of socket.
+ *  \return String length as returned by snprintf(), or negative on error.
+ */
+int osmo_sock_get_name_buf(char *str, size_t str_len, int fd)
+{
 	char hostbuf_l[INET6_ADDRSTRLEN], hostbuf_r[INET6_ADDRSTRLEN];
 	char portbuf_l[6], portbuf_r[6];
+	int rc;
 
 	/* get local */
-	if (osmo_sock_get_name2(fd, hostbuf_l, sizeof(hostbuf_l), portbuf_l, sizeof(portbuf_l), true))
-		return NULL;
+	if ((rc = osmo_sock_get_ip_and_port(fd, hostbuf_l, sizeof(hostbuf_l), portbuf_l, sizeof(portbuf_l), true)))
+		return rc;
 
 	/* get remote */
-	if (!osmo_sock_get_name2(fd, hostbuf_r, sizeof(hostbuf_r), portbuf_r, sizeof(portbuf_r), false))
-		return talloc_asprintf(ctx, "(r=%s:%s<->l=%s:%s)", hostbuf_r, portbuf_r, hostbuf_l, portbuf_l);
+	if (osmo_sock_get_ip_and_port(fd, hostbuf_r, sizeof(hostbuf_r), portbuf_r, sizeof(portbuf_r), false) != 0)
+		return snprintf(str, str_len, "r=NULL<->l=%s:%s", hostbuf_l, portbuf_l);
 
-	/* local only: different format */
-	return talloc_asprintf(ctx, "(r=NULL<->l=%s:%s)", hostbuf_l, portbuf_l);
+	return snprintf(str, str_len, "r=%s:%s<->l=%s:%s", hostbuf_r, portbuf_r, hostbuf_l, portbuf_l);
+}
+
+/*! Get address/port information on socket in static string, like "r=1.2.3.4:5<->l=6.7.8.9:10".
+ * This does not include braces like osmo_sock_get_name().
+ *  \param[in] fd  File descriptor of socket.
+ *  \return Static string buffer containing the result.
+ */
+const char *osmo_sock_get_name2(int fd)
+{
+	/* "r=1.2.3.4:123<->l=5.6.7.8:987" */
+	static char str[2 + INET6_ADDRSTRLEN + 1 + 5 + 3 + 2 + INET6_ADDRSTRLEN + 1 + 5 + 1];
+	osmo_sock_get_name_buf(str, sizeof(str), fd);
+	return str;
 }
 
 static int sock_get_domain(int fd)
