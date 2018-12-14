@@ -99,6 +99,9 @@ enum osmo_gsup_iei {
 	OSMO_GSUP_SM_RP_MMS_IE			= 0x45,
 	OSMO_GSUP_SM_ALERT_RSN_IE		= 0x46,
 
+	OSMO_GSUP_IMEI_IE			= 0x50,
+	OSMO_GSUP_IMEI_RESULT_IE		= 0x51,
+
 	_OSMO_GSUP_IEI_END_MARKER
 };
 
@@ -145,6 +148,10 @@ enum osmo_gsup_message_type {
 	OSMO_GSUP_MSGT_READY_FOR_SM_REQUEST	= 0b00101100,
 	OSMO_GSUP_MSGT_READY_FOR_SM_ERROR	= 0b00101101,
 	OSMO_GSUP_MSGT_READY_FOR_SM_RESULT	= 0b00101110,
+
+	OSMO_GSUP_MSGT_CHECK_IMEI_REQUEST	= 0b00110000,
+	OSMO_GSUP_MSGT_CHECK_IMEI_ERROR		= 0b00110001,
+	OSMO_GSUP_MSGT_CHECK_IMEI_RESULT	= 0b00110010,
 };
 
 #define OSMO_GSUP_IS_MSGT_REQUEST(msgt) (((msgt) & 0b00000011) == 0b00)
@@ -164,6 +171,11 @@ enum osmo_gsup_cancel_type {
 enum osmo_gsup_cn_domain {
 	OSMO_GSUP_CN_DOMAIN_PS			= 1,
 	OSMO_GSUP_CN_DOMAIN_CS			= 2,
+};
+
+enum osmo_gsup_imei_result {
+	OSMO_GSUP_IMEI_RESULT_ACK		= 1,
+	OSMO_GSUP_IMEI_RESULT_NACK		= 2,
 };
 
 /*! TCAP-like session state */
@@ -259,6 +271,10 @@ struct osmo_gsup_message {
 	const uint8_t			*sm_rp_mms;
 	/*! Alert reason (see 3GPP TS 29.002, 7.6.8.8) */
 	enum osmo_gsup_sms_sm_alert_rsn_t	sm_alert_rsn;
+
+	const uint8_t			*imei_enc;
+	size_t				imei_enc_len;
+	enum osmo_gsup_imei_result	imei_result;
 };
 
 int osmo_gsup_decode(const uint8_t *data, size_t data_len,

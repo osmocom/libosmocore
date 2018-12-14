@@ -289,6 +289,33 @@ static void test_gsup_messages_dec_enc(void)
 			0x02, /* Memory Available (SMMA) */
 	};
 
+	static const uint8_t send_check_imei_req[] = {
+		0x30, /* OSMO_GSUP_MSGT_CHECK_IMEI_REQUEST */
+		TEST_IMSI_IE,
+
+		/* imei */
+		0x50, 0x09,
+			0x42, 0x42, 0x42, 0x42, 0x42, 0x42, 0x42, 0x42, 0x42,
+	};
+
+	static const uint8_t send_check_imei_err[] = {
+		0x31, /* OSMO_GSUP_MSGT_CHECK_IMEI_ERROR */
+		TEST_IMSI_IE,
+
+		/* cause */
+		0x02, 0x01,
+			0x60, /* GMM_CAUSE_INV_MAND_INFO */
+	};
+
+	static const uint8_t send_check_imei_res[] = {
+		0x32, /* OSMO_GSUP_MSGT_CHECK_IMEI_RESULT */
+		TEST_IMSI_IE,
+
+		/* imei_result */
+		0x51, 0x01,
+			0x00, /* OSMO_GSUP_IMEI_RESULT_ACK */
+	};
+
 	static const struct test {
 		char *name;
 		const uint8_t *data;
@@ -338,6 +365,12 @@ static void test_gsup_messages_dec_enc(void)
 			send_mo_mt_forward_sm_err, sizeof(send_mo_mt_forward_sm_err)},
 		{"ReadyForSM (MSC -> SMSC) Indication",
 			send_ready_for_sm_ind, sizeof(send_ready_for_sm_ind)},
+		{"Check IMEI Request",
+			send_check_imei_req, sizeof(send_check_imei_req)},
+		{"Check IMEI Error",
+			send_check_imei_err, sizeof(send_check_imei_err)},
+		{"Check IMEI Result",
+			send_check_imei_res, sizeof(send_check_imei_res)},
 	};
 
 	printf("Test GSUP message decoding/encoding\n");

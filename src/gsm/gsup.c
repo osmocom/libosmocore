@@ -79,6 +79,10 @@ const struct value_string osmo_gsup_message_type_names[] = {
 	OSMO_VALUE_STRING(OSMO_GSUP_MSGT_READY_FOR_SM_ERROR),
 	OSMO_VALUE_STRING(OSMO_GSUP_MSGT_READY_FOR_SM_RESULT),
 
+	OSMO_VALUE_STRING(OSMO_GSUP_MSGT_CHECK_IMEI_REQUEST),
+	OSMO_VALUE_STRING(OSMO_GSUP_MSGT_CHECK_IMEI_ERROR),
+	OSMO_VALUE_STRING(OSMO_GSUP_MSGT_CHECK_IMEI_RESULT),
+
 	{ 0, NULL }
 };
 
@@ -116,6 +120,8 @@ int osmo_gsup_get_err_msg_type(enum osmo_gsup_message_type type_in)
 		return OSMO_GSUP_MSGT_MT_FORWARD_SM_ERROR;
 	case OSMO_GSUP_MSGT_READY_FOR_SM_REQUEST:
 		return OSMO_GSUP_MSGT_READY_FOR_SM_ERROR;
+	case OSMO_GSUP_MSGT_CHECK_IMEI_REQUEST:
+		return OSMO_GSUP_MSGT_CHECK_IMEI_ERROR;
 	default:
 		return -1;
 	}
@@ -487,6 +493,15 @@ int osmo_gsup_decode(const uint8_t *const_data, size_t data_len,
 			gsup_msg->sm_alert_rsn = *value;
 			break;
 
+		case OSMO_GSUP_IMEI_IE:
+			gsup_msg->imei_enc = value;
+			gsup_msg->imei_enc_len = value_len;
+			break;
+
+		case OSMO_GSUP_IMEI_RESULT_IE:
+			gsup_msg->imei_result = osmo_decode_big_endian(value, value_len) + 1;
+			break;
+
 		default:
 			LOGP(DLGSUP, LOGL_NOTICE,
 			     "GSUP IE type %d unknown\n", iei);
@@ -718,6 +733,14 @@ int osmo_gsup_encode(struct msgb *msg, const struct osmo_gsup_message *gsup_msg)
 	if ((u8 = gsup_msg->sm_alert_rsn)) {
 		msgb_tlv_put(msg, OSMO_GSUP_SM_ALERT_RSN_IE,
 				sizeof(u8), &u8);
+	}
+
+	if (gsup_msg->imei_enc)
+		msgb_tlv_put(msg, OSMO_GSUP_IMEI_IE, gsup_msg->imei_enc_len, gsup_msg->imei_enc);
+
+	if ((u8 = gsup_msg->imei_result)) {
+		u8 -= 1;
+		msgb_tlv_put(msg, OSMO_GSUP_IMEI_RESULT_IE, sizeof(u8), &u8);
 	}
 
 	return 0;

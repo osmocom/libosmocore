@@ -43,4 +43,10 @@ Test GSUP message decoding/encoding
           MO-/MT-ForwardSM Error OK
   Testing ReadyForSM (MSC -> SMSC) Indication
           ReadyForSM (MSC -> SMSC) Indication OK
+  Testing Check IMEI Request
+          Check IMEI Request OK
+  Testing Check IMEI Error
+          Check IMEI Error OK
+  Testing Check IMEI Result
+          Check IMEI Result OK
 Done.
