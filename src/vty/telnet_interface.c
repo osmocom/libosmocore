@@ -105,6 +105,18 @@ int telnet_init_dynif(void *tall_ctx, void *priv, const char *ip, int port)
 	return 0;
 }
 
+/*! Initializes telnet based VTY interface using the configured bind addr/port.
+ *  \param[in] tall_ctx \ref talloc context
+ *  \param[in] priv private data to be passed to callback
+ *  \param[in] default_port TCP port number to bind to if not explicitely configured
+ */
+int telnet_init_default(void *tall_ctx, void *priv, int default_port)
+{
+	return telnet_init_dynif(tall_ctx, priv, vty_get_bind_addr(),
+				 vty_get_bind_port(default_port));
+}
+
+
 extern struct host host;
 
 /*! close a telnet connection */

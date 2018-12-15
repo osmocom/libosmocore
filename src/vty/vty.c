@@ -90,6 +90,8 @@ char *vty_cwd = NULL;
  * use NULL and VTY_BIND_ADDR_DEFAULT instead. */
 static const char *vty_bind_addr = NULL;
 #define VTY_BIND_ADDR_DEFAULT "127.0.0.1"
+/* Port the VTY should bind to. -1 means not configured */
+static int vty_bind_port = -1;
 
 /* Configure lock. */
 static int vty_config;
@@ -1612,12 +1614,13 @@ DEFUN(no_vty_login,
 }
 
 /* vty bind */
-DEFUN(vty_bind, vty_bind_cmd, "bind A.B.C.D",
+DEFUN(vty_bind, vty_bind_cmd, "bind A.B.C.D [<0-65535>]",
       "Accept VTY telnet connections on local interface\n"
       "Local interface IP address (default: " VTY_BIND_ADDR_DEFAULT ")\n")
 {
 	talloc_free((void*)vty_bind_addr);
 	vty_bind_addr = talloc_strdup(tall_vty_ctx, argv[0]);
+	vty_bind_port = argc > 1 ? atoi(argv[1]) : -1;
 	return CMD_SUCCESS;
 }
 
@@ -1626,6 +1629,13 @@ const char *vty_get_bind_addr(void)
 	if (!vty_bind_addr)
 		return VTY_BIND_ADDR_DEFAULT;
 	return vty_bind_addr;
+}
+
+int vty_get_bind_port(int default_port)
+{
+	if (vty_bind_port >= 0)
+		return vty_bind_port;
+	return default_port;
 }
 
 DEFUN(service_advanced_vty,
@@ -1700,8 +1710,14 @@ static int vty_config_write(struct vty *vty)
 		vty_out(vty, " login%s", VTY_NEWLINE);
 
 	/* bind */
-	if (vty_bind_addr && (strcmp(vty_bind_addr, VTY_BIND_ADDR_DEFAULT) != 0))
-		vty_out(vty, " bind %s%s", vty_bind_addr, VTY_NEWLINE);
+	if (vty_bind_addr && (strcmp(vty_bind_addr, VTY_BIND_ADDR_DEFAULT) != 0 || vty_bind_port >= 0)) {
+		if (vty_bind_port >= 0) {
+			vty_out(vty, " bind %s %d%s", vty_bind_addr,
+				vty_bind_port, VTY_NEWLINE);
+		} else {
+			vty_out(vty, " bind %s%s", vty_bind_addr, VTY_NEWLINE);
+		}
+	}
 
 	vty_out(vty, "!%s", VTY_NEWLINE);
 

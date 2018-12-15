@@ -210,6 +210,8 @@ int vty_go_parent(struct vty *vty);
 
 /* Return IP address passed to the 'line vty'/'bind' command, or "127.0.0.1" */
 const char *vty_get_bind_addr(void);
+/** Returns configured port passed to the 'line vty'/'bind' command or default_port. */
+int vty_get_bind_port(int default_port);
 
 extern void *tall_vty_ctx;
 
