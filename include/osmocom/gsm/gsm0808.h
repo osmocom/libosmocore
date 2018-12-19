@@ -219,13 +219,13 @@ extern const struct value_string gsm0808_lcls_config_names[];
 extern const struct value_string gsm0808_lcls_control_names[];
 extern const struct value_string gsm0808_lcls_status_names[];
 
-static inline const char *gsm0808_lcls_config_name(uint8_t val) {
+static inline const char *gsm0808_lcls_config_name(enum gsm0808_lcls_config val) {
 	return get_value_string(gsm0808_lcls_config_names, val);
 }
-static inline const char *gsm0808_lcls_control_name(uint8_t val) {
+static inline const char *gsm0808_lcls_control_name(enum gsm0808_lcls_control val) {
 	return get_value_string(gsm0808_lcls_control_names, val);
 }
-static inline const char *gsm0808_lcls_status_name(uint8_t val) {
+static inline const char *gsm0808_lcls_status_name(enum gsm0808_lcls_status val) {
 	return get_value_string(gsm0808_lcls_status_names, val);
 }
 
