@@ -256,12 +256,6 @@ static void test_gsup_messages_dec_enc(void)
 		0x25, /* OSMO_GSUP_MSGT_MO_FORWARD_SM_ERROR */
 		TEST_IMSI_IE,
 
-		/* Session related IEs */
-		0x30, 0x04, /* Session ID */
-			0xde, 0xad, 0xbe, 0xef,
-		0x31, 0x01, /* Session state (END) */
-			0x03,
-
 		/* SM related IEs */
 		0x40, 0x01, /* SM-RP-MR (Message Reference) */
 			0xfa,
