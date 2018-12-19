@@ -526,8 +526,7 @@ uint8_t gsm0808_enc_gcr(struct msgb *msg, const struct osmo_gcr_parsed *g)
 
 /*! Decode BSSMAP Global Call Reference, 3GPP TS 29.205 Table B 2.1.9.1.
  *  \param[out] gcr Caller-provided memory to store Global Call Reference
- *  \param[in] elem IE value to be decoded
- *  \param[in] len Length of \a elem in bytes
+ *  \param[in] tp IE values to be decoded
  *  \returns number of bytes parsed; negative on error */
 int gsm0808_dec_gcr(struct osmo_gcr_parsed *gcr, const struct tlv_parsed *tp)
 {
