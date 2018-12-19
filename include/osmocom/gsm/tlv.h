@@ -495,6 +495,22 @@ void tlv_def_patch(struct tlv_definition *dst, const struct tlv_definition *src)
 	(TLVP_PRES_LEN(_tp, tag, min_len)? (_tp)->lv[tag].val : NULL)
 
 
+/*! Obtain 1-byte TLV element.
+ *  \param[in] tp pointer to \ref tlv_parsed
+ *  \param[in] tag the Tag to look for
+ *  \param[in] default_val default value to use if tag not available
+ *  \returns the 1st byte of value with a given tag or default_val if tag was not found
+ */
+static inline uint8_t tlvp_val8(const struct tlv_parsed *tp, uint8_t tag, uint8_t default_val)
+{
+	const uint8_t *res = TLVP_VAL_MINLEN(tp, tag, 1);
+
+	if (res)
+		return res[0];
+
+	return default_val;
+}
+
 /*! Align given TLV element with 16 bit value to an even address
  *  \param[in] tp pointer to \ref tlv_parsed
  *  \param[in] pos element to return
