@@ -42,7 +42,7 @@ struct osmo_sub_auth_data {
 	union {
 		struct {
 			uint8_t opc[16]; /*!< operator invariant value */
-			uint8_t k[16];	/*!< secret key of the subscriber */
+			uint8_t k[OSMO_A5_MAX_KEY_LEN_BYTES];	/*!< secret key of the subscriber */
 			uint8_t amf[2];
 			uint64_t sqn;	/*!< sequence number (in: prev sqn; out: used sqn) */
 			int opc_is_op;	/*!< is the OPC field OPC (0) or OP (1) ? */
@@ -60,8 +60,8 @@ struct osmo_sub_auth_data {
 struct osmo_auth_vector {
 	uint8_t rand[16];	/*!< random challenge */
 	uint8_t autn[16];	/*!< authentication nonce */
-	uint8_t ck[16];		/*!< ciphering key */
-	uint8_t ik[16];		/*!< integrity key */
+	uint8_t ck[OSMO_A5_MAX_KEY_LEN_BYTES];		/*!< ciphering key */
+	uint8_t ik[OSMO_A5_MAX_KEY_LEN_BYTES];		/*!< integrity key */
 	uint8_t res[16];	/*!< authentication result */
 	uint8_t res_len;	/*!< length (in bytes) of res */
 	uint8_t kc[8];		/*!< Kc for GSM encryption (A5) */

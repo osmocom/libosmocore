@@ -23,7 +23,10 @@ static void dump_auth_vec(struct osmo_auth_vector *vec)
 
 	if (vec->auth_types & OSMO_AUTH_TYPE_GSM) {
 		printf("SRES:\t%s\n", osmo_hexdump(vec->sres, sizeof(vec->sres)));
-		printf("Kc:\t%s\n", osmo_hexdump(vec->kc, sizeof(vec->kc)));
+		/* According to 3GPP TS 55.205 Sec. 4 the GSM-MILENAGE output is limited to 64 bits.
+		   According to 3GPP TS 33.102 Annex. B5 in UMTS security context Kc can be 128 bits.
+		   Here we test the former, so make sure we only print interesting Kc bits. */
+		printf("Kc:\t%s\n", osmo_hexdump(vec->kc, OSMO_A5_MAX_KEY_LEN_BYTES/2));
 	}
 }
 

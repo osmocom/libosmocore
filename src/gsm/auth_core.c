@@ -98,7 +98,7 @@ int osmo_auth_supported(enum osmo_auth_algo algo)
 	return 0;
 }
 
-/* C5 function to derive UMTS IK from GSM Kc */
+/* 3GPP TS 33.102 §6.8.2.3 C5 function to derive UMTS IK from GSM Kc */
 static inline void c5_function(uint8_t *ik, const uint8_t *kc)
 {
 	unsigned int i;
@@ -110,7 +110,7 @@ static inline void c5_function(uint8_t *ik, const uint8_t *kc)
 		ik[i] = ik[i-12];
 }
 
-/* C4 function to derive UMTS CK from GSM Kc */
+/* 3GPP TS 33.102 §6.8.2.3 C4 function to derive UMTS CK from GSM Kc */
 void osmo_c4(uint8_t *ck, const uint8_t *kc)
 {
 	memcpy(ck, kc, 8);
