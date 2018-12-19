@@ -489,7 +489,7 @@ void tlv_def_patch(struct tlv_definition *dst, const struct tlv_definition *src)
  * \param[in] _tp  pointer to \ref tlv_parsed.
  * \param[in] tag  IE tag to return.
  * \param[in] min_len  Minimum value length in bytes.
- * \returns struct tlv_p_entry pointer, or NULL if not present or too short.
+ * \returns const uint8_t pointer to value, or NULL if not present or too short.
  */
 #define TLVP_VAL_MINLEN(_tp, tag, min_len) \
 	(TLVP_PRES_LEN(_tp, tag, min_len)? (_tp)->lv[tag].val : NULL)
