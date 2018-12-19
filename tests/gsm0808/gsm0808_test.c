@@ -39,18 +39,10 @@
 		OSMO_ASSERT(rc_enc == msg->len); \
 	} while(0)
 
-#define VERIFY(msg, data, len) 						\
-	if (msgb_l3len(msg) != len) {					\
-		printf("%s:%d Length don't match: %d vs. %d. %s\n", 	\
-			__func__, __LINE__, msgb_l3len(msg), (int) len,	\
-			osmo_hexdump(msg->l3h, msgb_l3len(msg))); 	\
-		abort();						\
-	} else if (memcmp(msg->l3h, data, len) != 0) {			\
-		printf("%s:%d didn't match: got: %s\n",			\
-			__func__, __LINE__,				\
-			osmo_hexdump(msg->l3h, msgb_l3len(msg)));	\
-		abort();						\
-	}
+#define VERIFY(msg, data, data_len) do { \
+		if (!msgb_eq_l3_data_print(msg, data, data_len)) \
+			abort(); \
+	} while(0)
 
 /* Setup a fake codec list for testing */
 static void setup_codec_list(struct gsm0808_speech_codec_list *scl)
