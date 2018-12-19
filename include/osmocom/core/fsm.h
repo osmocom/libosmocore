@@ -119,9 +119,24 @@ struct osmo_fsm_inst {
 
 void osmo_fsm_log_addr(bool log_addr);
 
+/*! Log using FSM instance's context, on explicit logging level.
+ * \param fi  An osmo_fsm_inst.
+ * \param level  A logging level, e.g. LOGL_INFO.
+ * \param fmt  printf-like format string.
+ * \param args  Format string arguments.
+ */
 #define LOGPFSML(fi, level, fmt, args...) \
 		LOGPFSMLSRC(fi, level, __FILE__, __LINE__, fmt, ## args)
 
+/*! Log using FSM instance's context, on explicit logging level, and with explicit source file and line info.
+ * The log subsystem to log on is obtained from the underlying FSM definition.
+ * \param fi  An osmo_fsm_inst.
+ * \param level  A logging level, e.g. LOGL_INFO.
+ * \param caller_file  A string constant containing a source file path, like __FILE__.
+ * \param caller_line  A number constant containing a source file line, like __LINE__.
+ * \param fmt  printf-like format string.
+ * \param args  Format string arguments.
+ */
 #define LOGPFSMLSRC(fi, level, caller_file, caller_line, fmt, args...) \
 		LOGPSRC((fi)->fsm->log_subsys, level, \
 			caller_file, caller_line, \
@@ -130,9 +145,25 @@ void osmo_fsm_log_addr(bool log_addr);
 			osmo_fsm_state_name((fi)->fsm, (fi)->state), \
 			## args)
 
+/*! Log using FSM instance's context.
+ * The log level to log on is obtained from the FSM instance.
+ * The log subsystem to log on is obtained from the underlying FSM definition.
+ * \param fi  An osmo_fsm_inst.
+ * \param fmt  printf-like format string.
+ * \param args  Format string arguments.
+ */
 #define LOGPFSM(fi, fmt, args...) \
 		LOGPFSML(fi, (fi)->log_level, fmt, ## args)
 
+/*! Log using FSM instance's context, with explicit source file and line info.
+ * The log level to log on is obtained from the FSM instance.
+ * The log subsystem to log on is obtained from the underlying FSM definition.
+ * \param fi  An osmo_fsm_inst.
+ * \param caller_file  A string constant containing a source file path, like __FILE__.
+ * \param caller_line  A number constant containing a source file line, like __LINE__.
+ * \param fmt  printf-like format string.
+ * \param args  Format string arguments.
+ */
 #define LOGPFSMSRC(fi, caller_file, caller_line, fmt, args...) \
 		LOGPFSMLSRC(fi, (fi)->log_level, \
 			    caller_file, caller_line, \
