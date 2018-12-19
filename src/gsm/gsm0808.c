@@ -488,23 +488,8 @@ struct msgb *gsm0808_create_ass2(const struct gsm0808_channel_type *ct,
 	if (kc)
 		msgb_tv_fixed_put(msg, GSM0808_IE_KC_128, 16, kc);
 
-	if (lcls) {
-		/* LCLS: §3.2.2.115 Global Call Reference */
-		if (lcls->gcr)
-			gsm0808_enc_gcr(msg, lcls->gcr);
-
-		/* LCLS: §3.2.2.116 Configuration */
-		if (lcls->config != GSM0808_LCLS_CFG_NA)
-			msgb_tv_put(msg, GSM0808_IE_LCLS_CONFIG, lcls->config);
-
-		/* LCLS: §3.2.2.117 Connection Status Control */
-		if (lcls->control != GSM0808_LCLS_CSC_NA)
-			msgb_tv_put(msg, GSM0808_IE_LCLS_CONN_STATUS_CTRL, lcls->control);
-
-		/* LCLS: §3.2.2.118 Correlation-Not-Needed */
-		if (!lcls->corr_needed)
-			msgb_v_put(msg, GSM0808_IE_LCLS_CORR_NOT_NEEDED);
-	}
+	if (lcls)
+		gsm0808_enc_lcls(msg, lcls);
 
 	/* push the bssmap header */
 	msg->l3h =

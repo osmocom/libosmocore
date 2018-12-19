@@ -668,7 +668,7 @@ static void test_prepend_dtap()
 	msgb_free(in_msg);
 }
 
-static void test_enc_dec_gcr()
+static void test_enc_dec_lcls()
 {
 	static const uint8_t res[] = {
 		GSM0808_IE_GLOBAL_CALL_REF,
@@ -690,11 +690,18 @@ static void test_enc_dec_gcr()
 	};
 	int rc;
 	struct tlv_parsed tp;
-	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "global call reference");
+	struct osmo_lcls lcls_out = { .gcr = &p }, lcls_in = {
+		.gcr = &g,
+		.config = GSM0808_LCLS_CFG_NA,
+		.control = GSM0808_LCLS_CSC_NA,
+		.corr_needed = true,
+	};
+
+	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "LCLS IE");
 	if (!msg)
 		return;
 
-	len = gsm0808_enc_gcr(msg, &g);
+	len = gsm0808_enc_lcls(msg, &lcls_in);
 	printf("Testing Global Call Reference IE encoder...\n\t%d bytes added: %s\n",
 	       len, len == ARRAY_SIZE(res) ? "OK" : "FAIL");
 
@@ -707,29 +714,29 @@ static void test_enc_dec_gcr()
 		abort();
 	}
 
-	rc = gsm0808_dec_gcr(&p, &tp);
+	rc = gsm0808_dec_lcls(&lcls_out, &tp);
 	if (rc < 0) {
 		printf("decoding failed: %s [%s]\n", strerror(-rc), msgb_hexdump(msg));
 		abort();
 	}
 
-	if (p.net_len != g.net_len) {
-		printf("Network ID length parsed wrong: %u != %u\n", p.net_len, g.net_len);
+	if (lcls_out.gcr->net_len != g.net_len) {
+		printf("Network ID length parsed wrong: %u != %u\n", lcls_out.gcr->net_len, g.net_len);
 		abort();
 	}
 
-	if (p.node != g.node) {
-		printf("Node ID parsed wrong: 0x%X != 0x%X\n", p.node, g.node);
+	if (lcls_out.gcr->node != g.node) {
+		printf("Node ID parsed wrong: 0x%X != 0x%X\n", lcls_out.gcr->node, g.node);
 		abort();
 	}
 
-	if (memcmp(p.net, g.net, g.net_len) != 0) {
-		printf("Network ID parsed wrong: %s\n", osmo_hexdump(p.net, p.net_len));
+	if (memcmp(lcls_out.gcr->net, g.net, g.net_len) != 0) {
+		printf("Network ID parsed wrong: %s\n", osmo_hexdump(lcls_out.gcr->net, lcls_out.gcr->net_len));
 		abort();
 	}
 
-	if (memcmp(p.cr, g.cr, 5) != 0) {
-		printf("Call ref. ID parsed wrong: %s\n", osmo_hexdump(p.cr, 5));
+	if (memcmp(lcls_out.gcr->cr, g.cr, 5) != 0) {
+		printf("Call ref. ID parsed wrong: %s\n", osmo_hexdump(lcls_out.gcr->cr, 5));
 		abort();
 	}
 
@@ -1959,7 +1966,7 @@ int main(int argc, char **argv)
 	test_create_dtap();
 	test_prepend_dtap();
 
-	test_enc_dec_gcr();
+	test_enc_dec_lcls();
 
 	test_enc_dec_aoip_trasp_addr_v4();
 	test_enc_dec_aoip_trasp_addr_v6();

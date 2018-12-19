@@ -84,8 +84,8 @@ uint8_t gsm0808_enc_aoip_trasp_addr(struct msgb *msg,
 int gsm0808_dec_aoip_trasp_addr(struct sockaddr_storage *ss,
 				const uint8_t *elem, uint8_t len);
 
-uint8_t gsm0808_enc_gcr(struct msgb *msg, const struct osmo_gcr_parsed *g);
-int gsm0808_dec_gcr(struct osmo_gcr_parsed *g, const struct tlv_parsed *tp);
+uint8_t gsm0808_enc_lcls(struct msgb *msg, const struct osmo_lcls *lcls);
+int gsm0808_dec_lcls(struct osmo_lcls *lcls, const struct tlv_parsed *tp);
 
 uint8_t gsm0808_enc_speech_codec(struct msgb *msg,
 				 const struct gsm0808_speech_codec *sc);

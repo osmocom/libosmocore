@@ -512,7 +512,7 @@ int gsm0808_dec_channel_type(struct gsm0808_channel_type *ct,
  *  \param[out] msg Message Buffer for appending IE
  *  \param[in] g Global Call Reference, 3GPP TS 29.205 Table B 2.1.9.1
  *  \returns number of bytes added to \a msg or 0 on error */
-uint8_t gsm0808_enc_gcr(struct msgb *msg, const struct osmo_gcr_parsed *g)
+static uint8_t gsm0808_enc_gcr(struct msgb *msg, const struct osmo_gcr_parsed *g)
 {
 	uint8_t enc, *len = msgb_tl_put(msg, GSM0808_IE_GLOBAL_CALL_REF);
 
@@ -528,7 +528,7 @@ uint8_t gsm0808_enc_gcr(struct msgb *msg, const struct osmo_gcr_parsed *g)
  *  \param[out] gcr Caller-provided memory to store Global Call Reference
  *  \param[in] tp IE values to be decoded
  *  \returns number of bytes parsed; negative on error */
-int gsm0808_dec_gcr(struct osmo_gcr_parsed *gcr, const struct tlv_parsed *tp)
+static int gsm0808_dec_gcr(struct osmo_gcr_parsed *gcr, const struct tlv_parsed *tp)
 {
 	int ret;
 	const uint8_t *buf = TLVP_VAL_MINLEN(tp, GSM0808_IE_GLOBAL_CALL_REF, OSMO_GCR_MIN_LEN);
@@ -540,6 +540,56 @@ int gsm0808_dec_gcr(struct osmo_gcr_parsed *gcr, const struct tlv_parsed *tp)
 		return -ENOENT;
 
 	return 2 + ret;
+}
+
+/*! Add LCLS parameters to a given msgb, 3GPP TS 48.008 §3.2.2.115 - 3.2.2.120.
+ *  \param[out] msg Message Buffer for appending IE
+ *  \param[in] lcls LCLS-related data
+ *  \returns number of bytes added to \a msg or 0 on error */
+uint8_t gsm0808_enc_lcls(struct msgb *msg, const struct osmo_lcls *lcls)
+{
+	uint8_t enc = 0;
+
+	/* LCLS: §3.2.2.115 Global Call Reference */
+	if (lcls->gcr)
+		enc = gsm0808_enc_gcr(msg, lcls->gcr);
+
+	/* LCLS: §3.2.2.116 Configuration */
+	if (lcls->config != GSM0808_LCLS_CFG_NA) {
+		msgb_tv_put(msg, GSM0808_IE_LCLS_CONFIG, lcls->config);
+		enc += 2;
+	}
+
+	/* LCLS: §3.2.2.117 Connection Status Control */
+	if (lcls->control != GSM0808_LCLS_CSC_NA) {
+		msgb_tv_put(msg, GSM0808_IE_LCLS_CONN_STATUS_CTRL, lcls->control);
+		enc += 2;
+	}
+
+	/* LCLS: §3.2.2.118 Correlation-Not-Needed */
+	if (!lcls->corr_needed) {
+		msgb_v_put(msg, GSM0808_IE_LCLS_CORR_NOT_NEEDED);
+		enc++;
+	}
+
+	return enc;
+}
+
+/*! Decode LCLS parameters to a given msgb, 3GPP TS 48.008 §3.2.2.115 - 3.2.2.120.
+ *  \param[out] lcls Caller-provided memory to store LCLS-related data
+ *  \param[in] tp IE values to be decoded
+ *  \returns GCR size or negative on error */
+int gsm0808_dec_lcls(struct osmo_lcls *lcls, const struct tlv_parsed *tp)
+{
+	int ret = gsm0808_dec_gcr(lcls->gcr, tp);
+	if (ret < 0)
+		return ret;
+
+	lcls->config = tlvp_val8(tp, GSM0808_IE_LCLS_CONFIG, GSM0808_LCLS_CFG_NA);
+	lcls->control = tlvp_val8(tp, GSM0808_IE_LCLS_CONN_STATUS_CTRL, GSM0808_LCLS_CSC_NA);
+	lcls->corr_needed = TLVP_PRESENT(tp, GSM0808_IE_LCLS_CORR_NOT_NEEDED) ? false : true;
+
+	return ret;
 }
 
 /*! Encode TS 08.08 Encryption Information IE
