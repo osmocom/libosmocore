@@ -138,11 +138,11 @@ void osmo_fsm_log_addr(bool log_addr);
  * \param args  Format string arguments.
  */
 #define LOGPFSMLSRC(fi, level, caller_file, caller_line, fmt, args...) \
-		LOGPSRC((fi)->fsm->log_subsys, level, \
+		LOGPSRC((fi) ? (fi)->fsm->log_subsys : DLGLOBAL, level, \
 			caller_file, caller_line, \
 			"%s{%s}: " fmt, \
 			osmo_fsm_inst_name(fi), \
-			osmo_fsm_state_name((fi)->fsm, (fi)->state), \
+			(fi) ? osmo_fsm_state_name((fi)->fsm, (fi)->state) : "fi=NULL", \
 			## args)
 
 /*! Log using FSM instance's context.
@@ -153,7 +153,7 @@ void osmo_fsm_log_addr(bool log_addr);
  * \param args  Format string arguments.
  */
 #define LOGPFSM(fi, fmt, args...) \
-		LOGPFSML(fi, (fi)->log_level, fmt, ## args)
+		LOGPFSML(fi, (fi) ? (fi)->log_level : LOGL_ERROR, fmt, ## args)
 
 /*! Log using FSM instance's context, with explicit source file and line info.
  * The log level to log on is obtained from the FSM instance.
@@ -165,7 +165,7 @@ void osmo_fsm_log_addr(bool log_addr);
  * \param args  Format string arguments.
  */
 #define LOGPFSMSRC(fi, caller_file, caller_line, fmt, args...) \
-		LOGPFSMLSRC(fi, (fi)->log_level, \
+		LOGPFSMLSRC(fi, (fi) ? (fi)->log_level : LOGL_ERROR, \
 			    caller_file, caller_line, \
 			    fmt, ## args)
 
