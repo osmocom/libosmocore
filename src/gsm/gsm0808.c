@@ -312,19 +312,24 @@ struct msgb *gsm0808_create_cipher_reject_ext(enum gsm0808_cause_class class, ui
  *  \param[in] config LCLS Configuration
  *  \param[in] control LCLS Connection Status Control
  *  \returns callee-allocated msgb with BSSMAP LCLS NOTIFICATION */
-struct msgb *gsm0808_create_lcls_conn_ctrl(enum gsm0808_lcls_config *config,
-					   enum gsm0808_lcls_control *control)
+struct msgb *gsm0808_create_lcls_conn_ctrl(enum gsm0808_lcls_config config,
+					   enum gsm0808_lcls_control control)
 {
-	struct msgb *msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM,
-					       "bssmap: LCLS CONN CTRL");
+	struct msgb *msg;
+
+	/* According to NOTE 1 in §3.2.1.91 at least one of the parameters is required */
+	if (config == GSM0808_LCLS_CFG_NA && control == GSM0808_LCLS_CSC_NA)
+		return NULL;
+
+	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "bssmap: LCLS CONN CTRL");
 	if (!msg)
 		return NULL;
 
 	msgb_v_put(msg, BSS_MAP_MSG_LCLS_CONNECT_CTRL);
-	if (config)
-		msgb_tv_put(msg, GSM0808_IE_LCLS_CONFIG, *config);
-	if (control)
-		msgb_tv_put(msg, GSM0808_IE_LCLS_CONFIG, *control);
+	if (config != GSM0808_LCLS_CFG_NA)
+		msgb_tv_put(msg, GSM0808_IE_LCLS_CONFIG, config);
+	if (control != GSM0808_LCLS_CSC_NA)
+		msgb_tv_put(msg, GSM0808_IE_LCLS_CONFIG, control);
 	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
 
 	return msg;

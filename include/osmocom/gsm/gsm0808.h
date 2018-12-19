@@ -92,8 +92,8 @@ struct msgb *gsm0808_create_paging(const char *imsi, const uint32_t *tmsi,
 				   const struct gsm0808_cell_id_list *cil,
 				   const uint8_t *chan_needed)
 				   OSMO_DEPRECATED("use gsm0808_create_paging2 instead");
-struct msgb *gsm0808_create_lcls_conn_ctrl(enum gsm0808_lcls_config *config,
-					   enum gsm0808_lcls_control *control);
+struct msgb *gsm0808_create_lcls_conn_ctrl(enum gsm0808_lcls_config config,
+					   enum gsm0808_lcls_control control);
 struct msgb *gsm0808_create_lcls_conn_ctrl_ack(enum gsm0808_lcls_status status);
 struct msgb *gsm0808_create_lcls_notification(enum gsm0808_lcls_status status, bool break_req);
 
