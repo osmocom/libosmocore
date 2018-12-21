@@ -401,11 +401,7 @@ static void test_gsup_messages_dec_enc(void)
 					osmo_hexdump(t->data + j, ie_end - j));
 
 				OSMO_ASSERT(j <= ie_end - 2);
-				/**
-				 * FIXME: share the maximal IE value somehow
-				 * in order to avoid manual updating of this
-				 */
-				OSMO_ASSERT(t->data[j+0] <= OSMO_GSUP_SM_ALERT_RSN_IE);
+				OSMO_ASSERT(t->data[j+0] < _OSMO_GSUP_IEI_END_MARKER);
 				OSMO_ASSERT(t->data[j+1] <= ie_end - j - 2);
 
 				ie_end = j;

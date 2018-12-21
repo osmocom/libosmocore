@@ -98,6 +98,8 @@ enum osmo_gsup_iei {
 	OSMO_GSUP_SM_RP_CAUSE_IE		= 0x44,
 	OSMO_GSUP_SM_RP_MMS_IE			= 0x45,
 	OSMO_GSUP_SM_ALERT_RSN_IE		= 0x46,
+
+	_OSMO_GSUP_IEI_END_MARKER
 };
 
 /*! GSUP message type */
