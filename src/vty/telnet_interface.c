@@ -67,7 +67,7 @@ static struct osmo_fd server_socket = {
 /*! Initialize telnet based VTY interface listening to 127.0.0.1
  *  \param[in] tall_ctx \ref talloc context
  *  \param[in] priv private data to be passed to callback
- *  \param[in] port UDP port number
+ *  \param[in] port TCP port number to bind to
  */
 int telnet_init(void *tall_ctx, void *priv, int port)
 {
@@ -78,7 +78,7 @@ int telnet_init(void *tall_ctx, void *priv, int port)
  *  \param[in] tall_ctx \ref talloc context
  *  \param[in] priv private data to be passed to callback
  *  \param[in] ip IP to listen to ('::1' for localhost, '::0' for all, ...)
- *  \param[in] port UDP port number
+ *  \param[in] port TCP port number to bind to
  */
 int telnet_init_dynif(void *tall_ctx, void *priv, const char *ip, int port)
 {
