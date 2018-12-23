@@ -1616,7 +1616,8 @@ DEFUN(no_vty_login,
 /* vty bind */
 DEFUN(vty_bind, vty_bind_cmd, "bind A.B.C.D [<0-65535>]",
       "Accept VTY telnet connections on local interface\n"
-      "Local interface IP address (default: " VTY_BIND_ADDR_DEFAULT ")\n")
+      "Local interface IP address (default: " VTY_BIND_ADDR_DEFAULT ")\n"
+      "Local TCP port number\n")
 {
 	talloc_free((void*)vty_bind_addr);
 	vty_bind_addr = talloc_strdup(tall_vty_ctx, argv[0]);
