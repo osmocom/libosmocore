@@ -45,6 +45,7 @@
 #include <osmocom/gsm/protocol/gsm_03_40.h>
 #include <osmocom/gsm/protocol/gsm_04_08_gprs.h>
 #include <osmocom/gsm/protocol/gsm_08_08.h>
+#include <osmocom/gsm/gsm_utils.h>
 #include <osmocom/crypt/auth.h>
 
 #define OSMO_GSUP_PORT 4222
@@ -86,6 +87,7 @@ enum osmo_gsup_iei {
 	OSMO_GSUP_AUTS_IE			= 0x26,
 	OSMO_GSUP_RES_IE			= 0x27,
 	OSMO_GSUP_CN_DOMAIN_IE			= 0x28,
+	OSMO_GSUP_RAT_TYPES_IE			= 0x29,
 
 	OSMO_GSUP_SESSION_ID_IE			= 0x30,
 	OSMO_GSUP_SESSION_STATE_IE		= 0x31,
@@ -373,6 +375,9 @@ struct osmo_gsup_message {
 
 	/*! Session Management cause as of 3GPP TS 24.008 10.5.6.6 / Table 10.5.157. */
 	enum gsm48_gsm_cause		cause_sm;
+
+	enum osmo_rat_type		rat_types[8];
+	size_t				rat_types_len;
 };
 
 int osmo_gsup_decode(const uint8_t *data, size_t data_len,
