@@ -297,6 +297,7 @@ int osmo_gsup_decode(const uint8_t *const_data, size_t data_len,
 		     struct osmo_gsup_message *gsup_msg)
 {
 	int rc;
+	int i;
 	uint8_t tag;
 	/* the shift/match functions expect non-const pointers, but we'll
 	 * either copy the data or cast pointers back to const before returning
@@ -457,6 +458,21 @@ int osmo_gsup_decode(const uint8_t *const_data, size_t data_len,
 
 		case OSMO_GSUP_CN_DOMAIN_IE:
 			gsup_msg->cn_domain = *value;
+			break;
+
+		case OSMO_GSUP_SUPPORTED_RAT_TYPES_IE:
+			if (value_len > ARRAY_SIZE(gsup_msg->supported_rat_types)) {
+				LOGP(DLGSUP, LOGL_ERROR, "nr of supported RAT types %zu > %zu\n",
+					value_len, ARRAY_SIZE(gsup_msg->supported_rat_types));
+				return -GMM_CAUSE_COND_IE_ERR;
+			}
+			for (i = 0; i < value_len; i++)
+				gsup_msg->supported_rat_types[i] = value[i];
+			gsup_msg->supported_rat_types_len = value_len;
+			break;
+
+		case OSMO_GSUP_CURRENT_RAT_TYPE_IE:
+			gsup_msg->current_rat_type = *value;
 			break;
 
 		case OSMO_GSUP_CHARG_CHAR_IE:
@@ -855,6 +871,25 @@ int osmo_gsup_encode(struct msgb *msg, const struct osmo_gsup_message *gsup_msg)
 
 	if ((u8 = gsup_msg->cause_sm))
 		msgb_tlv_put(msg, OSMO_GSUP_CAUSE_SM_IE, sizeof(u8), &u8);
+
+	if (gsup_msg->supported_rat_types_len) {
+		int i;
+		uint8_t *len = msgb_tl_put(msg, OSMO_GSUP_SUPPORTED_RAT_TYPES_IE);
+		*len = gsup_msg->supported_rat_types_len;
+		for (i = 0; i < gsup_msg->supported_rat_types_len; i++) {
+			if (!gsup_msg->supported_rat_types[i] ||
+			    gsup_msg->supported_rat_types[i] >= OSMO_RAT_COUNT) {
+				LOGP(DLGSUP, LOGL_ERROR, "Failed to encode RAT type %s (nr %d)\n",
+				     osmo_rat_type_name(gsup_msg->supported_rat_types[i]), i);
+				return -EINVAL;
+			}
+			msgb_v_put(msg, gsup_msg->supported_rat_types[i]);
+		}
+	}
+	if (gsup_msg->current_rat_type != OSMO_RAT_UNKNOWN) {
+		u8 = gsup_msg->current_rat_type;
+		msgb_tlv_put(msg, OSMO_GSUP_CURRENT_RAT_TYPE_IE, sizeof(u8), &u8);
+	}
 
 	return 0;
 }
