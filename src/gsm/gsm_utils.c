@@ -997,3 +997,11 @@ int gsm_7bit_encode_oct(uint8_t *result, const char *data, int *octets)
 	return gsm_7bit_encode_n(result, GSM_7BIT_LEGACY_MAX_BUFFER_SIZE,
 				 data, octets);
 }
+
+/* This is also used by osmo-hlr's db schema */
+const struct value_string osmo_rat_type_names[] = {
+	{ OSMO_RAT_UNKNOWN, "unknown" },
+	{ OSMO_RAT_GERAN_A, "GERAN-A" },
+	{ OSMO_RAT_UTRAN_IU, "UTRAN-Iu" },
+	{}
+};
