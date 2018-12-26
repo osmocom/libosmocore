@@ -241,3 +241,16 @@ int gsm_7bit_decode_ussd(char *decoded, const uint8_t *user_data, uint8_t length
 int gsm_7bit_encode(uint8_t *result, const char *data) OSMO_DEPRECATED("Use gsm_7bit_encode_n() instead");
 int gsm_7bit_encode_ussd(uint8_t *result, const char *data, int *octets_written) OSMO_DEPRECATED("Use gsm_7bit_encode_n_ussd() instead");
 int gsm_7bit_encode_oct(uint8_t *result, const char *data, int *octets_written) OSMO_DEPRECATED("Use gsm_7bit_encode_n() instead");
+
+enum osmo_rat_type {
+	OSMO_RAT_UNKNOWN = 0,
+	OSMO_RAT_GERAN_A,
+	OSMO_RAT_UTRAN_IU,
+
+	/* keep this last */
+	OSMO_RAT_COUNT
+};
+
+extern const struct value_string osmo_rat_type_names[];
+inline static const char *osmo_rat_type_name(enum osmo_rat_type val)
+{ return get_value_string(osmo_rat_type_names, val); }
