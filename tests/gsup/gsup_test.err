@@ -101,26 +101,26 @@
 DLGSUP Stopping DLGSUP logging
   message 0: tested 2816 modifications, 510 parse failures
   message 1: tested 3584 modifications, 770 parse failures
-  message 2: tested 21248 modifications, 2575 parse failures
+  message 2: tested 21248 modifications, 2577 parse failures
   message 3: tested 2816 modifications, 510 parse failures
   message 4: tested 3584 modifications, 770 parse failures
-  message 5: tested 20736 modifications, 4022 parse failures
+  message 5: tested 20736 modifications, 4024 parse failures
   message 6: tested 3584 modifications, 771 parse failures
   message 7: tested 3584 modifications, 770 parse failures
   message 8: tested 2816 modifications, 510 parse failures
   message 9: tested 2816 modifications, 510 parse failures
   message 10: tested 3584 modifications, 770 parse failures
   message 11: tested 3328 modifications, 769 parse failures
-  message 12: tested 54016 modifications, 4626 parse failures
-  message 13: tested 11520 modifications, 1026 parse failures
+  message 12: tested 54016 modifications, 4628 parse failures
+  message 13: tested 11520 modifications, 1028 parse failures
   message 14: tested 5120 modifications, 1030 parse failures
-  message 15: tested 10752 modifications, 1262 parse failures
+  message 15: tested 10752 modifications, 1263 parse failures
   message 16: tested 7680 modifications, 1271 parse failures
   message 17: tested 8448 modifications, 2053 parse failures
-  message 18: tested 11264 modifications, 2307 parse failures
+  message 18: tested 11264 modifications, 2308 parse failures
   message 19: tested 5120 modifications, 1031 parse failures
   message 20: tested 6656 modifications, 1546 parse failures
   message 21: tested 3584 modifications, 771 parse failures
-  message 22: tested 5632 modifications, 771 parse failures
+  message 22: tested 5632 modifications, 772 parse failures
   message 23: tested 3584 modifications, 770 parse failures
   message 24: tested 3584 modifications, 771 parse failures
