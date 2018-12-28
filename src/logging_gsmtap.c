@@ -102,6 +102,12 @@ static void _gsmtap_raw_output(struct log_target *target, int subsys,
 	if (rc < 0) {
 		msgb_free(msg);
 		return;
+	} else if (rc >= msgb_tailroom(msg)) {
+		/* If the output was truncated, vsnprintf() returns the
+		 * number of characters which would have been written
+		 * if enough space had been available (excluding '\0'). */
+		rc = msgb_tailroom(msg);
+		msg->tail[rc - 1]  = '\0';
 	}
 	msgb_put(msg, rc);
 
