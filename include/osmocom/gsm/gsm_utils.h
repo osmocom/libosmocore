@@ -246,6 +246,7 @@ enum osmo_rat_type {
 	OSMO_RAT_UNKNOWN = 0,
 	OSMO_RAT_GERAN_A,
 	OSMO_RAT_UTRAN_IU,
+	OSMO_RAT_EUTRAN_SGS,
 
 	/* keep this last */
 	OSMO_RAT_COUNT
