@@ -555,6 +555,7 @@ sgsap_ue_emm_mode_names;
 sgsap_ie_tlvdef;
 
 osmo_rat_type_names;
+osmo_lu_type_names;
 
 local: *;
 };

@@ -1137,4 +1137,12 @@ struct gsm48_hdr *gsm48_push_l3hdr(struct msgb *msg,
 	return gh;
 }
 
+const struct value_string osmo_lu_type_names[] = {
+	{ GSM48_LUPD_NORMAL, "NORMAL" },
+	{ GSM48_LUPD_PERIODIC, "PERIODIC" },
+	{ GSM48_LUPD_IMSI_ATT, "IMSI-ATTACH" },
+	{ GSM48_LUPD_RESERVED, "RESERVED" },
+	{}
+};
+
 /*! @} */

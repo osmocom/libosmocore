@@ -1652,6 +1652,10 @@ const char *gsm48_pdisc_msgtype_name(uint8_t pdisc, uint8_t msg_type);
 #define GSM48_LUPD_IMSI_ATT	0x2
 #define GSM48_LUPD_RESERVED	0x3
 
+extern const struct value_string osmo_lu_type_names[];
+static inline const char *osmo_lu_type_name(uint8_t lu_type)
+{ return get_value_string(osmo_lu_type_names, lu_type); }
+
 /* Table 10.5.4 */
 #define GSM_MI_TYPE_MASK	0x07
 #define GSM_MI_TYPE_NONE	0x00
