@@ -53,6 +53,7 @@ uint8_t gsm48_generate_mid(uint8_t *buf, const char *id, uint8_t mi_type);
 int gsm48_mi_to_string(char *string, const int str_len,
 			const uint8_t *mi, const int mi_len);
 const char *gsm48_mi_type_name(uint8_t mi);
+const char *osmo_mi_name(const uint8_t *mi, uint8_t mi_len);
 
 /* Parse Routeing Area Identifier */
 void gsm48_parse_ra(struct gprs_ra_id *raid, const uint8_t *buf);

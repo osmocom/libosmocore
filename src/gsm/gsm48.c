@@ -433,6 +433,42 @@ const char *gsm48_mi_type_name(uint8_t mi)
 	return get_value_string(mi_type_names, mi);
 }
 
+/*! Return a human readable representation of a Mobile Identity in static buffer.
+ * \param[in] mi  Mobile Identity buffer containing 3GPP TS 04.08 style MI type and data.
+ * \param[in] mi_len  Length of mi.
+ * \return A string like "IMSI-1234567", "TMSI-0x1234ABCD" or "unknown", "TMSI-invalid"...
+ */
+const char *osmo_mi_name(const uint8_t *mi, uint8_t mi_len)
+{
+	static char mi_name[10 + GSM48_MI_SIZE + 1];
+	uint8_t mi_type;
+	uint32_t tmsi;
+	char mi_string[GSM48_MI_SIZE];
+
+	mi_type = (mi && mi_len) ? (mi[0] & GSM_MI_TYPE_MASK) : GSM_MI_TYPE_NONE;
+
+	switch (mi_type) {
+	case GSM_MI_TYPE_TMSI:
+		/* Table 10.5.4.3, reverse generate_mid_from_tmsi */
+		if (mi_len == GSM48_TMSI_LEN && mi[0] == (0xf0 | GSM_MI_TYPE_TMSI)) {
+			tmsi = osmo_load32be(&mi[1]);
+			snprintf(mi_name, sizeof(mi_name), "TMSI-0x%08" PRIX32, tmsi);
+			return mi_name;
+		}
+		return "TMSI-invalid";
+
+	case GSM_MI_TYPE_IMSI:
+	case GSM_MI_TYPE_IMEI:
+	case GSM_MI_TYPE_IMEISV:
+		osmo_bcd2str(mi_string, sizeof(mi_string), mi, 1, (mi_len * 2) - (mi[0] & GSM_MI_ODD ? 0 : 1), true);
+		snprintf(mi_name, sizeof(mi_name), "%s-%s", gsm48_mi_type_name(mi_type), mi_string);
+		return mi_name;
+
+	default:
+		return "unknown";
+	}
+}
+
 /*! Checks is particular message is cipherable in A/Gb mode according to
  *         3GPP TS 24.008 § 4.7.1.2
  *  \param[in] hdr Message header

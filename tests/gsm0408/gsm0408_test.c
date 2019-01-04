@@ -355,6 +355,7 @@ static void test_mid_from_imsi(void)
 struct test_mid_encode_decode_test {
 	uint8_t mi_type;
 	const char *mi_str;
+	const char *mi_name;
 	size_t str_size;
 	const char *expect_mi_tlv_hex;
 	const char *expect_str;
@@ -365,31 +366,37 @@ static const struct test_mid_encode_decode_test test_mid_encode_decode_tests[] =
 	{
 		.mi_type = GSM_MI_TYPE_IMSI,
 		.mi_str = "123456789012345",
+		.mi_name = "IMSI-123456789012345",
 		.expect_mi_tlv_hex = "17081932547698103254",
 	},
 	{
 		.mi_type = GSM_MI_TYPE_IMSI,
 		.mi_str = "12345678901234",
+		.mi_name = "IMSI-12345678901234",
 		.expect_mi_tlv_hex = "170811325476981032f4",
 	},
 	{
 		.mi_type = GSM_MI_TYPE_IMSI,
 		.mi_str = "423423",
+		.mi_name = "IMSI-423423",
 		.expect_mi_tlv_hex = "1704413224f3",
 	},
 	{
 		.mi_type = GSM_MI_TYPE_IMSI | GSM_MI_ODD,
 		.mi_str = "423423",
+		.mi_name = "IMSI-423423",
 		.expect_mi_tlv_hex = "1704413224f3",
 	},
 	{
 		.mi_type = GSM_MI_TYPE_IMSI,
 		.mi_str = "4234235",
+		.mi_name = "IMSI-4234235",
 		.expect_mi_tlv_hex = "170449322453",
 	},
 	{
 		.mi_type = GSM_MI_TYPE_IMSI,
 		.mi_str = "4234235",
+		.mi_name = "IMSI-4234235",
 		.expect_mi_tlv_hex = "170449322453",
 		.str_size = 4,
 		.expect_str = "423",
@@ -397,26 +404,31 @@ static const struct test_mid_encode_decode_test test_mid_encode_decode_tests[] =
 	{
 		.mi_type = GSM_MI_TYPE_IMEI,
 		.mi_str = "123456789012345",
+		.mi_name = "IMEI-123456789012345",
 		.expect_mi_tlv_hex = "17081a32547698103254",
 	},
 	{
 		.mi_type = GSM_MI_TYPE_IMEI,
 		.mi_str = "98765432109876",
+		.mi_name = "IMEI-98765432109876",
 		.expect_mi_tlv_hex = "170892785634129078f6",
 	},
 	{
 		.mi_type = GSM_MI_TYPE_IMEI,
 		.mi_str = "987654321098765",
+		.mi_name = "IMEI-987654321098765",
 		.expect_mi_tlv_hex = "17089a78563412907856",
 	},
 	{
 		.mi_type = GSM_MI_TYPE_IMEISV,
 		.mi_str = "987654321098765432",
+		.mi_name = "IMEI-SV-987654321098765432",
 		.expect_mi_tlv_hex = "170a937856341290785634f2",
 	},
 	{
 		.mi_type = GSM_MI_TYPE_IMEISV,
 		.mi_str = "987654321098765432",
+		.mi_name = "IMEI-SV-987654321098765432",
 		.expect_mi_tlv_hex = "170a937856341290785634f2",
 		.str_size = 16,
 		.expect_str = "987654321098765",
@@ -425,18 +437,21 @@ static const struct test_mid_encode_decode_test test_mid_encode_decode_tests[] =
 		/* gsm48 treats TMSI as decimal string */
 		.mi_type = GSM_MI_TYPE_TMSI,
 		.mi_str = "305419896", /* 0x12345678 as decimal */
+		.mi_name = "TMSI-0x12345678",
 		.expect_mi_tlv_hex = "1705f412345678",
 		.expect_rc = 9, /* exception: gsm48_mi_to_string() for TMSI returns strlen(), not bytes! */
 	},
 	{
 		.mi_type = GSM_MI_TYPE_TMSI,
 		.mi_str = "12648430", /* 0xc0ffee as decimal */
+		.mi_name = "TMSI-0x00C0FFEE",
 		.expect_mi_tlv_hex = "1705f400c0ffee",
 		.expect_rc = 8, /* exception: gsm48_mi_to_string() for TMSI returns strlen(), not bytes! */
 	},
 	{
 		.mi_type = GSM_MI_TYPE_TMSI,
 		.mi_str = "0",
+		.mi_name = "TMSI-0x00000000",
 		.expect_mi_tlv_hex = "1705f400000000",
 		.expect_rc = 1, /* exception: gsm48_mi_to_string() for TMSI returns strlen(), not bytes! */
 	},
@@ -444,6 +459,7 @@ static const struct test_mid_encode_decode_test test_mid_encode_decode_tests[] =
 		/* gsm48 treats TMSI as decimal string */
 		.mi_type = GSM_MI_TYPE_TMSI,
 		.mi_str = "305419896", /* 0x12345678 as decimal */
+		.mi_name = "TMSI-0x12345678",
 		.expect_mi_tlv_hex = "1705f412345678",
 		.str_size = 5,
 		.expect_str = "3054",
@@ -452,18 +468,21 @@ static const struct test_mid_encode_decode_test test_mid_encode_decode_tests[] =
 	{
 		.mi_type = GSM_MI_TYPE_NONE,
 		.mi_str = "123",
+		.mi_name = "unknown",
 		.expect_mi_tlv_hex = "17021832", /* encoding invalid MI type */
 		.expect_str = "",
 	},
 	{
 		.mi_type = GSM_MI_TYPE_NONE,
 		.mi_str = "1234",
+		.mi_name = "unknown",
 		.expect_mi_tlv_hex = "17031032f4", /* encoding invalid MI type */
 		.expect_str = "",
 	},
 	{
 		.mi_type = GSM_MI_ODD,
 		.mi_str = "1234",
+		.mi_name = "unknown",
 		.expect_mi_tlv_hex = "17031032f4", /* encoding invalid MI type */
 		.expect_str = "",
 	},
@@ -511,6 +530,13 @@ static void test_mid_encode_decode(void)
 			printf("     ERROR: expected MI-str=%s\n", osmo_quote_str(expect_str, -1));
 		if (rc != expect_rc)
 			printf("     ERROR: expected rc=%d\n", expect_rc);
+
+		if (t->mi_name) {
+			const char *mi_name = osmo_mi_name(mi_buf, mi_len);
+			printf("  -> MI-name=%s\n", osmo_quote_str(mi_name, -1));
+			if (strcmp(mi_name, t->mi_name))
+				printf("     ERROR: expected MI-name=%s\n", osmo_quote_str(t->mi_name, -1));
+		}
 
 		/* Now make sure the resulting string is always '\0' terminated.
 		 * The above started out with a zeroed buffer, now repeat with a tainted one. */
