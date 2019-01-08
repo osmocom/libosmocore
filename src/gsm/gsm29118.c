@@ -196,9 +196,14 @@ static int msgb_sgsap_name_put(struct msgb *msg, enum sgsap_iei iei, const char 
 {
 	uint8_t buf[APN_MAXLEN];
 	uint8_t len;
+	int rc;
+
 	/* encoding is like DNS names, which is like APN fields */
 	memset(buf, 0, sizeof(buf));
-	len = osmo_apn_from_str(buf, sizeof(buf), name);
+	rc = osmo_apn_from_str(buf, sizeof(buf), name);
+	if (rc < 0)
+		return -1;
+	len = (uint8_t)rc;
 
 	/* Note: While the VLR-Name (see 3GPP TS 29.118, chapter 9.4.22) has
 	 * a flexible length, the MME-Name has a fixed size of 55 octets. (see
