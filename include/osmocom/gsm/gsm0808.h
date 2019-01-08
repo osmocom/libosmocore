@@ -76,6 +76,12 @@ struct msgb *gsm0808_create_ass_compl(uint8_t rr_cause, uint8_t chosen_channel,
 				      const struct gsm0808_speech_codec *sc,
 				      const struct gsm0808_speech_codec_list
 				      *scl);
+struct msgb *gsm0808_create_ass_compl2(uint8_t rr_cause, uint8_t chosen_channel,
+				       uint8_t encr_alg_id, uint8_t speech_mode,
+				       const struct sockaddr_storage *ss,
+				       const struct gsm0808_speech_codec *sc,
+				       const struct gsm0808_speech_codec_list *scl,
+				       enum gsm0808_lcls_status lcls_bss_status);
 struct msgb *gsm0808_create_assignment_completed(uint8_t rr_cause,
 						 uint8_t chosen_channel,
 						 uint8_t encr_alg_id,

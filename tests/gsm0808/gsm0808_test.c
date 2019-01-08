@@ -510,11 +510,12 @@ static void test_create_ass_compl_aoip()
 	struct gsm0808_speech_codec sc;
 	struct gsm0808_speech_codec_list sc_list;
 	static const uint8_t res[] =
-	    { 0x00, 0x1d, 0x02, 0x15, 0x23, 0x21, 0x42, 0x2c, 0x11, 0x40, 0x22,
+	    { 0x00, 0x1f, 0x02, 0x15, 0x23, 0x21, 0x42, 0x2c, 0x11, 0x40, 0x22,
 	      GSM0808_IE_AOIP_TRASP_ADDR, 0x06, 0xc0, 0xa8, 0x64, 0x17, 0x04,
 	      0xd2, GSM0808_IE_SPEECH_CODEC, 0x01, GSM0808_SCT_HR1 | 0x90,
 	      GSM0808_IE_SPEECH_CODEC_LIST, 0x07, GSM0808_SCT_FR3 | 0x50, 0xef,
-	      0xcd, GSM0808_SCT_FR2 | 0xa0, 0x9f, GSM0808_SCT_CSD | 0x90, 0xc0 };
+	      0xcd, GSM0808_SCT_FR2 | 0xa0, 0x9f, GSM0808_SCT_CSD | 0x90, 0xc0,
+	      GSM0808_IE_LCLS_BSS_STATUS, GSM0808_LCLS_STS_LOCALLY_SWITCHED };
 	struct msgb *msg;
 
 	memset(&sin, 0, sizeof(sin));
@@ -533,8 +534,8 @@ static void test_create_ass_compl_aoip()
 	setup_codec_list(&sc_list);
 
 	printf("Testing creating Assignment Complete (AoIP)\n");
-	msg = gsm0808_create_ass_compl(0x23, 0x42, 0x11, 0x22,
-				       &ss, &sc, &sc_list);
+	msg = gsm0808_create_ass_compl2(0x23, 0x42, 0x11, 0x22,
+					&ss, &sc, &sc_list, GSM0808_LCLS_STS_LOCALLY_SWITCHED);
 	VERIFY(msg, res, ARRAY_SIZE(res));
 	msgb_free(msg);
 }

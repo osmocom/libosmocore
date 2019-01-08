@@ -153,6 +153,7 @@ gsm0808_create_ass;
 gsm0808_create_ass2;
 gsm0808_create_assignment_completed;
 gsm0808_create_ass_compl;
+gsm0808_create_ass_compl2;
 gsm0808_create_assignment_failure;
 gsm0808_create_ass_fail;
 gsm0808_create_cipher;

@@ -519,7 +519,7 @@ struct msgb *gsm0808_create_ass(const struct gsm0808_channel_type *ct,
 	return gsm0808_create_ass2(ct, cic, ss, scl, ci, NULL, NULL);
 }
 
-/*! Create BSSMAP Assignment Completed message
+/*! Create BSSMAP Assignment Completed message as per 3GPP TS 48.008 §3.2.1.2
  *  \param[in] rr_cause GSM 04.08 RR Cause value
  *  \param[in] chosen_channel Chosen Channel
  *  \param[in] encr_alg_id Encryption Algorithm ID
@@ -527,13 +527,14 @@ struct msgb *gsm0808_create_ass(const struct gsm0808_channel_type *ct,
  *  \param[in] ss Socket Address of BSS-side RTP socket
  *  \param[in] sc Speech Codec (current)
  *  \param[in] scl Speech Codec List (permitted)
+ *  \param[in] lcls_bss_status §3.2.2.119 LCLS-BSS-Status, optional
  *  \returns callee-allocated msgb with BSSMAP Assignment Complete message */
-struct msgb *gsm0808_create_ass_compl(uint8_t rr_cause, uint8_t chosen_channel,
+struct msgb *gsm0808_create_ass_compl2(uint8_t rr_cause, uint8_t chosen_channel,
 				      uint8_t encr_alg_id, uint8_t speech_mode,
 				      const struct sockaddr_storage *ss,
 				      const struct gsm0808_speech_codec *sc,
-				      const struct gsm0808_speech_codec_list
-				      *scl)
+				       const struct gsm0808_speech_codec_list *scl,
+				       enum gsm0808_lcls_status lcls_bss_status)
 {
 	struct msgb *msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM,
 						"bssmap: ass compl");
@@ -570,11 +571,34 @@ struct msgb *gsm0808_create_ass_compl(uint8_t rr_cause, uint8_t chosen_channel,
 	if (scl)
 		gsm0808_enc_speech_codec_list(msg, scl);
 
-	/* write LSA identifier 3.2.2.15 */
+	/* FIXME: write LSA identifier 3.2.2.15 - see 3GPP TS 43.073 */
+
+	/* LCLS-BSS-Status 3.2.2.119 */
+	if (lcls_bss_status != GSM0808_LCLS_STS_NA)
+		msgb_tv_put(msg, GSM0808_IE_LCLS_BSS_STATUS, lcls_bss_status);
 
 	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
 
 	return msg;
+}
+
+/*! Create BSSMAP Assignment Completed message
+ *  \param[in] rr_cause GSM 04.08 RR Cause value
+ *  \param[in] chosen_channel Chosen Channel
+ *  \param[in] encr_alg_id Encryption Algorithm ID
+ *  \param[in] speech_mode Speech Mode
+ *  \param[in] ss Socket Address of BSS-side RTP socket
+ *  \param[in] sc Speech Codec (current)
+ *  \param[in] scl Speech Codec List (permitted)
+ *  \returns callee-allocated msgb with BSSMAP Assignment Complete message */
+struct msgb *gsm0808_create_ass_compl(uint8_t rr_cause, uint8_t chosen_channel,
+				      uint8_t encr_alg_id, uint8_t speech_mode,
+				      const struct sockaddr_storage *ss,
+				      const struct gsm0808_speech_codec *sc,
+				      const struct gsm0808_speech_codec_list *scl)
+{
+	return gsm0808_create_ass_compl2(rr_cause, chosen_channel, encr_alg_id, speech_mode,
+					 ss, sc, scl, GSM0808_LCLS_STS_NA);
 }
 
 /*! Create BSSMAP Assignment Completed message
@@ -588,8 +612,8 @@ struct msgb *gsm0808_create_assignment_completed(uint8_t rr_cause,
 						 uint8_t encr_alg_id,
 						 uint8_t speech_mode)
 {
-	return gsm0808_create_ass_compl(rr_cause, chosen_channel, encr_alg_id,
-					speech_mode, NULL, NULL, NULL);
+	return gsm0808_create_ass_compl2(rr_cause, chosen_channel, encr_alg_id,
+					 speech_mode, NULL, NULL, NULL, GSM0808_LCLS_STS_NA);
 }
 
 /*! Create BSSMAP Assignment Failure message
