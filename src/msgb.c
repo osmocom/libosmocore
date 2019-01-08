@@ -260,7 +260,7 @@ bool _msgb_eq(const char *file, size_t line, const char *func, uint8_t level,
 		} else
 			LOGPC(DLGLOBAL, LOGL_FATAL, ".. ");
 
-	LOGPC(DLGLOBAL, LOGL_FATAL, "    msgb %s\n", m_dump);
+	LOGPC(DLGLOBAL, LOGL_FATAL, "    msgb %s\n", osmo_hexdump(m_data, len));
 
 	return false;
 }
