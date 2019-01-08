@@ -174,8 +174,8 @@ enum osmo_gsup_cn_domain {
 };
 
 enum osmo_gsup_imei_result {
-	OSMO_GSUP_IMEI_RESULT_ACK		= 1,
-	OSMO_GSUP_IMEI_RESULT_NACK		= 2,
+	OSMO_GSUP_IMEI_RESULT_ACK		= 1, /* on wire: 0 */
+	OSMO_GSUP_IMEI_RESULT_NACK		= 2, /* on wire: 1 */
 };
 
 /*! TCAP-like session state */
