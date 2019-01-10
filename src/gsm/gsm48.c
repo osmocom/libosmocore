@@ -1145,4 +1145,15 @@ const struct value_string osmo_lu_type_names[] = {
 	{}
 };
 
+const struct value_string osmo_cm_service_type_names[] = {
+	{ GSM48_CMSERV_MO_CALL_PACKET, "MO-Call" },
+	{ GSM48_CMSERV_EMERGENCY, "Emergency-Call" },
+	{ GSM48_CMSERV_SMS, "Short-Messaging-Service" },
+	{ GSM48_CMSERV_SUP_SERV, "Supplementary-Service" },
+	{ GSM48_CMSERV_VGCS, "Voice-Group-Call" },
+	{ GSM48_CMSERV_VBS, "Voice-Broadcast-Call" },
+	{ GSM48_CMSERV_LOC_SERV, "Location-Service" },
+	{}
+};
+
 /*! @} */

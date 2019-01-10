@@ -1631,13 +1631,20 @@ const char *gsm48_pdisc_msgtype_name(uint8_t pdisc, uint8_t msg_type);
 /* FIXME: Table 10.4 / 10.4a (GPRS) */
 
 /* Section 10.5.3.3 CM service type */
-#define GSM48_CMSERV_MO_CALL_PACKET	1
-#define GSM48_CMSERV_EMERGENCY		2
-#define GSM48_CMSERV_SMS		4
-#define GSM48_CMSERV_SUP_SERV		8
-#define GSM48_CMSERV_VGCS		9
-#define GSM48_CMSERV_VBS		10
-#define GSM48_CMSERV_LOC_SERV		11
+enum osmo_cm_service_type {
+	GSM48_CMSERV_MO_CALL_PACKET	= 1,
+	GSM48_CMSERV_EMERGENCY		= 2,
+	GSM48_CMSERV_SMS		= 4,
+	GSM48_CMSERV_SUP_SERV		= 8,
+	GSM48_CMSERV_VGCS		= 9,
+	GSM48_CMSERV_VBS		= 10,
+	GSM48_CMSERV_LOC_SERV		= 11,
+	GSM48_CMSERV_MAX_VAL		= GSM48_CMSERV_LOC_SERV
+};
+
+extern const struct value_string osmo_cm_service_type_names[];
+static inline const char *osmo_cm_service_type_name(enum osmo_cm_service_type val)
+{ return get_value_string(osmo_cm_service_type_names, val); }
 
 /* Section 10.5.2.26, Table 10.5.64 */
 #define GSM48_PM_MASK		0x03
