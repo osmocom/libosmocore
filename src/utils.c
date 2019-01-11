@@ -765,4 +765,35 @@ const char *osmo_str_toupper(const char *src)
 	return buf;
 }
 
+/*! Calculate the Luhn checksum (as used for IMEIs).
+ * \param[in] in  Input digits in ASCII string representation.
+ * \param[in] in_len  Count of digits to use for the input (14 for IMEI).
+ * \returns checksum char (e.g. '3'); negative on error
+ */
+const char osmo_luhn(const char* in, int in_len)
+{
+	int i, sum = 0;
+
+	/* All input must be numbers */
+	for (i = 0; i < in_len; i++) {
+		if (!isdigit(in[i]))
+			return -EINVAL;
+	}
+
+	/* Double every second digit and add it to sum */
+	for (i = in_len - 1; i >= 0; i -= 2) {
+		int dbl = (in[i] - '0') * 2;
+		if (dbl > 9)
+			dbl -= 9;
+		sum += dbl;
+	}
+
+	/* Add other digits to sum */
+	for (i = in_len - 2; i >= 0; i -= 2)
+		sum += in[i] - '0';
+
+	/* Final checksum */
+	return (sum * 9) % 10 + '0';
+}
+
 /*! @} */

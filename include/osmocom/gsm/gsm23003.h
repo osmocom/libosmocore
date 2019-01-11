@@ -93,6 +93,7 @@ struct osmo_guti {
 
 bool osmo_imsi_str_valid(const char *imsi);
 bool osmo_msisdn_str_valid(const char *msisdn);
+bool osmo_imei_str_valid(const char *imei, bool with_15th_digit);
 
 const char *osmo_mcc_name(uint16_t mcc);
 const char *osmo_mnc_name(uint16_t mnc, bool mnc_3_digits);

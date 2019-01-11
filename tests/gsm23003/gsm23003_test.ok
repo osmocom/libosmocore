@@ -42,6 +42,18 @@
 17: expect=false result=false msisdn='123456	123456'
 18: expect=false result=false msisdn='123456123456'
 19: expect=false result=false msisdn='(null)'
+----- test_valid_imei
+ 0: expect=true result=true imei='12345678901234' with_15th_digit=false
+ 1: expect=false result=false imei='1234567890123' with_15th_digit=false
+ 2: expect=false result=false imei='123456789012345' with_15th_digit=false
+ 3: expect=true result=true imei='357613004448485' with_15th_digit=true
+ 4: expect=true result=true imei='357805023984447' with_15th_digit=true
+ 5: expect=true result=true imei='352936001349777' with_15th_digit=true
+ 6: expect=true result=true imei='357663017768551' with_15th_digit=true
+ 7: expect=false result=false imei='357613004448480' with_15th_digit=true
+ 8: expect=false result=false imei='357613004448405' with_15th_digit=true
+ 9: expect=false result=false imei='357613004448085' with_15th_digit=true
+10: expect=false result=false imei='(null)' with_15th_digit=false
 ----- test_mnc_from_str
  0: "0" rc=0 mnc=0 mnc_3_digits=0 pass
  1: "00" rc=0 mnc=0 mnc_3_digits=0 pass

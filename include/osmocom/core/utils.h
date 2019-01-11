@@ -140,4 +140,6 @@ const char *osmo_quote_str_buf(const char *str, int in_len, char *buf, size_t bu
 
 uint32_t osmo_isqrt32(uint32_t x);
 
+const char osmo_luhn(const char* in, int in_len);
+
 /*! @} */

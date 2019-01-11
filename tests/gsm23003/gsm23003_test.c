@@ -118,6 +118,47 @@ bool test_valid_msisdn()
 	return pass;
 }
 
+static struct {
+	bool with_15th_digit;
+	const char *imei;
+	bool expect_ok;
+} test_imeis[] = {
+	/* without 15th digit */
+	{false, "12345678901234", true},
+	{false, "1234567890123", false},
+	{false, "123456789012345", false},
+
+	/* with 15th digit: valid */
+	{true, "357613004448485", true},
+	{true, "357805023984447", true},
+	{true, "352936001349777", true},
+	{true, "357663017768551", true},
+
+	/* with 15th digit: invalid */
+	{true, "357613004448480", false},
+	{true, "357613004448405", false},
+	{true, "357613004448085", false},
+
+	{ NULL, false, false },
+};
+
+bool test_valid_imei()
+{
+	int i;
+	bool pass = true;
+	bool ok = true;
+	printf("----- %s\n", __func__);
+
+	for (i = 0; i < ARRAY_SIZE(test_imeis); i++) {
+		ok = osmo_imei_str_valid(test_imeis[i].imei, test_imeis[i].with_15th_digit);
+		pass = pass && (ok == test_imeis[i].expect_ok);
+		printf("%2d: expect=%s result=%s imei='%s' with_15th_digit=%s\n",
+		       i, BOOL_STR(test_imeis[i].expect_ok), BOOL_STR(ok),
+		       test_imeis[i].imei, test_imeis[i].with_15th_digit ? "true" : "false");
+	}
+	return pass;
+}
+
 struct test_mnc_from_str_result {
 	int rc;
 	uint16_t mnc;
@@ -248,6 +289,7 @@ int main(int argc, char **argv)
 
 	pass = pass && test_valid_imsi();
 	pass = pass && test_valid_msisdn();
+	pass = pass && test_valid_imei();
 	pass = pass && test_mnc_from_str();
 	pass = pass && test_gummei_name();
 	pass = pass && test_domain_gen();

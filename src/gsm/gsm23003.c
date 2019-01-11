@@ -31,6 +31,7 @@
 
 #include <osmocom/gsm/gsm23003.h>
 #include <osmocom/gsm/protocol/gsm_23_003.h>
+#include <osmocom/core/utils.h>
 
 static bool is_n_digits(const char *str, int min_digits, int max_digits)
 {
@@ -69,6 +70,23 @@ bool osmo_imsi_str_valid(const char *imsi)
 bool osmo_msisdn_str_valid(const char *msisdn)
 {
 	return is_n_digits(msisdn, 1, 15);
+}
+
+/*! Determine whether the given IMEI is valid according to 3GPP TS 23.003,
+ * Section 6.2.1. It consists of 14 digits, the 15th check digit is not
+ * intended for digital transmission.
+ * \param imei  IMEI digits in ASCII string representation.
+ * \param with_15th_digit  when true, expect the 15th digit to be present and
+ *        verify it.
+ * \returns true when the IMEI is valid, false for invalid characters or number
+ *          of digits.
+ */
+bool osmo_imei_str_valid(const char *imei, bool with_15th_digit)
+{
+	if (with_15th_digit)
+		return is_n_digits(imei, 15, 15) && osmo_luhn(imei, 14) == imei[14];
+	else
+		return is_n_digits(imei, 14, 14);
 }
 
 /*! Return MCC string as standardized 3-digit with leading zeros.

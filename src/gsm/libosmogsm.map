@@ -551,6 +551,7 @@ osmo_oap_decode;
 
 osmo_imsi_str_valid;
 osmo_msisdn_str_valid;
+osmo_imei_str_valid;
 
 osmo_mncc_stringify;
 osmo_mncc_names;
