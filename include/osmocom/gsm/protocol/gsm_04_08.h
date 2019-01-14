@@ -1821,7 +1821,7 @@ enum gsm48_cause_loc {
 	GSM48_CAUSE_LOC_NET_BEYOND	= 0x0a,
 };
 
-/* Section 10.5.2.31 RR Cause / Table 10.5.70 */
+/* 3GPP TS 44.018 10.5.2.31 RR Cause / Table 10.5.70 */
 enum gsm48_rr_cause {
 	GSM48_RR_CAUSE_NORMAL		= 0x00,
 	GSM48_RR_CAUSE_ABNORMAL_UNSPEC	= 0x01,

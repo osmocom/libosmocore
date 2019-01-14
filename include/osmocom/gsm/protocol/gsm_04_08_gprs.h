@@ -238,7 +238,7 @@ enum gsm48_gmm_cause {
 
 extern const struct value_string *gsm48_gmm_cause_names;
 
-/* Chapter 10.4.6.6 / Table 10.5.157 */
+/* 3GPP TS 24.008 10.5.6.6 / Table 10.5.157 */
 enum gsm48_gsm_cause {
 	GSM_CAUSE_OPER_DET_BARR		= 0x08,
 	GSM_CAUSE_MBMS_CAP_INSUF	= 0x18,
