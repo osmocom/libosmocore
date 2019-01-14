@@ -37,6 +37,7 @@
 static void hexdump_test(void)
 {
 	uint8_t data[4098];
+	char buf[256];
 	int i;
 
 	for (i = 0; i < ARRAY_SIZE(data); ++i)
@@ -44,10 +45,34 @@ static void hexdump_test(void)
 
 	printf("Plain dump\n");
 	printf("%s\n", osmo_hexdump(data, 4));
+	printf("%s\n", osmo_hexdump_nospc(data, 4));
 
 	printf("Corner case\n");
 	printf("%s\n", osmo_hexdump(data, ARRAY_SIZE(data)));
 	printf("%s\n", osmo_hexdump_nospc(data, ARRAY_SIZE(data)));
+
+#define _HEXDUMP_BUF_TEST(SIZE, DELIM, DELIM_AFTER) \
+	buf[0] = '!'; \
+	buf[1] = '\0'; \
+	printf("osmo_hexdump_buf(buf, " #SIZE ", data, 4, %s, " #DELIM_AFTER ")\n = \"%s\"\n", \
+	       DELIM ? #DELIM : "NULL", \
+	       osmo_hexdump_buf(buf, SIZE, data, 4, DELIM, DELIM_AFTER))
+#define HEXDUMP_BUF_TEST(DELIM) \
+	_HEXDUMP_BUF_TEST(sizeof(buf), DELIM, false); \
+	_HEXDUMP_BUF_TEST(sizeof(buf), DELIM, true); \
+	_HEXDUMP_BUF_TEST(6, DELIM, false); \
+	_HEXDUMP_BUF_TEST(7, DELIM, false); \
+	_HEXDUMP_BUF_TEST(8, DELIM, false); \
+	_HEXDUMP_BUF_TEST(6, DELIM, true); \
+	_HEXDUMP_BUF_TEST(7, DELIM, true); \
+	_HEXDUMP_BUF_TEST(8, DELIM, true)
+
+	HEXDUMP_BUF_TEST("[delim]");
+	HEXDUMP_BUF_TEST(" ");
+	HEXDUMP_BUF_TEST(":");
+	HEXDUMP_BUF_TEST("::");
+	HEXDUMP_BUF_TEST("");
+	HEXDUMP_BUF_TEST(NULL);
 }
 
 static void hexparse_test(void)

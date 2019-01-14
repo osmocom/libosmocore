@@ -56,6 +56,9 @@ int osmo_hexparse(const char *str, uint8_t *b, int max_len);
 char *osmo_ubit_dump(const uint8_t *bits, unsigned int len);
 char *osmo_hexdump(const unsigned char *buf, int len);
 char *osmo_hexdump_nospc(const unsigned char *buf, int len);
+const char *osmo_hexdump_buf(char *out_buf, size_t out_buf_size, const unsigned char *buf, int len, const char *delim,
+			     bool delim_after_last);
+
 char *osmo_osmo_hexdump_nospc(const unsigned char *buf, int len) __attribute__((__deprecated__));
 
 #define osmo_static_assert(exp, name) typedef int dummy##name [(exp) ? 1 : -1] __attribute__((__unused__));
