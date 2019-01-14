@@ -783,8 +783,7 @@ int osmo_sock_get_remote_ip_port(int fd, char *port, size_t len)
  */
 char *osmo_sock_get_name(void *ctx, int fd)
 {
-	/* "r=1.2.3.4:123<->l=5.6.7.8:987" */
-	char str[2 + INET6_ADDRSTRLEN + 1 + 5 + 3 + 2 + INET6_ADDRSTRLEN + 1 + 5 + 1];
+	char str[OSMO_SOCK_NAME_MAXLEN];
 	int rc;
 	rc = osmo_sock_get_name_buf(str, sizeof(str), fd);
 	if (rc <= 0)
@@ -823,8 +822,7 @@ int osmo_sock_get_name_buf(char *str, size_t str_len, int fd)
  */
 const char *osmo_sock_get_name2(int fd)
 {
-	/* "r=1.2.3.4:123<->l=5.6.7.8:987" */
-	static char str[2 + INET6_ADDRSTRLEN + 1 + 5 + 3 + 2 + INET6_ADDRSTRLEN + 1 + 5 + 1];
+	static char str[OSMO_SOCK_NAME_MAXLEN];
 	osmo_sock_get_name_buf(str, sizeof(str), fd);
 	return str;
 }

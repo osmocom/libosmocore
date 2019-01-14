@@ -28,6 +28,8 @@ struct osmo_fd;
 #define OSMO_SOCK_F_NO_MCAST_ALL  (1 << 4)
 /*! use SO_REUSEADDR on UDP ports (required for multicast) */
 #define OSMO_SOCK_F_UDP_REUSEADDR (1 << 5)
+/*! maximum length of a socket name ("r=1.2.3.4:123<->l=5.6.7.8:987") */
+#define OSMO_SOCK_NAME_MAXLEN (2 + INET6_ADDRSTRLEN + 1 + 5 + 3 + 2 + INET6_ADDRSTRLEN + 1 + 5 + 1)
 
 int osmo_sock_init(uint16_t family, uint16_t type, uint8_t proto,
 		   const char *host, uint16_t port, unsigned int flags);
