@@ -720,6 +720,18 @@ static void test_enc_dec_lcls()
 		abort();
 	}
 
+	if (lcls_out.config != lcls_in.config) {
+		printf("LCLS Config parsed wrong: %s != %s\n",
+		       gsm0808_lcls_config_name(lcls_out.config), gsm0808_lcls_config_name(lcls_in.config));
+                abort();
+        }
+
+	if (lcls_out.control != lcls_in.control) {
+		printf("LCLS Control parsed wrong: %s != %s\n",
+		       gsm0808_lcls_control_name(lcls_out.control), gsm0808_lcls_control_name(lcls_in.control));
+                abort();
+        }
+
 	if (lcls_out.gcr->net_len != g.net_len) {
 		printf("Network ID length parsed wrong: %u != %u\n", lcls_out.gcr->net_len, g.net_len);
 		abort();
