@@ -91,3 +91,24 @@ int osmo_dec_gcr(struct osmo_gcr_parsed *gcr, const uint8_t *elem, uint8_t len)
 
 	return parsed + 5;
 }
+
+/*! Compare two GCR structs.
+ *  \param[in] gcr1 pointer to the GCR struct
+ *  \param[in] gcr2 pointer to the GCR struct
+ *  \returns true if GCRs are equal, false otherwise */
+bool osmo_gcr_eq(const struct osmo_gcr_parsed *gcr1, const struct osmo_gcr_parsed *gcr2)
+{
+	if (gcr1->net_len != gcr2->net_len)
+		return false;
+
+	if (gcr1->node != gcr2->node)
+		return false;
+
+	if (memcmp(gcr1->cr, gcr2->cr, 5) != 0)
+		return false;
+
+	if (memcmp(gcr1->net, gcr2->net, gcr2->net_len) != 0)
+		return false;
+
+	return true;
+}

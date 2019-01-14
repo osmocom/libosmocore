@@ -240,6 +240,7 @@ gsm29118_create_service_abort_req;
 
 osmo_enc_gcr;
 osmo_dec_gcr;
+osmo_gcr_eq;
 
 gsm0858_rsl_ul_meas_enc;
 

@@ -39,3 +39,4 @@ struct osmo_gcr_parsed {
 
 uint8_t osmo_enc_gcr(struct msgb *msg, const struct osmo_gcr_parsed *g);
 int osmo_dec_gcr(struct osmo_gcr_parsed *gcr, const uint8_t *elem, uint8_t len);
+bool osmo_gcr_eq(const struct osmo_gcr_parsed *gcr1, const struct osmo_gcr_parsed *gcr2);

@@ -732,25 +732,10 @@ static void test_enc_dec_lcls()
                 abort();
         }
 
-	if (lcls_out.gcr->net_len != g.net_len) {
-		printf("Network ID length parsed wrong: %u != %u\n", lcls_out.gcr->net_len, g.net_len);
-		abort();
-	}
-
-	if (lcls_out.gcr->node != g.node) {
-		printf("Node ID parsed wrong: 0x%X != 0x%X\n", lcls_out.gcr->node, g.node);
-		abort();
-	}
-
-	if (memcmp(lcls_out.gcr->net, g.net, g.net_len) != 0) {
-		printf("Network ID parsed wrong: %s\n", osmo_hexdump(lcls_out.gcr->net, lcls_out.gcr->net_len));
-		abort();
-	}
-
-	if (memcmp(lcls_out.gcr->cr, g.cr, 5) != 0) {
-		printf("Call ref. ID parsed wrong: %s\n", osmo_hexdump(lcls_out.gcr->cr, 5));
-		abort();
-	}
+	if (!osmo_gcr_eq(lcls_out.gcr, lcls_in.gcr)) {
+		printf("GCR parsed wrong.\n");
+                abort();
+        }
 
 	printf("\tdecoded %d bytes: %s\n", rc, rc == len ? "OK" : "FAIL");
 	msgb_free(msg);
