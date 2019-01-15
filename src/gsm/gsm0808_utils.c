@@ -28,6 +28,7 @@
 #include <errno.h>
 #include <osmocom/gsm/protocol/gsm_08_08.h>
 #include <osmocom/gsm/gsm48.h>
+#include <osmocom/gsm/gsm0808.h>
 #include <osmocom/gsm/gsm0808_utils.h>
 
 #define IP_V4_ADDR_LEN 4
@@ -589,6 +590,45 @@ int gsm0808_dec_lcls(struct osmo_lcls *lcls, const struct tlv_parsed *tp)
 	lcls->corr_needed = TLVP_PRESENT(tp, GSM0808_IE_LCLS_CORR_NOT_NEEDED) ? false : true;
 
 	return ret;
+}
+
+static char dbuf[256];
+
+/*! Dump LCLS parameters (GCR excluded) into string for printing.
+ *  \param[in] lcls pointer to the struct to print.
+ *  \returns string representation of LCLS or NULL on error. */
+char *osmo_lcls_dump(const struct osmo_lcls *lcls)
+{
+	struct osmo_strbuf s = { .buf = dbuf, .len = 256 };
+
+	if (!lcls)
+		return NULL;
+
+	OSMO_STRBUF_PRINTF(s, "LCLS Config: %s, Control: %s, Correlation-Needed: %u",
+			   gsm0808_lcls_config_name(lcls->config),
+			   gsm0808_lcls_control_name(lcls->control),
+			   lcls->corr_needed);
+
+	return dbuf;
+}
+
+/*! Dump GCR struct into string for printing.
+ *  \param[in] lcls pointer to the struct to print.
+ *  \returns string representation of GCR or NULL on error. */
+char *osmo_gcr_dump(const struct osmo_lcls *lcls)
+{
+	struct osmo_strbuf s = { .buf = dbuf, .len = 256 };
+
+	if (!lcls)
+		return NULL;
+
+	if (lcls->gcr_available) {
+		OSMO_STRBUF_PRINTF(s, "GCR NetID 0x%s, ", osmo_hexdump_nospc(lcls->gcr.net, lcls->gcr.net_len));
+		/* osmo_hexdump() uses static buffers so we can't call it twice withing the same parameter list */
+		OSMO_STRBUF_PRINTF(s, "Node 0x%x, CallRefID 0x%s", lcls->gcr.node, osmo_hexdump_nospc(lcls->gcr.cr, 5));
+	}
+
+	return dbuf;
 }
 
 /*! Encode TS 08.08 Encryption Information IE

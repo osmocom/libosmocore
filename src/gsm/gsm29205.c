@@ -20,9 +20,12 @@
  *
  */
 
+#include "config.h"
+
 #include <osmocom/gsm/protocol/gsm_08_08.h>
 #include <osmocom/gsm/gsm29205.h>
 #include <osmocom/gsm/gsm0808.h>
+#include <osmocom/core/utils.h>
 #include <osmocom/core/msgb.h>
 #include <osmocom/gsm/tlv.h>
 

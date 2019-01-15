@@ -247,6 +247,8 @@ gsm29118_create_service_abort_req;
 osmo_enc_gcr;
 osmo_dec_gcr;
 osmo_gcr_eq;
+osmo_gcr_dump;
+osmo_lcls_dump;
 
 gsm0858_rsl_ul_meas_enc;
 

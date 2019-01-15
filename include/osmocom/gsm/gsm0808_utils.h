@@ -68,6 +68,9 @@ struct osmo_lcls {
 	bool corr_needed;                  /**< §3.2.2.118 Correlation-Not-Needed */
 };
 
+char *osmo_lcls_dump(const struct osmo_lcls *lcls);
+char *osmo_gcr_dump(const struct osmo_lcls *lcls);
+
 extern const struct value_string gsm0808_cell_id_discr_names[];
 static inline const char *gsm0808_cell_id_discr_name(enum CELL_IDENT id_discr)
 { return get_value_string(gsm0808_cell_id_discr_names, id_discr); }

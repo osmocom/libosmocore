@@ -760,11 +760,12 @@ static void test_enc_dec_lcls()
         }
 
 	if (!osmo_gcr_eq(&lcls_out->gcr, &lcls_in.gcr)) {
-		printf("GCR parsed wrong.\n");
+		printf("GCR parsed wrong:\n\t%s\n\t%s\n", osmo_gcr_dump(lcls_out), osmo_gcr_dump(&lcls_in));
                 abort();
         }
 
-	printf("\tdecoded %d bytes: %s\n", rc, rc == len ? "OK" : "FAIL");
+	printf("\tdecoded %d bytes: %s:\n%s\n", rc, rc == len ? "OK" : "FAIL", osmo_lcls_dump(lcls_out));
+	printf("\t%s\n", osmo_gcr_dump(lcls_out));
 	msgb_free(msg);
 }
 
