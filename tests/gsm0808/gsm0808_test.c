@@ -445,17 +445,17 @@ static void test_create_ass2()
 	struct sockaddr_in sin;
 	struct gsm0808_speech_codec_list sc_list;
 	uint32_t call_id = 0xDEADFACE;
-	struct osmo_gcr_parsed gcr = { .net_len = 3, .node = 0xFEED };
 	uint8_t Kc[16];
 	struct osmo_lcls lcls = {
 		.config = GSM0808_LCLS_CFG_BOTH_WAY,
 		.control = GSM0808_LCLS_CSC_CONNECT,
-		.gcr = &gcr,
+		.gcr = { .net_len = 3, .node = 0xFEED },
+		.gcr_available = true,
 		.corr_needed = false
 	};
 
-	memset(gcr.cr, 'A', 5);
-	memset(gcr.net, 'D', gcr.net_len);
+	memset(lcls.gcr.cr, 'A', 5);
+	memset(lcls.gcr.net, 'D', lcls.gcr.net_len);
 	memset(Kc, 'E', 16);
 
 	memset(&ct, 0, sizeof(ct));
@@ -683,16 +683,16 @@ static void test_enc_dec_lcls()
 	};
 	uint8_t len;
 	struct msgb *msg;
-	struct osmo_gcr_parsed p = { 0 }, g = {
-		.net_len = 3,
-		.net = { 0xf1, 0xf2, 0xf3 },
-		.node = 0xDEAD,
-		.cr = { 0x41, 0x42, 0x43, 0x44, 0x45 },
-	};
 	int rc;
 	struct tlv_parsed tp;
-	struct osmo_lcls lcls_out = { .gcr = &p }, lcls_in = {
-		.gcr = &g,
+	struct osmo_lcls *lcls_out, lcls_in = {
+		.gcr = {
+			.net_len = 3,
+			.net = { 0xf1, 0xf2, 0xf3 },
+			.node = 0xDEAD,
+			.cr = { 0x41, 0x42, 0x43, 0x44, 0x45 },
+		},
+		.gcr_available = true,
 		.config = GSM0808_LCLS_CFG_NA,
 		.control = GSM0808_LCLS_CSC_NA,
 		.corr_needed = true,
@@ -700,6 +700,10 @@ static void test_enc_dec_lcls()
 
 	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "LCLS IE");
 	if (!msg)
+		return;
+
+	lcls_out = talloc_zero(msg, struct osmo_lcls);
+	if (!lcls_out)
 		return;
 
 	len = gsm0808_enc_lcls(msg, &lcls_in);
@@ -715,25 +719,25 @@ static void test_enc_dec_lcls()
 		abort();
 	}
 
-	rc = gsm0808_dec_lcls(&lcls_out, &tp);
+	rc = gsm0808_dec_lcls(lcls_out, &tp);
 	if (rc < 0) {
 		printf("decoding failed: %s [%s]\n", strerror(-rc), msgb_hexdump(msg));
 		abort();
 	}
 
-	if (lcls_out.config != lcls_in.config) {
+	if (lcls_out->config != lcls_in.config) {
 		printf("LCLS Config parsed wrong: %s != %s\n",
-		       gsm0808_lcls_config_name(lcls_out.config), gsm0808_lcls_config_name(lcls_in.config));
+		       gsm0808_lcls_config_name(lcls_out->config), gsm0808_lcls_config_name(lcls_in.config));
                 abort();
         }
 
-	if (lcls_out.control != lcls_in.control) {
+	if (lcls_out->control != lcls_in.control) {
 		printf("LCLS Control parsed wrong: %s != %s\n",
-		       gsm0808_lcls_control_name(lcls_out.control), gsm0808_lcls_control_name(lcls_in.control));
+		       gsm0808_lcls_control_name(lcls_out->control), gsm0808_lcls_control_name(lcls_in.control));
                 abort();
         }
 
-	if (!osmo_gcr_eq(lcls_out.gcr, lcls_in.gcr)) {
+	if (!osmo_gcr_eq(&lcls_out->gcr, &lcls_in.gcr)) {
 		printf("GCR parsed wrong.\n");
                 abort();
         }

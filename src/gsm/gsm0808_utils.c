@@ -551,8 +551,8 @@ uint8_t gsm0808_enc_lcls(struct msgb *msg, const struct osmo_lcls *lcls)
 	uint8_t enc = 0;
 
 	/* LCLS: §3.2.2.115 Global Call Reference */
-	if (lcls->gcr)
-		enc = gsm0808_enc_gcr(msg, lcls->gcr);
+	if (lcls->gcr_available)
+		enc = gsm0808_enc_gcr(msg, &lcls->gcr);
 
 	/* LCLS: §3.2.2.116 Configuration */
 	if (lcls->config != GSM0808_LCLS_CFG_NA) {
@@ -581,10 +581,9 @@ uint8_t gsm0808_enc_lcls(struct msgb *msg, const struct osmo_lcls *lcls)
  *  \returns GCR size or negative on error */
 int gsm0808_dec_lcls(struct osmo_lcls *lcls, const struct tlv_parsed *tp)
 {
-	int ret = gsm0808_dec_gcr(lcls->gcr, tp);
-	if (ret < 0)
-		return ret;
+	int ret = gsm0808_dec_gcr(&lcls->gcr, tp);
 
+	lcls->gcr_available = (ret < 0) ? false : true;
 	lcls->config = tlvp_val8(tp, GSM0808_IE_LCLS_CONFIG, GSM0808_LCLS_CFG_NA);
 	lcls->control = tlvp_val8(tp, GSM0808_IE_LCLS_CONN_STATUS_CTRL, GSM0808_LCLS_CSC_NA);
 	lcls->corr_needed = TLVP_PRESENT(tp, GSM0808_IE_LCLS_CORR_NOT_NEEDED) ? false : true;
