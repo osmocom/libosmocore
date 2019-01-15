@@ -37,6 +37,6 @@ struct osmo_gcr_parsed {
 	uint8_t cr[5];   /** Call Reference ID */
 };
 
-uint8_t osmo_enc_gcr(struct msgb *msg, const struct osmo_gcr_parsed *g);
-int osmo_dec_gcr(struct osmo_gcr_parsed *gcr, const uint8_t *elem, uint8_t len);
+uint8_t osmo_enc_gcr(struct msgb *msg, const struct osmo_gcr_parsed *g) OSMO_DEPRECATED_OUTSIDE_LIBOSMOCORE;
+int osmo_dec_gcr(struct osmo_gcr_parsed *gcr, const uint8_t *elem, uint8_t len) OSMO_DEPRECATED_OUTSIDE_LIBOSMOCORE;
 bool osmo_gcr_eq(const struct osmo_gcr_parsed *gcr1, const struct osmo_gcr_parsed *gcr2);
