@@ -56,6 +56,22 @@ struct gsm48_classmark2 {
 #endif
 } __attribute__ ((packed));
 
+struct osmo_gsm48_classmark {
+	bool classmark1_set;
+	struct gsm48_classmark1 classmark1;
+	uint8_t classmark2_len;
+	struct gsm48_classmark2 classmark2;
+	uint8_t classmark3_len;
+	uint8_t classmark3[14]; /* if cm3 gets extended by spec, it will be truncated */
+};
+
+bool osmo_gsm48_classmark_is_r99(const struct osmo_gsm48_classmark *cm);
+bool osmo_gsm48_classmark1_is_r99(const struct gsm48_classmark1 *cm1);
+bool osmo_gsm48_classmark2_is_r99(const struct gsm48_classmark2 *cm2, uint8_t cm2_len);
+int osmo_gsm48_classmark_supports_a5(const struct osmo_gsm48_classmark *cm, uint8_t a5);
+const char *osmo_gsm48_classmark_a5_name(const struct osmo_gsm48_classmark *cm);
+void osmo_gsm48_classmark_update(struct osmo_gsm48_classmark *dst, const struct osmo_gsm48_classmark *src);
+
 /* Chapter 10.5.2.1b.3 */
 #if OSMO_IS_LITTLE_ENDIAN == 1
 struct gsm48_range_1024 {
