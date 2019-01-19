@@ -7,16 +7,3 @@
 # If any interfaces have been added since the last public release: c:r:a + 1.
 # If any interfaces have been removed or changed since the last public release: c:r:0.
 #library	what			description / commit summary line
-libosmogsm	gsm0480_l3hdr_push()	removed from gsm/gsm0480.h (was not exposed)
-libosmogsm	gsm48_push_l3hdr()	(re)introduced in gsm/gsm48.h (GSM 04.08 API)
-libosmogsm	gsm48_push_l3hdr_tid()	a wrapper around gsm48_push_l3hdr()
-libosmocore	msgb_l4len		new symbol (exposed as 'static inline' in msgb.h)
-libosmogsm     gsm0808_cause_class_name()      getter for class description
-libosmogsm     gsm0808_cause_class()   getter for cause class
-libosmogsm     gsm0808_cause_ext()     check for cause extended bit
-libosmogsm     gsm0808_cause_name()    use enum as parameter
-libosmogsm     gsm0808_create_cipher_reject()          use enum as parameter
-libosmogsm	osmo_gsup_message			extended with SMS related fields
-libosmogsm	osmo_gsup_sms_{en|de}code_sm_rp_da	GSUP SM-RP-DA coding helpers
-libosmogsm	osmo_gsup_sms_{en|de}code_sm_rp_oa	GSUP SM-RP-OA coding helpers
-libosmogsm	gsm0808_create_lcls_conn_ctrl()		API/ABI break: change parameters from pointers to plain values
