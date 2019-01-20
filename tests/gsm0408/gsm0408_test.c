@@ -422,17 +422,17 @@ static const struct test_mid_encode_decode_test test_mid_encode_decode_tests[] =
 	},
 	{
 		.mi_type = GSM_MI_TYPE_IMEISV,
-		.mi_str = "987654321098765432",
-		.mi_name = "IMEI-SV-987654321098765432",
-		.expect_mi_tlv_hex = "170a937856341290785634f2",
+		.mi_str = "9876543210987654",
+		.mi_name = "IMEI-SV-9876543210987654",
+		.expect_mi_tlv_hex = "17099378563412907856f4",
 	},
 	{
 		.mi_type = GSM_MI_TYPE_IMEISV,
-		.mi_str = "987654321098765432",
-		.mi_name = "IMEI-SV-987654321098765432",
-		.expect_mi_tlv_hex = "170a937856341290785634f2",
-		.str_size = 16,
-		.expect_str = "987654321098765",
+		.mi_str = "9876543210987654",
+		.mi_name = "IMEI-SV-9876543210987654",
+		.expect_mi_tlv_hex = "17099378563412907856f4",
+		.str_size = 17,
+		.expect_str = "9876543210987654",
 	},
 	{
 		/* gsm48 treats TMSI as decimal string */
