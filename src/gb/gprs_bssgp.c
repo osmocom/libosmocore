@@ -1157,10 +1157,17 @@ int bssgp_tx_dl_ud(struct msgb *msg, uint16_t pdu_lifetime,
 	/* IMSI */
 	if (dup->imsi && strlen(dup->imsi)) {
 		uint8_t mi[GSM48_MID_MAX_SIZE];
+/* gsm48_generate_mid_from_imsi() is guaranteed to never return more than 11,
+ * but somehow gcc (8.2) is not smart enough to figure this out and claims that
+ * the memcpy in msgb_tvlv_put() below will cause and out-of-bounds access up to
+ * mi[131], which is wrong */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
 		int imsi_len = gsm48_generate_mid_from_imsi(mi, dup->imsi);
 		if (imsi_len > 2)
 			msgb_tvlv_push(msg, BSSGP_IE_IMSI,
 				imsi_len-2, mi+2);
+#pragma GCC diagnostic pop
 	}
 
 	/* DRX parameters */
@@ -1220,7 +1227,14 @@ int bssgp_tx_paging(uint16_t nsei, uint16_t ns_bvci,
 	else
 		bgph->pdu_type = BSSGP_PDUT_PAGING_CS;
 	/* IMSI */
+/* gsm48_generate_mid_from_imsi() is guaranteed to never return more than 11,
+ * but somehow gcc (8.2) is not smart enough to figure this out and claims that
+ * the memcpy in msgb_tvlv_put() below will cause and out-of-bounds access up to
+ * mi[131], which is wrong */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
 	msgb_tvlv_put(msg, BSSGP_IE_IMSI, imsi_len-2, mi+2);
+#pragma GCC diagnostic pop
 	/* DRX Parameters */
 	msgb_tvlv_put(msg, BSSGP_IE_DRX_PARAMS, 2,
 			(uint8_t *) &drx_params);

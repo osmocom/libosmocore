@@ -183,10 +183,16 @@ int bssgp_tx_radio_status_imsi(struct bssgp_bvc_ctx *bctx, uint8_t cause,
 
 	if (!msg)
 		return -ENOMEM;
-
+/* gsm48_generate_mid_from_imsi() is guaranteed to never return more than 11,
+ * but somehow gcc (8.2) is not smart enough to figure this out and claims that
+ * the memcpy in msgb_tvlv_put() below will cause and out-of-bounds access up to
+ * mi[131], which is wrong */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Warray-bounds"
 	/* strip the MI type and length values (2 bytes) */
 	if (imsi_len > 2)
 		msgb_tvlv_put(msg, BSSGP_IE_IMSI, imsi_len-2, mi+2);
+#pragma GCC diagnostic pop
 	LOGPC(DBSSGP, LOGL_NOTICE, "IMSI=%s ", imsi);
 
 	return common_tx_radio_status2(msg, cause);
