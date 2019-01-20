@@ -178,7 +178,7 @@ int bssgp_tx_radio_status_imsi(struct bssgp_bvc_ctx *bctx, uint8_t cause,
 				const char *imsi)
 {
 	struct msgb *msg = common_tx_radio_status(bctx);
-	uint8_t mi[10];
+	uint8_t mi[GSM48_MID_MAX_SIZE];
 	int imsi_len = gsm48_generate_mid_from_imsi(mi, imsi);
 
 	if (!msg)

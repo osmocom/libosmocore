@@ -1156,7 +1156,7 @@ int bssgp_tx_dl_ud(struct msgb *msg, uint16_t pdu_lifetime,
 
 	/* IMSI */
 	if (dup->imsi && strlen(dup->imsi)) {
-		uint8_t mi[10];
+		uint8_t mi[GSM48_MID_MAX_SIZE];
 		int imsi_len = gsm48_generate_mid_from_imsi(mi, dup->imsi);
 		if (imsi_len > 2)
 			msgb_tvlv_push(msg, BSSGP_IE_IMSI,
@@ -1205,7 +1205,7 @@ int bssgp_tx_paging(uint16_t nsei, uint16_t ns_bvci,
 	struct bssgp_normal_hdr *bgph =
 			(struct bssgp_normal_hdr *) msgb_put(msg, sizeof(*bgph));
 	uint16_t drx_params = osmo_htons(pinfo->drx_params);
-	uint8_t mi[10];
+	uint8_t mi[GSM48_MID_MAX_SIZE];
 	int imsi_len = gsm48_generate_mid_from_imsi(mi, pinfo->imsi);
 	struct gsm48_ra_id ra;
 

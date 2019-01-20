@@ -45,6 +45,7 @@ void gsm48_generate_lai(struct gsm48_loc_area_id *lai48, uint16_t mcc,
 	OSMO_DEPRECATED("Use gsm48_generate_lai2() instead, to not lose leading zeros in the MNC");
 void gsm48_generate_lai2(struct gsm48_loc_area_id *lai48, const struct osmo_location_area_id *lai);
 
+#define GSM48_MID_MAX_SIZE	11
 int gsm48_generate_mid_from_tmsi(uint8_t *buf, uint32_t tmsi);
 int gsm48_generate_mid_from_imsi(uint8_t *buf, const char *imsi);
 uint8_t gsm48_generate_mid(uint8_t *buf, const char *id, uint8_t mi_type);

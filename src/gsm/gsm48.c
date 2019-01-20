@@ -637,20 +637,23 @@ int gsm48_generate_mid_from_tmsi(uint8_t *buf, uint32_t tmsi)
 	return 7;
 }
 
-/*! Generate TS 24.008 §10.5.1.4 Mobile ID
- *  \param[out] buf Caller-provided output buffer
+/*! Generate TS 24.008 §10.5.1.4 Mobile ID of BCD type from ASCII string
+ *  \param[out] buf Caller-provided output buffer of at least GSM48_MID_MAX_SIZE bytes
  *  \param[in] id Identity to be encoded
- *  \param[in] mi_type Type of identity (e.g. GSM_MI_TYPE_TMSI)
+ *  \param[in] mi_type Type of identity (e.g. GSM_MI_TYPE_IMSI, IMEI, IMEISV)
  *  \returns number of bytes used in \a buf */
 uint8_t gsm48_generate_mid(uint8_t *buf, const char *id, uint8_t mi_type)
 {
-	uint8_t length = strnlen(id, 255), i, off = 0, odd = (length & 1) == 1;
+	uint8_t length = strnlen(id, 16), i, off = 0, odd = (length & 1) == 1;
+	/* maximum length == 16 (IMEISV) */
 
 	buf[0] = GSM48_IE_MOBILE_ID;
 	buf[2] = osmo_char2bcd(id[0]) << 4 | (mi_type & GSM_MI_TYPE_MASK) | (odd << 3);
 
 	/* if the length is even we will fill half of the last octet */
 	buf[1] = (length + (odd ? 1 : 2)) >> 1;
+	/* buf[1] maximum = 18/2 = 9 */
+	OSMO_ASSERT(buf[1] <= 9);
 
 	for (i = 1; i < buf[1]; ++i) {
 		uint8_t upper, lower = osmo_char2bcd(id[++off]);
@@ -662,6 +665,7 @@ uint8_t gsm48_generate_mid(uint8_t *buf, const char *id, uint8_t mi_type)
 		buf[2 + i] = (upper << 4) | lower;
 	}
 
+	/* maximum return value: 2 + 9 = 11 */
 	return 2 + buf[1];
 }
 
