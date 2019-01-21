@@ -1,3 +1,10 @@
+libosmocore (1.0.1) unstable; urgency=medium
+
+  [ Max ]
+  * Rename msgb_wrap_with_TL()
+
+ -- Harald Welte <laforge@gnumonks.org>  Mon, 21 Jan 2019 14:50:42 +0100
+
 libosmocore (1.0.0) unstable; urgency=medium
 
   [ Kévin Redon ]
