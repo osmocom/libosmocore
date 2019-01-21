@@ -220,7 +220,7 @@ const char *osmo_fsm_state_name(struct osmo_fsm *fsm, uint32_t state);
 
 /*! return the name of the state the FSM instance is currently in. */
 static inline const char *osmo_fsm_inst_state_name(struct osmo_fsm_inst *fi)
-{ return osmo_fsm_state_name(fi->fsm, fi->state); }
+{ return fi ? osmo_fsm_state_name(fi->fsm, fi->state) : "NULL"; }
 
 /*! perform a state change of the given FSM instance
  *
