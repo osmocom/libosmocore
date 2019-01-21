@@ -84,7 +84,7 @@ int gsm0480_wrap_invoke(struct msgb *msg, int op, int link_id)
 	msgb_tlv1_push(msg, GSM0480_COMPIDTAG_INVOKE_ID, link_id);
 
 	/* 1. component tag */
-	msgb_wrap_with_TL(msg, GSM0480_CTYPE_INVOKE);
+	msgb_push_tl(msg, GSM0480_CTYPE_INVOKE);
 
 	return 0;
 }
@@ -92,7 +92,7 @@ int gsm0480_wrap_invoke(struct msgb *msg, int op, int link_id)
 /* wrap the GSM 04.08 Facility IE around it */
 int gsm0480_wrap_facility(struct msgb *msg)
 {
-	msgb_wrap_with_TL(msg, GSM0480_IE_FACILITY);
+	msgb_push_tl(msg, GSM0480_IE_FACILITY);
 
 	return 0;
 }
@@ -793,26 +793,26 @@ struct msgb *gsm0480_gen_ussd_resp_7bit(uint8_t invoke_id, const char *text)
 	msgb_put(msg, response_len);
 
 	/* Then wrap it as an Octet String */
-	msgb_wrap_with_TL(msg, ASN1_OCTET_STRING_TAG);
+	msgb_push_tl(msg, ASN1_OCTET_STRING_TAG);
 
 	/* Pre-pend the DCS octet string */
 	msgb_tlv1_push(msg, ASN1_OCTET_STRING_TAG, 0x0F);
 
 	/* Then wrap these as a Sequence */
-	msgb_wrap_with_TL(msg, GSM_0480_SEQUENCE_TAG);
+	msgb_push_tl(msg, GSM_0480_SEQUENCE_TAG);
 
 	/* Pre-pend the operation code */
 	msgb_tlv1_push(msg, GSM0480_OPERATION_CODE,
 			GSM0480_OP_CODE_PROCESS_USS_REQ);
 
 	/* Wrap the operation code and IA5 string as a sequence */
-	msgb_wrap_with_TL(msg, GSM_0480_SEQUENCE_TAG);
+	msgb_push_tl(msg, GSM_0480_SEQUENCE_TAG);
 
 	/* Pre-pend the invoke ID */
 	msgb_tlv1_push(msg, GSM0480_COMPIDTAG_INVOKE_ID, invoke_id);
 
 	/* Wrap this up as a Return Result component */
-	msgb_wrap_with_TL(msg, GSM0480_CTYPE_RETURN_RESULT);
+	msgb_push_tl(msg, GSM0480_CTYPE_RETURN_RESULT);
 
 	return msg;
 }
@@ -832,7 +832,7 @@ struct msgb *gsm0480_create_ussd_resp(uint8_t invoke_id, uint8_t trans_id, const
 		return NULL;
 
 	/* Wrap the component in a Facility message */
-	msgb_wrap_with_TL(msg, GSM0480_IE_FACILITY);
+	msgb_push_tl(msg, GSM0480_IE_FACILITY);
 
 	/* And finally pre-pend the L3 header */
 	gsm48_push_l3hdr_tid(msg, GSM48_PDISC_NC_SS,
@@ -863,7 +863,7 @@ struct msgb *gsm0480_gen_return_error(uint8_t invoke_id, uint8_t error_code)
 	msgb_tlv1_push(msg, GSM0480_COMPIDTAG_INVOKE_ID, invoke_id);
 
 	/* Wrap this up as a Reject component */
-	msgb_wrap_with_TL(msg, GSM0480_CTYPE_RETURN_ERROR);
+	msgb_push_tl(msg, GSM0480_CTYPE_RETURN_ERROR);
 
 	/* FIXME: Wrap in Facility + L3? */
 	return msg;
@@ -896,7 +896,7 @@ struct msgb *gsm0480_gen_reject(int invoke_id, uint8_t problem_tag, uint8_t prob
 		msgb_tlv1_push(msg, GSM0480_COMPIDTAG_INVOKE_ID, invoke_id);
 
 	/* Wrap this up as a Reject component */
-	msgb_wrap_with_TL(msg, GSM0480_CTYPE_REJECT);
+	msgb_push_tl(msg, GSM0480_CTYPE_REJECT);
 
 	/* FIXME: Wrap in Facility + L3? */
 	return msg;
