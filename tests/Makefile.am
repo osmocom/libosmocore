@@ -27,6 +27,9 @@ check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
 		 oap/oap_client_test gsm29205/gsm29205_test		\
 		 logging/logging_vty_test				\
 		 vty/vty_transcript_test				\
+		 tdef/tdef_test tdef/tdef_vty_test_config_root		\
+		 tdef/tdef_vty_test_config_subnode			\
+		 tdef/tdef_vty_test_dynamic				\
 		 $(NULL)
 
 if ENABLE_MSGFILE
@@ -221,6 +224,18 @@ prbs_prbs_test_SOURCES = prbs/prbs_test.c
 gsm23003_gsm23003_test_SOURCES = gsm23003/gsm23003_test.c
 gsm23003_gsm23003_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 
+tdef_tdef_test_SOURCES = tdef/tdef_test.c
+tdef_tdef_test_LDADD = $(LDADD)
+
+tdef_tdef_vty_test_config_root_SOURCES = tdef/tdef_vty_test_config_root.c
+tdef_tdef_vty_test_config_root_LDADD = $(LDADD) $(top_builddir)/src/vty/libosmovty.la
+
+tdef_tdef_vty_test_config_subnode_SOURCES = tdef/tdef_vty_test_config_subnode.c
+tdef_tdef_vty_test_config_subnode_LDADD = $(LDADD) $(top_builddir)/src/vty/libosmovty.la
+
+tdef_tdef_vty_test_dynamic_SOURCES = tdef/tdef_vty_test_dynamic.c
+tdef_tdef_vty_test_dynamic_LDADD = $(LDADD) $(top_builddir)/src/vty/libosmovty.la
+
 # The `:;' works around a Bash 3.2 bug when the output is not writeable.
 $(srcdir)/package.m4: $(top_srcdir)/configure.ac
 	:;{ \
@@ -284,6 +299,10 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
 	     timer/clk_override_test.ok					\
 	     oap/oap_client_test.ok oap/oap_client_test.err		\
 	     vty/vty_transcript_test.vty				\
+	     tdef/tdef_test.ok \
+	     tdef/tdef_vty_test_config_root.vty	\
+	     tdef/tdef_vty_test_config_subnode.vty \
+	     tdef/tdef_vty_test_dynamic.vty \
 	     $(NULL)
 
 DISTCLEANFILES = atconfig atlocal conv/gsm0503_test_vectors.c
@@ -328,6 +347,7 @@ endif
 # To update the VTY script from current application behavior,
 # pass -u to osmo_verify_transcript_vty.py by doing:
 #   make vty-test U=-u
+
 vty-test-logging:
 	osmo_verify_transcript_vty.py -v \
 		-p 42042 \
@@ -340,9 +360,25 @@ vty-test-vty:
 		-r "$(top_builddir)/tests/vty/vty_transcript_test" \
 		$(U) $(srcdir)/vty/*.vty
 
+vty-test-tdef:
+	osmo_verify_transcript_vty.py -v \
+		-p 42042 \
+		-r "$(top_builddir)/tests/tdef/tdef_vty_test_config_root" \
+		$(U) $(srcdir)/tdef/tdef_vty_test_config_root.vty
+	osmo_verify_transcript_vty.py -v \
+		-p 42042 \
+		-r "$(top_builddir)/tests/tdef/tdef_vty_test_config_subnode" \
+		$(U) $(srcdir)/tdef/tdef_vty_test_config_subnode.vty
+	osmo_verify_transcript_vty.py -v \
+		-p 42042 \
+		-r "$(top_builddir)/tests/tdef/tdef_vty_test_dynamic" \
+		$(U) $(srcdir)/tdef/tdef_vty_test_dynamic.vty
+
+# don't run vty tests concurrently so that the ports don't conflict
 vty-test:
 	$(MAKE) vty-test-logging
 	$(MAKE) vty-test-vty
+	$(MAKE) vty-test-tdef
 
 ctrl-test:
 	echo "No CTRL tests exist currently"

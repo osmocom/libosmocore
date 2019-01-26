@@ -47,6 +47,7 @@ nobase_include_HEADERS = \
                        osmocom/core/statistics.h \
                        osmocom/core/strrb.h \
                        osmocom/core/talloc.h \
+                       osmocom/core/tdef.h \
                        osmocom/core/timer.h \
                        osmocom/core/timer_compat.h \
                        osmocom/core/utils.h \
@@ -154,6 +155,7 @@ nobase_include_HEADERS += \
                           osmocom/vty/vector.h \
                           osmocom/vty/vty.h \
                           osmocom/vty/ports.h \
+                          osmocom/vty/tdef_vty.h \
                           osmocom/ctrl/control_vty.h
 endif
 

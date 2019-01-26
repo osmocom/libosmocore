@@ -1,0 +1,107 @@
+tdef_vty_test> list
+... !timer
+  show timer [TNNNN]
+... !timer
+
+tdef_vty_test> show timer ?
+  [TNNNN]  T-number, optionally preceded by 't' or 'T'.
+
+tdef_vty_test> show timer
+T1 = 100 s	Testing a hundred seconds (default: 100 s)
+T2 = 100 ms	Testing a hundred milliseconds (default: 100 ms)
+T3 = 100 m	Testing a hundred minutes (default: 100 m)
+T4 = 100	Testing a hundred potatoes (default: 100)
+T2147483647 = 18446744073709551615 m	Very large (default: 18446744073709551615 m)
+T-23 = 18446744073709551601 s	Negative T number (default: 18446744073709551601 s)
+
+tdef_vty_test> enable
+tdef_vty_test# show timer
+T1 = 100 s	Testing a hundred seconds (default: 100 s)
+T2 = 100 ms	Testing a hundred milliseconds (default: 100 ms)
+T3 = 100 m	Testing a hundred minutes (default: 100 m)
+T4 = 100	Testing a hundred potatoes (default: 100)
+T2147483647 = 18446744073709551615 m	Very large (default: 18446744073709551615 m)
+T-23 = 18446744073709551601 s	Negative T number (default: 18446744073709551601 s)
+
+tdef_vty_test# configure terminal
+tdef_vty_test(config)# show running-config
+... !timer
+
+tdef_vty_test(config)# network
+
+tdef_vty_test(config-net)# do show timer
+T1 = 100 s	Testing a hundred seconds (default: 100 s)
+T2 = 100 ms	Testing a hundred milliseconds (default: 100 ms)
+T3 = 100 m	Testing a hundred minutes (default: 100 m)
+T4 = 100	Testing a hundred potatoes (default: 100)
+T2147483647 = 18446744073709551615 m	Very large (default: 18446744073709551615 m)
+T-23 = 18446744073709551601 s	Negative T number (default: 18446744073709551601 s)
+
+tdef_vty_test(config-net)# do show timer T3
+T3 = 100 m	Testing a hundred minutes (default: 100 m)
+tdef_vty_test(config-net)# do show timer 3
+T3 = 100 m	Testing a hundred minutes (default: 100 m)
+tdef_vty_test(config-net)# do show timer t3
+T3 = 100 m	Testing a hundred minutes (default: 100 m)
+
+tdef_vty_test(config-net)# timer T1 5
+tdef_vty_test(config-net)# timer T1
+T1 = 5 s	Testing a hundred seconds (default: 100 s)
+
+tdef_vty_test(config-net)# timer t1 678
+tdef_vty_test(config-net)# timer T1
+T1 = 678 s	Testing a hundred seconds (default: 100 s)
+
+tdef_vty_test(config-net)# timer 1 9012345
+tdef_vty_test(config-net)# timer T1
+T1 = 9012345 s	Testing a hundred seconds (default: 100 s)
+
+tdef_vty_test(config-net)# do show timer T666
+% No such timer: T666
+tdef_vty_test(config-net)# do show timer t666
+% No such timer: T666
+tdef_vty_test(config-net)# do show timer 666
+% No such timer: T666
+
+tdef_vty_test(config-net)# timer T666
+% No such timer: T666
+tdef_vty_test(config-net)# timer t666
+% No such timer: T666
+tdef_vty_test(config-net)# timer 666
+% No such timer: T666
+
+tdef_vty_test(config-net)# timer T666 5
+% No such timer: T666
+
+tdef_vty_test(config-net)# timer T-23 42
+tdef_vty_test(config-net)# timer T-23
+T-23 = 42 s	Negative T number (default: 18446744073709551601 s)
+
+tdef_vty_test(config-net)# timer t-23 43
+tdef_vty_test(config-net)# timer T-23
+T-23 = 43 s	Negative T number (default: 18446744073709551601 s)
+
+tdef_vty_test(config-net)# timer -23 44
+tdef_vty_test(config-net)# timer T-23
+T-23 = 44 s	Negative T number (default: 18446744073709551601 s)
+
+tdef_vty_test(config-net)# do show timer
+T1 = 9012345 s	Testing a hundred seconds (default: 100 s)
+T2 = 100 ms	Testing a hundred milliseconds (default: 100 ms)
+T3 = 100 m	Testing a hundred minutes (default: 100 m)
+T4 = 100	Testing a hundred potatoes (default: 100)
+T2147483647 = 18446744073709551615 m	Very large (default: 18446744073709551615 m)
+T-23 = 44 s	Negative T number (default: 18446744073709551601 s)
+
+tdef_vty_test(config-net)# show running-config
+... !timer
+net
+ timer T1 9012345
+ timer T-23 44
+... !timer
+
+tdef_vty_test(config-net)# timer T1 default
+tdef_vty_test(config-net)# timer T-23 default
+
+tdef_vty_test(config-net)# show running-config
+... !timer

@@ -1,0 +1,292 @@
+tdef_vty_test> list
+...
+  show timer [(tea|test|software)] [TNNNN]
+...
+
+tdef_vty_test> show timer ?
+  [tea]       Tea time
+  [test]      Test timers
+  [software]  Typical software development cycle
+
+tdef_vty_test> show timer test ?
+  [TNNNN]  T-number, optionally preceded by 't' or 'T'.
+
+tdef_vty_test> show timer
+tea: T1 = 50 s	Water Boiling Timeout (default: 50 s)
+tea: T2 = 300 s	Tea brewing (default: 300 s)
+tea: T3 = 5 m	Let tea cool down before drinking (default: 5 m)
+tea: T4 = 20 m	Forgot to drink tea while it's warm (default: 20 m)
+test: T1 = 100 s	Testing a hundred seconds (default: 100 s)
+test: T2 = 100 ms	Testing a hundred milliseconds (default: 100 ms)
+test: T3 = 100 m	Testing a hundred minutes (default: 100 m)
+test: T4 = 100	Testing a hundred potatoes (default: 100)
+test: T2147483647 = 18446744073709551615 m	Very large (default: 18446744073709551615 m)
+test: T-23 = 18446744073709551601 s	Negative T number (default: 18446744073709551601 s)
+software: T1 = 30 m	Write code (default: 30 m)
+software: T2 = 20 ms	Hit segfault (default: 20 ms)
+software: T3 = 480 m	Fix bugs (default: 480 m)
+
+tdef_vty_test> enable
+tdef_vty_test# show timer
+tea: T1 = 50 s	Water Boiling Timeout (default: 50 s)
+tea: T2 = 300 s	Tea brewing (default: 300 s)
+tea: T3 = 5 m	Let tea cool down before drinking (default: 5 m)
+tea: T4 = 20 m	Forgot to drink tea while it's warm (default: 20 m)
+test: T1 = 100 s	Testing a hundred seconds (default: 100 s)
+test: T2 = 100 ms	Testing a hundred milliseconds (default: 100 ms)
+test: T3 = 100 m	Testing a hundred minutes (default: 100 m)
+test: T4 = 100	Testing a hundred potatoes (default: 100)
+test: T2147483647 = 18446744073709551615 m	Very large (default: 18446744073709551615 m)
+test: T-23 = 18446744073709551601 s	Negative T number (default: 18446744073709551601 s)
+software: T1 = 30 m	Write code (default: 30 m)
+software: T2 = 20 ms	Hit segfault (default: 20 ms)
+software: T3 = 480 m	Fix bugs (default: 480 m)
+
+tdef_vty_test# configure terminal
+
+tdef_vty_test(config)# show running-config
+... !timer
+
+tdef_vty_test(config)# list
+...
+  timer [(tea|test|software)] [TNNNN] [(<0-2147483647>|default)]
+...
+
+tdef_vty_test(config)# timer ?
+  [tea]       Tea time
+  [test]      Test timers
+  [software]  Typical software development cycle
+
+tdef_vty_test(config)# timer sof T123 ?
+  [<0-2147483647>]  New timer value
+  [default]         Set to default timer value
+
+tdef_vty_test(config)# timer sof T123 ?
+  [<0-2147483647>]  New timer value
+  [default]         Set to default timer value
+
+tdef_vty_test(config)# timer test ?
+  [TNNNN]  T-number, optionally preceded by 't' or 'T'.
+
+tdef_vty_test(config)# timer test t2 ?
+  [<0-2147483647>]  New timer value
+  [default]         Set to default timer value
+
+tdef_vty_test(config)# do show timer
+tea: T1 = 50 s	Water Boiling Timeout (default: 50 s)
+tea: T2 = 300 s	Tea brewing (default: 300 s)
+tea: T3 = 5 m	Let tea cool down before drinking (default: 5 m)
+tea: T4 = 20 m	Forgot to drink tea while it's warm (default: 20 m)
+test: T1 = 100 s	Testing a hundred seconds (default: 100 s)
+test: T2 = 100 ms	Testing a hundred milliseconds (default: 100 ms)
+test: T3 = 100 m	Testing a hundred minutes (default: 100 m)
+test: T4 = 100	Testing a hundred potatoes (default: 100)
+test: T2147483647 = 18446744073709551615 m	Very large (default: 18446744073709551615 m)
+test: T-23 = 18446744073709551601 s	Negative T number (default: 18446744073709551601 s)
+software: T1 = 30 m	Write code (default: 30 m)
+software: T2 = 20 ms	Hit segfault (default: 20 ms)
+software: T3 = 480 m	Fix bugs (default: 480 m)
+
+tdef_vty_test(config)# do show timer tea
+tea: T1 = 50 s	Water Boiling Timeout (default: 50 s)
+tea: T2 = 300 s	Tea brewing (default: 300 s)
+tea: T3 = 5 m	Let tea cool down before drinking (default: 5 m)
+tea: T4 = 20 m	Forgot to drink tea while it's warm (default: 20 m)
+
+tdef_vty_test(config)# do show timer tea 2
+tea: T2 = 300 s	Tea brewing (default: 300 s)
+
+tdef_vty_test(config)# do show timer tea t2
+tea: T2 = 300 s	Tea brewing (default: 300 s)
+
+tdef_vty_test(config)# do show timer tea T2
+tea: T2 = 300 s	Tea brewing (default: 300 s)
+
+tdef_vty_test(config)# do show timer tea T5
+% No such timer: T5
+
+tdef_vty_test(config)# do show timer tea T0
+% No such timer: T0
+
+tdef_vty_test(config)# do show timer tea T-123
+% No such timer: T-123
+
+tdef_vty_test(config)# do show timer t
+tea: T1 = 50 s	Water Boiling Timeout (default: 50 s)
+tea: T2 = 300 s	Tea brewing (default: 300 s)
+tea: T3 = 5 m	Let tea cool down before drinking (default: 5 m)
+tea: T4 = 20 m	Forgot to drink tea while it's warm (default: 20 m)
+test: T1 = 100 s	Testing a hundred seconds (default: 100 s)
+test: T2 = 100 ms	Testing a hundred milliseconds (default: 100 ms)
+test: T3 = 100 m	Testing a hundred minutes (default: 100 m)
+test: T4 = 100	Testing a hundred potatoes (default: 100)
+test: T2147483647 = 18446744073709551615 m	Very large (default: 18446744073709551615 m)
+test: T-23 = 18446744073709551601 s	Negative T number (default: 18446744073709551601 s)
+
+tdef_vty_test(config)# do show timer te
+tea: T1 = 50 s	Water Boiling Timeout (default: 50 s)
+tea: T2 = 300 s	Tea brewing (default: 300 s)
+tea: T3 = 5 m	Let tea cool down before drinking (default: 5 m)
+tea: T4 = 20 m	Forgot to drink tea while it's warm (default: 20 m)
+test: T1 = 100 s	Testing a hundred seconds (default: 100 s)
+test: T2 = 100 ms	Testing a hundred milliseconds (default: 100 ms)
+test: T3 = 100 m	Testing a hundred minutes (default: 100 m)
+test: T4 = 100	Testing a hundred potatoes (default: 100)
+test: T2147483647 = 18446744073709551615 m	Very large (default: 18446744073709551615 m)
+test: T-23 = 18446744073709551601 s	Negative T number (default: 18446744073709551601 s)
+
+tdef_vty_test(config)# do show timer te T2
+tea: T2 = 300 s	Tea brewing (default: 300 s)
+test: T2 = 100 ms	Testing a hundred milliseconds (default: 100 ms)
+
+
+tdef_vty_test(config)# timer tea 3 30
+tdef_vty_test(config)# timer tea T3
+tea: T3 = 30 m	Let tea cool down before drinking (default: 5 m)
+
+tdef_vty_test(config)# timer tea t3 31
+tdef_vty_test(config)# timer tea T3
+tea: T3 = 31 m	Let tea cool down before drinking (default: 5 m)
+
+tdef_vty_test(config)# timer tea T3 32
+tdef_vty_test(config)# timer tea T3
+tea: T3 = 32 m	Let tea cool down before drinking (default: 5 m)
+
+tdef_vty_test(config)# timer tea T-123 99
+% No such timer: T-123
+
+tdef_vty_test(config)# timer tea T0 0
+% No such timer: T0
+
+tdef_vty_test(config)# timer tea T123 default
+% No such timer: T123
+
+tdef_vty_test(config)# timer tea
+tea: T1 = 50 s	Water Boiling Timeout (default: 50 s)
+tea: T2 = 300 s	Tea brewing (default: 300 s)
+tea: T3 = 32 m	Let tea cool down before drinking (default: 5 m)
+tea: T4 = 20 m	Forgot to drink tea while it's warm (default: 20 m)
+
+tdef_vty_test(config)# timer t
+tea: T1 = 50 s	Water Boiling Timeout (default: 50 s)
+tea: T2 = 300 s	Tea brewing (default: 300 s)
+tea: T3 = 32 m	Let tea cool down before drinking (default: 5 m)
+tea: T4 = 20 m	Forgot to drink tea while it's warm (default: 20 m)
+test: T1 = 100 s	Testing a hundred seconds (default: 100 s)
+test: T2 = 100 ms	Testing a hundred milliseconds (default: 100 ms)
+test: T3 = 100 m	Testing a hundred minutes (default: 100 m)
+test: T4 = 100	Testing a hundred potatoes (default: 100)
+test: T2147483647 = 18446744073709551615 m	Very large (default: 18446744073709551615 m)
+test: T-23 = 18446744073709551601 s	Negative T number (default: 18446744073709551601 s)
+
+tdef_vty_test(config)# timer te T2
+tea: T2 = 300 s	Tea brewing (default: 300 s)
+test: T2 = 100 ms	Testing a hundred milliseconds (default: 100 ms)
+
+tdef_vty_test(config)# timer test T2 100
+
+tdef_vty_test(config)# timer tes T2 100
+% Error: no timers found
+
+tdef_vty_test(config)# timer te T2 100
+% Error: no timers found
+
+
+tdef_vty_test(config)# do show timer software
+software: T1 = 30 m	Write code (default: 30 m)
+software: T2 = 20 ms	Hit segfault (default: 20 ms)
+software: T3 = 480 m	Fix bugs (default: 480 m)
+
+tdef_vty_test(config)# do show timer software 1
+software: T1 = 30 m	Write code (default: 30 m)
+
+tdef_vty_test(config)# do show timer software t1
+software: T1 = 30 m	Write code (default: 30 m)
+
+tdef_vty_test(config)# do show timer software T1
+software: T1 = 30 m	Write code (default: 30 m)
+
+tdef_vty_test(config)# do show timer software T99
+% No such timer: T99
+
+tdef_vty_test(config)# do show timer software T-123123
+% No such timer: T-123123
+
+tdef_vty_test(config)# do show timer software T0
+% No such timer: T0
+
+tdef_vty_test(config)# timer software 1 11
+tdef_vty_test(config)# timer software T1
+software: T1 = 11 m	Write code (default: 30 m)
+
+tdef_vty_test(config)# timer software t1 12
+tdef_vty_test(config)# timer software T1
+software: T1 = 12 m	Write code (default: 30 m)
+
+tdef_vty_test(config)# timer software T1 13
+tdef_vty_test(config)# timer software T2 0
+tdef_vty_test(config)# timer software
+software: T1 = 13 m	Write code (default: 30 m)
+software: T2 = 0 ms	Hit segfault (default: 20 ms)
+software: T3 = 480 m	Fix bugs (default: 480 m)
+
+tdef_vty_test(config)# timer softw
+software: T1 = 13 m	Write code (default: 30 m)
+software: T2 = 0 ms	Hit segfault (default: 20 ms)
+software: T3 = 480 m	Fix bugs (default: 480 m)
+
+tdef_vty_test(config)# timer softw T3
+software: T3 = 480 m	Fix bugs (default: 480 m)
+
+tdef_vty_test(config)# timer softw T3 23
+% Error: no timers found
+
+tdef_vty_test(config)# timer
+tea: T1 = 50 s	Water Boiling Timeout (default: 50 s)
+tea: T2 = 300 s	Tea brewing (default: 300 s)
+tea: T3 = 32 m	Let tea cool down before drinking (default: 5 m)
+tea: T4 = 20 m	Forgot to drink tea while it's warm (default: 20 m)
+test: T1 = 100 s	Testing a hundred seconds (default: 100 s)
+test: T2 = 100 ms	Testing a hundred milliseconds (default: 100 ms)
+test: T3 = 100 m	Testing a hundred minutes (default: 100 m)
+test: T4 = 100	Testing a hundred potatoes (default: 100)
+test: T2147483647 = 18446744073709551615 m	Very large (default: 18446744073709551615 m)
+test: T-23 = 18446744073709551601 s	Negative T number (default: 18446744073709551601 s)
+software: T1 = 13 m	Write code (default: 30 m)
+software: T2 = 0 ms	Hit segfault (default: 20 ms)
+software: T3 = 480 m	Fix bugs (default: 480 m)
+
+tdef_vty_test(config)# do show timer
+tea: T1 = 50 s	Water Boiling Timeout (default: 50 s)
+tea: T2 = 300 s	Tea brewing (default: 300 s)
+tea: T3 = 32 m	Let tea cool down before drinking (default: 5 m)
+tea: T4 = 20 m	Forgot to drink tea while it's warm (default: 20 m)
+test: T1 = 100 s	Testing a hundred seconds (default: 100 s)
+test: T2 = 100 ms	Testing a hundred milliseconds (default: 100 ms)
+test: T3 = 100 m	Testing a hundred minutes (default: 100 m)
+test: T4 = 100	Testing a hundred potatoes (default: 100)
+test: T2147483647 = 18446744073709551615 m	Very large (default: 18446744073709551615 m)
+test: T-23 = 18446744073709551601 s	Negative T number (default: 18446744073709551601 s)
+software: T1 = 13 m	Write code (default: 30 m)
+software: T2 = 0 ms	Hit segfault (default: 20 ms)
+software: T3 = 480 m	Fix bugs (default: 480 m)
+
+tdef_vty_test(config)# show running-config
+... !timer
+timer tea T3 32
+timer software T1 13
+timer software T2 0
+... !timer
+
+tdef_vty_test(config)# timer tea T3 default
+tdef_vty_test(config)# timer software T1 default
+tdef_vty_test(config)# show running-config
+... !timer
+timer software T2 0
+... !timer
+
+tdef_vty_test(config)# timer softw 2 default
+% Error: no timers found
+tdef_vty_test(config)# timer software 2 default
+tdef_vty_test(config)# show running-config
+... !timer

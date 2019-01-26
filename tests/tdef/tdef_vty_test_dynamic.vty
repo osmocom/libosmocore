@@ -1,0 +1,83 @@
+tdef_vty_test> list
+...
+  show member-timer [NAME] [TNNNN]
+...
+
+tdef_vty_test> enable
+tdef_vty_test# configure terminal
+
+tdef_vty_test(config)# member robin
+tdef_vty_test(config-member)# timer
+      robin: T1111 = 2 s	Dynamic Duo (default: 2 s)
+      robin: T2222 = 1 s	BATMAN (default: 1 s)
+      robin: T3333 = 12 s	Dadadadadadadadadadadada (default: 12 s)
+      robin: T4444 = 500 ms	POW! (default: 500 ms)
+
+tdef_vty_test(config-member)# timer T2222 423
+tdef_vty_test(config-member)# timer T2222
+      robin: T2222 = 423 s	BATMAN (default: 1 s)
+
+tdef_vty_test(config-member)# timer
+      robin: T1111 = 2 s	Dynamic Duo (default: 2 s)
+      robin: T2222 = 423 s	BATMAN (default: 1 s)
+      robin: T3333 = 12 s	Dadadadadadadadadadadada (default: 12 s)
+      robin: T4444 = 500 ms	POW! (default: 500 ms)
+
+tdef_vty_test(config-member)# do show member-timer
+      robin: T1111 = 2 s	Dynamic Duo (default: 2 s)
+      robin: T2222 = 423 s	BATMAN (default: 1 s)
+      robin: T3333 = 12 s	Dadadadadadadadadadadada (default: 12 s)
+      robin: T4444 = 500 ms	POW! (default: 500 ms)
+
+tdef_vty_test(config-member)# exit
+
+tdef_vty_test(config)# member batman
+tdef_vty_test(config-member)# timer 3333 17
+tdef_vty_test(config-member)# timer 3333
+     batman: T3333 = 17 s	Dadadadadadadadadadadada (default: 12 s)
+
+tdef_vty_test(config-member)# show running-config
+
+Current configuration:
+...
+member robin
+ timer T2222 423
+member batman
+ timer T3333 17
+...
+
+tdef_vty_test(config-member)# timer 3333 default
+
+tdef_vty_test(config-member)# show running-config
+...
+member robin
+ timer T2222 423
+member batman
+... !timer
+
+tdef_vty_test(config-member)# exit
+tdef_vty_test(config)# exit
+tdef_vty_test# show member-timer
+      robin: T1111 = 2 s	Dynamic Duo (default: 2 s)
+      robin: T2222 = 423 s	BATMAN (default: 1 s)
+      robin: T3333 = 12 s	Dadadadadadadadadadadada (default: 12 s)
+      robin: T4444 = 500 ms	POW! (default: 500 ms)
+     batman: T1111 = 2 s	Dynamic Duo (default: 2 s)
+     batman: T2222 = 1 s	BATMAN (default: 1 s)
+     batman: T3333 = 12 s	Dadadadadadadadadadadada (default: 12 s)
+     batman: T4444 = 500 ms	POW! (default: 500 ms)
+
+tdef_vty_test# show member-timer batman
+     batman: T1111 = 2 s	Dynamic Duo (default: 2 s)
+     batman: T2222 = 1 s	BATMAN (default: 1 s)
+     batman: T3333 = 12 s	Dadadadadadadadadadadada (default: 12 s)
+     batman: T4444 = 500 ms	POW! (default: 500 ms)
+
+tdef_vty_test# show member-timer robin
+      robin: T1111 = 2 s	Dynamic Duo (default: 2 s)
+      robin: T2222 = 423 s	BATMAN (default: 1 s)
+      robin: T3333 = 12 s	Dadadadadadadadadadadada (default: 12 s)
+      robin: T4444 = 500 ms	POW! (default: 500 ms)
+
+tdef_vty_test# show member-timer joker
+% No such member: joker

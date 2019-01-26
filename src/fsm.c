@@ -498,6 +498,10 @@ static int state_chg(struct osmo_fsm_inst *fi, uint32_t new_state,
  *  timer_cb. If passing timeout_secs == 0, it is recommended to also pass T ==
  *  0, so that fi->T is reset to 0 when no timeout is invoked.
  *
+ *  See also osmo_tdef_fsm_inst_state_chg() from the osmo_tdef API, which
+ *  provides a unified way to configure and apply GSM style Tnnnn timers to FSM
+ *  state transitions.
+ *
  *  Range: since time_t's maximum value is not well defined in a cross platform
  *  way, clamp timeout_secs to the maximum of the signed 32bit range, or roughly
  *  68 years (float(0x7fffffff) / (60. * 60 * 24 * 365.25) = 68.0497). Thus
