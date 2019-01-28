@@ -246,6 +246,7 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
              gprs/gprs_test.ok kasumi/kasumi_test.ok			\
              msgfile/msgfile_test.ok msgfile/msgconfig.cfg		\
              logging/logging_test.ok logging/logging_test.err		\
+             logging/logging_vty_test.vty				\
              fr/fr_test.ok loggingrb/logging_test.ok			\
              loggingrb/logging_test.err	strrb/strrb_test.ok		\
              codec/codec_test.ok \
