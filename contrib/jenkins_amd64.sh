@@ -28,7 +28,8 @@ build .
 
 # do distcheck only once, which is fine from built source tree, since distcheck
 # is well separated from the source tree state.
-$MAKE distcheck \
+DISTCHECK_CONFIGURE_FLAGS=--enable-external-tests \
+    $MAKE distcheck \
     || cat-testlogs.sh
 
 osmo-clean-workspace.sh
