@@ -101,3 +101,18 @@ Test_FSM{TWO}: Timeout of T10
 [0;mTest_FSM{TWO}: Freeing instance
 [0;mTest_FSM{TWO}: Deallocated
 [0;m--- test_state_chg_keep_timer() done
+
+--- test_state_chg_T()
+Test_FSM{NULL}: Allocated
+[0;mTest_FSM{NULL}: state_chg to ONE
+[0;mTest_FSM{ONE}: state_chg to TWO
+[0;mTest_FSM{TWO}: Terminating (cause = OSMO_FSM_TERM_REQUEST)
+[0;mTest_FSM{TWO}: Freeing instance
+[0;mTest_FSM{TWO}: Deallocated
+[0;mTest_FSM{NULL}: Allocated
+[0;mTest_FSM{NULL}: state_chg to ONE
+[0;mTest_FSM{ONE}: state_chg to TWO
+[0;mTest_FSM{TWO}: Terminating (cause = OSMO_FSM_TERM_REQUEST)
+[0;mTest_FSM{TWO}: Freeing instance
+[0;mTest_FSM{TWO}: Deallocated
+[0;m--- test_state_chg_T() done

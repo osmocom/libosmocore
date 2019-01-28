@@ -349,6 +349,43 @@ static void test_state_chg_keep_timer()
 	fprintf(stderr, "--- %s() done\n", __func__);
 }
 
+static void test_state_chg_T()
+{
+	struct osmo_fsm_inst *fi;
+
+	fprintf(stderr, "\n--- %s()\n", __func__);
+
+	fsm.timer_cb = NULL;
+
+	/* Test setting to timeout_secs = 0, T = 0 */
+	fi = osmo_fsm_inst_alloc(&fsm, g_ctx, NULL, LOGL_DEBUG, NULL);
+	OSMO_ASSERT(fi);
+
+	osmo_fsm_inst_state_chg(fi, ST_ONE, 23, 42);
+	printf("T = %d\n", fi->T);
+	OSMO_ASSERT(fi->T == 42);
+	osmo_fsm_inst_state_chg(fi, ST_TWO, 0, 0);
+	printf("T = %d\n", fi->T);
+	OSMO_ASSERT(fi->T == 0);
+
+	osmo_fsm_inst_term(fi, OSMO_FSM_TERM_REQUEST, NULL);
+
+	/* Test setting to timeout_secs = 0, T != 0 */
+	fi = osmo_fsm_inst_alloc(&fsm, g_ctx, NULL, LOGL_DEBUG, NULL);
+	OSMO_ASSERT(fi);
+
+	osmo_fsm_inst_state_chg(fi, ST_ONE, 23, 42);
+	printf("T = %d\n", fi->T);
+	OSMO_ASSERT(fi->T == 42);
+	osmo_fsm_inst_state_chg(fi, ST_TWO, 0, 11);
+	printf("T = %d\n", fi->T);
+	OSMO_ASSERT(fi->T == 11);
+
+	osmo_fsm_inst_term(fi, OSMO_FSM_TERM_REQUEST, NULL);
+
+	fprintf(stderr, "--- %s() done\n", __func__);
+}
+
 static const struct log_info_cat default_categories[] = {
 	[DMAIN] = {
 		.name = "DMAIN",
@@ -390,6 +427,7 @@ int main(int argc, char **argv)
 
 	test_id_api();
 	test_state_chg_keep_timer();
+	test_state_chg_T();
 
 	osmo_fsm_unregister(&fsm);
 	exit(0);
