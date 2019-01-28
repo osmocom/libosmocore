@@ -437,6 +437,11 @@ static int state_chg(struct osmo_fsm_inst *fi, uint32_t new_state,
 	uint32_t old_state = fi->state;
 	const struct osmo_fsm_state *st = &fsm->states[fi->state];
 
+	/* Limit to 0x7fffffff seconds as explained by
+	 * _osmo_fsm_inst_state_chg()'s API doc. */
+	if (timeout_secs > 0x7fffffff)
+		timeout_secs = 0x7fffffff;
+
 	/* validate if new_state is a valid state */
 	if (!(st->out_state_mask & (1 << new_state))) {
 		LOGPFSMLSRC(fi, LOGL_ERROR, file, line,
@@ -493,9 +498,16 @@ static int state_chg(struct osmo_fsm_inst *fi, uint32_t new_state,
  *  timer_cb. If passing timeout_secs == 0, it is recommended to also pass T ==
  *  0, so that fi->T is reset to 0 when no timeout is invoked.
  *
+ *  Range: since time_t's maximum value is not well defined in a cross platform
+ *  way, clamp timeout_secs to the maximum of the signed 32bit range, or roughly
+ *  68 years (float(0x7fffffff) / (60. * 60 * 24 * 365.25) = 68.0497). Thus
+ *  ensure that very large timeouts do not wrap around to become very small
+ *  ones. Note though that this might still be unsafe on systems with a time_t
+ *  range below 32 bits.
+ *
  *  \param[in] fi FSM instance whose state is to change
  *  \param[in] new_state The new state into which we should change
- *  \param[in] timeout_secs Timeout in seconds (if !=0)
+ *  \param[in] timeout_secs Timeout in seconds (if !=0), maximum-clamped to 2147483647 seconds.
  *  \param[in] T Timer number (if \ref timeout_secs != 0)
  *  \param[in] file Calling source file (from osmo_fsm_inst_state_chg macro)
  *  \param[in] line Calling source line (from osmo_fsm_inst_state_chg macro)
