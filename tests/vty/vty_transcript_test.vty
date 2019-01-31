@@ -2,6 +2,7 @@ vty_transcript_test> list
 ...
   multi0 (one|two|three)
   multi1 ([one]|[two]|[three])
+  multi2 [(one|two|three)]
 
 vty_transcript_test> multi0 ?
   one    1
@@ -51,3 +52,17 @@ ok argc=0
 
 vty_transcript_test> multi1 [one]
 % Unknown command.
+
+vty_transcript_test> multi2 ?
+  [one]    1
+  [two]    2
+  [three]  3
+
+vty_transcript_test> multi2 one
+ok argc=1 one
+
+vty_transcript_test> multi2 two
+ok argc=1 two
+
+vty_transcript_test> multi2
+ok argc=0

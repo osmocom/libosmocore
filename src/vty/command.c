@@ -380,6 +380,7 @@ static char *cmd_desc_str(const char **string)
 static vector cmd_make_descvec(const char *string, const char *descstr)
 {
 	int multiple = 0;
+	int optional_brace = 0;
 	const char *sp;
 	char *token;
 	int len;
@@ -401,6 +402,12 @@ static vector cmd_make_descvec(const char *string, const char *descstr)
 		while (isspace((int)*cp) && *cp != '\0')
 			cp++;
 
+		/* Explicitly detect optional multi-choice braces like [(one|two)]. */
+		if (cp[0] == '[' && cp[1] == '(') {
+			optional_brace = 1;
+			cp++;
+		}
+
 		if (*cp == '(') {
 			multiple = 1;
 			cp++;
@@ -408,6 +415,9 @@ static vector cmd_make_descvec(const char *string, const char *descstr)
 		if (*cp == ')') {
 			multiple = 0;
 			cp++;
+			if (*cp == ']')
+				cp++;
+			optional_brace = 0;
 		}
 		if (*cp == '|') {
 			OSMO_ASSERT(multiple);
@@ -434,9 +444,17 @@ static vector cmd_make_descvec(const char *string, const char *descstr)
 
 		len = cp - sp;
 
-		token = _talloc_zero(tall_vty_cmd_ctx, len + 1, "cmd_make_descvec");
-		memcpy(token, sp, len);
-		*(token + len) = '\0';
+		token = _talloc_zero(tall_vty_cmd_ctx, len + (optional_brace? 2 : 0) + 1, "cmd_make_descvec");
+		if (optional_brace) {
+			/* Place each individual multi-choice token in its own square braces */
+			token[0] = '[';
+			memcpy(token + 1, sp, len);
+			token[1 + len] = ']';
+			token[2 + len] = '\0';
+		} else {
+			memcpy(token, sp, len);
+			*(token + len) = '\0';
+		}
 
 		desc = talloc_zero(tall_vty_cmd_ctx, struct desc);
 		desc->cmd = token;

@@ -170,10 +170,19 @@ DEFUN(multi1, multi1_cmd,
 	return CMD_SUCCESS;
 }
 
+DEFUN(multi2, multi2_cmd,
+      "multi2 [(one|two|three)]",
+      "multi2 test command\n" "1\n2\n3\n")
+{
+	vty_out(vty, "ok argc=%d%s%s%s", argc, argc ? " " : "", argc ? argv[0] : "", VTY_NEWLINE);
+	return CMD_SUCCESS;
+}
+
 static void init_vty_cmds()
 {
 	install_element_ve(&multi0_cmd);
 	install_element_ve(&multi1_cmd);
+	install_element_ve(&multi2_cmd);
 }
 
 int main(int argc, char **argv)
