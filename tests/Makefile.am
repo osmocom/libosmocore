@@ -26,6 +26,7 @@ check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
 		 codec/codec_ecu_fr_test timer/clk_override_test	\
 		 oap/oap_client_test gsm29205/gsm29205_test		\
 		 logging/logging_vty_test				\
+		 vty/vty_transcript_test				\
 		 $(NULL)
 
 if ENABLE_MSGFILE
@@ -156,6 +157,9 @@ logging_logging_test_SOURCES = logging/logging_test.c
 logging_logging_vty_test_SOURCES = logging/logging_vty_test.c
 logging_logging_vty_test_LDADD = $(LDADD) $(top_builddir)/src/vty/libosmovty.la
 
+vty_vty_transcript_test_SOURCES = vty/vty_transcript_test.c
+vty_vty_transcript_test_LDADD = $(LDADD) $(top_builddir)/src/vty/libosmovty.la
+
 fr_fr_test_SOURCES = fr/fr_test.c
 fr_fr_test_LDADD = $(LDADD) $(top_builddir)/src/gb/libosmogb.la $(LIBRARY_DLSYM) \
 		   $(top_builddir)/src/vty/libosmovty.la \
@@ -278,7 +282,9 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
 	     sercomm/sercomm_test.ok prbs/prbs_test.ok			\
 	     gsm29205/gsm29205_test.ok gsm23003/gsm23003_test.ok        \
 	     timer/clk_override_test.ok					\
-	     oap/oap_client_test.ok oap/oap_client_test.err
+	     oap/oap_client_test.ok oap/oap_client_test.err		\
+	     vty/vty_transcript_test.vty				\
+	     $(NULL)
 
 DISTCLEANFILES = atconfig atlocal conv/gsm0503_test_vectors.c
 BUILT_SOURCES = conv/gsm0503_test_vectors.c
@@ -322,11 +328,21 @@ endif
 # To update the VTY script from current application behavior,
 # pass -u to osmo_verify_transcript_vty.py by doing:
 #   make vty-test U=-u
-vty-test:
+vty-test-logging:
 	osmo_verify_transcript_vty.py -v \
 		-p 42042 \
 		-r "$(top_builddir)/tests/logging/logging_vty_test" \
 		$(U) $(srcdir)/logging/*.vty
+
+vty-test-vty:
+	osmo_verify_transcript_vty.py -v \
+		-p 42042 \
+		-r "$(top_builddir)/tests/vty/vty_transcript_test" \
+		$(U) $(srcdir)/vty/*.vty
+
+vty-test:
+	$(MAKE) vty-test-logging
+	$(MAKE) vty-test-vty
 
 ctrl-test:
 	echo "No CTRL tests exist currently"

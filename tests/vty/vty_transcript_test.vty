@@ -1,0 +1,53 @@
+vty_transcript_test> list
+...
+  multi0 (one|two|three)
+  multi1 ([one]|[two]|[three])
+
+vty_transcript_test> multi0 ?
+  one    1
+  two    2
+  three  3
+
+vty_transcript_test> multi0 one
+ok argc=1 one
+
+vty_transcript_test> multi0 two
+ok argc=1 two
+
+vty_transcript_test> multi0 o
+ok argc=1 o
+
+vty_transcript_test> multi0 t
+ok argc=1 t
+
+vty_transcript_test> multi0 th
+ok argc=1 th
+
+vty_transcript_test> multi0
+% Command incomplete.
+
+vty_transcript_test> multi1 ?
+  [one]    1
+  [two]    2
+  [three]  3
+
+vty_transcript_test> multi1 one
+ok argc=1 one
+
+vty_transcript_test> multi1 two
+ok argc=1 two
+
+vty_transcript_test> multi1 o
+ok argc=1 o
+
+vty_transcript_test> multi1 t
+ok argc=1 t
+
+vty_transcript_test> multi1 th
+ok argc=1 th
+
+vty_transcript_test> multi1
+% Command incomplete.
+
+vty_transcript_test> multi1 [one]
+% Unknown command.
