@@ -47,7 +47,7 @@ vty_transcript_test> multi1 th
 ok argc=1 th
 
 vty_transcript_test> multi1
-% Command incomplete.
+ok argc=0
 
 vty_transcript_test> multi1 [one]
 % Unknown command.

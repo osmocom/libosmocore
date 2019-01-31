@@ -467,7 +467,7 @@ static int cmd_cmdsize(vector strvec)
 
 	for (i = 0; i < vector_active(strvec); i++)
 		if ((descvec = vector_slot(strvec, i)) != NULL) {
-			if ((vector_active(descvec)) == 1
+			if ((vector_active(descvec)) >= 1
 			    && (desc = vector_slot(descvec, 0)) != NULL) {
 				if (desc->cmd == NULL || CMD_OPTION(desc->cmd))
 					return size;
