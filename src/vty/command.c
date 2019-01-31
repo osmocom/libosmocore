@@ -2010,9 +2010,18 @@ static char **cmd_complete_command_real(vector vline, struct vty *vty,
 				descvec = vector_slot(strvec, index);
 				for (j = 0; j < vector_active(descvec); j++)
 					if ((desc = vector_slot(descvec, j))) {
-						if ((string = cmd_entry_function(vector_slot(vline, index), desc->cmd)))
+						const char *cmd = desc->cmd;
+						char *tmp = NULL;
+
+						if (CMD_OPTION(desc->cmd)) {
+							tmp = cmd_deopt(tall_vty_cmd_ctx, desc->cmd);
+							cmd = tmp;
+						}
+						if ((string = cmd_entry_function(vector_slot(vline, index), cmd)))
 							if (cmd_unique_string (matchvec, string))
 								vector_set (matchvec, talloc_strdup(tall_vty_cmd_ctx, string));
+						if (tmp)
+							talloc_free(tmp);
 					}
 			}
 		}
