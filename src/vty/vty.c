@@ -1217,24 +1217,6 @@ static void vty_stop_input(struct vty *vty)
 	vty->cp = vty->length = 0;
 	vty_clear_buf(vty);
 	vty_out(vty, "%s", VTY_NEWLINE);
-
-	switch (vty->node) {
-	case VIEW_NODE:
-	case ENABLE_NODE:
-		/* Nothing to do. */
-		break;
-	case CONFIG_NODE:
-	case VTY_NODE:
-		vty_config_unlock(vty);
-		vty->node = ENABLE_NODE;
-		break;
-	case CFG_LOG_NODE:
-		vty->node = CONFIG_NODE;
-		break;
-	default:
-		/* Unknown node, we have to ignore it. */
-		break;
-	}
 	vty_prompt(vty);
 
 	/* Set history pointer to the latest one. */
