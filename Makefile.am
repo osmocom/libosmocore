@@ -24,19 +24,27 @@ dist-hook:
 
 EXTRA_DIST = git-version-gen .version README.md osmo-release.mk osmo-release.sh
 
-if HAVE_DOXYGEN
+HTML = \
+	$(top_builddir)/doc/core/html/index.html \
+	$(top_builddir)/doc/gsm/html/index.html \
+	$(top_builddir)/doc/vty/html/index.html \
+	$(top_builddir)/doc/codec/html/index.html \
+	$(top_builddir)/doc/coding/html/index.html \
+	$(top_builddir)/doc/ctrl/html/index.html \
+	$(top_builddir)/doc/gb/html/index.html
 
+if HAVE_DOXYGEN
 html_DATA = $(top_builddir)/doc/html.tar
 
 doc: $(html_DATA)
 
-$(html_DATA): $(top_builddir)/doc/core/html/index.html \
-		  $(top_builddir)/doc/gsm/html/index.html \
-		  $(top_builddir)/doc/vty/html/index.html \
-		  $(top_builddir)/doc/codec/html/index.html \
-		  $(top_builddir)/doc/coding/html/index.html \
-		  $(top_builddir)/doc/ctrl/html/index.html \
-		  $(top_builddir)/doc/gb/html/index.html
+$(html_DATA): apidoc
+else
+DOXYGEN=doxygen
+endif
+
+.PHONY: apidoc
+apidoc: $(HTML)
 	cd $(top_builddir)/doc && tar cf html.tar */html
 
 # Support doxygen cross references from each library to each other library:
@@ -193,6 +201,7 @@ $(top_builddir)/doc/gb/html/index.html: $(top_builddir)/doc/libosmogb.tag.prep \
 	rm -rf $(top_builddir)/doc/gb; mkdir -p $(top_builddir)/doc/gb
 	$(DOXYGEN) Doxyfile.gb
 
+if HAVE_DOXYGEN
 install-data-hook:
 	cd $(DESTDIR)$(htmldir) && tar xf html.tar && rm -f html.tar
 
