@@ -249,26 +249,19 @@ int vty_shell(struct vty *vty)
 	return vty->type == VTY_SHELL ? 1 : 0;
 }
 
-
-/*! VTY standard output function
- *  \param[in] vty VTY to which we should print
- *  \param[in] format variable-length format string
- */
-int vty_out(struct vty *vty, const char *format, ...)
+int vty_out_va(struct vty *vty, const char *format, va_list ap)
 {
-	va_list args;
 	int len = 0;
 	int size = 1024;
 	char buf[1024];
 	char *p = NULL;
 
 	if (vty_shell(vty)) {
-		va_start(args, format);
-		vprintf(format, args);
-		va_end(args);
+		vprintf(format, ap);
 	} else {
+		va_list args;
 		/* Try to write to initial buffer.  */
-		va_start(args, format);
+		va_copy(args, ap);
 		len = vsnprintf(buf, sizeof buf, format, args);
 		va_end(args);
 
@@ -284,7 +277,7 @@ int vty_out(struct vty *vty, const char *format, ...)
 				if (!p)
 					return -1;
 
-				va_start(args, format);
+				va_copy(args, ap);
 				len = vsnprintf(p, size, format, args);
 				va_end(args);
 
@@ -308,6 +301,20 @@ int vty_out(struct vty *vty, const char *format, ...)
 	vty_event(VTY_WRITE, vty->fd, vty);
 
 	return len;
+}
+
+/*! VTY standard output function
+ *  \param[in] vty VTY to which we should print
+ *  \param[in] format variable-length format string
+ */
+int vty_out(struct vty *vty, const char *format, ...)
+{
+	va_list args;
+	int rc;
+	va_start(args, format);
+	rc = vty_out_va(vty, format, args);
+	va_end(args);
+	return rc;
 }
 
 /*! print a newline on the given VTY */

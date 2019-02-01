@@ -193,6 +193,7 @@ void vty_reset (void);
 struct vty *vty_new (void);
 struct vty *vty_create (int vty_sock, void *priv);
 int vty_out (struct vty *, const char *, ...) VTY_PRINTF_ATTRIBUTE(2, 3);
+int vty_out_va(struct vty *vty, const char *format, va_list ap);
 int vty_out_newline(struct vty *);
 int vty_read(struct vty *vty);
 //void vty_time_print (struct vty *, int);
