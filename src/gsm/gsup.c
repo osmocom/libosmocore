@@ -95,36 +95,11 @@ const struct value_string osmo_gsup_session_state_names[] = {
 };
 
 
-/*! return the error message type corresponding to \a type_in
- *  \returns matching error message type; -1 on error */
+/*! return the error message type corresponding to \a type_in.
+ *  Deprecated, use OSMO_GSUP_TO_MSGT_ERROR() instead. */
 int osmo_gsup_get_err_msg_type(enum osmo_gsup_message_type type_in)
 {
-	switch (type_in) {
-	case OSMO_GSUP_MSGT_UPDATE_LOCATION_REQUEST:
-		return OSMO_GSUP_MSGT_UPDATE_LOCATION_ERROR;
-	case OSMO_GSUP_MSGT_SEND_AUTH_INFO_REQUEST:
-		return OSMO_GSUP_MSGT_SEND_AUTH_INFO_ERROR;
-	case OSMO_GSUP_MSGT_PURGE_MS_REQUEST:
-		return OSMO_GSUP_MSGT_PURGE_MS_ERROR;
-	case OSMO_GSUP_MSGT_INSERT_DATA_REQUEST:
-		return OSMO_GSUP_MSGT_INSERT_DATA_ERROR;
-	case OSMO_GSUP_MSGT_DELETE_DATA_REQUEST:
-		return OSMO_GSUP_MSGT_DELETE_DATA_ERROR;
-	case OSMO_GSUP_MSGT_LOCATION_CANCEL_REQUEST:
-		return OSMO_GSUP_MSGT_LOCATION_CANCEL_ERROR;
-	case OSMO_GSUP_MSGT_PROC_SS_REQUEST:
-		return OSMO_GSUP_MSGT_PROC_SS_ERROR;
-	case OSMO_GSUP_MSGT_MO_FORWARD_SM_REQUEST:
-		return OSMO_GSUP_MSGT_MO_FORWARD_SM_ERROR;
-	case OSMO_GSUP_MSGT_MT_FORWARD_SM_REQUEST:
-		return OSMO_GSUP_MSGT_MT_FORWARD_SM_ERROR;
-	case OSMO_GSUP_MSGT_READY_FOR_SM_REQUEST:
-		return OSMO_GSUP_MSGT_READY_FOR_SM_ERROR;
-	case OSMO_GSUP_MSGT_CHECK_IMEI_REQUEST:
-		return OSMO_GSUP_MSGT_CHECK_IMEI_ERROR;
-	default:
-		return -1;
-	}
+	return OSMO_GSUP_TO_MSGT_ERROR(type_in);
 }
 
 static int decode_pdp_info(uint8_t *data, size_t data_len,

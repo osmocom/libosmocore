@@ -105,7 +105,18 @@ enum osmo_gsup_iei {
 	_OSMO_GSUP_IEI_END_MARKER
 };
 
-/*! GSUP message type */
+/*! GSUP message type
+ * Make sure that new messages follow this scheme:
+ * .----------------------------.
+ * | Ending Bits | Category     |
+ * |----------------------------|
+ * | 00          | Request      |
+ * | 01          | Error        |
+ * | 10          | Result       |
+ * | 11          | Other        |
+ * '----------------------------'
+ * Request, Error and Result messages must only differ in these last two bits.
+ */
 enum osmo_gsup_message_type {
 	OSMO_GSUP_MSGT_UPDATE_LOCATION_REQUEST	= 0b00000100,
 	OSMO_GSUP_MSGT_UPDATE_LOCATION_ERROR	= 0b00000101,
@@ -280,6 +291,7 @@ struct osmo_gsup_message {
 int osmo_gsup_decode(const uint8_t *data, size_t data_len,
 		     struct osmo_gsup_message *gsup_msg);
 int osmo_gsup_encode(struct msgb *msg, const struct osmo_gsup_message *gsup_msg);
-int osmo_gsup_get_err_msg_type(enum osmo_gsup_message_type type_in);
+int osmo_gsup_get_err_msg_type(enum osmo_gsup_message_type type_in)
+	OSMO_DEPRECATED("Use OSMO_GSUP_TO_MSGT_ERROR() instead");
 
 /*! @} */
