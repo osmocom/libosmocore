@@ -51,43 +51,61 @@ $(html_DATA): $(top_builddir)/doc/core/html/index.html \
 # circular dependency: we would rebuild all every time 'make' is invoked.
 # The .prep file also depends on all the source files for that library.
 
-$(top_builddir)/doc/libosmocore.tag.prep: $(top_builddir)/Doxyfile.core
+$(top_builddir)/doc/libosmocore.tag.prep: $(top_builddir)/Doxyfile.core \
+		$(top_srcdir)/include/osmocom/core/*.h \
+		$(top_srcdir)/src/*.[hc] \
+		$(top_srcdir)/src/pseudotalloc/*.[hc]
 	rm -rf $(top_builddir)/doc/core; mkdir -p $(top_builddir)/doc/core
 	rm -rf $(top_builddir)/doc/libosmocore.map
 	-$(DOXYGEN) $(top_builddir)/Doxyfile.core
 	touch "$@"
 
-$(top_builddir)/doc/libosmogsm.tag.prep: $(top_builddir)/Doxyfile.gsm
+$(top_builddir)/doc/libosmogsm.tag.prep: $(top_builddir)/Doxyfile.gsm \
+		$(top_srcdir)/include/osmocom/gsm/*.h \
+		$(top_srcdir)/include/osmocom/gsm/protocol/*.h \
+		$(top_srcdir)/include/osmocom/crypt/*.h \
+		$(top_srcdir)/src/gsm/*.c \
+		$(top_srcdir)/src/gsm/milenage/*.[hc]
 	rm -rf $(top_builddir)/doc/gsm; mkdir -p $(top_builddir)/doc/gsm
 	rm -rf $(top_builddir)/doc/libosmogsm.map
 	-$(DOXYGEN) $(top_builddir)/Doxyfile.gsm
 	touch "$@"
 
-$(top_builddir)/doc/libosmovty.tag.prep: $(top_builddir)/Doxyfile.vty
+$(top_builddir)/doc/libosmovty.tag.prep: $(top_builddir)/Doxyfile.vty \
+		$(top_srcdir)/include/osmocom/vty/*.h \
+		$(top_srcdir)/src/vty/*.c
 	rm -rf $(top_builddir)/doc/vty; mkdir -p $(top_builddir)/doc/vty
 	rm -rf $(top_builddir)/doc/libosmovty.map
 	-$(DOXYGEN) $(top_builddir)/Doxyfile.vty
 	touch "$@"
 
-$(top_builddir)/doc/libosmocodec.tag.prep: $(top_builddir)/Doxyfile.codec
+$(top_builddir)/doc/libosmocodec.tag.prep: $(top_builddir)/Doxyfile.codec \
+		$(top_srcdir)/include/osmocom/codec/*.h \
+		$(top_srcdir)/src/codec/*.c
 	rm -rf $(top_builddir)/doc/codec; mkdir -p $(top_builddir)/doc/codec
 	rm -rf $(top_builddir)/doc/libosmocodec.map
 	-$(DOXYGEN) $(top_builddir)/Doxyfile.codec
 	touch "$@"
 
-$(top_builddir)/doc/libosmocoding.tag.prep: $(top_builddir)/Doxyfile.coding
+$(top_builddir)/doc/libosmocoding.tag.prep: $(top_builddir)/Doxyfile.coding \
+		$(top_srcdir)/include/osmocom/coding/*.h \
+		$(top_srcdir)/src/coding/*.c
 	rm -rf $(top_builddir)/doc/coding; mkdir -p $(top_builddir)/doc/coding
 	rm -rf $(top_builddir)/doc/libosmocoding.map
 	-$(DOXYGEN) $(top_builddir)/Doxyfile.coding
 	touch "$@"
 
-$(top_builddir)/doc/libosmoctrl.tag.prep: $(top_builddir)/Doxyfile.ctrl
+$(top_builddir)/doc/libosmoctrl.tag.prep: $(top_builddir)/Doxyfile.ctrl \
+		$(top_srcdir)/include/osmocom/ctrl/*.h \
+		$(top_srcdir)/src/ctrl/*.c
 	rm -rf $(top_builddir)/doc/ctrl; mkdir -p $(top_builddir)/doc/ctrl
 	rm -rf $(top_builddir)/doc/libosmoctrl.map
 	-$(DOXYGEN) $(top_builddir)/Doxyfile.ctrl
 	touch "$@"
 
-$(top_builddir)/doc/libosmogb.tag.prep: $(top_builddir)/Doxyfile.gb
+$(top_builddir)/doc/libosmogb.tag.prep: $(top_builddir)/Doxyfile.gb \
+		$(top_srcdir)/include/osmocom/gprs/*.h \
+		$(top_srcdir)/src/gb/*.[hc]
 	rm -rf $(top_builddir)/doc/gb; mkdir -p $(top_builddir)/doc/gb
 	rm -rf $(top_builddir)/doc/libosmogb.map
 	-$(DOXYGEN) $(top_builddir)/Doxyfile.gb
