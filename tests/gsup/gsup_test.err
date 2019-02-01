@@ -73,6 +73,48 @@
   generated message: 32 01 08 21 43 65 87 09 21 43 f5 51 01 00 
   original message:  32 01 08 21 43 65 87 09 21 43 f5 51 01 00 
   IMSI:              123456789012345
+  generated message: 34 01 08 21 43 65 87 09 21 43 f5 30 04 de ad be ef 31 01 01 0a 01 04 60 05 4d 53 43 2d 41 61 05 4d 53 43 2d 42 62 05 01 42 42 42 42 
+  original message:  34 01 08 21 43 65 87 09 21 43 f5 30 04 de ad be ef 31 01 01 0a 01 04 60 05 4d 53 43 2d 41 61 05 4d 53 43 2d 42 62 05 01 42 42 42 42 
+  IMSI:              123456789012345
+  generated message: 35 01 08 21 43 65 87 09 21 43 f5 30 04 de ad be ef 31 01 02 0a 01 04 60 05 4d 53 43 2d 41 61 05 4d 53 43 2d 42 64 01 51 
+  original message:  35 01 08 21 43 65 87 09 21 43 f5 30 04 de ad be ef 31 01 02 0a 01 04 60 05 4d 53 43 2d 41 61 05 4d 53 43 2d 42 64 01 51 
+  IMSI:              123456789012345
+  generated message: 36 01 08 21 43 65 87 09 21 43 f5 08 07 91 94 61 46 32 24 43 30 04 de ad be ef 31 01 02 0a 01 04 60 05 4d 53 43 2d 41 61 05 4d 53 43 2d 42 62 05 01 42 42 42 42 
+  original message:  36 01 08 21 43 65 87 09 21 43 f5 08 07 91 94 61 46 32 24 43 30 04 de ad be ef 31 01 02 0a 01 04 60 05 4d 53 43 2d 41 61 05 4d 53 43 2d 42 62 05 01 42 42 42 42 
+  IMSI:              123456789012345
+  generated message: 38 01 08 21 43 65 87 09 21 43 f5 30 04 de ad be ef 31 01 01 0a 01 04 60 05 4d 53 43 2d 41 61 05 4d 53 43 2d 42 62 05 01 42 42 42 42 
+  original message:  38 01 08 21 43 65 87 09 21 43 f5 30 04 de ad be ef 31 01 01 0a 01 04 60 05 4d 53 43 2d 41 61 05 4d 53 43 2d 42 62 05 01 42 42 42 42 
+  IMSI:              123456789012345
+  generated message: 39 01 08 21 43 65 87 09 21 43 f5 30 04 de ad be ef 31 01 02 0a 01 04 60 05 4d 53 43 2d 41 61 05 4d 53 43 2d 42 64 01 51 
+  original message:  39 01 08 21 43 65 87 09 21 43 f5 30 04 de ad be ef 31 01 02 0a 01 04 60 05 4d 53 43 2d 41 61 05 4d 53 43 2d 42 64 01 51 
+  IMSI:              123456789012345
+  generated message: 3a 01 08 21 43 65 87 09 21 43 f5 30 04 de ad be ef 31 01 02 0a 01 04 60 05 4d 53 43 2d 41 61 05 4d 53 43 2d 42 62 05 01 42 42 42 42 
+  original message:  3a 01 08 21 43 65 87 09 21 43 f5 30 04 de ad be ef 31 01 02 0a 01 04 60 05 4d 53 43 2d 41 61 05 4d 53 43 2d 42 62 05 01 42 42 42 42 
+  IMSI:              123456789012345
+  generated message: 3c 01 08 21 43 65 87 09 21 43 f5 30 04 de ad be ef 31 01 03 0a 01 04 60 05 4d 53 43 2d 41 61 05 4d 53 43 2d 42 62 05 01 42 42 42 42 
+  original message:  3c 01 08 21 43 65 87 09 21 43 f5 30 04 de ad be ef 31 01 03 0a 01 04 60 05 4d 53 43 2d 41 61 05 4d 53 43 2d 42 62 05 01 42 42 42 42 
+  IMSI:              123456789012345
+  generated message: 3d 01 08 21 43 65 87 09 21 43 f5 30 04 de ad be ef 31 01 02 0a 01 04 60 05 4d 53 43 2d 41 61 05 4d 53 43 2d 42 64 01 51 
+  original message:  3d 01 08 21 43 65 87 09 21 43 f5 30 04 de ad be ef 31 01 02 0a 01 04 60 05 4d 53 43 2d 41 61 05 4d 53 43 2d 42 64 01 51 
+  IMSI:              123456789012345
+  generated message: 3e 01 08 21 43 65 87 09 21 43 f5 30 04 de ad be ef 31 01 03 0a 01 04 60 05 4d 53 43 2d 41 61 05 4d 53 43 2d 42 62 05 01 42 42 42 42 
+  original message:  3e 01 08 21 43 65 87 09 21 43 f5 30 04 de ad be ef 31 01 03 0a 01 04 60 05 4d 53 43 2d 41 61 05 4d 53 43 2d 42 62 05 01 42 42 42 42 
+  IMSI:              123456789012345
+  generated message: 40 01 08 21 43 65 87 09 21 43 f5 30 04 de ad be ef 31 01 02 0a 01 04 60 05 4d 53 43 2d 41 61 05 4d 53 43 2d 42 62 05 01 42 42 42 42 
+  original message:  40 01 08 21 43 65 87 09 21 43 f5 30 04 de ad be ef 31 01 02 0a 01 04 60 05 4d 53 43 2d 41 61 05 4d 53 43 2d 42 62 05 01 42 42 42 42 
+  IMSI:              123456789012345
+  generated message: 44 01 08 21 43 65 87 09 21 43 f5 30 04 de ad be ef 31 01 02 0a 01 04 60 05 4d 53 43 2d 41 61 05 4d 53 43 2d 42 62 05 01 42 42 42 42 
+  original message:  44 01 08 21 43 65 87 09 21 43 f5 30 04 de ad be ef 31 01 02 0a 01 04 60 05 4d 53 43 2d 41 61 05 4d 53 43 2d 42 62 05 01 42 42 42 42 
+  IMSI:              123456789012345
+  generated message: 47 01 08 21 43 65 87 09 21 43 f5 30 04 de ad be ef 31 01 03 0a 01 04 60 05 4d 53 43 2d 41 61 05 4d 53 43 2d 42 
+  original message:  47 01 08 21 43 65 87 09 21 43 f5 30 04 de ad be ef 31 01 03 0a 01 04 60 05 4d 53 43 2d 41 61 05 4d 53 43 2d 42 
+  IMSI:              123456789012345
+  generated message: 4b 01 08 21 43 65 87 09 21 43 f5 30 04 de ad be ef 31 01 03 0a 01 04 64 01 51 
+  original message:  4b 01 08 21 43 65 87 09 21 43 f5 30 04 de ad be ef 31 01 03 0a 01 04 64 01 51 
+  IMSI:              123456789012345
+  generated message: 4e 01 08 21 43 65 87 09 21 43 f5 30 04 de ad be ef 31 01 03 0a 01 04 60 05 4d 53 43 2d 41 61 05 4d 53 43 2d 42 
+  original message:  4e 01 08 21 43 65 87 09 21 43 f5 30 04 de ad be ef 31 01 03 0a 01 04 60 05 4d 53 43 2d 41 61 05 4d 53 43 2d 42 
+  IMSI:              123456789012345
   message 0: tested 14 truncations, 13 parse failures
   message 1: tested 14 truncations, 13 parse failures
   message 2: tested 83 truncations, 81 parse failures
@@ -98,19 +140,33 @@
   message 22: tested 22 truncations, 21 parse failures
   message 23: tested 14 truncations, 13 parse failures
   message 24: tested 14 truncations, 13 parse failures
+  message 25: tested 44 truncations, 38 parse failures
+  message 26: tested 40 truncations, 34 parse failures
+  message 27: tested 53 truncations, 46 parse failures
+  message 28: tested 44 truncations, 38 parse failures
+  message 29: tested 40 truncations, 34 parse failures
+  message 30: tested 44 truncations, 38 parse failures
+  message 31: tested 44 truncations, 38 parse failures
+  message 32: tested 40 truncations, 34 parse failures
+  message 33: tested 44 truncations, 38 parse failures
+  message 34: tested 44 truncations, 38 parse failures
+  message 35: tested 44 truncations, 38 parse failures
+  message 36: tested 37 truncations, 32 parse failures
+  message 37: tested 26 truncations, 22 parse failures
+  message 38: tested 37 truncations, 32 parse failures
 DLGSUP Stopping DLGSUP logging
   message 0: tested 3584 modifications, 771 parse failures
   message 1: tested 3584 modifications, 770 parse failures
   message 2: tested 21248 modifications, 2575 parse failures
   message 3: tested 2816 modifications, 510 parse failures
   message 4: tested 3584 modifications, 770 parse failures
-  message 5: tested 20736 modifications, 4022 parse failures
+  message 5: tested 20736 modifications, 4023 parse failures
   message 6: tested 3584 modifications, 771 parse failures
   message 7: tested 3584 modifications, 770 parse failures
   message 8: tested 2816 modifications, 510 parse failures
   message 9: tested 2816 modifications, 510 parse failures
   message 10: tested 3584 modifications, 770 parse failures
-  message 11: tested 3328 modifications, 769 parse failures
+  message 11: tested 3328 modifications, 770 parse failures
   message 12: tested 54016 modifications, 4626 parse failures
   message 13: tested 11520 modifications, 1026 parse failures
   message 14: tested 5120 modifications, 1030 parse failures
@@ -124,3 +180,17 @@ DLGSUP Stopping DLGSUP logging
   message 22: tested 5632 modifications, 771 parse failures
   message 23: tested 3584 modifications, 770 parse failures
   message 24: tested 3584 modifications, 771 parse failures
+  message 25: tested 11264 modifications, 2058 parse failures
+  message 26: tested 10240 modifications, 2060 parse failures
+  message 27: tested 13568 modifications, 2313 parse failures
+  message 28: tested 11264 modifications, 2058 parse failures
+  message 29: tested 10240 modifications, 2060 parse failures
+  message 30: tested 11264 modifications, 2058 parse failures
+  message 31: tested 11264 modifications, 2057 parse failures
+  message 32: tested 10240 modifications, 2060 parse failures
+  message 33: tested 11264 modifications, 2057 parse failures
+  message 34: tested 11264 modifications, 2058 parse failures
+  message 35: tested 11264 modifications, 2058 parse failures
+  message 36: tested 9472 modifications, 1803 parse failures
+  message 37: tested 6656 modifications, 1546 parse failures
+  message 38: tested 9472 modifications, 1803 parse failures

@@ -83,6 +83,26 @@ const struct value_string osmo_gsup_message_type_names[] = {
 	OSMO_VALUE_STRING(OSMO_GSUP_MSGT_CHECK_IMEI_ERROR),
 	OSMO_VALUE_STRING(OSMO_GSUP_MSGT_CHECK_IMEI_RESULT),
 
+	OSMO_VALUE_STRING(OSMO_GSUP_MSGT_E_PREPARE_HANDOVER_REQUEST),
+	OSMO_VALUE_STRING(OSMO_GSUP_MSGT_E_PREPARE_HANDOVER_ERROR),
+	OSMO_VALUE_STRING(OSMO_GSUP_MSGT_E_PREPARE_HANDOVER_RESULT),
+
+	OSMO_VALUE_STRING(OSMO_GSUP_MSGT_E_PREPARE_SUBSEQUENT_HANDOVER_REQUEST),
+	OSMO_VALUE_STRING(OSMO_GSUP_MSGT_E_PREPARE_SUBSEQUENT_HANDOVER_ERROR),
+	OSMO_VALUE_STRING(OSMO_GSUP_MSGT_E_PREPARE_SUBSEQUENT_HANDOVER_RESULT),
+
+	OSMO_VALUE_STRING(OSMO_GSUP_MSGT_E_SEND_END_SIGNAL_REQUEST),
+	OSMO_VALUE_STRING(OSMO_GSUP_MSGT_E_SEND_END_SIGNAL_ERROR),
+	OSMO_VALUE_STRING(OSMO_GSUP_MSGT_E_SEND_END_SIGNAL_RESULT),
+
+	OSMO_VALUE_STRING(OSMO_GSUP_MSGT_E_PROCESS_ACCESS_SIGNALLING_REQUEST),
+	OSMO_VALUE_STRING(OSMO_GSUP_MSGT_E_FORWARD_ACCESS_SIGNALLING_REQUEST),
+
+	OSMO_VALUE_STRING(OSMO_GSUP_MSGT_E_CLOSE),
+	OSMO_VALUE_STRING(OSMO_GSUP_MSGT_E_ABORT),
+
+	OSMO_VALUE_STRING(OSMO_GSUP_MSGT_E_ROUTING_ERROR),
+
 	{ 0, NULL }
 };
 
@@ -245,6 +265,26 @@ parse_error:
 	     "GSUP IE type %d, length %zu invalid in PDP info\n", iei, value_len);
 
 	return -1;
+}
+
+/*! Decode AN-apdu (see 3GPP TS 29.002 7.6.9.1).
+ * \param[out] gsup_msg abstract GSUP message structure
+ * \param[in]  data     pointer to the raw IE payload
+ * \param[in]  data_len length of IE pointed by \ref data
+ * \returns 0 in case of success, negative in case of error
+ */
+int osmo_gsup_decode_an_apdu(struct osmo_gsup_message *gsup_msg, const uint8_t *data, size_t data_len)
+{
+	if (data_len < 1) {
+		LOGP(DLGSUP, LOGL_ERROR, "Corrupted an_apdu message (length must be >= 1)\n");
+		return -EINVAL;
+	}
+
+	gsup_msg->an_apdu.access_network_proto = data[0];
+	gsup_msg->an_apdu.data_len = data_len -1;
+	gsup_msg->an_apdu.data = data + 1;
+
+	return 0;
 }
 
 /*! Decode (parse) a GSUP message
@@ -481,6 +521,36 @@ int osmo_gsup_decode(const uint8_t *const_data, size_t data_len,
 			gsup_msg->message_class = value[0];
 			break;
 
+		case OSMO_GSUP_SOURCE_NAME_IE:
+			gsup_msg->source_name = value;
+			gsup_msg->source_name_len = value_len;
+			break;
+
+		case OSMO_GSUP_DESTINATION_NAME_IE:
+			gsup_msg->destination_name = value;
+			gsup_msg->destination_name_len = value_len;
+			break;
+
+		case OSMO_GSUP_AN_APDU_IE:
+			rc = osmo_gsup_decode_an_apdu(gsup_msg, value, value_len);
+			if (rc)
+				return rc;
+			break;
+
+		case OSMO_GSUP_CAUSE_RR_IE:
+			gsup_msg->cause_rr = value[0];
+			gsup_msg->cause_rr_set = true;
+			break;
+
+		case OSMO_GSUP_CAUSE_BSSAP_IE:
+			gsup_msg->cause_bssap = value[0];
+			gsup_msg->cause_bssap_set = true;
+			break;
+
+		case OSMO_GSUP_CAUSE_SM_IE:
+			gsup_msg->cause_sm = value[0];
+			break;
+
 		default:
 			LOGP(DLGSUP, LOGL_NOTICE,
 			     "GSUP IE type %d unknown\n", iei);
@@ -566,6 +636,35 @@ static void encode_auth_info(struct msgb *msg, enum osmo_gsup_iei iei,
 
 	/* Update length field */
 	*len_field = msgb_length(msg) - old_len;
+}
+
+/*! Encode AN-apdu (see 3GPP TS 29.002 7.6.9.1).
+ * \param[out] msg      target message buffer (caller-allocated)
+ * \param[in]  gsup_msg abstract GSUP message structure
+ * \returns 0 in case of success, negative in case of error
+ */
+int osmo_gsup_encode_an_apdu(struct msgb *msg, const struct osmo_gsup_message *gsup_msg)
+{
+	const struct osmo_gsup_an_apdu an_apdu = gsup_msg->an_apdu;
+
+	if (msgb_tailroom(msg) < 2 + an_apdu.data_len) {
+		LOGP(DLGSUP, LOGL_ERROR, "Not enough tailroom in msg to encode an_apdu:"
+		     " IE header (2) + an_apdu.data_len (%zu) == %zu, msgb tailroom == %d\n",
+		     an_apdu.data_len, an_apdu.data_len + 2, msgb_tailroom(msg));
+		return -ENOMEM;
+	}
+
+	/* Tag and total length */
+	msgb_tv_put(msg, OSMO_GSUP_AN_APDU_IE, 1 + an_apdu.data_len);
+
+	/* Put access_network_proto */
+	msgb_v_put(msg, an_apdu.access_network_proto);
+
+	/* Put data */
+	uint8_t *buf = msgb_put(msg, an_apdu.data_len);
+	memcpy(buf, an_apdu.data, an_apdu.data_len);
+
+	return 0;
 }
 
 /*! Encode a GSUP message
@@ -726,6 +825,34 @@ int osmo_gsup_encode(struct msgb *msg, const struct osmo_gsup_message *gsup_msg)
 		u8 = gsup_msg->message_class;
 		msgb_tlv_put(msg, OSMO_GSUP_MESSAGE_CLASS_IE, sizeof(u8), &u8);
 	}
+
+	if (gsup_msg->source_name)
+		msgb_tlv_put(msg, OSMO_GSUP_SOURCE_NAME_IE, gsup_msg->source_name_len, gsup_msg->source_name);
+
+	if (gsup_msg->destination_name)
+		msgb_tlv_put(msg, OSMO_GSUP_DESTINATION_NAME_IE, gsup_msg->destination_name_len,
+			     gsup_msg->destination_name);
+
+	if (gsup_msg->an_apdu.access_network_proto || gsup_msg->an_apdu.data_len) {
+		rc = osmo_gsup_encode_an_apdu(msg, gsup_msg);
+		if (rc) {
+			LOGP(DLGSUP, LOGL_ERROR, "Failed to encode AN-apdu IE \n");
+			return -EINVAL;
+		}
+	}
+
+	if (gsup_msg->cause_rr_set) {
+		u8 = gsup_msg->cause_rr;
+		msgb_tlv_put(msg, OSMO_GSUP_CAUSE_RR_IE, sizeof(u8), &u8);
+	}
+
+	if (gsup_msg->cause_bssap_set) {
+		u8 = gsup_msg->cause_bssap;
+		msgb_tlv_put(msg, OSMO_GSUP_CAUSE_BSSAP_IE, sizeof(u8), &u8);
+	}
+
+	if ((u8 = gsup_msg->cause_sm))
+		msgb_tlv_put(msg, OSMO_GSUP_CAUSE_SM_IE, sizeof(u8), &u8);
 
 	return 0;
 }

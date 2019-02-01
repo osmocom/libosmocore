@@ -9,9 +9,16 @@
 
 /* Tests for osmo_gsup_messages.c */
 
+/* Complete IEs used multiple times (sorted alphabetically)
+ * 1st byte: IEI from osmo_gsup_iei, 2nd byte: length */
 #define TEST_IMSI_IE 0x01, 0x08, 0x21, 0x43, 0x65, 0x87, 0x09, 0x21, 0x43, 0xf5
 #define TEST_IMSI_STR "123456789012345"
 #define TEST_CLASS_SUBSCR_IE 0xa, 0x1, 0x1
+#define TEST_CLASS_INTER_MSC_IE 0xa, 0x1, 0x4
+#define TEST_MSISDN_IE 0x08, 0x07, 0x91, 0x94, 0x61, 0x46, 0x32, 0x24, 0x43
+#define TEST_AN_APDU_IE 0x62, 0x05, 0x01, 0x42, 0x42, 0x42, 0x42
+#define TEST_SOURCE_NAME_IE 0x60, 0x05, 'M', 'S', 'C', '-', 'A'
+#define TEST_DESTINATION_NAME_IE 0x61, 0x05, 'M', 'S', 'C', '-', 'B'
 
 static void test_gsup_messages_dec_enc(void)
 {
@@ -66,8 +73,7 @@ static void test_gsup_messages_dec_enc(void)
 	static const uint8_t update_location_res[] = {
 		0x06,
 		TEST_IMSI_IE,
-		0x08, 0x07, /* MSISDN of the subscriber */
-			0x91, 0x94, 0x61, 0x46, 0x32, 0x24, 0x43,
+		TEST_MSISDN_IE,
 		0x09, 0x07, /* HLR-Number of the subscriber */
 			0x91, 0x83, 0x52, 0x38, 0x48, 0x83, 0x93,
 		0x04, 0x00, /* PDP info complete */
@@ -312,6 +318,217 @@ static void test_gsup_messages_dec_enc(void)
 			0x00, /* OSMO_GSUP_IMEI_RESULT_ACK */
 	};
 
+	/* Handover related test messages. Oftentimes they only differ in the
+	 * AN_APDU_IE, which is mostly a blob in GSUP. To give a better example
+	 * of how the messages can be used, I've added the information an_apdu
+	 * holds in brackets (see osmo-msc.git's doc/interMSC_HO_GSUP_msgs.txt).
+	 * The session states are from the ASCII art in this e-mail:
+	 * https://lists.osmocom.org/pipermail/openbsc/2019-January/012653.html */
+	static const uint8_t send_e_prepare_handover_req[] = {
+		0x34, /* OSMO_GSUP_MSGT_E_PREPARE_HANDOVER_REQUEST */
+		TEST_IMSI_IE,
+
+		/* Session ID and state (begin) */
+		0x30, 0x04, 0xde, 0xad, 0xbe, 0xef,
+		0x31, 0x01, 0x01,
+
+		TEST_CLASS_INTER_MSC_IE,
+		TEST_SOURCE_NAME_IE,
+		TEST_DESTINATION_NAME_IE,
+		TEST_AN_APDU_IE, /* (Handover Request) */
+	};
+
+	static const uint8_t send_e_prepare_handover_err[] = {
+		0x35, /* OSMO_GSUP_MSGT_E_PREPARE_HANDOVER_ERROR */
+		TEST_IMSI_IE,
+
+		/* Session ID and state (continue) */
+		0x30, 0x04, 0xde, 0xad, 0xbe, 0xef,
+		0x31, 0x01, 0x02,
+
+		TEST_CLASS_INTER_MSC_IE,
+		TEST_SOURCE_NAME_IE,
+		TEST_DESTINATION_NAME_IE,
+
+		/* cause_bssap */
+		0x64, 0x01,
+			0x51, /* GSM0808_CAUSE_INVALID_MESSAGE_CONTENTS */
+	};
+
+	static const uint8_t send_e_prepare_handover_res[] = {
+		0x36, /* OSMO_GSUP_MSGT_E_PREPARE_HANDOVER_RESULT */
+		TEST_IMSI_IE,
+		TEST_MSISDN_IE, /* (Handover Number) */
+
+		/* Session ID and state (continue) */
+		0x30, 0x04, 0xde, 0xad, 0xbe, 0xef,
+		0x31, 0x01, 0x02,
+
+		TEST_CLASS_INTER_MSC_IE,
+		TEST_SOURCE_NAME_IE,
+		TEST_DESTINATION_NAME_IE,
+		TEST_AN_APDU_IE, /* (Handover Request Ack) */
+	};
+
+	static const uint8_t send_e_prepare_subsequent_handover_req[] = {
+		0x38, /* OSMO_GSUP_MSGT_E_PREPARE_SUBSEQUENT_HANDOVER_REQUEST */
+		TEST_IMSI_IE,
+
+		/* Session ID and state (begin) */
+		0x30, 0x04, 0xde, 0xad, 0xbe, 0xef,
+		0x31, 0x01, 0x01,
+
+		TEST_CLASS_INTER_MSC_IE,
+		TEST_SOURCE_NAME_IE,
+		TEST_DESTINATION_NAME_IE,
+		TEST_AN_APDU_IE, /* (Handover Required) */
+	};
+
+	static const uint8_t send_e_prepare_subsequent_handover_err[] = {
+		0x39, /* OSMO_GSUP_MSGT_E_PREPARE_SUBSEQUENT_HANDOVER_ERROR */
+		TEST_IMSI_IE,
+
+		/* Session ID and state (continue) */
+		0x30, 0x04, 0xde, 0xad, 0xbe, 0xef,
+		0x31, 0x01, 0x02,
+
+		TEST_CLASS_INTER_MSC_IE,
+		TEST_SOURCE_NAME_IE,
+		TEST_DESTINATION_NAME_IE,
+
+		/* cause_bssap */
+		0x64, 0x01,
+			0x51, /* GSM0808_CAUSE_INVALID_MESSAGE_CONTENTS */
+	};
+
+	static const uint8_t send_e_prepare_subsequent_handover_res[] = {
+		0x3A, /* OSMO_GSUP_MSGT_E_PREPARE_SUBSEQUENT_HANDOVER_RESULT */
+		TEST_IMSI_IE,
+
+		/* Session ID and state (continue) */
+		0x30, 0x04, 0xde, 0xad, 0xbe, 0xef,
+		0x31, 0x01, 0x02,
+
+		TEST_CLASS_INTER_MSC_IE,
+		TEST_SOURCE_NAME_IE,
+		TEST_DESTINATION_NAME_IE,
+		TEST_AN_APDU_IE, /* (Handover Request Ack) */
+	};
+
+	static const uint8_t send_e_send_end_signal_req[] = {
+		0x3C, /* OSMO_GSUP_MSGT_E_SEND_END_SIGNAL_REQUEST */
+		TEST_IMSI_IE,
+
+		/* Session ID and state (end) */
+		0x30, 0x04, 0xde, 0xad, 0xbe, 0xef,
+		0x31, 0x01, 0x03,
+
+		TEST_CLASS_INTER_MSC_IE,
+		TEST_SOURCE_NAME_IE,
+		TEST_DESTINATION_NAME_IE,
+		TEST_AN_APDU_IE, /* (Handover Complete) */
+	};
+
+	static const uint8_t send_e_send_end_signal_err[] = {
+		0x3D, /* OSMO_GSUP_MSGT_E_SEND_END_SIGNAL_ERROR */
+		TEST_IMSI_IE,
+
+		/* Session ID and state (continue) */
+		0x30, 0x04, 0xde, 0xad, 0xbe, 0xef,
+		0x31, 0x01, 0x02,
+
+		TEST_CLASS_INTER_MSC_IE,
+		TEST_SOURCE_NAME_IE,
+		TEST_DESTINATION_NAME_IE,
+
+		/* cause_bssap */
+		0x64, 0x01,
+			0x51, /* GSM0808_CAUSE_INVALID_MESSAGE_CONTENTS */
+	};
+
+	static const uint8_t send_e_process_access_signalling_req[] = {
+		0x40, /* OSMO_GSUP_MSGT_E_PROCESS_ACCESS_SIGNALLING_REQUEST */
+		TEST_IMSI_IE,
+
+		/* Session ID and state (continue) */
+		0x30, 0x04, 0xde, 0xad, 0xbe, 0xef,
+		0x31, 0x01, 0x02,
+
+		TEST_CLASS_INTER_MSC_IE,
+		TEST_SOURCE_NAME_IE,
+		TEST_DESTINATION_NAME_IE,
+		TEST_AN_APDU_IE, /* (Handover Detect) */
+	};
+
+	static const uint8_t send_e_send_end_signal_res[] = {
+		0x3E, /* OSMO_GSUP_MSGT_E_SEND_END_SIGNAL_RESULT */
+		TEST_IMSI_IE,
+
+		/* Session ID and state (end) */
+		0x30, 0x04, 0xde, 0xad, 0xbe, 0xef,
+		0x31, 0x01, 0x03,
+
+		TEST_CLASS_INTER_MSC_IE,
+		TEST_SOURCE_NAME_IE,
+		TEST_DESTINATION_NAME_IE,
+		TEST_AN_APDU_IE, /* (Handover Complete) */
+	};
+
+	static const uint8_t send_e_forward_access_signalling_req [] = {
+		0x44, /* OSMO_GSUP_MSGT_E_FORWARD_ACCESS_SIGNALLING_REQUEST */
+		TEST_IMSI_IE,
+
+		/* Session ID and state (continue) */
+		0x30, 0x04, 0xde, 0xad, 0xbe, 0xef,
+		0x31, 0x01, 0x02,
+
+		TEST_CLASS_INTER_MSC_IE,
+		TEST_SOURCE_NAME_IE,
+		TEST_DESTINATION_NAME_IE,
+		TEST_AN_APDU_IE, /* (DTAP, e.g. CC, SMS, ...) */
+	};
+
+	static const uint8_t send_e_close[] = {
+		0x47, /* OSMO_GSUP_MSGT_E_CLOSE */
+		TEST_IMSI_IE,
+
+		/* Session ID and state (end) */
+		0x30, 0x04, 0xde, 0xad, 0xbe, 0xef,
+		0x31, 0x01, 0x03,
+
+		TEST_CLASS_INTER_MSC_IE,
+		TEST_SOURCE_NAME_IE,
+		TEST_DESTINATION_NAME_IE,
+	};
+
+	static const uint8_t send_e_abort[] = {
+		0x4B, /* OSMO_GSUP_MSGT_E_ABORT */
+		TEST_IMSI_IE,
+
+		/* Session ID and state (end) */
+		0x30, 0x04, 0xde, 0xad, 0xbe, 0xef,
+		0x31, 0x01, 0x03,
+
+		TEST_CLASS_INTER_MSC_IE,
+
+		/* cause_bssap */
+		0x64, 0x01,
+			0x51, /* GSM0808_CAUSE_INVALID_MESSAGE_CONTENTS */
+	};
+
+	static const uint8_t send_e_routing_error[] = {
+		0x4E, /* OSMO_GSUP_MSGT_E_ROUTING_ERROR */
+		TEST_IMSI_IE,
+
+		/* Session ID and state (end) */
+		0x30, 0x04, 0xde, 0xad, 0xbe, 0xef,
+		0x31, 0x01, 0x03,
+
+		TEST_CLASS_INTER_MSC_IE,
+		TEST_SOURCE_NAME_IE,
+		TEST_DESTINATION_NAME_IE,
+	};
+
 	static const struct test {
 		char *name;
 		const uint8_t *data;
@@ -367,6 +584,34 @@ static void test_gsup_messages_dec_enc(void)
 			send_check_imei_err, sizeof(send_check_imei_err)},
 		{"Check IMEI Result",
 			send_check_imei_res, sizeof(send_check_imei_res)},
+		{"E Prepare Handover Request",
+			send_e_prepare_handover_req, sizeof(send_e_prepare_handover_req)},
+		{"E Prepare Handover Error",
+			send_e_prepare_handover_err, sizeof(send_e_prepare_handover_err)},
+		{"E Prepare Handover Result",
+			send_e_prepare_handover_res, sizeof(send_e_prepare_handover_res)},
+		{"E Prepare Subsequent Handover Request",
+			send_e_prepare_subsequent_handover_req, sizeof(send_e_prepare_subsequent_handover_req)},
+		{"E Prepare Subsequent Handover Error",
+			send_e_prepare_subsequent_handover_err, sizeof(send_e_prepare_subsequent_handover_err)},
+		{"E Prepare Subsequent Handover Result",
+			send_e_prepare_subsequent_handover_res, sizeof(send_e_prepare_subsequent_handover_res)},
+		{"E Send End Signal Request",
+			send_e_send_end_signal_req, sizeof(send_e_send_end_signal_req)},
+		{"E Send End Signal Error",
+			send_e_send_end_signal_err, sizeof(send_e_send_end_signal_err)},
+		{"E Send End Signal Result",
+			send_e_send_end_signal_res, sizeof(send_e_send_end_signal_res)},
+		{"E Process Access Signalling Request",
+			send_e_process_access_signalling_req, sizeof(send_e_process_access_signalling_req)},
+		{"E Forward Access Signalling Request",
+			send_e_forward_access_signalling_req, sizeof(send_e_forward_access_signalling_req)},
+		{"E Close",
+			send_e_close, sizeof(send_e_close)},
+		{"E Abort",
+			send_e_abort, sizeof(send_e_abort)},
+		{"E Routing Error",
+			send_e_routing_error, sizeof(send_e_routing_error)},
 	};
 
 	printf("Test GSUP message decoding/encoding\n");

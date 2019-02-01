@@ -49,4 +49,32 @@ Test GSUP message decoding/encoding
           Check IMEI Error OK
   Testing Check IMEI Result
           Check IMEI Result OK
+  Testing E Prepare Handover Request
+          E Prepare Handover Request OK
+  Testing E Prepare Handover Error
+          E Prepare Handover Error OK
+  Testing E Prepare Handover Result
+          E Prepare Handover Result OK
+  Testing E Prepare Subsequent Handover Request
+          E Prepare Subsequent Handover Request OK
+  Testing E Prepare Subsequent Handover Error
+          E Prepare Subsequent Handover Error OK
+  Testing E Prepare Subsequent Handover Result
+          E Prepare Subsequent Handover Result OK
+  Testing E Send End Signal Request
+          E Send End Signal Request OK
+  Testing E Send End Signal Error
+          E Send End Signal Error OK
+  Testing E Send End Signal Result
+          E Send End Signal Result OK
+  Testing E Process Access Signalling Request
+          E Process Access Signalling Request OK
+  Testing E Forward Access Signalling Request
+          E Forward Access Signalling Request OK
+  Testing E Close
+          E Close OK
+  Testing E Abort
+          E Abort OK
+  Testing E Routing Error
+          E Routing Error OK
 Done.

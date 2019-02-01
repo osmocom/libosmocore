@@ -42,7 +42,9 @@
 #include <osmocom/core/msgb.h>
 #include <osmocom/gsm/gsup_sms.h>
 #include <osmocom/gsm/protocol/gsm_23_003.h>
+#include <osmocom/gsm/protocol/gsm_03_40.h>
 #include <osmocom/gsm/protocol/gsm_04_08_gprs.h>
+#include <osmocom/gsm/protocol/gsm_08_08.h>
 #include <osmocom/crypt/auth.h>
 
 #define OSMO_GSUP_PORT 4222
@@ -102,6 +104,14 @@ enum osmo_gsup_iei {
 
 	OSMO_GSUP_IMEI_IE			= 0x50,
 	OSMO_GSUP_IMEI_RESULT_IE		= 0x51,
+
+	/* Inter-MSC handover related */
+	OSMO_GSUP_SOURCE_NAME_IE		= 0x60,
+	OSMO_GSUP_DESTINATION_NAME_IE		= 0x61,
+	OSMO_GSUP_AN_APDU_IE			= 0x62,
+	OSMO_GSUP_CAUSE_RR_IE			= 0x63,
+	OSMO_GSUP_CAUSE_BSSAP_IE		= 0x64,
+	OSMO_GSUP_CAUSE_SM_IE			= 0x65,
 
 	_OSMO_GSUP_IEI_END_MARKER
 };
@@ -164,6 +174,26 @@ enum osmo_gsup_message_type {
 	OSMO_GSUP_MSGT_CHECK_IMEI_REQUEST	= 0b00110000,
 	OSMO_GSUP_MSGT_CHECK_IMEI_ERROR		= 0b00110001,
 	OSMO_GSUP_MSGT_CHECK_IMEI_RESULT	= 0b00110010,
+
+	OSMO_GSUP_MSGT_E_PREPARE_HANDOVER_REQUEST		= 0b00110100,
+	OSMO_GSUP_MSGT_E_PREPARE_HANDOVER_ERROR			= 0b00110101,
+	OSMO_GSUP_MSGT_E_PREPARE_HANDOVER_RESULT		= 0b00110110,
+
+	OSMO_GSUP_MSGT_E_PREPARE_SUBSEQUENT_HANDOVER_REQUEST	= 0b00111000,
+	OSMO_GSUP_MSGT_E_PREPARE_SUBSEQUENT_HANDOVER_ERROR	= 0b00111001,
+	OSMO_GSUP_MSGT_E_PREPARE_SUBSEQUENT_HANDOVER_RESULT	= 0b00111010,
+
+	OSMO_GSUP_MSGT_E_SEND_END_SIGNAL_REQUEST		= 0b00111100,
+	OSMO_GSUP_MSGT_E_SEND_END_SIGNAL_ERROR			= 0b00111101,
+	OSMO_GSUP_MSGT_E_SEND_END_SIGNAL_RESULT			= 0b00111110,
+
+	OSMO_GSUP_MSGT_E_PROCESS_ACCESS_SIGNALLING_REQUEST	= 0b01000000,
+	OSMO_GSUP_MSGT_E_FORWARD_ACCESS_SIGNALLING_REQUEST	= 0b01000100,
+
+	OSMO_GSUP_MSGT_E_CLOSE					= 0b01000111,
+	OSMO_GSUP_MSGT_E_ABORT					= 0b01001011,
+
+	OSMO_GSUP_MSGT_E_ROUTING_ERROR				= 0b01001110,
 };
 
 #define OSMO_GSUP_IS_MSGT_REQUEST(msgt) (((msgt) & 0b00000011) == 0b00)
@@ -188,6 +218,12 @@ enum osmo_gsup_cn_domain {
 enum osmo_gsup_imei_result {
 	OSMO_GSUP_IMEI_RESULT_ACK		= 1, /* on wire: 0 */
 	OSMO_GSUP_IMEI_RESULT_NACK		= 2, /* on wire: 1 */
+};
+
+/* 3GPP 29.002 AccessNetworkProtocolId */
+enum osmo_gsup_access_network_protocol {
+	OSMO_GSUP_ACCESS_NETWORK_PROTOCOL_TS3G_48006 = 1,
+	OSMO_GSUP_ACCESS_NETWORK_PROTOCOL_TS3G_25413 = 2,
 };
 
 /*! TCAP-like session state */
@@ -244,6 +280,14 @@ enum osmo_gsup_message_class {
 extern const struct value_string osmo_gsup_message_class_names[];
 static inline const char *osmo_gsup_message_class_name(enum osmo_gsup_message_class val)
 { return get_value_string(osmo_gsup_message_class_names, val); }
+
+/*! AccessNetworkSignalInfo as in 3GPP TS 29.002. */
+struct osmo_gsup_an_apdu {
+	/* AccessNetworkProtocolId as in 3GPP TS 29.002. */
+	enum osmo_gsup_access_network_protocol access_network_proto;
+	const uint8_t *data;
+	size_t data_len;
+};
 
 /*! parsed/decoded GSUP protocol message */
 struct osmo_gsup_message {
@@ -307,6 +351,28 @@ struct osmo_gsup_message {
 	 * Inter-MSC messages are *required* to set a class = OSMO_GSUP_MESSAGE_CLASS_INTER_MSC. For older message classes, this may
 	 * be omitted (for backwards compatibility only -- if in doubt, include it). */
 	enum osmo_gsup_message_class		message_class;
+
+	/*! For messages routed via another GSUP entity (via HLR), the IPA name of the entity that sent this message. */
+	const uint8_t			*source_name;
+	/*! Number of bytes in source_name. */
+	size_t				source_name_len;
+	/*! For messages routed via another GSUP entity (via HLR), the IPA name of the entity that should ultimately
+	 * receive this message. */
+	const uint8_t			*destination_name;
+	/*! Number of bytes in destination_name. */
+	size_t				destination_name_len;
+
+	/*! inter-MSC AN-APDU. */
+	struct osmo_gsup_an_apdu	an_apdu;
+
+	uint8_t				cause_rr; /*!< 0 is a valid cause */
+	bool				cause_rr_set; /*!< whether cause_rr is set */
+
+	enum gsm0808_cause		cause_bssap; /*!< 0 is a valid cause */
+	bool				cause_bssap_set; /*!< whether cause_bssap is set */
+
+	/*! Session Management cause as of 3GPP TS 24.008 10.5.6.6 / Table 10.5.157. */
+	enum gsm48_gsm_cause		cause_sm;
 };
 
 int osmo_gsup_decode(const uint8_t *data, size_t data_len,
