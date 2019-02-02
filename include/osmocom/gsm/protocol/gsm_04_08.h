@@ -1770,8 +1770,10 @@ static inline const char *osmo_lu_type_name(uint8_t lu_type)
 #define GSM48_IE_GROUP_CHDES	0x74
 #define GSM48_IE_BA_LIST_PREF	0x75
 #define GSM48_IE_MOB_OVSERV_DIF	0x77
+#define GSM48_IE_CELL_SEL_IND_AFTER_REL	0x77 /* 44.018 Section 9.1.7 */
 #define GSM48_IE_REALTIME_DIFF	0x7b
 #define GSM48_IE_START_TIME	0x7c
+#define GSM48_IE_INDIVIDUAL_PRIORITIES 0x7c /* 44.018 Section 9.1.7 */
 #define GSM48_IE_TIMING_ADVANCE	0x7d
 #define GSM48_IE_GROUP_CIP_SEQ	0x80
 #define GSM48_IE_CIP_MODE_SET	0x90
