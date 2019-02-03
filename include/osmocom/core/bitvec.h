@@ -84,4 +84,13 @@ unsigned int bitvec_add_array(struct bitvec *bv, const uint32_t *array,
 			      unsigned int array_len, bool dry_run,
 			      unsigned int num_bits);
 
+/*! Return the number of bytes used within the bit vector */
+static inline unsigned int bitvec_used_bytes(const struct bitvec *bv)
+{
+	unsigned int bytes = bv->cur_bit/8;
+	if (bv->cur_bit%8)
+		bytes++;
+	return bytes;
+}
+
 /*! @} */
