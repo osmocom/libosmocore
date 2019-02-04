@@ -49,7 +49,7 @@ endif
 endif
 
 BUILT_SOURCES = crc8gen.c crc16gen.c crc32gen.c crc64gen.c
-EXTRA_DIST = conv_acc_sse_impl.h
+EXTRA_DIST = conv_acc_sse_impl.h crcXXgen.c.tpl
 
 libosmocore_la_LDFLAGS = -version-info $(LIBVERSION) -no-undefined
 
