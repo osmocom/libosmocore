@@ -195,6 +195,22 @@ struct msgb *gsm0808_create_clear_command(uint8_t cause)
 	return msg;
 }
 
+/*! Create BSSMAP Clear Command message.
+ *  \param[in] cause TS 08.08 cause value.
+ *  \param[in] csfb_ind indicate that the call was established in an CSFB context.
+ *  \returns callee-allocated msgb with BSSMAP Clear Command message. */
+struct msgb *gsm0808_create_clear_command2(uint8_t cause, bool csfb_ind)
+{
+	struct msgb *msg = gsm0808_create_clear_command(cause);
+	if (!msg)
+		return NULL;
+
+	if (csfb_ind)
+		msgb_v_put(msg, GSM0808_IE_CSFB_INDICATION);
+
+	return msg;
+}
+
 /*! Create BSSMAP Cipher Mode Command message
  *  \param[in] ei Mandatory Encryption Information
  *  \param[in] cipher_response_mode optional 1-byte Cipher Response Mode

@@ -164,6 +164,7 @@ gsm0808_get_cipher_reject_cause;
 gsm0808_create_classmark_request;
 gsm0808_create_classmark_update;
 gsm0808_create_clear_command;
+gsm0808_create_clear_command2;
 gsm0808_create_clear_complete;
 gsm0808_create_clear_rqst;
 gsm0808_create_paging;
