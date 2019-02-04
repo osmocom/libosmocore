@@ -204,6 +204,24 @@ static void test_used_bytes()
 	}
 }
 
+static void test_tailroom()
+{
+	struct bitvec b;
+	uint8_t d[32];
+	unsigned int i;
+
+	b.data = d;
+	b.data_len = sizeof(d);
+	bitvec_zero(&b);
+
+	OSMO_ASSERT(bitvec_tailroom_bits(&b) == sizeof(d)*8);
+
+	for (i = 0; i < 8*sizeof(d); i++) {
+		bitvec_set_bit(&b, 1);
+		OSMO_ASSERT(bitvec_tailroom_bits(&b) == sizeof(d)*8-(i+1));
+	}
+}
+
 int main(int argc, char **argv)
 {
 	struct bitvec bv;
@@ -311,6 +329,7 @@ int main(int argc, char **argv)
 
 	printf("\nbitvec bytes used.\n");
 	test_used_bytes();
+	test_tailroom();
 
 	printf("\nbitvec ok.\n");
 	return 0;

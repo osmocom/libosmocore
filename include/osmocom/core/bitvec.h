@@ -93,4 +93,10 @@ static inline unsigned int bitvec_used_bytes(const struct bitvec *bv)
 	return bytes;
 }
 
+/*! Return the tailroom in number of unused bits remaining in the bit-vector */
+static inline unsigned int bitvec_tailroom_bits(const struct bitvec *bv)
+{
+	return bv->data_len*8 - bv->cur_bit;
+}
+
 /*! @} */
