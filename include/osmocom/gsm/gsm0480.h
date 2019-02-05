@@ -117,7 +117,9 @@ struct msgb *gsm0480_create_ussd_resp(uint8_t invoke_id, uint8_t trans_id, const
 struct msgb *gsm0480_create_unstructuredSS_Notify(int alertPattern, const char *text);
 struct msgb *gsm0480_create_notifySS(const char *text);
 struct msgb *gsm0480_create_ussd_notify(int level, const char *text);
-struct msgb *gsm0480_create_ussd_release_complete(void);
+struct msgb *gsm0480_create_ussd_release_complete(void)
+	OSMO_DEPRECATED("Use gsm0480_create_release_complete() instead.");
+struct msgb *gsm0480_create_release_complete(uint8_t trans_id);
 
 int gsm0480_wrap_invoke(struct msgb *msg, int op, int link_id);
 int gsm0480_wrap_facility(struct msgb *msg);

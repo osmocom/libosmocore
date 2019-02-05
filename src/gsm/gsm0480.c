@@ -921,6 +921,7 @@ struct msgb *gsm0480_create_ussd_notify(int level, const char *text)
 	return msg;
 }
 
+/*! Deprecated, use gsm0480_create_release_complete() instead. */
 struct msgb *gsm0480_create_ussd_release_complete(void)
 {
 	struct msgb *msg;
@@ -933,6 +934,26 @@ struct msgb *gsm0480_create_ussd_release_complete(void)
 	gsm48_push_l3hdr(msg, GSM48_PDISC_NC_SS,
 			 /* FIXME: no transactionID?!? */
 			 GSM0480_MTYPE_RELEASE_COMPLETE);
+
+	return msg;
+}
+
+/*! Create a GSM 04.80 Release complete (see 2.5) message, prefixed
+ *  by GSM 04.08 L3 header with a given transaction ID.
+ * \param[in] trans_id  GSM 04.07 transaction identifier (and TI flag)
+ * \return  message buffer containing the Release complete message
+ */
+struct msgb *gsm0480_create_release_complete(uint8_t trans_id)
+{
+	struct msgb *msg;
+
+	msg = gsm0480_msgb_alloc_name("TS 04.80 USSD REL COMPL");
+	if (!msg)
+		return NULL;
+
+	/* Push the L3 header */
+	gsm48_push_l3hdr_tid(msg, GSM48_PDISC_NC_SS,
+			     trans_id, GSM0480_MTYPE_RELEASE_COMPLETE);
 
 	return msg;
 }
