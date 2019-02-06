@@ -53,8 +53,8 @@ static struct osmo_tdef tdefs_test[] = {
 	{ .T=2, .default_val=100, .unit=OSMO_TDEF_MS, .desc="Testing a hundred milliseconds" },
 	{ .T=3, .default_val=100, .unit=OSMO_TDEF_M, .desc="Testing a hundred minutes" },
 	{ .T=4, .default_val=100, .unit=OSMO_TDEF_CUSTOM, .desc="Testing a hundred potatoes" },
-	{ .T=INT_MAX, .default_val=ULONG_MAX, .unit=OSMO_TDEF_M, .desc="Very large" },
-	{ .T=-23, .default_val=-15, .desc="Negative T number" },
+	{ .T=0x7fffffff, .default_val=0xffffffff, .unit=OSMO_TDEF_M, .desc="Very large" },
+	{ .T=-23, .default_val=239471, .desc="Negative T number" },
 	{}  //  <-- important! last entry shall be zero
 };
 

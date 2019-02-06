@@ -300,6 +300,7 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
 	     oap/oap_client_test.ok oap/oap_client_test.err		\
 	     vty/vty_transcript_test.vty				\
 	     tdef/tdef_test.ok \
+	     tdef/tdef_test_range_64bit.ok \
 	     tdef/tdef_vty_test_config_root.vty	\
 	     tdef/tdef_vty_test_config_subnode.vty \
 	     tdef/tdef_vty_test_dynamic.vty \

@@ -49,20 +49,11 @@ static struct osmo_tdef tdefs[] = {
 	/* test conversions */
 	{ .T=1000, .default_val=2*1000, .unit=OSMO_TDEF_MS, .desc="two seconds from ms" },
 	{ .T=1001, .default_val=60*1000, .unit=OSMO_TDEF_MS, .desc="one minute from ms" },
-	{ .T=1002, .default_val=(ULONG_MAX/60), .unit=OSMO_TDEF_M, .desc="almost too many seconds" },
-	{ .T=1003, .default_val=ULONG_MAX, .unit=OSMO_TDEF_M, .desc="too many seconds" },
 	{ .T=1004, .default_val=1, .unit=OSMO_TDEF_MS, .desc="one ms" },
 	{ .T=1005, .default_val=0, .unit=OSMO_TDEF_MS, .desc="zero ms" },
 	{ .T=1006, .default_val=0, .unit=OSMO_TDEF_S, .desc="zero s" },
 	{ .T=1007, .default_val=0, .unit=OSMO_TDEF_M, .desc="zero m" },
 	{ .T=1008, .default_val=0, .unit=OSMO_TDEF_CUSTOM, .desc="zero" },
-
-	/* test range */
-	{ .T=INT_MAX, .default_val=ULONG_MAX, .unit=OSMO_TDEF_S, .desc="very large" },
-	{ .T=INT_MAX-1, .default_val=ULONG_MAX-1, .unit=OSMO_TDEF_S, .desc="very large" },
-	{ .T=INT_MAX-2, .default_val=LONG_MAX, .unit=OSMO_TDEF_S, .desc="very large" },
-	{ .T=INT_MAX-3, .default_val=ULONG_MAX, .unit=OSMO_TDEF_M, .desc="very large in minutes" },
-	{ .T=INT_MIN, .default_val=ULONG_MAX, .unit=OSMO_TDEF_S, .desc="negative" },
 
 	{ .T=0, .default_val=1, .unit=OSMO_TDEF_CUSTOM, .desc="zero" },
 
@@ -72,13 +63,26 @@ static struct osmo_tdef tdefs[] = {
 	{}  //  <-- important! last entry shall be zero
 };
 
-#define print_tdef_get(T, AS_UNIT) do { \
-		unsigned long val = osmo_tdef_get(tdefs, T, AS_UNIT, 999); \
+static struct osmo_tdef tdefs_range[] = {
+	{ .T=1002, .default_val=(ULONG_MAX/60), .unit=OSMO_TDEF_M, .desc="almost too many seconds" },
+	{ .T=1003, .default_val=ULONG_MAX, .unit=OSMO_TDEF_M, .desc="too many seconds" },
+
+	{ .T=INT_MAX, .default_val=ULONG_MAX, .unit=OSMO_TDEF_S, .desc="very large" },
+	{ .T=INT_MAX-1, .default_val=ULONG_MAX-1, .unit=OSMO_TDEF_S, .desc="very large" },
+	{ .T=INT_MAX-2, .default_val=LONG_MAX, .unit=OSMO_TDEF_S, .desc="very large" },
+	{ .T=INT_MAX-3, .default_val=ULONG_MAX, .unit=OSMO_TDEF_M, .desc="very large in minutes" },
+	{ .T=INT_MIN, .default_val=ULONG_MAX, .unit=OSMO_TDEF_S, .desc="negative" },
+
+	{}
+};
+
+#define print_tdef_get(TDEFS, T, AS_UNIT) do { \
+		unsigned long val = osmo_tdef_get(TDEFS, T, AS_UNIT, 999); \
 		printf("osmo_tdef_get(tdefs, %d, %s, 999)\t= %lu\n", T, osmo_tdef_unit_name(AS_UNIT), val); \
 	} while (0)
 
-#define print_tdef_get_short(T, AS_UNIT) do { \
-		unsigned long val = osmo_tdef_get(tdefs, T, AS_UNIT, 999); \
+#define print_tdef_get_short(TDEFS, T, AS_UNIT) do { \
+		unsigned long val = osmo_tdef_get(TDEFS, T, AS_UNIT, 999); \
 		printf("osmo_tdef_get(%d, %s)\t= %lu\n", T, osmo_tdef_unit_name(AS_UNIT), val); \
 	} while (0)
 
@@ -95,7 +99,7 @@ void print_tdef_info(unsigned int T)
 	printf("\n");
 }
 
-static void test_tdef_get()
+static void test_tdef_get(bool test_range)
 {
 	int i;
 	enum osmo_tdef_unit as_unit;
@@ -108,7 +112,18 @@ static void test_tdef_get()
 		unsigned int T = tdefs[i].T;
 		print_tdef_info(T);
 		for (as_unit = OSMO_TDEF_S; as_unit <= OSMO_TDEF_CUSTOM; as_unit++) {
-			print_tdef_get_short(T, as_unit);
+			print_tdef_get_short(tdefs, T, as_unit);
+		}
+	}
+
+	if (!test_range)
+		return;
+
+	for (i = 0; i < ARRAY_SIZE(tdefs_range)-1; i++) {
+		unsigned int T = tdefs_range[i].T;
+		print_tdef_info(T);
+		for (as_unit = OSMO_TDEF_S; as_unit <= OSMO_TDEF_CUSTOM; as_unit++) {
+			print_tdef_get_short(tdefs_range, T, as_unit);
 		}
 	}
 }
@@ -117,10 +132,10 @@ static void test_tdef_get_nonexisting()
 {
 	printf("\n%s()\n", __func__);
 
-	print_tdef_get(5, OSMO_TDEF_S);
-	print_tdef_get(5, OSMO_TDEF_MS);
-	print_tdef_get(5, OSMO_TDEF_M);
-	print_tdef_get(5, OSMO_TDEF_CUSTOM);
+	print_tdef_get(tdefs, 5, OSMO_TDEF_S);
+	print_tdef_get(tdefs, 5, OSMO_TDEF_MS);
+	print_tdef_get(tdefs, 5, OSMO_TDEF_M);
+	print_tdef_get(tdefs, 5, OSMO_TDEF_CUSTOM);
 }
 
 static void test_tdef_set_and_get()
@@ -132,23 +147,23 @@ static void test_tdef_set_and_get()
 	printf("setting 7 = 42\n");
 	t->val = 42;
 	print_tdef_info(7);
-	print_tdef_get_short(7, OSMO_TDEF_MS);
-	print_tdef_get_short(7, OSMO_TDEF_S);
-	print_tdef_get_short(7, OSMO_TDEF_M);
-	print_tdef_get_short(7, OSMO_TDEF_CUSTOM);
+	print_tdef_get_short(tdefs, 7, OSMO_TDEF_MS);
+	print_tdef_get_short(tdefs, 7, OSMO_TDEF_S);
+	print_tdef_get_short(tdefs, 7, OSMO_TDEF_M);
+	print_tdef_get_short(tdefs, 7, OSMO_TDEF_CUSTOM);
 
 	printf("setting 7 = 420\n");
 	t->val = 420;
 	print_tdef_info(7);
-	print_tdef_get_short(7, OSMO_TDEF_MS);
-	print_tdef_get_short(7, OSMO_TDEF_S);
-	print_tdef_get_short(7, OSMO_TDEF_M);
-	print_tdef_get_short(7, OSMO_TDEF_CUSTOM);
+	print_tdef_get_short(tdefs, 7, OSMO_TDEF_MS);
+	print_tdef_get_short(tdefs, 7, OSMO_TDEF_S);
+	print_tdef_get_short(tdefs, 7, OSMO_TDEF_M);
+	print_tdef_get_short(tdefs, 7, OSMO_TDEF_CUSTOM);
 
 	printf("resetting\n");
 	osmo_tdefs_reset(tdefs);
 	print_tdef_info(7);
-	print_tdef_get_short(7, OSMO_TDEF_S);
+	print_tdef_get_short(tdefs, 7, OSMO_TDEF_S);
 }
 
 enum test_tdef_fsm_states {
@@ -306,7 +321,7 @@ static void print_fsm_state(struct osmo_fsm_inst *fi)
 }
 
 
-#define test_tdef_fsm_state_chg(NEXT_STATE) do { \
+#define test_tdef_fsm_state_chg(tdefs, NEXT_STATE) do { \
 		const struct osmo_tdef_state_timeout *st = osmo_tdef_get_state_timeout(NEXT_STATE, \
 										       test_tdef_state_timeouts); \
 		if (!st) { \
@@ -318,7 +333,7 @@ static void print_fsm_state(struct osmo_fsm_inst *fi)
 			printf(" --> %s (configured as T%d%s %lu %s) rc=%d;\t", osmo_fsm_state_name(&test_tdef_fsm, \
 												    NEXT_STATE), \
 			       st->T, st->keep_timer ? "(keep_timer)" : "", \
-			       t? t->val : -1, t? osmo_tdef_unit_name(t->unit) : "-", \
+			       t? t->val : 0, t? osmo_tdef_unit_name(t->unit) : "-", \
 			       rc); \
 			print_fsm_state(fi); \
 		} \
@@ -329,7 +344,6 @@ static void print_fsm_state(struct osmo_fsm_inst *fi)
 static void test_tdef_state_timeout(bool test_range)
 {
 	struct osmo_fsm_inst *fi;
-	struct osmo_tdef *m = osmo_tdef_get_entry(tdefs, INT_MAX);
 	unsigned long m_secs;
 	printf("\n%s()\n", __func__);
 
@@ -341,51 +355,57 @@ static void test_tdef_state_timeout(bool test_range)
 	OSMO_ASSERT(fi);
 	print_fsm_state(fi);
 
-	test_tdef_fsm_state_chg(S_A);
-	test_tdef_fsm_state_chg(S_B);
-	test_tdef_fsm_state_chg(S_C);
-	test_tdef_fsm_state_chg(S_D);
+	test_tdef_fsm_state_chg(tdefs, S_A);
+	test_tdef_fsm_state_chg(tdefs, S_B);
+	test_tdef_fsm_state_chg(tdefs, S_C);
+	test_tdef_fsm_state_chg(tdefs, S_D);
 
-	test_tdef_fsm_state_chg(S_G);
-	test_tdef_fsm_state_chg(S_H);
-	test_tdef_fsm_state_chg(S_I);
-	test_tdef_fsm_state_chg(S_J);
+	test_tdef_fsm_state_chg(tdefs, S_G);
+	test_tdef_fsm_state_chg(tdefs, S_H);
+	test_tdef_fsm_state_chg(tdefs, S_I);
+	test_tdef_fsm_state_chg(tdefs, S_J);
 
 	printf("- test keep_timer:\n");
 	fake_time_passes(123, 45678);
 	print_fsm_state(fi);
-	test_tdef_fsm_state_chg(S_K);
-	test_tdef_fsm_state_chg(S_A);
+	test_tdef_fsm_state_chg(tdefs, S_K);
+	test_tdef_fsm_state_chg(tdefs, S_A);
 	fake_time_passes(23, 45678);
 	print_fsm_state(fi);
-	test_tdef_fsm_state_chg(S_K);
+	test_tdef_fsm_state_chg(tdefs, S_K);
 
-	test_tdef_fsm_state_chg(S_A);
+	test_tdef_fsm_state_chg(tdefs, S_A);
 	fake_time_passes(23, 45678);
 	print_fsm_state(fi);
-	test_tdef_fsm_state_chg(S_L);
-
-	printf("- test large T:\n");
-	test_tdef_fsm_state_chg(S_M);
-
-	printf("- test T<0:\n");
-	test_tdef_fsm_state_chg(S_N);
+	test_tdef_fsm_state_chg(tdefs, S_L);
 
 	printf("- test T=0:\n");
-	test_tdef_fsm_state_chg(S_O);
+	test_tdef_fsm_state_chg(tdefs, S_O);
 
 	printf("- test no timer:\n");
-	test_tdef_fsm_state_chg(S_X);
+	test_tdef_fsm_state_chg(tdefs, S_X);
 
 	printf("- test undefined timer, using default_val arg of osmo_tdef_fsm_inst_state_chg(), here passed as 999:\n");
-	test_tdef_fsm_state_chg(S_Y);
+	test_tdef_fsm_state_chg(tdefs, S_Y);
 
 	/* the range of unsigned long is architecture dependent. This test can be invoked manually to see whether
 	 * clamping the timeout values works, but the output will be of varying lengths depending on the system's
 	 * unsigned long range, and would cause differences in expected output. */
 	if (test_range) {
+		struct osmo_tdef *m;
+
+		printf("- test large T:\n");
+		test_tdef_fsm_state_chg(tdefs_range, S_M);
+
+		printf("- test T<0:\n");
+		test_tdef_fsm_state_chg(tdefs_range, S_N);
+
 		printf("- test range:\n");
-		test_tdef_fsm_state_chg(S_M);
+		test_tdef_fsm_state_chg(tdefs_range, S_M);
+
+		m = osmo_tdef_get_entry(tdefs_range, INT_MAX);
+		OSMO_ASSERT(m);
+
 		/* sweep through all the bits, shifting in 0xfffff.. from the right. */
 		m_secs = 0;
 		do {
@@ -408,19 +428,19 @@ static void test_tdef_state_timeout(bool test_range)
 			}
 
 			m->val = m_secs - 1;
-			test_tdef_fsm_state_chg(S_M);
+			test_tdef_fsm_state_chg(tdefs_range, S_M);
 			m->val = m_secs;
-			test_tdef_fsm_state_chg(S_M);
+			test_tdef_fsm_state_chg(tdefs_range, S_M);
 			m->val = m_secs + 1;
-			test_tdef_fsm_state_chg(S_M);
+			test_tdef_fsm_state_chg(tdefs_range, S_M);
 		} while (m_secs < ULONG_MAX);
 	}
 
 	printf("- test disallowed transition:\n");
-	test_tdef_fsm_state_chg(S_Z);
-	test_tdef_fsm_state_chg(S_B);
-	test_tdef_fsm_state_chg(S_C);
-	test_tdef_fsm_state_chg(S_D);
+	test_tdef_fsm_state_chg(tdefs, S_Z);
+	test_tdef_fsm_state_chg(tdefs, S_B);
+	test_tdef_fsm_state_chg(tdefs, S_C);
+	test_tdef_fsm_state_chg(tdefs, S_D);
 }
 
 int main(int argc, char **argv)
@@ -434,7 +454,7 @@ int main(int argc, char **argv)
 
 	osmo_fsm_register(&test_tdef_fsm);
 
-	test_tdef_get();
+	test_tdef_get(argc > 1);
 	test_tdef_get_nonexisting();
 	test_tdef_set_and_get();
 	/* Run range test iff any argument is passed on the cmdline. For the rationale, see the comment in
