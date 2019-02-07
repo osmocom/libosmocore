@@ -20,7 +20,7 @@ enum gsm414_tch_loop_mode {
 };
 
 #define GSM414_MT_CLOSE_TCH_LOOP_ACK	0x01	/* 8.2 */
-#define GSM414_MT_OPEN_LOOP_CMD		0x02	/* 8.3 */
+#define GSM414_MT_OPEN_LOOP_CMD		0x06	/* 8.3 */
 #define GSM414_OPEN_LOOP_ACK_IE		0x81
 
 #define GSM414_MT_CLOSE_MSLOT_LOOP_CMD	0x20	/* 8.4 */
