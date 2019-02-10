@@ -1577,6 +1577,93 @@ int gsm0808_cell_id_matches_list(const struct gsm0808_cell_id *id, const struct 
 	return -1;
 }
 
+/*! Copy information from a CGI to form a Cell Identifier of the specified kind.
+ * \param [out] cid  Compose new Cell Identifier here.
+ * \param [in] id_discr  Which kind of Cell Identifier to compose.
+ * \param [in] cgi  Cell Global Identifier to form the Cell Identifier from.
+ */
+void gsm0808_cell_id_from_cgi(struct gsm0808_cell_id *cid, enum CELL_IDENT id_discr,
+			      const struct osmo_cell_global_id *cgi)
+{
+	*cid = (struct gsm0808_cell_id){
+		.id_discr = id_discr,
+	};
+
+	switch (id_discr) {
+	case CELL_IDENT_WHOLE_GLOBAL:
+		cid->id.global = *cgi;
+		return;
+
+	case CELL_IDENT_LAC_AND_CI:
+		cid->id.lac_and_ci = (struct osmo_lac_and_ci_id){
+			.lac = cgi->lai.lac,
+			.ci = cgi->cell_identity,
+		};
+		return;
+
+	case CELL_IDENT_CI:
+		cid->id.ci = cgi->cell_identity;
+		return;
+
+	case CELL_IDENT_LAI:
+		cid->id.lai_and_lac = cgi->lai;
+		return;
+
+	case CELL_IDENT_LAC:
+		cid->id.lac = cgi->lai.lac;
+		return;
+
+	case CELL_IDENT_NO_CELL:
+	case CELL_IDENT_BSS:
+	case CELL_IDENT_UTRAN_PLMN_LAC_RNC:
+	case CELL_IDENT_UTRAN_RNC:
+	case CELL_IDENT_UTRAN_LAC_RNC:
+	default:
+		return;
+	};
+}
+
+/*! Overwrite parts of cgi with values from a Cell Identifier.
+ * Place only those items given in cid into cgi, leaving other values unchanged.
+ * \param[out] cgi  Cell Global Identity to write to.
+ * \param[in] cid  Cell Identity to read from.
+ * \return a bitmask of items that were set: OSMO_CGI_PART_PLMN | OSMO_CGI_PART_LAC | OSMO_CGI_PART_CI; 0 if nothing was
+ *         written to cgi.
+ */
+int gsm0808_cell_id_to_cgi(struct osmo_cell_global_id *cgi, const struct gsm0808_cell_id *cid)
+{
+	switch (cid->id_discr) {
+	case CELL_IDENT_WHOLE_GLOBAL:
+		*cgi = cid->id.global;
+		return OSMO_CGI_PART_PLMN | OSMO_CGI_PART_LAC | OSMO_CGI_PART_CI;
+
+	case CELL_IDENT_LAC_AND_CI:
+		cgi->lai.lac = cid->id.lac_and_ci.lac;
+		cgi->cell_identity = cid->id.lac_and_ci.ci;
+		return OSMO_CGI_PART_LAC | OSMO_CGI_PART_CI;
+
+	case CELL_IDENT_CI:
+		cgi->cell_identity = cid->id.ci;
+		return OSMO_CGI_PART_CI;
+
+	case CELL_IDENT_LAI:
+		cgi->lai = cid->id.lai_and_lac;
+		return OSMO_CGI_PART_PLMN | OSMO_CGI_PART_LAC;
+
+	case CELL_IDENT_LAC:
+		cgi->lai.lac = cid->id.lac;
+		return OSMO_CGI_PART_LAC;
+
+	case CELL_IDENT_NO_CELL:
+	case CELL_IDENT_BSS:
+	case CELL_IDENT_UTRAN_PLMN_LAC_RNC:
+	case CELL_IDENT_UTRAN_RNC:
+	case CELL_IDENT_UTRAN_LAC_RNC:
+	default:
+		return 0;
+	};
+}
+
 /*! value_string[] for enum CELL_IDENT. */
 const struct value_string gsm0808_cell_id_discr_names[] = {
 	{ CELL_IDENT_WHOLE_GLOBAL, "CGI" },

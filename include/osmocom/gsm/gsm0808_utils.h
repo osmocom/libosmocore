@@ -84,6 +84,9 @@ int gsm0808_cell_id_u_name(char *buf, size_t buflen,
 bool gsm0808_cell_ids_match(const struct gsm0808_cell_id *id1, const struct gsm0808_cell_id *id2, bool exact_match);
 int gsm0808_cell_id_matches_list(const struct gsm0808_cell_id *id, const struct gsm0808_cell_id_list2 *list,
 				 unsigned int match_nr, bool exact_match);
+void gsm0808_cell_id_from_cgi(struct gsm0808_cell_id *cid, enum CELL_IDENT id_discr,
+			      const struct osmo_cell_global_id *cgi);
+int gsm0808_cell_id_to_cgi(struct osmo_cell_global_id *cgi, const struct gsm0808_cell_id *cid);
 
 uint8_t gsm0808_enc_cause(struct msgb *msg, uint16_t cause);
 uint8_t gsm0808_enc_aoip_trasp_addr(struct msgb *msg,

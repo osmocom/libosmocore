@@ -30,6 +30,15 @@ struct osmo_cell_global_id {
 	uint16_t cell_identity;
 };
 
+/*! Bitmask of items contained in a struct osmo_cell_global_id.
+ * See also gsm0808_cell_id_to_cgi().
+ */
+enum osmo_cgi_part {
+	OSMO_CGI_PART_PLMN = 1,
+	OSMO_CGI_PART_LAC = 2,
+	OSMO_CGI_PART_CI = 4,
+};
+
 /* Actually defined in 3GPP TS 48.008 3.2.2.27 Cell Identifier List,
  * but conceptually belongs with the above structures. */
 struct osmo_lac_and_ci_id {

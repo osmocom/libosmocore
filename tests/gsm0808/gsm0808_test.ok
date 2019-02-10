@@ -629,4 +629,96 @@ CGI:023-042-23-5 and CI[1]:{6}: mismatch
 CGI:023-042-23-5 and LAC-CI[1]:{42-6}: mismatch
 CGI:023-042-23-5 and LAI[3]:{023-042-42, 023-99-23, 023-42-23}: mismatch
 CGI:023-042-23-5 and CGI[2]:{023-042-42-6, 023-99-23-5}: mismatch
+
+test_gsm0808_cell_id_to_from_cgi()
+cid LAC:23 -> cgi 777-007-23-7777 LAC -> cid LAC:23
+  --> gsm0808_cell_id{LAC} = LAC:23
+  --> gsm0808_cell_id{CI} = CI:7777
+  --> gsm0808_cell_id{LAC-CI} = LAC-CI:23-7777
+  --> gsm0808_cell_id{LAI} = LAI:777-007-23
+  --> gsm0808_cell_id{CGI} = CGI:777-007-23-7777
+cid LAC:42 -> cgi 777-007-42-7777 LAC -> cid LAC:42
+  --> gsm0808_cell_id{LAC} = LAC:42
+  --> gsm0808_cell_id{CI} = CI:7777
+  --> gsm0808_cell_id{LAC-CI} = LAC-CI:42-7777
+  --> gsm0808_cell_id{LAI} = LAI:777-007-42
+  --> gsm0808_cell_id{CGI} = CGI:777-007-42-7777
+cid CI:5 -> cgi 777-007-7777-5 CI -> cid CI:5
+  --> gsm0808_cell_id{LAC} = LAC:7777
+  --> gsm0808_cell_id{CI} = CI:5
+  --> gsm0808_cell_id{LAC-CI} = LAC-CI:7777-5
+  --> gsm0808_cell_id{LAI} = LAI:777-007-7777
+  --> gsm0808_cell_id{CGI} = CGI:777-007-7777-5
+cid CI:6 -> cgi 777-007-7777-6 CI -> cid CI:6
+  --> gsm0808_cell_id{LAC} = LAC:7777
+  --> gsm0808_cell_id{CI} = CI:6
+  --> gsm0808_cell_id{LAC-CI} = LAC-CI:7777-6
+  --> gsm0808_cell_id{LAI} = LAI:777-007-7777
+  --> gsm0808_cell_id{CGI} = CGI:777-007-7777-6
+cid LAC-CI:23-5 -> cgi 777-007-23-5 LAC CI -> cid LAC-CI:23-5
+  --> gsm0808_cell_id{LAC} = LAC:23
+  --> gsm0808_cell_id{CI} = CI:5
+  --> gsm0808_cell_id{LAC-CI} = LAC-CI:23-5
+  --> gsm0808_cell_id{LAI} = LAI:777-007-23
+  --> gsm0808_cell_id{CGI} = CGI:777-007-23-5
+cid LAC-CI:42-6 -> cgi 777-007-42-6 LAC CI -> cid LAC-CI:42-6
+  --> gsm0808_cell_id{LAC} = LAC:42
+  --> gsm0808_cell_id{CI} = CI:6
+  --> gsm0808_cell_id{LAC-CI} = LAC-CI:42-6
+  --> gsm0808_cell_id{LAI} = LAI:777-007-42
+  --> gsm0808_cell_id{CGI} = CGI:777-007-42-6
+cid LAI:023-042-23 -> cgi 023-042-23-7777 PLMN LAC -> cid LAI:023-042-23
+  --> gsm0808_cell_id{LAC} = LAC:23
+  --> gsm0808_cell_id{CI} = CI:7777
+  --> gsm0808_cell_id{LAC-CI} = LAC-CI:23-7777
+  --> gsm0808_cell_id{LAI} = LAI:023-042-23
+  --> gsm0808_cell_id{CGI} = CGI:023-042-23-7777
+cid LAI:023-042-42 -> cgi 023-042-42-7777 PLMN LAC -> cid LAI:023-042-42
+  --> gsm0808_cell_id{LAC} = LAC:42
+  --> gsm0808_cell_id{CI} = CI:7777
+  --> gsm0808_cell_id{LAC-CI} = LAC-CI:42-7777
+  --> gsm0808_cell_id{LAI} = LAI:023-042-42
+  --> gsm0808_cell_id{CGI} = CGI:023-042-42-7777
+cid LAI:023-99-23 -> cgi 023-99-23-7777 PLMN LAC -> cid LAI:023-99-23
+  --> gsm0808_cell_id{LAC} = LAC:23
+  --> gsm0808_cell_id{CI} = CI:7777
+  --> gsm0808_cell_id{LAC-CI} = LAC-CI:23-7777
+  --> gsm0808_cell_id{LAI} = LAI:023-99-23
+  --> gsm0808_cell_id{CGI} = CGI:023-99-23-7777
+cid LAI:023-42-23 -> cgi 023-42-23-7777 PLMN LAC -> cid LAI:023-42-23
+  --> gsm0808_cell_id{LAC} = LAC:23
+  --> gsm0808_cell_id{CI} = CI:7777
+  --> gsm0808_cell_id{LAC-CI} = LAC-CI:23-7777
+  --> gsm0808_cell_id{LAI} = LAI:023-42-23
+  --> gsm0808_cell_id{CGI} = CGI:023-42-23-7777
+cid CGI:023-042-23-5 -> cgi 023-042-23-5 PLMN LAC CI -> cid CGI:023-042-23-5
+  --> gsm0808_cell_id{LAC} = LAC:23
+  --> gsm0808_cell_id{CI} = CI:5
+  --> gsm0808_cell_id{LAC-CI} = LAC-CI:23-5
+  --> gsm0808_cell_id{LAI} = LAI:023-042-23
+  --> gsm0808_cell_id{CGI} = CGI:023-042-23-5
+cid CGI:023-042-42-6 -> cgi 023-042-42-6 PLMN LAC CI -> cid CGI:023-042-42-6
+  --> gsm0808_cell_id{LAC} = LAC:42
+  --> gsm0808_cell_id{CI} = CI:6
+  --> gsm0808_cell_id{LAC-CI} = LAC-CI:42-6
+  --> gsm0808_cell_id{LAI} = LAI:023-042-42
+  --> gsm0808_cell_id{CGI} = CGI:023-042-42-6
+cid CGI:023-99-23-5 -> cgi 023-99-23-5 PLMN LAC CI -> cid CGI:023-99-23-5
+  --> gsm0808_cell_id{LAC} = LAC:23
+  --> gsm0808_cell_id{CI} = CI:5
+  --> gsm0808_cell_id{LAC-CI} = LAC-CI:23-5
+  --> gsm0808_cell_id{LAI} = LAI:023-99-23
+  --> gsm0808_cell_id{CGI} = CGI:023-99-23-5
+cid NO-CELL:NO-CELL -> cgi 777-007-7777-7777 -> cid NO-CELL:NO-CELL
+  --> gsm0808_cell_id{LAC} = LAC:7777
+  --> gsm0808_cell_id{CI} = CI:7777
+  --> gsm0808_cell_id{LAC-CI} = LAC-CI:7777-7777
+  --> gsm0808_cell_id{LAI} = LAI:777-007-7777
+  --> gsm0808_cell_id{CGI} = CGI:777-007-7777-7777
+cid unknown 0x1a7:unknown 0x1a7 -> cgi 777-007-7777-7777 -> cid unknown 0x1a7:unknown 0x1a7
+  --> gsm0808_cell_id{LAC} = LAC:7777
+  --> gsm0808_cell_id{CI} = CI:7777
+  --> gsm0808_cell_id{LAC-CI} = LAC-CI:7777-7777
+  --> gsm0808_cell_id{LAI} = LAI:777-007-7777
+  --> gsm0808_cell_id{CGI} = CGI:777-007-7777-7777
 Done
