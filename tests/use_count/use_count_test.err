@@ -1,0 +1,171 @@
+
+test_use_count_fsm()
+DFOO DEBUG foo(a){IN_USE}: Allocated
+DFOO DEBUG foo(b){IN_USE}: Allocated
+DFOO DEBUG foo(c){IN_USE}: Allocated
+
+all use counts:
+a: 0 (-)
+b: 0 (-)
+c: 0 (-)
+3 foos
+
+A few gets and puts, logging source file information
+DFOO NOTICE foo(a){IN_USE}: a +1 barring: now used by 1 (barring) (use_count_test.c:223)
+DFOO NOTICE foo(b){IN_USE}: b +1 barring: now used by 1 (barring) (use_count_test.c:225)
+DFOO NOTICE foo(b){IN_USE}: b +1 fighting: now used by 2 (barring,fighting) (use_count_test.c:226)
+
+all use counts:
+a: 1 (barring)
+b: 2 (barring,fighting)
+c: 0 (-)
+3 foos
+
+Attempt to get more than one on limited 'barring' user:
+DFOO ERROR foo(b){IN_USE}: Attempt to get more than one barring (use_count_test.c:231)
+osmo_use_count_get_put(b, barring, 1) returned error: -34 Numerical result out of range
+
+all use counts:
+a: 1 (barring)
+b: 2 (barring,fighting)
+c: 0 (-)
+3 foos
+
+Put away one user of b
+DFOO NOTICE foo(b){IN_USE}: b -1 barring: now used by 1 (fighting) (use_count_test.c:235)
+
+all use counts:
+a: 1 (barring)
+b: 1 (fighting)
+c: 0 (-)
+3 foos
+
+(no longer log source file information)
+Test null use token
+DFOO NOTICE foo(a){IN_USE}: a +1 NULL: now used by 2 (barring,NULL)
+
+all use counts:
+a: 2 (barring,NULL)
+b: 1 (fighting)
+c: 0 (-)
+3 foos
+
+DFOO NOTICE foo(a){IN_USE}: a -1 NULL: now used by 1 (barring)
+
+all use counts:
+a: 1 (barring)
+b: 1 (fighting)
+c: 0 (-)
+3 foos
+
+Put away last user of a, goes to RELEASING state and waits for a hypothetic async release process
+DFOO NOTICE foo(a){IN_USE}: a -1 barring: now used by 0 (-)
+DFOO DEBUG foo(a){IN_USE}: Received Event FOO_EV_UNUSED
+DFOO DEBUG foo(a){IN_USE}: state_chg to IN_RELEASE
+DFOO NOTICE foo(a){IN_RELEASE}: a +1 releasing: now used by 1 (releasing)
+
+all use counts:
+a: 1 (releasing)
+b: 1 (fighting)
+c: 0 (-)
+3 foos
+
+Async releasing of a is done, will dealloc
+DFOO NOTICE foo(a){IN_RELEASE}: a -1 releasing: now used by 0 (-)
+DFOO DEBUG foo(a){IN_RELEASE}: Received Event FOO_EV_UNUSED
+DFOO DEBUG foo(a){IN_RELEASE}: Terminating (cause = OSMO_FSM_TERM_REGULAR)
+DFOO DEBUG foo(a){IN_RELEASE}: Freeing instance
+DFOO DEBUG foo(a){IN_RELEASE}: Deallocated
+
+all use counts:
+b: 1 (fighting)
+c: 0 (-)
+2 foos
+
+Use b multiple times
+DFOO NOTICE foo(b){IN_USE}: b +1 kungfoo: now used by 2 (fighting,kungfoo)
+DFOO NOTICE foo(b){IN_USE}: b +1 kungfoo: now used by 3 (fighting,2*kungfoo)
+DFOO NOTICE foo(b){IN_USE}: b -1 kungfoo: now used by 2 (fighting,kungfoo)
+DFOO NOTICE foo(b){IN_USE}: b +1 kungfoo: now used by 3 (fighting,2*kungfoo)
+DFOO NOTICE foo(b){IN_USE}: b +1 kungfoo: now used by 4 (fighting,3*kungfoo)
+
+all use counts:
+b: 4 (fighting,3*kungfoo)
+c: 0 (-)
+2 foos
+
+Test range: set kung-fu to INT32_MAX-1, then get three more; total count gets max-clamped to INT32_MAX
+DFOO NOTICE foo(b){IN_USE}: b +2147483643 kungfoo: now used by 2147483647 (fighting,2147483646*kungfoo)
+
+all use counts:
+b: 2147483647 (fighting,2147483646*kungfoo)
+c: 0 (-)
+2 foos
+
+DFOO NOTICE foo(b){IN_USE}: b +1 kungfoo: now used by 2147483647 (fighting,2147483647*kungfoo)
+osmo_use_count_get_put(b, kungfoo, 1) returned error: -34 Numerical result out of range
+osmo_use_count_get_put(b, kungfoo, 1) returned error: -34 Numerical result out of range
+DFOO NOTICE foo(b){IN_USE}: b +2 fighting: now used by 2147483647 (3*fighting,2147483647*kungfoo)
+DFOO NOTICE foo(b){IN_USE}: b -3 kungfoo: now used by 2147483647 (3*fighting,2147483644*kungfoo)
+DFOO NOTICE foo(b){IN_USE}: b -1 kungfoo: now used by 2147483646 (3*fighting,2147483643*kungfoo)
+DFOO NOTICE foo(b){IN_USE}: b -1 kungfoo: now used by 2147483645 (3*fighting,2147483642*kungfoo)
+DFOO NOTICE foo(b){IN_USE}: b +1 fighting: now used by 2147483646 (4*fighting,2147483642*kungfoo)
+DFOO NOTICE foo(b){IN_USE}: b +1 fighting: now used by 2147483647 (5*fighting,2147483642*kungfoo)
+DFOO NOTICE foo(b){IN_USE}: b +1 fighting: now used by 2147483647 (6*fighting,2147483642*kungfoo)
+
+all use counts:
+b: 2147483647 (6*fighting,2147483642*kungfoo)
+c: 0 (-)
+2 foos
+
+Release all uses of b
+DFOO NOTICE foo(b){IN_USE}: b -2147483642 kungfoo: now used by 6 (6*fighting)
+DFOO NOTICE foo(b){IN_USE}: b -6 fighting: now used by 0 (-)
+DFOO DEBUG foo(b){IN_USE}: Received Event FOO_EV_UNUSED
+DFOO DEBUG foo(b){IN_USE}: state_chg to IN_RELEASE
+DFOO NOTICE foo(b){IN_RELEASE}: b +1 releasing: now used by 1 (releasing)
+Signal async release as done
+DFOO NOTICE foo(b){IN_RELEASE}: b -1 releasing: now used by 0 (-)
+DFOO DEBUG foo(b){IN_RELEASE}: Received Event FOO_EV_UNUSED
+DFOO DEBUG foo(b){IN_RELEASE}: Terminating (cause = OSMO_FSM_TERM_REGULAR)
+DFOO DEBUG foo(b){IN_RELEASE}: Freeing instance
+DFOO DEBUG foo(b){IN_RELEASE}: Deallocated
+
+all use counts:
+c: 0 (-)
+1 foos
+
+Release something not gotten before: a get/put bug goes into negative count
+DFOO NOTICE foo(c){IN_USE}: c -1 kungfoo: now used by -1 (-1*kungfoo)
+DFOO ERROR foo(c){IN_USE}: Negative use count on kungfoo: -1 (-1*kungfoo)
+
+all use counts:
+c: -1 (-1*kungfoo)
+1 foos
+
+More negative
+DFOO NOTICE foo(c){IN_USE}: c -1 kungfoo: now used by -2 (-2*kungfoo)
+DFOO ERROR foo(c){IN_USE}: Negative use count on kungfoo: -2 (-2*kungfoo)
+DFOO NOTICE foo(c){IN_USE}: c -1 kungfoo: now used by -3 (-3*kungfoo)
+DFOO ERROR foo(c){IN_USE}: Negative use count on kungfoo: -3 (-3*kungfoo)
+
+all use counts:
+c: -3 (-3*kungfoo)
+1 foos
+
+Also release c
+DFOO NOTICE foo(c){IN_USE}: c +4 kungfoo: now used by 1 (kungfoo)
+DFOO NOTICE foo(c){IN_USE}: c -1 kungfoo: now used by 0 (-)
+DFOO DEBUG foo(c){IN_USE}: Received Event FOO_EV_UNUSED
+DFOO DEBUG foo(c){IN_USE}: state_chg to IN_RELEASE
+DFOO NOTICE foo(c){IN_RELEASE}: c +1 releasing: now used by 1 (releasing)
+Signal async release as done
+DFOO NOTICE foo(c){IN_RELEASE}: c -1 releasing: now used by 0 (-)
+DFOO DEBUG foo(c){IN_RELEASE}: Received Event FOO_EV_UNUSED
+DFOO DEBUG foo(c){IN_RELEASE}: Terminating (cause = OSMO_FSM_TERM_REGULAR)
+DFOO DEBUG foo(c){IN_RELEASE}: Freeing instance
+DFOO DEBUG foo(c){IN_RELEASE}: Deallocated
+
+all use counts:
+0 foos
+

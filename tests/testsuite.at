@@ -337,3 +337,10 @@ AT_KEYWORDS([sockaddr_str])
 cat $abs_srcdir/sockaddr_str/sockaddr_str_test.ok > expout
 AT_CHECK([$abs_top_builddir/tests/sockaddr_str/sockaddr_str_test], [0], [expout], [ignore])
 AT_CLEANUP
+
+AT_SETUP([use_count])
+AT_KEYWORDS([use_count])
+cat $abs_srcdir/use_count/use_count_test.ok > expout
+cat $abs_srcdir/use_count/use_count_test.err > experr
+AT_CHECK([$abs_top_builddir/tests/use_count/use_count_test], [0], [expout], [experr])
+AT_CLEANUP
