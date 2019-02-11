@@ -33,6 +33,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <errno.h>
+#include <limits.h>
 
 static void hexdump_test(void)
 {
@@ -936,6 +937,90 @@ static void osmo_str_tolowupper_test()
 	OSMO_ASSERT(ok);
 }
 
+/* Copy of the examples from OSMO_STRBUF_APPEND() */
+int print_spaces(char *dst, size_t dst_len, int argument)
+{
+	int i;
+	if (argument < 0)
+		return -EINVAL;
+	for (i = 0; i < argument && i < dst_len; i++)
+		dst[i] = ' ';
+	if (dst_len)
+		dst[OSMO_MIN(dst_len - 1, argument)] = '\0';
+	return argument;
+}
+
+void strbuf_example(char *buf, size_t buflen)
+{
+	struct osmo_strbuf sb = { .buf = buf, .len = buflen };
+
+	OSMO_STRBUF_APPEND(sb, print_spaces, 5);
+	OSMO_STRBUF_APPEND(sb, snprintf, "The answer is %d but what is the question?", 42);
+	OSMO_STRBUF_APPEND(sb, print_spaces, 423423);
+
+	printf("%s\n", buf);
+	printf("would have needed %zu bytes\n", sb.chars_needed);
+}
+
+/* Copy of the examples from OSMO_STRBUF_PRINTF() */
+int strbuf_example2(char *buf, size_t buflen)
+{
+	int i;
+	struct osmo_strbuf sb = { .buf = buf, .len = buflen };
+
+	OSMO_STRBUF_PRINTF(sb, "T minus");
+	for (i = 10; i; i--)
+		OSMO_STRBUF_PRINTF(sb, " %d", i);
+	OSMO_STRBUF_PRINTF(sb, " ... Lift off!");
+
+	return sb.chars_needed;
+}
+
+int strbuf_cascade(char *buf, size_t buflen)
+{
+	struct osmo_strbuf sb = { .buf = buf, .len = buflen };
+
+	OSMO_STRBUF_APPEND(sb, strbuf_example2);
+	OSMO_STRBUF_PRINTF(sb, " -- ");
+	OSMO_STRBUF_APPEND(sb, strbuf_example2);
+	OSMO_STRBUF_PRINTF(sb, " -- ");
+	OSMO_STRBUF_APPEND(sb, strbuf_example2);
+
+	return sb.chars_needed;
+}
+
+void strbuf_test()
+{
+	char buf[256];
+	int rc;
+	printf("\n%s\n", __func__);
+
+	printf("OSMO_STRBUF_APPEND():\n");
+	strbuf_example(buf, 23);
+
+	printf("\nOSMO_STRBUF_PRINTF():\n");
+	rc = strbuf_example2(buf, 23);
+	printf("1: (need %d chars, had size=23) %s\n", rc, buf);
+
+	rc = strbuf_example2(buf, rc);
+	printf("2: (need %d chars, had size=%d) %s\n", rc, rc, buf);
+
+	rc = strbuf_example2(buf, rc + 1);
+	printf("3: (need %d chars, had size=%d+1) %s\n", rc, rc, buf);
+
+	rc = strbuf_example2(buf, 0);
+	snprintf(buf, sizeof(buf), "0x2b 0x2b 0x2b...");
+	printf("4: (need %d chars, had size=0) %s\n", rc, buf);
+
+	rc = strbuf_example2(NULL, 99);
+	printf("5: (need %d chars, had NULL buffer)\n", rc);
+
+	printf("\ncascade:\n");
+	rc = strbuf_cascade(buf, sizeof(buf));
+	printf("(need %d chars)\n%s\n", rc, buf);
+	rc = strbuf_cascade(buf, 63);
+	printf("(need %d chars, had size=63) %s\n", rc, buf);
+}
 
 int main(int argc, char **argv)
 {
@@ -954,5 +1039,6 @@ int main(int argc, char **argv)
 	isqrt_test();
 	osmo_sockaddr_to_str_and_uint_test();
 	osmo_str_tolowupper_test();
+	strbuf_test();
 	return 0;
 }

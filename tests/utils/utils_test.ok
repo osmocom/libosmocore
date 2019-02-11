@@ -325,3 +325,20 @@ osmo_str_toupper_buf(28, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@
                    = 62, "ABCDEFGHIJKLMNOPQRSTUVWXYZA"
 osmo_str_toupper_buf(28, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()", in-place)
                    = 27, "ABCDEFGHIJKLMNOPQRSTUVWXYZA"
+
+strbuf_test
+OSMO_STRBUF_APPEND():
+     The answer is 42 
+would have needed 423470 bytes
+
+OSMO_STRBUF_PRINTF():
+1: (need 42 chars, had size=23) T minus 10 9 8 7 6 5 4
+2: (need 42 chars, had size=42) T minus 10 9 8 7 6 5 4 3 2 1 ... Lift off
+3: (need 42 chars, had size=42+1) T minus 10 9 8 7 6 5 4 3 2 1 ... Lift off!
+4: (need 42 chars, had size=0) 0x2b 0x2b 0x2b...
+5: (need 42 chars, had NULL buffer)
+
+cascade:
+(need 134 chars)
+T minus 10 9 8 7 6 5 4 3 2 1 ... Lift off! -- T minus 10 9 8 7 6 5 4 3 2 1 ... Lift off! -- T minus 10 9 8 7 6 5 4 3 2 1 ... Lift off!
+(need 134 chars, had size=63) T minus 10 9 8 7 6 5 4 3 2 1 ... Lift off! -- T minus 10 9 8 7

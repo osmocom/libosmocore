@@ -145,4 +145,89 @@ uint32_t osmo_isqrt32(uint32_t x);
 
 const char osmo_luhn(const char* in, int in_len);
 
+/*! State for OSMO_STRBUF_APPEND() and OSMO_STRBUF_PRINTF(). See there for examples. */
+struct osmo_strbuf {
+	/*! Point to the start of a string buffer. */
+	char *buf;
+	/*! Total sizeof() the buffer buf points at. */
+	size_t len;
+	/*! Current writing position in buf (end of the string written so far). */
+	char *pos;
+	/*! After all OSMO_STRBUF_APPEND operations, reflects the total number of characters that would be written had
+	 * buf been large enough. Like snprintf()'s return value, this does not include the terminating nul character.
+	 * Hence, to allocate an adequately sized buffer, add 1 to this number. */
+	size_t chars_needed;
+};
+
+/*! Append a string to a buffer, as printed by an snprintf()-like function and with similar bounds checking.
+ * Make sure to never write past the end of the buffer, and collect the total size that would be needed.
+ *
+ *     // an example function implementation to append: write N spaces.
+ *     int print_spaces(char *dst, size_t dst_len, int n)
+ *     {
+ *             int i;
+ *             if (n < 0)
+ *                     return -EINVAL;
+ *             for (i = 0; i < n && i < dst_len; i++)
+ *                     dst[i] = ' ';
+ *             if (dst_len)
+ *                     dst[OSMO_MIN(dst_len - 1, n)] = '\0';
+ *             // return the n that we would have liked to write if space were available:
+ *             return n;
+ *     }
+ *
+ *     // append above spaces as well as an snprintf()
+ *     void strbuf_example()
+ *     {
+ *             char buf[23];
+ *             struct osmo_strbuf sb = { .buf = buf, .len = sizeof(buf) };
+ *
+ *             OSMO_STRBUF_APPEND(sb, print_spaces, 5);
+ *             OSMO_STRBUF_APPEND(sb, snprintf, "The answer is %d but what is the question?", 42);
+ *             OSMO_STRBUF_APPEND(sb, print_spaces, 423423);
+ *
+ *             printf("%s\n", buf);
+ *             printf("would have needed %zu bytes\n", sb.chars_needed);
+ *     }
+ *
+ * \param[inout] STRBUF  A struct osmo_strbuf instance.
+ * \param[in] func  A function with a signature of int func(char *dst, size_t dst_len [, args]) with semantics like
+ *                  snprintf().
+ * \param[in] args  Arguments passed to func, if any.
+ */
+#define OSMO_STRBUF_APPEND(STRBUF, func, args...) do { \
+		if (!(STRBUF).pos) \
+			(STRBUF).pos = (STRBUF).buf; \
+		size_t remain = (STRBUF).buf ? (STRBUF).len - ((STRBUF).pos - (STRBUF).buf) : 0; \
+		int l = func((STRBUF).pos, remain, ##args); \
+		if (l < 0 || l > remain) \
+			(STRBUF).pos = (STRBUF).buf + (STRBUF).len; \
+		else \
+			(STRBUF).pos += l; \
+		if (l > 0) \
+			(STRBUF).chars_needed += l; \
+	} while(0)
+
+/*! Shortcut for OSMO_STRBUF_APPEND() invocation using snprintf().
+ *
+ *     int strbuf_example2(char *buf, size_t buflen)
+ *     {
+ *             int i;
+ *             struct osmo_strbuf sb = { .buf = buf, .len = buflen };
+ *
+ *             OSMO_STRBUF_PRINTF(sb, "T minus");
+ *             for (i = 10; i; i--)
+ *                     OSMO_STRBUF_PRINTF(sb, " %d", i);
+ *             OSMO_STRBUF_PRINTF(sb, " ... Lift off!");
+ *
+ *             return sb.chars_needed;
+ *     }
+ *
+ * \param[inout] STRBUF  A struct osmo_strbuf instance.
+ * \param[in] fmt  Format string passed to snprintf.
+ * \param[in] args  Additional arguments passed to snprintf, if any.
+ */
+#define OSMO_STRBUF_PRINTF(STRBUF, fmt, args...) \
+	OSMO_STRBUF_APPEND(STRBUF, snprintf, fmt, ##args)
+
 /*! @} */
