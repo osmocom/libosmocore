@@ -73,6 +73,9 @@ const char *get_value_string_or_null(const struct value_string *vs,
 {
 	int i;
 
+	if (!vs)
+		return NULL;
+
 	for (i = 0;; i++) {
 		if (vs[i].value == 0 && vs[i].str == NULL)
 			break;
