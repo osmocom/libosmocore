@@ -120,6 +120,103 @@ int osmo_tlvp_merge(struct tlv_parsed *dst, const struct tlv_parsed *src)
 	return 0;
 }
 
+
+/*! Encode a single TLV into given message buffer
+ *  \param[inout] msg Caller-allocated message buffer with sufficient tailroom
+ *  \param[in] type TLV type/format to use during encode
+ *  \param[in] tag Tag of TLV to be encoded
+ *  \parma[in] len Length of TLV to be encoded
+ *  \param[in] val Value part of TLV to be encoded
+ *  \returns 0 on success; negative in case of error */
+int tlv_encode_one(struct msgb *msg, enum tlv_type type, uint8_t tag,
+		   unsigned int len, const uint8_t *val)
+{
+	switch (type) {
+	case TLV_TYPE_NONE:
+		break;
+	case TLV_TYPE_FIXED:
+		msgb_tv_fixed_put(msg, tag, len, val);
+		break;
+	case TLV_TYPE_T:
+		msgb_v_put(msg, tag);
+		break;
+	case TLV_TYPE_TV:
+		msgb_tv_put(msg, tag, val[0]);
+		break;
+	case TLV_TYPE_TLV:
+		msgb_tlv_put(msg, tag, len, val);
+		break;
+	case TLV_TYPE_TL16V:
+		msgb_tl16v_put(msg, tag, len, val);
+		break;
+	case TLV_TYPE_TvLV:
+		msgb_tvlv_put(msg, tag, len, val);
+		break;
+	case TLV_TYPE_SINGLE_TV:
+		msgb_v_put(msg, (tag << 4) | (val[0] & 0xf));
+		break;
+	case TLV_TYPE_vTvLV_GAN:
+		msgb_vtvlv_gan_put(msg, tag, len, val);
+		break;
+	default:
+		return -EINVAL;
+	}
+	return 0;
+}
+
+/*! Encode a set of decoded TLVs according to a given definition into a message buffer
+ *  \param[inout] msg Caller-allocated message buffer with sufficient tailroom
+ *  \param[in] def structure defining the valid TLV tags / configurations
+ *  \param[in] tp decoded values to be encoded
+ *  \returns number of bytes consumed in msg; negative in case of error */
+int tlv_encode(struct msgb *msg, const struct tlv_definition *def, const struct tlv_parsed *tp)
+{
+	unsigned int tailroom_before = msgb_tailroom(msg);
+	unsigned int i;
+	int rc;
+
+	for (i = 0; i < ARRAY_SIZE(tp->lv); i++) {
+		/* skip entries in the array that aren't used/filled */
+		if (!TLVP_PRESENT(tp, i))
+			continue;
+
+		rc = tlv_encode_one(msg, def->def[i].type, i, TLVP_LEN(tp, i), TLVP_VAL(tp, i));
+		if (rc < 0)
+			return rc;
+	}
+
+	return tailroom_before - msgb_tailroom(msg);
+}
+
+/*! Encode a set of decoded TLVs according to a given definition and IE order into a message buffer
+ *  \param[inout] msg Caller-allocated message buffer with sufficient tailroom
+ *  \param[in] def structure defining the valid TLV tags / configurations
+ *  \param[in] tp decoded values to be encoded
+ *  \param[in] tag_order array of tags determining the IE encoding order
+ *  \param[in] tag_order_len length of tag_order
+ *  \returns number of bytes consumed in msg; negative in case of error */
+int tlv_encode_ordered(struct msgb *msg, const struct tlv_definition *def, const struct tlv_parsed *tp,
+			const uint8_t *tag_order, unsigned int tag_order_len)
+{
+
+	unsigned int tailroom_before = msgb_tailroom(msg);
+	unsigned int i;
+	int rc;
+
+	for (i = 0; i < tag_order_len; i++) {
+		uint8_t tag = tag_order[i];
+
+		/* skip entries in the array that aren't used/filled */
+		if (!TLVP_PRESENT(tp, tag))
+			continue;
+
+		rc = tlv_encode_one(msg, def->def[tag].type, tag, TLVP_LEN(tp, tag), TLVP_VAL(tp, tag));
+		if (rc < 0)
+			return rc;
+	}
+	return tailroom_before - msgb_tailroom(msg);
+}
+
 /*! Parse a single TLV encoded IE
  *  \param[out] o_tag the tag of the IE that was found
  *  \param[out] o_len length of the IE that was found

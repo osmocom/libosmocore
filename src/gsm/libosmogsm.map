@@ -537,6 +537,9 @@ tlv_dump;
 tlv_parse;
 tlv_parse2;
 tlv_parse_one;
+tlv_encode;
+tlv_encode_ordered;
+tlv_encode_one;
 tvlv_att_def;
 vtvlv_gan_att_def;
 

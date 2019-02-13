@@ -1,4 +1,6 @@
+#include <osmocom/core/msgb.h>
 #include <osmocom/gsm/tlv.h>
+#include <osmocom/gsm/gsm0808.h>
 
 static void check_tlv_parse(uint8_t **data, size_t *data_len,
 			    uint8_t exp_tag, size_t exp_len, const uint8_t *exp_val)
@@ -286,12 +288,57 @@ static void test_tlv_repeated_ie()
 	OSMO_ASSERT(dec3[2].lv[tag].val == &test_data[2 + 3 + 3]);
 }
 
+static void test_tlv_encoder()
+{
+	const uint8_t enc_ies[] = {
+		0x17, 0x14,	0x06, 0x2b, 0x12, 0x2b, 0x0b, 0x40, 0x2b, 0xb7, 0x05, 0xd0, 0x63, 0x82, 0x95, 0x03, 0x05, 0x40,
+				0x07, 0x08, 0x43, 0x90,
+		0x2c,		0x04,
+		0x40,		0x42,
+	};
+	const uint8_t ie_order[] = { 0x2c, 0x40, 0x17 };
+	const uint8_t enc_ies_reordered[] = {
+		0x2c,		0x04,
+		0x40,		0x42,
+		0x17, 0x14,	0x06, 0x2b, 0x12, 0x2b, 0x0b, 0x40, 0x2b, 0xb7, 0x05, 0xd0, 0x63, 0x82, 0x95, 0x03, 0x05, 0x40,
+				0x07, 0x08, 0x43, 0x90,
+	};
+	struct tlv_parsed tp;
+	struct msgb *msg = msgb_alloc(1024, __func__);
+	int rc;
+
+	printf("Testing TLV encoder by decoding + re-encoding binary\n");
+
+	OSMO_ASSERT(msg);
+
+	/* decode BSSAP IEs specified above */
+	rc = osmo_bssap_tlv_parse(&tp, enc_ies, ARRAY_SIZE(enc_ies));
+	OSMO_ASSERT(rc == 3);
+
+	/* re-encode it */
+	rc = tlv_encode(msg, gsm0808_att_tlvdef(), &tp);
+	OSMO_ASSERT(rc == ARRAY_SIZE(enc_ies));
+	OSMO_ASSERT(!memcmp(msgb_data(msg), enc_ies, ARRAY_SIZE(enc_ies)));
+
+	msgb_reset(msg);
+
+	printf("Testing TLV encoder with IE ordering\n");
+
+	/* re-encodei in different order */
+	rc = tlv_encode_ordered(msg, gsm0808_att_tlvdef(), &tp, ie_order, ARRAY_SIZE(ie_order));
+	OSMO_ASSERT(rc == ARRAY_SIZE(enc_ies));
+	OSMO_ASSERT(!memcmp(msgb_data(msg), enc_ies_reordered, ARRAY_SIZE(enc_ies_reordered)));
+
+	msgb_free(msg);
+}
+
 int main(int argc, char **argv)
 {
 	//osmo_init_logging2(ctx, &info);
 
 	test_tlv_shift_functions();
 	test_tlv_repeated_ie();
+	test_tlv_encoder();
 
 	printf("Done.\n");
 	return EXIT_SUCCESS;

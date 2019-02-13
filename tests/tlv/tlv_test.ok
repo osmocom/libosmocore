@@ -1,2 +1,4 @@
 Test shift functions
+Testing TLV encoder by decoding + re-encoding binary
+Testing TLV encoder with IE ordering
 Done.
