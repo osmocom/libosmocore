@@ -49,12 +49,18 @@
 #include <osmocom/core/linuxlist.h>
 #include <osmocom/core/talloc.h>
 #include <osmocom/core/utils.h>
+#include <osmocom/core/msgfile.h>
 
 struct node {
 	struct node *parent;		/* back-pointer */
 	struct llist_head list;		/* part of parent->children */
 	struct llist_head children;	/* our own children */
 	char *line;
+};
+
+struct osmo_patch_entry {
+	struct llist_head list;
+	struct node *tree;
 };
 
 /* allocate a new node */
@@ -225,49 +231,67 @@ static void dump_node(struct node *root, FILE *out, bool print_node_depth)
 
 static void exit_usage(int rc)
 {
-	fprintf(stderr, "Usage: osmo-config-merge <config-file> <config-patch> [--debug]\n");
+	fprintf(stderr, "Usage: osmo-config-merge <config-file> <config-patch>...<config-patch> [--debug]\n");
 	exit(rc);
 }
 
 
 int main(int argc, char **argv)
 {
-	const char *base_fname, *patch_fname;
-	struct node *base_tree, *patch_tree;
+	struct node *base_tree;
+	struct osmo_config_list *trees;
+	struct osmo_patch_entry *entry;
 	bool debug_enabled = false;
+	unsigned i;
 	void *ctx;
 
 	if (argc < 3)
 		exit_usage(1);
 
-	base_fname = argv[1];
-	patch_fname = argv[2];
-
-	if (argc > 3) {
-		if (!strcmp(argv[3], "--debug"))
-			debug_enabled = true;
-		else
-			exit_usage(1);
-	}
-
 	ctx = talloc_named_const(NULL, 0, "root");
 
-	base_tree = file_read(ctx, base_fname);
-	patch_tree = file_read(ctx, patch_fname);
-
-	if (!base_tree || ! patch_tree) {
+	base_tree = file_read(ctx, argv[1]);
+	trees = talloc_zero(ctx, struct osmo_config_list);
+	if (!base_tree || !trees) {
 		talloc_free(ctx);
 		return 2;
 	}
 
+	INIT_LLIST_HEAD(&trees->entry);
+	for (i = 2; i < argc; i++) {
+		if (!strcmp(argv[i], "--debug"))
+			debug_enabled = true;
+		else {
+			entry = talloc_zero(trees, struct osmo_patch_entry);
+			if (!entry) {
+				talloc_free(ctx);
+				return 3;
+			}
+
+			entry->tree = file_read(ctx, argv[i]);
+			if (!entry->tree) {
+				talloc_free(ctx);
+				return 4;
+			}
+			llist_add_tail(&entry->list, &trees->entry);
+		}
+	}
+
+	if (llist_empty(&trees->entry))
+		exit_usage(1);
+
 	if (debug_enabled) {
 		fprintf(stderr, "====== dumping tree (base)\n");
 		dump_node(base_tree, stderr, true);
-		fprintf(stderr, "====== dumping tree (patch)\n");
-		dump_node(patch_tree, stderr, true);
 	}
 
-	append_patch(base_tree, patch_tree);
+	llist_for_each_entry(entry, &trees->entry, list) {
+		append_patch(base_tree, entry->tree);
+		if (debug_enabled) {
+			fprintf(stderr, "====== dumping tree (patch)\n");
+			dump_node(entry->tree, stderr, true);
+		}
+	}
 
 	if (debug_enabled)
 		fprintf(stderr, "====== dumping tree (patched)\n");
@@ -275,7 +299,7 @@ int main(int argc, char **argv)
 	fflush(stdout);
 
 	/* make AddressSanitizer / LeakSanitizer happy by recursively freeing the trees */
-	talloc_free(patch_tree);
+	talloc_free(trees);
 	talloc_free(base_tree);
 	talloc_free(ctx);
 
