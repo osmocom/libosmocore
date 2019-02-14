@@ -53,7 +53,7 @@ logging_vty_test# list
   logging print level (0|1)
   logging print file (0|1|basename) [last]
   logging set-log-mask MASK
-  logging level (aa|bb|ccc|dddd|eee|lglobal|llapd|linp|lmux|lmi|lmib|lsms|lctrl|lgtp|lstats|lgsup|loap|lss7|lsccp|lsua|lm3ua|lmgcp|ljibuf) (debug|info|notice|error|fatal)
+  logging level (aa|bb|ccc|dddd|eee|lglobal|llapd|linp|lmux|lmi|lmib|lsms|lctrl|lgtp|lstats|lgsup|loap|lss7|lsccp|lsua|lm3ua|lmgcp|ljibuf|lrspro) (debug|info|notice|error|fatal)
   logging level set-all (debug|info|notice|error|fatal)
   logging level force-all (debug|info|notice|error|fatal)
   no logging level force-all

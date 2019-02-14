@@ -169,6 +169,11 @@ static const struct log_info_cat internal_cat[OSMO_NUM_DLIB] = {
 		.description = "libosmo-netif Jitter Buffer",
 		.enabled = 1, .loglevel = LOGL_NOTICE,
 	},
+	[INT2IDX(DLRSPRO)] = {
+		.name = "DLRSPRO",
+		.description = "Remote SIM protocol",
+		.enabled = 1, .loglevel = LOGL_NOTICE,
+	},
 };
 
 void assert_loginfo(const char *src)
