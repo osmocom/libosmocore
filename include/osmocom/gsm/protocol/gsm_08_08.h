@@ -437,6 +437,20 @@ enum gsm0808_chan_rate_type_speech {
 	GSM0808_SPEECH_PERM_NO_CHANGE = 0x1f,
 };
 
+/* GSM 08.08 3.2.2.11 Channel Type */
+enum gsm0808_chan_rate_type_sign {
+	GSM0808_SIGN_ANY                 = 0x00,
+	GSM0808_SIGN_SDCCH               = 0x01,
+	GSM0808_SIGN_SDCCH_FULL_BM       = 0x02,
+	GSM0808_SIGN_SDCCH_HALF_LM       = 0x03,
+	GSM0808_SIGN_FULL_BM             = 0x08,
+	GSM0808_SIGN_HALF_LM             = 0x09,
+	GSM0808_SIGN_FULL_PREF           = 0x0a,
+	GSM0808_SIGN_HALF_PREF           = 0x0b,
+	GSM0808_SIGN_FULL_PREF_NO_CHANGE = 0x1a,
+	GSM0808_SIGN_HALF_PREF_NO_CHANGE = 0x1b,
+};
+
 /*! GSM 08.08 3.2.2.11 Channel Type
  *  (see also 3GPP TS 48.008, section 3.2.2.11) */
 enum gsm0808_permitted_speech {
