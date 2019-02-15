@@ -583,12 +583,12 @@ osmo_rat_type_names;
 osmo_lu_type_names;
 osmo_cm_service_type_names;
 
-osmo_classmark_is_r99;
-osmo_classmark1_is_r99;
-osmo_classmark2_is_r99;
-osmo_classmark_supports_a5;
-osmo_classmark_a5_name;
-osmo_classmark_update;
+osmo_gsm48_classmark_is_r99;
+osmo_gsm48_classmark1_is_r99;
+osmo_gsm48_classmark2_is_r99;
+osmo_gsm48_classmark_supports_a5;
+osmo_gsm48_classmark_a5_name;
+osmo_gsm48_classmark_update;
 
 local: *;
 };
