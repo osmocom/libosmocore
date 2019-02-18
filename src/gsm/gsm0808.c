@@ -178,7 +178,10 @@ struct msgb *gsm0808_create_clear_complete(void)
 	return msg;
 }
 
-/*! Create BSSMAP Clear Command message
+/*! Create BSSMAP Clear Command message with BSSAP header *before* l3h and BSSMAP in l3h.
+ *  This is quite different from most (all?) other gsm0808_create_* which have l3h
+ *  point to the BSSAP header.  However, we have to keep this for backwards compatibility.
+ *  Use gsm0808_create_clear_command2() for a 'modern' implementation.
  *  \param[in] cause TS 08.08 cause value
  *  \returns callee-allocated msgb with BSSMAP Clear Command message */
 struct msgb *gsm0808_create_clear_command(uint8_t cause)
