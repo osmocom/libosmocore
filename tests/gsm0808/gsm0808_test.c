@@ -186,6 +186,28 @@ static void test_create_clear_command()
 	msgb_free(msg);
 }
 
+static void test_create_clear_command2()
+{
+	static const uint8_t res[] = { 0x00, 0x04, 0x20, 0x04, 0x01, 0x23 };
+	struct msgb *msg;
+
+	printf("Testing creating Clear Command 2\n");
+	msg = gsm0808_create_clear_command2(0x23, false);
+	VERIFY(msg, res, ARRAY_SIZE(res));
+	msgb_free(msg);
+}
+
+static void test_create_clear_command2_csfb()
+{
+	static const uint8_t res[] = { 0x00, 0x05, 0x20, 0x04, 0x01, 0x23, 0x8F };
+	struct msgb *msg;
+
+	printf("Testing creating Clear Command 2 (CSFB)\n");
+	msg = gsm0808_create_clear_command2(0x23, true);
+	VERIFY(msg, res, ARRAY_SIZE(res));
+	msgb_free(msg);
+}
+
 static void test_create_clear_complete()
 {
 	static const uint8_t res[] = { 0x00, 0x01, 0x21 };
@@ -2219,6 +2241,8 @@ int main(int argc, char **argv)
 	test_create_reset();
 	test_create_reset_ack();
 	test_create_clear_command();
+	test_create_clear_command2();
+	test_create_clear_command2_csfb();
 	test_create_clear_complete();
 	test_create_cipher();
 	test_create_cipher_complete();

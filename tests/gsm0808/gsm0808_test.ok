@@ -6,6 +6,8 @@ Testing creating Layer3 (AoIP)
 Testing creating Reset
 Testing creating Reset Ack
 Testing creating Clear Command
+Testing creating Clear Command 2
+Testing creating Clear Command 2 (CSFB)
 Testing creating Clear Complete
 Testing creating Chipher Mode Command
 Testing creating Cipher Complete
