@@ -201,12 +201,18 @@ struct msgb *gsm0808_create_clear_command(uint8_t cause)
  *  \returns callee-allocated msgb with BSSMAP Clear Command message. */
 struct msgb *gsm0808_create_clear_command2(uint8_t cause, bool csfb_ind)
 {
-	struct msgb *msg = gsm0808_create_clear_command(cause);
+	struct msgb *msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM,
+					       "bssmap: clear command");
 	if (!msg)
 		return NULL;
 
+	msgb_v_put(msg, BSS_MAP_MSG_CLEAR_CMD);
+	gsm0808_enc_cause(msg, cause);
+
 	if (csfb_ind)
 		msgb_v_put(msg, GSM0808_IE_CSFB_INDICATION);
+
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
 
 	return msg;
 }
