@@ -236,6 +236,8 @@ const char *rsl_chan_nr_str(uint8_t chan_nr)
 		sprintf(str, "RACH on TS%d", ts);
 	else if (cbits == 0x12)
 		sprintf(str, "PCH/AGCH on TS%d", ts);
+	else if (cbits == 0x18)
+		sprintf(str, "PDCH on TS%d", ts);
 	else
 		sprintf(str, "UNKNOWN on TS%d", ts);
 
