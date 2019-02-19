@@ -608,7 +608,7 @@ static void nsvc_start_timer(struct gprs_nsvc *nsvc, enum nsvc_timer_mode mode)
 	DEBUGP(DNS, "NSEI=%u Starting timer in mode %s (%u seconds)\n",
 		nsvc->nsei, get_value_string(timer_mode_strs, mode),
 		seconds);
-		
+
 	if (osmo_timer_pending(&nsvc->timer))
 		osmo_timer_del(&nsvc->timer);
 
@@ -636,7 +636,7 @@ static void gprs_ns_timer_cb(void *data)
 	DEBUGP(DNS, "NSEI=%u Timer expired in mode %s (%u seconds)\n",
 		nsvc->nsei, get_value_string(timer_mode_strs, nsvc->timer_mode),
 		seconds);
-		
+
 	switch (nsvc->timer_mode) {
 	case NSVC_TIMER_TNS_ALIVE:
 		/* Tns-alive case: we expired without response ! */
