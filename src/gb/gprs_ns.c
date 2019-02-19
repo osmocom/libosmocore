@@ -547,6 +547,34 @@ int gprs_ns_tx_block(struct gprs_nsvc *nsvc, uint8_t cause)
 	return gprs_ns_tx(nsvc, msg);
 }
 
+/*! Transmit a NS-BLOCK-ACK on a given NS-VC
+ *  \param[in] nsvc NS-VC on which the NS-BLOCK is to be transmitted
+ *  \returns 0 in case of success
+ */
+static int gprs_ns_tx_block_ack(struct gprs_nsvc *nsvc)
+{
+	struct msgb *msg;
+	struct gprs_ns_hdr *nsh;
+	uint16_t nsvci = osmo_htons(nsvc->nsvci);
+
+	log_set_context(LOG_CTX_GB_NSVC, nsvc);
+
+	msg = gprs_ns_msgb_alloc();
+	if (!msg)
+		return -ENOMEM;
+
+	LOGP(DNS, LOGL_INFO, "NSEI=%u Tx NS BLOCK ACK (NSVCI=%u)\n", nsvc->nsei, nsvc->nsvci);
+
+	/* be conservative and mark it as blocked even now! */
+	msg->l2h = msgb_put(msg, sizeof(*nsh));
+	nsh = (struct gprs_ns_hdr *) msg->l2h;
+	nsh->pdu_type = NS_PDUT_BLOCK_ACK;
+
+	msgb_tvlv_put(msg, NS_IE_VCI, 2, (uint8_t *) &nsvci);
+
+	return gprs_ns_tx(nsvc, msg);
+}
+
 /*! Transmit a NS-UNBLOCK on a given NS-VC
  *  \param[in] nsvc NS-VC on which the NS-UNBLOCK is to be transmitted
  *  \returns 0 in case of success
@@ -1122,7 +1150,7 @@ static int gprs_ns_rx_block(struct gprs_nsvc *nsvc, struct msgb *msg)
 	ns_osmo_signal_dispatch(nsvc, S_NS_BLOCK, *cause);
 	rate_ctr_inc(&nsvc->ctrg->ctr[NS_CTR_BLOCKED]);
 
-	return gprs_ns_tx_simple(nsvc, NS_PDUT_BLOCK_ACK);
+	return gprs_ns_tx_block_ack(nsvc);
 }
 
 int gprs_ns_vc_create(struct gprs_ns_inst *nsi, struct msgb *msg,
