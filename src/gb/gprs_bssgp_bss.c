@@ -277,7 +277,7 @@ int bssgp_tx_bvc_unblock(struct bssgp_bvc_ctx *bctx)
 			(struct bssgp_normal_hdr *) msgb_put(msg, sizeof(*bgph));
 	uint16_t _bvci = osmo_htons(bctx->bvci);
 
-	LOGP(DBSSGP, LOGL_NOTICE, "BSSGP (BVCI=%u) Tx BVC-BLOCK\n", bctx->bvci);
+	LOGP(DBSSGP, LOGL_NOTICE, "BSSGP (BVCI=%u) Tx BVC-UNBLOCK\n", bctx->bvci);
 
 	msgb_nsei(msg) = bctx->nsei;
 	msgb_bvci(msg) = 0; /* Signalling */
