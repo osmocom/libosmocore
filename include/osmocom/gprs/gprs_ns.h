@@ -175,6 +175,8 @@ struct sockaddr_in;
 /* main function for higher layers (BSSGP) to send NS messages */
 int gprs_ns_sendmsg(struct gprs_ns_inst *nsi, struct msgb *msg);
 
+int gprs_ns_tx_alive(struct gprs_nsvc *nsvc);
+int gprs_ns_tx_alive_ack(struct gprs_nsvc *nsvc);
 int gprs_ns_tx_reset(struct gprs_nsvc *nsvc, uint8_t cause);
 int gprs_ns_tx_block(struct gprs_nsvc *nsvc, uint8_t cause);
 int gprs_ns_tx_unblock(struct gprs_nsvc *nsvc);
