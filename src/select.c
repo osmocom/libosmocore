@@ -35,6 +35,7 @@
 #include <osmocom/core/select.h>
 #include <osmocom/core/linuxlist.h>
 #include <osmocom/core/timer.h>
+#include <osmocom/core/logging.h>
 
 #include "../config.h"
 
@@ -214,6 +215,11 @@ restart:
 
 		if (flags) {
 			work = 1;
+			/* make sure to clear any log context before processing the next incoming message
+			 * as part of some file descriptor callback.  This effectively prevents "context
+			 * leaking" from processing of one message into processing of the next message as part
+			 * of one iteration through the list of file descriptors here.  See OS#3813 */
+			log_reset_context();
 			ufd->cb(ufd, flags);
 		}
 		/* ugly, ugly hack. If more than one filedescriptor was
