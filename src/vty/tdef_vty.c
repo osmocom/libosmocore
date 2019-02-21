@@ -31,6 +31,7 @@
 #include <osmocom/vty/command.h>
 #include <osmocom/vty/tdef_vty.h>
 #include <osmocom/core/tdef.h>
+#include <osmocom/core/fsm.h>
 
 /*! \addtogroup Tdef_VTY
  *
@@ -40,7 +41,7 @@
  * \file tdef_vty.c
  */
 
-/*! Parse an argument like "T1234", "t1234" or "1234", as from OSMO_TDEF_VTY_ARG_T.
+/*! Parse an argument like "1234", "T1234", "t1234", or "X1234", "x1234", as from OSMO_TDEF_VTY_ARG_T.
  * \param[in] vty  VTY context for vty_out() of error messages.
  * \param[in] tdefs  Array of timer definitions to look up T timer.
  * \param[in] T_str  Argument string. It is not validated, expected to be checked by VTY input.
@@ -53,6 +54,7 @@ struct osmo_tdef *osmo_tdef_vty_parse_T_arg(struct vty *vty, struct osmo_tdef *t
 	struct osmo_tdef *t;
 	char *endptr;
 	const char *T_nr_str;
+	int sign = 1;
 
 	if (!tdefs) {
 		vty_out(vty, "%% Error: no timers found%s", VTY_NEWLINE);
@@ -60,20 +62,31 @@ struct osmo_tdef *osmo_tdef_vty_parse_T_arg(struct vty *vty, struct osmo_tdef *t
 	}
 
 	T_nr_str = T_str;
-	if (T_nr_str[0] == 't' || T_nr_str[0] == 'T')
+	if (T_nr_str[0] == 't' || T_nr_str[0] == 'T') {
+		sign = 1;
 		T_nr_str++;
+	} else if (T_nr_str[0] == 'x' || T_nr_str[0] == 'X') {
+		T_nr_str++;
+		sign = -1;
+	}
+
+	/* Make sure to disallow any characters changing the signedness of the parsed int */
+	if (T_nr_str[0] < '0' || T_nr_str[0] > '9') {
+		vty_out(vty, "%% Invalid T timer argument (should be 'T1234' or 'X1234'): '%s'%s", T_str, VTY_NEWLINE);
+		return NULL;
+	}
 
 	errno = 0;
 	l = strtol(T_nr_str, &endptr, 10);
-	if (errno || *endptr || l > INT_MAX) {
-		vty_out(vty, "%% No such timer: '%s'%s", T_str, VTY_NEWLINE);
+	if (errno || *endptr || l > INT_MAX || l < 0) {
+		vty_out(vty, "%% Invalid T timer argument (should be 'T1234' or 'X1234'): '%s'%s", T_str, VTY_NEWLINE);
 		return NULL;
 	}
-	T = l;
+	T = l * sign;
 
 	t = osmo_tdef_get_entry(tdefs, T);
 	if (!t)
-		vty_out(vty, "%% No such timer: T%d%s", T, VTY_NEWLINE);
+		vty_out(vty, "%% No such timer: " OSMO_T_FMT "%s", OSMO_T_FMT_ARGS(T), VTY_NEWLINE);
 	return t;
 }
 
@@ -153,8 +166,8 @@ void osmo_tdef_vty_out_one_va(struct vty *vty, struct osmo_tdef *t, const char *
 	}
 	if (prefix_fmt)
 		vty_out_va(vty, prefix_fmt, va);
-	vty_out(vty, "T%d = %lu%s%s\t%s (default: %lu%s%s)%s",
-		t->T, t->val,
+	vty_out(vty, OSMO_T_FMT " = %lu%s%s\t%s (default: %lu%s%s)%s",
+		OSMO_T_FMT_ARGS(t->T), t->val,
 		t->unit == OSMO_TDEF_CUSTOM ? "" : " ", t->unit == OSMO_TDEF_CUSTOM ? "" : osmo_tdef_unit_name(t->unit),
 		t->desc, t->default_val,
 		t->unit == OSMO_TDEF_CUSTOM ? "" : " ", t->unit == OSMO_TDEF_CUSTOM ? "" : osmo_tdef_unit_name(t->unit),
@@ -227,7 +240,7 @@ void osmo_tdef_vty_write(struct vty *vty, struct osmo_tdef *tdefs, const char *p
 			vty_out_va(vty, prefix_fmt, va);
 			va_end(va);
 		}
-		vty_out(vty, "T%d %lu%s", t->T, t->val, VTY_NEWLINE);
+		vty_out(vty, OSMO_T_FMT " %lu%s", OSMO_T_FMT_ARGS(t->T), t->val, VTY_NEWLINE);
 	}
 }
 

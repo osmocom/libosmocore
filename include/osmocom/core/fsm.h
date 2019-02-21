@@ -194,6 +194,9 @@ void osmo_fsm_log_timeouts(bool log_timeouts);
 			    caller_file, caller_line, \
 			    fmt, ## args)
 
+#define OSMO_T_FMT "%c%u"
+#define OSMO_T_FMT_ARGS(T) ((T) >= 0 ? 'T' : 'X'), ((T) >= 0 ? T : -T)
+
 int osmo_fsm_register(struct osmo_fsm *fsm);
 void osmo_fsm_unregister(struct osmo_fsm *fsm);
 struct osmo_fsm *osmo_fsm_find_by_name(const char *name);

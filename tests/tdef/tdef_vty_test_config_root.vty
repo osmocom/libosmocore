@@ -9,7 +9,7 @@ tdef_vty_test> show timer ?
   [software]  Typical software development cycle
 
 tdef_vty_test> show timer test ?
-  [TNNNN]  T-number, optionally preceded by 't' or 'T'.
+  [TNNNN]  T- or X-timer-number -- 3GPP compliant timer number of the format '1234' or 'T1234' or 't1234'; Osmocom-specific timer number of the format: 'X1234' or 'x1234'.
 
 tdef_vty_test> show timer
 tea: T1 = 50 s	Water Boiling Timeout (default: 50 s)
@@ -21,7 +21,7 @@ test: T2 = 100 ms	Testing a hundred milliseconds (default: 100 ms)
 test: T3 = 100 m	Testing a hundred minutes (default: 100 m)
 test: T4 = 100	Testing a hundred potatoes (default: 100)
 test: T2147483647 = 4294967295 m	Very large (default: 4294967295 m)
-test: T-23 = 239471 s	Negative T number (default: 239471 s)
+test: X23 = 239471 s	Negative T number (default: 239471 s)
 software: T1 = 30 m	Write code (default: 30 m)
 software: T2 = 20 ms	Hit segfault (default: 20 ms)
 software: T3 = 480 m	Fix bugs (default: 480 m)
@@ -37,7 +37,7 @@ test: T2 = 100 ms	Testing a hundred milliseconds (default: 100 ms)
 test: T3 = 100 m	Testing a hundred minutes (default: 100 m)
 test: T4 = 100	Testing a hundred potatoes (default: 100)
 test: T2147483647 = 4294967295 m	Very large (default: 4294967295 m)
-test: T-23 = 239471 s	Negative T number (default: 239471 s)
+test: X23 = 239471 s	Negative T number (default: 239471 s)
 software: T1 = 30 m	Write code (default: 30 m)
 software: T2 = 20 ms	Hit segfault (default: 20 ms)
 software: T3 = 480 m	Fix bugs (default: 480 m)
@@ -66,7 +66,7 @@ tdef_vty_test(config)# timer sof T123 ?
   [default]         Set to default timer value
 
 tdef_vty_test(config)# timer test ?
-  [TNNNN]  T-number, optionally preceded by 't' or 'T'.
+  [TNNNN]  T- or X-timer-number -- 3GPP compliant timer number of the format '1234' or 'T1234' or 't1234'; Osmocom-specific timer number of the format: 'X1234' or 'x1234'.
 
 tdef_vty_test(config)# timer test t2 ?
   [<0-2147483647>]  New timer value
@@ -82,7 +82,7 @@ test: T2 = 100 ms	Testing a hundred milliseconds (default: 100 ms)
 test: T3 = 100 m	Testing a hundred minutes (default: 100 m)
 test: T4 = 100	Testing a hundred potatoes (default: 100)
 test: T2147483647 = 4294967295 m	Very large (default: 4294967295 m)
-test: T-23 = 239471 s	Negative T number (default: 239471 s)
+test: X23 = 239471 s	Negative T number (default: 239471 s)
 software: T1 = 30 m	Write code (default: 30 m)
 software: T2 = 20 ms	Hit segfault (default: 20 ms)
 software: T3 = 480 m	Fix bugs (default: 480 m)
@@ -108,8 +108,11 @@ tdef_vty_test(config)# do show timer tea T5
 tdef_vty_test(config)# do show timer tea T0
 % No such timer: T0
 
+tdef_vty_test(config)# do show timer tea X123
+% No such timer: X123
+
 tdef_vty_test(config)# do show timer tea T-123
-% No such timer: T-123
+% Invalid T timer argument (should be 'T1234' or 'X1234'): 'T-123'
 
 tdef_vty_test(config)# do show timer t
 tea: T1 = 50 s	Water Boiling Timeout (default: 50 s)
@@ -121,7 +124,7 @@ test: T2 = 100 ms	Testing a hundred milliseconds (default: 100 ms)
 test: T3 = 100 m	Testing a hundred minutes (default: 100 m)
 test: T4 = 100	Testing a hundred potatoes (default: 100)
 test: T2147483647 = 4294967295 m	Very large (default: 4294967295 m)
-test: T-23 = 239471 s	Negative T number (default: 239471 s)
+test: X23 = 239471 s	Negative T number (default: 239471 s)
 
 tdef_vty_test(config)# do show timer te
 tea: T1 = 50 s	Water Boiling Timeout (default: 50 s)
@@ -133,7 +136,7 @@ test: T2 = 100 ms	Testing a hundred milliseconds (default: 100 ms)
 test: T3 = 100 m	Testing a hundred minutes (default: 100 m)
 test: T4 = 100	Testing a hundred potatoes (default: 100)
 test: T2147483647 = 4294967295 m	Very large (default: 4294967295 m)
-test: T-23 = 239471 s	Negative T number (default: 239471 s)
+test: X23 = 239471 s	Negative T number (default: 239471 s)
 
 tdef_vty_test(config)# do show timer te T2
 tea: T2 = 300 s	Tea brewing (default: 300 s)
@@ -152,8 +155,11 @@ tdef_vty_test(config)# timer tea T3 32
 tdef_vty_test(config)# timer tea T3
 tea: T3 = 32 m	Let tea cool down before drinking (default: 5 m)
 
+tdef_vty_test(config)# timer tea X123 99
+% No such timer: X123
+
 tdef_vty_test(config)# timer tea T-123 99
-% No such timer: T-123
+% Invalid T timer argument (should be 'T1234' or 'X1234'): 'T-123'
 
 tdef_vty_test(config)# timer tea T0 0
 % No such timer: T0
@@ -177,7 +183,7 @@ test: T2 = 100 ms	Testing a hundred milliseconds (default: 100 ms)
 test: T3 = 100 m	Testing a hundred minutes (default: 100 m)
 test: T4 = 100	Testing a hundred potatoes (default: 100)
 test: T2147483647 = 4294967295 m	Very large (default: 4294967295 m)
-test: T-23 = 239471 s	Negative T number (default: 239471 s)
+test: X23 = 239471 s	Negative T number (default: 239471 s)
 
 tdef_vty_test(config)# timer te T2
 tea: T2 = 300 s	Tea brewing (default: 300 s)
@@ -209,8 +215,11 @@ software: T1 = 30 m	Write code (default: 30 m)
 tdef_vty_test(config)# do show timer software T99
 % No such timer: T99
 
+tdef_vty_test(config)# do show timer software X123123
+% No such timer: X123123
+
 tdef_vty_test(config)# do show timer software T-123123
-% No such timer: T-123123
+% Invalid T timer argument (should be 'T1234' or 'X1234'): 'T-123123'
 
 tdef_vty_test(config)# do show timer software T0
 % No such timer: T0
@@ -251,7 +260,7 @@ test: T2 = 100 ms	Testing a hundred milliseconds (default: 100 ms)
 test: T3 = 100 m	Testing a hundred minutes (default: 100 m)
 test: T4 = 100	Testing a hundred potatoes (default: 100)
 test: T2147483647 = 4294967295 m	Very large (default: 4294967295 m)
-test: T-23 = 239471 s	Negative T number (default: 239471 s)
+test: X23 = 239471 s	Negative T number (default: 239471 s)
 software: T1 = 13 m	Write code (default: 30 m)
 software: T2 = 0 ms	Hit segfault (default: 20 ms)
 software: T3 = 480 m	Fix bugs (default: 480 m)
@@ -266,7 +275,7 @@ test: T2 = 100 ms	Testing a hundred milliseconds (default: 100 ms)
 test: T3 = 100 m	Testing a hundred minutes (default: 100 m)
 test: T4 = 100	Testing a hundred potatoes (default: 100)
 test: T2147483647 = 4294967295 m	Very large (default: 4294967295 m)
-test: T-23 = 239471 s	Negative T number (default: 239471 s)
+test: X23 = 239471 s	Negative T number (default: 239471 s)
 software: T1 = 13 m	Write code (default: 30 m)
 software: T2 = 0 ms	Hit segfault (default: 20 ms)
 software: T3 = 480 m	Fix bugs (default: 480 m)

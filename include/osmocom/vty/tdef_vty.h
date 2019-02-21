@@ -35,7 +35,9 @@ struct osmo_tdef;
 struct osmo_tdef_group;
 
 #define OSMO_TDEF_VTY_ARG_T "TNNNN"
-#define OSMO_TDEF_VTY_DOC_T "T-number, optionally preceded by 't' or 'T'.\n"
+#define OSMO_TDEF_VTY_DOC_T \
+	"T- or X-timer-number -- 3GPP compliant timer number of the format '1234' or 'T1234' or 't1234';" \
+	" Osmocom-specific timer number of the format: 'X1234' or 'x1234'.\n"
 #define OSMO_TDEF_VTY_ARG_T_OPTIONAL "[" OSMO_TDEF_VTY_ARG_T "]"
 
 #define OSMO_TDEF_VTY_ARG_VAL "(<0-2147483647>|default)"

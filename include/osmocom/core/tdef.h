@@ -54,6 +54,7 @@ static inline const char *osmo_tdef_unit_name(enum osmo_tdef_unit val)
  *                 { .T=10, .default_val=6, .desc="RR Assignment" },
  *                 { .T=101, .default_val=10, .desc="inter-BSC Handover MT, HO Request to HO Accept" },
  *                 { .T=3101, .default_val=3, .desc="RR Immediate Assignment" },
+ *                 { .T=-23, .default_val=42, .desc="internal X23 timeout (contrived example)" },
  *                 {}
  *         };
  *
@@ -61,8 +62,10 @@ static inline const char *osmo_tdef_unit_name(enum osmo_tdef_unit val)
  * configuration sets user-defined values (see osmo_tdef_vty_init()).
  */
 struct osmo_tdef {
-	/*! T1234 number; type corresponds to struct osmo_fsm_inst.T. Negative and zero T numbers are actually possible,
-	 * but be aware that osmo_tdef_fsm_inst_state_chg() interprets T == 0 as "no timer". */
+	/*! T1234 or X1234 number, corresponding to struct osmo_fsm_inst::T.
+	 * Positive values for T are considered to be 3GPP spec compliant and appear in logging and VTY as "T1234",
+	 * while negative values are considered to be Osmocom specific timers, represented in logging and VTY as
+	 * "X1234". Be aware that osmo_tdef_fsm_inst_state_chg() interprets T == 0 as "state without timeout". */
 	const int T;
 	/*! Timeout duration (according to unit), default value; type corresponds to osmo_fsm_inst_state_chg()'s
 	 * timeout_secs argument. Note that osmo_fsm_inst_state_chg() clamps the range. */
@@ -98,7 +101,9 @@ struct osmo_tdef *osmo_tdef_get_entry(struct osmo_tdef *tdefs, int T);
 /*! Using osmo_tdef for osmo_fsm_inst: array entry for a mapping of state numbers to timeout definitions.
  * For a usage example, see osmo_tdef_get_state_timeout() and test_tdef_state_timeout() in tdef_test.c. */
 struct osmo_tdef_state_timeout {
-	/*! Timer number to match struct osmo_tdef.T, and to pass to osmo_fsm_inst_state_chg(). */
+	/*! Timer number to match struct osmo_tdef.T, and to pass to osmo_fsm_inst_state_chg(). Positive values for T
+	 * are considered to be 3GPP spec compliant and appear in logging and VTY as "T1234", while negative values are
+	 * considered to be Osmocom specific timers, represented in logging and VTY as "X1234". */
 	int T;
 	/*! If true, call osmo_fsm_inst_state_chg_keep_timer().
 	 * If T == 0, keep previous T number, otherwise also set fi->T. */
