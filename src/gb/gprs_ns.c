@@ -365,6 +365,13 @@ static const struct value_string ns_cause_str[] = {
 	{ NS_CAUSE_PROTO_ERR_UNSPEC,	"Protocol error, unspecified" },
 	{ NS_CAUSE_INVAL_ESSENT_IE,	"Invalid essential IE" },
 	{ NS_CAUSE_MISSING_ESSENT_IE,	"Missing essential IE" },
+	{ NS_CAUSE_INVAL_NR_IPv4_EP,	"Invalid Number of IPv4 Endpoints" },
+	{ NS_CAUSE_INVAL_NR_IPv6_EP,	"Invalid Number of IPv6 Endpoints" },
+	{ NS_CAUSE_INVAL_NR_NS_VC,	"Invalid Number of NS-VCs" },
+	{ NS_CAUSE_INVAL_WEIGH,		"Invalid Weights" },
+	{ NS_CAUSE_UNKN_IP_EP,		"Unknown IP Endpoint" },
+	{ NS_CAUSE_UNKN_IP_ADDR,	"Unknown IP Address" },
+	{ NS_CAUSE_UNKN_IP_TEST_FAILED,	"IP Test Failed" },
 	{ 0, NULL }
 };
 
