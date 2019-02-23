@@ -3,19 +3,19 @@
 #pragma once
 
 #include <stdint.h>
-/* the data structure stored in msgb->cb for libgb apps */
+/*! the data structure stored in msgb->cb for libgb apps */
 struct libgb_msgb_cb {
 	unsigned char *bssgph;
 	unsigned char *llch;
 
-	/* Cell Identifier */
+	/*! Cell Identifier */
 	unsigned char *bssgp_cell_id;
 
-	/* Identifiers of a BTS, equal to 'struct bssgp_bts_ctx' */
+	/*! Identifiers of a BTS, equal to 'struct bssgp_bts_ctx' */
 	uint16_t nsei;
 	uint16_t bvci;
 
-	/* Identifier of a MS (inside BTS), equal to 'struct sgsn_mm_ctx' */
+	/*! Identifier of a MS (inside BTS), equal to 'struct sgsn_mm_ctx' */
 	uint32_t tlli;
 } __attribute__((packed, may_alias));
 #define LIBGB_MSGB_CB(__msgb)	((struct libgb_msgb_cb *)&((__msgb)->cb[0]))
