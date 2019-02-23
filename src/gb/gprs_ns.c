@@ -1171,8 +1171,7 @@ static int gprs_ns_rx_reset(struct gprs_nsvc **nsvc, struct msgb *msg)
 	rc = gprs_ns_tx_reset_ack(*nsvc);
 
 	/* start the test procedure */
-	gprs_ns_tx_alive(*nsvc);
-	nsvc_start_timer((*nsvc), NSVC_TIMER_TNS_TEST);
+	gprs_nsvc_start_test(*nsvc);
 
 	return rc;
 }
@@ -1295,10 +1294,9 @@ static int gprs_ns_rx_reset_ack(struct gprs_nsvc **nsvc, struct msgb *msg)
 		osmo_timer_del(&(*nsvc)->timer);
 	}
 	/* Initiate TEST proc.: Send ALIVE and start timer */
-	rc = gprs_ns_tx_alive(*nsvc);
-	nsvc_start_timer(*nsvc, NSVC_TIMER_TNS_TEST);
+	gprs_nsvc_start_test(*nsvc);
 
-	return rc;
+	return 0;
 }
 
 static int gprs_ns_rx_block(struct gprs_nsvc *nsvc, struct msgb *msg)
@@ -1947,6 +1945,13 @@ char *gprs_nsvc_state_append(char *s, struct gprs_nsvc *nsvc)
 		NS_DESC_B(nsvc->remote_state));
 
 	return s;
+}
+
+/*! Start the ALIVE timer procedure in all NS-VCs part of this NS Instance */
+void gprs_nsvc_start_test(struct gprs_nsvc *nsvc)
+{
+	gprs_ns_tx_alive(nsvc);
+	nsvc_start_timer(nsvc, NSVC_TIMER_TNS_TEST);
 }
 
 /*! @} */

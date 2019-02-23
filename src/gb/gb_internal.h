@@ -4,6 +4,7 @@
 #include <osmocom/gsm/tlv.h>
 #include <osmocom/gprs/gprs_ns.h>
 
+void gprs_nsvc_start_test(struct gprs_nsvc *nsvc);
 int gprs_ns_tx_sns_ack(struct gprs_nsvc *nsvc, uint8_t trans_id, uint8_t *cause,
 		       const struct gprs_ns_ie_ip4_elem *ip4_elems,unsigned int num_ip4_elems);
 
