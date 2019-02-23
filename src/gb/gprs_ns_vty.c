@@ -198,9 +198,10 @@ static void dump_ns(struct vty *vty, const struct gprs_ns_inst *nsi, bool stats,
 	vty_out(vty, "Encapsulation NS-UDP-IP     Local IP: %s, UDP Port: %u%s",
 		inet_ntoa(ia), vty_nsi->nsip.local_port, VTY_NEWLINE);
 
-	ia.s_addr = osmo_htonl(vty_nsi->frgre.local_ip);
-	vty_out(vty, "Encapsulation NS-FR-GRE-IP  Local IP: %s%s",
-		inet_ntoa(ia), VTY_NEWLINE);
+	if (nsi->frgre.enabled) {
+		ia.s_addr = osmo_htonl(vty_nsi->frgre.local_ip);
+		vty_out(vty, "Encapsulation NS-FR-GRE-IP  Local IP: %s%s", inet_ntoa(ia), VTY_NEWLINE);
+	}
 
 	llist_for_each_entry(nsvc, &nsi->gprs_nsvcs, list) {
 		if (nsvc == nsi->unknown_nsvc)
