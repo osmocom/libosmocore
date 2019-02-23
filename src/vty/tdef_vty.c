@@ -287,7 +287,7 @@ DEFUN(cfg_timer, cfg_timer_cmd, "DYNAMIC", "DYNAMIC")
 		return show_timer(self, vty, argc, argv);
 
 	/* If all arguments are passed, this is configuring a timer. */
-	group_arg = argc > 0 ? argv[0] : NULL;
+	group_arg = argv[0];
 	timer_args = argv + 1;
 	osmo_tdef_groups_for_each(g, global_tdef_groups) {
 		if (strcmp(g->name, group_arg))
