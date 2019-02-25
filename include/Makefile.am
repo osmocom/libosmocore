@@ -52,6 +52,7 @@ nobase_include_HEADERS = \
                        osmocom/core/timer_compat.h \
                        osmocom/core/utils.h \
                        osmocom/core/write_queue.h \
+                       osmocom/core/sockaddr_str.h \
                        osmocom/crypt/auth.h \
                        osmocom/crypt/gprs_cipher.h \
 		       osmocom/ctrl/control_cmd.h \

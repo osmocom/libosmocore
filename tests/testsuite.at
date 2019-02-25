@@ -331,3 +331,9 @@ AT_KEYWORDS([tdef])
 cat $abs_srcdir/tdef/tdef_test.ok > expout
 AT_CHECK([$abs_top_builddir/tests/tdef/tdef_test], [0], [expout], [ignore])
 AT_CLEANUP
+
+AT_SETUP([sockaddr_str])
+AT_KEYWORDS([sockaddr_str])
+cat $abs_srcdir/sockaddr_str/sockaddr_str_test.ok > expout
+AT_CHECK([$abs_top_builddir/tests/sockaddr_str/sockaddr_str_test], [0], [expout], [ignore])
+AT_CLEANUP

@@ -1,0 +1,239 @@
+/* tests for osmo_sockaddr_str API of libmsomcore */
+/*
+ * (C) 2019 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
+ *
+ * Author: neels@hofmeyr.de
+ *
+ * All Rights Reserved
+ *
+ * SPDX-License-Identifier: GPL-2.0+
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License along
+ * with this program; if not, write to the Free Software Foundation, Inc.,
+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+ *
+ */
+
+#include <stdio.h>
+#include <errno.h>
+#include <string.h>
+#include <osmocom/core/sockaddr_str.h>
+#include <osmocom/core/utils.h>
+#include <netinet/in.h>
+
+struct osmo_sockaddr_str oip_data[] = {
+	{ .af = AF_INET, .ip = "1.2.3.4", .port = 5 },
+	{ .af = AF_INET, .ip = "0.0.0.0", .port = 0 },
+	{ .af = AF_INET, .ip = "255.255.255.255", .port = 65535 },
+	{ .af = AF_INET, .ip = "0.0.0.256", .port = 1 },
+	{ .af = AF_INET, .ip = "not an ip address", .port = 1 },
+	{ .af = AF_INET6, .ip = "1:2:3::4", .port = 5 },
+	{ .af = AF_INET6, .ip = "::", .port = 0 },
+	{ .af = AF_INET6, .ip = "::1", .port = 0 },
+	{ .af = AF_INET6, .ip = "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", .port = 65535 },
+	{ .af = AF_INET6, .ip = "FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF", .port = 65535 },
+	{ .af = AF_INET6, .ip = "::fffff", .port = 1 },
+	{ .af = AF_INET6, .ip = "not an ip address", .port = 1 },
+
+	{ .af = AF_INET6, .ip = "1.2.3.4", .port = 5 },
+	{ .af = AF_INET, .ip = "1:2:3::4", .port = 5 },
+	{ .af = AF_UNSPEC, .ip = "1.2.3.4", .port = 5 },
+	{ .af = AF_INET, .ip = "", .port = 5 },
+	{ .af = AF_INET6, .ip = "", .port = 5 },
+	{ .af = AF_INET, .ip = "1.2.3.4", .port = 0 },
+	{ .af = AF_INET, .ip = "1.2.3:4:5", .port = 0 },
+	{ .af = AF_INET6, .ip = "::1:10.9.8.7", .port = 1 },
+};
+
+const char *af_name(int af)
+{
+	switch (af) {
+	case AF_INET:
+		return "AF_INET";
+	case AF_INET6:
+		return "AF_INET6";
+	case AF_UNSPEC:
+		return "AF_UNSPEC";
+	default:
+		return "?";
+	}
+}
+
+static const struct value_string err_names[] = {
+	{ -EINVAL, "-EINVAL" },
+	{}
+};
+
+static inline const char *err_name(int err)
+{ return get_value_string(err_names, err); }
+
+static inline const char *rc_name(int rc)
+{
+	if (!rc)
+		return "rc == 0";
+	if (rc < 0)
+		return "rc < 0";
+	return "rc > 0";
+}
+
+void dump_oip(const struct osmo_sockaddr_str *oip)
+{
+	printf("{ .af = %s, .ip = %s, .port = %u }\n", af_name(oip->af), osmo_quote_str(oip->ip, -1), oip->port);
+}
+
+void sockaddr_str_test_conversions()
+{
+	int i;
+	char buf[1024];
+
+#define hexdump(what) \
+	osmo_hexdump_buf(buf, sizeof(buf), (void*)(&what), sizeof(what), "", false)
+
+	for (i = 0; i < ARRAY_SIZE(oip_data); i++) {
+		struct osmo_sockaddr_str *x = &oip_data[i];
+		int rc;
+		printf("\n\n");
+		dump_oip(x);
+
+		printf("  osmo_sockaddr_str_is_set() = %s\n", osmo_sockaddr_str_is_set(x) ? "true" : "false");
+
+		{
+			struct in_addr a = {};
+
+			rc = osmo_sockaddr_str_to_in_addr(x, &a);
+			printf("  osmo_sockaddr_str_to_in_addr() %s in_addr=%s\n", rc_name(rc), hexdump(a));
+
+			if (rc == 0) {
+				struct osmo_sockaddr_str back;
+				rc = osmo_sockaddr_str_from_in_addr(&back, &a, x->port);
+				printf("   -> osmo_sockaddr_str_from_in_addr() %s ", rc_name(rc));
+				dump_oip(&back);
+				if (memcmp(x, &back, sizeof(back)))
+					printf("      DIFFERS!\n");
+			}
+		}
+
+		{
+			struct in6_addr a = {};
+
+			rc = osmo_sockaddr_str_to_in6_addr(x, &a);
+			printf("  osmo_sockaddr_str_to_in6_addr() %s in6_addr=%s\n", rc_name(rc), hexdump(a));
+
+			if (rc == 0) {
+				struct osmo_sockaddr_str back;
+				rc = osmo_sockaddr_str_from_in6_addr(&back, &a, x->port);
+				printf("   -> osmo_sockaddr_str_from_in6_addr() %s ", rc_name(rc));
+				dump_oip(&back);
+				if (memcmp(x, &back, sizeof(back)))
+					printf("      DIFFERS!\n");
+			}
+		}
+
+		{
+			uint32_t a = 0;
+
+			rc = osmo_sockaddr_str_to_32(x, &a);
+			printf("  osmo_sockaddr_str_to_32() %s uint32_t=0x%x\n", rc_name(rc), a);
+
+			if (rc == 0) {
+				struct osmo_sockaddr_str back;
+				rc = osmo_sockaddr_str_from_32(&back, a, x->port);
+				printf("   -> osmo_sockaddr_str_from_32() %s ", rc_name(rc));
+				dump_oip(&back);
+				if (memcmp(x, &back, sizeof(back)))
+					printf("      DIFFERS!\n");
+			}
+		}
+
+		{
+			uint32_t a = 0;
+
+			rc = osmo_sockaddr_str_to_32n(x, &a);
+			printf("  osmo_sockaddr_str_to_32n() %s uint32_t=0x%x\n", rc_name(rc), a);
+
+			if (rc == 0) {
+				struct osmo_sockaddr_str back;
+				rc = osmo_sockaddr_str_from_32n(&back, a, x->port);
+				printf("   -> osmo_sockaddr_str_from_32n() %s ", rc_name(rc));
+				dump_oip(&back);
+				if (memcmp(x, &back, sizeof(back)))
+					printf("      DIFFERS!\n");
+			}
+		}
+
+		{
+			struct sockaddr_in a = {};
+
+			rc = osmo_sockaddr_str_to_sockaddr_in(x, &a);
+			printf("  osmo_sockaddr_str_to_sockaddr_in() %s sockaddr_in=%s\n", rc_name(rc), hexdump(a));
+
+			if (rc == 0) {
+				struct osmo_sockaddr_str back;
+				rc = osmo_sockaddr_str_from_sockaddr_in(&back, &a);
+				printf("   -> osmo_sockaddr_str_from_sockaddr_in() %s ", rc_name(rc));
+				dump_oip(&back);
+				if (memcmp(x, &back, sizeof(back)))
+					printf("      DIFFERS!\n");
+			}
+		}
+
+		{
+			struct sockaddr_in6 a = {};
+
+			rc = osmo_sockaddr_str_to_sockaddr_in6(x, &a);
+			printf("  osmo_sockaddr_str_to_sockaddr_in6() %s sockaddr_in6=%s\n", rc_name(rc), hexdump(a));
+
+			if (rc == 0) {
+				struct osmo_sockaddr_str back;
+				rc = osmo_sockaddr_str_from_sockaddr_in6(&back, &a);
+				printf("   -> osmo_sockaddr_str_from_sockaddr_in6() %s ", rc_name(rc));
+				dump_oip(&back);
+				if (memcmp(x, &back, sizeof(back)))
+					printf("      DIFFERS!\n");
+			}
+		}
+
+		{
+			struct sockaddr_storage a = {};
+
+			rc = osmo_sockaddr_str_to_sockaddr(x, &a);
+			printf("  osmo_sockaddr_str_to_sockaddr() %s sockaddr_storage=%s\n", rc_name(rc), hexdump(a));
+
+			if (rc == 0) {
+				struct osmo_sockaddr_str back;
+				rc = osmo_sockaddr_str_from_sockaddr(&back, &a);
+				printf("   -> osmo_sockaddr_str_from_sockaddr() %s ", rc_name(rc));
+				dump_oip(&back);
+				if (memcmp(x, &back, sizeof(back)))
+					printf("      DIFFERS!\n");
+			}
+		}
+
+		{
+			struct osmo_sockaddr_str from_str;
+			rc = osmo_sockaddr_str_from_str(&from_str, x->ip, x->port);
+			printf("  osmo_sockaddr_str_from_str() %s ", rc_name(rc));
+			dump_oip(&from_str);
+			if (rc == 0 && memcmp(x, &from_str, sizeof(from_str)))
+				printf("      DIFFERS!\n");
+		}
+	}
+
+}
+
+int main(int argc, char **argv)
+{
+	sockaddr_str_test_conversions();
+	return 0;
+}
+
