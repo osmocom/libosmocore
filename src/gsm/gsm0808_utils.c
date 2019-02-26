@@ -1559,7 +1559,8 @@ bool gsm0808_cell_ids_match(const struct gsm0808_cell_id *id1, const struct gsm0
  * \param[in] list  Cell Identifier list to search in.
  * \param[in] match_nr  Ignore this many matches.
  * \param[in] exact_match  If true, consider as match only if the CELL_IDENT types and all values are identical.
- * \returns -1 if no match is found, list index if a match is found.
+ * \returns -1 if no match is found, list index if a match is found (i.e. rc == 0 means a match was found on the first
+ *           entry).
  */
 int gsm0808_cell_id_matches_list(const struct gsm0808_cell_id *id, const struct gsm0808_cell_id_list2 *list,
 				 unsigned int match_nr, bool exact_match)
