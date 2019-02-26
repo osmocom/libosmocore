@@ -129,7 +129,7 @@ const char *osmo_plmn_name(const struct osmo_plmn_id *plmn)
 	return buf;
 }
 
-/*! Same as osmo_mcc_mnc_name(), but returning in a different static buffer.
+/*! Same as osmo_plmn_name(), but returning in a different static buffer.
  * \param[in] plmn  MCC-MNC value.
  * \returns string in static buffer.
  */
