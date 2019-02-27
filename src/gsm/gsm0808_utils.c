@@ -1346,42 +1346,94 @@ uint16_t gsm0808_sc_cfg_from_gsm48_mr_cfg(const struct gsm48_multi_rate_conf *cf
 /*! Determine a GSM 04.08 AMR configuration struct from a set of speech codec
  *  configuration bits (S0-S15)
  *  \param[out] cfg AMR configuration in GSM 04.08 format.
- *  \param[in] s15_s0 configuration bits (S0-S15). */
-void gsm48_mr_cfg_from_gsm0808_sc_cfg(struct gsm48_multi_rate_conf *cfg,
-				      uint16_t s15_s0)
+ *  \param[in] s15_s0 configuration bits (S15-S0, non-ambiguous).
+ *  \returns zero when successful; negative on error */
+int gsm48_mr_cfg_from_gsm0808_sc_cfg(struct gsm48_multi_rate_conf *cfg,
+				     uint16_t s15_s0)
 {
+	unsigned int count = 0;
+
+	/* Note: See also: 3GPP TS 28.062
+	 * Table 7.11.3.1.3-2: Preferred Configurations for the Adaptive
+	 * Multi-Rate Codec Types */
+
+	/* Note: The resulting multirate-configuration must not contain an
+	 * active set of more than four codec rates. The active set also
+	 * must contain at least one rate. */
+
 	memset(cfg, 0, sizeof(*cfg));
+	cfg->ver = 1;
+	cfg->icmi = 1;
 
 	/* Strip option bits */
 	s15_s0 &= 0x00ff;
 
-	/* Rate 5,15k must always be present */
-	cfg->m5_15 = 1;
+	/* Rate 5,15k can never be selected (see table) */
+	cfg->m5_15 = 0;
 
-	if ((s15_s0 & GSM0808_SC_CFG_DEFAULT_AMR_4_75 & 0xff) ==
-	    (GSM0808_SC_CFG_DEFAULT_AMR_4_75 & 0xff))
+	if (s15_s0 & GSM0808_SC_CFG_AMR_4_75_5_90_7_40_12_20 & 0xff) {
+		/* Table Table 7.11.3.1.3-2 lists one mode that selects 4
+		 * rates at once (Config-NB-Code = 1). The rates selected
+		 * are known to be compatible between GERAN and UTRAN, since
+		 * an active set must not contain more than four rates at
+		 * a time, we ignore all other settings as they are either
+		 * redundaned or excess settings (invalid) */
 		cfg->m4_75 = 1;
-	if ((s15_s0 & GSM0808_SC_CFG_DEFAULT_AMR_5_90 & 0xff) ==
-	    (GSM0808_SC_CFG_DEFAULT_AMR_5_90 & 0xff))
 		cfg->m5_90 = 1;
-	if ((s15_s0 & GSM0808_SC_CFG_DEFAULT_AMR_6_70 & 0xff) ==
-	    (GSM0808_SC_CFG_DEFAULT_AMR_6_70 & 0xff))
-		cfg->m6_70 = 1;
-	if ((s15_s0 & GSM0808_SC_CFG_DEFAULT_AMR_7_40 & 0xff) ==
-	    (GSM0808_SC_CFG_DEFAULT_AMR_7_40 & 0xff))
 		cfg->m7_40 = 1;
-	if ((s15_s0 & GSM0808_SC_CFG_DEFAULT_AMR_7_95 & 0xff) ==
-	    (GSM0808_SC_CFG_DEFAULT_AMR_7_95 & 0xff))
-		cfg->m7_95 = 1;
-	if ((s15_s0 & GSM0808_SC_CFG_DEFAULT_AMR_10_2 & 0xff) ==
-	    (GSM0808_SC_CFG_DEFAULT_AMR_10_2 & 0xff))
-		cfg->m10_2 = 1;
-	if ((s15_s0 & GSM0808_SC_CFG_DEFAULT_AMR_12_2 & 0xff) ==
-	    (GSM0808_SC_CFG_DEFAULT_AMR_12_2 & 0xff))
 		cfg->m12_2 = 1;
+		count += 4;
+	}
 
-	cfg->ver = 1;
-	cfg->icmi = 1;
+	/* Check the bits in s15_s0 and set the flags for the
+	 * respective rates. */
+	if (s15_s0 & GSM0808_SC_CFG_AMR_4_75 && !cfg->m4_75) {
+		if (count >= 4)
+			return -EINVAL;
+		cfg->m4_75 = 1;
+		count++;
+	}
+	if (s15_s0 & GSM0808_SC_CFG_AMR_5_90 && !cfg->m5_90) {
+		if (count >= 4)
+			return -EINVAL;
+		cfg->m5_90 = 1;
+		count++;
+	}
+	if (s15_s0 & GSM0808_SC_CFG_AMR_6_70) {
+		if (count >= 4)
+			return -EINVAL;
+		cfg->m6_70 = 1;
+		count++;
+	}
+	if (s15_s0 & GSM0808_SC_CFG_AMR_7_40 && !cfg->m7_40) {
+		if (count >= 4)
+			return -EINVAL;
+		cfg->m7_40 = 1;
+		count++;
+	}
+	if (s15_s0 & GSM0808_SC_CFG_AMR_7_95) {
+		if (count >= 4)
+			return -EINVAL;
+		cfg->m7_95 = 1;
+		count++;
+	}
+	if (s15_s0 & GSM0808_SC_CFG_AMR_10_2) {
+		if (count >= 4)
+			return -EINVAL;
+		cfg->m10_2 = 1;
+		count++;
+	}
+	if (s15_s0 & GSM0808_SC_CFG_AMR_12_2 && !cfg->m12_2) {
+		if (count >= 4)
+			return -EINVAL;
+		cfg->m12_2 = 1;
+		count++;
+	}
+
+	if (count == 0)
+		return -EINVAL;
+
+	return 0;
 }
 
 int gsm0808_get_cipher_reject_cause(const struct tlv_parsed *tp)

@@ -315,43 +315,44 @@ Input:
  S15-S0 = ff03 = 0b1111111100000011
 Output:
  m4_75= 1   smod=  0
- m5_15= 1   spare= 0
- m5_90= 0   icmi=  1
+ m5_15= 0   spare= 0
+ m5_90= 1   icmi=  1
  m6_70= 0   nscb=  0
- m7_40= 0   ver=   1
+ m7_40= 1   ver=   1
  m7_95= 0
  m10_2= 0
- m12_2= 0
+ m12_2= 1
 
 Input:
  S15-S0 = 0000 = 0b0000000000000000
 Output:
  m4_75= 0   smod=  0
- m5_15= 1   spare= 0
+ m5_15= 0   spare= 0
  m5_90= 0   icmi=  1
  m6_70= 0   nscb=  0
  m7_40= 0   ver=   1
  m7_95= 0
  m10_2= 0
  m12_2= 0
+ Result invalid!
 
 Input:
  S15-S0 = ff06 = 0b1111111100000110
 Output:
- m4_75= 0   smod=  0
- m5_15= 1   spare= 0
+ m4_75= 1   smod=  0
+ m5_15= 0   spare= 0
  m5_90= 1   icmi=  1
  m6_70= 0   nscb=  0
- m7_40= 0   ver=   1
+ m7_40= 1   ver=   1
  m7_95= 0
  m10_2= 0
- m12_2= 0
+ m12_2= 1
 
 Input:
  S15-S0 = 3e08 = 0b0011111000001000
 Output:
  m4_75= 0   smod=  0
- m5_15= 1   spare= 0
+ m5_15= 0   spare= 0
  m5_90= 0   icmi=  1
  m6_70= 1   nscb=  0
  m7_40= 0   ver=   1
@@ -362,20 +363,20 @@ Output:
 Input:
  S15-S0 = 0c12 = 0b0000110000010010
 Output:
- m4_75= 0   smod=  0
- m5_15= 1   spare= 0
- m5_90= 0   icmi=  1
+ m4_75= 1   smod=  0
+ m5_15= 0   spare= 0
+ m5_90= 1   icmi=  1
  m6_70= 0   nscb=  0
  m7_40= 1   ver=   1
  m7_95= 0
  m10_2= 0
- m12_2= 0
+ m12_2= 1
 
 Input:
  S15-S0 = c020 = 0b1100000000100000
 Output:
  m4_75= 0   smod=  0
- m5_15= 1   spare= 0
+ m5_15= 0   spare= 0
  m5_90= 0   icmi=  1
  m6_70= 0   nscb=  0
  m7_40= 0   ver=   1
@@ -387,7 +388,7 @@ Input:
  S15-S0 = 3040 = 0b0011000001000000
 Output:
  m4_75= 0   smod=  0
- m5_15= 1   spare= 0
+ m5_15= 0   spare= 0
  m5_90= 0   icmi=  1
  m6_70= 0   nscb=  0
  m7_40= 0   ver=   1
@@ -398,50 +399,210 @@ Output:
 Input:
  S15-S0 = c082 = 0b1100000010000010
 Output:
- m4_75= 0   smod=  0
- m5_15= 1   spare= 0
- m5_90= 0   icmi=  1
+ m4_75= 1   smod=  0
+ m5_15= 0   spare= 0
+ m5_90= 1   icmi=  1
  m6_70= 0   nscb=  0
- m7_40= 0   ver=   1
+ m7_40= 1   ver=   1
  m7_95= 0
  m10_2= 0
  m12_2= 1
 
 Input:
- S15-S0 = ff4b = 0b1111111101001011
+ S15-S0 = 0001 = 0b0000000000000001
 Output:
  m4_75= 1   smod=  0
- m5_15= 1   spare= 0
+ m5_15= 0   spare= 0
+ m5_90= 0   icmi=  1
+ m6_70= 0   nscb=  0
+ m7_40= 0   ver=   1
+ m7_95= 0
+ m10_2= 0
+ m12_2= 0
+
+Input:
+ S15-S0 = 0002 = 0b0000000000000010
+Output:
+ m4_75= 1   smod=  0
+ m5_15= 0   spare= 0
+ m5_90= 1   icmi=  1
+ m6_70= 0   nscb=  0
+ m7_40= 1   ver=   1
+ m7_95= 0
+ m10_2= 0
+ m12_2= 1
+
+Input:
+ S15-S0 = 0004 = 0b0000000000000100
+Output:
+ m4_75= 0   smod=  0
+ m5_15= 0   spare= 0
+ m5_90= 1   icmi=  1
+ m6_70= 0   nscb=  0
+ m7_40= 0   ver=   1
+ m7_95= 0
+ m10_2= 0
+ m12_2= 0
+
+Input:
+ S15-S0 = 0008 = 0b0000000000001000
+Output:
+ m4_75= 0   smod=  0
+ m5_15= 0   spare= 0
  m5_90= 0   icmi=  1
  m6_70= 1   nscb=  0
+ m7_40= 0   ver=   1
+ m7_95= 0
+ m10_2= 0
+ m12_2= 0
+
+Input:
+ S15-S0 = 0010 = 0b0000000000010000
+Output:
+ m4_75= 0   smod=  0
+ m5_15= 0   spare= 0
+ m5_90= 0   icmi=  1
+ m6_70= 0   nscb=  0
+ m7_40= 1   ver=   1
+ m7_95= 0
+ m10_2= 0
+ m12_2= 0
+
+Input:
+ S15-S0 = 0020 = 0b0000000000100000
+Output:
+ m4_75= 0   smod=  0
+ m5_15= 0   spare= 0
+ m5_90= 0   icmi=  1
+ m6_70= 0   nscb=  0
+ m7_40= 0   ver=   1
+ m7_95= 1
+ m10_2= 0
+ m12_2= 0
+
+Input:
+ S15-S0 = 0040 = 0b0000000001000000
+Output:
+ m4_75= 0   smod=  0
+ m5_15= 0   spare= 0
+ m5_90= 0   icmi=  1
+ m6_70= 0   nscb=  0
  m7_40= 0   ver=   1
  m7_95= 0
  m10_2= 1
  m12_2= 0
 
 Input:
- S15-S0 = fcd2 = 0b1111110011010010
+ S15-S0 = 0080 = 0b0000000010000000
 Output:
  m4_75= 0   smod=  0
- m5_15= 1   spare= 0
+ m5_15= 0   spare= 0
  m5_90= 0   icmi=  1
  m6_70= 0   nscb=  0
- m7_40= 1   ver=   1
+ m7_40= 0   ver=   1
  m7_95= 0
- m10_2= 1
+ m10_2= 0
  m12_2= 1
 
 Input:
- S15-S0 = c0a2 = 0b1100000010100010
+ S15-S0 = 0058 = 0b0000000001011000
 Output:
  m4_75= 0   smod=  0
- m5_15= 1   spare= 0
+ m5_15= 0   spare= 0
+ m5_90= 0   icmi=  1
+ m6_70= 1   nscb=  0
+ m7_40= 1   ver=   1
+ m7_95= 0
+ m10_2= 1
+ m12_2= 0
+
+Input:
+ S15-S0 = 0021 = 0b0000000000100001
+Output:
+ m4_75= 1   smod=  0
+ m5_15= 0   spare= 0
  m5_90= 0   icmi=  1
  m6_70= 0   nscb=  0
  m7_40= 0   ver=   1
  m7_95= 1
  m10_2= 0
+ m12_2= 0
+
+Input:
+ S15-S0 = 0084 = 0b0000000010000100
+Output:
+ m4_75= 0   smod=  0
+ m5_15= 0   spare= 0
+ m5_90= 1   icmi=  1
+ m6_70= 0   nscb=  0
+ m7_40= 0   ver=   1
+ m7_95= 0
+ m10_2= 0
  m12_2= 1
+
+Input:
+ S15-S0 = 0086 = 0b0000000010000110
+Output:
+ m4_75= 1   smod=  0
+ m5_15= 0   spare= 0
+ m5_90= 1   icmi=  1
+ m6_70= 0   nscb=  0
+ m7_40= 1   ver=   1
+ m7_95= 0
+ m10_2= 0
+ m12_2= 1
+
+Input:
+ S15-S0 = 000a = 0b0000000000001010
+Output:
+ m4_75= 1   smod=  0
+ m5_15= 0   spare= 0
+ m5_90= 1   icmi=  1
+ m6_70= 0   nscb=  0
+ m7_40= 1   ver=   1
+ m7_95= 0
+ m10_2= 0
+ m12_2= 1
+ Result invalid!
+
+Input:
+ S15-S0 = 0079 = 0b0000000001111001
+Output:
+ m4_75= 1   smod=  0
+ m5_15= 0   spare= 0
+ m5_90= 0   icmi=  1
+ m6_70= 1   nscb=  0
+ m7_40= 1   ver=   1
+ m7_95= 1
+ m10_2= 0
+ m12_2= 0
+ Result invalid!
+
+Input:
+ S15-S0 = 0000 = 0b0000000000000000
+Output:
+ m4_75= 0   smod=  0
+ m5_15= 0   spare= 0
+ m5_90= 0   icmi=  1
+ m6_70= 0   nscb=  0
+ m7_40= 0   ver=   1
+ m7_95= 0
+ m10_2= 0
+ m12_2= 0
+ Result invalid!
+
+Input:
+ S15-S0 = ffff = 0b1111111111111111
+Output:
+ m4_75= 1   smod=  0
+ m5_15= 0   spare= 0
+ m5_90= 1   icmi=  1
+ m6_70= 0   nscb=  0
+ m7_40= 1   ver=   1
+ m7_95= 0
+ m10_2= 0
+ m12_2= 1
+ Result invalid!
 
 
 test_cell_id_matching

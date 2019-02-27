@@ -130,7 +130,7 @@ int gsm0808_chan_type_to_speech_codec(uint8_t perm_spch);
 int gsm0808_speech_codec_from_chan_type(struct gsm0808_speech_codec *sc,
 					uint8_t perm_spch);
 uint16_t gsm0808_sc_cfg_from_gsm48_mr_cfg(const struct gsm48_multi_rate_conf *cfg, bool fr);
-void gsm48_mr_cfg_from_gsm0808_sc_cfg(struct gsm48_multi_rate_conf *cfg, uint16_t s15_s0);
+int gsm48_mr_cfg_from_gsm0808_sc_cfg(struct gsm48_multi_rate_conf *cfg, uint16_t s15_s0);
 
 /*! \returns 3GPP TS 08.08 §3.2.2.5 Class of a given Cause */
 static inline enum gsm0808_cause_class gsm0808_cause_class(enum gsm0808_cause cause)

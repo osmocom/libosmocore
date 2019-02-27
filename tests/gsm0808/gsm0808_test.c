@@ -1907,12 +1907,13 @@ static void test_gsm0808_sc_cfg_from_gsm48_mr_cfg(void)
 static void test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single(uint16_t s15_s0)
 {
 	struct gsm48_multi_rate_conf cfg;
+	int rc;
 
 	printf("Input:\n");
 	printf(" S15-S0 = %04x = 0b" OSMO_BIN_SPEC OSMO_BIN_SPEC "\n", s15_s0,
 	       OSMO_BIN_PRINT(s15_s0 >> 8), OSMO_BIN_PRINT(s15_s0));
 
-	gsm48_mr_cfg_from_gsm0808_sc_cfg(&cfg, s15_s0);
+	rc = gsm48_mr_cfg_from_gsm0808_sc_cfg(&cfg, s15_s0);
 
 	printf("Output:\n");
 	printf(" m4_75= %u   smod=  %u\n", cfg.m4_75, cfg.smod);
@@ -1924,6 +1925,9 @@ static void test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single(uint16_t s15_s0)
 	printf(" m10_2= %u\n", cfg.m10_2);
 	printf(" m12_2= %u\n", cfg.m12_2);
 
+	if (rc != 0)
+		printf(" Result invalid!\n");
+
 	printf("\n");
 }
 
@@ -1931,7 +1935,8 @@ void test_gsm48_mr_cfg_from_gsm0808_sc_cfg()
 {
 	printf("Testing gsm48_mr_cfg_from_gsm0808_sc_cfg():\n");
 
-	/* Only one codec per setting */
+	/* Test with settings as defined in 3GPP TS 28.062, Table 7.11.3.1.3-2,
+	 * (up to four codecs may become selected) */
 	test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single
 	    (GSM0808_SC_CFG_DEFAULT_AMR_4_75);
 	test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single
@@ -1949,15 +1954,40 @@ void test_gsm48_mr_cfg_from_gsm0808_sc_cfg()
 	test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single
 	    (GSM0808_SC_CFG_DEFAULT_AMR_12_2);
 
-	/* Combinations */
+	/* Test with settings as defined in 3GPP TS 28.062, Table 7.11.3.1.3-2,
+	 * but pick only one distinctive setting at a time */
+	test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single(GSM0808_SC_CFG_AMR_4_75);
 	test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single
-	    (GSM0808_SC_CFG_DEFAULT_AMR_4_75 | GSM0808_SC_CFG_DEFAULT_AMR_6_70 |
-	     GSM0808_SC_CFG_DEFAULT_AMR_10_2);
+	    (GSM0808_SC_CFG_AMR_4_75_5_90_7_40_12_20);
+	test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single(GSM0808_SC_CFG_AMR_5_90);
+	test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single(GSM0808_SC_CFG_AMR_6_70);
+	test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single(GSM0808_SC_CFG_AMR_7_40);
+	test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single(GSM0808_SC_CFG_AMR_7_95);
+	test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single(GSM0808_SC_CFG_AMR_10_2);
+	test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single(GSM0808_SC_CFG_AMR_12_2);
+
+	/* Arbitrary, but valid combinations */
+	test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single(GSM0808_SC_CFG_AMR_7_40 |
+						     GSM0808_SC_CFG_AMR_6_70 |
+						     GSM0808_SC_CFG_AMR_10_2);
+	test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single(GSM0808_SC_CFG_AMR_7_95 |
+						     GSM0808_SC_CFG_AMR_4_75);
+	test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single(GSM0808_SC_CFG_AMR_5_90 |
+						     GSM0808_SC_CFG_AMR_12_2);
 	test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single
-	    (GSM0808_SC_CFG_DEFAULT_AMR_10_2 | GSM0808_SC_CFG_DEFAULT_AMR_12_2 |
-	     GSM0808_SC_CFG_DEFAULT_AMR_7_40);
+	    (GSM0808_SC_CFG_AMR_4_75_5_90_7_40_12_20 | GSM0808_SC_CFG_AMR_5_90 |
+	     GSM0808_SC_CFG_AMR_12_2);
+
+	/* Invalid combinations */
 	test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single
-	    (GSM0808_SC_CFG_DEFAULT_AMR_7_95 | GSM0808_SC_CFG_DEFAULT_AMR_12_2);
+	    (GSM0808_SC_CFG_AMR_4_75_5_90_7_40_12_20 | GSM0808_SC_CFG_AMR_6_70);
+	test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single(GSM0808_SC_CFG_AMR_7_40 |
+						     GSM0808_SC_CFG_AMR_6_70 |
+						     GSM0808_SC_CFG_AMR_10_2 |
+						     GSM0808_SC_CFG_AMR_7_95 |
+						     GSM0808_SC_CFG_AMR_4_75);
+	test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single(0x0000);
+	test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single(0xffff);
 }
 
 struct test_cell_id_matching_data {
@@ -2359,7 +2389,6 @@ int main(int argc, char **argv)
 	test_gsm0808_enc_dec_cell_id_ci();
 	test_gsm0808_enc_dec_cell_id_lac_and_ci();
 	test_gsm0808_enc_dec_cell_id_global();
-
 	test_gsm0808_sc_cfg_from_gsm48_mr_cfg();
 	test_gsm48_mr_cfg_from_gsm0808_sc_cfg();
 
