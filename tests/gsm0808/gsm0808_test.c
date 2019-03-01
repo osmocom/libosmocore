@@ -1902,6 +1902,27 @@ static void test_gsm0808_sc_cfg_from_gsm48_mr_cfg(void)
 	cfg.m10_2 = 1;
 	cfg.m12_2 = 1;
 	test_gsm0808_sc_cfg_from_gsm48_mr_cfg_single(&cfg);
+
+	cfg.m4_75 = 1;
+	cfg.m5_15 = 0;
+	cfg.m5_90 = 1;
+	cfg.m6_70 = 0;
+	cfg.m7_40 = 1;
+	cfg.m7_95 = 0;
+	cfg.m10_2 = 0;
+	cfg.m12_2 = 1;
+	test_gsm0808_sc_cfg_from_gsm48_mr_cfg_single(&cfg);
+
+	cfg.m4_75 = 1;
+	cfg.m5_15 = 0;
+	cfg.m5_90 = 1;
+	cfg.m6_70 = 0;
+	cfg.m7_40 = 1;
+	cfg.m7_95 = 0;
+	cfg.m10_2 = 0;
+	cfg.m12_2 = 0;
+	test_gsm0808_sc_cfg_from_gsm48_mr_cfg_single(&cfg);
+	
 }
 
 static void test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single(uint16_t s15_s0)

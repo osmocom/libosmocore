@@ -1340,6 +1340,16 @@ uint16_t gsm0808_sc_cfg_from_gsm48_mr_cfg(const struct gsm48_multi_rate_conf *cf
 	else
 		s15_s0 &= GSM0808_SC_CFG_DEFAULT_HR_AMR;
 
+	/* The mode that is encoded by S1 (Config-NB-Code = 1), takes a special
+	 * role as it does not stand for a single rate, but for up to four rates
+	 * at once (12.2, 7.4, 5.9, 4.75). We must check if the supplied cfg
+	 * covers this mode. If not, we need to make sure that the related
+	 * bit is removed. (See also 3GPP TS 28.062, Table 7.11.3.1.3-2) */
+	if (!(cfg->m12_2 && cfg->m7_40 && cfg->m5_90 && cfg->m4_75) && fr)
+		s15_s0 &= ~GSM0808_SC_CFG_AMR_4_75_5_90_7_40_12_20;
+	else if (!(cfg->m7_40 && cfg->m5_90 && cfg->m4_75))
+		s15_s0 &= ~GSM0808_SC_CFG_AMR_4_75_5_90_7_40_12_20;
+
 	return s15_s0;
 }
 
