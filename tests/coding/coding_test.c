@@ -104,13 +104,14 @@ static void test_xcch(uint8_t *l2)
 
 static void test_rach(uint8_t bsic, uint8_t ra)
 {
+	int rc;
 	uint8_t result;
 	ubit_t bursts_u[36];
 	sbit_t bursts_s[36];
 
 	/* Encode L2 message */
-	printf("Encoding: %02x\n", ra);
-	gsm0503_rach_ext_encode(bursts_u, ra, bsic, false);
+	rc = gsm0503_rach_ext_encode(bursts_u, ra, bsic, false);
+	printf("Encoding: %02x%s\n", ra, (rc != 0) ? " FAIL" : "");
 
 	/* Prepare soft-bits */
 	osmo_ubit2sbit(bursts_s, bursts_u, 36);
@@ -123,8 +124,8 @@ static void test_rach(uint8_t bsic, uint8_t ra)
 	memset(bursts_s + 6, 0, 8);
 
 	/* Decode, correcting errors */
-	gsm0503_rach_decode_ber(&result, bursts_s, bsic, NULL, NULL);
-	printf("Decoded: %02x\n", result);
+	rc = gsm0503_rach_decode_ber(&result, bursts_s, bsic, NULL, NULL);
+	printf("Decoded: %02x%s\n", result, (rc != 0) ? " FAIL" : "");
 
 	if (ra != result)
 		printf("FAIL [RACH]: encoded %u != %u decoded\n", ra, result);
@@ -134,13 +135,14 @@ static void test_rach(uint8_t bsic, uint8_t ra)
 
 static void test_rach_ext(uint8_t bsic, uint16_t ra)
 {
+	int rc;
 	uint16_t result = 3000; /* Max ext. RA is 2^11 = 2048 */
 	ubit_t bursts_u[36];
 	sbit_t bursts_s[36];
 
 	/* Encode L2 message */
-	printf("Encoding: %02x\n", ra);
-	gsm0503_rach_ext_encode(bursts_u, ra, bsic, true);
+	rc = gsm0503_rach_ext_encode(bursts_u, ra, bsic, true);
+	printf("Encoding: %02x%s\n", ra, (rc != 0) ? " FAIL" : "");
 
 	/* Prepare soft-bits */
 	osmo_ubit2sbit(bursts_s, bursts_u, 36);
@@ -153,8 +155,8 @@ static void test_rach_ext(uint8_t bsic, uint16_t ra)
 	memset(bursts_s + 9, 0, 8);
 
 	/* Decode, correcting errors */
-	gsm0503_rach_ext_decode_ber(&result, bursts_s, bsic, NULL, NULL);
-	printf("Decoded: %02x\n", result);
+	rc = gsm0503_rach_ext_decode_ber(&result, bursts_s, bsic, NULL, NULL);
+	printf("Decoded: %02x%s\n", result, (rc != 0) ? " FAIL" : "");
 
 	if (ra != result)
 		printf("FAIL [RACH ext]: encoded %u != %u decoded\n", ra, result);
