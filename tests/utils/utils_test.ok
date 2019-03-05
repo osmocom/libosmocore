@@ -258,11 +258,11 @@ NOT passed through. '"printable"'
 - zero length:
 '""'
 - truncation when too long:
-'"\axxxxE"'
+'"\axxxxxE'
 - always truncation, even when no escaping needed:
-'"xxxxxxE"'
+'"xxxxxxxE'
 - try to feed too little buf for quoting:
-'<buf-too-small>'
+'"'
 - NULL string becomes a "NULL" literal:
 'NULL'
 

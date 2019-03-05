@@ -142,11 +142,15 @@ bool osmo_identifier_valid(const char *str);
 bool osmo_separated_identifiers_valid(const char *str, const char *sep_chars);
 
 const char *osmo_escape_str(const char *str, int len);
-char *osmo_escape_str_buf(const char *str, int in_len, char *buf, size_t bufsize);
+char *osmo_escape_str_buf2(char *buf, size_t bufsize, const char *str, int in_len);
+const char *osmo_escape_str_buf(const char *str, int in_len, char *buf, size_t bufsize);
 char *osmo_escape_str_c(const void *ctx, const char *str, int in_len);
 const char *osmo_quote_str(const char *str, int in_len);
-char *osmo_quote_str_buf(const char *str, int in_len, char *buf, size_t bufsize);
+char *osmo_quote_str_buf2(char *buf, size_t bufsize, const char *str, int in_len);
+const char *osmo_quote_str_buf(const char *str, int in_len, char *buf, size_t bufsize);
 char *osmo_quote_str_c(const void *ctx, const char *str, int in_len);
+
+int osmo_print_n(char *buf, size_t bufsize, const char *str, size_t n);
 
 uint32_t osmo_isqrt32(uint32_t x);
 

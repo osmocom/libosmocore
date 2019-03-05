@@ -594,27 +594,77 @@ bool osmo_identifier_valid(const char *str)
 	return osmo_separated_identifiers_valid(str, NULL);
 }
 
-/*! Return the string with all non-printable characters escapeda, in user-supplied buffer.
+/*! Like osmo_escape_str_buf2, but with unusual ordering of arguments, and may sometimes return string constants instead
+ * of writing to buf for error cases or empty input.
+ * Most *_buf() functions have the buffer and size as first arguments, here the arguments are last.
+ * In particular, this function signature doesn't work with OSMO_STRBUF_APPEND_NOLEN().
  * \param[in] str  A string that may contain any characters.
  * \param[in] len  Pass -1 to print until nul char, or >= 0 to force a length.
  * \param[inout] buf  string buffer to write escaped characters to.
  * \param[in] bufsize  size of \a buf.
- * \returns buf containing an escaped representation, possibly truncated.
+ * \returns buf containing an escaped representation, possibly truncated,
+ *          or "(null)" if str == NULL, or "(error)" in case of errors.
  */
-char *osmo_escape_str_buf(const char *str, int in_len, char *buf, size_t bufsize)
+const char *osmo_escape_str_buf(const char *str, int in_len, char *buf, size_t bufsize)
 {
-	int in_pos = 0;
-	int next_unprintable = 0;
-	int out_pos = 0;
-	char *out = buf;
-	/* -1 to leave space for a final \0 */
-	int out_len = bufsize-1;
-
 	if (!str)
 		return "(null)";
+	if (!buf || !bufsize)
+		return "(error)";
+	return osmo_escape_str_buf2(buf, bufsize, str, in_len);
+}
+
+/*! Copy N characters to a buffer with a function signature useful for OSMO_STRBUF_APPEND().
+ * Similarly to snprintf(), the result is always nul terminated (except if buf is NULL or bufsize is 0).
+ * \param[out] buf  Target buffer.
+ * \param[in] bufsize  sizeof(buf).
+ * \param[in] str  String to copy.
+ * \param[in] n  Maximum number of non-nul characters to copy.
+ * \return Number of characters that would be written if bufsize were large enough excluding '\0' (like snprintf()).
+ */
+int osmo_print_n(char *buf, size_t bufsize, const char *str, size_t n)
+{
+	size_t write_n;
+
+	if (!str)
+		str = "";
+
+	n = strnlen(str, n);
+
+	if (!buf || !bufsize)
+		return n;
+	write_n = n;
+	if (write_n >= bufsize)
+		write_n = bufsize - 1;
+	if (write_n)
+		strncpy(buf, str, write_n);
+	buf[write_n] = '\0';
+
+	return n;
+}
+
+/*! Return the string with all non-printable characters escaped.
+ * \param[out] buf  string buffer to write escaped characters to.
+ * \param[in] bufsize  sizeof(buf).
+ * \param[in] str  A string that may contain any characters.
+ * \param[in] in_len  Pass -1 to print until nul char, or >= 0 to force a length (also past nul chars).
+ * \return Number of characters that would be written if bufsize were large enough excluding '\0' (like snprintf()).
+ */
+char *osmo_escape_str_buf2(char *buf, size_t bufsize, const char *str, int in_len)
+{
+	struct osmo_strbuf sb = { .buf = buf, .len = bufsize };
+	int in_pos = 0;
+	int next_unprintable = 0;
+
+	if (!str)
+		in_len = 0;
 
 	if (in_len < 0)
 		in_len = strlen(str);
+
+	/* Make sure of '\0' termination */
+	if (!in_len)
+		OSMO_STRBUF_PRINTF(sb, "%s", "");
 
 	while (in_pos < in_len) {
 		for (next_unprintable = in_pos;
@@ -623,24 +673,16 @@ char *osmo_escape_str_buf(const char *str, int in_len, char *buf, size_t bufsize
 		     && str[next_unprintable] != '\\';
 		     next_unprintable++);
 
-		if (next_unprintable == in_len && in_pos == 0) {
-			osmo_strlcpy(buf, str, bufsize);
-			return buf;
-		}
+		OSMO_STRBUF_APPEND(sb, osmo_print_n, &str[in_pos], next_unprintable - in_pos);
+		in_pos = next_unprintable;
 
-		while (in_pos < next_unprintable && out_pos < out_len)
-			out[out_pos++] = str[in_pos++];
-
-		if (out_pos == out_len || in_pos == in_len)
+		if (in_pos == in_len)
 			goto done;
 
 		switch (str[next_unprintable]) {
 #define BACKSLASH_CASE(c, repr) \
 		case c: \
-			if (out_pos > out_len-2) \
-				goto done; \
-			out[out_pos++] = '\\'; \
-			out[out_pos++] = repr; \
+			OSMO_STRBUF_PRINTF(sb, "\\%c", repr); \
 			break
 
 		BACKSLASH_CASE('\n', 'n');
@@ -656,19 +698,14 @@ char *osmo_escape_str_buf(const char *str, int in_len, char *buf, size_t bufsize
 #undef BACKSLASH_CASE
 
 		default:
-			out_pos += snprintf(&out[out_pos], out_len - out_pos, "\\%u", (unsigned char)str[in_pos]);
-			if (out_pos > out_len) {
-				out_pos = out_len;
-				goto done;
-			}
+			OSMO_STRBUF_PRINTF(sb, "\\%u", (unsigned char)str[in_pos]);
 			break;
 		}
 		in_pos ++;
 	}
 
 done:
-	out[out_pos] = '\0';
-	return out;
+	return buf;
 }
 
 /*! Return the string with all non-printable characters escaped.
@@ -692,27 +729,46 @@ char *osmo_escape_str_c(const void *ctx, const char *str, int in_len)
 	char *buf = talloc_size(ctx, in_len+1);
 	if (!buf)
 		return NULL;
-	return osmo_escape_str_buf(str, in_len, buf, in_len+1);
+	return osmo_escape_str_buf2(buf, in_len+1, str, in_len);
 }
 
-/*! Like osmo_escape_str(), but returns double-quotes around a string, or "NULL" for a NULL string.
+/*! Like osmo_escape_str_buf2(), but returns double-quotes around a string, or "NULL" for a NULL string.
  * This allows passing any char* value and get its C representation as string.
+ * The function signature is suitable for OSMO_STRBUF_APPEND_NOLEN().
+ * \param[out] buf  string buffer to write escaped characters to.
+ * \param[in] bufsize  sizeof(buf).
+ * \param[in] str  A string that may contain any characters.
+ * \param[in] in_len  Pass -1 to print until nul char, or >= 0 to force a length.
+ * \return Number of characters that would be written if bufsize were large enough excluding '\0' (like snprintf()).
+ */
+char *osmo_quote_str_buf2(char *buf, size_t bufsize, const char *str, int in_len)
+{
+	struct osmo_strbuf sb = { .buf = buf, .len = bufsize };
+	if (!str)
+		OSMO_STRBUF_PRINTF(sb, "NULL");
+	else {
+		OSMO_STRBUF_PRINTF(sb, "\"");
+		OSMO_STRBUF_APPEND_NOLEN(sb, osmo_escape_str_buf2, str, in_len);
+		OSMO_STRBUF_PRINTF(sb, "\"");
+	}
+	return buf;
+}
+
+/*! Like osmo_quote_str_buf2, but with unusual ordering of arguments, and may sometimes return string constants instead
+ * of writing to buf for error cases or empty input.
+ * Most *_buf() functions have the buffer and size as first arguments, here the arguments are last.
+ * In particular, this function signature doesn't work with OSMO_STRBUF_APPEND_NOLEN().
  * \param[in] str  A string that may contain any characters.
  * \param[in] in_len  Pass -1 to print until nul char, or >= 0 to force a length.
  * \returns buf containing a quoted and escaped representation, possibly truncated.
  */
-char *osmo_quote_str_buf(const char *str, int in_len, char *buf, size_t bufsize)
+const char *osmo_quote_str_buf(const char *str, int in_len, char *buf, size_t bufsize)
 {
-	int l;
 	if (!str)
 		return "NULL";
-	if (bufsize < 3)
-		return "<buf-too-small>";
-	buf[0] = '"';
-	osmo_escape_str_buf(str, in_len, buf + 1, bufsize - 2);
-	l = strlen(buf);
-	buf[l] = '"';
-	buf[l+1] = '\0'; /* both osmo_escape_str_buf() and max_len above ensure room for '\0' */
+	if (!buf || !bufsize)
+		return "(error)";
+	osmo_quote_str_buf2(buf, bufsize, str, in_len);
 	return buf;
 }
 
@@ -738,7 +794,7 @@ char *osmo_quote_str_c(const void *ctx, const char *str, int in_len)
 	char *buf = talloc_size(ctx, OSMO_MAX(in_len+2, 32));
 	if (!buf)
 		return NULL;
-	return osmo_quote_str_buf(str, in_len, buf, 32);
+	return osmo_quote_str_buf2(buf, 32, str, in_len);
 }
 
 /*! perform an integer square root operation on unsigned 32bit integer.
