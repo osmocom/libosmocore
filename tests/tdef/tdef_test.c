@@ -287,7 +287,7 @@ const struct timeval fake_time_start_time = { 123, 456 };
 	osmo_gettimeofday_override_add(secs, usecs); \
 	osmo_clock_override_add(CLOCK_MONOTONIC, secs, usecs * 1000); \
 	timersub(&osmo_gettimeofday_override_time, &fake_time_start_time, &diff); \
-	printf("Total time passed: %ld.%06ld s\n", diff.tv_sec, diff.tv_usec); \
+	printf("Time passes: %ld.%06ld s\n", (long)secs, (long)usecs); \
 	osmo_timers_prepare(); \
 	osmo_timers_update(); \
 } while (0)
@@ -303,7 +303,6 @@ void fake_time_start()
 	clock_override->tv_sec = fake_time_start_time.tv_sec;
 	clock_override->tv_nsec = fake_time_start_time.tv_usec * 1000;
 	osmo_clock_override_enable(CLOCK_MONOTONIC, true);
-	fake_time_passes(0, 0);
 }
 
 static void print_fsm_state(struct osmo_fsm_inst *fi)
@@ -325,18 +324,18 @@ static void print_fsm_state(struct osmo_fsm_inst *fi)
 		const struct osmo_tdef_state_timeout *st = osmo_tdef_get_state_timeout(NEXT_STATE, \
 										       test_tdef_state_timeouts); \
 		if (!st) { \
-			printf(" --> %s (no timer configured for this state)\n", \
+			printf(" --> %s (no timer configured for this state)\t", \
 			       osmo_fsm_state_name(&test_tdef_fsm, NEXT_STATE)); \
 		} else { \
 			struct osmo_tdef *t = osmo_tdef_get_entry(tdefs, st->T); \
 			int rc = osmo_tdef_fsm_inst_state_chg(fi, NEXT_STATE, test_tdef_state_timeouts, tdefs, 999); \
-			printf(" --> %s (configured as T%d%s %lu %s) rc=%d;\t", osmo_fsm_state_name(&test_tdef_fsm, \
-												    NEXT_STATE), \
+			printf(" --> %s (configured as T%d%s %lu %s) rc=%d;\t", \
+			       osmo_fsm_state_name(&test_tdef_fsm, NEXT_STATE), \
 			       st->T, st->keep_timer ? "(keep_timer)" : "", \
 			       t? t->val : 0, t? osmo_tdef_unit_name(t->unit) : "-", \
 			       rc); \
-			print_fsm_state(fi); \
 		} \
+		print_fsm_state(fi); \
 	} while(0)
 
 
@@ -377,6 +376,8 @@ static void test_tdef_state_timeout(bool test_range)
 	test_tdef_fsm_state_chg(tdefs, S_A);
 	fake_time_passes(23, 45678);
 	print_fsm_state(fi);
+	test_tdef_fsm_state_chg(tdefs, S_L);
+	test_tdef_fsm_state_chg(tdefs, S_O);
 	test_tdef_fsm_state_chg(tdefs, S_L);
 
 	printf("- test T=0:\n");
