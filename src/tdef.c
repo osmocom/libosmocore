@@ -220,7 +220,7 @@ struct osmo_tdef *osmo_tdef_get_entry(struct osmo_tdef *tdefs, int T)
  *
  * 	struct osmo_tdef_state_timeout my_fsm_timeouts[32] = {
  * 		[MY_FSM_STATE_3] = { .T = 423 }, // look up timeout configured for T423
- * 		[MY_FSM_STATE_7] = { .T = 235 },
+ * 		[MY_FSM_STATE_7] = { .keep_timer = true, .T = 235 }, // keep previous timer if running, or start T235
  * 		[MY_FSM_STATE_8] = { .keep_timer = true }, // keep previous state's T number, continue timeout.
  * 		// any state that is omitted will remain zero == no timeout
  *	};
@@ -254,20 +254,25 @@ int _osmo_tdef_fsm_inst_state_chg(struct osmo_fsm_inst *fi, uint32_t state,
 				  const char *file, int line)
 {
 	const struct osmo_tdef_state_timeout *t = osmo_tdef_get_state_timeout(state, timeouts_array);
-	unsigned long val;
+	unsigned long val = 0;
 
 	/* No timeout defined for this state? */
 	if (!t)
 		return _osmo_fsm_inst_state_chg(fi, state, 0, 0, file, line);
 
+	if (t->T)
+		val = osmo_tdef_get(tdefs, t->T, OSMO_TDEF_S, default_timeout);
+
 	if (t->keep_timer) {
-		int rc = _osmo_fsm_inst_state_chg_keep_timer(fi, state, file, line);
-		if (t->T && !rc)
-			fi->T = t->T;
-		return rc;
+		if (t->T)
+			return _osmo_fsm_inst_state_chg_keep_or_start_timer(fi, state, val, t->T, file, line);
+		else
+			return _osmo_fsm_inst_state_chg_keep_timer(fi, state, file, line);
 	}
 
-	val = osmo_tdef_get(tdefs, t->T, OSMO_TDEF_S, default_timeout);
+	/* val is always initialized here, because if t->keep_timer is false, t->T must be != 0.
+	 * Otherwise osmo_tdef_get_state_timeout() would have returned NULL. */
+	OSMO_ASSERT(t->T);
 	return _osmo_fsm_inst_state_chg(fi, state, val, t->T, file, line);
 }
 

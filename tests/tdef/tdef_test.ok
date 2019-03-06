@@ -130,9 +130,9 @@ state=A T=1, 76.954322 s remaining
  --> A (configured as T1 100 s) rc=0;	state=A T=1, 100.000000 s remaining
 Time passes: 23.045678 s
 state=A T=1, 76.954322 s remaining
- --> L (configured as T123(keep_timer) 1 s) rc=0;	state=L T=123, 76.954322 s remaining
+ --> L (configured as T123(keep_timer) 1 s) rc=0;	state=L T=1, 76.954322 s remaining
  --> O (no timer configured for this state) rc=0;	state=O T=0, no timeout
- --> L (configured as T123(keep_timer) 1 s) rc=0;	state=L T=123, no timeout
+ --> L (configured as T123(keep_timer) 1 s) rc=0;	state=L T=123, 1.000000 s remaining
 - test T=0:
  --> O (no timer configured for this state) rc=0;	state=O T=0, no timeout
 - test no timer:

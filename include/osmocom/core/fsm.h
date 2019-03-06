@@ -254,6 +254,21 @@ int _osmo_fsm_inst_state_chg(struct osmo_fsm_inst *fi, uint32_t new_state,
 int _osmo_fsm_inst_state_chg_keep_timer(struct osmo_fsm_inst *fi, uint32_t new_state,
 					const char *file, int line);
 
+/*! perform a state change while keeping the current timer if running, or starting a timer otherwise.
+ *
+ *  This is useful to keep a timeout across several states, but to make sure that some timeout is actually running.
+ *
+ *  This is a macro that calls _osmo_fsm_inst_state_chg_keep_or_start_timer() with the given
+ *  parameters as well as the caller's source file and line number for logging
+ *  purposes. See there for documentation.
+ */
+#define osmo_fsm_inst_state_chg_keep_or_start_timer(fi, new_state, timeout_secs, T) \
+	_osmo_fsm_inst_state_chg_keep_or_start_timer(fi, new_state, timeout_secs, T, \
+						     __FILE__, __LINE__)
+int _osmo_fsm_inst_state_chg_keep_or_start_timer(struct osmo_fsm_inst *fi, uint32_t new_state,
+						 unsigned long timeout_secs, int T,
+						 const char *file, int line);
+
 /*! dispatch an event to an osmocom finite state machine instance
  *
  *  This is a macro that calls _osmo_fsm_inst_dispatch() with the given
