@@ -27,6 +27,7 @@
 #include <osmocom/gsm/protocol/gsm_08_08.h>
 #include <osmocom/gsm/gsm0808_utils.h>
 #include <osmocom/gsm/gsm23003.h>
+#include <osmocom/gsm/protocol/gsm_23_003.h>
 #include <osmocom/core/utils.h>
 
 #define BSSMAP_MSG_SIZE 1024
@@ -143,11 +144,76 @@ struct gsm0808_handover_required {
 };
 struct msgb *gsm0808_create_handover_required(const struct gsm0808_handover_required *params);
 
+/*! 3GPP TS 48.008 §3.2.1.37 HANDOVER REQUIRED REJECT */
+struct gsm0808_handover_required_reject {
+	uint16_t cause;
+
+	/* more items are defined in the spec and may be added later */
+	bool more_items; /*< always set this to false */
+};
+struct msgb *gsm0808_create_handover_required_reject(const struct gsm0808_handover_required_reject *params);
+
+/*! 3GPP TS 48.008 §3.2.1.8 HANDOVER REQUEST */
+struct gsm0808_handover_request {
+	struct gsm0808_channel_type channel_type;
+	struct gsm0808_encrypt_info encryption_information;
+	struct osmo_gsm48_classmark classmark_information;
+	struct gsm0808_cell_id cell_identifier_serving;
+	struct gsm0808_cell_id cell_identifier_target;
+	enum gsm0808_cause cause;
+
+	bool current_channel_type_1_present;
+	uint8_t current_channel_type_1;
+
+	enum gsm0808_permitted_speech speech_version_used;
+
+	uint8_t chosen_encryption_algorithm_serving;
+
+	/*! Pass either old_bss_to_new_bss_info or old_bss_to_new_bss_info_raw. */
+	bool old_bss_to_new_bss_info_present;
+	struct gsm0808_old_bss_to_new_bss_info old_bss_to_new_bss_info;
+	/*! To feed the Old BSS to New BSS Information IE unchanged from the Handover Required message without having to
+	 * decode it. Pass either old_bss_to_new_bss_info or old_bss_to_new_bss_info_raw. Omit the TL part. */
+	const uint8_t *old_bss_to_new_bss_info_raw;
+	uint8_t old_bss_to_new_bss_info_raw_len;
+
+	const char *imsi;
+
+	const struct sockaddr_storage *aoip_transport_layer;
+
+	const struct gsm0808_speech_codec_list *codec_list_msc_preferred;
+
+	bool call_id_present;
+	uint32_t call_id;
+
+	const uint8_t *global_call_reference;
+	uint8_t global_call_reference_len;
+
+	/* more items are defined in the spec and may be added later */
+	bool more_items; /*!< always set this to false */
+};
+struct msgb *gsm0808_create_handover_request(const struct gsm0808_handover_request *params);
+
 struct msgb *gsm0808_create_handover_request_ack(const uint8_t *l3_info, uint8_t l3_info_len,
 						 uint8_t chosen_channel, uint8_t chosen_encr_alg,
 						 uint8_t chosen_speech_version);
 
+struct gsm0808_handover_command {
+	const uint8_t *l3_info;
+	uint8_t l3_info_len;
+
+	struct gsm0808_cell_id cell_identifier;
+
+	const uint8_t *new_bss_to_old_bss_info_raw;
+	size_t new_bss_to_old_bss_info_raw_len;
+
+	/* more items are defined in the spec and may be added later */
+	bool more_items; /*!< always set this to false */
+};
+struct msgb *gsm0808_create_handover_command(const struct gsm0808_handover_command *params);
+
 struct msgb *gsm0808_create_handover_detect();
+struct msgb *gsm0808_create_handover_succeeded();
 
 struct gsm0808_handover_complete {
 	bool rr_cause_present;

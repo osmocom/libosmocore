@@ -857,6 +857,129 @@ struct msgb *gsm0808_create_handover_required(const struct gsm0808_handover_requ
 	return msg;
 }
 
+/*! Create BSSMAP HANDOVER REQUIRED REJECT message.
+ * \returns newly allocated msgb with BSSMAP HANDOVER REQUIRED REJECT message. */
+struct msgb *gsm0808_create_handover_required_reject(const struct gsm0808_handover_required_reject *params)
+{
+	struct msgb *msg;
+
+	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "BSSMAP-HANDOVER-REQUIRED-REJECT");
+	if (!msg)
+		return NULL;
+
+	/* Message Type, 3.2.2.1 */
+	msgb_v_put(msg, BSS_MAP_MSG_HANDOVER_REQUIRED_REJECT);
+
+	/* Cause, 3.2.2.5 */
+	gsm0808_enc_cause(msg, params->cause);
+
+	/* prepend the header */
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
+
+	return msg;
+}
+
+/*! Create BSSMAP HANDOVER REQUEST message, 3GPP TS 48.008 3.2.1.8.
+ * Sent from the MSC to the potential new target cell during inter-BSC handover, or to the target MSC during inter-MSC
+ * handover.
+ */
+struct msgb *gsm0808_create_handover_request(const struct gsm0808_handover_request *params)
+{
+	struct msgb *msg;
+
+	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "BSSMAP-HANDOVER-REQUEST");
+	if (!msg)
+		return NULL;
+
+	/* Message Type, 3.2.2.1 */
+	msgb_v_put(msg, BSS_MAP_MSG_HANDOVER_RQST);
+
+	/* Channel Type 3.2.2.11 */
+	gsm0808_enc_channel_type(msg, &params->channel_type);
+
+	/* Encryption Information 3.2.2.10 */
+	gsm0808_enc_encrypt_info(msg, &params->encryption_information);
+
+	/* Classmark Information 1 3.2.2.30 or Classmark Information 2 3.2.2.19 (Classmark 2 wins) */
+	if (params->classmark_information.classmark2_len) {
+		msgb_tlv_put(msg, GSM0808_IE_CLASSMARK_INFORMATION_T2,
+			     params->classmark_information.classmark2_len,
+			     (const uint8_t*)&params->classmark_information.classmark2);
+	} else if (params->classmark_information.classmark1_set) {
+		msgb_tlv_put(msg, GSM0808_IE_CLASSMARK_INFORMATION_TYPE_1,
+			     sizeof(params->classmark_information.classmark1),
+			     (const uint8_t*)&params->classmark_information.classmark1);
+	}
+	/* (Classmark 3 possibly follows below) */
+
+	/* Cell Identifier (Serving) , 3.2.2.17 */
+	gsm0808_enc_cell_id(msg, &params->cell_identifier_serving);
+
+	/* Cell Identifier (Target) , 3.2.2.17 */
+	gsm0808_enc_cell_id(msg, &params->cell_identifier_target);
+
+	/* Cause, 3.2.2.5 */
+	gsm0808_enc_cause(msg, params->cause);
+
+	/* Classmark Information 3 3.2.2.20 */
+	if (params->classmark_information.classmark3_len) {
+		msgb_tlv_put(msg, GSM0808_IE_CLASSMARK_INFORMATION_T3,
+			     params->classmark_information.classmark3_len,
+			     (const uint8_t*)&params->classmark_information.classmark3);
+	}
+
+	/* Current Channel type 1 3.2.2.49 */
+	if (params->current_channel_type_1_present)
+		msgb_tv_fixed_put(msg, GSM0808_IE_CURRENT_CHANNEL_TYPE_1, 1, &params->current_channel_type_1);
+
+	/* Speech Version (Used), 3.2.2.51 */
+	if (params->speech_version_used) {
+		msgb_tv_put(msg, GSM0808_IE_SPEECH_VERSION, params->speech_version_used);
+	}
+
+	/* Chosen Encryption Algorithm (Serving) 3.2.2.44 */
+	if (params->chosen_encryption_algorithm_serving)
+		msgb_tv_put(msg, GSM0808_IE_CHOSEN_ENCR_ALG, params->chosen_encryption_algorithm_serving);
+
+	/* Old BSS to New BSS Information 3.2.2.58 */
+	if (params->old_bss_to_new_bss_info_raw && params->old_bss_to_new_bss_info_raw_len) {
+		msgb_tlv_put(msg, GSM0808_IE_OLD_BSS_TO_NEW_BSS_INFORMATION,
+			     params->old_bss_to_new_bss_info_raw_len,
+			     params->old_bss_to_new_bss_info_raw);
+	} else if (params->old_bss_to_new_bss_info_present) {
+		put_old_bss_to_new_bss_information(msg, &params->old_bss_to_new_bss_info);
+	}
+
+	/* IMSI 3.2.2.6 */
+	if (params->imsi) {
+		uint8_t mid_buf[GSM48_MI_SIZE + 2];
+		int mid_len = gsm48_generate_mid_from_imsi(mid_buf, params->imsi);
+		msgb_tlv_put(msg, GSM0808_IE_IMSI, mid_len - 2, mid_buf + 2);
+	}
+
+	if (params->aoip_transport_layer)
+		gsm0808_enc_aoip_trasp_addr(msg, params->aoip_transport_layer);
+
+	if (params->codec_list_msc_preferred)
+		gsm0808_enc_speech_codec_list(msg, params->codec_list_msc_preferred);
+
+	if (params->call_id_present) {
+		uint8_t val[4];
+		osmo_store32le(params->call_id, val);
+		msgb_tv_fixed_put(msg, GSM0808_IE_CALL_ID, 4, val);
+	}
+
+	if (params->global_call_reference && params->global_call_reference_len) {
+		msgb_tlv_put(msg, GSM0808_IE_GLOBAL_CALL_REF,
+			     params->global_call_reference_len, params->global_call_reference);
+	}
+
+	/* prepend header with final length */
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
+
+	return msg;
+}
+
 /*! Create BSSMAP HANDOVER REQUEST ACKNOWLEDGE message, 3GPP TS 48.008 3.2.1.10.
  * Sent from the MT BSC back to the MSC when it has allocated an lchan to handover to.
  * l3_info is the RR Handover Command that the MO BSC sends to the MS to move over. */
@@ -887,6 +1010,35 @@ struct msgb *gsm0808_create_handover_request_ack(const uint8_t *l3_info, uint8_t
 	return msg;
 }
 
+/*! Create BSSMAP HANDOVER COMMAND message, 3GPP TS 48.008 3.2.1.11.
+ * Sent from the MSC to the old BSS to transmit the RR Handover Command received from the new BSS. */
+struct msgb *gsm0808_create_handover_command(const struct gsm0808_handover_command *params)
+{
+	struct msgb *msg;
+
+	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "BSSMAP-HANDOVER-COMMAND");
+	if (!msg)
+		return NULL;
+
+	/* Message Type, 3.2.2.1 */
+	msgb_v_put(msg, BSS_MAP_MSG_HANDOVER_CMD);
+
+	msgb_tlv_put(msg, GSM0808_IE_LAYER_3_INFORMATION, params->l3_info_len, params->l3_info);
+
+	if (params->cell_identifier.id_discr != CELL_IDENT_NO_CELL)
+		gsm0808_enc_cell_id(msg, &params->cell_identifier);
+
+	if (params->new_bss_to_old_bss_info_raw
+	    && params->new_bss_to_old_bss_info_raw_len)
+		msgb_tlv_put(msg, GSM0808_IE_NEW_BSS_TO_OLD_BSS_INFO, params->new_bss_to_old_bss_info_raw_len,
+			     params->new_bss_to_old_bss_info_raw);
+
+	/* prepend header with final length */
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
+
+	return msg;
+}
+
 /*! Create BSSMAP HANDOVER DETECT message, 3GPP TS 48.008 3.2.1.40.
  * Sent from the MT BSC back to the MSC when the MS has sent a handover RACH request and the MT BSC has
  * received the Handover Detect message. */
@@ -900,6 +1052,25 @@ struct msgb *gsm0808_create_handover_detect()
 
 	/* Message Type, 3.2.2.1 */
 	msgb_v_put(msg, BSS_MAP_MSG_HANDOVER_DETECT);
+
+	/* prepend header with final length */
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
+
+	return msg;
+}
+
+/*! Create BSSMAP HANDOVER SUCCEEDED message, 3GPP TS 48.008 3.2.1.13.
+ * Sent from the MSC back to the old BSS to notify that the MS has successfully accessed the new BSS. */
+struct msgb *gsm0808_create_handover_succeeded()
+{
+	struct msgb *msg;
+
+	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "BSSMAP-HANDOVER-DETECT");
+	if (!msg)
+		return NULL;
+
+	/* Message Type, 3.2.2.1 */
+	msgb_v_put(msg, BSS_MAP_MSG_HANDOVER_SUCCEEDED);
 
 	/* prepend header with final length */
 	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
