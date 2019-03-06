@@ -323,12 +323,12 @@ static void print_fsm_state(struct osmo_fsm_inst *fi)
 #define test_tdef_fsm_state_chg(tdefs, NEXT_STATE) do { \
 		const struct osmo_tdef_state_timeout *st = osmo_tdef_get_state_timeout(NEXT_STATE, \
 										       test_tdef_state_timeouts); \
+		int rc = osmo_tdef_fsm_inst_state_chg(fi, NEXT_STATE, test_tdef_state_timeouts, tdefs, 999); \
 		if (!st) { \
-			printf(" --> %s (no timer configured for this state)\t", \
-			       osmo_fsm_state_name(&test_tdef_fsm, NEXT_STATE)); \
+			printf(" --> %s (no timer configured for this state) rc=%d;\t", \
+			       osmo_fsm_state_name(&test_tdef_fsm, NEXT_STATE), rc); \
 		} else { \
 			struct osmo_tdef *t = osmo_tdef_get_entry(tdefs, st->T); \
-			int rc = osmo_tdef_fsm_inst_state_chg(fi, NEXT_STATE, test_tdef_state_timeouts, tdefs, 999); \
 			printf(" --> %s (configured as T%d%s %lu %s) rc=%d;\t", \
 			       osmo_fsm_state_name(&test_tdef_fsm, NEXT_STATE), \
 			       st->T, st->keep_timer ? "(keep_timer)" : "", \

@@ -131,16 +131,16 @@ state=A T=1, 76.954322 s remaining
 Time passes: 23.045678 s
 state=A T=1, 76.954322 s remaining
  --> L (configured as T123(keep_timer) 1 s) rc=0;	state=L T=123, 76.954322 s remaining
- --> O (no timer configured for this state)	state=L T=123, 76.954322 s remaining
- --> L (configured as T123(keep_timer) 1 s) rc=0;	state=L T=123, 76.954322 s remaining
+ --> O (no timer configured for this state) rc=0;	state=O T=0, no timeout
+ --> L (configured as T123(keep_timer) 1 s) rc=0;	state=L T=123, no timeout
 - test T=0:
- --> O (no timer configured for this state)	state=L T=123, 76.954322 s remaining
+ --> O (no timer configured for this state) rc=0;	state=O T=0, no timeout
 - test no timer:
- --> X (no timer configured for this state)	state=L T=123, 76.954322 s remaining
+ --> X (no timer configured for this state) rc=0;	state=X T=0, no timeout
 - test undefined timer, using default_val arg of osmo_tdef_fsm_inst_state_chg(), here passed as 999:
  --> Y (configured as T666 0 -) rc=0;	state=Y T=666, 999.000000 s remaining
 - test disallowed transition:
- --> Z (no timer configured for this state)	state=Y T=666, 999.000000 s remaining
- --> B (configured as T2 100 ms) rc=0;	state=B T=2, 1.000000 s remaining
- --> C (configured as T3 100 m) rc=0;	state=C T=3, 6000.000000 s remaining
- --> D (configured as T4 100 custom-unit) rc=0;	state=D T=4, 100.000000 s remaining
+ --> Z (no timer configured for this state) rc=0;	state=Z T=0, no timeout
+ --> B (configured as T2 100 ms) rc=-1;	state=Z T=0, no timeout
+ --> C (configured as T3 100 m) rc=-1;	state=Z T=0, no timeout
+ --> D (configured as T4 100 custom-unit) rc=-1;	state=Z T=0, no timeout
