@@ -237,4 +237,6 @@ struct osmo_strbuf {
 #define OSMO_STRBUF_PRINTF(STRBUF, fmt, args...) \
 	OSMO_STRBUF_APPEND(STRBUF, snprintf, fmt, ##args)
 
+bool osmo_str_startswith(const char *str, const char *startswith_str);
+
 /*! @} */

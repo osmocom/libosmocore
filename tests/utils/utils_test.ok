@@ -340,3 +340,18 @@ cascade:
 (need 134 chars)
 T minus 10 9 8 7 6 5 4 3 2 1 ... Lift off! -- T minus 10 9 8 7 6 5 4 3 2 1 ... Lift off! -- T minus 10 9 8 7 6 5 4 3 2 1 ... Lift off!
 (need 134 chars, had size=63) T minus 10 9 8 7 6 5 4 3 2 1 ... Lift off! -- T minus 10 9 8 7
+
+startswith_test()
+osmo_str_startswith(NULL, NULL) == true
+osmo_str_startswith("", NULL) == true
+osmo_str_startswith(NULL, "") == true
+osmo_str_startswith("", "") == true
+osmo_str_startswith("abc", NULL) == true
+osmo_str_startswith("abc", "") == true
+osmo_str_startswith(NULL, "abc") == false
+osmo_str_startswith("", "abc") == false
+osmo_str_startswith("abc", "a") == true
+osmo_str_startswith("abc", "ab") == true
+osmo_str_startswith("abc", "abc") == true
+osmo_str_startswith("abc", "abcd") == false
+osmo_str_startswith("abc", "xyz") == false

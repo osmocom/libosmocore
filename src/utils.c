@@ -928,4 +928,18 @@ const char osmo_luhn(const char* in, int in_len)
 	return (sum * 9) % 10 + '0';
 }
 
+/*! Compare start of a string.
+ * This is an optimisation of 'strstr(str, startswith_str) == str' because it doesn't search through the entire string.
+ * \param str  (Longer) string to compare.
+ * \param startswith_str  (Shorter) string to compare with the start of str.
+ * \return true iff the first characters of str fully match startswith_str or startswith_str is empty. */
+bool osmo_str_startswith(const char *str, const char *startswith_str)
+{
+	if (!startswith_str || !*startswith_str)
+		return true;
+	if (!str)
+		return false;
+	return strncmp(str, startswith_str, strlen(startswith_str)) == 0;
+}
+
 /*! @} */

@@ -247,16 +247,6 @@ void osmo_tdef_vty_write(struct vty *vty, struct osmo_tdef *tdefs, const char *p
 /*! Singleton Tnnn groups definition as set by osmo_tdef_vty_groups_init(). */
 static struct osmo_tdef_group *global_tdef_groups;
 
-/*! \return true iff the first characters of str fully match startswith_str or both are empty. */
-static bool startswith(const char *str, const char *startswith_str)
-{
-	if (!startswith_str)
-		return true;
-	if (!str)
-		return false;
-	return strncmp(str, startswith_str, strlen(startswith_str)) == 0;
-}
-
 DEFUN(show_timer, show_timer_cmd, "DYNAMIC", "DYNAMIC")
       /* show timer [(alpha|beta|gamma)] [TNNNN] */
 {
@@ -268,7 +258,7 @@ DEFUN(show_timer, show_timer_cmd, "DYNAMIC", "DYNAMIC")
 	 * like "softw" or "t" (which can also be ambiguous). */
 
 	osmo_tdef_groups_for_each(g, global_tdef_groups) {
-		if (!group_arg || startswith(g->name, group_arg))
+		if (!group_arg || osmo_str_startswith(g->name, group_arg))
 			osmo_tdef_vty_show_cmd(vty, g->tdefs, T_arg, "%s: ", g->name);
 	}
 	return CMD_SUCCESS;

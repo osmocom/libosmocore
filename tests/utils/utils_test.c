@@ -1014,6 +1014,33 @@ void strbuf_test()
 	printf("(need %d chars, had size=63) %s\n", rc, buf);
 }
 
+static void startswith_test_str(const char *str, const char *startswith_str, bool expect_rc)
+{
+	bool rc = osmo_str_startswith(str, startswith_str);
+	printf("osmo_str_startswith(%s, ", osmo_quote_str(str, -1));
+	printf("%s) == %s\n", osmo_quote_str(startswith_str, -1), rc ? "true" : "false");
+	if (rc != expect_rc)
+		printf("   ERROR: EXPECTED %s\n", expect_rc ? "true" : "false");
+}
+
+static void startswith_test()
+{
+	printf("\n%s()\n", __func__);
+	startswith_test_str(NULL, NULL, true);
+	startswith_test_str("", NULL, true);
+	startswith_test_str(NULL, "", true);
+	startswith_test_str("", "", true);
+	startswith_test_str("abc", NULL, true);
+	startswith_test_str("abc", "", true);
+	startswith_test_str(NULL, "abc", false);
+	startswith_test_str("", "abc", false);
+	startswith_test_str("abc", "a", true);
+	startswith_test_str("abc", "ab", true);
+	startswith_test_str("abc", "abc", true);
+	startswith_test_str("abc", "abcd", false);
+	startswith_test_str("abc", "xyz", false);
+}
+
 int main(int argc, char **argv)
 {
 	static const struct log_info log_info = {};
@@ -1032,5 +1059,6 @@ int main(int argc, char **argv)
 	osmo_sockaddr_to_str_and_uint_test();
 	osmo_str_tolowupper_test();
 	strbuf_test();
+	startswith_test();
 	return 0;
 }
