@@ -100,7 +100,12 @@
 
 #if (!EMBEDDED)
 /* FIXME: this can be removed once we bump glibc requirements to 2.25: */
-#if defined(__GLIBC_PREREQ) && __GLIBC_PREREQ(2,25)
+#ifdef __GLIBC_PREREQ
+#if __GLIBC_PREREQ(2,25)
+#define HAVE_GLIBC_GETRANDOM
+#endif /* if __GLIBC_PREREQ(2,25) */
+#endif /* ifdef __GLIBC_PREREQ */
+#ifdef HAVE_GLIBC_GETRANDOM
 #pragma message ("glibc " OSMO_STRINGIFY_VAL(__GLIBC__) "." OSMO_STRINGIFY_VAL(__GLIBC_MINOR__) " random detected")
 #include <sys/random.h>
 #undef USE_GNUTLS
@@ -109,7 +114,7 @@
 #ifndef GRND_NONBLOCK
 #define GRND_NONBLOCK 0x0001
 #endif /* ifndef GRND_NONBLOCK */
-#endif /* if __GLIBC_PREREQ */
+#endif /* ifdef HAVE_GLIBC_GETRANDOM */
 #endif /* !EMBEDDED */
 
 #if (USE_GNUTLS)
@@ -447,7 +452,7 @@ int osmo_get_rand_id(uint8_t *out, size_t len)
 	if (len > OSMO_MAX_RAND_ID_LEN)
                return -E2BIG;
 #if (!EMBEDDED)
-#if defined(__GLIBC_PREREQ) && __GLIBC_PREREQ(2,25)
+#ifdef HAVE_GLIBC_GETRANDOM
 	rc = getrandom(out, len, GRND_NONBLOCK);
 #elif HAVE_DECL_SYS_GETRANDOM
 #pragma message ("Using direct syscall access for getrandom(): consider upgrading to glibc >= 2.25")
