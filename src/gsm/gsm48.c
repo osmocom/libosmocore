@@ -1192,7 +1192,7 @@ const char *osmo_gsm48_classmark_a5_name(const struct osmo_gsm48_classmark *cm)
 	static char buf[128];
 	char cm1[42] = "no-cm1";
 	char cm2[42] = " no-cm2";
-	char cm3[42] = " no-cm2";
+	char cm3[42] = " no-cm3";
 
 	if (cm->classmark1_set)
 		snprintf(cm1, sizeof(cm1), "cm1{a5/1=%s}",
