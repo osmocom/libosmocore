@@ -187,6 +187,7 @@ gsm0808_create_handover_required;
 gsm0808_create_handover_required_reject;
 gsm0808_create_handover_request;
 gsm0808_create_handover_request_ack;
+gsm0808_create_handover_request_ack2;
 gsm0808_create_handover_command;
 gsm0808_create_handover_detect;
 gsm0808_create_handover_succeeded;

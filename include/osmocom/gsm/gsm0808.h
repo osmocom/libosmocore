@@ -194,9 +194,29 @@ struct gsm0808_handover_request {
 };
 struct msgb *gsm0808_create_handover_request(const struct gsm0808_handover_request *params);
 
-struct msgb *gsm0808_create_handover_request_ack(const uint8_t *l3_info, uint8_t l3_info_len,
-						 uint8_t chosen_channel, uint8_t chosen_encr_alg,
-						 uint8_t chosen_speech_version);
+struct gsm0808_handover_request_ack {
+	const uint8_t *l3_info;
+	uint8_t l3_info_len;
+
+	bool chosen_channel_present;
+	uint8_t chosen_channel;
+
+	/*! For A5/N set chosen_encr_alg = N+1, e.g. chosen_encr_alg = 1 means A5/0 (no encryption), 2 means A5/1, 4
+	 * means A5/3. Set chosen_encr_alg = 0 to omit the Chosen Encryption Algorithm IE. */
+	uint8_t chosen_encr_alg;
+
+	/* chosen_speech_version == 0 omits the IE */
+	enum gsm0808_permitted_speech chosen_speech_version;
+
+	bool speech_codec_chosen_present;
+	struct gsm0808_speech_codec speech_codec_chosen;
+
+	const struct sockaddr_storage *aoip_transport_layer;
+
+	/* more items are defined in the spec and may be added later */
+	bool more_items; /*!< always set this to false */
+};
+struct msgb *gsm0808_create_handover_request_ack2(const struct gsm0808_handover_request_ack *params);
 
 struct gsm0808_handover_command {
 	const uint8_t *l3_info;

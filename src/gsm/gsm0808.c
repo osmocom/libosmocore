@@ -983,9 +983,7 @@ struct msgb *gsm0808_create_handover_request(const struct gsm0808_handover_reque
 /*! Create BSSMAP HANDOVER REQUEST ACKNOWLEDGE message, 3GPP TS 48.008 3.2.1.10.
  * Sent from the MT BSC back to the MSC when it has allocated an lchan to handover to.
  * l3_info is the RR Handover Command that the MO BSC sends to the MS to move over. */
-struct msgb *gsm0808_create_handover_request_ack(const uint8_t *l3_info, uint8_t l3_info_len,
-						 uint8_t chosen_channel, uint8_t chosen_encr_alg,
-						 uint8_t chosen_speech_version)
+struct msgb *gsm0808_create_handover_request_ack2(const struct gsm0808_handover_request_ack *params)
 {
 	struct msgb *msg;
 
@@ -996,18 +994,47 @@ struct msgb *gsm0808_create_handover_request_ack(const uint8_t *l3_info, uint8_t
 	/* Message Type, 3.2.2.1 */
 	msgb_v_put(msg, BSS_MAP_MSG_HANDOVER_RQST_ACKNOWLEDGE);
 
-	/* Layer 3 Information, 3.2.2.24 */
-	msgb_tlv_put(msg, GSM0808_IE_LAYER_3_INFORMATION, l3_info_len, l3_info);
+	/* Layer 3 Information, 3.2.2.24 -- it is actually mandatory, but rather compose a nonstandard message than
+	 * segfault or return NULL without a log message. */
+	if (params->l3_info && params->l3_info_len)
+		msgb_tlv_put(msg, GSM0808_IE_LAYER_3_INFORMATION, params->l3_info_len, params->l3_info);
 
-	msgb_tv_put(msg, GSM0808_IE_CHOSEN_CHANNEL, chosen_channel);
-	msgb_tv_put(msg, GSM0808_IE_CHOSEN_ENCR_ALG, chosen_encr_alg);
-	if (chosen_speech_version != 0)
-		msgb_tv_put(msg, GSM0808_IE_SPEECH_VERSION, chosen_speech_version);
+	if (params->chosen_channel_present)
+		msgb_tv_put(msg, GSM0808_IE_CHOSEN_CHANNEL, params->chosen_channel);
+	if (params->chosen_encr_alg)
+		msgb_tv_put(msg, GSM0808_IE_CHOSEN_ENCR_ALG, params->chosen_encr_alg);
+
+	if (params->chosen_speech_version != 0)
+		msgb_tv_put(msg, GSM0808_IE_SPEECH_VERSION, params->chosen_speech_version);
+
+	if (params->aoip_transport_layer)
+		gsm0808_enc_aoip_trasp_addr(msg, params->aoip_transport_layer);
+
+	/* AoIP: Speech Codec (Chosen) 3.2.2.104 */
+	if (params->speech_codec_chosen_present)
+		gsm0808_enc_speech_codec(msg, &params->speech_codec_chosen);
 
 	/* prepend header with final length */
 	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
 
 	return msg;
+}
+
+/*! Same as gsm0808_create_handover_request_ack2() but with less parameters.
+ * In particular, this lacks the AoIP Transport Layer address. */
+struct msgb *gsm0808_create_handover_request_ack(const uint8_t *l3_info, uint8_t l3_info_len,
+						 uint8_t chosen_channel, uint8_t chosen_encr_alg,
+						 uint8_t chosen_speech_version)
+{
+	struct gsm0808_handover_request_ack params = {
+		.l3_info = l3_info,
+		.l3_info_len = l3_info_len,
+		.chosen_channel = chosen_channel,
+		.chosen_encr_alg = chosen_encr_alg,
+		.chosen_speech_version = chosen_speech_version,
+	};
+
+	return gsm0808_create_handover_request_ack2(&params);
 }
 
 /*! Create BSSMAP HANDOVER COMMAND message, 3GPP TS 48.008 3.2.1.11.
