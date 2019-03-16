@@ -657,8 +657,8 @@ struct osmo_fsm_inst *gprs_sns_bss_fsm_alloc(void *ctx, struct gprs_nsvc *nsvc,
 		/* unspecified local address. Figure out which address the kernel would use if we
 		 * wanted to send a packet to the remote_ip */
 		char local_ip[32];
-		struct in_addr in = { .s_addr = htonl(nsi->nsip.remote_ip) };
-		osmo_sock_local_ip(local_ip, inet_ntoa(in));
+		struct sockaddr_in *daddr = &nsvc->ip.bts_addr;
+		osmo_sock_local_ip(local_ip, inet_ntoa(daddr->sin_addr));
 		ip4->ip_addr = inet_addr(local_ip);
 	}
 	ip4->udp_port = htons(gss->nsi->nsip.local_port);
