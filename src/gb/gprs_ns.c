@@ -195,6 +195,14 @@ const struct value_string gprs_ns_signal_ns_names[] = {
 			LOGP(DNS, LOGL_ERROR, "TX failed (%d) to peer %s\n",	\
 				rc, gprs_ns_ll_str(nsvc));
 
+static bool nsvc_is_not_used(const struct gprs_nsvc *nsvc)
+{
+	if (nsvc->data_weight == 0 && nsvc->sig_weight == 0)
+		return true;
+	else
+		return false;
+}
+
 struct msgb *gprs_ns_msgb_alloc(void)
 {
 	struct msgb *msg = msgb_alloc_headroom(NS_ALLOC_SIZE, NS_ALLOC_HEADROOM,
@@ -444,11 +452,39 @@ const char *gprs_ns_cause_str(enum ns_cause cause)
 static int nsip_sendmsg(struct gprs_nsvc *nsvc, struct msgb *msg);
 extern int grps_ns_frgre_sendmsg(struct gprs_nsvc *nsvc, struct msgb *msg);
 
+static bool ns_is_sns(uint8_t pdu_type)
+{
+	switch (pdu_type) {
+	case SNS_PDUT_CONFIG:
+	case SNS_PDUT_ACK:
+	case SNS_PDUT_ADD:
+	case SNS_PDUT_CHANGE_WEIGHT:
+	case SNS_PDUT_DELETE:
+	case SNS_PDUT_CONFIG_ACK:
+	case SNS_PDUT_SIZE:
+	case SNS_PDUT_SIZE_ACK:
+		return true;
+	default:
+		return false;
+	}
+}
+
 static int gprs_ns_tx(struct gprs_nsvc *nsvc, struct msgb *msg)
 {
+	struct gprs_ns_hdr *nsh = (struct gprs_ns_hdr *) msg->l2h;
 	int ret;
 
 	log_set_context(LOG_CTX_GB_NSVC, nsvc);
+
+	/* A pre-configured endpoint shall not be used for NSE data or signalling
+	 * traffic (with the exception of Size and Configuration procedures) unless it
+	 * is configured by the SGSN using the auto-configuration procedures. */
+	if (nsvc_is_not_used(nsvc) && !ns_is_sns(nsh->pdu_type) && nsh->pdu_type != NS_PDUT_STATUS) {
+		LOGP(DNS, LOGL_NOTICE, "Not transmitting %s on unused/pre-configured endpoint\n",
+			get_value_string(gprs_ns_pdu_strings, nsh->pdu_type));
+		msgb_free(msg);
+		return -EINVAL;
+	}
 
 	/* Increment number of Uplink bytes */
 	rate_ctr_inc(&nsvc->ctrg->ctr[NS_CTR_PKTS_OUT]);
@@ -1690,6 +1726,13 @@ int gprs_ns_process_msg(struct gprs_ns_inst *nsi, struct msgb *msg,
 	rate_ctr_inc(&(*nsvc)->ctrg->ctr[NS_CTR_PKTS_IN]);
 	rate_ctr_add(&(*nsvc)->ctrg->ctr[NS_CTR_BYTES_IN], msgb_l2len(msg));
 
+	if (nsvc_is_not_used(*nsvc) && !ns_is_sns(nsh->pdu_type) && nsh->pdu_type != NS_PDUT_STATUS) {
+		LOGP(DNS, LOGL_NOTICE, "NSEI=%u Rx %s on unused/pre-configured endpoint, discarding\n",
+			(*nsvc)->nsei, get_value_string(gprs_ns_pdu_strings, nsh->pdu_type));
+		gprs_ns_tx_status(*nsvc, NS_CAUSE_PROTO_ERR_UNSPEC, 0, msg);
+		return 0;
+	}
+
 	switch (nsh->pdu_type) {
 	case NS_PDUT_ALIVE:
 		/* If we're dead and blocked and suddenly receive a
@@ -2116,8 +2159,14 @@ struct gprs_nsvc *gprs_ns_nsip_connect_sns(struct gprs_ns_inst *nsi,
 	 * require some massive code and API changes compared to existing libosmogb,
 	 * so let's keep the old logic. */
 	nsvc = gprs_nsvc_by_rem_addr(nsi, dest);
-	if (!nsvc)
-		nsvc = gprs_nsvc_create(nsi, nsvci);
+	if (!nsvc) {
+		/* create NSVC with 0 data + signalling weight. This is illegal in SNS
+		 * and can hence only be created locally and serves as indication that
+		 * this NS-VC shall not be used for anything except SNS _unless_ it is
+		 * modified via SNS-{CONFIG,CHANGEWEIGHT,ADD} to become part of the
+		 * active NS-VCs */
+		nsvc = gprs_nsvc_create2(nsi, nsvci, 0, 0);
+	}
 	nsvc->ip.bts_addr = *dest;
 	nsvc->nsei = nsei;
 	nsvc->remote_end_is_sgsn = 1;
@@ -2161,6 +2210,10 @@ char *gprs_nsvc_state_append(char *s, struct gprs_nsvc *nsvc)
 /*! Start the ALIVE timer procedure in all NS-VCs part of this NS Instance */
 void gprs_nsvc_start_test(struct gprs_nsvc *nsvc)
 {
+	/* skip the initial NS-VC unless it has explicitly been configured
+	 * via SNS-CONFIG from the SGSN */
+	if (nsvc_is_not_used(nsvc))
+		return;
 	gprs_ns_tx_alive(nsvc);
 	nsvc_start_timer(nsvc, NSVC_TIMER_TNS_TEST);
 }
