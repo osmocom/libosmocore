@@ -58,7 +58,6 @@
  * - Only one NS-VC for each NSE: No load-sharing function
  * - NSVCI 65535 and 65534 are reserved for internal use
  * - Only UDP is supported as of now, no frame relay support
- * - The IP Sub-Network-Service (SNS) as specified in 48.016 is not implemented
  * - There are no BLOCK and UNBLOCK timers (yet?)
  *
  * \file gprs_ns.c */
