@@ -36,6 +36,8 @@
 #include <osmocom/core/linuxlist.h>
 #include <osmocom/core/timer.h>
 #include <osmocom/core/logging.h>
+#include <osmocom/core/talloc.h>
+#include <osmocom/core/utils.h>
 
 #include "../config.h"
 
@@ -233,11 +235,7 @@ restart:
 	return work;
 }
 
-/*! select main loop integration
- *  \param[in] polling should we pollonly (1) or block on select (0)
- *  \returns 0 if no fd handled; 1 if fd handled; negative in case of error
- */
-int osmo_select_main(int polling)
+static int _osmo_select_main(int polling)
 {
 	fd_set readset, writeset, exceptset;
 	int rc;
@@ -259,9 +257,41 @@ int osmo_select_main(int polling)
 	/* fire timers */
 	osmo_timers_update();
 
+	OSMO_ASSERT(osmo_ctx->select);
+
 	/* call registered callback functions */
 	return osmo_fd_disp_fds(&readset, &writeset, &exceptset);
 }
+
+/*! select main loop integration
+ *  \param[in] polling should we pollonly (1) or block on select (0)
+ *  \returns 0 if no fd handled; 1 if fd handled; negative in case of error
+ */
+int osmo_select_main(int polling)
+{
+	int rc = _osmo_select_main(polling);
+#ifndef EMBEDDED
+	if (talloc_total_size(osmo_ctx->select) != 0) {
+		osmo_panic("You cannot use the 'select' volatile "
+			   "context if you don't use osmo_select_main_ctx()!\n");
+	}
+#endif
+	return rc;
+}
+
+#ifndef EMBEDDED
+/*! select main loop integration with temporary select-dispatch talloc context
+ *  \param[in] polling should we pollonly (1) or block on select (0)
+ *  \returns 0 if no fd handled; 1 if fd handled; negative in case of error
+ */
+int osmo_select_main_ctx(int polling)
+{
+	int rc = _osmo_select_main(polling);
+	/* free all the children of the volatile 'select' scope context */
+	talloc_free_children(osmo_ctx->select);
+	return rc;
+}
+#endif
 
 /*! find an osmo_fd based on the integer fd
  *  \param[in] fd file descriptor to use as search key

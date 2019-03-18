@@ -32,6 +32,7 @@ check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
 		 tdef/tdef_vty_test_dynamic				\
 		 sockaddr_str/sockaddr_str_test				\
 		 use_count/use_count_test				\
+		 context/context_test					\
 		 $(NULL)
 
 if ENABLE_MSGFILE
@@ -251,6 +252,9 @@ sockaddr_str_sockaddr_str_test_LDADD = $(LDADD)
 use_count_use_count_test_SOURCES = use_count/use_count_test.c
 use_count_use_count_test_LDADD = $(LDADD)
 
+context_context_test_SOURCES = context/context_test.c
+context_context_test_LDADD = $(LDADD)
+
 # The `:;' works around a Bash 3.2 bug when the output is not writeable.
 $(srcdir)/package.m4: $(top_srcdir)/configure.ac
 	:;{ \
@@ -322,6 +326,7 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
 	     tdef/tdef_vty_test_dynamic.vty \
 	     sockaddr_str/sockaddr_str_test.ok \
 	     use_count/use_count_test.ok use_count/use_count_test.err \
+	     context/context_test.ok \
 	     $(NULL)
 
 DISTCLEANFILES = atconfig atlocal conv/gsm0503_test_vectors.c

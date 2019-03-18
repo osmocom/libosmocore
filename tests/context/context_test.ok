@@ -1,0 +1,4 @@
+entering osmo_select_main
+allocating from select context
+allocating from global context
+destructor was called automatically
