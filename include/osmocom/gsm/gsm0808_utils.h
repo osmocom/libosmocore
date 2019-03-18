@@ -69,7 +69,9 @@ struct osmo_lcls {
 };
 
 char *osmo_lcls_dump(const struct osmo_lcls *lcls);
+char *osmo_lcls_dump_buf(char *buf, size_t buf_len, const struct osmo_lcls *lcls);
 char *osmo_gcr_dump(const struct osmo_lcls *lcls);
+char *osmo_gcr_dump_buf(char *buf, size_t buf_len, const struct osmo_lcls *lcls);
 
 extern const struct value_string gsm0808_cell_id_discr_names[];
 static inline const char *gsm0808_cell_id_discr_name(enum CELL_IDENT id_discr)
@@ -251,5 +253,6 @@ static inline uint8_t gsm0808_chosen_channel(enum gsm_chan_t type, enum gsm48_ch
 }
 
 const char *gsm0808_channel_type_name(const struct gsm0808_channel_type *ct);
+char *gsm0808_channel_type_name_buf(char *buf, size_t buf_len, const struct gsm0808_channel_type *ct);
 
 /*! @} */

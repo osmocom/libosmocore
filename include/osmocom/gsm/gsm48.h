@@ -35,6 +35,7 @@ const char *gsm48_cc_msg_name(uint8_t msgtype);
 const char *gsm48_rr_msg_name(uint8_t msgtype);
 const char *rr_cause_name(uint8_t cause);
 const char *osmo_rai_name(const struct gprs_ra_id *rai);
+char *osmo_rai_name_buf(char *buf, size_t buf_len, const struct gprs_ra_id *rai);
 
 int gsm48_decode_lai(struct gsm48_loc_area_id *lai, uint16_t *mcc,
 		     uint16_t *mnc, uint16_t *lac)
@@ -55,6 +56,7 @@ int gsm48_mi_to_string(char *string, const int str_len,
 			const uint8_t *mi, const int mi_len);
 const char *gsm48_mi_type_name(uint8_t mi);
 const char *osmo_mi_name(const uint8_t *mi, uint8_t mi_len);
+char *osmo_mi_name_buf(char *buf, size_t buf_len, const uint8_t *mi, uint8_t mi_len);
 
 /* Parse Routeing Area Identifier */
 void gsm48_parse_ra(struct gprs_ra_id *raid, const uint8_t *buf);

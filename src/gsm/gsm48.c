@@ -182,6 +182,20 @@ const char *rr_cause_name(uint8_t cause)
 	return get_value_string(rr_cause_names, cause);
 }
 
+/*! Return MCC-MNC-LAC-RAC as string, in a caller-provided output buffer.
+ * \param[out] buf caller-provided output buffer
+ * \param[in] buf_len size of buf in bytes
+ * \param[in] rai  RAI to encode.
+ * \returns buf
+ */
+char *osmo_rai_name_buf(char *buf, size_t buf_len, const struct gprs_ra_id *rai)
+{
+	snprintf(buf, buf_len, "%s-%s-%u-%u",
+		 osmo_mcc_name(rai->mcc), osmo_mnc_name(rai->mnc, rai->mnc_3_digits), rai->lac,
+		 rai->rac);
+	return buf;
+}
+
 /*! Return MCC-MNC-LAC-RAC as string, in a static buffer.
  * \param[in] rai  RAI to encode.
  * \returns Static string buffer.
@@ -189,10 +203,7 @@ const char *rr_cause_name(uint8_t cause)
 const char *osmo_rai_name(const struct gprs_ra_id *rai)
 {
 	static char buf[32];
-	snprintf(buf, sizeof(buf), "%s-%s-%u-%u",
-		 osmo_mcc_name(rai->mcc), osmo_mnc_name(rai->mnc, rai->mnc_3_digits), rai->lac,
-		 rai->rac);
-	return buf;
+	return osmo_rai_name_buf(buf, sizeof(buf), rai);
 }
 
 /* FIXME: convert to value_string */
@@ -433,14 +444,15 @@ const char *gsm48_mi_type_name(uint8_t mi)
 	return get_value_string(mi_type_names, mi);
 }
 
-/*! Return a human readable representation of a Mobile Identity in static buffer.
+/*! Return a human readable representation of a Mobile Identity in caller-provided buffer.
+ * \param[out] buf caller-provided output buffer
+ * \param[in] buf_len size of buf in bytes
  * \param[in] mi  Mobile Identity buffer containing 3GPP TS 04.08 style MI type and data.
  * \param[in] mi_len  Length of mi.
- * \return A string like "IMSI-1234567", "TMSI-0x1234ABCD" or "unknown", "TMSI-invalid"...
+ * \return buf
  */
-const char *osmo_mi_name(const uint8_t *mi, uint8_t mi_len)
+char *osmo_mi_name_buf(char *buf, size_t buf_len, const uint8_t *mi, uint8_t mi_len)
 {
-	static char mi_name[10 + GSM48_MI_SIZE + 1];
 	uint8_t mi_type;
 	uint32_t tmsi;
 	char mi_string[GSM48_MI_SIZE];
@@ -452,8 +464,8 @@ const char *osmo_mi_name(const uint8_t *mi, uint8_t mi_len)
 		/* Table 10.5.4.3, reverse generate_mid_from_tmsi */
 		if (mi_len == GSM48_TMSI_LEN && mi[0] == (0xf0 | GSM_MI_TYPE_TMSI)) {
 			tmsi = osmo_load32be(&mi[1]);
-			snprintf(mi_name, sizeof(mi_name), "TMSI-0x%08" PRIX32, tmsi);
-			return mi_name;
+			snprintf(buf, buf_len, "TMSI-0x%08" PRIX32, tmsi);
+			return buf;
 		}
 		return "TMSI-invalid";
 
@@ -461,12 +473,23 @@ const char *osmo_mi_name(const uint8_t *mi, uint8_t mi_len)
 	case GSM_MI_TYPE_IMEI:
 	case GSM_MI_TYPE_IMEISV:
 		osmo_bcd2str(mi_string, sizeof(mi_string), mi, 1, (mi_len * 2) - (mi[0] & GSM_MI_ODD ? 0 : 1), true);
-		snprintf(mi_name, sizeof(mi_name), "%s-%s", gsm48_mi_type_name(mi_type), mi_string);
-		return mi_name;
+		snprintf(buf, buf_len, "%s-%s", gsm48_mi_type_name(mi_type), mi_string);
+		return buf;
 
 	default:
 		return "unknown";
 	}
+}
+
+/*! Return a human readable representation of a Mobile Identity in static buffer.
+ * \param[in] mi  Mobile Identity buffer containing 3GPP TS 04.08 style MI type and data.
+ * \param[in] mi_len  Length of mi.
+ * \return A string like "IMSI-1234567", "TMSI-0x1234ABCD" or "unknown", "TMSI-invalid"...
+ */
+const char *osmo_mi_name(const uint8_t *mi, uint8_t mi_len)
+{
+	static char mi_name[10 + GSM48_MI_SIZE + 1];
+	return osmo_mi_name_buf(mi_name, sizeof(mi_name), mi, mi_len);
 }
 
 /*! Checks is particular message is cipherable in A/Gb mode according to
@@ -1050,16 +1073,17 @@ const struct value_string gsm48_nc_ss_msgtype_names[] = {
 	{ 0, NULL }
 };
 
-/*! Compose a string naming the message type for given protocol.
+/*! Compose a string naming the message type for given protocol, in a caller-provided buffer.
  * If the message type string is known, return the message type name, otherwise
  * return "<protocol discriminator name>:<message type in hex>".
+ * \param[out] buf caller-allcated output string buffer
+ * \param[in] buf_len size of buf in bytes
  * \param[in] pdisc protocol discriminator like GSM48_PDISC_MM
  * \param[in] msg_type message type like GSM48_MT_MM_LOC_UPD_REQUEST
- * \returns statically allocated string or string constant.
+ * \returns buf
  */
-const char *gsm48_pdisc_msgtype_name(uint8_t pdisc, uint8_t msg_type)
+char *gsm48_pdisc_msgtype_name_buf(char *buf, size_t buf_len, uint8_t pdisc, uint8_t msg_type)
 {
-	static char namebuf[64];
 	const struct value_string *msgt_names;
 
 	switch (pdisc) {
@@ -1081,11 +1105,23 @@ const char *gsm48_pdisc_msgtype_name(uint8_t pdisc, uint8_t msg_type)
 	}
 
 	if (msgt_names)
-		return get_value_string(msgt_names, msg_type);
+		snprintf(buf, buf_len, "%s", get_value_string(msgt_names, msg_type));
+	else
+		snprintf(buf, buf_len, "%s:0x%02x", gsm48_pdisc_name(pdisc), msg_type);
+	return buf;
+}
 
-	snprintf(namebuf, sizeof(namebuf), "%s:0x%02x",
-		 gsm48_pdisc_name(pdisc), msg_type);
-	return namebuf;
+/*! Compose a string naming the message type for given protocol, in a static buffer.
+ * If the message type string is known, return the message type name, otherwise
+ * return "<protocol discriminator name>:<message type in hex>".
+ * \param[in] pdisc protocol discriminator like GSM48_PDISC_MM
+ * \param[in] msg_type message type like GSM48_MT_MM_LOC_UPD_REQUEST
+ * \returns statically allocated string or string constant.
+ */
+const char *gsm48_pdisc_msgtype_name(uint8_t pdisc, uint8_t msg_type)
+{
+	static char namebuf[64];
+	return gsm48_pdisc_msgtype_name_buf(namebuf, sizeof(namebuf), pdisc, msg_type);
 }
 
 const struct value_string gsm48_reject_value_names[] = {
@@ -1187,9 +1223,8 @@ bool osmo_gsm48_classmark_is_r99(const struct osmo_gsm48_classmark *cm)
  * \param[in] cm  Classmarks.
  * \returns A statically allocated string like "cm1{a5/1=supported} cm2{0x23= A5/2 A5/3} no-cm3"
  */
-const char *osmo_gsm48_classmark_a5_name(const struct osmo_gsm48_classmark *cm)
+char *osmo_gsm48_classmark_a5_name_buf(char *buf, size_t buf_len, const struct osmo_gsm48_classmark *cm)
 {
-	static char buf[128];
 	char cm1[42] = "no-cm1";
 	char cm2[42] = " no-cm2";
 	char cm3[42] = " no-cm3";
@@ -1212,9 +1247,20 @@ const char *osmo_gsm48_classmark_a5_name(const struct osmo_gsm48_classmark *cm)
 			 cm->classmark3[0] & (1 << 2) ? " A5/6" : "",
 			 cm->classmark3[0] & (1 << 3) ? " A5/7" : "");
 
-	snprintf(buf, sizeof(buf), "%s%s%s", cm1, cm2, cm3);
+	snprintf(buf, buf_len, "%s%s%s", cm1, cm2, cm3);
 	return buf;
 }
+
+/*! Return a string representation of A5 cipher algorithms indicated by Classmark 1, 2 and 3.
+ * \param[in] cm  Classmarks.
+ * \returns A statically allocated string like "cm1{a5/1=supported} cm2{0x23= A5/2 A5/3} no-cm3"
+ */
+const char *osmo_gsm48_classmark_a5_name(const struct osmo_gsm48_classmark *cm)
+{
+	static char buf[128];
+	return osmo_gsm48_classmark_a5_name_buf(buf, sizeof(buf), cm);
+}
+
 
 /*! Overwrite dst with the Classmark information present in src.
  * Add an new Classmark and overwrite in dst what src has to offer, but where src has no Classmark information, leave

@@ -886,15 +886,20 @@ uint32_t gsm_gsmtime2fn(struct gsm_time *time)
 	return (51 * ((time->t3 - time->t2 + 26) % 26) + time->t3 + (26 * 51 * time->t1));
 }
 
-char *osmo_dump_gsmtime(const struct gsm_time *tm)
+char *osmo_dump_gsmtime_buf(char *buf, size_t buf_len, const struct gsm_time *tm)
 {
-	static char buf[64];
-
-	snprintf(buf, sizeof(buf), "%06"PRIu32"/%02"PRIu16"/%02"PRIu8"/%02"PRIu8"/%02"PRIu8,
+	snprintf(buf, buf_len, "%06"PRIu32"/%02"PRIu16"/%02"PRIu8"/%02"PRIu8"/%02"PRIu8,
 		 tm->fn, tm->t1, tm->t2, tm->t3, (uint8_t)tm->fn%52);
 	buf[sizeof(buf)-1] = '\0';
 	return buf;
 }
+
+char *osmo_dump_gsmtime(const struct gsm_time *tm)
+{
+	static char buf[64];
+	return osmo_dump_gsmtime_buf(buf, sizeof(buf), tm);
+}
+
 
 /*! append range1024 encoded data to bit vector
  *  \param[out] bv Caller-provided output bit-vector

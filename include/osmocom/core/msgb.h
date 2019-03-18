@@ -67,6 +67,7 @@ extern struct msgb *msgb_dequeue(struct llist_head *queue);
 extern void msgb_reset(struct msgb *m);
 uint16_t msgb_length(const struct msgb *msg);
 extern const char *msgb_hexdump(const struct msgb *msg);
+char *msgb_hexdump_buf(char *buf, size_t buf_len, const struct msgb *msg);
 extern int msgb_resize_area(struct msgb *msg, uint8_t *area,
 	int old_size, int new_size);
 extern struct msgb *msgb_copy(const struct msgb *msg, const char *name);

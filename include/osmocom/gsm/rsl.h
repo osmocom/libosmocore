@@ -30,6 +30,7 @@ uint8_t rsl_enc_chan_nr(uint8_t type, uint8_t subch, uint8_t timeslot);
 /* decode channel number as per Section 9.3.1 */
 int rsl_dec_chan_nr(uint8_t chan_nr, uint8_t *type, uint8_t *subch, uint8_t *timeslot);
 /* Turns channel number into a string */
+char *rsl_chan_nr_str_buf(char *buf, size_t buf_len, uint8_t chan_nr);
 const char *rsl_chan_nr_str(uint8_t chan_nr);
 
 

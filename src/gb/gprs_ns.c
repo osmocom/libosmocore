@@ -1525,17 +1525,15 @@ int gprs_ns_rcvmsg(struct gprs_ns_inst *nsi, struct msgb *msg,
 	return rc;
 }
 
-const char *gprs_ns_ll_str(const struct gprs_nsvc *nsvc)
+char *gprs_ns_ll_str_buf(char *buf, size_t buf_len, const struct gprs_nsvc *nsvc)
 {
-	static char buf[80];
-
 	switch(nsvc->ll) {
 	case GPRS_NS_LL_UDP:
-		snprintf(buf, sizeof(buf), "%s:%u",
+		snprintf(buf, buf_len, "%s:%u",
 			 inet_ntoa(nsvc->ip.bts_addr.sin_addr), osmo_ntohs(nsvc->ip.bts_addr.sin_port));
 		break;
 	case GPRS_NS_LL_FR_GRE:
-		snprintf(buf, sizeof(buf), "%s:%u",
+		snprintf(buf, buf_len, "%s:%u",
 			 inet_ntoa(nsvc->frgre.bts_addr.sin_addr), osmo_ntohs(nsvc->frgre.bts_addr.sin_port));
 		break;
 	default:
@@ -1543,9 +1541,15 @@ const char *gprs_ns_ll_str(const struct gprs_nsvc *nsvc)
 		break;
 	}
 
-	buf[sizeof(buf) - 1] = '\0';
+	buf[buf_len - 1] = '\0';
 
 	return buf;
+}
+
+const char *gprs_ns_ll_str(const struct gprs_nsvc *nsvc)
+{
+	static char buf[80];
+	return gprs_ns_ll_str_buf(buf, sizeof(buf), nsvc);
 }
 
 void gprs_ns_ll_copy(struct gprs_nsvc *nsvc, struct gprs_nsvc *other)

@@ -53,6 +53,7 @@ int osmo_bcd2str(char *dst, size_t dst_size, const uint8_t *bcd, int start_nibbl
 
 int osmo_hexparse(const char *str, uint8_t *b, int max_len);
 
+char *osmo_ubit_dump_buf(char *buf, size_t buf_len, const uint8_t *bits, unsigned int len);
 char *osmo_ubit_dump(const uint8_t *bits, unsigned int len);
 char *osmo_hexdump(const unsigned char *buf, int len);
 char *osmo_hexdump_nospc(const unsigned char *buf, int len);
@@ -139,7 +140,7 @@ bool osmo_separated_identifiers_valid(const char *str, const char *sep_chars);
 const char *osmo_escape_str(const char *str, int len);
 char *osmo_escape_str_buf(const char *str, int in_len, char *buf, size_t bufsize);
 const char *osmo_quote_str(const char *str, int in_len);
-const char *osmo_quote_str_buf(const char *str, int in_len, char *buf, size_t bufsize);
+char *osmo_quote_str_buf(const char *str, int in_len, char *buf, size_t bufsize);
 
 uint32_t osmo_isqrt32(uint32_t x);
 

@@ -595,11 +595,13 @@ int gsm0808_dec_lcls(struct osmo_lcls *lcls, const struct tlv_parsed *tp)
 static char dbuf[256];
 
 /*! Dump LCLS parameters (GCR excluded) into string for printing.
+ *  \param[out] buf caller-allocated output string buffer
+ *  \param[in] buf_len size of buf in bytes
  *  \param[in] lcls pointer to the struct to print.
  *  \returns string representation of LCLS or NULL on error. */
-char *osmo_lcls_dump(const struct osmo_lcls *lcls)
+char *osmo_lcls_dump_buf(char *buf, size_t buf_len, const struct osmo_lcls *lcls)
 {
-	struct osmo_strbuf s = { .buf = dbuf, .len = 256 };
+	struct osmo_strbuf s = { .buf = buf, .len = buf_len };
 
 	if (!lcls)
 		return NULL;
@@ -612,12 +614,22 @@ char *osmo_lcls_dump(const struct osmo_lcls *lcls)
 	return dbuf;
 }
 
+/*! Dump LCLS parameters (GCR excluded) into static string buffer for printing.
+ *  \param[in] lcls pointer to the struct to print.
+ *  \returns string representation of LCLS in static buffer or NULL on error. */
+char *osmo_lcls_dump(const struct osmo_lcls *lcls)
+{
+	return osmo_lcls_dump_buf(dbuf, sizeof(dbuf), lcls);
+}
+
 /*! Dump GCR struct into string for printing.
+ *  \param[out] buf caller-allocated output string buffer
+ *  \param[in] buf_len size of buf in bytes
  *  \param[in] lcls pointer to the struct to print.
  *  \returns string representation of GCR or NULL on error. */
-char *osmo_gcr_dump(const struct osmo_lcls *lcls)
+char *osmo_gcr_dump_buf(char *buf, size_t buf_len, const struct osmo_lcls *lcls)
 {
-	struct osmo_strbuf s = { .buf = dbuf, .len = 256 };
+	struct osmo_strbuf s = { .buf = buf, .len = buf_len };
 
 	if (!lcls)
 		return NULL;
@@ -630,6 +642,15 @@ char *osmo_gcr_dump(const struct osmo_lcls *lcls)
 
 	return dbuf;
 }
+
+/*! Dump GCR struct into static string buffer for printing.
+ *  \param[in] lcls pointer to the struct to print.
+ *  \returns string representation of GCR in static buffer or NULL on error. */
+char *osmo_gcr_dump(const struct osmo_lcls *lcls)
+{
+	return osmo_gcr_dump_buf(dbuf, sizeof(dbuf), lcls);
+}
+
 
 /*! Encode TS 08.08 Encryption Information IE
  *  \param[out] msg Message Buffer to which IE is to be appended
@@ -1838,13 +1859,18 @@ const char *gsm0808_cell_id_list_name(const struct gsm0808_cell_id_list2 *cil)
 #undef APPEND_STR
 #undef APPEND_CELL_ID_U
 
-const char *gsm0808_channel_type_name(const struct gsm0808_channel_type *ct)
+char *gsm0808_channel_type_name_buf(char *buf, size_t buf_len, const struct gsm0808_channel_type *ct)
 {
-	static char buf[128];
-	snprintf(buf, sizeof(buf), "ch_indctr=0x%x ch_rate_type=0x%x perm_spch=%s",
+	snprintf(buf, buf_len, "ch_indctr=0x%x ch_rate_type=0x%x perm_spch=%s",
 		 ct->ch_indctr, ct->ch_rate_type,
 		 osmo_hexdump(ct->perm_spch, ct->perm_spch_len));
 	return buf;
+}
+
+const char *gsm0808_channel_type_name(const struct gsm0808_channel_type *ct)
+{
+	static char buf[128];
+	return gsm0808_channel_type_name_buf(buf, sizeof(buf), ct);
 }
 
 /*! @} */

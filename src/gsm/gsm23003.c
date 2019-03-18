@@ -90,13 +90,37 @@ bool osmo_imei_str_valid(const char *imei, bool with_15th_digit)
 }
 
 /*! Return MCC string as standardized 3-digit with leading zeros.
+ * \param[out] buf caller-allocated output buffer
+ * \param[in] buf_len size of buf in bytes
+ * \param[in] mcc  MCC value.
+ * \returns string in user-supplied output buffer
+ */
+char *osmo_mcc_name_buf(char *buf, size_t buf_len, uint16_t mcc)
+{
+	snprintf(buf, buf_len, "%03u", mcc);
+	return buf;
+}
+
+/*! Return MCC string as standardized 3-digit with leading zeros.
  * \param[in] mcc  MCC value.
  * \returns string in static buffer.
  */
 const char *osmo_mcc_name(uint16_t mcc)
 {
 	static char buf[8];
-	snprintf(buf, sizeof(buf), "%03u", mcc);
+	return osmo_mcc_name_buf(buf, sizeof(buf), mcc);
+}
+
+/*! Return MNC string as standardized 2- or 3-digit with leading zeros.
+ * \param[out] buf caller-allocated output buffer
+ * \param[in] buf_len size of buf in bytes
+ * \param[in] mnc  MNC value.
+ * \param[in] mnc_3_digits  True if an MNC should fill three digits, only has an effect if MNC < 100.
+ * \returns string in static buffer.
+ */
+char *osmo_mnc_name_buf(char *buf, size_t buf_len, uint16_t mnc, bool mnc_3_digits)
+{
+	snprintf(buf, buf_len, "%0*u", mnc_3_digits ? 3 : 2, mnc);
 	return buf;
 }
 
@@ -108,14 +132,21 @@ const char *osmo_mcc_name(uint16_t mcc)
 const char *osmo_mnc_name(uint16_t mnc, bool mnc_3_digits)
 {
 	static char buf[8];
-	snprintf(buf, sizeof(buf), "%0*u", mnc_3_digits ? 3 : 2, mnc);
-	return buf;
+	return osmo_mnc_name_buf(buf, sizeof(buf), mnc, mnc_3_digits);
 }
 
-static inline void plmn_name(char *buf, size_t buflen, const struct osmo_plmn_id *plmn)
+/*! Return MCC-MNC string as standardized 3-digit-dash-2/3-digit with leading zeros.
+ * \param[out] buf caller-allocated output buffer
+ * \param[in] buf_len size of buf in bytes
+ * \param[in] plmn  MCC-MNC value.
+ * \returns string in static buffer.
+ */
+char *osmo_plmn_name_buf(char *buf, size_t buf_len, const struct osmo_plmn_id *plmn)
 {
-	snprintf(buf, buflen, "%s-%s", osmo_mcc_name(plmn->mcc),
-		 osmo_mnc_name(plmn->mnc, plmn->mnc_3_digits));
+	char mcc[8], mnc[8];
+	snprintf(buf, buf_len, "%s-%s", osmo_mcc_name_buf(mcc, sizeof(mcc), plmn->mcc),
+		 osmo_mnc_name_buf(mnc, sizeof(mnc), plmn->mnc, plmn->mnc_3_digits));
+	return buf;
 }
 
 /*! Return MCC-MNC string as standardized 3-digit-dash-2/3-digit with leading zeros.
@@ -125,9 +156,9 @@ static inline void plmn_name(char *buf, size_t buflen, const struct osmo_plmn_id
 const char *osmo_plmn_name(const struct osmo_plmn_id *plmn)
 {
 	static char buf[16];
-	plmn_name(buf, sizeof(buf), plmn);
-	return buf;
+	return osmo_plmn_name_buf(buf, sizeof(buf), plmn);
 }
+
 
 /*! Same as osmo_plmn_name(), but returning in a different static buffer.
  * \param[in] plmn  MCC-MNC value.
@@ -136,7 +167,19 @@ const char *osmo_plmn_name(const struct osmo_plmn_id *plmn)
 const char *osmo_plmn_name2(const struct osmo_plmn_id *plmn)
 {
 	static char buf[16];
-	plmn_name(buf, sizeof(buf), plmn);
+	return osmo_plmn_name_buf(buf, sizeof(buf), plmn);
+}
+
+/*! Return MCC-MNC-LAC as string, in caller-provided output buffer.
+ * \param[out] buf caller-allocated output buffer
+ * \param[in] buf_len size of buf in bytes
+ * \param[in] lai  LAI to encode, the rac member is ignored.
+ * \returns buf
+ */
+char *osmo_lai_name_buf(char *buf, size_t buf_len, const struct osmo_location_area_id *lai)
+{
+	char plmn[16];
+	snprintf(buf, buf_len, "%s-%u", osmo_plmn_name_buf(plmn, sizeof(plmn), &lai->plmn), lai->lac);
 	return buf;
 }
 
@@ -147,13 +190,18 @@ const char *osmo_plmn_name2(const struct osmo_plmn_id *plmn)
 const char *osmo_lai_name(const struct osmo_location_area_id *lai)
 {
 	static char buf[32];
-	snprintf(buf, sizeof(buf), "%s-%u", osmo_plmn_name(&lai->plmn), lai->lac);
-	return buf;
+	return osmo_lai_name_buf(buf, sizeof(buf), lai);
 }
 
-static const char *_cgi_name(const struct osmo_cell_global_id *cgi, char *buf, size_t buflen)
+/*! Return MCC-MNC-LAC-CI as string, in caller-provided output buffer.
+ * \param[out] buf caller-allocated output buffer
+ * \param[in] buf_len size of buf in bytes
+ * \param[in] cgi  CGI to encode.
+ * \returns buf
+ */
+char *osmo_cgi_name_buf(char *buf, size_t buf_len, const struct osmo_cell_global_id *cgi)
 {
-	snprintf(buf, buflen, "%s-%u", osmo_lai_name(&cgi->lai), cgi->cell_identity);
+	snprintf(buf, buf_len, "%s-%u", osmo_lai_name(&cgi->lai), cgi->cell_identity);
 	return buf;
 }
 
@@ -164,7 +212,7 @@ static const char *_cgi_name(const struct osmo_cell_global_id *cgi, char *buf, s
 const char *osmo_cgi_name(const struct osmo_cell_global_id *cgi)
 {
 	static char buf[32];
-	return _cgi_name(cgi, buf, sizeof(buf));
+	return osmo_cgi_name_buf(buf, sizeof(buf), cgi);
 }
 
 /*! Same as osmo_cgi_name(), but uses a different static buffer.
@@ -175,7 +223,7 @@ const char *osmo_cgi_name(const struct osmo_cell_global_id *cgi)
 const char *osmo_cgi_name2(const struct osmo_cell_global_id *cgi)
 {
 	static char buf[32];
-	return _cgi_name(cgi, buf, sizeof(buf));
+	return osmo_cgi_name_buf(buf, sizeof(buf), cgi);
 }
 
 static void to_bcd(uint8_t *bcd, uint16_t val)
@@ -187,13 +235,30 @@ static void to_bcd(uint8_t *bcd, uint16_t val)
 	bcd[0] = val % 10;
 }
 
-const char *osmo_gummei_name(const struct osmo_gummei *gummei)
+/*! Return string representation of GUMMEI in caller-provided output buffer.
+ * \param[out] buf pointer to caller-provided output buffer
+ * \param[in] buf_len size of buf in bytes
+ * \param[in] gummei GUMMEI to be stringified
+ * \returns buf
+ */
+char *osmo_gummei_name_buf(char *buf, size_t buf_len, const struct osmo_gummei *gummei)
 {
-	static char buf[32];
-	snprintf(buf, sizeof(buf), "%s-%04x-%02x", osmo_plmn_name(&gummei->plmn),
+	char plmn[16];
+	snprintf(buf, buf_len, "%s-%04x-%02x", osmo_plmn_name_buf(plmn, sizeof(plmn), &gummei->plmn),
 		 gummei->mme.group_id, gummei->mme.code);
 	return buf;
 }
+
+/*! Return string representation of GUMMEI in static output buffer.
+ * \param[in] gummei GUMMEI to be stringified
+ * \returns pointer to static output buffer
+ */
+const char *osmo_gummei_name(const struct osmo_gummei *gummei)
+{
+	static char buf[32];
+	return osmo_gummei_name_buf(buf, sizeof(buf), gummei);
+}
+
 
 /* Convert MCC + MNC to BCD representation
  * \param[out] bcd_dst caller-allocated memory for output

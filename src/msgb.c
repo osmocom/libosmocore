@@ -392,13 +392,14 @@ int msgb_resize_area(struct msgb *msg, uint8_t *area,
 }
 
 
-/*! Return a (static) buffer containing a hexdump of the msg
- * \param[in] msg message buffer
- * \returns a pointer to a static char array
+/*! fill user-provided buffer with hexdump of the msg.
+ * \param[out] buf caller-allocated buffer for output string
+ * \param[in] buf_len length of buf
+ * \param[in] msg message buffer to be dumped
+ * \returns buf
  */
-const char *msgb_hexdump(const struct msgb *msg)
+char *msgb_hexdump_buf(char *buf, size_t buf_len, const struct msgb *msg)
 {
-	static char buf[4100];
 	int buf_offs = 0;
 	int nchars;
 	const unsigned char *start = msg->data;
@@ -421,32 +422,32 @@ const char *msgb_hexdump(const struct msgb *msg)
 		if (lxhs[i] > msg->tail)
 			continue;
 		if (lxhs[i] < msg->data || lxhs[i] > msg->tail) {
-			nchars = snprintf(buf + buf_offs, sizeof(buf) - buf_offs,
+			nchars = snprintf(buf + buf_offs, buf_len - buf_offs,
 					  "(L%d=data%+" PRIdPTR ") ",
 					  i+1, lxhs[i] - msg->data);
 			buf_offs += nchars;
 			continue;
 		}
 		if (lxhs[i] < start) {
-			nchars = snprintf(buf + buf_offs, sizeof(buf) - buf_offs,
+			nchars = snprintf(buf + buf_offs, buf_len - buf_offs,
 					  "(L%d%+" PRIdPTR ") ", i+1,
 					  start - lxhs[i]);
 			buf_offs += nchars;
 			continue;
 		}
-		nchars = snprintf(buf + buf_offs, sizeof(buf) - buf_offs,
+		nchars = snprintf(buf + buf_offs, buf_len - buf_offs,
 				  "%s[L%d]> ",
 				  osmo_hexdump(start, lxhs[i] - start),
 				  i+1);
-		if (nchars < 0 || nchars + buf_offs >= sizeof(buf))
+		if (nchars < 0 || nchars + buf_offs >= buf_len)
 			return "ERROR";
 
 		buf_offs += nchars;
 		start = lxhs[i];
 	}
-	nchars = snprintf(buf + buf_offs, sizeof(buf) - buf_offs,
+	nchars = snprintf(buf + buf_offs, buf_len - buf_offs,
 			  "%s", osmo_hexdump(start, msg->tail - start));
-	if (nchars < 0 || nchars + buf_offs >= sizeof(buf))
+	if (nchars < 0 || nchars + buf_offs >= buf_len)
 		return "ERROR";
 
 	buf_offs += nchars;
@@ -456,17 +457,17 @@ const char *msgb_hexdump(const struct msgb *msg)
 			continue;
 
 		if (lxhs[i] < msg->head || lxhs[i] > msg->head + msg->data_len) {
-			nchars = snprintf(buf + buf_offs, sizeof(buf) - buf_offs,
+			nchars = snprintf(buf + buf_offs, buf_len - buf_offs,
 					  "(L%d out of range) ", i+1);
 		} else if (lxhs[i] <= msg->data + msg->data_len &&
 			   lxhs[i] > msg->tail) {
-			nchars = snprintf(buf + buf_offs, sizeof(buf) - buf_offs,
+			nchars = snprintf(buf + buf_offs, buf_len - buf_offs,
 					  "(L%d=tail%+" PRIdPTR ") ",
 					  i+1, lxhs[i] - msg->tail);
 		} else
 			continue;
 
-		if (nchars < 0 || nchars + buf_offs >= sizeof(buf))
+		if (nchars < 0 || nchars + buf_offs >= buf_len)
 			return "ERROR";
 		buf_offs += nchars;
 	}
@@ -474,6 +475,15 @@ const char *msgb_hexdump(const struct msgb *msg)
 	return buf;
 }
 
+/*! Return a (static) buffer containing a hexdump of the msg.
+ * \param[in] msg message buffer
+ * \returns a pointer to a static char array
+ */
+const char *msgb_hexdump(const struct msgb *msg)
+{
+	static char buf[4100];
+	return msgb_hexdump_buf(buf, sizeof(buf), msg);
+}
 
 /*! Print a string to the end of message buffer.
  * \param[in] msgb message buffer.

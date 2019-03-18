@@ -215,33 +215,47 @@ int rsl_dec_chan_nr(uint8_t chan_nr, uint8_t *type, uint8_t *subch, uint8_t *tim
 	return 0;
 }
 
-/*! Get human-readable string for RSL channel number */
-const char *rsl_chan_nr_str(uint8_t chan_nr)
+/*! Get human-readable string for RSL channel number, in caller-provided buffer.
+ *  \param[out] buf caller-provided output buffer
+ *  \param[in] buf_len size of buf in bytes
+ *  \param[in] chan_nr channel number to be stringified
+ *  \returns buf with string
+ */
+char *rsl_chan_nr_str_buf(char *buf, size_t buf_len, uint8_t chan_nr)
 {
-	static char str[20];
 	int ts = chan_nr & 7;
 	uint8_t cbits = chan_nr >> 3;
 
 	if (cbits == 0x01)
-		sprintf(str, "TCH/F on TS%d", ts);
+		snprintf(buf, buf_len, "TCH/F on TS%d", ts);
 	else if ((cbits & 0x1e) == 0x02)
-		sprintf(str, "TCH/H(%u) on TS%d", cbits & 0x01, ts);
+		snprintf(buf, buf_len, "TCH/H(%u) on TS%d", cbits & 0x01, ts);
 	else if ((cbits & 0x1c) == 0x04)
-		sprintf(str, "SDCCH/4(%u) on TS%d", cbits & 0x03, ts);
+		snprintf(buf, buf_len, "SDCCH/4(%u) on TS%d", cbits & 0x03, ts);
 	else if ((cbits & 0x18) == 0x08)
-		sprintf(str, "SDCCH/8(%u) on TS%d", cbits & 0x07, ts);
+		snprintf(buf, buf_len, "SDCCH/8(%u) on TS%d", cbits & 0x07, ts);
 	else if (cbits == 0x10)
-		sprintf(str, "BCCH on TS%d", ts);
+		snprintf(buf, buf_len, "BCCH on TS%d", ts);
 	else if (cbits == 0x11)
-		sprintf(str, "RACH on TS%d", ts);
+		snprintf(buf, buf_len, "RACH on TS%d", ts);
 	else if (cbits == 0x12)
-		sprintf(str, "PCH/AGCH on TS%d", ts);
+		snprintf(buf, buf_len, "PCH/AGCH on TS%d", ts);
 	else if (cbits == 0x18)
-		sprintf(str, "PDCH on TS%d", ts);
+		snprintf(buf, buf_len, "PDCH on TS%d", ts);
 	else
-		sprintf(str, "UNKNOWN on TS%d", ts);
+		snprintf(buf, buf_len, "UNKNOWN on TS%d", ts);
 
-        return str;
+        return buf;
+}
+
+/*! Get human-readable string for RSL channel number, in static buffer.
+ *  \param[in] chan_nr channel number to be stringified
+ *  \returns buf with string
+ */
+const char *rsl_chan_nr_str(uint8_t chan_nr)
+{
+	static char str[20];
+	return rsl_chan_nr_str_buf(str, sizeof(str), chan_nr);
 }
 
 static const struct value_string rsl_err_vals[] = {

@@ -32,17 +32,22 @@
 
 static char apn_strbuf[APN_MAXLEN+1];
 
-char *osmo_apn_qualify(unsigned int mcc, unsigned int mnc, const char *ni)
+char *osmo_apn_qualify_buf(char *buf, size_t buf_len, unsigned int mcc, unsigned int mnc, const char *ni)
 {
-	snprintf(apn_strbuf, sizeof(apn_strbuf)-1, APN_GPRS_FMT,
-		ni, mnc, mcc);
-	apn_strbuf[sizeof(apn_strbuf)-1] = '\0';
+	snprintf(buf, buf_len-1, APN_GPRS_FMT, ni, mnc, mcc);
+	buf[buf_len-1] = '\0';
 
-	return apn_strbuf;
+	return buf;
 }
 
-char *osmo_apn_qualify_from_imsi(const char *imsi,
-				 const char *ni, int have_3dig_mnc)
+char *osmo_apn_qualify(unsigned int mcc, unsigned int mnc, const char *ni)
+{
+	return osmo_apn_qualify_buf(apn_strbuf, sizeof(apn_strbuf), mcc, mnc, ni);
+}
+
+
+char *osmo_apn_qualify_from_imsi_buf(char *buf, size_t buf_len, const char *imsi,
+				     const char *ni, int have_3dig_mnc)
 {
 	char cbuf[3+1], nbuf[3+1];
 
@@ -56,7 +61,13 @@ char *osmo_apn_qualify_from_imsi(const char *imsi,
 		strncpy(nbuf, imsi+3, 2);
 		nbuf[2] = '\0';
 	}
-	return osmo_apn_qualify(atoi(cbuf), atoi(nbuf), ni);
+	return osmo_apn_qualify_buf(buf, buf_len, atoi(cbuf), atoi(nbuf), ni);
+}
+
+char *osmo_apn_qualify_from_imsi(const char *imsi,
+				 const char *ni, int have_3dig_mnc)
+{
+	return osmo_apn_qualify_from_imsi_buf(apn_strbuf, sizeof(apn_strbuf), imsi, ni, have_3dig_mnc);
 }
 
 /**

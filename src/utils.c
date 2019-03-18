@@ -273,17 +273,20 @@ const char *osmo_hexdump_buf(char *out_buf, size_t out_buf_size, const unsigned 
 	return out_buf;
 }
 
-/*! Convert a sequence of unpacked bits to ASCII string
+/*! Convert a sequence of unpacked bits to ASCII string, in user-supplied buffer.
+ * \param[out] buf caller-provided output string buffer
+ * \param[out] buf_len size of buf in bytes
  * \param[in] bits A sequence of unpacked bits
  * \param[in] len Length of bits
+ * \returns string representation in static buffer.
  */
-char *osmo_ubit_dump(const uint8_t *bits, unsigned int len)
+char *osmo_ubit_dump_buf(char *buf, size_t buf_len, const uint8_t *bits, unsigned int len)
 {
 	int i;
 
-	if (len > sizeof(hexd_buff)-1)
-		len = sizeof(hexd_buff)-1;
-	memset(hexd_buff, 0, sizeof(hexd_buff));
+	if (len > buf_len-1)
+		len = buf_len-1;
+	memset(buf, 0, buf_len);
 
 	for (i = 0; i < len; i++) {
 		char outch;
@@ -301,10 +304,20 @@ char *osmo_ubit_dump(const uint8_t *bits, unsigned int len)
 			outch = 'E';
 			break;
 		}
-		hexd_buff[i] = outch;
+		buf[i] = outch;
 	}
-	hexd_buff[sizeof(hexd_buff)-1] = 0;
-	return hexd_buff;
+	buf[buf_len-1] = 0;
+	return buf;
+}
+
+/*! Convert a sequence of unpacked bits to ASCII string, in static buffer.
+ * \param[in] bits A sequence of unpacked bits
+ * \param[in] len Length of bits
+ * \returns string representation in static buffer.
+ */
+char *osmo_ubit_dump(const uint8_t *bits, unsigned int len)
+{
+	return osmo_ubit_dump_buf(hexd_buff, sizeof(hexd_buff), bits, len);
 }
 
 /*! Convert binary sequence to hexadecimal ASCII string
@@ -632,7 +645,7 @@ const char *osmo_escape_str(const char *str, int in_len)
  * \param[in] in_len  Pass -1 to print until nul char, or >= 0 to force a length.
  * \returns buf containing a quoted and escaped representation, possibly truncated.
  */
-const char *osmo_quote_str_buf(const char *str, int in_len, char *buf, size_t bufsize)
+char *osmo_quote_str_buf(const char *str, int in_len, char *buf, size_t bufsize)
 {
 	int l;
 	if (!str)

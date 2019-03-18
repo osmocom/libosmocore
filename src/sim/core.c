@@ -267,10 +267,8 @@ struct msgb *osim_new_apdumsg(uint8_t cla, uint8_t ins, uint8_t p1,
 	return msg;
 }
 
-/* FIXME: do we want to mark this as __thread? */
-static char sw_print_buf[256];
 
-char *osim_print_sw(const struct osim_card_hdl *ch, uint16_t sw_in)
+char *osim_print_sw_buf(char *buf, size_t buf_len, const struct osim_card_hdl *ch, uint16_t sw_in)
 {
 	const struct osim_card_sw *csw;
 
@@ -283,25 +281,29 @@ char *osim_print_sw(const struct osim_card_hdl *ch, uint16_t sw_in)
 
 	switch (csw->type) {
 	case SW_TYPE_STR:
-		snprintf(sw_print_buf, sizeof(sw_print_buf),
-			 "%04x (%s)", sw_in, csw->u.str);
+		snprintf(buf, buf_len, "%04x (%s)", sw_in, csw->u.str);
 		break;
 	default:
 		goto ret_def;
 	}
 
-	sw_print_buf[sizeof(sw_print_buf)-1] = '\0';
+	buf[buf_len-1] = '\0';
 
-	return sw_print_buf;
+	return buf;
 
 ret_def:
-	snprintf(sw_print_buf, sizeof(sw_print_buf),
-		 "%04x (Unknown)", sw_in);
-	sw_print_buf[sizeof(sw_print_buf)-1] = '\0';
+	snprintf(buf, buf_len, "%04x (Unknown)", sw_in);
+	buf[buf_len-1] = '\0';
 
-	return sw_print_buf;
+	return buf;
 }
 
+char *osim_print_sw(const struct osim_card_hdl *ch, uint16_t sw_in)
+{
+	/* FIXME: do we want to mark this as __thread? */
+	static char sw_print_buf[256];
+	return osim_print_sw_buf(sw_print_buf, sizeof(sw_print_buf), ch, sw_in);
+}
 
 const struct osim_card_sw *osim_find_sw(const struct osim_card_profile *cp,
 					uint16_t sw_in)
