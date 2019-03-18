@@ -66,7 +66,7 @@ int osmo_sock_unix_init(uint16_t type, uint8_t proto,
 int osmo_sock_unix_init_ofd(struct osmo_fd *ofd, uint16_t type, uint8_t proto,
 			    const char *socket_path, unsigned int flags);
 
-char *osmo_sock_get_name(void *ctx, int fd);
+char *osmo_sock_get_name(const void *ctx, int fd);
 const char *osmo_sock_get_name2(int fd);
 int osmo_sock_get_name_buf(char *str, size_t str_len, int fd);
 int osmo_sock_get_ip_and_port(int fd, char *ip, size_t ip_len, char *port, size_t port_len, bool local);

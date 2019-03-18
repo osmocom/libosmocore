@@ -781,7 +781,7 @@ int osmo_sock_get_remote_ip_port(int fd, char *port, size_t len)
  *  \param[in] fd file descriptor of socket
  *  \returns string identifying the connection of this socket, talloc'd from ctx.
  */
-char *osmo_sock_get_name(void *ctx, int fd)
+char *osmo_sock_get_name(const void *ctx, int fd)
 {
 	char str[OSMO_SOCK_NAME_MAXLEN];
 	int rc;
