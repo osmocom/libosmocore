@@ -32,6 +32,7 @@ int rsl_dec_chan_nr(uint8_t chan_nr, uint8_t *type, uint8_t *subch, uint8_t *tim
 /* Turns channel number into a string */
 char *rsl_chan_nr_str_buf(char *buf, size_t buf_len, uint8_t chan_nr);
 const char *rsl_chan_nr_str(uint8_t chan_nr);
+char *rsl_chan_nr_str_c(const void *ctx, uint8_t chan_nr);
 
 
 const char *rsl_err_name(uint8_t err);

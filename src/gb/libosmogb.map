@@ -65,6 +65,7 @@ gprs_ns_tx_unblock;
 gprs_ns_vty_init;
 gprs_ns_ll_str;
 gprs_ns_ll_str_buf;
+gprs_ns_ll_str_c;
 gprs_ns_ll_copy;
 gprs_ns_ll_clear;
 gprs_ns_msgb_alloc;

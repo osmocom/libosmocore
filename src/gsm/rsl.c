@@ -258,6 +258,19 @@ const char *rsl_chan_nr_str(uint8_t chan_nr)
 	return rsl_chan_nr_str_buf(str, sizeof(str), chan_nr);
 }
 
+/*! Get human-readable string for RSL channel number, in dynamically-allocated buffer.
+ *  \param[in] ctx talloc context from which to allocate output buffer
+ *  \param[in] chan_nr channel number to be stringified
+ *  \returns dynamically-allocated buffer with string representation
+ */
+char *rsl_chan_nr_str_c(const void *ctx, uint8_t chan_nr)
+{
+	char *str = talloc_size(ctx, 20);
+	if (!str)
+		return NULL;
+	return rsl_chan_nr_str_buf(str, 20, chan_nr);
+}
+
 static const struct value_string rsl_err_vals[] = {
 	{ RSL_ERR_RADIO_IF_FAIL,	"Radio Interface Failure" },
 	{ RSL_ERR_RADIO_LINK_FAIL,	"Radio Link Failure" },

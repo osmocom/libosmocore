@@ -70,6 +70,7 @@ struct osmo_lcls {
 
 char *osmo_lcls_dump(const struct osmo_lcls *lcls);
 char *osmo_lcls_dump_buf(char *buf, size_t buf_len, const struct osmo_lcls *lcls);
+char *osmo_lcls_dump_c(void *ctx, const struct osmo_lcls *lcls);
 char *osmo_gcr_dump(const struct osmo_lcls *lcls);
 char *osmo_gcr_dump_buf(char *buf, size_t buf_len, const struct osmo_lcls *lcls);
 
@@ -79,8 +80,11 @@ static inline const char *gsm0808_cell_id_discr_name(enum CELL_IDENT id_discr)
 
 const char *gsm0808_cell_id_name(const struct gsm0808_cell_id *cid);
 const char *gsm0808_cell_id_name2(const struct gsm0808_cell_id *cid);
+char *gsm0808_cell_id_name_buf(char *buf, size_t buflen, const struct gsm0808_cell_id *cid);
+char *gsm0808_cell_id_name_c(const void *ctx, const struct gsm0808_cell_id *cid);
 const char *gsm0808_cell_id_list_name(const struct gsm0808_cell_id_list2 *cil);
 int gsm0808_cell_id_list_name_buf(char *buf, size_t buflen, const struct gsm0808_cell_id_list2 *cil);
+char *gsm0808_cell_id_list_name_c(const void *ctx, const struct gsm0808_cell_id_list2 *cil);
 int gsm0808_cell_id_u_name(char *buf, size_t buflen,
 			   enum CELL_IDENT id_discr, const union gsm0808_cell_id_u *u);
 bool gsm0808_cell_ids_match(const struct gsm0808_cell_id *id1, const struct gsm0808_cell_id *id2, bool exact_match);
@@ -254,5 +258,6 @@ static inline uint8_t gsm0808_chosen_channel(enum gsm_chan_t type, enum gsm48_ch
 
 const char *gsm0808_channel_type_name(const struct gsm0808_channel_type *ct);
 char *gsm0808_channel_type_name_buf(char *buf, size_t buf_len, const struct gsm0808_channel_type *ct);
+char *gsm0808_channel_type_name_c(const void *ctx, const struct gsm0808_channel_type *ct);
 
 /*! @} */

@@ -111,6 +111,19 @@ const char *osmo_mcc_name(uint16_t mcc)
 	return osmo_mcc_name_buf(buf, sizeof(buf), mcc);
 }
 
+/*! Return MCC string as standardized 3-digit with leading zeros, into a talloc-allocated buffer.
+ * \param[in] ctx talloc context from which to allocate output buffer
+ * \param[in] mcc  MCC value.
+ * \returns string in dynamically allocated buffer.
+ */
+const char *osmo_mcc_name_c(const void *ctx, uint16_t mcc)
+{
+	char *buf = talloc_size(ctx, 8);
+	if (!buf)
+		return NULL;
+	return osmo_mcc_name_buf(buf, 8, mcc);
+}
+
 /*! Return MNC string as standardized 2- or 3-digit with leading zeros.
  * \param[out] buf caller-allocated output buffer
  * \param[in] buf_len size of buf in bytes
@@ -122,6 +135,20 @@ char *osmo_mnc_name_buf(char *buf, size_t buf_len, uint16_t mnc, bool mnc_3_digi
 {
 	snprintf(buf, buf_len, "%0*u", mnc_3_digits ? 3 : 2, mnc);
 	return buf;
+}
+
+/*! Return MNC string as standardized 2- or 3-digit with leading zeros, into a talloc-allocated buffer.
+ * \param[in] ctx talloc context from which to allocate output buffer
+ * \param[in] mnc  MNC value.
+ * \param[in] mnc_3_digits  True if an MNC should fill three digits, only has an effect if MNC < 100.
+ * \returns string in dynamically allocated buffer.
+ */
+char *osmo_mnc_name_c(const void *ctx, uint16_t mnc, bool mnc_3_digits)
+{
+	char *buf = talloc_size(ctx, 8);
+	if (!buf)
+		return buf;
+	return osmo_mnc_name_buf(buf, 8, mnc, mnc_3_digits);
 }
 
 /*! Return MNC string as standardized 2- or 3-digit with leading zeros.
@@ -170,6 +197,20 @@ const char *osmo_plmn_name2(const struct osmo_plmn_id *plmn)
 	return osmo_plmn_name_buf(buf, sizeof(buf), plmn);
 }
 
+/*! Return MCC-MNC string as standardized 3-digit-dash-2/3-digit with leading zeros, into
+ *  a dynamically-allocated output buffer.
+ * \param[in] ctx talloc context from which to allocate output buffer
+ * \param[in] plmn  MCC-MNC value.
+ * \returns string in dynamically allocated buffer.
+ */
+char *osmo_plmn_name_c(const void *ctx, const struct osmo_plmn_id *plmn)
+{
+	char *buf = talloc_size(ctx, 16);
+	if (!buf)
+		return NULL;
+	return osmo_plmn_name_buf(buf, 16, plmn);
+}
+
 /*! Return MCC-MNC-LAC as string, in caller-provided output buffer.
  * \param[out] buf caller-allocated output buffer
  * \param[in] buf_len size of buf in bytes
@@ -191,6 +232,19 @@ const char *osmo_lai_name(const struct osmo_location_area_id *lai)
 {
 	static char buf[32];
 	return osmo_lai_name_buf(buf, sizeof(buf), lai);
+}
+
+/*! Return MCC-MNC-LAC as string, in a talloc-allocated output buffer.
+ * \param[in] ctx talloc context from which to allocate output buffer
+ * \param[in] lai  LAI to encode, the rac member is ignored.
+ * \returns string representation of lai in dynamically allocated buffer.
+ */
+char *osmo_lai_name_c(const void *ctx, const struct osmo_location_area_id *lai)
+{
+	char *buf = talloc_size(ctx, 32);
+	if (!buf)
+		return NULL;
+	return osmo_lai_name_buf(buf, 32, lai);
 }
 
 /*! Return MCC-MNC-LAC-CI as string, in caller-provided output buffer.
@@ -226,6 +280,17 @@ const char *osmo_cgi_name2(const struct osmo_cell_global_id *cgi)
 	return osmo_cgi_name_buf(buf, sizeof(buf), cgi);
 }
 
+/*! Return MCC-MNC-LAC-CI as string, in a talloc-allocated output buffer.
+ * \param[in] ctx talloc context from which to allocate output buffer
+ * \param[in] cgi  CGI to encode.
+ * \returns string representation of CGI in dynamically-allocated buffer.
+ */
+char *osmo_cgi_name_c(const void *ctx, const struct osmo_cell_global_id *cgi)
+{
+	char *buf = talloc_size(ctx, 32);
+	return osmo_cgi_name_buf(buf, 32, cgi);
+}
+
 static void to_bcd(uint8_t *bcd, uint16_t val)
 {
 	bcd[2] = val % 10;
@@ -259,6 +324,19 @@ const char *osmo_gummei_name(const struct osmo_gummei *gummei)
 	return osmo_gummei_name_buf(buf, sizeof(buf), gummei);
 }
 
+/*! Return string representation of GUMMEI in static output buffer.
+ * \param[out] buf pointer to caller-provided output buffer
+ * \param[in] buf_len size of buf in bytes
+ * \param[in] gummei GUMMEI to be stringified
+ * \returns pointer to static output buffer
+ */
+char *osmo_gummei_name_c(const void *ctx, const struct osmo_gummei *gummei)
+{
+	char *buf = talloc_size(ctx, 32);
+	if (!buf)
+		return NULL;
+	return osmo_gummei_name_buf(buf, 32, gummei);
+}
 
 /* Convert MCC + MNC to BCD representation
  * \param[out] bcd_dst caller-allocated memory for output

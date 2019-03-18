@@ -106,18 +106,24 @@ bool osmo_imei_str_valid(const char *imei, bool with_15th_digit);
 
 const char *osmo_mcc_name(uint16_t mcc);
 char *osmo_mcc_name_buf(char *buf, size_t buf_len, uint16_t mcc);
+const char *osmo_mcc_name_c(const void *ctx, uint16_t mcc);
 const char *osmo_mnc_name(uint16_t mnc, bool mnc_3_digits);
 char *osmo_mnc_name_buf(char *buf, size_t buf_len, uint16_t mnc, bool mnc_3_digits);
+char *osmo_mnc_name_c(const void *ctx, uint16_t mnc, bool mnc_3_digits);
 const char *osmo_plmn_name(const struct osmo_plmn_id *plmn);
 const char *osmo_plmn_name2(const struct osmo_plmn_id *plmn);
 char *osmo_plmn_name_buf(char *buf, size_t buf_len, const struct osmo_plmn_id *plmn);
+char *osmo_plmn_name_c(const void *ctx, const struct osmo_plmn_id *plmn);
 const char *osmo_lai_name(const struct osmo_location_area_id *lai);
 char *osmo_lai_name_buf(char *buf, size_t buf_len, const struct osmo_location_area_id *lai);
+char *osmo_lai_name_c(const void *ctx, const struct osmo_location_area_id *lai);
 const char *osmo_cgi_name(const struct osmo_cell_global_id *cgi);
 const char *osmo_cgi_name2(const struct osmo_cell_global_id *cgi);
 char *osmo_cgi_name_buf(char *buf, size_t buf_len, const struct osmo_cell_global_id *cgi);
+char *osmo_cgi_name_c(const void *ctx, const struct osmo_cell_global_id *cgi);
 const char *osmo_gummei_name(const struct osmo_gummei *gummei);
 char *osmo_gummei_name_buf(char *buf, size_t buf_len, const struct osmo_gummei *gummei);
+char *osmo_gummei_name_c(const void *ctx, const struct osmo_gummei *gummei);
 
 void osmo_plmn_to_bcd(uint8_t *bcd_dst, const struct osmo_plmn_id *plmn);
 void osmo_plmn_from_bcd(const uint8_t *bcd_src, struct osmo_plmn_id *plmn);

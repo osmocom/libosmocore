@@ -298,6 +298,7 @@ enum osim_card_sw_class osim_sw_class(const struct osim_card_profile *cp,
 struct osim_card_hdl;
 char *osim_print_sw_buf(char *buf, size_t buf_len, const struct osim_card_hdl *ch, uint16_t sw_in);
 char *osim_print_sw(const struct osim_card_hdl *ch, uint16_t sw_in);
+char *osim_print_sw_c(const void *ctx, const struct osim_card_hdl *ch, uint16_t sw_in);
 
 extern const struct tlv_definition ts102221_fcp_tlv_def;
 extern const struct value_string ts102221_fcp_vals[14];

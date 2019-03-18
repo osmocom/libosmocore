@@ -181,6 +181,7 @@ uint32_t gsm_gsmtime2fn(struct gsm_time *time);
 /* Returns static buffer with string representation of a GSM Time */
 char *osmo_dump_gsmtime(const struct gsm_time *tm);
 char *osmo_dump_gsmtime_buf(char *buf, size_t buf_len, const struct gsm_time *tm);
+char *osmo_dump_gsmtime_c(const void *ctx, const struct gsm_time *tm);
 
 /* GSM TS 03.03 Chapter 2.6 */
 enum gprs_tlli_type {

@@ -24,6 +24,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
+#include <talloc.h>
 
 #include <osmocom/gsm/apn.h>
 
@@ -45,6 +46,13 @@ char *osmo_apn_qualify(unsigned int mcc, unsigned int mnc, const char *ni)
 	return osmo_apn_qualify_buf(apn_strbuf, sizeof(apn_strbuf), mcc, mnc, ni);
 }
 
+char *osmo_apn_qualify_c(const void *ctx, unsigned int mcc, unsigned int mnc, const char *ni)
+{
+	char *buf = talloc_size(ctx, APN_MAXLEN);
+	if (!buf)
+		return NULL;
+	return osmo_apn_qualify_buf(buf, APN_MAXLEN, mcc, mnc, ni);
+}
 
 char *osmo_apn_qualify_from_imsi_buf(char *buf, size_t buf_len, const char *imsi,
 				     const char *ni, int have_3dig_mnc)
@@ -68,6 +76,14 @@ char *osmo_apn_qualify_from_imsi(const char *imsi,
 				 const char *ni, int have_3dig_mnc)
 {
 	return osmo_apn_qualify_from_imsi_buf(apn_strbuf, sizeof(apn_strbuf), imsi, ni, have_3dig_mnc);
+}
+
+char *osmo_apn_qualify_from_imsi_c(const void *ctx, const char *imsi, const char *ni, int have_3dig_mnc)
+{
+	char *buf = talloc_size(ctx, APN_MAXLEN);
+	if (!buf)
+		return NULL;
+	return osmo_apn_qualify_from_imsi_buf(buf, APN_MAXLEN, imsi, ni, have_3dig_mnc);
 }
 
 /**

@@ -56,7 +56,9 @@ int osmo_hexparse(const char *str, uint8_t *b, int max_len);
 char *osmo_ubit_dump_buf(char *buf, size_t buf_len, const uint8_t *bits, unsigned int len);
 char *osmo_ubit_dump(const uint8_t *bits, unsigned int len);
 char *osmo_hexdump(const unsigned char *buf, int len);
+char *osmo_hexdump_c(const void *ctx, const unsigned char *buf, int len);
 char *osmo_hexdump_nospc(const unsigned char *buf, int len);
+char *osmo_hexdump_nospc_c(const void *ctx, const unsigned char *buf, int len);
 const char *osmo_hexdump_buf(char *out_buf, size_t out_buf_size, const unsigned char *buf, int len, const char *delim,
 			     bool delim_after_last);
 
@@ -73,9 +75,11 @@ void osmo_str2upper(char *out, const char *in)
 
 size_t osmo_str_tolower_buf(char *dest, size_t dest_len, const char *src);
 const char *osmo_str_tolower(const char *src);
+char *osmo_str_tolower_c(const void *ctx, const char *src);
 
 size_t osmo_str_toupper_buf(char *dest, size_t dest_len, const char *src);
 const char *osmo_str_toupper(const char *src);
+char *osmo_str_toupper_c(const void *ctx, const char *src);
 
 #define OSMO_SNPRINTF_RET(ret, rem, offset, len)		\
 do {								\
@@ -139,8 +143,10 @@ bool osmo_separated_identifiers_valid(const char *str, const char *sep_chars);
 
 const char *osmo_escape_str(const char *str, int len);
 char *osmo_escape_str_buf(const char *str, int in_len, char *buf, size_t bufsize);
+char *osmo_escape_str_c(const void *ctx, const char *str, int in_len);
 const char *osmo_quote_str(const char *str, int in_len);
 char *osmo_quote_str_buf(const char *str, int in_len, char *buf, size_t bufsize);
+char *osmo_quote_str_c(const void *ctx, const char *str, int in_len);
 
 uint32_t osmo_isqrt32(uint32_t x);
 

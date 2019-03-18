@@ -64,9 +64,8 @@
 #include <osmocom/core/talloc.h>
 #include <osmocom/core/logging.h>
 
-void *tall_msgb_ctx = NULL;
-
-/*! Allocate a new message buffer
+/*! Allocate a new message buffer from given talloc cotext
+ * \param[in] ctx talloc context from which to allocate
  * \param[in] size Length in octets, including headroom
  * \param[in] name Human-readable name to be associated with msgb
  * \returns dynamically-allocated \ref msgb
@@ -75,11 +74,11 @@ void *tall_msgb_ctx = NULL;
  * memory buffer for the actual message data (size specified by \a size)
  * using the talloc memory context previously set by \ref msgb_set_talloc_ctx
  */
-struct msgb *msgb_alloc(uint16_t size, const char *name)
+struct msgb *msgb_alloc_c(const void *ctx, uint16_t size, const char *name)
 {
 	struct msgb *msg;
 
-	msg = talloc_named_const(tall_msgb_ctx, sizeof(*msg) + size, name);
+	msg = talloc_named_const(ctx, sizeof(*msg) + size, name);
 	if (!msg) {
 		LOGP(DLGLOBAL, LOGL_FATAL, "Unable to allocate a msgb: "
 			"name='%s', size=%u\n", name, size);
@@ -97,6 +96,24 @@ struct msgb *msgb_alloc(uint16_t size, const char *name)
 
 	return msg;
 }
+
+/* default msgb allocation context for msgb_alloc() */
+void *tall_msgb_ctx = NULL;
+
+/*! Allocate a new message buffer from tall_msgb_ctx
+ * \param[in] size Length in octets, including headroom
+ * \param[in] name Human-readable name to be associated with msgb
+ * \returns dynamically-allocated \ref msgb
+ *
+ * This function allocates a 'struct msgb' as well as the underlying
+ * memory buffer for the actual message data (size specified by \a size)
+ * using the talloc memory context previously set by \ref msgb_set_talloc_ctx
+ */
+struct msgb *msgb_alloc(uint16_t size, const char *name)
+{
+	return msgb_alloc_c(tall_msgb_ctx, size, name);
+}
+
 
 /*! Release given message buffer
  * \param[in] m Message buffer to be freed
@@ -309,11 +326,11 @@ void *msgb_talloc_ctx_init(void *root_ctx, unsigned int pool_size)
  *  \param[in] msg  The old msgb object
  *  \param[in] name Human-readable name to be associated with msgb
  */
-struct msgb *msgb_copy(const struct msgb *msg, const char *name)
+struct msgb *msgb_copy_c(const void *ctx, const struct msgb *msg, const char *name)
 {
 	struct msgb *new_msg;
 
-	new_msg = msgb_alloc(msg->data_len, name);
+	new_msg = msgb_alloc_c(ctx, msg->data_len, name);
 	if (!new_msg)
 		return NULL;
 
@@ -336,6 +353,19 @@ struct msgb *msgb_copy(const struct msgb *msg, const char *name)
 		new_msg->l4h = new_msg->_data + (msg->l4h - msg->_data);
 
 	return new_msg;
+}
+
+/*! Copy an msgb.
+ *
+ *  This function allocates a new msgb, copies the data buffer of msg,
+ *  and adjusts the pointers (incl l1h-l4h) accordingly. The cb part
+ *  is not copied.
+ *  \param[in] msg  The old msgb object
+ *  \param[in] name Human-readable name to be associated with msgb
+ */
+struct msgb *msgb_copy(const struct msgb *msg, const char *name)
+{
+	return msgb_copy_c(tall_msgb_ctx, msg, name);
 }
 
 /*! Resize an area within an msgb
@@ -482,6 +512,19 @@ char *msgb_hexdump_buf(char *buf, size_t buf_len, const struct msgb *msg)
 const char *msgb_hexdump(const struct msgb *msg)
 {
 	static char buf[4100];
+	return msgb_hexdump_buf(buf, sizeof(buf), msg);
+}
+
+/*! Return a dynamically allocated buffer containing a hexdump of the msg
+ * \param[in] ctx talloc context from where to allocate the output string
+ * \param[in] msg message buffer
+ * \returns a pointer to a static char array
+ */
+char *msgb_hexdump_c(const void *ctx, const struct msgb *msg)
+{
+	char *buf = talloc_size(ctx, msgb_length(msg)*3 + 100);
+	if (!buf)
+		return NULL;
 	return msgb_hexdump_buf(buf, sizeof(buf), msg);
 }
 

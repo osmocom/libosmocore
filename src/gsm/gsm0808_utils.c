@@ -622,6 +622,14 @@ char *osmo_lcls_dump(const struct osmo_lcls *lcls)
 	return osmo_lcls_dump_buf(dbuf, sizeof(dbuf), lcls);
 }
 
+char *osmo_lcls_dump_c(void *ctx, const struct osmo_lcls *lcls)
+{
+	char *buf = talloc_size(ctx, 256);
+	if (!buf)
+		return NULL;
+	return osmo_lcls_dump_buf(buf, 256, lcls);
+}
+
 /*! Dump GCR struct into string for printing.
  *  \param[out] buf caller-allocated output string buffer
  *  \param[in] buf_len size of buf in bytes
@@ -1775,8 +1783,7 @@ const struct value_string gsm0808_cell_id_discr_names[] = {
 #define APPEND_STR(fmt, args...) APPEND_THING(snprintf, fmt, ##args)
 #define APPEND_CELL_ID_U(DISCR, U) APPEND_THING(gsm0808_cell_id_u_name, DISCR, U)
 
-static const char *gsm0808_cell_id_name_buf(const struct gsm0808_cell_id *cid,
-					    char *buf, size_t buflen)
+char *gsm0808_cell_id_name_buf(char *buf, size_t buflen, const struct gsm0808_cell_id *cid)
 {
 	char *pos = buf;
 	int total_len = 0;
@@ -1793,7 +1800,7 @@ static const char *gsm0808_cell_id_name_buf(const struct gsm0808_cell_id *cid,
 const char *gsm0808_cell_id_name(const struct gsm0808_cell_id *cid)
 {
 	static char buf[64];
-	return gsm0808_cell_id_name_buf(cid, buf, sizeof(buf));
+	return gsm0808_cell_id_name_buf(buf, sizeof(buf), cid);
 }
 
 /*! Like gsm0808_cell_id_name() but uses a different static buffer.
@@ -1803,7 +1810,15 @@ const char *gsm0808_cell_id_name(const struct gsm0808_cell_id *cid)
 const char *gsm0808_cell_id_name2(const struct gsm0808_cell_id *cid)
 {
 	static char buf[64];
-	return gsm0808_cell_id_name_buf(cid, buf, sizeof(buf));
+	return gsm0808_cell_id_name_buf(buf, sizeof(buf), cid);
+}
+
+char *gsm0808_cell_id_name_c(const void *ctx, const struct gsm0808_cell_id *cid)
+{
+	char *buf = talloc_size(ctx, 64);
+	if (!buf)
+		return NULL;
+	return gsm0808_cell_id_name_buf(buf, 64, cid);
 }
 
 /*! Return a human readable representation of the Cell Identifier List, like
@@ -1856,6 +1871,15 @@ const char *gsm0808_cell_id_list_name(const struct gsm0808_cell_id_list2 *cil)
 	return buf;
 }
 
+char *gsm0808_cell_id_list_name_c(const void *ctx, const struct gsm0808_cell_id_list2 *cil)
+{
+	char *buf = talloc_size(ctx, 1024);
+	if (!buf)
+		return NULL;
+	gsm0808_cell_id_list_name_buf(buf, 1024, cil);
+	return buf;
+}
+
 #undef APPEND_STR
 #undef APPEND_CELL_ID_U
 
@@ -1871,6 +1895,14 @@ const char *gsm0808_channel_type_name(const struct gsm0808_channel_type *ct)
 {
 	static char buf[128];
 	return gsm0808_channel_type_name_buf(buf, sizeof(buf), ct);
+}
+
+char *gsm0808_channel_type_name_c(const void *ctx, const struct gsm0808_channel_type *ct)
+{
+	char *buf = talloc_size(ctx, 128);
+	if (!buf)
+		return NULL;
+	return gsm0808_channel_type_name_buf(buf, 128, ct);
 }
 
 /*! @} */

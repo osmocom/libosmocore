@@ -827,6 +827,20 @@ const char *osmo_sock_get_name2(int fd)
 	return str;
 }
 
+/*! Get address/port information on socket in static string, like "r=1.2.3.4:5<->l=6.7.8.9:10".
+ * This does not include braces like osmo_sock_get_name().
+ *  \param[in] fd  File descriptor of socket.
+ *  \return Static string buffer containing the result.
+ */
+char *osmo_sock_get_name2_c(const void *ctx, int fd)
+{
+	char *str = talloc_size(ctx, OSMO_SOCK_NAME_MAXLEN);
+	if (!str)
+		return NULL;
+	osmo_sock_get_name_buf(str, sizeof(str), fd);
+	return str;
+}
+
 static int sock_get_domain(int fd)
 {
 	int domain;

@@ -1552,6 +1552,14 @@ const char *gprs_ns_ll_str(const struct gprs_nsvc *nsvc)
 	return gprs_ns_ll_str_buf(buf, sizeof(buf), nsvc);
 }
 
+char *gprs_ns_ll_str_c(const void *ctx, const struct gprs_nsvc *nsvc)
+{
+	char *buf = talloc_size(ctx, INET6_ADDRSTRLEN+10);
+	if (!buf)
+		return buf;
+	return gprs_ns_ll_str_buf(buf, INET6_ADDRSTRLEN+10, nsvc);
+}
+
 void gprs_ns_ll_copy(struct gprs_nsvc *nsvc, struct gprs_nsvc *other)
 {
 	nsvc->ll = other->ll;

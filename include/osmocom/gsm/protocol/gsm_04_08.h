@@ -71,6 +71,7 @@ bool osmo_gsm48_classmark2_is_r99(const struct gsm48_classmark2 *cm2, uint8_t cm
 int osmo_gsm48_classmark_supports_a5(const struct osmo_gsm48_classmark *cm, uint8_t a5);
 const char *osmo_gsm48_classmark_a5_name(const struct osmo_gsm48_classmark *cm);
 char *osmo_gsm48_classmark_a5_name_buf(char *buf, size_t buf_len, const struct osmo_gsm48_classmark *cm);
+char *osmo_gsm48_classmark_a5_name_c(const void *ctx, const struct osmo_gsm48_classmark *cm);
 void osmo_gsm48_classmark_update(struct osmo_gsm48_classmark *dst, const struct osmo_gsm48_classmark *src);
 
 /* Chapter 10.5.2.1b.3 */
@@ -1645,6 +1646,7 @@ extern const struct value_string gsm48_mm_msgtype_names[];
 extern const struct value_string gsm48_cc_msgtype_names[];
 const char *gsm48_pdisc_msgtype_name(uint8_t pdisc, uint8_t msg_type);
 char *gsm48_pdisc_msgtype_name_buf(char *buf, size_t buf_len, uint8_t pdisc, uint8_t msg_type);
+char *gsm48_pdisc_msgtype_name_c(const void *ctx, uint8_t pdisc, uint8_t msg_type);
 
 /* FIXME: Table 10.4 / 10.4a (GPRS) */
 

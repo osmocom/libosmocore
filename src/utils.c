@@ -338,6 +338,27 @@ char *osmo_hexdump(const unsigned char *buf, int len)
 }
 
 /*! Convert binary sequence to hexadecimal ASCII string
+ *  \param[in] ctx talloc context from where to allocate the output string
+ *  \param[in] buf pointer to sequence of bytes
+ *  \param[in] len length of buf in number of bytes
+ *  \returns pointer to zero-terminated string
+ *
+ * This function will print a sequence of bytes as hexadecimal numbers,
+ * adding one space character between each byte (e.g. "1a ef d9")
+ *
+ * The maximum size of the output buffer is 4096 bytes, i.e. the maximum
+ * number of input bytes that can be printed in one call is 1365!
+ */
+char *osmo_hexdump_c(const void *ctx, const unsigned char *buf, int len)
+{
+	char *hexd_buff = talloc_size(ctx, len*3 + 1);
+	if (!hexd_buff)
+		return NULL;
+	osmo_hexdump_buf(hexd_buff, sizeof(hexd_buff), buf, len, " ", true);
+	return hexd_buff;
+}
+
+/*! Convert binary sequence to hexadecimal ASCII string
  *  \param[in] buf pointer to sequence of bytes
  *  \param[in] len length of buf in number of bytes
  *  \returns pointer to zero-terminated string
@@ -353,6 +374,28 @@ char *osmo_hexdump_nospc(const unsigned char *buf, int len)
 	osmo_hexdump_buf(hexd_buff, sizeof(hexd_buff), buf, len, "", true);
 	return hexd_buff;
 }
+
+/*! Convert binary sequence to hexadecimal ASCII string
+ *  \param[in] ctx talloc context from where to allocate the output string
+ *  \param[in] buf pointer to sequence of bytes
+ *  \param[in] len length of buf in number of bytes
+ *  \returns pointer to zero-terminated string
+ *
+ * This function will print a sequence of bytes as hexadecimal numbers,
+ * without any space character between each byte (e.g. "1aefd9")
+ *
+ * The maximum size of the output buffer is 4096 bytes, i.e. the maximum
+ * number of input bytes that can be printed in one call is 2048!
+ */
+char *osmo_hexdump_nospc_c(const void *ctx, const unsigned char *buf, int len)
+{
+	char *hexd_buff = talloc_size(ctx, len*2 + 1);
+	if (!hexd_buff)
+		return NULL;
+	osmo_hexdump_buf(hexd_buff, sizeof(hexd_buff), buf, len, "", true);
+	return hexd_buff;
+}
+
 
 /* Compat with previous typo to preserve abi */
 char *osmo_osmo_hexdump_nospc(const unsigned char *buf, int len)
@@ -639,6 +682,19 @@ const char *osmo_escape_str(const char *str, int in_len)
 	return osmo_escape_str_buf(str, in_len, namebuf, sizeof(namebuf));
 }
 
+/*! Return the string with all non-printable characters escaped, in dynamically-allocated buffer.
+ * \param[in] str  A string that may contain any characters.
+ * \param[in] len  Pass -1 to print until nul char, or >= 0 to force a length.
+ * \returns dynamically-allocated output buffer, containing an escaped representation
+ */
+char *osmo_escape_str_c(const void *ctx, const char *str, int in_len)
+{
+	char *buf = talloc_size(ctx, in_len+1);
+	if (!buf)
+		return NULL;
+	return osmo_escape_str_buf(str, in_len, buf, in_len+1);
+}
+
 /*! Like osmo_escape_str(), but returns double-quotes around a string, or "NULL" for a NULL string.
  * This allows passing any char* value and get its C representation as string.
  * \param[in] str  A string that may contain any characters.
@@ -669,6 +725,20 @@ char *osmo_quote_str_buf(const char *str, int in_len, char *buf, size_t bufsize)
 const char *osmo_quote_str(const char *str, int in_len)
 {
 	return osmo_quote_str_buf(str, in_len, namebuf, sizeof(namebuf));
+}
+
+/*! Like osmo_quote_str_buf() but returns the result in a dynamically-allocated buffer.
+ * The static buffer is shared with get_value_string() and osmo_escape_str().
+ * \param[in] str  A string that may contain any characters.
+ * \param[in] in_len  Pass -1 to print until nul char, or >= 0 to force a length.
+ * \returns dynamically-allocated buffer containing a quoted and escaped representation.
+ */
+char *osmo_quote_str_c(const void *ctx, const char *str, int in_len)
+{
+	char *buf = talloc_size(ctx, OSMO_MAX(in_len+2, 32));
+	if (!buf)
+		return NULL;
+	return osmo_quote_str_buf(str, in_len, buf, 32);
 }
 
 /*! perform an integer square root operation on unsigned 32bit integer.
@@ -754,6 +824,21 @@ const char *osmo_str_tolower(const char *src)
 	return buf;
 }
 
+/*! Convert a string to lowercase, dynamically allocating the output from given talloc context
+ * See also osmo_str_tolower_buf().
+ * \param[in] ctx  talloc context from where to allocate the output string
+ * \param[in] src  String to convert to lowercase.
+ * \returns Resulting lowercase string in a dynamically allocated buffer, always nul terminated.
+ */
+char *osmo_str_tolower_c(const void *ctx, const char *src)
+{
+	char *buf = talloc_size(ctx, strlen(src)+1);
+	if (!buf)
+		return NULL;
+	osmo_str_tolower_buf(buf, sizeof(buf), src);
+	return buf;
+}
+
 /*! Convert a string to uppercase, while checking buffer size boundaries.
  * The result written to \a dest is guaranteed to be nul terminated if \a dest_len > 0.
  * If dest == src, the string is converted in-place, if necessary truncated at dest_len - 1 characters
@@ -793,6 +878,21 @@ size_t osmo_str_toupper_buf(char *dest, size_t dest_len, const char *src)
 const char *osmo_str_toupper(const char *src)
 {
 	static char buf[128];
+	osmo_str_toupper_buf(buf, sizeof(buf), src);
+	return buf;
+}
+
+/*! Convert a string to uppercase, dynamically allocating the output from given talloc context
+ * See also osmo_str_tolower_buf().
+ * \param[in] ctx  talloc context from where to allocate the output string
+ * \param[in] src  String to convert to uppercase.
+ * \returns Resulting uppercase string in a dynamically allocated buffer, always nul terminated.
+ */
+char *osmo_str_toupper_c(const void *ctx, const char *src)
+{
+	char *buf = talloc_size(ctx, strlen(src)+1);
+	if (!buf)
+		return NULL;
 	osmo_str_toupper_buf(buf, sizeof(buf), src);
 	return buf;
 }

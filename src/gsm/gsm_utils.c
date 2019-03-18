@@ -900,6 +900,13 @@ char *osmo_dump_gsmtime(const struct gsm_time *tm)
 	return osmo_dump_gsmtime_buf(buf, sizeof(buf), tm);
 }
 
+char *osmo_dump_gsmtime_c(const void *ctx, const struct gsm_time *tm)
+{
+	char *buf = talloc_size(ctx, 64);
+	if (!buf)
+		return NULL;
+	return osmo_dump_gsmtime_buf(buf, 64, tm);
+}
 
 /*! append range1024 encoded data to bit vector
  *  \param[out] bv Caller-provided output bit-vector

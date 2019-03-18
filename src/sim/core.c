@@ -305,6 +305,14 @@ char *osim_print_sw(const struct osim_card_hdl *ch, uint16_t sw_in)
 	return osim_print_sw_buf(sw_print_buf, sizeof(sw_print_buf), ch, sw_in);
 }
 
+char *osim_print_sw_c(const void *ctx, const struct osim_card_hdl *ch, uint16_t sw_in)
+{
+	char *buf = talloc_size(ctx, 256);
+	if (!buf)
+		return NULL;
+	return osim_print_sw_buf(buf, 256, ch, sw_in);
+}
+
 const struct osim_card_sw *osim_find_sw(const struct osim_card_profile *cp,
 					uint16_t sw_in)
 {

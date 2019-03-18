@@ -943,6 +943,15 @@ const char *abis_nm_dump_foh(const struct abis_om_fom_hdr *foh)
 	return abis_nm_dump_foh_buf(foh_buf, sizeof(foh_buf), foh);
 }
 
+char *abis_nm_dump_foh_c(void *ctx, const struct abis_om_fom_hdr *foh)
+{
+	size_t len = 15 /* format */ + 22 /* obj_class_name */+ 4*3 /* uint8 */ + 1 /*nul*/;
+	char *buf = talloc_size(ctx, len);
+	if (!buf)
+		return NULL;
+	return abis_nm_dump_foh_buf(buf, len, foh);
+}
+
 /* this is just for compatibility reasons, it is now a macro */
 #undef abis_nm_debugp_foh
 OSMO_DEPRECATED("Use abis_nm_debugp_foh macro instead")

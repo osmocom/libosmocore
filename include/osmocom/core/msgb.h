@@ -60,6 +60,7 @@ struct msgb {
 	unsigned char _data[0]; /*!< optional immediate data array */
 };
 
+extern struct msgb *msgb_alloc_c(const void *ctx, uint16_t size, const char *name);
 extern struct msgb *msgb_alloc(uint16_t size, const char *name);
 extern void msgb_free(struct msgb *m);
 extern void msgb_enqueue(struct llist_head *queue, struct msgb *msg);
@@ -68,9 +69,11 @@ extern void msgb_reset(struct msgb *m);
 uint16_t msgb_length(const struct msgb *msg);
 extern const char *msgb_hexdump(const struct msgb *msg);
 char *msgb_hexdump_buf(char *buf, size_t buf_len, const struct msgb *msg);
+char *msgb_hexdump_c(const void *ctx, const struct msgb *msg);
 extern int msgb_resize_area(struct msgb *msg, uint8_t *area,
 	int old_size, int new_size);
 extern struct msgb *msgb_copy(const struct msgb *msg, const char *name);
+extern struct msgb *msgb_copy_c(const void *ctx, const struct msgb *msg, const char *name);
 static int msgb_test_invariant(const struct msgb *msg) __attribute__((pure));
 
 /*! Free all msgbs from a queue built with msgb_enqueue().
@@ -500,6 +503,29 @@ static inline int msgb_l3trim(struct msgb *msg, int l3len)
 {
 	return msgb_trim(msg, (msg->l3h - msg->data) + l3len);
 }
+
+/*! Allocate message buffer with specified headroom from specified talloc context.
+ *  \param[in] ctx talloc context from which to allocate
+ *  \param[in] size size in bytes, including headroom
+ *  \param[in] headroom headroom in bytes
+ *  \param[in] name human-readable name
+ *  \returns allocated message buffer with specified headroom
+ *
+ * This function is a convenience wrapper around \ref msgb_alloc
+ * followed by \ref msgb_reserve in order to create a new \ref msgb with
+ * user-specified amount of headroom.
+ */
+static inline struct msgb *msgb_alloc_headroom_c(const void *ctx, int size, int headroom,
+						 const char *name)
+{
+	osmo_static_assert(size > headroom, headroom_bigger);
+
+	struct msgb *msg = msgb_alloc_c(ctx, size, name);
+	if (msg)
+		msgb_reserve(msg, headroom);
+	return msg;
+}
+
 
 /*! Allocate message buffer with specified headroom
  *  \param[in] size size in bytes, including headroom

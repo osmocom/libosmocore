@@ -213,6 +213,7 @@ int gprs_ns_vty_init(struct gprs_ns_inst *nsi);
 const char *gprs_ns_ll_str(const struct gprs_nsvc *nsvc);
 /* Return peer info in user-supplied buffer */
 char *gprs_ns_ll_str_buf(char *buf, size_t buf_len, const struct gprs_nsvc *nsvc);
+char *gprs_ns_ll_str_c(const void *ctx, const struct gprs_nsvc *nsvc);
 
 /* Copy the link layer info from other into nsvc */
 void gprs_ns_ll_copy(struct gprs_nsvc *nsvc, struct gprs_nsvc *other);

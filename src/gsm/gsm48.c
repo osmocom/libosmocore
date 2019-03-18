@@ -36,6 +36,7 @@
 #include <osmocom/core/byteswap.h>
 #include <osmocom/core/bit16gen.h>
 #include <osmocom/core/bit32gen.h>
+#include <osmocom/core/talloc.h>
 #include <osmocom/gsm/tlv.h>
 #include <osmocom/gsm/gsm48.h>
 #include <osmocom/gsm/gsm0502.h>
@@ -204,6 +205,19 @@ const char *osmo_rai_name(const struct gprs_ra_id *rai)
 {
 	static char buf[32];
 	return osmo_rai_name_buf(buf, sizeof(buf), rai);
+}
+
+/*! Return MCC-MNC-LAC-RAC as string, in dynamically-allocated output buffer.
+ * \param[in] ctx talloc context from which to allocate output buffer
+ * \param[in] rai  RAI to encode.
+ * \returns string representation in dynamically-allocated output buffer.
+ */
+char *osmo_rai_name_c(const void *ctx, const struct gprs_ra_id *rai)
+{
+	char *buf = talloc_size(ctx, 32);
+	if (!buf)
+		return NULL;
+	return osmo_rai_name_buf(buf, 32, rai);
 }
 
 /* FIXME: convert to value_string */
@@ -490,6 +504,22 @@ const char *osmo_mi_name(const uint8_t *mi, uint8_t mi_len)
 {
 	static char mi_name[10 + GSM48_MI_SIZE + 1];
 	return osmo_mi_name_buf(mi_name, sizeof(mi_name), mi, mi_len);
+}
+
+/*! Return a human readable representation of a Mobile Identity in dynamically-allocated buffer.
+ * \param[in] ctx talloc context from which to allocate output buffer
+ * \param[in] mi  Mobile Identity buffer containing 3GPP TS 04.08 style MI type and data.
+ * \param[in] mi_len  Length of mi.
+ * \return A string like "IMSI-1234567", "TMSI-0x1234ABCD" or "unknown", "TMSI-invalid" in a
+ * 	   dynamically-allocated output buffer.
+ */
+char *osmo_mi_name_c(const void *ctx, const uint8_t *mi, uint8_t mi_len)
+{
+	size_t buf_len = 10 + GSM48_MI_SIZE + 1;
+	char *mi_name = talloc_size(ctx, buf_len);
+	if (!mi_name)
+		return NULL;
+	return osmo_mi_name_buf(mi_name, buf_len, mi, mi_len);
 }
 
 /*! Checks is particular message is cipherable in A/Gb mode according to
@@ -1124,6 +1154,22 @@ const char *gsm48_pdisc_msgtype_name(uint8_t pdisc, uint8_t msg_type)
 	return gsm48_pdisc_msgtype_name_buf(namebuf, sizeof(namebuf), pdisc, msg_type);
 }
 
+/*! Compose a string naming the message type for given protocol, in a dynamically-allocated buffer.
+ * If the message type string is known, return the message type name, otherwise
+ * return "<protocol discriminator name>:<message type in hex>".
+ * \param[in] ctx talloc context from which to allocate output buffer
+ * \param[in] pdisc protocol discriminator like GSM48_PDISC_MM
+ * \param[in] msg_type message type like GSM48_MT_MM_LOC_UPD_REQUEST
+ * \returns string representation in dynamically allocated output buffer.
+ */
+char *gsm48_pdisc_msgtype_name_c(const void *ctx, uint8_t pdisc, uint8_t msg_type)
+{
+	char *namebuf = talloc_size(ctx, 64);
+	if (!namebuf)
+		return NULL;
+	return gsm48_pdisc_msgtype_name_buf(namebuf, 64, pdisc, msg_type);
+}
+
 const struct value_string gsm48_reject_value_names[] = {
 	 { GSM48_REJECT_IMSI_UNKNOWN_IN_HLR, "IMSI_UNKNOWN_IN_HLR" },
 	 { GSM48_REJECT_ILLEGAL_MS, "ILLEGAL_MS" },
@@ -1261,6 +1307,19 @@ const char *osmo_gsm48_classmark_a5_name(const struct osmo_gsm48_classmark *cm)
 	return osmo_gsm48_classmark_a5_name_buf(buf, sizeof(buf), cm);
 }
 
+/*! Return a string representation of A5 cipher algorithms indicated by Classmark 1, 2 and 3.
+ * \param[in] ctx talloc context from which to allocate output buffer
+ * \param[in] cm  Classmarks.
+ * \returns string like "cm1{a5/1=supported} cm2{0x23= A5/2 A5/3} no-cm3" in dynamically-allocated
+ *          output buffer.
+ */
+char *osmo_gsm48_classmark_a5_name_c(const void *ctx, const struct osmo_gsm48_classmark *cm)
+{
+	char *buf = talloc_size(ctx, 128);
+	if (!buf)
+		return NULL;
+	return osmo_gsm48_classmark_a5_name_buf(buf, 128, cm);
+}
 
 /*! Overwrite dst with the Classmark information present in src.
  * Add an new Classmark and overwrite in dst what src has to offer, but where src has no Classmark information, leave

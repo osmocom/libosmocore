@@ -43,6 +43,7 @@ extern const struct tlv_definition abis_nm_att_tlvdef_ipa;
 
 const char *abis_nm_dump_foh(const struct abis_om_fom_hdr *foh);
 char *abis_nm_dump_foh_buf(char *buf, size_t buf_len, const struct abis_om_fom_hdr *foh);
+char *abis_nm_dump_foh_c(void *ctx, const struct abis_om_fom_hdr *foh);
 
 /*! write a human-readable OML header to the debug log
  *  \param[in] ss Logging sub-system
