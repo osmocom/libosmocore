@@ -1,6 +1,6 @@
 AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include
 AM_CFLAGS = -Wall $(TALLOC_CFLAGS)
-AM_LDFLAGS =
+AM_LDFLAGS = -no-install
 LDADD = $(top_builddir)/src/libosmocore.la $(TALLOC_LIBS)
 
 if ENABLE_SERCOM_STUB
