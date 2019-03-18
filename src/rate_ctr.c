@@ -255,7 +255,11 @@ struct rate_ctr_group *rate_ctr_group_alloc(void *ctx,
 /*! Free the memory for the specified group of counters */
 void rate_ctr_group_free(struct rate_ctr_group *grp)
 {
-	llist_del(&grp->list);
+	if (!grp)
+		return;
+
+	if (!llist_empty(&grp->list))
+		llist_del(&grp->list);
 	talloc_free(grp);
 }
 
