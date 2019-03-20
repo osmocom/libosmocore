@@ -597,7 +597,7 @@ int main(int argc, char **argv)
 	test_numeric_range();
 
 	/* Leak check */
-	OSMO_ASSERT(talloc_total_blocks(stats_ctx) == 1);
+	OSMO_ASSERT(talloc_total_blocks(stats_ctx) == 2);
 
 	printf("All tests passed\n");
 

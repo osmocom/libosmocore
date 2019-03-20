@@ -36,7 +36,11 @@
  * \file signal.c */
 
 
+/* legacy export for old openbsc.git versions that insist on setting this directly */
 void *tall_sigh_ctx;
+/* actual talloc context used these days */
+static void *tall_sigh_ctx2;
+
 static LLIST_HEAD(signal_handler_list);
 
 struct signal_handler {
@@ -46,14 +50,11 @@ struct signal_handler {
 	void *data;
 };
 
-/*! Initialize a signal_handler talloc context for \ref osmo_signal_register_handler.
- * Create a talloc context called "osmo_signal".
- *  \param[in] root_ctx talloc context used as parent for the new "osmo_signal" ctx.
- *  \returns the new osmo_signal talloc context, e.g. for reporting
- */
+/* DEPRECATED: Never really worked and we now have OTC_GLOBAL */
 void *osmo_signal_talloc_ctx_init(void *root_ctx) {
-	tall_sigh_ctx = talloc_named_const(root_ctx, 0, "osmo_signal");
-	return tall_sigh_ctx;
+	if (!tall_sigh_ctx2)
+		tall_sigh_ctx2 = talloc_named_const(root_ctx ? root_ctx : OTC_GLOBAL, 0, "osmo_signal");
+	return tall_sigh_ctx2;
 }
 
 /*! Register a new signal handler
@@ -67,7 +68,12 @@ int osmo_signal_register_handler(unsigned int subsys,
 {
 	struct signal_handler *sig_data;
 
-	sig_data = talloc_zero(tall_sigh_ctx, struct signal_handler);
+	if (!tall_sigh_ctx2)
+		tall_sigh_ctx2 = talloc_named_const(OTC_GLOBAL, 0, "osmo_signal");
+	if (!tall_sigh_ctx2)
+		return -ENOMEM;
+
+	sig_data = talloc_zero(tall_sigh_ctx2, struct signal_handler);
 	if (!sig_data)
 		return -ENOMEM;
 

@@ -254,7 +254,7 @@ static void lapd_dl_newstate(struct lapd_datalink *dl, uint32_t state)
 	dl->state = state;
 }
 
-void *tall_lapd_ctx = NULL;
+__thread void *tall_lapd_ctx;
 
 /*! Initialize LAPD datalink instance and allocate history
  *  \param[in] dl caller-allocated datalink structure
@@ -315,6 +315,8 @@ void lapd_dl_init2(struct lapd_datalink *dl, uint8_t k, uint8_t v_range, int max
 
 	lapd_dl_newstate(dl, LAPD_STATE_IDLE);
 
+	if (!tall_lapd_ctx)
+		tall_lapd_ctx = talloc_named_const(OTC_GLOBAL, 1, "lapd context");
 	dl->tx_hist = talloc_zero_array(tall_lapd_ctx,
 					struct lapd_history, dl->range_hist);
 }

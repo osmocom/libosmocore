@@ -1,7 +1,7 @@
 /*! \file counter.c
  * utility routines for keeping some statistics. */
 /*
- * (C) 2009 by Harald Welte <laforge@gnumonks.org>
+ * (C) 2009,2019 by Harald Welte <laforge@gnumonks.org>
  *
  * All Rights Reserved
  *
@@ -39,8 +39,12 @@ void *tall_ctr_ctx;
  *  \returns Allocated counter on success; NULL on error */
 struct osmo_counter *osmo_counter_alloc(const char *name)
 {
-	struct osmo_counter *ctr = talloc_zero(tall_ctr_ctx, struct osmo_counter);
+	struct osmo_counter *ctr;
 
+	if (!tall_ctr_ctx)
+		tall_ctr_ctx = talloc_named_const(OTC_GLOBAL, 0, "osmo_counter");
+
+	ctr = talloc_zero(tall_ctr_ctx, struct osmo_counter);
 	if (!ctr)
 		return NULL;
 

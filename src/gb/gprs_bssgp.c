@@ -173,6 +173,9 @@ struct bssgp_bvc_ctx *btsctx_alloc(uint16_t bvci, uint16_t nsei)
 {
 	struct bssgp_bvc_ctx *ctx;
 
+	if (!bssgp_tall_ctx)
+		bssgp_tall_ctx = talloc_named_const(OTC_GLOBAL, 0, "bssgp");
+
 	ctx = talloc_zero(bssgp_tall_ctx, struct bssgp_bvc_ctx);
 	if (!ctx)
 		return NULL;

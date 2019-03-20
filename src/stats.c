@@ -226,10 +226,10 @@ void osmo_stats_reporter_free(struct osmo_stats_reporter *srep)
 }
 
 /*! Initilize the stats reporting module; call this once in your program
- *  \param[in] ctx Talloc context from which stats related memory is allocated */
+ *  \param[in] ctx should be NULL; only for legacy API compatibility */
 void osmo_stats_init(void *ctx)
 {
-	osmo_stats_ctx = ctx;
+	osmo_stats_ctx = talloc_named_const(ctx ? ctx : OTC_GLOBAL, 0, "stats");
 	osmo_stat_item_discard_all(&current_stat_item_index);
 
 	is_initialised = 1;

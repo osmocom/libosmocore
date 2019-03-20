@@ -126,7 +126,7 @@ const struct value_string osmo_ph_prim_names[] = {
 	{ 0,			NULL }
 };
 
-extern void *tall_lapd_ctx;
+extern __thread void *tall_lapd_ctx;
 
 static int lapdm_send_ph_data_req(struct lapd_msg_ctx *lctx, struct msgb *msg);
 static int send_rslms_dlsap(struct osmo_dlsap_prim *dp,

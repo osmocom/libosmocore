@@ -75,7 +75,7 @@ int telnet_init(void *tall_ctx, void *priv, int port)
 }
 
 /*! Initialize telnet based VTY interface
- *  \param[in] tall_ctx \ref talloc context
+ *  \param[in] tall_ctx should be NULL; nly for legacy API compatibility
  *  \param[in] priv private data to be passed to callback
  *  \param[in] ip IP to listen to ('::1' for localhost, '::0' for all, ...)
  *  \param[in] port TCP port number to bind to
@@ -84,8 +84,7 @@ int telnet_init_dynif(void *tall_ctx, void *priv, const char *ip, int port)
 {
 	int rc;
 
-	tall_telnet_ctx = talloc_named_const(tall_ctx, 1,
-			"telnet_connection");
+	tall_telnet_ctx = talloc_named_const(tall_ctx ? tall_ctx : OTC_GLOBAL, 0, "telnet_connection");
 
 	rc = osmo_sock_init_ofd(
 			&server_socket,

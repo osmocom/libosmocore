@@ -79,9 +79,14 @@ static int config_write_ctrl(struct vty *vty)
 	return CMD_SUCCESS;
 }
 
+/*! Initialize the VTY configuration for the CTRL interface.
+ *  \param[in] ctx should be NULL; only used for legacy compatibility
+ *  \returns 0 on success; negative on error */
 int ctrl_vty_init(void *ctx)
 {
-	ctrl_vty_ctx = ctx;
+	ctrl_vty_ctx = talloc_named_const(ctx ? ctx : OTC_GLOBAL, 0, "ctrl-vty");
+	if (!ctrl_vty_ctx)
+		return -1;
 	install_lib_element(CONFIG_NODE, &cfg_ctrl_cmd);
 	install_node(&ctrl_node, config_write_ctrl);
 

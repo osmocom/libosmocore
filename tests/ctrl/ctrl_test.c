@@ -4,6 +4,7 @@
 #include <string.h>
 #include <stdbool.h>
 
+#include <osmocom/core/talloc.h>
 #include <osmocom/core/utils.h>
 #include <osmocom/ctrl/control_cmd.h>
 #include <osmocom/core/logging.h>
@@ -459,7 +460,7 @@ static struct log_info info = {
 
 int main(int argc, char **argv)
 {
-	ctx = talloc_named_const(NULL, 1, "ctrl_test");
+	ctx = OTC_GLOBAL;
 	osmo_init_logging2(ctx, &info);
 	msgb_talloc_ctx_init(ctx, 0);
 
@@ -478,8 +479,8 @@ int main(int argc, char **argv)
 
 	test_deferred_cmd();
 
-	/* Expecting root ctx + msgb root ctx + 5 logging elements */
-	if (talloc_total_blocks(ctx) != 7) {
+	/* Expecting root ctx + name + select + msgb root ctx + 5 logging elements */
+	if (talloc_total_blocks(ctx) != 9) {
 		talloc_report_full(ctx, stdout);
 		OSMO_ASSERT(false);
 	}
