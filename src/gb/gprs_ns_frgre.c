@@ -315,9 +315,9 @@ static int nsfrgre_fd_cb(struct osmo_fd *bfd, unsigned int what)
 {
 	int rc = 0;
 
-	if (what & BSC_FD_READ)
+	if (what & OSMO_FD_READ)
 		rc = handle_nsfrgre_read(bfd);
-	if (what & BSC_FD_WRITE)
+	if (what & OSMO_FD_WRITE)
 		rc = handle_nsfrgre_write(bfd);
 
 	return rc;

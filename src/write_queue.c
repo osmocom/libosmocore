@@ -47,22 +47,22 @@ int osmo_wqueue_bfd_cb(struct osmo_fd *fd, unsigned int what)
 
 	queue = container_of(fd, struct osmo_wqueue, bfd);
 
-	if (what & BSC_FD_READ) {
+	if (what & OSMO_FD_READ) {
 		rc = queue->read_cb(fd);
 		if (rc == -EBADF)
 			goto err_badfd;
 	}
 
-	if (what & BSC_FD_EXCEPT) {
+	if (what & OSMO_FD_EXCEPT) {
 		rc = queue->except_cb(fd);
 		if (rc == -EBADF)
 			goto err_badfd;
 	}
 
-	if (what & BSC_FD_WRITE) {
+	if (what & OSMO_FD_WRITE) {
 		struct msgb *msg;
 
-		fd->when &= ~BSC_FD_WRITE;
+		fd->when &= ~OSMO_FD_WRITE;
 
 		/* the queue might have been emptied */
 		if (!llist_empty(&queue->msg_queue)) {
@@ -76,7 +76,7 @@ int osmo_wqueue_bfd_cb(struct osmo_fd *fd, unsigned int what)
 				goto err_badfd;
 
 			if (!llist_empty(&queue->msg_queue))
-				fd->when |= BSC_FD_WRITE;
+				fd->when |= OSMO_FD_WRITE;
 		}
 	}
 
@@ -115,7 +115,7 @@ int osmo_wqueue_enqueue(struct osmo_wqueue *queue, struct msgb *data)
 
 	++queue->current_length;
 	msgb_enqueue(&queue->msg_queue, data);
-	queue->bfd.when |= BSC_FD_WRITE;
+	queue->bfd.when |= OSMO_FD_WRITE;
 
 	return 0;
 }
@@ -133,7 +133,7 @@ void osmo_wqueue_clear(struct osmo_wqueue *queue)
 	}
 
 	queue->current_length = 0;
-	queue->bfd.when &= ~BSC_FD_WRITE;
+	queue->bfd.when &= ~OSMO_FD_WRITE;
 }
 
 /*! @} */

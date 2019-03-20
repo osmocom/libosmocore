@@ -59,7 +59,7 @@ static void *tall_telnet_ctx;
 static int telnet_new_connection(struct osmo_fd *fd, unsigned int what);
 
 static struct osmo_fd server_socket = {
-	.when	    = BSC_FD_READ,
+	.when	    = OSMO_FD_READ,
 	.cb	    = telnet_new_connection,
 	.priv_nr    = 0,
 };
@@ -142,8 +142,8 @@ static int client_data(struct osmo_fd *fd, unsigned int what)
 	struct telnet_connection *conn = fd->data;
 	int rc = 0;
 
-	if (what & BSC_FD_READ) {
-		conn->fd.when &= ~BSC_FD_READ;
+	if (what & OSMO_FD_READ) {
+		conn->fd.when &= ~OSMO_FD_READ;
 		rc = vty_read(conn->vty);
 	}
 
@@ -151,10 +151,10 @@ static int client_data(struct osmo_fd *fd, unsigned int what)
 	if (rc == -EBADF)
 		return rc;
 
-	if (what & BSC_FD_WRITE) {
+	if (what & OSMO_FD_WRITE) {
 		rc = buffer_flush_all(conn->vty->obuf, fd->fd);
 		if (rc == BUFFER_EMPTY)
-			conn->fd.when &= ~BSC_FD_WRITE;
+			conn->fd.when &= ~OSMO_FD_WRITE;
 	}
 
 	return rc;
@@ -177,7 +177,7 @@ static int telnet_new_connection(struct osmo_fd *fd, unsigned int what)
 	connection->priv = fd->data;
 	connection->fd.data = connection;
 	connection->fd.fd = new_connection;
-	connection->fd.when = BSC_FD_READ;
+	connection->fd.when = OSMO_FD_READ;
 	connection->fd.cb = client_data;
 	rc = osmo_fd_register(&connection->fd);
 	if (rc < 0) {
@@ -219,10 +219,10 @@ void vty_event(enum event event, int sock, struct vty *vty)
 
 	switch (event) {
 	case VTY_READ:
-		bfd->when |= BSC_FD_READ;
+		bfd->when |= OSMO_FD_READ;
 		break;
 	case VTY_WRITE:
-		bfd->when |= BSC_FD_WRITE;
+		bfd->when |= OSMO_FD_WRITE;
 		break;
 	case VTY_CLOSED:
 		/* vty layer is about to free() vty */

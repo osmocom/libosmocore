@@ -55,7 +55,7 @@ static int unregistered_count;
 /*! Set up an osmo-fd. Will not register it.
  *  \param[inout] ofd Osmo FD to be set-up
  *  \param[in] fd OS-level file descriptor number
- *  \param[in] when bit-mask of BSC_FD_{READ,WRITE,EXECEPT}
+ *  \param[in] when bit-mask of OSMO_FD_{READ,WRITE,EXECEPT}
  *  \param[in] cb Call-back function to be called
  *  \param[in] data Private context pointer
  *  \param[in] priv_nr Private number
@@ -171,13 +171,13 @@ inline int osmo_fd_fill_fds(void *_rset, void *_wset, void *_eset)
 	int highfd = 0;
 
 	llist_for_each_entry(ufd, &osmo_fds, list) {
-		if (ufd->when & BSC_FD_READ)
+		if (ufd->when & OSMO_FD_READ)
 			FD_SET(ufd->fd, readset);
 
-		if (ufd->when & BSC_FD_WRITE)
+		if (ufd->when & OSMO_FD_WRITE)
 			FD_SET(ufd->fd, writeset);
 
-		if (ufd->when & BSC_FD_EXCEPT)
+		if (ufd->when & OSMO_FD_EXCEPT)
 			FD_SET(ufd->fd, exceptset);
 
 		if (ufd->fd > highfd)
@@ -199,17 +199,17 @@ restart:
 		int flags = 0;
 
 		if (FD_ISSET(ufd->fd, readset)) {
-			flags |= BSC_FD_READ;
+			flags |= OSMO_FD_READ;
 			FD_CLR(ufd->fd, readset);
 		}
 
 		if (FD_ISSET(ufd->fd, writeset)) {
-			flags |= BSC_FD_WRITE;
+			flags |= OSMO_FD_WRITE;
 			FD_CLR(ufd->fd, writeset);
 		}
 
 		if (FD_ISSET(ufd->fd, exceptset)) {
-			flags |= BSC_FD_EXCEPT;
+			flags |= OSMO_FD_EXCEPT;
 			FD_CLR(ufd->fd, exceptset);
 		}
 
@@ -327,7 +327,7 @@ int osmo_timerfd_setup(struct osmo_fd *ofd, int (*cb)(struct osmo_fd *, unsigned
 {
 	ofd->cb = cb;
 	ofd->data = data;
-	ofd->when = BSC_FD_READ;
+	ofd->when = OSMO_FD_READ;
 
 	if (ofd->fd < 0) {
 		int rc;

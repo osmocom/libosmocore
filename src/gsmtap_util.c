@@ -355,7 +355,7 @@ static int gsmtap_sink_fd_cb(struct osmo_fd *fd, unsigned int flags)
 	int rc;
 	uint8_t buf[4096];
 
-	if (!(flags & BSC_FD_READ))
+	if (!(flags & OSMO_FD_READ))
 		return 0;
 
 	rc = read(fd->fd, buf, sizeof(buf));
@@ -395,7 +395,7 @@ int gsmtap_source_add_sink(struct gsmtap_inst *gti)
 
 		sink_ofd = &gti->sink_ofd;
 		sink_ofd->fd = fd;
-		sink_ofd->when = BSC_FD_READ;
+		sink_ofd->when = OSMO_FD_READ;
 		sink_ofd->cb = gsmtap_sink_fd_cb;
 
 		rc = osmo_fd_register(sink_ofd);

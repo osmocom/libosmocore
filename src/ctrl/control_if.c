@@ -524,7 +524,7 @@ static int listen_fd_cb(struct osmo_fd *listen_bfd, unsigned int what)
 	char *name;
 
 
-	if (!(what & BSC_FD_READ))
+	if (!(what & OSMO_FD_READ))
 		return 0;
 
 	fd = accept(listen_bfd->fd, NULL, NULL);
@@ -554,7 +554,7 @@ static int listen_fd_cb(struct osmo_fd *listen_bfd, unsigned int what)
 	LOGP(DLCTRL, LOGL_INFO, "accept()ed new CTRL connection from %s\n", name);
 
 	ccon->write_queue.bfd.fd = fd;
-	ccon->write_queue.bfd.when = BSC_FD_READ;
+	ccon->write_queue.bfd.when = OSMO_FD_READ;
 
 	ret = osmo_fd_register(&ccon->write_queue.bfd);
 	if (ret < 0) {

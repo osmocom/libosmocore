@@ -414,7 +414,7 @@ static inline int osmo_fd_init_ofd(struct osmo_fd *ofd, int sfd)
 		return sfd;
 
 	ofd->fd = sfd;
-	ofd->when = BSC_FD_READ;
+	ofd->when = OSMO_FD_READ;
 
 	rc = osmo_fd_register(ofd);
 	if (rc < 0) {
