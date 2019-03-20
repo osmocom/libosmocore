@@ -52,7 +52,7 @@ struct signal_handler {
  *  \returns the new osmo_signal talloc context, e.g. for reporting
  */
 void *osmo_signal_talloc_ctx_init(void *root_ctx) {
-	tall_sigh_ctx = talloc_named_const(tall_sigh_ctx, 0, "osmo_signal");
+	tall_sigh_ctx = talloc_named_const(root_ctx, 0, "osmo_signal");
 	return tall_sigh_ctx;
 }
 
