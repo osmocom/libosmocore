@@ -88,6 +88,8 @@ static struct gprs_nsvc *gprs_nsvc_create_ip4(struct gprs_ns_inst *nsi,
 	struct gprs_nsvc *nsvc;
 	struct sockaddr_in sin;
 	/* copy over. Both data structures use network byte order */
+	memset(&sin, 0, sizeof(sin));
+	sin.sin_family = AF_INET;
 	sin.sin_addr.s_addr = ip4->ip_addr;
 	sin.sin_port = ip4->udp_port;
 
