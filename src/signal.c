@@ -67,11 +67,9 @@ int osmo_signal_register_handler(unsigned int subsys,
 {
 	struct signal_handler *sig_data;
 
-	sig_data = talloc(tall_sigh_ctx, struct signal_handler);
+	sig_data = talloc_zero(tall_sigh_ctx, struct signal_handler);
 	if (!sig_data)
 		return -ENOMEM;
-
-	memset(sig_data, 0, sizeof(*sig_data));
 
 	sig_data->subsys = subsys;
 	sig_data->data = data;
