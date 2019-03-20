@@ -36,7 +36,7 @@
  * \file signal.c */
 
 
-void *tall_sigh_ctx;
+static void *tall_sigh_ctx;
 static LLIST_HEAD(signal_handler_list);
 
 struct signal_handler {
