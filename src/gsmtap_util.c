@@ -440,6 +440,7 @@ struct gsmtap_inst *gsmtap_source_init(const char *host, uint16_t port,
 
 		rc = osmo_fd_register(&gti->wq.bfd);
 		if (rc < 0) {
+			talloc_free(gti);
 			close(fd);
 			return NULL;
 		}
