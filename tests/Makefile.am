@@ -51,7 +51,11 @@ check_PROGRAMS += vty/vty_test
 endif
 
 if ENABLE_CTRL
-check_PROGRAMS += ctrl/ctrl_test fsm/fsm_test
+check_PROGRAMS += \
+	ctrl/ctrl_test \
+	fsm/fsm_test \
+	fsm/fsm_dealloc_test \
+	$(NULL)
 endif
 
 if ENABLE_STATS_TEST
@@ -206,6 +210,9 @@ fsm_fsm_test_LDADD = \
 	$(top_builddir)/src/ctrl/libosmoctrl.la \
 	$(top_builddir)/src/gsm/libosmogsm.la \
 	$(top_builddir)/src/vty/libosmovty.la
+
+fsm_fsm_dealloc_test_SOURCES = fsm/fsm_dealloc_test.c
+fsm_fsm_dealloc_test_LDADD = $(LDADD)
 
 write_queue_wqueue_test_SOURCES = write_queue/wqueue_test.c
 
