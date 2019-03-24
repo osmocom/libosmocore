@@ -346,26 +346,24 @@ static struct scene *scene_alloc()
 
 	LOGP(DLGLOBAL, LOGL_DEBUG, "%s()\n", __func__);
 
-	/*
 	s->o[root] = obj_alloc(s, NULL, "root");
-	*/
 
 	s->o[branch0] = obj_alloc(s, s->o[root], "_branch0");
 
 	s->o[twig0a] = obj_alloc(s, s->o[branch0], "__twig0a");
 
-	/*
 	s->o[twig0b] = obj_alloc(s, s->o[branch0], "__twig0b");
 
 	s->o[branch1] = obj_alloc(s, s->o[root], "_branch1");
 	s->o[twig1a] = obj_alloc(s, s->o[branch1], "__twig1a");
 	s->o[twig1b] = obj_alloc(s, s->o[branch1], "__twig1b");
-	*/
 
 	s->o[other] = obj_alloc(s, NULL, "other");
 
 	obj_set_other(s->o[branch0], s->o[other]);
 	obj_set_other(s->o[twig0a], s->o[other]);
+	obj_set_other(s->o[branch1], s->o[other]);
+	obj_set_other(s->o[twig1a], s->o[root]);
 
 	return s;
 }
@@ -455,6 +453,7 @@ int main(void)
 
 	log_set_category_filter(osmo_stderr_target, DLGLOBAL, 1, LOGL_DEBUG);
 
+	osmo_fsm_term_safely(true);
 	osmo_fsm_register(&test_fsm);
 
 	ctx_blocks = talloc_total_blocks(ctx);

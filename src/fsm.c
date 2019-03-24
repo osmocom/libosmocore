@@ -91,6 +91,18 @@
 LLIST_HEAD(osmo_g_fsms);
 static bool fsm_log_addr = true;
 static bool fsm_log_timeouts = false;
+/*! See osmo_fsm_term_safely(). */
+static bool fsm_term_safely_enabled = false;
+
+/*! Internal state for FSM instance termination cascades. */
+static __thread struct {
+	/*! The first FSM instance that invoked osmo_fsm_inst_term() in the current cascade. */
+	struct osmo_fsm_inst *root_fi;
+	/*! 2 if a secondary FSM terminates, 3 if a secondary FSM causes a tertiary FSM to terminate, and so on. */
+	unsigned int depth;
+	/*! Talloc context to collect all deferred deallocations (FSM instances, and talloc objects if any). */
+	void *collect_ctx;
+} fsm_term_safely;
 
 /*! specify if FSM instance addresses should be logged or not
  *
@@ -123,6 +135,68 @@ void osmo_fsm_log_addr(bool log_addr)
 void osmo_fsm_log_timeouts(bool log_timeouts)
 {
 	fsm_log_timeouts = log_timeouts;
+}
+
+/*! Enable safer way to deallocate cascades of terminating FSM instances.
+ *
+ * For legacy compatibility, this is disabled by default. In newer programs / releases, it is recommended to enable this
+ * feature during main() startup, since it greatly simplifies deallocating child, parent and other FSM instances without
+ * running into double-free or use-after-free scenarios. When enabled, this feature changes the order of logging, which
+ * may break legacy unit test expectations, and changes the order of deallocation to after the parent term event is
+ * dispatched.
+ *
+ * When enabled, an FSM instance termination detects whether another FSM instance is already terminating, and instead of
+ * deallocating immediately, collects all terminating FSM instances in a talloc context, to be bulk deallocated once all
+ * event handling and termination cascades are done.
+ *
+ * For example, if an FSM's cleanup() sends an event to some "other" FSM, which in turn causes the FSM's parent to
+ * deallocate, then the parent would talloc_free() the child's memory, causing a use-after-free. There are infinite
+ * constellations like this, which all are trivially solved with this feature enabled.
+ *
+ * For illustration, see fsm_dealloc_test.c.
+ *
+ * \param[in] term_safely  Pass true to switch to safer FSM instance termination behavior.
+ */
+void osmo_fsm_term_safely(bool term_safely)
+{
+	fsm_term_safely_enabled = term_safely;
+}
+
+/*! talloc_free() the given object immediately, or once ongoing FSM terminations are done.
+ *
+ * If an FSM deallocation cascade is ongoing, talloc_steal() the given talloc_object into the talloc context that is
+ * freed once the cascade is done. If no FSM deallocation cascade is ongoing, or if osmo_fsm_term_safely() is disabled,
+ * immediately talloc_free the object.
+ *
+ * This can be useful if some higher order talloc object, which is the talloc parent for FSM instances or their priv
+ * objects, is not itself tied to an FSM instance. This function allows safely freeing it without affecting ongoing FSM
+ * termination cascades.
+ *
+ * Once passed to this function, the talloc_object should be considered as already freed. Only FSM instance pre_term()
+ * and cleanup() functions as well as event handling caused by these may safely assume that it is still valid memory.
+ *
+ * The talloc_object should not have multiple parents.
+ *
+ * (This function may some day move to public API, which might be redundant if we introduce a select-loop volatile
+ * context mechanism to defer deallocation instead.)
+ *
+ * \param[in] talloc_object  Object pointer to free.
+ */
+static void osmo_fsm_defer_free(void *talloc_object)
+{
+	if (!fsm_term_safely.depth) {
+		talloc_free(talloc_object);
+		return;
+	}
+
+	if (!fsm_term_safely.collect_ctx) {
+		/* This is actually the first other object / FSM instance besides the root terminating inst. Create the
+		 * ctx to collect this and possibly more objects to free. Avoid talloc parent loops: don't make this ctx
+		 * the child of the root inst or anything like that. */
+		fsm_term_safely.collect_ctx = talloc_named_const(NULL, 0, "fsm_term_safely.collect_ctx");
+		OSMO_ASSERT(fsm_term_safely.collect_ctx);
+	}
+	talloc_steal(fsm_term_safely.collect_ctx, talloc_object);
 }
 
 struct osmo_fsm *osmo_fsm_find_by_name(const char *name)
@@ -399,10 +473,40 @@ void osmo_fsm_inst_change_parent(struct osmo_fsm_inst *fi,
  */
 void osmo_fsm_inst_free(struct osmo_fsm_inst *fi)
 {
-	LOGPFSM(fi, "Deallocated\n");
 	osmo_timer_del(&fi->timer);
 	llist_del(&fi->list);
-	talloc_free(fi);
+
+	if (fsm_term_safely.depth) {
+		/* Another FSM instance has caused this one to free and is still busy with its termination. Don't free
+		 * yet, until the other FSM instance is done. */
+		osmo_fsm_defer_free(fi);
+		/* The root_fi can't go missing really, but to be safe... */
+		if (fsm_term_safely.root_fi)
+			LOGPFSM(fi, "Deferring: will deallocate with %s\n", fsm_term_safely.root_fi->name);
+		else
+			LOGPFSM(fi, "Deferring deallocation\n");
+
+		/* Don't free anything yet. Exit. */
+		return;
+	}
+
+	/* fsm_term_safely.depth == 0.
+	 * - If fsm_term_safely is enabled, this is the original FSM instance that started terminating first. Free this
+	 *   and along with it all other collected terminated FSM instances.
+	 * - If fsm_term_safely is disabled, this is just any FSM instance deallocating. */
+
+	if (fsm_term_safely.collect_ctx) {
+		/* The fi may be a child of any other FSM instances or objects collected in the collect_ctx. Don't
+		 * deallocate separately to avoid use-after-free errors, put it in there and deallocate all at once. */
+		LOGPFSM(fi, "Deallocated, including all deferred deallocations\n");
+		osmo_fsm_defer_free(fi);
+		talloc_free(fsm_term_safely.collect_ctx);
+		fsm_term_safely.collect_ctx = NULL;
+	} else {
+		LOGPFSM(fi, "Deallocated\n");
+		talloc_free(fi);
+	}
+	fsm_term_safely.root_fi = NULL;
 }
 
 /*! get human-readable name of FSM event
@@ -716,8 +820,26 @@ void _osmo_fsm_inst_term(struct osmo_fsm_inst *fi,
 	}
 	fi->proc.terminating = true;
 
-	LOGPFSMSRC(fi, file, line, "Terminating (cause = %s)\n",
-		   osmo_fsm_term_cause_name(cause));
+	/* Start termination cascade handling only if the feature is enabled. Also check the current depth: though
+	 * unlikely, theoretically the fsm_term_safely_enabled flag could be toggled in the middle of a cascaded
+	 * termination, so make sure to continue if it already started. */
+	if (fsm_term_safely_enabled || fsm_term_safely.depth) {
+		fsm_term_safely.depth++;
+		/* root_fi is just for logging, so no need to be extra careful about it. */
+		if (!fsm_term_safely.root_fi)
+			fsm_term_safely.root_fi = fi;
+	}
+
+	if (fsm_term_safely.depth > 1) {
+		/* fsm_term_safely is enabled and this is a secondary FSM instance terminated, caused by the root_fi. */
+		LOGPFSMSRC(fi, file, line, "Terminating in cascade, depth %d (cause = %s, caused by: %s)\n",
+			   fsm_term_safely.depth, osmo_fsm_term_cause_name(cause),
+			   fsm_term_safely.root_fi ? fsm_term_safely.root_fi->name : "unknown");
+		/* The root_fi can't go missing really, but to be safe, log "unknown" in that case. */
+	} else {
+		/* fsm_term_safely is disabled, or this is the root_fi. */
+		LOGPFSMSRC(fi, file, line, "Terminating (cause = %s)\n", osmo_fsm_term_cause_name(cause));
+	}
 
 	/* graceful exit (optional) */
 	if (fi->fsm->pre_term)
@@ -738,15 +860,29 @@ void _osmo_fsm_inst_term(struct osmo_fsm_inst *fi,
 	if (fi->fsm->cleanup)
 		fi->fsm->cleanup(fi, cause);
 
-	LOGPFSMSRC(fi, file, line, "Freeing instance\n");
 	/* Fetch parent again in case it has changed. */
 	parent = fi->proc.parent;
-	osmo_fsm_inst_free(fi);
+
+	/* Legacy behavior if fsm_term_safely is disabled: free before dispatching parent event. (If fsm_term_safely is
+	 * enabled, depth will *always* be > 0 here.) Pivot on depth instead of the enabled flag in case the enabled
+	 * flag is toggled in the middle of an FSM term. */
+	if (!fsm_term_safely.depth) {
+		LOGPFSMSRC(fi, file, line, "Freeing instance\n");
+		osmo_fsm_inst_free(fi);
+	}
 
 	/* indicate our termination to the parent */
 	if (parent && cause != OSMO_FSM_TERM_PARENT)
 		_osmo_fsm_inst_dispatch(parent, parent_term_event, data,
 					file, line);
+
+	/* Newer, safe deallocation: free only after the parent_term_event was dispatched, to catch all termination
+	 * cascades, and free all FSM instances at once. (If fsm_term_safely is enabled, depth will *always* be > 0
+	 * here.) osmo_fsm_inst_free() will do the defer magic depending on the fsm_term_safely.depth. */
+	if (fsm_term_safely.depth) {
+		fsm_term_safely.depth--;
+		osmo_fsm_inst_free(fi);
+	}
 }
 
 /*! Terminate all child FSM instances of an FSM instance.

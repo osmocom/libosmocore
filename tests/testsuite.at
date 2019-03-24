@@ -273,6 +273,12 @@ cat $abs_srcdir/fsm/fsm_test.err > experr
 AT_CHECK([$abs_top_builddir/tests/fsm/fsm_test], [0], [expout], [experr])
 AT_CLEANUP
 
+AT_SETUP([fsm_dealloc])
+AT_KEYWORDS([fsm_dealloc])
+cat $abs_srcdir/fsm/fsm_dealloc_test.err > experr
+AT_CHECK([$abs_top_builddir/tests/fsm/fsm_dealloc_test], [0], [ignore], [experr])
+AT_CLEANUP
+
 AT_SETUP([oap])
 AT_KEYWORDS([oap])
 cat $abs_srcdir/oap/oap_test.ok > expout
