@@ -22,7 +22,6 @@ static const struct value_string test_fsm_event_names[] = {
 
 enum state {
 	ST_ALIVE,
-	ST_DESTROYING,
 };
 
 enum objname {
@@ -148,52 +147,19 @@ void alive(struct osmo_fsm_inst *fi, uint32_t event, void *data)
 	case EV_OTHER_GONE:
 		if (other_gone(obj, data)) {
 			/* Something this object depends on is gone, trigger deallocation */
-			osmo_fsm_inst_state_chg(fi, ST_DESTROYING, 0, 0);
+			osmo_fsm_inst_term(fi, OSMO_FSM_TERM_REGULAR, 0);
 		}
 		break;
 
 	case EV_CHILD_GONE:
 		if (!child_gone(obj, data)) {
 			/* All children are gone. Deallocate. */
-			osmo_fsm_inst_state_chg(fi, ST_DESTROYING, 0, 0);
+			osmo_fsm_inst_term(fi, OSMO_FSM_TERM_REGULAR, 0);
 		}
 		break;
 
 	case EV_DESTROY:
-		osmo_fsm_inst_state_chg(fi, ST_DESTROYING, 0, 0);
-		break;
-
-	default:
-		OSMO_ASSERT(false);
-	}
-	PUT();
-}
-
-void destroying_onenter(struct osmo_fsm_inst *fi, uint32_t prev_state)
-{
-	struct obj *obj = fi->priv;
-	GET();
-	LOGPFSML(fi, LOGL_DEBUG, "%s() from %s\n", __func__, osmo_fsm_state_name(fi->fsm, prev_state));
-	osmo_fsm_inst_term(fi, OSMO_FSM_TERM_REGULAR, 0);
-	PUT();
-}
-
-void destroying(struct osmo_fsm_inst *fi, uint32_t event, void *data)
-{
-	struct obj *obj = fi->priv;
-	GET();
-	LOGPFSML(fi, LOGL_DEBUG, "%s(%s)\n", __func__, osmo_fsm_event_name(fi->fsm, event));
-	switch (event) {
-	case EV_OTHER_GONE:
-		other_gone(obj, data);
-		break;
-
-	case EV_CHILD_GONE:
-		child_gone(obj, data);
-		break;
-
-	case EV_DESTROY:
-		LOGPFSML(fi, LOGL_DEBUG, "already destroying\n");
+		osmo_fsm_inst_term(fi, OSMO_FSM_TERM_REGULAR, 0);
 		break;
 
 	default:
@@ -214,23 +180,9 @@ static const struct osmo_fsm_state test_fsm_states[] = {
 			,
 		.out_state_mask = 0
 			| S(ST_ALIVE)
-			| S(ST_DESTROYING)
 			,
 		.onenter = alive_onenter,
 		.action = alive,
-	},
-	[ST_DESTROYING] = {
-		.name = "destroying",
-		.in_event_mask = 0
-			| S(EV_CHILD_GONE)
-			| S(EV_OTHER_GONE)
-			| S(EV_DESTROY)
-			,
-		.out_state_mask = 0
-			| S(ST_DESTROYING)
-			,
-		.onenter = destroying_onenter,
-		.action = destroying,
 	},
 };
 
