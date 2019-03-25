@@ -385,7 +385,7 @@ const struct rate_ctr *rate_ctr_get_by_name(const struct rate_ctr_group *ctrg, c
 }
 
 /*! Iterate over each counter in group and call function
- *  \param[in] counter group over whose counter to iterate
+ *  \param[in] ctrg counter group over which to iterate
  *  \param[in] handle_counter function pointer
  *  \param[in] data Data to hand transparently to \ref handle_counter
  *  \returns 0 on success; negative otherwise

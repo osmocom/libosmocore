@@ -111,10 +111,6 @@ typedef int (*rate_ctr_handler_t)(
 typedef int (*rate_ctr_group_handler_t)(struct rate_ctr_group *, void *);
 
 
-/*! Iterate over all counters
- *  \param[in] handle_item Call-back function, aborts if rc < 0
- *  \param[in] data Private data handed through to \a handle_counter
- */
 int rate_ctr_for_each_counter(struct rate_ctr_group *ctrg,
 	rate_ctr_handler_t handle_counter, void *data);
 
