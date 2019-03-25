@@ -476,8 +476,9 @@ const char *msgb_hexdump(const struct msgb *msg)
 
 
 /*! Print a string to the end of message buffer.
- * \param[in] msg message buffer
- * \returns 0 on success, -EINVAL on error
+ * \param[in] msgb message buffer.
+ * \param[in] format format string.
+ * \returns 0 on success, -EINVAL on error.
  *
  * The resulting string is printed to the msgb without a trailing nul
  * character. A nul following the data tail may be written as an implementation
