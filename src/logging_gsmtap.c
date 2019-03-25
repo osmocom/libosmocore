@@ -117,7 +117,11 @@ static void _gsmtap_raw_output(struct log_target *target, int subsys,
 }
 
 /*! Create a new logging target for GSMTAP logging
+ *  \param[in] host remote host to send the logs to
+ *  \param[in] port remote port to send the logs to
  *  \param[in] ident string identifier
+ *  \param[in] ofd_wq_mode register osmo_wqueue (1) or not (0)
+ *  \param[in] add_sink add GSMTAP sink or not
  *  \returns Log target in case of success, NULL in case of error
  */
 struct log_target *log_target_create_gsmtap(const char *host, uint16_t port,
