@@ -339,7 +339,7 @@ static inline unsigned char *msgb_push(struct msgb *msgb, unsigned int len)
 }
 
 /*! prepend a uint8 value to the head of the message
- *  \param[in] msgb message buffer
+ *  \param[in] msg message buffer
  *  \param[in] word unsigned 8bit byte to be prepended
  */
 static inline void msgb_push_u8(struct msgb *msg, uint8_t word)
@@ -349,7 +349,7 @@ static inline void msgb_push_u8(struct msgb *msg, uint8_t word)
 }
 
 /*! prepend a uint16 value to the head of the message
- *  \param[in] msgb message buffer
+ *  \param[in] msg message buffer
  *  \param[in] word unsigned 16bit byte to be prepended
  */
 static inline void msgb_push_u16(struct msgb *msg, uint16_t word)
@@ -359,7 +359,7 @@ static inline void msgb_push_u16(struct msgb *msg, uint16_t word)
 }
 
 /*! prepend a uint32 value to the head of the message
- *  \param[in] msgb message buffer
+ *  \param[in] msg message buffer
  *  \param[in] word unsigned 32bit byte to be prepended
  */
 static inline void msgb_push_u32(struct msgb *msg, uint32_t word)
@@ -396,7 +396,7 @@ static inline unsigned char *msgb_pull(struct msgb *msgb, unsigned int len)
 }
 
 /*! remove (pull) all headers in front of l3h from the message buffer.
- *  \param[in] msgb message buffer with a valid l3h
+ *  \param[in] msg message buffer with a valid l3h
  *  \returns pointer to new start of msgb (l3h)
  *
  * This function moves the \a data pointer of the \ref msgb further back
@@ -411,7 +411,7 @@ static inline unsigned char *msgb_pull_to_l3(struct msgb *msg)
 }
 
 /*! remove (pull) all headers in front of l2h from the message buffer.
- *  \param[in] msgb message buffer with a valid l2h
+ *  \param[in] msg message buffer with a valid l2h
  *  \returns pointer to new start of msgb (l2h)
  *
  * This function moves the \a data pointer of the \ref msgb further back
