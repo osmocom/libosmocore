@@ -192,7 +192,7 @@ static int subsys_lib2index(int subsys)
 }
 
 /*! Parse a human-readable log level into a numeric value
- *  \param lvl[in] zero-terminated string containing log level name
+ *  \param[in] lvl zero-terminated string containing log level name
  *  \returns numeric log level
  */
 int log_parse_level(const char *lvl)
@@ -201,7 +201,7 @@ int log_parse_level(const char *lvl)
 }
 
 /*! convert a numeric log level into human-readable string
- *  \param lvl[in] numeric log level
+ *  \param[in] lvl numeric log level
  *  \returns zero-terminated string (log level name)
  */
 const char *log_level_str(unsigned int lvl)
@@ -685,7 +685,7 @@ void log_set_print_filename(struct log_target *target, int print_filename)
 
 /*! Enable or disable printing of the filename while logging.
  *  \param[in] target Log target to be affected.
- *  \param[in] print_filename An LOG_FILENAME_* enum value.
+ *  \param[in] lft An LOG_FILENAME_* enum value.
  * LOG_FILENAME_NONE omits the source file and line information from logs.
  * LOG_FILENAME_PATH prints the entire source file path as passed to LOGP macros.
  */
@@ -707,7 +707,7 @@ void log_set_print_filename_pos(struct log_target *target, enum log_filename_pos
 
 /*! Enable or disable printing of the category name
  *  \param[in] target Log target to be affected
- *  \param[in] print_catname Enable (1) or disable (0) filenames
+ *  \param[in] print_category Enable (1) or disable (0) filenames
  *
  *  Print the category/subsys name in front of every log message.
  */
@@ -727,7 +727,7 @@ void log_set_print_category_hex(struct log_target *target, int print_category_he
 
 /*! Enable or disable printing of the log level name.
  *  \param[in] target Log target to be affected
- *  \param[in] print_catname Enable (1) or disable (0) filenames
+ *  \param[in] print_level Enable (1) or disable (0) log level name
  *
  *  Print the log level name in front of every log message.
  */
@@ -891,7 +891,7 @@ struct log_target *log_target_find(int type, const char *fname)
 }
 
 /*! Unregister, close and delete a log target
- *  \param target[in] log target to unregister, close and delete */
+ *  \param[in] target log target to unregister, close and delete */
 void log_target_destroy(struct log_target *target)
 {
 
@@ -954,7 +954,7 @@ int log_targets_reopen(void)
 
 /*! Initialize the Osmocom logging core
  *  \param[in] inf Information regarding logging categories, could be NULL
- *  \param[in] ctx \ref talloc context for logging allocations
+ *  \param[in] ctx talloc context for logging allocations
  *  \returns 0 in case of success, negative in case of error
  *
  *  If inf is NULL then only library-internal categories are initialized.
