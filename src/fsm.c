@@ -395,7 +395,7 @@ void osmo_fsm_inst_change_parent(struct osmo_fsm_inst *fi,
 }
 
 /*! delete a given instance of a FSM
- *  \param[in] fsm The FSM to be un-registered and deleted
+ *  \param[in] fi FSM instance to be un-registered and deleted
  */
 void osmo_fsm_inst_free(struct osmo_fsm_inst *fi)
 {

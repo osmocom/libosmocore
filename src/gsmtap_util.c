@@ -368,7 +368,7 @@ static int gsmtap_sink_fd_cb(struct osmo_fd *fd, unsigned int flags)
 }
 
 /*! Add a local sink to an existing GSMTAP source and return fd
- *  \param[in] gsmtap_fd file descriptor of the gsmtap socket
+ *  \param[in] gti existing GSMTAP source
  *  \returns file descriptor of locally bound receive socket
  *
  *  In case the GSMTAP socket is connected to a local destination
@@ -417,8 +417,8 @@ int gsmtap_source_add_sink(struct gsmtap_inst *gti)
  *
  * Open GSMTAP source (sending) socket, connect it to host/port,
  * allocate 'struct gsmtap_inst' and optionally osmo_fd/osmo_wqueue
- * registration.  This means it is like \ref gsmtap_init2 but integrated
- * with libosmocore \ref select */
+ * registration.
+ */
 struct gsmtap_inst *gsmtap_source_init(const char *host, uint16_t port,
 					int ofd_wq_mode)
 {
