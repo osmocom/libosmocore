@@ -206,7 +206,7 @@ static unsigned int rate_ctr_get_unused_name_idx(const char *name)
 }
 
 /*! Allocate a new group of counters according to description
- *  \param[in] ctx \ref talloc context
+ *  \param[in] ctx parent talloc context
  *  \param[in] desc Rate counter group description
  *  \param[in] idx Index of new counter group
  */
@@ -387,7 +387,7 @@ const struct rate_ctr *rate_ctr_get_by_name(const struct rate_ctr_group *ctrg, c
 /*! Iterate over each counter in group and call function
  *  \param[in] ctrg counter group over which to iterate
  *  \param[in] handle_counter function pointer
- *  \param[in] data Data to hand transparently to \ref handle_counter
+ *  \param[in] data Data to hand transparently to handle_counter()
  *  \returns 0 on success; negative otherwise
  */
 int rate_ctr_for_each_counter(struct rate_ctr_group *ctrg,
@@ -409,7 +409,7 @@ int rate_ctr_for_each_counter(struct rate_ctr_group *ctrg,
 
 /*! Iterate over all counter groups
  *  \param[in] handle_group function pointer of callback function
- *  \param[in] data Data to hand transparently to \ref handle_group
+ *  \param[in] data Data to hand transparently to handle_group()
  *  \returns 0 on success; negative otherwise
  */
 int rate_ctr_for_each_group(rate_ctr_group_handler_t handle_group, void *data)
