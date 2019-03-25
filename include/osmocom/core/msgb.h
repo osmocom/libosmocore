@@ -668,35 +668,35 @@ bool _msgb_eq(const char *file, size_t line, const char *func, uint8_t level,
  *  \param[in] msg2 reference message buffer
  *  \returns boolean indicating whether msgb content is equal
  */
-#define msgb_eq(msg1, msg2, len) msgb_eq_data(msg1, msgb_data(msg2), msgb_length(msg2))
+#define msgb_eq(msg1, msg2) msgb_eq_data(msg1, msgb_data(msg2), msgb_length(msg2))
 
 /*! Compare msgbs L1 content
  *  \param[in] msg1 message buffer
  *  \param[in] msg2 reference message buffer
  *  \returns boolean indicating whether msgb L1 content is equal
  */
-#define msgb_eq_l1(msg1, msg2, len) msgb_eq_l1_data(msg1, msgb_l1(msg2), msgb_l1len(msg2))
+#define msgb_eq_l1(msg1, msg2) msgb_eq_l1_data(msg1, msgb_l1(msg2), msgb_l1len(msg2))
 
 /*! Compare msgbs L2 content
  *  \param[in] msg1 message buffer
  *  \param[in] msg2 reference message buffer
  *  \returns boolean indicating whether msgb L2 content is equal
  */
-#define msgb_eq_l2(msg1, msg2, len) msgb_eq_l2_data(msg1, msgb_l2(msg2), msgb_l2len(msg2))
+#define msgb_eq_l2(msg1, msg2) msgb_eq_l2_data(msg1, msgb_l2(msg2), msgb_l2len(msg2))
 
 /*! Compare msgbs L3 content
  *  \param[in] msg1 message buffer
  *  \param[in] msg2 reference message buffer
  *  \returns boolean indicating whether msgb L3 content is equal
  */
-#define msgb_eq_l3(msg1, msg2, len) msgb_eq_l3_data(msg1, msgb_l3(msg2), msgb_l3len(msg2))
+#define msgb_eq_l3(msg1, msg2) msgb_eq_l3_data(msg1, msgb_l3(msg2), msgb_l3len(msg2))
 
 /*! Compare msgbs L4 content
  *  \param[in] msg1 message buffer
  *  \param[in] msg2 reference message buffer
  *  \returns boolean indicating whether msgb L4 content is equal
  */
-#define msgb_eq_l4(msg1, msg2, len) msgb_eq_l4_data(msg1, msgb_l4(msg2), msgb_l4len(msg2))
+#define msgb_eq_l4(msg1, msg2) msgb_eq_l4_data(msg1, msgb_l4(msg2), msgb_l4len(msg2))
 
 
 /* non inline functions to ease binding */
