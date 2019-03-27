@@ -98,11 +98,21 @@ const char *ipa_ccm_idtag_name(uint8_t tag)
 	return idtag_names[tag];
 }
 
+/*! Parse the payload part of an IPA CCM ID GET, return \ref tlv_parsed format. */
 int ipa_ccm_idtag_parse(struct tlv_parsed *dec, unsigned char *buf, int len)
 {
-	return ipa_ccm_idtag_parse_off(dec, buf, len, 0);
+	return ipa_ccm_idtag_parse_off(dec, buf, len, 1);
 }
 
+/*! Parse the payload part of an IPA CCM ID GET, return \ref tlv_parsed format.
+ *	WARNING: This function can only parse correctly IPA CCM ID GET/REQUEST
+ *	messages, and only when len_offset is passed value of 1.
+ *  \param[out] dec Caller-provided/allocated output structure for parsed payload
+ *  \param[in] buf Buffer containing the payload (excluding 1 byte msg_type) of the message
+ *  \param[in] len Length of \a buf in octets
+ *  \param[in] len_offset Offset from end of len field to start of value (ommiting tag). Must be 1!
+ *  \returns 0 on success; negative on error
+ */
 int ipa_ccm_idtag_parse_off(struct tlv_parsed *dec, unsigned char *buf, int len, const int len_offset)
 {
 	uint8_t t_len;
