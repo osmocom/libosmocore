@@ -204,8 +204,8 @@ int ipa_ccm_id_resp_parse(struct tlv_parsed *dec, const uint8_t *buf, unsigned i
 
 	while (len >= 3) {
 		len -= 3;
-		t_len = *cur++ << 8;
-		t_len += *cur++;
+		t_len = osmo_load16be(cur);
+		cur += 2;
 		t_tag = *cur++;
 
 		if (t_len > len + 1) {
