@@ -232,8 +232,6 @@ passed through unchanged "printable"
 ""
 - truncation when too long:
 "\axxxxxxE"
-- passthrough without truncation when no escaping needed:
-"xxxxxxxxxxxxxxxxxxxE"
 
 Testing string quoting
 - all chars from 0 to 255 in batches of 16:

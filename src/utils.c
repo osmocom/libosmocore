@@ -538,14 +538,14 @@ bool osmo_identifier_valid(const char *str)
 	return osmo_separated_identifiers_valid(str, NULL);
 }
 
-/*! Return the string with all non-printable characters escaped.
+/*! Return the string with all non-printable characters escapeda, in user-supplied buffer.
  * \param[in] str  A string that may contain any characters.
  * \param[in] len  Pass -1 to print until nul char, or >= 0 to force a length.
  * \param[inout] buf  string buffer to write escaped characters to.
  * \param[in] bufsize  size of \a buf.
- * \returns buf containing an escaped representation, possibly truncated, or str itself.
+ * \returns buf containing an escaped representation, possibly truncated.
  */
-const char *osmo_escape_str_buf(const char *str, int in_len, char *buf, size_t bufsize)
+char *osmo_escape_str_buf(const char *str, int in_len, char *buf, size_t bufsize)
 {
 	int in_pos = 0;
 	int next_unprintable = 0;
@@ -567,9 +567,10 @@ const char *osmo_escape_str_buf(const char *str, int in_len, char *buf, size_t b
 		     && str[next_unprintable] != '\\';
 		     next_unprintable++);
 
-		if (next_unprintable == in_len
-		    && in_pos == 0)
-			return str;
+		if (next_unprintable == in_len && in_pos == 0) {
+			osmo_strlcpy(buf, str, bufsize);
+			return buf;
+		}
 
 		while (in_pos < next_unprintable && out_pos < out_len)
 			out[out_pos++] = str[in_pos++];
@@ -633,25 +634,13 @@ const char *osmo_escape_str(const char *str, int in_len)
  */
 const char *osmo_quote_str_buf(const char *str, int in_len, char *buf, size_t bufsize)
 {
-	const char *res;
 	int l;
 	if (!str)
 		return "NULL";
 	if (bufsize < 3)
 		return "<buf-too-small>";
 	buf[0] = '"';
-	res = osmo_escape_str_buf(str, in_len, buf + 1, bufsize - 2);
-	/* if osmo_escape_str_buf() returned the str itself, we need to copy it to buf to be able to
-	 * quote it. */
-	if (res == str) {
-		/* max_len = bufsize - two quotes - nul term */
-		int max_len = bufsize - 2 - 1;
-		if (in_len >= 0)
-			max_len = OSMO_MIN(in_len, max_len);
-		/* It is not allowed to pass unterminated strings into osmo_strlcpy() :/ */
-		strncpy(buf + 1, str, max_len);
-		buf[1 + max_len] = '\0';
-	}
+	osmo_escape_str_buf(str, in_len, buf + 1, bufsize - 2);
 	l = strlen(buf);
 	buf[l] = '"';
 	buf[l+1] = '\0'; /* both osmo_escape_str_buf() and max_len above ensure room for '\0' */

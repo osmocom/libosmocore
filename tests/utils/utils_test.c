@@ -545,7 +545,7 @@ static void str_escape_test(void)
 
 	printf("- passthru:\n");
 	res = osmo_escape_str(printable, -1);
-	if (res != printable)
+	if (strcmp(res, printable))
 		printf("NOT passed through! \"%s\"\n", res);
 	else
 		printf("passed through unchanged \"%s\"\n", res);
@@ -560,14 +560,6 @@ static void str_escape_test(void)
 	memset(out_buf, 0x7f, sizeof(out_buf));
 	printf("\"%s\"\n", osmo_escape_str_buf((const char *)in_buf, sizeof(in_buf), out_buf, 10));
 	OSMO_ASSERT(out_buf[10] == 0x7f);
-
-	printf("- passthrough without truncation when no escaping needed:\n");
-	memset(in_buf, 'x', sizeof(in_buf));
-	in_buf[19] = 'E';
-	in_buf[20] = '\0';
-	memset(out_buf, 0x7f, sizeof(out_buf));
-	printf("\"%s\"\n", osmo_escape_str_buf((const char *)in_buf, -1, out_buf, 10));
-	OSMO_ASSERT(out_buf[0] == 0x7f);
 }
 
 static void str_quote_test(void)
