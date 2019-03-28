@@ -545,7 +545,7 @@ void osmo_fsm_inst_free(struct osmo_fsm_inst *fi)
  */
 const char *osmo_fsm_event_name(struct osmo_fsm *fsm, uint32_t event)
 {
-	static char buf[32];
+	static __thread char buf[32];
 	if (!fsm->event_names) {
 		snprintf(buf, sizeof(buf), "%"PRIu32, event);
 		return buf;
@@ -575,7 +575,7 @@ const char *osmo_fsm_inst_name(struct osmo_fsm_inst *fi)
  */
 const char *osmo_fsm_state_name(struct osmo_fsm *fsm, uint32_t state)
 {
-	static char buf[32];
+	static __thread char buf[32];
 	if (state >= fsm->num_states) {
 		snprintf(buf, sizeof(buf), "unknown %"PRIu32, state);
 		return buf;

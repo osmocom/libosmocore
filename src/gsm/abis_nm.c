@@ -939,7 +939,7 @@ char *abis_nm_dump_foh_buf(char *buf, size_t buf_len, const struct abis_om_fom_h
 
 const char *abis_nm_dump_foh(const struct abis_om_fom_hdr *foh)
 {
-	static char foh_buf[128];
+	static __thread char foh_buf[128];
 	return abis_nm_dump_foh_buf(foh_buf, sizeof(foh_buf), foh);
 }
 

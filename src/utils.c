@@ -41,7 +41,7 @@
  *
  * \file utils.c */
 
-static char namebuf[255];
+static __thread char namebuf[255];
 
 /*! get human-readable string for given value
  *  \param[in] vs Array of value_string tuples
@@ -219,7 +219,7 @@ int osmo_hexparse(const char *str, uint8_t *b, int max_len)
 	return nibblepos >> 1;
 }
 
-static char hexd_buff[4096];
+static __thread char hexd_buff[4096];
 static const char hex_chars[] = "0123456789abcdef";
 
 /*! Convert binary sequence to hexadecimal ASCII string.
@@ -492,7 +492,7 @@ uint64_t osmo_decode_big_endian(const uint8_t *data, size_t data_len)
  * sizeof(uint64_t), only the least significant bytes of value are encoded. */
 uint8_t *osmo_encode_big_endian(uint64_t value, size_t data_len)
 {
-	static uint8_t buf[sizeof(uint64_t)];
+	static __thread uint8_t buf[sizeof(uint64_t)];
 	OSMO_ASSERT(data_len <= ARRAY_SIZE(buf));
 	osmo_store64be_ext(value, buf, data_len);
 	return buf;
@@ -908,7 +908,7 @@ size_t osmo_str_tolower_buf(char *dest, size_t dest_len, const char *src)
  */
 const char *osmo_str_tolower(const char *src)
 {
-	static char buf[128];
+	static __thread char buf[128];
 	osmo_str_tolower_buf(buf, sizeof(buf), src);
 	return buf;
 }
@@ -967,7 +967,7 @@ size_t osmo_str_toupper_buf(char *dest, size_t dest_len, const char *src)
  */
 const char *osmo_str_toupper(const char *src)
 {
-	static char buf[128];
+	static __thread char buf[128];
 	osmo_str_toupper_buf(buf, sizeof(buf), src);
 	return buf;
 }

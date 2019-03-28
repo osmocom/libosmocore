@@ -203,7 +203,7 @@ char *osmo_rai_name_buf(char *buf, size_t buf_len, const struct gprs_ra_id *rai)
  */
 const char *osmo_rai_name(const struct gprs_ra_id *rai)
 {
-	static char buf[32];
+	static __thread char buf[32];
 	return osmo_rai_name_buf(buf, sizeof(buf), rai);
 }
 
@@ -502,7 +502,7 @@ char *osmo_mi_name_buf(char *buf, size_t buf_len, const uint8_t *mi, uint8_t mi_
  */
 const char *osmo_mi_name(const uint8_t *mi, uint8_t mi_len)
 {
-	static char mi_name[10 + GSM48_MI_SIZE + 1];
+	static __thread char mi_name[10 + GSM48_MI_SIZE + 1];
 	return osmo_mi_name_buf(mi_name, sizeof(mi_name), mi, mi_len);
 }
 
@@ -1150,7 +1150,7 @@ char *gsm48_pdisc_msgtype_name_buf(char *buf, size_t buf_len, uint8_t pdisc, uin
  */
 const char *gsm48_pdisc_msgtype_name(uint8_t pdisc, uint8_t msg_type)
 {
-	static char namebuf[64];
+	static __thread char namebuf[64];
 	return gsm48_pdisc_msgtype_name_buf(namebuf, sizeof(namebuf), pdisc, msg_type);
 }
 
@@ -1303,7 +1303,7 @@ char *osmo_gsm48_classmark_a5_name_buf(char *buf, size_t buf_len, const struct o
  */
 const char *osmo_gsm48_classmark_a5_name(const struct osmo_gsm48_classmark *cm)
 {
-	static char buf[128];
+	static __thread char buf[128];
 	return osmo_gsm48_classmark_a5_name_buf(buf, sizeof(buf), cm);
 }
 
