@@ -68,6 +68,7 @@ enum osmo_gsup_iei {
 	OSMO_GSUP_FREEZE_PTMSI_IE		= 0x07,
 	OSMO_GSUP_MSISDN_IE			= 0x08,
 	OSMO_GSUP_HLR_NUMBER_IE			= 0x09,
+	OSMO_GSUP_MESSAGE_CLASS_IE			= 0x0a,
 	OSMO_GSUP_PDP_CONTEXT_ID_IE		= 0x10,
 	OSMO_GSUP_PDP_TYPE_IE			= 0x11,
 	OSMO_GSUP_ACCESS_POINT_NAME_IE		= 0x12,
@@ -229,6 +230,21 @@ struct osmo_gsup_pdp_info {
 	size_t				pdp_charg_enc_len;
 };
 
+enum osmo_gsup_message_class {
+	OSMO_GSUP_MESSAGE_CLASS_UNSET = 0,
+	OSMO_GSUP_MESSAGE_CLASS_SUBSCRIBER_MANAGEMENT = 1,
+	OSMO_GSUP_MESSAGE_CLASS_SMS = 2,
+	OSMO_GSUP_MESSAGE_CLASS_USSD = 3,
+	OSMO_GSUP_MESSAGE_CLASS_INTER_MSC = 4,
+	/* Keep this as last entry with a value of max(enum osmo_gsup_message_class) + 1.
+	 * This value shall serve as the size for an array to aid de-muxing all known GSUP classes. */
+	OSMO_GSUP_MESSAGE_CLASS_ARRAYSIZE
+};
+
+extern const struct value_string osmo_gsup_message_class_names[];
+static inline const char *osmo_gsup_message_class_name(enum osmo_gsup_message_class val)
+{ return get_value_string(osmo_gsup_message_class_names, val); }
+
 /*! parsed/decoded GSUP protocol message */
 struct osmo_gsup_message {
 	enum osmo_gsup_message_type	message_type;
@@ -286,6 +302,11 @@ struct osmo_gsup_message {
 	const uint8_t			*imei_enc;
 	size_t				imei_enc_len;
 	enum osmo_gsup_imei_result	imei_result;
+
+	/*! Indicate the message class to trivially dispatch incoming GSUP messages to the right code paths.
+	 * Inter-MSC messages are *required* to set a class = OSMO_GSUP_MESSAGE_CLASS_INTER_MSC. For older message classes, this may
+	 * be omitted (for backwards compatibility only -- if in doubt, include it). */
+	enum osmo_gsup_message_class		message_class;
 };
 
 int osmo_gsup_decode(const uint8_t *data, size_t data_len,

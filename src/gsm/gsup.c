@@ -477,6 +477,10 @@ int osmo_gsup_decode(const uint8_t *const_data, size_t data_len,
 			gsup_msg->imei_result = osmo_decode_big_endian(value, value_len) + 1;
 			break;
 
+		case OSMO_GSUP_MESSAGE_CLASS_IE:
+			gsup_msg->message_class = value[0];
+			break;
+
 		default:
 			LOGP(DLGSUP, LOGL_NOTICE,
 			     "GSUP IE type %d unknown\n", iei);
@@ -718,7 +722,21 @@ int osmo_gsup_encode(struct msgb *msg, const struct osmo_gsup_message *gsup_msg)
 		msgb_tlv_put(msg, OSMO_GSUP_IMEI_RESULT_IE, sizeof(u8), &u8);
 	}
 
+	if (gsup_msg->message_class != OSMO_GSUP_MESSAGE_CLASS_UNSET) {
+		u8 = gsup_msg->message_class;
+		msgb_tlv_put(msg, OSMO_GSUP_MESSAGE_CLASS_IE, sizeof(u8), &u8);
+	}
+
 	return 0;
 }
+
+const struct value_string osmo_gsup_message_class_names[] = {
+	{ OSMO_GSUP_MESSAGE_CLASS_UNSET, "unset" },
+	{ OSMO_GSUP_MESSAGE_CLASS_SUBSCRIBER_MANAGEMENT, "Subscriber-Management" },
+	{ OSMO_GSUP_MESSAGE_CLASS_SMS, "SMS" },
+	{ OSMO_GSUP_MESSAGE_CLASS_USSD, "USSD" },
+	{ OSMO_GSUP_MESSAGE_CLASS_INTER_MSC, "Inter-MSC" },
+	{}
+};
 
 /*! @} */

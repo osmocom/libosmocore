@@ -11,6 +11,7 @@
 
 #define TEST_IMSI_IE 0x01, 0x08, 0x21, 0x43, 0x65, 0x87, 0x09, 0x21, 0x43, 0xf5
 #define TEST_IMSI_STR "123456789012345"
+#define TEST_CLASS_SUBSCR_IE 0xa, 0x1, 0x1
 
 static void test_gsup_messages_dec_enc(void)
 {
@@ -20,7 +21,8 @@ static void test_gsup_messages_dec_enc(void)
 
 	static const uint8_t send_auth_info_req[] = {
 		0x08,
-		TEST_IMSI_IE
+		TEST_IMSI_IE,
+		TEST_CLASS_SUBSCR_IE
 	};
 
 	static const uint8_t send_auth_info_err[] = {
