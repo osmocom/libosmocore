@@ -312,6 +312,7 @@ gsm48_construct_ra;
 gsm48_encode_ra;
 gsm48_hdr_gmm_cipherable;
 gsm48_decode_bcd_number;
+gsm48_decode_bcd_number2;
 gsm48_decode_bearer_cap;
 gsm48_decode_called;
 gsm48_decode_callerid;
