@@ -7,7 +7,12 @@ pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libosmocore.pc libosmocodec.pc libosmovty.pc libosmogsm.pc \
 		 libosmogb.pc libosmoctrl.pc libosmocoding.pc libosmosim.pc
 
+aclocaldir = $(datadir)/aclocal
+dist_aclocal_DATA = m4/osmo_ac_code_coverage.m4 \
+					m4/osmo_ax_code_coverage.m4
+
 @RELMAKE@
+@CODE_COVERAGE_RULES@
 
 relengdir = $(includedir)
 releng_DATA = osmo-release.mk

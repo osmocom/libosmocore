@@ -357,6 +357,8 @@ else
 	AM_CONDITIONAL(HAVE_SSE4_1, false)
 fi
 
+OSMO_AC_CODE_COVERAGE
+
 dnl Check if the compiler supports specified GCC's built-in function
 AC_DEFUN([CHECK_BUILTIN_SUPPORT], [
   AC_CACHE_CHECK(

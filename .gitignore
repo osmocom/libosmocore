@@ -95,3 +95,7 @@ tests/conv/gsm0503_test_vectors.c
 # vi files
 *.sw?
 /tests/libsercomstub.a
+
+# code coverage reports
+libosmocore-*-coverage*
+coverage-cobertura.xml
