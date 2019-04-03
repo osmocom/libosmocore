@@ -60,7 +60,8 @@
  */
 bool osmo_sockaddr_str_is_set(const struct osmo_sockaddr_str *sockaddr_str)
 {
-	return *sockaddr_str->ip
+	return sockaddr_str
+		&& *sockaddr_str->ip
 		&& sockaddr_str->port
 		&& (sockaddr_str->af == AF_INET || sockaddr_str->af == AF_INET6);
 }
