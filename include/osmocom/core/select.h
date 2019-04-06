@@ -52,6 +52,7 @@ void osmo_fd_unregister(struct osmo_fd *fd);
 void osmo_fd_close(struct osmo_fd *fd);
 int osmo_select_main(int polling);
 int osmo_select_main_ctx(int polling);
+void osmo_select_init(void);
 
 struct osmo_fd *osmo_fd_get_by_fd(int fd);
 

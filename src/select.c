@@ -50,9 +50,11 @@
  *
  * \file select.c */
 
-static int maxfd = 0;
-static LLIST_HEAD(osmo_fds);
-static int unregistered_count;
+/* keep a set of file descriptors per-thread, so that each thread can have its own
+ * distinct set of file descriptors to interact with */
+static __thread int maxfd = 0;
+static __thread struct llist_head osmo_fds; /* TLS cannot use LLIST_HEAD() */
+static __thread int unregistered_count;
 
 /*! Set up an osmo-fd. Will not register it.
  *  \param[inout] ofd Osmo FD to be set-up
@@ -305,6 +307,18 @@ struct osmo_fd *osmo_fd_get_by_fd(int fd)
 			return ofd;
 	}
 	return NULL;
+}
+
+/*! initialize the osmocom select abstraction for the current thread */
+void osmo_select_init(void)
+{
+	INIT_LLIST_HEAD(&osmo_fds);
+}
+
+/* ensure main thread always has pre-initialized osmo_fds */
+static __attribute__((constructor)) void on_dso_load_select(void)
+{
+	osmo_select_init();
 }
 
 #ifdef HAVE_SYS_TIMERFD_H
