@@ -199,7 +199,7 @@ DEFUN(show_talloc_ctx_filter, show_talloc_ctx_filter_cmd,
 	int rc;
 
 	/* Attempt to compile a regular expression */
-	rc = regcomp(&params.regexp, argv[2], 0);
+	rc = regcomp(&params.regexp, argv[2], REG_NOSUB);
 	if (rc) {
 		vty_out(vty, "Invalid expression%s", VTY_NEWLINE);
 		return CMD_WARNING;
