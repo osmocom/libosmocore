@@ -185,10 +185,10 @@ static int gsm_septet_lookup(uint8_t ch)
 	return -1;
 }
 
-/*! \brife Compute number of octets from number of septets,
- *  for instance: 47 septets needs 41,125 = 42 octets
- *  \param[in sept_len Number of Septets
- *  \returns Number of octets required */
+/*! Compute number of octets from number of septets.
+ * For instance: 47 septets need 41,125 = 42 octets.
+ * \param[in] sept_len Number of septets
+ * \returns Number of octets required */
 uint8_t gsm_get_octet_len(const uint8_t sept_len){
 	int octet_len = (sept_len * 7) / 8;
 	if ((sept_len * 7) % 8 != 0)
