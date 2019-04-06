@@ -180,22 +180,13 @@ static void talloc_ctx_walk(const char *ctx, const char *depth,
 DEFUN(show_talloc_ctx, show_talloc_ctx_cmd,
 	BASE_CMD_STR, BASE_CMD_DESCR)
 {
-	struct walk_cb_params *params;
-
-	/* Allocate memory */
-	params = talloc_zero(tall_vty_ctx, struct walk_cb_params);
-	if (!params)
-		return CMD_WARNING;
+	struct walk_cb_params params = { 0 };
 
 	/* Set up callback parameters */
-	params->filter = WALK_FILTER_NONE;
-	params->vty = vty;
+	params.filter = WALK_FILTER_NONE;
+	params.vty = vty;
 
-	talloc_ctx_walk(argv[0], argv[1], params);
-
-	/* Free memory */
-	talloc_free(params);
-
+	talloc_ctx_walk(argv[0], argv[1], &params);
 	return CMD_SUCCESS;
 }
 
@@ -204,31 +195,22 @@ DEFUN(show_talloc_ctx_filter, show_talloc_ctx_filter_cmd,
 	"Filter chunks using regular expression\n"
 	"Regular expression\n")
 {
-	struct walk_cb_params *params;
+	struct walk_cb_params params = { 0 };
 	int rc;
 
-	/* Allocate memory */
-	params = talloc_zero(tall_vty_ctx, struct walk_cb_params);
-	if (!params)
-		return CMD_WARNING;
-
 	/* Attempt to compile a regular expression */
-	rc = regcomp(&params->regexp, argv[2], 0);
+	rc = regcomp(&params.regexp, argv[2], 0);
 	if (rc) {
 		vty_out(vty, "Invalid expression%s", VTY_NEWLINE);
-		talloc_free(params);
 		return CMD_WARNING;
 	}
 
 	/* Set up callback parameters */
-	params->filter = WALK_FILTER_REGEXP;
-	params->vty = vty;
+	params.filter = WALK_FILTER_REGEXP;
+	params.vty = vty;
 
-	talloc_ctx_walk(argv[0], argv[1], params);
-
-	/* Free memory */
-	regfree(&params->regexp);
-	talloc_free(params);
+	talloc_ctx_walk(argv[0], argv[1], &params);
+	regfree(&params.regexp);
 
 	return CMD_SUCCESS;
 }
@@ -238,31 +220,21 @@ DEFUN(show_talloc_ctx_tree, show_talloc_ctx_tree_cmd,
 	"Display only a specific memory chunk\n"
 	"Chunk address (e.g. 0xdeadbeef)\n")
 {
-	struct walk_cb_params *params;
+	struct walk_cb_params params = { 0 };
 	int rc;
 
-	/* Allocate memory */
-	params = talloc_zero(tall_vty_ctx, struct walk_cb_params);
-	if (!params)
-		return CMD_WARNING;
-
 	/* Attempt to parse an address */
-	rc = sscanf(argv[2], "%p", &params->chunk_ptr);
+	rc = sscanf(argv[2], "%p", &params.chunk_ptr);
 	if (rc != 1) {
 		vty_out(vty, "Invalid chunk address%s", VTY_NEWLINE);
-		talloc_free(params);
 		return CMD_WARNING;
 	}
 
 	/* Set up callback parameters */
-	params->filter = WALK_FILTER_TREE;
-	params->vty = vty;
+	params.filter = WALK_FILTER_TREE;
+	params.vty = vty;
 
-	talloc_ctx_walk(argv[0], argv[1], params);
-
-	/* Free memory */
-	talloc_free(params);
-
+	talloc_ctx_walk(argv[0], argv[1], &params);
 	return CMD_SUCCESS;
 }
 
