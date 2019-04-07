@@ -710,6 +710,12 @@ void _osmo_fsm_inst_term(struct osmo_fsm_inst *fi,
 	struct osmo_fsm_inst *parent;
 	uint32_t parent_term_event = fi->proc.parent_term_event;
 
+	if (fi->proc.terminating) {
+		LOGPFSMSRC(fi, file, line, "Ignoring trigger to terminate: already terminating\n");
+		return;
+	}
+	fi->proc.terminating = true;
+
 	LOGPFSMSRC(fi, file, line, "Terminating (cause = %s)\n",
 		   osmo_fsm_term_cause_name(cause));
 

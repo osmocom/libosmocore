@@ -10,3 +10,4 @@
 libosmogb	gprs_ns_inst		Adding bss_sns_fi member for IP-SNS support
 libosmogb	gprs_nsvc		Adding sig_weight and data_weight members for IP-SNS support
 libosmogb	various new symbols	Adding functions related to IP-SNS support
+libosmocore	osmo_fsm_inst		Add flag proc.terminating (ABI change)

@@ -114,6 +114,8 @@ struct osmo_fsm_inst {
 		struct llist_head children;
 		/*! \ref llist_head linked to parent->proc.children */
 		struct llist_head child;
+		/*! Indicator whether osmo_fsm_inst_term() was already invoked on this instance. */
+		bool terminating;
 	} proc;
 };
 

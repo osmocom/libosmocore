@@ -41,6 +41,310 @@ DLGLOBAL DEBUG 5 (__twig0a.cleanup(),other.alive(),other.destroying_onenter(),ot
 DLGLOBAL DEBUG test(_branch0){alive}: state_chg to destroying
 DLGLOBAL DEBUG 6 (__twig0a.cleanup(),other.alive(),other.destroying_onenter(),other.cleanup(),_branch0.alive(),_branch0.destroying_onenter())
 DLGLOBAL DEBUG test(_branch0){destroying}: destroying_onenter() from alive
+DLGLOBAL DEBUG test(_branch0){destroying}: Ignoring trigger to terminate: already terminating
+DLGLOBAL DEBUG 5 (__twig0a.cleanup(),other.alive(),other.destroying_onenter(),other.cleanup(),_branch0.alive())
+DLGLOBAL DEBUG 4 (__twig0a.cleanup(),other.alive(),other.destroying_onenter(),other.cleanup())
+DLGLOBAL DEBUG test(other){destroying}: cleanup() done
+DLGLOBAL DEBUG 3 (__twig0a.cleanup(),other.alive(),other.destroying_onenter())
+DLGLOBAL DEBUG test(other){destroying}: Freeing instance
+DLGLOBAL DEBUG test(other){destroying}: Deallocated
+DLGLOBAL DEBUG 2 (__twig0a.cleanup(),other.alive())
+DLGLOBAL DEBUG 1 (__twig0a.cleanup())
+DLGLOBAL DEBUG test(_branch0){destroying}: Received Event EV_CHILD_GONE
+DLGLOBAL DEBUG 2 (__twig0a.cleanup(),_branch0.destroying())
+DLGLOBAL DEBUG test(_branch0){destroying}: destroying(EV_CHILD_GONE)
+DLGLOBAL DEBUG 3 (__twig0a.cleanup(),_branch0.destroying(),_branch0.child_gone())
+DLGLOBAL DEBUG test(_branch0){destroying}: EV_CHILD_GONE: Dropped reference _branch0.child[0] = __twig0a
+DLGLOBAL DEBUG test(_branch0){destroying}: No more children
+DLGLOBAL DEBUG 2 (__twig0a.cleanup(),_branch0.destroying())
+DLGLOBAL DEBUG 1 (__twig0a.cleanup())
+DLGLOBAL DEBUG test(__twig0a){alive}: cleanup() done
+DLGLOBAL DEBUG 0 (-)
+DLGLOBAL DEBUG test(__twig0a){alive}: Freeing instance
+DLGLOBAL DEBUG test(__twig0a){alive}: Deallocated
+DLGLOBAL DEBUG 1 (_branch0.cleanup())
+DLGLOBAL DEBUG test(_branch0){destroying}: cleanup()
+DLGLOBAL DEBUG test(_branch0){destroying}: scene forgets _branch0
+DLGLOBAL DEBUG test(_branch0){destroying}: cleanup() done
+DLGLOBAL DEBUG 0 (-)
+DLGLOBAL DEBUG test(_branch0){destroying}: Freeing instance
+DLGLOBAL DEBUG test(_branch0){destroying}: Deallocated
+DLGLOBAL DEBUG scene_alloc()
+DLGLOBAL DEBUG test(_branch0){alive}: Allocated
+DLGLOBAL DEBUG test(_branch0){alive}: Allocated
+DLGLOBAL DEBUG test(_branch0){alive}: is child of test(_branch0)
+DLGLOBAL DEBUG test(other){alive}: Allocated
+DLGLOBAL DEBUG test(_branch0){alive}: _branch0.other[0] = other
+DLGLOBAL DEBUG test(other){alive}: other.other[0] = _branch0
+DLGLOBAL DEBUG test(__twig0a){alive}: __twig0a.other[0] = other
+DLGLOBAL DEBUG test(other){alive}: other.other[1] = __twig0a
+DLGLOBAL DEBUG --- Test disabled: object 0 was not created. Cleaning up.
+DLGLOBAL DEBUG test(_branch0){alive}: Terminating (cause = OSMO_FSM_TERM_ERROR)
+DLGLOBAL DEBUG test(_branch0){alive}: pre_term()
+DLGLOBAL DEBUG test(__twig0a){alive}: Terminating (cause = OSMO_FSM_TERM_PARENT)
+DLGLOBAL DEBUG test(__twig0a){alive}: pre_term()
+DLGLOBAL DEBUG test(__twig0a){alive}: Removing from parent test(_branch0)
+DLGLOBAL DEBUG 1 (__twig0a.cleanup())
+DLGLOBAL DEBUG test(__twig0a){alive}: cleanup()
+DLGLOBAL DEBUG test(__twig0a){alive}: scene forgets __twig0a
+DLGLOBAL DEBUG test(__twig0a){alive}: removing reference __twig0a.other[0] -> other
+DLGLOBAL DEBUG test(other){alive}: Received Event EV_OTHER_GONE
+DLGLOBAL DEBUG 2 (__twig0a.cleanup(),other.alive())
+DLGLOBAL DEBUG test(other){alive}: alive(EV_OTHER_GONE)
+DLGLOBAL DEBUG 3 (__twig0a.cleanup(),other.alive(),other.other_gone())
+DLGLOBAL DEBUG test(other){alive}: EV_OTHER_GONE: Dropped reference other.other[1] = __twig0a
+DLGLOBAL DEBUG 2 (__twig0a.cleanup(),other.alive())
+DLGLOBAL DEBUG test(other){alive}: state_chg to destroying
+DLGLOBAL DEBUG 3 (__twig0a.cleanup(),other.alive(),other.destroying_onenter())
+DLGLOBAL DEBUG test(other){destroying}: destroying_onenter() from alive
+DLGLOBAL DEBUG test(other){destroying}: Terminating (cause = OSMO_FSM_TERM_REGULAR)
+DLGLOBAL DEBUG test(other){destroying}: pre_term()
+DLGLOBAL DEBUG 4 (__twig0a.cleanup(),other.alive(),other.destroying_onenter(),other.cleanup())
+DLGLOBAL DEBUG test(other){destroying}: cleanup()
+DLGLOBAL DEBUG test(other){destroying}: scene forgets other
+DLGLOBAL DEBUG test(other){destroying}: removing reference other.other[0] -> _branch0
+DLGLOBAL DEBUG test(_branch0){alive}: Received Event EV_OTHER_GONE
+DLGLOBAL DEBUG 5 (__twig0a.cleanup(),other.alive(),other.destroying_onenter(),other.cleanup(),_branch0.alive())
+DLGLOBAL DEBUG test(_branch0){alive}: alive(EV_OTHER_GONE)
+DLGLOBAL DEBUG 6 (__twig0a.cleanup(),other.alive(),other.destroying_onenter(),other.cleanup(),_branch0.alive(),_branch0.other_gone())
+DLGLOBAL DEBUG test(_branch0){alive}: EV_OTHER_GONE: Dropped reference _branch0.other[0] = other
+DLGLOBAL DEBUG 5 (__twig0a.cleanup(),other.alive(),other.destroying_onenter(),other.cleanup(),_branch0.alive())
+DLGLOBAL DEBUG test(_branch0){alive}: state_chg to destroying
+DLGLOBAL DEBUG 6 (__twig0a.cleanup(),other.alive(),other.destroying_onenter(),other.cleanup(),_branch0.alive(),_branch0.destroying_onenter())
+DLGLOBAL DEBUG test(_branch0){destroying}: destroying_onenter() from alive
+DLGLOBAL DEBUG test(_branch0){destroying}: Ignoring trigger to terminate: already terminating
+DLGLOBAL DEBUG 5 (__twig0a.cleanup(),other.alive(),other.destroying_onenter(),other.cleanup(),_branch0.alive())
+DLGLOBAL DEBUG 4 (__twig0a.cleanup(),other.alive(),other.destroying_onenter(),other.cleanup())
+DLGLOBAL DEBUG test(other){destroying}: cleanup() done
+DLGLOBAL DEBUG 3 (__twig0a.cleanup(),other.alive(),other.destroying_onenter())
+DLGLOBAL DEBUG test(other){destroying}: Freeing instance
+DLGLOBAL DEBUG test(other){destroying}: Deallocated
+DLGLOBAL DEBUG 2 (__twig0a.cleanup(),other.alive())
+DLGLOBAL DEBUG 1 (__twig0a.cleanup())
+DLGLOBAL DEBUG test(_branch0){destroying}: Received Event EV_CHILD_GONE
+DLGLOBAL DEBUG 2 (__twig0a.cleanup(),_branch0.destroying())
+DLGLOBAL DEBUG test(_branch0){destroying}: destroying(EV_CHILD_GONE)
+DLGLOBAL DEBUG 3 (__twig0a.cleanup(),_branch0.destroying(),_branch0.child_gone())
+DLGLOBAL DEBUG test(_branch0){destroying}: EV_CHILD_GONE: Dropped reference _branch0.child[0] = __twig0a
+DLGLOBAL DEBUG test(_branch0){destroying}: No more children
+DLGLOBAL DEBUG 2 (__twig0a.cleanup(),_branch0.destroying())
+DLGLOBAL DEBUG 1 (__twig0a.cleanup())
+DLGLOBAL DEBUG test(__twig0a){alive}: cleanup() done
+DLGLOBAL DEBUG 0 (-)
+DLGLOBAL DEBUG test(__twig0a){alive}: Freeing instance
+DLGLOBAL DEBUG test(__twig0a){alive}: Deallocated
+DLGLOBAL DEBUG 1 (_branch0.cleanup())
+DLGLOBAL DEBUG test(_branch0){destroying}: cleanup()
+DLGLOBAL DEBUG test(_branch0){destroying}: scene forgets _branch0
+DLGLOBAL DEBUG test(_branch0){destroying}: cleanup() done
+DLGLOBAL DEBUG 0 (-)
+DLGLOBAL DEBUG test(_branch0){destroying}: Freeing instance
+DLGLOBAL DEBUG test(_branch0){destroying}: Deallocated
+DLGLOBAL DEBUG scene_alloc()
+DLGLOBAL DEBUG test(_branch0){alive}: Allocated
+DLGLOBAL DEBUG test(_branch0){alive}: Allocated
+DLGLOBAL DEBUG test(_branch0){alive}: is child of test(_branch0)
+DLGLOBAL DEBUG test(other){alive}: Allocated
+DLGLOBAL DEBUG test(_branch0){alive}: _branch0.other[0] = other
+DLGLOBAL DEBUG test(other){alive}: other.other[0] = _branch0
+DLGLOBAL DEBUG test(__twig0a){alive}: __twig0a.other[0] = other
+DLGLOBAL DEBUG test(other){alive}: other.other[1] = __twig0a
+DLGLOBAL DEBUG ------ before term cascade, got:
+DLGLOBAL DEBUG   _branch0
+DLGLOBAL DEBUG   __twig0a
+DLGLOBAL DEBUG   other
+DLGLOBAL DEBUG ---
+DLGLOBAL DEBUG --- term at _branch0
+DLGLOBAL DEBUG test(_branch0){alive}: Terminating (cause = OSMO_FSM_TERM_REGULAR)
+DLGLOBAL DEBUG test(_branch0){alive}: pre_term()
+DLGLOBAL DEBUG test(__twig0a){alive}: Terminating (cause = OSMO_FSM_TERM_PARENT)
+DLGLOBAL DEBUG test(__twig0a){alive}: pre_term()
+DLGLOBAL DEBUG test(__twig0a){alive}: Removing from parent test(_branch0)
+DLGLOBAL DEBUG 1 (__twig0a.cleanup())
+DLGLOBAL DEBUG test(__twig0a){alive}: cleanup()
+DLGLOBAL DEBUG test(__twig0a){alive}: scene forgets __twig0a
+DLGLOBAL DEBUG test(__twig0a){alive}: removing reference __twig0a.other[0] -> other
+DLGLOBAL DEBUG test(other){alive}: Received Event EV_OTHER_GONE
+DLGLOBAL DEBUG 2 (__twig0a.cleanup(),other.alive())
+DLGLOBAL DEBUG test(other){alive}: alive(EV_OTHER_GONE)
+DLGLOBAL DEBUG 3 (__twig0a.cleanup(),other.alive(),other.other_gone())
+DLGLOBAL DEBUG test(other){alive}: EV_OTHER_GONE: Dropped reference other.other[1] = __twig0a
+DLGLOBAL DEBUG 2 (__twig0a.cleanup(),other.alive())
+DLGLOBAL DEBUG test(other){alive}: state_chg to destroying
+DLGLOBAL DEBUG 3 (__twig0a.cleanup(),other.alive(),other.destroying_onenter())
+DLGLOBAL DEBUG test(other){destroying}: destroying_onenter() from alive
+DLGLOBAL DEBUG test(other){destroying}: Terminating (cause = OSMO_FSM_TERM_REGULAR)
+DLGLOBAL DEBUG test(other){destroying}: pre_term()
+DLGLOBAL DEBUG 4 (__twig0a.cleanup(),other.alive(),other.destroying_onenter(),other.cleanup())
+DLGLOBAL DEBUG test(other){destroying}: cleanup()
+DLGLOBAL DEBUG test(other){destroying}: scene forgets other
+DLGLOBAL DEBUG test(other){destroying}: removing reference other.other[0] -> _branch0
+DLGLOBAL DEBUG test(_branch0){alive}: Received Event EV_OTHER_GONE
+DLGLOBAL DEBUG 5 (__twig0a.cleanup(),other.alive(),other.destroying_onenter(),other.cleanup(),_branch0.alive())
+DLGLOBAL DEBUG test(_branch0){alive}: alive(EV_OTHER_GONE)
+DLGLOBAL DEBUG 6 (__twig0a.cleanup(),other.alive(),other.destroying_onenter(),other.cleanup(),_branch0.alive(),_branch0.other_gone())
+DLGLOBAL DEBUG test(_branch0){alive}: EV_OTHER_GONE: Dropped reference _branch0.other[0] = other
+DLGLOBAL DEBUG 5 (__twig0a.cleanup(),other.alive(),other.destroying_onenter(),other.cleanup(),_branch0.alive())
+DLGLOBAL DEBUG test(_branch0){alive}: state_chg to destroying
+DLGLOBAL DEBUG 6 (__twig0a.cleanup(),other.alive(),other.destroying_onenter(),other.cleanup(),_branch0.alive(),_branch0.destroying_onenter())
+DLGLOBAL DEBUG test(_branch0){destroying}: destroying_onenter() from alive
+DLGLOBAL DEBUG test(_branch0){destroying}: Ignoring trigger to terminate: already terminating
+DLGLOBAL DEBUG 5 (__twig0a.cleanup(),other.alive(),other.destroying_onenter(),other.cleanup(),_branch0.alive())
+DLGLOBAL DEBUG 4 (__twig0a.cleanup(),other.alive(),other.destroying_onenter(),other.cleanup())
+DLGLOBAL DEBUG test(other){destroying}: cleanup() done
+DLGLOBAL DEBUG 3 (__twig0a.cleanup(),other.alive(),other.destroying_onenter())
+DLGLOBAL DEBUG test(other){destroying}: Freeing instance
+DLGLOBAL DEBUG test(other){destroying}: Deallocated
+DLGLOBAL DEBUG 2 (__twig0a.cleanup(),other.alive())
+DLGLOBAL DEBUG 1 (__twig0a.cleanup())
+DLGLOBAL DEBUG test(_branch0){destroying}: Received Event EV_CHILD_GONE
+DLGLOBAL DEBUG 2 (__twig0a.cleanup(),_branch0.destroying())
+DLGLOBAL DEBUG test(_branch0){destroying}: destroying(EV_CHILD_GONE)
+DLGLOBAL DEBUG 3 (__twig0a.cleanup(),_branch0.destroying(),_branch0.child_gone())
+DLGLOBAL DEBUG test(_branch0){destroying}: EV_CHILD_GONE: Dropped reference _branch0.child[0] = __twig0a
+DLGLOBAL DEBUG test(_branch0){destroying}: No more children
+DLGLOBAL DEBUG 2 (__twig0a.cleanup(),_branch0.destroying())
+DLGLOBAL DEBUG 1 (__twig0a.cleanup())
+DLGLOBAL DEBUG test(__twig0a){alive}: cleanup() done
+DLGLOBAL DEBUG 0 (-)
+DLGLOBAL DEBUG test(__twig0a){alive}: Freeing instance
+DLGLOBAL DEBUG test(__twig0a){alive}: Deallocated
+DLGLOBAL DEBUG 1 (_branch0.cleanup())
+DLGLOBAL DEBUG test(_branch0){destroying}: cleanup()
+DLGLOBAL DEBUG test(_branch0){destroying}: scene forgets _branch0
+DLGLOBAL DEBUG test(_branch0){destroying}: cleanup() done
+DLGLOBAL DEBUG 0 (-)
+DLGLOBAL DEBUG test(_branch0){destroying}: Freeing instance
+DLGLOBAL DEBUG test(_branch0){destroying}: Deallocated
+DLGLOBAL DEBUG --- after term cascade:
+DLGLOBAL DEBUG --- all deallocated.
+DLGLOBAL DEBUG scene_alloc()
+DLGLOBAL DEBUG test(_branch0){alive}: Allocated
+DLGLOBAL DEBUG test(_branch0){alive}: Allocated
+DLGLOBAL DEBUG test(_branch0){alive}: is child of test(_branch0)
+DLGLOBAL DEBUG test(other){alive}: Allocated
+DLGLOBAL DEBUG test(_branch0){alive}: _branch0.other[0] = other
+DLGLOBAL DEBUG test(other){alive}: other.other[0] = _branch0
+DLGLOBAL DEBUG test(__twig0a){alive}: __twig0a.other[0] = other
+DLGLOBAL DEBUG test(other){alive}: other.other[1] = __twig0a
+DLGLOBAL DEBUG ------ before destroy-event cascade, got:
+DLGLOBAL DEBUG   _branch0
+DLGLOBAL DEBUG   __twig0a
+DLGLOBAL DEBUG   other
+DLGLOBAL DEBUG ---
+DLGLOBAL DEBUG --- destroy-event at _branch0
+DLGLOBAL DEBUG test(_branch0){alive}: Received Event EV_DESTROY
+DLGLOBAL DEBUG 1 (_branch0.alive())
+DLGLOBAL DEBUG test(_branch0){alive}: alive(EV_DESTROY)
+DLGLOBAL DEBUG test(_branch0){alive}: state_chg to destroying
+DLGLOBAL DEBUG 2 (_branch0.alive(),_branch0.destroying_onenter())
+DLGLOBAL DEBUG test(_branch0){destroying}: destroying_onenter() from alive
+DLGLOBAL DEBUG test(_branch0){destroying}: Terminating (cause = OSMO_FSM_TERM_REGULAR)
+DLGLOBAL DEBUG test(_branch0){destroying}: pre_term()
+DLGLOBAL DEBUG test(__twig0a){alive}: Terminating (cause = OSMO_FSM_TERM_PARENT)
+DLGLOBAL DEBUG test(__twig0a){alive}: pre_term()
+DLGLOBAL DEBUG test(__twig0a){alive}: Removing from parent test(_branch0)
+DLGLOBAL DEBUG 3 (_branch0.alive(),_branch0.destroying_onenter(),__twig0a.cleanup())
+DLGLOBAL DEBUG test(__twig0a){alive}: cleanup()
+DLGLOBAL DEBUG test(__twig0a){alive}: scene forgets __twig0a
+DLGLOBAL DEBUG test(__twig0a){alive}: removing reference __twig0a.other[0] -> other
+DLGLOBAL DEBUG test(other){alive}: Received Event EV_OTHER_GONE
+DLGLOBAL DEBUG 4 (_branch0.alive(),_branch0.destroying_onenter(),__twig0a.cleanup(),other.alive())
+DLGLOBAL DEBUG test(other){alive}: alive(EV_OTHER_GONE)
+DLGLOBAL DEBUG 5 (_branch0.alive(),_branch0.destroying_onenter(),__twig0a.cleanup(),other.alive(),other.other_gone())
+DLGLOBAL DEBUG test(other){alive}: EV_OTHER_GONE: Dropped reference other.other[1] = __twig0a
+DLGLOBAL DEBUG 4 (_branch0.alive(),_branch0.destroying_onenter(),__twig0a.cleanup(),other.alive())
+DLGLOBAL DEBUG test(other){alive}: state_chg to destroying
+DLGLOBAL DEBUG 5 (_branch0.alive(),_branch0.destroying_onenter(),__twig0a.cleanup(),other.alive(),other.destroying_onenter())
+DLGLOBAL DEBUG test(other){destroying}: destroying_onenter() from alive
+DLGLOBAL DEBUG test(other){destroying}: Terminating (cause = OSMO_FSM_TERM_REGULAR)
+DLGLOBAL DEBUG test(other){destroying}: pre_term()
+DLGLOBAL DEBUG 6 (_branch0.alive(),_branch0.destroying_onenter(),__twig0a.cleanup(),other.alive(),other.destroying_onenter(),other.cleanup())
+DLGLOBAL DEBUG test(other){destroying}: cleanup()
+DLGLOBAL DEBUG test(other){destroying}: scene forgets other
+DLGLOBAL DEBUG test(other){destroying}: removing reference other.other[0] -> _branch0
+DLGLOBAL DEBUG test(_branch0){destroying}: Received Event EV_OTHER_GONE
+DLGLOBAL DEBUG 7 (_branch0.alive(),_branch0.destroying_onenter(),__twig0a.cleanup(),other.alive(),other.destroying_onenter(),other.cleanup(),_
+DLGLOBAL DEBUG test(_branch0){destroying}: destroying(EV_OTHER_GONE)
+DLGLOBAL DEBUG 8 (_branch0.alive(),_branch0.destroying_onenter(),__twig0a.cleanup(),other.alive(),other.destroying_onenter(),other.cleanup(),_
+DLGLOBAL DEBUG test(_branch0){destroying}: EV_OTHER_GONE: Dropped reference _branch0.other[0] = other
+DLGLOBAL DEBUG 7 (_branch0.alive(),_branch0.destroying_onenter(),__twig0a.cleanup(),other.alive(),other.destroying_onenter(),other.cleanup(),_
+DLGLOBAL DEBUG 6 (_branch0.alive(),_branch0.destroying_onenter(),__twig0a.cleanup(),other.alive(),other.destroying_onenter(),other.cleanup())
+DLGLOBAL DEBUG test(other){destroying}: cleanup() done
+DLGLOBAL DEBUG 5 (_branch0.alive(),_branch0.destroying_onenter(),__twig0a.cleanup(),other.alive(),other.destroying_onenter())
+DLGLOBAL DEBUG test(other){destroying}: Freeing instance
+DLGLOBAL DEBUG test(other){destroying}: Deallocated
+DLGLOBAL DEBUG 4 (_branch0.alive(),_branch0.destroying_onenter(),__twig0a.cleanup(),other.alive())
+DLGLOBAL DEBUG 3 (_branch0.alive(),_branch0.destroying_onenter(),__twig0a.cleanup())
+DLGLOBAL DEBUG test(_branch0){destroying}: Received Event EV_CHILD_GONE
+DLGLOBAL DEBUG 4 (_branch0.alive(),_branch0.destroying_onenter(),__twig0a.cleanup(),_branch0.destroying())
+DLGLOBAL DEBUG test(_branch0){destroying}: destroying(EV_CHILD_GONE)
+DLGLOBAL DEBUG 5 (_branch0.alive(),_branch0.destroying_onenter(),__twig0a.cleanup(),_branch0.destroying(),_branch0.child_gone())
+DLGLOBAL DEBUG test(_branch0){destroying}: EV_CHILD_GONE: Dropped reference _branch0.child[0] = __twig0a
+DLGLOBAL DEBUG test(_branch0){destroying}: No more children
+DLGLOBAL DEBUG 4 (_branch0.alive(),_branch0.destroying_onenter(),__twig0a.cleanup(),_branch0.destroying())
+DLGLOBAL DEBUG 3 (_branch0.alive(),_branch0.destroying_onenter(),__twig0a.cleanup())
+DLGLOBAL DEBUG test(__twig0a){alive}: cleanup() done
+DLGLOBAL DEBUG 2 (_branch0.alive(),_branch0.destroying_onenter())
+DLGLOBAL DEBUG test(__twig0a){alive}: Freeing instance
+DLGLOBAL DEBUG test(__twig0a){alive}: Deallocated
+DLGLOBAL DEBUG 3 (_branch0.alive(),_branch0.destroying_onenter(),_branch0.cleanup())
+DLGLOBAL DEBUG test(_branch0){destroying}: cleanup()
+DLGLOBAL DEBUG test(_branch0){destroying}: scene forgets _branch0
+DLGLOBAL DEBUG test(_branch0){destroying}: cleanup() done
+DLGLOBAL DEBUG 2 (_branch0.alive(),_branch0.destroying_onenter())
+DLGLOBAL DEBUG test(_branch0){destroying}: Freeing instance
+DLGLOBAL DEBUG test(_branch0){destroying}: Deallocated
+DLGLOBAL DEBUG 1 (_branch0.alive())
+DLGLOBAL DEBUG 0 (-)
+DLGLOBAL DEBUG --- after destroy-event cascade:
+DLGLOBAL DEBUG --- all deallocated.
+DLGLOBAL DEBUG scene_alloc()
+DLGLOBAL DEBUG test(_branch0){alive}: Allocated
+DLGLOBAL DEBUG test(_branch0){alive}: Allocated
+DLGLOBAL DEBUG test(_branch0){alive}: is child of test(_branch0)
+DLGLOBAL DEBUG test(other){alive}: Allocated
+DLGLOBAL DEBUG test(_branch0){alive}: _branch0.other[0] = other
+DLGLOBAL DEBUG test(other){alive}: other.other[0] = _branch0
+DLGLOBAL DEBUG test(__twig0a){alive}: __twig0a.other[0] = other
+DLGLOBAL DEBUG test(other){alive}: other.other[1] = __twig0a
+DLGLOBAL DEBUG ------ before term cascade, got:
+DLGLOBAL DEBUG   _branch0
+DLGLOBAL DEBUG   __twig0a
+DLGLOBAL DEBUG   other
+DLGLOBAL DEBUG ---
+DLGLOBAL DEBUG --- term at __twig0a
+DLGLOBAL DEBUG test(__twig0a){alive}: Terminating (cause = OSMO_FSM_TERM_REGULAR)
+DLGLOBAL DEBUG test(__twig0a){alive}: pre_term()
+DLGLOBAL DEBUG test(__twig0a){alive}: Removing from parent test(_branch0)
+DLGLOBAL DEBUG 1 (__twig0a.cleanup())
+DLGLOBAL DEBUG test(__twig0a){alive}: cleanup()
+DLGLOBAL DEBUG test(__twig0a){alive}: scene forgets __twig0a
+DLGLOBAL DEBUG test(__twig0a){alive}: removing reference __twig0a.other[0] -> other
+DLGLOBAL DEBUG test(other){alive}: Received Event EV_OTHER_GONE
+DLGLOBAL DEBUG 2 (__twig0a.cleanup(),other.alive())
+DLGLOBAL DEBUG test(other){alive}: alive(EV_OTHER_GONE)
+DLGLOBAL DEBUG 3 (__twig0a.cleanup(),other.alive(),other.other_gone())
+DLGLOBAL DEBUG test(other){alive}: EV_OTHER_GONE: Dropped reference other.other[1] = __twig0a
+DLGLOBAL DEBUG 2 (__twig0a.cleanup(),other.alive())
+DLGLOBAL DEBUG test(other){alive}: state_chg to destroying
+DLGLOBAL DEBUG 3 (__twig0a.cleanup(),other.alive(),other.destroying_onenter())
+DLGLOBAL DEBUG test(other){destroying}: destroying_onenter() from alive
+DLGLOBAL DEBUG test(other){destroying}: Terminating (cause = OSMO_FSM_TERM_REGULAR)
+DLGLOBAL DEBUG test(other){destroying}: pre_term()
+DLGLOBAL DEBUG 4 (__twig0a.cleanup(),other.alive(),other.destroying_onenter(),other.cleanup())
+DLGLOBAL DEBUG test(other){destroying}: cleanup()
+DLGLOBAL DEBUG test(other){destroying}: scene forgets other
+DLGLOBAL DEBUG test(other){destroying}: removing reference other.other[0] -> _branch0
+DLGLOBAL DEBUG test(_branch0){alive}: Received Event EV_OTHER_GONE
+DLGLOBAL DEBUG 5 (__twig0a.cleanup(),other.alive(),other.destroying_onenter(),other.cleanup(),_branch0.alive())
+DLGLOBAL DEBUG test(_branch0){alive}: alive(EV_OTHER_GONE)
+DLGLOBAL DEBUG 6 (__twig0a.cleanup(),other.alive(),other.destroying_onenter(),other.cleanup(),_branch0.alive(),_branch0.other_gone())
+DLGLOBAL DEBUG test(_branch0){alive}: EV_OTHER_GONE: Dropped reference _branch0.other[0] = other
+DLGLOBAL DEBUG 5 (__twig0a.cleanup(),other.alive(),other.destroying_onenter(),other.cleanup(),_branch0.alive())
+DLGLOBAL DEBUG test(_branch0){alive}: state_chg to destroying
+DLGLOBAL DEBUG 6 (__twig0a.cleanup(),other.alive(),other.destroying_onenter(),other.cleanup(),_branch0.alive(),_branch0.destroying_onenter())
+DLGLOBAL DEBUG test(_branch0){destroying}: destroying_onenter() from alive
 DLGLOBAL DEBUG test(_branch0){destroying}: Terminating (cause = OSMO_FSM_TERM_REGULAR)
 DLGLOBAL DEBUG test(_branch0){destroying}: pre_term()
 DLGLOBAL DEBUG 7 (__twig0a.cleanup(),other.alive(),other.destroying_onenter(),other.cleanup(),_branch0.alive(),_branch0.destroying_onenter(),_
@@ -57,49 +361,47 @@ DLGLOBAL DEBUG 3 (__twig0a.cleanup(),other.alive(),other.destroying_onenter())
 DLGLOBAL DEBUG test(other){destroying}: Freeing instance
 DLGLOBAL DEBUG test(other){destroying}: Deallocated
 =================================================================
-==12545==ERROR: AddressSanitizer: heap-use-after-free on address 0x6120000003a8 at pc 0x7fa96fdc9149 bp 0x7fff6045b000 sp 0x7fff6045aff8
-WRITE of size 8 at 0x6120000003a8 thread T0
-    #0 0x7fa96fdc9148 in __llist_del ../../../src/libosmocore/include/osmocom/core/linuxlist.h:114
-    #1 0x7fa96fdc9280 in llist_del ../../../src/libosmocore/include/osmocom/core/linuxlist.h:126
-    #2 0x7fa96fdcddaa in osmo_fsm_inst_free ../../../src/libosmocore/src/fsm.c:404
-    #3 0x7fa96fdd599c in _osmo_fsm_inst_term ../../../src/libosmocore/src/fsm.c:738
-    #4 0x55dde97cb9e3 in destroying_onenter ../../../src/libosmocore/tests/fsm/fsm_dealloc_test.c:177
-    #5 0x7fa96fdd26be in state_chg ../../../src/libosmocore/src/fsm.c:521
-    #6 0x7fa96fdd2770 in _osmo_fsm_inst_state_chg ../../../src/libosmocore/src/fsm.c:577
-    #7 0x55dde97cb2e6 in alive ../../../src/libosmocore/tests/fsm/fsm_dealloc_test.c:151
-    #8 0x7fa96fdd3d2f in _osmo_fsm_inst_dispatch ../../../src/libosmocore/src/fsm.c:685
-    #9 0x55dde97cd0ee in cleanup ../../../src/libosmocore/tests/fsm/fsm_dealloc_test.c:255
-    #10 0x7fa96fdd5192 in _osmo_fsm_inst_term ../../../src/libosmocore/src/fsm.c:733
-    #11 0x7fa96fdd60b1 in _osmo_fsm_inst_term_children ../../../src/libosmocore/src/fsm.c:784
-    #12 0x7fa96fdd475e in _osmo_fsm_inst_term ../../../src/libosmocore/src/fsm.c:720
-    #13 0x55dde97cf5d5 in scene_clean ../../../src/libosmocore/tests/fsm/fsm_dealloc_test.c:392
-    #14 0x55dde97cf92f in test_dealloc ../../../src/libosmocore/tests/fsm/fsm_dealloc_test.c:417
-    #15 0x55dde97cfffe in main ../../../src/libosmocore/tests/fsm/fsm_dealloc_test.c:465
-    #16 0x7fa96eff409a in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x2409a)
-    #17 0x55dde97c7329 in _start (/n/s/dev/make/libosmocore/tests/fsm/fsm_dealloc_test+0x11329)
+==12033==ERROR: AddressSanitizer: heap-use-after-free on address 0x6120000015a8 at pc 0x7f873241e1f9 bp 0x7ffe32f6c8c0 sp 0x7ffe32f6c8b8
+WRITE of size 8 at 0x6120000015a8 thread T0
+    #0 0x7f873241e1f8 in __llist_del ../../../src/libosmocore/include/osmocom/core/linuxlist.h:117
+    #1 0x7f873241e330 in llist_del ../../../src/libosmocore/include/osmocom/core/linuxlist.h:129
+    #2 0x7f8732422e5a in osmo_fsm_inst_free ../../../src/libosmocore/src/fsm.c:404
+    #3 0x7f873242b2e4 in _osmo_fsm_inst_term ../../../src/libosmocore/src/fsm.c:744
+    #4 0x55c9a9fb49e3 in destroying_onenter ../../../src/libosmocore/tests/fsm/fsm_dealloc_test.c:177
+    #5 0x7f873242776e in state_chg ../../../src/libosmocore/src/fsm.c:521
+    #6 0x7f8732427820 in _osmo_fsm_inst_state_chg ../../../src/libosmocore/src/fsm.c:577
+    #7 0x55c9a9fb42e6 in alive ../../../src/libosmocore/tests/fsm/fsm_dealloc_test.c:151
+    #8 0x7f8732428ddf in _osmo_fsm_inst_dispatch ../../../src/libosmocore/src/fsm.c:685
+    #9 0x55c9a9fb60ee in cleanup ../../../src/libosmocore/tests/fsm/fsm_dealloc_test.c:255
+    #10 0x7f873242aada in _osmo_fsm_inst_term ../../../src/libosmocore/src/fsm.c:739
+    #11 0x55c9a9fb87d6 in obj_term ../../../src/libosmocore/tests/fsm/fsm_dealloc_test.c:405
+    #12 0x55c9a9fb8d00 in test_dealloc ../../../src/libosmocore/tests/fsm/fsm_dealloc_test.c:428
+    #13 0x55c9a9fb8ffe in main ../../../src/libosmocore/tests/fsm/fsm_dealloc_test.c:465
+    #14 0x7f873164509a in __libc_start_main (/lib/x86_64-linux-gnu/libc.so.6+0x2409a)
+    #15 0x55c9a9fb0329 in _start (/n/s/dev/make/libosmocore/tests/fsm/fsm_dealloc_test+0x11329)
 
-0x6120000003a8 is located 104 bytes inside of 288-byte region [0x612000000340,0x612000000460)
+0x6120000015a8 is located 104 bytes inside of 296-byte region [0x612000001540,0x612000001668)
 freed by thread T0 here:
-    #0 0x7fa970061b50 in free (/usr/lib/x86_64-linux-gnu/libasan.so.5+0xe8b50)
-    #1 0x7fa96fcbd5d2  (/usr/lib/x86_64-linux-gnu/libtalloc.so.2+0xb5d2)
+    #0 0x7f87326bcfd0 in __interceptor_free (/usr/lib/x86_64-linux-gnu/libasan.so.5+0xe8fd0)
+    #1 0x7f873230f5d2  (/usr/lib/x86_64-linux-gnu/libtalloc.so.2+0xb5d2)
 
 previously allocated by thread T0 here:
-    #0 0x7fa970061ed0 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.5+0xe8ed0)
-    #1 0x7fa96fcbb140 in _talloc_zero (/usr/lib/x86_64-linux-gnu/libtalloc.so.2+0x9140)
+    #0 0x7f87326bd350 in __interceptor_malloc (/usr/lib/x86_64-linux-gnu/libasan.so.5+0xe9350)
+    #1 0x7f873230d140 in _talloc_zero (/usr/lib/x86_64-linux-gnu/libtalloc.so.2+0x9140)
 
-SUMMARY: AddressSanitizer: heap-use-after-free ../../../src/libosmocore/include/osmocom/core/linuxlist.h:114 in __llist_del
+SUMMARY: AddressSanitizer: heap-use-after-free ../../../src/libosmocore/include/osmocom/core/linuxlist.h:117 in __llist_del
 Shadow bytes around the buggy address:
-  0x0c247fff8020: 00 00 00 00 00 00 00 00 00 fa fa fa fa fa fa fa
-  0x0c247fff8030: fa fa fa fa fa fa fa fa fd fd fd fd fd fd fd fd
-  0x0c247fff8040: fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd
-  0x0c247fff8050: fd fd fd fd fd fd fd fd fd fd fd fd fa fa fa fa
-  0x0c247fff8060: fa fa fa fa fa fa fa fa fd fd fd fd fd fd fd fd
-=>0x0c247fff8070: fd fd fd fd fd[fd]fd fd fd fd fd fd fd fd fd fd
-  0x0c247fff8080: fd fd fd fd fd fd fd fd fd fd fd fd fa fa fa fa
-  0x0c247fff8090: fa fa fa fa fa fa fa fa 00 00 00 00 00 00 00 00
-  0x0c247fff80a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-  0x0c247fff80b0: 00 00 00 00 00 00 00 00 00 00 00 00 fa fa fa fa
-  0x0c247fff80c0: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
+  0x0c247fff8260: fd fd fd fd fd fd fd fd fd fd fd fd fd fa fa fa
+  0x0c247fff8270: fa fa fa fa fa fa fa fa fd fd fd fd fd fd fd fd
+  0x0c247fff8280: fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd
+  0x0c247fff8290: fd fd fd fd fd fd fd fd fd fd fd fd fd fa fa fa
+  0x0c247fff82a0: fa fa fa fa fa fa fa fa fd fd fd fd fd fd fd fd
+=>0x0c247fff82b0: fd fd fd fd fd[fd]fd fd fd fd fd fd fd fd fd fd
+  0x0c247fff82c0: fd fd fd fd fd fd fd fd fd fd fd fd fd fa fa fa
+  0x0c247fff82d0: fa fa fa fa fa fa fa fa 00 00 00 00 00 00 00 00
+  0x0c247fff82e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+  0x0c247fff82f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 fa fa fa
+  0x0c247fff8300: fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa fa
 Shadow byte legend (one shadow byte represents 8 application bytes):
   Addressable:           00
   Partially addressable: 01 02 03 04 05 06 07 
@@ -119,4 +421,4 @@ Shadow byte legend (one shadow byte represents 8 application bytes):
   ASan internal:           fe
   Left alloca redzone:     ca
   Right alloca redzone:    cb
-==12545==ABORTING
+==12033==ABORTING
