@@ -890,7 +890,7 @@ char *osmo_dump_gsmtime_buf(char *buf, size_t buf_len, const struct gsm_time *tm
 {
 	snprintf(buf, buf_len, "%06"PRIu32"/%02"PRIu16"/%02"PRIu8"/%02"PRIu8"/%02"PRIu8,
 		 tm->fn, tm->t1, tm->t2, tm->t3, (uint8_t)tm->fn%52);
-	buf[sizeof(buf)-1] = '\0';
+	buf[buf_len-1] = '\0';
 	return buf;
 }
 
