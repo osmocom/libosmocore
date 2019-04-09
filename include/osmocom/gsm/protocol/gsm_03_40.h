@@ -3,6 +3,11 @@
 
 #pragma once
 
+/* SM-TP-UD (User-Data) field may contain up to 140 octets
+ * (or 140 * 8 / 7 = 160 septets). See section 9.2.3.24. */
+#define GSM340_UDL_OCT_MAX 140  /*!< Maximum TP-UD length (in octets) for 7-bit encoding */
+#define GSM340_UDL_SPT_MAX 160  /*!< Maximum TP-UD length (in seplets) for 8-bit and UCS-2 encoding */
+
 /**
  * 9.1.2.5 Type Of Number
  */
