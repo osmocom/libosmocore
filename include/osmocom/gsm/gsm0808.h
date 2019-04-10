@@ -133,7 +133,7 @@ struct gsm0808_handover_required {
 	uint8_t current_channel_type_1;
 
 	bool speech_version_used_present;
-	uint8_t speech_version_used;
+	enum gsm0808_permitted_speech speech_version_used;
 
 	bool old_bss_to_new_bss_info_present;
 	struct gsm0808_old_bss_to_new_bss_info old_bss_to_new_bss_info;
@@ -196,7 +196,7 @@ struct gsm0808_handover_performed {
 	uint8_t chosen_encr_alg;
 
 	bool speech_version_chosen_present;
-	uint8_t speech_version_chosen;
+	enum gsm0808_permitted_speech speech_version_chosen;
 
 	bool speech_codec_chosen_present;
 	struct gsm0808_speech_codec speech_codec_chosen;

@@ -822,7 +822,7 @@ static uint8_t put_old_bss_to_new_bss_information(struct msgb *msg,
 
 /*! Create BSSMAP HANDOVER REQUIRED message.
  * \param[in] params  All information to be encoded.
- * \returns newly allocated msgb with BSSMAP REQUIRED message. */
+ * \returns newly allocated msgb with BSSMAP HANDOVER REQUIRED message. */
 struct msgb *gsm0808_create_handover_required(const struct gsm0808_handover_required *params)
 {
 	struct msgb *msg;
@@ -846,7 +846,7 @@ struct msgb *gsm0808_create_handover_required(const struct gsm0808_handover_requ
 
 	/* Speech Version (Used), 3.2.2.51 */
 	if (params->speech_version_used_present)
-		msgb_tv_fixed_put(msg, GSM0808_IE_SPEECH_VERSION, 1, &params->speech_version_used);
+		msgb_tv_put(msg, GSM0808_IE_SPEECH_VERSION, params->speech_version_used);
 
 	if (params->old_bss_to_new_bss_info_present)
 		put_old_bss_to_new_bss_information(msg, &params->old_bss_to_new_bss_info);

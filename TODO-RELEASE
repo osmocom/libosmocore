@@ -19,3 +19,5 @@ libosmocore	osmo_quote_str(),       On string truncation, these used to print a 
 		osmo_quote_str_buf()	  truncated string. This is no longer the case. e.g. a string 'truncated' in a
 					  9-char buffer used to print '"trunca"\0', which now becomes '"truncat\0'.
 libosmocore	osmo_quote_str_buf2()	New function signature similar to snprintf(), for use with OSMO_STRBUF_APPEND().
+libosmogsm	gsm0808_handover_required	Storage size changed, speech_version_used now an enum.
+		gsm0808_handover_performed	Storage size changed, speech_version_chosen now an enum.
