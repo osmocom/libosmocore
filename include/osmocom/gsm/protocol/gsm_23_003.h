@@ -5,6 +5,9 @@
 /* Chapter 2.2 */
 #define GSM23003_IMSI_MAX_DIGITS	15
 #define GSM23003_IMSI_MIN_DIGITS	6
+/*! The char[] buffer size to completely contain an IMSI including the optional checksum digit as well as the
+ * terminating nul character. */
+#define OSMO_IMSI_BUF_SIZE (GSM23003_IMSI_MAX_DIGITS+2)
 /* Chapter 2.4 */
 #define GSM23003_TMSI_NUM_BYTES		4
 /* Chapter 2.5 */

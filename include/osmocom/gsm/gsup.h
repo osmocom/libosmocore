@@ -232,7 +232,7 @@ struct osmo_gsup_pdp_info {
 /*! parsed/decoded GSUP protocol message */
 struct osmo_gsup_message {
 	enum osmo_gsup_message_type	message_type;
-	char				imsi[GSM23003_IMSI_MAX_DIGITS+2];
+	char				imsi[OSMO_IMSI_BUF_SIZE];
 	enum gsm48_gmm_cause		cause;
 	enum osmo_gsup_cancel_type	cancel_type;
 	int				pdp_info_compl;
