@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdarg.h>
+#include <stdbool.h>
 
 #include <osmocom/core/linuxlist.h>
 
@@ -192,6 +193,7 @@ void vty_init_vtysh (void);
 void vty_reset (void);
 struct vty *vty_new (void);
 struct vty *vty_create (int vty_sock, void *priv);
+bool vty_is_active(struct vty *vty);
 int vty_out (struct vty *, const char *, ...) VTY_PRINTF_ATTRIBUTE(2, 3);
 int vty_out_va(struct vty *vty, const char *format, va_list ap);
 int vty_out_newline(struct vty *);

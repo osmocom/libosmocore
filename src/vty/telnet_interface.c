@@ -197,6 +197,16 @@ static int telnet_new_connection(struct osmo_fd *fd, unsigned int what)
 	return 0;
 }
 
+bool vty_is_active(struct vty *vty)
+{
+	struct telnet_connection *connection;
+	llist_for_each_entry(connection, &active_connections, entry) {
+		if (connection->vty == vty)
+			return true;
+	}
+	return false;
+}
+
 /*! callback from core VTY code about VTY related events */
 void vty_event(enum event event, int sock, struct vty *vty)
 {
