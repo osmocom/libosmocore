@@ -220,6 +220,7 @@ void osmo_fsm_inst_free(struct osmo_fsm_inst *fi);
 
 int osmo_fsm_inst_update_id(struct osmo_fsm_inst *fi, const char *id);
 int osmo_fsm_inst_update_id_f(struct osmo_fsm_inst *fi, const char *fmt, ...);
+int osmo_fsm_inst_update_id_f_sanitize(struct osmo_fsm_inst *fi, char replace_with, const char *fmt, ...);
 
 const char *osmo_fsm_event_name(struct osmo_fsm *fsm, uint32_t event);
 const char *osmo_fsm_inst_name(struct osmo_fsm_inst *fi);

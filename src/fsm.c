@@ -364,6 +364,35 @@ int osmo_fsm_inst_update_id_f(struct osmo_fsm_inst *fi, const char *fmt, ...)
 	return 0;
 }
 
+/*! Change id of the FSM instance using a string format, and ensuring a valid id.
+ * Replace any characters that are not permitted as FSM identifier with replace_with.
+ * \param[in] fi FSM instance.
+ * \param[in] replace_with Character to use instead of non-permitted FSM id characters.
+ *                         Make sure to choose a legal character, e.g. '-'.
+ * \param[in] fmt format string to compose new ID.
+ * \param[in] ... variable argument list for format string.
+ * \returns 0 if the ID was updated, otherwise -EINVAL.
+ */
+int osmo_fsm_inst_update_id_f_sanitize(struct osmo_fsm_inst *fi, char replace_with, const char *fmt, ...)
+{
+	char *id = NULL;
+	va_list ap;
+	int rc;
+
+	if (!fmt)
+		return osmo_fsm_inst_update_id(fi, NULL);
+
+	va_start(ap, fmt);
+	id = talloc_vasprintf(fi, fmt, ap);
+	va_end(ap);
+
+	osmo_identifier_sanitize_buf(id, NULL, replace_with);
+
+	rc = osmo_fsm_inst_update_id(fi, id);
+	talloc_free(id);
+	return rc;
+}
+
 /*! allocate a new instance of a specified FSM
  *  \param[in] fsm Descriptor of the FSM
  *  \param[in] ctx talloc context from which to allocate memory

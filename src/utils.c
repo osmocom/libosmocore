@@ -553,6 +553,8 @@ bool osmo_is_hexstr(const char *str, int min_digits, int max_digits,
 	return true;
 }
 
+static const char osmo_identifier_illegal_chars[] = "., {}[]()<>|~\\^`'\"?=;/+*&%$#!";
+
 /*! Determine if a given identifier is valid, i.e. doesn't contain illegal chars
  *  \param[in] str String to validate
  *  \param[in] sep_chars Permitted separation characters between identifiers.
@@ -561,7 +563,6 @@ bool osmo_is_hexstr(const char *str, int min_digits, int max_digits,
 bool osmo_separated_identifiers_valid(const char *str, const char *sep_chars)
 {
 	/* characters that are illegal in names */
-	static const char illegal_chars[] = "., {}[]()<>|~\\^`'\"?=;/+*&%$#!";
 	unsigned int i;
 	size_t len;
 
@@ -578,7 +579,7 @@ bool osmo_separated_identifiers_valid(const char *str, const char *sep_chars)
 		if (!isprint((int)str[i]))
 			return false;
 		/* check for some explicit reserved control characters */
-		if (strchr(illegal_chars, str[i]))
+		if (strchr(osmo_identifier_illegal_chars, str[i]))
 			return false;
 	}
 
@@ -592,6 +593,25 @@ bool osmo_separated_identifiers_valid(const char *str, const char *sep_chars)
 bool osmo_identifier_valid(const char *str)
 {
 	return osmo_separated_identifiers_valid(str, NULL);
+}
+
+/*! Replace characters in the given string buffer so that it is guaranteed to pass osmo_separated_identifiers_valid().
+ * To guarantee passing osmo_separated_identifiers_valid(), replace_with must not itself be an illegal character. If in
+ * doubt, use '-'.
+ * \param[inout] str  Identifier to sanitize, must be nul terminated and in a writable buffer.
+ * \param[in] sep_chars  Additional characters that are allowed besides osmo_identifier_illegal_chars.
+ * \param[in] replace_with  Replace any illegal characters with this character.
+ */
+void osmo_identifier_sanitize_buf(char *str, const char *sep_chars, char replace_with)
+{
+	char *pos;
+	if (!str)
+		return;
+	for (pos = str; *pos; pos++) {
+		if (strchr(osmo_identifier_illegal_chars, *pos)
+		    || (sep_chars && strchr(sep_chars, *pos)))
+			*pos = replace_with;
+	}
 }
 
 /*! Like osmo_escape_str_buf2, but with unusual ordering of arguments, and may sometimes return string constants instead
