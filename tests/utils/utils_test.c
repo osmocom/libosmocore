@@ -1014,6 +1014,23 @@ void strbuf_test()
 	printf("(need %d chars, had size=63) %s\n", rc, buf);
 }
 
+void strbuf_test_nolen()
+{
+	char buf[20];
+	struct osmo_strbuf sb = { .buf = buf, .len = sizeof(buf) };
+	uint8_t ubits[] = {0, 0, 0, 1, 0, 1, 1, 1, 0, 0, 1, 0, 1, 0, 1, 0};
+	printf("\n%s\n", __func__);
+
+	OSMO_STRBUF_APPEND_NOLEN(sb, osmo_ubit_dump_buf, ubits, sizeof(ubits));
+	printf("%zu: %s (need=%zu)\n", sb.len, buf, sb.chars_needed);
+	OSMO_STRBUF_APPEND_NOLEN(sb, osmo_ubit_dump_buf, ubits, sizeof(ubits));
+	printf("more: %s (need=%zu)\n", buf, sb.chars_needed);
+
+	sb = (struct osmo_strbuf){ .buf = buf, .len = 10 };
+	OSMO_STRBUF_APPEND_NOLEN(sb, osmo_ubit_dump_buf, ubits, sizeof(ubits));
+	printf("%zu: %s (need=%zu)\n", sb.len, buf, sb.chars_needed);
+}
+
 static void startswith_test_str(const char *str, const char *startswith_str, bool expect_rc)
 {
 	bool rc = osmo_str_startswith(str, startswith_str);
@@ -1059,6 +1076,7 @@ int main(int argc, char **argv)
 	osmo_sockaddr_to_str_and_uint_test();
 	osmo_str_tolowupper_test();
 	strbuf_test();
+	strbuf_test_nolen();
 	startswith_test();
 	return 0;
 }

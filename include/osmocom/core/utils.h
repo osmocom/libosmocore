@@ -205,14 +205,14 @@ struct osmo_strbuf {
 #define OSMO_STRBUF_APPEND(STRBUF, func, args...) do { \
 		if (!(STRBUF).pos) \
 			(STRBUF).pos = (STRBUF).buf; \
-		size_t remain = (STRBUF).buf ? (STRBUF).len - ((STRBUF).pos - (STRBUF).buf) : 0; \
-		int l = func((STRBUF).pos, remain, ##args); \
-		if (l < 0 || l > remain) \
+		size_t _sb_remain = (STRBUF).buf ? (STRBUF).len - ((STRBUF).pos - (STRBUF).buf) : 0; \
+		int _sb_l = func((STRBUF).pos, _sb_remain, ##args); \
+		if (_sb_l < 0 || _sb_l > _sb_remain) \
 			(STRBUF).pos = (STRBUF).buf + (STRBUF).len; \
-		else \
-			(STRBUF).pos += l; \
-		if (l > 0) \
-			(STRBUF).chars_needed += l; \
+		else if ((STRBUF).pos) \
+			(STRBUF).pos += _sb_l; \
+		if (_sb_l > 0) \
+			(STRBUF).chars_needed += _sb_l; \
 	} while(0)
 
 /*! Shortcut for OSMO_STRBUF_APPEND() invocation using snprintf().
@@ -236,6 +236,29 @@ struct osmo_strbuf {
  */
 #define OSMO_STRBUF_PRINTF(STRBUF, fmt, args...) \
 	OSMO_STRBUF_APPEND(STRBUF, snprintf, fmt, ##args)
+
+/*! Like OSMO_STRBUF_APPEND(), but for function signatures that return the char* buffer instead of a length.
+ * When using this function, the final STRBUF.chars_needed may not reflect the actual number of characters needed, since
+ * that number cannot be obtained from this kind of function signature.
+ * \param[inout] STRBUF  A struct osmo_strbuf instance.
+ * \param[in] func  A function with a signature of char *func(char *dst, size_t dst_len [, args]) where
+ *                  the returned string is always written to dst.
+ * \param[in] args  Arguments passed to func, if any.
+ */
+#define OSMO_STRBUF_APPEND_NOLEN(STRBUF, func, args...) do { \
+		if (!(STRBUF).pos) \
+			(STRBUF).pos = (STRBUF).buf; \
+		size_t _sb_remain = (STRBUF).buf ? (STRBUF).len - ((STRBUF).pos - (STRBUF).buf) : 0; \
+		if (_sb_remain) { \
+			func((STRBUF).pos, _sb_remain, ##args); \
+		} \
+		size_t _sb_l = (STRBUF).pos ? strnlen((STRBUF).pos, _sb_remain) : 0; \
+		if (_sb_l > _sb_remain) \
+			(STRBUF).pos = (STRBUF).buf + (STRBUF).len; \
+		else if ((STRBUF).pos) \
+			(STRBUF).pos += _sb_l; \
+		(STRBUF).chars_needed += _sb_l; \
+	} while(0)
 
 bool osmo_str_startswith(const char *str, const char *startswith_str);
 
