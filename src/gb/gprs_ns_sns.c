@@ -498,7 +498,7 @@ static void gprs_sns_st_configured(struct osmo_fsm_inst *fi, uint32_t event, voi
 			}
 			/* make a copy as do_sns_delete() will change the array underneath us */
 			ip4_remote = talloc_memdup(fi, gss->ip4_remote,
-						   gss->num_ip4_remote*sizeof(v4_list));
+						   gss->num_ip4_remote*sizeof(*v4_list));
 			for (i = 0; i < gss->num_ip4_remote; i++) {
 				if (ip4_remote[i].ip_addr == ip_addr) {
 					rc = do_sns_delete(fi, &ip4_remote[i]);
