@@ -837,7 +837,7 @@ char *osmo_sock_get_name2_c(const void *ctx, int fd)
 	char *str = talloc_size(ctx, OSMO_SOCK_NAME_MAXLEN);
 	if (!str)
 		return NULL;
-	osmo_sock_get_name_buf(str, sizeof(str), fd);
+	osmo_sock_get_name_buf(str, OSMO_SOCK_NAME_MAXLEN, fd);
 	return str;
 }
 

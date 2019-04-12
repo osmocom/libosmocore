@@ -522,10 +522,11 @@ const char *msgb_hexdump(const struct msgb *msg)
  */
 char *msgb_hexdump_c(const void *ctx, const struct msgb *msg)
 {
-	char *buf = talloc_size(ctx, msgb_length(msg)*3 + 100);
+	size_t buf_len = msgb_length(msg) * 3 + 100;
+	char *buf = talloc_size(ctx, buf_len);
 	if (!buf)
 		return NULL;
-	return msgb_hexdump_buf(buf, sizeof(buf), msg);
+	return msgb_hexdump_buf(buf, buf_len, msg);
 }
 
 /*! Print a string to the end of message buffer.

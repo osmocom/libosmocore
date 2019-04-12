@@ -351,10 +351,11 @@ char *osmo_hexdump(const unsigned char *buf, int len)
  */
 char *osmo_hexdump_c(const void *ctx, const unsigned char *buf, int len)
 {
-	char *hexd_buff = talloc_size(ctx, len*3 + 1);
+	size_t hexd_buff_len = len * 3 + 1;
+	char *hexd_buff = talloc_size(ctx, hexd_buff_len);
 	if (!hexd_buff)
 		return NULL;
-	osmo_hexdump_buf(hexd_buff, sizeof(hexd_buff), buf, len, " ", true);
+	osmo_hexdump_buf(hexd_buff, hexd_buff_len, buf, len, " ", true);
 	return hexd_buff;
 }
 
@@ -389,10 +390,11 @@ char *osmo_hexdump_nospc(const unsigned char *buf, int len)
  */
 char *osmo_hexdump_nospc_c(const void *ctx, const unsigned char *buf, int len)
 {
-	char *hexd_buff = talloc_size(ctx, len*2 + 1);
+	size_t hexd_buff_len = len * 2 + 1;
+	char *hexd_buff = talloc_size(ctx, hexd_buff_len);
 	if (!hexd_buff)
 		return NULL;
-	osmo_hexdump_buf(hexd_buff, sizeof(hexd_buff), buf, len, "", true);
+	osmo_hexdump_buf(hexd_buff, hexd_buff_len, buf, len, "", true);
 	return hexd_buff;
 }
 
@@ -908,10 +910,11 @@ const char *osmo_str_tolower(const char *src)
  */
 char *osmo_str_tolower_c(const void *ctx, const char *src)
 {
-	char *buf = talloc_size(ctx, strlen(src)+1);
+	size_t buf_len = strlen(src) + 1;
+	char *buf = talloc_size(ctx, buf_len);
 	if (!buf)
 		return NULL;
-	osmo_str_tolower_buf(buf, sizeof(buf), src);
+	osmo_str_tolower_buf(buf, buf_len, src);
 	return buf;
 }
 
@@ -966,10 +969,11 @@ const char *osmo_str_toupper(const char *src)
  */
 char *osmo_str_toupper_c(const void *ctx, const char *src)
 {
-	char *buf = talloc_size(ctx, strlen(src)+1);
+	size_t buf_len = strlen(src) + 1;
+	char *buf = talloc_size(ctx, buf_len);
 	if (!buf)
 		return NULL;
-	osmo_str_toupper_buf(buf, sizeof(buf), src);
+	osmo_str_toupper_buf(buf, buf_len, src);
 	return buf;
 }
 
