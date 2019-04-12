@@ -307,6 +307,7 @@ int gsm_septet_encode(uint8_t *result, const char *data)
 		case 0x5d:
 		case 0x7c:
 			result[y++] = 0x1b;
+		/* fall-through */
 		default:
 			result[y] = gsm_7bit_alphabet[ch];
 			break;
