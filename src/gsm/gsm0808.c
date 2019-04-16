@@ -1387,6 +1387,10 @@ static const struct tlv_definition bss_att_tlvdef = {
 		[GSM0808_IE_CN_TO_MS_TRANSP_INFO]	= { TLV_TYPE_TLV },
 		[GSM0808_IE_SELECTED_PLMN_ID]		= { TLV_TYPE_FIXED, 3 },
 		[GSM0808_IE_LAST_USED_EUTRAN_PLMN_ID]	= { TLV_TYPE_FIXED, 3 },
+
+		/* Osmocom extensions */
+		[GSM0808_IE_OSMO_OSMUX_SUPPORT]		= { TLV_TYPE_T },
+		[GSM0808_IE_OSMO_OSMUX_CID]		= { TLV_TYPE_TV },
 	},
 };
 

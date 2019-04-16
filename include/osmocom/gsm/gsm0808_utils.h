@@ -100,6 +100,7 @@ uint8_t gsm0808_enc_aoip_trasp_addr(struct msgb *msg,
 				    const struct sockaddr_storage *ss);
 int gsm0808_dec_aoip_trasp_addr(struct sockaddr_storage *ss,
 				const uint8_t *elem, uint8_t len);
+int gsm0808_dec_osmux_cid(uint8_t *cid, const uint8_t *elem, uint8_t len);
 
 uint8_t gsm0808_enc_lcls(struct msgb *msg, const struct osmo_lcls *lcls);
 int gsm0808_dec_lcls(struct osmo_lcls *lcls, const struct tlv_parsed *tp);

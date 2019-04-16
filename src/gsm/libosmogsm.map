@@ -198,6 +198,7 @@ gsm0808_prepend_dtap_header;
 gsm0808_enc_cause;
 gsm0808_enc_aoip_trasp_addr;
 gsm0808_dec_aoip_trasp_addr;
+gsm0808_dec_osmux_cid;
 gsm0808_enc_speech_codec;
 gsm0808_dec_speech_codec;
 gsm0808_enc_speech_codec_list;

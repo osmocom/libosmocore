@@ -172,6 +172,25 @@ int gsm0808_dec_aoip_trasp_addr(struct sockaddr_storage *ss,
 	return (int)(elem - old_elem);
 }
 
+/*! Decode TS 08.08 (Osmocom Extension) Osmux CID
+ *  TV with len(V) == 1, and V is the CID to be used.
+ *  \param[out] cid Caller-provided variable where CID is stored
+ *  \param[in] elem pointer to IE value
+ *  \param[in] len length of \a elem in bytes
+ *  \returns number of bytes parsed */
+int gsm0808_dec_osmux_cid(uint8_t *cid, const uint8_t *elem, uint8_t len)
+{
+	OSMO_ASSERT(cid);
+	if (!elem)
+		return -EINVAL;
+	if (len != 1)
+		return -EINVAL;
+
+	*cid = *elem;
+
+	return 1;
+}
+
 #endif /* HAVE_SYS_SOCKET_H */
 
 /* Helper function for gsm0808_enc_speech_codec()
