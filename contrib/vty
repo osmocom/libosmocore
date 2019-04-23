@@ -1,0 +1,87 @@
+#!/usr/bin/expect -f
+
+# This expect script can be run as:
+# ./vty bsc
+# ./vty msc
+# ./vty sip ... etc
+# (no need to remember ports)
+#
+# One can edit the script itself to configure the preferred
+# logging configuration for each component.
+#
+# The last command to be issued will be logging filter all 1
+# This allows for easy recall and issuing of
+# 'logging filter all 0' to disable logging.
+# As an alternative one call call this script as
+# ./vty bsc 0 to disable logging on startup via the filter.
+#
+# Requires expect, available on most distributions.
+
+set host localhost
+set vty [lindex $argv 0]
+set lf [lindex $argv 1]
+if { $lf < 0 } { set lf 1 }
+set host localhost
+
+switch $vty {
+ hlr   { set port 4258 } ; # Short names
+ bsc   { set port 4242 }
+ mgw   { set port 4243 }
+ mgw2  {
+        set host 127.0.0.2
+        set port 4243
+       }
+ sg    { set port 4245 }
+ msc   { set port 4254 }
+ sip   { set port 4256 }
+ gg    { set port 4260 }
+ ggsn  { set port 4260 }
+ hnbgw { set port 4261 }
+
+ osmo-hlr           { set port 4258 } ; # Same but with full names of osmo-daemons:
+ osmo-bsc           { set port 4242 }
+ osmo-mgw           { set port 4243 }
+ osmo-mgw-for-bsc   { set port 4243 }
+ osmo-mgw-for-msc   {
+                     set host 127.0.0.2
+                     set port 4243
+                    }
+ osmo-sgsn          { set port 4245 }
+ osmo-msc           { set port 4254 }
+ osmo-sip-connector { set port 4256 }
+ osmo-ggsn          { set port 4260 }
+ osmo-hnbgw         { set port 4262 }
+ default            { set port 4242 } ; # Default to osmo-bsc / osmo-nitb
+}
+
+spawn -noecho telnet localhost $port
+expect ">"
+send "enable\r"
+expect "#"
+send "logging enable\r"
+expect "#"
+send "logging print category 1\r"
+expect "#"
+send "logging print category-hex 0\r"
+expect "#"
+send "logging print level 1\r"
+expect "#"
+send "logging print file basename last\r"
+expect "#"
+send "logging print extended-timestamp 1\r"
+expect "#"
+send "logging level set-all notice\r"
+expect "#"
+
+# Customise logging configuration per daemon here:
+switch $vty {
+ msc {
+  send "logging level mm info\r"
+  expect "#"
+  send "logging level cc info\r"
+  expect "#"
+ }
+}
+send "logging filter all $lf\r"
+expect "#"
+interact
