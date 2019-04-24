@@ -351,4 +351,4 @@ int osmo_t4_encode(struct bitvec *bv)
 	return -1;
 }
 
-
+/*! @} */
