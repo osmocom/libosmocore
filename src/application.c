@@ -89,7 +89,7 @@ static void sighup_hdlr(int signal)
 	log_targets_reopen();
 }
 
-/*! Ignore \ref SIGPIPE, \ref SIGALRM, \ref SIGHUP and \ref SIGIO */
+/*! Ignore SIGPIPE, SIGALRM, SIGHUP and SIGIO */
 void osmo_init_ignore_signals(void)
 {
 	/* Signals that by default would terminate */
