@@ -147,6 +147,22 @@ static void stat_test(void)
 		OSMO_ASSERT(value == 1000 + i);
 	}
 
+	/* check if dec & inc is working */
+	osmo_stat_item_set(statg->items[TEST_A_ITEM], 42);
+	rc = osmo_stat_item_get_next(statg->items[TEST_A_ITEM], &rd_a, &value);
+	OSMO_ASSERT(rc > 0);
+	OSMO_ASSERT(value == 42);
+
+	osmo_stat_item_dec(statg->items[TEST_A_ITEM], 21);
+	rc = osmo_stat_item_get_next(statg->items[TEST_A_ITEM], &rd_a, &value);
+	OSMO_ASSERT(rc > 0);
+	OSMO_ASSERT(value == 21);
+
+	osmo_stat_item_inc(statg->items[TEST_A_ITEM], 21);
+	rc = osmo_stat_item_get_next(statg->items[TEST_A_ITEM], &rd_a, &value);
+	OSMO_ASSERT(rc > 0);
+	OSMO_ASSERT(value == 42);
+
 	/* Keep 2 in FIFO */
 	osmo_stat_item_set(statg->items[TEST_A_ITEM], 33);
 	osmo_stat_item_set(statg->items[TEST_B_ITEM], 1000 + 33);

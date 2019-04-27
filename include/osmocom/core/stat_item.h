@@ -79,6 +79,8 @@ static inline void osmo_stat_item_group_udp_idx(
 
 void osmo_stat_item_group_free(struct osmo_stat_item_group *statg);
 
+void osmo_stat_item_inc(struct osmo_stat_item *item, int32_t value);
+void osmo_stat_item_dec(struct osmo_stat_item *item, int32_t value);
 void osmo_stat_item_set(struct osmo_stat_item *item, int32_t value);
 
 int osmo_stat_item_init(void *tall_ctx);

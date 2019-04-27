@@ -150,6 +150,30 @@ void osmo_stat_item_group_free(struct osmo_stat_item_group *grp)
 	talloc_free(grp);
 }
 
+/*! Increase the stat_item to the given value.
+ *  This function adds a new value for the given stat_item at the end of
+ *  the FIFO.
+ *  \param[in] item The stat_item whose \a value we want to set
+ *  \param[in] value The numeric value we want to store at end of FIFO
+ */
+void osmo_stat_item_inc(struct osmo_stat_item *item, int32_t value)
+{
+	int32_t oldvalue = item->values[item->last_offs].value;
+	osmo_stat_item_set(item, oldvalue + value);
+}
+
+/*! Descrease the stat_item to the given value.
+ *  This function adds a new value for the given stat_item at the end of
+ *  the FIFO.
+ *  \param[in] item The stat_item whose \a value we want to set
+ *  \param[in] value The numeric value we want to store at end of FIFO
+ */
+void osmo_stat_item_dec(struct osmo_stat_item *item, int32_t value)
+{
+	int32_t oldvalue = item->values[item->last_offs].value;
+	osmo_stat_item_set(item, oldvalue - value);
+}
+
 /*! Set the a given stat_item to the given value.
  *  This function adds a new value for the given stat_item at the end of
  *  the FIFO.
