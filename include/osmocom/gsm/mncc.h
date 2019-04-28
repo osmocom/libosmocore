@@ -15,7 +15,7 @@ struct gsm_mncc_bearer_cap {
 	int		coding;		/* Coding Standard */
 	int		radio;		/* Radio Channel Requirement */
 	int		speech_ctm;	/* CTM text telephony indication */
-	int		speech_ver[8];	/* Speech version indication */
+	int		speech_ver[8];	/* Speech version indication, see enum gsm48_bcap_speech_ver; -1 marks end */
 	struct {
 		enum gsm48_bcap_ra		rate_adaption;
 		enum gsm48_bcap_sig_access	sig_access;
