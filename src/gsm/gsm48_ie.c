@@ -55,7 +55,36 @@ int gsm48_decode_bcd_number(char *output, int output_len,
 			    const uint8_t *bcd_lv, int h_len)
 {
 	uint8_t in_len = bcd_lv[0];
+	/* Just assume the input buffer is big enough for the length byte and the following data, so pass in_len + 1 for
+	 * the input buffer size. */
+	return gsm48_decode_bcd_number2(output, output_len, bcd_lv, in_len + 1, h_len);
+}
+
+/*! Decode a 'called/calling/connect party BCD number' as in 10.5.4.7.
+ * \param[out] output  Caller-provided output buffer.
+ * \param[in] output_len  sizeof(output).
+ * \param[in] bcd_lv  Length-Value part of to-be-decoded IE.
+ * \param[in] input_len  Size of the bcd_lv buffer for bounds checking.
+ * \param[in] h_len  Length of an optional header between L and V parts.
+ * \return 0 in case of success, negative on error. Errors checked: no or too little input data, no or too little
+ * output buffer size, IE length exceeds input data size, decoded number exceeds size of the output buffer. The output
+ * is guaranteed to be nul terminated iff output_len > 0.
+ */
+int gsm48_decode_bcd_number2(char *output, size_t output_len,
+			     const uint8_t *bcd_lv, size_t input_len,
+			     size_t h_len)
+{
+	uint8_t in_len;
 	int i;
+	if (output_len < 1)
+		return -ENOSPC;
+	*output = '\0';
+	if (input_len < 1)
+		return -EIO;
+	in_len = bcd_lv[0];
+	/* len + 1: the BCD length plus the length byte itself must fit in the input buffer. */
+	if (input_len < in_len + 1)
+		return -EIO;
 
 	for (i = 1 + h_len; i <= in_len; i++) {
 		/* lower nibble */
@@ -74,33 +103,6 @@ int gsm48_decode_bcd_number(char *output, int output_len,
 		*output++ = '\0';
 
 	return 0;
-}
-
-/*! Decode a 'called/calling/connect party BCD number' as in 10.5.4.7.
- * \param[out] output  Caller-provided output buffer.
- * \param[in] output_len  sizeof(output).
- * \param[in] bcd_lv  Length-Value part of to-be-decoded IE.
- * \param[in] input_len  Size of the bcd_lv buffer for bounds checking.
- * \param[in] h_len  Length of an optional header between L and V parts.
- * \return 0 in case of success, negative on error. Errors checked: no or too little input data, no or too little
- * output buffer size, IE length exceeds input data size, decoded number exceeds size of the output buffer. The output
- * is guaranteed to be nul terminated iff output_len > 0.
- */
-int gsm48_decode_bcd_number2(char *output, size_t output_len,
-			     const uint8_t *bcd_lv, size_t input_len,
-			     size_t h_len)
-{
-	uint8_t len;
-	if (output_len < 1)
-		return -ENOSPC;
-	*output = '\0';
-	if (input_len < 1)
-		return -EIO;
-	len = bcd_lv[0];
-	/* len + 1: the BCD length plus the length byte itself must fit in the input buffer. */
-	if (input_len < len + 1)
-		return -EIO;
-	return gsm48_decode_bcd_number(output, output_len, bcd_lv, h_len);
 }
 
 /*! convert a single ASCII character to call-control BCD */
