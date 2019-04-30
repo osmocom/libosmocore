@@ -80,7 +80,7 @@ int gsm48_decode_bcd_number(char *output, int output_len,
  * \param[out] output  Caller-provided output buffer.
  * \param[in] output_len  sizeof(output).
  * \param[in] bcd_lv  Length-Value part of to-be-decoded IE.
- * \param[in] input_len  Size of the buffer to read the IE from.
+ * \param[in] input_len  Size of the bcd_lv buffer for bounds checking.
  * \param[in] h_len  Length of an optional header between L and V parts.
  * \return 0 in case of success, negative on error. Errors checked: no or too little input data, no or too little
  * output buffer size, IE length exceeds input data size, decoded number exceeds size of the output buffer. The output
@@ -97,7 +97,8 @@ int gsm48_decode_bcd_number2(char *output, size_t output_len,
 	if (input_len < 1)
 		return -EIO;
 	len = bcd_lv[0];
-	if (input_len < len)
+	/* len + 1: the BCD length plus the length byte itself must fit in the input buffer. */
+	if (input_len < len + 1)
 		return -EIO;
 	return gsm48_decode_bcd_number(output, output_len, bcd_lv, h_len);
 }
