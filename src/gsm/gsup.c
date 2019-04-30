@@ -332,9 +332,11 @@ int osmo_gsup_decode(const uint8_t *const_data, size_t data_len,
 	 * before the value part already contains this length so we can use it
 	 * here.
 	 */
-	OSMO_ASSERT(value[-1] == value_len);
-	gsm48_decode_bcd_number(gsup_msg->imsi, sizeof(gsup_msg->imsi),
-				value - 1, 0);
+	if (gsm48_decode_bcd_number2(gsup_msg->imsi, sizeof(gsup_msg->imsi),
+				     value - 1, value_len + 1, 0)) {
+		LOGP(DLGSUP, LOGL_ERROR, "Cannot decode IMSI\n");
+		return -GMM_CAUSE_INV_MAND_INFO;
+	}
 
 	/* specific parts */
 	while (data_len > 0) {
