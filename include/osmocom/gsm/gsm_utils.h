@@ -230,7 +230,7 @@ enum gsm_chan_t {
 };
 
 extern const struct value_string gsm_chan_t_names[];
-static inline const char *gsm_chan_t_name(enum gsm48_chan_mode val)
+static inline const char *gsm_chan_t_name(enum gsm_chan_t val)
 { return get_value_string(gsm_chan_t_names, val); }
 
 /* Deprectated functions */
