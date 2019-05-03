@@ -737,6 +737,46 @@ int gsm0808_dec_encrypt_info(struct gsm0808_encrypt_info *ei,
 	return (int)(elem - old_elem);
 }
 
+void gsm0808_msgb_put_cell_id_u(struct msgb *msg, enum CELL_IDENT id_discr, const union gsm0808_cell_id_u *u)
+{
+	switch (id_discr) {
+	case CELL_IDENT_WHOLE_GLOBAL: {
+		const struct osmo_cell_global_id *id = &u->global;
+		struct gsm48_loc_area_id lai;
+		gsm48_generate_lai2(&lai, &id->lai);
+		memcpy(msgb_put(msg, sizeof(lai)), &lai, sizeof(lai));
+		msgb_put_u16(msg, id->cell_identity);
+		break;
+	}
+	case CELL_IDENT_LAC_AND_CI: {
+		const struct osmo_lac_and_ci_id *id = &u->lac_and_ci;
+		msgb_put_u16(msg, id->lac);
+		msgb_put_u16(msg, id->ci);
+		break;
+	}
+	case CELL_IDENT_CI:
+		msgb_put_u16(msg, u->ci);
+		break;
+	case CELL_IDENT_LAI_AND_LAC: {
+		const struct osmo_location_area_id *id = &u->lai_and_lac;
+		struct gsm48_loc_area_id lai;
+		gsm48_generate_lai2(&lai, id);
+		memcpy(msgb_put(msg, sizeof(lai)), &lai, sizeof(lai));
+		break;
+	}
+	case CELL_IDENT_LAC:
+		msgb_put_u16(msg, u->lac);
+		break;
+	case CELL_IDENT_BSS:
+	case CELL_IDENT_NO_CELL:
+		/* Does not have any list items */
+		break;
+	default:
+		/* Support for other identifier list types is not implemented. */
+		OSMO_ASSERT(false);
+	}
+}
+
 /*! Encode TS 08.08 Cell Identifier List IE
  *  \param[out] msg Message Buffer to which IE is to be appended
  *  \param[in] cil Cell ID List to be encoded
@@ -758,47 +798,8 @@ uint8_t gsm0808_enc_cell_id_list2(struct msgb *msg,
 	msgb_put_u8(msg, cil->id_discr & 0x0f);
 
 	OSMO_ASSERT(cil->id_list_len <= GSM0808_CELL_ID_LIST2_MAXLEN)
-	switch (cil->id_discr) {
-	case CELL_IDENT_WHOLE_GLOBAL:
-		for (i = 0; i < cil->id_list_len; i++) {
-			const struct osmo_cell_global_id *id = &cil->id_list[i].global;
-			struct gsm48_loc_area_id lai;
-			gsm48_generate_lai2(&lai, &id->lai);
-			memcpy(msgb_put(msg, sizeof(lai)), &lai, sizeof(lai));
-			msgb_put_u16(msg, id->cell_identity);
-		}
-		break;
-	case CELL_IDENT_LAC_AND_CI:
-		for (i = 0; i < cil->id_list_len; i++) {
-			const struct osmo_lac_and_ci_id *id = &cil->id_list[i].lac_and_ci;
-			msgb_put_u16(msg, id->lac);
-			msgb_put_u16(msg, id->ci);
-		}
-		break;
-	case CELL_IDENT_CI:
-		for (i = 0; i < cil->id_list_len; i++)
-			msgb_put_u16(msg, cil->id_list[i].ci);
-		break;
-	case CELL_IDENT_LAI_AND_LAC:
-		for (i = 0; i < cil->id_list_len; i++) {
-			const struct osmo_location_area_id *id = &cil->id_list[i].lai_and_lac;
-			struct gsm48_loc_area_id lai;
-			gsm48_generate_lai2(&lai, id);
-			memcpy(msgb_put(msg, sizeof(lai)), &lai, sizeof(lai));
-		}
-		break;
-	case CELL_IDENT_LAC:
-		for (i = 0; i < cil->id_list_len; i++)
-			msgb_put_u16(msg, cil->id_list[i].lac);
-		break;
-	case CELL_IDENT_BSS:
-	case CELL_IDENT_NO_CELL:
-		/* Does not have any list items */
-		break;
-	default:
-		/* Support for other identifier list types is not implemented. */
-		OSMO_ASSERT(false);
-	}
+	for (i = 0; i < cil->id_list_len; i++)
+		gsm0808_msgb_put_cell_id_u(msg, cil->id_discr, &cil->id_list[i]);
 
 	*tlv_len = (uint8_t) (msg->tail - old_tail);
 	return *tlv_len + 2;

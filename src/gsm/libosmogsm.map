@@ -242,6 +242,7 @@ gsm0808_lcls_control_names;
 gsm0808_lcls_status_names;
 gsm0808_enc_lcls;
 gsm0808_dec_lcls;
+gsm0808_msgb_put_cell_id_u;
 
 gsm29118_msgb_alloc;
 gsm29118_create_alert_req;
