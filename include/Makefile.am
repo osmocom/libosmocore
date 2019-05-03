@@ -72,6 +72,7 @@ nobase_include_HEADERS = \
                        osmocom/gsm/abis_nm.h \
                        osmocom/gsm/apn.h \
                        osmocom/gsm/bts_features.h \
+                       osmocom/gsm/cbsp.h \
                        osmocom/gsm/comp128.h \
                        osmocom/gsm/comp128v23.h \
                        osmocom/gsm/bitvec_gsm.h \
@@ -124,6 +125,7 @@ nobase_include_HEADERS = \
 		       osmocom/gsm/protocol/gsm_23_003.h \
 		       osmocom/gsm/protocol/gsm_29_118.h \
                        osmocom/gsm/protocol/gsm_44_318.h \
+                       osmocom/gsm/protocol/gsm_48_049.h \
                        osmocom/gsm/protocol/ipaccess.h \
                        osmocom/gsm/protocol/smpp34_osmocom.h \
                        osmocom/gsm/rsl.h \

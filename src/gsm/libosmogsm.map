@@ -646,5 +646,16 @@ osmo_gsm48_classmark_a5_name_buf;
 osmo_gsm48_classmark_a5_name_c;
 osmo_gsm48_classmark_update;
 
+cbsp_msg_type_names;
+cbsp_iei_names;
+cbsp_category_names;
+cbsp_att_tlvdef;
+osmo_cbsp_msgb_alloc;
+osmo_cbsp_decoded_alloc;
+osmo_cbsp_init_struct;
+osmo_cbsp_encode;
+osmo_cbsp_decode;
+osmo_cbsp_recv_buffered;
+
 local: *;
 };
