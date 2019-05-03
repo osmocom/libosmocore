@@ -94,6 +94,7 @@ void gsm0808_cell_id_from_cgi(struct gsm0808_cell_id *cid, enum CELL_IDENT id_di
 			      const struct osmo_cell_global_id *cgi);
 int gsm0808_cell_id_to_cgi(struct osmo_cell_global_id *cgi, const struct gsm0808_cell_id *cid);
 void gsm0808_msgb_put_cell_id_u(struct msgb *msg, enum CELL_IDENT id_discr, const union gsm0808_cell_id_u *u);
+int gsm0808_decode_cell_id_u(union gsm0808_cell_id_u *out, enum CELL_IDENT discr, const uint8_t *buf, unsigned int len);
 
 uint8_t gsm0808_enc_cause(struct msgb *msg, uint16_t cause);
 uint8_t gsm0808_enc_aoip_trasp_addr(struct msgb *msg,

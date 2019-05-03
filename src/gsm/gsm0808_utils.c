@@ -193,6 +193,17 @@ int gsm0808_dec_osmux_cid(uint8_t *cid, const uint8_t *elem, uint8_t len)
 
 #endif /* HAVE_SYS_SOCKET_H */
 
+/* Decode 5-byte LAI list element data (see TS 08.08 3.2.2.27) into MCC/MNC/LAC. */
+static void decode_lai(const uint8_t *data, struct osmo_location_area_id *decoded)
+{
+	struct gsm48_loc_area_id lai;
+
+	/* Copy data to stack to prevent unaligned access in gsm48_decode_lai2(). */
+	memcpy(&lai, data, sizeof(lai)); /* don't byte swap yet */
+
+	gsm48_decode_lai2(&lai, decoded);
+}
+
 /* Helper function for gsm0808_enc_speech_codec()
  * and gsm0808_enc_speech_codec_list() */
 static uint8_t enc_speech_codec(struct msgb *msg,
@@ -756,6 +767,53 @@ int gsm0808_dec_encrypt_info(struct gsm0808_encrypt_info *ei,
 	return (int)(elem - old_elem);
 }
 
+/*! Decode a single GSM 08.08 Cell ID list element payload
+ *  \param[out] out caller-provided output union
+ *  \param[in] discr Cell ID discriminator describing type to be decoded
+ *  \param[in] buf User-provided input buffer containing binary Cell ID list element
+ *  \param[in] len Length of buf
+ *  \returns 0 on success; negative on error */
+int gsm0808_decode_cell_id_u(union gsm0808_cell_id_u *out, enum CELL_IDENT discr, const uint8_t *buf, unsigned int len)
+{
+	switch (discr) {
+	case CELL_IDENT_WHOLE_GLOBAL:
+		if (len < 7)
+			return -EINVAL;
+		decode_lai(buf, &out->global.lai);
+		out->global.cell_identity = osmo_load16be(buf + sizeof(struct gsm48_loc_area_id));
+		break;
+	case CELL_IDENT_LAC_AND_CI:
+		if (len < 4)
+			return -EINVAL;
+		out->lac_and_ci.lac = osmo_load16be(buf);
+		out->lac_and_ci.ci = osmo_load16be(buf + sizeof(uint16_t));
+		break;
+	case CELL_IDENT_CI:
+		if (len < 2)
+			return -EINVAL;
+		out->ci = osmo_load16be(buf);
+		break;
+	case CELL_IDENT_LAI_AND_LAC:
+		if (len < 5)
+			return -EINVAL;
+		decode_lai(buf, &out->lai_and_lac);
+		break;
+	case CELL_IDENT_LAC:
+		if (len < 2)
+			return -EINVAL;
+		out->lac = osmo_load16be(buf);
+		break;
+	case CELL_IDENT_BSS:
+	case CELL_IDENT_NO_CELL:
+		/* Does not have any list items */
+		break;
+	default:
+		/* Remaining cell identification types are not implemented. */
+		return -EINVAL;
+	}
+	return 0;
+}
+
 void gsm0808_msgb_put_cell_id_u(struct msgb *msg, enum CELL_IDENT id_discr, const union gsm0808_cell_id_u *u)
 {
 	switch (id_discr) {
@@ -863,17 +921,6 @@ uint8_t gsm0808_enc_cell_id_list(struct msgb *msg,
 
 	*tlv_len = (uint8_t) (msg->tail - old_tail);
 	return *tlv_len + 2;
-}
-
-/* Decode 5-byte LAI list element data (see TS 08.08 3.2.2.27) into MCC/MNC/LAC. */
-static void decode_lai(const uint8_t *data, struct osmo_location_area_id *decoded)
-{
-	struct gsm48_loc_area_id lai;
-
-	/* Copy data to stack to prevent unaligned access in gsm48_decode_lai2(). */
-	memcpy(&lai, data, sizeof(lai)); /* don't byte swap yet */
-
-	gsm48_decode_lai2(&lai, decoded);
 }
 
 static int parse_cell_id_global_list(struct gsm0808_cell_id_list2 *cil, const uint8_t *data, size_t remain,
