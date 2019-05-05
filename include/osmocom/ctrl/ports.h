@@ -22,4 +22,6 @@
 #define OSMO_CTRL_PORT_HLR	4259
 #define OSMO_CTRL_PORT_HNBGW	4262
 #define OSMO_CTRL_PORT_GBPROXY	4263
+/* 4264 used by VTY interface */
+#define OSMO_CTRL_PORT_CBC	4265
 /* When adding/changing port numbers, keep docs and wiki in sync. See above. */
