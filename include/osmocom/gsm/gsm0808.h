@@ -194,6 +194,10 @@ struct gsm0808_handover_request {
 };
 struct msgb *gsm0808_create_handover_request(const struct gsm0808_handover_request *params);
 
+struct msgb *gsm0808_create_handover_request_ack(const uint8_t *l3_info, uint8_t l3_info_len,
+						 uint8_t chosen_channel, uint8_t chosen_encr_alg,
+						 uint8_t chosen_speech_version);
+
 struct gsm0808_handover_request_ack {
 	const uint8_t *l3_info;
 	uint8_t l3_info_len;
