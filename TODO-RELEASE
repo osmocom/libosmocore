@@ -7,17 +7,3 @@
 # If any interfaces have been added since the last public release: c:r:a + 1.
 # If any interfaces have been removed or changed since the last public release: c:r:0.
 #library	what			description / commit summary line
-libosmogb	gprs_ns_inst		Adding bss_sns_fi member for IP-SNS support
-libosmogb	gprs_nsvc		Adding sig_weight and data_weight members for IP-SNS support
-libosmogb	various new symbols	Adding functions related to IP-SNS support
-libosmocore	osmo_fsm_inst		Add flag proc.terminating (ABI change)
-libosmocore	osmo_escape_str(),      These now always copy to the buffer instead of returning the
-		osmo_escape_str_buf()	  unchanged input string when no chars needed escaping, hence
-		                          returned strings might now also be truncated even if all chars were printable.
-libosmocore	osmo_escape_str_buf2()	New function signature similar to snprintf(), for use with OSMO_STRBUF_APPEND().
-libosmocore	osmo_quote_str(),       On string truncation, these used to print a closing quote '"' after the
-		osmo_quote_str_buf()	  truncated string. This is no longer the case. e.g. a string 'truncated' in a
-					  9-char buffer used to print '"trunca"\0', which now becomes '"truncat\0'.
-libosmocore	osmo_quote_str_buf2()	New function signature similar to snprintf(), for use with OSMO_STRBUF_APPEND().
-libosmogsm	gsm0808_handover_required	Storage size changed, speech_version_used now an enum.
-		gsm0808_handover_performed	Storage size changed, speech_version_chosen now an enum.
