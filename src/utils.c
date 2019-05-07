@@ -813,10 +813,21 @@ const char *osmo_quote_str(const char *str, int in_len)
  */
 char *osmo_quote_str_c(const void *ctx, const char *str, int in_len)
 {
-	char *buf = talloc_size(ctx, OSMO_MAX(in_len+2, 32));
+	size_t len = in_len == -1 ? strlen(str) : in_len;
+	char *buf;
+
+	/* account for two quote characters + terminating NUL */
+	len += 3;
+
+	/* some minimum length for things like "NULL" or "(error)" */
+	if (len < 32)
+		len = 32;
+
+	buf = talloc_size(ctx, len);
 	if (!buf)
 		return NULL;
-	return osmo_quote_str_buf2(buf, 32, str, in_len);
+
+	return osmo_quote_str_buf2(buf, len, str, in_len);
 }
 
 /*! perform an integer square root operation on unsigned 32bit integer.
