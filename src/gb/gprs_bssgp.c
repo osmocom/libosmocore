@@ -128,6 +128,10 @@ struct bssgp_bvc_ctx *btsctx_alloc(uint16_t bvci, uint16_t nsei)
 	ctx->nsei = nsei;
 	/* FIXME: BVCI is not unique, only BVCI+NSEI ?!? */
 	ctx->ctrg = rate_ctr_group_alloc(ctx, &bssgp_ctrg_desc, bvci);
+	if (!ctx->ctrg) {
+		talloc_free(ctx);
+		return NULL;
+	}
 	ctx->fc = talloc_zero(ctx, struct bssgp_flow_control);
 	/* cofigure for 2Mbit, 30 packets in queue */
 	bssgp_fc_init(ctx->fc, 100000, 2*1024*1024/8, 30, &_bssgp_tx_dl_ud);

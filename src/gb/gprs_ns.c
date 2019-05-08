@@ -333,6 +333,10 @@ struct gprs_nsvc *gprs_nsvc_create2(struct gprs_ns_inst *nsi, uint16_t nsvci,
 	nsvc->nsi = nsi;
 	osmo_timer_setup(&nsvc->timer, gprs_ns_timer_cb, nsvc);
 	nsvc->ctrg = rate_ctr_group_alloc(nsvc, &nsvc_ctrg_desc, nsvci);
+	if (!nsvc->ctrg) {
+		talloc_free(nsvc);
+		return NULL;
+	}
 	nsvc->statg = osmo_stat_item_group_alloc(nsvc, &nsvc_statg_desc, nsvci);
 	nsvc->sig_weight = sig_weight;
 	nsvc->data_weight = data_weight;
