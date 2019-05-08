@@ -69,7 +69,7 @@
 #include <osmocom/core/logging.h>
 
 static LLIST_HEAD(rate_ctr_groups);
-
+static struct osmo_timer_list rate_ctr_timer;
 static void *tall_rate_ctr_ctx;
 
 
@@ -217,6 +217,10 @@ struct rate_ctr_group *rate_ctr_group_alloc(void *ctx,
 	unsigned int size;
 	struct rate_ctr_group *group;
 
+	if (!osmo_timer_pending(&rate_ctr_timer))
+		LOGP(DLGLOBAL, LOGL_ERROR, "your program appears to use libosmocore rate_ctr "
+			"without calling rate_ctr_init() at start-up. Rate counters won't work!\n");
+
 	if (rate_ctr_get_group_by_name_idx(desc->group_name_prefix, idx)) {
 		unsigned int new_idx = rate_ctr_get_unused_name_idx(desc->group_name_prefix);
 		LOGP(DLGLOBAL, LOGL_ERROR, "counter group '%s' already exists for index %u,"
@@ -294,7 +298,6 @@ static void interval_expired(struct rate_ctr *ctr, enum rate_ctr_intv intv)
 		ctr->intv[intv+1].rate += ctr->intv[intv].rate;
 }
 
-static struct osmo_timer_list rate_ctr_timer;
 static uint64_t timer_ticks;
 
 /* The one-second interval has expired */
