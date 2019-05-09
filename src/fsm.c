@@ -47,15 +47,15 @@
  *  The general idea is that all actions performed within one state are
  *  located at one position in the code (the state's action function),
  *  as opposed to the 'message-centric' view of e.g. the existing
- *  state machines of the LAPD(m) coe, where there is one message for
- *  eahc possible event (primitive), and the function then needs to
+ *  state machines of the LAPD(m) core, where there is one message for
+ *  each possible event (primitive), and the function then needs to
  *  concern itself on how to handle that event over all possible states.
  *
  *  For each state, there is a bit-mask of permitted input events for
  *  this state, as well as a bit-mask of permitted new output states to
  *  which the state can change.  Furthermore, there is a function
  *  pointer implementing the actual handling of the input events
- *  occurring whilst in thta state.
+ *  occurring whilst in that state.
  *
  *  Furthermore, each state offers a function pointer that can be
  *  executed just before leaving a state, and another one just after
@@ -84,7 +84,7 @@
  *  NOTICE level is used for all other subscribers.
  *
  *  In order to attach private state to the \ref osmo_fsm_inst, it
- *  offers an opaque priv pointer.
+ *  offers an opaque private pointer.
  *
  * \file fsm.c */
 
