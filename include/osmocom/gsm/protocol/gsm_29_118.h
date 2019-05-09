@@ -73,6 +73,7 @@ enum sgsap_iei {
 	SGSAP_IE_UE_EMM_MODE			= 0x25,
 	SGSAP_IE_ADDL_PAGING_INDICATORS		= 0x26,
 	SGSAP_IE_TMSI_BASED_NRI_CONT		= 0x27,
+	SGSAP_IE_MO_FALLBACK_VALUE		= 0xf1,
 };
 extern const struct value_string sgsap_iei_names[];
 static inline const char *sgsap_iei_name(enum sgsap_iei iei) {

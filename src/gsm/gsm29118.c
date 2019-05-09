@@ -89,6 +89,7 @@ const struct value_string sgsap_iei_names[] = {
 	{ SGSAP_IE_UE_EMM_MODE,			"UE-EMM-MODE" },
 	{ SGSAP_IE_ADDL_PAGING_INDICATORS,	"ADDL-PAGING-INDICATORS" },
 	{ SGSAP_IE_TMSI_BASED_NRI_CONT,		"TMSI-BASED-NRI-CONT" },
+	{ SGSAP_IE_MO_FALLBACK_VALUE,		"MO-FALLBACK-VALUE" },
 	{ 0, NULL }
 };
 
@@ -179,6 +180,7 @@ const struct tlv_definition sgsap_ie_tlvdef = {
 		[SGSAP_IE_UE_EMM_MODE]		= { TLV_TYPE_TLV },
 		[SGSAP_IE_ADDL_PAGING_INDICATORS]={ TLV_TYPE_TLV },
 		[SGSAP_IE_TMSI_BASED_NRI_CONT]	= { TLV_TYPE_TLV },
+		[SGSAP_IE_MO_FALLBACK_VALUE]	= { TLV_TYPE_TLV },
 	},
 };
 
