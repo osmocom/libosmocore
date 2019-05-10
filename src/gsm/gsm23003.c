@@ -69,7 +69,7 @@ bool osmo_imsi_str_valid(const char *imsi)
  */
 bool osmo_msisdn_str_valid(const char *msisdn)
 {
-	return is_n_digits(msisdn, 1, 15);
+	return is_n_digits(msisdn, GSM23003_MSISDN_MIN_DIGITS, GSM23003_MSISDN_MAX_DIGITS);
 }
 
 /*! Determine whether the given IMEI is valid according to 3GPP TS 23.003,
