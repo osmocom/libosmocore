@@ -805,8 +805,10 @@ int osmo_sock_get_name_buf(char *str, size_t str_len, int fd)
 	int rc;
 
 	/* get local */
-	if ((rc = osmo_sock_get_ip_and_port(fd, hostbuf_l, sizeof(hostbuf_l), portbuf_l, sizeof(portbuf_l), true)))
+	if ((rc = osmo_sock_get_ip_and_port(fd, hostbuf_l, sizeof(hostbuf_l), portbuf_l, sizeof(portbuf_l), true))) {
+		osmo_strlcpy(str, "<error-in-getsockname>", str_len);
 		return rc;
+	}
 
 	/* get remote */
 	if (osmo_sock_get_ip_and_port(fd, hostbuf_r, sizeof(hostbuf_r), portbuf_r, sizeof(portbuf_r), false) != 0)
