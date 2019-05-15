@@ -123,10 +123,12 @@ leave:
 	return rc;
 }
 
-/**
+/*!
  * To be called when a good frame is received.
  * This function will then create a backup of the frame
  * and reset the internal state.
+ * \param[in] state The state object for the ECU
+ * \param[out] frame The valid frame (GSM_FR_BYTES bytes in RTP payload format)
  */
 void osmo_ecu_fr_reset(struct osmo_ecu_fr_state *state, uint8_t *frame)
 {
@@ -134,10 +136,13 @@ void osmo_ecu_fr_reset(struct osmo_ecu_fr_state *state, uint8_t *frame)
 	memcpy(state->frame_backup, frame, GSM_FR_BYTES);
 }
 
-/**
+/*!
  * To be called when a bad frame is received.
  * This function will then generate a replacement frame
  * that can be used to conceal the dropout.
+ * \param[in] state The state object for the ECU
+ * \param[out] frame The buffer to fill with GSM_FR_BYTES of replacement frame
+ * \returns 0 if the frame was sucessfully filled
  */
 int osmo_ecu_fr_conceal(struct osmo_ecu_fr_state *state, uint8_t *frame)
 {
