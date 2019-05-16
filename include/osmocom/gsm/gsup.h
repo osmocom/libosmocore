@@ -348,8 +348,8 @@ struct osmo_gsup_message {
 	enum osmo_gsup_imei_result	imei_result;
 
 	/*! Indicate the message class to trivially dispatch incoming GSUP messages to the right code paths.
-	 * Inter-MSC messages are *required* to set a class = OSMO_GSUP_MESSAGE_CLASS_INTER_MSC. For older message classes, this may
-	 * be omitted (for backwards compatibility only -- if in doubt, include it). */
+	 * Inter-MSC messages are *required* to set a class = OSMO_GSUP_MESSAGE_CLASS_INTER_MSC. For older message
+	 * classes, this may be omitted (for backwards compatibility only -- if in doubt, include it). */
 	enum osmo_gsup_message_class		message_class;
 
 	/*! For messages routed via another GSUP entity (via HLR), the IPA name of the entity that sent this message. */
