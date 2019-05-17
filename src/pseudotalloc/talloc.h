@@ -60,5 +60,6 @@ void *_talloc_zero_array(const void *ctx,
 			 const char *name);
 char *talloc_asprintf(const void *ctx, const char *fmt, ...);
 
-void *talloc_steal(const void *new_ctx, const void *obj);
+#define talloc_steal(ctx, ptr) _talloc_steal_loc((ctx), (ptr), __location__)
+void *_talloc_steal_loc(const void *new_ctx, const void *obj, const char *location);
 char *talloc_vasprintf(const void *t, const char *fmt, va_list ap);

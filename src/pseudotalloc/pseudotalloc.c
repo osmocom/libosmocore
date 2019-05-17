@@ -97,7 +97,7 @@ char *talloc_asprintf(const void *ctx, const char *fmt, ...)
 	return buf;
 }
 
-void *talloc_steal(const void *new_ctx, const void *obj)
+void *_talloc_steal_loc(const void *new_ctx, const void *obj, const char *location)
 {
 	/* as we don't do hierarchical allocations, this is simply a NOP */
 	return (void *)obj;
