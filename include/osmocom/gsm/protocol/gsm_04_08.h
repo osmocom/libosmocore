@@ -1370,32 +1370,30 @@ struct gsm48_rr_status {
 } __attribute__((packed));
 
 /* Section 10.2 + GSM 04.07 12.2.3.1.1 + 3GPP TS 24.007 11.2.3.1.1 */
-enum osmo_gsm48_pdisc {
-	GSM48_PDISC_GROUP_CC	= 0x00,
-	GSM48_PDISC_BCAST_CC	= 0x01,
-	GSM48_PDISC_PDSS1	= 0x02,	/* 04.07 only */
-	GSM48_PDISC_CC		= 0x03,
-	GSM48_PDISC_PDSS2	= 0x04,	/* 04.07 only */
-	GSM48_PDISC_GTTP	= 0x04,	/* 24.007 only */
-	GSM48_PDISC_MM		= 0x05,
-	GSM48_PDISC_RR		= 0x06,
-	GSM48_PDISC_MM_GPRS	= 0x08,
-	GSM48_PDISC_SMS		= 0x09,
-	GSM48_PDISC_SM_GPRS	= 0x0a,
-	GSM48_PDISC_NC_SS	= 0x0b,
-	GSM48_PDISC_LOC		= 0x0c,
-	GSM48_PDISC_EXTEND	= 0x0e,
-	GSM48_PDISC_TEST	= 0x0f,	/* as per 11.10, 04.14 */
-	GSM48_PDISC_MASK	= 0x0f,
-};
+#define GSM48_PDISC_GROUP_CC	0x00
+#define GSM48_PDISC_BCAST_CC	0x01
+#define GSM48_PDISC_PDSS1	0x02	/* 04.07 only */
+#define GSM48_PDISC_CC		0x03
+#define GSM48_PDISC_PDSS2	0x04	/* 04.07 only */
+#define GSM48_PDISC_GTTP	0x04	/* 24.007 only */
+#define GSM48_PDISC_MM		0x05
+#define GSM48_PDISC_RR		0x06
+#define GSM48_PDISC_MM_GPRS	0x08
+#define GSM48_PDISC_SMS		0x09
+#define GSM48_PDISC_SM_GPRS	0x0a
+#define GSM48_PDISC_NC_SS	0x0b
+#define GSM48_PDISC_LOC		0x0c
+#define GSM48_PDISC_EXTEND	0x0e
+#define GSM48_PDISC_TEST	0x0f	/* as per 11.10, 04.14 */
+#define GSM48_PDISC_MASK	0x0f
 
 extern const struct value_string gsm48_pdisc_names[];
-static inline const char *gsm48_pdisc_name(enum osmo_gsm48_pdisc val)
+static inline const char *gsm48_pdisc_name(uint8_t val)
 { return get_value_string(gsm48_pdisc_names, val); }
 
 bool gsm48_hdr_gmm_cipherable(const struct gsm48_hdr *hdr);
 
-static inline enum osmo_gsm48_pdisc gsm48_hdr_pdisc(const struct gsm48_hdr *hdr)
+static inline uint8_t gsm48_hdr_pdisc(const struct gsm48_hdr *hdr)
 {
 	/*
 	 * 3GPP TS 24.007 version 12.0.0 Release 12,
