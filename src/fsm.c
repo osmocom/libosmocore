@@ -1,7 +1,7 @@
 /*! \file fsm.c
  * Osmocom generic Finite State Machine implementation. */
 /*
- * (C) 2016 by Harald Welte <laforge@gnumonks.org>
+ * (C) 2016-2019 by Harald Welte <laforge@gnumonks.org>
  *
  * SPDX-License-Identifier: GPL-2.0+
  *
@@ -584,18 +584,13 @@ const char *osmo_fsm_state_name(struct osmo_fsm *fsm, uint32_t state)
 }
 
 static int state_chg(struct osmo_fsm_inst *fi, uint32_t new_state,
-		     bool keep_timer, unsigned long timeout_secs, int T,
+		     bool keep_timer, unsigned long timeout_ms, int T,
 		     const char *file, int line)
 {
 	struct osmo_fsm *fsm = fi->fsm;
 	uint32_t old_state = fi->state;
 	const struct osmo_fsm_state *st = &fsm->states[fi->state];
 	struct timeval remaining;
-
-	/* Limit to 0x7fffffff seconds as explained by
-	 * _osmo_fsm_inst_state_chg()'s API doc. */
-	if (timeout_secs > 0x7fffffff)
-		timeout_secs = 0x7fffffff;
 
 	/* validate if new_state is a valid state */
 	if (!(st->out_state_mask & (1 << new_state))) {
@@ -627,11 +622,18 @@ static int state_chg(struct osmo_fsm_inst *fi, uint32_t new_state,
 					   "State change to %s (keeping " OSMO_T_FMT ", %ld.%03lds remaining)\n",
 					   osmo_fsm_state_name(fsm, new_state),
 					   OSMO_T_FMT_ARGS(fi->T), remaining.tv_sec, remaining.tv_usec / 1000);
-		} else if (timeout_secs)
-			LOGPFSMSRC(fi, file, line, "State change to %s (" OSMO_T_FMT ", %lus)\n",
-				   osmo_fsm_state_name(fsm, new_state),
-				   OSMO_T_FMT_ARGS(T), timeout_secs);
-		else
+		} else if (timeout_ms) {
+			if (timeout_ms % 1000 == 0) {
+				/* keep log output legacy compatible to avoid autotest failures */
+				LOGPFSMSRC(fi, file, line, "State change to %s (" OSMO_T_FMT ", %lus)\n",
+					   osmo_fsm_state_name(fsm, new_state),
+					   OSMO_T_FMT_ARGS(T), timeout_ms/1000);
+			} else {
+				LOGPFSMSRC(fi, file, line, "State change to %s (" OSMO_T_FMT ", %lums)\n",
+					   osmo_fsm_state_name(fsm, new_state),
+					   OSMO_T_FMT_ARGS(T), timeout_ms);
+			}
+		} else
 			LOGPFSMSRC(fi, file, line, "State change to %s (no timeout)\n",
 				   osmo_fsm_state_name(fsm, new_state));
 	} else {
@@ -645,8 +647,8 @@ static int state_chg(struct osmo_fsm_inst *fi, uint32_t new_state,
 	if (!keep_timer
 	    || (keep_timer && !osmo_timer_pending(&fi->timer))) {
 		fi->T = T;
-		if (timeout_secs)
-			osmo_timer_schedule(&fi->timer, timeout_secs, 0);
+		if (timeout_ms)
+			osmo_timer_schedule(&fi->timer, timeout_ms / 1000, timeout_ms % 1000);
 	}
 
 	/* Call 'onenter' last, user might terminate FSM from there */
@@ -686,13 +688,6 @@ static int state_chg(struct osmo_fsm_inst *fi, uint32_t new_state,
  *  provides a unified way to configure and apply GSM style Tnnnn timers to FSM
  *  state transitions.
  *
- *  Range: since time_t's maximum value is not well defined in a cross platform
- *  way, clamp timeout_secs to the maximum of the signed 32bit range, or roughly
- *  68 years (float(0x7fffffff) / (60. * 60 * 24 * 365.25) = 68.0497). Thus
- *  ensure that very large timeouts do not wrap around to become very small
- *  ones. Note though that this might still be unsafe on systems with a time_t
- *  range below 32 bits.
- *
  *  \param[in] fi FSM instance whose state is to change
  *  \param[in] new_state The new state into which we should change
  *  \param[in] timeout_secs Timeout in seconds (if !=0), maximum-clamped to 2147483647 seconds.
@@ -707,7 +702,13 @@ int _osmo_fsm_inst_state_chg(struct osmo_fsm_inst *fi, uint32_t new_state,
 			     unsigned long timeout_secs, int T,
 			     const char *file, int line)
 {
-	return state_chg(fi, new_state, false, timeout_secs, T, file, line);
+	return state_chg(fi, new_state, false, timeout_secs*1000, T, file, line);
+}
+int _osmo_fsm_inst_state_chg_ms(struct osmo_fsm_inst *fi, uint32_t new_state,
+				unsigned long timeout_ms, int T,
+				const char *file, int line)
+{
+	return state_chg(fi, new_state, false, timeout_ms, T, file, line);
 }
 
 /*! perform a state change while keeping the current timer running.
@@ -761,8 +762,15 @@ int _osmo_fsm_inst_state_chg_keep_or_start_timer(struct osmo_fsm_inst *fi, uint3
 						 unsigned long timeout_secs, int T,
 						 const char *file, int line)
 {
-	return state_chg(fi, new_state, true, timeout_secs, T, file, line);
+	return state_chg(fi, new_state, true, timeout_secs*1000, T, file, line);
 }
+int _osmo_fsm_inst_state_chg_keep_or_start_timer_ms(struct osmo_fsm_inst *fi, uint32_t new_state,
+						    unsigned long timeout_ms, int T,
+						    const char *file, int line)
+{
+	return state_chg(fi, new_state, true, timeout_ms, T, file, line);
+}
+
 
 /*! dispatch an event to an osmocom finite state machine instance
  *
