@@ -1269,7 +1269,8 @@ static int rslms_rx_com_chan(struct msgb *msg, struct lapdm_channel *lc)
 	return rc;
 }
 
-/*! Receive a RSLms \ref msgb from Layer 3 */
+/*! Receive a RSLms \ref msgb from Layer 3. 'msg' ownership is transferred,
+ *  i.e. caller must not free it */
 int lapdm_rslms_recvmsg(struct msgb *msg, struct lapdm_channel *lc)
 {
 	struct abis_rsl_common_hdr *rslh = msgb_l2(msg);
@@ -1277,6 +1278,7 @@ int lapdm_rslms_recvmsg(struct msgb *msg, struct lapdm_channel *lc)
 
 	if (msgb_l2len(msg) < sizeof(*rslh)) {
 		LOGP(DLLAPD, LOGL_ERROR, "Message too short RSL hdr!\n");
+		msgb_free(msg);
 		return -EINVAL;
 	}
 
