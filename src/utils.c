@@ -999,7 +999,7 @@ char osmo_luhn(const char* in, int in_len)
 
 	/* All input must be numbers */
 	for (i = 0; i < in_len; i++) {
-		if (!isdigit(in[i]))
+		if (!isdigit((unsigned char)in[i]))
 			return -EINVAL;
 	}
 

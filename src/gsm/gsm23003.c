@@ -411,7 +411,7 @@ int osmo_mnc_from_str(const char *mnc_str, uint16_t *mnc, bool *mnc_3_digits)
 	char *endptr;
 	int rc = 0;
 
-	if (!mnc_str || !isdigit(mnc_str[0]) || strlen(mnc_str) > 3)
+	if (!mnc_str || !isdigit((unsigned char)mnc_str[0]) || strlen(mnc_str) > 3)
 		return -EINVAL;
 
 	errno = 0;
