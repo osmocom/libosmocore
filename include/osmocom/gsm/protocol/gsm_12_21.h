@@ -70,7 +70,7 @@ struct abis_om_obj_inst {
 	uint8_t	ts_nr;	/*!< Timeslot Number */
 } __attribute__ ((packed));
 
-/*! OML Object Instance */
+/*! OML FOM header */
 struct abis_om_fom_hdr {
 	uint8_t	msg_type;	/*!< Message Type (\ref abis_nm_msgtype) */
 	uint8_t	obj_class;	/*!< Object Class (\ref abis_nm_obj_class) */
