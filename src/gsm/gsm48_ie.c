@@ -66,9 +66,15 @@ int gsm48_decode_bcd_number(char *output, int output_len,
  * \param[in] bcd_lv  Length-Value part of to-be-decoded IE.
  * \param[in] input_len  Size of the bcd_lv buffer for bounds checking.
  * \param[in] h_len  Length of an optional header between L and V parts.
- * \return 0 in case of success, negative on error. Errors checked: no or too little input data, no or too little
- * output buffer size, IE length exceeds input data size, decoded number exceeds size of the output buffer. The output
- * is guaranteed to be nul terminated iff output_len > 0.
+ * \return 0 in case of success, negative on error.
+ *
+ * Errors checked:
+ *   - no or too little input data (-EIO),
+ *   - IE length exceeds input data size (-EIO),
+ *   - no or too little output buffer size (-ENOSPC),
+ *   - decoded number exceeds size of the output buffer (-ENOSPC).
+ *
+ * The output is guaranteed to be nul terminated iff output_len > 0.
  */
 int gsm48_decode_bcd_number2(char *output, size_t output_len,
 			     const uint8_t *bcd_lv, size_t input_len,
@@ -101,6 +107,10 @@ int gsm48_decode_bcd_number2(char *output, size_t output_len,
 	}
 	if (output_len >= 1)
 		*output++ = '\0';
+
+	/* Indicate whether the output was truncated */
+	if (i < in_len)
+		return -ENOSPC;
 
 	return 0;
 }

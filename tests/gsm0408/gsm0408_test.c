@@ -702,7 +702,7 @@ static const struct bcd_number_test {
 		/* Decoding test (one 5 digits do not fit) */
 		.dec_hex   = "0a21436587092143658709",
 		.dec_ascii = "123456789012345",
-		.dec_rc    = 0,
+		.dec_rc    = -ENOSPC,
 
 		/* Buffer length limitations */
 		.dec_buf_lim = 15 + 1, /* 5 digits less */
@@ -778,7 +778,7 @@ static void test_bcd_number_encode_decode()
 			printf("    - Expected: (rc=%d) '%s'\n",
 			       test->dec_rc, test->dec_ascii);
 			printf("    -   Actual: (rc=%d) '%s'\n",
-			       rc, rc == 0 ? buf_dec : "(none)");
+			       rc, (rc == 0 || rc == -ENOSPC) ? buf_dec : "(none)");
 		}
 	}
 

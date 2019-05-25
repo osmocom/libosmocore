@@ -173,8 +173,8 @@ BSD number encoding / decoding test
     - Expected: (rc=-5) ''
     -   Actual: (rc=-5) ''
   - Decoding HEX (buffer limit=16) '0a21436587092143658709'...
-    - Expected: (rc=0) '123456789012345'
-    -   Actual: (rc=0) '123456789012345'
+    - Expected: (rc=-28) '123456789012345'
+    -   Actual: (rc=-28) '123456789012345'
 - Running test: LV incorrect length
   - Decoding HEX (buffer limit=0) '05214365'...
     - Expected: (rc=-5) '(none)'
