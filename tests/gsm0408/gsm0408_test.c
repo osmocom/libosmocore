@@ -712,7 +712,7 @@ static const struct bcd_number_test {
 		.test_name = "LV incorrect length",
 		.dec_hex   = "05214365", /* should be 0x03 */
 		.dec_ascii = "(none)",
-		.dec_rc    = -EIO,
+		.dec_rc    = -EINVAL,
 	},
 	{
 		.test_name = "empty input buffer",

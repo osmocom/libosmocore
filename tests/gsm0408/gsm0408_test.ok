@@ -177,8 +177,8 @@ BSD number encoding / decoding test
     -   Actual: (rc=-28) '123456789012345'
 - Running test: LV incorrect length
   - Decoding HEX (buffer limit=0) '05214365'...
-    - Expected: (rc=-5) '(none)'
-    -   Actual: (rc=-5) '(none)'
+    - Expected: (rc=-22) '(none)'
+    -   Actual: (rc=-22) '(none)'
 - Running test: empty input buffer
   - Encoding ASCII (buffer limit=0) ''...
     - Expected: (rc=1) '00'

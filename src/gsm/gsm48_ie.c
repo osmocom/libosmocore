@@ -70,7 +70,7 @@ int gsm48_decode_bcd_number(char *output, int output_len,
  *
  * Errors checked:
  *   - no or too little input data (-EIO),
- *   - IE length exceeds input data size (-EIO),
+ *   - IE length exceeds input data size (-EINVAL),
  *   - no or too little output buffer size (-ENOSPC),
  *   - decoded number exceeds size of the output buffer (-ENOSPC).
  *
@@ -90,7 +90,7 @@ int gsm48_decode_bcd_number2(char *output, size_t output_len,
 	in_len = bcd_lv[0];
 	/* len + 1: the BCD length plus the length byte itself must fit in the input buffer. */
 	if (input_len < in_len + 1)
-		return -EIO;
+		return -EINVAL;
 
 	for (i = 1 + h_len; i <= in_len; i++) {
 		/* lower nibble */
