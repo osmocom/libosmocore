@@ -139,6 +139,54 @@ Decoding zero length Mobile Identities
     rc=1
     returned empty string
 
+BSD number encoding / decoding test
+- Running test: regular 9-digit MSISDN
+  - Encoding ASCII (buffer limit=0) '123456789'...
+    - Expected: (rc=6) '0521436587f9'
+    -   Actual: (rc=6) '0521436587f9'
+  - Decoding HEX (buffer limit=0) '0521436587f9'...
+    - Expected: (rc=0) '123456789'
+    -   Actual: (rc=0) '123456789'
+- Running test: regular 6-digit MSISDN with optional header (LHV)
+  - Encoding ASCII (buffer limit=0) '123456'...
+    - Expected: (rc=8) '0700000000214365'
+    -   Actual: (rc=8) '0721436587214365'
+  - Decoding HEX (buffer limit=0) '07deadbeef214365'...
+    - Expected: (rc=0) '123456'
+    -   Actual: (rc=0) '123456'
+- Running test: long 15-digit (maximum) MSISDN
+  - Encoding ASCII (buffer limit=0) '123456789012345'...
+    - Expected: (rc=9) '0821436587092143f5'
+    -   Actual: (rc=9) '0821436587092143f5'
+  - Decoding HEX (buffer limit=0) '0821436587092143f5'...
+    - Expected: (rc=0) '123456789012345'
+    -   Actual: (rc=0) '123456789012345'
+- Running test: long 15-digit (maximum) MSISDN, limited buffer
+  - Encoding ASCII (buffer limit=9) '123456789012345'...
+    - Expected: (rc=9) '0821436587092143f5'
+    -   Actual: (rc=9) '0821436587092143f5'
+  - Decoding HEX (buffer limit=16) '0821436587092143f5'...
+    - Expected: (rc=0) '123456789012345'
+    -   Actual: (rc=0) '12345678901234'
+- Running test: to be truncated 20-digit MSISDN
+  - Encoding ASCII (buffer limit=9) '12345678901234567890'...
+    - Expected: (rc=-5) ''
+    -   Actual: (rc=-5) ''
+  - Decoding HEX (buffer limit=16) '0a21436587092143658709'...
+    - Expected: (rc=0) '123456789012345'
+    -   Actual: (rc=0) '12345678901234'
+- Running test: LV incorrect length
+  - Decoding HEX (buffer limit=0) '05214365'...
+    - Expected: (rc=-5) '(none)'
+    -   Actual: (rc=-5) '(none)'
+- Running test: empty input buffer
+  - Encoding ASCII (buffer limit=0) ''...
+    - Expected: (rc=1) '00'
+    -   Actual: (rc=1) '00'
+  - Decoding HEX (buffer limit=0) ''...
+    - Expected: (rc=-5) '(none)'
+    -   Actual: (rc=-5) '(none)'
+
 Constructed RA:
 077-121-666-5
 MCC+MNC in BCD: 70 17 21 

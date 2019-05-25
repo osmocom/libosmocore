@@ -610,6 +610,181 @@ static void test_mid_decode_zero_length(void)
 	printf("\n");
 }
 
+static const struct bcd_number_test {
+	/* Human-readable test name */
+	const char *test_name;
+
+	/* To be encoded number in ASCII */
+	const char *enc_ascii;
+	/* Expected encoding result in HEX */
+	const char *enc_hex;
+	/* Optional header length (LHV) */
+	uint8_t enc_h_len;
+	/* Expected return code */
+	int enc_rc;
+
+	/* To be decoded buffer in HEX */
+	const char *dec_hex;
+	/* Expected decoding result in ASCII */
+	const char *dec_ascii;
+	/* Optional header length (LHV) */
+	uint8_t dec_h_len;
+	/* Expected return code */
+	int dec_rc;
+
+	/* Encoding buffer limit (0 means unlimited) */
+	size_t enc_buf_lim;
+	/* Decoding buffer limit (0 means unlimited) */
+	size_t dec_buf_lim;
+} bcd_number_test_set[] = {
+	{
+		.test_name = "regular 9-digit MSISDN",
+
+		/* Encoding test */
+		.enc_ascii = "123456789",
+		.enc_hex   = "0521436587f9",
+		.enc_rc    = 6,
+
+		/* Decoding test */
+		.dec_hex   = "0521436587f9",
+		.dec_ascii = "123456789",
+	},
+	{
+		.test_name = "regular 6-digit MSISDN with optional header (LHV)",
+
+		/* Encoding test */
+		.enc_ascii = "123456",
+		.enc_hex   = "0700000000214365",
+		.enc_h_len = 4, /* LHV */
+		.enc_rc    = 4 + 4,
+
+		/* Decoding test */
+		.dec_hex   = "07deadbeef214365",
+		.dec_ascii = "123456",
+		.dec_h_len = 4, /* LHV */
+	},
+	{
+		.test_name = "long 15-digit (maximum) MSISDN",
+
+		/* Encoding test */
+		.enc_ascii = "123456789012345",
+		.enc_hex   = "0821436587092143f5",
+		.enc_rc    = 9,
+
+		/* Decoding test */
+		.dec_hex   = "0821436587092143f5",
+		.dec_ascii = "123456789012345",
+	},
+	{
+		.test_name = "long 15-digit (maximum) MSISDN, limited buffer",
+
+		/* Encoding test */
+		.enc_ascii = "123456789012345",
+		.enc_hex   = "0821436587092143f5",
+		.enc_rc    = 9,
+
+		/* Decoding test */
+		.dec_hex   = "0821436587092143f5",
+		.dec_ascii = "123456789012345",
+
+		/* Buffer length limitations */
+		.dec_buf_lim = 15 + 1,
+		.enc_buf_lim = 9,
+	},
+	{
+		.test_name = "to be truncated 20-digit MSISDN",
+
+		/* Encoding test (not enough room in buffer) */
+		.enc_ascii = "12345678901234567890",
+		.enc_hex   = "", /* nothing */
+		.enc_rc    = -EIO,
+
+		/* Decoding test (one 5 digits do not fit) */
+		.dec_hex   = "0a21436587092143658709",
+		.dec_ascii = "123456789012345",
+		.dec_rc    = 0,
+
+		/* Buffer length limitations */
+		.dec_buf_lim = 15 + 1, /* 5 digits less */
+		.enc_buf_lim = 9,
+	},
+	{
+		.test_name = "LV incorrect length",
+		.dec_hex   = "05214365", /* should be 0x03 */
+		.dec_ascii = "(none)",
+		.dec_rc    = -EIO,
+	},
+	{
+		.test_name = "empty input buffer",
+
+		/* Encoding test */
+		.enc_ascii = "",
+		.enc_hex   = "00",
+		.enc_rc    = 1,
+
+		/* Decoding test */
+		.dec_hex   = "",
+		.dec_ascii = "(none)",
+		.dec_rc = -EIO,
+	},
+};
+
+static void test_bcd_number_encode_decode()
+{
+	const struct bcd_number_test *test;
+	uint8_t buf_enc[0xff] = { 0 };
+	char buf_dec[0xff] = { 0 };
+	size_t buf_len, i;
+	int rc;
+
+	printf("BSD number encoding / decoding test\n");
+
+	for (i = 0; i < ARRAY_SIZE(bcd_number_test_set); i++) {
+		test = &bcd_number_test_set[i];
+		printf("- Running test: %s\n", test->test_name);
+
+		if (test->enc_ascii) {
+			if (test->enc_buf_lim)
+				buf_len = test->enc_buf_lim;
+			else
+				buf_len = sizeof(buf_enc);
+
+			printf("  - Encoding ASCII (buffer limit=%zu) '%s'...\n",
+			       test->enc_buf_lim, test->enc_ascii);
+
+			rc = gsm48_encode_bcd_number(buf_enc, buf_len,
+				test->enc_h_len, test->enc_ascii);
+			printf("    - Expected: (rc=%d) '%s'\n",
+			       test->enc_rc, test->enc_hex);
+			printf("    -   Actual: (rc=%d) '%s'\n",
+			       rc, osmo_hexdump_nospc(buf_enc, rc >= 0 ? rc : 0));
+		}
+
+		if (test->dec_hex) {
+			/* Parse a HEX string */
+			rc = osmo_hexparse(test->dec_hex, buf_enc, sizeof(buf_enc));
+			OSMO_ASSERT(rc >= 0);
+
+			if (test->dec_buf_lim)
+				buf_len = test->dec_buf_lim;
+			else
+				buf_len = sizeof(buf_dec);
+
+			printf("  - Decoding HEX (buffer limit=%zu) '%s'...\n",
+			       test->dec_buf_lim, test->dec_hex);
+
+			rc = gsm48_decode_bcd_number2(buf_dec, buf_len,
+				buf_enc, rc, test->dec_h_len);
+			printf("    - Expected: (rc=%d) '%s'\n",
+			       test->dec_rc, test->dec_ascii);
+			printf("    -   Actual: (rc=%d) '%s'\n",
+			       rc, rc == 0 ? buf_dec : "(none)");
+		}
+	}
+
+	printf("\n");
+}
+
 struct {
 	int range;
 	int arfcns_num;
@@ -949,6 +1124,7 @@ int main(int argc, char **argv)
 	test_mid_from_imsi();
 	test_mid_encode_decode();
 	test_mid_decode_zero_length();
+	test_bcd_number_encode_decode();
 	test_ra_cap();
 	test_lai_encode_decode();
 
