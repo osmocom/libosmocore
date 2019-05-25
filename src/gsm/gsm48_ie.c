@@ -88,16 +88,16 @@ int gsm48_decode_bcd_number2(char *output, size_t output_len,
 
 	for (i = 1 + h_len; i <= in_len; i++) {
 		/* lower nibble */
-		output_len--;
 		if (output_len <= 1)
 			break;
 		*output++ = bcd_num_digits[bcd_lv[i] & 0xf];
+		output_len--;
 
 		/* higher nibble */
-		output_len--;
 		if (output_len <= 1)
 			break;
 		*output++ = bcd_num_digits[bcd_lv[i] >> 4];
+		output_len--;
 	}
 	if (output_len >= 1)
 		*output++ = '\0';

@@ -167,14 +167,14 @@ BSD number encoding / decoding test
     -   Actual: (rc=9) '0821436587092143f5'
   - Decoding HEX (buffer limit=16) '0821436587092143f5'...
     - Expected: (rc=0) '123456789012345'
-    -   Actual: (rc=0) '12345678901234'
+    -   Actual: (rc=0) '123456789012345'
 - Running test: to be truncated 20-digit MSISDN
   - Encoding ASCII (buffer limit=9) '12345678901234567890'...
     - Expected: (rc=-5) ''
     -   Actual: (rc=-5) ''
   - Decoding HEX (buffer limit=16) '0a21436587092143658709'...
     - Expected: (rc=0) '123456789012345'
-    -   Actual: (rc=0) '12345678901234'
+    -   Actual: (rc=0) '123456789012345'
 - Running test: LV incorrect length
   - Decoding HEX (buffer limit=0) '05214365'...
     - Expected: (rc=-5) '(none)'
