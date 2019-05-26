@@ -149,8 +149,8 @@ BSD number encoding / decoding test
     -   Actual: (rc=0) '123456789'
 - Running test: regular 6-digit MSISDN with optional header (LHV)
   - Encoding ASCII (buffer limit=0) '123456'...
-    - Expected: (rc=8) '0700000000214365'
-    -   Actual: (rc=8) '0721436587214365'
+    - Expected: (rc=8) '07ffffffff214365'
+    -   Actual: (rc=8) '07ffffffff214365'
   - Decoding HEX (buffer limit=0) '07deadbeef214365'...
     - Expected: (rc=0) '123456'
     -   Actual: (rc=0) '123456'

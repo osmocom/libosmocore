@@ -654,7 +654,7 @@ static const struct bcd_number_test {
 
 		/* Encoding test */
 		.enc_ascii = "123456",
-		.enc_hex   = "0700000000214365",
+		.enc_hex   = "07ffffffff214365",
 		.enc_h_len = 4, /* LHV */
 		.enc_rc    = 4 + 4,
 
@@ -732,8 +732,8 @@ static const struct bcd_number_test {
 static void test_bcd_number_encode_decode()
 {
 	const struct bcd_number_test *test;
-	uint8_t buf_enc[0xff] = { 0 };
-	char buf_dec[0xff] = { 0 };
+	uint8_t buf_enc[0xff] = { 0xff };
+	char buf_dec[0xff] = { 0xff };
 	size_t buf_len, i;
 	int rc;
 
@@ -780,6 +780,10 @@ static void test_bcd_number_encode_decode()
 			printf("    -   Actual: (rc=%d) '%s'\n",
 			       rc, (rc == 0 || rc == -ENOSPC) ? buf_dec : "(none)");
 		}
+
+		/* Poison buffers between the test iterations */
+		memset(buf_enc, 0xff, sizeof(buf_enc));
+		memset(buf_dec, 0xff, sizeof(buf_dec));
 	}
 
 	printf("\n");

@@ -132,7 +132,13 @@ static int asc_to_bcd(const char asc)
  *  \param[in] max_len Maximum Length of \a bcd_lv
  *  \param[in] h_len Length of an optional heder between L and V portion
  *  \param[in] input phone number as 0-terminated ASCII
- *  \returns number of bytes used in \a bcd_lv */
+ *  \returns number of bytes used in \a bcd_lv
+ *
+ * Depending on a context (e.g. called or calling party BCD number), the
+ * optional header between L and V parts can contain TON (Type Of Number),
+ * NPI (Numbering Plan Indication), presentation or screening indicator.
+ * NOTE: it is up to the caller to initialize this header!
+ */
 int gsm48_encode_bcd_number(uint8_t *bcd_lv, uint8_t max_len,
 		      int h_len, const char *input)
 {
