@@ -209,6 +209,12 @@ int rsl_dec_chan_nr(uint8_t chan_nr, uint8_t *type, uint8_t *subch, uint8_t *tim
 	} else if ((chan_nr & 0xf8) == RSL_CHAN_OSMO_PDCH) {
 		*type = RSL_CHAN_OSMO_PDCH;
 		*subch = 0;
+	} else if ((chan_nr & 0xf8) == RSL_CHAN_OSMO_CBCH4) {
+		*type = RSL_CHAN_OSMO_CBCH4;
+		*subch = 0;
+	} else if ((chan_nr & 0xf8) == RSL_CHAN_OSMO_CBCH8) {
+		*type = RSL_CHAN_OSMO_CBCH8;
+		*subch = 0;
 	} else
 		return -EINVAL;
 
@@ -242,6 +248,10 @@ char *rsl_chan_nr_str_buf(char *buf, size_t buf_len, uint8_t chan_nr)
 		snprintf(buf, buf_len, "PCH/AGCH on TS%d", ts);
 	else if (cbits == 0x18)
 		snprintf(buf, buf_len, "PDCH on TS%d", ts);
+	else if (cbits == 0x19)
+		snprintf(buf, buf_len, "CBCH(SDCCH/4) on TS%d", ts);
+	else if (cbits == 0x1a)
+		snprintf(buf, buf_len, "CBCH(SDCCH/8) on TS%d", ts);
 	else
 		snprintf(buf, buf_len, "UNKNOWN on TS%d", ts);
 

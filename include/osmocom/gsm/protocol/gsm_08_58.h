@@ -50,6 +50,8 @@ union abis_rsl_chan_nr {
 #define ABIS_RSL_CHAN_NR_CBITS_RACH		0x11
 #define ABIS_RSL_CHAN_NR_CBITS_PCH_AGCH	0x12
 #define ABIS_RSL_CHAN_NR_CBITS_OSMO_PDCH	0x18 /*< non-standard, for dyn TS */
+#define ABIS_RSL_CHAN_NR_CBITS_OSMO_CBCH4	0x19 /*< non-standard, for CBCH/SDCCH4 */
+#define ABIS_RSL_CHAN_NR_CBITS_OSMO_CBCH8	0x1a /*< non-standard, for CBCH/SDCCH8 */
 
 /* Link Identifier 9.3.2 */
 union abis_rsl_link_id {
@@ -424,6 +426,8 @@ enum {
 #define RSL_CHAN_RACH		0x88
 #define RSL_CHAN_PCH_AGCH	0x90
 #define RSL_CHAN_OSMO_PDCH	0xc0	/*< non-standard, for dyn TS */
+#define RSL_CHAN_OSMO_CBCH4	0xc8	/*< non-standard, for CBCH/SDCCH4 */
+#define RSL_CHAN_OSMO_CBCH8	0xd0	/*< non-standard, for CBCH/SDCCH8 */
 
 /* Chapter 9.3.3 */
 #define RSL_ACT_TYPE_INITIAL	0x00
