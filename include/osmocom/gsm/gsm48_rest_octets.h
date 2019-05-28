@@ -18,8 +18,6 @@ int osmo_gsm48_rest_octets_si2quater_encode(uint8_t *data, uint8_t si2q_index, u
 					    size_t uarfcn_length, uint16_t *scramble_list,
 					    struct osmo_earfcn_si2q *si2quater_neigh_list,
 					    size_t *e_offset);
-int osmo_gsm48_rest_octets_si2ter_encode(uint8_t *data);
-int osmo_gsm48_rest_octets_si2bis_encode(uint8_t *data);
 
 struct osmo_gsm48_si_pch_nch_info {
 	bool present;

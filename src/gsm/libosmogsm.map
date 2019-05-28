@@ -303,8 +303,6 @@ gsm48_att_tlvdef;
 gsm48_cc_msg_name;
 osmo_gsm48_rest_octets_si1_encode;
 osmo_gsm48_rest_octets_si2quater_encode;
-osmo_gsm48_rest_octets_si2ter_encode;
-osmo_gsm48_rest_octets_si2bis_encode;
 osmo_gsm48_rest_octets_si6_encode;
 osmo_gsm48_rest_octets_si3_encode;
 osmo_gsm48_rest_octets_si4_encode;
