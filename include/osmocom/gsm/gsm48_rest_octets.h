@@ -12,13 +12,15 @@
 #define SI2Q_MIN_LEN 18
 
 /* generate SI1 rest octets */
-int osmo_gsm48_rest_octets_si1(uint8_t *data, uint8_t *nch_pos, int is1800_net);
-int osmo_gsm48_rest_octets_si2quater(uint8_t *data, uint8_t si2q_index, uint8_t si2q_count, const uint16_t *uarfcn_list,
-				size_t *u_offset, size_t uarfcn_length, uint16_t *scramble_list,
-				struct osmo_earfcn_si2q *si2quater_neigh_list, size_t *e_offset);
-int osmo_gsm48_rest_octets_si2ter(uint8_t *data);
-int osmo_gsm48_rest_octets_si2bis(uint8_t *data);
-int osmo_gsm48_rest_octets_si6(uint8_t *data, bool is1800_net);
+int osmo_gsm48_rest_octets_si1_encode(uint8_t *data, uint8_t *nch_pos, int is1800_net);
+int osmo_gsm48_rest_octets_si2quater_encode(uint8_t *data, uint8_t si2q_index, uint8_t si2q_count,
+					    const uint16_t *uarfcn_list, size_t *u_offset,
+					    size_t uarfcn_length, uint16_t *scramble_list,
+					    struct osmo_earfcn_si2q *si2quater_neigh_list,
+					    size_t *e_offset);
+int osmo_gsm48_rest_octets_si2ter_encode(uint8_t *data);
+int osmo_gsm48_rest_octets_si2bis_encode(uint8_t *data);
+int osmo_gsm48_rest_octets_si6_encode(uint8_t *data, bool is1800_net);
 
 struct osmo_gsm48_si_selection_params {
 	uint16_t penalty_time:5,
@@ -67,10 +69,10 @@ struct osmo_gsm48_si_ro_info {
 };
 
 /* Generate SI3 Rest Octests (Chapter 10.5.2.34 / Table 10.4.72) */
-int osmo_gsm48_rest_octets_si3(uint8_t *data, const struct osmo_gsm48_si_ro_info *si3);
+int osmo_gsm48_rest_octets_si3_encode(uint8_t *data, const struct osmo_gsm48_si_ro_info *si3);
 
 /* Generate SI4 Rest Octets (Chapter 10.5.2.35) */
-int osmo_gsm48_rest_octets_si4(uint8_t *data, const struct osmo_gsm48_si_ro_info *si4, int len);
+int osmo_gsm48_rest_octets_si4_encode(uint8_t *data, const struct osmo_gsm48_si_ro_info *si4, int len);
 
 struct osmo_gsm48_si13_info {
 	struct osmo_gprs_cell_options cell_opts;
@@ -84,4 +86,4 @@ struct osmo_gsm48_si13_info {
 };
 
 /* Generate SI13 Rest Octests (Chapter 10.5.2.37b) */
-int osmo_gsm48_rest_octets_si13(uint8_t *data, const struct osmo_gsm48_si13_info *si13);
+int osmo_gsm48_rest_octets_si13_encode(uint8_t *data, const struct osmo_gsm48_si13_info *si13);

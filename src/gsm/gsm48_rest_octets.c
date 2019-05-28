@@ -35,7 +35,7 @@
 #include <osmocom/gsm/gsm48_rest_octets.h>
 
 /* generate SI1 rest octets */
-int osmo_gsm48_rest_octets_si1(uint8_t *data, uint8_t *nch_pos, int is1800_net)
+int osmo_gsm48_rest_octets_si1_encode(uint8_t *data, uint8_t *nch_pos, int is1800_net)
 {
 	struct bitvec bv;
 
@@ -430,9 +430,11 @@ static size_t si2q_earfcn_count(const struct osmo_earfcn_si2q *e)
 }
 
 /* generate SI2quater rest octets: 3GPP TS 44.018 § 10.5.2.33b */
-int osmo_gsm48_rest_octets_si2quater(uint8_t *data, uint8_t si2q_index, uint8_t si2q_count, const uint16_t *uarfcn_list,
-				     size_t *u_offset, size_t uarfcn_length, uint16_t *scramble_list,
-				     struct osmo_earfcn_si2q *si2quater_neigh_list, size_t *e_offset)
+int osmo_gsm48_rest_octets_si2quater_encode(uint8_t *data, uint8_t si2q_index, uint8_t si2q_count,
+					    const uint16_t *uarfcn_list, size_t *u_offset,
+					    size_t uarfcn_length, uint16_t *scramble_list,
+					    struct osmo_earfcn_si2q *si2quater_neigh_list,
+					    size_t *e_offset)
 {
 	int rc;
 	struct bitvec bv;
@@ -535,7 +537,7 @@ static void append_gprs_ind(struct bitvec *bv,
 }
 
 /* Generate SI2ter Rest Octests 3GPP TS 44.018 Table 10.5.2.33a.1 */
-int osmo_gsm48_rest_octets_si2ter(uint8_t *data)
+int osmo_gsm48_rest_octets_si2ter_encode(uint8_t *data)
 {
 	struct bitvec bv;
 
@@ -552,7 +554,7 @@ int osmo_gsm48_rest_octets_si2ter(uint8_t *data)
 }
 
 /* Generate SI2bis Rest Octests 3GPP TS 44.018 Table 10.5.2.33.1 */
-int osmo_gsm48_rest_octets_si2bis(uint8_t *data)
+int osmo_gsm48_rest_octets_si2bis_encode(uint8_t *data)
 {
 	struct bitvec bv;
 
@@ -566,7 +568,7 @@ int osmo_gsm48_rest_octets_si2bis(uint8_t *data)
 }
 
 /* Generate SI3 Rest Octests (Chapter 10.5.2.34 / Table 10.4.72) */
-int osmo_gsm48_rest_octets_si3(uint8_t *data, const struct osmo_gsm48_si_ro_info *si3)
+int osmo_gsm48_rest_octets_si3_encode(uint8_t *data, const struct osmo_gsm48_si_ro_info *si3)
 {
 	struct bitvec bv;
 
@@ -626,7 +628,7 @@ static int append_lsa_params(struct bitvec *bv,
 }
 
 /* Generate SI4 Rest Octets (Chapter 10.5.2.35) */
-int osmo_gsm48_rest_octets_si4(uint8_t *data, const struct osmo_gsm48_si_ro_info *si4, int len)
+int osmo_gsm48_rest_octets_si4_encode(uint8_t *data, const struct osmo_gsm48_si_ro_info *si4, int len)
 {
 	struct bitvec bv;
 
@@ -685,7 +687,7 @@ int osmo_gsm48_rest_octets_si4(uint8_t *data, const struct osmo_gsm48_si_ro_info
 { L | H < GPRS_MS_TXPWR_MAX_CCH : bit (5) > }
 <implicit spare >;
 */
-int osmo_gsm48_rest_octets_si6(uint8_t *data, bool is1800_net)
+int osmo_gsm48_rest_octets_si6_encode(uint8_t *data, bool is1800_net)
 {
 	struct bitvec bv;
 
@@ -908,7 +910,7 @@ static void append_gprs_pwr_ctrl_pars(struct bitvec *bv,
 }
 
 /* Generate SI13 Rest Octests (04.08 Chapter 10.5.2.37b) */
-int osmo_gsm48_rest_octets_si13(uint8_t *data, const struct osmo_gsm48_si13_info *si13)
+int osmo_gsm48_rest_octets_si13_encode(uint8_t *data, const struct osmo_gsm48_si13_info *si13)
 {
 	struct bitvec bv;
 
