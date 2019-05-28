@@ -951,3 +951,81 @@ int osmo_gsm48_rest_octets_si13_encode(uint8_t *data, const struct osmo_gsm48_si
 	bitvec_spare_padding(&bv, (bv.data_len*8)-1);
 	return bv.data_len;
 }
+
+
+/***********************************************************************
+ * Decoder
+ ***********************************************************************/
+
+/*! Decode SI3 Rest Octests (Chapter 10.5.2.34 / Table 10.4.72).
+ *  \param[out] si3 decoded SI3 rest octets
+ *  \param[in] encoded SI3 rest octets, 4 octets long */
+void osmo_gsm48_rest_octets_si3_decode(struct osmo_gsm48_si_ro_info *si3, const uint8_t *data)
+{
+	struct osmo_gsm48_si_selection_params *sp = &si3->selection_params;
+	struct osmo_gsm48_si_power_offset *po = &si3->power_offset;
+	struct osmo_gsm48_si3_gprs_ind *gi = &si3->gprs_ind;
+	struct bitvec bv;
+
+	memset(&bv, 0, sizeof(bv));
+	bv.data = (uint8_t *) data;
+	bv.data_len = 4;
+
+	memset(si3, 0, sizeof(*si3));
+
+	/* Optional Selection Paraosmo_gsm48_si_ro_infometers */
+	if (bitvec_get_bit_high(&bv) == H) {
+		sp->present = 1;
+		sp->cbq = bitvec_get_uint(&bv, 1);
+		sp->cell_resel_off = bitvec_get_uint(&bv, 6);
+		sp->temp_offs = bitvec_get_uint(&bv, 3);
+		sp->penalty_time = bitvec_get_uint(&bv, 5);
+	} else
+		sp->present = 0;
+
+	/* Optional Power Offset */
+	if (bitvec_get_bit_high(&bv) == H) {
+		po->present = 1;
+		po->power_offset = bitvec_get_uint(&bv, 2);
+	} else
+		po->present = 0;
+
+	/* System Information 2ter Indicator */
+	if (bitvec_get_bit_high(&bv) == H)
+		si3->si2ter_indicator = 1;
+	else
+		si3->si2ter_indicator = 0;
+
+	/* Early Classmark Sending Control */
+	if (bitvec_get_bit_high(&bv) == H)
+		si3->early_cm_ctrl = 1;
+	else
+		si3->early_cm_ctrl = 0;
+
+	/* Scheduling if and where */
+	if (bitvec_get_bit_high(&bv) == H) {
+		si3->scheduling.present = 1;
+		si3->scheduling.where = bitvec_get_uint(&bv, 3);
+	} else
+		si3->scheduling.present = 0;
+
+	/* GPRS Indicator */
+	if (bitvec_get_bit_high(&bv) == H) {
+		gi->present = 1;
+		gi->ra_colour = bitvec_get_uint(&bv, 3);
+		gi->si13_position = bitvec_get_uint(&bv, 1);
+	} else
+		gi->present = 0;
+
+	/* 3G Early Classmark Sending Restriction. If H, then controlled by
+	 * early_cm_ctrl above */
+	if (bitvec_get_bit_high(&bv) == H)
+		si3->early_cm_restrict_3g = 1;
+	else
+		si3->early_cm_restrict_3g = 0;
+
+	if (bitvec_get_bit_high(&bv) == H)
+		si3->si2quater_indicator = 1;
+	else
+		si3->si2quater_indicator = 0;
+}

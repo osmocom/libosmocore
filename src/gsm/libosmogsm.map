@@ -309,6 +309,7 @@ osmo_gsm48_rest_octets_si6_encode;
 osmo_gsm48_rest_octets_si3_encode;
 osmo_gsm48_rest_octets_si4_encode;
 osmo_gsm48_rest_octets_si13_encode;
+osmo_gsm48_rest_octets_si3_decode;
 gsm48_rr_msg_name;
 gsm48_cc_state_name;
 gsm48_construct_ra;
