@@ -20,7 +20,44 @@ int osmo_gsm48_rest_octets_si2quater_encode(uint8_t *data, uint8_t si2q_index, u
 					    size_t *e_offset);
 int osmo_gsm48_rest_octets_si2ter_encode(uint8_t *data);
 int osmo_gsm48_rest_octets_si2bis_encode(uint8_t *data);
-int osmo_gsm48_rest_octets_si6_encode(uint8_t *data, bool is1800_net);
+
+struct osmo_gsm48_si_pch_nch_info {
+	bool present;
+	bool paging_channel_restructuring;
+	uint8_t nln_sacch;
+	bool call_priority_present;
+	uint8_t call_priority;
+	bool nln_status_sacch;
+};
+
+struct osmo_gsm48_si_vbs_vgcs_options {
+	bool present;
+	bool inband_notifications;
+	bool inband_pagings;
+};
+
+struct osmo_gsm48_si_dtm_support {
+	bool present;
+	uint8_t rac;
+	uint8_t max_lapdm;
+};
+
+struct osmo_gsm48_si_gprs_ms_txpwr_max_ccch {
+	bool present;
+	uint8_t max_txpwr;
+};
+
+struct osmo_gsm48_si6_ro_info {
+	struct osmo_gsm48_si_pch_nch_info pch_nch_info;
+	struct osmo_gsm48_si_vbs_vgcs_options vbs_vgcs_options;
+	struct osmo_gsm48_si_dtm_support dtm_support;
+	bool band_indicator_1900;
+	struct osmo_gsm48_si_gprs_ms_txpwr_max_ccch gprs_ms_txpwr_max_ccch;
+	/* MBMS: not supported in Osmocom */
+	/* AMR config (group channel): not supported in Osmocom */
+};
+
+int osmo_gsm48_rest_octets_si6_encode(uint8_t *data, const struct osmo_gsm48_si6_ro_info *in);
 
 struct osmo_gsm48_si_selection_params {
 	uint16_t penalty_time:5,

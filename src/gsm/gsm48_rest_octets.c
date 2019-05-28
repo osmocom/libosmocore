@@ -687,7 +687,7 @@ int osmo_gsm48_rest_octets_si4_encode(uint8_t *data, const struct osmo_gsm48_si_
 { L | H < GPRS_MS_TXPWR_MAX_CCH : bit (5) > }
 <implicit spare >;
 */
-int osmo_gsm48_rest_octets_si6_encode(uint8_t *data, bool is1800_net)
+int osmo_gsm48_rest_octets_si6_encode(uint8_t *data, const struct osmo_gsm48_si6_ro_info *in)
 {
 	struct bitvec bv;
 
@@ -695,19 +695,43 @@ int osmo_gsm48_rest_octets_si6_encode(uint8_t *data, bool is1800_net)
 	bv.data = data;
 	bv.data_len = 1;
 
-	/* no PCH/NCH info */
-	bitvec_set_bit(&bv, L);
-	/* no VBS/VGCS options */
-	bitvec_set_bit(&bv, L);
-	/* no DTM_support */
-	bitvec_set_bit(&bv, L);
-	/* band indicator */
-	if (is1800_net)
-		bitvec_set_bit(&bv, L);
-	else
+	if (in->pch_nch_info.present) {
 		bitvec_set_bit(&bv, H);
-	/* no GPRS_MS_TXPWR_MAX_CCH */
-	bitvec_set_bit(&bv, L);
+		bitvec_set_bit(&bv, !!in->pch_nch_info.paging_channel_restructuring);
+		bitvec_set_uint(&bv, in->pch_nch_info.nln_sacch, 2);
+		if (in->pch_nch_info.call_priority_present) {
+			bitvec_set_bit(&bv, 1);
+			bitvec_set_uint(&bv, in->pch_nch_info.call_priority, 3);
+		} else
+			bitvec_set_bit(&bv, 0);
+		bitvec_set_bit(&bv, !!in->pch_nch_info.nln_status_sacch);
+	} else
+		bitvec_set_bit(&bv, L);
+
+	if (in->vbs_vgcs_options.present) {
+		bitvec_set_bit(&bv, H);
+		bitvec_set_bit(&bv, !!in->vbs_vgcs_options.inband_notifications);
+		bitvec_set_bit(&bv, !!in->vbs_vgcs_options.inband_pagings);
+	} else
+		bitvec_set_bit(&bv, L);
+
+	if (in->dtm_support.present) {
+		bitvec_set_bit(&bv, H);
+		bitvec_set_uint(&bv, in->dtm_support.rac, 8);
+		bitvec_set_uint(&bv, in->dtm_support.max_lapdm, 3);
+	} else
+		bitvec_set_bit(&bv, L);
+
+	if (in->band_indicator_1900)
+		bitvec_set_bit(&bv, H);
+	else
+		bitvec_set_bit(&bv, L);
+
+	if (in->gprs_ms_txpwr_max_ccch.present) {
+		bitvec_set_bit(&bv, H);
+		bitvec_set_uint(&bv, in->gprs_ms_txpwr_max_ccch.max_txpwr, 5);
+	} else
+		bitvec_set_bit(&bv, L);
 
 	bitvec_spare_padding(&bv, (bv.data_len * 8) - 1);
 	return bv.data_len;
