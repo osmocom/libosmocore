@@ -256,13 +256,13 @@ static int range_encode(enum osmo_gsm48_range r, int *arfcns, int arfcns_used, i
 	/* Select the range and the amount of bits needed */
 	switch (r) {
 	case OSMO_GSM48_ARFCN_RANGE_128:
-		return osmo_gsm48_range_enc_range128(chan_list, f0, w);
+		return osmo_gsm48_range_enc_128(chan_list, f0, w);
 	case OSMO_GSM48_ARFCN_RANGE_256:
-		return osmo_gsm48_range_enc_range256(chan_list, f0, w);
+		return osmo_gsm48_range_enc_256(chan_list, f0, w);
 	case OSMO_GSM48_ARFCN_RANGE_512:
-		return osmo_gsm48_range_enc_range512(chan_list, f0, w);
+		return osmo_gsm48_range_enc_512(chan_list, f0, w);
 	case OSMO_GSM48_ARFCN_RANGE_1024:
-		return osmo_gsm48_range_enc_range1024(chan_list, f0, f0_included, w);
+		return osmo_gsm48_range_enc_1024(chan_list, f0, f0_included, w);
 	default:
 		return -ERANGE;
 	};
