@@ -2226,7 +2226,7 @@ cmd_execute_command_real(vector vline, struct vty *vty,
 	/* Make copy of command elements. */
 	cmd_vector = vector_copy(cmd_node_vector(cmdvec, vty->node));
 
-	for (index = 0; index < vector_active(vline); index++)
+	for (index = 0; index < vector_active(vline); index++) {
 		if ((command = vector_slot(vline, index))) {
 			int ret;
 
@@ -2247,13 +2247,14 @@ cmd_execute_command_real(vector vline, struct vty *vty,
 				return CMD_ERR_NO_MATCH;
 			}
 		}
+	}
 
 	/* Check matched count. */
 	matched_element = NULL;
 	matched_count = 0;
 	incomplete_count = 0;
 
-	for (i = 0; i < vector_active(cmd_vector); i++)
+	for (i = 0; i < vector_active(cmd_vector); i++) {
 		if ((cmd_element = vector_slot(cmd_vector, i))) {
 			if (match == vararg_match
 			    || index >= cmd_element->cmdsize) {
@@ -2266,6 +2267,7 @@ cmd_execute_command_real(vector vline, struct vty *vty,
 				incomplete_count++;
 			}
 		}
+	}
 
 	/* Finish of using cmd_vector. */
 	vector_free(cmd_vector);
