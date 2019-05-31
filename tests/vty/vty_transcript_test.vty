@@ -66,3 +66,12 @@ ok argc=1 two
 
 vty_transcript_test> multi2
 ok argc=0
+
+vty_transcript_test> multi0 thr
+ok argc=1 thr
+
+vty_transcript_test> multi1 on
+ok argc=1 on
+
+vty_transcript_test> multi2 t
+ok argc=1 t
