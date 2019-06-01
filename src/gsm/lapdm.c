@@ -136,7 +136,7 @@ static void lapdm_dl_init(struct lapdm_datalink *dl,
 {
 	memset(dl, 0, sizeof(*dl));
 	dl->entity = entity;
-	lapd_dl_init(&dl->dl, 1, 8, 200);
+	lapd_dl_init(&dl->dl, 1, 8, 251); /* Section 5.8.5 of TS 04.06 */
 	dl->dl.reestablish = 0; /* GSM uses no reestablish */
 	dl->dl.send_ph_data_req = lapdm_send_ph_data_req;
 	dl->dl.send_dlsap = send_rslms_dlsap;
