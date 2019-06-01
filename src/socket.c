@@ -688,8 +688,8 @@ err:
  *  \param[in] flags flags like \ref OSMO_SOCK_F_CONNECT
  *  \returns socket fd on success; negative on error
  *
- * This function creates (and optionall binds/connects) a socket using
- * \ref osmo_sock_unix_init, but also fills the \a ofd structure.
+ * This function creates (and optionally binds/connects) a socket
+ * using osmo_sock_unix_init, but also fills the ofd structure.
  */
 int osmo_sock_unix_init_ofd(struct osmo_fd *ofd, uint16_t type, uint8_t proto,
 			    const char *socket_path, unsigned int flags)
