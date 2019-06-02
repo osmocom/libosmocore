@@ -457,6 +457,7 @@ lapd_state_names;
 
 lapdm_channel_exit;
 lapdm_channel_init;
+lapdm_channel_init2;
 lapdm_channel_reset;
 lapdm_channel_set_flags;
 lapdm_channel_set_l1;
@@ -465,6 +466,7 @@ lapdm_channel_set_mode;
 lapdm_datalink_for_sapi;
 lapdm_entity_exit;
 lapdm_entity_init;
+lapdm_entity_init2;
 lapdm_entity_reset;
 lapdm_entity_set_flags;
 lapdm_entity_set_mode;

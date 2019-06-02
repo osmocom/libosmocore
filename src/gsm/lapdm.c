@@ -1,7 +1,7 @@
 /*! \file lapdm.c
  * GSM LAPDm (TS 04.06) implementation. */
 /*
- * (C) 2010-2017 by Harald Welte <laforge@gnumonks.org>
+ * (C) 2010-2019 by Harald Welte <laforge@gnumonks.org>
  * (C) 2010-2011 by Andreas Eversberg <jolly@eversberg.eu>
  * (C) 2014-2016 by sysmocom - s.f.m.c GmbH
  *
@@ -132,7 +132,7 @@ static int send_rslms_dlsap(struct osmo_dlsap_prim *dp,
 static int update_pending_frames(struct lapd_msg_ctx *lctx);
 
 static void lapdm_dl_init(struct lapdm_datalink *dl,
-			  struct lapdm_entity *entity, int t200)
+			  struct lapdm_entity *entity, int t200_ms, uint32_t n200)
 {
 	memset(dl, 0, sizeof(*dl));
 	dl->entity = entity;
@@ -142,39 +142,101 @@ static void lapdm_dl_init(struct lapdm_datalink *dl,
 	dl->dl.send_dlsap = send_rslms_dlsap;
 	dl->dl.update_pending_frames = update_pending_frames;
 	dl->dl.n200_est_rel = N200_EST_REL;
-	dl->dl.n200 = N200;
+	dl->dl.n200 = n200;
 	dl->dl.t203_sec = 0; dl->dl.t203_usec = 0;
-	dl->dl.t200_sec = t200; dl->dl.t200_usec = 0;
+	dl->dl.t200_sec = t200_ms / 1000; dl->dl.t200_usec = (t200_ms % 1000) * 1000;
 }
 
 /*! initialize a LAPDm entity and all datalinks inside
  *  \param[in] le LAPDm entity
  *  \param[in] mode \ref lapdm_mode (BTS/MS)
+ *  \param[in] t200 T200 re-transmission timer for all SAPIs in seconds
+ *
+ *  Don't use this function; It doesn't support different T200 values per API
+ *  and doesn't permit the caller to specify the N200 counter, both of which
+ *  are required by GSM specs and supported by lapdm_entity_init2().
  */
 void lapdm_entity_init(struct lapdm_entity *le, enum lapdm_mode mode, int t200)
+{
+	/* convert from single full-second value to per-SAPI milli-second value */
+	int t200_ms_sapi_arr[_NR_DL_SAPI];
+	int i;
+
+	for (i = 0; i < ARRAY_SIZE(t200_ms_sapi_arr); i++)
+		t200_ms_sapi_arr[i] = t200 * 1000;
+
+	return lapdm_entity_init2(le, mode, t200_ms_sapi_arr, N200);
+}
+
+/*! initialize a LAPDm entity and all datalinks inside
+ *  \param[in] le LAPDm entity
+ *  \param[in] mode lapdm_mode (BTS/MS)
+ *  \param[in] t200_ms per-SAPI array of T200 re-transmission timer in milli-seconds
+ *  \param[in] n200 N200 re-transmisison count
+ */
+void lapdm_entity_init2(struct lapdm_entity *le, enum lapdm_mode mode,
+			const int *t200_ms, int n200)
 {
 	unsigned int i;
 
 	for (i = 0; i < ARRAY_SIZE(le->datalink); i++)
-		lapdm_dl_init(&le->datalink[i], le, t200);
+		lapdm_dl_init(&le->datalink[i], le, t200_ms[i], n200);
 
 	lapdm_entity_set_mode(le, mode);
+}
+
+static int get_n200_dcch(enum gsm_chan_t chan_t)
+{
+	switch (chan_t) {
+	case GSM_LCHAN_SDCCH:
+		return N200_TR_SDCCH;
+	case GSM_LCHAN_TCH_F:
+		return N200_TR_FACCH_FR;
+	case GSM_LCHAN_TCH_H:
+		return N200_TR_FACCH_HR;
+	default:
+		return -1;
+	}
+}
+
+/*! initialize a LAPDm channel and all its channels
+ *  \param[in] lc lapdm_channel to be initialized
+ *  \param[in] mode lapdm_mode (BTS/MS)
+ *
+ *  Don't use this function; It doesn't support different T200 values per API
+ *  and doesn't set the correct N200 counter, both of which
+ *  are required by GSM specs and supported by lapdm_channel_init2().
+ */
+void lapdm_channel_init(struct lapdm_channel *lc, enum lapdm_mode mode)
+{
+	/* emulate old backwards-compatible behavior with 1s/2s */
+	const int t200_ms_dcch[_NR_DL_SAPI] = { 1000, 1000 };
+	const int t200_ms_acch[_NR_DL_SAPI] = { 2000, 2000 };
+
+	lapdm_channel_init2(lc, mode, t200_ms_dcch, t200_ms_acch, GSM_LCHAN_SDCCH);
 }
 
 /*! initialize a LAPDm channel and all its channels
  *  \param[in] lc \ref lapdm_channel to be initialized
  *  \param[in] mode \ref lapdm_mode (BTS/MS)
- *
- * This really is a convenience wrapper around calling \ref
- * lapdm_entity_init twice.
+ *  \param[in] t200_ms_dcch per-SAPI array of T200 in milli-seconds for DCCH
+ *  \param[in] t200_ms_acch per-SAPI array of T200 in milli-seconds for SACCH
+ *  \param[in] chan_t GSM channel type (to correctly set N200)
  */
-void lapdm_channel_init(struct lapdm_channel *lc, enum lapdm_mode mode)
+int lapdm_channel_init2(struct lapdm_channel *lc, enum lapdm_mode mode,
+			const int *t200_ms_dcch, const int *t200_ms_acch, enum gsm_chan_t chan_t)
 {
-	lapdm_entity_init(&lc->lapdm_acch, mode, 2);
+	int n200_dcch = get_n200_dcch(chan_t);
+	if (n200_dcch < 0)
+		return -EINVAL;
+
+	lapdm_entity_init2(&lc->lapdm_acch, mode, t200_ms_acch, N200_TR_SACCH);
 	lc->lapdm_acch.lapdm_ch = lc;
-	/* FIXME: this depends on chan type */
-	lapdm_entity_init(&lc->lapdm_dcch, mode, 1);
+
+	lapdm_entity_init2(&lc->lapdm_dcch, mode, t200_ms_dcch, n200_dcch);
 	lc->lapdm_dcch.lapdm_ch = lc;
+
+	return 0;
 }
 
 /*! flush and release all resoures in LAPDm entity */
