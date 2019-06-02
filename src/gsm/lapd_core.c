@@ -564,7 +564,7 @@ static void lapd_t200_cb(void *data)
 	switch (dl->state) {
 	case LAPD_STATE_SABM_SENT:
 		/* 5.4.1.3 */
-		if (dl->retrans_ctr + 1 >= dl->n200_est_rel + 1) {
+		if (dl->retrans_ctr >= dl->n200_est_rel + 1) {
 			/* flush tx and send buffers */
 			lapd_dl_flush_tx(dl);
 			lapd_dl_flush_send(dl);
@@ -589,7 +589,7 @@ static void lapd_t200_cb(void *data)
 		break;
 	case LAPD_STATE_DISC_SENT:
 		/* 5.4.4.3 */
-		if (dl->retrans_ctr + 1 >= dl->n200_est_rel + 1) {
+		if (dl->retrans_ctr >= dl->n200_est_rel + 1) {
 			/* send MDL ERROR INIDCATION to L3 */
 			mdl_error(MDL_CAUSE_T200_EXPIRED, &dl->lctx);
 			/* send RELEASE INDICATION to L3 */
@@ -618,7 +618,7 @@ static void lapd_t200_cb(void *data)
 		/* fall through */
 	case LAPD_STATE_TIMER_RECOV:
 		dl->retrans_ctr++;
-		if (dl->retrans_ctr < dl->n200) {
+		if (dl->retrans_ctr <= dl->n200) {
 			uint8_t vs = sub_mod(dl->v_send, 1, dl->v_range);
 			uint8_t h = do_mod(vs, dl->range_hist);
 			/* retransmit I frame (V_s-1) with P=1, if any */
@@ -671,7 +671,7 @@ static void lapd_t200_cb(void *data)
 			/* reestablish */
 			if (!dl->reestablish)
 				break;
-			LOGP(DLLAPD, LOGL_NOTICE, "N200 reached, performing "
+			LOGP(DLLAPD, LOGL_NOTICE, "N200+1 reached, performing "
 				"reestablishment. (dl=%p)\n", dl);
 			lapd_reestablish(dl);
 		}
