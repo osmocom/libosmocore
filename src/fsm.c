@@ -609,33 +609,31 @@ static int state_chg(struct osmo_fsm_inst *fi, uint32_t new_state,
 		st->onleave(fi, new_state);
 
 	if (fsm_log_timeouts) {
+		char trailer[64];
+		trailer[0] = '\0';
 		if (keep_timer && fi->timer.active) {
 			/* This should always give us a timeout, but just in case the return value indicates error, omit
 			 * logging the remaining time. */
 			if (osmo_timer_remaining(&fi->timer, NULL, &remaining))
-				LOGPFSMSRC(fi, file, line,
-					   "State change to %s (keeping " OSMO_T_FMT ")\n",
-					   osmo_fsm_state_name(fsm, new_state),
-					   OSMO_T_FMT_ARGS(fi->T));
+				snprintf(trailer, sizeof(trailer), "(keeping " OSMO_T_FMT ")",
+					 OSMO_T_FMT_ARGS(fi->T));
 			else
-				LOGPFSMSRC(fi, file, line,
-					   "State change to %s (keeping " OSMO_T_FMT ", %ld.%03lds remaining)\n",
-					   osmo_fsm_state_name(fsm, new_state),
-					   OSMO_T_FMT_ARGS(fi->T), remaining.tv_sec, remaining.tv_usec / 1000);
+				snprintf(trailer, sizeof(trailer), "(keeping " OSMO_T_FMT
+					  ", %ld.%03lds remaining)", OSMO_T_FMT_ARGS(fi->T),
+					  remaining.tv_sec, remaining.tv_usec / 1000);
 		} else if (timeout_ms) {
-			if (timeout_ms % 1000 == 0) {
+			if (timeout_ms % 1000 == 0)
 				/* keep log output legacy compatible to avoid autotest failures */
-				LOGPFSMSRC(fi, file, line, "State change to %s (" OSMO_T_FMT ", %lus)\n",
-					   osmo_fsm_state_name(fsm, new_state),
+				snprintf(trailer, sizeof(trailer), "(" OSMO_T_FMT ", %lus)",
 					   OSMO_T_FMT_ARGS(T), timeout_ms/1000);
-			} else {
-				LOGPFSMSRC(fi, file, line, "State change to %s (" OSMO_T_FMT ", %lums)\n",
-					   osmo_fsm_state_name(fsm, new_state),
+			else
+				snprintf(trailer, sizeof(trailer), "(" OSMO_T_FMT ", %lums)",
 					   OSMO_T_FMT_ARGS(T), timeout_ms);
-			}
 		} else
-			LOGPFSMSRC(fi, file, line, "State change to %s (no timeout)\n",
-				   osmo_fsm_state_name(fsm, new_state));
+			snprintf(trailer, sizeof(trailer), "(no timeout)");
+
+		LOGPFSMSRC(fi, file, line, "State change to %s %s\n",
+			   osmo_fsm_state_name(fsm, new_state), trailer);
 	} else {
 		LOGPFSMSRC(fi, file, line, "state_chg to %s\n",
 			   osmo_fsm_state_name(fsm, new_state));
