@@ -82,6 +82,7 @@ int gsm48_decode_bcd_number2(char *output, size_t output_len,
 {
 	uint8_t in_len;
 	int i;
+	bool truncated = false;
 	if (output_len < 1)
 		return -ENOSPC;
 	*output = '\0';
@@ -94,14 +95,23 @@ int gsm48_decode_bcd_number2(char *output, size_t output_len,
 
 	for (i = 1 + h_len; i <= in_len; i++) {
 		/* lower nibble */
-		if (output_len <= 1)
+		if (output_len <= 1) {
+			truncated = true;
 			break;
+		}
 		*output++ = bcd_num_digits[bcd_lv[i] & 0xf];
 		output_len--;
 
 		/* higher nibble */
-		if (output_len <= 1)
+		if (output_len <= 1) {
+			/* not truncated if there is exactly one 0xf ('\0') higher nibble remaining */
+			if (i == in_len && (bcd_lv[i] & 0xf0) == 0xf0) {
+				break;
+			}
+
+			truncated = true;
 			break;
+		}
 		*output++ = bcd_num_digits[bcd_lv[i] >> 4];
 		output_len--;
 	}
@@ -109,7 +119,7 @@ int gsm48_decode_bcd_number2(char *output, size_t output_len,
 		*output++ = '\0';
 
 	/* Indicate whether the output was truncated */
-	if (i < in_len)
+	if (truncated)
 		return -ENOSPC;
 
 	return 0;

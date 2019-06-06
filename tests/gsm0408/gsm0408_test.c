@@ -727,6 +727,17 @@ static const struct bcd_number_test {
 		.dec_ascii = "(none)",
 		.dec_rc = -EIO,
 	},
+	{
+		.test_name = "decoding buffer is one byte too small (OS#4049)",
+
+		/* Decoding test */
+		.dec_hex   = "022143", /* "1234" */
+		.dec_ascii = "123",    /* '4' was truncated */
+		.dec_rc    = -ENOSPC,
+
+		/* Buffer length limitations */
+		.dec_buf_lim = 4,
+	},
 };
 
 static void test_bcd_number_encode_decode()

@@ -186,6 +186,10 @@ BSD number encoding / decoding test
   - Decoding HEX (buffer limit=0) ''...
     - Expected: (rc=-5) '(none)'
     -   Actual: (rc=-5) '(none)'
+- Running test: decoding buffer is one byte too small (OS#4049)
+  - Decoding HEX (buffer limit=4) '022143'...
+    - Expected: (rc=-28) '123'
+    -   Actual: (rc=-28) '123'
 
 Constructed RA:
 077-121-666-5
