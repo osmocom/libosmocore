@@ -19,7 +19,7 @@ vty_transcript_test> multi0 o
 ok argc=1 o
 
 vty_transcript_test> multi0 t
-ok argc=1 t
+% Ambiguous command.
 
 vty_transcript_test> multi0 th
 ok argc=1 th
@@ -42,7 +42,7 @@ vty_transcript_test> multi1 o
 ok argc=1 o
 
 vty_transcript_test> multi1 t
-ok argc=1 t
+% Ambiguous command.
 
 vty_transcript_test> multi1 th
 ok argc=1 th
@@ -74,4 +74,4 @@ vty_transcript_test> multi1 on
 ok argc=1 on
 
 vty_transcript_test> multi2 t
-ok argc=1 t
+% Ambiguous command.

@@ -1521,7 +1521,7 @@ is_cmd_ambiguous(char *command, vector v, int index, enum match_type type)
 				if (!desc)
 					continue;
 
-				enum match_type ret;
+				enum match_type mtype;
 				const char *str = desc->cmd;
 
 				if (CMD_OPTION(str)) {
@@ -1573,10 +1573,10 @@ is_cmd_ambiguous(char *command, vector v, int index, enum match_type type)
 						match++;
 					break;
 				case ipv6_prefix_match:
-					if ((ret =
+					if ((mtype =
 					     cmd_ipv6_prefix_match
 					     (command)) != no_match) {
-						if (ret == partly_match) {
+						if (mtype == partly_match) {
 							ret = 2;	/* There is incomplete match. */
 							goto free_and_return;
 						}
@@ -1590,10 +1590,10 @@ is_cmd_ambiguous(char *command, vector v, int index, enum match_type type)
 						match++;
 					break;
 				case ipv4_prefix_match:
-					if ((ret =
+					if ((mtype =
 					     cmd_ipv4_prefix_match
 					     (command)) != no_match) {
-						if (ret == partly_match) {
+						if (mtype == partly_match) {
 							ret = 2;	/* There is incomplete match. */
 							goto free_and_return;
 						}
