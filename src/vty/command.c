@@ -1516,97 +1516,100 @@ is_cmd_ambiguous(char *command, vector v, int index, enum match_type type)
 
 			descvec = vector_slot(cmd_element->strvec, index);
 
-			for (j = 0; j < vector_active(descvec); j++)
-				if ((desc = vector_slot(descvec, j))) {
-					enum match_type ret;
-					const char *str = desc->cmd;
+			for (j = 0; j < vector_active(descvec); j++) {
+				desc = vector_slot(descvec, j);
+				if (!desc)
+					continue;
 
-					if (CMD_OPTION(str)) {
-						if (!cmd_deopt_ctx)
-							cmd_deopt_ctx =
-								talloc_named_const(tall_vty_cmd_ctx, 0,
-										   __func__);
-						str = cmd_deopt(cmd_deopt_ctx, str);
-						if (str == NULL)
-							continue;
-					}
+				enum match_type ret;
+				const char *str = desc->cmd;
 
-					switch (type) {
-					case exact_match:
-						if (!(CMD_VARIABLE (str))
-						   && strcmp(command, str) == 0)
-							match++;
-						break;
-					case partly_match:
-						if (!(CMD_VARIABLE (str))
-						   && strncmp(command, str, strlen (command)) == 0)
-						{
-							if (matched
-							    && strcmp(matched,
-								      str) != 0) {
-								ret = 1; /* There is ambiguous match. */
-								goto free_and_return;
-							} else
-								matched = str;
-							match++;
-						}
-						break;
-					case range_match:
-						if (cmd_range_match
-						    (str, command)) {
-							if (matched
-							    && strcmp(matched,
-								      str) != 0) {
-								ret = 1;
-								goto free_and_return;
-							} else
-								matched = str;
-							match++;
-						}
-						break;
-#ifdef HAVE_IPV6
-					case ipv6_match:
-						if (CMD_IPV6(str))
-							match++;
-						break;
-					case ipv6_prefix_match:
-						if ((ret =
-						     cmd_ipv6_prefix_match
-						     (command)) != no_match) {
-							if (ret == partly_match) {
-								ret = 2;	/* There is incomplete match. */
-								goto free_and_return;
-							}
-
-							match++;
-						}
-						break;
-#endif				/* HAVE_IPV6 */
-					case ipv4_match:
-						if (CMD_IPV4(str))
-							match++;
-						break;
-					case ipv4_prefix_match:
-						if ((ret =
-						     cmd_ipv4_prefix_match
-						     (command)) != no_match) {
-							if (ret == partly_match) {
-								ret = 2;	/* There is incomplete match. */
-								goto free_and_return;
-							}
-
-							match++;
-						}
-						break;
-					case extend_match:
-						if (CMD_VARIABLE (str))
-							match++;
-						break;
-					case no_match:
-					default:
-						break;
-					}
+				if (CMD_OPTION(str)) {
+					if (!cmd_deopt_ctx)
+						cmd_deopt_ctx =
+							talloc_named_const(tall_vty_cmd_ctx, 0,
+									   __func__);
+					str = cmd_deopt(cmd_deopt_ctx, str);
+					if (str == NULL)
+						continue;
 				}
+
+				switch (type) {
+				case exact_match:
+					if (!(CMD_VARIABLE (str))
+					   && strcmp(command, str) == 0)
+						match++;
+					break;
+				case partly_match:
+					if (!(CMD_VARIABLE (str))
+					   && strncmp(command, str, strlen (command)) == 0)
+					{
+						if (matched
+						    && strcmp(matched,
+							      str) != 0) {
+							ret = 1; /* There is ambiguous match. */
+							goto free_and_return;
+						} else
+							matched = str;
+						match++;
+					}
+					break;
+				case range_match:
+					if (cmd_range_match
+					    (str, command)) {
+						if (matched
+						    && strcmp(matched,
+							      str) != 0) {
+							ret = 1;
+							goto free_and_return;
+						} else
+							matched = str;
+						match++;
+					}
+					break;
+#ifdef HAVE_IPV6
+				case ipv6_match:
+					if (CMD_IPV6(str))
+						match++;
+					break;
+				case ipv6_prefix_match:
+					if ((ret =
+					     cmd_ipv6_prefix_match
+					     (command)) != no_match) {
+						if (ret == partly_match) {
+							ret = 2;	/* There is incomplete match. */
+							goto free_and_return;
+						}
+
+						match++;
+					}
+					break;
+#endif				/* HAVE_IPV6 */
+				case ipv4_match:
+					if (CMD_IPV4(str))
+						match++;
+					break;
+				case ipv4_prefix_match:
+					if ((ret =
+					     cmd_ipv4_prefix_match
+					     (command)) != no_match) {
+						if (ret == partly_match) {
+							ret = 2;	/* There is incomplete match. */
+							goto free_and_return;
+						}
+
+						match++;
+					}
+					break;
+				case extend_match:
+					if (CMD_VARIABLE (str))
+						match++;
+					break;
+				case no_match:
+				default:
+					break;
+				}
+			}
 			if (!match)
 				vector_slot(v, i) = NULL;
 		}
