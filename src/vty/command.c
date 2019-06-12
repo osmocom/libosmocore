@@ -2310,16 +2310,26 @@ cmd_execute_command_real(vector vline, struct vty *vty,
 		}
 
 		vector descvec = vector_slot(matched_element->strvec, i);
+		const char *tmp_cmd;
 
 		if (vector_active(descvec) == 1) {
+			/* Single coice argument, no "(...|...)". */
 			struct desc *desc = vector_slot(descvec, 0);
 
-			if (CMD_VARARG(desc->cmd))
-				varflag = 1;
+			if (CMD_OPTION(desc->cmd)) {
+				/* we need to first remove the [] chars, then check to see what's inside (var or token) */
+				tmp_cmd = cmd_deopt(cmd_deopt_ctx, desc->cmd);
+			} else {
+				tmp_cmd = desc->cmd;
+			}
 
-			if (varflag || CMD_VARIABLE(desc->cmd)
-			    || CMD_OPTION(desc->cmd))
+			if (CMD_VARARG(tmp_cmd))
+				varflag = 1;
+			if (varflag || CMD_VARIABLE(tmp_cmd))
 				argv[argc++] = vector_slot(vline, i);
+			else if (CMD_OPTION(desc->cmd))
+				argv[argc++] = tmp_cmd;
+			/* else : we don't want to add non-opt single-choice static args in argv[] */
 		} else {
 			/* multi choice argument. look up which choice
 			   the user meant (can only be one after
@@ -2328,7 +2338,6 @@ cmd_execute_command_real(vector vline, struct vty *vty,
 			   want to pass "three" in argv[]. */
 			for (j = 0; j < vector_active(descvec); j++) {
 				struct desc *desc = vector_slot(descvec, j);
-				const char *tmp_cmd;
 				if (!desc)
 					continue;
 				if (cmd_match(desc->cmd, vector_slot(vline, i), ANY_MATCH, true) == NO_MATCH)

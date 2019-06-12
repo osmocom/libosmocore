@@ -80,7 +80,7 @@ vty_transcript_test> single0 one
 ok argc=1 one
 
 vty_transcript_test> single0 on
-ok argc=1 on
+ok argc=1 one
 
 vty_transcript_test> single0
 ok argc=0
