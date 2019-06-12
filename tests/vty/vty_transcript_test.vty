@@ -75,3 +75,12 @@ ok argc=1 on
 
 vty_transcript_test> multi2 t
 % Ambiguous command.
+
+vty_transcript_test> single0 one
+ok argc=1 one
+
+vty_transcript_test> single0 on
+ok argc=1 on
+
+vty_transcript_test> single0
+ok argc=0

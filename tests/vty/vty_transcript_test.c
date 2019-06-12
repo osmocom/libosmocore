@@ -154,6 +154,14 @@ const struct log_info log_info = {
 	.num_cat = ARRAY_SIZE(default_categories),
 };
 
+DEFUN(single0, single0_cmd,
+      "single0 [one]",
+      "single0 test command\n" "1\n")
+{
+	vty_out(vty, "ok argc=%d%s%s%s", argc, argc ? " " : "", argc ? argv[0] : "", VTY_NEWLINE);
+	return CMD_SUCCESS;
+}
+
 DEFUN(multi0, multi0_cmd,
       "multi0 (one|two|three)",
       "multi0 test command\n" "1\n2\n3\n")
@@ -180,6 +188,7 @@ DEFUN(multi2, multi2_cmd,
 
 static void init_vty_cmds()
 {
+	install_element_ve(&single0_cmd);
 	install_element_ve(&multi0_cmd);
 	install_element_ve(&multi1_cmd);
 	install_element_ve(&multi2_cmd);
