@@ -155,7 +155,7 @@ int osmo_print_n(char *buf, size_t bufsize, const char *str, size_t n);
 
 uint32_t osmo_isqrt32(uint32_t x);
 
-const char osmo_luhn(const char* in, int in_len);
+char osmo_luhn(const char* in, int in_len);
 
 /*! State for OSMO_STRBUF_APPEND() and OSMO_STRBUF_PRINTF(). See there for examples. */
 struct osmo_strbuf {

@@ -993,7 +993,7 @@ char *osmo_str_toupper_c(const void *ctx, const char *src)
  * \param[in] in_len  Count of digits to use for the input (14 for IMEI).
  * \returns checksum char (e.g. '3'); negative on error
  */
-const char osmo_luhn(const char* in, int in_len)
+char osmo_luhn(const char* in, int in_len)
 {
 	int i, sum = 0;
 
