@@ -2294,27 +2294,27 @@ cmd_execute_command_real(vector vline, struct vty *vty,
 	argc = 0;
 
 	for (i = 0; i < vector_active(vline); i++) {
-		if (varflag)
-			argv[argc++] = vector_slot(vline, i);
-		else {
-			vector descvec =
-			    vector_slot(matched_element->strvec, i);
-
-			if (vector_active(descvec) == 1) {
-				struct desc *desc = vector_slot(descvec, 0);
-
-				if (CMD_VARARG(desc->cmd))
-					varflag = 1;
-
-				if (varflag || CMD_VARIABLE(desc->cmd)
-				    || CMD_OPTION(desc->cmd))
-					argv[argc++] = vector_slot(vline, i);
-			} else
-				argv[argc++] = vector_slot(vline, i);
-		}
-
 		if (argc == CMD_ARGC_MAX)
 			return CMD_ERR_EXEED_ARGC_MAX;
+		if (varflag) {
+			argv[argc++] = vector_slot(vline, i);
+			continue;
+		}
+
+		vector descvec = vector_slot(matched_element->strvec, i);
+
+		if (vector_active(descvec) == 1) {
+			struct desc *desc = vector_slot(descvec, 0);
+
+			if (CMD_VARARG(desc->cmd))
+				varflag = 1;
+
+			if (varflag || CMD_VARIABLE(desc->cmd)
+			    || CMD_OPTION(desc->cmd))
+				argv[argc++] = vector_slot(vline, i);
+		} else {
+			argv[argc++] = vector_slot(vline, i);
+		}
 	}
 
 	/* For vtysh execution. */
@@ -2439,27 +2439,27 @@ cmd_execute_command_strict(vector vline, struct vty *vty,
 	argc = 0;
 
 	for (i = 0; i < vector_active(vline); i++) {
-		if (varflag)
-			argv[argc++] = vector_slot(vline, i);
-		else {
-			vector descvec =
-			    vector_slot(matched_element->strvec, i);
-
-			if (vector_active(descvec) == 1) {
-				struct desc *desc = vector_slot(descvec, 0);
-
-				if (CMD_VARARG(desc->cmd))
-					varflag = 1;
-
-				if (varflag || CMD_VARIABLE(desc->cmd)
-				    || CMD_OPTION(desc->cmd))
-					argv[argc++] = vector_slot(vline, i);
-			} else
-				argv[argc++] = vector_slot(vline, i);
-		}
-
 		if (argc == CMD_ARGC_MAX)
 			return CMD_ERR_EXEED_ARGC_MAX;
+		if (varflag) {
+			argv[argc++] = vector_slot(vline, i);
+			continue;
+		}
+
+		vector descvec = vector_slot(matched_element->strvec, i);
+
+		if (vector_active(descvec) == 1) {
+			struct desc *desc = vector_slot(descvec, 0);
+
+			if (CMD_VARARG(desc->cmd))
+				varflag = 1;
+
+			if (varflag || CMD_VARIABLE(desc->cmd)
+			    || CMD_OPTION(desc->cmd))
+				argv[argc++] = vector_slot(vline, i);
+		} else {
+			argv[argc++] = vector_slot(vline, i);
+		}
 	}
 
 	/* For vtysh execution. */
