@@ -359,15 +359,18 @@ static void _output(struct log_target *target, unsigned int subsys,
 			OSMO_SNPRINTF_RET(ret, rem, offset, len);
 #endif
 		} else if (target->print_timestamp) {
-			char *timestr;
 			time_t tm;
 			if ((tm = time(NULL)) == (time_t) -1)
 				goto err;
-			timestr = ctime(&tm);
-			timestr[strlen(timestr)-1] = '\0';
-			ret = snprintf(buf + offset, rem, "%s ", timestr);
-			if (ret < 0)
+			/* Get human-readable representation of time.
+			   man ctime: we need at least 26 bytes in buf */
+			if (rem < 26 || !ctime_r(&tm, buf + offset))
 				goto err;
+			ret = strlen(buf + offset);
+			if (ret <= 0)
+				goto err;
+			/* Get rid of useless final '\n' added by ctime_r. We want a space instead. */
+			buf[offset + ret - 1] = ' ';
 			OSMO_SNPRINTF_RET(ret, rem, offset, len);
 		}
 		if (target->print_category) {
