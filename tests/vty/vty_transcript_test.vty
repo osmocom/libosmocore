@@ -16,13 +16,13 @@ vty_transcript_test> multi0 two
 ok argc=1 two
 
 vty_transcript_test> multi0 o
-ok argc=1 o
+ok argc=1 one
 
 vty_transcript_test> multi0 t
 % Ambiguous command.
 
 vty_transcript_test> multi0 th
-ok argc=1 th
+ok argc=1 three
 
 vty_transcript_test> multi0
 % Command incomplete.
@@ -39,13 +39,13 @@ vty_transcript_test> multi1 two
 ok argc=1 two
 
 vty_transcript_test> multi1 o
-ok argc=1 o
+ok argc=1 one
 
 vty_transcript_test> multi1 t
 % Ambiguous command.
 
 vty_transcript_test> multi1 th
-ok argc=1 th
+ok argc=1 three
 
 vty_transcript_test> multi1
 ok argc=0
@@ -68,10 +68,10 @@ vty_transcript_test> multi2
 ok argc=0
 
 vty_transcript_test> multi0 thr
-ok argc=1 thr
+ok argc=1 three
 
 vty_transcript_test> multi1 on
-ok argc=1 on
+ok argc=1 one
 
 vty_transcript_test> multi2 t
 % Ambiguous command.

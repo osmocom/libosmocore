@@ -2217,7 +2217,7 @@ static int
 cmd_execute_command_real(vector vline, struct vty *vty,
 			 struct cmd_element **cmd)
 {
-	unsigned int i;
+	unsigned int i, j;
 	unsigned int index;
 	vector cmd_vector;
 	struct cmd_element *cmd_element;
@@ -2228,6 +2228,10 @@ cmd_execute_command_real(vector vline, struct vty *vty,
 	enum match_type match = 0;
 	int varflag;
 	char *command;
+	int rc;
+	/* Used for temporary storage of cmd_deopt() allocated arguments during
+	   argv[] generation */
+	void *cmd_deopt_ctx = NULL;
 
 	/* Make copy of command elements. */
 	cmd_vector = vector_copy(cmd_node_vector(cmdvec, vty->node));
@@ -2293,9 +2297,13 @@ cmd_execute_command_real(vector vline, struct vty *vty,
 	varflag = 0;
 	argc = 0;
 
+	cmd_deopt_ctx = talloc_named_const(tall_vty_cmd_ctx, 0, __func__);
+
 	for (i = 0; i < vector_active(vline); i++) {
-		if (argc == CMD_ARGC_MAX)
-			return CMD_ERR_EXEED_ARGC_MAX;
+		if (argc == CMD_ARGC_MAX) {
+			rc = CMD_ERR_EXEED_ARGC_MAX;
+			goto rc_free_deopt_ctx;
+		}
 		if (varflag) {
 			argv[argc++] = vector_slot(vline, i);
 			continue;
@@ -2313,7 +2321,32 @@ cmd_execute_command_real(vector vline, struct vty *vty,
 			    || CMD_OPTION(desc->cmd))
 				argv[argc++] = vector_slot(vline, i);
 		} else {
-			argv[argc++] = vector_slot(vline, i);
+			/* multi choice argument. look up which choice
+			   the user meant (can only be one after
+			   filtering and checking for ambigous). For instance,
+			   if user typed "th" for "(two|three)" arg, we
+			   want to pass "three" in argv[]. */
+			for (j = 0; j < vector_active(descvec); j++) {
+				struct desc *desc = vector_slot(descvec, j);
+				const char *tmp_cmd;
+				if (!desc)
+					continue;
+				if (cmd_match(desc->cmd, vector_slot(vline, i), ANY_MATCH, true) == NO_MATCH)
+					continue;
+				if (CMD_OPTION(desc->cmd)) {
+					/* we need to first remove the [] chars, then check to see what's inside (var or token) */
+					tmp_cmd = cmd_deopt(cmd_deopt_ctx, desc->cmd);
+				} else {
+					tmp_cmd = desc->cmd;
+				}
+
+				if(CMD_VARIABLE(tmp_cmd)) {
+					argv[argc++] = vector_slot(vline, i);
+				} else {
+					argv[argc++] = tmp_cmd;
+				}
+				break;
+			}
 		}
 	}
 
@@ -2322,10 +2355,14 @@ cmd_execute_command_real(vector vline, struct vty *vty,
 		*cmd = matched_element;
 
 	if (matched_element->daemon)
-		return CMD_SUCCESS_DAEMON;
+		rc = CMD_SUCCESS_DAEMON;
+	else	/* Execute matched command. */
+		rc = (*matched_element->func) (matched_element, vty, argc, argv);
 
-	/* Execute matched command. */
-	return (*matched_element->func) (matched_element, vty, argc, argv);
+rc_free_deopt_ctx:
+	/* Now after we called the command func, we can free temporary strings */
+	talloc_free(cmd_deopt_ctx);
+	return rc;
 }
 
 int

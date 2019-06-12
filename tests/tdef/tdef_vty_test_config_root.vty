@@ -163,7 +163,6 @@ tdef_vty_test(config)# timer te T2
 tdef_vty_test(config)# timer test T2 100
 
 tdef_vty_test(config)# timer tes T2 100
-% Error: no timers found
 
 tdef_vty_test(config)# timer te T2 100
 % Ambiguous command.
@@ -219,7 +218,6 @@ tdef_vty_test(config)# timer softw T3
 software: T3 = 480 m	Fix bugs (default: 480 m)
 
 tdef_vty_test(config)# timer softw T3 23
-% Error: no timers found
 
 tdef_vty_test(config)# timer
 tea: T1 = 50 s	Water Boiling Timeout (default: 50 s)
@@ -234,7 +232,7 @@ test: T2147483647 = 4294967295 m	Very large (default: 4294967295 m)
 test: X23 = 239471 s	Negative T number (default: 239471 s)
 software: T1 = 13 m	Write code (default: 30 m)
 software: T2 = 0 ms	Hit segfault (default: 20 ms)
-software: T3 = 480 m	Fix bugs (default: 480 m)
+software: T3 = 23 m	Fix bugs (default: 480 m)
 
 tdef_vty_test(config)# do show timer
 tea: T1 = 50 s	Water Boiling Timeout (default: 50 s)
@@ -249,13 +247,14 @@ test: T2147483647 = 4294967295 m	Very large (default: 4294967295 m)
 test: X23 = 239471 s	Negative T number (default: 239471 s)
 software: T1 = 13 m	Write code (default: 30 m)
 software: T2 = 0 ms	Hit segfault (default: 20 ms)
-software: T3 = 480 m	Fix bugs (default: 480 m)
+software: T3 = 23 m	Fix bugs (default: 480 m)
 
 tdef_vty_test(config)# show running-config
 ... !timer
 timer tea T3 32
 timer software T1 13
 timer software T2 0
+timer software T3 23
 ... !timer
 
 tdef_vty_test(config)# timer tea T3 default
@@ -263,10 +262,12 @@ tdef_vty_test(config)# timer software T1 default
 tdef_vty_test(config)# show running-config
 ... !timer
 timer software T2 0
+timer software T3 23
 ... !timer
 
 tdef_vty_test(config)# timer softw 2 default
-% Error: no timers found
 tdef_vty_test(config)# timer software 2 default
 tdef_vty_test(config)# show running-config
+... !timer
+timer software T3 23
 ... !timer
