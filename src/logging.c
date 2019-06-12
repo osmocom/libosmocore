@@ -361,7 +361,8 @@ static void _output(struct log_target *target, unsigned int subsys,
 		} else if (target->print_timestamp) {
 			char *timestr;
 			time_t tm;
-			tm = time(NULL);
+			if ((tm = time(NULL)) == (time_t) -1)
+				goto err;
 			timestr = ctime(&tm);
 			timestr[strlen(timestr)-1] = '\0';
 			ret = snprintf(buf + offset, rem, "%s ", timestr);
