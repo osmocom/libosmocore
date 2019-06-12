@@ -719,7 +719,7 @@ struct gsm48_rach_control {
  */
 static inline void gsm48_barr_acc(struct gsm48_rach_control *rach_control, unsigned int acc)
 {
-	OSMO_ASSERT(acc >= 0 && acc <= 15);
+	OSMO_ASSERT(acc <= 15);
 	if (acc >= 8)
 		rach_control->t2 |= (1 << (acc - 8));
 	else
@@ -733,7 +733,7 @@ static inline void gsm48_barr_acc(struct gsm48_rach_control *rach_control, unsig
  */
 static inline void gsm48_allow_acc(struct gsm48_rach_control *rach_control, unsigned int acc)
 {
-	OSMO_ASSERT(acc >= 0 && acc <= 15);
+	OSMO_ASSERT(acc <= 15);
 	if (acc >= 8)
 		rach_control->t2 &= ~(1 << (acc - 8));
 	else
@@ -748,7 +748,7 @@ static inline void gsm48_allow_acc(struct gsm48_rach_control *rach_control, unsi
  */
 static inline bool gsm48_acc_is_barred(struct gsm48_rach_control *rach_control, unsigned int acc)
 {
-	OSMO_ASSERT(acc >= 0 && acc <= 15);
+	OSMO_ASSERT(acc <= 15);
 	if (acc >= 8)
 		return (rach_control->t2 & (1 << (acc - 8))) != 0;
 	return (rach_control->t3 & (1 << (acc))) != 0;
