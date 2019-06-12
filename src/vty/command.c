@@ -869,17 +869,17 @@ static vector cmd_node_vector(vector v, enum node_type ntype)
 
 /* Completion match types. */
 enum match_type {
-	no_match = 0,
-	any_match,
-	extend_match,
-	ipv4_prefix_match,
-	ipv4_match,
-	ipv6_prefix_match,
-	ipv6_match,
-	range_match,
-	vararg_match,
-	partly_match,
-	exact_match,
+	NO_MATCH = 0,
+	ANY_MATCH,
+	EXTEND_MATCH,
+	IPV4_PREFIX_MATCH,
+	IPV4_MATCH,
+	IPV6_PREFIX_MATCH,
+	IPV6_MATCH,
+	RANGE_MATCH,
+	VARARG_MATCH,
+	PARTLY_MATCH,
+	EXACT_MATCH,
 };
 
 static enum match_type cmd_ipv4_match(const char *str)
@@ -889,7 +889,7 @@ static enum match_type cmd_ipv4_match(const char *str)
 	char buf[4];
 
 	if (str == NULL)
-		return partly_match;
+		return PARTLY_MATCH;
 
 	for (;;) {
 		memset(buf, 0, sizeof(buf));
@@ -897,29 +897,29 @@ static enum match_type cmd_ipv4_match(const char *str)
 		while (*str != '\0') {
 			if (*str == '.') {
 				if (dots >= 3)
-					return no_match;
+					return NO_MATCH;
 
 				if (*(str + 1) == '.')
-					return no_match;
+					return NO_MATCH;
 
 				if (*(str + 1) == '\0')
-					return partly_match;
+					return PARTLY_MATCH;
 
 				dots++;
 				break;
 			}
 			if (!isdigit((int)*str))
-				return no_match;
+				return NO_MATCH;
 
 			str++;
 		}
 
 		if (str - sp > 3)
-			return no_match;
+			return NO_MATCH;
 
 		strncpy(buf, sp, str - sp);
 		if (atoi(buf) > 255)
-			return no_match;
+			return NO_MATCH;
 
 		nums++;
 
@@ -930,9 +930,9 @@ static enum match_type cmd_ipv4_match(const char *str)
 	}
 
 	if (nums < 4)
-		return partly_match;
+		return PARTLY_MATCH;
 
-	return exact_match;
+	return EXACT_MATCH;
 }
 
 static enum match_type cmd_ipv4_prefix_match(const char *str)
@@ -942,7 +942,7 @@ static enum match_type cmd_ipv4_prefix_match(const char *str)
 	char buf[4];
 
 	if (str == NULL)
-		return partly_match;
+		return PARTLY_MATCH;
 
 	for (;;) {
 		memset(buf, 0, sizeof(buf));
@@ -950,44 +950,44 @@ static enum match_type cmd_ipv4_prefix_match(const char *str)
 		while (*str != '\0' && *str != '/') {
 			if (*str == '.') {
 				if (dots == 3)
-					return no_match;
+					return NO_MATCH;
 
 				if (*(str + 1) == '.' || *(str + 1) == '/')
-					return no_match;
+					return NO_MATCH;
 
 				if (*(str + 1) == '\0')
-					return partly_match;
+					return PARTLY_MATCH;
 
 				dots++;
 				break;
 			}
 
 			if (!isdigit((int)*str))
-				return no_match;
+				return NO_MATCH;
 
 			str++;
 		}
 
 		if (str - sp > 3)
-			return no_match;
+			return NO_MATCH;
 
 		strncpy(buf, sp, str - sp);
 		if (atoi(buf) > 255)
-			return no_match;
+			return NO_MATCH;
 
 		if (dots == 3) {
 			if (*str == '/') {
 				if (*(str + 1) == '\0')
-					return partly_match;
+					return PARTLY_MATCH;
 
 				str++;
 				break;
 			} else if (*str == '\0')
-				return partly_match;
+				return PARTLY_MATCH;
 		}
 
 		if (*str == '\0')
-			return partly_match;
+			return PARTLY_MATCH;
 
 		str++;
 	}
@@ -995,15 +995,15 @@ static enum match_type cmd_ipv4_prefix_match(const char *str)
 	sp = str;
 	while (*str != '\0') {
 		if (!isdigit((int)*str))
-			return no_match;
+			return NO_MATCH;
 
 		str++;
 	}
 
 	if (atoi(sp) > 32)
-		return no_match;
+		return NO_MATCH;
 
-	return exact_match;
+	return EXACT_MATCH;
 }
 
 #define IPV6_ADDR_STR		"0123456789abcdefABCDEF:.%"
@@ -1027,10 +1027,10 @@ static enum match_type cmd_ipv6_match(const char *str)
 	int ret;
 
 	if (str == NULL)
-		return partly_match;
+		return PARTLY_MATCH;
 
 	if (strspn(str, IPV6_ADDR_STR) != strlen(str))
-		return no_match;
+		return NO_MATCH;
 
 	/* use inet_pton that has a better support,
 	 * for example inet_pton can support the automatic addresses:
@@ -1039,14 +1039,14 @@ static enum match_type cmd_ipv6_match(const char *str)
 	ret = inet_pton(AF_INET6, str, &sin6_dummy.sin6_addr);
 
 	if (ret == 1)
-		return exact_match;
+		return EXACT_MATCH;
 
 	while (*str != '\0') {
 		switch (state) {
 		case STATE_START:
 			if (*str == ':') {
 				if (*(str + 1) != ':' && *(str + 1) != '\0')
-					return no_match;
+					return NO_MATCH;
 				colons--;
 				state = STATE_COLON;
 			} else {
@@ -1066,10 +1066,10 @@ static enum match_type cmd_ipv6_match(const char *str)
 			break;
 		case STATE_DOUBLE:
 			if (double_colon)
-				return no_match;
+				return NO_MATCH;
 
 			if (*(str + 1) == ':')
-				return no_match;
+				return NO_MATCH;
 			else {
 				if (*(str + 1) != '\0')
 					colons++;
@@ -1083,7 +1083,7 @@ static enum match_type cmd_ipv6_match(const char *str)
 		case STATE_ADDR:
 			if (*(str + 1) == ':' || *(str + 1) == '\0') {
 				if (str - sp > 3)
-					return no_match;
+					return NO_MATCH;
 
 				nums++;
 				state = STATE_COLON;
@@ -1099,20 +1099,20 @@ static enum match_type cmd_ipv6_match(const char *str)
 		}
 
 		if (nums > 8)
-			return no_match;
+			return NO_MATCH;
 
 		if (colons > 7)
-			return no_match;
+			return NO_MATCH;
 
 		str++;
 	}
 
 #if 0
 	if (nums < 11)
-		return partly_match;
+		return PARTLY_MATCH;
 #endif				/* 0 */
 
-	return exact_match;
+	return EXACT_MATCH;
 }
 
 static enum match_type cmd_ipv6_prefix_match(const char *str)
@@ -1124,17 +1124,17 @@ static enum match_type cmd_ipv6_prefix_match(const char *str)
 	char *endptr = NULL;
 
 	if (str == NULL)
-		return partly_match;
+		return PARTLY_MATCH;
 
 	if (strspn(str, IPV6_PREFIX_STR) != strlen(str))
-		return no_match;
+		return NO_MATCH;
 
 	while (*str != '\0' && state != STATE_MASK) {
 		switch (state) {
 		case STATE_START:
 			if (*str == ':') {
 				if (*(str + 1) != ':' && *(str + 1) != '\0')
-					return no_match;
+					return NO_MATCH;
 				colons--;
 				state = STATE_COLON;
 			} else {
@@ -1146,7 +1146,7 @@ static enum match_type cmd_ipv6_prefix_match(const char *str)
 		case STATE_COLON:
 			colons++;
 			if (*(str + 1) == '/')
-				return no_match;
+				return NO_MATCH;
 			else if (*(str + 1) == ':')
 				state = STATE_DOUBLE;
 			else {
@@ -1156,10 +1156,10 @@ static enum match_type cmd_ipv6_prefix_match(const char *str)
 			break;
 		case STATE_DOUBLE:
 			if (double_colon)
-				return no_match;
+				return NO_MATCH;
 
 			if (*(str + 1) == ':')
-				return no_match;
+				return NO_MATCH;
 			else {
 				if (*(str + 1) != '\0' && *(str + 1) != '/')
 					colons++;
@@ -1178,11 +1178,11 @@ static enum match_type cmd_ipv6_prefix_match(const char *str)
 			if (*(str + 1) == ':' || *(str + 1) == '.'
 			    || *(str + 1) == '\0' || *(str + 1) == '/') {
 				if (str - sp > 3)
-					return no_match;
+					return NO_MATCH;
 
 				for (; sp <= str; sp++)
 					if (*sp == '/')
-						return no_match;
+						return NO_MATCH;
 
 				nums++;
 
@@ -1199,7 +1199,7 @@ static enum match_type cmd_ipv6_prefix_match(const char *str)
 			break;
 		case STATE_SLASH:
 			if (*(str + 1) == '\0')
-				return partly_match;
+				return PARTLY_MATCH;
 
 			state = STATE_MASK;
 			break;
@@ -1208,33 +1208,33 @@ static enum match_type cmd_ipv6_prefix_match(const char *str)
 		}
 
 		if (nums > 11)
-			return no_match;
+			return NO_MATCH;
 
 		if (colons > 7)
-			return no_match;
+			return NO_MATCH;
 
 		str++;
 	}
 
 	if (state < STATE_MASK)
-		return partly_match;
+		return PARTLY_MATCH;
 
 	mask = strtol(str, &endptr, 10);
 	if (*endptr != '\0')
-		return no_match;
+		return NO_MATCH;
 
 	if (mask < 0 || mask > 128)
-		return no_match;
+		return NO_MATCH;
 
 /* I don't know why mask < 13 makes command match partly.
    Forgive me to make this comments. I Want to set static default route
    because of lack of function to originate default in ospf6d; sorry
        yasu
   if (mask < 13)
-    return partly_match;
+    return PARTLY_MATCH;
 */
 
-	return exact_match;
+	return EXACT_MATCH;
 }
 
 #endif				/* HAVE_IPV6  */
@@ -1349,7 +1349,7 @@ cmd_match(const char *str, const char *command,
 		 * as it we only discover it if a user tries to run it
 		 */
 		if (tmp == NULL)
-			return no_match;
+			return NO_MATCH;
 
 		ret = cmd_match(tmp, command, min, false);
 
@@ -1358,45 +1358,45 @@ cmd_match(const char *str, const char *command,
 		return ret;
 	}
 	else if (CMD_VARARG(str))
-		return vararg_match;
+		return VARARG_MATCH;
 	else if (CMD_RANGE(str))
 	{
 		if (cmd_range_match(str, command))
-			return range_match;
+			return RANGE_MATCH;
 	}
 #ifdef HAVE_IPV6
 	else if (CMD_IPV6(str))
 	{
 		if (cmd_ipv6_match(command) >= min)
-			return ipv6_match;
+			return IPV6_MATCH;
 	}
 	else if (CMD_IPV6_PREFIX(str))
 	{
 		if (cmd_ipv6_prefix_match(command) >= min)
-			return ipv6_prefix_match;
+			return IPV6_PREFIX_MATCH;
 	}
 #endif /* HAVE_IPV6  */
 	else if (CMD_IPV4(str))
 	{
 		if (cmd_ipv4_match(command) >= min)
-			return ipv4_match;
+			return IPV4_MATCH;
 	}
 	else if (CMD_IPV4_PREFIX(str))
 	{
 		if (cmd_ipv4_prefix_match(command) >= min)
-			return ipv4_prefix_match;
+			return IPV4_PREFIX_MATCH;
 	}
 	else if (CMD_VARIABLE(str))
-		return extend_match;
+		return EXTEND_MATCH;
 	else if (strncmp(command, str, strlen(command)) == 0)
 	{
 		if (strcmp(command, str) == 0)
-			return  exact_match;
-		else if (partly_match >= min)
-			return partly_match;
+			return  EXACT_MATCH;
+		else if (PARTLY_MATCH >= min)
+			return PARTLY_MATCH;
 	}
 
-	return no_match;
+	return NO_MATCH;
 }
 
 /* Filter vector at the specified index and by the given command string, to
@@ -1412,7 +1412,7 @@ cmd_filter(char *command, vector v, unsigned int index, enum match_type level)
 	vector descvec;
 	struct desc *desc;
 
-	match_type = no_match;
+	match_type = NO_MATCH;
 
 	/* If command and cmd_element string does not match set NULL to vector */
 	for (i = 0; i < vector_active(v); i++)
@@ -1432,7 +1432,7 @@ cmd_filter(char *command, vector v, unsigned int index, enum match_type level)
 
 						ret = cmd_match (desc->cmd, command, level, true);
 
-						if (ret != no_match)
+						if (ret != NO_MATCH)
 							matched++;
 
 						if (match_type < ret)
@@ -1443,8 +1443,8 @@ cmd_filter(char *command, vector v, unsigned int index, enum match_type level)
 			}
 		}
 
-	if (match_type == no_match)
-		return no_match;
+	if (match_type == NO_MATCH)
+		return NO_MATCH;
 
 	/* 2nd pass: We now know the 'strongest' match type for the index, so we
 	 * go again and filter out commands whose argument (at this index) is
@@ -1454,7 +1454,7 @@ cmd_filter(char *command, vector v, unsigned int index, enum match_type level)
 	 *   foo bar BLAH
 	 *
 	 * and the command string is 'foo bar 10', then we will get here with with
-	 * 'range_match' being the strongest match.  However, if 'BLAH' came
+	 * 'RANGE_MATCH' being the strongest match.  However, if 'BLAH' came
 	 * earlier, it won't have been filtered out (as a CMD_VARIABLE allows "10").
 	 *
 	 * If we don't do a 2nd pass and filter it out, the higher-layers will
@@ -1475,7 +1475,7 @@ cmd_filter(char *command, vector v, unsigned int index, enum match_type level)
 					if ((desc = vector_slot(descvec, j))) {
 						enum match_type ret;
 
-						ret = cmd_match(desc->cmd, command, any_match, true);
+						ret = cmd_match(desc->cmd, command, ANY_MATCH, true);
 
 						if (ret >= match_type)
 							matched++;
@@ -1535,12 +1535,12 @@ is_cmd_ambiguous(char *command, vector v, int index, enum match_type type)
 				}
 
 				switch (type) {
-				case exact_match:
+				case EXACT_MATCH:
 					if (!(CMD_VARIABLE (str))
 					   && strcmp(command, str) == 0)
 						match++;
 					break;
-				case partly_match:
+				case PARTLY_MATCH:
 					if (!(CMD_VARIABLE (str))
 					   && strncmp(command, str, strlen (command)) == 0)
 					{
@@ -1554,7 +1554,7 @@ is_cmd_ambiguous(char *command, vector v, int index, enum match_type type)
 						match++;
 					}
 					break;
-				case range_match:
+				case RANGE_MATCH:
 					if (cmd_range_match
 					    (str, command)) {
 						if (matched
@@ -1568,15 +1568,15 @@ is_cmd_ambiguous(char *command, vector v, int index, enum match_type type)
 					}
 					break;
 #ifdef HAVE_IPV6
-				case ipv6_match:
+				case IPV6_MATCH:
 					if (CMD_IPV6(str))
 						match++;
 					break;
-				case ipv6_prefix_match:
+				case IPV6_PREFIX_MATCH:
 					if ((mtype =
 					     cmd_ipv6_prefix_match
-					     (command)) != no_match) {
-						if (mtype == partly_match) {
+					     (command)) != NO_MATCH) {
+						if (mtype == PARTLY_MATCH) {
 							ret = 2;	/* There is incomplete match. */
 							goto free_and_return;
 						}
@@ -1585,15 +1585,15 @@ is_cmd_ambiguous(char *command, vector v, int index, enum match_type type)
 					}
 					break;
 #endif				/* HAVE_IPV6 */
-				case ipv4_match:
+				case IPV4_MATCH:
 					if (CMD_IPV4(str))
 						match++;
 					break;
-				case ipv4_prefix_match:
+				case IPV4_PREFIX_MATCH:
 					if ((mtype =
 					     cmd_ipv4_prefix_match
-					     (command)) != no_match) {
-						if (mtype == partly_match) {
+					     (command)) != NO_MATCH) {
+						if (mtype == PARTLY_MATCH) {
 							ret = 2;	/* There is incomplete match. */
 							goto free_and_return;
 						}
@@ -1601,11 +1601,11 @@ is_cmd_ambiguous(char *command, vector v, int index, enum match_type type)
 						match++;
 					}
 					break;
-				case extend_match:
+				case EXTEND_MATCH:
 					if (CMD_VARIABLE (str))
 						match++;
 					break;
-				case no_match:
+				case NO_MATCH:
 				default:
 					break;
 				}
@@ -1771,9 +1771,9 @@ cmd_describe_command_real(vector vline, struct vty *vty, int *status)
 		if (!command)
 			continue;
 
-		match = cmd_filter(command, cmd_vector, i, any_match);
+		match = cmd_filter(command, cmd_vector, i, ANY_MATCH);
 
-		if (match == vararg_match) {
+		if (match == VARARG_MATCH) {
 			struct cmd_element *cmd_element;
 			vector descvec;
 			unsigned int j, k;
@@ -1826,7 +1826,7 @@ cmd_describe_command_real(vector vline, struct vty *vty, int *status)
 	/* Make sure that cmd_vector is filtered based on current word */
 	command = vector_slot(vline, index);
 	if (command)
-		cmd_filter(command, cmd_vector, index, any_match);
+		cmd_filter(command, cmd_vector, index, ANY_MATCH);
 
 	/* Make description vector. */
 	for (i = 0; i < vector_active(cmd_vector); i++) {
@@ -1974,7 +1974,7 @@ static char **cmd_complete_command_real(vector vline, struct vty *vty,
 
 			/* First try completion match, if there is exactly match return 1 */
 			match =
-			    cmd_filter(command, cmd_vector, i, any_match);
+			    cmd_filter(command, cmd_vector, i, ANY_MATCH);
 
 			/* If there is exact match then filter ambiguous match else check
 			   ambiguousness. */
@@ -2234,9 +2234,9 @@ cmd_execute_command_real(vector vline, struct vty *vty,
 			int ret;
 
 			match = cmd_filter(command, cmd_vector, index,
-			                   any_match);
+			                   ANY_MATCH);
 
-			if (match == vararg_match)
+			if (match == VARARG_MATCH)
 				break;
 
 			ret =
@@ -2259,7 +2259,7 @@ cmd_execute_command_real(vector vline, struct vty *vty,
 
 	for (i = 0; i < vector_active(cmd_vector); i++) {
 		if ((cmd_element = vector_slot(cmd_vector, i))) {
-			if (match == vararg_match
+			if (match == VARARG_MATCH
 			    || index >= cmd_element->cmdsize) {
 				matched_element = cmd_element;
 #if 0
@@ -2383,10 +2383,10 @@ cmd_execute_command_strict(vector vline, struct vty *vty,
 			int ret;
 
 			match = cmd_filter(vector_slot(vline, index),
-			                   cmd_vector, index, exact_match);
+			                   cmd_vector, index, EXACT_MATCH);
 
 			/* If command meets '.VARARG' then finish matching. */
-			if (match == vararg_match)
+			if (match == VARARG_MATCH)
 				break;
 
 			ret =
@@ -2409,7 +2409,7 @@ cmd_execute_command_strict(vector vline, struct vty *vty,
 		if (vector_slot(cmd_vector, i) != NULL) {
 			cmd_element = vector_slot(cmd_vector, i);
 
-			if (match == vararg_match
+			if (match == VARARG_MATCH
 			    || index >= cmd_element->cmdsize) {
 				matched_element = cmd_element;
 				matched_count++;
