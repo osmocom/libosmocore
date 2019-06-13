@@ -48,7 +48,7 @@ const char *get_value_string_or_null(const struct value_string *vs,
 int get_string_value(const struct value_string *vs, const char *str);
 
 char osmo_bcd2char(uint8_t bcd);
-/* only works for numbers in ascci */
+/* only works for numbers in ASCII */
 uint8_t osmo_char2bcd(char c);
 
 int osmo_bcd2str(char *dst, size_t dst_size, const uint8_t *bcd, int start_nibble, int end_nibble, bool allow_hex);
@@ -92,7 +92,7 @@ do {								\
 	rem -= ret;						\
 } while (0)
 
-/*! Helper macro to terminate when an assertion failes
+/*! Helper macro to terminate when an assertion fails
  *  \param[in] exp Predicate to verify
  *  This function will generate a backtrace and terminate the program if
  *  the predicate evaluates to false (0).
@@ -105,7 +105,7 @@ do {								\
 /*! duplicate a string using talloc and release its prior content (if any)
  * \param[in] ctx Talloc context to use for allocation
  * \param[out] dst pointer to string, will be updated with ptr to new string
- * \param[in] newstr String that will be copieed to newly allocated string */
+ * \param[in] newstr String that will be copied to newly allocated string */
 static inline void osmo_talloc_replace_string(void *ctx, char **dst, const char *newstr)
 {
 	if (*dst)
