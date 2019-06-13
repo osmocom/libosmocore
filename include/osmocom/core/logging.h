@@ -16,7 +16,9 @@
 /*! Maximum number of logging filters */
 #define LOG_MAX_FILTERS	8
 
+#ifndef DEBUG
 #define DEBUG
+#endif
 
 #ifdef DEBUG
 /*! Log a debug message through the Osmocom logging framework

@@ -14,7 +14,9 @@
  * \file utils.h */
 
 /*! Determine number of elements in an array of static size */
+#ifndef ARRAY_SIZE
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
+#endif
 /*! Return the maximum of two specified values */
 #define OSMO_MAX(a, b) ((a) >= (b) ? (a) : (b))
 /*! Return the minimum of two specified values */
