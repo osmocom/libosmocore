@@ -2313,7 +2313,7 @@ cmd_execute_command_real(vector vline, struct vty *vty,
 				argv[argc++] = vector_slot(vline, i);
 		}
 
-		if (argc >= CMD_ARGC_MAX)
+		if (argc == CMD_ARGC_MAX)
 			return CMD_ERR_EXEED_ARGC_MAX;
 	}
 
@@ -2458,7 +2458,7 @@ cmd_execute_command_strict(vector vline, struct vty *vty,
 				argv[argc++] = vector_slot(vline, i);
 		}
 
-		if (argc >= CMD_ARGC_MAX)
+		if (argc == CMD_ARGC_MAX)
 			return CMD_ERR_EXEED_ARGC_MAX;
 	}
 
