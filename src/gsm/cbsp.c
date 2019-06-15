@@ -33,6 +33,8 @@
 #include <osmocom/gsm/cbsp.h>
 #include <osmocom/gsm/gsm0808_utils.h>
 
+const __thread char *osmo_cbsp_errstr;
+
 struct msgb *osmo_cbsp_msgb_alloc(void *ctx, const char *name)
 {
 	/* make the messages rather large as the cell lists can be long! */
@@ -134,6 +136,7 @@ static int encode_wperiod(uint32_t secs)
 		return (secs-120)/10;
 	if (secs <= 60*60)
 		return (secs-600)/30;
+	osmo_cbsp_errstr = "warning period out of range";
 	return -1;
 }
 
@@ -152,8 +155,10 @@ static int cbsp_enc_write_repl(struct msgb *msg, const struct osmo_cbsp_write_re
 	if (in->is_cbs) {
 		int num_of_pages = llist_count(&in->u.cbs.msg_content);
 		struct osmo_cbsp_content *ce;
-		if (num_of_pages == 0 || num_of_pages > 15)
+		if (num_of_pages == 0 || num_of_pages > 15) {
+			osmo_cbsp_errstr = "invalid number of pages";
 			return -EINVAL;
+		}
 		msgb_tv_put(msg, CBSP_IEI_CHANNEL_IND, in->u.cbs.channel_ind);
 		msgb_tv_put(msg, CBSP_IEI_CATEGORY, in->u.cbs.category);
 		msgb_tv16_put(msg, CBSP_IEI_REP_PERIOD, in->u.cbs.rep_period);
@@ -395,6 +400,8 @@ struct msgb *osmo_cbsp_encode(void *ctx, const struct osmo_cbsp_decoded *in)
 	unsigned int len;
 	int rc;
 
+	osmo_cbsp_errstr = NULL;
+
 	if (!msg)
 		return NULL;
 
@@ -462,9 +469,11 @@ struct msgb *osmo_cbsp_encode(void *ctx, const struct osmo_cbsp_decoded *in)
 	case CBSP_MSGT_SET_DRX:
 	case CBSP_MSGT_SET_DRX_COMPL:
 	case CBSP_MSGT_SET_DRX_FAIL:
+		osmo_cbsp_errstr = "message type not implemented";
 		rc = -1;
 		break;
 	default:
+		osmo_cbsp_errstr = "message type not known in spec";
 		rc = -1;
 		break;
 	}
@@ -502,8 +511,10 @@ static int cbsp_decode_cell_list(struct osmo_cbsp_cell_list *cl, void *ctx,
 		unsigned int len_remain = len - (cur - buf);
 		OSMO_ASSERT(ent);
 		rc = gsm0808_decode_cell_id_u(&ent->cell_id, cl->id_discr, cur, len_remain);
-		if (rc < 0)
+		if (rc < 0) {
+			osmo_cbsp_errstr = "cell list: error decoding cell_id_union";
 			return rc;
+		}
 		cur += rc;
 		llist_add_tail(&ent->list, &cl->list);
 	}
@@ -523,8 +534,10 @@ static int cbsp_decode_fail_list(struct llist_head *fl, void *ctx,
 		OSMO_ASSERT(ent);
 		ent->id_discr = cur[0];
 		rc = gsm0808_decode_cell_id_u(&ent->cell_id, ent->id_discr, cur+1, len_remain-1);
-		if (rc < 0)
+		if (rc < 0) {
+			osmo_cbsp_errstr = "fail list: error decoding cell_id_union";
 			return rc;
+		}
 		cur += rc;
 		ent->cause = *cur++;
 		llist_add_tail(&ent->list, fl);
@@ -545,11 +558,14 @@ static int cbsp_decode_loading_list(struct osmo_cbsp_loading_list *ll, void *ctx
 		unsigned int len_remain = len - (cur - buf);
 		OSMO_ASSERT(ent);
 		rc = gsm0808_decode_cell_id_u(&ent->cell_id, ll->id_discr, cur, len_remain);
-		if (rc < 0)
+		if (rc < 0) {
+			osmo_cbsp_errstr = "load list: error decoding cell_id_union";
 			return rc;
+		}
 		cur += rc;
 		if (cur + 2 > buf + len) {
 			talloc_free(ent);
+			osmo_cbsp_errstr = "load list: truncated IE";
 			return -EINVAL;
 		}
 		ent->load[0] = *cur++;
@@ -572,11 +588,14 @@ static int cbsp_decode_num_compl_list(struct osmo_cbsp_num_compl_list *cl, void 
 		unsigned int len_remain = len - (cur - buf);
 		OSMO_ASSERT(ent);
 		rc = gsm0808_decode_cell_id_u(&ent->cell_id, cl->id_discr, cur, len_remain);
-		if (rc < 0)
+		if (rc < 0) {
+			osmo_cbsp_errstr = "completed list: error decoding cell_id_union";
 			return rc;
+		}
 		cur += rc;
 		if (cur + 3 > buf + len) {
 			talloc_free(ent);
+			osmo_cbsp_errstr = "completed list: truncated IE";
 			return -EINVAL;
 		}
 		ent->num_compl = osmo_load16be(cur); cur += 2;
@@ -619,8 +638,10 @@ static int cbsp_dec_write_repl(struct osmo_cbsp_write_replace *out, const struct
 	/* check for mandatory IEs */
 	if (!TLVP_PRESENT(tp, CBSP_IEI_MSG_ID) ||
 	    !TLVP_PRESENT(tp, CBSP_IEI_NEW_SERIAL_NR) ||
-	    !TLVP_PRESENT(tp, CBSP_IEI_CELL_LIST))
+	    !TLVP_PRESENT(tp, CBSP_IEI_CELL_LIST)) {
+		osmo_cbsp_errstr = "missing/short mandatory IE";
 		return -EINVAL;
+	}
 
 	out->msg_id = tlvp_val16be(tp, CBSP_IEI_MSG_ID);
 	out->new_serial_nr = tlvp_val16be(tp, CBSP_IEI_NEW_SERIAL_NR);
@@ -636,14 +657,18 @@ static int cbsp_dec_write_repl(struct osmo_cbsp_write_replace *out, const struct
 	if (TLVP_PRESENT(tp, CBSP_IEI_CHANNEL_IND)) {
 		uint8_t num_of_pages;
 		INIT_LLIST_HEAD(&out->u.cbs.msg_content);
-		if (TLVP_PRESENT(tp, CBSP_IEI_EMERG_IND))
+		if (TLVP_PRESENT(tp, CBSP_IEI_EMERG_IND)) {
+			osmo_cbsp_errstr = "missing/short mandatory IE";
 			return -EINVAL;
+		}
 		if (!TLVP_PRESENT(tp, CBSP_IEI_CATEGORY) ||
 		    !TLVP_PRESENT(tp, CBSP_IEI_REP_PERIOD) ||
 		    !TLVP_PRESENT(tp, CBSP_IEI_NUM_BCAST_REQ) ||
 		    !TLVP_PRESENT(tp, CBSP_IEI_NUM_OF_PAGES) ||
-		    !TLVP_PRESENT(tp, CBSP_IEI_DCS))
+		    !TLVP_PRESENT(tp, CBSP_IEI_DCS)) {
+			osmo_cbsp_errstr = "missing/short mandatory IE";
 			return -EINVAL;
+		}
 		out->is_cbs = true;
 		out->u.cbs.channel_ind = *TLVP_VAL(tp, CBSP_IEI_CHANNEL_IND);
 		out->u.cbs.category = *TLVP_VAL(tp, CBSP_IEI_CATEGORY);
@@ -656,8 +681,10 @@ static int cbsp_dec_write_repl(struct osmo_cbsp_write_replace *out, const struct
 		for (i = 0; i < num_of_pages; i++) {
 			const uint8_t *ie = TLVP_VAL(&tp[i], CBSP_IEI_MSG_CONTENT);
 			struct osmo_cbsp_content *page;
-			if (!ie)
+			if (!ie) {
+				osmo_cbsp_errstr = "insufficient message content IEs";
 				return -EINVAL;
+			}
 			page = talloc_zero(ctx, struct osmo_cbsp_content);
 			OSMO_ASSERT(page);
 			page->user_len = *(ie-1); /* length byte before payload */
@@ -668,8 +695,10 @@ static int cbsp_dec_write_repl(struct osmo_cbsp_write_replace *out, const struct
 		if (!TLVP_PRES_LEN(tp, CBSP_IEI_EMERG_IND, 1) ||
 		    !TLVP_PRES_LEN(tp, CBSP_IEI_WARN_TYPE, 2) ||
 		    !TLVP_PRES_LEN(tp, CBSP_IEI_WARN_SEC_INFO, 50) ||
-		    !TLVP_PRES_LEN(tp, CBSP_IEI_WARNING_PERIOD, 1))
+		    !TLVP_PRES_LEN(tp, CBSP_IEI_WARNING_PERIOD, 1)) {
+			osmo_cbsp_errstr = "missing/short mandatory IE";
 			return -EINVAL;
+		}
 		out->u.emergency.indicator = *TLVP_VAL(tp, CBSP_IEI_EMERG_IND);
 		out->u.emergency.warning_type = tlvp_val16be(tp, CBSP_IEI_WARN_TYPE);
 		memcpy(&out->u.emergency.warning_sec_info, TLVP_VAL(tp, CBSP_IEI_WARN_SEC_INFO),
@@ -684,8 +713,10 @@ static int cbsp_dec_write_repl_compl(struct osmo_cbsp_write_replace_complete *ou
 				     const struct tlv_parsed *tp, struct msgb *in, void *ctx)
 {
 	if (!TLVP_PRES_LEN(tp, CBSP_IEI_MSG_ID, 2) ||
-	    !TLVP_PRES_LEN(tp, CBSP_IEI_NEW_SERIAL_NR, 2))
+	    !TLVP_PRES_LEN(tp, CBSP_IEI_NEW_SERIAL_NR, 2)) {
+		osmo_cbsp_errstr = "missing/short mandatory IE";
 		return -EINVAL;
+	}
 
 	out->msg_id = tlvp_val16be(tp, CBSP_IEI_MSG_ID);
 	out->new_serial_nr = tlvp_val16be(tp, CBSP_IEI_NEW_SERIAL_NR);
@@ -718,8 +749,10 @@ static int cbsp_dec_write_repl_fail(struct osmo_cbsp_write_replace_failure *out,
 {
 	if (!TLVP_PRES_LEN(tp, CBSP_IEI_MSG_ID, 2) ||
 	    !TLVP_PRES_LEN(tp, CBSP_IEI_NEW_SERIAL_NR, 2) ||
-	    !TLVP_PRES_LEN(tp, CBSP_IEI_FAILURE_LIST, 5))
+	    !TLVP_PRES_LEN(tp, CBSP_IEI_FAILURE_LIST, 5)) {
+		osmo_cbsp_errstr = "missing/short mandatory IE";
 		return -EINVAL;
+	}
 
 	out->msg_id = tlvp_val16be(tp, CBSP_IEI_MSG_ID);
 	out->new_serial_nr = tlvp_val16be(tp, CBSP_IEI_NEW_SERIAL_NR);
@@ -759,8 +792,11 @@ static int cbsp_dec_kill(struct osmo_cbsp_kill *out, const struct tlv_parsed *tp
 {
 	if (!TLVP_PRES_LEN(tp, CBSP_IEI_MSG_ID, 2) ||
 	    !TLVP_PRES_LEN(tp, CBSP_IEI_OLD_SERIAL_NR, 2) ||
-	    !TLVP_PRES_LEN(tp, CBSP_IEI_CELL_LIST, 1))
+	    !TLVP_PRES_LEN(tp, CBSP_IEI_CELL_LIST, 1)) {
+		osmo_cbsp_errstr = "missing/short mandatory IE";
 		return -EINVAL;
+	}
+
 	out->msg_id = tlvp_val16be(tp, CBSP_IEI_MSG_ID);
 	out->old_serial_nr = tlvp_val16be(tp, CBSP_IEI_OLD_SERIAL_NR);
 
@@ -781,8 +817,10 @@ static int cbsp_dec_kill_compl(struct osmo_cbsp_kill_complete *out, const struct
 {
 	if (!TLVP_PRES_LEN(tp, CBSP_IEI_MSG_ID, 2) ||
 	    !TLVP_PRES_LEN(tp, CBSP_IEI_OLD_SERIAL_NR, 2) ||
-	    !TLVP_PRES_LEN(tp, CBSP_IEI_CELL_LIST, 1))
+	    !TLVP_PRES_LEN(tp, CBSP_IEI_CELL_LIST, 1)) {
+		osmo_cbsp_errstr = "missing/short mandatory IE";
 		return -EINVAL;
+	}
 
 	out->msg_id = tlvp_val16be(tp, CBSP_IEI_MSG_ID);
 	out->old_serial_nr = tlvp_val16be(tp, CBSP_IEI_OLD_SERIAL_NR);
@@ -811,8 +849,10 @@ static int cbsp_dec_kill_fail(struct osmo_cbsp_kill_failure *out, const struct t
 {
 	if (!TLVP_PRES_LEN(tp, CBSP_IEI_MSG_ID, 2) ||
 	    !TLVP_PRES_LEN(tp, CBSP_IEI_OLD_SERIAL_NR, 2) ||
-	    !TLVP_PRES_LEN(tp, CBSP_IEI_FAILURE_LIST, 5))
+	    !TLVP_PRES_LEN(tp, CBSP_IEI_FAILURE_LIST, 5)) {
+		osmo_cbsp_errstr = "missing/short mandatory IE";
 		return -EINVAL;
+	}
 
 	out->msg_id = tlvp_val16be(tp, CBSP_IEI_MSG_ID);
 	out->old_serial_nr = tlvp_val16be(tp, CBSP_IEI_OLD_SERIAL_NR);
@@ -847,8 +887,10 @@ static int cbsp_dec_load_query(struct osmo_cbsp_load_query *out, const struct tl
 				struct msgb *in, void *ctx)
 {
 	if (!TLVP_PRES_LEN(tp, CBSP_IEI_CELL_LIST, 1) ||
-	    !TLVP_PRES_LEN(tp, CBSP_IEI_CHANNEL_IND, 1))
+	    !TLVP_PRES_LEN(tp, CBSP_IEI_CHANNEL_IND, 1)) {
+		osmo_cbsp_errstr = "missing/short mandatory IE";
 		return -EINVAL;
+	}
 
 	INIT_LLIST_HEAD(&out->cell_list.list);
 	cbsp_decode_cell_list(&out->cell_list, ctx, TLVP_VAL(tp, CBSP_IEI_CELL_LIST),
@@ -863,8 +905,10 @@ static int cbsp_dec_load_query_compl(struct osmo_cbsp_load_query_complete *out,
 				     const struct tlv_parsed *tp, struct msgb *in, void *ctx)
 {
 	if (!TLVP_PRES_LEN(tp, CBSP_IEI_RR_LOADING_LIST, 6) ||
-	    !TLVP_PRES_LEN(tp, CBSP_IEI_CHANNEL_IND, 1))
+	    !TLVP_PRES_LEN(tp, CBSP_IEI_CHANNEL_IND, 1)) {
+		osmo_cbsp_errstr = "missing/short mandatory IE";
 		return -EINVAL;
+	}
 
 	INIT_LLIST_HEAD(&out->loading_list.list);
 	cbsp_decode_loading_list(&out->loading_list, ctx,
@@ -880,8 +924,10 @@ static int cbsp_dec_load_query_fail(struct osmo_cbsp_load_query_failure *out,
 				    const struct tlv_parsed *tp, struct msgb *in, void *ctx)
 {
 	if (!TLVP_PRES_LEN(tp, CBSP_IEI_FAILURE_LIST, 5) ||
-	    !TLVP_PRES_LEN(tp, CBSP_IEI_CHANNEL_IND, 1))
+	    !TLVP_PRES_LEN(tp, CBSP_IEI_CHANNEL_IND, 1)) {
+		osmo_cbsp_errstr = "missing/short mandatory IE";
 		return -EINVAL;
+	}
 
 	INIT_LLIST_HEAD(&out->fail_list);
 	cbsp_decode_fail_list(&out->fail_list, ctx,
@@ -906,8 +952,11 @@ static int cbsp_dec_msg_status_query(struct osmo_cbsp_msg_status_query *out,
 	if (!TLVP_PRES_LEN(tp, CBSP_IEI_MSG_ID, 2) ||
 	    !TLVP_PRES_LEN(tp, CBSP_IEI_OLD_SERIAL_NR, 2) ||
 	    !TLVP_PRES_LEN(tp, CBSP_IEI_CELL_LIST, 1) ||
-	    !TLVP_PRES_LEN(tp, CBSP_IEI_CHANNEL_IND, 1))
+	    !TLVP_PRES_LEN(tp, CBSP_IEI_CHANNEL_IND, 1)) {
+		osmo_cbsp_errstr = "missing/short mandatory IE";
 		return -EINVAL;
+	}
+
 	out->msg_id = tlvp_val16be(tp, CBSP_IEI_MSG_ID);
 	out->old_serial_nr = tlvp_val16be(tp, CBSP_IEI_OLD_SERIAL_NR);
 
@@ -926,8 +975,10 @@ static int cbsp_dec_msg_status_query_compl(struct osmo_cbsp_msg_status_query_com
 	if (!TLVP_PRES_LEN(tp, CBSP_IEI_MSG_ID, 2) ||
 	    !TLVP_PRES_LEN(tp, CBSP_IEI_OLD_SERIAL_NR, 2) ||
 	    !TLVP_PRES_LEN(tp, CBSP_IEI_NUM_BCAST_COMPL_LIST, 7) ||
-	    !TLVP_PRES_LEN(tp, CBSP_IEI_CHANNEL_IND, 1))
+	    !TLVP_PRES_LEN(tp, CBSP_IEI_CHANNEL_IND, 1)) {
+		osmo_cbsp_errstr = "missing/short mandatory IE";
 		return -EINVAL;
+	}
 
 	out->msg_id = tlvp_val16be(tp, CBSP_IEI_MSG_ID);
 	out->old_serial_nr = tlvp_val16be(tp, CBSP_IEI_OLD_SERIAL_NR);
@@ -947,8 +998,10 @@ static int cbsp_dec_msg_status_query_fail(struct osmo_cbsp_msg_status_query_fail
 	if (!TLVP_PRES_LEN(tp, CBSP_IEI_MSG_ID, 2) ||
 	    !TLVP_PRES_LEN(tp, CBSP_IEI_OLD_SERIAL_NR, 2) ||
 	    !TLVP_PRES_LEN(tp, CBSP_IEI_FAILURE_LIST, 5) ||
-	    !TLVP_PRES_LEN(tp, CBSP_IEI_CHANNEL_IND, 1))
+	    !TLVP_PRES_LEN(tp, CBSP_IEI_CHANNEL_IND, 1)) {
+		osmo_cbsp_errstr = "missing/short mandatory IE";
 		return -EINVAL;
+	}
 
 	out->msg_id = tlvp_val16be(tp, CBSP_IEI_MSG_ID);
 	out->old_serial_nr = tlvp_val16be(tp, CBSP_IEI_OLD_SERIAL_NR);
@@ -973,8 +1026,10 @@ static int cbsp_dec_msg_status_query_fail(struct osmo_cbsp_msg_status_query_fail
 static int cbsp_dec_reset(struct osmo_cbsp_reset *out, const struct tlv_parsed *tp,
 			  struct msgb *in, void *ctx)
 {
-	if (!TLVP_PRES_LEN(tp, CBSP_IEI_CELL_LIST, 1))
+	if (!TLVP_PRES_LEN(tp, CBSP_IEI_CELL_LIST, 1)) {
+		osmo_cbsp_errstr = "missing/short mandatory IE";
 		return -EINVAL;
+	}
 
 	INIT_LLIST_HEAD(&out->cell_list.list);
 	cbsp_decode_cell_list(&out->cell_list, ctx, TLVP_VAL(tp, CBSP_IEI_CELL_LIST),
@@ -986,8 +1041,10 @@ static int cbsp_dec_reset(struct osmo_cbsp_reset *out, const struct tlv_parsed *
 static int cbsp_dec_reset_compl(struct osmo_cbsp_reset_complete *out, const struct tlv_parsed *tp,
 				struct msgb *in, void *ctx)
 {
-	if (!TLVP_PRES_LEN(tp, CBSP_IEI_CELL_LIST, 1))
+	if (!TLVP_PRES_LEN(tp, CBSP_IEI_CELL_LIST, 1)) {
+		osmo_cbsp_errstr = "missing/short mandatory IE";
 		return -EINVAL;
+	}
 
 	INIT_LLIST_HEAD(&out->cell_list.list);
 	cbsp_decode_cell_list(&out->cell_list, ctx, TLVP_VAL(tp, CBSP_IEI_CELL_LIST),
@@ -999,8 +1056,10 @@ static int cbsp_dec_reset_compl(struct osmo_cbsp_reset_complete *out, const stru
 static int cbsp_dec_reset_fail(struct osmo_cbsp_reset_failure *out, const struct tlv_parsed *tp,
 				struct msgb *in, void *ctx)
 {
-	if (!TLVP_PRES_LEN(tp, CBSP_IEI_FAILURE_LIST, 5))
+	if (!TLVP_PRES_LEN(tp, CBSP_IEI_FAILURE_LIST, 5)) {
+		osmo_cbsp_errstr = "missing/short mandatory IE";
 		return -EINVAL;
+	}
 
 	INIT_LLIST_HEAD(&out->fail_list);
 	cbsp_decode_fail_list(&out->fail_list, ctx,
@@ -1019,8 +1078,10 @@ static int cbsp_dec_reset_fail(struct osmo_cbsp_reset_failure *out, const struct
 static int cbsp_dec_keep_alive(struct osmo_cbsp_keep_alive *out, const struct tlv_parsed *tp,
 				struct msgb *in, void *ctx)
 {
-	if (!TLVP_PRES_LEN(tp, CBSP_IEI_KEEP_ALIVE_REP_PERIOD, 1))
+	if (!TLVP_PRES_LEN(tp, CBSP_IEI_KEEP_ALIVE_REP_PERIOD, 1)) {
+		osmo_cbsp_errstr = "missing/short mandatory IE";
 		return -EINVAL;
+	}
 
 	out->repetition_period = *TLVP_VAL(tp, CBSP_IEI_KEEP_ALIVE_REP_PERIOD);
 	return 0;
@@ -1039,8 +1100,10 @@ static int cbsp_dec_restart(struct osmo_cbsp_restart *out, const struct tlv_pars
 {
 	if (!TLVP_PRES_LEN(tp, CBSP_IEI_CELL_LIST, 1) ||
 	    !TLVP_PRES_LEN(tp, CBSP_IEI_BCAST_MSG_TYPE, 1) ||
-	    !TLVP_PRES_LEN(tp, CBSP_IEI_RECOVERY_IND, 1))
+	    !TLVP_PRES_LEN(tp, CBSP_IEI_RECOVERY_IND, 1)) {
+		osmo_cbsp_errstr = "missing/short mandatory IE";
 		return -EINVAL;
+	}
 
 	INIT_LLIST_HEAD(&out->cell_list.list);
 	cbsp_decode_cell_list(&out->cell_list, ctx, TLVP_VAL(tp, CBSP_IEI_CELL_LIST),
@@ -1056,8 +1119,10 @@ static int cbsp_dec_failure(struct osmo_cbsp_failure *out, const struct tlv_pars
 			    struct msgb *in, void *ctx)
 {
 	if (!TLVP_PRES_LEN(tp, CBSP_IEI_FAILURE_LIST, 5) ||
-	    !TLVP_PRES_LEN(tp, CBSP_IEI_BCAST_MSG_TYPE, 1))
+	    !TLVP_PRES_LEN(tp, CBSP_IEI_BCAST_MSG_TYPE, 1)) {
+		osmo_cbsp_errstr = "missing/short mandatory IE";
 		return -EINVAL;
+	}
 
 	INIT_LLIST_HEAD(&out->fail_list);
 	cbsp_decode_fail_list(&out->fail_list, ctx,
@@ -1072,8 +1137,10 @@ static int cbsp_dec_failure(struct osmo_cbsp_failure *out, const struct tlv_pars
 static int cbsp_dec_error_ind(struct osmo_cbsp_error_ind *out, const struct tlv_parsed *tp,
 			      struct msgb *in, void *ctx)
 {
-	if (!TLVP_PRES_LEN(tp, CBSP_IEI_CAUSE, 1))
+	if (!TLVP_PRES_LEN(tp, CBSP_IEI_CAUSE, 1)) {
+		osmo_cbsp_errstr = "missing/short mandatory IE";
 		return -EINVAL;
+	}
 
 	out->cause = *TLVP_VAL(tp, CBSP_IEI_CAUSE);
 	if (TLVP_PRES_LEN(tp, CBSP_IEI_MSG_ID, 2)) {
@@ -1106,6 +1173,8 @@ struct osmo_cbsp_decoded *osmo_cbsp_decode(void *ctx, struct msgb *in)
 	struct tlv_parsed tp[16]; /* max. number of pages in a given CBS message */
 	unsigned int len;
 	int rc;
+
+	osmo_cbsp_errstr = NULL;
 
 	if (!out)
 		return NULL;
@@ -1194,9 +1263,11 @@ struct osmo_cbsp_decoded *osmo_cbsp_decode(void *ctx, struct msgb *in)
 	case CBSP_MSGT_SET_DRX:
 	case CBSP_MSGT_SET_DRX_COMPL:
 	case CBSP_MSGT_SET_DRX_FAIL:
+		osmo_cbsp_errstr = "message type not implemented";
 		rc = -1;
 		break;
 	default:
+		osmo_cbsp_errstr = "message type not known in spec";
 		rc = -1;
 		break;
 	}

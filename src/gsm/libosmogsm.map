@@ -656,6 +656,7 @@ osmo_cbsp_init_struct;
 osmo_cbsp_encode;
 osmo_cbsp_decode;
 osmo_cbsp_recv_buffered;
+osmo_cbsp_errstr;
 
 local: *;
 };
