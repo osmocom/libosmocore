@@ -401,7 +401,7 @@ int bitvec_set_bytes(struct bitvec *bv, const uint8_t *bytes, unsigned int count
 }
 
 /*! Allocate a bit vector
- *  \param[in] size Number of bits in the vector
+ *  \param[in] size Number of bytes in the vector
  *  \param[in] ctx Context from which to allocate
  *  \return pointer to allocated vector; NULL in case of error */
 struct bitvec *bitvec_alloc(unsigned int size, TALLOC_CTX *ctx)
