@@ -10,6 +10,7 @@
 #define OSMO_IMSI_BUF_SIZE (GSM23003_IMSI_MAX_DIGITS+2)
 /* Chapter 2.4 */
 #define GSM23003_TMSI_NUM_BYTES		4
+#define GSM23003_TMSI_SGSN_MASK		0xC0000000UL
 /* Chapter 2.5 */
 #define GSM23003_LMSI_NUM_BYTES		4
 /* Chapter 2.6 */
