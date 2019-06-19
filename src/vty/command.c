@@ -515,7 +515,7 @@ char *osmo_asciidoc_escape(const char *inp)
 {
 	int _strlen;
 	char *out, *out_ptr;
-	int len = 0, i, j;
+	int len = 0, i;
 
 	if (!inp)
 		return NULL;
@@ -538,22 +538,17 @@ char *osmo_asciidoc_escape(const char *inp)
 
 	out_ptr = out;
 
-#define ADD(out, str) \
-	for (j = 0; j < strlen(str); ++j) \
-		*(out++) = str[j];
-
 	for (i = 0; i < _strlen; ++i) {
 		switch (inp[i]) {
 		case '|':
-			ADD(out_ptr, "\\|");
-			break;
+		/* Prepend escape character "\": */
+			*(out_ptr++) = '\\';
+			/* fall through */
 		default:
 			*(out_ptr++) = inp[i];
 			break;
 		}
 	}
-
-#undef ADD
 
 	out_ptr[0] = '\0';
 	return out;
