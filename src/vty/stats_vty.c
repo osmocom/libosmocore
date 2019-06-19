@@ -442,7 +442,7 @@ static int asciidoc_rate_ctr_group_handler(struct rate_ctr_group *ctrg, void *sc
 	char *group_name_prefix = osmo_asciidoc_escape(ctrg->desc->group_name_prefix);
 
 	vty_out(vty, "// rate_ctr_group table %s%s", group_description, VTY_NEWLINE);
-	vty_out(vty, ".%s - %s %s", group_name_prefix, group_description, VTY_NEWLINE);
+	vty_out(vty, ".%s - %s%s", group_name_prefix, group_description, VTY_NEWLINE);
 	vty_out(vty, "[options=\"header\"]%s", VTY_NEWLINE);
 	vty_out(vty, "|===%s", VTY_NEWLINE);
 	vty_out(vty, "| Name | Reference | Description%s", VTY_NEWLINE);
@@ -491,7 +491,7 @@ static int asciidoc_osmo_stat_item_group_handler(struct osmo_stat_item_group *st
 	vty_out(vty, "%s%s", group_description ? group_description : "" , VTY_NEWLINE);
 
 	vty_out(vty, "// osmo_stat_item_group table %s%s", group_description ? group_description : "", VTY_NEWLINE);
-	vty_out(vty, ".%s - %s %s", group_name_prefix, group_description ? group_description : "", VTY_NEWLINE);
+	vty_out(vty, ".%s - %s%s", group_name_prefix, group_description ? group_description : "", VTY_NEWLINE);
 	vty_out(vty, "[options=\"header\"]%s", VTY_NEWLINE);
 	vty_out(vty, "|===%s", VTY_NEWLINE);
 	vty_out(vty, "| Name | Reference | Description | Unit%s", VTY_NEWLINE);
