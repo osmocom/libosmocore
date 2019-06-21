@@ -203,7 +203,8 @@ static void lapd_start_t200(struct lapd_datalink *dl)
 {
 	if (osmo_timer_pending(&dl->t200))
 		return;
-	LOGP(DLLAPD, LOGL_INFO, "start T200 (dl=%p)\n", dl);
+	LOGP(DLLAPD, LOGL_INFO, "start T200 (dl=%p, timeout=%d.%06ds)\n",
+	     dl, dl->t200_sec, dl->t200_usec);
 	osmo_timer_schedule(&dl->t200, dl->t200_sec, dl->t200_usec);
 }
 
