@@ -273,7 +273,7 @@ static uint8_t enc_speech_codec(struct msgb *msg,
 	case GSM0808_SCT_FR5:
 	case GSM0808_SCT_HR4:
 	case GSM0808_SCT_CSD:
-		OSMO_ASSERT((sc->cfg & 0xff00) == 0)
+		OSMO_ASSERT((sc->cfg & 0xff00) == 0);
 		msgb_put_u8(msg, (uint8_t) sc->cfg & 0xff);
 		break;
 	default:
@@ -874,7 +874,7 @@ uint8_t gsm0808_enc_cell_id_list2(struct msgb *msg,
 
 	msgb_put_u8(msg, cil->id_discr & 0x0f);
 
-	OSMO_ASSERT(cil->id_list_len <= GSM0808_CELL_ID_LIST2_MAXLEN)
+	OSMO_ASSERT(cil->id_list_len <= GSM0808_CELL_ID_LIST2_MAXLEN);
 	for (i = 0; i < cil->id_list_len; i++)
 		gsm0808_msgb_put_cell_id_u(msg, cil->id_discr, &cil->id_list[i]);
 
@@ -906,7 +906,7 @@ uint8_t gsm0808_enc_cell_id_list(struct msgb *msg,
 
 	switch (cil->id_discr) {
 	case CELL_IDENT_LAC:
-		OSMO_ASSERT(cil->id_list_len <= CELL_ID_LIST_LAC_MAXLEN)
+		OSMO_ASSERT(cil->id_list_len <= CELL_ID_LIST_LAC_MAXLEN);
 		for (i=0;i<cil->id_list_len;i++) {
 			msgb_put_u16(msg, cil->id_list_lac[i]);
 		}

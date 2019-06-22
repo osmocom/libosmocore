@@ -121,7 +121,7 @@ static void assert_test(struct ctrl_handle *ctrl, struct ctrl_connection *ccon, 
 
 		printf("replied: '%s'\n", osmo_escape_str((char*)msgb_l2(sent_msg), -1));
 		OSMO_ASSERT(t->reply_str);
-		OSMO_ASSERT(!strcmp(t->reply_str, (char*)msgb_l2(sent_msg)))
+		OSMO_ASSERT(!strcmp(t->reply_str, (char*)msgb_l2(sent_msg)));
 		msgb_free(sent_msg);
 	}
 	osmo_wqueue_clear(&ccon->write_queue);
