@@ -614,6 +614,9 @@ unsigned int osmo_sockaddr_to_str_and_uint(char *addr, unsigned int addr_len, ui
  * type and \a proto and optionally binds or connects it, depending on
  * the value of \a flags parameter.
  */
+#if defined(__clang__) && defined(SUN_LEN)
+__attribute__((no_sanitize("undefined")))
+#endif
 int osmo_sock_unix_init(uint16_t type, uint8_t proto,
 			const char *socket_path, unsigned int flags)
 {
