@@ -79,10 +79,11 @@ $(top_builddir)/doc/libosmogsm.tag.prep: $(top_builddir)/Doxyfile.gsm \
 	-$(DOXYGEN) $(top_builddir)/Doxyfile.gsm
 	touch "$@"
 
+# Don't delete the entire doc/vty, it contains example.xml and vtydoc.xsd (OS#3986)
 $(top_builddir)/doc/libosmovty.tag.prep: $(top_builddir)/Doxyfile.vty \
 		$(top_srcdir)/include/osmocom/vty/*.h \
 		$(top_srcdir)/src/vty/*.c
-	rm -rf $(top_builddir)/doc/vty; mkdir -p $(top_builddir)/doc/vty
+	rm -rf $(top_builddir)/doc/vty/html $(top_builddir)/doc/vty/latex
 	rm -rf $(top_builddir)/doc/libosmovty.map
 	-$(DOXYGEN) $(top_builddir)/Doxyfile.vty
 	touch "$@"
@@ -151,6 +152,7 @@ $(top_builddir)/doc/gsm/html/index.html: $(top_builddir)/doc/libosmogsm.tag.prep
 	rm -rf $(top_builddir)/doc/gsm; mkdir -p $(top_builddir)/doc/gsm
 	$(DOXYGEN) Doxyfile.gsm
 
+# Don't delete the entire doc/vty, it contains example.xml and vtydoc.xsd (OS#3986)
 $(top_builddir)/doc/vty/html/index.html: $(top_builddir)/doc/libosmovty.tag.prep \
 		$(top_builddir)/doc/libosmocore.tag.prep \
 		$(top_builddir)/doc/libosmogsm.tag.prep \
@@ -158,7 +160,7 @@ $(top_builddir)/doc/vty/html/index.html: $(top_builddir)/doc/libosmovty.tag.prep
 		$(top_builddir)/doc/libosmocoding.tag.prep \
 		$(top_builddir)/doc/libosmoctrl.tag.prep \
 		$(top_builddir)/doc/libosmogb.tag.prep
-	rm -rf $(top_builddir)/doc/vty; mkdir -p $(top_builddir)/doc/vty
+	rm -rf $(top_builddir)/doc/vty/html $(top_builddir)/doc/vty/latex
 	$(DOXYGEN) Doxyfile.vty
 
 $(top_builddir)/doc/codec/html/index.html: $(top_builddir)/doc/libosmocodec.tag.prep \
