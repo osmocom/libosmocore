@@ -81,6 +81,7 @@ doc/gsm
 doc/gb
 doc/html.tar
 doc/*.tag
+doc/*.tag.prep
 tags
 
 src/crc*gen.c
