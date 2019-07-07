@@ -68,6 +68,7 @@ struct ph_rach_ind_param {
 	int8_t rssi;		/*!< RSSI of RACH indication */
 	uint16_t ber10k;	/*!< BER in units of 0.01% */
 	int16_t acc_delay_256bits;/* !< Burst TA Offset in 1/256th bits */
+	int16_t lqual_cb;	/* !< Link quality in centiBel */
 };
 
 /*! for PH-[UNIT]DATA.{req,ind} | PH-RTS.ind */
