@@ -98,9 +98,9 @@ do {								\
  *  the predicate evaluates to false (0).
  */
 #define OSMO_ASSERT(exp)    \
-	do if (!(exp)) { \
+	if (!(exp)) { \
 		osmo_panic("Assert failed %s %s:%d\n", #exp, __FILE__, __LINE__); \
-	} while(0)
+	}
 
 /*! duplicate a string using talloc and release its prior content (if any)
  * \param[in] ctx Talloc context to use for allocation
