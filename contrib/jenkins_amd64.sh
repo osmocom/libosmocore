@@ -31,5 +31,6 @@ build .
 DISTCHECK_CONFIGURE_FLAGS=--enable-external-tests \
     $MAKE distcheck \
     || cat-testlogs.sh
+$MAKE maintainer-clean
 
 osmo-clean-workspace.sh
