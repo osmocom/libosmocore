@@ -58,25 +58,18 @@ static inline unsigned int bytenum_from_bitnum(unsigned int bitnum)
 /* convert ZERO/ONE/L/H to a bitmask at given pos in a byte */
 static uint8_t bitval2mask(enum bit_value bit, uint8_t bitnum)
 {
-	int bitval;
-
 	switch (bit) {
 	case ZERO:
-		bitval = (0 << bitnum);
-		break;
+		return (0 << bitnum);
 	case ONE:
-		bitval = (1 << bitnum);
-		break;
+		return (1 << bitnum);
 	case L:
-		bitval = ((0x2b ^ (0 << bitnum)) & (1 << bitnum));
-		break;
+		return ((0x2b ^ (0 << bitnum)) & (1 << bitnum));
 	case H:
-		bitval = ((0x2b ^ (1 << bitnum)) & (1 << bitnum));
-		break;
+		return ((0x2b ^ (1 << bitnum)) & (1 << bitnum));
 	default:
 		return 0;
 	}
-	return bitval;
 }
 
 /*! check if the bit is 0 or 1 for a given position inside a bitvec
