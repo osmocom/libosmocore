@@ -966,7 +966,7 @@ void osmo_gsm48_rest_octets_si3_decode(struct osmo_gsm48_si_ro_info *si3, const 
 
 	memset(si3, 0, sizeof(*si3));
 
-	/* Optional Selection Paraosmo_gsm48_si_ro_infometers */
+	/* Optional Selection Parameters */
 	if (bitvec_get_bit_high(&bv) == H) {
 		sp->present = 1;
 		sp->cbq = bitvec_get_uint(&bv, 1);
