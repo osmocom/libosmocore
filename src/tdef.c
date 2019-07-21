@@ -187,7 +187,6 @@ unsigned long osmo_tdef_get(const struct osmo_tdef *tdefs, int T, enum osmo_tdef
 {
 	const struct osmo_tdef *t = osmo_tdef_get_entry((struct osmo_tdef*)tdefs, T);
 	if (!t) {
-		OSMO_ASSERT(val_if_not_present >= 0);
 		return val_if_not_present;
 	}
 	return osmo_tdef_round(t->val, t->unit, as_unit);
