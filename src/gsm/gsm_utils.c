@@ -466,8 +466,9 @@ int osmo_get_rand_id(uint8_t *out, size_t len)
 	if (rc < 0) {
 #if (USE_GNUTLS)
 		return gnutls_rnd(GNUTLS_RND_RANDOM, out, len);
-#endif
+#else
 		return -errno;
+#endif
 	}
 
 	/* getrandom() failed partially due to signal interruption:
