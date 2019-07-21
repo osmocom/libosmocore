@@ -323,7 +323,7 @@ int gsm0480_decode_ussd_request(const struct gsm48_hdr *hdr, uint16_t len,
 	memset(&ss, 0, sizeof(ss));
 
 	if (len < sizeof(*hdr) + 2) {
-		LOGP(0, LOGL_DEBUG, "USSD Request is too short.\n");
+		LOGP(DLGLOBAL, LOGL_ERROR, "USSD Request is too short.\n");
 		return 0;
 	}
 
@@ -345,7 +345,7 @@ int gsm0480_decode_ussd_request(const struct gsm48_hdr *hdr, uint16_t len,
 	}
 
 	if (!rc)
-		LOGP(0, LOGL_DEBUG, "Error occurred while parsing received USSD!\n");
+		LOGP(DLGLOBAL, LOGL_ERROR, "Error occurred while parsing received USSD!\n");
 
 	return rc;
 }
@@ -362,7 +362,7 @@ int gsm0480_decode_ss_request(const struct gsm48_hdr *hdr, uint16_t len,
 	 */
 	pdisc = gsm48_hdr_pdisc(hdr);
 	if (pdisc != GSM48_PDISC_NC_SS) {
-		LOGP(0, LOGL_ERROR, "Dropping message with "
+		LOGP(DLGLOBAL, LOGL_ERROR, "Dropping message with "
 			"unsupported pdisc=%02x\n", pdisc);
 		return 0;
 	}
@@ -385,7 +385,7 @@ static int parse_ss(const struct gsm48_hdr *hdr, uint16_t len, struct ss_request
 	 */
 	if (msg_type != GSM0480_MTYPE_RELEASE_COMPLETE) {
 		if (len < 2) {
-			LOGP(0, LOGL_DEBUG, "SS Request is too short.\n");
+			LOGP(DLGLOBAL, LOGL_ERROR, "SS Request is too short.\n");
 			return 0;
 		}
 	}
@@ -410,7 +410,7 @@ static int parse_ss(const struct gsm48_hdr *hdr, uint16_t len, struct ss_request
 		rc &= parse_ss_facility(&hdr->data[0], len, req);
 		break;
 	default:
-		LOGP(0, LOGL_DEBUG, "Unknown GSM 04.80 message-type field 0x%02x\n",
+		LOGP(DLGLOBAL, LOGL_ERROR, "Unknown GSM 04.80 message-type field 0x%02x\n",
 			hdr->msg_type);
 		rc = 0;
 		break;
@@ -459,7 +459,7 @@ static int parse_ss_info_elements(const uint8_t *ss_ie, uint16_t len,
 	case GSM0480_IE_SS_VERSION:
 		break;
 	default:
-		LOGP(0, LOGL_DEBUG, "Unhandled GSM 04.08 or 04.80 IEI 0x%02x\n",
+		LOGP(DLGLOBAL, LOGL_ERROR, "Unhandled GSM 04.08 or 04.80 IEI 0x%02x\n",
 			iei);
 		rc = 0;
 		break;
@@ -495,7 +495,7 @@ int gsm0480_parse_facility_ie(const uint8_t *facility_ie, uint16_t length,
 
 		/* Make sure that there is no overflow */
 		if (offset + 2 + component_length > length) {
-			LOGP(0, LOGL_ERROR, "Component does not fit.\n");
+			LOGP(DLGLOBAL, LOGL_ERROR, "Component does not fit.\n");
 			return -EINVAL;
 		}
 
@@ -515,7 +515,7 @@ int gsm0480_parse_facility_ie(const uint8_t *facility_ie, uint16_t length,
 		case GSM0480_CTYPE_REJECT:
 			break;
 		default:
-			LOGP(0, LOGL_DEBUG, "Unknown GSM 04.80 Facility "
+			LOGP(DLGLOBAL, LOGL_ERROR, "Unknown GSM 04.80 Facility "
 				"Component Type 0x%02x\n", component_type);
 			rc = 0;
 			break;
@@ -545,7 +545,7 @@ static int parse_ss_invoke(const uint8_t *invoke_data, uint16_t length,
 
 	/* mandatory part */
 	if (invoke_data[0] != GSM0480_COMPIDTAG_INVOKE_ID) {
-		LOGP(0, LOGL_DEBUG, "Unexpected GSM 04.80 Component-ID tag "
+		LOGP(DLGLOBAL, LOGL_ERROR, "Unexpected GSM 04.80 Component-ID tag "
 		     "0x%02x (expecting Invoke ID tag)\n", invoke_data[0]);
 	}
 
@@ -587,13 +587,13 @@ static int parse_ss_invoke(const uint8_t *invoke_data, uint16_t length,
 						 req);
 			break;
 		default:
-			LOGP(0, LOGL_DEBUG, "GSM 04.80 operation code 0x%02x "
+			LOGP(DLGLOBAL, LOGL_ERROR, "GSM 04.80 operation code 0x%02x "
 				"is not yet handled\n", operation_code);
 			rc = 0;
 			break;
 		}
 	} else {
-		LOGP(0, LOGL_DEBUG, "Unexpected GSM 04.80 Component-ID tag 0x%02x "
+		LOGP(DLGLOBAL, LOGL_ERROR, "Unexpected GSM 04.80 Component-ID tag 0x%02x "
 			"(expecting Operation Code tag)\n",
 			invoke_data[0]);
 		rc = 0;
@@ -614,7 +614,7 @@ static int parse_ss_return_result(const uint8_t *rr_data, uint16_t length,
 
 	/* Mandatory part */
 	if (rr_data[0] != GSM0480_COMPIDTAG_INVOKE_ID) {
-		LOGP(0, LOGL_DEBUG, "Unexpected GSM 04.80 Component-ID tag "
+		LOGP(DLGLOBAL, LOGL_ERROR, "Unexpected GSM 04.80 Component-ID tag "
 		     "0x%02x (expecting Invoke ID tag)\n", rr_data[0]);
 		return 0;
 	}
@@ -645,7 +645,7 @@ static int parse_ss_return_result(const uint8_t *rr_data, uint16_t length,
 		return parse_process_uss_data(rr_data + offset + 3,
 			length - offset - 3, req);
 	default:
-		LOGP(0, LOGL_DEBUG, "GSM 04.80 operation code 0x%02x "
+		LOGP(DLGLOBAL, LOGL_ERROR, "GSM 04.80 operation code 0x%02x "
 			"is not yet handled\n", operation_code);
 		return 0;
 	}
