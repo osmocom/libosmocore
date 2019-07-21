@@ -393,8 +393,6 @@ static int parse_ss(const struct gsm48_hdr *hdr, uint16_t len, struct ss_request
 	/* Table 2.1: Messages for call independent SS control */
 	switch (msg_type) {
 	case GSM0480_MTYPE_RELEASE_COMPLETE:
-		LOGP(0, LOGL_DEBUG, "SS Release Complete\n");
-
 		/**
 		 * Indicates that there is no decoded message.
 		 * To be overwriten by the message otherwise.
