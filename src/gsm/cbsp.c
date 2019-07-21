@@ -1391,10 +1391,8 @@ int osmo_cbsp_recv_buffered(void *ctx, int fd, struct msgb **rmsg, struct msgb *
 
 	if (!msg) {
 		msg = osmo_cbsp_msgb_alloc(ctx, __func__);
-		if (!msg) {
+		if (!msg)
 			return -ENOMEM;
-			goto discard_msg;
-		}
 		msg->l1h = msg->tail;
 	}
 
