@@ -53,8 +53,7 @@ int gsm48_generate_mid_from_imsi(uint8_t *buf, const char *imsi);
 uint8_t gsm48_generate_mid(uint8_t *buf, const char *id, uint8_t mi_type);
 
 /* Convert Mobile Identity (10.5.1.4) to string */
-int gsm48_mi_to_string(char *string, const int str_len,
-			const uint8_t *mi, const int mi_len);
+int gsm48_mi_to_string(char *string, int str_len, const uint8_t *mi, int mi_len);
 const char *gsm48_mi_type_name(uint8_t mi);
 const char *osmo_mi_name(const uint8_t *mi, uint8_t mi_len);
 char *osmo_mi_name_buf(char *buf, size_t buf_len, const uint8_t *mi, uint8_t mi_len);

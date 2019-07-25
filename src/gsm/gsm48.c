@@ -741,8 +741,7 @@ int gsm48_generate_mid_from_imsi(uint8_t *buf, const char *imsi)
  *           Depending on the MI type and amount of output buffer, this may return
  *           the nr of written bytes, or the written strlen(), or the snprintf()
  *           style strlen()-if-the-buffer-were-large-enough. */
-int gsm48_mi_to_string(char *string, const int str_len, const uint8_t *mi,
-		       const int mi_len)
+int gsm48_mi_to_string(char *string, int str_len, const uint8_t *mi, int mi_len)
 {
 	int rc;
 	uint8_t mi_type;
