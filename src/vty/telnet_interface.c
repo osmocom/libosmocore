@@ -210,7 +210,7 @@ bool vty_is_active(struct vty *vty)
 /*! callback from core VTY code about VTY related events */
 void vty_event(enum event event, int sock, struct vty *vty)
 {
-	struct vty_signal_data sig_data = { 0, };
+	struct vty_signal_data sig_data;
 	struct telnet_connection *connection = vty->priv;
 	struct osmo_fd *bfd;
 
