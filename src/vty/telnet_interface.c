@@ -169,7 +169,7 @@ static int telnet_new_connection(struct osmo_fd *fd, unsigned int what)
 	int rc;
 
 	if (new_connection < 0) {
-		LOGP(0, LOGL_ERROR, "telnet accept failed\n");
+		LOGP(DLGLOBAL, LOGL_ERROR, "telnet accept failed\n");
 		return new_connection;
 	}
 
@@ -188,7 +188,7 @@ static int telnet_new_connection(struct osmo_fd *fd, unsigned int what)
 
 	connection->vty = vty_create(new_connection, connection);
 	if (!connection->vty) {
-		LOGP(0, LOGL_ERROR, "couldn't create VTY\n");
+		LOGP(DLGLOBAL, LOGL_ERROR, "couldn't create VTY\n");
 		/* vty_create() is already closing the fd if it returns NULL */
 		talloc_free(connection);
 		return -1;
