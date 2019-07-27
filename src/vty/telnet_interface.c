@@ -123,6 +123,13 @@ extern struct host host;
 int telnet_close_client(struct osmo_fd *fd)
 {
 	struct telnet_connection *conn = (struct telnet_connection*)fd->data;
+	char sock_name_buf[OSMO_SOCK_NAME_MAXLEN];
+	int rc;
+
+	/* FIXME: getsockname() always fails: "Bad file descriptor" */
+	rc = osmo_sock_get_name_buf(sock_name_buf, OSMO_SOCK_NAME_MAXLEN, fd->fd);
+	LOGP(DLGLOBAL, LOGL_INFO, "Closing telnet connection %s\n",
+	     (rc <= 0) ? "r=NULL<->l=NULL" : sock_name_buf);
 
 	close(fd->fd);
 	osmo_fd_unregister(fd);
@@ -166,12 +173,17 @@ static int telnet_new_connection(struct osmo_fd *fd, unsigned int what)
 	struct sockaddr_in sockaddr;
 	socklen_t len = sizeof(sockaddr);
 	int new_connection = accept(fd->fd, (struct sockaddr*)&sockaddr, &len);
+	char sock_name_buf[OSMO_SOCK_NAME_MAXLEN];
 	int rc;
 
 	if (new_connection < 0) {
 		LOGP(DLGLOBAL, LOGL_ERROR, "telnet accept failed\n");
 		return new_connection;
 	}
+
+	rc = osmo_sock_get_name_buf(sock_name_buf, OSMO_SOCK_NAME_MAXLEN, new_connection);
+	LOGP(DLGLOBAL, LOGL_INFO, "Accept()ed new telnet connection %s\n",
+	     (rc <= 0) ? "r=NULL<->l=NULL" : sock_name_buf);
 
 	connection = talloc_zero(tall_telnet_ctx, struct telnet_connection);
 	connection->priv = fd->data;
