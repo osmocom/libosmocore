@@ -1416,6 +1416,8 @@ int vty_read(struct vty *vty)
 		case '\n':
 		case '\r':
 			vty_out(vty, "%s", VTY_NEWLINE);
+			/* '\0'-terminate the command buffer */
+			vty->buf[vty->length] = '\0';
 			vty_execute(vty);
 			break;
 		case '\t':
