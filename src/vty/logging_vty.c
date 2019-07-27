@@ -906,6 +906,8 @@ static int config_write_log_single(struct vty *vty, struct log_target *tgt)
 
 	vty_out(vty, " logging color %u%s", tgt->use_color ? 1 : 0,
 		VTY_NEWLINE);
+	vty_out(vty, " logging print category-hex %d%s",
+		tgt->print_category_hex ? 1 : 0, VTY_NEWLINE);
 	vty_out(vty, " logging print category %d%s",
 		tgt->print_category ? 1 : 0, VTY_NEWLINE);
 	if (tgt->print_ext_timestamp)
