@@ -989,7 +989,10 @@ static void test_gsm0808_enc_dec_channel_type()
 
 	rc_dec = gsm0808_dec_channel_type(&dec_ct, msg->data + 2, msg->len - 2);
 	OSMO_ASSERT(rc_dec == 4);
-	OSMO_ASSERT(memcmp(&enc_ct, &dec_ct, sizeof(enc_ct)) == 0);
+	OSMO_ASSERT(enc_ct.ch_indctr == dec_ct.ch_indctr);
+	OSMO_ASSERT(enc_ct.ch_rate_type == dec_ct.ch_rate_type);
+	OSMO_ASSERT(enc_ct.perm_spch_len == dec_ct.perm_spch_len);
+	OSMO_ASSERT(memcmp(&enc_ct.perm_spch[0], &dec_ct.perm_spch[0], enc_ct.perm_spch_len) == 0);
 
 	msgb_free(msg);
 }
