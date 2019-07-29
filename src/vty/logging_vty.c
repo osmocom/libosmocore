@@ -991,6 +991,44 @@ void logging_vty_add_deprecated_subsys(void *ctx, const char *name)
 	install_element(CFG_LOG_NODE, cmd);
 }
 
+/* logp (<categories>) (debug|...|fatal) .LOGMESSAGE*/
+DEFUN(vty_logp,
+      vty_logp_cmd,
+      NULL, /* cmdstr is dynamically set in gen_vty_logp_cmd_strs(). */
+      NULL) /* same thing for helpstr. */
+{
+	int category = log_parse_category(argv[0]);
+	int level = log_parse_level(argv[1]);
+	char *str = argv_concat(argv, argc, 2);
+	LOGP(category, level, "%s\n", str);
+	return CMD_SUCCESS;
+}
+
+static void gen_vty_logp_cmd_strs(struct cmd_element *cmd)
+{
+	char *cmd_str = NULL;
+	char *doc_str = NULL;
+
+	assert_loginfo(__func__);
+
+	OSMO_ASSERT(cmd->string == NULL);
+	OSMO_ASSERT(cmd->doc == NULL);
+
+	osmo_talloc_asprintf(tall_log_ctx, cmd_str, "logp (");
+	osmo_talloc_asprintf(tall_log_ctx, doc_str,
+			     "Print a message on all log outputs; useful for placing markers in test logs\n");
+	add_category_strings(&cmd_str, &doc_str, osmo_log_info);
+	osmo_talloc_asprintf(tall_log_ctx, cmd_str, ") %s", LOG_LEVEL_ARGS);
+	osmo_talloc_asprintf(tall_log_ctx, doc_str, "%s", LOG_LEVEL_STRS);
+
+	osmo_talloc_asprintf(tall_log_ctx, cmd_str, " .LOGMESSAGE");
+	osmo_talloc_asprintf(tall_log_ctx, doc_str,
+			     "Arbitrary message to log on given category and log level\n");
+
+	cmd->string = cmd_str;
+	cmd->doc = doc_str;
+}
+
 /*! Register logging related commands to the VTY. Call this once from
  *  your application if you want to support those commands. */
 void logging_vty_add_cmds()
@@ -1025,6 +1063,9 @@ void logging_vty_add_cmds()
 	install_element_ve(&deprecated_logging_level_all_everything_cmd);
 	install_element_ve(&show_logging_vty_cmd);
 	install_element_ve(&show_alarms_cmd);
+
+	gen_vty_logp_cmd_strs(&vty_logp_cmd);
+	install_element_ve(&vty_logp_cmd);
 
 	install_node(&cfg_log_node, config_write_log);
 	install_element(CFG_LOG_NODE, &logging_fltr_all_cmd);

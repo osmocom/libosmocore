@@ -468,3 +468,56 @@ DCCC FATAL Log message for DCCC on level LOGL_FATAL
 DDDDD ERROR Log message for DDDDD on level LOGL_ERROR
 DDDDD FATAL Log message for DDDDD on level LOGL_FATAL
 DEEE FATAL Log message for DEEE on level LOGL_FATAL
+
+logging_vty_test# list
+...
+  logp (aa|bb|ccc|dddd|eee|lglobal|llapd|linp|lmux|lmi|lmib|lsms|lctrl|lgtp|lstats|lgsup|loap|lss7|lsccp|lsua|lm3ua|lmgcp|ljibuf|lrspro) (debug|info|notice|error|fatal) .LOGMESSAGE
+...
+
+logging_vty_test# logp?
+  logp  Print a message on all log outputs; useful for placing markers in test logs
+
+logging_vty_test# logp ?
+  aa       Antropomorphic Armadillos (AA)
+  bb       Bidirectional Breadspread (BB)
+  ccc      Chaos Communication Congress (CCC)
+  dddd     Dehydrated Dribbling Duck Dunkers (DDDD)
+  eee      Exhaustive Entropy Extraction (EEE)
+  lglobal  Library-internal global log family
+  llapd    LAPD in libosmogsm
+  linp     A-bis Intput Subsystem
+  lmux     A-bis B-Subchannel TRAU Frame Multiplex
+  lmi      A-bis Input Driver for Signalling
+  lmib     A-bis Input Driver for B-Channels (voice)
+  lsms     Layer3 Short Message Service (SMS)
+  lctrl    Control Interface
+  lgtp     GPRS GTP library
+  lstats   Statistics messages and logging
+  lgsup    Generic Subscriber Update Protocol
+  loap     Osmocom Authentication Protocol
+  lss7     libosmo-sigtran Signalling System 7
+  lsccp    libosmo-sigtran SCCP Implementation
+  lsua     libosmo-sigtran SCCP User Adaptation
+  lm3ua    libosmo-sigtran MTP3 User Adaptation
+  lmgcp    libosmo-mgcp Media Gateway Control Protocol
+  ljibuf   libosmo-netif Jitter Buffer
+  lrspro   Remote SIM protocol
+
+logging_vty_test# logp lglobal ?
+  debug   Log debug messages and higher levels
+  info    Log informational messages and higher levels
+  notice  Log noticeable messages and higher levels
+  error   Log error messages and higher levels
+  fatal   Log only fatal messages
+
+logging_vty_test# logp lglobal info ?
+  LOGMESSAGE  Arbitrary message to log on given category and log level
+
+logging_vty_test# logging level set-all notice
+
+logging_vty_test# logp aa error This is the log message
+DAA ERROR This is the log message
+
+logging_vty_test# logp lglobal debug This log message is not echoed
+logging_vty_test# logp lglobal notice This log message is echoed
+DLGLOBAL NOTICE This log message is echoed
