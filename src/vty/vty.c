@@ -136,7 +136,7 @@ out:
 }
 
 /* Authentication of vty */
-static void vty_auth(struct vty *vty, char *buf)
+static void vty_auth(struct vty *vty)
 {
 	char *passwd = NULL;
 	enum node_type next_node = 0;
@@ -170,10 +170,10 @@ static void vty_auth(struct vty *vty, char *buf)
 	if (passwd) {
 #ifdef VTY_CRYPT_PW
 		if (host.encrypt)
-			fail = strcmp(crypt(buf, passwd), passwd);
+			fail = strcmp(crypt(vty->buf, passwd), passwd);
 		else
 #endif
-			fail = strcmp(buf, passwd);
+			fail = strcmp(vty->buf, passwd);
 	} else
 		fail = 1;
 
@@ -417,13 +417,13 @@ static void vty_prompt(struct vty *vty)
 }
 
 /* Command execution over the vty interface. */
-static int vty_command(struct vty *vty, char *buf)
+static int vty_command(struct vty *vty)
 {
 	int ret;
 	vector vline;
 
 	/* Split readline string up into the vector */
-	vline = cmd_make_strvec(buf);
+	vline = cmd_make_strvec(vty->buf);
 
 	if (vline == NULL)
 		return CMD_SUCCESS;
@@ -689,10 +689,10 @@ static int vty_execute(struct vty *vty)
 	switch (vty->node) {
 	case AUTH_NODE:
 	case AUTH_ENABLE_NODE:
-		vty_auth(vty, vty->buf);
+		vty_auth(vty);
 		break;
 	default:
-		ret = vty_command(vty, vty->buf);
+		ret = vty_command(vty);
 		if (vty->type == VTY_TERM)
 			vty_hist_add(vty);
 		break;
