@@ -620,7 +620,7 @@ static int state_chg(struct osmo_fsm_inst *fi, uint32_t new_state,
 			else
 				snprintf(trailer, sizeof(trailer), "(keeping " OSMO_T_FMT
 					  ", %ld.%03lds remaining)", OSMO_T_FMT_ARGS(fi->T),
-					  remaining.tv_sec, remaining.tv_usec / 1000);
+					  (long) remaining.tv_sec, remaining.tv_usec / 1000);
 		} else if (timeout_ms) {
 			if (timeout_ms % 1000 == 0)
 				/* keep log output legacy compatible to avoid autotest failures */
