@@ -48,6 +48,7 @@ int _talloc_free(void *ptr, const char *location);
 #define talloc(ctx, type) (type *)talloc_named_const(ctx, sizeof(type), #type)
 #define talloc_size(ctx, size) talloc_named_const(ctx, size, __location__)
 void *talloc_named_const(const void *context, size_t size, const char *name);
+void *talloc_named(const void *context, size_t size, const char *fmt, ...);
 void talloc_set_name_const(const void *ptr, const char *name);
 char *talloc_strdup(const void *t, const char *p);
 void *talloc_pool(const void *context, size_t size);

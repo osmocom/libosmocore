@@ -46,6 +46,11 @@ void *talloc_named_const(const void *context, size_t size, const char *name)
 	return pseudotalloc_malloc(size);
 }
 
+void *talloc_named(const void *context, size_t size, const char *fmt, ...)
+{
+	return pseudotalloc_malloc(size);
+}
+
 void talloc_set_name_const(const void *ptr, const char *name)
 {
 }
