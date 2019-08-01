@@ -42,6 +42,8 @@
  * \file utils.c */
 
 static __thread char namebuf[255];
+/* shared by osmo_str_tolower() and osmo_str_toupper() */
+static __thread char capsbuf[128];
 
 /*! get human-readable string for given value
  *  \param[in] vs Array of value_string tuples
@@ -901,16 +903,15 @@ size_t osmo_str_tolower_buf(char *dest, size_t dest_len, const char *src)
 /*! Convert a string to lowercase, using a static buffer.
  * The resulting string may be truncated if the internally used static buffer is shorter than src.
  * The internal buffer is at least 128 bytes long, i.e. guaranteed to hold at least 127 characters and a
- * terminating nul.
+ * terminating nul. The static buffer returned is shared with osmo_str_toupper().
  * See also osmo_str_tolower_buf().
  * \param[in] src  String to convert to lowercase.
  * \returns Resulting lowercase string in a static buffer, always nul terminated.
  */
 const char *osmo_str_tolower(const char *src)
 {
-	static __thread char buf[128];
-	osmo_str_tolower_buf(buf, sizeof(buf), src);
-	return buf;
+	osmo_str_tolower_buf(capsbuf, sizeof(capsbuf), src);
+	return capsbuf;
 }
 
 /*! Convert a string to lowercase, dynamically allocating the output from given talloc context
@@ -960,16 +961,15 @@ size_t osmo_str_toupper_buf(char *dest, size_t dest_len, const char *src)
 /*! Convert a string to uppercase, using a static buffer.
  * The resulting string may be truncated if the internally used static buffer is shorter than src.
  * The internal buffer is at least 128 bytes long, i.e. guaranteed to hold at least 127 characters and a
- * terminating nul.
+ * terminating nul. The static buffer returned is shared with osmo_str_tolower().
  * See also osmo_str_toupper_buf().
  * \param[in] src  String to convert to uppercase.
  * \returns Resulting uppercase string in a static buffer, always nul terminated.
  */
 const char *osmo_str_toupper(const char *src)
 {
-	static __thread char buf[128];
-	osmo_str_toupper_buf(buf, sizeof(buf), src);
-	return buf;
+	osmo_str_toupper_buf(capsbuf, sizeof(capsbuf), src);
+	return capsbuf;
 }
 
 /*! Convert a string to uppercase, dynamically allocating the output from given talloc context
