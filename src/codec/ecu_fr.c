@@ -164,3 +164,54 @@ int osmo_ecu_fr_conceal(struct osmo_ecu_fr_state *state, uint8_t *frame)
 
 	return 0;
 }
+
+/***********************************************************************
+ * Integration with ECU core
+ ***********************************************************************/
+
+static struct osmo_ecu_state *ecu_fr_init(void *ctx, enum osmo_ecu_codec codec)
+{
+	struct osmo_ecu_state *st;
+	size_t size = sizeof(*st) + sizeof(struct osmo_ecu_fr_state);
+
+	st = talloc_named_const(ctx, size, "ecu_state_FR");
+	if (!st)
+		return NULL;
+
+	memset(st, 0, size);
+	st->codec = codec;
+
+	return st;
+}
+
+static int ecu_fr_frame_in(struct osmo_ecu_state *st, bool bfi, const uint8_t *frame,
+			   unsigned int frame_bytes)
+{
+	struct osmo_ecu_fr_state *fr = (struct osmo_ecu_fr_state *) &st->data;
+	if (bfi)
+		return 0;
+
+	osmo_ecu_fr_reset(fr, frame);
+	return 0;
+}
+
+static int ecu_fr_frame_out(struct osmo_ecu_state *st, uint8_t *frame_out)
+{
+	struct osmo_ecu_fr_state *fr = (struct osmo_ecu_fr_state *) &st->data;
+
+	if (osmo_ecu_fr_conceal(fr, frame_out) == 0)
+		return GSM_FR_BYTES;
+	else
+		return -1;
+}
+
+static const struct osmo_ecu_ops osmo_ecu_ops_fr = {
+	.init = ecu_fr_init,
+	.frame_in = ecu_fr_frame_in,
+	.frame_out = ecu_fr_frame_out,
+};
+
+static __attribute__((constructor)) void on_dso_load_ecu_fr(void)
+{
+	osmo_ecu_register(&osmo_ecu_ops_fr, OSMO_ECU_CODEC_FR);
+}

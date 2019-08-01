@@ -113,6 +113,8 @@ void test_fr_concealment(void)
 	int i, rc;
 	int j = 0;
 
+	printf("=> Testing FR concealment (simple, consecutive bad frames)\n");
+
 	while (sample_frame_hex[j] != NULL) {
 		/* Parse frame from string to hex */
 		osmo_hexparse(sample_frame_hex[j], frame, GSM_FR_BYTES);
@@ -148,6 +150,8 @@ void test_fr_concealment_realistic()
 	unsigned int frame_len;
 	int rc, i = 0;
 
+	printf("\n=> Testing FR concealment (realistic, various bad frames)\n");
+
 	while (fr_frames_hex[i] != NULL) {
 		/* Debug print */
 		printf("Frame No. %03i:\n", i);
@@ -174,11 +178,54 @@ void test_fr_concealment_realistic()
 	}
 }
 
+/* Simulate a real life situation: voice frames with a few dropouts, using generic core */
+void test_fr_concealment_realistic_core()
+{
+	struct osmo_ecu_state *state = osmo_ecu_init(NULL, OSMO_ECU_CODEC_FR);
+	uint8_t frame[GSM_FR_BYTES];
+	unsigned int frame_len;
+	int rc, i = 0;
+
+	printf("\n=> Testing FR concealment (realistic, using ECU abstraction)\n");
+
+	OSMO_ASSERT(state);
+
+	while (fr_frames_hex[i] != NULL) {
+		/* Debug print */
+		printf("Frame No. %03i:\n", i);
+
+		/* Good or bad frame? */
+		frame_len = strlen(fr_frames_hex[i]) / 2;
+		if (frame_len == GSM_FR_BYTES) {
+			printf(" * input:  %s\n", fr_frames_hex[i]);
+			osmo_hexparse(fr_frames_hex[i], frame, GSM_FR_BYTES);
+			osmo_ecu_frame_in(state, false, frame, GSM_FR_BYTES);
+		} else {
+			printf(" * input:  (bad)\n");
+			memset(frame, 0x00, GSM_FR_BYTES);
+			osmo_ecu_frame_in(state, true, frame, 0);
+			rc = osmo_ecu_frame_out(state, frame);
+			OSMO_ASSERT(rc == GSM_FR_BYTES);
+		}
+
+		/* Print result */
+		printf(" * output: %s\n",
+			osmo_hexdump_nospc(frame, GSM_FR_BYTES));
+
+		/* Go to the next frame */
+		i++;
+	}
+
+	osmo_ecu_destroy(state);
+}
+
+
 int main(int argc, char **argv)
 {
 	/* Perform actual tests */
 	test_fr_concealment();
 	test_fr_concealment_realistic();
+	test_fr_concealment_realistic_core();
 
 	return 0;
 }
