@@ -11,5 +11,5 @@ struct osmo_ecu_fr_state {
 	uint8_t frame_backup[GSM_FR_BYTES];
 };
 
-void osmo_ecu_fr_reset(struct osmo_ecu_fr_state *state, uint8_t *frame);
+void osmo_ecu_fr_reset(struct osmo_ecu_fr_state *state, const uint8_t *frame);
 int osmo_ecu_fr_conceal(struct osmo_ecu_fr_state *state, uint8_t *frame);

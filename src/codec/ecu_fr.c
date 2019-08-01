@@ -130,7 +130,7 @@ leave:
  * \param[in] state The state object for the ECU
  * \param[out] frame The valid frame (GSM_FR_BYTES bytes in RTP payload format)
  */
-void osmo_ecu_fr_reset(struct osmo_ecu_fr_state *state, uint8_t *frame)
+void osmo_ecu_fr_reset(struct osmo_ecu_fr_state *state, const uint8_t *frame)
 {
 	state->subsequent_lost_frame = false;
 	memcpy(state->frame_backup, frame, GSM_FR_BYTES);
