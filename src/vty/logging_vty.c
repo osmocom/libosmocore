@@ -289,14 +289,15 @@ DEFUN(logging_prnt_file,
 static void add_category_strings(char **cmd_str_p, char **doc_str_p,
 				 const struct log_info *categories)
 {
+	char buf[128];
 	int i;
 	for (i = 0; i < categories->num_cat; i++) {
 		if (categories->cat[i].name == NULL)
 			continue;
 		/* skip the leading 'D' in each category name, hence '+ 1' */
+		osmo_str_tolower_buf(buf, sizeof(buf), categories->cat[i].name + 1);
 		osmo_talloc_asprintf(tall_log_ctx, *cmd_str_p, "%s%s",
-				     i ? "|" : "",
-				     osmo_str_tolower(categories->cat[i].name + 1));
+				     i ? "|" : "", buf);
 		osmo_talloc_asprintf(tall_log_ctx, *doc_str_p, "%s\n",
 				     categories->cat[i].description);
 	}
@@ -868,6 +869,7 @@ DEFUN(cfg_no_log_alarms, cfg_no_log_alarms_cmd,
 
 static int config_write_log_single(struct vty *vty, struct log_target *tgt)
 {
+	char level_buf[128];
 	int i;
 
 	switch (tgt->type) {
@@ -923,26 +925,25 @@ static int config_write_log_single(struct vty *vty, struct log_target *tgt)
 
 	if (tgt->loglevel) {
 		const char *level_str = get_value_string_or_null(loglevel_strs, tgt->loglevel);
-		level_str = osmo_str_tolower(level_str);
-		if (!level_str)
+		if (!level_str) {
 			vty_out(vty, "%% Invalid log level %u for 'force-all'%s",
 				tgt->loglevel, VTY_NEWLINE);
-		else
-			vty_out(vty, " logging level force-all %s%s", level_str, VTY_NEWLINE);
+		} else {
+			osmo_str_tolower_buf(level_buf, sizeof(level_buf), level_str);
+			vty_out(vty, " logging level force-all %s%s", level_buf, VTY_NEWLINE);
+		}
 	}
 
 	for (i = 0; i < osmo_log_info->num_cat; i++) {
 		const struct log_category *cat = &tgt->categories[i];
-		const char *cat_name;
+		char cat_name[128];
 		const char *level_str;
 
 		/* skip empty entries in the array */
 		if (!osmo_log_info->cat[i].name)
 			continue;
 
-		/* Note: cat_name references the static buffer returned by osmo_str_tolower(), will
-		 * become invalid after next osmo_str_tolower() invocation. */
-		cat_name = osmo_str_tolower(osmo_log_info->cat[i].name+1);
+		osmo_str_tolower_buf(cat_name, sizeof(cat_name), osmo_log_info->cat[i].name + 1);
 
 		level_str = get_value_string_or_null(loglevel_strs, cat->loglevel);
 		if (!level_str) {
@@ -951,8 +952,9 @@ static int config_write_log_single(struct vty *vty, struct log_target *tgt)
 			continue;
 		}
 
+		osmo_str_tolower_buf(level_buf, sizeof(level_buf), level_str);
 		vty_out(vty, " logging level %s", cat_name);
-		vty_out(vty, " %s%s", osmo_str_tolower(level_str), VTY_NEWLINE);
+		vty_out(vty, " %s%s", level_buf, VTY_NEWLINE);
 	}
 
 	return 1;
