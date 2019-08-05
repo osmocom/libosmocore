@@ -246,7 +246,7 @@ int main(int argc, char **argv)
 
 	handle_options(argc, argv);
 
-	logging_vty_add_cmds(&log_info);
+	logging_vty_add_cmds();
 	osmo_talloc_vty_add_cmds();
 
 	log_set_print_category(osmo_stderr_target, 1);
