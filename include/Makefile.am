@@ -30,6 +30,7 @@ nobase_include_HEADERS = \
                        osmocom/core/hash.h \
                        osmocom/core/hashtable.h \
                        osmocom/core/isdnhdlc.h \
+                       osmocom/core/it_q.h \
                        osmocom/core/linuxlist.h \
                        osmocom/core/linuxrbtree.h \
                        osmocom/core/log2.h \

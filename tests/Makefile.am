@@ -41,6 +41,7 @@ check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
 		 gad/gad_test						\
 		 bsslap/bsslap_test					\
 		 bssmap_le/bssmap_le_test				\
+		 it_q/it_q_test						\
 		 $(NULL)
 
 if ENABLE_MSGFILE
@@ -304,6 +305,9 @@ bsslap_bsslap_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 bssmap_le_bssmap_le_test_SOURCES = bssmap_le/bssmap_le_test.c
 bssmap_le_bssmap_le_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 
+it_q_it_q_test_SOURCES = it_q/it_q_test.c
+it_q_it_q_test_LDADD = $(LDADD)
+
 # The `:;' works around a Bash 3.2 bug when the output is not writeable.
 $(srcdir)/package.m4: $(top_srcdir)/configure.ac
 	:;{ \
@@ -389,6 +393,7 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
 	     gad/gad_test.ok \
 	     bsslap/bsslap_test.ok \
 	     bssmap_le/bssmap_le_test.ok \
+	     it_q/it_q_test.ok \
 	     $(NULL)
 
 if ENABLE_LIBSCTP
