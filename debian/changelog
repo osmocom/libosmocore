@@ -1,3 +1,141 @@
+libosmocore (1.2.0) unstable; urgency=medium
+
+  [ Harald Welte ]
+  * Add VTY and CTRL port numbers for OsmoCBC (Cell Broadcast Centre)
+  * deal with rate_ctr_group_alloc() returning NULL
+  * Fix osmo_quote_str_c() for strings larger than 32 bytes
+  * Print error message if application fails to call rate_ctr_init()
+  * gsm0808_utils: Introduce gsm0808_msgb_put_cell_id_u()
+  * Revert "Print error message if application fails to call rate_ctr_init()"
+  * osmo_sock_get_name_*: Ensure string is returned in error case
+  * Revert "Change GSM48_PDISC_* to enum type"
+  * pseudotalloc: turn talloc_steal() into #define
+  * TLV: Add one-shot TLV encoder
+  * lapdm_rslms_recvmsg: Fix memory leak in error path
+  * rsl: Add osmocom-specific extensions to RSL channel numbers for CBCH
+  * oap_client: Fix license: GPLv2+ instead of AGPLv3+
+  * tdef: Fix license: GPLv2+ instead of AGPLv3+
+  * gsm48_rest_octets: Fix license: GPLv2+ instead of AGPLv3+
+  * rest_octets: Use correct symbols names for range encoder
+  * rest_octets: Actually include gsm48_rest_octets.c in Makefile.am
+  * rest_octets: Fix export of osmo_gsm48_rest_octets
+  * rest_octets: Suffix encoder functiosn with _encode
+  * rest_octets: Add function to parse SI3 rest octets
+  * rest_octets: Implement actual SI6 rest octets encoding
+  * rest_octets: Remove SI2ter + SI2bis encoders that don't do anything
+  * lapdm: Don't truncate L3 payload at 200 bytes length
+  * make all library-internal static buffers thread-local
+  * gsm0808_utils: Add gsm0808_decode_cell_id_u()
+  * lapdm: Allow user to specify T200 values; Use correct N200 values
+  * lapd_core: Perform N200 retransmissions, not N200-1
+  * fsm: Allow millisecond granularity in osmo_fsm built-in timer
+  * fsm: Reduce amount of copy+pasted LOGPFSMSRC() statements
+  * fsm.c: Print error message for FSM with allstate_action but no events
+  * CBSP (Cell Broadcast Service Protocol; 3GPP TS 48.049) support
+  * cbsp: Introduce osmo_cbsp_errstr
+  * Add Cell Broadcast related definitions from 3GPP TS 23.041
+  * cbsp.c: Remove dead code
+  * tdef: remove bogus OSMO_ASSERT(unsigned long >= 0)
+  * osmo_get_rand_id(): Avoid dead code by proper #if/#else/#endif
+  * avoid gcc format error on embedded builds
+  * pseudotalloc: Simplistic wrapper of talloc_named()
+
+  [ Keith ]
+  * Add expect script: 'vty' for easy access to all vtys
+
+  [ Kévin Redon ]
+  * fix typo in FSM description
+  * fix isdigit taking unsigned as input
+  * minor: don't redefine macros
+  * (minor) fix typo in comments
+
+  [ Omar Ramadan ]
+  * Add MO-FALLBACK-VALUE SGsAP IE
+
+  [ Max ]
+  * NS: log address:port on error
+  * Change GSM48_PDISC_* to enum type
+
+  [ Pau Espin Pedrol ]
+  * gsm0808: Introduce Osmocom extensions to announce Osmux support
+  * vty: command.c: Get rid of huge indentation block
+  * vty: command.c: Fix is_cmd_ambiguous() returning always 0
+  * cosmetic: vty: command.c: Use upper case for enum match_type value names
+  * vty: command.c: Get rid of huge indentation block
+  * logging: Check return error from time() call
+  * logging: Use reentrant ctime_r instead of ctime
+  * command.c: Improve return check condition in cmd_execut_command_real()
+  * vty: command.c: Get rid of big indentation block
+  * vty: tests: Verify incomplete optional parameters are passed to vty funcs
+  * vty: command.c: Fix: multi-choice args are no longer passed incomplete to vty func
+  * vty: command.c: Fix: single-choice optional args are no longer passed incomplete to vty func
+  * vty: Remove trailing whitespace in output from show asciidoc
+  * gsm: lapd_core: Log timeout used upon start of T200
+  * vty: Simplify char escaping in asciidoc output
+  * gsm0808_test: Fix wrong use of memcp
+  * utils: share static buffer in osmo_str_to{lower,upper}()
+  * Get rid of osmo_str_tolower() use inside libosmocore code
+  * tests: logging: Remove undefined param passed to logging_vty_add_cmds
+  * configure: Autodetect TLS bug on ARM with old gcc and apply workaround
+  * configure: Allow disabling workaround for TLS bug in old ARM gcc versions
+  * osmo-release.sh: Drop whitespace after = when parsing LIBVERSION
+
+  [ Oliver Smith ]
+  * gsm_23_003: add GSM23003_MSISDN_{MIN,MAX}_DIGITS
+  * Cosmetic: GSUP: fix too long comment line
+  * gsm48_decode_bcd_number2: fix ENOSPC edge case
+  * gitignore: add doc/*.tag.prep
+  * Makefile.am: don't delete example.xml, vtydoc.xsd
+  * contrib/jenkins.sh: run "make maintainer-clean"
+
+  [ Sylvain Munaut ]
+  * codec/ecu: Add a bit of precision about the actual frame format used
+
+  [ Daniel Willmann ]
+  * Deprecate usage of osmo_counter_*
+  * stats_vty: Add verb to sentence for show asciidoc counters
+
+  [ Vadim Yanitskiy ]
+  * protocol/gsm_12_21.h: fix copy-pasted struct description
+  * gsm0408/gsm0408_test.c: introduce BCD number encoding / decoding test
+  * gsm48_decode_bcd_number2(): fix output truncation
+  * gsm48_decode_bcd_number2(): fix: return -ENOSPC on truncation
+  * gsm48_decode_bcd_number2(): return -EINVAL if LV has too big length
+  * gsm48_encode_bcd_number(): clarify optional LHV header initialization
+  * vty/command.c: cosmetic: add missing curly brackets
+  * socket.c: fix Doxygen doc for osmo_sock_unix_init_ofd()
+  * vty_transcript_test.vty: add choice auto-complete tests
+  * core/utils: drop meaningless const from return value of osmo_luhn()
+  * protocol/gsm_04_08.h: do not check if unsigned is positive
+  * Revert "fsm.c: Print error message for FSM with allstate_action but no events"
+  * Revert "utils.h: require a semi colon after OSMO_ASSERT"
+  * libosmogsm/l1sap.h: extend ph_rach_ind_param with lqual_cb
+  * osmo_gsm48_rest_octets_si3_decode(): fix copy-paste error in comment
+  * bitvec/bitval2mask(): cosmetic: get rid of temporary int variable
+  * gsm/gsm0480.c: parse_ss(): drop needless debug print
+  * gsm/gsm0480.c: use DLGLOBAL and LOGL_ERROR for logging
+  * gsm/gsm48.h: drop meaningless 'const' from gsm48_mi_to_string()
+  * vty/telnet_interface.c: use DLGLOBAL logging sub-system
+  * vty/telnet_interface.c: avoid unneeded initialization
+  * vty/logging_vty.c: fix writing of 'print category-hex'
+  * vty/telnet_interface.c: log connection accept() / close() events
+  * vty/vty.c: fix vty_read(): prevent further heap-buffer overrun
+  * vty/vty.c: the command buffer can be accessed directly
+
+  [ Alexander Couzens ]
+  * utils: add gsmtap_logread.py a gsmtap log reader
+  * bitvec: correct comment in bitvec_alloc
+  * utils.h: require a semi colon after OSMO_ASSERT
+
+  [ Eric Wild ]
+  * add define for magic tmsi constant
+  * tell ubsan to ignore SUN_LEN
+
+  [ Ruben Undheim ]
+  * Set HTML_TIMESTAMP to NO to make build reproducible
+
+ -- Pau Espin Pedrol <pespin@sysmocom.de>  Tue, 06 Aug 2019 18:02:01 +0200
+
 libosmocore (1.1.0) unstable; urgency=medium
 
   [ Oliver Smith ]
