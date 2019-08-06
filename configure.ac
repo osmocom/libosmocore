@@ -123,8 +123,7 @@ AC_DEFUN([CHECK_TM_INCLUDES_TM_GMTOFF], [
 CHECK_TM_INCLUDES_TM_GMTOFF
 
 dnl Check if We need to apply workaround for TLS bug on ARM platform for GCC < 7.3.0:
-CHECK_TLS_GCC_ARM_BUG
-CFLAGS="$CFLAGS $TLS_GCC_ARM_BUG_CFLAGS"
+ARG_ENABLE_DETECT_TLS_GCC_ARM_BUG
 
 dnl Generate the output
 AC_CONFIG_HEADER(config.h)
