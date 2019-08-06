@@ -47,7 +47,7 @@ if [ "z$LIBVERS" != "z" ]; then
 	fi
 	if [ "z$ALLOW_NO_LIBVERSION_DEB_MATCH" = "z0" ]; then
 		echo "$LIBVERS" | while read -r line; do
-			libversion=$(echo "$line" | cut -d "=" -f 2)
+			libversion=$(echo "$line" | cut -d "=" -f 2 | tr -d "[:space:]")
 			major="$(libversion_to_deb_major "$libversion")"
 			file_matches="$(find "${GIT_TOPDIR}/debian" -name "lib*${major}.install" | wc -l)"
 			if [ "z$file_matches" = "z0" ]; then
