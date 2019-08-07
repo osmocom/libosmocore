@@ -9,6 +9,8 @@ fi
 
 ALLOW_NO_LIBVERSION_CHANGE="${ALLOW_NO_LIBVERSION_CHANGE:-0}"
 ALLOW_NO_LIBVERSION_DEB_MATCH="${ALLOW_NO_LIBVERSION_DEB_MATCH:-0}"
+# Test stuff but don't modify stuff:
+DRY_RUN="${DRY_RUN:-0}"
 
 libversion_to_deb_major() {
 	libversion="$1"
@@ -73,11 +75,18 @@ if [ "z$LIBVERS" != "z" ]; then
 			exit 1
 		fi
 	fi
+	if [ "z$DRY_RUN" != "z0" ]; then
+		exit 0
+	fi
 	if [ -f "TODO-RELEASE" ]; then
 		grep '#' TODO-RELEASE > TODO-RELEASE.clean
 		mv TODO-RELEASE.clean TODO-RELEASE
 		git add TODO-RELEASE
 	fi
+fi
+
+if [ "z$DRY_RUN" != "z0" ]; then
+	exit 0
 fi
 gbp dch --debian-tag='%(version)s' --auto --meta --git-author --multimaint-merge --ignore-branch --new-version="$NEW_VER"
 dch -r -m --distribution "unstable" ""
