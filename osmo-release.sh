@@ -21,6 +21,46 @@ libversion_to_deb_major() {
 	echo "$major"
 }
 
+# Make sure that depedency requirement versions match in configure.ac vs debian/control.
+#eg: "PKG_CHECK_MODULES(LIBOSMOCORE, libosmocore >= 1.1.0)" vs "libosmocore-dev (>= 1.0.0),"
+check_configureac_debctrl_deps_match() {
+	configureac_list=$(grep -e "PKG_CHECK_MODULES" "${GIT_TOPDIR}/configure.ac" | cut -d "," -f 2 | tr -d ")" | tr -d " " | sed "s/>=/ /g")
+	echo "$configureac_list" | \
+	{ return_error=0
+	while read -r dep ver; do
+
+		debctrl_match="$(grep -e "${dep}-dev" ${GIT_TOPDIR}/debian/control | grep ">=")"
+		debctrl_match_count="$(echo "$debctrl_match" | grep -c ">=")"
+		if [ "z$debctrl_match_count" != "z0" ]; then
+			#echo "Dependency <$dep, $ver> from configure.ac matched in debian/control! ($debctrl_match_count)"
+			if [ "z$debctrl_match_count" != "z1" ]; then
+				echo "WARN: configure.ac <$dep, $ver> matches debian/control $debctrl_match_count times, manual check required!"
+			else # 1 match:
+				parsed_match=$(echo "$debctrl_match" | tr -d "(" | tr -d ")" | tr -d "," | tr -d " " | sed "s/>=/ /g")
+				debctrl_dep=$(echo "$parsed_match" | cut -d " " -f 1 | sed "s/-dev//g")
+				debctrl_ver=$(echo "$parsed_match" | cut -d " " -f 2)
+				if [ "z$dep" != "z$debctrl_dep" ] || [ "z$ver" != "z$debctrl_ver" ]; then
+					echo "ERROR: configure.ac <$dep, $ver> does NOT match debian/control <$debctrl_dep, $debctrl_ver>!"
+					return_error=1
+				#else
+				#	echo "OK: configure.ac <$dep, $ver> matches debian/control <$debctrl_dep, $debctrl_ver>"
+				fi
+			fi
+		fi
+	done
+	if [ $return_error -ne 0 ]; then
+		exit 1
+	fi
+	}
+
+	# catch and forward exit from pipe subshell "while read":
+	if [ $? -ne 0 ]; then
+		echo "ERROR: exiting due to previous errors"
+		exit 1
+	fi
+	echo "OK: dependency specific versions in configure.ac and debian/control match"
+}
+
 BUMPVER=`command -v bumpversion`
 GIT_TOPDIR="$(git rev-parse --show-toplevel)"
 NEW_VER=`bumpversion --list --current-version $VERSION $REL --allow-dirty | awk -F '=' '{ print $2 }'`
@@ -39,6 +79,8 @@ if [ "z$NEW_VER" = "z" ]; then
 fi
 
 echo "Releasing $VERSION -> $NEW_VER..."
+
+check_configureac_debctrl_deps_match
 
 if [ "z$LIBVERS" != "z" ]; then
 	if [ "z$MAKEMOD" = "z" ] && [ "z$ALLOW_NO_LIBVERSION_CHANGE" = "z0" ]; then
