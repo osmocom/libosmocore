@@ -60,6 +60,7 @@ if [ "z$LIBVERS" != "z" ]; then
 			else
 				echo "WARN: Found $file_matches files matching debian/lib*$major.install for LIBVERSION=$libversion, manual check required!"
 			fi
+
 			control_matches="$(grep -e "Package" "${GIT_TOPDIR}/debian/control" | grep "lib" | grep "$major$" | wc -l)"
 			if [ "z$control_matches" = "z0" ]; then
 				echo "ERROR: Found no matching Package lib*$major in debian/control for LIBVERSION=$libversion"
@@ -68,6 +69,19 @@ if [ "z$LIBVERS" != "z" ]; then
 				echo "OK: Found 'Package: lib*$major' in debian/control for LIBVERSION=$libversion"
 			else
 				echo "WARN: Found $file_matches files matching 'Package: lib*$major' in debian/control for LIBVERSION=$libversion, manual check required!"
+			fi
+
+			dhstrip_lib_total="$(grep -e "dh_strip" "${GIT_TOPDIR}/debian/rules" | grep "\-plib" | wc -l)"
+			dhstrip_lib_matches="$(grep -e "dh_strip" "${GIT_TOPDIR}/debian/rules" | grep "\-plib" | grep "$major" | wc -l)"
+			if [ "z$dhstrip_lib_total" != "z0" ]; then
+				if [ "z$dhstrip_lib_matches" = "z0" ] ; then
+					echo "ERROR: Found no matching 'dh_strip -plib*$major' line in debian/rules for LIBVERSION=$libversion"
+					exit 1
+				elif [ "z$dhstrip_lib_total" = "z1" ]; then
+					echo "OK: Found 'dh_strip -plib*$major' in debian/rules for LIBVERSION=$libversion"
+				else
+					echo "WARN: Found $dhstrip_lib_matches/$dhstrip_lib_total dh_strip matches 'dh_strip -plib*$major' in debian/rules for LIBVERSION=$libversion, manual check required!"
+				fi
 			fi
 		done
 		# catch and forward exit from pipe subshell "while read":
