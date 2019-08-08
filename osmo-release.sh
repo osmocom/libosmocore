@@ -24,7 +24,12 @@ libversion_to_deb_major() {
 # Make sure that depedency requirement versions match in configure.ac vs debian/control.
 #eg: "PKG_CHECK_MODULES(LIBOSMOCORE, libosmocore >= 1.1.0)" vs "libosmocore-dev (>= 1.0.0),"
 check_configureac_debctrl_deps_match() {
-	configureac_list=$(grep -e "PKG_CHECK_MODULES" "${GIT_TOPDIR}/configure.ac" | cut -d "," -f 2 | tr -d ")" | tr -d " " | sed "s/>=/ /g")
+	if [ -f "${GIT_TOPDIR}/openbsc/configure.ac" ]; then
+		configureac_file="openbsc/configure.ac"
+	else
+		configureac_file="configure.ac"
+	fi
+	configureac_list=$(grep -e "PKG_CHECK_MODULES" "${GIT_TOPDIR}/${configureac_file}" | cut -d "," -f 2 | tr -d ")" | tr -d " " | sed "s/>=/ /g")
 	echo "$configureac_list" | \
 	{ return_error=0
 	while read -r dep ver; do
@@ -163,7 +168,7 @@ if [ "z$DRY_RUN" != "z0" ]; then
 fi
 gbp dch --debian-tag='%(version)s' --auto --meta --git-author --multimaint-merge --ignore-branch --new-version="$NEW_VER"
 dch -r -m --distribution "unstable" ""
-git add debian/changelog
+git add ${GIT_TOPDIR}/debian/changelog
 bumpversion --current-version $VERSION $REL --tag --commit --tag-name $NEW_VER --allow-dirty
 git commit --amend # let the user add extra information to the release commit.
 git tag -s $NEW_VER -f -m "Release v$NEW_VER on $ISODATE."
