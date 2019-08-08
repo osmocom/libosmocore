@@ -61,6 +61,22 @@ check_configureac_debctrl_deps_match() {
 	echo "OK: dependency specific versions in configure.ac and debian/control match"
 }
 
+# Make sure that patches under debian/patches/ apply:
+check_debian_patch_apply() {
+	if [ ! -d "${GIT_TOPDIR}/debian/patches" ]; then
+		return
+	fi
+	for patch in ${GIT_TOPDIR}/debian/patches/*.patch; do
+		git apply --check $patch
+		if [ $? -ne 0 ]; then
+			echo "ERROR: patch no longer applies! $patch"
+			exit 1
+		else
+			echo "OK: patch applies: $patch"
+		fi
+	done
+}
+
 BUMPVER=`command -v bumpversion`
 GIT_TOPDIR="$(git rev-parse --show-toplevel)"
 NEW_VER=`bumpversion --list --current-version $VERSION $REL --allow-dirty | awk -F '=' '{ print $2 }'`
@@ -81,6 +97,7 @@ fi
 echo "Releasing $VERSION -> $NEW_VER..."
 
 check_configureac_debctrl_deps_match
+check_debian_patch_apply
 
 if [ "z$LIBVERS" != "z" ]; then
 	if [ "z$MAKEMOD" = "z" ] && [ "z$ALLOW_NO_LIBVERSION_CHANGE" = "z0" ]; then
