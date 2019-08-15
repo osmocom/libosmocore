@@ -183,10 +183,11 @@ void osmo_tdefs_reset(struct osmo_tdef *tdefs)
  * \param[in] val_if_not_present  Fallback value to return if no timeout is defined.
  * \return Timeout value in the unit given by as_unit, rounded up if necessary, or val_if_not_present.
  */
-unsigned long osmo_tdef_get(const struct osmo_tdef *tdefs, int T, enum osmo_tdef_unit as_unit, unsigned long val_if_not_present)
+unsigned long osmo_tdef_get(const struct osmo_tdef *tdefs, int T, enum osmo_tdef_unit as_unit, long val_if_not_present)
 {
 	const struct osmo_tdef *t = osmo_tdef_get_entry((struct osmo_tdef*)tdefs, T);
 	if (!t) {
+		OSMO_ASSERT(val_if_not_present >= 0);
 		return val_if_not_present;
 	}
 	return osmo_tdef_round(t->val, t->unit, as_unit);

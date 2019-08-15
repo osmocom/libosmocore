@@ -95,7 +95,7 @@ struct osmo_tdef {
 
 void osmo_tdefs_reset(struct osmo_tdef *tdefs);
 unsigned long osmo_tdef_get(const struct osmo_tdef *tdefs, int T, enum osmo_tdef_unit as_unit,
-			    unsigned long val_if_not_present);
+			    long val_if_not_present);
 struct osmo_tdef *osmo_tdef_get_entry(struct osmo_tdef *tdefs, int T);
 
 /*! Using osmo_tdef for osmo_fsm_inst: array entry for a mapping of state numbers to timeout definitions.
