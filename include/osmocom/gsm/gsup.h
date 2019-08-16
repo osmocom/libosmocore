@@ -107,6 +107,7 @@ enum osmo_gsup_iei {
 
 	OSMO_GSUP_IMEI_IE			= 0x50,
 	OSMO_GSUP_IMEI_RESULT_IE		= 0x51,
+	OSMO_GSUP_NUM_VECTORS_REQ_IE		= 0x52,
 
 	/* Inter-MSC handover related */
 	OSMO_GSUP_SOURCE_NAME_IE		= 0x60,

@@ -19,6 +19,7 @@
 #define TEST_AN_APDU_IE 0x62, 0x05, 0x01, 0x42, 0x42, 0x42, 0x42
 #define TEST_SOURCE_NAME_IE 0x60, 0x05, 'M', 'S', 'C', '-', 'A'
 #define TEST_DESTINATION_NAME_IE 0x61, 0x05, 'M', 'S', 'C', '-', 'B'
+#define TEST_NUM_VEC_IE(x) 0x52, 1, x
 
 static void test_gsup_messages_dec_enc(void)
 {
@@ -29,6 +30,13 @@ static void test_gsup_messages_dec_enc(void)
 	static const uint8_t send_auth_info_req[] = {
 		0x08,
 		TEST_IMSI_IE,
+		TEST_CLASS_SUBSCR_IE
+	};
+
+	static const uint8_t send_auth_info_req10[] = {
+		0x08,
+		TEST_IMSI_IE,
+		TEST_NUM_VEC_IE(10),
 		TEST_CLASS_SUBSCR_IE
 	};
 
@@ -612,6 +620,8 @@ static void test_gsup_messages_dec_enc(void)
 			send_e_abort, sizeof(send_e_abort)},
 		{"E Routing Error",
 			send_e_routing_error, sizeof(send_e_routing_error)},
+		{"Send Authentication Info Request (10 Vectors)",
+			send_auth_info_req10, sizeof(send_auth_info_req10)},
 	};
 
 	printf("Test GSUP message decoding/encoding\n");

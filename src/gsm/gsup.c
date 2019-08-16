@@ -569,6 +569,11 @@ int osmo_gsup_decode(const uint8_t *const_data, size_t data_len,
 			gsup_msg->cause_sm = value[0];
 			break;
 
+		case OSMO_GSUP_NUM_VECTORS_REQ_IE:
+			if (gsup_msg->message_type == OSMO_GSUP_MSGT_SEND_AUTH_INFO_REQUEST)
+				gsup_msg->num_auth_vectors = value[0];
+			break;
+
 		default:
 			LOGP(DLGSUP, LOGL_NOTICE,
 			     "GSUP IE type %d unknown\n", iei);
@@ -753,12 +758,18 @@ int osmo_gsup_encode(struct msgb *msg, const struct osmo_gsup_message *gsup_msg)
 		}
 	}
 
-	for (idx = 0; idx < gsup_msg->num_auth_vectors; idx++) {
-		const struct osmo_auth_vector *auth_vector;
+	if (gsup_msg->message_type == OSMO_GSUP_MSGT_SEND_AUTH_INFO_REQUEST) {
+		uint8_t num = gsup_msg->num_auth_vectors;
+		if (num != 0)
+			msgb_tlv_put(msg, OSMO_GSUP_NUM_VECTORS_REQ_IE, 1, &num);
+	} else {
+		for (idx = 0; idx < gsup_msg->num_auth_vectors; idx++) {
+			const struct osmo_auth_vector *auth_vector;
 
-		auth_vector = &gsup_msg->auth_vectors[idx];
+			auth_vector = &gsup_msg->auth_vectors[idx];
 
-		encode_auth_info(msg, OSMO_GSUP_AUTH_TUPLE_IE, auth_vector);
+			encode_auth_info(msg, OSMO_GSUP_AUTH_TUPLE_IE, auth_vector);
+		}
 	}
 
 	if (gsup_msg->auts)

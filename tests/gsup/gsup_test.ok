@@ -77,4 +77,6 @@ Test GSUP message decoding/encoding
           E Abort OK
   Testing E Routing Error
           E Routing Error OK
+  Testing Send Authentication Info Request (10 Vectors)
+          Send Authentication Info Request (10 Vectors) OK
 Done.
