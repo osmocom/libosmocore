@@ -1061,11 +1061,12 @@ void logging_vty_add_cmds()
 	install_element_ve(&deprecated_logging_level_everything_cmd);
 	install_element_ve(&deprecated_logging_level_all_cmd);
 	install_element_ve(&deprecated_logging_level_all_everything_cmd);
-	install_element_ve(&show_logging_vty_cmd);
-	install_element_ve(&show_alarms_cmd);
 
 	gen_vty_logp_cmd_strs(&vty_logp_cmd);
 	install_element_ve(&vty_logp_cmd);
+
+	install_element_ve(&show_logging_vty_cmd);
+	install_element_ve(&show_alarms_cmd);
 
 	install_node(&cfg_log_node, config_write_log);
 	install_element(CFG_LOG_NODE, &logging_fltr_all_cmd);
