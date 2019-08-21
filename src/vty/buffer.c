@@ -92,6 +92,8 @@ struct buffer *buffer_new(void *ctx, size_t size)
 /* Free buffer. */
 void buffer_free(struct buffer *b)
 {
+	if (!b)
+		return;
 	buffer_reset(b);
 	talloc_free(b);
 }
@@ -103,6 +105,9 @@ char *buffer_getstr(struct buffer *b)
 	struct buffer_data *data;
 	char *s;
 	char *p;
+
+	if (!b)
+		return NULL;
 
 	for (data = b->head; data; data = data->next)
 		totlen += data->cp - data->sp;
@@ -120,7 +125,7 @@ char *buffer_getstr(struct buffer *b)
 /* Return 1 if buffer is empty. */
 int buffer_empty(struct buffer *b)
 {
-	return (b->head == NULL);
+	return (!b || b->head == NULL);
 }
 
 /* Clear and free all allocated data. */
@@ -128,6 +133,9 @@ void buffer_reset(struct buffer *b)
 {
 	struct buffer_data *data;
 	struct buffer_data *next;
+
+	if (!b)
+		return;
 
 	for (data = b->head; data; data = next) {
 		next = data->next;
@@ -140,6 +148,9 @@ void buffer_reset(struct buffer *b)
 static struct buffer_data *buffer_add(struct buffer *b)
 {
 	struct buffer_data *d;
+
+	if (!b)
+		return NULL;
 
 	d = _talloc_zero(b,
 			 offsetof(struct buffer_data, data[b->size]),
@@ -161,8 +172,13 @@ static struct buffer_data *buffer_add(struct buffer *b)
 /* Write data to buffer. */
 void buffer_put(struct buffer *b, const void *p, size_t size)
 {
-	struct buffer_data *data = b->tail;
+	struct buffer_data *data;
 	const char *ptr = p;
+
+	if (!b)
+		return;
+
+	data = b->tail;
 
 	/* We use even last one byte of data buffer. */
 	while (size) {
@@ -185,12 +201,16 @@ void buffer_put(struct buffer *b, const void *p, size_t size)
 /* Insert character into the buffer. */
 void buffer_putc(struct buffer *b, unsigned char c)
 {
+	if (!b)
+		return;
 	buffer_put(b, &c, 1);
 }
 
 /* Put string to the buffer. */
 void buffer_putstr(struct buffer *b, const char *c)
 {
+	if (!b)
+		return;
 	buffer_put(b, c, strlen(c));
 }
 
@@ -202,7 +222,7 @@ buffer_status_t buffer_flush_all(struct buffer *b, int fd)
 	struct buffer_data *head;
 	size_t head_sp;
 
-	if (!b->head)
+	if (!b || !b->head)
 		return BUFFER_EMPTY;
 	head_sp = (head = b->head)->sp;
 	/* Flush all data. */
@@ -395,6 +415,9 @@ in one shot. */
 	size_t iovcnt = 0;
 	size_t nbyte = 0;
 
+	if (!b)
+		return BUFFER_EMPTY;
+
 	for (d = b->head; d && (iovcnt < MAX_CHUNKS) && (nbyte < MAX_FLUSH);
 	     d = d->next, iovcnt++) {
 		iov[iovcnt].iov_base = d->data + d->sp;
@@ -440,6 +463,8 @@ buffer_write(struct buffer * b, int fd, const void *p, size_t size)
 {
 	ssize_t nbytes;
 
+	if (!b)
+		return BUFFER_ERROR;
 #if 0
 	/* Should we attempt to drain any previously buffered data?  This could help reduce latency in pushing out the data if we are stuck in a long-running thread that is preventing the main select loop from calling the flush thread... */
 

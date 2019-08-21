@@ -260,6 +260,13 @@ int vty_out_va(struct vty *vty, const char *format, va_list ap)
 		vprintf(format, ap);
 	} else {
 		va_list args;
+
+		if (!vty->obuf) {
+			/* There is no output buffer. This can happen from logging to a telnet session, during cleanup
+			 * of this same (killed) telnet session. See OS#4146. */
+			return 0;
+		}
+
 		/* Try to write to initial buffer.  */
 		va_copy(args, ap);
 		len = vsnprintf(buf, sizeof buf, format, args);
