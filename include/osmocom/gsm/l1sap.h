@@ -67,8 +67,8 @@ struct ph_rach_ind_param {
 	/* elements added on 2018-02-26 */
 	int8_t rssi;		/*!< RSSI of RACH indication */
 	uint16_t ber10k;	/*!< BER in units of 0.01% */
-	int16_t acc_delay_256bits;/* !< Burst TA Offset in 1/256th bits */
-	int16_t lqual_cb;	/* !< Link quality in centiBel */
+	int16_t acc_delay_256bits;/*!< Burst TA Offset in 1/256th bits */
+	int16_t lqual_cb;	/*!< Link quality in centiBel */
 };
 
 /*! for PH-[UNIT]DATA.{req,ind} | PH-RTS.ind */
@@ -79,10 +79,10 @@ struct ph_data_param {
 	int8_t rssi;		/*!< RSSI of receivedindication */
 	uint16_t ber10k;	/*!< BER in units of 0.01% */
 	union {
-		int16_t ta_offs_qbits;	/* !< Burst TA Offset in quarter bits */
+		int16_t ta_offs_qbits;	/*!< Burst TA Offset in quarter bits */
 		int16_t ta_offs_256bits;/*!< timing advance offset (in 1/256th bits) */
 	};
-	int16_t lqual_cb;	/* !< Link quality in centiBel */
+	int16_t lqual_cb;	/*!< Link quality in centiBel */
 	enum osmo_ph_pres_info_type pdch_presence_info; /*!< Info regarding presence/validity of header and data parts */
 };
 
@@ -93,7 +93,7 @@ struct ph_tch_param {
 	int8_t rssi;		/*!< RSSI of received indication */
 	uint8_t marker;		/*!< RTP Marker bit (speech onset indicator) */
 	uint16_t ber10k;	/*!< BER in units of 0.01% */
-	int16_t lqual_cb;	/* !< Link quality in centiBel */
+	int16_t lqual_cb;	/*!< Link quality in centiBel */
 };
 
 /*! for PH-CONN.ind */
