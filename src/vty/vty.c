@@ -205,6 +205,9 @@ void vty_close(struct vty *vty)
 {
 	int i;
 
+	/* VTY_CLOSED is handled by the telnet_interface */
+	vty_event(VTY_CLOSED, vty->fd, vty);
+
 	if (vty->obuf)  {
 		/* Flush buffer. */
 		buffer_flush_all(vty->obuf, vty->fd);
@@ -235,9 +238,6 @@ void vty_close(struct vty *vty)
 
 	/* Check configure. */
 	vty_config_unlock(vty);
-
-	/* VTY_CLOSED is handled by the telnet_interface */
-	vty_event(VTY_CLOSED, vty->fd, vty);
 
 	/* OK free vty. */
 	talloc_free(vty);
