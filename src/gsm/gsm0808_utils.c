@@ -767,6 +767,27 @@ int gsm0808_dec_encrypt_info(struct gsm0808_encrypt_info *ei,
 	return (int)(elem - old_elem);
 }
 
+/* Return the size of the value part of a cell identifier of given type */
+int gsm0808_cell_id_size(enum CELL_IDENT discr)
+{
+	switch (discr) {
+	case CELL_IDENT_WHOLE_GLOBAL:
+		return 7;
+	case CELL_IDENT_LAC_AND_CI:
+		return 4;
+	case CELL_IDENT_CI:
+		return 2;
+	case CELL_IDENT_LAI_AND_LAC:
+		return 5;
+	case CELL_IDENT_LAC:
+		return 2;
+	case CELL_IDENT_BSS:
+	case CELL_IDENT_NO_CELL:
+		return 0;
+	default:
+		return -EINVAL;
+	}
+}
 /*! Decode a single GSM 08.08 Cell ID list element payload
  *  \param[out] out caller-provided output union
  *  \param[in] discr Cell ID discriminator describing type to be decoded

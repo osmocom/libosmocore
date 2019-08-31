@@ -515,7 +515,7 @@ static int cbsp_decode_cell_list(struct osmo_cbsp_cell_list *cl, void *ctx,
 			osmo_cbsp_errstr = "cell list: error decoding cell_id_union";
 			return rc;
 		}
-		cur += rc;
+		cur += gsm0808_cell_id_size(cl->id_discr);
 		llist_add_tail(&ent->list, &cl->list);
 	}
 	return 0;
@@ -538,7 +538,7 @@ static int cbsp_decode_fail_list(struct llist_head *fl, void *ctx,
 			osmo_cbsp_errstr = "fail list: error decoding cell_id_union";
 			return rc;
 		}
-		cur += rc;
+		cur += gsm0808_cell_id_size(ent->id_discr);
 		ent->cause = *cur++;
 		llist_add_tail(&ent->list, fl);
 	}
@@ -562,7 +562,7 @@ static int cbsp_decode_loading_list(struct osmo_cbsp_loading_list *ll, void *ctx
 			osmo_cbsp_errstr = "load list: error decoding cell_id_union";
 			return rc;
 		}
-		cur += rc;
+		cur += gsm0808_cell_id_size(ll->id_discr);
 		if (cur + 2 > buf + len) {
 			talloc_free(ent);
 			osmo_cbsp_errstr = "load list: truncated IE";
@@ -592,7 +592,7 @@ static int cbsp_decode_num_compl_list(struct osmo_cbsp_num_compl_list *cl, void 
 			osmo_cbsp_errstr = "completed list: error decoding cell_id_union";
 			return rc;
 		}
-		cur += rc;
+		cur += gsm0808_cell_id_size(cl->id_discr);
 		if (cur + 3 > buf + len) {
 			talloc_free(ent);
 			osmo_cbsp_errstr = "completed list: truncated IE";
