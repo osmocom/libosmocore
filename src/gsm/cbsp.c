@@ -1468,7 +1468,6 @@ int osmo_cbsp_recv_buffered(void *ctx, int fd, struct msgb **rmsg, struct msgb *
 	return rc;
 
 discard_msg:
-	printf("discard_msg\n");
 	if (tmp_msg)
 		*tmp_msg = NULL;
 	msgb_free(msg);
