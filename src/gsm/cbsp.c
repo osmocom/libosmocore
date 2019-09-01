@@ -687,8 +687,8 @@ static int cbsp_dec_write_repl(struct osmo_cbsp_write_replace *out, const struct
 			}
 			page = talloc_zero(ctx, struct osmo_cbsp_content);
 			OSMO_ASSERT(page);
-			page->user_len = *(ie-1); /* length byte before payload */
-			memcpy(page->data, ie, sizeof(page->data));
+			page->user_len = ie[0]; /* length byte before payload */
+			memcpy(page->data, ie+1, sizeof(page->data));
 			llist_add_tail(&page->list, &out->u.cbs.msg_content);
 		}
 	} else {
