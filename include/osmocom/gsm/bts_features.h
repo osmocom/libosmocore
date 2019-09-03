@@ -23,6 +23,7 @@ enum osmo_bts_features {
 	BTS_FEAT_SPEECH_F_EFR,
 	BTS_FEAT_SPEECH_F_AMR,
 	BTS_FEAT_SPEECH_H_AMR,
+	BTS_FEAT_ETWS_PN,
 	_NUM_BTS_FEAT
 };
 
