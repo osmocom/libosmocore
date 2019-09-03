@@ -236,6 +236,8 @@ enum abis_rsl_msgtype {
 	RSL_MT_IPAC_DLCX		= 0x77,
 	RSL_MT_IPAC_DLCX_ACK,
 	RSL_MT_IPAC_DLCX_NACK,
+
+	RSL_MT_OSMO_ETWS_CMD		= 0x7f,
 };
 
 /*! Siemens vendor-specific RSL message types */

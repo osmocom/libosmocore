@@ -389,6 +389,7 @@ static const struct value_string rsl_msgt_names[] = {
 	{ RSL_MT_TFO_REP,		"TFO_REP" },
 	{ RSL_MT_TFO_MOD_REQ,		"TFO_MOD_REQ" },
 	{ RSL_MT_LOCATION_INFO,		"LOCATION_INFO" },
+	{ RSL_MT_OSMO_ETWS_CMD,		"OSMO_ETWS_CMD" },
 	{ 0,				NULL }
 };
 
