@@ -10,10 +10,10 @@
 
 /* Expanded fields from GSM TS 04.08, Table 10.5.102 */
 struct gsm_mncc_bearer_cap {
-	int		transfer;	/* Information Transfer Capability */
-	int 		mode;		/* Transfer Mode */
-	int		coding;		/* Coding Standard */
-	int		radio;		/* Radio Channel Requirement */
+	int		transfer;	/* Information Transfer Capability, see enum gsm48_bcap_itcap. */
+	int 		mode;		/* Transfer Mode, see enum gsm48_bcap_tmod. */
+	int		coding;		/* Coding Standard, see enum gsm48_bcap_coding.*/
+	int		radio;		/* Radio Channel Requirement, see enum gsm48_bcap_rrq. */
 	int		speech_ctm;	/* CTM text telephony indication */
 	int		speech_ver[8];	/* Speech version indication, see enum gsm48_bcap_speech_ver; -1 marks end */
 	struct {

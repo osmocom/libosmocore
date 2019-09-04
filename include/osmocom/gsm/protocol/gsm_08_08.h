@@ -512,13 +512,15 @@ enum gsm0808_paging_info {
 	GSM0808_PAGINF_FOR_USSD		= 0x02,
 };
 
-/* 3GPP TS 48.008 3.2.2.104 Speech Codec */
+/*! 3GPP TS 48.008 3.2.2.104 Speech Codec */
 struct gsm0808_speech_codec {
 	bool fi;
 	bool pi;
 	bool pt;
 	bool tf;
+	/*! See enum gsm0808_speech_codec_type. */
 	uint8_t type;
+	/*! For examples, see enum gsm0808_speech_codec_defaults. */
 	uint16_t cfg;
 };
 
