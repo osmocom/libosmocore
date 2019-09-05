@@ -25,6 +25,9 @@
 #pragma once
 
 #include <stdint.h>
+#include <stdarg.h>
+
+#include <osmocom/vty/command.h>
 
 struct vty;
 
