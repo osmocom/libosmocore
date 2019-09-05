@@ -25,6 +25,7 @@
  */
 
 #include <limits.h>
+#include <errno.h>
 
 #include <osmocom/core/fsm.h>
 #include <osmocom/core/tdef.h>
@@ -208,6 +209,25 @@ struct osmo_tdef *osmo_tdef_get_entry(struct osmo_tdef *tdefs, int T)
 			return t;
 	}
 	return NULL;
+}
+
+/*! Set value in entry matching T, converting val from val_unit to unit of T.
+ * \param[in] tdefs  Array of timer definitions, last entry being fully zero.
+ * \param[in] T  Timer number to set the value for.
+ * \param[in] val  The new timer value to set.
+ * \param[in] val_unit  Units of value in parameter val.
+ * \return 0 on success, negative on error.
+ */
+int osmo_tdef_set(struct osmo_tdef *tdefs, int T, unsigned long val, enum osmo_tdef_unit val_unit)
+{
+	struct osmo_tdef *t;
+	osmo_tdef_for_each(t, tdefs) {
+		if (t->T == T) {
+			t->val = osmo_tdef_round(val, val_unit, t->unit);
+			return 0;
+		}
+	}
+	return -EEXIST;
 }
 
 /*! Using osmo_tdef for osmo_fsm_inst: find a given state's osmo_tdef_state_timeout entry.
