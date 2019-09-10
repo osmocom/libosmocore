@@ -212,6 +212,7 @@ struct osmo_tdef *osmo_tdef_get_entry(struct osmo_tdef *tdefs, int T)
 }
 
 /*! Set value in entry matching T, converting val from val_unit to unit of T.
+ * The converted value is rounded up to the next integer value of T's unit and clamped to ULONG_MAX, or 0 if val == 0.
  * \param[in] tdefs  Array of timer definitions, last entry being fully zero.
  * \param[in] T  Timer number to set the value for.
  * \param[in] val  The new timer value to set.
@@ -220,14 +221,11 @@ struct osmo_tdef *osmo_tdef_get_entry(struct osmo_tdef *tdefs, int T)
  */
 int osmo_tdef_set(struct osmo_tdef *tdefs, int T, unsigned long val, enum osmo_tdef_unit val_unit)
 {
-	struct osmo_tdef *t;
-	osmo_tdef_for_each(t, tdefs) {
-		if (t->T == T) {
-			t->val = osmo_tdef_round(val, val_unit, t->unit);
-			return 0;
-		}
-	}
-	return -EEXIST;
+	struct osmo_tdef *t = osmo_tdef_get_entry(tdefs, T);
+	if (!t)
+		return -EEXIST;
+	t->val = osmo_tdef_round(val, val_unit, t->unit);
+	return 0;
 }
 
 /*! Using osmo_tdef for osmo_fsm_inst: find a given state's osmo_tdef_state_timeout entry.
