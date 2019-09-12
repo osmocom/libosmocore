@@ -154,6 +154,7 @@ enum log_ctx_index {
 	LOG_CTX_GB_BVC,
 	LOG_CTX_BSC_SUBSCR,
 	LOG_CTX_VLR_SUBSCR,
+	LOG_CTX_L1_SAPI,
 	_LOG_CTX_COUNT
 };
 
@@ -166,6 +167,7 @@ enum log_filter_index {
 	LOG_FLT_GB_BVC,
 	LOG_FLT_BSC_SUBSCR,
 	LOG_FLT_VLR_SUBSCR,
+	LOG_FLT_L1_SAPI,
 	_LOG_FLT_COUNT
 };
 
