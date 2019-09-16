@@ -5,6 +5,7 @@
 
 #include <osmocom/codec/codec.h>
 
+/* ECU state for GSM-FR */
 struct osmo_ecu_fr_state {
 	bool subsequent_lost_frame;
 	uint8_t frame_backup[GSM_FR_BYTES];
