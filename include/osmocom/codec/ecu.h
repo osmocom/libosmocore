@@ -5,7 +5,6 @@
 
 #include <osmocom/codec/codec.h>
 
-/* Codec independent ECU state */
 struct osmo_ecu_fr_state {
 	bool subsequent_lost_frame;
 	uint8_t frame_backup[GSM_FR_BYTES];
@@ -40,6 +39,7 @@ enum osmo_ecu_codec {
  *   -- Harald Welte <laforge@gnumonks.org> on August 1, 2019.
  */
 
+/* Codec independent ECU state */
 struct osmo_ecu_state {
 	enum osmo_ecu_codec codec;
 	uint8_t data[0];
