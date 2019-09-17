@@ -379,6 +379,5 @@ void log_add_target(struct log_target *target);
 void log_del_target(struct log_target *target);
 
 struct log_target *log_target_find(int type, const char *fname);
-extern struct llist_head osmo_log_target_list;
 
 /*! @} */
