@@ -55,6 +55,9 @@ static struct osmo_tdef tdefs_test[] = {
 	{ .T=4, .default_val=100, .unit=OSMO_TDEF_CUSTOM, .desc="Testing a hundred potatoes" },
 	{ .T=0x7fffffff, .default_val=0xffffffff, .unit=OSMO_TDEF_M, .desc="Very large" },
 	{ .T=-23, .default_val=239471, .desc="Negative T number" },
+	{ .T=30, .default_val=50, .desc="Testing range min", .min_val=20 },
+	{ .T=31, .default_val=50, .desc="Testing range max", .max_val=52 },
+	{ .T=32, .default_val=50, .desc="Testing range both", .min_val=20, .max_val=52 },
 	{}  //  <-- important! last entry shall be zero
 };
 

@@ -136,14 +136,22 @@ static unsigned long osmo_tdef_round(unsigned long val, enum osmo_tdef_unit from
 
 /*! Set all osmo_tdef values to the default_val.
  * It is convenient to define a tdefs array by setting only the default_val, and calling osmo_tdefs_reset() once for
- * program startup. (See also osmo_tdef_vty_init())
+ * program startup. (See also osmo_tdef_vty_init()).
+ * During call to this function, default values are verified to be inside valid range; process is aborted otherwise.
  * \param[in] tdefs  Array of timer definitions, last entry being fully zero.
  */
 void osmo_tdefs_reset(struct osmo_tdef *tdefs)
 {
 	struct osmo_tdef *t;
-	osmo_tdef_for_each(t, tdefs)
+	osmo_tdef_for_each(t, tdefs) {
+		if (!osmo_tdef_val_in_range(t, t->default_val)) {
+			char range_str[64];
+			osmo_tdef_range_str_buf(range_str, sizeof(range_str), t);
+			osmo_panic("%s:%d Timer " OSMO_T_FMT " contains default value %lu not in range %s\n",
+				   __FILE__, __LINE__, OSMO_T_FMT_ARGS(t->T), t->default_val, range_str);
+		}
 		t->val = t->default_val;
+	}
 }
 
 /*! Return the value of a T timer from a list of osmo_tdef, in the given unit.
@@ -221,11 +229,53 @@ struct osmo_tdef *osmo_tdef_get_entry(struct osmo_tdef *tdefs, int T)
  */
 int osmo_tdef_set(struct osmo_tdef *tdefs, int T, unsigned long val, enum osmo_tdef_unit val_unit)
 {
+	unsigned long new_val;
 	struct osmo_tdef *t = osmo_tdef_get_entry(tdefs, T);
 	if (!t)
 		return -EEXIST;
-	t->val = osmo_tdef_round(val, val_unit, t->unit);
+
+	new_val = osmo_tdef_round(val, val_unit, t->unit);
+	if (!osmo_tdef_val_in_range(t, new_val))
+		return -ERANGE;
+
+	t->val = new_val;
 	return 0;
+}
+
+/*! Check if value new_val is in range of valid possible values for timer entry tdef.
+ * \param[in] tdef  Timer entry from a timer definition table.
+ * \param[in] new_val  The value whose validity to check, in units as per this timer entry.
+ * \return true if inside range, false otherwise.
+ */
+bool osmo_tdef_val_in_range(struct osmo_tdef *tdef, unsigned long new_val)
+{
+	return new_val >= tdef->min_val && (!tdef->max_val || new_val <= tdef->max_val);
+}
+
+/*! Write string representation of osmo_tdef range into buf.
+ * \param[in] buf  The buffer where the string representation is stored.
+ * \param[in] buf_len  Length of buffer in bytes.
+ * \param[in] tdef  Timer entry from a timer definition table.
+ * \return The number of characters printed on success, negative on error. See snprintf().
+ */
+int osmo_tdef_range_str_buf(char *buf, size_t buf_len, struct osmo_tdef *t)
+{
+	int ret, len = 0, offset = 0, rem = buf_len;
+
+	buf[0] = '\0';
+	ret = snprintf(buf + offset, rem, "[%lu .. ", t->min_val);
+	if (ret < 0)
+		return ret;
+	OSMO_SNPRINTF_RET(ret, rem, offset, len);
+
+	if (t->max_val)
+		ret = snprintf(buf + offset, rem, "%lu]", t->max_val);
+	else
+		ret = snprintf(buf + offset, rem, "inf]");
+	if (ret < 0)
+		return ret;
+	OSMO_SNPRINTF_RET(ret, rem, offset, len);
+	return ret;
 }
 
 /*! Using osmo_tdef for osmo_fsm_inst: find a given state's osmo_tdef_state_timeout entry.

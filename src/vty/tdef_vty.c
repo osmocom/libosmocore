@@ -115,12 +115,22 @@ unsigned long osmo_tdef_vty_parse_val_arg(const char *val_arg, unsigned long def
  */
 int osmo_tdef_vty_set_cmd(struct vty *vty, struct osmo_tdef *tdefs, const char **args)
 {
+	unsigned long new_val;
 	const char *T_arg = args[0];
 	const char *val_arg = args[1];
 	struct osmo_tdef *t = osmo_tdef_vty_parse_T_arg(vty, tdefs, T_arg);
 	if (!t)
 		return CMD_WARNING;
-	t->val = osmo_tdef_vty_parse_val_arg(val_arg, t->default_val);
+	new_val = osmo_tdef_vty_parse_val_arg(val_arg, t->default_val);
+
+	if (!osmo_tdef_val_in_range(t, new_val)) {
+		char range_str[64];
+		osmo_tdef_range_str_buf(range_str, sizeof(range_str), t);
+		vty_out(vty, "%% Timer " OSMO_T_FMT " value %lu is out of range %s%s",
+		        OSMO_T_FMT_ARGS(t->T), new_val, range_str, VTY_NEWLINE);
+		return CMD_WARNING;
+	}
+	t->val = new_val;
 	return CMD_SUCCESS;
 }
 
@@ -161,18 +171,29 @@ int osmo_tdef_vty_show_cmd(struct vty *vty, struct osmo_tdef *tdefs, const char 
  */
 void osmo_tdef_vty_out_one_va(struct vty *vty, struct osmo_tdef *t, const char *prefix_fmt, va_list va)
 {
+	char range_str[64];
+
 	if (!t) {
 		vty_out(vty, "%% Error: no such timer%s", VTY_NEWLINE);
 		return;
 	}
 	if (prefix_fmt)
 		vty_out_va(vty, prefix_fmt, va);
-	vty_out(vty, OSMO_T_FMT " = %lu%s%s\t%s (default: %lu%s%s)%s",
-		OSMO_T_FMT_ARGS(t->T), t->val,
-		t->unit == OSMO_TDEF_CUSTOM ? "" : " ", t->unit == OSMO_TDEF_CUSTOM ? "" : osmo_tdef_unit_name(t->unit),
-		t->desc, t->default_val,
-		t->unit == OSMO_TDEF_CUSTOM ? "" : " ", t->unit == OSMO_TDEF_CUSTOM ? "" : osmo_tdef_unit_name(t->unit),
-		VTY_NEWLINE);
+
+	vty_out(vty, OSMO_T_FMT " = %lu", OSMO_T_FMT_ARGS(t->T), t->val);
+	if (t->unit != OSMO_TDEF_CUSTOM)
+		vty_out(vty, " %s", osmo_tdef_unit_name(t->unit));
+
+	vty_out(vty, "\t%s (default: %lu", t->desc, t->default_val);
+	if (t->unit != OSMO_TDEF_CUSTOM)
+		vty_out(vty, " %s", osmo_tdef_unit_name(t->unit));
+
+	if (t->min_val || t->max_val) {
+		osmo_tdef_range_str_buf(range_str, sizeof(range_str), t);
+		vty_out(vty, ", range: %s", range_str);
+	}
+
+	vty_out(vty, ")%s", VTY_NEWLINE);
 }
 
 /*! Write to VTY the current status of one timer.

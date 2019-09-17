@@ -41,7 +41,7 @@ static struct osmo_tdef tdefs[] = {
 	{ .T=3, .default_val=100, .unit=OSMO_TDEF_M, .desc="100m" },
 	{ .T=4, .default_val=100, .unit=OSMO_TDEF_CUSTOM, .desc="100 potatoes" },
 
-	{ .T=7, .default_val=50, .desc="Water Boiling Timeout" },  // default is .unit=OSMO_TDEF_S == 0
+	{ .T=7, .default_val=50, .desc="Water Boiling Timeout", .min_val=20, .max_val=800 },  // default is .unit=OSMO_TDEF_S == 0
 	{ .T=8, .default_val=300, .desc="Tea brewing" },
 	{ .T=9, .default_val=5, .unit=OSMO_TDEF_M, .desc="Let tea cool down before drinking" },
 	{ .T=10, .default_val=20, .unit=OSMO_TDEF_M, .desc="Forgot to drink tea while it's warm" },
@@ -143,8 +143,9 @@ static void test_tdef_set_and_get()
 	struct osmo_tdef *t;
 	printf("\n%s()\n", __func__);
 
-	t = osmo_tdef_get_entry(tdefs, 7);
 	printf("setting 7 = 42\n");
+	t = osmo_tdef_get_entry(tdefs, 7);
+	OSMO_ASSERT(osmo_tdef_val_in_range(t, 42));
 	t->val = 42;
 	print_tdef_info(7);
 	print_tdef_get_short(tdefs, 7, OSMO_TDEF_MS);
@@ -153,7 +154,25 @@ static void test_tdef_set_and_get()
 	print_tdef_get_short(tdefs, 7, OSMO_TDEF_CUSTOM);
 
 	printf("setting 7 = 420\n");
-	t->val = 420;
+	OSMO_ASSERT(osmo_tdef_set(tdefs, 7, 420, OSMO_TDEF_S) == 0);
+	print_tdef_info(7);
+	print_tdef_get_short(tdefs, 7, OSMO_TDEF_MS);
+	print_tdef_get_short(tdefs, 7, OSMO_TDEF_S);
+	print_tdef_get_short(tdefs, 7, OSMO_TDEF_M);
+	print_tdef_get_short(tdefs, 7, OSMO_TDEF_CUSTOM);
+
+	printf("setting 7 = 10 (ERANGE)\n");
+	OSMO_ASSERT(!osmo_tdef_val_in_range(t, 10));
+	OSMO_ASSERT(osmo_tdef_set(tdefs, 7, 10, OSMO_TDEF_S) == -ERANGE);
+	print_tdef_info(7);
+	print_tdef_get_short(tdefs, 7, OSMO_TDEF_MS);
+	print_tdef_get_short(tdefs, 7, OSMO_TDEF_S);
+	print_tdef_get_short(tdefs, 7, OSMO_TDEF_M);
+	print_tdef_get_short(tdefs, 7, OSMO_TDEF_CUSTOM);
+
+	printf("setting 7 = 900 (ERANGE)\n");
+	OSMO_ASSERT(!osmo_tdef_val_in_range(t, 900));
+	OSMO_ASSERT(osmo_tdef_set(tdefs, 7, 900, OSMO_TDEF_S) == -ERANGE);
 	print_tdef_info(7);
 	print_tdef_get_short(tdefs, 7, OSMO_TDEF_MS);
 	print_tdef_get_short(tdefs, 7, OSMO_TDEF_S);

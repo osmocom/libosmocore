@@ -22,6 +22,9 @@ test: T3 = 100 m	Testing a hundred minutes (default: 100 m)
 test: T4 = 100	Testing a hundred potatoes (default: 100)
 test: T2147483647 = 4294967295 m	Very large (default: 4294967295 m)
 test: X23 = 239471 s	Negative T number (default: 239471 s)
+test: T30 = 50 s	Testing range min (default: 50 s, range: [20 .. inf])
+test: T31 = 50 s	Testing range max (default: 50 s, range: [0 .. 52])
+test: T32 = 50 s	Testing range both (default: 50 s, range: [20 .. 52])
 software: T1 = 30 m	Write code (default: 30 m)
 software: T2 = 20 ms	Hit segfault (default: 20 ms)
 software: T3 = 480 m	Fix bugs (default: 480 m)
@@ -38,6 +41,9 @@ test: T3 = 100 m	Testing a hundred minutes (default: 100 m)
 test: T4 = 100	Testing a hundred potatoes (default: 100)
 test: T2147483647 = 4294967295 m	Very large (default: 4294967295 m)
 test: X23 = 239471 s	Negative T number (default: 239471 s)
+test: T30 = 50 s	Testing range min (default: 50 s, range: [20 .. inf])
+test: T31 = 50 s	Testing range max (default: 50 s, range: [0 .. 52])
+test: T32 = 50 s	Testing range both (default: 50 s, range: [20 .. 52])
 software: T1 = 30 m	Write code (default: 30 m)
 software: T2 = 20 ms	Hit segfault (default: 20 ms)
 software: T3 = 480 m	Fix bugs (default: 480 m)
@@ -83,6 +89,9 @@ test: T3 = 100 m	Testing a hundred minutes (default: 100 m)
 test: T4 = 100	Testing a hundred potatoes (default: 100)
 test: T2147483647 = 4294967295 m	Very large (default: 4294967295 m)
 test: X23 = 239471 s	Negative T number (default: 239471 s)
+test: T30 = 50 s	Testing range min (default: 50 s, range: [20 .. inf])
+test: T31 = 50 s	Testing range max (default: 50 s, range: [0 .. 52])
+test: T32 = 50 s	Testing range both (default: 50 s, range: [20 .. 52])
 software: T1 = 30 m	Write code (default: 30 m)
 software: T2 = 20 ms	Hit segfault (default: 20 ms)
 software: T3 = 480 m	Fix bugs (default: 480 m)
@@ -167,6 +176,32 @@ tdef_vty_test(config)# timer tes T2 100
 tdef_vty_test(config)# timer te T2 100
 % Ambiguous command.
 
+tdef_vty_test(config)# timer test 30 40
+tdef_vty_test(config)# timer test 30 60
+tdef_vty_test(config)# timer test 30 10
+% Timer T30 value 10 is out of range [20 .. inf]
+
+tdef_vty_test(config)# timer test 31 40
+tdef_vty_test(config)# timer test 31 60
+% Timer T31 value 60 is out of range [0 .. 52]
+tdef_vty_test(config)# timer test 31 10
+
+tdef_vty_test(config)# timer test 32 40
+tdef_vty_test(config)# timer test 32 60
+% Timer T32 value 60 is out of range [20 .. 52]
+tdef_vty_test(config)# timer test 32 10
+% Timer T32 value 10 is out of range [20 .. 52]
+
+tdef_vty_test(config)# timer test
+test: T1 = 100 s	Testing a hundred seconds (default: 100 s)
+test: T2 = 100 ms	Testing a hundred milliseconds (default: 100 ms)
+test: T3 = 100 m	Testing a hundred minutes (default: 100 m)
+test: T4 = 100	Testing a hundred potatoes (default: 100)
+test: T2147483647 = 4294967295 m	Very large (default: 4294967295 m)
+test: X23 = 239471 s	Negative T number (default: 239471 s)
+test: T30 = 60 s	Testing range min (default: 50 s, range: [20 .. inf])
+test: T31 = 10 s	Testing range max (default: 50 s, range: [0 .. 52])
+test: T32 = 40 s	Testing range both (default: 50 s, range: [20 .. 52])
 
 tdef_vty_test(config)# do show timer software
 software: T1 = 30 m	Write code (default: 30 m)
@@ -230,6 +265,9 @@ test: T3 = 100 m	Testing a hundred minutes (default: 100 m)
 test: T4 = 100	Testing a hundred potatoes (default: 100)
 test: T2147483647 = 4294967295 m	Very large (default: 4294967295 m)
 test: X23 = 239471 s	Negative T number (default: 239471 s)
+test: T30 = 60 s	Testing range min (default: 50 s, range: [20 .. inf])
+test: T31 = 10 s	Testing range max (default: 50 s, range: [0 .. 52])
+test: T32 = 40 s	Testing range both (default: 50 s, range: [20 .. 52])
 software: T1 = 13 m	Write code (default: 30 m)
 software: T2 = 0 ms	Hit segfault (default: 20 ms)
 software: T3 = 23 m	Fix bugs (default: 480 m)
@@ -245,6 +283,9 @@ test: T3 = 100 m	Testing a hundred minutes (default: 100 m)
 test: T4 = 100	Testing a hundred potatoes (default: 100)
 test: T2147483647 = 4294967295 m	Very large (default: 4294967295 m)
 test: X23 = 239471 s	Negative T number (default: 239471 s)
+test: T30 = 60 s	Testing range min (default: 50 s, range: [20 .. inf])
+test: T31 = 10 s	Testing range max (default: 50 s, range: [0 .. 52])
+test: T32 = 40 s	Testing range both (default: 50 s, range: [20 .. 52])
 software: T1 = 13 m	Write code (default: 30 m)
 software: T2 = 0 ms	Hit segfault (default: 20 ms)
 software: T3 = 23 m	Fix bugs (default: 480 m)
@@ -252,6 +293,9 @@ software: T3 = 23 m	Fix bugs (default: 480 m)
 tdef_vty_test(config)# show running-config
 ... !timer
 timer tea T3 32
+timer test T30 60
+timer test T31 10
+timer test T32 40
 timer software T1 13
 timer software T2 0
 timer software T3 23
@@ -261,6 +305,9 @@ tdef_vty_test(config)# timer tea T3 default
 tdef_vty_test(config)# timer software T1 default
 tdef_vty_test(config)# show running-config
 ... !timer
+timer test T30 60
+timer test T31 10
+timer test T32 40
 timer software T2 0
 timer software T3 23
 ... !timer
@@ -269,5 +316,8 @@ tdef_vty_test(config)# timer softw 2 default
 tdef_vty_test(config)# timer software 2 default
 tdef_vty_test(config)# show running-config
 ... !timer
+timer test T30 60
+timer test T31 10
+timer test T32 40
 timer software T3 23
 ... !timer

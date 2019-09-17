@@ -77,6 +77,10 @@ struct osmo_tdef {
 	/*! Currently active timeout value, e.g. set by user config. This is the only mutable member: a user may
 	 * configure the timeout value, but neither unit nor any other field. */
 	unsigned long val;
+	/*! Minimum timer value (in this tdef unit), checked if set (not zero). */
+	unsigned long min_val;
+	/*! Maximum timer value (in this tdef unit), checked if set (not zero). */
+	unsigned long max_val;
 };
 
 /*! Iterate an array of struct osmo_tdef, the last item should be fully zero, i.e. "{}".
@@ -98,6 +102,8 @@ unsigned long osmo_tdef_get(const struct osmo_tdef *tdefs, int T, enum osmo_tdef
 			    long val_if_not_present);
 struct osmo_tdef *osmo_tdef_get_entry(struct osmo_tdef *tdefs, int T);
 int osmo_tdef_set(struct osmo_tdef *tdefs, int T, unsigned long val, enum osmo_tdef_unit val_unit);
+bool osmo_tdef_val_in_range(struct osmo_tdef *tdef, unsigned long new_val);
+int osmo_tdef_range_str_buf(char *buf, size_t buf_len, struct osmo_tdef *t);
 
 /*! Using osmo_tdef for osmo_fsm_inst: array entry for a mapping of state numbers to timeout definitions.
  * For a usage example, see osmo_tdef_get_state_timeout() and test_tdef_state_timeout() in tdef_test.c. */
