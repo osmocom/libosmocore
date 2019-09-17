@@ -181,21 +181,27 @@ DEFUN(logging_fltr_bvc,
 	"BVCI of the BVC to be filtered\n"
 	"BSSGP Virtual Connection Identifier (BVCI)\n")
 {
-	struct log_target *tgt = osmo_log_vty2tgt(vty);
+	struct log_target *tgt;
 	struct bssgp_bvc_ctx *bvc;
 	uint16_t nsei = atoi(argv[0]);
 	uint16_t bvci = atoi(argv[1]);
 
-	if (!tgt)
+	log_tgt_mutex_lock();
+	tgt = osmo_log_vty2tgt(vty);
+	if (!tgt) {
+		log_tgt_mutex_unlock();
 		return CMD_WARNING;
+	}
 
 	bvc = btsctx_by_bvci_nsei(bvci, nsei);
 	if (!bvc) {
 		vty_out(vty, "No BVC by that identifier%s", VTY_NEWLINE);
+		log_tgt_mutex_unlock();
 		return CMD_WARNING;
 	}
 
 	log_set_bvc_filter(tgt, bvc);
+	log_tgt_mutex_unlock();
 	return CMD_SUCCESS;
 }
 

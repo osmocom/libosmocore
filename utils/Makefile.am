@@ -1,7 +1,7 @@
 if ENABLE_UTILITIES
 AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include $(TALLOC_CFLAGS)
-AM_CFLAGS = -Wall
-LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/gsm/libosmogsm.la
+AM_CFLAGS = -Wall $(PTHREAD_CFLAGS)
+LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/gsm/libosmogsm.la $(PTHREAD_LIBS)
 
 EXTRA_DIST = conv_gen.py conv_codes_gsm.py
 

@@ -241,6 +241,7 @@ int main(int argc, char **argv)
 	vty_init(&vty_info);
 
 	osmo_init_logging2(root_ctx, &log_info);
+	log_enable_multithread();
 
 	vty_commands_init();
 

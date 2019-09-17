@@ -587,12 +587,16 @@ DEFUN(logging_fltr_nsvc,
 	"Identify NS-VC by NSVCI\n"
 	"Numeric identifier\n")
 {
-	struct log_target *tgt = osmo_log_vty2tgt(vty);
+	struct log_target *tgt;
 	struct gprs_nsvc *nsvc;
 	uint16_t id = atoi(argv[1]);
 
-	if (!tgt)
+	log_tgt_mutex_lock();
+	tgt = osmo_log_vty2tgt(vty);
+	if (!tgt) {
+		log_tgt_mutex_unlock();
 		return CMD_WARNING;
+	}
 
 	if (!strcmp(argv[0], "nsei"))
 		nsvc = gprs_nsvc_by_nsei(vty_nsi, id);
@@ -601,10 +605,12 @@ DEFUN(logging_fltr_nsvc,
 
 	if (!nsvc) {
 		vty_out(vty, "No NS-VC by that identifier%s", VTY_NEWLINE);
+		log_tgt_mutex_unlock();
 		return CMD_WARNING;
 	}
 
 	log_set_nsvc_filter(tgt, nsvc);
+	log_tgt_mutex_unlock();
 	return CMD_SUCCESS;
 }
 

@@ -4,7 +4,7 @@
 LIBVERSION=14:0:2
 
 AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include
-AM_CFLAGS = -Wall $(TALLOC_CFLAGS)
+AM_CFLAGS = -Wall $(TALLOC_CFLAGS) $(PTHREAD_CFLAGS)
 
 if ENABLE_PSEUDOTALLOC
 AM_CPPFLAGS += -I$(top_srcdir)/src/pseudotalloc
@@ -12,7 +12,7 @@ endif
 
 lib_LTLIBRARIES = libosmocore.la
 
-libosmocore_la_LIBADD = $(BACKTRACE_LIB) $(TALLOC_LIBS) $(LIBRARY_RT)
+libosmocore_la_LIBADD = $(BACKTRACE_LIB) $(TALLOC_LIBS) $(LIBRARY_RT) $(PTHREAD_LIBS)
 libosmocore_la_SOURCES = context.c timer.c timer_gettimeofday.c timer_clockgettime.c \
 			 select.c signal.c msgb.c bits.c \
 			 bitvec.c bitcomp.c counter.c fsm.c \

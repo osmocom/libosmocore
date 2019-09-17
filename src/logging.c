@@ -42,6 +42,7 @@
 #include <time.h>
 #include <sys/time.h>
 #include <errno.h>
+#include <pthread.h>
 
 #include <osmocom/core/talloc.h>
 #include <osmocom/core/utils.h>
@@ -62,6 +63,56 @@ struct log_info *osmo_log_info;
 static struct log_context log_context;
 void *tall_log_ctx = NULL;
 LLIST_HEAD(osmo_log_target_list);
+
+#if (!EMBEDDED)
+/*! This mutex must be held while using osmo_log_target_list or any of its
+  log_targets in a multithread program. Prevents race conditions between threads
+  like producing unordered timestamps or VTY deleting a target while another
+  thread is writing to it */
+static pthread_mutex_t osmo_log_tgt_mutex;
+static bool osmo_log_tgt_mutex_on = false;
+
+/*! Enable multithread support (mutex) in libosmocore logging system.
+ * Must be called by processes willing to use logging subsystem from several
+ * threads. Once enabled, it's not possible to disable it again.
+ */
+void log_enable_multithread(void) {
+	if (osmo_log_tgt_mutex_on)
+		return;
+	pthread_mutex_init(&osmo_log_tgt_mutex, NULL);
+	osmo_log_tgt_mutex_on = true;
+}
+
+/*! Acquire the osmo_log_tgt_mutex. Don't use this function directly, always use
+ *  macro log_tgt_mutex_lock() instead.
+ */
+void log_tgt_mutex_lock_impl(void) {
+	/* These lines are useful to debug scenarios where there's only 1 thread
+	   and a double lock appears, for instance during startup and some
+	   unlock() missing somewhere:
+	if (osmo_log_tgt_mutex_on && pthread_mutex_trylock(&osmo_log_tgt_mutex) != 0)
+		osmo_panic("acquiring already locked mutex!\n");
+	return;
+	*/
+
+	if (osmo_log_tgt_mutex_on)
+		pthread_mutex_lock(&osmo_log_tgt_mutex);
+}
+
+/*! Release the osmo_log_tgt_mutex. Don't use this function directly, always use
+ *  macro log_tgt_mutex_unlock() instead.
+ */
+void log_tgt_mutex_unlock_impl(void) {
+	if (osmo_log_tgt_mutex_on)
+		pthread_mutex_unlock(&osmo_log_tgt_mutex);
+}
+
+#else /* if (!EMBEDDED) */
+#pragma message ("logging multithread support disabled in embedded build")
+void log_enable_multithread(void) {}
+void log_tgt_mutex_lock_impl(void) {}
+void log_tgt_mutex_unlock_impl(void) {}
+#endif /* if (!EMBEDDED) */
 
 const struct value_string loglevel_strs[] = {
 	{ LOGL_DEBUG,	"DEBUG" },
@@ -532,6 +583,8 @@ void osmo_vlogp(int subsys, int level, const char *file, int line,
 
 	subsys = map_subsys(subsys);
 
+	log_tgt_mutex_lock();
+
 	llist_for_each_entry(tar, &osmo_log_target_list, entry) {
 		va_list bp;
 
@@ -548,6 +601,8 @@ void osmo_vlogp(int subsys, int level, const char *file, int line,
 			_output(tar, subsys, level, file, line, cont, format, bp);
 		va_end(bp);
 	}
+
+	log_tgt_mutex_unlock();
 }
 
 /*! logging function used by DEBUGP() macro
@@ -870,6 +925,7 @@ struct log_target *log_target_create_file(const char *fname)
  *  \param[in] type Log target type
  *  \param[in] fname File name
  *  \returns Log target (if found), NULL otherwise
+ *  Must be called with mutex osmo_log_tgt_mutex held, see log_tgt_mutex_lock.
  */
 struct log_target *log_target_find(int type, const char *fname)
 {
@@ -942,6 +998,8 @@ int log_targets_reopen(void)
 	struct log_target *tar;
 	int rc = 0;
 
+	log_tgt_mutex_lock();
+
 	llist_for_each_entry(tar, &osmo_log_target_list, entry) {
 		switch (tar->type) {
 		case LOG_TGT_TYPE_FILE:
@@ -952,6 +1010,8 @@ int log_targets_reopen(void)
 			break;
 		}
 	}
+
+	log_tgt_mutex_unlock();
 
 	return rc;
 }
@@ -1015,6 +1075,8 @@ void log_fini(void)
 {
 	struct log_target *tar, *tar2;
 
+	log_tgt_mutex_lock();
+
 	llist_for_each_entry_safe(tar, tar2, &osmo_log_target_list, entry)
 		log_target_destroy(tar);
 
@@ -1022,6 +1084,8 @@ void log_fini(void)
 	osmo_log_info = NULL;
 	talloc_free(tall_log_ctx);
 	tall_log_ctx = NULL;
+
+	log_tgt_mutex_unlock();
 }
 
 /*! Check whether a log entry will be generated.
@@ -1036,15 +1100,19 @@ int log_check_level(int subsys, unsigned int level)
 
 	/* TODO: The following could/should be cached (update on config) */
 
+	log_tgt_mutex_lock();
+
 	llist_for_each_entry(tar, &osmo_log_target_list, entry) {
 		if (!should_log_to_target(tar, subsys, level))
 			continue;
 
 		/* This might get logged (ignoring filters) */
+		log_tgt_mutex_unlock();
 		return 1;
 	}
 
 	/* We are sure, that this will not be logged. */
+	log_tgt_mutex_unlock();
 	return 0;
 }
 

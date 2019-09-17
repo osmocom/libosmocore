@@ -101,6 +101,25 @@ struct log_target *log_target_create_vty(struct vty *vty)
 	return target;
 }
 
+/*! Get tgt with log lock acquired, return and release lock with warning if tgt
+ *  is not found. Lock must be released later with log_tgt_mutex_unlock().
+ */
+#define ACQUIRE_VTY_LOG_TGT_WITH_LOCK(vty, tgt) \
+	do { \
+		log_tgt_mutex_lock(); \
+		tgt = osmo_log_vty2tgt(vty); \
+		if (!(tgt)) { \
+			log_tgt_mutex_unlock(); \
+			return CMD_WARNING; \
+		} \
+	} while (0)
+
+#define RET_WITH_UNLOCK(ret) \
+	do { \
+		log_tgt_mutex_unlock(); \
+		return (ret); \
+	} while (0)
+
 DEFUN(enable_logging,
       enable_logging_cmd,
       "logging enable",
@@ -118,11 +137,16 @@ DEFUN(enable_logging,
 	conn->dbg = log_target_create_vty(vty);
 	if (!conn->dbg)
 		return CMD_WARNING;
-
+	log_tgt_mutex_lock();
 	log_add_target(conn->dbg);
-	return CMD_SUCCESS;
+	RET_WITH_UNLOCK(CMD_SUCCESS);
 }
 
+/*! Get log target associated to VTY console.
+ *  \param[in] vty Log target type
+ *  \returns Log target (if logging enabled), NULL otherwise
+ *  Must be called with mutex osmo_log_tgt_mutex held, see log_tgt_mutex_lock.
+ */
 struct log_target *osmo_log_vty2tgt(struct vty *vty)
 {
 	struct telnet_connection *conn;
@@ -146,13 +170,12 @@ DEFUN(logging_fltr_all,
 	"Only print messages matched by other filters\n"
 	"Bypass filter and print all messages\n")
 {
-	struct log_target *tgt = osmo_log_vty2tgt(vty);
+	struct log_target *tgt;
 
-	if (!tgt)
-		return CMD_WARNING;
+	ACQUIRE_VTY_LOG_TGT_WITH_LOCK(vty, tgt);
 
 	log_set_all_filter(tgt, atoi(argv[0]));
-	return CMD_SUCCESS;
+	RET_WITH_UNLOCK(CMD_SUCCESS);
 }
 
 DEFUN(logging_use_clr,
@@ -162,13 +185,12 @@ DEFUN(logging_use_clr,
       "Don't use color for printing messages\n"
       "Use color for printing messages\n")
 {
-	struct log_target *tgt = osmo_log_vty2tgt(vty);
+	struct log_target *tgt;
 
-	if (!tgt)
-		return CMD_WARNING;
+	ACQUIRE_VTY_LOG_TGT_WITH_LOCK(vty, tgt);
 
 	log_set_use_color(tgt, atoi(argv[0]));
-	return CMD_SUCCESS;
+	RET_WITH_UNLOCK(CMD_SUCCESS);
 }
 
 DEFUN(logging_prnt_timestamp,
@@ -178,13 +200,12 @@ DEFUN(logging_prnt_timestamp,
 	"Don't prefix each log message\n"
 	"Prefix each log message with current timestamp\n")
 {
-	struct log_target *tgt = osmo_log_vty2tgt(vty);
+	struct log_target *tgt;
 
-	if (!tgt)
-		return CMD_WARNING;
+	ACQUIRE_VTY_LOG_TGT_WITH_LOCK(vty, tgt);
 
 	log_set_print_timestamp(tgt, atoi(argv[0]));
-	return CMD_SUCCESS;
+	RET_WITH_UNLOCK(CMD_SUCCESS);
 }
 
 DEFUN(logging_prnt_ext_timestamp,
@@ -195,13 +216,12 @@ DEFUN(logging_prnt_ext_timestamp,
 	"Don't prefix each log message\n"
 	"Prefix each log message with current timestamp with YYYYMMDDhhmmssnnn\n")
 {
-	struct log_target *tgt = osmo_log_vty2tgt(vty);
+	struct log_target *tgt;
 
-	if (!tgt)
-		return CMD_WARNING;
+	ACQUIRE_VTY_LOG_TGT_WITH_LOCK(vty, tgt);
 
 	log_set_print_extended_timestamp(tgt, atoi(argv[0]));
-	return CMD_SUCCESS;
+	RET_WITH_UNLOCK(CMD_SUCCESS);
 }
 
 DEFUN(logging_prnt_cat,
@@ -212,13 +232,11 @@ DEFUN(logging_prnt_cat,
 	"Don't prefix each log message\n"
 	"Prefix each log message with category/subsystem name\n")
 {
-	struct log_target *tgt = osmo_log_vty2tgt(vty);
-
-	if (!tgt)
-		return CMD_WARNING;
+	struct log_target *tgt;
+	ACQUIRE_VTY_LOG_TGT_WITH_LOCK(vty, tgt);
 
 	log_set_print_category(tgt, atoi(argv[0]));
-	return CMD_SUCCESS;
+	RET_WITH_UNLOCK(CMD_SUCCESS);
 }
 
 DEFUN(logging_prnt_cat_hex,
@@ -229,13 +247,12 @@ DEFUN(logging_prnt_cat_hex,
 	"Don't prefix each log message\n"
 	"Prefix each log message with category/subsystem nr in hex ('<000b>')\n")
 {
-	struct log_target *tgt = osmo_log_vty2tgt(vty);
+	struct log_target *tgt;
 
-	if (!tgt)
-		return CMD_WARNING;
+	ACQUIRE_VTY_LOG_TGT_WITH_LOCK(vty, tgt);
 
 	log_set_print_category_hex(tgt, atoi(argv[0]));
-	return CMD_SUCCESS;
+	RET_WITH_UNLOCK(CMD_SUCCESS);
 }
 
 DEFUN(logging_prnt_level,
@@ -246,13 +263,12 @@ DEFUN(logging_prnt_level,
       "Don't prefix each log message\n"
       "Prefix each log message with the log level name\n")
 {
-	struct log_target *tgt = osmo_log_vty2tgt(vty);
+	struct log_target *tgt;
 
-	if (!tgt)
-		return CMD_WARNING;
+	ACQUIRE_VTY_LOG_TGT_WITH_LOCK(vty, tgt);
 
 	log_set_print_level(tgt, atoi(argv[0]));
-	return CMD_SUCCESS;
+	RET_WITH_UNLOCK(CMD_SUCCESS);
 }
 
 static const struct value_string logging_print_file_args[] = {
@@ -273,17 +289,16 @@ DEFUN(logging_prnt_file,
       "Log source file info at the end of a log line. If omitted, log source file info just"
       " before the log text.\n")
 {
-	struct log_target *tgt = osmo_log_vty2tgt(vty);
+	struct log_target *tgt;
 
-	if (!tgt)
-		return CMD_WARNING;
+	ACQUIRE_VTY_LOG_TGT_WITH_LOCK(vty, tgt);
 
 	log_set_print_filename2(tgt, get_string_value(logging_print_file_args, argv[0]));
 	if (argc > 1)
 		log_set_print_filename_pos(tgt, LOG_FILENAME_POS_LINE_END);
 	else
 		log_set_print_filename_pos(tgt, LOG_FILENAME_POS_HEADER_END);
-	return CMD_SUCCESS;
+	RET_WITH_UNLOCK(CMD_SUCCESS);
 }
 
 static void add_category_strings(char **cmd_str_p, char **doc_str_p,
@@ -332,27 +347,26 @@ DEFUN(logging_level,
       NULL, /* cmdstr is dynamically set in logging_vty_add_cmds(). */
       NULL) /* same thing for helpstr. */
 {
+	struct log_target *tgt;
 	int category = log_parse_category(argv[0]);
 	int level = log_parse_level(argv[1]);
-	struct log_target *tgt = osmo_log_vty2tgt(vty);
 
-	if (!tgt)
-		return CMD_WARNING;
+	ACQUIRE_VTY_LOG_TGT_WITH_LOCK(vty, tgt);
 
 	if (level < 0) {
 		vty_out(vty, "Invalid level `%s'%s", argv[1], VTY_NEWLINE);
-		return CMD_WARNING;
+		RET_WITH_UNLOCK(CMD_WARNING);
 	}
 
 	if (category < 0) {
 		vty_out(vty, "Invalid category `%s'%s", argv[0], VTY_NEWLINE);
-		return CMD_WARNING;
+		RET_WITH_UNLOCK(CMD_WARNING);
 	}
 
 	tgt->categories[category].enabled = 1;
 	tgt->categories[category].loglevel = level;
 
-	return CMD_SUCCESS;
+	RET_WITH_UNLOCK(CMD_SUCCESS);
 }
 
 DEFUN(logging_level_set_all, logging_level_set_all_cmd,
@@ -362,12 +376,11 @@ DEFUN(logging_level_set_all, logging_level_set_all_cmd,
       " to take back these changes -- each category is set to the given level, period.\n"
       LOG_LEVEL_STRS)
 {
-	struct log_target *tgt = osmo_log_vty2tgt(vty);
+	struct log_target *tgt;
 	int level = log_parse_level(argv[0]);
 	int i;
 
-	if (!tgt)
-		return CMD_WARNING;
+	ACQUIRE_VTY_LOG_TGT_WITH_LOCK(vty, tgt);
 
 	for (i = 0; i < osmo_log_info->num_cat; i++) {
 		struct log_category *cat = &tgt->categories[i];
@@ -378,7 +391,7 @@ DEFUN(logging_level_set_all, logging_level_set_all_cmd,
 		cat->enabled = 1;
 		cat->loglevel = level;
 	}
-	return CMD_SUCCESS;
+	RET_WITH_UNLOCK(CMD_SUCCESS);
 }
 
 /* logging level (<categories>) everything */
@@ -394,23 +407,25 @@ DEFUN(logging_level_force_all, logging_level_force_all_cmd,
       "logging level force-all " LOG_LEVEL_ARGS,
       LOGGING_STR LEVEL_STR FORCE_ALL_STR LOG_LEVEL_STRS)
 {
-	struct log_target *tgt = osmo_log_vty2tgt(vty);
+	struct log_target *tgt;
 	int level = log_parse_level(argv[0]);
-	if (!tgt)
-		return CMD_WARNING;
+
+	ACQUIRE_VTY_LOG_TGT_WITH_LOCK(vty, tgt);
+
 	log_set_log_level(tgt, level);
-	return CMD_SUCCESS;
+	RET_WITH_UNLOCK(CMD_SUCCESS);
 }
 
 DEFUN(no_logging_level_force_all, no_logging_level_force_all_cmd,
       "no logging level force-all",
       NO_STR LOGGING_STR LEVEL_STR NO_FORCE_ALL_STR)
 {
-	struct log_target *tgt = osmo_log_vty2tgt(vty);
-	if (!tgt)
-		return CMD_WARNING;
+	struct log_target *tgt;
+
+	ACQUIRE_VTY_LOG_TGT_WITH_LOCK(vty, tgt);
+
 	log_set_log_level(tgt, 0);
-	return CMD_SUCCESS;
+	RET_WITH_UNLOCK(CMD_SUCCESS);
 }
 
 /* 'logging level all (debug|...|fatal)' */
@@ -438,13 +453,12 @@ DEFUN(logging_set_category_mask,
       " " OSMO_STRINGIFY(LOGL_FATAL) "=" OSMO_STRINGIFY_VAL(LOGL_FATAL)
       "\n")
 {
-	struct log_target *tgt = osmo_log_vty2tgt(vty);
+	struct log_target *tgt;
 
-	if (!tgt)
-		return CMD_WARNING;
+	ACQUIRE_VTY_LOG_TGT_WITH_LOCK(vty, tgt);
 
 	log_parse_category_mask(tgt, argv[0]);
-	return CMD_SUCCESS;
+	RET_WITH_UNLOCK(CMD_SUCCESS);
 }
 
 ALIAS_DEPRECATED(logging_set_category_mask,
@@ -462,17 +476,16 @@ DEFUN(diable_logging,
 	LOGGING_STR
       "Disables logging to this vty\n")
 {
-	struct log_target *tgt = osmo_log_vty2tgt(vty);
+	struct log_target *tgt;
 	struct telnet_connection *conn = (struct telnet_connection *) vty->priv;
 
-	if (!tgt)
-		return CMD_WARNING;
+	ACQUIRE_VTY_LOG_TGT_WITH_LOCK(vty, tgt);
 
 	log_del_target(tgt);
 	talloc_free(tgt);
 	conn->dbg = NULL;
 
-	return CMD_SUCCESS;
+	RET_WITH_UNLOCK(CMD_SUCCESS);
 }
 
 static void vty_print_logtarget(struct vty *vty, const struct log_info *info,
@@ -517,14 +530,12 @@ DEFUN(show_logging_vty,
 	SHOW_STR SHOW_LOG_STR
 	"Show current logging configuration for this vty\n")
 {
-	struct log_target *tgt = osmo_log_vty2tgt(vty);
+	struct log_target *tgt;
 
-	if (!tgt)
-		return CMD_WARNING;
+	ACQUIRE_VTY_LOG_TGT_WITH_LOCK(vty, tgt);
 
 	vty_print_logtarget(vty, osmo_log_info, tgt);
-
-	return CMD_SUCCESS;
+	RET_WITH_UNLOCK(CMD_SUCCESS);
 }
 
 DEFUN(show_alarms,
@@ -535,11 +546,14 @@ DEFUN(show_alarms,
 {
 	int i, num_alarms;
 	struct osmo_strrb *rb;
-	struct log_target *tgt = log_target_find(LOG_TGT_TYPE_STRRB, NULL);
+	struct log_target *tgt;
+
+	log_tgt_mutex_lock();
+	tgt = log_target_find(LOG_TGT_TYPE_STRRB, NULL);
 	if (!tgt) {
 		vty_out(vty, "%% No alarms, run 'log alarms <2-32700>'%s",
 			VTY_NEWLINE);
-		return CMD_WARNING;
+		RET_WITH_UNLOCK(CMD_WARNING);
 	}
 
 	rb = tgt->tgt_rb.rb;
@@ -550,8 +564,7 @@ DEFUN(show_alarms,
 	for (i = 0; i < num_alarms; i++)
 		vty_out(vty, "%% %s%s", osmo_strrb_get_nth(rb, i),
 			VTY_NEWLINE);
-
-	return CMD_SUCCESS;
+	RET_WITH_UNLOCK(CMD_SUCCESS);
 }
 
 gDEFUN(cfg_description, cfg_description_cmd,
@@ -625,6 +638,7 @@ static int _cfg_log_syslog(struct vty *vty, int facility)
 {
 	struct log_target *tgt;
 
+	log_tgt_mutex_lock();
 	/* First delete the old syslog target, if any */
 	tgt = log_target_find(LOG_TGT_TYPE_SYSLOG, NULL);
 	if (tgt)
@@ -633,14 +647,14 @@ static int _cfg_log_syslog(struct vty *vty, int facility)
 	tgt = log_target_create_syslog(host.app_info->name, 0, facility);
 	if (!tgt) {
 		vty_out(vty, "%% Unable to open syslog%s", VTY_NEWLINE);
-		return CMD_WARNING;
+		RET_WITH_UNLOCK(CMD_WARNING);
 	}
 	log_add_target(tgt);
 
 	vty->index = tgt;
 	vty->node = CFG_LOG_NODE;
 
-	return CMD_SUCCESS;
+	RET_WITH_UNLOCK(CMD_SUCCESS);
 }
 
 DEFUN(cfg_log_syslog_local, cfg_log_syslog_local_cmd,
@@ -700,16 +714,17 @@ DEFUN(cfg_no_log_syslog, cfg_no_log_syslog_cmd,
 {
 	struct log_target *tgt;
 
+	log_tgt_mutex_lock();
 	tgt = log_target_find(LOG_TGT_TYPE_SYSLOG, NULL);
 	if (!tgt) {
 		vty_out(vty, "%% No syslog target found%s",
 			VTY_NEWLINE);
-		return CMD_WARNING;
+		RET_WITH_UNLOCK(CMD_WARNING);
 	}
 
 	log_target_destroy(tgt);
 
-	return CMD_SUCCESS;
+	RET_WITH_UNLOCK(CMD_SUCCESS);
 }
 #endif /* HAVE_SYSLOG_H */
 
@@ -721,6 +736,7 @@ DEFUN(cfg_log_gsmtap, cfg_log_gsmtap_cmd,
 	const char *hostname = argc ? argv[0] : "127.0.0.1";
 	struct log_target *tgt;
 
+	log_tgt_mutex_lock();
 	tgt = log_target_find(LOG_TGT_TYPE_GSMTAP, hostname);
 	if (!tgt) {
 		tgt = log_target_create_gsmtap(hostname, GSMTAP_UDP_PORT,
@@ -729,7 +745,7 @@ DEFUN(cfg_log_gsmtap, cfg_log_gsmtap_cmd,
 		if (!tgt) {
 			vty_out(vty, "%% Unable to create GSMTAP log for %s%s",
 				hostname, VTY_NEWLINE);
-			return CMD_WARNING;
+			RET_WITH_UNLOCK(CMD_WARNING);
 		}
 		log_add_target(tgt);
 	}
@@ -737,7 +753,7 @@ DEFUN(cfg_log_gsmtap, cfg_log_gsmtap_cmd,
 	vty->index = tgt;
 	vty->node = CFG_LOG_NODE;
 
-	return CMD_SUCCESS;
+	RET_WITH_UNLOCK(CMD_SUCCESS);
 }
 
 DEFUN(cfg_log_stderr, cfg_log_stderr_cmd,
@@ -746,13 +762,14 @@ DEFUN(cfg_log_stderr, cfg_log_stderr_cmd,
 {
 	struct log_target *tgt;
 
+	log_tgt_mutex_lock();
 	tgt = log_target_find(LOG_TGT_TYPE_STDERR, NULL);
 	if (!tgt) {
 		tgt = log_target_create_stderr();
 		if (!tgt) {
 			vty_out(vty, "%% Unable to create stderr log%s",
 				VTY_NEWLINE);
-			return CMD_WARNING;
+			RET_WITH_UNLOCK(CMD_WARNING);
 		}
 		log_add_target(tgt);
 	}
@@ -760,7 +777,7 @@ DEFUN(cfg_log_stderr, cfg_log_stderr_cmd,
 	vty->index = tgt;
 	vty->node = CFG_LOG_NODE;
 
-	return CMD_SUCCESS;
+	RET_WITH_UNLOCK(CMD_SUCCESS);
 }
 
 DEFUN(cfg_no_log_stderr, cfg_no_log_stderr_cmd,
@@ -769,15 +786,16 @@ DEFUN(cfg_no_log_stderr, cfg_no_log_stderr_cmd,
 {
 	struct log_target *tgt;
 
+	log_tgt_mutex_lock();
 	tgt = log_target_find(LOG_TGT_TYPE_STDERR, NULL);
 	if (!tgt) {
 		vty_out(vty, "%% No stderr logging active%s", VTY_NEWLINE);
-		return CMD_WARNING;
+		RET_WITH_UNLOCK(CMD_WARNING);
 	}
 
 	log_target_destroy(tgt);
 
-	return CMD_SUCCESS;
+	RET_WITH_UNLOCK(CMD_SUCCESS);
 }
 
 DEFUN(cfg_log_file, cfg_log_file_cmd,
@@ -787,13 +805,14 @@ DEFUN(cfg_log_file, cfg_log_file_cmd,
 	const char *fname = argv[0];
 	struct log_target *tgt;
 
+	log_tgt_mutex_lock();
 	tgt = log_target_find(LOG_TGT_TYPE_FILE, fname);
 	if (!tgt) {
 		tgt = log_target_create_file(fname);
 		if (!tgt) {
 			vty_out(vty, "%% Unable to create file `%s'%s",
 				fname, VTY_NEWLINE);
-			return CMD_WARNING;
+			RET_WITH_UNLOCK(CMD_WARNING);
 		}
 		log_add_target(tgt);
 	}
@@ -801,7 +820,7 @@ DEFUN(cfg_log_file, cfg_log_file_cmd,
 	vty->index = tgt;
 	vty->node = CFG_LOG_NODE;
 
-	return CMD_SUCCESS;
+	RET_WITH_UNLOCK(CMD_SUCCESS);
 }
 
 
@@ -812,16 +831,17 @@ DEFUN(cfg_no_log_file, cfg_no_log_file_cmd,
 	const char *fname = argv[0];
 	struct log_target *tgt;
 
+	log_tgt_mutex_lock();
 	tgt = log_target_find(LOG_TGT_TYPE_FILE, fname);
 	if (!tgt) {
 		vty_out(vty, "%% No such log file `%s'%s",
 			fname, VTY_NEWLINE);
-		return CMD_WARNING;
+		RET_WITH_UNLOCK(CMD_WARNING);
 	}
 
 	log_target_destroy(tgt);
 
-	return CMD_SUCCESS;
+	RET_WITH_UNLOCK(CMD_SUCCESS);
 }
 
 DEFUN(cfg_log_alarms, cfg_log_alarms_cmd,
@@ -832,6 +852,8 @@ DEFUN(cfg_log_alarms, cfg_log_alarms_cmd,
 	struct log_target *tgt;
 	unsigned int rbsize = atoi(argv[0]);
 
+
+	log_tgt_mutex_lock();
 	tgt = log_target_find(LOG_TGT_TYPE_STRRB, NULL);
 	if (tgt)
 		log_target_destroy(tgt);
@@ -840,14 +862,14 @@ DEFUN(cfg_log_alarms, cfg_log_alarms_cmd,
 	if (!tgt) {
 		vty_out(vty, "%% Unable to create osmo_strrb (size %u)%s",
 			rbsize, VTY_NEWLINE);
-		return CMD_WARNING;
+		RET_WITH_UNLOCK(CMD_WARNING);
 	}
 	log_add_target(tgt);
 
 	vty->index = tgt;
 	vty->node = CFG_LOG_NODE;
 
-	return CMD_SUCCESS;
+	RET_WITH_UNLOCK(CMD_SUCCESS);
 }
 
 DEFUN(cfg_no_log_alarms, cfg_no_log_alarms_cmd,
@@ -856,15 +878,16 @@ DEFUN(cfg_no_log_alarms, cfg_no_log_alarms_cmd,
 {
 	struct log_target *tgt;
 
+	log_tgt_mutex_lock();
 	tgt = log_target_find(LOG_TGT_TYPE_STRRB, NULL);
 	if (!tgt) {
 		vty_out(vty, "%% No osmo_strrb target found%s", VTY_NEWLINE);
-		return CMD_WARNING;
+		RET_WITH_UNLOCK(CMD_WARNING);
 	}
 
 	log_target_destroy(tgt);
 
-	return CMD_SUCCESS;
+	RET_WITH_UNLOCK(CMD_SUCCESS);
 }
 
 static int config_write_log_single(struct vty *vty, struct log_target *tgt)
@@ -962,11 +985,13 @@ static int config_write_log_single(struct vty *vty, struct log_target *tgt)
 
 static int config_write_log(struct vty *vty)
 {
+	log_tgt_mutex_lock();
 	struct log_target *dbg = vty->index;
 
 	llist_for_each_entry(dbg, &osmo_log_target_list, entry)
 		config_write_log_single(vty, dbg);
 
+	log_tgt_mutex_unlock();
 	return 1;
 }
 

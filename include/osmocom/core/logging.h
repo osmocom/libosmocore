@@ -380,4 +380,18 @@ void log_del_target(struct log_target *target);
 
 struct log_target *log_target_find(int type, const char *fname);
 
+void log_enable_multithread(void);
+
+void log_tgt_mutex_lock_impl(void);
+void log_tgt_mutex_unlock_impl(void);
+#define LOG_MTX_DEBUG 0
+#if LOG_MTX_DEBUG
+	#include <pthread.h>
+	#define log_tgt_mutex_lock() do { fprintf(stderr, "[%lu] %s:%d [%s] lock\n", pthread_self(), __FILE__, __LINE__, __func__); log_tgt_mutex_lock_impl(); } while (0)
+	#define log_tgt_mutex_unlock() do { fprintf(stderr, "[%lu] %s:%d [%s] unlock\n", pthread_self(), __FILE__, __LINE__, __func__); log_tgt_mutex_unlock_impl(); } while (0)
+#else
+	#define log_tgt_mutex_lock() log_tgt_mutex_lock_impl()
+	#define log_tgt_mutex_unlock() log_tgt_mutex_unlock_impl()
+#endif
+
 /*! @} */
