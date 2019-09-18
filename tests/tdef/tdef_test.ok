@@ -117,6 +117,7 @@ osmo_tdef_get(7, ms)	= 420000
 osmo_tdef_get(7, s)	= 420
 osmo_tdef_get(7, m)	= 7
 osmo_tdef_get(7, custom-unit)	= 420
+setting 23 = 50 (EEXIST)
 resetting
 T7=50s
 osmo_tdef_get(7, s)	= 50

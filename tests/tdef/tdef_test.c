@@ -179,6 +179,9 @@ static void test_tdef_set_and_get()
 	print_tdef_get_short(tdefs, 7, OSMO_TDEF_M);
 	print_tdef_get_short(tdefs, 7, OSMO_TDEF_CUSTOM);
 
+	printf("setting 23 = 50 (EEXIST)\n");
+	OSMO_ASSERT(osmo_tdef_set(tdefs, 23, 50, OSMO_TDEF_S) == -EEXIST);
+
 	printf("resetting\n");
 	osmo_tdefs_reset(tdefs);
 	print_tdef_info(7);
