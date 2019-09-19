@@ -142,6 +142,46 @@ void test_fr_concealment(void)
 	}
 }
 
+/* Same as test_fr_concealment() but using generic core */
+void test_fr_concealment_core(void)
+{
+	struct osmo_ecu_state *state = osmo_ecu_init(NULL, OSMO_ECU_CODEC_FR);
+	uint8_t frame[GSM_FR_BYTES];
+	uint64_t xmaxc[4];
+	int i, rc;
+	int j = 0;
+
+	printf("=> Testing FR concealment (simple, consecutive bad frames)\n");
+
+	while (sample_frame_hex[j] != NULL) {
+		/* Parse frame from string to hex */
+		osmo_hexparse(sample_frame_hex[j], frame, GSM_FR_BYTES);
+		parse_xmaxc_frame(frame, xmaxc);
+		printf("Start with: %s, XMAXC: [%"PRIx64", %"PRIx64", %"PRIx64", %"PRIx64"]\n",
+		       sample_frame_hex[j], xmaxc[0], xmaxc[1], xmaxc[2], xmaxc[3]);
+
+		/* Reset the ECU with the proposed known good frame */
+		osmo_ecu_frame_in(state, false, frame, GSM_FR_BYTES);
+
+		/* Now pretend that we do not receive any good frames anymore */
+		for (i = 0; i < 20; i++) {
+
+			rc = osmo_ecu_frame_out(state, frame);
+			OSMO_ASSERT(rc == GSM_FR_BYTES);
+			parse_xmaxc_frame(frame, xmaxc);
+
+			printf("conceal: %02i, result: %s XMAXC: [%"PRIx64", %"PRIx64", %"PRIx64", %"PRIx64"]\n",
+			       i, osmo_hexdump_nospc(frame, GSM_FR_BYTES),
+			       xmaxc[0], xmaxc[1], xmaxc[2], xmaxc[3]);
+		}
+
+		/* Go to the next frame */
+		j++;
+	}
+
+	osmo_ecu_destroy(state);
+}
+
 /* Simulate a real life situation: voice frames with a few dropouts */
 void test_fr_concealment_realistic()
 {
@@ -224,6 +264,7 @@ int main(int argc, char **argv)
 {
 	/* Perform actual tests */
 	test_fr_concealment();
+	test_fr_concealment_core();
 	test_fr_concealment_realistic();
 	test_fr_concealment_realistic_core();
 
