@@ -156,16 +156,18 @@ if [ "z$LIBVERS" != "z" ]; then
 	if [ "z$DRY_RUN" != "z0" ]; then
 		exit 0
 	fi
-	if [ -f "TODO-RELEASE" ]; then
-		grep '#' TODO-RELEASE > TODO-RELEASE.clean
-		mv TODO-RELEASE.clean TODO-RELEASE
-		git add TODO-RELEASE
-	fi
 fi
 
 if [ "z$DRY_RUN" != "z0" ]; then
 	exit 0
 fi
+
+if [ -f "TODO-RELEASE" ]; then
+	grep '#' TODO-RELEASE > TODO-RELEASE.clean
+	mv TODO-RELEASE.clean TODO-RELEASE
+	git add TODO-RELEASE
+fi
+
 gbp dch --debian-tag='%(version)s' --auto --meta --git-author --multimaint-merge --ignore-branch --new-version="$NEW_VER"
 dch -r -m --distribution "unstable" ""
 git add ${GIT_TOPDIR}/debian/changelog
