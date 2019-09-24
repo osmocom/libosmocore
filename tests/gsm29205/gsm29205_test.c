@@ -44,7 +44,13 @@ static void test_gcr()
 	};
 	uint8_t len;
 	struct msgb *msg;
-	struct osmo_gcr_parsed p = { 0 }, g = {
+	struct osmo_gcr_parsed p = {
+		.net_len = 0,
+		.net = { 0 },
+		.node = 0x00,
+		.cr = { 0 },
+	};
+	struct osmo_gcr_parsed g = {
 		.net_len = 3,
 		.net = { 0x51, 0x52, 0x53 },
 		.node = 0xDEAD,
