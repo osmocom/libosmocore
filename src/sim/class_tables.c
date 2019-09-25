@@ -112,7 +112,7 @@ const struct osim_cla_ins_card_profile osim_gsm1111_cic_profile = {
 
 /* ETSI TS 102 221, Table 10.5, CLA = 0x0x, 0x4x or 0x6x */
 static const uint8_t uicc_ins_tbl_046[256] = {
-	[0xA4]	= 4,	/* SELET FILE */
+	[0xA4]	= 4,	/* SELECT FILE */
 	[0xB0]	= 2,	/* READ BINARY */
 	[0xD6]	= 3,	/* UPDATE BINARY */
 	[0xB2]	= 2,	/* READ RECORD */
