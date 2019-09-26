@@ -2927,9 +2927,10 @@ static int write_config_file(const char *config_file, char **outpath)
 /* Write current configuration into file. */
 DEFUN(config_write_file,
       config_write_file_cmd,
-      "write file",
+      "write file [PATH]",
       "Write running configuration to memory, network, or terminal\n"
-      "Write to configuration file\n")
+      "Write to configuration file\n"
+      "Set file path to store the config, or replace if already exists\n")
 {
 	char *failed_file;
 	int rc;
@@ -2942,6 +2943,9 @@ DEFUN(config_write_file,
 			return CMD_WARNING;
 		}
 	}
+
+	if (argc == 1)
+		host_config_set(argv[0]);
 
 	if (host.config == NULL) {
 		vty_out(vty, "Can't save to configuration file, using vtysh.%s",
