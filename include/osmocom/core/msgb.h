@@ -518,7 +518,7 @@ static inline int msgb_l3trim(struct msgb *msg, int l3len)
 static inline struct msgb *msgb_alloc_headroom_c(const void *ctx, int size, int headroom,
 						 const char *name)
 {
-	osmo_static_assert(size > headroom, headroom_bigger);
+	osmo_static_assert(size >= headroom, headroom_bigger);
 
 	struct msgb *msg = msgb_alloc_c(ctx, size, name);
 	if (msg)
@@ -540,7 +540,7 @@ static inline struct msgb *msgb_alloc_headroom_c(const void *ctx, int size, int 
 static inline struct msgb *msgb_alloc_headroom(int size, int headroom,
 						const char *name)
 {
-	osmo_static_assert(size > headroom, headroom_bigger);
+	osmo_static_assert(size >= headroom, headroom_bigger);
 
 	struct msgb *msg = msgb_alloc(size, name);
 	if (msg)
