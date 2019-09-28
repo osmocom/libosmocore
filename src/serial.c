@@ -97,7 +97,7 @@ osmo_serial_init(const char *dev, speed_t baudrate)
 	tio.c_cflag &= ~(PARENB | CSTOPB | CSIZE | CRTSCTS);
 	tio.c_cflag |=  (CREAD | CLOCAL | CS8);
 	tio.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
-	tio.c_iflag |=  (INPCK | ISTRIP);
+	tio.c_iflag |=  (INPCK);
 	tio.c_iflag &= ~(ISTRIP | IXON | IXOFF | IGNBRK | INLCR | ICRNL | IGNCR);
 	tio.c_oflag &= ~(OPOST | ONLCR);
 
