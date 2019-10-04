@@ -122,6 +122,7 @@ struct osmo_fsm_inst {
 void osmo_fsm_log_addr(bool log_addr);
 void osmo_fsm_log_timeouts(bool log_timeouts);
 void osmo_fsm_term_safely(bool term_safely);
+void osmo_fsm_set_dealloc_ctx(void *ctx);
 
 /*! Log using FSM instance's context, on explicit logging subsystem and level.
  * \param fi  An osmo_fsm_inst.

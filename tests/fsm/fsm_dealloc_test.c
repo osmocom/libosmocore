@@ -355,7 +355,7 @@ void obj_term(struct obj *obj)
 	osmo_fsm_inst_term(obj->fi, OSMO_FSM_TERM_REGULAR, NULL);
 }
 
-void test_dealloc(enum objname trigger, bool by_destroy_event)
+void test_dealloc(enum objname trigger, bool by_destroy_event, void *loop_ctx)
 {
 	struct scene *s = scene_alloc();
 	const char *label = by_destroy_event ? "destroy-event" : "term";
@@ -383,16 +383,63 @@ void test_dealloc(enum objname trigger, bool by_destroy_event)
 		LOGP(DLGLOBAL, LOGL_DEBUG, "--- %d objects remain. cleaning up\n", remain);
 	} else
 		LOGP(DLGLOBAL, LOGL_DEBUG, "--- all deallocated.\n");
+
+	if (loop_ctx) {
+		fprintf(stderr, "*** loop_ctx contains %zu blocks, deallocating.\n",
+			talloc_total_blocks(loop_ctx));
+		talloc_free_children(loop_ctx);
+	}
+
+	/* Silently free the remaining objects. */
 	scene_clean(s);
+	if (loop_ctx)
+		talloc_free_children(loop_ctx);
+}
+
+static void trigger_tests(void *loop_ctx)
+{
+	size_t ctx_blocks;
+	size_t ctx_size;
+	enum objname trigger;
+	int by_destroy_event;
+
+	ctx_blocks = talloc_total_blocks(ctx);
+	ctx_size = talloc_total_size(ctx);
+
+	for (trigger = 0; trigger < scene_size; trigger++) {
+		for (by_destroy_event = 0; by_destroy_event < 2; by_destroy_event++) {
+			test_dealloc(trigger, (bool)by_destroy_event, loop_ctx);
+
+			if (ctx_blocks != talloc_total_blocks(ctx)
+			    || ctx_size != talloc_total_size(ctx)) {
+				talloc_report_full(ctx, stderr);
+				OSMO_ASSERT(false);
+			}
+		}
+	}
+}
+
+void test_osmo_fsm_term_safely()
+{
+	fprintf(stderr, "\n\n%s()\n", __func__);
+	osmo_fsm_term_safely(true);
+	trigger_tests(NULL);
+	osmo_fsm_term_safely(false);
+	fprintf(stderr, "\n\n%s() done\n", __func__);
+}
+
+void test_osmo_fsm_set_dealloc_ctx()
+{
+	fprintf(stderr, "\n\n%s()\n", __func__);
+	void *dealloc_ctx = talloc_named_const(ctx, 0, "fsm_dealloc");
+	osmo_fsm_set_dealloc_ctx(dealloc_ctx);
+	trigger_tests(dealloc_ctx);
+	osmo_fsm_set_dealloc_ctx(NULL);
+	fprintf(stderr, "\n\n%s() done\n", __func__);
 }
 
 int main(void)
 {
-	enum objname trigger;
-	size_t ctx_blocks;
-	size_t ctx_size;
-	int by_destroy_event;
-
 	ctx = talloc_named_const(NULL, 0, "main");
 	osmo_init_logging2(ctx, NULL);
 
@@ -405,22 +452,10 @@ int main(void)
 
 	log_set_category_filter(osmo_stderr_target, DLGLOBAL, 1, LOGL_DEBUG);
 
-	osmo_fsm_term_safely(true);
 	osmo_fsm_register(&test_fsm);
 
-	ctx_blocks = talloc_total_blocks(ctx);
-	ctx_size = talloc_total_size(ctx);
-
-	for (trigger = 0; trigger < scene_size; trigger++) {
-		for (by_destroy_event = 0; by_destroy_event < 2; by_destroy_event++) {
-			test_dealloc(trigger, (bool)by_destroy_event);
-			if (ctx_blocks != talloc_total_blocks(ctx)
-			    || ctx_size != talloc_total_size(ctx)) {
-				talloc_report_full(ctx, stderr);
-				OSMO_ASSERT(false);
-			}
-		}
-	}
+	test_osmo_fsm_term_safely();
+	test_osmo_fsm_set_dealloc_ctx();
 
 	talloc_free(ctx);
 	return 0;

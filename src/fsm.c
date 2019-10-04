@@ -102,7 +102,19 @@ static __thread struct {
 	unsigned int depth;
 	/*! Talloc context to collect all deferred deallocations (FSM instances, and talloc objects if any). */
 	void *collect_ctx;
+	/*! See osmo_fsm_set_dealloc_ctx() */
+	void *fsm_dealloc_ctx;
 } fsm_term_safely;
+
+/*! Internal call to free an FSM instance, which redirects to the context set by osmo_fsm_set_dealloc_ctx() if any.
+ */
+static void fsm_free_or_steal(void *talloc_object)
+{
+	if (fsm_term_safely.fsm_dealloc_ctx)
+		talloc_steal(fsm_term_safely.fsm_dealloc_ctx, talloc_object);
+	else
+		talloc_free(talloc_object);
+}
 
 /*! specify if FSM instance addresses should be logged or not
  *
@@ -139,11 +151,9 @@ void osmo_fsm_log_timeouts(bool log_timeouts)
 
 /*! Enable safer way to deallocate cascades of terminating FSM instances.
  *
- * For legacy compatibility, this is disabled by default. In newer programs / releases, it is recommended to enable this
- * feature during main() startup, since it greatly simplifies deallocating child, parent and other FSM instances without
- * running into double-free or use-after-free scenarios. When enabled, this feature changes the order of logging, which
- * may break legacy unit test expectations, and changes the order of deallocation to after the parent term event is
- * dispatched.
+ * Note, using osmo_fsm_set_dealloc_ctx() is a more general solution to this same problem.
+ * Particularly, in a program using osmo_select_main_ctx(), the simplest solution to avoid most use-after-free problems
+ * from FSM instance deallocation is using osmo_fsm_set_dealloc_ctx(OTC_SELECT).
  *
  * When enabled, an FSM instance termination detects whether another FSM instance is already terminating, and instead of
  * deallocating immediately, collects all terminating FSM instances in a talloc context, to be bulk deallocated once all
@@ -155,11 +165,39 @@ void osmo_fsm_log_timeouts(bool log_timeouts)
  *
  * For illustration, see fsm_dealloc_test.c.
  *
+ * When enabled, this feature changes the order of logging, which may break legacy unit test expectations, and changes
+ * the order of deallocation to after the parent term event is dispatched.
+ *
  * \param[in] term_safely  Pass true to switch to safer FSM instance termination behavior.
  */
 void osmo_fsm_term_safely(bool term_safely)
 {
 	fsm_term_safely_enabled = term_safely;
+}
+
+/*! Instead of deallocating FSM instances, move them to the given talloc context.
+ *
+ * It is the caller's responsibility to clear this context to actually free the memory of terminated FSM instances.
+ * Make sure to not talloc_free(ctx) itself before setting a different osmo_fsm_set_dealloc_ctx(). To clear a ctx
+ * without the need to call osmo_fsm_set_dealloc_ctx() again, rather use talloc_free_children(ctx).
+ *
+ * For example, to defer deallocation to the next osmo_select_main_ctx() iteration, set this to OTC_SELECT.
+ *
+ * Deferring deallocation is the simplest solution to avoid most use-after-free problems from FSM instance deallocation.
+ * This is a simpler and more general solution than osmo_fsm_term_safely().
+ *
+ * To disable the feature again, pass NULL as ctx.
+ *
+ * Both osmo_fsm_term_safely() and osmo_fsm_set_dealloc_ctx() can be enabled at the same time, which will result in
+ * first collecting deallocated FSM instances in fsm_term_safely.collect_ctx, and finally reparenting that to the ctx
+ * passed here. However, in practice, it does not really make sense to enable both at the same time.
+ *
+ * \param ctx[in]  Instead of talloc_free()int, talloc_steal() all future deallocated osmo_fsm_inst instances to this
+ *                 ctx. If NULL, go back to talloc_free() as usual.
+ */
+void osmo_fsm_set_dealloc_ctx(void *ctx)
+{
+	fsm_term_safely.fsm_dealloc_ctx = ctx;
 }
 
 /*! talloc_free() the given object immediately, or once ongoing FSM terminations are done.
@@ -185,7 +223,7 @@ void osmo_fsm_term_safely(bool term_safely)
 static void osmo_fsm_defer_free(void *talloc_object)
 {
 	if (!fsm_term_safely.depth) {
-		talloc_free(talloc_object);
+		fsm_free_or_steal(talloc_object);
 		return;
 	}
 
@@ -412,7 +450,7 @@ struct osmo_fsm_inst *osmo_fsm_inst_alloc(struct osmo_fsm *fsm, void *ctx, void 
 	osmo_timer_setup(&fi->timer, fsm_tmr_cb, fi);
 
 	if (osmo_fsm_inst_update_id(fi, id) < 0) {
-			talloc_free(fi);
+			fsm_free_or_steal(fi);
 			return NULL;
 	}
 
@@ -529,11 +567,11 @@ void osmo_fsm_inst_free(struct osmo_fsm_inst *fi)
 		 * deallocate separately to avoid use-after-free errors, put it in there and deallocate all at once. */
 		LOGPFSM(fi, "Deallocated, including all deferred deallocations\n");
 		osmo_fsm_defer_free(fi);
-		talloc_free(fsm_term_safely.collect_ctx);
+		fsm_free_or_steal(fsm_term_safely.collect_ctx);
 		fsm_term_safely.collect_ctx = NULL;
 	} else {
 		LOGPFSM(fi, "Deallocated\n");
-		talloc_free(fi);
+		fsm_free_or_steal(fi);
 	}
 	fsm_term_safely.root_fi = NULL;
 }
