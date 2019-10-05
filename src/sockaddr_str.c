@@ -66,6 +66,35 @@ bool osmo_sockaddr_str_is_set(const struct osmo_sockaddr_str *sockaddr_str)
 		&& (sockaddr_str->af == AF_INET || sockaddr_str->af == AF_INET6);
 }
 
+/*! Return true if IP and port are valid and nonzero.
+ * \param[in] sockaddr_str  The instance to examine.
+ * \return True iff ip can be converted to a nonzero IP address, and port is not 0.
+ */
+bool osmo_sockaddr_str_is_nonzero(const struct osmo_sockaddr_str *sockaddr_str)
+{
+	uint32_t ipv4;
+	struct in6_addr ipv6_zero = {};
+	struct in6_addr ipv6;
+
+	if (!osmo_sockaddr_str_is_set(sockaddr_str))
+		return false;
+
+	switch (sockaddr_str->af) {
+	case AF_INET:
+		if (osmo_sockaddr_str_to_32(sockaddr_str, &ipv4))
+			return false;
+		return ipv4 != 0;
+
+	case AF_INET6:
+		if (osmo_sockaddr_str_to_in6_addr(sockaddr_str, &ipv6))
+			return false;
+		return memcmp(&ipv6, &ipv6_zero, sizeof(ipv6)) != 0;
+
+	default:
+		return false;
+	}
+}
+
 /*! Distinguish between valid IPv4 and IPv6 strings.
  * This does not verify whether the string is a valid IP address; it assumes that the input is a valid IP address, and
  * on that premise returns whether it is an IPv4 or IPv6 string, by looking for '.' and ':' characters.  It is safe to

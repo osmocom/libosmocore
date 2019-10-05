@@ -53,6 +53,8 @@ struct osmo_sockaddr_str oip_data[] = {
 	{ .af = AF_INET, .ip = "1.2.3.4", .port = 0 },
 	{ .af = AF_INET, .ip = "1.2.3:4:5", .port = 0 },
 	{ .af = AF_INET6, .ip = "::1:10.9.8.7", .port = 1 },
+	{ .af = AF_INET, .ip = "0.0.0.0", .port = 5 },
+	{ .af = AF_INET6, .ip = "::", .port = 5 },
 };
 
 const char *af_name(int af)
@@ -106,6 +108,7 @@ void sockaddr_str_test_conversions()
 		dump_oip(x);
 
 		printf("  osmo_sockaddr_str_is_set() = %s\n", osmo_sockaddr_str_is_set(x) ? "true" : "false");
+		printf("  osmo_sockaddr_str_is_nonzero() = %s\n", osmo_sockaddr_str_is_nonzero(x) ? "true" : "false");
 
 		{
 			struct in_addr a = {};
