@@ -630,6 +630,13 @@ static int state_chg(struct osmo_fsm_inst *fi, uint32_t new_state,
 	const struct osmo_fsm_state *st = &fsm->states[fi->state];
 	struct timeval remaining;
 
+	if (fi->proc.terminating) {
+		LOGPFSMSRC(fi, file, line,
+			   "FSM instance already terminating, not changing state to %s\n",
+			   osmo_fsm_state_name(fsm, new_state));
+		return -EINVAL;
+	}
+
 	/* validate if new_state is a valid state */
 	if (!(st->out_state_mask & (1 << new_state))) {
 		LOGPFSMLSRC(fi, LOGL_ERROR, file, line,
@@ -840,6 +847,14 @@ int _osmo_fsm_inst_dispatch(struct osmo_fsm_inst *fi, uint32_t event, void *data
 	}
 
 	fsm = fi->fsm;
+
+	if (fi->proc.terminating) {
+		LOGPFSMSRC(fi, file, line,
+			   "FSM instance already terminating, not dispatching event %s\n",
+			   osmo_fsm_event_name(fsm, event));
+		return -EINVAL;
+	}
+
 	OSMO_ASSERT(fi->state < fsm->num_states);
 	fs = &fi->fsm->states[fi->state];
 
