@@ -1,0 +1,63 @@
+{hscale=2}
+msc1 = osmo-msc
+foo = a Foo instance
+bar = a Barcode
+
+
+msc1 > foo	Some description
+msc1 -> foo	Some description
+msc1->foo	Some description
+msc1 >> foo	Some description
+		multi
+		line
+msc1 >> foo
+	Some description\nwith line feed
+	multi
+	line
+msc1 <> foo	Some description
+msc1 () foo	Some description
+msc1()foo	Some description
+msc1 [] foo	Some description
+msc1 note foo	Some description
+msc1 note foo  Some description
+
+
+... asdf asdf {ID=*}
+
+msc1 > foo   Some description  {id=bar}
+msc1 >> foo   Some description  {id=bar}
+
+msc1 [] foo   Red box {textbgcolor=red}
+||| yo
+
+msc1 >> foo   Some description  {id=bar}
+
+bar>msc1 Some description
+---
+
+foo	>	bar	normal arrow
+foo	->	bar	filled arrow
+foo	-->	bar	stippled arrow
+foo	~>	bar	half arrowhead
+foo	=>	bar	double lined arrow
+foo	-><	bar	arrow that ends in X
+msc1	>	*	broadcast arrow
+foo	-->	*	broadcast stippled arrow
+
+foo	<	bar
+foo	<-	bar
+foo	<--	bar
+foo	<~	bar
+foo	<=	bar
+foo	><-	bar
+*	<	bar
+
+foo	<->	bar
+foo	<-->	bar
+foo	<~>	bar
+foo	<=>	bar
+
+foo	<>	.	angled box
+foo	()	.	rounded box
+foo	[]	.	note
+
