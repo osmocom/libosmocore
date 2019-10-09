@@ -35,3 +35,15 @@ gsm0502_get_paging_group(uint64_t imsi, unsigned int bs_cc_chans,
 
 unsigned int
 gsm0502_calc_paging_group(struct gsm48_control_channel_descr *chan_desc, uint64_t imsi);
+
+enum gsm0502_fn_remap_channel {
+	FN_REMAP_TCH_F,
+	FN_REMAP_TCH_H0,
+	FN_REMAP_TCH_H1,
+	FN_REMAP_FACCH_F,
+	FN_REMAP_FACCH_H0,
+	FN_REMAP_FACCH_H1,
+	FN_REMAP_MAX,
+};
+
+uint32_t gsm0502_fn_remap(uint32_t fn, enum gsm0502_fn_remap_channel channel);

@@ -107,6 +107,7 @@ gsm0480_gen_return_error;
 gsm0480_gen_reject;
 
 gsm0502_calc_paging_group;
+gsm0502_fn_remap;
 
 gsm0503_xcch;
 gsm0503_rach;

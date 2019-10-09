@@ -33,6 +33,7 @@ check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
 		 sockaddr_str/sockaddr_str_test				\
 		 use_count/use_count_test				\
 		 context/context_test					\
+                 gsm0502/gsm0502_test					\
 		 $(NULL)
 
 if ENABLE_MSGFILE
@@ -107,6 +108,9 @@ bits_bitfield_test_SOURCES = bits/bitfield_test.c
 
 conv_conv_test_SOURCES = conv/conv_test.c conv/conv.c
 conv_conv_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libgsmint.la
+
+gsm0502_gsm0502_test_SOURCES = gsm0502/gsm0502_test.c
+gsm0502_gsm0502_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 
 conv_conv_gsm0503_test_SOURCES = conv/conv_gsm0503_test.c conv/conv.c conv/gsm0503_test_vectors.c
 conv_conv_gsm0503_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libgsmint.la
@@ -328,6 +332,7 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
 	     sockaddr_str/sockaddr_str_test.ok \
 	     use_count/use_count_test.ok use_count/use_count_test.err \
 	     context/context_test.ok \
+	     gsm0502/gsm0502_test.ok \
 	     $(NULL)
 
 DISTCLEANFILES = atconfig atlocal conv/gsm0503_test_vectors.c
