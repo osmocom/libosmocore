@@ -56,7 +56,7 @@
 static struct addrinfo *addrinfo_helper(uint16_t family, uint16_t type, uint8_t proto,
 					const char *host, uint16_t port, bool passive)
 {
-	struct addrinfo hints, *result;
+	struct addrinfo hints, *result, *rp;
 	char portbuf[6];
 	int rc;
 
@@ -66,6 +66,7 @@ static struct addrinfo *addrinfo_helper(uint16_t family, uint16_t type, uint8_t 
 	if (type == SOCK_RAW) {
 		/* Workaround for glibc, that returns EAI_SERVICE (-8) if
 		 * SOCK_RAW and IPPROTO_GRE is used.
+		 * http://sourceware.org/bugzilla/show_bug.cgi?id=15015
 		 */
 		hints.ai_socktype = SOCK_DGRAM;
 		hints.ai_protocol = IPPROTO_UDP;
@@ -82,6 +83,14 @@ static struct addrinfo *addrinfo_helper(uint16_t family, uint16_t type, uint8_t 
 		LOGP(DLGLOBAL, LOGL_ERROR, "getaddrinfo returned NULL: %s:%u: %s\n",
 			host, port, strerror(errno));
 		return NULL;
+	}
+
+	for (rp = result; rp != NULL; rp = rp->ai_next) {
+		/* Workaround for glibc again */
+		if (type == SOCK_RAW) {
+			rp->ai_socktype = SOCK_RAW;
+			rp->ai_protocol = proto;
+		}
 	}
 
 	return result;
@@ -199,12 +208,6 @@ int osmo_sock_init2(uint16_t family, uint16_t type, uint8_t proto,
 			return -EINVAL;
 
 		for (rp = result; rp != NULL; rp = rp->ai_next) {
-			/* Workaround for glibc again */
-			if (type == SOCK_RAW) {
-				rp->ai_socktype = SOCK_RAW;
-				rp->ai_protocol = proto;
-			}
-
 			sfd = socket_helper(rp, flags);
 			if (sfd < 0)
 				continue;
@@ -253,12 +256,6 @@ int osmo_sock_init2(uint16_t family, uint16_t type, uint8_t proto,
 		}
 
 		for (rp = result; rp != NULL; rp = rp->ai_next) {
-			/* Workaround for glibc again */
-			if (type == SOCK_RAW) {
-				rp->ai_socktype = SOCK_RAW;
-				rp->ai_protocol = proto;
-			}
-
 			if (sfd < 0) {
 				sfd = socket_helper(rp, flags);
 				if (sfd < 0)
@@ -332,12 +329,6 @@ int osmo_sock_init(uint16_t family, uint16_t type, uint8_t proto,
 	}
 
 	for (rp = result; rp != NULL; rp = rp->ai_next) {
-		/* Workaround for glibc again */
-		if (type == SOCK_RAW) {
-			rp->ai_socktype = SOCK_RAW;
-			rp->ai_protocol = proto;
-		}
-
 		sfd = socket_helper(rp, flags);
 		if (sfd == -1)
 			continue;
