@@ -53,6 +53,10 @@
 #include <netdb.h>
 #include <ifaddrs.h>
 
+#ifdef HAVE_LIBSCTP
+#include <netinet/sctp.h>
+#endif
+
 static struct addrinfo *addrinfo_helper(uint16_t family, uint16_t type, uint8_t proto,
 					const char *host, uint16_t port, bool passive)
 {
@@ -96,6 +100,34 @@ static struct addrinfo *addrinfo_helper(uint16_t family, uint16_t type, uint8_t 
 	return result;
 }
 
+/*! Retrieve an array of addrinfo with specified hints, one for each host in the hosts array.
+ *  \param[out] addrinfo array of addrinfo pointers, will be filled by the function on success.
+ *		Its size must be at least the one of hosts.
+ *  \param[in] family Socket family like AF_INET, AF_INET6.
+ *  \param[in] type Socket type like SOCK_DGRAM, SOCK_STREAM.
+ *  \param[in] proto Protocol like IPPROTO_TCP, IPPROTO_UDP.
+ *  \param[in] hosts array of char pointers (strings) containing the addresses to query.
+ *  \param[in] host_cnt length of the hosts array (in items).
+ *  \param[in] port port number in host byte order.
+ *  \param[in] passive whether to include the AI_PASSIVE flag in getaddrinfo() hints.
+ *  \returns 0 is returned on success together with a filled addrinfo array; negative on error
+ */
+static int addrinfo_helper_multi(struct addrinfo **addrinfo, uint16_t family, uint16_t type, uint8_t proto,
+					const char **hosts, size_t host_cnt, uint16_t port, bool passive)
+{
+	int i, j;
+
+	for (i = 0; i < host_cnt; i++) {
+		addrinfo[i] = addrinfo_helper(family, type, proto, hosts[i], port, passive);
+		if (!addrinfo[i]) {
+			for (j = 0; j < i; j++)
+				freeaddrinfo(addrinfo[j]);
+			return -EINVAL;
+		}
+	}
+	return 0;
+}
+
 static int socket_helper(const struct addrinfo *rp, unsigned int flags)
 {
 	int sfd, on = 1;
@@ -118,6 +150,37 @@ static int socket_helper(const struct addrinfo *rp, unsigned int flags)
 	return sfd;
 }
 
+/* Fill buf with a string representation of the address set, in the form:
+ * buf_len == 0: "()"
+ * buf_len == 1: "hostA"
+ * buf_len >= 2: (hostA|hostB|...|...)
+ */
+static int multiaddr_snprintf(char* buf, size_t buf_len, const char **hosts, size_t host_cnt)
+{
+	int len = 0, offset = 0, rem = buf_len;
+	int ret, i;
+	char *after;
+
+	if (buf_len < 3)
+		return -EINVAL;
+
+	if (host_cnt != 1) {
+		ret = snprintf(buf, rem, "(");
+		if (ret < 0)
+			return ret;
+		OSMO_SNPRINTF_RET(ret, rem, offset, len);
+	}
+	for (i = 0; i < host_cnt; i++) {
+		if (host_cnt == 1)
+			after = "";
+		else
+			after = (i == (host_cnt - 1)) ? ")" : "|";
+		ret = snprintf(buf + offset, rem, "%s%s", hosts[i] ? : "0.0.0.0", after);
+		OSMO_SNPRINTF_RET(ret, rem, offset, len);
+	}
+
+	return len;
+}
 
 static int osmo_sock_init_tail(int fd, uint16_t type, unsigned int flags)
 {
@@ -294,6 +357,229 @@ int osmo_sock_init2(uint16_t family, uint16_t type, uint8_t proto,
 	return sfd;
 }
 
+#ifdef HAVE_LIBSCTP
+
+
+/* Build array of addresses taking first addrinfo result of the requested family
+ * for each host in hosts. addrs4 or addrs6 are filled based on family type. */
+static int addrinfo_to_sockaddr(uint16_t family, const struct addrinfo **result,
+				const char **hosts, int host_cont,
+				struct sockaddr_in *addrs4, struct sockaddr_in6 *addrs6) {
+	size_t host_idx;
+	const struct addrinfo *rp;
+	OSMO_ASSERT(family == AF_INET || family == AF_INET6);
+
+	for (host_idx = 0; host_idx < host_cont; host_idx++) {
+		for (rp = result[host_idx]; rp != NULL; rp = rp->ai_next) {
+			if (rp->ai_family != family)
+				continue;
+			if (family == AF_INET)
+				memcpy(&addrs4[host_idx], rp->ai_addr, sizeof(addrs4[host_idx]));
+			else
+				memcpy(&addrs6[host_idx], rp->ai_addr, sizeof(addrs6[host_idx]));
+			break;
+		}
+		if (!rp) { /* No addr could be bound for this host! */
+			LOGP(DLGLOBAL, LOGL_ERROR, "No suitable remote address found for host: %s\n",
+			     hosts[host_idx]);
+			return -ENODEV;
+		}
+	}
+	return 0;
+}
+
+/*! Initialize a socket (including bind and/or connect) with multiple local or remote addresses.
+ *  \param[in] family Address Family like AF_INET, AF_INET6, AF_UNSPEC
+ *  \param[in] type Socket type like SOCK_DGRAM, SOCK_STREAM
+ *  \param[in] proto Protocol like IPPROTO_TCP, IPPROTO_UDP
+ *  \param[in] local_hosts array of char pointers (strings), each containing local host name or IP address in string form
+ *  \param[in] local_hosts_cnt length of local_hosts (in items)
+ *  \param[in] local_port local port number in host byte order
+ *  \param[in] remote_host array of char pointers (strings), each containing remote host name or IP address in string form
+ *  \param[in] remote_hosts_cnt length of remote_hosts (in items)
+ *  \param[in] remote_port remote port number in host byte order
+ *  \param[in] flags flags like \ref OSMO_SOCK_F_CONNECT
+ *  \returns socket file descriptor on success; negative on error
+ *
+ * This function is similar to \ref osmo_sock_init2(), but can be passed an
+ * array of local or remote addresses for protocols supporting multiple
+ * addresses per socket, like SCTP (currently only one supported). This function
+ * should not be used by protocols not supporting this kind of features, but
+ * rather \ref osmo_sock_init2() should be used instead.
+ * See \ref osmo_sock_init2() for more information on flags and general behavior.
+ */
+int osmo_sock_init2_multiaddr(uint16_t family, uint16_t type, uint8_t proto,
+		   const char **local_hosts, size_t local_hosts_cnt, uint16_t local_port,
+		   const char **remote_hosts, size_t remote_hosts_cnt, uint16_t remote_port,
+		   unsigned int flags)
+
+{
+	struct addrinfo *result[OSMO_SOCK_MAX_ADDRS];
+	int sfd = -1, rc, on = 1;
+	int i;
+	struct sockaddr_in addrs4[OSMO_SOCK_MAX_ADDRS];
+	struct sockaddr_in6 addrs6[OSMO_SOCK_MAX_ADDRS];
+	struct sockaddr *addrs;
+	char strbuf[512];
+
+	/* TODO: So far this function is only aimed for SCTP, but could be
+	   reused in the future for other protocols with multi-addr support */
+	if (proto != IPPROTO_SCTP)
+		return -ENOTSUP;
+
+	/* TODO: Let's not support AF_UNSPEC for now. sctp_bindx() actually
+	   supports binding both types of addresses on a AF_INET6 soscket, but
+	   that would mean we could get both AF_INET and AF_INET6 addresses for
+	   each host, and makes complexity of this function increase a lot since
+	   we'd need to find out which subsets to use, use v4v6 mapped socket,
+	   etc. */
+	if (family == AF_UNSPEC)
+		return -ENOTSUP;
+
+	if ((flags & (OSMO_SOCK_F_BIND | OSMO_SOCK_F_CONNECT)) == 0) {
+		LOGP(DLGLOBAL, LOGL_ERROR, "invalid: you have to specify either "
+			"BIND or CONNECT flags\n");
+		return -EINVAL;
+	}
+
+	if (((flags & OSMO_SOCK_F_BIND) && !local_hosts_cnt) ||
+	    ((flags & OSMO_SOCK_F_CONNECT) && !remote_hosts_cnt) ||
+	    local_hosts_cnt > OSMO_SOCK_MAX_ADDRS ||
+	    remote_hosts_cnt > OSMO_SOCK_MAX_ADDRS)
+		return -EINVAL;
+
+	/* figure out local side of socket */
+	if (flags & OSMO_SOCK_F_BIND) {
+		rc = addrinfo_helper_multi(result, family, type, proto, local_hosts,
+					       local_hosts_cnt, local_port, true);
+		if (rc < 0)
+			return -EINVAL;
+
+		/* Since addrinfo_helper sets ai_family, socktype and
+		   ai_protocol in hints, we know all results will use same
+		   values, so simply pick the first one and pass it to create
+		   the socket:
+		*/
+		sfd = socket_helper(result[0], flags);
+		if (sfd < 0) {
+			for (i = 0; i < local_hosts_cnt; i++)
+				freeaddrinfo(result[i]);
+			return sfd;
+		}
+
+		if (proto != IPPROTO_UDP || flags & OSMO_SOCK_F_UDP_REUSEADDR) {
+			rc = setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR,
+					&on, sizeof(on));
+			if (rc < 0) {
+				multiaddr_snprintf(strbuf, sizeof(strbuf), local_hosts, local_hosts_cnt);
+				LOGP(DLGLOBAL, LOGL_ERROR,
+				     "cannot setsockopt socket:"
+				     " %s:%u: %s\n",
+				     strbuf, local_port,
+				     strerror(errno));
+				for (i = 0; i < local_hosts_cnt; i++)
+					freeaddrinfo(result[i]);
+				close(sfd);
+				return rc;
+			}
+		}
+
+		/* Build array of addresses taking first of same family for each host.
+		   TODO: Ideally we should use backtracking storing last used
+		   indexes and trying next combination if connect() fails .*/
+		rc = addrinfo_to_sockaddr(family, (const struct addrinfo **)result,
+					  local_hosts, local_hosts_cnt, addrs4, addrs6);
+		if (rc < 0) {
+			for (i = 0; i < local_hosts_cnt; i++)
+				freeaddrinfo(result[i]);
+			close(sfd);
+			return -ENODEV;
+		}
+
+		if (family == AF_INET)
+			addrs = (struct sockaddr *)addrs4;
+		else
+			addrs = (struct sockaddr *)addrs6;
+		if (sctp_bindx(sfd, addrs, local_hosts_cnt, SCTP_BINDX_ADD_ADDR) == -1) {
+			multiaddr_snprintf(strbuf, sizeof(strbuf), local_hosts, local_hosts_cnt);
+			LOGP(DLGLOBAL, LOGL_NOTICE, "unable to bind socket: %s:%u: %s\n",
+			     strbuf, local_port, strerror(errno));
+			for (i = 0; i < local_hosts_cnt; i++)
+			     freeaddrinfo(result[i]);
+			close(sfd);
+			return -ENODEV;
+		}
+		for (i = 0; i < local_hosts_cnt; i++)
+			freeaddrinfo(result[i]);
+	}
+
+	/* Reached this point, if OSMO_SOCK_F_BIND then sfd is valid (>=0) or it
+	   was already closed and func returned. If OSMO_SOCK_F_BIND is not
+	   set, then sfd = -1 */
+
+	/* figure out remote side of socket */
+	if (flags & OSMO_SOCK_F_CONNECT) {
+		rc = addrinfo_helper_multi(result, family, type, proto, remote_hosts,
+					       remote_hosts_cnt, remote_port, false);
+		if (rc < 0) {
+			if (sfd >= 0)
+				close(sfd);
+			return -EINVAL;
+		}
+
+		if (sfd < 0) {
+			/* Since addrinfo_helper sets ai_family, socktype and
+			   ai_protocol in hints, we know all results will use same
+			   values, so simply pick the first one and pass it to create
+			   the socket:
+			*/
+			sfd = socket_helper(result[0], flags);
+			if (sfd < 0) {
+				for (i = 0; i < remote_hosts_cnt; i++)
+					freeaddrinfo(result[i]);
+				return sfd;
+			}
+		}
+
+		/* Build array of addresses taking first of same family for each host.
+		   TODO: Ideally we should use backtracking storing last used
+		   indexes and trying next combination if connect() fails .*/
+		rc = addrinfo_to_sockaddr(family, (const struct addrinfo **)result,
+					  remote_hosts, remote_hosts_cnt, addrs4, addrs6);
+		if (rc < 0) {
+			for (i = 0; i < remote_hosts_cnt; i++)
+				freeaddrinfo(result[i]);
+			close(sfd);
+			return -ENODEV;
+		}
+
+		if (family == AF_INET)
+			addrs = (struct sockaddr *)addrs4;
+		else
+			addrs = (struct sockaddr *)addrs6;
+		rc = sctp_connectx(sfd, addrs, remote_hosts_cnt, NULL);
+		if (rc != 0 && errno != EINPROGRESS) {
+			multiaddr_snprintf(strbuf, sizeof(strbuf), remote_hosts, remote_hosts_cnt);
+			LOGP(DLGLOBAL, LOGL_ERROR, "unable to connect socket: %s:%u: %s\n",
+				strbuf, remote_port, strerror(errno));
+			for (i = 0; i < remote_hosts_cnt; i++)
+				freeaddrinfo(result[i]);
+			close(sfd);
+			return -ENODEV;
+		}
+		for (i = 0; i < remote_hosts_cnt; i++)
+			freeaddrinfo(result[i]);
+	}
+
+	rc = osmo_sock_init_tail(sfd, type, flags);
+	if (rc < 0) {
+		close(sfd);
+		sfd = -1;
+	}
+
+	return sfd;
+}
+#endif /* HAVE_LIBSCTP */
 
 /*! Initialize a socket (including bind/connect)
  *  \param[in] family Address Family like AF_INET, AF_INET6, AF_UNSPEC

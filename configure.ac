@@ -100,6 +100,17 @@ AC_SUBST(SYMBOL_VISIBILITY)
 
 AC_CHECK_FUNCS(clock_gettime localtime_r)
 
+old_LIBS=$LIBS
+AC_SEARCH_LIBS([sctp_bindx], [sctp], [
+	AC_DEFINE(HAVE_LIBSCTP, 1, [Define 1 to enable SCTP support])
+	AC_SUBST(HAVE_LIBSCTP, [1])
+	if test -n "$ac_lib"; then
+		AC_SUBST(LIBSCTP_LIBS, [-l$ac_lib])
+	fi
+	], [
+	AC_MSG_WARN([sctp_bindx not found in searched libs])])
+LIBS=$old_LIBS
+
 AC_DEFUN([CHECK_TM_INCLUDES_TM_GMTOFF], [
   AC_CACHE_CHECK(
     [whether struct tm has tm_gmtoff member],
