@@ -2662,6 +2662,10 @@ int config_from_file(struct vty *vty, FILE * fp)
 			indent = NULL;
 		}
 	}
+	/* Make sure we call go_parent_cb for all remaining indent levels at the end of file */
+	while (vty_parent(vty))
+		vty_go_parent(vty);
+
 	return CMD_SUCCESS;
 
 return_invalid_indent:
