@@ -256,7 +256,9 @@ bool osmo_tdef_val_in_range(struct osmo_tdef *tdef, unsigned long new_val)
  * \param[in] buf  The buffer where the string representation is stored.
  * \param[in] buf_len  Length of buffer in bytes.
  * \param[in] tdef  Timer entry from a timer definition table.
- * \return The number of characters printed on success, negative on error. See snprintf().
+ * \return The number of characters printed on success (or number of characters
+ *         which would have been written to the final string if enough space
+ *         had been available), negative on error. See snprintf().
  */
 int osmo_tdef_range_str_buf(char *buf, size_t buf_len, struct osmo_tdef *t)
 {
@@ -275,7 +277,7 @@ int osmo_tdef_range_str_buf(char *buf, size_t buf_len, struct osmo_tdef *t)
 	if (ret < 0)
 		return ret;
 	OSMO_SNPRINTF_RET(ret, rem, offset, len);
-	return ret;
+	return len;
 }
 
 /*! Using osmo_tdef for osmo_fsm_inst: find a given state's osmo_tdef_state_timeout entry.
