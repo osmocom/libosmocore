@@ -467,21 +467,21 @@ int osmo_sock_init2_multiaddr(uint16_t family, uint16_t type, uint8_t proto,
 			return sfd;
 		}
 
-		if (proto != IPPROTO_UDP || flags & OSMO_SOCK_F_UDP_REUSEADDR) {
-			rc = setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR,
-					&on, sizeof(on));
-			if (rc < 0) {
-				multiaddr_snprintf(strbuf, sizeof(strbuf), local_hosts, local_hosts_cnt);
-				LOGP(DLGLOBAL, LOGL_ERROR,
-				     "cannot setsockopt socket:"
-				     " %s:%u: %s\n",
-				     strbuf, local_port,
-				     strerror(errno));
-				for (i = 0; i < local_hosts_cnt; i++)
-					freeaddrinfo(result[i]);
-				close(sfd);
-				return rc;
-			}
+		/* Since so far we only allow IPPROTO_SCTP in this function,
+		   no need to check below for "proto != IPPROTO_UDP || flags & OSMO_SOCK_F_UDP_REUSEADDR" */
+		rc = setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR,
+				&on, sizeof(on));
+		if (rc < 0) {
+			multiaddr_snprintf(strbuf, sizeof(strbuf), local_hosts, local_hosts_cnt);
+			LOGP(DLGLOBAL, LOGL_ERROR,
+			     "cannot setsockopt socket:"
+			     " %s:%u: %s\n",
+			     strbuf, local_port,
+			     strerror(errno));
+			for (i = 0; i < local_hosts_cnt; i++)
+				freeaddrinfo(result[i]);
+			close(sfd);
+			return rc;
 		}
 
 		/* Build array of addresses taking first of same family for each host.
