@@ -421,8 +421,27 @@ DEFUN(cfg_ambiguous_str_2, cfg_ambiguous_str_2_cmd,
 	return CMD_SUCCESS;
 }
 
+DEFUN(cfg_ret_success, cfg_ret_success_cmd,
+	"return-success",
+	"testing return success\n")
+{
+	printf("Called: 'return-success'\n");
+	return CMD_SUCCESS;
+}
+
+DEFUN(cfg_ret_warning, cfg_ret_warning_cmd,
+	"return-warning",
+	"testing return warning\n")
+{
+	printf("Called: 'return-warning'\n");
+	return CMD_WARNING;
+}
+
 void test_vty_add_cmds()
 {
+	install_element(CONFIG_NODE, &cfg_ret_warning_cmd);
+	install_element(CONFIG_NODE, &cfg_ret_success_cmd);
+
 	install_element(CONFIG_NODE, &cfg_level1_cmd);
 	install_node(&level1_node, NULL);
 	install_element(LEVEL1_NODE, &cfg_level1_child_cmd);
@@ -524,6 +543,7 @@ int main(int argc, char **argv)
 	test_exit_by_indent("fail_tabs_and_spaces.cfg", -EINVAL);
 	test_exit_by_indent("ok_indented_root.cfg", 0);
 	test_exit_by_indent("ok_empty_parent.cfg", 0);
+	test_exit_by_indent("fail_cmd_ret_warning.cfg", -EINVAL);
 
 	test_is_cmd_ambiguous();
 

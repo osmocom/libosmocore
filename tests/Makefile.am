@@ -293,6 +293,7 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
 	     vty/fail_not_de-indented.cfg \
 	     vty/fail_tabs_and_spaces.cfg \
 	     vty/fail_too_much_indent.cfg \
+	     vty/fail_cmd_ret_warning.cfg \
 	     vty/ok.cfg \
 	     vty/ok_empty_parent.cfg \
 	     vty/ok_ignore_blank.cfg \

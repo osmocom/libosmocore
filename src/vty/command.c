@@ -2631,8 +2631,7 @@ int config_from_file(struct vty *vty, FILE * fp)
 		ret = cmd_execute_command_strict(vline, vty, NULL);
 		cmd_free_strvec(vline);
 
-		if (ret != CMD_SUCCESS && ret != CMD_WARNING
-		    && ret != CMD_ERR_NOTHING_TODO) {
+		if (ret != CMD_SUCCESS && ret != CMD_ERR_NOTHING_TODO) {
 			if (indent) {
 				talloc_free(indent);
 				indent = NULL;
