@@ -100,6 +100,7 @@ static struct addrinfo *addrinfo_helper(uint16_t family, uint16_t type, uint8_t 
 	return result;
 }
 
+#ifdef HAVE_LIBSCTP
 /*! Retrieve an array of addrinfo with specified hints, one for each host in the hosts array.
  *  \param[out] addrinfo array of addrinfo pointers, will be filled by the function on success.
  *		Its size must be at least the one of hosts.
@@ -127,6 +128,7 @@ static int addrinfo_helper_multi(struct addrinfo **addrinfo, uint16_t family, ui
 	}
 	return 0;
 }
+#endif /* HAVE_LIBSCTP*/
 
 static int socket_helper(const struct addrinfo *rp, unsigned int flags)
 {
@@ -150,6 +152,7 @@ static int socket_helper(const struct addrinfo *rp, unsigned int flags)
 	return sfd;
 }
 
+#ifdef HAVE_LIBSCTP
 /* Fill buf with a string representation of the address set, in the form:
  * buf_len == 0: "()"
  * buf_len == 1: "hostA"
@@ -181,6 +184,7 @@ static int multiaddr_snprintf(char* buf, size_t buf_len, const char **hosts, siz
 
 	return len;
 }
+#endif /* HAVE_LIBSCTP */
 
 static int osmo_sock_init_tail(int fd, uint16_t type, unsigned int flags)
 {
