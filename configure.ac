@@ -100,17 +100,6 @@ AC_SUBST(SYMBOL_VISIBILITY)
 
 AC_CHECK_FUNCS(clock_gettime localtime_r)
 
-old_LIBS=$LIBS
-AC_SEARCH_LIBS([sctp_bindx], [sctp], [
-	AC_DEFINE(HAVE_LIBSCTP, 1, [Define 1 to enable SCTP support])
-	AC_SUBST(HAVE_LIBSCTP, [1])
-	if test -n "$ac_lib"; then
-		AC_SUBST(LIBSCTP_LIBS, [-l$ac_lib])
-	fi
-	], [
-	AC_MSG_WARN([sctp_bindx not found in searched libs])])
-LIBS=$old_LIBS
-
 AC_DEFUN([CHECK_TM_INCLUDES_TM_GMTOFF], [
   AC_CACHE_CHECK(
     [whether struct tm has tm_gmtoff member],
@@ -170,6 +159,22 @@ then
 	AC_SUBST([LIBGNUTLS_LIBS])
 	AC_DEFINE([USE_GNUTLS], [1], [Use GnuTLS as a fallback for missing getrandom()])
 fi
+
+AC_ARG_ENABLE([libsctp], [AS_HELP_STRING([--disable-libsctp], [Do not enable socket multiaddr APIs requiring libsctp])],
+	[ENABLE_LIBSCTP=$enableval], [ENABLE_LIBSCTP="yes"])
+AM_CONDITIONAL(ENABLE_LIBSCTP, test x"$ENABLE_LIBSCTP" = x"yes")
+AS_IF([test "x$ENABLE_LIBSCTP" = "xyes"], [
+	old_LIBS=$LIBS
+	AC_SEARCH_LIBS([sctp_bindx], [sctp], [
+		AC_DEFINE(HAVE_LIBSCTP, 1, [Define 1 to enable SCTP support])
+		AC_SUBST(HAVE_LIBSCTP, [1])
+		if test -n "$ac_lib"; then
+			AC_SUBST(LIBSCTP_LIBS, [-l$ac_lib])
+		fi
+		], [
+		AC_MSG_ERROR([sctp_bindx not found in searched libs])])
+	LIBS=$old_LIBS
+])
 
 AC_ARG_ENABLE(plugin,
 	[AS_HELP_STRING(
@@ -279,6 +284,7 @@ then
 	AM_CONDITIONAL(ENABLE_UTILITIES, false)
 	AM_CONDITIONAL(ENABLE_GB, false)
 	AM_CONDITIONAL(ENABLE_GNUTLS, false)
+	AM_CONDITIONAL(ENABLE_LIBSCTP, false)
 	AM_CONDITIONAL(ENABLE_PCSC, false)
 	AM_CONDITIONAL(ENABLE_PSEUDOTALLOC, true)
 	AM_CONDITIONAL(ENABLE_SERCOM_STUB, true)
