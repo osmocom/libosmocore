@@ -61,8 +61,12 @@ struct osmo_sockaddr_str {
  *     struct osmo_sockaddr_str *my_sockaddr_str = ...;
  *     printf("got " OSMO_SOCKADDR_STR_FMT "\n", OSMO_SOCKADDR_STR_FMT_ARGS(my_sockaddr_str));
  */
-#define OSMO_SOCKADDR_STR_FMT "%s:%u"
-#define OSMO_SOCKADDR_STR_FMT_ARGS(R) ((R)? (R)->ip : "NULL"), ((R)? (R)->port : 0)
+#define OSMO_SOCKADDR_STR_FMT "%s%s%s:%u"
+#define OSMO_SOCKADDR_STR_FMT_ARGS(R) \
+	((R) && (R)->af == AF_INET6)? "[" : "", \
+	(R)? (R)->ip : "NULL", \
+	((R) && (R)->af == AF_INET6)? "]" : "", \
+	(R)? (R)->port : 0
 
 bool osmo_sockaddr_str_is_set(const struct osmo_sockaddr_str *sockaddr_str);
 bool osmo_sockaddr_str_is_nonzero(const struct osmo_sockaddr_str *sockaddr_str);
