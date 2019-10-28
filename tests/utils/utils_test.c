@@ -1058,6 +1058,86 @@ static void startswith_test()
 	startswith_test_str("abc", "xyz", false);
 }
 
+static int foo_name_buf(char *buf, size_t buflen, const char *arg)
+{
+	if (!arg)
+		return -EINVAL;
+	return snprintf(buf, buflen, "%s", arg);
+}
+
+static char *foo_name_c(void *ctx, const char *arg)
+{
+        OSMO_NAME_C_IMPL(ctx, 10, "ERROR", foo_name_buf, arg)
+}
+
+static char *foo_name_c_null(void *ctx, const char *arg)
+{
+	OSMO_NAME_C_IMPL(ctx, 10, NULL, foo_name_buf, arg)
+}
+
+static char *foo_name_c_zero(void *ctx, const char *arg)
+{
+        OSMO_NAME_C_IMPL(ctx, 0, "ERROR", foo_name_buf, arg)
+}
+
+static char *foo_name_c_zero_null(void *ctx, const char *arg)
+{
+        OSMO_NAME_C_IMPL(ctx, 0, NULL, foo_name_buf, arg)
+}
+
+static void name_c_impl_test()
+{
+	char *test_strs[] = {
+		"test",
+		"longer than 10 chars",
+		NULL,
+	};
+	struct {
+		const char *label;
+		char *(*func)(void *, const char*);
+	} funcs[] = {
+		{
+			"OSMO_NAME_C_IMPL(10, \"ERROR\")",
+			foo_name_c,
+		},
+		{
+			"OSMO_NAME_C_IMPL(10, NULL)",
+			foo_name_c_null,
+		},
+		{
+			"OSMO_NAME_C_IMPL(0, \"ERROR\")",
+			foo_name_c_zero,
+		},
+		{
+			"OSMO_NAME_C_IMPL(0, NULL)",
+			foo_name_c_zero_null,
+		},
+	};
+
+	int i;
+	void *ctx = talloc_named_const(NULL, 0, __func__);
+	int allocs = talloc_total_blocks(ctx);
+
+	printf("\n%s\n", __func__);
+	for (i = 0; i < ARRAY_SIZE(test_strs); i++) {
+		char *test_str = test_strs[i];
+		int j;
+		printf("%2d: %s\n", i, osmo_quote_str(test_str, -1));
+
+		for (j = 0; j < ARRAY_SIZE(funcs); j++) {
+			char *str = funcs[j].func(ctx, test_str);
+			printf("  %30s -> %s", funcs[j].label, osmo_quote_str(str, -1));
+			printf("  allocated %d", (int)talloc_total_blocks(ctx) - allocs);
+			if (str) {
+				printf("  %zu bytes, name '%s'", talloc_total_size(str), talloc_get_name(str));
+				talloc_free(str);
+			}
+			printf("\n");
+		}
+	}
+	talloc_free(ctx);
+}
+
 int main(int argc, char **argv)
 {
 	static const struct log_info log_info = {};
@@ -1078,5 +1158,6 @@ int main(int argc, char **argv)
 	strbuf_test();
 	strbuf_test_nolen();
 	startswith_test();
+	name_c_impl_test();
 	return 0;
 }

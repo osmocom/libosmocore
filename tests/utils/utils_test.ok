@@ -360,3 +360,20 @@ osmo_str_startswith("abc", "ab") == true
 osmo_str_startswith("abc", "abc") == true
 osmo_str_startswith("abc", "abcd") == false
 osmo_str_startswith("abc", "xyz") == false
+
+name_c_impl_test
+ 0: "test"
+   OSMO_NAME_C_IMPL(10, "ERROR") -> "test"  allocated 1  10 bytes, name 'foo_name_c'
+      OSMO_NAME_C_IMPL(10, NULL) -> "test"  allocated 1  10 bytes, name 'foo_name_c_null'
+    OSMO_NAME_C_IMPL(0, "ERROR") -> "test"  allocated 1  5 bytes, name 'foo_name_c_zero'
+       OSMO_NAME_C_IMPL(0, NULL) -> "test"  allocated 1  5 bytes, name 'foo_name_c_zero_null'
+ 1: "longer than 10 chars"
+   OSMO_NAME_C_IMPL(10, "ERROR") -> "longer than 10 chars"  allocated 1  21 bytes, name 'foo_name_c'
+      OSMO_NAME_C_IMPL(10, NULL) -> "longer than 10 chars"  allocated 1  21 bytes, name 'foo_name_c_null'
+    OSMO_NAME_C_IMPL(0, "ERROR") -> "longer than 10 chars"  allocated 1  21 bytes, name 'foo_name_c_zero'
+       OSMO_NAME_C_IMPL(0, NULL) -> "longer than 10 chars"  allocated 1  21 bytes, name 'foo_name_c_zero_null'
+ 2: NULL
+   OSMO_NAME_C_IMPL(10, "ERROR") -> "ERROR"  allocated 1  6 bytes, name 'foo_name_c'
+      OSMO_NAME_C_IMPL(10, NULL) -> NULL  allocated 0
+    OSMO_NAME_C_IMPL(0, "ERROR") -> "ERROR"  allocated 1  6 bytes, name 'foo_name_c_zero'
+       OSMO_NAME_C_IMPL(0, NULL) -> NULL  allocated 0

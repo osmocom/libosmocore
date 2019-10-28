@@ -3,6 +3,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 #include <osmocom/core/backtrace.h>
 #include <osmocom/core/talloc.h>
@@ -270,5 +271,60 @@ struct osmo_strbuf {
 	} while(0)
 
 bool osmo_str_startswith(const char *str, const char *startswith_str);
+
+/*! Translate a buffer function to a talloc context function.
+ * This is the full function body of a char *foo_name_c(void *ctx, val...) function, implemented by an
+ * int foo_name_buf(buf, buflen, val...) function:
+ *
+ *    char *foo_name_c(void *ctx, example_t arg)
+ *    {
+ *            OSMO_NAME_C_IMPL(ctx, 64, "ERROR", foo_name_buf, arg)
+ *    }
+ *
+ * Return a talloc'd string containing the result of the given foo_name_buf() function, or ON_ERROR on error in the called
+ * foo_name_buf() function.
+ *
+ * If ON_ERROR is NULL, the function returns NULL on error rc from FUNC_BUF. Take care: returning NULL in printf() like
+ * formats (LOGP()) makes the program crash. If ON_ERROR is non-NULL, it must be a string constant, which is not
+ * returned directly, but written to an allocated string buffer first.
+ *
+ * \param[in] INITIAL_BUFSIZE  Which size to first talloc from ctx -- a larger size makes a reallocation less likely, a
+ * 	smaller size allocates less unused bytes, zero allocates once but still runs the string composition twice.
+ * \param[in] ON_ERROR  String constant to copy on error rc returned by FUNC_BUF, or NULL to return NULL.
+ * \param[in] FUNC_BUF  Name of a function with signature foo_buf(char *buf, size_t buflen, ...).
+ * \param[in] FUNC_BUF_ARGS  Additional arguments to pass to FUNC_BUF after the buf and buflen.
+ */
+#define OSMO_NAME_C_IMPL(CTX, INITIAL_BUFSIZE, ON_ERROR, FUNC_BUF, FUNC_BUF_ARGS...) \
+	size_t _len = INITIAL_BUFSIZE; \
+	int _needed; \
+	char *_str = NULL; \
+	if ((INITIAL_BUFSIZE) > 0) { \
+		_str = (char*)talloc_named_const(CTX, _len, __func__); \
+		OSMO_ASSERT(_str); \
+	} \
+	_needed = FUNC_BUF(_str, _len, ## FUNC_BUF_ARGS); \
+	if (_needed < 0) \
+		goto OSMO_NAME_C_on_error; \
+	if (_needed < _len) \
+		return _str; \
+	_len = _needed + 1; \
+	if (_str) \
+		talloc_free(_str); \
+	_str = (char*)talloc_named_const(CTX, _len, __func__); \
+	OSMO_ASSERT(_str); \
+	_needed = FUNC_BUF(_str, _len, ## FUNC_BUF_ARGS); \
+	if (_needed < 0) \
+		goto OSMO_NAME_C_on_error; \
+	return _str; \
+OSMO_NAME_C_on_error: \
+	/* Re-using and re-sizing above allocated buf ends up in very complex code. Just free and strdup. */ \
+	if (_str) \
+		talloc_free(_str); \
+	if (!(ON_ERROR)) \
+		return NULL; \
+	_str = talloc_strdup(CTX, ON_ERROR); \
+	OSMO_ASSERT(_str); \
+	talloc_set_name_const(_str, __func__); \
+	return _str;
 
 /*! @} */
