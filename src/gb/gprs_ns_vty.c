@@ -508,10 +508,6 @@ DEFUN(cfg_frgre_local_ip, cfg_frgre_local_ip_cmd,
 {
 	struct in_addr ia;
 
-	if (!vty_nsi->frgre.enabled) {
-		vty_out(vty, "FR/GRE is not enabled%s", VTY_NEWLINE);
-		return CMD_WARNING;
-	}
 	inet_aton(argv[0], &ia);
 	vty_nsi->frgre.local_ip = osmo_ntohl(ia.s_addr);
 
