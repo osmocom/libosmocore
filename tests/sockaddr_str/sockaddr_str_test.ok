@@ -362,3 +362,578 @@
   osmo_sockaddr_str_to_sockaddr() rc == 0 sockaddr_storage=0a00000500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
    -> osmo_sockaddr_str_from_sockaddr() rc == 0 { .af = AF_INET6, .ip = "::", .port = 5 }
   osmo_sockaddr_str_from_str() rc == 0 { .af = AF_INET6, .ip = "::", .port = 5 }
+
+
+{ .af = AF_INET6, .ip = "0::", .port = 5 }
+  OSMO_SOCKADDR_STR_FMT: '[0::]:5'
+  osmo_sockaddr_str_is_set() = true
+  osmo_sockaddr_str_is_nonzero() = false
+  osmo_sockaddr_str_to_in_addr() rc < 0 in_addr=00000000
+  osmo_sockaddr_str_to_in6_addr() rc == 0 in6_addr=00000000000000000000000000000000
+   -> osmo_sockaddr_str_from_in6_addr() rc == 0 { .af = AF_INET6, .ip = "::", .port = 5 }
+      DIFFERS!
+  osmo_sockaddr_str_to_32() rc < 0 uint32_t=0x0
+  osmo_sockaddr_str_to_32n() rc < 0 uint32_t=0x0
+  osmo_sockaddr_str_to_sockaddr_in() rc < 0 sockaddr_in=00000000000000000000000000000000
+  osmo_sockaddr_str_to_sockaddr_in6() rc == 0 sockaddr_in6=0a000005000000000000000000000000000000000000000000000000
+   -> osmo_sockaddr_str_from_sockaddr_in6() rc == 0 { .af = AF_INET6, .ip = "::", .port = 5 }
+      DIFFERS!
+  osmo_sockaddr_str_to_sockaddr() rc == 0 sockaddr_storage=0a00000500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+   -> osmo_sockaddr_str_from_sockaddr() rc == 0 { .af = AF_INET6, .ip = "::", .port = 5 }
+      DIFFERS!
+  osmo_sockaddr_str_from_str() rc == 0 { .af = AF_INET6, .ip = "0::", .port = 5 }
+
+
+test_osmo_sockaddr_str_cmp
+[ 0]
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5 == 1.2.3.4:5
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5 > 0.0.0.0:0(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5 < 255.255.255.255:65535
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5 > 0.0.0.256:1(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5 < not an ip address:1(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5 < [1:2:3::4]:5
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5 < [::]:0(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5 < [::1]:0(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5 < [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5 < [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5 < [::fffff]:1(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5 < [not an ip address]:1(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5 < [1.2.3.4]:5(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5 < 1:2:3::4:5(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5 > 1.2.3.4:5(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5 > :5(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5 < []:5(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5 > 1.2.3.4:0(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5 < 1.2.3:4:5:0(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5 < [::1:10.9.8.7]:1
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5 > 0.0.0.0:5(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5 < [::]:5(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5 < [0::]:5(zero)
+[ 1]
+  osmo_sockaddr_str_cmp(): 0.0.0.0:0(zero) < 1.2.3.4:5
+  osmo_sockaddr_str_cmp(): 0.0.0.0:0(zero) == 0.0.0.0:0(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.0:0(zero) < 255.255.255.255:65535
+  osmo_sockaddr_str_cmp(): 0.0.0.0:0(zero) < 0.0.0.256:1(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.0:0(zero) < not an ip address:1(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.0:0(zero) < [1:2:3::4]:5
+  osmo_sockaddr_str_cmp(): 0.0.0.0:0(zero) < [::]:0(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.0:0(zero) < [::1]:0(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.0:0(zero) < [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535
+  osmo_sockaddr_str_cmp(): 0.0.0.0:0(zero) < [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535
+  osmo_sockaddr_str_cmp(): 0.0.0.0:0(zero) < [::fffff]:1(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.0:0(zero) < [not an ip address]:1(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.0:0(zero) < [1.2.3.4]:5(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.0:0(zero) < 1:2:3::4:5(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.0:0(zero) > 1.2.3.4:5(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.0:0(zero) > :5(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.0:0(zero) < []:5(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.0:0(zero) < 1.2.3.4:0(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.0:0(zero) < 1.2.3:4:5:0(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.0:0(zero) < [::1:10.9.8.7]:1
+  osmo_sockaddr_str_cmp(): 0.0.0.0:0(zero) < 0.0.0.0:5(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.0:0(zero) < [::]:5(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.0:0(zero) < [0::]:5(zero)
+[ 2]
+  osmo_sockaddr_str_cmp(): 255.255.255.255:65535 > 1.2.3.4:5
+  osmo_sockaddr_str_cmp(): 255.255.255.255:65535 > 0.0.0.0:0(zero)
+  osmo_sockaddr_str_cmp(): 255.255.255.255:65535 == 255.255.255.255:65535
+  osmo_sockaddr_str_cmp(): 255.255.255.255:65535 > 0.0.0.256:1(zero)
+  osmo_sockaddr_str_cmp(): 255.255.255.255:65535 < not an ip address:1(zero)
+  osmo_sockaddr_str_cmp(): 255.255.255.255:65535 < [1:2:3::4]:5
+  osmo_sockaddr_str_cmp(): 255.255.255.255:65535 < [::]:0(zero)
+  osmo_sockaddr_str_cmp(): 255.255.255.255:65535 < [::1]:0(zero)
+  osmo_sockaddr_str_cmp(): 255.255.255.255:65535 < [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535
+  osmo_sockaddr_str_cmp(): 255.255.255.255:65535 < [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535
+  osmo_sockaddr_str_cmp(): 255.255.255.255:65535 < [::fffff]:1(zero)
+  osmo_sockaddr_str_cmp(): 255.255.255.255:65535 < [not an ip address]:1(zero)
+  osmo_sockaddr_str_cmp(): 255.255.255.255:65535 < [1.2.3.4]:5(zero)
+  osmo_sockaddr_str_cmp(): 255.255.255.255:65535 > 1:2:3::4:5(zero)
+  osmo_sockaddr_str_cmp(): 255.255.255.255:65535 > 1.2.3.4:5(zero)
+  osmo_sockaddr_str_cmp(): 255.255.255.255:65535 > :5(zero)
+  osmo_sockaddr_str_cmp(): 255.255.255.255:65535 < []:5(zero)
+  osmo_sockaddr_str_cmp(): 255.255.255.255:65535 > 1.2.3.4:0(zero)
+  osmo_sockaddr_str_cmp(): 255.255.255.255:65535 > 1.2.3:4:5:0(zero)
+  osmo_sockaddr_str_cmp(): 255.255.255.255:65535 < [::1:10.9.8.7]:1
+  osmo_sockaddr_str_cmp(): 255.255.255.255:65535 > 0.0.0.0:5(zero)
+  osmo_sockaddr_str_cmp(): 255.255.255.255:65535 < [::]:5(zero)
+  osmo_sockaddr_str_cmp(): 255.255.255.255:65535 < [0::]:5(zero)
+[ 3]
+  osmo_sockaddr_str_cmp(): 0.0.0.256:1(zero) < 1.2.3.4:5
+  osmo_sockaddr_str_cmp(): 0.0.0.256:1(zero) > 0.0.0.0:0(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.256:1(zero) < 255.255.255.255:65535
+  osmo_sockaddr_str_cmp(): 0.0.0.256:1(zero) == 0.0.0.256:1(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.256:1(zero) < not an ip address:1(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.256:1(zero) < [1:2:3::4]:5
+  osmo_sockaddr_str_cmp(): 0.0.0.256:1(zero) < [::]:0(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.256:1(zero) < [::1]:0(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.256:1(zero) < [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535
+  osmo_sockaddr_str_cmp(): 0.0.0.256:1(zero) < [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535
+  osmo_sockaddr_str_cmp(): 0.0.0.256:1(zero) < [::fffff]:1(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.256:1(zero) < [not an ip address]:1(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.256:1(zero) < [1.2.3.4]:5(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.256:1(zero) < 1:2:3::4:5(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.256:1(zero) > 1.2.3.4:5(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.256:1(zero) > :5(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.256:1(zero) < []:5(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.256:1(zero) < 1.2.3.4:0(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.256:1(zero) < 1.2.3:4:5:0(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.256:1(zero) < [::1:10.9.8.7]:1
+  osmo_sockaddr_str_cmp(): 0.0.0.256:1(zero) > 0.0.0.0:5(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.256:1(zero) < [::]:5(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.256:1(zero) < [0::]:5(zero)
+[ 4]
+  osmo_sockaddr_str_cmp(): not an ip address:1(zero) > 1.2.3.4:5
+  osmo_sockaddr_str_cmp(): not an ip address:1(zero) > 0.0.0.0:0(zero)
+  osmo_sockaddr_str_cmp(): not an ip address:1(zero) > 255.255.255.255:65535
+  osmo_sockaddr_str_cmp(): not an ip address:1(zero) > 0.0.0.256:1(zero)
+  osmo_sockaddr_str_cmp(): not an ip address:1(zero) == not an ip address:1(zero)
+  osmo_sockaddr_str_cmp(): not an ip address:1(zero) < [1:2:3::4]:5
+  osmo_sockaddr_str_cmp(): not an ip address:1(zero) < [::]:0(zero)
+  osmo_sockaddr_str_cmp(): not an ip address:1(zero) < [::1]:0(zero)
+  osmo_sockaddr_str_cmp(): not an ip address:1(zero) < [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535
+  osmo_sockaddr_str_cmp(): not an ip address:1(zero) < [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535
+  osmo_sockaddr_str_cmp(): not an ip address:1(zero) < [::fffff]:1(zero)
+  osmo_sockaddr_str_cmp(): not an ip address:1(zero) < [not an ip address]:1(zero)
+  osmo_sockaddr_str_cmp(): not an ip address:1(zero) < [1.2.3.4]:5(zero)
+  osmo_sockaddr_str_cmp(): not an ip address:1(zero) > 1:2:3::4:5(zero)
+  osmo_sockaddr_str_cmp(): not an ip address:1(zero) > 1.2.3.4:5(zero)
+  osmo_sockaddr_str_cmp(): not an ip address:1(zero) > :5(zero)
+  osmo_sockaddr_str_cmp(): not an ip address:1(zero) < []:5(zero)
+  osmo_sockaddr_str_cmp(): not an ip address:1(zero) > 1.2.3.4:0(zero)
+  osmo_sockaddr_str_cmp(): not an ip address:1(zero) > 1.2.3:4:5:0(zero)
+  osmo_sockaddr_str_cmp(): not an ip address:1(zero) < [::1:10.9.8.7]:1
+  osmo_sockaddr_str_cmp(): not an ip address:1(zero) > 0.0.0.0:5(zero)
+  osmo_sockaddr_str_cmp(): not an ip address:1(zero) < [::]:5(zero)
+  osmo_sockaddr_str_cmp(): not an ip address:1(zero) < [0::]:5(zero)
+[ 5]
+  osmo_sockaddr_str_cmp(): [1:2:3::4]:5 > 1.2.3.4:5
+  osmo_sockaddr_str_cmp(): [1:2:3::4]:5 > 0.0.0.0:0(zero)
+  osmo_sockaddr_str_cmp(): [1:2:3::4]:5 > 255.255.255.255:65535
+  osmo_sockaddr_str_cmp(): [1:2:3::4]:5 > 0.0.0.256:1(zero)
+  osmo_sockaddr_str_cmp(): [1:2:3::4]:5 > not an ip address:1(zero)
+  osmo_sockaddr_str_cmp(): [1:2:3::4]:5 == [1:2:3::4]:5
+  osmo_sockaddr_str_cmp(): [1:2:3::4]:5 > [::]:0(zero)
+  osmo_sockaddr_str_cmp(): [1:2:3::4]:5 > [::1]:0(zero)
+  osmo_sockaddr_str_cmp(): [1:2:3::4]:5 < [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535
+  osmo_sockaddr_str_cmp(): [1:2:3::4]:5 < [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535
+  osmo_sockaddr_str_cmp(): [1:2:3::4]:5 < [::fffff]:1(zero)
+  osmo_sockaddr_str_cmp(): [1:2:3::4]:5 < [not an ip address]:1(zero)
+  osmo_sockaddr_str_cmp(): [1:2:3::4]:5 > [1.2.3.4]:5(zero)
+  osmo_sockaddr_str_cmp(): [1:2:3::4]:5 > 1:2:3::4:5(zero)
+  osmo_sockaddr_str_cmp(): [1:2:3::4]:5 > 1.2.3.4:5(zero)
+  osmo_sockaddr_str_cmp(): [1:2:3::4]:5 > :5(zero)
+  osmo_sockaddr_str_cmp(): [1:2:3::4]:5 > []:5(zero)
+  osmo_sockaddr_str_cmp(): [1:2:3::4]:5 > 1.2.3.4:0(zero)
+  osmo_sockaddr_str_cmp(): [1:2:3::4]:5 > 1.2.3:4:5:0(zero)
+  osmo_sockaddr_str_cmp(): [1:2:3::4]:5 > [::1:10.9.8.7]:1
+  osmo_sockaddr_str_cmp(): [1:2:3::4]:5 > 0.0.0.0:5(zero)
+  osmo_sockaddr_str_cmp(): [1:2:3::4]:5 > [::]:5(zero)
+  osmo_sockaddr_str_cmp(): [1:2:3::4]:5 > [0::]:5(zero)
+[ 6]
+  osmo_sockaddr_str_cmp(): [::]:0(zero) > 1.2.3.4:5
+  osmo_sockaddr_str_cmp(): [::]:0(zero) > 0.0.0.0:0(zero)
+  osmo_sockaddr_str_cmp(): [::]:0(zero) > 255.255.255.255:65535
+  osmo_sockaddr_str_cmp(): [::]:0(zero) > 0.0.0.256:1(zero)
+  osmo_sockaddr_str_cmp(): [::]:0(zero) > not an ip address:1(zero)
+  osmo_sockaddr_str_cmp(): [::]:0(zero) < [1:2:3::4]:5
+  osmo_sockaddr_str_cmp(): [::]:0(zero) == [::]:0(zero)
+  osmo_sockaddr_str_cmp(): [::]:0(zero) < [::1]:0(zero)
+  osmo_sockaddr_str_cmp(): [::]:0(zero) < [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535
+  osmo_sockaddr_str_cmp(): [::]:0(zero) < [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535
+  osmo_sockaddr_str_cmp(): [::]:0(zero) < [::fffff]:1(zero)
+  osmo_sockaddr_str_cmp(): [::]:0(zero) < [not an ip address]:1(zero)
+  osmo_sockaddr_str_cmp(): [::]:0(zero) > [1.2.3.4]:5(zero)
+  osmo_sockaddr_str_cmp(): [::]:0(zero) > 1:2:3::4:5(zero)
+  osmo_sockaddr_str_cmp(): [::]:0(zero) > 1.2.3.4:5(zero)
+  osmo_sockaddr_str_cmp(): [::]:0(zero) > :5(zero)
+  osmo_sockaddr_str_cmp(): [::]:0(zero) > []:5(zero)
+  osmo_sockaddr_str_cmp(): [::]:0(zero) > 1.2.3.4:0(zero)
+  osmo_sockaddr_str_cmp(): [::]:0(zero) > 1.2.3:4:5:0(zero)
+  osmo_sockaddr_str_cmp(): [::]:0(zero) < [::1:10.9.8.7]:1
+  osmo_sockaddr_str_cmp(): [::]:0(zero) > 0.0.0.0:5(zero)
+  osmo_sockaddr_str_cmp(): [::]:0(zero) < [::]:5(zero)
+  osmo_sockaddr_str_cmp(): [::]:0(zero) < [0::]:5(zero)
+[ 7]
+  osmo_sockaddr_str_cmp(): [::1]:0(zero) > 1.2.3.4:5
+  osmo_sockaddr_str_cmp(): [::1]:0(zero) > 0.0.0.0:0(zero)
+  osmo_sockaddr_str_cmp(): [::1]:0(zero) > 255.255.255.255:65535
+  osmo_sockaddr_str_cmp(): [::1]:0(zero) > 0.0.0.256:1(zero)
+  osmo_sockaddr_str_cmp(): [::1]:0(zero) > not an ip address:1(zero)
+  osmo_sockaddr_str_cmp(): [::1]:0(zero) < [1:2:3::4]:5
+  osmo_sockaddr_str_cmp(): [::1]:0(zero) > [::]:0(zero)
+  osmo_sockaddr_str_cmp(): [::1]:0(zero) == [::1]:0(zero)
+  osmo_sockaddr_str_cmp(): [::1]:0(zero) < [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535
+  osmo_sockaddr_str_cmp(): [::1]:0(zero) < [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535
+  osmo_sockaddr_str_cmp(): [::1]:0(zero) < [::fffff]:1(zero)
+  osmo_sockaddr_str_cmp(): [::1]:0(zero) < [not an ip address]:1(zero)
+  osmo_sockaddr_str_cmp(): [::1]:0(zero) > [1.2.3.4]:5(zero)
+  osmo_sockaddr_str_cmp(): [::1]:0(zero) > 1:2:3::4:5(zero)
+  osmo_sockaddr_str_cmp(): [::1]:0(zero) > 1.2.3.4:5(zero)
+  osmo_sockaddr_str_cmp(): [::1]:0(zero) > :5(zero)
+  osmo_sockaddr_str_cmp(): [::1]:0(zero) > []:5(zero)
+  osmo_sockaddr_str_cmp(): [::1]:0(zero) > 1.2.3.4:0(zero)
+  osmo_sockaddr_str_cmp(): [::1]:0(zero) > 1.2.3:4:5:0(zero)
+  osmo_sockaddr_str_cmp(): [::1]:0(zero) < [::1:10.9.8.7]:1
+  osmo_sockaddr_str_cmp(): [::1]:0(zero) > 0.0.0.0:5(zero)
+  osmo_sockaddr_str_cmp(): [::1]:0(zero) > [::]:5(zero)
+  osmo_sockaddr_str_cmp(): [::1]:0(zero) > [0::]:5(zero)
+[ 8]
+  osmo_sockaddr_str_cmp(): [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535 > 1.2.3.4:5
+  osmo_sockaddr_str_cmp(): [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535 > 0.0.0.0:0(zero)
+  osmo_sockaddr_str_cmp(): [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535 > 255.255.255.255:65535
+  osmo_sockaddr_str_cmp(): [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535 > 0.0.0.256:1(zero)
+  osmo_sockaddr_str_cmp(): [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535 > not an ip address:1(zero)
+  osmo_sockaddr_str_cmp(): [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535 > [1:2:3::4]:5
+  osmo_sockaddr_str_cmp(): [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535 > [::]:0(zero)
+  osmo_sockaddr_str_cmp(): [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535 > [::1]:0(zero)
+  osmo_sockaddr_str_cmp(): [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535 == [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535
+  osmo_sockaddr_str_cmp(): [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535 == [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535
+  osmo_sockaddr_str_cmp(): [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535 > [::fffff]:1(zero)
+  osmo_sockaddr_str_cmp(): [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535 < [not an ip address]:1(zero)
+  osmo_sockaddr_str_cmp(): [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535 > [1.2.3.4]:5(zero)
+  osmo_sockaddr_str_cmp(): [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535 > 1:2:3::4:5(zero)
+  osmo_sockaddr_str_cmp(): [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535 > 1.2.3.4:5(zero)
+  osmo_sockaddr_str_cmp(): [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535 > :5(zero)
+  osmo_sockaddr_str_cmp(): [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535 > []:5(zero)
+  osmo_sockaddr_str_cmp(): [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535 > 1.2.3.4:0(zero)
+  osmo_sockaddr_str_cmp(): [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535 > 1.2.3:4:5:0(zero)
+  osmo_sockaddr_str_cmp(): [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535 > [::1:10.9.8.7]:1
+  osmo_sockaddr_str_cmp(): [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535 > 0.0.0.0:5(zero)
+  osmo_sockaddr_str_cmp(): [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535 > [::]:5(zero)
+  osmo_sockaddr_str_cmp(): [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535 > [0::]:5(zero)
+[ 9]
+  osmo_sockaddr_str_cmp(): [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535 > 1.2.3.4:5
+  osmo_sockaddr_str_cmp(): [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535 > 0.0.0.0:0(zero)
+  osmo_sockaddr_str_cmp(): [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535 > 255.255.255.255:65535
+  osmo_sockaddr_str_cmp(): [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535 > 0.0.0.256:1(zero)
+  osmo_sockaddr_str_cmp(): [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535 > not an ip address:1(zero)
+  osmo_sockaddr_str_cmp(): [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535 > [1:2:3::4]:5
+  osmo_sockaddr_str_cmp(): [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535 > [::]:0(zero)
+  osmo_sockaddr_str_cmp(): [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535 > [::1]:0(zero)
+  osmo_sockaddr_str_cmp(): [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535 == [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535
+  osmo_sockaddr_str_cmp(): [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535 == [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535
+  osmo_sockaddr_str_cmp(): [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535 > [::fffff]:1(zero)
+  osmo_sockaddr_str_cmp(): [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535 < [not an ip address]:1(zero)
+  osmo_sockaddr_str_cmp(): [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535 > [1.2.3.4]:5(zero)
+  osmo_sockaddr_str_cmp(): [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535 > 1:2:3::4:5(zero)
+  osmo_sockaddr_str_cmp(): [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535 > 1.2.3.4:5(zero)
+  osmo_sockaddr_str_cmp(): [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535 > :5(zero)
+  osmo_sockaddr_str_cmp(): [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535 > []:5(zero)
+  osmo_sockaddr_str_cmp(): [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535 > 1.2.3.4:0(zero)
+  osmo_sockaddr_str_cmp(): [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535 > 1.2.3:4:5:0(zero)
+  osmo_sockaddr_str_cmp(): [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535 > [::1:10.9.8.7]:1
+  osmo_sockaddr_str_cmp(): [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535 > 0.0.0.0:5(zero)
+  osmo_sockaddr_str_cmp(): [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535 > [::]:5(zero)
+  osmo_sockaddr_str_cmp(): [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535 > [0::]:5(zero)
+[10]
+  osmo_sockaddr_str_cmp(): [::fffff]:1(zero) > 1.2.3.4:5
+  osmo_sockaddr_str_cmp(): [::fffff]:1(zero) > 0.0.0.0:0(zero)
+  osmo_sockaddr_str_cmp(): [::fffff]:1(zero) > 255.255.255.255:65535
+  osmo_sockaddr_str_cmp(): [::fffff]:1(zero) > 0.0.0.256:1(zero)
+  osmo_sockaddr_str_cmp(): [::fffff]:1(zero) > not an ip address:1(zero)
+  osmo_sockaddr_str_cmp(): [::fffff]:1(zero) > [1:2:3::4]:5
+  osmo_sockaddr_str_cmp(): [::fffff]:1(zero) > [::]:0(zero)
+  osmo_sockaddr_str_cmp(): [::fffff]:1(zero) > [::1]:0(zero)
+  osmo_sockaddr_str_cmp(): [::fffff]:1(zero) < [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535
+  osmo_sockaddr_str_cmp(): [::fffff]:1(zero) < [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535
+  osmo_sockaddr_str_cmp(): [::fffff]:1(zero) == [::fffff]:1(zero)
+  osmo_sockaddr_str_cmp(): [::fffff]:1(zero) < [not an ip address]:1(zero)
+  osmo_sockaddr_str_cmp(): [::fffff]:1(zero) > [1.2.3.4]:5(zero)
+  osmo_sockaddr_str_cmp(): [::fffff]:1(zero) > 1:2:3::4:5(zero)
+  osmo_sockaddr_str_cmp(): [::fffff]:1(zero) > 1.2.3.4:5(zero)
+  osmo_sockaddr_str_cmp(): [::fffff]:1(zero) > :5(zero)
+  osmo_sockaddr_str_cmp(): [::fffff]:1(zero) > []:5(zero)
+  osmo_sockaddr_str_cmp(): [::fffff]:1(zero) > 1.2.3.4:0(zero)
+  osmo_sockaddr_str_cmp(): [::fffff]:1(zero) > 1.2.3:4:5:0(zero)
+  osmo_sockaddr_str_cmp(): [::fffff]:1(zero) > [::1:10.9.8.7]:1
+  osmo_sockaddr_str_cmp(): [::fffff]:1(zero) > 0.0.0.0:5(zero)
+  osmo_sockaddr_str_cmp(): [::fffff]:1(zero) > [::]:5(zero)
+  osmo_sockaddr_str_cmp(): [::fffff]:1(zero) > [0::]:5(zero)
+[11]
+  osmo_sockaddr_str_cmp(): [not an ip address]:1(zero) > 1.2.3.4:5
+  osmo_sockaddr_str_cmp(): [not an ip address]:1(zero) > 0.0.0.0:0(zero)
+  osmo_sockaddr_str_cmp(): [not an ip address]:1(zero) > 255.255.255.255:65535
+  osmo_sockaddr_str_cmp(): [not an ip address]:1(zero) > 0.0.0.256:1(zero)
+  osmo_sockaddr_str_cmp(): [not an ip address]:1(zero) > not an ip address:1(zero)
+  osmo_sockaddr_str_cmp(): [not an ip address]:1(zero) > [1:2:3::4]:5
+  osmo_sockaddr_str_cmp(): [not an ip address]:1(zero) > [::]:0(zero)
+  osmo_sockaddr_str_cmp(): [not an ip address]:1(zero) > [::1]:0(zero)
+  osmo_sockaddr_str_cmp(): [not an ip address]:1(zero) > [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535
+  osmo_sockaddr_str_cmp(): [not an ip address]:1(zero) > [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535
+  osmo_sockaddr_str_cmp(): [not an ip address]:1(zero) > [::fffff]:1(zero)
+  osmo_sockaddr_str_cmp(): [not an ip address]:1(zero) == [not an ip address]:1(zero)
+  osmo_sockaddr_str_cmp(): [not an ip address]:1(zero) > [1.2.3.4]:5(zero)
+  osmo_sockaddr_str_cmp(): [not an ip address]:1(zero) > 1:2:3::4:5(zero)
+  osmo_sockaddr_str_cmp(): [not an ip address]:1(zero) > 1.2.3.4:5(zero)
+  osmo_sockaddr_str_cmp(): [not an ip address]:1(zero) > :5(zero)
+  osmo_sockaddr_str_cmp(): [not an ip address]:1(zero) > []:5(zero)
+  osmo_sockaddr_str_cmp(): [not an ip address]:1(zero) > 1.2.3.4:0(zero)
+  osmo_sockaddr_str_cmp(): [not an ip address]:1(zero) > 1.2.3:4:5:0(zero)
+  osmo_sockaddr_str_cmp(): [not an ip address]:1(zero) > [::1:10.9.8.7]:1
+  osmo_sockaddr_str_cmp(): [not an ip address]:1(zero) > 0.0.0.0:5(zero)
+  osmo_sockaddr_str_cmp(): [not an ip address]:1(zero) > [::]:5(zero)
+  osmo_sockaddr_str_cmp(): [not an ip address]:1(zero) > [0::]:5(zero)
+[12]
+  osmo_sockaddr_str_cmp(): [1.2.3.4]:5(zero) > 1.2.3.4:5
+  osmo_sockaddr_str_cmp(): [1.2.3.4]:5(zero) > 0.0.0.0:0(zero)
+  osmo_sockaddr_str_cmp(): [1.2.3.4]:5(zero) > 255.255.255.255:65535
+  osmo_sockaddr_str_cmp(): [1.2.3.4]:5(zero) > 0.0.0.256:1(zero)
+  osmo_sockaddr_str_cmp(): [1.2.3.4]:5(zero) > not an ip address:1(zero)
+  osmo_sockaddr_str_cmp(): [1.2.3.4]:5(zero) < [1:2:3::4]:5
+  osmo_sockaddr_str_cmp(): [1.2.3.4]:5(zero) < [::]:0(zero)
+  osmo_sockaddr_str_cmp(): [1.2.3.4]:5(zero) < [::1]:0(zero)
+  osmo_sockaddr_str_cmp(): [1.2.3.4]:5(zero) < [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535
+  osmo_sockaddr_str_cmp(): [1.2.3.4]:5(zero) < [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535
+  osmo_sockaddr_str_cmp(): [1.2.3.4]:5(zero) < [::fffff]:1(zero)
+  osmo_sockaddr_str_cmp(): [1.2.3.4]:5(zero) < [not an ip address]:1(zero)
+  osmo_sockaddr_str_cmp(): [1.2.3.4]:5(zero) == [1.2.3.4]:5(zero)
+  osmo_sockaddr_str_cmp(): [1.2.3.4]:5(zero) > 1:2:3::4:5(zero)
+  osmo_sockaddr_str_cmp(): [1.2.3.4]:5(zero) > 1.2.3.4:5(zero)
+  osmo_sockaddr_str_cmp(): [1.2.3.4]:5(zero) > :5(zero)
+  osmo_sockaddr_str_cmp(): [1.2.3.4]:5(zero) > []:5(zero)
+  osmo_sockaddr_str_cmp(): [1.2.3.4]:5(zero) > 1.2.3.4:0(zero)
+  osmo_sockaddr_str_cmp(): [1.2.3.4]:5(zero) > 1.2.3:4:5:0(zero)
+  osmo_sockaddr_str_cmp(): [1.2.3.4]:5(zero) < [::1:10.9.8.7]:1
+  osmo_sockaddr_str_cmp(): [1.2.3.4]:5(zero) > 0.0.0.0:5(zero)
+  osmo_sockaddr_str_cmp(): [1.2.3.4]:5(zero) < [::]:5(zero)
+  osmo_sockaddr_str_cmp(): [1.2.3.4]:5(zero) > [0::]:5(zero)
+[13]
+  osmo_sockaddr_str_cmp(): 1:2:3::4:5(zero) > 1.2.3.4:5
+  osmo_sockaddr_str_cmp(): 1:2:3::4:5(zero) > 0.0.0.0:0(zero)
+  osmo_sockaddr_str_cmp(): 1:2:3::4:5(zero) < 255.255.255.255:65535
+  osmo_sockaddr_str_cmp(): 1:2:3::4:5(zero) > 0.0.0.256:1(zero)
+  osmo_sockaddr_str_cmp(): 1:2:3::4:5(zero) < not an ip address:1(zero)
+  osmo_sockaddr_str_cmp(): 1:2:3::4:5(zero) < [1:2:3::4]:5
+  osmo_sockaddr_str_cmp(): 1:2:3::4:5(zero) < [::]:0(zero)
+  osmo_sockaddr_str_cmp(): 1:2:3::4:5(zero) < [::1]:0(zero)
+  osmo_sockaddr_str_cmp(): 1:2:3::4:5(zero) < [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535
+  osmo_sockaddr_str_cmp(): 1:2:3::4:5(zero) < [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535
+  osmo_sockaddr_str_cmp(): 1:2:3::4:5(zero) < [::fffff]:1(zero)
+  osmo_sockaddr_str_cmp(): 1:2:3::4:5(zero) < [not an ip address]:1(zero)
+  osmo_sockaddr_str_cmp(): 1:2:3::4:5(zero) < [1.2.3.4]:5(zero)
+  osmo_sockaddr_str_cmp(): 1:2:3::4:5(zero) == 1:2:3::4:5(zero)
+  osmo_sockaddr_str_cmp(): 1:2:3::4:5(zero) > 1.2.3.4:5(zero)
+  osmo_sockaddr_str_cmp(): 1:2:3::4:5(zero) > :5(zero)
+  osmo_sockaddr_str_cmp(): 1:2:3::4:5(zero) < []:5(zero)
+  osmo_sockaddr_str_cmp(): 1:2:3::4:5(zero) > 1.2.3.4:0(zero)
+  osmo_sockaddr_str_cmp(): 1:2:3::4:5(zero) > 1.2.3:4:5:0(zero)
+  osmo_sockaddr_str_cmp(): 1:2:3::4:5(zero) < [::1:10.9.8.7]:1
+  osmo_sockaddr_str_cmp(): 1:2:3::4:5(zero) > 0.0.0.0:5(zero)
+  osmo_sockaddr_str_cmp(): 1:2:3::4:5(zero) < [::]:5(zero)
+  osmo_sockaddr_str_cmp(): 1:2:3::4:5(zero) < [0::]:5(zero)
+[14]
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5(zero) < 1.2.3.4:5
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5(zero) < 0.0.0.0:0(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5(zero) < 255.255.255.255:65535
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5(zero) < 0.0.0.256:1(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5(zero) < not an ip address:1(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5(zero) < [1:2:3::4]:5
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5(zero) < [::]:0(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5(zero) < [::1]:0(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5(zero) < [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5(zero) < [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5(zero) < [::fffff]:1(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5(zero) < [not an ip address]:1(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5(zero) < [1.2.3.4]:5(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5(zero) < 1:2:3::4:5(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5(zero) == 1.2.3.4:5(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5(zero) < :5(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5(zero) < []:5(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5(zero) < 1.2.3.4:0(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5(zero) < 1.2.3:4:5:0(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5(zero) < [::1:10.9.8.7]:1
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5(zero) < 0.0.0.0:5(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5(zero) < [::]:5(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:5(zero) < [0::]:5(zero)
+[15]
+  osmo_sockaddr_str_cmp(): :5(zero) < 1.2.3.4:5
+  osmo_sockaddr_str_cmp(): :5(zero) < 0.0.0.0:0(zero)
+  osmo_sockaddr_str_cmp(): :5(zero) < 255.255.255.255:65535
+  osmo_sockaddr_str_cmp(): :5(zero) < 0.0.0.256:1(zero)
+  osmo_sockaddr_str_cmp(): :5(zero) < not an ip address:1(zero)
+  osmo_sockaddr_str_cmp(): :5(zero) < [1:2:3::4]:5
+  osmo_sockaddr_str_cmp(): :5(zero) < [::]:0(zero)
+  osmo_sockaddr_str_cmp(): :5(zero) < [::1]:0(zero)
+  osmo_sockaddr_str_cmp(): :5(zero) < [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535
+  osmo_sockaddr_str_cmp(): :5(zero) < [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535
+  osmo_sockaddr_str_cmp(): :5(zero) < [::fffff]:1(zero)
+  osmo_sockaddr_str_cmp(): :5(zero) < [not an ip address]:1(zero)
+  osmo_sockaddr_str_cmp(): :5(zero) < [1.2.3.4]:5(zero)
+  osmo_sockaddr_str_cmp(): :5(zero) < 1:2:3::4:5(zero)
+  osmo_sockaddr_str_cmp(): :5(zero) > 1.2.3.4:5(zero)
+  osmo_sockaddr_str_cmp(): :5(zero) == :5(zero)
+  osmo_sockaddr_str_cmp(): :5(zero) < []:5(zero)
+  osmo_sockaddr_str_cmp(): :5(zero) < 1.2.3.4:0(zero)
+  osmo_sockaddr_str_cmp(): :5(zero) < 1.2.3:4:5:0(zero)
+  osmo_sockaddr_str_cmp(): :5(zero) < [::1:10.9.8.7]:1
+  osmo_sockaddr_str_cmp(): :5(zero) < 0.0.0.0:5(zero)
+  osmo_sockaddr_str_cmp(): :5(zero) < [::]:5(zero)
+  osmo_sockaddr_str_cmp(): :5(zero) < [0::]:5(zero)
+[16]
+  osmo_sockaddr_str_cmp(): []:5(zero) > 1.2.3.4:5
+  osmo_sockaddr_str_cmp(): []:5(zero) > 0.0.0.0:0(zero)
+  osmo_sockaddr_str_cmp(): []:5(zero) > 255.255.255.255:65535
+  osmo_sockaddr_str_cmp(): []:5(zero) > 0.0.0.256:1(zero)
+  osmo_sockaddr_str_cmp(): []:5(zero) > not an ip address:1(zero)
+  osmo_sockaddr_str_cmp(): []:5(zero) < [1:2:3::4]:5
+  osmo_sockaddr_str_cmp(): []:5(zero) < [::]:0(zero)
+  osmo_sockaddr_str_cmp(): []:5(zero) < [::1]:0(zero)
+  osmo_sockaddr_str_cmp(): []:5(zero) < [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535
+  osmo_sockaddr_str_cmp(): []:5(zero) < [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535
+  osmo_sockaddr_str_cmp(): []:5(zero) < [::fffff]:1(zero)
+  osmo_sockaddr_str_cmp(): []:5(zero) < [not an ip address]:1(zero)
+  osmo_sockaddr_str_cmp(): []:5(zero) < [1.2.3.4]:5(zero)
+  osmo_sockaddr_str_cmp(): []:5(zero) > 1:2:3::4:5(zero)
+  osmo_sockaddr_str_cmp(): []:5(zero) > 1.2.3.4:5(zero)
+  osmo_sockaddr_str_cmp(): []:5(zero) > :5(zero)
+  osmo_sockaddr_str_cmp(): []:5(zero) == []:5(zero)
+  osmo_sockaddr_str_cmp(): []:5(zero) > 1.2.3.4:0(zero)
+  osmo_sockaddr_str_cmp(): []:5(zero) > 1.2.3:4:5:0(zero)
+  osmo_sockaddr_str_cmp(): []:5(zero) < [::1:10.9.8.7]:1
+  osmo_sockaddr_str_cmp(): []:5(zero) > 0.0.0.0:5(zero)
+  osmo_sockaddr_str_cmp(): []:5(zero) < [::]:5(zero)
+  osmo_sockaddr_str_cmp(): []:5(zero) < [0::]:5(zero)
+[17]
+  osmo_sockaddr_str_cmp(): 1.2.3.4:0(zero) < 1.2.3.4:5
+  osmo_sockaddr_str_cmp(): 1.2.3.4:0(zero) > 0.0.0.0:0(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:0(zero) < 255.255.255.255:65535
+  osmo_sockaddr_str_cmp(): 1.2.3.4:0(zero) > 0.0.0.256:1(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:0(zero) < not an ip address:1(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:0(zero) < [1:2:3::4]:5
+  osmo_sockaddr_str_cmp(): 1.2.3.4:0(zero) < [::]:0(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:0(zero) < [::1]:0(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:0(zero) < [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535
+  osmo_sockaddr_str_cmp(): 1.2.3.4:0(zero) < [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535
+  osmo_sockaddr_str_cmp(): 1.2.3.4:0(zero) < [::fffff]:1(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:0(zero) < [not an ip address]:1(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:0(zero) < [1.2.3.4]:5(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:0(zero) < 1:2:3::4:5(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:0(zero) > 1.2.3.4:5(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:0(zero) > :5(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:0(zero) < []:5(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:0(zero) == 1.2.3.4:0(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:0(zero) < 1.2.3:4:5:0(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:0(zero) < [::1:10.9.8.7]:1
+  osmo_sockaddr_str_cmp(): 1.2.3.4:0(zero) > 0.0.0.0:5(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:0(zero) < [::]:5(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3.4:0(zero) < [0::]:5(zero)
+[18]
+  osmo_sockaddr_str_cmp(): 1.2.3:4:5:0(zero) > 1.2.3.4:5
+  osmo_sockaddr_str_cmp(): 1.2.3:4:5:0(zero) > 0.0.0.0:0(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3:4:5:0(zero) < 255.255.255.255:65535
+  osmo_sockaddr_str_cmp(): 1.2.3:4:5:0(zero) > 0.0.0.256:1(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3:4:5:0(zero) < not an ip address:1(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3:4:5:0(zero) < [1:2:3::4]:5
+  osmo_sockaddr_str_cmp(): 1.2.3:4:5:0(zero) < [::]:0(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3:4:5:0(zero) < [::1]:0(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3:4:5:0(zero) < [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535
+  osmo_sockaddr_str_cmp(): 1.2.3:4:5:0(zero) < [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535
+  osmo_sockaddr_str_cmp(): 1.2.3:4:5:0(zero) < [::fffff]:1(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3:4:5:0(zero) < [not an ip address]:1(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3:4:5:0(zero) < [1.2.3.4]:5(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3:4:5:0(zero) < 1:2:3::4:5(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3:4:5:0(zero) > 1.2.3.4:5(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3:4:5:0(zero) > :5(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3:4:5:0(zero) < []:5(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3:4:5:0(zero) > 1.2.3.4:0(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3:4:5:0(zero) == 1.2.3:4:5:0(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3:4:5:0(zero) < [::1:10.9.8.7]:1
+  osmo_sockaddr_str_cmp(): 1.2.3:4:5:0(zero) > 0.0.0.0:5(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3:4:5:0(zero) < [::]:5(zero)
+  osmo_sockaddr_str_cmp(): 1.2.3:4:5:0(zero) < [0::]:5(zero)
+[19]
+  osmo_sockaddr_str_cmp(): [::1:10.9.8.7]:1 > 1.2.3.4:5
+  osmo_sockaddr_str_cmp(): [::1:10.9.8.7]:1 > 0.0.0.0:0(zero)
+  osmo_sockaddr_str_cmp(): [::1:10.9.8.7]:1 > 255.255.255.255:65535
+  osmo_sockaddr_str_cmp(): [::1:10.9.8.7]:1 > 0.0.0.256:1(zero)
+  osmo_sockaddr_str_cmp(): [::1:10.9.8.7]:1 > not an ip address:1(zero)
+  osmo_sockaddr_str_cmp(): [::1:10.9.8.7]:1 < [1:2:3::4]:5
+  osmo_sockaddr_str_cmp(): [::1:10.9.8.7]:1 > [::]:0(zero)
+  osmo_sockaddr_str_cmp(): [::1:10.9.8.7]:1 > [::1]:0(zero)
+  osmo_sockaddr_str_cmp(): [::1:10.9.8.7]:1 < [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535
+  osmo_sockaddr_str_cmp(): [::1:10.9.8.7]:1 < [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535
+  osmo_sockaddr_str_cmp(): [::1:10.9.8.7]:1 < [::fffff]:1(zero)
+  osmo_sockaddr_str_cmp(): [::1:10.9.8.7]:1 < [not an ip address]:1(zero)
+  osmo_sockaddr_str_cmp(): [::1:10.9.8.7]:1 > [1.2.3.4]:5(zero)
+  osmo_sockaddr_str_cmp(): [::1:10.9.8.7]:1 > 1:2:3::4:5(zero)
+  osmo_sockaddr_str_cmp(): [::1:10.9.8.7]:1 > 1.2.3.4:5(zero)
+  osmo_sockaddr_str_cmp(): [::1:10.9.8.7]:1 > :5(zero)
+  osmo_sockaddr_str_cmp(): [::1:10.9.8.7]:1 > []:5(zero)
+  osmo_sockaddr_str_cmp(): [::1:10.9.8.7]:1 > 1.2.3.4:0(zero)
+  osmo_sockaddr_str_cmp(): [::1:10.9.8.7]:1 > 1.2.3:4:5:0(zero)
+  osmo_sockaddr_str_cmp(): [::1:10.9.8.7]:1 == [::1:10.9.8.7]:1
+  osmo_sockaddr_str_cmp(): [::1:10.9.8.7]:1 > 0.0.0.0:5(zero)
+  osmo_sockaddr_str_cmp(): [::1:10.9.8.7]:1 > [::]:5(zero)
+  osmo_sockaddr_str_cmp(): [::1:10.9.8.7]:1 > [0::]:5(zero)
+[20]
+  osmo_sockaddr_str_cmp(): 0.0.0.0:5(zero) < 1.2.3.4:5
+  osmo_sockaddr_str_cmp(): 0.0.0.0:5(zero) > 0.0.0.0:0(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.0:5(zero) < 255.255.255.255:65535
+  osmo_sockaddr_str_cmp(): 0.0.0.0:5(zero) < 0.0.0.256:1(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.0:5(zero) < not an ip address:1(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.0:5(zero) < [1:2:3::4]:5
+  osmo_sockaddr_str_cmp(): 0.0.0.0:5(zero) < [::]:0(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.0:5(zero) < [::1]:0(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.0:5(zero) < [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535
+  osmo_sockaddr_str_cmp(): 0.0.0.0:5(zero) < [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535
+  osmo_sockaddr_str_cmp(): 0.0.0.0:5(zero) < [::fffff]:1(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.0:5(zero) < [not an ip address]:1(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.0:5(zero) < [1.2.3.4]:5(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.0:5(zero) < 1:2:3::4:5(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.0:5(zero) > 1.2.3.4:5(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.0:5(zero) > :5(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.0:5(zero) < []:5(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.0:5(zero) < 1.2.3.4:0(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.0:5(zero) < 1.2.3:4:5:0(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.0:5(zero) < [::1:10.9.8.7]:1
+  osmo_sockaddr_str_cmp(): 0.0.0.0:5(zero) == 0.0.0.0:5(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.0:5(zero) < [::]:5(zero)
+  osmo_sockaddr_str_cmp(): 0.0.0.0:5(zero) < [0::]:5(zero)
+[21]
+  osmo_sockaddr_str_cmp(): [::]:5(zero) > 1.2.3.4:5
+  osmo_sockaddr_str_cmp(): [::]:5(zero) > 0.0.0.0:0(zero)
+  osmo_sockaddr_str_cmp(): [::]:5(zero) > 255.255.255.255:65535
+  osmo_sockaddr_str_cmp(): [::]:5(zero) > 0.0.0.256:1(zero)
+  osmo_sockaddr_str_cmp(): [::]:5(zero) > not an ip address:1(zero)
+  osmo_sockaddr_str_cmp(): [::]:5(zero) < [1:2:3::4]:5
+  osmo_sockaddr_str_cmp(): [::]:5(zero) > [::]:0(zero)
+  osmo_sockaddr_str_cmp(): [::]:5(zero) < [::1]:0(zero)
+  osmo_sockaddr_str_cmp(): [::]:5(zero) < [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535
+  osmo_sockaddr_str_cmp(): [::]:5(zero) < [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535
+  osmo_sockaddr_str_cmp(): [::]:5(zero) < [::fffff]:1(zero)
+  osmo_sockaddr_str_cmp(): [::]:5(zero) < [not an ip address]:1(zero)
+  osmo_sockaddr_str_cmp(): [::]:5(zero) > [1.2.3.4]:5(zero)
+  osmo_sockaddr_str_cmp(): [::]:5(zero) > 1:2:3::4:5(zero)
+  osmo_sockaddr_str_cmp(): [::]:5(zero) > 1.2.3.4:5(zero)
+  osmo_sockaddr_str_cmp(): [::]:5(zero) > :5(zero)
+  osmo_sockaddr_str_cmp(): [::]:5(zero) > []:5(zero)
+  osmo_sockaddr_str_cmp(): [::]:5(zero) > 1.2.3.4:0(zero)
+  osmo_sockaddr_str_cmp(): [::]:5(zero) > 1.2.3:4:5:0(zero)
+  osmo_sockaddr_str_cmp(): [::]:5(zero) < [::1:10.9.8.7]:1
+  osmo_sockaddr_str_cmp(): [::]:5(zero) > 0.0.0.0:5(zero)
+  osmo_sockaddr_str_cmp(): [::]:5(zero) == [::]:5(zero)
+  osmo_sockaddr_str_cmp(): [::]:5(zero) == [0::]:5(zero)
+[22]
+  osmo_sockaddr_str_cmp(): [0::]:5(zero) > 1.2.3.4:5
+  osmo_sockaddr_str_cmp(): [0::]:5(zero) > 0.0.0.0:0(zero)
+  osmo_sockaddr_str_cmp(): [0::]:5(zero) > 255.255.255.255:65535
+  osmo_sockaddr_str_cmp(): [0::]:5(zero) > 0.0.0.256:1(zero)
+  osmo_sockaddr_str_cmp(): [0::]:5(zero) > not an ip address:1(zero)
+  osmo_sockaddr_str_cmp(): [0::]:5(zero) < [1:2:3::4]:5
+  osmo_sockaddr_str_cmp(): [0::]:5(zero) > [::]:0(zero)
+  osmo_sockaddr_str_cmp(): [0::]:5(zero) < [::1]:0(zero)
+  osmo_sockaddr_str_cmp(): [0::]:5(zero) < [ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]:65535
+  osmo_sockaddr_str_cmp(): [0::]:5(zero) < [FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF]:65535
+  osmo_sockaddr_str_cmp(): [0::]:5(zero) < [::fffff]:1(zero)
+  osmo_sockaddr_str_cmp(): [0::]:5(zero) < [not an ip address]:1(zero)
+  osmo_sockaddr_str_cmp(): [0::]:5(zero) < [1.2.3.4]:5(zero)
+  osmo_sockaddr_str_cmp(): [0::]:5(zero) > 1:2:3::4:5(zero)
+  osmo_sockaddr_str_cmp(): [0::]:5(zero) > 1.2.3.4:5(zero)
+  osmo_sockaddr_str_cmp(): [0::]:5(zero) > :5(zero)
+  osmo_sockaddr_str_cmp(): [0::]:5(zero) > []:5(zero)
+  osmo_sockaddr_str_cmp(): [0::]:5(zero) > 1.2.3.4:0(zero)
+  osmo_sockaddr_str_cmp(): [0::]:5(zero) > 1.2.3:4:5:0(zero)
+  osmo_sockaddr_str_cmp(): [0::]:5(zero) < [::1:10.9.8.7]:1
+  osmo_sockaddr_str_cmp(): [0::]:5(zero) > 0.0.0.0:5(zero)
+  osmo_sockaddr_str_cmp(): [0::]:5(zero) == [::]:5(zero)
+  osmo_sockaddr_str_cmp(): [0::]:5(zero) == [0::]:5(zero)

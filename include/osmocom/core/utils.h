@@ -21,6 +21,8 @@
 #define OSMO_MAX(a, b) ((a) >= (b) ? (a) : (b))
 /*! Return the minimum of two specified values */
 #define OSMO_MIN(a, b) ((a) >= (b) ? (b) : (a))
+/*! Return a typical cmp result for comparable entities a and b. */
+#define OSMO_CMP(a, b) ((a) < (b)? -1 : ((a) > (b)? 1 : 0))
 /*! Stringify the name of a macro x, e.g. an FSM event name.
  * Note: if nested within another preprocessor macro, this will
  * stringify the value of x instead of its name. */

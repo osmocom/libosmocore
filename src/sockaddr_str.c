@@ -95,6 +95,80 @@ bool osmo_sockaddr_str_is_nonzero(const struct osmo_sockaddr_str *sockaddr_str)
 	}
 }
 
+/*! Compare two osmo_sockaddr_str instances by string comparison.
+ * Compare by strcmp() for the address and compare port numbers, ignore the AF_INET/AF_INET6 value.
+ * \param[in] a  left side of comparison.
+ * \param[in] b  right side of comparison.
+ * \return -1 if a < b, 0 if a == b, 1 if a > b.
+ */
+static int osmo_sockaddr_str_cmp_by_string(const struct osmo_sockaddr_str *a, const struct osmo_sockaddr_str *b)
+{
+	int cmp;
+	if (a == b)
+		return 0;
+	if (!a)
+		return -1;
+	if (!b)
+		return 1;
+	cmp = strncmp(a->ip, b->ip, sizeof(a->ip));
+	if (cmp)
+		return cmp;
+	return OSMO_CMP(a->port, b->port);
+}
+
+/*! Compare two osmo_sockaddr_str instances by resulting IP address.
+ * Compare IP versions (AF_INET vs AF_INET6), compare resulting IP address bytes and compare port numbers.
+ * If the IP address strings cannot be parsed successfully / if the 'af' is neither AF_INET nor AF_INET6, fall back to
+ * pure string comparison of the ip address.
+ * \param[in] a  left side of comparison.
+ * \param[in] b  right side of comparison.
+ * \return -1 if a < b, 0 if a == b, 1 if a > b.
+ */
+int osmo_sockaddr_str_cmp(const struct osmo_sockaddr_str *a, const struct osmo_sockaddr_str *b)
+{
+	int cmp;
+	uint32_t ipv4_a, ipv4_b;
+	struct in6_addr ipv6_a = {}, ipv6_b = {};
+
+	if (a == b)
+		return 0;
+	if (!a)
+		return -1;
+	if (!b)
+		return 1;
+	cmp = OSMO_CMP(a->af, b->af);
+	if (cmp)
+		return cmp;
+	switch (a->af) {
+	case AF_INET:
+		if (osmo_sockaddr_str_to_32(a, &ipv4_a)
+		    || osmo_sockaddr_str_to_32(b, &ipv4_b))
+			goto fallback_to_strcmp;
+		cmp = OSMO_CMP(ipv4_a, ipv4_b);
+		break;
+
+	case AF_INET6:
+		if (osmo_sockaddr_str_to_in6_addr(a, &ipv6_a)
+		    || osmo_sockaddr_str_to_in6_addr(b, &ipv6_b))
+			goto fallback_to_strcmp;
+		cmp = memcmp(&ipv6_a, &ipv6_b, sizeof(ipv6_a));
+		break;
+
+	default:
+		goto fallback_to_strcmp;
+	}
+	if (cmp)
+		return cmp;
+
+	cmp = OSMO_CMP(a->port, b->port);
+	if (cmp)
+		return cmp;
+	return 0;
+
+fallback_to_strcmp:
+	return osmo_sockaddr_str_cmp_by_string(a, b);
+}
+
 /*! Distinguish between valid IPv4 and IPv6 strings.
  * This does not verify whether the string is a valid IP address; it assumes that the input is a valid IP address, and
  * on that premise returns whether it is an IPv4 or IPv6 string, by looking for '.' and ':' characters.  It is safe to

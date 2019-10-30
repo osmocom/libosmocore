@@ -70,6 +70,7 @@ struct osmo_sockaddr_str {
 
 bool osmo_sockaddr_str_is_set(const struct osmo_sockaddr_str *sockaddr_str);
 bool osmo_sockaddr_str_is_nonzero(const struct osmo_sockaddr_str *sockaddr_str);
+int osmo_sockaddr_str_cmp(const struct osmo_sockaddr_str *a, const struct osmo_sockaddr_str *b);
 
 int osmo_sockaddr_str_from_str(struct osmo_sockaddr_str *sockaddr_str, const char *ip, uint16_t port);
 

@@ -55,6 +55,7 @@ struct osmo_sockaddr_str oip_data[] = {
 	{ .af = AF_INET6, .ip = "::1:10.9.8.7", .port = 1 },
 	{ .af = AF_INET, .ip = "0.0.0.0", .port = 5 },
 	{ .af = AF_INET6, .ip = "::", .port = 5 },
+	{ .af = AF_INET6, .ip = "0::", .port = 5 },
 };
 
 const char *af_name(int af)
@@ -236,9 +237,34 @@ void sockaddr_str_test_conversions()
 
 }
 
+static void test_osmo_sockaddr_str_cmp()
+{
+	int i;
+	printf("\n\n%s\n", __func__);
+	for (i = 0; i < ARRAY_SIZE(oip_data); i++) {
+		/* use a copy to not hit the pointer comparison in osmo_sockaddr_str_cmp(). */
+		struct osmo_sockaddr_str _a = oip_data[i];
+		struct osmo_sockaddr_str *a = &_a;
+		int j;
+		printf("[%2d]\n", i);
+
+		for (j = 0; j < ARRAY_SIZE(oip_data); j++) {
+			struct osmo_sockaddr_str *b = &oip_data[j];
+			int ip_rc = osmo_sockaddr_str_cmp(a, b);
+			printf("  osmo_sockaddr_str_cmp(): " OSMO_SOCKADDR_STR_FMT "%s %s " OSMO_SOCKADDR_STR_FMT "%s\n",
+			       OSMO_SOCKADDR_STR_FMT_ARGS(a),
+			       osmo_sockaddr_str_is_nonzero(a) ? "" : "(zero)",
+			       ip_rc < 0? "<" : (ip_rc == 0 ? "==" : ">" ),
+			       OSMO_SOCKADDR_STR_FMT_ARGS(b),
+			       osmo_sockaddr_str_is_nonzero(b) ? "" : "(zero)");
+		}
+	}
+}
+
 int main(int argc, char **argv)
 {
 	sockaddr_str_test_conversions();
+	test_osmo_sockaddr_str_cmp();
 	return 0;
 }
 
