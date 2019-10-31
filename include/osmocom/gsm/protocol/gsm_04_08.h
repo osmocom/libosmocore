@@ -954,7 +954,7 @@ struct gsm48_system_information_type_header {
 #if OSMO_IS_LITTLE_ENDIAN
 	uint8_t l2_plen;
 	uint8_t rr_protocol_discriminator :4,
-		skip_indicator:4; 
+		skip_indicator:4;
 	uint8_t system_information;
 #elif OSMO_IS_BIG_ENDIAN
 /* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
@@ -1104,7 +1104,7 @@ struct gsm48_system_information_type_4 {
 struct gsm48_system_information_type_5 {
 #if OSMO_IS_LITTLE_ENDIAN
 	uint8_t rr_protocol_discriminator :4,
-		skip_indicator:4; 
+		skip_indicator:4;
 	uint8_t system_information;
 	uint8_t bcch_frequency_list[16];
 #elif OSMO_IS_BIG_ENDIAN
@@ -1149,7 +1149,7 @@ struct gsm48_system_information_type_5ter {
 struct gsm48_system_information_type_6 {
 #if OSMO_IS_LITTLE_ENDIAN
 	uint8_t rr_protocol_discriminator :4,
-		skip_indicator:4; 
+		skip_indicator:4;
 	uint8_t system_information;
 	uint16_t cell_identity;
 	struct gsm48_loc_area_id lai;
