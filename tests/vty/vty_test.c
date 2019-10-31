@@ -482,27 +482,11 @@ void test_is_cmd_ambiguous()
 	destroy_test_vty(&test, vty);
 }
 
-static int go_parent_cb(struct vty *vty)
-{
-	/*
-	 * - For the interactive VTY tests above, it is expected to bounce back to
-	 *   the CONFIG_NODE. Hence do so in go_parent_cb().
-	 * - In the config file parsing tests, setting vty->node in go_parent_cb() has no
-	 *   effect, because we will subsequently pop a parent node from the parent stack
-	 *   and override to go to the node that was recorded as the actual parent.
-	 */
-	vty->node = CONFIG_NODE;
-	vty->index = NULL;
-	return 0;
-}
-
 int main(int argc, char **argv)
 {
 	struct vty_app_info vty_info = {
 		.name		= "VtyTest",
 		.version	= 0,
-		.go_parent_cb	= go_parent_cb,
-		.is_config_node	= NULL,
 	};
 
 	const struct log_info_cat default_categories[] = {};

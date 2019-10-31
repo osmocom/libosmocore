@@ -178,9 +178,14 @@ struct vty_app_info {
 	const char *copyright;
 	/*! \ref talloc context */
 	void *tall_ctx;
-	/*! call-back for returning to parent n ode */
+	/*! Call-back for taking actions upon exiting a node.
+	 * The return value is ignored, and changes to vty->node and vty->index made in this callback are ignored.
+	 * Implicit parent node tracking always sets the correct parent node and vty->index after this callback exits,
+	 * so this callback can handle only those nodes that should take specific actions upon node exit, or can be left
+	 * NULL entirely. */
 	int (*go_parent_cb)(struct vty *vty);
-	/*! call-back to determine if node is config node */
+	/*! OBSOLETED: Implicit parent node tracking has replaced the use of this callback. This callback is no longer
+	 * called, ever, and can be left NULL. */
 	int (*is_config_node)(struct vty *vty, int node);
 	/*! Check if the config is consistent before write */
 	int (*config_is_consistent)(struct vty *vty);

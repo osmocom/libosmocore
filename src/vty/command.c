@@ -200,18 +200,6 @@ static int cmp_desc(const void *p, const void *q)
 	return strcmp(a->cmd, b->cmd);
 }
 
-static int is_config_child(struct vty *vty)
-{
-	if (vty->node <= CONFIG_NODE)
-		return 0;
-	else if (vty->node > CONFIG_NODE && vty->node < _LAST_OSMOVTY_NODE)
-		return 1;
-	else if (host.app_info->is_config_node)
-		return host.app_info->is_config_node(vty, vty->node);
-	else
-		return vty->node > CONFIG_NODE;
-}
-
 /*! Sort each node's command element according to command string. */
 void sort_node(void)
 {
@@ -2187,25 +2175,10 @@ int vty_go_parent(struct vty *vty)
 			vty_clear_parents(vty);
 			break;
 
-		case CFG_LOG_NODE:
-		case VTY_NODE:
-			vty->node = CONFIG_NODE;
-			vty_clear_parents(vty);
-			break;
-
 		default:
-			if (host.app_info->go_parent_cb) {
+			if (host.app_info->go_parent_cb)
 				host.app_info->go_parent_cb(vty);
-				vty_pop_parent(vty);
-			}
-			else if (is_config_child(vty)) {
-				vty->node = CONFIG_NODE;
-				vty_clear_parents(vty);
-			}
-			else {
-				vty->node = VIEW_NODE;
-				vty_clear_parents(vty);
-			}
+			vty_pop_parent(vty);
 			break;
 	}
 
@@ -2365,8 +2338,29 @@ cmd_execute_command_real(vector vline, struct vty *vty,
 
 	if (matched_element->daemon)
 		rc = CMD_SUCCESS_DAEMON;
-	else	/* Execute matched command. */
+	else {
+		/* Execute matched command. */
+		struct vty_parent_node this_node = {
+				.node = vty->node,
+				.priv = vty->priv,
+				.indent = vty->indent,
+			};
+		struct vty_parent_node *parent = vty_parent(vty);
 		rc = (*matched_element->func) (matched_element, vty, argc, argv);
+
+		/* If we have stepped down into a child node, push a parent frame.
+		 * The causality is such: we don't expect every single node entry implementation to push
+		 * a parent node entry onto vty->parent_nodes. Instead we expect vty_go_parent() to *pop*
+		 * a parent node. Hence if the node changed without the parent node changing, we must
+		 * have stepped into a child node. */
+		if (vty->node != this_node.node && parent == vty_parent(vty)
+		    && vty->node > CONFIG_NODE) {
+			/* Push the parent node. */
+			parent = talloc_zero(vty, struct vty_parent_node);
+			*parent = this_node;
+			llist_add(&parent->entry, &vty->parent_nodes);
+		}
+	}
 
 rc_free_deopt_ctx:
 	/* Now after we called the command func, we can free temporary strings */
