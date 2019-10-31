@@ -1136,6 +1136,7 @@ static void test_si_range_helpers()
 static void test_power_ctrl()
 {
 	int8_t rc8;
+	int rc;
 
 	rc8 = osmo_gsm48_rfpowercap2powerclass(GSM_BAND_850, 0x00);
 	VERIFY(rc8, ==, 1);
@@ -1153,6 +1154,25 @@ static void test_power_ctrl()
 	VERIFY(rc8, <, 0);
 	rc8 = osmo_gsm48_rfpowercap2powerclass(GSM_BAND_900, 0xf2);
 	VERIFY(rc8, <, 0);
+
+	rc = ms_class_gmsk_dbm(GSM_BAND_850, 0);
+	VERIFY(rc, <, 0);
+	rc = ms_class_gmsk_dbm(GSM_BAND_850, 1);
+	VERIFY(rc, ==, 43);
+	rc = ms_class_gmsk_dbm(GSM_BAND_900, 3);
+	VERIFY(rc, ==, 37);
+	rc = ms_class_gmsk_dbm(GSM_BAND_1800, 2);
+	VERIFY(rc, ==, 24);
+	rc = ms_class_gmsk_dbm(GSM_BAND_1800, 3);
+	VERIFY(rc, ==, 36);
+	rc = ms_class_gmsk_dbm(GSM_BAND_1900, 3);
+	VERIFY(rc, ==, 33);
+	rc = ms_class_gmsk_dbm(GSM_BAND_1900, 4);
+	VERIFY(rc, <, 0);
+	rc = ms_class_gmsk_dbm(GSM_BAND_900, 5);
+	VERIFY(rc, ==, 29);
+	rc = ms_class_gmsk_dbm(GSM_BAND_900, 6);
+	VERIFY(rc, <, 0);
 }
 
 int main(int argc, char **argv)

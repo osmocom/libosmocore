@@ -501,8 +501,8 @@ size_t gsm0858_rsl_ul_meas_enc(struct gsm_meas_rep_unidir *mru, bool dtxd_used,
 /*! Convert power class to dBm according to GSM TS 05.05
  *  \param[in] band GSM frequency band
  *  \param[in] class GSM power class
- *  \returns maximum transmit power of power class in dBm */
-unsigned int ms_class_gmsk_dbm(enum gsm_band band, int class)
+ *  \returns maximum transmit power of power class in dBm, negative on error */
+int ms_class_gmsk_dbm(enum gsm_band band, int class)
 {
 	switch (band) {
 	case GSM_BAND_450:
