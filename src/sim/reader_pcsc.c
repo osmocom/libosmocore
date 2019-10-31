@@ -79,17 +79,18 @@ static struct osim_reader_hdl *pcsc_reader_open(int num, const char *id, void *c
 	rc = SCardListReaders(st->hContext, NULL, (LPSTR)&mszReaders, &dwReaders);
 	PCSC_ERROR(rc, "SCardListReaders");
 
+	/* SCARD_S_SUCCESS means there is at least one reader in the group */
 	num_readers = 0;
 	ptr = mszReaders;
-	while (*ptr != '\0') {
+	while (*ptr != '\0' && num_readers != num) {
 		ptr += strlen(ptr)+1;
 		num_readers++;
 	}
 
-	if (num_readers == 0)
+	if (num != num_readers)
 		goto end;
 
-	st->name = talloc_strdup(rh, mszReaders);
+	st->name = talloc_strdup(rh, ptr);
 	st->dwActiveProtocol = -1;
 
 	return rh;

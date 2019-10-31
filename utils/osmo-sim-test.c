@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
+#include <getopt.h>
 #include <arpa/inet.h>
 
 #include <osmocom/core/msgb.h>
@@ -328,6 +329,51 @@ out:
 	return -EINVAL;
 }
 
+static void print_help(void)
+{
+	printf(	"osmo-sim-test Usage:\n"
+		" -h  --help		This message\n"
+		" -n  --reader-num NR	Open reader number NR\n"
+	      );
+}
+
+static int readernum = 0;
+
+static void handle_options(int argc, char **argv)
+{
+	while (1) {
+		int option_index = 0, c;
+		const struct option long_options[] = {
+			{ "help", 0, 0, 'h' },
+			{ "reader-num", 1, 0, 'n' },
+			{0,0,0,0}
+		};
+
+		c = getopt_long(argc, argv, "hn:",
+				long_options, &option_index);
+		if (c == -1)
+			break;
+
+		switch (c) {
+		case 'h':
+			print_help();
+			exit(0);
+			break;
+		case 'n':
+			readernum = atoi(optarg);
+			break;
+		default:
+			exit(2);
+			break;
+		}
+	}
+
+	if (argc > optind) {
+		fprintf(stderr, "Unsupported positional arguments on command line\n");
+		exit(2);
+	}
+}
+
 int main(int argc, char **argv)
 {
 	struct osim_reader_hdl *reader;
@@ -335,7 +381,9 @@ int main(int argc, char **argv)
 	struct osim_chan_hdl *chan;
 	struct msgb *msg;
 
-	reader = osim_reader_open(OSIM_READER_DRV_PCSC, 0, "", NULL);
+	handle_options(argc, argv);
+
+	reader = osim_reader_open(OSIM_READER_DRV_PCSC, readernum, "", NULL);
 	if (!reader)
 		exit(1);
 	card = osim_card_open(reader, OSIM_PROTO_T0);
