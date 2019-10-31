@@ -9,3 +9,4 @@
 #library	what			description / commit summary line
 core		osmo_tdef_get()		change val_if_not_present arg from unsigned long to long to allow passing -1
 core		struct osmo_tdef	fields min_val,max_val added, ABI break (arrays of structs used in programs)
+gsm		API added		osmo_gsm48_rfpowercap2powerclass()

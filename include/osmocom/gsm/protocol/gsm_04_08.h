@@ -10,6 +10,7 @@
 #include <osmocom/core/endian.h>
 
 struct gsm_lchan;
+enum gsm_band;
 
 /* Chapter 10.5.1.5 */
 struct gsm48_classmark1 {
@@ -73,7 +74,7 @@ const char *osmo_gsm48_classmark_a5_name(const struct osmo_gsm48_classmark *cm);
 char *osmo_gsm48_classmark_a5_name_buf(char *buf, size_t buf_len, const struct osmo_gsm48_classmark *cm);
 char *osmo_gsm48_classmark_a5_name_c(const void *ctx, const struct osmo_gsm48_classmark *cm);
 void osmo_gsm48_classmark_update(struct osmo_gsm48_classmark *dst, const struct osmo_gsm48_classmark *src);
-
+int8_t osmo_gsm48_rfpowercap2powerclass(enum gsm_band band, uint8_t rf_power_cap);
 /* Chapter 10.5.2.1b.3 */
 #if OSMO_IS_LITTLE_ENDIAN == 1
 struct gsm48_range_1024 {

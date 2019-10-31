@@ -26,6 +26,7 @@
 #include <osmocom/gsm/gsm48_ie.h>
 #include <osmocom/gsm/gsm48.h>
 #include <osmocom/gsm/gsm48_arfcn_range_encode.h>
+#include <osmocom/gsm/gsm_utils.h>
 #include <osmocom/gsm/mncc.h>
 #include <osmocom/core/backtrace.h>
 #include <osmocom/core/utils.h>
@@ -1132,6 +1133,28 @@ static void test_si_range_helpers()
 	VERIFY(f0, ==, 1);
 }
 
+static void test_power_ctrl()
+{
+	int8_t rc8;
+
+	rc8 = osmo_gsm48_rfpowercap2powerclass(GSM_BAND_850, 0x00);
+	VERIFY(rc8, ==, 1);
+	rc8 = osmo_gsm48_rfpowercap2powerclass(GSM_BAND_900, 0x02);
+	VERIFY(rc8, ==, 3);
+	rc8 = osmo_gsm48_rfpowercap2powerclass(GSM_BAND_1800, 0x02);
+	VERIFY(rc8, ==, 3);
+	rc8 = osmo_gsm48_rfpowercap2powerclass(GSM_BAND_1900, 0x02);
+	VERIFY(rc8, ==, 3);
+	rc8 = osmo_gsm48_rfpowercap2powerclass(GSM_BAND_1900, 0x04);
+	VERIFY(rc8, <, 0);
+	rc8 = osmo_gsm48_rfpowercap2powerclass(GSM_BAND_900, 0x04);
+	VERIFY(rc8, ==, 5);
+	rc8 = osmo_gsm48_rfpowercap2powerclass(GSM_BAND_900, 0x05);
+	VERIFY(rc8, <, 0);
+	rc8 = osmo_gsm48_rfpowercap2powerclass(GSM_BAND_900, 0xf2);
+	VERIFY(rc8, <, 0);
+}
+
 int main(int argc, char **argv)
 {
 	test_bearer_cap();
@@ -1147,6 +1170,7 @@ int main(int argc, char **argv)
 	test_arfcn_filter();
 	test_print_encoding();
 	test_range_encoding();
+	test_power_ctrl();
 
 	return EXIT_SUCCESS;
 }

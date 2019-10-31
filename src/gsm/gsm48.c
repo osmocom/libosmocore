@@ -1390,4 +1390,25 @@ int osmo_gsm48_classmark_supports_a5(const struct osmo_gsm48_classmark *cm, uint
 	}
 }
 
+/*! Decode power class from Classmark1/2 RF power capability field.
+ * \param[in] rf_power_cap  The RF power capability field (3 bits).
+ * \param[in] band  the band of the arfcn from where the classmark was received
+ * \return the MS power class on success, negative on error.
+ */
+int8_t osmo_gsm48_rfpowercap2powerclass(enum gsm_band band, uint8_t rf_power_cap)
+{
+	switch (band)  {
+	case GSM_BAND_1800:
+	case GSM_BAND_1900:
+		if (rf_power_cap > 2)
+			return -1;
+		return rf_power_cap + 1;
+	default:
+		if (rf_power_cap > 4)
+			return -1;
+		return rf_power_cap + 1;
+	}
+}
+
+
 /*! @} */

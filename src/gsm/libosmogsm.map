@@ -646,6 +646,7 @@ osmo_gsm48_classmark_a5_name;
 osmo_gsm48_classmark_a5_name_buf;
 osmo_gsm48_classmark_a5_name_c;
 osmo_gsm48_classmark_update;
+osmo_gsm48_rfpowercap2powerclass;
 
 cbsp_msg_type_names;
 cbsp_iei_names;
