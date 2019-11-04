@@ -9,8 +9,9 @@
 #include <osmocom/core/utils.h>
 #include <osmocom/core/endian.h>
 
+#include <osmocom/gsm/gsm_utils.h>
+
 struct gsm_lchan;
-enum gsm_band;
 
 /* Chapter 10.5.1.5 */
 struct gsm48_classmark1 {

@@ -30,7 +30,6 @@
 
 #include <osmocom/core/defs.h>
 #include <osmocom/core/utils.h>
-#include <osmocom/gsm/protocol/gsm_04_08.h>
 
 #define ADD_MODULO(sum, delta, modulo) do {	\
 	if ((sum += delta) >= modulo)		\
