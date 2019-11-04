@@ -889,13 +889,25 @@ struct gsm48_pag_resp {
 #if OSMO_IS_LITTLE_ENDIAN
 	uint8_t spare:4,
 		 key_seq:4;
-	uint32_t classmark2;
+	union {
+		uint32_t classmark2;  /* Backward compatibility */
+		struct {
+			uint8_t cm2_len;
+			struct gsm48_classmark2 cm2;
+		};
+	};
 	uint8_t mi_len;
 	uint8_t mi[0];
 #elif OSMO_IS_BIG_ENDIAN
 /* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
 	uint8_t key_seq:4, spare:4;
-	uint32_t classmark2;
+	union {
+		uint32_t classmark2;  /* Backward compatibility */
+		struct {
+			uint8_t cm2_len;
+			struct gsm48_classmark2 cm2;
+		};
+	};
 	uint8_t mi_len;
 	uint8_t mi[0];
 #endif
@@ -1027,15 +1039,26 @@ struct gsm48_service_request {
 #if OSMO_IS_LITTLE_ENDIAN
 	uint8_t cm_service_type : 4,
 		 cipher_key_seq  : 4;
-	/* length + 3 bytes */
-	uint32_t classmark;
+	union {
+		uint32_t classmark;  /* Backward compatibility */
+		struct {
+			uint8_t cm2_len;
+			struct gsm48_classmark2 classmark2;
+		};
+	};
 	uint8_t mi_len;
 	uint8_t mi[0];
 	/* optional priority level */
 #elif OSMO_IS_BIG_ENDIAN
 /* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
 	uint8_t cipher_key_seq:4, cm_service_type:4;
-	uint32_t classmark;
+	union {
+		uint32_t classmark;  /* Backward compatibility */
+		struct {
+			uint8_t cm2_len;
+			struct gsm48_classmark2 classmark2;
+		};
+	};
 	uint8_t mi_len;
 	uint8_t mi[0];
 #endif
