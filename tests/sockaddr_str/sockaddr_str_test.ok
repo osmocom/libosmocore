@@ -1,6 +1,7 @@
 
 
 { .af = AF_INET, .ip = "1.2.3.4", .port = 5 }
+  OSMO_SOCKADDR_STR_FMT: '1.2.3.4:5'
   osmo_sockaddr_str_is_set() = true
   osmo_sockaddr_str_is_nonzero() = true
   osmo_sockaddr_str_to_in_addr() rc == 0 in_addr=01020304
@@ -19,6 +20,7 @@
 
 
 { .af = AF_INET, .ip = "0.0.0.0", .port = 0 }
+  OSMO_SOCKADDR_STR_FMT: '0.0.0.0:0'
   osmo_sockaddr_str_is_set() = false
   osmo_sockaddr_str_is_nonzero() = false
   osmo_sockaddr_str_to_in_addr() rc == 0 in_addr=00000000
@@ -37,6 +39,7 @@
 
 
 { .af = AF_INET, .ip = "255.255.255.255", .port = 65535 }
+  OSMO_SOCKADDR_STR_FMT: '255.255.255.255:65535'
   osmo_sockaddr_str_is_set() = true
   osmo_sockaddr_str_is_nonzero() = true
   osmo_sockaddr_str_to_in_addr() rc == 0 in_addr=ffffffff
@@ -55,6 +58,7 @@
 
 
 { .af = AF_INET, .ip = "0.0.0.256", .port = 1 }
+  OSMO_SOCKADDR_STR_FMT: '0.0.0.256:1'
   osmo_sockaddr_str_is_set() = true
   osmo_sockaddr_str_is_nonzero() = false
   osmo_sockaddr_str_to_in_addr() rc < 0 in_addr=00000000
@@ -68,6 +72,7 @@
 
 
 { .af = AF_INET, .ip = "not an ip address", .port = 1 }
+  OSMO_SOCKADDR_STR_FMT: 'not an ip address:1'
   osmo_sockaddr_str_is_set() = true
   osmo_sockaddr_str_is_nonzero() = false
   osmo_sockaddr_str_to_in_addr() rc < 0 in_addr=00000000
@@ -81,6 +86,7 @@
 
 
 { .af = AF_INET6, .ip = "1:2:3::4", .port = 5 }
+  OSMO_SOCKADDR_STR_FMT: '1:2:3::4:5'
   osmo_sockaddr_str_is_set() = true
   osmo_sockaddr_str_is_nonzero() = true
   osmo_sockaddr_str_to_in_addr() rc < 0 in_addr=00000000
@@ -97,6 +103,7 @@
 
 
 { .af = AF_INET6, .ip = "::", .port = 0 }
+  OSMO_SOCKADDR_STR_FMT: ':::0'
   osmo_sockaddr_str_is_set() = false
   osmo_sockaddr_str_is_nonzero() = false
   osmo_sockaddr_str_to_in_addr() rc < 0 in_addr=00000000
@@ -113,6 +120,7 @@
 
 
 { .af = AF_INET6, .ip = "::1", .port = 0 }
+  OSMO_SOCKADDR_STR_FMT: '::1:0'
   osmo_sockaddr_str_is_set() = false
   osmo_sockaddr_str_is_nonzero() = false
   osmo_sockaddr_str_to_in_addr() rc < 0 in_addr=00000000
@@ -129,6 +137,7 @@
 
 
 { .af = AF_INET6, .ip = "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", .port = 65535 }
+  OSMO_SOCKADDR_STR_FMT: 'ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff:65535'
   osmo_sockaddr_str_is_set() = true
   osmo_sockaddr_str_is_nonzero() = true
   osmo_sockaddr_str_to_in_addr() rc < 0 in_addr=00000000
@@ -145,6 +154,7 @@
 
 
 { .af = AF_INET6, .ip = "FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF", .port = 65535 }
+  OSMO_SOCKADDR_STR_FMT: 'FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:65535'
   osmo_sockaddr_str_is_set() = true
   osmo_sockaddr_str_is_nonzero() = true
   osmo_sockaddr_str_to_in_addr() rc < 0 in_addr=00000000
@@ -164,6 +174,7 @@
 
 
 { .af = AF_INET6, .ip = "::fffff", .port = 1 }
+  OSMO_SOCKADDR_STR_FMT: '::fffff:1'
   osmo_sockaddr_str_is_set() = true
   osmo_sockaddr_str_is_nonzero() = false
   osmo_sockaddr_str_to_in_addr() rc < 0 in_addr=00000000
@@ -177,6 +188,7 @@
 
 
 { .af = AF_INET6, .ip = "not an ip address", .port = 1 }
+  OSMO_SOCKADDR_STR_FMT: 'not an ip address:1'
   osmo_sockaddr_str_is_set() = true
   osmo_sockaddr_str_is_nonzero() = false
   osmo_sockaddr_str_to_in_addr() rc < 0 in_addr=00000000
@@ -190,6 +202,7 @@
 
 
 { .af = AF_INET6, .ip = "1.2.3.4", .port = 5 }
+  OSMO_SOCKADDR_STR_FMT: '1.2.3.4:5'
   osmo_sockaddr_str_is_set() = true
   osmo_sockaddr_str_is_nonzero() = false
   osmo_sockaddr_str_to_in_addr() rc < 0 in_addr=00000000
@@ -204,6 +217,7 @@
 
 
 { .af = AF_INET, .ip = "1:2:3::4", .port = 5 }
+  OSMO_SOCKADDR_STR_FMT: '1:2:3::4:5'
   osmo_sockaddr_str_is_set() = true
   osmo_sockaddr_str_is_nonzero() = false
   osmo_sockaddr_str_to_in_addr() rc < 0 in_addr=00000000
@@ -218,6 +232,7 @@
 
 
 { .af = AF_UNSPEC, .ip = "1.2.3.4", .port = 5 }
+  OSMO_SOCKADDR_STR_FMT: '1.2.3.4:5'
   osmo_sockaddr_str_is_set() = false
   osmo_sockaddr_str_is_nonzero() = false
   osmo_sockaddr_str_to_in_addr() rc < 0 in_addr=00000000
@@ -232,6 +247,7 @@
 
 
 { .af = AF_INET, .ip = "", .port = 5 }
+  OSMO_SOCKADDR_STR_FMT: ':5'
   osmo_sockaddr_str_is_set() = false
   osmo_sockaddr_str_is_nonzero() = false
   osmo_sockaddr_str_to_in_addr() rc < 0 in_addr=00000000
@@ -245,6 +261,7 @@
 
 
 { .af = AF_INET6, .ip = "", .port = 5 }
+  OSMO_SOCKADDR_STR_FMT: ':5'
   osmo_sockaddr_str_is_set() = false
   osmo_sockaddr_str_is_nonzero() = false
   osmo_sockaddr_str_to_in_addr() rc < 0 in_addr=00000000
@@ -258,6 +275,7 @@
 
 
 { .af = AF_INET, .ip = "1.2.3.4", .port = 0 }
+  OSMO_SOCKADDR_STR_FMT: '1.2.3.4:0'
   osmo_sockaddr_str_is_set() = false
   osmo_sockaddr_str_is_nonzero() = false
   osmo_sockaddr_str_to_in_addr() rc == 0 in_addr=01020304
@@ -276,6 +294,7 @@
 
 
 { .af = AF_INET, .ip = "1.2.3:4:5", .port = 0 }
+  OSMO_SOCKADDR_STR_FMT: '1.2.3:4:5:0'
   osmo_sockaddr_str_is_set() = false
   osmo_sockaddr_str_is_nonzero() = false
   osmo_sockaddr_str_to_in_addr() rc < 0 in_addr=00000000
@@ -290,6 +309,7 @@
 
 
 { .af = AF_INET6, .ip = "::1:10.9.8.7", .port = 1 }
+  OSMO_SOCKADDR_STR_FMT: '::1:10.9.8.7:1'
   osmo_sockaddr_str_is_set() = true
   osmo_sockaddr_str_is_nonzero() = true
   osmo_sockaddr_str_to_in_addr() rc < 0 in_addr=00000000
@@ -309,6 +329,7 @@
 
 
 { .af = AF_INET, .ip = "0.0.0.0", .port = 5 }
+  OSMO_SOCKADDR_STR_FMT: '0.0.0.0:5'
   osmo_sockaddr_str_is_set() = true
   osmo_sockaddr_str_is_nonzero() = false
   osmo_sockaddr_str_to_in_addr() rc == 0 in_addr=00000000
@@ -327,6 +348,7 @@
 
 
 { .af = AF_INET6, .ip = "::", .port = 5 }
+  OSMO_SOCKADDR_STR_FMT: ':::5'
   osmo_sockaddr_str_is_set() = true
   osmo_sockaddr_str_is_nonzero() = false
   osmo_sockaddr_str_to_in_addr() rc < 0 in_addr=00000000

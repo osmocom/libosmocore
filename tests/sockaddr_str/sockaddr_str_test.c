@@ -107,6 +107,8 @@ void sockaddr_str_test_conversions()
 		printf("\n\n");
 		dump_oip(x);
 
+		printf("  OSMO_SOCKADDR_STR_FMT: '" OSMO_SOCKADDR_STR_FMT "'\n",
+		       OSMO_SOCKADDR_STR_FMT_ARGS(x));
 		printf("  osmo_sockaddr_str_is_set() = %s\n", osmo_sockaddr_str_is_set(x) ? "true" : "false");
 		printf("  osmo_sockaddr_str_is_nonzero() = %s\n", osmo_sockaddr_str_is_nonzero(x) ? "true" : "false");
 
