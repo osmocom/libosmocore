@@ -7,6 +7,7 @@
 #include <errno.h>
 
 #include <osmocom/core/msgb.h>
+#include <osmocom/core/defs.h>
 #include <osmocom/gsm/tlv.h>
 #include <osmocom/gsm/mncc.h>
 #include <osmocom/gsm/protocol/gsm_04_08.h>
@@ -14,7 +15,7 @@
 /* decode a 'called/calling/connect party BCD number' as in 10.5.4.7 */
 int gsm48_decode_bcd_number(char *output, int output_len,
 			    const uint8_t *bcd_lv, int h_len)
-	OSMO_DEPRECATED("Use gsm48_decode_bcd_number2() for improved bounds checking");
+	OSMO_DEPRECATED_OUTSIDE("Use gsm48_decode_bcd_number2() for improved bounds checking");
 int gsm48_decode_bcd_number2(char *output, size_t output_len,
 			     const uint8_t *bcd_lv, size_t input_len,
 			     size_t h_len);

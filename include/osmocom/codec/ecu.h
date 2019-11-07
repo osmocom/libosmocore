@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#include <osmocom/core/defs.h>
 #include <osmocom/codec/codec.h>
 
 /* ECU state for GSM-FR */
@@ -12,9 +13,9 @@ struct osmo_ecu_fr_state {
 };
 
 void osmo_ecu_fr_reset(struct osmo_ecu_fr_state *state, const uint8_t *frame)
-	OSMO_DEPRECATED("Use generic ECU abstraction layer instead");
+	OSMO_DEPRECATED_OUTSIDE("Use generic ECU abstraction layer instead");
 int osmo_ecu_fr_conceal(struct osmo_ecu_fr_state *state, uint8_t *frame)
-	OSMO_DEPRECATED("Use generic ECU abstraction layer instead");
+	OSMO_DEPRECATED_OUTSIDE("Use generic ECU abstraction layer instead");
 
 enum osmo_ecu_codec {
 	OSMO_ECU_CODEC_HR,
