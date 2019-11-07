@@ -203,7 +203,10 @@ enum osmo_gsup_message_type {
 
 #define OSMO_GSUP_IS_MSGT_REQUEST(msgt) (((msgt) & 0b00000011) == 0b00)
 #define OSMO_GSUP_IS_MSGT_ERROR(msgt)   (((msgt) & 0b00000011) == 0b01)
+#define OSMO_GSUP_IS_MSGT_RESULT(msgt)  (((msgt) & 0b00000011) == 0b10)
+#define OSMO_GSUP_TO_MSGT_REQUEST(msgt) (((msgt) & 0b11111100))
 #define OSMO_GSUP_TO_MSGT_ERROR(msgt)   (((msgt) & 0b11111100) | 0b01)
+#define OSMO_GSUP_TO_MSGT_RESULT(msgt)  (((msgt) & 0b11111100) | 0b10)
 
 extern const struct value_string osmo_gsup_message_type_names[];
 static inline const char *
