@@ -112,6 +112,8 @@ extern struct llist_head bssgp_bvc_ctxts;
 struct bssgp_bvc_ctx *btsctx_by_raid_cid(const struct gprs_ra_id *raid, uint16_t cid);
 /* Find a BTS context based on BVCI+NSEI tuple */
 struct bssgp_bvc_ctx *btsctx_by_bvci_nsei(uint16_t bvci, uint16_t nsei);
+/* Free a given BTS context */
+void bssgp_bvc_ctx_free(struct bssgp_bvc_ctx *ctx);
 
 #define BVC_F_BLOCKED	0x0001
 

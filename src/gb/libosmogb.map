@@ -80,6 +80,7 @@ gprs_nsvc_state_append;
 gprs_log_filter_fn;
 
 btsctx_alloc;
+bssgp_bvc_ctx_free;
 btsctx_by_bvci_nsei;
 btsctx_by_raid_cid;
 

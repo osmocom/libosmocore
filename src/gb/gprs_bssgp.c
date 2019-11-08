@@ -141,6 +141,15 @@ struct bssgp_bvc_ctx *btsctx_alloc(uint16_t bvci, uint16_t nsei)
 	return ctx;
 }
 
+void bssgp_bvc_ctx_free(struct bssgp_bvc_ctx *ctx)
+{
+	if (!ctx)
+		return;
+	rate_ctr_group_free(ctx->ctrg);
+	llist_del(&ctx->list);
+	talloc_free(ctx);
+}
+
 /* Chapter 10.4.5: Flow Control BVC ACK */
 static int bssgp_tx_fc_bvc_ack(uint16_t nsei, uint8_t tag, uint16_t ns_bvci)
 {
