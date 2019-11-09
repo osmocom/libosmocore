@@ -10,6 +10,7 @@
 #include <osmocom/core/linuxlist.h>
 #include <osmocom/core/timer.h>
 #include <osmocom/core/utils.h>
+#include <osmocom/core/logging.h>
 
 /*! \defgroup fsm Finite State Machine abstraction
  *  @{
