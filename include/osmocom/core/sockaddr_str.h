@@ -31,6 +31,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <arpa/inet.h>
+#include <osmocom/core/defs.h>
 
 struct in_addr;
 struct in6_addr;
@@ -77,7 +78,7 @@ int osmo_sockaddr_str_from_str(struct osmo_sockaddr_str *sockaddr_str, const cha
 int osmo_sockaddr_str_from_in_addr(struct osmo_sockaddr_str *sockaddr_str, const struct in_addr *addr, uint16_t port);
 int osmo_sockaddr_str_from_in6_addr(struct osmo_sockaddr_str *sockaddr_str, const struct in6_addr *addr, uint16_t port);
 int osmo_sockaddr_str_from_32(struct osmo_sockaddr_str *sockaddr_str, uint32_t ip, uint16_t port);
-int osmo_sockaddr_str_from_32n(struct osmo_sockaddr_str *sockaddr_str, uint32_t ip, uint16_t port);
+int osmo_sockaddr_str_from_32h(struct osmo_sockaddr_str *sockaddr_str, uint32_t ip, uint16_t port);
 int osmo_sockaddr_str_from_sockaddr_in(struct osmo_sockaddr_str *sockaddr_str, const struct sockaddr_in *src);
 int osmo_sockaddr_str_from_sockaddr_in6(struct osmo_sockaddr_str *sockaddr_str, const struct sockaddr_in6 *src);
 int osmo_sockaddr_str_from_sockaddr(struct osmo_sockaddr_str *sockaddr_str, const struct sockaddr_storage *src);
@@ -85,9 +86,14 @@ int osmo_sockaddr_str_from_sockaddr(struct osmo_sockaddr_str *sockaddr_str, cons
 int osmo_sockaddr_str_to_in_addr(const struct osmo_sockaddr_str *sockaddr_str, struct in_addr *dst);
 int osmo_sockaddr_str_to_in6_addr(const struct osmo_sockaddr_str *sockaddr_str, struct in6_addr *dst);
 int osmo_sockaddr_str_to_32(const struct osmo_sockaddr_str *sockaddr_str, uint32_t *ip);
-int osmo_sockaddr_str_to_32n(const struct osmo_sockaddr_str *sockaddr_str, uint32_t *ip);
+int osmo_sockaddr_str_to_32h(const struct osmo_sockaddr_str *sockaddr_str, uint32_t *ip);
 int osmo_sockaddr_str_to_sockaddr_in(const struct osmo_sockaddr_str *sockaddr_str, struct sockaddr_in *dst);
 int osmo_sockaddr_str_to_sockaddr_in6(const struct osmo_sockaddr_str *sockaddr_str, struct sockaddr_in6 *dst);
 int osmo_sockaddr_str_to_sockaddr(const struct osmo_sockaddr_str *sockaddr_str, struct sockaddr_storage *dst);
+
+int osmo_sockaddr_str_from_32n(struct osmo_sockaddr_str *sockaddr_str, uint32_t ip, uint16_t port)
+	OSMO_DEPRECATED("osmo_sockaddr_str_from_32n() actually uses *host* byte order. Use osmo_sockaddr_str_from_32h() instead");
+int osmo_sockaddr_str_to_32n(const struct osmo_sockaddr_str *sockaddr_str, uint32_t *ip)
+	OSMO_DEPRECATED("osmo_sockaddr_str_to_32n() actually uses *host* byte order. Use osmo_sockaddr_str_to_32h() instead");
 
 /*! @} */

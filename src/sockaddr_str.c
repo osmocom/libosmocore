@@ -277,11 +277,18 @@ int osmo_sockaddr_str_from_32(struct osmo_sockaddr_str *sockaddr_str, uint32_t i
  * \param[in] port  Port number.
  * \return 0 on success, negative on error.
  */
-int osmo_sockaddr_str_from_32n(struct osmo_sockaddr_str *sockaddr_str, uint32_t ip, uint16_t port)
+int osmo_sockaddr_str_from_32h(struct osmo_sockaddr_str *sockaddr_str, uint32_t ip, uint16_t port)
 {
 	if (!sockaddr_str)
 		return -ENOSPC;
 	return osmo_sockaddr_str_from_32(sockaddr_str, osmo_ntohl(ip), port);
+}
+
+/*! DEPRECATED: the name suggests a conversion from network byte order, but actually converts from host byte order. Use
+ * osmo_sockaddr_str_from_32 for network byte order and osmo_sockaddr_str_from_32h for host byte order. */
+int osmo_sockaddr_str_from_32n(struct osmo_sockaddr_str *sockaddr_str, uint32_t ip, uint16_t port)
+{
+	return osmo_sockaddr_str_from_32h(sockaddr_str, ip, port);
 }
 
 /*! Convert IPv4 address and port to osmo_sockaddr_str.
@@ -403,7 +410,7 @@ int osmo_sockaddr_str_to_32(const struct osmo_sockaddr_str *sockaddr_str, uint32
  * \param[out] dst  IPv4 address data in 32bit host-byte-order format to write to.
  * \return 0 on success, negative on error (e.g. invalid IPv4 address string).
  */
-int osmo_sockaddr_str_to_32n(const struct osmo_sockaddr_str *sockaddr_str, uint32_t *ip)
+int osmo_sockaddr_str_to_32h(const struct osmo_sockaddr_str *sockaddr_str, uint32_t *ip)
 {
 	int rc;
 	uint32_t ip_h;
@@ -416,6 +423,13 @@ int osmo_sockaddr_str_to_32n(const struct osmo_sockaddr_str *sockaddr_str, uint3
 		return rc;
 	*ip = osmo_htonl(ip_h);
 	return 0;
+}
+
+/*! DEPRECATED: the name suggests a conversion to network byte order, but actually converts to host byte order. Use
+ * osmo_sockaddr_str_to_32() for network byte order and osmo_sockaddr_str_to_32h() for host byte order. */
+int osmo_sockaddr_str_to_32n(const struct osmo_sockaddr_str *sockaddr_str, uint32_t *ip)
+{
+	return osmo_sockaddr_str_to_32h(sockaddr_str, ip);
 }
 
 /*! Convert osmo_sockaddr_str address string and port to IPv4 address and port data.
