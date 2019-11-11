@@ -7,9 +7,9 @@
   osmo_sockaddr_str_to_in_addr() rc == 0 in_addr=01020304
    -> osmo_sockaddr_str_from_in_addr() rc == 0 { .af = AF_INET, .ip = "1.2.3.4", .port = 5 }
   osmo_sockaddr_str_to_in6_addr() rc < 0 in6_addr=00000000000000000000000000000000
-  osmo_sockaddr_str_to_32() rc == 0 uint32_t=0x4030201
+  osmo_sockaddr_str_to_32() rc == 0 uint8_t[4]=[ 01 02 03 04 ]
    -> osmo_sockaddr_str_from_32() rc == 0 { .af = AF_INET, .ip = "1.2.3.4", .port = 5 }
-  osmo_sockaddr_str_to_32n() rc == 0 uint32_t=0x1020304
+  osmo_sockaddr_str_to_32n() rc == 0 uint8_t[4]=[ 04 03 02 01 ]
    -> osmo_sockaddr_str_from_32n() rc == 0 { .af = AF_INET, .ip = "1.2.3.4", .port = 5 }
   osmo_sockaddr_str_to_sockaddr_in() rc == 0 sockaddr_in=02000005010203040000000000000000
    -> osmo_sockaddr_str_from_sockaddr_in() rc == 0 { .af = AF_INET, .ip = "1.2.3.4", .port = 5 }
@@ -26,9 +26,9 @@
   osmo_sockaddr_str_to_in_addr() rc == 0 in_addr=00000000
    -> osmo_sockaddr_str_from_in_addr() rc == 0 { .af = AF_INET, .ip = "0.0.0.0", .port = 0 }
   osmo_sockaddr_str_to_in6_addr() rc < 0 in6_addr=00000000000000000000000000000000
-  osmo_sockaddr_str_to_32() rc == 0 uint32_t=0x0
+  osmo_sockaddr_str_to_32() rc == 0 uint8_t[4]=[ 00 00 00 00 ]
    -> osmo_sockaddr_str_from_32() rc == 0 { .af = AF_INET, .ip = "0.0.0.0", .port = 0 }
-  osmo_sockaddr_str_to_32n() rc == 0 uint32_t=0x0
+  osmo_sockaddr_str_to_32n() rc == 0 uint8_t[4]=[ 00 00 00 00 ]
    -> osmo_sockaddr_str_from_32n() rc == 0 { .af = AF_INET, .ip = "0.0.0.0", .port = 0 }
   osmo_sockaddr_str_to_sockaddr_in() rc == 0 sockaddr_in=02000000000000000000000000000000
    -> osmo_sockaddr_str_from_sockaddr_in() rc == 0 { .af = AF_INET, .ip = "0.0.0.0", .port = 0 }
@@ -45,9 +45,9 @@
   osmo_sockaddr_str_to_in_addr() rc == 0 in_addr=ffffffff
    -> osmo_sockaddr_str_from_in_addr() rc == 0 { .af = AF_INET, .ip = "255.255.255.255", .port = 65535 }
   osmo_sockaddr_str_to_in6_addr() rc < 0 in6_addr=00000000000000000000000000000000
-  osmo_sockaddr_str_to_32() rc == 0 uint32_t=0xffffffff
+  osmo_sockaddr_str_to_32() rc == 0 uint8_t[4]=[ ff ff ff ff ]
    -> osmo_sockaddr_str_from_32() rc == 0 { .af = AF_INET, .ip = "255.255.255.255", .port = 65535 }
-  osmo_sockaddr_str_to_32n() rc == 0 uint32_t=0xffffffff
+  osmo_sockaddr_str_to_32n() rc == 0 uint8_t[4]=[ ff ff ff ff ]
    -> osmo_sockaddr_str_from_32n() rc == 0 { .af = AF_INET, .ip = "255.255.255.255", .port = 65535 }
   osmo_sockaddr_str_to_sockaddr_in() rc == 0 sockaddr_in=0200ffffffffffff0000000000000000
    -> osmo_sockaddr_str_from_sockaddr_in() rc == 0 { .af = AF_INET, .ip = "255.255.255.255", .port = 65535 }
@@ -63,8 +63,8 @@
   osmo_sockaddr_str_is_nonzero() = false
   osmo_sockaddr_str_to_in_addr() rc < 0 in_addr=00000000
   osmo_sockaddr_str_to_in6_addr() rc < 0 in6_addr=00000000000000000000000000000000
-  osmo_sockaddr_str_to_32() rc < 0 uint32_t=0x0
-  osmo_sockaddr_str_to_32n() rc < 0 uint32_t=0x0
+  osmo_sockaddr_str_to_32() rc < 0 uint8_t[4]=[ 00 00 00 00 ]
+  osmo_sockaddr_str_to_32n() rc < 0 uint8_t[4]=[ 00 00 00 00 ]
   osmo_sockaddr_str_to_sockaddr_in() rc < 0 sockaddr_in=02000001000000000000000000000000
   osmo_sockaddr_str_to_sockaddr_in6() rc < 0 sockaddr_in6=00000000000000000000000000000000000000000000000000000000
   osmo_sockaddr_str_to_sockaddr() rc < 0 sockaddr_storage=0200000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -77,8 +77,8 @@
   osmo_sockaddr_str_is_nonzero() = false
   osmo_sockaddr_str_to_in_addr() rc < 0 in_addr=00000000
   osmo_sockaddr_str_to_in6_addr() rc < 0 in6_addr=00000000000000000000000000000000
-  osmo_sockaddr_str_to_32() rc < 0 uint32_t=0x0
-  osmo_sockaddr_str_to_32n() rc < 0 uint32_t=0x0
+  osmo_sockaddr_str_to_32() rc < 0 uint8_t[4]=[ 00 00 00 00 ]
+  osmo_sockaddr_str_to_32n() rc < 0 uint8_t[4]=[ 00 00 00 00 ]
   osmo_sockaddr_str_to_sockaddr_in() rc < 0 sockaddr_in=02000001000000000000000000000000
   osmo_sockaddr_str_to_sockaddr_in6() rc < 0 sockaddr_in6=00000000000000000000000000000000000000000000000000000000
   osmo_sockaddr_str_to_sockaddr() rc < 0 sockaddr_storage=0200000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -92,8 +92,8 @@
   osmo_sockaddr_str_to_in_addr() rc < 0 in_addr=00000000
   osmo_sockaddr_str_to_in6_addr() rc == 0 in6_addr=00010002000300000000000000000004
    -> osmo_sockaddr_str_from_in6_addr() rc == 0 { .af = AF_INET6, .ip = "1:2:3::4", .port = 5 }
-  osmo_sockaddr_str_to_32() rc < 0 uint32_t=0x0
-  osmo_sockaddr_str_to_32n() rc < 0 uint32_t=0x0
+  osmo_sockaddr_str_to_32() rc < 0 uint8_t[4]=[ 00 00 00 00 ]
+  osmo_sockaddr_str_to_32n() rc < 0 uint8_t[4]=[ 00 00 00 00 ]
   osmo_sockaddr_str_to_sockaddr_in() rc < 0 sockaddr_in=00000000000000000000000000000000
   osmo_sockaddr_str_to_sockaddr_in6() rc == 0 sockaddr_in6=0a000005000000000001000200030000000000000000000400000000
    -> osmo_sockaddr_str_from_sockaddr_in6() rc == 0 { .af = AF_INET6, .ip = "1:2:3::4", .port = 5 }
@@ -109,8 +109,8 @@
   osmo_sockaddr_str_to_in_addr() rc < 0 in_addr=00000000
   osmo_sockaddr_str_to_in6_addr() rc == 0 in6_addr=00000000000000000000000000000000
    -> osmo_sockaddr_str_from_in6_addr() rc == 0 { .af = AF_INET6, .ip = "::", .port = 0 }
-  osmo_sockaddr_str_to_32() rc < 0 uint32_t=0x0
-  osmo_sockaddr_str_to_32n() rc < 0 uint32_t=0x0
+  osmo_sockaddr_str_to_32() rc < 0 uint8_t[4]=[ 00 00 00 00 ]
+  osmo_sockaddr_str_to_32n() rc < 0 uint8_t[4]=[ 00 00 00 00 ]
   osmo_sockaddr_str_to_sockaddr_in() rc < 0 sockaddr_in=00000000000000000000000000000000
   osmo_sockaddr_str_to_sockaddr_in6() rc == 0 sockaddr_in6=0a000000000000000000000000000000000000000000000000000000
    -> osmo_sockaddr_str_from_sockaddr_in6() rc == 0 { .af = AF_INET6, .ip = "::", .port = 0 }
@@ -126,8 +126,8 @@
   osmo_sockaddr_str_to_in_addr() rc < 0 in_addr=00000000
   osmo_sockaddr_str_to_in6_addr() rc == 0 in6_addr=00000000000000000000000000000001
    -> osmo_sockaddr_str_from_in6_addr() rc == 0 { .af = AF_INET6, .ip = "::1", .port = 0 }
-  osmo_sockaddr_str_to_32() rc < 0 uint32_t=0x0
-  osmo_sockaddr_str_to_32n() rc < 0 uint32_t=0x0
+  osmo_sockaddr_str_to_32() rc < 0 uint8_t[4]=[ 00 00 00 00 ]
+  osmo_sockaddr_str_to_32n() rc < 0 uint8_t[4]=[ 00 00 00 00 ]
   osmo_sockaddr_str_to_sockaddr_in() rc < 0 sockaddr_in=00000000000000000000000000000000
   osmo_sockaddr_str_to_sockaddr_in6() rc == 0 sockaddr_in6=0a000000000000000000000000000000000000000000000100000000
    -> osmo_sockaddr_str_from_sockaddr_in6() rc == 0 { .af = AF_INET6, .ip = "::1", .port = 0 }
@@ -143,8 +143,8 @@
   osmo_sockaddr_str_to_in_addr() rc < 0 in_addr=00000000
   osmo_sockaddr_str_to_in6_addr() rc == 0 in6_addr=ffffffffffffffffffffffffffffffff
    -> osmo_sockaddr_str_from_in6_addr() rc == 0 { .af = AF_INET6, .ip = "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", .port = 65535 }
-  osmo_sockaddr_str_to_32() rc < 0 uint32_t=0x0
-  osmo_sockaddr_str_to_32n() rc < 0 uint32_t=0x0
+  osmo_sockaddr_str_to_32() rc < 0 uint8_t[4]=[ 00 00 00 00 ]
+  osmo_sockaddr_str_to_32n() rc < 0 uint8_t[4]=[ 00 00 00 00 ]
   osmo_sockaddr_str_to_sockaddr_in() rc < 0 sockaddr_in=00000000000000000000000000000000
   osmo_sockaddr_str_to_sockaddr_in6() rc == 0 sockaddr_in6=0a00ffff00000000ffffffffffffffffffffffffffffffff00000000
    -> osmo_sockaddr_str_from_sockaddr_in6() rc == 0 { .af = AF_INET6, .ip = "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", .port = 65535 }
@@ -161,8 +161,8 @@
   osmo_sockaddr_str_to_in6_addr() rc == 0 in6_addr=ffffffffffffffffffffffffffffffff
    -> osmo_sockaddr_str_from_in6_addr() rc == 0 { .af = AF_INET6, .ip = "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", .port = 65535 }
       DIFFERS!
-  osmo_sockaddr_str_to_32() rc < 0 uint32_t=0x0
-  osmo_sockaddr_str_to_32n() rc < 0 uint32_t=0x0
+  osmo_sockaddr_str_to_32() rc < 0 uint8_t[4]=[ 00 00 00 00 ]
+  osmo_sockaddr_str_to_32n() rc < 0 uint8_t[4]=[ 00 00 00 00 ]
   osmo_sockaddr_str_to_sockaddr_in() rc < 0 sockaddr_in=00000000000000000000000000000000
   osmo_sockaddr_str_to_sockaddr_in6() rc == 0 sockaddr_in6=0a00ffff00000000ffffffffffffffffffffffffffffffff00000000
    -> osmo_sockaddr_str_from_sockaddr_in6() rc == 0 { .af = AF_INET6, .ip = "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", .port = 65535 }
@@ -179,8 +179,8 @@
   osmo_sockaddr_str_is_nonzero() = false
   osmo_sockaddr_str_to_in_addr() rc < 0 in_addr=00000000
   osmo_sockaddr_str_to_in6_addr() rc < 0 in6_addr=00000000000000000000000000000000
-  osmo_sockaddr_str_to_32() rc < 0 uint32_t=0x0
-  osmo_sockaddr_str_to_32n() rc < 0 uint32_t=0x0
+  osmo_sockaddr_str_to_32() rc < 0 uint8_t[4]=[ 00 00 00 00 ]
+  osmo_sockaddr_str_to_32n() rc < 0 uint8_t[4]=[ 00 00 00 00 ]
   osmo_sockaddr_str_to_sockaddr_in() rc < 0 sockaddr_in=00000000000000000000000000000000
   osmo_sockaddr_str_to_sockaddr_in6() rc < 0 sockaddr_in6=0a000001000000000000000000000000000000000000000000000000
   osmo_sockaddr_str_to_sockaddr() rc < 0 sockaddr_storage=0a00000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -193,8 +193,8 @@
   osmo_sockaddr_str_is_nonzero() = false
   osmo_sockaddr_str_to_in_addr() rc < 0 in_addr=00000000
   osmo_sockaddr_str_to_in6_addr() rc < 0 in6_addr=00000000000000000000000000000000
-  osmo_sockaddr_str_to_32() rc < 0 uint32_t=0x0
-  osmo_sockaddr_str_to_32n() rc < 0 uint32_t=0x0
+  osmo_sockaddr_str_to_32() rc < 0 uint8_t[4]=[ 00 00 00 00 ]
+  osmo_sockaddr_str_to_32n() rc < 0 uint8_t[4]=[ 00 00 00 00 ]
   osmo_sockaddr_str_to_sockaddr_in() rc < 0 sockaddr_in=00000000000000000000000000000000
   osmo_sockaddr_str_to_sockaddr_in6() rc < 0 sockaddr_in6=0a000001000000000000000000000000000000000000000000000000
   osmo_sockaddr_str_to_sockaddr() rc < 0 sockaddr_storage=0a00000100000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -207,8 +207,8 @@
   osmo_sockaddr_str_is_nonzero() = false
   osmo_sockaddr_str_to_in_addr() rc < 0 in_addr=00000000
   osmo_sockaddr_str_to_in6_addr() rc < 0 in6_addr=00000000000000000000000000000000
-  osmo_sockaddr_str_to_32() rc < 0 uint32_t=0x0
-  osmo_sockaddr_str_to_32n() rc < 0 uint32_t=0x0
+  osmo_sockaddr_str_to_32() rc < 0 uint8_t[4]=[ 00 00 00 00 ]
+  osmo_sockaddr_str_to_32n() rc < 0 uint8_t[4]=[ 00 00 00 00 ]
   osmo_sockaddr_str_to_sockaddr_in() rc < 0 sockaddr_in=00000000000000000000000000000000
   osmo_sockaddr_str_to_sockaddr_in6() rc < 0 sockaddr_in6=0a000005000000000000000000000000000000000000000000000000
   osmo_sockaddr_str_to_sockaddr() rc < 0 sockaddr_storage=0a00000500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -222,8 +222,8 @@
   osmo_sockaddr_str_is_nonzero() = false
   osmo_sockaddr_str_to_in_addr() rc < 0 in_addr=00000000
   osmo_sockaddr_str_to_in6_addr() rc < 0 in6_addr=00000000000000000000000000000000
-  osmo_sockaddr_str_to_32() rc < 0 uint32_t=0x0
-  osmo_sockaddr_str_to_32n() rc < 0 uint32_t=0x0
+  osmo_sockaddr_str_to_32() rc < 0 uint8_t[4]=[ 00 00 00 00 ]
+  osmo_sockaddr_str_to_32n() rc < 0 uint8_t[4]=[ 00 00 00 00 ]
   osmo_sockaddr_str_to_sockaddr_in() rc < 0 sockaddr_in=02000005000000000000000000000000
   osmo_sockaddr_str_to_sockaddr_in6() rc < 0 sockaddr_in6=00000000000000000000000000000000000000000000000000000000
   osmo_sockaddr_str_to_sockaddr() rc < 0 sockaddr_storage=0200000500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -237,8 +237,8 @@
   osmo_sockaddr_str_is_nonzero() = false
   osmo_sockaddr_str_to_in_addr() rc < 0 in_addr=00000000
   osmo_sockaddr_str_to_in6_addr() rc < 0 in6_addr=00000000000000000000000000000000
-  osmo_sockaddr_str_to_32() rc < 0 uint32_t=0x0
-  osmo_sockaddr_str_to_32n() rc < 0 uint32_t=0x0
+  osmo_sockaddr_str_to_32() rc < 0 uint8_t[4]=[ 00 00 00 00 ]
+  osmo_sockaddr_str_to_32n() rc < 0 uint8_t[4]=[ 00 00 00 00 ]
   osmo_sockaddr_str_to_sockaddr_in() rc < 0 sockaddr_in=00000000000000000000000000000000
   osmo_sockaddr_str_to_sockaddr_in6() rc < 0 sockaddr_in6=00000000000000000000000000000000000000000000000000000000
   osmo_sockaddr_str_to_sockaddr() rc < 0 sockaddr_storage=0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -252,8 +252,8 @@
   osmo_sockaddr_str_is_nonzero() = false
   osmo_sockaddr_str_to_in_addr() rc < 0 in_addr=00000000
   osmo_sockaddr_str_to_in6_addr() rc < 0 in6_addr=00000000000000000000000000000000
-  osmo_sockaddr_str_to_32() rc < 0 uint32_t=0x0
-  osmo_sockaddr_str_to_32n() rc < 0 uint32_t=0x0
+  osmo_sockaddr_str_to_32() rc < 0 uint8_t[4]=[ 00 00 00 00 ]
+  osmo_sockaddr_str_to_32n() rc < 0 uint8_t[4]=[ 00 00 00 00 ]
   osmo_sockaddr_str_to_sockaddr_in() rc < 0 sockaddr_in=02000005000000000000000000000000
   osmo_sockaddr_str_to_sockaddr_in6() rc < 0 sockaddr_in6=00000000000000000000000000000000000000000000000000000000
   osmo_sockaddr_str_to_sockaddr() rc < 0 sockaddr_storage=0200000500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -266,8 +266,8 @@
   osmo_sockaddr_str_is_nonzero() = false
   osmo_sockaddr_str_to_in_addr() rc < 0 in_addr=00000000
   osmo_sockaddr_str_to_in6_addr() rc < 0 in6_addr=00000000000000000000000000000000
-  osmo_sockaddr_str_to_32() rc < 0 uint32_t=0x0
-  osmo_sockaddr_str_to_32n() rc < 0 uint32_t=0x0
+  osmo_sockaddr_str_to_32() rc < 0 uint8_t[4]=[ 00 00 00 00 ]
+  osmo_sockaddr_str_to_32n() rc < 0 uint8_t[4]=[ 00 00 00 00 ]
   osmo_sockaddr_str_to_sockaddr_in() rc < 0 sockaddr_in=00000000000000000000000000000000
   osmo_sockaddr_str_to_sockaddr_in6() rc < 0 sockaddr_in6=0a000005000000000000000000000000000000000000000000000000
   osmo_sockaddr_str_to_sockaddr() rc < 0 sockaddr_storage=0a00000500000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -281,9 +281,9 @@
   osmo_sockaddr_str_to_in_addr() rc == 0 in_addr=01020304
    -> osmo_sockaddr_str_from_in_addr() rc == 0 { .af = AF_INET, .ip = "1.2.3.4", .port = 0 }
   osmo_sockaddr_str_to_in6_addr() rc < 0 in6_addr=00000000000000000000000000000000
-  osmo_sockaddr_str_to_32() rc == 0 uint32_t=0x4030201
+  osmo_sockaddr_str_to_32() rc == 0 uint8_t[4]=[ 01 02 03 04 ]
    -> osmo_sockaddr_str_from_32() rc == 0 { .af = AF_INET, .ip = "1.2.3.4", .port = 0 }
-  osmo_sockaddr_str_to_32n() rc == 0 uint32_t=0x1020304
+  osmo_sockaddr_str_to_32n() rc == 0 uint8_t[4]=[ 04 03 02 01 ]
    -> osmo_sockaddr_str_from_32n() rc == 0 { .af = AF_INET, .ip = "1.2.3.4", .port = 0 }
   osmo_sockaddr_str_to_sockaddr_in() rc == 0 sockaddr_in=02000000010203040000000000000000
    -> osmo_sockaddr_str_from_sockaddr_in() rc == 0 { .af = AF_INET, .ip = "1.2.3.4", .port = 0 }
@@ -299,8 +299,8 @@
   osmo_sockaddr_str_is_nonzero() = false
   osmo_sockaddr_str_to_in_addr() rc < 0 in_addr=00000000
   osmo_sockaddr_str_to_in6_addr() rc < 0 in6_addr=00000000000000000000000000000000
-  osmo_sockaddr_str_to_32() rc < 0 uint32_t=0x0
-  osmo_sockaddr_str_to_32n() rc < 0 uint32_t=0x0
+  osmo_sockaddr_str_to_32() rc < 0 uint8_t[4]=[ 00 00 00 00 ]
+  osmo_sockaddr_str_to_32n() rc < 0 uint8_t[4]=[ 00 00 00 00 ]
   osmo_sockaddr_str_to_sockaddr_in() rc < 0 sockaddr_in=02000000000000000000000000000000
   osmo_sockaddr_str_to_sockaddr_in6() rc < 0 sockaddr_in6=00000000000000000000000000000000000000000000000000000000
   osmo_sockaddr_str_to_sockaddr() rc < 0 sockaddr_storage=0200000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
@@ -316,8 +316,8 @@
   osmo_sockaddr_str_to_in6_addr() rc == 0 in6_addr=0000000000000000000000010a090807
    -> osmo_sockaddr_str_from_in6_addr() rc == 0 { .af = AF_INET6, .ip = "::1:a09:807", .port = 1 }
       DIFFERS!
-  osmo_sockaddr_str_to_32() rc < 0 uint32_t=0x0
-  osmo_sockaddr_str_to_32n() rc < 0 uint32_t=0x0
+  osmo_sockaddr_str_to_32() rc < 0 uint8_t[4]=[ 00 00 00 00 ]
+  osmo_sockaddr_str_to_32n() rc < 0 uint8_t[4]=[ 00 00 00 00 ]
   osmo_sockaddr_str_to_sockaddr_in() rc < 0 sockaddr_in=00000000000000000000000000000000
   osmo_sockaddr_str_to_sockaddr_in6() rc == 0 sockaddr_in6=0a000001000000000000000000000000000000010a09080700000000
    -> osmo_sockaddr_str_from_sockaddr_in6() rc == 0 { .af = AF_INET6, .ip = "::1:a09:807", .port = 1 }
@@ -335,9 +335,9 @@
   osmo_sockaddr_str_to_in_addr() rc == 0 in_addr=00000000
    -> osmo_sockaddr_str_from_in_addr() rc == 0 { .af = AF_INET, .ip = "0.0.0.0", .port = 5 }
   osmo_sockaddr_str_to_in6_addr() rc < 0 in6_addr=00000000000000000000000000000000
-  osmo_sockaddr_str_to_32() rc == 0 uint32_t=0x0
+  osmo_sockaddr_str_to_32() rc == 0 uint8_t[4]=[ 00 00 00 00 ]
    -> osmo_sockaddr_str_from_32() rc == 0 { .af = AF_INET, .ip = "0.0.0.0", .port = 5 }
-  osmo_sockaddr_str_to_32n() rc == 0 uint32_t=0x0
+  osmo_sockaddr_str_to_32n() rc == 0 uint8_t[4]=[ 00 00 00 00 ]
    -> osmo_sockaddr_str_from_32n() rc == 0 { .af = AF_INET, .ip = "0.0.0.0", .port = 5 }
   osmo_sockaddr_str_to_sockaddr_in() rc == 0 sockaddr_in=02000005000000000000000000000000
    -> osmo_sockaddr_str_from_sockaddr_in() rc == 0 { .af = AF_INET, .ip = "0.0.0.0", .port = 5 }
@@ -354,8 +354,8 @@
   osmo_sockaddr_str_to_in_addr() rc < 0 in_addr=00000000
   osmo_sockaddr_str_to_in6_addr() rc == 0 in6_addr=00000000000000000000000000000000
    -> osmo_sockaddr_str_from_in6_addr() rc == 0 { .af = AF_INET6, .ip = "::", .port = 5 }
-  osmo_sockaddr_str_to_32() rc < 0 uint32_t=0x0
-  osmo_sockaddr_str_to_32n() rc < 0 uint32_t=0x0
+  osmo_sockaddr_str_to_32() rc < 0 uint8_t[4]=[ 00 00 00 00 ]
+  osmo_sockaddr_str_to_32n() rc < 0 uint8_t[4]=[ 00 00 00 00 ]
   osmo_sockaddr_str_to_sockaddr_in() rc < 0 sockaddr_in=00000000000000000000000000000000
   osmo_sockaddr_str_to_sockaddr_in6() rc == 0 sockaddr_in6=0a000005000000000000000000000000000000000000000000000000
    -> osmo_sockaddr_str_from_sockaddr_in6() rc == 0 { .af = AF_INET6, .ip = "::", .port = 5 }
@@ -372,8 +372,8 @@
   osmo_sockaddr_str_to_in6_addr() rc == 0 in6_addr=00000000000000000000000000000000
    -> osmo_sockaddr_str_from_in6_addr() rc == 0 { .af = AF_INET6, .ip = "::", .port = 5 }
       DIFFERS!
-  osmo_sockaddr_str_to_32() rc < 0 uint32_t=0x0
-  osmo_sockaddr_str_to_32n() rc < 0 uint32_t=0x0
+  osmo_sockaddr_str_to_32() rc < 0 uint8_t[4]=[ 00 00 00 00 ]
+  osmo_sockaddr_str_to_32n() rc < 0 uint8_t[4]=[ 00 00 00 00 ]
   osmo_sockaddr_str_to_sockaddr_in() rc < 0 sockaddr_in=00000000000000000000000000000000
   osmo_sockaddr_str_to_sockaddr_in6() rc == 0 sockaddr_in6=0a000005000000000000000000000000000000000000000000000000
    -> osmo_sockaddr_str_from_sockaddr_in6() rc == 0 { .af = AF_INET6, .ip = "::", .port = 5 }
