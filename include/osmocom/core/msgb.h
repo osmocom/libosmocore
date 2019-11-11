@@ -239,7 +239,11 @@ static inline unsigned char *msgb_put(struct msgb *msgb, unsigned int len)
 {
 	unsigned char *tmp = msgb->tail;
 	if (msgb_tailroom(msgb) < (int) len)
-		MSGB_ABORT(msgb, "Not enough tailroom msgb_put (%u < %u)\n",
+		MSGB_ABORT(msgb, "Not enough tailroom msgb_put"
+			   " (allocated %u, head at %u, len %u, tailroom %u < want tailroom %u)\n",
+			   msgb->data_len - sizeof(struct msgb),
+			   msgb->head - msgb->_data,
+			   msgb->len,
 			   msgb_tailroom(msgb), len);
 	msgb->tail += len;
 	msgb->len += len;
@@ -335,8 +339,13 @@ static inline uint32_t msgb_get_u32(struct msgb *msgb)
 static inline unsigned char *msgb_push(struct msgb *msgb, unsigned int len)
 {
 	if (msgb_headroom(msgb) < (int) len)
-		MSGB_ABORT(msgb, "Not enough headroom msgb_push (%u < %u)\n",
-			   msgb_headroom(msgb), len);
+		MSGB_ABORT(msgb, "Not enough headroom msgb_push"
+			   " (allocated %u, head at %u < want headroom %u, len %u, tailroom %u)\n",
+			   msgb->data_len - sizeof(struct msgb),
+			   msgb->head - msgb->_data,
+			   len,
+			   msgb->len,
+			   msgb_tailroom(msgb));
 	msgb->data -= len;
 	msgb->len += len;
 	return msgb->data;
