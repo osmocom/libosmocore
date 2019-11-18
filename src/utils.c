@@ -509,6 +509,8 @@ uint8_t *osmo_encode_big_endian(uint64_t value, size_t data_len)
  * Copy at most \a siz bytes from \a src to \a dst, ensuring that the result is
  * NUL terminated. The NUL character is included in \a siz, i.e. passing the
  * actual sizeof(*dst) is correct.
+ *
+ * Note, a similar function that also limits the input buffer size is osmo_print_n().
  */
 size_t osmo_strlcpy(char *dst, const char *src, size_t siz)
 {

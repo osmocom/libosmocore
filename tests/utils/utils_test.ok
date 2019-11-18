@@ -377,3 +377,29 @@ name_c_impl_test
       OSMO_NAME_C_IMPL(10, NULL) -> NULL  allocated 0
     OSMO_NAME_C_IMPL(0, "ERROR") -> "ERROR"  allocated 1  6 bytes, name 'foo_name_c_zero'
        OSMO_NAME_C_IMPL(0, NULL) -> NULL  allocated 0
+
+osmo_print_n_test()
+"foo=bar" token_len=3 buf_size=100 -> token="foo" rc=3
+"foo" token_len=10 buf_size=100 -> token="foo" rc=3
+"foo" token_len=3 buf_size=100 -> token="foo" rc=3
+NULL token_len=10 buf_size=100 -> token="" rc=0
+"" token_len=10 buf_size=100 -> token="" rc=0
+"foo=bar" token_len=0 buf_size=100 -> token="" rc=0
+"foo=bar" token_len=3 buf_size=2 -> token="f" rc=3
+"foo" token_len=10 buf_size=2 -> token="f" rc=3
+"foo" token_len=3 buf_size=2 -> token="f" rc=3
+NULL token_len=10 buf_size=2 -> token="" rc=0
+"" token_len=10 buf_size=2 -> token="" rc=0
+"foo=bar" token_len=0 buf_size=2 -> token="" rc=0
+"foo=bar" token_len=3 buf_size=1 -> token="" rc=3
+"foo" token_len=10 buf_size=1 -> token="" rc=3
+"foo" token_len=3 buf_size=1 -> token="" rc=3
+NULL token_len=10 buf_size=1 -> token="" rc=0
+"" token_len=10 buf_size=1 -> token="" rc=0
+"foo=bar" token_len=0 buf_size=1 -> token="" rc=0
+"foo=bar" token_len=3 buf_size=0 -> token="unchanged" rc=3
+"foo" token_len=10 buf_size=0 -> token="unchanged" rc=3
+"foo" token_len=3 buf_size=0 -> token="unchanged" rc=3
+NULL token_len=10 buf_size=0 -> token="unchanged" rc=0
+"" token_len=10 buf_size=0 -> token="unchanged" rc=0
+"foo=bar" token_len=0 buf_size=0 -> token="unchanged" rc=0

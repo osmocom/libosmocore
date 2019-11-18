@@ -1138,6 +1138,59 @@ static void name_c_impl_test()
 	talloc_free(ctx);
 }
 
+static void osmo_print_n_test(void)
+{
+	struct token_test {
+		const char *src;
+		size_t token_len;
+		size_t buf_size;
+		const char *expect_token;
+		int expect_rc;
+	};
+	struct token_test tests[] = {
+		{ "foo=bar", 3, 100, "foo", 3 },
+		{ "foo", 10, 100, "foo", 3 },
+		{ "foo", 3, 100, "foo", 3 },
+		{ NULL, 10, 100, "", 0 },
+		{ "", 10, 100, "", 0 },
+		{ "foo=bar", 0, 100, "", 0 },
+
+		{ "foo=bar", 3, 2, "f", 3 },
+		{ "foo", 10, 2, "f", 3 },
+		{ "foo", 3, 2, "f", 3 },
+		{ NULL, 10, 2, "", 0 },
+		{ "", 10, 2, "", 0 },
+		{ "foo=bar", 0, 2, "", 0 },
+
+		{ "foo=bar", 3, 1, "", 3 },
+		{ "foo", 10, 1, "", 3 },
+		{ "foo", 3, 1, "", 3 },
+		{ NULL, 10, 1, "", 0 },
+		{ "", 10, 1, "", 0 },
+		{ "foo=bar", 0, 1, "", 0 },
+
+		{ "foo=bar", 3, 0, "unchanged", 3 },
+		{ "foo", 10, 0, "unchanged", 3 },
+		{ "foo", 3, 0, "unchanged", 3 },
+		{ NULL, 10, 0, "unchanged", 0 },
+		{ "", 10, 0, "unchanged", 0 },
+		{ "foo=bar", 0, 0, "unchanged", 0 },
+	};
+	struct token_test *t;
+	printf("\n%s()\n", __func__);
+	for (t = tests; t - tests < ARRAY_SIZE(tests); t++) {
+		char buf[100] = "unchanged";
+		int rc = osmo_print_n(buf, t->buf_size, t->src, t->token_len);
+		printf("%s token_len=%zu buf_size=%zu", osmo_quote_str(t->src, -1), t->token_len, t->buf_size);
+		printf(" -> token=%s rc=%d", osmo_quote_str(buf, -1), rc);
+		if (strcmp(buf, t->expect_token))
+			printf(" ERROR: expected token %s", osmo_quote_str(t->expect_token, -1));
+		if (rc != t->expect_rc)
+			printf(" ERROR: expected rc %d", t->expect_rc);
+		printf("\n");
+	}
+}
+
 int main(int argc, char **argv)
 {
 	static const struct log_info log_info = {};
@@ -1159,5 +1212,6 @@ int main(int argc, char **argv)
 	strbuf_test_nolen();
 	startswith_test();
 	name_c_impl_test();
+	osmo_print_n_test();
 	return 0;
 }
