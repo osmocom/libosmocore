@@ -403,3 +403,11 @@ NULL token_len=10 buf_size=1 -> token="" rc=0
 NULL token_len=10 buf_size=0 -> token="unchanged" rc=0
 "" token_len=10 buf_size=0 -> token="unchanged" rc=0
 "foo=bar" token_len=0 buf_size=0 -> token="unchanged" rc=0
+
+osmo_strnchr_test()
+osmo_strnchr("foo=bar", 8, '=') -> 3
+osmo_strnchr("foo=bar", 4, '=') -> 3
+osmo_strnchr("foo=bar", 3, '=') -> -1
+osmo_strnchr("foo=bar", 0, '=') -> -1
+osmo_strnchr("foo", 9, '=') -> -1
+osmo_strnchr("foo", 9, '\0') -> 3

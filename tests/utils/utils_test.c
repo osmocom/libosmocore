@@ -1191,6 +1191,39 @@ static void osmo_print_n_test(void)
 	}
 }
 
+static void osmo_strnchr_test(void)
+{
+	struct test {
+		const char *haystack;
+		size_t haystack_len;
+		const char *needle;
+		int expect_offset;
+	};
+	struct test tests[] = {
+		{ "foo=bar", 8, "=", 3 },
+		{ "foo=bar", 4, "=", 3 },
+		{ "foo=bar", 3, "=", -1 },
+		{ "foo=bar", 0, "=", -1 },
+		{ "foo\0=bar", 9, "=", -1 },
+		{ "foo\0=bar", 9, "\0", 3 },
+	};
+	struct test *t;
+	printf("\n%s()\n", __func__);
+	for (t = tests; t - tests < ARRAY_SIZE(tests); t++) {
+		const char *r = osmo_strnchr(t->haystack, t->haystack_len, t->needle[0]);
+		int offset = -1;
+		if (r)
+			offset = r - t->haystack;
+		printf("osmo_strnchr(%s, %zu, ",
+		       osmo_quote_str(t->haystack, -1), t->haystack_len);
+		printf("'%s') -> %d",
+		       osmo_escape_str(t->needle, 1), offset);
+		if (offset != t->expect_offset)
+			printf(" ERROR expected %d", t->expect_offset);
+		printf("\n");
+	}
+}
+
 int main(int argc, char **argv)
 {
 	static const struct log_info log_info = {};
@@ -1213,5 +1246,6 @@ int main(int argc, char **argv)
 	startswith_test();
 	name_c_impl_test();
 	osmo_print_n_test();
+	osmo_strnchr_test();
 	return 0;
 }

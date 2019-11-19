@@ -525,6 +525,28 @@ size_t osmo_strlcpy(char *dst, const char *src, size_t siz)
 	return ret;
 }
 
+/*! Find first occurence of a char in a size limited string.
+ * Like strchr() but with a buffer size limit.
+ * \param[in] str  String buffer to examine.
+ * \param[in] str_size  sizeof(str).
+ * \param[in] c  Character to look for.
+ * \return Pointer to the matched char, or NULL if not found.
+ */
+const char *osmo_strnchr(const char *str, size_t str_size, char c)
+{
+	const char *end = str + str_size;
+	const char *pos;
+	if (!str)
+		return NULL;
+	for (pos = str; pos < end; pos++) {
+		if (c == *pos)
+			return pos;
+		if (!*pos)
+			return NULL;
+	}
+	return NULL;
+}
+
 /*! Validate that a given string is a hex string within given size limits.
  * Note that each hex digit amounts to a nibble, so if checking for a hex
  * string to result in N bytes, pass amount of digits as 2*N.
