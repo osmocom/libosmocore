@@ -105,7 +105,7 @@ void logp(int subsys, const char *file, int line, int cont, const char *format, 
 #define LOGL_ERROR	7	/*!< error condition, requires user action */
 #define LOGL_FATAL	8	/*!< fatal, program aborted */
 
-/* logging levels defined by the library itself */
+/* logging subsystems defined by the library itself */
 #define DLGLOBAL	-1	/*!< global logging */
 #define DLLAPD		-2	/*!< LAPD implementation */
 #define DLINP		-3	/*!< (A-bis) Input sub-system */
