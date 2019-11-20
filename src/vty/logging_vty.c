@@ -998,7 +998,7 @@ static int config_write_log(struct vty *vty)
 static int log_deprecated_func(struct cmd_element *cmd, struct vty *vty, int argc, const char *argv[])
 {
 	vty_out(vty, "%% Ignoring deprecated '%s'%s", cmd->string, VTY_NEWLINE);
-	return CMD_WARNING;
+	return CMD_SUCCESS; /* Otherwise the process would terminate */
 }
 
 void logging_vty_add_deprecated_subsys(void *ctx, const char *name)

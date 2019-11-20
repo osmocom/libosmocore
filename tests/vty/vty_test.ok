@@ -290,6 +290,8 @@ reading file fail_cmd_ret_warning.cfg, expecting rc=-22
 Called: 'return-success'
 Called: 'return-warning'
 got rc=-22
+reading file ok_deprecated_logging.cfg, expecting rc=0
+got rc=0
 Going to test is_cmd_ambiguous()
 Going to execute 'ambiguous_nr'
 Called: 'ambiguous_nr [<0-23>]' (argc=0)

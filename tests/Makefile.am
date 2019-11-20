@@ -306,6 +306,7 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
 	     vty/ok_more_spaces.cfg \
 	     vty/ok_tabs_and_spaces.cfg \
 	     vty/ok_tabs.cfg \
+	     vty/ok_deprecated_logging.cfg \
 	     comp128/comp128_test.ok bits/bitfield_test.ok		\
 	     utils/utils_test.ok utils/utils_test.err stats/stats_test.ok \
 	     bitvec/bitvec_test.ok msgb/msgb_test.ok bits/bitcomp_test.ok \

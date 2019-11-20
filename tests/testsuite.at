@@ -199,7 +199,10 @@ AT_SETUP([vty])
 AT_KEYWORDS([vty])
 cat $abs_srcdir/vty/vty_test.ok > expout
 cp $abs_srcdir/vty/*.cfg .
-AT_CHECK([$abs_top_builddir/tests/vty/vty_test], [0], [expout], [ignore])
+# FIXME: calling vty_out() during initialization of the VTY interface would cause
+# the process write to its own *stdin*! This breaks the output of 'make check'.
+# Let's work this around untill the bug in libosmovty is fixed.
+AT_CHECK([$abs_top_builddir/tests/vty/vty_test 0>/dev/null], [0], [expout], [ignore])
 AT_CLEANUP
 
 AT_SETUP([gprs-bssgp])
