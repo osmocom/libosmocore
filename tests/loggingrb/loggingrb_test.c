@@ -34,19 +34,19 @@ static const struct log_info_cat default_categories[] = {
 	[DRLL] = {
 		  .name = "DRLL",
 		  .description = "A-bis Radio Link Layer (RLL)",
-		  .color = "\033[1;31m",
+		  .color = OSMO_LOGCOLOR_RED,
 		  .enabled = 1, .loglevel = LOGL_NOTICE,
 		  },
 	[DCC] = {
 		 .name = "DCC",
 		 .description = "Layer3 Call Control (CC)",
-		 .color = "\033[1;32m",
+		 .color = OSMO_LOGCOLOR_GREEN,
 		 .enabled = 1, .loglevel = LOGL_NOTICE,
 		 },
 	[DMM] = {
 		 .name = NULL,
 		 .description = "Layer3 Mobility Management (MM)",
-		 .color = "\033[1;33m",
+		 .color = OSMO_LOGCOLOR_BLUE,
 		 .enabled = 1, .loglevel = LOGL_NOTICE,
 		 },
 };
