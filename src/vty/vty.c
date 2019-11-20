@@ -1468,10 +1468,14 @@ vty_read_file(FILE *confp, void *priv)
 	struct vty *vty;
 
 	vty = vty_new();
-	vty->fd = 0;
 	vty->type = VTY_FILE;
 	vty->node = CONFIG_NODE;
 	vty->priv = priv;
+
+	/* By default, write to stderr. Otherwise, during parsing of the logging
+	 * configuration, all invocations to vty_out() would make the process
+	 * write() to its own stdin (fd=0)! */
+	vty->fd = fileno(stderr);
 
 	ret = config_from_file(vty, confp);
 
