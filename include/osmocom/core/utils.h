@@ -148,6 +148,11 @@ bool osmo_identifier_valid(const char *str);
 bool osmo_separated_identifiers_valid(const char *str, const char *sep_chars);
 void osmo_identifier_sanitize_buf(char *str, const char *sep_chars, char replace_with);
 
+size_t osmo_escape_cstr_buf(char *buf, size_t bufsize, const char *str, int in_len);
+char *osmo_escape_cstr_c(void *ctx, const char *str, int in_len);
+size_t osmo_quote_cstr_buf(char *buf, size_t bufsize, const char *str, int in_len);
+char *osmo_quote_cstr_c(void *ctx, const char *str, int in_len);
+
 const char *osmo_escape_str(const char *str, int len);
 char *osmo_escape_str_buf2(char *buf, size_t bufsize, const char *str, int in_len);
 const char *osmo_escape_str_buf(const char *str, int in_len, char *buf, size_t bufsize);

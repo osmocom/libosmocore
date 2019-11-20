@@ -693,14 +693,18 @@ int osmo_print_n(char *buf, size_t bufsize, const char *str, size_t n)
 
 /*! Return the string with all non-printable characters escaped.
  * This internal function is the implementation for all osmo_escape_str* and osmo_quote_str* API versions.
- * It provides a return value of characters-needed, to allow producing un-truncated strings in all cases.
+ * It provides both the legacy (non C compatible) escaping, as well as C compatible string constant syntax,
+ * and it provides a return value of characters-needed, to allow producing un-truncated strings in all cases.
  * \param[out] buf  string buffer to write escaped characters to.
  * \param[in] bufsize  sizeof(buf).
  * \param[in] str  A string that may contain any characters.
  * \param[in] in_len  Pass -1 to print until nul char, or >= 0 to force a length (also past nul chars).
+ * \param[in] legacy_format  If false, return C compatible string constants ("\x0f"), if true the legacy
+ *                           escaping format ("\15"). The legacy format also escapes as "\a\b\f\v", while
+ *                           the non-legacy format also escapes those as "\xNN" sequences.
  * \return Number of characters that would be written if bufsize were large enough excluding '\0' (like snprintf()).
  */
-static size_t _osmo_escape_str_buf(char *buf, size_t bufsize, const char *str, int in_len)
+static size_t _osmo_escape_str_buf(char *buf, size_t bufsize, const char *str, int in_len, bool legacy_format)
 {
 	struct osmo_strbuf sb = { .buf = buf, .len = bufsize };
 	int in_pos = 0;
@@ -739,19 +743,28 @@ static size_t _osmo_escape_str_buf(char *buf, size_t bufsize, const char *str, i
 		BACKSLASH_CASE('\r', 'r');
 		BACKSLASH_CASE('\t', 't');
 		BACKSLASH_CASE('\0', '0');
-		BACKSLASH_CASE('\a', 'a');
-		BACKSLASH_CASE('\b', 'b');
-		BACKSLASH_CASE('\v', 'v');
-		BACKSLASH_CASE('\f', 'f');
 		BACKSLASH_CASE('\\', '\\');
 		BACKSLASH_CASE('"', '"');
-#undef BACKSLASH_CASE
 
 		default:
-			OSMO_STRBUF_PRINTF(sb, "\\%u", (unsigned char)str[in_pos]);
+			if (legacy_format) {
+				switch (str[next_unprintable]) {
+				BACKSLASH_CASE('\a', 'a');
+				BACKSLASH_CASE('\b', 'b');
+				BACKSLASH_CASE('\v', 'v');
+				BACKSLASH_CASE('\f', 'f');
+				default:
+					OSMO_STRBUF_PRINTF(sb, "\\%u", (unsigned char)str[in_pos]);
+					break;
+				}
+				break;
+			}
+
+			OSMO_STRBUF_PRINTF(sb, "\\x%02x", (unsigned char)str[in_pos]);
 			break;
 		}
 		in_pos ++;
+#undef BACKSLASH_CASE
 	}
 
 done:
@@ -767,7 +780,7 @@ done:
  */
 char *osmo_escape_str_buf2(char *buf, size_t bufsize, const char *str, int in_len)
 {
-	_osmo_escape_str_buf(buf, bufsize, str, in_len);
+	_osmo_escape_str_buf(buf, bufsize, str, in_len, true);
 	return buf;
 }
 
@@ -791,26 +804,30 @@ char *osmo_escape_str_c(const void *ctx, const char *str, int in_len)
 {
 	/* The string will be at least as long as in_len, but some characters might need escaping.
 	 * These extra bytes should catch most usual escaping situations, avoiding a second run in OSMO_NAME_C_IMPL. */
-	OSMO_NAME_C_IMPL(ctx, in_len + 16, "ERROR", _osmo_escape_str_buf, str, in_len);
+	OSMO_NAME_C_IMPL(ctx, in_len + 16, "ERROR", _osmo_escape_str_buf, str, in_len, true);
 }
 
 /*! Return a quoted and escaped representation of the string.
  * This internal function is the implementation for all osmo_quote_str* API versions.
- * It provides a return value of characters-needed, to allow producing un-truncated strings in all cases.
+ * It provides both the legacy (non C compatible) escaping, as well as C compatible string constant syntax,
+ * and it provides a return value of characters-needed, to allow producing un-truncated strings in all cases.
  * \param[out] buf  string buffer to write escaped characters to.
  * \param[in] bufsize  sizeof(buf).
  * \param[in] str  A string that may contain any characters.
  * \param[in] in_len  Pass -1 to print until nul char, or >= 0 to force a length (also past nul chars).
+ * \param[in] legacy_format  If false, return C compatible string constants ("\x0f"), if true the legacy
+ *                           escaping format ("\15"). The legacy format also escapes as "\a\b\f\v", while
+ *                           the non-legacy format also escapes those as "\xNN" sequences.
  * \return Number of characters that would be written if bufsize were large enough excluding '\0' (like snprintf()).
  */
-static size_t _osmo_quote_str_buf(char *buf, size_t bufsize, const char *str, int in_len)
+static size_t _osmo_quote_str_buf(char *buf, size_t bufsize, const char *str, int in_len, bool legacy_format)
 {
 	struct osmo_strbuf sb = { .buf = buf, .len = bufsize };
 	if (!str)
 		OSMO_STRBUF_PRINTF(sb, "NULL");
 	else {
 		OSMO_STRBUF_PRINTF(sb, "\"");
-		OSMO_STRBUF_APPEND(sb, _osmo_escape_str_buf, str, in_len);
+		OSMO_STRBUF_APPEND(sb, _osmo_escape_str_buf, str, in_len, legacy_format);
 		OSMO_STRBUF_PRINTF(sb, "\"");
 	}
 	return sb.chars_needed;
@@ -827,7 +844,7 @@ static size_t _osmo_quote_str_buf(char *buf, size_t bufsize, const char *str, in
  */
 char *osmo_quote_str_buf2(char *buf, size_t bufsize, const char *str, int in_len)
 {
-	_osmo_quote_str_buf(buf, bufsize, str, in_len);
+	_osmo_quote_str_buf(buf, bufsize, str, in_len, true);
 	return buf;
 }
 
@@ -845,7 +862,7 @@ const char *osmo_quote_str_buf(const char *str, int in_len, char *buf, size_t bu
 		return "NULL";
 	if (!buf || !bufsize)
 		return "(error)";
-	_osmo_quote_str_buf(buf, bufsize, str, in_len);
+	_osmo_quote_str_buf(buf, bufsize, str, in_len, true);
 	return buf;
 }
 
@@ -857,7 +874,7 @@ const char *osmo_quote_str_buf(const char *str, int in_len, char *buf, size_t bu
  */
 const char *osmo_quote_str(const char *str, int in_len)
 {
-	_osmo_quote_str_buf(namebuf, sizeof(namebuf), str, in_len);
+	_osmo_quote_str_buf(namebuf, sizeof(namebuf), str, in_len, true);
 	return namebuf;
 }
 
@@ -870,7 +887,65 @@ char *osmo_quote_str_c(const void *ctx, const char *str, int in_len)
 {
 	/* The string will be at least as long as in_len, but some characters might need escaping.
 	 * These extra bytes should catch most usual escaping situations, avoiding a second run in OSMO_NAME_C_IMPL. */
-	OSMO_NAME_C_IMPL(ctx, in_len + 16, "ERROR", _osmo_quote_str_buf, str, in_len);
+	OSMO_NAME_C_IMPL(ctx, in_len + 16, "ERROR", _osmo_quote_str_buf, str, in_len, true);
+}
+
+/*! Return the string with all non-printable characters escaped.
+ * In contrast to osmo_escape_str_buf2(), this returns the needed buffer size suitable for OSMO_STRBUF_APPEND(), and
+ * this escapes characters in a way compatible with C string constant syntax.
+ * \param[out] buf  string buffer to write escaped characters to.
+ * \param[in] bufsize  sizeof(buf).
+ * \param[in] str  A string that may contain any characters.
+ * \param[in] in_len  Pass -1 to print until nul char, or >= 0 to force a length (also past nul chars).
+ * \return Number of characters that would be written if bufsize were large enough excluding '\0' (like snprintf()).
+ */
+size_t osmo_escape_cstr_buf(char *buf, size_t bufsize, const char *str, int in_len)
+{
+	return _osmo_escape_str_buf(buf, bufsize, str, in_len, false);
+}
+
+/*! Return the string with all non-printable characters escaped, in dynamically-allocated buffer.
+ * In contrast to osmo_escape_str_c(), this escapes characters in a way compatible with C string constant syntax, and
+ * allocates sufficient memory in all cases.
+ * \param[in] str  A string that may contain any characters.
+ * \param[in] len  Pass -1 to print until nul char, or >= 0 to force a length.
+ * \returns dynamically-allocated buffer, containing an escaped representation.
+ */
+char *osmo_escape_cstr_c(void *ctx, const char *str, int in_len)
+{
+	/* The string will be at least as long as in_len, but some characters might need escaping.
+	 * These extra bytes should catch most usual escaping situations, avoiding a second run in OSMO_NAME_C_IMPL. */
+	OSMO_NAME_C_IMPL(ctx, in_len + 16, "ERROR", _osmo_escape_str_buf, str, in_len, false);
+}
+
+/*! Like osmo_escape_str_buf2(), but returns double-quotes around a string, or "NULL" for a NULL string.
+ * This allows passing any char* value and get its C representation as string.
+ * The function signature is suitable for OSMO_STRBUF_APPEND_NOLEN().
+ * In contrast to osmo_escape_str_buf2(), this returns the needed buffer size suitable for OSMO_STRBUF_APPEND(), and
+ * this escapes characters in a way compatible with C string constant syntax.
+ * \param[out] buf  string buffer to write escaped characters to.
+ * \param[in] bufsize  sizeof(buf).
+ * \param[in] str  A string that may contain any characters.
+ * \param[in] in_len  Pass -1 to print until nul char, or >= 0 to force a length.
+ * \return Number of characters that would be written if bufsize were large enough excluding '\0' (like snprintf()).
+ */
+size_t osmo_quote_cstr_buf(char *buf, size_t bufsize, const char *str, int in_len)
+{
+	return _osmo_quote_str_buf(buf, bufsize, str, in_len, false);
+}
+
+/*! Return the string quoted and with all non-printable characters escaped, in dynamically-allocated buffer.
+ * In contrast to osmo_quote_str_c(), this escapes characters in a way compatible with C string constant syntax, and
+ * allocates sufficient memory in all cases.
+ * \param[in] str  A string that may contain any characters.
+ * \param[in] len  Pass -1 to print until nul char, or >= 0 to force a length.
+ * \returns dynamically-allocated buffer, containing a quoted and escaped representation.
+ */
+char *osmo_quote_cstr_c(void *ctx, const char *str, int in_len)
+{
+	/* The string will be at least as long as in_len plus two quotes, but some characters might need escaping.
+	 * These extra bytes should catch most usual escaping situations, avoiding a second run in OSMO_NAME_C_IMPL. */
+	OSMO_NAME_C_IMPL(ctx, in_len + 16, "ERROR", _osmo_quote_str_buf, str, in_len, false);
 }
 
 /*! perform an integer square root operation on unsigned 32bit integer.

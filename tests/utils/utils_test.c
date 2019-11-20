@@ -531,7 +531,7 @@ static void str_escape_test(void)
 	const char *printable = "printable";
 	const char *res;
 
-	printf("\nTesting string escaping\n");
+	printf("\nTesting string escaping: osmo_escape_str()\n");
 	printf("- all chars from 0 to 255 in batches of 16:\n");
 	in_buf[16] = '\0';
 	for (j = 0; j < 16; j++) {
@@ -571,7 +571,7 @@ static void str_quote_test(void)
 	const char *printable = "printable";
 	const char *res;
 
-	printf("\nTesting string quoting\n");
+	printf("\nTesting string quoting: osmo_quote_str()\n");
 	printf("- all chars from 0 to 255 in batches of 16:\n");
 	in_buf[16] = '\0';
 	for (j = 0; j < 16; j++) {
@@ -614,6 +614,132 @@ static void str_quote_test(void)
 
 	printf("- NULL string becomes a \"NULL\" literal:\n");
 	printf("'%s'\n", osmo_quote_str_buf(NULL, -1, out_buf, 10));
+}
+
+static void str_escape3_test(void)
+{
+	int i;
+	int j;
+	uint8_t in_buf[32];
+	char out_buf[11];
+	const char *printable = "printable";
+	const char *res;
+	void *ctx = talloc_named_const(NULL, 0, __func__);
+
+	printf("\nTesting string escaping: osmo_escape_cstr_buf()\n");
+	printf("- all chars from 0 to 255 in batches of 16:\n");
+	in_buf[16] = '\0';
+	for (j = 0; j < 16; j++) {
+		for (i = 0; i < 16; i++)
+			in_buf[i] = (j << 4) | i;
+		printf("\"%s\"\n", osmo_escape_cstr_c(ctx, (const char*)in_buf, 16));
+	}
+
+	printf("- nul terminated:\n");
+	printf("\"%s\"\n", osmo_escape_cstr_c(ctx, "termi\nated", -1));
+
+	printf("- passthru:\n");
+	res = osmo_escape_cstr_c(ctx, printable, -1);
+	if (strcmp(res, printable))
+		printf("NOT passed through! \"%s\"\n", res);
+	else
+		printf("passed through unchanged \"%s\"\n", res);
+
+	printf("- zero length:\n");
+	printf("\"%s\"\n", osmo_escape_cstr_c(ctx, "omitted", 0));
+
+	printf("- truncation when too long:\n");
+	memset(in_buf, 'x', sizeof(in_buf));
+	in_buf[0] = '\a';
+	in_buf[7] = 'E';
+	memset(out_buf, 0x7f, sizeof(out_buf));
+	osmo_escape_cstr_buf(out_buf, 10, (const char *)in_buf, sizeof(in_buf));
+	printf("\"%s\"\n", out_buf);
+	OSMO_ASSERT(out_buf[10] == 0x7f);
+
+	printf("- Test escaping an escaped string:\n");
+	res = "\x02\x03\n";
+	for (i = 0; i <= 3; i++) {
+		res = osmo_escape_cstr_c(ctx, res, -1);
+		printf("%d: '%s'\n", i, res);
+	}
+
+	talloc_free(ctx);
+}
+
+static void str_quote3_test(void)
+{
+	int i;
+	int j;
+	uint8_t in_buf[32];
+	char out_buf[11];
+	const char *printable = "printable";
+	const char *res;
+	void *ctx = talloc_named_const(NULL, 0, __func__);
+
+	printf("\nTesting string quoting: osmo_quote_cstr_buf()\n");
+	printf("- all chars from 0 to 255 in batches of 16:\n");
+	in_buf[16] = '\0';
+	for (j = 0; j < 16; j++) {
+		for (i = 0; i < 16; i++)
+			in_buf[i] = (j << 4) | i;
+		printf("%s\n", osmo_quote_cstr_c(ctx, (const char*)in_buf, 16));
+	}
+
+	printf("- nul terminated:\n");
+	printf("'%s'\n", osmo_quote_cstr_c(ctx, "termi\nated", -1));
+
+	printf("- never passthru:\n");
+	res = osmo_quote_cstr_c(ctx, printable, -1);
+	if (strcmp(res, printable))
+		printf("NOT passed through. '%s'\n", res);
+	else
+		printf("passed through unchanged '%s'\n", res);
+
+	printf("- zero length:\n");
+	printf("'%s'\n", osmo_quote_cstr_c(ctx, "omitted", 0));
+
+	printf("- truncation when too long:\n");
+	memset(in_buf, 'x', sizeof(in_buf));
+	in_buf[0] = '\a';
+	in_buf[6] = 'E';
+	memset(out_buf, 0x7f, sizeof(out_buf));
+	osmo_quote_cstr_buf(out_buf, 10, (const char *)in_buf, sizeof(in_buf));
+	printf("'%s'\n", out_buf);
+	OSMO_ASSERT(out_buf[10] == 0x7f);
+
+	printf("- always truncation, even when no escaping needed:\n");
+	memset(in_buf, 'x', sizeof(in_buf));
+	in_buf[7] = 'E'; /* dst has 10, less 1 quote and nul, leaves 8, i.e. in[7] is last */
+	in_buf[20] = '\0';
+	memset(out_buf, 0x7f, sizeof(out_buf));
+	osmo_quote_cstr_buf(out_buf, 10, (const char *)in_buf, -1);
+	printf("'%s'\n", out_buf);
+	OSMO_ASSERT(out_buf[0] == '"');
+	OSMO_ASSERT(out_buf[10] == 0x7f);
+
+	printf("- try to feed too little buf for quoting:\n");
+	osmo_quote_cstr_buf(out_buf, 2, "", -1);
+	printf("'%s'\n", out_buf);
+
+	printf("- Test quoting a quoted+escaped string:\n");
+	res = "\x02\x03\n";
+	for (i = 0; i <= 3; i++) {
+		res = osmo_quote_cstr_c(ctx, res, -1);
+		printf("%d: %s\n", i, res);
+	}
+
+	printf("- Test C-string equivalence:\n");
+#define TEST_STR "\0\x01\x02\x03\x04\x05\x06\x07\x08\t\n\x0b\x0c\r\x0e\x0f\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1a\x1b\x1c\x1d\x1e\x1f !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\x7f\x80\x81\x82\x83\x84\x85\x86\x87\x88\x89\x8a\x8b\x8c\x8d\x8e\x8f\x90\x91\x92\x93\x94\x95\x96\x97\x98\x99\x9a\x9b\x9c\x9d\x9e\x9f\xa0\xa1\xa2\xa3\xa4\xa5\xa6\xa7\xa8\xa9\xaa\xab\xac\xad\xae\xaf\xb0\xb1\xb2\xb3\xb4\xb5\xb6\xb7\xb8\xb9\xba\xbb\xbc\xbd\xbe\xbf\xc0\xc1\xc2\xc3\xc4\xc5\xc6\xc7\xc8\xc9\xca\xcb\xcc\xcd\xce\xcf\xd0\xd1\xd2\xd3\xd4\xd5\xd6\xd7\xd8\xd9\xda\xdb\xdc\xdd\xde\xdf\xe0\xe1\xe2\xe3\xe4\xe5\xe6\xe7\xe8\xe9\xea\xeb\xec\xed\xee\xef\xf0\xf1\xf2\xf3\xf4\xf5\xf6\xf7\xf8\xf9\xfa\xfb\xfc\xfd\xfe\xff"
+#define EMPTY_STR ""
+	printf("strcmp(OSMO_STRINGIFY_VAL(TEST_STR), osmo_quote_cstr_c(ctx, TEST_STR, 256)) == %d\n",
+	       strcmp(OSMO_STRINGIFY_VAL(TEST_STR), osmo_quote_cstr_c(ctx, TEST_STR, 256)));
+	printf("strcmp(OSMO_STRINGIFY_VAL(EMPTY_STR), osmo_quote_cstr_c(ctx, EMPTY_STR, -1)) == %d\n",
+	       strcmp(OSMO_STRINGIFY_VAL(EMPTY_STR), osmo_quote_cstr_c(ctx, EMPTY_STR, -1)));
+	printf("strcmp(\"NULL\", osmo_quote_cstr_c(ctx, NULL, -1)) == %d\n",
+	       strcmp("NULL", osmo_quote_cstr_c(ctx, NULL, -1)));
+
+	talloc_free(ctx);
 }
 
 static void isqrt_test(void)
@@ -1238,6 +1364,8 @@ int main(int argc, char **argv)
 	bcd2str_test();
 	str_escape_test();
 	str_quote_test();
+	str_escape3_test();
+	str_quote3_test();
 	isqrt_test();
 	osmo_sockaddr_to_str_and_uint_test();
 	osmo_str_tolowupper_test();
