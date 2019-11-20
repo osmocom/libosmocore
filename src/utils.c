@@ -280,7 +280,7 @@ const char *osmo_hexdump_buf(char *out_buf, size_t out_buf_size, const unsigned 
  * \param[out] buf_len size of buf in bytes
  * \param[in] bits A sequence of unpacked bits
  * \param[in] len Length of bits
- * \returns string representation in static buffer.
+ * \return The output buffer (buf).
  */
 char *osmo_ubit_dump_buf(char *buf, size_t buf_len, const uint8_t *bits, unsigned int len)
 {
@@ -672,7 +672,7 @@ int osmo_print_n(char *buf, size_t bufsize, const char *str, size_t n)
  * \param[in] bufsize  sizeof(buf).
  * \param[in] str  A string that may contain any characters.
  * \param[in] in_len  Pass -1 to print until nul char, or >= 0 to force a length (also past nul chars).
- * \return Number of characters that would be written if bufsize were large enough excluding '\0' (like snprintf()).
+ * \return The output buffer (buf).
  */
 char *osmo_escape_str_buf2(char *buf, size_t bufsize, const char *str, int in_len)
 {
@@ -763,7 +763,7 @@ char *osmo_escape_str_c(const void *ctx, const char *str, int in_len)
  * \param[in] bufsize  sizeof(buf).
  * \param[in] str  A string that may contain any characters.
  * \param[in] in_len  Pass -1 to print until nul char, or >= 0 to force a length.
- * \return Number of characters that would be written if bufsize were large enough excluding '\0' (like snprintf()).
+ * \return The output buffer (buf).
  */
 char *osmo_quote_str_buf2(char *buf, size_t bufsize, const char *str, int in_len)
 {
@@ -808,7 +808,6 @@ const char *osmo_quote_str(const char *str, int in_len)
 }
 
 /*! Like osmo_quote_str_buf() but returns the result in a dynamically-allocated buffer.
- * The static buffer is shared with get_value_string() and osmo_escape_str().
  * \param[in] str  A string that may contain any characters.
  * \param[in] in_len  Pass -1 to print until nul char, or >= 0 to force a length.
  * \returns dynamically-allocated buffer containing a quoted and escaped representation.
