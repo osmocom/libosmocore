@@ -163,7 +163,7 @@ static const struct log_info_cat internal_cat[OSMO_NUM_DLIB] = {
 		.name = "DLSMS",
 		.description = "Layer3 Short Message Service (SMS)",
 		.enabled = 1, .loglevel = LOGL_NOTICE,
-		.color = "\033[1;38m",
+		.color = OSMO_LOGCOLOR_BRIGHTWHITE,
 	},
 	[INT2IDX(DLCTRL)] = {
 		.name = "DLCTRL",
