@@ -1007,7 +1007,6 @@ void logging_vty_add_deprecated_subsys(void *ctx, const char *name)
 	OSMO_ASSERT(cmd);
 	cmd->string = talloc_asprintf(cmd, "logging level %s (debug|info|notice|error|fatal)",
 				    name);
-	printf("%s\n", cmd->string);
 	cmd->func = log_deprecated_func;
 	cmd->doc = LEVEL_STR
 		   "Deprecated Category\n";
