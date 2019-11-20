@@ -842,6 +842,26 @@ void log_set_use_color(struct log_target *target, int use_color)
 	target->use_color = use_color;
 }
 
+/*! Cycle through all logging categories, setting each to a different color.
+ * osmo_init_logging2() or log_init() *must* have been called before this.
+ */
+void log_set_cyclic_category_colors()
+{
+	int i;
+	struct log_info_cat *cat;
+	OSMO_ASSERT(osmo_log_info);
+	/* even though log_info->cat is defined const, we know that osmo_log_info was allocated during log_init(). */
+	cat = (struct log_info_cat*)osmo_log_info->cat;
+
+	for (i = 0; i < osmo_log_info->num_cat_user; i++) {
+		cat[i].color = osmo_logcolors[i % ARRAY_SIZE(osmo_logcolors)];
+	}
+	/* make sure the library defined categories get the same colors in each program */
+	for (i = osmo_log_info->num_cat_user; i < osmo_log_info->num_cat; i++) {
+		cat[i].color = osmo_logcolors[(i - osmo_log_info->num_cat_user) % ARRAY_SIZE(osmo_logcolors)];
+	}
+}
+
 /*! Enable or disable printing of timestamps while logging
  *  \param[in] target Log target to be affected
  *  \param[in] print_timestamp Enable (1) or disable (0) timestamps

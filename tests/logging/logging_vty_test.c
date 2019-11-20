@@ -87,31 +87,26 @@ static const struct log_info_cat default_categories[] = {
 	[DAA] = {
 		.name = "DAA",
 		.description = "Antropomorphic Armadillos (AA)",
-		.color = "\033[1;31m",
 		.enabled = 1, .loglevel = LOGL_DEBUG,
 	},
 	[DBB] = {
 		.name = "DBB",
 		.description = "Bidirectional Breadspread (BB)",
-		.color = "\033[1;32m",
 		.enabled = 1, .loglevel = LOGL_INFO,
 	},
 	[DCCC] = {
 		.name = "DCCC",
 		.description = "Chaos Communication Congress (CCC)",
-		.color = "\033[1;33m",
 		.enabled = 1, .loglevel = LOGL_NOTICE,
 	},
 	[DDDDD] = {
 		.name = "DDDDD",
 		.description = "Dehydrated Dribbling Duck Dunkers (DDDD)",
-		.color = "\033[1;34m",
 		.enabled = 1, .loglevel = LOGL_ERROR,
 	},
 	[DEEE] = {
 		.name = "DEEE",
 		.description = "Exhaustive Entropy Extraction (EEE)",
-		.color = "\033[1;35m",
 		.enabled = 1, .loglevel = LOGL_FATAL,
 	},
 };
@@ -238,6 +233,7 @@ int main(int argc, char **argv)
 
 	osmo_init_logging2(root_ctx, &log_info);
 	log_enable_multithread();
+	log_set_cyclic_category_colors();
 
 	vty_commands_init();
 

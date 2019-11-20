@@ -175,6 +175,28 @@ void logp(int subsys, const char *file, int line, int cont, const char *format, 
 #define OSMO_LOGCOLOR_BRIGHTWHITE "\033[1;37m"
 #define OSMO_LOGCOLOR_END "\033[0;m"
 
+/*! Color constants that can be used in log_info_cat.color.
+ * This list is useful to set distinct logging category colors in a loop.
+ */
+static const char * const osmo_logcolors[] = {
+	OSMO_LOGCOLOR_RED,
+	OSMO_LOGCOLOR_GREEN,
+	OSMO_LOGCOLOR_YELLOW,
+	OSMO_LOGCOLOR_BLUE,
+	OSMO_LOGCOLOR_PURPLE,
+	OSMO_LOGCOLOR_CYAN,
+	OSMO_LOGCOLOR_DARKRED,
+	OSMO_LOGCOLOR_DARKGREEN,
+	OSMO_LOGCOLOR_DARKYELLOW,
+	OSMO_LOGCOLOR_DARKBLUE,
+	OSMO_LOGCOLOR_DARKPURPLE,
+	OSMO_LOGCOLOR_DARKCYAN,
+	OSMO_LOGCOLOR_DARKGREY,
+	OSMO_LOGCOLOR_GREY,
+	OSMO_LOGCOLOR_BRIGHTWHITE,
+	OSMO_LOGCOLOR_NORMAL,
+};
+
 /*! Configuration of single log category / sub-system */
 struct log_category {
 	uint8_t loglevel;	/*!< configured log-level */
@@ -410,6 +432,7 @@ int log_set_context(uint8_t ctx, void *value);
 void log_set_all_filter(struct log_target *target, int);
 
 void log_set_use_color(struct log_target *target, int);
+void log_set_cyclic_category_colors();
 void log_set_print_extended_timestamp(struct log_target *target, int);
 void log_set_print_timestamp(struct log_target *target, int);
 void log_set_print_tid(struct log_target *target, int);
