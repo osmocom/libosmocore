@@ -128,6 +128,7 @@ int osmo_init_logging2(void *ctx, const struct log_info *log_info)
 
 	log_add_target(osmo_stderr_target);
 	log_set_all_filter(osmo_stderr_target, 1);
+	log_set_cyclic_category_colors();
 	return 0;
 }
 
