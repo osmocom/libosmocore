@@ -231,8 +231,8 @@ void vty_close(struct vty *vty)
 	/* Unset vector. */
 	vector_unset(vtyvec, vty->fd);
 
-	/* Close socket. */
-	if (vty->fd > 0 && vty->fd != fileno(stderr)) {
+	/* Close socket (ignore standard I/O streams). */
+	if (vty->fd > 2) {
 		close(vty->fd);
 		vty->fd = -1;
 	}
