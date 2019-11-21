@@ -128,6 +128,7 @@ struct vty *vty_new(void)
 		goto out_obuf;
 
 	new->max = VTY_BUFSIZ;
+	new->fd = -1;
 
 	return new;
 
