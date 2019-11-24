@@ -5,6 +5,7 @@
 #include <stdbool.h>
 
 #include <osmocom/core/linuxlist.h>
+#include <osmocom/core/defs.h>
 
 /*! \defgroup vty VTY (Virtual TTY) interface
  *  @{
@@ -186,7 +187,9 @@ struct vty_app_info {
 	int (*go_parent_cb)(struct vty *vty);
 	/*! OBSOLETED: Implicit parent node tracking has replaced the use of this callback. This callback is no longer
 	 * called, ever, and can be left NULL. */
-	int (*is_config_node)(struct vty *vty, int node);
+	int (*is_config_node)(struct vty *vty, int node)
+		OSMO_DEPRECATED("Implicit parent node tracking has replaced the use of this callback. This callback is"
+				" no longer called, ever, and can be left NULL.");
 	/*! Check if the config is consistent before write */
 	int (*config_is_consistent)(struct vty *vty);
 };
