@@ -7,6 +7,7 @@
 #include <stdint.h>
 #include <osmocom/core/linuxlist.h>
 #include <osmocom/core/utils.h>
+#include <osmocom/core/endian.h>
 
 /*
  * this is from GSM 03.03 CGI but is copied in GSM 08.08
@@ -40,11 +41,37 @@ struct bssmap_header {
 } __attribute__((packed));
 
 struct dtap_header {
+#if OSMO_IS_LITTLE_ENDIAN
 	uint8_t type;
-	uint8_t link_id;
+	union {
+		uint8_t link_id;  /* Backward compatibility */
+		struct {
+			uint8_t dlci_cc:2,
+			dlci_spare:3,
+			dlci_sapi:3; /* enum gsm0406_dlc_sapi */
+		};
+	};
 	uint8_t length;
+#elif OSMO_IS_BIG_ENDIAN
+	uint8_t type;
+	union {
+		uint8_t link_id;
+		struct {
+			uint8_t dlci_sapi:3, dlci_spare:3, dlci_cc:2;
+		};
+	};
+	uint8_t length;
+#endif
 } __attribute__((packed));
 
+/* Data Link Control SAPI, GSM 08.06 § 6.3.2, GSM 04.06 § 3.3.3 */
+enum gsm0406_dlci_sapi {
+	DLCI_SAPI_RR_MM_CC	= 0x0,
+	DLCI_SAPI_SMS		= 0x3,
+};
+extern const struct value_string gsm0406_dlci_sapi_names[];
+static inline const char *gsm0406_dlci_sapi_name(enum gsm0406_dlci_sapi val)
+{ return get_value_string(gsm0406_dlci_sapi_names, val); }
 
 enum BSS_MAP_MSG_TYPE {
 	BSS_MAP_MSG_RESERVED_0		= 0,

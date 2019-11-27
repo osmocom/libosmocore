@@ -1399,6 +1399,12 @@ const struct tlv_definition *gsm0808_att_tlvdef(void)
 	return &bss_att_tlvdef;
 }
 
+const struct value_string gsm0406_dlci_sapi_names[] = {
+	{ DLCI_SAPI_RR_MM_CC,	"RR/MM/CC" },
+	{ DLCI_SAPI_SMS,	"SMS" },
+	{ 0, NULL }
+};
+
 static const struct value_string gsm0808_msgt_names[] = {
 	{ BSS_MAP_MSG_ASSIGMENT_RQST,		"ASSIGNMENT REQ" },
 	{ BSS_MAP_MSG_ASSIGMENT_COMPLETE,	"ASSIGNMENT COMPL" },

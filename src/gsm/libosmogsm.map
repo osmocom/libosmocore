@@ -86,6 +86,8 @@ gprs_service_t_strs;
 
 gsm0341_build_msg;
 
+gsm0406_dlci_sapi_names;
+
 gsm0480_create_notifySS;
 gsm0480_create_unstructuredSS_Notify;
 gsm0480_create_ussd_resp;
