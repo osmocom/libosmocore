@@ -475,7 +475,7 @@ int main(int argc, char **argv)
 	log_set_print_category(osmo_stderr_target, 1);
 	log_set_use_color(osmo_stderr_target, 0);
 
-	osmo_fsm_register(&test_tdef_fsm);
+	OSMO_ASSERT(osmo_fsm_register(&test_tdef_fsm) == 0);
 
 	test_tdef_get(argc > 1);
 	test_tdef_get_nonexisting();

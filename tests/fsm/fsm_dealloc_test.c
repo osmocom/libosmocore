@@ -452,7 +452,7 @@ int main(void)
 
 	log_set_category_filter(osmo_stderr_target, DLGLOBAL, 1, LOGL_DEBUG);
 
-	osmo_fsm_register(&test_fsm);
+	OSMO_ASSERT(osmo_fsm_register(&test_fsm) == 0);
 
 	test_osmo_fsm_term_safely();
 	test_osmo_fsm_set_dealloc_ctx();

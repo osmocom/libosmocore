@@ -417,7 +417,7 @@ int main(int argc, char **argv)
 
 	g_ctx = NULL;
 	OSMO_ASSERT(osmo_fsm_find_by_name(fsm.name) == NULL);
-	osmo_fsm_register(&fsm);
+	OSMO_ASSERT(osmo_fsm_register(&fsm) == 0);
 	OSMO_ASSERT(osmo_fsm_find_by_name(fsm.name) == &fsm);
 
 	OSMO_ASSERT(osmo_fsm_inst_find_by_name(&fsm, "my_id") == NULL);
