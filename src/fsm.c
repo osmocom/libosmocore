@@ -286,10 +286,38 @@ struct osmo_fsm_inst *osmo_fsm_inst_find_by_id(const struct osmo_fsm *fsm,
  */
 int osmo_fsm_register(struct osmo_fsm *fsm)
 {
+	unsigned int i;
+	bool err = false;
+
+	/* first collect all errors regarding identifiers (not just the first one) */
 	if (!osmo_identifier_valid(fsm->name)) {
 		LOGP(DLGLOBAL, LOGL_ERROR, "Attempting to register FSM with illegal identifier '%s'\n", fsm->name);
-		return -EINVAL;
+		err = true;
 	}
+	for (i = 0; i < fsm->num_states; i++) {
+		const struct osmo_fsm_state *states = fsm->states;
+		if (!osmo_identifier_valid(states[i].name)) {
+			LOGP(DLGLOBAL, LOGL_ERROR, "Attempting to register FSM with illegal "
+			     "state name '%s'\n", states[i].name);
+			err = true;
+		}
+	}
+	if (fsm->event_names) {
+		const struct value_string *vs = fsm->event_names;
+		for (i = 0;; i++) {
+			if (vs[i].value == 0 && vs[i].str == NULL)
+				break;
+			if (!osmo_identifier_valid(vs[i].str)) {
+				LOGP(DLGLOBAL, LOGL_ERROR, "Attempting to register FSM with illegal "
+				     "event name '%s'\n", vs[i].str);
+				err = true;
+			}
+		}
+	}
+	/* then return -EINVAL in case any identifier error[s] were encountered */
+	if (err)
+		return -EINVAL;
+
 	if (osmo_fsm_find_by_name(fsm->name))
 		return -EEXIST;
 	if (fsm->event_names == NULL)
