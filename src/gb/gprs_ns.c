@@ -1884,13 +1884,18 @@ static bool gprs_sns_fsm_registered = false;
  */
 struct gprs_ns_inst *gprs_ns_instantiate(gprs_ns_cb_t *cb, void *ctx)
 {
-	struct gprs_ns_inst *nsi = talloc_zero(ctx, struct gprs_ns_inst);
+	struct gprs_ns_inst *nsi;
 
 	if (!gprs_sns_fsm_registered) {
-		gprs_sns_init();
+		int rc = gprs_sns_init();
+		if (rc < 0)
+			return NULL;
 		gprs_sns_fsm_registered = true;
 	}
 
+	nsi = talloc_zero(ctx, struct gprs_ns_inst);
+	if (!nsi)
+		return NULL;
 	nsi->cb = cb;
 	INIT_LLIST_HEAD(&nsi->gprs_nsvcs);
 	nsi->timeout[NS_TOUT_TNS_BLOCK] = 3;
