@@ -9,6 +9,7 @@ if ENABLE_UTILITIES
 EXTRA_DIST = conv_gen.py conv_codes_gsm.py
 
 bin_PROGRAMS += osmo-arfcn osmo-auc-gen osmo-config-merge osmo-aka-verify osmo-gsmtap-logsend
+bin_SCRIPTS = osmo-gsm-shark
 
 osmo_arfcn_SOURCES = osmo-arfcn.c
 
