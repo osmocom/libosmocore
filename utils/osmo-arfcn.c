@@ -100,7 +100,7 @@ int main(int argc, char **argv)
 	char *param;
 	enum program_mode mode = MODE_NONE;
 
-	while ((opt = getopt(argc, argv, "pa:f:ud")) != -1) {
+	while ((opt = getopt(argc, argv, "pa:f:udh")) != -1) {
 		switch (opt) {
 		case 'p':
 			pcs = 1;
