@@ -3,3 +3,4 @@ usr/bin/osmo-auc-gen
 usr/bin/osmo-aka-verify
 usr/bin/osmo-config-merge
 usr/bin/osmo-gsmtap-logsend
+usr/bin/osmo-gsm-shark
