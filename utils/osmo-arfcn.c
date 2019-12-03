@@ -128,6 +128,11 @@ int main(int argc, char **argv)
 		}
 	}
 
+	if (argc > optind) {
+		fprintf(stderr, "Unsupported positional arguments in command line\n");
+		exit(2);
+	}
+
 	switch (mode) {
 	case MODE_NONE:
 		help(argv[0]);

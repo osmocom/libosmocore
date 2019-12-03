@@ -247,6 +247,11 @@ int main(int argc, char **argv)
 		}
 	}
 
+	if (argc > optind) {
+		fprintf(stderr, "Unsupported positional arguments in command line\n");
+		exit(2);
+	}
+
 	if (!rand_is_set) {
 		rc = osmo_get_rand_id(_rand, 16);
 		if (rc < 0) {
