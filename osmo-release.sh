@@ -162,6 +162,7 @@ if [ "z$DRY_RUN" != "z0" ]; then
 	exit 0
 fi
 
+set -e
 if [ -f "TODO-RELEASE" ]; then
 	grep '#' TODO-RELEASE > TODO-RELEASE.clean
 	mv TODO-RELEASE.clean TODO-RELEASE
