@@ -16,7 +16,7 @@ Build-Depends: debhelper (>= 9),
                pkg-config,
                libtalloc-dev,
                libsctp-dev,
-               python (>= 2.7.6)
+               python3
 Standards-Version: 3.9.8
 Vcs-Git: git://git.osmocom.org/libosmocore.git
 Vcs-Browser: http://git.osmocom.org/libosmocore/

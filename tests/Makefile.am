@@ -362,7 +362,7 @@ $(TESTSUITE): $(srcdir)/testsuite.at $(srcdir)/package.m4
 	mv $@.tmp $@
 
 conv/gsm0503_test_vectors.c: $(top_srcdir)/utils/conv_gen.py $(top_srcdir)/utils/conv_codes_gsm.py
-	$(AM_V_GEN)python $(top_srcdir)/utils/conv_gen.py gen_vectors gsm \
+	$(AM_V_GEN)python3 $(top_srcdir)/utils/conv_gen.py gen_vectors gsm \
 		--target-path $(builddir)/conv
 
 if ENABLE_EXT_TESTS
