@@ -189,6 +189,7 @@ int bssgp_tx_radio_status_imsi(struct bssgp_bvc_ctx *bctx, uint8_t cause,
  * mi[131], which is wrong */
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Warray-bounds"
+	OSMO_ASSERT(imsi_len <= GSM48_MID_MAX_SIZE);
 	/* strip the MI type and length values (2 bytes) */
 	if (imsi_len > 2)
 		msgb_tvlv_put(msg, BSSGP_IE_IMSI, imsi_len-2, mi+2);

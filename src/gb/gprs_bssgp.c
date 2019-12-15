@@ -1178,6 +1178,7 @@ int bssgp_tx_dl_ud(struct msgb *msg, uint16_t pdu_lifetime,
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Warray-bounds"
 		int imsi_len = gsm48_generate_mid_from_imsi(mi, dup->imsi);
+		OSMO_ASSERT(imsi_len <= GSM48_MID_MAX_SIZE);
 		if (imsi_len > 2)
 			msgb_tvlv_push(msg, BSSGP_IE_IMSI,
 				imsi_len-2, mi+2);
@@ -1247,6 +1248,7 @@ int bssgp_tx_paging(uint16_t nsei, uint16_t ns_bvci,
  * mi[131], which is wrong */
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Warray-bounds"
+	OSMO_ASSERT(imsi_len <= GSM48_MID_MAX_SIZE);
 	msgb_tvlv_put(msg, BSSGP_IE_IMSI, imsi_len-2, mi+2);
 #pragma GCC diagnostic pop
 	/* DRX Parameters */
