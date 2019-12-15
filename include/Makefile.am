@@ -164,6 +164,11 @@ nobase_include_HEADERS += \
                           osmocom/ctrl/control_vty.h
 endif
 
+if ENABLE_LIBUSB
+nobase_include_HEADERS += \
+			  osmocom/usb/libusb.h
+endif
+
 noinst_HEADERS = \
 	osmocom/gsm/kasumi.h \
 	osmocom/gsm/gea.h \

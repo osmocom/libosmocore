@@ -1,11 +1,12 @@
 ACLOCAL_AMFLAGS = -I m4
 
 AM_CPPFLAGS = $(all_includes) -I$(top_srcdir)/include
-SUBDIRS = include src src/vty src/codec src/gsm src/coding src/gb src/ctrl src/sim src/pseudotalloc utils tests
+SUBDIRS = include src src/vty src/codec src/gsm src/coding src/gb src/ctrl src/sim src/pseudotalloc src/usb utils tests
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libosmocore.pc libosmocodec.pc libosmovty.pc libosmogsm.pc \
-		 libosmogb.pc libosmoctrl.pc libosmocoding.pc libosmosim.pc
+		 libosmogb.pc libosmoctrl.pc libosmocoding.pc libosmosim.pc \
+		 libosmousb.pc
 
 aclocaldir = $(datadir)/aclocal
 dist_aclocal_DATA = m4/osmo_ac_code_coverage.m4 \

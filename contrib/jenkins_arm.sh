@@ -19,6 +19,7 @@ build() {
 	--disable-doxygen \
 	--disable-shared \
 	--disable-libsctp \
+	--disable-libusb \
 	--enable-external-tests \
 	CFLAGS="-Os -ffunction-sections -fdata-sections -nostartfiles -nodefaultlibs $WERROR_FLAGS"
 

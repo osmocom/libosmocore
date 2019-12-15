@@ -146,6 +146,19 @@ AS_IF([test "x$ENABLE_PCSC" = "xyes"], [
 AM_CONDITIONAL(ENABLE_PCSC, test "x$ENABLE_PCSC" = "xyes")
 AC_SUBST(ENABLE_PCSC)
 
+AC_ARG_ENABLE([libusb], [AS_HELP_STRING([--disable-libusb], [Build without libusb support])],
+    [
+        ENABLE_LIBUSB=$enableval
+    ],
+    [
+        ENABLE_LIBUSB="yes"
+    ])
+AS_IF([test "x$ENABLE_LIBUSB" = "xyes"], [
+	PKG_CHECK_MODULES(LIBUSB, libusb-1.0)
+])
+AM_CONDITIONAL(ENABLE_LIBUSB, test "x$ENABLE_LIBUSB" = "xyes")
+AC_SUBST(ENABLE_LIBUSB)
+
 AC_ARG_ENABLE([gnutls], [AS_HELP_STRING([--disable-gnutls], [Do not use GnuTLS fallback for missing getrandom()])],
 	[ENABLE_GNUTLS=$enableval], [ENABLE_GNUTLS="yes"])
 AM_CONDITIONAL(ENABLE_GNUTLS, test x"$ENABLE_GNUTLS" = x"yes")
@@ -398,12 +411,14 @@ AC_OUTPUT(
 	libosmogb.pc
 	libosmoctrl.pc
 	libosmosim.pc
+	libosmousb.pc
 	include/Makefile
 	src/Makefile
 	src/vty/Makefile
 	src/codec/Makefile
 	src/coding/Makefile
 	src/sim/Makefile
+	src/usb/Makefile
 	src/gsm/Makefile
 	src/gb/Makefile
 	src/ctrl/Makefile
