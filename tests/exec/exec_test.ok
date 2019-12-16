@@ -1,0 +1,46 @@
+
+==== osmo_environment_filter ====
+Input Environment:
+	FOO=1
+	BAR=2
+	USER=mahlzeit
+	BAZ=3
+	SHELL=/bin/sh
+Input Whitelist:
+	SHELL
+	USER
+Output Environment (3):
+	USER=mahlzeit
+	SHELL=/bin/sh
+Testing for NULL out
+Testing for zero-length out
+Testing for one-length out
+Testing for no filter
+Testing for no input
+Success!
+
+==== osmo_environment_append ====
+Input Environment:
+	FOO=a
+	BAR=b
+	BAZ=c
+Input Addition:
+	MAHL=zeit
+	GSM=global
+	UMTS=universal
+	LTE=evolved
+Output Environment (8)
+	FOO=a
+	BAR=b
+	BAZ=c
+	MAHL=zeit
+	GSM=global
+	UMTS=universal
+	LTE=evolved
+Success!
+
+==== osmo_close_all_fds_above ====
+Success!
+
+==== osmo_system_nowait ====
+Success!

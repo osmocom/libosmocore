@@ -23,6 +23,7 @@ nobase_include_HEADERS = \
                        osmocom/core/crcgen.h \
                        osmocom/core/endian.h \
                        osmocom/core/defs.h \
+                       osmocom/core/exec.h \
                        osmocom/core/fsm.h \
                        osmocom/core/gsmtap.h \
                        osmocom/core/gsmtap_util.h \
