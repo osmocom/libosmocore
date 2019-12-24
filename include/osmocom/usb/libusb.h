@@ -62,6 +62,14 @@ char *osmo_libusb_dev_get_path_c(void *ctx, libusb_device *dev);
 libusb_device **osmo_libusb_find_matching_usb_devs(void *ctx, struct libusb_context *luctx,
 						   const struct dev_id *dev_ids);
 
+libusb_device *osmo_libusb_find_matching_dev_path(struct libusb_context *luctx,
+						  const struct dev_id *dev_ids,
+						  const char *path);
+
+libusb_device *osmo_libusb_find_matching_dev_serial(struct libusb_context *luctx,
+						    const struct dev_id *dev_ids,
+						    const char *serial);
+
 int osmo_libusb_dev_find_matching_interfaces(libusb_device *dev, int class, int sub_class,
 					     int protocol, struct usb_interface_match *out,
 					     unsigned int out_len);

@@ -220,6 +220,152 @@ libusb_device **osmo_libusb_find_matching_usb_devs(void *ctx, struct libusb_cont
 	return out;
 }
 
+/*! Find a USB device of matching VendorID/ProductID at given path.
+ *  \param[in] luctx libusb context on which to operate
+ *  \param[in] dev_ids zer-oterminated array of VendorId/ProductId tuples
+ *  \param[in] path string representation of USB path
+ *  \returns libusb_device if there was exactly one match; NULL otherwise */
+libusb_device *osmo_libusb_find_matching_dev_path(struct libusb_context *luctx,
+						  const struct dev_id *dev_ids,
+						  const char *path)
+{
+	libusb_device **list;
+	libusb_device *match = NULL;
+	unsigned int i;
+	int rc;
+
+	rc = libusb_get_device_list(luctx, &list);
+	if (rc <= 0)
+		return NULL;
+
+	for (i = 0; list[i] != NULL; i++) {
+		struct libusb_device_descriptor dev_desc;
+		libusb_device *dev = list[i];
+		char pathbuf[128];
+
+		rc = libusb_get_device_descriptor(dev, &dev_desc);
+		if (rc < 0) {
+			LOGP(DLUSB, LOGL_ERROR, "couldn't get device descriptor\n");
+			continue;
+		}
+
+		/* check if device doesn't match */
+		if (!match_dev_ids(&dev_desc, dev_ids))
+			continue;
+
+		/* check if path doesn't match */
+		if (path) {
+			osmo_libusb_dev_get_path_buf(pathbuf, sizeof(pathbuf), dev);
+			if (strcmp(pathbuf, path))
+				continue;
+		}
+
+		if (match) {
+			/* we already have a match, but now found a second -> FAIL */
+			libusb_free_device_list(list, 1);
+			LOGP(DLUSB, LOGL_ERROR, "Found more than one matching USB device\n");
+			return NULL;
+		} else
+			match = dev;
+	}
+
+	if (!match) {
+		/* no match: free the list with automatic unref of all devices */
+		libusb_free_device_list(list, 1);
+		return NULL;
+	}
+
+	/* unref all devices *except* the match we found */
+	for (i = 0; list[i] != NULL; i++) {
+		libusb_device *dev = list[i];
+		if (dev != match)
+			libusb_unref_device(dev);
+	}
+	/* free the list *without* automatic unref of all devices */
+	libusb_free_device_list(list, 0);
+	return match;
+}
+
+/*! Find a USB device of matching VendorID/ProductID and given iSerial string.
+ *  \param[in] luctx libusb context on which to operate
+ *  \param[in] dev_ids zer-oterminated array of VendorId/ProductId tuples
+ *  \param[in] serial string representation of serial number
+ *  \returns libusb_device if there was exactly one match; NULL otherwise */
+libusb_device *osmo_libusb_find_matching_dev_serial(struct libusb_context *luctx,
+						    const struct dev_id *dev_ids,
+						    const char *serial)
+{
+	libusb_device **list;
+	libusb_device *match = NULL;
+	unsigned int i;
+	int rc;
+
+	rc = libusb_get_device_list(luctx, &list);
+	if (rc <= 0)
+		return NULL;
+
+	for (i = 0; list[i] != NULL; i++) {
+		struct libusb_device_descriptor dev_desc;
+		libusb_device *dev = list[i];
+
+		rc = libusb_get_device_descriptor(dev, &dev_desc);
+		if (rc < 0) {
+			LOGP(DLUSB, LOGL_ERROR, "couldn't get device descriptor\n");
+			continue;
+		}
+
+		/* check if device doesn't match */
+		if (!match_dev_ids(&dev_desc, dev_ids))
+			continue;
+
+		/* check if serial number string doesn't match */
+		if (serial) {
+			char strbuf[256];
+			libusb_device_handle *devh;
+			rc = libusb_open(dev, &devh);
+			if (rc < 0) {
+				LOGP(DLUSB, LOGL_ERROR, "Cannot open USB Device: %s\n",
+					libusb_strerror(rc));
+				/* there's no point in continuing here, as we don't know if there
+				 * are multiple matches if we cannot read the iSerial string of all
+				 * devices with matching vid/pid */
+				libusb_free_device_list(list, 1);
+				return NULL;
+			}
+			rc = libusb_get_string_descriptor_ascii(devh, dev_desc.iSerialNumber,
+								(uint8_t *) strbuf, sizeof(strbuf));
+			libusb_close(devh);
+			if (strcmp(strbuf, serial))
+				continue;
+		}
+
+		if (match) {
+			/* we already have a match, but now found a second -> FAIL */
+			libusb_free_device_list(list, 1);
+			LOGP(DLUSB, LOGL_ERROR, "Found more than one matching USB device\n");
+			return NULL;
+		} else
+			match = dev;
+	}
+
+	if (!match) {
+		/* no match: free the list with automatic unref of all devices */
+		libusb_free_device_list(list, 1);
+		return NULL;
+	}
+
+	/* unref all devices *except* the match we found */
+	for (i = 0; list[i] != NULL; i++) {
+		libusb_device *dev = list[i];
+		if (dev != match)
+			libusb_unref_device(dev);
+	}
+	/* free the list *without* automatic unref of all devices */
+	libusb_free_device_list(list, 0);
+	return match;
+}
+
+
 /*! find a matching interface among all interfaces of the given USB device.
  *  \param[in] dev USB device in which we shall search
  *  \param[in] class USB Interface Class to look for
