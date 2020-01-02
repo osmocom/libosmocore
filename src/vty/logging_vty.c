@@ -351,17 +351,17 @@ DEFUN(logging_level,
 	int category = log_parse_category(argv[0]);
 	int level = log_parse_level(argv[1]);
 
-	ACQUIRE_VTY_LOG_TGT_WITH_LOCK(vty, tgt);
-
 	if (level < 0) {
 		vty_out(vty, "Invalid level `%s'%s", argv[1], VTY_NEWLINE);
-		RET_WITH_UNLOCK(CMD_WARNING);
+		return CMD_WARNING;
 	}
 
 	if (category < 0) {
 		vty_out(vty, "Invalid category `%s'%s", argv[0], VTY_NEWLINE);
-		RET_WITH_UNLOCK(CMD_WARNING);
+		return CMD_WARNING;
 	}
+
+	ACQUIRE_VTY_LOG_TGT_WITH_LOCK(vty, tgt);
 
 	tgt->categories[category].enabled = 1;
 	tgt->categories[category].loglevel = level;
