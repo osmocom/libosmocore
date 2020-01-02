@@ -29,7 +29,7 @@ check_configureac_debctrl_deps_match() {
 	else
 		configureac_file="configure.ac"
 	fi
-	configureac_list=$(grep -e "PKG_CHECK_MODULES" "${GIT_TOPDIR}/${configureac_file}" | cut -d "," -f 2 | tr -d ")" | tr -d " " | sed "s/>=/ /g")
+	configureac_list=$(grep -e "PKG_CHECK_MODULES(" "${GIT_TOPDIR}/${configureac_file}" | cut -d "," -f 2 | tr -d ")" | tr -d "[" | tr -d "]" | tr -d " " | sed "s/>=/ /g")
 	echo "$configureac_list" | \
 	{ return_error=0
 	while read -r dep ver; do
