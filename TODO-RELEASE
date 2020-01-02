@@ -7,11 +7,3 @@
 # If any interfaces have been added since the last public release: c:r:a + 1.
 # If any interfaces have been removed or changed since the last public release: c:r:0.
 #library	what			description / commit summary line
-core		osmo_tdef_get()		change val_if_not_present arg from unsigned long to long to allow passing -1
-core		struct osmo_tdef	fields min_val,max_val added, ABI break (arrays of structs used in programs)
-gsm		API added		osmo_gsm48_rfpowercap2powerclass()
-gb		API added		bssgp_bvc_ctx_free()
-core		osmo_sockaddr_str_from_32n(),
-		osmo_sockaddr_str_to_32n()	Deprecate: named 'n' but use host byte order.
-core		osmo_sockaddr_str_from_32h(),
-		osmo_sockaddr_str_to_32h()	New, use host byte order and are named appropriately.

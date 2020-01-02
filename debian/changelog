@@ -1,3 +1,137 @@
+libosmocore (1.3.0) unstable; urgency=medium
+
+  [ Pau Espin Pedrol ]
+  * osmo-release.sh: Add DRY_RUN mode
+  * osmo-release.sh: Verify debian/rules dh_strip lines match LIBVERSION
+  * osmo-release.sh: Verify consistency of dependency versions in configure.ac and debian/control
+  * osmo-release.sh: Check patches under debian/patches apply
+  * osmo-release.sh: Support releasing openbsc.git
+  * vty: Register logp cmd next to logging commands
+  * tdef: Introduce API osmo_tdef_set()
+  * tdef_vty.h: Add missing header dependencies
+  * logging_internal.h: Fix osmo_log_info definition
+  * osmo-release.sh: update TODO-RELEASE for non-lib projects too
+  * logging: Move extern declaration of osmo_log_target_list from logging.h to logging_internal.h
+  * msgb: Allow size==headroom in msgb_alloc_headroom*()
+  * tdef: Introduce min_val and max_val fields
+  * tdef_test: verify case where osmo_tdef_set returns -EEXIST
+  * vty: Optionally Set/replace cfg file during cmd 'write file'
+  * logging: Introduce mutex API to manage log_target in multi-thread envs
+  * socket.c: Move glibc workarounds to same place in addrinfo_helper()
+  * vty: Fix go_parent_cb not called for indented nodes at end of cfg file
+  * tdef: Return correct snprintf value for osmo_tdef_range_str_buf()
+  * socket: Introduce API osmo_sock_init2_multiaddr()
+  * socket: Remove unneeded condition check in osmo_sock_init2_multiaddr()
+  * libosmocore.pc.in: Append -lsctp to Libs.private
+  * socket.c: build multiaddr socket API helpers only if used by public APIs
+  * configure: Introduce --disable-libsctp and error by default if libsctp not found
+  * vty: Return error if cmd returns CMD_WARNING while reading cfg file
+  * cosmetic: gsm_04_08.h: Fix trailing whitespace
+  * gsm_04_08.h: Introduce API osmo_gsm48_rfpowercap2powerclass()
+  * gsm: Fix compilation error under some compilers
+  * gsm: gsm_utils: Fix return type of API ms_class_gmsk_dbm() and add unit tests
+  * gsm: gsm_04_08.h: Allow accessing classmark2 as struct instead of uint32_t
+  * Introduce fields related to DTAP DLCI
+  * osmo-release.sh: Use set -e before applying changes to prepare release
+  * osmo-release.sh: Improve of PKG_CHECK_MODULES from configure.ac
+  * Drop empty file debian/patches/series
+
+  [ Harald Welte ]
+  * codec/ecu_fr: Mark input TCH frame as 'const' as we only read it
+  * context: Add support for [per-thread] global talloc contexts
+  * cbsp: Fix endless loop iteration when decoding cell list IEs
+  * cbsp: Remove printf() statement from early development/debugging
+  * cbsp: Fix decoding of WRITE-REPLACE payload
+  * codec/ecu: Introduce new generic Error Concealment Unit abstraction
+  * gsm_08_58: Add vendor-specific Message Type for ETWS Primary Warning
+  * Introduce BTS_FEAT_ETWS_PN for communicating ETWS PN capability
+  * sim/class_tables: Fix typo in comment
+  * cosmetic: clarify c_iflag in osmo_serial_init()
+  * select: Make file descriptor lists per-thread
+  * 04.80: Deprecate gsm0480_create_ussd_resp()
+  * Check for osmo_fsm_register() error return value
+  * gprs_ns_instantiate(): propagate errors from gprs_sns_init() to caller
+  * osmo-arfcn: Fix '-h' option
+  * utils: exit(2) on unsupported positional arguments on command line
+  * gsup: Introduce OSMO_GSUP_NUM_VECTORS_REQ_IE
+  * gprs_bssgp: Work around gcc-9 claiming "error=stringop-overflow"
+  * libosmocore libusb integration
+  * usb: Import a variety of libusb utility functions from simtrace
+  * debian/control: Add missing libusb-1.0-0-dev dependency
+  * Introduce helper functions for safe fork+exec of processes
+
+  [ Neels Hofmeyr ]
+  * add vty logp command to echo on all log targets
+  * osmo_tdef_get(): allow passing -1 as default timeout
+  * fix: vty crash by logging during VTY_CLOSED event handling
+  * OSMO_SOCKADDR_STR_FMT_ARGS: remove useless condition
+  * OSMO_SOCKADDR_STR_FMT_ARGS: guard against NULL pointer
+  * tdef: fixup osmo_tdef_set()
+  * gsup: add OSMO_GSUP_SUPPORTED_RAT_TYPES_IE and OSMO_GSUP_CURRENT_RAT_TYPE_IE
+  * API doc tweaks (mncc.h, gsm_08_08.h)
+  * add osmo_fsm_set_dealloc_ctx(), to help with use-after-free
+  * fsm: refuse state chg and events after term
+  * add osmo_sockaddr_str_is_nonzero()
+  * test: add OSMO_SOCKADDR_STR_FMT to sockaddr_str_test.c
+  * fix OSMO_SOCKADDR_STR_FMT for IPv6
+  * add osmo_sockaddr_str_cmp()
+  * utils.c: fix various inaccurate API doc about return values
+  * logging.h: define ansi color constants
+  * fix DLSMS logging category color: '[1:38m' isn't actually defined
+  * cosmetic: logging.h: fix comment s/levels/subsystems
+  * osmo_sockaddr_str: API doc: fix 32bit addr mixup of host/network byte order
+  * utils.h: add OSMO_NAME_C_IMPL() macro
+  * fix osmo_escape_str_c() and osmo_quote_str_c()
+  * GSUP: rename E_ROUTING_ERROR to ROUTING_ERROR
+  * fsm.h: add missing include of logging.h
+  * msgb_put: more elaborate logging of head/tailroom failure
+  * utils_test: add osmo_print_n_test()
+  * utils: add osmo_strnchr()
+  * osmo_sockaddr_str: deprecate osmo_sockaddr_str_*_32n()
+  * vty: track parent nodes also for telnet sessions
+  * vty_app_info.is_config_node: add OSMO_DEPRECATED
+  * add osmo_escape_cstr and osmo_quote_cstr
+  * add all missing OSMO_GSUP_TO_MSGT_*() macros
+
+  [ Oliver Smith ]
+  * Cosmetic: l1sap.h: change /* !< to /*!<
+  * logging.h: add L1 SAPI related context and filter
+  * gprs_ns_vty: return success for disabled FR/GRE
+  * debian, utils: switch to python 3
+
+  [ Ruben Undheim ]
+  * MAXPATHLEN set if not defined
+  * No fail if no /proc/cpuinfo
+
+  [ Philipp Maier ]
+  * cosmetic: Move comment to the right place
+  * cosmetic: Add comment on GSM-FR ECU struct
+  * ecu_fr: increase test coverage for FR ECU implementation
+  * gsm0508: add functions to calculate beginning of a block
+
+  [ Vadim Yanitskiy ]
+  * gsm29205_test: fix error: missing braces around initializer
+  * GPRS/BSSGP: introduce bssgp_bvc_ctx_free()
+  * logging/vty: do not print deprecated logging commands to stdout
+  * logging/vty: use LOG_LEVEL_ARGS in logging_vty_add_deprecated_subsys()
+  * logging/vty: fix: actually ignore deprecated logging commands
+  * logging/vty: fix vty_read_file(): do not write warnings to stdin
+  * logging/vty: fix: do not close stderr in vty_close()
+  * libosmovty: properly initialize vty->fd in vty_new()
+  * libosmovty: simplify condition checking vty->fd in vty_close()
+  * core/defs.h: introduce and use OSMO_DEPRECATED_OUTSIDE
+
+  [ Daniel Willmann ]
+  * libosmogsm: add support for XOR authentication
+
+  [ Vasil Velichkov ]
+  * Add code coverage support
+
+  [ Eric Wild ]
+  * sim: allow opening reader# > 0
+
+ -- Pau Espin Pedrol <pespin@sysmocom.de>  Thu, 02 Jan 2020 18:42:29 +0100
+
 libosmocore (1.2.0) unstable; urgency=medium
 
   [ Harald Welte ]
