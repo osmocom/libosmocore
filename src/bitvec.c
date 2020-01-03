@@ -497,7 +497,7 @@ uint64_t bitvec_read_field(struct bitvec *bv, unsigned int *read_index, unsigned
  *  \param[in] bv The boolean vector to work on
  *  \param[in,out] write_index Where writing supposed to start in the vector
  *  \param[in] len How many bits to write
- *  \returns next write index or negative value on error
+ *  \returns 0 on success, negative value on error
  */
 int bitvec_write_field(struct bitvec *bv, unsigned int *write_index, uint64_t val, unsigned int len)
 {
