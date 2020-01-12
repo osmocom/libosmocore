@@ -55,6 +55,31 @@ struct usb_interface_match {
 	uint8_t string_idx;
 };
 
+/*! Description of the USB device+interface we're looking for */
+struct osmo_usb_matchspec {
+	/*! specify the USB device */
+	struct {
+		int vendor_id;	/*!< typically -1 for compile time defaults */
+		int product_id;	/*!< typically -1 for compile time defaults */
+		char *path;	/*!< used for disambiguation when multiple matches; can be NULL */
+	} dev;
+
+	/*! specify the USB configuration */
+	int config_id;		/*!< typically -1 unless user selects specific configuration */
+
+	/*! specify the USB interface */
+	struct {
+		/* typically those three are set to application defaults */
+		int class;	/*!< -1 or a user-specified class */
+		int subclass;	/*!< -1 or a user-specified subclass */
+		int proto;	/*!< -1 or a user-specified protocol */
+
+		/* typically those two are -1; but user can override them */
+		int num;
+		int altsetting;
+	} intf;
+};
+
 
 char *osmo_libusb_dev_get_path_buf(char *buf, size_t bufsize, libusb_device *dev);
 char *osmo_libusb_dev_get_path_c(void *ctx, libusb_device *dev);
@@ -80,6 +105,11 @@ int osmo_libusb_find_matching_interfaces(libusb_context *luctx, const struct dev
 
 libusb_device_handle *osmo_libusb_open_claim_interface(void *ctx, libusb_context *luctx,
 							const struct usb_interface_match *ifm);
+
+void osmo_libusb_match_init(struct osmo_usb_matchspec *cfg, int if_class, int if_subclass, int if_proto);
+
+libusb_device_handle *osmo_libusb_find_open_claim(const struct osmo_usb_matchspec *cfg,
+						  const struct dev_id *default_dev_ids);
 
 int osmo_libusb_get_ep_addrs(libusb_device_handle *devh, unsigned int if_num,
 			     uint8_t *out, uint8_t *in, uint8_t *irq);
