@@ -590,6 +590,102 @@ libusb_device_handle *osmo_libusb_open_claim_interface(void *ctx, libusb_context
 	return usb_devh;
 }
 
+void osmo_libusb_match_init(struct osmo_usb_matchspec *cfg, int if_class, int if_subclass, int if_proto)
+{
+	cfg->dev.vendor_id = -1;
+	cfg->dev.product_id = -1;
+	cfg->dev.path = NULL;
+
+	cfg->config_id = -1;
+
+	cfg->intf.class = if_class;
+	cfg->intf.subclass = if_subclass;
+	cfg->intf.proto = if_proto;
+
+	cfg->intf.num = cfg->intf.altsetting = -1;
+}
+
+
+/*! high-level all-in-one function for USB device, config + interface matching + opening.
+ * This function offers the highest level of API among all libosmousb helper functions. It
+ * is intended as a one-stop shop for everything related to grabbing an interface.
+ *
+ *   1) looks for a device matching either the VID/PID from 'cfg' or 'default_dev_ids',
+ *      if more than one is found, the user is expected to fill in cfg->dev.path to disambiguate.
+ *   2) find any interfaces on the device that match the specification in 'cfg'. The match
+ *      could be done based on any of (class, subclass, proto, interface number).  If there
+ *      are multiple matches, the caller must disambiguate by specifying the interface number.
+ *   3) open the USB device; set the configuration (if needed); claim the interface and set
+ *      the altsetting
+ *
+ *  \param[in] cfg user-supplied match configuration (from command line or config file)
+ *  \param[in] default_dev_ids Default list of supported VendorId/ProductIds
+ *  \returns libusb_device_handle on success, NULL on error
+ */
+libusb_device_handle *osmo_libusb_find_open_claim(const struct osmo_usb_matchspec *cfg,
+						  const struct dev_id *default_dev_ids)
+{
+	struct usb_interface_match if_matches[16];
+	struct usb_interface_match *ifm = NULL;
+	libusb_device_handle *usb_devh = NULL;
+	struct dev_id user_dev_ids[2] = {
+		{ cfg->dev.vendor_id, cfg->dev.product_id },
+		{ 0, 0 }
+	};
+	const struct dev_id *dev_ids = default_dev_ids;
+	libusb_device *dev;
+	int rc, i;
+
+	/* Stage 1: Find a device matching either the user-specified VID/PID or
+	 * the list of IDs in default_dev_ids plus optionally the user-specified path */
+	if (cfg->dev.vendor_id != -1 || cfg->dev.product_id != -1)
+		dev_ids = user_dev_ids;
+	dev = osmo_libusb_find_matching_dev_path(NULL, dev_ids, cfg->dev.path);
+	if (!dev)
+		goto close_exit;
+
+	/* Stage 2: Find any interfaces matching the class/subclass/proto as specified */
+	rc = osmo_libusb_dev_find_matching_interfaces(dev, cfg->intf.class, cfg->intf.subclass,
+						      cfg->intf.proto, if_matches, sizeof(if_matches));
+	if (rc < 1) {
+		LOGP(DLUSB, LOGL_NOTICE, "can't find matching USB interface at device\n");
+		goto close_exit;
+	} else if (rc == 1) {
+		ifm = if_matches;
+	} else if (rc > 1) {
+		if (cfg->intf.num == -1) {
+			LOGP(DLUSB, LOGL_ERROR, "Found %d matching USB interfaces, you "
+				"have to specify the interface number\n", rc);
+			goto close_exit;
+		}
+		for (i = 0; i < rc; i++) {
+			if (if_matches[i].interface == cfg->intf.num) {
+				ifm = &if_matches[i];
+				break;
+			}
+			/* FIXME: match altsetting */
+		}
+	}
+	if (!ifm) {
+		LOGP(DLUSB, LOGL_NOTICE, "Couldn't find matching interface\n");
+		goto close_exit;
+	}
+
+	/* Stage 3: Open device; set config (if required); claim interface; set altsetting */
+	usb_devh = osmo_libusb_open_claim_interface(NULL, NULL, ifm);
+	if (!usb_devh) {
+		LOGP(DLUSB, LOGL_ERROR, "can't open USB device (permissions issue?)\n");
+		goto close_exit;
+	}
+	return usb_devh;
+close_exit:
+	/* release if_matches */
+	if (usb_devh)
+		libusb_close(usb_devh);
+
+	return NULL;
+}
+
 /*! obtain the endpoint addresses for a given USB interface.
  *  \param[in] devh USB device handle on which to operate
  *  \param[in] if_num USB Interface number on which to operate
