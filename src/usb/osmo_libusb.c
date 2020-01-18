@@ -334,6 +334,12 @@ libusb_device *osmo_libusb_find_matching_dev_serial(struct libusb_context *luctx
 			}
 			rc = libusb_get_string_descriptor_ascii(devh, dev_desc.iSerialNumber,
 								(uint8_t *) strbuf, sizeof(strbuf));
+			if (rc < 0) {
+				LOGP(DLUSB, LOGL_ERROR, "Cannot read USB Descriptor: %s\n",
+					libusb_strerror(rc));
+				libusb_close(devh);
+				continue;
+			}
 			libusb_close(devh);
 			if (strcmp(strbuf, serial))
 				continue;
