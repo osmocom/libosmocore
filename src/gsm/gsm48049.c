@@ -95,7 +95,7 @@ const struct tlv_definition cbsp_att_tlvdef = {
 		[CBSP_IEI_RR_LOADING_LIST] =		{ TLV_TYPE_TL16V },
 		[CBSP_IEI_CAUSE] =			{ TLV_TYPE_TV },
 		[CBSP_IEI_DCS] =			{ TLV_TYPE_TV },
-		[CBSP_IEI_RECOVERY_IND]			{ TLV_TYPE_TV },
+		[CBSP_IEI_RECOVERY_IND] =		{ TLV_TYPE_TV },
 		[CBSP_IEI_MSG_ID] =			{ TLV_TYPE_FIXED, 2 },
 		[CBSP_IEI_EMERG_IND] =			{ TLV_TYPE_TV },
 		[CBSP_IEI_WARN_TYPE] =			{ TLV_TYPE_FIXED, 2 },
