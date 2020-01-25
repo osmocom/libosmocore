@@ -361,10 +361,10 @@ static char *timer_doc_string(const char *prefix, const char *suffix)
  * The given timer definitions group is stored in a global pointer, so this can be done only once per main() scope.
  * It would also be possible to have distinct timer groups on separate VTY subnodes, with a "manual" implementation, but
  * not with this API.
- * \param[in] parent_node  VTY node id at which to add the timer group commands, e.g. CONFIG_NODE.
+ * \param[in] parent_cfg_node  VTY node at which to add the timer configuration commands, e.g. CONFIG_NODE.
  * \param[in] groups  Global timer groups definition.
  */
-void osmo_tdef_vty_groups_init(enum node_type parent_node, struct osmo_tdef_group *groups)
+void osmo_tdef_vty_groups_init(unsigned int parent_cfg_node, struct osmo_tdef_group *groups)
 {
 	struct osmo_tdef_group *g;
 	OSMO_ASSERT(!global_tdef_groups);
@@ -380,7 +380,7 @@ void osmo_tdef_vty_groups_init(enum node_type parent_node, struct osmo_tdef_grou
 	cfg_timer_cmd.doc = timer_doc_string("Configure or show timers\n", OSMO_TDEF_VTY_DOC_SET);
 
 	install_element_ve(&show_timer_cmd);
-	install_element(parent_node, &cfg_timer_cmd);
+	install_element(parent_cfg_node, &cfg_timer_cmd);
 }
 
 /*! Write the global osmo_tdef_group configuration to VTY, as previously passed to osmo_tdef_vty_groups_init().
