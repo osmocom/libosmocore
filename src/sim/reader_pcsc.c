@@ -87,11 +87,14 @@ static struct osim_reader_hdl *pcsc_reader_open(int num, const char *id, void *c
 		num_readers++;
 	}
 
-	if (num != num_readers)
+	if (num != num_readers) {
+		SCardFreeMemory(st->hContext, mszReaders);
 		goto end;
+	}
 
 	st->name = talloc_strdup(rh, ptr);
 	st->dwActiveProtocol = -1;
+	SCardFreeMemory(st->hContext, mszReaders);
 
 	return rh;
 end:
