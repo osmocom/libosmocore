@@ -40,7 +40,7 @@
 
 /*! A mapping between human-readable string and numeric value */
 struct value_string {
-	unsigned int value;	/*!< numeric value */
+	int value;		/*!< numeric value */
 	const char *str;	/*!< human-readable string */
 };
 
