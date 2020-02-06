@@ -47,6 +47,7 @@
 #include <osmocom/coding/gsm0503_tables.h>
 #include <osmocom/coding/gsm0503_coding.h>
 #include <osmocom/coding/gsm0503_parity.h>
+#include <osmocom/coding/gsm0503_amr_dtx.h>
 
 /*! \mainpage libosmocoding Documentation
  *
@@ -1635,6 +1636,39 @@ static void tch_amr_disassemble(ubit_t *d_bits, const uint8_t *tch_data, int len
 		d_bits[i] = (tch_data[j >> 3] >> (7 - (j & 7))) & 1;
 }
 
+/* Append STI and MI bits to the SID_UPDATE frame, see also
+ * 3GPP TS 26.101, chapter 4.2.3 AMR Core Frame with comfort noise bits */
+static void tch_amr_sid_update_append(ubit_t *sid_update, uint8_t sti, uint8_t mi)
+{
+	/* Zero out the space that had been used by the CRC14 */
+	memset(sid_update + 35, 0, 14);
+
+	/* Append STI and MI parameters */
+	sid_update[35] = sti & 1;
+	sid_update[36] = mi & 1;
+	sid_update[37] = mi >> 1 & 1;
+	sid_update[38] = mi >> 2 & 1;
+}
+
+/* Extract a SID UPDATE fram the sbits of an FR AMR frame */
+static void extract_afs_sid_update(sbit_t *sid_update, const sbit_t *sbits)
+{
+
+	unsigned int i;
+
+	sbits += 32;
+
+	for (i = 0; i < 53; i++) {
+		sid_update[0] = sbits[0];
+		sid_update[1] = sbits[1];
+		sid_update[2] = sbits[2];
+		sid_update[3] = sbits[3];
+		sid_update += 4;
+		sbits += 8;
+	}
+
+}
+
 /* re-arrange according to TS 05.03 Table 2 (receiver) */
 static void tch_fr_d_to_b(ubit_t *b_bits, const ubit_t *d_bits)
 {
@@ -2101,10 +2135,37 @@ int gsm0503_tch_afs_decode(uint8_t *tch_data, const sbit_t *bursts,
 	int codec_mode_req, uint8_t *codec, int codecs, uint8_t *ft,
 	uint8_t *cmr, int *n_errors, int *n_bits_total)
 {
+	return gsm0503_tch_afs_decode_dtx(tch_data, bursts, codec_mode_req,
+					  codec, codecs, ft, cmr, n_errors,
+					  n_bits_total, NULL);
+}
+
+/*! Perform channel decoding of a TCH/AFS channel according TS 05.03
+ *  \param[out] tch_data Codec frame in RTP payload format
+ *  \param[in] bursts buffer containing the symbols of 8 bursts
+ *  \param[in] codec_mode_req is this CMR (1) or CMC (0)
+ *  \param[in] codec array of active codecs (active codec set)
+ *  \param[in] codecs number of codecs in \a codec
+ *  \param ft Frame Type; Input if \a codec_mode_req = 1, Output *  otherwise
+ *  \param[out] cmr Output in \a codec_mode_req = 1
+ *  \param[out] n_errors Number of detected bit errors
+ *  \param[out] n_bits_total Total number of bits
+ *  \param[inout] dtx DTX frame type output, previous DTX frame type input
+ *  \returns (>=4) length of bytes used in \a tch_data output buffer; ([0,3])
+ *  	     codec out of range; negative on error
+ */
+int gsm0503_tch_afs_decode_dtx(uint8_t *tch_data, const sbit_t *bursts,
+	int codec_mode_req, uint8_t *codec, int codecs, uint8_t *ft,
+	uint8_t *cmr, int *n_errors, int *n_bits_total, uint8_t *dtx)
+{
 	sbit_t iB[912], cB[456], h;
 	ubit_t d[244], p[6], conv[250];
 	int i, j, k, best = 0, rv, len, steal = 0, id = 0;
+	ubit_t cBd[456];
 	*n_errors = 0; *n_bits_total = 0;
+	static ubit_t sid_first_dummy[64] = { 0 };
+	sbit_t sid_update_enc[256];
+	uint8_t dtx_prev;
 
 	for (i=0; i<8; i++) {
 		gsm0503_tch_burst_unmap(&iB[i * 114], &bursts[i * 116], &h, i >> 2);
@@ -2121,6 +2182,50 @@ int gsm0503_tch_afs_decode(uint8_t *tch_data, const sbit_t *bursts,
 		}
 
 		return GSM_MACBLOCK_LEN;
+	}
+
+	/* Determine the DTX frame type (SID_UPDATE, ONSET etc...) */
+	if (dtx) {
+		osmo_sbit2ubit(cBd, cB, 456);
+		dtx_prev = *dtx;
+		*dtx = gsm0503_detect_afs_dtx_frame(n_errors, n_bits_total, cBd);
+
+		if (dtx_prev == AFS_SID_UPDATE && *dtx == AMR_OTHER) {
+			/* NOTE: The AFS_SID_UPDATE frame is splitted into
+			 * two half rate frames. If the id marker frame
+			 * (AFS_SID_UPDATE) is detected the following frame
+			 * contains the actual comfort noised data part of
+			 * (AFS_SID_UPDATE_CN). */
+			*dtx = AFS_SID_UPDATE_CN;
+
+			extract_afs_sid_update(sid_update_enc, cB);
+			osmo_conv_decode_ber(&gsm0503_tch_axs_sid_update,
+					     sid_update_enc, conv, n_errors,
+					     n_bits_total);
+			rv = osmo_crc16gen_check_bits(&gsm0503_amr_crc14, conv,
+						      35, conv + 35);
+			if (rv != 0) {
+				/* Error checking CRC14 for an AMR SID_UPDATE frame */
+				return -1;
+			}
+
+			tch_amr_sid_update_append(conv, 1,
+						  (codec_mode_req) ? codec[*ft]
+						  : codec[id]);
+			tch_amr_reassemble(tch_data, conv, 39);
+			len = 5;
+			goto out;
+		} else if (*dtx == AFS_SID_FIRST) {
+			tch_amr_sid_update_append(sid_first_dummy, 0,
+						  (codec_mode_req) ? codec[*ft]
+						  : codec[id]);
+			tch_amr_reassemble(tch_data, conv, 39);
+			len = 5;
+			goto out;
+		} else if (*dtx == AFS_ONSET) {
+			len = 0;
+			goto out;
+		}
 	}
 
 	for (i = 0; i < 4; i++) {
@@ -2283,6 +2388,7 @@ int gsm0503_tch_afs_decode(uint8_t *tch_data, const sbit_t *bursts,
 		return -1;
 	}
 
+out:
 	/* Change codec request / indication, if frame is valid */
 	if (codec_mode_req)
 		*cmr = id;
@@ -2480,9 +2586,36 @@ int gsm0503_tch_ahs_decode(uint8_t *tch_data, const sbit_t *bursts, int odd,
 	int codec_mode_req, uint8_t *codec, int codecs, uint8_t *ft,
 	uint8_t *cmr, int *n_errors, int *n_bits_total)
 {
+	return gsm0503_tch_ahs_decode_dtx(tch_data, bursts, odd, codec_mode_req,
+					  codec, codecs, ft, cmr, n_errors,
+					  n_bits_total, NULL);
+}
+
+/*! Perform channel decoding of a TCH/AFS channel according TS 05.03
+ *  \param[out] tch_data Codec frame in RTP payload format
+ *  \param[in] bursts buffer containing the symbols of 8 bursts
+ *  \param[in] odd Is this an odd (1) or even (0) frame number?
+ *  \param[in] codec_mode_req is this CMR (1) or CMC (0)
+ *  \param[in] codec array of active codecs (active codec set)
+ *  \param[in] codecs number of codecs in \a codec
+ *  \param ft Frame Type; Input if \a codec_mode_req = 1, Output *  otherwise
+ *  \param[out] cmr Output in \a codec_mode_req = 1
+ *  \param[out] n_errors Number of detected bit errors
+ *  \param[out] n_bits_total Total number of bits
+ *  \param[inout] dtx DTX frame type output, previous DTX frame type input
+ *  \returns (>=4) length of bytes used in \a tch_data output buffer; ([0,3])
+ *  	     codec out of range; negative on error
+ */
+int gsm0503_tch_ahs_decode_dtx(uint8_t *tch_data, const sbit_t *bursts, int odd,
+	int codec_mode_req, uint8_t *codec, int codecs, uint8_t *ft,
+	uint8_t *cmr, int *n_errors, int *n_bits_total, uint8_t *dtx)
+{
 	sbit_t iB[912], cB[456], h;
 	ubit_t d[244], p[6], conv[135];
 	int i, j, k, best = 0, rv, len, steal = 0, id = 0;
+	ubit_t cBd[456];
+	static ubit_t sid_first_dummy[64] = { 0 };
+	uint8_t dtx_prev;
 
 	/* only unmap the stealing bits */
 	if (!odd) {
@@ -2525,6 +2658,52 @@ int gsm0503_tch_ahs_decode(uint8_t *tch_data, const sbit_t *bursts, int odd,
 	}
 
 	gsm0503_tch_hr_deinterleave(cB, iB);
+
+	/* Determine the DTX frame type (SID_UPDATE, ONSET etc...) */
+	if (dtx) {
+		osmo_sbit2ubit(cBd, cB, 456);
+		dtx_prev = *dtx;
+		*dtx = gsm0503_detect_ahs_dtx_frame(n_errors, n_bits_total, cBd);
+
+		if (dtx_prev == AHS_SID_UPDATE && *dtx == AMR_OTHER) {
+			/* NOTE: The AHS_SID_UPDATE frame is splitted into
+			 * two half rate frames. If the id marker frame
+			 * (AHS_SID_UPDATE) is detected the following frame
+			 * contains the actual comfort noised data part of
+			 * (AHS_SID_UPDATE_CN). */
+			*dtx = AHS_SID_UPDATE_CN;
+
+			osmo_conv_decode_ber(&gsm0503_tch_axs_sid_update,
+					     cB + 16, conv, n_errors,
+					     n_bits_total);
+			rv = osmo_crc16gen_check_bits(&gsm0503_amr_crc14, conv,
+						      35, conv + 35);
+			if (rv != 0) {
+				/* Error checking CRC14 for an AMR SID_UPDATE frame */
+				return -1;
+			}
+
+			tch_amr_sid_update_append(conv, 1,
+						  (codec_mode_req) ? codec[*ft]
+						  : codec[id]);
+			tch_amr_reassemble(tch_data, conv, 39);
+			len = 5;
+			goto out;
+		} else if (*dtx == AHS_SID_FIRST_P2) {
+			tch_amr_sid_update_append(sid_first_dummy, 0,
+						  (codec_mode_req) ? codec[*ft]
+						  : codec[id]);
+			tch_amr_reassemble(tch_data, sid_first_dummy, 39);
+			len = 5;
+			goto out;
+		} else if (*dtx == AHS_SID_UPDATE || *dtx == AHS_ONSET
+			   || *dtx == AHS_SID_FIRST_INH
+			   || *dtx == AHS_SID_UPDATE_INH
+			   || *dtx == AHS_SID_FIRST_P1) {
+			len = 0;
+			goto out;
+		}
+	}
 
 	for (i = 0; i < 4; i++) {
 		for (j = 0, k = 0; j < 4; j++)
@@ -2670,6 +2849,7 @@ int gsm0503_tch_ahs_decode(uint8_t *tch_data, const sbit_t *bursts, int odd,
 		return -1;
 	}
 
+out:
 	/* Change codec request / indication, if frame is valid */
 	if (codec_mode_req)
 		*cmr = id;

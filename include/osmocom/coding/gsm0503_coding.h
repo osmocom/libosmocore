@@ -58,12 +58,18 @@ int gsm0503_tch_afs_encode(ubit_t *bursts, const uint8_t *tch_data, int len,
 int gsm0503_tch_afs_decode(uint8_t *tch_data, const sbit_t *bursts,
 	int codec_mode_req, uint8_t *codec, int codecs, uint8_t *ft,
 	uint8_t *cmr, int *n_errors, int *n_bits_total);
+int gsm0503_tch_afs_decode_dtx(uint8_t *tch_data, const sbit_t *bursts,
+	int codec_mode_req, uint8_t *codec, int codecs, uint8_t *ft,
+	uint8_t *cmr, int *n_errors, int *n_bits_total, uint8_t *dtx);
 
 int gsm0503_tch_ahs_encode(ubit_t *bursts, const uint8_t *tch_data, int len,
 	int codec_mode_req, uint8_t *codec, int codecs, uint8_t ft, uint8_t cmr);
 int gsm0503_tch_ahs_decode(uint8_t *tch_data, const sbit_t *bursts, int odd,
 	int codec_mode_req, uint8_t *codec, int codecs, uint8_t *ft,
 	uint8_t *cmr, int *n_errors, int *n_bits_total);
+int gsm0503_tch_ahs_decode_dtx(uint8_t *tch_data, const sbit_t *bursts, int odd,
+	int codec_mode_req, uint8_t *codec, int codecs, uint8_t *ft,
+	uint8_t *cmr, int *n_errors, int *n_bits_total, uint8_t *dtx);
 
 int gsm0503_rach_ext_encode(ubit_t *burst, uint16_t ra, uint8_t bsic, bool is_11bit);
 int gsm0503_rach_encode(ubit_t *burst, const uint8_t *ra, uint8_t bsic) OSMO_DEPRECATED("Use gsm0503_rach_ext_encode() instead");
