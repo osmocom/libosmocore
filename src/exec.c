@@ -217,6 +217,9 @@ int osmo_system_nowait(const char *command, const char **env_whitelist, char **a
 		/* close all file descriptors above stdio */
 		osmo_close_all_fds_above(2);
 
+		/* man execle: "an array of pointers *must* be terminated by a null pointer" */
+		new_env[0] = NULL;
+
 		/* build the new environment */
 		if (env_whitelist)
 			osmo_environment_filter(new_env, ARRAY_SIZE(new_env), environ, env_whitelist);
