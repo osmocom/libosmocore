@@ -86,6 +86,7 @@ static void osmo_usb_added_cb(int fd, short events, void *user_data)
 	struct osmo_fd *ofd = talloc_zero(OTC_GLOBAL, struct osmo_fd);
 	libusb_context *luctx = user_data;
 	unsigned int when = 0;
+	int rc;
 
 	if (events & POLLIN)
 		when |= OSMO_FD_READ;
@@ -93,7 +94,9 @@ static void osmo_usb_added_cb(int fd, short events, void *user_data)
 		when |= OSMO_FD_WRITE;
 
 	osmo_fd_setup(ofd, fd, when, osmo_usb_fd_cb, luctx, 0);
-	osmo_fd_register(ofd);
+	rc = osmo_fd_register(ofd);
+	if (rc)
+		LOGP(DLUSB, LOGL_ERROR, "osmo_fd_register() failed with rc=%d\n", rc);
 }
 
 /* called by libusb if it wants to remove a file-descriptor */
