@@ -221,10 +221,16 @@ int osmo_system_nowait(const char *command, const char **env_whitelist, char **a
 		new_env[0] = NULL;
 
 		/* build the new environment */
-		if (env_whitelist)
-			osmo_environment_filter(new_env, ARRAY_SIZE(new_env), environ, env_whitelist);
-		if (addl_env)
-			osmo_environment_append(new_env, ARRAY_SIZE(new_env), addl_env);
+		if (env_whitelist) {
+			rc = osmo_environment_filter(new_env, ARRAY_SIZE(new_env), environ, env_whitelist);
+			if (rc < 0)
+				return rc;
+		}
+		if (addl_env) {
+			rc = osmo_environment_append(new_env, ARRAY_SIZE(new_env), addl_env);
+			if (rc < 0)
+				return rc;
+		}
 
 		/* if we want to behave like system(3), we must go via the shell */
 		execle("/bin/sh", "sh", "-c", command, (char *) NULL, new_env);
