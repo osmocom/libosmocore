@@ -418,6 +418,8 @@ struct bitvec *bitvec_alloc(unsigned int size, TALLOC_CTX *ctx)
  *  \param[in] bit vector to free */
 void bitvec_free(struct bitvec *bv)
 {
+	if (bv == NULL)
+		return;
 	talloc_free(bv->data);
 	talloc_free(bv);
 }
