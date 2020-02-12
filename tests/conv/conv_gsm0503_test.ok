@@ -6,6 +6,38 @@
 [..] Encoding / Decoding cycle : OK
 [..] Encoding / Decoding cycle : OK
 
+[+] Testing: gsm0503_tch_f24
+[.] Input length  : ret =  72  exp =  72 -> OK
+[.] Output length : ret = 456  exp = 456 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
+[+] Testing: gsm0503_tch_f48
+[.] Input length  : ret = 152  exp = 152 -> OK
+[.] Output length : ret = 468  exp = 468 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
+[+] Testing: gsm0503_tch_f96
+[.] Input length  : ret = 240  exp = 240 -> OK
+[.] Output length : ret = 456  exp = 456 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
+[+] Testing: gsm0503_tch_f144
+[.] Input length  : ret = 290  exp = 290 -> OK
+[.] Output length : ret = 456  exp = 456 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
 [+] Testing: gsm0503_rach
 [.] Input length  : ret =  14  exp =  14 -> OK
 [.] Output length : ret =  36  exp =  36 -> OK
