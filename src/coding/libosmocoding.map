@@ -76,6 +76,8 @@ gsm0503_xcch_deinterleave;
 gsm0503_xcch_interleave;
 gsm0503_tch_fr_deinterleave;
 gsm0503_tch_fr_interleave;
+gsm0503_tch_f96_deinterleave;
+gsm0503_tch_f96_interleave;
 gsm0503_tch_hr_deinterleave;
 gsm0503_tch_hr_interleave;
 gsm0503_mcs1_ul_deinterleave;

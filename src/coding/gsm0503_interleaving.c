@@ -678,4 +678,56 @@ void gsm0503_tch_hr_interleave(const ubit_t *cB, ubit_t *iB)
 	}
 }
 
+/* 3GPP TS 45.003 Section 3.3.4
+ * The coded bits are reordered and interleaved according to the following rule:
+ *	i(B,j) = c(n,k) for k = 0,1,...,455
+ *		n = 0,1,...,N,N + 1,...
+ *		B = B0 +4n + (k mod 19) + (k div 114)
+ *		j = (k mod 19) + 19 (k mod 6)
+ *
+ * The result of the interleaving is a distribution of the reordered 114
+ * bit of a given data block, n = N, over 19 blocks, 6 bits equally
+ * distributed in each block, in a diagonal way over consecutive blocks.
+ *
+ * Or in other words the interleaving is a distribution of the encoded,
+ * reordered 456 bits from four given input data blocks, which taken
+ * together give n = N, over 22 bursts, 6 bits equally distributed in
+ * the first and 22 nd bursts, 12 bits distributed in the second and 21
+ * st bursts, 18 bits distributed in the third and 20 th bursts and 24
+ * bits distributed in the other 16 bursts.
+ *
+ * The block of coded data is interleaved "diagonal", where a new block
+ * of coded data starts with every fourth burst and is distributed over
+ * 22 bursts.
+ *
+ * Also used for TCH/F4.8, TCH/H4.8, TCH/F2.4 and TCH/H2.4 and TCH/F14.4 */
+void gsm0503_tch_f96_interleave(const ubit_t *cB, ubit_t *iB)
+{
+	int j, k, B;
+
+	for (k = 0; k < 456; k++) {
+		/* upper bound for B: 4*n + 18 + 4 = 4*n + 22 */
+		B = /* B0 + 4n + */ (k % 19) + (k / 114);
+		/* upper bound for j: 18 + 19*5 = 113 */
+		j = (k % 19) + 19 * (k % 6);
+		/* upper iB index: 4*n+23*114-1 */
+		iB[B * 114 + j] = cB[k];
+	}
+}
+
+void gsm0503_tch_f96_deinterleave(sbit_t *cB, const sbit_t *iB)
+{
+	int j, k, B;
+
+	for (k = 0; k < 456; k++) {
+		/* upper bound for B: 4*n + 18 + 4 = 4*n + 22 */
+		B = /* B0 + 4n + */ (k % 19) + (k / 114);
+		/* upper bound for j: 18 + 19*5 = 113 */
+		j = (k % 19) + 19 * (k % 6);
+		/* upper iB index: 4*n+23*114-1 */
+		cB[k] = iB[B * 114 + j];
+	}
+}
+
+
 /*! @} */
