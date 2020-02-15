@@ -135,6 +135,7 @@ enum osim_file_type {
 	TYPE_ADF,	/*!< Application Dedicated File */
 	TYPE_EF,	/*!< Entry File */
 	TYPE_EF_INT,	/*!< Internal Entry File */
+	TYPE_MF,	/*!< Master File */
 };
 
 enum osim_ef_type {

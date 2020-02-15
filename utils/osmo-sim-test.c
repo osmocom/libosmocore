@@ -33,6 +33,8 @@
 
 /* FIXME: this needs to be moved to card_fs_uicc.c */
 
+static uint8_t g_class = 0x00; /* UICC/USIM */
+
 /* 11.1.1 */
 static struct msgb *_select_file(struct osim_chan_hdl *st, uint8_t p1, uint8_t p2,
 			const uint8_t *data, uint8_t data_len)
@@ -40,7 +42,7 @@ static struct msgb *_select_file(struct osim_chan_hdl *st, uint8_t p1, uint8_t p
 	struct msgb *msg;
 	uint8_t *dst;
 
-	msg = osim_new_apdumsg(0x00, 0xA4, p1, p2, data_len, 256);
+	msg = osim_new_apdumsg(g_class, 0xA4, p1, p2, data_len, 256);
 	dst = msgb_put(msg, data_len);
 	memcpy(dst, data, data_len);
 
@@ -59,8 +61,13 @@ static struct msgb *select_adf(struct osim_chan_hdl *st, const uint8_t *adf, uin
 static struct msgb *select_file(struct osim_chan_hdl *st, uint16_t fid)
 {
 	uint16_t cfid = htons(fid);
+	uint8_t p2 = 0x04;
 
-	return _select_file(st, 0x00, 0x04, (uint8_t *)&cfid, 2);
+	/* Classic SIM cards don't support 0x04 (Return FCP) */
+	if (g_class == 0xA0)
+		p2 = 0x00;
+
+	return _select_file(st, 0x00, p2, (uint8_t *)&cfid, 2);
 }
 
 /* 11.1.9 */
@@ -72,7 +79,7 @@ static int verify_pin(struct osim_chan_hdl *st, uint8_t pin_nr, char *pin)
 	if (strlen(pin) > 8)
 		return -EINVAL;
 
-	msg = osim_new_apdumsg(0x00, 0x20, 0x00, pin_nr, 8, 0);
+	msg = osim_new_apdumsg(g_class, 0x20, 0x00, pin_nr, 8, 0);
 	pindst = (char *) msgb_put(msg, 8);
 	memset(pindst, 0xFF, 8);
 	/* Do not copy the terminating \0 */
@@ -86,7 +93,7 @@ static struct msgb *read_record_nr(struct osim_chan_hdl *st, uint8_t rec_nr, uin
 {
 	struct msgb *msg;
 
-	msg = osim_new_apdumsg(0x00, 0xB2, rec_nr, 0x04, 0, rec_size);
+	msg = osim_new_apdumsg(g_class, 0xB2, rec_nr, 0x04, 0, rec_size);
 
 	osim_transceive_apdu(st, msg);
 
@@ -101,7 +108,7 @@ static struct msgb *read_binary(struct osim_chan_hdl *st, uint16_t offset, uint1
 	if (offset > 0x7fff || len > 256)
 		return NULL;
 
-	msg = osim_new_apdumsg(0x00, 0xB0, offset >> 8, offset & 0xff, 0, len & 0xff);
+	msg = osim_new_apdumsg(g_class, 0xB0, offset >> 8, offset & 0xff, 0, len & 0xff);
 
 	osim_transceive_apdu(st, msg);
 
@@ -175,7 +182,61 @@ static int osim_fcp_fd_decode(struct osim_fcp_fd_decoded *ofd, const uint8_t *fc
 	return 0;
 }
 
+/* TS 51.011 Section 9.3 Type of File */
+static const enum osim_file_type sim2ftype[8] = {
+	[1] = TYPE_MF,
+	[2] = TYPE_DF,
+	[4] = TYPE_EF,
+};
+
+/* TS 51.011 Section 9.3 Structure of File */
+static const enum osim_ef_type sim2eftype[8] = {
+	[0] = EF_TYPE_TRANSP,
+	[1] = EF_TYPE_RECORD_FIXED,
+	[3] = EF_TYPE_RECORD_CYCLIC,
+};
+
+/* TS 51.011 Section 9.2.1 */
+static int osim_fcp_fd_decode_sim(struct osim_fcp_fd_decoded *ofd, const uint8_t *fcp, int fcp_len)
+{
+	memset(ofd, 0, sizeof(*ofd));
+
+	if (fcp_len < 14)
+		return -EINVAL;
+
+	ofd->type = sim2ftype[fcp[6] & 7];
+	switch (ofd->type) {
+	case TYPE_EF:
+		ofd->ef_type = sim2eftype[fcp[13] & 7];
+		if (fcp_len < 13 + fcp[12])
+			return -EINVAL;
+		switch (ofd->ef_type) {
+		case EF_TYPE_RECORD_FIXED:
+		case EF_TYPE_RECORD_CYCLIC:
+			if (fcp_len < 15)
+				return -EINVAL;
+			ofd->rec_len = fcp[14];
+			ofd->num_rec = ntohs(*(uint16_t *)(fcp+2)) / ofd->rec_len;
+			break;
+		default:
+			break;
+		}
+		break;
+	case TYPE_MF:
+	case TYPE_DF:
+		if (fcp_len < 22)
+			return -EINVAL;
+		break;
+	default:
+		break;
+	}
+
+	return 0;
+}
+
+extern struct osim_card_profile *osim_cprof_sim(void *ctx);
 extern struct osim_card_profile *osim_cprof_usim(void *ctx);
+extern struct osim_card_profile *osim_cprof_isim(void *ctx);
 
 static struct msgb *try_select_adf_usim(struct osim_chan_hdl *st)
 {
@@ -186,9 +247,17 @@ static struct msgb *try_select_adf_usim(struct osim_chan_hdl *st)
 	int rc, i;
 
 	msg = select_file(st, 0x2f00);
-	rc = tlv_parse(&tp, &ts102221_fcp_tlv_def, msgb_apdu_de(msg)+2, msgb_apdu_le(msg)-2, 0, 0);
-	if (rc < 0)
+	if (!msg)
 		return NULL;
+	/* return status word in case of error */
+	if (msgb_apdu_sw(msg) != 0x9000)
+		return msg;
+
+	rc = tlv_parse(&tp, &ts102221_fcp_tlv_def, msgb_apdu_de(msg)+2, msgb_apdu_le(msg)-2, 0, 0);
+	if (rc < 0) {
+		msgb_free(msg);
+		return NULL;
+	}
 
 	dump_fcp_template(&tp);
 
@@ -266,20 +335,25 @@ static int dump_file(struct osim_chan_hdl *chan, uint16_t fid)
 		goto out;
 	}
 
-	rc = tlv_parse(&tp, &ts102221_fcp_tlv_def, msgb_apdu_de(msg)+2, msgb_apdu_le(msg)-2, 0, 0);
-	if (rc < 0) {
-		printf("Unable to parse FCP\n");
-		goto out;
+	if (g_class != 0xA0) {
+		rc = tlv_parse(&tp, &ts102221_fcp_tlv_def, msgb_apdu_de(msg)+2, msgb_apdu_le(msg)-2, 0, 0);
+		if (rc < 0) {
+			printf("Unable to parse FCP: %s\n", msgb_hexdump(msg));
+			goto out;
+		}
+
+		if (!TLVP_PRESENT(&tp, UICC_FCP_T_FILE_DESC) ||
+		    TLVP_LEN(&tp, UICC_FCP_T_FILE_DESC) < 2) {
+			printf("No file descriptor present ?!?\n");
+			goto out;
+		}
+
+		rc = osim_fcp_fd_decode(&ffdd, TLVP_VAL(&tp, UICC_FCP_T_FILE_DESC),
+					TLVP_LEN(&tp, UICC_FCP_T_FILE_DESC));
+	} else {
+		rc = osim_fcp_fd_decode_sim(&ffdd, msgb_apdu_de(msg), msgb_apdu_le(msg));
 	}
 
-	if (!TLVP_PRESENT(&tp, UICC_FCP_T_FILE_DESC) ||
-	    TLVP_LEN(&tp, UICC_FCP_T_FILE_DESC) < 2) {
-		printf("No file descriptor present ?!?\n");
-		goto out;
-	}
-
-	rc = osim_fcp_fd_decode(&ffdd, TLVP_VAL(&tp, UICC_FCP_T_FILE_DESC),
-				TLVP_LEN(&tp, UICC_FCP_T_FILE_DESC));
 	if (rc < 0) {
 		printf("Unable to decode File Descriptor\n");
 		goto out;
@@ -432,10 +506,19 @@ int main(int argc, char **argv)
 		exit(3);
 
 	msg = try_select_adf_usim(chan);
-	if (!msg || msgb_apdu_sw(msg) != 0x9000)
+	if (!msg) {
 		exit(4);
-	dump_fcp_template_msg(msg);
-	msgb_free(msg);
+	} else if (msgb_apdu_sw(msg) == 0x6e00) {
+		/* CLA not supported: must be classic SIM, not USIM */
+		g_class = 0xA0;
+		chan->card->prof = osim_cprof_sim(chan->card);
+		chan->cwd = chan->card->prof->mf;
+		msgb_free(msg);
+	} else if (msgb_apdu_sw(msg) == 0x9000) {
+		/* normal file */
+		dump_fcp_template_msg(msg);
+		msgb_free(msg);
+	}
 
 	msg = select_file(chan, 0x6fc5);
 	dump_fcp_template_msg(msg);
