@@ -374,6 +374,44 @@ static void handle_options(int argc, char **argv)
 	}
 }
 
+
+static void iterate_fs(struct osim_chan_hdl *chan)
+{
+	const struct osim_file_desc *prev_cwd;
+	struct osim_file_desc *ofd;
+
+	/* iterate over all files in current working directory */
+	llist_for_each_entry(ofd, &chan->cwd->child_list, list) {
+		struct msgb *m;
+		printf("\n\n================ %s (%s) ==================\n",
+			ofd->short_name, ofd->long_name);
+
+		m = select_file(chan, ofd->fid);
+		if (msgb_apdu_sw(m) != 0x9000) {
+			msgb_free(m);
+			continue;
+		}
+		dump_fcp_template_msg(m);
+		msgb_free(m);
+
+		/* If this is a DF, recurse into it */
+		switch (ofd->type) {
+		case TYPE_DF:
+			/* the select above has just changed into this directory */
+			prev_cwd = chan->cwd;
+			chan->cwd = ofd;
+			iterate_fs(chan);
+			/* "pop" the directory from the stack */
+			chan->cwd = prev_cwd;
+			break;
+		default:
+			dump_file(chan, ofd->fid);
+			break;
+		}
+	}
+}
+
+
 int main(int argc, char **argv)
 {
 	struct osim_reader_hdl *reader;
@@ -410,19 +448,7 @@ int main(int argc, char **argv)
 	dump_fcp_template_msg(msg);
 	msgb_free(msg);
 
-	{
-		struct osim_file_desc *ofd;
-		llist_for_each_entry(ofd, &chan->cwd->child_list, list) {
-			struct msgb *m;
-			printf("\n\n================ %s (%s) ==================\n",
-				ofd->short_name, ofd->long_name);
-
-			m = select_file(chan, ofd->fid);
-			dump_fcp_template_msg(m);
-			msgb_free(m);
-			dump_file(chan, ofd->fid);
-		}
-	}
+	iterate_fs(chan);
 
 	exit(0);
 }
