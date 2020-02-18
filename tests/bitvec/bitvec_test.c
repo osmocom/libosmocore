@@ -222,6 +222,45 @@ static void test_tailroom()
 	}
 }
 
+static void test_bitvec_read_field(void)
+{
+	uint8_t data[8] = { 0xde, 0xad, 0xbe, 0xef, 0xfe, 0xeb, 0xda, 0xed };
+	struct bitvec bv = {
+		.data_len = sizeof(data),
+		.data = data,
+		.cur_bit = 0,
+	};
+
+	unsigned int readIndex;
+	uint64_t field;
+
+#define _bitvec_read_field(idx, len) \
+	readIndex = idx; \
+	field = bitvec_read_field(&bv, &readIndex, len); \
+	printf("bitvec_read_field(idx=%u, len=%u) => %" PRIx64 "\n", idx, len, field);
+
+	_bitvec_read_field(0, 64);
+	_bitvec_read_field(0, 32);
+	_bitvec_read_field(0, 16);
+	_bitvec_read_field(0, 8);
+	_bitvec_read_field(0, 0);
+
+	_bitvec_read_field(8, 8);
+	_bitvec_read_field(8, 4);
+	_bitvec_read_field(8, 0);
+
+	_bitvec_read_field(10, 9);
+	_bitvec_read_field(10, 7);
+	_bitvec_read_field(10, 5);
+	_bitvec_read_field(10, 3);
+	_bitvec_read_field(10, 1);
+
+	/* Out of bounds (see OS#4388) */
+	_bitvec_read_field(8 * 8 * 8, 16); /* index too far */
+	_bitvec_read_field(0, 8 * 8 + 1); /* too many bits */
+	_bitvec_read_field(8 * 8, 16); /* 16 bits past */
+}
+
 int main(int argc, char **argv)
 {
 	struct bitvec bv;
@@ -330,6 +369,9 @@ int main(int argc, char **argv)
 	printf("\nbitvec bytes used.\n");
 	test_used_bytes();
 	test_tailroom();
+
+	printf("\ntest bitvec_read_field():\n");
+	test_bitvec_read_field();
 
 	printf("\nbitvec ok.\n");
 	return 0;
