@@ -292,7 +292,7 @@ int bitvec_fill(struct bitvec *bv, unsigned int num_bits, enum bit_value fill)
 	return 0;
 }
 
-/*! pad all remaining bits up to num_bits
+/*! pad all remaining bits up to a given bit number
  *  \return 0 on success; negative otherwise */
 int bitvec_spare_padding(struct bitvec *bv, unsigned int up_to_bit)
 {
