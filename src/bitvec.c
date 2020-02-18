@@ -400,7 +400,7 @@ int bitvec_set_bytes(struct bitvec *bv, const uint8_t *bytes, unsigned int count
  *  \return pointer to allocated vector; NULL in case of error */
 struct bitvec *bitvec_alloc(unsigned int size, TALLOC_CTX *ctx)
 {
-	struct bitvec *bv = talloc_zero(ctx, struct bitvec);
+	struct bitvec *bv = talloc(ctx, struct bitvec);
 	if (!bv)
 		return NULL;
 
