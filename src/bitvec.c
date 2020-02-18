@@ -45,6 +45,7 @@
 #include <osmocom/core/bits.h>
 #include <osmocom/core/bitvec.h>
 #include <osmocom/core/panic.h>
+#include <osmocom/core/utils.h>
 
 #define BITNUM_FROM_COMP(byte, bit)	((byte*8)+bit)
 
@@ -457,17 +458,13 @@ unsigned int bitvec_unpack(struct bitvec *bv, const uint8_t *buffer)
  */
 int bitvec_unhex(struct bitvec *bv, const char *src)
 {
-	unsigned i;
-	unsigned val;
-	unsigned write_index = 0;
-	unsigned digits = bv->data_len * 2;
+	int rc;
 
-	for (i = 0; i < digits; i++) {
-		if (sscanf(src + i, "%1x", &val) < 1) {
-			return 1;
-		}
-		bitvec_write_field(bv, &write_index, val, 4);
-	}
+	rc = osmo_hexparse(src, bv->data, bv->data_len);
+	if (rc < 0) /* turn -1 into 1 in case of error */
+		return 1;
+
+	bv->cur_bit = rc * 8;
 	return 0;
 }
 
