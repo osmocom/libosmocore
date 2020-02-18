@@ -431,7 +431,7 @@ void bitvec_free(struct bitvec *bv)
  *  \return number of bytes (= bits) copied */
 unsigned int bitvec_pack(const struct bitvec *bv, uint8_t *buffer)
 {
-	unsigned int i = 0;
+	unsigned int i;
 	for (i = 0; i < bv->data_len; i++)
 		buffer[i] = bv->data[i];
 
@@ -444,7 +444,7 @@ unsigned int bitvec_pack(const struct bitvec *bv, uint8_t *buffer)
  *  \return number of bytes (= bits) copied */
 unsigned int bitvec_unpack(struct bitvec *bv, const uint8_t *buffer)
 {
-	unsigned int i = 0;
+	unsigned int i;
 	for (i = 0; i < bv->data_len; i++)
 		bv->data[i] = buffer[i];
 
