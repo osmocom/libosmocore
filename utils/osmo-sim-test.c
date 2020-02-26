@@ -378,11 +378,15 @@ static int dump_file(struct osim_chan_hdl *chan, uint16_t fid)
 		}
 		break;
 	case EF_TYPE_TRANSP:
-		if (!TLVP_PRESENT(&tp, UICC_FCP_T_FILE_SIZE))
+		if (g_class != 0xA0) {
+			if (!TLVP_PRESENT(&tp, UICC_FCP_T_FILE_SIZE))
+				goto out;
+			i = ntohs(*(uint16_t *)TLVP_VAL(&tp, UICC_FCP_T_FILE_SIZE));
+			printf("File size: %d bytes\n", i);
+		} else {
+			printf("Can not determine file size, invalid EF-type!\n");
 			goto out;
-		i = ntohs(*(uint16_t *)TLVP_VAL(&tp, UICC_FCP_T_FILE_SIZE));
-		printf("File size: %d bytes\n", i);
-
+		}
 		for (offset = 0; offset < i-1; ) {
 			uint16_t remain_len = i - offset;
 			uint16_t read_len = OSMO_MIN(remain_len, 256);
