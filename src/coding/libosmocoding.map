@@ -56,6 +56,7 @@ gsm0503_sch_crc10;
 gsm0503_tch_fr_crc3;
 gsm0503_tch_efr_crc8;
 gsm0503_amr_crc6;
+gsm0503_amr_crc14;
 
 gsm0503_xcch_burst_unmap;
 gsm0503_xcch_burst_map;
