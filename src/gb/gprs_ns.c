@@ -51,7 +51,7 @@
  *
  * There can be multiple BSSGP virtual connections over one (group of) NSVC's.  BSSGP will
  * therefore identify the BSSGP virtual connection by a BVCI passed down to NS.
- * NS then has to firgure out which NSVC's are responsible for this BVCI.
+ * NS then has to figure out which NSVC's are responsible for this BVCI.
  * Those mappings are administratively configured.
  *
  * This implementation has the following limitations:
@@ -1078,7 +1078,7 @@ int gprs_ns_tx_sns_size_ack(struct gprs_nsvc *nsvc, uint8_t *cause)
  *  \param[in] msg struct msgb to be trasnmitted
  *
  * This function obtains the NS-VC by the msgb_nsei(msg) and then checks
- * if the NS-VC is ALIVEV and not BLOCKED.  After that, it adds a NS
+ * if the NS-VC is ALIVE and not BLOCKED.  After that, it adds a NS
  * header for the NS-UNITDATA message type and sends it off.
  *
  * Section 9.2.10: transmit side / NS-UNITDATA-REQUEST primitive 
