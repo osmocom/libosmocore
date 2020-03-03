@@ -318,7 +318,8 @@ struct gprs_nsvc *gprs_nsvc_create2(struct gprs_ns_inst *nsi, uint16_t nsvci,
 		return NULL;
 	}
 
-	LOGP(DNS, LOGL_INFO, "NSVCI=%u Creating NS-VC\n", nsvci);
+	LOGP(DNS, LOGL_INFO, "NSVCI=%u Creating NS-VC with Signal weight %u, Data weight %u\n",
+	     nsvci, sig_weight, data_weight);
 
 	nsvc = talloc_zero(nsi, struct gprs_nsvc);
 	if (!nsvc)
