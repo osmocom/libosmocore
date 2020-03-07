@@ -479,6 +479,7 @@ const struct value_string gsmtap_gsm_channel_names[] = {
 	{ GSMTAP_CHANNEL_ACCH | GSMTAP_CHANNEL_SDCCH8, "SACCH/8" },
 	{ GSMTAP_CHANNEL_ACCH | GSMTAP_CHANNEL_TCH_F, "SACCH/F" },
 	{ GSMTAP_CHANNEL_ACCH | GSMTAP_CHANNEL_TCH_H, "SACCH/H" },
+	{ GSMTAP_CHANNEL_VOICE,		"VOICE" },
 	{ 0, NULL }
 };
 
