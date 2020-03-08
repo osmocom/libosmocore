@@ -54,18 +54,25 @@
 /*! convert RSL channel number to GSMTAP channel type
  *  \param[in] rsl_chantype RSL channel type
  *  \param[in] link_id RSL link identifier
+ *  \param[in] user_plane Is this voice/csd user plane (1) or signaling (0)
  *  \returns GSMTAP channel type
  */
-uint8_t chantype_rsl2gsmtap(uint8_t rsl_chantype, uint8_t link_id)
+uint8_t chantype_rsl2gsmtap2(uint8_t rsl_chantype, uint8_t link_id, bool user_plane)
 {
 	uint8_t ret = GSMTAP_CHANNEL_UNKNOWN;
 
 	switch (rsl_chantype) {
 	case RSL_CHAN_Bm_ACCHs:
-		ret = GSMTAP_CHANNEL_TCH_F;
+		if (user_plane)
+			ret = GSMTAP_CHANNEL_VOICE_F;
+		else
+			ret = GSMTAP_CHANNEL_FACCH_F;
 		break;
 	case RSL_CHAN_Lm_ACCHs:
-		ret = GSMTAP_CHANNEL_TCH_H;
+		if (user_plane)
+			ret = GSMTAP_CHANNEL_VOICE_H;
+		else
+			ret = GSMTAP_CHANNEL_FACCH_H;
 		break;
 	case RSL_CHAN_SDCCH4_ACCH:
 		ret = GSMTAP_CHANNEL_SDCCH4;
@@ -100,6 +107,16 @@ uint8_t chantype_rsl2gsmtap(uint8_t rsl_chantype, uint8_t link_id)
 	return ret;
 }
 
+/*! convert RSL channel number to GSMTAP channel type
+ *  \param[in] rsl_chantype RSL channel type
+ *  \param[in] link_id RSL link identifier
+ *  \returns GSMTAP channel type
+ */
+uint8_t chantype_rsl2gsmtap(uint8_t rsl_chantype, uint8_t link_id)
+{
+	return chantype_rsl2gsmtap2(rsl_chantype, link_id, false);
+}
+
 /*! convert GSMTAP channel type to RSL channel number + Link ID
  *  \param[in] gsmtap_chantype GSMTAP channel type
  *  \param[out] rsl_chantype RSL channel mumber
@@ -109,10 +126,12 @@ void chantype_gsmtap2rsl(uint8_t gsmtap_chantype, uint8_t *rsl_chantype,
                          uint8_t *link_id)
 {
 	switch (gsmtap_chantype & ~GSMTAP_CHANNEL_ACCH & 0xff) {
-	case GSMTAP_CHANNEL_TCH_F: // TCH/F, FACCH/F
+	case GSMTAP_CHANNEL_FACCH_F:
+	case GSMTAP_CHANNEL_VOICE_F: // TCH/F
 		*rsl_chantype = RSL_CHAN_Bm_ACCHs;
 		break;
-	case GSMTAP_CHANNEL_TCH_H: // TCH/H, FACCH/H
+	case GSMTAP_CHANNEL_FACCH_H:
+	case GSMTAP_CHANNEL_VOICE_H: // TCH/H
 		*rsl_chantype = RSL_CHAN_Lm_ACCHs;
 		break;
 	case GSMTAP_CHANNEL_SDCCH4: // SDCCH/4
@@ -467,8 +486,8 @@ const struct value_string gsmtap_gsm_channel_names[] = {
 	{ GSMTAP_CHANNEL_SDCCH,		"SDCCH" },
 	{ GSMTAP_CHANNEL_SDCCH4,	"SDCCH/4" },
 	{ GSMTAP_CHANNEL_SDCCH8,	"SDCCH/8" },
-	{ GSMTAP_CHANNEL_TCH_F,		"TCH/F/FACCH/F" },
-	{ GSMTAP_CHANNEL_TCH_H,		"TCH/H/FACCH/H" },
+	{ GSMTAP_CHANNEL_FACCH_F,	"FACCH/F" },
+	{ GSMTAP_CHANNEL_FACCH_H,	"FACCH/H" },
 	{ GSMTAP_CHANNEL_PACCH,		"PACCH" },
 	{ GSMTAP_CHANNEL_CBCH52,	"CBCH" },
 	{ GSMTAP_CHANNEL_PDCH,		"PDCH" } ,
@@ -477,9 +496,10 @@ const struct value_string gsmtap_gsm_channel_names[] = {
 	{ GSMTAP_CHANNEL_ACCH | GSMTAP_CHANNEL_SDCCH, "LSACCH" },
 	{ GSMTAP_CHANNEL_ACCH | GSMTAP_CHANNEL_SDCCH4, "SACCH/4" },
 	{ GSMTAP_CHANNEL_ACCH | GSMTAP_CHANNEL_SDCCH8, "SACCH/8" },
-	{ GSMTAP_CHANNEL_ACCH | GSMTAP_CHANNEL_TCH_F, "SACCH/F" },
-	{ GSMTAP_CHANNEL_ACCH | GSMTAP_CHANNEL_TCH_H, "SACCH/H" },
-	{ GSMTAP_CHANNEL_VOICE,		"VOICE" },
+	{ GSMTAP_CHANNEL_ACCH | GSMTAP_CHANNEL_FACCH_F, "SACCH/F" },
+	{ GSMTAP_CHANNEL_ACCH | GSMTAP_CHANNEL_FACCH_H, "SACCH/H" },
+	{ GSMTAP_CHANNEL_VOICE_F,	"TCH/F" },
+	{ GSMTAP_CHANNEL_VOICE_H,	"TCH/H" },
 	{ 0, NULL }
 };
 
