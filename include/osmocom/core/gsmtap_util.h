@@ -10,8 +10,8 @@
 
 uint8_t chantype_rsl2gsmtap2(uint8_t rsl_chantype, uint8_t rsl_link_id, bool user_plane);
 
-uint8_t chantype_rsl2gsmtap(uint8_t rsl_chantype, uint8_t rsl_link_id);
-	OSMO_DEPRECATED("Use chantype_rsl2gsmtap2() instead")
+uint8_t chantype_rsl2gsmtap(uint8_t rsl_chantype, uint8_t rsl_link_id)
+	OSMO_DEPRECATED("Use chantype_rsl2gsmtap2() instead");
 
 void chantype_gsmtap2rsl(uint8_t gsmtap_chantype, uint8_t *rsl_chantype, uint8_t *link_id);
 
