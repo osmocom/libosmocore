@@ -24,4 +24,6 @@
 #define OSMO_CTRL_PORT_GBPROXY	4263
 /* 4264 used by VTY interface */
 #define OSMO_CTRL_PORT_CBC	4265
+/* 4266 used by D-GSM mDNS */
+#define OSMO_CTRL_PORT_MGW	4267
 /* When adding/changing port numbers, keep docs and wiki in sync. See above. */
