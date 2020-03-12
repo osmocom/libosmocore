@@ -216,8 +216,9 @@ const uint16_t gsm690_4_75_bitorder[95] = {
 	 92,  31,  52,  65,  86,
 };
 
+/* See also RFC 4867 §3.6, Table 1, Column "Total speech bits" */
 static const uint8_t amr_len_by_ft[16] = {
-	12, 13, 15, 17, 19, 20, 26, 31, 7,  0,  0,  0,  0,  0,  0,  0
+	12, 13, 15, 17, 19, 20, 26, 31, 5,  0,  0,  0,  0,  0,  0,  0
 };
 
 const struct value_string osmo_amr_type_names[] = {
