@@ -35,6 +35,7 @@
 #include <osmocom/core/msgb.h>
 #include <osmocom/sim/sim.h>
 
+#include "config.h"
 
 #include "sim_int.h"
 
@@ -242,9 +243,11 @@ struct osim_reader_hdl *osim_reader_open(enum osim_reader_driver driver, int idx
 	struct osim_reader_hdl *rh;
 
 	switch (driver) {
+#ifdef HAVE_PCSC
 	case OSIM_READER_DRV_PCSC:
 		ops = &pcsc_reader_ops;
 		break;
+#endif
 	default:
 		return NULL;
 	}

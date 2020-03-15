@@ -142,6 +142,7 @@ AC_ARG_ENABLE([pcsc], [AS_HELP_STRING([--disable-pcsc], [Build without PC/SC sup
     ])
 AS_IF([test "x$ENABLE_PCSC" = "xyes"], [
 	PKG_CHECK_MODULES(PCSC, libpcsclite)
+	AC_DEFINE([HAVE_PCSC],[1],[Build with PC/SC support])
 ])
 AM_CONDITIONAL(ENABLE_PCSC, test "x$ENABLE_PCSC" = "xyes")
 AC_SUBST(ENABLE_PCSC)
