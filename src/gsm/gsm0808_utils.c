@@ -622,7 +622,7 @@ int gsm0808_dec_lcls(struct osmo_lcls *lcls, const struct tlv_parsed *tp)
 	return ret;
 }
 
-static __thread char dbuf[256];
+static  char dbuf[256];
 
 /*! Dump LCLS parameters (GCR excluded) into string for printing.
  *  \param[out] buf caller-allocated output string buffer
@@ -1887,7 +1887,7 @@ char *gsm0808_cell_id_name_buf(char *buf, size_t buflen, const struct gsm0808_ce
  */
 const char *gsm0808_cell_id_name(const struct gsm0808_cell_id *cid)
 {
-	static __thread char buf[64];
+	static  char buf[64];
 	return gsm0808_cell_id_name_buf(buf, sizeof(buf), cid);
 }
 
@@ -1897,7 +1897,7 @@ const char *gsm0808_cell_id_name(const struct gsm0808_cell_id *cid)
  */
 const char *gsm0808_cell_id_name2(const struct gsm0808_cell_id *cid)
 {
-	static __thread char buf[64];
+	static  char buf[64];
 	return gsm0808_cell_id_name_buf(buf, sizeof(buf), cid);
 }
 
@@ -1954,7 +1954,7 @@ int gsm0808_cell_id_list_name_buf(char *buf, size_t buflen, const struct gsm0808
  * See also gsm0808_cell_id_list_name_buf(). */
 const char *gsm0808_cell_id_list_name(const struct gsm0808_cell_id_list2 *cil)
 {
-	static __thread char buf[1024];
+	static  char buf[1024];
 	gsm0808_cell_id_list_name_buf(buf, sizeof(buf), cil);
 	return buf;
 }
@@ -1981,7 +1981,7 @@ char *gsm0808_channel_type_name_buf(char *buf, size_t buf_len, const struct gsm0
 
 const char *gsm0808_channel_type_name(const struct gsm0808_channel_type *ct)
 {
-	static __thread char buf[128];
+	static  char buf[128];
 	return gsm0808_channel_type_name_buf(buf, sizeof(buf), ct);
 }
 

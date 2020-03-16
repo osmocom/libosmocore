@@ -19,7 +19,7 @@ struct osmo_talloc_contexts {
 	void *select;
 };
 
-extern __thread struct osmo_talloc_contexts *osmo_ctx;
+extern  struct osmo_talloc_contexts *osmo_ctx;
 
 /* short-hand #defines for the osmo talloc contexts (OTC) that can be used to pass
  * to the various _c functions like msgb_alloc_c() */

@@ -1553,7 +1553,7 @@ char *gprs_ns_ll_str_buf(char *buf, size_t buf_len, const struct gprs_nsvc *nsvc
 
 const char *gprs_ns_ll_str(const struct gprs_nsvc *nsvc)
 {
-	static __thread char buf[80];
+	static  char buf[80];
 	return gprs_ns_ll_str_buf(buf, sizeof(buf), nsvc);
 }
 

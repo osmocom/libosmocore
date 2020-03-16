@@ -264,7 +264,7 @@ char *rsl_chan_nr_str_buf(char *buf, size_t buf_len, uint8_t chan_nr)
  */
 const char *rsl_chan_nr_str(uint8_t chan_nr)
 {
-	static __thread char str[20];
+	static  char str[20];
 	return rsl_chan_nr_str_buf(str, sizeof(str), chan_nr);
 }
 

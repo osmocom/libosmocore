@@ -41,9 +41,9 @@
  *
  * \file utils.c */
 
-static __thread char namebuf[255];
+static  char namebuf[255];
 /* shared by osmo_str_tolower() and osmo_str_toupper() */
-static __thread char capsbuf[128];
+static  char capsbuf[128];
 
 /*! get human-readable string for given value
  *  \param[in] vs Array of value_string tuples
@@ -221,7 +221,7 @@ int osmo_hexparse(const char *str, uint8_t *b, int max_len)
 	return nibblepos >> 1;
 }
 
-static __thread char hexd_buff[4096];
+static  char hexd_buff[4096];
 static const char hex_chars[] = "0123456789abcdef";
 
 /*! Convert binary sequence to hexadecimal ASCII string.
@@ -494,7 +494,7 @@ uint64_t osmo_decode_big_endian(const uint8_t *data, size_t data_len)
  * sizeof(uint64_t), only the least significant bytes of value are encoded. */
 uint8_t *osmo_encode_big_endian(uint64_t value, size_t data_len)
 {
-	static __thread uint8_t buf[sizeof(uint64_t)];
+	static  uint8_t buf[sizeof(uint64_t)];
 	OSMO_ASSERT(data_len <= ARRAY_SIZE(buf));
 	osmo_store64be_ext(value, buf, data_len);
 	return buf;

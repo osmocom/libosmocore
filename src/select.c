@@ -52,9 +52,9 @@
 
 /* keep a set of file descriptors per-thread, so that each thread can have its own
  * distinct set of file descriptors to interact with */
-static __thread int maxfd = 0;
-static __thread struct llist_head osmo_fds; /* TLS cannot use LLIST_HEAD() */
-static __thread int unregistered_count;
+static  int maxfd = 0;
+static  struct llist_head osmo_fds; /* TLS cannot use LLIST_HEAD() */
+static  int unregistered_count;
 
 /*! Set up an osmo-fd. Will not register it.
  *  \param[inout] ofd Osmo FD to be set-up

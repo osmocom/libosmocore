@@ -31,7 +31,7 @@
 #define APN_OI_GPRS_FMT	"mnc%03u.mcc%03u.gprs"
 #define APN_GPRS_FMT	"%s.mnc%03u.mcc%03u.gprs"
 
-static __thread char apn_strbuf[APN_MAXLEN+1];
+static  char apn_strbuf[APN_MAXLEN+1];
 
 char *osmo_apn_qualify_buf(char *buf, size_t buf_len, unsigned int mcc, unsigned int mnc, const char *ni)
 {

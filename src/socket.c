@@ -1109,7 +1109,7 @@ int osmo_sock_get_name_buf(char *str, size_t str_len, int fd)
  */
 const char *osmo_sock_get_name2(int fd)
 {
-	static __thread char str[OSMO_SOCK_NAME_MAXLEN];
+	static  char str[OSMO_SOCK_NAME_MAXLEN];
 	osmo_sock_get_name_buf(str, sizeof(str), fd);
 	return str;
 }

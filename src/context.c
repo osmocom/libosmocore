@@ -26,7 +26,7 @@
 #include <osmocom/core/talloc.h>
 #include <osmocom/core/utils.h>
 
-__thread struct osmo_talloc_contexts *osmo_ctx;
+ struct osmo_talloc_contexts *osmo_ctx;
 
 int osmo_ctx_init(const char *id)
 {

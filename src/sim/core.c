@@ -300,7 +300,7 @@ ret_def:
 
 char *osim_print_sw(const struct osim_card_hdl *ch, uint16_t sw_in)
 {
-	static __thread char sw_print_buf[256];
+	static  char sw_print_buf[256];
 	return osim_print_sw_buf(sw_print_buf, sizeof(sw_print_buf), ch, sw_in);
 }
 

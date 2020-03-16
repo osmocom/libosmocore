@@ -898,7 +898,7 @@ char *osmo_dump_gsmtime_buf(char *buf, size_t buf_len, const struct gsm_time *tm
 
 char *osmo_dump_gsmtime(const struct gsm_time *tm)
 {
-	static __thread char buf[64];
+	static  char buf[64];
 	return osmo_dump_gsmtime_buf(buf, sizeof(buf), tm);
 }
 

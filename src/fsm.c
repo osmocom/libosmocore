@@ -95,7 +95,7 @@ static bool fsm_log_timeouts = false;
 static bool fsm_term_safely_enabled = false;
 
 /*! Internal state for FSM instance termination cascades. */
-static __thread struct {
+static  struct {
 	/*! The first FSM instance that invoked osmo_fsm_inst_term() in the current cascade. */
 	struct osmo_fsm_inst *root_fi;
 	/*! 2 if a secondary FSM terminates, 3 if a secondary FSM causes a tertiary FSM to terminate, and so on. */
@@ -583,7 +583,7 @@ void osmo_fsm_inst_free(struct osmo_fsm_inst *fi)
  */
 const char *osmo_fsm_event_name(struct osmo_fsm *fsm, uint32_t event)
 {
-	static __thread char buf[32];
+	static  char buf[32];
 	if (!fsm->event_names) {
 		snprintf(buf, sizeof(buf), "%"PRIu32, event);
 		return buf;
@@ -613,7 +613,7 @@ const char *osmo_fsm_inst_name(struct osmo_fsm_inst *fi)
  */
 const char *osmo_fsm_state_name(struct osmo_fsm *fsm, uint32_t state)
 {
-	static __thread char buf[32];
+	static  char buf[32];
 	if (state >= fsm->num_states) {
 		snprintf(buf, sizeof(buf), "unknown %"PRIu32, state);
 		return buf;

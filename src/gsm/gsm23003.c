@@ -107,7 +107,7 @@ char *osmo_mcc_name_buf(char *buf, size_t buf_len, uint16_t mcc)
  */
 const char *osmo_mcc_name(uint16_t mcc)
 {
-	static __thread char buf[8];
+	static  char buf[8];
 	return osmo_mcc_name_buf(buf, sizeof(buf), mcc);
 }
 
@@ -158,7 +158,7 @@ char *osmo_mnc_name_c(const void *ctx, uint16_t mnc, bool mnc_3_digits)
  */
 const char *osmo_mnc_name(uint16_t mnc, bool mnc_3_digits)
 {
-	static __thread char buf[8];
+	static  char buf[8];
 	return osmo_mnc_name_buf(buf, sizeof(buf), mnc, mnc_3_digits);
 }
 
@@ -182,7 +182,7 @@ char *osmo_plmn_name_buf(char *buf, size_t buf_len, const struct osmo_plmn_id *p
  */
 const char *osmo_plmn_name(const struct osmo_plmn_id *plmn)
 {
-	static __thread char buf[16];
+	static  char buf[16];
 	return osmo_plmn_name_buf(buf, sizeof(buf), plmn);
 }
 
@@ -193,7 +193,7 @@ const char *osmo_plmn_name(const struct osmo_plmn_id *plmn)
  */
 const char *osmo_plmn_name2(const struct osmo_plmn_id *plmn)
 {
-	static __thread char buf[16];
+	static  char buf[16];
 	return osmo_plmn_name_buf(buf, sizeof(buf), plmn);
 }
 
@@ -230,7 +230,7 @@ char *osmo_lai_name_buf(char *buf, size_t buf_len, const struct osmo_location_ar
  */
 const char *osmo_lai_name(const struct osmo_location_area_id *lai)
 {
-	static __thread char buf[32];
+	static  char buf[32];
 	return osmo_lai_name_buf(buf, sizeof(buf), lai);
 }
 
@@ -265,7 +265,7 @@ char *osmo_cgi_name_buf(char *buf, size_t buf_len, const struct osmo_cell_global
  */
 const char *osmo_cgi_name(const struct osmo_cell_global_id *cgi)
 {
-	static __thread char buf[32];
+	static  char buf[32];
 	return osmo_cgi_name_buf(buf, sizeof(buf), cgi);
 }
 
@@ -276,7 +276,7 @@ const char *osmo_cgi_name(const struct osmo_cell_global_id *cgi)
  */
 const char *osmo_cgi_name2(const struct osmo_cell_global_id *cgi)
 {
-	static __thread char buf[32];
+	static  char buf[32];
 	return osmo_cgi_name_buf(buf, sizeof(buf), cgi);
 }
 
@@ -320,7 +320,7 @@ char *osmo_gummei_name_buf(char *buf, size_t buf_len, const struct osmo_gummei *
  */
 const char *osmo_gummei_name(const struct osmo_gummei *gummei)
 {
-	static __thread char buf[32];
+	static  char buf[32];
 	return osmo_gummei_name_buf(buf, sizeof(buf), gummei);
 }
 

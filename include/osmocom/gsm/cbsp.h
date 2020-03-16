@@ -283,7 +283,7 @@ struct osmo_cbsp_decoded {
 	} u;
 };
 
-extern const __thread char *osmo_cbsp_errstr;
+extern const  char *osmo_cbsp_errstr;
 
 struct msgb *osmo_cbsp_msgb_alloc(void *ctx, const char *name);
 struct msgb *osmo_cbsp_encode(void *ctx, const struct osmo_cbsp_decoded *in);
