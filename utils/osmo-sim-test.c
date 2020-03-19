@@ -1,5 +1,5 @@
 /* libosmosim test application - currently simply dumps a USIM */
-/* (C) 2012 by Harald Welte <laforge@gnumonks.org>
+/* (C) 2012-2020 by Harald Welte <laforge@gnumonks.org>
  * All Rights Reserved
  *
  * This program is free software; you can redistribute it and/or modify
@@ -25,6 +25,12 @@
 #include <getopt.h>
 #include <arpa/inet.h>
 
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <fcntl.h>
+#include <limits.h>
+
 #include <osmocom/core/msgb.h>
 #include <osmocom/core/talloc.h>
 #include <osmocom/sim/sim.h>
@@ -34,6 +40,7 @@
 /* FIXME: this needs to be moved to card_fs_uicc.c */
 
 static uint8_t g_class = 0x00; /* UICC/USIM */
+static const char *g_output_dir;
 
 /* 11.1.1 */
 static struct msgb *_select_file(struct osim_chan_hdl *st, uint8_t p1, uint8_t p2,
@@ -317,13 +324,15 @@ static struct msgb *try_select_adf_usim(struct osim_chan_hdl *st)
 	return NULL;
 }
 
-static int dump_file(struct osim_chan_hdl *chan, uint16_t fid)
+static int dump_file(struct osim_chan_hdl *chan, const char *short_name, uint16_t fid)
 {
 	struct tlv_parsed tp;
 	struct osim_fcp_fd_decoded ffdd;
 	struct msgb *msg, *rmsg;
 	int rc, i, offset;
+	FILE *f_data = NULL;
 
+	/* Select the file */
 	msg = select_file(chan, fid);
 	if (!msg) {
 		fprintf(stderr, "Unable to select file\n");
@@ -363,23 +372,41 @@ static int dump_file(struct osim_chan_hdl *chan, uint16_t fid)
 		goto out;
 	}
 
+	if (g_output_dir) {
+		f_data = fopen(short_name, "w");
+		if (!f_data) {
+			fprintf(stderr, "Couldn't create '%s': %s\n", short_name, strerror(errno));
+			goto out;
+		}
+	}
+
 	printf("EF type: %u\n", ffdd.ef_type);
 
 	switch (ffdd.ef_type) {
 	case EF_TYPE_RECORD_FIXED:
 		for (i = 0; i < ffdd.num_rec; i++) {
+			const char *hex;
 			rmsg = read_record_nr(chan, i+1, ffdd.rec_len);
-			if (!rmsg)
+			if (!rmsg) {
+				if (f_data)
+					fclose(f_data);
 				return -EIO;
+			}
 			printf("SW: %s\n", osim_print_sw(chan->card, msgb_apdu_sw(msg)));
-			printf("Rec %03u: %s\n", i+1,
-				osmo_hexdump(msgb_apdu_de(rmsg), msgb_apdu_le(rmsg)));
+
+			hex = osmo_hexdump_nospc(msgb_apdu_de(rmsg), msgb_apdu_le(rmsg));
+			printf("Rec %03u: %s\n", i+1, hex);
+			if (f_data)
+				fprintf(f_data, "%s\n", hex);
 		}
 		break;
 	case EF_TYPE_TRANSP:
 		if (g_class != 0xA0) {
-			if (!TLVP_PRESENT(&tp, UICC_FCP_T_FILE_SIZE))
+			if (!TLVP_PRESENT(&tp, UICC_FCP_T_FILE_SIZE)) {
+				if (f_data)
+					fclose(f_data);
 				goto out;
+			}
 			i = ntohs(*(uint16_t *)TLVP_VAL(&tp, UICC_FCP_T_FILE_SIZE));
 			printf("File size: %d bytes\n", i);
 		} else {
@@ -389,12 +416,18 @@ static int dump_file(struct osim_chan_hdl *chan, uint16_t fid)
 		for (offset = 0; offset < i-1; ) {
 			uint16_t remain_len = i - offset;
 			uint16_t read_len = OSMO_MIN(remain_len, 256);
+			const char *hex;
 			rmsg = read_binary(chan, offset, read_len);
-			if (!rmsg)
+			if (!rmsg) {
+				if (f_data)
+					fclose(f_data);
 				return -EIO;
+			}
 			offset += read_len;
-			printf("Content: %s\n",
-				osmo_hexdump(msgb_apdu_de(rmsg), msgb_apdu_le(rmsg)));
+			hex = osmo_hexdump_nospc(msgb_apdu_de(rmsg), msgb_apdu_le(rmsg));
+			printf("Content: %s\n", hex);
+			if (f_data)
+				fprintf(f_data, "%s", hex);
 		}
 		break;
 	default:
@@ -402,8 +435,11 @@ static int dump_file(struct osim_chan_hdl *chan, uint16_t fid)
 	}
 
 out:
+	if (f_data)
+		fclose(f_data);
 	msgb_free(msg);
 	return -EINVAL;
+
 }
 
 static void print_help(void)
@@ -411,6 +447,7 @@ static void print_help(void)
 	printf(	"osmo-sim-test Usage:\n"
 		" -h  --help		This message\n"
 		" -n  --reader-num NR	Open reader number NR\n"
+		" -o  --output-dir DIR	To-be-created output directory for filesystem dump\n"
 	      );
 }
 
@@ -423,10 +460,11 @@ static void handle_options(int argc, char **argv)
 		const struct option long_options[] = {
 			{ "help", 0, 0, 'h' },
 			{ "reader-num", 1, 0, 'n' },
+			{ "output-dir", 1, 0, 'o' },
 			{0,0,0,0}
 		};
 
-		c = getopt_long(argc, argv, "hn:",
+		c = getopt_long(argc, argv, "hn:o:",
 				long_options, &option_index);
 		if (c == -1)
 			break;
@@ -438,6 +476,9 @@ static void handle_options(int argc, char **argv)
 			break;
 		case 'n':
 			readernum = atoi(optarg);
+			break;
+		case 'o':
+			g_output_dir = optarg;
 			break;
 		default:
 			exit(2);
@@ -452,6 +493,22 @@ static void handle_options(int argc, char **argv)
 }
 
 
+static void mkdir_and_chdir(const char *name, mode_t mode)
+{
+	int rc;
+	rc = mkdir(name, mode);
+	if (rc < 0) {
+		fprintf(stderr, "Cannot create '%s': %s\n", name, strerror(errno));
+		exit(24);
+	}
+	rc = chdir(name);
+	if (rc < 0) {
+		fprintf(stderr, "Cannot change to just-created '%s': %s\n", name, strerror(errno));
+		exit(24);
+	}
+}
+
+
 static void iterate_fs(struct osim_chan_hdl *chan)
 {
 	const struct osim_file_desc *prev_cwd;
@@ -460,6 +517,8 @@ static void iterate_fs(struct osim_chan_hdl *chan)
 	/* iterate over all files in current working directory */
 	llist_for_each_entry(ofd, &chan->cwd->child_list, list) {
 		struct msgb *m;
+		char prev_dir[PATH_MAX];
+
 		printf("\n\n================ %s (%s) ==================\n",
 			ofd->short_name, ofd->long_name);
 
@@ -477,12 +536,22 @@ static void iterate_fs(struct osim_chan_hdl *chan)
 			/* the select above has just changed into this directory */
 			prev_cwd = chan->cwd;
 			chan->cwd = ofd;
+			if (g_output_dir) {
+				if (!getcwd(prev_dir, sizeof(prev_dir))) {
+					fprintf(stderr, "Cannot determine cwd: %s\n", strerror(errno));
+					exit(23);
+					continue;
+				}
+				mkdir_and_chdir(ofd->short_name, 0750);
+			}
 			iterate_fs(chan);
 			/* "pop" the directory from the stack */
 			chan->cwd = prev_cwd;
+			if (g_output_dir)
+				OSMO_ASSERT(chdir("..") == 0);
 			break;
 		default:
-			dump_file(chan, ofd->fid);
+			dump_file(chan, ofd->short_name, ofd->fid);
 			break;
 		}
 	}
@@ -497,6 +566,22 @@ int main(int argc, char **argv)
 	struct msgb *msg;
 
 	handle_options(argc, argv);
+
+	if (g_output_dir) {
+		int rc;
+		rc = mkdir(g_output_dir, 0750);
+		if (rc < 0) {
+			fprintf(stderr, "Cannot create directory '%s': %s\n", g_output_dir,
+				strerror(errno));
+			exit(5);
+		}
+		rc = chdir(g_output_dir);
+		if (rc < 0) {
+			fprintf(stderr, "Cannot change to just-created directory '%s': %s\n",
+				g_output_dir, strerror(errno));
+			exit(5);
+		}
+	}
 
 	reader = osim_reader_open(OSIM_READER_DRV_PCSC, readernum, "", NULL);
 	if (!reader)
@@ -521,6 +606,7 @@ int main(int argc, char **argv)
 		/* normal file */
 		dump_fcp_template_msg(msg);
 		msgb_free(msg);
+		mkdir_and_chdir("ADF_USIM", 0750);
 	}
 
 	msg = select_file(chan, 0x6fc5);
