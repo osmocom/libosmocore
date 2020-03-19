@@ -329,7 +329,6 @@ static int dump_file(struct osim_chan_hdl *chan, uint16_t fid)
 		fprintf(stderr, "Unable to select file\n");
 		return -EIO;
 	}
-	printf("SW: %s\n", osim_print_sw(chan->card, msgb_apdu_sw(msg)));
 	if (msgb_apdu_sw(msg) != 0x9000) {
 		fprintf(stderr, "status 0x%04x selecting file\n", msgb_apdu_sw(msg));
 		goto out;
