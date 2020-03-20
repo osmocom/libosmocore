@@ -77,6 +77,7 @@ static struct msgb *select_file(struct osim_chan_hdl *st, uint16_t fid)
 	return _select_file(st, 0x00, p2, (uint8_t *)&cfid, 2);
 }
 
+#if 0
 /* 11.1.9 */
 static int verify_pin(struct osim_chan_hdl *st, uint8_t pin_nr, char *pin)
 {
@@ -94,6 +95,7 @@ static int verify_pin(struct osim_chan_hdl *st, uint8_t pin_nr, char *pin)
 
 	return osim_transceive_apdu(st, msg);
 }
+#endif
 
 /* 11.1.5 */
 static struct msgb *read_record_nr(struct osim_chan_hdl *st, uint8_t rec_nr, uint16_t rec_size)
@@ -241,49 +243,59 @@ static int osim_fcp_fd_decode_sim(struct osim_fcp_fd_decoded *ofd, const uint8_t
 	return 0;
 }
 
-extern struct osim_card_profile *osim_cprof_sim(void *ctx);
-extern struct osim_card_profile *osim_cprof_usim(void *ctx);
-extern struct osim_card_profile *osim_cprof_isim(void *ctx);
-
-static struct msgb *try_select_adf_usim(struct osim_chan_hdl *st)
+/*! scan an UICC for all installed apps; allocate osim_card_app_hdl for each of them */
+static int osim_uicc_scan_apps(struct osim_chan_hdl *st)
 {
 	struct tlv_parsed tp;
 	struct osim_fcp_fd_decoded ofd;
-	struct msgb *msg, *msg2;
+	struct msgb *msg;
 	uint8_t *cur;
 	int rc, i;
 
+	/* we don't know where we currently might be; go back to MF */
+	msg = select_file(st, 0x3f00);
+	if (!msg)
+		return -EIO;
+	if (msgb_apdu_sw(msg) != 0x9000)
+		return -msgb_apdu_sw(msg);
+
+	/* select EF.DIR */
 	msg = select_file(st, 0x2f00);
 	if (!msg)
-		return NULL;
+		return -EIO;
 	/* return status word in case of error */
 	if (msgb_apdu_sw(msg) != 0x9000)
-		return msg;
+		return -msgb_apdu_sw(msg);
 
+	/* various FCP related sanity checks */
 	rc = tlv_parse(&tp, &ts102221_fcp_tlv_def, msgb_apdu_de(msg)+2, msgb_apdu_le(msg)-2, 0, 0);
 	if (rc < 0) {
+		fprintf(stderr, "Error decoding EF.DIR FCP TLV\n");
 		msgb_free(msg);
-		return NULL;
+		return -EINVAL;
 	}
 
 	dump_fcp_template(&tp);
 
 	if (!TLVP_PRESENT(&tp, UICC_FCP_T_FILE_DESC) ||
 	    TLVP_LEN(&tp, UICC_FCP_T_FILE_DESC) < 5) {
+		fprintf(stderr, "No EF.DIR FCP file description\n");
 		msgb_free(msg);
-		return NULL;
+		return -EINVAL;
 	}
 
 	rc = osim_fcp_fd_decode(&ofd, TLVP_VAL(&tp, UICC_FCP_T_FILE_DESC),
 				TLVP_LEN(&tp, UICC_FCP_T_FILE_DESC));
 	if (rc < 0) {
+		fprintf(stderr, "Error decoding EF.DIR FCP file description\n");
 		msgb_free(msg);
-		return NULL;
+		return -EINVAL;
 	}
 
 	if (ofd.type != TYPE_EF || ofd.ef_type != EF_TYPE_RECORD_FIXED) {
+		fprintf(stderr, "EF.DIR is not a fixed record EF!?!\n");
 		msgb_free(msg);
-		return NULL;
+		return -EINVAL;
 	}
 
 	msgb_free(msg);
@@ -291,38 +303,45 @@ static struct msgb *try_select_adf_usim(struct osim_chan_hdl *st)
 	printf("ofd rec_len = %u, num_rec = %u\n", ofd.rec_len, ofd.num_rec);
 
 	for (i = 0; i < ofd.num_rec; i++) {
+		const uint8_t *aid;
+		uint8_t aid_len;
 		msg = read_record_nr(st, i+1, ofd.rec_len);
-		if (!msg)
-			return NULL;
+		if (!msg) {
+			fprintf(stderr, "Error reading Record %u of EF.DIR, skipping\n", i+1);
+			continue;
+		}
+
+		/* Entries look like this:
+		 * 61194f10 a0000000871002ffffffff8907090000 5005 5553696d31 ffffffffffffffffffffff */
 
 		cur = msgb_apdu_de(msg);
 		if (msgb_apdu_le(msg) < 5) {
+			fprintf(stderr, "Record length %u too short for EF.DIR, skipping\n", msgb_apdu_le(msg));
 			msgb_free(msg);
-			return NULL;
+			continue;
 		}
 
 		if (cur[0] != 0x61 || cur[1] < 0x03 || cur[1] > 0x7f ||
 		    cur[2] != 0x4F || cur[3] < 0x01 || cur[3] > 0x10) {
+			fprintf(stderr, "Unexpected/unknown record in EF.DIR: %s, skipping\n",
+				osmo_hexdump_nospc(msgb_apdu_de(msg), msgb_apdu_le(msg)));
 			msgb_free(msg);
-			return NULL;
+			continue;
 		}
+		aid_len = cur[3];
+		aid = cur+4;
 
-		/* FIXME: actually check if it is an AID that we support, or
-		 * iterate until we find one that we support */
-
-		msg2 = select_adf(st, cur+4, cur[3]);
-
-		/* attach the USIM profile, FIXME: do this based on AID match */
-		st->card->prof = osim_cprof_usim(st->card);
-		st->cwd = osim_file_desc_find_name(st->card->prof->mf, "ADF.USIM");
-
-		msgb_free(msg);
-
-		return msg2;
+		/* FIXME: parse / pass label*/
+		printf("Detected AID %s\n", osmo_hexdump_nospc(aid, aid_len));
+		osim_card_hdl_add_app(st->card, aid, aid_len, NULL);
 	}
 
-	return NULL;
+	return i;
 }
+
+
+extern struct osim_card_profile *osim_cprof_sim(void *ctx);
+extern struct osim_card_profile *osim_cprof_uicc(void *ctx);
 
 static int dump_file(struct osim_chan_hdl *chan, const char *short_name, uint16_t fid)
 {
@@ -557,15 +576,51 @@ static void iterate_fs(struct osim_chan_hdl *chan)
 	}
 }
 
+static void iterate_apps(struct osim_chan_hdl *chan)
+{
+	struct osim_card_app_hdl *cah;
+
+	llist_for_each_entry(cah, &chan->card->apps, list) {
+		const struct osim_card_app_profile *cap = cah->prof;
+		struct msgb *msg;
+
+		if (!cap) {
+			fprintf(stderr, "Unknown AID %s; skipping\n",
+				osmo_hexdump_nospc(cah->aid, cah->aid_len));
+			continue;
+		}
+
+		msg = select_adf(chan, cah->aid, cah->aid_len);
+		if (!msg) {
+			fprintf(stderr, "Error selectiong ADF for AID %s; skipping\n",
+				osmo_hexdump_nospc(cah->aid, cah->aid_len));
+			continue;
+		}
+		printf("SW: %s\n", osim_print_sw(chan->card, msgb_apdu_sw(msg)));
+		chan->cur_app = cah;
+		chan->cwd = cap->adf;
+
+		if (g_output_dir)
+			mkdir_and_chdir(cap->adf->short_name, 0750);
+
+		iterate_fs(chan);
+
+		if (g_output_dir)
+			OSMO_ASSERT(chdir("..") == 0);
+	}
+}
+
 
 int main(int argc, char **argv)
 {
 	struct osim_reader_hdl *reader;
 	struct osim_card_hdl *card;
 	struct osim_chan_hdl *chan;
-	struct msgb *msg;
+	int rc;
 
 	handle_options(argc, argv);
+
+	osim_init(NULL);
 
 	if (g_output_dir) {
 		int rc;
@@ -593,34 +648,26 @@ int main(int argc, char **argv)
 	if (!chan)
 		exit(3);
 
-	msg = try_select_adf_usim(chan);
-	if (!msg) {
-		exit(4);
-	} else if (msgb_apdu_sw(msg) == 0x6e00) {
+	//verify_pin(chan, 1, "1653");
+
+	rc = osim_uicc_scan_apps(chan);
+	if (rc >= 0) {
+		chan->card->prof = osim_cprof_uicc(chan->card);
+		chan->cwd = chan->card->prof->mf;
+	} else if (rc == -0x6e00) {
 		/* CLA not supported: must be classic SIM, not USIM */
 		g_class = 0xA0;
 		chan->card->prof = osim_cprof_sim(chan->card);
 		chan->cwd = chan->card->prof->mf;
-		msgb_free(msg);
-	} else if (msgb_apdu_sw(msg) == 0x9000) {
-		/* normal file */
-		dump_fcp_template_msg(msg);
-		msgb_free(msg);
-		mkdir_and_chdir("ADF_USIM", 0750);
+	} else if (rc < 0) {
+		exit(4);
 	}
 
-	msg = select_file(chan, 0x6fc5);
-	dump_fcp_template_msg(msg);
-	printf("SW: %s\n", osim_print_sw(chan->card, msgb_apdu_sw(msg)));
-	msgb_free(msg);
-
-	verify_pin(chan, 1, "1653");
-
-	msg = select_file(chan, 0x6f06);
-	dump_fcp_template_msg(msg);
-	msgb_free(msg);
-
+	/* first iterate over normal file system */
 	iterate_fs(chan);
+
+	/* then itereate over all apps and their file system */
+	iterate_apps(chan);
 
 	exit(0);
 }

@@ -43,12 +43,6 @@ const struct osim_card_sw ts31_103_sw[] = {
 	OSIM_CARD_SW_LAST
 };
 
-static const struct osim_card_sw *isim_card_sws[] = {
-	ts31_103_sw,
-	ts102221_uicc_sw,
-	NULL
-};
-
 /* TS 31.103 Version 11.2.0 Release 11 / Chapoter 4.2 */
 static const struct osim_file_desc isim_ef_in_adf_isim[] = {
 	EF_TRANSP_N(0x6F02, 0x02, "EF.IMPI", 0, 1, 256,
@@ -86,23 +80,21 @@ static const struct osim_file_desc isim_ef_in_adf_isim[] = {
 /* Annex E - TS 101 220 */
 static const uint8_t adf_isim_aid[] = { 0xA0, 0x00, 0x00, 0x00, 0x87, 0x10, 0x04 };
 
-struct osim_card_profile *osim_cprof_isim(void *ctx)
+struct osim_card_app_profile *osim_aprof_isim(void *ctx)
 {
-	struct osim_card_profile *cprof;
-	struct osim_file_desc *mf;
+	struct osim_card_app_profile *aprof;
+	struct osim_file_desc *iadf;
 
-	cprof = talloc_zero(ctx, struct osim_card_profile);
-	cprof->name = "3GPP ISIM";
-	cprof->sws = isim_card_sws;
-
-	mf = alloc_df(cprof, 0x3f00, "MF");
-
-	cprof->mf = mf;
+	aprof = talloc_zero(ctx, struct osim_card_app_profile);
+	aprof->name = "3GPP ISIM";
+	aprof->sw = ts31_103_sw;
+	aprof->aid_len = sizeof(adf_isim_aid);
+	memcpy(aprof->aid, adf_isim_aid, aprof->aid_len);
 
 	/* ADF.USIM with its EF siblings */
-	add_adf_with_ef(mf, adf_isim_aid, sizeof(adf_isim_aid),
-			"ADF.ISIM", isim_ef_in_adf_isim,
-			ARRAY_SIZE(isim_ef_in_adf_isim));
+	iadf = alloc_adf_with_ef(aprof, adf_isim_aid, sizeof(adf_isim_aid), "ADF.ISIM",
+				 isim_ef_in_adf_isim, ARRAY_SIZE(isim_ef_in_adf_isim));
+	aprof->adf = iadf;
 
-	return cprof;
+	return aprof;
 }

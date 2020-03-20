@@ -1,7 +1,7 @@
 /*! \file card_fs_usim.c
  * 3GPP USIM specific structures / routines. */
 /*
- * (C) 2012-2014 by Harald Welte <laforge@gnumonks.org>
+ * (C) 2012-2020 by Harald Welte <laforge@gnumonks.org>
  *
  * All Rights Reserved
  *
@@ -45,24 +45,6 @@ const struct osim_card_sw ts31_102_sw[] = {
 		.u.str = "Security management - Key freshness error",
 	},
 	OSIM_CARD_SW_LAST
-};
-
-static const struct osim_card_sw *usim_card_sws[] = {
-	ts31_102_sw,
-	ts102221_uicc_sw,
-	NULL
-};
-
-/* TS 102 221 Chapter 13.1 */
-static const struct osim_file_desc uicc_ef_in_mf[] = {
-	EF_LIN_FIX_N(0x2f00, SFI_NONE, "EF.DIR", 0, 1, 32,
-			"Application directory"),
-	EF_TRANSP_N(0x2FE2, SFI_NONE, "EF.ICCID", 0, 10, 10,
-			"ICC Identification"),
-	EF_TRANSP_N(0x2F05, SFI_NONE, "EF.PL", 0, 2, 20,
-			"Preferred Languages"),
-	EF_LIN_FIX_N(0x2F06, SFI_NONE, "EF.ARR", F_OPTIONAL, 1, 256,
-			"Access Rule Reference"),
 };
 
 /* 31.102 Chapter 4.4.3 */
@@ -330,27 +312,21 @@ static const struct osim_file_desc usim_ef_in_df_hnb[] = {
 /* Annex E - TS 101 220 */
 static const uint8_t adf_usim_aid[] = { 0xA0, 0x00, 0x00, 0x00, 0x87, 0x10, 0x02 };
 
-struct osim_card_profile *osim_cprof_usim(void *ctx)
+struct osim_card_app_profile *osim_aprof_usim(void *ctx)
 {
-	struct osim_card_profile *cprof;
-	struct osim_file_desc *mf, *uadf;
-	int rc;
+	struct osim_card_app_profile *aprof;
+	struct osim_file_desc *uadf;
 
-	cprof = talloc_zero(ctx, struct osim_card_profile);
-	cprof->name = "3GPP USIM";
-	cprof->sws = usim_card_sws;
-
-	mf = alloc_df(cprof, 0x3f00, "MF");
-
-	cprof->mf = mf;
-
-	/* Core UICC Files */
-	add_filedesc(mf, uicc_ef_in_mf, ARRAY_SIZE(uicc_ef_in_mf));
+	aprof = talloc_zero(ctx, struct osim_card_app_profile);
+	aprof->name = "3GPP USIM";
+	aprof->sw = ts31_102_sw;
+	aprof->aid_len = sizeof(adf_usim_aid);
+	memcpy(aprof->aid, adf_usim_aid, aprof->aid_len);
 
 	/* ADF.USIM with its EF siblings */
-	uadf = add_adf_with_ef(mf, adf_usim_aid, sizeof(adf_usim_aid),
-				"ADF.USIM", usim_ef_in_adf_usim,
-				ARRAY_SIZE(usim_ef_in_adf_usim));
+	uadf = alloc_adf_with_ef(aprof, adf_usim_aid, sizeof(adf_usim_aid),
+				 "ADF.USIM", usim_ef_in_adf_usim, ARRAY_SIZE(usim_ef_in_adf_usim));
+	aprof->adf = uadf;
 
 	/* DFs under ADF.USIM */
 	add_df_with_ef(uadf, 0x5F3A, "DF.PHONEBOOK", NULL, 0);
@@ -369,13 +345,14 @@ struct osim_card_profile *osim_cprof_usim(void *ctx)
 	/* OMA BCAST Smart Card Profile */
 	add_df_with_ef(uadf, 0x5F80, "DF.BCAST", NULL, 0);
 
-	/* DF.GSM and DF.TELECOM hierarchy as sub-directory of MF */
+#if 0
+	/* DF.GSM as sub-directory of MF */
 	rc = osim_int_cprof_add_gsm(mf);
-	rc |= osim_int_cprof_add_telecom(mf);
 	if (rc != 0) {
 		talloc_free(cprof);
 		return NULL;
 	}
+#endif
 
-	return cprof;
+	return aprof;
 }

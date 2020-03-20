@@ -121,6 +121,7 @@ static struct osim_card_hdl *pcsc_card_open(struct osim_reader_hdl *rh,
 
 	card = talloc_zero(rh, struct osim_card_hdl);
 	INIT_LLIST_HEAD(&card->channels);
+	INIT_LLIST_HEAD(&card->apps);
 	card->reader = rh;
 	rh->card = card;
 

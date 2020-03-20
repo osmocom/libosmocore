@@ -1,7 +1,7 @@
 /*! \file core.c
  * Core routines for SIM/UICC/USIM access. */
 /*
- * (C) 2012 by Harald Welte <laforge@gnumonks.org>
+ * (C) 2012-2020 by Harald Welte <laforge@gnumonks.org>
  *
  * All Rights Reserved
  *
@@ -27,9 +27,12 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include <errno.h>
 
 #include <osmocom/core/talloc.h>
 #include <osmocom/sim/sim.h>
+
+#include "sim_int.h"
 
 struct osim_decoded_data *osim_file_decode(struct osim_file *file,
 					   int len, uint8_t *data)
@@ -154,21 +157,19 @@ add_df_with_ef(struct osim_file_desc *parent,
 }
 
 struct osim_file_desc *
-add_adf_with_ef(struct osim_file_desc *parent,
+alloc_adf_with_ef(void *ctx,
 		const uint8_t *adf_name, uint8_t adf_name_len,
 		const char *name, const struct osim_file_desc *in,
 		int num)
 {
 	struct osim_file_desc *df;
 
-	df = alloc_df(parent, 0xffff, name);
+	df = alloc_df(ctx, 0xffff, name);
 	if (!df)
 		return NULL;
 	df->type = TYPE_ADF;
 	df->df_name = adf_name;
 	df->df_name_len = adf_name_len;
-	df->parent = parent;
-	llist_add_tail(&df->list, &parent->child_list);
 	add_filedesc(df, in, num);
 
 	return df;
@@ -228,6 +229,88 @@ osim_file_desc_find_sfid(struct osim_file_desc *parent, uint8_t sfid)
 	return NULL;
 }
 
+
+/***********************************************************************
+ * Application Profiles + Applications
+ ***********************************************************************/
+
+static LLIST_HEAD(g_app_profiles);
+
+/*! Register an application profile. Typically called at early start-up. */
+void osim_app_profile_register(struct osim_card_app_profile *aprof)
+{
+	OSMO_ASSERT(!osim_app_profile_find_by_name(aprof->name));
+	OSMO_ASSERT(!osim_app_profile_find_by_aid(aprof->aid, aprof->aid_len));
+	llist_add_tail(&aprof->list, &g_app_profiles);
+}
+
+/*! Find any registered application profile based on its name (e.g. "ADF.USIM") */
+const struct osim_card_app_profile *
+osim_app_profile_find_by_name(const char *name)
+{
+	struct osim_card_app_profile *ap;
+
+	llist_for_each_entry(ap, &g_app_profiles, list) {
+		if (!strcmp(name, ap->name))
+			return ap;
+	}
+	return NULL;
+}
+
+/*! Find any registered application profile based on its AID */
+const struct osim_card_app_profile *
+osim_app_profile_find_by_aid(const uint8_t *aid, uint8_t aid_len)
+{
+	struct osim_card_app_profile *ap;
+
+	llist_for_each_entry(ap, &g_app_profiles, list) {
+		if (ap->aid_len > aid_len)
+			continue;
+		if (!memcmp(ap->aid, aid, ap->aid_len))
+			return ap;
+	}
+	return NULL;
+}
+
+struct osim_card_app_hdl *
+osim_card_hdl_find_app(struct osim_card_hdl *ch, const uint8_t *aid, uint8_t aid_len)
+{
+	struct osim_card_app_hdl *ah;
+
+	if (aid_len > MAX_AID_LEN)
+		return NULL;
+
+	llist_for_each_entry(ah, &ch->apps, list) {
+		if (!memcmp(ah->aid, aid, aid_len))
+			return ah;
+	}
+	return NULL;
+}
+
+/*! Add an application to a given card */
+int osim_card_hdl_add_app(struct osim_card_hdl *ch, const uint8_t *aid, uint8_t aid_len,
+			  const char *label)
+{
+	struct osim_card_app_hdl *ah;
+
+	if (aid_len > MAX_AID_LEN)
+		return -EINVAL;
+
+	if (osim_card_hdl_find_app(ch, aid, aid_len))
+		return -EEXIST;
+
+	ah = talloc_zero(ch, struct osim_card_app_hdl);
+	if (!ah)
+		return -ENOMEM;
+
+	memcpy(ah->aid, aid, aid_len);
+	ah->aid_len = aid_len;
+	ah->prof = osim_app_profile_find_by_aid(ah->aid, ah->aid_len);
+	if (label)
+		ah->label = talloc_strdup(ah, label);
+	llist_add_tail(&ah->list, &ch->apps);
+	return 0;
+}
 
 /*! Generate an APDU message and initialize APDU command header
  *  \param[in] cla CLASS byte
@@ -362,6 +445,14 @@ int default_decode(struct osim_decoded_data *dd,
 
 	elem = element_alloc(dd, "Unknown Payload", ELEM_T_BYTES, ELEM_REPR_HEX);
 	elem->u.buf = talloc_memdup(elem, data, len);
+
+	return 0;
+}
+
+int osim_init(void *ctx)
+{
+	osim_app_profile_register(osim_aprof_usim(ctx));
+	osim_app_profile_register(osim_aprof_isim(ctx));
 
 	return 0;
 }
