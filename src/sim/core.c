@@ -187,6 +187,22 @@ osim_file_desc_find_name(struct osim_file_desc *parent, const char *name)
 }
 
 struct osim_file_desc *
+osim_file_desc_find_aid(struct osim_file_desc *parent, const uint8_t *aid, uint8_t aid_len)
+{
+	struct osim_file_desc *ofd;
+	llist_for_each_entry(ofd, &parent->child_list, list) {
+		if (ofd->type != TYPE_ADF)
+			continue;
+		if (aid_len > ofd->df_name_len)
+			continue;
+		if (!memcmp(ofd->df_name, aid, aid_len)) {
+			return ofd;
+		}
+	}
+	return NULL;
+}
+
+struct osim_file_desc *
 osim_file_desc_find_fid(struct osim_file_desc *parent, uint16_t fid)
 {
 	struct osim_file_desc *ofd;
