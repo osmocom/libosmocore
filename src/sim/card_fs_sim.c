@@ -431,7 +431,7 @@ int osim_int_cprof_add_gsm(struct osim_file_desc *mf)
 	add_df_with_ef(gsm, 0x5F33, "DF.ACeS", NULL, 0);
 	add_df_with_ef(gsm, 0x5F3C, "DF.MExE", sim_ef_in_mexe,
 			ARRAY_SIZE(sim_ef_in_mexe));
-	add_df_with_ef(gsm, 0x5F40, "DF.EIA/TIA-533", NULL, 0);
+	add_df_with_ef(gsm, 0x5F40, "DF.EIA-TIA-533", NULL, 0);
 	add_df_with_ef(gsm, 0x5F60, "DF.CTS", NULL, 0);
 	add_df_with_ef(gsm, 0x5F70, "DF.SoLSA", sim_ef_in_solsa,
 			ARRAY_SIZE(sim_ef_in_solsa));
