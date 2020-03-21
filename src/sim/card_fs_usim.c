@@ -161,7 +161,7 @@ static const struct osim_file_desc usim_ef_in_adf_usim[] = {
 		"Key for hidden phone book entries"),
 	EF_LIN_FIX_N(0x6F4D, SFI_NONE, "EF.BDN", F_OPTIONAL, 15, 32,
 		"Barred Dialling Numbers"),
-	EF_LIN_FIX_N(0x6F4E, SFI_NONE, "EF.EXT4", F_OPTIONAL, 13, 13,
+	EF_LIN_FIX_N(0x6F55, SFI_NONE, "EF.EXT4", F_OPTIONAL, 13, 13,
 		"Extension 4"),
 	EF_LIN_FIX_N(0x6F58, SFI_NONE, "EF.CMI", F_OPTIONAL, 2, 16,
 		"Comparison Method Information"),
