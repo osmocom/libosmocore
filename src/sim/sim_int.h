@@ -33,5 +33,6 @@ void osim_app_profile_register(struct osim_card_app_profile *aprof);
 
 struct osim_card_app_profile *osim_aprof_usim(void *ctx);
 struct osim_card_app_profile *osim_aprof_isim(void *ctx);
+struct osim_card_app_profile *osim_aprof_hpsim(void *ctx);
 
 #endif

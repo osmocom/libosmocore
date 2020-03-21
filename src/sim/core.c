@@ -453,6 +453,7 @@ int osim_init(void *ctx)
 {
 	osim_app_profile_register(osim_aprof_usim(ctx));
 	osim_app_profile_register(osim_aprof_isim(ctx));
+	osim_app_profile_register(osim_aprof_hpsim(ctx));
 
 	return 0;
 }
