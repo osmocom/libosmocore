@@ -32,7 +32,7 @@
 #include "sim_int.h"
 #include "gsm_int.h"
 
-/* TS 31.102 Version 7.7.0 / Chapter 7.3 */
+/* TS 31.102 Version 15.7.0 Release 15 / Chapter 7.3 */
 const struct osim_card_sw ts31_102_sw[] = {
 	{
 		0x9862, 0xffff, SW_TYPE_STR, SW_CLS_ERROR,
@@ -43,11 +43,17 @@ const struct osim_card_sw ts31_102_sw[] = {
 	}, {
 		0x9865, 0xffff, SW_TYPE_STR, SW_CLS_ERROR,
 		.u.str = "Security management - Key freshness error",
+	}, {
+		0x9866, 0xffff, SW_TYPE_STR, SW_CLS_ERROR,
+		.u.str = "Security management - Authentication error, no memory space available",
+	}, {
+		0x9867, 0xffff, SW_TYPE_STR, SW_CLS_ERROR,
+		.u.str = "Security management - Authentication error, no memory space available in EF_MUK",
 	},
 	OSIM_CARD_SW_LAST
 };
 
-/* 31.102 Chapter 4.4.3 */
+/* 31.102 Version 15.7.0 Release 15 / Chapter 4.4.3 */
 static const struct osim_file_desc usim_ef_in_df_gsm_access[] = {
 	EF_TRANSP_N(0x4f20, 0x01, "EF.Kc", 0, 9, 9,
 		"Ciphering Key Kc"),
@@ -59,7 +65,7 @@ static const struct osim_file_desc usim_ef_in_df_gsm_access[] = {
 		"Investigation Scan"),
 };
 
-/* 31.102 Chapter 4.2 */
+/* 31.102 Version 15.7.0 Release 15 / Chapter 4.2 */
 static const struct osim_file_desc usim_ef_in_adf_usim[] = {
 	EF_TRANSP(0x6F05, 0x02, "EF.LI", 0, 2, 16,
 		"Language Indication", &gsm_lp_decode, NULL),
@@ -243,6 +249,39 @@ static const struct osim_file_desc usim_ef_in_adf_usim[] = {
 		"UICC IARI"),
 	EF_TRANSP_N(0x6FEC, SFI_NONE, "EF.PWS", F_OPTIONAL, 1, 32,
 		"Public Warning System"),
+	EF_LIN_FIX_N(0x6FED, SFI_NONE, "EF_FDNURI", F_OPTIONAL, 1, 128,
+		"Fixed Dialling Numbers URI"),
+	EF_LIN_FIX_N(0x6FEE, SFI_NONE, "EF_BDNURI", F_OPTIONAL, 1, 128,
+		"Barred Dialling Numbers URI"),
+	EF_LIN_FIX_N(0x6FEF, SFI_NONE, "EF_SDNURI", F_OPTIONAL, 1, 128,
+		"Service Dialling Numbers URI"),
+	EF_LIN_FIX_N(0x6FF0, SFI_NONE, "EF_IWL", F_OPTIONAL, 18, 32,
+		"IMEI(SV) White Lists"),
+	EF_CYCLIC_N(0x6FF1, SFI_NONE, "EF_IPS", F_OPTIONAL, 4, 4,
+		"IMEI(SV) Pairing Status"),
+	EF_LIN_FIX_N(0x6FF2, SFI_NONE, "EF_IPD", F_OPTIONAL, 10, 16,
+		"IMEI(SV) of Pairing Device"),
+	EF_TRANSP_N(0x6FF3, SFI_NONE, "EF_ePDGId", F_OPTIONAL, 1, 128,
+		"Home ePDG Identifier"),
+	EF_TRANSP_N(0x6FF4, SFI_NONE, "EF_ePDGSelection", F_OPTIONAL, 1, 128,
+		"ePDG Selection Information"),
+	EF_TRANSP_N(0x6FF5, SFI_NONE, "EF_ePDGIdEm", F_OPTIONAL, 1, 128,
+		"Emergency ePDG Identifier"),
+	EF_TRANSP_N(0x6FF6, SFI_NONE, "EF_ePDGSelectionEm", F_OPTIONAL, 1, 128,
+		"ePDG Selection Information for Emergency Services"),
+	EF_TRANSP_N(0x6FF7, SFI_NONE, "EF_FromPreferred", F_OPTIONAL, 1, 1,
+		"From Preferred"),
+	EF_TRANSP_N(0x6FF8, SFI_NONE, "EF_IMSConfigData", F_OPTIONAL, 3, 128,
+		"IMS Configuration Data"),
+	/* EF TVCONFIG (TV Configuration) has no fixed FID */
+	EF_TRANSP_N(0x6FF9, SFI_NONE, "EF_3GPPPSDATAOFF", F_OPTIONAL, 4, 4,
+		"3GPP PS Data Off"),
+	EF_LIN_FIX_N(0x6FFA, SFI_NONE, "EF_3GPPPSDATAOFFservicelist", F_OPTIONAL, 1, 128,
+		"3GPP PS Data Off Service List"),
+	EF_TRANSP_N(0x6FFC, SFI_NONE, "EF_XCAPConfigData", F_OPTIONAL, 1, 128,
+		"XCAP Configuration Data"),
+	EF_TRANSP_N(0x6FFD, SFI_NONE, "EF_EARFCNList", F_OPTIONAL, 1, 128,
+		"EARFCN list for MTC/NB-IOT UEs"),
 };
 
 
