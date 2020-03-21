@@ -345,14 +345,5 @@ struct osim_card_app_profile *osim_aprof_usim(void *ctx)
 	/* OMA BCAST Smart Card Profile */
 	add_df_with_ef(uadf, 0x5F80, "DF.BCAST", NULL, 0);
 
-#if 0
-	/* DF.GSM as sub-directory of MF */
-	rc = osim_int_cprof_add_gsm(mf);
-	if (rc != 0) {
-		talloc_free(cprof);
-		return NULL;
-	}
-#endif
-
 	return aprof;
 }

@@ -231,7 +231,7 @@ const struct tlv_definition ts102221_fcp_tlv_def = {
 /* Annex E - TS 101 220 */
 static const uint8_t __attribute__((__unused__)) adf_uicc_aid[] = { 0xA0, 0x00, 0x00, 0x00, 0x87, 0x10, 0x01 };
 
-struct osim_card_profile *osim_cprof_uicc(void *ctx)
+struct osim_card_profile *osim_cprof_uicc(void *ctx, bool have_df_gsm)
 {
 	struct osim_card_profile *cprof;
 	struct osim_file_desc *mf;
@@ -253,6 +253,15 @@ struct osim_card_profile *osim_cprof_uicc(void *ctx)
 	if (rc != 0) {
 		talloc_free(cprof);
 		return NULL;
+	}
+
+	if (have_df_gsm) {
+		/* DF.GSM as sub-directory of MF */
+		rc = osim_int_cprof_add_gsm(mf);
+		if (rc != 0) {
+			talloc_free(cprof);
+			return NULL;
+		}
 	}
 
 	return cprof;

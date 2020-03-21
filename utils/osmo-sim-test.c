@@ -341,7 +341,7 @@ static int osim_uicc_scan_apps(struct osim_chan_hdl *st)
 
 
 extern struct osim_card_profile *osim_cprof_sim(void *ctx);
-extern struct osim_card_profile *osim_cprof_uicc(void *ctx);
+extern struct osim_card_profile *osim_cprof_uicc(void *ctx, bool have_df_gsm);
 
 static int dump_file(struct osim_chan_hdl *chan, const char *short_name, uint16_t fid)
 {
@@ -652,7 +652,7 @@ int main(int argc, char **argv)
 
 	rc = osim_uicc_scan_apps(chan);
 	if (rc >= 0) {
-		chan->card->prof = osim_cprof_uicc(chan->card);
+		chan->card->prof = osim_cprof_uicc(chan->card, true);
 		chan->cwd = chan->card->prof->mf;
 	} else if (rc == -0x6e00) {
 		/* CLA not supported: must be classic SIM, not USIM */
