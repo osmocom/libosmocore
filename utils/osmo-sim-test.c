@@ -421,11 +421,8 @@ static int dump_file(struct osim_chan_hdl *chan, const char *short_name, uint16_
 		break;
 	case EF_TYPE_TRANSP:
 		if (g_class != 0xA0) {
-			if (!TLVP_PRESENT(&tp, UICC_FCP_T_FILE_SIZE)) {
-				if (f_data)
-					fclose(f_data);
+			if (!TLVP_PRESENT(&tp, UICC_FCP_T_FILE_SIZE))
 				goto out;
-			}
 			i = ntohs(*(uint16_t *)TLVP_VAL(&tp, UICC_FCP_T_FILE_SIZE));
 			printf("File size: %d bytes\n", i);
 		} else {
