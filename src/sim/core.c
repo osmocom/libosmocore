@@ -367,14 +367,19 @@ struct msgb *osim_new_apdumsg(uint8_t cla, uint8_t ins, uint8_t p1,
 }
 
 
-char *osim_print_sw_buf(char *buf, size_t buf_len, const struct osim_card_hdl *ch, uint16_t sw_in)
+char *osim_print_sw_buf(char *buf, size_t buf_len, const struct osim_chan_hdl *ch, uint16_t sw_in)
 {
-	const struct osim_card_sw *csw;
+	const struct osim_card_sw *csw = NULL;
 
-	if (!ch || !ch->prof)
+	if (!ch)
 		goto ret_def;
 
-	csw = osim_find_sw(ch->prof, sw_in);
+	if (ch->cur_app && ch->cur_app->prof)
+		csw = osim_app_profile_find_sw(ch->cur_app->prof, sw_in);
+
+	if (!csw && ch->card->prof)
+		csw = osim_cprof_find_sw(ch->card->prof, sw_in);
+
 	if (!csw)
 		goto ret_def;
 
@@ -397,13 +402,13 @@ ret_def:
 	return buf;
 }
 
-char *osim_print_sw(const struct osim_card_hdl *ch, uint16_t sw_in)
+char *osim_print_sw(const struct osim_chan_hdl *ch, uint16_t sw_in)
 {
 	static __thread char sw_print_buf[256];
 	return osim_print_sw_buf(sw_print_buf, sizeof(sw_print_buf), ch, sw_in);
 }
 
-char *osim_print_sw_c(const void *ctx, const struct osim_card_hdl *ch, uint16_t sw_in)
+char *osim_print_sw_c(const void *ctx, const struct osim_chan_hdl *ch, uint16_t sw_in)
 {
 	char *buf = talloc_size(ctx, 256);
 	if (!buf)
@@ -411,8 +416,8 @@ char *osim_print_sw_c(const void *ctx, const struct osim_card_hdl *ch, uint16_t 
 	return osim_print_sw_buf(buf, 256, ch, sw_in);
 }
 
-const struct osim_card_sw *osim_find_sw(const struct osim_card_profile *cp,
-					uint16_t sw_in)
+/*! Find status word within given card profile */
+const struct osim_card_sw *osim_cprof_find_sw(const struct osim_card_profile *cp, uint16_t sw_in)
 {
 	const struct osim_card_sw **sw_lists = cp->sws;
 	const struct osim_card_sw *sw_list, *sw;
@@ -426,10 +431,30 @@ const struct osim_card_sw *osim_find_sw(const struct osim_card_profile *cp,
 	return NULL;
 }
 
-enum osim_card_sw_class osim_sw_class(const struct osim_card_profile *cp,
-				      uint16_t sw_in)
+/*! Find application-specific status word within given card application profile */
+const struct osim_card_sw *osim_app_profile_find_sw(const struct osim_card_app_profile *ap, uint16_t sw_in)
 {
-	const struct osim_card_sw *csw = osim_find_sw(cp, sw_in);
+	const struct osim_card_sw *sw_list = ap->sw, *sw;
+
+	for (sw = sw_list; sw->code != 0 && sw->mask != 0; sw++) {
+		if ((sw_in & sw->mask) == sw->code)
+			return sw;
+	}
+	return NULL;
+}
+
+enum osim_card_sw_class osim_sw_class(const struct osim_chan_hdl *ch, uint16_t sw_in)
+{
+	const struct osim_card_sw *csw = NULL;
+
+	OSMO_ASSERT(ch);
+	OSMO_ASSERT(ch->card);
+
+	if (ch->cur_app && ch->cur_app->prof)
+		csw = osim_app_profile_find_sw(ch->cur_app->prof, sw_in);
+
+	if (!csw && ch->card->prof)
+		csw = osim_cprof_find_sw(ch->card->prof, sw_in);
 
 	if (!csw)
 		return SW_CLS_NONE;
