@@ -37,6 +37,7 @@
 
 static uint8_t g_class = 0x00; /* UICC/USIM */
 static const char *g_output_dir;
+static const char *g_pin;
 
 /* 11.1.1 */
 static struct msgb *_select_file(struct osim_chan_hdl *st, uint8_t p1, uint8_t p2,
@@ -73,15 +74,14 @@ static struct msgb *select_file(struct osim_chan_hdl *st, uint16_t fid)
 	return _select_file(st, 0x00, p2, (uint8_t *)&cfid, 2);
 }
 
-#if 0
 /* 11.1.9 */
-static int verify_pin(struct osim_chan_hdl *st, uint8_t pin_nr, char *pin)
+static struct msgb *verify_pin(struct osim_chan_hdl *st, uint8_t pin_nr, const char *pin)
 {
 	struct msgb *msg;
 	char *pindst;
 
 	if (strlen(pin) > 8)
-		return -EINVAL;
+		return NULL;
 
 	msg = osim_new_apdumsg(g_class, 0x20, 0x00, pin_nr, 8, 0);
 	pindst = (char *) msgb_put(msg, 8);
@@ -89,9 +89,10 @@ static int verify_pin(struct osim_chan_hdl *st, uint8_t pin_nr, char *pin)
 	/* Do not copy the terminating \0 */
 	memcpy(pindst, pin, strlen(pin));
 
-	return osim_transceive_apdu(st, msg);
+	osim_transceive_apdu(st, msg);
+
+	return msg;
 }
-#endif
 
 /* 11.1.5 */
 static struct msgb *read_record_nr(struct osim_chan_hdl *st, uint8_t rec_nr, uint16_t rec_size)
@@ -460,6 +461,7 @@ static void print_help(void)
 		" -h  --help		This message\n"
 		" -n  --reader-num NR	Open reader number NR\n"
 		" -o  --output-dir DIR	To-be-created output directory for filesystem dump\n"
+		" -p  --pin PIN		Authenticate using the given PIN\n"
 	      );
 }
 
@@ -473,10 +475,11 @@ static void handle_options(int argc, char **argv)
 			{ "help", 0, 0, 'h' },
 			{ "reader-num", 1, 0, 'n' },
 			{ "output-dir", 1, 0, 'o' },
+			{ "pin", 1, 0, 'p' },
 			{0,0,0,0}
 		};
 
-		c = getopt_long(argc, argv, "hn:o:",
+		c = getopt_long(argc, argv, "hn:o:p:",
 				long_options, &option_index);
 		if (c == -1)
 			break;
@@ -491,6 +494,9 @@ static void handle_options(int argc, char **argv)
 			break;
 		case 'o':
 			g_output_dir = optarg;
+			break;
+		case 'p':
+			g_pin = optarg;
 			break;
 		default:
 			exit(2);
@@ -641,7 +647,14 @@ int main(int argc, char **argv)
 	if (!chan)
 		exit(3);
 
-	//verify_pin(chan, 1, "1653");
+	if (g_pin) {
+		struct msgb *msg;
+		msg = verify_pin(chan, 1, g_pin);
+		if (!msg /*|| FIXME*/) {
+			fprintf(stderr, "Error authenticating PIN: %s\n");
+			exit(6);
+		}
+	}
 
 	rc = osim_uicc_scan_apps(chan);
 	if (rc >= 0) {
