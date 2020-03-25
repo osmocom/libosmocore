@@ -1026,6 +1026,7 @@ int log_targets_reopen(void)
 int log_init(const struct log_info *inf, void *ctx)
 {
 	int i;
+	struct log_info_cat *cat_ptr;
 
 	tall_log_ctx = talloc_named_const(ctx, 1, "logging");
 	if (!tall_log_ctx)
@@ -1043,28 +1044,35 @@ int log_init(const struct log_info *inf, void *ctx)
 		osmo_log_info->num_cat += inf->num_cat;
 	}
 
-	osmo_log_info->cat = talloc_zero_array(osmo_log_info,
-					struct log_info_cat,
-					osmo_log_info->num_cat);
-	if (!osmo_log_info->cat) {
+	cat_ptr = talloc_zero_array(osmo_log_info, struct log_info_cat,
+				    osmo_log_info->num_cat);
+	if (!cat_ptr) {
 		talloc_free(osmo_log_info);
 		osmo_log_info = NULL;
 		return -ENOMEM;
 	}
 
-	if (inf) { /* copy over the user part */
+	/* copy over the user part and sanitize loglevel */
+	if (inf) {
 		for (i = 0; i < inf->num_cat; i++) {
-			memcpy((struct log_info_cat *) &osmo_log_info->cat[i],
-			       &inf->cat[i], sizeof(struct log_info_cat));
+			memcpy(&cat_ptr[i], &inf->cat[i],
+			       sizeof(struct log_info_cat));
+
+			/* Make sure that the loglevel is set to NOTICE in case
+			 * no loglevel has been preset. */
+			if (!cat_ptr[i].loglevel) {
+				cat_ptr[i].loglevel = LOGL_NOTICE;
+			}
 		}
 	}
 
 	/* copy over the library part */
 	for (i = 0; i < ARRAY_SIZE(internal_cat); i++) {
 		unsigned int cn = osmo_log_info->num_cat_user + i;
-		memcpy((struct log_info_cat *) &osmo_log_info->cat[cn],
-			&internal_cat[i], sizeof(struct log_info_cat));
+		memcpy(&cat_ptr[cn], &internal_cat[i], sizeof(struct log_info_cat));
 	}
+
+	osmo_log_info->cat = cat_ptr;
 
 	return 0;
 }
