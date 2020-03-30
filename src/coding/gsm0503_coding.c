@@ -1332,7 +1332,7 @@ static int egprs_parse_dl_cps(struct egprs_cps *cps,
  *  \param[out] bursts caller-allocated buffer for unpacked burst bits
  *  \param[in] l2_data L2 (MAC) block to be encoded
  *  \param[in] l2_len length of l2_data in bytes, used to determine MCS
- *  \returns 0 on success; negative on error */
+ *  \returns number of bits encoded; negative on error */
 int gsm0503_pdtch_egprs_encode(ubit_t *bursts,
 	const uint8_t *l2_data, uint8_t l2_len)
 {
@@ -1427,7 +1427,7 @@ bad_header:
  *  \param[out] bursts caller-allocated buffer for unpacked burst bits
  *  \param[in] l2_data L2 (MAC) block to be encoded
  *  \param[in] l2_len length of l2_data in bytes, used to determine CS
- *  \returns 0 on success; negative on error */
+ *  \returns number of bits encoded; negative on error */
 int gsm0503_pdtch_encode(ubit_t *bursts, const uint8_t *l2_data, uint8_t l2_len)
 {
 	ubit_t iB[456], cB[676];
