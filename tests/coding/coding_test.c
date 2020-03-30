@@ -51,6 +51,12 @@
 		return; \
 	}
 
+#ifdef DEBUG
+#define printd(fmt, args...) printf(fmt, ##args)
+#else
+#define printd(fmt, args...)
+#endif
+
 static inline void dump_ubits(ubit_t *bursts_u, unsigned until)
 {
 	printf("U-Bits:\n");
@@ -121,16 +127,16 @@ static void test_rach(uint8_t bsic, uint8_t ra)
 	sbit_t bursts_s[36];
 
 	/* Encode L2 message */
-	printf("Encoding: %02x\n", ra);
+	printd("Encoding: %02x\n", ra);
 	rc = gsm0503_rach_ext_encode(bursts_u, ra, bsic, false);
 	CHECK_RC_OR_RET(rc == 0, "encoding");
 
 	/* Prepare soft-bits */
 	osmo_ubit2sbit(bursts_s, bursts_u, 36);
 
-	printf("U-Bits: %s\n", osmo_ubit_dump(bursts_u, 36));
+	printd("U-Bits: %s\n", osmo_ubit_dump(bursts_u, 36));
 
-	printf("S-Bits: %s\n", osmo_hexdump((uint8_t *)bursts_s, 36));
+	printd("S-Bits: %s\n", osmo_hexdump((uint8_t *)bursts_s, 36));
 
 	/* Destroy some bits */
 	memset(bursts_s + 6, 0, 8);
@@ -139,11 +145,11 @@ static void test_rach(uint8_t bsic, uint8_t ra)
 	rc = gsm0503_rach_decode_ber(&result, bursts_s, bsic, NULL, NULL);
 	CHECK_RC_OR_RET(rc == 0, "decoding");
 
-	printf("Decoded: %02x\n", result);
+	printd("Decoded: %02x\n", result);
 	if (ra != result)
 		printf("FAIL [RACH]: encoded %u != %u decoded\n", ra, result);
 
-	printf("\n");
+	printd("\n");
 }
 
 static void test_rach_ext(uint8_t bsic, uint16_t ra)
@@ -154,16 +160,16 @@ static void test_rach_ext(uint8_t bsic, uint16_t ra)
 	sbit_t bursts_s[36];
 
 	/* Encode L2 message */
-	printf("Encoding: %02x\n", ra);
+	printd("Encoding: %02x\n", ra);
 	rc = gsm0503_rach_ext_encode(bursts_u, ra, bsic, true);
 	CHECK_RC_OR_RET(rc == 0, "encoding");
 
 	/* Prepare soft-bits */
 	osmo_ubit2sbit(bursts_s, bursts_u, 36);
 
-	printf("U-Bits: %s\n", osmo_ubit_dump(bursts_u, 36));
+	printd("U-Bits: %s\n", osmo_ubit_dump(bursts_u, 36));
 
-	printf("S-Bits: %s\n", osmo_hexdump((uint8_t *)bursts_s, 36));
+	printd("S-Bits: %s\n", osmo_hexdump((uint8_t *)bursts_s, 36));
 
 	/* Destroy some bits */
 	memset(bursts_s + 9, 0, 8);
@@ -172,11 +178,11 @@ static void test_rach_ext(uint8_t bsic, uint16_t ra)
 	rc = gsm0503_rach_ext_decode_ber(&result, bursts_s, bsic, NULL, NULL);
 	CHECK_RC_OR_RET(rc == 0, "decoding");
 
-	printf("Decoded: %02x\n", result);
+	printd("Decoded: %02x\n", result);
 	if (ra != result)
 		printf("FAIL [RACH ext]: encoded %u != %u decoded\n", ra, result);
 
-	printf("\n");
+	printd("\n");
 }
 
 static void test_sch(uint8_t *info)
