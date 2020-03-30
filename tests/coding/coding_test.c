@@ -44,6 +44,13 @@
 			return;						\
 	} while(0)
 
+/* Similar to OSMO_ASSERT, but does not panic() */
+#define CHECK_RC_OR_RET(exp, action) \
+	if (!(exp)) { \
+		printf("%s(%s): assert %s failed\n", __func__, action, #exp); \
+		return; \
+	}
+
 static inline void dump_ubits(ubit_t *bursts_u, unsigned until)
 {
 	printf("U-Bits:\n");
@@ -76,10 +83,12 @@ static void test_xcch(uint8_t *l2)
 	ubit_t bursts_u[116 * 4];
 	sbit_t bursts_s[116 * 4];
 	int n_errors, n_bits_total;
+	int rc;
 
 	/* Encode L2 message */
 	printf("Encoding: %s\n", osmo_hexdump(l2, 23));
-	gsm0503_xcch_encode(bursts_u, l2);
+	rc = gsm0503_xcch_encode(bursts_u, l2);
+	CHECK_RC_OR_RET(rc == 0, "encoding");
 
 	/* Prepare soft-bits */
 	osmo_ubit2sbit(bursts_s, bursts_u, 116 * 4);
@@ -91,7 +100,9 @@ static void test_xcch(uint8_t *l2)
 	memset(bursts_s + 116, 0, 30);
 
 	/* Decode, correcting errors */
-	gsm0503_xcch_decode(result, bursts_s, &n_errors, &n_bits_total);
+	rc = gsm0503_xcch_decode(result, bursts_s, &n_errors, &n_bits_total);
+	CHECK_RC_OR_RET(rc == 0, "decoding");
+
 	printf("Decoded: %s\n", osmo_hexdump(result, 23));
 	printf("xcch_decode: n_errors=%d n_bits_total=%d ber=%.2f\n",
 		n_errors, n_bits_total, (float) n_errors / n_bits_total);
@@ -110,8 +121,9 @@ static void test_rach(uint8_t bsic, uint8_t ra)
 	sbit_t bursts_s[36];
 
 	/* Encode L2 message */
+	printf("Encoding: %02x\n", ra);
 	rc = gsm0503_rach_ext_encode(bursts_u, ra, bsic, false);
-	printf("Encoding: %02x%s\n", ra, (rc != 0) ? " FAIL" : "");
+	CHECK_RC_OR_RET(rc == 0, "encoding");
 
 	/* Prepare soft-bits */
 	osmo_ubit2sbit(bursts_s, bursts_u, 36);
@@ -125,8 +137,9 @@ static void test_rach(uint8_t bsic, uint8_t ra)
 
 	/* Decode, correcting errors */
 	rc = gsm0503_rach_decode_ber(&result, bursts_s, bsic, NULL, NULL);
-	printf("Decoded: %02x%s\n", result, (rc != 0) ? " FAIL" : "");
+	CHECK_RC_OR_RET(rc == 0, "decoding");
 
+	printf("Decoded: %02x\n", result);
 	if (ra != result)
 		printf("FAIL [RACH]: encoded %u != %u decoded\n", ra, result);
 
@@ -141,8 +154,9 @@ static void test_rach_ext(uint8_t bsic, uint16_t ra)
 	sbit_t bursts_s[36];
 
 	/* Encode L2 message */
+	printf("Encoding: %02x\n", ra);
 	rc = gsm0503_rach_ext_encode(bursts_u, ra, bsic, true);
-	printf("Encoding: %02x%s\n", ra, (rc != 0) ? " FAIL" : "");
+	CHECK_RC_OR_RET(rc == 0, "encoding");
 
 	/* Prepare soft-bits */
 	osmo_ubit2sbit(bursts_s, bursts_u, 36);
@@ -156,8 +170,9 @@ static void test_rach_ext(uint8_t bsic, uint16_t ra)
 
 	/* Decode, correcting errors */
 	rc = gsm0503_rach_ext_decode_ber(&result, bursts_s, bsic, NULL, NULL);
-	printf("Decoded: %02x%s\n", result, (rc != 0) ? " FAIL" : "");
+	CHECK_RC_OR_RET(rc == 0, "decoding");
 
+	printf("Decoded: %02x\n", result);
 	if (ra != result)
 		printf("FAIL [RACH ext]: encoded %u != %u decoded\n", ra, result);
 
@@ -169,6 +184,7 @@ static void test_sch(uint8_t *info)
 	uint8_t result[4];
 	ubit_t bursts_u[78];
 	sbit_t bursts_s[78];
+	int rc;
 
 	/* Zero bits 25 and above */
 	info[3] &= 1;
@@ -176,7 +192,8 @@ static void test_sch(uint8_t *info)
 
 	/* Encode L2 message */
 	printf("Encoding: %s\n", osmo_hexdump(info, 4));
-	gsm0503_sch_encode(bursts_u, info);
+	rc = gsm0503_sch_encode(bursts_u, info);
+	CHECK_RC_OR_RET(rc == 0, "encoding");
 
 	/* Prepare soft-bits */
 	osmo_ubit2sbit(bursts_s, bursts_u, 78);
@@ -189,7 +206,9 @@ static void test_sch(uint8_t *info)
 	memset(bursts_s + 6, 0, 10);
 
 	/* Decode, correcting errors */
-	gsm0503_sch_decode(result, bursts_s);
+	rc = gsm0503_sch_decode(result, bursts_s);
+	CHECK_RC_OR_RET(rc == 0, "decoding");
+
 	printf("Decoded: %s\n", osmo_hexdump(result, 4));
 
 	OSMO_ASSERT(!memcmp(info, result, 4));
@@ -210,7 +229,8 @@ static void test_fr(uint8_t *speech, int len)
 
 	/* Encode L2 message */
 	printf("Encoding: %s\n", osmo_hexdump(speech, len));
-	gsm0503_tch_fr_encode(bursts_u, speech, len, 1);
+	rc = gsm0503_tch_fr_encode(bursts_u, speech, len, 1);
+	CHECK_RC_OR_RET(rc == 0, "encoding");
 
 	/* Prepare soft-bits */
 	osmo_ubit2sbit(bursts_s, bursts_u, 116 * 8);
@@ -224,11 +244,12 @@ static void test_fr(uint8_t *speech, int len)
 	/* Decode, correcting errors */
 	rc = gsm0503_tch_fr_decode(result, bursts_s, 1, len == 31,
 		&n_errors, &n_bits_total);
+	CHECK_RC_OR_RET(rc == len, "decoding");
+
 	printf("Decoded: %s\n", osmo_hexdump(result, len));
 	printf("tch_fr_decode: n_errors=%d n_bits_total=%d ber=%.2f\n",
 		n_errors, n_bits_total, (float)n_errors/n_bits_total);
 
-	OSMO_ASSERT(rc == len);
 	OSMO_ASSERT(!memcmp(speech, result, len));
 
 	printf("\n");
@@ -247,7 +268,8 @@ static void test_hr(uint8_t *speech, int len)
 
 	/* Encode L2 message */
 	printf("Encoding: %s\n", osmo_hexdump(speech, len));
-	gsm0503_tch_hr_encode(bursts_u, speech, len);
+	rc = gsm0503_tch_hr_encode(bursts_u, speech, len);
+	CHECK_RC_OR_RET(rc == 0, "encoding");
 
 	/* Prepare soft-bits */
 	osmo_ubit2sbit(bursts_s, bursts_u, 116 * 6);
@@ -261,11 +283,12 @@ static void test_hr(uint8_t *speech, int len)
 	/* Decode, correcting errors */
 	rc = gsm0503_tch_hr_decode(result, bursts_s, 0,
 		&n_errors, &n_bits_total);
+	CHECK_RC_OR_RET(rc == len, "decoding");
+
 	printf("Decoded: %s\n", osmo_hexdump(result, len));
 	printf("tch_hr_decode: n_errors=%d n_bits_total=%d ber=%.2f\n",
 		n_errors, n_bits_total, (float)n_errors/n_bits_total);
 
-	OSMO_ASSERT(rc == len);
 	OSMO_ASSERT(!memcmp(speech, result, len));
 
 	printf("\n");
@@ -294,7 +317,8 @@ static void test_pdtch(uint8_t *l2, int len)
 
 	/* Encode L2 message */
 	printf("Encoding: %s\n", osmo_hexdump(l2, len));
-	gsm0503_pdtch_encode(bursts_u, l2, len);
+	rc = gsm0503_pdtch_encode(bursts_u, l2, len);
+	CHECK_RC_OR_RET(rc == GSM0503_GPRS_BURSTS_NBITS, "encoding");
 
 	/* Prepare soft-bits */
 	osmo_ubit2sbit(bursts_s, bursts_u, 116 * 4);
@@ -305,11 +329,12 @@ static void test_pdtch(uint8_t *l2, int len)
 	/* Decode */
 	rc = gsm0503_pdtch_decode(result, bursts_s, NULL,
 		&n_errors, &n_bits_total);
+	CHECK_RC_OR_RET(rc == len, "decoding");
+
 	printf("Decoded: %s\n", osmo_hexdump(result, len));
 	printf("pdtch_decode: n_errors=%d n_bits_total=%d ber=%.2f\n",
 		n_errors, n_bits_total, (float)n_errors/n_bits_total);
 
-	OSMO_ASSERT(rc == len);
 	OSMO_ASSERT(!memcmp(l2, result, len));
 
 	printf("\n");
