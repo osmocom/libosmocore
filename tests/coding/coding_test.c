@@ -384,8 +384,8 @@ int main(int argc, char **argv)
 {
 	int i, len_l2, len_mb;
 
-	len_l2 = sizeof(test_l2) / sizeof(test_l2[0]);
-	len_mb = sizeof(test_macblock) / sizeof(test_macblock[0]);
+	len_l2 = ARRAY_SIZE(test_l2);
+	len_mb = ARRAY_SIZE(test_macblock);
 
 	for (i = 0; i < len_l2; i++)
 		test_xcch(test_l2[i]);
