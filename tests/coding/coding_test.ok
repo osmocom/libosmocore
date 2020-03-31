@@ -40,6 +40,13 @@ S-Bits:
 Decoded: 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f 10 11 12 13 14 15 16 17 
 xcch_decode: n_errors=60 n_bits_total=456 ber=0.13
 
+Decoded RA11: 0x7cc
+Decoded RA11: 0x6cc
+Decoded RA11: 0x7cd
+Decoded RA11: 0x4cd
+Decoded RA11: 0x7cc
+Decoded RA11: 0x6ce
+
 Encoding: 03 03 01 00 
 U-Bits: 111001110011000011100111001100001101001111000000000011010000011010110111111100
 S-Bits: 81 81 81 7f 7f 81 81 81 7f 7f 81 81 7f 7f 7f 7f 81 81 81 7f 7f 81 81 81 7f 7f 81 81 7f 7f 7f 7f 81 81 7f 81 7f 7f 81 81 81 81 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 81 81 7f 81 7f 7f 7f 7f 7f 81 81 7f 81 7f 81 81 7f 81 81 81 81 81 81 81 7f 7f 
