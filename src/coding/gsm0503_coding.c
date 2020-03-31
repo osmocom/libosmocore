@@ -2879,7 +2879,7 @@ static inline int16_t rach_decode_ber(const sbit_t *burst, uint8_t bsic, bool is
 
 	osmo_ubit2pbit_ext(ra, 0, conv, 0, nbits, 1);
 
-	return is_11bit ? osmo_load16le(ra) : ra[0];
+	return is_11bit ? ((ra[0] << 3) | (ra[1] & 0x07)) : ra[0];
 }
 
 /*! Decode the Extended (11-bit) RACH according to 3GPP TS 45.003
@@ -2974,7 +2974,8 @@ int gsm0503_rach_ext_encode(ubit_t *burst, uint16_t ra11, uint8_t bsic, bool is_
 	uint8_t ra[2] = { 0 }, nbits = 8;
 
 	if (is_11bit) {
-		osmo_store16le(ra11, ra);
+		ra[0] = (uint8_t) (ra11 >> 3);
+		ra[1] = (uint8_t) (ra11 & 0x07);
 		nbits = 11;
 	} else
 		ra[0] = (uint8_t)ra11;
