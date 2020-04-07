@@ -1168,7 +1168,7 @@ int gsm0503_pdtch_decode(uint8_t *l2_data, const sbit_t *bursts, uint8_t *usf_p,
 }
 
 /*
- * EGPRS PDTCH UL block encoding
+ * EGPRS PDTCH DL block encoding
  */
 static int egprs_type3_map(ubit_t *bursts, const ubit_t *hc, const ubit_t *dc, int usf)
 {
