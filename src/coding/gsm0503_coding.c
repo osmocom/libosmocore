@@ -1176,7 +1176,7 @@ static int egprs_type3_map(ubit_t *bursts, const ubit_t *hc, const ubit_t *dc, i
 	ubit_t iB[456];
 	const ubit_t *hl_hn = gsm0503_pdtch_hl_hn_ubit[3];
 
-	gsm0503_mcs1_dl_interleave(gsm0503_usf2six[usf], hc, dc, iB);
+	gsm0503_mcs1_dl_interleave(gsm0503_usf2twelve_ubit[usf], hc, dc, iB);
 
 	for (i = 0; i < 4; i++) {
 		gsm0503_xcch_burst_map(&iB[i * 114], &bursts[i * 116],
