@@ -323,7 +323,7 @@ struct test_macblock {
 	uint8_t l2[54];
 };
 
-static struct test_macblock test_macblock[] = {
+static const struct test_macblock test_macblock[] = {
 	/* Random frame */
 	{	false,
 		GSM0503_GPRS_BURSTS_NBITS,
@@ -385,33 +385,34 @@ GSM RLC/MAC: EGPRS DL DATA BLOCK 1 (BSN 1)
 	},
 };
 
-static void test_pdtch(struct test_macblock *tmb, int len)
+static void test_pdtch(const struct test_macblock *tmb, int len)
 {
-	uint8_t result[len];
+	uint8_t l2[len], result[len];
 	ubit_t bursts_u[116 * 4];
 	sbit_t bursts_s[116 * 4];
 	int n_errors, n_bits_total;
 	int rc;
 
 	/* Zero the not coded tail bits */
+	memcpy(l2, tmb->l2, len);
 	switch (len) {
 	case 34:
 	case 54:
-		tmb->l2[len - 1] &= 0x7f;
+		l2[len - 1] &= 0x7f;
 		result[len - 1] &= 0x7f;
 		break;
 	case 40:
-		tmb->l2[len - 1] &= 0x07;
+		l2[len - 1] &= 0x07;
 		result[len - 1] &= 0x07;
 		break;
 	}
 
 	/* Encode L2 message */
-	printf("Encoding: %s\n", osmo_hexdump(tmb->l2, len));
+	printf("Encoding: %s\n", osmo_hexdump(l2, len));
 	if (tmb->is_egprs)
-		rc = gsm0503_pdtch_egprs_encode(bursts_u, tmb->l2, len);
+		rc = gsm0503_pdtch_egprs_encode(bursts_u, l2, len);
 	else
-		rc = gsm0503_pdtch_encode(bursts_u, tmb->l2, len);
+		rc = gsm0503_pdtch_encode(bursts_u, l2, len);
 	CHECK_RC_OR_RET(rc == (int)tmb->exp_burst_bits, "encoding");
 
 	/* Prepare soft-bits */
@@ -435,7 +436,7 @@ static void test_pdtch(struct test_macblock *tmb, int len)
 	printf("pdtch_decode: n_errors=%d n_bits_total=%d ber=%.2f\n",
 		n_errors, n_bits_total, (float)n_errors/n_bits_total);
 
-	OSMO_ASSERT(!memcmp(tmb->l2, result, len));
+	OSMO_ASSERT(!memcmp(l2, result, len));
 
 	printf("\n");
 }
