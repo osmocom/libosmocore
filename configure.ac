@@ -24,6 +24,11 @@ LT_INIT([pic-only disable-static])
 
 AC_CONFIG_MACRO_DIR([m4])
 
+dnl patching ${archive_cmds} to affect generation of file "libtool" to fix linking with clang
+AS_CASE(["$LD"],[*clang*],
+  [AS_CASE(["${host_os}"],
+     [*linux*],[archive_cmds='$CC -shared $pic_flag $libobjs $deplibs $compiler_flags $wl-soname $wl$soname -o $lib'])])
+
 dnl check for pkg-config
 dnl * If pkg-config is missing, we get a "syntax error" for PKG_CHECK_MODULES.
 dnl   Instead, we want to say that pkg-config and pkg.m4 are missing.
