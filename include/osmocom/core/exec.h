@@ -25,4 +25,5 @@ extern const char *osmo_environment_whitelist[];
 int osmo_environment_filter(char **out, size_t out_len, char **in, const char **whitelist);
 int osmo_environment_append(char **out, size_t out_len, char **in);
 int osmo_close_all_fds_above(int last_fd_to_keep);
+int osmo_system_nowait2(const char *command, const char **env_whitelist, char **addl_env, const char *user);
 int osmo_system_nowait(const char *command, const char **env_whitelist, char **addl_env);

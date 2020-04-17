@@ -23,6 +23,7 @@
 #include "config.h"
 #ifndef EMBEDDED
 
+#define _GNU_SOURCE
 #include <unistd.h>
 
 #include <errno.h>
@@ -31,6 +32,7 @@
 #include <stdio.h>
 #include <dirent.h>
 #include <sys/types.h>
+#include <pwd.h>
 
 #include <osmocom/core/logging.h>
 #include <osmocom/core/utils.h>
@@ -192,22 +194,33 @@ int osmo_close_all_fds_above(int last_fd_to_keep)
 /* Seems like POSIX has no header file for this, and even glibc + __USE_GNU doesn't help */
 extern char **environ;
 
-/*! call an external shell command without waiting for it.
+/*! call an external shell command as 'user' without waiting for it.
  *
  *  This mimics the behavior of system(3), with the following differences:
  *  - it doesn't wait for completion of the child process
  *  - it closes all non-stdio file descriptors by iterating /proc/self/fd
  *  - it constructs a reduced environment where only whitelisted keys survive
  *  - it (optionally) appends additional variables to the environment
+ *  - it (optionally) changes the user ID to that of 'user' (requires execution as root)
  *
  *  \param[in] command the shell command to be executed, see system(3)
  *  \param[in] env_whitelist A white-list of keys for environment variables
  *  \param[in] addl_env any additional environment variables to be appended
+ *  \param[in] user name of the user to which we should switch before executing the command
  *  \returns PID of generated child process; negative on error
  */
-int osmo_system_nowait(const char *command, const char **env_whitelist, char **addl_env)
+int osmo_system_nowait2(const char *command, const char **env_whitelist, char **addl_env, const char *user)
 {
+	struct passwd _pw, *pw;
+	int getpw_buflen = sysconf(_SC_GETPW_R_SIZE_MAX);
 	int rc;
+
+	if (user) {
+		char buf[getpw_buflen];
+		getpwnam_r(user, &_pw, buf, sizeof(buf), &pw);
+		if (!pw)
+			return -EINVAL;
+	}
 
 	rc = fork();
 	if (rc == 0) {
@@ -232,6 +245,20 @@ int osmo_system_nowait(const char *command, const char **env_whitelist, char **a
 				return rc;
 		}
 
+		/* drop privileges */
+		if (pw) {
+			if (setresgid(pw->pw_gid, pw->pw_gid, pw->pw_gid) < 0) {
+				perror("setresgid() during privilege drop");
+				exit(1);
+			}
+
+			if (setresuid(pw->pw_uid, pw->pw_uid, pw->pw_uid) < 0) {
+				perror("setresuid() during privilege drop");
+				exit(1);
+			}
+
+		}
+
 		/* if we want to behave like system(3), we must go via the shell */
 		execle("/bin/sh", "sh", "-c", command, (char *) NULL, new_env);
 		/* only reached in case of error */
@@ -243,5 +270,24 @@ int osmo_system_nowait(const char *command, const char **env_whitelist, char **a
 		return rc;
 	}
 }
+
+/*! call an external shell command without waiting for it.
+ *
+ *  This mimics the behavior of system(3), with the following differences:
+ *  - it doesn't wait for completion of the child process
+ *  - it closes all non-stdio file descriptors by iterating /proc/self/fd
+ *  - it constructs a reduced environment where only whitelisted keys survive
+ *  - it (optionally) appends additional variables to the environment
+ *
+ *  \param[in] command the shell command to be executed, see system(3)
+ *  \param[in] env_whitelist A white-list of keys for environment variables
+ *  \param[in] addl_env any additional environment variables to be appended
+ *  \returns PID of generated child process; negative on error
+ */
+int osmo_system_nowait(const char *command, const char **env_whitelist, char **addl_env)
+{
+	return osmo_system_nowait2(command, env_whitelist, addl_env, NULL);
+}
+
 
 #endif /* EMBEDDED */
