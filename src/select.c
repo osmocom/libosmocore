@@ -382,6 +382,7 @@ int osmo_timerfd_setup(struct osmo_fd *ofd, int (*cb)(struct osmo_fd *, unsigned
 
 		rc = osmo_fd_register(ofd);
 		if (rc < 0) {
+			osmo_fd_unregister(ofd);
 			close(ofd->fd);
 			ofd->fd = -1;
 			return rc;
