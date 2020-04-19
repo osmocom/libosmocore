@@ -40,10 +40,10 @@
 #include <osmocom/core/linuxlist.h>
 
 /* These store the amount of time that we wait until next timer expires. */
-static struct timeval nearest;
-static struct timeval *nearest_p;
+static __thread struct timeval nearest;
+static __thread struct timeval *nearest_p;
 
-static struct rb_root timer_root = RB_ROOT;
+static __thread struct rb_root timer_root = RB_ROOT;
 
 static void __add_timer(struct osmo_timer_list *timer)
 {
