@@ -181,4 +181,4 @@ static inline const char *sgsap_ue_emm_mode_name(enum sgsap_ue_emm_mode mode) {
  * See also: RFC1123 Section 2.1 Host Names and Numbers */
 #define SGS_VLR_NAME_MAXLEN 255
 
-const struct tlv_definition sgsap_ie_tlvdef;
+extern const struct tlv_definition sgsap_ie_tlvdef;
