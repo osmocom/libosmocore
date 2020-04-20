@@ -211,7 +211,8 @@ extern char **environ;
  */
 int osmo_system_nowait2(const char *command, const char **env_whitelist, char **addl_env, const char *user)
 {
-	struct passwd _pw, *pw;
+	struct passwd _pw;
+	struct passwd *pw = NULL;
 	int getpw_buflen = sysconf(_SC_GETPW_R_SIZE_MAX);
 	int rc;
 
