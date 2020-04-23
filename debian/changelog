@@ -1,3 +1,9 @@
+libosmocore (1.3.0-fw.2) unstable; urgency=medium
+
+  * statsd: do not omit index==0 when sending stat item groups
+
+ -- Kirill Zakharenko <kirill.zakharenko@fairwaves.co>  Thu, 23 Apr 2020 18:50:29 +0300
+
 libosmocore (1.3.0-fw.1) unstable; urgency=medium
 
   * WIP: gb: Standard-compliant Static Gb over IP
