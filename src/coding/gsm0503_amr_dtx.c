@@ -45,16 +45,18 @@ static const ubit_t codec_mode_3_sid[] = { 1, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0
 static const ubit_t codec_mode_4_sid[] = { 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 1 };
 
 const struct value_string gsm0503_amr_dtx_frame_names[] = {
+	{ AMR_OTHER,		"AMR_OTHER (audio)" },
 	{ AFS_SID_FIRST,	"AFS_SID_FIRST" },
-	{ AFS_SID_UPDATE,	"AFS_SID_UPDATE" },
+	{ AFS_SID_UPDATE,	"AFS_SID_UPDATE (marker)" },
+	{ AFS_SID_UPDATE_CN,	"AFS_SID_UPDATE_CN (audio)" },
 	{ AFS_ONSET,		"AFS_ONSET" },
-	{ AHS_SID_UPDATE,	"AHS_SID_UPDATE" },
+	{ AHS_SID_UPDATE,	"AHS_SID_UPDATE (marker)" },
+	{ AHS_SID_UPDATE_CN,	"AHS_SID_UPDATE_CN (audio)" },
 	{ AHS_SID_FIRST_P1,	"AHS_SID_FIRST_P1" },
 	{ AHS_SID_FIRST_P2,	"AHS_SID_FIRST_P2" },
 	{ AHS_ONSET,		"AHS_ONSET" },
 	{ AHS_SID_FIRST_INH,	"AHS_SID_FIRST_INH" },
 	{ AHS_SID_UPDATE_INH,	"AHS_SID_UPDATE_INH" },
-	{ AMR_OTHER,		"NON DTX FRAME (OTHER)" },
 	{ 0, NULL }
 };
 

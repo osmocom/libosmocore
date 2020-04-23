@@ -1,9 +1,9 @@
 FR AMR DTX FRAMES:
  ==> AFS_SID_FIRST, n_errors=0, n_bits_total=212
- ==> AFS_SID_UPDATE, n_errors=0, n_bits_total=212
+ ==> AFS_SID_UPDATE (marker), n_errors=0, n_bits_total=212
  ==> AFS_ONSET, n_errors=0, n_bits_total=228
 HR AMR DTX FRAMES:
- ==> AHS_SID_UPDATE, n_errors=0, n_bits_total=212
+ ==> AHS_SID_UPDATE (marker), n_errors=0, n_bits_total=212
  ==> AHS_SID_FIRST_P1, n_errors=0, n_bits_total=212
  ==> AHS_SID_FIRST_P2, n_errors=0, n_bits_total=114
  ==> AHS_ONSET, n_errors=0, n_bits_total=114
