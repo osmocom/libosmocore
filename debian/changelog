@@ -1,3 +1,9 @@
+libosmocore (1.3.0-fw.3) unstable; urgency=medium
+
+  * merged master:d87d6f177837c
+
+ -- Kirill Zakharenko <kirill.zakharenko@fairwaves.co>  Fri, 1 May 2020 18:23:29 +0300
+
 libosmocore (1.3.0-fw.2) unstable; urgency=medium
 
   * statsd: do not omit index==0 when sending stat item groups
