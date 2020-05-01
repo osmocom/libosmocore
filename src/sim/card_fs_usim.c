@@ -1,7 +1,7 @@
 /*! \file card_fs_usim.c
  * 3GPP USIM specific structures / routines. */
 /*
- * (C) 2012-2014 by Harald Welte <laforge@gnumonks.org>
+ * (C) 2012-2020 by Harald Welte <laforge@gnumonks.org>
  *
  * All Rights Reserved
  *
@@ -32,7 +32,7 @@
 #include "sim_int.h"
 #include "gsm_int.h"
 
-/* TS 31.102 Version 7.7.0 / Chapter 7.3 */
+/* TS 31.102 Version 15.7.0 Release 15 / Chapter 7.3 */
 const struct osim_card_sw ts31_102_sw[] = {
 	{
 		0x9862, 0xffff, SW_TYPE_STR, SW_CLS_ERROR,
@@ -43,29 +43,17 @@ const struct osim_card_sw ts31_102_sw[] = {
 	}, {
 		0x9865, 0xffff, SW_TYPE_STR, SW_CLS_ERROR,
 		.u.str = "Security management - Key freshness error",
+	}, {
+		0x9866, 0xffff, SW_TYPE_STR, SW_CLS_ERROR,
+		.u.str = "Security management - Authentication error, no memory space available",
+	}, {
+		0x9867, 0xffff, SW_TYPE_STR, SW_CLS_ERROR,
+		.u.str = "Security management - Authentication error, no memory space available in EF_MUK",
 	},
 	OSIM_CARD_SW_LAST
 };
 
-static const struct osim_card_sw *usim_card_sws[] = {
-	ts31_102_sw,
-	ts102221_uicc_sw,
-	NULL
-};
-
-/* TS 102 221 Chapter 13.1 */
-static const struct osim_file_desc uicc_ef_in_mf[] = {
-	EF_LIN_FIX_N(0x2f00, SFI_NONE, "EF.DIR", 0, 1, 32,
-			"Application directory"),
-	EF_TRANSP_N(0x2FE2, SFI_NONE, "EF.ICCID", 0, 10, 10,
-			"ICC Identification"),
-	EF_TRANSP_N(0x2F05, SFI_NONE, "EF.PL", 0, 2, 20,
-			"Preferred Languages"),
-	EF_LIN_FIX_N(0x2F06, SFI_NONE, "EF.ARR", F_OPTIONAL, 1, 256,
-			"Access Rule Reference"),
-};
-
-/* 31.102 Chapter 4.4.3 */
+/* 31.102 Version 15.7.0 Release 15 / Chapter 4.4.3 */
 static const struct osim_file_desc usim_ef_in_df_gsm_access[] = {
 	EF_TRANSP_N(0x4f20, 0x01, "EF.Kc", 0, 9, 9,
 		"Ciphering Key Kc"),
@@ -77,7 +65,7 @@ static const struct osim_file_desc usim_ef_in_df_gsm_access[] = {
 		"Investigation Scan"),
 };
 
-/* 31.102 Chapter 4.2 */
+/* 31.102 Version 15.7.0 Release 15 / Chapter 4.2 */
 static const struct osim_file_desc usim_ef_in_adf_usim[] = {
 	EF_TRANSP(0x6F05, 0x02, "EF.LI", 0, 2, 16,
 		"Language Indication", &gsm_lp_decode, NULL),
@@ -161,7 +149,7 @@ static const struct osim_file_desc usim_ef_in_adf_usim[] = {
 		"Key for hidden phone book entries"),
 	EF_LIN_FIX_N(0x6F4D, SFI_NONE, "EF.BDN", F_OPTIONAL, 15, 32,
 		"Barred Dialling Numbers"),
-	EF_LIN_FIX_N(0x6F4E, SFI_NONE, "EF.EXT4", F_OPTIONAL, 13, 13,
+	EF_LIN_FIX_N(0x6F55, SFI_NONE, "EF.EXT4", F_OPTIONAL, 13, 13,
 		"Extension 4"),
 	EF_LIN_FIX_N(0x6F58, SFI_NONE, "EF.CMI", F_OPTIONAL, 2, 16,
 		"Comparison Method Information"),
@@ -261,6 +249,39 @@ static const struct osim_file_desc usim_ef_in_adf_usim[] = {
 		"UICC IARI"),
 	EF_TRANSP_N(0x6FEC, SFI_NONE, "EF.PWS", F_OPTIONAL, 1, 32,
 		"Public Warning System"),
+	EF_LIN_FIX_N(0x6FED, SFI_NONE, "EF_FDNURI", F_OPTIONAL, 1, 128,
+		"Fixed Dialling Numbers URI"),
+	EF_LIN_FIX_N(0x6FEE, SFI_NONE, "EF_BDNURI", F_OPTIONAL, 1, 128,
+		"Barred Dialling Numbers URI"),
+	EF_LIN_FIX_N(0x6FEF, SFI_NONE, "EF_SDNURI", F_OPTIONAL, 1, 128,
+		"Service Dialling Numbers URI"),
+	EF_LIN_FIX_N(0x6FF0, SFI_NONE, "EF_IWL", F_OPTIONAL, 18, 32,
+		"IMEI(SV) White Lists"),
+	EF_CYCLIC_N(0x6FF1, SFI_NONE, "EF_IPS", F_OPTIONAL, 4, 4,
+		"IMEI(SV) Pairing Status"),
+	EF_LIN_FIX_N(0x6FF2, SFI_NONE, "EF_IPD", F_OPTIONAL, 10, 16,
+		"IMEI(SV) of Pairing Device"),
+	EF_TRANSP_N(0x6FF3, SFI_NONE, "EF_ePDGId", F_OPTIONAL, 1, 128,
+		"Home ePDG Identifier"),
+	EF_TRANSP_N(0x6FF4, SFI_NONE, "EF_ePDGSelection", F_OPTIONAL, 1, 128,
+		"ePDG Selection Information"),
+	EF_TRANSP_N(0x6FF5, SFI_NONE, "EF_ePDGIdEm", F_OPTIONAL, 1, 128,
+		"Emergency ePDG Identifier"),
+	EF_TRANSP_N(0x6FF6, SFI_NONE, "EF_ePDGSelectionEm", F_OPTIONAL, 1, 128,
+		"ePDG Selection Information for Emergency Services"),
+	EF_TRANSP_N(0x6FF7, SFI_NONE, "EF_FromPreferred", F_OPTIONAL, 1, 1,
+		"From Preferred"),
+	EF_TRANSP_N(0x6FF8, SFI_NONE, "EF_IMSConfigData", F_OPTIONAL, 3, 128,
+		"IMS Configuration Data"),
+	/* EF TVCONFIG (TV Configuration) has no fixed FID */
+	EF_TRANSP_N(0x6FF9, SFI_NONE, "EF_3GPPPSDATAOFF", F_OPTIONAL, 4, 4,
+		"3GPP PS Data Off"),
+	EF_LIN_FIX_N(0x6FFA, SFI_NONE, "EF_3GPPPSDATAOFFservicelist", F_OPTIONAL, 1, 128,
+		"3GPP PS Data Off Service List"),
+	EF_TRANSP_N(0x6FFC, SFI_NONE, "EF_XCAPConfigData", F_OPTIONAL, 1, 128,
+		"XCAP Configuration Data"),
+	EF_TRANSP_N(0x6FFD, SFI_NONE, "EF_EARFCNList", F_OPTIONAL, 1, 128,
+		"EARFCN list for MTC/NB-IOT UEs"),
 };
 
 
@@ -330,27 +351,21 @@ static const struct osim_file_desc usim_ef_in_df_hnb[] = {
 /* Annex E - TS 101 220 */
 static const uint8_t adf_usim_aid[] = { 0xA0, 0x00, 0x00, 0x00, 0x87, 0x10, 0x02 };
 
-struct osim_card_profile *osim_cprof_usim(void *ctx)
+struct osim_card_app_profile *osim_aprof_usim(void *ctx)
 {
-	struct osim_card_profile *cprof;
-	struct osim_file_desc *mf, *uadf;
-	int rc;
+	struct osim_card_app_profile *aprof;
+	struct osim_file_desc *uadf;
 
-	cprof = talloc_zero(ctx, struct osim_card_profile);
-	cprof->name = "3GPP USIM";
-	cprof->sws = usim_card_sws;
-
-	mf = alloc_df(cprof, 0x3f00, "MF");
-
-	cprof->mf = mf;
-
-	/* Core UICC Files */
-	add_filedesc(mf, uicc_ef_in_mf, ARRAY_SIZE(uicc_ef_in_mf));
+	aprof = talloc_zero(ctx, struct osim_card_app_profile);
+	aprof->name = "3GPP USIM";
+	aprof->sw = ts31_102_sw;
+	aprof->aid_len = sizeof(adf_usim_aid);
+	memcpy(aprof->aid, adf_usim_aid, aprof->aid_len);
 
 	/* ADF.USIM with its EF siblings */
-	uadf = add_adf_with_ef(mf, adf_usim_aid, sizeof(adf_usim_aid),
-				"ADF.USIM", usim_ef_in_adf_usim,
-				ARRAY_SIZE(usim_ef_in_adf_usim));
+	uadf = alloc_adf_with_ef(aprof, adf_usim_aid, sizeof(adf_usim_aid),
+				 "ADF.USIM", usim_ef_in_adf_usim, ARRAY_SIZE(usim_ef_in_adf_usim));
+	aprof->adf = uadf;
 
 	/* DFs under ADF.USIM */
 	add_df_with_ef(uadf, 0x5F3A, "DF.PHONEBOOK", NULL, 0);
@@ -369,13 +384,5 @@ struct osim_card_profile *osim_cprof_usim(void *ctx)
 	/* OMA BCAST Smart Card Profile */
 	add_df_with_ef(uadf, 0x5F80, "DF.BCAST", NULL, 0);
 
-	/* DF.GSM and DF.TELECOM hierarchy as sub-directory of MF */
-	rc = osim_int_cprof_add_gsm(mf);
-	rc |= osim_int_cprof_add_telecom(mf);
-	if (rc != 0) {
-		talloc_free(cprof);
-		return NULL;
-	}
-
-	return cprof;
+	return aprof;
 }

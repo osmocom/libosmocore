@@ -34,6 +34,7 @@ check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
 		 use_count/use_count_test				\
 		 context/context_test					\
                  gsm0502/gsm0502_test					\
+                 dtx/dtx_gsm0503_test					\
 		 $(NULL)
 
 if ENABLE_MSGFILE
@@ -113,6 +114,10 @@ conv_conv_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libgsmint.la
 
 gsm0502_gsm0502_test_SOURCES = gsm0502/gsm0502_test.c
 gsm0502_gsm0502_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
+
+dtx_dtx_gsm0503_test_SOURCES = dtx/dtx_gsm0503_test.c
+dtx_dtx_gsm0503_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la \
+			     $(top_builddir)/src/coding/libosmocoding.la
 
 conv_conv_gsm0503_test_SOURCES = conv/conv_gsm0503_test.c conv/conv.c conv/gsm0503_test_vectors.c
 conv_conv_gsm0503_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libgsmint.la
@@ -339,6 +344,7 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
 	     use_count/use_count_test.ok use_count/use_count_test.err \
 	     context/context_test.ok \
 	     gsm0502/gsm0502_test.ok \
+	     dtx/dtx_gsm0503_test.ok \
 	     exec/exec_test.ok exec/exec_test.err \
 	     $(NULL)
 

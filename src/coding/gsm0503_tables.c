@@ -63,6 +63,9 @@ const sbit_t gsm0503_pdtch_edge_hl_hn_sbit[3][8] = {
 	{ -127,-127, -127, 127,  127,-127, -127,-127 },
 };
 
+/*
+ * 3GPP TS 05.03 sec 5.1.2.2 "Block code". Rows re-ordered to be indxed by USF in host bit order.
+ */
 const ubit_t gsm0503_usf2six[8][6] = {
 	{ 0,0,0, 0,0,0 },
 	{ 1,0,0, 1,0,1 },
@@ -74,6 +77,9 @@ const ubit_t gsm0503_usf2six[8][6] = {
 	{ 1,1,1, 0,0,0 },
 };
 
+/*
+ * 3GPP TS 05.03 sec 5.1.4.2 "Block code". Rows re-ordered to be indxed by USF in host bit order.
+ */
 const ubit_t gsm0503_usf2twelve_ubit[8][12] = {
 	{ 0,0,0, 0,0,0, 0,0,0, 0,0,0 },
 	{ 1,1,0, 1,0,0, 0,0,1, 0,1,1 },

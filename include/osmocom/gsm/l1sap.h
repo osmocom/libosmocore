@@ -84,6 +84,7 @@ struct ph_data_param {
 	};
 	int16_t lqual_cb;	/*!< Link quality in centiBel */
 	enum osmo_ph_pres_info_type pdch_presence_info; /*!< Info regarding presence/validity of header and data parts */
+	uint8_t is_sub:1;	/*!< flags */
 };
 
 /*! for TCH.{req,ind} | TCH-RTS.ind */
@@ -94,6 +95,8 @@ struct ph_tch_param {
 	uint8_t marker;		/*!< RTP Marker bit (speech onset indicator) */
 	uint16_t ber10k;	/*!< BER in units of 0.01% */
 	int16_t lqual_cb;	/*!< Link quality in centiBel */
+	int16_t ta_offs_256bits;/*!< timing advance offset (in 1/256th bits) */
+	uint8_t is_sub:1;	/*!< flags */
 };
 
 /*! for PH-CONN.ind */

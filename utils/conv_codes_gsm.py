@@ -522,6 +522,25 @@ conv_codes = [
 		description = ["TCH/AHS 4.75 kbits convolutional code"]
 	),
 
+	# TCH_AXS SID UPDATE definition
+	ConvolutionalCode(
+		49,
+		[
+			( G1, G3 ),
+			( G2, G3 ),
+			(  1,  1 ),
+			(  1,  1 ),
+		],
+		name = 'tch_axs_sid_update',
+		description = [
+			"TCH/AFS and TCH/AHS SID UPDATE convolutional code:",
+			"G1/G3 = 1 + D + D3 + D4 / 1 + D + D2 + D3 + D4",
+			"G2/G3 = 1 + D2 + D4     / 1 + D + D2 + D3 + D4",
+			"G3/G3 = 1",
+			"G3/G3 = 1",
+		]
+	),
+
 	# EDGE MCS1_DL_HDR definition
 	ConvolutionalCode(
 		36,

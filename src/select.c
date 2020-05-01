@@ -382,6 +382,7 @@ int osmo_timerfd_setup(struct osmo_fd *ofd, int (*cb)(struct osmo_fd *, unsigned
 
 		rc = osmo_fd_register(ofd);
 		if (rc < 0) {
+			osmo_fd_unregister(ofd);
 			close(ofd->fd);
 			ofd->fd = -1;
 			return rc;
@@ -392,6 +393,65 @@ int osmo_timerfd_setup(struct osmo_fd *ofd, int (*cb)(struct osmo_fd *, unsigned
 
 #endif /* HAVE_SYS_TIMERFD_H */
 
+#ifdef HAVE_SYS_SIGNALFD_H
+#include <sys/signalfd.h>
+
+static int signalfd_callback(struct osmo_fd *ofd, unsigned int what)
+{
+	struct osmo_signalfd *osfd = ofd->data;
+	struct signalfd_siginfo fdsi;
+	int rc;
+
+	rc = read(ofd->fd, &fdsi, sizeof(fdsi));
+	if (rc < 0) {
+		osmo_fd_unregister(ofd);
+		close(ofd->fd);
+		ofd->fd = -1;
+		return rc;
+	}
+
+	osfd->cb(osfd, &fdsi);
+
+	return 0;
+};
+
+/*! create a signalfd and register it with osmocom select loop.
+ *  \param[in] ctx talloc context from which osmo_signalfd is to be allocated
+ *  \param[in] set of signals to be accept via this file descriptor
+ *  \param[in] cb call-back function to be called for each arriving signal
+ *  \param[in] data opaque user-provided data to pass to callback
+ *  \returns pointer to newly-allocated + registered osmo_signalfd; NULL on error */
+struct osmo_signalfd *
+osmo_signalfd_setup(void *ctx, sigset_t set, osmo_signalfd_cb *cb, void *data)
+{
+	struct osmo_signalfd *osfd = talloc_size(ctx, sizeof(*osfd));
+	int fd, rc;
+
+	if (!osfd)
+		return NULL;
+
+	osfd->data = data;
+	osfd->sigset = set;
+	osfd->cb = cb;
+
+	fd = signalfd(-1, &osfd->sigset, SFD_NONBLOCK);
+	if (fd < 0) {
+		talloc_free(osfd);
+		return NULL;
+	}
+
+	osmo_fd_setup(&osfd->ofd, fd, OSMO_FD_READ, signalfd_callback, osfd, 0);
+	rc = osmo_fd_register(&osfd->ofd);
+	if (rc < 0) {
+		close(fd);
+		talloc_free(osfd);
+		return NULL;
+	}
+
+	return osfd;
+}
+
+#endif /* HAVE_SYS_SIGNALFD_H */
 
 /*! @} */
 

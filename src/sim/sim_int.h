@@ -12,8 +12,6 @@ struct osim_decoded_element *
 element_alloc_sub(struct osim_decoded_element *ee, const char *name,
 	      enum osim_element_type type, enum osim_element_repr repr);
 
-extern const struct osim_card_sw ts102221_uicc_sw[0];
-
 int default_decode(struct osim_decoded_data *dd,
 		   const struct osim_file_desc *desc,
 		   int len, uint8_t *data);
@@ -26,11 +24,15 @@ add_df_with_ef(struct osim_file_desc *parent,
 		const struct osim_file_desc *in, int num);
 
 struct osim_file_desc *
-add_adf_with_ef(struct osim_file_desc *parent,
-		const uint8_t *adf_name, uint8_t adf_name_len,
-		const char *name, const struct osim_file_desc *in,
-		int num);
+alloc_adf_with_ef(void *ctx, const uint8_t *adf_name, uint8_t adf_name_len,
+		  const char *name, const struct osim_file_desc *in, int num);
 
 extern const struct osim_reader_ops pcsc_reader_ops;
+
+void osim_app_profile_register(struct osim_card_app_profile *aprof);
+
+struct osim_card_app_profile *osim_aprof_usim(void *ctx);
+struct osim_card_app_profile *osim_aprof_isim(void *ctx);
+struct osim_card_app_profile *osim_aprof_hpsim(void *ctx);
 
 #endif

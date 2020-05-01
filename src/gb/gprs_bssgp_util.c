@@ -43,7 +43,7 @@ struct gprs_ns_inst *bssgp_nsi;
 static const struct value_string bssgp_cause_strings[] = {
 	{ BSSGP_CAUSE_PROC_OVERLOAD,		"Processor overload" },
 	{ BSSGP_CAUSE_EQUIP_FAIL,		"Equipment Failure" },
-	{ BSSGP_CAUSE_TRASIT_NET_FAIL,		"Transit netowkr service failure" },
+	{ BSSGP_CAUSE_TRASIT_NET_FAIL,		"Transit network service failure" },
 	{ BSSGP_CAUSE_CAPA_GREATER_0KPBS,	"Transmission capacity modified" },
 	{ BSSGP_CAUSE_UNKNOWN_MS,		"Unknown MS" },
 	{ BSSGP_CAUSE_UNKNOWN_BVCI,		"Unknown BVCI" },

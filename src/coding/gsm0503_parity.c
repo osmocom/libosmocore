@@ -134,4 +134,15 @@ const struct osmo_crc8gen_code gsm0503_amr_crc6 = {
 	.remainder = 0x3f,
 };
 
+/*! GSM AMR parity (SID_UPDATE)
+ *
+ * g(x) = x^14 + x^13 + x^5 + x^3 + x^2 + 1
+ */
+const struct osmo_crc16gen_code gsm0503_amr_crc14 = {
+	.bits = 14,
+	.poly = 0x202d,
+	.init = 0x0000,
+	.remainder = 0x3fff,
+};
+
 /*! @} */

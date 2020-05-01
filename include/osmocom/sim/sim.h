@@ -9,6 +9,7 @@
 #include <osmocom/core/linuxlist.h>
 
 #define APDU_HDR_LEN	5
+#define MAX_AID_LEN	16 /* Table 13.2 of TS 102 221 */
 
 /*! command-response pairs cases
  *
@@ -65,6 +66,8 @@ struct osim_msgb_cb {
 
 #define msgb_apdu_dc(__x)	((__x)->l2h + sizeof(struct osim_apdu_cmd_hdr))
 #define msgb_apdu_de(__x)	((__x)->l2h + sizeof(struct osim_apdu_cmd_hdr) + msgb_apdu_lc(__x))
+
+int osim_init(void *ctx);
 
 /* FILES */
 
@@ -135,6 +138,7 @@ enum osim_file_type {
 	TYPE_ADF,	/*!< Application Dedicated File */
 	TYPE_EF,	/*!< Entry File */
 	TYPE_EF_INT,	/*!< Internal Entry File */
+	TYPE_MF,	/*!< Master File */
 };
 
 enum osim_ef_type {
@@ -242,6 +246,9 @@ struct osim_file_desc *
 osim_file_desc_find_name(struct osim_file_desc *parent, const char *name);
 
 struct osim_file_desc *
+osim_file_desc_find_aid(struct osim_file_desc *parent, const uint8_t *aid, uint8_t aid_len);
+
+struct osim_file_desc *
 osim_file_desc_find_fid(struct osim_file_desc *parent, uint16_t fid);
 
 struct osim_file_desc *
@@ -280,6 +287,28 @@ struct osim_card_sw {
 	.code = 0, .mask = 0, .type = SW_TYPE_NONE,	\
 	.class = SW_CLS_NONE, .u.str = NULL		\
 }
+
+/*! A card application (e.g. USIM, ISIM, HPSIM) */
+struct osim_card_app_profile {
+	/*! entry in the global list of card application profiles */
+	struct llist_head list;
+	/*! human-readable name */
+	const char *name;
+	/*! AID of this application, as used in EF.DIR */
+	uint8_t aid[MAX_AID_LEN];
+	uint8_t aid_len;
+	/*! file system description */
+	struct osim_file_desc *adf;
+	/*! Status words defined by application */
+	const struct osim_card_sw *sw;
+};
+
+const struct osim_card_app_profile *
+osim_app_profile_find_by_name(const char *name);
+
+const struct osim_card_app_profile *
+osim_app_profile_find_by_aid(const uint8_t *aid, uint8_t aid_len);
+
 
 /*! A card profile (e.g. SIM card */
 struct osim_card_profile {
@@ -353,6 +382,19 @@ struct osim_reader_hdl {
 	struct osim_card_hdl *card;
 };
 
+/*! descriptor for a given application present on a card */
+struct osim_card_app_hdl {
+	/*! member in card list of applications */
+	struct llist_head list;
+	/*! AID of the application */
+	uint8_t aid[MAX_AID_LEN];
+	uint8_t aid_len;
+	/*! application label from EF_DIR */
+	char *label;
+	/*! application profile (if any known) */
+	const struct osim_card_app_profile *prof;
+};
+
 struct osim_card_hdl {
 	/*! member in global list of cards */
 	struct llist_head list;
@@ -365,6 +407,9 @@ struct osim_card_hdl {
 
 	/*! list of channels for this card */
 	struct llist_head channels;
+
+	/*! list of applications found on card */
+	struct llist_head apps;
 };
 
 struct osim_chan_hdl {
@@ -372,8 +417,14 @@ struct osim_chan_hdl {
 	struct llist_head list;
 	/*! card to which this channel belongs */
 	struct osim_card_hdl *card;
+	/*! current working directory */
 	const struct osim_file_desc *cwd;
+	/*! currently selected application (if any) */
+	struct osim_card_app_hdl *cur_app;
 };
+
+int osim_card_hdl_add_app(struct osim_card_hdl *ch, const uint8_t *aid, uint8_t aid_len,
+			  const char *label);
 
 /* reader.c */
 int osim_transceive_apdu(struct osim_chan_hdl *st, struct msgb *amsg);

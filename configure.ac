@@ -24,6 +24,11 @@ LT_INIT([pic-only disable-static])
 
 AC_CONFIG_MACRO_DIR([m4])
 
+dnl patching ${archive_cmds} to affect generation of file "libtool" to fix linking with clang
+AS_CASE(["$LD"],[*clang*],
+  [AS_CASE(["${host_os}"],
+     [*linux*],[archive_cmds='$CC -shared $pic_flag $libobjs $deplibs $compiler_flags $wl-soname $wl$soname -o $lib'])])
+
 dnl check for pkg-config
 dnl * If pkg-config is missing, we get a "syntax error" for PKG_CHECK_MODULES.
 dnl   Instead, we want to say that pkg-config and pkg.m4 are missing.
@@ -57,7 +62,7 @@ AC_SUBST(LTLDFLAGS_OSMOCTRL)
 
 dnl checks for header files
 AC_HEADER_STDC
-AC_CHECK_HEADERS(execinfo.h sys/select.h sys/socket.h sys/timerfd.h syslog.h ctype.h netinet/tcp.h netinet/in.h)
+AC_CHECK_HEADERS(execinfo.h sys/select.h sys/socket.h sys/signalfd.h sys/timerfd.h syslog.h ctype.h netinet/tcp.h netinet/in.h)
 # for src/conv.c
 AC_FUNC_ALLOCA
 AC_SEARCH_LIBS([dlopen], [dl dld], [LIBRARY_DLOPEN="$LIBS";LIBS=""])
@@ -142,6 +147,7 @@ AC_ARG_ENABLE([pcsc], [AS_HELP_STRING([--disable-pcsc], [Build without PC/SC sup
     ])
 AS_IF([test "x$ENABLE_PCSC" = "xyes"], [
 	PKG_CHECK_MODULES(PCSC, libpcsclite)
+	AC_DEFINE([HAVE_PCSC],[1],[Build with PC/SC support])
 ])
 AM_CONDITIONAL(ENABLE_PCSC, test "x$ENABLE_PCSC" = "xyes")
 AC_SUBST(ENABLE_PCSC)

@@ -7,6 +7,7 @@
 #include <osmocom/core/linuxlist.h>
 #include <stdbool.h>
 #include <time.h>
+#include <signal.h>
 
 /*! \defgroup select Select loop abstraction
  *  @{
@@ -67,5 +68,22 @@ int osmo_timerfd_disable(struct osmo_fd *ofd);
 int osmo_timerfd_schedule(struct osmo_fd *ofd, const struct timespec *first,
 			  const struct timespec *interval);
 int osmo_timerfd_setup(struct osmo_fd *ofd, int (*cb)(struct osmo_fd *, unsigned int), void *data);
+
+/* signalfd integration */
+struct osmo_signalfd;
+struct signalfd_siginfo;
+
+typedef void osmo_signalfd_cb(struct osmo_signalfd *osfd, const struct signalfd_siginfo *fdsi);
+
+struct osmo_signalfd {
+	struct osmo_fd ofd;
+	sigset_t sigset;
+	osmo_signalfd_cb *cb;
+	void *data;
+};
+
+struct osmo_signalfd *
+osmo_signalfd_setup(void *ctx, sigset_t set, osmo_signalfd_cb *cb, void *data);
+
 
 /*! @} */

@@ -41,6 +41,7 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/un.h>
+#include <net/if.h>
 
 #include <netinet/in.h>
 #include <arpa/inet.h>
@@ -1193,6 +1194,27 @@ int osmo_sock_mcast_ttl_set(int fd,  uint8_t ttl)
 		return -EINVAL;
 	}
 }
+
+/*! Set the network device to which we should bind the multicast socket
+ *  \param[in] fd file descriptor of related socket
+ *  \param[in] ifname name of network interface to user for multicast
+ *  \returns 0 on success; negative otherwise */
+int osmo_sock_mcast_iface_set(int fd, const char *ifname)
+{
+	unsigned int ifindex;
+	struct ip_mreqn mr;
+
+	/* first, resolve interface name to ifindex */
+	ifindex = if_nametoindex(ifname);
+	if (ifindex == 0)
+		return -errno;
+
+	/* next, configure kernel to use that ifindex for this sockets multicast traffic */
+	memset(&mr, 0, sizeof(mr));
+	mr.imr_ifindex = ifindex;
+	return setsockopt(fd, IPPROTO_IP, IP_MULTICAST_IF, &mr, sizeof(mr));
+}
+
 
 /*! Enable/disable receiving all multicast packets, even for non-subscribed groups
  *  \param[in] fd file descriptor of related socket

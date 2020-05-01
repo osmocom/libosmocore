@@ -82,8 +82,8 @@
 #define GSMTAP_CHANNEL_SDCCH	0x06
 #define GSMTAP_CHANNEL_SDCCH4	0x07
 #define GSMTAP_CHANNEL_SDCCH8	0x08
-#define GSMTAP_CHANNEL_TCH_F	0x09
-#define GSMTAP_CHANNEL_TCH_H	0x0a
+#define GSMTAP_CHANNEL_FACCH_F	0x09	/* Actually, it's FACCH/F (signaling) */
+#define GSMTAP_CHANNEL_FACCH_H	0x0a	/* Actually, it's FACCH/H (signaling) */
 #define GSMTAP_CHANNEL_PACCH	0x0b
 #define GSMTAP_CHANNEL_CBCH52	0x0c
 #define GSMTAP_CHANNEL_PDTCH	0x0d
@@ -91,6 +91,10 @@
 #define GSMTAP_CHANNEL_PDCH	GSMTAP_CHANNEL_PDTCH
 #define GSMTAP_CHANNEL_PTCCH	0x0e
 #define GSMTAP_CHANNEL_CBCH51	0x0f
+#define GSMTAP_CHANNEL_VOICE_F	0x10	/* voice codec payload (FR/EFR/AMR) */
+#define GSMTAP_CHANNEL_VOICE_H	0x11	/* voice codec payload (HR/AMR) */
+#define GSMTAP_CHANNEL_TCH_F	GSMTAP_CHANNEL_FACCH_F	/* We used the wrong naming in 2008 when we were young */
+#define GSMTAP_CHANNEL_TCH_H	GSMTAP_CHANNEL_FACCH_H	/* We used the wrong naming in 2008 when we were young */
 
 /* GPRS Coding Scheme CS1..4 */
 #define GSMTAP_GPRS_CS_BASE	0x20
@@ -318,3 +322,26 @@ struct gsmtap_osmocore_log_hdr {
 		uint32_t line_nr;/*!< line number */
 	} src_file;
 } __attribute__((packed));
+
+/*! First byte of type==GSMTAP_TYPE_UM sub_type==GSMTAP_CHANNEL_VOICE payload */
+enum gsmtap_um_voice_type {
+	/*! 1 byte TOC + 112 bits (14 octets) = 15 octets payload;
+	 *  Reference is RFC5993 Section 5.2.1 + 3GPP TS 46.030 Annex B */
+	GSMTAP_UM_VOICE_HR,
+	/*! 33 payload bytes; Reference is RFC3551 Section 4.5.8.1 */
+	GSMTAP_UM_VOICE_FR,
+	/*! 31 payload bytes; Reference is RFC3551 Section 4.5.9 + ETSI TS 101 318 */
+	GSMTAP_UM_VOICE_EFR,
+	/*! 1 byte TOC + 5..31 bytes = 6..32 bytes payload; RFC4867 octet-aligned */
+	GSMTAP_UM_VOICE_AMR,
+	/* TODO: Revisit the types below; their usage; ... */
+	GSMTAP_UM_VOICE_AMR_SID_BAD,
+	GSMTAP_UM_VOICE_AMR_ONSET,
+	GSMTAP_UM_VOICE_AMR_RATSCCH,
+	GSMTAP_UM_VOICE_AMR_SID_UPDATE_INH,
+	GSMTAP_UM_VOICE_AMR_SID_FIRST_P1,
+	GSMTAP_UM_VOICE_AMR_SID_FIRST_P2,
+	GSMTAP_UM_VOICE_AMR_SID_FIRST_INH,
+	GSMTAP_UM_VOICE_AMR_RATSCCH_MARKER,
+	GSMTAP_UM_VOICE_AMR_RATSCCH_DATA,
+};

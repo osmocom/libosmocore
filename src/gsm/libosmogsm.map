@@ -135,6 +135,7 @@ gsm0503_tch_ahs_6_7;
 gsm0503_tch_ahs_5_9;
 gsm0503_tch_ahs_5_15;
 gsm0503_tch_ahs_4_75;
+gsm0503_tch_axs_sid_update;
 gsm0503_mcs1_dl_hdr;
 gsm0503_mcs1_ul_hdr;
 gsm0503_mcs1;

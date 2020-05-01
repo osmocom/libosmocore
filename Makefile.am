@@ -68,6 +68,7 @@ apidoc: $(HTML)
 $(top_builddir)/doc/libosmocore.tag.prep: $(top_builddir)/Doxyfile.core \
 		$(top_srcdir)/include/osmocom/core/*.h \
 		$(top_srcdir)/src/*.[hc] \
+		$(top_srcdir)/src/crcXXgen.c.tpl \
 		$(top_srcdir)/src/pseudotalloc/*.[hc]
 	rm -rf $(top_builddir)/doc/core; mkdir -p $(top_builddir)/doc/core
 	rm -rf $(top_builddir)/doc/libosmocore.map

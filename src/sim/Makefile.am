@@ -4,24 +4,26 @@
 LIBVERSION=1:2:1
 
 AM_CPPFLAGS = $(all_includes) -I$(top_srcdir)/include -I$(top_builddir)/include
-AM_CFLAGS = -fPIC -Wall $(PCSC_CFLAGS) $(TALLOC_CFLAGS)
+AM_CFLAGS = -fPIC -Wall $(TALLOC_CFLAGS)
 AM_LDFLAGS = $(COVERAGE_LDFLAGS)
-
-if ENABLE_PCSC
-# FIXME: only build the PC/SC dependent part conditional, but always build other parts
 
 noinst_HEADERS = sim_int.h gsm_int.h
 
+if !EMBEDDED
 lib_LTLIBRARIES = libosmosim.la
 
-libosmosim_la_SOURCES = core.c reader.c reader_pcsc.c class_tables.c \
+libosmosim_la_SOURCES = core.c reader.c class_tables.c \
 			card_fs_sim.c card_fs_usim.c card_fs_uicc.c \
-			card_fs_isim.c card_fs_tetra.c
+			card_fs_isim.c card_fs_hpsim.c card_fs_tetra.c
 libosmosim_la_LDFLAGS = -version-info $(LIBVERSION)
 libosmosim_la_LIBADD = \
 	$(top_builddir)/src/libosmocore.la \
 	$(top_builddir)/src/gsm/libosmogsm.la \
-	$(TALLOC_LIBS) \
-	$(PCSC_LIBS)
-
+	$(TALLOC_LIBS)
+if ENABLE_PCSC
+AM_CFLAGS += $(PCSC_CFLAGS)
+libosmosim_la_SOURCES += reader_pcsc.c
+libosmosim_la_LIBADD += $(PCSC_LIBS)
 endif
+
+endif # !EMBEDDED

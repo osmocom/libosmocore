@@ -10,7 +10,7 @@ fi
 
 osmo-clean-workspace.sh
 
-verify_value_string_arrays_are_terminated.py $(find . -name "*.[hc]")
+verify_value_string_arrays_are_terminated.py
 
 prep_build() {
     _src_dir="$1"

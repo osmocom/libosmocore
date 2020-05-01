@@ -36,6 +36,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <osmocom/core/utils.h>
 #include <osmocom/core/bits.h>
 #include <osmocom/core/conv.h>
 
@@ -87,6 +88,7 @@ osmo_conv_encode_init(struct osmo_conv_encoder *encoder,
                       const struct osmo_conv_code *code)
 {
 	memset(encoder, 0x00, sizeof(struct osmo_conv_encoder));
+	OSMO_ASSERT(code != NULL);
 	encoder->code = code;
 }
 

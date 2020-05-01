@@ -190,6 +190,14 @@
 [..] Encoding / Decoding cycle : OK
 [..] Encoding / Decoding cycle : OK
 
+[+] Testing: gsm0503_tch_axs_sid_update
+[.] Input length  : ret =  49  exp =  49 -> OK
+[.] Output length : ret = 212  exp = 212 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
 [+] Testing: gsm0503_mcs1_dl_hdr
 [.] Input length  : ret =  36  exp =  36 -> OK
 [.] Output length : ret = 108  exp = 108 -> OK

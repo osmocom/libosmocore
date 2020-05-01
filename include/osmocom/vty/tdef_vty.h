@@ -68,7 +68,7 @@ void osmo_tdef_vty_out_all_va(struct vty *vty, struct osmo_tdef *tdefs, const ch
 struct osmo_tdef *osmo_tdef_vty_parse_T_arg(struct vty *vty, struct osmo_tdef *tdefs, const char *osmo_tdef_str);
 unsigned long osmo_tdef_vty_parse_val_arg(const char *val_arg, unsigned long default_val);
 
-void osmo_tdef_vty_groups_init(enum node_type parent_node, struct osmo_tdef_group *groups);
+void osmo_tdef_vty_groups_init(unsigned int parent_cfg_node, struct osmo_tdef_group *groups);
 void osmo_tdef_vty_groups_write(struct vty *vty, const char *indent);
 
 /*! @} */

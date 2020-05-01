@@ -45,6 +45,7 @@
 #include <osmocom/core/bits.h>
 #include <osmocom/core/bitvec.h>
 #include <osmocom/core/panic.h>
+#include <osmocom/core/utils.h>
 
 #define BITNUM_FROM_COMP(byte, bit)	((byte*8)+bit)
 
@@ -291,7 +292,7 @@ int bitvec_fill(struct bitvec *bv, unsigned int num_bits, enum bit_value fill)
 	return 0;
 }
 
-/*! pad all remaining bits up to num_bits
+/*! pad all remaining bits up to a given bit number
  *  \return 0 on success; negative otherwise */
 int bitvec_spare_padding(struct bitvec *bv, unsigned int up_to_bit)
 {
@@ -399,7 +400,7 @@ int bitvec_set_bytes(struct bitvec *bv, const uint8_t *bytes, unsigned int count
  *  \return pointer to allocated vector; NULL in case of error */
 struct bitvec *bitvec_alloc(unsigned int size, TALLOC_CTX *ctx)
 {
-	struct bitvec *bv = talloc_zero(ctx, struct bitvec);
+	struct bitvec *bv = talloc(ctx, struct bitvec);
 	if (!bv)
 		return NULL;
 
@@ -418,6 +419,8 @@ struct bitvec *bitvec_alloc(unsigned int size, TALLOC_CTX *ctx)
  *  \param[in] bit vector to free */
 void bitvec_free(struct bitvec *bv)
 {
+	if (bv == NULL)
+		return;
 	talloc_free(bv->data);
 	talloc_free(bv);
 }
@@ -428,7 +431,7 @@ void bitvec_free(struct bitvec *bv)
  *  \return number of bytes (= bits) copied */
 unsigned int bitvec_pack(const struct bitvec *bv, uint8_t *buffer)
 {
-	unsigned int i = 0;
+	unsigned int i;
 	for (i = 0; i < bv->data_len; i++)
 		buffer[i] = bv->data[i];
 
@@ -441,7 +444,7 @@ unsigned int bitvec_pack(const struct bitvec *bv, uint8_t *buffer)
  *  \return number of bytes (= bits) copied */
 unsigned int bitvec_unpack(struct bitvec *bv, const uint8_t *buffer)
 {
-	unsigned int i = 0;
+	unsigned int i;
 	for (i = 0; i < bv->data_len; i++)
 		bv->data[i] = buffer[i];
 
@@ -455,17 +458,13 @@ unsigned int bitvec_unpack(struct bitvec *bv, const uint8_t *buffer)
  */
 int bitvec_unhex(struct bitvec *bv, const char *src)
 {
-	unsigned i;
-	unsigned val;
-	unsigned write_index = 0;
-	unsigned digits = bv->data_len * 2;
+	int rc;
 
-	for (i = 0; i < digits; i++) {
-		if (sscanf(src + i, "%1x", &val) < 1) {
-			return 1;
-		}
-		bitvec_write_field(bv, &write_index, val, 4);
-	}
+	rc = osmo_hexparse(src, bv->data, bv->data_len);
+	if (rc < 0) /* turn -1 into 1 in case of error */
+		return 1;
+
+	bv->cur_bit = rc * 8;
 	return 0;
 }
 
@@ -497,7 +496,7 @@ uint64_t bitvec_read_field(struct bitvec *bv, unsigned int *read_index, unsigned
  *  \param[in] bv The boolean vector to work on
  *  \param[in,out] write_index Where writing supposed to start in the vector
  *  \param[in] len How many bits to write
- *  \returns next write index or negative value on error
+ *  \returns 0 on success, negative value on error
  */
 int bitvec_write_field(struct bitvec *bv, unsigned int *write_index, uint64_t val, unsigned int len)
 {
