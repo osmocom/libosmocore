@@ -1,7 +1,7 @@
 /*! \file lapd_core.c
  * LAPD core implementation */
 /*
- * (C) 2010-2011 by Harald Welte <laforge@gnumonks.org>
+ * (C) 2010-2020 by Harald Welte <laforge@gnumonks.org>
  * (C) 2010-2011 by Andreas Eversberg <jolly@eversberg.eu>
  *
  * All Rights Reserved
@@ -203,8 +203,8 @@ static void lapd_start_t200(struct lapd_datalink *dl)
 {
 	if (osmo_timer_pending(&dl->t200))
 		return;
-	LOGP(DLLAPD, LOGL_INFO, "start T200 (dl=%p, timeout=%d.%06ds)\n",
-	     dl, dl->t200_sec, dl->t200_usec);
+	LOGDL(dl, LOGL_INFO, "start T200 (timeout=%d.%06ds)\n",
+	      dl->t200_sec, dl->t200_usec);
 	osmo_timer_schedule(&dl->t200, dl->t200_sec, dl->t200_usec);
 }
 
@@ -212,7 +212,7 @@ static void lapd_start_t203(struct lapd_datalink *dl)
 {
 	if (osmo_timer_pending(&dl->t203))
 		return;
-	LOGP(DLLAPD, LOGL_INFO, "start T203 (dl=%p)\n", dl);
+	LOGDL(dl, LOGL_INFO, "start T203\n");
 	osmo_timer_schedule(&dl->t203, dl->t203_sec, dl->t203_usec);
 }
 
@@ -220,7 +220,7 @@ static void lapd_stop_t200(struct lapd_datalink *dl)
 {
 	if (!osmo_timer_pending(&dl->t200))
 		return;
-	LOGP(DLLAPD, LOGL_INFO, "stop T200 (dl=%p)\n", dl);
+	LOGDL(dl, LOGL_INFO, "stop T200\n");
 	osmo_timer_del(&dl->t200);
 }
 
@@ -228,14 +228,14 @@ static void lapd_stop_t203(struct lapd_datalink *dl)
 {
 	if (!osmo_timer_pending(&dl->t203))
 		return;
-	LOGP(DLLAPD, LOGL_INFO, "stop T203 (dl=%p)\n", dl);
+	LOGDL(dl, LOGL_INFO, "stop T203\n");
 	osmo_timer_del(&dl->t203);
 }
 
 static void lapd_dl_newstate(struct lapd_datalink *dl, uint32_t state)
 {
-	LOGP(DLLAPD, LOGL_INFO, "new state %s -> %s (dl=%p)\n",
-		lapd_state_name(dl->state), lapd_state_name(state), dl);
+	LOGDL(dl, LOGL_INFO, "new state %s -> %s\n",
+		lapd_state_name(dl->state), lapd_state_name(state));
 
 	if (state != LAPD_STATE_MF_EST && dl->state == LAPD_STATE_MF_EST) {
 		/* stop T203 on leaving MF EST state, if running */
@@ -253,11 +253,16 @@ static void lapd_dl_newstate(struct lapd_datalink *dl, uint32_t state)
 	dl->state = state;
 }
 
-static void *tall_lapd_ctx = NULL;
+void *tall_lapd_ctx = NULL;
 
-/* init datalink instance and allocate history */
-void lapd_dl_init(struct lapd_datalink *dl, uint8_t k, uint8_t v_range,
-	int maxf)
+/*! Initialize LAPD datalink instance and allocate history
+ *  \param[in] dl caller-allocated datalink structure
+ *  \param[in] k maximum number of unacknowledged frames
+ *  \param[in] v_range range of sequence numbers
+ *  \param[in] maxf maximum frame size (after defragmentation)
+ *  \param[in] name human-readable name for this LAPD datalink */
+void lapd_dl_init2(struct lapd_datalink *dl, uint8_t k, uint8_t v_range, int maxf,
+		   const char *name)
 {
 	int m;
 
@@ -293,22 +298,47 @@ void lapd_dl_init(struct lapd_datalink *dl, uint8_t k, uint8_t v_range,
 		}
 	}
 
-	LOGP(DLLAPD, LOGL_INFO, "Init DL layer: sequence range = %d, k = %d, "
-		"history range = %d (dl=%p)\n", dl->v_range, dl->k,
-		dl->range_hist, dl);
+	if (!tall_lapd_ctx) {
+		tall_lapd_ctx = talloc_named_const(NULL, 1, "lapd context");
+		OSMO_ASSERT(tall_lapd_ctx);
+	}
+
+	talloc_free(dl->name);
+	if (name)
+		dl->name = talloc_strdup(tall_lapd_ctx, name);
+	else
+		dl->name = talloc_asprintf(tall_lapd_ctx, "dl=%p", dl);
+
+	LOGDL(dl, LOGL_INFO, "Init DL layer: sequence range = %d, k = %d, "
+		"history range = %d\n", dl->v_range, dl->k, dl->range_hist);
 
 	lapd_dl_newstate(dl, LAPD_STATE_IDLE);
 
-	if (!tall_lapd_ctx)
-		tall_lapd_ctx = talloc_named_const(NULL, 1, "lapd context");
 	dl->tx_hist = talloc_zero_array(tall_lapd_ctx,
 					struct lapd_history, dl->range_hist);
+}
+
+/*! Initialize LAPD datalink instance and allocate history
+ *  \param[in] dl caller-allocated datalink structure
+ *  \param[in] k maximum number of unacknowledged frames
+ *  \param[in] v_range range of sequence numbers
+ *  \param[in] maxf maximum frame size (after defragmentation) */
+void lapd_dl_init(struct lapd_datalink *dl, uint8_t k, uint8_t v_range, int maxf)
+{
+	lapd_dl_init2(dl, k, v_range, maxf, NULL);
+}
+
+void lapd_dl_set_name(struct lapd_datalink *dl, const char *name)
+{
+	if (!name)
+		return;
+	osmo_talloc_replace_string(tall_lapd_ctx, &dl->name, name);
 }
 
 /* reset to IDLE state */
 void lapd_dl_reset(struct lapd_datalink *dl)
 {
-	LOGP(DLLAPD, LOGL_INFO, "Resetting LAPDm instance\n");
+	LOGDL(dl, LOGL_INFO, "Resetting LAPDm instance\n");
 	/* enter idle state (and remove eventual cont_res) */
 	lapd_dl_newstate(dl, LAPD_STATE_IDLE);
 	/* flush buffer */
@@ -322,7 +352,6 @@ void lapd_dl_reset(struct lapd_datalink *dl)
 	lapd_stop_t203(dl);
 	if (dl->state == LAPD_STATE_IDLE)
 		return;
-	LOGP(DLLAPD, LOGL_INFO, "Resetting LAPDm instance (dl=%p)\n", dl);
 	/* enter idle state (and remove eventual cont_res) */
 	lapd_dl_newstate(dl, LAPD_STATE_IDLE);
 }
@@ -339,6 +368,8 @@ void lapd_dl_exit(struct lapd_datalink *dl)
 	/* free history buffer list */
 	talloc_free(dl->tx_hist);
 	dl->tx_hist = NULL;
+	talloc_free(dl->name);
+	dl->name = NULL;
 }
 
 /*! Set the \ref lapdm_mode of a LAPDm entity */
@@ -389,9 +420,9 @@ static int mdl_error(uint8_t cause, struct lapd_msg_ctx *lctx)
 	struct lapd_datalink *dl = lctx->dl;
 	struct osmo_dlsap_prim dp;
 
-	LOGP(DLLAPD, LOGL_NOTICE,
-	     "sending MDL-ERROR-IND cause %d from state %s (dl=%p)\n",
-	     cause, lapd_state_name(dl->state), dl);
+	LOGDL(dl, LOGL_NOTICE,
+	     "sending MDL-ERROR-IND cause %d from state %s\n",
+	     cause, lapd_state_name(dl->state));
 	osmo_prim_init(&dp.oph, 0, PRIM_MDL_ERROR, PRIM_OP_INDICATION, NULL);
 	dp.u.error_ind.cause = cause;
 	return dl->send_dlsap(&dp, lctx);
@@ -546,7 +577,7 @@ static int lapd_reestablish(struct lapd_datalink *dl)
 	struct osmo_dlsap_prim dp;
 	struct msgb *msg;
 
-	LOGP(DLLAPD, LOGL_DEBUG, "lapd reestablish (dl=%p)\n", dl);
+	LOGDL(dl, LOGL_DEBUG, "LAPD reestablish\n");
 
 	msg = lapd_msgb_alloc(0, "DUMMY");
 	osmo_prim_init(&dp.oph, 0, PRIM_DL_EST, PRIM_OP_REQUEST, msg);
@@ -559,8 +590,7 @@ static void lapd_t200_cb(void *data)
 {
 	struct lapd_datalink *dl = data;
 
-	LOGP(DLLAPD, LOGL_INFO, "Timeout T200 state=%s (dl=%p)\n",
-		lapd_state_name(dl->state), dl);
+	LOGDL(dl, LOGL_INFO, "Timeout T200 state=%s\n", lapd_state_name(dl->state));
 
 	switch (dl->state) {
 	case LAPD_STATE_SABM_SENT:
@@ -628,8 +658,7 @@ static void lapd_t200_cb(void *data)
 				int length = dl->tx_hist[h].msg->len;
 				struct lapd_msg_ctx nctx;
 
-				LOGP(DLLAPD, LOGL_INFO, "retransmit last frame"
-					" V(S)=%d (dl=%p)\n", vs, dl);
+				LOGDL(dl, LOGL_INFO, "retransmit last frame V(S)=%d\n", vs);
 				/* Create I frame (segment) from tx_hist */
 				memcpy(&nctx, &dl->lctx, sizeof(nctx));
 				/* keep nctx.ldp */
@@ -660,8 +689,7 @@ static void lapd_t200_cb(void *data)
 				} else if (dl->own_busy) {
 					lapd_send_rnr(&dl->lctx, 1, 1);
 				} else {
-					LOGP(DLLAPD, LOGL_INFO, "unhandled, "
-						"pls. fix (dl=%p)\n", dl);
+					LOGDL(dl, LOGL_INFO, "unhandled, pls. fix\n");
 				}
 			}
 			/* restart T200 (PH-READY-TO-SEND) */
@@ -672,14 +700,13 @@ static void lapd_t200_cb(void *data)
 			/* reestablish */
 			if (!dl->reestablish)
 				break;
-			LOGP(DLLAPD, LOGL_NOTICE, "N200+1 reached, performing "
-				"reestablishment. (dl=%p)\n", dl);
+			LOGDL(dl, LOGL_NOTICE, "N200+1 reached, performingreestablishment\n");
 			lapd_reestablish(dl);
 		}
 		break;
 	default:
-		LOGP(DLLAPD, LOGL_INFO, "T200 expired in unexpected "
-			"dl->state %s (dl=%p)\n", lapd_state_name(dl->state), dl);
+		LOGDL(dl, LOGL_INFO, "T200 expired in unexpected dl->state %s)\n",
+			lapd_state_name(dl->state));
 	}
 }
 
@@ -688,12 +715,10 @@ static void lapd_t203_cb(void *data)
 {
 	struct lapd_datalink *dl = data;
 
-	LOGP(DLLAPD, LOGL_INFO, "Timeout T203 state=%s (dl=%p)\n",
-	     lapd_state_name(dl->state), dl);
+	LOGDL(dl, LOGL_INFO, "Timeout T203 state=%s\n", lapd_state_name(dl->state));
 
 	if (dl->state != LAPD_STATE_MF_EST) {
-		LOGP(DLLAPD, LOGL_ERROR, "T203 fired outside MF EST state, "
-			"please fix! (dl=%p)\n", dl);
+		LOGDL(dl, LOGL_ERROR, "T203 fired outside MF EST state, please fix!\n");
 		return;
 	}
 
@@ -703,13 +728,11 @@ static void lapd_t203_cb(void *data)
 	lapd_dl_newstate(dl, LAPD_STATE_TIMER_RECOV);
 	/* transmit a supervisory command with P bit set to 1 as follows: */
 	if (!dl->own_busy) {
-		LOGP(DLLAPD, LOGL_INFO,
-		     "transmit an RR poll command (dl=%p)\n", dl);
+		LOGDL(dl, LOGL_INFO, "transmit an RR poll command\n");
 		/* Send RR with P=1 */
 		lapd_send_rr(&dl->lctx, 1, 1);
 	} else {
-		LOGP(DLLAPD, LOGL_INFO,
-		     "transmit an RNR poll command (dl=%p)\n", dl);
+		LOGDL(dl, LOGL_INFO, "transmit an RNR poll command\n");
 		/* Send RNR with P=1 */
 		lapd_send_rnr(&dl->lctx, 1, 1);
 	}
@@ -738,7 +761,7 @@ static void lapd_acknowledge(struct lapd_msg_ctx *lctx)
 		if (dl->tx_hist[h].msg) {
 			msgb_free(dl->tx_hist[h].msg);
 			dl->tx_hist[h].msg = NULL;
-			LOGP(DLLAPD, LOGL_INFO, "ack frame %d\n", i);
+			LOGDL(dl, LOGL_INFO, "ack frame %d\n", i);
 		}
 	}
 
@@ -759,7 +782,7 @@ static void lapd_acknowledge(struct lapd_msg_ctx *lctx)
 		 */
 		if (sub_mod(nr, dl->v_ack, dl->v_range)
 				> sub_mod(dl->v_send, dl->v_ack, dl->v_range)) {
-			LOGP(DLLAPD, LOGL_NOTICE, "N(R) sequence error (dl=%p)\n", dl);
+			LOGDL(dl, LOGL_NOTICE, "N(R) sequence error\n");
 			mdl_error(MDL_CAUSE_SEQ_ERR, lctx);
 		}
 	}
@@ -771,8 +794,7 @@ static void lapd_acknowledge(struct lapd_msg_ctx *lctx)
 	 * and if there are outstanding I frames, restart T200 */
 	if (t200_reset && !rej) {
 		if (dl->tx_hist[sub_mod(dl->v_send, 1, dl->range_hist)].msg) {
-			LOGP(DLLAPD, LOGL_INFO, "start T200, due to unacked I "
-				"frame(s) (dl=%p)\n", dl);
+			LOGDL(dl, LOGL_INFO, "start T200, due to unacked I frame(s)\n");
 			lapd_start_t200(dl);
 		}
 	}
@@ -805,14 +827,12 @@ static int lapd_rx_u(struct msgb *msg, struct lapd_msg_ctx *lctx)
 		prim = PRIM_DL_EST;
 		op = PRIM_OP_INDICATION;
 
-		LOGP(DLLAPD, LOGL_INFO, "SABM(E) received in state %s (dl=%p)\n",
-			lapd_state_name(dl->state), dl);
+		LOGDL(dl, LOGL_INFO, "SABM(E) received in state %s\n", lapd_state_name(dl->state));
 		/* 5.7.1 */
 		dl->seq_err_cond = 0;
 		/* G.2.2 Wrong value of the C/R bit */
 		if (lctx->cr == dl->cr.rem2loc.resp) {
-			LOGP(DLLAPD, LOGL_ERROR,
-			     "SABM response error (dl=%p)\n", dl);
+			LOGDL(dl, LOGL_ERROR, "SABM response error\n");
 			msgb_free(msg);
 			mdl_error(MDL_CAUSE_FRM_UNIMPL, lctx);
 			return -EINVAL;
@@ -822,8 +842,7 @@ static int lapd_rx_u(struct msgb *msg, struct lapd_msg_ctx *lctx)
 		 * set, AN MDL-ERROR-INDICATION is sent to MM.
 		 */
 		if (lctx->more || length > lctx->n201) {
-			LOGP(DLLAPD, LOGL_ERROR,
-			     "SABM too large error (dl=%p)\n", dl);
+			LOGDL(dl, LOGL_ERROR, "SABM too large error\n");
 			msgb_free(msg);
 			mdl_error(MDL_CAUSE_UFRM_INC_PARAM, lctx);
 			return -EIO;
@@ -833,8 +852,7 @@ static int lapd_rx_u(struct msgb *msg, struct lapd_msg_ctx *lctx)
 		case LAPD_STATE_IDLE:
 			break;
 		case LAPD_STATE_MF_EST:
-			LOGP(DLLAPD, LOGL_INFO, "SABM command, multiple "
-			     "frame established state (dl=%p)\n", dl);
+			LOGDL(dl, LOGL_INFO, "SABM command, multiple frame established state\n");
 			/* If link is lost on the remote side, we start over
 			 * and send DL-ESTABLISH indication again. */
 			/* Additionally, continue in case of content resoltion
@@ -846,14 +864,12 @@ static int lapd_rx_u(struct msgb *msg, struct lapd_msg_ctx *lctx)
 			if (!length) {
 				/* If no content resolution, this is a
 				 * re-establishment. */
-				LOGP(DLLAPD, LOGL_INFO,
-				     "Remote reestablish (dl=%p)\n", dl);
+				LOGDL(dl, LOGL_INFO, "Remote reestablish\n");
 				break;
 			}
 			if (!dl->cont_res) {
-				LOGP(DLLAPD, LOGL_INFO, "SABM command not "
-				     "allowed in state %s (dl=%p)\n",
-				     lapd_state_name(dl->state), dl);
+				LOGDL(dl, LOGL_INFO, "SABM command not allowed in state %s\n",
+				      lapd_state_name(dl->state));
 				mdl_error(MDL_CAUSE_SABM_MF, lctx);
 				msgb_free(msg);
 				return 0;
@@ -865,9 +881,8 @@ static int lapd_rx_u(struct msgb *msg, struct lapd_msg_ctx *lctx)
 #endif
 				if (memcmp(dl->cont_res->data, msg->data,
 								length)) {
-					LOGP(DLLAPD, LOGL_INFO, "Another SABM "
-					     "with different content - "
-					     "ignoring! (dl=%p)\n", dl);
+					LOGDL(dl, LOGL_INFO, "Another SABM with different content - "
+					     "ignoring!\n");
 					msgb_free(msg);
 					return 0;
 				}
@@ -889,9 +904,8 @@ static int lapd_rx_u(struct msgb *msg, struct lapd_msg_ctx *lctx)
 			 */
 			/* check for contention resoultion */
 			if (dl->tx_hist[0].msg && dl->tx_hist[0].msg->len) {
-				LOGP(DLLAPD, LOGL_NOTICE, "SABM not allowed "
-				     "during contention resolution (state=%s, dl=%p)\n",
-				     lapd_state_name(dl->state), dl);
+				LOGDL(dl, LOGL_NOTICE, "SABM not allowed during contention "
+				      "resolution (state=%s)\n", lapd_state_name(dl->state));
 				mdl_error(MDL_CAUSE_SABM_INFO_NOTALL, lctx);
 			}
 			lapd_send_ua(lctx, length, msg->l3h);
@@ -917,8 +931,7 @@ static int lapd_rx_u(struct msgb *msg, struct lapd_msg_ctx *lctx)
 			dl->cont_res = lapd_msgb_alloc(length, "CONT RES");
 			memcpy(msgb_put(dl->cont_res, length), msg->l3h,
 				length);
-			LOGP(DLLAPD, LOGL_NOTICE,
-			     "Store content res. (dl=%p)\n", dl);
+			LOGDL(dl, LOGL_NOTICE, "Store content res.\n");
 		}
 		/* send notification to L3 */
 		if (length == 0) {
@@ -932,12 +945,10 @@ static int lapd_rx_u(struct msgb *msg, struct lapd_msg_ctx *lctx)
 		}
 		break;
 	case LAPD_U_DM:
-		LOGP(DLLAPD, LOGL_INFO, "DM received in state %s (dl=%p)\n",
-			lapd_state_name(dl->state), dl);
+		LOGDL(dl, LOGL_INFO, "DM received in state %s\n", lapd_state_name(dl->state));
 		/* G.2.2 Wrong value of the C/R bit */
 		if (lctx->cr == dl->cr.rem2loc.cmd) {
-			LOGP(DLLAPD, LOGL_ERROR,
-			     "DM command error (dl=%p)\n", dl);
+			LOGDL(dl, LOGL_ERROR, "DM command error\n");
 			msgb_free(msg);
 			mdl_error(MDL_CAUSE_FRM_UNIMPL, lctx);
 			return -EINVAL;
@@ -954,21 +965,18 @@ static int lapd_rx_u(struct msgb *msg, struct lapd_msg_ctx *lctx)
 			break;
 		case LAPD_STATE_MF_EST:
 			if (lctx->p_f) {
-				LOGP(DLLAPD, LOGL_INFO, "unsolicited DM "
-					"response (dl=%p)\n", dl);
+				LOGDL(dl, LOGL_INFO, "unsolicited DM response\n");
 				mdl_error(MDL_CAUSE_UNSOL_DM_RESP, lctx);
 			} else {
-				LOGP(DLLAPD, LOGL_INFO, "unsolicited DM "
-					"response, multiple frame established "
-					"state (dl=%p)\n", dl);
+				LOGDL(dl, LOGL_INFO, "unsolicited DM response, "
+					"multiple frame established state\n");
 				mdl_error(MDL_CAUSE_UNSOL_DM_RESP_MF, lctx);
 				/* reestablish */
 				if (!dl->reestablish) {
 					msgb_free(msg);
 					return 0;
 				}
-				LOGP(DLLAPD, LOGL_NOTICE, "Performing "
-					"reestablishment. (dl=%p)\n", dl);
+				LOGDL(dl, LOGL_NOTICE, "Performing reestablishment\n");
 				lapd_reestablish(dl);
 			}
 			msgb_free(msg);
@@ -976,16 +984,14 @@ static int lapd_rx_u(struct msgb *msg, struct lapd_msg_ctx *lctx)
 		case LAPD_STATE_TIMER_RECOV:
 			/* FP = 0 (DM is normal in case PF = 1) */
 			if (!lctx->p_f) {
-				LOGP(DLLAPD, LOGL_INFO, "unsolicited DM "
-					"response, multiple frame established "
-					"state (dl=%p)\n", dl);
+				LOGDL(dl, LOGL_INFO, "unsolicited DM response, multiple frame "
+				      "established state\n");
 				mdl_error(MDL_CAUSE_UNSOL_DM_RESP_MF, lctx);
 				msgb_free(msg);
 				/* reestablish */
 				if (!dl->reestablish)
 					return 0;
-				LOGP(DLLAPD, LOGL_NOTICE, "Performing "
-					"reestablishment. (dl=%p)\n", dl);
+				LOGDL(dl, LOGL_NOTICE, "Performing reestablishment\n");
 				return lapd_reestablish(dl);
 			}
 			break;
@@ -1002,8 +1008,7 @@ static int lapd_rx_u(struct msgb *msg, struct lapd_msg_ctx *lctx)
 		case LAPD_STATE_IDLE:
 			/* 5.4.5 all other frame types shall be discarded */
 		default:
-			LOGP(DLLAPD, LOGL_INFO, "unsolicited DM response! "
-				"(discarding) (dl=%p)\n", dl);
+			LOGDL(dl, LOGL_INFO, "unsolicited DM response! (discarding)\n");
 			msgb_free(msg);
 			return 0;
 		}
@@ -1015,11 +1020,10 @@ static int lapd_rx_u(struct msgb *msg, struct lapd_msg_ctx *lctx)
 		msgb_free(msg);
 		break;
 	case LAPD_U_UI:
-		LOGP(DLLAPD, LOGL_INFO, "UI received (dl=%p)\n", dl);
+		LOGDL(dl, LOGL_INFO, "UI received\n");
 		/* G.2.2 Wrong value of the C/R bit */
 		if (lctx->cr == dl->cr.rem2loc.resp) {
-			LOGP(DLLAPD, LOGL_ERROR, "UI indicates response "
-			     "error (dl=%p)\n", dl);
+			LOGDL(dl, LOGL_ERROR, "UI indicates response error\n");
 			msgb_free(msg);
 			mdl_error(MDL_CAUSE_FRM_UNIMPL, lctx);
 			return -EINVAL;
@@ -1029,9 +1033,8 @@ static int lapd_rx_u(struct msgb *msg, struct lapd_msg_ctx *lctx)
 		 * set, AN MDL-ERROR-INDICATION is sent to MM.
 		 */
 		if (length > lctx->n201 || lctx->more) {
-			LOGP(DLLAPD, LOGL_ERROR, "UI too large error "
-				"(%d > N201(%d) or M=%d) (dl=%p)\n", length,
-				lctx->n201, lctx->more, dl);
+			LOGDL(dl, LOGL_ERROR, "UI too large error (%d > N201(%d) or M=%d)\n",
+			      length, lctx->n201, lctx->more);
 			msgb_free(msg);
 			mdl_error(MDL_CAUSE_UFRM_INC_PARAM, lctx);
 			return -EIO;
@@ -1042,8 +1045,7 @@ static int lapd_rx_u(struct msgb *msg, struct lapd_msg_ctx *lctx)
 			/* 5.3.3 UI frames received with the length indicator
 			 * set to "0" shall be ignored
 			 */
-			LOGP(DLLAPD, LOGL_INFO,
-			     "length=0 (discarding) (dl=%p)\n", dl);
+			LOGDL(dl, LOGL_INFO, "length=0 (discarding)\n");
 			msgb_free(msg);
 			return 0;
 		}
@@ -1055,8 +1057,7 @@ static int lapd_rx_u(struct msgb *msg, struct lapd_msg_ctx *lctx)
 		prim = PRIM_DL_REL;
 		op = PRIM_OP_INDICATION;
 
-		LOGP(DLLAPD, LOGL_INFO, "DISC received in state %s (dl=%p)\n",
-			lapd_state_name(dl->state), dl);
+		LOGDL(dl, LOGL_INFO, "DISC received in state %s\n", lapd_state_name(dl->state));
 		/* flush tx and send buffers */
 		lapd_dl_flush_tx(dl);
 		lapd_dl_flush_send(dl);
@@ -1064,8 +1065,7 @@ static int lapd_rx_u(struct msgb *msg, struct lapd_msg_ctx *lctx)
 		dl->seq_err_cond = 0;
 		/* G.2.2 Wrong value of the C/R bit */
 		if (lctx->cr == dl->cr.rem2loc.resp) {
-			LOGP(DLLAPD, LOGL_ERROR,
-			     "DISC response error (dl=%p)\n", dl);
+			LOGDL(dl, LOGL_ERROR, "DISC response error\n");
 			msgb_free(msg);
 			mdl_error(MDL_CAUSE_FRM_UNIMPL, lctx);
 			return -EINVAL;
@@ -1076,22 +1076,19 @@ static int lapd_rx_u(struct msgb *msg, struct lapd_msg_ctx *lctx)
 			 * primitive with cause "U frame with incorrect
 			 * parameters" is sent to the mobile management entity.
 			 */
-			LOGP(DLLAPD, LOGL_ERROR,
-			     "U frame iwth incorrect parameters (dl=%p)\n", dl);
+			LOGDL(dl, LOGL_ERROR, "U frame iwth incorrect parameters\n");
 			msgb_free(msg);
 			mdl_error(MDL_CAUSE_UFRM_INC_PARAM, lctx);
 			return -EIO;
 		}
 		switch (dl->state) {
 		case LAPD_STATE_IDLE:
-			LOGP(DLLAPD, LOGL_INFO,
-			     "DISC in idle state (dl=%p)\n", dl);
+			LOGDL(dl, LOGL_INFO, "DISC in idle state\n");
 			/* send DM with F=P */
 			msgb_free(msg);
 			return lapd_send_dm(lctx);
 		case LAPD_STATE_SABM_SENT:
-			LOGP(DLLAPD, LOGL_INFO,
-			     "DISC in SABM state (dl=%p)\n", dl);
+			LOGDL(dl, LOGL_INFO, "DISC in SABM state\n");
 			/* 5.4.6.2 send DM with F=P */
 			lapd_send_dm(lctx);
 			/* stop Timer T200 */
@@ -1103,12 +1100,10 @@ static int lapd_rx_u(struct msgb *msg, struct lapd_msg_ctx *lctx)
 				lctx);
 		case LAPD_STATE_MF_EST:
 		case LAPD_STATE_TIMER_RECOV:
-			LOGP(DLLAPD, LOGL_INFO,
-			     "DISC in est state (dl=%p)\n", dl);
+			LOGDL(dl, LOGL_INFO, "DISC in est state\n");
 			break;
 		case LAPD_STATE_DISC_SENT:
-			LOGP(DLLAPD, LOGL_INFO,
-			     "DISC in disc state (dl=%p)\n", dl);
+			LOGDL(dl, LOGL_INFO, "DISC in disc state\n");
 			prim = PRIM_DL_REL;
 			op = PRIM_OP_CONFIRM;
 			break;
@@ -1128,12 +1123,10 @@ static int lapd_rx_u(struct msgb *msg, struct lapd_msg_ctx *lctx)
 		msgb_free(msg);
 		break;
 	case LAPD_U_UA:
-		LOGP(DLLAPD, LOGL_INFO, "UA received in state %s (dl=%p)\n",
-			lapd_state_name(dl->state), dl);
+		LOGDL(dl, LOGL_INFO, "UA received in state %s\n", lapd_state_name(dl->state));
 		/* G.2.2 Wrong value of the C/R bit */
 		if (lctx->cr == dl->cr.rem2loc.cmd) {
-			LOGP(DLLAPD, LOGL_ERROR, "UA indicates command "
-				"error (dl=%p)\n", dl);
+			LOGDL(dl, LOGL_ERROR, "UA indicates command error\n");
 			msgb_free(msg);
 			mdl_error(MDL_CAUSE_FRM_UNIMPL, lctx);
 			return -EINVAL;
@@ -1143,8 +1136,7 @@ static int lapd_rx_u(struct msgb *msg, struct lapd_msg_ctx *lctx)
 		 * set, AN MDL-ERROR-INDICATION is sent to MM.
 		 */
 		if (lctx->more || length > lctx->n201) {
-			LOGP(DLLAPD, LOGL_ERROR,
-			     "UA too large error (dl=%p)\n", dl);
+			LOGDL(dl, LOGL_ERROR, "UA too large error\n");
 			msgb_free(msg);
 			mdl_error(MDL_CAUSE_UFRM_INC_PARAM, lctx);
 			return -EIO;
@@ -1154,8 +1146,7 @@ static int lapd_rx_u(struct msgb *msg, struct lapd_msg_ctx *lctx)
 			/* 5.4.1.2 A UA response with the F bit set to "0"
 			 * shall be ignored.
 			 */
-			LOGP(DLLAPD, LOGL_INFO,
-			     "F=0 (discarding) (dl=%p)\n", dl);
+			LOGDL(dl, LOGL_INFO, "F=0 (discarding)\n");
 			msgb_free(msg);
 			return 0;
 		}
@@ -1164,14 +1155,12 @@ static int lapd_rx_u(struct msgb *msg, struct lapd_msg_ctx *lctx)
 			break;
 		case LAPD_STATE_MF_EST:
 		case LAPD_STATE_TIMER_RECOV:
-			LOGP(DLLAPD, LOGL_INFO, "unsolicited UA response! "
-				"(discarding) (dl=%p)\n", dl);
+			LOGDL(dl, LOGL_INFO, "unsolicited UA response! (discarding)\n");
 			mdl_error(MDL_CAUSE_UNSOL_UA_RESP, lctx);
 			msgb_free(msg);
 			return 0;
 		case LAPD_STATE_DISC_SENT:
-			LOGP(DLLAPD, LOGL_INFO,
-			     "UA in disconnect state (dl=%p)\n", dl);
+			LOGDL(dl, LOGL_INFO, "UA in disconnect state\n");
 			/* stop Timer T200 */
 			lapd_stop_t200(dl);
 			/* go to idle state */
@@ -1184,12 +1173,11 @@ static int lapd_rx_u(struct msgb *msg, struct lapd_msg_ctx *lctx)
 		case LAPD_STATE_IDLE:
 			/* 5.4.5 all other frame types shall be discarded */
 		default:
-			LOGP(DLLAPD, LOGL_INFO, "unsolicited UA response! "
-				"(discarding) (dl=%p)\n", dl);
+			LOGDL(dl, LOGL_INFO, "unsolicited UA response! (discarding)\n");
 			msgb_free(msg);
 			return 0;
 		}
-		LOGP(DLLAPD, LOGL_INFO, "UA in SABM state (dl=%p)\n", dl);
+		LOGDL(dl, LOGL_INFO, "UA in SABM state\n");
 		/* stop Timer T200 */
 		lapd_stop_t200(dl);
 		/* compare UA with SABME if contention resolution is applied */
@@ -1197,8 +1185,7 @@ static int lapd_rx_u(struct msgb *msg, struct lapd_msg_ctx *lctx)
 			if (length != (dl->tx_hist[0].msg->len)
 			 || !!memcmp(dl->tx_hist[0].msg->data, msg->l3h,
 			 					length)) {
-				LOGP(DLLAPD, LOGL_INFO, "**** UA response "
-					"mismatches **** (dl=%p)\n", dl);
+				LOGDL(dl, LOGL_INFO, "**** UA response mismatches ****\n");
 				rc = send_dl_simple(PRIM_DL_REL,
 					PRIM_OP_INDICATION, lctx);
 				msgb_free(msg);
@@ -1222,22 +1209,19 @@ static int lapd_rx_u(struct msgb *msg, struct lapd_msg_ctx *lctx)
 		msgb_free(msg);
 		break;
 	case LAPD_U_FRMR:
-		LOGP(DLLAPD, LOGL_NOTICE,
-		     "Frame reject received (dl=%p)\n", dl);
+		LOGDL(dl, LOGL_NOTICE, "Frame reject received\n");
 		/* send MDL ERROR INIDCATION to L3 */
 		mdl_error(MDL_CAUSE_FRMR, lctx);
 		msgb_free(msg);
 		/* reestablish */
 		if (!dl->reestablish)
 			break;
-		LOGP(DLLAPD, LOGL_NOTICE,
-		     "Performing reestablishment. (dl=%p)\n", dl);
+		LOGDL(dl, LOGL_NOTICE, "Performing reestablishment\n");
 		rc = lapd_reestablish(dl);
 		break;
 	default:
 		/* G.3.1 */
-		LOGP(DLLAPD, LOGL_NOTICE,
-		     "Unnumbered frame not allowed. (dl=%p)\n", dl);
+		LOGDL(dl, LOGL_NOTICE, "Unnumbered frame not allowed\n");
 		msgb_free(msg);
 		mdl_error(MDL_CAUSE_FRM_UNIMPL, lctx);
 		return -EINVAL;
@@ -1256,8 +1240,7 @@ static int lapd_rx_s(struct msgb *msg, struct lapd_msg_ctx *lctx)
 		 * with the M bit set to "1", an MDL-ERROR-INDICATION
 		 * primitive with cause "S frame with incorrect
 		 * parameters" is sent to the mobile management entity. */
-		LOGP(DLLAPD, LOGL_ERROR,
-		     "S frame with incorrect parameters (dl=%p)\n", dl);
+		LOGDL(dl, LOGL_ERROR, "S frame with incorrect parameters\n");
 		msgb_free(msg);
 		mdl_error(MDL_CAUSE_SFRM_INC_PARAM, lctx);
 		return -EIO;
@@ -1267,8 +1250,7 @@ static int lapd_rx_s(struct msgb *msg, struct lapd_msg_ctx *lctx)
 	 && lctx->p_f
 	 && dl->state != LAPD_STATE_TIMER_RECOV) {
 		/* 5.4.2.2: Inidcate error on supervisory reponse F=1 */
-		LOGP(DLLAPD, LOGL_NOTICE,
-		     "S frame response with F=1 error (dl=%p)\n", dl);
+		LOGDL(dl,  LOGL_NOTICE, "S frame response with F=1 error\n");
 		mdl_error(MDL_CAUSE_UNSOL_SPRV_RESP, lctx);
 	}
 
@@ -1281,15 +1263,13 @@ static int lapd_rx_s(struct msgb *msg, struct lapd_msg_ctx *lctx)
 		/* fall though */
 	case LAPD_STATE_SABM_SENT:
 	case LAPD_STATE_DISC_SENT:
-		LOGP(DLLAPD, LOGL_NOTICE,
-		     "S frame ignored in this state (dl=%p)\n", dl);
+		LOGDL(dl, LOGL_NOTICE, "S frame ignored in this state\n");
 		msgb_free(msg);
 		return 0;
 	}
 	switch (lctx->s_u) {
 	case LAPD_S_RR:
-		LOGP(DLLAPD, LOGL_INFO, "RR received in state %s (dl=%p)\n",
-			lapd_state_name(dl->state), dl);
+		LOGDL(dl, LOGL_INFO, "RR received in state %s\n", lapd_state_name(dl->state));
 		/* 5.5.3.1: Acknowlege all tx frames up the the N(R)-1 */
 		lapd_acknowledge(lctx);
 
@@ -1297,10 +1277,8 @@ static int lapd_rx_s(struct msgb *msg, struct lapd_msg_ctx *lctx)
 		if (lctx->cr == dl->cr.rem2loc.cmd
 		 && lctx->p_f) {
 		 	if (!dl->own_busy && !dl->seq_err_cond) {
-				LOGP(DLLAPD, LOGL_INFO, "RR frame command "
-				     "with polling bit set and we are not "
-				     "busy, so we reply with RR frame "
-				      "response (dl=%p)\n", dl);
+				LOGDL(dl, LOGL_INFO, "RR frame command with polling bit set and "
+				      "we are not busy, so we reply with RR frame response\n");
 				lapd_send_rr(lctx, 1, 0);
 				/* NOTE: In case of sequence error condition,
 				 * the REJ frame has been transmitted when
@@ -1308,18 +1286,15 @@ static int lapd_rx_s(struct msgb *msg, struct lapd_msg_ctx *lctx)
 				 * done here
 				 */
 			} else if (dl->own_busy) {
-				LOGP(DLLAPD, LOGL_INFO, "RR frame command "
-				     "with polling bit set and we are busy, "
-				     "so we reply with RR frame response (dl=%p)\n",
-				     dl);
+				LOGDL(dl, LOGL_INFO, "RR frame command with polling bit set and "
+				      "we are busy, so we reply with RR frame response\n");
 				lapd_send_rnr(lctx, 1, 0);
 			}
 		} else if (lctx->cr == dl->cr.rem2loc.resp
 			&& lctx->p_f
 			&& dl->state == LAPD_STATE_TIMER_RECOV) {
-			LOGP(DLLAPD, LOGL_INFO, "RR response with F==1, "
-				"and we are in timer recovery state, so "
-				"we leave that state (dl=%p)\n", dl);
+			LOGDL(dl, LOGL_INFO, "RR response with F==1, and we are in timer recovery "
+				"state, so we leave that state\n");
 			/* V(S) to the N(R) in the RR frame */
 			dl->v_send = lctx->n_recv;
 			/* stop Timer T200 */
@@ -1332,8 +1307,7 @@ static int lapd_rx_s(struct msgb *msg, struct lapd_msg_ctx *lctx)
 
 		break;
 	case LAPD_S_RNR:
-		LOGP(DLLAPD, LOGL_INFO, "RNR received in state %s (dl=%p)\n",
-			lapd_state_name(dl->state), dl);
+		LOGDL(dl, LOGL_INFO, "RNR received in state %s\n", lapd_state_name(dl->state));
 		/* 5.5.3.1: Acknowlege all tx frames up the the N(R)-1 */
 		lapd_acknowledge(lctx);
 
@@ -1344,40 +1318,33 @@ static int lapd_rx_s(struct msgb *msg, struct lapd_msg_ctx *lctx)
 		if (lctx->p_f) {
 			if (lctx->cr == dl->cr.rem2loc.cmd) {
 				if (!dl->own_busy) {
-					LOGP(DLLAPD, LOGL_INFO, "RNR poll "
-						"command and we are not busy, "
-						"so we reply with RR final "
-						"response (dl=%p)\n", dl);
+					LOGDL(dl, LOGL_INFO, "RNR poll command and we are not busy, "
+					      "so we reply with RR final response\n");
 					/* Send RR with F=1 */
 					lapd_send_rr(lctx, 1, 0);
 				} else {
-					LOGP(DLLAPD, LOGL_INFO, "RNR poll "
-						"command and we are busy, so "
-						"we reply with RNR final "
-						"response (dl=%p)\n", dl);
+					LOGDL(dl, LOGL_INFO, "RNR poll command and we are busy, so "
+					      "we reply with RNR final response\n");
 					/* Send RNR with F=1 */
 					lapd_send_rnr(lctx, 1, 0);
 				}
 			} else if (dl->state == LAPD_STATE_TIMER_RECOV) {
-				LOGP(DLLAPD, LOGL_INFO, "RNR poll response "
-					"and we in timer recovery state, so "
-					"we leave that state (dl=%p)\n", dl);
+				LOGDL(dl, LOGL_INFO, "RNR poll response and we in timer recovery "
+				      "state, so we leave that state\n");
 				/* 5.5.7 Clear timer recovery condition */
 				lapd_dl_newstate(dl, LAPD_STATE_MF_EST);
 				/* V(S) to the N(R) in the RNR frame */
 				dl->v_send = lctx->n_recv;
 			}
 		} else
-			LOGP(DLLAPD, LOGL_INFO, "RNR not polling/final state "
-			     "received (dl=%p)\n", dl);
+			LOGDL(dl, LOGL_INFO, "RNR not polling/final state received\n");
 
 		/* Send message, if possible due to acknowledged data */
 		lapd_send_i(lctx, __LINE__);
 
 		break;
 	case LAPD_S_REJ:
-		LOGP(DLLAPD, LOGL_INFO, "REJ received in state %s (dl=%p)\n",
-			lapd_state_name(dl->state), dl);
+		LOGDL(dl, LOGL_INFO, "REJ received in state %s\n", lapd_state_name(dl->state));
 		/* 5.5.3.1: Acknowlege all tx frames up the the N(R)-1 */
 		lapd_acknowledge(lctx);
 
@@ -1392,12 +1359,9 @@ static int lapd_rx_s(struct msgb *msg, struct lapd_msg_ctx *lctx)
 			/* 5.5.3.2 */
 			if (lctx->cr == dl->cr.rem2loc.cmd && lctx->p_f) {
 				if (!dl->own_busy && !dl->seq_err_cond) {
-					LOGP(DLLAPD, LOGL_INFO, "REJ poll "
-						"command not in timer recovery "
-						"state and not in own busy "
-						"condition received, so we "
-						"respond with RR final "
-						"response (dl=%p)\n", dl);
+					LOGDL(dl, LOGL_INFO, "REJ poll command not in timer recovery "
+					      "state and not in own busy condition received, so we "
+					      "respond with RR final response\n");
 					lapd_send_rr(lctx, 1, 0);
 					/* NOTE: In case of sequence error
 					 * condition, the REJ frame has been
@@ -1406,29 +1370,22 @@ static int lapd_rx_s(struct msgb *msg, struct lapd_msg_ctx *lctx)
 					 * here
 				 	 */
 				} else if (dl->own_busy) {
-					LOGP(DLLAPD, LOGL_INFO, "REJ poll "
-						"command not in timer recovery "
-						"state and in own busy "
-						"condition received, so we "
-						"respond with RNR final "
-						"response (dl=%p)\n", dl);
+					LOGDL(dl, LOGL_INFO, "REJ poll command not in timer recovery "
+					      "state and in own busy condition received, so we "
+					      "respond with RNR final response\n");
 					lapd_send_rnr(lctx, 1, 0);
 				}
 			} else
-				LOGP(DLLAPD, LOGL_INFO, "REJ response or not "
-					"polling command not in timer recovery "
-					"state received (dl=%p)\n", dl);
+				LOGDL(dl, LOGL_INFO, "REJ response or not polling command not "
+				      "in timer recovery state received\n");
 			/* send MDL ERROR INIDCATION to L3 */
 			if (lctx->cr == dl->cr.rem2loc.resp && lctx->p_f) {
-				LOGP(DLLAPD, LOGL_ERROR,
-				     "unsolicited supervisory response! (dl=%p)\n",
-				     dl);
+				LOGDL(dl, LOGL_ERROR, "unsolicited supervisory response!\n");
 				mdl_error(MDL_CAUSE_UNSOL_SPRV_RESP, lctx);
 			}
 
 		} else if (lctx->cr == dl->cr.rem2loc.resp && lctx->p_f) {
-			LOGP(DLLAPD, LOGL_INFO, "REJ poll response in timer "
-				"recovery state received (dl=%p)\n", dl);
+			LOGDL(dl, LOGL_INFO, "REJ poll response in timer recovery state received\n");
 			/* Clear an existing peer receiver busy condition */
 			dl->peer_busy = 0;
 			/* V(S) and V(A) to the N(R) in the REJ frame */
@@ -1445,12 +1402,9 @@ static int lapd_rx_s(struct msgb *msg, struct lapd_msg_ctx *lctx)
 			/* 5.5.3.2 */
 			if (lctx->cr == dl->cr.rem2loc.cmd && lctx->p_f) {
 				if (!dl->own_busy && !dl->seq_err_cond) {
-					LOGP(DLLAPD, LOGL_INFO, "REJ poll "
-						"command in timer recovery "
-						"state and not in own busy "
-						"condition received, so we "
-						"respond with RR final "
-						"response (dl=%p)\n", dl);
+					LOGDL(dl, LOGL_INFO, "REJ poll command in timer recovery "
+					      "state and not in own busy condition received, so we "
+					      "respond with RR final response\n");
 					lapd_send_rr(lctx, 1, 0);
 					/* NOTE: In case of sequence error
 					 * condition, the REJ frame has been
@@ -1459,18 +1413,14 @@ static int lapd_rx_s(struct msgb *msg, struct lapd_msg_ctx *lctx)
 					 * here
 				 	 */
 				} else if (dl->own_busy) {
-					LOGP(DLLAPD, LOGL_INFO, "REJ poll "
-						"command in timer recovery "
-						"state and in own busy "
-						"condition received, so we "
-						"respond with RNR final "
-						"response (dl=%p)\n", dl);
+					LOGDL(dl, LOGL_INFO, "REJ poll command in timer recovery "
+					      "state and in own busy condition received, so we "
+					      "respond with RNR final response\n");
 					lapd_send_rnr(lctx, 1, 0);
 				}
 			} else
-				LOGP(DLLAPD, LOGL_INFO, "REJ response or not "
-					"polling command in timer recovery "
-					"state received (dl=%p)\n", dl);
+				LOGDL(dl, LOGL_INFO, "REJ response or not polling command in "
+				      "timer recovery state received\n");
 		}
 
 		/* FIXME: 5.5.4.2 2) */
@@ -1481,8 +1431,7 @@ static int lapd_rx_s(struct msgb *msg, struct lapd_msg_ctx *lctx)
 		break;
 	default:
 		/* G.3.1 */
-		LOGP(DLLAPD, LOGL_ERROR,
-		     "Supervisory frame not allowed. (dl=%p)\n", dl);
+		LOGDL(dl, LOGL_ERROR, "Supervisory frame not allowed\n");
 		msgb_free(msg);
 		mdl_error(MDL_CAUSE_FRM_UNIMPL, lctx);
 		return -EINVAL;
@@ -1500,13 +1449,13 @@ static int lapd_rx_i(struct msgb *msg, struct lapd_msg_ctx *lctx)
 	int length = lctx->length;
 	int rc;
 
-	LOGP(DLLAPD, LOGL_INFO, "I received in state %s on SAPI(%u) (dl=%p)\n",
-		lapd_state_name(dl->state), lctx->sapi, dl);
+	LOGDL(dl, LOGL_INFO, "I received in state %s on SAPI(%u)\n",
+	      lapd_state_name(dl->state), lctx->sapi);
 
 	/* G.2.2 Wrong value of the C/R bit */
 	if (lctx->cr == dl->cr.rem2loc.resp) {
-		LOGP(DLLAPD, LOGL_ERROR,
-		     "I frame response not allowed (dl=%p state %s)\n", dl, lapd_state_name(dl->state));
+		LOGDL(dl, LOGL_ERROR, "I frame response not allowed (state %s)\n",
+		      lapd_state_name(dl->state));
 		msgb_free(msg);
 		mdl_error(MDL_CAUSE_FRM_UNIMPL, lctx);
 		return -EINVAL;
@@ -1517,8 +1466,8 @@ static int lapd_rx_i(struct msgb *msg, struct lapd_msg_ctx *lctx)
 		 * to a numerical value L>N201 or L=0, an MDL-ERROR-INDICATION
 		 * primitive with cause "I frame with incorrect length"
 		 * is sent to the mobile management entity. */
-		LOGP(DLLAPD, LOGL_ERROR,
-		     "I frame length not allowed (dl=%p state %s)\n", dl, lapd_state_name(dl->state));
+		LOGDL(dl, LOGL_ERROR, "I frame length not allowed (state %s)\n",
+		      lapd_state_name(dl->state));
 		msgb_free(msg);
 		mdl_error(MDL_CAUSE_IFRM_INC_LEN, lctx);
 		return -EIO;
@@ -1529,8 +1478,8 @@ static int lapd_rx_i(struct msgb *msg, struct lapd_msg_ctx *lctx)
 	 * cause "I frame with incorrect use of M bit" is sent to the
 	 * mobile management entity. */
 	if (lctx->more && length < lctx->n201) {
-		LOGP(DLLAPD, LOGL_ERROR,
-		     "I frame with M bit too short (dl=%p state %s)\n", dl, lapd_state_name(dl->state));
+		LOGDL(dl, LOGL_ERROR, "I frame with M bit too short (state %s)\n",
+		      lapd_state_name(dl->state));
 		msgb_free(msg);
 		mdl_error(MDL_CAUSE_IFRM_INC_MBITS, lctx);
 		return -EIO;
@@ -1545,16 +1494,15 @@ static int lapd_rx_i(struct msgb *msg, struct lapd_msg_ctx *lctx)
 		/* fall though */
 	case LAPD_STATE_SABM_SENT:
 	case LAPD_STATE_DISC_SENT:
-		LOGP(DLLAPD, LOGL_NOTICE,
-		     "I frame ignored in state %s (dl=%p)\n", lapd_state_name(dl->state), dl);
+		LOGDL(dl, LOGL_NOTICE, "I frame ignored in state %s\n", lapd_state_name(dl->state));
 		msgb_free(msg);
 		return 0;
 	}
 
 	/* 5.7.1: N(s) sequence error */
 	if (ns != dl->v_recv) {
-		LOGP(DLLAPD, LOGL_NOTICE, "N(S) sequence error: N(S)=%u, "
-		     "V(R)=%u (dl=%p state %s)\n", ns, dl->v_recv, dl, lapd_state_name(dl->state));
+		LOGDL(dl, LOGL_NOTICE, "N(S) sequence error: N(S)=%u, V(R)=%u (state %s)\n",
+		      ns, dl->v_recv, lapd_state_name(dl->state));
 		/* discard data */
 		msgb_free(msg);
 		if (dl->seq_err_cond != 1) {
@@ -1588,8 +1536,7 @@ static int lapd_rx_i(struct msgb *msg, struct lapd_msg_ctx *lctx)
 
 	/* Increment receiver state */
 	dl->v_recv = inc_mod(dl->v_recv, dl->v_range);
-	LOGP(DLLAPD, LOGL_INFO, "incrementing V(R) to %u (dl=%p)\n",
-	     dl->v_recv, dl);
+	LOGDL(dl, LOGL_INFO, "incrementing V(R) to %u\n", dl->v_recv);
 
 	/* 5.5.3.1: Acknowlege all transmitted frames up the the N(R)-1 */
 	lapd_acknowledge(lctx); /* V(A) is also set here */
@@ -1598,8 +1545,7 @@ static int lapd_rx_i(struct msgb *msg, struct lapd_msg_ctx *lctx)
 	if (!dl->own_busy) {
 		/* if the frame carries a complete segment */
 		if (!lctx->more && !dl->rcv_buffer) {
-			LOGP(DLLAPD, LOGL_INFO,
-			     "message in single I frame (dl=%p)\n", dl);
+			LOGDL(dl, LOGL_INFO, "message in single I frame\n");
 			/* send a DATA INDICATION to L3 */
 			msgb_trim(msg, length);
 			rc = send_dl_l3(PRIM_DL_DATA, PRIM_OP_INDICATION, lctx,
@@ -1607,50 +1553,43 @@ static int lapd_rx_i(struct msgb *msg, struct lapd_msg_ctx *lctx)
 		} else {
 			/* create rcv_buffer */
 			if (!dl->rcv_buffer) {
-				LOGP(DLLAPD, LOGL_INFO, "message in multiple "
-				     "I frames (first message) (dl=%p)\n", dl);
+				LOGDL(dl, LOGL_INFO, "message in multiple I frames (first message)\n");
 				dl->rcv_buffer = lapd_msgb_alloc(dl->maxf,
 					"LAPD RX");
 				dl->rcv_buffer->l3h = dl->rcv_buffer->data;
 			}
 			/* concat. rcv_buffer */
 			if (msgb_l3len(dl->rcv_buffer) + length > dl->maxf) {
-				LOGP(DLLAPD, LOGL_NOTICE, "Received frame "
-					"overflow! (dl=%p)\n", dl);
+				LOGDL(dl, LOGL_NOTICE, "Received frame overflow!\n");
 			} else {
 				memcpy(msgb_put(dl->rcv_buffer, length),
 					msg->l3h, length);
 			}
 			/* if the last segment was received */
 			if (!lctx->more) {
-				LOGP(DLLAPD, LOGL_INFO, "message in multiple "
-					"I frames (last message) (dl=%p)\n", dl);
+				LOGDL(dl, LOGL_INFO, "message in multiple I frames (last message)\n");
 				rc = send_dl_l3(PRIM_DL_DATA,
 					PRIM_OP_INDICATION, lctx,
 					dl->rcv_buffer);
 				dl->rcv_buffer = NULL;
 			} else
-				LOGP(DLLAPD, LOGL_INFO, "message in multiple "
-					"I frames (next message) (dl=%p)\n", dl);
+				LOGDL(dl, LOGL_INFO, "message in multiple I frames (next message)\n");
 			msgb_free(msg);
 
 		}
 	} else
-		LOGP(DLLAPD, LOGL_INFO, "I frame ignored during own receiver "
-			"busy condition\n");
+		LOGDL(dl, LOGL_INFO, "I frame ignored during own receiver busy condition\n");
 
 	/* Check for P bit */
 	if (lctx->p_f) {
 		/* 5.5.2.1 */
 		/* check if we are not in own receiver busy */
 		if (!dl->own_busy) {
-			LOGP(DLLAPD, LOGL_INFO,
-			     "we are not busy, send RR (dl=%p)\n", dl);
+			LOGDL(dl, LOGL_INFO, "we are not busy, send RR\n");
 			/* Send RR with F=1 */
 			rc = lapd_send_rr(lctx, 1, 0);
 		} else {
-			LOGP(DLLAPD, LOGL_INFO,
-			     "we are busy, send RNR (dl=%p)\n", dl);
+			LOGDL(dl, LOGL_INFO, "we are busy, send RNR\n");
 			/* Send RNR with F=1 */
 			rc = lapd_send_rnr(lctx, 1, 0);
 		}
@@ -1667,17 +1606,15 @@ static int lapd_rx_i(struct msgb *msg, struct lapd_msg_ctx *lctx)
 				rc = dl->update_pending_frames(lctx);
 
 			if (rc) {
-				LOGP(DLLAPD, LOGL_INFO, "we are not busy and "
-				     "have no pending data, send RR (dl=%p)\n",
-				     dl);
+				LOGDL(dl, LOGL_INFO, "we are not busy and have no pending data, "
+				      "send RR\n");
 				/* Send RR with F=0 */
 				return lapd_send_rr(lctx, 0, 0);
 			}
 			/* all I or one RR is sent, we are done */
 			return 0;
 		} else {
-			LOGP(DLLAPD, LOGL_INFO,
-			     "we are busy, send RNR (dl=%p)\n", dl);
+			LOGDL(dl, LOGL_INFO, "we are busy, send RNR\n");
 			/* Send RNR with F=0 */
 			rc = lapd_send_rnr(lctx, 0, 0);
 		}
@@ -1705,8 +1642,7 @@ int lapd_ph_data_ind(struct msgb *msg, struct lapd_msg_ctx *lctx)
 		rc = lapd_rx_i(msg, lctx);
 		break;
 	default:
-		LOGP(DLLAPD, LOGL_NOTICE,
-		     "unknown LAPD format (dl=%p)\n", lctx->dl);
+		LOGDL(lctx->dl, LOGL_NOTICE, "unknown LAPD format\n");
 		msgb_free(msg);
 		rc = -EINVAL;
 	}
@@ -1744,11 +1680,9 @@ static int lapd_est_req(struct osmo_dlsap_prim *dp, struct lapd_msg_ctx *lctx)
 	struct lapd_msg_ctx nctx;
 
 	if (msg->len)
-		LOGP(DLLAPD, LOGL_INFO, "perform establishment with content "
-			"(SABM) (dl=%p)\n", dl);
+		LOGDL(dl, LOGL_INFO, "perform establishment with content (SABM)\n");
 	else
-		LOGP(DLLAPD, LOGL_INFO,
-		     "perform normal establishm. (SABM), (dl=%p)\n", dl);
+		LOGDL(dl, LOGL_INFO, "perform normal establishm. (SABM)\n");
 
 	/* Flush send-queue */
 	/* Clear send-buffer */
@@ -1803,15 +1737,12 @@ static int lapd_data_req(struct osmo_dlsap_prim *dp, struct lapd_msg_ctx *lctx)
 	struct msgb *msg = dp->oph.msg;
 
 	if (msgb_l3len(msg) == 0) {
-		LOGP(DLLAPD, LOGL_ERROR,
-		     "writing an empty message is not possible. (dl=%p)\n", dl);
+		LOGDL(dl, LOGL_ERROR, "writing an empty message is not possible\n");
 		msgb_free(msg);
 		return -1;
 	}
 
-	LOGP(DLLAPD, LOGL_INFO,
-	     "writing message to send-queue: l3len: %d (dl=%p)\n",
-	     msgb_l3len(msg), dl);
+	LOGDL(dl, LOGL_INFO, "writing message to send-queue: l3len: %d\n", msgb_l3len(msg));
 
 	/* Write data into the send queue */
 	msgb_enqueue(&dl->send_queue, msg);
@@ -1834,19 +1765,17 @@ static int lapd_send_i(struct lapd_msg_ctx *lctx, int line)
 	struct lapd_msg_ctx nctx;
 
 
-	LOGP(DLLAPD, LOGL_INFO,
-	     "%s() called from line %d (dl=%p)\n", __func__, line, dl);
+	LOGDL(dl, LOGL_INFO, "%s() called from line %d\n", __func__, line);
 
 	next_frame:
 
 	if (dl->peer_busy) {
-		LOGP(DLLAPD, LOGL_INFO, "peer busy, not sending (dl=%p)\n", dl);
+		LOGDL(dl, LOGL_INFO, "peer busy, not sending\n");
 		return rc;
 	}
 
 	if (dl->state == LAPD_STATE_TIMER_RECOV) {
-		LOGP(DLLAPD, LOGL_INFO,
-		     "timer recovery, not sending (dl=%p)\n", dl);
+		LOGDL(dl, LOGL_INFO, "timer recovery, not sending\n");
 		return rc;
 	}
 
@@ -1857,9 +1786,8 @@ static int lapd_send_i(struct lapd_msg_ctx *lctx, int line)
 	 * of the error recovery procedures as described in subclauses 5.5.4 and
 	 * 5.5.7. */
 	if (dl->v_send == add_mod(dl->v_ack, k, dl->v_range)) {
-		LOGP(DLLAPD, LOGL_INFO, "k frames outstanding, not sending "
-			"more (k=%u V(S)=%u V(A)=%u) (dl=%p)\n", k, dl->v_send,
-			dl->v_ack, dl);
+		LOGDL(dl, LOGL_INFO, "k frames outstanding, not sending more "
+		      "(k=%u V(S)=%u V(A)=%u)\n", k, dl->v_send, dl->v_ack);
 		return rc;
 	}
 
@@ -1875,8 +1803,7 @@ static int lapd_send_i(struct lapd_msg_ctx *lctx, int line)
 			/* No more data to be sent */
 			if (!dl->send_buffer)
 				return rc;
-			LOGP(DLLAPD, LOGL_INFO, "get message from "
-				"send-queue (dl=%p)\n", dl);
+			LOGDL(dl, LOGL_INFO, "get message from send-queue\n");
 		}
 
 		/* How much is left in the send-buffer? */
@@ -1885,10 +1812,9 @@ static int lapd_send_i(struct lapd_msg_ctx *lctx, int line)
 		length = left;
 		if (length > lctx->n201)
 			length = lctx->n201;
-		LOGP(DLLAPD, LOGL_INFO, "msg-len %d sent %d left %d N201 %d "
-			"length %d first byte %02x (dl=%p)\n",
-			msgb_l3len(dl->send_buffer), dl->send_out, left,
-			lctx->n201, length, dl->send_buffer->l3h[0], dl);
+		LOGDL(dl, LOGL_INFO, "msg-len %d sent %d left %d N201 %d length %d "
+		      "first byte %02x\n", msgb_l3len(dl->send_buffer), dl->send_out, left,
+		      lctx->n201, length, dl->send_buffer->l3h[0]);
 		/* If message in send-buffer is completely sent */
 		if (left == 0) {
 			msgb_free(dl->send_buffer);
@@ -1896,8 +1822,8 @@ static int lapd_send_i(struct lapd_msg_ctx *lctx, int line)
 			goto next_message;
 		}
 
-		LOGP(DLLAPD, LOGL_INFO, "send I frame %sV(S)=%d (dl=%p)\n",
-			(left > length) ? "segment " : "", dl->v_send, dl);
+		LOGDL(dl, LOGL_INFO, "send I frame %sV(S)=%d\n",
+		      (left > length) ? "segment " : "", dl->v_send);
 
 		/* Create I frame (segment) and transmit-buffer content */
 		msg = lapd_msgb_alloc(length, "LAPD I");
@@ -1929,8 +1855,7 @@ static int lapd_send_i(struct lapd_msg_ctx *lctx, int line)
 		/* Add length to track how much is already in the tx buffer */
 		dl->send_out += length;
 	} else {
-		LOGP(DLLAPD, LOGL_INFO, "resend I frame from tx buffer "
-			"V(S)=%d (dl=%p)\n", dl->v_send, dl);
+		LOGDL(dl, LOGL_INFO, "resend I frame from tx buffer V(S)=%d\n", dl->v_send);
 
 		/* Create I frame (segment) from tx_hist */
 		length = dl->tx_hist[h].msg->len;
@@ -1978,16 +1903,15 @@ static int lapd_susp_req(struct osmo_dlsap_prim *dp, struct lapd_msg_ctx *lctx)
 	struct lapd_datalink *dl = lctx->dl;
 	struct msgb *msg = dp->oph.msg;
 
-	LOGP(DLLAPD, LOGL_INFO, "perform suspension (dl=%p)\n", dl);
+	LOGDL(dl, LOGL_INFO, "perform suspension\n");
 
 	/* put back the send-buffer to the send-queue (first position) */
 	if (dl->send_buffer) {
-		LOGP(DLLAPD, LOGL_INFO, "put frame in sendbuffer back to "
-			"queue (dl=%p)\n", dl);
+		LOGDL(dl, LOGL_INFO, "put frame in sendbuffer back to queue\n");
 		llist_add(&dl->send_buffer->list, &dl->send_queue);
 		dl->send_buffer = NULL;
 	} else
-		LOGP(DLLAPD, LOGL_INFO, "no frame in sendbuffer (dl=%p)\n", dl);
+		LOGDL(dl, LOGL_INFO, "no frame in sendbuffer\n");
 
 	/* Clear transmit buffer, but keep send buffer */
 	lapd_dl_flush_tx(dl);
@@ -2007,9 +1931,7 @@ static int lapd_res_req(struct osmo_dlsap_prim *dp, struct lapd_msg_ctx *lctx)
 	struct msgb *msg = dp->oph.msg;
 	struct lapd_msg_ctx nctx;
 
-	LOGP(DLLAPD, LOGL_INFO,
-	     "perform re-establishment (SABM) length=%d (dl=%p)\n",
-	     msg->len, dl);
+	LOGDL(dl, LOGL_INFO, "perform re-establishment (SABM) length=%d\n", msg->len);
 
 	/* be sure that history is empty */
 	lapd_dl_flush_hist(dl);
@@ -2079,7 +2001,7 @@ static int lapd_rel_req(struct osmo_dlsap_prim *dp, struct lapd_msg_ctx *lctx)
 
 	/* local release */
 	if (dp->u.rel_req.mode) {
-		LOGP(DLLAPD, LOGL_INFO, "perform local release (dl=%p)\n", dl);
+		LOGDL(dl, LOGL_INFO, "perform local release\n");
 		msgb_free(msg);
 		/* stop Timer T200 */
 		lapd_stop_t200(dl);
@@ -2099,7 +2021,7 @@ static int lapd_rel_req(struct osmo_dlsap_prim *dp, struct lapd_msg_ctx *lctx)
 	/* flush tx_hist */
 	lapd_dl_flush_hist(dl);
 
-	LOGP(DLLAPD, LOGL_INFO, "perform normal release (DISC) (dl=%p)\n", dl);
+	LOGDL(dl, LOGL_INFO, "perform normal release (DISC)\n");
 
 	/* Push LAPD header on msgb */
 	/* assemble message */
@@ -2224,22 +2146,20 @@ int lapd_recv_dlsap(struct osmo_dlsap_prim *dp, struct lapd_msg_ctx *lctx)
 		}
 	}
 	if (!supported) {
-		LOGP(DLLAPD, LOGL_NOTICE,
-		     "Message %u/%u unsupported. (dl=%p)\n", dp->oph.primitive,
-		     dp->oph.operation, dl);
+		LOGDL(dl, LOGL_NOTICE, "Message %u/%u unsupported\n",
+		      dp->oph.primitive, dp->oph.operation);
 		msgb_free(msg);
 		return 0;
 	}
 	if (i == L2DOWNSLLEN) {
-		LOGP(DLLAPD, LOGL_NOTICE, "Message %u/%u unhandled at this "
-			"state %s. (dl=%p)\n", dp->oph.primitive,
-			dp->oph.operation, lapd_state_name(dl->state), dl);
+		LOGDL(dl, LOGL_NOTICE, "Message %u/%u unhandled at this state %s\n",
+		      dp->oph.primitive, dp->oph.operation, lapd_state_name(dl->state));
 		msgb_free(msg);
 		return 0;
 	}
 
-	LOGP(DLLAPD, LOGL_INFO, "Message %s received in state %s (dl=%p)\n",
-		l2downstatelist[i].name, lapd_state_name(dl->state), dl);
+	LOGDL(dl, LOGL_INFO, "Message %s received in state %s\n",
+		l2downstatelist[i].name, lapd_state_name(dl->state));
 
 	rc = l2downstatelist[i].rout(dp, lctx);
 

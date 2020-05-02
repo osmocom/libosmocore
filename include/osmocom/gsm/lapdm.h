@@ -83,13 +83,19 @@ struct lapdm_datalink *lapdm_datalink_for_sapi(struct lapdm_entity *le, uint8_t 
 
 /* initialize a LAPDm entity */
 void lapdm_entity_init(struct lapdm_entity *le, enum lapdm_mode mode, int t200)
-	OSMO_DEPRECATED("Use lapdm_entity_init2() instead");
+	OSMO_DEPRECATED("Use lapdm_entity_init3() instead");
 void lapdm_entity_init2(struct lapdm_entity *le, enum lapdm_mode mode,
-			const int *t200_ms, int n200);
+			const int *t200_ms, int n200)
+	OSMO_DEPRECATED("Use lapdm_entity_init3() instead");
+void lapdm_entity_init3(struct lapdm_entity *le, enum lapdm_mode mode,
+			const int *t200_ms, int n200, const char *name_pfx);
 void lapdm_channel_init(struct lapdm_channel *lc, enum lapdm_mode mode)
-	OSMO_DEPRECATED("Use lapdm_channel_init2() instead");
+	OSMO_DEPRECATED("Use lapdm_channel_init3() instead");
 int lapdm_channel_init2(struct lapdm_channel *lc, enum lapdm_mode mode,
 			const int *t200_ms_dcch, const int *t200_ms_acch, enum gsm_chan_t chan_t);
+int lapdm_channel_init3(struct lapdm_channel *lc, enum lapdm_mode mode,
+			const int *t200_ms_dcch, const int *t200_ms_acch, enum gsm_chan_t chan_t,
+			const char *name_pfx);
 /* deinitialize a LAPDm entity */
 void lapdm_entity_exit(struct lapdm_entity *le);
 void lapdm_channel_exit(struct lapdm_channel *lc);

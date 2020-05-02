@@ -14,6 +14,9 @@
  * \file lapd_core.h
  */
 
+#define LOGDL(dl, level, fmt, args...) \
+	LOGP(DLLAPD, level, "(%s) "  fmt, (dl)->name, ## args)
+
 /*! LAPD related primitives (L2<->L3 SAP)*/
 enum osmo_dl_prim {
 	PRIM_DL_UNIT_DATA,	/*!< DL-UNIT-DATA */
@@ -158,10 +161,13 @@ struct lapd_datalink {
 	uint8_t range_hist; /*!< range of history buffer 2..2^n */
 	struct msgb *rcv_buffer; /*!< buffer to assemble the received message */
 	struct msgb *cont_res; /*!< buffer to store content resolution data on network side, to detect multiple phones on same channel */
+	char *name; /*!< user-provided name */
 };
 
-void lapd_dl_init(struct lapd_datalink *dl, uint8_t k, uint8_t v_range,
-	int maxf);
+void lapd_dl_init(struct lapd_datalink *dl, uint8_t k, uint8_t v_range, int maxf)
+	OSMO_DEPRECATED("Use lapd_dl_init2() instead");
+void lapd_dl_init2(struct lapd_datalink *dl, uint8_t k, uint8_t v_range, int maxf, const char *name);
+void lapd_dl_set_name(struct lapd_datalink *dl, const char *name);
 void lapd_dl_exit(struct lapd_datalink *dl);
 void lapd_dl_reset(struct lapd_datalink *dl);
 int lapd_set_mode(struct lapd_datalink *dl, enum lapd_mode mode);

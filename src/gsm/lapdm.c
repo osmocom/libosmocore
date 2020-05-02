@@ -126,17 +126,20 @@ const struct value_string osmo_ph_prim_names[] = {
 	{ 0,			NULL }
 };
 
+extern void *tall_lapd_ctx;
+
 static int lapdm_send_ph_data_req(struct lapd_msg_ctx *lctx, struct msgb *msg);
 static int send_rslms_dlsap(struct osmo_dlsap_prim *dp,
 	struct lapd_msg_ctx *lctx);
 static int update_pending_frames(struct lapd_msg_ctx *lctx);
 
 static void lapdm_dl_init(struct lapdm_datalink *dl,
-			  struct lapdm_entity *entity, int t200_ms, uint32_t n200)
+			  struct lapdm_entity *entity, int t200_ms, uint32_t n200,
+			  const char *name)
 {
 	memset(dl, 0, sizeof(*dl));
 	dl->entity = entity;
-	lapd_dl_init(&dl->dl, 1, 8, 251); /* Section 5.8.5 of TS 04.06 */
+	lapd_dl_init2(&dl->dl, 1, 8, 251, name); /* Section 5.8.5 of TS 04.06 */
 	dl->dl.reestablish = 0; /* GSM uses no reestablish */
 	dl->dl.send_ph_data_req = lapdm_send_ph_data_req;
 	dl->dl.send_dlsap = send_rslms_dlsap;
@@ -165,7 +168,7 @@ void lapdm_entity_init(struct lapdm_entity *le, enum lapdm_mode mode, int t200)
 	for (i = 0; i < ARRAY_SIZE(t200_ms_sapi_arr); i++)
 		t200_ms_sapi_arr[i] = t200 * 1000;
 
-	return lapdm_entity_init2(le, mode, t200_ms_sapi_arr, N200);
+	return lapdm_entity_init3(le, mode, t200_ms_sapi_arr, N200, NULL);
 }
 
 /*! initialize a LAPDm entity and all datalinks inside
@@ -177,10 +180,29 @@ void lapdm_entity_init(struct lapdm_entity *le, enum lapdm_mode mode, int t200)
 void lapdm_entity_init2(struct lapdm_entity *le, enum lapdm_mode mode,
 			const int *t200_ms, int n200)
 {
+	lapdm_entity_init3(le, mode, t200_ms, n200, NULL);
+}
+
+/*! initialize a LAPDm entity and all datalinks inside
+ *  \param[in] le LAPDm entity
+ *  \param[in] mode lapdm_mode (BTS/MS)
+ *  \param[in] t200_ms per-SAPI array of T200 re-transmission timer in milli-seconds
+ *  \param[in] n200 N200 re-transmisison count
+ *  \param[in] name human-readable name (will be copied internally + extended with SAPI)
+ */
+void lapdm_entity_init3(struct lapdm_entity *le, enum lapdm_mode mode,
+			const int *t200_ms, int n200, const char *name_pfx)
+{
 	unsigned int i;
 
-	for (i = 0; i < ARRAY_SIZE(le->datalink); i++)
-		lapdm_dl_init(&le->datalink[i], le, t200_ms[i], n200);
+	for (i = 0; i < ARRAY_SIZE(le->datalink); i++) {
+		char name[256];
+		if (name_pfx) {
+			snprintf(name, sizeof(name), "%s[%s]", name_pfx, i == 0 ? "0" : "3");
+			lapdm_dl_init(&le->datalink[i], le, t200_ms[i], n200, name);
+		} else
+			lapdm_dl_init(&le->datalink[i], le, t200_ms[i], n200, NULL);
+	}
 
 	lapdm_entity_set_mode(le, mode);
 }
@@ -213,7 +235,7 @@ void lapdm_channel_init(struct lapdm_channel *lc, enum lapdm_mode mode)
 	const int t200_ms_dcch[_NR_DL_SAPI] = { 1000, 1000 };
 	const int t200_ms_acch[_NR_DL_SAPI] = { 2000, 2000 };
 
-	lapdm_channel_init2(lc, mode, t200_ms_dcch, t200_ms_acch, GSM_LCHAN_SDCCH);
+	lapdm_channel_init3(lc, mode, t200_ms_dcch, t200_ms_acch, GSM_LCHAN_SDCCH, NULL);
 }
 
 /*! initialize a LAPDm channel and all its channels
@@ -226,14 +248,42 @@ void lapdm_channel_init(struct lapdm_channel *lc, enum lapdm_mode mode)
 int lapdm_channel_init2(struct lapdm_channel *lc, enum lapdm_mode mode,
 			const int *t200_ms_dcch, const int *t200_ms_acch, enum gsm_chan_t chan_t)
 {
+	return lapdm_channel_init3(lc, mode, t200_ms_dcch, t200_ms_acch, chan_t, NULL);
+}
+
+/*! initialize a LAPDm channel and all its channels
+ *  \param[in] lc \ref lapdm_channel to be initialized
+ *  \param[in] mode \ref lapdm_mode (BTS/MS)
+ *  \param[in] t200_ms_dcch per-SAPI array of T200 in milli-seconds for DCCH
+ *  \param[in] t200_ms_acch per-SAPI array of T200 in milli-seconds for SACCH
+ *  \param[in] chan_t GSM channel type (to correctly set N200)
+ *  \parma[in] name_pfx human-readable name (copied by function + extended with ACCH/DCCH)
+ */
+int lapdm_channel_init3(struct lapdm_channel *lc, enum lapdm_mode mode,
+			const int *t200_ms_dcch, const int *t200_ms_acch, enum gsm_chan_t chan_t,
+			const char *name_pfx)
+{
 	int n200_dcch = get_n200_dcch(chan_t);
+	char namebuf[256];
+	char *name = NULL;
+
 	if (n200_dcch < 0)
 		return -EINVAL;
 
-	lapdm_entity_init2(&lc->lapdm_acch, mode, t200_ms_acch, N200_TR_SACCH);
+	osmo_talloc_replace_string(tall_lapd_ctx, &lc->name, name_pfx);
+
+	if (name_pfx) {
+		snprintf(namebuf, sizeof(namebuf), "%s[ACCH]", name_pfx);
+		name = namebuf;
+	}
+	lapdm_entity_init3(&lc->lapdm_acch, mode, t200_ms_acch, N200_TR_SACCH, name);
 	lc->lapdm_acch.lapdm_ch = lc;
 
-	lapdm_entity_init2(&lc->lapdm_dcch, mode, t200_ms_dcch, n200_dcch);
+	if (name_pfx) {
+		snprintf(namebuf, sizeof(namebuf), "%s[DCCH]", name_pfx);
+		name = namebuf;
+	}
+	lapdm_entity_init3(&lc->lapdm_dcch, mode, t200_ms_dcch, n200_dcch, name);
 	lc->lapdm_dcch.lapdm_ch = lc;
 
 	return 0;
@@ -478,7 +528,7 @@ static int rsl_rll_error(uint8_t cause, struct lapdm_msg_ctx *mctx)
 {
 	struct msgb *msg;
 
-	LOGP(DLLAPD, LOGL_NOTICE, "sending MDL-ERROR-IND %d\n", cause);
+	LOGDL(&mctx->dl->dl, LOGL_NOTICE, "sending MDL-ERROR-IND %d\n", cause);
 	msg = rsl_rll_simple(RSL_MT_ERROR_IND, mctx->chan_nr, mctx->link_id, 0);
 	msgb_tlv_put(msg, RSL_IE_RLM_CAUSE, 1, &cause);
 	return rslms_sendmsg(msg, mctx->dl->entity);
@@ -523,7 +573,7 @@ static int send_rslms_dlsap(struct osmo_dlsap_prim *dp,
 	}
 
 	if (!rll_msg) {
-		LOGP(DLLAPD, LOGL_ERROR, "Unsupported op %d, prim %d. Please "
+		LOGDL(dl, LOGL_ERROR, "Unsupported op %d, prim %d. Please "
 			"fix!\n", dp->oph.primitive, dp->oph.operation);
 		return -EINVAL;
 	}
@@ -592,7 +642,7 @@ static int update_pending_frames(struct lapd_msg_ctx *lctx)
 					LAPDm_CTRL_PF_BIT(msg->l2h[1]));
 			rc = 0;
 		} else if (LAPDm_CTRL_is_S(msg->l2h[1])) {
-			LOGP(DLLAPD, LOGL_ERROR, "Supervisory frame in queue, this shouldn't happen\n");
+			LOGDL(dl, LOGL_ERROR, "Supervisory frame in queue, this shouldn't happen\n");
 		}
 	}
 
@@ -690,8 +740,7 @@ static int l2_ph_data_ind(struct msgb *msg, struct lapdm_entity *le,
 	mctx.dl = lapdm_datalink_for_sapi(le, sapi);
 	/* G.2.1 No action on frames containing an unallocated SAPI. */
 	if (!mctx.dl) {
-		LOGP(DLLAPD, LOGL_NOTICE, "Received frame for unsupported "
-			"SAPI %d!\n", sapi);
+		LOGP(DLLAPD, LOGL_NOTICE, "Received frame for unsupported SAPI %d!\n", sapi);
 		msgb_free(msg);
 		return -EIO;
 	}
@@ -705,8 +754,7 @@ static int l2_ph_data_ind(struct msgb *msg, struct lapdm_entity *le,
 		mctx.link_id |= LAPDm_ADDR_SAPI(msg->l2h[0]);
 		/* G.2.3 EA bit set to "0" is not allowed in GSM */
 		if (!LAPDm_ADDR_EA(msg->l2h[0])) {
-			LOGP(DLLAPD, LOGL_NOTICE, "EA bit 0 is not allowed in "
-				"GSM\n");
+			LOGDL(lctx.dl, LOGL_NOTICE, "EA bit 0 is not allowed in GSM\n");
 			msgb_free(msg);
 			rsl_rll_error(RLL_CAUSE_FRM_UNIMPL, &mctx);
 			return -EINVAL;
@@ -737,8 +785,7 @@ static int l2_ph_data_ind(struct msgb *msg, struct lapdm_entity *le,
 			/* 5.3.3 UI frames with invalid SAPI values shall be
 			 * discarded
 			 */
-			LOGP(DLLAPD, LOGL_INFO, "sapi=%u (discarding)\n",
-				lctx.sapi);
+			LOGDL(lctx.dl, LOGL_INFO, "sapi=%u (discarding)\n", lctx.sapi);
 			msgb_free(msg);
 			return 0;
 		}
@@ -755,8 +802,7 @@ static int l2_ph_data_ind(struct msgb *msg, struct lapdm_entity *le,
 				 * MDL-ERROR-INDICATION primitive with cause
 				 * "frame not implemented" is sent to the
 				 * mobile management entity. */
-				LOGP(DLLAPD, LOGL_NOTICE, "we don't support "
-					"multi-octet length\n");
+				LOGDL(lctx.dl, LOGL_NOTICE, "we don't support multi-octet length\n");
 				msgb_free(msg);
 				rsl_rll_error(RLL_CAUSE_FRM_UNIMPL, &mctx);
 				return -EINVAL;
@@ -771,7 +817,7 @@ static int l2_ph_data_ind(struct msgb *msg, struct lapdm_entity *le,
 		memcpy(&mctx.dl->mctx, &mctx, sizeof(mctx.dl->mctx));
 		rc =lapdm_rx_not_permitted(le, &lctx);
 		if (rc > 0) {
-			LOGP(DLLAPD, LOGL_NOTICE, "received message not permitted\n");
+			LOGDL(lctx.dl, LOGL_NOTICE, "received message not permitted\n");
 			msgb_free(msg);
 			rsl_rll_error(rc, &mctx);
 			return -EINVAL;
@@ -930,7 +976,7 @@ static int rslms_rx_rll_est_req(struct msgb *msg, struct lapdm_datalink *dl)
 		if (sapi != 0) {
 			/* According to clause 6, the contention resolution
 			 * procedure is only permitted with SAPI value 0 */
-			LOGP(DLLAPD, LOGL_ERROR, "SAPI != 0 but contention"
+			LOGDL(&dl->dl, LOGL_ERROR, "SAPI != 0 but contention"
 				"resolution (discarding)\n");
 			msgb_free(msg);
 			return send_rll_simple(RSL_MT_REL_IND, &dl->mctx);
@@ -946,7 +992,7 @@ static int rslms_rx_rll_est_req(struct msgb *msg, struct lapdm_datalink *dl)
 
 	/* check if the layer3 message length exceeds N201 */
 	if (length > n201) {
-		LOGP(DLLAPD, LOGL_ERROR, "frame too large: %d > N201(%d) "
+		LOGDL(&dl->dl, LOGL_ERROR, "frame too large: %d > N201(%d) "
 			"(discarding)\n", length, n201);
 		msgb_free(msg);
 		return send_rll_simple(RSL_MT_REL_IND, &dl->mctx);
@@ -975,7 +1021,7 @@ static int rslms_rx_rll_udata_req(struct msgb *msg, struct lapdm_datalink *dl)
 	int length, ui_bts;
 
 	if (!le) {
-		LOGP(DLLAPD, LOGL_ERROR, "lapdm_datalink without entity error\n");
+		LOGDL(&dl->dl, LOGL_ERROR, "lapdm_datalink without entity error\n");
 		msgb_free(msg);
 		return -EMLINK;
 	}
@@ -992,8 +1038,7 @@ static int rslms_rx_rll_udata_req(struct msgb *msg, struct lapdm_datalink *dl)
 		le->tx_power = *TLVP_VAL(&tv, RSL_IE_MS_POWER);
 	}
 	if (!TLVP_PRESENT(&tv, RSL_IE_L3_INFO)) {
-		LOGP(DLLAPD, LOGL_ERROR, "unit data request without message "
-			"error\n");
+		LOGDL(&dl->dl, LOGL_ERROR, "unit data request without message error\n");
 		msgb_free(msg);
 		return -EINVAL;
 	}
@@ -1001,15 +1046,14 @@ static int rslms_rx_rll_udata_req(struct msgb *msg, struct lapdm_datalink *dl)
 	length = TLVP_LEN(&tv, RSL_IE_L3_INFO);
 	/* check if the layer3 message length exceeds N201 */
 	if (length + ((link_id & 0x40) ? 4 : 2) + !ui_bts > 23) {
-		LOGP(DLLAPD, LOGL_ERROR, "frame too large: %d > N201(%d) "
+		LOGDL(&dl->dl, LOGL_ERROR, "frame too large: %d > N201(%d) "
 			"(discarding)\n", length,
 			((link_id & 0x40) ? 18 : 20) + ui_bts);
 		msgb_free(msg);
 		return -EIO;
 	}
 
-	LOGP(DLLAPD, LOGL_INFO, "sending unit data (tx_power=%d, ta=%d)\n",
-		le->tx_power, le->ta);
+	LOGDL(&dl->dl, LOGL_INFO, "sending unit data (tx_power=%d, ta=%d)\n", le->tx_power, le->ta);
 
 	/* Remove RLL header from msgb and set length to L3-info */
 	msgb_pull_to_l3(msg);
@@ -1041,8 +1085,7 @@ static int rslms_rx_rll_data_req(struct msgb *msg, struct lapdm_datalink *dl)
 
 	rsl_tlv_parse(&tv, rllh->data, msgb_l2len(msg)-sizeof(*rllh));
 	if (!TLVP_PRESENT(&tv, RSL_IE_L3_INFO)) {
-		LOGP(DLLAPD, LOGL_ERROR, "data request without message "
-			"error\n");
+		LOGDL(&dl->dl, LOGL_ERROR, "data request without message error\n");
 		msgb_free(msg);
 		return -EINVAL;
 	}
@@ -1068,7 +1111,7 @@ static int rslms_rx_rll_susp_req(struct msgb *msg, struct lapdm_datalink *dl)
 	struct osmo_dlsap_prim dp;
 
 	if (sapi != 0) {
-		LOGP(DLLAPD, LOGL_ERROR, "SAPI != 0 while suspending\n");
+		LOGDL(&dl->dl, LOGL_ERROR, "SAPI != 0 while suspending\n");
 		msgb_free(msg);
 		return -EINVAL;
 	}
@@ -1098,7 +1141,7 @@ static int rslms_rx_rll_res_req(struct msgb *msg, struct lapdm_datalink *dl)
 
 	rsl_tlv_parse(&tv, rllh->data, msgb_l2len(msg)-sizeof(*rllh));
 	if (!TLVP_PRESENT(&tv, RSL_IE_L3_INFO)) {
-		LOGP(DLLAPD, LOGL_ERROR, "resume without message error\n");
+		LOGDL(&dl->dl, LOGL_ERROR, "resume without message error\n");
 		msgb_free(msg);
 		return send_rll_simple(RSL_MT_REL_IND, &dl->mctx);
 	}
@@ -1235,7 +1278,7 @@ static int rslms_rx_rll(struct msgb *msg, struct lapdm_channel *lc)
 		case RSL_MT_SUSP_REQ:
 		case RSL_MT_RES_REQ:
 		case RSL_MT_RECON_REQ:
-			LOGP(DLLAPD, LOGL_NOTICE, "(%p) RLL Message '%s' unsupported in BTS side LAPDm\n",
+			LOGP(DLLAPD, LOGL_NOTICE, "(%s) RLL Message '%s' unsupported in BTS side LAPDm\n",
 				lc->name, rsl_msg_name(msg_type));
 			msgb_free(msg);
 			return -EINVAL;
@@ -1262,14 +1305,14 @@ static int rslms_rx_rll(struct msgb *msg, struct lapdm_channel *lc)
 		/* This is triggered in abnormal error conditions where
 		 * set_lapdm_context() was not called for the channel earlier. */
 		if (!dl->dl.lctx.dl) {
-			LOGP(DLLAPD, LOGL_NOTICE, "(%p) RLL Message '%s' received without LAPDm context. (sapi %d)\n",
+			LOGP(DLLAPD, LOGL_NOTICE, "(%s) RLL Message '%s' received without LAPDm context. (sapi %d)\n",
 					lc->name, rsl_msg_name(msg_type), sapi);
 			msgb_free(msg);
 			return -EINVAL;
 		}
 		break;
 	default:
-		LOGP(DLLAPD, LOGL_INFO, "(%p) RLL Message '%s' received. (sapi %d)\n",
+		LOGP(DLLAPD, LOGL_INFO, "(%s) RLL Message '%s' received. (sapi %d)\n",
 			lc->name, rsl_msg_name(msg_type), sapi);
 	}
 
