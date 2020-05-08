@@ -73,6 +73,7 @@ struct osmo_stats_reporter {
 	char *bind_addr_str;	/*!< local bind IP address */
 	int dest_port;		/*!< destination (UDP) port */
 	int mtu;		/*!< Maximum Transmission Unit */
+	unsigned int flush_period;	/*!< period between regular flushes */
 
 	/*! Maximum class/index to report. FIXME: More details! */
 	enum osmo_stats_class max_class;
@@ -87,7 +88,8 @@ struct osmo_stats_reporter {
 	int fd;				/*!< file descriptor of socket */
 	struct msgb *buffer;		/*!< message buffer for log output */
 	int agg_enabled;		/*!< is aggregation enabled? */
-	int force_single_flush;
+	int force_single_flush;		/*!< set to 1 to force a flush (send even unchanged stats values) */
+	unsigned int flush_period_counter;	/*!< count sends between forced flushes */
 
 	struct llist_head list;
 	int (*open)(struct osmo_stats_reporter *srep);
@@ -129,6 +131,7 @@ int osmo_stats_reporter_set_max_class(struct osmo_stats_reporter *srep,
 int osmo_stats_reporter_set_name_prefix(struct osmo_stats_reporter *srep, const char *prefix);
 int osmo_stats_reporter_enable(struct osmo_stats_reporter *srep);
 int osmo_stats_reporter_disable(struct osmo_stats_reporter *srep);
+int osmo_stats_reporter_set_flush_period(struct osmo_stats_reporter *srep, unsigned int period);
 
 /* reporter creation */
 struct osmo_stats_reporter *osmo_stats_reporter_create_log(const char *name);
