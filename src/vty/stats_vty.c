@@ -269,24 +269,6 @@ DEFUN(cfg_stats_reporter_statsd, cfg_stats_reporter_statsd_cmd,
 	return CMD_SUCCESS;
 }
 
-DEFUN(cfg_stats_interval, cfg_stats_interval_cmd,
-	"stats interval <1-65535>",
-	CFG_STATS_STR "Set the reporting interval\n"
-	"Interval in seconds\n")
-{
-	int rc;
-	int interval = atoi(argv[0]);
-	rc = osmo_stats_set_interval(interval);
-	if (rc < 0) {
-		vty_out(vty, "%% Unable to set interval: %s%s",
-			strerror(-rc), VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	return CMD_SUCCESS;
-}
-
-
 DEFUN(cfg_no_stats_reporter_statsd, cfg_no_stats_reporter_statsd_cmd,
 	"no stats reporter statsd",
 	NO_STR CFG_STATS_STR CFG_REPORTER_STR "Report to a STATSD server\n")
@@ -343,6 +325,23 @@ DEFUN(cfg_no_stats_reporter_log, cfg_no_stats_reporter_log_cmd,
 	}
 
 	osmo_stats_reporter_free(srep);
+
+	return CMD_SUCCESS;
+}
+
+DEFUN(cfg_stats_interval, cfg_stats_interval_cmd,
+	"stats interval <1-65535>",
+	CFG_STATS_STR "Set the reporting interval\n"
+	"Interval in seconds\n")
+{
+	int rc;
+	int interval = atoi(argv[0]);
+	rc = osmo_stats_set_interval(interval);
+	if (rc < 0) {
+		vty_out(vty, "%% Unable to set interval: %s%s",
+			strerror(-rc), VTY_NEWLINE);
+		return CMD_WARNING;
+	}
 
 	return CMD_SUCCESS;
 }
