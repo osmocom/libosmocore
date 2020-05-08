@@ -341,6 +341,25 @@ int osmo_stats_set_interval(int interval)
 	return 0;
 }
 
+/*! Set the regular flush period for a given stats_reporter
+ *
+ * Send all stats even if they have not changed (i.e. force the flush)
+ * every N-th reporting interval. Set to 0 to disable regular flush,
+ * set to 1 to flush every time, set to 2 to flush every 2nd time, etc.
+ *  \param[in] srep stats_reporter to set flush period for
+ *  \param[in] period Reporting interval in seconds
+ *  \returns 0 on success; negative on error */
+int osmo_stats_reporter_set_flush_period(struct osmo_stats_reporter *srep, unsigned int period)
+{
+	srep->flush_period = period;
+	srep->flush_period_counter = 0;
+	/* force the flush now if it's not disabled by period=0 */
+	if (period > 0)
+		srep->force_single_flush = 1;
+
+	return 0;
+}
+
 /*! Set the name prefix of a given stats_reporter.
  *  \param[in] srep stats_reporter whose name prefix is to be set
  *  \param[in] prefix NAme perfix to pre-pend for any reported value
@@ -706,7 +725,17 @@ static void flush_all_reporters()
 			continue;
 
 		osmo_stats_reporter_send_buffer(srep);
+
+		/* reset force_single_flush first */
 		srep->force_single_flush = 0;
+		/* and schedule a new flush if it's time for it */
+		if (srep->flush_period > 0) {
+			srep->flush_period_counter++;
+			if (srep->flush_period_counter >= srep->flush_period) {
+				srep->force_single_flush = 1;
+				srep->flush_period_counter = 0;
+			}
+		}
 	}
 }
 
