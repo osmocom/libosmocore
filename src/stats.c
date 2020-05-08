@@ -326,8 +326,7 @@ int osmo_stats_reporter_set_max_class(struct osmo_stats_reporter *srep,
 	return 0;
 }
 
-/*! Set the reporting interval of a given stats_reporter (in seconds).
- *  \param[in] srep stats_reporter whose remote address is to be set
+/*! Set the reporting interval (common for all reporters)
  *  \param[in] interval Reporting interval in seconds
  *  \returns 0 on success; negative on error */
 int osmo_stats_set_interval(int interval)
