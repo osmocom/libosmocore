@@ -576,9 +576,9 @@ int osmo_gsm48_rest_octets_si3_encode(uint8_t *data, const struct osmo_gsm48_si_
 	/* 3G Early Classmark Sending Restriction. If H, then controlled by
 	 * early_cm_ctrl above */
 	if (si3->early_cm_restrict_3g)
-		bitvec_set_bit(&bv, L);
-	else
 		bitvec_set_bit(&bv, H);
+	else
+		bitvec_set_bit(&bv, L);
 
 	if (si3->si2quater_indicator) {
 		bitvec_set_bit(&bv, H); /* indicator struct present */

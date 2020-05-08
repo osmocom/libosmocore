@@ -309,6 +309,7 @@ osim_app_profile_find_by_name(const char *name);
 const struct osim_card_app_profile *
 osim_app_profile_find_by_aid(const uint8_t *aid, uint8_t aid_len);
 
+const struct osim_card_sw *osim_app_profile_find_sw(const struct osim_card_app_profile *ap, uint16_t sw_in);
 
 /*! A card profile (e.g. SIM card */
 struct osim_card_profile {
@@ -319,15 +320,13 @@ struct osim_card_profile {
 	const struct osim_card_sw **sws;
 };
 
-const struct osim_card_sw *osim_find_sw(const struct osim_card_profile *cp,
-					uint16_t sw);
-enum osim_card_sw_class osim_sw_class(const struct osim_card_profile *cp,
-					uint16_t sw_in);
+const struct osim_card_sw *osim_cprof_find_sw(const struct osim_card_profile *cp, uint16_t sw_in);
 
-struct osim_card_hdl;
-char *osim_print_sw_buf(char *buf, size_t buf_len, const struct osim_card_hdl *ch, uint16_t sw_in);
-char *osim_print_sw(const struct osim_card_hdl *ch, uint16_t sw_in);
-char *osim_print_sw_c(const void *ctx, const struct osim_card_hdl *ch, uint16_t sw_in);
+struct osim_chan_hdl;
+enum osim_card_sw_class osim_sw_class(const struct osim_chan_hdl *ch, uint16_t sw_in);
+char *osim_print_sw_buf(char *buf, size_t buf_len, const struct osim_chan_hdl *ch, uint16_t sw_in);
+char *osim_print_sw(const struct osim_chan_hdl *ch, uint16_t sw_in);
+char *osim_print_sw_c(const void *ctx, const struct osim_chan_hdl *ch, uint16_t sw_in);
 
 extern const struct tlv_definition ts102221_fcp_tlv_def;
 extern const struct value_string ts102221_fcp_vals[14];

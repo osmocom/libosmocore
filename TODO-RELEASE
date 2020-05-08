@@ -9,3 +9,4 @@
 #library	what			description / commit summary line
 gsm		API/ABI change		l1sap.h, added struct members to ph_data_param and ph_tch_param
 sim		API/ABI change		new osim_file_desc_find_aid()
+sim		API/ABI change		all over the place

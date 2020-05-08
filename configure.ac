@@ -77,7 +77,9 @@ AC_SUBST(BACKTRACE_LIB)
 AX_PTHREAD
 
 # check for old glibc < 2.17 to get clock_gettime
-AC_SEARCH_LIBS([clock_gettime], [rt posix4], [LIBRARY_RT="$LIBS";LIBS=""])
+AC_SEARCH_LIBS([clock_gettime], [rt posix4],
+	       [AC_DEFINE(HAVE_CLOCK_GETTIME, 1, [Define if clock_gettime is available])
+	        LIBRARY_RT="$LIBS";LIBS="";])
 AC_SUBST(LIBRARY_RT)
 
 AC_ARG_ENABLE(doxygen,
@@ -103,7 +105,7 @@ AC_COMPILE_IFELSE([AC_LANG_SOURCE([char foo;])],
 CFLAGS="$saved_CFLAGS"
 AC_SUBST(SYMBOL_VISIBILITY)
 
-AC_CHECK_FUNCS(clock_gettime localtime_r)
+AC_CHECK_FUNCS(localtime_r)
 
 AC_DEFUN([CHECK_TM_INCLUDES_TM_GMTOFF], [
   AC_CACHE_CHECK(

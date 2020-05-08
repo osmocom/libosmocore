@@ -411,7 +411,7 @@ static int dump_file(struct osim_chan_hdl *chan, const char *short_name, uint16_
 					fclose(f_data);
 				return -EIO;
 			}
-			printf("SW: %s\n", osim_print_sw(chan->card, msgb_apdu_sw(msg)));
+			printf("SW: %s\n", osim_print_sw(chan, msgb_apdu_sw(msg)));
 
 			hex = osmo_hexdump_nospc(msgb_apdu_de(rmsg), msgb_apdu_le(rmsg));
 			printf("Rec %03u: %s\n", i+1, hex);
@@ -593,7 +593,7 @@ static void iterate_apps(struct osim_chan_hdl *chan)
 				osmo_hexdump_nospc(cah->aid, cah->aid_len));
 			continue;
 		}
-		printf("SW: %s\n", osim_print_sw(chan->card, msgb_apdu_sw(msg)));
+		printf("SW: %s\n", osim_print_sw(chan, msgb_apdu_sw(msg)));
 		chan->cur_app = cah;
 		chan->cwd = cap->adf;
 
