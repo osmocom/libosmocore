@@ -245,6 +245,27 @@ DEFUN(cfg_stats_reporter_disable, cfg_stats_reporter_disable_cmd,
 	return CMD_SUCCESS;
 }
 
+DEFUN(cfg_stats_reporter_flush_period, cfg_stats_reporter_flush_period_cmd,
+	"flush-period <0-65535>",
+	CFG_STATS_STR "Send all stats even if they have not changed (i.e. force the flush)"
+	              "every N-th reporting interval. Set to 0 to disable regular flush (default).\n"
+	"0 to disable regular flush (default), 1 to flush every time, 2 to flush every 2nd time, etc\n")
+{
+	int rc;
+	int period = atoi(argv[0]);
+	struct osmo_stats_reporter *srep = osmo_stats_vty2srep(vty);
+	OSMO_ASSERT(srep);
+
+	rc = osmo_stats_reporter_set_flush_period(srep, period);
+	if (rc < 0) {
+		vty_out(vty, "%% Unable to set force flush period: %s%s",
+			strerror(-rc), VTY_NEWLINE);
+		return CMD_WARNING;
+	}
+
+	return CMD_SUCCESS;
+}
+
 DEFUN(cfg_stats_reporter_statsd, cfg_stats_reporter_statsd_cmd,
 	"stats reporter statsd",
 	CFG_STATS_STR CFG_REPORTER_STR "Report to a STATSD server\n")
@@ -268,24 +289,6 @@ DEFUN(cfg_stats_reporter_statsd, cfg_stats_reporter_statsd_cmd,
 
 	return CMD_SUCCESS;
 }
-
-DEFUN(cfg_stats_interval, cfg_stats_interval_cmd,
-	"stats interval <1-65535>",
-	CFG_STATS_STR "Set the reporting interval\n"
-	"Interval in seconds\n")
-{
-	int rc;
-	int interval = atoi(argv[0]);
-	rc = osmo_stats_set_interval(interval);
-	if (rc < 0) {
-		vty_out(vty, "%% Unable to set interval: %s%s",
-			strerror(-rc), VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	return CMD_SUCCESS;
-}
-
 
 DEFUN(cfg_no_stats_reporter_statsd, cfg_no_stats_reporter_statsd_cmd,
 	"no stats reporter statsd",
@@ -343,6 +346,23 @@ DEFUN(cfg_no_stats_reporter_log, cfg_no_stats_reporter_log_cmd,
 	}
 
 	osmo_stats_reporter_free(srep);
+
+	return CMD_SUCCESS;
+}
+
+DEFUN(cfg_stats_interval, cfg_stats_interval_cmd,
+	"stats interval <1-65535>",
+	CFG_STATS_STR "Set the reporting interval\n"
+	"Interval in seconds\n")
+{
+	int rc;
+	int interval = atoi(argv[0]);
+	rc = osmo_stats_set_interval(interval);
+	if (rc < 0) {
+		vty_out(vty, "%% Unable to set interval: %s%s",
+			strerror(-rc), VTY_NEWLINE);
+		return CMD_WARNING;
+	}
 
 	return CMD_SUCCESS;
 }
@@ -589,6 +609,10 @@ static int config_write_stats_reporter(struct vty *vty, struct osmo_stats_report
 	else
 		vty_out(vty, "  no prefix%s", VTY_NEWLINE);
 
+	if (srep->flush_period > 0)
+		vty_out(vty, "  flush-period %d%s",
+			srep->flush_period, VTY_NEWLINE);
+
 	if (srep->enabled)
 		vty_out(vty, "  enable%s", VTY_NEWLINE);
 
@@ -638,6 +662,7 @@ void osmo_stats_vty_add_cmds()
 	install_element(CFG_STATS_NODE, &cfg_stats_reporter_level_cmd);
 	install_element(CFG_STATS_NODE, &cfg_stats_reporter_enable_cmd);
 	install_element(CFG_STATS_NODE, &cfg_stats_reporter_disable_cmd);
+	install_element(CFG_STATS_NODE, &cfg_stats_reporter_flush_period_cmd);
 
 	install_element_ve(&show_stats_asciidoc_table_cmd);
 	install_element_ve(&show_rate_counters_cmd);
