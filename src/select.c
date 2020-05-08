@@ -334,7 +334,7 @@ int osmo_timerfd_disable(struct osmo_fd *ofd)
 	return timerfd_settime(ofd->fd, 0, &its_null, NULL);
 }
 
-/*! schedule the osmcoom-wrapped timerfd to occur first at \a first, then periodically at \a interval
+/*! schedule the osmocom-wrapped timerfd to occur first at \a first, then periodically at \a interval
  *  \param[in] ofd Osmocom wrapped timerfd
  *  \param[in] first Relative time at which the timer should first execute (NULL = \a interval)
  *  \param[in] interval Time interval at which subsequent timer shall fire
