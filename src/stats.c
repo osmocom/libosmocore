@@ -85,7 +85,7 @@
 #include <osmocom/core/logging.h>
 #include <osmocom/core/rate_ctr.h>
 #include <osmocom/core/stat_item.h>
-#include <osmocom/core/timer.h>
+#include <osmocom/core/select.h>
 #include <osmocom/core/counter.h>
 #include <osmocom/core/msgb.h>
 
@@ -102,7 +102,7 @@ static struct osmo_stats_config s_stats_config = {
 };
 struct osmo_stats_config *osmo_stats_config = &s_stats_config;
 
-static struct osmo_timer_list osmo_stats_timer;
+static struct osmo_fd osmo_stats_timer = {.fd=-1};
 
 static int osmo_stats_reporter_log_send_counter(struct osmo_stats_reporter *srep,
 	const struct rate_ctr_group *ctrg,
@@ -140,23 +140,48 @@ static int update_srep_config(struct osmo_stats_reporter *srep)
 	return rc;
 }
 
-static void osmo_stats_timer_cb(void *data)
+static int osmo_stats_timer_cb(struct osmo_fd *ofd, unsigned int what)
 {
-	int interval = osmo_stats_config->interval;
+	uint64_t expire_count;
+	int rc;
+
+	/* check that the timer has actually expired */
+	if (!(what & BSC_FD_READ))
+		return 0;
+
+	/* read from timerfd: number of expirations of periodic timer */
+	rc = read(ofd->fd, (void *) &expire_count, sizeof(expire_count));
+	if (rc < 0 && errno == EAGAIN)
+		return 0;
+	OSMO_ASSERT(rc == sizeof(expire_count));
 
 	if (!llist_empty(&osmo_stats_reporter_list))
 		osmo_stats_report();
 
-	osmo_timer_schedule(&osmo_stats_timer, interval, 0);
+	return 0;
 }
 
 static int start_timer()
 {
+	int rc;
+	int interval = osmo_stats_config->interval;
+
 	if (!is_initialised)
 		return -ESRCH;
 
-	osmo_timer_setup(&osmo_stats_timer, osmo_stats_timer_cb, NULL);
-	osmo_timer_schedule(&osmo_stats_timer, 0, 1);
+	struct timespec ts_first = {.tv_sec=0, .tv_nsec=1000};
+	struct timespec ts_interval = {.tv_sec=interval, .tv_nsec=0};
+
+	rc = osmo_timerfd_setup(&osmo_stats_timer, osmo_stats_timer_cb, NULL);
+	if (rc < 0)
+		LOGP(DLSTATS, LOGL_ERROR, "Failed to setup the timer with error code %d (fd=%d)\n",
+		     rc, osmo_stats_timer.fd);
+	rc = osmo_timerfd_schedule(&osmo_stats_timer, &ts_first, &ts_interval);
+	if (rc < 0)
+		LOGP(DLSTATS, LOGL_ERROR, "Failed to schedule the timer with error code %d (fd=%d, interval %d sec)\n",
+		     rc, osmo_stats_timer.fd, interval);
+
+	LOGP(DLSTATS, LOGL_INFO, "Stats timer started with interval %d sec\n", interval);
 
 	return 0;
 }
