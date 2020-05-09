@@ -227,12 +227,12 @@ fi
 AC_ARG_ENABLE(bsc_fd_check,
 	[AS_HELP_STRING(
 		[--enable-bsc-fd-check],
-		[Instrument bsc_register_fd to check that the fd is registered]
+		[Instrument osmo_fd_register to check that the fd is registered]
 	)],
 	[fd_check=$enableval], [fd_check="no"])
 if test x"$fd_check" = x"no"
 then
-	AC_DEFINE([BSC_FD_CHECK],[1],[Instrument the bsc_register_fd])
+	AC_DEFINE([OSMO_FD_CHECK],[1],[Instrument the osmo_fd_register])
 fi
 
 AC_ARG_ENABLE(msgfile,

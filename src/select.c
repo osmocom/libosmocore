@@ -121,7 +121,7 @@ int osmo_fd_register(struct osmo_fd *fd)
 	if (fd->fd > maxfd)
 		maxfd = fd->fd;
 
-#ifdef BSC_FD_CHECK
+#ifdef OSMO_FD_CHECK
 	if (osmo_fd_is_registered(fd)) {
 		fprintf(stderr, "Adding a osmo_fd that is already in the list.\n");
 		return 0;
