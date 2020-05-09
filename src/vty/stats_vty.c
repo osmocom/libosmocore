@@ -252,7 +252,7 @@ DEFUN(cfg_stats_reporter_flush_period, cfg_stats_reporter_flush_period_cmd,
 	"0 to disable regular flush (default), 1 to flush every time, 2 to flush every 2nd time, etc\n")
 {
 	int rc;
-	int period = atoi(argv[0]);
+	unsigned int period = atoi(argv[0]);
 	struct osmo_stats_reporter *srep = osmo_stats_vty2srep(vty);
 	OSMO_ASSERT(srep);
 
