@@ -14,7 +14,7 @@ communications.
 There is no clear scope of it. We simply move all shared code between
 the various Osmocom projects in this library to avoid code duplication.
 
-The libosmcoore.git repository build multiple libraries:
+The libosmocore.git repository build multiple libraries:
 
 * **libosmocore** contains some general-purpose functions like select-loop
   abstraction, message buffers, timers, linked lists
