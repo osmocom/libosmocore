@@ -28,7 +28,6 @@ The libosmocore.git repository build multiple libraries:
 * **libosmocodec** contains an implementation of GSM voice codecs
 * **libosmocoding** contains an implementation of GSM channel coding
 * **libosmosim** contains infrastructure to interface SIM/UICC/USIM cards
-* **libosmotrau** contains encoding/decoding functions for A-bis TRAU frames
 
 
 Homepage
