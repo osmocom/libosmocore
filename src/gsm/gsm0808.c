@@ -447,8 +447,8 @@ struct msgb *gsm0808_create_sapi_reject(uint8_t link_id)
 		return NULL;
 
 	msgb_v_put(msg, BSS_MAP_MSG_SAPI_N_REJECT);
-	msgb_v_put(msg, link_id);
-	msgb_v_put(msg, GSM0808_CAUSE_BSS_NOT_EQUIPPED);
+	msgb_tv_put(msg, GSM0808_IE_DLCI, link_id);
+	gsm0808_enc_cause(msg, GSM0808_CAUSE_BSS_NOT_EQUIPPED);
 
 	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
 

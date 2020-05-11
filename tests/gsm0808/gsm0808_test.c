@@ -370,7 +370,7 @@ static void test_create_cm_u()
 
 static void test_create_sapi_reject()
 {
-	static const uint8_t res[] = { 0x00, 0x03, 0x25, 0x03, 0x25 };
+	static const uint8_t res[] = { 0x00, 0x06, 0x25, 0x18, 0x03, 0x04, 0x01, 0x25 };
 	struct msgb *msg;
 
 	printf("Testing creating SAPI Reject\n");
