@@ -23,6 +23,7 @@ check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
 		 coding/coding_test conv/conv_gsm0503_test		\
 		 abis/abis_test endian/endian_test sercomm/sercomm_test	\
 		 prbs/prbs_test gsm23003/gsm23003_test 			\
+		 gsm23236/gsm23236_test                                 \
 		 codec/codec_ecu_fr_test timer/clk_override_test	\
 		 oap/oap_client_test gsm29205/gsm29205_test		\
 		 logging/logging_vty_test				\
@@ -246,6 +247,9 @@ prbs_prbs_test_SOURCES = prbs/prbs_test.c
 gsm23003_gsm23003_test_SOURCES = gsm23003/gsm23003_test.c
 gsm23003_gsm23003_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 
+gsm23236_gsm23236_test_SOURCES = gsm23236/gsm23236_test.c
+gsm23236_gsm23236_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
+
 tdef_tdef_test_SOURCES = tdef/tdef_test.c
 tdef_tdef_test_LDADD = $(LDADD)
 
@@ -336,6 +340,7 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
 	     conv/conv_gsm0503_test.ok endian/endian_test.ok 		\
 	     sercomm/sercomm_test.ok prbs/prbs_test.ok			\
 	     gsm29205/gsm29205_test.ok gsm23003/gsm23003_test.ok        \
+	     gsm23236/gsm23236_test.ok                                  \
 	     timer/clk_override_test.ok					\
 	     oap/oap_client_test.ok oap/oap_client_test.err		\
 	     vty/vty_transcript_test.vty				\

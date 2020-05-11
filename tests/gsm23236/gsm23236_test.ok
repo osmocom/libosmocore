@@ -1,0 +1,514 @@
+
+osmo_tmsi_nri_v_get(0x00000000, 10) -> nri_v=0x0 rc=0
+........|NRI->..................
+00000000000000000000000000000000 tmsi  nri_bitlen=10
+        0000000000 = 0x0 ok
+osmo_tmsi_nri_v_set(0x00000000, 0x0, 10) -> tmsi=0x00000000 rc=0
+        0000000000
+00000000000000000000000000000000 ok
+
+osmo_tmsi_nri_v_get(0x00000000, 10) -> nri_v=0x0 rc=0
+........|NRI->..................
+00000000000000000000000000000000 tmsi  nri_bitlen=10
+        0000000000 = 0x0 ok
+osmo_tmsi_nri_v_set(0x00000000, 0x7fff, 10) -> tmsi=0x00ffc000 rc=0
+        1111111111
+00000000111111111100000000000000 ok
+
+osmo_tmsi_nri_v_get(0xffffffff, 10) -> nri_v=0x3ff rc=0
+........|NRI->..................
+11111111111111111111111111111111 tmsi  nri_bitlen=10
+        1111111111 = 0x3ff ok
+osmo_tmsi_nri_v_set(0xffffffff, 0x0, 10) -> tmsi=0xff003fff rc=0
+        0000000000
+11111111000000000011111111111111 ok
+
+osmo_tmsi_nri_v_get(0xffffffff, 10) -> nri_v=0x3ff rc=0
+........|NRI->..................
+11111111111111111111111111111111 tmsi  nri_bitlen=10
+        1111111111 = 0x3ff ok
+osmo_tmsi_nri_v_set(0xffffffff, 0x7fff, 10) -> tmsi=0xffffffff rc=0
+        1111111111
+11111111111111111111111111111111 ok
+
+osmo_tmsi_nri_v_get(0x00000000, 5) -> nri_v=0x0 rc=0
+........|NRI->..................
+00000000000000000000000000000000 tmsi  nri_bitlen=5
+        00000 = 0x0 ok
+osmo_tmsi_nri_v_set(0x00000000, 0x0, 5) -> tmsi=0x00000000 rc=0
+        00000
+00000000000000000000000000000000 ok
+
+osmo_tmsi_nri_v_get(0x00000000, 5) -> nri_v=0x0 rc=0
+........|NRI->..................
+00000000000000000000000000000000 tmsi  nri_bitlen=5
+        00000 = 0x0 ok
+osmo_tmsi_nri_v_set(0x00000000, 0x7fff, 5) -> tmsi=0x00f80000 rc=0
+        11111
+00000000111110000000000000000000 ok
+
+osmo_tmsi_nri_v_get(0xffffffff, 5) -> nri_v=0x1f rc=0
+........|NRI->..................
+11111111111111111111111111111111 tmsi  nri_bitlen=5
+        11111 = 0x1f ok
+osmo_tmsi_nri_v_set(0xffffffff, 0x0, 5) -> tmsi=0xff07ffff rc=0
+        00000
+11111111000001111111111111111111 ok
+
+osmo_tmsi_nri_v_get(0xffffffff, 5) -> nri_v=0x1f rc=0
+........|NRI->..................
+11111111111111111111111111111111 tmsi  nri_bitlen=5
+        11111 = 0x1f ok
+osmo_tmsi_nri_v_set(0xffffffff, 0x7fff, 5) -> tmsi=0xffffffff rc=0
+        11111
+11111111111111111111111111111111 ok
+
+osmo_tmsi_nri_v_get(0x01234567, 8) -> nri_v=0x23 rc=0
+........|NRI->..................
+00000001001000110100010101100111 tmsi  nri_bitlen=8
+        00100011 = 0x23 ok
+osmo_tmsi_nri_v_set(0x01234567, 0x42, 8) -> tmsi=0x01424567 rc=0
+        01000010
+00000001010000100100010101100111 ok
+
+osmo_tmsi_nri_v_get(0x01234567, 15) -> nri_v=0x11a2 rc=0
+........|NRI->..................
+00000001001000110100010101100111 tmsi  nri_bitlen=15
+        001000110100010 = 0x11a2 ok
+osmo_tmsi_nri_v_set(0x01234567, 0x7fff, 15) -> tmsi=0x01ffff67 rc=0
+        111111111111111
+00000001111111111111111101100111 ok
+
+osmo_tmsi_nri_v_get(0x01234567, 16) -> nri_v=0xffffffff rc=-1
+ ok
+osmo_tmsi_nri_v_set(0x01234567, 0x7fff, 16) -> tmsi=0x01234567 rc=-1
+ ok
+
+osmo_tmsi_nri_v_get(0x01234567, 0) -> nri_v=0xffffffff rc=-1
+ ok
+osmo_tmsi_nri_v_set(0x01234567, 0x7fff, 0) -> tmsi=0x01234567 rc=-1
+ ok
+
+test_nri_validate()
+osmo_nri_v_validate(-32768, 10) = -1 ok
+osmo_nri_v_validate(-23, 10) = -1 ok
+osmo_nri_v_validate(-1, 10) = -1 ok
+osmo_nri_v_validate(0, 10) = 0 ok
+osmo_nri_v_validate(1023, 10) = 0 ok
+osmo_nri_v_validate(1024, 10) = 1 ok
+osmo_nri_v_validate(32767, 10) = 1 ok
+osmo_nri_v_validate(-32768, 5) = -1 ok
+osmo_nri_v_validate(-23, 5) = -1 ok
+osmo_nri_v_validate(-1, 5) = -1 ok
+osmo_nri_v_validate(0, 5) = 0 ok
+osmo_nri_v_validate(31, 5) = 0 ok
+osmo_nri_v_validate(32, 5) = 1 ok
+osmo_nri_v_validate(32767, 5) = 1 ok
+osmo_nri_v_validate(-32768, 1) = -1 ok
+osmo_nri_v_validate(-23, 1) = -1 ok
+osmo_nri_v_validate(-1, 1) = -1 ok
+osmo_nri_v_validate(0, 1) = 0 ok
+osmo_nri_v_validate(1, 1) = 0 ok
+osmo_nri_v_validate(2, 1) = 1 ok
+osmo_nri_v_validate(32767, 1) = 1 ok
+osmo_nri_v_validate(-32768, 0) = -1 ok
+osmo_nri_v_validate(-23, 0) = -1 ok
+osmo_nri_v_validate(-1, 0) = -1 ok
+osmo_nri_v_validate(0, 0) = 1 ok
+osmo_nri_v_validate(1, 0) = 1 ok
+osmo_nri_v_validate(32767, 0) = 1 ok
+
+test_nri_range_validate()
+osmo_nri_range_validate({-32768,-32768}, 10) = -1 ok
+osmo_nri_range_validate({-23,-23}, 10) = -1 ok
+osmo_nri_range_validate({-1,-1}, 10) = -1 ok
+osmo_nri_range_validate({0,0}, 10) = 0 ok
+osmo_nri_range_validate({1023,1023}, 10) = 0 ok
+osmo_nri_range_validate({1024,1024}, 10) = 1 ok
+osmo_nri_range_validate({32767,32767}, 10) = 1 ok
+osmo_nri_range_validate({-32768,-32768}, 5) = -1 ok
+osmo_nri_range_validate({-23,-23}, 5) = -1 ok
+osmo_nri_range_validate({-1,-1}, 5) = -1 ok
+osmo_nri_range_validate({0,0}, 5) = 0 ok
+osmo_nri_range_validate({31,31}, 5) = 0 ok
+osmo_nri_range_validate({32,32}, 5) = 1 ok
+osmo_nri_range_validate({32767,32767}, 5) = 1 ok
+osmo_nri_range_validate({-32768,-32768}, 1) = -1 ok
+osmo_nri_range_validate({-23,-23}, 1) = -1 ok
+osmo_nri_range_validate({-1,-1}, 1) = -1 ok
+osmo_nri_range_validate({0,0}, 1) = 0 ok
+osmo_nri_range_validate({1,1}, 1) = 0 ok
+osmo_nri_range_validate({2,2}, 1) = 1 ok
+osmo_nri_range_validate({32767,32767}, 1) = 1 ok
+osmo_nri_range_validate({-32768,-32768}, 0) = -1 ok
+osmo_nri_range_validate({-23,-23}, 0) = -1 ok
+osmo_nri_range_validate({-1,-1}, 0) = -1 ok
+osmo_nri_range_validate({0,0}, 0) = 1 ok
+osmo_nri_range_validate({1,1}, 0) = 1 ok
+osmo_nri_range_validate({32767,32767}, 0) = 1 ok
+osmo_nri_range_validate({0,-32768}, 10) = -2 ok
+osmo_nri_range_validate({0,-23}, 10) = -2 ok
+osmo_nri_range_validate({0,-1}, 10) = -2 ok
+osmo_nri_range_validate({0,0}, 10) = 0 ok
+osmo_nri_range_validate({0,1023}, 10) = 0 ok
+osmo_nri_range_validate({0,1024}, 10) = 2 ok
+osmo_nri_range_validate({0,32767}, 10) = 2 ok
+osmo_nri_range_validate({0,-32768}, 5) = -2 ok
+osmo_nri_range_validate({0,-23}, 5) = -2 ok
+osmo_nri_range_validate({0,-1}, 5) = -2 ok
+osmo_nri_range_validate({0,0}, 5) = 0 ok
+osmo_nri_range_validate({0,31}, 5) = 0 ok
+osmo_nri_range_validate({0,32}, 5) = 2 ok
+osmo_nri_range_validate({0,32767}, 5) = 2 ok
+osmo_nri_range_validate({0,-32768}, 1) = -2 ok
+osmo_nri_range_validate({0,-23}, 1) = -2 ok
+osmo_nri_range_validate({0,-1}, 1) = -2 ok
+osmo_nri_range_validate({0,0}, 1) = 0 ok
+osmo_nri_range_validate({0,1}, 1) = 0 ok
+osmo_nri_range_validate({0,2}, 1) = 2 ok
+osmo_nri_range_validate({0,32767}, 1) = 2 ok
+osmo_nri_range_validate({0,-32768}, 0) = 1 ok
+osmo_nri_range_validate({0,-23}, 0) = 1 ok
+osmo_nri_range_validate({0,-1}, 0) = 1 ok
+osmo_nri_range_validate({0,0}, 0) = 1 ok
+osmo_nri_range_validate({0,1}, 0) = 1 ok
+osmo_nri_range_validate({0,32767}, 0) = 1 ok
+osmo_nri_range_validate({0,0}, 10) = 0 ok
+osmo_nri_range_validate({1,0}, 10) = -3 ok
+osmo_nri_range_validate({1023,1023}, 10) = 0 ok
+osmo_nri_range_validate({1023,1022}, 10) = -3 ok
+osmo_nri_range_validate({1023,0}, 10) = -3 ok
+osmo_nri_range_validate({0,0}, 5) = 0 ok
+osmo_nri_range_validate({1,0}, 5) = -3 ok
+osmo_nri_range_validate({31,31}, 5) = 0 ok
+osmo_nri_range_validate({31,30}, 5) = -3 ok
+osmo_nri_range_validate({31,0}, 5) = -3 ok
+osmo_nri_range_validate({0,0}, 1) = 0 ok
+osmo_nri_range_validate({1,1}, 1) = 0 ok
+osmo_nri_range_validate({1,0}, 1) = -3 ok
+
+test_nri_list()
+nri_ranges = {
+};
+osmo_nri_v_matches_ranges(-32768) -> false
+osmo_nri_v_matches_ranges(-1) -> false
+osmo_nri_v_matches_ranges(0) -> false
+osmo_nri_v_matches_ranges(32767) -> false
+osmo_nri_v_matches_ranges(100) -> false
+osmo_nri_range_overlaps_ranges(-32768, -1) -> false
+osmo_nri_range_overlaps_ranges(-100, 100) -> false
+osmo_nri_range_overlaps_ranges(10, 20) -> false
+osmo_nri_ranges_add(100, 200) -> 0
+nri_ranges = {
+  { 100, 200 },
+};
+osmo_nri_v_matches_ranges(-32768) -> false
+osmo_nri_v_matches_ranges(-1) -> false
+osmo_nri_v_matches_ranges(0) -> false
+osmo_nri_v_matches_ranges(32767) -> false
+osmo_nri_v_matches_ranges(99) -> false
+osmo_nri_v_matches_ranges(100) -> true
+osmo_nri_v_matches_ranges(101) -> true
+osmo_nri_v_matches_ranges(199) -> true
+osmo_nri_v_matches_ranges(200) -> true
+osmo_nri_v_matches_ranges(201) -> false
+osmo_nri_range_overlaps_ranges(-32768, -1) -> false
+osmo_nri_range_overlaps_ranges(-100, 100) -> true
+osmo_nri_range_overlaps_ranges(10, 20) -> false
+osmo_nri_range_overlaps_ranges(10, 99) -> false
+osmo_nri_range_overlaps_ranges(10, 100) -> true
+osmo_nri_range_overlaps_ranges(10, 150) -> true
+osmo_nri_range_overlaps_ranges(99, 99) -> false
+osmo_nri_range_overlaps_ranges(100, 100) -> true
+osmo_nri_range_overlaps_ranges(150, 300) -> true
+osmo_nri_range_overlaps_ranges(200, 300) -> true
+osmo_nri_range_overlaps_ranges(201, 300) -> false
+
+del from start:
+osmo_nri_ranges_del(0, 110) -> 0
+nri_ranges = {
+  { 111, 200 },
+};
+osmo_nri_ranges_del(111, 111) -> 0
+nri_ranges = {
+  { 112, 200 },
+};
+osmo_nri_ranges_del(112, 199) -> 0
+nri_ranges = {
+  { 200, 200 },
+};
+osmo_nri_v_matches_ranges(-32768) -> false
+osmo_nri_v_matches_ranges(-1) -> false
+osmo_nri_v_matches_ranges(0) -> false
+osmo_nri_v_matches_ranges(32767) -> false
+osmo_nri_v_matches_ranges(199) -> false
+osmo_nri_v_matches_ranges(200) -> true
+osmo_nri_v_matches_ranges(201) -> false
+osmo_nri_range_overlaps_ranges(-32768, -1) -> false
+osmo_nri_range_overlaps_ranges(-1000, 1000) -> true
+osmo_nri_range_overlaps_ranges(0, 199) -> false
+osmo_nri_range_overlaps_ranges(0, 200) -> true
+osmo_nri_range_overlaps_ranges(0, 201) -> true
+osmo_nri_range_overlaps_ranges(0, 1000) -> true
+osmo_nri_range_overlaps_ranges(199, 199) -> false
+osmo_nri_range_overlaps_ranges(200, 200) -> true
+osmo_nri_range_overlaps_ranges(201, 201) -> false
+
+del from end:
+osmo_nri_ranges_add(100, 200) -> 0
+nri_ranges = {
+  { 100, 200 },
+};
+osmo_nri_ranges_del(190, 32767) -> 0
+nri_ranges = {
+  { 100, 189 },
+};
+osmo_nri_ranges_del(189, 189) -> 0
+nri_ranges = {
+  { 100, 188 },
+};
+osmo_nri_ranges_del(101, 188) -> 0
+nri_ranges = {
+  { 100, 100 },
+};
+osmo_nri_v_matches_ranges(-32768) -> false
+osmo_nri_v_matches_ranges(-1) -> false
+osmo_nri_v_matches_ranges(0) -> false
+osmo_nri_v_matches_ranges(32767) -> false
+osmo_nri_v_matches_ranges(99) -> false
+osmo_nri_v_matches_ranges(100) -> true
+osmo_nri_v_matches_ranges(101) -> false
+
+del from middle:
+osmo_nri_ranges_add(100, 200) -> 0
+nri_ranges = {
+  { 100, 200 },
+};
+osmo_nri_ranges_del(150, 160) -> 0
+nri_ranges = {
+  { 100, 149 },
+  { 161, 200 },
+};
+osmo_nri_ranges_del(110, 120) -> 0
+nri_ranges = {
+  { 100, 109 },
+  { 121, 149 },
+  { 161, 200 },
+};
+osmo_nri_ranges_del(130, 130) -> 0
+nri_ranges = {
+  { 100, 109 },
+  { 121, 129 },
+  { 131, 149 },
+  { 161, 200 },
+};
+osmo_nri_ranges_del(180, 190) -> 0
+nri_ranges = {
+  { 100, 109 },
+  { 121, 129 },
+  { 131, 149 },
+  { 161, 179 },
+  { 191, 200 },
+};
+osmo_nri_v_matches_ranges(-32768) -> false
+osmo_nri_v_matches_ranges(-1) -> false
+osmo_nri_v_matches_ranges(0) -> false
+osmo_nri_v_matches_ranges(32767) -> false
+osmo_nri_v_matches_ranges(99) -> false
+osmo_nri_v_matches_ranges(100) -> true
+osmo_nri_v_matches_ranges(109) -> true
+osmo_nri_v_matches_ranges(110) -> false
+osmo_nri_v_matches_ranges(120) -> false
+osmo_nri_v_matches_ranges(121) -> true
+osmo_nri_v_matches_ranges(129) -> true
+osmo_nri_v_matches_ranges(130) -> false
+osmo_nri_v_matches_ranges(131) -> true
+osmo_nri_v_matches_ranges(148) -> true
+osmo_nri_v_matches_ranges(149) -> true
+osmo_nri_v_matches_ranges(150) -> false
+osmo_nri_v_matches_ranges(160) -> false
+osmo_nri_v_matches_ranges(161) -> true
+osmo_nri_v_matches_ranges(170) -> true
+osmo_nri_v_matches_ranges(179) -> true
+osmo_nri_v_matches_ranges(180) -> false
+osmo_nri_v_matches_ranges(185) -> false
+osmo_nri_v_matches_ranges(190) -> false
+osmo_nri_v_matches_ranges(191) -> true
+osmo_nri_v_matches_ranges(195) -> true
+osmo_nri_v_matches_ranges(200) -> true
+osmo_nri_v_matches_ranges(201) -> false
+osmo_nri_v_matches_ranges(1000) -> false
+osmo_nri_range_overlaps_ranges(110, 120) -> false
+osmo_nri_range_overlaps_ranges(110, 130) -> true
+osmo_nri_range_overlaps_ranges(100, 200) -> true
+
+del across whole chunks:
+osmo_nri_ranges_del(115, 185) -> 0
+nri_ranges = {
+  { 100, 109 },
+  { 191, 200 },
+};
+osmo_nri_ranges_del(105, 195) -> 0
+nri_ranges = {
+  { 100, 104 },
+  { 196, 200 },
+};
+osmo_nri_ranges_del(0, 1000) -> 0
+nri_ranges = {
+};
+
+add to join chunks:
+osmo_nri_ranges_add(0, 100) -> 0
+nri_ranges = {
+  { 0, 100 },
+};
+osmo_nri_ranges_del(11, 19) -> 0
+nri_ranges = {
+  { 0, 10 },
+  { 20, 100 },
+};
+osmo_nri_ranges_del(23, 23) -> 0
+nri_ranges = {
+  { 0, 10 },
+  { 20, 22 },
+  { 24, 100 },
+};
+osmo_nri_ranges_del(30, 41) -> 0
+nri_ranges = {
+  { 0, 10 },
+  { 20, 22 },
+  { 24, 29 },
+  { 42, 100 },
+};
+osmo_nri_ranges_add(23, 23) -> 0
+nri_ranges = {
+  { 0, 10 },
+  { 20, 29 },
+  { 42, 100 },
+};
+osmo_nri_ranges_add(11, 41) -> 0
+nri_ranges = {
+  { 0, 100 },
+};
+osmo_nri_v_matches_ranges(0) -> true
+osmo_nri_v_matches_ranges(10) -> true
+osmo_nri_v_matches_ranges(11) -> true
+osmo_nri_v_matches_ranges(24) -> true
+osmo_nri_v_matches_ranges(41) -> true
+osmo_nri_v_matches_ranges(42) -> true
+osmo_nri_v_matches_ranges(100) -> true
+osmo_nri_v_matches_ranges(101) -> false
+
+border cases:
+osmo_nri_ranges_add(0, 0) -> 0
+nri_ranges = {
+  { 0, 100 },
+};
+osmo_nri_ranges_add(32767, 32767) -> 0
+nri_ranges = {
+  { 0, 100 },
+  { 32767, 32767 },
+};
+osmo_nri_ranges_add(1, 32766) -> 0
+nri_ranges = {
+  { 0, 32767 },
+};
+osmo_nri_v_matches_ranges(-32768) -> false
+osmo_nri_v_matches_ranges(-1) -> false
+osmo_nri_v_matches_ranges(0) -> true
+osmo_nri_v_matches_ranges(32767) -> true
+osmo_nri_ranges_del(0, 0) -> 0
+nri_ranges = {
+  { 1, 32767 },
+};
+osmo_nri_ranges_del(32767, 32767) -> 0
+nri_ranges = {
+  { 1, 32766 },
+};
+osmo_nri_ranges_del(1, 32766) -> 0
+nri_ranges = {
+};
+
+range errors:
+osmo_nri_ranges_add(-1, -1) -> -1
+nri_ranges = {
+};
+osmo_nri_ranges_add(-20, -10) -> -1
+nri_ranges = {
+};
+osmo_nri_ranges_add(100, 1) -> -1
+nri_ranges = {
+};
+osmo_nri_ranges_add(0, 32767) -> 0
+nri_ranges = {
+  { 0, 32767 },
+};
+osmo_nri_ranges_del(-1, -1) -> -1
+nri_ranges = {
+  { 0, 32767 },
+};
+osmo_nri_ranges_del(-20, -10) -> -1
+nri_ranges = {
+  { 0, 32767 },
+};
+osmo_nri_ranges_del(100, 1) -> -1
+nri_ranges = {
+  { 0, 32767 },
+};
+
+test_nri_limit_by_ranges()
+osmo_nri_ranges_add(10, 10) -> 0
+nri_ranges = {
+  { 10, 10 },
+};
+osmo_nri_ranges_add(20, 21) -> 0
+nri_ranges = {
+  { 10, 10 },
+  { 20, 21 },
+};
+osmo_nri_ranges_add(30, 32) -> 0
+nri_ranges = {
+  { 10, 10 },
+  { 20, 21 },
+  { 30, 32 },
+};
+osmo_nri_v_limit_by_ranges(0) -> nri_v=10 rc=0 ok
+osmo_nri_v_limit_by_ranges(1) -> nri_v=20 rc=0 ok
+osmo_nri_v_limit_by_ranges(2) -> nri_v=21 rc=0 ok
+osmo_nri_v_limit_by_ranges(3) -> nri_v=30 rc=0 ok
+osmo_nri_v_limit_by_ranges(4) -> nri_v=31 rc=0 ok
+osmo_nri_v_limit_by_ranges(5) -> nri_v=32 rc=0 ok
+osmo_nri_v_limit_by_ranges(6) -> nri_v=10 rc=0 ok
+osmo_nri_v_limit_by_ranges(7) -> nri_v=20 rc=0 ok
+osmo_nri_v_limit_by_ranges(8) -> nri_v=21 rc=0 ok
+osmo_nri_v_limit_by_ranges(9) -> nri_v=30 rc=0 ok
+osmo_nri_v_limit_by_ranges(10) -> nri_v=31 rc=0 ok
+osmo_nri_v_limit_by_ranges(11) -> nri_v=32 rc=0 ok
+osmo_nri_v_limit_by_ranges(12) -> nri_v=10 rc=0 ok
+osmo_nri_v_limit_by_ranges(13) -> nri_v=20 rc=0 ok
+osmo_nri_v_limit_by_ranges(14) -> nri_v=21 rc=0 ok
+osmo_nri_v_limit_by_ranges(15) -> nri_v=30 rc=0 ok
+osmo_nri_v_limit_by_ranges(16) -> nri_v=31 rc=0 ok
+osmo_nri_v_limit_by_ranges(17) -> nri_v=32 rc=0 ok
+osmo_nri_v_limit_by_ranges(18) -> nri_v=10 rc=0 ok
+osmo_tmsi_nri_v_limit_by_ranges(0x00000000, 8) -> tmsi=0x000a0000 nri_v=10 rc=0 ok
+osmo_tmsi_nri_v_limit_by_ranges(0x00010000, 8) -> tmsi=0x00140000 nri_v=20 rc=0 ok
+osmo_tmsi_nri_v_limit_by_ranges(0x00020000, 8) -> tmsi=0x00150000 nri_v=21 rc=0 ok
+osmo_tmsi_nri_v_limit_by_ranges(0x00030000, 8) -> tmsi=0x001e0000 nri_v=30 rc=0 ok
+osmo_tmsi_nri_v_limit_by_ranges(0x00040000, 8) -> tmsi=0x001f0000 nri_v=31 rc=0 ok
+osmo_tmsi_nri_v_limit_by_ranges(0x00050000, 8) -> tmsi=0x00200000 nri_v=32 rc=0 ok
+osmo_tmsi_nri_v_limit_by_ranges(0x00060000, 8) -> tmsi=0x000a0000 nri_v=10 rc=0 ok
+osmo_tmsi_nri_v_limit_by_ranges(0x00070000, 8) -> tmsi=0x00140000 nri_v=20 rc=0 ok
+osmo_tmsi_nri_v_limit_by_ranges(0x00080000, 8) -> tmsi=0x00150000 nri_v=21 rc=0 ok
+osmo_tmsi_nri_v_limit_by_ranges(0x00090000, 8) -> tmsi=0x001e0000 nri_v=30 rc=0 ok
+osmo_tmsi_nri_v_limit_by_ranges(0x000a0000, 8) -> tmsi=0x001f0000 nri_v=31 rc=0 ok
+osmo_tmsi_nri_v_limit_by_ranges(0x000b0000, 8) -> tmsi=0x00200000 nri_v=32 rc=0 ok
+osmo_tmsi_nri_v_limit_by_ranges(0x000c0000, 8) -> tmsi=0x000a0000 nri_v=10 rc=0 ok
+osmo_tmsi_nri_v_limit_by_ranges(0x000d0000, 8) -> tmsi=0x00140000 nri_v=20 rc=0 ok
+osmo_tmsi_nri_v_limit_by_ranges(0x000e0000, 8) -> tmsi=0x00150000 nri_v=21 rc=0 ok
+osmo_tmsi_nri_v_limit_by_ranges(0x000f0000, 8) -> tmsi=0x001e0000 nri_v=30 rc=0 ok
+osmo_tmsi_nri_v_limit_by_ranges(0x00100000, 8) -> tmsi=0x001f0000 nri_v=31 rc=0 ok
+osmo_tmsi_nri_v_limit_by_ranges(0x00110000, 8) -> tmsi=0x00200000 nri_v=32 rc=0 ok
+osmo_tmsi_nri_v_limit_by_ranges(0x00120000, 8) -> tmsi=0x000a0000 nri_v=10 rc=0 ok
+
+pass

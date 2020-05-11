@@ -344,6 +344,12 @@ cat $abs_srcdir/gsm23003/gsm23003_test.ok > expout
 AT_CHECK([$abs_top_builddir/tests/gsm23003/gsm23003_test], [0], [expout], [ignore])
 AT_CLEANUP
 
+AT_SETUP([gsm23236])
+AT_KEYWORDS([gsm23236])
+cat $abs_srcdir/gsm23236/gsm23236_test.ok > expout
+AT_CHECK([$abs_top_builddir/tests/gsm23236/gsm23236_test], [0], [expout], [ignore])
+AT_CLEANUP
+
 AT_SETUP([tdef])
 AT_KEYWORDS([tdef])
 cat $abs_srcdir/tdef/tdef_test.ok > expout

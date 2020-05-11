@@ -678,5 +678,22 @@ osmo_i460_subchan_add;
 osmo_i460_subchan_del;
 osmo_i460_ts_init;
 
+osmo_nri_v_validate;
+osmo_nri_v_matches_ranges;
+osmo_nri_v_limit_by_ranges;
+osmo_tmsi_nri_v_get;
+osmo_tmsi_nri_v_set;
+osmo_tmsi_nri_v_limit_by_ranges;
+osmo_nri_range_validate;
+osmo_nri_range_overlaps_ranges;
+osmo_nri_ranges_alloc;
+osmo_nri_ranges_free;
+osmo_nri_ranges_add;
+osmo_nri_ranges_del;
+osmo_nri_ranges_vty_add;
+osmo_nri_ranges_vty_del;
+osmo_nri_ranges_to_str_buf;
+osmo_nri_ranges_to_str_c;
+
 local: *;
 };
