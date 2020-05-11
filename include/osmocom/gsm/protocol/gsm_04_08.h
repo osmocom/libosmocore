@@ -77,7 +77,6 @@ char *osmo_gsm48_classmark_a5_name_c(const void *ctx, const struct osmo_gsm48_cl
 void osmo_gsm48_classmark_update(struct osmo_gsm48_classmark *dst, const struct osmo_gsm48_classmark *src);
 int8_t osmo_gsm48_rfpowercap2powerclass(enum gsm_band band, uint8_t rf_power_cap);
 /* Chapter 10.5.2.1b.3 */
-#if OSMO_IS_LITTLE_ENDIAN == 1
 struct gsm48_range_1024 {
 #if OSMO_IS_LITTLE_ENDIAN
 	uint8_t	w1_hi:2,
@@ -131,64 +130,8 @@ struct gsm48_range_1024 {
 	uint8_t	w15_lo:2, w16:6;
 #endif
 } __attribute__ ((packed));
-#else
-struct gsm48_range_1024 {
-#if OSMO_IS_LITTLE_ENDIAN
-	uint8_t	 form_id:5,
-		f0:1,
-		w1_hi:2;
-	uint8_t	w1_lo;
-	uint8_t	w2_hi;
-	uint8_t	 w2_lo:1,
-		w3_hi:7;
-	uint8_t	 w3_lo:2,
-		w4_hi:6;
-	uint8_t	 w4_lo:2,
-		w5_hi:6;
-	uint8_t	 w5_lo:2,
-		w6_hi:6;
-	uint8_t	 w6_lo:2,
-		w7_hi:6;
-	uint8_t	 w7_lo:2,
-		w8_hi:6;
-	uint8_t	 w8_lo:1,
-		w9:7;
-	uint8_t	 w10:7,
-		w11_hi:1;
-	uint8_t	 w11_lo:6,
-		w12_hi:2;
-	uint8_t	 w12_lo:5,
-		w13_hi:3;
-	uint8_t	 w13_lo:4,
-		w14_hi:4;
-	uint8_t	 w14_lo:3,
-		w15_hi:5;
-	uint8_t	 w15_lo:2,
-		w16:6;
-#elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
-	uint8_t	 w1_hi:2, f0:1, form_id:5;
-	uint8_t	w1_lo;
-	uint8_t	w2_hi;
-	uint8_t	 w3_hi:7, w2_lo:1;
-	uint8_t	 w4_hi:6, w3_lo:2;
-	uint8_t	 w5_hi:6, w4_lo:2;
-	uint8_t	 w6_hi:6, w5_lo:2;
-	uint8_t	 w7_hi:6, w6_lo:2;
-	uint8_t	 w8_hi:6, w7_lo:2;
-	uint8_t	 w9:7, w8_lo:1;
-	uint8_t	 w11_hi:1, w10:7;
-	uint8_t	 w12_hi:2, w11_lo:6;
-	uint8_t	 w13_hi:3, w12_lo:5;
-	uint8_t	 w14_hi:4, w13_lo:4;
-	uint8_t	 w15_hi:5, w14_lo:3;
-	uint8_t	 w16:6, w15_lo:2;
-#endif
-} __attribute__ ((packed));
-#endif
 
 /* Chapter 10.5.2.1b.4 */
-#if OSMO_IS_LITTLE_ENDIAN == 1
 struct gsm48_range_512 {
 #if OSMO_IS_LITTLE_ENDIAN
 	uint8_t	orig_arfcn_hi:1,
@@ -242,64 +185,8 @@ struct gsm48_range_512 {
 	uint8_t	w16_lo:3, w17:5;
 #endif
 } __attribute__ ((packed));
-#else
-struct gsm48_range_512 {
-#if OSMO_IS_LITTLE_ENDIAN
-	uint8_t	 form_id:7,
-		orig_arfcn_hi:1;
-	uint8_t	orig_arfcn_mid;
-	uint8_t	 orig_arfcn_lo:1,
-		w1_hi:7;
-	uint8_t	 w1_lo:2,
-		w2_hi:6;
-	uint8_t	 w2_lo:2,
-		w3_hi:6;
-	uint8_t	 w3_lo:2,
-		w4_hi:6;
-	uint8_t	 w4_lo:1,
-		w5:7;
-	uint8_t	 w6:7,
-		w7_hi:1;
-	uint8_t	 w7_lo:6,
-		w8_hi:2;
-	uint8_t	 w8_lo:4,
-		w9_hi:4;
-	uint8_t	 w9_lo:2,
-		w10:6;
-	uint8_t	 w11:6,
-		w12_hi:2;
-	uint8_t	 w12_lo:4,
-		w13_hi:4;
-	uint8_t	 w13_lo:2,
-		w14:6;
-	uint8_t	 w15:6,
-		w16_hi:2;
-	uint8_t	 w16_lo:3,
-		w17:5;
-#elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
-	uint8_t	 orig_arfcn_hi:1, form_id:7;
-	uint8_t	orig_arfcn_mid;
-	uint8_t	 w1_hi:7, orig_arfcn_lo:1;
-	uint8_t	 w2_hi:6, w1_lo:2;
-	uint8_t	 w3_hi:6, w2_lo:2;
-	uint8_t	 w4_hi:6, w3_lo:2;
-	uint8_t	 w5:7, w4_lo:1;
-	uint8_t	 w7_hi:1, w6:7;
-	uint8_t	 w8_hi:2, w7_lo:6;
-	uint8_t	 w9_hi:4, w8_lo:4;
-	uint8_t	 w10:6, w9_lo:2;
-	uint8_t	 w12_hi:2, w11:6;
-	uint8_t	 w13_hi:4, w12_lo:4;
-	uint8_t	 w14:6, w13_lo:2;
-	uint8_t	 w16_hi:2, w15:6;
-	uint8_t	 w17:5, w16_lo:3;
-#endif
-} __attribute__ ((packed));
-#endif
 
 /* Chapter 10.5.2.1b.5 */
-#if OSMO_IS_LITTLE_ENDIAN == 1
 struct gsm48_range_256 {
 #if OSMO_IS_LITTLE_ENDIAN
 	uint8_t	orig_arfcn_hi:1,
@@ -359,70 +246,8 @@ struct gsm48_range_256 {
 	uint8_t	w20_lo:3, w21:4, spare:1;
 #endif
 } __attribute__ ((packed));
-#else
-struct gsm48_range_256 {
-#if OSMO_IS_LITTLE_ENDIAN
-	uint8_t	 form_id:7,
-		orig_arfcn_hi:1;
-	uint8_t	orig_arfcn_mid;
-	uint8_t	 orig_arfcn_lo:1,
-		w1_hi:7;
-	uint8_t	 w1_lo:1,
-		w2:7;
-	uint8_t	 w3:7,
-		w4_hi:1;
-	uint8_t	 w4_lo:5,
-		w5_hi:3;
-	uint8_t	 w5_lo:3,
-		w6_hi:5;
-	uint8_t	 w6_lo:1,
-		 w7:6,
-		w8_hi:1;
-	uint8_t	 w8_lo:4,
-		w9_hi:4;
-	uint8_t	 w9_lo:1,
-		 w10:5,
-		w11_hi:2;
-	uint8_t	 w11_lo:3,
-		w12:5;
-	uint8_t	 w13:5,
-		w14_hi:3;
-	uint8_t	 w14_lo:2,
-		 w15:5,
-		w16_hi:1;
-	uint8_t	 w16_lo:3,
-		 w17:4,
-		w18_hi:1;
-	uint8_t	 w18_lo:3,
-		 w19:4,
-		w20_hi:1;
-	uint8_t	 w20_lo:3,
-		 w21:4,
-		spare:1;
-#elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
-	uint8_t	 orig_arfcn_hi:1, form_id:7;
-	uint8_t	orig_arfcn_mid;
-	uint8_t	 w1_hi:7, orig_arfcn_lo:1;
-	uint8_t	 w2:7, w1_lo:1;
-	uint8_t	 w4_hi:1, w3:7;
-	uint8_t	 w5_hi:3, w4_lo:5;
-	uint8_t	 w6_hi:5, w5_lo:3;
-	uint8_t	 w8_hi:1, w7:6, w6_lo:1;
-	uint8_t	 w9_hi:4, w8_lo:4;
-	uint8_t	 w11_hi:2, w10:5, w9_lo:1;
-	uint8_t	 w12:5, w11_lo:3;
-	uint8_t	 w14_hi:3, w13:5;
-	uint8_t	 w16_hi:1, w15:5, w14_lo:2;
-	uint8_t	 w18_hi:1, w17:4, w16_lo:3;
-	uint8_t	 w20_hi:1, w19:4, w18_lo:3;
-	uint8_t	 spare:1, w21:4, w20_lo:3;
-#endif
-} __attribute__ ((packed));
-#endif
 
 /* Chapter 10.5.2.1b.6 */
-#if OSMO_IS_LITTLE_ENDIAN == 1
 struct gsm48_range_128 {
 #if OSMO_IS_LITTLE_ENDIAN
 	uint8_t	orig_arfcn_hi:1,
@@ -484,69 +309,6 @@ struct gsm48_range_128 {
 	uint8_t	w26_lo:1, w27:3, w28:3, spare:1;
 #endif
 } __attribute__ ((packed));
-#else
-struct gsm48_range_128 {
-#if OSMO_IS_LITTLE_ENDIAN
-	uint8_t	 form_id:7,
-		orig_arfcn_hi:1;
-	uint8_t	orig_arfcn_mid;
-	uint8_t	 orig_arfcn_lo:1,
-		w1:7;
-	uint8_t	 w2:6,
-		w3_hi:2;
-	uint8_t	 w3_lo:4,
-		w4_hi:4;
-	uint8_t	 w4_lo:1,
-		 w5:5,
-		w6_hi:2;
-	uint8_t	 w6_lo:3,
-		w7:5;
-	uint8_t	 w8:4,
-		w9:4;
-	uint8_t	 w10:4,
-		w11:4;
-	uint8_t	 w12:4,
-		w13:4;
-	uint8_t	 w14:4,
-		w15:4;
-	uint8_t	 w16:3,
-		 w17:3,
-		w18_hi:2;
-	uint8_t	 w18_lo:1,
-		 w19:3,
-		 w20:3,
-		w21_hi:1;
-	uint8_t	 w21_lo:2,
-		 w22:3,
-		w23:3;
-	uint8_t	 w24:3,
-		 w25:3,
-		w26_hi:2;
-	uint8_t	 w26_lo:1,
-		 w27:3,
-		 w28:3,
-		spare:1;
-#elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
-	uint8_t	 orig_arfcn_hi:1, form_id:7;
-	uint8_t	orig_arfcn_mid;
-	uint8_t	 w1:7, orig_arfcn_lo:1;
-	uint8_t	 w3_hi:2, w2:6;
-	uint8_t	 w4_hi:4, w3_lo:4;
-	uint8_t	 w6_hi:2, w5:5, w4_lo:1;
-	uint8_t	 w7:5, w6_lo:3;
-	uint8_t	 w9:4, w8:4;
-	uint8_t	 w11:4, w10:4;
-	uint8_t	 w13:4, w12:4;
-	uint8_t	 w15:4, w14:4;
-	uint8_t	 w18_hi:2, w17:3, w16:3;
-	uint8_t	 w21_hi:1, w20:3, w19:3, w18_lo:1;
-	uint8_t	 w23:3, w22:3, w21_lo:2;
-	uint8_t	 w26_hi:2, w25:3, w24:3;
-	uint8_t	 spare:1, w28:3, w27:3, w26_lo:1;
-#endif
-} __attribute__ ((packed));
-#endif
 
 /* Chapter 10.5.2.1b.7 */
 struct gsm48_var_bit {
