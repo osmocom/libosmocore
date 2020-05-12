@@ -145,7 +145,7 @@ int gsm48_mr_cfg_from_gsm0808_sc_cfg(struct gsm48_multi_rate_conf *cfg, uint16_t
 /*! \returns 3GPP TS 08.08 §3.2.2.5 Class of a given Cause */
 static inline enum gsm0808_cause_class gsm0808_cause_class(enum gsm0808_cause cause)
 {
-	return (cause << 1) >> 4;
+	return (cause >> 4) & 0x7;
 }
 
 /*! \returns true if 3GPP TS 08.08 §3.2.2.5 Class has extended bit set */
