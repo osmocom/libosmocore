@@ -1654,6 +1654,22 @@ const char *gsm0808_cause_name(enum gsm0808_cause cause)
 	return get_value_string(gsm0808_cause_names, cause);
 }
 
+enum gsm0808_cause gsm0808_get_cause(const struct tlv_parsed *tp)
+{
+	const uint8_t *buf = TLVP_VAL_MINLEN(tp, GSM0808_IE_CAUSE, 1);
+
+	if (!buf)
+		return -EBADMSG;
+
+	if (TLVP_LEN(tp, GSM0808_IE_CAUSE) > 1) {
+		if (!gsm0808_cause_ext(buf[0]))
+			return -EINVAL;
+		return buf[1];
+	}
+
+	return buf[0];
+}
+
 const struct value_string gsm0808_lcls_config_names[] = {
 	{ GSM0808_LCLS_CFG_BOTH_WAY, "Connect both-way" },
 	{ GSM0808_LCLS_CFG_BOTH_WAY_AND_BICAST_UL,

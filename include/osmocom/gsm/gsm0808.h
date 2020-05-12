@@ -315,6 +315,10 @@ const char *gsm0808_bssap_name(uint8_t msg_type);
 const char *gsm0808_cause_name(enum gsm0808_cause cause);
 const char *gsm0808_cause_class_name(enum gsm0808_cause_class class);
 
+/*! Parse Cause TLV 3GPP TS 08.08 §3.2.2.5
+ * \returns Cause value */
+enum gsm0808_cause gsm0808_get_cause(const struct tlv_parsed *tp);
+
 extern const struct value_string gsm0808_lcls_config_names[];
 extern const struct value_string gsm0808_lcls_control_names[];
 extern const struct value_string gsm0808_lcls_status_names[];

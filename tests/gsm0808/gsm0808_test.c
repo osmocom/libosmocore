@@ -306,7 +306,7 @@ static inline void parse_cipher_reject(struct msgb *msg, uint8_t exp)
 	if (rc < 0)
 		printf("FIXME: failed (%d) to parse created message %s\n", rc, msgb_hexdump(msg));
 
-	rc = gsm0808_get_cipher_reject_cause(&tp);
+	rc = gsm0808_get_cause(&tp);
 	if (rc < 0)
 		printf("FIXME: failed (%s) to extract Cause from created message %s\n",
 		       strerror(-rc), msgb_hexdump(msg));
