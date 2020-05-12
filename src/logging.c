@@ -1028,6 +1028,9 @@ int log_init(const struct log_info *inf, void *ctx)
 	int i;
 	struct log_info_cat *cat_ptr;
 
+	/* Ensure that log_init is not called multiple times */
+	OSMO_ASSERT(tall_log_ctx == NULL)
+
 	tall_log_ctx = talloc_named_const(ctx, 1, "logging");
 	if (!tall_log_ctx)
 		return -ENOMEM;
