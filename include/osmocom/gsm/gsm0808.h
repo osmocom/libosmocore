@@ -319,6 +319,9 @@ const char *gsm0808_cause_class_name(enum gsm0808_cause_class class);
  * \returns Cause value */
 enum gsm0808_cause gsm0808_get_cause(const struct tlv_parsed *tp);
 
+const char *gsm0808_diagnostics_octet_location_str(uint8_t pointer);
+const char *gsm0808_diagnostics_bit_location_str(uint8_t bit_pointer);
+
 extern const struct value_string gsm0808_lcls_config_names[];
 extern const struct value_string gsm0808_lcls_control_names[];
 extern const struct value_string gsm0808_lcls_status_names[];

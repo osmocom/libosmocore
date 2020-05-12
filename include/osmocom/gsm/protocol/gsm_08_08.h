@@ -663,3 +663,16 @@ enum gsm0808_lcls_status {
 	GSM0808_LCLS_STS_LOCALLY_SWITCHED	= 0x04,
 	GSM0808_LCLS_STS_NA			= 0xFF
 };
+
+/* 3GPP TS 48.008 3.2.2.32 Diagnostics */
+struct gsm0808_diagnostics {
+	uint8_t error_pointer_octet;
+#if OSMO_IS_LITTLE_ENDIAN
+	uint8_t error_pointer_bit_spare:4,
+			error_pointer_bit:4;
+#elif OSMO_IS_BIG_ENDIAN
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+	uint8_t error_pointer_bit:4, error_pointer_bit_spare:4;
+#endif
+	uint8_t msg[0]; /*! received message which provoked the error */
+} __attribute__((packed));
