@@ -158,6 +158,8 @@ gsm0808_bssmap_name;
 gsm0808_cause_name;
 gsm0808_cause_class_name;
 gsm0808_get_cause;
+gsm0808_diagnostics_octet_location_str;
+gsm0808_diagnostics_bit_location_str;
 gsm0808_create_ass;
 gsm0808_create_ass2;
 gsm0808_create_assignment_completed;

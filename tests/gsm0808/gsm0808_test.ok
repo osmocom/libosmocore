@@ -910,4 +910,10 @@ cid unknown 0x1a7:unknown 0x1a7 -> cgi 777-007-7777-7777 -> cid unknown 0x1a7:un
   --> gsm0808_cell_id{LAC-CI} = LAC-CI:7777-7777
   --> gsm0808_cell_id{LAI} = LAI:777-007-7777
   --> gsm0808_cell_id{CGI} = CGI:777-007-7777-7777
+Testing decoding CONFUSION
+  Cause class 5/0x5 (Invalid message)
+  Cause 82/0x52 (INFORMATION ELEMENT OR FIELD MISSING)
+  Diagnostics error octet location 0 (Error location not determined)
+  Diagnostics error bit location 15 (Reserved value)
+  Diagnostics message that provoked the error: 00 03 25 03 25 
 Done
