@@ -2,6 +2,8 @@
  * Paging helper code */
 /*
  * (C) 2009 by Holger Hans Peter Freyther <zecke@selfish.org>
+ * (C) 2010 by Sylvain Munaut <tnt@246tNt.com>
+ *
  * All Rights Reserved
  *
  * SPDX-License-Identifier: GPL-2.0+
@@ -200,4 +202,55 @@ uint32_t gsm0502_fn_remap(uint32_t fn, enum gsm0502_fn_remap_channel channel)
 	fn_map = (fn + GSM_MAX_FN - sub) % GSM_MAX_FN;
 
 	return fn_map;
+}
+
+/* Magic numbers (RNTABLE) for pseudo-random hopping sequence generation. */
+static const uint8_t rn_table[114] = {
+	 48,  98,  63,   1,  36,  95,  78, 102,  94,  73,
+	  0,  64,  25,  81,  76,  59, 124,  23, 104, 100,
+	101,  47, 118,  85,  18,  56,  96,  86,  54,   2,
+	 80,  34, 127,  13,   6,  89,  57, 103,  12,  74,
+	 55, 111,  75,  38, 109,  71, 112,  29,  11,  88,
+	 87,  19,   3,  68, 110,  26,  33,  31,   8,  45,
+	 82,  58,  40, 107,  32,   5, 106,  92,  62,  67,
+	 77, 108, 122,  37,  60,  66, 121,  42,  51, 126,
+	117, 114,   4,  90,  43,  52,  53, 113, 120,  72,
+	 16,  49,   7,  79, 119,  61,  22,  84,   9,  97,
+	 91,  15,  21,  24,  46,  39,  93, 105,  65,  70,
+	125,  99,  17, 123,
+};
+
+/*! Hopping sequence generation as per 3GPP TS 45.002, section 6.2.3. */
+uint16_t gsm0502_hop_seq_gen(const struct gsm_time *t,
+			     uint8_t hsn, uint8_t maio,
+			     size_t n, const uint16_t *ma)
+{
+	unsigned int mai;
+
+	if (hsn == 0) {
+		/* cyclic hopping */
+		mai = (t->fn + maio) % n;
+	} else {
+		/* pseudo random hopping */
+		int m, mp, tp, s, pnm;
+
+		pnm = (n >> 0) | (n >> 1)
+		    | (n >> 2) | (n >> 3)
+		    | (n >> 4) | (n >> 5)
+		    | (n >> 6);
+
+		m = t->t2 + rn_table[(hsn ^ (t->t1 & 63)) + t->t3];
+		mp = m & pnm;
+
+		if (mp < n)
+			s = mp;
+		else {
+			tp = t->t3 & pnm;
+			s = (mp + tp) % n;
+		}
+
+		mai = (s + maio) % n;
+	}
+
+	return ma ? ma[mai] : mai;
 }

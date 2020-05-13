@@ -110,6 +110,7 @@ gsm0480_gen_reject;
 
 gsm0502_calc_paging_group;
 gsm0502_fn_remap;
+gsm0502_hop_seq_gen;
 
 gsm0503_xcch;
 gsm0503_rach;
