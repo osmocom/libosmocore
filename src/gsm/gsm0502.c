@@ -193,7 +193,7 @@ uint32_t gsm0502_fn_remap(uint32_t fn, enum gsm0502_fn_remap_channel channel)
 	}
 
 	if (sub == -1) {
-		LOGP(DLGLOBAL, LOGL_ERROR, "could not remap frame number!, fn=%"PRIu32"\n", fn);
+		LOGP(DLGLOBAL, LOGL_ERROR, "could not remap frame number!, fn=%" PRIu32 "\n", fn);
 		return fn;
 	}
 
