@@ -190,6 +190,42 @@ static void test_sid_fr(void)
 	}
 }
 
+
+
+static void test_amr_s_d(void)
+{
+	ubit_t in[244];
+	ubit_t mid[244];
+	ubit_t out[244];
+	int i, j;
+
+	for (j = AMR_4_75; j <= AMR_12_2; j++) {
+		unsigned int n_bits = gsm690_bitlength[j];
+
+		printf("=> AMR Mode %d (%d bits)\n", j, n_bits);
+		/* set a single bit in the input buffer */
+		for (i = 0; i < n_bits; i++) {
+
+			memset(in, 0, sizeof(in));
+			in[i] = 1;
+
+			/* re-order from s to d */
+			osmo_amr_s_to_d(mid, in, n_bits, j);
+
+			/* and back to d */
+			osmo_amr_d_to_s(out, mid, n_bits, j);
+
+			if (memcmp(in, out, n_bits)) {
+				printf("Error in bit %d of mode %d!\n", i, j);
+				printf("inp s-bits: %s\n", osmo_ubit_dump(in, n_bits));
+				printf("mid d-bits: %s\n", osmo_ubit_dump(mid, n_bits));
+				printf("out s-bits: %s\n", osmo_ubit_dump(out, n_bits));
+				//OSMO_ASSERT(0);
+			}
+		}
+	}
+}
+
 int main(int argc, char **argv)
 {
 	printf("AMR RTP payload decoder test:\n");
@@ -212,6 +248,9 @@ int main(int argc, char **argv)
 
 	printf("FR RTP payload SID test:\n");
 	test_sid_fr();
+
+	printf("AMR s/d bit re-ordering test:\n");
+	test_amr_s_d();
 
 	return 0;
 }

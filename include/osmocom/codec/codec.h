@@ -6,6 +6,7 @@
 #include <stdbool.h>
 
 #include <osmocom/core/utils.h>
+#include <osmocom/core/bits.h>
 
 /* TS 101318 Chapter 5.1: 260 bits + 4bit sig */
 #define GSM_FR_BYTES	33
@@ -50,6 +51,11 @@ enum osmo_amr_quality {
        AMR_BAD = 0,
        AMR_GOOD = 1
 };
+
+extern const uint8_t gsm690_bitlength[AMR_NO_DATA+1];
+
+int osmo_amr_s_to_d(ubit_t *out, const ubit_t *in, uint16_t n_bits, enum osmo_amr_type amr_mode);
+int osmo_amr_d_to_s(ubit_t *out, const ubit_t *in, uint16_t n_bits, enum osmo_amr_type amr_mode);
 
 /*! Check if given AMR Frame Type is a speech frame
  *  \param[in] ft AMR Frame Type

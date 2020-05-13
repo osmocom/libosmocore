@@ -2,6 +2,7 @@
  * GSM 06.90 - GSM AMR Codec. */
 /*
  * (C) 2010 Sylvain Munaut <tnt@246tNt.com>
+ * (C) 2020 Harald Welte <laforge@gnumonks.org>
  *
  * All Rights Reserved
  *
@@ -29,6 +30,7 @@
 #include <stdlib.h>
 
 #include <osmocom/core/utils.h>
+#include <osmocom/core/bits.h>
 #include <osmocom/codec/codec.h>
 /*
  * These table map between the raw encoder parameter output and
@@ -215,6 +217,114 @@ const uint16_t gsm690_4_75_bitorder[95] = {
 	 88,  90,  91,  34,  55,  68,  89,  37,  58,  71,
 	 92,  31,  52,  65,  86,
 };
+
+/*! These constants refer to the length of one "AMR core frame" as per
+ *  TS 26.101 Section 4.2.2 / Table 2. */
+const uint8_t gsm690_bitlength[AMR_NO_DATA+1] = {
+	[AMR_4_75] = 95,
+	[AMR_5_15] = 103,
+	[AMR_5_90] = 118,
+	[AMR_6_70] = 134,
+	[AMR_7_40] = 148,
+	[AMR_7_95] = 159,
+	[AMR_10_2] = 204,
+	[AMR_12_2] = 244,
+	[AMR_SID] = 39,
+};
+
+struct ts26101_reorder_table {
+	/*! Table as per TS 26.101 Annex B to compute d-bits from s-bits */
+	const uint16_t *s_to_d;
+	/*! size of table */
+	uint8_t len;
+};
+
+static const struct ts26101_reorder_table ts26101_reorder_tables[8] = {
+	[AMR_4_75] = {
+		.s_to_d = gsm690_4_75_bitorder,
+		.len = ARRAY_SIZE(gsm690_4_75_bitorder),
+	},
+	[AMR_5_15] = {
+		.s_to_d = gsm690_5_15_bitorder,
+		.len = ARRAY_SIZE(gsm690_5_15_bitorder),
+	},
+	[AMR_5_90] = {
+		.s_to_d = gsm690_5_9_bitorder,
+		.len = ARRAY_SIZE(gsm690_5_9_bitorder),
+	},
+	[AMR_6_70] = {
+		.s_to_d = gsm690_6_7_bitorder,
+		.len = ARRAY_SIZE(gsm690_6_7_bitorder),
+	},
+	[AMR_7_40] = {
+		.s_to_d = gsm690_7_4_bitorder,
+		.len = ARRAY_SIZE(gsm690_7_4_bitorder),
+	},
+	[AMR_7_95] = {
+		.s_to_d = gsm690_7_95_bitorder,
+		.len = ARRAY_SIZE(gsm690_7_95_bitorder),
+	},
+	[AMR_10_2] = {
+		.s_to_d = gsm690_10_2_bitorder,
+		.len = ARRAY_SIZE(gsm690_10_2_bitorder),
+	},
+	[AMR_12_2] = {
+		.s_to_d = gsm690_12_2_bitorder,
+		.len = ARRAY_SIZE(gsm690_12_2_bitorder),
+	},
+};
+
+/*! Convert from S-bits (codec output) to d-bits.
+ *  \param[out] out user-provided output buffer for generated unpacked d-bits
+ *  \param[in] in input buffer for unpacked s-bits
+ *  \param[in] n_bits number of bits (in both in and out)
+ *  \param[in] AMR mode (0..7) */
+int osmo_amr_s_to_d(ubit_t *out, const ubit_t *in, uint16_t n_bits, enum osmo_amr_type amr_mode)
+{
+	const struct ts26101_reorder_table *tbl;
+	int i;
+
+	if (amr_mode >= ARRAY_SIZE(ts26101_reorder_tables))
+		return -ENODEV;
+
+	tbl = &ts26101_reorder_tables[amr_mode];
+
+	if (n_bits > tbl->len)
+		return -EINVAL;
+
+	for (i = 0; i < n_bits; i++) {
+		uint16_t n = tbl->s_to_d[i];
+		out[i] = in[n];
+	}
+
+	return n_bits;
+}
+
+/*! Convert from d-bits to s-bits (codec input).
+ *  \param[out] out user-provided output buffer for generated unpacked s-bits
+ *  \param[in] in input buffer for unpacked d-bits
+ *  \param[in] n_bits number of bits (in both in and out)
+ *  \param[in] AMR mode (0..7) */
+int osmo_amr_d_to_s(ubit_t *out, const ubit_t *in, uint16_t n_bits, enum osmo_amr_type amr_mode)
+{
+	const struct ts26101_reorder_table *tbl;
+	int i;
+
+	if (amr_mode >= ARRAY_SIZE(ts26101_reorder_tables))
+		return -ENODEV;
+
+	tbl = &ts26101_reorder_tables[amr_mode];
+
+	if (n_bits > tbl->len)
+		return -EINVAL;
+
+	for (i = 0; i < n_bits; i++) {
+		uint16_t n = tbl->s_to_d[i];
+		out[n] = in[i];
+	}
+
+	return n_bits;
+}
 
 /* See also RFC 4867 §3.6, Table 1, Column "Total speech bits" */
 static const uint8_t amr_len_by_ft[16] = {

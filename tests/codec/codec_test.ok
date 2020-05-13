@@ -30,3 +30,12 @@ FR SID d9 23 ba e5 e2 00 00 80 41 20 00 01 00 00 10 00 04 00 00 00 00 00 48 00 0
 FR SID d8 62 a2 61 60 00 00 10 00 00 92 00 00 00 00 40 00 00 08 00 00 00 01 00 00 01 00 00 80 00 40 02 40 : 1
 FR SID d9 e4 c3 6d 12 00 00 80 00 20 00 40 00 00 00 00 00 10 00 00 00 10 48 00 10 48 00 00 00 00 2d 04 00 : 1
 FR SID d9 a4 c3 29 59 00 00 10 00 00 12 00 00 00 00 41 00 00 01 00 00 00 01 00 80 00 00 00 00 42 00 12 02 : 1
+AMR s/d bit re-ordering test:
+=> AMR Mode 0 (95 bits)
+=> AMR Mode 1 (103 bits)
+=> AMR Mode 2 (118 bits)
+=> AMR Mode 3 (134 bits)
+=> AMR Mode 4 (148 bits)
+=> AMR Mode 5 (159 bits)
+=> AMR Mode 6 (204 bits)
+=> AMR Mode 7 (244 bits)
