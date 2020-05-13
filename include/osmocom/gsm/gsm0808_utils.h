@@ -155,6 +155,9 @@ static inline bool gsm0808_cause_ext(enum gsm0808_cause cause)
 	return (cause & 0x80) && !(cause & 0x0F);
 }
 
+int gsm0808_get_cipher_reject_cause(const struct tlv_parsed *tp)
+OSMO_DEPRECATED("Use gsm0808_get_cause() instead");
+
 /*! \returns 3GPP TS 48.008 3.2.2.49 Current Channel Type 1 from enum gsm_chan_t. */
 static inline uint8_t gsm0808_current_channel_type_1(enum gsm_chan_t type)
 {
