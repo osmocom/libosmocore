@@ -220,7 +220,16 @@ static const uint8_t rn_table[114] = {
 	125,  99,  17, 123,
 };
 
-/*! Hopping sequence generation as per 3GPP TS 45.002, section 6.2.3. */
+/*! Hopping sequence generation as per 3GPP TS 45.002, section 6.2.3.
+ *  \param[in] t GSM time (TDMA frame number, T1/T2/T3).
+ *  \param[in] hsn Hopping Sequence Number.
+ *  \param[in] maio Mobile Allocation Index Offset.
+ *  \param[in] n number of entries in mobile allocation (arfcn table).
+ *  \param[in] ma array of ARFCNs (sorted in ascending order)
+ *		  representing the Mobile Allocation.
+ *  \returns ARFCN to use for given input parameters at time 't'
+ *	     or Mobile Allocation Index if ma == NULL.
+ */
 uint16_t gsm0502_hop_seq_gen(const struct gsm_time *t,
 			     uint8_t hsn, uint8_t maio,
 			     size_t n, const uint16_t *ma)
