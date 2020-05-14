@@ -41,27 +41,21 @@ struct bssmap_header {
 } __attribute__((packed));
 
 struct dtap_header {
-#if OSMO_IS_LITTLE_ENDIAN
 	uint8_t type;
 	union {
 		uint8_t link_id;  /* Backward compatibility */
 		struct {
+#if OSMO_IS_LITTLE_ENDIAN
 			uint8_t dlci_cc:2,
 			dlci_spare:3,
 			dlci_sapi:3; /* enum gsm0406_dlc_sapi */
-		};
-	};
-	uint8_t length;
 #elif OSMO_IS_BIG_ENDIAN
-	uint8_t type;
-	union {
-		uint8_t link_id;
-		struct {
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
 			uint8_t dlci_sapi:3, dlci_spare:3, dlci_cc:2;
+#endif
 		};
 	};
 	uint8_t length;
-#endif
 } __attribute__((packed));
 
 /* Data Link Control SAPI, GSM 08.06 § 6.3.2, GSM 04.06 § 3.3.3 */

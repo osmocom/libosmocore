@@ -664,7 +664,7 @@ struct gsm48_pag_resp {
 /* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
 	uint8_t key_seq:4, spare:4;
 	union {
-		uint32_t classmark2;  /* Backward compatibility */
+		uint32_t classmark2;
 		struct {
 			uint8_t cm2_len;
 			struct gsm48_classmark2 cm2;
@@ -815,7 +815,7 @@ struct gsm48_service_request {
 /* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
 	uint8_t cipher_key_seq:4, cm_service_type:4;
 	union {
-		uint32_t classmark;  /* Backward compatibility */
+		uint32_t classmark;
 		struct {
 			uint8_t cm2_len;
 			struct gsm48_classmark2 classmark2;
