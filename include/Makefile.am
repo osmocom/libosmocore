@@ -103,6 +103,7 @@ nobase_include_HEADERS = \
                        osmocom/gsm/gsm_utils.h \
                        osmocom/gsm/gsup.h \
                        osmocom/gsm/gsup_sms.h \
+                       osmocom/gsm/i460_mux.h \
                        osmocom/gsm/ipa.h \
                        osmocom/gsm/lapd_core.h \
                        osmocom/gsm/lapdm.h \

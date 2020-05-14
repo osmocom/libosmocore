@@ -35,6 +35,7 @@ check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
 		 context/context_test					\
                  gsm0502/gsm0502_test					\
                  dtx/dtx_gsm0503_test					\
+                 i460_mux/i460_mux_test					\
 		 $(NULL)
 
 if ENABLE_MSGFILE
@@ -269,6 +270,9 @@ context_context_test_LDADD = $(LDADD)
 exec_exec_test_SOURCES = exec/exec_test.c
 exec_exec_test_LDADD = $(LDADD)
 
+i460_mux_i460_mux_test_SOURCES = i460_mux/i460_mux_test.c
+i460_mux_i460_mux_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
+
 # The `:;' works around a Bash 3.2 bug when the output is not writeable.
 $(srcdir)/package.m4: $(top_srcdir)/configure.ac
 	:;{ \
@@ -346,6 +350,7 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
 	     gsm0502/gsm0502_test.ok \
 	     dtx/dtx_gsm0503_test.ok \
 	     exec/exec_test.ok exec/exec_test.err \
+	     i460_mux/i460_mux_test.ok \
 	     $(NULL)
 
 DISTCLEANFILES = atconfig atlocal conv/gsm0503_test_vectors.c

@@ -375,3 +375,9 @@ cat $abs_srcdir/exec/exec_test.ok > expout
 cat $abs_srcdir/exec/exec_test.err > experr
 AT_CHECK([$abs_top_builddir/tests/exec/exec_test], [0], [expout], [experr])
 AT_CLEANUP
+
+AT_SETUP([i460_mux])
+AT_KEYWORDS([i460_mux])
+cat $abs_srcdir/i460_mux/i460_mux_test.ok > expout
+AT_CHECK([$abs_top_builddir/tests/i460_mux/i460_mux_test], [0], [expout], [ignore])
+AT_CLEANUP

@@ -667,5 +667,12 @@ osmo_cbsp_decode;
 osmo_cbsp_recv_buffered;
 osmo_cbsp_errstr;
 
+osmo_i460_demux_in;
+osmo_i460_mux_enqueue;
+osmo_i460_mux_out;
+osmo_i460_subchan_add;
+osmo_i460_subchan_del;
+osmo_i460_ts_init;
+
 local: *;
 };
