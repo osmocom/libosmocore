@@ -17,6 +17,7 @@ re_struct_end = re.compile(r'^}[^;]*;\s*$')
 
 re_substruct_start = re.compile(r'^\s+struct\s*{\s*$')
 re_substruct_end = re.compile(r'^\s+}\s*([^;]*\s)[a-zA-Z_][a-zA-Z_0-9]*\s*;\s*$')
+re_unnamed_substruct_end = re.compile(r'^\s+}\s*;\s*$')
 
 re_int_def = re.compile(r'(^\s*((const|unsigned|signed|char|int|long|int[0-9]+_t|uint[0-9]_t)\s+)+\s*)([^;]*;)',
                         re.DOTALL | re.MULTILINE)
@@ -73,7 +74,8 @@ def section_struct_body(struct_body_lines):
         line = struct_body_lines[j]
 
         if (re_substruct_start.fullmatch(line)
-            or re_substruct_end.fullmatch(line)):
+            or re_substruct_end.fullmatch(line)
+            or re_unnamed_substruct_end.fullmatch(line)):
             end_def()
             arbitrary_part.append(line)
             j += 1
