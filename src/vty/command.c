@@ -619,15 +619,17 @@ static char *xml_escape(const char *inp)
 	return out;
 }
 
+typedef int (*print_func_t)(void *data, const char *fmt, ...);
+
 /*
- * Write one cmd_element as XML to the given VTY.
+ * Write one cmd_element as XML via a print_func_t.
  */
-static int vty_dump_element(struct cmd_element *cmd, struct vty *vty)
+static int vty_dump_element(struct cmd_element *cmd, print_func_t print_func, void *data, const char *newline)
 {
 	char *xml_string = xml_escape(cmd->string);
 
-	vty_out(vty, "    <command id='%s'>%s", xml_string, VTY_NEWLINE);
-	vty_out(vty, "      <params>%s", VTY_NEWLINE);
+	print_func(data, "    <command id='%s'>%s", xml_string, newline);
+	print_func(data, "      <params>%s", newline);
 
 	int j;
 	for (j = 0; j < vector_count(cmd->strvec); ++j) {
@@ -641,15 +643,15 @@ static int vty_dump_element(struct cmd_element *cmd, struct vty *vty)
 
 			xml_param = xml_escape(desc->cmd);
 			xml_doc = xml_escape(desc->str);
-			vty_out(vty, "        <param name='%s' doc='%s' />%s",
-				xml_param, xml_doc, VTY_NEWLINE);
+			print_func(data, "        <param name='%s' doc='%s' />%s",
+				xml_param, xml_doc, newline);
 			talloc_free(xml_param);
 			talloc_free(xml_doc);
 		}
 	}
 
-	vty_out(vty, "      </params>%s", VTY_NEWLINE);
-	vty_out(vty, "    </command>%s", VTY_NEWLINE);
+	print_func(data, "      </params>%s", newline);
+	print_func(data, "    </command>%s", newline);
 
 	talloc_free(xml_string);
 	return 0;
@@ -658,20 +660,20 @@ static int vty_dump_element(struct cmd_element *cmd, struct vty *vty)
 static bool vty_command_is_common(struct cmd_element *cmd);
 
 /*
- * Dump all nodes and commands associated with a given node as XML to the VTY.
+ * Dump all nodes and commands associated with a given node as XML via a print_func_t.
  */
-static int vty_dump_nodes(struct vty *vty)
+static int vty_dump_nodes(print_func_t print_func, void *data, const char *newline)
 {
 	int i, j;
 	int same_name_count;
 
-	vty_out(vty, "<vtydoc xmlns='urn:osmocom:xml:libosmocore:vty:doc:1.0'>%s", VTY_NEWLINE);
+	print_func(data, "<vtydoc xmlns='urn:osmocom:xml:libosmocore:vty:doc:1.0'>%s", newline);
 
 	/* Only once, list all common node commands. Use the CONFIG node to find common node commands. */
-	vty_out(vty, "  <node id='_common_cmds_'>%s", VTY_NEWLINE);
-	vty_out(vty, "    <name>Common Commands</name>%s", VTY_NEWLINE);
-	vty_out(vty, "    <description>These commands are available on all VTY nodes. They are listed"
-		" here only once, to unclutter the VTY reference.</description>%s", VTY_NEWLINE);
+	print_func(data, "  <node id='_common_cmds_'>%s", newline);
+	print_func(data, "    <name>Common Commands</name>%s", newline);
+	print_func(data, "    <description>These commands are available on all VTY nodes. They are listed"
+		" here only once, to unclutter the VTY reference.</description>%s", newline);
 	for (i = 0; i < vector_active(cmdvec); ++i) {
 		struct cmd_node *cnode;
 		cnode = vector_slot(cmdvec, i);
@@ -686,10 +688,10 @@ static int vty_dump_nodes(struct vty *vty)
 			if (!vty_command_is_common(elem))
 				continue;
 			if (!(elem->attr & (CMD_ATTR_DEPRECATED | CMD_ATTR_HIDDEN)))
-				vty_dump_element(elem, vty);
+				vty_dump_element(elem, print_func, data, newline);
 		}
 	}
-	vty_out(vty, "  </node>%s", VTY_NEWLINE);
+	print_func(data, "  </node>%s", newline);
 
 	for (i = 0; i < vector_active(cmdvec); ++i) {
 		struct cmd_node *cnode;
@@ -712,11 +714,11 @@ static int vty_dump_nodes(struct vty *vty)
 				same_name_count ++;
 		}
 
-		vty_out(vty, "  <node id='%s", cnode->name);
+		print_func(data, "  <node id='%s", cnode->name);
 		if (same_name_count > 1 || !*cnode->name)
-			vty_out(vty, "_%d", same_name_count);
-		vty_out(vty, "'>%s", VTY_NEWLINE);
-		vty_out(vty, "    <name>%s</name>%s", cnode->name, VTY_NEWLINE);
+			print_func(data, "_%d", same_name_count);
+		print_func(data, "'>%s", newline);
+		print_func(data, "    <name>%s</name>%s", cnode->name, newline);
 
 		for (j = 0; j < vector_active(cnode->cmd_vector); ++j) {
 			struct cmd_element *elem;
@@ -724,15 +726,48 @@ static int vty_dump_nodes(struct vty *vty)
 			if (vty_command_is_common(elem))
 				continue;
 			if (!(elem->attr & (CMD_ATTR_DEPRECATED | CMD_ATTR_HIDDEN)))
-				vty_dump_element(elem, vty);
+				vty_dump_element(elem, print_func, data, newline);
 		}
 
-		vty_out(vty, "  </node>%s", VTY_NEWLINE);
+		print_func(data, "  </node>%s", newline);
 	}
 
-	vty_out(vty, "</vtydoc>%s", VTY_NEWLINE);
+	print_func(data, "</vtydoc>%s", newline);
 
 	return 0;
+}
+
+static int print_func_vty(void *data, const char *format, ...)
+{
+	struct vty *vty = data;
+	va_list args;
+	int rc;
+	va_start(args, format);
+	rc = vty_out_va(vty, format, args);
+	va_end(args);
+	return rc;
+}
+
+static int vty_dump_xml_ref_to_vty(struct vty *vty)
+{
+	return vty_dump_nodes(print_func_vty, vty, VTY_NEWLINE);
+}
+
+static int print_func_stream(void *data, const char *format, ...)
+{
+	va_list args;
+	int rc;
+	va_start(args, format);
+	rc = vfprintf((FILE*)data, format, args);
+	va_end(args);
+	return rc;
+}
+
+/*! Print the XML reference of all VTY nodes to the given stream.
+ */
+int vty_dump_xml_ref(FILE *stream)
+{
+	return vty_dump_nodes(print_func_stream, stream, "\n");
 }
 
 /* Check if a command with given string exists at given node */
@@ -2772,7 +2807,7 @@ DEFUN(show_version,
 DEFUN(show_online_help,
       show_online_help_cmd, "show online-help", SHOW_STR "Online help\n")
 {
-	vty_dump_nodes(vty);
+	vty_dump_xml_ref_to_vty(vty);
 	return CMD_SUCCESS;
 }
 

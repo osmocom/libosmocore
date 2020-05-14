@@ -401,4 +401,6 @@ void print_version(int print_copyright);
 
 extern void *tall_vty_cmd_ctx;
 
+int vty_dump_xml_ref(FILE *stream);
+
 /*! @} */
