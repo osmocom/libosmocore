@@ -1,5 +1,7 @@
 #pragma once
 
+#include <osmocom/core/endian.h>
+
 /* Section 9.4.1.2: GSM Message Format */
 struct gsm23041_msg_param_gsm {
 	uint16_t serial_nr;
