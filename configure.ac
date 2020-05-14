@@ -441,4 +441,5 @@ AC_OUTPUT(
 	Doxyfile.coding
 	Doxyfile.gb
 	Doxyfile.ctrl
-	Makefile)
+	Makefile
+	contrib/libosmocore.spec)

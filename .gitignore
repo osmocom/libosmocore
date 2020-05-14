@@ -99,3 +99,5 @@ tests/conv/gsm0503_test_vectors.c
 # code coverage reports
 libosmocore-*-coverage*
 coverage-cobertura.xml
+
+contrib/libosmocore.spec

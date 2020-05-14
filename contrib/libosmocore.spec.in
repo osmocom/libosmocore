@@ -12,14 +12,8 @@
 # license that conforms to the Open Source Definition (Version 1.9)
 # published by the Open Source Initiative.
 
-# Please submit bugfixes or comments via http://bugs.opensuse.org/
-#
-
-
-%define version_unconverted 1.3.0.94
-
 Name:           libosmocore
-Version:        1.3.0.94
+Version:        @VERSION@
 Release:        0
 Summary:        The Open Source Mobile Communications Core Library
 License:        GPL-2.0-only AND GPL-2.0-or-later AND LGPL-2.1-or-later AND AGPL-3.0-or-later
@@ -30,7 +24,7 @@ BuildRequires:  automake >= 1.6
 BuildRequires:  libtool >= 2
 BuildRequires:  lksctp-tools-devel
 BuildRequires:  pkg-config >= 0.20
-BuildRequires:  python2
+BuildRequires:  python3
 BuildRequires:  xz
 BuildRequires:  pkgconfig(gnutls) >= 2.12.0
 BuildRequires:  pkgconfig(libpcsclite)
@@ -294,7 +288,7 @@ License:        GPL-2.0-or-later
 Group:          Development/Libraries/C and C++
 Requires:       libosmocore-devel = %version
 Requires:       libosmousb0 = %version
-Requires:       libusb-1_0-devel
+Requires:       pkgconfig(libusb-1.0)
 
 %description -n libosmousb-devel
 The libosmosub library in particular contains routines for USB device
