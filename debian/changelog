@@ -1,3 +1,9 @@
+libosmocore (1.3.0-fw.7) unstable; urgency=medium
+
+  * Merge fairwaves/ip-gb, fairwaves/gsm0808-confusion into master
+
+ -- Kirill Zakharenko <kirill.zakharenko@fairwaves.co>  Sat, 16 May 2020 18:42:23 +0000
+
 libosmocore (1.3.0) unstable; urgency=medium
 
   [ Pau Espin Pedrol ]
