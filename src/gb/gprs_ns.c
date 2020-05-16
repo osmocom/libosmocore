@@ -106,6 +106,8 @@
 		}										\
 	} while (0)
 
+static int gbip_dialect_ipaccess = 0;
+
 static const struct tlv_definition ns_att_tlvdef = {
 	.def = {
 		[NS_IE_CAUSE]	= { TLV_TYPE_TvLV, 0 },
@@ -220,7 +222,7 @@ static inline void ns_set_state_with_log(struct gprs_nsvc *nsvc, uint32_t state,
 {
 	uint32_t old_state = is_remote ? nsvc->remote_state : nsvc->state;
 
-	LOGPSRC(DNS, LOGL_DEBUG, file, line, "NSEI %d (NS-VCI=%u) setting %sstate [%s,%s,%s] -> [%s,%s,%s]\n",
+	LOGPSRC(DNS, LOGL_DEBUG, file, line, "NSEI=%d (NS-VCI=%u) setting %sstate [%s,%s,%s] -> [%s,%s,%s]\n",
 		nsvc->nsei, nsvc->nsvci, is_remote ? "remote " : "",
 		NS_DESC_A(old_state), NS_DESC_B(old_state), NS_DESC_R(old_state),
 		NS_DESC_A(state), NS_DESC_B(state), NS_DESC_R(state));
@@ -327,8 +329,8 @@ struct gprs_nsvc *gprs_nsvc_create2(struct gprs_ns_inst *nsi, uint16_t nsvci,
 	nsvc->nsvci = nsvci;
 	nsvc->nsvci_is_valid = 1;
 	/* before RESET procedure: BLOCKED and DEAD */
-	if (nsi->bss_sns_fi)
-		ns_set_state(nsvc, 0);
+	if (nsi->bss_sns_fi || gbip_dialect_ipaccess)
+		ns_set_state(nsvc, 0); /* DEAD */
 	else
 		ns_set_state(nsvc, NSE_S_BLOCKED);
 	nsvc->nsi = nsi;
@@ -793,7 +795,7 @@ static void gprs_ns_timer_cb(void *data)
 			nsvc->nsi->timeout[NS_TOUT_TNS_ALIVE_RETRIES]) {
 			/* mark as dead (and blocked unless IP-SNS) */
 			rate_ctr_inc(&nsvc->ctrg->ctr[NS_CTR_DEAD]);
-			if (!nsvc->nsi->bss_sns_fi) {
+			if (gbip_dialect_ipaccess && !nsvc->nsi->bss_sns_fi) {
 				ns_set_state(nsvc, NSE_S_BLOCKED);
 				rate_ctr_inc(&nsvc->ctrg->ctr[NS_CTR_BLOCKED]);
 			} else
@@ -804,7 +806,7 @@ static void gprs_ns_timer_cb(void *data)
 				nsvc->nsi->timeout[NS_TOUT_TNS_ALIVE_RETRIES]);
 			ns_osmo_signal_dispatch(nsvc, S_NS_ALIVE_EXP, 0);
 			/* FIXME: should we send this signal in case of SNS? */
-			if (!nsvc->nsi->bss_sns_fi)
+			if (gbip_dialect_ipaccess && !nsvc->nsi->bss_sns_fi)
 				ns_osmo_signal_dispatch(nsvc, S_NS_BLOCK, NS_CAUSE_NSVC_BLOCKED);
 			return;
 		}
@@ -1756,13 +1758,27 @@ int gprs_ns_process_msg(struct gprs_ns_inst *nsi, struct msgb *msg,
 		 * NS-ALIVE out of the blue, we might have been re-started
 		 * and should send a NS-RESET to make sure everything recovers
 		 * fine. */
+		LOGP(DNS, LOGL_DEBUG, "NSEI=%u Rx ALIVE (NSVCI=%u) in state [%s,%s,%s]\n",
+		     (*nsvc)->nsei, (*nsvc)->nsvci, NS_DESC_A((*nsvc)->state), NS_DESC_B((*nsvc)->state), NS_DESC_R((*nsvc)->state));
+		if (!gbip_dialect_ipaccess && !((*nsvc)->state & NSE_S_ALIVE)) {
+			ns_set_remote_state(*nsvc, NSE_S_ALIVE);
+			ns_set_state(*nsvc, NSE_S_ALIVE);
+			ns_osmo_signal_dispatch(*nsvc, S_NS_UNBLOCK, 0);
+		}
 		if ((*nsvc)->state == NSE_S_BLOCKED)
 			rc = gprs_nsvc_reset((*nsvc), NS_CAUSE_PDU_INCOMP_PSTATE);
 		else if (!((*nsvc)->state & NSE_S_RESET))
 			rc = gprs_ns_tx_alive_ack(*nsvc);
 		break;
 	case NS_PDUT_ALIVE_ACK:
-		ns_mark_alive(*nsvc);
+		LOGP(DNS, LOGL_DEBUG, "NSEI=%u Rx ALIVE ACK (NSVCI=%u) in state [%s,%s,%s]\n",
+		     (*nsvc)->nsei, (*nsvc)->nsvci, NS_DESC_A((*nsvc)->state), NS_DESC_B((*nsvc)->state), NS_DESC_R((*nsvc)->state));
+		if (!gbip_dialect_ipaccess && !((*nsvc)->state & NSE_S_ALIVE)) {
+			ns_set_remote_state(*nsvc, NSE_S_ALIVE);
+			ns_set_state(*nsvc, NSE_S_ALIVE);
+			ns_osmo_signal_dispatch(*nsvc, S_NS_UNBLOCK, 0);
+		} else
+			ns_mark_alive(*nsvc);
 		if ((*nsvc)->timer_mode == NSVC_TIMER_TNS_ALIVE)
 			osmo_stat_item_set((*nsvc)->statg->items[NS_STAT_ALIVE_DELAY],
 				nsvc_timer_elapsed_ms(*nsvc));
@@ -2113,17 +2129,26 @@ int gprs_nsvc_reset(struct gprs_nsvc *nsvc, uint8_t cause)
 	LOGP(DNS, LOGL_INFO, "NSEI=%u RESET procedure based on API request\n",
 		nsvc->nsei);
 
-	/* Mark NS-VC locally as blocked and dead */
-	ns_set_state(nsvc, NSE_S_BLOCKED | NSE_S_RESET);
+	if (gbip_dialect_ipaccess) {
+		/* Mark NS-VC locally as blocked and dead */
+		ns_set_state(nsvc, NSE_S_BLOCKED | NSE_S_RESET);
 
-	/* Send NS-RESET PDU */
-	rc = gprs_ns_tx_reset(nsvc, cause);
-	if (rc < 0) {
-		LOGP(DNS, LOGL_ERROR, "NSEI=%u, error resetting NS-VC\n",
-			nsvc->nsei);
+		/* Send NS-RESET PDU */
+		rc = gprs_ns_tx_reset(nsvc, cause);
+		if (rc < 0) {
+			LOGP(DNS, LOGL_ERROR, "NSEI=%u, error resetting NS-VC\n",
+				nsvc->nsei);
+		}
+		/* Start Tns-reset */
+		nsvc_start_timer(nsvc, NSVC_TIMER_TNS_RESET);
+	} else {
+		/* Mark NS-VC as unblocked and dead */
+		ns_set_state(nsvc, 0); /* DEAD */
+		ns_set_remote_state(nsvc, 0); /* DEAD */
+		rate_ctr_inc(&(nsvc)->ctrg->ctr[NS_CTR_DEAD]);
+		/* Initiate TEST proc.: Send ALIVE and start timer */
+		gprs_nsvc_start_test(nsvc);
 	}
-	/* Start Tns-reset */
-	nsvc_start_timer(nsvc, NSVC_TIMER_TNS_RESET);
 
 	return rc;
 }

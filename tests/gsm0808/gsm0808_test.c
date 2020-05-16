@@ -379,6 +379,55 @@ static void test_create_sapi_reject()
 	msgb_free(msg);
 }
 
+static void test_dec_confusion()
+{
+	static const uint8_t hex[] =
+		{ 0x26, 0x04, 0x01, 0x52, 0x1f, 0x07, 0x00, 0xff, 0x00, 0x03, 0x25, 0x03, 0x25 };
+	struct tlv_parsed tp;
+	int diag_len;
+	enum gsm0808_cause cause;
+	enum gsm0808_cause_class cause_class;
+	struct gsm0808_diagnostics *diag;
+
+	printf("Testing decoding CONFUSION\n");
+
+	tlv_parse(&tp, gsm0808_att_tlvdef(), hex+1, sizeof(hex)-1, 0, 0);
+
+	/* Check for the Cause and Diagnostic mandatory elements */
+	if (!TLVP_PRESENT(&tp, GSM0808_IE_CAUSE) || !TLVP_PRESENT(&tp, GSM0808_IE_DIAGNOSTIC)) {
+		printf("Either Cause or Diagnostic mandatory IE are not detected\n");
+		return;
+	}
+
+	diag_len = TLVP_LEN(&tp, GSM0808_IE_DIAGNOSTIC);
+	if (diag_len < 5) {
+		printf("Diagnostic length is too short: %d (expected > 5)\n",
+		       diag_len);
+		return;
+	}
+
+	cause = gsm0808_get_cause(&tp);
+	if ((int)cause < 0) {
+		printf("ERROR: failed (%s) to extract Cause, aborting\n", strerror(-(int)cause));
+		return;
+	}
+	cause_class = gsm0808_cause_class(cause);
+	printf("  Cause class %d/0x%x (%s)\n",
+	       cause_class, cause_class, gsm0808_cause_class_name(cause_class));
+	printf("  Cause %d/0x%x (%s)\n",
+	       cause, cause, gsm0808_cause_name(cause));
+
+	diag = (struct gsm0808_diagnostics *)TLVP_VAL(&tp, GSM0808_IE_DIAGNOSTIC);
+	printf("  Diagnostics error octet location %d (%s)\n",
+	       diag->error_pointer_octet,
+	       gsm0808_diagnostics_octet_location_str(diag->error_pointer_octet));
+	printf("  Diagnostics error bit location %d (%s)\n",
+	       diag->error_pointer_bit,
+	       gsm0808_diagnostics_bit_location_str(diag->error_pointer_bit));
+	printf("  Diagnostics message that provoked the error: %s\n",
+	       osmo_hexdump(diag->msg, diag_len-2));
+}
+
 static void test_create_ass()
 {
 	static const uint8_t res1[] =
@@ -2421,6 +2470,8 @@ int main(int argc, char **argv)
 	test_cell_id_list_matching(false);
 
 	test_gsm0808_cell_id_to_from_cgi();
+
+	test_dec_confusion();
 
 	printf("Done\n");
 	return EXIT_SUCCESS;

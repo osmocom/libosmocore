@@ -21,6 +21,8 @@
  *
  */
 
+#include <string.h>
+
 #include <osmocom/core/byteswap.h>
 #include <osmocom/gsm/gsm0808.h>
 #include <osmocom/gsm/gsm0808_utils.h>
@@ -33,6 +35,9 @@
  *  Helper functions regarding the TS 08.08 / 48.008 A interface, primarily
  *  message generation/encoding.
  */
+
+/*! Char buffer to return strings from functions */
+static __thread char str_buff[512];
 
 /*! Create "Complete L3 Info" for AoIP, legacy implementation.
  * Instead use gsm0808_create_layer3_aoip2(), which is capable of three-digit MNC with leading zeros.
@@ -1668,6 +1673,39 @@ enum gsm0808_cause gsm0808_get_cause(const struct tlv_parsed *tp)
 	}
 
 	return buf[0];
+}
+
+const char *gsm0808_diagnostics_octet_location_str(uint8_t pointer)
+{
+	switch (pointer) {
+	case 0:
+		return "Error location not determined";
+	case 1:
+		return "The first octet of the message received (i.e. the message type) was found erroneous (unknown)";
+	case 0xfd:
+		return  "The first octet of the BSSAP header (Discrimination) was found erroneous";
+	case 0xfe:
+		return  "(DTAP only) The DLCI (second) octet of the BSSAP header was found erroneous";
+	case 0xff:
+		return  "The last octet of the BSSAP header (length indicator) was found erroneous";
+	default:
+		snprintf(str_buff, sizeof(str_buff), "The %d octet of the message received was found erroneous", pointer);
+		return str_buff;
+	}
+}
+
+const char *gsm0808_diagnostics_bit_location_str(uint8_t bit_pointer)
+{
+	if (bit_pointer == 0) {
+		return "No particular part of the octet is indicated";
+	} else if (bit_pointer > 8) {
+		return "Reserved value";
+	}
+
+	snprintf(str_buff, sizeof(str_buff),
+	         "An error was provoked by the field whose most significant bit is in bit position %d",
+	         bit_pointer);
+	return str_buff;
 }
 
 const struct value_string gsm0808_lcls_config_names[] = {
