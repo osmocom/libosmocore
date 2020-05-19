@@ -169,7 +169,8 @@ void chantype_gsmtap2rsl(uint8_t gsmtap_chantype, uint8_t *rsl_chantype,
  *  \param[in] snr Signal/Noise Ratio (SNR)
  *  \param[in] data Pointer to data buffer
  *  \param[in] len Length of \ref data
- *  \return dynamically allocated message buffer containing data
+ *  \return dynamically allocated message buffer containing data,
+ *          or NULL for unknown chan_type
  *
  * This function will allocate a new msgb and fill it with a GSMTAP
  * header containing the information
@@ -181,6 +182,9 @@ struct msgb *gsmtap_makemsg_ex(uint8_t type, uint16_t arfcn, uint8_t ts, uint8_t
 	struct msgb *msg;
 	struct gsmtap_hdr *gh;
 	uint8_t *dst;
+
+	if (chan_type == GSMTAP_CHANNEL_UNKNOWN)
+		return NULL;
 
 	msg = msgb_alloc(sizeof(*gh) + len, "gsmtap_tx");
 	if (!msg)
