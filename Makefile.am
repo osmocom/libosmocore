@@ -28,7 +28,15 @@ $(top_srcdir)/.version:
 dist-hook:
 	echo $(VERSION) > $(distdir)/.tarball-version
 
-EXTRA_DIST = git-version-gen .version README.md osmo-release.mk osmo-release.sh
+EXTRA_DIST = \
+	     .version \
+	     README.md \
+	     contrib/libosmocore.spec.in \
+	     debian \
+	     git-version-gen \
+	     osmo-release.mk \
+	     osmo-release.sh \
+	     $(NULL)
 
 HTML = \
 	$(top_builddir)/doc/core/html/index.html \
