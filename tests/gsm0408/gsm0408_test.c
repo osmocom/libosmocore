@@ -611,6 +611,368 @@ static void test_mid_decode_zero_length(void)
 	printf("\n");
 }
 
+struct msgb *msgb_from_hex(const char *label, uint16_t size, const char *hex)
+{
+	struct msgb *msg = msgb_alloc_headroom(size, 4, label);
+	OSMO_ASSERT(msg);
+	msg->l3h = msgb_put(msg, osmo_hexparse(hex, msg->data, msgb_tailroom(msg)));
+	return msg;
+}
+
+struct mobile_identity_tc {
+	const char *label;
+	const char *compl_l3_msg;
+	int expect_rc;
+	struct osmo_mobile_identity expect_mi;
+};
+
+/* Some Complete Layer 3 messages copied from real GSM network traces. */
+struct mobile_identity_tc mobile_identity_tests[] = {
+	{
+		.label = "LU with IMSI 901700000004620",
+		.compl_l3_msg = "050802008168000130" "089910070000006402",
+		.expect_mi = {
+			.type = GSM_MI_TYPE_IMSI,
+			.imsi = "901700000004620",
+		},
+	},
+	{
+		.label = "LU with TMSI 0x0980ad8a",
+		.compl_l3_msg = "05084262f224002a50" "05f40980ad8a",
+		.expect_mi = {
+			.type = GSM_MI_TYPE_TMSI,
+			.tmsi = 0x0980ad8a,
+		},
+	},
+	{
+		.label = "LU with invalid MI type",
+		.compl_l3_msg = "050802008168000130" "089d10070000006402",
+		.expect_rc = -EINVAL,
+	},
+	{
+		.label = "LU with truncated IMSI MI",
+		.compl_l3_msg = "050802008168000130" "0899100700000064",
+		.expect_rc = -EBADMSG,
+	},
+	{
+		.label = "LU with too short IMSI MI (12345)",
+		.compl_l3_msg = "050802008168000130" "03193254",
+		.expect_rc = -EBADMSG,
+	},
+	{
+		.label = "LU with just long enough IMSI MI 123456",
+		.compl_l3_msg = "050802008168000130" "04113254f6",
+		.expect_mi = {
+			.type = GSM_MI_TYPE_IMSI,
+			.imsi = "123456",
+		},
+	},
+	{
+		.label = "LU with max length IMSI MI 123456789012345",
+		.compl_l3_msg = "050802008168000130" "081932547698103254",
+		.expect_mi = {
+			.type = GSM_MI_TYPE_IMSI,
+			.imsi = "123456789012345",
+		},
+	},
+	{
+		.label = "LU with just too long IMSI MI 1234567890123456",
+		.compl_l3_msg = "050802008168000130" "091132547698103254f6",
+		.expect_rc = -EBADMSG,
+	},
+	{
+		.label = "LU with truncated TMSI MI",
+		.compl_l3_msg = "05084262f224002a50" "05f40980ad",
+		.expect_rc = -EBADMSG,
+	},
+	{
+		.label = "LU with odd length TMSI",
+		.compl_l3_msg = "05084262f224002a50" "05fc0980ad8a",
+		.expect_rc = -EBADMSG,
+	},
+	{
+		.label = "LU with too long TMSI MI",
+		.compl_l3_msg = "05084262f224002a50" "06f40980ad23",
+		.expect_rc = -EBADMSG,
+	},
+	{
+		.label = "LU with too short TMSI",
+		.compl_l3_msg = "05084262f224002a50" "04f480ad8a",
+		.expect_rc = -EBADMSG,
+	},
+	{
+		.label = "CM Service Request with IMSI 123456",
+		.compl_l3_msg = "052401035058a6" "04113254f6",
+		.expect_mi = {
+			.type = GSM_MI_TYPE_IMSI,
+			.imsi = "123456",
+		},
+	},
+	{
+		.label = "CM Service Request with TMSI 0x5a42e404",
+		.compl_l3_msg = "052401035058a6" "05f45a42e404",
+		.expect_mi = {
+			.type = GSM_MI_TYPE_TMSI,
+			.tmsi = 0x5a42e404,
+		},
+	},
+	{
+		.label = "CM Service Request with shorter CM2, with IMSI 123456",
+		.compl_l3_msg = "052401025058" "04113254f6",
+		.expect_mi = {
+			.type = GSM_MI_TYPE_IMSI,
+			.imsi = "123456",
+		},
+	},
+	{
+		.label = "CM Service Request with longer CM2, with IMSI 123456",
+		.compl_l3_msg = "052401055058a62342" "04113254f6",
+		.expect_mi = {
+			.type = GSM_MI_TYPE_IMSI,
+			.imsi = "123456",
+		},
+	},
+	{
+		.label = "CM Service Request with shorter CM2, with TMSI 0x00000000",
+		.compl_l3_msg = "052401025058" "05f400000000",
+		.expect_mi = {
+			.type = GSM_MI_TYPE_TMSI,
+			.tmsi = 0,
+		},
+	},
+	{
+		.label = "CM Service Request with invalid MI type",
+		.compl_l3_msg = "052401035058a6" "089d10070000006402",
+		.expect_rc = -EINVAL,
+	},
+	{
+		.label = "CM Service Request with truncated IMSI MI",
+		.compl_l3_msg = "052401035058a6" "0899100700000064",
+		.expect_rc = -EBADMSG,
+	},
+	{
+		.label = "CM Service Request with truncated TMSI MI",
+		.compl_l3_msg = "0524010150" "05f40980ad",
+		.expect_rc = -EBADMSG,
+	},
+	{
+		.label = "CM Service Request with odd length TMSI",
+		.compl_l3_msg = "052401045058a623" "05fc0980ad8a",
+		.expect_rc = -EBADMSG,
+	},
+	{
+		.label = "CM Service Request with too long TMSI MI",
+		.compl_l3_msg = "052401035058a6" "06f40980ad23",
+		.expect_rc = -EBADMSG,
+	},
+	{
+		.label = "CM Service Request with too short TMSI",
+		.compl_l3_msg = "052401035058a6" "04f480ad8a",
+		.expect_rc = -EBADMSG,
+	},
+	{
+		.label = "CM Service Reestablish Request with TMSI 0x5a42e404",
+		.compl_l3_msg = "052801035058a6" "05f45a42e404",
+		.expect_mi = {
+			.type = GSM_MI_TYPE_TMSI,
+			.tmsi = 0x5a42e404,
+		},
+	},
+	{
+		.label = "Paging Response with IMSI 1234567",
+		.compl_l3_msg = "06270003505886" "0419325476",
+		.expect_mi = {
+			.type = GSM_MI_TYPE_IMSI,
+			.imsi = "1234567",
+		},
+	},
+	{
+		.label = "Paging Response with TMSI 0xb48883de",
+		.compl_l3_msg = "06270003505886" "05f4b48883de",
+		.expect_mi = {
+			.type = GSM_MI_TYPE_TMSI,
+			.tmsi = 0xb48883de,
+		},
+	},
+	{
+		.label = "Paging Response with TMSI, with unused nibble not 0xf",
+		.compl_l3_msg = "06270003505886" "0504b48883de",
+		.expect_rc = -EBADMSG,
+	},
+	{
+		.label = "Paging Response with too short IMEI (1234567)",
+		.compl_l3_msg = "06270003505886" "041a325476",
+		.expect_rc = -EBADMSG,
+	},
+	{
+		.label = "Paging Response with IMEI 123456789012345",
+		.compl_l3_msg = "06270003505886" "081a32547698103254",
+		.expect_mi = {
+			.type = GSM_MI_TYPE_IMEI,
+			.imei = "123456789012345",
+		},
+	},
+	{
+		.label = "Paging Response with IMEI 12345678901234 (no Luhn checksum)",
+		.compl_l3_msg = "06270003505886" "0812325476981032f4",
+		.expect_mi = {
+			.type = GSM_MI_TYPE_IMEI,
+			.imei = "12345678901234",
+		},
+	},
+	{
+		.label = "Paging Response with IMEISV 1234567890123456",
+		.compl_l3_msg = "06270003505886" "091332547698103254f6",
+		.expect_mi = {
+			.type = GSM_MI_TYPE_IMEISV,
+			.imeisv = "1234567890123456",
+		},
+	},
+	{
+		.label = "Paging Response with too short IMEISV 123456789012345",
+		.compl_l3_msg = "06270003505886" "081b32547698103254",
+		.expect_rc = -EBADMSG,
+	},
+	{
+		.label = "Paging Response with too long IMEISV 12345678901234567",
+		.compl_l3_msg = "06270003505886" "091b3254769810325476",
+		.expect_rc = -EBADMSG,
+	},
+	{
+		.label = "Paging Response with IMSI 123456789012345 and flipped ODD bit",
+		.compl_l3_msg = "06270003505886" "081132547698103254",
+		.expect_rc = -EBADMSG,
+	},
+	{
+		.label = "IMSI-Detach with IMSI 901700000004620",
+		.compl_l3_msg = "050130" "089910070000006402",
+		.expect_mi = {
+			.type = GSM_MI_TYPE_IMSI,
+			.imsi = "901700000004620",
+		},
+	},
+	{
+		.label = "IMSI-Detach with TMSI 0x0980ad8a",
+		.compl_l3_msg = "050130" "05f40980ad8a",
+		.expect_mi = {
+			.type = GSM_MI_TYPE_TMSI,
+			.tmsi = 0x0980ad8a,
+		},
+	},
+	{
+		.label = "IMSI-Detach with invalid MI type",
+		.compl_l3_msg = "050130" "089d10070000006402",
+		.expect_rc = -EINVAL,
+	},
+	{
+		.label = "IMSI-Detach with truncated IMSI MI",
+		.compl_l3_msg = "050130" "0899100700000064",
+		.expect_rc = -EBADMSG,
+	},
+	{
+		.label = "IMSI-Detach with too short IMSI MI (12345)",
+		.compl_l3_msg = "050130" "03193254",
+		.expect_rc = -EBADMSG,
+	},
+	{
+		.label = "IMSI-Detach with just long enough IMSI MI 123456",
+		.compl_l3_msg = "050130" "04113254f6",
+		.expect_mi = {
+			.type = GSM_MI_TYPE_IMSI,
+			.imsi = "123456",
+		},
+	},
+	{
+		.label = "IMSI-Detach with max length IMSI MI 123456789012345",
+		.compl_l3_msg = "050130" "081932547698103254",
+		.expect_mi = {
+			.type = GSM_MI_TYPE_IMSI,
+			.imsi = "123456789012345",
+		},
+	},
+	{
+		.label = "IMSI-Detach with just too long IMSI MI 1234567890123456",
+		.compl_l3_msg = "050130" "091132547698103254f6",
+		.expect_rc = -EBADMSG,
+	},
+	{
+		.label = "IMSI-Detach with truncated TMSI MI",
+		.compl_l3_msg = "050130" "05f40980ad",
+		.expect_rc = -EBADMSG,
+	},
+	{
+		.label = "IMSI-Detach with odd length TMSI",
+		.compl_l3_msg = "050130" "05fc0980ad8a",
+		.expect_rc = -EBADMSG,
+	},
+	{
+		.label = "IMSI-Detach with too long TMSI MI",
+		.compl_l3_msg = "050130" "06f40980ad23",
+		.expect_rc = -EBADMSG,
+	},
+	{
+		.label = "IMSI-Detach with too short TMSI",
+		.compl_l3_msg = "050130" "04f480ad8a",
+		.expect_rc = -EBADMSG,
+	},
+	{
+		.label = "Identity Response with IMSI 901700000004620",
+		.compl_l3_msg = "0519" "089910070000006402",
+		.expect_mi = {
+			.type = GSM_MI_TYPE_IMSI,
+			.imsi = "901700000004620",
+		},
+	},
+	{
+		.label = "Identity Response with IMEI 123456789012345",
+		.compl_l3_msg = "0519" "081a32547698103254",
+		.expect_mi = {
+			.type = GSM_MI_TYPE_IMEI,
+			.imei = "123456789012345",
+		},
+	},
+	{
+		.label = "Identity Response with IMEISV 9876543210987654",
+		.compl_l3_msg = "0519" "099378563412907856f4",
+		.expect_mi = {
+			.type = GSM_MI_TYPE_IMEISV,
+			.imeisv = "9876543210987654",
+		},
+	},
+};
+
+void test_struct_mobile_identity()
+{
+	struct mobile_identity_tc *t;
+	printf("%s()\n", __func__);
+	for (t = mobile_identity_tests; (t - mobile_identity_tests) < ARRAY_SIZE(mobile_identity_tests); t++) {
+		struct osmo_mobile_identity mi;
+		struct msgb *msg;
+		int rc;
+		memset(&mi, 0xff, sizeof(mi));
+
+		msg = msgb_from_hex(t->label, 1024, t->compl_l3_msg);
+		rc = osmo_mobile_identity_decode_from_l3(&mi, msg, false);
+		msgb_free(msg);
+
+		printf("%s: rc = %d", t->label, rc);
+		if (!rc) {
+			printf(", mi = %s", osmo_mobile_identity_to_str_c(OTC_SELECT, &mi));
+		}
+
+		if (rc == t->expect_rc
+		    && ((rc != 0) || !osmo_mobile_identity_cmp(&mi, &t->expect_mi))) {
+			printf(" ok");
+		} else {
+			printf("  ERROR: Expected rc = %d", t->expect_rc);
+			if (!t->expect_rc)
+				printf(", mi = %s", osmo_mobile_identity_to_str_c(OTC_SELECT, &t->expect_mi));
+		}
+		printf("\n");
+	}
+	printf("\n");
+}
+
 static const struct bcd_number_test {
 	/* Human-readable test name */
 	const char *test_name;
@@ -1182,6 +1544,7 @@ int main(int argc, char **argv)
 	test_mid_from_imsi();
 	test_mid_encode_decode();
 	test_mid_decode_zero_length();
+	test_struct_mobile_identity();
 	test_bcd_number_encode_decode();
 	test_ra_cap();
 	test_lai_encode_decode();

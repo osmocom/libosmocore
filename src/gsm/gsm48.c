@@ -45,6 +45,7 @@
 #include <osmocom/gsm/protocol/gsm_04_80.h>
 #include <osmocom/gsm/protocol/gsm_08_58.h>
 #include <osmocom/gsm/protocol/gsm_04_08_gprs.h>
+#include <osmocom/gsm/protocol/gsm_23_003.h>
 
 /*! \addtogroup gsm0408
  *  @{
@@ -458,7 +459,8 @@ const char *gsm48_mi_type_name(uint8_t mi)
 	return get_value_string(mi_type_names, mi);
 }
 
-/*! Return a human readable representation of a Mobile Identity in caller-provided buffer.
+/*! Deprecated, see osmo_mobile_identity instead.
+ * Return a human readable representation of a Mobile Identity in caller-provided buffer.
  * \param[out] buf caller-provided output buffer
  * \param[in] buf_len size of buf in bytes
  * \param[in] mi  Mobile Identity buffer containing 3GPP TS 04.08 style MI type and data.
@@ -497,7 +499,8 @@ char *osmo_mi_name_buf(char *buf, size_t buf_len, const uint8_t *mi, uint8_t mi_
 	}
 }
 
-/*! Return a human readable representation of a Mobile Identity in static buffer.
+/*! Deprecated, see osmo_mobile_identity instead.
+ * Return a human readable representation of a Mobile Identity in static buffer.
  * \param[in] mi  Mobile Identity buffer containing 3GPP TS 04.08 style MI type and data.
  * \param[in] mi_len  Length of mi.
  * \return A string like "IMSI-1234567", "TMSI-0x1234ABCD" or "unknown", "TMSI-invalid"...
@@ -508,7 +511,8 @@ const char *osmo_mi_name(const uint8_t *mi, uint8_t mi_len)
 	return osmo_mi_name_buf(mi_name, sizeof(mi_name), mi, mi_len);
 }
 
-/*! Return a human readable representation of a Mobile Identity in dynamically-allocated buffer.
+/*! Deprecated, see osmo_mobile_identity instead.
+ * Return a human readable representation of a Mobile Identity in dynamically-allocated buffer.
  * \param[in] ctx talloc context from which to allocate output buffer
  * \param[in] mi  Mobile Identity buffer containing 3GPP TS 04.08 style MI type and data.
  * \param[in] mi_len  Length of mi.
@@ -522,6 +526,450 @@ char *osmo_mi_name_c(const void *ctx, const uint8_t *mi, uint8_t mi_len)
 	if (!mi_name)
 		return NULL;
 	return osmo_mi_name_buf(mi_name, buf_len, mi, mi_len);
+}
+
+/*! Extract Mobile Identity from encoded bytes (3GPP TS 24.008 10.5.1.4).
+ *
+ * On failure (negative return value), mi->type == GSM_MI_TYPE_NONE, mi->string[] is all-zero and mi->tmsi ==
+ * GSM_RESERVED_TMSI.
+ *
+ * On success, mi->type reflects the decoded Mobile Identity type (GSM_MI_TYPE_IMSI, GSM_MI_TYPE_TMSI, GSM_MI_TYPE_IMEI
+ * or GSM_MI_TYPE_IMEISV).
+ *
+ * On success, mi->string always contains a human readable representation of the Mobile Identity digits: IMSI, IMEI and
+ * IMEISV as digits like "12345678", and TMSI as "0x" and 8 hexadecimal digits like "0x1234abcd".
+ *
+ * mi->tmsi contains the uint32_t TMSI value iff the extracted Mobile Identity was a TMSI, or GSM_RESERVED_TMSI
+ * otherwise.
+ *
+ * \param[out] mi  Return buffer for decoded Mobile Identity.
+ * \param[in] mi_data  The encoded Mobile Identity octets.
+ * \param[in] mi_len  Number of octets in mi_data.
+ * \param[in] allow_hex  If false, hexadecimal digits (>9) result in an error return value.
+ * \returns 0 on success, negative on error: -EBADMSG = invalid length indication or invalid data,
+ *          -EINVAL = unknown Mobile Identity type.
+ */
+int osmo_mobile_identity_decode(struct osmo_mobile_identity *mi, const uint8_t *mi_data, uint8_t mi_len,
+				bool allow_hex)
+{
+	int rc;
+	int nibbles_len;
+	char *str;
+	size_t str_size;
+
+	if (!mi_data || mi_len < 1)
+		return -EBADMSG;
+
+	nibbles_len = (mi_len - 1) * 2 + ((mi_data[0] & GSM_MI_ODD) ? 1 : 0);
+
+	*mi = (struct osmo_mobile_identity){
+		.type = mi_data[0] & GSM_MI_TYPE_MASK,
+	};
+
+	/* First do length checks */
+	switch (mi->type) {
+	case GSM_MI_TYPE_TMSI:
+		mi->tmsi = GSM_RESERVED_TMSI;
+		if (nibbles_len != (GSM23003_TMSI_NUM_BYTES * 2)) {
+			rc = -EBADMSG;
+			goto return_error;
+		}
+		break;
+
+	case GSM_MI_TYPE_IMSI:
+		if (nibbles_len < GSM23003_IMSI_MIN_DIGITS || nibbles_len > GSM23003_IMSI_MAX_DIGITS) {
+			rc = -EBADMSG;
+			goto return_error;
+		}
+		str = mi->imsi;
+		str_size = sizeof(mi->imsi);
+		break;
+
+	case GSM_MI_TYPE_IMEI:
+		if (nibbles_len != GSM23003_IMEI_NUM_DIGITS && nibbles_len != GSM23003_IMEI_NUM_DIGITS_NO_CHK) {
+			rc = -EBADMSG;
+			goto return_error;
+		}
+		str = mi->imei;
+		str_size = sizeof(mi->imei);
+		break;
+
+	case GSM_MI_TYPE_IMEISV:
+		if (nibbles_len != GSM23003_IMEISV_NUM_DIGITS) {
+			rc = -EBADMSG;
+			goto return_error;
+		}
+		str = mi->imeisv;
+		str_size = sizeof(mi->imeisv);
+		break;
+
+	default:
+		rc = -EINVAL;
+		goto return_error;
+	}
+
+	/* Decode BCD digits */
+	switch (mi->type) {
+	case GSM_MI_TYPE_TMSI:
+		/* MI is a 32bit integer TMSI. Length has been checked above. */
+		if ((mi_data[0] & 0xf0) != 0xf0) {
+			/* A TMSI always has the first nibble == 0xf */
+			rc = -EBADMSG;
+			goto return_error;
+		}
+		mi->tmsi = osmo_load32be(&mi_data[1]);
+		return 0;
+
+	case GSM_MI_TYPE_IMSI:
+	case GSM_MI_TYPE_IMEI:
+	case GSM_MI_TYPE_IMEISV:
+		/* If the length is even, the last nibble (higher nibble of last octet) must be 0xf */
+		if (!(mi_data[0] & GSM_MI_ODD)
+		    && ((mi_data[mi_len - 1] & 0xf0) != 0xf0)) {
+			rc = -EBADMSG;
+			goto return_error;
+		}
+		rc = osmo_bcd2str(str, str_size, mi_data, 1, 1 + nibbles_len, allow_hex);
+		/* rc checked below */
+		break;
+
+	default:
+		/* Already handled above, but as future bug paranoia: */
+		rc = -EINVAL;
+		goto return_error;
+	}
+
+	/* check mi->str printing rc */
+	if (rc < 1 || rc >= str_size) {
+		rc = -EBADMSG;
+		goto return_error;
+	}
+	return 0;
+
+return_error:
+	*mi = (struct osmo_mobile_identity){
+		.type = GSM_MI_TYPE_NONE,
+	};
+	return rc;
+}
+
+/*! Return the number of encoded Mobile Identity octets, without actually encoding.
+ * Useful to write tag-length header before encoding the MI.
+ * \param[in] mi  Mobile Identity.
+ * \param[out] mi_digits  If not NULL, store the number of nibbles of used MI data (i.e. strlen(mi->string) or 8 for a TMSI).
+ * \return octets that osmo_mobile_identity_encode_msgb() will write for this mi.
+ */
+int osmo_mobile_identity_encoded_len(const struct osmo_mobile_identity *mi, int *mi_digits)
+{
+	int mi_nibbles;
+	if (!mi)
+		return -EINVAL;
+	switch (mi->type) {
+	case GSM_MI_TYPE_TMSI:
+		mi_nibbles = GSM23003_TMSI_NUM_BYTES * 2;
+		break;
+	case GSM_MI_TYPE_IMSI:
+		mi_nibbles = strlen(mi->imsi);
+		if (mi_nibbles < GSM23003_IMSI_MIN_DIGITS
+		    || mi_nibbles > GSM23003_IMSI_MAX_DIGITS)
+			return -EINVAL;
+		break;
+	case GSM_MI_TYPE_IMEI:
+		mi_nibbles = strlen(mi->imei);
+		if (mi_nibbles < GSM23003_IMEI_NUM_DIGITS_NO_CHK
+		    || mi_nibbles > GSM23003_IMEI_NUM_DIGITS)
+			return -EINVAL;
+		break;
+	case GSM_MI_TYPE_IMEISV:
+		mi_nibbles = strlen(mi->imeisv);
+		if (mi_nibbles != GSM23003_IMEISV_NUM_DIGITS)
+			return -EINVAL;
+		break;
+	default:
+		return -ENOTSUP;
+	}
+
+	if (mi_digits)
+		*mi_digits = mi_nibbles;
+
+	/* one type nibble, plus the MI nibbles, plus a filler nibble to complete the last octet:
+	 * mi_octets = ceil((float)(mi_nibbles + 1) / 2)
+	 */
+	return (mi_nibbles + 2) / 2;
+}
+
+/*! Encode Mobile Identity from uint32_t (TMSI) or digits string (all others) (3GPP TS 24.008 10.5.1.4).
+ *
+ * \param[out] buf  Return buffer for encoded Mobile Identity.
+ * \param[in] buflen  sizeof(buf).
+ * \param[in] mi  Mobile identity to encode.
+ * \param[in] allow_hex  If false, hexadecimal digits (>9) result in an error return value.
+ * \returns Amount of bytes written to buf, or negative on error.
+ */
+int osmo_mobile_identity_encode_buf(uint8_t *buf, size_t buflen, const struct osmo_mobile_identity *mi, bool allow_hex)
+{
+	int rc;
+	int nibbles_len;
+	int mi_octets;
+	const char *mi_str;
+
+	if (!buf || !buflen)
+		return -EIO;
+
+	mi_octets = osmo_mobile_identity_encoded_len(mi, &nibbles_len);
+	if (mi_octets < 0)
+		return mi_octets;
+	if (mi_octets > buflen)
+		return -ENOSPC;
+
+	buf[0] = (mi->type & GSM_MI_TYPE_MASK) | ((nibbles_len & 1) ? GSM_MI_ODD : 0);
+
+	switch (mi->type) {
+	case GSM_MI_TYPE_TMSI:
+		buf[0] |= 0xf0;
+		osmo_store32be(mi->tmsi, &buf[1]);
+		return mi_octets;
+
+	case GSM_MI_TYPE_IMSI:
+		mi_str = mi->imsi;
+		break;
+	case GSM_MI_TYPE_IMEI:
+		mi_str = mi->imei;
+		break;
+	case GSM_MI_TYPE_IMEISV:
+		mi_str = mi->imeisv;
+		break;
+	default:
+		return -ENOTSUP;
+	}
+	rc = osmo_str2bcd(buf, buflen, mi_str, 1, -1, allow_hex);
+	if (rc != mi_octets)
+		return -EINVAL;
+	return mi_octets;
+}
+
+/*! Encode Mobile Identity type and BCD digits, appended to a msgb.
+ * Example to add a GSM48_IE_MOBILE_ID IEI with tag and length to a msgb:
+ *
+ *  struct osmo_mobile_identity mi = { .type = GSM_MI_TYPE_IMSI, .tmsi = random_tmsi, };
+ *  uint8_t *l = msgb_tl_put(msg, GSM48_IE_MOBILE_ID);
+ *  int rc = osmo_mobile_identity_encode_msgb(msg, &mi, false);
+ *  if (rc < 0)
+ *          goto error;
+ *  *l = rc;
+ *
+ * Example to add a BSSGP_IE_IMSI with tag and variable-size length, where the
+ * length needs to be known at the time of writing the IE tag-length header:
+ *
+ *  struct osmo_mobile_identity mi = { .type = GSM_MI_TYPE_IMSI, };
+ *  OSMO_STRLCPY_ARRAY(mi.imsi, pinfo->imsi);
+ *  msgb_tvl_put(msg, BSSGP_IE_IMSI, osmo_mobile_identity_encoded_len(&mi, NULL));
+ *  if (osmo_mobile_identity_encode_msgb(msg, &mi, false) < 0)
+ *          goto error;
+ */
+int osmo_mobile_identity_encode_msgb(struct msgb *msg, const struct osmo_mobile_identity *mi, bool allow_hex)
+{
+	int rc = osmo_mobile_identity_encode_buf(msg->tail, msgb_tailroom(msg), mi, allow_hex);
+	if (rc < 0)
+		return rc;
+	msgb_put(msg, rc);
+	return rc;
+}
+
+/*! Extract Mobile Identity from a Complete Layer 3 message.
+ *
+ * Determine the Mobile Identity data and call osmo_mobile_identity_decode() to return a decoded struct
+ * osmo_mobile_identity.
+ *
+ * \param[out] mi  Return buffer for decoded Mobile Identity.
+ * \param[in] msg  The Complete Layer 3 message to extract from (LU, CM Service Req or Paging Resp).
+ * \returns 0 on success, negative on error: return codes as defined in osmo_mobile_identity_decode(), or
+ *          -ENOTSUP = not a Complete Layer 3 message,
+ */
+int osmo_mobile_identity_decode_from_l3(struct osmo_mobile_identity *mi, struct msgb *msg, bool allow_hex)
+{
+	const struct gsm48_hdr *gh;
+	int8_t pdisc = 0;
+	uint8_t mtype = 0;
+	const struct gsm48_loc_upd_req *lu;
+	const uint8_t *cm2_buf;
+	uint8_t cm2_len;
+	const uint8_t *mi_start;
+	const struct gsm48_pag_resp *paging_response;
+	const uint8_t *mi_data;
+	uint8_t mi_len;
+	const struct gsm48_imsi_detach_ind *idi;
+
+	*mi = (struct osmo_mobile_identity){
+		.type = GSM_MI_TYPE_NONE,
+		.tmsi = GSM_RESERVED_TMSI,
+	};
+
+	if (msgb_l3len(msg) < sizeof(*gh))
+		return -EBADMSG;
+
+	gh = msgb_l3(msg);
+	pdisc = gsm48_hdr_pdisc(gh);
+	mtype = gsm48_hdr_msg_type(gh);
+
+	switch (pdisc) {
+	case GSM48_PDISC_MM:
+
+		switch (mtype) {
+		case GSM48_MT_MM_LOC_UPD_REQUEST:
+			/* First make sure that lu-> can be dereferenced */
+			if (msgb_l3len(msg) < sizeof(*gh) + sizeof(*lu))
+				return -EBADMSG;
+
+			/* Now we know there is enough msgb data to read a lu->mi_len, so also check that */
+			lu = (struct gsm48_loc_upd_req*)gh->data;
+			if (msgb_l3len(msg) < sizeof(*gh) + sizeof(*lu) + lu->mi_len)
+				return -EBADMSG;
+			mi_data = lu->mi;
+			mi_len = lu->mi_len;
+			goto got_mi;
+
+		case GSM48_MT_MM_CM_SERV_REQ:
+		case GSM48_MT_MM_CM_REEST_REQ:
+			/* Unfortunately in Phase1 the Classmark2 length is variable, so we cannot
+			 * just use gsm48_service_request struct, and need to parse it manually. */
+			if (msgb_l3len(msg) < sizeof(*gh) + 2)
+				return -EBADMSG;
+
+			cm2_len = gh->data[1];
+			cm2_buf = gh->data + 2;
+			goto got_cm2;
+
+		case GSM48_MT_MM_IMSI_DETACH_IND:
+			if (msgb_l3len(msg) < sizeof(*gh) + sizeof(*idi))
+				return -EBADMSG;
+			idi = (struct gsm48_imsi_detach_ind*) gh->data;
+			mi_data = idi->mi;
+			mi_len = idi->mi_len;
+			goto got_mi;
+
+		case GSM48_MT_MM_ID_RESP:
+			if (msgb_l3len(msg) < sizeof(*gh) + 2)
+				return -EBADMSG;
+			mi_data = gh->data+1;
+			mi_len = gh->data[0];
+			goto got_mi;
+
+		default:
+			break;
+		}
+		break;
+
+	case GSM48_PDISC_RR:
+
+		switch (mtype) {
+		case GSM48_MT_RR_PAG_RESP:
+			if (msgb_l3len(msg) < sizeof(*gh) + sizeof(*paging_response))
+				return -EBADMSG;
+			paging_response = (struct gsm48_pag_resp*)gh->data;
+			cm2_len = paging_response->cm2_len;
+			cm2_buf = (uint8_t*)&paging_response->cm2;
+			goto got_cm2;
+
+		default:
+			break;
+		}
+		break;
+	}
+
+	return -ENOTSUP;
+
+got_cm2:
+	/* MI (Mobile Identity) LV follows the Classmark2 */
+
+	/* There must be at least a mi_len byte after the CM2 */
+	if (cm2_buf + cm2_len + 1 > msg->tail)
+		return -EBADMSG;
+
+	mi_start = cm2_buf + cm2_len;
+	mi_len = mi_start[0];
+	mi_data = mi_start + 1;
+
+got_mi:
+	/* mi_data points at the start of the Mobile Identity coding of mi_len bytes */
+	if (mi_data + mi_len > msg->tail)
+		return -EBADMSG;
+
+	return osmo_mobile_identity_decode(mi, mi_data, mi_len, allow_hex);
+}
+
+/*! Return a human readable representation of a struct osmo_mobile_identity.
+ * Write a string like "IMSI-1234567", "TMSI-0x1234ABCD" or "NONE", "NULL".
+ * \param[out] buf  String buffer to write to.
+ * \param[in] buflen  sizeof(buf).
+ * \param[in] mi  Decoded Mobile Identity data.
+ * \return the strlen() of the string written when buflen is sufficiently large, like snprintf().
+ */
+int osmo_mobile_identity_to_str_buf(char *buf, size_t buflen, const struct osmo_mobile_identity *mi)
+{
+	struct osmo_strbuf sb = { .buf = buf, .len = buflen };
+	if (!mi)
+		return snprintf(buf, buflen, "NULL");
+	OSMO_STRBUF_PRINTF(sb, "%s", gsm48_mi_type_name(mi->type));
+	switch (mi->type) {
+	case GSM_MI_TYPE_TMSI:
+		OSMO_STRBUF_PRINTF(sb, "-0x%08" PRIX32, mi->tmsi);
+		break;
+	case GSM_MI_TYPE_IMSI:
+		OSMO_STRBUF_PRINTF(sb, "-%s", mi->imsi);
+		break;
+	case GSM_MI_TYPE_IMEI:
+		OSMO_STRBUF_PRINTF(sb, "-%s", mi->imei);
+		break;
+	case GSM_MI_TYPE_IMEISV:
+		OSMO_STRBUF_PRINTF(sb, "-%s", mi->imeisv);
+		break;
+	default:
+		break;
+	}
+	return sb.chars_needed;
+}
+
+/*! Like osmo_mobile_identity_to_str_buf(), but return the string in a talloc buffer.
+ * \param[in] ctx  Talloc context to allocate from.
+ * \param[in] mi  Decoded Mobile Identity data.
+ * \return a string like "IMSI-1234567", "TMSI-0x1234ABCD" or "NONE", "NULL".
+ */
+char *osmo_mobile_identity_to_str_c(void *ctx, const struct osmo_mobile_identity *mi)
+{
+        OSMO_NAME_C_IMPL(ctx, 32, "ERROR", osmo_mobile_identity_to_str_buf, mi)
+}
+
+/*! Compare two osmo_mobile_identity structs, returning typical cmp() result.
+ * \param[in] a  Left side osmo_mobile_identity.
+ * \param[in] b  Right side osmo_mobile_identity.
+ * \returns 0 if both are equal, -1 if a < b, 1 if a > b.
+ */
+int osmo_mobile_identity_cmp(const struct osmo_mobile_identity *a, const struct osmo_mobile_identity *b)
+{
+	int cmp;
+	if (a == b)
+		return 0;
+	if (!a)
+		return -1;
+	if (!b)
+		return 1;
+	cmp = OSMO_CMP(a->type, b->type);
+	if (cmp)
+		return cmp;
+	switch (a->type) {
+	case GSM_MI_TYPE_TMSI:
+		return OSMO_CMP(a->tmsi, b->tmsi);
+	case GSM_MI_TYPE_IMSI:
+		return strncmp(a->imsi, b->imsi, sizeof(a->imsi));
+	case GSM_MI_TYPE_IMEI:
+		return strncmp(a->imei, b->imei, sizeof(a->imei));
+	case GSM_MI_TYPE_IMEISV:
+		return strncmp(a->imeisv, b->imeisv, sizeof(a->imeisv));
+	default:
+		/* No known type, but both have the same type. */
+		return 0;
+	}
 }
 
 /*! Checks is particular message is cipherable in A/Gb mode according to
@@ -676,7 +1124,8 @@ void gsm48_set_dtx(struct gsm48_cell_options *op, enum gsm48_dtx_mode full,
 	}
 }
 
-/*! Generate TS 04.08 Mobile ID from TMSI
+/*! Deprecated, see osmo_mobile_identity instead.
+ * Generate TS 04.08 Mobile ID from TMSI
  *  \param[out] buf Caller-provided output buffer (7 bytes)
  *  \param[in] tmsi TMSI to be encoded
  *  \returns number of byes encoded (always 7) */
@@ -692,7 +1141,8 @@ int gsm48_generate_mid_from_tmsi(uint8_t *buf, uint32_t tmsi)
 	return 7;
 }
 
-/*! Generate TS 24.008 §10.5.1.4 Mobile ID of BCD type from ASCII string
+/*! Deprecated, see osmo_mobile_identity instead.
+ * Generate TS 24.008 §10.5.1.4 Mobile ID of BCD type from ASCII string
  *  \param[out] buf Caller-provided output buffer of at least GSM48_MID_MAX_SIZE bytes
  *  \param[in] id Identity to be encoded
  *  \param[in] mi_type Type of identity (e.g. GSM_MI_TYPE_IMSI, IMEI, IMEISV)
@@ -724,7 +1174,8 @@ uint8_t gsm48_generate_mid(uint8_t *buf, const char *id, uint8_t mi_type)
 	return 2 + buf[1];
 }
 
-/*! Generate TS 04.08 Mobile ID from IMSI
+/*! Deprecated, see osmo_mobile_identity instead.
+ * Generate TS 04.08 Mobile ID from IMSI
  *  \param[out] buf Caller-provided output buffer
  *  \param[in] imsi IMSI to be encoded
  *  \returns number of bytes used in \a buf */
@@ -733,7 +1184,8 @@ int gsm48_generate_mid_from_imsi(uint8_t *buf, const char *imsi)
 	return gsm48_generate_mid(buf, imsi, GSM_MI_TYPE_IMSI);
 }
 
-/*! Convert TS 04.08 Mobile Identity (10.5.1.4) to string.
+/*! Deprecated, see osmo_mobile_identity instead.
+ * Convert TS 04.08 Mobile Identity (10.5.1.4) to string.
  * This function does not validate the Mobile Identity digits, i.e. digits > 9 are returned as 'A'-'F'.
  *  \param[out] string Caller-provided buffer for output
  *  \param[in] str_len Length of \a string in bytes

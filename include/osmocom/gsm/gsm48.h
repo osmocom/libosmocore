@@ -4,10 +4,12 @@
 
 #include <stdbool.h>
 
+#include <osmocom/core/defs.h>
 #include <osmocom/core/msgb.h>
 
 #include <osmocom/gsm/tlv.h>
 #include <osmocom/gsm/protocol/gsm_04_08.h>
+#include <osmocom/gsm/protocol/gsm_23_003.h>
 #include <osmocom/gsm/gsm48_ie.h>
 #include <osmocom/gsm/gsm23003.h>
 
@@ -48,16 +50,55 @@ void gsm48_generate_lai(struct gsm48_loc_area_id *lai48, uint16_t mcc,
 void gsm48_generate_lai2(struct gsm48_loc_area_id *lai48, const struct osmo_location_area_id *lai);
 
 #define GSM48_MID_MAX_SIZE	11
-int gsm48_generate_mid_from_tmsi(uint8_t *buf, uint32_t tmsi);
-int gsm48_generate_mid_from_imsi(uint8_t *buf, const char *imsi);
-uint8_t gsm48_generate_mid(uint8_t *buf, const char *id, uint8_t mi_type);
+int gsm48_generate_mid_from_tmsi(uint8_t *buf, uint32_t tmsi)
+	OSMO_DEPRECATED_OUTSIDE("Instead use: l = msgb_tl_put(msg, GSM48_IE_MOBILE_ID);"
+				" *l = osmo_mobile_identity_encode_msgb(...)");
+int gsm48_generate_mid_from_imsi(uint8_t *buf, const char *imsi)
+	OSMO_DEPRECATED_OUTSIDE("Instead use: l = msgb_tl_put(msg, GSM48_IE_MOBILE_ID);"
+				" *l = osmo_mobile_identity_encode_msgb(...)");
+uint8_t gsm48_generate_mid(uint8_t *buf, const char *id, uint8_t mi_type)
+	OSMO_DEPRECATED_OUTSIDE("Instead use: l = msgb_tl_put(msg, GSM48_IE_MOBILE_ID);"
+				" *l = osmo_mobile_identity_encode_msgb(...)");
 
-/* Convert Mobile Identity (10.5.1.4) to string */
-int gsm48_mi_to_string(char *string, int str_len, const uint8_t *mi, int mi_len);
 const char *gsm48_mi_type_name(uint8_t mi);
-const char *osmo_mi_name(const uint8_t *mi, uint8_t mi_len);
-char *osmo_mi_name_buf(char *buf, size_t buf_len, const uint8_t *mi, uint8_t mi_len);
-char *osmo_mi_name_c(const void *ctx, const uint8_t *mi, uint8_t mi_len);
+/* Convert encoded Mobile Identity (10.5.1.4) to string */
+int gsm48_mi_to_string(char *string, int str_len, const uint8_t *mi, int mi_len)
+	OSMO_DEPRECATED_OUTSIDE("Instead use osmo_mobile_identity_decode()");
+const char *osmo_mi_name(const uint8_t *mi, uint8_t mi_len)
+	OSMO_DEPRECATED_OUTSIDE("Instead use osmo_mobile_identity_to_str_c()");
+char *osmo_mi_name_buf(char *buf, size_t buf_len, const uint8_t *mi, uint8_t mi_len)
+	OSMO_DEPRECATED_OUTSIDE("Instead use osmo_mobile_identity_to_str_buf()");
+char *osmo_mi_name_c(const void *ctx, const uint8_t *mi, uint8_t mi_len)
+	OSMO_DEPRECATED_OUTSIDE("Instead use osmo_mobile_identity_to_str_c()");
+
+/*! Decoded representation of a Mobile Identity (3GPP TS 24.008 10.5.1.4).
+ * See osmo_mobile_identity_decode() and osmo_mobile_identity_from_l3(). */
+struct osmo_mobile_identity {
+	/*! A GSM_MI_TYPE_* constant (like GSM_MI_TYPE_IMSI). */
+	uint8_t type;
+	/*! Decoded Mobile Identity digits or TMSI value. IMSI, IMEI and IMEISV as digits like
+	 * "12345678", and TMSI is represented as raw uint32_t. */
+	union {
+		/*! type == GSM_MI_TYPE_IMSI. */
+		char imsi[GSM23003_IMSI_MAX_DIGITS + 1];
+		/*! type == GSM_MI_TYPE_IMEI. */
+		char imei[GSM23003_IMEI_NUM_DIGITS + 1];
+		/*! type == GSM_MI_TYPE_IMEISV. */
+		char imeisv[GSM23003_IMEISV_NUM_DIGITS + 1];
+		/*! TMSI / P-TMSI / M-TMSI integer value if type == GSM_MI_TYPE_TMSI. */
+		uint32_t tmsi;
+	};
+};
+
+int osmo_mobile_identity_to_str_buf(char *buf, size_t buflen, const struct osmo_mobile_identity *mi);
+char *osmo_mobile_identity_to_str_c(void *ctx, const struct osmo_mobile_identity *mi);
+int osmo_mobile_identity_cmp(const struct osmo_mobile_identity *a, const struct osmo_mobile_identity *b);
+int osmo_mobile_identity_decode(struct osmo_mobile_identity *mi, const uint8_t *mi_data, uint8_t mi_len,
+				bool allow_hex);
+int osmo_mobile_identity_decode_from_l3(struct osmo_mobile_identity *mi, struct msgb *msg, bool allow_hex);
+int osmo_mobile_identity_encoded_len(const struct osmo_mobile_identity *mi, int *mi_digits);
+int osmo_mobile_identity_encode_buf(uint8_t *buf, size_t buflen, const struct osmo_mobile_identity *mi, bool allow_hex);
+int osmo_mobile_identity_encode_msgb(struct msgb *msg, const struct osmo_mobile_identity *mi, bool allow_hex);
 
 /* Parse Routeing Area Identifier */
 void gsm48_parse_ra(struct gprs_ra_id *raid, const uint8_t *buf);
