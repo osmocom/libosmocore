@@ -297,7 +297,9 @@ bool osmo_str_startswith(const char *str, const char *startswith_str);
  * \param[in] INITIAL_BUFSIZE  Which size to first talloc from ctx -- a larger size makes a reallocation less likely, a
  * 	smaller size allocates less unused bytes, zero allocates once but still runs the string composition twice.
  * \param[in] ON_ERROR  String constant to copy on error rc returned by FUNC_BUF, or NULL to return NULL.
- * \param[in] FUNC_BUF  Name of a function with signature foo_buf(char *buf, size_t buflen, ...).
+ * \param[in] FUNC_BUF  Name of a function with signature int foo_buf(char *buf, size_t buflen, ...).
+ *                      The function must return the strlen() that it would write to a sufficiently large buffer or
+ *                      negative on error, like snprintf().
  * \param[in] FUNC_BUF_ARGS  Additional arguments to pass to FUNC_BUF after the buf and buflen.
  */
 #define OSMO_NAME_C_IMPL(CTX, INITIAL_BUFSIZE, ON_ERROR, FUNC_BUF, FUNC_BUF_ARGS...) \
