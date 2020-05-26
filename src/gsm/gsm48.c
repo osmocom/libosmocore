@@ -479,9 +479,10 @@ char *osmo_mi_name_buf(char *buf, size_t buf_len, const uint8_t *mi, uint8_t mi_
 		if (mi_len == GSM48_TMSI_LEN && mi[0] == (0xf0 | GSM_MI_TYPE_TMSI)) {
 			tmsi = osmo_load32be(&mi[1]);
 			snprintf(buf, buf_len, "TMSI-0x%08" PRIX32, tmsi);
-			return buf;
+		} else {
+			snprintf(buf, buf_len, "TMSI-invalid");
 		}
-		return "TMSI-invalid";
+		return buf;
 
 	case GSM_MI_TYPE_IMSI:
 	case GSM_MI_TYPE_IMEI:
@@ -491,7 +492,8 @@ char *osmo_mi_name_buf(char *buf, size_t buf_len, const uint8_t *mi, uint8_t mi_
 		return buf;
 
 	default:
-		return "unknown";
+		snprintf(buf, buf_len, "unknown");
+		return buf;
 	}
 }
 
