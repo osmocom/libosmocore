@@ -178,22 +178,17 @@ int bssgp_tx_radio_status_imsi(struct bssgp_bvc_ctx *bctx, uint8_t cause,
 				const char *imsi)
 {
 	struct msgb *msg = common_tx_radio_status(bctx);
-	uint8_t mi[GSM48_MID_MAX_SIZE];
-	int imsi_len = gsm48_generate_mid_from_imsi(mi, imsi);
+	struct osmo_mobile_identity mi = { .type = GSM_MI_TYPE_IMSI, };
+	OSMO_STRLCPY_ARRAY(mi.imsi, imsi);
 
 	if (!msg)
 		return -ENOMEM;
-/* gsm48_generate_mid_from_imsi() is guaranteed to never return more than 11,
- * but somehow gcc (8.2) is not smart enough to figure this out and claims that
- * the memcpy in msgb_tvlv_put() below will cause and out-of-bounds access up to
- * mi[131], which is wrong */
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Warray-bounds"
-	OSMO_ASSERT(imsi_len <= GSM48_MID_MAX_SIZE);
-	/* strip the MI type and length values (2 bytes) */
-	if (imsi_len > 2)
-		msgb_tvlv_put(msg, BSSGP_IE_IMSI, imsi_len-2, mi+2);
-#pragma GCC diagnostic pop
+
+	msgb_tvl_put(msg, BSSGP_IE_IMSI, osmo_mobile_identity_encoded_len(&mi, NULL));
+	if (osmo_mobile_identity_encode_msgb(msg, &mi, false) <= 0) {
+		msgb_free(msg);
+		return -EINVAL;
+	}
 	LOGPC(DBSSGP, LOGL_NOTICE, "IMSI=%s ", imsi);
 
 	return common_tx_radio_status2(msg, cause);
@@ -486,6 +481,7 @@ int bssgp_rx_paging(struct bssgp_paging_info *pinfo,
 	struct tlv_parsed tp;
 	uint8_t ra[6];
 	int rc, data_len;
+	struct osmo_mobile_identity mi;
 
 	memset(ra, 0, sizeof(ra));
 
@@ -510,9 +506,11 @@ int bssgp_rx_paging(struct bssgp_paging_info *pinfo,
 		goto err_mand_ie;
 	if (!pinfo->imsi)
 		pinfo->imsi = talloc_zero_size(pinfo, GSM_IMSI_LENGTH);
-	gsm48_mi_to_string(pinfo->imsi, GSM_IMSI_LENGTH,
-			   TLVP_VAL(&tp, BSSGP_IE_IMSI),
-			   TLVP_LEN(&tp, BSSGP_IE_IMSI));
+	if (osmo_mobile_identity_decode(&mi, TLVP_VAL(&tp, BSSGP_IE_IMSI), TLVP_LEN(&tp, BSSGP_IE_IMSI), false))
+		goto err_mand_ie;
+	if (mi.type != GSM_MI_TYPE_IMSI)
+		goto err_mand_ie;
+	osmo_talloc_replace_string(pinfo, &pinfo->imsi, mi.imsi);
 
 	/* DRX Parameters */
 	if (!TLVP_PRESENT(&tp, BSSGP_IE_DRX_PARAMS))

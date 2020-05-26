@@ -1170,19 +1170,20 @@ int bssgp_tx_dl_ud(struct msgb *msg, uint16_t pdu_lifetime,
 
 	/* IMSI */
 	if (dup->imsi && strlen(dup->imsi)) {
-		uint8_t mi[GSM48_MID_MAX_SIZE];
-/* gsm48_generate_mid_from_imsi() is guaranteed to never return more than 11,
- * but somehow gcc (8.2) is not smart enough to figure this out and claims that
- * the memcpy in msgb_tvlv_put() below will cause and out-of-bounds access up to
- * mi[131], which is wrong */
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Warray-bounds"
-		int imsi_len = gsm48_generate_mid_from_imsi(mi, dup->imsi);
-		OSMO_ASSERT(imsi_len <= GSM48_MID_MAX_SIZE);
-		if (imsi_len > 2)
-			msgb_tvlv_push(msg, BSSGP_IE_IMSI,
-				imsi_len-2, mi+2);
-#pragma GCC diagnostic pop
+		struct osmo_mobile_identity mi = { .type = GSM_MI_TYPE_IMSI, };
+		OSMO_STRLCPY_ARRAY(mi.imsi, dup->imsi);
+		msgb_tvl_put(msg, BSSGP_IE_IMSI, osmo_mobile_identity_encoded_len(&mi, NULL));
+		if (osmo_mobile_identity_encode_msgb(msg, &mi, false) <= 0) {
+			if (log_check_level(DBSSGP, LOGL_NOTICE)) {
+				char strbuf[64];
+				osmo_mobile_identity_to_str_buf(strbuf, sizeof(strbuf), &mi);
+				LOGP(DBSSGP, LOGL_ERROR,
+				     "NSEI=%u/BVCI=%u Cannot encode Mobile Identity %s\n",
+				     nsei, bvci, strbuf);
+			}
+			msgb_free(msg);
+			return -EINVAL;
+		}
 	}
 
 	/* DRX parameters */
@@ -1227,12 +1228,8 @@ int bssgp_tx_paging(uint16_t nsei, uint16_t ns_bvci,
 	struct bssgp_normal_hdr *bgph =
 			(struct bssgp_normal_hdr *) msgb_put(msg, sizeof(*bgph));
 	uint16_t drx_params = osmo_htons(pinfo->drx_params);
-	uint8_t mi[GSM48_MID_MAX_SIZE];
-	int imsi_len = gsm48_generate_mid_from_imsi(mi, pinfo->imsi);
 	struct gsm48_ra_id ra;
-
-	if (imsi_len < 2)
-		return -EINVAL;
+	struct osmo_mobile_identity mi;
 
 	msgb_nsei(msg) = nsei;
 	msgb_bvci(msg) = ns_bvci;
@@ -1241,16 +1238,23 @@ int bssgp_tx_paging(uint16_t nsei, uint16_t ns_bvci,
 		bgph->pdu_type = BSSGP_PDUT_PAGING_PS;
 	else
 		bgph->pdu_type = BSSGP_PDUT_PAGING_CS;
+
 	/* IMSI */
-/* gsm48_generate_mid_from_imsi() is guaranteed to never return more than 11,
- * but somehow gcc (8.2) is not smart enough to figure this out and claims that
- * the memcpy in msgb_tvlv_put() below will cause and out-of-bounds access up to
- * mi[131], which is wrong */
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Warray-bounds"
-	OSMO_ASSERT(imsi_len <= GSM48_MID_MAX_SIZE);
-	msgb_tvlv_put(msg, BSSGP_IE_IMSI, imsi_len-2, mi+2);
-#pragma GCC diagnostic pop
+	mi = (struct osmo_mobile_identity){ .type = GSM_MI_TYPE_IMSI, };
+	OSMO_STRLCPY_ARRAY(mi.imsi, pinfo->imsi);
+	msgb_tvl_put(msg, BSSGP_IE_IMSI, osmo_mobile_identity_encoded_len(&mi, NULL));
+	if (osmo_mobile_identity_encode_msgb(msg, &mi, false) <= 0) {
+		if (log_check_level(DBSSGP, LOGL_NOTICE)) {
+			char strbuf[64];
+			osmo_mobile_identity_to_str_buf(strbuf, sizeof(strbuf), &mi);
+			LOGP(DBSSGP, LOGL_ERROR,
+			     "NSEI=%u/BVCI=%u Cannot encode Mobile Identity %s\n",
+			     nsei, ns_bvci, strbuf);
+		}
+		msgb_free(msg);
+		return -EINVAL;
+	}
+
 	/* DRX Parameters */
 	msgb_tvlv_put(msg, BSSGP_IE_DRX_PARAMS, 2,
 			(uint8_t *) &drx_params);

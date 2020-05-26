@@ -730,9 +730,10 @@ struct msgb *gsm0808_create_paging2(const char *imsi, const uint32_t *tmsi,
 				    const uint8_t *chan_needed)
 {
 	struct msgb *msg;
-	uint8_t mid_buf[GSM48_MI_SIZE + 2];
-	int mid_len;
+	struct osmo_mobile_identity mi;
 	uint32_t tmsi_sw;
+	uint8_t *l;
+	int rc;
 
 	/* Mandatory elements! */
 	OSMO_ASSERT(imsi);
@@ -750,8 +751,15 @@ struct msgb *gsm0808_create_paging2(const char *imsi, const uint32_t *tmsi,
 	msgb_v_put(msg, BSS_MAP_MSG_PAGING);
 
 	/* mandatory IMSI 3.2.2.6 */
-	mid_len = gsm48_generate_mid_from_imsi(mid_buf, imsi);
-	msgb_tlv_put(msg, GSM0808_IE_IMSI, mid_len - 2, mid_buf + 2);
+	mi = (struct osmo_mobile_identity){ .type = GSM_MI_TYPE_IMSI, };
+	OSMO_STRLCPY_ARRAY(mi.imsi, imsi);
+	l = msgb_tl_put(msg, GSM0808_IE_IMSI);
+	rc = osmo_mobile_identity_encode_msgb(msg, &mi, false);
+	if (rc <= 0) {
+		msgb_free(msg);
+		return NULL;
+	}
+	*l = rc;
 
 	/* TMSI 3.2.2.7 */
 	if (tmsi) {
@@ -967,9 +975,17 @@ struct msgb *gsm0808_create_handover_request(const struct gsm0808_handover_reque
 
 	/* IMSI 3.2.2.6 */
 	if (params->imsi) {
-		uint8_t mid_buf[GSM48_MI_SIZE + 2];
-		int mid_len = gsm48_generate_mid_from_imsi(mid_buf, params->imsi);
-		msgb_tlv_put(msg, GSM0808_IE_IMSI, mid_len - 2, mid_buf + 2);
+		uint8_t *l;
+		int rc;
+		struct osmo_mobile_identity mi = { .type = GSM_MI_TYPE_IMSI, };
+		OSMO_STRLCPY_ARRAY(mi.imsi, params->imsi);
+		l = msgb_tl_put(msg, GSM0808_IE_IMSI);
+		rc = osmo_mobile_identity_encode_msgb(msg, &mi, false);
+		if (rc <= 0) {
+			msgb_free(msg);
+			return NULL;
+		}
+		*l = rc;
 	}
 
 	if (params->aoip_transport_layer)
