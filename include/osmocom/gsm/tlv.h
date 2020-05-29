@@ -111,6 +111,14 @@ static inline uint8_t *tlv_put(uint8_t *buf, uint8_t tag, uint8_t len,
 	return buf + len;
 }
 
+/*! put (append) a TL field (a TLV field but omitting the value part). */
+static inline uint8_t *tl_put(uint8_t *buf, uint8_t tag, uint8_t len)
+{
+	*buf++ = tag;
+	*buf++ = len;
+	return buf;
+}
+
 /*! put (append) a TLV16 field */
 static inline uint8_t *tlv16_put(uint8_t *buf, uint8_t tag, uint8_t len,
 				const uint16_t *val)
@@ -130,6 +138,15 @@ static inline uint8_t *tl16v_put(uint8_t *buf, uint8_t tag, uint16_t len,
 	*buf++ = len & 0xff;
 	memcpy(buf, val, len);
 	return buf + len*2;
+}
+
+/*! put (append) a TL16 field. */
+static inline uint8_t *tl16_put(uint8_t *buf, uint8_t tag, uint16_t len)
+{
+	*buf++ = tag;
+	*buf++ = len >> 8;
+	*buf++ = len & 0xff;
+	return buf;
 }
 
 /*! put (append) a TL16V field */
@@ -154,6 +171,23 @@ static inline uint8_t *tvlv_put(uint8_t *buf, uint8_t tag, uint16_t len,
 		buf[1] |= 0x80;
 	} else
 		ret = tl16v_put(buf, tag, len, val);
+
+	return ret;
+}
+
+/*! put (append) a TvL field (a TvLV with variable-size length, where the value part's length is already known, but will
+ * be put() later).
+ * \returns pointer to the value's start position.
+ */
+static inline uint8_t *tvl_put(uint8_t *buf, uint8_t tag, uint16_t len)
+{
+	uint8_t *ret;
+
+	if (len <= TVLV_MAX_ONEBYTE) {
+		ret = tl_put(buf, tag, len);
+		buf[1] |= 0x80;
+	} else
+		ret = tl16_put(buf, tag, len);
 
 	return ret;
 }
@@ -213,6 +247,17 @@ static inline uint8_t *msgb_t16lv_put(struct msgb *msg, uint16_t tag, uint8_t le
 {
 	uint8_t *buf = msgb_put(msg, T16LV_GROSS_LEN(len));
 	return t16lv_put(buf, tag, len, val);
+}
+
+/*! put (append) a TvL field to \ref msgb, i.e. a TvLV with variable-size length, where the value's length is already
+ * known, but will be put() later. The value section is not yet reserved, only tag and variable-length are put in the
+ * msgb.
+ * \returns pointer to the value's start position and end of the msgb.
+ */
+static inline uint8_t *msgb_tvl_put(struct msgb *msg, uint8_t tag, uint16_t len)
+{
+	uint8_t *buf = msgb_put(msg, TVLV_GROSS_LEN(len));
+	return tvl_put(buf, tag, len);
 }
 
 /*! put (append) a TvLV field to \ref msgb */
