@@ -37,6 +37,12 @@ static inline int osmo_bts_set_feature(struct bitvec *features, enum osmo_bts_fe
 	return bitvec_set_bit_pos(features, feature, 1);
 }
 
+static inline int osmo_bts_unset_feature(struct bitvec *features, enum osmo_bts_features feature)
+{
+	OSMO_ASSERT(_NUM_BTS_FEAT < MAX_BTS_FEATURES);
+	return bitvec_set_bit_pos(features, feature, 0);
+}
+
 static inline bool osmo_bts_has_feature(const struct bitvec *features, enum osmo_bts_features feature)
 {
 	OSMO_ASSERT(_NUM_BTS_FEAT < MAX_BTS_FEATURES);
