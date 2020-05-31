@@ -40,5 +40,5 @@ static inline int osmo_bts_set_feature(struct bitvec *features, enum osmo_bts_fe
 static inline bool osmo_bts_has_feature(const struct bitvec *features, enum osmo_bts_features feature)
 {
 	OSMO_ASSERT(_NUM_BTS_FEAT < MAX_BTS_FEATURES);
-	return bitvec_get_bit_pos(features, feature);
+	return bitvec_get_bit_pos(features, feature) == ONE;
 }
