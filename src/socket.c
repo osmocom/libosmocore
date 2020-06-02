@@ -260,8 +260,11 @@ int osmo_sock_init2(uint16_t family, uint16_t type, uint8_t proto,
 		   const char *local_host, uint16_t local_port,
 		   const char *remote_host, uint16_t remote_port, unsigned int flags)
 {
-	struct addrinfo *result, *rp;
+	struct addrinfo *local = NULL, *remote = NULL, *rp;
 	int sfd = -1, rc, on = 1;
+
+	bool local_ipv4 = false, local_ipv6 = false;
+	bool remote_ipv4 = false, remote_ipv6 = false;
 
 	if ((flags & (OSMO_SOCK_F_BIND | OSMO_SOCK_F_CONNECT)) == 0) {
 		LOGP(DLGLOBAL, LOGL_ERROR, "invalid: you have to specify either "
@@ -269,13 +272,73 @@ int osmo_sock_init2(uint16_t family, uint16_t type, uint8_t proto,
 		return -EINVAL;
 	}
 
+	/* figure out local address infos */
+	if (flags & OSMO_SOCK_F_BIND) {
+		local = addrinfo_helper(family, type, proto, local_host, local_port, true);
+		if (!local)
+			return -EINVAL;
+	}
+
+	/* figure out remote address infos */
+	if (flags & OSMO_SOCK_F_CONNECT) {
+		remote = addrinfo_helper(family, type, proto, remote_host, remote_port, false);
+		if (!remote) {
+			if (local)
+				freeaddrinfo(local);
+
+			return -EINVAL;
+		}
+	}
+
+	/* It must do a full run to ensure AF_UNSPEC does not fail.
+	 * In case first local valid entry is IPv4 and only remote valid entry
+	 * is IPv6 or vice versa */
+	if (family == AF_UNSPEC) {
+		for (rp = local; rp != NULL; rp = rp->ai_next) {
+			switch (rp->ai_family) {
+				case AF_INET:
+					local_ipv4 = true;
+					break;
+				case AF_INET6:
+					local_ipv6 = true;
+					break;
+			}
+		}
+
+		for (rp = remote; rp != NULL; rp = rp->ai_next) {
+			switch (rp->ai_family) {
+				case AF_INET:
+					remote_ipv4 = true;
+					break;
+				case AF_INET6:
+					remote_ipv6 = true;
+					break;
+			}
+		}
+
+		/* priotize ipv6 as per RFC */
+		if (local_ipv6 && remote_ipv6)
+			family = AF_INET6;
+		else if (local_ipv4 && remote_ipv4)
+			family = AF_INET;
+		else {
+			if (local)
+				freeaddrinfo(local);
+			if (remote)
+				freeaddrinfo(remote);
+			LOGP(DLGLOBAL, LOGL_ERROR, "Unable to find a common protocol (IPv4 or IPv6) for local host: %s and remote host: %s.\n",
+			     local_host, remote_host);
+			return -ENODEV;
+		}
+	}
+
 	/* figure out local side of socket */
 	if (flags & OSMO_SOCK_F_BIND) {
-		result = addrinfo_helper(family, type, proto, local_host, local_port, true);
-		if (!result)
-			return -EINVAL;
+		for (rp = local; rp != NULL; rp = rp->ai_next) {
+			/* When called with AF_UNSPEC, family will set to IPv4 or IPv6 */
+			if (rp->ai_family != family)
+				continue;
 
-		for (rp = result; rp != NULL; rp = rp->ai_next) {
 			sfd = socket_helper(rp, flags);
 			if (sfd < 0)
 				continue;
@@ -302,8 +365,11 @@ int osmo_sock_init2(uint16_t family, uint16_t type, uint8_t proto,
 			}
 			break;
 		}
-		freeaddrinfo(result);
+
+		freeaddrinfo(local);
 		if (rp == NULL) {
+			if (remote)
+				freeaddrinfo(remote);
 			LOGP(DLGLOBAL, LOGL_ERROR, "no suitable local addr found for: %s:%u\n",
 				local_host, local_port);
 			return -ENODEV;
@@ -316,14 +382,11 @@ int osmo_sock_init2(uint16_t family, uint16_t type, uint8_t proto,
 
 	/* figure out remote side of socket */
 	if (flags & OSMO_SOCK_F_CONNECT) {
-		result = addrinfo_helper(family, type, proto, remote_host, remote_port, false);
-		if (!result) {
-			if (sfd >= 0)
-				close(sfd);
-			return -EINVAL;
-		}
+		for (rp = remote; rp != NULL; rp = rp->ai_next) {
+			/* When called with AF_UNSPEC, family will set to IPv4 or IPv6 */
+			if (rp->ai_family != family)
+				continue;
 
-		for (rp = result; rp != NULL; rp = rp->ai_next) {
 			if (sfd < 0) {
 				sfd = socket_helper(rp, flags);
 				if (sfd < 0)
@@ -343,7 +406,8 @@ int osmo_sock_init2(uint16_t family, uint16_t type, uint8_t proto,
 			}
 			break;
 		}
-		freeaddrinfo(result);
+
+		freeaddrinfo(remote);
 		if (rp == NULL) {
 			LOGP(DLGLOBAL, LOGL_ERROR, "no suitable remote addr found for: %s:%u\n",
 				remote_host, remote_port);

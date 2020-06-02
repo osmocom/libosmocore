@@ -120,6 +120,27 @@ static int test_sockinit2(void)
 	 * FreeBSD 10 or 11 VM at home */
 	OSMO_ASSERT(!strncmp(name, "(r=127.0.0.1:53<->l=127.0.0.1", 29));
 #endif
+
+	printf("Checking osmo_sock_init2(AF_UNSPEC) must fail on mixed IPv4 & IPv6\n");
+	fd = osmo_sock_init2(AF_UNSPEC, SOCK_DGRAM, IPPROTO_UDP, "127.0.0.1", 0, "::1", 53,
+			     OSMO_SOCK_F_BIND|OSMO_SOCK_F_CONNECT);
+	OSMO_ASSERT(fd < 0);
+
+	printf("Checking osmo_sock_init2(AF_UNSPEC) must fail on mixed IPv6 & IPv4\n");
+	fd = osmo_sock_init2(AF_UNSPEC, SOCK_DGRAM, IPPROTO_UDP, "::1", 0, "127.0.0.1", 53,
+			     OSMO_SOCK_F_BIND|OSMO_SOCK_F_CONNECT);
+	OSMO_ASSERT(fd < 0);
+
+	printf("Checking osmo_sock_init2(AF_UNSPEC) BIND + CONNECT on IPv4\n");
+	fd = osmo_sock_init2(AF_UNSPEC, SOCK_DGRAM, IPPROTO_UDP, "127.0.0.1", 0, "127.0.0.1", 53,
+			     OSMO_SOCK_F_BIND|OSMO_SOCK_F_CONNECT);
+	OSMO_ASSERT(fd >= 0);
+
+	printf("Checking osmo_sock_init2(AF_UNSPEC) BIND + CONNECT on IPv6\n");
+	fd = osmo_sock_init2(AF_UNSPEC, SOCK_DGRAM, IPPROTO_UDP, "::1", 0, "::1", 53,
+			     OSMO_SOCK_F_BIND|OSMO_SOCK_F_CONNECT);
+	OSMO_ASSERT(fd >= 0);
+
 	talloc_free(name);
 
 	return 0;
