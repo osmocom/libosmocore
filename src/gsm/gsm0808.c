@@ -24,6 +24,7 @@
 #include <string.h>
 
 #include <osmocom/core/byteswap.h>
+#include <osmocom/core/endian.h>
 #include <osmocom/gsm/gsm0808.h>
 #include <osmocom/gsm/gsm0808_utils.h>
 #include <osmocom/gsm/protocol/gsm_08_08.h>
@@ -515,7 +516,16 @@ struct msgb *gsm0808_create_ass2(const struct gsm0808_channel_type *ct,
 
 	/* AoIP: Call Identifier 3.2.2.105 */
 	if (ci) {
-		ci_sw = osmo_htonl(*ci);
+		/* NOTE: 3GPP TS 48.008, section 3.2.2.105 specifies that
+		   the least significant byte should be transmitted first.
+		   On x86, this would mean that the endieness is already
+		   correct, however a platform independed implementation
+		   is required: */
+#ifndef OSMO_IS_LITTLE_ENDIAN
+		ci_sw = osmo_swab32(*ci);
+#else
+		ci_sw = *ci;
+#endif
 		msgb_tv_fixed_put(msg, GSM0808_IE_CALL_ID, sizeof(ci_sw),
 				  (uint8_t *) & ci_sw);
 	}
