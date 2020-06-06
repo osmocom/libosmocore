@@ -90,6 +90,32 @@ static int config_write_ns(struct vty *vty)
 
 	vty_out(vty, "ns%s", VTY_NEWLINE);
 
+	/* global configuration must be written first, as some of it may be
+	 * relevant when creating the NSE/NSVC later below */
+
+	if (vty_nsi->nsip.local_ip) {
+		ia.s_addr = osmo_htonl(vty_nsi->nsip.local_ip);
+		vty_out(vty, " encapsulation udp local-ip %s%s",
+			inet_ntoa(ia), VTY_NEWLINE);
+	}
+	if (vty_nsi->nsip.local_port)
+		vty_out(vty, " encapsulation udp local-port %u%s",
+			vty_nsi->nsip.local_port, VTY_NEWLINE);
+	if (vty_nsi->nsip.dscp)
+		vty_out(vty, " encapsulation udp dscp %d%s",
+			vty_nsi->nsip.dscp, VTY_NEWLINE);
+
+	vty_out(vty, " encapsulation udp use-reset-block-unblock %s%s",
+		vty_nsi->nsip.use_reset_block_unblock ? "enabled" : "disabled", VTY_NEWLINE);
+
+	vty_out(vty, " encapsulation framerelay-gre enabled %u%s",
+		vty_nsi->frgre.enabled ? 1 : 0, VTY_NEWLINE);
+	if (vty_nsi->frgre.local_ip) {
+		ia.s_addr = osmo_htonl(vty_nsi->frgre.local_ip);
+		vty_out(vty, " encapsulation framerelay-gre local-ip %s%s",
+			inet_ntoa(ia), VTY_NEWLINE);
+	}
+
 	llist_for_each_entry(nsvc, &vty_nsi->gprs_nsvcs, list) {
 		if (!nsvc->persistent)
 			continue;
@@ -129,26 +155,6 @@ static int config_write_ns(struct vty *vty)
 		vty_out(vty, " timer %s %u%s",
 			get_value_string(gprs_ns_timer_strs, i),
 			vty_nsi->timeout[i], VTY_NEWLINE);
-
-	if (vty_nsi->nsip.local_ip) {
-		ia.s_addr = osmo_htonl(vty_nsi->nsip.local_ip);
-		vty_out(vty, " encapsulation udp local-ip %s%s",
-			inet_ntoa(ia), VTY_NEWLINE);
-	}
-	if (vty_nsi->nsip.local_port)
-		vty_out(vty, " encapsulation udp local-port %u%s",
-			vty_nsi->nsip.local_port, VTY_NEWLINE);
-	if (vty_nsi->nsip.dscp)
-		vty_out(vty, " encapsulation udp dscp %d%s",
-			vty_nsi->nsip.dscp, VTY_NEWLINE);
-
-	vty_out(vty, " encapsulation framerelay-gre enabled %u%s",
-		vty_nsi->frgre.enabled ? 1 : 0, VTY_NEWLINE);
-	if (vty_nsi->frgre.local_ip) {
-		ia.s_addr = osmo_htonl(vty_nsi->frgre.local_ip);
-		vty_out(vty, " encapsulation framerelay-gre local-ip %s%s",
-			inet_ntoa(ia), VTY_NEWLINE);
-	}
 
 	return CMD_SUCCESS;
 }
@@ -500,6 +506,21 @@ DEFUN(cfg_nsip_dscp, cfg_nsip_dscp_cmd,
 	return CMD_SUCCESS;
 }
 
+DEFUN(cfg_nsip_res_block_unblock, cfg_nsip_res_block_unblock_cmd,
+	"encapsulation udp use-reset-block-unblock (enabled|disabled)",
+	ENCAPS_STR "NS over UDP Encapsulation\n"
+	"Use NS-{RESET,BLOCK,UNBLOCK} procedures in violation of 3GPP TS 48.016\n"
+	"Enable NS-{RESET,BLOCK,UNBLOCK}\n"
+	"Disable NS-{RESET,BLOCK,UNBLOCK}\n")
+{
+	if (!strcmp(argv[0], "enabled"))
+		vty_nsi->nsip.use_reset_block_unblock = true;
+	else
+		vty_nsi->nsip.use_reset_block_unblock = false;
+
+	return CMD_SUCCESS;
+}
+
 DEFUN(cfg_frgre_local_ip, cfg_frgre_local_ip_cmd,
       "encapsulation framerelay-gre local-ip A.B.C.D",
 	ENCAPS_STR "NS over Frame Relay over GRE Encapsulation\n"
@@ -643,6 +664,7 @@ int gprs_ns_vty_init(struct gprs_ns_inst *nsi)
 	install_element(L_NS_NODE, &cfg_nsip_local_ip_cmd);
 	install_element(L_NS_NODE, &cfg_nsip_local_port_cmd);
 	install_element(L_NS_NODE, &cfg_nsip_dscp_cmd);
+	install_element(L_NS_NODE, &cfg_nsip_res_block_unblock_cmd);
 	install_element(L_NS_NODE, &cfg_frgre_enable_cmd);
 	install_element(L_NS_NODE, &cfg_frgre_local_ip_cmd);
 

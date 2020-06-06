@@ -327,7 +327,7 @@ struct gprs_nsvc *gprs_nsvc_create2(struct gprs_ns_inst *nsi, uint16_t nsvci,
 	nsvc->nsvci = nsvci;
 	nsvc->nsvci_is_valid = 1;
 	/* before RESET procedure: BLOCKED and DEAD */
-	if (nsi->bss_sns_fi)
+	if (nsi->bss_sns_fi || !nsi->nsip.use_reset_block_unblock)
 		ns_set_state(nsvc, 0);
 	else
 		ns_set_state(nsvc, NSE_S_BLOCKED);
@@ -793,7 +793,7 @@ static void gprs_ns_timer_cb(void *data)
 			nsvc->nsi->timeout[NS_TOUT_TNS_ALIVE_RETRIES]) {
 			/* mark as dead (and blocked unless IP-SNS) */
 			rate_ctr_inc(&nsvc->ctrg->ctr[NS_CTR_DEAD]);
-			if (!nsvc->nsi->bss_sns_fi) {
+			if (!nsvc->nsi->bss_sns_fi && nsvc->nsi->nsip.use_reset_block_unblock) {
 				ns_set_state(nsvc, NSE_S_BLOCKED);
 				rate_ctr_inc(&nsvc->ctrg->ctr[NS_CTR_BLOCKED]);
 			} else
@@ -804,7 +804,7 @@ static void gprs_ns_timer_cb(void *data)
 				nsvc->nsi->timeout[NS_TOUT_TNS_ALIVE_RETRIES]);
 			ns_osmo_signal_dispatch(nsvc, S_NS_ALIVE_EXP, 0);
 			/* FIXME: should we send this signal in case of SNS? */
-			if (!nsvc->nsi->bss_sns_fi)
+			if (!nsvc->nsi->bss_sns_fi && nsvc->nsi->nsip.use_reset_block_unblock)
 				ns_osmo_signal_dispatch(nsvc, S_NS_BLOCK, NS_CAUSE_NSVC_BLOCKED);
 			return;
 		}
@@ -1758,8 +1758,12 @@ int gprs_ns_process_msg(struct gprs_ns_inst *nsi, struct msgb *msg,
 		 * fine. */
 		if ((*nsvc)->state == NSE_S_BLOCKED)
 			rc = gprs_nsvc_reset((*nsvc), NS_CAUSE_PDU_INCOMP_PSTATE);
-		else if (!((*nsvc)->state & NSE_S_RESET))
+		else if (!((*nsvc)->state & NSE_S_RESET)) {
+			/* if we're not alive, we cannot transmit the ACK; set ALIVE */
+			if (!((*nsvc)->state & NSE_S_ALIVE))
+				ns_mark_alive(*nsvc);
 			rc = gprs_ns_tx_alive_ack(*nsvc);
+		}
 		break;
 	case NS_PDUT_ALIVE_ACK:
 		ns_mark_alive(*nsvc);
@@ -1914,6 +1918,11 @@ struct gprs_ns_inst *gprs_ns_instantiate(gprs_ns_cb_t *cb, void *ctx)
 	nsi->unknown_nsvc->nsvci_is_valid = 0;
 	llist_del(&nsi->unknown_nsvc->list);
 	INIT_LLIST_HEAD(&nsi->unknown_nsvc->list);
+
+	/* By default we are in IPA compatible mode, that is we use NS-RESET, NS-BLOCK
+	 * and NS-UNBLOCK procedures even for an IP/UDP based Gb interface, in violation
+	 * of 3GPP TS 48.016. */
+	nsi->nsip.use_reset_block_unblock = true;
 
 	return nsi;
 }

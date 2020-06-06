@@ -97,6 +97,8 @@ struct gprs_ns_inst {
 		uint32_t remote_ip;
 		uint16_t remote_port;
 		int dscp;
+		/*! IPA compatibility: NS-RESET/BLOCK/UNBLOCK even on IP-SNS */
+		bool use_reset_block_unblock;
 	} nsip;
 	/*! NS-over-FR-over-GRE-over-IP specific bits */
 	struct {
