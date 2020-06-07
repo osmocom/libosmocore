@@ -338,7 +338,7 @@ void lapd_dl_set_name(struct lapd_datalink *dl, const char *name)
 /* reset to IDLE state */
 void lapd_dl_reset(struct lapd_datalink *dl)
 {
-	LOGDL(dl, LOGL_INFO, "Resetting LAPDm instance\n");
+	LOGDL(dl, LOGL_INFO, "Resetting LAPD instance\n");
 	/* enter idle state (and remove eventual cont_res) */
 	lapd_dl_newstate(dl, LAPD_STATE_IDLE);
 	/* flush buffer */
