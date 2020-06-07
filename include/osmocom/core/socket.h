@@ -2,6 +2,7 @@
  *  Osmocom socket convenience functions. */
 
 #pragma once
+#if (!EMBEDDED)
 
 /*! \defgroup socket Socket convenience functions
  *  @{
@@ -11,16 +12,23 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#if (!EMBEDDED)
 #include <arpa/inet.h>
 
 /*! maximum length of a socket name ("r=1.2.3.4:123<->l=5.6.7.8:987") */
 #define OSMO_SOCK_NAME_MAXLEN (2 + INET6_ADDRSTRLEN + 1 + 5 + 3 + 2 + INET6_ADDRSTRLEN + 1 + 5 + 1)
-#endif
 
 struct sockaddr_in;
 struct sockaddr;
 struct osmo_fd;
+
+struct osmo_sockaddr {
+	union {
+		struct sockaddr sa;
+		struct sockaddr_storage sas;
+		struct sockaddr_in sin;
+		struct sockaddr_in6 sin6;
+	} u;
+};
 
 /* flags for osmo_sock_init. */
 /*! connect the socket to a remote peer */
@@ -92,4 +100,5 @@ int osmo_sock_mcast_subscribe(int fd, const char *grp_addr);
 
 int osmo_sock_local_ip(char *local_ip, const char *remote_ip);
 
+#endif /* (!EMBEDDED) */
 /*! @} */
