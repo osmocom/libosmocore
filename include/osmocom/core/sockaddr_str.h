@@ -74,6 +74,7 @@ bool osmo_sockaddr_str_is_nonzero(const struct osmo_sockaddr_str *sockaddr_str);
 int osmo_sockaddr_str_cmp(const struct osmo_sockaddr_str *a, const struct osmo_sockaddr_str *b);
 
 int osmo_sockaddr_str_from_str(struct osmo_sockaddr_str *sockaddr_str, const char *ip, uint16_t port);
+int osmo_sockaddr_str_from_str2(struct osmo_sockaddr_str *sockaddr_str, const char *ip);
 
 int osmo_sockaddr_str_from_in_addr(struct osmo_sockaddr_str *sockaddr_str, const struct in_addr *addr, uint16_t port);
 int osmo_sockaddr_str_from_in6_addr(struct osmo_sockaddr_str *sockaddr_str, const struct in6_addr *addr, uint16_t port);

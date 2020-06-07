@@ -188,6 +188,34 @@ int osmo_ip_str_type(const char *ip)
 	return AF_UNSPEC;
 }
 
+/*! Safely copy the given ip string to sockaddr_str, classify to AF_INET or AF_INET6.
+ * Data will be written to sockaddr_str even if an error is returned.
+ * \param[out] sockaddr_str  The instance to copy to.
+ * \param[in] ip  Valid IP address string.
+ * \return 0 on success, negative if copying the address string failed (e.g. too long), if the address family could
+ *         not be detected (i.e. if osmo_ip_str_type() returned AF_UNSPEC), or if sockaddr_str is NULL.
+ */
+int osmo_sockaddr_str_from_str2(struct osmo_sockaddr_str *sockaddr_str, const char *ip)
+{
+	int rc;
+	if (!sockaddr_str)
+		return -ENOSPC;
+	if (!ip)
+		ip = "";
+	sockaddr_str->af = osmo_ip_str_type(ip);
+	/* to be compatible with previous behaviour, zero the full IP field.
+	 * Allow the usage of memcmp(&sockaddr_str, ...) */
+	memset(sockaddr_str->ip, 0x0, sizeof(sockaddr_str->ip));
+	rc = osmo_strlcpy(sockaddr_str->ip, ip, sizeof(sockaddr_str->ip));
+	if (rc <= 0)
+		return -EIO;
+	if (rc >= sizeof(sockaddr_str->ip))
+		return -ENOSPC;
+	if (sockaddr_str->af == AF_UNSPEC)
+		return -EINVAL;
+	return 0;
+}
+
 /*! Safely copy the given ip string to sockaddr_str, classify to AF_INET or AF_INET6, and set the port.
  * Data will be written to sockaddr_str even if an error is returned.
  * \param[out] sockaddr_str  The instance to copy to.
@@ -201,20 +229,11 @@ int osmo_sockaddr_str_from_str(struct osmo_sockaddr_str *sockaddr_str, const cha
 	int rc;
 	if (!sockaddr_str)
 		return -ENOSPC;
-	if (!ip)
-		ip = "";
-	*sockaddr_str = (struct osmo_sockaddr_str){
-		.af = osmo_ip_str_type(ip),
-		.port = port,
-	};
-	rc = osmo_strlcpy(sockaddr_str->ip, ip, sizeof(sockaddr_str->ip));
-	if (rc <= 0)
-		return -EIO;
-	if (rc >= sizeof(sockaddr_str->ip))
-		return -ENOSPC;
-	if (sockaddr_str->af == AF_UNSPEC)
-		return -EINVAL;
-	return 0;
+
+	rc = osmo_sockaddr_str_from_str2(sockaddr_str, ip);
+	sockaddr_str->port = port;
+
+	return rc;
 }
 
 /*! Convert IPv4 address to osmo_sockaddr_str, and set port.
