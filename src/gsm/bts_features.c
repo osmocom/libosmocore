@@ -40,6 +40,7 @@ const struct value_string osmo_bts_features_descs[] = {
 	{ BTS_FEAT_SPEECH_H_AMR,	"Halfrate speech AMR" },
 	{ BTS_FEAT_ETWS_PN,		"ETWS Primary Notification via PCH" },
 	{ BTS_FEAT_PAGING_COORDINATION,	"BSS Paging Coordination" },
+	{ BTS_FEAT_IPV6_NSVC,		"NSVC IPv6" },
 	{ 0, NULL }
 };
 

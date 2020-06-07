@@ -25,6 +25,7 @@ enum osmo_bts_features {
 	BTS_FEAT_SPEECH_H_AMR,
 	BTS_FEAT_ETWS_PN,
 	BTS_FEAT_PAGING_COORDINATION,	/* BTS hands CS paging to PCU/PACCH */
+	BTS_FEAT_IPV6_NSVC,
 	_NUM_BTS_FEAT
 };
 
