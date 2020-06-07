@@ -304,6 +304,10 @@ struct desc {
 #define CMD_IPV6(S)        ((strcmp ((S), "X:X::X:X") == 0))
 #define CMD_IPV6_PREFIX(S) ((strcmp ((S), "X:X::X:X/M") == 0))
 
+#define VTY_IPV4_CMD "A.B.C.D"
+#define VTY_IPV6_CMD "X:X::X:X"
+#define VTY_IPV46_CMD "(" VTY_IPV4_CMD "|" VTY_IPV6_CMD ")"
+
 /* Common descriptions. */
 #define SHOW_STR "Show running system information\n"
 #define IP_STR "IP information\n"
