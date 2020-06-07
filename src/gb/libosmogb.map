@@ -70,7 +70,7 @@ gprs_ns_ll_copy;
 gprs_ns_ll_clear;
 gprs_ns_msgb_alloc;
 
-gprs_nsvc_create;
+gprs_nsvc_create2;
 gprs_nsvc_delete;
 gprs_nsvc_reset;
 gprs_nsvc_by_nsvci;

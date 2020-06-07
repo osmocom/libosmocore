@@ -347,12 +347,6 @@ struct gprs_nsvc *gprs_nsvc_create2(struct gprs_ns_inst *nsi, uint16_t nsvci,
 	return nsvc;
 }
 
-/*! Old API for creating a NS-VC. Uses gprs_nsvc_create2 with fixed weights. */
-struct gprs_nsvc *gprs_nsvc_create(struct gprs_ns_inst *nsi, uint16_t nsvci)
-{
-	return gprs_nsvc_create2(nsi, nsvci, 1, 1);
-}
-
 /*! Delete given NS-VC
  *  \param[in] nsvc gprs_nsvc to be deleted
  */
@@ -1269,7 +1263,7 @@ static int gprs_ns_rx_reset(struct gprs_nsvc **nsvc, struct msgb *msg)
 			     nsvci, (*nsvc)->nsvci,
 			     gprs_ns_ll_str(*nsvc));
 			orig_nsvc = *nsvc;
-			*nsvc = gprs_nsvc_create((*nsvc)->nsi, nsvci);
+			*nsvc = gprs_nsvc_create2((*nsvc)->nsi, nsvci, 1, 1);
 			(*nsvc)->nsei  = nsei;
 		}
 	}
@@ -1691,7 +1685,7 @@ int gprs_ns_vc_create(struct gprs_ns_inst *nsi, struct msgb *msg,
 	 * simply have changed addresses, or it is a SGSN */
 	existing_nsvc = gprs_nsvc_by_nsvci(nsi, nsvci);
 	if (!existing_nsvc) {
-		*new_nsvc = gprs_nsvc_create(nsi, 0xffff);
+		*new_nsvc = gprs_nsvc_create2(nsi, 0xffff, 1, 1);
 		(*new_nsvc)->nsvci_is_valid = 0;
 		log_set_context(LOG_CTX_GB_NSVC, *new_nsvc);
 		gprs_ns_ll_copy(*new_nsvc, fallback_nsvc);
@@ -1914,7 +1908,7 @@ struct gprs_ns_inst *gprs_ns_instantiate(gprs_ns_cb_t *cb, void *ctx)
 
 	/* Create the dummy NSVC that we use for sending
 	 * messages to non-existant/unknown NS-VC's */
-	nsi->unknown_nsvc = gprs_nsvc_create(nsi, 0xfffe);
+	nsi->unknown_nsvc = gprs_nsvc_create2(nsi, 0xfffe, 1, 1);
 	nsi->unknown_nsvc->nsvci_is_valid = 0;
 	llist_del(&nsi->unknown_nsvc->list);
 	INIT_LLIST_HEAD(&nsi->unknown_nsvc->list);
@@ -2155,7 +2149,7 @@ struct gprs_nsvc *gprs_ns_nsip_connect(struct gprs_ns_inst *nsi,
 
 	nsvc = gprs_nsvc_by_rem_addr(nsi, dest);
 	if (!nsvc)
-		nsvc = gprs_nsvc_create(nsi, nsvci);
+		nsvc = gprs_nsvc_create2(nsi, nsvci, 1, 1);
 	nsvc->ip.bts_addr = *dest;
 	nsvc->nsei = nsei;
 	nsvc->remote_end_is_sgsn = 1;

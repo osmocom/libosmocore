@@ -197,7 +197,6 @@ int gprs_ns_tx_unblock(struct gprs_nsvc *nsvc);
 /* Listen for incoming GPRS packets via NS/FR/GRE */
 int gprs_ns_frgre_listen(struct gprs_ns_inst *nsi);
 
-struct gprs_nsvc *gprs_nsvc_create(struct gprs_ns_inst *nsi, uint16_t nsvci);
 struct gprs_nsvc *gprs_nsvc_create2(struct gprs_ns_inst *nsi, uint16_t nsvci,
 				    uint8_t sig_weight, uint8_t data_weight);
 void gprs_nsvc_delete(struct gprs_nsvc *nsvc);

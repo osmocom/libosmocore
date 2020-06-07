@@ -292,7 +292,7 @@ DEFUN(cfg_nse_nsvc, cfg_nse_nsvci_cmd,
 
 	nsvc = gprs_nsvc_by_nsei(vty_nsi, nsei);
 	if (!nsvc) {
-		nsvc = gprs_nsvc_create(vty_nsi, nsvci);
+		nsvc = gprs_nsvc_create2(vty_nsi, nsvci, 1, 1);
 		nsvc->nsei = nsei;
 	}
 	nsvc->nsvci = nsvci;
