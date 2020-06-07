@@ -511,6 +511,7 @@ enum abis_nm_attr {
 
 	/* osmocom (osmo-bts) specific attributes, used in combination
 	 * with the "org.osmocom" manufacturer identification */
+	NM_ATT_OSMO_NS_LINK_CFG         = 0xfd, /* osmocom version supports IPv4 & IPv6 in difference to IPACC */
 	NM_ATT_OSMO_REDUCEPOWER		= 0xfe,	/* TLV_TYPE_TV */
 };
 #define NM_ATT_BS11_FILE_DATA	NM_ATT_EVENT_TYPE
