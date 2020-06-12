@@ -154,7 +154,7 @@ int osmo_bcd2str(char *dst, size_t dst_size, const uint8_t *bcd, int start_nibbl
 	int nibble_i;
 	int rc = 0;
 
-	if (!dst || dst_size < 1)
+	if (!dst || dst_size < 1 || start_nibble < 0)
 		return -ENOMEM;
 
 	for (nibble_i = start_nibble; nibble_i < end_nibble && dst < dst_end; nibble_i++, dst++) {
