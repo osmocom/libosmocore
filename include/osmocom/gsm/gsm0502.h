@@ -7,6 +7,30 @@
 #include <osmocom/gsm/protocol/gsm_04_08.h>
 #include <osmocom/gsm/protocol/gsm_08_58.h>
 
+/* 4.3.3 TDMA frame number : constants and modular arithmetic */
+#define GSM_TDMA_FN_DURATION_nS		4615384		/* in 1e−9 seconds (approx) */
+#define GSM_TDMA_FN_DURATION_uS		4615		/* in 1e-6 seconds (approx) */
+
+#define GSM_TDMA_SUPERFRAME		(26 * 51)
+#define GSM_TDMA_HYPERFRAME		(2048 * GSM_TDMA_SUPERFRAME)
+
+/*! Return the sum of two specified TDMA frame numbers (summation) */
+#define GSM_TDMA_FN_SUM(a, b) \
+	((a + b) % GSM_TDMA_HYPERFRAME)
+/*! Return the difference of two specified TDMA frame numbers (subtraction) */
+#define GSM_TDMA_FN_SUB(a, b) \
+	((a + GSM_TDMA_HYPERFRAME - b) % GSM_TDMA_HYPERFRAME)
+/*! Return the *minimum* difference of two specified TDMA frame numbers (distance) */
+#define GSM_TDMA_FN_DIFF(a, b) \
+	OSMO_MIN(GSM_TDMA_FN_SUB(a, b), GSM_TDMA_FN_SUB(b, a))
+
+/*! Increment the given TDMA frame number by 1 and return the result (like ++fn) */
+#define GSM_TDMA_FN_INC(fn) \
+	((fn) = GSM_TDMA_FN_SUM((fn), 1))
+/*! Decrement the given TDMA frame number by 1 and return the result (like --fn) */
+#define GSM_TDMA_FN_DEC(fn) \
+	((fn) = GSM_TDMA_FN_SUB((fn), 1))
+
 /* Table 5 Clause 7 TS 05.02 */
 static inline unsigned int
 gsm0502_get_n_pag_blocks(struct gsm48_control_channel_descr *chan_desc)
