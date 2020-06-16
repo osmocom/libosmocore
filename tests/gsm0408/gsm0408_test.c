@@ -18,6 +18,8 @@
  *
  */
 
+#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
+
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
