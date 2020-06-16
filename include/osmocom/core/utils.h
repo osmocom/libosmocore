@@ -55,7 +55,6 @@ char osmo_bcd2char(uint8_t bcd);
 uint8_t osmo_char2bcd(char c);
 
 int osmo_bcd2str(char *dst, size_t dst_size, const uint8_t *bcd, int start_nibble, int end_nibble, bool allow_hex);
-int osmo_str2bcd(uint8_t *dst, size_t dst_size, const char *digits, int start_nibble, int end_nibble, bool allow_hex);
 
 int osmo_hexparse(const char *str, uint8_t *b, int max_len);
 

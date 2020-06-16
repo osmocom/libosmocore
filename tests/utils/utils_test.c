@@ -487,7 +487,6 @@ static void bcd2str_test(void)
 {
 	int i;
 	uint8_t bcd[64];
-	uint8_t bcd2[64];
 	int rc;
 
 	printf("\nTesting bcd to string conversion\n");
@@ -512,12 +511,6 @@ static void bcd2str_test(void)
 			printf("    ERROR: expected rc=%d\n", t->expect_rc);
 		if (strcmp(str, t->expect_str))
 			printf("    ERROR: expected result %s\n", osmo_quote_str(t->expect_str, -1));
-
-		memset(bcd2, 0xff, sizeof(bcd2));
-		rc = osmo_str2bcd(bcd2, sizeof(bcd2), str, t->start_nibble, -1, t->allow_hex);
-		printf("osmo_str2bcd(start_nibble=%d) -> rc=%d\n", t->start_nibble, rc);
-		if (rc > 0)
-			printf(" = %s\n", osmo_hexdump(bcd2, rc));
 	}
 
 	printf("- zero output buffer\n");

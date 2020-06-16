@@ -181,41 +181,27 @@ Testing bcd to string conversion
 - BCD-input='1a 32 54 76 98 f0' nibbles=[1..11[ str_size=64
   rc=10
   -> "1234567890"
-osmo_str2bcd(start_nibble=1) -> rc=6
- = 1f 32 54 76 98 f0 
 - BCD-input='1a 32 a4 cb 9d f0' nibbles=[1..11[ str_size=64
   rc=-22
   -> "1234ABCD90"
-osmo_str2bcd(start_nibble=1) -> rc=-22
 - BCD-input='1a 32 a4 cb 9d f0' nibbles=[1..11[ str_size=64
   rc=10
   -> "1234ABCD90"
-osmo_str2bcd(start_nibble=1) -> rc=6
- = 1f 32 a4 cb 9d f0 
 - BCD-input='1a 32 54 76 98 f0' nibbles=[1..12[ str_size=64
   rc=-22
   -> "1234567890F"
-osmo_str2bcd(start_nibble=1) -> rc=-22
 - BCD-input='1a 32 54 76 98 f0' nibbles=[1..12[ str_size=64
   rc=11
   -> "1234567890F"
-osmo_str2bcd(start_nibble=1) -> rc=6
- = 1f 32 54 76 98 f0 
 - BCD-input='1a 32 54 76 98 f0' nibbles=[0..12[ str_size=64
   rc=12
   -> "A1234567890F"
-osmo_str2bcd(start_nibble=0) -> rc=6
- = 1a 32 54 76 98 f0 
 - BCD-input='1a 32 54 76 98 f0' nibbles=[1..12[ str_size=5
   rc=11
   -> "1234"
-osmo_str2bcd(start_nibble=1) -> rc=3
- = 1f 32 f4 
 - BCD-input='' nibbles=[1..1[ str_size=64
   rc=0
   -> ""
-osmo_str2bcd(start_nibble=1) -> rc=1
- = ff 
 - zero output buffer
   bcd2str(NULL, ...) -> -12
   bcd2str(dst, 0, ...) -> -12

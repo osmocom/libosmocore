@@ -175,65 +175,6 @@ int osmo_bcd2str(char *dst, size_t dst_size, const uint8_t *bcd, int start_nibbl
 	return OSMO_MAX(0, end_nibble - start_nibble);
 }
 
-/*! Convert string to BCD.
- * The given nibble offsets are interpreted in BCD order, i.e. nibble 0 is bcd[0] & 0x0f, nibble 1 is bcd[0] & 0xf0, nibble
- * 3 is bcd[1] & 0x0f, etc..
- *  \param[out] dst  Output BCD buffer.
- *  \param[in] dst_size  sizeof() the output string buffer.
- *  \param[in] digits  String containing decimal or hexadecimal digits in upper or lower case.
- *  \param[in] start_nibble  Offset to start from, in nibbles, typically 1 to skip the first (MI type) nibble.
- *  \param[in] end_nibble  Negative to write all digits found in str, followed by 0xf nibbles to fill any started octet.
- *                         If >= 0, stop before this offset in nibbles, e.g. to get default behavior, pass
- *                         start_nibble + strlen(str) + ((start_nibble + strlen(str)) & 1? 1 : 0) + 1.
- *  \param[in] allow_hex  If false, return error if there are hexadecimal digits (A-F). If true, write those to
- *                        BCD.
- *  \returns The buffer size in octets that is used to place all bcd digits (including the skipped nibbles
- *           from 'start_nibble' and rounded up to full octets); -EINVAL on invalid digits;
- *           -ENOMEM if dst is NULL, if dst_size is too small to contain all nibbles, or if start_nibble is negative.
- */
-int osmo_str2bcd(uint8_t *dst, size_t dst_size, const char *digits, int start_nibble, int end_nibble, bool allow_hex)
-{
-	const char *digit = digits;
-	int nibble_i;
-
-	if (!dst || !dst_size || start_nibble < 0)
-		return -ENOMEM;
-
-	if (end_nibble < 0) {
-		end_nibble = start_nibble + strlen(digits);
-		/* If the last octet is not complete, add another filler nibble */
-		if (end_nibble & 1)
-			end_nibble++;
-	}
-	if ((end_nibble / 2) > dst_size)
-		return -ENOMEM;
-
-	for (nibble_i = start_nibble; nibble_i < end_nibble; nibble_i++) {
-		uint8_t nibble = 0xf;
-		int octet = nibble_i >> 1;
-		if (*digit) {
-			char c = *digit;
-			digit++;
-			if (c >= '0' && c <= '9')
-				nibble = c - '0';
-			else if (allow_hex && c >= 'A' && c <= 'F')
-				nibble = 0xa + (c - 'A');
-			else if (allow_hex && c >= 'a' && c <= 'f')
-				nibble = 0xa + (c - 'a');
-			else
-				return -EINVAL;
-		}
-		nibble &= 0xf;
-		if ((nibble_i & 1))
-			dst[octet] = (nibble << 4) | (dst[octet] & 0x0f);
-		else
-			dst[octet] = (dst[octet] & 0xf0) | nibble;
-	}
-
-	/* floor(float(end_nibble) / 2) */
-	return end_nibble / 2;
-}
-
 /*! Parse a string containing hexadecimal digits
  *  \param[in] str string containing ASCII encoded hexadecimal digits
  *  \param[out] b output buffer

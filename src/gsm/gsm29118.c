@@ -219,14 +219,12 @@ static int msgb_sgsap_name_put(struct msgb *msg, enum sgsap_iei iei, const char 
 /* Encode IMSI from string representation and append to SGSaAP msg */
 static void msgb_sgsap_imsi_put(struct msgb *msg, const char *imsi)
 {
-	int rc;
-	struct osmo_mobile_identity mi = { .type = GSM_MI_TYPE_IMSI, };
-	uint8_t *l;
-	OSMO_STRLCPY_ARRAY(mi.imsi, imsi);
-	l = msgb_tl_put(msg, SGSAP_IE_IMSI);
-	rc = osmo_mobile_identity_encode_msgb(msg, &mi, false);
-	/* This function fails to do error handling, so in case of error, leave the len == 0. */
-	*l = rc > 0? rc : 0;
+	uint8_t buf[16];
+	uint8_t len;
+	/* encoding is just like TS 04.08 */
+	len = gsm48_generate_mid_from_imsi(buf, imsi);
+	/* skip first two bytes (tag+length) so we can use msgb_tlv_put */
+	msgb_tlv_put(msg, SGSAP_IE_IMSI, len - 2, buf + 2);
 }
 
 /* Encode LAI from struct representation and append to SGSaAP msg */
