@@ -104,6 +104,9 @@ struct msgb *gsm0808_create_lcls_conn_ctrl(enum gsm0808_lcls_config config,
 					   enum gsm0808_lcls_control control);
 struct msgb *gsm0808_create_lcls_conn_ctrl_ack(enum gsm0808_lcls_status status);
 struct msgb *gsm0808_create_lcls_notification(enum gsm0808_lcls_status status, bool break_req);
+struct msgb *gsm0808_create_common_id(const char *imsi,
+				      const struct osmo_plmn_id *selected_plmn_id,
+				      const struct osmo_plmn_id *last_used_eutran_plnm_id);
 
 
 /*! 3GPP TS 48.008 §3.2.2.5.8 Old BSS to New BSS information */

@@ -1235,6 +1235,48 @@ struct msgb *gsm0808_create_handover_performed(const struct gsm0808_handover_per
 	return msg;
 }
 
+struct msgb *gsm0808_create_common_id(const char *imsi,
+				      const struct osmo_plmn_id *selected_plmn_id,
+				      const struct osmo_plmn_id *last_used_eutran_plnm_id)
+{
+	struct msgb *msg;
+	uint8_t mid_buf[GSM48_MI_SIZE + 2];
+	uint8_t *out;
+	int mid_len;
+
+	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "COMMON-ID");
+	if (!msg)
+		return NULL;
+
+	/* Message Type, 3.2.2.1 */
+	msgb_v_put(msg, BSS_MAP_MSG_COMMON_ID);
+
+	/* mandatory IMSI 3.2.2.6 */
+	mid_len = gsm48_generate_mid_from_imsi(mid_buf, imsi);
+	msgb_tlv_put(msg, GSM0808_IE_IMSI, mid_len - 2, mid_buf + 2);
+
+	/* not implemented: SNA Access Information */
+
+	/* Selected PLMN ID */
+	if (selected_plmn_id) {
+		msgb_v_put(msg, GSM0808_IE_SELECTED_PLMN_ID);
+		out = msgb_put(msg, 3);
+		osmo_plmn_to_bcd(out, selected_plmn_id);
+	}
+
+	/* Last used E-UTRAN PLMN ID */
+	if (last_used_eutran_plnm_id) {
+		msgb_v_put(msg, GSM0808_IE_LAST_USED_EUTRAN_PLMN_ID);
+		out = msgb_put(msg, 3);
+		osmo_plmn_to_bcd(out, last_used_eutran_plnm_id);
+	}
+
+	/* prepend header with final length */
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
+
+	return msg;
+}
+
 /*! Prepend a DTAP header to given Message Buffer
  *  \param[in] msgb Message Buffer
  *  \param[in] link_id Link Identifier */

@@ -202,6 +202,7 @@ gsm0808_create_handover_succeeded;
 gsm0808_create_handover_complete;
 gsm0808_create_handover_failure;
 gsm0808_create_handover_performed;
+gsm0808_create_common_id;
 gsm0808_prepend_dtap_header;
 gsm0808_enc_cause;
 gsm0808_enc_aoip_trasp_addr;
