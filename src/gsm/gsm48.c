@@ -751,7 +751,8 @@ int osmo_mobile_identity_encode_buf(uint8_t *buf, size_t buflen, const struct os
 /*! Encode Mobile Identity type and BCD digits, appended to a msgb.
  * Example to add a GSM48_IE_MOBILE_ID IEI with tag and length to a msgb:
  *
- *  struct osmo_mobile_identity mi = { .type = GSM_MI_TYPE_IMSI, .tmsi = random_tmsi, };
+ *  struct osmo_mobile_identity mi = { .type = GSM_MI_TYPE_IMSI };
+ *  OSMO_STRLCPY_ARRAY(mi.imsi, "1234567890123456");
  *  uint8_t *l = msgb_tl_put(msg, GSM48_IE_MOBILE_ID);
  *  int rc = osmo_mobile_identity_encode_msgb(msg, &mi, false);
  *  if (rc < 0)
