@@ -1235,14 +1235,19 @@ struct msgb *gsm0808_create_handover_performed(const struct gsm0808_handover_per
 	return msg;
 }
 
+/*! Create BSSMAP COMMON ID message, 3GPP TS 48.008 3.2.1.68.
+ * \param[in] imsi  IMSI digits (decimal string).
+ * \param[in] selected_plmn_id  Selected PLMN ID to encode, or NULL to not encode this IE.
+ * \param[in] last_used_eutran_plnm_id  Last used E-UTRAN PLMN ID to encode, or NULL to not encode this IE.
+ * \returns callee-allocated msgb with BSSMAP COMMON ID message, or NULL if encoding failed. */
 struct msgb *gsm0808_create_common_id(const char *imsi,
 				      const struct osmo_plmn_id *selected_plmn_id,
 				      const struct osmo_plmn_id *last_used_eutran_plnm_id)
 {
 	struct msgb *msg;
-	uint8_t mid_buf[GSM48_MI_SIZE + 2];
 	uint8_t *out;
-	int mid_len;
+	struct osmo_mobile_identity mi;
+	int rc;
 
 	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "COMMON-ID");
 	if (!msg)
@@ -1252,8 +1257,16 @@ struct msgb *gsm0808_create_common_id(const char *imsi,
 	msgb_v_put(msg, BSS_MAP_MSG_COMMON_ID);
 
 	/* mandatory IMSI 3.2.2.6 */
-	mid_len = gsm48_generate_mid_from_imsi(mid_buf, imsi);
-	msgb_tlv_put(msg, GSM0808_IE_IMSI, mid_len - 2, mid_buf + 2);
+	mi = (struct osmo_mobile_identity){ .type = GSM_MI_TYPE_IMSI };
+	OSMO_STRLCPY_ARRAY(mi.imsi, imsi);
+	out = msgb_tl_put(msg, GSM0808_IE_IMSI);
+	rc = osmo_mobile_identity_encode_msgb(msg, &mi, false);
+	if (rc < 0) {
+		msgb_free(msg);
+		return NULL;
+	}
+	/* write the MI value length */
+	*out = rc;
 
 	/* not implemented: SNA Access Information */
 
