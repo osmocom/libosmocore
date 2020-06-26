@@ -318,6 +318,7 @@ DEFUN(cfg_nse_remoteip, cfg_nse_remoteip_cmd,
 		vty_out(vty, "No such NSE (%u)%s", nsei, VTY_NEWLINE);
 		return CMD_WARNING;
 	}
+	nsvc->ip.bts_addr.sin_family = AF_INET;
 	inet_aton(argv[1], &nsvc->ip.bts_addr.sin_addr);
 
 	return CMD_SUCCESS;
