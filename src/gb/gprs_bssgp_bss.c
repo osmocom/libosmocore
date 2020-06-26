@@ -290,7 +290,7 @@ int bssgp_tx_bvc_unblock(struct bssgp_bvc_ctx *bctx)
 }
 
 /*! Transmit a BVC-RESET message (Chapter 10.4.12) */
-int bssgp_tx_bvc_reset(struct bssgp_bvc_ctx *bctx, uint16_t bvci, uint8_t cause)
+int bssgp_tx_bvc_reset2(struct bssgp_bvc_ctx *bctx, uint16_t bvci, uint8_t cause, bool add_cell_id)
 {
 	struct msgb *msg = bssgp_msgb_alloc();
 	struct bssgp_normal_hdr *bgph =
@@ -306,7 +306,7 @@ int bssgp_tx_bvc_reset(struct bssgp_bvc_ctx *bctx, uint16_t bvci, uint8_t cause)
 
 	msgb_tvlv_put(msg, BSSGP_IE_BVCI, 2, (uint8_t *) &_bvci);
 	msgb_tvlv_put(msg, BSSGP_IE_CAUSE, 1, &cause);
-	if (bvci != BVCI_PTM) {
+	if (add_cell_id) {
 		uint8_t bssgp_cid[8];
 		bssgp_create_cell_id(bssgp_cid, &bctx->ra_id, bctx->cell_id);
 		msgb_tvlv_put(msg, BSSGP_IE_CELL_ID, sizeof(bssgp_cid), bssgp_cid);
@@ -314,6 +314,10 @@ int bssgp_tx_bvc_reset(struct bssgp_bvc_ctx *bctx, uint16_t bvci, uint8_t cause)
 	/* Optional: Feature Bitmap */
 
 	return gprs_ns_sendmsg(bssgp_nsi, msg);
+}
+int bssgp_tx_bvc_reset(struct bssgp_bvc_ctx *bctx, uint16_t bvci, uint8_t cause)
+{
+	return bssgp_tx_bvc_reset2(bctx, bvci, cause, bvci != BVCI_PTM);
 }
 
 /*! Transmit a FLOW_CONTROL-BVC (Chapter 10.4.4)

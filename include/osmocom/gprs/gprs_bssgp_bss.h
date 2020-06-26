@@ -57,6 +57,7 @@ int bssgp_tx_bvc_block(struct bssgp_bvc_ctx *bctx, uint8_t cause);
 int bssgp_tx_bvc_unblock(struct bssgp_bvc_ctx *bctx);
 
 int bssgp_tx_bvc_reset(struct bssgp_bvc_ctx *bctx, uint16_t bvci, uint8_t cause);
+int bssgp_tx_bvc_reset2(struct bssgp_bvc_ctx *bctx, uint16_t bvci, uint8_t cause, bool add_cell_id);
 
 int bssgp_tx_ul_ud(struct bssgp_bvc_ctx *bctx, uint32_t tlli,
 		   const uint8_t *qos_profile, struct msgb *llc_pdu);

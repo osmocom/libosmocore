@@ -14,3 +14,4 @@ gsm		new API			new osmo_bts_unset_feature()
 gb		API/ABI change		deprecate gprs_nsvc_crate(); export gprs_nsvc_create2()
 gsm		API/ABI change		add new member to lapd_datalink
 gsm		new API			new gsm0808_create_common_id()
+gb		new API			new bssgp_tx_bvc_reset2()

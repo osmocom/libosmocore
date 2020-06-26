@@ -15,6 +15,7 @@ bssgp_msgb_ra_put;
 bssgp_parse_cell_id;
 bssgp_tx_bvc_block;
 bssgp_tx_bvc_reset;
+bssgp_tx_bvc_reset2;
 bssgp_tx_bvc_unblock;
 bssgp_tx_fc_bvc;
 bssgp_tx_fc_ms;
