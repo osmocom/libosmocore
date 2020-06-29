@@ -35,4 +35,5 @@
 /* 4262-4263 used by control interface */
 #define OSMO_VTY_PORT_CBC	4264
 #define OSMO_VTY_PORT_UECUPS	4268
+#define OSMO_VTY_PORT_E1D	4269
 /* When adding/changing port numbers, keep docs and wiki in sync. See above. */
