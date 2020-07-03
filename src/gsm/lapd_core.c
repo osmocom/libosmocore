@@ -104,6 +104,7 @@
 #define CR_NET2USER_RESP	0
 
 #define LAPD_HEADROOM	56
+#define LAPD_TAILROOM	16
 
 #define SBIT(a) (1 << a)
 #define ALL_STATES 0xffffffff
@@ -120,7 +121,7 @@ struct msgb *lapd_msgb_alloc(int length, const char *name)
 	/* adding space for padding, FIXME: add as an option */
 	if (length < 21)
 		length = 21;
-	return msgb_alloc_headroom(length + LAPD_HEADROOM, LAPD_HEADROOM, name);
+	return msgb_alloc_headroom(length + LAPD_HEADROOM + LAPD_TAILROOM, LAPD_HEADROOM, name);
 }
 
 static inline uint8_t do_mod(uint8_t x, uint8_t m)
