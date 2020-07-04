@@ -1578,6 +1578,10 @@ static int lapd_rx_i(struct msgb *msg, struct lapd_msg_ctx *lctx)
 			msgb_free(msg);
 
 		}
+		/* the L3 or higher (called in-line above via send_dl_l3) might have destroyed the
+		 * data link meanwhile. See OS#1761 */
+		if (dl->state == LAPD_STATE_NULL)
+			return 0;
 	} else
 		LOGDL(dl, LOGL_INFO, "I frame ignored during own receiver busy condition\n");
 
