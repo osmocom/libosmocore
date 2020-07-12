@@ -619,7 +619,7 @@ int gprs_ns_tx_status(struct gprs_nsvc *nsvc, uint8_t cause,
 	return gprs_ns_tx(nsvc, msg);
 }
 
-/*! Transmit a NS-BLOCK on a tiven NS-VC
+/*! Transmit a NS-BLOCK on a given NS-VC
  *  \param[in] nsvc NS-VC on which the NS-BLOCK is to be transmitted
  *  \param[in] cause Numeric NS Cause value
  *  \returns 0 in case of success
