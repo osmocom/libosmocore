@@ -7,7 +7,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include
 AM_CFLAGS = -Wall ${GCC_FVISIBILITY_HIDDEN} -fno-strict-aliasing $(TALLOC_CFLAGS)
 
 # FIXME: this should eventually go into a milenage/Makefile.am
-noinst_HEADERS = common_vty.h gb_internal.h gprs_bssgp_internal.h
+noinst_HEADERS = common_vty.h gb_internal.h gprs_bssgp_internal.h gprs_ns2_internal.h
 
 if ENABLE_GB
 lib_LTLIBRARIES = libosmogb.la
@@ -20,7 +20,10 @@ libosmogb_la_LIBADD = $(TALLOC_LIBS) \
 
 libosmogb_la_SOURCES = gprs_ns.c gprs_ns_frgre.c gprs_ns_vty.c gprs_ns_sns.c \
 		  gprs_bssgp.c gprs_bssgp_util.c gprs_bssgp_vty.c \
-		  gprs_bssgp_bss.c common_vty.c
+		  gprs_bssgp_bss.c \
+		  gprs_ns2.c gprs_ns2_udp.c gprs_ns2_frgre.c gprs_ns2_vc_fsm.c gprs_ns2_sns.c \
+		  gprs_ns2_message.c gprs_ns2_vty.c \
+		  common_vty.c
 endif
 
 EXTRA_DIST = libosmogb.map

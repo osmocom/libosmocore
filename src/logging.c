@@ -230,6 +230,11 @@ static const struct log_info_cat internal_cat[OSMO_NUM_DLIB] = {
 		.description = "Remote SIM protocol",
 		.enabled = 1, .loglevel = LOGL_NOTICE,
 	},
+	[INT2IDX(DLNS)] = {
+		.name = "DLNS",
+		.description = "GPRS NS layer",
+		.enabled = 1, .loglevel = LOGL_NOTICE,
+	},
 };
 
 void assert_loginfo(const char *src)

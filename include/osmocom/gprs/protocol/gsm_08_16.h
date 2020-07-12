@@ -6,6 +6,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <arpa/inet.h>
 
 /*! \addtogroup libgb
  *  @{
@@ -21,6 +22,14 @@ struct gprs_ns_hdr {
 /*! Section 10.3.2c List of IP4 Elements */
 struct gprs_ns_ie_ip4_elem {
 	uint32_t ip_addr;
+	uint16_t udp_port;
+	uint8_t sig_weight;
+	uint8_t data_weight;
+} __attribute__ ((packed));
+
+/*! Section 10.3.2d List of IP6 Elements */
+struct gprs_ns_ie_ip6_elem {
+	struct in6_addr ip_addr;
 	uint16_t udp_port;
 	uint8_t sig_weight;
 	uint8_t data_weight;

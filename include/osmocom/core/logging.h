@@ -125,7 +125,8 @@ void logp(int subsys, const char *file, int line, int cont, const char *format, 
 #define DLMGCP		-17	/*!< Osmocom MGCP */
 #define DLJIBUF		-18	/*!< Osmocom Jitter Buffer */
 #define DLRSPRO		-19	/*!< Osmocom Remote SIM Protocol */
-#define OSMO_NUM_DLIB	19	/*!< Number of logging sub-systems in libraries */
+#define DLNS		-20	/*!< Osmocom NS layer */
+#define OSMO_NUM_DLIB	20	/*!< Number of logging sub-systems in libraries */
 
 /* Colors that can be used in log_info_cat.color */
 #define OSMO_LOGCOLOR_NORMAL NULL
