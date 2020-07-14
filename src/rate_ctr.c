@@ -426,4 +426,25 @@ int rate_ctr_for_each_group(rate_ctr_group_handler_t handle_group, void *data)
 	return rc;
 }
 
+/*! Reset a rate counter back to zero
+ *  \param[in] ctr counter to reset
+ */
+void rate_ctr_reset(struct rate_ctr *ctr)
+{
+        memset(ctr, 0, sizeof(*ctr));
+}
+
+/*! Reset all counters in a group
+ *  \param[in] ctrg counter group to reset
+ */
+void rate_ctr_group_reset(struct rate_ctr_group *ctrg)
+{
+	int i;
+
+	for (i = 0; i < ctrg->desc->num_ctr; i++) {
+		struct rate_ctr *ctr = &ctrg->ctr[i];
+                rate_ctr_reset(ctr);
+	}
+}
+
 /*! @} */

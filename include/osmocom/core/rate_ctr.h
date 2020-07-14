@@ -116,4 +116,7 @@ int rate_ctr_for_each_counter(struct rate_ctr_group *ctrg,
 
 int rate_ctr_for_each_group(rate_ctr_group_handler_t handle_group, void *data);
 
+void rate_ctr_reset(struct rate_ctr *ctr);
+void rate_ctr_group_reset(struct rate_ctr_group *ctrg);
+
 /*! @} */
