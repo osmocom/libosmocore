@@ -43,6 +43,8 @@
 
 #define SHOW_STATS_STR "Show statistical values\n"
 
+#define STATS_STR "Stats related commands\n"
+
 /*! \file stats_vty.c
  *  VTY interface for statsd / statistic items
  *
@@ -351,9 +353,9 @@ DEFUN(cfg_no_stats_reporter_log, cfg_no_stats_reporter_log_cmd,
 }
 
 DEFUN(cfg_stats_interval, cfg_stats_interval_cmd,
-	"stats interval <1-65535>",
+	"stats interval <0-65535>",
 	CFG_STATS_STR "Set the reporting interval\n"
-	"Interval in seconds\n")
+	"Interval in seconds (0 disables the reporting interval)\n")
 {
 	int rc;
 	int interval = atoi(argv[0]);
@@ -567,6 +569,37 @@ DEFUN(show_rate_counters,
 	return CMD_SUCCESS;
 }
 
+DEFUN(stats_report,
+      stats_report_cmd,
+      "stats report",
+      STATS_STR "Manurally trigger reporting of stats\n")
+{
+        osmo_stats_report();
+	return CMD_SUCCESS;
+}
+
+static int reset_rate_ctr_group_handler(struct rate_ctr_group *ctrg, void *sctx_)
+{
+        rate_ctr_group_reset(ctrg);
+        return 0;
+}
+
+static int reset_osmo_stat_item_group_handler(struct osmo_stat_item_group *statg, void *sctx_)
+{
+        osmo_stat_item_group_reset(statg);
+        return 0;
+}
+
+DEFUN(stats_reset,
+      stats_reset_cmd,
+      "stats reset",
+      STATS_STR "Reset all stats\n")
+{
+        rate_ctr_for_each_group(reset_rate_ctr_group_handler, NULL);
+        osmo_stat_item_for_each_group(reset_osmo_stat_item_group_handler, NULL);
+	return CMD_SUCCESS;
+}
+
 static int config_write_stats_reporter(struct vty *vty, struct osmo_stats_reporter *srep)
 {
 	if (srep == NULL)
@@ -666,4 +699,7 @@ void osmo_stats_vty_add_cmds()
 
 	install_element_ve(&show_stats_asciidoc_table_cmd);
 	install_element_ve(&show_rate_counters_cmd);
+
+        install_element(ENABLE_NODE, &stats_report_cmd);
+        install_element(ENABLE_NODE, &stats_reset_cmd);
 }

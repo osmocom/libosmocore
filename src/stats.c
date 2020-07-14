@@ -181,12 +181,21 @@ static int start_timer()
 	if (rc < 0)
 		LOGP(DLSTATS, LOGL_ERROR, "Failed to setup the timer with error code %d (fd=%d)\n",
 		     rc, osmo_stats_timer.fd);
-	rc = osmo_timerfd_schedule(&osmo_stats_timer, &ts_first, &ts_interval);
-	if (rc < 0)
-		LOGP(DLSTATS, LOGL_ERROR, "Failed to schedule the timer with error code %d (fd=%d, interval %d sec)\n",
-		     rc, osmo_stats_timer.fd, interval);
 
-	LOGP(DLSTATS, LOGL_INFO, "Stats timer started with interval %d sec\n", interval);
+        if (interval == 0) {
+		rc = osmo_timerfd_disable(&osmo_stats_timer);
+		if (rc < 0)
+			LOGP(DLSTATS, LOGL_ERROR, "Failed to disable the timer with error code %d (fd=%d)\n",
+			     rc, osmo_stats_timer.fd);
+        } else {
+
+		rc = osmo_timerfd_schedule(&osmo_stats_timer, &ts_first, &ts_interval);
+		if (rc < 0)
+			LOGP(DLSTATS, LOGL_ERROR, "Failed to schedule the timer with error code %d (fd=%d, interval %d sec)\n",
+			rc, osmo_stats_timer.fd, interval);
+
+		LOGP(DLSTATS, LOGL_INFO, "Stats timer started with interval %d sec\n", interval);
+	}
 
 	return 0;
 }
@@ -361,7 +370,7 @@ int osmo_stats_reporter_set_max_class(struct osmo_stats_reporter *srep,
  *  \returns 0 on success; negative on error */
 int osmo_stats_set_interval(int interval)
 {
-	if (interval <= 0)
+	if (interval < 0)
 		return -EINVAL;
 
 	osmo_stats_config->interval = interval;
