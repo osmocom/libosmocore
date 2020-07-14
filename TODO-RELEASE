@@ -16,3 +16,4 @@ gsm		API/ABI change		add new member to lapd_datalink
 gsm		new API			new gsm0808_create_common_id()
 gb		new API			new bssgp_tx_bvc_reset2()
 core		new API			new rate_ctr_reset(), rate_ctr_group_reset()
+core		new API			new osmo_stat_item_reset(), osmo_stat_item_group_reset()

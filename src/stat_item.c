@@ -356,4 +356,33 @@ int osmo_stat_item_for_each_group(osmo_stat_item_group_handler_t handle_group, v
 	return rc;
 }
 
+
+/*! Remove all values of a stat item
+ *  \param[in] item stat item to reset
+ */
+void osmo_stat_item_reset(struct osmo_stat_item *item)
+{
+	unsigned int i;
+
+	item->last_offs = item->desc->num_values - 1;
+	item->last_value_index = -1;
+
+	for (i = 0; i <= item->last_offs; i++) {
+		item->values[i].value = item->desc->default_value;
+		item->values[i].id = OSMO_STAT_ITEM_NOVALUE_ID;
+	}
+}
+
+/*! Reset all osmo stat items in a group
+ *  \param[in] statg stat item group to reset
+ */
+void osmo_stat_item_group_reset(struct osmo_stat_item_group *statg)
+{
+	int i;
+
+	for (i = 0; i < statg->desc->num_items; i++) {
+		struct osmo_stat_item *item = statg->items[i];
+                osmo_stat_item_reset(item);
+	}
+}
 /*! @} */

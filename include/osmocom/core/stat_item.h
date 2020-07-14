@@ -114,4 +114,8 @@ static inline int32_t osmo_stat_item_get_last(const struct osmo_stat_item *item)
 {
 	return item->values[item->last_offs].value;
 }
+
+void osmo_stat_item_reset(struct osmo_stat_item *item);
+void osmo_stat_item_group_reset(struct osmo_stat_item_group *statg);
+
 /*! @} */
