@@ -337,6 +337,9 @@ static void gen_logging_level_cmd_strs(struct cmd_element *cmd,
 	osmo_talloc_asprintf(tall_log_ctx, cmd_str, ") %s", level_args);
 	osmo_talloc_asprintf(tall_log_ctx, doc_str, "%s", level_strs);
 
+	talloc_set_name_const(cmd_str, "vty_log_level_cmd_str");
+	talloc_set_name_const(doc_str, "vty_log_level_doc_str");
+
 	cmd->string = cmd_str;
 	cmd->doc = doc_str;
 }
@@ -1047,6 +1050,9 @@ static void gen_vty_logp_cmd_strs(struct cmd_element *cmd)
 	osmo_talloc_asprintf(tall_log_ctx, cmd_str, " .LOGMESSAGE");
 	osmo_talloc_asprintf(tall_log_ctx, doc_str,
 			     "Arbitrary message to log on given category and log level\n");
+
+	talloc_set_name_const(cmd_str, "vty_logp_cmd_str");
+	talloc_set_name_const(doc_str, "vty_logp_doc_str");
 
 	cmd->string = cmd_str;
 	cmd->doc = doc_str;
