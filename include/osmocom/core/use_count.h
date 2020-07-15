@@ -130,8 +130,9 @@ typedef int (* osmo_use_count_cb_t )(struct osmo_use_count_entry *use_count_entr
  *     int foo_use_cb(struct osmo_use_count_entry *use_count_entry, int32_t old_use_count, const char *file, int line)
  *     {
  *             struct foo *foo = use_count_entry->use_count->talloc_object;
- *             if (osmo_use_count_total(&use_count_entry->use_count) == 0)
+ *             if (osmo_use_count_total(use_count_entry->use_count) == 0)
  *                     talloc_free(foo);
+ *             return 0;
  *     }
  *
  *     // The function name is a convenient use token:
