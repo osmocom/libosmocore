@@ -12,7 +12,10 @@
 #include <osmocom/gprs/protocol/gsm_08_18.h>
 
 /* gprs_bssgp_util.c */
+typedef int (*bssgp_bvc_send)(void *ctx, struct msgb *msg);
+
 extern struct gprs_ns_inst *bssgp_nsi;
+void bssgp_set_bssgp_callback(bssgp_bvc_send ns_send, void *data);
 struct msgb *bssgp_msgb_alloc(void);
 struct msgb *bssgp_msgb_copy(const struct msgb *msg, const char *name);
 const char *bssgp_cause_str(enum gprs_bssgp_cause cause);

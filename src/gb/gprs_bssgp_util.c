@@ -32,6 +32,7 @@
 #include <osmocom/gprs/gprs_bssgp.h>
 #include <osmocom/gprs/gprs_ns.h>
 
+#include "gprs_bssgp_internal.h"
 #include "common_vty.h"
 
 struct gprs_ns_inst *bssgp_nsi;
@@ -210,7 +211,7 @@ int bssgp_tx_simple_bvci(uint8_t pdu_type, uint16_t nsei,
 	_bvci = osmo_htons(bvci);
 	msgb_tvlv_put(msg, BSSGP_IE_BVCI, 2, (uint8_t *) &_bvci);
 
-	return gprs_ns_sendmsg(bssgp_nsi, msg);
+	return bssgp_ns_send(bssgp_ns_send_data, msg);
 }
 
 /* Chapter 10.4.14: Status */
@@ -248,5 +249,5 @@ int bssgp_tx_status(uint8_t cause, uint16_t *bvci, struct msgb *orig_msg)
 	msgb_tvlv_put(msg, BSSGP_IE_PDU_IN_ERROR,
 		      msgb_bssgp_len(orig_msg), msgb_bssgph(orig_msg));
 
-	return gprs_ns_sendmsg(bssgp_nsi, msg);
+	return bssgp_ns_send(bssgp_ns_send_data, msg);
 }

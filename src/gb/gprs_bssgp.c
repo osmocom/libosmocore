@@ -44,6 +44,11 @@
 
 void *bssgp_tall_ctx = NULL;
 
+static int _gprs_ns_sendmsg(void *ctx, struct msgb *msg);
+
+bssgp_bvc_send bssgp_ns_send = _gprs_ns_sendmsg;
+void *bssgp_ns_send_data = NULL;
+
 static const struct rate_ctr_desc bssgp_ctr_description[] = {
 	{ "packets:in",	"Packets at BSSGP Level ( In)" },
 	{ "packets:out","Packets at BSSGP Level (Out)" },
@@ -66,6 +71,13 @@ LLIST_HEAD(bssgp_bvc_ctxts);
 
 static int _bssgp_tx_dl_ud(struct bssgp_flow_control *fc, struct msgb *msg,
 			   uint32_t llc_pdu_len, void *priv);
+
+
+/* callback to be backward compatible with  old users which do not set the bssgp_ns_send function */
+static int _gprs_ns_sendmsg(void *ctx, struct msgb *msg)
+{
+	return gprs_ns_sendmsg(bssgp_nsi, msg);
+}
 
 /* Find a BTS Context based on parsed RA ID and Cell ID */
 struct bssgp_bvc_ctx *btsctx_by_raid_cid(const struct gprs_ra_id *raid, uint16_t cid)
@@ -117,6 +129,12 @@ struct bssgp_bvc_ctx *btsctx_by_bvci_nsei(uint16_t bvci, uint16_t nsei)
 	return NULL;
 }
 
+void bssgp_set_bssgp_callback(bssgp_bvc_send ns_send, void *data)
+{
+	bssgp_ns_send = ns_send;
+	bssgp_ns_send_data = data;
+}
+
 struct bssgp_bvc_ctx *btsctx_alloc(uint16_t bvci, uint16_t nsei)
 {
 	struct bssgp_bvc_ctx *ctx;
@@ -163,7 +181,7 @@ static int bssgp_tx_fc_bvc_ack(uint16_t nsei, uint8_t tag, uint16_t ns_bvci)
 	bgph->pdu_type = BSSGP_PDUT_FLOW_CONTROL_BVC_ACK;
 	msgb_tvlv_put(msg, BSSGP_IE_TAG, 1, &tag);
 
-	return gprs_ns_sendmsg(bssgp_nsi, msg);
+	return bssgp_ns_send(bssgp_ns_send_data, msg);
 }
 
 /* 10.3.7 SUSPEND-ACK PDU */
@@ -182,7 +200,7 @@ int bssgp_tx_suspend_ack(uint16_t nsei, uint32_t tlli,
 	bssgp_msgb_ra_put(msg, ra_id);
 	msgb_tvlv_put(msg, BSSGP_IE_SUSPEND_REF_NR, 1, &suspend_ref);
 
-	return gprs_ns_sendmsg(bssgp_nsi, msg);
+	return bssgp_ns_send(bssgp_ns_send_data, msg);
 }
 
 /* 10.3.8 SUSPEND-NACK PDU */
@@ -204,7 +222,7 @@ int bssgp_tx_suspend_nack(uint16_t nsei, uint32_t tlli,
 	if (cause)
 		msgb_tvlv_put(msg, BSSGP_IE_CAUSE, 1, cause);
 
-	return gprs_ns_sendmsg(bssgp_nsi, msg);
+	return bssgp_ns_send(bssgp_ns_send_data, msg);
 }
 
 /* 10.3.10 RESUME-ACK PDU */
@@ -222,7 +240,7 @@ int bssgp_tx_resume_ack(uint16_t nsei, uint32_t tlli,
 	bssgp_msgb_tlli_put(msg, tlli);
 	bssgp_msgb_ra_put(msg, ra_id);
 
-	return gprs_ns_sendmsg(bssgp_nsi, msg);
+	return bssgp_ns_send(bssgp_ns_send_data, msg);
 }
 
 /* 10.3.11 RESUME-NACK PDU */
@@ -243,7 +261,7 @@ int bssgp_tx_resume_nack(uint16_t nsei, uint32_t tlli,
 	if (cause)
 		msgb_tvlv_put(msg, BSSGP_IE_CAUSE, 1, cause);
 
-	return gprs_ns_sendmsg(bssgp_nsi, msg);
+	return bssgp_ns_send(bssgp_ns_send_data, msg);
 }
 
 uint16_t bssgp_parse_cell_id(struct gprs_ra_id *raid, const uint8_t *buf)
@@ -266,7 +284,7 @@ int bssgp_create_cell_id(uint8_t *buf, const struct gprs_ra_id *raid,
 }
 
 /* Chapter 8.4 BVC-Reset Procedure */
-static int bssgp_rx_bvc_reset(struct msgb *msg, struct tlv_parsed *tp,	
+static int bssgp_rx_bvc_reset(struct msgb *msg, struct tlv_parsed *tp,
 			      uint16_t ns_bvci)
 {
 	struct osmo_bssgp_prim nmp;
@@ -744,7 +762,7 @@ static int bssgp_fc_needs_queueing(struct bssgp_flow_control *fc, uint32_t pdu_l
 static int _bssgp_tx_dl_ud(struct bssgp_flow_control *fc, struct msgb *msg,
 			   uint32_t llc_pdu_len, void *priv)
 {
-	return gprs_ns_sendmsg(bssgp_nsi, msg);
+	return bssgp_ns_send(bssgp_ns_send_data, msg);
 }
 
 /* input function of the flow control implementation, called first
@@ -1286,7 +1304,7 @@ int bssgp_tx_paging(uint16_t nsei, uint16_t ns_bvci,
 		msgb_tvlv_put(msg, BSSGP_IE_TMSI, 4, (uint8_t *) &ptmsi);
 	}
 
-	return gprs_ns_sendmsg(bssgp_nsi, msg);
+	return bssgp_ns_send(bssgp_ns_send_data, msg);
 }
 
 void bssgp_set_log_ss(int ss)

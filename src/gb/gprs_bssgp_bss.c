@@ -34,6 +34,7 @@
 #include <osmocom/gprs/gprs_bssgp_bss.h>
 #include <osmocom/gprs/gprs_ns.h>
 
+#include "gprs_bssgp_internal.h"
 #include "common_vty.h"
 
 #define GSM_IMSI_LENGTH 17
@@ -69,7 +70,7 @@ int bssgp_tx_suspend(uint16_t nsei, uint32_t tlli,
 	bssgp_msgb_tlli_put(msg, tlli);
 	bssgp_msgb_ra_put(msg, ra_id);
 
-	return gprs_ns_sendmsg(bssgp_nsi, msg);
+	return bssgp_ns_send(bssgp_ns_send_data, msg);
 }
 
 /*! GMM-RESUME.req (Chapter 10.3.9) */
@@ -91,7 +92,7 @@ int bssgp_tx_resume(uint16_t nsei, uint32_t tlli,
 
 	msgb_tvlv_put(msg, BSSGP_IE_SUSPEND_REF_NR, 1, &suspend_ref);
 
-	return gprs_ns_sendmsg(bssgp_nsi, msg);
+	return bssgp_ns_send(bssgp_ns_send_data, msg);
 }
 
 /*! Transmit RA-CAPABILITY-UPDATE (10.3.3) */
@@ -113,7 +114,7 @@ int bssgp_tx_ra_capa_upd(struct bssgp_bvc_ctx *bctx, uint32_t tlli, uint8_t tag)
 
 	msgb_tvlv_put(msg, BSSGP_IE_TAG, 1, &tag);
 
-	return gprs_ns_sendmsg(bssgp_nsi, msg);
+	return bssgp_ns_send(bssgp_ns_send_data, msg);
 }
 
 /* first common part of RADIO-STATUS */
@@ -141,7 +142,7 @@ static int common_tx_radio_status2(struct msgb *msg, uint8_t cause)
 	msgb_tvlv_put(msg, BSSGP_IE_CAUSE, 1, &cause);
 	LOGPC(DBSSGP, LOGL_NOTICE, "CAUSE=%s\n", bssgp_cause_str(cause));
 
-	return gprs_ns_sendmsg(bssgp_nsi, msg);
+	return bssgp_ns_send(bssgp_ns_send_data, msg);
 }
 
 /*! Transmit RADIO-STATUS for TLLI (10.3.5) */
@@ -220,7 +221,7 @@ int bssgp_tx_flush_ll_ack(struct bssgp_bvc_ctx *bctx, uint32_t tlli,
 		msgb_tvlv_put(msg, BSSGP_IE_BVCI, 2, (uint8_t *) &_bvci_new);
 	msgb_tvlv_put(msg, BSSGP_IE_NUM_OCT_AFF, 3, (uint8_t *) &_oct_aff);
 
-	return gprs_ns_sendmsg(bssgp_nsi, msg);
+	return bssgp_ns_send(bssgp_ns_send_data, msg);
 }
 
 /*! Transmit LLC-DISCARDED (Chapter 10.4.3) */
@@ -246,7 +247,7 @@ int bssgp_tx_llc_discarded(struct bssgp_bvc_ctx *bctx, uint32_t tlli,
 	msgb_tvlv_put(msg, BSSGP_IE_BVCI, 2, (uint8_t *) &_bvci);
 	msgb_tvlv_put(msg, BSSGP_IE_NUM_OCT_AFF, 3, ((uint8_t *) &_oct_aff) + 1);
 
-	return gprs_ns_sendmsg(bssgp_nsi, msg);
+	return bssgp_ns_send(bssgp_ns_send_data, msg);
 }
 
 /*! Transmit a BVC-BLOCK message (Chapter 10.4.8) */
@@ -267,7 +268,7 @@ int bssgp_tx_bvc_block(struct bssgp_bvc_ctx *bctx, uint8_t cause)
 	msgb_tvlv_put(msg, BSSGP_IE_BVCI, 2, (uint8_t *) &_bvci);
 	msgb_tvlv_put(msg, BSSGP_IE_CAUSE, 1, &cause);
 
-	return gprs_ns_sendmsg(bssgp_nsi, msg);
+	return bssgp_ns_send(bssgp_ns_send_data, msg);
 }
 
 /*! Transmit a BVC-UNBLOCK message (Chapter 10.4.10) */
@@ -286,7 +287,7 @@ int bssgp_tx_bvc_unblock(struct bssgp_bvc_ctx *bctx)
 
 	msgb_tvlv_put(msg, BSSGP_IE_BVCI, 2, (uint8_t *) &_bvci);
 
-	return gprs_ns_sendmsg(bssgp_nsi, msg);
+	return bssgp_ns_send(bssgp_ns_send_data, msg);
 }
 
 /*! Transmit a BVC-RESET message (Chapter 10.4.12) */
@@ -313,7 +314,7 @@ int bssgp_tx_bvc_reset2(struct bssgp_bvc_ctx *bctx, uint16_t bvci, uint8_t cause
 	}
 	/* Optional: Feature Bitmap */
 
-	return gprs_ns_sendmsg(bssgp_nsi, msg);
+	return bssgp_ns_send(bssgp_ns_send_data, msg);
 }
 int bssgp_tx_bvc_reset(struct bssgp_bvc_ctx *bctx, uint16_t bvci, uint8_t cause)
 {
@@ -389,7 +390,7 @@ int bssgp_tx_fc_bvc(struct bssgp_bvc_ctx *bctx, uint8_t tag,
 			      sizeof(e_queue_delay),
 			      (uint8_t *) &e_queue_delay);
 
-	return gprs_ns_sendmsg(bssgp_nsi, msg);
+	return bssgp_ns_send(bssgp_ns_send_data, msg);
 }
 
 /*! Transmit a FLOW_CONTROL-MS (Chapter 10.4.6)
@@ -432,7 +433,7 @@ int bssgp_tx_fc_ms(struct bssgp_bvc_ctx *bctx, uint32_t tlli, uint8_t tag,
 		msgb_tvlv_put(msg, BSSGP_IE_BUCKET_FULL_RATIO,
 			      1, bucket_full_ratio);
 
-	return gprs_ns_sendmsg(bssgp_nsi, msg);
+	return bssgp_ns_send(bssgp_ns_send_data, msg);
 }
 
 /*! RL-UL-UNITDATA.req (Chapter 10.2.2)
@@ -478,7 +479,7 @@ int bssgp_tx_ul_ud(struct bssgp_bvc_ctx *bctx, uint32_t tlli,
 	rate_ctr_inc(&bctx->ctrg->ctr[BSSGP_CTR_PKTS_OUT]);
 	rate_ctr_add(&bctx->ctrg->ctr[BSSGP_CTR_BYTES_OUT], msg->len);
 
-	return gprs_ns_sendmsg(bssgp_nsi, msg);
+	return bssgp_ns_send(bssgp_ns_send_data, msg);
 }
 
 /* Parse a single GMM-PAGING.req to a given NSEI/NS-BVCI */
