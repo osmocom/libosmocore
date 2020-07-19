@@ -1662,6 +1662,35 @@ int osmo_sock_local_ip(char *local_ip, const char *remote_ip)
 	return 0;
 }
 
+/*! Compare two osmo_sockaddr.
+ * \param[in] a
+ * \param[in] b
+ * \return 0 if a and b are equal. Otherwise it follows memcmp()
+ */
+int osmo_sockaddr_cmp(struct osmo_sockaddr *a, struct osmo_sockaddr *b)
+{
+	if (a == b)
+		return 0;
+	if (!a)
+		return 1;
+	if (!b)
+		return -1;
+
+	if (a->u.sa.sa_family != b->u.sa.sa_family) {
+		return OSMO_CMP(a->u.sa.sa_family, b->u.sa.sa_family);
+	}
+
+	switch (a->u.sa.sa_family) {
+	case AF_INET:
+		return memcmp(&a->u.sin, &b->u.sin, sizeof(struct sockaddr_in));
+	case AF_INET6:
+		return memcmp(&a->u.sin6, &b->u.sin6, sizeof(struct sockaddr_in6));
+	default:
+		/* fallback to memcmp for remaining AF over the full osmo_sockaddr length */
+		return memcmp(a, b, sizeof(struct osmo_sockaddr));
+	}
+}
+
 #endif /* HAVE_SYS_SOCKET_H */
 
 /*! @} */
