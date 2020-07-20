@@ -6,6 +6,6 @@ includedir=@includedir@
 Name: Osmocom L1 transcoding Library
 Description: C Utility Library
 Version: @VERSION@
-Libs: -L${libdir} -losmocoding -losmocodec -losmogsm -losmocore
-Cflags: -I${includedir}/
+Libs: -L${libdir} @TALLOC_LIBS@ -losmocoding -losmocodec -losmogsm -losmocore
+Cflags: -I${includedir}/ @TALLOC_CFLAGS@
 
