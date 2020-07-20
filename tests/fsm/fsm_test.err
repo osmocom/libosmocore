@@ -1,18 +1,18 @@
 Checking FSM allocation
-[0;mTest_FSM(my_id){NULL}: Allocated
-[0;mTest_FSM(my_id){NULL}: Received Event EV_B
-[0;mTest_FSM(my_id){NULL}: Event EV_B not permitted
-[0;mTest_FSM(my_id){NULL}: Received Event EV_A
-[0;mTest_FSM(my_id){NULL}: State change to ONE (no timeout)
-[0;mTest_FSM(my_id){ONE}: Received Event EV_B
-[0;mTest_FSM(my_id){ONE}: State change to TWO (T2342, 1s)
-[0;mTest_FSM(my_id){TWO}: Timeout of T2342
-[0;mTimer
-[0;mTest_FSM(my_id){TWO}: Deallocated
-[0;m
+Test_FSM(my_id){NULL}: Allocated
+Test_FSM(my_id){NULL}: Received Event EV_B
+Test_FSM(my_id){NULL}: Event EV_B not permitted
+Test_FSM(my_id){NULL}: Received Event EV_A
+Test_FSM(my_id){NULL}: State change to ONE (no timeout)
+Test_FSM(my_id){ONE}: Received Event EV_B
+Test_FSM(my_id){ONE}: State change to TWO (T2342, 1s)
+Test_FSM(my_id){TWO}: Timeout of T2342
+Timer
+Test_FSM(my_id){TWO}: Deallocated
+
 --- test_id_api()
 Test_FSM{NULL}: Allocated
-[0;m  osmo_fsm_inst_name() == "Test_FSM"
+  osmo_fsm_inst_name() == "Test_FSM"
   osmo_fsm_inst_find_by_name("Test_FSM") == fi
 osmo_fsm_inst_update_id("my_id")
     rc == 0, ok
@@ -39,23 +39,23 @@ osmo_fsm_inst_update_id("arbitrary_id")
   osmo_fsm_inst_find_by_id("arbitrary_id") == fi
 osmo_fsm_inst_update_id("")
 Attempting to set illegal id for FSM instance of type 'Test_FSM': ""
-[0;m    rc == -22, ok
+    rc == -22, ok
   osmo_fsm_inst_name() == "Test_FSM(arbitrary_id)"
   osmo_fsm_inst_find_by_name("Test_FSM(arbitrary_id)") == fi
 osmo_fsm_inst_update_id("invalid.id")
 Attempting to set illegal id for FSM instance of type 'Test_FSM': "invalid.id"
-[0;m    rc == -22, ok
+    rc == -22, ok
   osmo_fsm_inst_name() == "Test_FSM(arbitrary_id)"
   osmo_fsm_inst_find_by_name("Test_FSM(arbitrary_id)") == fi
 --- id format tests...
 osmo_fsm_inst_update_id_f("format%cid", '.')
 Attempting to set illegal id for FSM instance of type 'Test_FSM': "format.id"
-[0;m    rc == -22, ok
+    rc == -22, ok
   osmo_fsm_inst_name() == "Test_FSM(arbitrary_id)"
   osmo_fsm_inst_find_by_name("Test_FSM(arbitrary_id)") == fi
 osmo_fsm_inst_update_id_f("%s", "")
 Attempting to set illegal id for FSM instance of type 'Test_FSM': ""
-[0;m    rc == -22, ok
+    rc == -22, ok
   osmo_fsm_inst_name() == "Test_FSM(arbitrary_id)"
   osmo_fsm_inst_find_by_name("Test_FSM(arbitrary_id)") == fi
 osmo_fsm_inst_update_id_f("format%xid%d", 0x23, 42)
@@ -78,41 +78,41 @@ osmo_fsm_inst_update_id_f("%s%c%s", "arbitrary", '_', "id")
 --- test_id_api() done
 
 Test_FSM(arbitrary_id){NULL}: Terminating (cause = OSMO_FSM_TERM_REQUEST)
-[0;mTest_FSM(arbitrary_id){NULL}: Freeing instance
-[0;mTest_FSM(arbitrary_id){NULL}: Deallocated
-[0;m
+Test_FSM(arbitrary_id){NULL}: Freeing instance
+Test_FSM(arbitrary_id){NULL}: Deallocated
+
 --- test_state_chg_keep_timer()
 Test_FSM{NULL}: Allocated
-[0;mTest_FSM{NULL}: State change to ONE (no timeout)
-[0;mTest_FSM{ONE}: State change to TWO (no timeout)
-[0;mTest_FSM{TWO}: Terminating (cause = OSMO_FSM_TERM_REQUEST)
-[0;mTest_FSM{TWO}: Freeing instance
-[0;mTest_FSM{TWO}: Deallocated
-[0;mTotal time passed: 0.000000 s
+Test_FSM{NULL}: State change to ONE (no timeout)
+Test_FSM{ONE}: State change to TWO (no timeout)
+Test_FSM{TWO}: Terminating (cause = OSMO_FSM_TERM_REQUEST)
+Test_FSM{TWO}: Freeing instance
+Test_FSM{TWO}: Deallocated
+Total time passed: 0.000000 s
 Test_FSM{NULL}: Allocated
-[0;mTest_FSM{NULL}: State change to ONE (T10, 10s)
-[0;mTotal time passed: 2.000342 s
+Test_FSM{NULL}: State change to ONE (T10, 10s)
+Total time passed: 2.000342 s
 Test_FSM{ONE}: State change to TWO (keeping T10, 7.999s remaining)
-[0;mTotal time passed: 2.000342 s
+Total time passed: 2.000342 s
 Total time passed: 9.999999 s
 Total time passed: 10.000000 s
 Test_FSM{TWO}: Timeout of T10
-[0;mTest_FSM{TWO}: Terminating (cause = OSMO_FSM_TERM_REQUEST)
-[0;mTest_FSM{TWO}: Freeing instance
-[0;mTest_FSM{TWO}: Deallocated
-[0;m--- test_state_chg_keep_timer() done
+Test_FSM{TWO}: Terminating (cause = OSMO_FSM_TERM_REQUEST)
+Test_FSM{TWO}: Freeing instance
+Test_FSM{TWO}: Deallocated
+--- test_state_chg_keep_timer() done
 
 --- test_state_chg_T()
 Test_FSM{NULL}: Allocated
-[0;mTest_FSM{NULL}: State change to ONE (T42, 23s)
-[0;mTest_FSM{ONE}: State change to TWO (no timeout)
-[0;mTest_FSM{TWO}: Terminating (cause = OSMO_FSM_TERM_REQUEST)
-[0;mTest_FSM{TWO}: Freeing instance
-[0;mTest_FSM{TWO}: Deallocated
-[0;mTest_FSM{NULL}: Allocated
-[0;mTest_FSM{NULL}: State change to ONE (T42, 23s)
-[0;mTest_FSM{ONE}: State change to TWO (no timeout)
-[0;mTest_FSM{TWO}: Terminating (cause = OSMO_FSM_TERM_REQUEST)
-[0;mTest_FSM{TWO}: Freeing instance
-[0;mTest_FSM{TWO}: Deallocated
-[0;m--- test_state_chg_T() done
+Test_FSM{NULL}: State change to ONE (T42, 23s)
+Test_FSM{ONE}: State change to TWO (no timeout)
+Test_FSM{TWO}: Terminating (cause = OSMO_FSM_TERM_REQUEST)
+Test_FSM{TWO}: Freeing instance
+Test_FSM{TWO}: Deallocated
+Test_FSM{NULL}: Allocated
+Test_FSM{NULL}: State change to ONE (T42, 23s)
+Test_FSM{ONE}: State change to TWO (no timeout)
+Test_FSM{TWO}: Terminating (cause = OSMO_FSM_TERM_REQUEST)
+Test_FSM{TWO}: Freeing instance
+Test_FSM{TWO}: Deallocated
+--- test_state_chg_T() done
