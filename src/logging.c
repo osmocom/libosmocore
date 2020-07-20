@@ -505,7 +505,7 @@ static void _output(struct log_target *target, unsigned int subsys,
 		}
 	}
 
-	if (target->use_color) {
+	if (target->use_color && c_subsys) {
 		ret = snprintf(buf + offset, rem, OSMO_LOGCOLOR_END);
 		if (ret < 0)
 			goto err;
