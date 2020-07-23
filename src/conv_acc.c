@@ -85,6 +85,11 @@ int16_t *osmo_conv_sse_avx_vdec_malloc(size_t n);
 void osmo_conv_sse_avx_vdec_free(int16_t *ptr);
 #endif
 
+#ifdef HAVE_NEON
+int16_t *osmo_conv_neon_vdec_malloc(size_t n);
+void osmo_conv_neon_vdec_free(int16_t *ptr);
+#endif
+
 /* Forward Metric Units */
 void osmo_conv_gen_metrics_k5_n2(const int8_t *seq, const int16_t *out,
 	int16_t *sums, int16_t *paths, int norm);
@@ -126,6 +131,21 @@ void osmo_conv_sse_avx_metrics_k7_n2(const int8_t *seq, const int16_t *out,
 void osmo_conv_sse_avx_metrics_k7_n3(const int8_t *seq, const int16_t *out,
 	int16_t *sums, int16_t *paths, int norm);
 void osmo_conv_sse_avx_metrics_k7_n4(const int8_t *seq, const int16_t *out,
+	int16_t *sums, int16_t *paths, int norm);
+#endif
+
+#if defined(HAVE_NEON)
+void osmo_conv_neon_metrics_k5_n2(const int8_t *seq, const int16_t *out,
+	int16_t *sums, int16_t *paths, int norm);
+void osmo_conv_neon_metrics_k5_n3(const int8_t *seq, const int16_t *out,
+	int16_t *sums, int16_t *paths, int norm);
+void osmo_conv_neon_metrics_k5_n4(const int8_t *seq, const int16_t *out,
+	int16_t *sums, int16_t *paths, int norm);
+void osmo_conv_neon_metrics_k7_n2(const int8_t *seq, const int16_t *out,
+	int16_t *sums, int16_t *paths, int norm);
+void osmo_conv_neon_metrics_k7_n3(const int8_t *seq, const int16_t *out,
+	int16_t *sums, int16_t *paths, int norm);
+void osmo_conv_neon_metrics_k7_n4(const int8_t *seq, const int16_t *out,
 	int16_t *sums, int16_t *paths, int norm);
 #endif
 
@@ -528,6 +548,12 @@ static int vdec_init(struct vdecoder *dec, const struct osmo_conv_code *code)
 	if (dec->k == 5) {
 		switch (dec->n) {
 		case 2:
+/* rach len 14 is too short for neon */
+#ifdef HAVE_NEON
+			if (code->len < 100)
+				dec->metric_func = osmo_conv_gen_metrics_k5_n2;
+			else
+#endif
 			dec->metric_func = osmo_conv_metrics_k5_n2;
 			break;
 		case 3:
@@ -681,6 +707,8 @@ static void osmo_conv_init(void)
 	} else {
 		INIT_POINTERS(gen);
 	}
+#elif defined(HAVE_NEON)
+	INIT_POINTERS(neon);
 #else
 	INIT_POINTERS(gen);
 #endif

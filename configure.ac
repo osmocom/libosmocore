@@ -378,6 +378,17 @@ else
 	AM_CONDITIONAL(HAVE_SSE4_1, false)
 fi
 
+AC_ARG_ENABLE(neon,
+	[AS_HELP_STRING(
+		[--enable-neon],
+		[Enable NEON support]
+	)],
+	[neon=$enableval], [neon="no"])
+AC_DEFINE(HAVE_NEON,,
+[Support ARM NEON instructions])
+AM_CONDITIONAL(HAVE_NEON, [test "x$neon" != "xno"])
+
+
 OSMO_AC_CODE_COVERAGE
 
 dnl Check if the compiler supports specified GCC's built-in function

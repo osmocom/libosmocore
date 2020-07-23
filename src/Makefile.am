@@ -48,6 +48,11 @@ endif
 endif
 endif
 
+if HAVE_NEON
+libosmocore_la_SOURCES += conv_acc_neon.c
+# conv_acc_neon.lo : AM_CFLAGS += -mfpu=neon no, could as well be vfp with neon
+endif
+
 BUILT_SOURCES = crc8gen.c crc16gen.c crc32gen.c crc64gen.c
 EXTRA_DIST = conv_acc_sse_impl.h crcXXgen.c.tpl
 
