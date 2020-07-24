@@ -306,6 +306,26 @@ static int find_unused_subchan_idx(const struct osmo_i460_timeslot *ts)
 	return -1;
 }
 
+/* reset subchannel struct into a defined state */
+static void subchan_reset(struct osmo_i460_subchan *schan, bool first_time)
+{
+	/* Before we zero out the subchannel struct, we must be sure that the
+	 * tx_queue is cleared and all dynamically allocated memory is freed.
+	 * However, on an uninitalized subchannel struct we can not be sure
+	 * that the pointers are valid. If the subchannel is reset the first
+	 * time the caller must set first_time to true. */
+	if (!first_time) {
+		if (schan->demux.out_bitbuf)
+			talloc_free(schan->demux.out_bitbuf);
+		msgb_queue_free(&schan->mux.tx_queue);
+	}
+
+	/* Reset subchannel to a defined state */
+	memset(schan, 0, sizeof(*schan));
+	schan->rate = OSMO_I460_RATE_NONE;
+	INIT_LLIST_HEAD(&schan->mux.tx_queue);
+}
+
 /*! initialize an I.460 timeslot */
 void osmo_i460_ts_init(struct osmo_i460_timeslot *ts)
 {
@@ -313,10 +333,7 @@ void osmo_i460_ts_init(struct osmo_i460_timeslot *ts)
 
 	for (i = 0; i < ARRAY_SIZE(ts->schan); i++) {
 		struct osmo_i460_subchan *schan = &ts->schan[i];
-
-		memset(schan, 0, sizeof(*schan));
-		schan->rate = OSMO_I460_RATE_NONE;
-		INIT_LLIST_HEAD(&schan->mux.tx_queue);
+		subchan_reset(schan, true);
 	}
 }
 
@@ -345,7 +362,7 @@ osmo_i460_subchan_add(void *ctx, struct osmo_i460_timeslot *ts, const struct osm
 	schan->demux.user_data = chd->demux.user_data;
 	rc = alloc_bitbuf(ctx, schan, chd->demux.num_bits);
 	if (rc < 0) {
-		memset(schan, 0, sizeof(*schan));
+		subchan_reset(schan, false);
 		return NULL;
 	}
 
@@ -356,8 +373,7 @@ osmo_i460_subchan_add(void *ctx, struct osmo_i460_timeslot *ts, const struct osm
 /* remove a su-channel from the multiplex */
 void osmo_i460_subchan_del(struct osmo_i460_subchan *schan)
 {
-	talloc_free(schan->demux.out_bitbuf);
-	memset(schan, 0, sizeof(*schan));
+	subchan_reset(schan, false);
 }
 
 /*! @} */
