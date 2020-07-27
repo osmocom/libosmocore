@@ -113,6 +113,8 @@ int osmo_sock_mcast_subscribe(int fd, const char *grp_addr);
 
 int osmo_sock_local_ip(char *local_ip, const char *remote_ip);
 
+int osmo_sockaddr_local_ip(struct osmo_sockaddr *local_ip,
+			   const struct osmo_sockaddr *remote_ip);
 int osmo_sockaddr_cmp(struct osmo_sockaddr *a, struct osmo_sockaddr *b);
 
 #endif /* (!EMBEDDED) */

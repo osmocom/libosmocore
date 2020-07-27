@@ -1662,6 +1662,29 @@ int osmo_sock_local_ip(char *local_ip, const char *remote_ip)
 	return 0;
 }
 
+/*! Determine the matching local address for a given remote address.
+ *  \param[out] local_ip caller provided memory for resulting local address
+ *  \param[in] remote_ip remote address
+ *  \returns 0 on success; negative otherwise
+ */
+int osmo_sockaddr_local_ip(struct osmo_sockaddr *local_ip, const struct osmo_sockaddr *remote_ip)
+{
+	int sfd;
+	int rc;
+	socklen_t local_ip_len;
+
+	sfd = osmo_sock_init_osa(SOCK_DGRAM, IPPROTO_UDP, NULL, remote_ip, OSMO_SOCK_F_CONNECT);
+	if (sfd < 0)
+		return -EINVAL;
+
+	memset(local_ip, 0, sizeof(*local_ip));
+	local_ip_len = sizeof(*local_ip);
+	rc = getsockname(sfd, (struct sockaddr *)local_ip, &local_ip_len);
+	close(sfd);
+
+	return rc;
+}
+
 /*! Compare two osmo_sockaddr.
  * \param[in] a
  * \param[in] b
