@@ -1286,7 +1286,6 @@ int osmo_sock_mcast_subscribe(int fd, const char *grp_addr)
 /*! Determine the matching local IP-address for a given remote IP-Address.
  *  \param[out] local_ip caller provided memory for resulting local IP-address
  *  \param[in] remote_ip remote IP-address
- *  \param[in] fd file descriptor of related scoket
  *  \returns 0 on success; negative otherwise
  *
  *  The function accepts IPv4 and IPv6 address strings. The caller must provide
