@@ -1480,19 +1480,52 @@ static enum match_type cmd_ipv6_prefix_match(const char *str)
 #error "LONG_MAX not defined!"
 #endif
 
+/* This function is aimed at quickly guessing & filtering the numeric base a
+ * string can contain, by no means validates the entire value.
+ * Returns 16 if string follows pattern "({+,-}0x[digits])"
+ * Returns 10 if string follows pattern "({+,-}[digits])"
+ * Returns a negative value if something other is detected (error)
+*/
+static int check_base(const char *str)
+{
+	const char *ptr = str;
+	/* Skip any space */
+	while (isspace(*ptr)) ptr++;
+
+	/* Skip optional sign: */
+	if (*ptr == '+' || *ptr == '-')
+		ptr++;
+	if (*ptr == '0') {
+		ptr++;
+		if (*ptr == '\0' || isdigit(*ptr))
+			return 10;
+		if (!(*ptr == 'x' || *ptr == 'X'))
+			return -1;
+		ptr++;
+		if (isxdigit(*ptr))
+			return 16;
+		return -1;
+	}
+	return 10;
+}
+
 int vty_cmd_range_match(const char *range, const char *str)
 {
 	char *p;
 	char buf[DECIMAL_STRLEN_MAX_UNSIGNED + 1];
 	char *endptr = NULL;
+	int min_base, max_base, val_base;
 
 	if (str == NULL)
 		return 1;
 
+	if ((val_base = check_base(str)) < 0)
+		return 0;
+
 	if (range[1] == '-') {
 		signed long min = 0, max = 0, val;
 
-		val = strtol(str, &endptr, 10);
+		val = strtol(str, &endptr, val_base);
 		if (*endptr != '\0')
 			return 0;
 
@@ -1504,7 +1537,9 @@ int vty_cmd_range_match(const char *range, const char *str)
 			return 0;
 		strncpy(buf, range, p - range);
 		buf[p - range] = '\0';
-		min = -strtol(buf, &endptr, 10);
+		if ((min_base = check_base(buf)) < 0)
+			return 0;
+		min = -strtol(buf, &endptr, min_base);
 		if (*endptr != '\0')
 			return 0;
 
@@ -1516,7 +1551,9 @@ int vty_cmd_range_match(const char *range, const char *str)
 			return 0;
 		strncpy(buf, range, p - range);
 		buf[p - range] = '\0';
-		max = strtol(buf, &endptr, 10);
+		if ((max_base = check_base(buf)) < 0)
+			return 0;
+		max = strtol(buf, &endptr, max_base);
 		if (*endptr != '\0')
 			return 0;
 
@@ -1528,7 +1565,7 @@ int vty_cmd_range_match(const char *range, const char *str)
 		if (str[0] == '-')
 			return 0;
 
-		val = strtoul(str, &endptr, 10);
+		val = strtoul(str, &endptr, val_base);
 		if (*endptr != '\0')
 			return 0;
 
@@ -1540,7 +1577,9 @@ int vty_cmd_range_match(const char *range, const char *str)
 			return 0;
 		strncpy(buf, range, p - range);
 		buf[p - range] = '\0';
-		min = strtoul(buf, &endptr, 10);
+		if ((min_base = check_base(buf)) < 0)
+			return 0;
+		min = strtoul(buf, &endptr, min_base);
 		if (*endptr != '\0')
 			return 0;
 
@@ -1552,7 +1591,9 @@ int vty_cmd_range_match(const char *range, const char *str)
 			return 0;
 		strncpy(buf, range, p - range);
 		buf[p - range] = '\0';
-		max = strtoul(buf, &endptr, 10);
+		if ((max_base = check_base(buf)) < 0)
+			return 0;
+		max = strtoul(buf, &endptr, max_base);
 		if (*endptr != '\0')
 			return 0;
 
@@ -1560,6 +1601,14 @@ int vty_cmd_range_match(const char *range, const char *str)
 			return 0;
 	}
 
+	/* Don't allow ranges specified by min and max with different bases */
+	if (min_base != max_base)
+		return 0;
+	/* arg value passed must match the base of the range */
+	if (min_base != val_base)
+		return 0;
+
+	/* Everything's fine */
 	return 1;
 }
 

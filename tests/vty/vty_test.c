@@ -448,6 +448,34 @@ DEFUN(cfg_numeric_range, cfg_numeric_range_cmd,
 	return CMD_SUCCESS;
 }
 
+DEFUN(cfg_range_base10, cfg_range_base10_cmd,
+	"range-base10 <0-999999>",
+	"testing decimal range\n"
+	"the decimal range\n")
+{
+	printf("Called: 'return-success'\n");
+	return CMD_SUCCESS;
+}
+
+DEFUN(cfg_range_base16, cfg_range_base16_cmd,
+	"range-base16 <0x0-0x8888>",
+	"testing hexadecimal range\n"
+	"the hexadecimal range\n")
+{
+	printf("Called: 'return-success'\n");
+	return CMD_SUCCESS;
+}
+
+DEFUN(cfg_range_baseboth, cfg_range_baseboth_cmd,
+	"range-baseboth (<0-999999>|<0x0-0x8888>)",
+	"testing both ranges\n"
+	"the decimal range\n"
+	"the hexadecimal range\n")
+{
+	printf("Called: 'return-success'\n");
+	return CMD_SUCCESS;
+}
+
 void test_vty_add_cmds()
 {
 	install_element(CONFIG_NODE, &cfg_ret_warning_cmd);
@@ -473,6 +501,10 @@ void test_vty_add_cmds()
 	install_element_ve(&cfg_ambiguous_str_2_cmd);
 
 	install_element_ve(&cfg_numeric_range_cmd);
+
+	install_element_ve(&cfg_range_base10_cmd);
+	install_element_ve(&cfg_range_base16_cmd);
+	install_element_ve(&cfg_range_baseboth_cmd);
 }
 
 void test_is_cmd_ambiguous()
@@ -509,6 +541,40 @@ void test_numeric_range()
 	destroy_test_vty(&test, vty);
 }
 
+void test_ranges()
+{
+	struct vty *vty;
+	struct vty_test test;
+
+	printf("Going to test test_ranges()\n");
+	vty = create_test_vty(&test);
+
+	printf("test range-base10\n");
+	OSMO_ASSERT(do_vty_command(vty, "range-base10 0") == CMD_SUCCESS);
+	OSMO_ASSERT(do_vty_command(vty, "range-base10 40000") == CMD_SUCCESS);
+	OSMO_ASSERT(do_vty_command(vty, "range-base10 -400000") == CMD_ERR_NO_MATCH);
+	OSMO_ASSERT(do_vty_command(vty, "range-base10 0x0") == CMD_ERR_NO_MATCH);
+	OSMO_ASSERT(do_vty_command(vty, "range-base10 0x343") == CMD_ERR_NO_MATCH);
+	OSMO_ASSERT(do_vty_command(vty, "range-base10 -0x343") == CMD_ERR_NO_MATCH);
+
+	printf("test range-base16\n");
+	OSMO_ASSERT(do_vty_command(vty, "range-base16 0") == CMD_ERR_NO_MATCH);
+	OSMO_ASSERT(do_vty_command(vty, "range-base16 40000") == CMD_ERR_NO_MATCH);
+	OSMO_ASSERT(do_vty_command(vty, "range-base16 -400000") == CMD_ERR_NO_MATCH);
+	OSMO_ASSERT(do_vty_command(vty, "range-base16 0x0") == CMD_SUCCESS);
+	OSMO_ASSERT(do_vty_command(vty, "range-base16 0x343") == CMD_SUCCESS);
+	OSMO_ASSERT(do_vty_command(vty, "range-base16 -0x343") == CMD_ERR_NO_MATCH);
+
+	printf("test range-baseboth\n");
+	OSMO_ASSERT(do_vty_command(vty, "range-baseboth 0") == CMD_SUCCESS);
+	OSMO_ASSERT(do_vty_command(vty, "range-baseboth 40000") == CMD_SUCCESS);
+	OSMO_ASSERT(do_vty_command(vty, "range-baseboth -400000") == CMD_ERR_NO_MATCH);
+	OSMO_ASSERT(do_vty_command(vty, "range-baseboth 0x0") == CMD_SUCCESS);
+	OSMO_ASSERT(do_vty_command(vty, "range-baseboth 0x343") == CMD_SUCCESS);
+	OSMO_ASSERT(do_vty_command(vty, "range-baseboth -0x343") == CMD_ERR_NO_MATCH);
+
+	destroy_test_vty(&test, vty);
+}
 /* Application specific attributes */
 enum vty_test_attr {
 	VTY_TEST_ATTR_FOO = 0,
@@ -591,6 +657,7 @@ int main(int argc, char **argv)
 	test_is_cmd_ambiguous();
 
 	test_numeric_range();
+	test_ranges();
 
 	/* Leak check */
 	OSMO_ASSERT(talloc_total_blocks(stats_ctx) == 1);
