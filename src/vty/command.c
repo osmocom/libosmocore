@@ -1325,6 +1325,9 @@ static int cmd_range_match(const char *range, const char *str)
 	} else {
 		unsigned long min, max, val;
 
+		if (str[0] == '-')
+			return 0;
+
 		val = strtoul(str, &endptr, 10);
 		if (*endptr != '\0')
 			return 0;

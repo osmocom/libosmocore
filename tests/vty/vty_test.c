@@ -508,7 +508,7 @@ void test_numeric_range()
 
 	OSMO_ASSERT(do_vty_command(vty, "numeric-range 0") == CMD_SUCCESS);
 	OSMO_ASSERT(do_vty_command(vty, "numeric-range 40000") == CMD_SUCCESS);
-	OSMO_ASSERT(do_vty_command(vty, "numeric-range -400000") == CMD_SUCCESS);
+	OSMO_ASSERT(do_vty_command(vty, "numeric-range -400000") == CMD_ERR_NO_MATCH);
 
 	destroy_test_vty(&test, vty);
 }

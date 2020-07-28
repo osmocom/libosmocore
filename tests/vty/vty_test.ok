@@ -319,6 +319,5 @@ Going to execute 'numeric-range 40000'
 Called: 'return-success'
 Returned: 0, Current node: 1 '%s> '
 Going to execute 'numeric-range -400000'
-Called: 'return-success'
-Returned: 0, Current node: 1 '%s> '
+Returned: 2, Current node: 1 '%s> '
 All tests passed
