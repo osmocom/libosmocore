@@ -97,6 +97,7 @@ enum node_type {
 	L_CS7_SCCPADDR_NODE,	/*!< SS7 SCCP Address */
 	L_CS7_SCCPADDR_GT_NODE,	/*!< SS7 SCCP Global Title */
 
+	L_CPU_SCHED_NODE,		/*!< CPU Sched related options node */
 	/*
 	 * When adding new nodes to the libosmocore project, these nodes can be
 	 * used to avoid ABI changes for unrelated projects.
