@@ -542,6 +542,9 @@ struct rsl_ie_chan_ident {
 #define RSL_ERR_CCCH_OVERLOAD		0x23
 #define RSL_ERR_ACCH_OVERLOAD		0x24
 #define RSL_ERR_PROCESSOR_OVERLOAD	0x25
+#define RSL_ERR_BTS_NOT_EQUIPPED	0x27
+#define RSL_ERR_REMOTE_TRANSC_FAIL	0x28
+#define RSL_ERR_NOTIFICATION_OVERFL	0x29
 #define RSL_ERR_RES_UNAVAIL		0x2f
 /* service or option not available */
 #define RSL_ERR_TRANSC_UNAVAIL		0x30
