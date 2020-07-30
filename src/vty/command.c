@@ -37,6 +37,7 @@ Boston, MA  02110-1301, USA. */
 #include <unistd.h>
 #include <ctype.h>
 #include <time.h>
+#include <limits.h>
 #include <sys/time.h>
 #include <sys/stat.h>
 
@@ -1262,12 +1263,27 @@ static enum match_type cmd_ipv6_prefix_match(const char *str)
 
 #endif				/* HAVE_IPV6  */
 
-#define DECIMAL_STRLEN_MAX 10
+
+#if ULONG_MAX == 18446744073709551615UL
+#define DECIMAL_STRLEN_MAX_UNSIGNED 20
+#elif ULONG_MAX == 4294967295UL
+#define DECIMAL_STRLEN_MAX_UNSIGNED 10
+#else
+#error "ULONG_MAX not defined!"
+#endif
+
+#if LONG_MAX == 9223372036854775807L
+#define DECIMAL_STRLEN_MAX_SIGNED 19
+#elif LONG_MAX == 2147483647L
+#define DECIMAL_STRLEN_MAX_SIGNED 10
+#else
+#error "LONG_MAX not defined!"
+#endif
 
 static int cmd_range_match(const char *range, const char *str)
 {
 	char *p;
-	char buf[DECIMAL_STRLEN_MAX + 1];
+	char buf[DECIMAL_STRLEN_MAX_UNSIGNED + 1];
 	char *endptr = NULL;
 
 	if (str == NULL)
@@ -1284,7 +1300,7 @@ static int cmd_range_match(const char *range, const char *str)
 		p = strchr(range, '-');
 		if (p == NULL)
 			return 0;
-		if (p - range > DECIMAL_STRLEN_MAX)
+		if (p - range > DECIMAL_STRLEN_MAX_SIGNED)
 			return 0;
 		strncpy(buf, range, p - range);
 		buf[p - range] = '\0';
@@ -1296,7 +1312,7 @@ static int cmd_range_match(const char *range, const char *str)
 		p = strchr(range, '>');
 		if (p == NULL)
 			return 0;
-		if (p - range > DECIMAL_STRLEN_MAX)
+		if (p - range > DECIMAL_STRLEN_MAX_SIGNED)
 			return 0;
 		strncpy(buf, range, p - range);
 		buf[p - range] = '\0';
@@ -1317,7 +1333,7 @@ static int cmd_range_match(const char *range, const char *str)
 		p = strchr(range, '-');
 		if (p == NULL)
 			return 0;
-		if (p - range > DECIMAL_STRLEN_MAX)
+		if (p - range > DECIMAL_STRLEN_MAX_UNSIGNED)
 			return 0;
 		strncpy(buf, range, p - range);
 		buf[p - range] = '\0';
@@ -1329,7 +1345,7 @@ static int cmd_range_match(const char *range, const char *str)
 		p = strchr(range, '>');
 		if (p == NULL)
 			return 0;
-		if (p - range > DECIMAL_STRLEN_MAX)
+		if (p - range > DECIMAL_STRLEN_MAX_UNSIGNED)
 			return 0;
 		strncpy(buf, range, p - range);
 		buf[p - range] = '\0';
