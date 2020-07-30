@@ -51,8 +51,9 @@
  *
  */
 
-#include <string.h>
+#include <sys/types.h>
 #include <inttypes.h>
+#include <string.h>
 #include <errno.h>
 #include <osmocom/core/msgb.h>
 #include <osmocom/core/logging.h>

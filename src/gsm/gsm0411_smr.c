@@ -49,9 +49,10 @@
  */
 
 
+#include <sys/types.h>
+#include <inttypes.h>
 #include <string.h>
 #include <errno.h>
-#include <inttypes.h>
 #include <osmocom/core/msgb.h>
 #include <osmocom/core/logging.h>
 #include <osmocom/core/timer.h>
