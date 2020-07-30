@@ -22,6 +22,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
+#include <limits.h>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -438,6 +439,19 @@ DEFUN(cfg_ret_warning, cfg_ret_warning_cmd,
 	return CMD_WARNING;
 }
 
+DEFUN(cfg_numeric_range, cfg_numeric_range_cmd,
+#if ULONG_MAX == 18446744073709551615UL
+	"numeric-range <0-18446744073709551615>",
+#else
+	"numeric-range <0-4294967295>",
+#endif
+	"testing numeric range\n"
+	"the numeric range\n")
+{
+	printf("Called: 'return-success'\n");
+	return CMD_SUCCESS;
+}
+
 void test_vty_add_cmds()
 {
 	install_element(CONFIG_NODE, &cfg_ret_warning_cmd);
@@ -461,6 +475,8 @@ void test_vty_add_cmds()
 	install_element_ve(&cfg_ambiguous_nr_2_cmd);
 	install_element_ve(&cfg_ambiguous_str_1_cmd);
 	install_element_ve(&cfg_ambiguous_str_2_cmd);
+
+	install_element_ve(&cfg_numeric_range_cmd);
 }
 
 void test_is_cmd_ambiguous()
@@ -478,6 +494,21 @@ void test_is_cmd_ambiguous()
 	OSMO_ASSERT(do_vty_command(vty, "ambiguous_str") == CMD_SUCCESS);
 	OSMO_ASSERT(do_vty_command(vty, "ambiguous_str arg") == CMD_SUCCESS);
 	OSMO_ASSERT(do_vty_command(vty, "ambiguous_str arg keyword") == CMD_SUCCESS);
+
+	destroy_test_vty(&test, vty);
+}
+
+void test_numeric_range()
+{
+	struct vty *vty;
+	struct vty_test test;
+
+	printf("Going to test test_numeric_range()\n");
+	vty = create_test_vty(&test);
+
+	OSMO_ASSERT(do_vty_command(vty, "numeric-range 0") == CMD_ERR_NO_MATCH);
+	OSMO_ASSERT(do_vty_command(vty, "numeric-range 40000") == CMD_ERR_NO_MATCH);
+	OSMO_ASSERT(do_vty_command(vty, "numeric-range -400000") == CMD_ERR_NO_MATCH);
 
 	destroy_test_vty(&test, vty);
 }
@@ -534,6 +565,8 @@ int main(int argc, char **argv)
 	test_exit_by_indent("ok_deprecated_logging.cfg", 0);
 
 	test_is_cmd_ambiguous();
+
+	test_numeric_range();
 
 	/* Leak check */
 	OSMO_ASSERT(talloc_total_blocks(stats_ctx) == 1);

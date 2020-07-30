@@ -311,4 +311,11 @@ Returned: 0, Current node: 1 '%s> '
 Going to execute 'ambiguous_str arg keyword'
 Called: 'ambiguous_str ARG keyword'
 Returned: 0, Current node: 1 '%s> '
+Going to test test_numeric_range()
+Going to execute 'numeric-range 0'
+Returned: 2, Current node: 1 '%s> '
+Going to execute 'numeric-range 40000'
+Returned: 2, Current node: 1 '%s> '
+Going to execute 'numeric-range -400000'
+Returned: 2, Current node: 1 '%s> '
 All tests passed
