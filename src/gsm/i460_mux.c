@@ -175,9 +175,15 @@ static ubit_t mux_schan_provide_bit(struct osmo_i460_subchan *schan)
 	ubit_t bit;
 
 	/* if we don't have anything to transmit, return '1' bits */
-	if (llist_empty(&mux->tx_queue))
-		return 0x01;
+	if (llist_empty(&mux->tx_queue)) {
+		/* User code now has a last chance to put something into the queue. */
+		if (mux->in_cb_queue_empty)
+			mux->in_cb_queue_empty(mux->user_data);
 
+		/* If the queue is still empty, return idle bits */
+		if (llist_empty(&mux->tx_queue))
+			return 0x01;
+	}
 	msg = llist_entry(mux->tx_queue.next, struct msgb, list);
 	bit = msgb_pull_u8(msg);
 
@@ -360,6 +366,8 @@ osmo_i460_subchan_add(void *ctx, struct osmo_i460_timeslot *ts, const struct osm
 	schan->demux.out_cb_bits = chd->demux.out_cb_bits;
 	schan->demux.out_cb_bytes = chd->demux.out_cb_bytes;
 	schan->demux.user_data = chd->demux.user_data;
+	schan->mux.in_cb_queue_empty = chd->mux.in_cb_queue_empty;
+	schan->mux.user_data = chd->mux.user_data;
 	rc = alloc_bitbuf(ctx, schan, chd->demux.num_bits);
 	if (rc < 0) {
 		subchan_reset(schan, false);

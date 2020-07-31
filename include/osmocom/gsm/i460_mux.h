@@ -52,9 +52,13 @@ struct osmo_i460_subchan_demux {
 	void *user_data;
 };
 
+typedef void (*in_cb_queue_empty_t)(void *user_data);
+
 struct osmo_i460_subchan_mux {
 	/*! list of to-be-transmitted message buffers */
 	struct llist_head tx_queue;
+	in_cb_queue_empty_t in_cb_queue_empty;
+	void *user_data;
 };
 
 struct osmo_i460_subchan {
@@ -87,6 +91,14 @@ struct osmo_i460_schan_desc {
 		/* opaque user data pointer to pass to out_cb */
 		void *user_data;
 	} demux;
+
+	struct {
+		/* call-back function whenever the muxer requires more input data from the sub-channels,
+		 * but has nothing enqueued yet. A typical function would then call osmo_i460_mux_enqueue() */
+		in_cb_queue_empty_t in_cb_queue_empty;
+		/* opaque user data pointer to pass to in_cb */
+		void *user_data;
+	} mux;
 };
 
 void osmo_i460_demux_in(struct osmo_i460_timeslot *ts, const uint8_t *data, size_t data_len);
