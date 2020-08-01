@@ -186,6 +186,133 @@ static int test_get_ip_and_port()
 	return 0;
 }
 
+static int test_sockinit_osa(void)
+{
+	int fd, rc;
+	char *name;
+
+	struct osmo_sockaddr localhost4 = {};
+	struct osmo_sockaddr localhost6 = {};
+	struct osmo_sockaddr localhost4_noport = {};
+	struct osmo_sockaddr localhost6_noport = {};
+	struct osmo_sockaddr any4 = {};
+	struct osmo_sockaddr any6 = {};
+	struct osmo_sockaddr invalid = {};
+
+	localhost4.u.sin = (struct sockaddr_in){
+		.sin_family = AF_INET,
+		.sin_addr.s_addr = inet_addr("127.0.0.1"),
+		.sin_port = htons(42),
+	};
+
+	localhost6.u.sin6 = (struct sockaddr_in6){
+		.sin6_family = AF_INET6,
+		.sin6_port = htons(42),
+	};
+	inet_pton(AF_INET6, "::1", &localhost6.u.sin6.sin6_addr);
+
+	localhost4_noport = localhost4;
+	localhost4_noport.u.sin.sin_port = htons(0);
+	localhost6_noport = localhost6;
+	localhost6_noport.u.sin6.sin6_port = htons(0);
+
+	any4.u.sin = (struct sockaddr_in){
+		.sin_family = AF_INET,
+		.sin_addr.s_addr = inet_addr("0.0.0.0"),
+		.sin_port = htons(0),
+	};
+	any6.u.sin6 = (struct sockaddr_in6){
+		.sin6_family = AF_INET6,
+		.sin6_port = htons(0),
+	};
+	inet_pton(AF_INET6, "::", &any6.u.sin6.sin6_addr);
+
+	invalid.u.sa.sa_family = AF_UNSPEC;
+
+	printf("Checking osmo_sock_init_osa() with bind to a random local UDP port\n");
+	fd = osmo_sock_init_osa(SOCK_DGRAM, IPPROTO_UDP,
+			    &any4, NULL, OSMO_SOCK_F_BIND);
+	OSMO_ASSERT(fd >= 0);
+	name = osmo_sock_get_name(ctx, fd);
+	/* expect it to be not connected. We cannot match on INADDR_ANY,
+	 * as apparently that won't work on FreeBSD if there's only one
+	 * address (e.g. 137.0.0.1) assigned to the entire system, like
+	 * the Osmocom FreeBSD build slaves */
+	OSMO_ASSERT(!strncmp(name, "(r=NULL<->", 9));
+	talloc_free(name);
+	/* expect it to be blocking */
+	rc = fcntl(fd, F_GETFL);
+	OSMO_ASSERT(!(rc & O_NONBLOCK));
+	close(fd);
+
+	printf("Checking osmo_sock_init_osa() IPv4 for OSMO_SOCK_F_NONBLOCK\n");
+	fd = osmo_sock_init_osa(SOCK_DGRAM, IPPROTO_UDP,
+			    &any4, NULL, OSMO_SOCK_F_BIND|OSMO_SOCK_F_NONBLOCK);
+	OSMO_ASSERT(fd >= 0);
+	/* expect it to be blocking */
+	rc = fcntl(fd, F_GETFL);
+	OSMO_ASSERT(rc & O_NONBLOCK);
+	close(fd);
+
+	printf("Checking osmo_sock_init_osa() IPv6 for OSMO_SOCK_F_NONBLOCK\n");
+	fd = osmo_sock_init_osa(SOCK_DGRAM, IPPROTO_UDP,
+			    &any6, NULL, OSMO_SOCK_F_BIND|OSMO_SOCK_F_NONBLOCK);
+	OSMO_ASSERT(fd >= 0);
+	/* expect it to be blocking */
+	rc = fcntl(fd, F_GETFL);
+	OSMO_ASSERT(rc & O_NONBLOCK);
+	close(fd);
+
+	printf("Checking osmo_sock_init_osa() for invalid flags\n");
+	fd = osmo_sock_init_osa(SOCK_DGRAM, IPPROTO_UDP, &any4,  NULL, 0);
+	OSMO_ASSERT(fd < 0);
+
+	printf("Checking osmo_sock_init_osa() for combined BIND + CONNECT on IPv4\n");
+	fd = osmo_sock_init_osa(SOCK_DGRAM, IPPROTO_UDP, &localhost4_noport, &localhost4,
+			     OSMO_SOCK_F_BIND|OSMO_SOCK_F_CONNECT);
+	OSMO_ASSERT(fd >= 0);
+	name = osmo_sock_get_name(ctx, fd);
+#ifndef __FreeBSD__
+	/* For some reason, on the jenkins.osmocom.org build slave with
+	 * FreeBSD 10 inside a jail, it fails.  Works fine on laforge's
+	 * FreeBSD 10 or 11 VM at home */
+	OSMO_ASSERT(!strncmp(name, "(r=127.0.0.1:42<->l=127.0.0.1", 29));
+#endif
+	close(fd);
+
+	printf("Checking osmo_sock_init_osa() for combined BIND + CONNECT on IPv6\n");
+	fd = osmo_sock_init_osa(SOCK_DGRAM, IPPROTO_UDP, &localhost6_noport, &localhost6,
+			     OSMO_SOCK_F_BIND|OSMO_SOCK_F_CONNECT);
+	OSMO_ASSERT(fd >= 0);
+	name = osmo_sock_get_name(ctx, fd);
+#ifndef __FreeBSD__
+	/* For some reason, on the jenkins.osmocom.org build slave with
+	 * FreeBSD 10 inside a jail, it fails.  Works fine on laforge's
+	 * FreeBSD 10 or 11 VM at home */
+	OSMO_ASSERT(!strncmp(name, "(r=::1:42<->l=::1", 17));
+#endif
+	close(fd);
+
+	printf("Checking osmo_sock_init_osa() must fail on mixed IPv4 & IPv6\n");
+	fd = osmo_sock_init_osa(SOCK_DGRAM, IPPROTO_UDP, &localhost4_noport, &localhost6,
+			     OSMO_SOCK_F_BIND|OSMO_SOCK_F_CONNECT);
+	OSMO_ASSERT(fd < 0);
+
+	printf("Checking osmo_sock_init_osa() must fail on mixed IPv6 & IPv4\n");
+	fd = osmo_sock_init_osa(SOCK_DGRAM, IPPROTO_UDP, &localhost6_noport, &localhost4,
+			     OSMO_SOCK_F_BIND|OSMO_SOCK_F_CONNECT);
+	OSMO_ASSERT(fd < 0);
+
+	printf("Checking osmo_sock_init_osa() must fail on invalid osmo_sockaddr\n");
+	fd = osmo_sock_init_osa(SOCK_DGRAM, IPPROTO_UDP, &invalid, &localhost4,
+			     OSMO_SOCK_F_BIND|OSMO_SOCK_F_CONNECT);
+	OSMO_ASSERT(fd < 0);
+
+	talloc_free(name);
+
+	return 0;
+}
+
 const struct log_info_cat default_categories[] = {
 };
 
@@ -204,6 +331,7 @@ int main(int argc, char *argv[])
 	test_sockinit();
 	test_sockinit2();
 	test_get_ip_and_port();
+	test_sockinit_osa();
 
 	return EXIT_SUCCESS;
 }

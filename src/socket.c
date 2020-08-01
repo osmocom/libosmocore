@@ -34,6 +34,7 @@
 #include <osmocom/core/logging.h>
 #include <osmocom/core/select.h>
 #include <osmocom/core/socket.h>
+#include <osmocom/core/sockaddr_str.h>
 #include <osmocom/core/talloc.h>
 #include <osmocom/core/utils.h>
 
@@ -136,6 +137,28 @@ static int socket_helper(const struct addrinfo *rp, unsigned int flags)
 	int sfd, on = 1;
 
 	sfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
+	if (sfd == -1) {
+		LOGP(DLGLOBAL, LOGL_ERROR,
+			"unable to create socket: %s\n", strerror(errno));
+		return sfd;
+	}
+	if (flags & OSMO_SOCK_F_NONBLOCK) {
+		if (ioctl(sfd, FIONBIO, (unsigned char *)&on) < 0) {
+			LOGP(DLGLOBAL, LOGL_ERROR,
+				"cannot set this socket unblocking: %s\n",
+				strerror(errno));
+			close(sfd);
+			sfd = -EINVAL;
+		}
+	}
+	return sfd;
+}
+
+static int socket_helper_osa(const struct osmo_sockaddr *addr, uint16_t type, uint8_t proto, unsigned int flags)
+{
+	int sfd, on = 1;
+
+	sfd = socket(addr->u.sa.sa_family, type, proto);
 	if (sfd == -1) {
 		LOGP(DLGLOBAL, LOGL_ERROR,
 			"unable to create socket: %s\n", strerror(errno));
@@ -422,6 +445,135 @@ int osmo_sock_init2(uint16_t family, uint16_t type, uint8_t proto,
 			if (sfd >= 0)
 				close(sfd);
 			return -ENODEV;
+		}
+	}
+
+	rc = osmo_sock_init_tail(sfd, type, flags);
+	if (rc < 0) {
+		close(sfd);
+		sfd = -1;
+	}
+
+	return sfd;
+}
+
+#define _SOCKADDR_TO_STR(dest, sockaddr) do { \
+		if (osmo_sockaddr_str_from_sockaddr(&dest, &sockaddr->u.sas)) \
+			osmo_strlcpy(dest.ip, "Invalid IP", 11); \
+	} while (0)
+
+/*! Initialize a socket (including bind and/or connect)
+ *  \param[in] family Address Family like AF_INET, AF_INET6, AF_UNSPEC
+ *  \param[in] type Socket type like SOCK_DGRAM, SOCK_STREAM
+ *  \param[in] proto Protocol like IPPROTO_TCP, IPPROTO_UDP
+ *  \param[in] local local address
+ *  \param[in] remote remote address
+ *  \param[in] flags flags like \ref OSMO_SOCK_F_CONNECT
+ *  \returns socket file descriptor on success; negative on error
+ *
+ * This function creates a new socket of the
+ * \a type and \a proto and optionally binds it to the \a local
+ * as well as optionally connects it to the \a remote
+ * depending on the value * of \a flags parameter.
+ *
+ * As opposed to \ref osmo_sock_init(), this function allows to combine
+ * the \ref OSMO_SOCK_F_BIND and \ref OSMO_SOCK_F_CONNECT flags.  This
+ * is useful if you want to connect to a remote host/port, but still
+ * want to bind that socket to either a specific local alias IP and/or a
+ * specific local source port.
+ *
+ * You must specify either \ref OSMO_SOCK_F_BIND, or \ref
+ * OSMO_SOCK_F_CONNECT, or both.
+ *
+ * If \ref OSMO_SOCK_F_NONBLOCK is specified, the socket will be set to
+ * non-blocking mode.
+ */
+int osmo_sock_init_osa(uint16_t type, uint8_t proto,
+		        const struct osmo_sockaddr *local,
+		        const struct osmo_sockaddr *remote,
+		        unsigned int flags)
+{
+	int sfd = -1, rc, on = 1;
+	struct osmo_sockaddr_str sastr = {};
+
+	if ((flags & (OSMO_SOCK_F_BIND | OSMO_SOCK_F_CONNECT)) == 0) {
+		LOGP(DLGLOBAL, LOGL_ERROR, "invalid: you have to specify either "
+			"BIND or CONNECT flags\n");
+		return -EINVAL;
+	}
+
+	if ((flags & OSMO_SOCK_F_BIND) && !local) {
+		LOGP(DLGLOBAL, LOGL_ERROR, "invalid argument. Cannot BIND when local is NULL\n");
+		return -EINVAL;
+	}
+
+	if ((flags & OSMO_SOCK_F_CONNECT) && !remote) {
+		LOGP(DLGLOBAL, LOGL_ERROR, "invalid argument. Cannot CONNECT when remote is NULL\n");
+		return -EINVAL;
+	}
+
+	if ((flags & OSMO_SOCK_F_BIND) &&
+	    (flags & OSMO_SOCK_F_CONNECT) &&
+	    local->u.sa.sa_family != remote->u.sa.sa_family) {
+		LOGP(DLGLOBAL, LOGL_ERROR, "invalid: the family for "
+		     "local and remote endpoint must be same.\n");
+		return -EINVAL;
+	}
+
+	/* figure out local side of socket */
+	if (flags & OSMO_SOCK_F_BIND) {
+		sfd = socket_helper_osa(local, type, proto, flags);
+		if (sfd < 0) {
+			_SOCKADDR_TO_STR(sastr, local);
+			LOGP(DLGLOBAL, LOGL_ERROR, "no suitable local addr found for: %s:%u\n",
+				sastr.ip, sastr.port);
+			return -ENODEV;
+		}
+
+		if (proto != IPPROTO_UDP || (flags & OSMO_SOCK_F_UDP_REUSEADDR)) {
+			rc = setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR,
+					&on, sizeof(on));
+			if (rc < 0) {
+				_SOCKADDR_TO_STR(sastr, local);
+				LOGP(DLGLOBAL, LOGL_ERROR,
+				     "cannot setsockopt socket:"
+				     " %s:%u: %s\n",
+				     sastr.ip, sastr.port,
+				     strerror(errno));
+				close(sfd);
+				return rc;
+			}
+		}
+
+		if (bind(sfd, &local->u.sa, sizeof(struct osmo_sockaddr)) == -1) {
+			_SOCKADDR_TO_STR(sastr, local);
+			LOGP(DLGLOBAL, LOGL_ERROR, "unable to bind socket: %s:%u: %s\n",
+			     sastr.ip, sastr.port, strerror(errno));
+			close(sfd);
+			return -1;
+		}
+	}
+
+	/* Reached this point, if OSMO_SOCK_F_BIND then sfd is valid (>=0) or it
+	   was already closed and func returned. If OSMO_SOCK_F_BIND is not
+	   set, then sfd = -1 */
+
+	/* figure out remote side of socket */
+	if (flags & OSMO_SOCK_F_CONNECT) {
+		if (sfd < 0) {
+			sfd = socket_helper_osa(remote, type, proto, flags);
+			if (sfd < 0) {
+				return sfd;
+			}
+		}
+
+		rc = connect(sfd, &remote->u.sa, sizeof(struct osmo_sockaddr));
+		if (rc != 0 && errno != EINPROGRESS) {
+			_SOCKADDR_TO_STR(sastr, remote);
+			LOGP(DLGLOBAL, LOGL_ERROR, "unable to connect socket: %s:%u: %s\n",
+			     sastr.ip, sastr.port, strerror(errno));
+			close(sfd);
+			return rc;
 		}
 	}
 
@@ -858,6 +1010,13 @@ int osmo_sock_init2_ofd(struct osmo_fd *ofd, int family, int type, int proto,
 {
 	return osmo_fd_init_ofd(ofd, osmo_sock_init2(family, type, proto, local_host,
 					local_port, remote_host, remote_port, flags));
+}
+
+int osmo_sock_init_osa_ofd(struct osmo_fd *ofd, int type, int proto,
+			const struct osmo_sockaddr *local,
+			const struct osmo_sockaddr *remote, unsigned int flags)
+{
+	return osmo_fd_init_ofd(ofd, osmo_sock_init_osa(type, proto, local, remote, flags));
 }
 
 /*! Initialize a socket and fill \ref sockaddr

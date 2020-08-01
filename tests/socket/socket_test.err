@@ -2,3 +2,7 @@ invalid: both bind and connect flags set: 0.0.0.0:0
 invalid: you have to specify either BIND or CONNECT flags
 Unable to find a common protocol (IPv4 or IPv6) for local host: 127.0.0.1 and remote host: ::1.
 Unable to find a common protocol (IPv4 or IPv6) for local host: ::1 and remote host: 127.0.0.1.
+invalid: you have to specify either BIND or CONNECT flags
+invalid: the family for local and remote endpoint must be same.
+invalid: the family for local and remote endpoint must be same.
+invalid: the family for local and remote endpoint must be same.
