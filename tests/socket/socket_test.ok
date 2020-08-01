@@ -10,3 +10,5 @@ Checking osmo_sock_init2(AF_UNSPEC) must fail on mixed IPv6 & IPv4
 Checking osmo_sock_init2(AF_UNSPEC) BIND + CONNECT on IPv4
 Checking osmo_sock_init2(AF_UNSPEC) BIND + CONNECT on IPv6
 Checking osmo_sock_init2(AF_UNSPEC) BIND on IPv4
+Checking test_get_ip_and_port() for combined BIND + CONNECT on IPv4
+Checking test_get_ip_and_port() for combined BIND + CONNECT on IPv6

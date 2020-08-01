@@ -154,6 +154,38 @@ static int test_sockinit2(void)
 	return 0;
 }
 
+static int test_get_ip_and_port()
+{
+	int fd, rc;
+	char ip[INET6_ADDRSTRLEN] = { };
+	char port[6] = { };
+
+	printf("Checking test_get_ip_and_port() for combined BIND + CONNECT on IPv4\n");
+	fd = osmo_sock_init2(AF_INET, SOCK_DGRAM, IPPROTO_UDP, "127.0.0.1", 0, "127.0.0.1", 55,
+			     OSMO_SOCK_F_BIND|OSMO_SOCK_F_CONNECT);
+
+	OSMO_ASSERT(fd >= 0);
+
+	/* get the remote */
+	rc = osmo_sock_get_ip_and_port(fd, ip, sizeof(ip), port, sizeof(port), false);
+	OSMO_ASSERT(rc == 0);
+	OSMO_ASSERT(strncmp(ip, "127.0.0.1", INET6_ADDRSTRLEN) == 0);
+	OSMO_ASSERT(strncmp(port, "55", 6) == 0);
+
+	printf("Checking test_get_ip_and_port() for combined BIND + CONNECT on IPv6\n");
+	fd = osmo_sock_init2(AF_INET6, SOCK_DGRAM, IPPROTO_UDP, "::1", 0, "::1", 55,
+			     OSMO_SOCK_F_BIND|OSMO_SOCK_F_CONNECT);
+	OSMO_ASSERT(fd >= 0);
+
+	/* get the remote */
+	rc = osmo_sock_get_ip_and_port(fd, ip, sizeof(ip), port, sizeof(port), false);
+	OSMO_ASSERT(rc == 0);
+	OSMO_ASSERT(strncmp(ip, "::1", INET6_ADDRSTRLEN) == 0);
+	OSMO_ASSERT(strncmp(port, "55", 6) == 0);
+
+	return 0;
+}
+
 const struct log_info_cat default_categories[] = {
 };
 
@@ -171,6 +203,7 @@ int main(int argc, char *argv[])
 
 	test_sockinit();
 	test_sockinit2();
+	test_get_ip_and_port();
 
 	return EXIT_SUCCESS;
 }
