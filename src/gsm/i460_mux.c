@@ -89,32 +89,34 @@ static void demux_subchan_extract_bits(struct osmo_i460_subchan *schan, const ui
 
 	for (i = 0; i < data_len; i++) {
 		uint8_t inbyte = data[i];
-		uint8_t inbits = inbyte >> schan->bit_offset;
+		/* I.460 defines sub-channel 0 is using bit positions 1+2 (the two
+		 * most significant bits, hence we extract msb-first */
+		uint8_t inbits = inbyte << schan->bit_offset;
 
 		/* extract the bits relevant to the given schan */
 		switch (schan->rate) {
 		case OSMO_I460_RATE_8k:
-			demux_subchan_append_bit(schan, inbits & 0x01);
+			demux_subchan_append_bit(schan, inbits & 0x80);
 			break;
 		case OSMO_I460_RATE_16k:
-			demux_subchan_append_bit(schan, inbits & 0x01);
-			demux_subchan_append_bit(schan, inbits & 0x02);
+			demux_subchan_append_bit(schan, inbits & 0x80);
+			demux_subchan_append_bit(schan, inbits & 0x40);
 			break;
 		case OSMO_I460_RATE_32k:
-			demux_subchan_append_bit(schan, inbits & 0x01);
-			demux_subchan_append_bit(schan, inbits & 0x02);
-			demux_subchan_append_bit(schan, inbits & 0x04);
-			demux_subchan_append_bit(schan, inbits & 0x08);
+			demux_subchan_append_bit(schan, inbits & 0x80);
+			demux_subchan_append_bit(schan, inbits & 0x40);
+			demux_subchan_append_bit(schan, inbits & 0x20);
+			demux_subchan_append_bit(schan, inbits & 0x10);
 			break;
 		case OSMO_I460_RATE_64k:
-			demux_subchan_append_bit(schan, inbits & 0x01);
-			demux_subchan_append_bit(schan, inbits & 0x02);
-			demux_subchan_append_bit(schan, inbits & 0x04);
-			demux_subchan_append_bit(schan, inbits & 0x08);
-			demux_subchan_append_bit(schan, inbits & 0x10);
-			demux_subchan_append_bit(schan, inbits & 0x20);
-			demux_subchan_append_bit(schan, inbits & 0x40);
 			demux_subchan_append_bit(schan, inbits & 0x80);
+			demux_subchan_append_bit(schan, inbits & 0x40);
+			demux_subchan_append_bit(schan, inbits & 0x20);
+			demux_subchan_append_bit(schan, inbits & 0x10);
+			demux_subchan_append_bit(schan, inbits & 0x08);
+			demux_subchan_append_bit(schan, inbits & 0x04);
+			demux_subchan_append_bit(schan, inbits & 0x02);
+			demux_subchan_append_bit(schan, inbits & 0x01);
 			break;
 		default:
 			OSMO_ASSERT(0);
@@ -205,22 +207,25 @@ static uint8_t mux_subchan_provide_bits(struct osmo_i460_subchan *schan, uint8_t
 	uint8_t outbits = 0;
 	uint8_t outmask;
 
+	/* I.460 defines sub-channel 0 is using bit positions 1+2 (the two
+	 * most significant bits, hence we provide msb-first */
+
 	switch (schan->rate) {
 	case OSMO_I460_RATE_8k:
-		outbits = mux_schan_provide_bit(schan);
-		outmask = 0x01;
+		outbits = mux_schan_provide_bit(schan) << 7;
+		outmask = 0x80;
 		break;
 	case OSMO_I460_RATE_16k:
-		outbits |= mux_schan_provide_bit(schan) << 1;
-		outbits |= mux_schan_provide_bit(schan) << 0;
-		outmask = 0x03;
+		outbits |= mux_schan_provide_bit(schan) << 7;
+		outbits |= mux_schan_provide_bit(schan) << 6;
+		outmask = 0xC0;
 		break;
 	case OSMO_I460_RATE_32k:
-		outbits |= mux_schan_provide_bit(schan) << 3;
-		outbits |= mux_schan_provide_bit(schan) << 2;
-		outbits |= mux_schan_provide_bit(schan) << 1;
-		outbits |= mux_schan_provide_bit(schan) << 0;
-		outmask = 0x0F;
+		outbits |= mux_schan_provide_bit(schan) << 7;
+		outbits |= mux_schan_provide_bit(schan) << 6;
+		outbits |= mux_schan_provide_bit(schan) << 5;
+		outbits |= mux_schan_provide_bit(schan) << 4;
+		outmask = 0xF0;
 		break;
 	case OSMO_I460_RATE_64k:
 		outbits |= mux_schan_provide_bit(schan) << 7;
@@ -236,8 +241,8 @@ static uint8_t mux_subchan_provide_bits(struct osmo_i460_subchan *schan, uint8_t
 	default:
 		OSMO_ASSERT(0);
 	}
-	*mask = outmask << schan->bit_offset;
-	return outbits << schan->bit_offset;
+	*mask = outmask >> schan->bit_offset;
+	return outbits >> schan->bit_offset;
 }
 
 /* provide one byte of multiplexed I.460 bits */

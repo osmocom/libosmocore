@@ -7,15 +7,15 @@ demux_bits_cb '64k': 00000000000000010000001000000011000001000000010100000110000
 mux_out: 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55 55 
 
 ==> test_32k_subchan
-demux_bits_cb '32k_0': 1111000011110000000000000000000000000000
-demux_bits_cb '32k_4': 0000111111110000000000000000000000000000
+demux_bits_cb '32k_0': 0000111111110000000000000000000000000000
+demux_bits_cb '32k_4': 1111000011110000000000000000000000000000
 test_32k_subchan-single-0
-mux_out: f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 
-mux_out: f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 
+mux_out: 5f 5f 5f 5f 5f 5f 5f 5f 5f 5f 5f 5f 5f 5f 5f 5f 
+mux_out: 5f 5f 5f 5f 5f 5f 5f 5f 5f 5f 5f 5f 5f 5f 5f 5f 
 mux_out: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 
 test_32k_subchan-single-1
-mux_out: 5f 5f 5f 5f 5f 5f 5f 5f 5f 5f 5f 5f 5f 5f 5f 5f 
-mux_out: 5f 5f 5f 5f 5f 5f 5f 5f 5f 5f 5f 5f 5f 5f 5f 5f 
+mux_out: f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 
+mux_out: f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 f5 
 mux_out: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 
 
 ==> test_16k_subchan
@@ -24,28 +24,28 @@ demux_bits_cb '16k_2': 0011000011000000000000000000000000000000
 demux_bits_cb '16k_4': 0000110011000000000000000000000000000000
 demux_bits_cb '16k_6': 0000001111000000000000000000000000000000
 test_16k_subchan-single-0
-mux_out: fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd 
-mux_out: fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd 
-mux_out: fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd 
-mux_out: fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd 
+mux_out: 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 
+mux_out: 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 
+mux_out: 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 
+mux_out: 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 
 mux_out: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 
 test_16k_subchan-single-1
-mux_out: f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 
-mux_out: f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 
-mux_out: f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 
-mux_out: f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 
+mux_out: df df df df df df df df df df df df df df df df 
+mux_out: df df df df df df df df df df df df df df df df 
+mux_out: df df df df df df df df df df df df df df df df 
+mux_out: df df df df df df df df df df df df df df df df 
 mux_out: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 
 test_16k_subchan-single-2
-mux_out: df df df df df df df df df df df df df df df df 
-mux_out: df df df df df df df df df df df df df df df df 
-mux_out: df df df df df df df df df df df df df df df df 
-mux_out: df df df df df df df df df df df df df df df df 
+mux_out: f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 
+mux_out: f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 
+mux_out: f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 
+mux_out: f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 f7 
 mux_out: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 
 test_16k_subchan-single-3
-mux_out: 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 
-mux_out: 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 
-mux_out: 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 
-mux_out: 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 7f 
+mux_out: fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd 
+mux_out: fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd 
+mux_out: fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd 
+mux_out: fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd fd 
 mux_out: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 
 
 ==> test_8k_subchan
@@ -58,58 +58,58 @@ demux_bits_cb '8k_5': 0000001001100000000000000000000000000000
 demux_bits_cb '8k_6': 0000000101100000000000000000000000000000
 demux_bits_cb '8k_7': 0000000011100000000000000000000000000000
 test_8k_subchan-single-0
-mux_out: fe ff fe ff fe ff fe ff fe ff fe ff fe ff fe ff 
-mux_out: fe ff fe ff fe ff fe ff fe ff fe ff fe ff fe ff 
-mux_out: fe ff fe ff fe ff fe ff fe ff fe ff fe ff fe ff 
-mux_out: fe ff fe ff fe ff fe ff fe ff fe ff fe ff fe ff 
+mux_out: 7f ff 7f ff 7f ff 7f ff 7f ff 7f ff 7f ff 7f ff 
+mux_out: 7f ff 7f ff 7f ff 7f ff 7f ff 7f ff 7f ff 7f ff 
+mux_out: 7f ff 7f ff 7f ff 7f ff 7f ff 7f ff 7f ff 7f ff 
+mux_out: 7f ff 7f ff 7f ff 7f ff 7f ff 7f ff 7f ff 7f ff 
 mux_out: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 
 test_8k_subchan-single-1
-mux_out: fd ff fd ff fd ff fd ff fd ff fd ff fd ff fd ff 
-mux_out: fd ff fd ff fd ff fd ff fd ff fd ff fd ff fd ff 
-mux_out: fd ff fd ff fd ff fd ff fd ff fd ff fd ff fd ff 
-mux_out: fd ff fd ff fd ff fd ff fd ff fd ff fd ff fd ff 
+mux_out: bf ff bf ff bf ff bf ff bf ff bf ff bf ff bf ff 
+mux_out: bf ff bf ff bf ff bf ff bf ff bf ff bf ff bf ff 
+mux_out: bf ff bf ff bf ff bf ff bf ff bf ff bf ff bf ff 
+mux_out: bf ff bf ff bf ff bf ff bf ff bf ff bf ff bf ff 
 mux_out: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 
 test_8k_subchan-single-2
-mux_out: fb ff fb ff fb ff fb ff fb ff fb ff fb ff fb ff 
-mux_out: fb ff fb ff fb ff fb ff fb ff fb ff fb ff fb ff 
-mux_out: fb ff fb ff fb ff fb ff fb ff fb ff fb ff fb ff 
-mux_out: fb ff fb ff fb ff fb ff fb ff fb ff fb ff fb ff 
+mux_out: df ff df ff df ff df ff df ff df ff df ff df ff 
+mux_out: df ff df ff df ff df ff df ff df ff df ff df ff 
+mux_out: df ff df ff df ff df ff df ff df ff df ff df ff 
+mux_out: df ff df ff df ff df ff df ff df ff df ff df ff 
 mux_out: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 
 test_8k_subchan-single-3
-mux_out: f7 ff f7 ff f7 ff f7 ff f7 ff f7 ff f7 ff f7 ff 
-mux_out: f7 ff f7 ff f7 ff f7 ff f7 ff f7 ff f7 ff f7 ff 
-mux_out: f7 ff f7 ff f7 ff f7 ff f7 ff f7 ff f7 ff f7 ff 
-mux_out: f7 ff f7 ff f7 ff f7 ff f7 ff f7 ff f7 ff f7 ff 
+mux_out: ef ff ef ff ef ff ef ff ef ff ef ff ef ff ef ff 
+mux_out: ef ff ef ff ef ff ef ff ef ff ef ff ef ff ef ff 
+mux_out: ef ff ef ff ef ff ef ff ef ff ef ff ef ff ef ff 
+mux_out: ef ff ef ff ef ff ef ff ef ff ef ff ef ff ef ff 
 mux_out: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 
 test_8k_subchan-single-4
-mux_out: ef ff ef ff ef ff ef ff ef ff ef ff ef ff ef ff 
-mux_out: ef ff ef ff ef ff ef ff ef ff ef ff ef ff ef ff 
-mux_out: ef ff ef ff ef ff ef ff ef ff ef ff ef ff ef ff 
-mux_out: ef ff ef ff ef ff ef ff ef ff ef ff ef ff ef ff 
+mux_out: f7 ff f7 ff f7 ff f7 ff f7 ff f7 ff f7 ff f7 ff 
+mux_out: f7 ff f7 ff f7 ff f7 ff f7 ff f7 ff f7 ff f7 ff 
+mux_out: f7 ff f7 ff f7 ff f7 ff f7 ff f7 ff f7 ff f7 ff 
+mux_out: f7 ff f7 ff f7 ff f7 ff f7 ff f7 ff f7 ff f7 ff 
 mux_out: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 
 test_8k_subchan-single-5
-mux_out: df ff df ff df ff df ff df ff df ff df ff df ff 
-mux_out: df ff df ff df ff df ff df ff df ff df ff df ff 
-mux_out: df ff df ff df ff df ff df ff df ff df ff df ff 
-mux_out: df ff df ff df ff df ff df ff df ff df ff df ff 
+mux_out: fb ff fb ff fb ff fb ff fb ff fb ff fb ff fb ff 
+mux_out: fb ff fb ff fb ff fb ff fb ff fb ff fb ff fb ff 
+mux_out: fb ff fb ff fb ff fb ff fb ff fb ff fb ff fb ff 
+mux_out: fb ff fb ff fb ff fb ff fb ff fb ff fb ff fb ff 
 mux_out: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 
 test_8k_subchan-single-6
-mux_out: bf ff bf ff bf ff bf ff bf ff bf ff bf ff bf ff 
-mux_out: bf ff bf ff bf ff bf ff bf ff bf ff bf ff bf ff 
-mux_out: bf ff bf ff bf ff bf ff bf ff bf ff bf ff bf ff 
-mux_out: bf ff bf ff bf ff bf ff bf ff bf ff bf ff bf ff 
+mux_out: fd ff fd ff fd ff fd ff fd ff fd ff fd ff fd ff 
+mux_out: fd ff fd ff fd ff fd ff fd ff fd ff fd ff fd ff 
+mux_out: fd ff fd ff fd ff fd ff fd ff fd ff fd ff fd ff 
+mux_out: fd ff fd ff fd ff fd ff fd ff fd ff fd ff fd ff 
 mux_out: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 
 test_8k_subchan-single-7
-mux_out: 7f ff 7f ff 7f ff 7f ff 7f ff 7f ff 7f ff 7f ff 
-mux_out: 7f ff 7f ff 7f ff 7f ff 7f ff 7f ff 7f ff 7f ff 
-mux_out: 7f ff 7f ff 7f ff 7f ff 7f ff 7f ff 7f ff 7f ff 
-mux_out: 7f ff 7f ff 7f ff 7f ff 7f ff 7f ff 7f ff 7f ff 
+mux_out: fe ff fe ff fe ff fe ff fe ff fe ff fe ff fe ff 
+mux_out: fe ff fe ff fe ff fe ff fe ff fe ff fe ff fe ff 
+mux_out: fe ff fe ff fe ff fe ff fe ff fe ff fe ff fe ff 
+mux_out: fe ff fe ff fe ff fe ff fe ff fe ff fe ff fe ff 
 mux_out: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 
 
 ==> test_unused_subchan
 test_unused_subchan-single
-mux_out: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc 
-mux_out: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc 
-mux_out: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc 
-mux_out: fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc fc 
+mux_out: 3f 3f 3f 3f 3f 3f 3f 3f 3f 3f 3f 3f 3f 3f 3f 3f 
+mux_out: 3f 3f 3f 3f 3f 3f 3f 3f 3f 3f 3f 3f 3f 3f 3f 3f 
+mux_out: 3f 3f 3f 3f 3f 3f 3f 3f 3f 3f 3f 3f 3f 3f 3f 3f 
+mux_out: 3f 3f 3f 3f 3f 3f 3f 3f 3f 3f 3f 3f 3f 3f 3f 3f 
 mux_out: ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff ff 

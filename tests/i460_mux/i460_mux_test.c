@@ -234,8 +234,8 @@ static void test_32k_subchan(void)
 	int i;
 	for (i = 0; i < sizeof(sequence); i++)
 		sequence[i] = 0;
-	sequence[0] = 0x0f;
 	sequence[1] = 0xf0;
+	sequence[0] = 0x0f;
 	sequence[2] = 0xff;
 	osmo_i460_demux_in(ts, sequence, sizeof(sequence));
 
@@ -278,10 +278,10 @@ static void test_16k_subchan(void)
 	int i;
 	for (i = 0; i < sizeof(sequence); i++)
 		sequence[i] = 0;
-	sequence[0] = 0x03;
-	sequence[1] = 0x0c;
-	sequence[2] = 0x30;
-	sequence[3] = 0xc0;
+	sequence[0] = 0xC0;
+	sequence[1] = 0x30;
+	sequence[2] = 0x0c;
+	sequence[3] = 0x03;
 	sequence[4] = 0xff;
 	osmo_i460_demux_in(ts, sequence, sizeof(sequence));
 
@@ -328,16 +328,16 @@ static void test_8k_subchan(void)
 	for (i = 0; i < sizeof(sequence); i++)
 		sequence[i] = 0;
 	i = 0;
-	sequence[i++] = 0x01;
-	sequence[i++] = 0x02;
-	sequence[i++] = 0x04;
-	sequence[i++] = 0x08;
-	sequence[i++] = 0x0f;
-	sequence[i++] = 0x10;
-	sequence[i++] = 0x20;
-	sequence[i++] = 0x40;
 	sequence[i++] = 0x80;
+	sequence[i++] = 0x40;
+	sequence[i++] = 0x20;
+	sequence[i++] = 0x10;
 	sequence[i++] = 0xf0;
+	sequence[i++] = 0x08;
+	sequence[i++] = 0x04;
+	sequence[i++] = 0x02;
+	sequence[i++] = 0x01;
+	sequence[i++] = 0x0f;
 	sequence[i++] = 0xff;
 	osmo_i460_demux_in(ts, sequence, sizeof(sequence));
 
