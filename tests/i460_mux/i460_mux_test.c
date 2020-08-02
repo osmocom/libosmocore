@@ -3,7 +3,8 @@
 
 #include <osmocom/gsm/i460_mux.h>
 
-static void bits_cb(void *user_data, const ubit_t *bits, unsigned int num_bits)
+static void bits_cb(struct osmo_i460_subchan *schan, void *user_data,
+		    const ubit_t *bits, unsigned int num_bits)
 {
 	char *str = user_data;
 	printf("demux_bits_cb '%s': %s\n", str, osmo_ubit_dump(bits, num_bits));

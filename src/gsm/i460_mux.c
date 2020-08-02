@@ -69,14 +69,14 @@ static void demux_subchan_append_bit(struct osmo_i460_subchan *schan, uint8_t bi
 
 	if (demux->out_idx >= demux->out_bitbuf_size) {
 		if (demux->out_cb_bits)
-			demux->out_cb_bits(demux->user_data, demux->out_bitbuf, demux->out_idx);
+			demux->out_cb_bits(schan, demux->user_data, demux->out_bitbuf, demux->out_idx);
 		else {
 			/* pack bits into bytes */
 			OSMO_ASSERT((demux->out_idx % 8) == 0);
 			unsigned int num_bytes = demux->out_idx / 8;
 			uint8_t bytes[num_bytes];
 			osmo_ubit2pbit(bytes, demux->out_bitbuf, demux->out_idx);
-			demux->out_cb_bytes(demux->user_data, bytes, num_bytes);
+			demux->out_cb_bytes(schan, demux->user_data, bytes, num_bytes);
 		}
 		demux->out_idx = 0;
 	}
@@ -137,11 +137,11 @@ void osmo_i460_demux_in(struct osmo_i460_timeslot *ts, const uint8_t *data, size
 		schan = &ts->schan[0];
 		demux = &schan->demux;
 		if (demux->out_cb_bytes)
-			demux->out_cb_bytes(demux->user_data, data, data_len);
+			demux->out_cb_bytes(schan, demux->user_data, data, data_len);
 		else {
 			ubit_t bits[data_len*8];
 			osmo_pbit2ubit(bits, data, data_len*8);
-			demux->out_cb_bits(demux->user_data, bits, data_len*8);
+			demux->out_cb_bits(schan, demux->user_data, bits, data_len*8);
 		}
 		return;
 	}
@@ -178,7 +178,7 @@ static ubit_t mux_schan_provide_bit(struct osmo_i460_subchan *schan)
 	if (llist_empty(&mux->tx_queue)) {
 		/* User code now has a last chance to put something into the queue. */
 		if (mux->in_cb_queue_empty)
-			mux->in_cb_queue_empty(mux->user_data);
+			mux->in_cb_queue_empty(schan, mux->user_data);
 
 		/* If the queue is still empty, return idle bits */
 		if (llist_empty(&mux->tx_queue))

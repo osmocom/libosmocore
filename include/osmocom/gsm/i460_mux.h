@@ -36,8 +36,12 @@ enum osmo_i460_rate {
 	OSMO_I460_RATE_8k,
 };
 
-typedef void (*out_cb_bits_t)(void *user_data, const ubit_t *bits, unsigned int num_bits);
-typedef void (*out_cb_bytes_t)(void *user_data, const uint8_t *bytes, unsigned int num_bytes);
+struct osmo_i460_subchan;
+
+typedef void (*out_cb_bits_t)(struct osmo_i460_subchan *schan, void *user_data,
+			      const ubit_t *bits, unsigned int num_bits);
+typedef void (*out_cb_bytes_t)(struct osmo_i460_subchan *schan, void *user_data,
+			       const uint8_t *bytes, unsigned int num_bytes);
 
 struct osmo_i460_subchan_demux {
 	/*! bit-buffer for output bits */
@@ -52,7 +56,7 @@ struct osmo_i460_subchan_demux {
 	void *user_data;
 };
 
-typedef void (*in_cb_queue_empty_t)(void *user_data);
+typedef void (*in_cb_queue_empty_t)(struct osmo_i460_subchan *schan, void *user_data);
 
 struct osmo_i460_subchan_mux {
 	/*! list of to-be-transmitted message buffers */
