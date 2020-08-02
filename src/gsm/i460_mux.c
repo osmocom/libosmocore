@@ -339,6 +339,7 @@ void osmo_i460_ts_init(struct osmo_i460_timeslot *ts)
 
 	for (i = 0; i < ARRAY_SIZE(ts->schan); i++) {
 		struct osmo_i460_subchan *schan = &ts->schan[i];
+		schan->ts = ts;
 		subchan_reset(schan, true);
 	}
 }

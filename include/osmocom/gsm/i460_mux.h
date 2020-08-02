@@ -62,6 +62,7 @@ struct osmo_i460_subchan_mux {
 };
 
 struct osmo_i460_subchan {
+	struct osmo_i460_timeslot *ts;	/* back-pointer */
 	enum osmo_i460_rate rate;		/* 8/16/32/64k */
 	uint8_t bit_offset;		/* bit offset inside each byte of the B-channel */
 	struct osmo_i460_subchan_demux demux;
