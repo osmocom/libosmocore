@@ -54,7 +54,7 @@ libosmocore_la_SOURCES += conv_acc_neon.c
 endif
 
 BUILT_SOURCES = crc8gen.c crc16gen.c crc32gen.c crc64gen.c
-EXTRA_DIST = conv_acc_sse_impl.h crcXXgen.c.tpl
+EXTRA_DIST = conv_acc_sse_impl.h conv_acc_neon_impl.h crcXXgen.c.tpl
 
 libosmocore_la_LDFLAGS = -version-info $(LIBVERSION) -no-undefined
 
