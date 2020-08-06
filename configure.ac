@@ -381,7 +381,7 @@ fi
 AC_ARG_ENABLE(neon,
 	[AS_HELP_STRING(
 		[--enable-neon],
-		[Enable NEON support]
+		[Enable ARM NEON instructions support [default=no]]
 	)],
 	[neon=$enableval], [neon="no"])
 AC_DEFINE(HAVE_NEON,,
