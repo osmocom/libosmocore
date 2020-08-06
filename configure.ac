@@ -384,6 +384,8 @@ AC_ARG_ENABLE(neon,
 		[Enable ARM NEON instructions support [default=no]]
 	)],
 	[neon=$enableval], [neon="no"])
+AC_MSG_CHECKING([whether to enable ARM NEON instructions support])
+AC_MSG_RESULT([$neon])
 AM_CONDITIONAL(HAVE_NEON, [test "x$neon" != "xno"])
 
 
