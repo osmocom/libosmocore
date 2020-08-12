@@ -2858,10 +2858,14 @@ gDEFUN(config_list, config_list_cmd, "list", "Print command list\n")
 	struct cmd_node *cnode = vector_slot(cmdvec, vty->node);
 	struct cmd_element *cmd;
 
-	for (i = 0; i < vector_active(cnode->cmd_vector); i++)
-		if ((cmd = vector_slot(cnode->cmd_vector, i)) != NULL
-		    && !(cmd->attr & (CMD_ATTR_DEPRECATED | CMD_ATTR_HIDDEN)))
-			vty_out(vty, "  %s%s", cmd->string, VTY_NEWLINE);
+	for (i = 0; i < vector_active(cnode->cmd_vector); i++) {
+		if ((cmd = vector_slot(cnode->cmd_vector, i)) == NULL)
+			continue;
+		if (cmd->attr & (CMD_ATTR_DEPRECATED | CMD_ATTR_HIDDEN))
+			continue;
+		vty_out(vty, "  %s%s", cmd->string, VTY_NEWLINE);
+	}
+
 	return CMD_SUCCESS;
 }
 
