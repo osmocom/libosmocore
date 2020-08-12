@@ -2834,20 +2834,21 @@ DEFUN(show_online_help,
 gDEFUN(config_help,
       config_help_cmd, "help", "Description of the interactive help system\n")
 {
-	vty_out(vty,
-		"This VTY provides advanced help features.  When you need help,%s\
-anytime at the command line please press '?'.%s\
-%s\
-If nothing matches, the help list will be empty and you must backup%s\
- until entering a '?' shows the available options.%s\
-Two styles of help are provided:%s\
-1. Full help is available when you are ready to enter a%s\
-command argument (e.g. 'show ?') and describes each possible%s\
-argument.%s\
-2. Partial help is provided when an abbreviated argument is entered%s\
-   and you want to know what arguments match the input%s\
-   (e.g. 'show me?'.)%s%s", VTY_NEWLINE, VTY_NEWLINE, VTY_NEWLINE,
-		VTY_NEWLINE, VTY_NEWLINE, VTY_NEWLINE, VTY_NEWLINE, VTY_NEWLINE, VTY_NEWLINE, VTY_NEWLINE, VTY_NEWLINE, VTY_NEWLINE, VTY_NEWLINE);
+	vty_out(vty, "This VTY provides advanced help features.  When you need help,%s"
+		     "anytime at the command line please press '?'.%s%s"
+		     "If nothing matches, the help list will be empty and you must backup%s"
+		     " until entering a '?' shows the available options.%s"
+		     "Two styles of help are provided:%s"
+		     "1. Full help is available when you are ready to enter a%s"
+		     "command argument (e.g. 'show ?') and describes each possible%s"
+		     "argument.%s"
+		     "2. Partial help is provided when an abbreviated argument is entered%s"
+		     "   and you want to know what arguments match the input%s"
+		     "   (e.g. 'show me?'.)%s%s",
+		     VTY_NEWLINE, VTY_NEWLINE, VTY_NEWLINE, VTY_NEWLINE,
+		     VTY_NEWLINE, VTY_NEWLINE, VTY_NEWLINE, VTY_NEWLINE,
+		     VTY_NEWLINE, VTY_NEWLINE, VTY_NEWLINE, VTY_NEWLINE,
+		     VTY_NEWLINE);
 	return CMD_SUCCESS;
 }
 
