@@ -109,13 +109,13 @@ transcoding routines.
 This subpackage contains libraries and header files for developing
 applications that want to make use of libosmocoding.
 
-%package -n libosmocore12
+%package -n libosmocore16
 Summary:        Osmocom core library
 # crc16.c has GPL2-only clauses, the rest (*.c) is GPL-2.0+
 License:        GPL-2.0-only AND GPL-2.0-or-later
 Group:          System/Libraries
 
-%description -n libosmocore12
+%description -n libosmocore16
 libosmocore is a library with various utility functions shared
 between OpenBSC and OsmocomBB.
 
@@ -124,7 +124,7 @@ Summary:        Development files for the Osmocom core library
 # crc16.h has GPL2-only clauses, the rest (*.h) is GPL-2.0+
 License:        GPL-2.0-only AND GPL-2.0-or-later
 Group:          Development/Libraries/C and C++
-Requires:       libosmocore12 = %version
+Requires:       libosmocore16 = %version
 Requires:       libtalloc-devel
 
 %description -n libosmocore-devel
@@ -161,12 +161,12 @@ interface, the control interface is meant to be used by programs.
 This subpackage contains libraries and header files for developing
 applications that want to make use of libosmoctrl.
 
-%package -n libosmogb9
+%package -n libosmogb11
 Summary:        Osmocom GPRS Gb Interface (NS/BSSGP) library
 License:        AGPL-3.0-or-later
 Group:          System/Libraries
 
-%description -n libosmogb9
+%description -n libosmogb11
 libosmocore is a package with various utility functions that were
 originally developed as part of the OpenBSC project.
 
@@ -177,7 +177,7 @@ Summary:        Development files for the Osmocom GPRS Gb interface library
 License:        AGPL-3.0-or-later
 Group:          Development/Libraries/C and C++
 Requires:       libosmocore-devel = %version
-Requires:       libosmogb9 = %version
+Requires:       libosmogb11 = %version
 Requires:       libosmovty-devel = %version
 
 %description -n libosmogb-devel
@@ -186,12 +186,12 @@ The libosmogb library contains a GPRS BSSGP protocol implementation.
 This subpackage contains libraries and header files for developing
 applications that want to make use of libosmogb.
 
-%package -n libosmogsm13
+%package -n libosmogsm15
 Summary:        Osmocom GSM utility library
 License:        GPL-2.0-or-later AND AGPL-3.0-or-later
 Group:          System/Libraries
 
-%description -n libosmogsm13
+%description -n libosmogsm15
 libosmocore is a package with various utility functions that were
 originally developed as part of the OpenBSC project.
 
@@ -206,7 +206,7 @@ Summary:        Development files for the Osmocom GSM utility library
 License:        GPL-2.0-or-later AND AGPL-3.0-or-later
 Group:          Development/Libraries/C and C++
 Requires:       libosmocore-devel = %version
-Requires:       libosmogsm13 = %version
+Requires:       libosmogsm15 = %version
 
 %description -n libosmogsm-devel
 The libosmogsm library in particular is a collection of common code
@@ -218,12 +218,12 @@ protocol definitions for a series of protocols.
 This subpackage contains libraries and header files for developing
 applications that want to make use of libosmogsm.
 
-%package -n libosmosim0
+%package -n libosmosim2
 Summary:        Osmocom SIM card related utility library
 License:        GPL-2.0-or-later
 Group:          System/Libraries
 
-%description -n libosmosim0
+%description -n libosmosim2
 libosmocore is a package with various utility functions that were
 originally developed as part of the OpenBSC project.
 
@@ -235,7 +235,7 @@ Summary:        Development files for the Osmocom SIM card utility library
 License:        GPL-2.0-or-later
 Group:          Development/Libraries/C and C++
 Requires:       libosmocore-devel = %version
-Requires:       libosmosim0 = %version
+Requires:       libosmosim2 = %version
 
 %description -n libosmosim-devel
 The libosmosim library in particular contains routines for SIM card
@@ -320,16 +320,16 @@ make %{?_smp_mflags} check || (find . -name testsuite.log -exec cat {} +)
 %postun -n libosmocodec0 -p /sbin/ldconfig
 %post   -n libosmocoding0 -p /sbin/ldconfig
 %postun -n libosmocoding0 -p /sbin/ldconfig
-%post   -n libosmocore12 -p /sbin/ldconfig
-%postun -n libosmocore12 -p /sbin/ldconfig
+%post   -n libosmocore16 -p /sbin/ldconfig
+%postun -n libosmocore16 -p /sbin/ldconfig
 %post   -n libosmoctrl0 -p /sbin/ldconfig
 %postun -n libosmoctrl0 -p /sbin/ldconfig
-%post   -n libosmogb9 -p /sbin/ldconfig
-%postun -n libosmogb9 -p /sbin/ldconfig
-%post   -n libosmogsm13 -p /sbin/ldconfig
-%postun -n libosmogsm13 -p /sbin/ldconfig
-%post   -n libosmosim0 -p /sbin/ldconfig
-%postun -n libosmosim0 -p /sbin/ldconfig
+%post   -n libosmogb11 -p /sbin/ldconfig
+%postun -n libosmogb11 -p /sbin/ldconfig
+%post   -n libosmogsm15 -p /sbin/ldconfig
+%postun -n libosmogsm15 -p /sbin/ldconfig
+%post   -n libosmosim2 -p /sbin/ldconfig
+%postun -n libosmosim2 -p /sbin/ldconfig
 %post   -n libosmovty4 -p /sbin/ldconfig
 %postun -n libosmovty4 -p /sbin/ldconfig
 %post   -n libosmousb0 -p /sbin/ldconfig
@@ -363,9 +363,9 @@ make %{?_smp_mflags} check || (find . -name testsuite.log -exec cat {} +)
 %_libdir/libosmocoding.so
 %_libdir/pkgconfig/libosmocoding.pc
 
-%files -n libosmocore12
+%files -n libosmocore16
 %defattr(-,root,root)
-%_libdir/libosmocore.so.12*
+%_libdir/libosmocore.so.16*
 
 %files -n libosmocore-devel
 %defattr(-,root,root)
@@ -389,9 +389,9 @@ make %{?_smp_mflags} check || (find . -name testsuite.log -exec cat {} +)
 %_libdir/libosmoctrl.so
 %_libdir/pkgconfig/libosmoctrl.pc
 
-%files -n libosmogb9
+%files -n libosmogb11
 %defattr(-,root,root)
-%_libdir/libosmogb.so.9*
+%_libdir/libosmogb.so.11*
 
 %files -n libosmogb-devel
 %defattr(-,root,root)
@@ -401,9 +401,9 @@ make %{?_smp_mflags} check || (find . -name testsuite.log -exec cat {} +)
 %_libdir/libosmogb.so
 %_libdir/pkgconfig/libosmogb.pc
 
-%files -n libosmogsm13
+%files -n libosmogsm15
 %defattr(-,root,root)
-%_libdir/libosmogsm.so.13*
+%_libdir/libosmogsm.so.15*
 
 %files -n libosmogsm-devel
 %defattr(-,root,root)
@@ -414,9 +414,9 @@ make %{?_smp_mflags} check || (find . -name testsuite.log -exec cat {} +)
 %_libdir/libosmogsm.so
 %_libdir/pkgconfig/libosmogsm.pc
 
-%files -n libosmosim0
+%files -n libosmosim2
 %defattr(-,root,root)
-%_libdir/libosmosim.so.0*
+%_libdir/libosmosim.so.2*
 
 %files -n libosmosim-devel
 %defattr(-,root,root)

@@ -7,13 +7,3 @@
 # If any interfaces have been added since the last public release: c:r:a + 1.
 # If any interfaces have been removed or changed since the last public release: c:r:0.
 #library	what			description / commit summary line
-gsm		API/ABI change		l1sap.h, added struct members to ph_data_param and ph_tch_param
-sim		API/ABI change		new osim_file_desc_find_aid()
-sim		API/ABI change		all over the place
-gsm		new API			new osmo_bts_unset_feature()
-gb		API/ABI change		deprecate gprs_nsvc_crate(); export gprs_nsvc_create2()
-gsm		API/ABI change		add new member to lapd_datalink
-gsm		new API			new gsm0808_create_common_id()
-gb		new API			new bssgp_tx_bvc_reset2()
-core		new API			new rate_ctr_reset(), rate_ctr_group_reset()
-core		new API			new osmo_stat_item_reset(), osmo_stat_item_group_reset()

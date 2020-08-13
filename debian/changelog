@@ -1,3 +1,207 @@
+libosmocore (1.4.0) unstable; urgency=medium
+
+  [ Pau Espin Pedrol ]
+  * bitvec: Fix return value in doc for bitvec_write_field()
+  * gb: Fix typo in bssgp_cause_strings description
+  * logging_vty.c: Avoid acquiring log tgt lock in logging level cmd when not needed
+  * value_string: Switch val from unsigned to int
+  * gsm0503_coding: Fix misleading comment UL vs DL
+  * gsm0503_coding: Fix USF encoding in MCS1-4
+  * gsm0503_tables: Document USF encoding tables
+  * tests/coding: Test decoding of DL EGPRS data packet
+  * tests/coding_test: Fix test_pdtch() results
+  * gsm_04_06.h: Remove repeated egprs header struct definitions
+  * configure.ac: Fix HAVE_CLOCK_GETTIME undef when func in -lrt
+  * Drop old BSC references in fd check configure option
+  * Revert "gsmtap_makemsg_ex: NULL for unknown chan_type"
+  * use_count.h: Fix API doc example
+  * tests/fsm_test.c: Disable use color in logging output
+  * tests: vty: Extend test to do some numeric range validations
+  * vty: Allow 64 bit values in numeric ranges if system supports it
+  * vty: Don't match negative values on purely positive ranges
+  * vty: Introduce support to set cpu-affinity and scheduler policy
+
+  [ Harald Welte ]
+  * usb: Use OSMO_STRLCPY where appropriate
+  * usb: Add osmo_libusb_find_matching_dev_{path,serial}
+  * osmo_libusb: Check return of libusb_get_string_descriptor_ascii()
+  * osmo-sim-test: Recurse through subdirectories
+  * osmo-sim-test: Fall-back to classic SIM
+  * chantype_rsl2gsmtap(): Add entries for CBCH
+  * gsmtap.h: Add definitions for voice inside GSMTAP
+  * Add GSMTAP_CHANNEL_VOICE to gsmtap_gsm_channel_names[] value_string
+  * Add CTRL port number for osmo-mgw
+  * gsmtap: Solve TCH / FACCH confusion once and for all
+  * fixup depreciation warning
+  * socket: Add osmo_sock_mcast_iface_set() to bind multicast to device
+  * libosmosim: Build irrespective of PC/SC support
+  * sim: card_fs_usim.c: Fix FID of EF.EXT4
+  * card_fs_sim: Avoid '/' in file names
+  * osmo-sim-test: Use stderr for error messages
+  * osmo-sim-test: don't print SW in successful case of dump_file()
+  * osmo-sim-test: Optionally dump card files to host filesystem
+  * sim: add osim_file_desc_find_aid()
+  * sim: re-structure how we support cards + applications
+  * osmo-sim-test: Also [attempt to] dump DF.GSM on USIM cards
+  * card_fs_{usim,isim}: Update to 15.7.0 / Release 15
+  * sim: Add HPSIM application support
+  * osmo-sim-test: Avoid double-close
+  * ports.h: Add 4268 for UECUPS VTY
+  * exec: Introduce osmo_system_nowait2() to allow specify a user
+  * select.c: Introduce support for signalfd
+  * timerfd: call osmo_fd_unregister() when closing on read error
+  * gsm0503_parity: Fix compilation with gcc-10
+  * gsm_29_118.h: Fix compilation with gcc-10
+  * sim: When decoding SW, take application specific SW into account
+  * README.md: fix typo (coore -> core)
+  * README.md: We don't build libosmotrau.  The latter is in libosmo-abis.git
+  * usb: Add osmo_libusb_find_open_claim() all-in-one API
+  * codec: Add functions for AMR s->d bits and d->s bits
+  * libosmogsm: add Doxygen docs for gsm0502_hop_seq_gen()
+  * Implement ITU-T I.460 multiplex / demultiplex
+  * NS: Optionally disable NS-{RESET,BLOCK,UNBLOCK} when using UDP/IP
+  * NS: replace use of gprs_nsvc_create() with gprs_nsvc_crate2()
+  * lapd/lapdm: print user-defined string name instead of (dl=%p)
+  * lapd_core: Fix log line being about LAPD and not LAPDm
+  * Revert "add osmo_mobile_identity API"
+  * bts_features.h: Introduce BTS_FEAT_PAGING_COORDINATION
+  * gsm0808: Add gsm0808_create_common_id()
+  * gprs_bssgp: Add bssgp_tx_bvc_reset2()
+  * gprs_ns: Set sockaddr_in.sin_family for persistent NSVCs
+  * vty/ports.h: Add VTY port for osmo-e1d
+  * lapd_core: Ensure we always have some tailroom
+  * lapd_core: After calling into L3, check if the state has changed
+  * vty: Avoid ultra-long multi-line strings cluttering talloc reports
+  * gsm0411_{smc,smr}.c: Work around newlib bug
+  * bits.c: Use faster look-up-table approach for osmo_revbytebits_{buf,u8}
+  * i460: Add back-pointer from sub-channel to timeslot
+  * i460: pass more context to call-back functions
+  * i460: Fix bit- and subslots ordering of I.460 mux + demux
+
+  [ Neels Hofmeyr ]
+  * add crcXXgen.c.tpl to EXTRA_DIST
+  * jenkins.sh: simpler invocation of verify_value_string_...
+  * gsm_04_08.h: fix big endian structs
+  * add missing endian.h in gsm_23_041.h
+  * struct_endianess.py: also recognise unnamed substructs
+  * cosmetic: apply changes to match struct_endianess.py output
+  * enable vty xml dumping to stdout
+  * api doc: clarify 'returns' of gsm48_mi_to_string()
+  * api doc: clarify OSMO_NAME_C_IMPL() required FUNC_BUF signature
+  * fix osmo_mi_name_c() to always return talloced strings, via osmo_mi_name_buf()
+  * add gsm23236: MSC pooling: TMSI and NRI utility functions
+  * tlv.h: add msgb_tvl_put() to add a TvLV without the value part
+  * osmo_bcd2str: also validate start_nibble parameter
+  * add osmo_mobile_identity API
+  * add osmo_mobile_identity API
+  * gsm0408_test: allow deprecated API
+  * api comment: fix example of osmo_mobile_identity_encode_msgb
+  * fixup for gsm0808_create_common_id(): add API doc, use new MI API
+
+  [ Philipp Maier ]
+  * l1sap: add measurement related struct members
+  * osmo-sim-test: check tlv_parsed struct tp before access
+  * parity: add amr crc14 definition
+  * conv: add convolutional coder for AMR SID UPDATE frames
+  * gsm690: Fix amr speech bit length table
+  * dtx: add decoding for AMR-DTX frames
+  * exec: osmo_system_nowait2: initalize *pw pointer with NULL
+  * logging: use LOGL_NOTICE when no loglevel is set
+  * logging: do not allow multiple calls of log_init()
+  * gsm0505_amr_dtx: add missing value strings
+  * gsm0808: fix endieness of call identifier
+  * i460_mux: correctly reset subchannels
+  * gsm_08_58: add missing RSL error cause codes
+  * i460_mux: add callback to notify empty tx queue
+
+  [ Vadim Yanitskiy ]
+  * usb/Makefile.am: fix copy-pasted library name: s/libosmosim/libosmousb/
+  * gsm/gsm48049.c: fix use of GNU 'missing =' extension in designator
+  * tdef_vty: do not enforce enum 'node_type' in osmo_tdef_vty_groups_init()
+  * conv: prevent theoretical NULL pointer dereference in osmo_conv_encode()
+  * osmo_libusb: check return value of osmo_fd_register()
+  * exec: prevent uninitialized memory access in osmo_system_nowait()
+  * exec: propogate errors from osmo_environment_[filter|append]
+  * bitvec: make bitvec_free() safe against NULL
+  * tests/bitvec: add a unit test for bitvec_read_field()
+  * bitvec: fix bitvec_unhex(): do not return 1 on success
+  * bitvec: fix misleading description of bitvec_spare_padding()
+  * bitvec: cosmetic: init i only once in bitvec_[un]pack()
+  * bitvec: avoid redundant zero-initialization in bitvec_alloc()
+  * tests/coding: check return value of encoding / decoding functions
+  * tests/coding: reduce verbosity of 8-bit / 11-bit RACH coding tests
+  * tests/coding: cosmetic: use ARRAY_SIZE() macro from utils.h
+  * coding: fix documentation of PDTCH encoding functions
+  * tests/coding: add 11-bit Access Burst samples from a real phone
+  * coding: fix bit ordering in 11-bit RACH coding functions
+  * rest_octets: fix encoding of 3G Early Classmark Sending Restriction
+  * libosmogsm: cosmetic: add spaces before and after PRIu32
+  * bts_features: fix: properly check the result of bitvec_get_bit_pos()
+  * bts_features: introduce osmo_bts_unset_feature()
+  * gsm0502: add TDMA frame number constants and modular arithmetic
+  * utils/gsmtap_logread.py: make it executable
+  * src/Makefile.am: add conv_acc_neon_impl.h to EXTRA_DIST
+  * configure.ac: clarify description of --enable-neon
+  * configure.ac: fix: do not define HAVE_NEON unconditionally
+  * configure.ac: print ARM NEON instructions support status
+
+  [ Eric Wild ]
+  * pcsc: don't leak memory
+
+  [ Alexander Chemeris ]
+  * gb: Fix typos in gprs_ns.c comments
+  * gb: Print signalling and data weights on NS-VC creation.
+  * select: Fix typo in a comment Osmcoom->Osmocom
+  * stats: Move cfg_stats_interval_cmd() function.
+  * stats: Fix documentation for osmo_stats_set_interval()
+  * stats: Support regular stats flush
+  * stats: Change timer to timerfd to make it a true interval timer.
+  * gsm0808: Fix encoding of the SAPI_N_REJECT BSSMAP message.
+  * gsm0808: Make a function to extract Cause IE publicly available.
+  * gsm0808_utils: Fix gsm0808_cause_class() function
+  * gsm0808_utils: Add gsm0808_get_cipher_reject_cause() back with a deprecation notice.
+  * gsm0808: Implement helper functions for CONFUSION BSSMAP message decoding.
+
+  [ Maksim Aristov ]
+  * debian: Change python3 dependency to native arch
+
+  [ Eric ]
+  * configure.ac: fix libtool issue  with clang and sanitizer
+  * timer.c: make timers thread safe
+  * pkgconfig/osmocodec/osmocoding: link to talloc
+  * libomsocoding: NEON viterbi acceleration
+
+  [ Kirill Zakharenko ]
+  * statsd: fix rendering for groups with idx==0
+
+  [ Sylvain Munaut ]
+  * libosmogsm: import hopping sequence generation code
+
+  [ Oliver Smith ]
+  * contrib: import RPM spec
+  * gsmtap_makemsg_ex: NULL for unknown chan_type
+  * contrib: integrate RPM spec
+  * Makefile.am: EXTRA_DIST: debian, contrib/*.spec.in
+
+  [ Alexander Couzens ]
+  * gprs_ns.h: add missing prototype gprs_ns_rcvmsg()
+  * gprs_ns: fix typo in comment
+  * gprs_ns_frgre.h: add missing declaration of structs
+  * bts_features: add feature BTS_FEAT_IPV6_NSVC
+  * socket: osmo_sock_local_ip: correct doxygen comment
+  * vty: add a define VTY_IPV46_CMD to require a IPv4/6 address
+  * Gb/BSSGP: replace hardcoded Tx into NS library by a callback
+  * gsm 12.21: add osmocom specific NM_ATT_OSMO_NS_LINK_CFG
+  * osmo_sock_init2: improve support for AF_UNSPEC
+  * socket.h: introduce osmo_sockaddr to hold v4 and v6 endpoints
+
+  [ Daniel Willmann ]
+  * rate_ctr: Add functions to reset rate counter (groups)
+  * stat_item: Add function to reset stat items and groups
+  * stats: Add stats commands related to testing
+
+ -- Harald Welte <laforge@osmocom.org>  Thu, 13 Aug 2020 11:06:35 +0200
+
 libosmocore (1.3.0) unstable; urgency=medium
 
   [ Pau Espin Pedrol ]
