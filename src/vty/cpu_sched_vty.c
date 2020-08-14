@@ -469,7 +469,7 @@ static int set_sched_rr(unsigned int prio)
 	LOGP(DLGLOBAL, LOGL_NOTICE, "Setting SCHED_RR priority %d\n", param.sched_priority);
 	rc = sched_setscheduler(getpid(), SCHED_RR, &param);
 	if (rc == -1) {
-		LOGP(DLGLOBAL, LOGL_FATAL, "Setting SCHED_RR priority %d failed: %s\n",
+		LOGP(DLGLOBAL, LOGL_ERROR, "Setting SCHED_RR priority %d failed: %s\n",
 		     param.sched_priority, strerror(errno));
 		return -1;
 	}
@@ -631,7 +631,10 @@ int osmo_cpu_sched_vty_apply_localthread(void)
 	int rc = 0;
 
 	/* Assert subsystem was inited and structs are preset */
-	OSMO_ASSERT(sched_vty_opts);
+	if (!sched_vty_opts) {
+		LOGP(DLGLOBAL, LOGL_FATAL, "Setting cpu-affinity mask impossible: no opts!\n");
+		return 0;
+	}
 
 	if (pthread_getname_np(pthread_self(), name, sizeof(name)) == 0)
 		has_name = true;
