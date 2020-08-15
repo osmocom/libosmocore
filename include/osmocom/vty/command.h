@@ -149,7 +149,8 @@ struct cmd_element {
 	unsigned int cmdsize;	/*!< Command index count. */
 	char *config;		/*!< Configuration string */
 	vector subconfig;	/*!< Sub configuration string */
-	unsigned char attr;	/*!< Command attributes */
+	unsigned char attr;	/*!< Command attributes (global) */
+	unsigned int usrattr;	/*!< Command attributes (program specific) */
 };
 
 /*! Command description structure. */
@@ -200,6 +201,16 @@ struct desc {
     .daemon = dnum, \
   };
 
+#define DEFUN_CMD_ELEMENT_ATTR_USRATTR(funcname, cmdname, cmdstr, helpstr, attrs, usrattrs) \
+  static struct cmd_element cmdname = \
+  { \
+    .string = cmdstr, \
+    .func = funcname, \
+    .doc = helpstr, \
+    .attr = attrs, \
+    .usrattr = usrattrs, \
+  };
+
 #define DEFUN_CMD_FUNC_DECL(funcname) \
   static int funcname (struct cmd_element *, struct vty *, int, const char *[]); \
 
@@ -239,6 +250,22 @@ struct desc {
 
 #define DEFUN_DEPRECATED(funcname, cmdname, cmdstr, helpstr) \
   DEFUN_ATTR (funcname, cmdname, cmdstr, helpstr, CMD_ATTR_DEPRECATED)
+
+/*! Macro for defining a VTY node and function with global & program specific attributes.
+ *  \param[in] funcname Name of the function implementing the node.
+ *  \param[in] cmdname Name of the command node.
+ *  \param[in] attr Global attributes (see CMD_ATTR_*).
+ *  \param[in] usrattr Program specific attributes.
+ *  \param[in] cmdstr String with syntax of node.
+ *  \param[in] helpstr String with help message of node.
+ */
+#define DEFUN_ATTR_USRATTR(funcname, cmdname, attr, usrattr, cmdstr, helpstr) \
+  DEFUN_CMD_FUNC_DECL(funcname) \
+  DEFUN_CMD_ELEMENT_ATTR_USRATTR(funcname, cmdname, cmdstr, helpstr, attr, usrattr) \
+  DEFUN_CMD_FUNC_TEXT(funcname)
+
+#define DEFUN_USRATTR(funcname, cmdname, usrattr, cmdstr, helpstr) \
+  DEFUN_ATTR_USRATTR(funcname, cmdname, 0, usrattr, cmdstr, helpstr)
 
 /* DEFUN_NOSH for commands that vtysh should ignore */
 #define DEFUN_NOSH(funcname, cmdname, cmdstr, helpstr) \

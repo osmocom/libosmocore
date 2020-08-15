@@ -8,3 +8,5 @@
 # If any interfaces have been removed or changed since the last public release: c:r:0.
 #library	what			description / commit summary line
 libosmogsm	new API			gsm0808_create_sapi_reject_cause() with cause argument
+libosmovty	ABI change		struct cmd_element: add a field for program specific attributes
+libosmovty	ABI change		struct vty_app_info: optional program specific attributes description

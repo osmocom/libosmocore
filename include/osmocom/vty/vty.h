@@ -192,6 +192,10 @@ struct vty_app_info {
 				" no longer called, ever, and can be left NULL.");
 	/*! Check if the config is consistent before write */
 	int (*config_is_consistent)(struct vty *vty);
+	/*! Description of the application specific VTY attributes (optional). */
+	const char * usr_attr_desc[32];
+	/*! Flag letters of the application specific VTY attributes (optional). */
+	char usr_attr_letters[32];
 };
 
 /* Prototypes. */
