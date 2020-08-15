@@ -2217,23 +2217,23 @@ static void vty_clear_parents(struct vty *vty)
 int vty_go_parent(struct vty *vty)
 {
 	switch (vty->node) {
-		case AUTH_NODE:
-		case VIEW_NODE:
-		case ENABLE_NODE:
-		case CONFIG_NODE:
-			vty_clear_parents(vty);
-			break;
+	case AUTH_NODE:
+	case VIEW_NODE:
+	case ENABLE_NODE:
+	case CONFIG_NODE:
+		vty_clear_parents(vty);
+		break;
 
-		case AUTH_ENABLE_NODE:
-			vty->node = VIEW_NODE;
-			vty_clear_parents(vty);
-			break;
+	case AUTH_ENABLE_NODE:
+		vty->node = VIEW_NODE;
+		vty_clear_parents(vty);
+		break;
 
-		default:
-			if (host.app_info->go_parent_cb)
-				host.app_info->go_parent_cb(vty);
-			vty_pop_parent(vty);
-			break;
+	default:
+		if (host.app_info->go_parent_cb)
+			host.app_info->go_parent_cb(vty);
+		vty_pop_parent(vty);
+		break;
 	}
 
 	return vty->node;
