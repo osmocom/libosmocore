@@ -628,11 +628,36 @@ typedef int (*print_func_t)(void *data, const char *fmt, ...);
 static int vty_dump_element(struct cmd_element *cmd, print_func_t print_func, void *data, const char *newline)
 {
 	char *xml_string = xml_escape(cmd->string);
+	unsigned int i;
 
 	print_func(data, "    <command id='%s'>%s", xml_string, newline);
+
+	/* Print application specific attributes and their description */
+	if (cmd->usrattr != 0x00) { /* ... if at least one flag is set */
+		print_func(data, "      <attributes scope='application'>%s", newline);
+
+		for (i = 0; i < ARRAY_SIZE(host.app_info->usr_attr_desc); i++) {
+			char *xml_att_desc;
+			char flag;
+
+			/* Skip attribute if *not* set */
+			if (~cmd->usrattr & (1 << i))
+				continue;
+
+			xml_att_desc = xml_escape(host.app_info->usr_attr_desc[i]);
+			print_func(data, "        <attribute doc='%s'", xml_att_desc);
+			talloc_free(xml_att_desc);
+
+			if ((flag = host.app_info->usr_attr_letters[i]) != '\0')
+				print_func(data, " flag='%c'", flag);
+			print_func(data, " />%s", newline);
+		}
+
+		print_func(data, "      </attributes>%s", newline);
+	}
+
 	print_func(data, "      <params>%s", newline);
 
-	int i;
 	for (i = 0; i < vector_count(cmd->strvec); ++i) {
 		vector descvec = vector_slot(cmd->strvec, i);
 		int j;
