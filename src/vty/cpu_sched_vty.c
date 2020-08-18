@@ -82,7 +82,7 @@ static struct sched_vty_opts *sched_vty_opts;
 
 static struct cmd_node sched_node = {
 	L_CPU_SCHED_NODE,
-	"%s(config-sched)# ",
+	"%s(config-cpu-sched)# ",
 	1,
 };
 
