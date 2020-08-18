@@ -632,13 +632,13 @@ static int vty_dump_element(struct cmd_element *cmd, print_func_t print_func, vo
 	print_func(data, "    <command id='%s'>%s", xml_string, newline);
 	print_func(data, "      <params>%s", newline);
 
-	int j;
-	for (j = 0; j < vector_count(cmd->strvec); ++j) {
-		vector descvec = vector_slot(cmd->strvec, j);
-		int i;
-		for (i = 0; i < vector_active(descvec); ++i) {
+	int i;
+	for (i = 0; i < vector_count(cmd->strvec); ++i) {
+		vector descvec = vector_slot(cmd->strvec, i);
+		int j;
+		for (j = 0; j < vector_active(descvec); ++j) {
 			char *xml_param, *xml_doc;
-			struct desc *desc = vector_slot(descvec, i);
+			struct desc *desc = vector_slot(descvec, j);
 			if (desc == NULL)
 				continue;
 
