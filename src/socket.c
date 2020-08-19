@@ -79,7 +79,7 @@ static struct addrinfo *addrinfo_helper(uint16_t family, uint16_t type, uint8_t 
 		hints.ai_socktype = type;
 		hints.ai_protocol = proto;
 	}
-
+	hints.ai_flags = AI_ADDRCONFIG;
 	if (passive)
 		hints.ai_flags |= AI_PASSIVE;
 
@@ -428,24 +428,63 @@ int osmo_sock_init2(uint16_t family, uint16_t type, uint8_t proto,
 
 #ifdef HAVE_LIBSCTP
 
+/* Check whether there's an IPv6 Addr as first option of any addrinfo item in the addrinfo set */
+static void addrinfo_has_v4v6addr(const struct addrinfo **result, size_t result_count, bool *has_v4, bool *has_v6)
+{
+	size_t host_idx;
+	*has_v4 = false;
+	*has_v6 = false;
+
+	for (host_idx = 0; host_idx < result_count; host_idx++) {
+		if (result[host_idx]->ai_family == AF_INET)
+			*has_v4 = true;
+		else if (result[host_idx]->ai_family == AF_INET6)
+			*has_v6 = true;
+	}
+}
+
+static int socket_helper_multiaddr(uint16_t family, uint16_t type, uint8_t proto, unsigned int flags)
+{
+	int sfd, on = 1;
+
+	sfd = socket(family, type, proto);
+	if (sfd == -1) {
+		LOGP(DLGLOBAL, LOGL_ERROR,
+			"Unable to create socket: %s\n", strerror(errno));
+		return sfd;
+	}
+	if (flags & OSMO_SOCK_F_NONBLOCK) {
+		if (ioctl(sfd, FIONBIO, (unsigned char *)&on) < 0) {
+			LOGP(DLGLOBAL, LOGL_ERROR,
+				"Cannot set this socket unblocking: %s\n",
+				strerror(errno));
+			close(sfd);
+			sfd = -EINVAL;
+		}
+	}
+	return sfd;
+}
 
 /* Build array of addresses taking first addrinfo result of the requested family
- * for each host in hosts. addrs4 or addrs6 are filled based on family type. */
+ * for each host in addrs_buf. */
 static int addrinfo_to_sockaddr(uint16_t family, const struct addrinfo **result,
 				const char **hosts, int host_cont,
-				struct sockaddr_in *addrs4, struct sockaddr_in6 *addrs6) {
-	size_t host_idx;
+				uint8_t *addrs_buf, size_t addrs_buf_len) {
+	size_t host_idx, offset = 0;
 	const struct addrinfo *rp;
-	OSMO_ASSERT(family == AF_INET || family == AF_INET6);
 
 	for (host_idx = 0; host_idx < host_cont; host_idx++) {
+		/* Addresses are ordered based on RFC 3484, see man getaddrinfo */
 		for (rp = result[host_idx]; rp != NULL; rp = rp->ai_next) {
-			if (rp->ai_family != family)
+			if (family != AF_UNSPEC && rp->ai_family != family)
 				continue;
-			if (family == AF_INET)
-				memcpy(&addrs4[host_idx], rp->ai_addr, sizeof(addrs4[host_idx]));
-			else
-				memcpy(&addrs6[host_idx], rp->ai_addr, sizeof(addrs6[host_idx]));
+			if (offset + rp->ai_addrlen > addrs_buf_len) {
+				LOGP(DLGLOBAL, LOGL_ERROR, "Output buffer to small: %zu\n",
+				     addrs_buf_len);
+				return -ENOSPC;
+			}
+			memcpy(addrs_buf + offset, rp->ai_addr, rp->ai_addrlen);
+			offset += rp->ai_addrlen;
 			break;
 		}
 		if (!rp) { /* No addr could be bound for this host! */
@@ -486,23 +525,18 @@ int osmo_sock_init2_multiaddr(uint16_t family, uint16_t type, uint8_t proto,
 	struct addrinfo *res_loc[OSMO_SOCK_MAX_ADDRS], *res_rem[OSMO_SOCK_MAX_ADDRS];
 	int sfd = -1, rc, on = 1;
 	int i;
-	struct sockaddr_in addrs4[OSMO_SOCK_MAX_ADDRS];
-	struct sockaddr_in6 addrs6[OSMO_SOCK_MAX_ADDRS];
-	struct sockaddr *addrs;
+	bool loc_has_v4addr, rem_has_v4addr;
+	bool loc_has_v6addr, rem_has_v6addr;
+	struct sockaddr_in6 addrs_buf[OSMO_SOCK_MAX_ADDRS];
 	char strbuf[512];
+
+	/* updated later in case of AF_UNSPEC */
+	loc_has_v4addr = rem_has_v4addr = (family == AF_INET);
+	loc_has_v6addr = rem_has_v6addr = (family == AF_INET6);
 
 	/* TODO: So far this function is only aimed for SCTP, but could be
 	   reused in the future for other protocols with multi-addr support */
 	if (proto != IPPROTO_SCTP)
-		return -ENOTSUP;
-
-	/* TODO: Let's not support AF_UNSPEC for now. sctp_bindx() actually
-	   supports binding both types of addresses on a AF_INET6 soscket, but
-	   that would mean we could get both AF_INET and AF_INET6 addresses for
-	   each host, and makes complexity of this function increase a lot since
-	   we'd need to find out which subsets to use, use v4v6 mapped socket,
-	   etc. */
-	if (family == AF_UNSPEC)
 		return -ENOTSUP;
 
 	if ((flags & (OSMO_SOCK_F_BIND | OSMO_SOCK_F_CONNECT)) == 0) {
@@ -523,6 +557,10 @@ int osmo_sock_init2_multiaddr(uint16_t family, uint16_t type, uint8_t proto,
 					   local_hosts_cnt, local_port, true);
 		if (rc < 0)
 			return -EINVAL;
+		/* Figure out if there's any IPV4 or IPv6 addr in the set */
+		if (family == AF_UNSPEC)
+			addrinfo_has_v4v6addr((const struct addrinfo **)res_loc, local_hosts_cnt,
+					      &loc_has_v4addr, &loc_has_v6addr);
 	}
 	/* figure out remote side of socket */
 	if (flags & OSMO_SOCK_F_CONNECT) {
@@ -530,22 +568,27 @@ int osmo_sock_init2_multiaddr(uint16_t family, uint16_t type, uint8_t proto,
 					   remote_hosts_cnt, remote_port, false);
 		if (rc < 0)
 			return -EINVAL;
+		/* Figure out if there's any IPv4 or IPv6  addr in the set */
+		if (family == AF_UNSPEC)
+			addrinfo_has_v4v6addr((const struct addrinfo **)res_rem, remote_hosts_cnt,
+					      &rem_has_v4addr, &rem_has_v6addr);
 	}
 
-	/* figure out local side of socket */
+	if (((flags & OSMO_SOCK_F_BIND) && (flags & OSMO_SOCK_F_CONNECT)) &&
+	    (loc_has_v4addr != rem_has_v4addr || loc_has_v6addr != rem_has_v6addr)) {
+		LOGP(DLGLOBAL, LOGL_ERROR, "Invalid v4 vs v6 in local vs remote addresses\n");
+		rc = -EINVAL;
+		goto ret_freeaddrinfo;
+	}
+
+	sfd = socket_helper_multiaddr(loc_has_v6addr ? AF_INET6 : AF_INET,
+				      type, proto, flags);
+	if (sfd < 0) {
+		rc = sfd;
+		goto ret_freeaddrinfo;
+	}
+
 	if (flags & OSMO_SOCK_F_BIND) {
-
-		/* Since addrinfo_helper sets ai_family, socktype and
-		   ai_protocol in hints, we know all results will use same
-		   values, so simply pick the first one and pass it to create
-		   the socket:
-		*/
-		sfd = socket_helper(res_loc[0], flags);
-		if (sfd < 0) {
-			rc = sfd;
-			goto ret_freeaddrinfo;
-		}
-
 		/* Since so far we only allow IPPROTO_SCTP in this function,
 		   no need to check below for "proto != IPPROTO_UDP || flags & OSMO_SOCK_F_UDP_REUSEADDR" */
 		rc = setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR,
@@ -560,21 +603,20 @@ int osmo_sock_init2_multiaddr(uint16_t family, uint16_t type, uint8_t proto,
 			goto ret_close;
 		}
 
-		/* Build array of addresses taking first of same family for each host.
+		/* Build array of addresses taking first entry for each host.
 		   TODO: Ideally we should use backtracking storing last used
 		   indexes and trying next combination if connect() fails .*/
+		/* We could alternatively use v4v6 mapped addresses and call sctp_bindx once with an array od sockaddr_in6 */
 		rc = addrinfo_to_sockaddr(family, (const struct addrinfo **)res_loc,
-					  local_hosts, local_hosts_cnt, addrs4, addrs6);
+					  local_hosts, local_hosts_cnt,
+					  (uint8_t*)addrs_buf, sizeof(addrs_buf));
 		if (rc < 0) {
 			rc = -ENODEV;
 			goto ret_close;
 		}
 
-		if (family == AF_INET)
-			addrs = (struct sockaddr *)addrs4;
-		else
-			addrs = (struct sockaddr *)addrs6;
-		if (sctp_bindx(sfd, addrs, local_hosts_cnt, SCTP_BINDX_ADD_ADDR) == -1) {
+		rc = sctp_bindx(sfd, (struct sockaddr *)addrs_buf, local_hosts_cnt, SCTP_BINDX_ADD_ADDR);
+		if (rc == -1) {
 			multiaddr_snprintf(strbuf, sizeof(strbuf), local_hosts, local_hosts_cnt);
 			LOGP(DLGLOBAL, LOGL_NOTICE, "unable to bind socket: %s:%u: %s\n",
 			     strbuf, local_port, strerror(errno));
@@ -583,40 +625,19 @@ int osmo_sock_init2_multiaddr(uint16_t family, uint16_t type, uint8_t proto,
 		}
 	}
 
-	/* Reached this point, if OSMO_SOCK_F_BIND then sfd is valid (>=0) or it
-	   was already closed and func returned. If OSMO_SOCK_F_BIND is not
-	   set, then sfd = -1 */
-
-	/* figure out remote side of socket */
 	if (flags & OSMO_SOCK_F_CONNECT) {
-		if (sfd < 0) {
-			/* Since addrinfo_helper sets ai_family, socktype and
-			   ai_protocol in hints, we know all results will use same
-			   values, so simply pick the first one and pass it to create
-			   the socket:
-			*/
-			sfd = socket_helper(res_rem[0], flags);
-			if (sfd < 0) {
-				rc = sfd;
-				goto ret_freeaddrinfo;
-			}
-		}
-
 		/* Build array of addresses taking first of same family for each host.
 		   TODO: Ideally we should use backtracking storing last used
 		   indexes and trying next combination if connect() fails .*/
 		rc = addrinfo_to_sockaddr(family, (const struct addrinfo **)res_rem,
-					  remote_hosts, remote_hosts_cnt, addrs4, addrs6);
+					  remote_hosts, remote_hosts_cnt,
+					  (uint8_t*)addrs_buf, sizeof(addrs_buf));
 		if (rc < 0) {
 			rc = -ENODEV;
 			goto ret_close;
 		}
 
-		if (family == AF_INET)
-			addrs = (struct sockaddr *)addrs4;
-		else
-			addrs = (struct sockaddr *)addrs6;
-		rc = sctp_connectx(sfd, addrs, remote_hosts_cnt, NULL);
+		rc = sctp_connectx(sfd, (struct sockaddr *)addrs_buf, remote_hosts_cnt, NULL);
 		if (rc != 0 && errno != EINPROGRESS) {
 			multiaddr_snprintf(strbuf, sizeof(strbuf), remote_hosts, remote_hosts_cnt);
 			LOGP(DLGLOBAL, LOGL_ERROR, "unable to connect socket: %s:%u: %s\n",

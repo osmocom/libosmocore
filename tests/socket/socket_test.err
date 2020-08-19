@@ -2,3 +2,11 @@ invalid: both bind and connect flags set: 0.0.0.0:0
 invalid: you have to specify either BIND or CONNECT flags
 Unable to find a common protocol (IPv4 or IPv6) for local host: 127.0.0.1 and remote host: ::1.
 Unable to find a common protocol (IPv4 or IPv6) for local host: ::1 and remote host: 127.0.0.1.
+invalid: you have to specify either BIND or CONNECT flags
+Invalid v4 vs v6 in local vs remote addresses
+Invalid v4 vs v6 in local vs remote addresses
+invalid: you have to specify either BIND or CONNECT flags
+Invalid v4 vs v6 in local vs remote addresses
+Invalid v4 vs v6 in local vs remote addresses
+getaddrinfo returned NULL: ::1:0: Transport endpoint is not connected
+getaddrinfo returned NULL: 127.0.0.1:0: Transport endpoint is not connected
