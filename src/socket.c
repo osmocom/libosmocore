@@ -483,7 +483,7 @@ int osmo_sock_init2_multiaddr(uint16_t family, uint16_t type, uint8_t proto,
 		   unsigned int flags)
 
 {
-	struct addrinfo *result[OSMO_SOCK_MAX_ADDRS];
+	struct addrinfo *res_loc[OSMO_SOCK_MAX_ADDRS], *res_rem[OSMO_SOCK_MAX_ADDRS];
 	int sfd = -1, rc, on = 1;
 	int i;
 	struct sockaddr_in addrs4[OSMO_SOCK_MAX_ADDRS];
@@ -519,21 +519,31 @@ int osmo_sock_init2_multiaddr(uint16_t family, uint16_t type, uint8_t proto,
 
 	/* figure out local side of socket */
 	if (flags & OSMO_SOCK_F_BIND) {
-		rc = addrinfo_helper_multi(result, family, type, proto, local_hosts,
-					       local_hosts_cnt, local_port, true);
+		rc = addrinfo_helper_multi(res_loc, family, type, proto, local_hosts,
+					   local_hosts_cnt, local_port, true);
 		if (rc < 0)
 			return -EINVAL;
+	}
+	/* figure out remote side of socket */
+	if (flags & OSMO_SOCK_F_CONNECT) {
+		rc = addrinfo_helper_multi(res_rem, family, type, proto, remote_hosts,
+					   remote_hosts_cnt, remote_port, false);
+		if (rc < 0)
+			return -EINVAL;
+	}
+
+	/* figure out local side of socket */
+	if (flags & OSMO_SOCK_F_BIND) {
 
 		/* Since addrinfo_helper sets ai_family, socktype and
 		   ai_protocol in hints, we know all results will use same
 		   values, so simply pick the first one and pass it to create
 		   the socket:
 		*/
-		sfd = socket_helper(result[0], flags);
+		sfd = socket_helper(res_loc[0], flags);
 		if (sfd < 0) {
-			for (i = 0; i < local_hosts_cnt; i++)
-				freeaddrinfo(result[i]);
-			return sfd;
+			rc = sfd;
+			goto ret_freeaddrinfo;
 		}
 
 		/* Since so far we only allow IPPROTO_SCTP in this function,
@@ -547,22 +557,17 @@ int osmo_sock_init2_multiaddr(uint16_t family, uint16_t type, uint8_t proto,
 			     " %s:%u: %s\n",
 			     strbuf, local_port,
 			     strerror(errno));
-			for (i = 0; i < local_hosts_cnt; i++)
-				freeaddrinfo(result[i]);
-			close(sfd);
-			return rc;
+			goto ret_close;
 		}
 
 		/* Build array of addresses taking first of same family for each host.
 		   TODO: Ideally we should use backtracking storing last used
 		   indexes and trying next combination if connect() fails .*/
-		rc = addrinfo_to_sockaddr(family, (const struct addrinfo **)result,
+		rc = addrinfo_to_sockaddr(family, (const struct addrinfo **)res_loc,
 					  local_hosts, local_hosts_cnt, addrs4, addrs6);
 		if (rc < 0) {
-			for (i = 0; i < local_hosts_cnt; i++)
-				freeaddrinfo(result[i]);
-			close(sfd);
-			return -ENODEV;
+			rc = -ENODEV;
+			goto ret_close;
 		}
 
 		if (family == AF_INET)
@@ -573,13 +578,9 @@ int osmo_sock_init2_multiaddr(uint16_t family, uint16_t type, uint8_t proto,
 			multiaddr_snprintf(strbuf, sizeof(strbuf), local_hosts, local_hosts_cnt);
 			LOGP(DLGLOBAL, LOGL_NOTICE, "unable to bind socket: %s:%u: %s\n",
 			     strbuf, local_port, strerror(errno));
-			for (i = 0; i < local_hosts_cnt; i++)
-			     freeaddrinfo(result[i]);
-			close(sfd);
-			return -ENODEV;
+			rc = -ENODEV;
+			goto ret_close;
 		}
-		for (i = 0; i < local_hosts_cnt; i++)
-			freeaddrinfo(result[i]);
 	}
 
 	/* Reached this point, if OSMO_SOCK_F_BIND then sfd is valid (>=0) or it
@@ -588,38 +589,27 @@ int osmo_sock_init2_multiaddr(uint16_t family, uint16_t type, uint8_t proto,
 
 	/* figure out remote side of socket */
 	if (flags & OSMO_SOCK_F_CONNECT) {
-		rc = addrinfo_helper_multi(result, family, type, proto, remote_hosts,
-					       remote_hosts_cnt, remote_port, false);
-		if (rc < 0) {
-			if (sfd >= 0)
-				close(sfd);
-			return -EINVAL;
-		}
-
 		if (sfd < 0) {
 			/* Since addrinfo_helper sets ai_family, socktype and
 			   ai_protocol in hints, we know all results will use same
 			   values, so simply pick the first one and pass it to create
 			   the socket:
 			*/
-			sfd = socket_helper(result[0], flags);
+			sfd = socket_helper(res_rem[0], flags);
 			if (sfd < 0) {
-				for (i = 0; i < remote_hosts_cnt; i++)
-					freeaddrinfo(result[i]);
-				return sfd;
+				rc = sfd;
+				goto ret_freeaddrinfo;
 			}
 		}
 
 		/* Build array of addresses taking first of same family for each host.
 		   TODO: Ideally we should use backtracking storing last used
 		   indexes and trying next combination if connect() fails .*/
-		rc = addrinfo_to_sockaddr(family, (const struct addrinfo **)result,
+		rc = addrinfo_to_sockaddr(family, (const struct addrinfo **)res_rem,
 					  remote_hosts, remote_hosts_cnt, addrs4, addrs6);
 		if (rc < 0) {
-			for (i = 0; i < remote_hosts_cnt; i++)
-				freeaddrinfo(result[i]);
-			close(sfd);
-			return -ENODEV;
+			rc = -ENODEV;
+			goto ret_close;
 		}
 
 		if (family == AF_INET)
@@ -631,13 +621,9 @@ int osmo_sock_init2_multiaddr(uint16_t family, uint16_t type, uint8_t proto,
 			multiaddr_snprintf(strbuf, sizeof(strbuf), remote_hosts, remote_hosts_cnt);
 			LOGP(DLGLOBAL, LOGL_ERROR, "unable to connect socket: %s:%u: %s\n",
 				strbuf, remote_port, strerror(errno));
-			for (i = 0; i < remote_hosts_cnt; i++)
-				freeaddrinfo(result[i]);
-			close(sfd);
-			return -ENODEV;
+			rc = -ENODEV;
+			goto ret_close;
 		}
-		for (i = 0; i < remote_hosts_cnt; i++)
-			freeaddrinfo(result[i]);
 	}
 
 	rc = osmo_sock_init_tail(sfd, type, flags);
@@ -646,7 +632,18 @@ int osmo_sock_init2_multiaddr(uint16_t family, uint16_t type, uint8_t proto,
 		sfd = -1;
 	}
 
-	return sfd;
+	rc = sfd;
+	goto ret_freeaddrinfo;
+
+ret_close:
+	if (sfd >= 0)
+		close(sfd);
+ret_freeaddrinfo:
+	for (i = 0; i < local_hosts_cnt; i++)
+		freeaddrinfo(res_loc[i]);
+	for (i = 0; i < remote_hosts_cnt; i++)
+		freeaddrinfo(res_rem[i]);
+	return rc;
 }
 #endif /* HAVE_LIBSCTP */
 
