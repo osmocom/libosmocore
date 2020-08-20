@@ -48,6 +48,7 @@
 #define GSMTAP_TYPE_OSMOCORE_LOG	0x10	/* libosmocore logging */
 #define GSMTAP_TYPE_QC_DIAG		0x11	/* Qualcomm DIAG frame */
 #define GSMTAP_TYPE_LTE_NAS		0x12	/* LTE Non-Access Stratum */
+#define GSMTAP_TYPE_E1T1		0x13	/* E1/T1 Lines */
 
 /* ====== DO NOT MAKE UNAPPROVED MODIFICATIONS HERE ===== */
 
@@ -170,6 +171,14 @@
 #define GSMTAP_LTE_CH_PCCH	0x05
 #define GSMTAP_LTE_CH_DTCH	0x06
 #define GSMTAP_LTE_CH_MTCH	0x07
+
+/* ====== DO NOT MAKE UNAPPROVED MODIFICATIONS HERE ===== */
+/* sub-types for TYPE_E1T1 */
+#define GSMTAP_E1T1_LAPD	0x01	/* Q.921 LAPD */
+#define GSMTAP_E1T1_FR		0x02	/* Frame Relay */
+#define GSMTAP_E1T1_RAW		0x03	/* raw/transparent B-channel */
+#define GSMTAP_E1T1_TRAU16	0x04	/* 16k TRAU frames; sub-slot 0-3 */
+#define GSMTAP_E1T1_TRAU8	0x05	/* 8k TRAU frames; sub-slot 0-7 */
 
 /* flags for the ARFCN */
 #define GSMTAP_ARFCN_F_PCS	0x8000
