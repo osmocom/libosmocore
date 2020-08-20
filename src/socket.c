@@ -85,8 +85,8 @@ static struct addrinfo *addrinfo_helper(uint16_t family, uint16_t type, uint8_t 
 
 	rc = getaddrinfo(host, portbuf, &hints, &result);
 	if (rc != 0) {
-		LOGP(DLGLOBAL, LOGL_ERROR, "getaddrinfo returned NULL: %s:%u: %s\n",
-			host, port, strerror(errno));
+		LOGP(DLGLOBAL, LOGL_ERROR, "getaddrinfo(%s, %u) failed: %s\n",
+			host, port, gai_strerror(rc));
 		return NULL;
 	}
 
@@ -695,11 +695,8 @@ int osmo_sock_init(uint16_t family, uint16_t type, uint8_t proto,
 	}
 
 	result = addrinfo_helper(family, type, proto, host, port, flags & OSMO_SOCK_F_BIND);
-	if (!result) {
-		LOGP(DLGLOBAL, LOGL_ERROR, "getaddrinfo returned NULL: %s:%u: %s\n",
-			host, port, strerror(errno));
+	if (!result)
 		return -EINVAL;
-	}
 
 	for (rp = result; rp != NULL; rp = rp->ai_next) {
 		sfd = socket_helper(rp, flags);
