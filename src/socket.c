@@ -1072,16 +1072,16 @@ int osmo_sock_unix_init_ofd(struct osmo_fd *ofd, uint16_t type, uint8_t proto,
  */
 int osmo_sock_get_ip_and_port(int fd, char *ip, size_t ip_len, char *port, size_t port_len, bool local)
 {
-	struct sockaddr sa;
+	struct sockaddr_storage sa;
 	socklen_t len = sizeof(sa);
 	char ipbuf[INET6_ADDRSTRLEN], portbuf[6];
 	int rc;
 
-	rc = local ? getsockname(fd, &sa, &len) : getpeername(fd, &sa, &len);
+	rc = local ? getsockname(fd, (struct sockaddr*)&sa, &len) : getpeername(fd, (struct sockaddr*)&sa, &len);
 	if (rc < 0)
 		return rc;
 
-	rc = getnameinfo(&sa, len, ipbuf, sizeof(ipbuf),
+	rc = getnameinfo((const struct sockaddr*)&sa, len, ipbuf, sizeof(ipbuf),
 			 portbuf, sizeof(portbuf),
 			 NI_NUMERICHOST | NI_NUMERICSERV);
 	if (rc < 0)
