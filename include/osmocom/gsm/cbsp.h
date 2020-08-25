@@ -7,7 +7,7 @@
 
 /* Definitions for parsed / abstract representation of messages in the
  * CBSP (Cell Broadcast Service Protocol, 3GPP TS 48.049).  Data here is *not* formatted
- * like the * on-the-wire format.  Any similarities are coincidetial ;) */
+ * like the on-the-wire format.  Any similarities are coincidential ;) */
 
 /* Copyright (C) 2019  Harald Welte <laforge@gnumonks.org>
  *
