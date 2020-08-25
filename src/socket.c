@@ -79,7 +79,7 @@ static struct addrinfo *addrinfo_helper(uint16_t family, uint16_t type, uint8_t 
 		hints.ai_socktype = type;
 		hints.ai_protocol = proto;
 	}
-	hints.ai_flags = AI_ADDRCONFIG;
+
 	if (passive)
 		hints.ai_flags |= AI_PASSIVE;
 
