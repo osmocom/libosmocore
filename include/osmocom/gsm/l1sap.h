@@ -126,7 +126,7 @@ struct info_meas_ind_param {
 /*! for {ACTIVATE,DEACTIVATE,MODIFY} MPH-INFO.req */
 struct info_act_req_param {
 	uint8_t chan_nr;	/*!< Channel Number (Like RSL) */
-	uint8_t sacch_only;	/*!< \breif Only deactivate SACCH */
+	uint8_t sacch_only;	/*!< \brief Only deactivate SACCH */
 };
 
 /*! for {ACTIVATE,DEACTIVATE} MPH-INFO.cnf */
