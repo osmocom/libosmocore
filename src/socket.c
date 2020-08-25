@@ -566,8 +566,10 @@ int osmo_sock_init2_multiaddr(uint16_t family, uint16_t type, uint8_t proto,
 	if (flags & OSMO_SOCK_F_CONNECT) {
 		rc = addrinfo_helper_multi(res_rem, family, type, proto, remote_hosts,
 					   remote_hosts_cnt, remote_port, false);
-		if (rc < 0)
-			return -EINVAL;
+		if (rc < 0) {
+			rc = -EINVAL;
+			goto ret_freeaddrinfo_loc;
+		}
 		/* Figure out if there's any IPv4 or IPv6  addr in the set */
 		if (family == AF_UNSPEC)
 			addrinfo_has_v4v6addr((const struct addrinfo **)res_rem, remote_hosts_cnt,
@@ -660,10 +662,15 @@ ret_close:
 	if (sfd >= 0)
 		close(sfd);
 ret_freeaddrinfo:
-	for (i = 0; i < local_hosts_cnt; i++)
-		freeaddrinfo(res_loc[i]);
-	for (i = 0; i < remote_hosts_cnt; i++)
-		freeaddrinfo(res_rem[i]);
+	if (flags & OSMO_SOCK_F_CONNECT) {
+		for (i = 0; i < remote_hosts_cnt; i++)
+			freeaddrinfo(res_rem[i]);
+	}
+ret_freeaddrinfo_loc:
+	if (flags & OSMO_SOCK_F_BIND) {
+		for (i = 0; i < local_hosts_cnt; i++)
+			freeaddrinfo(res_loc[i]);
+	}
 	return rc;
 }
 #endif /* HAVE_LIBSCTP */
