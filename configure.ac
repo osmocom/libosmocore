@@ -197,6 +197,10 @@ AS_IF([test "x$ENABLE_LIBSCTP" = "xyes"], [
 	LIBS=$old_LIBS
 ])
 
+AC_ARG_ENABLE([sctp-tests], [AS_HELP_STRING([--disable-sctp-tests], [Do not run socket tests requiring system SCTP support])],
+	[ENABLE_SCTP_TESTS=$enableval], [ENABLE_SCTP_TESTS="yes"])
+AM_CONDITIONAL(ENABLE_SCTP_TESTS, test x"$ENABLE_SCTP_TESTS" = x"yes")
+
 AC_ARG_ENABLE(plugin,
 	[AS_HELP_STRING(
 		[--disable-plugin],

@@ -1,0 +1,8 @@
+invalid: you have to specify either BIND or CONNECT flags
+Invalid v4 vs v6 in local vs remote addresses
+Invalid v4 vs v6 in local vs remote addresses
+invalid: you have to specify either BIND or CONNECT flags
+Invalid v4 vs v6 in local vs remote addresses
+Invalid v4 vs v6 in local vs remote addresses
+getaddrinfo(::1, 0) failed: Address family for hostname not supported
+getaddrinfo(127.0.0.1, 0) failed: Address family for hostname not supported

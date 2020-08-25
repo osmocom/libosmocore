@@ -313,6 +313,15 @@ touch experr
 AT_CHECK([$abs_top_builddir/tests/socket/socket_test], [0], [expout], [experr])
 AT_CLEANUP
 
+AT_SETUP([socket_sctp])
+AT_KEYWORDS([socket_sctp])
+AT_SKIP_IF([! test -e $abs_top_builddir/tests/socket/socket_sctp_test])
+cat $abs_srcdir/socket/socket_sctp_test.ok > expout
+cat $abs_srcdir/socket/socket_sctp_test.err > experr
+touch experr
+AT_CHECK([$abs_top_builddir/tests/socket/socket_sctp_test], [0], [expout], [experr])
+AT_CLEANUP
+
 AT_SETUP([osmo-auc-gen])
 AT_KEYWORDS([osmo-auc-gen])
 cat $abs_srcdir/osmo-auc-gen/osmo-auc-gen_test.ok > expout

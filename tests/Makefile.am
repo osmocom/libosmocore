@@ -358,6 +358,14 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
 	     i460_mux/i460_mux_test.ok \
 	     $(NULL)
 
+if ENABLE_LIBSCTP
+if ENABLE_SCTP_TESTS
+EXTRA_DIST += socket/socket_sctp_test.ok socket/socket_sctp_test.err
+check_PROGRAMS += socket/socket_sctp_test
+socket_socket_sctp_test_SOURCES = socket/socket_sctp_test.c
+endif
+endif
+
 DISTCLEANFILES = atconfig atlocal conv/gsm0503_test_vectors.c
 BUILT_SOURCES = conv/gsm0503_test_vectors.c
 noinst_HEADERS = conv/conv.h
