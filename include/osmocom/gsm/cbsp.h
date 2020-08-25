@@ -6,7 +6,7 @@
 #include <osmocom/gsm/gsm0808_utils.h>
 
 /* Definitions for parsed / abstract representation of messages in the
- * CBSP (Cell Broadcast Service Protocol).  Data here is *not* formatted
+ * CBSP (Cell Broadcast Service Protocol, 3GPP TS 48.049).  Data here is *not* formatted
  * like the * on-the-wire format.  Any similarities are coincidetial ;) */
 
 /* Copyright (C) 2019  Harald Welte <laforge@gnumonks.org>

@@ -1,3 +1,4 @@
+/* Cell Broadcast Service Protocol (CBSP, 3GPP TS 48.049): Message encoding, decoding and reception */
 /*
  * Copyright (C) 2019  Harald Welte <laforge@gnumonks.org>
  *
