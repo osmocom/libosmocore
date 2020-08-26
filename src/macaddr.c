@@ -34,6 +34,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <errno.h>
 
 /*! Parse a MAC address from human-readable notation
  *  This function parses an ethernet MAC address in the commonly-used
@@ -77,11 +78,11 @@ int osmo_macaddr_parse(uint8_t *out, const char *in)
  */
 int osmo_get_macaddr(uint8_t *mac_out, const char *dev_name)
 {
-	int rc = -1;
 	struct ifaddrs *ifa, *ifaddr;
+	int rc = -ENODEV;
 
 	if (getifaddrs(&ifaddr) != 0)
-		return -1;
+		return -errno;
 
 	for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
 		struct sockaddr_dl *sdl;
