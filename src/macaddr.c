@@ -102,7 +102,7 @@ int osmo_get_macaddr(uint8_t *mac_out, const char *dev_name)
 	}
 
 	freeifaddrs(ifaddr);
-	return 0;
+	return rc;
 }
 
 #else
