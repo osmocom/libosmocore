@@ -336,8 +336,8 @@ static void lapdm_pad_msgb(struct msgb *msg, uint8_t n201)
 		return;
 	}
 
-	data = msgb_put(msg, pad_len);
-	memset(data, 0x2B, pad_len);
+	data = msgb_put(msg, pad_len); /* TODO: random padding */
+	memset(data, GSM_MACBLOCK_PADDING, pad_len);
 }
 
 /* input function that L2 calls when sending messages up to L3 */
