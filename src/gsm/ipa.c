@@ -121,22 +121,25 @@ int ipa_ccm_idtag_parse_off(struct tlv_parsed *dec, unsigned char *buf, int len,
 
 	memset(dec, 0, sizeof(*dec));
 
+	LOGP(DLMI, LOGL_DEBUG, "Rx IPA CCM ID_GET: ");
 	while (len >= 2) {
 		len -= 2;
 		t_len = *cur++;
 		t_tag = *cur++;
 
 		if (t_len < len_offset) {
+			LOGPC(DLMI, LOGL_DEBUG, "\n");
 			LOGP(DLMI, LOGL_ERROR, "minimal offset not included: %d < %d\n", t_len, len_offset);
 			return -EINVAL;
 		}
 
 		if (t_len > len + 1) {
+			LOGPC(DLMI, LOGL_DEBUG, "\n");
 			LOGP(DLMI, LOGL_ERROR, "The tag does not fit: %d > %d\n", t_len, len + 1);
 			return -EINVAL;
 		}
 
-		DEBUGPC(DLMI, "%s='%s' ", ipa_ccm_idtag_name(t_tag), cur);
+		LOGPC(DLMI, LOGL_DEBUG, "%s='%s' ", ipa_ccm_idtag_name(t_tag), cur);
 
 		dec->lv[t_tag].len = t_len - len_offset;
 		dec->lv[t_tag].val = cur;
@@ -144,6 +147,7 @@ int ipa_ccm_idtag_parse_off(struct tlv_parsed *dec, unsigned char *buf, int len,
 		cur += t_len - len_offset;
 		len -= t_len - len_offset;
 	}
+	LOGPC(DLMI, LOGL_DEBUG, "\n");
 	return 0;
 }
 
@@ -164,17 +168,19 @@ int ipa_ccm_id_get_parse(struct tlv_parsed *dec, const uint8_t *buf, unsigned in
 
 	memset(dec, 0, sizeof(*dec));
 
+	LOGP(DLMI, LOGL_DEBUG, "Rx IPA CCM ID_GET: ");
 	while (len >= 2) {
 		len -= 2;
 		t_len = *cur++;
 		t_tag = *cur++;
 
 		if (t_len > len + 1) {
+			LOGPC(DLMI, LOGL_DEBUG, "\n");
 			LOGP(DLMI, LOGL_ERROR, "The tag does not fit: %d > %d\n", t_len, len + 1);
 			return -EINVAL;
 		}
 
-		DEBUGPC(DLMI, "%s='%s' ", ipa_ccm_idtag_name(t_tag), cur);
+		LOGPC(DLMI, LOGL_DEBUG, "%s='%s' ", ipa_ccm_idtag_name(t_tag), cur);
 
 		dec->lv[t_tag].len = t_len-1;
 		dec->lv[t_tag].val = cur;
@@ -182,6 +188,7 @@ int ipa_ccm_id_get_parse(struct tlv_parsed *dec, const uint8_t *buf, unsigned in
 		cur += t_len-1;
 		len -= t_len-1;
 	}
+	LOGPC(DLMI, LOGL_DEBUG, "\n");
 	return 0;
 }
 
@@ -202,6 +209,7 @@ int ipa_ccm_id_resp_parse(struct tlv_parsed *dec, const uint8_t *buf, unsigned i
 
 	memset(dec, 0, sizeof(*dec));
 
+	LOGP(DLMI, LOGL_DEBUG, "Rx IPA CCM ID_RESP: ");
 	while (len >= 3) {
 		len -= 3;
 		t_len = osmo_load16be(cur);
@@ -209,6 +217,7 @@ int ipa_ccm_id_resp_parse(struct tlv_parsed *dec, const uint8_t *buf, unsigned i
 		t_tag = *cur++;
 
 		if (t_len > len + 1) {
+			LOGPC(DLMI, LOGL_DEBUG, "\n");
 			LOGP(DLMI, LOGL_ERROR, "The tag does not fit: %d > %d\n", t_len, len + 1);
 			return -EINVAL;
 		}
@@ -221,6 +230,7 @@ int ipa_ccm_id_resp_parse(struct tlv_parsed *dec, const uint8_t *buf, unsigned i
 		cur += t_len-1;
 		len -= t_len-1;
 	}
+	LOGPC(DLMI, LOGL_DEBUG, "\n");
 	return 0;
 }
 
