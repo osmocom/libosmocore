@@ -60,7 +60,9 @@ struct msgb *gsm0808_create_cipher_reject_ext(enum gsm0808_cause_class class, ui
 struct msgb *gsm0808_create_classmark_request();
 struct msgb *gsm0808_create_classmark_update(const uint8_t *cm2, uint8_t cm2_len,
 					     const uint8_t *cm3, uint8_t cm3_len);
-struct msgb *gsm0808_create_sapi_reject(uint8_t link_id);
+struct msgb *gsm0808_create_sapi_reject_cause(uint8_t link_id, uint16_t cause);
+struct msgb *gsm0808_create_sapi_reject(uint8_t link_id)
+	OSMO_DEPRECATED("Use gsm0808_create_sapi_reject_cause() instead");
 struct msgb *gsm0808_create_ass(const struct gsm0808_channel_type *ct,
 				const uint16_t *cic,
 				const struct sockaddr_storage *ss,

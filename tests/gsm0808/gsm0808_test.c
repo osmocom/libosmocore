@@ -374,7 +374,7 @@ static void test_create_sapi_reject()
 	struct msgb *msg;
 
 	printf("Testing creating SAPI Reject\n");
-	msg = gsm0808_create_sapi_reject(3);
+	msg = gsm0808_create_sapi_reject_cause(3, GSM0808_CAUSE_BSS_NOT_EQUIPPED);
 	VERIFY(msg, res, ARRAY_SIZE(res));
 	msgb_free(msg);
 }

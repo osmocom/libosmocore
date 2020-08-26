@@ -444,8 +444,9 @@ struct msgb *gsm0808_create_classmark_update(const uint8_t *cm2, uint8_t cm2_len
 
 /*! Create BSSMAP SAPI N Reject message
  *  \param[in] link_id Link Identifier
+ *  \param[in] cause BSSAP Cause value (see 3GPP TS 48.008, section 3.2.2.5)
  *  \returns callee-allocated msgb with BSSMAP SAPI N Reject message */
-struct msgb *gsm0808_create_sapi_reject(uint8_t link_id)
+struct msgb *gsm0808_create_sapi_reject_cause(uint8_t link_id, uint16_t cause)
 {
 	struct msgb *msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM,
 					       "bssmap: sapi 'n' reject");
@@ -454,11 +455,21 @@ struct msgb *gsm0808_create_sapi_reject(uint8_t link_id)
 
 	msgb_v_put(msg, BSS_MAP_MSG_SAPI_N_REJECT);
 	msgb_tv_put(msg, GSM0808_IE_DLCI, link_id);
-	gsm0808_enc_cause(msg, GSM0808_CAUSE_BSS_NOT_EQUIPPED);
+	gsm0808_enc_cause(msg, cause);
 
 	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
 
 	return msg;
+}
+
+/*! Create BSSMAP SAPI N Reject message (with hard-coded cause "BSS not equipped").
+ *  DEPRECATED: use gsm0808_create_sapi_reject_cause() instead.
+ *  \param[in] link_id Link Identifier
+ *  \param[in] cause BSSAP Cause value (see 3GPP TS 48.008, section 3.2.2.5)
+ *  \returns callee-allocated msgb with BSSMAP SAPI N Reject message */
+struct msgb *gsm0808_create_sapi_reject(uint8_t link_id)
+{
+	return gsm0808_create_sapi_reject_cause(link_id, GSM0808_CAUSE_BSS_NOT_EQUIPPED);
 }
 
 /*! Create BSSMAP Assignment Request message, 3GPP TS 48.008 §3.2.1.1.
