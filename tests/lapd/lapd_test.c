@@ -306,8 +306,8 @@ static int dequeue_prim(struct lapdm_entity *le, struct osmo_phsap_prim *pp,
 	/* Take message from queue */
 	rc = lapdm_phsap_dequeue_prim(le, pp);
 
-	fprintf(stderr, "dequeue: got rc %d: %s\n", rc,
-		rc <= 0 ? strerror(-rc) : "-");
+	printf("lapdm_phsap_dequeue_prim(): got rc %d: %s\n",
+	       rc, rc <= 0 ? strerror(-rc) : "-");
 
 	if (rc < 0)
 		return rc;
@@ -317,15 +317,14 @@ static int dequeue_prim(struct lapdm_entity *le, struct osmo_phsap_prim *pp,
 		l3_len = msgb_l3len(pp->oph.msg);
 		l2_header_len -= l3_len;
 	} else
-		fprintf(stderr, "MSGB: L3 is undefined\n");
+		printf("MSGB: L3 is undefined\n");
 
 	if (l2_header_len < 0 || l2_header_len > pp->oph.msg->data_len) {
-		fprintf(stderr,
-			"MSGB inconsistent: data = %p, l2 = %p, l3 = %p, tail = %p\n",
-			pp->oph.msg->data,
-			pp->oph.msg->l2h,
-			pp->oph.msg->l3h,
-			pp->oph.msg->tail);
+		printf("MSGB inconsistent: data = %p, l2 = %p, l3 = %p, tail = %p\n",
+		       pp->oph.msg->data,
+		       pp->oph.msg->l2h,
+		       pp->oph.msg->l3h,
+		       pp->oph.msg->tail);
 		l2_header_len = -1;
 	}
 
@@ -571,7 +570,8 @@ static void lapdm_establish(const uint8_t *est_req, size_t est_req_size)
 	/* Send the establish request */
 	msg = create_est_req(est_req, est_req_size);
 	rc = lapdm_rslms_recvmsg(msg, &bts_to_ms_channel);
-	fprintf(stderr, "recvmsg: got rc %d: %s\n", rc, rc <= 0 ? strerror(-rc) : "???");
+	printf("lapdm_rslms_recvmsg(): got rc %d: %s\n",
+	       rc, rc <= 0 ? strerror(-rc) : "???");
 	OSMO_ASSERT(rc == 0);
 
 	/* Take message from queue */
