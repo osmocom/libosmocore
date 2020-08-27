@@ -73,6 +73,17 @@ static const uint8_t ua_cm[] = {
 	0x00, 0x00, 0x80, 0x2b, 0x2b, 0x2b, 0x2b
 };
 
+static const uint8_t pr[] = {
+	0x06, 0x27, 0x07, 0x03, 0x50, 0x58, 0x92, 0x05,
+	0xf4, 0x44, 0x59, 0xba, 0x63,
+};
+
+static const uint8_t ua_pr[] = {
+	0x01, 0x73, 0x35, 0x06, 0x27, 0x07, 0x03, 0x50,
+	0x58, 0x92, 0x05, 0xf4, 0x44, 0x59, 0xba, 0x63,
+	0x2b, 0x2b, 0x2b, 0x2b, 0x2b, 0x2b, 0x2b,
+};
+
 static const uint8_t mm[] = {
 	0x00, 0x0c, 0x00, 0x03, 0x01, 0x01, 0x20, 0x02,
 	0x00, 0x0b, 0x00, 0x03, 0x05, 0x04, 0x0d
@@ -757,6 +768,63 @@ static void test_lapdm_desync()
 	lapdm_channel_exit(&bts_to_ms_channel);
 }
 
+static void test_lapdm_sapi_prio(void)
+{
+	static const uint8_t dl_sabm[] = { 0x0f, 0x3f, 0x01 };
+	struct osmo_phsap_prim pp1, pp2;
+	struct lapdm_channel lc = { };
+	struct msgb *msg;
+	int rc;
+
+	printf("\n=== I test SAPI0/SAPI3 prioritization ===\n\n");
+
+	/* BTS to MS in polling mode */
+	lapdm_channel_init(&lc, LAPDM_MODE_BTS);
+	lapdm_channel_set_flags(&lc, LAPDM_ENT_F_POLLING_ONLY);
+	lapdm_channel_set_l1(&lc, NULL, NULL);
+	lapdm_channel_set_l3(&lc, bts_to_ms_dummy_tx_cb, NULL);
+
+	/* MS establishes a SAPI=0 link by sending func=SABM on SDCCH */
+	printf("MS is establishing a SAPI=0 link\n");
+	send_sabm(&lc, 0, pr, sizeof(pr));
+
+	/* BTS establishes a SAPI=3 link by sending func=SABM on SDCCH */
+	msg = create_est_req(est_req_sdcch_sapi3, sizeof(est_req_sdcch_sapi3));
+	printf("BTS is establishing a SAPI=3 link\n");
+	rc = lapdm_rslms_recvmsg(msg, &lc);
+	OSMO_ASSERT(rc == 0);
+
+	/* Make sure that we get func=UA on SDCCH from the BTS first */
+	rc = dequeue_prim(&lc.lapdm_dcch, &pp1, "DCCH");
+	CHECK_RC(rc);
+
+	/* Contention resolution is completed, we should get func=SABM now */
+	rc = dequeue_prim(&lc.lapdm_dcch, &pp2, "DCCH");
+	CHECK_RC(rc);
+
+	/* Check the actual message payload */
+	rc = memcmp(pp1.oph.msg->l2h, ua_pr, sizeof(ua_pr));
+	printf("Checking the func=UA message: %s\n", rc == 0 ? "OK" : "FAIL");
+	rc = memcmp(pp2.oph.msg->l2h, dl_sabm, sizeof(dl_sabm));
+	printf("Checking the func=SABM message: %s\n", rc == 0 ? "OK" : "FAIL");
+
+	msgb_free(pp1.oph.msg);
+	msgb_free(pp2.oph.msg);
+
+	/* Make sure that the queues are empty now */
+	printf("\nChecking whether the DCCH/SACCH queues are empty\n");
+	rc = dequeue_prim(&lc.lapdm_dcch, &pp1, "DCCH");
+	OSMO_ASSERT(rc < 0);
+	rc = dequeue_prim(&lc.lapdm_dcch, &pp2, "SACCH");
+	OSMO_ASSERT(rc < 0);
+
+	/* Clean up */
+	lapdm_channel_exit(&lc);
+
+	/* Check if exit is idempotent */
+	lapdm_channel_exit(&lc);
+}
+
 int main(int argc, char **argv)
 {
 	void *ctx = talloc_named_const(NULL, 0, "lapd_test");
@@ -773,6 +841,7 @@ int main(int argc, char **argv)
 	test_lapdm_contention_resolution();
 	test_lapdm_establishment();
 	test_lapdm_desync();
+	test_lapdm_sapi_prio();
 
 	printf("Success.\n");
 
