@@ -568,7 +568,7 @@ static void lapdm_establish(const uint8_t *est_req, size_t est_req_size)
 	lapdm_channel_set_l1(&bts_to_ms_channel, NULL, &test_state);
 	lapdm_channel_set_l3(&bts_to_ms_channel, bts_to_ms_tx_cb, &test_state);
 
-	/* Send the release request */
+	/* Send the establish request */
 	msg = create_est_req(est_req, est_req_size);
 	rc = lapdm_rslms_recvmsg(msg, &bts_to_ms_channel);
 	fprintf(stderr, "recvmsg: got rc %d: %s\n", rc, rc <= 0 ? strerror(-rc) : "???");
