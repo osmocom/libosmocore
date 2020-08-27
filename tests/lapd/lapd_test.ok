@@ -131,13 +131,13 @@ MS is establishing a SAPI=0 link
 bts_to_ms_dummy_tx_cb: MS->BTS(us) message 22
 BTS is establishing a SAPI=3 link
 lapdm_phsap_dequeue_prim(): got rc 0: Success
-Took message from DCCH queue: L2 header size 3, L3 size 20, SAP 0x1000000, 0/0, Link 0x03
-Message: [L2]> 0f 3f 01 [L3]> 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 
-lapdm_phsap_dequeue_prim(): got rc 0: Success
 Took message from DCCH queue: L2 header size 3, L3 size 20, SAP 0x1000000, 0/0, Link 0x00
 Message: [L2]> 01 73 35 [L3]> 06 27 07 03 50 58 92 05 f4 44 59 ba 63 2b 2b 2b 2b 2b 2b 2b 
-Checking the func=UA message: FAIL
-Checking the func=SABM message: FAIL
+lapdm_phsap_dequeue_prim(): got rc 0: Success
+Took message from DCCH queue: L2 header size 3, L3 size 20, SAP 0x1000000, 0/0, Link 0x03
+Message: [L2]> 0f 3f 01 [L3]> 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 2b 
+Checking the func=UA message: OK
+Checking the func=SABM message: OK
 
 Checking whether the DCCH/SACCH queues are empty
 lapdm_phsap_dequeue_prim(): got rc -19: No such device
