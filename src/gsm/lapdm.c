@@ -380,7 +380,21 @@ static int tx_ph_data_enqueue(struct lapdm_datalink *dl, struct msgb *msg,
 	return le->l1_prim_cb(&pp.oph, le->l1_ctx);
 }
 
-static struct msgb *tx_dequeue_msgb(struct lapdm_entity *le)
+/* Dequeue a Downlink message for DCCH (dedicated channel) */
+static struct msgb *tx_dequeue_dcch_msgb(struct lapdm_entity *le)
+{
+	struct msgb *msg;
+
+	/* SAPI=0 always has higher priority than SAPI=3 */
+	msg = msgb_dequeue(&le->datalink[DL_SAPI0].dl.tx_queue);
+	if (msg == NULL) /* no SAPI=0 messages, dequeue SAPI=3 (if any) */
+		msg = msgb_dequeue(&le->datalink[DL_SAPI3].dl.tx_queue);
+
+	return msg;
+}
+
+/* Dequeue a Downlink message for ACCH (associated channel) */
+static struct msgb *tx_dequeue_acch_msgb(struct lapdm_entity *le)
 {
 	struct lapdm_datalink *dl;
 	int last = le->last_tx_dequeue;
@@ -411,7 +425,12 @@ int lapdm_phsap_dequeue_prim(struct lapdm_entity *le, struct osmo_phsap_prim *pp
 	struct msgb *msg;
 	uint8_t pad;
 
-	msg = tx_dequeue_msgb(le);
+	/* Dequeue depending on channel type: DCCH or ACCH.
+	 * See 3GPP TS 44.005, section 4.2.2 "Priority". */
+	if (le == &le->lapdm_ch->lapdm_dcch)
+		msg = tx_dequeue_dcch_msgb(le);
+	else
+		msg = tx_dequeue_acch_msgb(le);
 	if (!msg)
 		return -ENODEV;
 
