@@ -67,7 +67,7 @@ static const uint8_t cm[] = {
 	0x29, 0x47, 0x80, 0x00, 0x00, 0x00, 0x00, 0x80,
 };
 
-static const uint8_t ua[] = {
+static const uint8_t ua_cm[] = {
 	0x01, 0x73, 0x41, 0x05, 0x24, 0x31, 0x03, 0x50,
 	0x18, 0x93, 0x08, 0x29, 0x47, 0x80, 0x00, 0x00,
 	0x00, 0x00, 0x80, 0x2b, 0x2b, 0x2b, 0x2b
@@ -491,7 +491,7 @@ static void test_lapdm_contention_resolution()
 	send_sabm(&bts_to_ms_channel, 0, cm, sizeof(cm));
 	rc = dequeue_prim(&bts_to_ms_channel.lapdm_dcch, &pp, "DCCH");
 	CHECK_RC(rc);
-	OSMO_ASSERT(memcmp(pp.oph.msg->l2h, ua, ARRAY_SIZE(ua)) == 0);
+	OSMO_ASSERT(memcmp(pp.oph.msg->l2h, ua_cm, ARRAY_SIZE(ua_cm)) == 0);
 	msgb_free(pp.oph.msg);
 
 	/* Send SABM MS 2, we must get nothing, due to collision */
@@ -507,7 +507,7 @@ static void test_lapdm_contention_resolution()
 	send_sabm(&bts_to_ms_channel, 0, cm, sizeof(cm));
 	rc = dequeue_prim(&bts_to_ms_channel.lapdm_dcch, &pp, "DCCH");
 	CHECK_RC(rc);
-	OSMO_ASSERT(memcmp(pp.oph.msg->l2h, ua, ARRAY_SIZE(ua)) == 0);
+	OSMO_ASSERT(memcmp(pp.oph.msg->l2h, ua_cm, ARRAY_SIZE(ua_cm)) == 0);
 	msgb_free(pp.oph.msg);
 
 	/* clean up */
@@ -698,7 +698,7 @@ static void test_lapdm_desync()
 
 	rc = dequeue_prim(&bts_to_ms_channel.lapdm_dcch, &pp, "DCCH");
 	CHECK_RC(rc);
-	OSMO_ASSERT(memcmp(pp.oph.msg->l2h, ua, ARRAY_SIZE(ua)) == 0);
+	OSMO_ASSERT(memcmp(pp.oph.msg->l2h, ua_cm, ARRAY_SIZE(ua_cm)) == 0);
 	msgb_free(pp.oph.msg);
 
 	printf("\nSending Classmark Change\n");
