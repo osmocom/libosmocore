@@ -443,6 +443,22 @@ static void addrinfo_has_v4v6addr(const struct addrinfo **result, size_t result_
 	}
 }
 
+/* Check whether there's an IPv6 with IN6ADDR_ANY_INIT ("::") */
+static bool addrinfo_has_in6addr_any(const struct addrinfo **result, size_t result_count)
+{
+	size_t host_idx;
+	struct in6_addr in6addr_any = IN6ADDR_ANY_INIT;
+
+	for (host_idx = 0; host_idx < result_count; host_idx++) {
+		if (result[host_idx]->ai_family != AF_INET6)
+			continue;
+		if (memcmp(&((struct sockaddr_in6 *)result[host_idx]->ai_addr)->sin6_addr,
+			   &in6addr_any, sizeof(in6addr_any)) == 0)
+			return true;
+	}
+	return false;
+}
+
 static int socket_helper_multiaddr(uint16_t family, uint16_t type, uint8_t proto, unsigned int flags)
 {
 	int sfd, on = 1;
@@ -577,6 +593,7 @@ int osmo_sock_init2_multiaddr(uint16_t family, uint16_t type, uint8_t proto,
 	}
 
 	if (((flags & OSMO_SOCK_F_BIND) && (flags & OSMO_SOCK_F_CONNECT)) &&
+	    !addrinfo_has_in6addr_any((const struct addrinfo **)res_loc, local_hosts_cnt) &&
 	    (loc_has_v4addr != rem_has_v4addr || loc_has_v6addr != rem_has_v6addr)) {
 		LOGP(DLGLOBAL, LOGL_ERROR, "Invalid v4 vs v6 in local vs remote addresses\n");
 		rc = -EINVAL;
