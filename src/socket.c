@@ -1419,7 +1419,7 @@ int osmo_sock_local_ip(char *local_ip, const char *remote_ip)
 
 	/* Find out the address family (AF_INET or AF_INET6?) */
 	memset(&addrinfo_hint, '\0', sizeof(addrinfo_hint));
-	addrinfo_hint.ai_family = PF_UNSPEC;
+	addrinfo_hint.ai_family = AF_UNSPEC;
 	addrinfo_hint.ai_flags = AI_NUMERICHOST;
 	rc = getaddrinfo(remote_ip, NULL, &addrinfo_hint, &addrinfo);
 	if (rc)
