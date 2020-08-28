@@ -1413,7 +1413,9 @@ int osmo_sock_local_ip(char *local_ip, const char *remote_ip)
 	int rc;
 	struct addrinfo addrinfo_hint;
 	struct addrinfo *addrinfo = NULL;
-	struct sockaddr_in local_addr;
+	struct sockaddr_storage local_addr;
+	struct sockaddr_in *sin;
+	struct sockaddr_in6 *sin6;
 	socklen_t local_addr_len;
 	uint16_t family;
 
@@ -1442,12 +1444,21 @@ int osmo_sock_local_ip(char *local_ip, const char *remote_ip)
 	close(sfd);
 	if (rc < 0)
 		return -EINVAL;
-	if (local_addr.sin_family == AF_INET)
-		inet_ntop(AF_INET, &local_addr.sin_addr, local_ip, INET_ADDRSTRLEN);
-	else if (local_addr.sin_family == AF_INET6)
-		inet_ntop(AF_INET6, &local_addr.sin_addr, local_ip, INET6_ADDRSTRLEN);
-	else
+
+	switch (local_addr.ss_family) {
+	case AF_INET:
+		sin = (struct sockaddr_in*)&local_addr;
+		if (!inet_ntop(AF_INET, &sin->sin_addr, local_ip, INET_ADDRSTRLEN))
+			return -EINVAL;
+		break;
+	case AF_INET6:
+		sin6 = (struct sockaddr_in6*)&local_addr;
+		if (!inet_ntop(AF_INET6, &sin6->sin6_addr, local_ip, INET_ADDRSTRLEN))
+			return -EINVAL;
+		break;
+	default:
 		return -EINVAL;
+	}
 
 	return 0;
 }
