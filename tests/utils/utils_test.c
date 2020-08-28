@@ -775,6 +775,7 @@ struct osmo_sockaddr_to_str_and_uint_test_case {
 	bool omit_port;
 	const char *addr;
 	unsigned int addr_len;
+	int address_family; /* AF_INET / AF_INET6 */
 	bool omit_addr;
 	unsigned int expect_rc;
 	const char *expect_returned_addr;
@@ -785,24 +786,28 @@ struct osmo_sockaddr_to_str_and_uint_test_case osmo_sockaddr_to_str_and_uint_tes
 		.port = 0,
 		.addr = "0.0.0.0",
 		.addr_len = 20,
+		.address_family = AF_INET,
 		.expect_rc = 7,
 	},
 	{
 		.port = 65535,
 		.addr = "255.255.255.255",
 		.addr_len = 20,
+		.address_family = AF_INET,
 		.expect_rc = 15,
 	},
 	{
 		.port = 1234,
 		.addr = "234.23.42.123",
 		.addr_len = 20,
+		.address_family = AF_INET,
 		.expect_rc = 13,
 	},
 	{
 		.port = 1234,
 		.addr = "234.23.42.123",
 		.addr_len = 10,
+		.address_family = AF_INET,
 		.expect_rc = 13,
 		.expect_returned_addr = "234.23.42",
 	},
@@ -811,11 +816,13 @@ struct osmo_sockaddr_to_str_and_uint_test_case osmo_sockaddr_to_str_and_uint_tes
 		.omit_port = true,
 		.addr = "234.23.42.123",
 		.addr_len = 20,
+		.address_family = AF_INET,
 		.expect_rc = 13,
 	},
 	{
 		.port = 1234,
 		.addr = "234.23.42.123",
+		.address_family = AF_INET,
 		.omit_addr = true,
 		.expect_rc = 0,
 		.expect_returned_addr = "",
@@ -824,17 +831,83 @@ struct osmo_sockaddr_to_str_and_uint_test_case osmo_sockaddr_to_str_and_uint_tes
 		.port = 1234,
 		.addr = "234.23.42.123",
 		.addr_len = 0,
+		.address_family = AF_INET,
 		.expect_rc = 13,
 		.expect_returned_addr = "",
 	},
 	{
 		.port = 1234,
 		.addr = "234.23.42.123",
+		.address_family = AF_INET,
 		.omit_port = true,
 		.omit_addr = true,
 		.expect_rc = 0,
 		.expect_returned_addr = "",
 	},
+	{
+		.port = 1234,
+		.addr = "::",
+		.addr_len = 20,
+		.address_family = AF_INET6,
+		.expect_rc = 2,
+	},
+	{
+		.port = 1234,
+		.addr = "::1",
+		.addr_len = 20,
+		.address_family = AF_INET6,
+		.expect_rc = 3,
+	},
+	{
+		.port = 1234,
+		.addr = "::1",
+		.addr_len = 20,
+		.address_family = AF_INET6,
+		.omit_port = true,
+		.omit_addr = false,
+		.expect_rc = 3,
+	},
+	{
+		.port = 1234,
+		.addr = "::1",
+		.addr_len = 20,
+		.address_family = AF_INET6,
+		.omit_port = false,
+		.omit_addr = true,
+		.expect_rc = 0,
+		.expect_returned_addr = "",
+	},
+	{
+		.port = 1234,
+		.addr = "fd02:db8:1::1",
+		.addr_len = 20,
+		.address_family = AF_INET6,
+		.expect_rc = 13,
+	},
+	{
+		.port = 1234,
+		.addr = "2001:db8:1::ab9:C0A8:102",
+		.addr_len = 40,
+		.address_family = AF_INET6,
+		.expect_rc = 24,
+		.expect_returned_addr = "2001:db8:1::ab9:c0a8:102",
+	},
+	{
+		.port = 1234,
+		.addr = "2001:0db8:0001:0000:0000:0ab9:C0A8:0102",
+		.addr_len = 32,
+		.address_family = AF_INET6,
+		.expect_rc = 24,
+		.expect_returned_addr = "2001:db8:1::ab9:c0a8:102",
+	},
+	{
+		.port = 1234,
+		.addr = "::ffff:192.168.20.34",
+		.addr_len = 32,
+		.address_family = AF_INET6,
+		.expect_rc = 20,
+		.expect_returned_addr = "::ffff:192.168.20.34",
+	}
 };
 
 static void osmo_sockaddr_to_str_and_uint_test(void)
@@ -846,22 +919,35 @@ static void osmo_sockaddr_to_str_and_uint_test(void)
 		struct osmo_sockaddr_to_str_and_uint_test_case *t =
 			&osmo_sockaddr_to_str_and_uint_test_data[i];
 
-		struct sockaddr_in sin = {
-			.sin_family = AF_INET,
-			.sin_port = htons(t->port),
-		};
-		inet_aton(t->addr, &sin.sin_addr);
+		struct sockaddr_storage sa;
+		struct sockaddr_in *sin;
+		struct sockaddr_in6 *sin6;
+		sa.ss_family = t->address_family;
+		switch (t->address_family) {
+		case AF_INET:
+			sin = (struct sockaddr_in *)&sa;
+			OSMO_ASSERT(inet_pton(t->address_family, t->addr, &sin->sin_addr) == 1);
+			sin->sin_port = htons(t->port);
+			break;
+		case AF_INET6:
+			sin6 = (struct sockaddr_in6 *)&sa;
+			OSMO_ASSERT(inet_pton(t->address_family, t->addr, &sin6->sin6_addr) == 1);
+			sin6->sin6_port = htons(t->port);
+			break;
+		default:
+			OSMO_ASSERT(0);
+		}
 
-		char addr[20] = {};
+		char addr[INET6_ADDRSTRLEN] = {};
 		uint16_t port = 0;
 		unsigned int rc;
 
 		rc = osmo_sockaddr_to_str_and_uint(
 			t->omit_addr? NULL : addr, t->addr_len,
 			t->omit_port? NULL : &port,
-			(const struct sockaddr*)&sin);
+			(const struct sockaddr *)&sa);
 
-		printf("[%d] %s:%u%s%s addr_len=%u --> %s:%u rc=%u\n",
+		printf("[%d] [%s]:%u%s%s addr_len=%u --> [%s]:%u rc=%u\n",
 		       i,
 		       t->addr ? : "-",
 		       t->port,

@@ -355,14 +355,22 @@ strcmp("NULL", osmo_quote_cstr_c(ctx, NULL, -1)) == 0
 Testing integer square-root
 
 osmo_sockaddr_to_str_and_uint_test
-[0] 0.0.0.0:0 addr_len=20 --> 0.0.0.0:0 rc=7
-[1] 255.255.255.255:65535 addr_len=20 --> 255.255.255.255:65535 rc=15
-[2] 234.23.42.123:1234 addr_len=20 --> 234.23.42.123:1234 rc=13
-[3] 234.23.42.123:1234 addr_len=10 --> 234.23.42:1234 rc=13
-[4] 234.23.42.123:1234 (omit port) addr_len=20 --> 234.23.42.123:0 rc=13
-[5] 234.23.42.123:1234 (omit addr) addr_len=0 --> :1234 rc=0
-[6] 234.23.42.123:1234 addr_len=0 --> :1234 rc=13
-[7] 234.23.42.123:1234 (omit addr) (omit port) addr_len=0 --> :0 rc=0
+[0] [0.0.0.0]:0 addr_len=20 --> [0.0.0.0]:0 rc=7
+[1] [255.255.255.255]:65535 addr_len=20 --> [255.255.255.255]:65535 rc=15
+[2] [234.23.42.123]:1234 addr_len=20 --> [234.23.42.123]:1234 rc=13
+[3] [234.23.42.123]:1234 addr_len=10 --> [234.23.42]:1234 rc=13
+[4] [234.23.42.123]:1234 (omit port) addr_len=20 --> [234.23.42.123]:0 rc=13
+[5] [234.23.42.123]:1234 (omit addr) addr_len=0 --> []:1234 rc=0
+[6] [234.23.42.123]:1234 addr_len=0 --> []:1234 rc=13
+[7] [234.23.42.123]:1234 (omit addr) (omit port) addr_len=0 --> []:0 rc=0
+[8] [::]:1234 addr_len=20 --> [::]:1234 rc=2
+[9] [::1]:1234 addr_len=20 --> [::1]:1234 rc=3
+[10] [::1]:1234 (omit port) addr_len=20 --> [::1]:0 rc=3
+[11] [::1]:1234 (omit addr) addr_len=20 --> []:1234 rc=0
+[12] [fd02:db8:1::1]:1234 addr_len=20 --> [fd02:db8:1::1]:1234 rc=13
+[13] [2001:db8:1::ab9:C0A8:102]:1234 addr_len=40 --> [2001:db8:1::ab9:c0a8:102]:1234 rc=24
+[14] [2001:0db8:0001:0000:0000:0ab9:C0A8:0102]:1234 addr_len=32 --> [2001:db8:1::ab9:c0a8:102]:1234 rc=24
+[15] [::ffff:192.168.20.34]:1234 addr_len=32 --> [::ffff:192.168.20.34]:1234 rc=20
 
 osmo_str_tolowupper_test
 osmo_str_tolower("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ!@#$%^&*()")

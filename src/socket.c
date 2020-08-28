@@ -983,9 +983,22 @@ size_t osmo_sockaddr_in_to_str_and_uint(char *addr, unsigned int addr_len, uint1
 unsigned int osmo_sockaddr_to_str_and_uint(char *addr, unsigned int addr_len, uint16_t *port,
 					   const struct sockaddr *sa)
 {
-	const struct sockaddr_in *sin = (const struct sockaddr_in *)sa;
 
-	return osmo_sockaddr_in_to_str_and_uint(addr, addr_len, port, sin);
+	const struct sockaddr_in6 *sin6;
+
+	switch (sa->sa_family) {
+	case AF_INET:
+		return osmo_sockaddr_in_to_str_and_uint(addr, addr_len, port,
+							(const struct sockaddr_in *)sa);
+	case AF_INET6:
+		sin6 = (const struct sockaddr_in6 *)sa;
+		if (port)
+			*port = ntohs(sin6->sin6_port);
+		if (addr && inet_ntop(sa->sa_family, &sin6->sin6_addr, addr, addr_len))
+			return strlen(addr);
+		break;
+	}
+	return 0;
 }
 
 /*! Initialize a unix domain socket (including bind/connect)
