@@ -1453,7 +1453,7 @@ int osmo_sock_local_ip(char *local_ip, const char *remote_ip)
 		break;
 	case AF_INET6:
 		sin6 = (struct sockaddr_in6*)&local_addr;
-		if (!inet_ntop(AF_INET6, &sin6->sin6_addr, local_ip, INET_ADDRSTRLEN))
+		if (!inet_ntop(AF_INET6, &sin6->sin6_addr, local_ip, INET6_ADDRSTRLEN))
 			return -EINVAL;
 		break;
 	default:
