@@ -24,6 +24,7 @@
 #include <string.h>
 #include <fcntl.h>
 #include <inttypes.h>
+#include <errno.h>
 
 #include <sys/socket.h>
 #include <arpa/inet.h>
@@ -142,6 +143,11 @@ static int test_sockinit2(void)
 	fd = osmo_sock_init2(AF_UNSPEC, SOCK_DGRAM, IPPROTO_UDP, "::1", 0, "::1", 53,
 			     OSMO_SOCK_F_BIND|OSMO_SOCK_F_CONNECT);
 	OSMO_ASSERT(fd >= 0);
+
+	printf("Checking osmo_sock_init2(AF_UNSPEC) BIND on IPv4\n");
+	fd = osmo_sock_init2(AF_UNSPEC, SOCK_DGRAM, IPPROTO_UDP, "127.0.0.1", 0, NULL, 0,
+			     OSMO_SOCK_F_BIND);
+	OSMO_ASSERT(fd == -ENODEV); /* BUG! */
 
 	talloc_free(name);
 
