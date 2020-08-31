@@ -283,8 +283,9 @@ struct msgb *gsm0808_create_cipher_complete(struct msgb *layer3, uint8_t alg_id)
 					msgb_l3len(layer3), layer3->l3h);
 	}
 
-	/* and the optional BSS message */
-	msgb_tv_put(msg, GSM0808_IE_CHOSEN_ENCR_ALG, alg_id);
+	/* Optional Chosen Encryption Algorithm IE */
+	if (alg_id > 0)
+		msgb_tv_put(msg, GSM0808_IE_CHOSEN_ENCR_ALG, alg_id);
 
 	/* pre-pend the header */
 	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
@@ -603,7 +604,8 @@ struct msgb *gsm0808_create_ass_compl2(uint8_t rr_cause, uint8_t chosen_channel,
 	msgb_tv_put(msg, GSM0808_IE_CHOSEN_CHANNEL, chosen_channel);
 
 	/* write chosen encryption algorithm 3.2.2.44 */
-	msgb_tv_put(msg, GSM0808_IE_CHOSEN_ENCR_ALG, encr_alg_id);
+	if (encr_alg_id > 0)
+		msgb_tv_put(msg, GSM0808_IE_CHOSEN_ENCR_ALG, encr_alg_id);
 
 	/* write circuit pool 3.2.2.45 */
 	/* write speech version chosen: 3.2.2.51 when BTS picked it */
@@ -964,7 +966,7 @@ struct msgb *gsm0808_create_handover_request(const struct gsm0808_handover_reque
 	}
 
 	/* Chosen Encryption Algorithm (Serving) 3.2.2.44 */
-	if (params->chosen_encryption_algorithm_serving)
+	if (params->chosen_encryption_algorithm_serving > 0)
 		msgb_tv_put(msg, GSM0808_IE_CHOSEN_ENCR_ALG, params->chosen_encryption_algorithm_serving);
 
 	/* Old BSS to New BSS Information 3.2.2.58 */
@@ -1027,7 +1029,7 @@ struct msgb *gsm0808_create_handover_request_ack2(const struct gsm0808_handover_
 
 	if (params->chosen_channel_present)
 		msgb_tv_put(msg, GSM0808_IE_CHOSEN_CHANNEL, params->chosen_channel);
-	if (params->chosen_encr_alg)
+	if (params->chosen_encr_alg > 0)
 		msgb_tv_put(msg, GSM0808_IE_CHOSEN_ENCR_ALG, params->chosen_encr_alg);
 
 	if (params->chosen_speech_version != 0)
@@ -1157,7 +1159,7 @@ struct msgb *gsm0808_create_handover_complete(const struct gsm0808_handover_comp
 		gsm0808_enc_speech_codec_list(msg, &params->codec_list_bss_supported);
 
 	/* Chosen Encryption Algorithm 3.2.2.44 */
-	if (params->chosen_encr_alg_present)
+	if (params->chosen_encr_alg_present && params->chosen_encr_alg > 0)
 		msgb_tv_put(msg, GSM0808_IE_CHOSEN_ENCR_ALG, params->chosen_encr_alg);
 
 	/* LCLS-BSS-Status 3.2.2.119 */
@@ -1225,7 +1227,7 @@ struct msgb *gsm0808_create_handover_performed(const struct gsm0808_handover_per
 		msgb_tv_put(msg, GSM0808_IE_CHOSEN_CHANNEL, params->chosen_channel);
 
 	/* Chosen Encryption Algorithm 3.2.2.44 */
-	if (params->chosen_encr_alg_present)
+	if (params->chosen_encr_alg_present && params->chosen_encr_alg > 0)
 		msgb_tv_put(msg, GSM0808_IE_CHOSEN_ENCR_ALG, params->chosen_encr_alg);
 
 	/* Speech Version (chosen) 3.2.2.51 */
