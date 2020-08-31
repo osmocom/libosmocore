@@ -316,19 +316,27 @@ int osmo_sock_init2(uint16_t family, uint16_t type, uint8_t proto,
 			}
 		}
 
-		/* priotize ipv6 as per RFC */
-		if (local_ipv6 && remote_ipv6)
-			family = AF_INET6;
-		else if (local_ipv4 && remote_ipv4)
-			family = AF_INET;
-		else {
-			if (local)
-				freeaddrinfo(local);
-			if (remote)
-				freeaddrinfo(remote);
-			LOGP(DLGLOBAL, LOGL_ERROR, "Unable to find a common protocol (IPv4 or IPv6) for local host: %s and remote host: %s.\n",
-			     local_host, remote_host);
-			return -ENODEV;
+		if ((flags & OSMO_SOCK_F_BIND) && (flags & OSMO_SOCK_F_CONNECT)) {
+			/* prioritize ipv6 as per RFC */
+			if (local_ipv6 && remote_ipv6)
+				family = AF_INET6;
+			else if (local_ipv4 && remote_ipv4)
+				family = AF_INET;
+			else {
+				if (local)
+					freeaddrinfo(local);
+				if (remote)
+					freeaddrinfo(remote);
+				LOGP(DLGLOBAL, LOGL_ERROR,
+				     "Unable to find a common protocol (IPv4 or IPv6) "
+				     "for local host: %s and remote host: %s.\n",
+				     local_host, remote_host);
+				return -ENODEV;
+			}
+		} else if ((flags & OSMO_SOCK_F_BIND)) {
+			family = local_ipv6 ? AF_INET6 : AF_INET;
+		} else if ((flags & OSMO_SOCK_F_CONNECT)) {
+			family = remote_ipv6 ? AF_INET6 : AF_INET;
 		}
 	}
 
