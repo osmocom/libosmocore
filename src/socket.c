@@ -1001,6 +1001,38 @@ unsigned int osmo_sockaddr_to_str_and_uint(char *addr, unsigned int addr_len, ui
 	return 0;
 }
 
+/*! inet_ntop() wrapper for a struct sockaddr.
+ *  \param[in] sa  source sockaddr to get the address from.
+ *  \param[out] dst  string buffer of at least INET6_ADDRSTRLEN size.
+ *  \returns returns a non-null pointer to dst. NULL is returned if there was an
+ *  error, with errno set to indicate the error.
+ */
+const char *osmo_sockaddr_ntop(const struct sockaddr *sa, char *dst)
+{
+	const struct osmo_sockaddr *osa = (const struct osmo_sockaddr *)sa;
+	return inet_ntop(osa->u.sa.sa_family,
+			 osa->u.sa.sa_family == AF_INET6 ?
+				(const void *)&osa->u.sin6.sin6_addr :
+				(const void *)&osa->u.sin.sin_addr,
+			 dst, INET6_ADDRSTRLEN);
+}
+
+/*! Get sockaddr port content (in host byte order)
+ *  \param[in] sa  source sockaddr to get the port from.
+ *  \returns returns the sockaddr port in host byte order
+ */
+uint16_t osmo_sockaddr_port(const struct sockaddr *sa)
+{
+	const struct osmo_sockaddr *osa = (const struct osmo_sockaddr *)sa;
+	switch (osa->u.sa.sa_family) {
+	case AF_INET6:
+		return ntohs(osa->u.sin6.sin6_port);
+	case AF_INET:
+		return ntohs(osa->u.sin.sin_port);
+	}
+	return 0;
+}
+
 /*! Initialize a unix domain socket (including bind/connect)
  *  \param[in] type Socket type like SOCK_DGRAM, SOCK_STREAM
  *  \param[in] proto Protocol like IPPROTO_TCP, IPPROTO_UDP

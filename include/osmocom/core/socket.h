@@ -75,6 +75,9 @@ unsigned int osmo_sockaddr_to_str_and_uint(char *addr, unsigned int addr_len, ui
 size_t osmo_sockaddr_in_to_str_and_uint(char *addr, unsigned int addr_len, uint16_t *port,
 					const struct sockaddr_in *sin);
 
+const char *osmo_sockaddr_ntop(const struct sockaddr *sa, char *dst);
+uint16_t osmo_sockaddr_port(const struct sockaddr *sa);
+
 int osmo_sock_unix_init(uint16_t type, uint8_t proto,
 			const char *socket_path, unsigned int flags);
 
