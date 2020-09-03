@@ -40,8 +40,8 @@
 int gprs_log_filter_fn(const struct log_context *ctx,
 			struct log_target *tar)
 {
-	const struct gprs_nsvc *nsvc = ctx->ctx[LOG_CTX_GB_NSVC];
-	const struct gprs_bvc *bvc = ctx->ctx[LOG_CTX_GB_BVC];
+	const void *nsvc = ctx->ctx[LOG_CTX_GB_NSVC];
+	const void *bvc = ctx->ctx[LOG_CTX_GB_BVC];
 
 	/* Filter on the NS Virtual Connection */
 	if ((tar->filter_map & (1 << LOG_FLT_GB_NSVC)) != 0
