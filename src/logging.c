@@ -39,6 +39,11 @@
 #ifdef HAVE_STRINGS_H
 #include <strings.h>
 #endif
+
+#ifdef HAVE_SYSLOG_H
+#include <syslog.h>
+#endif
+
 #include <time.h>
 #include <sys/time.h>
 #include <errno.h>
@@ -964,6 +969,11 @@ void log_target_destroy(struct log_target *target)
 		fclose(target->tgt_file.out);
 		target->tgt_file.out = NULL;
 		break;
+#ifdef HAVE_SYSLOG_H
+	case LOG_TGT_TYPE_SYSLOG:
+		closelog();
+		break;
+#endif /* HAVE_SYSLOG_H */
 	default:
 		/* make GCC happy */
 		break;
