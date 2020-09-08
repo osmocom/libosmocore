@@ -71,5 +71,10 @@ if ENABLE_SERIAL
 libosmocore_la_SOURCES += serial.c
 endif
 
+if ENABLE_SYSTEMD_LOGGING
+libosmocore_la_SOURCES += logging_systemd.c
+libosmocore_la_LIBADD += $(SYSTEMD_LIBS)
+endif
+
 crc%gen.c: crcXXgen.c.tpl
 	$(AM_V_GEN)sed -e's/XX/$*/g' $< > $@

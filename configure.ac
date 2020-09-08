@@ -181,6 +181,19 @@ then
 	AC_DEFINE([USE_GNUTLS], [1], [Use GnuTLS as a fallback for missing getrandom()])
 fi
 
+AC_ARG_ENABLE([systemd_logging],
+	[AS_HELP_STRING(
+		[--enable-systemd-logging],
+		[Build with systemd-journal logging support]
+	)],
+	[systemd_logging=$enableval], [systemd_logging="no"])
+AS_IF([test "x$systemd_logging" = "xyes"], [
+	PKG_CHECK_MODULES(SYSTEMD, libsystemd)
+	AC_DEFINE([ENABLE_SYSTEMD_LOGGING], [1], [Enable systemd-journal logging target])
+])
+AM_CONDITIONAL(ENABLE_SYSTEMD_LOGGING, test "x$systemd_logging" = "xyes")
+AC_SUBST(ENABLE_SYSTEMD_LOGGING)
+
 AC_ARG_ENABLE([libsctp], [AS_HELP_STRING([--disable-libsctp], [Do not enable socket multiaddr APIs requiring libsctp])],
 	[ENABLE_LIBSCTP=$enableval], [ENABLE_LIBSCTP="yes"])
 AM_CONDITIONAL(ENABLE_LIBSCTP, test x"$ENABLE_LIBSCTP" = x"yes")

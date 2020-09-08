@@ -732,6 +732,64 @@ DEFUN(cfg_no_log_syslog, cfg_no_log_syslog_cmd,
 }
 #endif /* HAVE_SYSLOG_H */
 
+DEFUN(cfg_log_systemd_journal, cfg_log_systemd_journal_cmd,
+      "log systemd-journal [raw]",
+      LOG_STR "Logging to systemd-journal\n"
+      "Offload rendering of the meta information (location, category) to systemd\n")
+{
+#ifdef ENABLE_SYSTEMD_LOGGING
+	struct log_target *tgt;
+	bool raw = argc > 0;
+
+	log_tgt_mutex_lock();
+	tgt = log_target_find(LOG_TGT_TYPE_SYSTEMD, NULL);
+	if (tgt == NULL) {
+		tgt = log_target_create_systemd(raw);
+		if (tgt == NULL) {
+			vty_out(vty, "%% Unable to create systemd-journal "
+				"log target%s", VTY_NEWLINE);
+			RET_WITH_UNLOCK(CMD_WARNING);
+		}
+		log_add_target(tgt);
+	} else if (tgt->sd_journal.raw != raw) {
+		log_target_systemd_set_raw(tgt, raw);
+	}
+
+	vty->index = tgt;
+	vty->node = CFG_LOG_NODE;
+
+	RET_WITH_UNLOCK(CMD_SUCCESS);
+#else
+	vty_out(vty, "%% systemd-journal logging is not available "
+		"in this build of libosmocore%s", VTY_NEWLINE);
+	return CMD_WARNING;
+#endif /* ENABLE_SYSTEMD_LOGGING */
+}
+
+DEFUN(cfg_no_log_systemd_journal, cfg_no_log_systemd_journal_cmd,
+	"no log systemd-journal",
+	NO_STR LOG_STR "Logging to systemd-journal\n")
+{
+#ifdef ENABLE_SYSTEMD_LOGGING
+	struct log_target *tgt;
+
+	log_tgt_mutex_lock();
+	tgt = log_target_find(LOG_TGT_TYPE_SYSTEMD, NULL);
+	if (!tgt) {
+		vty_out(vty, "%% No systemd-journal logging active%s", VTY_NEWLINE);
+		RET_WITH_UNLOCK(CMD_WARNING);
+	}
+
+	log_target_destroy(tgt);
+
+	RET_WITH_UNLOCK(CMD_SUCCESS);
+#else
+	vty_out(vty, "%% systemd-journal logging is not available "
+		"in this build of libosmocore%s", VTY_NEWLINE);
+	return CMD_WARNING;
+#endif /* ENABLE_SYSTEMD_LOGGING */
+}
+
 DEFUN(cfg_log_gsmtap, cfg_log_gsmtap_cmd,
 	"log gsmtap [HOSTNAME]",
 	LOG_STR "Logging via GSMTAP\n"
@@ -925,6 +983,11 @@ static int config_write_log_single(struct vty *vty, struct log_target *tgt)
 	case LOG_TGT_TYPE_GSMTAP:
 		vty_out(vty, "log gsmtap %s%s",
 			tgt->tgt_gsmtap.hostname, VTY_NEWLINE);
+		break;
+	case LOG_TGT_TYPE_SYSTEMD:
+		vty_out(vty, "log systemd-journal%s%s",
+			tgt->sd_journal.raw ? " raw" : "",
+			VTY_NEWLINE);
 		break;
 	}
 
@@ -1127,5 +1190,7 @@ void logging_vty_add_cmds()
 	install_lib_element(CONFIG_NODE, &cfg_log_syslog_local_cmd);
 	install_lib_element(CONFIG_NODE, &cfg_no_log_syslog_cmd);
 #endif
+	install_lib_element(CONFIG_NODE, &cfg_log_systemd_journal_cmd);
+	install_lib_element(CONFIG_NODE, &cfg_no_log_systemd_journal_cmd);
 	install_lib_element(CONFIG_NODE, &cfg_log_gsmtap_cmd);
 }
