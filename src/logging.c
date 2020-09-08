@@ -915,8 +915,10 @@ struct log_target *log_target_create_file(const char *fname)
 
 	target->type = LOG_TGT_TYPE_FILE;
 	target->tgt_file.out = fopen(fname, "a");
-	if (!target->tgt_file.out)
+	if (!target->tgt_file.out) {
+		log_target_destroy(target);
 		return NULL;
+	}
 
 	target->output = _file_output;
 
@@ -966,6 +968,8 @@ void log_target_destroy(struct log_target *target)
 #if (!EMBEDDED)
 	switch (target->type) {
 	case LOG_TGT_TYPE_FILE:
+		if (target->tgt_file.out == NULL)
+			break;
 		fclose(target->tgt_file.out);
 		target->tgt_file.out = NULL;
 		break;
