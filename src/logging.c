@@ -959,16 +959,14 @@ void log_target_destroy(struct log_target *target)
 	log_del_target(target);
 
 #if (!EMBEDDED)
-	if (target->output == &_file_output) {
-/* since C89/C99 says stderr is a macro, we can safely do this! */
-#ifdef stderr
-		/* don't close stderr */
-		if (target->tgt_file.out != stderr)
-#endif
-		{
-			fclose(target->tgt_file.out);
-			target->tgt_file.out = NULL;
-		}
+	switch (target->type) {
+	case LOG_TGT_TYPE_FILE:
+		fclose(target->tgt_file.out);
+		target->tgt_file.out = NULL;
+		break;
+	default:
+		/* make GCC happy */
+		break;
 	}
 #endif
 
