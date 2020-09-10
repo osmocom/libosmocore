@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 #include <arpa/inet.h>
+#include <osmocom/core/utils.h>
 
 /*! \addtogroup libgb
  *  @{
