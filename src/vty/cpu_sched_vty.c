@@ -175,7 +175,7 @@ static int generate_cpu_hex_mask(char *str, size_t str_buf_size,
 		if (CPU_ISSET_S(cpu + 3, cpuset_size, cpuset))
 			val |= 0x08;
 
-		if (val >= 0 && val < 10)
+		if (val < 10)
 			*ptr = '0' + val;
 		else
 			*ptr = ('a' - 10) + val;
