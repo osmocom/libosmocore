@@ -625,15 +625,28 @@ enum gprs_ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 		return GPRS_NS2_CS_SKIPPED;
 	}
 
-	/* Only the RESET procedure creates a new NSVC */
-	if (nsh->pdu_type != NS_PDUT_RESET) {
-		rc = reject_status_msg(msg, &tp, reject, NS_CAUSE_PDU_INCOMP_PSTATE);
+	if (bind->vc_mode == NS2_VC_MODE_BLOCKRESET) {
+		/* Only the RESET procedure creates a new NSVC */
+		if (nsh->pdu_type != NS_PDUT_RESET) {
+			rc = reject_status_msg(msg, &tp, reject, NS_CAUSE_PDU_INCOMP_PSTATE);
 
-		if (rc < 0) {
-			LOGP(DLNS, LOGL_ERROR, "Failed to generate reject message (%d)\n", rc);
-			return rc;
+			if (rc < 0) {
+				LOGP(DLNS, LOGL_ERROR, "Failed to generate reject message (%d)\n", rc);
+				return rc;
+			}
+			return GPRS_NS2_CS_REJECTED;
 		}
-		return GPRS_NS2_CS_REJECTED;
+	} else { /* NS2_VC_MODE_ALIVE */
+		/* Only the ALIVE procedure creates a new NSVC */
+		if (nsh->pdu_type != NS_PDUT_ALIVE) {
+			rc = reject_status_msg(msg, &tp, reject, NS_CAUSE_PDU_INCOMP_PSTATE);
+
+			if (rc < 0) {
+				LOGP(DLNS, LOGL_ERROR, "Failed to generate reject message (%d)\n", rc);
+				return rc;
+			}
+			return GPRS_NS2_CS_REJECTED;
+		}
 	}
 
 	rc = ns2_tlv_parse(&tp, nsh->data,
@@ -645,11 +658,13 @@ enum gprs_ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 		return GPRS_NS2_CS_REJECTED;
 	}
 
-	if (!TLVP_PRESENT(&tp, NS_IE_CAUSE) ||
-	    !TLVP_PRESENT(&tp, NS_IE_VCI) || !TLVP_PRESENT(&tp, NS_IE_NSEI)) {
-		LOGP(DLNS, LOGL_ERROR, "NS RESET Missing mandatory IE\n");
-		rc = reject_status_msg(msg, &tp, reject, NS_CAUSE_MISSING_ESSENT_IE);
-		return GPRS_NS2_CS_REJECTED;
+	if (bind->vc_mode == NS2_VC_MODE_BLOCKRESET) {
+		if (!TLVP_PRESENT(&tp, NS_IE_CAUSE) ||
+				!TLVP_PRESENT(&tp, NS_IE_VCI) || !TLVP_PRESENT(&tp, NS_IE_NSEI)) {
+			LOGP(DLNS, LOGL_ERROR, "NS RESET Missing mandatory IE\n");
+			rc = reject_status_msg(msg, &tp, reject, NS_CAUSE_MISSING_ESSENT_IE);
+			return GPRS_NS2_CS_REJECTED;
+		}
 	}
 
 	/* find or create NSE */
