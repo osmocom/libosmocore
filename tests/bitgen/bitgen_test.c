@@ -22,10 +22,25 @@
 				read_val = osmo_load##SIZE####BE_LE##_ext(&buf[at_idx], len); \
 				printf("osmo_load" #SIZE #BE_LE "_ext(&buf[%d], %d) = 0x%" PRIx##SIZE "\n", \
 				       at_idx, len, read_val); \
+				\
+				if (!strcmp(#BE_LE, "be")) { \
+					read_val = osmo_load##SIZE####BE_LE##_ext_2(&buf[at_idx], len); \
+					printf("osmo_load" #SIZE #BE_LE "_ext_2(&buf[%d], %d) = 0x%" PRIx##SIZE "\n", \
+					       at_idx, len, read_val); \
+				} \
 			} \
 		} \
 	} while (0)
 
+/* Shims to allow compiling, the *le_ext_2 are not actually invoked because of the strcmp() condition above. */
+#define osmo_load16le_ext_2 dummy
+#define osmo_load32le_ext_2 dummy
+#define osmo_load64le_ext_2 dummy
+
+static inline uint64_t dummy(const void *p, uint8_t n)
+{
+	OSMO_ASSERT(false);
+}
 
 int main(int argc, char **argv)
 {
@@ -37,12 +52,22 @@ int main(int argc, char **argv)
 	DO_TEST(le, 64);
 
 	{
-		printf("--- store/load 0x112233 as 24bit big-endian\n");
+		printf("--- store/load 0x112233 as 24bit big-endian, legacy\n");
 		uint8_t buf[4];
 		memset(buf, 0, sizeof(buf));
 		osmo_store32be_ext(0x00112233, buf, 3); // stores 11 22 33
 		printf("%s\n", osmo_hexdump(buf, 4));
 		uint32_t r = osmo_load32be_ext(buf, 3); // returns 0x11223300, not 0x00112233
+		printf("0x%x\n", r);
+	}
+
+	{
+		printf("--- store/load 0x112233 as 24bit big-endian\n");
+		uint8_t buf[4];
+		memset(buf, 0, sizeof(buf));
+		osmo_store32be_ext(0x00112233, buf, 3); // stores 11 22 33
+		printf("%s\n", osmo_hexdump(buf, 4));
+		uint32_t r = osmo_load32be_ext_2(buf, 3); // returns 0x00112233
 		printf("0x%x\n", r);
 	}
 

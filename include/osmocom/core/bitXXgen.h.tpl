@@ -24,7 +24,7 @@
 
 #include <osmocom/core/utils.h>
 
-/*! load unaligned n-byte integer (little-endian encoding) into uintXX_t
+/*! load unaligned n-byte integer (little-endian encoding) into uintXX_t, into the least significant octets.
  *  \param[in] p Buffer where integer is stored
  *  \param[in] n Number of bytes stored in p
  *  \returns XX bit unsigned integer
@@ -39,7 +39,9 @@ static inline uintXX_t osmo_loadXXle_ext(const void *p, uint8_t n)
 	return r;
 }
 
-/*! load unaligned n-byte integer (big-endian encoding) into uintXX_t
+/*! load unaligned n-byte integer (big-endian encoding) into uintXX_t, into the MOST significant octets.
+ * WARNING: for n < sizeof(uintXX_t), the result is not returned in the least significant octets, as one might expect.
+ * To always return the same value as fed to osmo_storeXXbe_ext() before, use osmo_loadXXbe_ext_2().
  *  \param[in] p Buffer where integer is stored
  *  \param[in] n Number of bytes stored in p
  *  \returns XX bit unsigned integer
@@ -51,6 +53,21 @@ static inline uintXX_t osmo_loadXXbe_ext(const void *p, uint8_t n)
 	const uint8_t *q = (uint8_t *)p;
 	OSMO_ASSERT(n <= sizeof(r));
 	for(i = 0; i < n; r |= ((uintXX_t)q[i] << (XX - 8* (1 + i))), i++);
+	return r;
+}
+
+/*! load unaligned n-byte integer (big-endian encoding) into uintXX_t, into the least significant octets.
+ *  \param[in] p Buffer where integer is stored
+ *  \param[in] n Number of bytes stored in p
+ *  \returns XX bit unsigned integer
+ */
+static inline uintXX_t osmo_loadXXbe_ext_2(const void *p, uint8_t n)
+{
+	uint8_t i;
+	uintXX_t r = 0;
+	const uint8_t *q = (uint8_t *)p;
+	OSMO_ASSERT(n <= sizeof(r));
+	for(i = 0; i < n; r |= ((uintXX_t)q[i] << (XX - 8* (1 + i + (sizeof(r) - n)))), i++);
 	return r;
 }
 
