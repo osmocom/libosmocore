@@ -396,3 +396,9 @@ AT_KEYWORDS([i460_mux])
 cat $abs_srcdir/i460_mux/i460_mux_test.ok > expout
 AT_CHECK([$abs_top_builddir/tests/i460_mux/i460_mux_test], [0], [expout], [ignore])
 AT_CLEANUP
+
+AT_SETUP([bitgen])
+AT_KEYWORDS([bitgen])
+cat $abs_srcdir/bitgen/bitgen_test.ok > expout
+AT_CHECK([$abs_top_builddir/tests/bitgen/bitgen_test], [0], [expout], [ignore])
+AT_CLEANUP
