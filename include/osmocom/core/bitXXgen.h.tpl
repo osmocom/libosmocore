@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include <osmocom/core/utils.h>
+
 /*! load unaligned n-byte integer (little-endian encoding) into uintXX_t
  *  \param[in] p Buffer where integer is stored
  *  \param[in] n Number of bytes stored in p
@@ -32,6 +34,7 @@ static inline uintXX_t osmo_loadXXle_ext(const void *p, uint8_t n)
 	uint8_t i;
 	uintXX_t r = 0;
 	const uint8_t *q = (uint8_t *)p;
+	OSMO_ASSERT(n <= sizeof(r));
 	for(i = 0; i < n; r |= ((uintXX_t)q[i] << (8 * i)), i++);
 	return r;
 }
@@ -46,6 +49,7 @@ static inline uintXX_t osmo_loadXXbe_ext(const void *p, uint8_t n)
 	uint8_t i;
 	uintXX_t r = 0;
 	const uint8_t *q = (uint8_t *)p;
+	OSMO_ASSERT(n <= sizeof(r));
 	for(i = 0; i < n; r |= ((uintXX_t)q[i] << (XX - 8* (1 + i))), i++);
 	return r;
 }
@@ -60,6 +64,7 @@ static inline void osmo_storeXXle_ext(uintXX_t x, void *p, uint8_t n)
 {
 	uint8_t i;
 	uint8_t *q = (uint8_t *)p;
+	OSMO_ASSERT(n <= sizeof(x));
 	for(i = 0; i < n; q[i] = (x >> i * 8) & 0xFF, i++);
 }
 
@@ -72,6 +77,7 @@ static inline void osmo_storeXXbe_ext(uintXX_t x, void *p, uint8_t n)
 {
 	uint8_t i;
 	uint8_t *q = (uint8_t *)p;
+	OSMO_ASSERT(n <= sizeof(x));
 	for(i = 0; i < n; q[i] = (x >> ((n - 1 - i) * 8)) & 0xFF, i++);
 }
 
