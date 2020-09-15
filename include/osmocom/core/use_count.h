@@ -216,6 +216,8 @@ int _osmo_use_count_get_put(struct osmo_use_count *uc, const char *use, int32_t 
 			    const char *file, int line);
 
 const char *osmo_use_count_name_buf(char *buf, size_t buf_len, const struct osmo_use_count *uc);
+int osmo_use_count_to_str_buf(char *buf, size_t buf_len, const struct osmo_use_count *uc);
+char *osmo_use_count_to_str_c(void *ctx, const struct osmo_use_count *uc);
 
 int32_t osmo_use_count_total(const struct osmo_use_count *uc);
 int32_t osmo_use_count_by(const struct osmo_use_count *uc, const char *use);

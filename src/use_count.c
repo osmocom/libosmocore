@@ -107,6 +107,19 @@ int32_t osmo_use_count_by(const struct osmo_use_count *uc, const char *use)
  */
 const char *osmo_use_count_name_buf(char *buf, size_t buf_len, const struct osmo_use_count *uc)
 {
+	osmo_use_count_to_str_buf(buf, buf_len, uc);
+	return buf;
+}
+
+/*! Write a comprehensive listing of use counts to a string buffer.
+ * Reads like "12 (3*barring,fighting,8*kungfoo)".
+ * \param[inout] buf  Destination buffer.
+ * \param[in] buf_len  sizeof(buf).
+ * \param[in] uc  Use counts to print.
+ * \return number of bytes that would be written, like snprintf().
+ */
+int osmo_use_count_to_str_buf(char *buf, size_t buf_len, const struct osmo_use_count *uc)
+{
 	int32_t count = osmo_use_count_total(uc);
 	struct osmo_strbuf sb = { .buf = buf, .len = buf_len };
 	struct osmo_use_count_entry *e;
@@ -128,7 +141,18 @@ const char *osmo_use_count_name_buf(char *buf, size_t buf_len, const struct osmo
 	if (first)
 		OSMO_STRBUF_PRINTF(sb, "-");
 	OSMO_STRBUF_PRINTF(sb, ")");
-	return buf;
+	return sb.chars_needed;
+}
+
+/*! Write a comprehensive listing of use counts to a talloc allocated string buffer.
+ * Reads like "12 (3*barring,fighting,8*kungfoo)".
+ * \param[in] ctx  talloc pool to allocate from.
+ * \param[in] uc  Use counts to print.
+ * \return buf, always nul-terminated.
+ */
+char *osmo_use_count_to_str_c(void *ctx, const struct osmo_use_count *uc)
+{
+	OSMO_NAME_C_IMPL(ctx, 32, "ERROR", osmo_use_count_to_str_buf, uc)
 }
 
 /* Return a use token's use count entry -- probably you want osmo_use_count_by() instead.
