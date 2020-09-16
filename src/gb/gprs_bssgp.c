@@ -171,6 +171,8 @@ void bssgp_bvc_ctx_free(struct bssgp_bvc_ctx *ctx)
 {
 	if (!ctx)
 		return;
+
+	osmo_timer_del(&ctx->fc->timer);
 	rate_ctr_group_free(ctx->ctrg);
 	llist_del(&ctx->list);
 	talloc_free(ctx);
