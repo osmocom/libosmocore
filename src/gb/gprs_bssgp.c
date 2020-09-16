@@ -146,17 +146,25 @@ struct bssgp_bvc_ctx *btsctx_alloc(uint16_t bvci, uint16_t nsei)
 	ctx->nsei = nsei;
 	/* FIXME: BVCI is not unique, only BVCI+NSEI ?!? */
 	ctx->ctrg = rate_ctr_group_alloc(ctx, &bssgp_ctrg_desc, bvci);
-	if (!ctx->ctrg) {
-		talloc_free(ctx);
-		return NULL;
-	}
+	if (!ctx->ctrg)
+		goto err_ctrg;
+
 	ctx->fc = talloc_zero(ctx, struct bssgp_flow_control);
+	if (!ctx->fc)
+		goto err_fc;
+
 	/* cofigure for 2Mbit, 30 packets in queue */
 	bssgp_fc_init(ctx->fc, 100000, 2*1024*1024/8, 30, &_bssgp_tx_dl_ud);
 
 	llist_add(&ctx->list, &bssgp_bvc_ctxts);
 
 	return ctx;
+
+err_fc:
+	rate_ctr_group_free(ctx->ctrg);
+err_ctrg:
+	talloc_free(ctx);
+	return NULL;
 }
 
 void bssgp_bvc_ctx_free(struct bssgp_bvc_ctx *ctx)
