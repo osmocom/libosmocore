@@ -33,7 +33,7 @@ libgsmint_la_SOURCES =  a5.c rxlev_stat.c tlv_parser.c comp128.c comp128v23.c \
 			gsup.c gsup_sms.c gprs_gea.c gsm0503_conv.c oap.c gsm0808_utils.c \
 			gsm23003.c gsm23236.c mncc.c bts_features.c oap_client.c \
 			gsm29118.c gsm48_rest_octets.c cbsp.c gsm48049.c i460_mux.c \
-			gad.c
+			gad.c bsslap.c
 libgsmint_la_LDFLAGS = -no-undefined
 libgsmint_la_LIBADD = $(top_builddir)/src/libosmocore.la
 

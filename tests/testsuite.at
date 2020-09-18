@@ -409,3 +409,9 @@ AT_KEYWORDS([gad])
 cat $abs_srcdir/gad/gad_test.ok > expout
 AT_CHECK([$abs_top_builddir/tests/gad/gad_test], [0], [expout], [ignore])
 AT_CLEANUP
+
+AT_SETUP([bsslap])
+AT_KEYWORDS([bsslap])
+cat $abs_srcdir/bsslap/bsslap_test.ok > expout
+AT_CHECK([$abs_top_builddir/tests/bsslap/bsslap_test], [0], [expout], [ignore])
+AT_CLEANUP

@@ -705,6 +705,10 @@ osmo_nri_ranges_vty_del;
 osmo_nri_ranges_to_str_buf;
 osmo_nri_ranges_to_str_c;
 
+osmo_bsslap_enc;
+osmo_bsslap_dec;
+osmo_bsslap_msgt_names;
+
 osmo_gad_enc;
 osmo_gad_dec;
 osmo_gad_to_str_buf;

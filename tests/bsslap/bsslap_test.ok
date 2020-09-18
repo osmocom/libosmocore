@@ -1,0 +1,7 @@
+--- test_bsslap_enc_dec
+[0] TA Request: ok
+[1] TA Response: ok
+[2] Reject: ok
+[3] Reset: ok
+[4] Abort: ok
+[5] TA Layer3: ok
