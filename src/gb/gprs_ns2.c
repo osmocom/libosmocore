@@ -216,7 +216,7 @@ char *gprs_ns2_ll_str_buf(char *buf, size_t buf_len, struct gprs_ns2_vc *nsvc)
 	struct osmo_sockaddr_str remote_str;
 
 	if (!buf_len)
-		return 0;
+		return NULL;
 
 	switch (nsvc->ll) {
 	case GPRS_NS_LL_UDP:
