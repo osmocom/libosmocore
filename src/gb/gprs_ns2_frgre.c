@@ -528,11 +528,18 @@ static int frgre_fd_cb(struct osmo_fd *bfd, unsigned int what)
 	return rc;
 }
 
+/*! determine if given bind is for FR-GRE encapsulation. */
 int gprs_ns2_is_frgre_bind(struct gprs_ns2_vc_bind *bind)
 {
 	return (bind->driver == &vc_driver_frgre);
 }
 
+/*! Create a new bind for NS over FR-GRE.
+ *  \param[in] nsi NS instance in which to create the bind
+ *  \param[in] local local address on which to bind
+ *  \param[in] dscp DSCP/TOS bits to use for transmitted data on this bind
+ *  \param[out] result pointer to created bind
+ *  \return 0 on success; negative on error */
 int gprs_ns2_frgre_bind(struct gprs_ns2_inst *nsi,
 			struct osmo_sockaddr *local,
 			int dscp,

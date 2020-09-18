@@ -202,11 +202,10 @@ static int ns2_tx_simple(struct gprs_ns2_vc *nsvc, uint8_t pdu_type)
 	return nsvc->bind->send_vc(nsvc, msg);
 }
 
-/*! Transmit a NS-BLOCK on a given NS-VC
+/*! Transmit a NS-BLOCK on a given NS-VC.
  *  \param[in] vc NS-VC on which the NS-BLOCK is to be transmitted
  *  \param[in] cause Numeric NS Cause value
- *  \returns 0 in case of success
- */
+ *  \returns 0 in case of success */
 int ns2_tx_block(struct gprs_ns2_vc *nsvc, uint8_t cause)
 {
 	struct msgb *msg;
@@ -236,10 +235,9 @@ int ns2_tx_block(struct gprs_ns2_vc *nsvc, uint8_t cause)
 	return nsvc->bind->send_vc(nsvc, msg);
 }
 
-/*! Transmit a NS-BLOCK-ACK on a given NS-VC
+/*! Transmit a NS-BLOCK-ACK on a given NS-VC.
  *  \param[in] nsvc NS-VC on which the NS-BLOCK is to be transmitted
- *  \returns 0 in case of success
- */
+ *  \returns 0 in case of success */
 int ns2_tx_block_ack(struct gprs_ns2_vc *nsvc)
 {
 	struct msgb *msg;
@@ -266,10 +264,10 @@ int ns2_tx_block_ack(struct gprs_ns2_vc *nsvc)
 	return nsvc->bind->send_vc(nsvc, msg);
 }
 
-/*! Transmit a NS-RESET on a given NSVC
+/*! Transmit a NS-RESET on a given NS-VC.
  *  \param[in] nsvc NS-VC used for transmission
  *  \paam[in] cause Numeric NS cause value
- */
+ *  \returns 0 in case of success */
 int ns2_tx_reset(struct gprs_ns2_vc *nsvc, uint8_t cause)
 {
 	struct msgb *msg;
@@ -299,13 +297,16 @@ int ns2_tx_reset(struct gprs_ns2_vc *nsvc, uint8_t cause)
 	return nsvc->bind->send_vc(nsvc, msg);
 }
 
-/* Section 9.2.6 */
+/*! Transmit a NS-RESET-ACK on a given NS-VC.
+ *  \param[in] nsvc NS-VC used for transmission
+ *  \returns 0 in case of success */
 int ns2_tx_reset_ack(struct gprs_ns2_vc *nsvc)
 {
 	struct msgb *msg;
 	struct gprs_ns_hdr *nsh;
 	uint16_t nsvci, nsei;
 
+	/* Section 9.2.6 */
 	log_set_context(LOG_CTX_GB_NSVC, nsvc);
 
 	ERR_IF_NSVC_USES_SNS(nsvc, "transmit NS RESET ACK");
@@ -331,10 +332,9 @@ int ns2_tx_reset_ack(struct gprs_ns2_vc *nsvc)
 	return nsvc->bind->send_vc(nsvc, msg);
 }
 
-/*! Transmit a NS-UNBLOCK on a given NS-VC
+/*! Transmit a NS-UNBLOCK on a given NS-VC.
  *  \param[in] nsvc NS-VC on which the NS-UNBLOCK is to be transmitted
- *  \returns 0 in case of success
- */
+ *  \returns 0 in case of success */
 int ns2_tx_unblock(struct gprs_ns2_vc *nsvc)
 {
 	log_set_context(LOG_CTX_GB_NSVC, nsvc);
@@ -348,10 +348,9 @@ int ns2_tx_unblock(struct gprs_ns2_vc *nsvc)
 }
 
 
-/*! Transmit a NS-UNBLOCK-ACK on a given NS-VC
+/*! Transmit a NS-UNBLOCK-ACK on a given NS-VC.
  *  \param[in] nsvc NS-VC on which the NS-UNBLOCK-ACK is to be transmitted
- *  \returns 0 in case of success
- */
+ *  \returns 0 in case of success */
 int ns2_tx_unblock_ack(struct gprs_ns2_vc *nsvc)
 {
 	log_set_context(LOG_CTX_GB_NSVC, nsvc);
@@ -364,10 +363,9 @@ int ns2_tx_unblock_ack(struct gprs_ns2_vc *nsvc)
 	return ns2_tx_simple(nsvc, NS_PDUT_UNBLOCK_ACK);
 }
 
-/*! Transmit a NS-ALIVE on a given NS-VC
+/*! Transmit a NS-ALIVE on a given NS-VC.
  *  \param[in] nsvc NS-VC on which the NS-ALIVE is to be transmitted
- *  \returns 0 in case of success
- */
+ *  \returns 0 in case of success */
 int ns2_tx_alive(struct gprs_ns2_vc *nsvc)
 {
 	log_set_context(LOG_CTX_GB_NSVC, nsvc);
@@ -377,10 +375,9 @@ int ns2_tx_alive(struct gprs_ns2_vc *nsvc)
 	return ns2_tx_simple(nsvc, NS_PDUT_ALIVE);
 }
 
-/*! Transmit a NS-ALIVE-ACK on a given NS-VC
+/*! Transmit a NS-ALIVE-ACK on a given NS-VC.
  *  \param[in] nsvc NS-VC on which the NS-ALIVE-ACK is to be transmitted
- *  \returns 0 in case of success
- */
+ *  \returns 0 in case of success */
 int ns2_tx_alive_ack(struct gprs_ns2_vc *nsvc)
 {
 	log_set_context(LOG_CTX_GB_NSVC, nsvc);
@@ -390,6 +387,12 @@ int ns2_tx_alive_ack(struct gprs_ns2_vc *nsvc)
 	return ns2_tx_simple(nsvc, NS_PDUT_ALIVE_ACK);
 }
 
+/*! Transmit NS-UNITDATA on a given NS-VC.
+ *  \param[in] nsvc NS-VC on which the NS-UNITDATA is to be transmitted
+ *  \param[in] bvci BVCI to encode in NS-UNITDATA header
+ *  \param[in] sducontrol SDU control octet of NS header
+ *  \param[in] msg message buffer containing payload
+ *  \returns 0 in case of success */
 int ns2_tx_unit_data(struct gprs_ns2_vc *nsvc,
 		     uint16_t bvci, uint8_t sducontrol,
 		     struct msgb *msg)
@@ -414,11 +417,12 @@ int ns2_tx_unit_data(struct gprs_ns2_vc *nsvc,
 	return nsvc->bind->send_vc(nsvc, msg);
 }
 
-/*! Transmit a NS-STATUS on a given NSVC
+/*! Transmit a NS-STATUS on a given NS-VC.
  *  \param[in] nsvc NS-VC to be used for transmission
  *  \param[in] cause Numeric NS cause value
  *  \param[in] bvci BVCI to be reset within NSVC
- *  \param[in] orig_msg message causing the STATUS */
+ *  \param[in] orig_msg message causing the STATUS
+ *  \returns 0 in case of success */
 int ns2_tx_status(struct gprs_ns2_vc *nsvc, uint8_t cause,
 		       uint16_t bvci, struct msgb *orig_msg)
 {

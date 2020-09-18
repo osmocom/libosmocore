@@ -584,11 +584,9 @@ struct osmo_fsm_inst *gprs_ns2_vc_fsm_alloc(struct gprs_ns2_vc *nsvc,
 	return fi;
 }
 
-/*!
- * \brief gprs_ns2_vc_fsm_start start the FSM
- * \param vc the virtual circuit
- * \return 0 on success
- */
+/*! Start a NS-VC FSM.
+ *  \param nsvc the virtual circuit
+ *  \return 0 on success; negative on error */
 int gprs_ns2_vc_fsm_start(struct gprs_ns2_vc *nsvc)
 {
 	/* allows to call this function even for started nsvc by gprs_ns2_start_alive_all_nsvcs */
@@ -597,13 +595,11 @@ int gprs_ns2_vc_fsm_start(struct gprs_ns2_vc *nsvc)
 	return 0;
 }
 
-/*!
- * \brief gprs_ns2_vc_rx entry point for messages from the driver/VL
- * \param vc the virtual circuit on which is recived
- * \param msg the message
- * \param tp the parsed TLVs
- * \return 0 on success
- */
+/*! entry point for messages from the driver/VL
+ *  \param nsvc virtual circuit on which the message was received
+ *  \param msg message that was received
+ *  \param tp parsed TLVs of the received message
+ *  \return 0 on success; negative on error */
 int gprs_ns2_vc_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp)
 {
 	struct gprs_ns_hdr *nsh = (struct gprs_ns_hdr *) msg->l2h;
@@ -658,11 +654,7 @@ int gprs_ns2_vc_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed
 	return 0;
 }
 
-/*!
- * \brief gprs_ns2_vc_is_alive says if this
- * \param vc
- * \return
- */
+/*! is the given NS-VC unblocked? */
 int gprs_ns2_vc_is_unblocked(struct gprs_ns2_vc *nsvc)
 {
 	return (nsvc->fi->state == GPRS_NS2_ST_UNBLOCKED);

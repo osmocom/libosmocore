@@ -1198,6 +1198,10 @@ static struct osmo_fsm gprs_ns2_sns_bss_fsm = {
 	.log_subsys = DLNS,
 };
 
+/*! Allocate an IP-SNS FSM for the BSS side.
+ *  \param[in] nse NS Entity in which the FSM runs
+ *  \param[in] id string identifier
+ *  \retruns FSM instance on success; NULL on error */
 struct osmo_fsm_inst *ns2_sns_bss_fsm_alloc(struct gprs_ns2_nse *nse,
 					    const char *id)
 {
@@ -1221,6 +1225,11 @@ err:
 	return NULL;
 }
 
+/*! Start an IP-SNS FSM.
+ *  \param[in] nse NS Entity whose IP-SNS FSM shall be started
+ *  \param[in] nsvc Initial NS-VC
+ *  \param[in] remote remote (SGSN) address
+ *  \returns 0 on success; negative on error */
 int ns2_sns_bss_fsm_start(struct gprs_ns2_nse *nse, struct gprs_ns2_vc *nsvc, struct osmo_sockaddr *remote)
 {
 	struct osmo_fsm_inst *fi = nse->bss_sns_fi;
@@ -1340,7 +1349,11 @@ err:
 	return -1;
 }
 
-/* main entry point for receiving SNS messages from the network */
+/*! main entry point for receiving SNS messages from the network.
+ *  \param[in] nsvc NS-VC on which the message was received
+ *  \param[in] msg message buffer of the IP-SNS message
+ *  \param[in] tp parsed TLV structure of message
+ *  \retruns 0 on success; negative on error */
 int gprs_ns2_sns_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp)
 {
 	struct gprs_ns2_nse *nse = nsvc->nse;
@@ -1418,6 +1431,10 @@ static void vty_dump_sns_ip6(struct vty *vty, const struct gprs_ns_ie_ip6_elem *
 		ip_addr, ntohs(ip6->udp_port), ip6->sig_weight, ip6->data_weight, VTY_NEWLINE);
 }
 
+/*! Dump the IP-SNS state to a vty.
+ *  \param[in] vty VTY to which the state shall be printed
+ *  \param[in] nse NS Entity whose IP-SNS state shall be printed
+ *  \param[in] stats Whether or not statistics shall also be printed */
 void gprs_ns2_sns_dump_vty(struct vty *vty, const struct gprs_ns2_nse *nse, bool stats)
 {
 	struct ns2_sns_state *gss;

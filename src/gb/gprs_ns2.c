@@ -203,6 +203,11 @@ static const struct osmo_stat_item_group_desc nsvc_statg_desc = {
 	.class_id = OSMO_STATS_CLASS_PEER,
 };
 
+/*! string-format a given NS-VC into a user-supplied buffer.
+ *  \param[in] buf user-allocated output buffer
+ *  \param[in] buf_len size of user-allocated output buffer in bytes
+ *  \param[in] nsvc NS-VC to be string-formatted
+ *  \return pointer to buf on success; NULL on error */
 char *gprs_ns2_ll_str_buf(char *buf, size_t buf_len, struct gprs_ns2_vc *nsvc)
 {
 	struct osmo_sockaddr *local;
@@ -256,12 +261,19 @@ char *gprs_ns2_ll_str_buf(char *buf, size_t buf_len, struct gprs_ns2_vc *nsvc)
 /* udp is the longest: udp)[IP6]:65536<65536>[IP6]:65536 */
 #define NS2_LL_MAX_STR 4+2*(INET6_ADDRSTRLEN+9)+8
 
+/*! string-format a given NS-VC to a thread-local static buffer.
+ *  \param[in] nsvc NS-VC to be string-formatted
+ *  \return pointer to the string on success; NULL on error */
 const char *gprs_ns2_ll_str(struct gprs_ns2_vc *nsvc)
 {
 	static __thread char buf[NS2_LL_MAX_STR];
 	return gprs_ns2_ll_str_buf(buf, sizeof(buf), nsvc);
 }
 
+/*! string-format a given NS-VC to a dynamically allocated string.
+ *  \param[in] ctx talloc context from which to allocate
+ *  \param[in] nsvc NS-VC to be string-formatted
+ *  \return pointer to the string on success; NULL on error */
 char *gprs_ns2_ll_str_c(const void *ctx, struct gprs_ns2_vc *nsvc)
 {
 	char *buf = talloc_size(ctx, NS2_LL_MAX_STR);
@@ -270,12 +282,10 @@ char *gprs_ns2_ll_str_c(const void *ctx, struct gprs_ns2_vc *nsvc)
 	return gprs_ns2_ll_str_buf(buf, NS2_LL_MAX_STR, nsvc);
 }
 
-/*!
- * Receive a primitive from the NS User (Gb)
- * \param nsi
- * \param oph The primitive.
- * \return 0 on success
- */
+/*! Receive a primitive from the NS User (Gb).
+ *  \param[in] nsi NS instance to which the primitive is issued
+ *  \param[in] oph The primitive
+ *  \return 0 on success; negative on error */
 int gprs_ns2_recv_prim(struct gprs_ns2_inst *nsi, struct osmo_prim_hdr *oph)
 {
 	/* TODO: implement load distribution function */
@@ -329,6 +339,11 @@ int gprs_ns2_recv_prim(struct gprs_ns2_inst *nsi, struct osmo_prim_hdr *oph)
 	return ns2_tx_unit_data(nsvc, bvci, sducontrol, oph->msg);
 }
 
+/*! Send a STATUS.ind primitive to the specified NS instance user.
+ *  \param[in] nsi NS instance on which we operate
+ *  \param[in] nsei NSEI to which the statue relates
+ *  \param[in] bvci BVCI to which the status relates
+ *  \param[in] cause The cause of the status */
 void ns2_prim_status_ind(struct gprs_ns2_inst *nsi,
 			 uint16_t nsei, uint16_t bvci,
 			 enum gprs_ns2_affecting_cause cause)
@@ -343,13 +358,11 @@ void ns2_prim_status_ind(struct gprs_ns2_inst *nsi,
 	nsi->cb(&nsp.oph, nsi->cb_data);
 }
 
-/*!
- * \brief ns2_vc_alloc
- * \param bind
- * \param nse
- * \param initiater - if this is an incoming remote (!initiater) or a local outgoing connection (initater)
- * \return
- */
+/*! Allocate a NS-VC within the given bind + NSE.
+ * \param[in] bind The 'bind' on which we operate
+ * \param[in] nse The NS Entity on which we operate
+ * \param[in] initiater - if this is an incoming remote (!initiater) or a local outgoing connection (initater)
+ * \return newly allocated NS-VC on success; NULL on error */
 struct gprs_ns2_vc *ns2_vc_alloc(struct gprs_ns2_vc_bind *bind, struct gprs_ns2_nse *nse, bool initiater)
 {
 	struct gprs_ns2_vc *nsvc = talloc_zero(bind, struct gprs_ns2_vc);
@@ -390,7 +403,8 @@ err:
 	return NULL;
 }
 
-
+/*! Destroy/release given NS-VC.
+ *  \param[in] nsvc NS-VC to destroy */
 void gprs_ns2_free_nsvc(struct gprs_ns2_vc *nsvc)
 {
 	if (!nsvc)
@@ -419,6 +433,7 @@ void gprs_ns2_free_nsvc(struct gprs_ns2_vc *nsvc)
 	talloc_free(nsvc);
 }
 
+/*! Allocate a message buffer for use with the NS2 stack. */
 struct msgb *gprs_ns2_msgb_alloc(void)
 {
 	struct msgb *msg = msgb_alloc_headroom(NS_ALLOC_SIZE, NS_ALLOC_HEADROOM,
@@ -430,14 +445,12 @@ struct msgb *gprs_ns2_msgb_alloc(void)
 	return msg;
 }
 
-/*!
- * Create a status message to be sent over a new connection.
- * \param[in] orig_msg the original message
- * \param[in] tp TLVP parsed of the original message
- * \param[out] reject
- * \param[in] cause
- * \return 0 on success
- */
+/*! Create a status message to be sent over a new connection.
+ *  \param[in] orig_msg the original message
+ *  \param[in] tp TLVP parsed of the original message
+ *  \param[out] reject callee-allocated message buffer of the generated NS-STATUS
+ *  \param[in] cause Cause for the rejection
+ *  \return 0 on success */
 static int reject_status_msg(struct msgb *orig_msg, struct tlv_parsed *tp, struct msgb **reject, enum ns_cause cause)
 {
 	struct msgb *msg = gprs_ns2_msgb_alloc();
@@ -492,6 +505,10 @@ static int reject_status_msg(struct msgb *orig_msg, struct tlv_parsed *tp, struc
 	return 0;
 }
 
+/*! Resolve a NS Entity based on its NSEI.
+ *  \param[in] nsi NS Instance in which we do the look-up
+ *  \param[in] nsei NSEI to look up
+ *  \return NS Entity in successful case; NULL if none found */
 struct gprs_ns2_nse *gprs_ns2_nse_by_nsei(struct gprs_ns2_inst *nsi, uint16_t nsei)
 {
 	struct gprs_ns2_nse *nse;
@@ -504,6 +521,10 @@ struct gprs_ns2_nse *gprs_ns2_nse_by_nsei(struct gprs_ns2_inst *nsi, uint16_t ns
 	return NULL;
 }
 
+/*! Resolve a NS-VC Entity based on its NS-VCI.
+ *  \param[in] nsi NS Instance in which we do the look-up
+ *  \param[in] nsvci NS-VCI to look up
+ *  \return NS-VC Entity in successful case; NULL if none found */
 struct gprs_ns2_vc *gprs_ns2_nsvc_by_nsvci(struct gprs_ns2_inst *nsi, uint16_t nsvci)
 {
 	struct gprs_ns2_nse *nse;
@@ -519,6 +540,10 @@ struct gprs_ns2_vc *gprs_ns2_nsvc_by_nsvci(struct gprs_ns2_inst *nsi, uint16_t n
 	return NULL;
 }
 
+/*! Create a NS Entity within given NS instance.
+ *  \param[in] nsi NS instance in which to create NS Entity
+ *  \param[in] nsei NS Entity Identifier of to-be-created NSE
+ *  \returns newly-allocated NS-E in successful case; NULL on error */
 struct gprs_ns2_nse *gprs_ns2_create_nse(struct gprs_ns2_inst *nsi, uint16_t nsei)
 {
 	struct gprs_ns2_nse *nse;
@@ -541,6 +566,8 @@ struct gprs_ns2_nse *gprs_ns2_create_nse(struct gprs_ns2_inst *nsi, uint16_t nse
 	return nse;
 }
 
+/*! Destroy given NS Entity.
+ *  \param[in] nse NS Entity to destroy */
 void gprs_ns2_free_nse(struct gprs_ns2_nse *nse)
 {
 	struct gprs_ns2_vc *nsvc, *tmp;
@@ -574,15 +601,13 @@ static inline int ns2_tlv_parse(struct tlv_parsed *dec,
 }
 
 
-/*!
- * Create a new VC based on a message. Depending on the bind it might create NSE.
- * \param[in] bind
- * \param[in] msg
- * \param[in] logname A name to describe the VC. E.g. ip address pair
- * \param[out] reject A message filled to be sent back. Only used in failure cases.
- * \param[out] success A pointer which will be set to the new VC on success
- * \return
- */
+/*! Create a new NS-VC based on a [received] message. Depending on the bind it might create a NSE.
+ *  \param[in] bind the bind through which msg was received
+ *  \param[in] msg the actual received message
+ *  \param[in] logname A name to describe the VC. E.g. ip address pair
+ *  \param[out] reject A message filled to be sent back. Only used in failure cases.
+ *  \param[out] success A pointer which will be set to the new VC on success
+ *  \return enum value indicating the status, e.g. GPRS_NS2_CS_CREATED */
 enum gprs_ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 			       struct msgb *msg,
 			       const char *logname,
@@ -696,6 +721,12 @@ enum gprs_ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 	return GPRS_NS2_CS_CREATED;
 }
 
+/*! Create, and connect an inactive, new IP-based NS-VC
+ *  \param[in] bind bind in which the new NS-VC is to be created
+ *  \param[in] remote remote address to which to connect
+ *  \param[in] nse NS Entity in which the NS-VC is to be created
+ *  \param[in] nsvci is only required when bind->vc_mode == NS2_VC_MODE_BLOCKRESET
+ *  \return pointer to newly-allocated, connected and inactive NS-VC; NULL on error */
 struct gprs_ns2_vc *gprs_ns2_ip_connect_inactive(struct gprs_ns2_vc_bind *bind,
 					struct osmo_sockaddr *remote,
 					struct gprs_ns2_nse *nse,
@@ -715,14 +746,12 @@ struct gprs_ns2_vc *gprs_ns2_ip_connect_inactive(struct gprs_ns2_vc_bind *bind,
 	return nsvc;
 }
 
-/*!
- * Create a new IP-based NSVC
- * \param bind
- * \param remote
- * \param nse
- * \param nsvci is only required when bind->vc_mode == NS2_VC_MODE_BLOCKRESET
- * \return
- */
+/*! Create, connect and activate a new IP-based NS-VC
+ *  \param[in] bind bind in which the new NS-VC is to be created
+ *  \param[in] remote remote address to which to connect
+ *  \param[in] nse NS Entity in which the NS-VC is to be created
+ *  \param[in] nsvci is only required when bind->vc_mode == NS2_VC_MODE_BLOCKRESET
+ *  \return pointer to newly-allocated, connected and activated NS-VC; NULL on error */
 struct gprs_ns2_vc *gprs_ns2_ip_connect(struct gprs_ns2_vc_bind *bind,
 					struct osmo_sockaddr *remote,
 					struct gprs_ns2_nse *nse,
@@ -738,14 +767,12 @@ struct gprs_ns2_vc *gprs_ns2_ip_connect(struct gprs_ns2_vc_bind *bind,
 	return nsvc;
 }
 
-/*!
- * Create a new IP-based NSVC
- * \param bind
- * \param remote
- * \param nsei
- * \param nsvci only required when bind->vc_mode == NS2_VC_MODE_BLOCKRESET
- * \return
- */
+/*! Create, connect and activate a new IP-based NS-VC
+ *  \param[in] bind bind in which the new NS-VC is to be created
+ *  \param[in] remote remote address to which to connect
+ *  \param[in] nsei NSEI of the NS Entity in which the NS-VC is to be created
+ *  \param[in] nsvci is only required when bind->vc_mode == NS2_VC_MODE_BLOCKRESET
+ *  \return pointer to newly-allocated, connected and activated NS-VC; NULL on error */
 struct gprs_ns2_vc *gprs_ns2_ip_connect2(struct gprs_ns2_vc_bind *bind,
 					 struct osmo_sockaddr *remote,
 					 uint16_t nsei,
@@ -762,13 +789,11 @@ struct gprs_ns2_vc *gprs_ns2_ip_connect2(struct gprs_ns2_vc_bind *bind,
 	return gprs_ns2_ip_connect(bind, remote, nse, nsvci);
 }
 
-/*!
- * Create a new IP SNS NSE
- * \param bind
- * \param remote
- * \param nsei
- * \return 0 on success
- */
+/*! Create, connect and activate a new IP-SNS NSE.
+ *  \param[in] bind bind in which the new NS-VC is to be created
+ *  \param[in] remote remote address to which to connect
+ *  \param[in] nsei NSEI of the NS Entity in which the NS-VC is to be created
+ *  \return 0 on success; negative on error */
 int gprs_ns2_ip_connect_sns(struct gprs_ns2_vc_bind *bind,
 			    struct osmo_sockaddr *remote,
 			    uint16_t nsei)
@@ -795,6 +820,10 @@ int gprs_ns2_ip_connect_sns(struct gprs_ns2_vc_bind *bind,
 	return ns2_sns_bss_fsm_start(nse, nsvc, remote);
 }
 
+/*! Find NS-VC for given socket address.
+ *  \param[in] nse NS Entity in which to search
+ *  \param[in] sockaddr socket address to search for
+ *  \return NS-VC matching sockaddr; NULL if none found */
 struct gprs_ns2_vc *gprs_ns2_nsvc_by_sockaddr(struct gprs_ns2_nse *nse,
 					      struct osmo_sockaddr *sockaddr)
 {
@@ -814,13 +843,11 @@ struct gprs_ns2_vc *gprs_ns2_nsvc_by_sockaddr(struct gprs_ns2_nse *nse,
 }
 
 
-/*!
- * \brief gprs_ns2_recv_vc entrypoint of received NS PDU from the driver/bind
- * \param nsi
- * \param vc
- * \param msg the received message. Must not be freeded.
- * \return
- */
+/*! Bottom-side entry-point for received NS PDU from the driver/bind
+ * \param[in] nsi NS instance
+ * \param[in] nsvc NS-VC for which the message was received
+ * \param msg the received message. Ownership is trasnferred, caller must not free it!
+ * \return 0 on success; negative on error */
 int ns2_recv_vc(struct gprs_ns2_inst *nsi,
 		struct gprs_ns2_vc *nsvc,
 		struct msgb *msg)
@@ -893,7 +920,9 @@ int ns2_recv_vc(struct gprs_ns2_inst *nsi,
 	return rc;
 }
 
-/* notify a nse about the change of a nsvc */
+/*! Notify a nse about the change of a NS-VC.
+ *  \param[in] nsvc NS-VC which has detected the change (and shall not be notified).
+ *  \param[in] unblocked whether the NSE should be marked as unblocked (true) or blocked (false) */
 void ns2_nse_notify_unblocked(struct gprs_ns2_vc *nsvc, bool unblocked)
 {
 	struct gprs_ns2_nse *nse = nsvc->nse;
@@ -928,11 +957,10 @@ void ns2_nse_notify_unblocked(struct gprs_ns2_vc *nsvc, bool unblocked)
 }
 
 /*! Create a new GPRS NS instance
- *  \param[in] ctx a talloc context
- *  \param[in] cb Call-back function for incoming BSSGP data
- *  \param[in] cb_data Call-back data
- *  \returns dynamically allocated gprs_ns_inst
- */
+ *  \param[in] ctx a talloc context to allocate NS instance from
+ *  \param[in] cb Call-back function for dispatching primitives to the user
+ *  \param[in] cb_data transparent user data passed to Call-back
+ *  \returns dynamically allocated gprs_ns_inst; NULL on error */
 struct gprs_ns2_inst *gprs_ns2_instantiate(void *ctx, osmo_prim_cb cb, void *cb_data)
 {
 	struct gprs_ns2_inst *nsi;
@@ -958,6 +986,8 @@ struct gprs_ns2_inst *gprs_ns2_instantiate(void *ctx, osmo_prim_cb cb, void *cb_
 	return nsi;
 }
 
+/*! Destroy a NS Instance (including all its NSEs, binds, ...).
+ *  \param[in] nsi NS instance to destroy */
 void gprs_ns2_free(struct gprs_ns2_inst *nsi)
 {
 	struct gprs_ns2_vc_bind *bind, *tbind;
@@ -975,11 +1005,10 @@ void gprs_ns2_free(struct gprs_ns2_inst *nsi)
 	}
 }
 
-/*!
- * \brief gprs_ns2_dynamic_create_nse
- * \param nsi the instance to modify
- * \param create_nse if NSE can be created on receiving package. SGSN set this.
- * \return
+/*! Configure whether a NS Instance should dynamically create NSEs based on incoming traffic.
+ *  \param nsi the instance to modify
+ *  \param create_nse if NSE can be created on receiving package. SGSN set this.
+ *  \return 0 on success; negative on error
  */
 int gprs_ns2_dynamic_create_nse(struct gprs_ns2_inst *nsi, bool create_nse)
 {
@@ -988,6 +1017,8 @@ int gprs_ns2_dynamic_create_nse(struct gprs_ns2_inst *nsi, bool create_nse)
 	return 0;
 }
 
+/*! Start the NS-ALIVE FSM in all NS-VCs of given NSE.
+ *  \param[in] nse NS Entity in whihc to start NS-ALIVE FSMs */
 void gprs_ns2_start_alive_all_nsvcs(struct gprs_ns2_nse *nse)
 {
 	struct gprs_ns2_vc *nsvc;
@@ -1001,11 +1032,16 @@ void gprs_ns2_start_alive_all_nsvcs(struct gprs_ns2_nse *nse)
 	}
 }
 
+/*! Set the mode of given bind.
+ *  \param[in] bind the bind we want to set the mode of
+ *  \param[in] modde mode to set bind to */
 void gprs_ns2_bind_set_mode(struct gprs_ns2_vc_bind *bind, enum gprs_ns2_vc_mode mode)
 {
 	bind->vc_mode = mode;
 }
 
+/*! Destroy a given bind.
+ *  \param[in] bind the bind we want to destroy */
 void gprs_ns2_free_bind(struct gprs_ns2_vc_bind *bind)
 {
 	struct gprs_ns2_vc *nsvc, *tmp;

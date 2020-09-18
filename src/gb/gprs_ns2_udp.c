@@ -78,6 +78,11 @@ static void free_vc(struct gprs_ns2_vc *nsvc)
 	nsvc->priv = NULL;
 }
 
+/*! Find a NS-VC by its remote socket address.
+ *  \param[in] bind in which to search
+ *  \param[in] saddr remote peer socket adddress to search
+ *  \param[out] result pointer to result
+ *  \returns 0 on success; 1 if no NS-VC was found; negative on error */
 int gprs_ns2_find_vc_by_sockaddr(struct gprs_ns2_vc_bind *bind, struct osmo_sockaddr *saddr, struct gprs_ns2_vc **result)
 {
 	struct gprs_ns2_vc *nsvc;
@@ -115,12 +120,10 @@ static inline int nsip_sendmsg(struct gprs_ns2_vc_bind *bind,
 	return rc;
 }
 
-/*!
- * \brief nsip_vc_sendmsg will send the msg and free msgb afterwards.
- * \param vc
- * \param msg
- * \return < 0 on erros, otherwise the bytes sent.
- */
+/*! send the msg and free it afterwards.
+ * \param nsvc NS-VC on which the message shall be sent
+ * \param msg message to be sent
+ * \return number of bytes transmitted; negative on error */
 static int nsip_vc_sendmsg(struct gprs_ns2_vc *nsvc, struct msgb *msg)
 {
 	int rc;
@@ -241,13 +244,12 @@ static int nsip_fd_cb(struct osmo_fd *bfd, unsigned int what)
 	return rc;
 }
 
-/*!
- * \brief bind to an IPv4/IPv6 address
- * \param[in] nsi NS Instance in which to create the NSVC
- * \param[in] address the address to bind to
- * \param[out] result if set, returns the bind object
- * \return
- */
+/*! Bind to an IPv4/IPv6 address
+ *  \param[in] nsi NS Instance in which to create the NSVC
+ *  \param[in] local the local address to bind to
+ *  \param[in] dscp the DSCP/TOS bits used for transmitted data
+ *  \param[out] result if set, returns the bind object
+ *  \return 0 on success; negative in case of error */
 int gprs_ns2_ip_bind(struct gprs_ns2_inst *nsi,
 		     struct osmo_sockaddr *local,
 		     int dscp,
@@ -310,6 +312,11 @@ int gprs_ns2_ip_bind(struct gprs_ns2_inst *nsi,
 	return 0;
 }
 
+/*! Create new NS-VC to a given remote address
+ *  \param[in] bind the bind we want to connect
+ *  \param[in] nse NS entity to be used for the new NS-VC
+ *  \param[in] remote remote address to connect to
+ *  \return pointer to newly-allocated and connected NS-VC; NULL on error */
 struct gprs_ns2_vc *gprs_ns2_ip_bind_connect(struct gprs_ns2_vc_bind *bind,
 					     struct gprs_ns2_nse *nse,
 					     struct osmo_sockaddr *remote)
@@ -332,6 +339,9 @@ struct gprs_ns2_vc *gprs_ns2_ip_bind_connect(struct gprs_ns2_vc_bind *bind,
 	return nsvc;
 }
 
+/*! Return the socket address of the remote peer of a NS-VC.
+ *  \param[in] nsvc NS-VC whose remote peer we want to know
+ *  \return address of the remote peer; NULL in case of error */
 struct osmo_sockaddr *gprs_ns2_ip_vc_sockaddr(struct gprs_ns2_vc *nsvc)
 {
 	struct priv_vc *priv;
@@ -343,6 +353,9 @@ struct osmo_sockaddr *gprs_ns2_ip_vc_sockaddr(struct gprs_ns2_vc *nsvc)
 	return &priv->remote;
 }
 
+/*! Return the locally bound socket address of the bind.
+ *  \param[in] bind The bind whose local address we want to know
+ *  \return address of the local bind */
 struct osmo_sockaddr *gprs_ns2_ip_bind_sockaddr(struct gprs_ns2_vc_bind *bind)
 {
 	struct priv_bind *priv;
@@ -351,11 +364,13 @@ struct osmo_sockaddr *gprs_ns2_ip_bind_sockaddr(struct gprs_ns2_vc_bind *bind)
 	return &priv->addr;
 }
 
+/*! Is the given bind an IP bind? */
 int gprs_ns2_is_ip_bind(struct gprs_ns2_vc_bind *bind)
 {
 	return (bind->driver == &vc_driver_ip);
 }
 
+/*! Set the DSCP (TOS) bit value of the given bind. */
 int gprs_ns2_ip_bind_set_dscp(struct gprs_ns2_vc_bind *bind, int dscp)
 {
 	struct priv_bind *priv;
