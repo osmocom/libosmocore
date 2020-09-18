@@ -64,7 +64,7 @@ enum ns_ctr {
 
 
 
-int gprs_ns2_validate_reset(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp, uint8_t *cause)
+static int gprs_ns2_validate_reset(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp, uint8_t *cause)
 {
 	if (!TLVP_PRESENT(tp, NS_IE_CAUSE) || !TLVP_PRESENT(tp, NS_IE_VCI) || !TLVP_PRESENT(tp, NS_IE_NSEI)) {
 		*cause = NS_CAUSE_MISSING_ESSENT_IE;
@@ -74,7 +74,7 @@ int gprs_ns2_validate_reset(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct t
 	return 0;
 }
 
-int gprs_ns2_validate_reset_ack(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp, uint8_t *cause)
+static int gprs_ns2_validate_reset_ack(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp, uint8_t *cause)
 {
 	if (!TLVP_PRESENT(tp, NS_IE_VCI) || !TLVP_PRESENT(tp, NS_IE_NSEI)) {
 		*cause = NS_CAUSE_MISSING_ESSENT_IE;
@@ -84,7 +84,7 @@ int gprs_ns2_validate_reset_ack(struct gprs_ns2_vc *nsvc, struct msgb *msg, stru
 	return 0;
 }
 
-int gprs_ns2_validate_block(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp, uint8_t *cause)
+static int gprs_ns2_validate_block(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp, uint8_t *cause)
 {
 	if (!TLVP_PRESENT(tp, NS_IE_VCI) || !TLVP_PRESENT(tp, NS_IE_CAUSE)) {
 		*cause = NS_CAUSE_MISSING_ESSENT_IE;
@@ -94,7 +94,7 @@ int gprs_ns2_validate_block(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct t
 	return 0;
 }
 
-int gprs_ns2_validate_block_ack(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp, uint8_t *cause)
+static int gprs_ns2_validate_block_ack(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp, uint8_t *cause)
 {
 	if (!TLVP_PRESENT(tp, NS_IE_VCI)) {
 		*cause = NS_CAUSE_MISSING_ESSENT_IE;
@@ -104,7 +104,7 @@ int gprs_ns2_validate_block_ack(struct gprs_ns2_vc *nsvc, struct msgb *msg, stru
 	return 0;
 }
 
-int gprs_ns2_validate_status(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp, uint8_t *cause)
+static int gprs_ns2_validate_status(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp, uint8_t *cause)
 {
 
 	if (!TLVP_PRESENT(tp, NS_IE_CAUSE)) {
