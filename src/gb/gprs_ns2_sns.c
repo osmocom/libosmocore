@@ -861,6 +861,7 @@ static void ns2_sns_st_configured_add(struct osmo_fsm_inst *fi,
 	const struct gprs_ns_ie_ip6_elem *v6_list = NULL;
 	int num_v4 = 0, num_v6 = 0;
 	uint8_t trans_id, cause = 0xff;
+	unsigned int i;
 	int rc = 0;
 
 	/* TODO: refactor EV_ADD/CHANGE/REMOVE by
@@ -879,11 +880,12 @@ static void ns2_sns_st_configured_add(struct osmo_fsm_inst *fi,
 
 		v4_list = (const struct gprs_ns_ie_ip4_elem *) TLVP_VAL(tp, NS_IE_IPv4_LIST);
 		num_v4 = TLVP_LEN(tp, NS_IE_IPv4_LIST) / sizeof(*v4_list);
-		for (int i = 0; i < num_v4; i++) {
+		for (i = 0; i < num_v4; i++) {
+			unsigned int j;
 			rc = do_sns_add(fi, &v4_list[i], NULL);
 			if (rc < 0) {
 				/* rollback/undo to restore previous state */
-				for (int j = 0; j < i; j++)
+				for (j = 0; j < i; j++)
 					do_sns_delete(fi, &v4_list[j], NULL);
 				cause = -rc;
 				ns2_tx_sns_ack(gss->sns_nsvc, trans_id, &cause, NULL, 0, NULL, 0);
@@ -899,11 +901,12 @@ static void ns2_sns_st_configured_add(struct osmo_fsm_inst *fi,
 
 		v6_list = (const struct gprs_ns_ie_ip6_elem *) TLVP_VAL(tp, NS_IE_IPv6_LIST);
 		num_v6 = TLVP_LEN(tp, NS_IE_IPv6_LIST) / sizeof(*v6_list);
-		for (int i = 0; i < num_v6; i++) {
+		for (i = 0; i < num_v6; i++) {
+			unsigned int j;
 			rc = do_sns_add(fi, NULL, &v6_list[i]);
 			if (rc < 0) {
 				/* rollback/undo to restore previous state */
-				for (int j = 0; j < i; j++)
+				for (j = 0; j < i; j++)
 					do_sns_delete(fi, NULL, &v6_list[j]);
 				cause = -rc;
 				ns2_tx_sns_ack(gss->sns_nsvc, trans_id, &cause, NULL, 0, NULL, 0);
@@ -924,6 +927,7 @@ static void ns2_sns_st_configured_delete(struct osmo_fsm_inst *fi,
 	const struct gprs_ns_ie_ip6_elem *v6_list = NULL;
 	int num_v4 = 0, num_v6 = 0;
 	uint8_t trans_id, cause = 0xff;
+	unsigned int i;
 	int rc = 0;
 
 	/* TODO: split up delete into v4 + v6
@@ -935,7 +939,7 @@ static void ns2_sns_st_configured_delete(struct osmo_fsm_inst *fi,
 		if (TLVP_PRESENT(tp, NS_IE_IPv4_LIST)) {
 			v4_list = (const struct gprs_ns_ie_ip4_elem *) TLVP_VAL(tp, NS_IE_IPv4_LIST);
 			num_v4 = TLVP_LEN(tp, NS_IE_IPv4_LIST) / sizeof(*v4_list);
-			for (int i = 0; i < num_v4; i++) {
+			for ( i = 0; i < num_v4; i++) {
 				rc = do_sns_delete(fi, &v4_list[i], NULL);
 				if (rc < 0) {
 					cause = -rc;
@@ -961,7 +965,7 @@ static void ns2_sns_st_configured_delete(struct osmo_fsm_inst *fi,
 			/* make a copy as do_sns_delete() will change the array underneath us */
 			ip4_remote = talloc_memdup(fi, gss->ip4_remote,
 						   gss->num_ip4_remote * sizeof(*v4_list));
-			for (unsigned i = 0; i < gss->num_ip4_remote; i++) {
+			for (i = 0; i < gss->num_ip4_remote; i++) {
 				if (ip4_remote[i].ip_addr == ip_addr) {
 					rc = do_sns_delete(fi, &ip4_remote[i], NULL);
 					if (rc < 0) {
@@ -985,7 +989,7 @@ static void ns2_sns_st_configured_delete(struct osmo_fsm_inst *fi,
 		if (TLVP_PRESENT(tp, NS_IE_IPv6_LIST)) {
 			v6_list = (const struct gprs_ns_ie_ip6_elem *) TLVP_VAL(tp, NS_IE_IPv6_LIST);
 			num_v6 = TLVP_LEN(tp, NS_IE_IPv6_LIST) / sizeof(*v6_list);
-			for (int i = 0; i < num_v6; i++) {
+			for (i = 0; i < num_v6; i++) {
 				rc = do_sns_delete(fi, NULL, &v6_list[i]);
 				if (rc < 0) {
 					cause = -rc;
@@ -1002,6 +1006,7 @@ static void ns2_sns_st_configured_delete(struct osmo_fsm_inst *fi,
 			const uint8_t *ie = TLVP_VAL(tp, NS_IE_IP_ADDR);
 			struct gprs_ns_ie_ip6_elem *ip6_remote;
 			struct in6_addr ip6_addr;
+			unsigned int i;
 			if (ie[0] != 0x02) { /* Address Type != IPv6 */
 				cause = NS_CAUSE_UNKN_IP_ADDR;
 				ns2_tx_sns_ack(gss->sns_nsvc, trans_id, &cause, NULL, 0, NULL, 0);
@@ -1011,7 +1016,7 @@ static void ns2_sns_st_configured_delete(struct osmo_fsm_inst *fi,
 			/* make a copy as do_sns_delete() will change the array underneath us */
 			ip6_remote = talloc_memdup(fi, gss->ip6_remote,
 						   gss->num_ip6_remote * sizeof(*v4_list));
-			for (unsigned i = 0; i < gss->num_ip6_remote; i++) {
+			for (i = 0; i < gss->num_ip6_remote; i++) {
 				if (!memcmp(&ip6_remote[i].ip_addr, &ip6_addr, sizeof(struct in6_addr))) {
 					rc = do_sns_delete(fi, NULL, &ip6_remote[i]);
 					if (rc < 0) {
@@ -1045,12 +1050,13 @@ static void ns2_sns_st_configured_change(struct osmo_fsm_inst *fi,
 	int num_v4 = 0, num_v6 = 0;
 	uint8_t trans_id, cause = 0xff;
 	int rc = 0;
+	unsigned int i;
 
 	trans_id = *TLVP_VAL(tp, NS_IE_TRANS_ID);
 	if (TLVP_PRESENT(tp, NS_IE_IPv4_LIST)) {
 		v4_list = (const struct gprs_ns_ie_ip4_elem *) TLVP_VAL(tp, NS_IE_IPv4_LIST);
 		num_v4 = TLVP_LEN(tp, NS_IE_IPv4_LIST) / sizeof(*v4_list);
-		for (int i = 0; i < num_v4; i++) {
+		for (i = 0; i < num_v4; i++) {
 			rc = do_sns_change_weight(fi, &v4_list[i], NULL);
 			if (rc < 0) {
 				cause = -rc;
@@ -1064,7 +1070,7 @@ static void ns2_sns_st_configured_change(struct osmo_fsm_inst *fi,
 	} else if (TLVP_PRESENT(tp, NS_IE_IPv6_LIST)) {
 		v6_list = (const struct gprs_ns_ie_ip6_elem *) TLVP_VAL(tp, NS_IE_IPv6_LIST);
 		num_v6 = TLVP_LEN(tp, NS_IE_IPv6_LIST) / sizeof(*v6_list);
-		for (int i = 0; i < num_v6; i++) {
+		for (i = 0; i < num_v6; i++) {
 			rc = do_sns_change_weight(fi, NULL, &v6_list[i]);
 			if (rc < 0) {
 				cause = -rc;
