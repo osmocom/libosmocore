@@ -415,3 +415,9 @@ AT_KEYWORDS([bsslap])
 cat $abs_srcdir/bsslap/bsslap_test.ok > expout
 AT_CHECK([$abs_top_builddir/tests/bsslap/bsslap_test], [0], [expout], [ignore])
 AT_CLEANUP
+
+AT_SETUP([bssmap_le])
+AT_KEYWORDS([bssmap_le])
+cat $abs_srcdir/bssmap_le/bssmap_le_test.ok > expout
+AT_CHECK([$abs_top_builddir/tests/bssmap_le/bssmap_le_test], [0], [expout], [ignore])
+AT_CLEANUP

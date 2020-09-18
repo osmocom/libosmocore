@@ -1,0 +1,11 @@
+--- test_bssmap_le_enc_dec
+[0] RESET: ok (encoded len = 6)
+[1] RESET ACKNOWLEDGE: ok (encoded len = 3)
+[2] PERFORM LOCATION REQUEST: ok (encoded len = 41)
+[3] PERFORM LOCATION RESPONSE: ok (encoded len = 13)
+[4] PERFORM LOCATION RESPONSE: ok (encoded len = 6)
+[5] PERFORM LOCATION RESPONSE: ok (encoded len = 7)
+[6] PERFORM LOCATION ABORT: ok (encoded len = 6)
+[7] CONNECTION ORIENTED INFORMATON: ok (encoded len = 8)
+[8] CONNECTION ORIENTED INFORMATON: ok (encoded len = 13)
+[9] CONNECTION ORIENTED INFORMATON: ok (encoded len = 10)

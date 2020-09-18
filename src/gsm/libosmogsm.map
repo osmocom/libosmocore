@@ -705,6 +705,17 @@ osmo_nri_ranges_vty_del;
 osmo_nri_ranges_to_str_buf;
 osmo_nri_ranges_to_str_c;
 
+osmo_bssmap_le_msgt_names;
+osmo_bssap_le_enc;
+osmo_bssap_le_dec;
+osmo_lcs_cause_enc;
+osmo_lcs_cause_dec;
+osmo_bssmap_le_ie_enc_location_type;
+osmo_bssmap_le_ie_dec_location_type;
+osmo_bssmap_le_msgt;
+osmo_bssap_le_pdu_to_str_buf;
+osmo_bssap_le_pdu_to_str_c;
+
 osmo_bsslap_enc;
 osmo_bsslap_dec;
 osmo_bsslap_msgt_names;
