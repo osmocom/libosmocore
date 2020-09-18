@@ -92,6 +92,7 @@ nobase_include_HEADERS = \
                        osmocom/coding/gsm0503_interleaving.h \
                        osmocom/coding/gsm0503_coding.h \
                        osmocom/coding/gsm0503_amr_dtx.h \
+                       osmocom/gsm/gad.h \
                        osmocom/gsm/gsm0808.h \
                        osmocom/gsm/gsm29205.h \
                        osmocom/gsm/gsm0808_utils.h \
@@ -115,6 +116,7 @@ nobase_include_HEADERS = \
                        osmocom/gsm/l1sap.h \
                        osmocom/gsm/oap.h \
                        osmocom/gsm/oap_client.h \
+                       osmocom/gsm/protocol/gsm_23_032.h \
                        osmocom/gsm/protocol/gsm_03_40.h \
                        osmocom/gsm/protocol/gsm_03_41.h \
                        osmocom/gsm/protocol/gsm_04_08.h \

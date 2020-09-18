@@ -705,5 +705,16 @@ osmo_nri_ranges_vty_del;
 osmo_nri_ranges_to_str_buf;
 osmo_nri_ranges_to_str_c;
 
+osmo_gad_enc;
+osmo_gad_dec;
+osmo_gad_to_str_buf;
+osmo_gad_to_str_c;
+osmo_gad_enc_lat;
+osmo_gad_dec_lat;
+osmo_gad_enc_lon;
+osmo_gad_dec_lon;
+osmo_gad_enc_unc;
+osmo_gad_dec_unc;
+
 local: *;
 };
