@@ -26,9 +26,11 @@
 #include <osmocom/core/byteswap.h>
 #include <osmocom/core/endian.h>
 #include <osmocom/gsm/gsm0808.h>
+#include <osmocom/gsm/gsm0808_lcs.h>
 #include <osmocom/gsm/gsm0808_utils.h>
 #include <osmocom/gsm/protocol/gsm_08_08.h>
 #include <osmocom/gsm/gsm48.h>
+#include <osmocom/gsm/gad.h>
 
 /*! \addtogroup gsm0808
  *  @{
@@ -1337,6 +1339,106 @@ struct msgb *gsm0808_create_dtap(struct msgb *msg_l3, uint8_t link_id)
 	/* Payload */
 	data = msgb_put(msg, header->length);
 	memcpy(data, msg_l3->l3h, header->length);
+
+	return msg;
+}
+
+struct msgb *gsm0808_create_perform_location_request(const struct gsm0808_perform_location_request *params)
+{
+	struct msgb *msg;
+	uint8_t *out;
+	int rc;
+
+	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "BSSMAP-PERFORM-LOCATION-REQUEST");
+	if (!msg)
+		return NULL;
+
+	/* Message Type, 3.2.2.1 */
+	msgb_v_put(msg, BSS_MAP_MSG_PERFORM_LOCATION_RQST);
+
+	/* Location Type 3.2.2.63 */
+	osmo_bssmap_le_ie_enc_location_type(msg, &params->location_type);
+
+	if (params->imsi.type == GSM_MI_TYPE_IMSI) {
+		/* IMSI 3.2.2.6 */
+		out = msgb_tl_put(msg, GSM0808_IE_IMSI);
+		rc = osmo_mobile_identity_encode_msgb(msg, &params->imsi, false);
+		if (rc < 0) {
+			msgb_free(msg);
+			return NULL;
+		}
+		/* write the MI value length */
+		*out = rc;
+	}
+
+	/* prepend header with final length */
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
+
+	return msg;
+}
+
+struct msgb *gsm0808_create_perform_location_response(const struct gsm0808_perform_location_response *params)
+{
+	struct msgb *msg;
+
+	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "BSSMAP-PERFORM-LOCATION-RESPONSE");
+	if (!msg)
+		return NULL;
+
+	/* Message Type, 3.2.2.1 */
+	msgb_v_put(msg, BSS_MAP_MSG_PERFORM_LOCATION_RESPONSE);
+
+	if (params->location_estimate_present) {
+		uint8_t *l = msgb_tl_put(msg, GSM0808_IE_LOCATION_ESTIMATE);
+		int rc = osmo_gad_raw_write(msg, &params->location_estimate);
+		if (rc < 0) {
+			msgb_free(msg);
+			return NULL;
+		}
+		*l = rc;
+	}
+
+	if (params->lcs_cause.present) {
+		uint8_t *l = msgb_tl_put(msg, GSM0808_IE_LCS_CAUSE);
+		int rc = osmo_lcs_cause_enc(msg, &params->lcs_cause);
+		if (rc < 0) {
+			msgb_free(msg);
+			return NULL;
+		}
+		*l = rc;
+	}
+
+	/* prepend header with final length */
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
+
+	return msg;
+}
+
+int gsm0808_enc_lcs_cause(struct msgb *msg, const struct lcs_cause_ie *lcs_cause)
+{
+	uint8_t *l = msgb_tl_put(msg, GSM0808_IE_LCS_CAUSE);
+	int rc = osmo_lcs_cause_enc(msg, lcs_cause);
+	if (rc <= 0)
+		return rc;
+	*l = rc;
+	return rc + 2;
+}
+
+struct msgb *gsm0808_create_perform_location_abort(const struct lcs_cause_ie *lcs_cause)
+{
+	struct msgb *msg;
+
+	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "BSSMAP-PERFORM-LOCATION-ABORT");
+	if (!msg)
+		return NULL;
+
+	/* Message Type, 3.2.2.1 */
+	msgb_v_put(msg, BSS_MAP_MSG_PERFORM_LOCATION_ABORT);
+
+	gsm0808_enc_lcs_cause(msg, lcs_cause);
+
+	/* prepend header with final length */
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
 
 	return msg;
 }

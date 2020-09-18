@@ -255,6 +255,9 @@ gsm0808_enc_lcls;
 gsm0808_dec_lcls;
 gsm0808_msgb_put_cell_id_u;
 gsm0808_decode_cell_id_u;
+gsm0808_create_perform_location_request;
+gsm0808_create_perform_location_response;
+gsm0808_create_perform_location_abort;
 
 gsm29118_msgb_alloc;
 gsm29118_create_alert_req;

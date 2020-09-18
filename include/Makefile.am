@@ -96,6 +96,7 @@ nobase_include_HEADERS = \
                        osmocom/gsm/bssmap_le.h \
                        osmocom/gsm/gad.h \
                        osmocom/gsm/gsm0808.h \
+                       osmocom/gsm/gsm0808_lcs.h \
                        osmocom/gsm/gsm29205.h \
                        osmocom/gsm/gsm0808_utils.h \
                        osmocom/gsm/gsm23003.h \
