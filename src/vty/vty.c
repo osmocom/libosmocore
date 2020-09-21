@@ -1119,7 +1119,7 @@ static void vty_describe_command(struct vty *vty)
 	int ret;
 	vector vline;
 	vector describe;
-	unsigned int i, width, desc_width;
+	unsigned int i, cmd_width, desc_width;
 	struct desc *desc, *desc_cr = NULL;
 
 	vline = cmd_make_strvec(vty->buf);
@@ -1152,7 +1152,7 @@ static void vty_describe_command(struct vty *vty)
 	}
 
 	/* Get width of command string. */
-	width = 0;
+	cmd_width = 0;
 	for (i = 0; i < vector_active(describe); i++)
 		if ((desc = vector_slot(describe, i)) != NULL) {
 			unsigned int len;
@@ -1164,12 +1164,12 @@ static void vty_describe_command(struct vty *vty)
 			if (desc->cmd[0] == '.')
 				len--;
 
-			if (width < len)
-				width = len;
+			if (cmd_width < len)
+				cmd_width = len;
 		}
 
 	/* Get width of description string. */
-	desc_width = vty->width - (width + 6);
+	desc_width = vty->width - (cmd_width + 6);
 
 	/* Print out description. */
 	for (i = 0; i < vector_active(describe); i++)
@@ -1188,15 +1188,15 @@ static void vty_describe_command(struct vty *vty)
 					'.' ? desc->cmd + 1 : desc->cmd,
 					VTY_NEWLINE);
 			else if (desc_width >= strlen(desc->str))
-				vty_out(vty, "  %-*s  %s%s", width,
+				vty_out(vty, "  %-*s  %s%s", cmd_width,
 					desc->cmd[0] ==
 					'.' ? desc->cmd + 1 : desc->cmd,
 					desc->str, VTY_NEWLINE);
 			else
-				vty_describe_fold(vty, width, desc_width, desc);
+				vty_describe_fold(vty, cmd_width, desc_width, desc);
 
 #if 0
-			vty_out(vty, "  %-*s %s%s", width
+			vty_out(vty, "  %-*s %s%s", cmd_width
 				desc->cmd[0] == '.' ? desc->cmd + 1 : desc->cmd,
 				desc->str ? desc->str : "", VTY_NEWLINE);
 #endif				/* 0 */
@@ -1208,11 +1208,11 @@ static void vty_describe_command(struct vty *vty)
 				desc->cmd[0] == '.' ? desc->cmd + 1 : desc->cmd,
 				VTY_NEWLINE);
 		else if (desc_width >= strlen(desc->str))
-			vty_out(vty, "  %-*s  %s%s", width,
+			vty_out(vty, "  %-*s  %s%s", cmd_width,
 				desc->cmd[0] == '.' ? desc->cmd + 1 : desc->cmd,
 				desc->str, VTY_NEWLINE);
 		else
-			vty_describe_fold(vty, width, desc_width, desc);
+			vty_describe_fold(vty, cmd_width, desc_width, desc);
 	}
 
 	cmd_free_strvec(vline);
