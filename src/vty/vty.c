@@ -1143,14 +1143,12 @@ static void vty_describe_command(struct vty *vty)
 		vty_prompt(vty);
 		vty_redraw_line(vty);
 		return;
-		break;
 	case CMD_ERR_NO_MATCH:
 		cmd_free_strvec(vline);
 		vty_out(vty, "%% There is no matched command.%s", VTY_NEWLINE);
 		vty_prompt(vty);
 		vty_redraw_line(vty);
 		return;
-		break;
 	}
 
 	/* Get width of command string. */
