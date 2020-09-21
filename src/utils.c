@@ -545,7 +545,7 @@ uint64_t osmo_decode_big_endian(const uint8_t *data, size_t data_len)
 
 /*! Generic big-endian encoding of big endian number up to 64bit
  *  \param[in] value unsigned integer value to be stored
- *  \param[in] data_len number of octets 
+ *  \param[in] data_len number of octets
  *  \returns static buffer containing big-endian stored value
  *
  * This is like osmo_store64be_ext, except that this returns a static buffer of
@@ -577,7 +577,7 @@ size_t osmo_strlcpy(char *dst, const char *src, size_t siz)
 
 	if (siz) {
 		size_t len = (ret >= siz) ? siz - 1 : ret;
-		if (src)
+		if (len)
 			memcpy(dst, src, len);
 		dst[len] = '\0';
 	}
