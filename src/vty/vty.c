@@ -1153,7 +1153,7 @@ static void vty_describe_command(struct vty *vty)
 
 	/* Get width of command string. */
 	cmd_width = 0;
-	for (i = 0; i < vector_active(describe); i++)
+	for (i = 0; i < vector_active(describe); i++) {
 		if ((desc = vector_slot(describe, i)) != NULL) {
 			unsigned int len;
 
@@ -1167,12 +1167,13 @@ static void vty_describe_command(struct vty *vty)
 			if (cmd_width < len)
 				cmd_width = len;
 		}
+	}
 
 	/* Get width of description string. */
 	desc_width = vty->width - (cmd_width + 6);
 
 	/* Print out description. */
-	for (i = 0; i < vector_active(describe); i++)
+	for (i = 0; i < vector_active(describe); i++) {
 		if ((desc = vector_slot(describe, i)) != NULL) {
 			if (desc->cmd[0] == '\0')
 				continue;
@@ -1201,6 +1202,7 @@ static void vty_describe_command(struct vty *vty)
 				desc->str ? desc->str : "", VTY_NEWLINE);
 #endif				/* 0 */
 		}
+	}
 
 	if ((desc = desc_cr)) {
 		if (!desc->str)
