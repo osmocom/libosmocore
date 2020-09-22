@@ -776,7 +776,11 @@ int osmo_sock_init2_multiaddr(uint16_t family, uint16_t type, uint8_t proto,
 	if (((flags & OSMO_SOCK_F_BIND) && (flags & OSMO_SOCK_F_CONNECT)) &&
 	    !addrinfo_has_in6addr_any((const struct addrinfo **)res_loc, local_hosts_cnt) &&
 	    (loc_has_v4addr != rem_has_v4addr || loc_has_v6addr != rem_has_v6addr)) {
-		LOGP(DLGLOBAL, LOGL_ERROR, "Invalid v4 vs v6 in local vs remote addresses\n");
+		LOGP(DLGLOBAL, LOGL_ERROR, "Invalid v4 vs v6 in local vs remote addresses: "
+		     "local:%s%s remote:%s%s\n",
+		     loc_has_v4addr ? " v4" : "", loc_has_v6addr ? " v6" : "",
+		     rem_has_v4addr ? " v4" : "", rem_has_v6addr ? " v6" : ""
+		     );
 		rc = -EINVAL;
 		goto ret_freeaddrinfo;
 	}
