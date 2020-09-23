@@ -131,10 +131,9 @@ struct osmo_sockaddr *gprs_ns2_ip_vc_sockaddr(struct gprs_ns2_vc *nsvc);
 struct osmo_sockaddr *gprs_ns2_ip_bind_sockaddr(struct gprs_ns2_vc_bind *bind);
 int gprs_ns2_is_ip_bind(struct gprs_ns2_vc_bind *bind);
 int gprs_ns2_ip_bind_set_dscp(struct gprs_ns2_vc_bind *bind, int dscp);
-int gprs_ns2_find_vc_by_sockaddr(
+struct gprs_ns2_vc *gprs_ns2_nsvc_by_sockaddr_bind(
 		struct gprs_ns2_vc_bind *bind,
-		struct osmo_sockaddr *saddr,
-		struct gprs_ns2_vc **result);
+		struct osmo_sockaddr *saddr);
 
 int gprs_ns2_frgre_bind(struct gprs_ns2_inst *nsi,
 			struct osmo_sockaddr *local,
@@ -142,8 +141,9 @@ int gprs_ns2_frgre_bind(struct gprs_ns2_inst *nsi,
 			struct gprs_ns2_vc_bind **result);
 int gprs_ns2_is_frgre_bind(struct gprs_ns2_vc_bind *bind);
 
-struct gprs_ns2_vc *gprs_ns2_nsvc_by_sockaddr(struct gprs_ns2_nse *nsei,
-					      struct osmo_sockaddr *sockaddr);
+struct gprs_ns2_vc *gprs_ns2_nsvc_by_sockaddr_nse(
+		struct gprs_ns2_nse *nse,
+		struct osmo_sockaddr *sockaddr);
 void gprs_ns2_start_alive_all_nsvcs(struct gprs_ns2_nse *nse);
 const char *gprs_ns2_cause_str(int cause);
 const char *gprs_ns2_ll_str(struct gprs_ns2_vc *nsvc);

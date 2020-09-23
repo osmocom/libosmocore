@@ -81,15 +81,11 @@ static void free_vc(struct gprs_ns2_vc *nsvc)
 /*! Find a NS-VC by its remote socket address.
  *  \param[in] bind in which to search
  *  \param[in] saddr remote peer socket adddress to search
- *  \param[out] result pointer to result
- *  \returns 0 on success; 1 if no NS-VC was found; negative on error */
-int gprs_ns2_find_vc_by_sockaddr(struct gprs_ns2_vc_bind *bind, struct osmo_sockaddr *saddr, struct gprs_ns2_vc **result)
+ *  \returns NS-VC matching sockaddr; NULL if none found */
+struct gprs_ns2_vc *gprs_ns2_nsvc_by_sockaddr_bind(struct gprs_ns2_vc_bind *bind, struct osmo_sockaddr *saddr)
 {
 	struct gprs_ns2_vc *nsvc;
 	struct priv_vc *vcpriv;
-
-	if (!result)
-		return -EINVAL;
 
 	llist_for_each_entry(nsvc, &bind->nsvc, blist) {
 		vcpriv = nsvc->priv;
@@ -98,11 +94,10 @@ int gprs_ns2_find_vc_by_sockaddr(struct gprs_ns2_vc_bind *bind, struct osmo_sock
 		if (osmo_sockaddr_cmp(&vcpriv->remote, saddr))
 			continue;
 
-		*result = nsvc;
-		return 0;
+		return nsvc;
 	}
 
-	return 1;
+	return NULL;
 }
 
 static inline int nsip_sendmsg(struct gprs_ns2_vc_bind *bind,
@@ -194,8 +189,8 @@ static int handle_nsip_read(struct osmo_fd *bfd)
 		return -EINVAL;
 
 	/* check if a vc is available */
-	rc = gprs_ns2_find_vc_by_sockaddr(bind, &saddr, &nsvc);
-	if (rc) {
+	nsvc = gprs_ns2_nsvc_by_sockaddr_bind(bind, &saddr);
+	if (!nsvc) {
 		/* VC not found */
 		rc = ns2_create_vc(bind, msg, "newconnection", &reject, &nsvc);
 		switch (rc) {

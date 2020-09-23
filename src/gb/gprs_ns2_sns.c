@@ -179,7 +179,7 @@ static struct gprs_ns2_vc *nsvc_by_ip4_elem(struct gprs_ns2_nse *nse,
 	sa.u.sin.sin_port = ip4->udp_port;
 	sa.u.sin.sin_family = AF_INET;
 
-	return gprs_ns2_nsvc_by_sockaddr(nse, &sa);
+	return gprs_ns2_nsvc_by_sockaddr_nse(nse, &sa);
 }
 
 static struct gprs_ns2_vc *nsvc_by_ip6_elem(struct gprs_ns2_nse *nse,
@@ -191,7 +191,7 @@ static struct gprs_ns2_vc *nsvc_by_ip6_elem(struct gprs_ns2_nse *nse,
 	sa.u.sin6.sin6_port = ip6->udp_port;
 	sa.u.sin6.sin6_family = AF_INET;
 
-	return gprs_ns2_nsvc_by_sockaddr(nse, &sa);
+	return gprs_ns2_nsvc_by_sockaddr_nse(nse, &sa);
 }
 
 /*! called when a nsvc is beeing freed */

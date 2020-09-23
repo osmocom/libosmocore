@@ -824,7 +824,7 @@ int gprs_ns2_ip_connect_sns(struct gprs_ns2_vc_bind *bind,
  *  \param[in] nse NS Entity in which to search
  *  \param[in] sockaddr socket address to search for
  *  \return NS-VC matching sockaddr; NULL if none found */
-struct gprs_ns2_vc *gprs_ns2_nsvc_by_sockaddr(struct gprs_ns2_nse *nse,
+struct gprs_ns2_vc *gprs_ns2_nsvc_by_sockaddr_nse(struct gprs_ns2_nse *nse,
 					      struct osmo_sockaddr *sockaddr)
 {
 	struct gprs_ns2_vc *nsvc;
