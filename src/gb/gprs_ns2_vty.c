@@ -138,20 +138,21 @@ static void ns2_vc_free(struct ns2_vty_vc *vtyvc) {
 
 static struct ns2_vty_vc *vtyvc_by_nsei(uint16_t nsei, bool alloc_missing) {
 	struct ns2_vty_vc *vtyvc;
+
 	llist_for_each_entry(vtyvc, &priv.vtyvc, list) {
 		if (vtyvc->nsei == nsei)
 			return vtyvc;
 	}
 
-	if (alloc_missing) {
-		vtyvc = vtyvc_alloc(nsei);
-		if (!vtyvc)
-			return vtyvc;
+	if (!alloc_missing)
+		return NULL;
 
-		vtyvc->nsei = nsei;
-	}
+	vtyvc = vtyvc_alloc(nsei);
+	if (!vtyvc)
+		return vtyvc;
 
-	return NULL;
+	vtyvc->nsei = nsei;
+	return vtyvc;
 }
 
 static int config_write_ns(struct vty *vty)
