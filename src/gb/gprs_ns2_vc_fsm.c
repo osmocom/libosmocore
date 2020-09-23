@@ -469,9 +469,9 @@ static void gprs_ns2_recv_unitdata(struct osmo_fsm_inst *fi,
 	/* TODO: nsh->data[0] -> C/R only valid in IP SNS */
 	bvci = nsh->data[1] << 8 | nsh->data[2];
 
-	msgb_bssgph(msg) = &nsh->data[3];
-	msgb_bvci(msg) = nsp.bvci = bvci;
-	msgb_nsei(msg) = nsp.nsei = priv->nsvc->nse->nsei;
+	msg->l3h = &nsh->data[3];
+	nsp.bvci = bvci;
+	nsp.nsei = priv->nsvc->nse->nsei;
 
 	if (nsh->data[0])
 		nsp.u.unitdata.change = NS_ENDPOINT_REQUEST_CHANGE;
