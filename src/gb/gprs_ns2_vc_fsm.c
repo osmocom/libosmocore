@@ -473,7 +473,8 @@ static void gprs_ns2_recv_unitdata(struct osmo_fsm_inst *fi,
 	nsp.bvci = bvci;
 	nsp.nsei = priv->nsvc->nse->nsei;
 
-	if (nsh->data[0])
+	/* 10.3.9 NS SDU Control Bits */
+	if (nsh->data[0] & 0x1)
 		nsp.u.unitdata.change = NS_ENDPOINT_REQUEST_CHANGE;
 
 	osmo_prim_init(&nsp.oph, SAP_NS, PRIM_NS_UNIT_DATA,
