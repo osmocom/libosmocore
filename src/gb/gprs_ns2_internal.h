@@ -203,8 +203,7 @@ enum gprs_ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 			       struct msgb **reject,
 			       struct gprs_ns2_vc **success);
 
-int ns2_recv_vc(struct gprs_ns2_inst *nsi,
-		struct gprs_ns2_vc *nsvc,
+int ns2_recv_vc(struct gprs_ns2_vc *nsvc,
 		struct msgb *msg);
 
 struct gprs_ns2_vc *ns2_vc_alloc(struct gprs_ns2_vc_bind *bind,

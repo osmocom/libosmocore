@@ -195,7 +195,7 @@ static int handle_nsip_read(struct osmo_fd *bfd)
 		rc = ns2_create_vc(bind, msg, "newconnection", &reject, &nsvc);
 		switch (rc) {
 		case GPRS_NS2_CS_FOUND:
-			rc = ns2_recv_vc(bind->nsi, nsvc, msg);
+			rc = ns2_recv_vc(nsvc, msg);
 			break;
 		case GPRS_NS2_CS_ERROR:
 		case GPRS_NS2_CS_SKIPPED:
@@ -208,12 +208,12 @@ static int handle_nsip_read(struct osmo_fd *bfd)
 		case GPRS_NS2_CS_CREATED:
 			ns2_driver_alloc_vc(bind, nsvc, &saddr);
 			gprs_ns2_vc_fsm_start(nsvc);
-			rc = ns2_recv_vc(bind->nsi, nsvc, msg);
+			rc = ns2_recv_vc(nsvc, msg);
 			break;
 		}
 	} else {
 		/* VC found */
-		rc = ns2_recv_vc(bind->nsi, nsvc, msg);
+		rc = ns2_recv_vc(nsvc, msg);
 	}
 
 	msgb_free(msg);

@@ -844,12 +844,10 @@ struct gprs_ns2_vc *gprs_ns2_nsvc_by_sockaddr_nse(struct gprs_ns2_nse *nse,
 
 
 /*! Bottom-side entry-point for received NS PDU from the driver/bind
- * \param[in] nsi NS instance
  * \param[in] nsvc NS-VC for which the message was received
  * \param msg the received message. Ownership is trasnferred, caller must not free it!
  * \return 0 on success; negative on error */
-int ns2_recv_vc(struct gprs_ns2_inst *nsi,
-		struct gprs_ns2_vc *nsvc,
+int ns2_recv_vc(struct gprs_ns2_vc *nsvc,
 		struct msgb *msg)
 {
 	struct gprs_ns_hdr *nsh = (struct gprs_ns_hdr *) msg->l2h;
