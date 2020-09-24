@@ -404,7 +404,8 @@ DEFUN(cfg_nse_remoteip, cfg_nse_remoteip_cmd,
 	"nse <0-65535> remote-ip " VTY_IPV46_CMD,
 	NSE_CMD_STR
 	"Remote IP Address\n"
-	"Remote IP Address\n")
+	"Remote IPv4 Address\n"
+	"Remote IPv6 Address\n")
 {
 	uint16_t nsei = atoi(argv[0]);
 	struct ns2_vty_vc *vtyvc;
@@ -555,7 +556,8 @@ DEFUN(cfg_nsip_local_ip, cfg_nsip_local_ip_cmd,
       "encapsulation udp local-ip " VTY_IPV46_CMD,
 	ENCAPS_STR "NS over UDP Encapsulation\n"
 	"Set the IP address on which we listen for NS/UDP\n"
-	"IP Address\n")
+	"IPv4 Address\n"
+	"IPv6 Address\n")
 {
 	osmo_sockaddr_str_from_str2(&priv.udp, argv[0]);
 
@@ -632,7 +634,8 @@ DEFUN(cfg_frgre_local_ip, cfg_frgre_local_ip_cmd,
       "encapsulation framerelay-gre local-ip " VTY_IPV46_CMD,
 	ENCAPS_STR "NS over Frame Relay over GRE Encapsulation\n"
 	"Set the IP address on which we listen for NS/FR/GRE\n"
-	"IP Address\n")
+	"IPv4 Address\n"
+	"IPv6 Address\n")
 {
 	osmo_sockaddr_str_from_str2(&priv.frgreaddr, argv[0]);
 
