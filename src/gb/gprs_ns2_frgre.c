@@ -453,8 +453,8 @@ static int handle_nsfrgre_read(struct osmo_fd *bfd)
 			goto out;
 		case GPRS_NS2_CS_REJECTED:
 			/* nsip_sendmsg will free reject */
-			frgre_sendmsg(bind, reject, &saddr);
-			return 0;
+			rc = frgre_sendmsg(bind, reject, &saddr);
+			goto out;
 		case GPRS_NS2_CS_CREATED:
 			frgre_alloc_vc(bind, nsvc, &saddr, dlci);
 			gprs_ns2_vc_fsm_start(nsvc);

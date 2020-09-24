@@ -202,8 +202,8 @@ static int handle_nsip_read(struct osmo_fd *bfd)
 			goto out;
 		case GPRS_NS2_CS_REJECTED:
 			/* nsip_sendmsg will free reject */
-			nsip_sendmsg(bind, reject, &saddr);
-			return 0;
+			rc = nsip_sendmsg(bind, reject, &saddr);
+			goto out;
 		case GPRS_NS2_CS_CREATED:
 			ns2_driver_alloc_vc(bind, nsvc, &saddr);
 			gprs_ns2_vc_fsm_start(nsvc);
