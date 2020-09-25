@@ -60,7 +60,7 @@ struct ns2_vty_priv {
 	/* force vc mode if another configuration forces
 	 * the vc mode. E.g. SNS configuration */
 	bool force_vc_mode;
-	char *force_vc_mode_reason;
+	const char *force_vc_mode_reason;
 	bool frgre;
 
 	struct llist_head vtyvc;
@@ -826,7 +826,7 @@ void ns2_vty_bind_apply(struct gprs_ns2_vc_bind *bind)
  * \param mode
  * \param reason A description shown to the user when a vty command wants to change the mode.
  */
-void gprs_ns2_vty_force_vc_mode(bool force, enum gprs_ns2_vc_mode mode, char *reason)
+void gprs_ns2_vty_force_vc_mode(bool force, enum gprs_ns2_vc_mode mode, const char *reason)
 {
 	priv.force_vc_mode = force;
 
