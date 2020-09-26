@@ -835,8 +835,9 @@ DEFUN(cfg_log_gsmtap, cfg_log_gsmtap_cmd,
 }
 
 DEFUN(cfg_log_stderr, cfg_log_stderr_cmd,
-	"log stderr",
-	LOG_STR "Logging via STDERR of the process\n")
+	"log stderr [blocking-io]",
+	LOG_STR "Logging via STDERR of the process\n"
+	"Use blocking, synchronous I/O\n")
 {
 	struct log_target *tgt;
 
@@ -851,6 +852,11 @@ DEFUN(cfg_log_stderr, cfg_log_stderr_cmd,
 		}
 		log_add_target(tgt);
 	}
+
+	if (argc > 0 && !strcmp(argv[0], "blocking-io"))
+		log_target_file_switch_to_stream(tgt);
+	else
+		log_target_file_switch_to_wqueue(tgt);
 
 	vty->index = tgt;
 	vty->node = CFG_LOG_NODE;
@@ -878,8 +884,9 @@ DEFUN(cfg_no_log_stderr, cfg_no_log_stderr_cmd,
 }
 
 DEFUN(cfg_log_file, cfg_log_file_cmd,
-	"log file .FILENAME",
-	LOG_STR "Logging to text file\n" "Filename\n")
+	"log file FILENAME [blocking-io]",
+	LOG_STR "Logging to text file\n" "Filename\n"
+	"Use blocking, synchronous I/O\n")
 {
 	const char *fname = argv[0];
 	struct log_target *tgt;
@@ -896,6 +903,11 @@ DEFUN(cfg_log_file, cfg_log_file_cmd,
 		log_add_target(tgt);
 	}
 
+	if (argc > 1 && !strcmp(argv[1], "blocking-io"))
+		log_target_file_switch_to_stream(tgt);
+	else
+		log_target_file_switch_to_wqueue(tgt);
+
 	vty->index = tgt;
 	vty->node = CFG_LOG_NODE;
 
@@ -904,7 +916,7 @@ DEFUN(cfg_log_file, cfg_log_file_cmd,
 
 
 DEFUN(cfg_no_log_file, cfg_no_log_file_cmd,
-	"no log file .FILENAME",
+	"no log file FILENAME",
 	NO_STR LOG_STR "Logging to text file\n" "Filename\n")
 {
 	const char *fname = argv[0];
@@ -979,7 +991,10 @@ static int config_write_log_single(struct vty *vty, struct log_target *tgt)
 		return 1;
 		break;
 	case LOG_TGT_TYPE_STDERR:
-		vty_out(vty, "log stderr%s", VTY_NEWLINE);
+		if (tgt->tgt_file.wqueue)
+			vty_out(vty, "log stderr%s", VTY_NEWLINE);
+		else
+			vty_out(vty, "log stderr blocking-io%s", VTY_NEWLINE);
 		break;
 	case LOG_TGT_TYPE_SYSLOG:
 #ifdef HAVE_SYSLOG_H
@@ -990,7 +1005,10 @@ static int config_write_log_single(struct vty *vty, struct log_target *tgt)
 #endif
 		break;
 	case LOG_TGT_TYPE_FILE:
-		vty_out(vty, "log file %s%s", tgt->tgt_file.fname, VTY_NEWLINE);
+		if (tgt->tgt_file.wqueue)
+			vty_out(vty, "log file %s%s", tgt->tgt_file.fname, VTY_NEWLINE);
+		else
+			vty_out(vty, "log file %s blocking-io%s", tgt->tgt_file.fname, VTY_NEWLINE);
 		break;
 	case LOG_TGT_TYPE_STRRB:
 		vty_out(vty, "log alarms %zu%s",
