@@ -35,6 +35,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <unistd.h>
 
 #ifdef HAVE_STRINGS_H
 #include <strings.h>
@@ -57,6 +58,9 @@
 
 #include <time.h>
 #include <sys/time.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #include <errno.h>
 #include <pthread.h>
 
@@ -64,11 +68,16 @@
 #include <osmocom/core/utils.h>
 #include <osmocom/core/logging.h>
 #include <osmocom/core/timer.h>
+#include <osmocom/core/select.h>
+#include <osmocom/core/write_queue.h>
 
 #include <osmocom/vty/logging.h>	/* for LOGGING_STR. */
 
 /* maximum length of the log string of a single log event (typically  line) */
 #define MAX_LOG_SIZE	4096
+
+/* maximum number of log statements we queue in file/stderr target write queue */
+#define LOG_WQUEUE_LEN	1024
 
 osmo_static_assert(_LOG_CTX_COUNT <= ARRAY_SIZE(((struct log_context*)NULL)->ctx),
 		   enum_logging_ctx_items_fit_in_struct_log_context);
@@ -872,11 +881,32 @@ void log_set_category_filter(struct log_target *target, int category,
 }
 
 #if (!EMBEDDED)
+static void _file_output_stream(struct log_target *target, unsigned int level,
+			 const char *log)
+{
+	OSMO_ASSERT(target->tgt_file.out);
+	fprintf(target->tgt_file.out, "%s", log);
+	fflush(target->tgt_file.out);
+}
+
+/* output via non-blocking write_queue, doing internal buffering */
 static void _file_output(struct log_target *target, unsigned int level,
 			 const char *log)
 {
-	fprintf(target->tgt_file.out, "%s", log);
-	fflush(target->tgt_file.out);
+	int len = strlen(log);
+	struct msgb *msg;
+
+	OSMO_ASSERT(target->tgt_file.wqueue);
+	msg = msgb_alloc_c(target->tgt_file.wqueue, len, "log_file_msg");
+	if (!msg)
+		return;
+
+	/* we simply enqueue the log message to a write queue here, to avoid any blocking
+	 * writes on the output file.  The write queue will tell us once the file is writable
+	 * and call _file_wq_write_cb() */
+	memcpy(msg->data, log, len);
+	msgb_put(msg, len);
+	osmo_wqueue_enqueue_quiet(target->tgt_file.wqueue, msg);
 }
 #endif
 
@@ -939,7 +969,7 @@ struct log_target *log_target_create_stderr(void)
 
 	target->type = LOG_TGT_TYPE_STDERR;
 	target->tgt_file.out = stderr;
-	target->output = _file_output;
+	target->output = _file_output_stream;
 	return target;
 #else
 	return NULL;
@@ -947,11 +977,28 @@ struct log_target *log_target_create_stderr(void)
 }
 
 #if (!EMBEDDED)
-/*! Create a new file-based log target
+/* write-queue tells us we should write another msgb (log line) to the output fd */
+static int _file_wq_write_cb(struct osmo_fd *ofd, struct msgb *msg)
+{
+	int rc;
+
+	rc = write(ofd->fd, msgb_data(msg), msgb_length(msg));
+	if (rc < 0)
+		return rc;
+	if (rc != msgb_length(msg)) {
+		/* pull the number of bytes we have already written */
+		msgb_pull(msg, rc);
+		/* ask write_queue to re-insert the msgb at the head of the queue */
+		return -EAGAIN;
+	}
+	return 0;
+}
+
+/*! Create a new file-based log target using buffered, blocking stream output
  *  \param[in] fname File name of the new log file
  *  \returns Log target in case of success, NULL otherwise
  */
-struct log_target *log_target_create_file(const char *fname)
+struct log_target *log_target_create_file_stream(const char *fname)
 {
 	struct log_target *target;
 
@@ -965,9 +1012,194 @@ struct log_target *log_target_create_file(const char *fname)
 		log_target_destroy(target);
 		return NULL;
 	}
+	target->output = _file_output_stream;
+	target->tgt_file.fname = talloc_strdup(target, fname);
 
+	return target;
+}
+
+/*! switch from non-blocking/write-queue to blocking + buffered stream output
+ *  \param[in] target log target which we should switch
+ *  \return 0 on success; 1 if already switched before; negative on error */
+int log_target_file_switch_to_stream(struct log_target *target)
+{
+	struct osmo_wqueue *wq;
+	const char *name;
+
+	if (!target)
+		return -ENODEV;
+
+	/* this only works for file/stderr targets */
+	switch (target->type) {
+	case LOG_TGT_TYPE_FILE:
+		name = target->tgt_file.fname;
+		break;
+	case LOG_TGT_TYPE_STDERR:
+		name = "stderr";
+		break;
+	default:
+		return -EINVAL;
+	}
+
+	if (target->tgt_file.out) {
+		/* target has already been switched over */
+		return 1;
+	}
+
+	LOGP(DLGLOBAL, LOGL_INFO, "Switching log target '%s' to blocking stream I/O\n", name);
+
+	/* close the write queue file descriptor */
+	wq = target->tgt_file.wqueue;
+	OSMO_ASSERT(wq);
+
+	/* re-open output as stream */
+	if (target->type == LOG_TGT_TYPE_STDERR)
+		target->tgt_file.out = stderr;
+	else
+		target->tgt_file.out = fopen(target->tgt_file.fname, "a");
+	if (!target->tgt_file.out) {
+		LOGP(DLGLOBAL, LOGL_ERROR, "Cannot open log target '%s' as blocking stream I/O: %s\n",
+		     name, strerror(errno));
+		return -EIO;
+	}
+
+	/* synchronously block anything left in the queue */
+	while (!llist_empty(&wq->msg_queue)) {
+		struct msgb *msg = msgb_dequeue(&wq->msg_queue);
+		fwrite(msgb_data(msg), msgb_length(msg), 1, target->tgt_file.out);
+		msgb_free(msg);
+	}
+
+	/* now that everything succeeded, we can finally close the old output fd */
+	if (target->type == LOG_TGT_TYPE_FILE) {
+		osmo_fd_unregister(&wq->bfd);
+		close(wq->bfd.fd);
+	}
+
+	/* release the queue itself */
+	talloc_free(wq);
+	target->tgt_file.wqueue = NULL;
+	target->output = _file_output_stream;
+	target->raw_output = NULL;
+
+	return 0;
+}
+
+/*! switch from blocking + buffered file output to non-blocking write-queue based output.
+ *  \param[in] target log target which we should switch
+ *  \return 0 on success; 1 if already switched before; negative on error */
+int log_target_file_switch_to_wqueue(struct log_target *target)
+{
+	struct osmo_wqueue *wq;
+	const char *name;
+	int rc;
+
+	if (!target)
+		return -ENODEV;
+
+	/* this only works for file/stderr targets */
+	switch (target->type) {
+	case LOG_TGT_TYPE_FILE:
+		name = target->tgt_file.fname;
+		break;
+	case LOG_TGT_TYPE_STDERR:
+		name = "stderr";
+		break;
+	default:
+		return -EINVAL;
+	}
+
+	if (!target->tgt_file.out) {
+		/* target has already been switched over */
+		return 1;
+	}
+
+	LOGP(DLGLOBAL, LOGL_INFO, "Switching log target '%s' to non-blocking I/O\n", name);
+
+	/* we create a ~640kB sized talloc pool within the write-queue to ensure individual
+	 * log lines (stored as msgbs) will not put result in malloc() calls, and also to
+	 * reduce the OOM probability within logging, as the pool is already allocated */
+	wq = talloc_pooled_object(target, struct osmo_wqueue, LOG_WQUEUE_LEN,
+				  LOG_WQUEUE_LEN*(sizeof(struct msgb)+512));
+	if (!wq)
+		return -ENOMEM;
+	osmo_wqueue_init(wq, LOG_WQUEUE_LEN);
+
+	fflush(target->tgt_file.out);
+	if (target->type == LOG_TGT_TYPE_FILE) {
+		rc = open(target->tgt_file.fname, O_WRONLY|O_APPEND|O_CREAT|O_NONBLOCK, 0660);
+		if (rc < 0) {
+			LOGP(DLGLOBAL, LOGL_ERROR, "Cannot open log target '%s' as non-blocking I/O: %s\n",
+			     name, strerror(errno));
+			talloc_free(wq);
+			return -errno;
+		}
+	} else {
+		rc = STDERR_FILENO;
+	}
+	wq->bfd.fd = rc;
+	wq->bfd.when = OSMO_FD_WRITE;
+	wq->write_cb = _file_wq_write_cb;
+
+	rc = osmo_fd_register(&wq->bfd);
+	if (rc < 0) {
+		talloc_free(wq);
+		return -EIO;
+	}
+	target->tgt_file.wqueue = wq;
 	target->output = _file_output;
 
+	/* now that everything succeeded, we can finally close the old output stream */
+	if (target->type == LOG_TGT_TYPE_FILE)
+		fclose(target->tgt_file.out);
+	target->tgt_file.out = NULL;
+
+	return 0;
+}
+
+/*! Create a new file-based log target using non-blocking write_queue
+ *  \param[in] fname File name of the new log file
+ *  \returns Log target in case of success, NULL otherwise
+ */
+struct log_target *log_target_create_file(const char *fname)
+{
+	struct log_target *target;
+	struct osmo_wqueue *wq;
+	int rc;
+
+	target = log_target_create();
+	if (!target)
+		return NULL;
+
+	target->type = LOG_TGT_TYPE_FILE;
+	/* we create a ~640kB sized talloc pool within the write-queue to ensure individual
+	 * log lines (stored as msgbs) will not put result in malloc() calls, and also to
+	 * reduce the OOM probability within logging, as the pool is already allocated */
+	wq = talloc_pooled_object(target, struct osmo_wqueue, LOG_WQUEUE_LEN,
+				  LOG_WQUEUE_LEN*(sizeof(struct msgb)+512));
+	if (!wq) {
+		log_target_destroy(target);
+		return NULL;
+	}
+	osmo_wqueue_init(wq, LOG_WQUEUE_LEN);
+	wq->bfd.fd = open(fname, O_WRONLY|O_APPEND|O_CREAT|O_NONBLOCK, 0660);
+	if (wq->bfd.fd < 0) {
+		talloc_free(wq);
+		log_target_destroy(target);
+		return NULL;
+	}
+	wq->bfd.when = OSMO_FD_WRITE;
+	wq->write_cb = _file_wq_write_cb;
+
+	rc = osmo_fd_register(&wq->bfd);
+	if (rc < 0) {
+		talloc_free(wq);
+		log_target_destroy(target);
+		return NULL;
+	}
+
+	target->tgt_file.wqueue = wq;
+	target->output = _file_output;
 	target->tgt_file.fname = talloc_strdup(target, fname);
 
 	return target;
@@ -1007,17 +1239,33 @@ struct log_target *log_target_find(int type, const char *fname)
  *  \param[in] target log target to unregister, close and delete */
 void log_target_destroy(struct log_target *target)
 {
-
 	/* just in case, to make sure we don't have any references */
 	log_del_target(target);
 
 #if (!EMBEDDED)
+	struct osmo_wqueue *wq;
 	switch (target->type) {
 	case LOG_TGT_TYPE_FILE:
-		if (target->tgt_file.out == NULL)
-			break;
-		fclose(target->tgt_file.out);
-		target->tgt_file.out = NULL;
+	case LOG_TGT_TYPE_STDERR:
+		if (target->tgt_file.out) {
+			if (target->type == LOG_TGT_TYPE_FILE)
+				fclose(target->tgt_file.out);
+			target->tgt_file.out = NULL;
+		}
+		wq = target->tgt_file.wqueue;
+		if (wq) {
+			if (wq->bfd.fd >= 0) {
+				if (target->type == LOG_TGT_TYPE_FILE)
+					close(wq->bfd.fd);
+				wq->bfd.fd = -1;
+			}
+			osmo_fd_unregister(&wq->bfd);
+			osmo_wqueue_clear(wq);
+			talloc_free(wq);
+			target->tgt_file.wqueue = NULL;
+		}
+		talloc_free((void *)target->tgt_file.fname);
+		target->tgt_file.fname = NULL;
 		break;
 #ifdef HAVE_SYSLOG_H
 	case LOG_TGT_TYPE_SYSLOG:
@@ -1038,13 +1286,33 @@ void log_target_destroy(struct log_target *target)
  *  \returns 0 in case of success; negative otherwise */
 int log_target_file_reopen(struct log_target *target)
 {
-	fclose(target->tgt_file.out);
+	struct osmo_wqueue *wq;
+	int rc;
 
-	target->tgt_file.out = fopen(target->tgt_file.fname, "a");
-	if (!target->tgt_file.out)
-		return -errno;
+	OSMO_ASSERT(target->type == LOG_TGT_TYPE_FILE || target->type == LOG_TGT_TYPE_STDERR);
+	OSMO_ASSERT(target->tgt_file.out || target->tgt_file.wqueue);
 
-	/* we assume target->output already to be set */
+	if (target->tgt_file.out) {
+		fclose(target->tgt_file.out);
+		target->tgt_file.out = fopen(target->tgt_file.fname, "a");
+		if (!target->tgt_file.out)
+			return -errno;
+	} else {
+		wq = target->tgt_file.wqueue;
+		osmo_fd_unregister(&wq->bfd);
+		if (wq->bfd.fd >= 0) {
+			close(wq->bfd.fd);
+			wq->bfd.fd = -1;
+		}
+
+		rc = open(target->tgt_file.fname, O_WRONLY|O_APPEND|O_CREAT|O_NONBLOCK, 0660);
+		if (rc < 0)
+			return -errno;
+		wq->bfd.fd = rc;
+		rc = osmo_fd_register(&wq->bfd);
+		if (rc < 0)
+			return rc;
+	}
 
 	return 0;
 }

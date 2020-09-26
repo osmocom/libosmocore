@@ -254,6 +254,7 @@ int main(int argc, char **argv)
 	log_set_print_category_hex(osmo_stderr_target, 0);
 	log_set_print_level(osmo_stderr_target, 1);
 	log_set_print_filename2(osmo_stderr_target, LOG_FILENAME_NONE);
+	log_target_file_switch_to_wqueue(osmo_stderr_target);
 
 	if (cmdline_config.config_file) {
 		rc = vty_read_config_file(cmdline_config.config_file, NULL);
