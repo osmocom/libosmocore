@@ -41,6 +41,7 @@
 #include <osmocom/gprs/gprs_ns.h>
 
 #include "common_vty.h"
+#include "osmocom/gsm/gsm48.h"
 
 void *bssgp_tall_ctx = NULL;
 
@@ -90,6 +91,39 @@ struct bssgp_bvc_ctx *btsctx_by_raid_cid(const struct gprs_ra_id *raid, uint16_t
 			return bctx;
 	}
 	return NULL;
+}
+
+/*! Transmit a BVC-RESET message with a given nsei and bvci (Chapter 10.4.12)
+ *  \param[in] nsei The NSEI to transmit over
+ *  \param[in] bvci BVCI of the BVC to reset
+ *  \param[in] cause The cause of the reset
+ *  \param[in] ra_id Pointer to the ra_id to include. If NULL no cell information will be included
+ *  \param[in] cell_id The cell_id to include (if ra_id is not NULL)
+ */
+int bssgp_tx_bvc_reset_nsei_bvci(uint16_t nsei, uint16_t bvci, enum gprs_bssgp_cause cause, const struct gprs_ra_id *ra_id, uint16_t cell_id)
+{
+	struct msgb *msg = bssgp_msgb_alloc();
+	struct bssgp_normal_hdr *bgph =
+		(struct bssgp_normal_hdr *) msgb_put(msg, sizeof(*bgph));
+	uint16_t _bvci = osmo_htons(bvci);
+
+	msgb_nsei(msg) = nsei;
+	msgb_bvci(msg) = 0; /* Signalling */
+	bgph->pdu_type = BSSGP_PDUT_BVC_RESET;
+	LOGP(DBSSGP, LOGL_NOTICE, "BSSGP (BVCI=%u) Tx BVC-RESET "
+		"CAUSE=%s\n", bvci, bssgp_cause_str(cause));
+
+	msgb_tvlv_put(msg, BSSGP_IE_BVCI, 2, (uint8_t *) &_bvci);
+	msgb_tvlv_put(msg, BSSGP_IE_CAUSE, 1, (uint8_t *) &cause);
+	if (ra_id) {
+		uint8_t bssgp_cid[8];
+		bssgp_create_cell_id(bssgp_cid, ra_id, cell_id);
+		msgb_tvlv_put(msg, BSSGP_IE_CELL_ID, sizeof(bssgp_cid), bssgp_cid);
+	}
+
+	/* Optional: Feature Bitmap */
+
+	return bssgp_ns_send(bssgp_ns_send_data, msg);
 }
 
 /*! Initiate reset procedure for all PTP BVC on a given NSEI.

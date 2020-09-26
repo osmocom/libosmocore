@@ -20,6 +20,7 @@ struct msgb *bssgp_msgb_alloc(void);
 struct msgb *bssgp_msgb_copy(const struct msgb *msg, const char *name);
 const char *bssgp_cause_str(enum gprs_bssgp_cause cause);
 const char *bssgp_pdu_str(enum bssgp_pdu_type pdu);
+int bssgp_tx_bvc_reset_nsei_bvci(uint16_t nsei, uint16_t bvci, enum gprs_bssgp_cause cause, const struct gprs_ra_id *ra_id, uint16_t cell_id);
 /* Transmit a simple response such as BLOCK/UNBLOCK/RESET ACK/NACK */
 int bssgp_tx_simple_bvci(uint8_t pdu_type, uint16_t nsei,
 			 uint16_t bvci, uint16_t ns_bvci);

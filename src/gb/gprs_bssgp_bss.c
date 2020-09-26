@@ -293,28 +293,10 @@ int bssgp_tx_bvc_unblock(struct bssgp_bvc_ctx *bctx)
 /*! Transmit a BVC-RESET message (Chapter 10.4.12) */
 int bssgp_tx_bvc_reset2(struct bssgp_bvc_ctx *bctx, uint16_t bvci, uint8_t cause, bool add_cell_id)
 {
-	struct msgb *msg = bssgp_msgb_alloc();
-	struct bssgp_normal_hdr *bgph =
-			(struct bssgp_normal_hdr *) msgb_put(msg, sizeof(*bgph));
-	uint16_t _bvci = osmo_htons(bvci);
-
-	LOGP(DBSSGP, LOGL_NOTICE, "BSSGP (BVCI=%u) Tx BVC-RESET "
-		"CAUSE=%s\n", bvci, bssgp_cause_str(cause));
-
-	msgb_nsei(msg) = bctx->nsei;
-	msgb_bvci(msg) = 0; /* Signalling */
-	bgph->pdu_type = BSSGP_PDUT_BVC_RESET;
-
-	msgb_tvlv_put(msg, BSSGP_IE_BVCI, 2, (uint8_t *) &_bvci);
-	msgb_tvlv_put(msg, BSSGP_IE_CAUSE, 1, &cause);
-	if (add_cell_id) {
-		uint8_t bssgp_cid[8];
-		bssgp_create_cell_id(bssgp_cid, &bctx->ra_id, bctx->cell_id);
-		msgb_tvlv_put(msg, BSSGP_IE_CELL_ID, sizeof(bssgp_cid), bssgp_cid);
-	}
-	/* Optional: Feature Bitmap */
-
-	return bssgp_ns_send(bssgp_ns_send_data, msg);
+	if (add_cell_id)
+		return bssgp_tx_bvc_reset_nsei_bvci(bctx->nsei, bvci, cause, &bctx->ra_id, bctx->cell_id);
+	else
+		return bssgp_tx_bvc_reset_nsei_bvci(bctx->nsei, bvci, cause, NULL, 0);
 }
 int bssgp_tx_bvc_reset(struct bssgp_bvc_ctx *bctx, uint16_t bvci, uint8_t cause)
 {
