@@ -44,6 +44,17 @@
 #include <syslog.h>
 #endif
 
+#ifdef HAVE_SYSTEMTAP
+/* include the generated probes header and put markers in code */
+#include "probes.h"
+#define TRACE(probe) probe
+#define TRACE_ENABLED(probe) probe ## _ENABLED()
+#else
+/* Wrap the probe to allow it to be removed when no systemtap available */
+#define TRACE(probe)
+#define TRACE_ENABLED(probe) (0)
+#endif /* HAVE_SYSTEMTAP */
+
 #include <time.h>
 #include <sys/time.h>
 #include <errno.h>
@@ -670,9 +681,11 @@ void logp2(int subsys, unsigned int level, const char *file, int line, int cont,
 {
 	va_list ap;
 
+	TRACE(LIBOSMOCORE_LOG_START());
 	va_start(ap, format);
 	osmo_vlogp(subsys, level, file, line, cont, format, ap);
 	va_end(ap);
+	TRACE(LIBOSMOCORE_LOG_DONE());
 }
 
 /*! Register a new log target with the logging core

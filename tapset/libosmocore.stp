@@ -1,0 +1,18 @@
+/* libosmocore tapset
+ *
+ * This file is part of libosmocore.
+ *
+ * Each probe defines the probe name and a full probestr which consist of the probe name and between
+ * brackets all argument names and values.
+ */
+
+probe libosmocore_log_start = process("libosmocore").mark("log_start")
+{
+ count = $arg1;
+ probestr = sprintf("%s(count=%d), $$name, count);
+}
+
+probe libosmocore_log_done = process("libosmocore").mark("log_done")
+{
+ probestr = sprintf("%s", $$name);
+}
