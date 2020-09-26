@@ -100,6 +100,23 @@ void osmo_wqueue_init(struct osmo_wqueue *queue, int max_length)
 	INIT_LLIST_HEAD(&queue->msg_queue);
 }
 
+/*! Enqueue a new \ref msgb into a write queue (without logging full queue events)
+ *  \param[in] queue Write queue to be used
+ *  \param[in] data to-be-enqueued message buffer
+ *  \returns 0 on success; negative on error
+ */
+int osmo_wqueue_enqueue_quiet(struct osmo_wqueue *queue, struct msgb *data)
+{
+	if (queue->current_length >= queue->max_length)
+		return -ENOSPC;
+
+	++queue->current_length;
+	msgb_enqueue(&queue->msg_queue, data);
+	queue->bfd.when |= OSMO_FD_WRITE;
+
+	return 0;
+}
+
 /*! Enqueue a new \ref msgb into a write queue
  *  \param[in] queue Write queue to be used
  *  \param[in] data to-be-enqueued message buffer
@@ -113,11 +130,7 @@ int osmo_wqueue_enqueue(struct osmo_wqueue *queue, struct msgb *data)
 		return -ENOSPC;
 	}
 
-	++queue->current_length;
-	msgb_enqueue(&queue->msg_queue, data);
-	queue->bfd.when |= OSMO_FD_WRITE;
-
-	return 0;
+	return osmo_wqueue_enqueue_quiet(queue, data);
 }
 
 /*! Clear a \ref osmo_wqueue

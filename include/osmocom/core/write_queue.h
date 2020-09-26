@@ -53,6 +53,7 @@ struct osmo_wqueue {
 void osmo_wqueue_init(struct osmo_wqueue *queue, int max_length);
 void osmo_wqueue_clear(struct osmo_wqueue *queue);
 int osmo_wqueue_enqueue(struct osmo_wqueue *queue, struct msgb *data);
+int osmo_wqueue_enqueue_quiet(struct osmo_wqueue *queue, struct msgb *data);
 int osmo_wqueue_bfd_cb(struct osmo_fd *fd, unsigned int what);
 
 /*! @} */
