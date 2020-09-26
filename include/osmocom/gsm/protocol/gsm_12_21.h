@@ -789,6 +789,13 @@ enum ipac_bcch_info_type {
 	IPAC_BINF_CELL_ALLOC		= (1 << 2),
 };
 
+/*! Osmocom NSVC address type for NM_ATT_OSMO_NS_LINK_CFG */
+enum osmo_oml_nsvc_address_type {
+	OSMO_NSVC_ADDR_UNSPEC		= 0x00,
+	OSMO_NSVC_ADDR_IPV4		= 0x04,
+	OSMO_NSVC_ADDR_IPV6		= 0x29,
+};
+
 /*! 3GPP TS 52.021 §9.4.62 SW Description */
 struct abis_nm_sw_desc {
 	uint8_t file_id[UINT8_MAX];
