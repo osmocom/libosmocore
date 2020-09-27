@@ -64,11 +64,9 @@ int osmo_wqueue_bfd_cb(struct osmo_fd *fd, unsigned int what)
 
 		fd->when &= ~OSMO_FD_WRITE;
 
+		msg = msgb_dequeue_count(&queue->msg_queue, &queue->current_length);
 		/* the queue might have been emptied */
-		if (!llist_empty(&queue->msg_queue)) {
-			--queue->current_length;
-
-			msg = msgb_dequeue(&queue->msg_queue);
+		if (msg) {
 			rc = queue->write_cb(fd, msg);
 			msgb_free(msg);
 
@@ -110,8 +108,7 @@ int osmo_wqueue_enqueue_quiet(struct osmo_wqueue *queue, struct msgb *data)
 	if (queue->current_length >= queue->max_length)
 		return -ENOSPC;
 
-	++queue->current_length;
-	msgb_enqueue(&queue->msg_queue, data);
+	msgb_enqueue_count(&queue->msg_queue, data, &queue->current_length);
 	queue->bfd.when |= OSMO_FD_WRITE;
 
 	return 0;
