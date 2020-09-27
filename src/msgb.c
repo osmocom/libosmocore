@@ -64,7 +64,7 @@
 #include <osmocom/core/talloc.h>
 #include <osmocom/core/logging.h>
 
-/*! Allocate a new message buffer from given talloc cotext
+/*! Allocate a new message buffer from given talloc context
  * \param[in] ctx talloc context from which to allocate
  * \param[in] size Length in octets, including headroom
  * \param[in] name Human-readable name to be associated with msgb
