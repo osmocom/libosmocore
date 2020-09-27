@@ -478,8 +478,8 @@ int main(int argc, char **argv)
 
 	test_deferred_cmd();
 
-	/* Expecting root ctx + msgb root ctx + 5 logging elements */
-	if (talloc_total_blocks(ctx) != 7) {
+	/* Expecting root ctx + msgb root ctx + 6 logging elements */
+	if (talloc_total_blocks(ctx) != 8) {
 		talloc_report_full(ctx, stdout);
 		OSMO_ASSERT(false);
 	}

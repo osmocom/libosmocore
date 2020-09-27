@@ -70,6 +70,8 @@
 #include <osmocom/core/timer.h>
 #include <osmocom/core/select.h>
 #include <osmocom/core/write_queue.h>
+#include <osmocom/core/stats.h>
+#include <osmocom/core/rate_ctr.h>
 
 #include <osmocom/vty/logging.h>	/* for LOGGING_STR. */
 
@@ -91,6 +93,27 @@ struct log_info *osmo_log_info;
 static struct log_context log_context;
 void *tall_log_ctx = NULL;
 LLIST_HEAD(osmo_log_target_list);
+
+enum tgt_ctr {
+	TGT_CTR_LOG_COUNT,
+	TGT_CTR_REOPEN_COUNT,
+	TGT_CTR_QUEUED_COUNT,
+	TGT_CTR_DROP_COUNT,
+};
+static const struct rate_ctr_desc log_target_ctr_description[] = {
+	{ "writes",	"Log write count" },
+	{ "repoens",	"Re-open count  " },
+	{ "queued",	"Log writes queued due to blocked file descriptor" },
+	{ "drops",	"Log writes dropped due to queue overflow" },
+};
+static const struct rate_ctr_group_desc log_target_ctrg_desc = {
+	.group_name_prefix = "log:target",
+	.group_description = "Log Target Statistics",
+	.num_ctr = ARRAY_SIZE(log_target_ctr_description),
+	.ctr_desc = log_target_ctr_description,
+	.class_id = OSMO_STATS_CLASS_GLOBAL,
+};
+
 
 #if (!EMBEDDED)
 /*! This mutex must be held while using osmo_log_target_list or any of its
@@ -673,6 +696,8 @@ void osmo_vlogp(int subsys, int level, const char *file, int line,
 		if (!should_log_to_target(tar, subsys, level))
 			continue;
 
+		rate_ctr_inc(&tar->ctrg->ctr[TGT_CTR_LOG_COUNT]);
+
 		/* According to the manpage, vsnprintf leaves the value of ap
 		 * in undefined state. Since _output uses vsnprintf and it may
 		 * be called several times, we have to pass a copy of ap. */
@@ -960,9 +985,14 @@ static void _file_raw_output(struct log_target *target, int subsys, unsigned int
 	}
 	/* if we reach here, either we already had elements in the write_queue, or the synchronous write
 	 * failed: enqueue the message to the write_queue (backlog) */
-	osmo_wqueue_enqueue_quiet(target->tgt_file.wqueue, msg);
+	rate_ctr_inc(&target->ctrg->ctr[TGT_CTR_QUEUED_COUNT]);
+	rc = osmo_wqueue_enqueue_quiet(target->tgt_file.wqueue, msg);
+	if (rc < 0)
+		rate_ctr_inc(&target->ctrg->ctr[TGT_CTR_DROP_COUNT]);
 }
 #endif
+
+static int log_target_ctrg_idx = 0;
 
 /*! Create a new log target skeleton
  *  \returns dynamically-allocated log target
@@ -985,6 +1015,12 @@ struct log_target *log_target_create(void)
 						struct log_category,
 						osmo_log_info->num_cat);
 	if (!target->categories) {
+		talloc_free(target);
+		return NULL;
+	}
+	target->ctrg = rate_ctr_group_alloc(target, &log_target_ctrg_desc, log_target_ctrg_idx++);
+	if (!target->ctrg) {
+		talloc_free(target->categories);
 		talloc_free(target);
 		return NULL;
 	}
@@ -1316,6 +1352,7 @@ void log_target_destroy(struct log_target *target)
 	}
 #endif
 
+	rate_ctr_group_free(target->ctrg);
 	talloc_free(target);
 }
 
@@ -1352,6 +1389,7 @@ int log_target_file_reopen(struct log_target *target)
 			return rc;
 	}
 
+	rate_ctr_inc(&target->ctrg->ctr[TGT_CTR_REOPEN_COUNT]);
 	return 0;
 }
 

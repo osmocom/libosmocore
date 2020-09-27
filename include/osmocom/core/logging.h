@@ -10,6 +10,7 @@
 #include <stdbool.h>
 #include <osmocom/core/defs.h>
 #include <osmocom/core/linuxlist.h>
+#include <osmocom/core/rate_ctr.h>
 
 #ifndef DEBUG
 #define DEBUG
@@ -357,6 +358,9 @@ struct log_target {
 	enum log_filename_type print_filename2;
 	/* Where on a log line to put the source file info. */
 	enum log_filename_pos print_filename_pos;
+
+	/* Rate counters related to this target */
+	struct rate_ctr_group *ctrg;
 };
 
 /* use the above macros */
