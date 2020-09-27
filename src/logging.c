@@ -78,7 +78,7 @@
 #define MAX_LOG_SIZE	4096
 
 /* maximum number of log statements we queue in file/stderr target write queue */
-#define LOG_WQUEUE_LEN	1024
+#define LOG_WQUEUE_LEN	156
 
 osmo_static_assert(_LOG_CTX_COUNT <= ARRAY_SIZE(((struct log_context*)NULL)->ctx),
 		   enum_logging_ctx_items_fit_in_struct_log_context);
@@ -449,12 +449,23 @@ static const char *const_basename(const char *path)
 	return bn + 1;
 }
 
-static void _output(struct log_target *target, unsigned int subsys,
-		    unsigned int level, const char *file, int line, int cont,
-		    const char *format, va_list ap)
+/*! main output formatting function for log lines.
+ *  \param[out] buf caller-allocated output buffer for the generated string
+ *  \param[in] buf_len number of bytes available in buf
+ *  \param[in] target log target for which the string is to be formatted
+ *  \param[in] subsys Log sub-system number
+ *  \param[in] level Log level
+ *  \param[in] file name of source code file generating the log
+ *  \param[in] line line source code line number within 'file' generating the log
+ *  \param[in] cont is this a continuation (true) or not (false)
+ *  \param[in] format format string
+ *  \param[in] ap variable argument list for format
+ *  \returns number of bytes written to out */
+static int _output_buf(char *buf, int buf_len, struct log_target *target, unsigned int subsys,
+			unsigned int level, const char *file, int line, int cont,
+			const char *format, va_list ap)
 {
-	char buf[MAX_LOG_SIZE];
-	int ret, len = 0, offset = 0, rem = sizeof(buf);
+	int ret, len = 0, offset = 0, rem = buf_len;
 	const char *c_subsys = NULL;
 
 	/* are we using color */
@@ -588,8 +599,21 @@ static void _output(struct log_target *target, unsigned int subsys,
 		OSMO_SNPRINTF_RET(ret, rem, offset, len);
 	}
 err:
-	buf[sizeof(buf)-1] = '\0';
-	target->output(target, level, buf);
+	buf[buf_len-1] = '\0';
+	return len;
+}
+
+/* Format the log line for given target; use a stack buffer and call target->output */
+static void _output(struct log_target *target, unsigned int subsys,
+		    unsigned int level, const char *file, int line, int cont,
+		    const char *format, va_list ap)
+{
+	char buf[MAX_LOG_SIZE];
+	int rc;
+
+	rc = _output_buf(buf, sizeof(buf), target, subsys, level, file, line, cont, format, ap);
+	if (rc > 0)
+		target->output(target, level, buf);
 }
 
 /* Catch internal logging category indexes as well as out-of-bounds indexes.
@@ -922,22 +946,22 @@ static void _file_output_stream(struct log_target *target, unsigned int level,
 }
 
 /* output via non-blocking write_queue, doing internal buffering */
-static void _file_output(struct log_target *target, unsigned int level,
-			 const char *log)
+static void _file_raw_output(struct log_target *target, int subsys, unsigned int level, const char *file,
+			     int line, int cont, const char *format, va_list ap)
 {
-	int len = strlen(log);
 	struct msgb *msg;
+	int rc;
 
 	OSMO_ASSERT(target->tgt_file.wqueue);
-	msg = msgb_alloc_c(target->tgt_file.wqueue, len, "log_file_msg");
+	msg = msgb_alloc_c(target->tgt_file.wqueue, MAX_LOG_SIZE, "log_file_msg");
 	if (!msg)
 		return;
 
 	/* we simply enqueue the log message to a write queue here, to avoid any blocking
 	 * writes on the output file.  The write queue will tell us once the file is writable
 	 * and call _file_wq_write_cb() */
-	memcpy(msg->data, log, len);
-	msgb_put(msg, len);
+	rc = _output_buf((char *)msgb_data(msg), msgb_tailroom(msg), target, subsys, level, file, line, cont, format, ap);
+	msgb_put(msg, rc);
 	osmo_wqueue_enqueue_quiet(target->tgt_file.wqueue, msg);
 }
 #endif
@@ -1152,7 +1176,7 @@ int log_target_file_switch_to_wqueue(struct log_target *target)
 	 * log lines (stored as msgbs) will not put result in malloc() calls, and also to
 	 * reduce the OOM probability within logging, as the pool is already allocated */
 	wq = talloc_pooled_object(target, struct osmo_wqueue, LOG_WQUEUE_LEN,
-				  LOG_WQUEUE_LEN*(sizeof(struct msgb)+512));
+				  LOG_WQUEUE_LEN*(sizeof(struct msgb)+MAX_LOG_SIZE));
 	if (!wq)
 		return -ENOMEM;
 	osmo_wqueue_init(wq, LOG_WQUEUE_LEN);
@@ -1179,7 +1203,8 @@ int log_target_file_switch_to_wqueue(struct log_target *target)
 		return -EIO;
 	}
 	target->tgt_file.wqueue = wq;
-	target->output = _file_output;
+	target->raw_output = _file_raw_output;
+	target->output = NULL;
 
 	/* now that everything succeeded, we can finally close the old output stream */
 	if (target->type == LOG_TGT_TYPE_FILE)
@@ -1208,7 +1233,7 @@ struct log_target *log_target_create_file(const char *fname)
 	 * log lines (stored as msgbs) will not put result in malloc() calls, and also to
 	 * reduce the OOM probability within logging, as the pool is already allocated */
 	wq = talloc_pooled_object(target, struct osmo_wqueue, LOG_WQUEUE_LEN,
-				  LOG_WQUEUE_LEN*(sizeof(struct msgb)+512));
+				  LOG_WQUEUE_LEN*(sizeof(struct msgb)+MAX_LOG_SIZE));
 	if (!wq) {
 		log_target_destroy(target);
 		return NULL;
@@ -1231,7 +1256,7 @@ struct log_target *log_target_create_file(const char *fname)
 	}
 
 	target->tgt_file.wqueue = wq;
-	target->output = _file_output;
+	target->raw_output = _file_raw_output;
 	target->tgt_file.fname = talloc_strdup(target, fname);
 
 	return target;
