@@ -56,6 +56,9 @@
 
 #include <osmocom/vty/logging.h>	/* for LOGGING_STR. */
 
+/* maximum length of the log string of a single log event (typically  line) */
+#define MAX_LOG_SIZE	4096
+
 osmo_static_assert(_LOG_CTX_COUNT <= ARRAY_SIZE(((struct log_context*)NULL)->ctx),
 		   enum_logging_ctx_items_fit_in_struct_log_context);
 osmo_static_assert(_LOG_FLT_COUNT <= ARRAY_SIZE(((struct log_target*)NULL)->filter_data),
@@ -390,7 +393,7 @@ static void _output(struct log_target *target, unsigned int subsys,
 		    unsigned int level, const char *file, int line, int cont,
 		    const char *format, va_list ap)
 {
-	char buf[4096];
+	char buf[MAX_LOG_SIZE];
 	int ret, len = 0, offset = 0, rem = sizeof(buf);
 	const char *c_subsys = NULL;
 
