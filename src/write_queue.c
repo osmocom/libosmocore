@@ -68,10 +68,15 @@ int osmo_wqueue_bfd_cb(struct osmo_fd *fd, unsigned int what)
 		/* the queue might have been emptied */
 		if (msg) {
 			rc = queue->write_cb(fd, msg);
-			msgb_free(msg);
-
-			if (rc == -EBADF)
+			if (rc == -EBADF) {
+				msgb_free(msg);
 				goto err_badfd;
+			} else if (rc == -EAGAIN) {
+				/* re-enqueue the msgb to the head of the queue */
+				llist_add(&msg->list, &queue->msg_queue);
+				queue->current_length++;
+			} else
+				msgb_free(msg);
 
 			if (!llist_empty(&queue->msg_queue))
 				fd->when |= OSMO_FD_WRITE;
