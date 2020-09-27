@@ -33,6 +33,7 @@
 #include <osmocom/core/strrb.h>
 #include <osmocom/core/loggingrb.h>
 #include <osmocom/core/gsmtap.h>
+#include <osmocom/core/application.h>
 
 #include <osmocom/vty/command.h>
 #include <osmocom/vty/buffer.h>
@@ -797,6 +798,7 @@ DEFUN(cfg_no_log_stderr, cfg_no_log_stderr_cmd,
 	}
 
 	log_target_destroy(tgt);
+	osmo_stderr_target = NULL;
 
 	RET_WITH_UNLOCK(CMD_SUCCESS);
 }
