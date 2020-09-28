@@ -622,6 +622,13 @@ static char *xml_escape(const char *inp)
 
 typedef int (*print_func_t)(void *data, const char *fmt, ...);
 
+static const struct value_string cmd_attr_desc[] = {
+	{ CMD_ATTR_DEPRECATED,		"This command is deprecated" },
+	{ CMD_ATTR_HIDDEN,		"This command is hidden" },
+	{ CMD_ATTR_IMMEDIATE,		"This command applies immediately" },
+	{ 0, NULL }
+};
+
 /*
  * Write one cmd_element as XML via a print_func_t.
  */
@@ -631,6 +638,25 @@ static int vty_dump_element(struct cmd_element *cmd, print_func_t print_func, vo
 	unsigned int i;
 
 	print_func(data, "    <command id='%s'>%s", xml_string, newline);
+
+	/* Print global attributes and their description */
+	if (cmd->attr != 0x00) { /* ... if at least one flag is set */
+		print_func(data, "      <attributes scope='global'>%s", newline);
+
+		for (i = 0; i < ARRAY_SIZE(cmd_attr_desc) - 1; i++) {
+			char *xml_att_desc;
+
+			if (~cmd->attr & cmd_attr_desc[i].value)
+				continue;
+
+			xml_att_desc = xml_escape(cmd_attr_desc[i].str);
+			print_func(data, "        <attribute doc='%s' />%s",
+				   xml_att_desc, newline);
+			talloc_free(xml_att_desc);
+		}
+
+		print_func(data, "      </attributes>%s", newline);
+	}
 
 	/* Print application specific attributes and their description */
 	if (cmd->usrattr != 0x00) { /* ... if at least one flag is set */
