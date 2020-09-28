@@ -137,6 +137,7 @@ struct cmd_node {
 enum {
 	CMD_ATTR_DEPRECATED	= (1 << 0),
 	CMD_ATTR_HIDDEN		= (1 << 1),
+	CMD_ATTR_IMMEDIATE	= (1 << 2),
 };
 
 /*! Structure of a command element */
