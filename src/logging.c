@@ -937,6 +937,24 @@ void log_set_category_filter(struct log_target *target, int category,
 }
 
 #if (!EMBEDDED)
+/* write-queue tells us we should write another msgb (log line) to the output fd */
+static int _file_wq_write_cb(struct osmo_fd *ofd, struct msgb *msg)
+{
+	int rc;
+
+	rc = write(ofd->fd, msgb_data(msg), msgb_length(msg));
+	if (rc < 0)
+		return rc;
+	if (rc != msgb_length(msg)) {
+		/* pull the number of bytes we have already written */
+		msgb_pull(msg, rc);
+		/* ask write_queue to re-insert the msgb at the head of the queue */
+		return -EAGAIN;
+	}
+	return 0;
+}
+
+/* output via buffered, blocking stdio streams */
 static void _file_output_stream(struct log_target *target, unsigned int level,
 			 const char *log)
 {
@@ -962,6 +980,18 @@ static void _file_raw_output(struct log_target *target, int subsys, unsigned int
 	 * and call _file_wq_write_cb() */
 	rc = _output_buf((char *)msgb_data(msg), msgb_tailroom(msg), target, subsys, level, file, line, cont, format, ap);
 	msgb_put(msg, rc);
+
+	/* attempt a synchronous, non-blocking write, if the write queue is empty */
+	if (target->tgt_file.wqueue->current_length == 0) {
+		rc = _file_wq_write_cb(&target->tgt_file.wqueue->bfd, msg);
+		if (rc == 0) {
+			/* the write was complete, we can exit early */
+			msgb_free(msg);
+			return;
+		}
+	}
+	/* if we reach here, either we already had elements in the write_queue, or the synchronous write
+	 * failed: enqueue the message to the write_queue (backlog) */
 	osmo_wqueue_enqueue_quiet(target->tgt_file.wqueue, msg);
 }
 #endif
@@ -1034,23 +1064,6 @@ struct log_target *log_target_create_stderr(void)
 }
 
 #if (!EMBEDDED)
-/* write-queue tells us we should write another msgb (log line) to the output fd */
-static int _file_wq_write_cb(struct osmo_fd *ofd, struct msgb *msg)
-{
-	int rc;
-
-	rc = write(ofd->fd, msgb_data(msg), msgb_length(msg));
-	if (rc < 0)
-		return rc;
-	if (rc != msgb_length(msg)) {
-		/* pull the number of bytes we have already written */
-		msgb_pull(msg, rc);
-		/* ask write_queue to re-insert the msgb at the head of the queue */
-		return -EAGAIN;
-	}
-	return 0;
-}
-
 /*! Create a new file-based log target using buffered, blocking stream output
  *  \param[in] fname File name of the new log file
  *  \returns Log target in case of success, NULL otherwise
