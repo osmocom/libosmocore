@@ -127,6 +127,9 @@ int osmo_use_count_to_str_buf(char *buf, size_t buf_len, const struct osmo_use_c
 
 	OSMO_STRBUF_PRINTF(sb, "%" PRId32 " (", count);
 
+	if (!uc->use_counts.next)
+		goto uninitialized;
+
 	first = true;
 	llist_for_each_entry(e, &uc->use_counts, entry) {
 		if (!e->count)
@@ -140,6 +143,8 @@ int osmo_use_count_to_str_buf(char *buf, size_t buf_len, const struct osmo_use_c
 	}
 	if (first)
 		OSMO_STRBUF_PRINTF(sb, "-");
+
+uninitialized:
 	OSMO_STRBUF_PRINTF(sb, ")");
 	return sb.chars_needed;
 }
