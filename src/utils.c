@@ -30,6 +30,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <inttypes.h>
+#include <limits.h>
 
 #include <osmocom/core/utils.h>
 #include <osmocom/core/bit64gen.h>
@@ -1206,6 +1207,194 @@ bool osmo_str_startswith(const char *str, const char *startswith_str)
 	if (!str)
 		return false;
 	return strncmp(str, startswith_str, strlen(startswith_str)) == 0;
+}
+
+/*! Convert a string of a floating point number to a signed int, with a decimal factor (fixed-point precision).
+ * For example, with precision=3, convert "-1.23" to -1230. In other words, the float value is multiplied by
+ * 10 to-the-power-of precision to obtain the returned integer.
+ * The usable range of digits is -INT64_MAX .. INT64_MAX -- note, not INT64_MIN! The value of INT64_MIN is excluded to
+ * reduce implementation complexity. See also utils_test.c.
+ * \param[out] val  Returned integer value.
+ * \param[in] str  String of a float, like '-12.345'.
+ * \param[in] in_len  Length of string to parse, or -1 to use strlen(str).
+ * \param[in] precision  Fixed-point precision, or  * \returns 0 on success, negative on error.
+ */
+int osmo_float_str_to_int(int64_t *val, const char *str, unsigned int precision)
+{
+	const char *point;
+	char *endptr;
+	const char *p;
+	int64_t sign = 1;
+	int64_t integer = 0;
+	int64_t decimal = 0;
+	int64_t precision_factor;
+	int64_t integer_max;
+	int64_t decimal_max;
+	int i;
+
+	OSMO_ASSERT(val);
+	*val = 0;
+
+	if (!str)
+		return -EINVAL;
+	if (str[0] == '-') {
+		str = str + 1;
+		sign = -1;
+	} else if (str[0] == '+') {
+		str = str + 1;
+	}
+	if (!str[0])
+		return -EINVAL;
+
+	/* Validate entire string as purely digits and at most one decimal dot. If not doing this here in advance,
+	 * parsing digits might stop early because of precision cut-off and miss validation of input data. */
+	point = NULL;
+	for (p = str; *p; p++) {
+		if (*p == '.') {
+			if (point)
+				return -EINVAL;
+			point = p;
+		} else if (!isdigit(*p))
+			return -EINVAL;
+	}
+
+	/* Parse integer part if there is one. If the string starts with a point, there's nothing to parse for the
+	 * integer part. */
+	if (!point || point > str) {
+		errno = 0;
+		integer = strtoll(str, &endptr, 10);
+		if ((errno == ERANGE && (integer == LONG_MAX || integer == LONG_MIN))
+		    || (errno != 0 && integer == 0))
+			return -ERANGE;
+
+		if ((point && endptr != point)
+		    || (!point && *endptr))
+			return -EINVAL;
+	}
+
+	/* Parse the fractional part if there is any, and if the precision is nonzero (if we even care about fractional
+	 * digits) */
+	if (precision && point && point[1] != '\0') {
+		/* limit the number of digits parsed to 'precision'.
+		 * If 'precision' is larger than the 19 digits representable in int64_t, skip some, to pick up lower
+		 * magnitude digits. */
+		unsigned int skip_digits = (precision < 20) ? 0 : precision - 20;
+		char decimal_str[precision + 1];
+		osmo_strlcpy(decimal_str, point+1, precision+1);
+
+		/* fill with zeros to make exactly 'precision' digits */
+		for (i = strlen(decimal_str); i < precision; i++)
+			decimal_str[i] = '0';
+		decimal_str[precision] = '\0';
+
+		for (i = 0; i < skip_digits; i++) {
+			/* When skipping digits because precision > nr-of-digits-in-int64_t, they must be zero;
+			 * if there is a nonzero digit above the precision, it's -ERANGE. */
+			if (decimal_str[i] != '0')
+				return -ERANGE;
+		}
+		errno = 0;
+		decimal = strtoll(decimal_str + skip_digits, &endptr, 10);
+		if ((errno == ERANGE && (decimal == LONG_MAX || decimal == LONG_MIN))
+		    || (errno != 0 && decimal == 0))
+			return -ERANGE;
+
+		if (*endptr)
+			return -EINVAL;
+	}
+
+	if (precision > 18) {
+		/* Special case of returning more digits than fit in int64_t range, e.g.
+		 * osmo_float_str_to_int("0.0000000012345678901234567", precision=25) -> 12345678901234567. */
+		precision_factor = 0;
+		integer_max = 0;
+		decimal_max = INT64_MAX;
+	} else {
+		/* Do not surpass the resulting int64_t range. Depending on the amount of precision, the integer part
+		 * and decimal part have specific ranges they must comply to. */
+		precision_factor = 1;
+		for (i = 0; i < precision; i++)
+		     precision_factor *= 10;
+		integer_max = INT64_MAX / precision_factor;
+		if (integer == integer_max)
+			decimal_max = INT64_MAX % precision_factor;
+		else
+			decimal_max = INT64_MAX;
+	}
+
+	if (integer > integer_max)
+		return -ERANGE;
+	if (decimal > decimal_max)
+		return -ERANGE;
+
+	*val = sign * (integer * precision_factor + decimal);
+	return 0;
+}
+
+/*! Convert an integer with a factor of a million to a floating point string.
+ * For example, with precision = 3, convert -1230 to "-1.23".
+ * \param[out] buf  Buffer to write string to.
+ * \param[in] buflen  sizeof(buf).
+ * \param[in] val  Value to convert to float.
+ * \returns number of chars that would be written, like snprintf().
+ */
+int osmo_int_to_float_str_buf(char *buf, size_t buflen, int64_t val, unsigned int precision)
+{
+	struct osmo_strbuf sb = { .buf = buf, .len = buflen };
+	unsigned int i;
+	unsigned int w;
+	int64_t precision_factor;
+	if (val < 0) {
+		OSMO_STRBUF_PRINTF(sb, "-");
+		if (val == INT64_MIN) {
+			OSMO_STRBUF_PRINTF(sb, "ERR");
+			return sb.chars_needed;
+		}
+		val = -val;
+	}
+
+	if (precision > 18) {
+		/* Special case of returning more digits than fit in int64_t range, e.g.
+		 * osmo_int_to_float_str(12345678901234567, precision=25) -> "0.0000000012345678901234567". */
+		if (!val) {
+			OSMO_STRBUF_PRINTF(sb, "0");
+			return sb.chars_needed;
+		}
+		OSMO_STRBUF_PRINTF(sb, "0.");
+		for (i = 19; i < precision; i++)
+			OSMO_STRBUF_PRINTF(sb, "0");
+		precision = 19;
+	} else {
+		precision_factor = 1;
+		for (i = 0; i < precision; i++)
+		     precision_factor *= 10;
+
+		OSMO_STRBUF_PRINTF(sb, "%" PRId64, val / precision_factor);
+		val %= precision_factor;
+		if (!val)
+			return sb.chars_needed;
+		OSMO_STRBUF_PRINTF(sb, ".");
+	}
+
+	/* print fractional part, skip trailing zeros */
+	w = precision;
+	while (!(val % 10)) {
+		val /= 10;
+		w--;
+	}
+	OSMO_STRBUF_PRINTF(sb, "%0*" PRId64, w, val);
+	return sb.chars_needed;
+}
+
+/*! Convert an integer with a factor of a million to a floating point string.
+ * For example, convert -1230000 to "-1.23".
+ * \param[in] ctx  Talloc ctx to allocate string buffer from.
+ * \param[in] val  Value to convert to float.
+ * \returns resulting string, dynamically allocated.
+ */
+char *osmo_int_to_float_str_c(void *ctx, int64_t val, unsigned int precision)
+{
+	OSMO_NAME_C_IMPL(ctx, 16, "ERROR", osmo_int_to_float_str_buf, val, precision)
 }
 
 /*! @} */
