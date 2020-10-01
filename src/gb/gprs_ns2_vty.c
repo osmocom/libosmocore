@@ -758,8 +758,7 @@ int gprs_ns2_vty_create() {
 	} else {
 		/* UDP */
 		osmo_sockaddr_str_to_sockaddr(&priv.udp, &sockaddr.u.sas);
-		gprs_ns2_ip_bind(vty_nsi, &sockaddr, priv.dscp, &bind);
-		if (!bind) {
+		if (gprs_ns2_ip_bind(vty_nsi, &sockaddr, priv.dscp, &bind)) {
 			/* TODO: could not bind on the specific address */
 			return -1;
 		}
