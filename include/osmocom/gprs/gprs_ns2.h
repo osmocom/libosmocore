@@ -9,6 +9,7 @@
 #include <osmocom/core/prim.h>
 
 struct osmo_sockaddr;
+struct osmo_sockaddr_str;
 
 struct gprs_ns2_inst;
 struct gprs_ns2_nse;
@@ -157,7 +158,7 @@ char *gprs_ns2_ll_str_buf(char *buf, size_t buf_len, struct gprs_ns2_vc *nsvc);
 char *gprs_ns2_ll_str_c(const void *ctx, struct gprs_ns2_vc *nsvc);
 
 /* vty */
-int gprs_ns2_vty_init(struct gprs_ns2_inst *nsi);
+int gprs_ns2_vty_init(struct gprs_ns2_inst *nsi, struct osmo_sockaddr_str *default_bind);
 int gprs_ns2_vty_create();
 void gprs_ns2_vty_force_vc_mode(bool force, enum gprs_ns2_vc_mode mode, const char *reason);
 

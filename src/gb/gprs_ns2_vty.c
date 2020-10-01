@@ -690,7 +690,13 @@ DEFUN(logging_fltr_nsvc,
 	return CMD_SUCCESS;
 }
 
-int gprs_ns2_vty_init(struct gprs_ns2_inst *nsi)
+/**
+ * gprs_ns2_vty_init initialize the vty
+ * \param[inout] nsi
+ * \param[in] default_bind set the default address to bind to. Can be NULL.
+ * \return 0 on success
+ */
+int gprs_ns2_vty_init(struct gprs_ns2_inst *nsi, struct osmo_sockaddr_str *default_bind)
 {
 	static bool vty_elements_installed = false;
 
@@ -698,6 +704,8 @@ int gprs_ns2_vty_init(struct gprs_ns2_inst *nsi)
 	memset(&priv, 0, sizeof(struct ns2_vty_priv));
 	INIT_LLIST_HEAD(&priv.vtyvc);
 	priv.vc_mode = NS2_VC_MODE_BLOCKRESET;
+	if (default_bind)
+		memcpy(&priv.udp, default_bind, sizeof(*default_bind));
 
 	/* Regression test code may call this function repeatedly, so make sure
 	 * that VTY elements are not duplicated, which would assert. */
