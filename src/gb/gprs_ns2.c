@@ -353,6 +353,8 @@ void ns2_prim_status_ind(struct gprs_ns2_nse *nse,
 	nsp.bvci = bvci;
 	nsp.u.status.cause = cause;
 	nsp.u.status.transfer = -1;
+	nsp.u.status.first = nse->first;
+	nsp.u.status.persistent = nse->persistent;
 	osmo_prim_init(&nsp.oph, SAP_NS, PRIM_NS_STATUS,
 			PRIM_OP_INDICATION, NULL);
 	nse->nsi->cb(&nsp.oph, nse->nsi->cb_data);
@@ -559,6 +561,7 @@ struct gprs_ns2_nse *gprs_ns2_create_nse(struct gprs_ns2_inst *nsi, uint16_t nse
 
 	nse->nsei = nsei;
 	nse->nsi = nsi;
+	nse->first = true;
 	llist_add(&nse->list, &nsi->nse);
 	INIT_LLIST_HEAD(&nse->nsvc);
 
@@ -931,6 +934,7 @@ void ns2_nse_notify_unblocked(struct gprs_ns2_vc *nsvc, bool unblocked)
 		/* this is the first unblocked NSVC on an unavailable NSE */
 		nse->alive = true;
 		ns2_prim_status_ind(nse, 0, NS_AFF_CAUSE_RECOVERY);
+		nse->first = false;
 		return;
 	}
 

@@ -78,6 +78,12 @@ struct osmo_gprs_ns2_prim {
 			enum gprs_ns2_affecting_cause cause;
 			/* 48.016 5.2.2.6 transfer capability */
 			int transfer;
+			/* osmocom specific */
+			/* Persistent NSE/NSVC are configured by vty */
+			bool persistent;
+			/* Only true on the first time it's available.
+			 * Allow the BSSGP layer to reset persistent NSE */
+			bool first;
 		} status;
 	} u;
 };

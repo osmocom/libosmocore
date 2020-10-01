@@ -120,6 +120,10 @@ struct gprs_ns2_nse {
 	/*! true if this NSE was created by VTY or pcu socket) */
 	bool persistent;
 
+	/*! true if this NSE wasn't yet alive at all.
+	 * Will be true after the first status ind with NS_AFF_CAUSE_RECOVERY */
+	bool first;
+
 	/*! true if this NSE has at least one alive VC */
 	bool alive;
 
