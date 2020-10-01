@@ -670,7 +670,7 @@ static void ns2_sns_st_size_onenter(struct osmo_fsm_inst *fi, uint32_t old_state
 	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
 
 	if (old_state != GPRS_SNS_ST_UNCONFIGURED)
-		ns2_prim_status_ind(gss->nse->nsi, gss->nse->nsei, 0, NS_AFF_CAUSE_SNS_FAILURE);
+		ns2_prim_status_ind(gss->nse, 0, NS_AFF_CAUSE_SNS_FAILURE);
 
 	if (gss->num_max_ip4_remote > 0)
 		ns2_tx_sns_size(gss->sns_nsvc, true, gss->num_max_nsvcs, gss->num_max_ip4_remote, -1);
@@ -1110,7 +1110,7 @@ static void ns2_sns_st_configured(struct osmo_fsm_inst *fi, uint32_t event, void
 static void ns2_sns_st_configured_onenter(struct osmo_fsm_inst *fi, uint32_t old_state)
 {
 	struct gprs_ns2_nse *nse = nse_inst_from_fi(fi);
-	ns2_prim_status_ind(nse->nsi, nse->nsei, 0, NS_AFF_CAUSE_SNS_CONFIGURED);
+	ns2_prim_status_ind(nse, 0, NS_AFF_CAUSE_SNS_CONFIGURED);
 }
 
 static const struct osmo_fsm_state ns2_sns_bss_states[] = {

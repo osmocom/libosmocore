@@ -344,18 +344,18 @@ int gprs_ns2_recv_prim(struct gprs_ns2_inst *nsi, struct osmo_prim_hdr *oph)
  *  \param[in] nsei NSEI to which the statue relates
  *  \param[in] bvci BVCI to which the status relates
  *  \param[in] cause The cause of the status */
-void ns2_prim_status_ind(struct gprs_ns2_inst *nsi,
-			 uint16_t nsei, uint16_t bvci,
+void ns2_prim_status_ind(struct gprs_ns2_nse *nse,
+			 uint16_t bvci,
 			 enum gprs_ns2_affecting_cause cause)
 {
 	struct osmo_gprs_ns2_prim nsp = {};
-	nsp.nsei = nsei;
+	nsp.nsei = nse->nsei;
 	nsp.bvci = bvci;
 	nsp.u.status.cause = cause;
 	nsp.u.status.transfer = -1;
 	osmo_prim_init(&nsp.oph, SAP_NS, PRIM_NS_STATUS,
 			PRIM_OP_INDICATION, NULL);
-	nsi->cb(&nsp.oph, nsi->cb_data);
+	nse->nsi->cb(&nsp.oph, nse->nsi->cb_data);
 }
 
 /*! Allocate a NS-VC within the given bind + NSE.
@@ -410,8 +410,7 @@ void gprs_ns2_free_nsvc(struct gprs_ns2_vc *nsvc)
 	if (!nsvc)
 		return;
 
-	ns2_prim_status_ind(nsvc->nse->nsi, nsvc->nse->nsei,
-			    0, NS_AFF_CAUSE_VC_FAILURE);
+	ns2_prim_status_ind(nsvc->nse, 0, NS_AFF_CAUSE_VC_FAILURE);
 
 	llist_del(&nsvc->list);
 	llist_del(&nsvc->blist);
@@ -579,8 +578,7 @@ void gprs_ns2_free_nse(struct gprs_ns2_nse *nse)
 		gprs_ns2_free_nsvc(nsvc);
 	}
 
-	ns2_prim_status_ind(nse->nsi, nse->nsei,
-			    0, NS_AFF_CAUSE_FAILURE);
+	ns2_prim_status_ind(nse, 0, NS_AFF_CAUSE_FAILURE);
 
 	llist_del(&nse->list);
 	if (nse->bss_sns_fi)
@@ -932,8 +930,7 @@ void ns2_nse_notify_unblocked(struct gprs_ns2_vc *nsvc, bool unblocked)
 	if (unblocked) {
 		/* this is the first unblocked NSVC on an unavailable NSE */
 		nse->alive = true;
-		ns2_prim_status_ind(nse->nsi, nse->nsei,
-				    0, NS_AFF_CAUSE_RECOVERY);
+		ns2_prim_status_ind(nse, 0, NS_AFF_CAUSE_RECOVERY);
 		return;
 	}
 
@@ -950,8 +947,7 @@ void ns2_nse_notify_unblocked(struct gprs_ns2_vc *nsvc, bool unblocked)
 
 	/* nse became unavailable */
 	nse->alive = false;
-	ns2_prim_status_ind(nse->nsi, nse->nsei,
-			    0, NS_AFF_CAUSE_FAILURE);
+	ns2_prim_status_ind(nse, 0, NS_AFF_CAUSE_FAILURE);
 }
 
 /*! Create a new GPRS NS instance
