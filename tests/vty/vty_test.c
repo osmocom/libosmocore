@@ -513,11 +513,29 @@ void test_numeric_range()
 	destroy_test_vty(&test, vty);
 }
 
+/* Application specific attributes */
+enum vty_test_attr {
+	VTY_TEST_ATTR_FOO = 0,
+	VTY_TEST_ATTR_BAR,
+	VTY_TEST_ATTR_ZOO,
+	VTY_TEST_ATTR_FOO_DUP,
+	VTY_TEST_ATTR_ZOO_DUP,
+};
+
 int main(int argc, char **argv)
 {
 	struct vty_app_info vty_info = {
 		.name		= "VtyTest",
 		.version	= 0,
+		.usr_attr_letters = {
+			[VTY_TEST_ATTR_FOO]	= 'f',
+			[VTY_TEST_ATTR_BAR]	= 'b',
+			[VTY_TEST_ATTR_ZOO]	= 'z',
+
+			/* Duplicate detection check */
+			[VTY_TEST_ATTR_FOO_DUP]	= 'f',
+			[VTY_TEST_ATTR_ZOO_DUP]	= 'z',
+		},
 	};
 
 	const struct log_info_cat default_categories[] = {};

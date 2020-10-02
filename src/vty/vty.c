@@ -66,6 +66,7 @@
 #include <osmocom/vty/command.h>
 #include <osmocom/vty/buffer.h>
 #include <osmocom/core/talloc.h>
+#include <osmocom/core/utils.h>
 
 #ifndef MAXPATHLEN
   #define MAXPATHLEN 4096
@@ -1794,6 +1795,8 @@ void vty_init_vtysh(void)
 /* Install vty's own commands like `who' command. */
 void vty_init(struct vty_app_info *app_info)
 {
+	unsigned int i, j;
+
 	tall_vty_ctx = talloc_named_const(NULL, 0, "vty");
 	tall_vty_vec_ctx = talloc_named_const(tall_vty_ctx, 0, "vty_vector");
 	tall_vty_cmd_ctx = talloc_named_const(tall_vty_ctx, 0, "vty_command");
@@ -1801,6 +1804,19 @@ void vty_init(struct vty_app_info *app_info)
 	cmd_init(1);
 
 	host.app_info = app_info;
+
+	/* Check for duplicate flags in application specific attributes (if any) */
+	for (i = 0; i < ARRAY_SIZE(app_info->usr_attr_letters); i++) {
+		if (app_info->usr_attr_letters[i] == '\0')
+			continue;
+		for (j = i + 1; j < ARRAY_SIZE(app_info->usr_attr_letters); j++) {
+			if (app_info->usr_attr_letters[j] != app_info->usr_attr_letters[i])
+				continue;
+			fprintf(stderr, "Found duplicate flag letter '%c' in application "
+				"specific attributes (index %u vs %u)! Please fix.\n",
+				app_info->usr_attr_letters[i], i, j);
+		}
+	}
 
 	/* For further configuration read, preserve current directory. */
 	vty_save_cwd();
