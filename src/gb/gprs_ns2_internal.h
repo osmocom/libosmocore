@@ -192,8 +192,11 @@ struct gprs_ns2_vc_bind {
 
 	/*! free the vc priv data */
 	void (*free_vc)(struct gprs_ns2_vc *nsvc);
-};
 
+	/*! allow to show information for the vty */
+	void (*dump_vty)(const struct gprs_ns2_vc_bind *bind,
+			 struct vty *vty, bool stats);
+};
 
 struct gprs_ns2_vc_driver {
 	const char *name;

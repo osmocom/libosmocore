@@ -78,6 +78,34 @@ static void free_vc(struct gprs_ns2_vc *nsvc)
 	nsvc->priv = NULL;
 }
 
+static void dump_vty(const struct gprs_ns2_vc_bind *bind,
+		     struct vty *vty, bool _stats)
+{
+	struct priv_bind *priv;
+	struct gprs_ns2_vc *nsvc;
+	struct osmo_sockaddr_str sockstr = {};
+	unsigned long nsvcs = 0;
+
+	if (!bind)
+		return;
+
+	priv = bind->priv;
+	if (osmo_sockaddr_str_from_sockaddr(&sockstr, &priv->addr.u.sas))
+		strcpy(sockstr.ip, "invalid");
+
+	llist_for_each_entry(nsvc, &bind->nsvc, blist) {
+		nsvcs++;
+	}
+
+	vty_out(vty, "UDP bind: %s:%d dcsp: %d%s", sockstr.ip, sockstr.port, priv->dscp, VTY_NEWLINE);
+	vty_out(vty, "  %lu NS-VC: %s", nsvcs, VTY_NEWLINE);
+
+	llist_for_each_entry(nsvc, &bind->nsvc, blist) {
+		vty_out(vty, "    %s%s", gprs_ns2_ll_str(nsvc), VTY_NEWLINE);
+	}
+}
+
+
 /*! Find a NS-VC by its remote socket address.
  *  \param[in] bind in which to search
  *  \param[in] saddr remote peer socket adddress to search
@@ -262,6 +290,7 @@ int gprs_ns2_ip_bind(struct gprs_ns2_inst *nsi,
 	bind->driver = &vc_driver_ip;
 	bind->send_vc = nsip_vc_sendmsg;
 	bind->free_vc = free_vc;
+	bind->dump_vty = dump_vty;
 	bind->nsi = nsi;
 
 	priv = bind->priv = talloc_zero(bind, struct priv_bind);

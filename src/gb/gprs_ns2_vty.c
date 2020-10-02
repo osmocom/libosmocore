@@ -303,9 +303,20 @@ static void dump_nse(struct vty *vty, const struct gprs_ns2_nse *nse, bool stats
 	}
 }
 
+static void dump_bind(struct vty *vty, const struct gprs_ns2_vc_bind *bind, bool stats)
+{
+	if (bind->dump_vty)
+		bind->dump_vty(bind, vty, stats);
+}
+
 static void dump_ns(struct vty *vty, const struct gprs_ns2_inst *nsi, bool stats, bool persistent_only)
 {
+	struct gprs_ns2_vc_bind *bind;
 	struct gprs_ns2_nse *nse;
+
+	llist_for_each_entry(bind, &nsi->binding, list) {
+		dump_bind(vty, bind, stats);
+	}
 
 	llist_for_each_entry(nse, &nsi->nse, list) {
 		dump_nse(vty, nse, stats, persistent_only);
