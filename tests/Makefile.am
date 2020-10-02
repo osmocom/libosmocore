@@ -315,7 +315,7 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
              loggingrb/logging_test.err	strrb/strrb_test.ok		\
              codec/codec_test.ok \
              codec/codec_ecu_fr_test.ok \
-	     vty/vty_test.ok \
+	     vty/vty_test.ok vty/vty_test.err \
 	     vty/fail_not_de-indented.cfg \
 	     vty/fail_tabs_and_spaces.cfg \
 	     vty/fail_too_much_indent.cfg \
