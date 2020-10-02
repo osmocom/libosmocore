@@ -309,7 +309,6 @@ static void dump_ns(struct vty *vty, const struct gprs_ns2_inst *nsi, bool stats
 
 	llist_for_each_entry(nse, &nsi->nse, list) {
 		dump_nse(vty, nse, stats, persistent_only);
-		break;
 	}
 
 }
