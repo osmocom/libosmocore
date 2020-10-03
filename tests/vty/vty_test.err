@@ -1,5 +1,6 @@
 Found duplicate flag letter 'f' in application specific attributes (index 0 vs 3)! Please fix.
 Found duplicate flag letter 'z' in application specific attributes (index 2 vs 4)! Please fix.
+Attribute flag letter 'X' is reserved for libraries! Please fix.
 Got VTY event: 2
 Got VTY event: 2
 Got VTY event: 2

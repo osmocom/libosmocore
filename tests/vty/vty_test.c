@@ -520,6 +520,7 @@ enum vty_test_attr {
 	VTY_TEST_ATTR_ZOO,
 	VTY_TEST_ATTR_FOO_DUP,
 	VTY_TEST_ATTR_ZOO_DUP,
+	VTY_TEST_ATTR_UPPER,
 };
 
 int main(int argc, char **argv)
@@ -535,6 +536,8 @@ int main(int argc, char **argv)
 			/* Duplicate detection check */
 			[VTY_TEST_ATTR_FOO_DUP]	= 'f',
 			[VTY_TEST_ATTR_ZOO_DUP]	= 'z',
+			/* Reserved for libraries */
+			[VTY_TEST_ATTR_UPPER]	= 'X',
 		},
 	};
 

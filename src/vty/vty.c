@@ -1809,6 +1809,14 @@ void vty_init(struct vty_app_info *app_info)
 	for (i = 0; i < ARRAY_SIZE(app_info->usr_attr_letters); i++) {
 		if (app_info->usr_attr_letters[i] == '\0')
 			continue;
+
+		/* Upper case flag letters are reserved for libraries */
+		if (app_info->usr_attr_letters[i] >= 'A' &&
+		    app_info->usr_attr_letters[i] <= 'Z') {
+			fprintf(stderr, "Attribute flag letter '%c' is reserved "
+				"for libraries! Please fix.\n", app_info->usr_attr_letters[i]);
+		}
+
 		for (j = i + 1; j < ARRAY_SIZE(app_info->usr_attr_letters); j++) {
 			if (app_info->usr_attr_letters[j] != app_info->usr_attr_letters[i])
 				continue;
