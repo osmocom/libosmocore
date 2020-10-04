@@ -2948,6 +2948,96 @@ gDEFUN(config_help,
 	return CMD_SUCCESS;
 }
 
+enum {
+	ATTR_TYPE_GLOBAL	= (1 << 0),
+	ATTR_TYPE_LIB		= (1 << 1),
+	ATTR_TYPE_APP		= (1 << 2),
+};
+
+static void print_attr_list(struct vty *vty, unsigned int attr_mask)
+{
+	const char *desc;
+	unsigned int i;
+	bool found;
+	char flag;
+
+	if (attr_mask & ATTR_TYPE_GLOBAL) {
+		vty_out(vty, "  Global attributes:%s", VTY_NEWLINE);
+
+		for (i = 0; i < ARRAY_SIZE(cmd_attr_desc) - 1; i++) {
+			desc = cmd_attr_desc[i].str;
+			flag = '.'; /* FIXME: no flags defined */
+			vty_out(vty, "    %c  %s%s", flag, desc, VTY_NEWLINE);
+		}
+	}
+
+	if (attr_mask & ATTR_TYPE_LIB) {
+		vty_out(vty, "  Library specific attributes:%s", VTY_NEWLINE);
+
+		for (i = 0, found = false; i < _OSMO_CORE_LIB_ATTR_COUNT; i++) {
+			if ((desc = cmd_lib_attr_desc[i]) == NULL)
+				continue;
+			found = true;
+
+			flag = cmd_lib_attr_letters[i];
+			if (flag == '\0')
+				flag = '.';
+
+			vty_out(vty, "    %c  %s%s", flag, desc, VTY_NEWLINE);
+		}
+
+		if (!found)
+			vty_out(vty, "    (no attributes)%s", VTY_NEWLINE);
+	}
+
+	if (attr_mask & ATTR_TYPE_APP) {
+		vty_out(vty, "  Application specific attributes:%s", VTY_NEWLINE);
+
+		for (i = 0, found = false; i < VTY_CMD_USR_ATTR_NUM; i++) {
+			if ((desc = host.app_info->usr_attr_desc[i]) == NULL)
+				continue;
+			found = true;
+
+			flag = host.app_info->usr_attr_letters[i];
+			if (flag == '\0')
+				flag = '.';
+
+			vty_out(vty, "    %c  %s%s", flag, desc, VTY_NEWLINE);
+		}
+
+		if (!found)
+			vty_out(vty, "    (no attributes)%s", VTY_NEWLINE);
+	}
+}
+
+gDEFUN(show_vty_attr_all, show_vty_attr_all_cmd,
+       "show vty-attributes",
+       SHOW_STR "List of VTY attributes\n")
+{
+	print_attr_list(vty, 0xff);
+	return CMD_SUCCESS;
+}
+
+gDEFUN(show_vty_attr, show_vty_attr_cmd,
+       "show vty-attributes (application|library|global)",
+       SHOW_STR "List of VTY attributes\n"
+       "Application specific attributes only\n"
+       "Library specific attributes only\n"
+       "Global attributes only\n")
+{
+	unsigned int attr_mask = 0;
+
+	if (argv[0][0] == 'g') /* global */
+		attr_mask |= ATTR_TYPE_GLOBAL;
+	else if (argv[0][0] == 'l') /* library */
+		attr_mask |= ATTR_TYPE_LIB;
+	else if (argv[0][0] == 'a') /* application */
+		attr_mask |= ATTR_TYPE_APP;
+
+	print_attr_list(vty, attr_mask);
+	return CMD_SUCCESS;
+}
+
 /* Help display function for all node. */
 gDEFUN(config_list, config_list_cmd, "list", "Print command list\n")
 {
@@ -3932,6 +4022,9 @@ static void install_basic_node_commands(int node)
 	install_lib_element(node, &config_help_cmd);
 	install_lib_element(node, &config_list_cmd);
 
+	install_lib_element(node, &show_vty_attr_all_cmd);
+	install_lib_element(node, &show_vty_attr_cmd);
+
 	install_lib_element(node, &config_write_terminal_cmd);
 	install_lib_element(node, &config_write_file_cmd);
 	install_lib_element(node, &config_write_memory_cmd);
@@ -3952,6 +4045,8 @@ static void install_basic_node_commands(int node)
 static bool vty_command_is_common(struct cmd_element *cmd)
 {
 	if (cmd == &config_help_cmd
+	    || cmd == &show_vty_attr_all_cmd
+	    || cmd == &show_vty_attr_cmd
 	    || cmd == &config_list_cmd
 	    || cmd == &config_write_terminal_cmd
 	    || cmd == &config_write_file_cmd
@@ -4035,6 +4130,8 @@ void cmd_init(int terminal)
 		install_lib_element(VIEW_NODE, &config_list_cmd);
 		install_lib_element(VIEW_NODE, &config_exit_cmd);
 		install_lib_element(VIEW_NODE, &config_help_cmd);
+		install_lib_element(VIEW_NODE, &show_vty_attr_all_cmd);
+		install_lib_element(VIEW_NODE, &show_vty_attr_cmd);
 		install_lib_element(VIEW_NODE, &config_enable_cmd);
 		install_lib_element(VIEW_NODE, &config_terminal_length_cmd);
 		install_lib_element(VIEW_NODE, &config_terminal_no_length_cmd);
