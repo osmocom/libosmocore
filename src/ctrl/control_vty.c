@@ -82,10 +82,10 @@ static int config_write_ctrl(struct vty *vty)
 int ctrl_vty_init(void *ctx)
 {
 	ctrl_vty_ctx = ctx;
-	install_element(CONFIG_NODE, &cfg_ctrl_cmd);
+	install_lib_element(CONFIG_NODE, &cfg_ctrl_cmd);
 	install_node(&ctrl_node, config_write_ctrl);
 
-	install_element(L_CTRL_NODE, &cfg_ctrl_bind_addr_cmd);
+	install_lib_element(L_CTRL_NODE, &cfg_ctrl_bind_addr_cmd);
 	return 0;
 }
 

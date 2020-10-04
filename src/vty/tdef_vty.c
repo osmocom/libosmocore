@@ -379,8 +379,8 @@ void osmo_tdef_vty_groups_init(unsigned int parent_cfg_node, struct osmo_tdef_gr
 	cfg_timer_cmd.string = timer_command_string("timer", OSMO_TDEF_VTY_ARG_SET_OPTIONAL);
 	cfg_timer_cmd.doc = timer_doc_string("Configure or show timers\n", OSMO_TDEF_VTY_DOC_SET);
 
-	install_element_ve(&show_timer_cmd);
-	install_element(parent_cfg_node, &cfg_timer_cmd);
+	install_lib_element_ve(&show_timer_cmd);
+	install_lib_element(parent_cfg_node, &cfg_timer_cmd);
 }
 
 /*! Write the global osmo_tdef_group configuration to VTY, as previously passed to osmo_tdef_vty_groups_init().

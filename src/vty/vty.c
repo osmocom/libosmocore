@@ -1834,18 +1834,18 @@ void vty_init(struct vty_app_info *app_info)
 	/* Install bgp top node. */
 	install_node(&vty_node, vty_config_write);
 
-	install_element_ve(&config_who_cmd);
-	install_element_ve(&show_history_cmd);
-	install_element(CONFIG_NODE, &line_vty_cmd);
-	install_element(CONFIG_NODE, &service_advanced_vty_cmd);
-	install_element(CONFIG_NODE, &no_service_advanced_vty_cmd);
-	install_element(CONFIG_NODE, &show_history_cmd);
-	install_element(ENABLE_NODE, &terminal_monitor_cmd);
-	install_element(ENABLE_NODE, &terminal_no_monitor_cmd);
+	install_lib_element_ve(&config_who_cmd);
+	install_lib_element_ve(&show_history_cmd);
+	install_lib_element(CONFIG_NODE, &line_vty_cmd);
+	install_lib_element(CONFIG_NODE, &service_advanced_vty_cmd);
+	install_lib_element(CONFIG_NODE, &no_service_advanced_vty_cmd);
+	install_lib_element(CONFIG_NODE, &show_history_cmd);
+	install_lib_element(ENABLE_NODE, &terminal_monitor_cmd);
+	install_lib_element(ENABLE_NODE, &terminal_no_monitor_cmd);
 
-	install_element(VTY_NODE, &vty_login_cmd);
-	install_element(VTY_NODE, &no_vty_login_cmd);
-	install_element(VTY_NODE, &vty_bind_cmd);
+	install_lib_element(VTY_NODE, &vty_login_cmd);
+	install_lib_element(VTY_NODE, &no_vty_login_cmd);
+	install_lib_element(VTY_NODE, &vty_bind_cmd);
 }
 
 /*! Read the configuration file using the VTY code

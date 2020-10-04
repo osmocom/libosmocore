@@ -196,9 +196,9 @@ void osmo_fsm_vty_add_cmds(void)
 	if (osmo_fsm_vty_cmds_installed)
 		return;
 
-	install_element_ve(&show_fsm_cmd);
-	install_element_ve(&show_fsms_cmd);
-	install_element_ve(&show_fsm_inst_cmd);
-	install_element_ve(&show_fsm_insts_cmd);
+	install_lib_element_ve(&show_fsm_cmd);
+	install_lib_element_ve(&show_fsms_cmd);
+	install_lib_element_ve(&show_fsm_inst_cmd);
+	install_lib_element_ve(&show_fsm_insts_cmd);
 	osmo_fsm_vty_cmds_installed = true;
 }

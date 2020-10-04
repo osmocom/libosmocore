@@ -1016,7 +1016,7 @@ void logging_vty_add_deprecated_subsys(void *ctx, const char *name)
 		   "Deprecated Category\n";
 	cmd->attr = CMD_ATTR_DEPRECATED;
 
-	install_element(CFG_LOG_NODE, cmd);
+	install_lib_element(CFG_LOG_NODE, cmd);
 }
 
 /* logp (<categories>) (debug|...|fatal) .LOGMESSAGE*/
@@ -1064,18 +1064,18 @@ static void gen_vty_logp_cmd_strs(struct cmd_element *cmd)
  *  your application if you want to support those commands. */
 void logging_vty_add_cmds()
 {
-	install_element_ve(&enable_logging_cmd);
-	install_element_ve(&disable_logging_cmd);
-	install_element_ve(&logging_fltr_all_cmd);
-	install_element_ve(&logging_use_clr_cmd);
-	install_element_ve(&logging_prnt_timestamp_cmd);
-	install_element_ve(&logging_prnt_ext_timestamp_cmd);
-	install_element_ve(&logging_prnt_cat_cmd);
-	install_element_ve(&logging_prnt_cat_hex_cmd);
-	install_element_ve(&logging_prnt_level_cmd);
-	install_element_ve(&logging_prnt_file_cmd);
-	install_element_ve(&logging_set_category_mask_cmd);
-	install_element_ve(&logging_set_category_mask_old_cmd);
+	install_lib_element_ve(&enable_logging_cmd);
+	install_lib_element_ve(&disable_logging_cmd);
+	install_lib_element_ve(&logging_fltr_all_cmd);
+	install_lib_element_ve(&logging_use_clr_cmd);
+	install_lib_element_ve(&logging_prnt_timestamp_cmd);
+	install_lib_element_ve(&logging_prnt_ext_timestamp_cmd);
+	install_lib_element_ve(&logging_prnt_cat_cmd);
+	install_lib_element_ve(&logging_prnt_cat_hex_cmd);
+	install_lib_element_ve(&logging_prnt_level_cmd);
+	install_lib_element_ve(&logging_prnt_file_cmd);
+	install_lib_element_ve(&logging_set_category_mask_cmd);
+	install_lib_element_ve(&logging_set_category_mask_old_cmd);
 
 	/* logging level (<categories>) (debug|...|fatal) */
 	gen_logging_level_cmd_strs(&logging_level_cmd,
@@ -1085,47 +1085,47 @@ void logging_vty_add_cmds()
 	gen_logging_level_cmd_strs(&deprecated_logging_level_everything_cmd,
 				   "everything", EVERYTHING_STR);
 
-	install_element_ve(&logging_level_cmd);
-	install_element_ve(&logging_level_set_all_cmd);
-	install_element_ve(&logging_level_force_all_cmd);
-	install_element_ve(&no_logging_level_force_all_cmd);
-	install_element_ve(&deprecated_logging_level_everything_cmd);
-	install_element_ve(&deprecated_logging_level_all_cmd);
-	install_element_ve(&deprecated_logging_level_all_everything_cmd);
+	install_lib_element_ve(&logging_level_cmd);
+	install_lib_element_ve(&logging_level_set_all_cmd);
+	install_lib_element_ve(&logging_level_force_all_cmd);
+	install_lib_element_ve(&no_logging_level_force_all_cmd);
+	install_lib_element_ve(&deprecated_logging_level_everything_cmd);
+	install_lib_element_ve(&deprecated_logging_level_all_cmd);
+	install_lib_element_ve(&deprecated_logging_level_all_everything_cmd);
 
 	gen_vty_logp_cmd_strs(&vty_logp_cmd);
-	install_element_ve(&vty_logp_cmd);
+	install_lib_element_ve(&vty_logp_cmd);
 
-	install_element_ve(&show_logging_vty_cmd);
-	install_element_ve(&show_alarms_cmd);
+	install_lib_element_ve(&show_logging_vty_cmd);
+	install_lib_element_ve(&show_alarms_cmd);
 
 	install_node(&cfg_log_node, config_write_log);
-	install_element(CFG_LOG_NODE, &logging_fltr_all_cmd);
-	install_element(CFG_LOG_NODE, &logging_use_clr_cmd);
-	install_element(CFG_LOG_NODE, &logging_prnt_timestamp_cmd);
-	install_element(CFG_LOG_NODE, &logging_prnt_ext_timestamp_cmd);
-	install_element(CFG_LOG_NODE, &logging_prnt_cat_cmd);
-	install_element(CFG_LOG_NODE, &logging_prnt_cat_hex_cmd);
-	install_element(CFG_LOG_NODE, &logging_prnt_level_cmd);
-	install_element(CFG_LOG_NODE, &logging_prnt_file_cmd);
-	install_element(CFG_LOG_NODE, &logging_level_cmd);
-	install_element(CFG_LOG_NODE, &logging_level_set_all_cmd);
-	install_element(CFG_LOG_NODE, &logging_level_force_all_cmd);
-	install_element(CFG_LOG_NODE, &no_logging_level_force_all_cmd);
-	install_element(CFG_LOG_NODE, &deprecated_logging_level_everything_cmd);
-	install_element(CFG_LOG_NODE, &deprecated_logging_level_all_cmd);
-	install_element(CFG_LOG_NODE, &deprecated_logging_level_all_everything_cmd);
+	install_lib_element(CFG_LOG_NODE, &logging_fltr_all_cmd);
+	install_lib_element(CFG_LOG_NODE, &logging_use_clr_cmd);
+	install_lib_element(CFG_LOG_NODE, &logging_prnt_timestamp_cmd);
+	install_lib_element(CFG_LOG_NODE, &logging_prnt_ext_timestamp_cmd);
+	install_lib_element(CFG_LOG_NODE, &logging_prnt_cat_cmd);
+	install_lib_element(CFG_LOG_NODE, &logging_prnt_cat_hex_cmd);
+	install_lib_element(CFG_LOG_NODE, &logging_prnt_level_cmd);
+	install_lib_element(CFG_LOG_NODE, &logging_prnt_file_cmd);
+	install_lib_element(CFG_LOG_NODE, &logging_level_cmd);
+	install_lib_element(CFG_LOG_NODE, &logging_level_set_all_cmd);
+	install_lib_element(CFG_LOG_NODE, &logging_level_force_all_cmd);
+	install_lib_element(CFG_LOG_NODE, &no_logging_level_force_all_cmd);
+	install_lib_element(CFG_LOG_NODE, &deprecated_logging_level_everything_cmd);
+	install_lib_element(CFG_LOG_NODE, &deprecated_logging_level_all_cmd);
+	install_lib_element(CFG_LOG_NODE, &deprecated_logging_level_all_everything_cmd);
 
-	install_element(CONFIG_NODE, &cfg_log_stderr_cmd);
-	install_element(CONFIG_NODE, &cfg_no_log_stderr_cmd);
-	install_element(CONFIG_NODE, &cfg_log_file_cmd);
-	install_element(CONFIG_NODE, &cfg_no_log_file_cmd);
-	install_element(CONFIG_NODE, &cfg_log_alarms_cmd);
-	install_element(CONFIG_NODE, &cfg_no_log_alarms_cmd);
+	install_lib_element(CONFIG_NODE, &cfg_log_stderr_cmd);
+	install_lib_element(CONFIG_NODE, &cfg_no_log_stderr_cmd);
+	install_lib_element(CONFIG_NODE, &cfg_log_file_cmd);
+	install_lib_element(CONFIG_NODE, &cfg_no_log_file_cmd);
+	install_lib_element(CONFIG_NODE, &cfg_log_alarms_cmd);
+	install_lib_element(CONFIG_NODE, &cfg_no_log_alarms_cmd);
 #ifdef HAVE_SYSLOG_H
-	install_element(CONFIG_NODE, &cfg_log_syslog_cmd);
-	install_element(CONFIG_NODE, &cfg_log_syslog_local_cmd);
-	install_element(CONFIG_NODE, &cfg_no_log_syslog_cmd);
+	install_lib_element(CONFIG_NODE, &cfg_log_syslog_cmd);
+	install_lib_element(CONFIG_NODE, &cfg_log_syslog_local_cmd);
+	install_lib_element(CONFIG_NODE, &cfg_no_log_syslog_cmd);
 #endif
-	install_element(CONFIG_NODE, &cfg_log_gsmtap_cmd);
+	install_lib_element(CONFIG_NODE, &cfg_log_gsmtap_cmd);
 }

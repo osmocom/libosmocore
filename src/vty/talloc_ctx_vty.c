@@ -247,7 +247,7 @@ DEFUN(show_talloc_ctx_tree, show_talloc_ctx_tree_cmd,
  */
 void osmo_talloc_vty_add_cmds(void)
 {
-	install_element_ve(&show_talloc_ctx_cmd);
-	install_element_ve(&show_talloc_ctx_tree_cmd);
-	install_element_ve(&show_talloc_ctx_filter_cmd);
+	install_lib_element_ve(&show_talloc_ctx_cmd);
+	install_lib_element_ve(&show_talloc_ctx_tree_cmd);
+	install_lib_element_ve(&show_talloc_ctx_filter_cmd);
 }

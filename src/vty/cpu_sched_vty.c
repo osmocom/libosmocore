@@ -604,13 +604,13 @@ int osmo_cpu_sched_vty_init(void *tall_ctx)
 	INIT_LLIST_HEAD(&sched_vty_opts->cpu_affinity_li);
 	pthread_mutex_init(&sched_vty_opts->cpu_affinity_li_mutex, NULL);
 
-	install_element(CONFIG_NODE, &cfg_sched_cmd);
+	install_lib_element(CONFIG_NODE, &cfg_sched_cmd);
 	install_node(&sched_node, config_write_sched);
 
-	install_element(L_CPU_SCHED_NODE, &cfg_sched_policy_cmd);
-	install_element(L_CPU_SCHED_NODE, &cfg_sched_cpu_affinity_cmd);
+	install_lib_element(L_CPU_SCHED_NODE, &cfg_sched_policy_cmd);
+	install_lib_element(L_CPU_SCHED_NODE, &cfg_sched_cpu_affinity_cmd);
 
-	install_element_ve(&show_sched_threads_cmd);
+	install_lib_element_ve(&show_sched_threads_cmd);
 
 	/* Initialize amount of cpus now */
 	if (get_num_cpus() < 0)

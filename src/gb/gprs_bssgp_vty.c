@@ -207,15 +207,15 @@ DEFUN(logging_fltr_bvc,
 
 int bssgp_vty_init(void)
 {
-	install_element_ve(&show_bssgp_cmd);
-	install_element_ve(&show_bssgp_stats_cmd);
-	install_element_ve(&show_bvc_cmd);
-	install_element_ve(&logging_fltr_bvc_cmd);
-	install_element_ve(&bvc_reset_cmd);
+	install_lib_element_ve(&show_bssgp_cmd);
+	install_lib_element_ve(&show_bssgp_stats_cmd);
+	install_lib_element_ve(&show_bvc_cmd);
+	install_lib_element_ve(&logging_fltr_bvc_cmd);
+	install_lib_element_ve(&bvc_reset_cmd);
 
-	install_element(CFG_LOG_NODE, &logging_fltr_bvc_cmd);
+	install_lib_element(CFG_LOG_NODE, &logging_fltr_bvc_cmd);
 
-	install_element(CONFIG_NODE, &cfg_bssgp_cmd);
+	install_lib_element(CONFIG_NODE, &cfg_bssgp_cmd);
 	install_node(&bssgp_node, config_write_bssgp);
 
 	return 0;

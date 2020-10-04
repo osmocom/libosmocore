@@ -673,33 +673,33 @@ static int config_write_stats(struct vty *vty)
  */
 void osmo_stats_vty_add_cmds()
 {
-	install_element_ve(&show_stats_cmd);
-	install_element_ve(&show_stats_level_cmd);
+	install_lib_element_ve(&show_stats_cmd);
+	install_lib_element_ve(&show_stats_level_cmd);
 
-	install_element(CONFIG_NODE, &cfg_stats_reporter_statsd_cmd);
-	install_element(CONFIG_NODE, &cfg_no_stats_reporter_statsd_cmd);
-	install_element(CONFIG_NODE, &cfg_stats_reporter_log_cmd);
-	install_element(CONFIG_NODE, &cfg_no_stats_reporter_log_cmd);
-	install_element(CONFIG_NODE, &cfg_stats_interval_cmd);
+	install_lib_element(CONFIG_NODE, &cfg_stats_reporter_statsd_cmd);
+	install_lib_element(CONFIG_NODE, &cfg_no_stats_reporter_statsd_cmd);
+	install_lib_element(CONFIG_NODE, &cfg_stats_reporter_log_cmd);
+	install_lib_element(CONFIG_NODE, &cfg_no_stats_reporter_log_cmd);
+	install_lib_element(CONFIG_NODE, &cfg_stats_interval_cmd);
 
 	install_node(&cfg_stats_node, config_write_stats);
 
-	install_element(CFG_STATS_NODE, &cfg_stats_reporter_local_ip_cmd);
-	install_element(CFG_STATS_NODE, &cfg_no_stats_reporter_local_ip_cmd);
-	install_element(CFG_STATS_NODE, &cfg_stats_reporter_remote_ip_cmd);
-	install_element(CFG_STATS_NODE, &cfg_stats_reporter_remote_port_cmd);
-	install_element(CFG_STATS_NODE, &cfg_stats_reporter_mtu_cmd);
-	install_element(CFG_STATS_NODE, &cfg_no_stats_reporter_mtu_cmd);
-	install_element(CFG_STATS_NODE, &cfg_stats_reporter_prefix_cmd);
-	install_element(CFG_STATS_NODE, &cfg_no_stats_reporter_prefix_cmd);
-	install_element(CFG_STATS_NODE, &cfg_stats_reporter_level_cmd);
-	install_element(CFG_STATS_NODE, &cfg_stats_reporter_enable_cmd);
-	install_element(CFG_STATS_NODE, &cfg_stats_reporter_disable_cmd);
-	install_element(CFG_STATS_NODE, &cfg_stats_reporter_flush_period_cmd);
+	install_lib_element(CFG_STATS_NODE, &cfg_stats_reporter_local_ip_cmd);
+	install_lib_element(CFG_STATS_NODE, &cfg_no_stats_reporter_local_ip_cmd);
+	install_lib_element(CFG_STATS_NODE, &cfg_stats_reporter_remote_ip_cmd);
+	install_lib_element(CFG_STATS_NODE, &cfg_stats_reporter_remote_port_cmd);
+	install_lib_element(CFG_STATS_NODE, &cfg_stats_reporter_mtu_cmd);
+	install_lib_element(CFG_STATS_NODE, &cfg_no_stats_reporter_mtu_cmd);
+	install_lib_element(CFG_STATS_NODE, &cfg_stats_reporter_prefix_cmd);
+	install_lib_element(CFG_STATS_NODE, &cfg_no_stats_reporter_prefix_cmd);
+	install_lib_element(CFG_STATS_NODE, &cfg_stats_reporter_level_cmd);
+	install_lib_element(CFG_STATS_NODE, &cfg_stats_reporter_enable_cmd);
+	install_lib_element(CFG_STATS_NODE, &cfg_stats_reporter_disable_cmd);
+	install_lib_element(CFG_STATS_NODE, &cfg_stats_reporter_flush_period_cmd);
 
-	install_element_ve(&show_stats_asciidoc_table_cmd);
-	install_element_ve(&show_rate_counters_cmd);
+	install_lib_element_ve(&show_stats_asciidoc_table_cmd);
+	install_lib_element_ve(&show_rate_counters_cmd);
 
-        install_element(ENABLE_NODE, &stats_report_cmd);
-        install_element(ENABLE_NODE, &stats_reset_cmd);
+        install_lib_element(ENABLE_NODE, &stats_report_cmd);
+        install_lib_element(ENABLE_NODE, &stats_reset_cmd);
 }

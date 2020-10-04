@@ -724,30 +724,30 @@ int gprs_ns2_vty_init(struct gprs_ns2_inst *nsi, struct osmo_sockaddr_str *defau
 		return 0;
 	vty_elements_installed = true;
 
-	install_element_ve(&show_ns_cmd);
-	install_element_ve(&show_ns_stats_cmd);
-	install_element_ve(&show_ns_pers_cmd);
-	install_element_ve(&show_nse_cmd);
-	install_element_ve(&logging_fltr_nsvc_cmd);
+	install_lib_element_ve(&show_ns_cmd);
+	install_lib_element_ve(&show_ns_stats_cmd);
+	install_lib_element_ve(&show_ns_pers_cmd);
+	install_lib_element_ve(&show_nse_cmd);
+	install_lib_element_ve(&logging_fltr_nsvc_cmd);
 
-	install_element(CFG_LOG_NODE, &logging_fltr_nsvc_cmd);
+	install_lib_element(CFG_LOG_NODE, &logging_fltr_nsvc_cmd);
 
-	install_element(CONFIG_NODE, &cfg_ns_cmd);
+	install_lib_element(CONFIG_NODE, &cfg_ns_cmd);
 	install_node(&ns_node, config_write_ns);
-	install_element(L_NS_NODE, &cfg_nse_nsvci_cmd);
-	install_element(L_NS_NODE, &cfg_nse_remoteip_cmd);
-	install_element(L_NS_NODE, &cfg_nse_remoteport_cmd);
-	install_element(L_NS_NODE, &cfg_nse_fr_dlci_cmd);
-	install_element(L_NS_NODE, &cfg_nse_encaps_cmd);
-	install_element(L_NS_NODE, &cfg_nse_remoterole_cmd);
-	install_element(L_NS_NODE, &cfg_no_nse_cmd);
-	install_element(L_NS_NODE, &cfg_ns_timer_cmd);
-	install_element(L_NS_NODE, &cfg_nsip_local_ip_cmd);
-	install_element(L_NS_NODE, &cfg_nsip_local_port_cmd);
-	install_element(L_NS_NODE, &cfg_nsip_dscp_cmd);
-	install_element(L_NS_NODE, &cfg_nsip_res_block_unblock_cmd);
-	install_element(L_NS_NODE, &cfg_frgre_enable_cmd);
-	install_element(L_NS_NODE, &cfg_frgre_local_ip_cmd);
+	install_lib_element(L_NS_NODE, &cfg_nse_nsvci_cmd);
+	install_lib_element(L_NS_NODE, &cfg_nse_remoteip_cmd);
+	install_lib_element(L_NS_NODE, &cfg_nse_remoteport_cmd);
+	install_lib_element(L_NS_NODE, &cfg_nse_fr_dlci_cmd);
+	install_lib_element(L_NS_NODE, &cfg_nse_encaps_cmd);
+	install_lib_element(L_NS_NODE, &cfg_nse_remoterole_cmd);
+	install_lib_element(L_NS_NODE, &cfg_no_nse_cmd);
+	install_lib_element(L_NS_NODE, &cfg_ns_timer_cmd);
+	install_lib_element(L_NS_NODE, &cfg_nsip_local_ip_cmd);
+	install_lib_element(L_NS_NODE, &cfg_nsip_local_port_cmd);
+	install_lib_element(L_NS_NODE, &cfg_nsip_dscp_cmd);
+	install_lib_element(L_NS_NODE, &cfg_nsip_res_block_unblock_cmd);
+	install_lib_element(L_NS_NODE, &cfg_frgre_enable_cmd);
+	install_lib_element(L_NS_NODE, &cfg_frgre_local_ip_cmd);
 
 	/* TODO: nsvc/nsei command to reset states or reset/block/unblock nsei/nsvcs */
 
