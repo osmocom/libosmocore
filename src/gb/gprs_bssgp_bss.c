@@ -318,7 +318,16 @@ int bssgp_tx_bvc_reset2(struct bssgp_bvc_ctx *bctx, uint16_t bvci, uint8_t cause
 }
 int bssgp_tx_bvc_reset(struct bssgp_bvc_ctx *bctx, uint16_t bvci, uint8_t cause)
 {
-	return bssgp_tx_bvc_reset2(bctx, bvci, cause, bvci != BVCI_PTM);
+	/* The Cell Identifier IE is mandatory in the BVC-RESET PDU sent from BSS to SGSN in order to reset a
+	 * BVC corresponding to a PTP functional entity. The Cell Identifier IE shall not be used in any other
+	 * BVC-RESET PDU. */
+	switch (bvci) {
+	case BVCI_SIGNALLING:
+	case BVCI_PTM:
+		return bssgp_tx_bvc_reset2(bctx, bvci, cause, false);
+	default:
+		return bssgp_tx_bvc_reset2(bctx, bvci, cause, true);
+	}
 }
 
 /*! Transmit a FLOW_CONTROL-BVC (Chapter 10.4.4)
