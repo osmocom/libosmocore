@@ -142,6 +142,21 @@ enum {
 	CMD_ATTR_LIB_COMMAND	= (1 << 4),
 };
 
+/*! Attributes shared between libraries (up to 32 entries). */
+enum {
+	/* The entries of this enum shall conform the following requirements:
+	 * 1. Naming format: 'OSMO_' + <LIBNAME> + '_LIB_ATTR_' + <ATTRNAME>,
+	 *    where LIBNAME is a short name of the library, e.g. 'ABIS', 'MGCP',
+	 *    and ATTRNAME is a brief name of the attribute, e.g. RTP_CONN_EST;
+	 *    for example: 'OSMO_ABIS_LIB_ATTR_RSL_LINK_UP'.
+	 * 2. Brevity: shortenings and abbreviations are welcome!
+	 * 3. Values are not flags but indexes, unlike CMD_ATTR_*.
+	 * 4. Ordering: new entries added before _OSMO_CORE_LIB_ATTR_COUNT. */
+
+	/* Keep this floating entry last, it's needed for count check. */
+	_OSMO_CORE_LIB_ATTR_COUNT
+};
+
 /*! Structure of a command element */
 struct cmd_element {
 	const char *string;	/*!< Command specification by string. */

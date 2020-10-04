@@ -631,6 +631,18 @@ static const struct value_string cmd_attr_desc[] = {
 	{ 0, NULL }
 };
 
+/* Description of attributes shared between the lib commands */
+static const char * const cmd_lib_attr_desc[32] = {
+	/* [OSMO_LIBNAME_LIB_ATTR_ATTRNAME] = \
+	 * 	"Brief but meaningful description", */
+};
+
+/* Flag letters of attributes shared between the lib commands.
+ * NOTE: uppercase letters only, the rest is reserved for applications. */
+static const char cmd_lib_attr_letters[32] = {
+	/* [OSMO_LIBNAME_LIB_ATTR_ATTRNAME] =		'X', */
+};
+
 /*
  * Write one cmd_element as XML via a print_func_t.
  */
@@ -662,7 +674,18 @@ static int vty_dump_element(struct cmd_element *cmd, print_func_t print_func, vo
 
 	/* Print application specific attributes and their description */
 	if (cmd->usrattr != 0x00) { /* ... if at least one flag is set */
-		print_func(data, "      <attributes scope='application'>%s", newline);
+		const char * const *desc;
+		const char *letters;
+
+		if (cmd->attr & CMD_ATTR_LIB_COMMAND) {
+			print_func(data, "      <attributes scope='library'>%s", newline);
+			letters = &cmd_lib_attr_letters[0];
+			desc = &cmd_lib_attr_desc[0];
+		} else {
+			print_func(data, "      <attributes scope='application'>%s", newline);
+			letters = &host.app_info->usr_attr_letters[0];
+			desc = &host.app_info->usr_attr_desc[0];
+		}
 
 		for (i = 0; i < ARRAY_SIZE(host.app_info->usr_attr_desc); i++) {
 			char *xml_att_desc;
@@ -672,11 +695,11 @@ static int vty_dump_element(struct cmd_element *cmd, print_func_t print_func, vo
 			if (~cmd->usrattr & (1 << i))
 				continue;
 
-			xml_att_desc = xml_escape(host.app_info->usr_attr_desc[i]);
+			xml_att_desc = xml_escape(desc[i]);
 			print_func(data, "        <attribute doc='%s'", xml_att_desc);
 			talloc_free(xml_att_desc);
 
-			if ((flag = host.app_info->usr_attr_letters[i]) != '\0')
+			if ((flag = letters[i]) != '\0')
 				print_func(data, " flag='%c'", flag);
 			print_func(data, " />%s", newline);
 		}
@@ -4052,6 +4075,28 @@ void cmd_init(int terminal)
 
 	}
 	srand(time(NULL));
+}
+
+/* FIXME: execute this section in the unit test instead */
+static __attribute__((constructor)) void on_dso_load(void)
+{
+	unsigned int i, j;
+
+	/* Check total number of the library specific attributes */
+	OSMO_ASSERT(_OSMO_CORE_LIB_ATTR_COUNT < 32);
+
+	/* Check for duplicates in the list of library specific flags */
+	for (i = 0; i < _OSMO_CORE_LIB_ATTR_COUNT; i++) {
+		if (cmd_lib_attr_letters[i] == '\0')
+			continue;
+
+		/* Only upper case flag letters are allowed for libraries */
+		OSMO_ASSERT(cmd_lib_attr_letters[i] >= 'A');
+		OSMO_ASSERT(cmd_lib_attr_letters[i] <= 'Z');
+
+		for (j = i + 1; j < _OSMO_CORE_LIB_ATTR_COUNT; j++)
+			OSMO_ASSERT(cmd_lib_attr_letters[i] != cmd_lib_attr_letters[j]);
+	}
 }
 
 /*! @} */
