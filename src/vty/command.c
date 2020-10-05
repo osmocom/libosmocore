@@ -3038,19 +3038,96 @@ gDEFUN(show_vty_attr, show_vty_attr_cmd,
 	return CMD_SUCCESS;
 }
 
+/* Compose flag bit-mask for all commands within the given node */
+static unsigned int node_flag_mask(const struct cmd_node *cnode)
+{
+	unsigned int flag_mask = 0x00;
+	unsigned int f, i;
+
+	for (f = 0; f < VTY_CMD_USR_ATTR_NUM; f++) {
+		for (i = 0; i < vector_active(cnode->cmd_vector); i++) {
+			const struct cmd_element *cmd;
+			char flag_letter;
+
+			if ((cmd = vector_slot(cnode->cmd_vector, i)) == NULL)
+				continue;
+			if (cmd->attr & (CMD_ATTR_DEPRECATED | CMD_ATTR_HIDDEN))
+				continue;
+			if (~cmd->usrattr & (1 << f))
+				continue;
+
+			if (cmd->attr & CMD_ATTR_LIB_COMMAND)
+				flag_letter = cmd_lib_attr_letters[f];
+			else
+				flag_letter = host.app_info->usr_attr_letters[f];
+
+			if (flag_letter == '\0')
+				continue;
+
+			flag_mask |= (1 << f);
+			break;
+		}
+	}
+
+	return flag_mask;
+}
+
+/* Compose flag char-mask for the given command (e.g. ".F.OB..") */
+static const char *cmd_flag_mask(const struct cmd_element *cmd,
+				 unsigned int flag_mask)
+{
+	static char char_mask[VTY_CMD_USR_ATTR_NUM + 1];
+	char *ptr = &char_mask[0];
+	char flag_letter;
+	unsigned int f;
+
+	for (f = 0; f < VTY_CMD_USR_ATTR_NUM; f++) {
+		if (~flag_mask & (1 << f))
+			continue;
+		if (~cmd->usrattr & (1 << f)) {
+			*(ptr++) = '.';
+			continue;
+		}
+
+		if (cmd->attr & CMD_ATTR_LIB_COMMAND)
+			flag_letter = cmd_lib_attr_letters[f];
+		else
+			flag_letter = host.app_info->usr_attr_letters[f];
+
+		*(ptr++) = flag_letter ? flag_letter : '.';
+	}
+
+	*ptr = '\0';
+
+	return char_mask;
+}
+
 /* Help display function for all node. */
-gDEFUN(config_list, config_list_cmd, "list", "Print command list\n")
+gDEFUN(config_list, config_list_cmd,
+       "list [with-flags]",
+       "Print command list\n"
+       "Also print the VTY attribute flags\n")
 {
 	unsigned int i;
 	struct cmd_node *cnode = vector_slot(cmdvec, vty->node);
+	unsigned int flag_mask = 0x00;
 	struct cmd_element *cmd;
+
+	if (argc > 0)
+		flag_mask = node_flag_mask(cnode);
 
 	for (i = 0; i < vector_active(cnode->cmd_vector); i++) {
 		if ((cmd = vector_slot(cnode->cmd_vector, i)) == NULL)
 			continue;
 		if (cmd->attr & (CMD_ATTR_DEPRECATED | CMD_ATTR_HIDDEN))
 			continue;
-		vty_out(vty, "  %s%s", cmd->string, VTY_NEWLINE);
+		if (!flag_mask)
+			vty_out(vty, "  %s%s", cmd->string, VTY_NEWLINE);
+		else {
+			vty_out(vty, "  %s  %s%s",
+				cmd_flag_mask(cmd, flag_mask),
+				cmd->string, VTY_NEWLINE);
+		}
 	}
 
 	return CMD_SUCCESS;
