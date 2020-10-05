@@ -627,6 +627,7 @@ static const struct value_string cmd_attr_desc[] = {
 	{ CMD_ATTR_HIDDEN,		"This command is hidden" },
 	{ CMD_ATTR_IMMEDIATE,		"This command applies immediately" },
 	{ CMD_ATTR_NODE_EXIT,		"This command applies on VTY node exit" },
+	/* CMD_ATTR_LIB_COMMAND is intentionally skipped */
 	{ 0, NULL }
 };
 
@@ -860,11 +861,28 @@ void install_element(int ntype, struct cmd_element *cmd)
 	cmd->cmdsize = cmd_cmdsize(cmd->strvec);
 }
 
+/*! Install a library command into a node
+ *  \param[in] ntype Node Type
+ *  \param[in] cmd element to be installed
+ */
+void install_lib_element(int ntype, struct cmd_element *cmd)
+{
+	cmd->attr |= CMD_ATTR_LIB_COMMAND;
+	install_element(ntype, cmd);
+}
+
 /* Install a command into VIEW and ENABLE node */
 void install_element_ve(struct cmd_element *cmd)
 {
 	install_element(VIEW_NODE, cmd);
 	install_element(ENABLE_NODE, cmd);
+}
+
+/* Install a library command into VIEW and ENABLE node */
+void install_lib_element_ve(struct cmd_element *cmd)
+{
+	cmd->attr |= CMD_ATTR_LIB_COMMAND;
+	install_element_ve(cmd);
 }
 
 #ifdef VTY_CRYPT_PW

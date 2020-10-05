@@ -139,6 +139,7 @@ enum {
 	CMD_ATTR_HIDDEN		= (1 << 1),
 	CMD_ATTR_IMMEDIATE	= (1 << 2),
 	CMD_ATTR_NODE_EXIT	= (1 << 3),
+	CMD_ATTR_LIB_COMMAND	= (1 << 4),
 };
 
 /*! Structure of a command element */
@@ -397,7 +398,9 @@ struct desc {
 void install_node(struct cmd_node *, int (*)(struct vty *));
 void install_default(int node_type) OSMO_DEPRECATED("Now happens implicitly with install_node()");
 void install_element(int node_type, struct cmd_element *);
+void install_lib_element(int node_type, struct cmd_element *);
 void install_element_ve(struct cmd_element *cmd);
+void install_lib_element_ve(struct cmd_element *cmd);
 void sort_node(void);
 
 void vty_install_default(int node_type) OSMO_DEPRECATED("Now happens implicitly with install_node()");
