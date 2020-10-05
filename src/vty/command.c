@@ -635,12 +635,15 @@ static const struct value_string cmd_attr_desc[] = {
 static const char * const cmd_lib_attr_desc[32] = {
 	/* [OSMO_LIBNAME_LIB_ATTR_ATTRNAME] = \
 	 * 	"Brief but meaningful description", */
+	[OSMO_SCCP_LIB_ATTR_RSTRT_ASP] = \
+		"This command applies on ASP restart",
 };
 
 /* Flag letters of attributes shared between the lib commands.
  * NOTE: uppercase letters only, the rest is reserved for applications. */
 static const char cmd_lib_attr_letters[32] = {
 	/* [OSMO_LIBNAME_LIB_ATTR_ATTRNAME] =		'X', */
+	[OSMO_SCCP_LIB_ATTR_RSTRT_ASP] =		'A',
 };
 
 /*
