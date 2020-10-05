@@ -626,6 +626,7 @@ static const struct value_string cmd_attr_desc[] = {
 	{ CMD_ATTR_DEPRECATED,		"This command is deprecated" },
 	{ CMD_ATTR_HIDDEN,		"This command is hidden" },
 	{ CMD_ATTR_IMMEDIATE,		"This command applies immediately" },
+	{ CMD_ATTR_NODE_EXIT,		"This command applies on VTY node exit" },
 	{ 0, NULL }
 };
 
