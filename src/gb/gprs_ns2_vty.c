@@ -810,17 +810,15 @@ int gprs_ns2_vty_create() {
 		}
 		nse->persistent = true;
 
-		if (bind) {
-			nsvc = gprs_ns2_ip_connect(bind,
-						   &sockaddr,
-						   nse,
-						   vtyvc->nsvci);
-			if (!nsvc) {
-				/* Could not create NSVC, connect failed */
-				continue;
-			}
-			nsvc->persistent = true;
+		nsvc = gprs_ns2_ip_connect(bind,
+					   &sockaddr,
+					   nse,
+					   vtyvc->nsvci);
+		if (!nsvc) {
+			/* Could not create NSVC, connect failed */
+			continue;
 		}
+		nsvc->persistent = true;
 	}
 
 
