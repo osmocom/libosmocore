@@ -142,9 +142,34 @@ static void signal_handler(int signal)
 	}
 }
 
+/* Application specific VTY attributes */
+enum {
+	TEST_ATTR_UNBELIEVABLE,
+	TEST_ATTR_MAGNIFICENT,
+	TEST_ATTR_WONDERFUL,
+	TEST_ATTR_UNUSED,
+};
+
 static struct vty_app_info vty_info = {
 	.name		= "vty_transcript_test",
 	.version	= PACKAGE_VERSION,
+	.usr_attr_desc  = {
+		/* Some random description strings, who cares... */
+		[TEST_ATTR_UNBELIEVABLE]	= \
+			"Unbelievable: not able to be believed; unlikely to be true",
+		[TEST_ATTR_MAGNIFICENT]		= \
+			"Magnificent: impressively beautiful, elaborate, or extravagant",
+		[TEST_ATTR_WONDERFUL]		= \
+			"Wonderful: inspiring delight, pleasure, or admiration",
+		[TEST_ATTR_UNUSED]		= \
+			"Intentionally unused attribute, ignore me",
+	},
+	.usr_attr_letters = {
+		[TEST_ATTR_UNBELIEVABLE]	= 'u',
+		[TEST_ATTR_MAGNIFICENT]		= 'm',
+		[TEST_ATTR_WONDERFUL]		= 'w',
+		[TEST_ATTR_UNUSED]		= 'n',
+	},
 };
 
 static const struct log_info_cat default_categories[] = {};
@@ -186,12 +211,106 @@ DEFUN(multi2, multi2_cmd,
 	return CMD_SUCCESS;
 }
 
+#define X(f) (1 << f)
+
+enum {
+	ATTR_TEST_NODE = _LAST_OSMOVTY_NODE + 1,
+};
+
+static struct cmd_node attr_test_node = {
+	ATTR_TEST_NODE,
+	"%s(config-attr-test)# ",
+	1
+};
+
+DEFUN(cfg_attr_test, cfg_attr_test_cmd,
+      "attribute-test",
+      "Enter attribute test node\n")
+{
+	vty->index = NULL;
+	vty->node = ATTR_TEST_NODE;
+	return CMD_SUCCESS;
+}
+
+DEFUN_ATTR(cfg_attr_immediate, cfg_attr_immediate_cmd,
+	   "foo-immediate",
+	   "Applies immediately\n",
+	   CMD_ATTR_IMMEDIATE)
+{
+	return CMD_SUCCESS;
+}
+
+DEFUN_ATTR(cfg_attr_node_exit, cfg_attr_node_exit_cmd,
+	   "foo-node-exit",
+	   "Applies on node exit\n",
+	   CMD_ATTR_NODE_EXIT)
+{
+	return CMD_SUCCESS;
+}
+
+DEFUN_USRATTR(cfg_app_attr_unbelievable,
+	      cfg_app_attr_unbelievable_cmd,
+	      X(TEST_ATTR_UNBELIEVABLE),
+	      "app-unbelievable",
+	      "Unbelievable help message\n")
+{
+	return CMD_SUCCESS;
+}
+
+DEFUN_USRATTR(cfg_app_attr_magnificent,
+	      cfg_app_attr_magnificent_cmd,
+	      X(TEST_ATTR_MAGNIFICENT),
+	      "app-magnificent",
+	      "Magnificent help message\n")
+{
+	return CMD_SUCCESS;
+}
+
+DEFUN_USRATTR(cfg_app_attr_wonderful,
+	      cfg_app_attr_wonderful_cmd,
+	      X(TEST_ATTR_WONDERFUL),
+	      "app-wonderful",
+	      "Wonderful help message\n")
+{
+	return CMD_SUCCESS;
+}
+
+DEFUN_USRATTR(cfg_app_attr_unbelievable_magnificent,
+	      cfg_app_attr_unbelievable_magnificent_cmd,
+	      X(TEST_ATTR_UNBELIEVABLE) | X(TEST_ATTR_MAGNIFICENT),
+	      "app-unbelievable-magnificent",
+	      "Unbelievable & magnificent help message\n")
+{
+	return CMD_SUCCESS;
+}
+
+DEFUN_USRATTR(cfg_app_attr_unbelievable_wonderful,
+	      cfg_app_attr_unbelievable_wonderful_cmd,
+	      X(TEST_ATTR_UNBELIEVABLE) | X(TEST_ATTR_WONDERFUL),
+	      "app-unbelievable-wonderful",
+	      "Unbelievable & wonderful help message\n")
+{
+	return CMD_SUCCESS;
+}
+
 static void init_vty_cmds()
 {
 	install_element_ve(&single0_cmd);
 	install_element_ve(&multi0_cmd);
 	install_element_ve(&multi1_cmd);
 	install_element_ve(&multi2_cmd);
+
+	install_element(CONFIG_NODE, &cfg_attr_test_cmd);
+	install_node(&attr_test_node, NULL);
+	install_element(ATTR_TEST_NODE, &cfg_attr_immediate_cmd);
+	install_element(ATTR_TEST_NODE, &cfg_attr_node_exit_cmd);
+
+	install_element(ATTR_TEST_NODE, &cfg_app_attr_unbelievable_cmd);
+	install_element(ATTR_TEST_NODE, &cfg_app_attr_magnificent_cmd);
+	install_element(ATTR_TEST_NODE, &cfg_app_attr_wonderful_cmd);
+
+	install_element(ATTR_TEST_NODE, &cfg_app_attr_unbelievable_magnificent_cmd);
+	install_element(ATTR_TEST_NODE, &cfg_app_attr_unbelievable_wonderful_cmd);
 }
 
 int main(int argc, char **argv)

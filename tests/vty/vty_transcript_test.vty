@@ -84,3 +84,41 @@ ok argc=1 one
 
 vty_transcript_test> single0
 ok argc=0
+
+vty_transcript_test> show vty-attributes
+  Global attributes:
+    .  This command is deprecated
+    .  This command is hidden
+    .  This command applies immediately
+    .  This command applies on VTY node exit
+  Library specific attributes:
+    A  This command applies on ASP restart
+  Application specific attributes:
+    u  Unbelievable: not able to be believed; unlikely to be true
+    m  Magnificent: impressively beautiful, elaborate, or extravagant
+    w  Wonderful: inspiring delight, pleasure, or admiration
+    n  Intentionally unused attribute, ignore me
+
+vty_transcript_test> en
+vty_transcript_test# configure terminal
+vty_transcript_test(config)# attribute-test
+
+vty_transcript_test(config-attr-test)# list
+...
+  foo-immediate
+  foo-node-exit
+  app-unbelievable
+  app-magnificent
+  app-wonderful
+  app-unbelievable-magnificent
+  app-unbelievable-wonderful
+
+vty_transcript_test(config-attr-test)# list with-flags
+...
+  ...  foo-immediate
+  ...  foo-node-exit
+  u..  app-unbelievable
+  .m.  app-magnificent
+  ..w  app-wonderful
+  um.  app-unbelievable-magnificent
+  u.w  app-unbelievable-wonderful
