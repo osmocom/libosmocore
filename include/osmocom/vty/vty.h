@@ -28,6 +28,9 @@
 #define VTY_BUFSIZ 512
 #define VTY_MAXHIST 20
 
+/* Number of application / library specific VTY attributes */
+#define VTY_CMD_USR_ATTR_NUM 32
+
 /*! VTY events */
 enum event {
 	VTY_SERV,
@@ -193,9 +196,9 @@ struct vty_app_info {
 	/*! Check if the config is consistent before write */
 	int (*config_is_consistent)(struct vty *vty);
 	/*! Description of the application specific VTY attributes (optional). */
-	const char * usr_attr_desc[32];
+	const char * usr_attr_desc[VTY_CMD_USR_ATTR_NUM];
 	/*! Flag letters of the application specific VTY attributes (optional). */
-	char usr_attr_letters[32];
+	char usr_attr_letters[VTY_CMD_USR_ATTR_NUM];
 };
 
 /* Prototypes. */
