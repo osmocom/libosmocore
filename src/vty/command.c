@@ -4309,6 +4309,11 @@ static __attribute__((constructor)) void on_dso_load(void)
 		if (cmd_lib_attr_letters[i] == '\0')
 			continue;
 
+		/* Some flag characters are reserved for global attributes */
+		const char rafc[] = VTY_CMD_ATTR_FLAGS_RESERVED;
+		for (j = 0; j < ARRAY_SIZE(rafc); j++)
+			OSMO_ASSERT(cmd_lib_attr_letters[i] != rafc[j]);
+
 		/* Only upper case flag letters are allowed for libraries */
 		OSMO_ASSERT(cmd_lib_attr_letters[i] >= 'A');
 		OSMO_ASSERT(cmd_lib_attr_letters[i] <= 'Z');

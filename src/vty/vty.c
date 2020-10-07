@@ -1810,6 +1810,15 @@ void vty_init(struct vty_app_info *app_info)
 		if (app_info->usr_attr_letters[i] == '\0')
 			continue;
 
+		/* Some flag characters are reserved for global attributes */
+		const char rafc[] = VTY_CMD_ATTR_FLAGS_RESERVED;
+		for (j = 0; j < ARRAY_SIZE(rafc); j++) {
+			if (app_info->usr_attr_letters[i] != rafc[j])
+				continue;
+			fprintf(stderr, "Attribute flag character '%c' is reserved "
+				"for globals! Please fix.\n", app_info->usr_attr_letters[i]);
+		}
+
 		/* Upper case flag letters are reserved for libraries */
 		if (app_info->usr_attr_letters[i] >= 'A' &&
 		    app_info->usr_attr_letters[i] <= 'Z') {

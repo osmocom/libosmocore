@@ -521,6 +521,9 @@ enum vty_test_attr {
 	VTY_TEST_ATTR_FOO_DUP,
 	VTY_TEST_ATTR_ZOO_DUP,
 	VTY_TEST_ATTR_UPPER,
+	VTY_TEST_ATTR_RAFC_DOT,
+	VTY_TEST_ATTR_RAFC_EXCL,
+	VTY_TEST_ATTR_RAFC_AT,
 };
 
 int main(int argc, char **argv)
@@ -538,6 +541,10 @@ int main(int argc, char **argv)
 			[VTY_TEST_ATTR_ZOO_DUP]	= 'z',
 			/* Reserved for libraries */
 			[VTY_TEST_ATTR_UPPER]	= 'X',
+			/* Reserved for global attribues */
+			[VTY_TEST_ATTR_RAFC_DOT]	'.',
+			[VTY_TEST_ATTR_RAFC_EXCL]	'!',
+			[VTY_TEST_ATTR_RAFC_AT]		'@',
 		},
 	};
 
