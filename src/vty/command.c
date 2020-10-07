@@ -631,6 +631,19 @@ static const struct value_string cmd_attr_desc[] = {
 	{ 0, NULL }
 };
 
+/* Get a flag character for a global VTY command attribute */
+static char cmd_attr_get_flag(unsigned int attr)
+{
+	switch (attr) {
+	case CMD_ATTR_IMMEDIATE:
+		return '!';
+	case CMD_ATTR_NODE_EXIT:
+		return '@';
+	default:
+		return '.';
+	}
+}
+
 /* Description of attributes shared between the lib commands */
 static const char * const cmd_lib_attr_desc[32] = {
 	/* [OSMO_LIBNAME_LIB_ATTR_ATTRNAME] = \
@@ -662,14 +675,20 @@ static int vty_dump_element(struct cmd_element *cmd, print_func_t print_func, vo
 
 		for (i = 0; i < ARRAY_SIZE(cmd_attr_desc) - 1; i++) {
 			char *xml_att_desc;
+			char flag;
 
 			if (~cmd->attr & cmd_attr_desc[i].value)
 				continue;
 
 			xml_att_desc = xml_escape(cmd_attr_desc[i].str);
-			print_func(data, "        <attribute doc='%s' />%s",
+			print_func(data, "        <attribute doc='%s'",
 				   xml_att_desc, newline);
 			talloc_free(xml_att_desc);
+
+			flag = cmd_attr_get_flag(cmd_attr_desc[i].value);
+			if (flag != '.')
+				print_func(data, " flag='%c'", flag);
+			print_func(data, " />%s", newline);
 		}
 
 		print_func(data, "      </attributes>%s", newline);
@@ -2965,9 +2984,12 @@ static void print_attr_list(struct vty *vty, unsigned int attr_mask)
 		vty_out(vty, "  Global attributes:%s", VTY_NEWLINE);
 
 		for (i = 0; i < ARRAY_SIZE(cmd_attr_desc) - 1; i++) {
+			flag = cmd_attr_get_flag(cmd_attr_desc[i].value);
 			desc = cmd_attr_desc[i].str;
-			flag = '.'; /* FIXME: no flags defined */
-			vty_out(vty, "    %c  %s%s", flag, desc, VTY_NEWLINE);
+
+			/* Skip attributes without flags */
+			if (flag != '.')
+				vty_out(vty, "    %c  %s%s", flag, desc, VTY_NEWLINE);
 		}
 	}
 
@@ -3072,7 +3094,26 @@ static unsigned int node_flag_mask(const struct cmd_node *cnode)
 	return flag_mask;
 }
 
-/* Compose flag char-mask for the given command (e.g. ".F.OB..") */
+/* Compose global flag char-mask for the given command (e.g. "!" or "@") */
+static const char *cmd_gflag_mask(const struct cmd_element *cmd)
+{
+	static char char_mask[8 + 1];
+	char *ptr = &char_mask[0];
+
+	/* Mutually exclusive global attributes */
+	if (cmd->attr & CMD_ATTR_IMMEDIATE)
+		*(ptr++) = cmd_attr_get_flag(CMD_ATTR_IMMEDIATE);
+	else if (cmd->attr & CMD_ATTR_NODE_EXIT)
+		*(ptr++) = cmd_attr_get_flag(CMD_ATTR_NODE_EXIT);
+	else
+		*(ptr++) = '.';
+
+	*ptr = '\0';
+
+	return char_mask;
+}
+
+/* Compose app / lib flag char-mask for the given command (e.g. ".F.OB..") */
 static const char *cmd_flag_mask(const struct cmd_element *cmd,
 				 unsigned int flag_mask)
 {
@@ -3121,10 +3162,11 @@ gDEFUN(config_list, config_list_cmd,
 			continue;
 		if (cmd->attr & (CMD_ATTR_DEPRECATED | CMD_ATTR_HIDDEN))
 			continue;
-		if (!flag_mask)
+		if (!argc)
 			vty_out(vty, "  %s%s", cmd->string, VTY_NEWLINE);
 		else {
-			vty_out(vty, "  %s  %s%s",
+			vty_out(vty, "  %s %s  %s%s",
+				cmd_gflag_mask(cmd),
 				cmd_flag_mask(cmd, flag_mask),
 				cmd->string, VTY_NEWLINE);
 		}

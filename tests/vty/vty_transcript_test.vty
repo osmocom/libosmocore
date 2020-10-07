@@ -87,10 +87,8 @@ ok argc=0
 
 vty_transcript_test> show vty-attributes
   Global attributes:
-    .  This command is deprecated
-    .  This command is hidden
-    .  This command applies immediately
-    .  This command applies on VTY node exit
+    !  This command applies immediately
+    @  This command applies on VTY node exit
   Library specific attributes:
     A  This command applies on ASP restart
   Application specific attributes:
@@ -115,10 +113,10 @@ vty_transcript_test(config-attr-test)# list
 
 vty_transcript_test(config-attr-test)# list with-flags
 ...
-  ...  foo-immediate
-  ...  foo-node-exit
-  u..  app-unbelievable
-  .m.  app-magnificent
-  ..w  app-wonderful
-  um.  app-unbelievable-magnificent
-  u.w  app-unbelievable-wonderful
+  ! ...  foo-immediate
+  @ ...  foo-node-exit
+  . u..  app-unbelievable
+  . .m.  app-magnificent
+  . ..w  app-wonderful
+  . um.  app-unbelievable-magnificent
+  . u.w  app-unbelievable-wonderful
