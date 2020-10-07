@@ -631,6 +631,10 @@ static const struct value_string cmd_attr_desc[] = {
 	{ 0, NULL }
 };
 
+/* Public attributes (to be printed in the VTY / XML reference) */
+#define CMD_ATTR_PUBLIC_MASK \
+	(CMD_ATTR_IMMEDIATE | CMD_ATTR_NODE_EXIT)
+
 /* Get a flag character for a global VTY command attribute */
 static char cmd_attr_get_flag(unsigned int attr)
 {
@@ -670,7 +674,7 @@ static int vty_dump_element(struct cmd_element *cmd, print_func_t print_func, vo
 	print_func(data, "    <command id='%s'>%s", xml_string, newline);
 
 	/* Print global attributes and their description */
-	if (cmd->attr != 0x00) { /* ... if at least one flag is set */
+	if (cmd->attr & CMD_ATTR_PUBLIC_MASK) { /* ... only public ones */
 		print_func(data, "      <attributes scope='global'>%s", newline);
 
 		for (i = 0; i < ARRAY_SIZE(cmd_attr_desc) - 1; i++) {
