@@ -1214,9 +1214,11 @@ bool osmo_str_startswith(const char *str, const char *startswith_str)
  * 10 to-the-power-of precision to obtain the returned integer.
  * The usable range of digits is -INT64_MAX .. INT64_MAX -- note, not INT64_MIN! The value of INT64_MIN is excluded to
  * reduce implementation complexity. See also utils_test.c.
+ * The advantage over using sscanf("%f") is guaranteed precision: float or double types may apply rounding in the
+ * conversion result. osmo_float_str_to_int() and osmo_int_to_float_str_buf() guarantee true results when converting
+ * back and forth between string and int.
  * \param[out] val  Returned integer value.
  * \param[in] str  String of a float, like '-12.345'.
- * \param[in] in_len  Length of string to parse, or -1 to use strlen(str).
  * \param[in] precision  Fixed-point precision, or  * \returns 0 on success, negative on error.
  */
 int osmo_float_str_to_int(int64_t *val, const char *str, unsigned int precision)
@@ -1331,8 +1333,14 @@ int osmo_float_str_to_int(int64_t *val, const char *str, unsigned int precision)
 	return 0;
 }
 
-/*! Convert an integer with a factor of a million to a floating point string.
+/*! Convert an integer to a floating point string using a decimal quotient (fixed-point precision).
  * For example, with precision = 3, convert -1230 to "-1.23".
+ * The usable range of digits is -INT64_MAX .. INT64_MAX -- note, not INT64_MIN! The value of INT64_MIN is excluded to
+ * reduce implementation complexity. See also utils_test.c.
+ * The advantage over using printf("%.6g") is guaranteed precision: float or double types may apply rounding in the
+ * conversion result. osmo_float_str_to_int() and osmo_int_to_float_str_buf() guarantee true results when converting
+ * back and forth between string and int.
+ * The resulting string omits trailing zeros in the fractional part (like "%g" would) but never applies rounding.
  * \param[out] buf  Buffer to write string to.
  * \param[in] buflen  sizeof(buf).
  * \param[in] val  Value to convert to float.
