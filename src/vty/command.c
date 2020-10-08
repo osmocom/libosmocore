@@ -654,6 +654,10 @@ static const char * const cmd_lib_attr_desc[32] = {
 	 * 	"Brief but meaningful description", */
 	[OSMO_SCCP_LIB_ATTR_RSTRT_ASP] = \
 		"This command applies on ASP restart",
+	[OSMO_ABIS_LIB_ATTR_IPA_NEW_LNK] = \
+		"This command applies on IPA link establishment",
+	[OSMO_ABIS_LIB_ATTR_LINE_UPD] = \
+		"This command applies on E1 line update",
 };
 
 /* Flag letters of attributes shared between the lib commands.
@@ -661,6 +665,8 @@ static const char * const cmd_lib_attr_desc[32] = {
 static const char cmd_lib_attr_letters[32] = {
 	/* [OSMO_LIBNAME_LIB_ATTR_ATTRNAME] =		'X', */
 	[OSMO_SCCP_LIB_ATTR_RSTRT_ASP] =		'A',
+	[OSMO_ABIS_LIB_ATTR_IPA_NEW_LNK] =		'I',
+	[OSMO_ABIS_LIB_ATTR_LINE_UPD] =			'L',
 };
 
 /*

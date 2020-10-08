@@ -153,6 +153,8 @@ enum {
 	 * 3. Values are not flags but indexes, unlike CMD_ATTR_*.
 	 * 4. Ordering: new entries added before _OSMO_CORE_LIB_ATTR_COUNT. */
 	OSMO_SCCP_LIB_ATTR_RSTRT_ASP,
+	OSMO_ABIS_LIB_ATTR_IPA_NEW_LNK,
+	OSMO_ABIS_LIB_ATTR_LINE_UPD,
 
 	/* Keep this floating entry last, it's needed for count check. */
 	_OSMO_CORE_LIB_ATTR_COUNT

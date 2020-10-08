@@ -91,6 +91,8 @@ vty_transcript_test> show vty-attributes
     @  This command applies on VTY node exit
   Library specific attributes:
     A  This command applies on ASP restart
+    I  This command applies on IPA link establishment
+    L  This command applies on E1 line update
   Application specific attributes:
     u  Unbelievable: not able to be believed; unlikely to be true
     m  Magnificent: impressively beautiful, elaborate, or extravagant
