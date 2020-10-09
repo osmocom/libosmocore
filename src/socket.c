@@ -1690,7 +1690,8 @@ int osmo_sockaddr_local_ip(struct osmo_sockaddr *local_ip, const struct osmo_soc
  * \param[in] b
  * \return 0 if a and b are equal. Otherwise it follows memcmp()
  */
-int osmo_sockaddr_cmp(struct osmo_sockaddr *a, struct osmo_sockaddr *b)
+int osmo_sockaddr_cmp(const struct osmo_sockaddr *a,
+		      const struct osmo_sockaddr *b)
 {
 	if (a == b)
 		return 0;
