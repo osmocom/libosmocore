@@ -303,8 +303,6 @@ int gprs_ns2_ip_bind(struct gprs_ns2_inst *nsi,
 	priv->addr = *local;
 	INIT_LLIST_HEAD(&bind->nsvc);
 
-	llist_add(&bind->list, &nsi->binding);
-
 	rc = osmo_sock_init_osa_ofd(&priv->fd, SOCK_DGRAM, IPPROTO_UDP,
 				 local, NULL,
 				 OSMO_SOCK_F_BIND);
@@ -325,6 +323,7 @@ int gprs_ns2_ip_bind(struct gprs_ns2_inst *nsi,
 				dscp, rc, errno);
 	}
 
+	llist_add(&bind->list, &nsi->binding);
 	ns2_vty_bind_apply(bind);
 
 	if (result)
