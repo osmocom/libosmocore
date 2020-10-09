@@ -61,12 +61,12 @@ void test_bsslap_enc_dec()
 		void *loop_ctx = msg;
 		rc = osmo_bsslap_enc(msg, pdu);
 		if (rc <= 0) {
-			printf("[%ld] %s: ERROR: failed to encode pdu\n", (pdu - bsslap_test_pdus),
+			printf("[%td] %s: ERROR: failed to encode pdu\n", (pdu - bsslap_test_pdus),
 			       osmo_bsslap_msgt_name(pdu->msg_type));
 			goto loop_end;
 		}
 		if (rc != msg->len) {
-			printf("[%ld] %s: ERROR: osmo_bsslap_enc() returned length %d but msgb has %d bytes\n",
+			printf("[%td] %s: ERROR: osmo_bsslap_enc() returned length %d but msgb has %d bytes\n",
 			       (pdu - bsslap_test_pdus), osmo_bsslap_msgt_name(pdu->msg_type),
 			       rc, msg->len);
 			goto loop_end;
@@ -75,21 +75,21 @@ void test_bsslap_enc_dec()
 		memset(&dec_pdu, 0xff, sizeof(dec_pdu));
 		rc = osmo_bsslap_dec(&dec_pdu, &err, loop_ctx, msg->data, msg->len);
 		if (rc) {
-			printf("[%ld] %s: ERROR: failed to decode pdu: %s\n", (pdu - bsslap_test_pdus),
+			printf("[%td] %s: ERROR: failed to decode pdu: %s\n", (pdu - bsslap_test_pdus),
 			       osmo_bsslap_msgt_name(pdu->msg_type), err->logmsg);
 			printf("     encoded data: %s\n", osmo_hexdump(msg->data, msg->len));
 			goto loop_end;
 		}
 
 		if (memcmp(pdu, &dec_pdu, sizeof(dec_pdu))) {
-			printf("[%ld] %s: ERROR: decoded PDU != encoded PDU\n", (pdu - bsslap_test_pdus),
+			printf("[%td] %s: ERROR: decoded PDU != encoded PDU\n", (pdu - bsslap_test_pdus),
 			       osmo_bsslap_msgt_name(pdu->msg_type));
 			printf("     original struct: %s\n", osmo_hexdump((void*)pdu, sizeof(*pdu)));
 			printf("      decoded struct: %s\n", osmo_hexdump((void*)&dec_pdu, sizeof(dec_pdu)));
 			goto loop_end;
 		}
 
-		printf("[%ld] %s: ok\n", (pdu - bsslap_test_pdus), osmo_bsslap_msgt_name(pdu->msg_type));
+		printf("[%td] %s: ok\n", (pdu - bsslap_test_pdus), osmo_bsslap_msgt_name(pdu->msg_type));
 
 loop_end:
 		msgb_free(msg);
