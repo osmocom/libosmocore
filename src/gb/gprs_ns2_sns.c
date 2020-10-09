@@ -1230,7 +1230,8 @@ err:
  *  \param[in] nsvc Initial NS-VC
  *  \param[in] remote remote (SGSN) address
  *  \returns 0 on success; negative on error */
-int ns2_sns_bss_fsm_start(struct gprs_ns2_nse *nse, struct gprs_ns2_vc *nsvc, struct osmo_sockaddr *remote)
+int ns2_sns_bss_fsm_start(struct gprs_ns2_nse *nse, struct gprs_ns2_vc *nsvc,
+			  const struct osmo_sockaddr *remote)
 {
 	struct osmo_fsm_inst *fi = nse->bss_sns_fi;
 	struct ns2_sns_state *gss = (struct ns2_sns_state *) nse->bss_sns_fi->priv;

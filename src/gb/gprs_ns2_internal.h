@@ -271,14 +271,14 @@ int ns2_tx_status(struct gprs_ns2_vc *nsvc, uint8_t cause,
 /* driver */
 struct gprs_ns2_vc *gprs_ns2_ip_bind_connect(struct gprs_ns2_vc_bind *bind,
 					     struct gprs_ns2_nse *nse,
-					     struct osmo_sockaddr *remote);
+					     const struct osmo_sockaddr *remote);
 
 /* sns */
 int gprs_ns2_sns_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp);
 struct osmo_fsm_inst *ns2_sns_bss_fsm_alloc(struct gprs_ns2_nse *nse,
 					     const char *id);
 int ns2_sns_bss_fsm_start(struct gprs_ns2_nse *nse, struct gprs_ns2_vc *nsvc,
-			  struct osmo_sockaddr *remote);
+			  const struct osmo_sockaddr *remote);
 void ns2_sns_free_nsvc(struct gprs_ns2_vc *nsvc);
 
 /* vc */

@@ -707,7 +707,8 @@ DEFUN(logging_fltr_nsvc,
  * \param[in] default_bind set the default address to bind to. Can be NULL.
  * \return 0 on success
  */
-int gprs_ns2_vty_init(struct gprs_ns2_inst *nsi, struct osmo_sockaddr_str *default_bind)
+int gprs_ns2_vty_init(struct gprs_ns2_inst *nsi,
+		      const struct osmo_sockaddr_str *default_bind)
 {
 	static bool vty_elements_installed = false;
 

@@ -107,23 +107,23 @@ struct gprs_ns2_vc *gprs_ns2_nsvc_by_nsvci(struct gprs_ns2_inst *nsi, uint16_t n
 
 /* IP VL driver */
 int gprs_ns2_ip_bind(struct gprs_ns2_inst *nsi,
-		     struct osmo_sockaddr *local,
+		     const struct osmo_sockaddr *local,
 		     int dscp,
 		     struct gprs_ns2_vc_bind **result);
 void gprs_ns2_bind_set_mode(struct gprs_ns2_vc_bind *bind, enum gprs_ns2_vc_mode mode);
 
 /* create a VC connection */
 struct gprs_ns2_vc *gprs_ns2_ip_connect(struct gprs_ns2_vc_bind *bind,
-					struct osmo_sockaddr *remote,
+					const struct osmo_sockaddr *remote,
 					struct gprs_ns2_nse *nse,
 					uint16_t nsvci);
 
 struct gprs_ns2_vc *gprs_ns2_ip_connect2(struct gprs_ns2_vc_bind *bind,
-					 struct osmo_sockaddr *remote,
+					 const struct osmo_sockaddr *remote,
 					 uint16_t nsei,
 					 uint16_t nsvci);
 struct gprs_ns2_vc *gprs_ns2_ip_connect_inactive(struct gprs_ns2_vc_bind *bind,
-					struct osmo_sockaddr *remote,
+					const struct osmo_sockaddr *remote,
 					struct gprs_ns2_nse *nse,
 					uint16_t nsvci);
 
@@ -131,7 +131,7 @@ void gprs_ns2_free_bind(struct gprs_ns2_vc_bind *bind);
 
 /* create a VC SNS connection */
 int gprs_ns2_ip_connect_sns(struct gprs_ns2_vc_bind *bind,
-			    struct osmo_sockaddr *remote,
+			    const struct osmo_sockaddr *remote,
 			    uint16_t nsei);
 
 struct osmo_sockaddr *gprs_ns2_ip_vc_sockaddr(struct gprs_ns2_vc *nsvc);
@@ -140,17 +140,17 @@ int gprs_ns2_is_ip_bind(struct gprs_ns2_vc_bind *bind);
 int gprs_ns2_ip_bind_set_dscp(struct gprs_ns2_vc_bind *bind, int dscp);
 struct gprs_ns2_vc *gprs_ns2_nsvc_by_sockaddr_bind(
 		struct gprs_ns2_vc_bind *bind,
-		struct osmo_sockaddr *saddr);
+		const struct osmo_sockaddr *saddr);
 
 int gprs_ns2_frgre_bind(struct gprs_ns2_inst *nsi,
-			struct osmo_sockaddr *local,
+			const struct osmo_sockaddr *local,
 			int dscp,
 			struct gprs_ns2_vc_bind **result);
 int gprs_ns2_is_frgre_bind(struct gprs_ns2_vc_bind *bind);
 
 struct gprs_ns2_vc *gprs_ns2_nsvc_by_sockaddr_nse(
 		struct gprs_ns2_nse *nse,
-		struct osmo_sockaddr *sockaddr);
+		const struct osmo_sockaddr *sockaddr);
 void gprs_ns2_start_alive_all_nsvcs(struct gprs_ns2_nse *nse);
 const char *gprs_ns2_cause_str(int cause);
 const char *gprs_ns2_ll_str(struct gprs_ns2_vc *nsvc);
@@ -158,7 +158,8 @@ char *gprs_ns2_ll_str_buf(char *buf, size_t buf_len, struct gprs_ns2_vc *nsvc);
 char *gprs_ns2_ll_str_c(const void *ctx, struct gprs_ns2_vc *nsvc);
 
 /* vty */
-int gprs_ns2_vty_init(struct gprs_ns2_inst *nsi, struct osmo_sockaddr_str *default_bind);
+int gprs_ns2_vty_init(struct gprs_ns2_inst *nsi,
+		      const struct osmo_sockaddr_str *default_bind);
 int gprs_ns2_vty_create();
 void gprs_ns2_vty_force_vc_mode(bool force, enum gprs_ns2_vc_mode mode, const char *reason);
 

@@ -110,7 +110,8 @@ static void dump_vty(const struct gprs_ns2_vc_bind *bind,
  *  \param[in] bind in which to search
  *  \param[in] saddr remote peer socket adddress to search
  *  \returns NS-VC matching sockaddr; NULL if none found */
-struct gprs_ns2_vc *gprs_ns2_nsvc_by_sockaddr_bind(struct gprs_ns2_vc_bind *bind, struct osmo_sockaddr *saddr)
+struct gprs_ns2_vc *gprs_ns2_nsvc_by_sockaddr_bind(struct gprs_ns2_vc_bind *bind,
+						   const struct osmo_sockaddr *saddr)
 {
 	struct gprs_ns2_vc *nsvc;
 	struct priv_vc *vcpriv;
@@ -271,7 +272,7 @@ static int nsip_fd_cb(struct osmo_fd *bfd, unsigned int what)
  *  \param[out] result if set, returns the bind object
  *  \return 0 on success; negative in case of error */
 int gprs_ns2_ip_bind(struct gprs_ns2_inst *nsi,
-		     struct osmo_sockaddr *local,
+		     const struct osmo_sockaddr *local,
 		     int dscp,
 		     struct gprs_ns2_vc_bind **result)
 {
@@ -339,7 +340,7 @@ int gprs_ns2_ip_bind(struct gprs_ns2_inst *nsi,
  *  \return pointer to newly-allocated and connected NS-VC; NULL on error */
 struct gprs_ns2_vc *gprs_ns2_ip_bind_connect(struct gprs_ns2_vc_bind *bind,
 					     struct gprs_ns2_nse *nse,
-					     struct osmo_sockaddr *remote)
+					     const struct osmo_sockaddr *remote)
 {
 	struct gprs_ns2_vc *nsvc;
 	struct priv_vc *priv;

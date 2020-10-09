@@ -729,7 +729,7 @@ enum gprs_ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
  *  \param[in] nsvci is only required when bind->vc_mode == NS2_VC_MODE_BLOCKRESET
  *  \return pointer to newly-allocated, connected and inactive NS-VC; NULL on error */
 struct gprs_ns2_vc *gprs_ns2_ip_connect_inactive(struct gprs_ns2_vc_bind *bind,
-					struct osmo_sockaddr *remote,
+					const struct osmo_sockaddr *remote,
 					struct gprs_ns2_nse *nse,
 					uint16_t nsvci)
 {
@@ -754,7 +754,7 @@ struct gprs_ns2_vc *gprs_ns2_ip_connect_inactive(struct gprs_ns2_vc_bind *bind,
  *  \param[in] nsvci is only required when bind->vc_mode == NS2_VC_MODE_BLOCKRESET
  *  \return pointer to newly-allocated, connected and activated NS-VC; NULL on error */
 struct gprs_ns2_vc *gprs_ns2_ip_connect(struct gprs_ns2_vc_bind *bind,
-					struct osmo_sockaddr *remote,
+					const struct osmo_sockaddr *remote,
 					struct gprs_ns2_nse *nse,
 					uint16_t nsvci)
 {
@@ -775,7 +775,7 @@ struct gprs_ns2_vc *gprs_ns2_ip_connect(struct gprs_ns2_vc_bind *bind,
  *  \param[in] nsvci is only required when bind->vc_mode == NS2_VC_MODE_BLOCKRESET
  *  \return pointer to newly-allocated, connected and activated NS-VC; NULL on error */
 struct gprs_ns2_vc *gprs_ns2_ip_connect2(struct gprs_ns2_vc_bind *bind,
-					 struct osmo_sockaddr *remote,
+					 const struct osmo_sockaddr *remote,
 					 uint16_t nsei,
 					 uint16_t nsvci)
 {
@@ -796,7 +796,7 @@ struct gprs_ns2_vc *gprs_ns2_ip_connect2(struct gprs_ns2_vc_bind *bind,
  *  \param[in] nsei NSEI of the NS Entity in which the NS-VC is to be created
  *  \return 0 on success; negative on error */
 int gprs_ns2_ip_connect_sns(struct gprs_ns2_vc_bind *bind,
-			    struct osmo_sockaddr *remote,
+			    const struct osmo_sockaddr *remote,
 			    uint16_t nsei)
 {
 	struct gprs_ns2_nse *nse = gprs_ns2_nse_by_nsei(bind->nsi, nsei);
@@ -826,7 +826,7 @@ int gprs_ns2_ip_connect_sns(struct gprs_ns2_vc_bind *bind,
  *  \param[in] sockaddr socket address to search for
  *  \return NS-VC matching sockaddr; NULL if none found */
 struct gprs_ns2_vc *gprs_ns2_nsvc_by_sockaddr_nse(struct gprs_ns2_nse *nse,
-					      struct osmo_sockaddr *sockaddr)
+						  const struct osmo_sockaddr *sockaddr)
 {
 	struct gprs_ns2_vc *nsvc;
 	struct osmo_sockaddr *remote;

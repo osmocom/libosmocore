@@ -538,7 +538,7 @@ int gprs_ns2_is_frgre_bind(struct gprs_ns2_vc_bind *bind)
  *  \param[out] result pointer to created bind
  *  \return 0 on success; negative on error */
 int gprs_ns2_frgre_bind(struct gprs_ns2_inst *nsi,
-			struct osmo_sockaddr *local,
+			const struct osmo_sockaddr *local,
 			int dscp,
 			struct gprs_ns2_vc_bind **result)
 {
