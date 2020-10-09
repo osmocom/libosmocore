@@ -875,8 +875,8 @@ int ns2_recv_vc(struct gprs_ns2_vc *nsvc,
 	case SNS_PDUT_CHANGE_WEIGHT:
 	case SNS_PDUT_DELETE:
 		/* weird layout: NSEI TLV, then value-only transaction IE, then TLV again */
-		rc = ns2_tlv_parse(&tp, nsh->data+1,
-				   msgb_l2len(msg) - sizeof(*nsh)-1, 0, 0);
+		rc = ns2_tlv_parse(&tp, nsh->data+5,
+				   msgb_l2len(msg) - sizeof(*nsh)-5, 0, 0);
 		if (rc < 0) {
 			LOGPC(DLNS, LOGL_NOTICE, "Error during TLV Parse in %s\n", msgb_hexdump(msg));
 			return rc;
