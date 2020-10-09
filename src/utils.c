@@ -1263,7 +1263,7 @@ int osmo_float_str_to_int(int64_t *val, const char *str, unsigned int precision)
 	if (!point || point > str) {
 		errno = 0;
 		integer = strtoll(str, &endptr, 10);
-		if ((errno == ERANGE && (integer == LONG_MAX || integer == LONG_MIN))
+		if ((errno == ERANGE && (integer == LLONG_MAX || integer == LLONG_MIN))
 		    || (errno != 0 && integer == 0))
 			return -ERANGE;
 
@@ -1295,7 +1295,7 @@ int osmo_float_str_to_int(int64_t *val, const char *str, unsigned int precision)
 		}
 		errno = 0;
 		decimal = strtoll(decimal_str + skip_digits, &endptr, 10);
-		if ((errno == ERANGE && (decimal == LONG_MAX || decimal == LONG_MIN))
+		if ((errno == ERANGE && (decimal == LLONG_MAX || decimal == LLONG_MIN))
 		    || (errno != 0 && decimal == 0))
 			return -ERANGE;
 
