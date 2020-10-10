@@ -1001,6 +1001,8 @@ void gprs_ns2_free(struct gprs_ns2_inst *nsi)
 	llist_for_each_entry_safe(bind, tbind, &nsi->binding, list) {
 		gprs_ns2_free_bind(bind);
 	}
+
+	talloc_free(nsi);
 }
 
 /*! Configure whether a NS Instance should dynamically create NSEs based on incoming traffic.
