@@ -302,10 +302,17 @@ int gprs_ns2_ip_bind(struct gprs_ns2_inst *nsi,
 		     int dscp,
 		     struct gprs_ns2_vc_bind **result)
 {
-	struct gprs_ns2_vc_bind *bind = talloc_zero(nsi, struct gprs_ns2_vc_bind);
+	struct gprs_ns2_vc_bind *bind;
 	struct priv_bind *priv;
 	int rc;
 
+	bind = gprs_ns2_ip_bind_by_sockaddr(nsi, local);
+	if (bind) {
+		*result = bind;
+		return -EBUSY;
+	}
+
+	bind = talloc_zero(nsi, struct gprs_ns2_vc_bind);
 	if (!bind)
 		return -ENOSPC;
 
