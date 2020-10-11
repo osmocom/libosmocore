@@ -598,6 +598,15 @@ void gprs_ns2_free_nse(struct gprs_ns2_nse *nse)
 	talloc_free(nse);
 }
 
+void gprs_ns2_free_nses(struct gprs_ns2_inst *nsi)
+{
+	struct gprs_ns2_nse *nse, *ntmp;
+
+	llist_for_each_entry_safe(nse, ntmp, &nsi->nse, list) {
+		gprs_ns2_free_nse(nse);
+	}
+}
+
 static inline int ns2_tlv_parse(struct tlv_parsed *dec,
 			 const uint8_t *buf, int buf_len, uint8_t lv_tag,
 			 uint8_t lv_tag2)
@@ -997,15 +1006,10 @@ struct gprs_ns2_inst *gprs_ns2_instantiate(void *ctx, osmo_prim_cb cb, void *cb_
  *  \param[in] nsi NS instance to destroy */
 void gprs_ns2_free(struct gprs_ns2_inst *nsi)
 {
-	struct gprs_ns2_nse *nse, *ntmp;
-
 	if (!nsi)
 		return;
 
-	llist_for_each_entry_safe(nse, ntmp, &nsi->nse, list) {
-		gprs_ns2_free_nse(nse);
-	}
-
+	gprs_ns2_free_nses(nsi);
 	gprs_ns2_free_binds(nsi);
 
 	talloc_free(nsi);

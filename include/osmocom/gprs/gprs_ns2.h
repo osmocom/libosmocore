@@ -101,6 +101,7 @@ struct gprs_ns2_nse *gprs_ns2_nse_by_nsei(struct gprs_ns2_inst *nsi, uint16_t ns
 struct gprs_ns2_nse *gprs_ns2_create_nse(struct gprs_ns2_inst *nsi, uint16_t nsei);
 uint16_t gprs_ns2_nse_nsei(struct gprs_ns2_nse *nse);
 void gprs_ns2_free_nse(struct gprs_ns2_nse *nse);
+void gprs_ns2_free_nses(struct gprs_ns2_inst *nsi);
 
 /* create vc */
 void gprs_ns2_free_nsvc(struct gprs_ns2_vc *nsvc);
