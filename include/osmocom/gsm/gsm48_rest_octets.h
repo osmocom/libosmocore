@@ -125,3 +125,6 @@ int osmo_gsm48_rest_octets_si13_encode(uint8_t *data, const struct osmo_gsm48_si
 
 /* Parse SI3 Rest Octets */
 void osmo_gsm48_rest_octets_si3_decode(struct osmo_gsm48_si_ro_info *si3, const uint8_t *data);
+
+/* Parse SI4 Rest Octets */
+void osmo_gsm48_rest_octets_si4_decode(struct osmo_gsm48_si_ro_info *si4, const uint8_t *data, int len);

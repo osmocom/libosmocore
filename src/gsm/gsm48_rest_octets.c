@@ -1022,3 +1022,46 @@ void osmo_gsm48_rest_octets_si3_decode(struct osmo_gsm48_si_ro_info *si3, const 
 	else
 		si3->si2quater_indicator = 0;
 }
+
+
+void osmo_gsm48_rest_octets_si4_decode(struct osmo_gsm48_si_ro_info *si4, const uint8_t *data, int len)
+{
+	struct osmo_gsm48_si_selection_params *sp = &si4->selection_params;
+	struct osmo_gsm48_si_power_offset *po = &si4->power_offset;
+	struct osmo_gsm48_si3_gprs_ind *gi = &si4->gprs_ind;
+	struct bitvec bv;
+
+	memset(&bv, 0, sizeof(bv));
+	bv.data = (uint8_t *) data;
+	bv.data_len = len;
+
+	memset(si4, 0, sizeof(*si4));
+
+	/* Optional Selection Parameters */
+	if (bitvec_get_bit_high(&bv) == H) {
+		sp->present = 1;
+		sp->cbq = bitvec_get_uint(&bv, 1);
+		sp->cell_resel_off = bitvec_get_uint(&bv, 6);
+		sp->temp_offs = bitvec_get_uint(&bv, 3);
+		sp->penalty_time = bitvec_get_uint(&bv, 5);
+	} else {
+		sp->present = 0;
+	}
+
+	/* Optional Power Offset */
+	if (bitvec_get_bit_high(&bv) == H) {
+		po->present = 1;
+		po->power_offset = bitvec_get_uint(&bv, 2);
+	} else {
+		po->present = 0;
+	}
+
+	/* GPRS Indicator */
+	if (bitvec_get_bit_high(&bv) == H) {
+		gi->present = 1;
+		gi->ra_colour = bitvec_get_uint(&bv, 3);
+		gi->si13_position = bitvec_get_uint(&bv, 1);
+	} else {
+		gi->present = 0;
+	}
+}
