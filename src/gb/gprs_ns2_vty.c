@@ -247,7 +247,7 @@ static void dump_nsvc(struct vty *vty, struct gprs_ns2_vc *nsvc, bool stats)
 {
 	struct osmo_sockaddr_str remote;
 	struct osmo_sockaddr_str local;
-	struct osmo_sockaddr *sockaddr;
+	const struct osmo_sockaddr *sockaddr;
 
 	switch (nsvc->ll) {
 	case GPRS_NS_LL_UDP: {

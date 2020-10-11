@@ -274,7 +274,7 @@ struct gprs_ns2_vc_bind *gprs_ns2_ip_bind_by_sockaddr(struct gprs_ns2_inst *nsi,
 						      const struct osmo_sockaddr *sockaddr)
 {
 	struct gprs_ns2_vc_bind *bind;
-	struct osmo_sockaddr *local;
+	const struct osmo_sockaddr *local;
 
 	OSMO_ASSERT(nsi);
 	OSMO_ASSERT(sockaddr);
@@ -396,7 +396,7 @@ struct gprs_ns2_vc *gprs_ns2_ip_bind_connect(struct gprs_ns2_vc_bind *bind,
 /*! Return the socket address of the remote peer of a NS-VC.
  *  \param[in] nsvc NS-VC whose remote peer we want to know
  *  \return address of the remote peer; NULL in case of error */
-struct osmo_sockaddr *gprs_ns2_ip_vc_sockaddr(struct gprs_ns2_vc *nsvc)
+const struct osmo_sockaddr *gprs_ns2_ip_vc_sockaddr(struct gprs_ns2_vc *nsvc)
 {
 	struct priv_vc *priv;
 
@@ -410,7 +410,7 @@ struct osmo_sockaddr *gprs_ns2_ip_vc_sockaddr(struct gprs_ns2_vc *nsvc)
 /*! Return the locally bound socket address of the bind.
  *  \param[in] bind The bind whose local address we want to know
  *  \return address of the local bind */
-struct osmo_sockaddr *gprs_ns2_ip_bind_sockaddr(struct gprs_ns2_vc_bind *bind)
+const struct osmo_sockaddr *gprs_ns2_ip_bind_sockaddr(struct gprs_ns2_vc_bind *bind)
 {
 	struct priv_bind *priv;
 

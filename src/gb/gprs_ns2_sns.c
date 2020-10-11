@@ -473,7 +473,7 @@ static int do_sns_change_weight(struct osmo_fsm_inst *fi, const struct gprs_ns_i
 	struct gprs_ns2_nse *nse = nse_inst_from_fi(fi);
 	struct gprs_ns2_vc *nsvc;
 	struct osmo_sockaddr sa = {};
-	struct osmo_sockaddr *remote;
+	const struct osmo_sockaddr *remote;
 	uint8_t new_signal;
 	uint8_t new_data;
 
@@ -533,7 +533,7 @@ static int do_sns_delete(struct osmo_fsm_inst *fi,
 	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
 	struct gprs_ns2_nse *nse = nse_inst_from_fi(fi);
 	struct gprs_ns2_vc *nsvc, *tmp;
-	struct osmo_sockaddr *remote;
+	const struct osmo_sockaddr *remote;
 	struct osmo_sockaddr sa = {};
 
 	if (ip4) {
@@ -1239,7 +1239,9 @@ int ns2_sns_bss_fsm_start(struct gprs_ns2_nse *nse, struct gprs_ns2_vc *nsvc,
 	struct gprs_ns_ie_ip6_elem *ip6_elems;
 	struct gprs_ns2_vc_bind *bind;
 	struct gprs_ns2_inst *nsi = nse->nsi;
-	struct osmo_sockaddr *sa, local;
+	const struct osmo_sockaddr *sa;
+	struct osmo_sockaddr local;
+
 	gss->ip = remote->u.sa.sa_family == AF_INET ? IPv4 : IPv6;
 
 	gss->initial = *remote;

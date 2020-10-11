@@ -210,8 +210,8 @@ static const struct osmo_stat_item_group_desc nsvc_statg_desc = {
  *  \return pointer to buf on success; NULL on error */
 char *gprs_ns2_ll_str_buf(char *buf, size_t buf_len, struct gprs_ns2_vc *nsvc)
 {
-	struct osmo_sockaddr *local;
-	struct osmo_sockaddr *remote;
+	const struct osmo_sockaddr *local;
+	const struct osmo_sockaddr *remote;
 	struct osmo_sockaddr_str local_str;
 	struct osmo_sockaddr_str remote_str;
 
@@ -847,7 +847,7 @@ struct gprs_ns2_vc *gprs_ns2_nsvc_by_sockaddr_nse(struct gprs_ns2_nse *nse,
 						  const struct osmo_sockaddr *sockaddr)
 {
 	struct gprs_ns2_vc *nsvc;
-	struct osmo_sockaddr *remote;
+	const struct osmo_sockaddr *remote;
 
 	OSMO_ASSERT(nse);
 	OSMO_ASSERT(sockaddr);
