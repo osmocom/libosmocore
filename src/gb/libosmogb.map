@@ -93,6 +93,7 @@ gprs_ns2_ip_connect;
 gprs_ns2_ip_connect2;
 gprs_ns2_ip_connect_inactive;
 gprs_ns2_ip_connect_sns;
+gprs_ns2_ip_vc_local;
 gprs_ns2_ip_vc_remote;
 gprs_ns2_is_frgre_bind;
 gprs_ns2_is_ip_bind;

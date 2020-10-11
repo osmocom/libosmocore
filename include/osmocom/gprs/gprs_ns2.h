@@ -140,6 +140,7 @@ int gprs_ns2_ip_connect_sns(struct gprs_ns2_vc_bind *bind,
 			    uint16_t nsei);
 
 const struct osmo_sockaddr *gprs_ns2_ip_vc_remote(struct gprs_ns2_vc *nsvc);
+const struct osmo_sockaddr *gprs_ns2_ip_vc_local(const struct gprs_ns2_vc *nsvc);
 const struct osmo_sockaddr *gprs_ns2_ip_bind_sockaddr(struct gprs_ns2_vc_bind *bind);
 int gprs_ns2_is_ip_bind(struct gprs_ns2_vc_bind *bind);
 int gprs_ns2_ip_bind_set_dscp(struct gprs_ns2_vc_bind *bind, int dscp);

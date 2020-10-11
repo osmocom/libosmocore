@@ -393,6 +393,23 @@ struct gprs_ns2_vc *gprs_ns2_ip_bind_connect(struct gprs_ns2_vc_bind *bind,
 	return nsvc;
 }
 
+/*! Return the socket address of the local peer of a NS-VC.
+ *  \param[in] nsvc NS-VC whose local peer we want to know
+ *  \return address of the local peer; NULL in case of error */
+const struct osmo_sockaddr *gprs_ns2_ip_vc_local(const struct gprs_ns2_vc *nsvc)
+{
+	struct priv_bind *priv;
+
+	if (nsvc->ll != GPRS_NS_LL_UDP)
+		return NULL;
+
+	if (nsvc->bind->driver != &vc_driver_ip)
+		return NULL;
+
+	priv = nsvc->bind->priv;
+	return &priv->addr;
+}
+
 /*! Return the socket address of the remote peer of a NS-VC.
  *  \param[in] nsvc NS-VC whose remote peer we want to know
  *  \return address of the remote peer; NULL in case of error */
