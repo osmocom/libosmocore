@@ -313,6 +313,80 @@ static int test_sockinit_osa(void)
 	return 0;
 }
 
+static void test_osa_str(void)
+{
+	char buf[256];
+	const char *result;
+	struct osmo_sockaddr localhost4 = {};
+	struct osmo_sockaddr localhost6 = {};
+
+	localhost4.u.sin = (struct sockaddr_in){
+		.sin_family = AF_INET,
+		.sin_addr.s_addr = inet_addr("127.0.0.1"),
+		.sin_port = htons(42),
+	};
+
+	localhost6.u.sin6 = (struct sockaddr_in6){
+		.sin6_family = AF_INET6,
+		.sin6_port = htons(42),
+	};
+	inet_pton(AF_INET6, "::1", &localhost6.u.sin6.sin6_addr);
+
+	/* test a too short str */
+	memset(&buf[0], 0, sizeof(buf));
+	result = osmo_sockaddr_to_str_buf(buf, 1, &localhost4);
+	printf("Checking osmo_sockaddr_to_str_buf to small IPv4\n");
+	OSMO_ASSERT(result == NULL);
+
+	memset(&buf[0], 0, sizeof(buf));
+	result = osmo_sockaddr_to_str_buf(buf, sizeof(buf), &localhost4);
+	printf("Checking osmo_sockaddr_to_str_buf IPv4\n");
+	OSMO_ASSERT(!strncmp("127.0.0.1:42", result, sizeof(buf)));
+
+	memset(&buf[0], 0, sizeof(buf));
+	result = osmo_sockaddr_to_str_buf(buf, 256, &localhost6);
+	printf("Checking osmo_sockaddr_to_str_buf IPv6\n");
+	OSMO_ASSERT(!strncmp("[::1]:42", result, sizeof(buf)));
+
+	memset(&buf[0], 0, sizeof(buf));
+	result = osmo_sockaddr_to_str_buf(buf, 8, &localhost6);
+	printf("Checking osmo_sockaddr_to_str_buf too short IPv6\n");
+	OSMO_ASSERT(!strncmp("[::1]:4", result, sizeof(buf)));
+
+	memset(&buf[0], 0, sizeof(buf));
+	result = osmo_sockaddr_to_str_buf(buf, 5, &localhost6);
+	printf("Checking osmo_sockaddr_to_str_buf too short IPv6\n");
+	OSMO_ASSERT(result == NULL);
+
+	localhost6.u.sin6.sin6_port = 0;
+	memset(&buf[0], 0, sizeof(buf));
+	result = osmo_sockaddr_to_str_buf(buf, 5, &localhost6);
+	printf("Checking osmo_sockaddr_to_str_buf only 5 bytes IPv6\n");
+	OSMO_ASSERT(result == NULL);
+
+	inet_pton(AF_INET6, "::", &localhost6.u.sin6.sin6_addr);
+	memset(&buf[0], 0, sizeof(buf));
+	result = osmo_sockaddr_to_str_buf(buf, 5, &localhost6);
+	printf("Checking osmo_sockaddr_to_str_buf only 5 bytes IPv6\n");
+	OSMO_ASSERT(!strncmp("[::]", result, sizeof(buf)));
+
+	inet_pton(AF_INET6, "2003:1234:5678:90ab:cdef:1234:4321:4321", &localhost6.u.sin6.sin6_addr);
+	memset(&buf[0], 0, sizeof(buf));
+	result = osmo_sockaddr_to_str_buf(buf, sizeof(buf), &localhost6);
+	printf("Checking osmo_sockaddr_to_str_buf long IPv6\n");
+	OSMO_ASSERT(!strncmp("[2003:1234:5678:90ab:cdef:1234:4321:4321]", result, sizeof(buf)));
+
+	localhost6.u.sin6.sin6_port = htons(23420);
+	memset(&buf[0], 0, sizeof(buf));
+	result = osmo_sockaddr_to_str_buf(buf, sizeof(buf), &localhost6);
+	printf("Checking osmo_sockaddr_to_str_buf long IPv6 port\n");
+	OSMO_ASSERT(!strncmp("[2003:1234:5678:90ab:cdef:1234:4321:4321]:23420", result, sizeof(buf)));
+
+	result = osmo_sockaddr_to_str(&localhost6);
+	printf("Checking osmo_sockaddr_to_str_buf long IPv6 port static buffer\n");
+	OSMO_ASSERT(!strncmp("[2003:1234:5678:90ab:cdef:1234:4321:4321]:23420", result, sizeof(buf)));
+}
+
 const struct log_info_cat default_categories[] = {
 };
 
@@ -332,6 +406,7 @@ int main(int argc, char *argv[])
 	test_sockinit2();
 	test_get_ip_and_port();
 	test_sockinit_osa();
+	test_osa_str();
 
 	return EXIT_SUCCESS;
 }

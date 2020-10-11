@@ -21,3 +21,13 @@ Checking osmo_sock_init_osa() for combined BIND + CONNECT on IPv6
 Checking osmo_sock_init_osa() must fail on mixed IPv4 & IPv6
 Checking osmo_sock_init_osa() must fail on mixed IPv6 & IPv4
 Checking osmo_sock_init_osa() must fail on invalid osmo_sockaddr
+Checking osmo_sockaddr_to_str_buf to small IPv4
+Checking osmo_sockaddr_to_str_buf IPv4
+Checking osmo_sockaddr_to_str_buf IPv6
+Checking osmo_sockaddr_to_str_buf too short IPv6
+Checking osmo_sockaddr_to_str_buf too short IPv6
+Checking osmo_sockaddr_to_str_buf only 5 bytes IPv6
+Checking osmo_sockaddr_to_str_buf only 5 bytes IPv6
+Checking osmo_sockaddr_to_str_buf long IPv6
+Checking osmo_sockaddr_to_str_buf long IPv6 port
+Checking osmo_sockaddr_to_str_buf long IPv6 port static buffer

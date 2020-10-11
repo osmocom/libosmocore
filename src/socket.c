@@ -1715,6 +1715,68 @@ int osmo_sockaddr_cmp(const struct osmo_sockaddr *a,
 	}
 }
 
+/*! string-format a given osmo_sockaddr address
+ *  \param[in] sockaddr the osmo_sockaddr to print
+ *  \return pointer to the string on success; NULL on error
+ */
+const char *osmo_sockaddr_to_str(const struct osmo_sockaddr *sockaddr)
+{
+	/* INET6_ADDRSTRLEN contains already a null termination,
+	 * adding '[' ']' ':' '16 bit port' */
+	static __thread char buf[INET6_ADDRSTRLEN + 8];
+	return osmo_sockaddr_to_str_buf(buf, sizeof(buf), sockaddr);
+}
+
+/*! string-format a given osmo_sockaddr address into a user-supplied buffer
+ *  \param[in] buf user-supplied output buffer
+ *  \param[in] buf_len size of the user-supplied output buffer in bytes
+ *  \param[in] sockaddr the osmo_sockaddr to print
+ *  \return pointer to the string on success; NULL on error
+ */
+char *osmo_sockaddr_to_str_buf(char *buf, size_t buf_len,
+			    const struct osmo_sockaddr *sockaddr)
+{
+	uint16_t port = 0;
+	size_t written;
+	if (buf_len < 5)
+		return NULL;
+
+	if (!sockaddr)
+		return NULL;
+
+	switch (sockaddr->u.sa.sa_family) {
+	case AF_INET:
+		written = osmo_sockaddr_to_str_and_uint(buf, buf_len, &port, &sockaddr->u.sa);
+		if (written + 1 >= buf_len && port)
+			return NULL;
+		if (port)
+			snprintf(buf + written, buf_len - written, ":%u", port);
+		break;
+	case AF_INET6:
+		buf[0] = '[';
+		written = osmo_sockaddr_to_str_and_uint(buf + 1, buf_len - 1, &port, &sockaddr->u.sa);
+		if (written + 2 >= buf_len)
+			return NULL;
+
+		if (written + 3 >= buf_len && port)
+			return NULL;
+
+		if (port)
+			snprintf(buf + 1 + written, buf_len - written - 1, "]:%u", port);
+		else {
+			buf[written + 1] = ']';
+			buf[written + 2] = 0;
+		}
+		break;
+	default:
+		snprintf(buf, buf_len, "unsupported family %d", sockaddr->u.sa.sa_family);
+		return buf;
+	}
+
+	return buf;
+}
+
+
 #endif /* HAVE_SYS_SOCKET_H */
 
 /*! @} */

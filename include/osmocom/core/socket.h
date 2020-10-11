@@ -118,5 +118,9 @@ int osmo_sockaddr_local_ip(struct osmo_sockaddr *local_ip,
 int osmo_sockaddr_cmp(const struct osmo_sockaddr *a,
 		      const struct osmo_sockaddr *b);
 
+const char *osmo_sockaddr_to_str(const struct osmo_sockaddr *sockaddr);
+char *osmo_sockaddr_to_str_buf(char *buf, size_t buf_len,
+			       const struct osmo_sockaddr *sockaddr);
+
 #endif /* (!EMBEDDED) */
 /*! @} */
