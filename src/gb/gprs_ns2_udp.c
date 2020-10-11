@@ -413,7 +413,7 @@ const struct osmo_sockaddr *gprs_ns2_ip_vc_local(const struct gprs_ns2_vc *nsvc)
 /*! Return the socket address of the remote peer of a NS-VC.
  *  \param[in] nsvc NS-VC whose remote peer we want to know
  *  \return address of the remote peer; NULL in case of error */
-const struct osmo_sockaddr *gprs_ns2_ip_vc_remote(struct gprs_ns2_vc *nsvc)
+const struct osmo_sockaddr *gprs_ns2_ip_vc_remote(const struct gprs_ns2_vc *nsvc)
 {
 	struct priv_vc *priv;
 
