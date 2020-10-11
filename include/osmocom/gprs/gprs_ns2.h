@@ -138,6 +138,7 @@ void gprs_ns2_free_binds(struct gprs_ns2_inst *nsi);
 int gprs_ns2_ip_connect_sns(struct gprs_ns2_vc_bind *bind,
 			    const struct osmo_sockaddr *remote,
 			    uint16_t nsei);
+const struct osmo_sockaddr *gprs_ns2_nse_sns_remote(struct gprs_ns2_nse *nse);
 
 const struct osmo_sockaddr *gprs_ns2_ip_vc_remote(struct gprs_ns2_vc *nsvc);
 const struct osmo_sockaddr *gprs_ns2_ip_vc_local(const struct gprs_ns2_vc *nsvc);

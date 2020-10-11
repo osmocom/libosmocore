@@ -194,6 +194,21 @@ static struct gprs_ns2_vc *nsvc_by_ip6_elem(struct gprs_ns2_nse *nse,
 	return gprs_ns2_nsvc_by_sockaddr_nse(nse, &sa);
 }
 
+/*! Return the initial SNS remote socket address
+ * \param nse NS Entity
+ * \return address of the initial SNS connection; NULL in case of error
+ */
+const struct osmo_sockaddr *gprs_ns2_nse_sns_remote(struct gprs_ns2_nse *nse)
+{
+	struct ns2_sns_state *gss;
+
+	if (!nse->bss_sns_fi)
+		return NULL;
+
+	gss = (struct ns2_sns_state *) nse->bss_sns_fi->priv;
+	return &gss->initial;
+}
+
 /*! called when a nsvc is beeing freed */
 void ns2_sns_free_nsvc(struct gprs_ns2_vc *nsvc)
 {
