@@ -97,6 +97,11 @@ int gprs_ns2_dynamic_create_nse(struct gprs_ns2_inst *nsi, bool create_nse);
 /* Entrypoint for primitives from the NS USER */
 int gprs_ns2_recv_prim(struct gprs_ns2_inst *nsi, struct osmo_prim_hdr *oph);
 
+/*! a callback to iterate over all NSVC */
+typedef int (*gprs_ns2_foreach_nsvc_cb)(struct gprs_ns2_vc *nsvc, void *ctx);
+
+int gprs_ns2_nse_foreach_nsvc(struct gprs_ns2_nse *nse,
+			      gprs_ns2_foreach_nsvc_cb cb, void *cb_data);
 struct gprs_ns2_nse *gprs_ns2_nse_by_nsei(struct gprs_ns2_inst *nsi, uint16_t nsei);
 struct gprs_ns2_nse *gprs_ns2_create_nse(struct gprs_ns2_inst *nsi, uint16_t nsei);
 uint16_t gprs_ns2_nse_nsei(struct gprs_ns2_nse *nse);

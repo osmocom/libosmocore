@@ -861,6 +861,28 @@ struct gprs_ns2_vc *gprs_ns2_nsvc_by_sockaddr_nse(struct gprs_ns2_nse *nse,
 	return NULL;
 }
 
+/*!
+ * Iterate over all nsvc of a NS Entity and call the callback.
+ * If the callback returns < 0 it aborts the loop and returns the callback return code.
+ * \param[in] nse NS Entity to iterate over all nsvcs
+ * \param[in] cb the callback to call
+ * \param[inout] cb_data the private data of the callback
+ * \return 0 if the loop completes. If a callback returns < 0 it will returns this value.
+ */
+int gprs_ns2_nse_foreach_nsvc(struct gprs_ns2_nse *nse, gprs_ns2_foreach_nsvc_cb cb, void *cb_data)
+{
+	struct gprs_ns2_vc *nsvc, *tmp;
+	int rc = 0;
+	llist_for_each_entry_safe(nsvc, tmp, &nse->nsvc, list) {
+		rc = cb(nsvc, cb_data);
+		if (rc < 0)
+			return rc;
+	}
+
+	return 0;
+}
+
+
 
 /*! Bottom-side entry-point for received NS PDU from the driver/bind
  * \param[in] nsvc NS-VC for which the message was received

@@ -101,6 +101,7 @@ gprs_ns2_ll_str;
 gprs_ns2_ll_str_buf;
 gprs_ns2_ll_str_c;
 gprs_ns2_nse_by_nsei;
+gprs_ns2_nse_foreach_nsvc;
 gprs_ns2_nse_nsei;
 gprs_ns2_nse_sns_remote;
 gprs_ns2_nsvc_by_nsvci;
