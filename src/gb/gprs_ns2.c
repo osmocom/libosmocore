@@ -226,7 +226,7 @@ char *gprs_ns2_ll_str_buf(char *buf, size_t buf_len, struct gprs_ns2_vc *nsvc)
 		}
 
 		local = gprs_ns2_ip_bind_sockaddr(nsvc->bind);
-		remote = gprs_ns2_ip_vc_sockaddr(nsvc);
+		remote = gprs_ns2_ip_vc_remote(nsvc);
 		if (osmo_sockaddr_str_from_sockaddr(&local_str, &local->u.sas))
 			strcpy(local_str.ip, "invalid");
 		if (osmo_sockaddr_str_from_sockaddr(&remote_str, &remote->u.sas))
@@ -853,7 +853,7 @@ struct gprs_ns2_vc *gprs_ns2_nsvc_by_sockaddr_nse(struct gprs_ns2_nse *nse,
 	OSMO_ASSERT(sockaddr);
 
 	llist_for_each_entry(nsvc, &nse->nsvc, list) {
-		remote = gprs_ns2_ip_vc_sockaddr(nsvc);
+		remote = gprs_ns2_ip_vc_remote(nsvc);
 		if (!osmo_sockaddr_cmp(sockaddr, remote))
 			return nsvc;
 	}

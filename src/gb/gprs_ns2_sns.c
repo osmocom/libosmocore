@@ -305,7 +305,7 @@ static int create_missing_nsvcs(struct osmo_fsm_inst *fi)
 				if (nsvc->bind != bind)
 					continue;
 
-				if (!osmo_sockaddr_cmp(&remote, gprs_ns2_ip_vc_sockaddr(nsvc))) {
+				if (!osmo_sockaddr_cmp(&remote, gprs_ns2_ip_vc_remote(nsvc))) {
 					found = true;
 					break;
 				}
@@ -340,7 +340,7 @@ static int create_missing_nsvcs(struct osmo_fsm_inst *fi)
 				if (nsvc->bind != bind)
 					continue;
 
-				if (!osmo_sockaddr_cmp(&remote, gprs_ns2_ip_vc_sockaddr(nsvc))) {
+				if (!osmo_sockaddr_cmp(&remote, gprs_ns2_ip_vc_remote(nsvc))) {
 					found = true;
 					break;
 				}
@@ -508,7 +508,7 @@ static int do_sns_change_weight(struct osmo_fsm_inst *fi, const struct gprs_ns_i
 	}
 
 	llist_for_each_entry(nsvc, &nse->nsvc, list) {
-		remote = gprs_ns2_ip_vc_sockaddr(nsvc);
+		remote = gprs_ns2_ip_vc_remote(nsvc);
 		/* all nsvc in NSE should be IP/UDP nsvc */
 		OSMO_ASSERT(remote);
 
@@ -556,7 +556,7 @@ static int do_sns_delete(struct osmo_fsm_inst *fi,
 	}
 
 	llist_for_each_entry_safe(nsvc, tmp, &nse->nsvc, list) {
-		remote = gprs_ns2_ip_vc_sockaddr(nsvc);
+		remote = gprs_ns2_ip_vc_remote(nsvc);
 		/* all nsvc in NSE should be IP/UDP nsvc */
 		OSMO_ASSERT(remote);
 		if (osmo_sockaddr_cmp(&sa, remote))

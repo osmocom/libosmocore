@@ -251,7 +251,7 @@ static void dump_nsvc(struct vty *vty, struct gprs_ns2_vc *nsvc, bool stats)
 
 	switch (nsvc->ll) {
 	case GPRS_NS_LL_UDP: {
-		sockaddr = gprs_ns2_ip_vc_sockaddr(nsvc);
+		sockaddr = gprs_ns2_ip_vc_remote(nsvc);
 		if (!sockaddr) {
 			vty_out(vty, "unknown");
 			break;
