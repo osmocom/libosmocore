@@ -424,6 +424,40 @@ const struct osmo_sockaddr *gprs_ns2_ip_vc_remote(const struct gprs_ns2_vc *nsvc
 	return &priv->remote;
 }
 
+/*! Compare the NS-VC with the given parameter
+ *  \param[in] nsvc NS-VC to compare with
+ *  \param[in] local The local address
+ *  \param[in] remote The remote address
+ *  \param[in] nsvci NS-VCI will only be used if the NS-VC in BLOCKRESET mode otherwise NS-VCI isn't applicable.
+ *  \return true if the NS-VC has the same properties as given
+ */
+bool gprs_ns2_ip_vc_equal(const struct gprs_ns2_vc *nsvc,
+			  const struct osmo_sockaddr *local,
+			  const struct osmo_sockaddr *remote,
+			  uint16_t nsvci)
+{
+	struct priv_vc *vpriv;
+	struct priv_bind *bpriv;
+
+	if (nsvc->ll != GPRS_NS_LL_UDP)
+		return false;
+
+	vpriv = nsvc->priv;
+	bpriv = nsvc->bind->priv;
+
+	if (osmo_sockaddr_cmp(local, &bpriv->addr))
+		return false;
+
+	if (osmo_sockaddr_cmp(remote, &vpriv->remote))
+		return false;
+
+	if (nsvc->mode == NS2_VC_MODE_BLOCKRESET)
+		if (nsvc->nsvci != nsvci)
+			return false;
+
+	return true;
+}
+
 /*! Return the locally bound socket address of the bind.
  *  \param[in] bind The bind whose local address we want to know
  *  \return address of the local bind */
