@@ -265,6 +265,32 @@ static int nsip_fd_cb(struct osmo_fd *bfd, unsigned int what)
 	return rc;
 }
 
+/*! Find NS bind for a given socket address
+ *  \param[in] nsi NS instance
+ *  \param[in] sockaddr socket address to search for
+ *  \return
+ */
+struct gprs_ns2_vc_bind *gprs_ns2_ip_bind_by_sockaddr(struct gprs_ns2_inst *nsi,
+						      const struct osmo_sockaddr *sockaddr)
+{
+	struct gprs_ns2_vc_bind *bind;
+	struct osmo_sockaddr *local;
+
+	OSMO_ASSERT(nsi);
+	OSMO_ASSERT(sockaddr);
+
+	llist_for_each_entry(bind, &nsi->binding, list) {
+		if (!gprs_ns2_is_ip_bind(bind))
+			continue;
+
+		local = gprs_ns2_ip_bind_sockaddr(bind);
+		if (!osmo_sockaddr_cmp(sockaddr, local))
+			return bind;
+	}
+
+	return NULL;
+}
+
 /*! Bind to an IPv4/IPv6 address
  *  \param[in] nsi NS Instance in which to create the NSVC
  *  \param[in] local the local address to bind to

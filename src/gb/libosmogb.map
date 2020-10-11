@@ -84,6 +84,7 @@ gprs_ns2_free_nsvc;
 gprs_ns2_frgre_bind;
 gprs_ns2_instantiate;
 gprs_ns2_ip_bind;
+gprs_ns2_ip_bind_by_sockaddr;
 gprs_ns2_ip_bind_set_dscp;
 gprs_ns2_ip_bind_sockaddr;
 gprs_ns2_ip_connect;

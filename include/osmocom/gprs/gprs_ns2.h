@@ -110,6 +110,8 @@ int gprs_ns2_ip_bind(struct gprs_ns2_inst *nsi,
 		     const struct osmo_sockaddr *local,
 		     int dscp,
 		     struct gprs_ns2_vc_bind **result);
+struct gprs_ns2_vc_bind *gprs_ns2_ip_bind_by_sockaddr(struct gprs_ns2_inst *nsi,
+						      const struct osmo_sockaddr *sockaddr);
 void gprs_ns2_bind_set_mode(struct gprs_ns2_vc_bind *bind, enum gprs_ns2_vc_mode mode);
 
 /* create a VC connection */
