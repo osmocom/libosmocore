@@ -99,6 +99,7 @@ int gprs_ns2_recv_prim(struct gprs_ns2_inst *nsi, struct osmo_prim_hdr *oph);
 
 struct gprs_ns2_nse *gprs_ns2_nse_by_nsei(struct gprs_ns2_inst *nsi, uint16_t nsei);
 struct gprs_ns2_nse *gprs_ns2_create_nse(struct gprs_ns2_inst *nsi, uint16_t nsei);
+uint16_t gprs_ns2_nse_nsei(struct gprs_ns2_nse *nse);
 void gprs_ns2_free_nse(struct gprs_ns2_nse *nse);
 
 /* create vc */

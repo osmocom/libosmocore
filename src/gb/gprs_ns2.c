@@ -568,6 +568,15 @@ struct gprs_ns2_nse *gprs_ns2_create_nse(struct gprs_ns2_inst *nsi, uint16_t nse
 	return nse;
 }
 
+/*! Return the NSEI
+ * \param[in] nse NS Entity
+ * \return the nsei.
+ */
+uint16_t gprs_ns2_nse_nsei(struct gprs_ns2_nse *nse)
+{
+	return nse->nsei;
+}
+
 /*! Destroy given NS Entity.
  *  \param[in] nse NS Entity to destroy */
 void gprs_ns2_free_nse(struct gprs_ns2_nse *nse)
