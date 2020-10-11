@@ -79,6 +79,7 @@ gprs_ns2_dynamic_create_nse;
 gprs_ns2_find_vc_by_sockaddr;
 gprs_ns2_free;
 gprs_ns2_free_bind;
+gprs_ns2_free_binds;
 gprs_ns2_free_nse;
 gprs_ns2_free_nsvc;
 gprs_ns2_frgre_bind;

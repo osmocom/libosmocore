@@ -997,7 +997,6 @@ struct gprs_ns2_inst *gprs_ns2_instantiate(void *ctx, osmo_prim_cb cb, void *cb_
  *  \param[in] nsi NS instance to destroy */
 void gprs_ns2_free(struct gprs_ns2_inst *nsi)
 {
-	struct gprs_ns2_vc_bind *bind, *tbind;
 	struct gprs_ns2_nse *nse, *ntmp;
 
 	if (!nsi)
@@ -1007,9 +1006,7 @@ void gprs_ns2_free(struct gprs_ns2_inst *nsi)
 		gprs_ns2_free_nse(nse);
 	}
 
-	llist_for_each_entry_safe(bind, tbind, &nsi->binding, list) {
-		gprs_ns2_free_bind(bind);
-	}
+	gprs_ns2_free_binds(nsi);
 
 	talloc_free(nsi);
 }
@@ -1066,5 +1063,14 @@ void gprs_ns2_free_bind(struct gprs_ns2_vc_bind *bind)
 
 	llist_del(&bind->list);
 	talloc_free(bind);
+}
+
+void gprs_ns2_free_binds(struct gprs_ns2_inst *nsi)
+{
+	struct gprs_ns2_vc_bind *bind, *tbind;
+
+	llist_for_each_entry_safe(bind, tbind, &nsi->binding, list) {
+		gprs_ns2_free_bind(bind);
+	}
 }
 /*! @} */
