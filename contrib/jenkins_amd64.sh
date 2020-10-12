@@ -29,7 +29,7 @@ build .
 # do distcheck only once, which is fine from built source tree, since distcheck
 # is well separated from the source tree state.
 DISTCHECK_CONFIGURE_FLAGS=--enable-external-tests \
-    $MAKE distcheck \
+    $MAKE $PARALLEL_MAKE distcheck \
     || cat-testlogs.sh
 $MAKE maintainer-clean
 
