@@ -256,7 +256,7 @@ void vty_event(enum event event, int sock, struct vty *vty)
 }
 
 /*! Close all telnet connections and release the telnet socket */
-void telnet_exit(void) 
+void telnet_exit(void)
 {
 	struct telnet_connection *tc, *tc2;
 
