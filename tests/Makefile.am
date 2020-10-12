@@ -285,7 +285,7 @@ bitgen_bitgen_test_SOURCES = bitgen/bitgen_test.c
 bitgen_bitgen_test_LDADD = $(LDADD)
 
 gad_gad_test_SOURCES = gad/gad_test.c
-gad_gad_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/gad.o
+gad_gad_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 
 bsslap_bsslap_test_SOURCES = bsslap/bsslap_test.c
 bsslap_bsslap_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la

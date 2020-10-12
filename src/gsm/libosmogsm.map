@@ -733,6 +733,9 @@ osmo_gad_enc_lon;
 osmo_gad_dec_lon;
 osmo_gad_enc_unc;
 osmo_gad_dec_unc;
+osmo_gad_raw_read;
+osmo_gad_raw_write;
+osmo_gad_type_names;
 
 local: *;
 };
