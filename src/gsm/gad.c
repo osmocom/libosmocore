@@ -271,7 +271,7 @@ static int osmo_gad_enc_ell_point_unc_circle(struct gad_raw_ell_point_unc_circle
 	};
 	osmo_store32be_ext(osmo_gad_enc_lat(v->lat), raw->lat, 3);
 	osmo_store32be_ext(osmo_gad_enc_lon(v->lon), raw->lon, 3);
-	return sizeof(&raw);
+	return sizeof(raw);
 }
 
 static int osmo_gad_dec_ell_point_unc_circle(struct osmo_gad_ell_point_unc_circle *v,
