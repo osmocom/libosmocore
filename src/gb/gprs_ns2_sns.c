@@ -230,7 +230,7 @@ static void ns2_nsvc_create_ip4(struct osmo_fsm_inst *fi,
 	struct gprs_ns2_inst *nsi = nse->nsi;
 	struct gprs_ns2_vc *nsvc;
 	struct gprs_ns2_vc_bind *bind;
-	struct osmo_sockaddr remote;
+	struct osmo_sockaddr remote = { };
 	/* copy over. Both data structures use network byte order */
 	remote.u.sin.sin_family = AF_INET;
 	remote.u.sin.sin_addr.s_addr = ip4->ip_addr;
