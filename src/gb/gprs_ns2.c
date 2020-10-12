@@ -864,7 +864,7 @@ int ns2_recv_vc(struct gprs_ns2_vc *nsvc,
 		rc = ns2_tlv_parse(&tp, nsh->data+1,
 				   msgb_l2len(msg) - sizeof(*nsh)-1, 0, 0);
 		if (rc < 0) {
-			LOGPC(DLNS, LOGL_NOTICE, "Error during TLV Parse in %s\n", msgb_hexdump(msg));
+			LOGP(DLNS, LOGL_NOTICE, "Error during TLV Parse in %s\n", msgb_hexdump(msg));
 			return rc;
 		}
 		/* All sub-network service related message types */
@@ -878,7 +878,7 @@ int ns2_recv_vc(struct gprs_ns2_vc *nsvc,
 		rc = ns2_tlv_parse(&tp, nsh->data+5,
 				   msgb_l2len(msg) - sizeof(*nsh)-5, 0, 0);
 		if (rc < 0) {
-			LOGPC(DLNS, LOGL_NOTICE, "Error during TLV Parse in %s\n", msgb_hexdump(msg));
+			LOGP(DLNS, LOGL_NOTICE, "Error during TLV Parse in %s\n", msgb_hexdump(msg));
 			return rc;
 		}
 		tp.lv[NS_IE_NSEI].val = nsh->data+2;
@@ -893,7 +893,7 @@ int ns2_recv_vc(struct gprs_ns2_vc *nsvc,
 		rc = ns2_tlv_parse(&tp, nsh->data,
 				   msgb_l2len(msg) - sizeof(*nsh), 0, 0);
 		if (rc < 0) {
-			LOGPC(DLNS, LOGL_NOTICE, "Error during TLV Parse in %s\n", msgb_hexdump(msg));
+			LOGP(DLNS, LOGL_NOTICE, "Error during TLV Parse in %s\n", msgb_hexdump(msg));
 			return rc;
 		}
 		/* All sub-network service related message types */
@@ -907,7 +907,7 @@ int ns2_recv_vc(struct gprs_ns2_vc *nsvc,
 		rc = ns2_tlv_parse(&tp, nsh->data,
 				   msgb_l2len(msg) - sizeof(*nsh), 0, 0);
 		if (rc < 0) {
-			LOGPC(DLNS, LOGL_NOTICE, "Error during TLV Parse\n");
+			LOGP(DLNS, LOGL_NOTICE, "Error during TLV Parse\n");
 			if (nsh->pdu_type != NS_PDUT_STATUS)
 				ns2_tx_status(nsvc, NS_CAUSE_PROTO_ERR_UNSPEC, 0, msg);
 			return rc;
