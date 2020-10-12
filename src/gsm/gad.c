@@ -252,8 +252,8 @@ static uint8_t osmo_gad_enc_ha_unc(uint32_t mm)
 				.rc = (RC), \
 				.type = (TYPE), \
 				.logmsg = talloc_asprintf(*err, "Error decoding GAD%s%s: " fmt, \
-							  (TYPE) >= 0 ? " " : "", \
-							  (TYPE) >= 0 ? osmo_gad_type_name(TYPE) : "", ##args), \
+							  ((int)(TYPE)) >= 0 ? " " : "", \
+							  ((int)(TYPE)) >= 0 ? osmo_gad_type_name(TYPE) : "", ##args), \
 			}; \
 		} \
 		return RC; \
