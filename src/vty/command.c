@@ -3085,7 +3085,7 @@ static unsigned int node_flag_mask(const struct cmd_node *cnode)
 				continue;
 			if (cmd->attr & (CMD_ATTR_DEPRECATED | CMD_ATTR_HIDDEN))
 				continue;
-			if (~cmd->usrattr & (1 << f))
+			if (~cmd->usrattr & ((unsigned)1 << f))
 				continue;
 
 			if (cmd->attr & CMD_ATTR_LIB_COMMAND)
@@ -3133,9 +3133,9 @@ static const char *cmd_flag_mask(const struct cmd_element *cmd,
 	unsigned int f;
 
 	for (f = 0; f < VTY_CMD_USR_ATTR_NUM; f++) {
-		if (~flag_mask & (1 << f))
+		if (~flag_mask & ((unsigned)1 << f))
 			continue;
-		if (~cmd->usrattr & (1 << f)) {
+		if (~cmd->usrattr & ((unsigned)1 << f)) {
 			*(ptr++) = '.';
 			continue;
 		}
