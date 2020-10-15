@@ -46,8 +46,9 @@ int osmo_gsm48_rest_octets_si1_encode(uint8_t *data, uint8_t *nch_pos, int is180
 	if (nch_pos) {
 		bitvec_set_bit(&bv, H);
 		bitvec_set_uint(&bv, *nch_pos, 5);
-	} else
+	} else {
 		bitvec_set_bit(&bv, L);
+	}
 
 	if (is1800_net)
 		bitvec_set_bit(&bv, L);
@@ -134,8 +135,9 @@ static inline bool append_eutran_neib_cell(struct bitvec *bv, const struct osmo_
 		/* E-UTRAN_PRIORITY: 3GPP TS 45.008*/
 		bitvec_set_bit(bv, 1);
 		bitvec_set_uint(bv, e->prio, 3);
-	} else
+	} else {
 		bitvec_set_bit(bv, 0);
+	}
 
 	/* THRESH_E-UTRAN_high */
 	bitvec_set_uint(bv, e->thresh_hi, 5);
@@ -144,15 +146,17 @@ static inline bool append_eutran_neib_cell(struct bitvec *bv, const struct osmo_
 		/* THRESH_E-UTRAN_low: */
 		bitvec_set_bit(bv, 1);
 		bitvec_set_uint(bv, e->thresh_lo, 5);
-	} else
+	} else {
 		bitvec_set_bit(bv, 0);
+	}
 
 	if (e->qrxlm_valid) {
 		/* E-UTRAN_QRXLEVMIN: */
 		bitvec_set_bit(bv, 1);
 		bitvec_set_uint(bv, e->qrxlm, 5);
-	} else
+	} else {
 		bitvec_set_bit(bv, 0);
+	}
 
 	return true;
 }
@@ -404,8 +408,9 @@ static inline void append_uarfcns(struct bitvec *bv, const uint16_t *uarfcn_list
 			if (i < uarfcn_length) {
 				cu = uarfcn_list[i];
 				st = i;
-			} else
+			} else {
 				break;
+			}
 		}
 
 	/* stop bit - end of Repeated UTRAN FDD Neighbour Cells */
@@ -508,8 +513,9 @@ static void append_selection_params(struct bitvec *bv,
 		bitvec_set_uint(bv, sp->cell_resel_off, 6);
 		bitvec_set_uint(bv, sp->temp_offs, 3);
 		bitvec_set_uint(bv, sp->penalty_time, 5);
-	} else
+	} else {
 		bitvec_set_bit(bv, L);
+	}
 }
 
 /* Append power offset to bitvec */
@@ -519,8 +525,9 @@ static void append_power_offset(struct bitvec *bv,
 	if (po->present) {
 		bitvec_set_bit(bv, H);
 		bitvec_set_uint(bv, po->power_offset, 2);
-	} else
+	} else {
 		bitvec_set_bit(bv, L);
+	}
 }
 
 /* Append GPRS indicator to bitvec */
@@ -532,8 +539,9 @@ static void append_gprs_ind(struct bitvec *bv,
 		bitvec_set_uint(bv, gi->ra_colour, 3);
 		/* 0 == SI13 in BCCH Norm, 1 == SI13 sent on BCCH Ext */
 		bitvec_set_bit(bv, gi->si13_position);
-	} else
+	} else {
 		bitvec_set_bit(bv, L);
+	}
 }
 
 /* Generate SI3 Rest Octests (Chapter 10.5.2.34 / Table 10.4.72) */
@@ -567,8 +575,9 @@ int osmo_gsm48_rest_octets_si3_encode(uint8_t *data, const struct osmo_gsm48_si_
 	if (si3->scheduling.present) {
 		bitvec_set_bit(&bv, H);
 		bitvec_set_uint(&bv, si3->scheduling.where, 3);
-	} else
+	} else {
 		bitvec_set_bit(&bv, L);
+	}
 
 	/* GPRS Indicator */
 	append_gprs_ind(&bv, &si3->gprs_ind);
@@ -618,22 +627,25 @@ int osmo_gsm48_rest_octets_si4_encode(uint8_t *data, const struct osmo_gsm48_si_
 		if (si4->lsa_params.present) {
 			bitvec_set_bit(&bv, H);
 			append_lsa_params(&bv, &si4->lsa_params);
-		} else
+		} else {
 			bitvec_set_bit(&bv, L);
+		}
 
 		/* Cell Identity */
 		if (1) {
 			bitvec_set_bit(&bv, H);
 			bitvec_set_uint(&bv, si4->cell_id, 16);
-		} else
+		} else {
 			bitvec_set_bit(&bv, L);
+		}
 
 		/* LSA ID Information */
 		if (0) {
 			bitvec_set_bit(&bv, H);
 			/* FIXME */
-		} else
+		} else {
 			bitvec_set_bit(&bv, L);
+		}
 	} else {
 		/* L and break indicator */
 		bitvec_set_bit(&bv, L);
@@ -671,25 +683,29 @@ int osmo_gsm48_rest_octets_si6_encode(uint8_t *data, const struct osmo_gsm48_si6
 		if (in->pch_nch_info.call_priority_present) {
 			bitvec_set_bit(&bv, 1);
 			bitvec_set_uint(&bv, in->pch_nch_info.call_priority, 3);
-		} else
+		} else {
 			bitvec_set_bit(&bv, 0);
+		}
 		bitvec_set_bit(&bv, !!in->pch_nch_info.nln_status_sacch);
-	} else
+	} else {
 		bitvec_set_bit(&bv, L);
+	}
 
 	if (in->vbs_vgcs_options.present) {
 		bitvec_set_bit(&bv, H);
 		bitvec_set_bit(&bv, !!in->vbs_vgcs_options.inband_notifications);
 		bitvec_set_bit(&bv, !!in->vbs_vgcs_options.inband_pagings);
-	} else
+	} else {
 		bitvec_set_bit(&bv, L);
+	}
 
 	if (in->dtm_support.present) {
 		bitvec_set_bit(&bv, H);
 		bitvec_set_uint(&bv, in->dtm_support.rac, 8);
 		bitvec_set_uint(&bv, in->dtm_support.max_lapdm, 3);
-	} else
+	} else {
 		bitvec_set_bit(&bv, L);
+	}
 
 	if (in->band_indicator_1900)
 		bitvec_set_bit(&bv, H);
@@ -699,8 +715,9 @@ int osmo_gsm48_rest_octets_si6_encode(uint8_t *data, const struct osmo_gsm48_si6
 	if (in->gprs_ms_txpwr_max_ccch.present) {
 		bitvec_set_bit(&bv, H);
 		bitvec_set_uint(&bv, in->gprs_ms_txpwr_max_ccch.max_txpwr, 5);
-	} else
+	} else {
 		bitvec_set_bit(&bv, L);
+	}
 
 	bitvec_spare_padding(&bv, (bv.data_len * 8) - 1);
 	return bv.data_len;
@@ -730,8 +747,9 @@ static int append_gprs_mobile_alloc(struct bitvec *bv)
 		/* We want to use a RFL number list */
 		bitvec_set_bit(bv, 1);
 		/* FIXME: RFL number list */
-	} else
+	} else {
 		bitvec_set_bit(bv, 0);
+	}
 
 	if (0) {
 		/* We want to use a MA_BITMAP */
@@ -743,8 +761,9 @@ static int append_gprs_mobile_alloc(struct bitvec *bv)
 			/* We want to provide an ARFCN index list */
 			bitvec_set_bit(bv, 1);
 			/* FIXME */
-		} else
+		} else {
 			bitvec_set_bit(bv, 0);
+		}
 	}
 	return 0;
 }
@@ -973,15 +992,17 @@ void osmo_gsm48_rest_octets_si3_decode(struct osmo_gsm48_si_ro_info *si3, const 
 		sp->cell_resel_off = bitvec_get_uint(&bv, 6);
 		sp->temp_offs = bitvec_get_uint(&bv, 3);
 		sp->penalty_time = bitvec_get_uint(&bv, 5);
-	} else
+	} else {
 		sp->present = 0;
+	}
 
 	/* Optional Power Offset */
 	if (bitvec_get_bit_high(&bv) == H) {
 		po->present = 1;
 		po->power_offset = bitvec_get_uint(&bv, 2);
-	} else
+	} else {
 		po->present = 0;
+	}
 
 	/* System Information 2ter Indicator */
 	if (bitvec_get_bit_high(&bv) == H)
@@ -999,16 +1020,18 @@ void osmo_gsm48_rest_octets_si3_decode(struct osmo_gsm48_si_ro_info *si3, const 
 	if (bitvec_get_bit_high(&bv) == H) {
 		si3->scheduling.present = 1;
 		si3->scheduling.where = bitvec_get_uint(&bv, 3);
-	} else
+	} else {
 		si3->scheduling.present = 0;
+	}
 
 	/* GPRS Indicator */
 	if (bitvec_get_bit_high(&bv) == H) {
 		gi->present = 1;
 		gi->ra_colour = bitvec_get_uint(&bv, 3);
 		gi->si13_position = bitvec_get_uint(&bv, 1);
-	} else
+	} else {
 		gi->present = 0;
+	}
 
 	/* 3G Early Classmark Sending Restriction. If H, then controlled by
 	 * early_cm_ctrl above */
