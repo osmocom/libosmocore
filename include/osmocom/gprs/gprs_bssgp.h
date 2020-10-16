@@ -112,6 +112,8 @@ struct bssgp_bvc_ctx {
 	//struct gprs_nsvc *nsvc;
 };
 extern struct llist_head bssgp_bvc_ctxts;
+/* Create a BTS Context with BVCI+NSEI */
+struct bssgp_bvc_ctx *btsctx_alloc(uint16_t bvci, uint16_t nsei);
 /* Find a BTS Context based on parsed RA ID and Cell ID */
 struct bssgp_bvc_ctx *btsctx_by_raid_cid(const struct gprs_ra_id *raid, uint16_t cid);
 /* Find a BTS context based on BVCI+NSEI tuple */
