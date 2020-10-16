@@ -232,25 +232,25 @@ char *rsl_chan_nr_str_buf(char *buf, size_t buf_len, uint8_t chan_nr)
 	int ts = chan_nr & 7;
 	uint8_t cbits = chan_nr >> 3;
 
-	if (cbits == 0x01)
+	if (cbits == ABIS_RSL_CHAN_NR_CBITS_Bm_ACCHs)
 		snprintf(buf, buf_len, "TCH/F on TS%d", ts);
-	else if ((cbits & 0x1e) == 0x02)
+	else if ((cbits & 0x1e) == ABIS_RSL_CHAN_NR_CBITS_Lm_ACCHs(0))
 		snprintf(buf, buf_len, "TCH/H(%u) on TS%d", cbits & 0x01, ts);
-	else if ((cbits & 0x1c) == 0x04)
+	else if ((cbits & 0x1c) == ABIS_RSL_CHAN_NR_CBITS_SDCCH4_ACCH(0))
 		snprintf(buf, buf_len, "SDCCH/4(%u) on TS%d", cbits & 0x03, ts);
-	else if ((cbits & 0x18) == 0x08)
+	else if ((cbits & 0x18) == ABIS_RSL_CHAN_NR_CBITS_SDCCH8_ACCH(0))
 		snprintf(buf, buf_len, "SDCCH/8(%u) on TS%d", cbits & 0x07, ts);
-	else if (cbits == 0x10)
+	else if (cbits == ABIS_RSL_CHAN_NR_CBITS_BCCH)
 		snprintf(buf, buf_len, "BCCH on TS%d", ts);
-	else if (cbits == 0x11)
+	else if (cbits == ABIS_RSL_CHAN_NR_CBITS_RACH)
 		snprintf(buf, buf_len, "RACH on TS%d", ts);
-	else if (cbits == 0x12)
+	else if (cbits == ABIS_RSL_CHAN_NR_CBITS_PCH_AGCH)
 		snprintf(buf, buf_len, "PCH/AGCH on TS%d", ts);
-	else if (cbits == 0x18)
+	else if (cbits == ABIS_RSL_CHAN_NR_CBITS_OSMO_PDCH)
 		snprintf(buf, buf_len, "PDCH on TS%d", ts);
-	else if (cbits == 0x19)
+	else if (cbits == ABIS_RSL_CHAN_NR_CBITS_OSMO_CBCH4)
 		snprintf(buf, buf_len, "CBCH(SDCCH/4) on TS%d", ts);
-	else if (cbits == 0x1a)
+	else if (cbits == ABIS_RSL_CHAN_NR_CBITS_OSMO_CBCH8)
 		snprintf(buf, buf_len, "CBCH(SDCCH/8) on TS%d", ts);
 	else
 		snprintf(buf, buf_len, "UNKNOWN on TS%d", ts);
