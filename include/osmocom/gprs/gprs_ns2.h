@@ -20,8 +20,13 @@ struct gprs_ns_ie_ip4_elem;
 struct gprs_ns_ie_ip6_elem;
 
 enum gprs_ns2_vc_mode {
-	NS2_VC_MODE_BLOCKRESET, /* The VC will use RESET/BLOCK/UNBLOCK to start the connection and do ALIVE/ACK */
-	NS2_VC_MODE_ALIVE, /* The will only use ALIVE/ACK */
+	/*! The VC will use RESET/BLOCK/UNBLOCK to start the connection and do ALIVE/ACK.
+	 * This is what is needed for Frame Relay transport, and if you use a R97/R99 Gb
+	 * interface over an IP transport (never standardized by 3GPP) */
+	NS2_VC_MODE_BLOCKRESET,
+	/*! The VC will only use ALIVE/ACK (no RESET/BLOCK/UNBLOCK), which is for Gb-IP
+	 * interface compliant to 3GPP Rel=4 or later. */
+	NS2_VC_MODE_ALIVE,
 };
 
 /*! Osmocom NS primitives according to 48.016 5.2 Service primitves */
