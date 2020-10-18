@@ -19,6 +19,8 @@
 #define OSMO_FD_WRITE	0x0002
 /*! Indicate interest in exceptions from the file descriptor */
 #define OSMO_FD_EXCEPT	0x0004
+/*! Used as when_mask in osmo_fd_update_when() */
+#define OSMO_FD_MASK	0xFFFF
 
 /* legacy naming dating back to early OpenBSC / bsc_hack of 2008 */
 #define BSC_FD_READ	OSMO_FD_READ
@@ -46,6 +48,24 @@ struct osmo_fd {
 void osmo_fd_setup(struct osmo_fd *ofd, int fd, unsigned int when,
 		   int (*cb)(struct osmo_fd *fd, unsigned int what),
 		   void *data, unsigned int priv_nr);
+
+void osmo_fd_update_when(struct osmo_fd *ofd, unsigned int when_mask, unsigned int when);
+
+static inline void osmo_fd_read_enable(struct osmo_fd *ofd) {
+	osmo_fd_update_when(ofd, OSMO_FD_MASK, OSMO_FD_READ);
+}
+
+static inline void osmo_fd_read_disable(struct osmo_fd *ofd) {
+	osmo_fd_update_when(ofd, ~OSMO_FD_READ, 0);
+}
+
+static inline void osmo_fd_write_enable(struct osmo_fd *ofd) {
+	osmo_fd_update_when(ofd, OSMO_FD_MASK, OSMO_FD_WRITE);
+}
+
+static inline void osmo_fd_write_disable(struct osmo_fd *ofd) {
+	osmo_fd_update_when(ofd, ~OSMO_FD_WRITE, 0);
+}
 
 bool osmo_fd_is_registered(struct osmo_fd *fd);
 int osmo_fd_register(struct osmo_fd *fd);

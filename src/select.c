@@ -75,6 +75,15 @@ void osmo_fd_setup(struct osmo_fd *ofd, int fd, unsigned int when,
 	ofd->priv_nr = priv_nr;
 }
 
+/*! Update the 'when' field of osmo_fd. "ofd->when = (ofd->when & when_mask) | when".
+ *  Use this function instead of directly modifying ofd->when, as the latter will be
+ *  removed soon. */
+void osmo_fd_update_when(struct osmo_fd *ofd, unsigned int when_mask, unsigned int when)
+{
+	ofd->when &= when_mask;
+	ofd->when |= when;
+}
+
 /*! Check if a file descriptor is already registered
  *  \param[in] fd osmocom file descriptor to be checked
  *  \returns true if registered; otherwise false
