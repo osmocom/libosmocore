@@ -84,6 +84,7 @@ int osmo_timer_remaining(const struct osmo_timer_list *timer,
  * internal timer list management
  */
 struct timeval *osmo_timers_nearest(void);
+int osmo_timers_nearest_ms(void);
 void osmo_timers_prepare(void);
 int osmo_timers_update(void);
 int osmo_timers_check(void);

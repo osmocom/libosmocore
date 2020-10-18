@@ -184,6 +184,22 @@ struct timeval *osmo_timers_nearest(void)
 	return nearest_p;
 }
 
+/*! Determine time between now and the nearest timer in milliseconds
+ *  \returns number of milliseconds until nearest timer expires; -1 if no timers pending
+ */
+int osmo_timers_nearest_ms(void)
+{
+	int nearest_ms;
+
+	if (!nearest_p)
+		return -1;
+
+	nearest_ms = nearest_p->tv_sec * 1000;
+	nearest_ms += nearest_p->tv_usec / 1000;
+
+	return nearest_ms;
+}
+
 static void update_nearest(struct timeval *cand, struct timeval *current)
 {
 	if (cand->tv_sec != LONG_MAX) {

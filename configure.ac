@@ -62,7 +62,7 @@ AC_SUBST(LTLDFLAGS_OSMOCTRL)
 
 dnl checks for header files
 AC_HEADER_STDC
-AC_CHECK_HEADERS(execinfo.h sys/select.h sys/socket.h sys/signalfd.h sys/timerfd.h syslog.h ctype.h netinet/tcp.h netinet/in.h)
+AC_CHECK_HEADERS(execinfo.h poll.h sys/select.h sys/socket.h sys/signalfd.h sys/timerfd.h syslog.h ctype.h netinet/tcp.h netinet/in.h)
 # for src/conv.c
 AC_FUNC_ALLOCA
 AC_SEARCH_LIBS([dlopen], [dl dld], [LIBRARY_DLOPEN="$LIBS";LIBS=""])
@@ -251,6 +251,16 @@ if test x"$fd_check" = x"no"
 then
 	AC_DEFINE([OSMO_FD_CHECK],[1],[Instrument the osmo_fd_register])
 fi
+
+AC_ARG_ENABLE([force_io_select],
+	[AS_HELP_STRING(
+		[--enable-force-io-select],
+		[Build with old select I/O instead of poll]
+	)],
+	[force_io_select=$enableval], [force_io_select="no"])
+AS_IF([test "x$force_io_select" = "xyes"], [
+	AC_DEFINE([FORCE_IO_SELECT], [1], [Force the use of select() instaed of poll()])
+])
 
 AC_ARG_ENABLE(msgfile,
 	[AS_HELP_STRING(

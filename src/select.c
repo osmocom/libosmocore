@@ -4,7 +4,7 @@
  * userspace logging daemon for the iptables ULOG target
  * of the linux 2.4 netfilter subsystem. */
 /*
- * (C) 2000-2009 by Harald Welte <laforge@gnumonks.org>
+ * (C) 2000-2020 by Harald Welte <laforge@gnumonks.org>
  * All Rights Reserverd.
  *
  * SPDX-License-Identifier: GPL-2.0+
@@ -41,8 +41,9 @@
 
 #include "../config.h"
 
-#ifdef HAVE_SYS_SELECT_H
+#if defined(HAVE_SYS_SELECT_H) && defined(HAVE_POLL_H)
 #include <sys/select.h>
+#include <poll.h>
 
 /*! \addtogroup select
  *  @{
@@ -55,6 +56,18 @@
 static __thread int maxfd = 0;
 static __thread struct llist_head osmo_fds; /* TLS cannot use LLIST_HEAD() */
 static __thread int unregistered_count;
+
+#ifndef FORCE_IO_SELECT
+struct poll_state {
+	/* array of pollfd */
+	struct pollfd *poll;
+	/* number of entries in pollfd allocated */
+	unsigned int poll_size;
+	/* number of osmo_fd registered */
+	unsigned int num_registered;
+};
+static __thread struct poll_state g_poll;
+#endif /* FORCE_IO_SELECT */
 
 /*! Set up an osmo-fd. Will not register it.
  *  \param[inout] ofd Osmo FD to be set-up
@@ -136,6 +149,19 @@ int osmo_fd_register(struct osmo_fd *fd)
 		return 0;
 	}
 #endif
+#ifndef FORCE_IO_SELECT
+	if (g_poll.num_registered + 1 > g_poll.poll_size) {
+		struct pollfd *p;
+		unsigned int new_size = g_poll.poll_size ? g_poll.poll_size * 2 : 1024;
+		p = talloc_realloc(OTC_GLOBAL, g_poll.poll, struct pollfd, new_size);
+		if (!p)
+			return -ENOMEM;
+		memset(p + g_poll.poll_size, 0, new_size - g_poll.poll_size);
+		g_poll.poll = p;
+		g_poll.poll_size = new_size;
+	}
+	g_poll.num_registered++;
+#endif /* FORCE_IO_SELECT */
 
 	llist_add_tail(&fd->list, &osmo_fds);
 
@@ -152,6 +178,9 @@ void osmo_fd_unregister(struct osmo_fd *fd)
 	 * osmo_fd_is_registered() */
 	unregistered_count++;
 	llist_del(&fd->list);
+#ifndef FORCE_IO_SELECT
+	g_poll.num_registered--;
+#endif /* FORCE_IO_SELECT */
 }
 
 /*! Close a file descriptor, mark it as closed + unregister from select loop abstraction
@@ -246,6 +275,110 @@ restart:
 	return work;
 }
 
+
+#ifndef FORCE_IO_SELECT
+/* fill g_poll.poll and return the number of entries filled */
+static unsigned int poll_fill_fds(void)
+{
+	struct osmo_fd *ufd;
+	unsigned int i = 0;
+
+	llist_for_each_entry(ufd, &osmo_fds, list) {
+		struct pollfd *p;
+
+		if (!ufd->when)
+			continue;
+
+		p = &g_poll.poll[i++];
+
+		p->fd = ufd->fd;
+		p->events = 0;
+		p->revents = 0;
+
+		/* use the same mapping as the Linux kernel does in fs/select.c */
+		if (ufd->when & OSMO_FD_READ)
+			p->events |= POLLIN | POLLHUP | POLLERR;
+
+		if (ufd->when & OSMO_FD_WRITE)
+			p->events |= POLLOUT | POLLERR;
+
+		if (ufd->when & OSMO_FD_EXCEPT)
+			p->events |= POLLPRI;
+
+	}
+
+	return i;
+}
+
+/* iterate over first n_fd entries of g_poll.poll + dispatch */
+static int poll_disp_fds(int n_fd)
+{
+	struct osmo_fd *ufd;
+	unsigned int i;
+	int work = 0;
+
+	for (i = 0; i < n_fd; i++) {
+		struct pollfd *p = &g_poll.poll[i];
+		int flags = 0;
+
+		if (!p->revents)
+			continue;
+
+		ufd = osmo_fd_get_by_fd(p->fd);
+		if (!ufd) {
+			/* FD might have been unregistered meanwhile */
+			continue;
+		}
+		/* use the same mapping as the Linux kernel does in fs/select.c */
+		if (p->revents & (POLLIN | POLLHUP | POLLERR))
+			flags |= OSMO_FD_READ;
+		if (p->revents & (POLLOUT | POLLERR))
+			flags |= OSMO_FD_WRITE;
+		if (p->revents & POLLPRI)
+			flags |= OSMO_FD_EXCEPT;
+
+		/* make sure we never report more than the user requested */
+		flags &= ufd->when;
+
+		if (flags) {
+			work = 1;
+			/* make sure to clear any log context before processing the next incoming message
+			 * as part of some file descriptor callback.  This effectively prevents "context
+			 * leaking" from processing of one message into processing of the next message as part
+			 * of one iteration through the list of file descriptors here.  See OS#3813 */
+			log_reset_context();
+			ufd->cb(ufd, flags);
+		}
+	}
+
+	return work;
+}
+
+static int _osmo_select_main(int polling)
+{
+	unsigned int n_poll;
+	int rc;
+
+	/* prepare read and write fdsets */
+	n_poll = poll_fill_fds();
+
+	if (!polling)
+		osmo_timers_prepare();
+
+	rc = poll(g_poll.poll, n_poll, polling ? 0 : osmo_timers_nearest_ms());
+	if (rc < 0)
+		return 0;
+
+	/* fire timers */
+	osmo_timers_update();
+
+	OSMO_ASSERT(osmo_ctx->select);
+
+	/* call registered callback functions */
+	return poll_disp_fds(n_poll);
+}
+#else /* FORCE_IO_SELECT */
+/* the old implementation based on select, used 2008-2020 */
 static int _osmo_select_main(int polling)
 {
 	fd_set readset, writeset, exceptset;
@@ -273,6 +406,7 @@ static int _osmo_select_main(int polling)
 	/* call registered callback functions */
 	return osmo_fd_disp_fds(&readset, &writeset, &exceptset);
 }
+#endif /* FORCE_IO_SELECT */
 
 /*! select main loop integration
  *  \param[in] polling should we pollonly (1) or block on select (0)
