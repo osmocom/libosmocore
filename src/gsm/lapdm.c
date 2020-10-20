@@ -735,11 +735,9 @@ static int l2_ph_data_ind(struct msgb *msg, struct lapdm_entity *le,
 			 && LAPDm_CTRL_U_BITS(msg->l2h[3]) == 0) {
 				mctx.lapdm_fmt = LAPDm_FMT_B4;
 				n201 = N201_B4;
-				LOGP(DLLAPD, LOGL_INFO, "fmt=B4\n");
 			} else {
 				mctx.lapdm_fmt = LAPDm_FMT_B;
 				n201 = N201_AB_SACCH;
-				LOGP(DLLAPD, LOGL_INFO, "fmt=B\n");
 			}
 			/* SACCH frames have a two-byte L1 header that
 			 * OsmocomBB L1 doesn't strip */
@@ -750,7 +748,6 @@ static int l2_ph_data_ind(struct msgb *msg, struct lapdm_entity *le,
 			sapi = (msg->l2h[0] >> 2) & 7;
 		} else {
 			mctx.lapdm_fmt = LAPDm_FMT_B;
-			LOGP(DLLAPD, LOGL_INFO, "fmt=B\n");
 			n201 = N201_AB_SDCCH;
 			sapi = (msg->l2h[0] >> 2) & 7;
 		}
@@ -850,7 +847,6 @@ static int l2_ph_data_ind(struct msgb *msg, struct lapdm_entity *le,
 		break;
 	case LAPDm_FMT_Bbis:
 		/* directly pass up to layer3 */
-		LOGP(DLLAPD, LOGL_INFO, "fmt=Bbis UI\n");
 		msg->l3h = msg->l2h;
 		msgb_pull_to_l3(msg);
 		rc = send_rslms_rll_l3(RSL_MT_UNIT_DATA_IND, &mctx, msg);
