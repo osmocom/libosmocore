@@ -232,6 +232,23 @@ DEFUN(cfg_attr_test, cfg_attr_test_cmd,
 	return CMD_SUCCESS;
 }
 
+DEFUN_DEPRECATED(cfg_attr_deprecated,
+		 cfg_attr_deprecated_cmd,
+		 "foo-deprecated",
+		 "This command is deprecated\n")
+{
+	return CMD_WARNING;
+}
+
+DEFUN_HIDDEN(cfg_attr_hidden,
+	     cfg_attr_hidden_cmd,
+	     "foo-hidden [expert-mode]",
+	     "This command is hidden\n"
+	     "But can be seen in the expert mode\n")
+{
+	return CMD_SUCCESS;
+}
+
 DEFUN_ATTR(cfg_attr_immediate, cfg_attr_immediate_cmd,
 	   "foo-immediate",
 	   "Applies immediately\n",
@@ -293,6 +310,15 @@ DEFUN_USRATTR(cfg_app_attr_unbelievable_wonderful,
 	return CMD_SUCCESS;
 }
 
+DEFUN_ATTR_USRATTR(cfg_attr_hidden_app_attr_unbelievable,
+		   cfg_attr_hidden_app_attr_unbelievable_cmd,
+		   CMD_ATTR_HIDDEN, X(TEST_ATTR_UNBELIEVABLE),
+		   "app-hidden-unbelievable",
+		   "Hidden, but still unbelievable help message\n")
+{
+	return CMD_SUCCESS;
+}
+
 static void init_vty_cmds()
 {
 	install_element_ve(&single0_cmd);
@@ -302,6 +328,8 @@ static void init_vty_cmds()
 
 	install_element(CONFIG_NODE, &cfg_attr_test_cmd);
 	install_node(&attr_test_node, NULL);
+	install_element(ATTR_TEST_NODE, &cfg_attr_deprecated_cmd);
+	install_element(ATTR_TEST_NODE, &cfg_attr_hidden_cmd);
 	install_element(ATTR_TEST_NODE, &cfg_attr_immediate_cmd);
 	install_element(ATTR_TEST_NODE, &cfg_attr_node_exit_cmd);
 
@@ -311,6 +339,7 @@ static void init_vty_cmds()
 
 	install_element(ATTR_TEST_NODE, &cfg_app_attr_unbelievable_magnificent_cmd);
 	install_element(ATTR_TEST_NODE, &cfg_app_attr_unbelievable_wonderful_cmd);
+	install_element(ATTR_TEST_NODE, &cfg_attr_hidden_app_attr_unbelievable_cmd);
 }
 
 int main(int argc, char **argv)

@@ -24,6 +24,7 @@
 #pragma once
 
 #include <stdio.h>
+#include <stdbool.h>
 #include <sys/types.h>
 #include "vector.h"
 
@@ -65,6 +66,9 @@ struct host {
 
 	/*! VTY application information */
 	const struct vty_app_info *app_info;
+
+	/*! Whether the expert mode is enabled. */
+	bool expert_mode;
 };
 
 /*! There are some command levels which called from command node. */

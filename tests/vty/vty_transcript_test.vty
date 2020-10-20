@@ -87,6 +87,7 @@ ok argc=0
 
 vty_transcript_test> show vty-attributes
   Global attributes:
+    ^  This command is hidden (check expert mode)
     !  This command applies immediately
     @  This command applies on VTY node exit
   Library specific attributes:
@@ -104,7 +105,7 @@ vty_transcript_test# configure terminal
 vty_transcript_test(config)# attribute-test
 
 vty_transcript_test(config-attr-test)# list
-...
+... !foo-(hidden|deprecated)
   foo-immediate
   foo-node-exit
   app-unbelievable
@@ -112,9 +113,10 @@ vty_transcript_test(config-attr-test)# list
   app-wonderful
   app-unbelievable-magnificent
   app-unbelievable-wonderful
+... !app-hidden-*
 
 vty_transcript_test(config-attr-test)# list with-flags
-...
+... !foo-(hidden|deprecated)
   ! ...  foo-immediate
   @ ...  foo-node-exit
   . u..  app-unbelievable
@@ -122,3 +124,56 @@ vty_transcript_test(config-attr-test)# list with-flags
   . ..w  app-wonderful
   . um.  app-unbelievable-magnificent
   . u.w  app-unbelievable-wonderful
+... !app-hidden-*
+
+vty_transcript_test(config-attr-test)# foo-deprecated?
+% There is no matched command.
+vty_transcript_test(config-attr-test)# foo-hidden?
+% There is no matched command.
+vty_transcript_test(config-attr-test)# app-hidden-unbelievable?
+% There is no matched command.
+
+vty_transcript_test(config-attr-test)# end
+vty_transcript_test# disable
+
+vty_transcript_test> enable?
+  enable  Turn on privileged mode command
+vty_transcript_test> enable ?
+  [expert-mode]  Enable the expert mode (show hidden commands)
+
+vty_transcript_test> enable expert-mode
+vty_transcript_test# configure terminal
+vty_transcript_test(config)# attribute-test
+
+vty_transcript_test(config-attr-test)# list
+... !foo-deprected
+  foo-hidden [expert-mode]
+  foo-immediate
+  foo-node-exit
+  app-unbelievable
+  app-magnificent
+  app-wonderful
+  app-unbelievable-magnificent
+  app-unbelievable-wonderful
+  app-hidden-unbelievable
+
+vty_transcript_test(config-attr-test)# list with-flags
+... !foo-deprected
+  ^ ...  foo-hidden [expert-mode]
+  ! ...  foo-immediate
+  @ ...  foo-node-exit
+  . u..  app-unbelievable
+  . .m.  app-magnificent
+  . ..w  app-wonderful
+  . um.  app-unbelievable-magnificent
+  . u.w  app-unbelievable-wonderful
+  ^ u..  app-hidden-unbelievable
+
+vty_transcript_test(config-attr-test)# foo-deprecated?
+% There is no matched command.
+vty_transcript_test(config-attr-test)# foo-hidden?
+  foo-hidden  This command is hidden
+vty_transcript_test(config-attr-test)# foo-hidden ?
+  [expert-mode]  But can be seen in the expert mode
+vty_transcript_test(config-attr-test)# app-hidden-unbelievable?
+  app-hidden-unbelievable  Hidden, but still unbelievable help message

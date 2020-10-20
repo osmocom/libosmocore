@@ -32,7 +32,7 @@
 #define VTY_CMD_USR_ATTR_NUM 32
 /* Flag characters reserved for global VTY attributes */
 #define VTY_CMD_ATTR_FLAGS_RESERVED \
-	{ '.', '!', '@' }
+	{ '.', '!', '@', '^' }
 
 /*! VTY events */
 enum event {

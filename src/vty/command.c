@@ -624,7 +624,7 @@ typedef int (*print_func_t)(void *data, const char *fmt, ...);
 
 static const struct value_string cmd_attr_desc[] = {
 	{ CMD_ATTR_DEPRECATED,		"This command is deprecated" },
-	{ CMD_ATTR_HIDDEN,		"This command is hidden" },
+	{ CMD_ATTR_HIDDEN,		"This command is hidden (check expert mode)" },
 	{ CMD_ATTR_IMMEDIATE,		"This command applies immediately" },
 	{ CMD_ATTR_NODE_EXIT,		"This command applies on VTY node exit" },
 	/* CMD_ATTR_LIB_COMMAND is intentionally skipped */
@@ -639,6 +639,8 @@ static const struct value_string cmd_attr_desc[] = {
 static char cmd_attr_get_flag(unsigned int attr)
 {
 	switch (attr) {
+	case CMD_ATTR_HIDDEN:
+		return '^';
 	case CMD_ATTR_IMMEDIATE:
 		return '!';
 	case CMD_ATTR_NODE_EXIT:
@@ -796,8 +798,11 @@ static int vty_dump_nodes(print_func_t print_func, void *data, const char *newli
 			elem = vector_slot(cnode->cmd_vector, j);
 			if (!vty_command_is_common(elem))
 				continue;
-			if (!(elem->attr & (CMD_ATTR_DEPRECATED | CMD_ATTR_HIDDEN)))
-				vty_dump_element(elem, print_func, data, newline);
+			if (elem->attr & CMD_ATTR_DEPRECATED)
+				continue;
+			if (!host.expert_mode && (elem->attr & CMD_ATTR_HIDDEN))
+				continue;
+			vty_dump_element(elem, print_func, data, newline);
 		}
 	}
 	print_func(data, "  </node>%s", newline);
@@ -834,8 +839,11 @@ static int vty_dump_nodes(print_func_t print_func, void *data, const char *newli
 			elem = vector_slot(cnode->cmd_vector, j);
 			if (vty_command_is_common(elem))
 				continue;
-			if (!(elem->attr & (CMD_ATTR_DEPRECATED | CMD_ATTR_HIDDEN)))
-				vty_dump_element(elem, print_func, data, newline);
+			if (elem->attr & CMD_ATTR_DEPRECATED)
+				continue;
+			if (!host.expert_mode && (elem->attr & CMD_ATTR_HIDDEN))
+				continue;
+			vty_dump_element(elem, print_func, data, newline);
 		}
 
 		print_func(data, "  </node>%s", newline);
@@ -2007,7 +2015,9 @@ cmd_describe_command_real(vector vline, struct vty *vty, int *status)
 		if (!cmd_element)
 			continue;
 
-		if (cmd_element->attr & (CMD_ATTR_DEPRECATED|CMD_ATTR_HIDDEN))
+		if (cmd_element->attr & CMD_ATTR_DEPRECATED)
+			continue;
+		if (!host.expert_mode && (cmd_element->attr & CMD_ATTR_HIDDEN))
 			continue;
 
 		strvec = cmd_element->strvec;
@@ -2867,7 +2877,10 @@ DEFUN(config_terminal,
 }
 
 /* Enable command */
-DEFUN(enable, config_enable_cmd, "enable", "Turn on privileged mode command\n")
+DEFUN(enable, config_enable_cmd,
+      "enable [expert-mode]",
+      "Turn on privileged mode command\n"
+      "Enable the expert mode (show hidden commands)\n")
 {
 	/* If enable password is NULL, change to ENABLE_NODE */
 	if ((host.enable == NULL && host.enable_encrypt == NULL) ||
@@ -2875,6 +2888,8 @@ DEFUN(enable, config_enable_cmd, "enable", "Turn on privileged mode command\n")
 		vty->node = ENABLE_NODE;
 	else
 		vty->node = AUTH_ENABLE_NODE;
+
+	host.expert_mode = argc > 0;
 
 	return CMD_SUCCESS;
 }
@@ -2885,6 +2900,9 @@ DEFUN(disable,
 {
 	if (vty->node == ENABLE_NODE)
 		vty->node = VIEW_NODE;
+
+	host.expert_mode = false;
+
 	return CMD_SUCCESS;
 }
 
@@ -3083,7 +3101,9 @@ static unsigned int node_flag_mask(const struct cmd_node *cnode)
 
 			if ((cmd = vector_slot(cnode->cmd_vector, i)) == NULL)
 				continue;
-			if (cmd->attr & (CMD_ATTR_DEPRECATED | CMD_ATTR_HIDDEN))
+			if (cmd->attr & CMD_ATTR_DEPRECATED)
+				continue;
+			if (!host.expert_mode && (cmd->attr & CMD_ATTR_HIDDEN))
 				continue;
 			if (~cmd->usrattr & ((unsigned)1 << f))
 				continue;
@@ -3111,7 +3131,9 @@ static const char *cmd_gflag_mask(const struct cmd_element *cmd)
 	char *ptr = &char_mask[0];
 
 	/* Mutually exclusive global attributes */
-	if (cmd->attr & CMD_ATTR_IMMEDIATE)
+	if (cmd->attr & CMD_ATTR_HIDDEN)
+		*(ptr++) = cmd_attr_get_flag(CMD_ATTR_HIDDEN);
+	else if (cmd->attr & CMD_ATTR_IMMEDIATE)
 		*(ptr++) = cmd_attr_get_flag(CMD_ATTR_IMMEDIATE);
 	else if (cmd->attr & CMD_ATTR_NODE_EXIT)
 		*(ptr++) = cmd_attr_get_flag(CMD_ATTR_NODE_EXIT);
@@ -3170,7 +3192,9 @@ gDEFUN(config_list, config_list_cmd,
 	for (i = 0; i < vector_active(cnode->cmd_vector); i++) {
 		if ((cmd = vector_slot(cnode->cmd_vector, i)) == NULL)
 			continue;
-		if (cmd->attr & (CMD_ATTR_DEPRECATED | CMD_ATTR_HIDDEN))
+		if (cmd->attr & CMD_ATTR_DEPRECATED)
+			continue;
+		if (!host.expert_mode && (cmd->attr & CMD_ATTR_HIDDEN))
 			continue;
 		if (!argc)
 			vty_out(vty, "  %s%s", cmd->string, VTY_NEWLINE);
@@ -4244,6 +4268,7 @@ void cmd_init(int terminal)
 	host.lines = -1;
 	host.motd = default_motd;
 	host.motdfile = NULL;
+	host.expert_mode = false;
 
 	/* Install top nodes. */
 	install_node_bare(&view_node, NULL);
