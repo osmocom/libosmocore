@@ -814,420 +814,469 @@ static void lapd_acknowledge(struct lapd_msg_ctx *lctx)
 
 /* L1 -> L2 */
 
-/* Receive a LAPD U (Unnumbered) message from L1 */
-static int lapd_rx_u(struct msgb *msg, struct lapd_msg_ctx *lctx)
+/* Receive a LAPD U SABM(E) message from L1 */
+static int lapd_rx_u_sabm(struct msgb *msg, struct lapd_msg_ctx *lctx)
 {
 	struct lapd_datalink *dl = lctx->dl;
 	int length = lctx->length;
 	int rc = 0;
 	uint8_t prim, op;
 
-	switch (lctx->s_u) {
-	case LAPD_U_SABM:
-	case LAPD_U_SABME:
-		prim = PRIM_DL_EST;
-		op = PRIM_OP_INDICATION;
+	prim = PRIM_DL_EST;
+	op = PRIM_OP_INDICATION;
 
-		LOGDL(dl, LOGL_INFO, "SABM(E) received in state %s\n", lapd_state_name(dl->state));
-		/* 5.7.1 */
-		dl->seq_err_cond = 0;
-		/* G.2.2 Wrong value of the C/R bit */
-		if (lctx->cr == dl->cr.rem2loc.resp) {
-			LOGDL(dl, LOGL_ERROR, "SABM response error\n");
-			msgb_free(msg);
-			mdl_error(MDL_CAUSE_FRM_UNIMPL, lctx);
-			return -EINVAL;
-		}
-
-		/* G.4.5 If SABM is received with L>N201 or with M bit
-		 * set, AN MDL-ERROR-INDICATION is sent to MM.
-		 */
-		if (lctx->more || length > lctx->n201) {
-			LOGDL(dl, LOGL_ERROR, "SABM too large error\n");
-			msgb_free(msg);
-			mdl_error(MDL_CAUSE_UFRM_INC_PARAM, lctx);
-			return -EIO;
-		}
-
-		switch (dl->state) {
-		case LAPD_STATE_IDLE:
-			break;
-		case LAPD_STATE_MF_EST:
-			LOGDL(dl, LOGL_INFO, "SABM command, multiple frame established state\n");
-			/* If link is lost on the remote side, we start over
-			 * and send DL-ESTABLISH indication again. */
-			/* Additionally, continue in case of content resoltion
-			 * (GSM network). This happens, if the mobile has not
-			 * yet received UA or another mobile (collision) tries
-			 * to establish connection. The mobile must receive
-			 * UA again. */
-			/* 5.4.2.1 */
-			if (!length) {
-				/* If no content resolution, this is a
-				 * re-establishment. */
-				LOGDL(dl, LOGL_INFO, "Remote reestablish\n");
-				break;
-			}
-			if (!dl->cont_res) {
-				LOGDL(dl, LOGL_INFO, "SABM command not allowed in state %s\n",
-				      lapd_state_name(dl->state));
-				mdl_error(MDL_CAUSE_SABM_MF, lctx);
-				msgb_free(msg);
-				return 0;
-			}
-			/* Ignore SABM if content differs from first SABM. */
-			if (dl->mode == LAPD_MODE_NETWORK && length) {
-#ifdef TEST_CONTENT_RESOLUTION_NETWORK
-				dl->cont_res->data[0] ^= 0x01;
-#endif
-				if (memcmp(dl->cont_res->data, msg->data,
-								length)) {
-					LOGDL(dl, LOGL_INFO, "Another SABM with different content - "
-					     "ignoring!\n");
-					msgb_free(msg);
-					return 0;
-				}
-			}
-			/* send UA again */
-			lapd_send_ua(lctx, length, msg->l3h);
-			msgb_free(msg);
-			return 0;
-		case LAPD_STATE_DISC_SENT:
-			/* 5.4.6.2 send DM with F=P */
-			lapd_send_dm(lctx);
-			/* stop Timer T200 */
-			lapd_stop_t200(dl);
-			msgb_free(msg);
-			return send_dl_simple(prim, op, lctx);
-		default:
-			/* collision: Send UA, but still wait for rx UA, then
-			 * change to MF_EST state.
-			 */
-			/* check for contention resoultion */
-			if (dl->tx_hist[0].msg && dl->tx_hist[0].msg->len) {
-				LOGDL(dl, LOGL_NOTICE, "SABM not allowed during contention "
-				      "resolution (state=%s)\n", lapd_state_name(dl->state));
-				mdl_error(MDL_CAUSE_SABM_INFO_NOTALL, lctx);
-			}
-			lapd_send_ua(lctx, length, msg->l3h);
-			msgb_free(msg);
-			return 0;
-		}
-		/* save message context for further use */
-		memcpy(&dl->lctx, lctx, sizeof(dl->lctx));
-#ifndef TEST_CONTENT_RESOLUTION_NETWORK
-		/* send UA response */
-		lapd_send_ua(lctx, length, msg->l3h);
-#endif
-		/* set Vs, Vr and Va to 0 */
-		dl->v_send = dl->v_recv = dl->v_ack = 0;
-		/* clear tx_hist */
-		lapd_dl_flush_hist(dl);
-		/* enter multiple-frame-established state */
-		lapd_dl_newstate(dl, LAPD_STATE_MF_EST);
-		/* store content resolution data on network side
-		 * Note: cont_res will be removed when changing state again,
-		 * so it must be allocated AFTER lapd_dl_newstate(). */
-		if (dl->mode == LAPD_MODE_NETWORK && length) {
-			dl->cont_res = lapd_msgb_alloc(length, "CONT RES");
-			memcpy(msgb_put(dl->cont_res, length), msg->l3h,
-				length);
-			LOGDL(dl, LOGL_NOTICE, "Store content res.\n");
-		}
-		/* send notification to L3 */
-		if (length == 0) {
-			/* 5.4.1.2 Normal establishment procedures */
-			rc = send_dl_simple(prim, op, lctx);
-			msgb_free(msg);
-		} else {
-			/* 5.4.1.4 Contention resolution establishment */
-			msgb_trim(msg, length);
-			rc = send_dl_l3(prim, op, lctx, msg);
-		}
-		break;
-	case LAPD_U_DM:
-		LOGDL(dl, LOGL_INFO, "DM received in state %s\n", lapd_state_name(dl->state));
-		/* G.2.2 Wrong value of the C/R bit */
-		if (lctx->cr == dl->cr.rem2loc.cmd) {
-			LOGDL(dl, LOGL_ERROR, "DM command error\n");
-			msgb_free(msg);
-			mdl_error(MDL_CAUSE_FRM_UNIMPL, lctx);
-			return -EINVAL;
-		}
-		if (!lctx->p_f) {
-			/* 5.4.1.2 DM responses with the F bit set to "0"
-			 * shall be ignored.
-			 */
-			msgb_free(msg);
-			return 0;
-		}
-		switch (dl->state) {
-		case LAPD_STATE_SABM_SENT:
-			break;
-		case LAPD_STATE_MF_EST:
-			if (lctx->p_f) {
-				LOGDL(dl, LOGL_INFO, "unsolicited DM response\n");
-				mdl_error(MDL_CAUSE_UNSOL_DM_RESP, lctx);
-			} else {
-				LOGDL(dl, LOGL_INFO, "unsolicited DM response, "
-					"multiple frame established state\n");
-				mdl_error(MDL_CAUSE_UNSOL_DM_RESP_MF, lctx);
-				/* reestablish */
-				if (!dl->reestablish) {
-					msgb_free(msg);
-					return 0;
-				}
-				LOGDL(dl, LOGL_NOTICE, "Performing reestablishment\n");
-				lapd_reestablish(dl);
-			}
-			msgb_free(msg);
-			return 0;
-		case LAPD_STATE_TIMER_RECOV:
-			/* FP = 0 (DM is normal in case PF = 1) */
-			if (!lctx->p_f) {
-				LOGDL(dl, LOGL_INFO, "unsolicited DM response, multiple frame "
-				      "established state\n");
-				mdl_error(MDL_CAUSE_UNSOL_DM_RESP_MF, lctx);
-				msgb_free(msg);
-				/* reestablish */
-				if (!dl->reestablish)
-					return 0;
-				LOGDL(dl, LOGL_NOTICE, "Performing reestablishment\n");
-				return lapd_reestablish(dl);
-			}
-			break;
-		case LAPD_STATE_DISC_SENT:
-			/* stop Timer T200 */
-			lapd_stop_t200(dl);
-			/* go to idle state */
-			lapd_dl_flush_tx(dl);
-			lapd_dl_flush_send(dl);
-			lapd_dl_newstate(dl, LAPD_STATE_IDLE);
-			rc = send_dl_simple(PRIM_DL_REL, PRIM_OP_CONFIRM, lctx);
-			msgb_free(msg);
-			return 0;
-		case LAPD_STATE_IDLE:
-			/* 5.4.5 all other frame types shall be discarded */
-		default:
-			LOGDL(dl, LOGL_INFO, "unsolicited DM response! (discarding)\n");
-			msgb_free(msg);
-			return 0;
-		}
-		/* stop timer T200 */
-		lapd_stop_t200(dl);
-		/* go to idle state */
-		lapd_dl_newstate(dl, LAPD_STATE_IDLE);
-		rc = send_dl_simple(PRIM_DL_REL, PRIM_OP_INDICATION, lctx);
-		msgb_free(msg);
-		break;
-	case LAPD_U_UI:
-		LOGDL(dl, LOGL_INFO, "UI received\n");
-		/* G.2.2 Wrong value of the C/R bit */
-		if (lctx->cr == dl->cr.rem2loc.resp) {
-			LOGDL(dl, LOGL_ERROR, "UI indicates response error\n");
-			msgb_free(msg);
-			mdl_error(MDL_CAUSE_FRM_UNIMPL, lctx);
-			return -EINVAL;
-		}
-
-		/* G.4.5 If UI is received with L>N201 or with M bit
-		 * set, AN MDL-ERROR-INDICATION is sent to MM.
-		 */
-		if (length > lctx->n201 || lctx->more) {
-			LOGDL(dl, LOGL_ERROR, "UI too large error (%d > N201(%d) or M=%d)\n",
-			      length, lctx->n201, lctx->more);
-			msgb_free(msg);
-			mdl_error(MDL_CAUSE_UFRM_INC_PARAM, lctx);
-			return -EIO;
-		}
-
-		/* do some length checks */
-		if (length == 0) {
-			/* 5.3.3 UI frames received with the length indicator
-			 * set to "0" shall be ignored
-			 */
-			LOGDL(dl, LOGL_INFO, "length=0 (discarding)\n");
-			msgb_free(msg);
-			return 0;
-		}
-		msgb_trim(msg, length);
-		rc = send_dl_l3(PRIM_DL_UNIT_DATA, PRIM_OP_INDICATION, lctx,
-				msg);
-		break;
-	case LAPD_U_DISC:
-		prim = PRIM_DL_REL;
-		op = PRIM_OP_INDICATION;
-
-		LOGDL(dl, LOGL_INFO, "DISC received in state %s\n", lapd_state_name(dl->state));
-		/* flush tx and send buffers */
-		lapd_dl_flush_tx(dl);
-		lapd_dl_flush_send(dl);
-		/* 5.7.1 */
-		dl->seq_err_cond = 0;
-		/* G.2.2 Wrong value of the C/R bit */
-		if (lctx->cr == dl->cr.rem2loc.resp) {
-			LOGDL(dl, LOGL_ERROR, "DISC response error\n");
-			msgb_free(msg);
-			mdl_error(MDL_CAUSE_FRM_UNIMPL, lctx);
-			return -EINVAL;
-		}
-		if (length > 0 || lctx->more) {
-			/* G.4.4 If a DISC or DM frame is received with L>0 or
-			 * with the M bit set to "1", an MDL-ERROR-INDICATION
-			 * primitive with cause "U frame with incorrect
-			 * parameters" is sent to the mobile management entity.
-			 */
-			LOGDL(dl, LOGL_ERROR, "U frame iwth incorrect parameters\n");
-			msgb_free(msg);
-			mdl_error(MDL_CAUSE_UFRM_INC_PARAM, lctx);
-			return -EIO;
-		}
-		switch (dl->state) {
-		case LAPD_STATE_IDLE:
-			LOGDL(dl, LOGL_INFO, "DISC in idle state\n");
-			/* send DM with F=P */
-			msgb_free(msg);
-			return lapd_send_dm(lctx);
-		case LAPD_STATE_SABM_SENT:
-			LOGDL(dl, LOGL_INFO, "DISC in SABM state\n");
-			/* 5.4.6.2 send DM with F=P */
-			lapd_send_dm(lctx);
-			/* stop Timer T200 */
-			lapd_stop_t200(dl);
-			/* go to idle state */
-			lapd_dl_newstate(dl, LAPD_STATE_IDLE);
-			msgb_free(msg);
-			return send_dl_simple(PRIM_DL_REL, PRIM_OP_INDICATION,
-				lctx);
-		case LAPD_STATE_MF_EST:
-		case LAPD_STATE_TIMER_RECOV:
-			LOGDL(dl, LOGL_INFO, "DISC in est state\n");
-			break;
-		case LAPD_STATE_DISC_SENT:
-			LOGDL(dl, LOGL_INFO, "DISC in disc state\n");
-			prim = PRIM_DL_REL;
-			op = PRIM_OP_CONFIRM;
-			break;
-		default:
-			lapd_send_ua(lctx, length, msg->l3h);
-			msgb_free(msg);
-			return 0;
-		}
-		/* send UA response */
-		lapd_send_ua(lctx, length, msg->l3h);
-		/* stop Timer T200 */
-		lapd_stop_t200(dl);
-		/* enter idle state, keep tx-buffer with UA response */
-		lapd_dl_newstate(dl, LAPD_STATE_IDLE);
-		/* send notification to L3 */
-		rc = send_dl_simple(prim, op, lctx);
-		msgb_free(msg);
-		break;
-	case LAPD_U_UA:
-		LOGDL(dl, LOGL_INFO, "UA received in state %s\n", lapd_state_name(dl->state));
-		/* G.2.2 Wrong value of the C/R bit */
-		if (lctx->cr == dl->cr.rem2loc.cmd) {
-			LOGDL(dl, LOGL_ERROR, "UA indicates command error\n");
-			msgb_free(msg);
-			mdl_error(MDL_CAUSE_FRM_UNIMPL, lctx);
-			return -EINVAL;
-		}
-
-		/* G.4.5 If UA is received with L>N201 or with M bit
-		 * set, AN MDL-ERROR-INDICATION is sent to MM.
-		 */
-		if (lctx->more || length > lctx->n201) {
-			LOGDL(dl, LOGL_ERROR, "UA too large error\n");
-			msgb_free(msg);
-			mdl_error(MDL_CAUSE_UFRM_INC_PARAM, lctx);
-			return -EIO;
-		}
-
-		if (!lctx->p_f) {
-			/* 5.4.1.2 A UA response with the F bit set to "0"
-			 * shall be ignored.
-			 */
-			LOGDL(dl, LOGL_INFO, "F=0 (discarding)\n");
-			msgb_free(msg);
-			return 0;
-		}
-		switch (dl->state) {
-		case LAPD_STATE_SABM_SENT:
-			break;
-		case LAPD_STATE_MF_EST:
-		case LAPD_STATE_TIMER_RECOV:
-			LOGDL(dl, LOGL_INFO, "unsolicited UA response! (discarding)\n");
-			mdl_error(MDL_CAUSE_UNSOL_UA_RESP, lctx);
-			msgb_free(msg);
-			return 0;
-		case LAPD_STATE_DISC_SENT:
-			LOGDL(dl, LOGL_INFO, "UA in disconnect state\n");
-			/* stop Timer T200 */
-			lapd_stop_t200(dl);
-			/* go to idle state */
-			lapd_dl_flush_tx(dl);
-			lapd_dl_flush_send(dl);
-			lapd_dl_newstate(dl, LAPD_STATE_IDLE);
-			rc = send_dl_simple(PRIM_DL_REL, PRIM_OP_CONFIRM, lctx);
-			msgb_free(msg);
-			return 0;
-		case LAPD_STATE_IDLE:
-			/* 5.4.5 all other frame types shall be discarded */
-		default:
-			LOGDL(dl, LOGL_INFO, "unsolicited UA response! (discarding)\n");
-			msgb_free(msg);
-			return 0;
-		}
-		LOGDL(dl, LOGL_INFO, "UA in SABM state\n");
-		/* stop Timer T200 */
-		lapd_stop_t200(dl);
-		/* compare UA with SABME if contention resolution is applied */
-		if (dl->tx_hist[0].msg->len) {
-			if (length != (dl->tx_hist[0].msg->len)
-			 || !!memcmp(dl->tx_hist[0].msg->data, msg->l3h,
-			 					length)) {
-				LOGDL(dl, LOGL_INFO, "**** UA response mismatches ****\n");
-				rc = send_dl_simple(PRIM_DL_REL,
-					PRIM_OP_INDICATION, lctx);
-				msgb_free(msg);
-				/* go to idle state */
-				lapd_dl_flush_tx(dl);
-				lapd_dl_flush_send(dl);
-				lapd_dl_newstate(dl, LAPD_STATE_IDLE);
-				return 0;
-			}
-		}
-		/* set Vs, Vr and Va to 0 */
-		dl->v_send = dl->v_recv = dl->v_ack = 0;
-		/* clear tx_hist */
-		lapd_dl_flush_hist(dl);
-		/* enter multiple-frame-established state */
-		lapd_dl_newstate(dl, LAPD_STATE_MF_EST);
-		/* send outstanding frames, if any (resume / reconnect) */
-		lapd_send_i(lctx, __LINE__);
-		/* send notification to L3 */
-		rc = send_dl_simple(PRIM_DL_EST, PRIM_OP_CONFIRM, lctx);
-		msgb_free(msg);
-		break;
-	case LAPD_U_FRMR:
-		LOGDL(dl, LOGL_NOTICE, "Frame reject received\n");
-		/* send MDL ERROR INIDCATION to L3 */
-		mdl_error(MDL_CAUSE_FRMR, lctx);
-		msgb_free(msg);
-		/* reestablish */
-		if (!dl->reestablish)
-			break;
-		LOGDL(dl, LOGL_NOTICE, "Performing reestablishment\n");
-		rc = lapd_reestablish(dl);
-		break;
-	default:
-		/* G.3.1 */
-		LOGDL(dl, LOGL_NOTICE, "Unnumbered frame not allowed\n");
+	LOGDL(dl, LOGL_INFO, "SABM(E) received in state %s\n", lapd_state_name(dl->state));
+	/* 5.7.1 */
+	dl->seq_err_cond = 0;
+	/* G.2.2 Wrong value of the C/R bit */
+	if (lctx->cr == dl->cr.rem2loc.resp) {
+		LOGDL(dl, LOGL_ERROR, "SABM response error\n");
 		msgb_free(msg);
 		mdl_error(MDL_CAUSE_FRM_UNIMPL, lctx);
 		return -EINVAL;
 	}
+
+	/* G.4.5 If SABM is received with L>N201 or with M bit
+	 * set, AN MDL-ERROR-INDICATION is sent to MM.
+	 */
+	if (lctx->more || length > lctx->n201) {
+		LOGDL(dl, LOGL_ERROR, "SABM too large error\n");
+		msgb_free(msg);
+		mdl_error(MDL_CAUSE_UFRM_INC_PARAM, lctx);
+		return -EIO;
+	}
+
+	switch (dl->state) {
+	case LAPD_STATE_IDLE:
+		break;
+	case LAPD_STATE_MF_EST:
+		LOGDL(dl, LOGL_INFO, "SABM command, multiple frame established state\n");
+		/* If link is lost on the remote side, we start over
+		 * and send DL-ESTABLISH indication again. */
+		/* Additionally, continue in case of content resoltion
+		 * (GSM network). This happens, if the mobile has not
+		 * yet received UA or another mobile (collision) tries
+		 * to establish connection. The mobile must receive
+		 * UA again. */
+		/* 5.4.2.1 */
+		if (!length) {
+			/* If no content resolution, this is a
+			 * re-establishment. */
+			LOGDL(dl, LOGL_INFO, "Remote reestablish\n");
+			break;
+		}
+		if (!dl->cont_res) {
+			LOGDL(dl, LOGL_INFO, "SABM command not allowed in state %s\n",
+			      lapd_state_name(dl->state));
+			mdl_error(MDL_CAUSE_SABM_MF, lctx);
+			msgb_free(msg);
+			return 0;
+		}
+		/* Ignore SABM if content differs from first SABM. */
+		if (dl->mode == LAPD_MODE_NETWORK && length) {
+#ifdef TEST_CONTENT_RESOLUTION_NETWORK
+			dl->cont_res->data[0] ^= 0x01;
+#endif
+			if (memcmp(dl->cont_res->data, msg->data,
+							length)) {
+				LOGDL(dl, LOGL_INFO, "Another SABM with different content - "
+				     "ignoring!\n");
+				msgb_free(msg);
+				return 0;
+			}
+		}
+		/* send UA again */
+		lapd_send_ua(lctx, length, msg->l3h);
+		msgb_free(msg);
+		return 0;
+	case LAPD_STATE_DISC_SENT:
+		/* 5.4.6.2 send DM with F=P */
+		lapd_send_dm(lctx);
+		/* stop Timer T200 */
+		lapd_stop_t200(dl);
+		msgb_free(msg);
+		return send_dl_simple(prim, op, lctx);
+	default:
+		/* collision: Send UA, but still wait for rx UA, then
+		 * change to MF_EST state.
+		 */
+		/* check for contention resoultion */
+		if (dl->tx_hist[0].msg && dl->tx_hist[0].msg->len) {
+			LOGDL(dl, LOGL_NOTICE, "SABM not allowed during contention "
+			      "resolution (state=%s)\n", lapd_state_name(dl->state));
+			mdl_error(MDL_CAUSE_SABM_INFO_NOTALL, lctx);
+		}
+		lapd_send_ua(lctx, length, msg->l3h);
+		msgb_free(msg);
+		return 0;
+	}
+	/* save message context for further use */
+	memcpy(&dl->lctx, lctx, sizeof(dl->lctx));
+#ifndef TEST_CONTENT_RESOLUTION_NETWORK
+	/* send UA response */
+	lapd_send_ua(lctx, length, msg->l3h);
+#endif
+	/* set Vs, Vr and Va to 0 */
+	dl->v_send = dl->v_recv = dl->v_ack = 0;
+	/* clear tx_hist */
+	lapd_dl_flush_hist(dl);
+	/* enter multiple-frame-established state */
+	lapd_dl_newstate(dl, LAPD_STATE_MF_EST);
+	/* store content resolution data on network side
+	 * Note: cont_res will be removed when changing state again,
+	 * so it must be allocated AFTER lapd_dl_newstate(). */
+	if (dl->mode == LAPD_MODE_NETWORK && length) {
+		dl->cont_res = lapd_msgb_alloc(length, "CONT RES");
+		memcpy(msgb_put(dl->cont_res, length), msg->l3h,
+			length);
+		LOGDL(dl, LOGL_NOTICE, "Store content res.\n");
+	}
+	/* send notification to L3 */
+	if (length == 0) {
+		/* 5.4.1.2 Normal establishment procedures */
+		rc = send_dl_simple(prim, op, lctx);
+		msgb_free(msg);
+	} else {
+		/* 5.4.1.4 Contention resolution establishment */
+		msgb_trim(msg, length);
+		rc = send_dl_l3(prim, op, lctx, msg);
+	}
 	return rc;
+}
+
+/* Receive a LAPD U DM message from L1 */
+static int lapd_rx_u_dm(struct msgb *msg, struct lapd_msg_ctx *lctx)
+{
+	struct lapd_datalink *dl = lctx->dl;
+	int rc = 0;
+
+	LOGDL(dl, LOGL_INFO, "DM received in state %s\n", lapd_state_name(dl->state));
+	/* G.2.2 Wrong value of the C/R bit */
+	if (lctx->cr == dl->cr.rem2loc.cmd) {
+		LOGDL(dl, LOGL_ERROR, "DM command error\n");
+		msgb_free(msg);
+		mdl_error(MDL_CAUSE_FRM_UNIMPL, lctx);
+		return -EINVAL;
+	}
+	if (!lctx->p_f) {
+		/* 5.4.1.2 DM responses with the F bit set to "0"
+		 * shall be ignored.
+		 */
+		msgb_free(msg);
+		return 0;
+	}
+	switch (dl->state) {
+	case LAPD_STATE_SABM_SENT:
+		break;
+	case LAPD_STATE_MF_EST:
+		if (lctx->p_f) {
+			LOGDL(dl, LOGL_INFO, "unsolicited DM response\n");
+			mdl_error(MDL_CAUSE_UNSOL_DM_RESP, lctx);
+		} else {
+			LOGDL(dl, LOGL_INFO, "unsolicited DM response, "
+				"multiple frame established state\n");
+			mdl_error(MDL_CAUSE_UNSOL_DM_RESP_MF, lctx);
+			/* reestablish */
+			if (!dl->reestablish) {
+				msgb_free(msg);
+				return 0;
+			}
+			LOGDL(dl, LOGL_NOTICE, "Performing reestablishment\n");
+			lapd_reestablish(dl);
+		}
+		msgb_free(msg);
+		return 0;
+	case LAPD_STATE_TIMER_RECOV:
+		/* FP = 0 (DM is normal in case PF = 1) */
+		if (!lctx->p_f) {
+			LOGDL(dl, LOGL_INFO, "unsolicited DM response, multiple frame "
+			      "established state\n");
+			mdl_error(MDL_CAUSE_UNSOL_DM_RESP_MF, lctx);
+			msgb_free(msg);
+			/* reestablish */
+			if (!dl->reestablish)
+				return 0;
+			LOGDL(dl, LOGL_NOTICE, "Performing reestablishment\n");
+			return lapd_reestablish(dl);
+		}
+		break;
+	case LAPD_STATE_DISC_SENT:
+		/* stop Timer T200 */
+		lapd_stop_t200(dl);
+		/* go to idle state */
+		lapd_dl_flush_tx(dl);
+		lapd_dl_flush_send(dl);
+		lapd_dl_newstate(dl, LAPD_STATE_IDLE);
+		rc = send_dl_simple(PRIM_DL_REL, PRIM_OP_CONFIRM, lctx);
+		msgb_free(msg);
+		return 0;
+	case LAPD_STATE_IDLE:
+		/* 5.4.5 all other frame types shall be discarded */
+	default:
+		LOGDL(dl, LOGL_INFO, "unsolicited DM response! (discarding)\n");
+		msgb_free(msg);
+		return 0;
+	}
+	/* stop timer T200 */
+	lapd_stop_t200(dl);
+	/* go to idle state */
+	lapd_dl_newstate(dl, LAPD_STATE_IDLE);
+	rc = send_dl_simple(PRIM_DL_REL, PRIM_OP_INDICATION, lctx);
+	msgb_free(msg);
+	return rc;
+}
+
+/* Receive a LAPD U UI message from L1 */
+static int lapd_rx_u_ui(struct msgb *msg, struct lapd_msg_ctx *lctx)
+{
+	struct lapd_datalink *dl = lctx->dl;
+	int length = lctx->length;
+
+	LOGDL(dl, LOGL_INFO, "UI received\n");
+	/* G.2.2 Wrong value of the C/R bit */
+	if (lctx->cr == dl->cr.rem2loc.resp) {
+		LOGDL(dl, LOGL_ERROR, "UI indicates response error\n");
+		msgb_free(msg);
+		mdl_error(MDL_CAUSE_FRM_UNIMPL, lctx);
+		return -EINVAL;
+	}
+
+	/* G.4.5 If UI is received with L>N201 or with M bit
+	 * set, AN MDL-ERROR-INDICATION is sent to MM.
+	 */
+	if (length > lctx->n201 || lctx->more) {
+		LOGDL(dl, LOGL_ERROR, "UI too large error (%d > N201(%d) or M=%d)\n",
+		      length, lctx->n201, lctx->more);
+		msgb_free(msg);
+		mdl_error(MDL_CAUSE_UFRM_INC_PARAM, lctx);
+		return -EIO;
+	}
+
+	/* do some length checks */
+	if (length == 0) {
+		/* 5.3.3 UI frames received with the length indicator
+		 * set to "0" shall be ignored
+		 */
+		LOGDL(dl, LOGL_INFO, "length=0 (discarding)\n");
+		msgb_free(msg);
+		return 0;
+	}
+	msgb_trim(msg, length);
+	return send_dl_l3(PRIM_DL_UNIT_DATA, PRIM_OP_INDICATION, lctx, msg);
+}
+
+/* Receive a LAPD U DISC message from L1 */
+static int lapd_rx_u_disc(struct msgb *msg, struct lapd_msg_ctx *lctx)
+{
+	struct lapd_datalink *dl = lctx->dl;
+	int length = lctx->length;
+	int rc = 0;
+	uint8_t prim, op;
+
+	prim = PRIM_DL_REL;
+	op = PRIM_OP_INDICATION;
+
+	LOGDL(dl, LOGL_INFO, "DISC received in state %s\n", lapd_state_name(dl->state));
+	/* flush tx and send buffers */
+	lapd_dl_flush_tx(dl);
+	lapd_dl_flush_send(dl);
+	/* 5.7.1 */
+	dl->seq_err_cond = 0;
+	/* G.2.2 Wrong value of the C/R bit */
+	if (lctx->cr == dl->cr.rem2loc.resp) {
+		LOGDL(dl, LOGL_ERROR, "DISC response error\n");
+		msgb_free(msg);
+		mdl_error(MDL_CAUSE_FRM_UNIMPL, lctx);
+		return -EINVAL;
+	}
+	if (length > 0 || lctx->more) {
+		/* G.4.4 If a DISC or DM frame is received with L>0 or
+		 * with the M bit set to "1", an MDL-ERROR-INDICATION
+		 * primitive with cause "U frame with incorrect
+		 * parameters" is sent to the mobile management entity.
+		 */
+		LOGDL(dl, LOGL_ERROR, "U frame iwth incorrect parameters\n");
+		msgb_free(msg);
+		mdl_error(MDL_CAUSE_UFRM_INC_PARAM, lctx);
+		return -EIO;
+	}
+	switch (dl->state) {
+	case LAPD_STATE_IDLE:
+		LOGDL(dl, LOGL_INFO, "DISC in idle state\n");
+		/* send DM with F=P */
+		msgb_free(msg);
+		return lapd_send_dm(lctx);
+	case LAPD_STATE_SABM_SENT:
+		LOGDL(dl, LOGL_INFO, "DISC in SABM state\n");
+		/* 5.4.6.2 send DM with F=P */
+		lapd_send_dm(lctx);
+		/* stop Timer T200 */
+		lapd_stop_t200(dl);
+		/* go to idle state */
+		lapd_dl_newstate(dl, LAPD_STATE_IDLE);
+		msgb_free(msg);
+		return send_dl_simple(PRIM_DL_REL, PRIM_OP_INDICATION,
+			lctx);
+	case LAPD_STATE_MF_EST:
+	case LAPD_STATE_TIMER_RECOV:
+		LOGDL(dl, LOGL_INFO, "DISC in est state\n");
+		break;
+	case LAPD_STATE_DISC_SENT:
+		LOGDL(dl, LOGL_INFO, "DISC in disc state\n");
+		prim = PRIM_DL_REL;
+		op = PRIM_OP_CONFIRM;
+		break;
+	default:
+		lapd_send_ua(lctx, length, msg->l3h);
+		msgb_free(msg);
+		return 0;
+	}
+	/* send UA response */
+	lapd_send_ua(lctx, length, msg->l3h);
+	/* stop Timer T200 */
+	lapd_stop_t200(dl);
+	/* enter idle state, keep tx-buffer with UA response */
+	lapd_dl_newstate(dl, LAPD_STATE_IDLE);
+	/* send notification to L3 */
+	rc = send_dl_simple(prim, op, lctx);
+	msgb_free(msg);
+	return rc;
+}
+
+/* Receive a LAPD U UA message from L1 */
+static int lapd_rx_u_ua(struct msgb *msg, struct lapd_msg_ctx *lctx)
+{
+	struct lapd_datalink *dl = lctx->dl;
+	int length = lctx->length;
+	int rc = 0;
+
+	LOGDL(dl, LOGL_INFO, "UA received in state %s\n", lapd_state_name(dl->state));
+	/* G.2.2 Wrong value of the C/R bit */
+	if (lctx->cr == dl->cr.rem2loc.cmd) {
+		LOGDL(dl, LOGL_ERROR, "UA indicates command error\n");
+		msgb_free(msg);
+		mdl_error(MDL_CAUSE_FRM_UNIMPL, lctx);
+		return -EINVAL;
+	}
+
+	/* G.4.5 If UA is received with L>N201 or with M bit
+	 * set, AN MDL-ERROR-INDICATION is sent to MM.
+	 */
+	if (lctx->more || length > lctx->n201) {
+		LOGDL(dl, LOGL_ERROR, "UA too large error\n");
+		msgb_free(msg);
+		mdl_error(MDL_CAUSE_UFRM_INC_PARAM, lctx);
+		return -EIO;
+	}
+
+	if (!lctx->p_f) {
+		/* 5.4.1.2 A UA response with the F bit set to "0"
+		 * shall be ignored.
+		 */
+		LOGDL(dl, LOGL_INFO, "F=0 (discarding)\n");
+		msgb_free(msg);
+		return 0;
+	}
+	switch (dl->state) {
+	case LAPD_STATE_SABM_SENT:
+		break;
+	case LAPD_STATE_MF_EST:
+	case LAPD_STATE_TIMER_RECOV:
+		LOGDL(dl, LOGL_INFO, "unsolicited UA response! (discarding)\n");
+		mdl_error(MDL_CAUSE_UNSOL_UA_RESP, lctx);
+		msgb_free(msg);
+		return 0;
+	case LAPD_STATE_DISC_SENT:
+		LOGDL(dl, LOGL_INFO, "UA in disconnect state\n");
+		/* stop Timer T200 */
+		lapd_stop_t200(dl);
+		/* go to idle state */
+		lapd_dl_flush_tx(dl);
+		lapd_dl_flush_send(dl);
+		lapd_dl_newstate(dl, LAPD_STATE_IDLE);
+		rc = send_dl_simple(PRIM_DL_REL, PRIM_OP_CONFIRM, lctx);
+		msgb_free(msg);
+		return 0;
+	case LAPD_STATE_IDLE:
+		/* 5.4.5 all other frame types shall be discarded */
+	default:
+		LOGDL(dl, LOGL_INFO, "unsolicited UA response! (discarding)\n");
+		msgb_free(msg);
+		return 0;
+	}
+	LOGDL(dl, LOGL_INFO, "UA in SABM state\n");
+	/* stop Timer T200 */
+	lapd_stop_t200(dl);
+	/* compare UA with SABME if contention resolution is applied */
+	if (dl->tx_hist[0].msg->len) {
+		if (length != (dl->tx_hist[0].msg->len)
+		 || !!memcmp(dl->tx_hist[0].msg->data, msg->l3h,
+							length)) {
+			LOGDL(dl, LOGL_INFO, "**** UA response mismatches ****\n");
+			rc = send_dl_simple(PRIM_DL_REL,
+				PRIM_OP_INDICATION, lctx);
+			msgb_free(msg);
+			/* go to idle state */
+			lapd_dl_flush_tx(dl);
+			lapd_dl_flush_send(dl);
+			lapd_dl_newstate(dl, LAPD_STATE_IDLE);
+			return 0;
+		}
+	}
+	/* set Vs, Vr and Va to 0 */
+	dl->v_send = dl->v_recv = dl->v_ack = 0;
+	/* clear tx_hist */
+	lapd_dl_flush_hist(dl);
+	/* enter multiple-frame-established state */
+	lapd_dl_newstate(dl, LAPD_STATE_MF_EST);
+	/* send outstanding frames, if any (resume / reconnect) */
+	lapd_send_i(lctx, __LINE__);
+	/* send notification to L3 */
+	rc = send_dl_simple(PRIM_DL_EST, PRIM_OP_CONFIRM, lctx);
+	msgb_free(msg);
+	return rc;
+}
+
+/* Receive a LAPD U FRMR message from L1 */
+static int lapd_rx_u_frmr(struct msgb *msg, struct lapd_msg_ctx *lctx)
+{
+	struct lapd_datalink *dl = lctx->dl;
+
+	LOGDL(dl, LOGL_NOTICE, "Frame reject received\n");
+	/* send MDL ERROR INIDCATION to L3 */
+	mdl_error(MDL_CAUSE_FRMR, lctx);
+	msgb_free(msg);
+	/* reestablish */
+	if (!dl->reestablish)
+		return 0;
+	LOGDL(dl, LOGL_NOTICE, "Performing reestablishment\n");
+	return lapd_reestablish(dl);
+}
+
+/* Receive a LAPD U (Unnumbered) message from L1 */
+static int lapd_rx_u(struct msgb *msg, struct lapd_msg_ctx *lctx)
+{
+	switch (lctx->s_u) {
+	case LAPD_U_SABM:
+	case LAPD_U_SABME:
+		return lapd_rx_u_sabm(msg, lctx);
+	case LAPD_U_DM:
+		return lapd_rx_u_dm(msg, lctx);
+	case LAPD_U_UI:
+		return lapd_rx_u_ui(msg, lctx);
+	case LAPD_U_DISC:
+		return lapd_rx_u_disc(msg, lctx);
+	case LAPD_U_UA:
+		return lapd_rx_u_ua(msg, lctx);
+	case LAPD_U_FRMR:
+		return lapd_rx_u_frmr(msg, lctx);
+	default:
+		/* G.3.1 */
+		LOGDL(lctx->dl, LOGL_NOTICE, "Unnumbered frame not allowed\n");
+		msgb_free(msg);
+		mdl_error(MDL_CAUSE_FRM_UNIMPL, lctx);
+		return -EINVAL;
+	}
 }
 
 /* Receive a LAPD S (Supervisory) message from L1 */
