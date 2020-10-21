@@ -674,7 +674,8 @@ static const char cmd_lib_attr_letters[32] = {
 /*
  * Write one cmd_element as XML via a print_func_t.
  */
-static int vty_dump_element(struct cmd_element *cmd, print_func_t print_func, void *data, const char *newline)
+static int vty_dump_element(const struct cmd_element *cmd, print_func_t print_func,
+			    void *data, const char *newline)
 {
 	char *xml_string = xml_escape(cmd->string);
 	unsigned int i;
@@ -768,7 +769,7 @@ static int vty_dump_element(struct cmd_element *cmd, print_func_t print_func, vo
 	return 0;
 }
 
-static bool vty_command_is_common(struct cmd_element *cmd);
+static bool vty_command_is_common(const struct cmd_element *cmd);
 
 /*
  * Dump all nodes and commands associated with a given node as XML via a print_func_t.
@@ -786,16 +787,14 @@ static int vty_dump_nodes(print_func_t print_func, void *data, const char *newli
 	print_func(data, "    <description>These commands are available on all VTY nodes. They are listed"
 		" here only once, to unclutter the VTY reference.</description>%s", newline);
 	for (i = 0; i < vector_active(cmdvec); ++i) {
-		struct cmd_node *cnode;
-		cnode = vector_slot(cmdvec, i);
+		const struct cmd_node *cnode = vector_slot(cmdvec, i);
 		if (!cnode)
 			continue;
 		if (cnode->node != CONFIG_NODE)
 			continue;
 
 		for (j = 0; j < vector_active(cnode->cmd_vector); ++j) {
-			struct cmd_element *elem;
-			elem = vector_slot(cnode->cmd_vector, j);
+			const struct cmd_element *elem = vector_slot(cnode->cmd_vector, j);
 			if (!vty_command_is_common(elem))
 				continue;
 			if (elem->attr & CMD_ATTR_DEPRECATED)
@@ -808,8 +807,7 @@ static int vty_dump_nodes(print_func_t print_func, void *data, const char *newli
 	print_func(data, "  </node>%s", newline);
 
 	for (i = 0; i < vector_active(cmdvec); ++i) {
-		struct cmd_node *cnode;
-		cnode = vector_slot(cmdvec, i);
+		const struct cmd_node *cnode = vector_slot(cmdvec, i);
 		if (!cnode)
 			continue;
 		if (vector_active(cnode->cmd_vector) < 1)
@@ -820,8 +818,7 @@ static int vty_dump_nodes(print_func_t print_func, void *data, const char *newli
 		 * 'name', the second becomes 'name_2', then 'name_3', ... */
 		same_name_count = 1;
 		for (j = 0; j < i; ++j) {
-			struct cmd_node *cnode2;
-			cnode2 = vector_slot(cmdvec, j);
+			const struct cmd_node *cnode2 = vector_slot(cmdvec, j);
 			if (!cnode2)
 				continue;
 			if (strcmp(cnode->name, cnode2->name) == 0)
@@ -835,8 +832,7 @@ static int vty_dump_nodes(print_func_t print_func, void *data, const char *newli
 		print_func(data, "    <name>%s</name>%s", cnode->name, newline);
 
 		for (j = 0; j < vector_active(cnode->cmd_vector); ++j) {
-			struct cmd_element *elem;
-			elem = vector_slot(cnode->cmd_vector, j);
+			const struct cmd_element *elem = vector_slot(cnode->cmd_vector, j);
 			if (vty_command_is_common(elem))
 				continue;
 			if (elem->attr & CMD_ATTR_DEPRECATED)
@@ -4195,7 +4191,7 @@ static void install_basic_node_commands(int node)
 /*! Return true if a node is installed by install_basic_node_commands(), so
  * that we can avoid repeating them for each and every node during 'show
  * running-config' */
-static bool vty_command_is_common(struct cmd_element *cmd)
+static bool vty_command_is_common(const struct cmd_element *cmd)
 {
 	if (cmd == &config_help_cmd
 	    || cmd == &show_vty_attr_all_cmd
