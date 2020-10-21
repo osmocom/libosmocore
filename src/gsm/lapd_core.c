@@ -849,6 +849,23 @@ static int lapd_rx_u_sabm(struct msgb *msg, struct lapd_msg_ctx *lctx)
 	switch (dl->state) {
 	case LAPD_STATE_IDLE:
 		break;
+	case LAPD_STATE_TIMER_RECOV:
+		LOGDL(dl, LOGL_INFO, "SABM command, timer recovery state\n");
+		/* If link is lost on the remote side, we start over
+		* and send DL-ESTABLISH indication again. */
+		/* 3GPP TS 44.006 8.6.3 "Procedures for re-establishment" */
+		if (length) {
+			/* check for contention resoultion */
+			LOGDL(dl, LOGL_ERROR, "SABM L>0 not expected in timer "
+			      "recovery state\n");
+			mdl_error(MDL_CAUSE_SABM_INFO_NOTALL, lctx);
+			lapd_send_dm(lctx);
+			msgb_free(msg);
+			return 0;
+		}
+		/* re-establishment, continue below */
+		lapd_stop_t200(dl);
+		break;
 	case LAPD_STATE_MF_EST:
 		LOGDL(dl, LOGL_INFO, "SABM command, multiple frame established state\n");
 		/* If link is lost on the remote side, we start over
