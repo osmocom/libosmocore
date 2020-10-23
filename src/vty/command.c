@@ -633,7 +633,7 @@ static const struct value_string cmd_attr_desc[] = {
 
 /* Public attributes (to be printed in the VTY / XML reference) */
 #define CMD_ATTR_PUBLIC_MASK \
-	(CMD_ATTR_IMMEDIATE | CMD_ATTR_NODE_EXIT)
+	(CMD_ATTR_HIDDEN | CMD_ATTR_IMMEDIATE | CMD_ATTR_NODE_EXIT)
 
 /* Get a flag character for a global VTY command attribute */
 static char cmd_attr_get_flag(unsigned int attr)
