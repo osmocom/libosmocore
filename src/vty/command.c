@@ -876,11 +876,49 @@ static int print_func_stream(void *data, const char *format, ...)
 	return rc;
 }
 
+const struct value_string vty_ref_gen_mode_names[] = {
+	{ VTY_REF_GEN_MODE_DEFAULT,	"default" },
+	{ VTY_REF_GEN_MODE_EXPERT,	"expert" },
+	{ 0, NULL }
+};
+
+const struct value_string vty_ref_gen_mode_desc[] = {
+	{ VTY_REF_GEN_MODE_DEFAULT,	"all commands except deprecated and hidden" },
+	{ VTY_REF_GEN_MODE_EXPERT,	"all commands including hidden, excluding deprecated" },
+	{ 0, NULL }
+};
+
 /*! Print the XML reference of all VTY nodes to the given stream.
+ * \param[out] stream  Output stream to print the XML reference to.
+ * \param[in]  mode    The XML reference generation mode.
+ * \returns always 0 for now, no errors possible.
+ */
+int vty_dump_xml_ref_mode(FILE *stream, enum vty_ref_gen_mode mode)
+{
+	switch (mode) {
+	case VTY_REF_GEN_MODE_EXPERT:
+		host.expert_mode = true;
+		break;
+	case VTY_REF_GEN_MODE_DEFAULT:
+	default:
+		host.expert_mode = false;
+		break;
+	}
+
+	return vty_dump_nodes(print_func_stream, stream, "\n");
+}
+
+/*! Print the XML reference of all VTY nodes to the given stream.
+ * \param[out] stream  Output stream to print the XML reference to.
+ * \returns always 0 for now, no errors possible.
+ *
+ * NOTE: this function is deprecated because it does not allow to
+ *	 specify the XML reference generation mode (default mode
+ *	 is hard-coded).  Use vty_dump_xml_ref_mode() instead.
  */
 int vty_dump_xml_ref(FILE *stream)
 {
-	return vty_dump_nodes(print_func_stream, stream, "\n");
+	return vty_dump_xml_ref_mode(stream, VTY_REF_GEN_MODE_DEFAULT);
 }
 
 /* Check if a command with given string exists at given node */

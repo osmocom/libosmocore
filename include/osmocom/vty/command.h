@@ -29,6 +29,7 @@
 #include "vector.h"
 
 #include <osmocom/core/defs.h>
+#include <osmocom/core/utils.h>
 
 /*! \defgroup command VTY Command
  *  @{
@@ -460,6 +461,18 @@ void print_version(int print_copyright);
 
 extern void *tall_vty_cmd_ctx;
 
-int vty_dump_xml_ref(FILE *stream);
+/*! VTY reference generation mode. */
+enum vty_ref_gen_mode {
+	/*! Default mode: all commands except deprecated and hidden. */
+	VTY_REF_GEN_MODE_DEFAULT = 0,
+	/*! Expert mode: all commands including hidden, excluding deprecated. */
+	VTY_REF_GEN_MODE_EXPERT,
+};
+
+extern const struct value_string vty_ref_gen_mode_names[];
+extern const struct value_string vty_ref_gen_mode_desc[];
+
+int vty_dump_xml_ref_mode(FILE *stream, enum vty_ref_gen_mode mode);
+int vty_dump_xml_ref(FILE *stream) OSMO_DEPRECATED("Use vty_dump_xml_ref_mode() instead");
 
 /*! @} */
