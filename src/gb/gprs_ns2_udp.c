@@ -206,7 +206,7 @@ static struct priv_vc *ns2_driver_alloc_vc(struct gprs_ns2_vc_bind *bind, struct
 
 static int handle_nsip_read(struct osmo_fd *bfd)
 {
-	int rc;
+	int rc = 0;
 	int error = 0;
 	struct gprs_ns2_vc_bind *bind = bfd->data;
 	struct osmo_sockaddr saddr;
@@ -240,10 +240,10 @@ static int handle_nsip_read(struct osmo_fd *bfd)
 		}
 	}
 
-	rc = ns2_recv_vc(nsvc, msg);
+	return ns2_recv_vc(nsvc, msg);
+
 out:
 	msgb_free(msg);
-
 	return rc;
 }
 

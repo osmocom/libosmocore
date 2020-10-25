@@ -459,8 +459,10 @@ static void gprs_ns2_recv_unitdata(struct osmo_fsm_inst *fi,
 	struct osmo_gprs_ns2_prim nsp = {};
 	uint16_t bvci;
 
-	if (msgb_l2len(msg) < sizeof(*nsh) + 3)
+	if (msgb_l2len(msg) < sizeof(*nsh) + 3) {
+		msgb_free(msg);
 		return;
+	}
 
 	/* TODO: 7.1: For an IP sub-network, an NS-UNITDATA PDU
 	 * for a PTP BVC may indicate a request to change the IP endpoint
@@ -488,6 +490,7 @@ static void gprs_ns2_vc_fsm_allstate_action(struct osmo_fsm_inst *fi,
 {
 	struct gprs_ns2_vc_priv *priv = fi->priv;
 	struct gprs_ns2_inst *nsi = ns_inst_from_fi(fi);
+	struct msgb *msg = data;
 
 	switch (event) {
 	case GPRS_NS2_EV_RESET:
@@ -520,22 +523,31 @@ static void gprs_ns2_vc_fsm_allstate_action(struct osmo_fsm_inst *fi,
 			recv_test_procedure(fi);
 		break;
 	case GPRS_NS2_EV_UNITDATA:
+		/* UNITDATA has to handle the release of msg.
+		 * If send upwards (gprs_ns2_recv_unitdata) it must NOT free
+		 * the msg, the upper layer has to do it.
+		 * Otherwise the msg must be freed.
+		 */
 		switch (fi->state) {
 		case GPRS_NS2_ST_BLOCKED:
 			/* 7.2.1: the BLOCKED_ACK might be lost */
-			if (priv->initiater)
-				gprs_ns2_recv_unitdata(fi, data);
-			else
-				ns2_tx_status(priv->nsvc,
-					      NS_CAUSE_NSVC_BLOCKED,
-					      0, data);
+			if (priv->initiater) {
+				gprs_ns2_recv_unitdata(fi, msg);
+				return;
+			}
+
+			ns2_tx_status(priv->nsvc,
+				      NS_CAUSE_NSVC_BLOCKED,
+				      0, msg);
 			break;
 		/* ALIVE can receive UNITDATA if the ALIVE_ACK is lost */
 		case GPRS_NS2_ST_ALIVE:
 		case GPRS_NS2_ST_UNBLOCKED:
-			gprs_ns2_recv_unitdata(fi, data);
-			break;
+			gprs_ns2_recv_unitdata(fi, msg);
+			return;
 		}
+
+		msgb_free(msg);
 		break;
 	}
 }
@@ -613,6 +625,7 @@ int gprs_ns2_vc_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed
 {
 	struct gprs_ns_hdr *nsh = (struct gprs_ns_hdr *) msg->l2h;
 	struct osmo_fsm_inst *fi = nsvc->fi;
+	int rc = 0;
 	uint8_t cause;
 
 	/* TODO: 7.2: on UNBLOCK/BLOCK: check if NS-VCI is correct,
@@ -622,7 +635,8 @@ int gprs_ns2_vc_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed
 
 	if (gprs_ns2_validate(nsvc, nsh->pdu_type, msg, tp, &cause)) {
 		if (nsh->pdu_type != NS_PDUT_STATUS) {
-			return ns2_tx_status(nsvc, cause, 0, msg);
+			rc = ns2_tx_status(nsvc, cause, 0, msg);
+			goto out;
 		}
 	}
 
@@ -652,15 +666,19 @@ int gprs_ns2_vc_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed
 		osmo_fsm_inst_dispatch(fi, GPRS_NS2_EV_ALIVE_ACK, tp);
 		break;
 	case NS_PDUT_UNITDATA:
+		/* UNITDATA have to free msg because it might send the msg layer upwards */
 		osmo_fsm_inst_dispatch(fi, GPRS_NS2_EV_UNITDATA, msg);
-		break;
+		return 0;
 	default:
 		LOGP(DLNS, LOGL_ERROR, "NSEI=%u Rx unknown NS PDU type %s\n", nsvc->nse->nsei,
 			get_value_string(gprs_ns_pdu_strings, nsh->pdu_type));
 		return -EINVAL;
 	}
 
-	return 0;
+out:
+	msgb_free(msg);
+
+	return rc;
 }
 
 /*! is the given NS-VC unblocked? */

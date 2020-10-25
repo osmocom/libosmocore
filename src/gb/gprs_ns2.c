@@ -1001,7 +1001,7 @@ void ns2_nse_notify_unblocked(struct gprs_ns2_vc *nsvc, bool unblocked)
 
 /*! Create a new GPRS NS instance
  *  \param[in] ctx a talloc context to allocate NS instance from
- *  \param[in] cb Call-back function for dispatching primitives to the user
+ *  \param[in] cb Call-back function for dispatching primitives to the user. The Call-back must free all msgb* given in the primitive.
  *  \param[in] cb_data transparent user data passed to Call-back
  *  \returns dynamically allocated gprs_ns_inst; NULL on error */
 struct gprs_ns2_inst *gprs_ns2_instantiate(void *ctx, osmo_prim_cb cb, void *cb_data)
