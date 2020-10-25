@@ -773,8 +773,23 @@ static bool vty_command_is_common(const struct cmd_element *cmd);
 
 /*
  * Dump all nodes and commands associated with a given node as XML via a print_func_t.
+ *
+ * (gflag_mask, match = false) - print only those commands with non-matching flags.
+ * (gflag_mask, match = true) - print only those commands with matching flags.
+ *
+ * Some examples:
+ *
+ *  Print all commands except deprecated and hidden (default mode):
+ *    (CMD_ATTR_DEPRECATED | CMD_ATTR_HIDDEN, false)
+ *  Print only deprecated and hidden commands:
+ *    (CMD_ATTR_DEPRECATED | CMD_ATTR_HIDDEN, true)
+ *  Print all commands except deprecated (expert mode):
+ *    (CMD_ATTR_DEPRECATED, false)
+ *  Print only hidden commands:
+ *    (CMD_ATTR_HIDDEN, true)
  */
-static int vty_dump_nodes(print_func_t print_func, void *data, const char *newline)
+static int vty_dump_nodes(print_func_t print_func, void *data, const char *newline,
+			  unsigned char gflag_mask, bool match)
 {
 	int i, j;
 	int same_name_count;
@@ -797,9 +812,9 @@ static int vty_dump_nodes(print_func_t print_func, void *data, const char *newli
 			const struct cmd_element *elem = vector_slot(cnode->cmd_vector, j);
 			if (!vty_command_is_common(elem))
 				continue;
-			if (elem->attr & CMD_ATTR_DEPRECATED)
+			if (!match && (elem->attr & gflag_mask) != 0x00)
 				continue;
-			if (!host.expert_mode && (elem->attr & CMD_ATTR_HIDDEN))
+			if (match && (elem->attr & gflag_mask) == 0x00)
 				continue;
 			vty_dump_element(elem, print_func, data, newline);
 		}
@@ -835,9 +850,9 @@ static int vty_dump_nodes(print_func_t print_func, void *data, const char *newli
 			const struct cmd_element *elem = vector_slot(cnode->cmd_vector, j);
 			if (vty_command_is_common(elem))
 				continue;
-			if (elem->attr & CMD_ATTR_DEPRECATED)
+			if (!match && (elem->attr & gflag_mask) != 0x00)
 				continue;
-			if (!host.expert_mode && (elem->attr & CMD_ATTR_HIDDEN))
+			if (match && (elem->attr & gflag_mask) == 0x00)
 				continue;
 			vty_dump_element(elem, print_func, data, newline);
 		}
@@ -863,7 +878,10 @@ static int print_func_vty(void *data, const char *format, ...)
 
 static int vty_dump_xml_ref_to_vty(struct vty *vty)
 {
-	return vty_dump_nodes(print_func_vty, vty, VTY_NEWLINE);
+	unsigned char gflag_mask = CMD_ATTR_DEPRECATED;
+	if (!vty->expert_mode)
+		gflag_mask |= CMD_ATTR_HIDDEN;
+	return vty_dump_nodes(print_func_vty, vty, VTY_NEWLINE, gflag_mask, false);
 }
 
 static int print_func_stream(void *data, const char *format, ...)
@@ -895,17 +913,21 @@ const struct value_string vty_ref_gen_mode_desc[] = {
  */
 int vty_dump_xml_ref_mode(FILE *stream, enum vty_ref_gen_mode mode)
 {
+	unsigned char gflag_mask;
+
 	switch (mode) {
 	case VTY_REF_GEN_MODE_EXPERT:
-		host.expert_mode = true;
+		/* All commands except deprecated */
+		gflag_mask = CMD_ATTR_DEPRECATED;
 		break;
 	case VTY_REF_GEN_MODE_DEFAULT:
 	default:
-		host.expert_mode = false;
+		/* All commands except deprecated and hidden */
+		gflag_mask = CMD_ATTR_DEPRECATED | CMD_ATTR_HIDDEN;
 		break;
 	}
 
-	return vty_dump_nodes(print_func_stream, stream, "\n");
+	return vty_dump_nodes(print_func_stream, stream, "\n", gflag_mask, false);
 }
 
 /*! Print the XML reference of all VTY nodes to the given stream.
@@ -2051,7 +2073,7 @@ cmd_describe_command_real(vector vline, struct vty *vty, int *status)
 
 		if (cmd_element->attr & CMD_ATTR_DEPRECATED)
 			continue;
-		if (!host.expert_mode && (cmd_element->attr & CMD_ATTR_HIDDEN))
+		if (!vty->expert_mode && (cmd_element->attr & CMD_ATTR_HIDDEN))
 			continue;
 
 		strvec = cmd_element->strvec;
@@ -2923,7 +2945,7 @@ DEFUN(enable, config_enable_cmd,
 	else
 		vty->node = AUTH_ENABLE_NODE;
 
-	host.expert_mode = argc > 0;
+	vty->expert_mode = argc > 0;
 
 	return CMD_SUCCESS;
 }
@@ -2935,7 +2957,7 @@ DEFUN(disable,
 	if (vty->node == ENABLE_NODE)
 		vty->node = VIEW_NODE;
 
-	host.expert_mode = false;
+	vty->expert_mode = false;
 
 	return CMD_SUCCESS;
 }
@@ -3123,7 +3145,7 @@ gDEFUN(show_vty_attr, show_vty_attr_cmd,
 }
 
 /* Compose flag bit-mask for all commands within the given node */
-static unsigned int node_flag_mask(const struct cmd_node *cnode)
+static unsigned int node_flag_mask(const struct cmd_node *cnode, bool expert_mode)
 {
 	unsigned int flag_mask = 0x00;
 	unsigned int f, i;
@@ -3137,7 +3159,7 @@ static unsigned int node_flag_mask(const struct cmd_node *cnode)
 				continue;
 			if (cmd->attr & CMD_ATTR_DEPRECATED)
 				continue;
-			if (!host.expert_mode && (cmd->attr & CMD_ATTR_HIDDEN))
+			if (!expert_mode && (cmd->attr & CMD_ATTR_HIDDEN))
 				continue;
 			if (~cmd->usrattr & ((unsigned)1 << f))
 				continue;
@@ -3221,14 +3243,14 @@ gDEFUN(config_list, config_list_cmd,
 	struct cmd_element *cmd;
 
 	if (argc > 0)
-		flag_mask = node_flag_mask(cnode);
+		flag_mask = node_flag_mask(cnode, vty->expert_mode);
 
 	for (i = 0; i < vector_active(cnode->cmd_vector); i++) {
 		if ((cmd = vector_slot(cnode->cmd_vector, i)) == NULL)
 			continue;
 		if (cmd->attr & CMD_ATTR_DEPRECATED)
 			continue;
-		if (!host.expert_mode && (cmd->attr & CMD_ATTR_HIDDEN))
+		if (!vty->expert_mode && (cmd->attr & CMD_ATTR_HIDDEN))
 			continue;
 		if (!argc)
 			vty_out(vty, "  %s%s", cmd->string, VTY_NEWLINE);
@@ -4302,7 +4324,6 @@ void cmd_init(int terminal)
 	host.lines = -1;
 	host.motd = default_motd;
 	host.motdfile = NULL;
-	host.expert_mode = false;
 
 	/* Install top nodes. */
 	install_node_bare(&view_node, NULL);

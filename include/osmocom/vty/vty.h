@@ -165,6 +165,9 @@ struct vty {
 	/*! When reading from a config file, these are the indenting characters expected for children of
 	 * the current VTY node. */
 	char *indent;
+
+	/*! Whether the expert mode is enabled. */
+	bool expert_mode;
 };
 
 /* Small macro to determine newline is newline only or linefeed needed. */
