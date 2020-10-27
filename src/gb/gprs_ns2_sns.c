@@ -91,6 +91,7 @@ static const struct value_string gprs_sns_event_names[] = {
 	{ GPRS_SNS_EV_ADD,		"ADD" },
 	{ GPRS_SNS_EV_DELETE,		"DELETE" },
 	{ GPRS_SNS_EV_CHANGE_WEIGHT,	"CHANGE_WEIGHT" },
+	{ GPRS_SNS_EV_NO_NSVC,		"NO_NSVC" },
 	{ 0, NULL }
 };
 
