@@ -232,7 +232,7 @@ void ns2_sns_free_nsvc(struct gprs_ns2_vc *nsvc)
 				gss->sns_nsvc = tmp;
 		}
 	} else {
-		LOGPFSML(fi, LOGL_ERROR, "NSE %d: no remaining NSVC. Reseting SNS FSM.", nse->nsei);
+		LOGPFSML(fi, LOGL_ERROR, "NSE %d: no remaining NSVC, resetting SNS FSM\n", nse->nsei);
 		gss->sns_nsvc = NULL;
 		osmo_fsm_inst_dispatch(fi, GPRS_SNS_EV_NO_NSVC, NULL);
 	}
