@@ -203,6 +203,23 @@ static const struct osmo_stat_item_group_desc nsvc_statg_desc = {
 	.class_id = OSMO_STATS_CLASS_PEER,
 };
 
+const struct value_string gprs_ns2_aff_cause_prim_strs[] = {
+	{ NS_AFF_CAUSE_VC_FAILURE,	"NSVC failure" },
+	{ NS_AFF_CAUSE_VC_RECOVERY,	"NSVC recovery" },
+	{ NS_AFF_CAUSE_FAILURE,		"NSE failure" },
+	{ NS_AFF_CAUSE_RECOVERY,	"NSE recovery" },
+	{ NS_AFF_CAUSE_SNS_CONFIGURED,	"NSE SNS configured" },
+	{ NS_AFF_CAUSE_SNS_FAILURE,	"NSE SNS failure" },
+	{ 0, NULL }
+};
+
+const struct value_string ns2_prim_str[] = {
+	{ PRIM_NS_UNIT_DATA,	"UNIT DATA" },
+	{ PRIM_NS_CONGESTION,	"CONGESTION" },
+	{ PRIM_NS_STATUS,	"STATUS" },
+	{ 0, NULL }
+};
+
 /*! string-format a given NS-VC into a user-supplied buffer.
  *  \param[in] buf user-allocated output buffer
  *  \param[in] buf_len size of user-allocated output buffer in bytes

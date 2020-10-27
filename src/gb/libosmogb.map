@@ -72,6 +72,7 @@ gprs_ns_ll_copy;
 gprs_ns_ll_clear;
 gprs_ns_msgb_alloc;
 
+gprs_ns2_aff_cause_prim_strs;
 gprs_ns2_bind_set_mode;
 gprs_ns2_cause_str;
 gprs_ns2_create_nse;
@@ -107,6 +108,7 @@ gprs_ns2_nse_nsei;
 gprs_ns2_nse_sns_remote;
 gprs_ns2_nsvc_by_nsvci;
 gprs_ns2_nsvc_by_sockaddr;
+gprs_ns2_prim_strs;
 gprs_ns2_recv_prim;
 gprs_ns2_reset_persistent_nsvcs;
 gprs_ns2_start_alive_all_nsvcs;
