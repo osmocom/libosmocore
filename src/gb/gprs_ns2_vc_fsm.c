@@ -540,6 +540,14 @@ static void gprs_ns2_vc_fsm_allstate_action(struct osmo_fsm_inst *fi,
 	}
 }
 
+static void gprs_ns2_vc_fsm_clean(struct osmo_fsm_inst *fi,
+				  enum osmo_fsm_term_cause cause)
+{
+	struct gprs_ns2_vc_priv *priv = fi->priv;
+
+	osmo_timer_del(&priv->alive.timer);
+}
+
 static struct osmo_fsm gprs_ns2_vc_fsm = {
 	.name = "GPRS-NS2-VC",
 	.states = gprs_ns2_vc_states,
@@ -549,7 +557,7 @@ static struct osmo_fsm gprs_ns2_vc_fsm = {
 			       S(GPRS_NS2_EV_ALIVE) |
 			       S(GPRS_NS2_EV_ALIVE_ACK),
 	.allstate_action = gprs_ns2_vc_fsm_allstate_action,
-	.cleanup = NULL,
+	.cleanup = gprs_ns2_vc_fsm_clean,
 	.timer_cb = gprs_ns2_vc_fsm_timer_cb,
 	/* .log_subsys = DNS, "is not constant" */
 	.event_names = gprs_ns2_vc_event_names,
