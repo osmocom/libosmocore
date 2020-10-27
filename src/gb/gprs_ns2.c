@@ -138,7 +138,7 @@ static const struct tlv_definition ns_att_tlvdef2 = {
 
 
 /* Section 10.3.2, Table 13 */
-static const struct value_string ns2_cause_str[] = {
+const struct value_string gprs_ns2_cause_strs[] = {
 	{ NS_CAUSE_TRANSIT_FAIL,	"Transit network failure" },
 	{ NS_CAUSE_OM_INTERVENTION, 	"O&M intervention" },
 	{ NS_CAUSE_EQUIP_FAIL,		"Equipment failure" },
@@ -159,13 +159,6 @@ static const struct value_string ns2_cause_str[] = {
 	{ NS_CAUSE_UNKN_IP_TEST_FAILED,	"IP Test Failed" },
 	{ 0, NULL }
 };
-
-/*! Obtain a human-readable string for NS cause value */
-const char *gprs_ns2_cause_str(int cause)
-{
-	enum ns_cause _cause = cause;
-	return get_value_string(ns2_cause_str, _cause);
-}
 
 static const struct rate_ctr_desc nsvc_ctr_description[] = {
 	{ "packets:in", "Packets at NS Level  ( In)" },

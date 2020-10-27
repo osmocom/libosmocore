@@ -7,6 +7,7 @@
 #include <netinet/in.h>
 
 #include <osmocom/core/prim.h>
+#include <osmocom/gprs/protocol/gsm_08_16.h>
 
 struct osmo_sockaddr;
 struct osmo_sockaddr_str;
@@ -73,6 +74,12 @@ enum gprs_ns2_change_ip_endpoint {
 	NS_ENDPOINT_REQUEST_CHANGE,
 	NS_ENDPOINT_CONFIRM_CHANGE,
 };
+
+extern const struct value_string gprs_ns2_cause_strs[];
+
+/*! Obtain a human-readable string for NS primitives */
+static inline const char *gprs_ns2_cause_str(enum ns_cause val)
+{ return get_value_string(gprs_ns2_cause_strs, val); }
 
 struct osmo_gprs_ns2_prim {
 	struct osmo_prim_hdr oph;
@@ -185,7 +192,6 @@ struct gprs_ns2_vc *gprs_ns2_nsvc_by_sockaddr_nse(
 		struct gprs_ns2_nse *nse,
 		const struct osmo_sockaddr *sockaddr);
 void gprs_ns2_start_alive_all_nsvcs(struct gprs_ns2_nse *nse);
-const char *gprs_ns2_cause_str(int cause);
 const char *gprs_ns2_ll_str(struct gprs_ns2_vc *nsvc);
 char *gprs_ns2_ll_str_buf(char *buf, size_t buf_len, struct gprs_ns2_vc *nsvc);
 char *gprs_ns2_ll_str_c(const void *ctx, struct gprs_ns2_vc *nsvc);
