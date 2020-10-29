@@ -131,7 +131,7 @@ const struct value_string gsm411_rp_cause_strs[] = {
 	{ GSM411_RP_CAUSE_INV_TRANS_REF, "Invalid Transaction Reference" },
 	{ GSM411_RP_CAUSE_SEMANT_INC_MSG, "Semantically Incorrect Message" },
 	{ GSM411_RP_CAUSE_INV_MAND_INF, "Invalid Mandatory Information" },
-	{ GSM411_RP_CAUSE_MSGTYPE_NOTEXIST, "Message Type non-existant" },
+	{ GSM411_RP_CAUSE_MSGTYPE_NOTEXIST, "Message Type non-existent" },
 	{ GSM411_RP_CAUSE_MSG_INCOMP_STATE, "Message incompatible with protocol state" },
 	{ GSM411_RP_CAUSE_IE_NOTEXIST, "Information Element not existing" },
 	{ GSM411_RP_CAUSE_PROTOCOL_ERR, "Protocol Error" },

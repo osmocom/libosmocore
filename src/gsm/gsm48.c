@@ -170,7 +170,7 @@ static const struct value_string rr_cause_names[] = {
 	{ GSM48_RR_CAUSE_CALL_CLEARED,		"Call already cleared" },
 	{ GSM48_RR_CAUSE_SEMANT_INCORR,		"Semantically incorrect message" },
 	{ GSM48_RR_CAUSE_INVALID_MAND_INF,	"Invalid mandatory information" },
-	{ GSM48_RR_CAUSE_MSG_TYPE_N,		"Message type non-existant or not implemented" },
+	{ GSM48_RR_CAUSE_MSG_TYPE_N,		"Message type non-existent or not implemented" },
 	{ GSM48_RR_CAUSE_MSG_TYPE_N_COMPAT,	"Message type not compatible with protocol state" },
 	{ GSM48_RR_CAUSE_COND_IE_ERROR,		"Conditional IE error" },
 	{ GSM48_RR_CAUSE_NO_CELL_ALLOC_A,	"No cell allocation available" },
