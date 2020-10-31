@@ -348,6 +348,30 @@ static const struct osim_file_desc usim_ef_in_df_hnb[] = {
 		"Oprator Home NodeB Name"),
 };
 
+/* 31.102 Chapter 4.4.11 */
+static const struct osim_file_desc usim_ef_in_df_5gs[] = {
+	EF_TRANSP_N(0x4F01, 0x01, "EF.5GS3GPPLOCI", F_OPTIONAL, 20, 20,
+		"5GS 3GPP location information"),
+	EF_TRANSP_N(0x4F02, 0x02, "EF.5GSN3GPPLOCI", F_OPTIONAL, 20, 20,
+		"5GS non-3GPP location information"),
+	EF_LIN_FIX_N(0x4F03, 0x03, "EF.5GS3GPPNSC", F_OPTIONAL, 57, 57,
+		"5GS 3GPP Access NAS Security Context"),
+	EF_LIN_FIX_N(0x4F04, 0x04, "EF.5GSN3GPPNSC", F_OPTIONAL, 57, 57,
+		"5GS non-3GPP Access NAS Security Context"),
+	EF_TRANSP_N(0x4F05, 0x05, "EF.5GAUTHKEYS", F_OPTIONAL, 68, 68,
+		"5GS authentication keys"),
+	EF_TRANSP_N(0x4F06, 0x06, "EF.UAC_AIC", F_OPTIONAL, 4, 4,
+		"UAC Access Identities Configuration"),
+	EF_TRANSP_N(0x4F07, 0x07, "EF.SUCI_Calc_Info", F_OPTIONAL, 2, 64,
+		"Subscription Concealed Identifier Calculation Information"),
+	EF_LIN_FIX_N(0x4F08, 0x08, "EF.OPL5G", F_OPTIONAL, 10, 10,
+		"5GS Operator PLMN List"),
+	EF_TRANSP_N(0x4F09, 0x09, "EF.NSI", F_OPTIONAL, 1, 64,
+		"Network Specific Identifier"),
+	EF_TRANSP_N(0x4F0A, 0x0A, "EF.Routing_Indicator", F_OPTIONAL, 4, 4,
+		"Routing Indicator"),
+};
+
 /* Annex E - TS 101 220 */
 static const uint8_t adf_usim_aid[] = { 0xA0, 0x00, 0x00, 0x00, 0x87, 0x10, 0x02 };
 
@@ -375,6 +399,8 @@ struct osim_card_app_profile *osim_aprof_usim(void *ctx)
 			ARRAY_SIZE(usim_ef_in_df_mexe));
 	add_df_with_ef(uadf, 0x5F40, "DF.WLAN", usim_ef_in_df_wlan,
 			ARRAY_SIZE(usim_ef_in_df_wlan));
+	add_df_with_ef(uadf, 0x5FC0, "DF.5GS", usim_ef_in_df_5gs,
+			ARRAY_SIZE(usim_ef_in_df_5gs));
 	/* Home-NodeB (femtocell) */
 	add_df_with_ef(uadf, 0x5F50, "DF.HNB", usim_ef_in_df_hnb,
 			ARRAY_SIZE(usim_ef_in_df_hnb));
