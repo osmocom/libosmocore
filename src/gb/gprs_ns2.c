@@ -292,6 +292,14 @@ char *gprs_ns2_ll_str_c(const void *ctx, struct gprs_ns2_vc *nsvc)
 	return gprs_ns2_ll_str_buf(buf, NS2_LL_MAX_STR, nsvc);
 }
 
+/*! Return the current state name of a given NS-VC to a thread-local static buffer.
+ *  \param[in] nsvc NS-VC to return the state of
+ *  \return pointer to the string on success; NULL on error */
+const char *gprs_ns2_nsvc_state_name(struct gprs_ns2_vc *nsvc)
+{
+	return osmo_fsm_inst_state_name(nsvc->fi);
+}
+
 /*! Receive a primitive from the NS User (Gb).
  *  \param[in] nsi NS instance to which the primitive is issued
  *  \param[in] oph The primitive

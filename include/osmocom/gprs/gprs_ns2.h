@@ -192,9 +192,12 @@ struct gprs_ns2_vc *gprs_ns2_nsvc_by_sockaddr_nse(
 		struct gprs_ns2_nse *nse,
 		const struct osmo_sockaddr *sockaddr);
 void gprs_ns2_start_alive_all_nsvcs(struct gprs_ns2_nse *nse);
+
+/* VC information */
 const char *gprs_ns2_ll_str(struct gprs_ns2_vc *nsvc);
 char *gprs_ns2_ll_str_buf(char *buf, size_t buf_len, struct gprs_ns2_vc *nsvc);
 char *gprs_ns2_ll_str_c(const void *ctx, struct gprs_ns2_vc *nsvc);
+const char *gprs_ns2_nsvc_state_name(struct gprs_ns2_vc *nsvc);
 
 /* vty */
 int gprs_ns2_vty_init(struct gprs_ns2_inst *nsi,

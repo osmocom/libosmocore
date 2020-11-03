@@ -109,6 +109,7 @@ gprs_ns2_nse_nsei;
 gprs_ns2_nse_sns_remote;
 gprs_ns2_nsvc_by_nsvci;
 gprs_ns2_nsvc_by_sockaddr;
+gprs_ns2_nsvc_state_name;
 gprs_ns2_prim_strs;
 gprs_ns2_recv_prim;
 gprs_ns2_reset_persistent_nsvcs;
