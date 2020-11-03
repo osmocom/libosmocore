@@ -363,9 +363,11 @@ int gprs_ns2_recv_prim(struct gprs_ns2_inst *nsi, struct osmo_prim_hdr *oph)
  *  \param[in] bvci BVCI to which the status relates
  *  \param[in] cause The cause of the status */
 void ns2_prim_status_ind(struct gprs_ns2_nse *nse,
+			 struct gprs_ns2_vc *nsvc,
 			 uint16_t bvci,
 			 enum gprs_ns2_affecting_cause cause)
 {
+	char nsvc_str[NS2_LL_MAX_STR];
 	struct osmo_gprs_ns2_prim nsp = {};
 	nsp.nsei = nse->nsei;
 	nsp.bvci = bvci;
@@ -373,6 +375,9 @@ void ns2_prim_status_ind(struct gprs_ns2_nse *nse,
 	nsp.u.status.transfer = -1;
 	nsp.u.status.first = nse->first;
 	nsp.u.status.persistent = nse->persistent;
+	if (nsvc)
+		nsp.u.status.nsvc = gprs_ns2_ll_str_buf(nsvc_str, sizeof(nsvc_str), nsvc);
+
 	osmo_prim_init(&nsp.oph, SAP_NS, PRIM_NS_STATUS,
 			PRIM_OP_INDICATION, NULL);
 	nse->nsi->cb(&nsp.oph, nse->nsi->cb_data);
@@ -430,7 +435,7 @@ void gprs_ns2_free_nsvc(struct gprs_ns2_vc *nsvc)
 	if (!nsvc)
 		return;
 
-	ns2_prim_status_ind(nsvc->nse, 0, NS_AFF_CAUSE_VC_FAILURE);
+	ns2_prim_status_ind(nsvc->nse, nsvc, 0, NS_AFF_CAUSE_VC_FAILURE);
 
 	llist_del(&nsvc->list);
 	llist_del(&nsvc->blist);
@@ -608,7 +613,7 @@ void gprs_ns2_free_nse(struct gprs_ns2_nse *nse)
 		gprs_ns2_free_nsvc(nsvc);
 	}
 
-	ns2_prim_status_ind(nse, 0, NS_AFF_CAUSE_FAILURE);
+	ns2_prim_status_ind(nse, NULL, 0, NS_AFF_CAUSE_FAILURE);
 
 	llist_del(&nse->list);
 	if (nse->bss_sns_fi)
@@ -986,7 +991,7 @@ void ns2_nse_notify_unblocked(struct gprs_ns2_vc *nsvc, bool unblocked)
 	if (unblocked) {
 		/* this is the first unblocked NSVC on an unavailable NSE */
 		nse->alive = true;
-		ns2_prim_status_ind(nse, 0, NS_AFF_CAUSE_RECOVERY);
+		ns2_prim_status_ind(nse, NULL, 0, NS_AFF_CAUSE_RECOVERY);
 		nse->first = false;
 		return;
 	}
@@ -1004,7 +1009,7 @@ void ns2_nse_notify_unblocked(struct gprs_ns2_vc *nsvc, bool unblocked)
 
 	/* nse became unavailable */
 	nse->alive = false;
-	ns2_prim_status_ind(nse, 0, NS_AFF_CAUSE_FAILURE);
+	ns2_prim_status_ind(nse, NULL, 0, NS_AFF_CAUSE_FAILURE);
 }
 
 /*! Create a new GPRS NS instance

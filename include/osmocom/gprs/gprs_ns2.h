@@ -101,6 +101,7 @@ struct osmo_gprs_ns2_prim {
 		} congestion;
 		struct {
 			enum gprs_ns2_affecting_cause cause;
+			char *nsvc;
 			/* 48.016 5.2.2.6 transfer capability */
 			int transfer;
 			/* osmocom specific */

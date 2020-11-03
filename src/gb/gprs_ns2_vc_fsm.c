@@ -318,8 +318,11 @@ static void gprs_ns2_st_blocked(struct osmo_fsm_inst *fi, uint32_t event, void *
 static void gprs_ns2_st_unblocked_on_enter(struct osmo_fsm_inst *fi, uint32_t old_state)
 {
 	struct gprs_ns2_vc_priv *priv = fi->priv;
+	struct gprs_ns2_vc *nsvc = priv->nsvc;
+	struct gprs_ns2_nse *nse = nsvc->nse;
 
-	ns2_nse_notify_unblocked(priv->nsvc, true);
+	ns2_nse_notify_unblocked(nsvc, true);
+	ns2_prim_status_ind(nse, nsvc, 0, NS_AFF_CAUSE_VC_RECOVERY);
 }
 
 static void gprs_ns2_st_unblocked(struct osmo_fsm_inst *fi, uint32_t event, void *data)
