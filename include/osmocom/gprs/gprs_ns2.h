@@ -37,11 +37,11 @@ enum gprs_ns2_prim {
 	PRIM_NS_STATUS,
 };
 
-extern const struct value_string ns2_prim_strs[];
+extern const struct value_string gprs_ns2_prim_strs[];
 
 /*! Obtain a human-readable string for NS primitives */
 static inline const char *gprs_ns2_prim_str(enum gprs_ns2_prim val)
-{ return get_value_string(ns2_prim_strs, val); }
+{ return get_value_string(gprs_ns2_prim_strs, val); }
 
 /*! Osmocom NS primitives according to 48.016 5.2.2.4 Service primitves */
 enum gprs_ns2_congestion_cause {

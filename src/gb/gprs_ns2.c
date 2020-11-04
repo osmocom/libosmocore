@@ -206,7 +206,7 @@ const struct value_string gprs_ns2_aff_cause_prim_strs[] = {
 	{ 0, NULL }
 };
 
-const struct value_string ns2_prim_str[] = {
+const struct value_string gprs_ns2_prim_strs[] = {
 	{ PRIM_NS_UNIT_DATA,	"UNIT DATA" },
 	{ PRIM_NS_CONGESTION,	"CONGESTION" },
 	{ PRIM_NS_STATUS,	"STATUS" },
