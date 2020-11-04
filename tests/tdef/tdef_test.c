@@ -54,6 +54,7 @@ static struct osmo_tdef tdefs[] = {
 	{ .T=1006, .default_val=0, .unit=OSMO_TDEF_S, .desc="zero s" },
 	{ .T=1007, .default_val=0, .unit=OSMO_TDEF_M, .desc="zero m" },
 	{ .T=1008, .default_val=0, .unit=OSMO_TDEF_CUSTOM, .desc="zero" },
+	{ .T=1009, .default_val=0, .unit=OSMO_TDEF_US, .desc="zero us" },
 
 	{ .T=0, .default_val=1, .unit=OSMO_TDEF_CUSTOM, .desc="zero" },
 
@@ -111,7 +112,7 @@ static void test_tdef_get(bool test_range)
 	for (i = 0; i < ARRAY_SIZE(tdefs)-1; i++) {
 		unsigned int T = tdefs[i].T;
 		print_tdef_info(T);
-		for (as_unit = OSMO_TDEF_S; as_unit <= OSMO_TDEF_CUSTOM; as_unit++) {
+		for (as_unit = OSMO_TDEF_S; as_unit <= OSMO_TDEF_US; as_unit++) {
 			print_tdef_get_short(tdefs, T, as_unit);
 		}
 	}
@@ -122,7 +123,7 @@ static void test_tdef_get(bool test_range)
 	for (i = 0; i < ARRAY_SIZE(tdefs_range)-1; i++) {
 		unsigned int T = tdefs_range[i].T;
 		print_tdef_info(T);
-		for (as_unit = OSMO_TDEF_S; as_unit <= OSMO_TDEF_CUSTOM; as_unit++) {
+		for (as_unit = OSMO_TDEF_S; as_unit <= OSMO_TDEF_US; as_unit++) {
 			print_tdef_get_short(tdefs_range, T, as_unit);
 		}
 	}
@@ -136,6 +137,7 @@ static void test_tdef_get_nonexisting()
 	print_tdef_get(tdefs, 5, OSMO_TDEF_MS);
 	print_tdef_get(tdefs, 5, OSMO_TDEF_M);
 	print_tdef_get(tdefs, 5, OSMO_TDEF_CUSTOM);
+	print_tdef_get(tdefs, 5, OSMO_TDEF_US);
 }
 
 static void test_tdef_set_and_get()
@@ -152,6 +154,7 @@ static void test_tdef_set_and_get()
 	print_tdef_get_short(tdefs, 7, OSMO_TDEF_S);
 	print_tdef_get_short(tdefs, 7, OSMO_TDEF_M);
 	print_tdef_get_short(tdefs, 7, OSMO_TDEF_CUSTOM);
+	print_tdef_get_short(tdefs, 7, OSMO_TDEF_US);
 
 	printf("setting 7 = 420\n");
 	OSMO_ASSERT(osmo_tdef_set(tdefs, 7, 420, OSMO_TDEF_S) == 0);
@@ -160,6 +163,7 @@ static void test_tdef_set_and_get()
 	print_tdef_get_short(tdefs, 7, OSMO_TDEF_S);
 	print_tdef_get_short(tdefs, 7, OSMO_TDEF_M);
 	print_tdef_get_short(tdefs, 7, OSMO_TDEF_CUSTOM);
+	print_tdef_get_short(tdefs, 7, OSMO_TDEF_US);
 
 	printf("setting 7 = 10 (ERANGE)\n");
 	OSMO_ASSERT(!osmo_tdef_val_in_range(t, 10));
@@ -169,6 +173,7 @@ static void test_tdef_set_and_get()
 	print_tdef_get_short(tdefs, 7, OSMO_TDEF_S);
 	print_tdef_get_short(tdefs, 7, OSMO_TDEF_M);
 	print_tdef_get_short(tdefs, 7, OSMO_TDEF_CUSTOM);
+	print_tdef_get_short(tdefs, 7, OSMO_TDEF_US);
 
 	printf("setting 7 = 900 (ERANGE)\n");
 	OSMO_ASSERT(!osmo_tdef_val_in_range(t, 900));
@@ -178,6 +183,7 @@ static void test_tdef_set_and_get()
 	print_tdef_get_short(tdefs, 7, OSMO_TDEF_S);
 	print_tdef_get_short(tdefs, 7, OSMO_TDEF_M);
 	print_tdef_get_short(tdefs, 7, OSMO_TDEF_CUSTOM);
+	print_tdef_get_short(tdefs, 7, OSMO_TDEF_US);
 
 	printf("setting 23 = 50 (EEXIST)\n");
 	OSMO_ASSERT(osmo_tdef_set(tdefs, 23, 50, OSMO_TDEF_S) == -EEXIST);

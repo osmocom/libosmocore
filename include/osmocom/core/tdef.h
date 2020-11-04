@@ -40,6 +40,7 @@ enum osmo_tdef_unit {
 	OSMO_TDEF_MS,		/*!< milliseconds */
 	OSMO_TDEF_M,		/*!< minutes */
 	OSMO_TDEF_CUSTOM,	/*!< unspecified unit, explained in osmo_tdef.desc. */
+	OSMO_TDEF_US,		/*!< microseconds */
 };
 
 extern const struct value_string osmo_tdef_unit_names[];

@@ -93,6 +93,17 @@ static unsigned long osmo_tdef_factor(enum osmo_tdef_unit a, enum osmo_tdef_unit
 		return 1;
 
 	switch (b) {
+	case OSMO_TDEF_US:
+		switch (a) {
+		case OSMO_TDEF_MS:
+			return 1000;
+		case OSMO_TDEF_S:
+			return 1000*1000;
+		case OSMO_TDEF_M:
+			return 60*1000*1000;
+		default:
+			return 0;
+		}
 	case OSMO_TDEF_MS:
 		switch (a) {
 		case OSMO_TDEF_S:
@@ -351,6 +362,7 @@ const struct value_string osmo_tdef_unit_names[] = {
 	{ OSMO_TDEF_MS, "ms" },
 	{ OSMO_TDEF_M, "m" },
 	{ OSMO_TDEF_CUSTOM, "custom-unit" },
+	{ OSMO_TDEF_US, "us" },
 	{}
 };
 
