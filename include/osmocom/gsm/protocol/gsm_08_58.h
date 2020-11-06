@@ -337,6 +337,9 @@ enum abis_rsl_ie {
 	RSL_IE_SIEMENS_HIGHEST_RATE	= 0x4e,
 	RSL_IE_SIEMENS_SUGGESTED_RATE	= 0x4f,
 
+	/* Osmocom specific */
+	RSL_IE_OSMO_REP_ACCH_CAP= 0x60,
+
 	/* ip.access */
 	RSL_IE_IPAC_SRTP_CONFIG	= 0xe0,
 	RSL_IE_IPAC_PROXY_UDP	= 0xe1,
