@@ -245,39 +245,7 @@ DEFUN(cfg_ns, cfg_ns_cmd,
 
 static void dump_nsvc(struct vty *vty, struct gprs_ns2_vc *nsvc, bool stats)
 {
-	struct osmo_sockaddr_str remote;
-	struct osmo_sockaddr_str local;
-	const struct osmo_sockaddr *sockaddr;
-
-	switch (nsvc->ll) {
-	case GPRS_NS_LL_UDP: {
-		sockaddr = gprs_ns2_ip_vc_remote(nsvc);
-		if (!sockaddr) {
-			vty_out(vty, "unknown");
-			break;
-		}
-
-		if (osmo_sockaddr_str_from_sockaddr(
-					&remote,
-					&sockaddr->u.sas)) {
-			vty_out(vty, "unknown");
-			break;
-		}
-
-		vty_out(vty, "%s:%u <> %s:%u", local.ip, local.port, remote.ip, remote.port);
-		break;
-	}
-	case GPRS_NS_LL_FR_GRE:
-		/* TODO: implement dump_nse for FR GRE */
-	case GPRS_NS_LL_E1:
-		/* TODO: implement dump_nse for E1 */
-		break;
-	}
-
-	vty_out(vty, "Remote: %s ",
-		 gprs_ns2_ll_str(nsvc));
-
-	vty_out(vty, "%s%s", nsvc->ll == GPRS_NS_LL_UDP ? "UDP" : "FR-GRE", VTY_NEWLINE);
+	vty_out(vty, " %s%s", gprs_ns2_ll_str(nsvc), VTY_NEWLINE);
 
 	if (stats) {
 		vty_out_rate_ctr_group(vty, " ", nsvc->ctrg);
