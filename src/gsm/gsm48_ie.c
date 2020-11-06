@@ -34,6 +34,7 @@
 #include <osmocom/core/msgb.h>
 #include <osmocom/gsm/tlv.h>
 #include <osmocom/gsm/mncc.h>
+#include <osmocom/core/bitvec.h>
 #include <osmocom/gsm/protocol/gsm_04_08.h>
 #include <osmocom/gsm/gsm48_ie.h>
 
@@ -1296,6 +1297,251 @@ int gsm48_decode_freq_list(struct gsm_sysinfo_freq *f, uint8_t *cd,
 
 		return 0;
 	}
+
+	return 0;
+}
+
+/*! Decode 3GPP TS 24.008 Mobile Station Classmark 3 (10.5.1.7).
+ *  \param[out] classmark3_out user provided memory to store decoded classmark3.
+ *  \param[in] classmark3 pointer to memory that contains the raw classmark bits.
+ *  \param[in] classmark3_len length in bytes of the memory where classmark3 points to.
+ *  \returns 0 on success; negative on error. */
+int gsm48_decode_classmark3(struct gsm48_classmark3 *classmark3_out,
+			    const uint8_t *classmark3, size_t classmark3_len)
+{
+	struct bitvec bv;
+	uint8_t data[255];
+	struct gsm48_classmark3 *cm3 = classmark3_out;
+
+	/* if cm3 gets extended by spec, it will be truncated, but 255 bytes
+	 * should be more than enough. */
+	if (classmark3_len > sizeof(data))
+		classmark3_len = sizeof(data);
+
+	memset(&bv, 0, sizeof(bv));
+	memset(data, 0, sizeof(data));
+	memset(classmark3_out, 0, sizeof(*classmark3_out));
+
+	memcpy(data, classmark3, classmark3_len);
+	bv.data = (uint8_t*) data;
+	bv.data_len = sizeof(data);
+
+	/* Parse bit vector, see also: 3GPP TS 24.008, section 10.5.1.7 */
+	bitvec_get_uint(&bv, 1);
+	cm3->mult_band_supp = bitvec_get_uint(&bv, 3);
+	switch (cm3->mult_band_supp) {
+	case 0x00:
+		cm3->a5_bits = bitvec_get_uint(&bv, 4);
+		break;
+	case 0x05:
+	case 0x06:
+		cm3->a5_bits = bitvec_get_uint(&bv, 4);
+		cm3->assoc_radio_cap_2 = bitvec_get_uint(&bv, 4);
+		cm3->assoc_radio_cap_1 = bitvec_get_uint(&bv, 4);
+		break;
+	case 0x01:
+	case 0x02:
+	case 0x04:
+		cm3->a5_bits = bitvec_get_uint(&bv, 4);
+		bitvec_get_uint(&bv, 4);
+		cm3->assoc_radio_cap_1 = bitvec_get_uint(&bv, 4);
+		break;
+	default:
+		return -1;
+	}
+
+	cm3->r_support.present = bitvec_get_uint(&bv, 1);
+	if (cm3->r_support.present)
+		cm3->r_support.r_gsm_assoc_radio_cap = bitvec_get_uint(&bv, 3);
+
+	cm3->hscsd_mult_slot_cap.present = bitvec_get_uint(&bv, 1);
+	if (cm3->hscsd_mult_slot_cap.present)
+		cm3->hscsd_mult_slot_cap.class = bitvec_get_uint(&bv, 5);
+
+	cm3->ucs2_treatment = bitvec_get_uint(&bv, 1);
+	cm3->extended_meas_cap = bitvec_get_uint(&bv, 1);
+
+	cm3->ms_meas_cap.present = bitvec_get_uint(&bv, 1);
+	if (cm3->ms_meas_cap.present) {
+		cm3->ms_meas_cap.sms_value = bitvec_get_uint(&bv, 4);
+		cm3->ms_meas_cap.sm_value = bitvec_get_uint(&bv, 4);
+	}
+
+	cm3->ms_pos_method_cap.present = bitvec_get_uint(&bv, 1);
+	if (cm3->ms_pos_method_cap.present)
+		cm3->ms_pos_method_cap.method = bitvec_get_uint(&bv, 5);
+
+	cm3->ecsd_multislot_cap.present = bitvec_get_uint(&bv, 1);
+	if (cm3->ecsd_multislot_cap.present)
+		cm3->ecsd_multislot_cap.class = bitvec_get_uint(&bv, 5);
+
+	cm3->psk8_struct.present = bitvec_get_uint(&bv, 1);
+	if (cm3->psk8_struct.present) {
+		cm3->psk8_struct.mod_cap = bitvec_get_uint(&bv, 1);
+
+		cm3->psk8_struct.rf_pwr_cap_1.present = bitvec_get_uint(&bv, 1);
+		if (cm3->psk8_struct.rf_pwr_cap_1.present) {
+			cm3->psk8_struct.rf_pwr_cap_1.value =
+			    bitvec_get_uint(&bv, 2);
+		}
+
+		cm3->psk8_struct.rf_pwr_cap_2.present = bitvec_get_uint(&bv, 1);
+		if (cm3->psk8_struct.rf_pwr_cap_2.present) {
+			cm3->psk8_struct.rf_pwr_cap_2.value =
+			    bitvec_get_uint(&bv, 2);
+		}
+	}
+
+	cm3->gsm_400_bands_supp.present = bitvec_get_uint(&bv, 1);
+	if (cm3->gsm_400_bands_supp.present) {
+		cm3->gsm_400_bands_supp.value = bitvec_get_uint(&bv, 2);
+		if (cm3->gsm_400_bands_supp.value == 0x00)
+			return -1;
+		cm3->gsm_400_bands_supp.assoc_radio_cap =
+		    bitvec_get_uint(&bv, 4);
+	}
+
+	cm3->gsm_850_assoc_radio_cap.present = bitvec_get_uint(&bv, 1);
+	if (cm3->gsm_850_assoc_radio_cap.present)
+		cm3->gsm_850_assoc_radio_cap.value = bitvec_get_uint(&bv, 4);
+
+	cm3->gsm_1900_assoc_radio_cap.present = bitvec_get_uint(&bv, 1);
+	if (cm3->gsm_1900_assoc_radio_cap.present)
+		cm3->gsm_1900_assoc_radio_cap.value = bitvec_get_uint(&bv, 4);
+
+	cm3->umts_fdd_rat_cap = bitvec_get_uint(&bv, 1);
+	cm3->umts_tdd_rat_cap = bitvec_get_uint(&bv, 1);
+	cm3->cdma200_rat_cap = bitvec_get_uint(&bv, 1);
+
+	cm3->dtm_gprs_multislot_cap.present = bitvec_get_uint(&bv, 1);
+	if (cm3->dtm_gprs_multislot_cap.present) {
+		cm3->dtm_gprs_multislot_cap.class = bitvec_get_uint(&bv, 2);
+		cm3->dtm_gprs_multislot_cap.single_slot_dtm =
+		    bitvec_get_uint(&bv, 1);
+		cm3->dtm_gprs_multislot_cap.dtm_egprs_multislot_cap.present =
+		    bitvec_get_uint(&bv, 1);
+		if (cm3->dtm_gprs_multislot_cap.dtm_egprs_multislot_cap.present)
+			cm3->dtm_gprs_multislot_cap.dtm_egprs_multislot_cap.
+			    class = bitvec_get_uint(&bv, 2);
+	}
+
+	/* Release 4 starts here. */
+	cm3->single_band_supp.present = bitvec_get_uint(&bv, 1);
+	if (cm3->single_band_supp.present)
+		cm3->single_band_supp.value = bitvec_get_uint(&bv, 4);
+
+	cm3->gsm_750_assoc_radio_cap.present = bitvec_get_uint(&bv, 1);
+	if (cm3->gsm_750_assoc_radio_cap.present)
+		cm3->gsm_750_assoc_radio_cap.value = bitvec_get_uint(&bv, 4);
+
+	cm3->umts_1_28_mcps_tdd_rat_cap = bitvec_get_uint(&bv, 1);
+	cm3->geran_feature_package = bitvec_get_uint(&bv, 1);
+
+	cm3->extended_dtm_gprs_multislot_cap.present = bitvec_get_uint(&bv, 1);
+	if (cm3->extended_dtm_gprs_multislot_cap.present) {
+		cm3->extended_dtm_gprs_multislot_cap.class =
+		    bitvec_get_uint(&bv, 2);
+		cm3->extended_dtm_gprs_multislot_cap.
+		    extended_dtm_egprs_multislot_cap.present =
+		    bitvec_get_uint(&bv, 1);
+		if (cm3->extended_dtm_gprs_multislot_cap.
+		    extended_dtm_egprs_multislot_cap.present)
+			cm3->extended_dtm_gprs_multislot_cap.
+			    extended_dtm_egprs_multislot_cap.class =
+			    bitvec_get_uint(&bv, 2);
+	}
+
+	/* Release 5 starts here */
+	cm3->high_multislot_cap.present = bitvec_get_uint(&bv, 1);
+	if (cm3->high_multislot_cap.present)
+		cm3->high_multislot_cap.value = bitvec_get_uint(&bv, 2);
+
+	/* This used to be the GERAN Iu mode support bit, but the newer spec
+	 * releases say that it should not be used (always zero), however
+	 * we will just ignore tha state of this bit. */
+	bitvec_get_uint(&bv, 1);
+
+	cm3->geran_feature_package_2 = bitvec_get_uint(&bv, 1);
+	cm3->gmsk_multislot_power_prof = bitvec_get_uint(&bv, 2);
+	cm3->psk8_multislot_power_prof = bitvec_get_uint(&bv, 2);
+
+	/* Release 6 starts here */
+	cm3->t_gsm_400_bands_supp.present = bitvec_get_uint(&bv, 1);
+	if (cm3->t_gsm_400_bands_supp.present) {
+		cm3->t_gsm_400_bands_supp.value = bitvec_get_uint(&bv, 2);
+		cm3->t_gsm_400_bands_supp.assoc_radio_cap =
+		    bitvec_get_uint(&bv, 4);
+	}
+
+	/* This used to be T-GSM 900 associated radio capability, but the
+	 * newer spec releases say that this bit should not be used, but if
+	 * it is used by some MS anyway we must assume that there is data
+	 * we have to override. */
+	if (bitvec_get_uint(&bv, 1))
+		bitvec_get_uint(&bv, 4);
+
+	cm3->dl_advanced_rx_perf = bitvec_get_uint(&bv, 2);
+	cm3->dtm_enhancements_cap = bitvec_get_uint(&bv, 1);
+
+	cm3->dtm_gprs_high_multislot_cap.present = bitvec_get_uint(&bv, 1);
+	if (cm3->dtm_gprs_high_multislot_cap.present) {
+		cm3->dtm_gprs_high_multislot_cap.class =
+		    bitvec_get_uint(&bv, 3);
+		cm3->dtm_gprs_high_multislot_cap.offset_required =
+		    bitvec_get_uint(&bv, 1);
+		cm3->dtm_gprs_high_multislot_cap.dtm_egprs_high_multislot_cap.
+		    present = bitvec_get_uint(&bv, 1);
+		if (cm3->dtm_gprs_high_multislot_cap.
+		    dtm_egprs_high_multislot_cap.present)
+			cm3->dtm_gprs_high_multislot_cap.
+			    dtm_egprs_high_multislot_cap.class =
+			    bitvec_get_uint(&bv, 3);
+	}
+
+	cm3->repeated_acch_capability = bitvec_get_uint(&bv, 1);
+
+	/* Release 7 starts here */
+	cm3->gsm_710_assoc_radio_cap.present = bitvec_get_uint(&bv, 1);
+	if (cm3->gsm_710_assoc_radio_cap.present)
+		cm3->gsm_710_assoc_radio_cap.value = bitvec_get_uint(&bv, 4);
+
+	cm3->t_gsm_810_assoc_radio_cap.present = bitvec_get_uint(&bv, 1);
+	if (cm3->t_gsm_810_assoc_radio_cap.present)
+		cm3->t_gsm_810_assoc_radio_cap.value = bitvec_get_uint(&bv, 4);
+
+	cm3->ciphering_mode_setting_cap = bitvec_get_uint(&bv, 1);
+	cm3->add_pos_cap = bitvec_get_uint(&bv, 1);
+
+	/* Release 8 starts here */
+	cm3->e_utra_fdd_supp = bitvec_get_uint(&bv, 1);
+	cm3->e_utra_tdd_supp = bitvec_get_uint(&bv, 1);
+	cm3->e_utra_meas_rep_supp = bitvec_get_uint(&bv, 1);
+	cm3->prio_resel_supp = bitvec_get_uint(&bv, 1);
+
+	/* Release 9 starts here */
+	cm3->utra_csg_cells_rep = bitvec_get_uint(&bv, 1);
+
+	cm3->vamos_level = bitvec_get_uint(&bv, 2);
+
+	/* Release 10 starts here */
+	cm3->tighter_capability = bitvec_get_uint(&bv, 2);
+	cm3->sel_ciph_dl_sacch = bitvec_get_uint(&bv, 1);
+
+	/* Release 11 starts here */
+	cm3->cs_ps_srvcc_geran_utra = bitvec_get_uint(&bv, 2);
+	cm3->cs_ps_srvcc_geran_eutra = bitvec_get_uint(&bv, 2);
+
+	cm3->geran_net_sharing = bitvec_get_uint(&bv, 1);
+	cm3->e_utra_wb_rsrq_meas_supp = bitvec_get_uint(&bv, 1);
+
+	/* Release 12 starts here */
+	cm3->er_band_support = bitvec_get_uint(&bv, 1);
+	cm3->utra_mult_band_ind_supp = bitvec_get_uint(&bv, 1);
+	cm3->e_utra_mult_band_ind_supp = bitvec_get_uint(&bv, 1);
+	cm3->extended_tsc_set_cap_supp = bitvec_get_uint(&bv, 1);
+
+	/* Late addition of a release 11 feature */
+	cm3->extended_earfcn_val_range = bitvec_get_uint(&bv, 1);
 
 	return 0;
 }

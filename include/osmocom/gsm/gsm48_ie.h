@@ -119,3 +119,7 @@ struct gsm_sysinfo_freq {
 /* decode "Cell Channel Description" (10.5.2.1b) and other frequency lists */
 int gsm48_decode_freq_list(struct gsm_sysinfo_freq *f, uint8_t *cd,
 			   uint8_t len, uint8_t mask, uint8_t frqt);
+
+/* decode "CSN.1 encoded Classmark 3" (10.5.1.7) */
+int gsm48_decode_classmark3(struct gsm48_classmark3 *classmark3_out,
+			    const uint8_t *classmark3, size_t classmark3_len);
