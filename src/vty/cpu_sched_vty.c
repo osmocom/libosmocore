@@ -371,7 +371,7 @@ static int my_sched_setaffinity(enum sched_vty_thread_id tid_type, pid_t pid,
 
 }
 
-DEFUN(cfg_sched_cpu_affinity, cfg_sched_cpu_affinity_cmd,
+DEFUN_ATTR(cfg_sched_cpu_affinity, cfg_sched_cpu_affinity_cmd,
 	"cpu-affinity (self|all|<0-4294967295>|THREADNAME) CPUHEXMASK [delay]",
 	"Set CPU affinity mask on a (group of) thread(s)\n"
 	"Set CPU affinity mask on thread running the VTY\n"
@@ -379,7 +379,8 @@ DEFUN(cfg_sched_cpu_affinity, cfg_sched_cpu_affinity_cmd,
 	"Set CPU affinity mask on a thread with specified PID\n"
 	"Set CPU affinity mask on a thread with specified thread name\n"
 	"CPU affinity mask\n"
-	"If set, delay applying the affinity mask now and let the app handle it at a later point\n")
+	"If set, delay applying the affinity mask now and let the app handle it at a later point\n",
+	CMD_ATTR_IMMEDIATE)
 {
 	const char* str_who = argv[0];
 	const char *str_mask = argv[1];
@@ -476,11 +477,12 @@ static int set_sched_rr(unsigned int prio)
 	return 0;
 }
 
-DEFUN(cfg_sched_policy, cfg_sched_policy_cmd,
+DEFUN_ATTR(cfg_sched_policy, cfg_sched_policy_cmd,
 	"policy rr <1-32>",
 	"Set the scheduling policy to use for the process\n"
 	"Use the SCHED_RR real-time scheduling algorithm\n"
-	"Set the SCHED_RR real-time priority\n")
+	"Set the SCHED_RR real-time priority\n",
+	CMD_ATTR_IMMEDIATE)
 {
 	sched_vty_opts->sched_rr_prio = atoi(argv[0]);
 
