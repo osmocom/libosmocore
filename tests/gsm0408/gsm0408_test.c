@@ -327,6 +327,203 @@ static void test_lai_encode_decode(void)
 	}
 }
 
+static void dump_cm3(struct gsm48_classmark3 *cm3)
+{
+	printf("mult_band_supp=%02x\n", cm3->mult_band_supp);
+	printf("a5_bits=%02x\n", cm3->a5_bits);
+	printf("assoc_radio_cap_1=%02x\n", cm3->assoc_radio_cap_1);
+	printf("assoc_radio_cap_2=%02x\n", cm3->assoc_radio_cap_2);
+	printf("\n");
+	printf("r_support.present=%u\n", cm3->r_support.present);
+	printf("r_support.r_gsm_assoc_radio_cap=%02x\n",
+	       cm3->r_support.r_gsm_assoc_radio_cap);
+	printf("\n");
+	printf("hscsd_mult_slot_cap.present=%u\n",
+	       cm3->hscsd_mult_slot_cap.present);
+	printf("hscsd_mult_slot_cap.mslot_class=%02x\n",
+	       cm3->hscsd_mult_slot_cap.mslot_class);
+	printf("\n");
+	printf("ucs2_treatment=%u\n", cm3->ucs2_treatment);
+	printf("extended_meas_cap=%u\n", cm3->extended_meas_cap);
+	printf("\n");
+	printf("ms_meas_cap.present=%u\n", cm3->ms_meas_cap.present);
+	printf("ms_meas_cap.sms_value=%02x\n", cm3->ms_meas_cap.sms_value);
+	printf("ms_meas_cap.sm_value=%02x\n", cm3->ms_meas_cap.sm_value);
+	printf("\n");
+	printf("ms_pos_method_cap.present=%u\n",
+	       cm3->ms_pos_method_cap.present);
+	printf("ms_pos_method_cap.method=%02x\n",
+	       cm3->ms_pos_method_cap.method);
+	printf("\n");
+	printf("ecsd_multislot_cap.present=%u\n",
+	       cm3->ecsd_multislot_cap.present);
+	printf("ecsd_multislot_cap.mslot_class=%02x\n",
+	       cm3->ecsd_multislot_cap.mslot_class);
+	printf("\n");
+	printf("psk8_struct.present=%u\n", cm3->psk8_struct.present);
+	printf("psk8_struct.mod_cap=%u\n", cm3->psk8_struct.mod_cap);
+	printf("psk8_struct.rf_pwr_cap_1.present=%u\n",
+	       cm3->psk8_struct.rf_pwr_cap_1.present);
+	printf("psk8_struct.rf_pwr_cap_1.value=%02x\n",
+	       cm3->psk8_struct.rf_pwr_cap_1.value);
+	printf("psk8_struct.rf_pwr_cap_2.present=%u\n",
+	       cm3->psk8_struct.rf_pwr_cap_2.present);
+	printf("psk8_struct.rf_pwr_cap_2.value=%02x\n",
+	       cm3->psk8_struct.rf_pwr_cap_2.value);
+	printf("\n");
+	printf("gsm_400_bands_supp.present=%u\n",
+	       cm3->gsm_400_bands_supp.present);
+	printf("gsm_400_bands_supp.value=%02x\n",
+	       cm3->gsm_400_bands_supp.value);
+	printf("gsm_400_bands_supp.assoc_radio_cap=%02x\n",
+	       cm3->gsm_400_bands_supp.assoc_radio_cap);
+	printf("\n");
+	printf("gsm_850_assoc_radio_cap.present=%u\n",
+	       cm3->gsm_850_assoc_radio_cap.present);
+	printf("gsm_850_assoc_radio_cap.value=%02x\n",
+	       cm3->gsm_850_assoc_radio_cap.value);
+	printf("\n");
+	printf("gsm_1900_assoc_radio_cap.present=%u\n",
+	       cm3->gsm_1900_assoc_radio_cap.present);
+	printf("gsm_1900_assoc_radio_cap.value=%02x\n",
+	       cm3->gsm_1900_assoc_radio_cap.value);
+	printf("\n");
+	printf("umts_fdd_rat_cap=%u\n", cm3->umts_fdd_rat_cap);
+	printf("umts_tdd_rat_cap=%u\n", cm3->umts_tdd_rat_cap);
+	printf("cdma200_rat_cap=%u\n", cm3->cdma200_rat_cap);
+	printf("\n");
+	printf("dtm_gprs_multislot_cap.present=%u\n",
+	       cm3->dtm_gprs_multislot_cap.present);
+	printf("dtm_gprs_multislot_cap.mslot_class=%02x\n",
+	       cm3->dtm_gprs_multislot_cap.mslot_class);
+	printf("dtm_gprs_multislot_cap.single_slot_dtm=%u\n",
+	       cm3->dtm_gprs_multislot_cap.single_slot_dtm);
+	printf("dtm_gprs_multislot_cap.dtm_egprs_multislot_cap.present=%u\n",
+	       cm3->dtm_gprs_multislot_cap.dtm_egprs_multislot_cap.present);
+	printf("dtm_gprs_multislot_cap.dtm_egprs_multislot_cap.mslot_class=%02x\n",
+	       cm3->dtm_gprs_multislot_cap.dtm_egprs_multislot_cap.mslot_class);
+	printf("\n");
+	printf("single_band_supp.present=%u\n", cm3->single_band_supp.present);
+	printf("single_band_supp.value=%u\n", cm3->single_band_supp.value);
+	printf("\n");
+	printf("gsm_750_assoc_radio_cap.present=%u\n",
+	       cm3->gsm_750_assoc_radio_cap.present);
+	printf("gsm_750_assoc_radio_cap.value=%02x\n",
+	       cm3->gsm_750_assoc_radio_cap.value);
+	printf("\n");
+	printf("umts_1_28_mcps_tdd_rat_cap=%u\n",
+	       cm3->umts_1_28_mcps_tdd_rat_cap);
+	printf("geran_feature_package=%u\n", cm3->geran_feature_package);
+	printf("\n");
+	printf("extended_dtm_gprs_multislot_cap.present=%u\n",
+	       cm3->extended_dtm_gprs_multislot_cap.present);
+	printf("extended_dtm_gprs_multislot_cap.mslot_class=%02x\n",
+	       cm3->extended_dtm_gprs_multislot_cap.mslot_class);
+	printf
+	    ("extended_dtm_gprs_multislot_cap.dtm_egprs_multislot_cap.present=%u\n",
+	     cm3->extended_dtm_gprs_multislot_cap.
+	     extended_dtm_egprs_multislot_cap.present);
+	printf
+	    ("extended_dtm_gprs_multislot_cap.dtm_egprs_multislot_cap.mslot_class=%02x\n",
+	     cm3->extended_dtm_gprs_multislot_cap.
+	     extended_dtm_egprs_multislot_cap.mslot_class);
+	printf("\n");
+	printf("high_multislot_cap.present=%u\n",
+	       cm3->high_multislot_cap.present);
+	printf("high_multislot_cap.value=%02x\n",
+	       cm3->high_multislot_cap.value);
+	printf("\n");
+	printf("geran_feature_package_2=%u\n", cm3->geran_feature_package_2);
+	printf("gmsk_multislot_power_prof=%02x\n",
+	       cm3->gmsk_multislot_power_prof);
+	printf("psk8_multislot_power_prof=%02x\n",
+	       cm3->psk8_multislot_power_prof);
+	printf("\n");
+	printf("t_gsm_400_bands_supp.present=%u\n",
+	       cm3->t_gsm_400_bands_supp.present);
+	printf("t_gsm_400_bands_supp.value=%02x\n",
+	       cm3->t_gsm_400_bands_supp.value);
+	printf("t_gsm_400_bands_supp.assoc_radio_cap=%02x\n",
+	       cm3->t_gsm_400_bands_supp.assoc_radio_cap);
+	printf("\n");
+	printf("dl_advanced_rx_perf=%02x\n", cm3->dl_advanced_rx_perf);
+	printf("dtm_enhancements_cap=%u\n", cm3->dtm_enhancements_cap);
+	printf("\n");
+	printf("dtm_gprs_high_multislot_cap.present=%u\n",
+	       cm3->dtm_gprs_high_multislot_cap.present);
+	printf("dtm_gprs_high_multislot_cap.mslot_class=%02x\n",
+	       cm3->dtm_gprs_high_multislot_cap.mslot_class);
+	printf("dtm_gprs_high_multislot_cap.offset_required=%u\n",
+	       cm3->dtm_gprs_high_multislot_cap.offset_required);
+	printf
+	    ("dtm_gprs_high_multislot_cap.dtm_egprs_high_multislot_cap.present=%u\n",
+	     cm3->dtm_gprs_high_multislot_cap.dtm_egprs_high_multislot_cap.
+	     present);
+	printf
+	    ("dtm_gprs_high_multislot_cap.dtm_egprs_high_multislot_cap.mslot_class=%02x\n",
+	     cm3->dtm_gprs_high_multislot_cap.dtm_egprs_high_multislot_cap.
+	     mslot_class);
+	printf("\n");
+	printf("repeated_acch_capability=%u\n", cm3->repeated_acch_capability);
+	printf("\n");
+	printf("gsm_710_assoc_radio_cap.present=%u\n",
+	       cm3->gsm_710_assoc_radio_cap.present);
+	printf("gsm_710_assoc_radio_cap.value=%02x\n",
+	       cm3->gsm_710_assoc_radio_cap.value);
+	printf("\n");
+	printf("t_gsm_810_assoc_radio_cap.present=%u\n",
+	       cm3->t_gsm_810_assoc_radio_cap.present);
+	printf("t_gsm_810_assoc_radio_cap.value=%02x\n",
+	       cm3->t_gsm_810_assoc_radio_cap.value);
+	printf("\n");
+	printf("ciphering_mode_setting_cap=%u\n",
+	       cm3->ciphering_mode_setting_cap);
+	printf("add_pos_cap=%u\n", cm3->add_pos_cap);
+	printf("e_utra_fdd_supp=%u\n", cm3->e_utra_fdd_supp);
+	printf("e_utra_tdd_supp=%u\n", cm3->e_utra_tdd_supp);
+	printf("e_utra_meas_rep_supp=%u\n", cm3->e_utra_meas_rep_supp);
+	printf("prio_resel_supp=%u\n", cm3->prio_resel_supp);
+	printf("utra_csg_cells_rep=%u\n", cm3->utra_csg_cells_rep);
+	printf("vamos_level=%02x\n", cm3->vamos_level);
+	printf("tighter_capability=%02x\n", cm3->tighter_capability);
+	printf("sel_ciph_dl_sacch=%u\n", cm3->sel_ciph_dl_sacch);
+	printf("cs_ps_srvcc_geran_utra=%02x\n", cm3->cs_ps_srvcc_geran_utra);
+	printf("cs_ps_srvcc_geran_eutra=%02x\n", cm3->cs_ps_srvcc_geran_eutra);
+	printf("geran_net_sharing=%u\n", cm3->geran_net_sharing);
+	printf("e_utra_wb_rsrq_meas_supp=%u\n", cm3->e_utra_wb_rsrq_meas_supp);
+	printf("er_band_support=%u\n", cm3->er_band_support);
+	printf("utra_mult_band_ind_supp=%u\n", cm3->utra_mult_band_ind_supp);
+	printf("e_utra_mult_band_ind_supp=%u\n",
+	       cm3->e_utra_mult_band_ind_supp);
+	printf("extended_tsc_set_cap_supp=%u\n",
+	       cm3->extended_tsc_set_cap_supp);
+	printf("extended_earfcn_val_range=%u\n",
+	       cm3->extended_earfcn_val_range);
+}
+
+static void test_decode_classmark3(void)
+{
+	struct gsm48_classmark3 cm3;
+	const uint8_t cm3_1[] = { 0x60, 0x14, 0x04, 0x2f, 0x65, 0x00, 0x20, 0x03, 0x40, 0x4a };
+	const uint8_t cm3_2[] = { 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55, 0x55};
+	const uint8_t cm3_3[] = { 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa};
+
+	printf("=====cm3_1=====\n");
+        gsm48_decode_classmark3(&cm3, cm3_1, sizeof(cm3_1));
+	dump_cm3(&cm3);
+	printf("\n");
+
+	printf("=====cm3_2=====\n");
+        gsm48_decode_classmark3(&cm3, cm3_2, sizeof(cm3_2));
+	dump_cm3(&cm3);
+	printf("\n");
+
+	printf("=====cm3_3=====\n");
+        gsm48_decode_classmark3(&cm3, cm3_3, sizeof(cm3_3));
+	dump_cm3(&cm3);
+	printf("\n");
+}
+
 static void test_mid_from_tmsi(void)
 {
 	static const uint8_t res[] = { 0x17, 0x05, 0xf4, 0xaa, 0xbb, 0xcc, 0xdd };
@@ -1550,6 +1747,7 @@ int main(int argc, char **argv)
 	test_bcd_number_encode_decode();
 	test_ra_cap();
 	test_lai_encode_decode();
+	test_decode_classmark3();
 
 	test_si_range_helpers();
 	test_arfcn_filter();

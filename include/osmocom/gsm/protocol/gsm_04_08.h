@@ -58,6 +58,175 @@ struct gsm48_classmark2 {
 #endif
 } __attribute__ ((packed));
 
+/* Chapter 10.5.1.7 */
+struct gsm48_classmark3 {
+	uint8_t a5_bits;
+	uint8_t mult_band_supp;
+	uint8_t assoc_radio_cap_1;
+	uint8_t assoc_radio_cap_2;
+
+	struct {
+		bool present;
+		uint8_t r_gsm_assoc_radio_cap;
+	} r_support;
+
+	struct {
+		bool present;
+		uint8_t mslot_class;
+	} hscsd_mult_slot_cap;
+
+	bool ucs2_treatment;
+	bool extended_meas_cap;
+
+	struct {
+		bool present;
+		uint8_t sms_value;
+		uint8_t sm_value;
+	} ms_meas_cap;
+
+	struct {
+		bool present;
+		uint8_t method;
+	} ms_pos_method_cap;
+
+	struct {
+		bool present;
+		uint8_t mslot_class;
+	} ecsd_multislot_cap;
+
+	struct {
+		bool present;
+		bool mod_cap;
+
+		struct {
+			bool present;
+			uint8_t value;
+		} rf_pwr_cap_1;
+
+		struct {
+			bool present;
+			uint8_t value;
+		} rf_pwr_cap_2;
+
+	} psk8_struct;
+
+	struct {
+		bool present;
+		uint8_t value;
+		uint8_t assoc_radio_cap;
+	} gsm_400_bands_supp;
+
+	struct {
+		bool present;
+		uint8_t value;
+	} gsm_850_assoc_radio_cap;
+
+	struct {
+		bool present;
+		uint8_t value;
+	} gsm_1900_assoc_radio_cap;
+
+	bool umts_fdd_rat_cap;
+	bool umts_tdd_rat_cap;
+	bool cdma200_rat_cap;
+
+	struct {
+		bool present;
+		uint8_t mslot_class;
+		bool single_slot_dtm;
+		struct {
+			bool present;
+			uint8_t mslot_class;
+		} dtm_egprs_multislot_cap;
+	} dtm_gprs_multislot_cap;
+
+	struct {
+		bool present;
+		uint8_t value;
+	} single_band_supp;
+
+	struct {
+		bool present;
+		uint8_t value;
+	} gsm_750_assoc_radio_cap;
+
+	bool umts_1_28_mcps_tdd_rat_cap;
+	bool geran_feature_package;
+
+	struct {
+		bool present;
+		uint8_t mslot_class;
+		struct {
+			bool present;
+			uint8_t mslot_class;
+		} extended_dtm_egprs_multislot_cap;
+	} extended_dtm_gprs_multislot_cap;
+
+	struct {
+		bool present;
+		uint8_t value;
+	} high_multislot_cap;
+
+	bool geran_feature_package_2;
+	uint8_t gmsk_multislot_power_prof;
+	uint8_t psk8_multislot_power_prof;
+
+	struct {
+		bool present;
+		uint8_t value;
+		uint8_t assoc_radio_cap;
+	} t_gsm_400_bands_supp;
+
+	uint8_t dl_advanced_rx_perf;
+	bool dtm_enhancements_cap;
+
+	struct {
+		bool present;
+		uint8_t mslot_class;
+		bool offset_required;
+		struct {
+			bool present;
+			uint8_t mslot_class;
+		} dtm_egprs_high_multislot_cap;
+	} dtm_gprs_high_multislot_cap;
+
+	bool repeated_acch_capability;
+
+	struct {
+		bool present;
+		uint8_t value;
+	} gsm_710_assoc_radio_cap;
+
+	struct {
+		bool present;
+		uint8_t value;
+	} t_gsm_810_assoc_radio_cap;
+
+	bool ciphering_mode_setting_cap;
+	bool add_pos_cap;
+	bool e_utra_fdd_supp;
+	bool e_utra_tdd_supp;
+	bool e_utra_meas_rep_supp;
+	bool prio_resel_supp;
+	bool utra_csg_cells_rep;
+
+	uint8_t vamos_level;
+	uint8_t tighter_capability;
+
+	bool sel_ciph_dl_sacch;
+
+	uint8_t cs_ps_srvcc_geran_utra;
+	uint8_t cs_ps_srvcc_geran_eutra;
+
+	bool geran_net_sharing;
+	bool e_utra_wb_rsrq_meas_supp;
+	bool er_band_support;
+	bool utra_mult_band_ind_supp;
+	bool e_utra_mult_band_ind_supp;
+	bool extended_tsc_set_cap_supp;
+	bool extended_earfcn_val_range;
+};
+
 struct osmo_gsm48_classmark {
 	bool classmark1_set;
 	struct gsm48_classmark1 classmark1;
