@@ -245,4 +245,39 @@ osmo_serial_clear_custom_baudrate(int fd)
 	return 0;
 }
 
+/*! Convert unsigned integer value to speed_t
+ *  \param[in] baudrate integer value containing the desired standard baudrate
+ *  \param[out] speed the standrd baudrate requested in speed_t format
+ *  \returns 0 for success or negative errno.
+ */
+int
+osmo_serial_speed_t(unsigned int baudrate, speed_t *speed)
+{
+	switch(baudrate) {
+	case 0: *speed = B0; break;
+	case 50: *speed = B50; break;
+	case 75: *speed = B75; break;
+	case 110: *speed = B110; break;
+	case 134: *speed = B134; break;
+	case 150: *speed = B150; break;
+	case 200: *speed = B200; break;
+	case 300: *speed = B300; break;
+	case 600: *speed = B600; break;
+	case 1200: *speed = B1200; break;
+	case 1800: *speed = B1800; break;
+	case 2400: *speed = B2400; break;
+	case 4800: *speed = B4800; break;
+	case 9600: *speed = B9600; break;
+	case 19200: *speed = B19200; break;
+	case 38400: *speed = B38400; break;
+	case 57600: *speed = B57600; break;
+	case 115200: *speed = B115200; break;
+	case 230400: *speed = B230400; break;
+	default:
+		*speed = B0;
+		return -EINVAL;
+	}
+	return 0;
+}
+
 /*! @} */

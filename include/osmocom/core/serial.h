@@ -32,5 +32,6 @@ int osmo_serial_init(const char *dev, speed_t baudrate);
 int osmo_serial_set_baudrate(int fd, speed_t baudrate);
 int osmo_serial_set_custom_baudrate(int fd, int baudrate);
 int osmo_serial_clear_custom_baudrate(int fd);
+int osmo_serial_speed_t(unsigned int baudrate, speed_t *speed);
 
 /*! @} */
