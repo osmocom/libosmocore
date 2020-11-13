@@ -348,6 +348,44 @@ static const struct osim_file_desc usim_ef_in_df_hnb[] = {
 		"Oprator Home NodeB Name"),
 };
 
+/* 31.102 Chapter 4.4.8 */
+static const struct osim_file_desc usim_ef_in_df_prose[] = {
+	EF_LIN_FIX_N(0x4F01, 0x01, "EF.PROSE_MON", F_OPTIONAL, 1, 64,
+		"ProSe Monitoring Parameters"),
+	EF_LIN_FIX_N(0x4F02, 0x02, "EF.PROSE_ANN", F_OPTIONAL, 1, 64,
+		"ProSe Announcing Parameters"),
+	EF_LIN_FIX_N(0x4F03, 0x03, "EF.PROSEFUNC", F_OPTIONAL, 1, 64,
+		"HPLMN ProSe Function"),
+	EF_TRANSP_N(0x4F04, 0x04, "EF.PROSE_RADIO_COM", F_OPTIONAL, 1, 128,
+		"ProSe Direct Communication Radio Parameters"),
+	EF_TRANSP_N(0x4F05, 0x05, "EF.PROSE_RADIO_MON", F_OPTIONAL, 1, 128,
+		"ProSe Direct Discovery Monitoring Radio Parameters"),
+	EF_TRANSP_N(0x4F06, 0x06, "EF.PROSE_RADIO_ANN", F_OPTIONAL, 1, 128,
+		"ProSe Direct Discovery Announcing Radio Parameters"),
+	EF_LIN_FIX_N(0x4F07, 0x07, "EF.PROSE_POLICY", F_OPTIONAL, 1, 64,
+		"ProSe Direct Discovery Announcing Radio Parameters"),
+	EF_LIN_FIX_N(0x4F08, 0x08, "EF.PROSE_PLMN", F_OPTIONAL, 1, 64,
+		"ProSe PLMN Parametes"),
+	EF_TRANSP_N(0x4F09, 0x09, "EF.PROSE_GC", F_OPTIONAL, 8, 64,
+		"ProSe Direct Discovery Announcing Radio Parameters"),
+	EF_TRANSP_N(0x4F10, 0x10, "EF.PST", F_OPTIONAL, 1, 2,
+		"ProSe Service Table"),
+	EF_TRANSP_N(0x4F11, 0x11, "EF.PROSE_UIRC", F_OPTIONAL, 1, 128,
+		"ProSe UsageInformationReportingConfiguration"),
+	EF_LIN_FIX_N(0x4F12, 0x12, "EF.PROSE_GM_DISCOVERY", F_OPTIONAL, 1, 64,
+		"ProSe Group Member Discovery Parameters"),
+	EF_LIN_FIX_N(0x4F13, 0x13, "EF.PROSE_RELAY", F_OPTIONAL, 1, 64,
+		"ProSe Relay Parameters"),
+	EF_TRANSP_N(0x4F14, 0x14, "EF.PROSE_RELAY_DISCOVERY", F_OPTIONAL, 5, 64,
+		"ProSe Relay Discovery Parameters"),
+};
+
+/* 31.102 Chapter 4.4.9 */
+static const struct osim_file_desc usim_ef_in_df_acdc[] = {
+	EF_TRANSP_N(0x4F01, 0x01, "EF.ACDC_LIST", F_OPTIONAL, 1, 128,
+		"ACDC List"),
+};
+
 /* 31.102 Chapter 4.4.11 */
 static const struct osim_file_desc usim_ef_in_df_5gs[] = {
 	EF_TRANSP_N(0x4F01, 0x01, "EF.5GS3GPPLOCI", F_OPTIONAL, 20, 20,
@@ -409,6 +447,10 @@ struct osim_card_app_profile *osim_aprof_usim(void *ctx)
 			ARRAY_SIZE(usim_ef_in_solsa));
 	/* OMA BCAST Smart Card Profile */
 	add_df_with_ef(uadf, 0x5F80, "DF.BCAST", NULL, 0);
+	add_df_with_ef(uadf, 0x5F90, "DF.ProSe", usim_ef_in_df_prose,
+			ARRAY_SIZE(usim_ef_in_df_prose));
+	add_df_with_ef(uadf, 0x5FA0, "DF.ACDC", usim_ef_in_df_acdc,
+			ARRAY_SIZE(usim_ef_in_df_acdc));
 
 	return aprof;
 }
