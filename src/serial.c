@@ -141,7 +141,7 @@ _osmo_serial_set_baudrate(int fd, speed_t baudrate)
 
 	rc = tcsetattr(fd, TCSANOW, &tio);
 	if (rc < 0) {
-		dbg_perror("tcgetattr()");
+		dbg_perror("tcsetattr()");
 		return -errno;
 	}
 
