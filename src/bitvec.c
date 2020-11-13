@@ -272,7 +272,7 @@ int bitvec_get_uint(struct bitvec *bv, unsigned int num_bits)
 		if (bit < 0)
 			return bit;
 		if (bit)
-			ui |= (1 << (num_bits - i - 1));
+			ui |= ((unsigned)1 << (num_bits - i - 1));
 		bv->cur_bit++;
 	}
 
