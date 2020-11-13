@@ -91,8 +91,10 @@ osmo_serial_init(const char *dev, speed_t baudrate)
 		goto error;
 	}
 
-	cfsetispeed(&tio, baudrate);
-	cfsetospeed(&tio, baudrate);
+	if (cfsetispeed(&tio, baudrate) < 0)
+		dbg_perror("cfsetispeed()");
+	if (cfsetospeed(&tio, baudrate) < 0)
+		dbg_perror("cfsetospeed()");
 
 	tio.c_cflag &= ~(PARENB | CSTOPB | CSIZE | CRTSCTS);
 	tio.c_cflag |=  (CREAD | CLOCAL | CS8);
@@ -136,8 +138,11 @@ _osmo_serial_set_baudrate(int fd, speed_t baudrate)
 		dbg_perror("tcgetattr()");
 		return -errno;
 	}
-	cfsetispeed(&tio, baudrate);
-	cfsetospeed(&tio, baudrate);
+
+	if (cfsetispeed(&tio, baudrate) < 0)
+		dbg_perror("cfsetispeed()");
+	if (cfsetospeed(&tio, baudrate) < 0)
+		dbg_perror("cfsetospeed()");
 
 	rc = tcsetattr(fd, TCSANOW, &tio);
 	if (rc < 0) {
