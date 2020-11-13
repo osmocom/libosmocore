@@ -67,7 +67,7 @@ osmo_serial_init(const char *dev, speed_t baudrate)
 		return -errno;
 	}
 
-	/* now put it into blcoking mode */
+	/* now put it into blocking mode */
 	flags = fcntl(fd, F_GETFL, 0);
 	if (flags < 0) {
 		dbg_perror("fcntl get flags");
