@@ -12,12 +12,12 @@ osmo_tdef_get(2, ms)	= 100
 osmo_tdef_get(2, m)	= 1
 osmo_tdef_get(2, custom-unit)	= 100
 osmo_tdef_get(2, us)	= 100000
-T3=100m
-osmo_tdef_get(3, s)	= 6000
-osmo_tdef_get(3, ms)	= 6000000
-osmo_tdef_get(3, m)	= 100
-osmo_tdef_get(3, custom-unit)	= 100
-osmo_tdef_get(3, us)	= 6000000000
+T3=50m
+osmo_tdef_get(3, s)	= 3000
+osmo_tdef_get(3, ms)	= 3000000
+osmo_tdef_get(3, m)	= 50
+osmo_tdef_get(3, custom-unit)	= 50
+osmo_tdef_get(3, us)	= 3000000000
 T4=100custom-unit
 osmo_tdef_get(4, s)	= 100
 osmo_tdef_get(4, ms)	= 100
@@ -154,7 +154,7 @@ test_tdef_state_timeout()
 state=A T=0, no timeout
  --> A (configured as T1 100 s) rc=0;	state=A T=1, 100.000000 s remaining
  --> B (configured as T2 100 ms) rc=0;	state=B T=2, 1.000000 s remaining
- --> C (configured as T3 100 m) rc=0;	state=C T=3, 6000.000000 s remaining
+ --> C (configured as T3 50 m) rc=0;	state=C T=3, 3000.000000 s remaining
  --> D (configured as T4 100 custom-unit) rc=0;	state=D T=4, 100.000000 s remaining
  --> G (configured as T7 50 s) rc=0;	state=G T=7, 50.000000 s remaining
  --> H (configured as T8 300 s) rc=0;	state=H T=8, 300.000000 s remaining
@@ -183,5 +183,5 @@ state=A T=1, 76.954322 s remaining
 - test disallowed transition:
  --> Z (no timer configured for this state) rc=0;	state=Z T=0, no timeout
  --> B (configured as T2 100 ms) rc=-1;	state=Z T=0, no timeout
- --> C (configured as T3 100 m) rc=-1;	state=Z T=0, no timeout
+ --> C (configured as T3 50 m) rc=-1;	state=Z T=0, no timeout
  --> D (configured as T4 100 custom-unit) rc=-1;	state=Z T=0, no timeout

@@ -38,7 +38,7 @@ static void *ctx = NULL;
 static struct osmo_tdef tdefs[] = {
 	{ .T=1, .default_val=100, .desc="100s" },
 	{ .T=2, .default_val=100, .unit=OSMO_TDEF_MS, .desc="100ms" },
-	{ .T=3, .default_val=100, .unit=OSMO_TDEF_M, .desc="100m" },
+	{ .T=3, .default_val=50, .unit=OSMO_TDEF_M, .desc="50m" },
 	{ .T=4, .default_val=100, .unit=OSMO_TDEF_CUSTOM, .desc="100 potatoes" },
 
 	{ .T=7, .default_val=50, .desc="Water Boiling Timeout", .min_val=20, .max_val=800 },  // default is .unit=OSMO_TDEF_S == 0
