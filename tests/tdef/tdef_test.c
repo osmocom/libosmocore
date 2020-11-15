@@ -48,7 +48,7 @@ static struct osmo_tdef tdefs[] = {
 
 	/* test conversions */
 	{ .T=1000, .default_val=2*1000, .unit=OSMO_TDEF_MS, .desc="two seconds from ms" },
-	{ .T=1001, .default_val=30*1000, .unit=OSMO_TDEF_MS, .desc="half minute from ms" },
+	{ .T=1001, .default_val=60*1000, .unit=OSMO_TDEF_MS, .desc="one minute from ms" },
 	{ .T=1004, .default_val=1, .unit=OSMO_TDEF_MS, .desc="one ms" },
 	{ .T=1005, .default_val=0, .unit=OSMO_TDEF_MS, .desc="zero ms" },
 	{ .T=1006, .default_val=0, .unit=OSMO_TDEF_S, .desc="zero s" },
