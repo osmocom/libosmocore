@@ -464,6 +464,8 @@ enum vty_ref_gen_mode {
 	VTY_REF_GEN_MODE_DEFAULT = 0,
 	/*! Expert mode: all commands including hidden, excluding deprecated. */
 	VTY_REF_GEN_MODE_EXPERT,
+	/*! "Inverse" mode: only hidden commands. */
+	VTY_REF_GEN_MODE_HIDDEN,
 };
 
 extern const struct value_string vty_ref_gen_mode_names[];

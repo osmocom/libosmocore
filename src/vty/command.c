@@ -897,12 +897,14 @@ static int print_func_stream(void *data, const char *format, ...)
 const struct value_string vty_ref_gen_mode_names[] = {
 	{ VTY_REF_GEN_MODE_DEFAULT,	"default" },
 	{ VTY_REF_GEN_MODE_EXPERT,	"expert" },
+	{ VTY_REF_GEN_MODE_HIDDEN,	"hidden" },
 	{ 0, NULL }
 };
 
 const struct value_string vty_ref_gen_mode_desc[] = {
 	{ VTY_REF_GEN_MODE_DEFAULT,	"all commands except deprecated and hidden" },
 	{ VTY_REF_GEN_MODE_EXPERT,	"all commands including hidden, excluding deprecated" },
+	{ VTY_REF_GEN_MODE_HIDDEN,	"hidden commands only" },
 	{ 0, NULL }
 };
 
@@ -914,11 +916,17 @@ const struct value_string vty_ref_gen_mode_desc[] = {
 int vty_dump_xml_ref_mode(FILE *stream, enum vty_ref_gen_mode mode)
 {
 	unsigned char gflag_mask;
+	bool match = false;
 
 	switch (mode) {
 	case VTY_REF_GEN_MODE_EXPERT:
 		/* All commands except deprecated */
 		gflag_mask = CMD_ATTR_DEPRECATED;
+		break;
+	case VTY_REF_GEN_MODE_HIDDEN:
+		/* Only hidden commands */
+		gflag_mask = CMD_ATTR_HIDDEN;
+		match = true;
 		break;
 	case VTY_REF_GEN_MODE_DEFAULT:
 	default:
@@ -927,7 +935,7 @@ int vty_dump_xml_ref_mode(FILE *stream, enum vty_ref_gen_mode mode)
 		break;
 	}
 
-	return vty_dump_nodes(print_func_stream, stream, "\n", gflag_mask, false);
+	return vty_dump_nodes(print_func_stream, stream, "\n", gflag_mask, match);
 }
 
 /*! Print the XML reference of all VTY nodes to the given stream.
