@@ -118,6 +118,9 @@ struct gprs_ns2_nse {
 	/*! llist head to hold all nsvc */
 	struct llist_head nsvc;
 
+	/*! count all active NSVCs with data capabilities */
+	int nsvc_data_count;
+
 	/*! true if this NSE was created by VTY or pcu socket) */
 	bool persistent;
 
@@ -154,7 +157,10 @@ struct gprs_ns2_vc {
 	/*! signalling weight. 0 = don't use for signalling (BVCI == 0)*/
 	uint8_t sig_weight;
 
-	/*! signaling weight. 0 = don't use for user data (BVCI != 0) */
+	/*! signalling packet counter for the load sharing function */
+	uint8_t sig_counter;
+
+	/*! data weight. 0 = don't use for user data (BVCI != 0) */
 	uint8_t data_weight;
 
 	/*! can be used by the bind/driver of the virtual circuit. e.g. ipv4/ipv6/frgre/e1 */

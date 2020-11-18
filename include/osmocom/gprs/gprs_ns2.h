@@ -92,6 +92,7 @@ struct osmo_gprs_ns2_prim {
 	union {
 		struct {
 			enum gprs_ns2_change_ip_endpoint change;
+			uint32_t link_selector;
 			/* TODO: implement resource distribution
 			 * add place holder for the link selector */
 			long long _resource_distribution_placeholder1;

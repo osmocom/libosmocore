@@ -57,7 +57,6 @@
  * Those mappings are administratively configured.
  *
  * This implementation has the following limitations:
- * - Only one NS-VC for each NSE: No load-sharing function
  * - NSVCI 65535 and 65534 are reserved for internal use
  * - There are no BLOCK and UNBLOCK timers (yet?)
  *
@@ -308,19 +307,129 @@ const char *gprs_ns2_nsvc_state_name(struct gprs_ns2_vc *nsvc)
 	return osmo_fsm_inst_state_name(nsvc->fi);
 }
 
+/* select a signalling NSVC and respect sig_counter
+ * param[out] reset_counter - all counter has to be resetted to their signal weight
+ * return the chosen nsvc or NULL
+ */
+static struct gprs_ns2_vc *ns2_load_sharing_signal(struct gprs_ns2_nse *nse)
+{
+	struct gprs_ns2_vc *nsvc = NULL, *last = NULL, *tmp;
+
+	llist_for_each_entry(tmp, &nse->nsvc, list) {
+		if (tmp->sig_weight == 0)
+			continue;
+		if (!gprs_ns2_vc_is_unblocked(tmp))
+			continue;
+		if (tmp->sig_counter == 0) {
+			last = tmp;
+			continue;
+		}
+
+		tmp->sig_counter--;
+		nsvc = tmp;
+		break;
+	}
+
+	/* all counter were zero, but there are valid nsvc */
+	if (!nsvc && last) {
+		llist_for_each_entry(tmp, &nse->nsvc, list) {
+			tmp->sig_counter = tmp->sig_weight;
+		}
+
+		last->sig_counter--;
+		return last;
+	} else {
+		return nsvc;
+	}
+}
+
+/* 4.4.1 Load Sharing function for the Frame Relay Sub-Network */
+static struct gprs_ns2_vc *ns2_load_sharing_modulor(
+		struct gprs_ns2_nse *nse,
+		uint16_t bvci,
+		uint32_t load_selector)
+{
+	struct gprs_ns2_vc *tmp;
+	uint32_t mod = (bvci + load_selector) % nse->nsvc_data_count;
+	uint32_t i = 0;
+
+	llist_for_each_entry(tmp, &nse->nsvc, list) {
+		if (!gprs_ns2_vc_is_unblocked(tmp))
+			continue;
+		if (tmp->data_weight == 0)
+			continue;
+
+		if (i == mod)
+			return tmp;
+		i++;
+	}
+
+	return NULL;
+}
+
+/* pick the first available data NSVC - no load sharing */
+struct gprs_ns2_vc *ns2_load_sharing_first(struct gprs_ns2_nse *nse)
+{
+	struct gprs_ns2_vc *nsvc = NULL, *tmp;
+
+	llist_for_each_entry(tmp, &nse->nsvc, list) {
+		if (!gprs_ns2_vc_is_unblocked(tmp))
+			continue;
+		if (tmp->data_weight == 0)
+			continue;
+
+		nsvc = tmp;
+		break;
+	}
+
+	return nsvc;
+}
+
+
+static struct gprs_ns2_vc *ns2_load_sharing(
+		struct gprs_ns2_nse *nse,
+		uint16_t bvci,
+		uint32_t link_selector)
+{
+	struct gprs_ns2_vc *nsvc = NULL;
+
+	if (bvci == 0) {
+		/* signalling */
+		nsvc = ns2_load_sharing_signal(nse);
+	} else {
+		enum gprs_ns_ll ll;
+
+		/* data with load sharing parameter */
+		if (llist_empty(&nse->nsvc))
+			return NULL;
+		nsvc = llist_first_entry(&nse->nsvc, struct gprs_ns2_vc, list);
+		ll = nsvc->ll;
+
+		switch (ll) {
+		case GPRS_NS_LL_FR:
+			nsvc = ns2_load_sharing_modulor(nse, bvci, link_selector);
+			break;
+		default:
+			nsvc = ns2_load_sharing_first(nse);
+			break;
+		}
+	}
+
+	return nsvc;
+}
+
 /*! Receive a primitive from the NS User (Gb).
  *  \param[in] nsi NS instance to which the primitive is issued
  *  \param[in] oph The primitive
  *  \return 0 on success; negative on error */
 int gprs_ns2_recv_prim(struct gprs_ns2_inst *nsi, struct osmo_prim_hdr *oph)
 {
-	/* TODO: implement load distribution function */
 	/* TODO: implement resource distribution */
 	/* TODO: check for empty PDUs which can be sent to Request/Confirm
 	 *       the IP endpoint */
 	struct osmo_gprs_ns2_prim *nsp;
 	struct gprs_ns2_nse *nse = NULL;
-	struct gprs_ns2_vc *nsvc = NULL, *tmp;
+	struct gprs_ns2_vc *nsvc = NULL;
 	uint16_t bvci, nsei;
 	uint8_t sducontrol = 0;
 
@@ -342,16 +451,7 @@ int gprs_ns2_recv_prim(struct gprs_ns2_inst *nsi, struct osmo_prim_hdr *oph)
 	if (!nse)
 		return -EINVAL;
 
-	llist_for_each_entry(tmp, &nse->nsvc, list) {
-		if (!gprs_ns2_vc_is_unblocked(tmp))
-			continue;
-		if (bvci == 0 && tmp->sig_weight == 0)
-			continue;
-		if (bvci != 0 && tmp->data_weight == 0)
-			continue;
-
-		nsvc = tmp;
-	}
+	nsvc = ns2_load_sharing(nse, bvci, nsp->u.unitdata.link_selector);
 
 	/* TODO: send a status primitive back */
 	if (!nsvc)
@@ -985,6 +1085,20 @@ int ns2_recv_vc(struct gprs_ns2_vc *nsvc,
 	return rc;
 }
 
+/* summarize all active data nsvcs */
+void ns2_nse_data_sum(struct gprs_ns2_nse *nse)
+{
+	struct gprs_ns2_vc *nsvc;
+	nse->nsvc_data_count = 0;
+
+	llist_for_each_entry(nsvc, &nse->nsvc, list) {
+		if (!gprs_ns2_vc_is_unblocked(nsvc))
+			continue;
+		if (nsvc->data_weight > 0)
+			nse->nsvc_data_count++;
+	}
+}
+
 /*! Notify a nse about the change of a NS-VC.
  *  \param[in] nsvc NS-VC which has detected the change (and shall not be notified).
  *  \param[in] unblocked whether the NSE should be marked as unblocked (true) or blocked (false) */
@@ -992,6 +1106,8 @@ void ns2_nse_notify_unblocked(struct gprs_ns2_vc *nsvc, bool unblocked)
 {
 	struct gprs_ns2_nse *nse = nsvc->nse;
 	struct gprs_ns2_vc *tmp;
+
+	ns2_nse_data_sum(nse);
 
 	if (unblocked == nse->alive)
 		return;
