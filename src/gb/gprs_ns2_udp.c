@@ -379,6 +379,9 @@ struct gprs_ns2_vc *gprs_ns2_ip_bind_connect(struct gprs_ns2_vc_bind *bind,
 	struct priv_vc *priv;
 
 	nsvc = ns2_vc_alloc(bind, nse, true);
+	if (!nsvc)
+		return NULL;
+
 	nsvc->priv = talloc_zero(bind, struct priv_vc);
 	if (!nsvc->priv) {
 		gprs_ns2_free_nsvc(nsvc);
