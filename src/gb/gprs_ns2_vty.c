@@ -34,6 +34,7 @@
 
 #include <osmocom/core/msgb.h>
 #include <osmocom/core/byteswap.h>
+#include <osmocom/core/fsm.h>
 #include <osmocom/core/talloc.h>
 #include <osmocom/core/select.h>
 #include <osmocom/core/rate_ctr.h>
@@ -350,6 +351,36 @@ DEFUN(show_nse, show_nse_cmd, "show ns (nsei|nsvc) <0-65535> [stats]",
 
 		dump_nsvc(vty, nsvc, show_stats);
 	}
+
+	return CMD_SUCCESS;
+}
+
+static int nsvc_force_unconf_cb(struct gprs_ns2_vc *nsvc, void *ctx)
+{
+	gprs_ns2_vc_force_unconfigured(nsvc);
+	return 0;
+}
+
+DEFUN_HIDDEN(nsvc_force_unconf, nsvc_force_unconf_cmd,
+	"nsvc nsei <0-65535> force-unconfigured",
+	"NS Virtual Connection\n"
+	"The NSEI\n"
+	"Reset the NSVCs back to initial state\n"
+	)
+{
+	struct gprs_ns2_inst *nsi = vty_nsi;
+	struct gprs_ns2_nse *nse;
+
+	uint16_t id = atoi(argv[0]);
+
+	nse = gprs_ns2_nse_by_nsei(nsi, id);
+	if (!nse) {
+		vty_out(vty, "Could not find NSE for NSEI %u%s", id, VTY_NEWLINE);
+		return CMD_WARNING;
+	}
+
+	/* Perform the operation for all nsvc */
+	gprs_ns2_nse_foreach_nsvc(nse, nsvc_force_unconf_cb, NULL);
 
 	return CMD_SUCCESS;
 }
@@ -698,6 +729,8 @@ int gprs_ns2_vty_init(struct gprs_ns2_inst *nsi,
 	install_lib_element_ve(&show_ns_pers_cmd);
 	install_lib_element_ve(&show_nse_cmd);
 	install_lib_element_ve(&logging_fltr_nsvc_cmd);
+
+	install_lib_element(ENABLE_NODE, &nsvc_force_unconf_cmd);
 
 	install_lib_element(CFG_LOG_NODE, &logging_fltr_nsvc_cmd);
 
