@@ -163,7 +163,7 @@ int bssgp_create_cell_id(uint8_t *buf, const struct gprs_ra_id *raid,
 			 uint16_t cid);
 
 /* Wrapper around TLV parser to parse BSSGP IEs */
-static inline int bssgp_tlv_parse(struct tlv_parsed *tp, uint8_t *buf, int len)
+static inline int bssgp_tlv_parse(struct tlv_parsed *tp, const uint8_t *buf, int len)
 {
 	return tlv_parse(tp, &tvlv_att_def, buf, len, 0, 0);
 }
