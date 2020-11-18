@@ -286,6 +286,7 @@ void ns2_sns_free_nsvc(struct gprs_ns2_vc *nsvc);
 struct osmo_fsm_inst *gprs_ns2_vc_fsm_alloc(struct gprs_ns2_vc *nsvc,
 					    const char *id, bool initiate);
 int gprs_ns2_vc_fsm_start(struct gprs_ns2_vc *nsvc);
+int gprs_ns2_vc_force_unconfigured(struct gprs_ns2_vc *nsvc);
 int gprs_ns2_vc_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp);
 int gprs_ns2_vc_is_alive(struct gprs_ns2_vc *nsvc);
 int gprs_ns2_vc_is_unblocked(struct gprs_ns2_vc *nsvc);
