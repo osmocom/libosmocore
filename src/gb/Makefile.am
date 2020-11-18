@@ -21,9 +21,9 @@ libosmogb_la_LIBADD = $(TALLOC_LIBS) \
 libosmogb_la_SOURCES = gprs_ns.c gprs_ns_frgre.c gprs_ns_vty.c gprs_ns_sns.c \
 		  gprs_bssgp.c gprs_bssgp_util.c gprs_bssgp_vty.c \
 		  gprs_bssgp_bss.c \
-		  gprs_ns2.c gprs_ns2_udp.c gprs_ns2_frgre.c gprs_ns2_vc_fsm.c gprs_ns2_sns.c \
+		  gprs_ns2.c gprs_ns2_udp.c gprs_ns2_frgre.c gprs_ns2_fr.c gprs_ns2_vc_fsm.c gprs_ns2_sns.c \
 		  gprs_ns2_message.c gprs_ns2_vty.c \
-		  common_vty.c
+		  common_vty.c frame_relay.c
 endif
 
 EXTRA_DIST = libosmogb.map

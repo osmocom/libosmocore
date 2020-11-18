@@ -8,9 +8,11 @@
 
 #include <osmocom/core/prim.h>
 #include <osmocom/gprs/protocol/gsm_08_16.h>
+#include <osmocom/gprs/frame_relay.h>
 
 struct osmo_sockaddr;
 struct osmo_sockaddr_str;
+struct osmo_fr_network;
 
 struct gprs_ns2_inst;
 struct gprs_ns2_nse;
@@ -146,6 +148,23 @@ struct gprs_ns2_vc_bind *gprs_ns2_ip_bind_by_sockaddr(struct gprs_ns2_inst *nsi,
 						      const struct osmo_sockaddr *sockaddr);
 void gprs_ns2_bind_set_mode(struct gprs_ns2_vc_bind *bind, enum gprs_ns2_vc_mode mode);
 
+/* FR VL driver */
+struct gprs_ns2_vc_bind *gprs_ns2_fr_bind_by_netif(
+		struct gprs_ns2_inst *nsi,
+		const char *netif);
+const char *gprs_ns2_fr_bind_netif(struct gprs_ns2_vc_bind *bind);
+int gprs_ns2_fr_bind(struct gprs_ns2_inst *nsi,
+		     const char *netif,
+		     struct osmo_fr_network *fr_network,
+		     enum osmo_fr_role fr_role,
+		     struct gprs_ns2_vc_bind **result);
+int gprs_ns2_is_fr_bind(struct gprs_ns2_vc_bind *bind);
+struct gprs_ns2_vc *gprs_ns2_fr_nsvc_by_dlci(struct gprs_ns2_vc_bind *bind, uint16_t dlci);
+struct gprs_ns2_vc *gprs_ns2_fr_connect(struct gprs_ns2_vc_bind *bind,
+					uint16_t nsei,
+					uint16_t nsvci,
+					uint16_t dlci);
+
 /* create a VC connection */
 struct gprs_ns2_vc *gprs_ns2_ip_connect(struct gprs_ns2_vc_bind *bind,
 					const struct osmo_sockaddr *remote,
@@ -188,6 +207,7 @@ int gprs_ns2_frgre_bind(struct gprs_ns2_inst *nsi,
 			int dscp,
 			struct gprs_ns2_vc_bind **result);
 int gprs_ns2_is_frgre_bind(struct gprs_ns2_vc_bind *bind);
+uint16_t gprs_ns2_fr_nsvc_dlci(struct gprs_ns2_vc *nsvc);
 
 struct gprs_ns2_vc *gprs_ns2_nsvc_by_sockaddr_nse(
 		struct gprs_ns2_nse *nse,

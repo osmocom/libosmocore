@@ -60,6 +60,7 @@ enum ns_stat {
 enum gprs_ns_ll {
 	GPRS_NS_LL_UDP,		/*!< NS/UDP/IP */
 	GPRS_NS_LL_E1,		/*!< NS/E1 */
+	GPRS_NS_LL_FR,		/*!< NS/FR */
 	GPRS_NS_LL_FR_GRE,	/*!< NS/FR/GRE/IP */
 };
 

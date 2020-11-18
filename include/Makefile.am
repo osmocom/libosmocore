@@ -60,6 +60,7 @@ nobase_include_HEADERS = \
 		       osmocom/ctrl/control_cmd.h \
 		       osmocom/ctrl/control_if.h \
 		       osmocom/ctrl/ports.h \
+                       osmocom/gprs/frame_relay.h \
                        osmocom/gprs/gprs_bssgp.h \
                        osmocom/gprs/gprs_bssgp_bss.h \
                        osmocom/gprs/gprs_msgb.h \

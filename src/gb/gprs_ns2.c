@@ -59,7 +59,6 @@
  * This implementation has the following limitations:
  * - Only one NS-VC for each NSE: No load-sharing function
  * - NSVCI 65535 and 65534 are reserved for internal use
- * - Only UDP is supported as of now, no frame relay support
  * - There are no BLOCK and UNBLOCK timers (yet?)
  *
  * \file gprs_ns2.c */
@@ -257,6 +256,15 @@ char *gprs_ns2_ll_str_buf(char *buf, size_t buf_len, struct gprs_ns2_vc *nsvc)
 		break;
 	case GPRS_NS_LL_E1:
 		snprintf(buf, buf_len, "e1)");
+		break;
+	case GPRS_NS_LL_FR:
+		if (!gprs_ns2_is_frgre_bind(nsvc->bind)) {
+			buf[0] = '\0';
+			return buf;
+		}
+
+		snprintf(buf, buf_len, "fr)netif: %s dlci: %u", gprs_ns2_fr_bind_netif(nsvc->bind),
+			 gprs_ns2_fr_nsvc_dlci(nsvc));
 		break;
 	default:
 		buf[0] = '\0';
