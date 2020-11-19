@@ -869,7 +869,6 @@ int gprs_ns2_vty_create() {
 		case GPRS_NS2_LL_FR:
 			break;
 		case GPRS_NS2_LL_FR_GRE:
-		case GPRS_NS2_LL_E1:
 			continue;
 		}
 
@@ -920,7 +919,6 @@ int gprs_ns2_vty_create() {
 			break;
 		}
 		case GPRS_NS2_LL_FR_GRE:
-		case GPRS_NS2_LL_E1:
 			continue;
 		}
 	}

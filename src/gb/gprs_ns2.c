@@ -253,9 +253,6 @@ char *gprs_ns2_ll_str_buf(char *buf, size_t buf_len, struct gprs_ns2_vc *nsvc)
 	case GPRS_NS2_LL_FR_GRE:
 		snprintf(buf, buf_len, "frgre)");
 		break;
-	case GPRS_NS2_LL_E1:
-		snprintf(buf, buf_len, "e1)");
-		break;
 	case GPRS_NS2_LL_FR:
 		if (!gprs_ns2_is_frgre_bind(nsvc->bind)) {
 			buf[0] = '\0';

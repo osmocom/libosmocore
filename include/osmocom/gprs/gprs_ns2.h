@@ -35,7 +35,6 @@ enum gprs_ns2_vc_mode {
 /*! Osmocom NS link layer types */
 enum gprs_ns2_ll {
 	GPRS_NS2_LL_UDP,	/*!< NS/UDP/IP */
-	GPRS_NS2_LL_E1,		/*!< NS/E1 */
 	GPRS_NS2_LL_FR,		/*!< NS/FR */
 	GPRS_NS2_LL_FR_GRE,	/*!< NS/FR/GRE/IP */
 };
