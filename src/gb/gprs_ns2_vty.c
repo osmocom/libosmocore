@@ -928,6 +928,9 @@ int gprs_ns2_vty_create() {
 		case GPRS_NS2_LL_FR_GRE:
 			dialect = NS2_DIALECT_STATIC_RESETBLOCK;
 			continue;
+		case GPRS_NS2_LL_UNDEF:
+			/* should not happen */
+			OSMO_ASSERT(false);
 		}
 
 		nse = gprs_ns2_nse_by_nsei(vty_nsi, vtyvc->nsei);
@@ -977,6 +980,7 @@ int gprs_ns2_vty_create() {
 			break;
 		}
 		case GPRS_NS2_LL_FR_GRE:
+		case GPRS_NS2_LL_UNDEF:
 			continue;
 		}
 	}

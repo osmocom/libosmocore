@@ -185,12 +185,16 @@ struct gprs_ns2_vc {
 struct gprs_ns2_vc_bind {
 	/*! unique name */
 	const char *name;
+
 	/*! list entry in nsi */
 	struct llist_head list;
+
 	/*! list of all VC */
 	struct llist_head nsvc;
+
 	/*! driver private structure */
 	void *priv;
+
 	/*! a pointer back to the nsi */
 	struct gprs_ns2_inst *nsi;
 	struct gprs_ns2_vc_driver *driver;
