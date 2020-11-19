@@ -525,11 +525,6 @@ DEFUN(cfg_nse_fr_dlci, cfg_nse_fr_dlci_cmd,
 		return CMD_WARNING;
 	}
 
-	if (vtyvc->ll != GPRS_NS2_LL_FR_GRE) {
-		vty_out(vty, "Warning: seting FR DLCI on non-FR NSE%s",
-			VTY_NEWLINE);
-	}
-
 	vtyvc->frdlci = dlci;
 
 	return CMD_SUCCESS;
@@ -880,7 +875,7 @@ int gprs_ns2_vty_create() {
 
 		nse = gprs_ns2_nse_by_nsei(vty_nsi, vtyvc->nsei);
 		if (!nse) {
-			nse = gprs_ns2_create_nse(vty_nsi, vtyvc->nsei);
+			nse = gprs_ns2_create_nse(vty_nsi, vtyvc->nsei, vtyvc->ll);
 			if (!nse) {
 				/* Could not create NSE for VTY */
 				continue;

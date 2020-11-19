@@ -123,6 +123,9 @@ struct gprs_ns2_nse {
 	/*! true if this NSE has at least one alive VC */
 	bool alive;
 
+	/*! which link-layer are we based on? */
+	enum gprs_ns2_ll ll;
+
 	struct osmo_fsm_inst *bss_sns_fi;
 };
 
@@ -164,8 +167,6 @@ struct gprs_ns2_vc {
 	struct rate_ctr_group *ctrg;
 	struct osmo_stat_item_group *statg;
 
-	/*! which link-layer are we based on? */
-	enum gprs_ns2_ll ll;
 	enum gprs_ns2_vc_mode mode;
 
 	struct osmo_fsm_inst *fi;
@@ -185,6 +186,9 @@ struct gprs_ns2_vc_bind {
 
 	/*! if VCs use reset/block/unblock method. IP shall not use this */
 	enum gprs_ns2_vc_mode vc_mode;
+
+	/*! which link-layer are we based on? */
+	enum gprs_ns2_ll ll;
 
 	/*! send a msg over a VC */
 	int (*send_vc)(struct gprs_ns2_vc *nsvc, struct msgb *msg);

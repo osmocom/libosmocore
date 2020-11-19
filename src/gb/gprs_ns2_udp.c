@@ -322,6 +322,7 @@ int gprs_ns2_ip_bind(struct gprs_ns2_inst *nsi,
 	}
 
 	bind->driver = &vc_driver_ip;
+	bind->ll = GPRS_NS2_LL_UDP;
 	bind->send_vc = nsip_vc_sendmsg;
 	bind->free_vc = free_vc;
 	bind->dump_vty = dump_vty;
@@ -391,8 +392,6 @@ struct gprs_ns2_vc *gprs_ns2_ip_bind_connect(struct gprs_ns2_vc_bind *bind,
 	priv = nsvc->priv;
 	priv->remote = *remote;
 
-	nsvc->ll = GPRS_NS2_LL_UDP;
-
 	return nsvc;
 }
 
@@ -402,9 +401,6 @@ struct gprs_ns2_vc *gprs_ns2_ip_bind_connect(struct gprs_ns2_vc_bind *bind,
 const struct osmo_sockaddr *gprs_ns2_ip_vc_local(const struct gprs_ns2_vc *nsvc)
 {
 	struct priv_bind *priv;
-
-	if (nsvc->ll != GPRS_NS2_LL_UDP)
-		return NULL;
 
 	if (nsvc->bind->driver != &vc_driver_ip)
 		return NULL;
@@ -420,7 +416,7 @@ const struct osmo_sockaddr *gprs_ns2_ip_vc_remote(const struct gprs_ns2_vc *nsvc
 {
 	struct priv_vc *priv;
 
-	if (nsvc->ll != GPRS_NS2_LL_UDP)
+	if (nsvc->bind->driver != &vc_driver_ip)
 		return NULL;
 
 	priv = nsvc->priv;
@@ -442,7 +438,7 @@ bool gprs_ns2_ip_vc_equal(const struct gprs_ns2_vc *nsvc,
 	struct priv_vc *vpriv;
 	struct priv_bind *bpriv;
 
-	if (nsvc->ll != GPRS_NS2_LL_UDP)
+	if (nsvc->bind->driver != &vc_driver_ip)
 		return false;
 
 	vpriv = nsvc->priv;

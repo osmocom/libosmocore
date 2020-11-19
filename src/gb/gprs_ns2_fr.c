@@ -354,6 +354,7 @@ int gprs_ns2_fr_bind(struct gprs_ns2_inst *nsi,
 		return -ENOSPC;
 
 	bind->driver = &vc_driver_fr;
+	bind->ll = GPRS_NS2_LL_FR;
 	bind->send_vc = fr_vc_sendmsg;
 	bind->free_vc = free_vc;
 	bind->dump_vty = dump_vty;
@@ -469,7 +470,7 @@ struct gprs_ns2_vc *gprs_ns2_fr_connect(struct gprs_ns2_vc_bind *bind,
 	struct priv_vc *priv = NULL;
 	struct gprs_ns2_nse *nse = gprs_ns2_nse_by_nsei(bind->nsi, nsei);
 	if (!nse) {
-		nse = gprs_ns2_create_nse(bind->nsi, nsei);
+		nse = gprs_ns2_create_nse(bind->nsi, nsei, GPRS_NS2_LL_FR);
 		if (!nse)
 			return NULL;
 		created_nse = true;
@@ -490,7 +491,6 @@ struct gprs_ns2_vc *gprs_ns2_fr_connect(struct gprs_ns2_vc_bind *bind,
 
 	nsvc->nsvci = nsvci;
 	nsvc->nsvci_is_valid = true;
-	nsvc->ll = GPRS_NS2_LL_FR;
 
 	gprs_ns2_vc_fsm_start(nsvc);
 

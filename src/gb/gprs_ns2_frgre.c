@@ -555,6 +555,7 @@ int gprs_ns2_frgre_bind(struct gprs_ns2_inst *nsi,
 	}
 
 	bind->driver = &vc_driver_frgre;
+	bind->ll = GPRS_NS2_LL_FR_GRE;
 	bind->send_vc = frgre_vc_sendmsg;
 	bind->free_vc = free_vc;
 	bind->nsi = nsi;

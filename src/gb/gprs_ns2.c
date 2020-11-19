@@ -226,7 +226,7 @@ char *gprs_ns2_ll_str_buf(char *buf, size_t buf_len, struct gprs_ns2_vc *nsvc)
 	if (!buf_len)
 		return NULL;
 
-	switch (nsvc->ll) {
+	switch (nsvc->nse->ll) {
 	case GPRS_NS2_LL_UDP:
 		if (!gprs_ns2_is_ip_bind(nsvc->bind)) {
 			buf[0] = '\0';
@@ -397,15 +397,11 @@ static struct gprs_ns2_vc *ns2_load_sharing(
 		/* signalling */
 		nsvc = ns2_load_sharing_signal(nse);
 	} else {
-		enum gprs_ns2_ll ll;
-
 		/* data with load sharing parameter */
 		if (llist_empty(&nse->nsvc))
 			return NULL;
-		nsvc = llist_first_entry(&nse->nsvc, struct gprs_ns2_vc, list);
-		ll = nsvc->ll;
 
-		switch (ll) {
+		switch (nse->ll) {
 		case GPRS_NS2_LL_FR:
 			nsvc = ns2_load_sharing_modulor(nse, bvci, link_selector);
 			break;
@@ -676,7 +672,7 @@ struct gprs_ns2_vc *gprs_ns2_nsvc_by_nsvci(struct gprs_ns2_inst *nsi, uint16_t n
  *  \param[in] nsi NS instance in which to create NS Entity
  *  \param[in] nsei NS Entity Identifier of to-be-created NSE
  *  \returns newly-allocated NS-E in successful case; NULL on error */
-struct gprs_ns2_nse *gprs_ns2_create_nse(struct gprs_ns2_inst *nsi, uint16_t nsei)
+struct gprs_ns2_nse *gprs_ns2_create_nse(struct gprs_ns2_inst *nsi, uint16_t nsei, enum gprs_ns2_ll linklayer)
 {
 	struct gprs_ns2_nse *nse;
 
@@ -690,6 +686,7 @@ struct gprs_ns2_nse *gprs_ns2_create_nse(struct gprs_ns2_inst *nsi, uint16_t nse
 	if (!nse)
 		return NULL;
 
+	nse->ll = linklayer;
 	nse->nsei = nsei;
 	nse->nsi = nsi;
 	nse->first = true;
@@ -845,7 +842,7 @@ enum gprs_ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 			return GPRS_NS2_CS_SKIPPED;
 		}
 
-		nse = gprs_ns2_create_nse(bind->nsi, nsei);
+		nse = gprs_ns2_create_nse(bind->nsi, nsei, bind->ll);
 		if (!nse) {
 			return GPRS_NS2_CS_ERROR;
 		}
@@ -854,8 +851,6 @@ enum gprs_ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 	nsvc = ns2_vc_alloc(bind, nse, false);
 	if (!nsvc)
 		return GPRS_NS2_CS_SKIPPED;
-
-	nsvc->ll = GPRS_NS2_LL_UDP;
 
 	nsvci = tlvp_val16be(&tp, NS_IE_VCI);
 	nsvc->nsvci = nsvci;
@@ -926,7 +921,7 @@ struct gprs_ns2_vc *gprs_ns2_ip_connect2(struct gprs_ns2_vc_bind *bind,
 	struct gprs_ns2_nse *nse = gprs_ns2_nse_by_nsei(bind->nsi, nsei);
 
 	if (!nse) {
-		nse = gprs_ns2_create_nse(bind->nsi, nsei);
+		nse = gprs_ns2_create_nse(bind->nsi, nsei, GPRS_NS2_LL_UDP);
 		if (!nse)
 			return NULL;
 	}
@@ -947,7 +942,7 @@ int gprs_ns2_ip_connect_sns(struct gprs_ns2_vc_bind *bind,
 	struct gprs_ns2_vc *nsvc;
 
 	if (!nse) {
-		nse = gprs_ns2_create_nse(bind->nsi, nsei);
+		nse = gprs_ns2_create_nse(bind->nsi, nsei, GPRS_NS2_LL_UDP);
 		if (!nse)
 			return -1;
 	}
