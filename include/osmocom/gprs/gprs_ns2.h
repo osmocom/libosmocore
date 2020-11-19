@@ -42,6 +42,7 @@ enum gprs_ns2_dialect {
 
 /*! Osmocom NS link layer types */
 enum gprs_ns2_ll {
+	GPRS_NS2_LL_UNDEF,	/*!< undefined, used by vty */
 	GPRS_NS2_LL_UDP,	/*!< NS/UDP/IP */
 	GPRS_NS2_LL_FR,		/*!< NS/FR */
 	GPRS_NS2_LL_FR_GRE,	/*!< NS/FR/GRE/IP */
@@ -263,5 +264,8 @@ const char *gprs_ns2_nsvc_state_name(struct gprs_ns2_vc *nsvc);
 int gprs_ns2_vty_init(struct gprs_ns2_inst *nsi,
 		      const struct osmo_sockaddr_str *default_bind);
 int gprs_ns2_vty_create();
+
+/* vty 2 */
+int gprs_ns2_vty2_init(struct gprs_ns2_inst *nsi);
 
 /*! @} */

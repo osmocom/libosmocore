@@ -234,6 +234,7 @@ struct gprs_ns2_vc *ns2_vc_alloc(struct gprs_ns2_vc_bind *bind,
 
 struct msgb *gprs_ns2_msgb_alloc(void);
 
+void gprs_ns2_sns_write_vty(struct vty *vty, const struct gprs_ns2_nse *nse);
 void gprs_ns2_sns_dump_vty(struct vty *vty, const struct gprs_ns2_nse *nse, bool stats);
 void ns2_prim_status_ind(struct gprs_ns2_nse *nse,
 			 struct gprs_ns2_vc *nsvc,
