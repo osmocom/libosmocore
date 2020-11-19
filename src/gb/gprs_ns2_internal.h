@@ -56,14 +56,6 @@ enum ns_stat {
 	NS_STAT_ALIVE_DELAY,
 };
 
-/*! Osmocom NS link layer types */
-enum gprs_ns_ll {
-	GPRS_NS_LL_UDP,		/*!< NS/UDP/IP */
-	GPRS_NS_LL_E1,		/*!< NS/E1 */
-	GPRS_NS_LL_FR,		/*!< NS/FR */
-	GPRS_NS_LL_FR_GRE,	/*!< NS/FR/GRE/IP */
-};
-
 /*! Osmocom NS2 VC create status */
 enum gprs_ns2_cs {
 	GPRS_NS2_CS_CREATED,     /*!< A NSVC object has been created */
@@ -173,7 +165,7 @@ struct gprs_ns2_vc {
 	struct osmo_stat_item_group *statg;
 
 	/*! which link-layer are we based on? */
-	enum gprs_ns_ll ll;
+	enum gprs_ns2_ll ll;
 	enum gprs_ns2_vc_mode mode;
 
 	struct osmo_fsm_inst *fi;

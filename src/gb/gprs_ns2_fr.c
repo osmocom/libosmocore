@@ -490,7 +490,7 @@ struct gprs_ns2_vc *gprs_ns2_fr_connect(struct gprs_ns2_vc_bind *bind,
 
 	nsvc->nsvci = nsvci;
 	nsvc->nsvci_is_valid = true;
-	nsvc->ll = GPRS_NS_LL_FR;
+	nsvc->ll = GPRS_NS2_LL_FR;
 
 	gprs_ns2_vc_fsm_start(nsvc);
 

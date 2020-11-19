@@ -73,7 +73,7 @@ struct ns2_vty_vc {
 	struct llist_head list;
 
 	struct osmo_sockaddr_str remote;
-	enum gprs_ns_ll ll;
+	enum gprs_ns2_ll ll;
 
 	/* old vty code doesnt support multiple NSVCI per NSEI */
 	uint16_t nsei;
@@ -213,7 +213,7 @@ static int config_write_ns(struct vty *vty)
 			vtyvc->remote_end_is_sgsn ? "sgsn" : "bss", VTY_NEWLINE);
 
 		switch (vtyvc->ll) {
-		case GPRS_NS_LL_UDP:
+		case GPRS_NS2_LL_UDP:
 			vty_out(vty, " nse %u nsvci %u encapsulation udp%s", vtyvc->nsei, vtyvc->nsvci,
 				VTY_NEWLINE);
 			vty_out(vty, " nse %u nsvci %u remote-ip %s%s", vtyvc->nsei, vtyvc->nsvci,
@@ -221,7 +221,7 @@ static int config_write_ns(struct vty *vty)
 			vty_out(vty, " nse %u nsvci %u remote-port %u%s", vtyvc->nsei, vtyvc->nsvci,
 				vtyvc->remote.port, VTY_NEWLINE);
 			break;
-		case GPRS_NS_LL_FR_GRE:
+		case GPRS_NS2_LL_FR_GRE:
 			vty_out(vty, " nse %u nsvci %u encapsulation framerelay-gre%s", vtyvc->nsei,
 				vtyvc->nsvci, VTY_NEWLINE);
 			vty_out(vty, " nse %u nsvci %u remote-ip %s%s", vtyvc->nsei, vtyvc->nsvci,
@@ -229,7 +229,7 @@ static int config_write_ns(struct vty *vty)
 			vty_out(vty, " nse %u nsvci %u fr-dlci %u%s", vtyvc->nsei, vtyvc->nsvci,
 				vtyvc->frdlci, VTY_NEWLINE);
 			break;
-		case GPRS_NS_LL_FR:
+		case GPRS_NS2_LL_FR:
 			vty_out(vty, " nse %u nsvci %u fr %s dlci %u%s", vtyvc->nsei, vtyvc->nsvci,
 				vtyvc->netif, vtyvc->frdlci, VTY_NEWLINE);
 			break;
@@ -430,7 +430,7 @@ DEFUN(cfg_nse_fr, cfg_nse_fr_cmd,
 	osmo_strlcpy(vtyvc->netif, name, sizeof(vtyvc->netif));
 	vtyvc->frdlci = dlci;
 	vtyvc->nsvci = nsvci;
-	vtyvc->ll = GPRS_NS_LL_FR;
+	vtyvc->ll = GPRS_NS2_LL_FR;
 
 	return CMD_SUCCESS;
 }
@@ -525,7 +525,7 @@ DEFUN(cfg_nse_fr_dlci, cfg_nse_fr_dlci_cmd,
 		return CMD_WARNING;
 	}
 
-	if (vtyvc->ll != GPRS_NS_LL_FR_GRE) {
+	if (vtyvc->ll != GPRS_NS2_LL_FR_GRE) {
 		vty_out(vty, "Warning: seting FR DLCI on non-FR NSE%s",
 			VTY_NEWLINE);
 	}
@@ -554,9 +554,9 @@ DEFUN(cfg_nse_encaps, cfg_nse_encaps_cmd,
 	}
 
 	if (!strcmp(argv[2], "udp"))
-		vtyvc->ll = GPRS_NS_LL_UDP;
+		vtyvc->ll = GPRS_NS2_LL_UDP;
 	else
-		vtyvc->ll = GPRS_NS_LL_FR_GRE;
+		vtyvc->ll = GPRS_NS2_LL_FR_GRE;
 
 	return CMD_SUCCESS;
 }
@@ -855,7 +855,7 @@ int gprs_ns2_vty_create() {
 	llist_for_each_entry(vtyvc, &priv.vtyvc, list) {
 		/* validate settings */
 		switch (vtyvc->ll) {
-		case GPRS_NS_LL_UDP:
+		case GPRS_NS2_LL_UDP:
 			if (strlen(vtyvc->remote.ip) == 0) {
 				/* Invalid IP for VC */
 				continue;
@@ -871,10 +871,10 @@ int gprs_ns2_vty_create() {
 				continue;
 			}
 			break;
-		case GPRS_NS_LL_FR:
+		case GPRS_NS2_LL_FR:
 			break;
-		case GPRS_NS_LL_FR_GRE:
-		case GPRS_NS_LL_E1:
+		case GPRS_NS2_LL_FR_GRE:
+		case GPRS_NS2_LL_E1:
 			continue;
 		}
 
@@ -889,7 +889,7 @@ int gprs_ns2_vty_create() {
 		nse->persistent = true;
 
 		switch (vtyvc->ll) {
-		case GPRS_NS_LL_UDP:
+		case GPRS_NS2_LL_UDP:
 			nsvc = gprs_ns2_ip_connect(bind,
 						   &sockaddr,
 						   nse,
@@ -900,7 +900,7 @@ int gprs_ns2_vty_create() {
 			}
 			nsvc->persistent = true;
 			break;
-		case GPRS_NS_LL_FR: {
+		case GPRS_NS2_LL_FR: {
 			if (vty_fr_network == NULL) {
 				/* TODO: add a switch for BSS/SGSN/gbproxy */
 				vty_fr_network = osmo_fr_network_alloc(vty_nsi);
@@ -924,8 +924,8 @@ int gprs_ns2_vty_create() {
 			nsvc->persistent = true;
 			break;
 		}
-		case GPRS_NS_LL_FR_GRE:
-		case GPRS_NS_LL_E1:
+		case GPRS_NS2_LL_FR_GRE:
+		case GPRS_NS2_LL_E1:
 			continue;
 		}
 	}

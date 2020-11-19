@@ -227,7 +227,7 @@ char *gprs_ns2_ll_str_buf(char *buf, size_t buf_len, struct gprs_ns2_vc *nsvc)
 		return NULL;
 
 	switch (nsvc->ll) {
-	case GPRS_NS_LL_UDP:
+	case GPRS_NS2_LL_UDP:
 		if (!gprs_ns2_is_ip_bind(nsvc->bind)) {
 			buf[0] = '\0';
 			return buf;
@@ -250,13 +250,13 @@ char *gprs_ns2_ll_str_buf(char *buf, size_t buf_len, struct gprs_ns2_vc *nsvc)
 				 local_str.ip, local_str.port,
 				 remote_str.ip, remote_str.port);
 		break;
-	case GPRS_NS_LL_FR_GRE:
+	case GPRS_NS2_LL_FR_GRE:
 		snprintf(buf, buf_len, "frgre)");
 		break;
-	case GPRS_NS_LL_E1:
+	case GPRS_NS2_LL_E1:
 		snprintf(buf, buf_len, "e1)");
 		break;
-	case GPRS_NS_LL_FR:
+	case GPRS_NS2_LL_FR:
 		if (!gprs_ns2_is_frgre_bind(nsvc->bind)) {
 			buf[0] = '\0';
 			return buf;
@@ -397,7 +397,7 @@ static struct gprs_ns2_vc *ns2_load_sharing(
 		/* signalling */
 		nsvc = ns2_load_sharing_signal(nse);
 	} else {
-		enum gprs_ns_ll ll;
+		enum gprs_ns2_ll ll;
 
 		/* data with load sharing parameter */
 		if (llist_empty(&nse->nsvc))
@@ -406,7 +406,7 @@ static struct gprs_ns2_vc *ns2_load_sharing(
 		ll = nsvc->ll;
 
 		switch (ll) {
-		case GPRS_NS_LL_FR:
+		case GPRS_NS2_LL_FR:
 			nsvc = ns2_load_sharing_modulor(nse, bvci, link_selector);
 			break;
 		default:
@@ -855,7 +855,7 @@ enum gprs_ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 	if (!nsvc)
 		return GPRS_NS2_CS_SKIPPED;
 
-	nsvc->ll = GPRS_NS_LL_UDP;
+	nsvc->ll = GPRS_NS2_LL_UDP;
 
 	nsvci = tlvp_val16be(&tp, NS_IE_VCI);
 	nsvc->nsvci = nsvci;
