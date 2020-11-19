@@ -41,6 +41,7 @@ const struct value_string osmo_bts_features_descs[] = {
 	{ BTS_FEAT_ETWS_PN,		"ETWS Primary Notification via PCH" },
 	{ BTS_FEAT_PAGING_COORDINATION,	"BSS Paging Coordination" },
 	{ BTS_FEAT_IPV6_NSVC,		"NSVC IPv6" },
+	{ BTS_FEAT_ACCH_REP,		"FACCH/SACCH Repeation" },
 	{ 0, NULL }
 };
 
