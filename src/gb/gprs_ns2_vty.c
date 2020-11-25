@@ -126,14 +126,12 @@ static struct cmd_node ns_node = {
 	1,
 };
 
-static struct ns2_vty_vc *vtyvc_alloc(uint16_t nsei, uint16_t nsvci)
-{
+static struct ns2_vty_vc *vtyvc_alloc(uint16_t nsei) {
 	struct ns2_vty_vc *vtyvc = talloc_zero(vty_nsi, struct ns2_vty_vc);
 	if (!vtyvc)
 		return vtyvc;
 
 	vtyvc->nsei = nsei;
-	vtyvc->nsvci = nsvci;
 
 	llist_add(&vtyvc->list, &priv.vtyvc);
 
@@ -148,19 +146,18 @@ static void ns2_vc_free(struct ns2_vty_vc *vtyvc) {
 	talloc_free(vtyvc);
 }
 
-static struct ns2_vty_vc *vtyvc_by_nsei_nsvci(uint16_t nsei, uint16_t nsvci, bool alloc_missing)
-{
+static struct ns2_vty_vc *vtyvc_by_nsei(uint16_t nsei, bool alloc_missing) {
 	struct ns2_vty_vc *vtyvc;
 
 	llist_for_each_entry(vtyvc, &priv.vtyvc, list) {
-		if (vtyvc->nsei == nsei && vtyvc->nsvci == nsvci)
+		if (vtyvc->nsei == nsei)
 			return vtyvc;
 	}
 
 	if (!alloc_missing)
 		return NULL;
 
-	vtyvc = vtyvc_alloc(nsei, nsvci);
+	vtyvc = vtyvc_alloc(nsei);
 	if (!vtyvc)
 		return vtyvc;
 
@@ -209,29 +206,36 @@ static int config_write_ns(struct vty *vty)
 		vty_out(vty, " nse %u nsvci %u%s",
 			vtyvc->nsei, vtyvc->nsvci, VTY_NEWLINE);
 
-		vty_out(vty, " nse %u nsvci %u remote-role %s%s", vtyvc->nsei, vtyvc->nsvci,
-			vtyvc->remote_end_is_sgsn ? "sgsn" : "bss", VTY_NEWLINE);
+		vty_out(vty, " nse %u remote-role %s%s",
+			vtyvc->nsei, vtyvc->remote_end_is_sgsn ? "sgsn" : "bss",
+			VTY_NEWLINE);
 
 		switch (vtyvc->ll) {
 		case GPRS_NS2_LL_UDP:
-			vty_out(vty, " nse %u nsvci %u encapsulation udp%s", vtyvc->nsei, vtyvc->nsvci,
+			vty_out(vty, " nse %u encapsulation udp%s", vtyvc->nsei, VTY_NEWLINE);
+			vty_out(vty, " nse %u remote-ip %s%s",
+				vtyvc->nsei,
+				vtyvc->remote.ip,
 				VTY_NEWLINE);
-			vty_out(vty, " nse %u nsvci %u remote-ip %s%s", vtyvc->nsei, vtyvc->nsvci,
-				vtyvc->remote.ip, VTY_NEWLINE);
-			vty_out(vty, " nse %u nsvci %u remote-port %u%s", vtyvc->nsei, vtyvc->nsvci,
-				vtyvc->remote.port, VTY_NEWLINE);
+			vty_out(vty, " nse %u remote-port %u%s",
+				vtyvc->nsei, vtyvc->remote.port,
+				VTY_NEWLINE);
 			break;
 		case GPRS_NS2_LL_FR_GRE:
-			vty_out(vty, " nse %u nsvci %u encapsulation framerelay-gre%s", vtyvc->nsei,
-				vtyvc->nsvci, VTY_NEWLINE);
-			vty_out(vty, " nse %u nsvci %u remote-ip %s%s", vtyvc->nsei, vtyvc->nsvci,
-				vtyvc->remote.ip, VTY_NEWLINE);
-			vty_out(vty, " nse %u nsvci %u fr-dlci %u%s", vtyvc->nsei, vtyvc->nsvci,
-				vtyvc->frdlci, VTY_NEWLINE);
+			vty_out(vty, " nse %u encapsulation framerelay-gre%s",
+				vtyvc->nsei, VTY_NEWLINE);
+			vty_out(vty, " nse %u remote-ip %s%s",
+				vtyvc->nsei,
+				vtyvc->remote.ip,
+				VTY_NEWLINE);
+			vty_out(vty, " nse %u fr-dlci %u%s",
+				vtyvc->nsei, vtyvc->frdlci,
+				VTY_NEWLINE);
 			break;
 		case GPRS_NS2_LL_FR:
-			vty_out(vty, " nse %u nsvci %u fr %s dlci %u%s", vtyvc->nsei, vtyvc->nsvci,
-				vtyvc->netif, vtyvc->frdlci, VTY_NEWLINE);
+			vty_out(vty, " nse %u fr %s dlci %u%s",
+				vtyvc->nsei, vtyvc->netif, vtyvc->frdlci,
+				VTY_NEWLINE);
 			break;
 		default:
 			break;
@@ -416,7 +420,7 @@ DEFUN(cfg_nse_fr, cfg_nse_fr_cmd,
 	const char *name = argv[3];
 	uint16_t dlci = atoi(argv[4]);
 
-	vtyvc = vtyvc_by_nsei_nsvci(nsei, nsvci, true);
+	vtyvc = vtyvc_by_nsei(nsei, true);
 	if (!vtyvc) {
 		vty_out(vty, "Can not allocate space %s", VTY_NEWLINE);
 		return CMD_WARNING;
@@ -447,7 +451,7 @@ DEFUN(cfg_nse_nsvc, cfg_nse_nsvci_cmd,
 	uint16_t nsei = atoi(argv[0]);
 	uint16_t nsvci = atoi(argv[1]);
 
-	vtyvc = vtyvc_by_nsei_nsvci(nsei, nsvci, true);
+	vtyvc = vtyvc_by_nsei(nsei, true);
 	if (!vtyvc) {
 		vty_out(vty, "Can not allocate space %s", VTY_NEWLINE);
 		return CMD_WARNING;
@@ -459,43 +463,37 @@ DEFUN(cfg_nse_nsvc, cfg_nse_nsvci_cmd,
 }
 
 DEFUN(cfg_nse_remoteip, cfg_nse_remoteip_cmd,
-	"nse <0-65535> nsvci <0-65535> remote-ip " VTY_IPV46_CMD,
+	"nse <0-65535> remote-ip " VTY_IPV46_CMD,
 	NSE_CMD_STR
-	"NS Virtual Connection\n"
-	"NS Virtual Connection ID (NSVCI)\n"
 	"Remote IP Address\n"
 	"Remote IPv4 Address\n"
 	"Remote IPv6 Address\n")
 {
 	uint16_t nsei = atoi(argv[0]);
-	uint16_t nsvci = atoi(argv[1]);
 	struct ns2_vty_vc *vtyvc;
 
-	vtyvc = vtyvc_by_nsei_nsvci(nsei, nsvci, true);
+	vtyvc = vtyvc_by_nsei(nsei, true);
 	if (!vtyvc) {
 		vty_out(vty, "Can not allocate space %s", VTY_NEWLINE);
 		return CMD_WARNING;
 	}
 
-	osmo_sockaddr_str_from_str2(&vtyvc->remote, argv[2]);
+	osmo_sockaddr_str_from_str2(&vtyvc->remote, argv[1]);
 
 	return CMD_SUCCESS;
 }
 
 DEFUN(cfg_nse_remoteport, cfg_nse_remoteport_cmd,
-	"nse <0-65535> nsvci <0-65535> remote-port <0-65535>",
+	"nse <0-65535> remote-port <0-65535>",
 	NSE_CMD_STR
-	"NS Virtual Connection\n"
-	"NS Virtual Connection ID (NSVCI)\n"
 	"Remote UDP Port\n"
 	"Remote UDP Port Number\n")
 {
 	uint16_t nsei = atoi(argv[0]);
-	uint16_t nsvci = atoi(argv[1]);
-	uint16_t port = atoi(argv[2]);
+	uint16_t port = atoi(argv[1]);
 	struct ns2_vty_vc *vtyvc;
 
-	vtyvc = vtyvc_by_nsei_nsvci(nsei, nsvci, true);
+	vtyvc = vtyvc_by_nsei(nsei, true);
 	if (!vtyvc) {
 		vty_out(vty, "Can not allocate space %s", VTY_NEWLINE);
 		return CMD_WARNING;
@@ -509,8 +507,6 @@ DEFUN(cfg_nse_remoteport, cfg_nse_remoteport_cmd,
 DEFUN(cfg_nse_fr_dlci, cfg_nse_fr_dlci_cmd,
 	"nse <0-65535> nsvci <0-65535> fr-dlci <16-1007>",
 	NSE_CMD_STR
-	"NS Virtual Connection\n"
-	"NS Virtual Connection ID (NSVCI)\n"
 	"Frame Relay DLCI\n"
 	"Frame Relay DLCI Number\n")
 {
@@ -519,36 +515,34 @@ DEFUN(cfg_nse_fr_dlci, cfg_nse_fr_dlci_cmd,
 	uint16_t dlci = atoi(argv[2]);
 	struct ns2_vty_vc *vtyvc;
 
-	vtyvc = vtyvc_by_nsei_nsvci(nsei, nsvci, true);
+	vtyvc = vtyvc_by_nsei(nsei, true);
 	if (!vtyvc) {
 		vty_out(vty, "Can not allocate space %s", VTY_NEWLINE);
 		return CMD_WARNING;
 	}
 
 	vtyvc->frdlci = dlci;
+	vtyvc->nsvci = nsvci;
 
 	return CMD_SUCCESS;
 }
 
 DEFUN(cfg_nse_encaps, cfg_nse_encaps_cmd,
-	"nse <0-65535> nsvci <0-65535> encapsulation (udp|framerelay-gre)",
+	"nse <0-65535> encapsulation (udp|framerelay-gre)",
 	NSE_CMD_STR
-	"NS Virtual Connection\n"
-	"NS Virtual Connection ID (NSVCI)\n"
 	"Encapsulation for NS\n"
 	"UDP/IP Encapsulation\n" "Frame-Relay/GRE/IP Encapsulation\n")
 {
 	uint16_t nsei = atoi(argv[0]);
-	uint16_t nsvci = atoi(argv[1]);
 	struct ns2_vty_vc *vtyvc;
 
-	vtyvc = vtyvc_by_nsei_nsvci(nsei, nsvci, true);
+	vtyvc = vtyvc_by_nsei(nsei, true);
 	if (!vtyvc) {
 		vty_out(vty, "Can not allocate space %s", VTY_NEWLINE);
 		return CMD_WARNING;
 	}
 
-	if (!strcmp(argv[2], "udp"))
+	if (!strcmp(argv[1], "udp"))
 		vtyvc->ll = GPRS_NS2_LL_UDP;
 	else
 		vtyvc->ll = GPRS_NS2_LL_FR_GRE;
@@ -557,25 +551,22 @@ DEFUN(cfg_nse_encaps, cfg_nse_encaps_cmd,
 }
 
 DEFUN(cfg_nse_remoterole, cfg_nse_remoterole_cmd,
-	"nse <0-65535> nsvci <0-65535> remote-role (sgsn|bss)",
+	"nse <0-65535> remote-role (sgsn|bss)",
 	NSE_CMD_STR
-	"NS Virtual Connection\n"
-	"NS Virtual Connection ID (NSVCI)\n"
 	"Remote NSE Role\n"
 	"Remote Peer is SGSN\n"
 	"Remote Peer is BSS\n")
 {
 	uint16_t nsei = atoi(argv[0]);
-	uint16_t nsvci = atoi(argv[1]);
 	struct ns2_vty_vc *vtyvc;
 
-	vtyvc = vtyvc_by_nsei_nsvci(nsei, nsvci, true);
+	vtyvc = vtyvc_by_nsei(nsei, true);
 	if (!vtyvc) {
 		vty_out(vty, "Can not allocate space %s", VTY_NEWLINE);
 		return CMD_WARNING;
 	}
 
-	if (!strcmp(argv[2], "sgsn"))
+	if (!strcmp(argv[1], "sgsn"))
 		vtyvc->remote_end_is_sgsn = 1;
 	else
 		vtyvc->remote_end_is_sgsn = 0;
@@ -584,15 +575,14 @@ DEFUN(cfg_nse_remoterole, cfg_nse_remoterole_cmd,
 }
 
 DEFUN(cfg_no_nse, cfg_no_nse_cmd,
-	"no nse <0-65535> nsvci <0-65535>",
+	"no nse <0-65535>",
 	"Delete Persistent NS Entity\n"
 	"Delete " NSE_CMD_STR)
 {
 	uint16_t nsei = atoi(argv[0]);
-	uint16_t nsvci = atoi(argv[1]);
 	struct ns2_vty_vc *vtyvc;
 
-	vtyvc = vtyvc_by_nsei_nsvci(nsei, nsvci, false);
+	vtyvc = vtyvc_by_nsei(nsei, false);
 	if (!vtyvc) {
 		vty_out(vty, "The NSE %d does not exists.%s", nsei, VTY_NEWLINE);
 		return CMD_WARNING;
