@@ -342,7 +342,7 @@ static int rx_lmi_q933_status_enq(struct msgb *msg, struct tlv_parsed *tp)
 	OSMO_ASSERT(link);
 
 	if (link->role == FR_ROLE_USER_EQUIPMENT) {
-		LOGPFRL(link, LOGL_ERROR, "STATUS-ENQ are not support for role user\n");
+		LOGPFRL(link, LOGL_ERROR, "STATUS-ENQ aren't supported in role user\n");
 		return -1;
 	}
 
@@ -600,7 +600,7 @@ static int rx_lmi_q933_status(struct msgb *msg, struct tlv_parsed *tp)
 	OSMO_ASSERT(link);
 
 	if (link->role == FR_ROLE_NETWORK_EQUIPMENT) {
-		LOGPFRL(link, LOGL_ERROR, "Rx STATUS: STATUS aren't support for role network\n");
+		LOGPFRL(link, LOGL_ERROR, "Rx STATUS: STATUS aren't supported in role network\n");
 		return -1;
 	}
 
