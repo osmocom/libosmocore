@@ -406,7 +406,8 @@ DEFUN(cfg_nse_fr, cfg_nse_fr_cmd,
 	NSE_CMD_STR
 	"NS Virtual Connection\n"
 	"NS Virtual Connection ID (NSVCI)\n"
-	"frame relay\n"
+	"Frame Relay User-Side\n"
+	"Frame Relay Network-Side\n"
 	IFNAME_STR
 	"Data Link connection identifier\n"
 	"Data Link connection identifier\n"
@@ -507,6 +508,8 @@ DEFUN(cfg_nse_remoteport, cfg_nse_remoteport_cmd,
 DEFUN(cfg_nse_fr_dlci, cfg_nse_fr_dlci_cmd,
 	"nse <0-65535> nsvci <0-65535> fr-dlci <16-1007>",
 	NSE_CMD_STR
+	"NS Virtual Connection\n"
+	"NS Virtual Connection ID (NSVCI)\n"
 	"Frame Relay DLCI\n"
 	"Frame Relay DLCI Number\n")
 {
