@@ -98,6 +98,7 @@ enum gsm48_gprs_ie_mm {
 	GSM48_IE_GMM_PDP_CTX_STATUS	= 0x32,	/* 10.5.7.1 */
 	GSM48_IE_GMM_PS_LCS_CAPA	= 0x33,	/* 10.5.5.22 */
 	GSM48_IE_GMM_GMM_MBMS_CTX_ST	= 0x35,	/* 10.5.7.6 */
+	GSM48_IE_GMM_NET_FEAT_SUPPORT	= 0xB0,	/* 10.5.5.23 */
 };
 
 enum gsm48_gprs_ie_sm {
