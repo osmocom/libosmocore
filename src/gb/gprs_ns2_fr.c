@@ -319,7 +319,7 @@ static int open_socket(const char *ifname)
 			"cannot set this socket unblocking: %s\n",
 			strerror(errno));
 		close(fd);
-		fd = -EINVAL;
+		return -EINVAL;
 	}
 
 	rc = bind(fd, (struct sockaddr *)&addr, sizeof(addr));
