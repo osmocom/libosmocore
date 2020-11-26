@@ -558,7 +558,7 @@ static int parse_link_pvc_status(struct osmo_fr_link *link, struct tlv_parsed *t
 		dlc = osmo_fr_dlc_by_dlci(link, dlci);
 		if (!dlc) {
 			/* don't create dlc's for the ones which are about to be deleted. */
-			if (dlc->del)
+			if (pvc->delete)
 				continue;
 
 			dlc = osmo_fr_dlc_alloc(link, dlci);
