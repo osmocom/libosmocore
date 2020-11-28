@@ -32,6 +32,7 @@
 
 #include <string.h>
 #include <stdint.h>
+#include <inttypes.h>
 #include <errno.h>
 
 #include <osmocom/core/utils.h>
@@ -100,15 +101,15 @@ static int osmo_stats_reporter_statsd_send(struct osmo_stats_reporter *srep,
 
 	if (prefix) {
 		if (name1)
-			fmt = "%1$s.%2$s.%6$u.%3$s:%4$d|%5$s";
+			fmt = "%1$s.%2$s.%6$u.%3$s:%4$" PRId64 "|%5$s";
 		else
-			fmt = "%1$s.%2$0.0s%3$s:%4$d|%5$s";
+			fmt = "%1$s.%2$0.0s%3$s:%4$" PRId64 "|%5$s";
 	} else {
 		prefix = "";
 		if (name1)
-			fmt = "%1$s%2$s.%6$u.%3$s:%4$d|%5$s";
+			fmt = "%1$s%2$s.%6$u.%3$s:%4$" PRId64 "|%5$s";
 		else
-			fmt = "%1$s%2$0.0s%3$s:%4$d|%5$s";
+			fmt = "%1$s%2$0.0s%3$s:%4$" PRId64 "|%5$s";
 	}
 
 	if (srep->agg_enabled) {
