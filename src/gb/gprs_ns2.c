@@ -211,6 +211,13 @@ const struct value_string gprs_ns2_prim_strs[] = {
 	{ 0, NULL }
 };
 
+const struct value_string gprs_ns2_lltype_strs[] = {
+	{ GPRS_NS2_LL_UDP,	"UDP" },
+	{ GPRS_NS2_LL_FR_GRE,	"FR_GRE" },
+	{ GPRS_NS2_LL_FR,	"FR" },
+	{ 0, NULL }
+};
+
 /*! string-format a given NS-VC into a user-supplied buffer.
  *  \param[in] buf user-allocated output buffer
  *  \param[in] buf_len size of user-allocated output buffer in bytes

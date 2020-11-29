@@ -119,6 +119,7 @@ gprs_ns2_is_ip_bind;
 gprs_ns2_ll_str;
 gprs_ns2_ll_str_buf;
 gprs_ns2_ll_str_c;
+gprs_ns2_lltype_strs;
 gprs_ns2_nse_by_nsei;
 gprs_ns2_nse_foreach_nsvc;
 gprs_ns2_nse_nsei;
