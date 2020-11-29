@@ -233,7 +233,8 @@ int ns2_recv_vc(struct gprs_ns2_vc *nsvc,
 struct gprs_ns2_vc *ns2_vc_alloc(struct gprs_ns2_vc_bind *bind,
 				 struct gprs_ns2_nse *nse,
 				 bool initiater,
-				 enum gprs_ns2_vc_mode vc_mode);
+				 enum gprs_ns2_vc_mode vc_mode,
+				 const char *id);
 
 struct msgb *gprs_ns2_msgb_alloc(void);
 

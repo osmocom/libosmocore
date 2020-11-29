@@ -486,9 +486,10 @@ void ns2_prim_status_ind(struct gprs_ns2_nse *nse,
  * \param[in] bind The 'bind' on which we operate
  * \param[in] nse The NS Entity on which we operate
  * \param[in] initiater - if this is an incoming remote (!initiater) or a local outgoing connection (initater)
+ * \param[in] id - human-readable identifier
  * \return newly allocated NS-VC on success; NULL on error */
 struct gprs_ns2_vc *ns2_vc_alloc(struct gprs_ns2_vc_bind *bind, struct gprs_ns2_nse *nse, bool initiater,
-				 enum gprs_ns2_vc_mode vc_mode)
+				 enum gprs_ns2_vc_mode vc_mode, const char *id)
 {
 	/* Sanity check */
 	OSMO_ASSERT(bind->ll == nse->ll);
@@ -511,7 +512,7 @@ struct gprs_ns2_vc *ns2_vc_alloc(struct gprs_ns2_vc_bind *bind, struct gprs_ns2_
 	nsvc->statg = osmo_stat_item_group_alloc(nsvc, &nsvc_statg_desc, bind->nsi->rate_ctr_idx);
 	if (!nsvc->statg)
 		goto err_group;
-	if (!gprs_ns2_vc_fsm_alloc(nsvc, NULL, initiater))
+	if (!gprs_ns2_vc_fsm_alloc(nsvc, id, initiater))
 		goto err_statg;
 
 	bind->nsi->rate_ctr_idx++;
@@ -791,6 +792,7 @@ enum gprs_ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 	enum gprs_ns2_vc_mode vc_mode;
 	uint16_t nsvci;
 	uint16_t nsei;
+	char idbuf[32];
 
 	int rc, tlv;
 
@@ -907,8 +909,11 @@ enum gprs_ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 		return GPRS_NS2_CS_SKIPPED;
 	}
 
+	nsvci = tlvp_val16be(&tp, NS_IE_VCI);
 	vc_mode = gprs_ns2_dialect_to_vc_mode(dialect);
-	nsvc = ns2_vc_alloc(bind, nse, false, vc_mode);
+	snprintf(idbuf, sizeof(idbuf), "%s-NSE%05u-NSVC%05u", gprs_ns2_lltype_str(nse->ll),
+		 nse->nsei, nsvci);
+	nsvc = ns2_vc_alloc(bind, nse, false, vc_mode, idbuf);
 	if (!nsvc)
 		return GPRS_NS2_CS_SKIPPED;
 

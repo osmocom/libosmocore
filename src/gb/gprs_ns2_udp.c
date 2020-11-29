@@ -394,6 +394,8 @@ struct gprs_ns2_vc *gprs_ns2_ip_bind_connect(struct gprs_ns2_vc_bind *bind,
 	struct gprs_ns2_vc *nsvc;
 	struct priv_vc *priv;
 	enum gprs_ns2_vc_mode vc_mode;
+	char *sockaddr_str;
+	char idbuf[64];
 
 	vc_mode = gprs_ns2_dialect_to_vc_mode(nse->dialect);
 	if ((int) vc_mode == -1) {
@@ -402,7 +404,11 @@ struct gprs_ns2_vc *gprs_ns2_ip_bind_connect(struct gprs_ns2_vc_bind *bind,
 		return NULL;
 	}
 
-	nsvc = ns2_vc_alloc(bind, nse, true, vc_mode);
+	sockaddr_str = (char *)osmo_sockaddr_to_str(remote);
+	osmo_identifier_sanitize_buf(sockaddr_str, NULL, '_');
+	snprintf(idbuf, sizeof(idbuf), "%s-NSE%05u-remote-%s", gprs_ns2_lltype_str(nse->ll),
+		 nse->nsei, sockaddr_str);
+	nsvc = ns2_vc_alloc(bind, nse, true, vc_mode, idbuf);
 	if (!nsvc)
 		return NULL;
 

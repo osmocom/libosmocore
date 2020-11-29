@@ -737,13 +737,17 @@ struct gprs_ns2_vc *gprs_ns2_fr_connect(struct gprs_ns2_vc_bind *bind,
 {
 	struct gprs_ns2_vc *nsvc = NULL;
 	struct priv_vc *priv = NULL;
+	struct priv_bind *bpriv = bind->priv;
+	char idbuf[64];
 
 	nsvc = gprs_ns2_fr_nsvc_by_dlci(bind, dlci);
 	if (nsvc) {
 		goto err;
 	}
 
-	nsvc = ns2_vc_alloc(bind, nse, true, NS2_VC_MODE_BLOCKRESET);
+	snprintf(idbuf, sizeof(idbuf), "%s-%s-DLCI%u-NSE%05u-NSVC%05u", gprs_ns2_lltype_str(nse->ll),
+		 bpriv->netif, dlci, nse->nsei, nsvci);
+	nsvc = ns2_vc_alloc(bind, nse, true, NS2_VC_MODE_BLOCKRESET, idbuf);
 	if (!nsvc)
 		goto err;
 

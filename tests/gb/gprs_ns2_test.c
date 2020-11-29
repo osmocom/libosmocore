@@ -113,7 +113,7 @@ void test_nse_transfer_cap(void *ctx)
 	OSMO_ASSERT(nse);
 
 	printf("---- Test with NSVC[0]\n");
-	nsvc[0] = ns2_vc_alloc(bind[0], nse, false, NS2_VC_MODE_ALIVE);
+	nsvc[0] = ns2_vc_alloc(bind[0], nse, false, NS2_VC_MODE_ALIVE, NULL);
 	OSMO_ASSERT(nsvc[0]);
 	OSMO_ASSERT(ns2_count_transfer_cap(nse, 0) == 0);
 	nsvc[0]->fi->state = 3;	/* HACK: 3 = GPRS_NS2_ST_UNBLOCKED */
@@ -121,7 +121,7 @@ void test_nse_transfer_cap(void *ctx)
 	OSMO_ASSERT(ns2_count_transfer_cap(nse, 0) == 42);
 
 	printf("---- Test with NSVC[1]\n");
-	nsvc[1] = ns2_vc_alloc(bind[0], nse, false, NS2_VC_MODE_ALIVE);
+	nsvc[1] = ns2_vc_alloc(bind[0], nse, false, NS2_VC_MODE_ALIVE, NULL);
 	OSMO_ASSERT(nsvc[1]);
 	OSMO_ASSERT(ns2_count_transfer_cap(nse, 0) == 42);
 	nsvc[1]->fi->state = 3; /* HACK: 3 = GPRS_NS2_ST_UNBLOCKED */
@@ -129,7 +129,7 @@ void test_nse_transfer_cap(void *ctx)
 	OSMO_ASSERT(ns2_count_transfer_cap(nse, 0) == 42);
 
 	printf("---- Test with NSVC[2]\n");
-	nsvc[2] = ns2_vc_alloc(bind[1], nse, false, NS2_VC_MODE_ALIVE);
+	nsvc[2] = ns2_vc_alloc(bind[1], nse, false, NS2_VC_MODE_ALIVE, NULL);
 	OSMO_ASSERT(nsvc[2]);
 	OSMO_ASSERT(ns2_count_transfer_cap(nse, 0) == 42);
 	nsvc[2]->fi->state = 3; /* HACK: 3 = GPRS_NS2_ST_UNBLOCKED */
