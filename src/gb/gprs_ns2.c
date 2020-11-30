@@ -1202,7 +1202,7 @@ void gprs_ns2_start_alive_all_nsvcs(struct gprs_ns2_nse *nse)
 
 /*! Set the mode of given bind.
  *  \param[in] bind the bind we want to set the mode of
- *  \param[in] modde mode to set bind to */
+ *  \param[in] mode mode to set bind to */
 void gprs_ns2_bind_set_mode(struct gprs_ns2_vc_bind *bind, enum gprs_ns2_vc_mode mode)
 {
 	bind->vc_mode = mode;
