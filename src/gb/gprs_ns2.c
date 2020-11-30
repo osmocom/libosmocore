@@ -772,42 +772,37 @@ enum gprs_ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 	if (msg->len < sizeof(struct gprs_ns_hdr))
 		return GPRS_NS2_CS_ERROR;
 
-	if (nsh->pdu_type == NS_PDUT_STATUS) {
+	switch (nsh->pdu_type) {
+	case NS_PDUT_STATUS:
 		/* Do not respond, see 3GPP TS 08.16, 7.5.1 */
 		LOGP(DLNS, LOGL_INFO, "Ignoring NS STATUS from %s "
 		     "for non-existing NS-VC\n",
 		     logname);
 		return GPRS_NS2_CS_SKIPPED;
-	}
-
-	if (nsh->pdu_type == NS_PDUT_ALIVE_ACK) {
+	case NS_PDUT_ALIVE_ACK:
 		/* Ignore this, see 3GPP TS 08.16, 7.4.1 */
 		LOGP(DLNS, LOGL_INFO, "Ignoring NS ALIVE ACK from %s "
 		     "for non-existing NS-VC\n",
 		     logname);
 		return GPRS_NS2_CS_SKIPPED;
-	}
-
-	if (nsh->pdu_type == NS_PDUT_RESET_ACK) {
+	case NS_PDUT_RESET_ACK:
 		/* Ignore this, see 3GPP TS 08.16, 7.3.1 */
 		LOGP(DLNS, LOGL_INFO, "Ignoring NS RESET ACK from %s "
 		     "for non-existing NS-VC\n",
 		     logname);
 		return GPRS_NS2_CS_SKIPPED;
-	}
+	case NS_PDUT_RESET:
+		/* accept PDU RESET when vc_mode matches */
+		if (bind->vc_mode == NS2_VC_MODE_BLOCKRESET)
+			break;
 
-	if (bind->vc_mode == NS2_VC_MODE_BLOCKRESET) {
-		/* Only the RESET procedure creates a new NSVC */
-		if (nsh->pdu_type != NS_PDUT_RESET) {
-			rc = reject_status_msg(msg, &tp, reject, NS_CAUSE_PDU_INCOMP_PSTATE);
-
-			if (rc < 0) {
-				LOGP(DLNS, LOGL_ERROR, "Failed to generate reject message (%d)\n", rc);
-				return rc;
-			}
-			return GPRS_NS2_CS_REJECTED;
+		rc = reject_status_msg(msg, &tp, reject, NS_CAUSE_PDU_INCOMP_PSTATE);
+		if (rc < 0) {
+			LOGP(DLNS, LOGL_ERROR, "Failed to generate reject message (%d)\n", rc);
+			return rc;
 		}
-	} else { /* NS2_VC_MODE_ALIVE */
+		return GPRS_NS2_CS_REJECTED;
+	default:
 		rc = reject_status_msg(msg, &tp, reject, NS_CAUSE_PDU_INCOMP_PSTATE);
 
 		if (rc < 0) {
