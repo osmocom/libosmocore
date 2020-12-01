@@ -292,34 +292,48 @@ static void dump_bind(struct vty *vty, const struct gprs_ns2_vc_bind *bind, bool
 		bind->dump_vty(bind, vty, stats);
 }
 
-static void dump_ns(struct vty *vty, const struct gprs_ns2_inst *nsi, bool stats, bool persistent_only)
+static void dump_ns_bind(struct vty *vty, const struct gprs_ns2_inst *nsi, bool stats)
 {
 	struct gprs_ns2_vc_bind *bind;
-	struct gprs_ns2_nse *nse;
 
 	llist_for_each_entry(bind, &nsi->binding, list) {
 		dump_bind(vty, bind, stats);
 	}
+}
+
+
+static void dump_ns_entities(struct vty *vty, const struct gprs_ns2_inst *nsi, bool stats, bool persistent_only)
+{
+	struct gprs_ns2_nse *nse;
 
 	llist_for_each_entry(nse, &nsi->nse, list) {
 		dump_nse(vty, nse, stats, persistent_only);
 	}
-
 }
 
-DEFUN(show_ns, show_ns_cmd, "show ns",
-	SHOW_STR "Display information about the NS protocol")
+DEFUN(show_ns_binds, show_ns_binds_cmd, "show ns binds [stats]",
+	SHOW_STR
+	"Display information about the NS protocol binds\n"
+	"Include statistic\n")
 {
-	dump_ns(vty, vty_nsi, false, false);
+	bool stats = false;
+	if (argc > 0)
+		stats = true;
+
+	dump_ns_bind(vty, vty_nsi, stats);
 	return CMD_SUCCESS;
 }
 
-DEFUN(show_ns_stats, show_ns_stats_cmd, "show ns stats",
+DEFUN(show_ns_entities, show_ns_entities_cmd, "show ns entities [stats]",
 	SHOW_STR
-	"Display information about the NS protocol\n"
+	"Display information about the NS protocol entities (NSEs)\n"
 	"Include statistics\n")
 {
-	dump_ns(vty, vty_nsi, true, false);
+	bool stats = false;
+	if (argc > 0)
+		stats = true;
+
+	dump_ns_entities(vty, vty_nsi, stats, false);
 	return CMD_SUCCESS;
 }
 
@@ -328,7 +342,7 @@ DEFUN(show_ns_pers, show_ns_pers_cmd, "show ns persistent",
 	"Display information about the NS protocol\n"
 	"Show only persistent NS\n")
 {
-	dump_ns(vty, vty_nsi, true, true);
+	dump_ns_entities(vty, vty_nsi, true, true);
 	return CMD_SUCCESS;
 }
 
@@ -776,8 +790,8 @@ int gprs_ns2_vty_init(struct gprs_ns2_inst *nsi,
 		return 0;
 	vty_elements_installed = true;
 
-	install_lib_element_ve(&show_ns_cmd);
-	install_lib_element_ve(&show_ns_stats_cmd);
+	install_lib_element_ve(&show_ns_binds_cmd);
+	install_lib_element_ve(&show_ns_entities_cmd);
 	install_lib_element_ve(&show_ns_pers_cmd);
 	install_lib_element_ve(&show_nse_cmd);
 	install_lib_element_ve(&logging_fltr_nsvc_cmd);
