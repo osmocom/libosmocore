@@ -32,6 +32,14 @@ enum gprs_ns2_vc_mode {
 	NS2_VC_MODE_ALIVE,
 };
 
+enum gprs_ns2_dialect {
+	NS2_DIALECT_UNDEF,
+	NS2_DIALECT_STATIC_ALIVE,
+	NS2_DIALECT_STATIC_RESETBLOCK,
+	NS2_DIALECT_IPACCESS,
+	NS2_DIALECT_SNS,
+};
+
 /*! Osmocom NS link layer types */
 enum gprs_ns2_ll {
 	GPRS_NS2_LL_UDP,	/*!< NS/UDP/IP */
@@ -144,7 +152,8 @@ int gprs_ns2_nse_foreach_nsvc(struct gprs_ns2_nse *nse,
 			      gprs_ns2_foreach_nsvc_cb cb, void *cb_data);
 struct gprs_ns2_nse *gprs_ns2_nse_by_nsei(struct gprs_ns2_inst *nsi, uint16_t nsei);
 struct gprs_ns2_nse *gprs_ns2_create_nse(struct gprs_ns2_inst *nsi, uint16_t nsei,
-					 enum gprs_ns2_ll linklayer);
+					 enum gprs_ns2_ll linklayer,
+					 enum gprs_ns2_dialect dialect);
 uint16_t gprs_ns2_nse_nsei(struct gprs_ns2_nse *nse);
 void gprs_ns2_free_nse(struct gprs_ns2_nse *nse);
 void gprs_ns2_free_nses(struct gprs_ns2_inst *nsi);
@@ -160,7 +169,6 @@ int gprs_ns2_ip_bind(struct gprs_ns2_inst *nsi,
 		     struct gprs_ns2_vc_bind **result);
 struct gprs_ns2_vc_bind *gprs_ns2_ip_bind_by_sockaddr(struct gprs_ns2_inst *nsi,
 						      const struct osmo_sockaddr *sockaddr);
-void gprs_ns2_bind_set_mode(struct gprs_ns2_vc_bind *bind, enum gprs_ns2_vc_mode mode);
 
 /* FR VL driver */
 struct gprs_ns2_vc_bind *gprs_ns2_fr_bind_by_netif(
@@ -188,7 +196,8 @@ struct gprs_ns2_vc *gprs_ns2_ip_connect(struct gprs_ns2_vc_bind *bind,
 struct gprs_ns2_vc *gprs_ns2_ip_connect2(struct gprs_ns2_vc_bind *bind,
 					 const struct osmo_sockaddr *remote,
 					 uint16_t nsei,
-					 uint16_t nsvci);
+					 uint16_t nsvci,
+					 enum gprs_ns2_dialect dialect);
 struct gprs_ns2_vc *gprs_ns2_ip_connect_inactive(struct gprs_ns2_vc_bind *bind,
 					const struct osmo_sockaddr *remote,
 					struct gprs_ns2_nse *nse,
@@ -238,7 +247,5 @@ const char *gprs_ns2_nsvc_state_name(struct gprs_ns2_vc *nsvc);
 int gprs_ns2_vty_init(struct gprs_ns2_inst *nsi,
 		      const struct osmo_sockaddr_str *default_bind);
 int gprs_ns2_vty_create();
-void gprs_ns2_vty_force_vc_mode(bool force, enum gprs_ns2_vc_mode mode, const char *reason);
-
 
 /*! @} */

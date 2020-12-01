@@ -130,6 +130,9 @@ struct gprs_ns2_nse {
 	/*! which link-layer are we based on? */
 	enum gprs_ns2_ll ll;
 
+	/*! which dialect does this NSE speaks? */
+	enum gprs_ns2_dialect dialect;
+
 	struct osmo_fsm_inst *bss_sns_fi;
 };
 
@@ -188,8 +191,8 @@ struct gprs_ns2_vc_bind {
 	struct gprs_ns2_inst *nsi;
 	struct gprs_ns2_vc_driver *driver;
 
-	/*! if VCs use reset/block/unblock method. IP shall not use this */
-	enum gprs_ns2_vc_mode vc_mode;
+	bool accept_ipaccess;
+	bool accept_sns;
 
 	/*! which link-layer are we based on? */
 	enum gprs_ns2_ll ll;
@@ -222,7 +225,8 @@ int ns2_recv_vc(struct gprs_ns2_vc *nsvc,
 
 struct gprs_ns2_vc *ns2_vc_alloc(struct gprs_ns2_vc_bind *bind,
 				 struct gprs_ns2_nse *nse,
-				 bool initiater);
+				 bool initiater,
+				 enum gprs_ns2_vc_mode vc_mode);
 
 struct msgb *gprs_ns2_msgb_alloc(void);
 
@@ -298,8 +302,6 @@ int gprs_ns2_vc_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed
 int gprs_ns2_vc_is_alive(struct gprs_ns2_vc *nsvc);
 int gprs_ns2_vc_is_unblocked(struct gprs_ns2_vc *nsvc);
 
-/* vty.c */
-void ns2_vty_bind_apply(struct gprs_ns2_vc_bind *bind);
-
 /* nse */
 void ns2_nse_notify_unblocked(struct gprs_ns2_vc *nsvc, bool unblocked);
+enum gprs_ns2_vc_mode gprs_ns2_dialect_to_vc_mode(enum gprs_ns2_dialect dialect);

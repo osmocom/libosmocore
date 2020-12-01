@@ -492,7 +492,8 @@ void ns2_prim_status_ind(struct gprs_ns2_nse *nse,
  * \param[in] nse The NS Entity on which we operate
  * \param[in] initiater - if this is an incoming remote (!initiater) or a local outgoing connection (initater)
  * \return newly allocated NS-VC on success; NULL on error */
-struct gprs_ns2_vc *ns2_vc_alloc(struct gprs_ns2_vc_bind *bind, struct gprs_ns2_nse *nse, bool initiater)
+struct gprs_ns2_vc *ns2_vc_alloc(struct gprs_ns2_vc_bind *bind, struct gprs_ns2_nse *nse, bool initiater,
+				 enum gprs_ns2_vc_mode vc_mode)
 {
 	struct gprs_ns2_vc *nsvc = talloc_zero(bind, struct gprs_ns2_vc);
 
@@ -501,7 +502,7 @@ struct gprs_ns2_vc *ns2_vc_alloc(struct gprs_ns2_vc_bind *bind, struct gprs_ns2_
 
 	nsvc->bind = bind;
 	nsvc->nse = nse;
-	nsvc->mode = bind->vc_mode;
+	nsvc->mode = vc_mode;
 	nsvc->sig_weight = 1;
 	nsvc->data_weight = 1;
 
@@ -672,7 +673,8 @@ struct gprs_ns2_vc *gprs_ns2_nsvc_by_nsvci(struct gprs_ns2_inst *nsi, uint16_t n
  *  \param[in] nsi NS instance in which to create NS Entity
  *  \param[in] nsei NS Entity Identifier of to-be-created NSE
  *  \returns newly-allocated NS-E in successful case; NULL on error */
-struct gprs_ns2_nse *gprs_ns2_create_nse(struct gprs_ns2_inst *nsi, uint16_t nsei, enum gprs_ns2_ll linklayer)
+struct gprs_ns2_nse *gprs_ns2_create_nse(struct gprs_ns2_inst *nsi, uint16_t nsei,
+					 enum gprs_ns2_ll linklayer, enum gprs_ns2_dialect dialect)
 {
 	struct gprs_ns2_nse *nse;
 
@@ -686,6 +688,7 @@ struct gprs_ns2_nse *gprs_ns2_create_nse(struct gprs_ns2_inst *nsi, uint16_t nse
 	if (!nse)
 		return NULL;
 
+	nse->dialect = dialect;
 	nse->ll = linklayer;
 	nse->nsei = nsei;
 	nse->nsi = nsi;
@@ -765,6 +768,8 @@ enum gprs_ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 	struct tlv_parsed tp;
 	struct gprs_ns2_vc *nsvc;
 	struct gprs_ns2_nse *nse;
+	enum gprs_ns2_dialect dialect;
+	enum gprs_ns2_vc_mode vc_mode;
 	uint16_t nsvci;
 	uint16_t nsei;
 
@@ -794,8 +799,10 @@ enum gprs_ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 		return GPRS_NS2_CS_SKIPPED;
 	case NS_PDUT_RESET:
 		/* accept PDU RESET when vc_mode matches */
-		if (bind->vc_mode == NS2_VC_MODE_BLOCKRESET)
+		if (bind->accept_ipaccess) {
+			dialect = NS2_DIALECT_IPACCESS;
 			break;
+		}
 
 		rc = reject_status_msg(msg, &tp, reject, NS_CAUSE_PDU_INCOMP_PSTATE);
 		if (rc < 0) {
@@ -837,13 +844,14 @@ enum gprs_ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 			return GPRS_NS2_CS_SKIPPED;
 		}
 
-		nse = gprs_ns2_create_nse(bind->nsi, nsei, bind->ll);
+		nse = gprs_ns2_create_nse(bind->nsi, nsei, bind->ll, dialect);
 		if (!nse) {
 			return GPRS_NS2_CS_ERROR;
 		}
 	}
 
-	nsvc = ns2_vc_alloc(bind, nse, false);
+	vc_mode = gprs_ns2_dialect_to_vc_mode(dialect);
+	nsvc = ns2_vc_alloc(bind, nse, false, vc_mode);
 	if (!nsvc)
 		return GPRS_NS2_CS_SKIPPED;
 
@@ -911,12 +919,13 @@ struct gprs_ns2_vc *gprs_ns2_ip_connect(struct gprs_ns2_vc_bind *bind,
 struct gprs_ns2_vc *gprs_ns2_ip_connect2(struct gprs_ns2_vc_bind *bind,
 					 const struct osmo_sockaddr *remote,
 					 uint16_t nsei,
-					 uint16_t nsvci)
+					 uint16_t nsvci,
+					 enum gprs_ns2_dialect dialect)
 {
 	struct gprs_ns2_nse *nse = gprs_ns2_nse_by_nsei(bind->nsi, nsei);
 
 	if (!nse) {
-		nse = gprs_ns2_create_nse(bind->nsi, nsei, GPRS_NS2_LL_UDP);
+		nse = gprs_ns2_create_nse(bind->nsi, nsei, GPRS_NS2_LL_UDP, dialect);
 		if (!nse)
 			return NULL;
 	}
@@ -937,9 +946,17 @@ int gprs_ns2_ip_connect_sns(struct gprs_ns2_vc_bind *bind,
 	struct gprs_ns2_vc *nsvc;
 
 	if (!nse) {
-		nse = gprs_ns2_create_nse(bind->nsi, nsei, GPRS_NS2_LL_UDP);
+		nse = gprs_ns2_create_nse(bind->nsi, nsei, GPRS_NS2_LL_UDP, NS2_DIALECT_SNS);
 		if (!nse)
 			return -1;
+	}
+
+	if (nse->ll != GPRS_NS2_LL_UDP) {
+		return -2;
+	}
+
+	if (nse->dialect != NS2_DIALECT_SNS) {
+		return -2;
 	}
 
 	nsvc = gprs_ns2_ip_bind_connect(bind, nse, remote);
@@ -1199,14 +1216,6 @@ void gprs_ns2_start_alive_all_nsvcs(struct gprs_ns2_nse *nse)
 	}
 }
 
-/*! Set the mode of given bind.
- *  \param[in] bind the bind we want to set the mode of
- *  \param[in] mode mode to set bind to */
-void gprs_ns2_bind_set_mode(struct gprs_ns2_vc_bind *bind, enum gprs_ns2_vc_mode mode)
-{
-	bind->vc_mode = mode;
-}
-
 /*! Destroy a given bind.
  *  \param[in] bind the bind we want to destroy */
 void gprs_ns2_free_bind(struct gprs_ns2_vc_bind *bind)
@@ -1234,4 +1243,20 @@ void gprs_ns2_free_binds(struct gprs_ns2_inst *nsi)
 		gprs_ns2_free_bind(bind);
 	}
 }
+
+enum gprs_ns2_vc_mode gprs_ns2_dialect_to_vc_mode(
+		enum gprs_ns2_dialect dialect)
+{
+	switch (dialect) {
+	case NS2_DIALECT_SNS:
+	case NS2_DIALECT_STATIC_ALIVE:
+		return NS2_VC_MODE_ALIVE;
+	case NS2_DIALECT_STATIC_RESETBLOCK:
+	case NS2_DIALECT_IPACCESS:
+		return NS2_VC_MODE_BLOCKRESET;
+	default:
+		return -1;
+	}
+}
+
 /*! @} */

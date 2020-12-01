@@ -486,7 +486,6 @@ int gprs_ns2_fr_bind(struct gprs_ns2_inst *nsi,
 	}
 	strncpy(priv->netif, netif, sizeof(priv->netif));
 
-	ns2_vty_bind_apply(bind);
 	if (result)
 		*result = bind;
 
@@ -600,7 +599,7 @@ struct gprs_ns2_vc *gprs_ns2_fr_connect(struct gprs_ns2_vc_bind *bind,
 	struct priv_vc *priv = NULL;
 	struct gprs_ns2_nse *nse = gprs_ns2_nse_by_nsei(bind->nsi, nsei);
 	if (!nse) {
-		nse = gprs_ns2_create_nse(bind->nsi, nsei, GPRS_NS2_LL_FR);
+		nse = gprs_ns2_create_nse(bind->nsi, nsei, GPRS_NS2_LL_FR, NS2_DIALECT_STATIC_RESETBLOCK);
 		if (!nse)
 			return NULL;
 		created_nse = true;
@@ -611,7 +610,7 @@ struct gprs_ns2_vc *gprs_ns2_fr_connect(struct gprs_ns2_vc_bind *bind,
 		goto err_nse;
 	}
 
-	nsvc = ns2_vc_alloc(bind, nse, true);
+	nsvc = ns2_vc_alloc(bind, nse, true, NS2_VC_MODE_BLOCKRESET);
 	if (!nsvc)
 		goto err_nse;
 

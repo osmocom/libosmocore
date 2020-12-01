@@ -62,10 +62,6 @@ struct ns2_vty_priv {
 	struct osmo_sockaddr_str frgreaddr;
 	int dscp;
 	enum gprs_ns2_vc_mode vc_mode;
-	/* force vc mode if another configuration forces
-	 * the vc mode. E.g. SNS configuration */
-	bool force_vc_mode;
-	const char *force_vc_mode_reason;
 	bool frgre;
 
 	struct llist_head vtyvc;
@@ -714,29 +710,13 @@ DEFUN(cfg_nsip_res_block_unblock, cfg_nsip_res_block_unblock_cmd,
 	"Disable NS-{RESET,BLOCK,UNBLOCK}\n")
 {
 	enum gprs_ns2_vc_mode vc_mode;
-	struct gprs_ns2_vc_bind *bind;
 
 	if (!strcmp(argv[0], "enabled"))
 		vc_mode = NS2_VC_MODE_BLOCKRESET;
 	else
 		vc_mode = NS2_VC_MODE_ALIVE;
 
-	if (priv.force_vc_mode) {
-		if (priv.vc_mode != vc_mode)
-		{
-			vty_out(vty, "Ignoring use-reset-block because it's already set by %s.%s",
-				priv.force_vc_mode_reason, VTY_NEWLINE);
-			return CMD_WARNING;
-		}
-
-		return CMD_SUCCESS;
-	}
-
 	priv.vc_mode = vc_mode;
-
-	llist_for_each_entry(bind, &vty_nsi->binding, list) {
-		gprs_ns2_bind_set_mode(bind, priv.vc_mode);
-	}
 
 	return CMD_SUCCESS;
 }
@@ -902,6 +882,7 @@ int gprs_ns2_vty_create() {
 	struct gprs_ns2_nse *nse;
 	struct gprs_ns2_vc *nsvc;
 	struct osmo_sockaddr sockaddr;
+	enum gprs_ns2_dialect dialect = NS2_DIALECT_UNDEF;
 	int rc = 0;
 
 	if (!vty_nsi)
@@ -918,7 +899,7 @@ int gprs_ns2_vty_create() {
 			/* TODO: could not bind on the specific address */
 			return -1;
 		}
-		gprs_ns2_bind_set_mode(bind, priv.vc_mode);
+		bind->accept_ipaccess = true;
 	}
 
 	/* create vcs */
@@ -926,6 +907,7 @@ int gprs_ns2_vty_create() {
 		/* validate settings */
 		switch (vtyvc->ll) {
 		case GPRS_NS2_LL_UDP:
+			dialect = NS2_DIALECT_IPACCESS;
 			if (strlen(vtyvc->remote.ip) == 0) {
 				/* Invalid IP for VC */
 				continue;
@@ -942,14 +924,16 @@ int gprs_ns2_vty_create() {
 			}
 			break;
 		case GPRS_NS2_LL_FR:
+			dialect = NS2_DIALECT_STATIC_RESETBLOCK;
 			break;
 		case GPRS_NS2_LL_FR_GRE:
+			dialect = NS2_DIALECT_STATIC_RESETBLOCK;
 			continue;
 		}
 
 		nse = gprs_ns2_nse_by_nsei(vty_nsi, vtyvc->nsei);
 		if (!nse) {
-			nse = gprs_ns2_create_nse(vty_nsi, vtyvc->nsei, vtyvc->ll);
+			nse = gprs_ns2_create_nse(vty_nsi, vtyvc->nsei, vtyvc->ll, dialect);
 			if (!nse) {
 				/* Could not create NSE for VTY */
 				continue;
@@ -1000,30 +984,4 @@ int gprs_ns2_vty_create() {
 
 
 	return 0;
-}
-
-/*!
- * \brief ns2_vty_bind_apply will be called when a new bind is created to apply vty settings
- * \param bind
- * \return
- */
-void ns2_vty_bind_apply(struct gprs_ns2_vc_bind *bind)
-{
-	gprs_ns2_bind_set_mode(bind, priv.vc_mode);
-}
-
-/*!
- * \brief ns2_vty_force_vc_mode force a mode and prevents the vty from overwriting it.
- * \param force if true mode and reason will be set. false to allow modification via vty.
- * \param mode
- * \param reason A description shown to the user when a vty command wants to change the mode.
- */
-void gprs_ns2_vty_force_vc_mode(bool force, enum gprs_ns2_vc_mode mode, const char *reason)
-{
-	priv.force_vc_mode = force;
-
-	if (force) {
-		priv.vc_mode = mode;
-		priv.force_vc_mode_reason = reason;
-	}
 }
