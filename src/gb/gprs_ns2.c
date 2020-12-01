@@ -265,7 +265,7 @@ char *gprs_ns2_ll_str_buf(char *buf, size_t buf_len, struct gprs_ns2_vc *nsvc)
 			 gprs_ns2_fr_nsvc_dlci(nsvc));
 		break;
 	default:
-		buf[0] = '\0';
+		snprintf(buf, buf_len, "unknown)");
 		break;
 	}
 
