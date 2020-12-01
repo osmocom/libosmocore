@@ -105,13 +105,16 @@ static void dump_vty(const struct gprs_ns2_vc_bind *bind, struct vty *vty, bool 
 {
 	struct priv_bind *priv;
 	struct gprs_ns2_vc *nsvc;
+	struct osmo_fr_link *fr_link;
 
 	if (!bind)
 		return;
 
 	priv = bind->priv;
+	fr_link = priv->link;
 
-	vty_out(vty, "FR bind: %s%s", priv->netif, VTY_NEWLINE);
+	vty_out(vty, "FR bind: %s, role: %s%s", priv->netif,
+		osmo_fr_role_str(fr_link->role), VTY_NEWLINE);
 
 	llist_for_each_entry(nsvc, &bind->nsvc, blist) {
 		vty_out(vty, "    %s%s", gprs_ns2_ll_str(nsvc), VTY_NEWLINE);
