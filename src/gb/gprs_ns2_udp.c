@@ -359,8 +359,6 @@ int gprs_ns2_ip_bind(struct gprs_ns2_inst *nsi,
 	}
 
 	llist_add(&bind->list, &nsi->binding);
-	ns2_vty_bind_apply(bind);
-
 	if (result)
 		*result = bind;
 
@@ -378,8 +376,15 @@ struct gprs_ns2_vc *gprs_ns2_ip_bind_connect(struct gprs_ns2_vc_bind *bind,
 {
 	struct gprs_ns2_vc *nsvc;
 	struct priv_vc *priv;
+	enum gprs_ns2_vc_mode vc_mode;
 
-	nsvc = ns2_vc_alloc(bind, nse, true);
+	vc_mode = gprs_ns2_dialect_to_vc_mode(nse->dialect);
+	if (vc_mode == -1) {
+		LOGP(DLNS, LOGL_ERROR, "Can not derive vc mode from dialect. Maybe libosmocore is too old.\n");
+		return NULL;
+	}
+
+	nsvc = ns2_vc_alloc(bind, nse, true, vc_mode);
 	if (!nsvc)
 		return NULL;
 

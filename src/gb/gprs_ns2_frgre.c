@@ -592,8 +592,6 @@ int gprs_ns2_frgre_bind(struct gprs_ns2_inst *nsi,
 				dscp, rc, errno);
 	}
 
-	ns2_vty_bind_apply(bind);
-
 	if (result)
 		*result = bind;
 
