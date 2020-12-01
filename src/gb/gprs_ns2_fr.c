@@ -50,8 +50,10 @@
 #include <osmocom/core/select.h>
 #include <osmocom/core/socket.h>
 #include <osmocom/core/talloc.h>
+#include <osmocom/core/mnl.h>
 #include <osmocom/gprs/gprs_ns2.h>
 
+#include "config.h"
 #include "common_vty.h"
 #include "gprs_ns2_internal.h"
 
@@ -81,6 +83,7 @@ struct priv_bind {
 	struct osmo_fd fd;
 	char netif[IF_NAMESIZE];
 	struct osmo_fr_link *link;
+	bool if_running;
 };
 
 struct priv_vc {
@@ -112,8 +115,8 @@ static void dump_vty(const struct gprs_ns2_vc_bind *bind, struct vty *vty, bool 
 	priv = bind->priv;
 	fr_link = priv->link;
 
-	vty_out(vty, "FR bind: %s, role: %s%s", priv->netif,
-		osmo_fr_role_str(fr_link->role), VTY_NEWLINE);
+	vty_out(vty, "FR bind: %s, role: %s, link: %s%s", priv->netif,
+		osmo_fr_role_str(fr_link->role), priv->if_running ? "UP" : "DOWN", VTY_NEWLINE);
 
 	llist_for_each_entry(nsvc, &bind->nsvc, blist) {
 		vty_out(vty, "    NSVCI %05u: %s%s", nsvc->nsvci, gprs_ns2_ll_str(nsvc), VTY_NEWLINE);
@@ -334,6 +337,116 @@ static int open_socket(const char *ifname)
 	return fd;
 }
 
+#ifdef ENABLE_LIBMNL
+
+#include <osmocom/core/mnl.h>
+#include <linux/if.h>
+#include <linux/if_link.h>
+#include <linux/rtnetlink.h>
+
+#ifndef ARPHRD_FRAD
+#define ARPHRD_FRAD  770
+#endif
+
+/* validate the netlink attributes */
+static int data_attr_cb(const struct nlattr *attr, void *data)
+{
+	const struct nlattr **tb = data;
+	int type = mnl_attr_get_type(attr);
+
+	if (mnl_attr_type_valid(attr, IFLA_MAX) < 0)
+		return MNL_CB_OK;
+
+	switch (type) {
+	case IFLA_MTU:
+		if (mnl_attr_validate(attr, MNL_TYPE_U32) < 0)
+			return MNL_CB_ERROR;
+		break;
+	case IFLA_IFNAME:
+		if (mnl_attr_validate(attr, MNL_TYPE_STRING) < 0)
+			return MNL_CB_ERROR;
+		break;
+	}
+	tb[type] = attr;
+	return MNL_CB_OK;
+}
+
+/* find the bind for the netdev (if any) */
+static struct gprs_ns2_vc_bind *bind4netdev(struct gprs_ns2_inst *nsi, const char *ifname)
+{
+	struct gprs_ns2_vc_bind *bind;
+
+	llist_for_each_entry(bind, &nsi->binding, list) {
+		struct priv_bind *bpriv = bind->priv;
+		if (!strcmp(bpriv->netif, ifname))
+			return bind;
+	}
+
+	return NULL;
+}
+
+/* handle a single netlink message received via libmnl */
+static int linkmon_mnl_cb(const struct nlmsghdr *nlh, void *data)
+{
+	struct osmo_mnl *omnl = data;
+	struct gprs_ns2_vc_bind *bind;
+	struct nlattr *tb[IFLA_MAX+1] = {};
+	struct ifinfomsg *ifm = mnl_nlmsg_get_payload(nlh);
+	struct gprs_ns2_inst *nsi;
+	const char *ifname;
+	bool if_running;
+
+	OSMO_ASSERT(omnl);
+	OSMO_ASSERT(ifm);
+
+	nsi = omnl->priv;
+
+	if (ifm->ifi_type != ARPHRD_FRAD)
+		return MNL_CB_OK;
+
+	mnl_attr_parse(nlh, sizeof(*ifm), data_attr_cb, tb);
+
+	if (!tb[IFLA_IFNAME])
+		return MNL_CB_OK;
+	ifname = mnl_attr_get_str(tb[IFLA_IFNAME]);
+	if_running = !!(ifm->ifi_flags & IFF_RUNNING);
+
+	bind = bind4netdev(nsi, ifname);
+	if (bind) {
+		struct priv_bind *bpriv = bind->priv;
+		if (bpriv->if_running != if_running) {
+			/* update running state */
+			LOGP(DLNS, LOGL_NOTICE, "FR net-device '%s': Physical link state changed: %s\n",
+			     ifname, if_running ? "UP" : "DOWN");
+			bpriv->if_running = if_running;
+		}
+	}
+
+	return MNL_CB_OK;
+}
+
+/* trigger one initial dump of all link information */
+static void linkmon_initial_dump(struct osmo_mnl *omnl)
+{
+	char buf[MNL_SOCKET_BUFFER_SIZE];
+	struct nlmsghdr *nlh = mnl_nlmsg_put_header(buf);
+	struct rtgenmsg *rt;
+
+	nlh->nlmsg_type = RTM_GETLINK;
+	nlh->nlmsg_flags = NLM_F_REQUEST | NLM_F_DUMP;
+	nlh->nlmsg_seq = time(NULL);
+	rt = mnl_nlmsg_put_extra_header(nlh, sizeof(struct rtgenmsg));
+	rt->rtgen_family = AF_PACKET;
+
+	if (mnl_socket_sendto(omnl->mnls, nlh, nlh->nlmsg_len) < 0) {
+		LOGP(DLNS, LOGL_ERROR, "linkmon: Cannot send rtnetlink message: %s\n", strerror(errno));
+	}
+
+	/* the response[s] will be handled just like the events */
+}
+#endif /* LIBMNL */
+
+
 /*! Create a new bind for NS over FR.
  *  \param[in] nsi NS instance in which to create the bind
  *  \param[in] netif Network interface to bind to
@@ -400,6 +513,16 @@ int gprs_ns2_fr_bind(struct gprs_ns2_inst *nsi,
 
 	INIT_LLIST_HEAD(&bind->nsvc);
 	llist_add(&bind->list, &nsi->binding);
+
+#ifdef ENABLE_LIBMNL
+	if (!nsi->linkmon_mnl)
+		nsi->linkmon_mnl = osmo_mnl_init(nsi, NETLINK_ROUTE, RTMGRP_LINK, linkmon_mnl_cb, nsi);
+
+	/* we get a new full dump after every bind. which is a bit excessive. But that's just once
+	 * at start-up, so we can get away with it */
+	if (nsi->linkmon_mnl)
+		linkmon_initial_dump(nsi->linkmon_mnl);
+#endif
 
 	return rc;
 
