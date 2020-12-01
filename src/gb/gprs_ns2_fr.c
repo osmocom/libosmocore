@@ -117,7 +117,7 @@ static void dump_vty(const struct gprs_ns2_vc_bind *bind, struct vty *vty, bool 
 		osmo_fr_role_str(fr_link->role), VTY_NEWLINE);
 
 	llist_for_each_entry(nsvc, &bind->nsvc, blist) {
-		vty_out(vty, "    %s%s", gprs_ns2_ll_str(nsvc), VTY_NEWLINE);
+		vty_out(vty, "    NSVCI %05u: %s%s", nsvc->nsvci, gprs_ns2_ll_str(nsvc), VTY_NEWLINE);
 	}
 
 	priv = bind->priv;
