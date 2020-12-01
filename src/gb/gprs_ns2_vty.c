@@ -260,11 +260,11 @@ DEFUN(cfg_ns, cfg_ns_cmd,
 
 static void dump_nsvc(struct vty *vty, struct gprs_ns2_vc *nsvc, bool stats)
 {
-	vty_out(vty, " %s%s", gprs_ns2_ll_str(nsvc), VTY_NEWLINE);
+	vty_out(vty, " NSVCI %05u %s%s", nsvc->nsvci, gprs_ns2_ll_str(nsvc), VTY_NEWLINE);
 
 	if (stats) {
-		vty_out_rate_ctr_group(vty, " ", nsvc->ctrg);
-		vty_out_stat_item_group(vty, " ", nsvc->statg);
+		vty_out_rate_ctr_group(vty, "  ", nsvc->ctrg);
+		vty_out_stat_item_group(vty, "  ", nsvc->statg);
 	}
 }
 
