@@ -95,7 +95,11 @@ struct gprs_ns2_inst {
 
 	/*! workaround for rate counter until rate counter accepts char str as index */
 	uint32_t rate_ctr_idx;
+
+	/*! libmnl netlink socket for link state monitoring */
+	struct osmo_mnl *linkmon_mnl;
 };
+
 
 /*! Structure repesenting a NSE. The BSS/PCU will only have a single NSE, while SGSN has one for each BSS/PCU */
 struct gprs_ns2_nse {

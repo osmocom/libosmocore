@@ -20,6 +20,7 @@ build() {
 	--disable-shared \
 	--disable-libsctp \
 	--disable-libusb \
+	--disable-libmnl \
 	--enable-external-tests \
 	CFLAGS="-Os -ffunction-sections -fdata-sections -nostartfiles -nodefaultlibs $WERROR_FLAGS"
 

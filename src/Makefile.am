@@ -4,7 +4,7 @@
 LIBVERSION=16:0:0
 
 AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include
-AM_CFLAGS = -Wall $(TALLOC_CFLAGS) $(PTHREAD_CFLAGS) $(LIBSCTP_CFLAGS)
+AM_CFLAGS = -Wall $(TALLOC_CFLAGS) $(PTHREAD_CFLAGS) $(LIBSCTP_CFLAGS) $(LIBMNL_CFLAGS)
 
 if ENABLE_PSEUDOTALLOC
 AM_CPPFLAGS += -I$(top_srcdir)/src/pseudotalloc
@@ -74,6 +74,11 @@ endif
 if ENABLE_SYSTEMD_LOGGING
 libosmocore_la_SOURCES += logging_systemd.c
 libosmocore_la_LIBADD += $(SYSTEMD_LIBS)
+endif
+
+if ENABLE_LIBMNL
+libosmocore_la_SOURCES += mnl.c
+libosmocore_la_LIBADD += $(LIBMNL_LIBS)
 endif
 
 crc%gen.c: crcXXgen.c.tpl

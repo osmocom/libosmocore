@@ -194,6 +194,19 @@ AS_IF([test "x$systemd_logging" = "xyes"], [
 AM_CONDITIONAL(ENABLE_SYSTEMD_LOGGING, test "x$systemd_logging" = "xyes")
 AC_SUBST(ENABLE_SYSTEMD_LOGGING)
 
+AC_ARG_ENABLE([libmnl],
+	[AS_HELP_STRING(
+		[--disable-libmnl],
+		[Build without netlink socket support via libmnl]
+	)],
+	[mnl=$enableval], [mnl="yes"])
+AS_IF([test "x$mnl" = "xyes"], [
+	PKG_CHECK_MODULES(LIBMNL, libmnl)
+	AC_DEFINE([ENABLE_LIBMNL], [1], [Enable netlink socket support via libmnl])
+])
+AM_CONDITIONAL(ENABLE_LIBMNL, test "x$mnl" = "xyes")
+AC_SUBST(ENABLE_LIBMNL)
+
 AC_ARG_ENABLE([libsctp], [AS_HELP_STRING([--disable-libsctp], [Do not enable socket multiaddr APIs requiring libsctp])],
 	[ENABLE_LIBSCTP=$enableval], [ENABLE_LIBSCTP="yes"])
 AM_CONDITIONAL(ENABLE_LIBSCTP, test x"$ENABLE_LIBSCTP" = x"yes")
