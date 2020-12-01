@@ -109,8 +109,8 @@ struct osmo_fr_dlc {
 	/* is this DLC about to be destroyed */
 	bool del;
 
-	/* the local state needs to be transfered to the
-	 * UE. The NET must wait until the UE confirms it implicited by a seq number check */
+	/* The local state needs to be transferred to the USER;
+	 * NET must wait until USER confirms it implicitly by a seq number check */
 	bool state_send;
 
 	int (*rx_cb)(void *cb_data, struct msgb *msg);
