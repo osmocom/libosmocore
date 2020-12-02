@@ -42,7 +42,6 @@
 #include <netpacket/packet.h>
 #include <linux/if_ether.h>
 #include <linux/hdlc.h>
-#include <linux/if.h>
 
 #include <osmocom/gprs/frame_relay.h>
 #include <osmocom/core/byteswap.h>
