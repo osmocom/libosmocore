@@ -110,6 +110,18 @@ static const struct value_string gprs_ns_timer_strs[] = {
 	{ 0, NULL }
 };
 
+static void log_set_nse_filter(struct log_target *target,
+				struct gprs_ns2_nse *nse)
+{
+	if (nse) {
+		target->filter_map |= (1 << LOG_FLT_GB_NSE);
+		target->filter_data[LOG_FLT_GB_NSE] = nse;
+	} else if (target->filter_data[LOG_FLT_GB_NSE]) {
+		target->filter_map = ~(1 << LOG_FLT_GB_NSE);
+		target->filter_data[LOG_FLT_GB_NSE] = NULL;
+	}
+}
+
 static void log_set_nsvc_filter(struct log_target *target,
 				struct gprs_ns2_vc *nsvc)
 {
@@ -756,7 +768,37 @@ DEFUN(cfg_frgre_enable, cfg_frgre_enable_cmd,
 
 /* TODO: allow vty to reset/block/unblock nsvc/nsei */
 
-/* TODO: add filter for NSEI as ns1 code does */
+DEFUN(logging_fltr_nse,
+      logging_fltr_nse_cmd,
+      "logging filter nse nsei <0-65535>",
+	LOGGING_STR FILTER_STR
+	"Filter based on NS Entity\n"
+	"Identify NSE by NSEI\n"
+	"Numeric identifier\n")
+{
+	struct log_target *tgt;
+	struct gprs_ns2_nse *nse;
+	uint16_t id = atoi(argv[1]);
+
+	log_tgt_mutex_lock();
+	tgt = osmo_log_vty2tgt(vty);
+	if (!tgt) {
+		log_tgt_mutex_unlock();
+		return CMD_WARNING;
+	}
+
+	nse = gprs_ns2_nse_by_nsei(vty_nsi, id);
+	if (!nse) {
+		vty_out(vty, "No NSE by that identifier%s", VTY_NEWLINE);
+		log_tgt_mutex_unlock();
+		return CMD_WARNING;
+	}
+
+	log_set_nse_filter(tgt, nse);
+	log_tgt_mutex_unlock();
+	return CMD_SUCCESS;
+}
+
 /* TODO: add filter for single connection by description */
 DEFUN(logging_fltr_nsvc,
       logging_fltr_nsvc_cmd,
@@ -818,10 +860,12 @@ int gprs_ns2_vty_init(struct gprs_ns2_inst *nsi,
 	install_lib_element_ve(&show_ns_entities_cmd);
 	install_lib_element_ve(&show_ns_pers_cmd);
 	install_lib_element_ve(&show_nse_cmd);
+	install_lib_element_ve(&logging_fltr_nse_cmd);
 	install_lib_element_ve(&logging_fltr_nsvc_cmd);
 
 	install_lib_element(ENABLE_NODE, &nsvc_force_unconf_cmd);
 
+	install_lib_element(CFG_LOG_NODE, &logging_fltr_nse_cmd);
 	install_lib_element(CFG_LOG_NODE, &logging_fltr_nsvc_cmd);
 
 	install_lib_element(CONFIG_NODE, &cfg_ns_cmd);

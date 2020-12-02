@@ -189,6 +189,7 @@ static int ns2_tx_simple(struct gprs_ns2_vc *nsvc, uint8_t pdu_type)
 	struct msgb *msg = gprs_ns2_msgb_alloc();
 	struct gprs_ns_hdr *nsh;
 
+	log_set_context(LOG_CTX_GB_NSE, nsvc->nse);
 	log_set_context(LOG_CTX_GB_NSVC, nsvc);
 
 	if (!msg)
@@ -212,6 +213,7 @@ int ns2_tx_block(struct gprs_ns2_vc *nsvc, uint8_t cause)
 	struct gprs_ns_hdr *nsh;
 	uint16_t nsvci = osmo_htons(nsvc->nsvci);
 
+	log_set_context(LOG_CTX_GB_NSE, nsvc->nse);
 	log_set_context(LOG_CTX_GB_NSVC, nsvc);
 
 	ERR_IF_NSVC_USES_SNS(nsvc, "transmit NS BLOCK");
@@ -244,6 +246,7 @@ int ns2_tx_block_ack(struct gprs_ns2_vc *nsvc)
 	struct gprs_ns_hdr *nsh;
 	uint16_t nsvci = osmo_htons(nsvc->nsvci);
 
+	log_set_context(LOG_CTX_GB_NSE, nsvc->nse);
 	log_set_context(LOG_CTX_GB_NSVC, nsvc);
 
 	ERR_IF_NSVC_USES_SNS(nsvc, "transmit NS BLOCK ACK");
@@ -275,6 +278,7 @@ int ns2_tx_reset(struct gprs_ns2_vc *nsvc, uint8_t cause)
 	uint16_t nsvci = osmo_htons(nsvc->nsvci);
 	uint16_t nsei = osmo_htons(nsvc->nse->nsei);
 
+	log_set_context(LOG_CTX_GB_NSE, nsvc->nse);
 	log_set_context(LOG_CTX_GB_NSVC, nsvc);
 
 	ERR_IF_NSVC_USES_SNS(nsvc, "transmit NS RESET");
@@ -307,6 +311,7 @@ int ns2_tx_reset_ack(struct gprs_ns2_vc *nsvc)
 	uint16_t nsvci, nsei;
 
 	/* Section 9.2.6 */
+	log_set_context(LOG_CTX_GB_NSE, nsvc->nse);
 	log_set_context(LOG_CTX_GB_NSVC, nsvc);
 
 	ERR_IF_NSVC_USES_SNS(nsvc, "transmit NS RESET ACK");
@@ -337,6 +342,7 @@ int ns2_tx_reset_ack(struct gprs_ns2_vc *nsvc)
  *  \returns 0 in case of success */
 int ns2_tx_unblock(struct gprs_ns2_vc *nsvc)
 {
+	log_set_context(LOG_CTX_GB_NSE, nsvc->nse);
 	log_set_context(LOG_CTX_GB_NSVC, nsvc);
 
 	ERR_IF_NSVC_USES_SNS(nsvc, "transmit NS UNBLOCK");
@@ -353,6 +359,7 @@ int ns2_tx_unblock(struct gprs_ns2_vc *nsvc)
  *  \returns 0 in case of success */
 int ns2_tx_unblock_ack(struct gprs_ns2_vc *nsvc)
 {
+	log_set_context(LOG_CTX_GB_NSE, nsvc->nse);
 	log_set_context(LOG_CTX_GB_NSVC, nsvc);
 
 	ERR_IF_NSVC_USES_SNS(nsvc, "transmit NS UNBLOCK ACK");
@@ -368,6 +375,7 @@ int ns2_tx_unblock_ack(struct gprs_ns2_vc *nsvc)
  *  \returns 0 in case of success */
 int ns2_tx_alive(struct gprs_ns2_vc *nsvc)
 {
+	log_set_context(LOG_CTX_GB_NSE, nsvc->nse);
 	log_set_context(LOG_CTX_GB_NSVC, nsvc);
 	LOGP(DLNS, LOGL_DEBUG, "NSEI=%u Tx NS ALIVE (NSVCI=%u)\n",
 		nsvc->nse->nsei, nsvc->nsvci);
@@ -380,6 +388,7 @@ int ns2_tx_alive(struct gprs_ns2_vc *nsvc)
  *  \returns 0 in case of success */
 int ns2_tx_alive_ack(struct gprs_ns2_vc *nsvc)
 {
+	log_set_context(LOG_CTX_GB_NSE, nsvc->nse);
 	log_set_context(LOG_CTX_GB_NSVC, nsvc);
 	LOGP(DLNS, LOGL_DEBUG, "NSEI=%u Tx NS ALIVE_ACK (NSVCI=%u)\n",
 		nsvc->nse->nsei, nsvc->nsvci);
@@ -399,6 +408,7 @@ int ns2_tx_unit_data(struct gprs_ns2_vc *nsvc,
 {
 	struct gprs_ns_hdr *nsh;
 
+	log_set_context(LOG_CTX_GB_NSE, nsvc->nse);
 	log_set_context(LOG_CTX_GB_NSVC, nsvc);
 
 	msg->l2h = msgb_push(msg, sizeof(*nsh) + 3);
@@ -430,6 +440,7 @@ int ns2_tx_status(struct gprs_ns2_vc *nsvc, uint8_t cause,
 	struct gprs_ns_hdr *nsh;
 	uint16_t nsvci = osmo_htons(nsvc->nsvci);
 
+	log_set_context(LOG_CTX_GB_NSE, nsvc->nse);
 	log_set_context(LOG_CTX_GB_NSVC, nsvc);
 
 	bvci = osmo_htons(bvci);
@@ -495,6 +506,7 @@ int ns2_tx_sns_ack(struct gprs_ns2_vc *nsvc, uint8_t trans_id, uint8_t *cause,
 
 	msg = gprs_ns2_msgb_alloc();
 
+	log_set_context(LOG_CTX_GB_NSE, nsvc->nse);
 	log_set_context(LOG_CTX_GB_NSVC, nsvc);
 	if (!msg)
 		return -ENOMEM;
@@ -553,6 +565,7 @@ int ns2_tx_sns_config(struct gprs_ns2_vc *nsvc, bool end_flag,
 
 	msg = gprs_ns2_msgb_alloc();
 
+	log_set_context(LOG_CTX_GB_NSE, nsvc->nse);
 	log_set_context(LOG_CTX_GB_NSVC, nsvc);
 	if (!msg)
 		return -ENOMEM;
@@ -601,6 +614,7 @@ int ns2_tx_sns_config_ack(struct gprs_ns2_vc *nsvc, uint8_t *cause)
 		return -1;
 
 	msg = gprs_ns2_msgb_alloc();
+	log_set_context(LOG_CTX_GB_NSE, nsvc->nse);
 	log_set_context(LOG_CTX_GB_NSVC, nsvc);
 	if (!msg)
 		return -ENOMEM;
@@ -646,6 +660,7 @@ int ns2_tx_sns_size(struct gprs_ns2_vc *nsvc, bool reset_flag, uint16_t max_nr_n
 
 	msg = gprs_ns2_msgb_alloc();
 
+	log_set_context(LOG_CTX_GB_NSE, nsvc->nse);
 	log_set_context(LOG_CTX_GB_NSVC, nsvc);
 	if (!msg)
 		return -ENOMEM;
@@ -685,6 +700,7 @@ int ns2_tx_sns_size_ack(struct gprs_ns2_vc *nsvc, uint8_t *cause)
 	struct gprs_ns_hdr *nsh;
 	uint16_t nsei;
 
+	log_set_context(LOG_CTX_GB_NSE, nsvc->nse);
 	log_set_context(LOG_CTX_GB_NSVC, nsvc);
 	if (!msg)
 		return -ENOMEM;

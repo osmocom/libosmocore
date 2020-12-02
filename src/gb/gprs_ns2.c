@@ -72,6 +72,7 @@
 #include <arpa/inet.h>
 
 #include <osmocom/core/fsm.h>
+#include <osmocom/core/logging.h>
 #include <osmocom/core/msgb.h>
 #include <osmocom/core/rate_ctr.h>
 #include <osmocom/core/socket.h>
@@ -1009,6 +1010,9 @@ int ns2_recv_vc(struct gprs_ns2_vc *nsvc,
 	struct gprs_ns_hdr *nsh = (struct gprs_ns_hdr *) msg->l2h;
 	struct tlv_parsed tp;
 	int rc = 0;
+
+	log_set_context(LOG_CTX_GB_NSE, nsvc->nse);
+	log_set_context(LOG_CTX_GB_NSVC, nsvc);
 
 	if (msg->len < sizeof(struct gprs_ns_hdr))
 		return -EINVAL;
