@@ -324,6 +324,17 @@ static void dump_ns_entities(struct vty *vty, const struct gprs_ns2_inst *nsi, b
 	}
 }
 
+/* Backwards compatibility, among other things for the TestVTYGbproxy which expects
+ * 'show ns' to output something about binds */
+DEFUN_HIDDEN(show_ns, show_ns_cmd, "show ns",
+	SHOW_STR SHOW_NS_STR)
+{
+	dump_ns_entities(vty, vty_nsi, false, false);
+	dump_ns_bind(vty, vty_nsi, false);
+	return CMD_SUCCESS;
+}
+
+
 DEFUN(show_ns_binds, show_ns_binds_cmd, "show ns binds [stats]",
 	SHOW_STR SHOW_NS_STR
 	"Display information about the NS protocol binds\n"
@@ -802,6 +813,7 @@ int gprs_ns2_vty_init(struct gprs_ns2_inst *nsi,
 		return 0;
 	vty_elements_installed = true;
 
+	install_lib_element_ve(&show_ns_cmd);
 	install_lib_element_ve(&show_ns_binds_cmd);
 	install_lib_element_ve(&show_ns_entities_cmd);
 	install_lib_element_ve(&show_ns_pers_cmd);
