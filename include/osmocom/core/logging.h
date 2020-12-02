@@ -11,11 +11,6 @@
 #include <osmocom/core/defs.h>
 #include <osmocom/core/linuxlist.h>
 
-/*! Maximum number of logging contexts */
-#define LOG_MAX_CTX		8
-/*! Maximum number of logging filters */
-#define LOG_MAX_FILTERS	8
-
 #ifndef DEBUG
 #define DEBUG
 #endif
@@ -162,11 +157,6 @@ struct log_info_cat {
 	uint8_t enabled;		/*!< is this category enabled or not */
 };
 
-/*! Log context information, passed to filter */
-struct log_context {
-	void *ctx[LOG_MAX_CTX+1];
-};
-
 /*! Indexes to indicate the object currently acted upon.
  * Array indexes for the global \a log_context array. */
 enum log_ctx_index {
@@ -189,6 +179,16 @@ enum log_filter_index {
 	LOG_FLT_VLR_SUBSCR,
 	LOG_FLT_L1_SAPI,
 	_LOG_FLT_COUNT
+};
+
+/*! Maximum number of logging contexts */
+#define LOG_MAX_CTX	_LOG_CTX_COUNT
+/*! Maximum number of logging filters */
+#define LOG_MAX_FILTERS	_LOG_FLT_COUNT
+
+/*! Log context information, passed to filter */
+struct log_context {
+	void *ctx[LOG_MAX_CTX+1];
 };
 
 /*! Compatibility with older libosmocore versions */
