@@ -54,6 +54,8 @@
 
 #include "gprs_ns2_internal.h"
 
+#define SHOW_NS_STR "Display information about the NS protocol\n"
+
 struct ns2_vty_priv {
 	/* global listen */
 	struct osmo_sockaddr_str udp;
@@ -323,7 +325,7 @@ static void dump_ns_entities(struct vty *vty, const struct gprs_ns2_inst *nsi, b
 }
 
 DEFUN(show_ns_binds, show_ns_binds_cmd, "show ns binds [stats]",
-	SHOW_STR
+	SHOW_STR SHOW_NS_STR
 	"Display information about the NS protocol binds\n"
 	"Include statistic\n")
 {
@@ -336,7 +338,7 @@ DEFUN(show_ns_binds, show_ns_binds_cmd, "show ns binds [stats]",
 }
 
 DEFUN(show_ns_entities, show_ns_entities_cmd, "show ns entities [stats]",
-	SHOW_STR
+	SHOW_STR SHOW_NS_STR
 	"Display information about the NS protocol entities (NSEs)\n"
 	"Include statistics\n")
 {
@@ -349,8 +351,7 @@ DEFUN(show_ns_entities, show_ns_entities_cmd, "show ns entities [stats]",
 }
 
 DEFUN(show_ns_pers, show_ns_pers_cmd, "show ns persistent",
-	SHOW_STR
-	"Display information about the NS protocol\n"
+	SHOW_STR SHOW_NS_STR
 	"Show only persistent NS\n")
 {
 	dump_ns_entities(vty, vty_nsi, true, true);
@@ -358,7 +359,7 @@ DEFUN(show_ns_pers, show_ns_pers_cmd, "show ns persistent",
 }
 
 DEFUN(show_nse, show_nse_cmd, "show ns (nsei|nsvc) <0-65535> [stats]",
-	SHOW_STR "Display information about the NS protocol\n"
+	SHOW_STR SHOW_NS_STR
 	"Select one NSE by its NSE Identifier\n"
 	"Select one NSE by its NS-VC Identifier\n"
 	"The Identifier of selected type\n"
