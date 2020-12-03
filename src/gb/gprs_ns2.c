@@ -590,7 +590,7 @@ static int reject_status_msg(struct msgb *orig_msg, struct tlv_parsed *tp, struc
 	if (!msg)
 		return -ENOMEM;
 
-	if (TLVP_PRESENT(tp, NS_IE_NSEI)) {
+	if (TLVP_PRES_LEN(tp, NS_IE_NSEI, 2)) {
 		nsei = tlvp_val16be(tp, NS_IE_NSEI);
 
 		LOGP(DLNS, LOGL_NOTICE, "NSEI=%u Rejecting message without NSVCI. Tx NS STATUS (cause=%s)\n",
@@ -602,7 +602,7 @@ static int reject_status_msg(struct msgb *orig_msg, struct tlv_parsed *tp, struc
 	nsh->pdu_type = NS_PDUT_STATUS;
 
 	msgb_tvlv_put(msg, NS_IE_CAUSE, 1, &_cause);
-	have_vci = TLVP_PRESENT(tp, NS_IE_VCI);
+	have_vci = TLVP_PRES_LEN(tp, NS_IE_VCI, 2);
 
 	/* Section 9.2.7.1: Static conditions for NS-VCI */
 	if (cause == NS_CAUSE_NSVC_BLOCKED ||
@@ -822,8 +822,8 @@ enum gprs_ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 		return GPRS_NS2_CS_REJECTED;
 	}
 
-	if (!TLVP_PRESENT(&tp, NS_IE_CAUSE) ||
-			!TLVP_PRESENT(&tp, NS_IE_VCI) || !TLVP_PRESENT(&tp, NS_IE_NSEI)) {
+	if (!TLVP_PRES_LEN(&tp, NS_IE_CAUSE, 1) ||
+	    !TLVP_PRES_LEN(&tp, NS_IE_VCI, 2) || !TLVP_PRES_LEN(&tp, NS_IE_NSEI, 2)) {
 		LOGP(DLNS, LOGL_ERROR, "NS RESET Missing mandatory IE\n");
 		rc = reject_status_msg(msg, &tp, reject, NS_CAUSE_MISSING_ESSENT_IE);
 		return GPRS_NS2_CS_REJECTED;

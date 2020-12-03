@@ -66,7 +66,8 @@ enum ns_ctr {
 
 static int gprs_ns2_validate_reset(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp, uint8_t *cause)
 {
-	if (!TLVP_PRESENT(tp, NS_IE_CAUSE) || !TLVP_PRESENT(tp, NS_IE_VCI) || !TLVP_PRESENT(tp, NS_IE_NSEI)) {
+	if (!TLVP_PRES_LEN(tp, NS_IE_CAUSE, 1) ||
+	    !TLVP_PRES_LEN(tp, NS_IE_VCI, 2) || !TLVP_PRES_LEN(tp, NS_IE_NSEI, 2)) {
 		*cause = NS_CAUSE_MISSING_ESSENT_IE;
 		return -1;
 	}
@@ -76,7 +77,7 @@ static int gprs_ns2_validate_reset(struct gprs_ns2_vc *nsvc, struct msgb *msg, s
 
 static int gprs_ns2_validate_reset_ack(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp, uint8_t *cause)
 {
-	if (!TLVP_PRESENT(tp, NS_IE_VCI) || !TLVP_PRESENT(tp, NS_IE_NSEI)) {
+	if (!TLVP_PRES_LEN(tp, NS_IE_VCI, 2) || !TLVP_PRES_LEN(tp, NS_IE_NSEI, 2)) {
 		*cause = NS_CAUSE_MISSING_ESSENT_IE;
 		return -1;
 	}
@@ -86,7 +87,7 @@ static int gprs_ns2_validate_reset_ack(struct gprs_ns2_vc *nsvc, struct msgb *ms
 
 static int gprs_ns2_validate_block(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp, uint8_t *cause)
 {
-	if (!TLVP_PRESENT(tp, NS_IE_VCI) || !TLVP_PRESENT(tp, NS_IE_CAUSE)) {
+	if (!TLVP_PRES_LEN(tp, NS_IE_VCI, 2) || !TLVP_PRES_LEN(tp, NS_IE_CAUSE, 1)) {
 		*cause = NS_CAUSE_MISSING_ESSENT_IE;
 		return -1;
 	}
@@ -96,7 +97,7 @@ static int gprs_ns2_validate_block(struct gprs_ns2_vc *nsvc, struct msgb *msg, s
 
 static int gprs_ns2_validate_block_ack(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp, uint8_t *cause)
 {
-	if (!TLVP_PRESENT(tp, NS_IE_VCI)) {
+	if (!TLVP_PRES_LEN(tp, NS_IE_VCI, 2)) {
 		*cause = NS_CAUSE_MISSING_ESSENT_IE;
 		return -1;
 	}
@@ -107,7 +108,7 @@ static int gprs_ns2_validate_block_ack(struct gprs_ns2_vc *nsvc, struct msgb *ms
 static int gprs_ns2_validate_status(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp, uint8_t *cause)
 {
 
-	if (!TLVP_PRESENT(tp, NS_IE_CAUSE)) {
+	if (!TLVP_PRES_LEN(tp, NS_IE_CAUSE, 1)) {
 		*cause = NS_CAUSE_MISSING_ESSENT_IE;
 		return -1;
 	}
@@ -117,7 +118,7 @@ static int gprs_ns2_validate_status(struct gprs_ns2_vc *nsvc, struct msgb *msg, 
 	switch (_cause) {
 	case NS_CAUSE_NSVC_BLOCKED:
 	case NS_CAUSE_NSVC_UNKNOWN:
-		if (!TLVP_PRESENT(tp, NS_IE_CAUSE)) {
+		if (!TLVP_PRES_LEN(tp, NS_IE_CAUSE, 1)) {
 			*cause = NS_CAUSE_MISSING_ESSENT_IE;
 			return -1;
 		}
@@ -127,19 +128,19 @@ static int gprs_ns2_validate_status(struct gprs_ns2_vc *nsvc, struct msgb *msg, 
 	case NS_CAUSE_PROTO_ERR_UNSPEC:
 	case NS_CAUSE_INVAL_ESSENT_IE:
 	case NS_CAUSE_MISSING_ESSENT_IE:
-		if (!TLVP_PRESENT(tp, NS_IE_CAUSE)) {
+		if (!TLVP_PRES_LEN(tp, NS_IE_CAUSE, 1)) {
 			*cause = NS_CAUSE_MISSING_ESSENT_IE;
 			return -1;
 		}
 		break;
 	case NS_CAUSE_BVCI_UNKNOWN:
-		if (!TLVP_PRESENT(tp, NS_IE_BVCI)) {
+		if (!TLVP_PRES_LEN(tp, NS_IE_BVCI, 2)) {
 			*cause = NS_CAUSE_MISSING_ESSENT_IE;
 			return -1;
 		}
 		break;
 	case NS_CAUSE_UNKN_IP_TEST_FAILED:
-		if (!TLVP_PRESENT (tp, NS_IE_IPv4_LIST) && !TLVP_PRESENT(tp, NS_IE_IPv6_LIST)) {
+		if (!TLVP_PRESENT(tp, NS_IE_IPv4_LIST) && !TLVP_PRESENT(tp, NS_IE_IPv6_LIST)) {
 			*cause = NS_CAUSE_MISSING_ESSENT_IE;
 			return -1;
 		}
