@@ -351,7 +351,7 @@ static int bssgp_rx_bvc_reset(struct msgb *msg, struct tlv_parsed *tp,
 	/* When we receive a BVC-RESET PDU (at least of a PTP BVCI), the BSS
 	 * informs us about its RAC + Cell ID, so we can create a mapping */
 	if (bvci != 0 && bvci != 1) {
-		if (!TLVP_PRESENT(tp, BSSGP_IE_CELL_ID)) {
+		if (!TLVP_PRES_LEN(tp, BSSGP_IE_CELL_ID, 8)) {
 			LOGP(DBSSGP, LOGL_ERROR, "BSSGP BVCI=%u Rx RESET "
 				"missing mandatory IE\n", bvci);
 			return -EINVAL;
@@ -467,7 +467,7 @@ static int bssgp_rx_ul_ud(struct msgb *msg, struct tlv_parsed *tp,
 	DEBUGP(DBSSGP, "BSSGP TLLI=0x%08x Rx UPLINK-UNITDATA\n", msgb_tlli(msg));
 
 	/* Cell ID and LLC_PDU are the only mandatory IE */
-	if (!TLVP_PRESENT(tp, BSSGP_IE_CELL_ID) ||
+	if (!TLVP_PRES_LEN(tp, BSSGP_IE_CELL_ID, 8) ||
 	    !TLVP_PRESENT(tp, BSSGP_IE_LLC_PDU)) {
 		LOGP(DBSSGP, LOGL_ERROR, "BSSGP TLLI=0x%08x Rx UL-UD "
 			"missing mandatory IE\n", msgb_tlli(msg));
@@ -497,8 +497,8 @@ static int bssgp_rx_suspend(struct msgb *msg, struct tlv_parsed *tp)
 	uint16_t ns_bvci = msgb_bvci(msg), nsei = msgb_nsei(msg);
 	int rc;
 
-	if (!TLVP_PRESENT(tp, BSSGP_IE_TLLI) ||
-	    !TLVP_PRESENT(tp, BSSGP_IE_ROUTEING_AREA)) {
+	if (!TLVP_PRES_LEN(tp, BSSGP_IE_TLLI, 4) ||
+	    !TLVP_PRES_LEN(tp, BSSGP_IE_ROUTEING_AREA, 6)) {
 		LOGP(DBSSGP, LOGL_ERROR, "BSSGP BVCI=%u Rx SUSPEND "
 			"missing mandatory IE\n", ns_bvci);
 		return bssgp_tx_status(BSSGP_CAUSE_MISSING_MAND_IE, NULL, msg);
@@ -538,9 +538,9 @@ static int bssgp_rx_resume(struct msgb *msg, struct tlv_parsed *tp)
 	uint16_t ns_bvci = msgb_bvci(msg), nsei = msgb_nsei(msg);
 	int rc;
 
-	if (!TLVP_PRESENT(tp, BSSGP_IE_TLLI) ||
-	    !TLVP_PRESENT(tp, BSSGP_IE_ROUTEING_AREA) ||
-	    !TLVP_PRESENT(tp, BSSGP_IE_SUSPEND_REF_NR)) {
+	if (!TLVP_PRES_LEN(tp, BSSGP_IE_TLLI, 4 ) ||
+	    !TLVP_PRES_LEN(tp, BSSGP_IE_ROUTEING_AREA, 6) ||
+	    !TLVP_PRES_LEN(tp, BSSGP_IE_SUSPEND_REF_NR, 1)) {
 		LOGP(DBSSGP, LOGL_ERROR, "BSSGP BVCI=%u Rx RESUME "
 			"missing mandatory IE\n", ns_bvci);
 		return bssgp_tx_status(BSSGP_CAUSE_MISSING_MAND_IE, NULL, msg);
@@ -580,16 +580,16 @@ static int bssgp_rx_llc_disc(struct msgb *msg, struct tlv_parsed *tp,
 	uint32_t tlli = 0;
 	uint16_t nsei = msgb_nsei(msg);
 
-	if (!TLVP_PRESENT(tp, BSSGP_IE_TLLI) ||
-	    !TLVP_PRESENT(tp, BSSGP_IE_LLC_FRAMES_DISCARDED) ||
-	    !TLVP_PRESENT(tp, BSSGP_IE_BVCI) ||
-	    !TLVP_PRESENT(tp, BSSGP_IE_NUM_OCT_AFF)) {
+	if (!TLVP_PRES_LEN(tp, BSSGP_IE_TLLI, 4) ||
+	    !TLVP_PRES_LEN(tp, BSSGP_IE_LLC_FRAMES_DISCARDED, 1) ||
+	    !TLVP_PRES_LEN(tp, BSSGP_IE_BVCI, 2) ||
+	    !TLVP_PRES_LEN(tp, BSSGP_IE_NUM_OCT_AFF, 3)) {
 		LOGP(DBSSGP, LOGL_ERROR, "BSSGP BVCI=%u Rx LLC DISCARDED "
 			"missing mandatory IE\n", ctx->bvci);
+		return bssgp_tx_status(BSSGP_CAUSE_MISSING_MAND_IE, NULL, msg);
 	}
 
-	if (TLVP_PRESENT(tp, BSSGP_IE_TLLI))
-		tlli = tlvp_val32be(tp, BSSGP_IE_TLLI);
+	tlli = tlvp_val32be(tp, BSSGP_IE_TLLI);
 
 	DEBUGP(DBSSGP, "BSSGP BVCI=%u TLLI=%08x Rx LLC DISCARDED\n",
 		ctx->bvci, tlli);
@@ -615,7 +615,7 @@ int bssgp_rx_status(struct msgb *msg, struct tlv_parsed *tp,
 	struct osmo_bssgp_prim nmp;
 	enum gprs_bssgp_cause cause;
 
-	if (!TLVP_PRESENT(tp, BSSGP_IE_CAUSE)) {
+	if (!TLVP_PRES_LEN(tp, BSSGP_IE_CAUSE, 1)) {
 		LOGP(DBSSGP, LOGL_ERROR, "BSSGP BVCI=%u Rx STATUS "
 			"missing mandatory IE\n", bvci);
 		cause = BSSGP_CAUSE_PROTO_ERR_UNSPEC;
@@ -627,7 +627,7 @@ int bssgp_rx_status(struct msgb *msg, struct tlv_parsed *tp,
 		bvci, bssgp_cause_str(cause));
 
 	if (cause == BSSGP_CAUSE_BVCI_BLOCKED || cause == BSSGP_CAUSE_UNKNOWN_BVCI) {
-		if (!TLVP_PRESENT(tp, BSSGP_IE_BVCI))
+		if (!TLVP_PRES_LEN(tp, BSSGP_IE_BVCI, 2))
 			LOGP(DBSSGP, LOGL_ERROR,
 				"BSSGP BVCI=%u Rx STATUS cause=%s "
 				"missing conditional BVCI IE\n",
@@ -882,11 +882,11 @@ static int bssgp_rx_fc_bvc(struct msgb *msg, struct tlv_parsed *tp,
 	DEBUGP(DBSSGP, "BSSGP BVCI=%u Rx Flow Control BVC\n",
 		bctx->bvci);
 
-	if (!TLVP_PRESENT(tp, BSSGP_IE_TAG) ||
-	    !TLVP_PRESENT(tp, BSSGP_IE_BVC_BUCKET_SIZE) ||
-	    !TLVP_PRESENT(tp, BSSGP_IE_BUCKET_LEAK_RATE) ||
-	    !TLVP_PRESENT(tp, BSSGP_IE_BMAX_DEFAULT_MS) ||
-	    !TLVP_PRESENT(tp, BSSGP_IE_R_DEFAULT_MS)) {
+	if (!TLVP_PRES_LEN(tp, BSSGP_IE_TAG, 1) ||
+	    !TLVP_PRES_LEN(tp, BSSGP_IE_BVC_BUCKET_SIZE, 2) ||
+	    !TLVP_PRES_LEN(tp, BSSGP_IE_BUCKET_LEAK_RATE, 2) ||
+	    !TLVP_PRES_LEN(tp, BSSGP_IE_BMAX_DEFAULT_MS, 2) ||
+	    !TLVP_PRES_LEN(tp, BSSGP_IE_R_DEFAULT_MS,2)) {
 		LOGP(DBSSGP, LOGL_ERROR, "BSSGP BVCI=%u Rx FC BVC "
 			"missing mandatory IE\n", bctx->bvci);
 		return bssgp_tx_status(BSSGP_CAUSE_MISSING_MAND_IE, NULL, msg);
@@ -1040,8 +1040,8 @@ static int bssgp_rx_sign(struct msgb *msg, struct tlv_parsed *tp,
 		break;
 	case BSSGP_PDUT_BVC_BLOCK:
 		/* BSS tells us that BVC shall be blocked */
-		if (!TLVP_PRESENT(tp, BSSGP_IE_BVCI) ||
-		    !TLVP_PRESENT(tp, BSSGP_IE_CAUSE)) {
+		if (!TLVP_PRES_LEN(tp, BSSGP_IE_BVCI, 2) ||
+		    !TLVP_PRES_LEN(tp, BSSGP_IE_CAUSE, 1)) {
 			LOGP(DBSSGP, LOGL_ERROR, "BSSGP Rx BVC-BLOCK "
 				"missing mandatory IE\n");
 			goto err_mand_ie;
@@ -1050,7 +1050,7 @@ static int bssgp_rx_sign(struct msgb *msg, struct tlv_parsed *tp,
 		break;
 	case BSSGP_PDUT_BVC_UNBLOCK:
 		/* BSS tells us that BVC shall be unblocked */
-		if (!TLVP_PRESENT(tp, BSSGP_IE_BVCI)) {
+		if (!TLVP_PRES_LEN(tp, BSSGP_IE_BVCI, 2)) {
 			LOGP(DBSSGP, LOGL_ERROR, "BSSGP Rx BVC-UNBLOCK "
 				"missing mandatory IE\n");
 			goto err_mand_ie;
@@ -1062,8 +1062,8 @@ static int bssgp_rx_sign(struct msgb *msg, struct tlv_parsed *tp,
 		break;
 	case BSSGP_PDUT_BVC_RESET:
 		/* BSS tells us that BVC init is required */
-		if (!TLVP_PRESENT(tp, BSSGP_IE_BVCI) ||
-		    !TLVP_PRESENT(tp, BSSGP_IE_CAUSE)) {
+		if (!TLVP_PRES_LEN(tp, BSSGP_IE_BVCI, 2) ||
+		    !TLVP_PRES_LEN(tp, BSSGP_IE_CAUSE, 1)) {
 			LOGP(DBSSGP, LOGL_ERROR, "BSSGP Rx BVC-RESET "
 				"missing mandatory IE\n");
 			goto err_mand_ie;
@@ -1135,7 +1135,7 @@ int bssgp_rcvmsg(struct msgb *msg)
 		return rc;
 	}
 
-	if (bvci == BVCI_SIGNALLING && TLVP_PRESENT(&tp, BSSGP_IE_BVCI))
+	if (bvci == BVCI_SIGNALLING && TLVP_PRES_LEN(&tp, BSSGP_IE_BVCI, 2))
 		bvci = tlvp_val16be(&tp, BSSGP_IE_BVCI);
 
 	/* look-up or create the BTS context for this BVC */

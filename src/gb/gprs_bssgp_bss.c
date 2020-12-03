@@ -511,24 +511,24 @@ int bssgp_rx_paging(struct bssgp_paging_info *pinfo,
 			   TLVP_LEN(&tp, BSSGP_IE_IMSI));
 
 	/* DRX Parameters */
-	if (!TLVP_PRESENT(&tp, BSSGP_IE_DRX_PARAMS))
+	if (!TLVP_PRES_LEN(&tp, BSSGP_IE_DRX_PARAMS, 2))
 		goto err_mand_ie;
 	pinfo->drx_params = tlvp_val16be(&tp, BSSGP_IE_DRX_PARAMS);
 
 	/* Scope */
-	if (TLVP_PRESENT(&tp, BSSGP_IE_BSS_AREA_ID)) {
+	if (TLVP_PRES_LEN(&tp, BSSGP_IE_BSS_AREA_ID, 1)) {
 		pinfo->scope = BSSGP_PAGING_BSS_AREA;
-	} else if (TLVP_PRESENT(&tp, BSSGP_IE_LOCATION_AREA)) {
+	} else if (TLVP_PRES_LEN(&tp, BSSGP_IE_LOCATION_AREA, 5)) {
 		pinfo->scope = BSSGP_PAGING_LOCATION_AREA;
 		memcpy(ra, TLVP_VAL(&tp, BSSGP_IE_LOCATION_AREA),
 			TLVP_LEN(&tp, BSSGP_IE_LOCATION_AREA));
 		gsm48_parse_ra(&pinfo->raid, ra);
-	} else if (TLVP_PRESENT(&tp, BSSGP_IE_ROUTEING_AREA)) {
+	} else if (TLVP_PRES_LEN(&tp, BSSGP_IE_ROUTEING_AREA, 6)) {
 		pinfo->scope = BSSGP_PAGING_ROUTEING_AREA;
 		memcpy(ra, TLVP_VAL(&tp, BSSGP_IE_ROUTEING_AREA),
 			TLVP_LEN(&tp, BSSGP_IE_ROUTEING_AREA));
 		gsm48_parse_ra(&pinfo->raid, ra);
-	} else if (TLVP_PRESENT(&tp, BSSGP_IE_BVCI)) {
+	} else if (TLVP_PRES_LEN(&tp, BSSGP_IE_BVCI, 2)) {
 		pinfo->scope = BSSGP_PAGING_BVCI;
 		pinfo->bvci = tlvp_val16be(&tp, BSSGP_IE_BVCI);
 	} else
@@ -546,8 +546,7 @@ int bssgp_rx_paging(struct bssgp_paging_info *pinfo,
 	}
 
 	/* Optional (P-)TMSI */
-	if (TLVP_PRESENT(&tp, BSSGP_IE_TMSI) &&
-	    TLVP_LEN(&tp, BSSGP_IE_TMSI) >= 4) {
+	if (TLVP_PRES_LEN(&tp, BSSGP_IE_TMSI, 4)) {
 		if (!pinfo->ptmsi)
 			pinfo->ptmsi = talloc_zero_size(pinfo, sizeof(uint32_t));
 		*(pinfo->ptmsi) = osmo_load32be(TLVP_VAL(&tp, BSSGP_IE_TMSI));
