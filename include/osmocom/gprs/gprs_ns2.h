@@ -162,8 +162,13 @@ void gprs_ns2_free_nses(struct gprs_ns2_inst *nsi);
 void gprs_ns2_free_nsvc(struct gprs_ns2_vc *nsvc);
 struct gprs_ns2_vc *gprs_ns2_nsvc_by_nsvci(struct gprs_ns2_inst *nsi, uint16_t nsvci);
 
+/* generic VL driver */
+struct gprs_ns2_vc_bind *gprs_ns2_bind_by_name(struct gprs_ns2_inst *nsi,
+					       const char *name);
+
 /* IP VL driver */
 int gprs_ns2_ip_bind(struct gprs_ns2_inst *nsi,
+		     const char *name,
 		     const struct osmo_sockaddr *local,
 		     int dscp,
 		     struct gprs_ns2_vc_bind **result);
@@ -176,6 +181,7 @@ struct gprs_ns2_vc_bind *gprs_ns2_fr_bind_by_netif(
 		const char *netif);
 const char *gprs_ns2_fr_bind_netif(struct gprs_ns2_vc_bind *bind);
 int gprs_ns2_fr_bind(struct gprs_ns2_inst *nsi,
+		     const char *name,
 		     const char *netif,
 		     struct osmo_fr_network *fr_network,
 		     enum osmo_fr_role fr_role,
@@ -226,6 +232,7 @@ struct gprs_ns2_vc *gprs_ns2_nsvc_by_sockaddr_bind(
 		const struct osmo_sockaddr *saddr);
 
 int gprs_ns2_frgre_bind(struct gprs_ns2_inst *nsi,
+			const char *name,
 			const struct osmo_sockaddr *local,
 			int dscp,
 			struct gprs_ns2_vc_bind **result);

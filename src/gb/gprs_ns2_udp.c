@@ -298,6 +298,7 @@ struct gprs_ns2_vc_bind *gprs_ns2_ip_bind_by_sockaddr(struct gprs_ns2_inst *nsi,
  *  \param[out] result if set, returns the bind object
  *  \return 0 on success; negative in case of error */
 int gprs_ns2_ip_bind(struct gprs_ns2_inst *nsi,
+		     const char *name,
 		     const struct osmo_sockaddr *local,
 		     int dscp,
 		     struct gprs_ns2_vc_bind **result)
@@ -305,6 +306,12 @@ int gprs_ns2_ip_bind(struct gprs_ns2_inst *nsi,
 	struct gprs_ns2_vc_bind *bind;
 	struct priv_bind *priv;
 	int rc;
+
+	if (!name)
+		return -EINVAL;
+
+	if (gprs_ns2_bind_by_name(nsi, name))
+		return -EALREADY;
 
 	bind = gprs_ns2_ip_bind_by_sockaddr(nsi, local);
 	if (bind) {
@@ -315,6 +322,12 @@ int gprs_ns2_ip_bind(struct gprs_ns2_inst *nsi,
 	bind = talloc_zero(nsi, struct gprs_ns2_vc_bind);
 	if (!bind)
 		return -ENOSPC;
+
+	bind->name = talloc_strdup(bind, name);
+	if (!bind->name) {
+		talloc_free(bind);
+		return -ENOSPC;
+	}
 
 	if (local->u.sa.sa_family != AF_INET && local->u.sa.sa_family != AF_INET6) {
 		talloc_free(bind);

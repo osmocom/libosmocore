@@ -457,18 +457,32 @@ static void linkmon_initial_dump(struct osmo_mnl *omnl)
  *  \param[out] result pointer to created bind
  *  \return 0 on success; negative on error */
 int gprs_ns2_fr_bind(struct gprs_ns2_inst *nsi,
+		     const char *name,
 		     const char *netif,
 		     struct osmo_fr_network *fr_network,
 		     enum osmo_fr_role fr_role,
 		     struct gprs_ns2_vc_bind **result)
 {
-	struct gprs_ns2_vc_bind *bind = talloc_zero(nsi, struct gprs_ns2_vc_bind);
+	struct gprs_ns2_vc_bind *bind;
 	struct priv_bind *priv;
 	struct osmo_fr_link *fr_link;
 	int rc = 0;
 
+	if (!name)
+		return -EINVAL;
+
+	if (gprs_ns2_bind_by_name(nsi, name))
+		return -EALREADY;
+
+	bind = talloc_zero(nsi, struct gprs_ns2_vc_bind);
 	if (!bind)
 		return -ENOSPC;
+
+	bind->name = talloc_strdup(bind, name);
+	if (!bind->name) {
+		rc = -ENOSPC;
+		goto err_bind;
+	}
 
 	bind->driver = &vc_driver_fr;
 	bind->ll = GPRS_NS2_LL_FR;
@@ -479,7 +493,7 @@ int gprs_ns2_fr_bind(struct gprs_ns2_inst *nsi,
 	priv = bind->priv = talloc_zero(bind, struct priv_bind);
 	if (!priv) {
 		rc = -ENOSPC;
-		goto err_bind;
+		goto err_name;
 	}
 
 	priv->fd.cb = fr_fd_cb;
@@ -533,6 +547,8 @@ err_fr:
 	osmo_fr_link_free(fr_link);
 err_priv:
 	talloc_free(priv);
+err_name:
+	talloc_free((char *)bind->name);
 err_bind:
 	talloc_free(bind);
 
