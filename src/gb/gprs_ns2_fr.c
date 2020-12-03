@@ -603,6 +603,45 @@ struct gprs_ns2_vc_bind *gprs_ns2_fr_bind_by_netif(
  *  \param[in] dlci Data Link connection identifier
  *  \return pointer to newly-allocated, connected and activated NS-VC; NULL on error */
 struct gprs_ns2_vc *gprs_ns2_fr_connect(struct gprs_ns2_vc_bind *bind,
+					struct gprs_ns2_nse *nse,
+					uint16_t nsvci,
+					uint16_t dlci)
+{
+	struct gprs_ns2_vc *nsvc = NULL;
+	struct priv_vc *priv = NULL;
+
+	nsvc = gprs_ns2_fr_nsvc_by_dlci(bind, dlci);
+	if (nsvc) {
+		goto err;
+	}
+
+	nsvc = ns2_vc_alloc(bind, nse, true, NS2_VC_MODE_BLOCKRESET);
+	if (!nsvc)
+		goto err;
+
+	nsvc->priv = priv = fr_alloc_vc(bind, nsvc, dlci);
+	if (!priv)
+		goto err;
+
+	nsvc->nsvci = nsvci;
+	nsvc->nsvci_is_valid = true;
+
+	gprs_ns2_vc_fsm_start(nsvc);
+
+	return nsvc;
+
+err:
+	gprs_ns2_free_nsvc(nsvc);
+	return NULL;
+}
+
+
+/*! Create, connect and activate a new FR-based NS-VC
+ *  \param[in] bind bind in which the new NS-VC is to be created
+ *  \param[in] nsei NSEI of the NS Entity in which the NS-VC is to be created
+ *  \param[in] dlci Data Link connection identifier
+ *  \return pointer to newly-allocated, connected and activated NS-VC; NULL on error */
+struct gprs_ns2_vc *gprs_ns2_fr_connect2(struct gprs_ns2_vc_bind *bind,
 					uint16_t nsei,
 					uint16_t nsvci,
 					uint16_t dlci)

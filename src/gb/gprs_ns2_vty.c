@@ -968,7 +968,7 @@ int gprs_ns2_vty_create() {
 				}
 			}
 
-			nsvc = gprs_ns2_fr_connect(fr, vtyvc->nsei, vtyvc->nsvci, vtyvc->frdlci);
+			nsvc = gprs_ns2_fr_connect(fr, nse, vtyvc->nsvci, vtyvc->frdlci);
 			if (!nsvc) {
 				/* Could not create NSVC, connect failed */
 				continue;
