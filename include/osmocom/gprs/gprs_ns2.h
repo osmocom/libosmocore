@@ -189,6 +189,10 @@ int gprs_ns2_fr_bind(struct gprs_ns2_inst *nsi,
 int gprs_ns2_is_fr_bind(struct gprs_ns2_vc_bind *bind);
 struct gprs_ns2_vc *gprs_ns2_fr_nsvc_by_dlci(struct gprs_ns2_vc_bind *bind, uint16_t dlci);
 struct gprs_ns2_vc *gprs_ns2_fr_connect(struct gprs_ns2_vc_bind *bind,
+					struct gprs_ns2_nse *nse,
+					uint16_t nsvci,
+					uint16_t dlci);
+struct gprs_ns2_vc *gprs_ns2_fr_connect2(struct gprs_ns2_vc_bind *bind,
 					uint16_t nsei,
 					uint16_t nsvci,
 					uint16_t dlci);
