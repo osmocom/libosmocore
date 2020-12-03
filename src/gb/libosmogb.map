@@ -109,6 +109,7 @@ gprs_ns_ll_clear;
 gprs_ns_msgb_alloc;
 
 gprs_ns2_aff_cause_prim_strs;
+gprs_ns2_bind_by_name;
 gprs_ns2_cause_strs;
 gprs_ns2_create_nse;
 gprs_ns2_dynamic_create_nse;

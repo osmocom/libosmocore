@@ -181,6 +181,8 @@ struct gprs_ns2_vc {
 
 /*! Structure repesenting a bind instance. E.g. IPv4 listen port. */
 struct gprs_ns2_vc_bind {
+	/*! unique name */
+	const char *name;
 	/*! list entry in nsi */
 	struct llist_head list;
 	/*! list of all VC */

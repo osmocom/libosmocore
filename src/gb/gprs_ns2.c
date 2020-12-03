@@ -1239,6 +1239,7 @@ void gprs_ns2_free_bind(struct gprs_ns2_vc_bind *bind)
 		bind->driver->free_bind(bind);
 
 	llist_del(&bind->list);
+	talloc_free((char *)bind->name);
 	talloc_free(bind);
 }
 
@@ -1249,6 +1250,24 @@ void gprs_ns2_free_binds(struct gprs_ns2_inst *nsi)
 	llist_for_each_entry_safe(bind, tbind, &nsi->binding, list) {
 		gprs_ns2_free_bind(bind);
 	}
+}
+
+/*! Search for a bind with a unique name
+ *  \param[in] nsi NS instance on which we operate
+ *  \param[in] name The unique bind name to search for
+ *  \return the bind or NULL if not found
+ */
+struct gprs_ns2_vc_bind *gprs_ns2_bind_by_name(
+		struct gprs_ns2_inst *nsi, const char *name)
+{
+	struct gprs_ns2_vc_bind *bind;
+
+	llist_for_each_entry(bind, &nsi->binding, list) {
+		if (!strcmp(bind->name, name))
+			return bind;
+	}
+
+	return NULL;
 }
 
 enum gprs_ns2_vc_mode gprs_ns2_dialect_to_vc_mode(

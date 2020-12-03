@@ -538,6 +538,7 @@ int gprs_ns2_is_frgre_bind(struct gprs_ns2_vc_bind *bind)
  *  \param[out] result pointer to created bind
  *  \return 0 on success; negative on error */
 int gprs_ns2_frgre_bind(struct gprs_ns2_inst *nsi,
+			const char *name,
 			const struct osmo_sockaddr *local,
 			int dscp,
 			struct gprs_ns2_vc_bind **result)
@@ -546,12 +547,24 @@ int gprs_ns2_frgre_bind(struct gprs_ns2_inst *nsi,
 	struct priv_bind *priv;
 	int rc;
 
+	if (!name)
+		return -ENOSPC;
+
+	if (gprs_ns2_bind_by_name(nsi, name))
+		return -EALREADY;
+
 	if (!bind)
 		return -ENOSPC;
 
 	if (local->u.sa.sa_family != AF_INET && local->u.sa.sa_family != AF_INET6) {
 		talloc_free(bind);
 		return -EINVAL;
+	}
+
+	bind->name = talloc_strdup(bind, name);
+	if (!bind->name) {
+		talloc_free(bind);
+		return -ENOSPC;
 	}
 
 	bind->driver = &vc_driver_frgre;

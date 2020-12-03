@@ -895,7 +895,7 @@ int gprs_ns2_vty_create() {
 	} else {
 		/* UDP */
 		osmo_sockaddr_str_to_sockaddr(&priv.udp, &sockaddr.u.sas);
-		if (gprs_ns2_ip_bind(vty_nsi, &sockaddr, priv.dscp, &bind)) {
+		if (gprs_ns2_ip_bind(vty_nsi, "vtybind", &sockaddr, priv.dscp, &bind)) {
 			/* TODO: could not bind on the specific address */
 			return -1;
 		}
@@ -962,7 +962,7 @@ int gprs_ns2_vty_create() {
 						vty_nsi,
 						vtyvc->netif);
 			if (!fr) {
-				rc = gprs_ns2_fr_bind(vty_nsi, vtyvc->netif, vty_fr_network, vtyvc->fr.role, &fr);
+				rc = gprs_ns2_fr_bind(vty_nsi, vtyvc->netif, vtyvc->netif, vty_fr_network, vtyvc->fr.role, &fr);
 				if (rc < 0) {
 					LOGP(DLNS, LOGL_ERROR, "Can not create fr bind on device %s err: %d\n", vtyvc->netif, rc);
 					return rc;
