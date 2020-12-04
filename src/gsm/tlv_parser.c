@@ -266,24 +266,24 @@ int tlv_parse_one(uint8_t *o_tag, uint16_t *o_len, const uint8_t **o_val,
 	case TLV_TYPE_TLV:
 tlv:		/* GSM TS 04.07 11.2.4: Type 4 TLV */
 		if (buf + 1 > buf + buf_len)
-			return -1;
+			return OSMO_TLVP_ERR_OFS_BEYOND_BUFFER;
 		*o_val = buf+2;
 		*o_len = *(buf+1);
 		len = *o_len + 2;
 		if (len > buf_len)
-			return -2;
+			return OSMO_TLVP_ERR_OFS_LEN_BEYOND_BUFFER;
 		break;
 	case TLV_TYPE_vTvLV_GAN:	/* 44.318 / 11.1.4 */
 		/* FIXME: variable-length TAG! */
 		if (*(buf+1) & 0x80) {
 			/* like TL16Vbut without highest bit of len */
 			if (2 > buf_len)
-				return -1;
+				return OSMO_TLVP_ERR_OFS_BEYOND_BUFFER;
 			*o_val = buf+3;
 			*o_len = (*(buf+1) & 0x7F) << 8 | *(buf+2);
 			len = *o_len + 3;
 			if (len > buf_len)
-				return -2;
+				return OSMO_TLVP_ERR_OFS_LEN_BEYOND_BUFFER;
 		} else {
 			/* like TLV */
 			goto tlv;
@@ -293,26 +293,26 @@ tlv:		/* GSM TS 04.07 11.2.4: Type 4 TLV */
 		if (*(buf+1) & 0x80) {
 			/* like TLV, but without highest bit of len */
 			if (buf + 1 > buf + buf_len)
-				return -1;
+				return OSMO_TLVP_ERR_OFS_BEYOND_BUFFER;
 			*o_val = buf+2;
 			*o_len = *(buf+1) & 0x7f;
 			len = *o_len + 2;
 			if (len > buf_len)
-				return -2;
+				return OSMO_TLVP_ERR_OFS_LEN_BEYOND_BUFFER;
 			break;
 		}
 		/* like TL16V, fallthrough */
 	case TLV_TYPE_TL16V:
 		if (2 > buf_len)
-			return -1;
+			return OSMO_TLVP_ERR_OFS_BEYOND_BUFFER;
 		*o_val = buf+3;
 		*o_len = *(buf+1) << 8 | *(buf+2);
 		len = *o_len + 3;
 		if (len > buf_len)
-			return -2;
+			return OSMO_TLVP_ERR_OFS_LEN_BEYOND_BUFFER;
 		break;
 	default:
-		return -3;
+		return OSMO_TLVP_ERR_UNKNOWN_TLV_TYPE;
 	}
 
 	return len;
@@ -370,12 +370,12 @@ int tlv_parse2(struct tlv_parsed *dec, int dec_multiples,
 		const uint8_t *val;
 		uint16_t parsed_len;
 		if (ofs > buf_len)
-			return -1;
+			return OSMO_TLVP_ERR_OFS_BEYOND_BUFFER;
 		val = &buf[ofs+1];
 		len = buf[ofs];
 		parsed_len = len + 1;
 		if (ofs + parsed_len > buf_len)
-			return -2;
+			return OSMO_TLVP_ERR_OFS_LEN_BEYOND_BUFFER;
 		num_parsed++;
 		ofs += parsed_len;
 		/* store the resulting val and len */
@@ -391,12 +391,12 @@ int tlv_parse2(struct tlv_parsed *dec, int dec_multiples,
 		const uint8_t *val;
 		uint16_t parsed_len;
 		if (ofs > buf_len)
-			return -1;
+			return OSMO_TLVP_ERR_OFS_BEYOND_BUFFER;
 		val = &buf[ofs+1];
 		len = buf[ofs];
 		parsed_len = len + 1;
 		if (ofs + parsed_len > buf_len)
-			return -2;
+			return OSMO_TLVP_ERR_OFS_LEN_BEYOND_BUFFER;
 		num_parsed++;
 		ofs += parsed_len;
 		/* store the resulting val and len */
@@ -667,7 +667,7 @@ int osmo_tlv_prot_validate_tp(const struct osmo_tlv_prot_def *pdef, uint8_t msg_
 			      const struct tlv_parsed *tp, int log_subsys, const char *log_pfx)
 {
 	const struct osmo_tlv_prot_msg_def *msg_def= &pdef->msg_def[msg_type];
-	unsigned int num_err = 0;
+	unsigned int err = 0;
 	unsigned int i;
 
 	if (msg_def->mand_ies) {
@@ -677,7 +677,8 @@ int osmo_tlv_prot_validate_tp(const struct osmo_tlv_prot_def *pdef, uint8_t msg_
 				LOGP(log_subsys, LOGL_ERROR, "%s %s %s: Missing Mandatory IE: %s\n",
 				     log_pfx, pdef->name, osmo_tlv_prot_msg_name(pdef, msg_type),
 				     osmo_tlv_prot_ie_name(pdef, iei));
-				num_err++;
+				if (!err)
+					err = OSMO_TLVP_ERR_MAND_IE_MISSING;
 			}
 		}
 	}
@@ -693,11 +694,12 @@ int osmo_tlv_prot_validate_tp(const struct osmo_tlv_prot_def *pdef, uint8_t msg_
 			LOGP(log_subsys, LOGL_ERROR, "%s %s %s: Short IE %s: %u < %u\n", log_pfx,
 			     pdef->name, osmo_tlv_prot_msg_name(pdef, msg_type),
 			     osmo_tlv_prot_ie_name(pdef, i), TLVP_LEN(tp, i), min_len);
-			num_err++;
+			if (!err)
+				err = OSMO_TLVP_ERR_IE_TOO_SHORT;
 		}
 	}
 
-	return -num_err;
+	return err;
 }
 
 /*! Parse + Validate a TLV-encoded message against the protocol definition.

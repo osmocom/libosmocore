@@ -40,6 +40,16 @@
 /*! maximum length of TLV of one byte length */
 #define TVLV_MAX_ONEBYTE	0x7f
 
+/*! error return codes of various TLV parser functions */
+enum osmo_tlv_parser_error {
+	OSMO_TLVP_ERR_OFS_BEYOND_BUFFER		= -1,
+	OSMO_TLVP_ERR_OFS_LEN_BEYOND_BUFFER	= -2,
+	OSMO_TLVP_ERR_UNKNOWN_TLV_TYPE		= -3,
+
+	OSMO_TLVP_ERR_MAND_IE_MISSING		= -50,
+	OSMO_TLVP_ERR_IE_TOO_SHORT		= -51,
+};
+
 /*! gross length of a TVLV type field */
 static inline uint16_t TVLV_GROSS_LEN(uint16_t len)
 {
