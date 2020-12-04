@@ -1,4 +1,4 @@
-/* (C) 2008-2017 by Harald Welte <laforge@gnumonks.org>
+/* (C) 2008-2020 by Harald Welte <laforge@gnumonks.org>
  * (C) 2016-2017 by sysmocom - s.f.m.c. GmbH
  *
  * All Rights Reserved
@@ -24,6 +24,7 @@
 #include <stdint.h>
 #include <errno.h>
 #include <osmocom/core/utils.h>
+#include <osmocom/core/logging.h>
 #include <osmocom/gsm/tlv.h>
 
 /*! \addtogroup tlv
@@ -625,6 +626,108 @@ fail:
 	*data += *data_len;
 	*data_len = 0;
 	return -1;
+}
+
+static __thread char ienamebuf[32];
+static __thread char msgnamebuf[32];
+
+/*! get the message name for given msg_type in protocol pdef */
+const char *osmo_tlv_prot_msg_name(const struct osmo_tlv_prot_def *pdef, uint8_t msg_type)
+{
+	if (pdef->msg_def[msg_type].name) {
+		return pdef->msg_def[msg_type].name;
+	} else if (pdef->msgt_names) {
+		return get_value_string(pdef->msgt_names, msg_type);
+	} else {
+		snprintf(msgnamebuf, sizeof(msgnamebuf), "Unknown msg_type 0x%02x", msg_type);
+		return msgnamebuf;
+	}
+}
+
+/*! get the IE name for given IEI in protocol pdef */
+const char *osmo_tlv_prot_ie_name(const struct osmo_tlv_prot_def *pdef, uint8_t iei)
+{
+	if (pdef->ie_def[iei].name) {
+		return pdef->ie_def[iei].name;
+	} else {
+		snprintf(ienamebuf, sizeof(ienamebuf), "Unknown IEI 0x%02x", iei);
+		return ienamebuf;
+	}
+}
+
+/*! Validate an already TLV-decoded message against the protocol definition.
+ *  \param[in] pdef protocol definition of given protocol
+ *  \param[in] msg_type message type of the parsed message
+ *  \param[in] tp TLV parser result
+ *  \param[in] log_subsys logging sub-system for log messages
+ *  \param[in] log_pfx prefix for log messages
+ *  \returns 0 in case of success; negative osmo_tlv_parser_error in case of error
+ */
+int osmo_tlv_prot_validate_tp(const struct osmo_tlv_prot_def *pdef, uint8_t msg_type,
+			      const struct tlv_parsed *tp, int log_subsys, const char *log_pfx)
+{
+	const struct osmo_tlv_prot_msg_def *msg_def= &pdef->msg_def[msg_type];
+	unsigned int num_err = 0;
+	unsigned int i;
+
+	if (msg_def->mand_ies) {
+		for (i = 0; i < msg_def->mand_count; i++) {
+			uint8_t iei = msg_def->mand_ies[i];
+			if (!TLVP_PRESENT(tp, iei)) {
+				LOGP(log_subsys, LOGL_ERROR, "%s %s %s: Missing Mandatory IE: %s\n",
+				     log_pfx, pdef->name, osmo_tlv_prot_msg_name(pdef, msg_type),
+				     osmo_tlv_prot_ie_name(pdef, iei));
+				num_err++;
+			}
+		}
+	}
+
+	for (i = 0; i < ARRAY_SIZE(tp->lv); i++) {
+		uint16_t min_len;
+
+		if (!TLVP_PRESENT(tp, i))
+			continue;
+
+		min_len = pdef->ie_def[i].min_len;
+		if (TLVP_LEN(tp, i) < min_len) {
+			LOGP(log_subsys, LOGL_ERROR, "%s %s %s: Short IE %s: %u < %u\n", log_pfx,
+			     pdef->name, osmo_tlv_prot_msg_name(pdef, msg_type),
+			     osmo_tlv_prot_ie_name(pdef, i), TLVP_LEN(tp, i), min_len);
+			num_err++;
+		}
+	}
+
+	return -num_err;
+}
+
+/*! Parse + Validate a TLV-encoded message against the protocol definition.
+ *  \param[in] pdef protocol definition of given protocol
+ *  \param[out] dec caller-allocated pointer to \ref tlv_parsed
+ *  \param[in] dec_multiples length of the tlv_parsed[] in \a dec.
+ *  \param[in] msg_type message type of the parsed message
+ *  \param[in] buf the input data buffer to be parsed
+ *  \param[in] buf_len length of the input data buffer
+ *  \param[in] lv_tag an initial LV tag at the start of the buffer
+ *  \param[in] lv_tag2 a second initial LV tag following the \a lv_tag
+ *  \param[in] log_subsys logging sub-system for log messages
+ *  \param[in] log_pfx prefix for log messages
+ *  \returns 0 in case of success; negative osmo_tlv_parser_error in case of error
+ */
+int osmo_tlv_prot_parse(const struct osmo_tlv_prot_def *pdef,
+			struct tlv_parsed *dec, unsigned int dec_multiples, uint8_t msg_type,
+			const uint8_t *buf, unsigned int buf_len, uint8_t lv_tag, uint8_t lv_tag2,
+			int log_subsys, const char *log_pfx)
+{
+	int rc;
+
+	rc = tlv_parse2(dec, dec_multiples, pdef->tlv_def, buf, buf_len, lv_tag, lv_tag2);
+	if (rc < 0) {
+		LOGP(log_subsys, LOGL_ERROR, "%s %s %s: TLV parser error %d\n", log_pfx,
+		     pdef->name, osmo_tlv_prot_msg_name(pdef, msg_type), rc);
+		return rc;
+	}
+
+	return osmo_tlv_prot_validate_tp(pdef, msg_type, dec, log_subsys, log_pfx);
 }
 
 /*! @} */

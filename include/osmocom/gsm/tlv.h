@@ -620,4 +620,54 @@ int osmo_match_shift_tlv(uint8_t **data, size_t *data_len,
 int osmo_shift_lv(uint8_t **data, size_t *data_len,
 		  uint8_t **value, size_t *value_len);
 
+#define MSG_DEF(name, mand_ies, flags) { name, mand_ies, ARRAY_SIZE(mand_ies), flags }
+
+struct osmo_tlv_prot_msg_def {
+	/*! human-readable name of message type (optional) */
+	const char *name;
+	/*! array of mandatory IEs */
+	const uint8_t *mand_ies;
+	/*! number of entries in 'mand_ies' above */
+	uint8_t mand_count;
+	/*! user-defined flags (like uplink/downlink/...) */
+	uint32_t flags;
+};
+struct osmo_tlv_prot_ie_def {
+	/*! minimum length of IE value part, in octets */
+	uint16_t min_len;
+	/*! huamn-readable name (optional) */
+	const char *name;
+};
+
+/*! Osmocom TLV protocol definition */
+struct osmo_tlv_prot_def {
+	/*! human-readable name of protocol */
+	const char *name;
+	/*! TLV parser definition (optional) */
+	const struct tlv_definition *tlv_def;
+	/*! definition of each message (8-bit message type) */
+	struct osmo_tlv_prot_msg_def msg_def[256];
+	/*! definition of IE for each 8-bit tag */
+	struct osmo_tlv_prot_ie_def ie_def[256];
+	/*! value_string array of message type names (legacy, if not populated in msg_def) */
+	const struct value_string *msgt_names;
+};
+
+const char *osmo_tlv_prot_msg_name(const struct osmo_tlv_prot_def *pdef, uint8_t msg_type);
+const char *osmo_tlv_prot_ie_name(const struct osmo_tlv_prot_def *pdef, uint8_t iei);
+
+int osmo_tlv_prot_validate_tp(const struct osmo_tlv_prot_def *pdef, uint8_t msg_type,
+			      const struct tlv_parsed *tp, int log_subsys, const char *log_pfx);
+
+int osmo_tlv_prot_parse(const struct osmo_tlv_prot_def *pdef,
+			struct tlv_parsed *dec, unsigned int dec_multiples, uint8_t msg_type,
+			const uint8_t *buf, unsigned int buf_len, uint8_t lv_tag, uint8_t lv_tag2,
+			int log_subsys, const char *log_pfx);
+
+static inline uint32_t osmo_tlv_prot_msgt_flags(const struct osmo_tlv_prot_def *pdef, uint8_t msg_type)
+{
+	return pdef->msg_def[msg_type].flags;
+}
+
+
 /*! @} */

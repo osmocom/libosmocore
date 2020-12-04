@@ -580,6 +580,11 @@ osmo_shift_tlv;
 osmo_match_shift_tlv;
 osmo_shift_lv;
 
+osmo_tlv_prot_msg_name;
+osmo_tlv_prot_ie_name;
+osmo_tlv_prot_validate_tp;
+osmo_tlv_prot_parse;
+
 gan_msgt_vals;
 gan_pdisc_vals;
 
