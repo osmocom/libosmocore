@@ -778,7 +778,7 @@ DEFUN(logging_fltr_nse,
 {
 	struct log_target *tgt;
 	struct gprs_ns2_nse *nse;
-	uint16_t id = atoi(argv[1]);
+	uint16_t id = atoi(argv[0]);
 
 	log_tgt_mutex_lock();
 	tgt = osmo_log_vty2tgt(vty);
@@ -810,7 +810,7 @@ DEFUN(logging_fltr_nsvc,
 {
 	struct log_target *tgt;
 	struct gprs_ns2_vc *nsvc;
-	uint16_t id = atoi(argv[1]);
+	uint16_t id = atoi(argv[0]);
 
 	log_tgt_mutex_lock();
 	tgt = osmo_log_vty2tgt(vty);
