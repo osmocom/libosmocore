@@ -9,6 +9,9 @@
 #define BVCI_SIGNALLING	0x0000
 #define BVCI_PTM	0x0001
 
+/* typo backwards compatiblity */
+#define BSSGP_PDUT_RA_CAPA_UDPATE BSSGP_PDUT_RA_CAPA_UPDATE
+
 /*! BSSGP PDU types (Section 11.3.26 / Table 11.27) */
 enum bssgp_pdu_type {
 	/* PDUs between RL and BSSGP SAPs */
@@ -22,7 +25,7 @@ enum bssgp_pdu_type {
 	/* PDUs between GMM SAPs */
 	BSSGP_PDUT_PAGING_PS		= 0x06,
 	BSSGP_PDUT_PAGING_CS		= 0x07,
-	BSSGP_PDUT_RA_CAPA_UDPATE	= 0x08,
+	BSSGP_PDUT_RA_CAPA_UPDATE	= 0x08,
 	BSSGP_PDUT_RA_CAPA_UPDATE_ACK	= 0x09,
 	BSSGP_PDUT_RADIO_STATUS		= 0x0a,
 	BSSGP_PDUT_SUSPEND		= 0x0b,
