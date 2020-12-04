@@ -340,7 +340,6 @@ static int open_socket(const char *ifname)
 #ifdef ENABLE_LIBMNL
 
 #include <osmocom/core/mnl.h>
-#include <linux/if.h>
 #include <linux/if_link.h>
 #include <linux/rtnetlink.h>
 
