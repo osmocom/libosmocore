@@ -4,7 +4,10 @@
 LIBVERSION=11:0:0
 
 AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include
-AM_CFLAGS = -Wall ${GCC_FVISIBILITY_HIDDEN} -fno-strict-aliasing $(TALLOC_CFLAGS)
+AM_CFLAGS = -Wall ${GCC_FVISIBILITY_HIDDEN} -fno-strict-aliasing \
+	    $(TALLOC_CFLAGS) \
+	    $(LIBMNL_CFLAGS) \
+	    $(NULL)
 
 # FIXME: this should eventually go into a milenage/Makefile.am
 noinst_HEADERS = common_vty.h gb_internal.h gprs_bssgp_internal.h gprs_ns2_internal.h
