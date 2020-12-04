@@ -12,8 +12,21 @@
 #include <osmocom/gprs/protocol/gsm_08_18.h>
 
 /* gprs_bssgp_util.c */
-typedef int (*bssgp_bvc_send)(void *ctx, struct msgb *msg);
 
+#define BSSGP_PDUF_UL	0x0001	/* PDU may occur in uplink */
+#define BSSGP_PDUF_DL	0x0002	/* PDU may occur in downlink */
+#define BSSGP_PDUF_SIG	0x0004	/* PDU may occur on Signaling BVC */
+#define BSSGP_PDUF_PTP	0x0008	/* PDU may occur on PTP BVC */
+#define BSSGP_PDUF_PTM	0x0010	/* PDU may occur on PTM BVC */
+
+extern const struct osmo_tlv_prot_def osmo_pdef_bssgp;
+
+/*! return the PDU type flags (UL/DL/SIG/PTP/PTM) of specified PDU type */
+static inline uint32_t bssgp_pdu_type_flags(uint8_t pdu_type) {
+	return osmo_tlv_prot_msgt_flags(&osmo_pdef_bssgp, pdu_type);
+}
+
+typedef int (*bssgp_bvc_send)(void *ctx, struct msgb *msg);
 extern struct gprs_ns_inst *bssgp_nsi;
 void bssgp_set_bssgp_callback(bssgp_bvc_send ns_send, void *data);
 struct msgb *bssgp_msgb_alloc(void);

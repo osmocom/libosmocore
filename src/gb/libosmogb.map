@@ -149,5 +149,7 @@ bssgp_bvc_ctx_free;
 btsctx_by_bvci_nsei;
 btsctx_by_raid_cid;
 
+osmo_pdef_bssgp;
+
 local: *;
 };
