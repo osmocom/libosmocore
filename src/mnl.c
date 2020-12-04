@@ -74,7 +74,7 @@ struct osmo_mnl *osmo_mnl_init(void *ctx, int bus, unsigned int groups, mnl_cb_t
 
 	olm->priv = priv;
 	olm->mnl_cb = mnl_cb;
-	olm->mnls = mnl_socket_open2(bus, SOCK_CLOEXEC);
+	olm->mnls = mnl_socket_open(bus);
 	if (!olm->mnls) {
 		LOGP(DLGLOBAL, LOGL_ERROR, "Error creating netlink socket for bus %d: %s\n",
 			bus, strerror(errno));
