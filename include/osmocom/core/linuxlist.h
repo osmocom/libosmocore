@@ -579,11 +579,11 @@ hlist_is_singular_node(struct hlist_node *n, struct hlist_head *h)
  * reference of the first entry if it exists.
  */
 static inline void hlist_move_list(struct hlist_head *old,
-				   struct hlist_head *new)
+				   struct hlist_head *_new)
 {
-	new->first = old->first;
-	if (new->first)
-		new->first->pprev = &new->first;
+	_new->first = old->first;
+	if (_new->first)
+		_new->first->pprev = &_new->first;
 	old->first = NULL;
 }
 
