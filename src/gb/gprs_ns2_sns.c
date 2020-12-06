@@ -1169,7 +1169,8 @@ static const struct osmo_fsm_state ns2_sns_bss_states[] = {
 		.in_event_mask = S(GPRS_SNS_EV_ADD) |
 				 S(GPRS_SNS_EV_DELETE) |
 				 S(GPRS_SNS_EV_CHANGE_WEIGHT),
-		.out_state_mask = S(GPRS_SNS_ST_UNCONFIGURED),
+		.out_state_mask = S(GPRS_SNS_ST_UNCONFIGURED) |
+				  S(GPRS_SNS_ST_SIZE),
 		.name = "CONFIGURED",
 		.action = ns2_sns_st_configured,
 		.onenter = ns2_sns_st_configured_onenter,
