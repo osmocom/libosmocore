@@ -677,6 +677,7 @@ struct gprs_ns2_nse *gprs_ns2_create_nse(struct gprs_ns2_inst *nsi, uint16_t nse
 					 enum gprs_ns2_ll linklayer, enum gprs_ns2_dialect dialect)
 {
 	struct gprs_ns2_nse *nse;
+	char sns[16];
 
 	nse = gprs_ns2_nse_by_nsei(nsi, nsei);
 	if (nse) {
@@ -687,6 +688,15 @@ struct gprs_ns2_nse *gprs_ns2_create_nse(struct gprs_ns2_inst *nsi, uint16_t nse
 	nse = talloc_zero(nsi, struct gprs_ns2_nse);
 	if (!nse)
 		return NULL;
+
+	if (dialect == NS2_DIALECT_SNS) {
+		snprintf(sns, sizeof(sns), "nse-%d-sns", nsei);
+		nse->bss_sns_fi = ns2_sns_bss_fsm_alloc(nse, NULL);
+		if (!nse->bss_sns_fi) {
+			talloc_free(nse);
+			return NULL;
+		}
+	}
 
 	nse->dialect = dialect;
 	nse->ll = linklayer;
@@ -959,14 +969,11 @@ int gprs_ns2_ip_connect_sns(struct gprs_ns2_vc_bind *bind,
 		return -2;
 	}
 
-	nsvc = gprs_ns2_ip_bind_connect(bind, nse, remote);
-	if (!nsvc)
+	if (!nse->bss_sns_fi)
 		return -1;
 
-	if (!nse->bss_sns_fi)
-		nse->bss_sns_fi = ns2_sns_bss_fsm_alloc(nse, NULL);
-
-	if (!nse->bss_sns_fi)
+	nsvc = gprs_ns2_ip_bind_connect(bind, nse, remote);
+	if (!nsvc)
 		return -1;
 
 	return ns2_sns_bss_fsm_start(nse, nsvc, remote);
