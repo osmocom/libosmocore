@@ -160,6 +160,7 @@ void gprs_ns2_free_nses(struct gprs_ns2_inst *nsi);
 
 /* create vc */
 void gprs_ns2_free_nsvc(struct gprs_ns2_vc *nsvc);
+void gprs_ns2_free_nsvcs(struct gprs_ns2_nse *nse);
 struct gprs_ns2_vc *gprs_ns2_nsvc_by_nsvci(struct gprs_ns2_inst *nsi, uint16_t nsvci);
 
 /* generic VL driver */

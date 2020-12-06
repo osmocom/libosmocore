@@ -562,6 +562,21 @@ void gprs_ns2_free_nsvc(struct gprs_ns2_vc *nsvc)
 	talloc_free(nsvc);
 }
 
+/*! Destroy/release all NS-VC of given NSE
+ *  \param[in] nse NSE
+ */
+void gprs_ns2_free_nsvcs(struct gprs_ns2_nse *nse)
+{
+	struct gprs_ns2_vc *nsvc, *tmp;
+
+	if (!nse)
+		return;
+
+	llist_for_each_entry_safe(nsvc, tmp, &nse->nsvc, list) {
+		gprs_ns2_free_nsvc(nsvc);
+	}
+}
+
 /*! Allocate a message buffer for use with the NS2 stack. */
 struct msgb *gprs_ns2_msgb_alloc(void)
 {
@@ -722,15 +737,10 @@ uint16_t gprs_ns2_nse_nsei(struct gprs_ns2_nse *nse)
  *  \param[in] nse NS Entity to destroy */
 void gprs_ns2_free_nse(struct gprs_ns2_nse *nse)
 {
-	struct gprs_ns2_vc *nsvc, *tmp;
-
 	if (!nse)
 		return;
 
-	llist_for_each_entry_safe(nsvc, tmp, &nse->nsvc, list) {
-		gprs_ns2_free_nsvc(nsvc);
-	}
-
+	gprs_ns2_free_nsvcs(nse);
 	ns2_prim_status_ind(nse, NULL, 0, NS_AFF_CAUSE_FAILURE);
 
 	llist_del(&nse->list);
