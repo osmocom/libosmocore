@@ -1265,6 +1265,7 @@ int ns2_sns_bss_fsm_start(struct gprs_ns2_nse *nse, struct gprs_ns2_vc *nsvc,
 	gss->sns_nsvc = nsvc;
 	nsvc->sns_only = true;
 
+	/* count how many bindings are available (only UDP binds) */
 	int count = 0;
 	llist_for_each_entry(bind, &nsi->binding, list) {
 		if (!gprs_ns2_is_ip_bind(bind))
@@ -1320,6 +1321,7 @@ int ns2_sns_bss_fsm_start(struct gprs_ns2_nse *nse, struct gprs_ns2_vc *nsvc,
 
 		gss->num_ip4_local = count;
 		gss->num_max_ip4_remote = 4;
+		gss->num_max_nsvcs = OSMO_MAX(gss->num_max_ip4_remote * 4, 8);
 		break;
 	case IPv6:
 		/* IPv6 */
@@ -1358,10 +1360,9 @@ int ns2_sns_bss_fsm_start(struct gprs_ns2_nse *nse, struct gprs_ns2_vc *nsvc,
 		}
 		gss->num_ip6_local = count;
 		gss->num_max_ip6_remote = 4;
+		gss->num_max_nsvcs = OSMO_MAX(gss->num_max_ip6_remote * 4, 8);
 		break;
 	}
-
-	gss->num_max_nsvcs = 8;
 
 	return osmo_fsm_inst_dispatch(nse->bss_sns_fi, GPRS_SNS_EV_START, NULL);
 
