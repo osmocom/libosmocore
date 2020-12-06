@@ -93,6 +93,7 @@ gprs_ns2_free_binds;
 gprs_ns2_free_nse;
 gprs_ns2_free_nses;
 gprs_ns2_free_nsvc;
+gprs_ns2_free_nsvcs;
 gprs_ns2_frgre_bind;
 gprs_ns2_fr_bind;
 gprs_ns2_fr_bind_netif;
