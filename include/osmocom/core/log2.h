@@ -7,7 +7,6 @@
 
 #pragma once
 #include <stdint.h>
-#define __always_inline               inline __attribute__((always_inline))
 
 /* from linux/asm-generic/bitops/{fls,fls64}.h - could later be enhanced
  * with architecture specific optimized versions */
@@ -19,7 +18,7 @@
  * This is defined the same way as ffs.
  * Note fls(0) = 0, fls(1) = 1, fls(0x80000000) = 32.
  */
-static __always_inline int fls(unsigned int x)
+static inline __attribute__((always_inline)) int fls(unsigned int x)
 {
 	int r = 32;
 
@@ -59,7 +58,7 @@ static __always_inline int fls(unsigned int x)
  * set bit if value is nonzero. The last (most significant) bit is
  * at position 64.
  */
-static __always_inline int fls64(uint64_t x)
+static inline __attribute__((always_inline)) int fls64(uint64_t x)
 {
 	uint32_t h = x >> 32;
 	if (h)
