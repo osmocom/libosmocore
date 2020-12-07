@@ -321,3 +321,23 @@ enum gprs_bssgp_cause {
 	BSSGP_CAUSE_DTM_HO_MSC_ERR		= 0x4a,
 	BSSGP_CAUSE_INVAL_CSG_CELL		= 0x4b,
 };
+
+/* Feature Bitmap (Section 11.3.45) */
+#define	BSSGP_FEAT_PFC		0x01	/* Packet Flow Context */
+#define	BSSGP_FEAT_CBL		0x02	/* Current Bucket Level */
+#define	BSSGP_FEAT_INR		0x04	/* Inter-NSE re-routing */
+#define	BSSGP_FEAT_LCS		0x08	/* Location Services */
+#define	BSSGP_FEAT_RIM		0x10	/* RAN Inoformation Management */
+#define	BSSGP_FEAT_PFC_FC	0x20	/* PFC Flow Control */
+#define	BSSGP_FEAT_ERS		0x40	/* Enhanced Radio Status */
+#define	BSSGP_FEAT_MBMS		0x80	/* Multimedia Broadcast */
+
+/* Extended Feature Bitmap (Section 11.3.84) */
+#define	BSSGP_XFEAT_PSHO	0x01	/* PS Handover */
+#define	BSSGP_XFEAT_GBIT	0x02	/* Gigabit Interface */
+#define	BSSGP_XFEAT_MOCN	0x04	/* Multi-Operator CN */
+#define	BSSGP_XFEAT_CSPS	0x08	/* CS/PS coordination enhancements */
+#define	BSSGP_XFEAT_ECIoT	0x10	/* EC-GSM-IoT */
+#define	BSSGP_XFEAT_DCN		0x20	/* Dedicated CN */
+#define	BSSGP_XFEAT_eDRX	0x40	/* eDRX */
+#define	BSSGP_XFEAT_MSAD	0x80	/* MS-assisted Dedicated CN selection */
