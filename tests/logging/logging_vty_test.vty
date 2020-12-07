@@ -53,7 +53,7 @@ logging_vty_test# list
   logging print level (0|1)
   logging print file (0|1|basename) [last]
   logging set-log-mask MASK
-  logging level (aa|bb|ccc|dddd|eee|lglobal|llapd|linp|lmux|lmi|lmib|lsms|lctrl|lgtp|lstats|lgsup|loap|lss7|lsccp|lsua|lm3ua|lmgcp|ljibuf|lrspro|lns) (debug|info|notice|error|fatal)
+  logging level (aa|bb|ccc|dddd|eee|lglobal|llapd|linp|lmux|lmi|lmib|lsms|lctrl|lgtp|lstats|lgsup|loap|lss7|lsccp|lsua|lm3ua|lmgcp|ljibuf|lrspro|lns|lbssgp) (debug|info|notice|error|fatal)
   logging level set-all (debug|info|notice|error|fatal)
   logging level force-all (debug|info|notice|error|fatal)
   no logging level force-all
@@ -471,7 +471,7 @@ DEEE FATAL Log message for DEEE on level LOGL_FATAL
 
 logging_vty_test# list
 ...
-  logp (aa|bb|ccc|dddd|eee|lglobal|llapd|linp|lmux|lmi|lmib|lsms|lctrl|lgtp|lstats|lgsup|loap|lss7|lsccp|lsua|lm3ua|lmgcp|ljibuf|lrspro|lns) (debug|info|notice|error|fatal) .LOGMESSAGE
+  logp (aa|bb|ccc|dddd|eee|lglobal|llapd|linp|lmux|lmi|lmib|lsms|lctrl|lgtp|lstats|lgsup|loap|lss7|lsccp|lsua|lm3ua|lmgcp|ljibuf|lrspro|lns|lbssgp) (debug|info|notice|error|fatal) .LOGMESSAGE
 ...
 
 logging_vty_test# logp?
@@ -503,6 +503,7 @@ logging_vty_test# logp ?
   ljibuf   libosmo-netif Jitter Buffer
   lrspro   Remote SIM protocol
   lns      GPRS NS layer
+  lbssgp   GPRS BSSGP layer
 
 logging_vty_test# logp lglobal ?
   debug   Log debug messages and higher levels

@@ -233,6 +233,6 @@ void bssgp_fc_flush_queue(struct bssgp_flow_control *fc);
 
 /* gprs_bssgp_vty.c */
 int bssgp_vty_init(void);
-void bssgp_set_log_ss(int ss);
+void bssgp_set_log_ss(int ss) OSMO_DEPRECATED("Use DLBSSGP instead!\n");
 
 int bssgp_prim_cb(struct osmo_prim_hdr *oph, void *ctx);

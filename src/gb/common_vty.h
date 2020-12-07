@@ -3,5 +3,5 @@
 #include <osmocom/vty/command.h>
 #include <osmocom/core/logging.h>
 
-extern int DNS, DBSSGP;
+extern int DNS;
 

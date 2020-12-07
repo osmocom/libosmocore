@@ -33,7 +33,6 @@
 #include <osmocom/gprs/gprs_ns.h>
 
 #include "gprs_bssgp_internal.h"
-#include "common_vty.h"
 
 struct gprs_ns_inst *bssgp_nsi;
 
@@ -561,17 +560,17 @@ int bssgp_tx_status(uint8_t cause, uint16_t *bvci, struct msgb *orig_msg)
 	   cause is either "BVCI blocked" or "BVCI unknown" */
 	if (cause == BSSGP_CAUSE_UNKNOWN_BVCI || cause == BSSGP_CAUSE_BVCI_BLOCKED) {
 		if (bvci == NULL)
-			LOGP(DBSSGP, LOGL_ERROR, "BSSGP Tx STATUS, cause=%s: "
+			LOGP(DLBSSGP, LOGL_ERROR, "BSSGP Tx STATUS, cause=%s: "
 			     "missing conditional BVCI\n",
 			     bssgp_cause_str(cause));
 	} else {
 		if (bvci != NULL)
-			LOGP(DBSSGP, LOGL_ERROR, "BSSGP Tx STATUS, cause=%s: "
+			LOGP(DLBSSGP, LOGL_ERROR, "BSSGP Tx STATUS, cause=%s: "
 			     "unexpected conditional BVCI\n",
 			     bssgp_cause_str(cause));
 	}
 
-	LOGP(DBSSGP, LOGL_NOTICE, "BSSGP BVCI=%u Tx STATUS, cause=%s\n",
+	LOGP(DLBSSGP, LOGL_NOTICE, "BSSGP BVCI=%u Tx STATUS, cause=%s\n",
 		bvci ? *bvci : 0, bssgp_cause_str(cause));
 	msgb_nsei(msg) = msgb_nsei(orig_msg);
 	msgb_bvci(msg) = 0;

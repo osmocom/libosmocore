@@ -35,7 +35,6 @@
 #include <osmocom/gprs/gprs_ns.h>
 
 #include "gprs_bssgp_internal.h"
-#include "common_vty.h"
 
 #define GSM_IMSI_LENGTH 17
 
@@ -61,7 +60,7 @@ int bssgp_tx_suspend(uint16_t nsei, uint32_t tlli,
 	struct bssgp_normal_hdr *bgph =
 			(struct bssgp_normal_hdr *) msgb_put(msg, sizeof(*bgph));
 
-	LOGP(DBSSGP, LOGL_NOTICE, "BSSGP (BVCI=0) Tx SUSPEND (TLLI=0x%04x)\n",
+	LOGP(DLBSSGP, LOGL_NOTICE, "BSSGP (BVCI=0) Tx SUSPEND (TLLI=0x%04x)\n",
 		tlli);
 	msgb_nsei(msg) = nsei;
 	msgb_bvci(msg) = 0; /* Signalling */
@@ -81,7 +80,7 @@ int bssgp_tx_resume(uint16_t nsei, uint32_t tlli,
 	struct bssgp_normal_hdr *bgph =
 			(struct bssgp_normal_hdr *) msgb_put(msg, sizeof(*bgph));
 
-	LOGP(DBSSGP, LOGL_NOTICE, "BSSGP (BVCI=0) Tx RESUME (TLLI=0x%04x)\n",
+	LOGP(DLBSSGP, LOGL_NOTICE, "BSSGP (BVCI=0) Tx RESUME (TLLI=0x%04x)\n",
 		tlli);
 	msgb_nsei(msg) = nsei;
 	msgb_bvci(msg) = 0; /* Signalling */
@@ -102,7 +101,7 @@ int bssgp_tx_ra_capa_upd(struct bssgp_bvc_ctx *bctx, uint32_t tlli, uint8_t tag)
 	struct bssgp_normal_hdr *bgph =
 		(struct bssgp_normal_hdr *) msgb_put(msg, sizeof(*bgph));
 
-	LOGP(DBSSGP, LOGL_NOTICE, "BSSGP (BVCI=%u) Tx RA-CAPA-UPD (TLLI=0x%04x)\n",
+	LOGP(DLBSSGP, LOGL_NOTICE, "BSSGP (BVCI=%u) Tx RA-CAPA-UPD (TLLI=0x%04x)\n",
 		bctx->bvci, tlli);
 
 	/* set NSEI and BVCI in msgb cb */
@@ -124,7 +123,7 @@ static struct msgb *common_tx_radio_status(struct bssgp_bvc_ctx *bctx)
 	struct bssgp_normal_hdr *bgph =
 		(struct bssgp_normal_hdr *) msgb_put(msg, sizeof(*bgph));
 
-	LOGP(DBSSGP, LOGL_NOTICE, "BSSGP (BVCI=%u) Tx RADIO-STATUS ",
+	LOGP(DLBSSGP, LOGL_NOTICE, "BSSGP (BVCI=%u) Tx RADIO-STATUS ",
 		bctx->bvci);
 
 	/* set NSEI and BVCI in msgb cb */
@@ -140,7 +139,7 @@ static struct msgb *common_tx_radio_status(struct bssgp_bvc_ctx *bctx)
 static int common_tx_radio_status2(struct msgb *msg, uint8_t cause)
 {
 	msgb_tvlv_put(msg, BSSGP_IE_CAUSE, 1, &cause);
-	LOGPC(DBSSGP, LOGL_NOTICE, "CAUSE=%s\n", bssgp_cause_str(cause));
+	LOGPC(DLBSSGP, LOGL_NOTICE, "CAUSE=%s\n", bssgp_cause_str(cause));
 
 	return bssgp_ns_send(bssgp_ns_send_data, msg);
 }
@@ -154,7 +153,7 @@ int bssgp_tx_radio_status_tlli(struct bssgp_bvc_ctx *bctx, uint8_t cause,
 	if (!msg)
 		return -ENOMEM;
 	bssgp_msgb_tlli_put(msg, tlli);
-	LOGPC(DBSSGP, LOGL_NOTICE, "TLLI=0x%08x ", tlli);
+	LOGPC(DLBSSGP, LOGL_NOTICE, "TLLI=0x%08x ", tlli);
 
 	return common_tx_radio_status2(msg, cause);
 }
@@ -169,7 +168,7 @@ int bssgp_tx_radio_status_tmsi(struct bssgp_bvc_ctx *bctx, uint8_t cause,
 	if (!msg)
 		return -ENOMEM;
 	msgb_tvlv_put(msg, BSSGP_IE_TMSI, 4, (uint8_t *)&_tmsi);
-	LOGPC(DBSSGP, LOGL_NOTICE, "TMSI=0x%08x ", tmsi);
+	LOGPC(DLBSSGP, LOGL_NOTICE, "TMSI=0x%08x ", tmsi);
 
 	return common_tx_radio_status2(msg, cause);
 }
@@ -195,7 +194,7 @@ int bssgp_tx_radio_status_imsi(struct bssgp_bvc_ctx *bctx, uint8_t cause,
 	if (imsi_len > 2)
 		msgb_tvlv_put(msg, BSSGP_IE_IMSI, imsi_len-2, mi+2);
 #pragma GCC diagnostic pop
-	LOGPC(DBSSGP, LOGL_NOTICE, "IMSI=%s ", imsi);
+	LOGPC(DLBSSGP, LOGL_NOTICE, "IMSI=%s ", imsi);
 
 	return common_tx_radio_status2(msg, cause);
 }
@@ -234,7 +233,7 @@ int bssgp_tx_llc_discarded(struct bssgp_bvc_ctx *bctx, uint32_t tlli,
 	uint16_t _bvci = osmo_htons(bctx->bvci);
 	uint32_t _oct_aff = osmo_htonl(num_octets & 0xFFFFFF);
 
-	LOGP(DBSSGP, LOGL_NOTICE, "BSSGP (BVCI=%u) Tx LLC-DISCARDED "
+	LOGP(DLBSSGP, LOGL_NOTICE, "BSSGP (BVCI=%u) Tx LLC-DISCARDED "
 	     "TLLI=0x%04x, FRAMES=%u, OCTETS=%u\n", bctx->bvci, tlli,
 	     num_frames, num_octets);
 	msgb_nsei(msg) = bctx->nsei;
@@ -258,7 +257,7 @@ int bssgp_tx_bvc_block(struct bssgp_bvc_ctx *bctx, uint8_t cause)
 			(struct bssgp_normal_hdr *) msgb_put(msg, sizeof(*bgph));
 	uint16_t _bvci = osmo_htons(bctx->bvci);
 
-	LOGP(DBSSGP, LOGL_NOTICE, "BSSGP (BVCI=%u) Tx BVC-BLOCK "
+	LOGP(DLBSSGP, LOGL_NOTICE, "BSSGP (BVCI=%u) Tx BVC-BLOCK "
 		"CAUSE=%s\n", bctx->bvci, bssgp_cause_str(cause));
 
 	msgb_nsei(msg) = bctx->nsei;
@@ -279,7 +278,7 @@ int bssgp_tx_bvc_unblock(struct bssgp_bvc_ctx *bctx)
 			(struct bssgp_normal_hdr *) msgb_put(msg, sizeof(*bgph));
 	uint16_t _bvci = osmo_htons(bctx->bvci);
 
-	LOGP(DBSSGP, LOGL_NOTICE, "BSSGP (BVCI=%u) Tx BVC-UNBLOCK\n", bctx->bvci);
+	LOGP(DLBSSGP, LOGL_NOTICE, "BSSGP (BVCI=%u) Tx BVC-UNBLOCK\n", bctx->bvci);
 
 	msgb_nsei(msg) = bctx->nsei;
 	msgb_bvci(msg) = 0; /* Signalling */

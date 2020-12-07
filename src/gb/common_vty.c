@@ -63,4 +63,4 @@ int gprs_log_filter_fn(const struct log_context *ctx,
 }
 
 
-int DNS, DBSSGP;
+int DNS;

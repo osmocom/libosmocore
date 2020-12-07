@@ -44,8 +44,6 @@
 #include <osmocom/vty/telnet_interface.h>
 #include <osmocom/vty/misc.h>
 
-#include "common_vty.h"
-
 static void log_set_bvc_filter(struct log_target *target,
 				struct bssgp_bvc_ctx *bctx)
 {
