@@ -514,3 +514,52 @@ int gprs_ns2_ip_bind_set_dscp(struct gprs_ns2_vc_bind *bind, int dscp)
 
 	return rc;
 }
+
+/*! Count UDP binds compatible with remote */
+int ns2_ip_count_bind(struct gprs_ns2_inst *nsi, struct osmo_sockaddr *remote)
+{
+	struct gprs_ns2_vc_bind *bind;
+	const struct osmo_sockaddr *sa;
+	int count = 0;
+
+	llist_for_each_entry(bind, &nsi->binding, list) {
+		if (!gprs_ns2_is_ip_bind(bind))
+			continue;
+
+		sa = gprs_ns2_ip_bind_sockaddr(bind);
+		if (!sa)
+			continue;
+
+		if (sa->u.sa.sa_family == remote->u.sa.sa_family)
+			count++;
+	}
+
+	return count;
+}
+
+/* return the matching bind by index */
+struct gprs_ns2_vc_bind *ns2_ip_get_bind_by_index(struct gprs_ns2_inst *nsi,
+						  struct osmo_sockaddr *remote,
+						  int index)
+{
+	struct gprs_ns2_vc_bind *bind;
+	const struct osmo_sockaddr *sa;
+	int i = 0;
+
+	llist_for_each_entry(bind, &nsi->binding, list) {
+		if (!gprs_ns2_is_ip_bind(bind))
+			continue;
+
+		sa = gprs_ns2_ip_bind_sockaddr(bind);
+		if (!sa)
+			continue;
+
+		if (sa->u.sa.sa_family == remote->u.sa.sa_family) {
+			if (index == i)
+				return bind;
+			i++;
+		}
+	}
+
+	return NULL;
+}

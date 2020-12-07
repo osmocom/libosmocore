@@ -953,42 +953,6 @@ struct gprs_ns2_vc *gprs_ns2_ip_connect2(struct gprs_ns2_vc_bind *bind,
 	return gprs_ns2_ip_connect(bind, remote, nse, nsvci);
 }
 
-/*! Create, connect and activate a new IP-SNS NSE.
- *  \param[in] bind bind in which the new NS-VC is to be created
- *  \param[in] remote remote address to which to connect
- *  \param[in] nsei NSEI of the NS Entity in which the NS-VC is to be created
- *  \return 0 on success; negative on error */
-int gprs_ns2_ip_connect_sns(struct gprs_ns2_vc_bind *bind,
-			    const struct osmo_sockaddr *remote,
-			    uint16_t nsei)
-{
-	struct gprs_ns2_nse *nse = gprs_ns2_nse_by_nsei(bind->nsi, nsei);
-	struct gprs_ns2_vc *nsvc;
-
-	if (!nse) {
-		nse = gprs_ns2_create_nse(bind->nsi, nsei, GPRS_NS2_LL_UDP, NS2_DIALECT_SNS);
-		if (!nse)
-			return -1;
-	}
-
-	if (nse->ll != GPRS_NS2_LL_UDP) {
-		return -2;
-	}
-
-	if (nse->dialect != NS2_DIALECT_SNS) {
-		return -2;
-	}
-
-	if (!nse->bss_sns_fi)
-		return -1;
-
-	nsvc = gprs_ns2_ip_bind_connect(bind, nse, remote);
-	if (!nsvc)
-		return -1;
-
-	return ns2_sns_bss_fsm_start(nse, nsvc, remote);
-}
-
 /*! Find NS-VC for given socket address.
  *  \param[in] nse NS Entity in which to search
  *  \param[in] sockaddr socket address to search for
