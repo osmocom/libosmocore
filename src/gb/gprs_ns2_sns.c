@@ -117,6 +117,8 @@ struct ns2_sns_state {
 	struct sns_endpoint *initial;
 	/* all SNS PDU will be sent over this nsvc */
 	struct gprs_ns2_vc *sns_nsvc;
+	/* iterate over the binds after all remote has been tested */
+	int bind_offset;
 
 	/* local configuration to send to the remote end */
 	struct gprs_ns_ie_ip4_elem *ip4_local;
@@ -714,9 +716,15 @@ static void ns2_sns_st_size_onenter(struct osmo_fsm_inst *fi, uint32_t old_state
 		return;
 	}
 
-	bind = ns2_ip_get_bind_by_offset(nsi, remote, 0);
+	bind = ns2_ip_get_bind_by_offset(nsi, remote, gss->bind_offset);
 	if (!bind) {
-		return;
+		if (gss->bind_offset) {
+			gss->bind_offset = 0;
+			bind = ns2_ip_get_bind_by_offset(nsi, remote, gss->bind_offset);
+		}
+
+		if (!bind)
+			return;
 	}
 
 	/* setup the NSVC */
@@ -1333,12 +1341,18 @@ static void ns2_sns_st_all_action(struct osmo_fsm_inst *fi, uint32_t event, void
 			ns2_prim_status_ind(gss->nse, NULL, 0, NS_AFF_CAUSE_SNS_NO_ENDPOINTS);
 			osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_UNCONFIGURED, 0, 3);
 			return;
-		} else if (!gss->initial)
+		} else if (!gss->initial) {
 			gss->initial = llist_first_entry(&gss->sns_endpoints, struct sns_endpoint, list);
-		else if (gss->initial->list.next == &gss->sns_endpoints) /* last entry, continue with first */
+			gss->bind_offset = 0;
+		} else if (gss->initial->list.next == &gss->sns_endpoints) {
+			/* last entry, continue with first */
 			gss->initial = llist_first_entry(&gss->sns_endpoints, struct sns_endpoint, list);
-		else /* next element is an entry */
+			gss->bind_offset++;
+			gss->bind_offset %= ns2_ip_count_bind(nse->nsi, &gss->initial->saddr);
+		} else {
+			/* next element is an entry */
 			gss->initial = llist_entry(gss->initial->list.next, struct sns_endpoint, list);
+		}
 
 		gss->reselection_running = false;
 		osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_SIZE, nse->nsi->timeout[NS_TOUT_TSNS_PROV], 1);
