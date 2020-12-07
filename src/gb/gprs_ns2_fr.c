@@ -50,8 +50,11 @@
 #include <osmocom/core/select.h>
 #include <osmocom/core/socket.h>
 #include <osmocom/core/talloc.h>
-#include <osmocom/core/mnl.h>
 #include <osmocom/gprs/gprs_ns2.h>
+
+#ifdef ENABLE_LIBMNL
+#include <osmocom/core/mnl.h>
+#endif
 
 #include "config.h"
 #include "common_vty.h"
