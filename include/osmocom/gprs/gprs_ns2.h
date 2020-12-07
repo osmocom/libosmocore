@@ -82,6 +82,7 @@ enum gprs_ns2_affecting_cause {
 	/* osmocom own causes */
 	NS_AFF_CAUSE_SNS_CONFIGURED,
 	NS_AFF_CAUSE_SNS_FAILURE,
+	NS_AFF_CAUSE_SNS_NO_ENDPOINTS,
 };
 
 extern const struct value_string gprs_ns2_aff_cause_prim_strs[];
@@ -218,9 +219,11 @@ void gprs_ns2_free_bind(struct gprs_ns2_vc_bind *bind);
 void gprs_ns2_free_binds(struct gprs_ns2_inst *nsi);
 
 /* create a VC SNS connection */
-int gprs_ns2_ip_connect_sns(struct gprs_ns2_vc_bind *bind,
-			    const struct osmo_sockaddr *remote,
-			    uint16_t nsei);
+int gprs_ns2_sns_count(struct gprs_ns2_nse *nse);
+int gprs_ns2_sns_add_endpoint(struct gprs_ns2_nse *nse,
+				   const struct osmo_sockaddr *saddr);
+int gprs_ns2_sns_del_endpoint(struct gprs_ns2_nse *nse,
+				   const struct osmo_sockaddr *saddr);
 const struct osmo_sockaddr *gprs_ns2_nse_sns_remote(struct gprs_ns2_nse *nse);
 
 const struct osmo_sockaddr *gprs_ns2_ip_vc_remote(const struct gprs_ns2_vc *nsvc);

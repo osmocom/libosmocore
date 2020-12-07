@@ -69,7 +69,7 @@ enum gprs_sns_bss_state {
 };
 
 enum gprs_sns_event {
-	GPRS_SNS_EV_START,
+	GPRS_SNS_EV_SELECT_ENDPOINT,	/*!< Select a SNS endpoint from the list */
 	GPRS_SNS_EV_SIZE,
 	GPRS_SNS_EV_SIZE_ACK,
 	GPRS_SNS_EV_CONFIG,
@@ -82,7 +82,7 @@ enum gprs_sns_event {
 };
 
 static const struct value_string gprs_sns_event_names[] = {
-	{ GPRS_SNS_EV_START, 		"START" },
+	{ GPRS_SNS_EV_SELECT_ENDPOINT,	"SELECT_ENDPOINT" },
 	{ GPRS_SNS_EV_SIZE,		"SIZE" },
 	{ GPRS_SNS_EV_SIZE_ACK,		"SIZE_ACK" },
 	{ GPRS_SNS_EV_CONFIG,		"CONFIG" },
@@ -95,14 +95,26 @@ static const struct value_string gprs_sns_event_names[] = {
 	{ 0, NULL }
 };
 
+struct sns_endpoint {
+	struct llist_head list;
+	struct osmo_sockaddr saddr;
+};
+
 struct ns2_sns_state {
 	struct gprs_ns2_nse *nse;
 
 	enum ns2_sns_type ip;
 
-	/* initial connection. the initial connection will be terminated
-	 * in configured state or moved into NSE if valid */
-	struct osmo_sockaddr initial;
+	/* holds the list of initial SNS endpoints */
+	struct llist_head sns_endpoints;
+	/* prevent recursive reselection */
+	bool reselection_running;
+
+	/* The current initial SNS endpoints.
+	 * The initial connection will be moved into the NSE
+	 * if configured via SNS. Otherwise it will be removed
+	 * in configured state. */
+	struct sns_endpoint *initial;
 	/* all SNS PDU will be sent over this nsvc */
 	struct gprs_ns2_vc *sns_nsvc;
 
@@ -207,7 +219,7 @@ const struct osmo_sockaddr *gprs_ns2_nse_sns_remote(struct gprs_ns2_nse *nse)
 		return NULL;
 
 	gss = (struct ns2_sns_state *) nse->bss_sns_fi->priv;
-	return &gss->initial;
+	return &gss->initial->saddr;
 }
 
 /*! called when a nsvc is beeing freed */
@@ -646,16 +658,7 @@ static int do_sns_add(struct osmo_fsm_inst *fi,
 
 static void ns2_sns_st_unconfigured(struct osmo_fsm_inst *fi, uint32_t event, void *data)
 {
-	struct gprs_ns2_nse *nse = nse_inst_from_fi(fi);
-	struct gprs_ns2_inst *nsi = nse->nsi;
-
-	switch (event) {
-	case GPRS_SNS_EV_START:
-		osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_SIZE, nsi->timeout[NS_TOUT_TSNS_PROV], 1);
-		break;
-	default:
-		OSMO_ASSERT(0);
-	}
+	/* empty state - SNS Select will start by all action */
 }
 
 static void ns2_sns_st_size(struct osmo_fsm_inst *fi, uint32_t event, void *data)
@@ -681,18 +684,133 @@ static void ns2_sns_st_size(struct osmo_fsm_inst *fi, uint32_t event, void *data
 	}
 }
 
+/* setup all dynamic SNS settings, create a new nsvc and send the SIZE */
 static void ns2_sns_st_size_onenter(struct osmo_fsm_inst *fi, uint32_t old_state)
 {
 	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
+	struct gprs_ns_ie_ip4_elem *ip4_elems;
+	struct gprs_ns_ie_ip6_elem *ip6_elems;
+	struct gprs_ns2_vc_bind *bind;
+	struct gprs_ns2_inst *nsi = gss->nse->nsi;
+	struct osmo_sockaddr *remote;
+	const struct osmo_sockaddr *sa;
+	struct osmo_sockaddr local;
+	int count;
 
+	/* on a generic failure, the timer callback will recover */
 	if (old_state != GPRS_SNS_ST_UNCONFIGURED)
 		ns2_prim_status_ind(gss->nse, NULL, 0, NS_AFF_CAUSE_SNS_FAILURE);
+
+	/* no initial available */
+	if (!gss->initial)
+		return;
+
+	remote = &gss->initial->saddr;
+
+	/* count how many bindings are available (only UDP binds) */
+	count = ns2_ip_count_bind(nsi, remote);
+	if (count == 0) {
+		/* TODO: logging */
+		return;
+	}
+
+	bind = ns2_ip_get_bind_by_offset(nsi, remote, 0);
+	if (!bind) {
+		return;
+	}
+
+	/* setup the NSVC */
+	if (!gss->sns_nsvc) {
+		gss->sns_nsvc = gprs_ns2_ip_bind_connect(bind, gss->nse, remote);
+		if (!gss->sns_nsvc)
+			return;
+		gss->sns_nsvc->sns_only = true;
+	}
+
+	switch (gss->ip) {
+	case IPv4:
+		ip4_elems = talloc_zero_size(fi, sizeof(struct gprs_ns_ie_ip4_elem) * count);
+		if (!ip4_elems)
+			return;
+
+		gss->ip4_local = ip4_elems;
+
+		llist_for_each_entry(bind, &nsi->binding, list) {
+			if (!gprs_ns2_is_ip_bind(bind))
+				continue;
+
+			sa = gprs_ns2_ip_bind_sockaddr(bind);
+			if (!sa)
+				continue;
+
+			if (sa->u.sas.ss_family != AF_INET)
+				continue;
+
+			/* check if this is an specific bind */
+			if (sa->u.sin.sin_addr.s_addr == 0) {
+				if (osmo_sockaddr_local_ip(&local, remote))
+					continue;
+
+				ip4_elems->ip_addr = local.u.sin.sin_addr.s_addr;
+			} else {
+				ip4_elems->ip_addr = sa->u.sin.sin_addr.s_addr;
+			}
+
+			ip4_elems->udp_port = sa->u.sin.sin_port;
+			ip4_elems->sig_weight = 2;
+			ip4_elems->data_weight = 1;
+			ip4_elems++;
+		}
+
+		gss->num_ip4_local = count;
+		gss->num_max_ip4_remote = 4;
+		gss->num_max_nsvcs = OSMO_MAX(gss->num_max_ip4_remote * gss->num_ip4_local, 8);
+		break;
+	case IPv6:
+		/* IPv6 */
+		ip6_elems = talloc_zero_size(fi, sizeof(struct gprs_ns_ie_ip6_elem) * count);
+		if (!ip6_elems)
+			return;
+
+		gss->ip6_local = ip6_elems;
+
+		llist_for_each_entry(bind, &nsi->binding, list) {
+			if (!gprs_ns2_is_ip_bind(bind))
+				continue;
+
+			sa = gprs_ns2_ip_bind_sockaddr(bind);
+			if (!sa)
+				continue;
+
+			if (sa->u.sas.ss_family != AF_INET6)
+				continue;
+
+			/* check if this is an specific bind */
+			if (IN6_IS_ADDR_UNSPECIFIED(&sa->u.sin6.sin6_addr)) {
+				if (osmo_sockaddr_local_ip(&local, remote))
+					continue;
+
+				ip6_elems->ip_addr = local.u.sin6.sin6_addr;
+			} else {
+				ip6_elems->ip_addr = sa->u.sin6.sin6_addr;
+			}
+
+			ip6_elems->udp_port = sa->u.sin.sin_port;
+			ip6_elems->sig_weight = 2;
+			ip6_elems->data_weight = 1;
+
+			ip6_elems++;
+		}
+		gss->num_ip6_local = count;
+		gss->num_max_ip6_remote = 4;
+		gss->num_max_nsvcs = OSMO_MAX(gss->num_max_ip6_remote * gss->num_ip6_local, 8);
+		break;
+	}
 
 	if (gss->num_max_ip4_remote > 0)
 		ns2_tx_sns_size(gss->sns_nsvc, true, gss->num_max_nsvcs, gss->num_max_ip4_remote, -1);
 	else
 		ns2_tx_sns_size(gss->sns_nsvc, true, gss->num_max_nsvcs, -1, gss->num_max_ip6_remote);
-
 }
 
 static void ns2_sns_st_config_bss(struct osmo_fsm_inst *fi, uint32_t event, void *data)
@@ -1130,7 +1248,7 @@ static void ns2_sns_st_configured_onenter(struct osmo_fsm_inst *fi, uint32_t old
 
 static const struct osmo_fsm_state ns2_sns_bss_states[] = {
 	[GPRS_SNS_ST_UNCONFIGURED] = {
-		.in_event_mask = S(GPRS_SNS_EV_START),
+		.in_event_mask = 0,
 		.out_state_mask = S(GPRS_SNS_ST_SIZE),
 		.name = "UNCONFIGURED",
 		.action = ns2_sns_st_unconfigured,
@@ -1194,17 +1312,46 @@ static int ns2_sns_fsm_bss_timer_cb(struct osmo_fsm_inst *fi)
 
 static void ns2_sns_st_all_action(struct osmo_fsm_inst *fi, uint32_t event, void *data)
 {
+	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
 	struct gprs_ns2_nse *nse = nse_inst_from_fi(fi);
 
 	/* reset when receiving GPRS_SNS_EV_NO_NSVC */
-	osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_SIZE, nse->nsi->timeout[NS_TOUT_TSNS_PROV], 3);
+	switch (event) {
+	case GPRS_SNS_EV_NO_NSVC:
+		if (!gss->reselection_running)
+			osmo_fsm_inst_dispatch(fi, GPRS_SNS_EV_SELECT_ENDPOINT, NULL);
+		break;
+	case GPRS_SNS_EV_SELECT_ENDPOINT:
+		/* tear down previous state
+		 * gprs_ns2_free_nsvcs() will trigger NO_NSVC, prevent this from triggering a reselection */
+		gss->reselection_running = true;
+		gprs_ns2_free_nsvcs(nse);
+
+		/* Choose the next sns endpoint. */
+		if (llist_empty(&gss->sns_endpoints)) {
+			gss->initial = NULL;
+			ns2_prim_status_ind(gss->nse, NULL, 0, NS_AFF_CAUSE_SNS_NO_ENDPOINTS);
+			osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_UNCONFIGURED, 0, 3);
+			return;
+		} else if (!gss->initial)
+			gss->initial = llist_first_entry(&gss->sns_endpoints, struct sns_endpoint, list);
+		else if (gss->initial->list.next == &gss->sns_endpoints) /* last entry, continue with first */
+			gss->initial = llist_first_entry(&gss->sns_endpoints, struct sns_endpoint, list);
+		else /* next element is an entry */
+			gss->initial = llist_entry(gss->initial->list.next, struct sns_endpoint, list);
+
+		gss->reselection_running = false;
+		osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_SIZE, nse->nsi->timeout[NS_TOUT_TSNS_PROV], 1);
+		break;
+	}
 }
 
 static struct osmo_fsm gprs_ns2_sns_bss_fsm = {
 	.name = "GPRS-NS2-SNS-BSS",
 	.states = ns2_sns_bss_states,
 	.num_states = ARRAY_SIZE(ns2_sns_bss_states),
-	.allstate_event_mask = S(GPRS_SNS_EV_NO_NSVC),
+	.allstate_event_mask = S(GPRS_SNS_EV_NO_NSVC) |
+			       S(GPRS_SNS_EV_SELECT_ENDPOINT),
 	.allstate_action = ns2_sns_st_all_action,
 	.cleanup = NULL,
 	.timer_cb = ns2_sns_fsm_bss_timer_cb,
@@ -1234,139 +1381,12 @@ struct osmo_fsm_inst *ns2_sns_bss_fsm_alloc(struct gprs_ns2_nse *nse,
 
 	fi->priv = gss;
 	gss->nse = nse;
+	INIT_LLIST_HEAD(&gss->sns_endpoints);
 
 	return fi;
 err:
 	osmo_fsm_inst_term(fi, OSMO_FSM_TERM_ERROR, NULL);
 	return NULL;
-}
-
-/*! Start an IP-SNS FSM.
- *  \param[in] nse NS Entity whose IP-SNS FSM shall be started
- *  \param[in] nsvc Initial NS-VC
- *  \param[in] remote remote (SGSN) address
- *  \returns 0 on success; negative on error */
-int ns2_sns_bss_fsm_start(struct gprs_ns2_nse *nse, struct gprs_ns2_vc *nsvc,
-			  const struct osmo_sockaddr *remote)
-{
-	struct osmo_fsm_inst *fi = nse->bss_sns_fi;
-	struct ns2_sns_state *gss = (struct ns2_sns_state *) nse->bss_sns_fi->priv;
-	struct gprs_ns_ie_ip4_elem *ip4_elems;
-	struct gprs_ns_ie_ip6_elem *ip6_elems;
-	struct gprs_ns2_vc_bind *bind;
-	struct gprs_ns2_inst *nsi = nse->nsi;
-	const struct osmo_sockaddr *sa;
-	struct osmo_sockaddr local;
-
-	gss->ip = remote->u.sa.sa_family == AF_INET ? IPv4 : IPv6;
-
-	gss->initial = *remote;
-	gss->sns_nsvc = nsvc;
-	nsvc->sns_only = true;
-
-	/* count how many bindings are available (only UDP binds) */
-	int count = 0;
-	llist_for_each_entry(bind, &nsi->binding, list) {
-		if (!gprs_ns2_is_ip_bind(bind))
-			continue;
-
-		sa = gprs_ns2_ip_bind_sockaddr(bind);
-		if (!sa)
-			continue;
-
-		if (sa->u.sa.sa_family == remote->u.sa.sa_family)
-			count++;
-	}
-
-	if (count == 0) {
-		/* TODO: logging */
-		goto err;
-	}
-
-	switch (gss->ip) {
-	case IPv4:
-		ip4_elems = talloc_zero_size(fi, sizeof(struct gprs_ns_ie_ip4_elem) * count);
-		if (!ip4_elems)
-			goto err;
-
-		gss->ip4_local = ip4_elems;
-
-		llist_for_each_entry(bind, &nsi->binding, list) {
-			if (!gprs_ns2_is_ip_bind(bind))
-				continue;
-
-			sa = gprs_ns2_ip_bind_sockaddr(bind);
-			if (!sa)
-				continue;
-
-			if (sa->u.sas.ss_family != AF_INET)
-				continue;
-
-			/* check if this is an specific bind */
-			if (sa->u.sin.sin_addr.s_addr == 0) {
-				if (osmo_sockaddr_local_ip(&local, remote))
-					continue;
-
-				ip4_elems->ip_addr = local.u.sin.sin_addr.s_addr;
-			} else {
-				ip4_elems->ip_addr = sa->u.sin.sin_addr.s_addr;
-			}
-
-			ip4_elems->udp_port = sa->u.sin.sin_port;
-			ip4_elems->sig_weight = 2;
-			ip4_elems->data_weight = 1;
-			ip4_elems++;
-		}
-
-		gss->num_ip4_local = count;
-		gss->num_max_ip4_remote = 4;
-		gss->num_max_nsvcs = OSMO_MAX(gss->num_max_ip4_remote * gss->num_ip4_local, 8);
-		break;
-	case IPv6:
-		/* IPv6 */
-		ip6_elems = talloc_zero_size(fi, sizeof(struct gprs_ns_ie_ip6_elem) * count);
-		if (!ip6_elems)
-			goto err;
-
-		gss->ip6_local = ip6_elems;
-
-		llist_for_each_entry(bind, &nsi->binding, list) {
-			if (!gprs_ns2_is_ip_bind(bind))
-				continue;
-
-			sa = gprs_ns2_ip_bind_sockaddr(bind);
-			if (!sa)
-				continue;
-
-			if (sa->u.sas.ss_family != AF_INET6)
-				continue;
-
-			/* check if this is an specific bind */
-			if (IN6_IS_ADDR_UNSPECIFIED(&sa->u.sin6.sin6_addr)) {
-				if (osmo_sockaddr_local_ip(&local, remote))
-					continue;
-
-				ip6_elems->ip_addr = local.u.sin6.sin6_addr;
-			} else {
-				ip6_elems->ip_addr = sa->u.sin6.sin6_addr;
-			}
-
-			ip6_elems->udp_port = sa->u.sin.sin_port;
-			ip6_elems->sig_weight = 2;
-			ip6_elems->data_weight = 1;
-
-			ip6_elems++;
-		}
-		gss->num_ip6_local = count;
-		gss->num_max_ip6_remote = 4;
-		gss->num_max_nsvcs = OSMO_MAX(gss->num_max_ip6_remote * gss->num_ip6_local, 8);
-		break;
-	}
-
-	return osmo_fsm_inst_dispatch(nse->bss_sns_fi, GPRS_SNS_EV_START, NULL);
-
-err:
-	return -1;
 }
 
 /*! main entry point for receiving SNS messages from the network.
@@ -1488,6 +1508,138 @@ void gprs_ns2_sns_dump_vty(struct vty *vty, const struct gprs_ns2_nse *nse, bool
 		for (i = 0; i < gss->num_ip6_remote; i++)
 			vty_dump_sns_ip6(vty, &gss->ip6_remote[i]);
 	}
+}
+
+static struct sns_endpoint *ns2_get_sns_endpoint(struct ns2_sns_state *state,
+						 const struct osmo_sockaddr *saddr)
+{
+	struct sns_endpoint *endpoint;
+
+	llist_for_each_entry(endpoint, &state->sns_endpoints, list) {
+		if (!osmo_sockaddr_cmp(saddr, &endpoint->saddr))
+			return endpoint;
+	}
+
+	return NULL;
+}
+
+/*! gprs_ns2_sns_add_endpoint
+ *  \param[in] nse
+ *  \param[in] sockaddr
+ *  \return
+ */
+int gprs_ns2_sns_add_endpoint(struct gprs_ns2_nse *nse,
+			      const struct osmo_sockaddr *saddr)
+{
+	struct ns2_sns_state *gss;
+	struct sns_endpoint *endpoint;
+	bool do_selection = false;
+
+	if (nse->ll != GPRS_NS2_LL_UDP) {
+		return -EINVAL;
+	}
+
+	if (nse->dialect != NS2_DIALECT_SNS) {
+		return -EINVAL;
+	}
+
+	gss = nse->bss_sns_fi->priv;
+
+	if (ns2_get_sns_endpoint(gss, saddr))
+		return -EADDRINUSE;
+
+	endpoint = talloc_zero(nse->bss_sns_fi->priv, struct sns_endpoint);
+	if (!endpoint)
+		return -ENOMEM;
+
+	endpoint->saddr = *saddr;
+	if (llist_empty(&gss->sns_endpoints))
+		do_selection = true;
+
+	llist_add_tail(&endpoint->list, &gss->sns_endpoints);
+	if (do_selection)
+		osmo_fsm_inst_dispatch(nse->bss_sns_fi, GPRS_SNS_EV_SELECT_ENDPOINT, NULL);
+
+	return 0;
+}
+
+/*! gprs_ns2_sns_del_endpoint
+ *  \param[in] nse
+ *  \param[in] sockaddr
+ *  \return 0 on success, otherwise < 0
+ */
+int gprs_ns2_sns_del_endpoint(struct gprs_ns2_nse *nse,
+			      const struct osmo_sockaddr *saddr)
+{
+	struct ns2_sns_state *gss;
+	struct sns_endpoint *endpoint;
+
+	if (nse->ll != GPRS_NS2_LL_UDP) {
+		return -EINVAL;
+	}
+
+	if (nse->dialect != NS2_DIALECT_SNS) {
+		return -EINVAL;
+	}
+
+	gss = nse->bss_sns_fi->priv;
+	endpoint = ns2_get_sns_endpoint(gss, saddr);
+	if (!endpoint)
+		return -ENOENT;
+
+	/* if this is an unused SNS endpoint it's done */
+	if (gss->initial != endpoint) {
+		llist_del(&endpoint->list);
+		talloc_free(endpoint);
+		return 0;
+	}
+
+	/* gprs_ns2_free_nsvcs() will trigger GPRS_SNS_EV_NO_NSVC on the last NS-VC
+	 * and restart SNS SIZE procedure which selects a new initial */
+	LOGP(DLNS, LOGL_INFO, "Current in-use SNS endpoint is being removed."
+			      "Closing all NS-VC and restart SNS-SIZE procedure"
+			      "with a remaining SNS endpoint.\n");
+
+	/* Continue with the next endpoint in the list.
+	 * Special case if the endpoint is at the start or end of the list */
+	if (endpoint->list.prev == &gss->sns_endpoints ||
+			endpoint->list.next == &gss->sns_endpoints)
+		gss->initial = NULL;
+	else
+		gss->initial = llist_entry(endpoint->list.next->prev,
+					    struct sns_endpoint,
+					    list);
+
+	llist_del(&endpoint->list);
+	gprs_ns2_free_nsvcs(nse);
+	talloc_free(endpoint);
+
+	return 0;
+}
+
+/*! gprs_ns2_sns_count
+ *  \param[in] nse NS Entity whose IP-SNS endpoints shall be printed
+ *  \return the count of endpoints or < 0 if NSE doesn't contain sns.
+ */
+int gprs_ns2_sns_count(struct gprs_ns2_nse *nse)
+{
+	struct ns2_sns_state *gss;
+	struct sns_endpoint *endpoint;
+	int count = 0;
+
+	if (nse->ll != GPRS_NS2_LL_UDP) {
+		return -EINVAL;
+	}
+
+	if (nse->dialect != NS2_DIALECT_SNS) {
+		return -EINVAL;
+	}
+
+	gss = nse->bss_sns_fi->priv;
+	llist_for_each_entry(endpoint, &gss->sns_endpoints, list)
+		count++;
+
+	return count;
 }
 
 /* initialize osmo_ctx on main tread */

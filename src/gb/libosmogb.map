@@ -111,7 +111,6 @@ gprs_ns2_ip_bind_sockaddr;
 gprs_ns2_ip_connect;
 gprs_ns2_ip_connect2;
 gprs_ns2_ip_connect_inactive;
-gprs_ns2_ip_connect_sns;
 gprs_ns2_ip_vc_local;
 gprs_ns2_ip_vc_remote;
 gprs_ns2_ip_vc_equal;
@@ -132,6 +131,8 @@ gprs_ns2_prim_strs;
 gprs_ns2_recv_prim;
 gprs_ns2_reset_persistent_nsvcs;
 gprs_ns2_start_alive_all_nsvcs;
+gprs_ns2_sns_add_endpoint;
+gprs_ns2_sns_del_endpoint;
 gprs_ns2_vty_create;
 gprs_ns2_vty_init;
 
