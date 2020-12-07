@@ -400,7 +400,7 @@ static const struct osmo_fsm_state gprs_ns2_vc_states[] = {
 		.onenter = gprs_ns2_st_blocked_onenter,
 	},
 	[GPRS_NS2_ST_UNBLOCKED] = {
-		.in_event_mask = S(GPRS_NS2_EV_BLOCK),
+		.in_event_mask = S(GPRS_NS2_EV_BLOCK) | S(GPRS_NS2_EV_UNBLOCK_ACK),
 		.out_state_mask = S(GPRS_NS2_ST_RESET) | S(GPRS_NS2_ST_ALIVE) |
 				  S(GPRS_NS2_ST_BLOCKED) |
 				  S(GPRS_NS2_ST_UNCONFIGURED),
