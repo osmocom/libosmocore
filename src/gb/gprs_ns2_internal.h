@@ -15,10 +15,8 @@ struct vty;
 struct gprs_ns2_vc_driver;
 struct gprs_ns2_vc_bind;
 
-
-
-#define NS_TIMERS_COUNT 8
-#define NS_TIMERS "(tns-block|tns-block-retries|tns-reset|tns-reset-retries|tns-test|tns-alive|tns-alive-retries|tsns-prov)"
+#define NS_TIMERS_COUNT 10
+#define NS_TIMERS "(tns-block|tns-block-retries|tns-reset|tns-reset-retries|tns-test|tns-alive|tns-alive-retries|tsns-prov|tsns-prov-retries)"
 #define NS_TIMERS_HELP	\
 	"(un)blocking Timer (Tns-block) timeout\n"		\
 	"(un)blocking Timer (Tns-block) number of retries\n"	\
@@ -27,7 +25,9 @@ struct gprs_ns2_vc_bind;
 	"Test Timer (Tns-test) timeout\n"			\
 	"Alive Timer (Tns-alive) timeout\n"			\
 	"Alive Timer (Tns-alive) number of retries\n"		\
-	"SNS Provision Timer (Tsns-prov) timeout\n"
+	"SNS Provision Timer (Tsns-prov) timeout\n"		\
+	"SNS Size number of retries\n"				\
+	"SNS Config number of retries\n"			\
 
 /* Educated guess - LLC user payload is 1500 bytes plus possible headers */
 #define NS_ALLOC_SIZE	3072
@@ -42,6 +42,8 @@ enum ns2_timeout {
 	NS_TOUT_TNS_ALIVE,
 	NS_TOUT_TNS_ALIVE_RETRIES,
 	NS_TOUT_TSNS_PROV,
+	NS_TOUT_TSNS_SIZE_RETRIES,
+	NS_TOUT_TSNS_CONFIG_RETRIES,
 };
 
 enum nsvc_timer_mode {

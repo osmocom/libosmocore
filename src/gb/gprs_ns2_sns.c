@@ -119,6 +119,8 @@ struct ns2_sns_state {
 	struct gprs_ns2_vc *sns_nsvc;
 	/* iterate over the binds after all remote has been tested */
 	int bind_offset;
+	/* timer N */
+	int N;
 
 	/* local configuration to send to the remote end */
 	struct gprs_ns_ie_ip4_elem *ip4_local;
@@ -1304,14 +1306,22 @@ static const struct osmo_fsm_state ns2_sns_bss_states[] = {
 
 static int ns2_sns_fsm_bss_timer_cb(struct osmo_fsm_inst *fi)
 {
+	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
 	struct gprs_ns2_nse *nse = nse_inst_from_fi(fi);
 	struct gprs_ns2_inst *nsi = nse->nsi;
 
+	gss->N++;
 	switch (fi->T) {
 	case 1:
+		if (gss->N >= nsi->timeout[NS_TOUT_TSNS_SIZE_RETRIES])
+			osmo_fsm_inst_dispatch(fi, GPRS_SNS_EV_SELECT_ENDPOINT, NULL);
+
 		osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_SIZE, nsi->timeout[NS_TOUT_TSNS_PROV], 1);
 		break;
 	case 2:
+		if (gss->N >= nsi->timeout[NS_TOUT_TSNS_CONFIG_RETRIES])
+			osmo_fsm_inst_dispatch(fi, GPRS_SNS_EV_SELECT_ENDPOINT, NULL);
+
 		osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_CONFIG_BSS, nsi->timeout[NS_TOUT_TSNS_PROV], 2);
 		break;
 	}
