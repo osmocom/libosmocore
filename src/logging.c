@@ -131,6 +131,7 @@ const struct value_string loglevel_strs[] = {
 	{ 0, NULL },
 };
 
+/* 256 color palette see https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit */
 #define INT2IDX(x)	(-1*(x)-1)
 static const struct log_info_cat internal_cat[OSMO_NUM_DLIB] = {
 	[INT2IDX(DLGLOBAL)] = {	/* -1 becomes 0 */
@@ -138,110 +139,131 @@ static const struct log_info_cat internal_cat[OSMO_NUM_DLIB] = {
 		.description = "Library-internal global log family",
 		.loglevel = LOGL_NOTICE,
 		.enabled = 1,
+		.color = "\033[38;5;19m",
 	},
 	[INT2IDX(DLLAPD)] = {	/* -2 becomes 1 */
 		.name = "DLLAPD",
 		.description = "LAPD in libosmogsm",
 		.loglevel = LOGL_NOTICE,
 		.enabled = 1,
+		.color = "\033[38;5;21m",
 	},
 	[INT2IDX(DLINP)] = {
 		.name = "DLINP",
 		.description = "A-bis Intput Subsystem",
 		.loglevel = LOGL_NOTICE,
 		.enabled = 1,
+		.color = "\033[38;5;23m",
 	},
 	[INT2IDX(DLMUX)] = {
 		.name = "DLMUX",
 		.description = "A-bis B-Subchannel TRAU Frame Multiplex",
 		.loglevel = LOGL_NOTICE,
 		.enabled = 1,
+		.color = "\033[38;5;25m",
 	},
 	[INT2IDX(DLMI)] = {
 		.name = "DLMI",
 		.description = "A-bis Input Driver for Signalling",
 		.enabled = 0, .loglevel = LOGL_NOTICE,
+		.color = "\033[38;5;27m",
 	},
 	[INT2IDX(DLMIB)] = {
 		.name = "DLMIB",
 		.description = "A-bis Input Driver for B-Channels (voice)",
 		.enabled = 0, .loglevel = LOGL_NOTICE,
+		.color = "\033[38;5;29m",
 	},
 	[INT2IDX(DLSMS)] = {
 		.name = "DLSMS",
 		.description = "Layer3 Short Message Service (SMS)",
 		.enabled = 1, .loglevel = LOGL_NOTICE,
 		.color = OSMO_LOGCOLOR_BRIGHTWHITE,
+		.color = "\033[38;5;31m",
 	},
 	[INT2IDX(DLCTRL)] = {
 		.name = "DLCTRL",
 		.description = "Control Interface",
 		.enabled = 1, .loglevel = LOGL_NOTICE,
+		.color = "\033[38;5;33m",
 	},
 	[INT2IDX(DLGTP)] = {
 		.name = "DLGTP",
 		.description = "GPRS GTP library",
 		.enabled = 1, .loglevel = LOGL_NOTICE,
+		.color = "\033[38;5;35m",
 	},
 	[INT2IDX(DLSTATS)] = {
 		.name = "DLSTATS",
 		.description = "Statistics messages and logging",
 		.enabled = 1, .loglevel = LOGL_NOTICE,
+		.color = "\033[38;5;37m",
 	},
 	[INT2IDX(DLGSUP)] = {
 		.name = "DLGSUP",
 		.description = "Generic Subscriber Update Protocol",
 		.enabled = 1, .loglevel = LOGL_NOTICE,
+		.color = "\033[38;5;39m",
 	},
 	[INT2IDX(DLOAP)] = {
 		.name = "DLOAP",
 		.description = "Osmocom Authentication Protocol",
 		.enabled = 1, .loglevel = LOGL_NOTICE,
+		.color = "\033[38;5;41m",
 	},
 	[INT2IDX(DLSS7)] = {
 		.name = "DLSS7",
 		.description = "libosmo-sigtran Signalling System 7",
 		.enabled = 1, .loglevel = LOGL_NOTICE,
+		.color = "\033[38;5;43m",
 	},
 	[INT2IDX(DLSCCP)] = {
 		.name = "DLSCCP",
 		.description = "libosmo-sigtran SCCP Implementation",
 		.enabled = 1, .loglevel = LOGL_NOTICE,
+		.color = "\033[38;5;45m",
 	},
 	[INT2IDX(DLSUA)] = {
 		.name = "DLSUA",
 		.description = "libosmo-sigtran SCCP User Adaptation",
 		.enabled = 1, .loglevel = LOGL_NOTICE,
+		.color = "\033[38;5;47m",
 	},
 	[INT2IDX(DLM3UA)] = {
 		.name = "DLM3UA",
 		.description = "libosmo-sigtran MTP3 User Adaptation",
 		.enabled = 1, .loglevel = LOGL_NOTICE,
+		.color = "\033[38;5;49m",
 	},
 	[INT2IDX(DLMGCP)] = {
 		.name = "DLMGCP",
 		.description = "libosmo-mgcp Media Gateway Control Protocol",
 		.enabled = 1, .loglevel = LOGL_NOTICE,
+		.color = "\033[38;5;51m",
 	},
 	[INT2IDX(DLJIBUF)] = {
 		.name = "DLJIBUF",
 		.description = "libosmo-netif Jitter Buffer",
 		.enabled = 1, .loglevel = LOGL_NOTICE,
+		.color = "\033[38;5;53m",
 	},
 	[INT2IDX(DLRSPRO)] = {
 		.name = "DLRSPRO",
 		.description = "Remote SIM protocol",
 		.enabled = 1, .loglevel = LOGL_NOTICE,
+		.color = "\033[38;5;55m",
 	},
 	[INT2IDX(DLNS)] = {
 		.name = "DLNS",
 		.description = "GPRS NS layer",
 		.enabled = 1, .loglevel = LOGL_NOTICE,
+		.color = "\033[38;5;57m",
 	},
 	[INT2IDX(DLBSSGP)] = {
 		.name = "DLBSSGP",
 		.description = "GPRS BSSGP layer",
 		.enabled = 1, .loglevel = LOGL_NOTICE,
+		.color = "\033[38;5;59m",
 	},
 };
 
