@@ -719,17 +719,16 @@ static void ns2_sns_st_config_bss_onenter(struct osmo_fsm_inst *fi, uint32_t old
 {
 	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
 	/* Transmit SNS-CONFIG */
-	/* TODO: ipv6 */
 	switch (gss->ip) {
 	case IPv4:
 		ns2_tx_sns_config(gss->sns_nsvc, true,
-				       gss->ip4_local, gss->num_ip4_local,
-				       NULL, 0);
+				  gss->ip4_local, gss->num_ip4_local,
+				  NULL, 0);
 		break;
 	case IPv6:
 		ns2_tx_sns_config(gss->sns_nsvc, true,
-				       NULL, 0,
-				       gss->ip6_local, gss->num_ip6_local);
+				  NULL, 0,
+				  gss->ip6_local, gss->num_ip6_local);
 		break;
 	}
 }
