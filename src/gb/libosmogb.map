@@ -45,6 +45,27 @@ bssgp_tx_paging;
 bssgp_vty_init;
 bssgp_nsi;
 
+bssgp2_nsi_tx_ptp;
+bssgp2_nsi_tx_sig;
+bssgp2_enc_bvc_block;
+bssgp2_enc_bvc_block_ack;
+bssgp2_enc_bvc_unblock;
+bssgp2_enc_bvc_unblock_ack;
+bssgp2_enc_bvc_reset;
+bssgp2_enc_bvc_reset_ack;
+bssgp2_enc_status;
+
+bssgp_bvc_fsm_alloc_sig_bss;
+bssgp_bvc_fsm_alloc_ptp_bss;
+bssgp_bvc_fsm_alloc_sig_sgsn;
+bssgp_bvc_fsm_alloc_ptp_sgsn;
+bssgp_bvc_fsm_set_ops;
+bssgp_bvc_fsm_is_unblocked;
+bssgp_bvc_fsm_get_block_cause;
+bssgp_bvc_get_features_advertised;
+bssgp_bvc_get_features_received;
+bssgp_bvc_get_features_negotiated;
+
 osmo_fr_network_alloc;
 osmo_fr_link_alloc;
 osmo_fr_link_free;
