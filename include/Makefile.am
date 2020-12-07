@@ -35,7 +35,6 @@ nobase_include_HEADERS = \
                        osmocom/core/log2.h \
                        osmocom/core/logging.h \
                        osmocom/core/loggingrb.h \
-                       osmocom/core/mnl.h \
                        osmocom/core/stats.h \
                        osmocom/core/macaddr.h \
                        osmocom/core/msgb.h \
@@ -185,6 +184,10 @@ endif
 if ENABLE_LIBUSB
 nobase_include_HEADERS += \
 			  osmocom/usb/libusb.h
+endif
+
+if ENABLE_LIBMNL
+nobase_include_HEADERS += osmocom/core/mnl.h
 endif
 
 noinst_HEADERS = \
