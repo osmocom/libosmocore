@@ -437,7 +437,7 @@ struct msgb *bssgp2_enc_fc_ms_ack(uint32_t tlli, uint8_t tag)
 		return NULL;
 
 	bgph = (struct bssgp_normal_hdr *) msgb_put(msg, sizeof(*bgph));
-	bgph->pdu_type = BSSGP_PDUT_FLOW_CONTROL_BVC_ACK;
+	bgph->pdu_type = BSSGP_PDUT_FLOW_CONTROL_MS_ACK;
 
 	msgb_tvlv_put_32be(msg, BSSGP_IE_TLLI, tlli);
 	msgb_tvlv_put(msg, BSSGP_IE_TAG, 1, &tag);

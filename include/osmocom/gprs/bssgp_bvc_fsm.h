@@ -4,6 +4,7 @@
 struct gprs_ns2_inst;
 struct osmo_fsm_inst;
 struct gprs_ra_id;
+struct bssgp2_flow_ctrl;
 
 enum bssp_ptp_bvc_fsm_state {
 	BSSGP_BVCFSM_S_NULL,
@@ -22,10 +23,13 @@ enum bssgp_ptp_bvc_fsm_event {
 	BSSGP_BVCFSM_E_RX_UNBLOCK_ACK,
 	BSSGP_BVCFSM_E_RX_RESET,
 	BSSGP_BVCFSM_E_RX_RESET_ACK,
+	BSSGP_BVCFSM_E_RX_FC_BVC,
+	BSSGP_BVCFSM_E_RX_FC_BVC_ACK,
 	/* Requests of the local user */
 	BSSGP_BVCFSM_E_REQ_BLOCK,	/* data: uint8_t *cause */
 	BSSGP_BVCFSM_E_REQ_UNBLOCK,
 	BSSGP_BVCFSM_E_REQ_RESET,	/* data: uint8_t *cause */
+	BSSGP_BVCFSM_E_REQ_FC_BVC,	/* data: struct bssgp2_flow_ctrl */
 };
 
 struct bssgp_bvc_fsm_ops {
@@ -35,6 +39,7 @@ struct bssgp_bvc_fsm_ops {
 	/* call-back notifying the user of a BVC-RESET event */
 	void (*reset_notification)(uint16_t nsei, uint16_t bvci, const struct gprs_ra_id *ra_id,
 				   uint16_t cell_id, uint8_t cause, void *priv);
+	void (*rx_fc_bvc)(uint16_t nsei, uint16_t bvci, const struct bssgp2_flow_ctrl *fc, void *priv);
 };
 
 struct osmo_fsm_inst *

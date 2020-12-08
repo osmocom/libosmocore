@@ -101,9 +101,12 @@ static const struct value_string ptp_bvc_event_names[] = {
 	{ BSSGP_BVCFSM_E_RX_UNBLOCK_ACK, "RX-BVC-UNBLOCK-ACK" },
 	{ BSSGP_BVCFSM_E_RX_RESET, "RX-BVC-RESET" },
 	{ BSSGP_BVCFSM_E_RX_RESET_ACK, "RX-BVC-RESET-ACK" },
+	{ BSSGP_BVCFSM_E_RX_FC_BVC, "RX-FLOW-CONTROL-BVC" },
+	{ BSSGP_BVCFSM_E_RX_FC_BVC_ACK, "RX-FLOW-CONTROL-BVC-ACK" },
 	{ BSSGP_BVCFSM_E_REQ_BLOCK, "REQ-BLOCK" },
 	{ BSSGP_BVCFSM_E_REQ_UNBLOCK, "REQ-UNBLOCK" },
 	{ BSSGP_BVCFSM_E_REQ_RESET, "REQ-RESET" },
+	{ BSSGP_BVCFSM_E_REQ_FC_BVC, "REQ-FLOW-CONTROL-BVC" },
 	{ 0, NULL }
 };
 
@@ -132,6 +135,8 @@ struct bvc_fsm_priv {
 		uint32_t advertised;
 		uint32_t received;
 		uint32_t negotiated;
+		/* only used if BSSGP_XFEAT_GBIT is negotiated */
+		enum bssgp_fc_granularity fc_granularity;
 	} features;
 
 	/* Cell Identification used by BSS when
@@ -391,9 +396,11 @@ static void bssgp_bvc_fsm_wait_reset_ack(struct osmo_fsm_inst *fi, uint32_t even
 
 static void bssgp_bvc_fsm_unblocked(struct osmo_fsm_inst *fi, uint32_t event, void *data)
 {
+	struct bssgp2_flow_ctrl rx_fc, *tx_fc;
 	struct bvc_fsm_priv *bfp = fi->priv;
 	const struct tlv_parsed *tp = NULL;
 	struct msgb *rx = NULL, *tx;
+	int rc;
 
 	switch (event) {
 	case BSSGP_BVCFSM_E_RX_UNBLOCK_ACK:
@@ -458,6 +465,33 @@ static void bssgp_bvc_fsm_unblocked(struct osmo_fsm_inst *fi, uint32_t event, vo
 		tx = bssgp2_enc_bvc_block(bfp->bvci, bfp->block_cause);
 		fi_tx_sig(fi, tx);
 		osmo_fsm_inst_state_chg(fi, BSSGP_BVCFSM_S_BLOCKED, T1_SECS, T1);
+		break;
+	case BSSGP_BVCFSM_E_RX_FC_BVC:
+		rx = data;
+		tp = (const struct tlv_parsed *) msgb_bcid(rx);
+		/* we assume osmo_tlv_prot_* has been used before calling here to ensure this */
+		OSMO_ASSERT(bfp->role_sgsn);
+		rc = bssgp2_dec_fc_bvc(&rx_fc, tp);
+		if (rc < 0) {
+			_tx_status(fi, BSSGP_CAUSE_SEM_INCORR_PDU, rx);
+			break;
+		}
+		if (bfp->ops->rx_fc_bvc)
+			bfp->ops->rx_fc_bvc(bfp->nsei, bfp->bvci, &rx_fc, bfp->ops_priv);
+		tx = bssgp2_enc_fc_bvc_ack(rx_fc.tag);
+		fi_tx_ptp(fi, tx);
+		break;
+	case BSSGP_BVCFSM_E_RX_FC_BVC_ACK:
+		rx = data;
+		tp = (const struct tlv_parsed *) msgb_bcid(rx);
+		/* we assume osmo_tlv_prot_* has been used before calling here to ensure this */
+		OSMO_ASSERT(!bfp->role_sgsn);
+		break;
+	case BSSGP_BVCFSM_E_REQ_FC_BVC:
+		tx_fc = data;
+		tx = bssgp2_enc_fc_bvc(tx_fc, bfp->features.negotiated & (BSSGP_XFEAT_GBIT << 8) ?
+					&bfp->features.fc_granularity : NULL);
+		fi_tx_ptp(fi, tx);
 		break;
 	}
 }
@@ -580,7 +614,10 @@ static const struct osmo_fsm_state bssgp_bvc_fsm_states[] = {
 		.in_event_mask = S(BSSGP_BVCFSM_E_RX_BLOCK) |
 				 S(BSSGP_BVCFSM_E_RX_UNBLOCK) |
 				 S(BSSGP_BVCFSM_E_RX_UNBLOCK_ACK) |
-				 S(BSSGP_BVCFSM_E_REQ_BLOCK),
+				 S(BSSGP_BVCFSM_E_REQ_BLOCK) |
+				 S(BSSGP_BVCFSM_E_RX_FC_BVC) |
+				 S(BSSGP_BVCFSM_E_RX_FC_BVC_ACK) |
+				 S(BSSGP_BVCFSM_E_REQ_FC_BVC),
 		.out_state_mask = S(BSSGP_BVCFSM_S_BLOCKED) |
 				  S(BSSGP_BVCFSM_S_WAIT_RESET_ACK) |
 				  S(BSSGP_BVCFSM_S_UNBLOCKED),
