@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include <osmocom/core/msgb.h>
+#include <osmocom/core/byteswap.h>
 #include <osmocom/core/bit16gen.h>
 #include <osmocom/core/bit32gen.h>
 
@@ -276,6 +277,20 @@ static inline uint8_t *msgb_tvlv_put(struct msgb *msg, uint8_t tag, uint16_t len
 {
 	uint8_t *buf = msgb_put(msg, TVLV_GROSS_LEN(len));
 	return tvlv_put(buf, tag, len, val);
+}
+
+/*! put (append) a TvLV field containing a big-endian 16bit value to msgb. */
+static inline uint8_t *msgb_tvlv_put_16be(struct msgb *msg, uint8_t tag, uint16_t val)
+{
+	uint16_t val_be = osmo_htons(val);
+	return msgb_tvlv_put(msg, tag, 2, (const uint8_t *)&val_be);
+}
+
+/*! put (append) a TvLV field containing a big-endian 16bit value to msgb. */
+static inline uint8_t *msgb_tvlv_put_32be(struct msgb *msg, uint8_t tag, uint32_t val)
+{
+	uint32_t val_be = osmo_htonl(val);
+	return msgb_tvlv_put(msg, tag, 4, (const uint8_t *)&val_be);
 }
 
 /*! put (append) a vTvLV field to \ref msgb */
