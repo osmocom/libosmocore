@@ -238,3 +238,209 @@ struct msgb *bssgp2_enc_status(uint8_t cause, const uint16_t *bvci, const struct
 
 	return msg;
 }
+
+static const unsigned int bssgp_fc_gran_tbl[] = {
+	[BSSGP_FC_GRAN_100]	= 100,
+	[BSSGP_FC_GRAN_1000]	= 1000,
+	[BSSGP_FC_GRAN_10000]	= 10000,
+	[BSSGP_FC_GRAN_100000]	= 100000,
+};
+
+/*! Decode a FLOW-CONTROL-BVC PDU as per TS 48.018 Section 10.4.4.
+ *  \param[out] fc caller-allocated memory for parsed output
+ *  \param[in] tp pre-parsed TLVs; caller must ensure mandatory IE presence/length
+ *  \returns 0 on success; negative in case of error */
+int bssgp2_dec_fc_bvc(struct bssgp2_flow_ctrl *fc, const struct tlv_parsed *tp)
+{
+	unsigned int granularity = 100;
+
+	/* optional "Flow Control Granularity IE" (11.3.102); applies to
+	 * bucket_size_max, bucket_leak_rate and PFC FC params IE */
+	if (TLVP_PRESENT(tp, BSSGP_IE_FLOW_CTRL_GRANULARITY)) {
+		uint8_t gran = *TLVP_VAL(tp, BSSGP_IE_FLOW_CTRL_GRANULARITY);
+		granularity = bssgp_fc_gran_tbl[gran & 3];
+	}
+
+	/* mandatory IEs */
+	fc->tag = *TLVP_VAL(tp, BSSGP_IE_TAG);
+	fc->bucket_size_max = granularity * tlvp_val16be(tp, BSSGP_IE_BVC_BUCKET_SIZE);
+	fc->bucket_leak_rate = (granularity * tlvp_val16be(tp, BSSGP_IE_BUCKET_LEAK_RATE)) / 8;
+	fc->u.bvc.bmax_default_ms = granularity * tlvp_val16be(tp, BSSGP_IE_BMAX_DEFAULT_MS);
+	fc->u.bvc.r_default_ms = (granularity * tlvp_val16be(tp, BSSGP_IE_R_DEFAULT_MS)) / 8;
+
+	/* optional / conditional */
+	if (TLVP_PRESENT(tp, BSSGP_IE_BUCKET_FULL_RATIO)) {
+		fc->bucket_full_ratio_present = true;
+		fc->bucket_full_ratio = *TLVP_VAL(tp, BSSGP_IE_BUCKET_FULL_RATIO);
+	} else {
+		fc->bucket_full_ratio_present = false;
+	}
+
+	if (TLVP_PRESENT(tp, BSSGP_IE_BVC_MEASUREMENT)) {
+		uint16_t val = tlvp_val16be(tp, BSSGP_IE_BVC_MEASUREMENT);
+		fc->u.bvc.measurement_present = true;
+		/* convert from centi-seconds to milli-seconds */
+		if (val == 0xffff)
+			fc->u.bvc.measurement = 0xffffffff;
+		else
+			fc->u.bvc.measurement = val * 10;
+	} else {
+		fc->u.bvc.measurement_present = false;
+	}
+
+	return 0;
+
+}
+
+/*! Encode a FLOW-CONTROL-BVC PDU as per TS 48.018 Section 10.4.4.
+ *  \param[in] fc structure describing to-be-encoded FC parameters
+ *  \param[in] gran if non-NULL: Encode using specified unit granularity
+ *  \returns encoded PDU or NULL in case of error */
+struct msgb *bssgp2_enc_fc_bvc(const struct bssgp2_flow_ctrl *fc, enum bssgp_fc_granularity *gran)
+{
+	struct msgb *msg = bssgp_msgb_alloc();
+	struct bssgp_normal_hdr *bgph;
+	unsigned int granularity = 100;
+
+	if (gran)
+		granularity = bssgp_fc_gran_tbl[*gran & 3];
+
+	if (!msg)
+		return NULL;
+
+	bgph = (struct bssgp_normal_hdr *) msgb_put(msg, sizeof(*bgph));
+	bgph->pdu_type = BSSGP_PDUT_FLOW_CONTROL_BVC;
+
+	msgb_tvlv_put(msg, BSSGP_IE_TAG, 1, &fc->tag);
+	msgb_tvlv_put_16be(msg, BSSGP_IE_BVC_BUCKET_SIZE, fc->bucket_size_max / granularity);
+	msgb_tvlv_put_16be(msg, BSSGP_IE_BUCKET_LEAK_RATE, fc->bucket_leak_rate * 8 / granularity);
+	msgb_tvlv_put_16be(msg, BSSGP_IE_BMAX_DEFAULT_MS, fc->u.bvc.bmax_default_ms / granularity);
+	msgb_tvlv_put_16be(msg, BSSGP_IE_R_DEFAULT_MS, fc->u.bvc.r_default_ms * 8 / granularity);
+
+	if (fc->bucket_full_ratio_present)
+		msgb_tvlv_put(msg, BSSGP_IE_BUCKET_FULL_RATIO, 1, &fc->bucket_full_ratio);
+
+	if (fc->u.bvc.measurement_present) {
+		uint16_t val;
+		/* convert from ms to cs */
+		if (fc->u.bvc.measurement == 0xffffffff)
+			val = 0xffff;
+		else
+			val = fc->u.bvc.measurement / 10;
+		msgb_tvlv_put_16be(msg, BSSGP_IE_BVC_MEASUREMENT, val);
+	}
+
+	if (gran) {
+		uint8_t val = *gran & 3;
+		msgb_tvlv_put(msg, BSSGP_IE_FLOW_CTRL_GRANULARITY, 1, &val);
+	}
+
+	return msg;
+}
+
+/*! Encode a FLOW-CONTROL-BVC-ACK PDU as per TS 48.018 Section 10.4.4.
+ *  \param[in] tag the tag IE value to encode
+ *  \returns encoded PDU or NULL in case of error */
+struct msgb *bssgp2_enc_fc_bvc_ack(uint8_t tag)
+{
+	struct msgb *msg = bssgp_msgb_alloc();
+	struct bssgp_normal_hdr *bgph;
+
+	if (!msg)
+		return NULL;
+
+	bgph = (struct bssgp_normal_hdr *) msgb_put(msg, sizeof(*bgph));
+	bgph->pdu_type = BSSGP_PDUT_FLOW_CONTROL_BVC_ACK;
+
+	msgb_tvlv_put(msg, BSSGP_IE_TAG, 1, &tag);
+
+	return msg;
+}
+
+/*! Decode a FLOW-CONTROL-MS PDU as per TS 48.018 Section 10.4.6.
+ *  \param[out] fc caller-allocated memory for parsed output
+ *  \param[in] tp pre-parsed TLVs; caller must ensure mandatory IE presence/length
+ *  \returns 0 on success; negative in case of error */
+int bssgp2_dec_fc_ms(struct bssgp2_flow_ctrl *fc, struct tlv_parsed *tp)
+{
+	unsigned int granularity = 100;
+
+	/* optional "Flow Control Granularity IE" (11.3.102); applies to
+	 * bucket_size_max, bucket_leak_rate and PFC FC params IE */
+	if (TLVP_PRESENT(tp, BSSGP_IE_FLOW_CTRL_GRANULARITY)) {
+		uint8_t gran = *TLVP_VAL(tp, BSSGP_IE_FLOW_CTRL_GRANULARITY);
+		granularity = bssgp_fc_gran_tbl[gran & 3];
+	}
+
+	/* mandatory IEs */
+	fc->u.ms.tlli = tlvp_val32be(tp, BSSGP_IE_TLLI);
+	fc->tag = *TLVP_VAL(tp, BSSGP_IE_TAG);
+	fc->bucket_size_max = granularity * tlvp_val16be(tp, BSSGP_IE_MS_BUCKET_SIZE);
+	fc->bucket_leak_rate = (granularity * tlvp_val16be(tp, BSSGP_IE_BUCKET_LEAK_RATE)) / 8;
+
+	/* optional / conditional */
+	if (TLVP_PRESENT(tp, BSSGP_IE_BUCKET_FULL_RATIO)) {
+		fc->bucket_full_ratio_present = true;
+		fc->bucket_full_ratio = *TLVP_VAL(tp, BSSGP_IE_BUCKET_FULL_RATIO);
+	} else {
+		fc->bucket_full_ratio_present = false;
+	}
+
+	return 0;
+}
+
+/*! Encode a FLOW-CONTROL-MS PDU as per TS 48.018 Section 10.4.6.
+ *  \param[in] fc structure describing to-be-encoded FC parameters
+ *  \param[in] gran if non-NULL: Encode using specified unit granularity
+ *  \returns encoded PDU or NULL in case of error */
+struct msgb *bssgp2_enc_fc_ms(const struct bssgp2_flow_ctrl *fc, enum bssgp_fc_granularity *gran)
+{
+	struct msgb *msg = bssgp_msgb_alloc();
+	struct bssgp_normal_hdr *bgph;
+	unsigned int granularity = 100;
+
+	if (gran)
+		granularity = bssgp_fc_gran_tbl[*gran & 3];
+
+	if (!msg)
+		return NULL;
+
+	bgph = (struct bssgp_normal_hdr *) msgb_put(msg, sizeof(*bgph));
+	bgph->pdu_type = BSSGP_PDUT_FLOW_CONTROL_MS;
+
+	msgb_tvlv_put_32be(msg, BSSGP_IE_TLLI, fc->u.ms.tlli);
+	msgb_tvlv_put(msg, BSSGP_IE_TAG, 1, &fc->tag);
+	msgb_tvlv_put_16be(msg, BSSGP_IE_MS_BUCKET_SIZE, fc->bucket_size_max / granularity);
+	msgb_tvlv_put_16be(msg, BSSGP_IE_BUCKET_LEAK_RATE, fc->bucket_leak_rate * 8 / granularity);
+
+	if (fc->bucket_full_ratio_present)
+		msgb_tvlv_put(msg, BSSGP_IE_BUCKET_FULL_RATIO, 1, &fc->bucket_full_ratio);
+
+	if (gran) {
+		uint8_t val = *gran & 3;
+		msgb_tvlv_put(msg, BSSGP_IE_FLOW_CTRL_GRANULARITY, 1, &val);
+	}
+
+	return msg;
+}
+
+/*! Encode a FLOW-CONTROL-BVC-ACK PDU as per TS 48.018 Section 10.4.7.
+ *  \param[in] tlli the TLLI IE value to encode
+ *  \param[in] tag the tag IE value to encode
+ *  \returns encoded PDU or NULL in case of error */
+struct msgb *bssgp2_enc_fc_ms_ack(uint32_t tlli, uint8_t tag)
+{
+	struct msgb *msg = bssgp_msgb_alloc();
+	struct bssgp_normal_hdr *bgph;
+
+	if (!msg)
+		return NULL;
+
+	bgph = (struct bssgp_normal_hdr *) msgb_put(msg, sizeof(*bgph));
+	bgph->pdu_type = BSSGP_PDUT_FLOW_CONTROL_BVC_ACK;
+
+	msgb_tvlv_put_32be(msg, BSSGP_IE_TLLI, tlli);
+	msgb_tvlv_put(msg, BSSGP_IE_TAG, 1, &tag);
+
+	return msg;
+}

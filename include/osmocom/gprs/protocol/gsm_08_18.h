@@ -341,3 +341,11 @@ enum gprs_bssgp_cause {
 #define	BSSGP_XFEAT_DCN		0x20	/* Dedicated CN */
 #define	BSSGP_XFEAT_eDRX	0x40	/* eDRX */
 #define	BSSGP_XFEAT_MSAD	0x80	/* MS-assisted Dedicated CN selection */
+
+/* Flow Control Granularity (Section 11.3.102) */
+enum bssgp_fc_granularity {
+	BSSGP_FC_GRAN_100	= 0,
+	BSSGP_FC_GRAN_1000	= 1,
+	BSSGP_FC_GRAN_10000	= 2,
+	BSSGP_FC_GRAN_100000	= 3,
+};

@@ -47,12 +47,18 @@ bssgp_nsi;
 
 bssgp2_nsi_tx_ptp;
 bssgp2_nsi_tx_sig;
+bssgp2_dec_fc_bvc;
+bssgp2_dec_fc_ms;
 bssgp2_enc_bvc_block;
 bssgp2_enc_bvc_block_ack;
 bssgp2_enc_bvc_unblock;
 bssgp2_enc_bvc_unblock_ack;
 bssgp2_enc_bvc_reset;
 bssgp2_enc_bvc_reset_ack;
+bssgp2_enc_fc_bvc;
+bssgp2_enc_fc_bvc_ack;
+bssgp2_enc_fc_ms;
+bssgp2_enc_fc_ms_ack;
 bssgp2_enc_status;
 
 bssgp_bvc_fsm_alloc_sig_bss;
