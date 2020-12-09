@@ -832,18 +832,13 @@ enum gprs_ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 		}
 
 		rc = reject_status_msg(msg, &tp, reject, NS_CAUSE_PDU_INCOMP_PSTATE);
-		if (rc < 0) {
+		if (rc < 0)
 			LOGP(DLNS, LOGL_ERROR, "Failed to generate reject message (%d)\n", rc);
-			return rc;
-		}
 		return GPRS_NS2_CS_REJECTED;
 	default:
 		rc = reject_status_msg(msg, &tp, reject, NS_CAUSE_PDU_INCOMP_PSTATE);
-
-		if (rc < 0) {
+		if (rc < 0)
 			LOGP(DLNS, LOGL_ERROR, "Failed to generate reject message (%d)\n", rc);
-			return rc;
-		}
 		return GPRS_NS2_CS_REJECTED;
 	}
 
@@ -854,10 +849,8 @@ enum gprs_ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 		LOGP(DLNS, LOGL_ERROR, "Rx NS RESET Error %d during "
 				       "TLV Parse\n", tlv);
 		rc = reject_status_msg(msg, &tp, reject, NS_CAUSE_PROTO_ERR_UNSPEC);
-		if (rc < 0) {
+		if (rc < 0)
 			LOGP(DLNS, LOGL_ERROR, "Failed to generate reject message (%d)\n", rc);
-			return rc;
-		}
 		return GPRS_NS2_CS_REJECTED;
 	}
 
@@ -865,6 +858,8 @@ enum gprs_ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 	    !TLVP_PRES_LEN(&tp, NS_IE_VCI, 2) || !TLVP_PRES_LEN(&tp, NS_IE_NSEI, 2)) {
 		LOGP(DLNS, LOGL_ERROR, "NS RESET Missing mandatory IE\n");
 		rc = reject_status_msg(msg, &tp, reject, NS_CAUSE_MISSING_ESSENT_IE);
+		if (rc < 0)
+			LOGP(DLNS, LOGL_ERROR, "Failed to generate reject message (%d)\n", rc);
 		return GPRS_NS2_CS_REJECTED;
 	}
 
