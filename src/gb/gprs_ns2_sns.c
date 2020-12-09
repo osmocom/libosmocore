@@ -1320,7 +1320,7 @@ int ns2_sns_bss_fsm_start(struct gprs_ns2_nse *nse, struct gprs_ns2_vc *nsvc,
 
 		gss->num_ip4_local = count;
 		gss->num_max_ip4_remote = 4;
-		gss->num_max_nsvcs = OSMO_MAX(gss->num_max_ip4_remote * 4, 8);
+		gss->num_max_nsvcs = OSMO_MAX(gss->num_max_ip4_remote * gss->num_ip4_local, 8);
 		break;
 	case IPv6:
 		/* IPv6 */
@@ -1359,7 +1359,7 @@ int ns2_sns_bss_fsm_start(struct gprs_ns2_nse *nse, struct gprs_ns2_vc *nsvc,
 		}
 		gss->num_ip6_local = count;
 		gss->num_max_ip6_remote = 4;
-		gss->num_max_nsvcs = OSMO_MAX(gss->num_max_ip6_remote * 4, 8);
+		gss->num_max_nsvcs = OSMO_MAX(gss->num_max_ip6_remote * gss->num_ip6_local, 8);
 		break;
 	}
 
