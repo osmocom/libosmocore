@@ -793,19 +793,17 @@ enum gprs_ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 	uint16_t nsvci;
 	uint16_t nsei;
 
-	int rc;
+	int rc, tlv;
 
 	if (msg->len < sizeof(struct gprs_ns_hdr))
 		return GPRS_NS2_CS_ERROR;
 
-	rc = ns2_tlv_parse(&tp, nsh->data,
+	/* parse the tlv early to allow reject status msg to
+	 * work with valid tp.
+	 * Ignore the return code until the pdu type is parsed because
+	 * an unknown pdu type should be ignored */
+	tlv = ns2_tlv_parse(&tp, nsh->data,
 			   msgb_l2len(msg) - sizeof(*nsh), 0, 0);
-	if (rc < 0) {
-		LOGP(DLNS, LOGL_ERROR, "Rx NS RESET Error %d during "
-		     "TLV Parse\n", rc);
-		/* TODO: send invalid message back */
-		return GPRS_NS2_CS_REJECTED;
-	}
 
 	switch (nsh->pdu_type) {
 	case NS_PDUT_STATUS:
@@ -842,6 +840,20 @@ enum gprs_ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 	default:
 		rc = reject_status_msg(msg, &tp, reject, NS_CAUSE_PDU_INCOMP_PSTATE);
 
+		if (rc < 0) {
+			LOGP(DLNS, LOGL_ERROR, "Failed to generate reject message (%d)\n", rc);
+			return rc;
+		}
+		return GPRS_NS2_CS_REJECTED;
+	}
+
+	if (tlv < 0) {
+		/* TODO: correct behaviour would checking what's wrong.
+		 * If it's an essential TLV for the PDU return NS_CAUSE_INVAL_ESSENT_IE.
+		 * Otherwise ignore the non-essential TLV. */
+		LOGP(DLNS, LOGL_ERROR, "Rx NS RESET Error %d during "
+				       "TLV Parse\n", tlv);
+		rc = reject_status_msg(msg, &tp, reject, NS_CAUSE_PROTO_ERR_UNSPEC);
 		if (rc < 0) {
 			LOGP(DLNS, LOGL_ERROR, "Failed to generate reject message (%d)\n", rc);
 			return rc;
