@@ -798,6 +798,15 @@ enum gprs_ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 	if (msg->len < sizeof(struct gprs_ns_hdr))
 		return GPRS_NS2_CS_ERROR;
 
+	rc = ns2_tlv_parse(&tp, nsh->data,
+			   msgb_l2len(msg) - sizeof(*nsh), 0, 0);
+	if (rc < 0) {
+		LOGP(DLNS, LOGL_ERROR, "Rx NS RESET Error %d during "
+		     "TLV Parse\n", rc);
+		/* TODO: send invalid message back */
+		return GPRS_NS2_CS_REJECTED;
+	}
+
 	switch (nsh->pdu_type) {
 	case NS_PDUT_STATUS:
 		/* Do not respond, see 3GPP TS 08.16, 7.5.1 */
@@ -837,15 +846,6 @@ enum gprs_ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 			LOGP(DLNS, LOGL_ERROR, "Failed to generate reject message (%d)\n", rc);
 			return rc;
 		}
-		return GPRS_NS2_CS_REJECTED;
-	}
-
-	rc = ns2_tlv_parse(&tp, nsh->data,
-			   msgb_l2len(msg) - sizeof(*nsh), 0, 0);
-	if (rc < 0) {
-		LOGP(DLNS, LOGL_ERROR, "Rx NS RESET Error %d during "
-		     "TLV Parse\n", rc);
-		/* TODO: send invalid message back */
 		return GPRS_NS2_CS_REJECTED;
 	}
 
