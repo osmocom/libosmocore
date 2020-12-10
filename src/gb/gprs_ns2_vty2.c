@@ -483,7 +483,7 @@ static struct cmd_node ns_nse_node = {
 };
 
 DEFUN(cfg_ns_nse_nsvc_fr, cfg_ns_nse_nsvc_fr_cmd,
-      "nsvc fr NETIF nsvci <0-65535> dlci <16-1007>",
+      "nsvc fr NETIF dlci <16-1007> nsvci <0-65535>",
       "NS Virtual Connection\n"
       "frame relay\n"
       "frame relay interface. Must be registered via fr vty\n"
@@ -497,8 +497,8 @@ DEFUN(cfg_ns_nse_nsvc_fr, cfg_ns_nse_nsvc_fr_cmd,
 	struct gprs_ns2_vc *nsvc;
 	struct gprs_ns2_nse *nse = vty->index;
 	const char *netif = argv[0];
-	uint16_t nsvci = atoi(argv[1]);
-	uint16_t dlci = atoi(argv[2]);
+	uint16_t dlci = atoi(argv[1]);
+	uint16_t nsvci = atoi(argv[2]);
 	bool dialect_modified = false;
 	bool ll_modified = false;
 
