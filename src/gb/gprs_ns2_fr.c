@@ -555,6 +555,21 @@ err_bind:
 	return rc;
 }
 
+/*! Return the frame relay role of a bind
+ * \param[in] bind The bind
+ * \return the frame relay role or -EINVAL if bind is not frame relay
+ */
+enum osmo_fr_role gprs_ns2_fr_bind_role(struct gprs_ns2_vc_bind *bind)
+{
+	struct priv_bind *priv;
+
+	if (bind->driver != &vc_driver_fr)
+		return -EINVAL;
+
+	priv = bind->priv;
+	return priv->link->role;
+}
+
 /*! Return the network interface of the bind
  * \param[in] bind The bind
  * \return the network interface
