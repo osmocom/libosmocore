@@ -317,7 +317,7 @@ static int open_socket(int ifindex)
 	addr.sll_protocol = htons(ETH_P_ALL);
 	addr.sll_ifindex = ifindex;
 
-	fd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
+	fd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_HDLC));
 	if (fd < 0) {
 		LOGP(DLNS, LOGL_ERROR, "Can not create AF_PACKET socket. Are you root or have CAP_RAW_SOCKET?\n");
 		return fd;
