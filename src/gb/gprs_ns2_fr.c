@@ -711,7 +711,7 @@ struct gprs_ns2_vc *gprs_ns2_fr_nsvc_by_dlci(struct gprs_ns2_vc_bind *bind,
  * \param[in] nsvc
  * \return the dlci or 0 on error. 0 is not a valid dlci.
  */
-uint16_t gprs_ns2_fr_nsvc_dlci(struct gprs_ns2_vc *nsvc)
+uint16_t gprs_ns2_fr_nsvc_dlci(const struct gprs_ns2_vc *nsvc)
 {
 	struct priv_vc *vcpriv;
 
