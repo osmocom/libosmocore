@@ -79,6 +79,19 @@ static const struct value_string gprs_ns_timer_strs[] = {
 	{ 0, NULL }
 };
 
+const struct value_string vty_fr_role_names[] = {
+	{ FR_ROLE_USER_EQUIPMENT,	"fr" },
+	{ FR_ROLE_NETWORK_EQUIPMENT,	"frnet" },
+	{ 0, NULL }
+};
+
+const struct value_string vty_ll_names[] = {
+	{ GPRS_NS2_LL_FR,	"fr" },
+	{ GPRS_NS2_LL_FR_GRE,	"frgre" },
+	{ GPRS_NS2_LL_UDP,	"udp" },
+	{ 0, NULL }
+};
+
 static struct vty_bind *vty_bind_by_name(const char *name)
 {
 	struct vty_bind *vbind;
@@ -268,9 +281,140 @@ DEFUN(cfg_no_ns_bind, cfg_no_ns_bind_cmd,
 	return CMD_SUCCESS;
 }
 
+
+static void config_write_vbind(struct vty *vty, struct vty_bind *vbind)
+{
+	struct gprs_ns2_vc_bind *bind;
+	const struct osmo_sockaddr *addr;
+	struct osmo_sockaddr_str addr_str;
+	const char *netif, *frrole_str, *llstr;
+	enum osmo_fr_role frrole;
+
+	llstr = get_value_string_or_null(vty_ll_names, vbind->ll);
+	if (!llstr)
+		return;
+	vty_out(vty, " bind %s %s%s", llstr, vbind->name, VTY_NEWLINE);
+
+	bind = gprs_ns2_bind_by_name(vty_nsi, vbind->name);
+	switch (vbind->ll) {
+	case GPRS_NS2_LL_FR:
+		if (bind) {
+			netif = gprs_ns2_fr_bind_netif(bind);
+			if (!netif)
+				return;
+			frrole = gprs_ns2_fr_bind_role(bind);
+			if ((int) frrole == -1)
+				return;
+			frrole_str = get_value_string_or_null(vty_fr_role_names, frrole);
+			if (netif && frrole_str)
+				vty_out(vty, "  fr %s %s%s", netif, frrole_str, VTY_NEWLINE);
+		}
+		break;
+	case GPRS_NS2_LL_UDP:
+		if (bind) {
+			addr = gprs_ns2_ip_bind_sockaddr(bind);
+			if (!osmo_sockaddr_str_from_sockaddr(&addr_str, &addr->u.sas)) {
+				vty_out(vty, "  listen %s %d%s", addr_str.ip, addr_str.port,
+					VTY_NEWLINE);
+			}
+		}
+		if (vbind->accept_ipaccess)
+			vty_out(vty, "  accept-ipaccess%s", VTY_NEWLINE);
+		/* TODO: dscp */
+		break;
+	default:
+		return;
+	}
+}
+
+static void config_write_nsvc(struct vty *vty, const struct gprs_ns2_vc *nsvc)
+{
+	const char *netif;
+	uint16_t dlci;
+	const struct osmo_sockaddr *addr;
+	struct osmo_sockaddr_str addr_str;
+
+	switch (nsvc->nse->ll) {
+	case GPRS_NS2_LL_UNDEF:
+		break;
+	case GPRS_NS2_LL_UDP:
+		switch (nsvc->nse->dialect) {
+		case NS2_DIALECT_IPACCESS:
+			addr = gprs_ns2_ip_vc_remote(nsvc);
+			if (!addr)
+				break;
+			if (osmo_sockaddr_str_from_sockaddr(&addr_str, &addr->u.sas))
+				break;
+			vty_out(vty, "nsvc ipa %s nsvci %d %s %d%s",
+				nsvc->bind->name, nsvc->nsvci,
+				addr_str.ip, addr_str.port, VTY_NEWLINE);
+			break;
+		case NS2_DIALECT_STATIC_ALIVE:
+			addr = gprs_ns2_ip_vc_remote(nsvc);
+			if (!addr)
+				break;
+			if (osmo_sockaddr_str_from_sockaddr(&addr_str, &addr->u.sas))
+				break;
+			vty_out(vty, "nsvc udp %s %s %d%s",
+				nsvc->bind->name, addr_str.ip, addr_str.port, VTY_NEWLINE);
+			break;
+		default:
+			break;
+		}
+		break;
+	case GPRS_NS2_LL_FR:
+		netif = gprs_ns2_fr_bind_netif(nsvc->bind);
+		if (!netif)
+			break;
+		dlci = gprs_ns2_fr_nsvc_dlci(nsvc);
+		if (!dlci)
+			break;
+		OSMO_ASSERT(nsvc->nsvci_is_valid);
+		vty_out(vty, "nsvc fr %s dlci %d nsvci %d%s",
+			netif, dlci, nsvc->nsvci, VTY_NEWLINE);
+		break;
+	case GPRS_NS2_LL_FR_GRE:
+		break;
+	}
+}
+
+static void config_write_nse(struct vty *vty, struct gprs_ns2_nse *nse)
+{
+	struct gprs_ns2_vc *nsvc;
+
+	vty_out(vty, " nse %d%s", nse->nsei, VTY_NEWLINE);
+	switch (nse->dialect) {
+	case NS2_DIALECT_SNS:
+		gprs_ns2_sns_write_vty(vty, nse);
+		break;
+	default:
+		llist_for_each_entry(nsvc, &nse->nsvc, list) {
+			config_write_nsvc(vty, nsvc);
+		}
+		break;
+	}
+}
+
 static int config_write_ns(struct vty *vty)
 {
-	/* TODO: */
+	struct gprs_ns2_nse *nse;
+	struct vty_bind *vbind;
+
+	vty_out(vty, "ns%s", VTY_NEWLINE);
+
+	llist_for_each_entry(vbind, &binds, list) {
+		config_write_vbind(vty, vbind);
+	}
+
+	llist_for_each_entry(nse, &vty_nsi->nse, list) {
+		if (!nse->persistent)
+			continue;
+
+		config_write_nse(vty, nse);
+	}
+
+	// TODO timer
+
 	return 0;
 }
 
