@@ -245,7 +245,7 @@ int gprs_ns2_frgre_bind(struct gprs_ns2_inst *nsi,
 			int dscp,
 			struct gprs_ns2_vc_bind **result);
 int gprs_ns2_is_frgre_bind(struct gprs_ns2_vc_bind *bind);
-uint16_t gprs_ns2_fr_nsvc_dlci(struct gprs_ns2_vc *nsvc);
+uint16_t gprs_ns2_fr_nsvc_dlci(const struct gprs_ns2_vc *nsvc);
 
 struct gprs_ns2_vc *gprs_ns2_nsvc_by_sockaddr_nse(
 		struct gprs_ns2_nse *nse,
