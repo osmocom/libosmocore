@@ -182,6 +182,7 @@ struct gprs_ns2_vc_bind *gprs_ns2_fr_bind_by_netif(
 		struct gprs_ns2_inst *nsi,
 		const char *netif);
 const char *gprs_ns2_fr_bind_netif(struct gprs_ns2_vc_bind *bind);
+enum osmo_fr_role gprs_ns2_fr_bind_role(struct gprs_ns2_vc_bind *bind);
 int gprs_ns2_fr_bind(struct gprs_ns2_inst *nsi,
 		     const char *name,
 		     const char *netif,
