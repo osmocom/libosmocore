@@ -46,6 +46,7 @@
 #include <osmocom/core/fsm.h>
 #include <osmocom/core/msgb.h>
 #include <osmocom/core/socket.h>
+#include <osmocom/core/sockaddr_str.h>
 #include <osmocom/gsm/tlv.h>
 #include <osmocom/gprs/gprs_msgb.h>
 #include <osmocom/gprs/gprs_ns2.h>
@@ -1531,6 +1532,27 @@ void gprs_ns2_sns_dump_vty(struct vty *vty, const struct gprs_ns2_nse *nse, bool
 		vty_out(vty, "Remote IPv6 Endpoints:%s", VTY_NEWLINE);
 		for (i = 0; i < gss->num_ip6_remote; i++)
 			vty_dump_sns_ip6(vty, &gss->ip6_remote[i]);
+	}
+}
+
+/*! write IP-SNS to a vty
+ *  \param[in] vty VTY to which the state shall be printed
+ *  \param[in] nse NS Entity whose IP-SNS state shall be printed
+ *  \param[in] stats Whether or not statistics shall also be printed */
+void gprs_ns2_sns_write_vty(struct vty *vty, const struct gprs_ns2_nse *nse)
+{
+	struct ns2_sns_state *gss;
+	struct osmo_sockaddr_str addr_str;
+	struct sns_endpoint *endpoint;
+
+	if (!nse->bss_sns_fi)
+		return;
+
+	gss = (struct ns2_sns_state *) nse->bss_sns_fi->priv;
+	llist_for_each_entry(endpoint, &gss->sns_endpoints, list) {
+		osmo_sockaddr_str_from_sockaddr(&addr_str, &endpoint->saddr.u.sas);
+		vty_out(vty, "ip-sns %s %s %d%s",
+			"somegroup", addr_str.ip, addr_str.port, VTY_NEWLINE);
 	}
 }
 
