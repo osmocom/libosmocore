@@ -86,6 +86,7 @@ struct priv_bind {
 	struct osmo_fd fd;
 	char netif[IF_NAMESIZE];
 	struct osmo_fr_link *link;
+	int ifindex;
 	bool if_running;
 };
 
@@ -196,12 +197,14 @@ static int handle_netif_read(struct osmo_fd *bfd)
 	struct gprs_ns2_vc_bind *bind = bfd->data;
 	struct priv_bind *priv = bind->priv;
 	struct msgb *msg = msgb_alloc(NS_ALLOC_SIZE, "Gb/NS/FR/GRE Rx");
+	struct sockaddr_ll sll;
+	socklen_t sll_len = sizeof(sll);
 	int rc = 0;
 
 	if (!msg)
 		return -ENOMEM;
 
-	rc = read(bfd->fd, msg->data, NS_ALLOC_SIZE);
+	rc = recvfrom(bfd->fd, msg->data, NS_ALLOC_SIZE, 0, (struct sockaddr *)&sll, &sll_len);
 	if (rc < 0) {
 		LOGP(DLNS, LOGL_ERROR, "recv error %s during NS-FR-GRE recv\n",
 		     strerror(errno));
@@ -209,6 +212,11 @@ static int handle_netif_read(struct osmo_fd *bfd)
 	} else if (rc == 0) {
 		goto out_err;
 	}
+
+	/* ignore any packets that we might have received for a different interface, between
+	 * the socket() and the bind() call */
+	if (sll.sll_ifindex != priv->ifindex)
+		goto out_err;
 
 	msgb_put(msg, rc);
 	msg->dst = priv->link;
@@ -299,17 +307,10 @@ static int devname2ifindex(const char *ifname)
 	return ifr.ifr_ifindex;
 }
 
-static int open_socket(const char *ifname)
+static int open_socket(int ifindex)
 {
 	struct sockaddr_ll addr;
-	int ifindex;
 	int fd, rc;
-
-	ifindex = devname2ifindex(ifname);
-	if (ifindex < 0) {
-		LOGP(DLNS, LOGL_ERROR, "Can not get interface index for interface %s\n", ifname);
-		return ifindex;
-	}
 
 	memset(&addr, 0, sizeof(addr));
 	addr.sll_family = AF_PACKET;
@@ -318,13 +319,16 @@ static int open_socket(const char *ifname)
 
 	fd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
 	if (fd < 0) {
-		LOGP(DLNS, LOGL_ERROR, "Can not get socket for interface %s. Are you root or have CAP_RAW_SOCKET?\n", ifname);
+		LOGP(DLNS, LOGL_ERROR, "Can not create AF_PACKET socket. Are you root or have CAP_RAW_SOCKET?\n");
 		return fd;
 	}
 
+	/* there's a race condition between the above syscall and the bind() call below,
+	 * causing other packets to be received in between */
+
 	rc = bind(fd, (struct sockaddr *)&addr, sizeof(addr));
 	if (rc < 0) {
-		LOGP(DLNS, LOGL_ERROR, "Can not bind for interface %s\n", ifname);
+		LOGP(DLNS, LOGL_ERROR, "Can not bind AF_PACKET socket to ifindex %d\n", ifindex);
 		close(fd);
 		return rc;
 	}
@@ -496,7 +500,14 @@ int gprs_ns2_fr_bind(struct gprs_ns2_inst *nsi,
 	fr_link->tx_cb = fr_tx_cb;
 	fr_link->tx_cb_data = bind;
 	priv->link = fr_link;
-	priv->fd.fd = rc = open_socket(netif);
+
+	priv->ifindex = devname2ifindex(netif);
+	if (priv->ifindex < 0) {
+		LOGP(DLNS, LOGL_ERROR, "Can not get interface index for interface %s\n", netif);
+		goto err_fr;
+	}
+
+	priv->fd.fd = rc = open_socket(priv->ifindex);
 	if (rc < 0)
 		goto err_fr;
 
