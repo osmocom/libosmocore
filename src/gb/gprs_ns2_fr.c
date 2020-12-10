@@ -303,7 +303,7 @@ static int open_socket(const char *ifname)
 {
 	struct sockaddr_ll addr;
 	int ifindex;
-	int fd, rc, on = 1;
+	int fd, rc;
 
 	ifindex = devname2ifindex(ifname);
 	if (ifindex < 0) {
@@ -320,14 +320,6 @@ static int open_socket(const char *ifname)
 	if (fd < 0) {
 		LOGP(DLNS, LOGL_ERROR, "Can not get socket for interface %s. Are you root or have CAP_RAW_SOCKET?\n", ifname);
 		return fd;
-	}
-
-	if (ioctl(fd, FIONBIO, (unsigned char *)&on) < 0) {
-		LOGP(DLGLOBAL, LOGL_ERROR,
-			"cannot set this socket unblocking: %s\n",
-			strerror(errno));
-		close(fd);
-		return -EINVAL;
 	}
 
 	rc = bind(fd, (struct sockaddr *)&addr, sizeof(addr));
