@@ -1352,7 +1352,9 @@ int bssgp_tx_paging(uint16_t nsei, uint16_t ns_bvci,
 
 void bssgp_set_log_ss(int ss)
 {
-	LOGP(DLGLOBAL, LOGL_ERROR, "BSSGP has moved from DGPRS to DLGPRS, please update your code\n");
+	/* BSSGP has moved from DGPRS to DLGPRS, please update your code if it's
+	 * still calling this function
+	 */
 }
 
 /*!
