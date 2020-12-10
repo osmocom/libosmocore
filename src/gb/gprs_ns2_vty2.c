@@ -1080,7 +1080,7 @@ DEFUN(cfg_no_ns_nse_ip_sns, cfg_no_ns_nse_ip_sns_cmd,
 	struct osmo_sockaddr_str remote_str; /* argv[2] */
 	struct osmo_sockaddr remote;
 	uint16_t port = atoi(argv[3]);
-	int rc;
+	int count;
 
 	if (nse->ll != GPRS_NS2_LL_UDP) {
 		vty_out(vty, "This NSE doesn't support UDP.%s", VTY_NEWLINE);
@@ -1102,20 +1102,20 @@ DEFUN(cfg_no_ns_nse_ip_sns, cfg_no_ns_nse_ip_sns_cmd,
 		return CMD_WARNING;
 	}
 
-	rc = gprs_ns2_sns_del_endpoint(nse, &remote);
-	if (rc) {
+	if (gprs_ns2_sns_del_endpoint(nse, &remote)) {
 		vty_out(vty, "Can not remove specified SNS endpoint.%s", VTY_NEWLINE);
 		return CMD_WARNING;
 	}
 
-	/* TODO:
-	 * - check if sns has endpoints
-	 * - if !empty -> CMD SUCCESS
-	 * - remove sns fsm
-	 * - set to LL/DIALECT to undef
-	 */
-
-	if (llist_empty(&nse->nsvc)) {
+	count = gprs_ns2_sns_count(nse);
+	if (count > 0) {
+		 /* there are other sns endpoints */
+		return CMD_SUCCESS;
+	} else if (count < 0) {
+		OSMO_ASSERT(0);
+	} else {
+		/* clean up nse to allow other nsvc commands */
+		osmo_fsm_inst_term(nse->bss_sns_fi, OSMO_FSM_TERM_REQUEST, NULL);
 		nse->ll = GPRS_NS2_LL_UNDEF;
 		nse->dialect = NS2_DIALECT_UNDEF;
 	}
