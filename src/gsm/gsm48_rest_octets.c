@@ -193,8 +193,25 @@ static inline void append_earfcn(struct bitvec *bv, const struct osmo_earfcn_si2
 	/* Priority and E-UTRAN Parameters Description */
 	bitvec_set_bit(bv, 1);
 
-	/* No Serving Cell Priority Parameters Descr. */
-	bitvec_set_bit(bv, 0);
+	/* Serving Cell Priority Parameters Descr. is Present,
+	* see also: 3GPP TS 44.018, Table 10.5.2.33b.1 */
+	bitvec_set_bit(bv, 1);
+
+	/* GERAN_PRIORITY */
+	bitvec_set_uint(bv, 0, 3);
+
+	/* THRESH_Priority_Search */
+	bitvec_set_uint(bv, 0, 4);
+
+	/* THRESH_GSM_low */
+	bitvec_set_uint(bv, 0, 4);
+
+	/* H_PRIO */
+	bitvec_set_uint(bv, 0, 2);
+
+	/* T_Reselection */
+	bitvec_set_uint(bv, 0, 2);
+
 	/* No 3G Priority Parameters Description */
 	bitvec_set_bit(bv, 0);
 	/* E-UTRAN Parameters Description */
