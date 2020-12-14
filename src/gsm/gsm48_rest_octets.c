@@ -165,7 +165,7 @@ static inline void append_earfcn(struct bitvec *bv, const struct osmo_earfcn_si2
 {
 	bool appended;
 	unsigned int old = bv->cur_bit; /* save current position to make rollback possible */
-	int rem = budget - 25;
+	int rem = ((int)budget) - 40;
 	if (rem <= 0)
 		return;
 
@@ -193,6 +193,8 @@ static inline void append_earfcn(struct bitvec *bv, const struct osmo_earfcn_si2
 	/* Priority and E-UTRAN Parameters Description */
 	bitvec_set_bit(bv, 1);
 
+	/* budget: 10 bits used above */
+
 	/* Serving Cell Priority Parameters Descr. is Present,
 	* see also: 3GPP TS 44.018, Table 10.5.2.33b.1 */
 	bitvec_set_bit(bv, 1);
@@ -211,6 +213,8 @@ static inline void append_earfcn(struct bitvec *bv, const struct osmo_earfcn_si2
 
 	/* T_Reselection */
 	bitvec_set_uint(bv, 0, 2);
+
+	/* budget: 26 bits used above */
 
 	/* No 3G Priority Parameters Description */
 	bitvec_set_bit(bv, 0);
@@ -235,11 +239,15 @@ static inline void append_earfcn(struct bitvec *bv, const struct osmo_earfcn_si2
 	/* Repeated E-UTRAN Neighbour Cells */
 	bitvec_set_bit(bv, 1);
 
+	/* budget: 34 bits used above */
+
 	appended = append_eutran_neib_cell(bv, e, e_offset, rem);
 	if (!appended) { /* appending is impossible within current budget: rollback */
 		bv->cur_bit = old;
 		return;
 	}
+
+	/* budget: further 6 bits used below, totalling 40 bits */
 
 	/* stop bit - end of Repeated E-UTRAN Neighbour Cells sequence: */
 	bitvec_set_bit(bv, 0);
