@@ -909,13 +909,8 @@ static int append_gprs_cell_opt(struct bitvec *bv,
 			/* EGPRS supported in the cell */
 			bitvec_set_bit(bv, 1);
 
-			/* 1bit EGPRS PACKET CHANNEL REQUEST */
-			if (gco->supports_egprs_11bit_rach == 0) {
-				bitvec_set_bit(bv,
-					gco->ext_info.use_egprs_p_ch_req);
-			} else {
-				bitvec_set_bit(bv, 0);
-			}
+			/* 1bit EGPRS PACKET CHANNEL REQUEST (inverted logic) */
+			bitvec_set_bit(bv, !gco->ext_info.use_egprs_p_ch_req);
 
 			/* 4bit BEP PERIOD */
 			bitvec_set_uint(bv, gco->ext_info.bep_period, 4);
