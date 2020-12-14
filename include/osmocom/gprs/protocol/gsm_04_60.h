@@ -167,7 +167,7 @@ enum osmo_gprs_nmo {
 	GPRS_NMO_III	= 2,	/* no paging coordination */
 };
 
-/* TS 04.60 12.24 */
+/* TS 44.060 12.24 */
 struct osmo_gprs_cell_options {
 	enum osmo_gprs_nmo nmo;
 	/* T3168: wait for packet uplink assignment message */
@@ -187,6 +187,7 @@ struct osmo_gprs_cell_options {
 		uint8_t pfc_supported;
 		uint8_t dtm_supported;
 		uint8_t bss_paging_coordination;
+		bool ccn_active;
 	} ext_info;
 };
 

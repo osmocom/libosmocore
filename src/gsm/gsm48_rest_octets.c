@@ -906,6 +906,8 @@ static int append_gprs_cell_opt(struct bitvec *bv,
 		bitvec_set_bit(bv, 0);
 	} else {
 		/* extension information */
+
+		/* R99 extension: */
 		bitvec_set_bit(bv, 1);
 		if (!gco->ext_info.egprs_supported) {
 			/* 6bit length of extension */
@@ -927,6 +929,10 @@ static int append_gprs_cell_opt(struct bitvec *bv,
 		bitvec_set_bit(bv, gco->ext_info.pfc_supported);
 		bitvec_set_bit(bv, gco->ext_info.dtm_supported);
 		bitvec_set_bit(bv, gco->ext_info.bss_paging_coordination);
+
+		/* REL-4 extension: */
+		bitvec_set_bit(bv, gco->ext_info.ccn_active);
+		bitvec_set_bit(bv, 0); /* NW_EXT_UTBF disabled */
 	}
 
 	return 0;
