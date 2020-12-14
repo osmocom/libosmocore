@@ -320,6 +320,7 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
              gsm0808/gsm0808_test.ok gb/bssgp_fc_tests.err		\
              gb/bssgp_fc_tests.ok gb/bssgp_fc_tests.sh			\
              gb/gprs_bssgp_test.ok gb/gprs_ns_test.ok gea/gea_test.ok	\
+             gb/gprs_ns2_vty.vty					\
              gprs/gprs_test.ok kasumi/kasumi_test.ok			\
              msgfile/msgfile_test.ok msgfile/msgconfig.cfg		\
              logging/logging_test.ok logging/logging_test.err		\
@@ -430,6 +431,13 @@ endif
 # pass -u to osmo_verify_transcript_vty.py by doing:
 #   make vty-test U=-u
 
+vty-test-ns2:
+	$(MAKE) -C $(top_builddir)/utils osmo-ns-dummy
+	osmo_verify_transcript_vty.py -v \
+		-p 42042 \
+		-r "$(top_builddir)/utils/osmo-ns-dummy -p 42042" \
+		$(U) $(srcdir)/gb/gprs_ns2*.vty
+
 vty-test-logging:
 	osmo_verify_transcript_vty.py -v \
 		-p 42042 \
@@ -461,6 +469,7 @@ vty-test:
 	$(MAKE) vty-test-logging
 	$(MAKE) vty-test-vty
 	$(MAKE) vty-test-tdef
+	$(MAKE) vty-test-ns2
 
 ctrl-test:
 	echo "No CTRL tests exist currently"

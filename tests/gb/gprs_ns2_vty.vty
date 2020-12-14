@@ -1,0 +1,33 @@
+OsmoNSdummy> list
+...
+  show ns binds [stats]
+  show ns entities [stats]
+  show ns persistent
+  show ns (nsei|nsvc) <0-65535> [stats]
+...
+  logging filter nse nsei <0-65535>
+  logging filter nsvc nsvci <0-65535>
+...
+OsmoNSdummy> enable
+OsmoNSdummy# configure terminal
+OsmoNSdummy(config)# list
+...
+  ns
+...
+OsmoNSdummy(config)# ns
+OsmoNSdummy(config-ns)# list
+...
+  timer (tns-block|tns-block-retries|tns-reset|tns-reset-retries|tns-test|tns-alive|tns-alive-retries|tsns-prov|tsns-size-retries|tsns-config-retries) <0-65535>
+  nse <0-65535>
+  no nse <0-65535>
+  bind (fr|udp) ID
+  no bind ID
+...
+OsmoNSdummy(config-ns)# bind udp abc
+OsmoNSdummy(config-ns-bind)# fr eta0 frnet
+fr can be only used with frame relay bind
+OsmoNSdummy(config-ns-bind)# listen 127.0.0.14 42999
+OsmoNSdummy(config-ns-bind)# end
+OsmoNSdummy# show ns
+UDP bind: 127.0.0.14:42999 DSCP: 0
+  0 NS-VC: 
