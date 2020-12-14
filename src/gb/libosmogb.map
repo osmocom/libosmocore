@@ -2,6 +2,7 @@ LIBOSMOGB_1.0 {
 global:
 bssgp_cause_str;
 bssgp_create_cell_id;
+bssgp_create_rim_ri;
 bssgp_pdu_str;
 bssgp_fc_in;
 bssgp_fc_init;
@@ -13,6 +14,7 @@ bssgp_msgb_copy;
 bssgp_msgb_tlli_put;
 bssgp_msgb_ra_put;
 bssgp_parse_cell_id;
+bssgp_parse_rim_ri;
 bssgp_set_bssgp_callback;
 bssgp_tx_bvc_block;
 bssgp_tx_bvc_reset;

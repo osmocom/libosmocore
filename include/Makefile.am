@@ -76,6 +76,7 @@ nobase_include_HEADERS = \
                        osmocom/gprs/protocol/gsm_04_60.h \
                        osmocom/gprs/protocol/gsm_08_16.h \
                        osmocom/gprs/protocol/gsm_08_18.h \
+                       osmocom/gprs/protocol/gsm_24_301.h \
                        osmocom/gsm/a5.h \
                        osmocom/gsm/abis_nm.h \
                        osmocom/gsm/apn.h \

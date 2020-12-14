@@ -172,7 +172,8 @@ gb_bssgp_fc_test_LDADD = $(LDADD) $(top_builddir)/src/gb/libosmogb.la \
 gb_gprs_bssgp_test_SOURCES = gb/gprs_bssgp_test.c
 gb_gprs_bssgp_test_LDADD = $(LDADD) $(top_builddir)/src/gb/libosmogb.la $(LIBRARY_DLSYM) \
 			   $(top_builddir)/src/vty/libosmovty.la \
-			   $(top_builddir)/src/gsm/libosmogsm.la
+			   $(top_builddir)/src/gsm/libosmogsm.la \
+			   $(top_builddir)/src/gb/libosmogb.la
 
 gb_gprs_ns_test_SOURCES = gb/gprs_ns_test.c
 gb_gprs_ns_test_LDADD = $(LDADD) $(top_builddir)/src/gb/libosmogb.la $(LIBRARY_DLSYM) \
