@@ -64,6 +64,7 @@ static inline bool append_eutran_neib_cell(struct bitvec *bv, const struct osmo_
 					   uint8_t budget)
 {
 	unsigned i, skip = 0;
+	size_t offset = *e_offset;
 	int16_t rem = budget - 6; /* account for mandatory stop bit and THRESH_E-UTRAN_high */
 	uint8_t earfcn_budget;
 
@@ -94,7 +95,7 @@ static inline bool append_eutran_neib_cell(struct bitvec *bv, const struct osmo_
 	/* now we can proceed with actually adding EARFCNs within adjusted budget limit */
 	for (i = 0; i < e->length; i++) {
 		if (e->arfcn[i] != OSMO_EARFCN_INVALID) {
-			if (skip < *e_offset) {
+			if (skip < offset) {
 				skip++; /* ignore EARFCNs added on previous calls */
 			} else {
 				earfcn_budget = 17; /* compute budget per-EARFCN */
