@@ -780,6 +780,22 @@ struct ipac_preproc_ave_cfg {
 #endif
 }__attribute__ ((packed));
 
+/*! MS/BS Power Control Thresholds */
+struct ipac_preproc_pc_thresh {
+#if OSMO_IS_LITTLE_ENDIAN
+	uint8_t l_rxlev:6, reserved_l_rxlev:2;
+	uint8_t u_rxlev:6, reserved_u_rxlev:2;
+	uint8_t l_rxqual:3, reserved_l_rxqual:1,
+		u_rxqual:3, reserved_u_rxqual:1;
+#elif OSMO_IS_BIG_ENDIAN
+	uint8_t reserved_l_rxlev:2, l_rxlev:6;
+	uint8_t reserved_u_rxlev:2, u_rxlev:6;
+	uint8_t reserved_l_rxqual:1, l_rxqual:3,
+		reserved_u_rxqual:1, u_rxqual:3;
+#endif
+}__attribute__ ((packed));
+
+/*! Handover Thresholds */
 struct ipac_preproc_ho_thresh {
 #if OSMO_IS_LITTLE_ENDIAN
 	uint8_t l_rxlev_ul_h:6,
@@ -807,6 +823,34 @@ struct ipac_preproc_ho_thresh {
 #endif
 }__attribute__ ((packed));
 
+/*! PC Threshold Comparators */
+struct ipac_preproc_pc_comp {
+#if OSMO_IS_LITTLE_ENDIAN
+	uint8_t p1:5, reserved_p1:3;
+	uint8_t n1:5, reserved_n1:3;
+	uint8_t p2:5, reserved_p2:3;
+	uint8_t n2:5, reserved_n2:3;
+	uint8_t p3:5, reserved_p3:3;
+	uint8_t n3:5, reserved_n3:3;
+	uint8_t p4:5, reserved_p4:3;
+	uint8_t n4:5, reserved_n4:3;
+	uint8_t pc_interval:5, reserved_pc:3;
+	uint8_t red_step_size:4, inc_step_size:4;
+#elif OSMO_IS_BIG_ENDIAN
+	uint8_t reserved_p1:3, p1:5;
+	uint8_t reserved_n1:3, n1:5;
+	uint8_t reserved_p2:3, p2:5;
+	uint8_t reserved_n2:3, n2:5;
+	uint8_t reserved_p3:3, p3:5;
+	uint8_t reserved_n3:3, n3:5;
+	uint8_t reserved_p4:3, p4:5;
+	uint8_t reserved_n4:3, n4:5;
+	uint8_t reserved_pc:3, pc_interval:5;
+	uint8_t inc_step_size:4, red_step_size:4;
+#endif
+}__attribute__ ((packed));
+
+/*! HO Threshold Comparators */
 struct ipac_preproc_ho_comp {
 #if OSMO_IS_LITTLE_ENDIAN
 	uint8_t p5:5,
