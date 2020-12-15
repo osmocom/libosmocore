@@ -406,7 +406,9 @@ enum abis_rsl_ie {
 enum {
 	IPAC_UNWEIGHTED_AVE = 0,
 	IPAC_WEIGHTED_AVE,
-	IPAC_MEDIAN_AVE
+	IPAC_MEDIAN_AVE,
+	/* EWMA is an Osmocom specific extension */
+	IPAC_OSMO_EWMA_AVE,
 };
 
 /* IPAC MEAS_PREPROC AVERAGING PARAMID */
