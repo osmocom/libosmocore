@@ -16,7 +16,7 @@ struct gprs_ns2_vc_driver;
 struct gprs_ns2_vc_bind;
 
 #define NS_TIMERS_COUNT 10
-#define NS_TIMERS "(tns-block|tns-block-retries|tns-reset|tns-reset-retries|tns-test|tns-alive|tns-alive-retries|tsns-prov|tsns-prov-retries)"
+#define NS_TIMERS "(tns-block|tns-block-retries|tns-reset|tns-reset-retries|tns-test|tns-alive|tns-alive-retries|tsns-prov|tsns-size-retries|tsns-config-retries)"
 #define NS_TIMERS_HELP	\
 	"(un)blocking Timer (Tns-block) timeout\n"		\
 	"(un)blocking Timer (Tns-block) number of retries\n"	\
