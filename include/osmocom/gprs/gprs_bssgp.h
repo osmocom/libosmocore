@@ -56,6 +56,8 @@ enum bssgp_prim {
 	PRIM_NM_BVC_BLOCK,
 	PRIM_NM_BVC_UNBLOCK,
 	PRIM_NM_STATUS,
+
+        PRIM_BSSGP_RIM_PDU_TRANSFER,
 };
 
 struct osmo_bssgp_prim {

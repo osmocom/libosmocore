@@ -16,4 +16,6 @@ enum osmo_gsm_sap {
 	SAP_BSSGP_PFM,
 
 	SAP_NS,
+
+	SAP_BSSGP_RIM,
 };

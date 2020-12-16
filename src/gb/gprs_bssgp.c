@@ -734,6 +734,39 @@ int bssgp_rx_status(struct msgb *msg, struct tlv_parsed *tp,
 	return bssgp_prim_cb(&nmp.oph, NULL);
 }
 
+static int bssgp_rx_rim(struct msgb *msg, struct tlv_parsed *tp, uint16_t bvci)
+{
+	struct osmo_bssgp_prim nmp;
+	uint16_t nsei = msgb_nsei(msg);
+	struct bssgp_normal_hdr *bgph = (struct bssgp_normal_hdr *)msgb_bssgph(msg);
+	enum bssgp_prim prim;
+
+	DEBUGP(DLBSSGP, "BSSGP BVCI=%u Rx RIM-PDU:%s\n", bvci, bssgp_pdu_str(bgph->pdu_type));
+
+	/* Specify PRIM type based on the RIM PDU */
+	switch (bgph->pdu_type) {
+	case BSSGP_PDUT_RAN_INFO:
+	case BSSGP_PDUT_RAN_INFO_REQ:
+	case BSSGP_PDUT_RAN_INFO_ACK:
+	case BSSGP_PDUT_RAN_INFO_ERROR:
+	case BSSGP_PDUT_RAN_INFO_APP_ERROR:
+		prim = PRIM_BSSGP_RIM_PDU_TRANSFER;
+		break;
+	default:
+		/* Caller already makes sure that this can't happen. */
+		OSMO_ASSERT(false);
+	}
+
+	/* Send BSSGP RIM indication to NM */
+	memset(&nmp, 0, sizeof(nmp));
+	nmp.nsei = nsei;
+	nmp.bvci = bvci;
+	nmp.tp = tp;
+	osmo_prim_init(&nmp.oph, SAP_BSSGP_RIM, prim, PRIM_OP_INDICATION, msg);
+	bssgp_prim_cb(&nmp.oph, NULL);
+
+	return 0;
+}
 
 /* One element (msgb) in a BSSGP Flow Control queue */
 struct bssgp_fc_queue_element {
@@ -1159,6 +1192,15 @@ static int bssgp_rx_sign(struct msgb *msg, struct tlv_parsed *tp,
 	case BSSGP_PDUT_STATUS:
 		/* This is already handled in bssgp_rcvmsg() */
 		break;
+
+	case BSSGP_PDUT_RAN_INFO:
+	case BSSGP_PDUT_RAN_INFO_REQ:
+	case BSSGP_PDUT_RAN_INFO_ACK:
+	case BSSGP_PDUT_RAN_INFO_ERROR:
+	case BSSGP_PDUT_RAN_INFO_APP_ERROR:
+		bssgp_rx_rim(msg, tp, bvci);
+		break;
+
 	/* those only exist in the SGSN -> BSS direction */
 	case BSSGP_PDUT_PAGING_PS:
 	case BSSGP_PDUT_PAGING_CS:
