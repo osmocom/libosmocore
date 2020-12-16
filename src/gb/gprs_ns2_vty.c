@@ -103,6 +103,8 @@ static const struct value_string gprs_ns_timer_strs[] = {
 	{ 5, "tns-alive" },
 	{ 6, "tns-alive-retries" },
 	{ 7, "tsns-prov" },
+	{ 8, "tsns-size-retries" },
+	{ 9, "tsns-config-retries" },
 	{ 0, NULL }
 };
 
