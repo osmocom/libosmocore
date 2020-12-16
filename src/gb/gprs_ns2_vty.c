@@ -901,7 +901,8 @@ int gprs_ns2_vty_create() {
 			/* TODO: could not bind on the specific address */
 			return -1;
 		}
-		bind->accept_ipaccess = true;
+
+		bind->accept_ipaccess = priv.vc_mode == NS2_VC_MODE_BLOCKRESET;
 	}
 
 	/* create vcs */
@@ -909,7 +910,10 @@ int gprs_ns2_vty_create() {
 		/* validate settings */
 		switch (vtyvc->ll) {
 		case GPRS_NS2_LL_UDP:
-			dialect = NS2_DIALECT_IPACCESS;
+			if (priv.vc_mode == NS2_VC_MODE_BLOCKRESET)
+				dialect = NS2_DIALECT_IPACCESS;
+			else
+				dialect = NS2_DIALECT_STATIC_ALIVE;
 			if (strlen(vtyvc->remote.ip) == 0) {
 				/* Invalid IP for VC */
 				continue;
