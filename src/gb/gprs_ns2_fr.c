@@ -296,8 +296,7 @@ static int devname2ifindex(const char *ifname)
 
 
 	memset(&ifr, 0, sizeof(ifr));
-	strncpy(ifr.ifr_name, ifname, sizeof(ifr.ifr_name));
-	ifr.ifr_name[sizeof(ifr.ifr_name)-1] = 0;
+	OSMO_STRLCPY_ARRAY(ifr.ifr_name, ifname);
 
 	rc = ioctl(sk, SIOCGIFINDEX, &ifr);
 	close(sk);
