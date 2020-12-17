@@ -36,12 +36,14 @@
 #include <netinet/ip.h>
 #include <netinet/ip6.h>
 #include <arpa/inet.h>
-#include <net/if.h>
+#include <linux/if.h>
 
 #include <sys/ioctl.h>
 #include <netpacket/packet.h>
 #include <linux/if_ether.h>
 #include <linux/hdlc.h>
+#include <linux/hdlc/ioctl.h>
+#include <linux/sockios.h>
 
 #include <osmocom/gprs/frame_relay.h>
 #include <osmocom/core/byteswap.h>
@@ -84,7 +86,7 @@ struct gprs_ns2_vc_driver vc_driver_fr = {
 };
 
 struct priv_bind {
-	char netif[IF_NAMESIZE];
+	char netif[IFNAMSIZ];
 	struct osmo_fr_link *link;
 	struct osmo_wqueue wqueue;
 	int ifindex;
@@ -433,6 +435,103 @@ static void linkmon_initial_dump(struct osmo_mnl *omnl)
 }
 #endif /* LIBMNL */
 
+static int set_ifupdown(const char *netif, bool up)
+{
+	int sock, rc;
+	struct ifreq req;
+
+	sock = socket(AF_INET, SOCK_DGRAM, 0);
+	if (sock < 0)
+		return sock;
+
+	memset(&req, 0, sizeof req);
+	strncpy(req.ifr_name, netif, IFNAMSIZ);
+
+	if (up)
+		req.ifr_flags |= IFF_UP;
+
+	rc = ioctl(sock, SIOCSIFFLAGS, &req);
+	close(sock);
+	return rc;
+}
+
+static int setup_device(const char *netif)
+{
+	int sock, rc;
+	char buffer[128];
+	fr_proto *fr = (void*)buffer;
+	struct ifreq req;
+
+	sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
+	if (sock < 0) {
+		LOGP(DLNS, LOGL_ERROR, "%s: Unable to create socket: %s\n",
+		     netif, strerror(errno));
+		return sock;
+	}
+
+	memset(&req, 0, sizeof(struct ifreq));
+	memset(&buffer, 0, sizeof(buffer));
+	osmo_strlcpy(req.ifr_name, netif, IFNAMSIZ);
+	req.ifr_settings.ifs_ifsu.sync = (void*)buffer;
+	req.ifr_settings.size = sizeof(buffer);
+	req.ifr_settings.type = IF_GET_PROTO;
+
+	rc = ioctl(sock, SIOCWANDEV, &req);
+	if (rc < 0) {
+		LOGP(DLNS, LOGL_ERROR, "%s: Unable to get FR protocol information: %s\n",
+		     netif, strerror(errno));
+		goto err;
+	}
+
+	/* check if the device is good */
+	if (req.ifr_settings.type != IF_PROTO_FR && fr->lmi != LMI_NONE) {
+		LOGP(DLNS, LOGL_INFO, "%s: has correct frame relay mode and lmi\n", netif);
+		goto ifup;
+	}
+
+	/* modify the device to match */
+	rc = set_ifupdown(netif, false);
+	if (rc) {
+		LOGP(DLNS, LOGL_ERROR, "Unable to bring up the device %s: %s\n",
+		      netif, strerror(errno));
+		goto err;
+	}
+
+	memset(&req, 0, sizeof(struct ifreq));
+	memset(fr, 0, sizeof(fr_proto));
+	osmo_strlcpy(req.ifr_name, netif, IFNAMSIZ);
+	req.ifr_settings.type = IF_PROTO_FR;
+	req.ifr_settings.size = sizeof(fr_proto);
+	req.ifr_settings.ifs_ifsu.fr = fr;
+	fr->lmi = LMI_NONE;
+	/* even those settings aren't used, they must be in the range */
+	/* polling verification timer*/
+	fr->t391 = 10;
+	/* link integrity verification polling timer */
+	fr->t392 = 15;
+	/* full status polling counter*/
+	fr->n391 = 6;
+	/* error threshold */
+	fr->n392 = 3;
+	/* monitored events count */
+	fr->n393 = 4;
+
+	rc = ioctl(sock, SIOCWANDEV, &req);
+	if (rc) {
+		LOGP(DLNS, LOGL_ERROR, "%s: Unable to set FR protocol on information: %s\n",
+		      netif, strerror(errno));
+		goto err;
+	}
+
+ifup:
+	rc = set_ifupdown(netif, true);
+	if (rc)
+		LOGP(DLNS, LOGL_ERROR, "Unable to bring up the device %s: %s\n",
+		      netif, strerror(errno));
+err:
+	close(sock);
+	return rc;
+}
 
 /*! Create a new bind for NS over FR.
  *  \param[in] nsi NS instance in which to create the bind
@@ -481,7 +580,7 @@ int gprs_ns2_fr_bind(struct gprs_ns2_inst *nsi,
 		goto err_name;
 	}
 
-	if (strlen(netif) > IF_NAMESIZE) {
+	if (strlen(netif) > IFNAMSIZ) {
 		rc = -EINVAL;
 		goto err_priv;
 	}
@@ -504,6 +603,13 @@ int gprs_ns2_fr_bind(struct gprs_ns2_inst *nsi,
 	priv->ifindex = rc = devname2ifindex(netif);
 	if (rc < 0) {
 		LOGP(DLNS, LOGL_ERROR, "Can not get interface index for interface %s\n", netif);
+		goto err_fr;
+	}
+
+	/* set protocol frame relay and lmi */
+	rc = setup_device(priv->netif);
+	if(rc < 0) {
+		LOGP(DLNS, LOGL_ERROR, "Failed to setup the interface %s for frame relay and lmi\n", netif);
 		goto err_fr;
 	}
 
@@ -597,7 +703,7 @@ struct gprs_ns2_vc_bind *gprs_ns2_fr_bind_by_netif(
 			continue;
 
 		_netif = gprs_ns2_fr_bind_netif(bind);
-		if (!strncmp(_netif, netif, IF_NAMESIZE))
+		if (!strncmp(_netif, netif, IFNAMSIZ))
 			return bind;
 	}
 
