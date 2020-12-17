@@ -579,6 +579,8 @@ int gprs_ns2_fr_bind(struct gprs_ns2_inst *nsi,
 
 	bind->driver = &vc_driver_fr;
 	bind->ll = GPRS_NS2_LL_FR;
+	/* 2 mbit */
+	bind->transfer_capability = 2;
 	bind->send_vc = fr_vc_sendmsg;
 	bind->free_vc = free_vc;
 	bind->dump_vty = dump_vty;

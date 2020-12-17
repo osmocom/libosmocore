@@ -198,6 +198,9 @@ struct gprs_ns2_vc_bind {
 	bool accept_ipaccess;
 	bool accept_sns;
 
+	/*! transfer capability in mbit */
+	int transfer_capability;
+
 	/*! which link-layer are we based on? */
 	enum gprs_ns2_ll ll;
 
@@ -312,3 +315,5 @@ int gprs_ns2_vc_is_unblocked(struct gprs_ns2_vc *nsvc);
 /* nse */
 void ns2_nse_notify_unblocked(struct gprs_ns2_vc *nsvc, bool unblocked);
 enum gprs_ns2_vc_mode gprs_ns2_dialect_to_vc_mode(enum gprs_ns2_dialect dialect);
+int ns2_count_transfer_cap(struct gprs_ns2_nse *nse,
+			   uint16_t bvci);

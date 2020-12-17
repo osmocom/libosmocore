@@ -74,7 +74,7 @@ check_PROGRAMS += \
 endif
 
 if ENABLE_GB
-check_PROGRAMS += gb/bssgp_fc_test gb/gprs_bssgp_test gb/gprs_ns_test fr/fr_test
+check_PROGRAMS += gb/bssgp_fc_test gb/gprs_bssgp_test gb/gprs_ns_test gb/gprs_ns2_test fr/fr_test
 endif
 
 utils_utils_test_SOURCES = utils/utils_test.c
@@ -179,6 +179,16 @@ gb_gprs_ns_test_SOURCES = gb/gprs_ns_test.c
 gb_gprs_ns_test_LDADD = $(LDADD) $(top_builddir)/src/gb/libosmogb.la $(LIBRARY_DLSYM) \
 			$(top_builddir)/src/vty/libosmovty.la \
 			$(top_builddir)/src/gsm/libosmogsm.la
+
+gb_gprs_ns2_test_SOURCES = gb/gprs_ns2_test.c
+gb_gprs_ns2_test_LDADD = $(LDADD) $(LIBRARY_DLSYM) \
+			$(top_builddir)/src/vty/libosmovty.la \
+			$(top_builddir)/src/gsm/libosmogsm.la \
+			$(top_builddir)/src/libosmocore.la \
+			$(top_builddir)/src/gb/libosmogb-test.la
+if ENABLE_LIBMNL
+gb_gprs_ns2_test_LDADD += $(LIBMNL_LIBS)
+endif
 
 logging_logging_test_SOURCES = logging/logging_test.c
 
@@ -321,6 +331,7 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
              gb/bssgp_fc_tests.ok gb/bssgp_fc_tests.sh			\
              gb/gprs_bssgp_test.ok gb/gprs_ns_test.ok gea/gea_test.ok	\
              gb/gprs_ns2_vty.vty gb/osmoappdesc.py gb/osmo-ns-dummy.cfg \
+             gb/gprs_ns2_test.ok					\
              gprs/gprs_test.ok kasumi/kasumi_test.ok			\
              msgfile/msgfile_test.ok msgfile/msgconfig.cfg		\
              logging/logging_test.ok logging/logging_test.err		\

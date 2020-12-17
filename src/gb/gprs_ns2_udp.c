@@ -336,6 +336,10 @@ int gprs_ns2_ip_bind(struct gprs_ns2_inst *nsi,
 
 	bind->driver = &vc_driver_ip;
 	bind->ll = GPRS_NS2_LL_UDP;
+	/* expect 100 mbit at least.
+	 * TODO: ask the network layer about the speed. But would require
+	 * notification on change. */
+	bind->transfer_capability = 100;
 	bind->send_vc = nsip_vc_sendmsg;
 	bind->free_vc = free_vc;
 	bind->dump_vty = dump_vty;

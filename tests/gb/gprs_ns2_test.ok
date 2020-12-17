@@ -1,0 +1,10 @@
+===== NS2 protocol test START
+--- Testing NSE transfer cap
+---- Create NSE + Binds
+---- Test with NSVC[0]
+---- Test with NSVC[1]
+---- Test with NSVC[2]
+---- Test with NSVC[1] removed
+--- Finish NSE transfer cap
+===== NS2 protocol test END
+

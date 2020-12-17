@@ -471,7 +471,7 @@ void ns2_prim_status_ind(struct gprs_ns2_nse *nse,
 	nsp.nsei = nse->nsei;
 	nsp.bvci = bvci;
 	nsp.u.status.cause = cause;
-	nsp.u.status.transfer = -1;
+	nsp.u.status.transfer = ns2_count_transfer_cap(nse, bvci);
 	nsp.u.status.first = nse->first;
 	nsp.u.status.persistent = nse->persistent;
 	if (nsvc)
@@ -1261,6 +1261,70 @@ enum gprs_ns2_vc_mode gprs_ns2_dialect_to_vc_mode(
 	default:
 		return -1;
 	}
+}
+
+static void add_bind_array(struct gprs_ns2_vc_bind **array,
+			   struct gprs_ns2_vc_bind *bind, int size)
+{
+	int i;
+	for (i=0; i < size; i++) {
+		if (array[i] == bind)
+			return;
+		if (!array[i])
+			break;
+	}
+
+	if (i == size)
+		return;
+
+	array[i] = bind;
+}
+
+/*! calculate the transfer capabilities for a nse
+ *  \param nse the nse to count the transfer capability
+ *  \param bvci a bvci - unused
+ *  \return the transfer capability in mbit. On error < 0.
+ */
+int ns2_count_transfer_cap(struct gprs_ns2_nse *nse,
+			   uint16_t bvci)
+{
+	struct gprs_ns2_vc *nsvc;
+	struct gprs_ns2_vc_bind **active_binds;
+	int i, active_nsvcs = 0, transfer_cap = 0;
+
+	/* calculate the transfer capabilities based on the binds.
+	 * A bind has a transfer capability which is shared across all NSVCs.
+	 * Take care the bind cap is not counted twice within a NSE.
+	 * This should be accurate for FR and UDP but not for FR/GRE. */
+
+	if (!nse->alive)
+		return 0;
+
+	llist_for_each_entry(nsvc, &nse->nsvc, list) {
+		if (gprs_ns2_vc_is_unblocked(nsvc))
+			active_nsvcs++;
+	}
+	/* an alive nse should always have active_nsvcs */
+	OSMO_ASSERT(active_nsvcs);
+
+	active_binds = talloc_zero_array(nse, struct gprs_ns2_vc_bind*, active_nsvcs);
+	if (!active_binds)
+		return -ENOMEM;
+
+	llist_for_each_entry(nsvc, &nse->nsvc, list) {
+		if (!gprs_ns2_vc_is_unblocked(nsvc))
+			continue;
+		add_bind_array(active_binds, nsvc->bind, active_nsvcs);
+	}
+
+	/* TODO: change calcuation for FR/GRE */
+	for (i = 0; i < active_nsvcs; i++) {
+		if (active_binds[i])
+			transfer_cap += active_binds[i]->transfer_capability;
+	}
+
+	talloc_free(active_binds);
+	return transfer_cap;
 }
 
 /*! @} */

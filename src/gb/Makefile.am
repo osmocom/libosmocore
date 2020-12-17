@@ -28,6 +28,12 @@ libosmogb_la_SOURCES = gprs_ns.c gprs_ns_frgre.c gprs_ns_vty.c gprs_ns_sns.c \
 		  gprs_ns2_message.c gprs_ns2_vty.c gprs_ns2_vty2.c \
 		  gprs_bssgp2.c bssgp_bvc_fsm.c \
 		  common_vty.c frame_relay.c
+
+# convenience library for testing with access to all non-static symbols
+noinst_LTLIBRARIES = libosmogb-test.la
+libosmogb_test_la_LIBADD = $(libosmogb_la_LIBADD)
+libosmogb_test_la_SOURCES= $(libosmogb_la_SOURCES)
+
 endif
 
 EXTRA_DIST = libosmogb.map
