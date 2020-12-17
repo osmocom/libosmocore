@@ -50,6 +50,7 @@
 #include <osmocom/core/select.h>
 #include <osmocom/core/socket.h>
 #include <osmocom/core/talloc.h>
+#include <osmocom/core/write_queue.h>
 #include <osmocom/gprs/gprs_ns2.h>
 
 #ifdef ENABLE_LIBMNL
@@ -83,9 +84,9 @@ struct gprs_ns2_vc_driver vc_driver_fr = {
 };
 
 struct priv_bind {
-	struct osmo_fd fd;
 	char netif[IF_NAMESIZE];
 	struct osmo_fr_link *link;
+	struct osmo_wqueue wqueue;
 	int ifindex;
 	bool if_running;
 };
@@ -142,7 +143,7 @@ static void free_bind(struct gprs_ns2_vc_bind *bind)
 	OSMO_ASSERT(llist_empty(&bind->nsvc));
 
 	osmo_fr_link_free(priv->link);
-	osmo_fd_close(&priv->fd);
+	osmo_fd_close(&priv->wqueue.bfd);
 	talloc_free(priv);
 }
 
@@ -238,22 +239,9 @@ static int fr_dlci_rx_cb(void *cb_data, struct msgb *msg)
 	return rc;
 }
 
-static int handle_netif_write(struct osmo_fd *bfd)
+static int handle_netif_write(struct osmo_fd *ofd, struct msgb *msg)
 {
-	/* FIXME */
-	return -EIO;
-}
-
-static int fr_fd_cb(struct osmo_fd *bfd, unsigned int what)
-{
-	int rc = 0;
-
-	if (what & OSMO_FD_READ)
-		rc = handle_netif_read(bfd);
-	if (what & OSMO_FD_WRITE)
-		rc = handle_netif_write(bfd);
-
-	return rc;
+	return write(ofd->fd, msgb_data(msg), msgb_length(msg));
 }
 
 /*! determine if given bind is for FR-GRE encapsulation. */
@@ -276,13 +264,15 @@ int fr_tx_cb(void *data, struct msgb *msg)
 {
 	struct gprs_ns2_vc_bind *bind = data;
 	struct priv_bind *priv = bind->priv;
-	int rc;
 
-	/* FIXME half writes */
-	rc = write(priv->fd.fd, msg->data, msg->len);
-	msgb_free(msg);
+	if (osmo_wqueue_enqueue(&priv->wqueue, msg)) {
+		LOGP(DLNS, LOGL_ERROR, "frame relay %s: failed to enqueue message\n",
+		     priv->netif);
+		msgb_free(msg);
+		return -EINVAL;
+	}
 
-	return rc;
+	return 0;
 }
 
 static int devname2ifindex(const char *ifname)
@@ -491,8 +481,6 @@ int gprs_ns2_fr_bind(struct gprs_ns2_inst *nsi,
 		goto err_name;
 	}
 
-	priv->fd.cb = fr_fd_cb;
-	priv->fd.data = bind;
 	if (strlen(netif) > IF_NAMESIZE) {
 		rc = -EINVAL;
 		goto err_priv;
@@ -519,12 +507,14 @@ int gprs_ns2_fr_bind(struct gprs_ns2_inst *nsi,
 		goto err_fr;
 	}
 
-	priv->fd.fd = rc = open_socket(priv->ifindex);
+	rc = open_socket(priv->ifindex);
 	if (rc < 0)
 		goto err_fr;
-
-	priv->fd.when = OSMO_FD_READ;
-	rc = osmo_fd_register(&priv->fd);
+	osmo_wqueue_init(&priv->wqueue, 10);
+	priv->wqueue.write_cb = handle_netif_write;
+	priv->wqueue.read_cb = handle_netif_read;
+	osmo_fd_setup(&priv->wqueue.bfd, rc, OSMO_FD_READ, osmo_wqueue_bfd_cb, bind, 0);
+	rc = osmo_fd_register(&priv->wqueue.bfd);
 	if (rc < 0)
 		goto err_fd;
 
@@ -544,7 +534,7 @@ int gprs_ns2_fr_bind(struct gprs_ns2_inst *nsi,
 	return rc;
 
 err_fd:
-	close(priv->fd.fd);
+	close(priv->wqueue.bfd.fd);
 err_fr:
 	osmo_fr_link_free(fr_link);
 err_priv:
