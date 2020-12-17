@@ -497,7 +497,7 @@ int gprs_ns2_fr_bind(struct gprs_ns2_inst *nsi,
 		rc = -EINVAL;
 		goto err_priv;
 	}
-	strncpy(priv->netif, netif, sizeof(priv->netif));
+	OSMO_STRLCPY_ARRAY(priv->netif, netif);
 
 	if (result)
 		*result = bind;
