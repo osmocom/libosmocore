@@ -139,7 +139,6 @@ static const struct log_info_cat internal_cat[OSMO_NUM_DLIB] = {
 		.description = "Library-internal global log family",
 		.loglevel = LOGL_NOTICE,
 		.enabled = 1,
-		.color = "\033[38;5;19m",
 	},
 	[INT2IDX(DLLAPD)] = {	/* -2 becomes 1 */
 		.name = "DLLAPD",
