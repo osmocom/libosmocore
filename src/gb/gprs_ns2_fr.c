@@ -514,8 +514,8 @@ int gprs_ns2_fr_bind(struct gprs_ns2_inst *nsi,
 	fr_link->tx_cb_data = bind;
 	priv->link = fr_link;
 
-	priv->ifindex = devname2ifindex(netif);
-	if (priv->ifindex < 0) {
+	priv->ifindex = rc = devname2ifindex(netif);
+	if (rc < 0) {
 		LOGP(DLNS, LOGL_ERROR, "Can not get interface index for interface %s\n", netif);
 		goto err_fr;
 	}
