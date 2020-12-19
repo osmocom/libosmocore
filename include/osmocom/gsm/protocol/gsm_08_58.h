@@ -787,8 +787,8 @@ struct ipac_preproc_pc_thresh {
 #if OSMO_IS_LITTLE_ENDIAN
 	uint8_t l_rxlev:6, reserved_l_rxlev:2;
 	uint8_t u_rxlev:6, reserved_u_rxlev:2;
-	uint8_t l_rxqual:3, reserved_l_rxqual:1,
-		u_rxqual:3, reserved_u_rxqual:1;
+	uint8_t u_rxqual:3, reserved_u_rxqual:1,
+		l_rxqual:3, reserved_l_rxqual:1;
 #elif OSMO_IS_BIG_ENDIAN
 	uint8_t reserved_l_rxlev:2, l_rxlev:6;
 	uint8_t reserved_u_rxlev:2, u_rxlev:6;
