@@ -250,7 +250,6 @@ void ns2_sns_free_nsvc(struct gprs_ns2_vc *nsvc)
 				gss->sns_nsvc = tmp;
 		}
 	} else {
-		LOGPFSML(fi, LOGL_ERROR, "NSE %d: no remaining NSVC, resetting SNS FSM\n", nse->nsei);
 		gss->sns_nsvc = NULL;
 		osmo_fsm_inst_dispatch(fi, GPRS_SNS_EV_NO_NSVC, NULL);
 	}
@@ -1337,8 +1336,12 @@ static void ns2_sns_st_all_action(struct osmo_fsm_inst *fi, uint32_t event, void
 	/* reset when receiving GPRS_SNS_EV_NO_NSVC */
 	switch (event) {
 	case GPRS_SNS_EV_NO_NSVC:
-		if (!gss->reselection_running)
-			osmo_fsm_inst_dispatch(fi, GPRS_SNS_EV_SELECT_ENDPOINT, NULL);
+		/* ignore reselection running */
+		if (gss->reselection_running)
+			break;
+
+		LOGPFSML(fi, LOGL_ERROR, "NSE %d: no remaining NSVC, resetting SNS FSM\n", nse->nsei);
+		osmo_fsm_inst_dispatch(fi, GPRS_SNS_EV_SELECT_ENDPOINT, NULL);
 		break;
 	case GPRS_SNS_EV_SELECT_ENDPOINT:
 		/* tear down previous state
