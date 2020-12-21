@@ -440,8 +440,12 @@ DEFUN_HIDDEN(nsvc_force_unconf, nsvc_force_unconf_cmd,
 		return CMD_WARNING;
 	}
 
-	/* Perform the operation for all nsvc */
-	gprs_ns2_nse_foreach_nsvc(nse, nsvc_force_unconf_cb, NULL);
+	if (nse->dialect == NS2_DIALECT_SNS) {
+		gprs_ns2_free_nsvcs(nse);
+	} else {
+		/* Perform the operation for all nsvc */
+		gprs_ns2_nse_foreach_nsvc(nse, nsvc_force_unconf_cb, NULL);
+	}
 
 	return CMD_SUCCESS;
 }
