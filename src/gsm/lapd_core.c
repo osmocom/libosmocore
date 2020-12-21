@@ -624,8 +624,6 @@ static void lapd_t200_cb(void *data)
 		if (dl->retrans_ctr >= dl->n200_est_rel + 1) {
 			/* send MDL ERROR INIDCATION to L3 */
 			mdl_error(MDL_CAUSE_T200_EXPIRED, &dl->lctx);
-			/* send RELEASE INDICATION to L3 */
-			send_dl_simple(PRIM_DL_REL, PRIM_OP_CONFIRM, &dl->lctx);
 			/* flush tx and send buffers */
 			lapd_dl_flush_tx(dl);
 			lapd_dl_flush_send(dl);
@@ -634,6 +632,8 @@ static void lapd_t200_cb(void *data)
 			/* NOTE: we must not change any other states or buffers
 			 * and queues, since we may reconnect after handover
 			 * failure. the buffered messages is replaced there */
+			/* send RELEASE INDICATION to L3 */
+			send_dl_simple(PRIM_DL_REL, PRIM_OP_CONFIRM, &dl->lctx);
 			break;
 		}
 		/* retransmit DISC command */
@@ -1230,13 +1230,12 @@ static int lapd_rx_u_ua(struct msgb *msg, struct lapd_msg_ctx *lctx)
 		 || !!memcmp(dl->tx_hist[0].msg->data, msg->l3h,
 							length)) {
 			LOGDL(dl, LOGL_INFO, "**** UA response mismatches ****\n");
-			rc = send_dl_simple(PRIM_DL_REL,
-				PRIM_OP_INDICATION, lctx);
-			msgb_free(msg);
 			/* go to idle state */
 			lapd_dl_flush_tx(dl);
 			lapd_dl_flush_send(dl);
 			lapd_dl_newstate(dl, LAPD_STATE_IDLE);
+			rc = send_dl_simple(PRIM_DL_REL, PRIM_OP_INDICATION, lctx);
+			msgb_free(msg);
 			return 0;
 		}
 	}
