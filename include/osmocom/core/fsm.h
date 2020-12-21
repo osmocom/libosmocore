@@ -326,4 +326,15 @@ void _osmo_fsm_inst_term_children(struct osmo_fsm_inst *fi,
 				  void *data,
 				  const char *file, int line);
 
+/*! dispatch an event to all children of an osmocom finite state machine instance
+ *
+ *  This is a macro that calls _osmo_fsm_inst_broadcast_children() with the given
+ *  parameters as well as the caller's source file and line number for logging
+ *  purposes. See there for documentation.
+ */
+#define osmo_fsm_inst_broadcast_children(fi, cause, data) \
+	_osmo_fsm_inst_broadcast_children(fi, cause, data, __FILE__, __LINE__)
+void _osmo_fsm_inst_broadcast_children(struct osmo_fsm_inst *fi, uint32_t event,
+					void *data, const char *file, int line);
+
 /*! @} */

@@ -1016,6 +1016,26 @@ void _osmo_fsm_inst_term_children(struct osmo_fsm_inst *fi,
 	}
 }
 
+/*! Broadcast an event to all the FSMs children.
+ *
+ *  Iterate over all children and send them the specified event.
+ *
+ *  \param[in] fi FSM instance of the parent
+ *  \param[in] event Event to send to children of FSM instance
+ *  \param[in] data Data to pass along with the event
+ *  \param[in] file Calling source file (from osmo_fsm_inst_dispatch macro)
+ *  \param[in] line Calling source line (from osmo_fsm_inst_dispatch macro)
+ */
+void _osmo_fsm_inst_broadcast_children(struct osmo_fsm_inst *fi,
+					uint32_t event, void *data,
+					const char *file, int line)
+{
+	struct osmo_fsm_inst *child, *tmp;
+	llist_for_each_entry_safe(child, tmp, &fi->proc.children, proc.child) {
+		_osmo_fsm_inst_dispatch(child, event, data, file, line);
+	}
+}
+
 const struct value_string osmo_fsm_term_cause_names[] = {
 	OSMO_VALUE_STRING(OSMO_FSM_TERM_PARENT),
 	OSMO_VALUE_STRING(OSMO_FSM_TERM_REQUEST),
