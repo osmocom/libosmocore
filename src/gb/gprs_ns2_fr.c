@@ -445,7 +445,7 @@ static int set_ifupdown(const char *netif, bool up)
 		return sock;
 
 	memset(&req, 0, sizeof req);
-	strncpy(req.ifr_name, netif, IFNAMSIZ);
+	OSMO_STRLCPY_ARRAY(req.ifr_name, netif);
 
 	if (up)
 		req.ifr_flags |= IFF_UP;
