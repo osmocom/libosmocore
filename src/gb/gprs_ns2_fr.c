@@ -471,7 +471,7 @@ static int setup_device(const char *netif)
 
 	memset(&req, 0, sizeof(struct ifreq));
 	memset(&buffer, 0, sizeof(buffer));
-	osmo_strlcpy(req.ifr_name, netif, IFNAMSIZ);
+	OSMO_STRLCPY_ARRAY(req.ifr_name, netif);
 	req.ifr_settings.ifs_ifsu.sync = (void*)buffer;
 	req.ifr_settings.size = sizeof(buffer);
 	req.ifr_settings.type = IF_GET_PROTO;
@@ -499,7 +499,7 @@ static int setup_device(const char *netif)
 
 	memset(&req, 0, sizeof(struct ifreq));
 	memset(fr, 0, sizeof(fr_proto));
-	osmo_strlcpy(req.ifr_name, netif, IFNAMSIZ);
+	OSMO_STRLCPY_ARRAY(req.ifr_name, netif);
 	req.ifr_settings.type = IF_PROTO_FR;
 	req.ifr_settings.size = sizeof(fr_proto);
 	req.ifr_settings.ifs_ifsu.fr = fr;
