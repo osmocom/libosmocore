@@ -1315,14 +1315,14 @@ static int ns2_sns_fsm_bss_timer_cb(struct osmo_fsm_inst *fi)
 	case 1:
 		if (gss->N >= nsi->timeout[NS_TOUT_TSNS_SIZE_RETRIES])
 			osmo_fsm_inst_dispatch(fi, GPRS_SNS_EV_SELECT_ENDPOINT, NULL);
-
-		osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_SIZE, nsi->timeout[NS_TOUT_TSNS_PROV], 1);
+		else
+			osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_SIZE, nsi->timeout[NS_TOUT_TSNS_PROV], 1);
 		break;
 	case 2:
 		if (gss->N >= nsi->timeout[NS_TOUT_TSNS_CONFIG_RETRIES])
 			osmo_fsm_inst_dispatch(fi, GPRS_SNS_EV_SELECT_ENDPOINT, NULL);
-
-		osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_CONFIG_BSS, nsi->timeout[NS_TOUT_TSNS_PROV], 2);
+		else
+			osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_CONFIG_BSS, nsi->timeout[NS_TOUT_TSNS_PROV], 2);
 		break;
 	}
 	return 0;
