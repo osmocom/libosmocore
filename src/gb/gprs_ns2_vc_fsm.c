@@ -566,10 +566,12 @@ static void gprs_ns2_vc_fsm_allstate_action(struct osmo_fsm_inst *fi,
 		msgb_free(msg);
 		break;
 	case GPRS_NS2_EV_FORCE_UNCONFIGURED:
-		/* Force the NSVC back to its initial state */
-		osmo_fsm_inst_state_chg(fi, GPRS_NS2_ST_UNCONFIGURED, 0, 0);
-		osmo_fsm_inst_dispatch(fi, GPRS_NS2_EV_START, NULL);
-		return;
+		if (fi->state != GPRS_NS2_ST_UNCONFIGURED) {
+			/* Force the NSVC back to its initial state */
+			osmo_fsm_inst_state_chg(fi, GPRS_NS2_ST_UNCONFIGURED, 0, 0);
+			osmo_fsm_inst_dispatch(fi, GPRS_NS2_EV_START, NULL);
+			return;
+		}
 		break;
 	}
 }
