@@ -727,7 +727,7 @@ static int vty_dump_element(const struct cmd_element *cmd, print_func_t print_fu
 			char flag;
 
 			/* Skip attribute if *not* set */
-			if (~cmd->usrattr & (1 << i))
+			if (~cmd->usrattr & ((unsigned)1 << i))
 				continue;
 
 			xml_att_desc = xml_escape(desc[i]);
