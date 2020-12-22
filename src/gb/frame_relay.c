@@ -880,9 +880,6 @@ struct osmo_fr_link *osmo_fr_link_alloc(struct osmo_fr_network *net, enum osmo_f
 	struct osmo_fr_link *link = talloc_zero(net, struct osmo_fr_link);
 	if (!link)
 		return NULL;
-
-	LOGPFRL(link, LOGL_INFO, "Creating frame relay link with role %s\n", osmo_fr_role_str(role));
-
 	link->role = role;
 	link->net = net;
 	link->name = talloc_strdup(link, name);
@@ -900,6 +897,8 @@ struct osmo_fr_link *osmo_fr_link_alloc(struct osmo_fr_network *net, enum osmo_f
 		osmo_timer_schedule(&link->t392, osmo_tdef_get(link->net->T_defs, 392, OSMO_TDEF_S, 15), 0);
 		break;
 	}
+
+	LOGPFRL(link, LOGL_INFO, "Creating frame relay link with role %s\n", osmo_fr_role_str(role));
 
 	return link;
 }
