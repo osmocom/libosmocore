@@ -476,23 +476,24 @@ static int setup_device(const char *netif)
 	req.ifr_settings.size = sizeof(buffer);
 	req.ifr_settings.type = IF_GET_PROTO;
 
+	/* EINVAL is returned when no protocol has been set */
 	rc = ioctl(sock, SIOCWANDEV, &req);
-	if (rc < 0) {
+	if (rc < 0 && errno != EINVAL) {
 		LOGP(DLNS, LOGL_ERROR, "%s: Unable to get FR protocol information: %s\n",
 		     netif, strerror(errno));
 		goto err;
 	}
 
 	/* check if the device is good */
-	if (req.ifr_settings.type != IF_PROTO_FR && fr->lmi != LMI_NONE) {
-		LOGP(DLNS, LOGL_INFO, "%s: has correct frame relay mode and lmi\n", netif);
+	if (rc == 0 && req.ifr_settings.type == IF_PROTO_FR && fr->lmi == LMI_NONE) {
+		LOGP(DLNS, LOGL_NOTICE, "%s: has correct frame relay mode and lmi\n", netif);
 		goto ifup;
 	}
 
 	/* modify the device to match */
 	rc = set_ifupdown(netif, false);
 	if (rc) {
-		LOGP(DLNS, LOGL_ERROR, "Unable to bring up the device %s: %s\n",
+		LOGP(DLNS, LOGL_ERROR, "Unable to bring down the device %s: %s\n",
 		      netif, strerror(errno));
 		goto err;
 	}
@@ -516,6 +517,7 @@ static int setup_device(const char *netif)
 	/* monitored events count */
 	fr->n393 = 4;
 
+	LOGP(DLNS, LOGL_INFO, "%s: Setting frame relay related parameters\n", netif);
 	rc = ioctl(sock, SIOCWANDEV, &req);
 	if (rc) {
 		LOGP(DLNS, LOGL_ERROR, "%s: Unable to set FR protocol on information: %s\n",
