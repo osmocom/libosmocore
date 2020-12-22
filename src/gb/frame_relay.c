@@ -849,6 +849,8 @@ static void fr_t392_cb(void *data)
 struct osmo_fr_network *osmo_fr_network_alloc(void *ctx)
 {
 	struct osmo_fr_network *net = talloc_zero(ctx, struct osmo_fr_network);
+	if (!net)
+		return NULL;
 
 	INIT_LLIST_HEAD(&net->links);
 	net->T_defs = fr_tdefs;
