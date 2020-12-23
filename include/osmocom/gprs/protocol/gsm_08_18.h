@@ -349,3 +349,25 @@ enum bssgp_fc_granularity {
 	BSSGP_FC_GRAN_10000	= 2,
 	BSSGP_FC_GRAN_100000	= 3,
 };
+
+/* RAN-INFORMATION-REQUEST PDU Type Extension
+ * 3GPP TS 48.018, table 11.3.65.1 */
+enum bssgp_rim_pdu_type {
+	RIM_PDU_TYPE_STOP	= 0,
+	RIM_PDU_TYPE_SING_REP	= 1,
+	RIM_PDU_TYPE_MULT_REP	= 2,
+};
+
+/* RIM PDU Indications
+ * 3GPP TS 48.018, section 11.3.65.0 */
+struct bssgp_rim_pdu_ind {
+#if OSMO_IS_BIG_ENDIAN
+		uint8_t reserved:4,
+			pdu_type_ext:3,
+			ack_requested:1;
+#elif OSMO_IS_LITTLE_ENDIAN
+		uint8_t ack_requested:1,
+			pdu_type_ext:3,
+			reserved:4;
+#endif
+} __attribute__ ((packed));
