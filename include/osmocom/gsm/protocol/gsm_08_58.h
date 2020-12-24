@@ -775,10 +775,12 @@ struct ipac_preproc_ave_cfg {
 		reserved:1;
 	uint8_t h_reqt:5,
 		ave_method:3;
+	uint8_t params[0];
 #elif OSMO_IS_BIG_ENDIAN
 /* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
 	uint8_t reserved:1, param_id:2, h_reqave:5;
 	uint8_t ave_method:3, h_reqt:5;
+	uint8_t params[0];
 #endif
 }__attribute__ ((packed));
 
