@@ -350,15 +350,12 @@ static struct gprs_ns2_vc *ns2_load_sharing_modulor(
 		uint32_t load_selector)
 {
 	struct gprs_ns2_vc *tmp;
-	uint32_t mod = (bvci + load_selector) % nse->nsvc_data_count;
+	uint32_t mod = (bvci + load_selector) % nse->nsvc_count;
 	uint32_t i = 0;
 
 	llist_for_each_entry(tmp, &nse->nsvc, list) {
 		if (!gprs_ns2_vc_is_unblocked(tmp))
 			continue;
-		if (tmp->data_weight == 0)
-			continue;
-
 		if (i == mod)
 			return tmp;
 		i++;
@@ -393,22 +390,20 @@ static struct gprs_ns2_vc *ns2_load_sharing(
 {
 	struct gprs_ns2_vc *nsvc = NULL;
 
-	if (bvci == 0) {
-		/* signalling */
-		nsvc = ns2_load_sharing_signal(nse);
-	} else {
-		/* data with load sharing parameter */
-		if (llist_empty(&nse->nsvc))
-			return NULL;
-
-		switch (nse->ll) {
-		case GPRS_NS2_LL_FR:
-			nsvc = ns2_load_sharing_modulor(nse, bvci, link_selector);
-			break;
-		default:
+	switch (nse->ll) {
+	case GPRS_NS2_LL_FR:
+		nsvc = ns2_load_sharing_modulor(nse, bvci, link_selector);
+		break;
+	case GPRS_NS2_LL_UDP:
+	default:
+		if (bvci == 0) {
+			/* signalling */
+			nsvc = ns2_load_sharing_signal(nse);
+		} else {
+			/* data with load sharing parameter */
 			nsvc = ns2_load_sharing_first(nse);
-			break;
 		}
+		break;
 	}
 
 	return nsvc;
@@ -1087,13 +1082,13 @@ int ns2_recv_vc(struct gprs_ns2_vc *nsvc,
 void ns2_nse_data_sum(struct gprs_ns2_nse *nse)
 {
 	struct gprs_ns2_vc *nsvc;
-	nse->nsvc_data_count = 0;
+	nse->nsvc_count = 0;
 
 	llist_for_each_entry(nsvc, &nse->nsvc, list) {
 		if (!gprs_ns2_vc_is_unblocked(nsvc))
 			continue;
-		if (nsvc->data_weight > 0)
-			nse->nsvc_data_count++;
+
+		nse->nsvc_count++;
 	}
 }
 

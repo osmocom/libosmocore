@@ -116,8 +116,8 @@ struct gprs_ns2_nse {
 	/*! llist head to hold all nsvc */
 	struct llist_head nsvc;
 
-	/*! count all active NSVCs with data capabilities */
-	int nsvc_data_count;
+	/*! count all active NSVCs */
+	int nsvc_count;
 
 	/*! true if this NSE was created by VTY or pcu socket) */
 	bool persistent;
