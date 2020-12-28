@@ -25,3 +25,5 @@ extern __thread struct osmo_talloc_contexts *osmo_ctx;
  * to the various _c functions like msgb_alloc_c() */
 #define OTC_GLOBAL (osmo_ctx->global)
 #define OTC_SELECT (osmo_ctx->select)
+
+int osmo_ctx_init(const char *id);
