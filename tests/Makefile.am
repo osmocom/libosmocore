@@ -320,7 +320,7 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
              gsm0808/gsm0808_test.ok gb/bssgp_fc_tests.err		\
              gb/bssgp_fc_tests.ok gb/bssgp_fc_tests.sh			\
              gb/gprs_bssgp_test.ok gb/gprs_ns_test.ok gea/gea_test.ok	\
-             gb/gprs_ns2_vty.vty					\
+             gb/gprs_ns2_vty.vty gb/osmoappdesc.py gb/osmo-ns-dummy.cfg \
              gprs/gprs_test.ok kasumi/kasumi_test.ok			\
              msgfile/msgfile_test.ok msgfile/msgconfig.cfg		\
              logging/logging_test.ok logging/logging_test.err		\
@@ -437,6 +437,8 @@ vty-test-ns2:
 		-p 42042 \
 		-r "$(top_builddir)/utils/osmo-ns-dummy -p 42042" \
 		$(U) $(srcdir)/gb/gprs_ns2*.vty
+	osmotestvty.py -p $(abs_top_srcdir)/tests/gb -w $(abs_top_builddir)/tests/gb -v
+	osmotestconfig.py -p $(abs_top_srcdir)/tests/gb -w $(abs_top_builddir)/tests/gb -v
 
 vty-test-logging:
 	osmo_verify_transcript_vty.py -v \
