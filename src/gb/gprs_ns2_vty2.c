@@ -108,7 +108,7 @@ static struct vty_bind *vty_bind_by_name(const char *name)
 
 static struct vty_bind *vty_bind_alloc(const char *name)
 {
-	struct vty_bind *vbind = talloc(vty_nsi, struct vty_bind);
+	struct vty_bind *vbind = talloc_zero(vty_nsi, struct vty_bind);
 	if (!vbind)
 		return NULL;
 
