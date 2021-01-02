@@ -177,12 +177,15 @@ static int cbsp_enc_write_repl(struct msgb *msg, const struct osmo_cbsp_write_re
 		}
 	} else {
 		int wperiod = encode_wperiod(in->u.emergency.warning_period);
+		uint8_t *cur;
 		if (wperiod < 0)
 			return -EINVAL;
 		msgb_tv_put(msg, CBSP_IEI_EMERG_IND, in->u.emergency.indicator);
 		msgb_tv16_put(msg, CBSP_IEI_WARN_TYPE, in->u.emergency.warning_type);
-		msgb_tlv_put(msg, CBSP_IEI_WARN_SEC_INFO, sizeof(in->u.emergency.warning_sec_info),
-			     in->u.emergency.warning_sec_info);
+		/* Tag + fixed length value! */
+		msgb_put_u8(msg, CBSP_IEI_WARN_SEC_INFO);
+		cur = msgb_put(msg, sizeof(in->u.emergency.warning_sec_info));
+		memcpy(cur, in->u.emergency.warning_sec_info, sizeof(in->u.emergency.warning_sec_info));
 		msgb_tv_put(msg, CBSP_IEI_WARNING_PERIOD, wperiod);
 	}
 	return 0;
