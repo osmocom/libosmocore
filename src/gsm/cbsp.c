@@ -1460,12 +1460,7 @@ int osmo_cbsp_recv_buffered(void *ctx, int fd, struct msgb **rmsg, struct msgb *
 		}
 	}
 	/* else: complete message received */
-	rc = msgb_l2len(msg);
-	if (rc == 0) {
-		/* drop empty message */
-		rc = -EAGAIN;
-		goto discard_msg;
-	}
+	rc = msgb_length(msg);
 	if (tmp_msg)
 		*tmp_msg = NULL;
 	*rmsg = msg;
