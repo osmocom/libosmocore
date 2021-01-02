@@ -678,6 +678,7 @@ static int cbsp_dec_write_repl(struct osmo_cbsp_write_replace *out, const struct
 		out->u.cbs.category = *TLVP_VAL(tp, CBSP_IEI_CATEGORY);
 		out->u.cbs.rep_period = tlvp_val16be(tp, CBSP_IEI_REP_PERIOD);
 		out->u.cbs.num_bcast_req = tlvp_val16be(tp, CBSP_IEI_NUM_BCAST_REQ);
+		out->u.cbs.dcs = *TLVP_VAL(tp, CBSP_IEI_DCS);
 		num_of_pages = *TLVP_VAL(tp, CBSP_IEI_NUM_OF_PAGES);
 		if (num_of_pages < 1)
 			return -EINVAL;
