@@ -226,6 +226,7 @@ int main (int argc, char *argv[])
 		exit(1);
 	}
 
+	gprs_ns2_dynamic_create_nse(nsi, true);
 	gprs_ns2_vty2_init(nsi);
 	rc = vty_read_config_file(config_file, NULL);
 	if (rc < 0 && config_given) {
