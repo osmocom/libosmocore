@@ -17,11 +17,11 @@ void chantype_gsmtap2rsl(uint8_t gsmtap_chantype, uint8_t *rsl_chantype, uint8_t
 
 struct msgb *gsmtap_makemsg_ex(uint8_t type, uint16_t arfcn, uint8_t ts, uint8_t chan_type,
 			    uint8_t ss, uint32_t fn, int8_t signal_dbm,
-			    uint8_t snr, const uint8_t *data, unsigned int len);
+			    int8_t snr, const uint8_t *data, unsigned int len);
 
 struct msgb *gsmtap_makemsg(uint16_t arfcn, uint8_t ts, uint8_t chan_type,
 			    uint8_t ss, uint32_t fn, int8_t signal_dbm,
-			    uint8_t snr, const uint8_t *data, unsigned int len);
+			    int8_t snr, const uint8_t *data, unsigned int len);
 
 /*! one gsmtap instance */
 struct gsmtap_inst {
@@ -51,12 +51,12 @@ int gsmtap_sendmsg(struct gsmtap_inst *gti, struct msgb *msg);
 
 int gsmtap_send_ex(struct gsmtap_inst *gti, uint8_t type, uint16_t arfcn, uint8_t ts,
 		uint8_t chan_type, uint8_t ss, uint32_t fn,
-		int8_t signal_dbm, uint8_t snr, const uint8_t *data,
+		int8_t signal_dbm, int8_t snr, const uint8_t *data,
 		unsigned int len);
 
 int gsmtap_send(struct gsmtap_inst *gti, uint16_t arfcn, uint8_t ts,
 		uint8_t chan_type, uint8_t ss, uint32_t fn,
-		int8_t signal_dbm, uint8_t snr, const uint8_t *data,
+		int8_t signal_dbm, int8_t snr, const uint8_t *data,
 		unsigned int len);
 
 extern const struct value_string gsmtap_gsm_channel_names[];
