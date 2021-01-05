@@ -398,9 +398,12 @@ int bssgp_create_rim_ri(uint8_t *buf, const struct bssgp_rim_routing_info *ri)
 		/* Note: 3GPP TS 24.301 Figure 9.9.3.32.1 and 3GPP TS 24.008
 		 * Figure 10.5.130 specify MCC/MNC encoding in the same way,
 		 * so we can re-use gsm48_encode_ra() for that. */
-		raid_temp.mcc = ri->eutran.tai.mcc;
-		raid_temp.mnc = ri->eutran.tai.mnc;
-		raid_temp.mnc_3_digits = ri->eutran.tai.mnc_3_digits;
+		raid_temp = (struct gprs_ra_id) {
+			.mcc = ri->eutran.tai.mcc,
+			.mnc = ri->eutran.tai.mnc,
+			.mnc_3_digits = ri->eutran.tai.mnc_3_digits,
+		};
+
 		gsm48_encode_ra((struct gsm48_ra_id *)buf, &raid_temp);
 		osmo_store16be(ri->eutran.tai.tac, buf + 3);
 		OSMO_ASSERT(ri->eutran.global_enb_id_len <=
