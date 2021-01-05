@@ -402,10 +402,11 @@ int bssgp_create_rim_ri(uint8_t *buf, const struct bssgp_rim_routing_info *ri)
 			.mcc = ri->eutran.tai.mcc,
 			.mnc = ri->eutran.tai.mnc,
 			.mnc_3_digits = ri->eutran.tai.mnc_3_digits,
+			/* TAC is encoded in the same way as LAC */
+			.lac = ri->eutran.tai.tac,
 		};
 
 		gsm48_encode_ra((struct gsm48_ra_id *)buf, &raid_temp);
-		osmo_store16be(ri->eutran.tai.tac, buf + 3);
 		OSMO_ASSERT(ri->eutran.global_enb_id_len <=
 			    sizeof(ri->eutran.global_enb_id));
 		memcpy(buf + 5, ri->eutran.global_enb_id,
