@@ -44,6 +44,7 @@ union gsm0808_cell_id_u {
 	uint16_t				ci;
 	struct osmo_location_area_id		lai_and_lac;
 	uint16_t				lac;
+	struct osmo_cell_global_id_ps		global_ps;
 };
 
 /*! Parsed representation of Cell Identifier IE (3GPP TS 48.008 3.2.2.17) */

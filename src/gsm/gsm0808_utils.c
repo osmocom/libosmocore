@@ -784,6 +784,8 @@ int gsm0808_cell_id_size(enum CELL_IDENT discr)
 	case CELL_IDENT_BSS:
 	case CELL_IDENT_NO_CELL:
 		return 0;
+	case CELL_IDENT_WHOLE_GLOBAL_PS:
+		return 8;
 	default:
 		return -EINVAL;
 	}
@@ -828,6 +830,13 @@ int gsm0808_decode_cell_id_u(union gsm0808_cell_id_u *out, enum CELL_IDENT discr
 	case CELL_IDENT_NO_CELL:
 		/* Does not have any list items */
 		break;
+	case CELL_IDENT_WHOLE_GLOBAL_PS:
+		if (len < 8)
+			return -EINVAL;
+		decode_lai(buf, (struct osmo_location_area_id *)&out->global_ps.rai); /* rai contains lai + non-decoded rac */
+		out->global_ps.rai.rac = *(buf + sizeof(struct gsm48_loc_area_id));
+		out->global_ps.cell_identity = osmo_load16be(buf + sizeof(struct gsm48_loc_area_id) + 1);
+		break;
 	default:
 		/* Remaining cell identification types are not implemented. */
 		return -EINVAL;
@@ -869,6 +878,15 @@ void gsm0808_msgb_put_cell_id_u(struct msgb *msg, enum CELL_IDENT id_discr, cons
 	case CELL_IDENT_NO_CELL:
 		/* Does not have any list items */
 		break;
+	case CELL_IDENT_WHOLE_GLOBAL_PS: {
+		const struct osmo_cell_global_id_ps *id = &u->global_ps;
+		struct gsm48_loc_area_id lai;
+		gsm48_generate_lai2(&lai, &id->rai.lac);
+		memcpy(msgb_put(msg, sizeof(lai)), &lai, sizeof(lai));
+		memcpy(msgb_put(msg, 1), &id->rai.rac, 1);
+		msgb_put_u16(msg, id->cell_identity);
+		break;
+	}
 	default:
 		/* Support for other identifier list types is not implemented. */
 		OSMO_ASSERT(false);
@@ -1592,6 +1610,8 @@ int gsm0808_cell_id_u_name(char *buf, size_t buflen,
 		return snprintf(buf, buflen, "%s", osmo_lai_name(&u->lai_and_lac));
 	case CELL_IDENT_WHOLE_GLOBAL:
 		return snprintf(buf, buflen, "%s", osmo_cgi_name(&u->global));
+	case CELL_IDENT_WHOLE_GLOBAL_PS:
+		return snprintf(buf, buflen, "%s", osmo_cgi_ps_name(&u->global_ps));
 	default:
 		/* For CELL_IDENT_BSS and CELL_IDENT_NO_CELL, just print the discriminator.
 		 * Same for kinds we have no string representation of yet. */
@@ -1611,6 +1631,11 @@ static void cell_id_to_cgi(struct osmo_cell_global_id *dst,
 	switch (discr) {
 	case CELL_IDENT_WHOLE_GLOBAL:
 		*dst = u->global;
+		return;
+
+	case CELL_IDENT_WHOLE_GLOBAL_PS:
+		dst->lai = u->global_ps.rai.lac;
+		dst->cell_identity = u->global_ps.cell_identity;
 		return;
 
 	case CELL_IDENT_LAC_AND_CI:
@@ -1805,6 +1830,11 @@ int gsm0808_cell_id_to_cgi(struct osmo_cell_global_id *cgi, const struct gsm0808
 		*cgi = cid->id.global;
 		return OSMO_CGI_PART_PLMN | OSMO_CGI_PART_LAC | OSMO_CGI_PART_CI;
 
+	case CELL_IDENT_WHOLE_GLOBAL_PS:
+		cgi->lai = cid->id.global_ps.rai.lac;
+		cgi->cell_identity = cid->id.global_ps.cell_identity;
+		return OSMO_CGI_PART_PLMN | OSMO_CGI_PART_LAC | OSMO_CGI_PART_CI;
+
 	case CELL_IDENT_LAC_AND_CI:
 		cgi->lai.lac = cid->id.lac_and_ci.lac;
 		cgi->cell_identity = cid->id.lac_and_ci.ci;
@@ -1844,6 +1874,7 @@ const struct value_string gsm0808_cell_id_discr_names[] = {
 	{ CELL_IDENT_UTRAN_PLMN_LAC_RNC, "UTRAN-PLMN-LAC-RNC" },
 	{ CELL_IDENT_UTRAN_RNC, "UTRAN-RNC" },
 	{ CELL_IDENT_UTRAN_LAC_RNC, "UTRAN-LAC-RNC" },
+	{ CELL_IDENT_WHOLE_GLOBAL_PS, "CGI-PS"},
 	{ 0, NULL }
 };
 

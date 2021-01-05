@@ -30,6 +30,11 @@ struct osmo_cell_global_id {
 	uint16_t cell_identity;
 };
 
+struct osmo_cell_global_id_ps {
+	struct osmo_routing_area_id rai;
+	uint16_t cell_identity;
+};
+
 /*! Bitmask of items contained in a struct osmo_cell_global_id.
  * See also gsm0808_cell_id_to_cgi().
  */
@@ -37,6 +42,7 @@ enum osmo_cgi_part {
 	OSMO_CGI_PART_PLMN = 1,
 	OSMO_CGI_PART_LAC = 2,
 	OSMO_CGI_PART_CI = 4,
+	OSMO_CGI_PART_RAC = 8,
 };
 
 /* Actually defined in 3GPP TS 48.008 3.2.2.27 Cell Identifier List,
@@ -117,10 +123,17 @@ char *osmo_plmn_name_c(const void *ctx, const struct osmo_plmn_id *plmn);
 const char *osmo_lai_name(const struct osmo_location_area_id *lai);
 char *osmo_lai_name_buf(char *buf, size_t buf_len, const struct osmo_location_area_id *lai);
 char *osmo_lai_name_c(const void *ctx, const struct osmo_location_area_id *lai);
+const char *osmo_rai_name2(const struct osmo_routing_area_id *rai);
+char *osmo_rai_name2_buf(char *buf, size_t buf_len, const struct osmo_routing_area_id *rai);
+char *osmo_rai_name2_c(const void *ctx, const struct osmo_routing_area_id *rai);
 const char *osmo_cgi_name(const struct osmo_cell_global_id *cgi);
 const char *osmo_cgi_name2(const struct osmo_cell_global_id *cgi);
 char *osmo_cgi_name_buf(char *buf, size_t buf_len, const struct osmo_cell_global_id *cgi);
 char *osmo_cgi_name_c(const void *ctx, const struct osmo_cell_global_id *cgi);
+const char *osmo_cgi_ps_name(const struct osmo_cell_global_id_ps *cgi_ps);
+const char *osmo_cgi_ps_name2(const struct osmo_cell_global_id_ps *cgi_ps);
+char *osmo_cgi_ps_name_buf(char *buf, size_t buf_len, const struct osmo_cell_global_id_ps *cgi_ps);
+char *osmo_cgi_ps_name_c(const void *ctx, const struct osmo_cell_global_id_ps *cgi_ps);
 const char *osmo_gummei_name(const struct osmo_gummei *gummei);
 char *osmo_gummei_name_buf(char *buf, size_t buf_len, const struct osmo_gummei *gummei);
 char *osmo_gummei_name_c(const void *ctx, const struct osmo_gummei *gummei);
