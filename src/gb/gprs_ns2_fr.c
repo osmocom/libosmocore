@@ -448,11 +448,15 @@ static int set_ifupdown(const char *netif, bool up)
 	OSMO_STRLCPY_ARRAY(req.ifr_name, netif);
 
 	rc = ioctl(sock, SIOCGIFFLAGS, &req);
-	if (rc < 0)
+	if (rc < 0) {
+		close(sock);
 		return rc;
+	}
 
-	if ((req.ifr_flags & IFF_UP) == up)
+	if ((req.ifr_flags & IFF_UP) == up) {
+		close(sock);
 		return 0;
+	}
 
 	if (up)
 		req.ifr_flags |= IFF_UP;
