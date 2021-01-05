@@ -221,6 +221,10 @@ int ctrl_cmd_handle(struct ctrl_handle *ctrl, struct ctrl_cmd *cmd,
 
 	if (cmd->type == CTRL_TYPE_SET_REPLY ||
 	    cmd->type == CTRL_TYPE_GET_REPLY) {
+		if (ctrl->reply_cb) {
+			ctrl->reply_cb(ctrl, cmd, data);
+			return CTRL_CMD_HANDLED;
+		}
 		if (strncmp(cmd->reply, "OK", 2) == 0) {
 			LOGP(DLCTRL, LOGL_DEBUG, "%s <%s> for %s is OK\n",
 			     get_value_string(ctrl_type_vals, cmd->type),

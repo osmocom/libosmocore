@@ -12,3 +12,4 @@ libosmogsm	ABI change		struct osmo_gprs_cell_options size changed (new field at 
 libosmogsm	API change		struct ipac_preproc_ave_cfg: new zero-sized flexible array member at end
 libosmovty	ABI change		struct cmd_element: add a field for program specific attributes
 libosmovty	ABI change		struct vty_app_info: optional program specific attributes description
+libosmoctrl     ABI change		struct ctrl_handle changed size (new field "reply_cb" at the end)

@@ -9,6 +9,7 @@ int ctrl_parse_get_num(vector vline, int i, long *num);
 
 typedef int (*ctrl_cmd_lookup)(void *data, vector vline, int *node_type,
 				void **node_data, int *i);
+typedef void (*ctrl_cmd_reply_cb)(struct ctrl_handle *ctrl, struct ctrl_cmd *cmd, void *data);
 
 struct ctrl_handle {
 	struct osmo_fd listen_fd;
@@ -18,6 +19,12 @@ struct ctrl_handle {
 
 	/* List of control connections */
 	struct llist_head ccon_list;
+
+	/* User defined GET/SET REPLY handler. User can set cmd->defer to 1 in
+	   order to own and keep the cmd pointer and free it after the function
+	   returns. "data" param is the user data pointer supplied during
+	   ctrl_handle allocation  */
+	ctrl_cmd_reply_cb reply_cb;
 };
 
 
