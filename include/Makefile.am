@@ -69,6 +69,7 @@ nobase_include_HEADERS = \
                        osmocom/gprs/gprs_bssgp.h \
                        osmocom/gprs/gprs_bssgp2.h \
                        osmocom/gprs/gprs_bssgp_bss.h \
+                       osmocom/gprs/gprs_bssgp_rim.h \
                        osmocom/gprs/gprs_msgb.h \
                        osmocom/gprs/gprs_ns.h \
                        osmocom/gprs/gprs_ns_frgre.h \

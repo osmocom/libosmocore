@@ -1,0 +1,220 @@
+===== BSSGP RIM test START
+----- test_bssgp_dec_ran_inf_req_rim_cont_nacc START
+rc=0, bssgp_ran_inf_req_rim_cont:
+ app_id = 01
+ seq_num = 00000001
+ pdu_ind.ack_requested = 0
+ pdu_ind.pdu_type_ext = 1
+ prot_ver = 1
+ app_cont: bssgp_ran_inf_req_app_cont_nacc:
+  reprt_cell.rai.lac.plmn.mcc = 262
+  reprt_cell.rai.lac.plmn.mnc = 42
+  reprt_cell.rai.lac.plmn.mnc_3_digits = 0
+  reprt_cell.rai.lac.lac = 13200
+  reprt_cell.rai.rac = 0
+  reprt_cell.cell_identity = 51e1
+----- test_bssgp_dec_ran_inf_req_rim_cont_nacc END
+----- test_bssgp_enc_ran_inf_req_rim_cont_nacc START
+bssgp_ran_inf_req_rim_cont:
+ app_id = 01
+ seq_num = 00000001
+ pdu_ind.ack_requested = 0
+ pdu_ind.pdu_type_ext = 1
+ prot_ver = 1
+ app_cont: bssgp_ran_inf_req_app_cont_nacc:
+  reprt_cell.rai.lac.plmn.mcc = 262
+  reprt_cell.rai.lac.plmn.mnc = 42
+  reprt_cell.rai.lac.plmn.mnc_3_digits = 0
+  reprt_cell.rai.lac.lac = 13200
+  reprt_cell.rai.rac = 0
+  reprt_cell.cell_identity = 51e1
+rc=25, result=4b81014c84000000014f81025581014d8862f22433900051e1
+----- test_bssgp_enc_ran_inf_req_rim_cont_nacc END
+----- test_bssgp_dec_ran_inf_rim_cont_nacc START
+rc=0, bssgp_ran_inf_rim_cont:
+ app_id = 01
+ seq_num = 00000002
+ pdu_ind.ack_requested = 0
+ pdu_ind.pdu_type_ext = 1
+ prot_ver = 1
+ app_err = 0
+ app_cont: bssgp_ran_inf_app_cont_nacc:
+  reprt_cell.rai.lac.plmn.mcc = 262
+  reprt_cell.rai.lac.plmn.mnc = 42
+  reprt_cell.rai.lac.plmn.mnc_3_digits = 0
+  reprt_cell.rai.lac.lac = 13135
+  reprt_cell.rai.rac = 0
+  reprt_cell.cell_identity = 51e0
+  type_psi = 0
+  num_si = 3
+ si[0] = 198fb100000000000000000000000000007900002b
+ si[1] = 1b753000f110236ec9033c2747407900003c0b2b2b
+ si[2] = 009000185a6fc9e08410ab2b2b2b2b2b2b2b2b2b2b
+----- test_bssgp_dec_ran_inf_rim_cont_nacc END
+----- test_bssgp_dec_ran_inf_rim_cont_err_nacc START
+rc=0, bssgp_ran_inf_rim_cont:
+ app_id = 01
+ seq_num = 00000001
+ pdu_ind.ack_requested = 0
+ pdu_ind.pdu_type_ext = 1
+ prot_ver = 1
+ app_err = 1
+ app_err_cont: bssgp_app_err_cont_nacc:
+  macc_cause = 01
+  err_app_cont: aabbccddee
+  err_app_cont_len: 5
+----- test_bssgp_dec_ran_inf_rim_cont_err_nacc END
+----- test_bssgp_enc_ran_inf_rim_cont_nacc START
+bssgp_ran_inf_rim_cont:
+ app_id = 01
+ seq_num = 00000001
+ pdu_ind.ack_requested = 0
+ pdu_ind.pdu_type_ext = 1
+ prot_ver = 1
+ app_err = 0
+ app_cont: bssgp_ran_inf_app_cont_nacc:
+  reprt_cell.rai.lac.plmn.mcc = 262
+  reprt_cell.rai.lac.plmn.mnc = 42
+  reprt_cell.rai.lac.plmn.mnc_3_digits = 0
+  reprt_cell.rai.lac.lac = 13135
+  reprt_cell.rai.rac = 0
+  reprt_cell.cell_identity = 51e0
+  type_psi = 0
+  num_si = 3
+ si[0] = 198fb100000000000000000000000000007900002b
+ si[1] = 1b753000f110236ec9033c2747407900003c0b2b2b
+ si[2] = 009000185a6fc9e08410ab2b2b2b2b2b2b2b2b2b2b
+rc=89, result=4b81014c84000000014f81025581014ec862f224334f0051e006198fb100000000000000000000000000007900002b1b753000f110236ec9033c2747407900003c0b2b2b009000185a6fc9e08410ab2b2b2b2b2b2b2b2b2b2b
+----- test_bssgp_enc_ran_inf_rim_cont_nacc END
+----- test_bssgp_enc_ran_inf_rim_cont_err_nacc START
+bssgp_ran_inf_rim_cont:
+ app_id = 01
+ seq_num = 00000001
+ pdu_ind.ack_requested = 0
+ pdu_ind.pdu_type_ext = 1
+ prot_ver = 1
+ app_err = 1
+ app_err_cont: bssgp_app_err_cont_nacc:
+  macc_cause = 01
+  err_app_cont: aabbccddee
+  err_app_cont_len: 5
+rc=23, result=4b81014c84000000014f8102558101568601aabbccddee
+----- test_bssgp_enc_ran_inf_rim_cont_err_nacc END
+----- test_bssgp_dec_ran_inf_ack_rim_cont START
+rc=0, bssgp_ran_inf_ack_rim_cont:
+ app_id = 01
+ seq_num = 00000001
+ prot_ver = 1
+----- test_bssgp_dec_ran_inf_ack_rim_cont END
+----- test_bssgp_enc_ran_inf_ack_rim_cont START
+bssgp_ran_inf_ack_rim_cont:
+ app_id = 01
+ seq_num = 00000001
+ prot_ver = 1
+rc=12, result=4b81014c8400000001558101
+----- test_bssgp_enc_ran_inf_ack_rim_cont END
+----- test_bssgp_dec_ran_inf_err_rim_cont START
+rc=0, bssgp_ran_inf_err_rim_cont:
+ app_id = 17
+ cause = 2b
+ prot_ver = 1
+ err_pdu: aabbccddee
+ err_pdu_len: 5
+----- test_bssgp_dec_ran_inf_err_rim_cont END
+----- test_bssgp_enc_ran_inf_err_rim_cont START
+bssgp_ran_inf_err_rim_cont:
+ app_id = 17
+ cause = 2b
+ prot_ver = 1
+ err_pdu: aabbccddee
+ err_pdu_len: 5
+rc=16, result=4b811707812b5581011585aabbccddee
+----- test_bssgp_enc_ran_inf_err_rim_cont END
+----- test_bssgp_dec_ran_inf_app_err_rim_cont_nacc START
+rc=0, bssgp_ran_inf_app_err_rim_cont:
+ app_id = 01
+ seq_num = 00000001
+ pdu_ind.ack_requested = 0
+ pdu_ind.pdu_type_ext = 1
+ prot_ver = 1
+ app_err_cont: bssgp_app_err_cont_nacc:
+  macc_cause = aa
+  err_app_cont: bbccddee
+  err_app_cont_len: 4
+----- test_bssgp_dec_ran_inf_app_err_rim_cont_nacc END
+----- test_bssgp_enc_ran_inf_app_err_rim_cont_nacc START
+bssgp_ran_inf_app_err_rim_cont:
+ app_id = 01
+ seq_num = 00000001
+ pdu_ind.ack_requested = 0
+ pdu_ind.pdu_type_ext = 1
+ prot_ver = 1
+ app_err_cont: bssgp_app_err_cont_nacc:
+  macc_cause = 01
+  err_app_cont: aabbccddee
+  err_app_cont_len: 5
+rc=23, result=4b81014c84000000014f8102558101568601aabbccddee
+----- test_bssgp_enc_ran_inf_app_err_rim_cont_nacc END
+----- test_bssgp_dec_ran_inf_req_app_cont_nacc START
+rc=0,  app_cont: bssgp_ran_inf_req_app_cont_nacc:
+  reprt_cell.rai.lac.plmn.mcc = 262
+  reprt_cell.rai.lac.plmn.mnc = 42
+  reprt_cell.rai.lac.plmn.mnc_3_digits = 0
+  reprt_cell.rai.lac.lac = 13200
+  reprt_cell.rai.rac = 0
+  reprt_cell.cell_identity = 51e1
+----- test_bssgp_dec_ran_inf_req_app_cont_nacc END
+----- test_bssgp_enc_ran_inf_req_app_cont_nacc START
+ app_cont: bssgp_ran_inf_req_app_cont_nacc:
+  reprt_cell.rai.lac.plmn.mcc = 262
+  reprt_cell.rai.lac.plmn.mnc = 42
+  reprt_cell.rai.lac.plmn.mnc_3_digits = 0
+  reprt_cell.rai.lac.lac = 13200
+  reprt_cell.rai.rac = 0
+  reprt_cell.cell_identity = 51e1
+rc=8, result=62f22433900051e1
+----- test_bssgp_enc_ran_inf_req_app_cont_nacc END
+----- test_bssgp_dec_ran_inf_app_cont_nacc START
+rc=0,  app_cont: bssgp_ran_inf_app_cont_nacc:
+  reprt_cell.rai.lac.plmn.mcc = 262
+  reprt_cell.rai.lac.plmn.mnc = 42
+  reprt_cell.rai.lac.plmn.mnc_3_digits = 0
+  reprt_cell.rai.lac.lac = 13135
+  reprt_cell.rai.rac = 0
+  reprt_cell.cell_identity = 51e0
+  type_psi = 0
+  num_si = 3
+ si[0] = 198fb100000000000000000000000000007900002b
+ si[1] = 1b753000f110236ec9033c2747407900003c0b2b2b
+ si[2] = 009000185a6fc9e08410ab2b2b2b2b2b2b2b2b2b2b
+----- test_bssgp_dec_ran_inf_app_cont_nacc END
+----- test_bssgp_enc_ran_inf_app_cont_nacc START
+ app_cont: bssgp_ran_inf_app_cont_nacc:
+  reprt_cell.rai.lac.plmn.mcc = 262
+  reprt_cell.rai.lac.plmn.mnc = 42
+  reprt_cell.rai.lac.plmn.mnc_3_digits = 0
+  reprt_cell.rai.lac.lac = 13135
+  reprt_cell.rai.rac = 0
+  reprt_cell.cell_identity = 51e1
+  type_psi = 0
+  num_si = 3
+ si[0] = 198fb100000000000000000000000000007900002b
+ si[1] = 1b753000f110236ec9033c2747407900003c0b2b2b
+ si[2] = 009000185a6fc9e08410ab2b2b2b2b2b2b2b2b2b2b
+rc=72, result=62f224334f0051e106198fb100000000000000000000000000007900002b1b753000f110236ec9033c2747407900003c0b2b2b009000185a6fc9e08410ab2b2b2b2b2b2b2b2b2b2b
+----- test_bssgp_enc_ran_inf_app_cont_nacc END
+----- test_bssgp_dec_app_err_cont_nacc START
+rc=0,  app_err_cont: bssgp_app_err_cont_nacc:
+  macc_cause = 01
+  err_app_cont: aabbccddee
+  err_app_cont_len: 5
+----- test_bssgp_dec_app_err_cont_nacc END
+----- test_bssgp_enc_app_err_cont_nacc START
+ app_err_cont: bssgp_app_err_cont_nacc:
+  macc_cause = 01
+  err_app_cont: aabbccddee
+  err_app_cont_len: 5
+rc=6, result=01aabbccddee
+----- test_bssgp_enc_app_err_cont_nacc END
+===== BSSGP RIM test END
+
