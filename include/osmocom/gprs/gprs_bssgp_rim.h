@@ -27,6 +27,36 @@
 
 #include <osmocom/gprs/protocol/gsm_08_18.h>
 
+enum bssgp_rim_routing_info_discr {
+	BSSGP_RIM_ROUTING_INFO_GERAN,
+	BSSGP_RIM_ROUTING_INFO_UTRAN,
+	BSSGP_RIM_ROUTING_INFO_EUTRAN,
+};
+
+/*! BSSGP RIM Routing information, see also 3GPP TS 48.018, section 11.3.70 */
+struct bssgp_rim_routing_info {
+	enum bssgp_rim_routing_info_discr discr;
+	union {
+		struct {
+			struct gprs_ra_id raid;
+			uint16_t cid;
+		} geran;
+		struct {
+			struct gprs_ra_id raid;
+			uint16_t rncid;
+		} utran;
+		struct {
+			struct osmo_eutran_tai tai;
+			/* See also 3GPP TS 36.413 9.2.1.37 and 3GPP TS 36.401 */
+			uint8_t global_enb_id[8];
+			uint8_t global_enb_id_len;
+		} eutran;
+	};
+};
+
+int bssgp_parse_rim_ri(struct bssgp_rim_routing_info *ri, const uint8_t *buf, unsigned int len);
+int bssgp_create_rim_ri(uint8_t *buf, const struct bssgp_rim_routing_info *ri);
+
 /* 3GPP TS 48.018, table 11.3.63.1.1: RAN-INFORMATION-REQUEST Application Container coding for NACC */
 struct bssgp_ran_inf_req_app_cont_nacc {
 	struct osmo_cell_global_id_ps reprt_cell;

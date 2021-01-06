@@ -1,4 +1,60 @@
 ===== BSSGP RIM test START
+----- test_bssgp_parse_rim_ri START
+rc=9
+GERAN cell identifier
+ * mcc: 262
+   mnc: 42
+   mnc 3 digits: 0
+   lac: 13200
+   rac: 0
+ * cell id: 51e1
+
+rc=9
+UTRAN RNC identifier
+ * mcc: 262
+   mnc: 42
+   mnc 3 digits: 0
+   lac: 13200
+   rac: 0
+ * rnc id: 51e1
+
+rc=9
+EUTRAN eNB identifier
+ * mcc: 262
+   mnc: 42
+   mnc 3 digits: 0
+   tac: 13200
+ * global_enb_id: 0051e1
+
+----- test_bssgp_parse_rim_ri END
+----- test_bssgp_create_rim_ri START
+GERAN cell identifier
+ * mcc: 262
+   mnc: 42
+   mnc 3 digits: 0
+   lac: 13200
+   rac: 0
+ * cell id: 51e1
+rc=9, result=0062f22433900051e1
+
+UTRAN RNC identifier
+ * mcc: 262
+   mnc: 42
+   mnc 3 digits: 0
+   lac: 13200
+   rac: 0
+ * rnc id: 51e1
+rc=9, result=0162f22433900051e1
+
+EUTRAN eNB identifier
+ * mcc: 262
+   mnc: 42
+   mnc 3 digits: 0
+   tac: 13200
+ * global_enb_id: 0051e1
+rc=9, result=0262f22433900051e1
+
+----- test_bssgp_create_rim_ri END
 ----- test_bssgp_dec_ran_inf_req_rim_cont_nacc START
 rc=0, bssgp_ran_inf_req_rim_cont:
  app_id = 01

@@ -41,6 +41,97 @@
  * (3GPP TS 48.018, sub-clause 11.3.9) but without IE and length octets. */
 #define REP_CELL_ID_LEN 8
 
+/*! Parse a RIM Routing information IE (3GPP TS 48.018, chapter 11.3.70).
+ *  \param[out] ri user provided memory to store the parsed results.
+ *  \param[in] buf input buffer of the value part of the IE.
+ *  \returns length of parsed octets, -EINVAL on error. */
+int bssgp_parse_rim_ri(struct bssgp_rim_routing_info *ri, const uint8_t *buf,
+		       unsigned int len)
+{
+	struct gprs_ra_id raid_temp;
+
+	memset(ri, 0, sizeof(*ri));
+	if (len < 2)
+		return -EINVAL;
+
+	ri->discr = buf[0] & 0x0f;
+	buf++;
+
+	switch (ri->discr) {
+	case BSSGP_RIM_ROUTING_INFO_GERAN:
+		if (len < 9)
+			return -EINVAL;
+		ri->geran.cid = bssgp_parse_cell_id(&ri->geran.raid, buf);
+		return 9;
+	case BSSGP_RIM_ROUTING_INFO_UTRAN:
+		if (len < 9)
+			return -EINVAL;
+		gsm48_parse_ra(&ri->utran.raid, buf);
+		ri->utran.rncid = osmo_load16be(buf + 6);
+		return 9;
+	case BSSGP_RIM_ROUTING_INFO_EUTRAN:
+		if (len < 7 || len > 14)
+			return -EINVAL;
+		/* Note: 3GPP TS 24.301 Figure 9.9.3.32.1 and 3GPP TS 24.008
+		 * Figure 10.5.130 specify MCC/MNC encoding in the same way,
+		 * so we can re-use gsm48_parse_ra() for that. */
+		gsm48_parse_ra(&raid_temp, buf);
+		ri->eutran.tai.mcc = raid_temp.mcc;
+		ri->eutran.tai.mnc = raid_temp.mnc;
+		ri->eutran.tai.mnc_3_digits = raid_temp.mnc_3_digits;
+		ri->eutran.tai.tac = osmo_load16be(buf + 3);
+		memcpy(ri->eutran.global_enb_id, buf + 5, len - 6);
+	        ri->eutran.global_enb_id_len = len - 6;
+		return len;
+	default:
+		return -EINVAL;
+	}
+}
+
+/*! Encode a RIM Routing information IE (3GPP TS 48.018, chapter 11.3.70).
+ *  \param[out] buf user provided memory (at least 14 byte) for the generated value part of the IE.
+ *  \param[in] ri user provided input data struct.
+ *  \returns length of encoded octets, -EINVAL on error. */
+int bssgp_create_rim_ri(uint8_t *buf, const struct bssgp_rim_routing_info *ri)
+{
+	int rc;
+	struct gprs_ra_id raid_temp;
+
+	buf[0] = ri->discr & 0x0f;
+	buf++;
+
+	switch (ri->discr) {
+	case BSSGP_RIM_ROUTING_INFO_GERAN:
+		rc = bssgp_create_cell_id(buf, &ri->geran.raid, ri->geran.cid);
+		if (rc < 0)
+			return -EINVAL;
+		return rc + 1;
+	case BSSGP_RIM_ROUTING_INFO_UTRAN:
+		gsm48_encode_ra((struct gsm48_ra_id *)buf, &ri->utran.raid);
+		osmo_store16be(ri->utran.rncid, buf + 6);
+		return 9;
+	case BSSGP_RIM_ROUTING_INFO_EUTRAN:
+		/* Note: 3GPP TS 24.301 Figure 9.9.3.32.1 and 3GPP TS 24.008
+		 * Figure 10.5.130 specify MCC/MNC encoding in the same way,
+		 * so we can re-use gsm48_encode_ra() for that. */
+		raid_temp = (struct gprs_ra_id) {
+			.mcc = ri->eutran.tai.mcc,
+			.mnc = ri->eutran.tai.mnc,
+			.mnc_3_digits = ri->eutran.tai.mnc_3_digits,
+		};
+
+		gsm48_encode_ra((struct gsm48_ra_id *)buf, &raid_temp);
+		osmo_store16be(ri->eutran.tai.tac, buf + 3);
+		OSMO_ASSERT(ri->eutran.global_enb_id_len <=
+			    sizeof(ri->eutran.global_enb_id));
+		memcpy(buf + 5, ri->eutran.global_enb_id,
+		       ri->eutran.global_enb_id_len);
+		return ri->eutran.global_enb_id_len + 6;
+	default:
+		return -EINVAL;
+	}
+}
+
 /*! Decode a RAN Information Request Application Container for NACC (3GPP TS 48.018, section 11.3.63.1.1).
  *  \param[out] user provided memory for decoded data struct.
  *  \param[in] buf user provided memory with the encoded value data of the IE.
