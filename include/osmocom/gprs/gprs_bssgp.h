@@ -11,6 +11,7 @@
 
 #include <osmocom/gprs/protocol/gsm_08_18.h>
 #include <osmocom/gprs/protocol/gsm_24_301.h>
+#include <osmocom/gprs/gprs_bssgp_rim.h>
 
 /* gprs_bssgp_util.c */
 
@@ -40,6 +41,39 @@ int bssgp_tx_simple_bvci(uint8_t pdu_type, uint16_t nsei,
 			 uint16_t bvci, uint16_t ns_bvci);
 /* Chapter 10.4.14: Status */
 int bssgp_tx_status(uint8_t cause, uint16_t *bvci, struct msgb *orig_msg);
+
+/* Chapter 10.6.1: RAN-INFORMATION-REQUEST */
+struct bssgp_ran_information_pdu {
+	struct bssgp_rim_routing_info routing_info_dest;
+	struct bssgp_rim_routing_info routing_info_src;
+
+	/* Encoded variant of the RIM container */
+	uint8_t rim_cont_iei;
+	const uint8_t *rim_cont;
+	unsigned int rim_cont_len;
+
+	/* Decoded variant of the RIM container */
+	bool decoded_present;
+	union {
+		struct bssgp_ran_inf_req_rim_cont req_rim_cont;
+		struct bssgp_ran_inf_rim_cont rim_cont;
+		struct bssgp_ran_inf_ack_rim_cont ack_rim_cont;
+		struct bssgp_ran_inf_err_rim_cont err_rim_cont;
+		struct bssgp_ran_inf_app_err_rim_cont app_err_rim_cont;
+	} decoded;
+
+	/* When receiving a PDU from BSSGP the encoded variant of the RIM
+	 * container will always be present. The decoded variant will be
+	 * present in addition whenever BSSGP was able to decode the container.
+	 *
+	 * When sending a PDU to BSSGP, then the decoded variant is used when
+	 * it is available. The encoded variant (if present) will be ignored
+	 * then. */
+};
+int bssgp_tx_rim(const struct bssgp_ran_information_pdu *pdu, uint16_t nsei);
+
+int bssgp_parse_rim_pdu(struct bssgp_ran_information_pdu *pdu, const struct msgb *msg);
+struct msgb *bssgp_encode_rim_pdu(const struct bssgp_ran_information_pdu *pdu);
 
 enum bssgp_prim {
 	PRIM_BSSGP_DL_UD,
@@ -75,6 +109,7 @@ struct osmo_bssgp_prim {
 		struct {
 			uint8_t suspend_ref;
 		} resume;
+		struct bssgp_ran_information_pdu rim_pdu;
 	} u;
 };
 

@@ -54,6 +54,10 @@ struct bssgp_rim_routing_info {
 	};
 };
 
+/* The encoded result of the rim routing information is, depending on the
+ * address type (discr) of variable length. */
+#define BSSGP_RIM_ROUTING_INFO_MAXLEN 14
+
 int bssgp_parse_rim_ri(struct bssgp_rim_routing_info *ri, const uint8_t *buf, unsigned int len);
 int bssgp_create_rim_ri(uint8_t *buf, const struct bssgp_rim_routing_info *ri);
 

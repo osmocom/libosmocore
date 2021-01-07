@@ -675,6 +675,8 @@ static int bssgp_rx_rim(struct msgb *msg, struct tlv_parsed *tp, uint16_t bvci)
 	nmp.nsei = nsei;
 	nmp.bvci = bvci;
 	nmp.tp = tp;
+	if (bssgp_parse_rim_pdu(&nmp.u.rim_pdu, msg) < 0)
+		return bssgp_tx_status(BSSGP_CAUSE_MISSING_MAND_IE, NULL, msg);
 	osmo_prim_init(&nmp.oph, SAP_BSSGP_RIM, prim, PRIM_OP_INDICATION, msg);
 	bssgp_prim_cb(&nmp.oph, NULL);
 
@@ -1111,7 +1113,7 @@ static int bssgp_rx_sign(struct msgb *msg, struct tlv_parsed *tp,
 	case BSSGP_PDUT_RAN_INFO_ACK:
 	case BSSGP_PDUT_RAN_INFO_ERROR:
 	case BSSGP_PDUT_RAN_INFO_APP_ERROR:
-		bssgp_rx_rim(msg, tp, bvci);
+		rc = bssgp_rx_rim(msg, tp, bvci);
 		break;
 
 	/* those only exist in the SGSN -> BSS direction */

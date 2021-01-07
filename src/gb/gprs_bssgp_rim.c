@@ -96,6 +96,7 @@ int bssgp_create_rim_ri(uint8_t *buf, const struct bssgp_rim_routing_info *ri)
 {
 	int rc;
 	struct gprs_ra_id raid_temp;
+	int len;
 
 	buf[0] = ri->discr & 0x0f;
 	buf++;
@@ -105,11 +106,13 @@ int bssgp_create_rim_ri(uint8_t *buf, const struct bssgp_rim_routing_info *ri)
 		rc = bssgp_create_cell_id(buf, &ri->geran.raid, ri->geran.cid);
 		if (rc < 0)
 			return -EINVAL;
-		return rc + 1;
+		len = rc + 1;
+		break;
 	case BSSGP_RIM_ROUTING_INFO_UTRAN:
 		gsm48_encode_ra((struct gsm48_ra_id *)buf, &ri->utran.raid);
 		osmo_store16be(ri->utran.rncid, buf + 6);
-		return 9;
+		len = 9;
+		break;
 	case BSSGP_RIM_ROUTING_INFO_EUTRAN:
 		/* Note: 3GPP TS 24.301 Figure 9.9.3.32.1 and 3GPP TS 24.008
 		 * Figure 10.5.130 specify MCC/MNC encoding in the same way,
@@ -126,10 +129,14 @@ int bssgp_create_rim_ri(uint8_t *buf, const struct bssgp_rim_routing_info *ri)
 			    sizeof(ri->eutran.global_enb_id));
 		memcpy(buf + 5, ri->eutran.global_enb_id,
 		       ri->eutran.global_enb_id_len);
-		return ri->eutran.global_enb_id_len + 6;
+		len = ri->eutran.global_enb_id_len + 6;
+		break;
 	default:
 		return -EINVAL;
 	}
+
+	OSMO_ASSERT(len <= BSSGP_RIM_ROUTING_INFO_MAXLEN);
+	return len;
 }
 
 /*! Decode a RAN Information Request Application Container for NACC (3GPP TS 48.018, section 11.3.63.1.1).
