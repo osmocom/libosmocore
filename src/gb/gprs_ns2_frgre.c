@@ -314,6 +314,7 @@ static struct msgb *read_nsfrgre_msg(struct osmo_fd *bfd, int *error,
 		break;
 	case AF_INET6:
 		ip46hdr = sizeof(struct ip6_hdr);
+		break;
 	default:
 		*error = -EIO;
 		goto out_err;
