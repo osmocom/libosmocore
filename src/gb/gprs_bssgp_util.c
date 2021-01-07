@@ -588,3 +588,218 @@ int bssgp_tx_status(uint8_t cause, uint16_t *bvci, struct msgb *orig_msg)
 
 	return bssgp_ns_send(bssgp_ns_send_data, msg);
 }
+
+/* Chapter 10.6.1: RAN-INFORMATION-REQUEST */
+int bssgp_tx_rim(const struct bssgp_ran_information_pdu *pdu, uint16_t nsei)
+{
+	struct msgb *msg;
+	struct bssgp_normal_hdr *bgph;
+
+	/* Encode RIM PDU into mesage buffer */
+	msg = bssgp_encode_rim_pdu(pdu);
+	if (!msg) {
+		LOGP(DLBSSGP, LOGL_ERROR,
+		     "BSSGP RIM (NSEI=%u) unable to encode BSSGP RIM PDU\n", nsei);
+		return -EINVAL;
+	}
+
+	msgb_nsei(msg) = nsei;
+	msgb_bvci(msg) = 0;	/* Signalling */
+
+	bgph = (struct bssgp_normal_hdr *)msgb_bssgph(msg);
+	DEBUGP(DLBSSGP, "BSSGP BVCI=0 Tx RIM-PDU:%s\n", bssgp_pdu_str(bgph->pdu_type));
+
+	return bssgp_ns_send(bssgp_ns_send_data, msg);
+}
+
+/* Parse a given message buffer into a rim-pdu struct */
+int bssgp_parse_rim_pdu(struct bssgp_ran_information_pdu *pdu, const struct msgb *msg)
+{
+	struct tlv_parsed tp[2];
+	struct bssgp_normal_hdr *bgph = (struct bssgp_normal_hdr *)msgb_bssgph(msg);
+	int data_len;
+	int rc;
+	uint16_t nsei = msgb_nsei(msg);
+
+	memset(pdu, 0, sizeof(*pdu));
+
+	data_len = msgb_bssgp_len(msg) - sizeof(*bgph);
+	if (data_len < 0)
+		return -EINVAL;
+
+	rc = osmo_tlv_prot_parse(&osmo_pdef_bssgp, tp, ARRAY_SIZE(tp), bgph->pdu_type, bgph->data, data_len, 0, 0,
+				 DLBSSGP, __func__);
+	if (rc < 0)
+		return -EINVAL;
+
+	if (TLVP_PRESENT(&tp[0], BSSGP_IE_RIM_ROUTING_INFO)) {
+		rc = bssgp_parse_rim_ri(&pdu->routing_info_dest, TLVP_VAL(&tp[0], BSSGP_IE_RIM_ROUTING_INFO),
+					TLVP_LEN(&tp[0], BSSGP_IE_RIM_ROUTING_INFO));
+		if (rc < 0) {
+			LOGP(DLBSSGP, LOGL_ERROR, "BSSGP RIM (NSEI=%u) invalid Destination Cell Identifier IE\n", nsei);
+			return -EINVAL;
+		}
+	} else {
+		LOGP(DLBSSGP, LOGL_ERROR, "BSSGP RIM (NSEI=%u) missing Destination Cell Identifier IE\n", nsei);
+		return -EINVAL;
+	}
+
+	if (TLVP_PRESENT(&tp[1], BSSGP_IE_RIM_ROUTING_INFO)) {
+		rc = bssgp_parse_rim_ri(&pdu->routing_info_src, TLVP_VAL(&tp[1], BSSGP_IE_RIM_ROUTING_INFO),
+					TLVP_LEN(&tp[1], BSSGP_IE_RIM_ROUTING_INFO));
+		if (rc < 0) {
+			LOGP(DLBSSGP, LOGL_ERROR, "BSSGP RIM (NSEI=%u) invalid Destination Cell Identifier IE\n", nsei);
+			return -EINVAL;
+		}
+	} else {
+		LOGP(DLBSSGP, LOGL_ERROR, "BSSGP RIM (NSEI=%u) missing Source Cell Identifier IE\n", nsei);
+		return -EINVAL;
+	}
+
+	if (TLVP_PRESENT(&tp[0], BSSGP_IE_RI_REQ_RIM_CONTAINER))
+		pdu->rim_cont_iei = BSSGP_IE_RI_REQ_RIM_CONTAINER;
+	else if (TLVP_PRESENT(&tp[0], BSSGP_IE_RI_RIM_CONTAINER))
+		pdu->rim_cont_iei = BSSGP_IE_RI_RIM_CONTAINER;
+	else if (TLVP_PRESENT(&tp[0], BSSGP_IE_RI_APP_ERROR_RIM_CONT))
+		pdu->rim_cont_iei = BSSGP_IE_RI_APP_ERROR_RIM_CONT;
+	else if (TLVP_PRESENT(&tp[0], BSSGP_IE_RI_ACK_RIM_CONTAINER))
+		pdu->rim_cont_iei = BSSGP_IE_RI_ACK_RIM_CONTAINER;
+	else if (TLVP_PRESENT(&tp[0], BSSGP_IE_RI_ERROR_RIM_COINTAINER))
+		pdu->rim_cont_iei = BSSGP_IE_RI_ERROR_RIM_COINTAINER;
+	else {
+		LOGP(DLBSSGP, LOGL_ERROR, "BSSGP RIM (NSEI=%u) missing or wrong RIM Container IE\n", nsei);
+		return -EINVAL;
+	}
+
+	pdu->rim_cont = TLVP_VAL(&tp[0], pdu->rim_cont_iei);
+	pdu->rim_cont_len = TLVP_LEN(&tp[0], pdu->rim_cont_iei);
+
+	/* Make sure the rim container field is not empty */
+	if (pdu->rim_cont_len < 1)
+		return -EINVAL;
+	if (!pdu->rim_cont)
+		return -EINVAL;
+
+	/* Note: It is not an error if we fail to parse the RIM container,
+	 * since there are applications where parsing the RIM container
+	 * is not necessary (routing). It is up to the API user to check
+	 * the results. */
+	switch (pdu->rim_cont_iei) {
+	case BSSGP_IE_RI_REQ_RIM_CONTAINER:
+		rc = bssgp_dec_ran_inf_req_rim_cont(&pdu->decoded.req_rim_cont, pdu->rim_cont, pdu->rim_cont_len);
+		break;
+	case BSSGP_IE_RI_RIM_CONTAINER:
+		rc = bssgp_dec_ran_inf_rim_cont(&pdu->decoded.rim_cont, pdu->rim_cont, pdu->rim_cont_len);
+		break;
+	case BSSGP_IE_RI_APP_ERROR_RIM_CONT:
+		rc = bssgp_dec_ran_inf_app_err_rim_cont(&pdu->decoded.app_err_rim_cont, pdu->rim_cont,
+							pdu->rim_cont_len);
+		break;
+	case BSSGP_IE_RI_ACK_RIM_CONTAINER:
+		rc = bssgp_dec_ran_inf_ack_rim_cont(&pdu->decoded.ack_rim_cont, pdu->rim_cont, pdu->rim_cont_len);
+		break;
+	case BSSGP_IE_RI_ERROR_RIM_COINTAINER:
+		rc = bssgp_dec_ran_inf_err_rim_cont(&pdu->decoded.err_rim_cont, pdu->rim_cont, pdu->rim_cont_len);
+		break;
+	default:
+		LOGP(DLBSSGP, LOGL_DEBUG, "BSSGP RIM (NSEI=%u) cannot parse unknown RIM container.\n", nsei);
+		return 0;
+	}
+	if (rc < 0) {
+		LOGP(DLBSSGP, LOGL_DEBUG, "BSSGP RIM (NSEI=%u) unable to parse RIM container.\n", nsei);
+		return 0;
+	}
+	pdu->decoded_present = true;
+
+	return 0;
+}
+
+/* Encode a given rim-pdu struct into a message buffer */
+struct msgb *bssgp_encode_rim_pdu(const struct bssgp_ran_information_pdu *pdu)
+{
+	struct msgb *msg = bssgp_msgb_alloc();
+	struct bssgp_normal_hdr *bgph;
+	uint8_t rim_ri_buf[BSSGP_RIM_ROUTING_INFO_MAXLEN];
+	uint8_t *rim_cont_buf;
+	int rc;
+
+	if (!msg)
+		return NULL;
+	bgph = (struct bssgp_normal_hdr *)msgb_put(msg, sizeof(*bgph));
+
+	/* Set PDU type based on RIM container type */
+	switch (pdu->rim_cont_iei) {
+	case BSSGP_IE_RI_REQ_RIM_CONTAINER:
+		bgph->pdu_type = BSSGP_PDUT_RAN_INFO_REQ;
+		break;
+	case BSSGP_IE_RI_RIM_CONTAINER:
+		bgph->pdu_type = BSSGP_PDUT_RAN_INFO;
+		break;
+	case BSSGP_IE_RI_APP_ERROR_RIM_CONT:
+		bgph->pdu_type = BSSGP_PDUT_RAN_INFO_APP_ERROR;
+		break;
+	case BSSGP_IE_RI_ACK_RIM_CONTAINER:
+		bgph->pdu_type = BSSGP_PDUT_RAN_INFO_ACK;
+		break;
+	case BSSGP_IE_RI_ERROR_RIM_COINTAINER:
+		bgph->pdu_type = BSSGP_PDUT_RAN_INFO_ERROR;
+		break;
+	default:
+		/* The caller must correctly specify the container type! */
+		OSMO_ASSERT(false);
+	}
+
+	/* Put RIM routing information */
+	rc = bssgp_create_rim_ri(rim_ri_buf, &pdu->routing_info_dest);
+	if (rc < 0 || rc > BSSGP_RIM_ROUTING_INFO_MAXLEN)
+		goto error;
+	msgb_tvlv_put(msg, BSSGP_IE_RIM_ROUTING_INFO, rc, rim_ri_buf);
+	rc = bssgp_create_rim_ri(rim_ri_buf, &pdu->routing_info_src);
+	if (rc < 0 || rc > BSSGP_RIM_ROUTING_INFO_MAXLEN)
+		goto error;
+	msgb_tvlv_put(msg, BSSGP_IE_RIM_ROUTING_INFO, rc, rim_ri_buf);
+
+	/* Put RIM container */
+	if (pdu->decoded_present) {
+		rim_cont_buf = talloc_zero_size(msg, msg->data_len);
+		if (!rim_cont_buf)
+			goto error;
+
+		switch (pdu->rim_cont_iei) {
+		case BSSGP_IE_RI_REQ_RIM_CONTAINER:
+			rc = bssgp_enc_ran_inf_req_rim_cont(rim_cont_buf, msg->data_len, &pdu->decoded.req_rim_cont);
+			break;
+		case BSSGP_IE_RI_RIM_CONTAINER:
+			rc = bssgp_enc_ran_inf_rim_cont(rim_cont_buf, msg->data_len, &pdu->decoded.rim_cont);
+			break;
+		case BSSGP_IE_RI_APP_ERROR_RIM_CONT:
+			rc = bssgp_enc_ran_inf_app_err_rim_cont(rim_cont_buf, msg->data_len,
+								&pdu->decoded.app_err_rim_cont);
+			break;
+		case BSSGP_IE_RI_ACK_RIM_CONTAINER:
+			rc = bssgp_enc_ran_inf_ack_rim_cont(rim_cont_buf, msg->data_len, &pdu->decoded.ack_rim_cont);
+			break;
+		case BSSGP_IE_RI_ERROR_RIM_COINTAINER:
+			rc = bssgp_enc_ran_inf_err_rim_cont(rim_cont_buf, msg->data_len, &pdu->decoded.err_rim_cont);
+			break;
+		default:
+			/* The API user must set the iei properly! */
+			OSMO_ASSERT(false);
+		}
+		if (rc < 0)
+			goto error;
+
+		msgb_tvlv_put(msg, pdu->rim_cont_iei, rc, rim_cont_buf);
+		talloc_free(rim_cont_buf);
+	} else {
+		/* Make sure the RIM container is actually present. */
+		OSMO_ASSERT(pdu->rim_cont_iei != 0 && pdu->rim_cont_len > 0 && pdu->rim_cont);
+		msgb_tvlv_put(msg, pdu->rim_cont_iei, pdu->rim_cont_len, pdu->rim_cont);
+	}
+
+	return msg;
+error:
+	talloc_free(rim_cont_buf);
+	msgb_free(msg);
+	return 0;
+}
