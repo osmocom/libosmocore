@@ -456,7 +456,10 @@ static void bssgp_bvc_fsm_unblocked(struct osmo_fsm_inst *fi, uint32_t event, vo
 	case BSSGP_BVCFSM_E_REQ_BLOCK:
 		if (bfp->role_sgsn) {
 			LOGPFSML(fi, LOGL_ERROR, "SGSN may not initiate BVC-BLOCK\n");
-			_tx_status(fi, BSSGP_CAUSE_SEM_INCORR_PDU, rx);
+			break;
+		}
+		if (bfp->bvci == 0) {
+			LOGPFSML(fi, LOGL_ERROR, "BVCI 0 cannot be blocked\n");
 			break;
 		}
 		bfp->locally_blocked = true;
