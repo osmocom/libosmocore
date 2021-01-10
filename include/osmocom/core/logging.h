@@ -50,10 +50,7 @@ void logp(int subsys, const char *file, int line, int cont, const char *format, 
  *  \param[in] args variable argument list
  */
 #define LOGPC(ss, level, fmt, args...) \
-	do { \
-		if (log_check_level(ss, level)) \
-			logp2(ss, level, __FILE__, __LINE__, 1, fmt, ##args); \
-	} while(0)
+	LOGPSRCC(ss, level, NULL, 0, 1, fmt, ##args)
 
 /*! Log through the Osmocom logging framework with explicit source.
  *  If caller_file is passed as NULL, __FILE__ and __LINE__ are used
@@ -85,6 +82,7 @@ void logp(int subsys, const char *file, int line, int cont, const char *format, 
  */
 #define LOGPSRCC(ss, level, caller_file, caller_line, cont, fmt, args...) \
 	do { \
+		TRACEPEVTSRC(ss, level, caller_file, caller_line, __func__, fmt, ##args); \
 		if (log_check_level(ss, level)) {\
 			if (caller_file) \
 				logp2(ss, level, caller_file, caller_line, cont, fmt, ##args); \
@@ -92,6 +90,33 @@ void logp(int subsys, const char *file, int line, int cont, const char *format, 
 				logp2(ss, level, __FILE__, __LINE__, cont, fmt, ##args); \
 		}\
 	} while(0)
+
+#define TRACEOP_ENTFUN	"ENTER"
+#define TRACEOP_EXTFUN	"EXIT"
+#define TRACEOP_ATTR	"ATTR"
+#define TRACEOP_EVT	"EVT"
+
+#define TRACEP(ss, oper, fmt, args...) \
+	TRACEPSRC(ss, oper, NULL, 0, (const char *)NULL, fmt, ##args)
+#define TRACEPSRC(ss, oper, caller_file, caller_line, caller_func, fmt, args...) \
+	do { \
+		if (log_check_level(DLTRACE, LOGL_DEBUG)) {\
+			if (caller_file) \
+				logp2(DLTRACE, LOGL_DEBUG, caller_file, caller_line, 0, "[" oper " func=%s ss=%02x]%s" fmt, caller_func, ss, fmt[0]?" ":"", ##args); \
+			else \
+				logp2(DLTRACE, LOGL_DEBUG, __FILE__, __LINE__, 0, "[" oper " func=%s ss=%02x]%s" fmt, __func__, ss, fmt[0]?" ":"", ##args); \
+		}\
+	} while(0)
+
+#define TRACEPENTFUN(ss, fmt, args...) \
+	TRACEP(ss, TRACEOP_ENTFUN, fmt, ##args)
+#define TRACEPEXTFUN(ss, fmt, args...) \
+	TRACEP(ss, TRACEOP_EXTFUN, fmt, ##args)
+#define TRACEPATTR(ss, fmt, args...) \
+	TRACEP(ss, TRACEOP_ATTR, fmt, ##args)
+#define TRACEPEVTSRC(ss, level, caller_file, caller_line, caller_func, fmt, args...) \
+	TRACEPSRC(ss, TRACEOP_EVT, caller_file, caller_line, caller_func, "level=%02x " fmt, level, ##args)
+
 
 /*! different log levels */
 #define LOGL_DEBUG	1	/*!< debugging information */
@@ -122,7 +147,8 @@ void logp(int subsys, const char *file, int line, int cont, const char *format, 
 #define DLRSPRO		-19	/*!< Osmocom Remote SIM Protocol */
 #define DLNS		-20	/*!< Osmocom NS layer */
 #define DLBSSGP		-21	/*!< Osmocom BSSGP layer */
-#define OSMO_NUM_DLIB	21	/*!< Number of logging sub-systems in libraries */
+#define DLTRACE		-22	/*!< Osmocom Tracing messages (intended for GSMTAP logging) */
+#define OSMO_NUM_DLIB	22	/*!< Number of logging sub-systems in libraries */
 
 /* Colors that can be used in log_info_cat.color */
 #define OSMO_LOGCOLOR_NORMAL NULL

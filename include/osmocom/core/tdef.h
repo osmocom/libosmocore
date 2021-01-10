@@ -159,11 +159,11 @@ const struct osmo_tdef_state_timeout *osmo_tdef_get_state_timeout(uint32_t state
  */
 #define osmo_tdef_fsm_inst_state_chg(fi, state, timeouts_array, tdefs, default_timeout) \
 	_osmo_tdef_fsm_inst_state_chg(fi, state, timeouts_array, tdefs, default_timeout, \
-				      __FILE__, __LINE__)
+				      __FILE__, __LINE__, __func__)
 int _osmo_tdef_fsm_inst_state_chg(struct osmo_fsm_inst *fi, uint32_t state,
 				  const struct osmo_tdef_state_timeout *timeouts_array,
 				  const struct osmo_tdef *tdefs, unsigned long default_timeout,
-				  const char *file, int line);
+				  const char *file, int line, const char *func);
 
 /*! Manage timer definitions in named groups.
  * This should be defined as an array with the final element kept fully zero-initialized,

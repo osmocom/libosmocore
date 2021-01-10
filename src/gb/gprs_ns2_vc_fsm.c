@@ -46,6 +46,7 @@
 #include <osmocom/gprs/protocol/gsm_08_16.h>
 
 #include "gprs_ns2_internal.h"
+#include "osmocom/core/logging.h"
 
 #define S(x)	(1 << (x))
 
@@ -491,6 +492,7 @@ static int ns2_vc_fsm_timer_cb(struct osmo_fsm_inst *fi)
 	struct gprs_ns2_inst *nsi = ns_inst_from_fi(fi);
 	struct gprs_ns2_vc_priv *priv = fi->priv;
 
+	TRACEPFSMENT(fi, "nsei=%05u", priv->nsvc->nse->nsei);
 	switch (fi->state) {
 	case GPRS_NS2_ST_RESET:
 		if (priv->initiate_reset) {
@@ -536,6 +538,7 @@ static int ns2_vc_fsm_timer_cb(struct osmo_fsm_inst *fi)
 		}
 		break;
 	}
+	TRACEPFSMEXT(fi, "status=ok");
 	return 0;
 }
 
@@ -548,8 +551,11 @@ static void ns2_recv_unitdata(struct osmo_fsm_inst *fi,
 	struct osmo_gprs_ns2_prim nsp = {};
 	uint16_t bvci;
 
+	TRACEPFSMENT(fi, "nsei=%05u", priv->nsvc->nse->nsei);
+
 	if (msgb_l2len(msg) < sizeof(*nsh) + 3) {
 		msgb_free(msg);
+		TRACEPFSMEXT(fi, "status=error Message too small");
 		return;
 	}
 
@@ -564,6 +570,7 @@ static void ns2_recv_unitdata(struct osmo_fsm_inst *fi,
 	nsp.bvci = bvci;
 	nsp.nsei = priv->nsvc->nse->nsei;
 
+	TRACEPATTR(DNS, "bvci=%05u", bvci);
 	/* 10.3.9 NS SDU Control Bits */
 	if (nsh->data[0] & 0x1)
 		nsp.u.unitdata.change = GPRS_NS2_ENDPOINT_REQUEST_CHANGE;
@@ -571,6 +578,7 @@ static void ns2_recv_unitdata(struct osmo_fsm_inst *fi,
 	osmo_prim_init(&nsp.oph, SAP_NS, GPRS_NS2_PRIM_UNIT_DATA,
 			PRIM_OP_INDICATION, msg);
 	nsi->cb(&nsp.oph, nsi->cb_data);
+	TRACEPFSMEXT(fi, "status=ok");
 }
 
 static void ns2_vc_fsm_allstate_action(struct osmo_fsm_inst *fi,
@@ -580,6 +588,8 @@ static void ns2_vc_fsm_allstate_action(struct osmo_fsm_inst *fi,
 	struct gprs_ns2_vc_priv *priv = fi->priv;
 	struct gprs_ns2_inst *nsi = ns_inst_from_fi(fi);
 	struct msgb *msg = data;
+
+	TRACEPFSMENT(fi, "nsei=%05u", priv->nsvc->nse->nsei);
 
 	switch (event) {
 	case GPRS_NS2_EV_RX_RESET:
@@ -622,6 +632,8 @@ static void ns2_vc_fsm_allstate_action(struct osmo_fsm_inst *fi,
 			/* 7.2.1: the BLOCKED_ACK might be lost */
 			if (priv->accept_unitdata) {
 				ns2_recv_unitdata(fi, msg);
+				TRACEPFSMEXT(fi, "status=ok");
+
 				return;
 			}
 
@@ -633,6 +645,7 @@ static void ns2_vc_fsm_allstate_action(struct osmo_fsm_inst *fi,
 		case GPRS_NS2_ST_RECOVERING:
 		case GPRS_NS2_ST_UNBLOCKED:
 			ns2_recv_unitdata(fi, msg);
+			TRACEPFSMEXT(fi, "status=ok");
 			return;
 		}
 
@@ -642,6 +655,7 @@ static void ns2_vc_fsm_allstate_action(struct osmo_fsm_inst *fi,
 		if (fi->state != GPRS_NS2_ST_UNCONFIGURED) {
 			/* Force the NSVC back to its initial state */
 			osmo_fsm_inst_state_chg(fi, GPRS_NS2_ST_UNCONFIGURED, 0, 0);
+			TRACEPFSMEXT(fi, "status=ok");
 			return;
 		}
 		break;
@@ -660,6 +674,7 @@ static void ns2_vc_fsm_allstate_action(struct osmo_fsm_inst *fi,
 			osmo_fsm_inst_state_chg(fi, GPRS_NS2_ST_BLOCKED, nsi->timeout[NS_TOUT_TNS_BLOCK], 0);
 		break;
 	}
+	TRACEPFSMEXT(fi, "");
 }
 
 static void ns2_vc_fsm_clean(struct osmo_fsm_inst *fi,
@@ -708,12 +723,16 @@ struct osmo_fsm_inst *ns2_vc_fsm_alloc(struct gprs_ns2_vc *nsvc,
 	if (!fi)
 		return fi;
 
+	TRACEPFSMENT(fi, "nsei=%05u", nsvc->nse->nsei);
+
 	nsvc->fi = fi;
 	priv = fi->priv = talloc_zero(fi, struct gprs_ns2_vc_priv);
 	priv->nsvc = nsvc;
 	priv->initiator = initiator;
 
 	osmo_timer_setup(&priv->alive.timer, alive_timeout_handler, fi);
+
+	TRACEPFSMEXT(fi, "status=ok");
 
 	return fi;
 }
@@ -765,6 +784,8 @@ int ns2_vc_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp)
 	int rc = 0;
 	uint8_t cause;
 	uint16_t nsei, nsvci;
+
+	TRACEPFSMENT(fi, "nsei=%05u span.kind=server", nsvc->nse->nsei);
 
 	/* TODO: 7.2: on UNBLOCK/BLOCK: check if NS-VCI is correct,
 	 *  if not answer STATUS with "NS-VC unknown" */
@@ -831,15 +852,19 @@ int ns2_vc_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp)
 	case NS_PDUT_UNITDATA:
 		/* UNITDATA have to free msg because it might send the msg layer upwards */
 		osmo_fsm_inst_dispatch(fi, GPRS_NS2_EV_RX_UNITDATA, msg);
+		TRACEPFSMEXT(fi, "status=ok");
 		return 0;
 	default:
 		LOGPFSML(fi, LOGL_ERROR, "NSEI=%u Rx unknown NS PDU type %s\n", nsvc->nse->nsei,
 			 get_value_string(gprs_ns_pdu_strings, nsh->pdu_type));
+		TRACEPFSMEXT(fi, "status=error NSEI unknown");
 		return -EINVAL;
 	}
 
 out:
 	msgb_free(msg);
+
+	TRACEPFSMEXT(fi, "status=ok");
 
 	return rc;
 }

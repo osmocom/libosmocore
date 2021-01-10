@@ -202,6 +202,34 @@ void osmo_fsm_set_dealloc_ctx(void *ctx);
 #define OSMO_T_FMT "%c%u"
 #define OSMO_T_FMT_ARGS(T) ((T) >= 0 ? 'T' : 'X'), ((T) >= 0 ? T : -T)
 
+/* FSM Tracing Macros */
+#define TRACEPFSMENTSRC(fi, file, line, func, fmt, args...) \
+	TRACEPSRC((fi)->fsm->log_subsys, TRACEOP_ENTFUN, \
+		file, line, func, \
+		"fsminst=%p name=%s id=%s state=%s%s" fmt, fi, \
+		(fi)->fsm->name, (fi)->id, \
+		osmo_fsm_state_name((fi)->fsm, (fi)->state), \
+		fmt[0] ? " " : "", ## args)
+#define TRACEPFSMEXTSRC(fi, file, line, func, fmt, args...) \
+	TRACEPSRC((fi)->fsm->log_subsys, TRACEOP_EXTFUN, \
+		file, line, func, fmt, ##args)
+#define TRACEPFSMATTRSRC(fi, file, line, func, fmt, args...) \
+	TRACEPSRC((fi)->fsm->log_subsys, TRACEOP_ATTR, \
+		file, line, func, fmt, ##args)
+
+#define TRACEPFSMENT(fi, fmt, args...) \
+	TRACEP((fi)->fsm->log_subsys, TRACEOP_ENTFUN, \
+		"fsminst=%p name=%s id=%s state=%s%s" fmt, fi, \
+		(fi)->fsm->name, (fi)->id, \
+		osmo_fsm_state_name((fi)->fsm, (fi)->state), \
+		fmt[0] ? " " : "", ## args)
+
+#define TRACEPFSMEXT(fi, fmt, args...) \
+	TRACEP((fi)->fsm->log_subsys, TRACEOP_EXTFUN, fmt, ##args)
+
+#define TRACEPFSMATTR(fi, fmt, args...) \
+	TRACEP((fi)->fsm->log_subsys, TRACEOP_ATTR, fmt, ##args)
+
 int osmo_fsm_register(struct osmo_fsm *fsm);
 void osmo_fsm_unregister(struct osmo_fsm *fsm);
 struct osmo_fsm *osmo_fsm_find_by_name(const char *name);
@@ -240,17 +268,17 @@ static inline const char *osmo_fsm_inst_state_name(struct osmo_fsm_inst *fi)
  */
 #define osmo_fsm_inst_state_chg(fi, new_state, timeout_secs, T) \
 	_osmo_fsm_inst_state_chg(fi, new_state, timeout_secs, T, \
-				 __FILE__, __LINE__)
+				 __FILE__, __LINE__, __func__)
 int _osmo_fsm_inst_state_chg(struct osmo_fsm_inst *fi, uint32_t new_state,
 			     unsigned long timeout_secs, int T,
-			     const char *file, int line);
+			     const char *file, int line, const char *func);
 
 #define osmo_fsm_inst_state_chg_ms(fi, new_state, timeout_ms, T) \
 	_osmo_fsm_inst_state_chg_ms(fi, new_state, timeout_ms, T, \
-				 __FILE__, __LINE__)
+				 __FILE__, __LINE__, __func__)
 int _osmo_fsm_inst_state_chg_ms(struct osmo_fsm_inst *fi, uint32_t new_state,
 				unsigned long timeout_ms, int T,
-				const char *file, int line);
+				const char *file, int line, const char *func);
 
 /*! perform a state change while keeping the current timer running.
  *
@@ -263,9 +291,9 @@ int _osmo_fsm_inst_state_chg_ms(struct osmo_fsm_inst *fi, uint32_t new_state,
  */
 #define osmo_fsm_inst_state_chg_keep_timer(fi, new_state) \
 	_osmo_fsm_inst_state_chg_keep_timer(fi, new_state, \
-				 __FILE__, __LINE__)
+				 __FILE__, __LINE__, __func__)
 int _osmo_fsm_inst_state_chg_keep_timer(struct osmo_fsm_inst *fi, uint32_t new_state,
-					const char *file, int line);
+					const char *file, int line, const char *func);
 
 /*! perform a state change while keeping the current timer if running, or starting a timer otherwise.
  *
@@ -277,17 +305,17 @@ int _osmo_fsm_inst_state_chg_keep_timer(struct osmo_fsm_inst *fi, uint32_t new_s
  */
 #define osmo_fsm_inst_state_chg_keep_or_start_timer(fi, new_state, timeout_secs, T) \
 	_osmo_fsm_inst_state_chg_keep_or_start_timer(fi, new_state, timeout_secs, T, \
-						     __FILE__, __LINE__)
+						     __FILE__, __LINE__, __func__)
 int _osmo_fsm_inst_state_chg_keep_or_start_timer(struct osmo_fsm_inst *fi, uint32_t new_state,
 						 unsigned long timeout_secs, int T,
-						 const char *file, int line);
+						 const char *file, int line, const char *func);
 
 #define osmo_fsm_inst_state_chg_keep_or_start_timer_ms(fi, new_state, timeout_ms, T) \
 	_osmo_fsm_inst_state_chg_keep_or_start_timer_ms(fi, new_state, timeout_ms, T, \
-						     __FILE__, __LINE__)
+						     __FILE__, __LINE__, __func__)
 int _osmo_fsm_inst_state_chg_keep_or_start_timer_ms(struct osmo_fsm_inst *fi, uint32_t new_state,
 						   unsigned long timeout_ms, int T,
-						   const char *file, int line);
+						   const char *file, int line, const char *func);
 
 
 /*! dispatch an event to an osmocom finite state machine instance
@@ -297,9 +325,9 @@ int _osmo_fsm_inst_state_chg_keep_or_start_timer_ms(struct osmo_fsm_inst *fi, ui
  *  purposes. See there for documentation.
  */
 #define osmo_fsm_inst_dispatch(fi, event, data) \
-	_osmo_fsm_inst_dispatch(fi, event, data, __FILE__, __LINE__)
+	_osmo_fsm_inst_dispatch(fi, event, data, __FILE__, __LINE__, __func__)
 int _osmo_fsm_inst_dispatch(struct osmo_fsm_inst *fi, uint32_t event, void *data,
-			    const char *file, int line);
+			    const char *file, int line, const char *func);
 
 /*! Terminate FSM instance with given cause
  *
@@ -308,10 +336,10 @@ int _osmo_fsm_inst_dispatch(struct osmo_fsm_inst *fi, uint32_t event, void *data
  *  See there for documentation.
  */
 #define osmo_fsm_inst_term(fi, cause, data) \
-	_osmo_fsm_inst_term(fi, cause, data, __FILE__, __LINE__)
+	_osmo_fsm_inst_term(fi, cause, data, __FILE__, __LINE__, __func__)
 void _osmo_fsm_inst_term(struct osmo_fsm_inst *fi,
 			 enum osmo_fsm_term_cause cause, void *data,
-			 const char *file, int line);
+			 const char *file, int line, const char *func);
 
 /*! Terminate all child FSM instances of an FSM instance.
  *
@@ -320,11 +348,11 @@ void _osmo_fsm_inst_term(struct osmo_fsm_inst *fi,
  *  purposes. See there for documentation.
  */
 #define osmo_fsm_inst_term_children(fi, cause, data) \
-	_osmo_fsm_inst_term_children(fi, cause, data, __FILE__, __LINE__)
+	_osmo_fsm_inst_term_children(fi, cause, data, __FILE__, __LINE__, __func__)
 void _osmo_fsm_inst_term_children(struct osmo_fsm_inst *fi,
 				  enum osmo_fsm_term_cause cause,
 				  void *data,
-				  const char *file, int line);
+				  const char *file, int line, const char *func);
 
 /*! dispatch an event to all children of an osmocom finite state machine instance
  *
@@ -333,8 +361,8 @@ void _osmo_fsm_inst_term_children(struct osmo_fsm_inst *fi,
  *  purposes. See there for documentation.
  */
 #define osmo_fsm_inst_broadcast_children(fi, cause, data) \
-	_osmo_fsm_inst_broadcast_children(fi, cause, data, __FILE__, __LINE__)
+	_osmo_fsm_inst_broadcast_children(fi, cause, data, __FILE__, __LINE__, __func__)
 void _osmo_fsm_inst_broadcast_children(struct osmo_fsm_inst *fi, uint32_t event,
-					void *data, const char *file, int line);
+					void *data, const char *file, int line, const char *func);
 
 /*! @} */

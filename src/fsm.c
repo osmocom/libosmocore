@@ -319,14 +319,17 @@ static void fsm_tmr_cb(void *data)
 	struct osmo_fsm *fsm = fi->fsm;
 	int32_t T = fi->T;
 
+	TRACEPFSMENT(fi, "timer=" OSMO_T_FMT, OSMO_T_FMT_ARGS(fi->T));
 	LOGPFSM(fi, "Timeout of " OSMO_T_FMT "\n", OSMO_T_FMT_ARGS(fi->T));
 
 	if (fsm->timer_cb) {
 		int rc = fsm->timer_cb(fi);
-		if (rc != 1)
+		if (rc != 1) {
 			/* We don't actually know whether fi exists anymore.
 			 * Make sure to not access it and return right away. */
+			TRACEPFSMEXT(fi, "");
 			return;
+		}
 		/* The timer_cb told us to terminate, so we can safely assume
 		 * that fi still exists. */
 		LOGPFSM(fi, "timer_cb requested termination\n");
@@ -335,6 +338,7 @@ static void fsm_tmr_cb(void *data)
 
 	/* if timer_cb returns 1 or there is no timer_cb */
 	osmo_fsm_inst_term(fi, OSMO_FSM_TERM_TIMEOUT, &T);
+	TRACEPFSMEXT(fi, "");
 }
 
 /*! Change id of the FSM instance
@@ -453,6 +457,7 @@ struct osmo_fsm_inst *osmo_fsm_inst_alloc(struct osmo_fsm *fsm, void *ctx, void 
 			fsm_free_or_steal(fi);
 			return NULL;
 	}
+	TRACEPFSMENT(fi, "fsm_alloc=1 fsm_parent=%p", ctx);
 
 	INIT_LLIST_HEAD(&fi->proc.children);
 	INIT_LLIST_HEAD(&fi->proc.child);
@@ -460,6 +465,7 @@ struct osmo_fsm_inst *osmo_fsm_inst_alloc(struct osmo_fsm *fsm, void *ctx, void 
 
 	LOGPFSM(fi, "Allocated\n");
 
+	TRACEPFSMEXT(fi, "status=ok");
 	return fi;
 }
 
@@ -479,19 +485,20 @@ struct osmo_fsm_inst *osmo_fsm_inst_alloc_child(struct osmo_fsm *fsm,
 						uint32_t parent_term_event)
 {
 	struct osmo_fsm_inst *fi;
+	TRACEPFSMENT(parent, "");
 
 	fi = osmo_fsm_inst_alloc(fsm, parent, NULL, parent->log_level,
 				 parent->id);
 	if (!fi) {
 		/* indicate immediate termination to caller */
 		osmo_fsm_inst_dispatch(parent, parent_term_event, NULL);
+		TRACEPFSMEXT(fi, "status=error");
 		return NULL;
 	}
-
 	LOGPFSM(fi, "is child of %s\n", osmo_fsm_inst_name(parent));
 
 	osmo_fsm_inst_change_parent(fi, parent, parent_term_event);
-
+	TRACEPFSMEXT(fi, "status=ok");
 	return fi;
 }
 
@@ -540,6 +547,9 @@ void osmo_fsm_inst_change_parent(struct osmo_fsm_inst *fi,
  */
 void osmo_fsm_inst_free(struct osmo_fsm_inst *fi)
 {
+	uint32_t ss = fi->fsm->log_subsys;
+	TRACEPFSMENT(fi, "fsm_free=1");
+
 	osmo_timer_del(&fi->timer);
 	llist_del(&fi->list);
 
@@ -554,6 +564,7 @@ void osmo_fsm_inst_free(struct osmo_fsm_inst *fi)
 			LOGPFSM(fi, "Deferring deallocation\n");
 
 		/* Don't free anything yet. Exit. */
+		TRACEPFSMEXT(fi, "status=ok");
 		return;
 	}
 
@@ -574,6 +585,8 @@ void osmo_fsm_inst_free(struct osmo_fsm_inst *fi)
 		fsm_free_or_steal(fi);
 	}
 	fsm_term_safely.root_fi = NULL;
+
+	TRACEP(ss, TRACEOP_EXTFUN, "status=ok");
 }
 
 /*! get human-readable name of FSM event
@@ -623,17 +636,20 @@ const char *osmo_fsm_state_name(struct osmo_fsm *fsm, uint32_t state)
 
 static int state_chg(struct osmo_fsm_inst *fi, uint32_t new_state,
 		     bool keep_timer, unsigned long timeout_ms, int T,
-		     const char *file, int line)
+		     const char *file, int line, const char *func)
 {
 	struct osmo_fsm *fsm = fi->fsm;
 	uint32_t old_state = fi->state;
 	const struct osmo_fsm_state *st = &fsm->states[fi->state];
 	struct timeval remaining;
 
+	TRACEPFSMENTSRC(fi, file, line, func, "new_state=%s T=%u tout_ms=%lu", osmo_fsm_state_name(fsm, new_state), T, timeout_ms);
+
 	if (fi->proc.terminating) {
 		LOGPFSMSRC(fi, file, line,
 			   "FSM instance already terminating, not changing state to %s\n",
 			   osmo_fsm_state_name(fsm, new_state));
+		TRACEPFSMEXTSRC(fi, file, line, func, "status=error");
 		return -EINVAL;
 	}
 
@@ -642,6 +658,7 @@ static int state_chg(struct osmo_fsm_inst *fi, uint32_t new_state,
 		LOGPFSMLSRC(fi, LOGL_ERROR, file, line,
 			    "transition to state %s not permitted!\n",
 			    osmo_fsm_state_name(fsm, new_state));
+		TRACEPFSMEXTSRC(fi, file, line, func, "status=error Invalid transition");
 		return -EPERM;
 	}
 
@@ -698,6 +715,7 @@ static int state_chg(struct osmo_fsm_inst *fi, uint32_t new_state,
 	if (st->onenter)
 		st->onenter(fi, old_state);
 
+	TRACEPFSMEXTSRC(fi, file, line, func, "status=ok");
 	return 0;
 }
 
@@ -743,15 +761,15 @@ static int state_chg(struct osmo_fsm_inst *fi, uint32_t new_state,
  */
 int _osmo_fsm_inst_state_chg(struct osmo_fsm_inst *fi, uint32_t new_state,
 			     unsigned long timeout_secs, int T,
-			     const char *file, int line)
+			     const char *file, int line, const char *func)
 {
-	return state_chg(fi, new_state, false, timeout_secs*1000, T, file, line);
+	return state_chg(fi, new_state, false, timeout_secs*1000, T, file, line, func);
 }
 int _osmo_fsm_inst_state_chg_ms(struct osmo_fsm_inst *fi, uint32_t new_state,
 				unsigned long timeout_ms, int T,
-				const char *file, int line)
+				const char *file, int line, const char *func)
 {
-	return state_chg(fi, new_state, false, timeout_ms, T, file, line);
+	return state_chg(fi, new_state, false, timeout_ms, T, file, line, func);
 }
 
 /*! perform a state change while keeping the current timer running.
@@ -774,9 +792,9 @@ int _osmo_fsm_inst_state_chg_ms(struct osmo_fsm_inst *fi, uint32_t new_state,
  *  \returns 0 on success; negative on error
  */
 int _osmo_fsm_inst_state_chg_keep_timer(struct osmo_fsm_inst *fi, uint32_t new_state,
-					const char *file, int line)
+					const char *file, int line, const char *func)
 {
-	return state_chg(fi, new_state, true, 0, 0, file, line);
+	return state_chg(fi, new_state, true, 0, 0, file, line, func);
 }
 
 /*! perform a state change while keeping the current timer if running, or starting a timer otherwise.
@@ -803,15 +821,15 @@ int _osmo_fsm_inst_state_chg_keep_timer(struct osmo_fsm_inst *fi, uint32_t new_s
  */
 int _osmo_fsm_inst_state_chg_keep_or_start_timer(struct osmo_fsm_inst *fi, uint32_t new_state,
 						 unsigned long timeout_secs, int T,
-						 const char *file, int line)
+						 const char *file, int line, const char* func)
 {
-	return state_chg(fi, new_state, true, timeout_secs*1000, T, file, line);
+	return state_chg(fi, new_state, true, timeout_secs*1000, T, file, line, func);
 }
 int _osmo_fsm_inst_state_chg_keep_or_start_timer_ms(struct osmo_fsm_inst *fi, uint32_t new_state,
 						    unsigned long timeout_ms, int T,
-						    const char *file, int line)
+						    const char *file, int line, const char *func)
 {
-	return state_chg(fi, new_state, true, timeout_ms, T, file, line);
+	return state_chg(fi, new_state, true, timeout_ms, T, file, line, func);
 }
 
 
@@ -833,7 +851,7 @@ int _osmo_fsm_inst_state_chg_keep_or_start_timer_ms(struct osmo_fsm_inst *fi, ui
  *  \returns 0 in case of success; negative on error
  */
 int _osmo_fsm_inst_dispatch(struct osmo_fsm_inst *fi, uint32_t event, void *data,
-			    const char *file, int line)
+			    const char *file, int line, const char *func)
 {
 	struct osmo_fsm *fsm;
 	const struct osmo_fsm_state *fs;
@@ -847,11 +865,13 @@ int _osmo_fsm_inst_dispatch(struct osmo_fsm_inst *fi, uint32_t event, void *data
 	}
 
 	fsm = fi->fsm;
+	TRACEPFSMENTSRC(fi, file, line, func, "event=%s", osmo_fsm_event_name(fsm, event));
 
 	if (fi->proc.terminating) {
 		LOGPFSMSRC(fi, file, line,
 			   "FSM instance already terminating, not dispatching event %s\n",
 			   osmo_fsm_event_name(fsm, event));
+		TRACEPFSMEXTSRC(fi, file, line, func, "status=error");
 		return -EINVAL;
 	}
 
@@ -863,6 +883,7 @@ int _osmo_fsm_inst_dispatch(struct osmo_fsm_inst *fi, uint32_t event, void *data
 
 	if (((1 << event) & fsm->allstate_event_mask) && fsm->allstate_action) {
 		fsm->allstate_action(fi, event, data);
+		TRACEPFSMEXTSRC(fi, file, line, func, "status=ok");
 		return 0;
 	}
 
@@ -870,12 +891,14 @@ int _osmo_fsm_inst_dispatch(struct osmo_fsm_inst *fi, uint32_t event, void *data
 		LOGPFSMLSRC(fi, LOGL_ERROR, file, line,
 			    "Event %s not permitted\n",
 			    osmo_fsm_event_name(fsm, event));
+		TRACEPFSMEXTSRC(fi, file, line, func, "status=error");
 		return -1;
 	}
 
 	if (fs->action)
 		fs->action(fi, event, data);
 
+	TRACEPFSMEXTSRC(fi, file, line, func, "status=ok");
 	return 0;
 }
 
@@ -897,7 +920,7 @@ int _osmo_fsm_inst_dispatch(struct osmo_fsm_inst *fi, uint32_t event, void *data
  */
 void _osmo_fsm_inst_term(struct osmo_fsm_inst *fi,
 			 enum osmo_fsm_term_cause cause, void *data,
-			 const char *file, int line)
+			 const char *file, int line, const char *func)
 {
 	struct osmo_fsm_inst *parent;
 	uint32_t parent_term_event = fi->proc.parent_term_event;
@@ -934,7 +957,7 @@ void _osmo_fsm_inst_term(struct osmo_fsm_inst *fi,
 		fi->fsm->pre_term(fi, cause);
 
 	_osmo_fsm_inst_term_children(fi, OSMO_FSM_TERM_PARENT, NULL,
-				     file, line);
+				     file, line, func);
 
 	/* delete ourselves from the parent */
 	parent = fi->proc.parent;
@@ -962,7 +985,7 @@ void _osmo_fsm_inst_term(struct osmo_fsm_inst *fi,
 	/* indicate our termination to the parent */
 	if (parent && cause != OSMO_FSM_TERM_PARENT)
 		_osmo_fsm_inst_dispatch(parent, parent_term_event, data,
-					file, line);
+					file, line, func);
 
 	/* Newer, safe deallocation: free only after the parent_term_event was dispatched, to catch all termination
 	 * cascades, and free all FSM instances at once. (If fsm_term_safely is enabled, depth will *always* be > 0
@@ -988,7 +1011,7 @@ void _osmo_fsm_inst_term(struct osmo_fsm_inst *fi,
 void _osmo_fsm_inst_term_children(struct osmo_fsm_inst *fi,
 				  enum osmo_fsm_term_cause cause,
 				  void *data,
-				  const char *file, int line)
+				  const char *file, int line, const char *func)
 {
 	struct osmo_fsm_inst *first_child, *last_seen_first_child;
 
@@ -1012,7 +1035,7 @@ void _osmo_fsm_inst_term_children(struct osmo_fsm_inst *fi,
 
 		/* terminate child */
 		_osmo_fsm_inst_term(first_child, cause, data,
-				    file, line);
+				    file, line, func);
 	}
 }
 
@@ -1028,11 +1051,11 @@ void _osmo_fsm_inst_term_children(struct osmo_fsm_inst *fi,
  */
 void _osmo_fsm_inst_broadcast_children(struct osmo_fsm_inst *fi,
 					uint32_t event, void *data,
-					const char *file, int line)
+					const char *file, int line, const char *func)
 {
 	struct osmo_fsm_inst *child, *tmp;
 	llist_for_each_entry_safe(child, tmp, &fi->proc.children, proc.child) {
-		_osmo_fsm_inst_dispatch(child, event, data, file, line);
+		_osmo_fsm_inst_dispatch(child, event, data, file, line, func);
 	}
 }
 

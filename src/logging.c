@@ -274,6 +274,12 @@ static const struct log_info_cat internal_cat[OSMO_NUM_DLIB] = {
 		.enabled = 1, .loglevel = LOGL_NOTICE,
 		.color = "\033[38;5;59m",
 	},
+	[INT2IDX(DLTRACE)] = {
+		.name = "DLTRACE",
+		.description = "Machine-parsable trace messages (for use with GSMTAP logging)",
+		.enabled = 0, .loglevel = LOGL_NOTICE,
+		.color = "",
+	},
 };
 
 void assert_loginfo(const char *src)

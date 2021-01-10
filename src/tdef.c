@@ -332,29 +332,29 @@ const struct osmo_tdef_state_timeout *osmo_tdef_get_state_timeout(uint32_t state
 int _osmo_tdef_fsm_inst_state_chg(struct osmo_fsm_inst *fi, uint32_t state,
 				  const struct osmo_tdef_state_timeout *timeouts_array,
 				  const struct osmo_tdef *tdefs, unsigned long default_timeout,
-				  const char *file, int line)
+				  const char *file, int line, const char *func)
 {
 	const struct osmo_tdef_state_timeout *t = osmo_tdef_get_state_timeout(state, timeouts_array);
 	unsigned long val = 0;
 
 	/* No timeout defined for this state? */
 	if (!t)
-		return _osmo_fsm_inst_state_chg(fi, state, 0, 0, file, line);
+		return _osmo_fsm_inst_state_chg(fi, state, 0, 0, file, line, func);
 
 	if (t->T)
 		val = osmo_tdef_get(tdefs, t->T, OSMO_TDEF_S, default_timeout);
 
 	if (t->keep_timer) {
 		if (t->T)
-			return _osmo_fsm_inst_state_chg_keep_or_start_timer(fi, state, val, t->T, file, line);
+			return _osmo_fsm_inst_state_chg_keep_or_start_timer(fi, state, val, t->T, file, line, func);
 		else
-			return _osmo_fsm_inst_state_chg_keep_timer(fi, state, file, line);
+			return _osmo_fsm_inst_state_chg_keep_timer(fi, state, file, line, func);
 	}
 
 	/* val is always initialized here, because if t->keep_timer is false, t->T must be != 0.
 	 * Otherwise osmo_tdef_get_state_timeout() would have returned NULL. */
 	OSMO_ASSERT(t->T);
-	return _osmo_fsm_inst_state_chg(fi, state, val, t->T, file, line);
+	return _osmo_fsm_inst_state_chg(fi, state, val, t->T, file, line, func);
 }
 
 const struct value_string osmo_tdef_unit_names[] = {
