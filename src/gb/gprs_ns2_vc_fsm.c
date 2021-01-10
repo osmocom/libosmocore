@@ -334,6 +334,9 @@ static void gprs_ns2_st_unblocked(struct osmo_fsm_inst *fi, uint32_t event, void
 	struct gprs_ns2_vc_priv *priv = fi->priv;
 
 	switch (event) {
+	case GPRS_NS2_EV_UNBLOCK:
+		ns2_tx_unblock_ack(priv->nsvc);
+		break;
 	case GPRS_NS2_EV_BLOCK:
 		priv->initiate_block = false;
 		ns2_tx_block_ack(priv->nsvc);
@@ -400,7 +403,8 @@ static const struct osmo_fsm_state gprs_ns2_vc_states[] = {
 		.onenter = gprs_ns2_st_blocked_onenter,
 	},
 	[GPRS_NS2_ST_UNBLOCKED] = {
-		.in_event_mask = S(GPRS_NS2_EV_BLOCK) | S(GPRS_NS2_EV_UNBLOCK_ACK),
+		.in_event_mask = S(GPRS_NS2_EV_BLOCK) | S(GPRS_NS2_EV_UNBLOCK_ACK) |
+				 S(GPRS_NS2_EV_UNBLOCK),
 		.out_state_mask = S(GPRS_NS2_ST_RESET) | S(GPRS_NS2_ST_ALIVE) |
 				  S(GPRS_NS2_ST_BLOCKED) |
 				  S(GPRS_NS2_ST_UNCONFIGURED),
