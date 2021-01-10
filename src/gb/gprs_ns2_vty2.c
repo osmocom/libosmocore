@@ -1491,7 +1491,9 @@ DEFUN_HIDDEN(nsvc_force_unconf, nsvc_force_unconf_cmd,
 		return CMD_WARNING;
 	}
 
-	if (nse->dialect == NS2_DIALECT_SNS) {
+	if (!nse->persistent) {
+		gprs_ns2_free_nse(nse);
+	} else if (nse->dialect == NS2_DIALECT_SNS) {
 		gprs_ns2_free_nsvcs(nse);
 	} else {
 		/* Perform the operation for all nsvc */
