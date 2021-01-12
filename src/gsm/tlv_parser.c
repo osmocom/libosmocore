@@ -231,7 +231,10 @@ int tlv_parse_one(uint8_t *o_tag, uint16_t *o_len, const uint8_t **o_val,
 		  const uint8_t *buf, int buf_len)
 {
 	uint8_t tag;
-	int len;
+	int len; /* number of bytes consumed by TLV entry */
+
+	if (buf_len < 1)
+		return -1;
 
 	tag = *buf;
 	*o_tag = tag;
@@ -264,56 +267,54 @@ int tlv_parse_one(uint8_t *o_tag, uint16_t *o_len, const uint8_t **o_val,
 		break;
 	case TLV_TYPE_TLV:
 tlv:		/* GSM TS 04.07 11.2.4: Type 4 TLV */
-		if (buf + 1 > buf + buf_len)
+		if (buf_len < 2)
 			return -1;
 		*o_val = buf+2;
 		*o_len = *(buf+1);
 		len = *o_len + 2;
-		if (len > buf_len)
-			return -2;
 		break;
 	case TLV_TYPE_vTvLV_GAN:	/* 44.318 / 11.1.4 */
 		/* FIXME: variable-length TAG! */
+		if (buf_len < 2)
+			return -1;
 		if (*(buf+1) & 0x80) {
-			/* like TL16Vbut without highest bit of len */
-			if (2 > buf_len)
+			if (buf_len < 3)
 				return -1;
+			/* like TL16Vbut without highest bit of len */
 			*o_val = buf+3;
 			*o_len = (*(buf+1) & 0x7F) << 8 | *(buf+2);
 			len = *o_len + 3;
-			if (len > buf_len)
-				return -2;
 		} else {
 			/* like TLV */
 			goto tlv;
 		}
 		break;
 	case TLV_TYPE_TvLV:
+		if (buf_len < 2)
+			return -1;
 		if (*(buf+1) & 0x80) {
 			/* like TLV, but without highest bit of len */
-			if (buf + 1 > buf + buf_len)
-				return -1;
 			*o_val = buf+2;
 			*o_len = *(buf+1) & 0x7f;
 			len = *o_len + 2;
-			if (len > buf_len)
-				return -2;
 			break;
 		}
 		/* like TL16V, fallthrough */
 	case TLV_TYPE_TL16V:
-		if (2 > buf_len)
+		if (buf_len < 3)
 			return -1;
 		*o_val = buf+3;
 		*o_len = *(buf+1) << 8 | *(buf+2);
 		len = *o_len + 3;
-		if (len > buf_len)
-			return -2;
 		break;
 	default:
 		return -3;
 	}
 
+	if (buf_len < len) {
+		*o_val = NULL;
+		return -2;
+	}
 	return len;
 }
 
