@@ -1,4 +1,11 @@
 Test shift functions
 Testing TLV encoder by decoding + re-encoding binary
 Testing TLV encoder with IE ordering
+Testing TLV_TYPE_T decoder for out-of-bounds
+Testing TLV_TYPE_TV decoder for out-of-bounds
+Testing TLV_TYPE_FIXED decoder for out-of-bounds
+Testing TLV_TYPE_TLV decoder for out-of-bounds
+Testing TLV_TYPE_vTvLV_GAN decoder for out-of-bounds
+Testing TLV_TYPE_TvLV decoder for out-of-bounds
+Testing TLV_TYPE_TL16V decoder for out-of-bounds
 Done.

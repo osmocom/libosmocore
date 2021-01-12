@@ -332,6 +332,97 @@ static void test_tlv_encoder()
 	msgb_free(msg);
 }
 
+static void test_tlv_parser_bounds()
+{
+	struct tlv_definition tdef;
+	struct tlv_parsed dec;
+	uint8_t buf[32];
+
+	memset(&tdef, 0, sizeof(tdef));
+
+	printf("Testing TLV_TYPE_T decoder for out-of-bounds\n");
+	tdef.def[0x23].type = TLV_TYPE_T;
+	buf[0] = 0x23;
+	OSMO_ASSERT(tlv_parse(&dec, &tdef, buf, 1, 0, 0) == 1);
+	OSMO_ASSERT(tlv_parse(&dec, &tdef, buf, 0, 0, 0) == 0);
+
+	printf("Testing TLV_TYPE_TV decoder for out-of-bounds\n");
+	tdef.def[0x23].type = TLV_TYPE_TV;
+	buf[0] = 0x23;
+	buf[1] = 0x42;
+	OSMO_ASSERT(tlv_parse(&dec, &tdef, buf, 2, 0, 0) == 1);
+	OSMO_ASSERT(*TLVP_VAL(&dec, 0x23) == buf[1]);
+	OSMO_ASSERT(tlv_parse(&dec, &tdef, buf, 1, 0, 0) == OSMO_TLVP_ERR_OFS_LEN_BEYOND_BUFFER);
+	OSMO_ASSERT(TLVP_VAL(&dec, 0x23) == NULL);
+
+	printf("Testing TLV_TYPE_FIXED decoder for out-of-bounds\n");
+	tdef.def[0x23].type = TLV_TYPE_FIXED;
+	tdef.def[0x23].fixed_len = 2;
+	buf[0] = 0x23;
+	buf[1] = 0x42;
+	buf[2] = 0x55;
+	OSMO_ASSERT(tlv_parse(&dec, &tdef, buf, 3, 0, 0) == 1);
+	OSMO_ASSERT(tlv_parse(&dec, &tdef, buf, 2, 0, 0) == OSMO_TLVP_ERR_OFS_LEN_BEYOND_BUFFER);
+	OSMO_ASSERT(TLVP_VAL(&dec, 0x23) == NULL);
+
+	printf("Testing TLV_TYPE_TLV decoder for out-of-bounds\n");
+	tdef.def[0x23].type = TLV_TYPE_TLV;
+	buf[0] = 0x23;
+	buf[1] = 0x02;
+	buf[2] = 0x55;
+	buf[3] = 0xAA;
+	OSMO_ASSERT(tlv_parse(&dec, &tdef, buf, 4, 0, 0) == 1);
+	OSMO_ASSERT(TLVP_VAL(&dec, 0x23) == &buf[2]);
+	OSMO_ASSERT(tlv_parse(&dec, &tdef, buf, 3, 0, 0) == OSMO_TLVP_ERR_OFS_LEN_BEYOND_BUFFER);
+	OSMO_ASSERT(TLVP_VAL(&dec, 0x23) == NULL);
+	OSMO_ASSERT(tlv_parse(&dec, &tdef, buf, 2, 0, 0) == OSMO_TLVP_ERR_OFS_LEN_BEYOND_BUFFER);
+	OSMO_ASSERT(TLVP_VAL(&dec, 0x23) == NULL);
+	OSMO_ASSERT(tlv_parse(&dec, &tdef, buf, 1, 0, 0) == OSMO_TLVP_ERR_OFS_BEYOND_BUFFER);
+	OSMO_ASSERT(TLVP_VAL(&dec, 0x23) == NULL);
+
+	printf("Testing TLV_TYPE_vTvLV_GAN decoder for out-of-bounds\n");
+	tdef.def[0x23].type = TLV_TYPE_vTvLV_GAN;
+	buf[0] = 0x23;
+	buf[1] = 0x80;
+	buf[2] = 0x01;
+	buf[3] = 0xAA;
+	OSMO_ASSERT(tlv_parse(&dec, &tdef, buf, 4, 0, 0) == 1);
+	OSMO_ASSERT(TLVP_VAL(&dec, 0x23) == &buf[3]);
+	OSMO_ASSERT(tlv_parse(&dec, &tdef, buf, 3, 0, 0) == OSMO_TLVP_ERR_OFS_LEN_BEYOND_BUFFER);
+	OSMO_ASSERT(TLVP_VAL(&dec, 0x23) == NULL);
+	OSMO_ASSERT(tlv_parse(&dec, &tdef, buf, 2, 0, 0) == OSMO_TLVP_ERR_OFS_BEYOND_BUFFER);
+	OSMO_ASSERT(TLVP_VAL(&dec, 0x23) == NULL);
+	OSMO_ASSERT(tlv_parse(&dec, &tdef, buf, 1, 0, 0) == OSMO_TLVP_ERR_OFS_BEYOND_BUFFER);
+	OSMO_ASSERT(TLVP_VAL(&dec, 0x23) == NULL);
+
+	printf("Testing TLV_TYPE_TvLV decoder for out-of-bounds\n");
+	tdef.def[0x23].type = TLV_TYPE_TvLV;
+	buf[0] = 0x23;
+	buf[1] = 0x81;
+	buf[2] = 0xAA;
+	OSMO_ASSERT(tlv_parse(&dec, &tdef, buf, 3, 0, 0) == 1);
+	OSMO_ASSERT(TLVP_VAL(&dec, 0x23) == &buf[2]);
+	OSMO_ASSERT(tlv_parse(&dec, &tdef, buf, 2, 0, 0) == OSMO_TLVP_ERR_OFS_LEN_BEYOND_BUFFER);
+	OSMO_ASSERT(TLVP_VAL(&dec, 0x23) == NULL);
+	OSMO_ASSERT(tlv_parse(&dec, &tdef, buf, 1, 0, 0) == OSMO_TLVP_ERR_OFS_BEYOND_BUFFER);
+	OSMO_ASSERT(TLVP_VAL(&dec, 0x23) == NULL);
+
+	printf("Testing TLV_TYPE_TL16V decoder for out-of-bounds\n");
+	tdef.def[0x23].type = TLV_TYPE_TL16V;
+	buf[0] = 0x23;
+	buf[1] = 0x00;
+	buf[2] = 0x01;
+	buf[3] = 0xAA;
+	OSMO_ASSERT(tlv_parse(&dec, &tdef, buf, 4, 0, 0) == 1);
+	OSMO_ASSERT(TLVP_VAL(&dec, 0x23) == &buf[3]);
+	OSMO_ASSERT(tlv_parse(&dec, &tdef, buf, 3, 0, 0) == OSMO_TLVP_ERR_OFS_LEN_BEYOND_BUFFER);
+	OSMO_ASSERT(TLVP_VAL(&dec, 0x23) == NULL);
+	OSMO_ASSERT(tlv_parse(&dec, &tdef, buf, 2, 0, 0) == OSMO_TLVP_ERR_OFS_BEYOND_BUFFER);
+	OSMO_ASSERT(TLVP_VAL(&dec, 0x23) == NULL);
+	OSMO_ASSERT(tlv_parse(&dec, &tdef, buf, 1, 0, 0) == OSMO_TLVP_ERR_OFS_BEYOND_BUFFER);
+	OSMO_ASSERT(TLVP_VAL(&dec, 0x23) == NULL);
+}
+
 int main(int argc, char **argv)
 {
 	//osmo_init_logging2(ctx, &info);
@@ -339,6 +430,7 @@ int main(int argc, char **argv)
 	test_tlv_shift_functions();
 	test_tlv_repeated_ie();
 	test_tlv_encoder();
+	test_tlv_parser_bounds();
 
 	printf("Done.\n");
 	return EXIT_SUCCESS;
