@@ -12,6 +12,7 @@
 #define OSMO_CTRL_PORT_TRX	4236
 /* 4237 used by VTY interface */
 #define OSMO_CTRL_PORT_BTS	4238
+#define OSMO_CTRL_PORT_BSC_NEIGH 4248 /* osmo-bsc Neighbor Resloution Service */
 #define OSMO_CTRL_PORT_NITB_BSC	4249
 #define OSMO_CTRL_PORT_BSC_NAT	4250
 #define OSMO_CTRL_PORT_SGSN	4251
