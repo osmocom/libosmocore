@@ -270,6 +270,8 @@ static void ns2_nsvc_create_ip4(struct osmo_fsm_inst *fi,
 
 	/* for every bind, create a connection if bind type == IP */
 	llist_for_each_entry(bind, &nsi->binding, list) {
+		if (bind->ll != GPRS_NS2_LL_UDP)
+			continue;
 		/* ignore failed connection */
 		nsvc = gprs_ns2_ip_connect_inactive(bind,
 					   &remote,
@@ -299,6 +301,8 @@ static void ns2_nsvc_create_ip6(struct osmo_fsm_inst *fi,
 
 	/* for every bind, create a connection if bind type == IP */
 	llist_for_each_entry(bind, &nsi->binding, list) {
+		if (bind->ll != GPRS_NS2_LL_UDP)
+			continue;
 		/* ignore failed connection */
 		nsvc = gprs_ns2_ip_connect_inactive(bind,
 					   &remote,
@@ -332,6 +336,8 @@ static int create_missing_nsvcs(struct osmo_fsm_inst *fi)
 
 		llist_for_each_entry(bind, &nse->nsi->binding, list) {
 			bool found = false;
+			if (bind->ll != GPRS_NS2_LL_UDP)
+				continue;
 
 			llist_for_each_entry(nsvc, &nse->nsvc, list) {
 				if (nsvc->bind != bind)
@@ -367,6 +373,8 @@ static int create_missing_nsvcs(struct osmo_fsm_inst *fi)
 
 		llist_for_each_entry(bind, &nse->nsi->binding, list) {
 			bool found = false;
+			if (bind->ll != GPRS_NS2_LL_UDP)
+				continue;
 
 			llist_for_each_entry(nsvc, &nse->nsvc, list) {
 				if (nsvc->bind != bind)
