@@ -111,7 +111,7 @@ enum gprs_ns2_vc_event {
 
 	GPRS_NS2_EV_UNITDATA,
 
-	GPRS_NS2_EV_FORCE_UNCONFIGURED,
+	GPRS_NS2_EV_FORCE_UNCONFIGURED, /* called via vty for tests */
 };
 
 static const struct value_string gprs_ns2_vc_event_names[] = {
@@ -126,7 +126,7 @@ static const struct value_string gprs_ns2_vc_event_names[] = {
 	{ GPRS_NS2_EV_ALIVE_ACK,		"ALIVE_ACK" },
 	{ GPRS_NS2_EV_STATUS,			"STATUS" },
 	{ GPRS_NS2_EV_UNITDATA,			"UNITDATA" },
-	{GPRS_NS2_EV_FORCE_UNCONFIGURED,	"FORCE_UNCONFIGURED"},
+	{ GPRS_NS2_EV_FORCE_UNCONFIGURED,	"FORCE_UNCONFIGURED" },
 	{ 0, NULL }
 };
 
@@ -431,7 +431,6 @@ static int gprs_ns2_vc_fsm_timer_cb(struct osmo_fsm_inst *fi)
 	struct gprs_ns2_inst *nsi = ns_inst_from_fi(fi);
 	struct gprs_ns2_vc_priv *priv = fi->priv;
 
-	/* PCU timeouts */
 	switch (fi->state) {
 	case GPRS_NS2_ST_RESET:
 		if (priv->initiate_reset) {
