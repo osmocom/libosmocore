@@ -738,6 +738,7 @@ void gprs_ns2_free_nse(struct gprs_ns2_nse *nse)
 	if (!nse)
 		return;
 
+	nse->alive = false;
 	gprs_ns2_free_nsvcs(nse);
 	ns2_prim_status_ind(nse, NULL, 0, NS_AFF_CAUSE_FAILURE);
 
