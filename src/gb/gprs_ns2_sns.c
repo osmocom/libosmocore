@@ -255,66 +255,55 @@ void ns2_sns_free_nsvc(struct gprs_ns2_vc *nsvc)
 	}
 }
 
-static void ns2_nsvc_create_ip4(struct osmo_fsm_inst *fi,
-				 struct gprs_ns2_nse *nse,
-				 const struct gprs_ns_ie_ip4_elem *ip4)
+static void ns2_vc_create_ip(struct osmo_fsm_inst *fi, struct gprs_ns2_nse *nse, const struct osmo_sockaddr *remote,
+			     uint8_t sig_weight, uint8_t data_weight)
 {
 	struct gprs_ns2_inst *nsi = nse->nsi;
 	struct gprs_ns2_vc *nsvc;
 	struct gprs_ns2_vc_bind *bind;
+
+	/* for every bind, create a connection if bind type == IP */
+	llist_for_each_entry(bind, &nsi->binding, list) {
+		if (bind->ll != GPRS_NS2_LL_UDP)
+			continue;
+		/* ignore failed connection */
+		nsvc = gprs_ns2_ip_connect_inactive(bind,
+					   remote,
+					   nse, 0);
+		if (!nsvc) {
+			LOGPFSML(fi, LOGL_ERROR, "SNS-CONFIG: Failed to create NSVC\n");
+			continue;
+		}
+
+		nsvc->sig_weight = sig_weight;
+		nsvc->data_weight = data_weight;
+	}
+}
+
+static void ns2_nsvc_create_ip4(struct osmo_fsm_inst *fi,
+				 struct gprs_ns2_nse *nse,
+				 const struct gprs_ns_ie_ip4_elem *ip4)
+{
 	struct osmo_sockaddr remote = { };
 	/* copy over. Both data structures use network byte order */
 	remote.u.sin.sin_family = AF_INET;
 	remote.u.sin.sin_addr.s_addr = ip4->ip_addr;
 	remote.u.sin.sin_port = ip4->udp_port;
 
-	/* for every bind, create a connection if bind type == IP */
-	llist_for_each_entry(bind, &nsi->binding, list) {
-		if (bind->ll != GPRS_NS2_LL_UDP)
-			continue;
-		/* ignore failed connection */
-		nsvc = gprs_ns2_ip_connect_inactive(bind,
-					   &remote,
-					   nse, 0);
-		if (!nsvc) {
-			LOGPFSML(fi, LOGL_ERROR, "SNS-CONFIG: Failed to create NSVC\n");
-			continue;
-		}
-
-		nsvc->sig_weight = ip4->sig_weight;
-		nsvc->data_weight = ip4->data_weight;
-	}
+	ns2_vc_create_ip(fi, nse, &remote, ip4->sig_weight, ip4->data_weight);
 }
 
 static void ns2_nsvc_create_ip6(struct osmo_fsm_inst *fi,
 				 struct gprs_ns2_nse *nse,
 				 const struct gprs_ns_ie_ip6_elem *ip6)
 {
-	struct gprs_ns2_inst *nsi = nse->nsi;
-	struct gprs_ns2_vc *nsvc;
-	struct gprs_ns2_vc_bind *bind;
 	struct osmo_sockaddr remote = {};
 	/* copy over. Both data structures use network byte order */
 	remote.u.sin6.sin6_family = AF_INET6;
 	remote.u.sin6.sin6_addr = ip6->ip_addr;
 	remote.u.sin6.sin6_port = ip6->udp_port;
 
-	/* for every bind, create a connection if bind type == IP */
-	llist_for_each_entry(bind, &nsi->binding, list) {
-		if (bind->ll != GPRS_NS2_LL_UDP)
-			continue;
-		/* ignore failed connection */
-		nsvc = gprs_ns2_ip_connect_inactive(bind,
-					   &remote,
-					   nse, 0);
-		if (!nsvc) {
-			LOGPFSML(fi, LOGL_ERROR, "SNS-CONFIG: Failed to create NSVC\n");
-			continue;
-		}
-
-		nsvc->sig_weight = ip6->sig_weight;
-		nsvc->data_weight = ip6->data_weight;
-	}
+	ns2_vc_create_ip(fi, nse, &remote, ip6->sig_weight, ip6->data_weight);
 }
 
 
