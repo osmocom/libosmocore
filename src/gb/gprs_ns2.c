@@ -490,6 +490,9 @@ void ns2_prim_status_ind(struct gprs_ns2_nse *nse,
 struct gprs_ns2_vc *ns2_vc_alloc(struct gprs_ns2_vc_bind *bind, struct gprs_ns2_nse *nse, bool initiater,
 				 enum gprs_ns2_vc_mode vc_mode)
 {
+	/* Sanity check */
+	OSMO_ASSERT(bind->ll == nse->ll);
+
 	struct gprs_ns2_vc *nsvc = talloc_zero(bind, struct gprs_ns2_vc);
 
 	if (!nsvc)
