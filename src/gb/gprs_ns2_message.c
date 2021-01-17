@@ -498,7 +498,7 @@ int ns2_tx_sns_ack(struct gprs_ns2_vc *nsvc, uint8_t trans_id, uint8_t *cause,
 			const struct gprs_ns_ie_ip6_elem *ip6_elems,
 			unsigned int num_ip6_elems)
 {
-	struct msgb *msg = gprs_ns2_msgb_alloc();
+	struct msgb *msg;
 	struct gprs_ns_hdr *nsh;
 	uint16_t nsei;
 
@@ -652,7 +652,7 @@ int ns2_tx_sns_config_ack(struct gprs_ns2_vc *nsvc, uint8_t *cause)
 int ns2_tx_sns_size(struct gprs_ns2_vc *nsvc, bool reset_flag, uint16_t max_nr_nsvc,
 			 int ip4_ep_nr, int ip6_ep_nr)
 {
-	struct msgb *msg = gprs_ns2_msgb_alloc();
+	struct msgb *msg;
 	struct gprs_ns_hdr *nsh;
 	uint16_t nsei;
 
