@@ -101,7 +101,8 @@ struct priv_vc {
 
 static void free_vc(struct gprs_ns2_vc *nsvc)
 {
-	OSMO_ASSERT(nsvc);
+	if (!nsvc)
+		return;
 
 	if (!nsvc->priv)
 		return;

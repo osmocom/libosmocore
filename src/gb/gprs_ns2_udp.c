@@ -73,6 +73,9 @@ static void free_bind(struct gprs_ns2_vc_bind *bind)
 
 static void free_vc(struct gprs_ns2_vc *nsvc)
 {
+	if (!nsvc)
+		return;
+
 	if (!nsvc->priv)
 		return;
 
