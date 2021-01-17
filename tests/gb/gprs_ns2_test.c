@@ -160,5 +160,6 @@ int main(int argc, char **argv)
 	test_nse_transfer_cap(ctx);
 	printf("===== NS2 protocol test END\n\n");
 
+	talloc_free(ctx);
 	exit(EXIT_SUCCESS);
 }
