@@ -44,15 +44,15 @@ static int ns_prim_cb(struct osmo_prim_hdr *oph, void *ctx)
 	return 0;
 }
 
-void free_bind(struct gprs_ns2_vc_bind *bind)
+static void clear_pdus(struct gprs_ns2_vc_bind *bind)
 {
-	OSMO_ASSERT(bind);
-	talloc_free(bind);
+	struct osmo_wqueue *queue = bind->priv;
+	osmo_wqueue_clear(queue);
 }
 
 struct gprs_ns2_vc_driver vc_driver_dummy = {
 	.name = "GB UDP dummy",
-	.free_bind = free_bind,
+	.free_bind = clear_pdus,
 };
 
 static int vc_sendmsg(struct gprs_ns2_vc *nsvc, struct msgb *msg)
