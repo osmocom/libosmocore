@@ -6,5 +6,10 @@
 ---- Test with NSVC[2]
 ---- Test with NSVC[1] removed
 --- Finish NSE transfer cap
+--- Testing NSE block unblock nsvc
+---- Create NSE + Binds
+---- Create NSVC[i]
+---- Create NSVC[i]
+--- Finish NSE block unblock nsvc
 ===== NS2 protocol test END
 

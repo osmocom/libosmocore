@@ -318,6 +318,8 @@ int gprs_ns2_vc_force_unconfigured(struct gprs_ns2_vc *nsvc);
 int gprs_ns2_vc_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp);
 int gprs_ns2_vc_is_alive(struct gprs_ns2_vc *nsvc);
 int gprs_ns2_vc_is_unblocked(struct gprs_ns2_vc *nsvc);
+int ns2_vc_block(struct gprs_ns2_vc *nsvc);
+int ns2_vc_unblock(struct gprs_ns2_vc *nsvc);
 
 /* nse */
 void ns2_nse_notify_unblocked(struct gprs_ns2_vc *nsvc, bool unblocked);

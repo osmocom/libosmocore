@@ -1503,6 +1503,33 @@ DEFUN_HIDDEN(nsvc_force_unconf, nsvc_force_unconf_cmd,
 	return CMD_SUCCESS;
 }
 
+DEFUN(nsvc_block, nsvc_block_cmd,
+      "nsvc <0-65535> (block|unblock)",
+      "NS Virtual Connection\n"
+      NSVCI_STR
+      "Block a NSVC. As cause code O&M intervention will be used.\n"
+      "Unblock a NSVC. As cause code O&M intervention will be used.\n")
+{
+	struct gprs_ns2_inst *nsi = vty_nsi;
+	struct gprs_ns2_vc *nsvc;
+
+	uint16_t id = atoi(argv[0]);
+
+	nsvc = gprs_ns2_nsvc_by_nsvci(nsi, id);
+	if (!nsvc) {
+		vty_out(vty, "Could not find NSVCI %05u%s", id, VTY_NEWLINE);
+		return CMD_WARNING;
+	}
+
+	if (!strcmp(argv[1], "block")) {
+		ns2_vc_block(nsvc);
+	} else {
+		ns2_vc_unblock(nsvc);
+	}
+
+	return CMD_SUCCESS;
+}
+
 static void log_set_nse_filter(struct log_target *target,
 				struct gprs_ns2_nse *nse)
 {
@@ -1608,6 +1635,7 @@ int gprs_ns2_vty2_init(struct gprs_ns2_inst *nsi)
 	install_lib_element_ve(&logging_fltr_nsvc_cmd);
 
 	install_lib_element(ENABLE_NODE, &nsvc_force_unconf_cmd);
+	install_lib_element(ENABLE_NODE, &nsvc_block_cmd);
 
 	install_lib_element(CFG_LOG_NODE, &logging_fltr_nse_cmd);
 	install_lib_element(CFG_LOG_NODE, &logging_fltr_nsvc_cmd);
