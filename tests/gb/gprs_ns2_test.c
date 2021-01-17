@@ -142,6 +142,7 @@ void test_nse_transfer_cap(void *ctx)
 	ns2_nse_notify_unblocked(nsvc[1], false);
 	OSMO_ASSERT(ns2_count_transfer_cap(nse, 0) == 42 + 23);
 
+	gprs_ns2_free(nsi);
 	printf("--- Finish NSE transfer cap\n");
 
 }
