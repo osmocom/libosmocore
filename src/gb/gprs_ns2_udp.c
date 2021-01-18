@@ -63,6 +63,8 @@ static void free_bind(struct gprs_ns2_vc_bind *bind)
 	if (!bind)
 		return;
 
+	OSMO_ASSERT(gprs_ns2_is_ip_bind(bind));
+
 	priv = bind->priv;
 
 	osmo_fd_close(&priv->fd);
@@ -74,6 +76,7 @@ static void free_vc(struct gprs_ns2_vc *nsvc)
 	if (!nsvc->priv)
 		return;
 
+	OSMO_ASSERT(gprs_ns2_is_ip_bind(nsvc->bind));
 	talloc_free(nsvc->priv);
 	nsvc->priv = NULL;
 }
@@ -115,6 +118,8 @@ struct gprs_ns2_vc *gprs_ns2_nsvc_by_sockaddr_bind(struct gprs_ns2_vc_bind *bind
 {
 	struct gprs_ns2_vc *nsvc;
 	struct priv_vc *vcpriv;
+
+	OSMO_ASSERT(gprs_ns2_is_ip_bind(bind));
 
 	llist_for_each_entry(nsvc, &bind->nsvc, blist) {
 		vcpriv = nsvc->priv;
@@ -397,6 +402,8 @@ struct gprs_ns2_vc *gprs_ns2_ip_bind_connect(struct gprs_ns2_vc_bind *bind,
 	char *sockaddr_str;
 	char idbuf[64];
 
+	OSMO_ASSERT(gprs_ns2_is_ip_bind(bind));
+
 	vc_mode = gprs_ns2_dialect_to_vc_mode(nse->dialect);
 	if ((int) vc_mode == -1) {
 		LOGP(DLNS, LOGL_ERROR, "Can not derive vc mode from dialect %d. Maybe libosmocore is too old.\n",
@@ -492,6 +499,7 @@ bool gprs_ns2_ip_vc_equal(const struct gprs_ns2_vc *nsvc,
 const struct osmo_sockaddr *gprs_ns2_ip_bind_sockaddr(struct gprs_ns2_vc_bind *bind)
 {
 	struct priv_bind *priv;
+	OSMO_ASSERT(gprs_ns2_is_ip_bind(bind));
 
 	priv = bind->priv;
 	return &priv->addr;
@@ -509,6 +517,7 @@ int gprs_ns2_ip_bind_set_dscp(struct gprs_ns2_vc_bind *bind, int dscp)
 	struct priv_bind *priv;
 	int rc = 0;
 
+	OSMO_ASSERT(gprs_ns2_is_ip_bind(bind));
 	priv = bind->priv;
 
 	if (dscp != priv->dscp) {

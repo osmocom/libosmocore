@@ -106,6 +106,7 @@ static void free_vc(struct gprs_ns2_vc *nsvc)
 	if (!nsvc->priv)
 		return;
 
+	OSMO_ASSERT(gprs_ns2_is_fr_bind(nsvc->bind));
 	talloc_free(nsvc->priv);
 	nsvc->priv = NULL;
 }
@@ -137,6 +138,7 @@ static void free_bind(struct gprs_ns2_vc_bind *bind)
 {
 	struct priv_bind *priv;
 
+	OSMO_ASSERT(gprs_ns2_is_fr_bind(bind));
 	if (!bind)
 		return;
 
@@ -158,6 +160,7 @@ static struct priv_vc *fr_alloc_vc(struct gprs_ns2_vc_bind *bind,
 	if (!priv)
 		return NULL;
 
+	OSMO_ASSERT(gprs_ns2_is_fr_bind(bind));
 	nsvc->priv = priv;
 	priv->dlci = dlci;
 	priv->dlc = osmo_fr_dlc_alloc(privb->link, dlci);
@@ -180,6 +183,7 @@ int gprs_ns2_find_vc_by_dlci(struct gprs_ns2_vc_bind *bind,
 	struct gprs_ns2_vc *nsvc;
 	struct priv_vc *vcpriv;
 
+	OSMO_ASSERT(gprs_ns2_is_fr_bind(bind));
 	if (!result)
 		return -EINVAL;
 
@@ -740,6 +744,7 @@ struct gprs_ns2_vc *gprs_ns2_fr_connect(struct gprs_ns2_vc_bind *bind,
 	struct priv_bind *bpriv = bind->priv;
 	char idbuf[64];
 
+	OSMO_ASSERT(gprs_ns2_is_fr_bind(bind));
 	nsvc = gprs_ns2_fr_nsvc_by_dlci(bind, dlci);
 	if (nsvc) {
 		goto err;
@@ -780,7 +785,10 @@ struct gprs_ns2_vc *gprs_ns2_fr_connect2(struct gprs_ns2_vc_bind *bind,
 {
 	bool created_nse = false;
 	struct gprs_ns2_vc *nsvc = NULL;
-	struct gprs_ns2_nse *nse = gprs_ns2_nse_by_nsei(bind->nsi, nsei);
+	struct gprs_ns2_nse *nse;
+
+	OSMO_ASSERT(gprs_ns2_is_fr_bind(bind));
+	nse = gprs_ns2_nse_by_nsei(bind->nsi, nsei);
 	if (!nse) {
 		nse = gprs_ns2_create_nse(bind->nsi, nsei, GPRS_NS2_LL_FR, NS2_DIALECT_STATIC_RESETBLOCK);
 		if (!nse)
@@ -812,6 +820,7 @@ struct gprs_ns2_vc *gprs_ns2_fr_nsvc_by_dlci(struct gprs_ns2_vc_bind *bind,
 	struct gprs_ns2_vc *nsvc;
 	struct priv_vc *vcpriv;
 
+	OSMO_ASSERT(gprs_ns2_is_fr_bind(bind));
 	llist_for_each_entry(nsvc, &bind->nsvc, blist) {
 		vcpriv = nsvc->priv;
 
