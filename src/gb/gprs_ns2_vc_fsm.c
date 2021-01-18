@@ -57,6 +57,7 @@ struct gprs_ns2_vc_priv {
 	int N;
 	/* The initiator is responsible to UNBLOCK the VC. The BSS is usually the initiator.
 	 * It can change during runtime. The side which blocks an unblocked side.*/
+	bool initiator;
 	bool initiate_block;
 	bool initiate_reset;
 	/* if blocked by O&M/vty */
@@ -227,6 +228,9 @@ static void gprs_ns2_st_unconfigured(struct osmo_fsm_inst *fi, uint32_t event, v
 {
 	struct gprs_ns2_vc_priv *priv = fi->priv;
 	struct gprs_ns2_inst *nsi = priv->nsvc->nse->nsi;
+
+	priv->initiate_reset = priv->initiate_block = priv->initiator;
+	priv->om_blocked = false;
 
 	switch (event) {
 	case GPRS_NS2_EV_REQ_START:
@@ -690,8 +694,7 @@ struct osmo_fsm_inst *gprs_ns2_vc_fsm_alloc(struct gprs_ns2_vc *nsvc,
 	nsvc->fi = fi;
 	priv = fi->priv = talloc_zero(fi, struct gprs_ns2_vc_priv);
 	priv->nsvc = nsvc;
-	priv->initiate_reset = initiator;
-	priv->initiate_block = initiator;
+	priv->initiator = initiator;
 
 	osmo_timer_setup(&priv->alive.timer, alive_timeout_handler, fi);
 
