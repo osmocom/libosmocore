@@ -1261,6 +1261,11 @@ int ns2_recv_vc(struct gprs_ns2_vc *nsvc,
 	if (msg->len < sizeof(struct gprs_ns_hdr))
 		return -EINVAL;
 
+	if (nsh->pdu_type != NS_PDUT_UNITDATA)
+		LOG_NS_RX_SIGNAL(nsvc, nsh->pdu_type);
+	else
+		LOG_NS_DATA(nsvc, "Rx", nsh->pdu_type, LOGL_INFO, "\n");
+
 	switch (nsh->pdu_type) {
 	case SNS_PDUT_CONFIG:
 		/* one additional byte ('end flag') before the TLV part starts */

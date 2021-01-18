@@ -646,6 +646,8 @@ static void ns2_vc_fsm_allstate_action(struct osmo_fsm_inst *fi,
 		 * the msg, the upper layer has to do it.
 		 * Otherwise the msg must be freed.
 		 */
+
+		LOG_NS_DATA(priv->nsvc, "Rx", NS_PDUT_UNITDATA, LOGL_INFO, "\n");
 		switch (fi->state) {
 		case GPRS_NS2_ST_BLOCKED:
 			/* 7.2.1: the BLOCKED_ACK might be lost */
@@ -812,8 +814,7 @@ int ns2_vc_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp)
 			if (nsh->pdu_type == NS_PDUT_RESET)
 				ns2_tx_reset_ack(nsvc);
 
-			LOGNSVC(nsvc, LOGL_ERROR, "Rx %s with wrong NSEI=%05u. Ignoring PDU.\n",
-				get_value_string(gprs_ns_pdu_strings, nsh->pdu_type), nsei);
+			LOG_NS_SIGNAL(nsvc, "Rx", nsh->pdu_type, LOGL_ERROR, " with wrong NSEI=%05u. Ignoring PDU.\n", nsei);
 			goto out;
 		}
 	}
@@ -825,8 +826,7 @@ int ns2_vc_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp)
 			if (nsh->pdu_type == NS_PDUT_RESET)
 				ns2_tx_reset_ack(nsvc);
 
-			LOGNSVC(nsvc, LOGL_ERROR, "Rx %s with wrong NSVCI=%05u. Ignoring PDU.\n",
-				get_value_string(gprs_ns_pdu_strings, nsh->pdu_type), nsvci);
+			LOG_NS_SIGNAL(nsvc, "Rx", nsh->pdu_type, LOGL_ERROR, " with wrong NSVCI=%05u. Ignoring PDU.\n", nsvci);
 			goto out;
 		}
 	}

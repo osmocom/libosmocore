@@ -198,9 +198,9 @@ static int ns2_tx_simple(struct gprs_ns2_vc *nsvc, uint8_t pdu_type)
 
 	msg->l2h = msgb_put(msg, sizeof(*nsh));
 	nsh = (struct gprs_ns_hdr *) msg->l2h;
-
 	nsh->pdu_type = pdu_type;
 
+	LOG_NS_TX_SIGNAL(nsvc, nsh->pdu_type);
 	return ns_vc_tx(nsvc, msg);
 }
 
@@ -223,8 +223,6 @@ int ns2_tx_block(struct gprs_ns2_vc *nsvc, uint8_t cause)
 	if (!msg)
 		return -ENOMEM;
 
-	LOGNSVC(nsvc, LOGL_INFO, "Tx NS BLOCK (cause=%s)\n", gprs_ns2_cause_str(cause));
-
 	rate_ctr_inc(&nsvc->ctrg->ctr[NS_CTR_BLOCKED]);
 
 	msg->l2h = msgb_put(msg, sizeof(*nsh));
@@ -234,6 +232,7 @@ int ns2_tx_block(struct gprs_ns2_vc *nsvc, uint8_t cause)
 	msgb_tvlv_put(msg, NS_IE_CAUSE, 1, &cause);
 	msgb_tvlv_put(msg, NS_IE_VCI, 2, (uint8_t *) &nsvci);
 
+	LOG_NS_SIGNAL(nsvc, "Tx", nsh->pdu_type, LOGL_INFO, " cause=%s\n", gprs_ns2_cause_str(cause));
 	return ns_vc_tx(nsvc, msg);
 }
 
@@ -255,14 +254,13 @@ int ns2_tx_block_ack(struct gprs_ns2_vc *nsvc)
 	if (!msg)
 		return -ENOMEM;
 
-	LOGNSVC(nsvc, LOGL_INFO, "Tx NS BLOCK ACK\n");
-
 	msg->l2h = msgb_put(msg, sizeof(*nsh));
 	nsh = (struct gprs_ns_hdr *) msg->l2h;
 	nsh->pdu_type = NS_PDUT_BLOCK_ACK;
 
 	msgb_tvlv_put(msg, NS_IE_VCI, 2, (uint8_t *) &nsvci);
 
+	LOG_NS_TX_SIGNAL(nsvc, nsh->pdu_type);
 	return ns_vc_tx(nsvc, msg);
 }
 
@@ -286,8 +284,6 @@ int ns2_tx_reset(struct gprs_ns2_vc *nsvc, uint8_t cause)
 	if (!msg)
 		return -ENOMEM;
 
-	LOGNSVC(nsvc, LOGL_INFO, "Tx NS RESET (cause=%s)\n", gprs_ns2_cause_str(cause));
-
 	msg->l2h = msgb_put(msg, sizeof(*nsh));
 	nsh = (struct gprs_ns_hdr *) msg->l2h;
 	nsh->pdu_type = NS_PDUT_RESET;
@@ -296,6 +292,7 @@ int ns2_tx_reset(struct gprs_ns2_vc *nsvc, uint8_t cause)
 	msgb_tvlv_put(msg, NS_IE_VCI, 2, (uint8_t *) &nsvci);
 	msgb_tvlv_put(msg, NS_IE_NSEI, 2, (uint8_t *) &nsei);
 
+	LOG_NS_SIGNAL(nsvc, "Tx", nsh->pdu_type, LOGL_INFO, " cause=%s\n", gprs_ns2_cause_str(cause));
 	return ns_vc_tx(nsvc, msg);
 }
 
@@ -326,11 +323,10 @@ int ns2_tx_reset_ack(struct gprs_ns2_vc *nsvc)
 
 	nsh->pdu_type = NS_PDUT_RESET_ACK;
 
-	LOGNSVC(nsvc, LOGL_INFO, "Tx NS RESET ACK\n");
-
 	msgb_tvlv_put(msg, NS_IE_VCI, 2, (uint8_t *)&nsvci);
 	msgb_tvlv_put(msg, NS_IE_NSEI, 2, (uint8_t *)&nsei);
 
+	LOG_NS_TX_SIGNAL(nsvc, nsh->pdu_type);
 	return ns_vc_tx(nsvc, msg);
 }
 
@@ -343,8 +339,6 @@ int ns2_tx_unblock(struct gprs_ns2_vc *nsvc)
 	log_set_context(LOG_CTX_GB_NSVC, nsvc);
 
 	ERR_IF_NSVC_USES_SNS(nsvc, "transmit NS UNBLOCK");
-
-	LOGNSVC(nsvc, LOGL_INFO, "Tx NS UNBLOCK\n");
 
 	return ns2_tx_simple(nsvc, NS_PDUT_UNBLOCK);
 }
@@ -360,8 +354,6 @@ int ns2_tx_unblock_ack(struct gprs_ns2_vc *nsvc)
 
 	ERR_IF_NSVC_USES_SNS(nsvc, "transmit NS UNBLOCK ACK");
 
-	LOGNSVC(nsvc, LOGL_INFO, "Tx NS UNBLOCK_ACK\n");
-
 	return ns2_tx_simple(nsvc, NS_PDUT_UNBLOCK_ACK);
 }
 
@@ -372,7 +364,6 @@ int ns2_tx_alive(struct gprs_ns2_vc *nsvc)
 {
 	log_set_context(LOG_CTX_GB_NSE, nsvc->nse);
 	log_set_context(LOG_CTX_GB_NSVC, nsvc);
-	LOGNSVC(nsvc, LOGL_DEBUG, "Tx NS ALIVE\n");
 
 	return ns2_tx_simple(nsvc, NS_PDUT_ALIVE);
 }
@@ -384,7 +375,6 @@ int ns2_tx_alive_ack(struct gprs_ns2_vc *nsvc)
 {
 	log_set_context(LOG_CTX_GB_NSE, nsvc->nse);
 	log_set_context(LOG_CTX_GB_NSVC, nsvc);
-	LOGNSVC(nsvc, LOGL_DEBUG, "Tx NS ALIVE_ACK\n");
 
 	return ns2_tx_simple(nsvc, NS_PDUT_ALIVE_ACK);
 }
@@ -417,6 +407,7 @@ int ns2_tx_unit_data(struct gprs_ns2_vc *nsvc,
 	nsh->data[1] = bvci >> 8;
 	nsh->data[2] = bvci & 0xff;
 
+	LOG_NS_DATA(nsvc, "Tx", nsh->pdu_type, LOGL_INFO, "\n");
 	return ns_vc_tx(nsvc, msg);
 }
 
@@ -441,8 +432,6 @@ int ns2_tx_status(struct gprs_ns2_vc *nsvc, uint8_t cause,
 
 	if (!msg)
 		return -ENOMEM;
-
-	LOGNSVC(nsvc, LOGL_NOTICE, "Tx NS STATUS (cause=%s)\n", gprs_ns2_cause_str(cause));
 
 	msg->l2h = msgb_put(msg, sizeof(*nsh));
 	nsh = (struct gprs_ns_hdr *) msg->l2h;
@@ -478,6 +467,7 @@ int ns2_tx_status(struct gprs_ns2_vc *nsvc, uint8_t cause,
 		break;
 	}
 
+	LOG_NS_SIGNAL(nsvc, "Tx", nsh->pdu_type, LOGL_INFO, " cause=%s\n", gprs_ns2_cause_str(cause));
 	return ns_vc_tx(nsvc, msg);
 }
 
@@ -515,8 +505,6 @@ int ns2_tx_sns_ack(struct gprs_ns2_vc *nsvc, uint8_t trans_id, uint8_t *cause,
 		return -EIO;
 	}
 
-	LOGNSVC(nsvc, LOGL_INFO, "Tx SNS-ACK (trans_id=%u, cause=%s, num_ip4=%u, num_ip6=%u)\n",
-		trans_id, cause ? gprs_ns2_cause_str(*cause) : "NULL", num_ip4_elems, num_ip6_elems);
 
 	nsei = osmo_htons(nsvc->nse->nsei);
 
@@ -541,6 +529,9 @@ int ns2_tx_sns_ack(struct gprs_ns2_vc *nsvc, uint8_t trans_id, uint8_t *cause,
 			      (const uint8_t *)ip6_elems);
 	}
 
+	LOG_NS_SIGNAL(nsvc, "Tx", nsh->pdu_type, LOGL_INFO,
+		      " (trans_id=%u, cause=%s, num_ip4=%u, num_ip6=%u)\n",
+		      trans_id, cause ? gprs_ns2_cause_str(*cause) : "NULL", num_ip4_elems, num_ip6_elems);
 	return ns_vc_tx(nsvc, msg);
 }
 
@@ -576,9 +567,6 @@ int ns2_tx_sns_config(struct gprs_ns2_vc *nsvc, bool end_flag,
 		return -EIO;
 	}
 
-	LOGNSVC(nsvc, LOGL_INFO, "Tx SNS-CONFIG (end_flag=%u, num_ip4=%u, num_ip6=%u)\n",
-		end_flag, num_ip4_elems, num_ip6_elems);
-
 	nsei = osmo_htons(nsvc->nse->nsei);
 
 	msg->l2h = msgb_put(msg, sizeof(*nsh));
@@ -599,6 +587,9 @@ int ns2_tx_sns_config(struct gprs_ns2_vc *nsvc, bool end_flag,
 			      (const uint8_t *)ip6_elems);
 	}
 
+	LOG_NS_SIGNAL(nsvc, "Tx", nsh->pdu_type, LOGL_INFO,
+		      " (end_flag=%u, num_ip4=%u, num_ip6=%u)\n",
+		      end_flag, num_ip4_elems, num_ip6_elems);
 	return ns_vc_tx(nsvc, msg);
 }
 
@@ -627,9 +618,6 @@ int ns2_tx_sns_config_ack(struct gprs_ns2_vc *nsvc, uint8_t *cause)
 		return -EIO;
 	}
 
-	LOGNSVC(nsvc, LOGL_INFO, "Tx SNS-CONFIG-ACK (cause=%s)\n",
-		cause ? gprs_ns2_cause_str(*cause) : "NULL");
-
 	nsei = osmo_htons(nsvc->nse->nsei);
 
 	msg->l2h = msgb_put(msg, sizeof(*nsh));
@@ -641,6 +629,9 @@ int ns2_tx_sns_config_ack(struct gprs_ns2_vc *nsvc, uint8_t *cause)
 	if (cause)
 		msgb_tvlv_put(msg, NS_IE_CAUSE, 1, cause);
 
+	LOGNSVC(nsvc, LOGL_INFO, "Tx SNS-CONFIG-ACK (cause=%s)\n",
+		cause ? gprs_ns2_cause_str(*cause) : "NULL");
+	LOG_NS_TX_SIGNAL(nsvc, nsh->pdu_type);
 	return ns_vc_tx(nsvc, msg);
 }
 
@@ -675,9 +666,6 @@ int ns2_tx_sns_size(struct gprs_ns2_vc *nsvc, bool reset_flag, uint16_t max_nr_n
 		return -EIO;
 	}
 
-	LOGNSVC(nsvc, LOGL_INFO, "Tx SNS-SIZE (reset=%u, max_nr_nsvc=%u, num_ip4=%u, num_ip6=%u)\n",
-		reset_flag, max_nr_nsvc, ip4_ep_nr, ip6_ep_nr);
-
 	nsei = osmo_htons(nsvc->nse->nsei);
 
 	msg->l2h = msgb_put(msg, sizeof(*nsh));
@@ -693,6 +681,9 @@ int ns2_tx_sns_size(struct gprs_ns2_vc *nsvc, bool reset_flag, uint16_t max_nr_n
 	if (ip6_ep_nr >= 0)
 		msgb_tv16_put(msg, NS_IE_IPv6_EP_NR, ip6_ep_nr);
 
+	LOG_NS_SIGNAL(nsvc, "Tx", nsh->pdu_type, LOGL_INFO,
+		      " (reset=%u, max_nr_nsvc=%u, num_ip4=%u, num_ip6=%u)\n",
+		      reset_flag, max_nr_nsvc, ip4_ep_nr, ip6_ep_nr);
 	return ns_vc_tx(nsvc, msg);
 }
 
@@ -717,9 +708,6 @@ int ns2_tx_sns_size_ack(struct gprs_ns2_vc *nsvc, uint8_t *cause)
 		return -EIO;
 	}
 
-	LOGNSVC(nsvc, LOGL_INFO, "Tx SNS-SIZE-ACK (cause=%s)\n",
-		cause ? gprs_ns2_cause_str(*cause) : "NULL");
-
 	nsei = osmo_htons(nsvc->nse->nsei);
 
 	msg->l2h = msgb_put(msg, sizeof(*nsh));
@@ -731,7 +719,7 @@ int ns2_tx_sns_size_ack(struct gprs_ns2_vc *nsvc, uint8_t *cause)
 	if (cause)
 		msgb_tvlv_put(msg, NS_IE_CAUSE, 1, cause);
 
+	LOG_NS_SIGNAL(nsvc, "Tx", nsh->pdu_type, LOGL_INFO, " cause=%s\n",
+		      cause ? gprs_ns2_cause_str(*cause) : "NULL");
 	return ns_vc_tx(nsvc, msg);
 }
-
-

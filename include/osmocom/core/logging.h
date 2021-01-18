@@ -122,7 +122,9 @@ void logp(int subsys, const char *file, int line, int cont, const char *format, 
 #define DLRSPRO		-19	/*!< Osmocom Remote SIM Protocol */
 #define DLNS		-20	/*!< Osmocom NS layer */
 #define DLBSSGP		-21	/*!< Osmocom BSSGP layer */
-#define OSMO_NUM_DLIB	21	/*!< Number of logging sub-systems in libraries */
+#define DLNSDATA	-22	/*!< Osmocom NS layer data pdus */
+#define DLNSSIGNAL	-23	/*!< Osmocom NS layer signal pdus */
+#define OSMO_NUM_DLIB	23	/*!< Number of logging sub-systems in libraries */
 
 /* Colors that can be used in log_info_cat.color */
 #define OSMO_LOGCOLOR_NORMAL NULL

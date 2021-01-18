@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include <osmocom/core/logging.h>
 #include <osmocom/gprs/protocol/gsm_08_16.h>
 #include <osmocom/gprs/gprs_ns2.h>
 
@@ -14,17 +15,29 @@
 #define LOGBIND(bind, lvl, fmt, args ...) \
 	LOGP(DLNS, lvl, "BIND(%s) " fmt, (bind)->name, ## args)
 
-
-#define LOGNSVC(nsvc, lvl, fmt, args ...)					\
+#define LOGNSVC_SS(ss, nsvc, lvl, fmt, args ...)				\
 	do {									\
 		if ((nsvc)->nsvci_is_valid) {					\
-			LOGP(DLNS, lvl, "NSE(%05u)-NSVC(%05u) " fmt,		\
+			LOGP(ss, lvl, "NSE(%05u)-NSVC(%05u) " fmt,		\
 			     (nsvc)->nse->nsei, (nsvc)->nsvci, ## args);	\
 		} else { 							\
-			LOGP(DLNS, lvl, "NSE(%05u)-NSVC(none) " fmt, 		\
+			LOGP(ss, lvl, "NSE(%05u)-NSVC(none) " fmt, 		\
 			     (nsvc)->nse->nsei, ## args);			\
 		}								\
 	} while (0)
+
+#define LOGNSVC(nsvc, lvl, fmt, args ...)					\
+	LOGNSVC_SS(DLNS, nsvc, lvl, fmt, ## args)
+
+#define LOG_NS_SIGNAL(nsvc, direction, pdu_type, lvl, fmt, args ...)	\
+	LOGNSVC_SS(DLNSSIGNAL, nsvc, lvl, "%s %s" fmt, direction, get_value_string(gprs_ns_pdu_strings, pdu_type), ## args)
+
+#define LOG_NS_DATA(nsvc, direction, pdu_type, lvl, fmt, args ...)	\
+	LOGNSVC_SS(DLNSDATA, nsvc, lvl, "%s %s" fmt, direction, get_value_string(gprs_ns_pdu_strings, pdu_type), ## args)
+
+#define LOG_NS_RX_SIGNAL(nsvc, pdu_type) LOG_NS_SIGNAL(nsvc, "Rx", pdu_type, LOGL_INFO, "\n")
+#define LOG_NS_TX_SIGNAL(nsvc, pdu_type) LOG_NS_SIGNAL(nsvc, "Tx", pdu_type, LOGL_INFO, "\n")
+
 
 struct osmo_fsm_inst;
 struct tlv_parsed;

@@ -277,6 +277,18 @@ static const struct log_info_cat internal_cat[OSMO_NUM_DLIB] = {
 		.enabled = 1, .loglevel = LOGL_NOTICE,
 		.color = "\033[38;5;59m",
 	},
+	[INT2IDX(DLNSDATA)] = {
+		.name = "DLNSDATA",
+		.description = "GPRS NS layer data PDU",
+		.enabled = 1, .loglevel = LOGL_NOTICE,
+		.color = "\033[38;5;61m",
+	},
+	[INT2IDX(DLNSSIGNAL)] = {
+		.name = "DLNSSIGNAL",
+		.description = "GPRS NS layer signal PDU",
+		.enabled = 1, .loglevel = LOGL_NOTICE,
+		.color = "\033[38;5;63m",
+	},
 };
 
 void assert_loginfo(const char *src)
