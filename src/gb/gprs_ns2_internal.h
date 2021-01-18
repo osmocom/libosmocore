@@ -136,6 +136,12 @@ struct gprs_ns2_nse {
 	enum gprs_ns2_dialect dialect;
 
 	struct osmo_fsm_inst *bss_sns_fi;
+
+	/*! sum of all the data weight of _active_ NS-VCs */
+	uint32_t sum_data_weight;
+
+	/*! sum of all the signalling weight of _active_ NS-VCs */
+	uint32_t sum_sig_weight;
 };
 
 /*! Structure representing a single NS-VC */

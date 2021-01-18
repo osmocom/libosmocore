@@ -1121,13 +1121,18 @@ int ns2_recv_vc(struct gprs_ns2_vc *nsvc,
 void ns2_nse_data_sum(struct gprs_ns2_nse *nse)
 {
 	struct gprs_ns2_vc *nsvc;
+
 	nse->nsvc_count = 0;
+	nse->sum_data_weight = 0;
+	nse->sum_sig_weight = 0;
 
 	llist_for_each_entry(nsvc, &nse->nsvc, list) {
 		if (!gprs_ns2_vc_is_unblocked(nsvc))
 			continue;
 
 		nse->nsvc_count++;
+		nse->sum_data_weight += nsvc->data_weight;
+		nse->sum_sig_weight += nsvc->sig_weight;
 	}
 }
 
@@ -1137,35 +1142,25 @@ void ns2_nse_data_sum(struct gprs_ns2_nse *nse)
 void ns2_nse_notify_unblocked(struct gprs_ns2_vc *nsvc, bool unblocked)
 {
 	struct gprs_ns2_nse *nse = nsvc->nse;
-	struct gprs_ns2_vc *tmp;
 
 	ns2_nse_data_sum(nse);
 
 	if (unblocked == nse->alive)
 		return;
 
-	if (unblocked) {
-		/* this is the first unblocked NSVC on an unavailable NSE */
+	/* wait until both data_weight and sig_weight are != 0 before declaring NSE as alive */
+	if (unblocked && nse->sum_data_weight && nse->sum_sig_weight) {
 		nse->alive = true;
 		ns2_prim_status_ind(nse, NULL, 0, NS_AFF_CAUSE_RECOVERY);
 		nse->first = false;
 		return;
 	}
 
-	/* check if there are any remaining alive vcs */
-	llist_for_each_entry(tmp, &nse->nsvc, list) {
-		if (tmp == nsvc)
-			continue;
-
-		if (gprs_ns2_vc_is_unblocked(tmp)) {
-			/* there is at least one remaining alive NSVC */
-			return;
-		}
+	if (nse->alive && (nse->sum_data_weight == 0 || nse->sum_sig_weight == 0)) {
+		/* nse became unavailable */
+		nse->alive = false;
+		ns2_prim_status_ind(nse, NULL, 0, NS_AFF_CAUSE_FAILURE);
 	}
-
-	/* nse became unavailable */
-	nse->alive = false;
-	ns2_prim_status_ind(nse, NULL, 0, NS_AFF_CAUSE_FAILURE);
 }
 
 /*! Create a new GPRS NS instance
