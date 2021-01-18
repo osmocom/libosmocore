@@ -188,6 +188,9 @@ void sighandler(int sigset)
 /* called by the ns layer */
 int gprs_ns_prim_cb(struct osmo_prim_hdr *oph, void *ctx)
 {
+	if (oph->msg)
+		msgb_free(oph->msg);
+
 	return 0;
 }
 
