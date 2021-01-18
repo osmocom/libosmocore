@@ -255,6 +255,19 @@ void ns2_sns_free_nsvc(struct gprs_ns2_vc *nsvc)
 	}
 }
 
+static void ns2_clear_ipv46_entries(struct ns2_sns_state *gss)
+{
+	TALLOC_FREE(gss->ip4_local);
+	TALLOC_FREE(gss->ip4_remote);
+	TALLOC_FREE(gss->ip6_local);
+	TALLOC_FREE(gss->ip6_remote);
+
+	gss->num_ip4_local = 0;
+	gss->num_ip4_remote = 0;
+	gss->num_ip6_local = 0;
+	gss->num_ip6_remote = 0;
+}
+
 static void ns2_vc_create_ip(struct osmo_fsm_inst *fi, struct gprs_ns2_nse *nse, const struct osmo_sockaddr *remote,
 			     uint8_t sig_weight, uint8_t data_weight)
 {
@@ -701,6 +714,8 @@ static void ns2_sns_st_size_onenter(struct osmo_fsm_inst *fi, uint32_t old_state
 	/* on a generic failure, the timer callback will recover */
 	if (old_state != GPRS_SNS_ST_UNCONFIGURED)
 		ns2_prim_status_ind(gss->nse, NULL, 0, NS_AFF_CAUSE_SNS_FAILURE);
+
+	ns2_clear_ipv46_entries(gss);
 
 	/* no initial available */
 	if (!gss->initial)
@@ -1349,6 +1364,7 @@ static void ns2_sns_st_all_action(struct osmo_fsm_inst *fi, uint32_t event, void
 		 * gprs_ns2_free_nsvcs() will trigger NO_NSVC, prevent this from triggering a reselection */
 		gss->reselection_running = true;
 		gprs_ns2_free_nsvcs(nse);
+		ns2_clear_ipv46_entries(gss);
 
 		/* Choose the next sns endpoint. */
 		if (llist_empty(&gss->sns_endpoints)) {
