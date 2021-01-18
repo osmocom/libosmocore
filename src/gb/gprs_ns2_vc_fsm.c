@@ -100,39 +100,39 @@ enum gprs_ns2_vc_state {
 };
 
 enum gprs_ns2_vc_event {
-	GPRS_NS2_EV_START,
+	GPRS_NS2_EV_REQ_START,
 
 	/* received messages */
-	GPRS_NS2_EV_RESET,
-	GPRS_NS2_EV_RESET_ACK,
-	GPRS_NS2_EV_UNBLOCK,
-	GPRS_NS2_EV_UNBLOCK_ACK,
-	GPRS_NS2_EV_BLOCK,
-	GPRS_NS2_EV_BLOCK_ACK,
-	GPRS_NS2_EV_ALIVE,
-	GPRS_NS2_EV_ALIVE_ACK,
-	GPRS_NS2_EV_STATUS,
+	GPRS_NS2_EV_RX_RESET,
+	GPRS_NS2_EV_RX_RESET_ACK,
+	GPRS_NS2_EV_RX_UNBLOCK,
+	GPRS_NS2_EV_RX_UNBLOCK_ACK,
+	GPRS_NS2_EV_RX_BLOCK,
+	GPRS_NS2_EV_RX_BLOCK_ACK,
+	GPRS_NS2_EV_RX_ALIVE,
+	GPRS_NS2_EV_RX_ALIVE_ACK,
+	GPRS_NS2_EV_RX_STATUS,
 
-	GPRS_NS2_EV_UNITDATA,
+	GPRS_NS2_EV_RX_UNITDATA,
 
-	GPRS_NS2_EV_FORCE_UNCONFIGURED,	/* called via vty for tests */
-	GPRS_NS2_EV_REQ_OM_BLOCK,	/* vty cmd: block */
-	GPRS_NS2_EV_REQ_OM_UNBLOCK,	/* vty cmd: unblock*/
+	GPRS_NS2_EV_REQ_FORCE_UNCONFIGURED,	/* called via vty for tests */
+	GPRS_NS2_EV_REQ_OM_BLOCK,		/* vty cmd: block */
+	GPRS_NS2_EV_REQ_OM_UNBLOCK,		/* vty cmd: unblock*/
 };
 
 static const struct value_string gprs_ns2_vc_event_names[] = {
-	{ GPRS_NS2_EV_START, 			"START" },
-	{ GPRS_NS2_EV_RESET,			"RESET" },
-	{ GPRS_NS2_EV_RESET_ACK,		"RESET_ACK" },
-	{ GPRS_NS2_EV_UNBLOCK,			"UNBLOCK" },
-	{ GPRS_NS2_EV_UNBLOCK_ACK,		"UNBLOCK_ACK" },
-	{ GPRS_NS2_EV_BLOCK,			"BLOCK" },
-	{ GPRS_NS2_EV_BLOCK_ACK,		"BLOCK_ACK" },
-	{ GPRS_NS2_EV_ALIVE,			"ALIVE" },
-	{ GPRS_NS2_EV_ALIVE_ACK,		"ALIVE_ACK" },
-	{ GPRS_NS2_EV_STATUS,			"STATUS" },
-	{ GPRS_NS2_EV_UNITDATA,			"UNITDATA" },
-	{ GPRS_NS2_EV_FORCE_UNCONFIGURED,	"FORCE_UNCONFIGURED" },
+	{ GPRS_NS2_EV_REQ_START, 			"START" },
+	{ GPRS_NS2_EV_RX_RESET,			"RESET" },
+	{ GPRS_NS2_EV_RX_RESET_ACK,		"RESET_ACK" },
+	{ GPRS_NS2_EV_RX_UNBLOCK,			"UNBLOCK" },
+	{ GPRS_NS2_EV_RX_UNBLOCK_ACK,		"UNBLOCK_ACK" },
+	{ GPRS_NS2_EV_RX_BLOCK,			"BLOCK" },
+	{ GPRS_NS2_EV_RX_BLOCK_ACK,		"BLOCK_ACK" },
+	{ GPRS_NS2_EV_RX_ALIVE,			"ALIVE" },
+	{ GPRS_NS2_EV_RX_ALIVE_ACK,		"ALIVE_ACK" },
+	{ GPRS_NS2_EV_RX_STATUS,			"STATUS" },
+	{ GPRS_NS2_EV_RX_UNITDATA,			"UNITDATA" },
+	{ GPRS_NS2_EV_REQ_FORCE_UNCONFIGURED,	"FORCE_UNCONFIGURED" },
 	{ GPRS_NS2_EV_REQ_OM_BLOCK,		"REQ-O&M-BLOCK"},
 	{ GPRS_NS2_EV_REQ_OM_UNBLOCK,		"REQ-O&M-UNBLOCK"},
 	{ 0, NULL }
@@ -229,7 +229,7 @@ static void gprs_ns2_st_unconfigured(struct osmo_fsm_inst *fi, uint32_t event, v
 	struct gprs_ns2_inst *nsi = priv->nsvc->nse->nsi;
 
 	switch (event) {
-	case GPRS_NS2_EV_START:
+	case GPRS_NS2_EV_REQ_START:
 		switch (priv->nsvc->mode) {
 		case NS2_VC_MODE_ALIVE:
 			osmo_fsm_inst_state_chg(fi, GPRS_NS2_ST_ALIVE, nsi->timeout[NS_TOUT_TNS_ALIVE], NS_TOUT_TNS_ALIVE);
@@ -268,7 +268,7 @@ static void gprs_ns2_st_reset(struct osmo_fsm_inst *fi, uint32_t event, void *da
 
 	if (priv->initiate_reset) {
 		switch (event) {
-		case GPRS_NS2_EV_RESET_ACK:
+		case GPRS_NS2_EV_RX_RESET_ACK:
 			osmo_fsm_inst_state_chg(fi, GPRS_NS2_ST_BLOCKED,
 						nsi->timeout[NS_TOUT_TNS_BLOCK], NS_TOUT_TNS_BLOCK);
 			break;
@@ -276,7 +276,7 @@ static void gprs_ns2_st_reset(struct osmo_fsm_inst *fi, uint32_t event, void *da
 	} else {
 		/* we are on the receiving end */
 		switch (event) {
-		case GPRS_NS2_EV_RESET:
+		case GPRS_NS2_EV_RX_RESET:
 			ns2_tx_reset_ack(priv->nsvc);
 			osmo_fsm_inst_state_chg(fi, GPRS_NS2_ST_BLOCKED,
 						0, 0);
@@ -312,16 +312,16 @@ static void gprs_ns2_st_blocked(struct osmo_fsm_inst *fi, uint32_t event, void *
 
 	if (priv->om_blocked) {
 		switch (event) {
-		case GPRS_NS2_EV_BLOCK_ACK:
+		case GPRS_NS2_EV_RX_BLOCK_ACK:
 			priv->accept_unitdata = false;
 			osmo_timer_del(&fi->timer);
 			break;
-		case GPRS_NS2_EV_BLOCK:
+		case GPRS_NS2_EV_RX_BLOCK:
 			priv->accept_unitdata = false;
 			ns2_tx_block_ack(priv->nsvc);
 			osmo_timer_del(&fi->timer);
 			break;
-		case GPRS_NS2_EV_UNBLOCK:
+		case GPRS_NS2_EV_RX_UNBLOCK:
 			priv->accept_unitdata = false;
 			ns2_tx_block(priv->nsvc, NS_CAUSE_OM_INTERVENTION);
 			osmo_timer_add(&fi->timer);
@@ -329,14 +329,14 @@ static void gprs_ns2_st_blocked(struct osmo_fsm_inst *fi, uint32_t event, void *
 		}
 	} else if (priv->initiate_block) {
 		switch (event) {
-		case GPRS_NS2_EV_BLOCK:
+		case GPRS_NS2_EV_RX_BLOCK:
 			/* TODO: BLOCK is a UNBLOCK_NACK */
 			ns2_tx_block_ack(priv->nsvc);
 			break;
-		case GPRS_NS2_EV_UNBLOCK:
+		case GPRS_NS2_EV_RX_UNBLOCK:
 			ns2_tx_unblock_ack(priv->nsvc);
 			/* fall through */
-		case GPRS_NS2_EV_UNBLOCK_ACK:
+		case GPRS_NS2_EV_RX_UNBLOCK_ACK:
 			priv->accept_unitdata = true;
 			osmo_fsm_inst_state_chg(fi, GPRS_NS2_ST_UNBLOCKED,
 						0, NS_TOUT_TNS_TEST);
@@ -345,10 +345,10 @@ static void gprs_ns2_st_blocked(struct osmo_fsm_inst *fi, uint32_t event, void *
 	} else {
 		/* we are on the receiving end. The initiator who sent RESET is responsible to UNBLOCK! */
 		switch (event) {
-		case GPRS_NS2_EV_BLOCK:
+		case GPRS_NS2_EV_RX_BLOCK:
 			ns2_tx_block_ack(priv->nsvc);
 			break;
-		case GPRS_NS2_EV_UNBLOCK:
+		case GPRS_NS2_EV_RX_UNBLOCK:
 			ns2_tx_unblock_ack(priv->nsvc);
 			osmo_fsm_inst_state_chg(fi, GPRS_NS2_ST_UNBLOCKED,
 						0, 0);
@@ -373,10 +373,10 @@ static void gprs_ns2_st_unblocked(struct osmo_fsm_inst *fi, uint32_t event, void
 	struct gprs_ns2_vc_priv *priv = fi->priv;
 
 	switch (event) {
-	case GPRS_NS2_EV_UNBLOCK:
+	case GPRS_NS2_EV_RX_UNBLOCK:
 		ns2_tx_unblock_ack(priv->nsvc);
 		break;
-	case GPRS_NS2_EV_BLOCK:
+	case GPRS_NS2_EV_RX_BLOCK:
 		priv->initiate_block = false;
 		ns2_tx_block_ack(priv->nsvc);
 		osmo_fsm_inst_state_chg(fi, GPRS_NS2_ST_BLOCKED,
@@ -388,7 +388,7 @@ static void gprs_ns2_st_unblocked(struct osmo_fsm_inst *fi, uint32_t event, void
 static void gprs_ns2_st_alive(struct osmo_fsm_inst *fi, uint32_t event, void *data)
 {
 	switch (event) {
-	case GPRS_NS2_EV_ALIVE_ACK:
+	case GPRS_NS2_EV_RX_ALIVE_ACK:
 		osmo_fsm_inst_state_chg(fi, GPRS_NS2_ST_UNBLOCKED, 0, 0);
 		break;
 	}
@@ -416,13 +416,13 @@ static void gprs_ns2_st_alive_onleave(struct osmo_fsm_inst *fi, uint32_t next_st
 
 static const struct osmo_fsm_state gprs_ns2_vc_states[] = {
 	[GPRS_NS2_ST_UNCONFIGURED] = {
-		.in_event_mask = S(GPRS_NS2_EV_START),
+		.in_event_mask = S(GPRS_NS2_EV_REQ_START),
 		.out_state_mask = S(GPRS_NS2_ST_RESET) | S(GPRS_NS2_ST_ALIVE),
 		.name = "UNCONFIGURED",
 		.action = gprs_ns2_st_unconfigured,
 	},
 	[GPRS_NS2_ST_RESET] = {
-		.in_event_mask = S(GPRS_NS2_EV_RESET_ACK) | S(GPRS_NS2_EV_RESET),
+		.in_event_mask = S(GPRS_NS2_EV_RX_RESET_ACK) | S(GPRS_NS2_EV_RX_RESET),
 		.out_state_mask = S(GPRS_NS2_ST_RESET) |
 				  S(GPRS_NS2_ST_BLOCKED) |
 				  S(GPRS_NS2_ST_UNCONFIGURED),
@@ -431,8 +431,8 @@ static const struct osmo_fsm_state gprs_ns2_vc_states[] = {
 		.onenter = gprs_ns2_st_reset_onenter,
 	},
 	[GPRS_NS2_ST_BLOCKED] = {
-		.in_event_mask = S(GPRS_NS2_EV_BLOCK) | S(GPRS_NS2_EV_BLOCK_ACK) |
-		S(GPRS_NS2_EV_UNBLOCK) | S(GPRS_NS2_EV_UNBLOCK_ACK),
+		.in_event_mask = S(GPRS_NS2_EV_RX_BLOCK) | S(GPRS_NS2_EV_RX_BLOCK_ACK) |
+		S(GPRS_NS2_EV_RX_UNBLOCK) | S(GPRS_NS2_EV_RX_UNBLOCK_ACK),
 		.out_state_mask = S(GPRS_NS2_ST_RESET) |
 				  S(GPRS_NS2_ST_UNBLOCKED) |
 				  S(GPRS_NS2_ST_BLOCKED) |
@@ -442,8 +442,8 @@ static const struct osmo_fsm_state gprs_ns2_vc_states[] = {
 		.onenter = gprs_ns2_st_blocked_onenter,
 	},
 	[GPRS_NS2_ST_UNBLOCKED] = {
-		.in_event_mask = S(GPRS_NS2_EV_BLOCK) | S(GPRS_NS2_EV_UNBLOCK_ACK) |
-				 S(GPRS_NS2_EV_UNBLOCK),
+		.in_event_mask = S(GPRS_NS2_EV_RX_BLOCK) | S(GPRS_NS2_EV_RX_UNBLOCK_ACK) |
+				 S(GPRS_NS2_EV_RX_UNBLOCK),
 		.out_state_mask = S(GPRS_NS2_ST_RESET) | S(GPRS_NS2_ST_ALIVE) |
 				  S(GPRS_NS2_ST_BLOCKED) |
 				  S(GPRS_NS2_ST_UNCONFIGURED),
@@ -454,7 +454,7 @@ static const struct osmo_fsm_state gprs_ns2_vc_states[] = {
 
 	/* ST_ALIVE is only used on VC without RESET/BLOCK */
 	[GPRS_NS2_ST_ALIVE] = {
-		.in_event_mask = S(GPRS_NS2_EV_ALIVE_ACK),
+		.in_event_mask = S(GPRS_NS2_EV_RX_ALIVE_ACK),
 		.out_state_mask = S(GPRS_NS2_ST_RESET) |
 				  S(GPRS_NS2_ST_UNBLOCKED) |
 				  S(GPRS_NS2_ST_UNCONFIGURED),
@@ -560,7 +560,7 @@ static void gprs_ns2_vc_fsm_allstate_action(struct osmo_fsm_inst *fi,
 	struct msgb *msg = data;
 
 	switch (event) {
-	case GPRS_NS2_EV_RESET:
+	case GPRS_NS2_EV_RX_RESET:
 		if (priv->nsvc->mode != NS2_VC_MODE_BLOCKRESET)
 			break;
 
@@ -572,7 +572,7 @@ static void gprs_ns2_vc_fsm_allstate_action(struct osmo_fsm_inst *fi,
 		/* pass the event down into FSM action */
 		gprs_ns2_st_reset(fi, event, data);
 		break;
-	case GPRS_NS2_EV_ALIVE:
+	case GPRS_NS2_EV_RX_ALIVE:
 		switch (fi->state) {
 		case GPRS_NS2_ST_UNCONFIGURED:
 		case GPRS_NS2_ST_RESET:
@@ -582,14 +582,14 @@ static void gprs_ns2_vc_fsm_allstate_action(struct osmo_fsm_inst *fi,
 			ns2_tx_alive_ack(priv->nsvc);
 		}
 		break;
-	case GPRS_NS2_EV_ALIVE_ACK:
+	case GPRS_NS2_EV_RX_ALIVE_ACK:
 		/* for VCs without RESET/BLOCK/UNBLOCK, the connections comes after ALIVE_ACK unblocked */
 		if (fi->state == GPRS_NS2_ST_ALIVE)
 			gprs_ns2_st_alive(fi, event, data);
 		else
 			recv_test_procedure(fi);
 		break;
-	case GPRS_NS2_EV_UNITDATA:
+	case GPRS_NS2_EV_RX_UNITDATA:
 		/* UNITDATA has to handle the release of msg.
 		 * If send upwards (gprs_ns2_recv_unitdata) it must NOT free
 		 * the msg, the upper layer has to do it.
@@ -616,11 +616,11 @@ static void gprs_ns2_vc_fsm_allstate_action(struct osmo_fsm_inst *fi,
 
 		msgb_free(msg);
 		break;
-	case GPRS_NS2_EV_FORCE_UNCONFIGURED:
+	case GPRS_NS2_EV_REQ_FORCE_UNCONFIGURED:
 		if (fi->state != GPRS_NS2_ST_UNCONFIGURED) {
 			/* Force the NSVC back to its initial state */
 			osmo_fsm_inst_state_chg(fi, GPRS_NS2_ST_UNCONFIGURED, 0, 0);
-			osmo_fsm_inst_dispatch(fi, GPRS_NS2_EV_START, NULL);
+			osmo_fsm_inst_dispatch(fi, GPRS_NS2_EV_REQ_START, NULL);
 			return;
 		}
 		break;
@@ -653,11 +653,11 @@ static struct osmo_fsm gprs_ns2_vc_fsm = {
 	.name = "GPRS-NS2-VC",
 	.states = gprs_ns2_vc_states,
 	.num_states = ARRAY_SIZE(gprs_ns2_vc_states),
-	.allstate_event_mask = S(GPRS_NS2_EV_UNITDATA) |
-			       S(GPRS_NS2_EV_RESET) |
-			       S(GPRS_NS2_EV_ALIVE) |
-			       S(GPRS_NS2_EV_ALIVE_ACK) |
-			       S(GPRS_NS2_EV_FORCE_UNCONFIGURED) |
+	.allstate_event_mask = S(GPRS_NS2_EV_RX_UNITDATA) |
+			       S(GPRS_NS2_EV_RX_RESET) |
+			       S(GPRS_NS2_EV_RX_ALIVE) |
+			       S(GPRS_NS2_EV_RX_ALIVE_ACK) |
+			       S(GPRS_NS2_EV_REQ_FORCE_UNCONFIGURED) |
 			       S(GPRS_NS2_EV_REQ_OM_BLOCK) |
 			       S(GPRS_NS2_EV_REQ_OM_UNBLOCK),
 	.allstate_action = gprs_ns2_vc_fsm_allstate_action,
@@ -705,7 +705,7 @@ int gprs_ns2_vc_fsm_start(struct gprs_ns2_vc *nsvc)
 {
 	/* allows to call this function even for started nsvc by gprs_ns2_start_alive_all_nsvcs */
 	if (nsvc->fi->state == GPRS_NS2_ST_UNCONFIGURED)
-		return osmo_fsm_inst_dispatch(nsvc->fi, GPRS_NS2_EV_START, NULL);
+		return osmo_fsm_inst_dispatch(nsvc->fi, GPRS_NS2_EV_REQ_START, NULL);
 	return 0;
 }
 
@@ -714,7 +714,7 @@ int gprs_ns2_vc_fsm_start(struct gprs_ns2_vc *nsvc)
  *  \return 0 on success; negative on error */
 int gprs_ns2_vc_force_unconfigured(struct gprs_ns2_vc *nsvc)
 {
-	return osmo_fsm_inst_dispatch(nsvc->fi, GPRS_NS2_EV_FORCE_UNCONFIGURED, NULL);
+	return osmo_fsm_inst_dispatch(nsvc->fi, GPRS_NS2_EV_REQ_FORCE_UNCONFIGURED, NULL);
 }
 
 /*! Block a NS-VC.
@@ -759,32 +759,32 @@ int gprs_ns2_vc_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed
 
 	switch (nsh->pdu_type) {
 	case NS_PDUT_RESET:
-		osmo_fsm_inst_dispatch(fi, GPRS_NS2_EV_RESET, tp);
+		osmo_fsm_inst_dispatch(fi, GPRS_NS2_EV_RX_RESET, tp);
 		break;
 	case NS_PDUT_RESET_ACK:
-		osmo_fsm_inst_dispatch(fi, GPRS_NS2_EV_RESET_ACK, tp);
+		osmo_fsm_inst_dispatch(fi, GPRS_NS2_EV_RX_RESET_ACK, tp);
 		break;
 	case NS_PDUT_BLOCK:
-		osmo_fsm_inst_dispatch(fi, GPRS_NS2_EV_BLOCK, tp);
+		osmo_fsm_inst_dispatch(fi, GPRS_NS2_EV_RX_BLOCK, tp);
 		break;
 	case NS_PDUT_BLOCK_ACK:
-		osmo_fsm_inst_dispatch(fi, GPRS_NS2_EV_BLOCK_ACK, tp);
+		osmo_fsm_inst_dispatch(fi, GPRS_NS2_EV_RX_BLOCK_ACK, tp);
 		break;
 	case NS_PDUT_UNBLOCK:
-		osmo_fsm_inst_dispatch(fi, GPRS_NS2_EV_UNBLOCK, tp);
+		osmo_fsm_inst_dispatch(fi, GPRS_NS2_EV_RX_UNBLOCK, tp);
 		break;
 	case NS_PDUT_UNBLOCK_ACK:
-		osmo_fsm_inst_dispatch(fi, GPRS_NS2_EV_UNBLOCK_ACK, tp);
+		osmo_fsm_inst_dispatch(fi, GPRS_NS2_EV_RX_UNBLOCK_ACK, tp);
 		break;
 	case NS_PDUT_ALIVE:
-		osmo_fsm_inst_dispatch(fi, GPRS_NS2_EV_ALIVE, tp);
+		osmo_fsm_inst_dispatch(fi, GPRS_NS2_EV_RX_ALIVE, tp);
 		break;
 	case NS_PDUT_ALIVE_ACK:
-		osmo_fsm_inst_dispatch(fi, GPRS_NS2_EV_ALIVE_ACK, tp);
+		osmo_fsm_inst_dispatch(fi, GPRS_NS2_EV_RX_ALIVE_ACK, tp);
 		break;
 	case NS_PDUT_UNITDATA:
 		/* UNITDATA have to free msg because it might send the msg layer upwards */
-		osmo_fsm_inst_dispatch(fi, GPRS_NS2_EV_UNITDATA, msg);
+		osmo_fsm_inst_dispatch(fi, GPRS_NS2_EV_RX_UNITDATA, msg);
 		return 0;
 	default:
 		LOGP(DLNS, LOGL_ERROR, "NSEI=%u Rx unknown NS PDU type %s\n", nsvc->nse->nsei,
