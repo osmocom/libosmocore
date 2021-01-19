@@ -51,31 +51,70 @@ extern struct llist_head osmo_g_fsms;
 
 /*! Print information about a FSM [class] to the given VTY
  *  \param vty The VTY to which to print
+ *  \param[in] prefix prefix to print at start of each line (typically indenting)
  *  \param[in] fsm The FSM class to print
  */
-void vty_out_fsm(struct vty *vty, struct osmo_fsm *fsm)
+void vty_out_fsm2(struct vty *vty, const char *prefix, struct osmo_fsm *fsm)
 {
 	unsigned int i;
 	const struct value_string *evt_name;
 
-	vty_out(vty, "FSM Name: '%s', Log Subsys: '%s'%s", fsm->name,
+	vty_out(vty, "%sFSM Name: '%s', Log Subsys: '%s'%s", prefix, fsm->name,
 		log_category_name(fsm->log_subsys), VTY_NEWLINE);
 	/* list the events */
 	if (fsm->event_names) {
 		for (evt_name = fsm->event_names; evt_name->str != NULL; evt_name++) {
-			vty_out(vty, " Event %02u (0x%08x): '%s'%s", evt_name->value,
+			vty_out(vty, "%s Event %02u (0x%08x): '%s'%s", prefix, evt_name->value,
 				(1 << evt_name->value), evt_name->str, VTY_NEWLINE);
 		}
 	} else
-		vty_out(vty, " No event names are defined for this FSM! Please fix!%s", VTY_NEWLINE);
+		vty_out(vty, "%s No event names are defined for this FSM! Please fix!%s", prefix, VTY_NEWLINE);
 
 	/* list the states */
-	vty_out(vty, " Number of States: %u%s", fsm->num_states, VTY_NEWLINE);
+	vty_out(vty, "%s Number of States: %u%s", prefix, fsm->num_states, VTY_NEWLINE);
 	for (i = 0; i < fsm->num_states; i++) {
 		const struct osmo_fsm_state *state = &fsm->states[i];
-		vty_out(vty, "  State %-20s InEvtMask: 0x%08x, OutStateMask: 0x%08x%s",
+		vty_out(vty, "%s  State %-20s InEvtMask: 0x%08x, OutStateMask: 0x%08x%s", prefix,
 			state->name, state->in_event_mask, state->out_state_mask,
 			VTY_NEWLINE);
+	}
+}
+
+/*! Print information about a FSM [class] to the given VTY
+ *  \param vty The VTY to which to print
+ *  \param[in] fsm The FSM class to print
+ */
+void vty_out_fsm(struct vty *vty, struct osmo_fsm *fsm)
+{
+	vty_out_fsm2(vty, "", fsm);
+}
+
+/*! Print a FSM instance to the given VTY
+ *  \param vty The VTY to which to print
+ *  \param[in] prefix prefix to print at start of each line (typically indenting)
+ *  \param[in] fsmi The FSM instance to print
+ */
+void vty_out_fsm_inst2(struct vty *vty, const char *prefix, struct osmo_fsm_inst *fsmi)
+{
+	struct osmo_fsm_inst *child;
+
+	vty_out(vty, "%sFSM Instance Name: '%s', ID: '%s'%s", prefix,
+		fsmi->name, fsmi->id, VTY_NEWLINE);
+	vty_out(vty, "%s Log-Level: '%s', State: '%s'%s", prefix,
+		log_level_str(fsmi->log_level),
+		osmo_fsm_state_name(fsmi->fsm, fsmi->state),
+		VTY_NEWLINE);
+	if (fsmi->T)
+		vty_out(vty, "%s Timer: %u%s", prefix, fsmi->T, VTY_NEWLINE);
+	if (fsmi->proc.parent) {
+		vty_out(vty, "%s Parent: '%s', Term-Event: '%s'%s", prefix,
+			fsmi->proc.parent->name,
+			osmo_fsm_event_name(fsmi->proc.parent->fsm,
+					    fsmi->proc.parent_term_event),
+			VTY_NEWLINE);
+	}
+	llist_for_each_entry(child, &fsmi->proc.children, proc.child) {
+		vty_out(vty, "%s Child: '%s'%s", prefix, child->name, VTY_NEWLINE);
 	}
 }
 
@@ -85,26 +124,7 @@ void vty_out_fsm(struct vty *vty, struct osmo_fsm *fsm)
  */
 void vty_out_fsm_inst(struct vty *vty, struct osmo_fsm_inst *fsmi)
 {
-	struct osmo_fsm_inst *child;
-
-	vty_out(vty, "FSM Instance Name: '%s', ID: '%s'%s",
-		fsmi->name, fsmi->id, VTY_NEWLINE);
-	vty_out(vty, " Log-Level: '%s', State: '%s'%s",
-		log_level_str(fsmi->log_level),
-		osmo_fsm_state_name(fsmi->fsm, fsmi->state),
-		VTY_NEWLINE);
-	if (fsmi->T)
-		vty_out(vty, " Timer: %u%s", fsmi->T, VTY_NEWLINE);
-	if (fsmi->proc.parent) {
-		vty_out(vty, " Parent: '%s', Term-Event: '%s'%s",
-			fsmi->proc.parent->name,
-			osmo_fsm_event_name(fsmi->proc.parent->fsm,
-					    fsmi->proc.parent_term_event),
-			VTY_NEWLINE);
-	}
-	llist_for_each_entry(child, &fsmi->proc.children, proc.child) {
-		vty_out(vty, " Child: '%s'%s", child->name, VTY_NEWLINE);
-	}
+	vty_out_fsm_inst2(vty, "", fsmi);
 }
 
 #define SH_FSM_STR	SHOW_STR "Show information about finite state machines\n"
