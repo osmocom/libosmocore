@@ -1499,28 +1499,29 @@ int gprs_ns2_sns_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parse
 #include <osmocom/vty/vty.h>
 #include <osmocom/vty/misc.h>
 
-static void vty_dump_sns_ip4(struct vty *vty, const struct gprs_ns_ie_ip4_elem *ip4)
+static void vty_dump_sns_ip4(struct vty *vty, const char *prefix, const struct gprs_ns_ie_ip4_elem *ip4)
 {
 	struct in_addr in = { .s_addr = ip4->ip_addr };
-	vty_out(vty, " %s:%u, Signalling Weight: %u, Data Weight: %u%s",
+	vty_out(vty, "%s %s:%u, Signalling Weight: %u, Data Weight: %u%s", prefix,
 		inet_ntoa(in), ntohs(ip4->udp_port), ip4->sig_weight, ip4->data_weight, VTY_NEWLINE);
 }
 
-static void vty_dump_sns_ip6(struct vty *vty, const struct gprs_ns_ie_ip6_elem *ip6)
+static void vty_dump_sns_ip6(struct vty *vty, const char *prefix, const struct gprs_ns_ie_ip6_elem *ip6)
 {
 	char ip_addr[INET6_ADDRSTRLEN] = {};
 	if (!inet_ntop(AF_INET6, &ip6->ip_addr, ip_addr, (INET6_ADDRSTRLEN)))
 		strcpy(ip_addr, "Invalid IPv6");
 
-	vty_out(vty, " %s:%u, Signalling Weight: %u, Data Weight: %u%s",
+	vty_out(vty, "%s %s:%u, Signalling Weight: %u, Data Weight: %u%s", prefix,
 		ip_addr, ntohs(ip6->udp_port), ip6->sig_weight, ip6->data_weight, VTY_NEWLINE);
 }
 
 /*! Dump the IP-SNS state to a vty.
  *  \param[in] vty VTY to which the state shall be printed
+ *  \param[in] prefix prefix to print at start of each line (typically indenting)
  *  \param[in] nse NS Entity whose IP-SNS state shall be printed
  *  \param[in] stats Whether or not statistics shall also be printed */
-void gprs_ns2_sns_dump_vty(struct vty *vty, const struct gprs_ns2_nse *nse, bool stats)
+void gprs_ns2_sns_dump_vty(struct vty *vty, const char *prefix, const struct gprs_ns2_nse *nse, bool stats)
 {
 	struct ns2_sns_state *gss;
 	unsigned int i;
@@ -1528,30 +1529,30 @@ void gprs_ns2_sns_dump_vty(struct vty *vty, const struct gprs_ns2_nse *nse, bool
 	if (!nse->bss_sns_fi)
 		return;
 
-	vty_out_fsm_inst(vty, nse->bss_sns_fi);
+	vty_out_fsm_inst2(vty, prefix, nse->bss_sns_fi);
 	gss = (struct ns2_sns_state *) nse->bss_sns_fi->priv;
 
-	vty_out(vty, "Maximum number of remote  NS-VCs: %zu, IPv4 Endpoints: %zu, IPv6 Endpoints: %zu%s",
-		gss->num_max_nsvcs, gss->num_max_ip4_remote, gss->num_max_ip6_remote, VTY_NEWLINE);
+	vty_out(vty, "%sMaximum number of remote  NS-VCs: %zu, IPv4 Endpoints: %zu, IPv6 Endpoints: %zu%s",
+		prefix, gss->num_max_nsvcs, gss->num_max_ip4_remote, gss->num_max_ip6_remote, VTY_NEWLINE);
 
 	if (gss->num_ip4_local && gss->num_ip4_remote) {
-		vty_out(vty, "Local IPv4 Endpoints:%s", VTY_NEWLINE);
+		vty_out(vty, "%sLocal IPv4 Endpoints:%s", prefix, VTY_NEWLINE);
 		for (i = 0; i < gss->num_ip4_local; i++)
-			vty_dump_sns_ip4(vty, &gss->ip4_local[i]);
+			vty_dump_sns_ip4(vty, prefix, &gss->ip4_local[i]);
 
-		vty_out(vty, "Remote IPv4 Endpoints:%s", VTY_NEWLINE);
+		vty_out(vty, "%sRemote IPv4 Endpoints:%s", prefix, VTY_NEWLINE);
 		for (i = 0; i < gss->num_ip4_remote; i++)
-			vty_dump_sns_ip4(vty, &gss->ip4_remote[i]);
+			vty_dump_sns_ip4(vty, prefix, &gss->ip4_remote[i]);
 	}
 
 	if (gss->num_ip6_local && gss->num_ip6_remote) {
-		vty_out(vty, "Local IPv6 Endpoints:%s", VTY_NEWLINE);
+		vty_out(vty, "%sLocal IPv6 Endpoints:%s", prefix, VTY_NEWLINE);
 		for (i = 0; i < gss->num_ip6_local; i++)
-			vty_dump_sns_ip6(vty, &gss->ip6_local[i]);
+			vty_dump_sns_ip6(vty, prefix, &gss->ip6_local[i]);
 
-		vty_out(vty, "Remote IPv6 Endpoints:%s", VTY_NEWLINE);
+		vty_out(vty, "%sRemote IPv6 Endpoints:%s", prefix, VTY_NEWLINE);
 		for (i = 0; i < gss->num_ip6_remote; i++)
-			vty_dump_sns_ip6(vty, &gss->ip6_remote[i]);
+			vty_dump_sns_ip6(vty, prefix, &gss->ip6_remote[i]);
 	}
 }
 

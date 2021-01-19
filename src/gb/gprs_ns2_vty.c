@@ -298,7 +298,7 @@ static void dump_nse(struct vty *vty, const struct gprs_ns2_nse *nse, bool stats
 	vty_out(vty, "NSEI %05u: %s, %s%s", nse->nsei, gprs_ns2_lltype_str(nse->ll),
 		nse->alive ? "ALIVE" : "DEAD", VTY_NEWLINE);
 
-	gprs_ns2_sns_dump_vty(vty, nse, stats);
+	gprs_ns2_sns_dump_vty(vty, " ", nse, stats);
 	llist_for_each_entry(nsvc, &nse->nsvc, list) {
 		if (persistent_only) {
 			if (nsvc->persistent)
