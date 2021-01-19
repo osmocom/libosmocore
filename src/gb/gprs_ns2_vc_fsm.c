@@ -462,7 +462,7 @@ static const struct osmo_fsm_state gprs_ns2_vc_states[] = {
 	/* ST_ALIVE is only used on VC without RESET/BLOCK */
 	[GPRS_NS2_ST_ALIVE] = {
 		.in_event_mask = S(GPRS_NS2_EV_RX_ALIVE_ACK),
-		.out_state_mask = S(GPRS_NS2_ST_RESET) |
+		.out_state_mask = S(GPRS_NS2_ST_ALIVE) |
 				  S(GPRS_NS2_ST_UNBLOCKED) |
 				  S(GPRS_NS2_ST_UNCONFIGURED),
 		.name = "ALIVE",
