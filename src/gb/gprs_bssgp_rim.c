@@ -405,7 +405,7 @@ int bssgp_dec_ran_inf_req_rim_cont(struct bssgp_ran_inf_req_rim_cont *cont, cons
 		case BSSGP_RAN_INF_APP_ID_SON:
 		case BSSGP_RAN_INF_APP_ID_UTRA_SI:
 			/* TODO: add parsers for Si3, MBMS, SON, UTRA-SI app containers */
-			return -EINVAL;
+			return -EOPNOTSUPP;
 		default:
 			return -EINVAL;
 		}
@@ -475,7 +475,7 @@ int bssgp_enc_ran_inf_req_rim_cont(uint8_t *buf, size_t len, const struct bssgp_
 	case BSSGP_RAN_INF_APP_ID_SON:
 	case BSSGP_RAN_INF_APP_ID_UTRA_SI:
 		/* TODO: add encoders for Si3, MBMS, SON, UTRA-SI app containers */
-		return -EINVAL;
+		return -EOPNOTSUPP;
 	default:
 		return -EINVAL;
 	}
@@ -528,7 +528,7 @@ int bssgp_dec_ran_inf_rim_cont(struct bssgp_ran_inf_rim_cont *cont, const uint8_
 		case BSSGP_RAN_INF_APP_ID_SON:
 		case BSSGP_RAN_INF_APP_ID_UTRA_SI:
 			/* TODO: add parsers for Si3, MBMS, SON, UTRA-SI app containers */
-			return -EINVAL;
+			return -EOPNOTSUPP;
 		default:
 			return -EINVAL;
 		}
@@ -547,7 +547,7 @@ int bssgp_dec_ran_inf_rim_cont(struct bssgp_ran_inf_rim_cont *cont, const uint8_
 		case BSSGP_RAN_INF_APP_ID_SON:
 		case BSSGP_RAN_INF_APP_ID_UTRA_SI:
 			/* TODO: add parsers for Si3, MBMS, SON, UTRA-SI app containers */
-			return -EINVAL;
+			return -EOPNOTSUPP;
 		default:
 			return -EINVAL;
 		}
@@ -594,7 +594,7 @@ int bssgp_enc_ran_inf_rim_cont(uint8_t *buf, size_t len, const struct bssgp_ran_
 		case BSSGP_RAN_INF_APP_ID_SON:
 		case BSSGP_RAN_INF_APP_ID_UTRA_SI:
 			/* TODO: add encoders for Si3, MBMS, SON, UTRA-SI app containers */
-			return -EINVAL;
+			return -EOPNOTSUPP;
 		default:
 			return -EINVAL;
 		}
@@ -613,7 +613,7 @@ int bssgp_enc_ran_inf_rim_cont(uint8_t *buf, size_t len, const struct bssgp_ran_
 		case BSSGP_RAN_INF_APP_ID_SON:
 		case BSSGP_RAN_INF_APP_ID_UTRA_SI:
 			/* TODO: add encoders for Si3, MBMS, SON, UTRA-SI app containers */
-			return -EINVAL;
+			return -EOPNOTSUPP;
 		default:
 			return -EINVAL;
 		}
@@ -810,7 +810,7 @@ int bssgp_dec_ran_inf_app_err_rim_cont(struct bssgp_ran_inf_app_err_rim_cont *co
 	case BSSGP_RAN_INF_APP_ID_SON:
 	case BSSGP_RAN_INF_APP_ID_UTRA_SI:
 		/* TODO: add parsers for Si3, MBMS, SON, UTRA-SI app containers */
-		return -EINVAL;
+		return -EOPNOTSUPP;
 	default:
 		return -EINVAL;
 	}
@@ -849,7 +849,7 @@ int bssgp_enc_ran_inf_app_err_rim_cont(uint8_t *buf, size_t len, const struct bs
 	case BSSGP_RAN_INF_APP_ID_SON:
 	case BSSGP_RAN_INF_APP_ID_UTRA_SI:
 		/* TODO: add encoders for Si3, MBMS, SON, UTRA-SI app containers */
-		return -EINVAL;
+		return -EOPNOTSUPP;
 	default:
 		return -EINVAL;
 	}
