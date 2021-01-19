@@ -258,7 +258,6 @@ int ns2_tx_block_ack(struct gprs_ns2_vc *nsvc)
 
 	LOGP(DLNS, LOGL_INFO, "NSEI=%u Tx NS BLOCK ACK (NSVCI=%u)\n", nsvc->nse->nsei, nsvc->nsvci);
 
-	/* be conservative and mark it as blocked even now! */
 	msg->l2h = msgb_put(msg, sizeof(*nsh));
 	nsh = (struct gprs_ns_hdr *) msg->l2h;
 	nsh->pdu_type = NS_PDUT_BLOCK_ACK;
