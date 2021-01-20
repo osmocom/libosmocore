@@ -756,6 +756,16 @@ int gprs_ns2_vc_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed
 	/* TODO: handle RESET with different VCI */
 	/* TODO: handle BLOCK/UNBLOCK/ALIVE with different VCI */
 
+	if (nsh->pdu_type == NS_PDUT_UNITDATA) {
+		/* UNITDATA have to free msg because it might send the msg layer upwards */
+		osmo_fsm_inst_dispatch(fi, GPRS_NS2_EV_RX_UNITDATA, msg);
+		return 0;
+	}
+
+	/* pdu_type set to NS_PDUT_UNITDATA is the only case where *tp may be
+	 * NULL, in all other cases *tp must point to valid memory. */
+	OSMO_ASSERT(tp);
+
 	if (gprs_ns2_validate(nsvc, nsh->pdu_type, msg, tp, &cause)) {
 		if (nsh->pdu_type != NS_PDUT_STATUS) {
 			rc = ns2_tx_status(nsvc, cause, 0, msg);
@@ -788,10 +798,6 @@ int gprs_ns2_vc_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed
 	case NS_PDUT_ALIVE_ACK:
 		osmo_fsm_inst_dispatch(fi, GPRS_NS2_EV_RX_ALIVE_ACK, tp);
 		break;
-	case NS_PDUT_UNITDATA:
-		/* UNITDATA have to free msg because it might send the msg layer upwards */
-		osmo_fsm_inst_dispatch(fi, GPRS_NS2_EV_RX_UNITDATA, msg);
-		return 0;
 	default:
 		LOGPFSML(fi, LOGL_ERROR, "NSEI=%u Rx unknown NS PDU type %s\n", nsvc->nse->nsei,
 			 get_value_string(gprs_ns_pdu_strings, nsh->pdu_type));
