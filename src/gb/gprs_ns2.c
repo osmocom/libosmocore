@@ -217,6 +217,7 @@ const struct value_string gprs_ns2_aff_cause_prim_strs[] = {
 	{ GPRS_NS2_AFF_CAUSE_RECOVERY,		"NSE recovery" },
 	{ GPRS_NS2_AFF_CAUSE_SNS_CONFIGURED,	"NSE SNS configured" },
 	{ GPRS_NS2_AFF_CAUSE_SNS_FAILURE,	"NSE SNS failure" },
+	{ GPRS_NS2_AFF_CAUSE_MTU_CHANGE,	"NSE MTU changed" },
 	{ 0, NULL }
 };
 
@@ -496,15 +497,20 @@ void ns2_prim_status_ind(struct gprs_ns2_nse *nse,
 	nsp.u.status.transfer = ns2_count_transfer_cap(nse, bvci);
 	nsp.u.status.first = nse->first;
 	nsp.u.status.persistent = nse->persistent;
+	if (nse->mtu < 4)
+		nsp.u.status.mtu = 0;
+	else
+		nsp.u.status.mtu = nse->mtu - 4; /* 1 Byte NS PDU type, 1 Byte NS SDU control, 2 Byte BVCI */
+
 	if (nsvc) {
 		nsp.u.status.nsvc = gprs_ns2_ll_str_buf(nsvc_str, sizeof(nsvc_str), nsvc);
-		LOGNSVC(nsvc, LOGL_NOTICE, "NS-STATUS.ind(bvci=%05u): cause=%s, transfer=%d, first=%d\n",
+		LOGNSVC(nsvc, LOGL_NOTICE, "NS-STATUS.ind(bvci=%05u): cause=%s, transfer=%d, first=%d, mtu=%d\n",
 			nsp.bvci, gprs_ns2_aff_cause_prim_str(nsp.u.status.cause),
-			nsp.u.status.transfer, nsp.u.status.first);
+			nsp.u.status.transfer, nsp.u.status.first, nse->mtu);
 	} else {
-		LOGNSE(nse, LOGL_NOTICE, "NS-STATUS.ind(bvci=%05u): cause=%s, transfer=%d, first=%d\n",
+		LOGNSE(nse, LOGL_NOTICE, "NS-STATUS.ind(bvci=%05u): cause=%s, transfer=%d, first=%d, mtu=%d\n",
 			nsp.bvci, gprs_ns2_aff_cause_prim_str(nsp.u.status.cause),
-			nsp.u.status.transfer, nsp.u.status.first);
+			nsp.u.status.transfer, nsp.u.status.first, nse->mtu);
 	}
 
 	osmo_prim_init(&nsp.oph, SAP_NS, GPRS_NS2_PRIM_STATUS, PRIM_OP_INDICATION, NULL);
@@ -548,6 +554,7 @@ struct gprs_ns2_vc *ns2_vc_alloc(struct gprs_ns2_vc_bind *bind, struct gprs_ns2_
 
 	llist_add(&nsvc->list, &nse->nsvc);
 	llist_add(&nsvc->blist, &bind->nsvc);
+	ns2_nse_update_mtu(nse);
 
 	return nsvc;
 
@@ -746,6 +753,7 @@ struct gprs_ns2_nse *gprs_ns2_create_nse(struct gprs_ns2_inst *nsi, uint16_t nse
 	nse->nsei = nsei;
 	nse->nsi = nsi;
 	nse->first = true;
+	nse->mtu = 0;
 	llist_add(&nse->list, &nsi->nse);
 	INIT_LLIST_HEAD(&nse->nsvc);
 
@@ -1332,6 +1340,31 @@ static void add_bind_array(struct gprs_ns2_vc_bind **array,
 		return;
 
 	array[i] = bind;
+}
+
+void ns2_nse_update_mtu(struct gprs_ns2_nse *nse)
+{
+	struct gprs_ns2_vc *nsvc;
+	int mtu = 0;
+
+	if (llist_empty(&nse->nsvc)) {
+		nse->mtu = 0;
+		return;
+	}
+
+	llist_for_each_entry(nsvc, &nse->nsvc, list) {
+		if (mtu == 0)
+			mtu = nsvc->bind->mtu;
+		else if (mtu > nsvc->bind->mtu)
+			mtu = nsvc->bind->mtu;
+	}
+
+	if (nse->mtu == mtu)
+		return;
+
+	nse->mtu = mtu;
+	if (nse->alive)
+		ns2_prim_status_ind(nsvc->nse, NULL, 0, GPRS_NS2_AFF_CAUSE_MTU_CHANGE);
 }
 
 /*! calculate the transfer capabilities for a nse

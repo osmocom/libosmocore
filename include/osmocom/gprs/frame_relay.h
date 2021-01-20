@@ -39,6 +39,11 @@ enum osmo_fr_role {
 	FR_ROLE_NETWORK_EQUIPMENT,
 };
 
+/* 48.016 § 6.1.4.2 default maximum information field size of 1600 octets */
+#define FRAME_RELAY_MTU 1600
+/* FR DLC header is 2 byte */
+#define FRAME_RELAY_SDU (FRAME_RELAY_MTU - 2)
+
 extern const struct value_string osmo_fr_role_names[];
 
 static inline const char *osmo_fr_role_str(enum osmo_fr_role role) {

@@ -572,6 +572,10 @@ int gprs_ns2_frgre_bind(struct gprs_ns2_inst *nsi,
 	bind->send_vc = frgre_vc_sendmsg;
 	bind->free_vc = free_vc;
 	bind->nsi = nsi;
+	/* TODO: allow to set the MTU via vty. It can not be automatic detected because it goes over an
+	 * ethernet device and the MTU here must match the FR side of the FR-to-GRE gateway.
+	 */
+	bind->mtu = FRAME_RELAY_SDU;
 
 	priv = bind->priv = talloc_zero(bind, struct priv_bind);
 	if (!priv) {

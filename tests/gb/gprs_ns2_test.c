@@ -40,16 +40,22 @@ int bssgp_prim_cb(struct osmo_prim_hdr *oph, void *ctx)
 
 static struct log_info info = {};
 static struct osmo_wqueue *unitdata = NULL;
+static struct osmo_gprs_ns2_prim last_nse_recovery = {};
 
 static int ns_prim_cb(struct osmo_prim_hdr *oph, void *ctx)
 {
+	struct osmo_gprs_ns2_prim *nsp;
 	OSMO_ASSERT(oph->sap == SAP_NS);
+	nsp = container_of(oph, struct osmo_gprs_ns2_prim, oph);
 	if (oph->msg) {
 		if (oph->primitive == GPRS_NS2_PRIM_UNIT_DATA) {
 			osmo_wqueue_enqueue(unitdata, oph->msg);
 		} else {
 			msgb_free(oph->msg);
 		}
+	}
+	if (oph->primitive == GPRS_NS2_PRIM_STATUS && nsp->u.status.cause == GPRS_NS2_AFF_CAUSE_RECOVERY) {
+		last_nse_recovery = *nsp;
 	}
 	return 0;
 }
@@ -113,6 +119,7 @@ static struct gprs_ns2_vc_bind *dummy_bind(struct gprs_ns2_inst *nsi, const char
 	bind->transfer_capability = 42;
 	bind->send_vc = vc_sendmsg;
 	bind->priv = talloc_zero(bind, struct osmo_wqueue);
+	bind->mtu = 123;
 	struct osmo_wqueue *queue = bind->priv;
 
 	osmo_wqueue_init(queue, 100);
@@ -154,6 +161,7 @@ static struct gprs_ns2_vc_bind *loopback_bind(struct gprs_ns2_inst *nsi, const c
 	bind->ll = GPRS_NS2_LL_UDP;
 	bind->transfer_capability = 99;
 	bind->send_vc = loopback_sendmsg;
+	bind->mtu = 123;
 	return bind;
 }
 
@@ -362,6 +370,59 @@ void test_unitdata(void *ctx)
 	printf("--- Finish unitdata test\n");
 }
 
+void test_mtu(void *ctx)
+{
+	struct gprs_ns2_inst *nsi;
+	struct gprs_ns2_vc_bind *bind[2];
+	struct gprs_ns2_vc_bind *loopbind;
+	struct gprs_ns2_nse *nse;
+	struct gprs_ns2_vc *nsvc[2];
+	struct gprs_ns2_vc *loop[2];
+
+	struct msgb *msg, *other;
+	char idbuf[32];
+	int i;
+
+	printf("--- Testing mtu test\n");
+	osmo_wqueue_clear(unitdata);
+	printf("---- Create NSE + Binds\n");
+	nsi = gprs_ns2_instantiate(ctx, ns_prim_cb, NULL);
+	bind[0] = dummy_bind(nsi, "bblock1");
+	bind[1] = dummy_bind(nsi, "bblock2");
+	loopbind = loopback_bind(nsi, "loopback");
+	nse = gprs_ns2_create_nse(nsi, 1004, GPRS_NS2_LL_UDP, GPRS_NS2_DIALECT_STATIC_RESETBLOCK);
+	OSMO_ASSERT(nse);
+
+	for (i=0; i<2; i++) {
+		printf("---- Create NSVC[%d]\n", i);
+		snprintf(idbuf, sizeof(idbuf), "NSE%05u-dummy-%i", nse->nsei, i);
+		nsvc[i] = ns2_vc_alloc(bind[i], nse, false, GPRS_NS2_VC_MODE_BLOCKRESET, idbuf);
+		loop[i] = loopback_nsvc(loopbind, nsvc[i]);
+		OSMO_ASSERT(nsvc[i]);
+		ns2_vc_fsm_start(nsvc[i]);
+		OSMO_ASSERT(!ns2_vc_is_unblocked(nsvc[i]));
+		ns2_tx_reset(loop[i], NS_CAUSE_OM_INTERVENTION);
+		ns2_tx_unblock(loop[i]);
+		OSMO_ASSERT(ns2_vc_is_unblocked(nsvc[i]));
+	}
+
+	/* both nsvcs are unblocked and alive */
+	printf("---- Send a small UNITDATA to NSVC[0]\n");
+	msg = generate_unitdata("test_unitdata");
+	ns2_recv_vc(nsvc[0], msg);
+	other = msgb_dequeue(&unitdata->msg_queue);
+	OSMO_ASSERT(msg == other);
+	other = msgb_dequeue(&unitdata->msg_queue);
+	OSMO_ASSERT(NULL == other);
+	msgb_free(msg);
+
+	printf("---- Check if got mtu reported\n");
+	/* 1b NS PDU type, 1b NS SDU control, 2b BVCI */
+	OSMO_ASSERT(last_nse_recovery.u.status.mtu == 123 - 4);
+
+	gprs_ns2_free(nsi);
+	printf("--- Finish unitdata test\n");
+}
 
 int main(int argc, char **argv)
 {
@@ -379,6 +440,7 @@ int main(int argc, char **argv)
 	test_nse_transfer_cap(ctx);
 	test_block_unblock_nsvc(ctx);
 	test_unitdata(ctx);
+	test_mtu(ctx);
 	printf("===== NS2 protocol test END\n\n");
 
 	talloc_free(ctx);

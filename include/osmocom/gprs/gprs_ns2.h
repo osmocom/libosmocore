@@ -84,6 +84,7 @@ enum gprs_ns2_affecting_cause {
 	GPRS_NS2_AFF_CAUSE_SNS_CONFIGURED,
 	GPRS_NS2_AFF_CAUSE_SNS_FAILURE,
 	GPRS_NS2_AFF_CAUSE_SNS_NO_ENDPOINTS,
+	GPRS_NS2_AFF_CAUSE_MTU_CHANGE,
 };
 
 extern const struct value_string gprs_ns2_aff_cause_prim_strs[];
@@ -135,6 +136,8 @@ struct osmo_gprs_ns2_prim {
 			/* Only true on the first time it's available.
 			 * Allow the BSSGP layer to reset persistent NSE */
 			bool first;
+			/* MTU of a NS SDU. It's the lowest MTU of all (alive & dead) NSVCs */
+			uint16_t mtu;
 		} status;
 	} u;
 };

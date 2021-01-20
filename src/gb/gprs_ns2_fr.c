@@ -801,6 +801,7 @@ int gprs_ns2_fr_bind(struct gprs_ns2_inst *nsi,
 	bind->send_vc = fr_vc_sendmsg;
 	bind->free_vc = free_vc;
 	bind->dump_vty = dump_vty;
+	bind->mtu = FRAME_RELAY_SDU;
 	priv = bind->priv = talloc_zero(bind, struct priv_bind);
 	if (!priv) {
 		rc = -ENOMEM;

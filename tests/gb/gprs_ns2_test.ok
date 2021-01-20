@@ -20,5 +20,12 @@
 ---- Try to receive over blocked NSVC[0]
 ---- Receive over NSVC[1]
 --- Finish unitdata test
+--- Testing mtu test
+---- Create NSE + Binds
+---- Create NSVC[0]
+---- Create NSVC[1]
+---- Send a small UNITDATA to NSVC[0]
+---- Check if got mtu reported
+--- Finish unitdata test
 ===== NS2 protocol test END
 

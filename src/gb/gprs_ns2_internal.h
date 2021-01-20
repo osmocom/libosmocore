@@ -179,6 +179,9 @@ struct gprs_ns2_nse {
 
 	/*! sum of all the signalling weight of _alive_ NS-VCs */
 	uint32_t sum_sig_weight;
+
+	/*! MTU of a NS PDU. This is the lowest MTU of all NSVCs */
+	uint16_t mtu;
 };
 
 /*! Structure representing a single NS-VC */
@@ -244,6 +247,9 @@ struct gprs_ns2_vc_bind {
 	/*! transfer capability in mbit */
 	int transfer_capability;
 
+	/*! MTU of a NS PDU on this bind. */
+	uint16_t mtu;
+
 	/*! which link-layer are we based on? */
 	enum gprs_ns2_ll ll;
 
@@ -298,6 +304,7 @@ void ns2_prim_status_ind(struct gprs_ns2_nse *nse,
 			 uint16_t bvci,
 			 enum gprs_ns2_affecting_cause cause);
 void ns2_nse_notify_alive(struct gprs_ns2_vc *nsvc, bool alive);
+void ns2_nse_update_mtu(struct gprs_ns2_nse *nse);
 
 /* message */
 int ns2_validate(struct gprs_ns2_vc *nsvc,

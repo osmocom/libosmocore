@@ -368,6 +368,10 @@ int gprs_ns2_ip_bind(struct gprs_ns2_inst *nsi,
 				dscp, rc, errno);
 	}
 
+	/* IPv4: max fragmented payload can be (13 bit) * 8 byte => 65535.
+	 * IPv6: max payload can be 65535 (RFC 2460).
+	 * UDP header = 8 byte */
+	bind->mtu = 65535 - 8;
 	if (result)
 		*result = bind;
 
