@@ -1010,8 +1010,9 @@ static int config_write_log_single(struct vty *vty, struct log_target *tgt)
 			tgt->print_timestamp ? 1 : 0, VTY_NEWLINE);
 	if (tgt->print_level)
 		vty_out(vty, " logging print level 1%s", VTY_NEWLINE);
-	vty_out(vty, " logging print file %s%s",
+	vty_out(vty, " logging print file %s%s%s",
 		get_value_string(logging_print_file_args, tgt->print_filename2),
+		tgt->print_filename_pos == LOG_FILENAME_POS_LINE_END ? " last" : "",
 		VTY_NEWLINE);
 
 	if (tgt->loglevel) {
