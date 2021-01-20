@@ -272,6 +272,9 @@ static void gprs_ns2_st_reset(struct osmo_fsm_inst *fi, uint32_t event, void *da
 
 	if (priv->initiate_reset) {
 		switch (event) {
+		case GPRS_NS2_EV_RX_RESET:
+			ns2_tx_reset_ack(priv->nsvc);
+			/* fall-through */
 		case GPRS_NS2_EV_RX_RESET_ACK:
 			osmo_fsm_inst_state_chg(fi, GPRS_NS2_ST_BLOCKED,
 						nsi->timeout[NS_TOUT_TNS_BLOCK], NS_TOUT_TNS_BLOCK);
