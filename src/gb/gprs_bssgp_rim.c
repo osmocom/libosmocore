@@ -438,7 +438,7 @@ static uint8_t *dub_tlvp_header(uint8_t *buf, uint8_t iei, uint16_t len)
 	} else {
 		memmove(buf_ptr + 1, buf_ptr, len);
 		buf_ptr[1] = len >> 8;
-		buf_ptr[1] = len & 0xff;
+		buf_ptr[2] = len & 0xff;
 		buf_ptr += TVLV_HDR_MAXLEN;
 	}
 	buf_ptr += len;
