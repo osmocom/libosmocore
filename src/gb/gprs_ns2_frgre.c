@@ -180,26 +180,25 @@ static int handle_rx_gre_ipv6(struct osmo_fd *bfd, struct msgb *msg,
 	inner_ip6h = (struct ip6_hdr *) ((uint8_t *)greh + sizeof(*greh));
 
 	if (gre_payload_len < sizeof(*ip6hdr) + sizeof(*inner_greh)) {
-		LOGP(DLNS, LOGL_ERROR, "GRE keepalive too short\n");
+		LOGBIND(bind, LOGL_ERROR, "GRE keepalive too short\n");
 		return -EIO;
 	}
 
 	if (!memcmp(&inner_ip6h->ip6_src, &ip6hdr->ip6_src, sizeof(struct in6_addr)) ||
 	    !memcmp(&inner_ip6h->ip6_dst, &ip6hdr->ip6_dst, sizeof(struct in6_addr))) {
-		LOGP(DLNS, LOGL_ERROR,
-			"GRE keepalive with wrong tunnel addresses\n");
+		LOGBIND(bind, LOGL_ERROR, "GRE keepalive with wrong tunnel addresses\n");
 		return -EIO;
 	}
 
 	/* Are IPv6 extensions header are allowed in the *inner*? In the outer they are */
 	if (inner_ip6h->ip6_ctlun.ip6_un1.ip6_un1_nxt != IPPROTO_GRE) {
-		LOGP(DLNS, LOGL_ERROR, "GRE keepalive with wrong protocol\n");
+		LOGBIND(bind, LOGL_ERROR, "GRE keepalive with wrong protocol\n");
 		return -EIO;
 	}
 
 	inner_greh = (struct gre_hdr *) ((uint8_t *)inner_ip6h + sizeof(struct ip6_hdr));
 	if (inner_greh->ptype != osmo_htons(GRE_PTYPE_KAR)) {
-		LOGP(DLNS, LOGL_ERROR, "GRE keepalive inner GRE type != 0\n");
+		LOGBIND(bind, LOGL_ERROR, "GRE keepalive inner GRE type != 0\n");
 		return -EIO;
 	}
 
@@ -212,7 +211,7 @@ static int handle_rx_gre_ipv6(struct osmo_fd *bfd, struct msgb *msg,
 	ia6 = ip6hdr->ip6_src;
 	char ip6str[INET6_ADDRSTRLEN] = {};
 	inet_ntop(AF_INET6, &ia6, ip6str, INET6_ADDRSTRLEN);
-	LOGP(DLNS, LOGL_DEBUG, "GRE keepalive from %s, responding\n", ip6str);
+	LOGBIND(bind, LOGL_DEBUG, "GRE keepalive from %s, responding\n", ip6str);
 
 	/* why does it reduce the gre_payload_len by the ipv6 header?
 	 * make it similiar to ipv4 even this seems to be wrong */
@@ -238,25 +237,24 @@ static int handle_rx_gre_ipv4(struct osmo_fd *bfd, struct msgb *msg,
 	inner_iph = (struct iphdr *) ((uint8_t *)greh + sizeof(*greh));
 
 	if (gre_payload_len < inner_iph->ihl*4 + sizeof(*inner_greh)) {
-		LOGP(DLNS, LOGL_ERROR, "GRE keepalive too short\n");
+		LOGBIND(bind, LOGL_ERROR, "GRE keepalive too short\n");
 		return -EIO;
 	}
 
 	if (inner_iph->saddr != iph->daddr ||
 	    inner_iph->daddr != iph->saddr) {
-		LOGP(DLNS, LOGL_ERROR,
-			"GRE keepalive with wrong tunnel addresses\n");
+		LOGBIND(bind, LOGL_ERROR, "GRE keepalive with wrong tunnel addresses\n");
 		return -EIO;
 	}
 
 	if (inner_iph->protocol != IPPROTO_GRE) {
-		LOGP(DLNS, LOGL_ERROR, "GRE keepalive with wrong protocol\n");
+		LOGBIND(bind, LOGL_ERROR, "GRE keepalive with wrong protocol\n");
 		return -EIO;
 	}
 
 	inner_greh = (struct gre_hdr *) ((uint8_t *)inner_iph + iph->ihl*4);
 	if (inner_greh->ptype != osmo_htons(GRE_PTYPE_KAR)) {
-		LOGP(DLNS, LOGL_ERROR, "GRE keepalive inner GRE type != 0\n");
+		LOGBIND(bind, LOGL_ERROR, "GRE keepalive inner GRE type != 0\n");
 		return -EIO;
 	}
 
@@ -267,8 +265,7 @@ static int handle_rx_gre_ipv4(struct osmo_fd *bfd, struct msgb *msg,
 	daddr.sin_port = IPPROTO_GRE;
 
 	ia.s_addr = iph->saddr;
-	LOGP(DLNS, LOGL_DEBUG, "GRE keepalive from %s, responding\n",
-		inet_ntoa(ia));
+	LOGBIND(bind, LOGL_DEBUG, "GRE keepalive from %s, responding\n", inet_ntoa(ia));
 
 	/* why does it reduce the gre_payload_len by the ipv4 header? */
 	return sendto(priv->fd.fd, inner_greh,
@@ -277,7 +274,8 @@ static int handle_rx_gre_ipv4(struct osmo_fd *bfd, struct msgb *msg,
 }
 
 static struct msgb *read_nsfrgre_msg(struct osmo_fd *bfd, int *error,
-				     struct osmo_sockaddr *saddr, uint16_t *dlci)
+				     struct osmo_sockaddr *saddr, uint16_t *dlci,
+				     const struct gprs_ns2_vc_bind *bind)
 {
 	struct msgb *msg = msgb_alloc(NS_ALLOC_SIZE, "Gb/NS/FR/GRE Rx");
 	int ret = 0;
@@ -296,8 +294,7 @@ static struct msgb *read_nsfrgre_msg(struct osmo_fd *bfd, int *error,
 	ret = recvfrom(bfd->fd, msg->data, NS_ALLOC_SIZE, 0,
 			&saddr->u.sa, &saddr_len);
 	if (ret < 0) {
-		LOGP(DLNS, LOGL_ERROR, "recv error %s during NS-FR-GRE recv\n",
-			strerror(errno));
+		LOGBIND(bind, LOGL_ERROR, "recv error %s during NS-FR-GRE recv\n", strerror(errno));
 		*error = ret;
 		goto out_err;
 	} else if (ret == 0) {
@@ -323,7 +320,7 @@ static struct msgb *read_nsfrgre_msg(struct osmo_fd *bfd, int *error,
 
 	/* TODO: add support for the extension headers */
 	if (msg->len < ip46hdr + sizeof(*greh) + 2) {
-		LOGP(DLNS, LOGL_ERROR, "Short IP packet: %u bytes\n", msg->len);
+		LOGBIND(bind, LOGL_ERROR, "Short IP packet: %u bytes\n", msg->len);
 		*error = -EIO;
 		goto out_err;
 	}
@@ -332,7 +329,7 @@ static struct msgb *read_nsfrgre_msg(struct osmo_fd *bfd, int *error,
 	case AF_INET:
 		iph = (struct iphdr *) msg->data;
 		if (msg->len < (iph->ihl*4 + sizeof(*greh) + 2)) {
-			LOGP(DLNS, LOGL_ERROR, "Short IP packet: %u bytes\n", msg->len);
+			LOGBIND(bind, LOGL_ERROR, "Short IP packet: %u bytes\n", msg->len);
 			*error = -EIO;
 			goto out_err;
 		}
@@ -344,8 +341,7 @@ static struct msgb *read_nsfrgre_msg(struct osmo_fd *bfd, int *error,
 
 	greh = (struct gre_hdr *) (msg->data + iph->ihl*4);
 	if (greh->flags) {
-		LOGP(DLNS, LOGL_NOTICE, "Unknown GRE flags 0x%04x\n",
-			osmo_ntohs(greh->flags));
+		LOGBIND(bind, LOGL_NOTICE, "Unknown GRE flags 0x%04x\n", osmo_ntohs(greh->flags));
 	}
 
 	switch (osmo_ntohs(greh->ptype)) {
@@ -362,29 +358,27 @@ static struct msgb *read_nsfrgre_msg(struct osmo_fd *bfd, int *error,
 		/* continue as usual */
 		break;
 	default:
-		LOGP(DLNS, LOGL_NOTICE, "Unknown GRE protocol 0x%04x != FR\n",
-			osmo_ntohs(greh->ptype));
+		LOGBIND(bind, LOGL_NOTICE, "Unknown GRE protocol 0x%04x != FR\n", osmo_ntohs(greh->ptype));
 		*error = -EIO;
 		goto out_err;
 		break;
 	}
 
 	if (msg->len < sizeof(*greh) + 2) {
-		LOGP(DLNS, LOGL_ERROR, "Short FR header: %u bytes\n", msg->len);
+		LOGBIND(bind, LOGL_ERROR, "Short FR header: %u bytes\n", msg->len);
 		*error = -EIO;
 		goto out_err;
 	}
 
 	frh = (uint8_t *)greh + sizeof(*greh);
 	if (frh[0] & 0x01) {
-		LOGP(DLNS, LOGL_NOTICE, "Unsupported single-byte FR address\n");
+		LOGBIND(bind, LOGL_NOTICE, "Unsupported single-byte FR address\n");
 		*error = -EIO;
 		goto out_err;
 	}
 	*dlci = ((frh[0] & 0xfc) << 2);
 	if ((frh[1] & 0x0f) != 0x01) {
-		LOGP(DLNS, LOGL_NOTICE, "Unknown second FR octet 0x%02x\n",
-			frh[1]);
+		LOGBIND(bind, LOGL_NOTICE, "Unknown second FR octet 0x%02x\n", frh[1]);
 		*error = -EIO;
 		goto out_err;
 	}
@@ -430,13 +424,12 @@ static int handle_nsfrgre_read(struct osmo_fd *bfd)
 	struct msgb *reject;
 	uint16_t dlci;
 
-	msg = read_nsfrgre_msg(bfd, &rc, &saddr, &dlci);
+	msg = read_nsfrgre_msg(bfd, &rc, &saddr, &dlci, bind);
 	if (!msg)
 		return rc;
 
 	if (dlci == 0 || dlci == 1023) {
-		LOGP(DLNS, LOGL_INFO, "Received FR on LMI DLCI %u - ignoring\n",
-			dlci);
+		LOGBIND(bind, LOGL_INFO, "Received FR on LMI DLCI %u - ignoring\n", dlci);
 		rc = 0;
 		goto out;
 	}
@@ -603,8 +596,7 @@ int gprs_ns2_frgre_bind(struct gprs_ns2_inst *nsi,
 		rc = setsockopt(priv->fd.fd, IPPROTO_IP, IP_TOS,
 				&dscp, sizeof(dscp));
 		if (rc < 0)
-			LOGP(DLNS, LOGL_ERROR,
-				"Failed to set the DSCP to %d with ret(%d) errno(%d)\n",
+			LOGBIND(bind, LOGL_ERROR, "Failed to set the DSCP to %d with ret(%d) errno(%d)\n",
 				dscp, rc, errno);
 	}
 

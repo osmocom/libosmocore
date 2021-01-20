@@ -695,7 +695,7 @@ struct gprs_ns2_nse *gprs_ns2_create_nse(struct gprs_ns2_inst *nsi, uint16_t nse
 
 	nse = gprs_ns2_nse_by_nsei(nsi, nsei);
 	if (nse) {
-		LOGP(DLNS, LOGL_ERROR, "NSEI:%u Can not create a NSE with already taken NSEI\n", nsei);
+		LOGNSE(nse, LOGL_ERROR, "Can not create a NSE with already taken NSEI\n");
 		return nse;
 	}
 
@@ -885,8 +885,9 @@ enum gprs_ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 	} else {
 		/* nsei already known */
 		if (nse->ll != bind->ll) {
-			LOGP(DLNS, LOGL_ERROR, "Received NS-RESET NS-VCI(%05u) with wrong linklayer(%s) for already known NSE(%05u/%s)\n",
-			     nsei, gprs_ns2_lltype_str(bind->ll), nse->nsei, gprs_ns2_lltype_str(nse->ll));
+			LOGNSE(nse, LOGL_ERROR, "Received NS-RESET NS-VCI(%05u) with wrong linklayer(%s)"
+				" for already known NSE(%s)\n", nsvci, gprs_ns2_lltype_str(bind->ll),
+				gprs_ns2_lltype_str(nse->ll));
 			return GPRS_NS2_CS_SKIPPED;
 		}
 	}
@@ -894,8 +895,7 @@ enum gprs_ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 	nsvc = gprs_ns2_nsvc_by_nsvci(bind->nsi, nsvci);
 	if (nsvc) {
 		if (nsvc->persistent) {
-			LOGP(DLNS, LOGL_ERROR, "Received NS-RESET for a persistent NSE(%05u) NS-VCI(%05u) over wrong connection.\n",
-			     nsei, nsvci);
+			LOGNSVC(nsvc, LOGL_ERROR, "Received NS-RESET for a persistent NSE over wrong connection.\n");
 			return GPRS_NS2_CS_SKIPPED;
 		}
 		/* destroy old dynamic nsvc */
@@ -904,8 +904,8 @@ enum gprs_ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 
 	/* do nse persistent check late to be more precise on the error message */
 	if (nse->persistent) {
-		LOGP(DLNS, LOGL_ERROR, "Received NS-RESET for a persistent NSE(%05u) but the unknown NS-VCI(%05u)\n",
-		     nsei, nsvci);
+		LOGNSE(nse, LOGL_ERROR, "Received NS-RESET for a persistent NSE but the unknown "
+		       "NS-VCI(%05u)\n", nsvci);
 		return GPRS_NS2_CS_SKIPPED;
 	}
 

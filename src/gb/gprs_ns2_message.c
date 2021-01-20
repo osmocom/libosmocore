@@ -43,8 +43,7 @@
 	do {										\
 		if (!nsvc->nse->bss_sns_fi)						\
 			break;								\
-		LOGP(DLNS, LOGL_DEBUG, "NSEI=%u Rx invalid packet %s with SNS\n",	\
-				       nsvc->nse->nsei, reason);			\
+		LOGNSVC(nsvc, LOGL_DEBUG, "invalid packet %s with SNS\n", reason);	\
 	} while (0)
 
 enum ns_ctr {
@@ -223,8 +222,7 @@ int ns2_tx_block(struct gprs_ns2_vc *nsvc, uint8_t cause)
 	if (!msg)
 		return -ENOMEM;
 
-	LOGP(DLNS, LOGL_INFO, "NSEI=%u Tx NS BLOCK (NSVCI=%u, cause=%s)\n",
-		nsvc->nse->nsei, nsvc->nsvci, gprs_ns2_cause_str(cause));
+	LOGNSVC(nsvc, LOGL_INFO, "Tx NS BLOCK (cause=%s)\n", gprs_ns2_cause_str(cause));
 
 	rate_ctr_inc(&nsvc->ctrg->ctr[NS_CTR_BLOCKED]);
 
@@ -256,7 +254,7 @@ int ns2_tx_block_ack(struct gprs_ns2_vc *nsvc)
 	if (!msg)
 		return -ENOMEM;
 
-	LOGP(DLNS, LOGL_INFO, "NSEI=%u Tx NS BLOCK ACK (NSVCI=%u)\n", nsvc->nse->nsei, nsvc->nsvci);
+	LOGNSVC(nsvc, LOGL_INFO, "Tx NS BLOCK ACK\n");
 
 	msg->l2h = msgb_put(msg, sizeof(*nsh));
 	nsh = (struct gprs_ns_hdr *) msg->l2h;
@@ -287,8 +285,7 @@ int ns2_tx_reset(struct gprs_ns2_vc *nsvc, uint8_t cause)
 	if (!msg)
 		return -ENOMEM;
 
-	LOGP(DLNS, LOGL_INFO, "NSEI=%u Tx NS RESET (NSVCI=%u, cause=%s)\n",
-		nsvc->nse->nsei, nsvc->nsvci, gprs_ns2_cause_str(cause));
+	LOGNSVC(nsvc, LOGL_INFO, "Tx NS RESET (cause=%s)\n", gprs_ns2_cause_str(cause));
 
 	msg->l2h = msgb_put(msg, sizeof(*nsh));
 	nsh = (struct gprs_ns_hdr *) msg->l2h;
@@ -328,8 +325,7 @@ int ns2_tx_reset_ack(struct gprs_ns2_vc *nsvc)
 
 	nsh->pdu_type = NS_PDUT_RESET_ACK;
 
-	LOGP(DLNS, LOGL_INFO, "NSEI=%u Tx NS RESET ACK (NSVCI=%u)\n",
-		nsvc->nse->nsei, nsvc->nsvci);
+	LOGNSVC(nsvc, LOGL_INFO, "Tx NS RESET ACK\n");
 
 	msgb_tvlv_put(msg, NS_IE_VCI, 2, (uint8_t *)&nsvci);
 	msgb_tvlv_put(msg, NS_IE_NSEI, 2, (uint8_t *)&nsei);
@@ -347,8 +343,7 @@ int ns2_tx_unblock(struct gprs_ns2_vc *nsvc)
 
 	ERR_IF_NSVC_USES_SNS(nsvc, "transmit NS UNBLOCK");
 
-	LOGP(DLNS, LOGL_INFO, "NSEI=%u Tx NS UNBLOCK (NSVCI=%u)\n",
-		nsvc->nse->nsei, nsvc->nsvci);
+	LOGNSVC(nsvc, LOGL_INFO, "Tx NS UNBLOCK\n");
 
 	return ns2_tx_simple(nsvc, NS_PDUT_UNBLOCK);
 }
@@ -364,8 +359,7 @@ int ns2_tx_unblock_ack(struct gprs_ns2_vc *nsvc)
 
 	ERR_IF_NSVC_USES_SNS(nsvc, "transmit NS UNBLOCK ACK");
 
-	LOGP(DLNS, LOGL_INFO, "NSEI=%u Tx NS UNBLOCK (NSVCI=%u)\n",
-		nsvc->nse->nsei, nsvc->nsvci);
+	LOGNSVC(nsvc, LOGL_INFO, "Tx NS UNBLOCK_ACK\n");
 
 	return ns2_tx_simple(nsvc, NS_PDUT_UNBLOCK_ACK);
 }
@@ -377,8 +371,7 @@ int ns2_tx_alive(struct gprs_ns2_vc *nsvc)
 {
 	log_set_context(LOG_CTX_GB_NSE, nsvc->nse);
 	log_set_context(LOG_CTX_GB_NSVC, nsvc);
-	LOGP(DLNS, LOGL_DEBUG, "NSEI=%u Tx NS ALIVE (NSVCI=%u)\n",
-		nsvc->nse->nsei, nsvc->nsvci);
+	LOGNSVC(nsvc, LOGL_DEBUG, "Tx NS ALIVE\n");
 
 	return ns2_tx_simple(nsvc, NS_PDUT_ALIVE);
 }
@@ -390,8 +383,7 @@ int ns2_tx_alive_ack(struct gprs_ns2_vc *nsvc)
 {
 	log_set_context(LOG_CTX_GB_NSE, nsvc->nse);
 	log_set_context(LOG_CTX_GB_NSVC, nsvc);
-	LOGP(DLNS, LOGL_DEBUG, "NSEI=%u Tx NS ALIVE_ACK (NSVCI=%u)\n",
-		nsvc->nse->nsei, nsvc->nsvci);
+	LOGNSVC(nsvc, LOGL_DEBUG, "Tx NS ALIVE_ACK\n");
 
 	return ns2_tx_simple(nsvc, NS_PDUT_ALIVE_ACK);
 }
@@ -414,7 +406,7 @@ int ns2_tx_unit_data(struct gprs_ns2_vc *nsvc,
 	msg->l2h = msgb_push(msg, sizeof(*nsh) + 3);
 	nsh = (struct gprs_ns_hdr *) msg->l2h;
 	if (!nsh) {
-		LOGP(DLNS, LOGL_ERROR, "Not enough headroom for NS header\n");
+		LOGNSVC(nsvc, LOGL_ERROR, "Not enough headroom for NS header\n");
 		msgb_free(msg);
 		return -EIO;
 	}
@@ -448,8 +440,7 @@ int ns2_tx_status(struct gprs_ns2_vc *nsvc, uint8_t cause,
 	if (!msg)
 		return -ENOMEM;
 
-	LOGP(DLNS, LOGL_NOTICE, "NSEI=%u Tx NS STATUS (NSVCI=%u, cause=%s)\n",
-		nsvc->nse->nsei, nsvc->nsvci, gprs_ns2_cause_str(cause));
+	LOGNSVC(nsvc, LOGL_NOTICE, "Tx NS STATUS (cause=%s)\n", gprs_ns2_cause_str(cause));
 
 	msg->l2h = msgb_put(msg, sizeof(*nsh));
 	nsh = (struct gprs_ns_hdr *) msg->l2h;
@@ -512,8 +503,7 @@ int ns2_tx_sns_ack(struct gprs_ns2_vc *nsvc, uint8_t trans_id, uint8_t *cause,
 		return -ENOMEM;
 
 	if (!nsvc->nse->bss_sns_fi) {
-		LOGP(DLNS, LOGL_ERROR, "NSEI=%u Cannot transmit SNS on NSVC without SNS active\n",
-		     nsvc->nse->nsei);
+		LOGNSVC(nsvc, LOGL_ERROR, "Cannot transmit SNS on NSVC without SNS active\n");
 		msgb_free(msg);
 		return -EIO;
 	}
@@ -571,8 +561,7 @@ int ns2_tx_sns_config(struct gprs_ns2_vc *nsvc, bool end_flag,
 		return -ENOMEM;
 
 	if (!nsvc->nse->bss_sns_fi) {
-		LOGP(DLNS, LOGL_ERROR, "NSEI=%u Cannot transmit SNS on NSVC without SNS active\n",
-		     nsvc->nse->nsei);
+		LOGNSVC(nsvc, LOGL_ERROR, "Cannot transmit SNS on NSVC without SNS active\n");
 		msgb_free(msg);
 		return -EIO;
 	}
@@ -620,8 +609,7 @@ int ns2_tx_sns_config_ack(struct gprs_ns2_vc *nsvc, uint8_t *cause)
 		return -ENOMEM;
 
 	if (!nsvc->nse->bss_sns_fi) {
-		LOGP(DLNS, LOGL_ERROR, "NSEI=%u Cannot transmit SNS on NSVC without SNS active\n",
-		     nsvc->nse->nsei);
+		LOGNSVC(nsvc, LOGL_ERROR, "Cannot transmit SNS on NSVC without SNS active\n");
 		msgb_free(msg);
 		return -EIO;
 	}
@@ -666,8 +654,7 @@ int ns2_tx_sns_size(struct gprs_ns2_vc *nsvc, bool reset_flag, uint16_t max_nr_n
 		return -ENOMEM;
 
 	if (!nsvc->nse->bss_sns_fi) {
-		LOGP(DLNS, LOGL_ERROR, "NSEI=%u Cannot transmit SNS on NSVC without SNS active\n",
-		     nsvc->nse->nsei);
+		LOGNSVC(nsvc, LOGL_ERROR, "Cannot transmit SNS on NSVC without SNS active\n");
 		msgb_free(msg);
 		return -EIO;
 	}
@@ -706,8 +693,7 @@ int ns2_tx_sns_size_ack(struct gprs_ns2_vc *nsvc, uint8_t *cause)
 		return -ENOMEM;
 
 	if (!nsvc->nse->bss_sns_fi) {
-		LOGP(DLNS, LOGL_ERROR, "NSEI=%u Cannot transmit SNS on NSVC without SNS active\n",
-		     nsvc->nse->nsei);
+		LOGNSVC(nsvc, LOGL_ERROR, "Cannot transmit SNS on NSVC without SNS active\n");
 		msgb_free(msg);
 		return -EIO;
 	}

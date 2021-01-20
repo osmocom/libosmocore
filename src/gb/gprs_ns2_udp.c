@@ -168,8 +168,8 @@ static int nsip_vc_sendmsg(struct gprs_ns2_vc *nsvc, struct msgb *msg)
 }
 
 /* Read a single NS-over-IP message */
-static struct msgb *read_nsip_msg(struct osmo_fd *bfd, int *error,
-				  struct osmo_sockaddr *saddr)
+static struct msgb *read_nsip_msg(struct osmo_fd *bfd, int *error, struct osmo_sockaddr *saddr,
+				  const struct gprs_ns2_vc_bind *bind)
 {
 	struct msgb *msg = gprs_ns2_msgb_alloc();
 	int ret = 0;
@@ -183,8 +183,8 @@ static struct msgb *read_nsip_msg(struct osmo_fd *bfd, int *error,
 	ret = recvfrom(bfd->fd, msg->data, NS_ALLOC_SIZE - NS_ALLOC_HEADROOM, 0,
 			&saddr->u.sa, &saddr_len);
 	if (ret < 0) {
-		LOGP(DLNS, LOGL_ERROR, "recv error %s during NSIP recvfrom %s\n",
-		     strerror(errno), osmo_sock_get_name2(bfd->fd));
+		LOGBIND(bind, LOGL_ERROR, "recv error %s during NSIP recvfrom %s\n",
+			strerror(errno), osmo_sock_get_name2(bfd->fd));
 		msgb_free(msg);
 		*error = ret;
 		return NULL;
@@ -219,7 +219,7 @@ static int handle_nsip_read(struct osmo_fd *bfd)
 	struct gprs_ns2_vc_bind *bind = bfd->data;
 	struct osmo_sockaddr saddr;
 	struct gprs_ns2_vc *nsvc;
-	struct msgb *msg = read_nsip_msg(bfd, &error, &saddr);
+	struct msgb *msg = read_nsip_msg(bfd, &error, &saddr, bind);
 	struct msgb *reject;
 
 	if (!msg)
@@ -378,8 +378,7 @@ int gprs_ns2_ip_bind(struct gprs_ns2_inst *nsi,
 		rc = setsockopt(priv->fd.fd, IPPROTO_IP, IP_TOS,
 				&dscp, sizeof(dscp));
 		if (rc < 0)
-			LOGP(DLNS, LOGL_ERROR,
-				"Failed to set the DSCP to %d with ret(%d) errno(%d)\n",
+			LOGBIND(bind, LOGL_ERROR, "Failed to set the DSCP to %d with ret(%d) errno(%d)\n",
 				dscp, rc, errno);
 	}
 
@@ -409,8 +408,8 @@ struct gprs_ns2_vc *gprs_ns2_ip_bind_connect(struct gprs_ns2_vc_bind *bind,
 
 	vc_mode = gprs_ns2_dialect_to_vc_mode(nse->dialect);
 	if ((int) vc_mode == -1) {
-		LOGP(DLNS, LOGL_ERROR, "Can not derive vc mode from dialect %d. Maybe libosmocore is too old.\n",
-		     nse->dialect);
+		LOGNSE(nse, LOGL_ERROR, "Can not derive vc mode from dialect %d. Maybe libosmocore is too old.\n",
+			nse->dialect);
 		return NULL;
 	}
 
@@ -528,10 +527,10 @@ int gprs_ns2_ip_bind_set_dscp(struct gprs_ns2_vc_bind *bind, int dscp)
 
 		rc = setsockopt(priv->fd.fd, IPPROTO_IP, IP_TOS,
 				&dscp, sizeof(dscp));
-		if (rc < 0)
-			LOGP(DLNS, LOGL_ERROR,
-			     "Failed to set the DSCP to %d with ret(%d) errno(%d)\n",
-			     dscp, rc, errno);
+		if (rc < 0) {
+			LOGBIND(bind, LOGL_ERROR, "Failed to set the DSCP to %d with ret(%d) errno(%d)\n",
+				dscp, rc, errno);
+		}
 	}
 
 	return rc;

@@ -8,6 +8,24 @@
 #include <osmocom/gprs/protocol/gsm_08_16.h>
 #include <osmocom/gprs/gprs_ns2.h>
 
+#define LOGNSE(nse, lvl, fmt, args ...) \
+	LOGP(DLNS, lvl, "NSE(%05u) " fmt, (nse)->nsei, ## args)
+
+#define LOGBIND(bind, lvl, fmt, args ...) \
+	LOGP(DLNS, lvl, "BIND(%s) " fmt, (bind)->name, ## args)
+
+
+#define LOGNSVC(nsvc, lvl, fmt, args ...)					\
+	do {									\
+		if ((nsvc)->nsvci_is_valid) {					\
+			LOGP(DLNS, lvl, "NSE(%05u)-NSVC(%05u) " fmt,		\
+			     (nsvc)->nse->nsei, (nsvc)->nsvci, ## args);	\
+		} else { 							\
+			LOGP(DLNS, lvl, "NSE(%05u)-NSVC(none) " fmt, 		\
+			     (nsvc)->nse->nsei, ## args);			\
+		}								\
+	} while (0)
+
 struct osmo_fsm_inst;
 struct tlv_parsed;
 struct vty;

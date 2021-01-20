@@ -214,8 +214,7 @@ static int handle_netif_read(struct osmo_fd *bfd)
 
 	rc = recvfrom(bfd->fd, msg->data, NS_ALLOC_SIZE, 0, (struct sockaddr *)&sll, &sll_len);
 	if (rc < 0) {
-		LOGP(DLNS, LOGL_ERROR, "recv error %s during NS-FR-GRE recv\n",
-		     strerror(errno));
+		LOGBIND(bind, LOGL_ERROR, "recv error %s during NS-FR-GRE recv\n", strerror(errno));
 		goto out_err;
 	} else if (rc == 0) {
 		goto out_err;
@@ -273,8 +272,7 @@ int fr_tx_cb(void *data, struct msgb *msg)
 	struct priv_bind *priv = bind->priv;
 
 	if (osmo_wqueue_enqueue(&priv->wqueue, msg)) {
-		LOGP(DLNS, LOGL_ERROR, "frame relay %s: failed to enqueue message\n",
-		     priv->netif);
+		LOGBIND(bind, LOGL_ERROR, "frame relay %s: failed to enqueue message\n", priv->netif);
 		msgb_free(msg);
 		return -EINVAL;
 	}
@@ -303,7 +301,7 @@ static int devname2ifindex(const char *ifname)
 	return ifr.ifr_ifindex;
 }
 
-static int open_socket(int ifindex)
+static int open_socket(int ifindex, const struct gprs_ns2_vc_bind *nsbind)
 {
 	struct sockaddr_ll addr;
 	int fd, rc;
@@ -315,7 +313,7 @@ static int open_socket(int ifindex)
 
 	fd = socket(AF_PACKET, SOCK_RAW, htons(ETH_P_HDLC));
 	if (fd < 0) {
-		LOGP(DLNS, LOGL_ERROR, "Can not create AF_PACKET socket. Are you root or have CAP_RAW_SOCKET?\n");
+		LOGBIND(nsbind, LOGL_ERROR, "Can not create AF_PACKET socket. Are you root or have CAP_NET_RAW?\n");
 		return fd;
 	}
 
@@ -324,7 +322,7 @@ static int open_socket(int ifindex)
 
 	rc = bind(fd, (struct sockaddr *)&addr, sizeof(addr));
 	if (rc < 0) {
-		LOGP(DLNS, LOGL_ERROR, "Can not bind AF_PACKET socket to ifindex %d\n", ifindex);
+		LOGBIND(nsbind, LOGL_ERROR, "Can not bind AF_PACKET socket to ifindex %d\n", ifindex);
 		close(fd);
 		return rc;
 	}
@@ -410,8 +408,8 @@ static int linkmon_mnl_cb(const struct nlmsghdr *nlh, void *data)
 		struct priv_bind *bpriv = bind->priv;
 		if (bpriv->if_running != if_running) {
 			/* update running state */
-			LOGP(DLNS, LOGL_NOTICE, "FR net-device '%s': Physical link state changed: %s\n",
-			     ifname, if_running ? "UP" : "DOWN");
+			LOGBIND(bind, LOGL_NOTICE, "FR net-device '%s': Physical link state changed: %s\n",
+				ifname, if_running ? "UP" : "DOWN");
 			bpriv->if_running = if_running;
 		}
 	}
@@ -471,7 +469,7 @@ static int set_ifupdown(const char *netif, bool up)
 	return rc;
 }
 
-static int setup_device(const char *netif)
+static int setup_device(const char *netif, const struct gprs_ns2_vc_bind *bind)
 {
 	int sock, rc;
 	char buffer[128];
@@ -480,8 +478,8 @@ static int setup_device(const char *netif)
 
 	sock = socket(PF_INET, SOCK_DGRAM, IPPROTO_IP);
 	if (sock < 0) {
-		LOGP(DLNS, LOGL_ERROR, "%s: Unable to create socket: %s\n",
-		     netif, strerror(errno));
+		LOGBIND(bind, LOGL_ERROR, "%s: Unable to create socket: %s\n",
+			netif, strerror(errno));
 		return sock;
 	}
 
@@ -495,22 +493,22 @@ static int setup_device(const char *netif)
 	/* EINVAL is returned when no protocol has been set */
 	rc = ioctl(sock, SIOCWANDEV, &req);
 	if (rc < 0 && errno != EINVAL) {
-		LOGP(DLNS, LOGL_ERROR, "%s: Unable to get FR protocol information: %s\n",
-		     netif, strerror(errno));
+		LOGBIND(bind, LOGL_ERROR, "%s: Unable to get FR protocol information: %s\n",
+			netif, strerror(errno));
 		goto err;
 	}
 
 	/* check if the device is good */
 	if (rc == 0 && req.ifr_settings.type == IF_PROTO_FR && fr->lmi == LMI_NONE) {
-		LOGP(DLNS, LOGL_NOTICE, "%s: has correct frame relay mode and lmi\n", netif);
+		LOGBIND(bind, LOGL_NOTICE, "%s: has correct frame relay mode and lmi\n", netif);
 		goto ifup;
 	}
 
 	/* modify the device to match */
 	rc = set_ifupdown(netif, false);
 	if (rc) {
-		LOGP(DLNS, LOGL_ERROR, "Unable to bring down the device %s: %s\n",
-		      netif, strerror(errno));
+		LOGBIND(bind, LOGL_ERROR, "Unable to bring down the device %s: %s\n",
+			netif, strerror(errno));
 		goto err;
 	}
 
@@ -533,19 +531,19 @@ static int setup_device(const char *netif)
 	/* monitored events count */
 	fr->n393 = 4;
 
-	LOGP(DLNS, LOGL_INFO, "%s: Setting frame relay related parameters\n", netif);
+	LOGBIND(bind, LOGL_INFO, "%s: Setting frame relay related parameters\n", netif);
 	rc = ioctl(sock, SIOCWANDEV, &req);
 	if (rc) {
-		LOGP(DLNS, LOGL_ERROR, "%s: Unable to set FR protocol on information: %s\n",
-		      netif, strerror(errno));
+		LOGBIND(bind, LOGL_ERROR, "%s: Unable to set FR protocol on information: %s\n",
+			netif, strerror(errno));
 		goto err;
 	}
 
 ifup:
 	rc = set_ifupdown(netif, true);
 	if (rc)
-		LOGP(DLNS, LOGL_ERROR, "Unable to bring up the device %s: %s\n",
-		      netif, strerror(errno));
+		LOGBIND(bind, LOGL_ERROR, "Unable to bring up the device %s: %s\n",
+			netif, strerror(errno));
 err:
 	close(sock);
 	return rc;
@@ -622,18 +620,18 @@ int gprs_ns2_fr_bind(struct gprs_ns2_inst *nsi,
 
 	priv->ifindex = rc = devname2ifindex(netif);
 	if (rc < 0) {
-		LOGP(DLNS, LOGL_ERROR, "Can not get interface index for interface %s\n", netif);
+		LOGBIND(bind, LOGL_ERROR, "Can not get interface index for interface %s\n", netif);
 		goto err_fr;
 	}
 
 	/* set protocol frame relay and lmi */
-	rc = setup_device(priv->netif);
+	rc = setup_device(priv->netif, bind);
 	if(rc < 0) {
-		LOGP(DLNS, LOGL_ERROR, "Failed to setup the interface %s for frame relay and lmi\n", netif);
+		LOGBIND(bind, LOGL_ERROR, "Failed to setup the interface %s for frame relay and lmi\n", netif);
 		goto err_fr;
 	}
 
-	rc = open_socket(priv->ifindex);
+	rc = open_socket(priv->ifindex, bind);
 	if (rc < 0)
 		goto err_fr;
 	osmo_wqueue_init(&priv->wqueue, 10);

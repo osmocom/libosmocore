@@ -1447,16 +1447,16 @@ int gprs_ns2_sns_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parse
 	struct osmo_fsm_inst *fi;
 
 	if (!nse->bss_sns_fi) {
-		LOGP(DLNS, LOGL_NOTICE, "NSEI=%u Rx %s for NS Instance that has no SNS!\n",
-		     nsvc->nse->nsei, get_value_string(gprs_ns_pdu_strings, nsh->pdu_type));
+		LOGNSVC(nsvc, LOGL_NOTICE, "Rx %s for NS Instance that has no SNS!\n",
+			get_value_string(gprs_ns_pdu_strings, nsh->pdu_type));
 		return -EINVAL;
 	}
 
-	LOGP(DLNS, LOGL_DEBUG, "NSEI=%u Rx SNS PDU type %s\n", nsei,
-		get_value_string(gprs_ns_pdu_strings, nsh->pdu_type));
-
 	/* FIXME: how to resolve SNS FSM Instance by NSEI (SGSN)? */
 	fi = nse->bss_sns_fi;
+
+	LOGPFSML(fi, LOGL_DEBUG, "NSEI=%u Rx SNS PDU type %s\n", nsei,
+		 get_value_string(gprs_ns_pdu_strings, nsh->pdu_type));
 
 	switch (nsh->pdu_type) {
 	case SNS_PDUT_SIZE:
@@ -1484,12 +1484,12 @@ int gprs_ns2_sns_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parse
 		osmo_fsm_inst_dispatch(fi, GPRS_SNS_EV_CHANGE_WEIGHT, tp);
 		break;
 	case SNS_PDUT_ACK:
-		LOGP(DLNS, LOGL_NOTICE, "NSEI=%u Rx unsupported SNS PDU type %s\n", nsei,
-			get_value_string(gprs_ns_pdu_strings, nsh->pdu_type));
+		LOGPFSML(fi, LOGL_NOTICE, "NSEI=%u Rx unsupported SNS PDU type %s\n", nsei,
+			 get_value_string(gprs_ns_pdu_strings, nsh->pdu_type));
 		break;
 	default:
-		LOGP(DLNS, LOGL_ERROR, "NSEI=%u Rx unknown SNS PDU type %s\n", nsei,
-			get_value_string(gprs_ns_pdu_strings, nsh->pdu_type));
+		LOGPFSML(fi, LOGL_ERROR, "NSEI=%u Rx unknown SNS PDU type %s\n", nsei,
+			 get_value_string(gprs_ns_pdu_strings, nsh->pdu_type));
 		return -EINVAL;
 	}
 
@@ -1663,7 +1663,7 @@ int gprs_ns2_sns_del_endpoint(struct gprs_ns2_nse *nse,
 
 	/* gprs_ns2_free_nsvcs() will trigger GPRS_SNS_EV_NO_NSVC on the last NS-VC
 	 * and restart SNS SIZE procedure which selects a new initial */
-	LOGP(DLNS, LOGL_INFO, "Current in-use SNS endpoint is being removed."
+	LOGNSE(nse, LOGL_INFO, "Current in-use SNS endpoint is being removed."
 			      "Closing all NS-VC and restart SNS-SIZE procedure"
 			      "with a remaining SNS endpoint.\n");
 
