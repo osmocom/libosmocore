@@ -188,6 +188,7 @@ void test_block_unblock_nsvc(void *ctx)
 	struct gprs_ns_hdr *nsh;
 	struct msgb *msg;
 	char idbuf[32];
+	int i;
 
 	printf("--- Testing NSE block unblock nsvc\n");
 	printf("---- Create NSE + Binds\n");
@@ -197,7 +198,7 @@ void test_block_unblock_nsvc(void *ctx)
 	nse = gprs_ns2_create_nse(nsi, 1001, GPRS_NS2_LL_UDP, NS2_DIALECT_STATIC_RESETBLOCK);
 	OSMO_ASSERT(nse);
 
-	for (int i=0; i<2; i++) {
+	for (i=0; i<2; i++) {
 		printf("---- Create NSVC[i]\n");
 		snprintf(idbuf, sizeof(idbuf), "NSE%05u-dummy-%i", nse->nsei, i);
 		nsvc[i] = ns2_vc_alloc(bind[i], nse, false, NS2_VC_MODE_BLOCKRESET, idbuf);
