@@ -8,6 +8,8 @@ AC_CONFIG_AUX_DIR([.])
 AM_INIT_AUTOMAKE([foreign dist-bzip2 no-dist-gzip 1.6 subdir-objects])
 AC_CONFIG_TESTDIR(tests)
 
+CFLAGS="$CFLAGS -std=gnu11"
+
 dnl kernel style compile messages
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
 
