@@ -750,7 +750,6 @@ int gprs_ns2_vc_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed
 	struct osmo_fsm_inst *fi = nsvc->fi;
 	int rc = 0;
 	uint8_t cause;
-	uint16_t nsei;
 
 	/* TODO: 7.2: on UNBLOCK/BLOCK: check if NS-VCI is correct,
 	 *  if not answer STATUS with "NS-VC unknown" */
@@ -760,19 +759,6 @@ int gprs_ns2_vc_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed
 	if (gprs_ns2_validate(nsvc, nsh->pdu_type, msg, tp, &cause)) {
 		if (nsh->pdu_type != NS_PDUT_STATUS) {
 			rc = ns2_tx_status(nsvc, cause, 0, msg);
-			goto out;
-		}
-	}
-
-	if (TLVP_PRESENT(tp, NS_IE_NSEI)) {
-		nsei = tlvp_val16be(tp, NS_IE_NSEI);
-		if (nsei != nsvc->nse->nsei) {
-			/* 48.016 § 7.3.1 send, RESET_ACK to wrong NSVCI + ignore */
-			if (nsh->pdu_type == NS_PDUT_RESET)
-				ns2_tx_reset_ack(nsvc);
-
-			LOGNSVC(nsvc, LOGL_ERROR, "Rx %s with wrong NSEI=%05u. Ignoring PDU.\n",
-				get_value_string(gprs_ns_pdu_strings, nsh->pdu_type), nsei);
 			goto out;
 		}
 	}
