@@ -116,4 +116,5 @@ int main(int argc, char **argv)
 	tc_alloc();
 	tc_queue_length();
 	tc_eventfd();
+	return 0;
 }

@@ -395,4 +395,5 @@ int main(int argc, char **argv)
 	test_16k_subchan();
 	test_8k_subchan();
 	test_unused_subchan();
+	return 0;
 }
