@@ -270,6 +270,17 @@ int bssgp_enc_ran_inf_app_cont_nacc(uint8_t *buf, size_t len, const struct bssgp
 	return (int)(buf_ptr - buf);
 }
 
+/* 3GPP TS 48.018, table 11.3.64.1.b, NACC Cause coding */
+const struct value_string bssgp_nacc_cause_strs[] = {
+	{ BSSGP_NACC_CAUSE_UNSPEC,		"unspecified error" },
+	{ BSSGP_NACC_CAUSE_SYNTAX_ERR,		"syntax error in app container" },
+	{ BSSGP_NACC_CAUSE_RPRT_CELL_MISSMTCH,  "reporting cell id mismatch" },
+	{ BSSGP_NACC_CAUSE_SIPSI_TYPE_ERR,	"SI/PSI type error" },
+	{ BSSGP_NACC_CAUSE_SIPSI_LEN_ERR,	"SI/PSI inconsistent length" },
+	{ BSSGP_NACC_CAUSE_SIPSI_SET_ERR,	"inconsistent set of msg" },
+	{ 0, NULL }
+};
+
 /*! Decode a Application Error Container for NACC (3GPP TS 48.018, section 11.3.64.1).
  *  \param[out] user provided memory for decoded data struct.
  *  \param[in] buf user provided memory with the encoded value data of the IE.

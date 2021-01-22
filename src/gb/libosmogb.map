@@ -29,6 +29,7 @@ bssgp_msgb_alloc;
 bssgp_msgb_copy;
 bssgp_msgb_tlli_put;
 bssgp_msgb_ra_put;
+bssgp_nacc_cause_strs;
 bssgp_parse_cell_id;
 bssgp_parse_rim_pdu;
 bssgp_parse_rim_ri;

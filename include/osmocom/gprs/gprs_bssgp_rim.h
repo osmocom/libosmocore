@@ -96,6 +96,12 @@ enum bssgp_nacc_cause {
 	BSSGP_NACC_CAUSE_SIPSI_SET_ERR,
 };
 
+extern const struct value_string bssgp_nacc_cause_strs[];
+
+/*! Obtain a human-readable string for NACC Cause code */
+static inline const char *bssgp_nacc_cause_str(enum bssgp_nacc_cause val)
+{ return get_value_string(bssgp_nacc_cause_strs, val); }
+
 /* 3GPP TS 48.018, table 11.3.64.1.a, Application Error Container coding for NACC */
 struct bssgp_app_err_cont_nacc {
 	enum bssgp_nacc_cause nacc_cause;
