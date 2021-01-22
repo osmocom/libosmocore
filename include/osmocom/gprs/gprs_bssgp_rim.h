@@ -123,6 +123,12 @@ enum bssgp_ran_inf_app_id {
 	BSSGP_RAN_INF_APP_ID_UTRA_SI = 5,
 };
 
+extern const struct value_string bssgp_ran_inf_app_id_strs[];
+
+/*! Obtain a human-readable string for RIM Application Identity code */
+static inline const char *bssgp_ran_inf_app_id_str(enum bssgp_ran_inf_app_id val)
+{ return get_value_string(bssgp_ran_inf_app_id_strs, val); }
+
 /* 3GPP TS 48.018, table 11.3.62a.1.b: RAN-INFORMATION-REQUEST RIM Container Contents */
 struct bssgp_ran_inf_req_rim_cont {
 	enum bssgp_ran_inf_app_id app_id;

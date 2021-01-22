@@ -385,6 +385,16 @@ static uint8_t *enc_rim_cont_common(uint8_t *buf, size_t len, const struct bssgp
 	return buf_ptr;
 }
 
+/* 3GPP TS 48.018, table 11.3.61.b: RIM Application Identity coding */
+const struct value_string bssgp_ran_inf_app_id_strs[] = {
+	{ BSSGP_RAN_INF_APP_ID_NACC,	"Network Assisted Cell Change (NACC)" },
+	{ BSSGP_RAN_INF_APP_ID_SI3,	"System Information 3 (SI3)" },
+	{ BSSGP_RAN_INF_APP_ID_MBMS,	"MBMS data channel" },
+	{ BSSGP_RAN_INF_APP_ID_SON,	"SON Transfer" },
+	{ BSSGP_RAN_INF_APP_ID_UTRA_SI,	"UTRA System Information (UTRA SI)" },
+	{ 0, NULL }
+};
+
 /*! Decode a RAN Information Request RIM Container (3GPP TS 48.018, table 11.3.62a.1.b).
  *  \param[out] user provided memory for decoded data struct.
  *  \param[in] buf user provided memory with the encoded value data of the IE.
