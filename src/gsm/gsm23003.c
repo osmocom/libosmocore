@@ -565,6 +565,23 @@ int osmo_lai_cmp(const struct osmo_location_area_id *a, const struct osmo_locati
 	return 0;
 }
 
+/* Compare two RAI.
+ * The order of comparison is MCC, MNC, LAC, RAC. See also osmo_lai_cmp().
+ * \param a[in]  "Left" side RAI.
+ * \param b[in]  "Right" side RAI.
+ * \returns 0 if the RAI are equal, -1 if a < b, 1 if a > b. */
+int osmo_rai_cmp(const struct osmo_routing_area_id *a, const struct osmo_routing_area_id *b)
+{
+	int rc = osmo_lai_cmp(&a->lac, &b->lac);
+	if (rc)
+		return rc;
+	if (a->rac < b->rac)
+		return -1;
+	if (a->rac > b->rac)
+		return 1;
+	return 0;
+}
+
 /* Compare two CGI.
  * The order of comparison is MCC, MNC, LAC, CI. See also osmo_lai_cmp().
  * \param a[in]  "Left" side CGI.
@@ -573,6 +590,23 @@ int osmo_lai_cmp(const struct osmo_location_area_id *a, const struct osmo_locati
 int osmo_cgi_cmp(const struct osmo_cell_global_id *a, const struct osmo_cell_global_id *b)
 {
 	int rc = osmo_lai_cmp(&a->lai, &b->lai);
+	if (rc)
+		return rc;
+	if (a->cell_identity < b->cell_identity)
+		return -1;
+	if (a->cell_identity > b->cell_identity)
+		return 1;
+	return 0;
+}
+
+/* Compare two CGI-PS.
+ * The order of comparison is MCC, MNC, LAC, RAC, CI. See also osmo_rai_cmp().
+ * \param a[in]  "Left" side CGI-PS.
+ * \param b[in]  "Right" side CGI-PS.
+ * \returns 0 if the CGI are equal, -1 if a < b, 1 if a > b. */
+int osmo_cgi_ps_cmp(const struct osmo_cell_global_id_ps *a, const struct osmo_cell_global_id_ps *b)
+{
+	int rc = osmo_rai_cmp(&a->rai, &b->rai);
 	if (rc)
 		return rc;
 	if (a->cell_identity < b->cell_identity)
