@@ -41,6 +41,13 @@
  * (3GPP TS 48.018, sub-clause 11.3.9) but without IE and length octets. */
 #define REP_CELL_ID_LEN 8
 
+const struct value_string bssgp_rim_routing_info_discr_strs[] = {
+	{ BSSGP_RIM_ROUTING_INFO_GERAN,		"GERAN cell" },
+	{ BSSGP_RIM_ROUTING_INFO_UTRAN,		"UTRAN RNC" },
+	{ BSSGP_RIM_ROUTING_INFO_EUTRAN,	"E-UTRAN eNodeB/HeNB" },
+	{ 0, NULL }
+};
+
 /*! Parse a RIM Routing information IE (3GPP TS 48.018, chapter 11.3.70).
  *  \param[out] ri user provided memory to store the parsed results.
  *  \param[in] buf input buffer of the value part of the IE.

@@ -33,6 +33,12 @@ enum bssgp_rim_routing_info_discr {
 	BSSGP_RIM_ROUTING_INFO_EUTRAN,
 };
 
+extern const struct value_string bssgp_rim_routing_info_discr_strs[];
+
+/*! Obtain a human-readable string for NACC Cause code */
+static inline const char *bssgp_rim_routing_info_discr_str(enum bssgp_rim_routing_info_discr val)
+{ return get_value_string(bssgp_rim_routing_info_discr_strs, val); }
+
 /*! BSSGP RIM Routing information, see also 3GPP TS 48.018, section 11.3.70 */
 struct bssgp_rim_routing_info {
 	enum bssgp_rim_routing_info_discr discr;
