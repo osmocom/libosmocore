@@ -713,7 +713,7 @@ static void ns2_sns_st_size_onenter(struct osmo_fsm_inst *fi, uint32_t old_state
 
 	/* on a generic failure, the timer callback will recover */
 	if (old_state != GPRS_SNS_ST_UNCONFIGURED)
-		ns2_prim_status_ind(gss->nse, NULL, 0, NS_AFF_CAUSE_SNS_FAILURE);
+		ns2_prim_status_ind(gss->nse, NULL, 0, GPRS_NS2_AFF_CAUSE_SNS_FAILURE);
 
 	ns2_clear_ipv46_entries(gss);
 
@@ -1265,7 +1265,7 @@ static void ns2_sns_st_configured(struct osmo_fsm_inst *fi, uint32_t event, void
 static void ns2_sns_st_configured_onenter(struct osmo_fsm_inst *fi, uint32_t old_state)
 {
 	struct gprs_ns2_nse *nse = nse_inst_from_fi(fi);
-	ns2_prim_status_ind(nse, NULL, 0, NS_AFF_CAUSE_SNS_CONFIGURED);
+	ns2_prim_status_ind(nse, NULL, 0, GPRS_NS2_AFF_CAUSE_SNS_CONFIGURED);
 }
 
 static const struct osmo_fsm_state ns2_sns_bss_states[] = {
@@ -1369,7 +1369,7 @@ static void ns2_sns_st_all_action(struct osmo_fsm_inst *fi, uint32_t event, void
 		/* Choose the next sns endpoint. */
 		if (llist_empty(&gss->sns_endpoints)) {
 			gss->initial = NULL;
-			ns2_prim_status_ind(gss->nse, NULL, 0, NS_AFF_CAUSE_SNS_NO_ENDPOINTS);
+			ns2_prim_status_ind(gss->nse, NULL, 0, GPRS_NS2_AFF_CAUSE_SNS_NO_ENDPOINTS);
 			osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_UNCONFIGURED, 0, 3);
 			return;
 		} else if (!gss->initial) {
@@ -1606,7 +1606,7 @@ int gprs_ns2_sns_add_endpoint(struct gprs_ns2_nse *nse,
 		return -EINVAL;
 	}
 
-	if (nse->dialect != NS2_DIALECT_SNS) {
+	if (nse->dialect != GPRS_NS2_DIALECT_SNS) {
 		return -EINVAL;
 	}
 
@@ -1645,7 +1645,7 @@ int gprs_ns2_sns_del_endpoint(struct gprs_ns2_nse *nse,
 		return -EINVAL;
 	}
 
-	if (nse->dialect != NS2_DIALECT_SNS) {
+	if (nse->dialect != GPRS_NS2_DIALECT_SNS) {
 		return -EINVAL;
 	}
 
@@ -1698,7 +1698,7 @@ int gprs_ns2_sns_count(struct gprs_ns2_nse *nse)
 		return -EINVAL;
 	}
 
-	if (nse->dialect != NS2_DIALECT_SNS) {
+	if (nse->dialect != GPRS_NS2_DIALECT_SNS) {
 		return -EINVAL;
 	}
 

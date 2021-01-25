@@ -212,7 +212,7 @@ static int config_write_ns(struct vty *vty)
 			priv.dscp, VTY_NEWLINE);
 
 	vty_out(vty, " encapsulation udp use-reset-block-unblock %s%s",
-		priv.vc_mode == NS2_VC_MODE_BLOCKRESET ? "enabled" : "disabled", VTY_NEWLINE);
+		priv.vc_mode == GPRS_NS2_VC_MODE_BLOCKRESET ? "enabled" : "disabled", VTY_NEWLINE);
 
 	llist_for_each_entry(vtyvc, &priv.vtyvc, list) {
 		vty_out(vty, " nse %u nsvci %u%s",
@@ -440,7 +440,7 @@ DEFUN_HIDDEN(nsvc_force_unconf, nsvc_force_unconf_cmd,
 		return CMD_WARNING;
 	}
 
-	if (nse->dialect == NS2_DIALECT_SNS) {
+	if (nse->dialect == GPRS_NS2_DIALECT_SNS) {
 		gprs_ns2_free_nsvcs(nse);
 	} else {
 		/* Perform the operation for all nsvc */
@@ -718,9 +718,9 @@ DEFUN(cfg_nsip_res_block_unblock, cfg_nsip_res_block_unblock_cmd,
 	enum gprs_ns2_vc_mode vc_mode;
 
 	if (!strcmp(argv[0], "enabled"))
-		vc_mode = NS2_VC_MODE_BLOCKRESET;
+		vc_mode = GPRS_NS2_VC_MODE_BLOCKRESET;
 	else
-		vc_mode = NS2_VC_MODE_ALIVE;
+		vc_mode = GPRS_NS2_VC_MODE_ALIVE;
 
 	priv.vc_mode = vc_mode;
 
@@ -831,7 +831,7 @@ int gprs_ns2_vty_init(struct gprs_ns2_inst *nsi,
 	vty_nsi = nsi;
 	memset(&priv, 0, sizeof(struct ns2_vty_priv));
 	INIT_LLIST_HEAD(&priv.vtyvc);
-	priv.vc_mode = NS2_VC_MODE_BLOCKRESET;
+	priv.vc_mode = GPRS_NS2_VC_MODE_BLOCKRESET;
 	if (default_bind)
 		memcpy(&priv.udp, default_bind, sizeof(*default_bind));
 
@@ -888,7 +888,7 @@ int gprs_ns2_vty_create() {
 	struct gprs_ns2_nse *nse;
 	struct gprs_ns2_vc *nsvc;
 	struct osmo_sockaddr sockaddr;
-	enum gprs_ns2_dialect dialect = NS2_DIALECT_UNDEF;
+	enum gprs_ns2_dialect dialect = GPRS_NS2_DIALECT_UNDEF;
 	int rc = 0;
 
 	if (!vty_nsi)
@@ -906,7 +906,7 @@ int gprs_ns2_vty_create() {
 			return -1;
 		}
 
-		bind->accept_ipaccess = priv.vc_mode == NS2_VC_MODE_BLOCKRESET;
+		bind->accept_ipaccess = priv.vc_mode == GPRS_NS2_VC_MODE_BLOCKRESET;
 	}
 
 	/* create vcs */
@@ -914,10 +914,10 @@ int gprs_ns2_vty_create() {
 		/* validate settings */
 		switch (vtyvc->ll) {
 		case GPRS_NS2_LL_UDP:
-			if (priv.vc_mode == NS2_VC_MODE_BLOCKRESET)
-				dialect = NS2_DIALECT_IPACCESS;
+			if (priv.vc_mode == GPRS_NS2_VC_MODE_BLOCKRESET)
+				dialect = GPRS_NS2_DIALECT_IPACCESS;
 			else
-				dialect = NS2_DIALECT_STATIC_ALIVE;
+				dialect = GPRS_NS2_DIALECT_STATIC_ALIVE;
 			if (strlen(vtyvc->remote.ip) == 0) {
 				/* Invalid IP for VC */
 				continue;
@@ -934,10 +934,10 @@ int gprs_ns2_vty_create() {
 			}
 			break;
 		case GPRS_NS2_LL_FR:
-			dialect = NS2_DIALECT_STATIC_RESETBLOCK;
+			dialect = GPRS_NS2_DIALECT_STATIC_RESETBLOCK;
 			break;
 		case GPRS_NS2_LL_FR_GRE:
-			dialect = NS2_DIALECT_STATIC_RESETBLOCK;
+			dialect = GPRS_NS2_DIALECT_STATIC_RESETBLOCK;
 			continue;
 		case GPRS_NS2_LL_UNDEF:
 			/* should not happen */

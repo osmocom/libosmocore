@@ -45,7 +45,7 @@ static int ns_prim_cb(struct osmo_prim_hdr *oph, void *ctx)
 {
 	OSMO_ASSERT(oph->sap == SAP_NS);
 	if (oph->msg) {
-		if (oph->primitive == PRIM_NS_UNIT_DATA) {
+		if (oph->primitive == GPRS_NS2_PRIM_UNIT_DATA) {
 			osmo_wqueue_enqueue(unitdata, oph->msg);
 		} else {
 			msgb_free(oph->msg);
@@ -187,11 +187,11 @@ void test_nse_transfer_cap(void *ctx)
 	bind[0] = dummy_bind(nsi, "transfercap1");
 	bind[1] = dummy_bind(nsi, "transfercap2");
 	bind[1]->transfer_capability = 23;
-	nse = gprs_ns2_create_nse(nsi, 1001, GPRS_NS2_LL_UDP, NS2_DIALECT_STATIC_ALIVE);
+	nse = gprs_ns2_create_nse(nsi, 1001, GPRS_NS2_LL_UDP, GPRS_NS2_DIALECT_STATIC_ALIVE);
 	OSMO_ASSERT(nse);
 
 	printf("---- Test with NSVC[0]\n");
-	nsvc[0] = ns2_vc_alloc(bind[0], nse, false, NS2_VC_MODE_ALIVE, NULL);
+	nsvc[0] = ns2_vc_alloc(bind[0], nse, false, GPRS_NS2_VC_MODE_ALIVE, NULL);
 	OSMO_ASSERT(nsvc[0]);
 	OSMO_ASSERT(ns2_count_transfer_cap(nse, 0) == 0);
 	nsvc[0]->fi->state = 3;	/* HACK: 3 = GPRS_NS2_ST_UNBLOCKED */
@@ -199,7 +199,7 @@ void test_nse_transfer_cap(void *ctx)
 	OSMO_ASSERT(ns2_count_transfer_cap(nse, 0) == 42);
 
 	printf("---- Test with NSVC[1]\n");
-	nsvc[1] = ns2_vc_alloc(bind[0], nse, false, NS2_VC_MODE_ALIVE, NULL);
+	nsvc[1] = ns2_vc_alloc(bind[0], nse, false, GPRS_NS2_VC_MODE_ALIVE, NULL);
 	OSMO_ASSERT(nsvc[1]);
 	OSMO_ASSERT(ns2_count_transfer_cap(nse, 0) == 42);
 	nsvc[1]->fi->state = 3; /* HACK: 3 = GPRS_NS2_ST_UNBLOCKED */
@@ -207,7 +207,7 @@ void test_nse_transfer_cap(void *ctx)
 	OSMO_ASSERT(ns2_count_transfer_cap(nse, 0) == 42);
 
 	printf("---- Test with NSVC[2]\n");
-	nsvc[2] = ns2_vc_alloc(bind[1], nse, false, NS2_VC_MODE_ALIVE, NULL);
+	nsvc[2] = ns2_vc_alloc(bind[1], nse, false, GPRS_NS2_VC_MODE_ALIVE, NULL);
 	OSMO_ASSERT(nsvc[2]);
 	OSMO_ASSERT(ns2_count_transfer_cap(nse, 0) == 42);
 	nsvc[2]->fi->state = 3; /* HACK: 3 = GPRS_NS2_ST_UNBLOCKED */
@@ -244,13 +244,13 @@ void test_block_unblock_nsvc(void *ctx)
 	nsi = gprs_ns2_instantiate(ctx, ns_prim_cb, NULL);
 	bind[0] = dummy_bind(nsi, "bblock1");
 	bind[1] = dummy_bind(nsi, "bblock2");
-	nse = gprs_ns2_create_nse(nsi, 1001, GPRS_NS2_LL_UDP, NS2_DIALECT_STATIC_RESETBLOCK);
+	nse = gprs_ns2_create_nse(nsi, 1001, GPRS_NS2_LL_UDP, GPRS_NS2_DIALECT_STATIC_RESETBLOCK);
 	OSMO_ASSERT(nse);
 
 	for (i=0; i<2; i++) {
 		printf("---- Create NSVC[i]\n");
 		snprintf(idbuf, sizeof(idbuf), "NSE%05u-dummy-%i", nse->nsei, i);
-		nsvc[i] = ns2_vc_alloc(bind[i], nse, false, NS2_VC_MODE_BLOCKRESET, idbuf);
+		nsvc[i] = ns2_vc_alloc(bind[i], nse, false, GPRS_NS2_VC_MODE_BLOCKRESET, idbuf);
 		OSMO_ASSERT(nsvc[i]);
 		nsvc[i]->fi->state = 3;	/* HACK: 3 = GPRS_NS2_ST_UNBLOCKED */
 		/* ensure the fi->state works correct */
@@ -321,13 +321,13 @@ void test_unitdata(void *ctx)
 	bind[0] = dummy_bind(nsi, "bblock1");
 	bind[1] = dummy_bind(nsi, "bblock2");
 	loopbind = loopback_bind(nsi, "loopback");
-	nse = gprs_ns2_create_nse(nsi, 1004, GPRS_NS2_LL_UDP, NS2_DIALECT_STATIC_RESETBLOCK);
+	nse = gprs_ns2_create_nse(nsi, 1004, GPRS_NS2_LL_UDP, GPRS_NS2_DIALECT_STATIC_RESETBLOCK);
 	OSMO_ASSERT(nse);
 
 	for (i=0; i<2; i++) {
 		printf("---- Create NSVC[%d]\n", i);
 		snprintf(idbuf, sizeof(idbuf), "NSE%05u-dummy-%i", nse->nsei, i);
-		nsvc[i] = ns2_vc_alloc(bind[i], nse, false, NS2_VC_MODE_BLOCKRESET, idbuf);
+		nsvc[i] = ns2_vc_alloc(bind[i], nse, false, GPRS_NS2_VC_MODE_BLOCKRESET, idbuf);
 		loop[i] = loopback_nsvc(loopbind, nsvc[i]);
 		OSMO_ASSERT(nsvc[i]);
 		ns2_vc_fsm_start(nsvc[i]);

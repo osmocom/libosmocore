@@ -52,7 +52,7 @@ int bssgp2_nsi_tx_ptp(struct gprs_ns2_inst *nsi, uint16_t nsei, uint16_t bvci,
 	nsp.nsei = nsei;
 	nsp.u.unitdata.link_selector = lsp;
 
-	osmo_prim_init(&nsp.oph, SAP_NS, PRIM_NS_UNIT_DATA, PRIM_OP_REQUEST, msg);
+	osmo_prim_init(&nsp.oph, SAP_NS, GPRS_NS2_PRIM_UNIT_DATA, PRIM_OP_REQUEST, msg);
 	rc = gprs_ns2_recv_prim(nsi, &nsp.oph);
 
 	return rc;

@@ -171,7 +171,7 @@ DEFUN(cfg_ns_nsei, cfg_ns_nsei_cmd,
 
 	nse = gprs_ns2_nse_by_nsei(vty_nsi, nsei);
 	if (!nse) {
-		nse = gprs_ns2_create_nse(vty_nsi, nsei, GPRS_NS2_LL_UNDEF, NS2_DIALECT_UNDEF);
+		nse = gprs_ns2_create_nse(vty_nsi, nsei, GPRS_NS2_LL_UNDEF, GPRS_NS2_DIALECT_UNDEF);
 		if (!nse) {
 			vty_out(vty, "Failed to create NSE!%s", VTY_NEWLINE);
 			return CMD_ERR_INCOMPLETE;
@@ -345,7 +345,7 @@ static void config_write_nsvc(struct vty *vty, const struct gprs_ns2_vc *nsvc)
 		break;
 	case GPRS_NS2_LL_UDP:
 		switch (nsvc->nse->dialect) {
-		case NS2_DIALECT_IPACCESS:
+		case GPRS_NS2_DIALECT_IPACCESS:
 			addr = gprs_ns2_ip_vc_remote(nsvc);
 			if (!addr)
 				break;
@@ -355,7 +355,7 @@ static void config_write_nsvc(struct vty *vty, const struct gprs_ns2_vc *nsvc)
 				nsvc->bind->name, addr_str.ip, addr_str.port,
 				nsvc->nsvci, VTY_NEWLINE);
 			break;
-		case NS2_DIALECT_STATIC_ALIVE:
+		case GPRS_NS2_DIALECT_STATIC_ALIVE:
 			addr = gprs_ns2_ip_vc_remote(nsvc);
 			if (!addr)
 				break;
@@ -390,7 +390,7 @@ static void _config_write_ns_nse(struct vty *vty, struct gprs_ns2_nse *nse)
 
 	vty_out(vty, " nse %u%s", nse->nsei, VTY_NEWLINE);
 	switch (nse->dialect) {
-	case NS2_DIALECT_SNS:
+	case GPRS_NS2_DIALECT_SNS:
 		ns2_sns_write_vty(vty, nse);
 		break;
 	default:
@@ -709,7 +709,7 @@ DEFUN(cfg_ns_nse_nsvc_fr, cfg_ns_nse_nsvc_fr_cmd,
 		goto err;
 	}
 
-	if (nse->dialect != NS2_DIALECT_STATIC_RESETBLOCK && nse->dialect != NS2_DIALECT_UNDEF) {
+	if (nse->dialect != GPRS_NS2_DIALECT_STATIC_RESETBLOCK && nse->dialect != GPRS_NS2_DIALECT_UNDEF) {
 		vty_out(vty, "Can not mix NS-VC with different dialects%s", VTY_NEWLINE);
 		goto err;
 	}
@@ -719,8 +719,8 @@ DEFUN(cfg_ns_nse_nsvc_fr, cfg_ns_nse_nsvc_fr_cmd,
 		ll_modified = true;
 	}
 
-	if (nse->dialect == NS2_DIALECT_UNDEF) {
-		nse->dialect = NS2_DIALECT_STATIC_RESETBLOCK;
+	if (nse->dialect == GPRS_NS2_DIALECT_UNDEF) {
+		nse->dialect = GPRS_NS2_DIALECT_STATIC_RESETBLOCK;
 		dialect_modified = true;
 	}
 
@@ -755,7 +755,7 @@ err:
 	if (ll_modified)
 		nse->ll = GPRS_NS2_LL_UNDEF;
 	if (dialect_modified)
-		nse->dialect = NS2_DIALECT_UNDEF;
+		nse->dialect = GPRS_NS2_DIALECT_UNDEF;
 
 	return CMD_WARNING;
 }
@@ -806,7 +806,7 @@ DEFUN(cfg_no_ns_nse_nsvc_fr_dlci, cfg_no_ns_nse_nsvc_fr_dlci_cmd,
 	gprs_ns2_free_nsvc(nsvc);
 	if (llist_empty(&nse->nsvc)) {
 		nse->ll = GPRS_NS2_LL_UNDEF;
-		nse->dialect = NS2_DIALECT_UNDEF;
+		nse->dialect = GPRS_NS2_DIALECT_UNDEF;
 	}
 
 	return CMD_SUCCESS;
@@ -825,15 +825,15 @@ DEFUN(cfg_no_ns_nse_nsvci, cfg_no_ns_nse_nsvci_cmd,
 	uint16_t nsvci = atoi(argv[0]);
 
 	switch (nse->dialect) {
-	case NS2_DIALECT_SNS:
-	case NS2_DIALECT_STATIC_ALIVE:
+	case GPRS_NS2_DIALECT_SNS:
+	case GPRS_NS2_DIALECT_STATIC_ALIVE:
 		vty_out(vty, "NSE doesn't support NSVCI.%s", VTY_NEWLINE);
 		return CMD_WARNING;
-	case NS2_DIALECT_UNDEF:
+	case GPRS_NS2_DIALECT_UNDEF:
 		vty_out(vty, "No NSVCs configured%s", VTY_NEWLINE);
 		return CMD_WARNING;
-	case NS2_DIALECT_IPACCESS:
-	case NS2_DIALECT_STATIC_RESETBLOCK:
+	case GPRS_NS2_DIALECT_IPACCESS:
+	case GPRS_NS2_DIALECT_STATIC_RESETBLOCK:
 		break;
 	}
 
@@ -852,7 +852,7 @@ DEFUN(cfg_no_ns_nse_nsvci, cfg_no_ns_nse_nsvci_cmd,
 	gprs_ns2_free_nsvc(nsvc);
 	if (llist_empty(&nse->nsvc)) {
 		nse->ll = GPRS_NS2_LL_UNDEF;
-		nse->dialect = NS2_DIALECT_UNDEF;
+		nse->dialect = GPRS_NS2_DIALECT_UNDEF;
 	}
 
 	return CMD_SUCCESS;
@@ -883,8 +883,8 @@ DEFUN(cfg_ns_nse_nsvc_udp, cfg_ns_nse_nsvc_udp_cmd,
 		ll_modified = true;
 	}
 
-	if (nse->dialect == NS2_DIALECT_UNDEF) {
-		nse->dialect = NS2_DIALECT_STATIC_ALIVE;
+	if (nse->dialect == GPRS_NS2_DIALECT_UNDEF) {
+		nse->dialect = GPRS_NS2_DIALECT_STATIC_ALIVE;
 		dialect_modified = true;
 	}
 
@@ -893,7 +893,7 @@ DEFUN(cfg_ns_nse_nsvc_udp, cfg_ns_nse_nsvc_udp_cmd,
 		goto err;
 	}
 
-	if (nse->dialect != NS2_DIALECT_STATIC_ALIVE) {
+	if (nse->dialect != GPRS_NS2_DIALECT_STATIC_ALIVE) {
 		vty_out(vty, "Can not mix NS-VC with different dialects%s", VTY_NEWLINE);
 		goto err;
 	}
@@ -934,7 +934,7 @@ err:
 	if (ll_modified)
 		nse->ll = GPRS_NS2_LL_UNDEF;
 	if (dialect_modified)
-		nse->dialect = NS2_DIALECT_UNDEF;
+		nse->dialect = GPRS_NS2_DIALECT_UNDEF;
 	return CMD_WARNING;
 }
 
@@ -961,7 +961,7 @@ DEFUN(cfg_no_ns_nse_nsvc_udp, cfg_no_ns_nse_nsvc_udp_cmd,
 		return CMD_WARNING;
 	}
 
-	if (nse->dialect != NS2_DIALECT_STATIC_ALIVE) {
+	if (nse->dialect != GPRS_NS2_DIALECT_STATIC_ALIVE) {
 		vty_out(vty, "This NSE doesn't support UDP with dialect static alive.%s", VTY_NEWLINE);
 		return CMD_WARNING;
 	}
@@ -1010,7 +1010,7 @@ DEFUN(cfg_no_ns_nse_nsvc_udp, cfg_no_ns_nse_nsvc_udp_cmd,
 	gprs_ns2_free_nsvc(nsvc);
 	if (llist_empty(&nse->nsvc)) {
 		nse->ll = GPRS_NS2_LL_UNDEF;
-		nse->dialect = NS2_DIALECT_UNDEF;
+		nse->dialect = GPRS_NS2_DIALECT_UNDEF;
 	}
 
 	return CMD_SUCCESS;
@@ -1044,8 +1044,8 @@ DEFUN(cfg_ns_nse_nsvc_ipa, cfg_ns_nse_nsvc_ipa_cmd,
 		ll_modified = true;
 	}
 
-	if (nse->dialect == NS2_DIALECT_UNDEF) {
-		nse->dialect = NS2_DIALECT_IPACCESS;
+	if (nse->dialect == GPRS_NS2_DIALECT_UNDEF) {
+		nse->dialect = GPRS_NS2_DIALECT_IPACCESS;
 		dialect_modified = true;
 	}
 
@@ -1054,7 +1054,7 @@ DEFUN(cfg_ns_nse_nsvc_ipa, cfg_ns_nse_nsvc_ipa_cmd,
 		goto err;
 	}
 
-	if (nse->dialect != NS2_DIALECT_IPACCESS) {
+	if (nse->dialect != GPRS_NS2_DIALECT_IPACCESS) {
 		vty_out(vty, "Can not mix NS-VC with different dialects%s", VTY_NEWLINE);
 		goto err;
 	}
@@ -1095,7 +1095,7 @@ err:
 	if (ll_modified)
 		nse->ll = GPRS_NS2_LL_UNDEF;
 	if (dialect_modified)
-		nse->dialect = NS2_DIALECT_UNDEF;
+		nse->dialect = GPRS_NS2_DIALECT_UNDEF;
 	return CMD_WARNING;
 }
 
@@ -1125,7 +1125,7 @@ DEFUN(cfg_no_ns_nse_nsvc_ipa, cfg_no_ns_nse_nsvc_ipa_cmd,
 		return CMD_WARNING;
 	}
 
-	if (nse->dialect != NS2_DIALECT_IPACCESS) {
+	if (nse->dialect != GPRS_NS2_DIALECT_IPACCESS) {
 		vty_out(vty, "This NSE doesn't support UDP with dialect ipaccess.%s", VTY_NEWLINE);
 		return CMD_WARNING;
 	}
@@ -1185,7 +1185,7 @@ DEFUN(cfg_no_ns_nse_nsvc_ipa, cfg_no_ns_nse_nsvc_ipa_cmd,
 	gprs_ns2_free_nsvc(nsvc);
 	if (llist_empty(&nse->nsvc)) {
 		nse->ll = GPRS_NS2_LL_UNDEF;
-		nse->dialect = NS2_DIALECT_UNDEF;
+		nse->dialect = GPRS_NS2_DIALECT_UNDEF;
 	}
 
 	return CMD_SUCCESS;
@@ -1213,13 +1213,13 @@ DEFUN(cfg_ns_nse_ip_sns, cfg_ns_nse_ip_sns_cmd,
 		ll_modified = true;
 	}
 
-	if (nse->dialect == NS2_DIALECT_UNDEF) {
+	if (nse->dialect == GPRS_NS2_DIALECT_UNDEF) {
 		char sns[16];
 		snprintf(sns, sizeof(sns), "NSE%05u-SNS", nse->nsei);
 		nse->bss_sns_fi = ns2_sns_bss_fsm_alloc(nse, sns);
 		if (!nse->bss_sns_fi)
 			goto err;
-		nse->dialect = NS2_DIALECT_SNS;
+		nse->dialect = GPRS_NS2_DIALECT_SNS;
 		dialect_modified = true;
 	}
 
@@ -1228,7 +1228,7 @@ DEFUN(cfg_ns_nse_ip_sns, cfg_ns_nse_ip_sns_cmd,
 		goto err;
 	}
 
-	if (nse->dialect != NS2_DIALECT_SNS) {
+	if (nse->dialect != GPRS_NS2_DIALECT_SNS) {
 		vty_out(vty, "Can not mix NS-VC with different dialects%s", VTY_NEWLINE);
 		goto err;
 	}
@@ -1259,7 +1259,7 @@ err:
 	if (ll_modified)
 		nse->ll = GPRS_NS2_LL_UNDEF;
 	if (dialect_modified)
-		nse->dialect = NS2_DIALECT_UNDEF;
+		nse->dialect = GPRS_NS2_DIALECT_UNDEF;
 	return CMD_WARNING;
 }
 
@@ -1282,7 +1282,7 @@ DEFUN(cfg_no_ns_nse_ip_sns, cfg_no_ns_nse_ip_sns_cmd,
 		return CMD_WARNING;
 	}
 
-	if (nse->dialect != NS2_DIALECT_SNS) {
+	if (nse->dialect != GPRS_NS2_DIALECT_SNS) {
 		vty_out(vty, "This NSE doesn't support UDP with dialect ip-sns.%s", VTY_NEWLINE);
 		return CMD_WARNING;
 	}
@@ -1313,7 +1313,7 @@ DEFUN(cfg_no_ns_nse_ip_sns, cfg_no_ns_nse_ip_sns_cmd,
 		osmo_fsm_inst_term(nse->bss_sns_fi, OSMO_FSM_TERM_REQUEST, NULL);
 		nse->bss_sns_fi = NULL;
 		nse->ll = GPRS_NS2_LL_UNDEF;
-		nse->dialect = NS2_DIALECT_UNDEF;
+		nse->dialect = GPRS_NS2_DIALECT_UNDEF;
 	}
 
 	return CMD_SUCCESS;
@@ -1493,7 +1493,7 @@ DEFUN_HIDDEN(nsvc_force_unconf, nsvc_force_unconf_cmd,
 
 	if (!nse->persistent) {
 		gprs_ns2_free_nse(nse);
-	} else if (nse->dialect == NS2_DIALECT_SNS) {
+	} else if (nse->dialect == GPRS_NS2_DIALECT_SNS) {
 		gprs_ns2_free_nsvcs(nse);
 	} else {
 		/* Perform the operation for all nsvc */

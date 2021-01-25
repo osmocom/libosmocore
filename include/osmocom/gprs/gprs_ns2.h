@@ -26,18 +26,18 @@ enum gprs_ns2_vc_mode {
 	/*! The VC will use RESET/BLOCK/UNBLOCK to start the connection and do ALIVE/ACK.
 	 * This is what is needed for Frame Relay transport, and if you use a R97/R99 Gb
 	 * interface over an IP transport (never standardized by 3GPP) */
-	NS2_VC_MODE_BLOCKRESET,
+	GPRS_NS2_VC_MODE_BLOCKRESET,
 	/*! The VC will only use ALIVE/ACK (no RESET/BLOCK/UNBLOCK), which is for Gb-IP
 	 * interface compliant to 3GPP Rel=4 or later. */
-	NS2_VC_MODE_ALIVE,
+	GPRS_NS2_VC_MODE_ALIVE,
 };
 
 enum gprs_ns2_dialect {
-	NS2_DIALECT_UNDEF,
-	NS2_DIALECT_STATIC_ALIVE,
-	NS2_DIALECT_STATIC_RESETBLOCK,
-	NS2_DIALECT_IPACCESS,
-	NS2_DIALECT_SNS,
+	GPRS_NS2_DIALECT_UNDEF,
+	GPRS_NS2_DIALECT_STATIC_ALIVE,
+	GPRS_NS2_DIALECT_STATIC_RESETBLOCK,
+	GPRS_NS2_DIALECT_IPACCESS,
+	GPRS_NS2_DIALECT_SNS,
 };
 
 /*! Osmocom NS link layer types */
@@ -50,9 +50,9 @@ enum gprs_ns2_ll {
 
 /*! Osmocom NS primitives according to 48.016 5.2 Service primitves */
 enum gprs_ns2_prim {
-	PRIM_NS_UNIT_DATA,
-	PRIM_NS_CONGESTION,
-	PRIM_NS_STATUS,
+	GPRS_NS2_PRIM_UNIT_DATA,
+	GPRS_NS2_PRIM_CONGESTION,
+	GPRS_NS2_PRIM_STATUS,
 };
 
 extern const struct value_string gprs_ns2_prim_strs[];
@@ -68,22 +68,22 @@ static inline const char *gprs_ns2_lltype_str(enum gprs_ns2_ll val)
 
 /*! Osmocom NS primitives according to 48.016 5.2.2.4 Service primitves */
 enum gprs_ns2_congestion_cause {
-	NS_CONG_CAUSE_BACKWARD_BEGIN,
-	NS_CONG_CAUSE_BACKWARD_END,
-	NS_CONG_CAUSE_FORWARD_BEGIN,
-	NS_CONG_CAUSE_FORWARD_END,
+	GPRS_NS2_CONG_CAUSE_BACKWARD_BEGIN,
+	GPRS_NS2_CONG_CAUSE_BACKWARD_END,
+	GPRS_NS2_CONG_CAUSE_FORWARD_BEGIN,
+	GPRS_NS2_CONG_CAUSE_FORWARD_END,
 };
 
 /*! Osmocom NS primitives according to 48.016 5.2.2.6 Service primitves */
 enum gprs_ns2_affecting_cause {
-	NS_AFF_CAUSE_VC_FAILURE,
-	NS_AFF_CAUSE_VC_RECOVERY,
-	NS_AFF_CAUSE_FAILURE,
-	NS_AFF_CAUSE_RECOVERY,
+	GPRS_NS2_AFF_CAUSE_VC_FAILURE,
+	GPRS_NS2_AFF_CAUSE_VC_RECOVERY,
+	GPRS_NS2_AFF_CAUSE_FAILURE,
+	GPRS_NS2_AFF_CAUSE_RECOVERY,
 	/* osmocom own causes */
-	NS_AFF_CAUSE_SNS_CONFIGURED,
-	NS_AFF_CAUSE_SNS_FAILURE,
-	NS_AFF_CAUSE_SNS_NO_ENDPOINTS,
+	GPRS_NS2_AFF_CAUSE_SNS_CONFIGURED,
+	GPRS_NS2_AFF_CAUSE_SNS_FAILURE,
+	GPRS_NS2_AFF_CAUSE_SNS_NO_ENDPOINTS,
 };
 
 extern const struct value_string gprs_ns2_aff_cause_prim_strs[];
@@ -94,9 +94,9 @@ static inline const char *gprs_ns2_aff_cause_prim_str(enum gprs_ns2_affecting_ca
 
 /*! Osmocom NS primitives according to 48.016 5.2.2.7 Service primitves */
 enum gprs_ns2_change_ip_endpoint {
-	NS_ENDPOINT_NO_CHANGE,
-	NS_ENDPOINT_REQUEST_CHANGE,
-	NS_ENDPOINT_CONFIRM_CHANGE,
+	GRPS_NS2_ENDPOINT_NO_CHANGE,
+	GPRS_NS2_ENDPOINT_REQUEST_CHANGE,
+	GPRS_NS2_ENDPOINT_CONFIRM_CHANGE,
 };
 
 extern const struct value_string gprs_ns2_cause_strs[];

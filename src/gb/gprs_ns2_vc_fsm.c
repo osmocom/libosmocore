@@ -212,7 +212,7 @@ static void alive_timeout_handler(void *data)
 			osmo_timer_schedule(&priv->alive.timer, nsi->timeout[NS_TOUT_TNS_ALIVE], 0);
 		} else {
 			/* lost connection */
-			if (priv->nsvc->mode == NS2_VC_MODE_BLOCKRESET) {
+			if (priv->nsvc->mode == GPRS_NS2_VC_MODE_BLOCKRESET) {
 				osmo_fsm_inst_state_chg(fi, GPRS_NS2_ST_RESET, nsi->timeout[NS_TOUT_TNS_RESET], 0);
 			} else {
 				osmo_fsm_inst_state_chg(fi, GPRS_NS2_ST_ALIVE, nsi->timeout[NS_TOUT_TNS_ALIVE], 0);
@@ -235,10 +235,10 @@ static void ns2_st_unconfigured(struct osmo_fsm_inst *fi, uint32_t event, void *
 	switch (event) {
 	case GPRS_NS2_EV_REQ_START:
 		switch (priv->nsvc->mode) {
-		case NS2_VC_MODE_ALIVE:
+		case GPRS_NS2_VC_MODE_ALIVE:
 			osmo_fsm_inst_state_chg(fi, GPRS_NS2_ST_ALIVE, nsi->timeout[NS_TOUT_TNS_ALIVE], NS_TOUT_TNS_ALIVE);
 			break;
-		case NS2_VC_MODE_BLOCKRESET:
+		case GPRS_NS2_VC_MODE_BLOCKRESET:
 			osmo_fsm_inst_state_chg(fi, GPRS_NS2_ST_RESET, nsi->timeout[NS_TOUT_TNS_RESET], NS_TOUT_TNS_RESET);
 			break;
 		}
@@ -372,7 +372,7 @@ static void ns2_st_unblocked_on_enter(struct osmo_fsm_inst *fi, uint32_t old_sta
 
 	priv->accept_unitdata = true;
 	ns2_nse_notify_unblocked(nsvc, true);
-	ns2_prim_status_ind(nse, nsvc, 0, NS_AFF_CAUSE_VC_RECOVERY);
+	ns2_prim_status_ind(nse, nsvc, 0, GPRS_NS2_AFF_CAUSE_VC_RECOVERY);
 }
 
 static void ns2_st_unblocked(struct osmo_fsm_inst *fi, uint32_t event, void *data)
@@ -551,9 +551,9 @@ static void ns2_recv_unitdata(struct osmo_fsm_inst *fi,
 
 	/* 10.3.9 NS SDU Control Bits */
 	if (nsh->data[0] & 0x1)
-		nsp.u.unitdata.change = NS_ENDPOINT_REQUEST_CHANGE;
+		nsp.u.unitdata.change = GPRS_NS2_ENDPOINT_REQUEST_CHANGE;
 
-	osmo_prim_init(&nsp.oph, SAP_NS, PRIM_NS_UNIT_DATA,
+	osmo_prim_init(&nsp.oph, SAP_NS, GPRS_NS2_PRIM_UNIT_DATA,
 			PRIM_OP_INDICATION, msg);
 	nsi->cb(&nsp.oph, nsi->cb_data);
 }
@@ -568,7 +568,7 @@ static void ns2_vc_fsm_allstate_action(struct osmo_fsm_inst *fi,
 
 	switch (event) {
 	case GPRS_NS2_EV_RX_RESET:
-		if (priv->nsvc->mode != NS2_VC_MODE_BLOCKRESET)
+		if (priv->nsvc->mode != GPRS_NS2_VC_MODE_BLOCKRESET)
 			break;
 
 		/* move the FSM into reset */

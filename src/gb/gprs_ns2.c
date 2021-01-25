@@ -196,19 +196,19 @@ static const struct osmo_stat_item_group_desc nsvc_statg_desc = {
 };
 
 const struct value_string gprs_ns2_aff_cause_prim_strs[] = {
-	{ NS_AFF_CAUSE_VC_FAILURE,	"NSVC failure" },
-	{ NS_AFF_CAUSE_VC_RECOVERY,	"NSVC recovery" },
-	{ NS_AFF_CAUSE_FAILURE,		"NSE failure" },
-	{ NS_AFF_CAUSE_RECOVERY,	"NSE recovery" },
-	{ NS_AFF_CAUSE_SNS_CONFIGURED,	"NSE SNS configured" },
-	{ NS_AFF_CAUSE_SNS_FAILURE,	"NSE SNS failure" },
+	{ GPRS_NS2_AFF_CAUSE_VC_FAILURE,	"NSVC failure" },
+	{ GPRS_NS2_AFF_CAUSE_VC_RECOVERY,	"NSVC recovery" },
+	{ GPRS_NS2_AFF_CAUSE_FAILURE,		"NSE failure" },
+	{ GPRS_NS2_AFF_CAUSE_RECOVERY,		"NSE recovery" },
+	{ GPRS_NS2_AFF_CAUSE_SNS_CONFIGURED,	"NSE SNS configured" },
+	{ GPRS_NS2_AFF_CAUSE_SNS_FAILURE,	"NSE SNS failure" },
 	{ 0, NULL }
 };
 
 const struct value_string gprs_ns2_prim_strs[] = {
-	{ PRIM_NS_UNIT_DATA,	"UNIT DATA" },
-	{ PRIM_NS_CONGESTION,	"CONGESTION" },
-	{ PRIM_NS_STATUS,	"STATUS" },
+	{ GPRS_NS2_PRIM_UNIT_DATA,	"UNIT DATA" },
+	{ GPRS_NS2_PRIM_CONGESTION,	"CONGESTION" },
+	{ GPRS_NS2_PRIM_STATUS,		"STATUS" },
 	{ 0, NULL }
 };
 
@@ -429,7 +429,7 @@ int gprs_ns2_recv_prim(struct gprs_ns2_inst *nsi, struct osmo_prim_hdr *oph)
 
 	nsp = container_of(oph, struct osmo_gprs_ns2_prim, oph);
 
-	if (oph->operation != PRIM_OP_REQUEST || oph->primitive != PRIM_NS_UNIT_DATA)
+	if (oph->operation != PRIM_OP_REQUEST || oph->primitive != GPRS_NS2_PRIM_UNIT_DATA)
 		return -EINVAL;
 
 	if (!oph->msg)
@@ -448,9 +448,9 @@ int gprs_ns2_recv_prim(struct gprs_ns2_inst *nsi, struct osmo_prim_hdr *oph)
 	if (!nsvc)
 		return 0;
 
-	if (nsp->u.unitdata.change == NS_ENDPOINT_REQUEST_CHANGE)
+	if (nsp->u.unitdata.change == GPRS_NS2_ENDPOINT_REQUEST_CHANGE)
 		sducontrol = 1;
-	else if (nsp->u.unitdata.change == NS_ENDPOINT_CONFIRM_CHANGE)
+	else if (nsp->u.unitdata.change == GPRS_NS2_ENDPOINT_CONFIRM_CHANGE)
 		sducontrol = 2;
 
 	return ns2_tx_unit_data(nsvc, bvci, sducontrol, oph->msg);
@@ -477,7 +477,7 @@ void ns2_prim_status_ind(struct gprs_ns2_nse *nse,
 	if (nsvc)
 		nsp.u.status.nsvc = gprs_ns2_ll_str_buf(nsvc_str, sizeof(nsvc_str), nsvc);
 
-	osmo_prim_init(&nsp.oph, SAP_NS, PRIM_NS_STATUS,
+	osmo_prim_init(&nsp.oph, SAP_NS, GPRS_NS2_PRIM_STATUS,
 			PRIM_OP_INDICATION, NULL);
 	nse->nsi->cb(&nsp.oph, nse->nsi->cb_data);
 }
@@ -539,7 +539,7 @@ void gprs_ns2_free_nsvc(struct gprs_ns2_vc *nsvc)
 	if (!nsvc)
 		return;
 
-	ns2_prim_status_ind(nsvc->nse, nsvc, 0, NS_AFF_CAUSE_VC_FAILURE);
+	ns2_prim_status_ind(nsvc->nse, nsvc, 0, GPRS_NS2_AFF_CAUSE_VC_FAILURE);
 
 	llist_del(&nsvc->list);
 	llist_del(&nsvc->blist);
@@ -703,7 +703,7 @@ struct gprs_ns2_nse *gprs_ns2_create_nse(struct gprs_ns2_inst *nsi, uint16_t nse
 	if (!nse)
 		return NULL;
 
-	if (dialect == NS2_DIALECT_SNS) {
+	if (dialect == GPRS_NS2_DIALECT_SNS) {
 		snprintf(sns, sizeof(sns), "NSE%05u-SNS", nsei);
 		nse->bss_sns_fi = ns2_sns_bss_fsm_alloc(nse, sns);
 		if (!nse->bss_sns_fi) {
@@ -741,7 +741,7 @@ void gprs_ns2_free_nse(struct gprs_ns2_nse *nse)
 
 	nse->alive = false;
 	gprs_ns2_free_nsvcs(nse);
-	ns2_prim_status_ind(nse, NULL, 0, NS_AFF_CAUSE_FAILURE);
+	ns2_prim_status_ind(nse, NULL, 0, GPRS_NS2_AFF_CAUSE_FAILURE);
 
 	llist_del(&nse->list);
 	if (nse->bss_sns_fi)
@@ -828,7 +828,7 @@ enum ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 	case NS_PDUT_RESET:
 		/* accept PDU RESET when vc_mode matches */
 		if (bind->accept_ipaccess) {
-			dialect = NS2_DIALECT_IPACCESS;
+			dialect = GPRS_NS2_DIALECT_IPACCESS;
 			break;
 		}
 
@@ -871,7 +871,7 @@ enum ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 	nse = gprs_ns2_nse_by_nsei(bind->nsi, nsei);
 	if (!nse) {
 		/* only create nse for udp & ipaccess */
-		if (bind->ll != GPRS_NS2_LL_UDP || dialect != NS2_DIALECT_IPACCESS)
+		if (bind->ll != GPRS_NS2_LL_UDP || dialect != GPRS_NS2_DIALECT_IPACCESS)
 			return NS2_CS_SKIPPED;
 
 		if (!bind->nsi->create_nse || !bind->accept_ipaccess)
@@ -942,7 +942,7 @@ struct gprs_ns2_vc *gprs_ns2_ip_connect_inactive(struct gprs_ns2_vc_bind *bind,
 	if (!nsvc)
 		return NULL;
 
-	if (nsvc->mode == NS2_VC_MODE_BLOCKRESET) {
+	if (nsvc->mode == GPRS_NS2_VC_MODE_BLOCKRESET) {
 		nsvc->nsvci = nsvci;
 		nsvc->nsvci_is_valid = true;
 	}
@@ -1151,7 +1151,7 @@ void ns2_nse_notify_unblocked(struct gprs_ns2_vc *nsvc, bool unblocked)
 	/* wait until both data_weight and sig_weight are != 0 before declaring NSE as alive */
 	if (unblocked && nse->sum_data_weight && nse->sum_sig_weight) {
 		nse->alive = true;
-		ns2_prim_status_ind(nse, NULL, 0, NS_AFF_CAUSE_RECOVERY);
+		ns2_prim_status_ind(nse, NULL, 0, GPRS_NS2_AFF_CAUSE_RECOVERY);
 		nse->first = false;
 		return;
 	}
@@ -1159,7 +1159,7 @@ void ns2_nse_notify_unblocked(struct gprs_ns2_vc *nsvc, bool unblocked)
 	if (nse->alive && (nse->sum_data_weight == 0 || nse->sum_sig_weight == 0)) {
 		/* nse became unavailable */
 		nse->alive = false;
-		ns2_prim_status_ind(nse, NULL, 0, NS_AFF_CAUSE_FAILURE);
+		ns2_prim_status_ind(nse, NULL, 0, GPRS_NS2_AFF_CAUSE_FAILURE);
 	}
 }
 
@@ -1284,12 +1284,12 @@ struct gprs_ns2_vc_bind *gprs_ns2_bind_by_name(struct gprs_ns2_inst *nsi, const 
 enum gprs_ns2_vc_mode ns2_dialect_to_vc_mode(enum gprs_ns2_dialect dialect)
 {
 	switch (dialect) {
-	case NS2_DIALECT_SNS:
-	case NS2_DIALECT_STATIC_ALIVE:
-		return NS2_VC_MODE_ALIVE;
-	case NS2_DIALECT_STATIC_RESETBLOCK:
-	case NS2_DIALECT_IPACCESS:
-		return NS2_VC_MODE_BLOCKRESET;
+	case GPRS_NS2_DIALECT_SNS:
+	case GPRS_NS2_DIALECT_STATIC_ALIVE:
+		return GPRS_NS2_VC_MODE_ALIVE;
+	case GPRS_NS2_DIALECT_STATIC_RESETBLOCK:
+	case GPRS_NS2_DIALECT_IPACCESS:
+		return GPRS_NS2_VC_MODE_BLOCKRESET;
 	default:
 		return -1;
 	}

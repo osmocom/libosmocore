@@ -488,7 +488,7 @@ bool gprs_ns2_ip_vc_equal(const struct gprs_ns2_vc *nsvc,
 	if (osmo_sockaddr_cmp(remote, &vpriv->remote))
 		return false;
 
-	if (nsvc->mode == NS2_VC_MODE_BLOCKRESET)
+	if (nsvc->mode == GPRS_NS2_VC_MODE_BLOCKRESET)
 		if (nsvc->nsvci != nsvci)
 			return false;
 
