@@ -42,9 +42,9 @@
 #define REP_CELL_ID_LEN 8
 
 const struct value_string bssgp_rim_routing_info_discr_strs[] = {
-	{ BSSGP_RIM_ROUTING_INFO_GERAN,		"GERAN cell" },
-	{ BSSGP_RIM_ROUTING_INFO_UTRAN,		"UTRAN RNC" },
-	{ BSSGP_RIM_ROUTING_INFO_EUTRAN,	"E-UTRAN eNodeB/HeNB" },
+	{ BSSGP_RIM_ROUTING_INFO_GERAN,		"GERAN-cell" },
+	{ BSSGP_RIM_ROUTING_INFO_UTRAN,		"UTRAN-RNC" },
+	{ BSSGP_RIM_ROUTING_INFO_EUTRAN,	"E-UTRAN-eNodeB/HeNB" },
 	{ 0, NULL }
 };
 
