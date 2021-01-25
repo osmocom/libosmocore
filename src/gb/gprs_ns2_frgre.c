@@ -439,17 +439,17 @@ static int handle_nsfrgre_read(struct osmo_fd *bfd)
 		/* VC not found */
 		rc = ns2_create_vc(bind, msg, "newconnection", &reject, &nsvc);
 		switch (rc) {
-		case GPRS_NS2_CS_FOUND:
+		case NS2_CS_FOUND:
 			break;
-		case GPRS_NS2_CS_ERROR:
-		case GPRS_NS2_CS_SKIPPED:
+		case NS2_CS_ERROR:
+		case NS2_CS_SKIPPED:
 			rc = 0;
 			goto out;
-		case GPRS_NS2_CS_REJECTED:
+		case NS2_CS_REJECTED:
 			/* nsip_sendmsg will free reject */
 			rc = frgre_sendmsg(bind, reject, &saddr);
 			goto out;
-		case GPRS_NS2_CS_CREATED:
+		case NS2_CS_CREATED:
 			frgre_alloc_vc(bind, nsvc, &saddr, dlci);
 			gprs_ns2_vc_fsm_start(nsvc);
 			break;

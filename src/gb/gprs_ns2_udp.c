@@ -231,17 +231,17 @@ static int handle_nsip_read(struct osmo_fd *bfd)
 		/* VC not found */
 		rc = ns2_create_vc(bind, msg, "newconnection", &reject, &nsvc);
 		switch (rc) {
-		case GPRS_NS2_CS_FOUND:
+		case NS2_CS_FOUND:
 			break;
-		case GPRS_NS2_CS_ERROR:
-		case GPRS_NS2_CS_SKIPPED:
+		case NS2_CS_ERROR:
+		case NS2_CS_SKIPPED:
 			rc = 0;
 			goto out;
-		case GPRS_NS2_CS_REJECTED:
+		case NS2_CS_REJECTED:
 			/* nsip_sendmsg will free reject */
 			rc = nsip_sendmsg(bind, reject, &saddr);
 			goto out;
-		case GPRS_NS2_CS_CREATED:
+		case NS2_CS_CREATED:
 			ns2_driver_alloc_vc(bind, nsvc, &saddr);
 			gprs_ns2_vc_fsm_start(nsvc);
 			break;

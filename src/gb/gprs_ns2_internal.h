@@ -77,12 +77,12 @@ enum ns_stat {
 };
 
 /*! Osmocom NS2 VC create status */
-enum gprs_ns2_cs {
-	GPRS_NS2_CS_CREATED,     /*!< A NSVC object has been created */
-	GPRS_NS2_CS_FOUND,       /*!< A NSVC object has been found */
-	GPRS_NS2_CS_REJECTED,    /*!< Rejected and answered message */
-	GPRS_NS2_CS_SKIPPED,     /*!< Skipped message */
-	GPRS_NS2_CS_ERROR,       /*!< Failed to process message */
+enum ns2_cs {
+	NS2_CS_CREATED,     /*!< A NSVC object has been created */
+	NS2_CS_FOUND,       /*!< A NSVC object has been found */
+	NS2_CS_REJECTED,    /*!< Rejected and answered message */
+	NS2_CS_SKIPPED,     /*!< Skipped message */
+	NS2_CS_ERROR,       /*!< Failed to process message */
 };
 
 
@@ -245,7 +245,7 @@ struct gprs_ns2_vc_driver {
 	void (*free_bind)(struct gprs_ns2_vc_bind *driver);
 };
 
-enum gprs_ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
+enum ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 			       struct msgb *msg,
 			       const char *logname,
 			       struct msgb **reject,

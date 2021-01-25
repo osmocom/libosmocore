@@ -778,11 +778,11 @@ static inline int ns2_tlv_parse(struct tlv_parsed *dec,
  *  \param[out] reject A message filled to be sent back. Only used in failure cases.
  *  \param[out] success A pointer which will be set to the new VC on success
  *  \return enum value indicating the status, e.g. GPRS_NS2_CS_CREATED */
-enum gprs_ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
-			       struct msgb *msg,
-			       const char *logname,
-			       struct msgb **reject,
-			       struct gprs_ns2_vc **success)
+enum ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
+			  struct msgb *msg,
+			  const char *logname,
+			  struct msgb **reject,
+			  struct gprs_ns2_vc **success)
 {
 	struct gprs_ns_hdr *nsh = (struct gprs_ns_hdr *)msg->l2h;
 	struct tlv_parsed tp;
@@ -797,7 +797,7 @@ enum gprs_ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 	int rc, tlv;
 
 	if (msg->len < sizeof(struct gprs_ns_hdr))
-		return GPRS_NS2_CS_ERROR;
+		return NS2_CS_ERROR;
 
 	/* parse the tlv early to allow reject status msg to
 	 * work with valid tp.
@@ -812,19 +812,19 @@ enum gprs_ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 		LOGP(DLNS, LOGL_INFO, "Ignoring NS STATUS from %s "
 		     "for non-existing NS-VC\n",
 		     logname);
-		return GPRS_NS2_CS_SKIPPED;
+		return NS2_CS_SKIPPED;
 	case NS_PDUT_ALIVE_ACK:
 		/* Ignore this, see 3GPP TS 08.16, 7.4.1 */
 		LOGP(DLNS, LOGL_INFO, "Ignoring NS ALIVE ACK from %s "
 		     "for non-existing NS-VC\n",
 		     logname);
-		return GPRS_NS2_CS_SKIPPED;
+		return NS2_CS_SKIPPED;
 	case NS_PDUT_RESET_ACK:
 		/* Ignore this, see 3GPP TS 08.16, 7.3.1 */
 		LOGP(DLNS, LOGL_INFO, "Ignoring NS RESET ACK from %s "
 		     "for non-existing NS-VC\n",
 		     logname);
-		return GPRS_NS2_CS_SKIPPED;
+		return NS2_CS_SKIPPED;
 	case NS_PDUT_RESET:
 		/* accept PDU RESET when vc_mode matches */
 		if (bind->accept_ipaccess) {
@@ -835,12 +835,12 @@ enum gprs_ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 		rc = reject_status_msg(msg, &tp, reject, NS_CAUSE_PDU_INCOMP_PSTATE);
 		if (rc < 0)
 			LOGP(DLNS, LOGL_ERROR, "Failed to generate reject message (%d)\n", rc);
-		return GPRS_NS2_CS_REJECTED;
+		return NS2_CS_REJECTED;
 	default:
 		rc = reject_status_msg(msg, &tp, reject, NS_CAUSE_PDU_INCOMP_PSTATE);
 		if (rc < 0)
 			LOGP(DLNS, LOGL_ERROR, "Failed to generate reject message (%d)\n", rc);
-		return GPRS_NS2_CS_REJECTED;
+		return NS2_CS_REJECTED;
 	}
 
 	if (tlv < 0) {
@@ -852,7 +852,7 @@ enum gprs_ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 		rc = reject_status_msg(msg, &tp, reject, NS_CAUSE_PROTO_ERR_UNSPEC);
 		if (rc < 0)
 			LOGP(DLNS, LOGL_ERROR, "Failed to generate reject message (%d)\n", rc);
-		return GPRS_NS2_CS_REJECTED;
+		return NS2_CS_REJECTED;
 	}
 
 	if (!TLVP_PRES_LEN(&tp, NS_IE_CAUSE, 1) ||
@@ -861,7 +861,7 @@ enum gprs_ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 		rc = reject_status_msg(msg, &tp, reject, NS_CAUSE_MISSING_ESSENT_IE);
 		if (rc < 0)
 			LOGP(DLNS, LOGL_ERROR, "Failed to generate reject message (%d)\n", rc);
-		return GPRS_NS2_CS_REJECTED;
+		return NS2_CS_REJECTED;
 	}
 
 	nsei  = tlvp_val16be(&tp, NS_IE_NSEI);
@@ -872,15 +872,15 @@ enum gprs_ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 	if (!nse) {
 		/* only create nse for udp & ipaccess */
 		if (bind->ll != GPRS_NS2_LL_UDP || dialect != NS2_DIALECT_IPACCESS)
-			return GPRS_NS2_CS_SKIPPED;
+			return NS2_CS_SKIPPED;
 
 		if (!bind->nsi->create_nse || !bind->accept_ipaccess)
-			return GPRS_NS2_CS_SKIPPED;
+			return NS2_CS_SKIPPED;
 
 		nse = gprs_ns2_create_nse(bind->nsi, nsei, bind->ll, dialect);
 		if (!nse) {
 			LOGP(DLNS, LOGL_ERROR, "Failed to create NSE(%05u)\n", nsei);
-			return GPRS_NS2_CS_ERROR;
+			return NS2_CS_ERROR;
 		}
 	} else {
 		/* nsei already known */
@@ -888,7 +888,7 @@ enum gprs_ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 			LOGNSE(nse, LOGL_ERROR, "Received NS-RESET NS-VCI(%05u) with wrong linklayer(%s)"
 				" for already known NSE(%s)\n", nsvci, gprs_ns2_lltype_str(bind->ll),
 				gprs_ns2_lltype_str(nse->ll));
-			return GPRS_NS2_CS_SKIPPED;
+			return NS2_CS_SKIPPED;
 		}
 	}
 
@@ -896,7 +896,7 @@ enum gprs_ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 	if (nsvc) {
 		if (nsvc->persistent) {
 			LOGNSVC(nsvc, LOGL_ERROR, "Received NS-RESET for a persistent NSE over wrong connection.\n");
-			return GPRS_NS2_CS_SKIPPED;
+			return NS2_CS_SKIPPED;
 		}
 		/* destroy old dynamic nsvc */
 		gprs_ns2_free_nsvc(nsvc);
@@ -906,7 +906,7 @@ enum gprs_ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 	if (nse->persistent) {
 		LOGNSE(nse, LOGL_ERROR, "Received NS-RESET for a persistent NSE but the unknown "
 		       "NS-VCI(%05u)\n", nsvci);
-		return GPRS_NS2_CS_SKIPPED;
+		return NS2_CS_SKIPPED;
 	}
 
 	nsvci = tlvp_val16be(&tp, NS_IE_VCI);
@@ -915,14 +915,14 @@ enum gprs_ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 		 nse->nsei, nsvci);
 	nsvc = ns2_vc_alloc(bind, nse, false, vc_mode, idbuf);
 	if (!nsvc)
-		return GPRS_NS2_CS_SKIPPED;
+		return NS2_CS_SKIPPED;
 
 	nsvc->nsvci = nsvci;
 	nsvc->nsvci_is_valid = true;
 
 	*success = nsvc;
 
-	return GPRS_NS2_CS_CREATED;
+	return NS2_CS_CREATED;
 }
 
 /*! Create, and connect an inactive, new IP-based NS-VC
