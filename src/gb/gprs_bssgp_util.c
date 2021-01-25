@@ -594,6 +594,8 @@ int bssgp_tx_rim(const struct bssgp_ran_information_pdu *pdu, uint16_t nsei)
 {
 	struct msgb *msg;
 	struct bssgp_normal_hdr *bgph;
+	char ri_src_str[64];
+	char ri_dest_str[64];
 
 	/* Encode RIM PDU into mesage buffer */
 	msg = bssgp_encode_rim_pdu(pdu);
@@ -607,7 +609,10 @@ int bssgp_tx_rim(const struct bssgp_ran_information_pdu *pdu, uint16_t nsei)
 	msgb_bvci(msg) = 0;	/* Signalling */
 
 	bgph = (struct bssgp_normal_hdr *)msgb_bssgph(msg);
-	DEBUGP(DLBSSGP, "BSSGP BVCI=0 Tx RIM-PDU:%s\n", bssgp_pdu_str(bgph->pdu_type));
+	DEBUGP(DLBSSGP, "BSSGP BVCI=0 Tx RIM-PDU:%s, src=%s, dest=%s\n",
+	       bssgp_pdu_str(bgph->pdu_type),
+	       bssgp_rim_ri_name_buf(ri_src_str, sizeof(ri_src_str), &pdu->routing_info_src),
+	       bssgp_rim_ri_name_buf(ri_dest_str, sizeof(ri_dest_str), &pdu->routing_info_dest));
 
 	return bssgp_ns_send(bssgp_ns_send_data, msg);
 }

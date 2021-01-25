@@ -653,8 +653,8 @@ static int bssgp_rx_rim(struct msgb *msg, struct tlv_parsed *tp, uint16_t bvci)
 	uint16_t nsei = msgb_nsei(msg);
 	struct bssgp_normal_hdr *bgph = (struct bssgp_normal_hdr *)msgb_bssgph(msg);
 	enum bssgp_prim prim;
-
-	DEBUGP(DLBSSGP, "BSSGP BVCI=%u Rx RIM-PDU:%s\n", bvci, bssgp_pdu_str(bgph->pdu_type));
+	char ri_src_str[64];
+	char ri_dest_str[64];
 
 	/* Specify PRIM type based on the RIM PDU */
 	switch (bgph->pdu_type) {
@@ -677,6 +677,10 @@ static int bssgp_rx_rim(struct msgb *msg, struct tlv_parsed *tp, uint16_t bvci)
 	nmp.tp = tp;
 	if (bssgp_parse_rim_pdu(&nmp.u.rim_pdu, msg) < 0)
 		return bssgp_tx_status(BSSGP_CAUSE_MISSING_MAND_IE, NULL, msg);
+	DEBUGP(DLBSSGP, "BSSGP BVCI=%u Rx RIM-PDU:%s, src=%s, dest=%s\n",
+	       bvci, bssgp_pdu_str(bgph->pdu_type),
+	       bssgp_rim_ri_name_buf(ri_src_str, sizeof(ri_src_str), &nmp.u.rim_pdu.routing_info_src),
+	       bssgp_rim_ri_name_buf(ri_dest_str, sizeof(ri_dest_str), &nmp.u.rim_pdu.routing_info_dest));
 	osmo_prim_init(&nmp.oph, SAP_BSSGP_RIM, prim, PRIM_OP_INDICATION, msg);
 	bssgp_prim_cb(&nmp.oph, NULL);
 
