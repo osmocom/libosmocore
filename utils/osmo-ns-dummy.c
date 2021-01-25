@@ -230,7 +230,7 @@ int main (int argc, char *argv[])
 	}
 
 	gprs_ns2_dynamic_create_nse(nsi, true);
-	gprs_ns2_vty2_init(nsi);
+	gprs_ns2_vty_init(nsi);
 	rc = vty_read_config_file(config_file, NULL);
 	if (rc < 0 && config_given) {
 		fprintf(stderr, "Failed to parse the config file: '%s'\n",
