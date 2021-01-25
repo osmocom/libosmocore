@@ -1047,7 +1047,7 @@ int ns2_recv_vc(struct gprs_ns2_vc *nsvc,
 		struct msgb *msg)
 {
 	struct gprs_ns_hdr *nsh = (struct gprs_ns_hdr *) msg->l2h;
-	struct tlv_parsed tp;
+	struct tlv_parsed tp = { };
 	int rc = 0;
 
 	log_set_context(LOG_CTX_GB_NSE, nsvc->nse);
@@ -1099,7 +1099,7 @@ int ns2_recv_vc(struct gprs_ns2_vc *nsvc,
 		break;
 
 	case NS_PDUT_UNITDATA:
-		rc = gprs_ns2_vc_rx(nsvc, msg, NULL);
+		rc = gprs_ns2_vc_rx(nsvc, msg, &tp);
 		break;
 	default:
 		rc = ns2_tlv_parse(&tp, nsh->data,
