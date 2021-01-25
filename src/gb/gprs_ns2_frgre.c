@@ -393,9 +393,9 @@ out_err:
 	return NULL;
 }
 
-static int gprs_ns2_find_vc_by_dlci(struct gprs_ns2_vc_bind *bind,
-				    uint16_t dlci,
-				    struct gprs_ns2_vc **result)
+static int ns2_find_vc_by_dlci(struct gprs_ns2_vc_bind *bind,
+			       uint16_t dlci,
+			       struct gprs_ns2_vc **result)
 {
 	struct gprs_ns2_vc *nsvc;
 	struct priv_vc *vcpriv;
@@ -434,7 +434,7 @@ static int handle_nsfrgre_read(struct osmo_fd *bfd)
 		goto out;
 	}
 
-	rc = gprs_ns2_find_vc_by_dlci(bind, dlci, &nsvc);
+	rc = ns2_find_vc_by_dlci(bind, dlci, &nsvc);
 	if (rc) {
 		/* VC not found */
 		rc = ns2_create_vc(bind, msg, "newconnection", &reject, &nsvc);

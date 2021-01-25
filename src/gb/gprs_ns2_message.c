@@ -63,7 +63,7 @@ enum ns_ctr {
 
 
 
-static int gprs_ns2_validate_reset(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp, uint8_t *cause)
+static int ns2_validate_reset(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp, uint8_t *cause)
 {
 	if (!TLVP_PRES_LEN(tp, NS_IE_CAUSE, 1) ||
 	    !TLVP_PRES_LEN(tp, NS_IE_VCI, 2) || !TLVP_PRES_LEN(tp, NS_IE_NSEI, 2)) {
@@ -74,7 +74,7 @@ static int gprs_ns2_validate_reset(struct gprs_ns2_vc *nsvc, struct msgb *msg, s
 	return 0;
 }
 
-static int gprs_ns2_validate_reset_ack(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp, uint8_t *cause)
+static int ns2_validate_reset_ack(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp, uint8_t *cause)
 {
 	if (!TLVP_PRES_LEN(tp, NS_IE_VCI, 2) || !TLVP_PRES_LEN(tp, NS_IE_NSEI, 2)) {
 		*cause = NS_CAUSE_MISSING_ESSENT_IE;
@@ -84,7 +84,7 @@ static int gprs_ns2_validate_reset_ack(struct gprs_ns2_vc *nsvc, struct msgb *ms
 	return 0;
 }
 
-static int gprs_ns2_validate_block(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp, uint8_t *cause)
+static int ns2_validate_block(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp, uint8_t *cause)
 {
 	if (!TLVP_PRES_LEN(tp, NS_IE_VCI, 2) || !TLVP_PRES_LEN(tp, NS_IE_CAUSE, 1)) {
 		*cause = NS_CAUSE_MISSING_ESSENT_IE;
@@ -94,7 +94,7 @@ static int gprs_ns2_validate_block(struct gprs_ns2_vc *nsvc, struct msgb *msg, s
 	return 0;
 }
 
-static int gprs_ns2_validate_block_ack(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp, uint8_t *cause)
+static int ns2_validate_block_ack(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp, uint8_t *cause)
 {
 	if (!TLVP_PRES_LEN(tp, NS_IE_VCI, 2)) {
 		*cause = NS_CAUSE_MISSING_ESSENT_IE;
@@ -104,7 +104,7 @@ static int gprs_ns2_validate_block_ack(struct gprs_ns2_vc *nsvc, struct msgb *ms
 	return 0;
 }
 
-static int gprs_ns2_validate_status(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp, uint8_t *cause)
+static int ns2_validate_status(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp, uint8_t *cause)
 {
 
 	if (!TLVP_PRES_LEN(tp, NS_IE_CAUSE, 1)) {
@@ -157,15 +157,15 @@ int ns2_validate(struct gprs_ns2_vc *nsvc,
 {
 	switch (pdu_type) {
 	case NS_PDUT_RESET:
-		return gprs_ns2_validate_reset(nsvc, msg, tp, cause);
+		return ns2_validate_reset(nsvc, msg, tp, cause);
 	case NS_PDUT_RESET_ACK:
-		return gprs_ns2_validate_reset_ack(nsvc, msg, tp, cause);
+		return ns2_validate_reset_ack(nsvc, msg, tp, cause);
 	case NS_PDUT_BLOCK:
-		return gprs_ns2_validate_block(nsvc, msg, tp, cause);
+		return ns2_validate_block(nsvc, msg, tp, cause);
 	case NS_PDUT_BLOCK_ACK:
-		return gprs_ns2_validate_block_ack(nsvc, msg, tp, cause);
+		return ns2_validate_block_ack(nsvc, msg, tp, cause);
 	case NS_PDUT_STATUS:
-		return gprs_ns2_validate_status(nsvc, msg, tp, cause);
+		return ns2_validate_status(nsvc, msg, tp, cause);
 
 	/* following PDUs doesn't have any payloads */
 	case NS_PDUT_ALIVE:

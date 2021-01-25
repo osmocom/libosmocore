@@ -121,7 +121,7 @@ enum gprs_ns2_vc_event {
 	GPRS_NS2_EV_REQ_OM_UNBLOCK,		/* vty cmd: unblock*/
 };
 
-static const struct value_string gprs_ns2_vc_event_names[] = {
+static const struct value_string ns2_vc_event_names[] = {
 	{ GPRS_NS2_EV_REQ_START, 			"START" },
 	{ GPRS_NS2_EV_RX_RESET,			"RESET" },
 	{ GPRS_NS2_EV_RX_RESET_ACK,		"RESET_ACK" },
@@ -224,7 +224,7 @@ static void alive_timeout_handler(void *data)
 	}
 }
 
-static void gprs_ns2_st_unconfigured(struct osmo_fsm_inst *fi, uint32_t event, void *data)
+static void ns2_st_unconfigured(struct osmo_fsm_inst *fi, uint32_t event, void *data)
 {
 	struct gprs_ns2_vc_priv *priv = fi->priv;
 	struct gprs_ns2_inst *nsi = priv->nsvc->nse->nsi;
@@ -250,7 +250,7 @@ static void gprs_ns2_st_unconfigured(struct osmo_fsm_inst *fi, uint32_t event, v
 }
 
 
-static void gprs_ns2_st_reset_onenter(struct osmo_fsm_inst *fi, uint32_t old_state)
+static void ns2_st_reset_onenter(struct osmo_fsm_inst *fi, uint32_t old_state)
 {
 	struct gprs_ns2_vc_priv *priv = fi->priv;
 
@@ -265,7 +265,7 @@ static void gprs_ns2_st_reset_onenter(struct osmo_fsm_inst *fi, uint32_t old_sta
 	ns2_nse_notify_unblocked(priv->nsvc, false);
 }
 
-static void gprs_ns2_st_reset(struct osmo_fsm_inst *fi, uint32_t event, void *data)
+static void ns2_st_reset(struct osmo_fsm_inst *fi, uint32_t event, void *data)
 {
 	struct gprs_ns2_inst *nsi = ns_inst_from_fi(fi);
 	struct gprs_ns2_vc_priv *priv = fi->priv;
@@ -292,7 +292,7 @@ static void gprs_ns2_st_reset(struct osmo_fsm_inst *fi, uint32_t event, void *da
 	}
 }
 
-static void gprs_ns2_st_blocked_onenter(struct osmo_fsm_inst *fi, uint32_t old_state)
+static void ns2_st_blocked_onenter(struct osmo_fsm_inst *fi, uint32_t old_state)
 {
 	struct gprs_ns2_vc_priv *priv = fi->priv;
 
@@ -313,7 +313,7 @@ static void gprs_ns2_st_blocked_onenter(struct osmo_fsm_inst *fi, uint32_t old_s
 	start_test_procedure(priv);
 }
 
-static void gprs_ns2_st_blocked(struct osmo_fsm_inst *fi, uint32_t event, void *data)
+static void ns2_st_blocked(struct osmo_fsm_inst *fi, uint32_t event, void *data)
 {
 	struct gprs_ns2_vc_priv *priv = fi->priv;
 
@@ -364,7 +364,7 @@ static void gprs_ns2_st_blocked(struct osmo_fsm_inst *fi, uint32_t event, void *
 	}
 }
 
-static void gprs_ns2_st_unblocked_on_enter(struct osmo_fsm_inst *fi, uint32_t old_state)
+static void ns2_st_unblocked_on_enter(struct osmo_fsm_inst *fi, uint32_t old_state)
 {
 	struct gprs_ns2_vc_priv *priv = fi->priv;
 	struct gprs_ns2_vc *nsvc = priv->nsvc;
@@ -375,7 +375,7 @@ static void gprs_ns2_st_unblocked_on_enter(struct osmo_fsm_inst *fi, uint32_t ol
 	ns2_prim_status_ind(nse, nsvc, 0, NS_AFF_CAUSE_VC_RECOVERY);
 }
 
-static void gprs_ns2_st_unblocked(struct osmo_fsm_inst *fi, uint32_t event, void *data)
+static void ns2_st_unblocked(struct osmo_fsm_inst *fi, uint32_t event, void *data)
 {
 	struct gprs_ns2_vc_priv *priv = fi->priv;
 
@@ -392,7 +392,7 @@ static void gprs_ns2_st_unblocked(struct osmo_fsm_inst *fi, uint32_t event, void
 	}
 }
 
-static void gprs_ns2_st_alive(struct osmo_fsm_inst *fi, uint32_t event, void *data)
+static void ns2_st_alive(struct osmo_fsm_inst *fi, uint32_t event, void *data)
 {
 	switch (event) {
 	case GPRS_NS2_EV_RX_ALIVE_ACK:
@@ -401,7 +401,7 @@ static void gprs_ns2_st_alive(struct osmo_fsm_inst *fi, uint32_t event, void *da
 	}
 }
 
-static void gprs_ns2_st_alive_onenter(struct osmo_fsm_inst *fi, uint32_t old_state)
+static void ns2_st_alive_onenter(struct osmo_fsm_inst *fi, uint32_t old_state)
 {
 	struct gprs_ns2_vc_priv *priv = fi->priv;
 	struct gprs_ns2_inst *nsi = ns_inst_from_fi(fi);
@@ -416,17 +416,17 @@ static void gprs_ns2_st_alive_onenter(struct osmo_fsm_inst *fi, uint32_t old_sta
 	ns2_nse_notify_unblocked(priv->nsvc, false);
 }
 
-static void gprs_ns2_st_alive_onleave(struct osmo_fsm_inst *fi, uint32_t next_state)
+static void ns2_st_alive_onleave(struct osmo_fsm_inst *fi, uint32_t next_state)
 {
 	start_test_procedure(fi->priv);
 }
 
-static const struct osmo_fsm_state gprs_ns2_vc_states[] = {
+static const struct osmo_fsm_state ns2_vc_states[] = {
 	[GPRS_NS2_ST_UNCONFIGURED] = {
 		.in_event_mask = S(GPRS_NS2_EV_REQ_START),
 		.out_state_mask = S(GPRS_NS2_ST_RESET) | S(GPRS_NS2_ST_ALIVE),
 		.name = "UNCONFIGURED",
-		.action = gprs_ns2_st_unconfigured,
+		.action = ns2_st_unconfigured,
 	},
 	[GPRS_NS2_ST_RESET] = {
 		.in_event_mask = S(GPRS_NS2_EV_RX_RESET_ACK) | S(GPRS_NS2_EV_RX_RESET),
@@ -434,8 +434,8 @@ static const struct osmo_fsm_state gprs_ns2_vc_states[] = {
 				  S(GPRS_NS2_ST_BLOCKED) |
 				  S(GPRS_NS2_ST_UNCONFIGURED),
 		.name = "RESET",
-		.action = gprs_ns2_st_reset,
-		.onenter = gprs_ns2_st_reset_onenter,
+		.action = ns2_st_reset,
+		.onenter = ns2_st_reset_onenter,
 	},
 	[GPRS_NS2_ST_BLOCKED] = {
 		.in_event_mask = S(GPRS_NS2_EV_RX_BLOCK) | S(GPRS_NS2_EV_RX_BLOCK_ACK) |
@@ -445,8 +445,8 @@ static const struct osmo_fsm_state gprs_ns2_vc_states[] = {
 				  S(GPRS_NS2_ST_BLOCKED) |
 				  S(GPRS_NS2_ST_UNCONFIGURED),
 		.name = "BLOCKED",
-		.action = gprs_ns2_st_blocked,
-		.onenter = gprs_ns2_st_blocked_onenter,
+		.action = ns2_st_blocked,
+		.onenter = ns2_st_blocked_onenter,
 	},
 	[GPRS_NS2_ST_UNBLOCKED] = {
 		.in_event_mask = S(GPRS_NS2_EV_RX_BLOCK) | S(GPRS_NS2_EV_RX_UNBLOCK_ACK) |
@@ -455,8 +455,8 @@ static const struct osmo_fsm_state gprs_ns2_vc_states[] = {
 				  S(GPRS_NS2_ST_BLOCKED) |
 				  S(GPRS_NS2_ST_UNCONFIGURED),
 		.name = "UNBLOCKED",
-		.action = gprs_ns2_st_unblocked,
-		.onenter = gprs_ns2_st_unblocked_on_enter,
+		.action = ns2_st_unblocked,
+		.onenter = ns2_st_unblocked_on_enter,
 	},
 
 	/* ST_ALIVE is only used on VC without RESET/BLOCK */
@@ -466,13 +466,13 @@ static const struct osmo_fsm_state gprs_ns2_vc_states[] = {
 				  S(GPRS_NS2_ST_UNBLOCKED) |
 				  S(GPRS_NS2_ST_UNCONFIGURED),
 		.name = "ALIVE",
-		.action = gprs_ns2_st_alive,
-		.onenter = gprs_ns2_st_alive_onenter,
-		.onleave = gprs_ns2_st_alive_onleave,
+		.action = ns2_st_alive,
+		.onenter = ns2_st_alive_onenter,
+		.onleave = ns2_st_alive_onleave,
 	},
 };
 
-static int gprs_ns2_vc_fsm_timer_cb(struct osmo_fsm_inst *fi)
+static int ns2_vc_fsm_timer_cb(struct osmo_fsm_inst *fi)
 {
 	struct gprs_ns2_inst *nsi = ns_inst_from_fi(fi);
 	struct gprs_ns2_vc_priv *priv = fi->priv;
@@ -524,7 +524,7 @@ static int gprs_ns2_vc_fsm_timer_cb(struct osmo_fsm_inst *fi)
 	return 0;
 }
 
-static void gprs_ns2_recv_unitdata(struct osmo_fsm_inst *fi,
+static void ns2_recv_unitdata(struct osmo_fsm_inst *fi,
 				   struct msgb *msg)
 {
 	struct gprs_ns2_vc_priv *priv = fi->priv;
@@ -558,7 +558,7 @@ static void gprs_ns2_recv_unitdata(struct osmo_fsm_inst *fi,
 	nsi->cb(&nsp.oph, nsi->cb_data);
 }
 
-static void gprs_ns2_vc_fsm_allstate_action(struct osmo_fsm_inst *fi,
+static void ns2_vc_fsm_allstate_action(struct osmo_fsm_inst *fi,
 					    uint32_t event,
 					    void *data)
 {
@@ -577,7 +577,7 @@ static void gprs_ns2_vc_fsm_allstate_action(struct osmo_fsm_inst *fi,
 			osmo_fsm_inst_state_chg(fi, GPRS_NS2_ST_RESET, nsi->timeout[NS_TOUT_TNS_RESET], NS_TOUT_TNS_RESET);
 		}
 		/* pass the event down into FSM action */
-		gprs_ns2_st_reset(fi, event, data);
+		ns2_st_reset(fi, event, data);
 		break;
 	case GPRS_NS2_EV_RX_ALIVE:
 		switch (fi->state) {
@@ -592,7 +592,7 @@ static void gprs_ns2_vc_fsm_allstate_action(struct osmo_fsm_inst *fi,
 	case GPRS_NS2_EV_RX_ALIVE_ACK:
 		/* for VCs without RESET/BLOCK/UNBLOCK, the connections comes after ALIVE_ACK unblocked */
 		if (fi->state == GPRS_NS2_ST_ALIVE)
-			gprs_ns2_st_alive(fi, event, data);
+			ns2_st_alive(fi, event, data);
 		else
 			recv_test_procedure(fi);
 		break;
@@ -606,7 +606,7 @@ static void gprs_ns2_vc_fsm_allstate_action(struct osmo_fsm_inst *fi,
 		case GPRS_NS2_ST_BLOCKED:
 			/* 7.2.1: the BLOCKED_ACK might be lost */
 			if (priv->accept_unitdata) {
-				gprs_ns2_recv_unitdata(fi, msg);
+				ns2_recv_unitdata(fi, msg);
 				return;
 			}
 
@@ -617,7 +617,7 @@ static void gprs_ns2_vc_fsm_allstate_action(struct osmo_fsm_inst *fi,
 		/* ALIVE can receive UNITDATA if the ALIVE_ACK is lost */
 		case GPRS_NS2_ST_ALIVE:
 		case GPRS_NS2_ST_UNBLOCKED:
-			gprs_ns2_recv_unitdata(fi, msg);
+			ns2_recv_unitdata(fi, msg);
 			return;
 		}
 
@@ -648,7 +648,7 @@ static void gprs_ns2_vc_fsm_allstate_action(struct osmo_fsm_inst *fi,
 	}
 }
 
-static void gprs_ns2_vc_fsm_clean(struct osmo_fsm_inst *fi,
+static void ns2_vc_fsm_clean(struct osmo_fsm_inst *fi,
 				  enum osmo_fsm_term_cause cause)
 {
 	struct gprs_ns2_vc_priv *priv = fi->priv;
@@ -656,10 +656,10 @@ static void gprs_ns2_vc_fsm_clean(struct osmo_fsm_inst *fi,
 	osmo_timer_del(&priv->alive.timer);
 }
 
-static struct osmo_fsm gprs_ns2_vc_fsm = {
+static struct osmo_fsm ns2_vc_fsm = {
 	.name = "GPRS-NS2-VC",
-	.states = gprs_ns2_vc_states,
-	.num_states = ARRAY_SIZE(gprs_ns2_vc_states),
+	.states = ns2_vc_states,
+	.num_states = ARRAY_SIZE(ns2_vc_states),
 	.allstate_event_mask = S(GPRS_NS2_EV_RX_UNITDATA) |
 			       S(GPRS_NS2_EV_RX_RESET) |
 			       S(GPRS_NS2_EV_RX_ALIVE) |
@@ -667,11 +667,11 @@ static struct osmo_fsm gprs_ns2_vc_fsm = {
 			       S(GPRS_NS2_EV_REQ_FORCE_UNCONFIGURED) |
 			       S(GPRS_NS2_EV_REQ_OM_BLOCK) |
 			       S(GPRS_NS2_EV_REQ_OM_UNBLOCK),
-	.allstate_action = gprs_ns2_vc_fsm_allstate_action,
-	.cleanup = gprs_ns2_vc_fsm_clean,
-	.timer_cb = gprs_ns2_vc_fsm_timer_cb,
+	.allstate_action = ns2_vc_fsm_allstate_action,
+	.cleanup = ns2_vc_fsm_clean,
+	.timer_cb = ns2_vc_fsm_timer_cb,
 	/* .log_subsys = DNS, "is not constant" */
-	.event_names = gprs_ns2_vc_event_names,
+	.event_names = ns2_vc_event_names,
 	.pre_term = NULL,
 	.log_subsys = DLNS,
 };
@@ -690,7 +690,7 @@ struct osmo_fsm_inst *ns2_vc_fsm_alloc(struct gprs_ns2_vc *nsvc,
 	struct osmo_fsm_inst *fi;
 	struct gprs_ns2_vc_priv *priv;
 
-	fi = osmo_fsm_inst_alloc(&gprs_ns2_vc_fsm, nsvc, NULL, LOGL_DEBUG, id);
+	fi = osmo_fsm_inst_alloc(&ns2_vc_fsm, nsvc, NULL, LOGL_DEBUG, id);
 	if (!fi)
 		return fi;
 
@@ -839,5 +839,5 @@ int ns2_vc_is_unblocked(struct gprs_ns2_vc *nsvc)
 /* initialize osmo_ctx on main tread */
 static __attribute__((constructor)) void on_dso_load_ctx(void)
 {
-	OSMO_ASSERT(osmo_fsm_register(&gprs_ns2_vc_fsm) == 0);
+	OSMO_ASSERT(osmo_fsm_register(&ns2_vc_fsm) == 0);
 }
