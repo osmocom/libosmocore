@@ -11,5 +11,14 @@
 ---- Create NSVC[i]
 ---- Create NSVC[i]
 --- Finish NSE block unblock nsvc
+--- Testing unitdata test
+---- Create NSE + Binds
+---- Create NSVC[0]
+---- Create NSVC[1]
+---- Send UNITDATA to NSVC[0]
+---- Send Block NSVC[0]
+---- Try to receive over blocked NSVC[0]
+---- Receive over NSVC[1]
+--- Finish unitdata test
 ===== NS2 protocol test END
 
