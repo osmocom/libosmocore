@@ -66,6 +66,8 @@ struct bssgp_rim_routing_info {
  * address type (discr) of variable length. */
 #define BSSGP_RIM_ROUTING_INFO_MAXLEN 14
 
+char *bssgp_rim_ri_name_buf(char *buf, size_t buf_len, const struct bssgp_rim_routing_info *ri);
+const char *bssgp_rim_ri_name(const struct bssgp_rim_routing_info *ri);
 int bssgp_parse_rim_ri(struct bssgp_rim_routing_info *ri, const uint8_t *buf, unsigned int len);
 int bssgp_create_rim_ri(uint8_t *buf, const struct bssgp_rim_routing_info *ri);
 

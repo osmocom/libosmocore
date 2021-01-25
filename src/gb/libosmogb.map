@@ -35,6 +35,8 @@ bssgp_parse_rim_pdu;
 bssgp_parse_rim_ri;
 bssgp_ran_inf_app_id_strs;
 bssgp_rim_routing_info_discr_strs;
+bssgp_rim_ri_name_buf;
+bssgp_rim_ri_name;
 bssgp_set_bssgp_callback;
 bssgp_tx_bvc_block;
 bssgp_tx_bvc_reset;

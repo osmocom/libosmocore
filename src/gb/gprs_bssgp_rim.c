@@ -146,6 +146,68 @@ int bssgp_create_rim_ri(uint8_t *buf, const struct bssgp_rim_routing_info *ri)
 	return len;
 }
 
+/*! Encode a RIM Routing information into a human readable string.
+ *  \param[buf] user provided string buffer to store the resulting string.
+ *  \param[buf_len] maximum length of string buffer.
+ *  \param[in] ri user provided input data struct.
+ *  \returns pointer to the beginning of the resulting string stored in string buffer. */
+char *bssgp_rim_ri_name_buf(char *buf, size_t buf_len, const struct bssgp_rim_routing_info *ri)
+{
+	char plmn_str[16];
+	char enb_id_str[16];
+	char g_id_ps_str[32];
+	struct osmo_plmn_id plmn;
+	struct osmo_cell_global_id_ps g_id_ps;
+
+	if (!ri)
+		return NULL;
+
+	switch (ri->discr) {
+	case BSSGP_RIM_ROUTING_INFO_GERAN:
+		g_id_ps.rai.rac = ri->geran.raid.rac;
+		g_id_ps.rai.lac.lac = ri->geran.raid.lac;
+		g_id_ps.rai.lac.plmn.mcc = ri->geran.raid.mcc;
+		g_id_ps.rai.lac.plmn.mnc_3_digits = ri->geran.raid.mnc_3_digits;
+		g_id_ps.rai.lac.plmn.mnc = ri->geran.raid.mnc;
+		g_id_ps.cell_identity = ri->geran.cid;
+		snprintf(buf, buf_len, "%s-%s", bssgp_rim_routing_info_discr_str(ri->discr),
+			 osmo_cgi_ps_name_buf(g_id_ps_str, sizeof(g_id_ps_str), &g_id_ps));
+		break;
+	case BSSGP_RIM_ROUTING_INFO_UTRAN:
+		g_id_ps.rai.rac = ri->utran.raid.rac;
+		g_id_ps.rai.lac.lac = ri->utran.raid.lac;
+		g_id_ps.rai.lac.plmn.mcc = ri->utran.raid.mcc;
+		g_id_ps.rai.lac.plmn.mnc_3_digits = ri->utran.raid.mnc_3_digits;
+		g_id_ps.rai.lac.plmn.mnc = ri->utran.raid.mnc;
+		g_id_ps.cell_identity = ri->utran.rncid;
+		snprintf(buf, buf_len, "%s-%s", bssgp_rim_routing_info_discr_str(ri->discr),
+			 osmo_cgi_ps_name_buf(g_id_ps_str, sizeof(g_id_ps_str), &g_id_ps));
+		break;
+	case BSSGP_RIM_ROUTING_INFO_EUTRAN:
+		plmn.mcc = ri->eutran.tai.mcc;
+		plmn.mnc = ri->eutran.tai.mnc;
+		plmn.mnc_3_digits = ri->eutran.tai.mnc_3_digits;
+		snprintf(buf, buf_len, "%s-%s-%u-%s", bssgp_rim_routing_info_discr_str(ri->discr),
+			 osmo_plmn_name_buf(plmn_str, sizeof(plmn_str), &plmn), ri->eutran.tai.tac,
+			 osmo_hexdump_buf(enb_id_str, sizeof(enb_id_str), ri->eutran.global_enb_id,
+					  ri->eutran.global_enb_id_len, "", false));
+		break;
+	default:
+		snprintf(buf, buf_len, "invalid");
+	}
+
+	return buf;
+}
+
+/*! Encode a RIM Routing information into a human readable string.
+ *  \param[in] ri user provided input data struct.
+ *  \returns pointer to the resulting string. */
+const char *bssgp_rim_ri_name(const struct bssgp_rim_routing_info *ri)
+{
+	static __thread char rim_ri_buf[64];
+	return bssgp_rim_ri_name_buf(rim_ri_buf, sizeof(rim_ri_buf), ri);
+}
+
 /*! Decode a RAN Information Request Application Container for NACC (3GPP TS 48.018, section 11.3.63.1.1).
  *  \param[out] user provided memory for decoded data struct.
  *  \param[in] buf user provided memory with the encoded value data of the IE.
