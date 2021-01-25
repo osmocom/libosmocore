@@ -96,6 +96,8 @@ bssgp_bvc_fsm_get_block_cause;
 bssgp_bvc_get_features_advertised;
 bssgp_bvc_get_features_received;
 bssgp_bvc_get_features_negotiated;
+bssgp_bvc_fsm_set_max_pdu_len;
+bssgp_bvc_fsm_get_max_pdu_len;
 
 osmo_fr_network_alloc;
 osmo_fr_link_alloc;

@@ -116,6 +116,8 @@ struct bvc_fsm_priv {
 
 	/* NSEI of the underlying NS Entity */
 	uint16_t nsei;
+	/* Maximum size of the BSSGP PDU */
+	uint16_t max_pdu_len;
 
 	/* BVCI of this BVC */
 	uint16_t bvci;
@@ -666,6 +668,7 @@ _bvc_fsm_alloc(void *ctx, struct gprs_ns2_inst *nsi, bool role_sgsn, uint16_t ns
 	bfp->role_sgsn = role_sgsn;
 	bfp->nsei = nsei;
 	bfp->bvci = bvci;
+	bfp->max_pdu_len = UINT16_MAX;
 
 	return fi;
 }
@@ -816,6 +819,26 @@ uint32_t bssgp_bvc_get_features_negotiated(struct osmo_fsm_inst *fi)
 	OSMO_ASSERT(fi->fsm == &bssgp_bvc_fsm);
 	return bfp->features.negotiated;
 }
+
+/*! Set the maximum size of a BSSGP PDU.
+ *! On the NS layer this corresponds to the size of an NS SDU in NS-UNITDATA (3GPP TS 48.016 Ch. 9.2.10) */
+void bssgp_bvc_fsm_set_max_pdu_len(struct osmo_fsm_inst *fi, uint16_t max_pdu_len) {
+	struct bvc_fsm_priv *bfp = fi->priv;
+
+	OSMO_ASSERT(fi->fsm == &bssgp_bvc_fsm);
+	bfp->max_pdu_len = max_pdu_len;
+}
+
+/*! Return the maximum size of a BSSGP PDU
+ *! On the NS layer this corresponds to the size of an NS SDU in NS-UNITDATA (3GPP TS 48.016 Ch. 9.2.10) */
+uint16_t bssgp_bvc_fsm_get_max_pdu_len(const struct osmo_fsm_inst *fi)
+{
+	const struct bvc_fsm_priv *bfp = fi->priv;
+
+	OSMO_ASSERT(fi->fsm == &bssgp_bvc_fsm);
+	return bfp->max_pdu_len;
+}
+
 
 static __attribute__((constructor)) void on_dso_load_bvc_fsm(void)
 {
