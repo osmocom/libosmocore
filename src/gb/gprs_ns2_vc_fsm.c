@@ -684,7 +684,7 @@ static struct osmo_fsm gprs_ns2_vc_fsm = {
  * \param initiator initiator is the site which starts the connection. Usually the BSS.
  * \return NULL on error, otherwise the fsm
  */
-struct osmo_fsm_inst *gprs_ns2_vc_fsm_alloc(struct gprs_ns2_vc *nsvc,
+struct osmo_fsm_inst *ns2_vc_fsm_alloc(struct gprs_ns2_vc *nsvc,
 					    const char *id, bool initiator)
 {
 	struct osmo_fsm_inst *fi;
@@ -707,7 +707,7 @@ struct osmo_fsm_inst *gprs_ns2_vc_fsm_alloc(struct gprs_ns2_vc *nsvc,
 /*! Start a NS-VC FSM.
  *  \param nsvc the virtual circuit
  *  \return 0 on success; negative on error */
-int gprs_ns2_vc_fsm_start(struct gprs_ns2_vc *nsvc)
+int ns2_vc_fsm_start(struct gprs_ns2_vc *nsvc)
 {
 	/* allows to call this function even for started nsvc by gprs_ns2_start_alive_all_nsvcs */
 	if (nsvc->fi->state == GPRS_NS2_ST_UNCONFIGURED)
@@ -718,7 +718,7 @@ int gprs_ns2_vc_fsm_start(struct gprs_ns2_vc *nsvc)
 /*! Reset a NS-VC FSM.
  *  \param nsvc the virtual circuit
  *  \return 0 on success; negative on error */
-int gprs_ns2_vc_force_unconfigured(struct gprs_ns2_vc *nsvc)
+int ns2_vc_force_unconfigured(struct gprs_ns2_vc *nsvc)
 {
 	return osmo_fsm_inst_dispatch(nsvc->fi, GPRS_NS2_EV_REQ_FORCE_UNCONFIGURED, NULL);
 }
@@ -744,7 +744,7 @@ int ns2_vc_unblock(struct gprs_ns2_vc *nsvc)
  *  \param msg message that was received
  *  \param tp parsed TLVs of the received message
  *  \return 0 on success; negative on error */
-int gprs_ns2_vc_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp)
+int ns2_vc_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp)
 {
 	struct gprs_ns_hdr *nsh = (struct gprs_ns_hdr *) msg->l2h;
 	struct osmo_fsm_inst *fi = nsvc->fi;
@@ -756,7 +756,7 @@ int gprs_ns2_vc_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed
 	 *  if not answer STATUS with "NS-VC unknown" */
 	/* TODO: handle BLOCK/UNBLOCK/ALIVE with different VCI */
 
-	if (gprs_ns2_validate(nsvc, nsh->pdu_type, msg, tp, &cause)) {
+	if (ns2_validate(nsvc, nsh->pdu_type, msg, tp, &cause)) {
 		if (nsh->pdu_type != NS_PDUT_STATUS) {
 			rc = ns2_tx_status(nsvc, cause, 0, msg);
 			goto out;
@@ -831,7 +831,7 @@ out:
 }
 
 /*! is the given NS-VC unblocked? */
-int gprs_ns2_vc_is_unblocked(struct gprs_ns2_vc *nsvc)
+int ns2_vc_is_unblocked(struct gprs_ns2_vc *nsvc)
 {
 	return (nsvc->fi->state == GPRS_NS2_ST_UNBLOCKED);
 }

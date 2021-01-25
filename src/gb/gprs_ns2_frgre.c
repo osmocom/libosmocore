@@ -451,7 +451,7 @@ static int handle_nsfrgre_read(struct osmo_fd *bfd)
 			goto out;
 		case NS2_CS_CREATED:
 			frgre_alloc_vc(bind, nsvc, &saddr, dlci);
-			gprs_ns2_vc_fsm_start(nsvc);
+			ns2_vc_fsm_start(nsvc);
 			break;
 		}
 	}

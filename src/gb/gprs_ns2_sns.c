@@ -246,7 +246,7 @@ void ns2_sns_free_nsvc(struct gprs_ns2_vc *nsvc)
 	if (nse->alive) {
 		/* choose a different sns nsvc */
 		llist_for_each_entry(tmp, &nse->nsvc, list) {
-			if (gprs_ns2_vc_is_unblocked(tmp))
+			if (ns2_vc_is_unblocked(tmp))
 				gss->sns_nsvc = tmp;
 		}
 	} else {
@@ -743,7 +743,7 @@ static void ns2_sns_st_size_onenter(struct osmo_fsm_inst *fi, uint32_t old_state
 
 	/* setup the NSVC */
 	if (!gss->sns_nsvc) {
-		gss->sns_nsvc = gprs_ns2_ip_bind_connect(bind, gss->nse, remote);
+		gss->sns_nsvc = ns2_ip_bind_connect(bind, gss->nse, remote);
 		if (!gss->sns_nsvc)
 			return;
 		gss->sns_nsvc->sns_only = true;
@@ -1439,7 +1439,7 @@ err:
  *  \param[in] msg message buffer of the IP-SNS message
  *  \param[in] tp parsed TLV structure of message
  *  \retruns 0 on success; negative on error */
-int gprs_ns2_sns_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp)
+int ns2_sns_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp)
 {
 	struct gprs_ns2_nse *nse = nsvc->nse;
 	struct gprs_ns_hdr *nsh = (struct gprs_ns_hdr *) msg->l2h;
@@ -1521,7 +1521,7 @@ static void vty_dump_sns_ip6(struct vty *vty, const char *prefix, const struct g
  *  \param[in] prefix prefix to print at start of each line (typically indenting)
  *  \param[in] nse NS Entity whose IP-SNS state shall be printed
  *  \param[in] stats Whether or not statistics shall also be printed */
-void gprs_ns2_sns_dump_vty(struct vty *vty, const char *prefix, const struct gprs_ns2_nse *nse, bool stats)
+void ns2_sns_dump_vty(struct vty *vty, const char *prefix, const struct gprs_ns2_nse *nse, bool stats)
 {
 	struct ns2_sns_state *gss;
 	unsigned int i;
@@ -1559,7 +1559,7 @@ void gprs_ns2_sns_dump_vty(struct vty *vty, const char *prefix, const struct gpr
 /*! write IP-SNS to a vty
  *  \param[in] vty VTY to which the state shall be printed
  *  \param[in] nse NS Entity whose IP-SNS state shall be printed */
-void gprs_ns2_sns_write_vty(struct vty *vty, const struct gprs_ns2_nse *nse)
+void ns2_sns_write_vty(struct vty *vty, const struct gprs_ns2_nse *nse)
 {
 	struct ns2_sns_state *gss;
 	struct osmo_sockaddr_str addr_str;

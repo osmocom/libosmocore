@@ -149,11 +149,11 @@ static int gprs_ns2_validate_status(struct gprs_ns2_vc *nsvc, struct msgb *msg, 
 	return 0;
 }
 
-int gprs_ns2_validate(struct gprs_ns2_vc *nsvc,
-		      uint8_t pdu_type,
-		      struct msgb *msg,
-		      struct tlv_parsed *tp,
-		      uint8_t *cause)
+int ns2_validate(struct gprs_ns2_vc *nsvc,
+		 uint8_t pdu_type,
+		 struct msgb *msg,
+		 struct tlv_parsed *tp,
+		 uint8_t *cause)
 {
 	switch (pdu_type) {
 	case NS_PDUT_RESET:
@@ -186,7 +186,7 @@ int gprs_ns2_validate(struct gprs_ns2_vc *nsvc,
 /* transmit functions */
 static int ns2_tx_simple(struct gprs_ns2_vc *nsvc, uint8_t pdu_type)
 {
-	struct msgb *msg = gprs_ns2_msgb_alloc();
+	struct msgb *msg = ns2_msgb_alloc();
 	struct gprs_ns_hdr *nsh;
 
 	log_set_context(LOG_CTX_GB_NSE, nsvc->nse);
@@ -218,7 +218,7 @@ int ns2_tx_block(struct gprs_ns2_vc *nsvc, uint8_t cause)
 
 	ERR_IF_NSVC_USES_SNS(nsvc, "transmit NS BLOCK");
 
-	msg = gprs_ns2_msgb_alloc();
+	msg = ns2_msgb_alloc();
 	if (!msg)
 		return -ENOMEM;
 
@@ -250,7 +250,7 @@ int ns2_tx_block_ack(struct gprs_ns2_vc *nsvc)
 
 	ERR_IF_NSVC_USES_SNS(nsvc, "transmit NS BLOCK ACK");
 
-	msg = gprs_ns2_msgb_alloc();
+	msg = ns2_msgb_alloc();
 	if (!msg)
 		return -ENOMEM;
 
@@ -281,7 +281,7 @@ int ns2_tx_reset(struct gprs_ns2_vc *nsvc, uint8_t cause)
 
 	ERR_IF_NSVC_USES_SNS(nsvc, "transmit NS RESET");
 
-	msg = gprs_ns2_msgb_alloc();
+	msg = ns2_msgb_alloc();
 	if (!msg)
 		return -ENOMEM;
 
@@ -313,7 +313,7 @@ int ns2_tx_reset_ack(struct gprs_ns2_vc *nsvc)
 
 	ERR_IF_NSVC_USES_SNS(nsvc, "transmit NS RESET ACK");
 
-	msg = gprs_ns2_msgb_alloc();
+	msg = ns2_msgb_alloc();
 	if (!msg)
 		return -ENOMEM;
 
@@ -428,7 +428,7 @@ int ns2_tx_unit_data(struct gprs_ns2_vc *nsvc,
 int ns2_tx_status(struct gprs_ns2_vc *nsvc, uint8_t cause,
 		       uint16_t bvci, struct msgb *orig_msg)
 {
-	struct msgb *msg = gprs_ns2_msgb_alloc();
+	struct msgb *msg = ns2_msgb_alloc();
 	struct gprs_ns_hdr *nsh;
 	uint16_t nsvci = osmo_htons(nsvc->nsvci);
 
@@ -495,7 +495,7 @@ int ns2_tx_sns_ack(struct gprs_ns2_vc *nsvc, uint8_t trans_id, uint8_t *cause,
 	if (!nsvc)
 		return -1;
 
-	msg = gprs_ns2_msgb_alloc();
+	msg = ns2_msgb_alloc();
 
 	log_set_context(LOG_CTX_GB_NSE, nsvc->nse);
 	log_set_context(LOG_CTX_GB_NSVC, nsvc);
@@ -553,7 +553,7 @@ int ns2_tx_sns_config(struct gprs_ns2_vc *nsvc, bool end_flag,
 	if (!nsvc)
 		return -1;
 
-	msg = gprs_ns2_msgb_alloc();
+	msg = ns2_msgb_alloc();
 
 	log_set_context(LOG_CTX_GB_NSE, nsvc->nse);
 	log_set_context(LOG_CTX_GB_NSVC, nsvc);
@@ -602,7 +602,7 @@ int ns2_tx_sns_config_ack(struct gprs_ns2_vc *nsvc, uint8_t *cause)
 	if (!nsvc)
 		return -1;
 
-	msg = gprs_ns2_msgb_alloc();
+	msg = ns2_msgb_alloc();
 	log_set_context(LOG_CTX_GB_NSE, nsvc->nse);
 	log_set_context(LOG_CTX_GB_NSVC, nsvc);
 	if (!msg)
@@ -646,7 +646,7 @@ int ns2_tx_sns_size(struct gprs_ns2_vc *nsvc, bool reset_flag, uint16_t max_nr_n
 	if (!nsvc)
 		return -1;
 
-	msg = gprs_ns2_msgb_alloc();
+	msg = ns2_msgb_alloc();
 
 	log_set_context(LOG_CTX_GB_NSE, nsvc->nse);
 	log_set_context(LOG_CTX_GB_NSVC, nsvc);
@@ -683,7 +683,7 @@ int ns2_tx_sns_size(struct gprs_ns2_vc *nsvc, bool reset_flag, uint16_t max_nr_n
  *  \returns 0 on success; negative in case of error */
 int ns2_tx_sns_size_ack(struct gprs_ns2_vc *nsvc, uint8_t *cause)
 {
-	struct msgb *msg = gprs_ns2_msgb_alloc();
+	struct msgb *msg = ns2_msgb_alloc();
 	struct gprs_ns_hdr *nsh;
 	uint16_t nsei;
 

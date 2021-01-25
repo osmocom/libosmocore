@@ -254,7 +254,7 @@ void test_block_unblock_nsvc(void *ctx)
 		OSMO_ASSERT(nsvc[i]);
 		nsvc[i]->fi->state = 3;	/* HACK: 3 = GPRS_NS2_ST_UNBLOCKED */
 		/* ensure the fi->state works correct */
-		OSMO_ASSERT(gprs_ns2_vc_is_unblocked(nsvc[i]));
+		OSMO_ASSERT(ns2_vc_is_unblocked(nsvc[i]));
 		ns2_nse_notify_unblocked(nsvc[i], true);
 	}
 
@@ -277,7 +277,7 @@ void test_block_unblock_nsvc(void *ctx)
 	nsh->pdu_type = NS_PDUT_UNBLOCK_ACK;
 	ns2_recv_vc(nsvc[0], msg);
 
-	OSMO_ASSERT(gprs_ns2_vc_is_unblocked(nsvc[0]));
+	OSMO_ASSERT(ns2_vc_is_unblocked(nsvc[0]));
 	gprs_ns2_free(nsi);
 	printf("--- Finish NSE block unblock nsvc\n");
 }
@@ -330,11 +330,11 @@ void test_unitdata(void *ctx)
 		nsvc[i] = ns2_vc_alloc(bind[i], nse, false, NS2_VC_MODE_BLOCKRESET, idbuf);
 		loop[i] = loopback_nsvc(loopbind, nsvc[i]);
 		OSMO_ASSERT(nsvc[i]);
-		gprs_ns2_vc_fsm_start(nsvc[i]);
-		OSMO_ASSERT(!gprs_ns2_vc_is_unblocked(nsvc[i]));
+		ns2_vc_fsm_start(nsvc[i]);
+		OSMO_ASSERT(!ns2_vc_is_unblocked(nsvc[i]));
 		ns2_tx_reset(loop[i], NS_CAUSE_OM_INTERVENTION);
 		ns2_tx_unblock(loop[i]);
-		OSMO_ASSERT(gprs_ns2_vc_is_unblocked(nsvc[i]));
+		OSMO_ASSERT(ns2_vc_is_unblocked(nsvc[i]));
 	}
 
 	/* both nsvcs are unblocked and alive */

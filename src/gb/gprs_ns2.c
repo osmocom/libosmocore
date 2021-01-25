@@ -318,7 +318,7 @@ static struct gprs_ns2_vc *ns2_load_sharing_signal(struct gprs_ns2_nse *nse)
 	llist_for_each_entry(tmp, &nse->nsvc, list) {
 		if (tmp->sig_weight == 0)
 			continue;
-		if (!gprs_ns2_vc_is_unblocked(tmp))
+		if (!ns2_vc_is_unblocked(tmp))
 			continue;
 		if (tmp->sig_counter == 0) {
 			last = tmp;
@@ -354,7 +354,7 @@ static struct gprs_ns2_vc *ns2_load_sharing_modulor(
 	uint32_t i = 0;
 
 	llist_for_each_entry(tmp, &nse->nsvc, list) {
-		if (!gprs_ns2_vc_is_unblocked(tmp))
+		if (!ns2_vc_is_unblocked(tmp))
 			continue;
 		if (i == mod)
 			return tmp;
@@ -370,7 +370,7 @@ struct gprs_ns2_vc *ns2_load_sharing_first(struct gprs_ns2_nse *nse)
 	struct gprs_ns2_vc *nsvc = NULL, *tmp;
 
 	llist_for_each_entry(tmp, &nse->nsvc, list) {
-		if (!gprs_ns2_vc_is_unblocked(tmp))
+		if (!ns2_vc_is_unblocked(tmp))
 			continue;
 		if (tmp->data_weight == 0)
 			continue;
@@ -512,7 +512,7 @@ struct gprs_ns2_vc *ns2_vc_alloc(struct gprs_ns2_vc_bind *bind, struct gprs_ns2_
 	nsvc->statg = osmo_stat_item_group_alloc(nsvc, &nsvc_statg_desc, bind->nsi->rate_ctr_idx);
 	if (!nsvc->statg)
 		goto err_group;
-	if (!gprs_ns2_vc_fsm_alloc(nsvc, id, initiater))
+	if (!ns2_vc_fsm_alloc(nsvc, id, initiater))
 		goto err_statg;
 
 	bind->nsi->rate_ctr_idx++;
@@ -577,7 +577,7 @@ void gprs_ns2_free_nsvcs(struct gprs_ns2_nse *nse)
 }
 
 /*! Allocate a message buffer for use with the NS2 stack. */
-struct msgb *gprs_ns2_msgb_alloc(void)
+struct msgb *ns2_msgb_alloc(void)
 {
 	struct msgb *msg = msgb_alloc_headroom(NS_ALLOC_SIZE, NS_ALLOC_HEADROOM,
 					       "GPRS/NS");
@@ -596,7 +596,7 @@ struct msgb *gprs_ns2_msgb_alloc(void)
  *  \return 0 on success */
 static int reject_status_msg(struct msgb *orig_msg, struct tlv_parsed *tp, struct msgb **reject, enum ns_cause cause)
 {
-	struct msgb *msg = gprs_ns2_msgb_alloc();
+	struct msgb *msg = ns2_msgb_alloc();
 	struct gprs_ns_hdr *nsh;
 	bool have_vci = false;
 	uint8_t _cause = cause;
@@ -910,7 +910,7 @@ enum ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 	}
 
 	nsvci = tlvp_val16be(&tp, NS_IE_VCI);
-	vc_mode = gprs_ns2_dialect_to_vc_mode(dialect);
+	vc_mode = ns2_dialect_to_vc_mode(dialect);
 	snprintf(idbuf, sizeof(idbuf), "%s-NSE%05u-NSVC%05u", gprs_ns2_lltype_str(nse->ll),
 		 nse->nsei, nsvci);
 	nsvc = ns2_vc_alloc(bind, nse, false, vc_mode, idbuf);
@@ -938,7 +938,7 @@ struct gprs_ns2_vc *gprs_ns2_ip_connect_inactive(struct gprs_ns2_vc_bind *bind,
 {
 	struct gprs_ns2_vc *nsvc;
 
-	nsvc = gprs_ns2_ip_bind_connect(bind, nse, remote);
+	nsvc = ns2_ip_bind_connect(bind, nse, remote);
 	if (!nsvc)
 		return NULL;
 
@@ -966,7 +966,7 @@ struct gprs_ns2_vc *gprs_ns2_ip_connect(struct gprs_ns2_vc_bind *bind,
 	if (!nsvc)
 		return NULL;
 
-	gprs_ns2_vc_fsm_start(nsvc);
+	ns2_vc_fsm_start(nsvc);
 
 	return nsvc;
 }
@@ -1066,7 +1066,7 @@ int ns2_recv_vc(struct gprs_ns2_vc *nsvc,
 			return rc;
 		}
 		/* All sub-network service related message types */
-		rc = gprs_ns2_sns_rx(nsvc, msg, &tp);
+		rc = ns2_sns_rx(nsvc, msg, &tp);
 		break;
 	case SNS_PDUT_ACK:
 	case SNS_PDUT_ADD:
@@ -1083,7 +1083,7 @@ int ns2_recv_vc(struct gprs_ns2_vc *nsvc,
 		tp.lv[NS_IE_NSEI].len = 2;
 		tp.lv[NS_IE_TRANS_ID].val = nsh->data+4;
 		tp.lv[NS_IE_TRANS_ID].len = 1;
-		rc = gprs_ns2_sns_rx(nsvc, msg, &tp);
+		rc = ns2_sns_rx(nsvc, msg, &tp);
 		break;
 	case SNS_PDUT_CONFIG_ACK:
 	case SNS_PDUT_SIZE:
@@ -1095,11 +1095,11 @@ int ns2_recv_vc(struct gprs_ns2_vc *nsvc,
 			return rc;
 		}
 		/* All sub-network service related message types */
-		rc = gprs_ns2_sns_rx(nsvc, msg, &tp);
+		rc = ns2_sns_rx(nsvc, msg, &tp);
 		break;
 
 	case NS_PDUT_UNITDATA:
-		rc = gprs_ns2_vc_rx(nsvc, msg, &tp);
+		rc = ns2_vc_rx(nsvc, msg, &tp);
 		break;
 	default:
 		rc = ns2_tlv_parse(&tp, nsh->data,
@@ -1110,7 +1110,7 @@ int ns2_recv_vc(struct gprs_ns2_vc *nsvc,
 				ns2_tx_status(nsvc, NS_CAUSE_PROTO_ERR_UNSPEC, 0, msg);
 			return rc;
 		}
-		rc = gprs_ns2_vc_rx(nsvc, msg, &tp);
+		rc = ns2_vc_rx(nsvc, msg, &tp);
 		break;
 	}
 
@@ -1127,7 +1127,7 @@ void ns2_nse_data_sum(struct gprs_ns2_nse *nse)
 	nse->sum_sig_weight = 0;
 
 	llist_for_each_entry(nsvc, &nse->nsvc, list) {
-		if (!gprs_ns2_vc_is_unblocked(nsvc))
+		if (!ns2_vc_is_unblocked(nsvc))
 			continue;
 
 		nse->nsvc_count++;
@@ -1231,7 +1231,7 @@ void gprs_ns2_start_alive_all_nsvcs(struct gprs_ns2_nse *nse)
 		if (nsvc->sns_only)
 			continue;
 
-		gprs_ns2_vc_fsm_start(nsvc);
+		ns2_vc_fsm_start(nsvc);
 	}
 }
 
@@ -1269,8 +1269,7 @@ void gprs_ns2_free_binds(struct gprs_ns2_inst *nsi)
  *  \param[in] name The unique bind name to search for
  *  \return the bind or NULL if not found
  */
-struct gprs_ns2_vc_bind *gprs_ns2_bind_by_name(
-		struct gprs_ns2_inst *nsi, const char *name)
+struct gprs_ns2_vc_bind *gprs_ns2_bind_by_name(struct gprs_ns2_inst *nsi, const char *name)
 {
 	struct gprs_ns2_vc_bind *bind;
 
@@ -1282,8 +1281,7 @@ struct gprs_ns2_vc_bind *gprs_ns2_bind_by_name(
 	return NULL;
 }
 
-enum gprs_ns2_vc_mode gprs_ns2_dialect_to_vc_mode(
-		enum gprs_ns2_dialect dialect)
+enum gprs_ns2_vc_mode ns2_dialect_to_vc_mode(enum gprs_ns2_dialect dialect)
 {
 	switch (dialect) {
 	case NS2_DIALECT_SNS:
@@ -1335,7 +1333,7 @@ int ns2_count_transfer_cap(struct gprs_ns2_nse *nse,
 		return 0;
 
 	llist_for_each_entry(nsvc, &nse->nsvc, list) {
-		if (gprs_ns2_vc_is_unblocked(nsvc))
+		if (ns2_vc_is_unblocked(nsvc))
 			active_nsvcs++;
 	}
 	/* an alive nse should always have active_nsvcs */
@@ -1346,7 +1344,7 @@ int ns2_count_transfer_cap(struct gprs_ns2_nse *nse,
 		return -ENOMEM;
 
 	llist_for_each_entry(nsvc, &nse->nsvc, list) {
-		if (!gprs_ns2_vc_is_unblocked(nsvc))
+		if (!ns2_vc_is_unblocked(nsvc))
 			continue;
 		add_bind_array(active_binds, nsvc->bind, active_nsvcs);
 	}

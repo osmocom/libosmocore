@@ -260,10 +260,10 @@ struct gprs_ns2_vc *ns2_vc_alloc(struct gprs_ns2_vc_bind *bind,
 				 enum gprs_ns2_vc_mode vc_mode,
 				 const char *id);
 
-struct msgb *gprs_ns2_msgb_alloc(void);
+struct msgb *ns2_msgb_alloc(void);
 
-void gprs_ns2_sns_write_vty(struct vty *vty, const struct gprs_ns2_nse *nse);
-void gprs_ns2_sns_dump_vty(struct vty *vty, const char *prefix, const struct gprs_ns2_nse *nse, bool stats);
+void ns2_sns_write_vty(struct vty *vty, const struct gprs_ns2_nse *nse);
+void ns2_sns_dump_vty(struct vty *vty, const char *prefix, const struct gprs_ns2_nse *nse, bool stats);
 void ns2_prim_status_ind(struct gprs_ns2_nse *nse,
 			 struct gprs_ns2_vc *nsvc,
 			 uint16_t bvci,
@@ -271,11 +271,11 @@ void ns2_prim_status_ind(struct gprs_ns2_nse *nse,
 void ns2_nse_notify_alive(struct gprs_ns2_vc *nsvc, bool alive);
 
 /* message */
-int gprs_ns2_validate(struct gprs_ns2_vc *nsvc,
-		      uint8_t pdu_type,
-		      struct msgb *msg,
-		      struct tlv_parsed *tp,
-		      uint8_t *cause);
+int ns2_validate(struct gprs_ns2_vc *nsvc,
+		 uint8_t pdu_type,
+		 struct msgb *msg,
+		 struct tlv_parsed *tp,
+		 uint8_t *cause);
 
 /* SNS messages */
 int ns2_tx_sns_ack(struct gprs_ns2_vc *nsvc, uint8_t trans_id, uint8_t *cause,
@@ -314,33 +314,33 @@ int ns2_tx_status(struct gprs_ns2_vc *nsvc, uint8_t cause,
 		       uint16_t bvci, struct msgb *orig_msg);
 
 /* driver */
-struct gprs_ns2_vc *gprs_ns2_ip_bind_connect(struct gprs_ns2_vc_bind *bind,
-					     struct gprs_ns2_nse *nse,
-					     const struct osmo_sockaddr *remote);
+struct gprs_ns2_vc *ns2_ip_bind_connect(struct gprs_ns2_vc_bind *bind,
+					struct gprs_ns2_nse *nse,
+					const struct osmo_sockaddr *remote);
 int ns2_ip_count_bind(struct gprs_ns2_inst *nsi, struct osmo_sockaddr *remote);
 struct gprs_ns2_vc_bind *ns2_ip_get_bind_by_index(struct gprs_ns2_inst *nsi,
 						  struct osmo_sockaddr *remote,
 						  int index);
 
 /* sns */
-int gprs_ns2_sns_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp);
+int ns2_sns_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp);
 struct osmo_fsm_inst *ns2_sns_bss_fsm_alloc(struct gprs_ns2_nse *nse,
 					     const char *id);
 void ns2_sns_free_nsvc(struct gprs_ns2_vc *nsvc);
 
 /* vc */
-struct osmo_fsm_inst *gprs_ns2_vc_fsm_alloc(struct gprs_ns2_vc *nsvc,
+struct osmo_fsm_inst *ns2_vc_fsm_alloc(struct gprs_ns2_vc *nsvc,
 					    const char *id, bool initiate);
-int gprs_ns2_vc_fsm_start(struct gprs_ns2_vc *nsvc);
-int gprs_ns2_vc_force_unconfigured(struct gprs_ns2_vc *nsvc);
-int gprs_ns2_vc_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp);
-int gprs_ns2_vc_is_alive(struct gprs_ns2_vc *nsvc);
-int gprs_ns2_vc_is_unblocked(struct gprs_ns2_vc *nsvc);
+int ns2_vc_fsm_start(struct gprs_ns2_vc *nsvc);
+int ns2_vc_force_unconfigured(struct gprs_ns2_vc *nsvc);
+int ns2_vc_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp);
+int ns2_vc_is_alive(struct gprs_ns2_vc *nsvc);
+int ns2_vc_is_unblocked(struct gprs_ns2_vc *nsvc);
 int ns2_vc_block(struct gprs_ns2_vc *nsvc);
 int ns2_vc_unblock(struct gprs_ns2_vc *nsvc);
 
 /* nse */
 void ns2_nse_notify_unblocked(struct gprs_ns2_vc *nsvc, bool unblocked);
-enum gprs_ns2_vc_mode gprs_ns2_dialect_to_vc_mode(enum gprs_ns2_dialect dialect);
+enum gprs_ns2_vc_mode ns2_dialect_to_vc_mode(enum gprs_ns2_dialect dialect);
 int ns2_count_transfer_cap(struct gprs_ns2_nse *nse,
 			   uint16_t bvci);

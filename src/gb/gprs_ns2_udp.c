@@ -171,7 +171,7 @@ static int nsip_vc_sendmsg(struct gprs_ns2_vc *nsvc, struct msgb *msg)
 static struct msgb *read_nsip_msg(struct osmo_fd *bfd, int *error, struct osmo_sockaddr *saddr,
 				  const struct gprs_ns2_vc_bind *bind)
 {
-	struct msgb *msg = gprs_ns2_msgb_alloc();
+	struct msgb *msg = ns2_msgb_alloc();
 	int ret = 0;
 	socklen_t saddr_len = sizeof(*saddr);
 
@@ -243,7 +243,7 @@ static int handle_nsip_read(struct osmo_fd *bfd)
 			goto out;
 		case NS2_CS_CREATED:
 			ns2_driver_alloc_vc(bind, nsvc, &saddr);
-			gprs_ns2_vc_fsm_start(nsvc);
+			ns2_vc_fsm_start(nsvc);
 			break;
 		}
 	}
@@ -394,9 +394,9 @@ int gprs_ns2_ip_bind(struct gprs_ns2_inst *nsi,
  *  \param[in] nse NS entity to be used for the new NS-VC
  *  \param[in] remote remote address to connect to
  *  \return pointer to newly-allocated and connected NS-VC; NULL on error */
-struct gprs_ns2_vc *gprs_ns2_ip_bind_connect(struct gprs_ns2_vc_bind *bind,
-					     struct gprs_ns2_nse *nse,
-					     const struct osmo_sockaddr *remote)
+struct gprs_ns2_vc *ns2_ip_bind_connect(struct gprs_ns2_vc_bind *bind,
+					struct gprs_ns2_nse *nse,
+					const struct osmo_sockaddr *remote)
 {
 	struct gprs_ns2_vc *nsvc;
 	struct priv_vc *priv;
@@ -406,7 +406,7 @@ struct gprs_ns2_vc *gprs_ns2_ip_bind_connect(struct gprs_ns2_vc_bind *bind,
 
 	OSMO_ASSERT(gprs_ns2_is_ip_bind(bind));
 
-	vc_mode = gprs_ns2_dialect_to_vc_mode(nse->dialect);
+	vc_mode = ns2_dialect_to_vc_mode(nse->dialect);
 	if ((int) vc_mode == -1) {
 		LOGNSE(nse, LOGL_ERROR, "Can not derive vc mode from dialect %d. Maybe libosmocore is too old.\n",
 			nse->dialect);
