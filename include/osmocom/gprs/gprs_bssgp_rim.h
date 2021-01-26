@@ -25,7 +25,9 @@
 
 #pragma once
 
+#include <osmocom/gsm/gsm48.h>
 #include <osmocom/gprs/protocol/gsm_08_18.h>
+#include <osmocom/gprs/protocol/gsm_24_301.h>
 
 enum bssgp_rim_routing_info_discr {
 	BSSGP_RIM_ROUTING_INFO_GERAN,
