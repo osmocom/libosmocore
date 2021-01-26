@@ -516,7 +516,7 @@ DEFUN(cfg_no_ns_bind_listen, cfg_no_ns_bind_listen_cmd,
 	if (!bind)
 		return CMD_ERR_NOTHING_TODO;
 
-	OSMO_ASSERT(bind->ll != GPRS_NS2_LL_UDP);
+	OSMO_ASSERT(bind->ll == GPRS_NS2_LL_UDP);
 	bind->driver->free_bind(bind);
 	return CMD_SUCCESS;
 }
