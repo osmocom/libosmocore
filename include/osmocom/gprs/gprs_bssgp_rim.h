@@ -236,3 +236,37 @@ struct bssgp_ran_inf_app_err_rim_cont {
 
 int bssgp_dec_ran_inf_app_err_rim_cont(struct bssgp_ran_inf_app_err_rim_cont *cont, const uint8_t *buf, size_t len);
 int bssgp_enc_ran_inf_app_err_rim_cont(uint8_t *buf, size_t len, const struct bssgp_ran_inf_app_err_rim_cont *cont);
+
+/* Chapter 10.6.1: RAN-INFORMATION-REQUEST */
+struct bssgp_ran_information_pdu {
+	struct bssgp_rim_routing_info routing_info_dest;
+	struct bssgp_rim_routing_info routing_info_src;
+
+	/* Encoded variant of the RIM container */
+	uint8_t rim_cont_iei;
+	const uint8_t *rim_cont;
+	unsigned int rim_cont_len;
+
+	/* Decoded variant of the RIM container */
+	bool decoded_present;
+	union {
+		struct bssgp_ran_inf_req_rim_cont req_rim_cont;
+		struct bssgp_ran_inf_rim_cont rim_cont;
+		struct bssgp_ran_inf_ack_rim_cont ack_rim_cont;
+		struct bssgp_ran_inf_err_rim_cont err_rim_cont;
+		struct bssgp_ran_inf_app_err_rim_cont app_err_rim_cont;
+	} decoded;
+
+	/* When receiving a PDU from BSSGP the encoded variant of the RIM
+	 * container will always be present. The decoded variant will be
+	 * present in addition whenever BSSGP was able to decode the container.
+	 *
+	 * When sending a PDU to BSSGP, then the decoded variant is used when
+	 * it is available. The encoded variant (if present) will be ignored
+	 * then. */
+};
+
+int bssgp_parse_rim_pdu(struct bssgp_ran_information_pdu *pdu, const struct msgb *msg);
+struct msgb *bssgp_encode_rim_pdu(const struct bssgp_ran_information_pdu *pdu);
+
+int bssgp_tx_rim(const struct bssgp_ran_information_pdu *pdu, uint16_t nsei);

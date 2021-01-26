@@ -41,6 +41,7 @@
 #include <osmocom/gprs/gprs_ns.h>
 
 #include "osmocom/gsm/gsm48.h"
+#include "gprs_bssgp_internal.h"
 
 void *bssgp_tall_ctx = NULL;
 
@@ -645,46 +646,6 @@ int bssgp_rx_status(struct msgb *msg, struct tlv_parsed *tp,
 			PRIM_OP_INDICATION, msg);
 
 	return bssgp_prim_cb(&nmp.oph, NULL);
-}
-
-static int bssgp_rx_rim(struct msgb *msg, struct tlv_parsed *tp, uint16_t bvci)
-{
-	struct osmo_bssgp_prim nmp;
-	uint16_t nsei = msgb_nsei(msg);
-	struct bssgp_normal_hdr *bgph = (struct bssgp_normal_hdr *)msgb_bssgph(msg);
-	enum bssgp_prim prim;
-	char ri_src_str[64];
-	char ri_dest_str[64];
-
-	/* Specify PRIM type based on the RIM PDU */
-	switch (bgph->pdu_type) {
-	case BSSGP_PDUT_RAN_INFO:
-	case BSSGP_PDUT_RAN_INFO_REQ:
-	case BSSGP_PDUT_RAN_INFO_ACK:
-	case BSSGP_PDUT_RAN_INFO_ERROR:
-	case BSSGP_PDUT_RAN_INFO_APP_ERROR:
-		prim = PRIM_BSSGP_RIM_PDU_TRANSFER;
-		break;
-	default:
-		/* Caller already makes sure that this can't happen. */
-		OSMO_ASSERT(false);
-	}
-
-	/* Send BSSGP RIM indication to NM */
-	memset(&nmp, 0, sizeof(nmp));
-	nmp.nsei = nsei;
-	nmp.bvci = bvci;
-	nmp.tp = tp;
-	if (bssgp_parse_rim_pdu(&nmp.u.rim_pdu, msg) < 0)
-		return bssgp_tx_status(BSSGP_CAUSE_MISSING_MAND_IE, NULL, msg);
-	DEBUGP(DLBSSGP, "BSSGP BVCI=%u Rx RIM-PDU:%s, src=%s, dest=%s\n",
-	       bvci, bssgp_pdu_str(bgph->pdu_type),
-	       bssgp_rim_ri_name_buf(ri_src_str, sizeof(ri_src_str), &nmp.u.rim_pdu.routing_info_src),
-	       bssgp_rim_ri_name_buf(ri_dest_str, sizeof(ri_dest_str), &nmp.u.rim_pdu.routing_info_dest));
-	osmo_prim_init(&nmp.oph, SAP_BSSGP_RIM, prim, PRIM_OP_INDICATION, msg);
-	bssgp_prim_cb(&nmp.oph, NULL);
-
-	return 0;
 }
 
 /* One element (msgb) in a BSSGP Flow Control queue */
