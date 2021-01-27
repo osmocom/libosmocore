@@ -108,9 +108,6 @@ struct gprs_ns2_inst {
 	/*! linked lists of all NSVC in this instance */
 	struct llist_head nse;
 
-	/*! create dynamic NSE on receiving packages */
-	bool create_nse;
-
 	uint16_t timeout[NS_TIMERS_COUNT];
 
 	/*! workaround for rate counter until rate counter accepts char str as index */

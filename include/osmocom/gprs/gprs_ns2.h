@@ -142,7 +142,6 @@ struct osmo_gprs_ns2_prim {
 /* instance */
 struct gprs_ns2_inst *gprs_ns2_instantiate(void *ctx, osmo_prim_cb cb, void *cb_data);
 void gprs_ns2_free(struct gprs_ns2_inst *inst);
-int gprs_ns2_dynamic_create_nse(struct gprs_ns2_inst *nsi, bool create_nse);
 
 /* Entrypoint for primitives from the NS USER */
 int gprs_ns2_recv_prim(struct gprs_ns2_inst *nsi, struct osmo_prim_hdr *oph);

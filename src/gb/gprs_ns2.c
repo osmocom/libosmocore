@@ -874,7 +874,7 @@ enum ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 		if (bind->ll != GPRS_NS2_LL_UDP || dialect != GPRS_NS2_DIALECT_IPACCESS)
 			return NS2_CS_SKIPPED;
 
-		if (!bind->nsi->create_nse || !bind->accept_ipaccess)
+		if (!bind->accept_ipaccess)
 			return NS2_CS_SKIPPED;
 
 		nse = gprs_ns2_create_nse(bind->nsi, nsei, bind->ll, dialect);
@@ -1206,18 +1206,6 @@ void gprs_ns2_free(struct gprs_ns2_inst *nsi)
 	gprs_ns2_free_binds(nsi);
 
 	talloc_free(nsi);
-}
-
-/*! Configure whether a NS Instance should dynamically create NSEs based on incoming traffic.
- *  \param nsi the instance to modify
- *  \param create_nse if NSE can be created on receiving package. SGSN set this.
- *  \return 0 on success; negative on error
- */
-int gprs_ns2_dynamic_create_nse(struct gprs_ns2_inst *nsi, bool create_nse)
-{
-	nsi->create_nse = create_nse;
-
-	return 0;
 }
 
 /*! Start the NS-ALIVE FSM in all NS-VCs of given NSE.
