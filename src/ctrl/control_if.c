@@ -514,6 +514,7 @@ struct ctrl_connection *osmo_ctrl_conn_alloc(void *ctx, void *data)
 	INIT_LLIST_HEAD(&ccon->def_cmds);
 
 	ccon->write_queue.bfd.data = data;
+	ccon->write_queue.bfd.fd = -1;
 	ccon->write_queue.write_cb = control_write_cb;
 	ccon->write_queue.read_cb = handle_control_read;
 
