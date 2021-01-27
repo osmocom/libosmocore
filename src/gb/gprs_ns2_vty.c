@@ -1617,7 +1617,12 @@ DEFUN(logging_fltr_nsvc,
 	return CMD_SUCCESS;
 }
 
-int gprs_ns2_vty_init(struct gprs_ns2_inst *nsi)
+/*! initialized a reduced vty interface which excludes the configuration nodes besides timeouts.
+ *  This can be used by the PCU which can be only configured by the BTS/BSC and not by the vty.
+ * \param[in] nsi NS instance on which we operate
+ * \return 0 on success.
+ */
+int gprs_ns2_vty_init_reduced(struct gprs_ns2_inst *nsi)
 {
 	vty_nsi = nsi;
 	INIT_LLIST_HEAD(&binds);
@@ -1645,6 +1650,16 @@ int gprs_ns2_vty_init(struct gprs_ns2_inst *nsi)
 	install_node(&ns_node, config_write_ns);
 	/* TODO: convert into osmo timer */
 	install_lib_element(L_NS_NODE, &cfg_ns_timer_cmd);
+
+	return 0;
+}
+
+int gprs_ns2_vty_init(struct gprs_ns2_inst *nsi)
+{
+	int rc = gprs_ns2_vty_init_reduced(nsi);
+	if (rc)
+		return rc;
+
 	install_lib_element(L_NS_NODE, &cfg_ns_nsei_cmd);
 	install_lib_element(L_NS_NODE, &cfg_no_ns_nsei_cmd);
 	install_lib_element(L_NS_NODE, &cfg_ns_bind_cmd);
