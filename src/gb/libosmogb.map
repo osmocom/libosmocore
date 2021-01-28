@@ -185,7 +185,9 @@ gprs_ns2_reset_persistent_nsvcs;
 gprs_ns2_start_alive_all_nsvcs;
 gprs_ns2_sns_add_endpoint;
 gprs_ns2_sns_del_endpoint;
+gprs_ns2_vty_create;
 gprs_ns2_vty_init;
+gprs_ns2_vty2_init;
 
 gprs_nsvc_create2;
 gprs_nsvc_delete;

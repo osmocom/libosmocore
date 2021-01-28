@@ -261,6 +261,11 @@ char *gprs_ns2_ll_str_c(const void *ctx, struct gprs_ns2_vc *nsvc);
 const char *gprs_ns2_nsvc_state_name(struct gprs_ns2_vc *nsvc);
 
 /* vty */
-int gprs_ns2_vty_init(struct gprs_ns2_inst *nsi);
+int gprs_ns2_vty_init(struct gprs_ns2_inst *nsi,
+		      const struct osmo_sockaddr_str *default_bind);
+int gprs_ns2_vty_create();
+
+/* vty 2 */
+int gprs_ns2_vty2_init(struct gprs_ns2_inst *nsi);
 
 /*! @} */

@@ -1,7 +1,9 @@
 /*! \file gprs_ns2_vty.c
  * VTY interface for our GPRS Networks Service (NS) implementation. */
 
-/* (C) 2020 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
+/* (C) 2009-2014 by Harald Welte <laforge@gnumonks.org>
+ * (C) 2016-2017 by sysmocom - s.f.m.c. GmbH
+ * (C) 2020 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
  * Author: Alexander Couzens <lynxis@fe80.eu>
  *
  * All Rights Reserved
@@ -31,44 +33,67 @@
 #include <arpa/inet.h>
 #include <net/if.h>
 
+#include <osmocom/core/msgb.h>
 #include <osmocom/core/byteswap.h>
 #include <osmocom/core/fsm.h>
-#include <osmocom/core/linuxlist.h>
-#include <osmocom/core/msgb.h>
-#include <osmocom/core/rate_ctr.h>
-#include <osmocom/core/select.h>
 #include <osmocom/core/talloc.h>
+#include <osmocom/core/select.h>
+#include <osmocom/core/rate_ctr.h>
+#include <osmocom/core/socket.h>
 #include <osmocom/core/sockaddr_str.h>
+#include <osmocom/core/linuxlist.h>
 #include <osmocom/core/socket.h>
 #include <osmocom/gprs/frame_relay.h>
 #include <osmocom/gprs/gprs_ns2.h>
 #include <osmocom/gsm/tlv.h>
+#include <osmocom/vty/vty.h>
 #include <osmocom/vty/command.h>
 #include <osmocom/vty/logging.h>
-#include <osmocom/vty/misc.h>
 #include <osmocom/vty/telnet_interface.h>
-#include <osmocom/vty/vty.h>
+#include <osmocom/vty/misc.h>
 
 #include "gprs_ns2_internal.h"
 
 #define SHOW_NS_STR "Display information about the NS protocol\n"
-#define NSVCI_STR "NS Virtual Connection ID (NS-VCI)\n"
-#define DLCI_STR "Data Link connection identifier\n"
 
-static struct gprs_ns2_inst *vty_nsi = NULL;
-static struct osmo_fr_network *vty_fr_network = NULL;
-static struct llist_head binds;
-
-struct vty_bind {
-	struct llist_head list;
-	const char *name;
-	enum gprs_ns2_ll ll;
+struct ns2_vty_priv {
+	/* global listen */
+	struct osmo_sockaddr_str udp;
+	struct osmo_sockaddr_str frgreaddr;
 	int dscp;
-	bool accept_ipaccess;
-	bool accept_sns;
+	enum gprs_ns2_vc_mode vc_mode;
+	bool frgre;
+
+	struct llist_head vtyvc;
 };
 
-/* TODO: this should into osmo timer */
+struct ns2_vty_vc {
+	struct llist_head list;
+
+	struct osmo_sockaddr_str remote;
+	enum gprs_ns2_ll ll;
+
+	/* old vty code doesnt support multiple NSVCI per NSEI */
+	uint16_t nsei;
+	uint16_t nsvci;
+	uint16_t frdlci;
+
+	struct {
+		enum osmo_fr_role role;
+	} fr;
+
+	char netif[IF_NAMESIZE];
+
+	bool remote_end_is_sgsn;
+	bool configured;
+};
+
+static struct gprs_ns2_inst *vty_nsi = NULL;
+static struct ns2_vty_priv priv;
+static struct osmo_fr_network *vty_fr_network = NULL;
+
+/* FIXME: this should go to some common file as it is copied
+ * in vty_interface.c of the BSC */
 static const struct value_string gprs_ns_timer_strs[] = {
 	{ 0, "tns-block" },
 	{ 1, "tns-block-retries" },
@@ -83,51 +108,28 @@ static const struct value_string gprs_ns_timer_strs[] = {
 	{ 0, NULL }
 };
 
-const struct value_string vty_fr_role_names[] = {
-	{ FR_ROLE_USER_EQUIPMENT,	"fr" },
-	{ FR_ROLE_NETWORK_EQUIPMENT,	"frnet" },
-	{ 0, NULL }
-};
-
-const struct value_string vty_ll_names[] = {
-	{ GPRS_NS2_LL_FR,	"fr" },
-	{ GPRS_NS2_LL_FR_GRE,	"frgre" },
-	{ GPRS_NS2_LL_UDP,	"udp" },
-	{ 0, NULL }
-};
-
-static struct vty_bind *vty_bind_by_name(const char *name)
+static void log_set_nse_filter(struct log_target *target,
+				struct gprs_ns2_nse *nse)
 {
-	struct vty_bind *vbind;
-	llist_for_each_entry(vbind, &binds, list) {
-		if (!strncmp(vbind->name, name, strlen(vbind->name)))
-			return vbind;
+	if (nse) {
+		target->filter_map |= (1 << LOG_FLT_GB_NSE);
+		target->filter_data[LOG_FLT_GB_NSE] = nse;
+	} else if (target->filter_data[LOG_FLT_GB_NSE]) {
+		target->filter_map = ~(1 << LOG_FLT_GB_NSE);
+		target->filter_data[LOG_FLT_GB_NSE] = NULL;
 	}
-	return NULL;
 }
 
-static struct vty_bind *vty_bind_alloc(const char *name)
+static void log_set_nsvc_filter(struct log_target *target,
+				struct gprs_ns2_vc *nsvc)
 {
-	struct vty_bind *vbind = talloc_zero(vty_nsi, struct vty_bind);
-	if (!vbind)
-		return NULL;
-
-	vbind->name = talloc_strdup(vty_nsi, name);
-	if (!vbind->name) {
-		talloc_free(vbind);
-		return NULL;
+	if (nsvc) {
+		target->filter_map |= (1 << LOG_FLT_GB_NSVC);
+		target->filter_data[LOG_FLT_GB_NSVC] = nsvc;
+	} else if (target->filter_data[LOG_FLT_GB_NSVC]) {
+		target->filter_map = ~(1 << LOG_FLT_GB_NSVC);
+		target->filter_data[LOG_FLT_GB_NSVC] = NULL;
 	}
-
-	llist_add(&vbind->list, &binds);
-	return vbind;
-}
-
-static void vty_bind_free(struct vty_bind *vbind)
-{
-	if (!vbind)
-		return;
-
-	llist_del(&vbind->list);
 }
 
 static struct cmd_node ns_node = {
@@ -135,6 +137,130 @@ static struct cmd_node ns_node = {
 	"%s(config-ns)# ",
 	1,
 };
+
+static struct ns2_vty_vc *vtyvc_alloc(uint16_t nsei) {
+	struct ns2_vty_vc *vtyvc = talloc_zero(vty_nsi, struct ns2_vty_vc);
+	if (!vtyvc)
+		return vtyvc;
+
+	vtyvc->nsei = nsei;
+
+	llist_add(&vtyvc->list, &priv.vtyvc);
+
+	return vtyvc;
+}
+
+static void ns2_vc_free(struct ns2_vty_vc *vtyvc) {
+	if (!vtyvc)
+		return;
+
+	llist_del(&vtyvc->list);
+	talloc_free(vtyvc);
+}
+
+static struct ns2_vty_vc *vtyvc_by_nsei(uint16_t nsei, bool alloc_missing) {
+	struct ns2_vty_vc *vtyvc;
+
+	llist_for_each_entry(vtyvc, &priv.vtyvc, list) {
+		if (vtyvc->nsei == nsei)
+			return vtyvc;
+	}
+
+	if (!alloc_missing)
+		return NULL;
+
+	vtyvc = vtyvc_alloc(nsei);
+	if (!vtyvc)
+		return vtyvc;
+
+	vtyvc->nsei = nsei;
+	return vtyvc;
+}
+
+static int config_write_ns(struct vty *vty)
+{
+	struct ns2_vty_vc *vtyvc;
+	unsigned int i;
+	struct osmo_sockaddr_str sockstr;
+
+	vty_out(vty, "ns%s", VTY_NEWLINE);
+
+	/* global configuration must be written first, as some of it may be
+	 * relevant when creating the NSE/NSVC later below */
+
+	vty_out(vty, " encapsulation framerelay-gre enabled %u%s",
+		priv.frgre ? 1 : 0, VTY_NEWLINE);
+
+	if (priv.frgre) {
+		if (strlen(priv.frgreaddr.ip)) {
+			vty_out(vty, " encapsulation framerelay-gre local-ip %s%s",
+				sockstr.ip, VTY_NEWLINE);
+		}
+	} else {
+		if (strlen(priv.udp.ip)) {
+			vty_out(vty, " encapsulation udp local-ip %s%s",
+				priv.udp.ip, VTY_NEWLINE);
+		}
+
+		if (priv.udp.port)
+			vty_out(vty, " encapsulation udp local-port %u%s",
+				priv.udp.port, VTY_NEWLINE);
+	}
+
+	if (priv.dscp)
+		vty_out(vty, " encapsulation udp dscp %d%s",
+			priv.dscp, VTY_NEWLINE);
+
+	vty_out(vty, " encapsulation udp use-reset-block-unblock %s%s",
+		priv.vc_mode == GPRS_NS2_VC_MODE_BLOCKRESET ? "enabled" : "disabled", VTY_NEWLINE);
+
+	llist_for_each_entry(vtyvc, &priv.vtyvc, list) {
+		vty_out(vty, " nse %u nsvci %u%s",
+			vtyvc->nsei, vtyvc->nsvci, VTY_NEWLINE);
+
+		vty_out(vty, " nse %u remote-role %s%s",
+			vtyvc->nsei, vtyvc->remote_end_is_sgsn ? "sgsn" : "bss",
+			VTY_NEWLINE);
+
+		switch (vtyvc->ll) {
+		case GPRS_NS2_LL_UDP:
+			vty_out(vty, " nse %u encapsulation udp%s", vtyvc->nsei, VTY_NEWLINE);
+			vty_out(vty, " nse %u remote-ip %s%s",
+				vtyvc->nsei,
+				vtyvc->remote.ip,
+				VTY_NEWLINE);
+			vty_out(vty, " nse %u remote-port %u%s",
+				vtyvc->nsei, vtyvc->remote.port,
+				VTY_NEWLINE);
+			break;
+		case GPRS_NS2_LL_FR_GRE:
+			vty_out(vty, " nse %u encapsulation framerelay-gre%s",
+				vtyvc->nsei, VTY_NEWLINE);
+			vty_out(vty, " nse %u remote-ip %s%s",
+				vtyvc->nsei,
+				vtyvc->remote.ip,
+				VTY_NEWLINE);
+			vty_out(vty, " nse %u fr-dlci %u%s",
+				vtyvc->nsei, vtyvc->frdlci,
+				VTY_NEWLINE);
+			break;
+		case GPRS_NS2_LL_FR:
+			vty_out(vty, " nse %u fr %s dlci %u%s",
+				vtyvc->nsei, vtyvc->netif, vtyvc->frdlci,
+				VTY_NEWLINE);
+			break;
+		default:
+			break;
+		}
+	}
+
+	for (i = 0; i < ARRAY_SIZE(vty_nsi->timeout); i++)
+		vty_out(vty, " timer %s %u%s",
+			get_value_string(gprs_ns_timer_strs, i),
+			vty_nsi->timeout[i], VTY_NEWLINE);
+
+	return CMD_SUCCESS;
+}
 
 DEFUN(cfg_ns, cfg_ns_cmd,
       "ns",
@@ -144,1183 +270,6 @@ DEFUN(cfg_ns, cfg_ns_cmd,
 	return CMD_SUCCESS;
 }
 
-DEFUN(cfg_ns_timer, cfg_ns_timer_cmd,
-	"timer " NS_TIMERS " <0-65535>",
-	"Network Service Timer\n"
-	NS_TIMERS_HELP "Timer Value\n")
-{
-	int idx = get_string_value(gprs_ns_timer_strs, argv[0]);
-	int val = atoi(argv[1]);
-
-	if (idx < 0 || idx >= ARRAY_SIZE(vty_nsi->timeout))
-		return CMD_WARNING;
-
-	vty_nsi->timeout[idx] = val;
-
-	return CMD_SUCCESS;
-}
-
-DEFUN(cfg_ns_nsei, cfg_ns_nsei_cmd,
-      "nse <0-65535>",
-      "Persistent NS Entity\n"
-      "NS Entity ID (NSEI)\n"
-      )
-{
-	struct gprs_ns2_nse *nse;
-	uint16_t nsei = atoi(argv[0]);
-
-	nse = gprs_ns2_nse_by_nsei(vty_nsi, nsei);
-	if (!nse) {
-		nse = gprs_ns2_create_nse(vty_nsi, nsei, GPRS_NS2_LL_UNDEF, GPRS_NS2_DIALECT_UNDEF);
-		if (!nse) {
-			vty_out(vty, "Failed to create NSE!%s", VTY_NEWLINE);
-			return CMD_ERR_INCOMPLETE;
-		}
-		nse->persistent = true;
-	}
-
-	if (!nse->persistent) {
-		/* TODO: should the dynamic NSE removed? */
-		vty_out(vty, "A dynamic NSE with the specified NSEI already exists%s", VTY_NEWLINE);
-		return CMD_ERR_INCOMPLETE;
-	}
-
-	vty->node = L_NS_NSE_NODE;
-	vty->index = nse;
-
-	return CMD_SUCCESS;
-}
-
-DEFUN(cfg_no_ns_nsei, cfg_no_ns_nsei_cmd,
-      "no nse <0-65535>",
-      NO_STR
-      "Delete a Persistent NS Entity\n"
-      "NS Entity ID (NSEI)\n"
-      )
-{
-	struct gprs_ns2_nse *nse;
-	uint16_t nsei = atoi(argv[0]);
-
-	nse = gprs_ns2_nse_by_nsei(vty_nsi, nsei);
-	if (!nse) {
-		vty_out(vty, "Can not find NS Entity %s%s", argv[0], VTY_NEWLINE);
-		return CMD_ERR_NOTHING_TODO;
-	}
-
-	if (!nse->persistent) {
-		vty_out(vty, "Ignoring non-persistent NS Entity%s", VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	vty_out(vty, "Deleting NS Entity %u%s", nse->nsei, VTY_NEWLINE);
-	gprs_ns2_free_nse(nse);
-	return CMD_SUCCESS;
-}
-
-/* TODO: add fr/gre */
-DEFUN(cfg_ns_bind, cfg_ns_bind_cmd,
-      "bind (fr|udp) ID",
-      "Binding\n"
-      "Frame Relay\n" "UDP/IP\n"
-      "a unique identifier for this bind to reference NS-VCs\n"
-      )
-{
-	const char *nstype = argv[0];
-	const char *name = argv[1];
-	struct vty_bind *vbind;
-	enum gprs_ns2_ll ll;
-	int rc;
-
-	rc = get_string_value(vty_ll_names, nstype);
-	if (rc < 0)
-		return CMD_WARNING;
-	ll = (enum gprs_ns2_ll) rc;
-
-	if (!osmo_identifier_valid(name)) {
-		vty_out(vty, "Invalid ID. The ID should be only alphanumeric.%s", VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	vbind = vty_bind_by_name(name);
-	if (vbind) {
-		if (vbind->ll != ll) {
-			vty_out(vty, "A bind with the specified ID already exists with a different type (fr|frgre|udp)!%s",
-				VTY_NEWLINE);
-			return CMD_WARNING;
-		}
-	} else {
-		vbind = vty_bind_alloc(name);
-		if (!vbind) {
-			vty_out(vty, "Can not create bind - out of memory%s", VTY_NEWLINE);
-			return CMD_WARNING;
-		}
-		vbind->ll = ll;
-	}
-
-	vty->index = vbind;
-	vty->node = L_NS_BIND_NODE;
-
-	return CMD_SUCCESS;
-}
-
-DEFUN(cfg_no_ns_bind, cfg_no_ns_bind_cmd,
-      "no bind ID",
-      NO_STR
-      "Delete a binding\n"
-      "a unique identifier for this bind to reference NS-VCs\n"
-      )
-{
-	struct vty_bind *vbind;
-	struct gprs_ns2_vc_bind *bind;
-	const char *name = argv[0];
-
-	vbind = vty_bind_by_name(name);
-	if (!vbind) {
-		vty_out(vty, "bind %s does not exist!%s", name, VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-	vty_bind_free(vbind);
-	bind = gprs_ns2_bind_by_name(vty_nsi, name);
-	if (bind)
-		bind->driver->free_bind(bind);
-	return CMD_SUCCESS;
-}
-
-
-static void config_write_vbind(struct vty *vty, struct vty_bind *vbind)
-{
-	struct gprs_ns2_vc_bind *bind;
-	const struct osmo_sockaddr *addr;
-	struct osmo_sockaddr_str addr_str;
-	const char *netif, *frrole_str, *llstr;
-	enum osmo_fr_role frrole;
-
-	llstr = get_value_string_or_null(vty_ll_names, vbind->ll);
-	if (!llstr)
-		return;
-	vty_out(vty, " bind %s %s%s", llstr, vbind->name, VTY_NEWLINE);
-
-	bind = gprs_ns2_bind_by_name(vty_nsi, vbind->name);
-	switch (vbind->ll) {
-	case GPRS_NS2_LL_FR:
-		if (bind) {
-			netif = gprs_ns2_fr_bind_netif(bind);
-			if (!netif)
-				return;
-			frrole = gprs_ns2_fr_bind_role(bind);
-			if ((int) frrole == -1)
-				return;
-			frrole_str = get_value_string_or_null(vty_fr_role_names, frrole);
-			if (netif && frrole_str)
-				vty_out(vty, "  fr %s %s%s", netif, frrole_str, VTY_NEWLINE);
-		}
-		break;
-	case GPRS_NS2_LL_UDP:
-		if (bind) {
-			addr = gprs_ns2_ip_bind_sockaddr(bind);
-			if (!osmo_sockaddr_str_from_sockaddr(&addr_str, &addr->u.sas)) {
-				vty_out(vty, "  listen %s %u%s", addr_str.ip, addr_str.port,
-					VTY_NEWLINE);
-			}
-		}
-		if (vbind->accept_ipaccess)
-			vty_out(vty, "  accept-ipaccess%s", VTY_NEWLINE);
-		if (vbind->dscp)
-			vty_out(vty, "  dscp %u%s", vbind->dscp, VTY_NEWLINE);
-		break;
-	default:
-		return;
-	}
-}
-
-static void config_write_nsvc(struct vty *vty, const struct gprs_ns2_vc *nsvc)
-{
-	const char *netif;
-	uint16_t dlci;
-	const struct osmo_sockaddr *addr;
-	struct osmo_sockaddr_str addr_str;
-
-	switch (nsvc->nse->ll) {
-	case GPRS_NS2_LL_UNDEF:
-		break;
-	case GPRS_NS2_LL_UDP:
-		switch (nsvc->nse->dialect) {
-		case GPRS_NS2_DIALECT_IPACCESS:
-			addr = gprs_ns2_ip_vc_remote(nsvc);
-			if (!addr)
-				break;
-			if (osmo_sockaddr_str_from_sockaddr(&addr_str, &addr->u.sas))
-				break;
-			vty_out(vty, "  nsvc ipa %s %s %u nsvci %u%s",
-				nsvc->bind->name, addr_str.ip, addr_str.port,
-				nsvc->nsvci, VTY_NEWLINE);
-			break;
-		case GPRS_NS2_DIALECT_STATIC_ALIVE:
-			addr = gprs_ns2_ip_vc_remote(nsvc);
-			if (!addr)
-				break;
-			if (osmo_sockaddr_str_from_sockaddr(&addr_str, &addr->u.sas))
-				break;
-			vty_out(vty, "  nsvc udp %s %s %u%s",
-				nsvc->bind->name, addr_str.ip, addr_str.port, VTY_NEWLINE);
-			break;
-		default:
-			break;
-		}
-		break;
-	case GPRS_NS2_LL_FR:
-		netif = gprs_ns2_fr_bind_netif(nsvc->bind);
-		if (!netif)
-			break;
-		dlci = gprs_ns2_fr_nsvc_dlci(nsvc);
-		if (!dlci)
-			break;
-		OSMO_ASSERT(nsvc->nsvci_is_valid);
-		vty_out(vty, "  nsvc fr %s dlci %u nsvci %u%s",
-			netif, dlci, nsvc->nsvci, VTY_NEWLINE);
-		break;
-	case GPRS_NS2_LL_FR_GRE:
-		break;
-	}
-}
-
-static void _config_write_ns_nse(struct vty *vty, struct gprs_ns2_nse *nse)
-{
-	struct gprs_ns2_vc *nsvc;
-
-	vty_out(vty, " nse %u%s", nse->nsei, VTY_NEWLINE);
-	switch (nse->dialect) {
-	case GPRS_NS2_DIALECT_SNS:
-		ns2_sns_write_vty(vty, nse);
-		break;
-	default:
-		llist_for_each_entry(nsvc, &nse->nsvc, list) {
-			config_write_nsvc(vty, nsvc);
-		}
-		break;
-	}
-}
-
-static int config_write_ns(struct vty *vty)
-{
-	unsigned int i;
-
-	vty_out(vty, "ns%s", VTY_NEWLINE);
-
-	for (i = 0; i < ARRAY_SIZE(vty_nsi->timeout); i++)
-		vty_out(vty, " timer %s %u%s",
-			get_value_string(gprs_ns_timer_strs, i),
-			vty_nsi->timeout[i], VTY_NEWLINE);
-
-	return 0;
-}
-
-static int config_write_ns_nse(struct vty *vty)
-{
-	struct gprs_ns2_nse *nse;
-
-	llist_for_each_entry(nse, &vty_nsi->nse, list) {
-		if (!nse->persistent)
-			continue;
-
-		_config_write_ns_nse(vty, nse);
-	}
-
-	return 0;
-}
-
-static int config_write_ns_bind(struct vty *vty)
-{
-	struct vty_bind *vbind;
-
-	llist_for_each_entry(vbind, &binds, list) {
-		config_write_vbind(vty, vbind);
-	}
-
-	return 0;
-}
-
-static struct cmd_node ns_bind_node = {
-	L_NS_BIND_NODE,
-	"%s(config-ns-bind)# ",
-	1,
-};
-
-DEFUN(cfg_ns_bind_listen, cfg_ns_bind_listen_cmd,
-      "listen " VTY_IPV46_CMD " <1-65535>",
-      "Binding\n"
-      "IPv4 Address\n" "IPv6 Address\n"
-      "Port\n"
-      )
-{
-	struct vty_bind *vbind = vty->index;
-	struct gprs_ns2_vc_bind *bind;
-
-	const char *addr_str = argv[0];
-	unsigned int port = atoi(argv[1]);
-	struct osmo_sockaddr_str sockaddr_str;
-	struct osmo_sockaddr sockaddr;
-
-	if (vbind->ll != GPRS_NS2_LL_UDP) {
-		vty_out(vty, "listen can be only used with UDP bind%s",
-			VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	if (osmo_sockaddr_str_from_str(&sockaddr_str, addr_str, port)) {
-		vty_out(vty, "Can not parse the Address %s %s%s", argv[0], argv[1], VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-	osmo_sockaddr_str_to_sockaddr(&sockaddr_str, &sockaddr.u.sas);
-	if (gprs_ns2_ip_bind_by_sockaddr(vty_nsi, &sockaddr)) {
-		vty_out(vty, "A bind with the specified address already exists!%s", VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	if (gprs_ns2_ip_bind(vty_nsi, vbind->name, &sockaddr, vbind->dscp, &bind) != 0) {
-		vty_out(vty, "Failed to create the bind!%s", VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	bind->accept_ipaccess = vbind->accept_ipaccess;
-	bind->accept_sns = vbind->accept_sns;
-
-	return CMD_SUCCESS;
-}
-
-DEFUN(cfg_no_ns_bind_listen, cfg_no_ns_bind_listen_cmd,
-      "no listen",
-      NO_STR
-      "Delete a IP/Port assignment\n"
-      )
-{
-	struct vty_bind *vbind = vty->index;
-	struct gprs_ns2_vc_bind *bind;
-
-	if (vbind->ll != GPRS_NS2_LL_UDP) {
-		vty_out(vty, "no listen can be only used with UDP bind%s", VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	bind = gprs_ns2_bind_by_name(vty_nsi, vbind->name);
-	if (!bind)
-		return CMD_ERR_NOTHING_TODO;
-
-	OSMO_ASSERT(bind->ll != GPRS_NS2_LL_UDP);
-	bind->driver->free_bind(bind);
-	return CMD_SUCCESS;
-}
-
-DEFUN(cfg_ns_bind_dscp, cfg_ns_bind_dscp_cmd,
-      "dscp <0-255>",
-      "Set DSCP/TOS on the UDP socket\n" "DSCP Value\n")
-{
-	struct vty_bind *vbind = vty->index;
-	struct gprs_ns2_vc_bind *bind;
-	uint16_t dscp = atoi(argv[0]);
-
-	if (vbind->ll != GPRS_NS2_LL_UDP) {
-		vty_out(vty, "dscp can be only used with UDP bind%s",
-			VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	vbind->dscp = dscp;
-	bind = gprs_ns2_bind_by_name(vty_nsi, vbind->name);
-	if (bind)
-		gprs_ns2_ip_bind_set_dscp(bind, dscp);
-
-	return CMD_SUCCESS;
-}
-
-DEFUN(cfg_no_ns_bind_dscp, cfg_no_ns_bind_dscp_cmd,
-      "no dscp",
-      "Set DSCP/TOS on the UDP socket\n" "DSCP Value\n")
-{
-	struct vty_bind *vbind = vty->index;
-	struct gprs_ns2_vc_bind *bind;
-	uint16_t dscp = 0;
-
-	if (vbind->ll != GPRS_NS2_LL_UDP) {
-		vty_out(vty, "dscp can be only used with UDP bind%s",
-			VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	vbind->dscp = dscp;
-	bind = gprs_ns2_bind_by_name(vty_nsi, vbind->name);
-	if (bind)
-		gprs_ns2_ip_bind_set_dscp(bind, dscp);
-
-	return CMD_SUCCESS;
-}
-
-DEFUN(cfg_ns_bind_ipaccess, cfg_ns_bind_ipaccess_cmd,
-      "accept-ipaccess",
-      "Allow to create dynamic NS Entity by NS Reset PDU on UDP (ip.access style)\n"
-      )
-{
-	struct vty_bind *vbind = vty->index;
-	struct gprs_ns2_vc_bind *bind;
-
-	if (vbind->ll != GPRS_NS2_LL_UDP) {
-		vty_out(vty, "accept-ipaccess can be only used with UDP bind%s",
-			VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	vbind->accept_ipaccess = true;
-	bind = gprs_ns2_bind_by_name(vty_nsi, vbind->name);
-	if (bind)
-		bind->accept_ipaccess = true;
-
-	return CMD_SUCCESS;
-}
-
-DEFUN(cfg_no_ns_bind_ipaccess, cfg_no_ns_bind_ipaccess_cmd,
-      "no accept-ipaccess",
-      NO_STR
-      "Reject NS Reset PDU on UDP (ip.access style)\n"
-      )
-{
-	struct vty_bind *vbind = vty->index;
-	struct gprs_ns2_vc_bind *bind;
-
-	if (vbind->ll != GPRS_NS2_LL_UDP) {
-		vty_out(vty, "no accept-ipaccess can be only used with UDP bind%s",
-			VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	vbind->accept_ipaccess = false;
-	bind = gprs_ns2_bind_by_name(vty_nsi, vbind->name);
-	if (bind)
-		bind->accept_ipaccess = false;
-
-	return CMD_SUCCESS;
-}
-
-
-DEFUN(cfg_ns_bind_fr, cfg_ns_bind_fr_cmd,
-      "fr NETIF (fr|frnet)",
-      "frame relay\n"
-      IFNAME_STR
-      "fr (user) is used by BSS or SGSN attached to UNI of a FR network\n"
-      "frnet (network) is used by SGSN if BSS is directly attached\n"
-      )
-{
-	struct vty_bind *vbind = vty->index;
-	struct gprs_ns2_vc_bind *bind;
-	const char *netif = argv[0];
-	const char *role = argv[1];
-
-	int rc = 0;
-	enum osmo_fr_role frrole;
-
-	if (vbind->ll != GPRS_NS2_LL_FR) {
-		vty_out(vty, "fr can be only used with frame relay bind%s", VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	if (!strcmp(role, "fr"))
-		frrole = FR_ROLE_USER_EQUIPMENT;
-	else if (!strcmp(role, "frnet"))
-		frrole = FR_ROLE_NETWORK_EQUIPMENT;
-	else
-		return CMD_WARNING;
-
-	bind = gprs_ns2_fr_bind_by_netif(vty_nsi, netif);
-	if (bind) {
-		vty_out(vty, "Interface %s already used.%s", netif, VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	rc = gprs_ns2_fr_bind(vty_nsi, vbind->name, netif, vty_fr_network, frrole, &bind);
-	if (rc < 0) {
-		LOGP(DLNS, LOGL_ERROR, "Failed to bind interface %s on fr. Err: %d\n", netif, rc);
-		return CMD_WARNING;
-	}
-
-	return CMD_SUCCESS;
-}
-
-DEFUN(cfg_no_ns_bind_fr, cfg_no_ns_bind_fr_cmd,
-      "no fr NETIF",
-      NO_STR
-      "Delete a frame relay link\n"
-      "Delete a frame relay link\n"
-      IFNAME_STR
-      )
-{
-	struct vty_bind *vbind = vty->index;
-	struct gprs_ns2_vc_bind *bind;
-	const char *netif = argv[0];
-
-	if (vbind->ll != GPRS_NS2_LL_FR) {
-		vty_out(vty, "fr can be only used with frame relay bind%s",
-			VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	bind = gprs_ns2_fr_bind_by_netif(vty_nsi, netif);
-	if (!bind) {
-		vty_out(vty, "Interface not found.%s", VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	if (strcmp(bind->name, vbind->name)) {
-		vty_out(vty, "The specified interface is not bound to this bind.%s", VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	bind->driver->free_bind(bind);
-	return CMD_SUCCESS;
-}
-
-
-static struct cmd_node ns_nse_node = {
-	L_NS_NSE_NODE,
-	"%s(config-ns-nse)# ",
-	1,
-};
-
-DEFUN(cfg_ns_nse_nsvc_fr, cfg_ns_nse_nsvc_fr_cmd,
-      "nsvc fr NETIF dlci <16-1007> nsvci <0-65535>",
-      "NS Virtual Connection\n"
-      "frame relay\n"
-      "frame relay interface. Must be registered via fr vty\n"
-      NSVCI_STR
-      NSVCI_STR
-      DLCI_STR
-      DLCI_STR
-      )
-{
-	struct gprs_ns2_vc_bind *bind;
-	struct gprs_ns2_vc *nsvc;
-	struct gprs_ns2_nse *nse = vty->index;
-	const char *netif = argv[0];
-	uint16_t dlci = atoi(argv[1]);
-	uint16_t nsvci = atoi(argv[2]);
-	bool dialect_modified = false;
-	bool ll_modified = false;
-
-	if (nse->ll != GPRS_NS2_LL_FR && nse->ll != GPRS_NS2_LL_UNDEF) {
-		vty_out(vty, "Can not mix NS-VC with different link layer%s", VTY_NEWLINE);
-		goto err;
-	}
-
-	if (nse->dialect != GPRS_NS2_DIALECT_STATIC_RESETBLOCK && nse->dialect != GPRS_NS2_DIALECT_UNDEF) {
-		vty_out(vty, "Can not mix NS-VC with different dialects%s", VTY_NEWLINE);
-		goto err;
-	}
-
-	if (nse->ll == GPRS_NS2_LL_UNDEF) {
-		nse->ll = GPRS_NS2_LL_FR;
-		ll_modified = true;
-	}
-
-	if (nse->dialect == GPRS_NS2_DIALECT_UNDEF) {
-		nse->dialect = GPRS_NS2_DIALECT_STATIC_RESETBLOCK;
-		dialect_modified = true;
-	}
-
-
-	bind = gprs_ns2_fr_bind_by_netif(vty_nsi, netif);
-	if (!bind) {
-		vty_out(vty, "Can not find fr interface \"%s\". Please configure it via fr vty.%s",
-			netif, VTY_NEWLINE);
-		goto err;
-	}
-
-	if (gprs_ns2_fr_nsvc_by_dlci(bind, dlci)) {
-		vty_out(vty, "A NS-VC with the specified DLCI already exist!%s", VTY_NEWLINE);
-		goto err;
-	}
-
-	if (gprs_ns2_nsvc_by_nsvci(vty_nsi, nsvci)) {
-		vty_out(vty, "A NS-VC with the specified NS-VCI already exist!%s", VTY_NEWLINE);
-		goto err;
-	}
-
-	nsvc = gprs_ns2_fr_connect(bind, nse, nsvci, dlci);
-	if (!nsvc) {
-		/* Could not create NS-VC, connect failed */
-		vty_out(vty, "Failed to create the NS-VC%s", VTY_NEWLINE);
-		goto err;
-	}
-	nsvc->persistent = true;
-	return CMD_SUCCESS;
-
-err:
-	if (ll_modified)
-		nse->ll = GPRS_NS2_LL_UNDEF;
-	if (dialect_modified)
-		nse->dialect = GPRS_NS2_DIALECT_UNDEF;
-
-	return CMD_WARNING;
-}
-
-DEFUN(cfg_no_ns_nse_nsvc_fr_dlci, cfg_no_ns_nse_nsvc_fr_dlci_cmd,
-      "no nsvc fr NETIF dlci <16-1007>",
-      NO_STR
-      "Delete frame relay NS-VC\n"
-      "frame relay\n"
-      "frame relay interface. Must be registered via fr vty\n"
-      DLCI_STR
-      DLCI_STR
-      )
-{
-	struct gprs_ns2_vc_bind *bind;
-	struct gprs_ns2_vc *nsvc;
-	struct gprs_ns2_nse *nse = vty->index;
-	const char *netif = argv[0];
-	uint16_t dlci = atoi(argv[1]);
-
-	if (nse->ll != GPRS_NS2_LL_FR) {
-		vty_out(vty, "This NSE doesn't support frame relay.%s", VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	bind = gprs_ns2_fr_bind_by_netif(vty_nsi, netif);
-	if (!bind) {
-		vty_out(vty, "Can not find fr interface \"%s\"%s",
-			netif, VTY_NEWLINE);
-		return CMD_ERR_NOTHING_TODO;
-	}
-
-	nsvc = gprs_ns2_fr_nsvc_by_dlci(bind, dlci);
-	if (!nsvc) {
-		vty_out(vty, "Can not find a NS-VC on fr interface %s with dlci %u%s",
-			netif, dlci, VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	if (nse != nsvc->nse) {
-		vty_out(vty, "The specified NS-VC is not a part of the NSE %u!%s"
-			     "To remove this NS-VC go to the vty node 'nse %u'%s",
-			nse->nsei, VTY_NEWLINE,
-			nsvc->nse->nsei, VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	gprs_ns2_free_nsvc(nsvc);
-	if (llist_empty(&nse->nsvc)) {
-		nse->ll = GPRS_NS2_LL_UNDEF;
-		nse->dialect = GPRS_NS2_DIALECT_UNDEF;
-	}
-
-	return CMD_SUCCESS;
-}
-
-DEFUN(cfg_no_ns_nse_nsvci, cfg_no_ns_nse_nsvci_cmd,
-      "no nsvc nsvci <0-65535>",
-      NO_STR
-      "Delete NSVC\n"
-      NSVCI_STR
-      NSVCI_STR
-      )
-{
-	struct gprs_ns2_vc *nsvc;
-	struct gprs_ns2_nse *nse = vty->index;
-	uint16_t nsvci = atoi(argv[0]);
-
-	switch (nse->dialect) {
-	case GPRS_NS2_DIALECT_SNS:
-	case GPRS_NS2_DIALECT_STATIC_ALIVE:
-		vty_out(vty, "NSE doesn't support NSVCI.%s", VTY_NEWLINE);
-		return CMD_WARNING;
-	case GPRS_NS2_DIALECT_UNDEF:
-		vty_out(vty, "No NSVCs configured%s", VTY_NEWLINE);
-		return CMD_WARNING;
-	case GPRS_NS2_DIALECT_IPACCESS:
-	case GPRS_NS2_DIALECT_STATIC_RESETBLOCK:
-		break;
-	}
-
-	nsvc = gprs_ns2_nsvc_by_nsvci(vty_nsi, nsvci);
-	if (!nsvc) {
-		vty_out(vty, "Can not find NS-VC with NS-VCI %u%s", nsvci, VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	if (nse != nsvc->nse) {
-		vty_out(vty, "NS-VC with NS-VCI %u is not part of this NSE!%s",
-			nsvci, VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	gprs_ns2_free_nsvc(nsvc);
-	if (llist_empty(&nse->nsvc)) {
-		nse->ll = GPRS_NS2_LL_UNDEF;
-		nse->dialect = GPRS_NS2_DIALECT_UNDEF;
-	}
-
-	return CMD_SUCCESS;
-}
-
-DEFUN(cfg_ns_nse_nsvc_udp, cfg_ns_nse_nsvc_udp_cmd,
-      "nsvc udp BIND " VTY_IPV46_CMD " <1-65535>",
-      "NS Virtual Connection\n"
-      "NS over UDP\n"
-      "A unique bind identifier created by ns bind\n"
-      "Remote IPv4 Address\n" "Remote IPv6 Address\n"
-      "Remote UDP Port\n"
-      )
-{
-	struct gprs_ns2_vc_bind *bind;
-	struct gprs_ns2_vc *nsvc;
-	struct gprs_ns2_nse *nse = vty->index;
-	bool dialect_modified = false;
-	bool ll_modified = false;
-
-	const char *bind_name = argv[0];
-	struct osmo_sockaddr_str remote_str;
-	struct osmo_sockaddr remote;
-	uint16_t port = atoi(argv[2]);
-
-	if (nse->ll == GPRS_NS2_LL_UNDEF) {
-		nse->ll = GPRS_NS2_LL_UDP;
-		ll_modified = true;
-	}
-
-	if (nse->dialect == GPRS_NS2_DIALECT_UNDEF) {
-		nse->dialect = GPRS_NS2_DIALECT_STATIC_ALIVE;
-		dialect_modified = true;
-	}
-
-	if (nse->ll != GPRS_NS2_LL_UDP) {
-		vty_out(vty, "Can not mix NS-VC with different link layer%s", VTY_NEWLINE);
-		goto err;
-	}
-
-	if (nse->dialect != GPRS_NS2_DIALECT_STATIC_ALIVE) {
-		vty_out(vty, "Can not mix NS-VC with different dialects%s", VTY_NEWLINE);
-		goto err;
-	}
-
-	if (osmo_sockaddr_str_from_str(&remote_str, argv[1], port)) {
-		vty_out(vty, "Can not parse IPv4/IPv6 or port.%s", VTY_NEWLINE);
-		goto err;
-	}
-
-	if (osmo_sockaddr_str_to_sockaddr(&remote_str, &remote.u.sas)) {
-		vty_out(vty, "Can not parse IPv4/IPv6 or port.%s", VTY_NEWLINE);
-		goto err;
-	}
-
-	bind = gprs_ns2_bind_by_name(vty_nsi, bind_name);
-	if (!bind) {
-		vty_out(vty, "Can not find bind with name %s%s",
-			bind_name, VTY_NEWLINE);
-		goto err;
-	}
-
-	if (bind->ll != GPRS_NS2_LL_UDP) {
-		vty_out(vty, "Bind %s is not an UDP bind.%s",
-			bind_name, VTY_NEWLINE);
-		goto err;
-	}
-
-	nsvc = gprs_ns2_ip_connect(bind, &remote, nse, 0);
-	if (!nsvc) {
-		vty_out(vty, "Can not create NS-VC.%s", VTY_NEWLINE);
-		goto err;
-	}
-	nsvc->persistent = true;
-
-	return CMD_SUCCESS;
-
-err:
-	if (ll_modified)
-		nse->ll = GPRS_NS2_LL_UNDEF;
-	if (dialect_modified)
-		nse->dialect = GPRS_NS2_DIALECT_UNDEF;
-	return CMD_WARNING;
-}
-
-DEFUN(cfg_no_ns_nse_nsvc_udp, cfg_no_ns_nse_nsvc_udp_cmd,
-      "no nsvc udp BIND " VTY_IPV46_CMD " <1-65535>",
-      NO_STR
-      "Delete a NS Virtual Connection\n"
-      "NS over UDP\n"
-      "A unique bind identifier created by ns bind\n"
-      "Remote IPv4 Address\n" "Remote IPv6 Address\n"
-      "Remote UDP Port\n"
-      )
-{
-	struct gprs_ns2_vc_bind *bind;
-	struct gprs_ns2_vc *nsvc;
-	struct gprs_ns2_nse *nse = vty->index;
-	const char *bind_name = argv[0];
-	struct osmo_sockaddr_str remote_str;
-	struct osmo_sockaddr remote;
-	uint16_t port = atoi(argv[2]);
-
-	if (nse->ll != GPRS_NS2_LL_UDP) {
-		vty_out(vty, "This NSE doesn't support UDP.%s", VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	if (nse->dialect != GPRS_NS2_DIALECT_STATIC_ALIVE) {
-		vty_out(vty, "This NSE doesn't support UDP with dialect static alive.%s", VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	bind = gprs_ns2_bind_by_name(vty_nsi, bind_name);
-	if (!bind) {
-		vty_out(vty, "Can not find bind with name %s%s",
-			bind_name, VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	if (bind->ll != GPRS_NS2_LL_UDP) {
-		vty_out(vty, "Bind %s is not an UDP bind.%s",
-			bind_name, VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	if (osmo_sockaddr_str_from_str(&remote_str, argv[1], port)) {
-		vty_out(vty, "Can not parse IPv4/IPv6 or port.%s", VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	if (osmo_sockaddr_str_to_sockaddr(&remote_str, &remote.u.sas)) {
-		vty_out(vty, "Can not parse IPv4/IPv6 or port.%s", VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	nsvc = gprs_ns2_nsvc_by_sockaddr_bind(bind, &remote);
-	if (!nsvc) {
-		vty_out(vty, "Can not find NS-VC with remote %s:%u%s",
-			remote_str.ip, remote_str.port, VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	if (!nsvc->persistent) {
-		vty_out(vty, "NS-VC with remote %s:%u is a dynamic NS-VC. Not configured by vty.%s",
-			remote_str.ip, remote_str.port, VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	if (nsvc->nse != nse) {
-		vty_out(vty, "NS-VC is not part of this NSE!%s", VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	gprs_ns2_free_nsvc(nsvc);
-	if (llist_empty(&nse->nsvc)) {
-		nse->ll = GPRS_NS2_LL_UNDEF;
-		nse->dialect = GPRS_NS2_DIALECT_UNDEF;
-	}
-
-	return CMD_SUCCESS;
-}
-
-DEFUN(cfg_ns_nse_nsvc_ipa, cfg_ns_nse_nsvc_ipa_cmd,
-      "nsvc ipa BIND " VTY_IPV46_CMD " <1-65535> nsvci <0-65535>" ,
-      "NS Virtual Connection\n"
-      "NS over UDP ip.access style (uses RESET/BLOCK)\n"
-      "A unique bind identifier created by ns bind\n"
-      "Remote IPv4 Address\n" "Remote IPv6 Address\n"
-      "Remote UDP Port\n"
-      NSVCI_STR
-      NSVCI_STR
-      )
-{
-	struct gprs_ns2_vc_bind *bind;
-	struct gprs_ns2_vc *nsvc;
-	struct gprs_ns2_nse *nse = vty->index;
-	bool dialect_modified = false;
-	bool ll_modified = false;
-
-	const char *bind_name = argv[0];
-	struct osmo_sockaddr_str remote_str;
-	struct osmo_sockaddr remote;
-	uint16_t port = atoi(argv[2]);
-	uint16_t nsvci = atoi(argv[3]);
-
-	if (nse->ll == GPRS_NS2_LL_UNDEF) {
-		nse->ll = GPRS_NS2_LL_UDP;
-		ll_modified = true;
-	}
-
-	if (nse->dialect == GPRS_NS2_DIALECT_UNDEF) {
-		nse->dialect = GPRS_NS2_DIALECT_IPACCESS;
-		dialect_modified = true;
-	}
-
-	if (nse->ll != GPRS_NS2_LL_UDP) {
-		vty_out(vty, "Can not mix NS-VC with different link layer%s", VTY_NEWLINE);
-		goto err;
-	}
-
-	if (nse->dialect != GPRS_NS2_DIALECT_IPACCESS) {
-		vty_out(vty, "Can not mix NS-VC with different dialects%s", VTY_NEWLINE);
-		goto err;
-	}
-
-	if (osmo_sockaddr_str_from_str(&remote_str, argv[1], port)) {
-		vty_out(vty, "Can not parse IPv4/IPv6 or port.%s", VTY_NEWLINE);
-		goto err;
-	}
-
-	if (osmo_sockaddr_str_to_sockaddr(&remote_str, &remote.u.sas)) {
-		vty_out(vty, "Can not parse IPv4/IPv6 or port.%s", VTY_NEWLINE);
-		goto err;
-	}
-
-	bind = gprs_ns2_bind_by_name(vty_nsi, bind_name);
-	if (!bind) {
-		vty_out(vty, "Can not find bind with name %s%s",
-			bind_name, VTY_NEWLINE);
-		goto err;
-	}
-
-	if (bind->ll != GPRS_NS2_LL_UDP) {
-		vty_out(vty, "Bind %s is not an UDP bind.%s",
-			bind_name, VTY_NEWLINE);
-		goto err;
-	}
-
-	nsvc = gprs_ns2_ip_connect(bind, &remote, nse, nsvci);
-	if (!nsvc) {
-		vty_out(vty, "Can not create NS-VC.%s", VTY_NEWLINE);
-		goto err;
-	}
-	nsvc->persistent = true;
-
-	return CMD_SUCCESS;
-
-err:
-	if (ll_modified)
-		nse->ll = GPRS_NS2_LL_UNDEF;
-	if (dialect_modified)
-		nse->dialect = GPRS_NS2_DIALECT_UNDEF;
-	return CMD_WARNING;
-}
-
-DEFUN(cfg_no_ns_nse_nsvc_ipa, cfg_no_ns_nse_nsvc_ipa_cmd,
-      "no nsvc ipa BIND " VTY_IPV46_CMD " <1-65535> nsvci <0-65535>",
-      NO_STR
-      "Delete a NS Virtual Connection\n"
-      "NS over UDP\n"
-      "A unique bind identifier created by ns bind\n"
-      "Remote IPv4 Address\n" "Remote IPv6 Address\n"
-      "Remote UDP Port\n"
-      NSVCI_STR
-      NSVCI_STR
-      )
-{
-	struct gprs_ns2_vc_bind *bind;
-	struct gprs_ns2_vc *nsvc;
-	struct gprs_ns2_nse *nse = vty->index;
-	const char *bind_name = argv[0];
-	struct osmo_sockaddr_str remote_str;
-	struct osmo_sockaddr remote;
-	uint16_t port = atoi(argv[2]);
-	uint16_t nsvci = atoi(argv[3]);
-
-	if (nse->ll != GPRS_NS2_LL_UDP) {
-		vty_out(vty, "This NSE doesn't support UDP.%s", VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	if (nse->dialect != GPRS_NS2_DIALECT_IPACCESS) {
-		vty_out(vty, "This NSE doesn't support UDP with dialect ipaccess.%s", VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	bind = gprs_ns2_bind_by_name(vty_nsi, bind_name);
-	if (!bind) {
-		vty_out(vty, "Can not find bind with name %s%s",
-			bind_name, VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	if (bind->ll != GPRS_NS2_LL_UDP) {
-		vty_out(vty, "Bind %s is not an UDP bind.%s",
-			bind_name, VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	if (osmo_sockaddr_str_from_str(&remote_str, argv[1], port)) {
-		vty_out(vty, "Can not parse IPv4/IPv6 or port.%s", VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	if (osmo_sockaddr_str_to_sockaddr(&remote_str, &remote.u.sas)) {
-		vty_out(vty, "Can not parse IPv4/IPv6 or port.%s", VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	nsvc = gprs_ns2_nsvc_by_sockaddr_bind(bind, &remote);
-	if (!nsvc) {
-		vty_out(vty, "Can not find NS-VC with remote %s:%u%s",
-			remote_str.ip, remote_str.port, VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	if (!nsvc->persistent) {
-		vty_out(vty, "NS-VC with remote %s:%u is a dynamic NS-VC. Not configured by vty.%s",
-			remote_str.ip, remote_str.port, VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	if (nsvc->nse != nse) {
-		vty_out(vty, "NS-VC is not part of this NSE!%s", VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	if (!nsvc->nsvci_is_valid) {
-		vty_out(vty, "NS-VC doesn't have a nsvci!%s", VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	if (nsvc->nsvci != nsvci) {
-		vty_out(vty, "NS-VC has a different nsvci (%u)!%s",
-			nsvc->nsvci, VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	gprs_ns2_free_nsvc(nsvc);
-	if (llist_empty(&nse->nsvc)) {
-		nse->ll = GPRS_NS2_LL_UNDEF;
-		nse->dialect = GPRS_NS2_DIALECT_UNDEF;
-	}
-
-	return CMD_SUCCESS;
-}
-
-DEFUN(cfg_ns_nse_ip_sns, cfg_ns_nse_ip_sns_cmd,
-      "ip-sns " VTY_IPV46_CMD " <1-65535>",
-      "SNS Initial Endpoint\n"
-      "SGSN IPv4 Address\n" "SGSN IPv6 Address\n"
-      "SGSN UDP Port\n"
-      )
-{
-	struct gprs_ns2_nse *nse = vty->index;
-	bool dialect_modified = false;
-	bool ll_modified = false;
-	int rc;
-
-	/* argv[0] */
-	struct osmo_sockaddr_str remote_str;
-	struct osmo_sockaddr remote;
-	uint16_t port = atoi(argv[1]);
-
-	if (nse->ll == GPRS_NS2_LL_UNDEF) {
-		nse->ll = GPRS_NS2_LL_UDP;
-		ll_modified = true;
-	}
-
-	if (nse->dialect == GPRS_NS2_DIALECT_UNDEF) {
-		char sns[16];
-		snprintf(sns, sizeof(sns), "NSE%05u-SNS", nse->nsei);
-		nse->bss_sns_fi = ns2_sns_bss_fsm_alloc(nse, sns);
-		if (!nse->bss_sns_fi)
-			goto err;
-		nse->dialect = GPRS_NS2_DIALECT_SNS;
-		dialect_modified = true;
-	}
-
-	if (nse->ll != GPRS_NS2_LL_UDP) {
-		vty_out(vty, "Can not mix NS-VC with different link layer%s", VTY_NEWLINE);
-		goto err;
-	}
-
-	if (nse->dialect != GPRS_NS2_DIALECT_SNS) {
-		vty_out(vty, "Can not mix NS-VC with different dialects%s", VTY_NEWLINE);
-		goto err;
-	}
-
-	if (osmo_sockaddr_str_from_str(&remote_str, argv[0], port)) {
-		vty_out(vty, "Can not parse IPv4/IPv6 or port.%s", VTY_NEWLINE);
-		goto err;
-	}
-
-	if (osmo_sockaddr_str_to_sockaddr(&remote_str, &remote.u.sas)) {
-		vty_out(vty, "Can not parse IPv4/IPv6 or port.%s", VTY_NEWLINE);
-		goto err;
-	}
-
-	rc = gprs_ns2_sns_add_endpoint(nse, &remote);
-	switch (rc) {
-	case 0:
-		return CMD_SUCCESS;
-	case -EADDRINUSE:
-		vty_out(vty, "Specified SNS endpoint already part of the NSE.%s", VTY_NEWLINE);
-		return CMD_WARNING;
-	default:
-		vty_out(vty, "Can not add specified SNS endpoint.%s", VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-err:
-	if (ll_modified)
-		nse->ll = GPRS_NS2_LL_UNDEF;
-	if (dialect_modified)
-		nse->dialect = GPRS_NS2_DIALECT_UNDEF;
-	return CMD_WARNING;
-}
-
-DEFUN(cfg_no_ns_nse_ip_sns, cfg_no_ns_nse_ip_sns_cmd,
-      "no ip-sns " VTY_IPV46_CMD " <1-65535>",
-      NO_STR
-      "Delete a SNS Initial Endpoint\n"
-      "SGSN IPv4 Address\n" "SGSN IPv6 Address\n"
-      "SGSN UDP Port\n"
-      )
-{
-	struct gprs_ns2_nse *nse = vty->index;
-	struct osmo_sockaddr_str remote_str; /* argv[0] */
-	struct osmo_sockaddr remote;
-	uint16_t port = atoi(argv[1]);
-	int count;
-
-	if (nse->ll != GPRS_NS2_LL_UDP) {
-		vty_out(vty, "This NSE doesn't support UDP.%s", VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	if (nse->dialect != GPRS_NS2_DIALECT_SNS) {
-		vty_out(vty, "This NSE doesn't support UDP with dialect ip-sns.%s", VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	if (osmo_sockaddr_str_from_str(&remote_str, argv[0], port)) {
-		vty_out(vty, "Can not parse IPv4/IPv6 or port.%s", VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	if (osmo_sockaddr_str_to_sockaddr(&remote_str, &remote.u.sas)) {
-		vty_out(vty, "Can not parse IPv4/IPv6 or port.%s", VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	if (gprs_ns2_sns_del_endpoint(nse, &remote)) {
-		vty_out(vty, "Can not remove specified SNS endpoint.%s", VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-
-	count = gprs_ns2_sns_count(nse);
-	if (count > 0) {
-		 /* there are other sns endpoints */
-		return CMD_SUCCESS;
-	} else if (count < 0) {
-		OSMO_ASSERT(0);
-	} else {
-		/* clean up nse to allow other nsvc commands */
-		osmo_fsm_inst_term(nse->bss_sns_fi, OSMO_FSM_TERM_REQUEST, NULL);
-		nse->bss_sns_fi = NULL;
-		nse->ll = GPRS_NS2_LL_UNDEF;
-		nse->dialect = GPRS_NS2_DIALECT_UNDEF;
-	}
-
-	return CMD_SUCCESS;
-}
-
-
-/* non-config commands */
 static void dump_nsvc(struct vty *vty, struct gprs_ns2_vc *nsvc, bool stats)
 {
 	char nsvci_str[32];
@@ -1491,9 +440,7 @@ DEFUN_HIDDEN(nsvc_force_unconf, nsvc_force_unconf_cmd,
 		return CMD_WARNING;
 	}
 
-	if (!nse->persistent) {
-		gprs_ns2_free_nse(nse);
-	} else if (nse->dialect == GPRS_NS2_DIALECT_SNS) {
+	if (nse->dialect == GPRS_NS2_DIALECT_SNS) {
 		gprs_ns2_free_nsvcs(nse);
 	} else {
 		/* Perform the operation for all nsvc */
@@ -1503,56 +450,309 @@ DEFUN_HIDDEN(nsvc_force_unconf, nsvc_force_unconf_cmd,
 	return CMD_SUCCESS;
 }
 
-DEFUN(nsvc_block, nsvc_block_cmd,
-      "nsvc <0-65535> (block|unblock)",
-      "NS Virtual Connection\n"
-      NSVCI_STR
-      "Block a NSVC. As cause code O&M intervention will be used.\n"
-      "Unblock a NSVC. As cause code O&M intervention will be used.\n")
+#define NSE_CMD_STR "Persistent NS Entity\n" "NS Entity ID (NSEI)\n"
+
+DEFUN(cfg_nse_fr, cfg_nse_fr_cmd,
+	"nse <0-65535> nsvci <0-65535> (fr|frnet) NETIF dlci <0-1023>",
+	NSE_CMD_STR
+	"NS Virtual Connection\n"
+	"NS Virtual Connection ID (NSVCI)\n"
+	"Frame Relay User-Side\n"
+	"Frame Relay Network-Side\n"
+	IFNAME_STR
+	"Data Link connection identifier\n"
+	"Data Link connection identifier\n"
+	)
 {
-	struct gprs_ns2_inst *nsi = vty_nsi;
-	struct gprs_ns2_vc *nsvc;
+	struct ns2_vty_vc *vtyvc;
 
-	uint16_t id = atoi(argv[0]);
+	uint16_t nsei = atoi(argv[0]);
+	uint16_t nsvci = atoi(argv[1]);
+	const char *role = argv[2];
+	const char *name = argv[3];
+	uint16_t dlci = atoi(argv[4]);
 
-	nsvc = gprs_ns2_nsvc_by_nsvci(nsi, id);
-	if (!nsvc) {
-		vty_out(vty, "Could not find NSVCI %05u%s", id, VTY_NEWLINE);
+	vtyvc = vtyvc_by_nsei(nsei, true);
+	if (!vtyvc) {
+		vty_out(vty, "Can not allocate space %s", VTY_NEWLINE);
 		return CMD_WARNING;
 	}
 
-	if (!strcmp(argv[1], "block")) {
-		ns2_vc_block(nsvc);
-	} else {
-		ns2_vc_unblock(nsvc);
+	if (!strcmp(role, "fr"))
+		vtyvc->fr.role = FR_ROLE_USER_EQUIPMENT;
+	else if (!strcmp(role, "frnet"))
+		vtyvc->fr.role = FR_ROLE_NETWORK_EQUIPMENT;
+
+	osmo_strlcpy(vtyvc->netif, name, sizeof(vtyvc->netif));
+	vtyvc->frdlci = dlci;
+	vtyvc->nsvci = nsvci;
+	vtyvc->ll = GPRS_NS2_LL_FR;
+
+	return CMD_SUCCESS;
+}
+
+DEFUN(cfg_nse_nsvc, cfg_nse_nsvci_cmd,
+	"nse <0-65535> nsvci <0-65535>",
+	NSE_CMD_STR
+	"NS Virtual Connection\n"
+	"NS Virtual Connection ID (NSVCI)\n"
+	)
+{
+	struct ns2_vty_vc *vtyvc;
+
+	uint16_t nsei = atoi(argv[0]);
+	uint16_t nsvci = atoi(argv[1]);
+
+	vtyvc = vtyvc_by_nsei(nsei, true);
+	if (!vtyvc) {
+		vty_out(vty, "Can not allocate space %s", VTY_NEWLINE);
+		return CMD_WARNING;
+	}
+
+	vtyvc->nsvci = nsvci;
+
+	return CMD_SUCCESS;
+}
+
+DEFUN(cfg_nse_remoteip, cfg_nse_remoteip_cmd,
+	"nse <0-65535> remote-ip " VTY_IPV46_CMD,
+	NSE_CMD_STR
+	"Remote IP Address\n"
+	"Remote IPv4 Address\n"
+	"Remote IPv6 Address\n")
+{
+	uint16_t nsei = atoi(argv[0]);
+	struct ns2_vty_vc *vtyvc;
+
+	vtyvc = vtyvc_by_nsei(nsei, true);
+	if (!vtyvc) {
+		vty_out(vty, "Can not allocate space %s", VTY_NEWLINE);
+		return CMD_WARNING;
+	}
+
+	osmo_sockaddr_str_from_str2(&vtyvc->remote, argv[1]);
+
+	return CMD_SUCCESS;
+}
+
+DEFUN(cfg_nse_remoteport, cfg_nse_remoteport_cmd,
+	"nse <0-65535> remote-port <0-65535>",
+	NSE_CMD_STR
+	"Remote UDP Port\n"
+	"Remote UDP Port Number\n")
+{
+	uint16_t nsei = atoi(argv[0]);
+	uint16_t port = atoi(argv[1]);
+	struct ns2_vty_vc *vtyvc;
+
+	vtyvc = vtyvc_by_nsei(nsei, true);
+	if (!vtyvc) {
+		vty_out(vty, "Can not allocate space %s", VTY_NEWLINE);
+		return CMD_WARNING;
+	}
+
+	vtyvc->remote.port = port;
+
+	return CMD_SUCCESS;
+}
+
+DEFUN(cfg_nse_fr_dlci, cfg_nse_fr_dlci_cmd,
+	"nse <0-65535> nsvci <0-65535> fr-dlci <16-1007>",
+	NSE_CMD_STR
+	"NS Virtual Connection\n"
+	"NS Virtual Connection ID (NSVCI)\n"
+	"Frame Relay DLCI\n"
+	"Frame Relay DLCI Number\n")
+{
+	uint16_t nsei = atoi(argv[0]);
+	uint16_t nsvci = atoi(argv[1]);
+	uint16_t dlci = atoi(argv[2]);
+	struct ns2_vty_vc *vtyvc;
+
+	vtyvc = vtyvc_by_nsei(nsei, true);
+	if (!vtyvc) {
+		vty_out(vty, "Can not allocate space %s", VTY_NEWLINE);
+		return CMD_WARNING;
+	}
+
+	vtyvc->frdlci = dlci;
+	vtyvc->nsvci = nsvci;
+
+	return CMD_SUCCESS;
+}
+
+DEFUN(cfg_nse_encaps, cfg_nse_encaps_cmd,
+	"nse <0-65535> encapsulation (udp|framerelay-gre)",
+	NSE_CMD_STR
+	"Encapsulation for NS\n"
+	"UDP/IP Encapsulation\n" "Frame-Relay/GRE/IP Encapsulation\n")
+{
+	uint16_t nsei = atoi(argv[0]);
+	struct ns2_vty_vc *vtyvc;
+
+	vtyvc = vtyvc_by_nsei(nsei, true);
+	if (!vtyvc) {
+		vty_out(vty, "Can not allocate space %s", VTY_NEWLINE);
+		return CMD_WARNING;
+	}
+
+	if (!strcmp(argv[1], "udp"))
+		vtyvc->ll = GPRS_NS2_LL_UDP;
+	else
+		vtyvc->ll = GPRS_NS2_LL_FR_GRE;
+
+	return CMD_SUCCESS;
+}
+
+DEFUN(cfg_nse_remoterole, cfg_nse_remoterole_cmd,
+	"nse <0-65535> remote-role (sgsn|bss)",
+	NSE_CMD_STR
+	"Remote NSE Role\n"
+	"Remote Peer is SGSN\n"
+	"Remote Peer is BSS\n")
+{
+	uint16_t nsei = atoi(argv[0]);
+	struct ns2_vty_vc *vtyvc;
+
+	vtyvc = vtyvc_by_nsei(nsei, true);
+	if (!vtyvc) {
+		vty_out(vty, "Can not allocate space %s", VTY_NEWLINE);
+		return CMD_WARNING;
+	}
+
+	if (!strcmp(argv[1], "sgsn"))
+		vtyvc->remote_end_is_sgsn = 1;
+	else
+		vtyvc->remote_end_is_sgsn = 0;
+
+	return CMD_SUCCESS;
+}
+
+DEFUN(cfg_no_nse, cfg_no_nse_cmd,
+	"no nse <0-65535>",
+	"Delete Persistent NS Entity\n"
+	"Delete " NSE_CMD_STR)
+{
+	uint16_t nsei = atoi(argv[0]);
+	struct ns2_vty_vc *vtyvc;
+
+	vtyvc = vtyvc_by_nsei(nsei, false);
+	if (!vtyvc) {
+		vty_out(vty, "The NSE %d does not exists.%s", nsei, VTY_NEWLINE);
+		return CMD_WARNING;
+	}
+
+	ns2_vc_free(vtyvc);
+
+	return CMD_SUCCESS;
+}
+
+DEFUN(cfg_ns_timer, cfg_ns_timer_cmd,
+	"timer " NS_TIMERS " <0-65535>",
+	"Network Service Timer\n"
+	NS_TIMERS_HELP "Timer Value\n")
+{
+	int idx = get_string_value(gprs_ns_timer_strs, argv[0]);
+	int val = atoi(argv[1]);
+
+	if (idx < 0 || idx >= ARRAY_SIZE(vty_nsi->timeout))
+		return CMD_WARNING;
+
+	vty_nsi->timeout[idx] = val;
+
+	return CMD_SUCCESS;
+}
+
+#define ENCAPS_STR "NS encapsulation options\n"
+
+DEFUN(cfg_nsip_local_ip, cfg_nsip_local_ip_cmd,
+      "encapsulation udp local-ip " VTY_IPV46_CMD,
+	ENCAPS_STR "NS over UDP Encapsulation\n"
+	"Set the IP address on which we listen for NS/UDP\n"
+	"IPv4 Address\n"
+	"IPv6 Address\n")
+{
+	osmo_sockaddr_str_from_str2(&priv.udp, argv[0]);
+
+	return CMD_SUCCESS;
+}
+
+DEFUN(cfg_nsip_local_port, cfg_nsip_local_port_cmd,
+      "encapsulation udp local-port <0-65535>",
+	ENCAPS_STR "NS over UDP Encapsulation\n"
+	"Set the UDP port on which we listen for NS/UDP\n"
+	"UDP port number\n")
+{
+	unsigned int port = atoi(argv[0]);
+
+	priv.udp.port = port;
+
+	return CMD_SUCCESS;
+}
+
+DEFUN(cfg_nsip_dscp, cfg_nsip_dscp_cmd,
+      "encapsulation udp dscp <0-255>",
+	ENCAPS_STR "NS over UDP Encapsulation\n"
+	"Set DSCP/TOS on the UDP socket\n" "DSCP Value\n")
+{
+	int dscp = atoi(argv[0]);
+	struct gprs_ns2_vc_bind *bind;
+
+	priv.dscp = dscp;
+
+	llist_for_each_entry(bind, &vty_nsi->binding, list) {
+		if (gprs_ns2_is_ip_bind(bind))
+			gprs_ns2_ip_bind_set_dscp(bind, dscp);
 	}
 
 	return CMD_SUCCESS;
 }
 
-static void log_set_nse_filter(struct log_target *target,
-				struct gprs_ns2_nse *nse)
+DEFUN(cfg_nsip_res_block_unblock, cfg_nsip_res_block_unblock_cmd,
+	"encapsulation udp use-reset-block-unblock (enabled|disabled)",
+	ENCAPS_STR "NS over UDP Encapsulation\n"
+	"Use NS-{RESET,BLOCK,UNBLOCK} procedures in violation of 3GPP TS 48.016\n"
+	"Enable NS-{RESET,BLOCK,UNBLOCK}\n"
+	"Disable NS-{RESET,BLOCK,UNBLOCK}\n")
 {
-	if (nse) {
-		target->filter_map |= (1 << LOG_FLT_GB_NSE);
-		target->filter_data[LOG_FLT_GB_NSE] = nse;
-	} else if (target->filter_data[LOG_FLT_GB_NSE]) {
-		target->filter_map = ~(1 << LOG_FLT_GB_NSE);
-		target->filter_data[LOG_FLT_GB_NSE] = NULL;
-	}
+	enum gprs_ns2_vc_mode vc_mode;
+
+	if (!strcmp(argv[0], "enabled"))
+		vc_mode = GPRS_NS2_VC_MODE_BLOCKRESET;
+	else
+		vc_mode = GPRS_NS2_VC_MODE_ALIVE;
+
+	priv.vc_mode = vc_mode;
+
+	return CMD_SUCCESS;
 }
 
-static void log_set_nsvc_filter(struct log_target *target,
-				struct gprs_ns2_vc *nsvc)
+DEFUN(cfg_frgre_local_ip, cfg_frgre_local_ip_cmd,
+      "encapsulation framerelay-gre local-ip " VTY_IPV46_CMD,
+	ENCAPS_STR "NS over Frame Relay over GRE Encapsulation\n"
+	"Set the IP address on which we listen for NS/FR/GRE\n"
+	"IPv4 Address\n"
+	"IPv6 Address\n")
 {
-	if (nsvc) {
-		target->filter_map |= (1 << LOG_FLT_GB_NSVC);
-		target->filter_data[LOG_FLT_GB_NSVC] = nsvc;
-	} else if (target->filter_data[LOG_FLT_GB_NSVC]) {
-		target->filter_map = ~(1 << LOG_FLT_GB_NSVC);
-		target->filter_data[LOG_FLT_GB_NSVC] = NULL;
-	}
+	osmo_sockaddr_str_from_str2(&priv.frgreaddr, argv[0]);
+
+	return CMD_SUCCESS;
 }
+
+DEFUN(cfg_frgre_enable, cfg_frgre_enable_cmd,
+      "encapsulation framerelay-gre enabled (1|0)",
+	ENCAPS_STR "NS over Frame Relay over GRE Encapsulation\n"
+	"Enable or disable Frame Relay over GRE\n"
+	"Enable\n" "Disable\n")
+{
+	int enabled = atoi(argv[0]);
+
+	priv.frgre = enabled;
+
+	return CMD_SUCCESS;
+}
+
+/* TODO: allow vty to reset/block/unblock nsvc/nsei */
 
 DEFUN(logging_fltr_nse,
       logging_fltr_nse_cmd,
@@ -1617,14 +817,29 @@ DEFUN(logging_fltr_nsvc,
 	return CMD_SUCCESS;
 }
 
-int gprs_ns2_vty_init(struct gprs_ns2_inst *nsi)
+/**
+ * gprs_ns2_vty_init initialize the vty
+ * \param[inout] nsi
+ * \param[in] default_bind set the default address to bind to. Can be NULL.
+ * \return 0 on success
+ */
+int gprs_ns2_vty_init(struct gprs_ns2_inst *nsi,
+		      const struct osmo_sockaddr_str *default_bind)
 {
-	vty_nsi = nsi;
-	INIT_LLIST_HEAD(&binds);
+	static bool vty_elements_installed = false;
 
-	vty_fr_network = osmo_fr_network_alloc(nsi);
-	if (!vty_fr_network)
-		return -ENOMEM;
+	vty_nsi = nsi;
+	memset(&priv, 0, sizeof(struct ns2_vty_priv));
+	INIT_LLIST_HEAD(&priv.vtyvc);
+	priv.vc_mode = GPRS_NS2_VC_MODE_BLOCKRESET;
+	if (default_bind)
+		memcpy(&priv.udp, default_bind, sizeof(*default_bind));
+
+	/* Regression test code may call this function repeatedly, so make sure
+	 * that VTY elements are not duplicated, which would assert. */
+	if (vty_elements_installed)
+		return 0;
+	vty_elements_installed = true;
 
 	install_lib_element_ve(&show_ns_cmd);
 	install_lib_element_ve(&show_ns_binds_cmd);
@@ -1635,42 +850,152 @@ int gprs_ns2_vty_init(struct gprs_ns2_inst *nsi)
 	install_lib_element_ve(&logging_fltr_nsvc_cmd);
 
 	install_lib_element(ENABLE_NODE, &nsvc_force_unconf_cmd);
-	install_lib_element(ENABLE_NODE, &nsvc_block_cmd);
 
 	install_lib_element(CFG_LOG_NODE, &logging_fltr_nse_cmd);
 	install_lib_element(CFG_LOG_NODE, &logging_fltr_nsvc_cmd);
 
 	install_lib_element(CONFIG_NODE, &cfg_ns_cmd);
-
 	install_node(&ns_node, config_write_ns);
-	/* TODO: convert into osmo timer */
+	install_lib_element(L_NS_NODE, &cfg_nse_fr_cmd);
+	install_lib_element(L_NS_NODE, &cfg_nse_nsvci_cmd);
+	install_lib_element(L_NS_NODE, &cfg_nse_remoteip_cmd);
+	install_lib_element(L_NS_NODE, &cfg_nse_remoteport_cmd);
+	install_lib_element(L_NS_NODE, &cfg_nse_fr_dlci_cmd);
+	install_lib_element(L_NS_NODE, &cfg_nse_encaps_cmd);
+	install_lib_element(L_NS_NODE, &cfg_nse_remoterole_cmd);
+	install_lib_element(L_NS_NODE, &cfg_no_nse_cmd);
 	install_lib_element(L_NS_NODE, &cfg_ns_timer_cmd);
-	install_lib_element(L_NS_NODE, &cfg_ns_nsei_cmd);
-	install_lib_element(L_NS_NODE, &cfg_no_ns_nsei_cmd);
-	install_lib_element(L_NS_NODE, &cfg_ns_bind_cmd);
-	install_lib_element(L_NS_NODE, &cfg_no_ns_bind_cmd);
+	install_lib_element(L_NS_NODE, &cfg_nsip_local_ip_cmd);
+	install_lib_element(L_NS_NODE, &cfg_nsip_local_port_cmd);
+	install_lib_element(L_NS_NODE, &cfg_nsip_dscp_cmd);
+	install_lib_element(L_NS_NODE, &cfg_nsip_res_block_unblock_cmd);
+	install_lib_element(L_NS_NODE, &cfg_frgre_enable_cmd);
+	install_lib_element(L_NS_NODE, &cfg_frgre_local_ip_cmd);
 
-	install_node(&ns_bind_node, config_write_ns_bind);
-	install_lib_element(L_NS_BIND_NODE, &cfg_ns_bind_listen_cmd);
-	install_lib_element(L_NS_BIND_NODE, &cfg_no_ns_bind_listen_cmd);
-	install_lib_element(L_NS_BIND_NODE, &cfg_ns_bind_dscp_cmd);
-	install_lib_element(L_NS_BIND_NODE, &cfg_no_ns_bind_dscp_cmd);
-	install_lib_element(L_NS_BIND_NODE, &cfg_ns_bind_ipaccess_cmd);
-	install_lib_element(L_NS_BIND_NODE, &cfg_no_ns_bind_ipaccess_cmd);
-	install_lib_element(L_NS_BIND_NODE, &cfg_ns_bind_fr_cmd);
-	install_lib_element(L_NS_BIND_NODE, &cfg_no_ns_bind_fr_cmd);
-	/* TODO: accept-ip-sns when SGSN SNS has been implemented */
+	/* TODO: nsvc/nsei command to reset states or reset/block/unblock nsei/nsvcs */
 
-	install_node(&ns_nse_node, config_write_ns_nse);
-	install_lib_element(L_NS_NSE_NODE, &cfg_ns_nse_nsvc_fr_cmd);
-	install_lib_element(L_NS_NSE_NODE, &cfg_no_ns_nse_nsvci_cmd);
-	install_lib_element(L_NS_NSE_NODE, &cfg_no_ns_nse_nsvc_fr_dlci_cmd);
-	install_lib_element(L_NS_NSE_NODE, &cfg_ns_nse_nsvc_udp_cmd);
-	install_lib_element(L_NS_NSE_NODE, &cfg_no_ns_nse_nsvc_udp_cmd);
-	install_lib_element(L_NS_NSE_NODE, &cfg_ns_nse_nsvc_ipa_cmd);
-	install_lib_element(L_NS_NSE_NODE, &cfg_no_ns_nse_nsvc_ipa_cmd);
-	install_lib_element(L_NS_NSE_NODE, &cfg_ns_nse_ip_sns_cmd);
-	install_lib_element(L_NS_NSE_NODE, &cfg_no_ns_nse_ip_sns_cmd);
+	return 0;
+}
+
+/*!
+ * \brief gprs_ns2_vty_create parse the vty tree into ns nodes
+ * It has to be in different steps to ensure the bind is created before creating VCs.
+ * \return 0 on success
+ */
+int gprs_ns2_vty_create() {
+	struct ns2_vty_vc *vtyvc;
+	struct gprs_ns2_vc_bind *bind, *fr;
+	struct gprs_ns2_nse *nse;
+	struct gprs_ns2_vc *nsvc;
+	struct osmo_sockaddr sockaddr;
+	enum gprs_ns2_dialect dialect = GPRS_NS2_DIALECT_UNDEF;
+	int rc = 0;
+
+	if (!vty_nsi)
+		return -1;
+
+	/* create binds, only support a single bind. either FR or UDP */
+	if (priv.frgre) {
+		/* TODO not yet supported !*/
+		return -1;
+	} else {
+		/* UDP */
+		osmo_sockaddr_str_to_sockaddr(&priv.udp, &sockaddr.u.sas);
+		if (gprs_ns2_ip_bind(vty_nsi, "vtybind", &sockaddr, priv.dscp, &bind)) {
+			/* TODO: could not bind on the specific address */
+			return -1;
+		}
+
+		bind->accept_ipaccess = priv.vc_mode == GPRS_NS2_VC_MODE_BLOCKRESET;
+	}
+
+	/* create vcs */
+	llist_for_each_entry(vtyvc, &priv.vtyvc, list) {
+		/* validate settings */
+		switch (vtyvc->ll) {
+		case GPRS_NS2_LL_UDP:
+			if (priv.vc_mode == GPRS_NS2_VC_MODE_BLOCKRESET)
+				dialect = GPRS_NS2_DIALECT_IPACCESS;
+			else
+				dialect = GPRS_NS2_DIALECT_STATIC_ALIVE;
+			if (strlen(vtyvc->remote.ip) == 0) {
+				/* Invalid IP for VC */
+				continue;
+			}
+
+			if (!vtyvc->remote.port) {
+				/* Invalid port for VC */
+				continue;
+			}
+
+			if (osmo_sockaddr_str_to_sockaddr(&vtyvc->remote, &sockaddr.u.sas)) {
+				/* Invalid sockaddr for VC */
+				continue;
+			}
+			break;
+		case GPRS_NS2_LL_FR:
+			dialect = GPRS_NS2_DIALECT_STATIC_RESETBLOCK;
+			break;
+		case GPRS_NS2_LL_FR_GRE:
+			dialect = GPRS_NS2_DIALECT_STATIC_RESETBLOCK;
+			continue;
+		case GPRS_NS2_LL_UNDEF:
+			/* should not happen */
+			OSMO_ASSERT(false);
+		}
+
+		nse = gprs_ns2_nse_by_nsei(vty_nsi, vtyvc->nsei);
+		if (!nse) {
+			nse = gprs_ns2_create_nse(vty_nsi, vtyvc->nsei, vtyvc->ll, dialect);
+			if (!nse) {
+				/* Could not create NSE for VTY */
+				continue;
+			}
+		}
+		nse->persistent = true;
+
+		switch (vtyvc->ll) {
+		case GPRS_NS2_LL_UDP:
+			nsvc = gprs_ns2_ip_connect(bind,
+						   &sockaddr,
+						   nse,
+						   vtyvc->nsvci);
+			if (!nsvc) {
+				/* Could not create NSVC, connect failed */
+				continue;
+			}
+			nsvc->persistent = true;
+			break;
+		case GPRS_NS2_LL_FR: {
+			if (vty_fr_network == NULL) {
+				/* TODO: add a switch for BSS/SGSN/gbproxy */
+				vty_fr_network = osmo_fr_network_alloc(vty_nsi);
+			}
+			fr = gprs_ns2_fr_bind_by_netif(
+						vty_nsi,
+						vtyvc->netif);
+			if (!fr) {
+				rc = gprs_ns2_fr_bind(vty_nsi, vtyvc->netif, vtyvc->netif, vty_fr_network, vtyvc->fr.role, &fr);
+				if (rc < 0) {
+					LOGP(DLNS, LOGL_ERROR, "Can not create fr bind on device %s err: %d\n", vtyvc->netif, rc);
+					return rc;
+				}
+			}
+
+			nsvc = gprs_ns2_fr_connect(fr, nse, vtyvc->nsvci, vtyvc->frdlci);
+			if (!nsvc) {
+				/* Could not create NSVC, connect failed */
+				continue;
+			}
+			nsvc->persistent = true;
+			break;
+		}
+		case GPRS_NS2_LL_FR_GRE:
+		case GPRS_NS2_LL_UNDEF:
+			continue;
+		}
+	}
+
 
 	return 0;
 }
