@@ -401,20 +401,6 @@ static void _config_write_ns_nse(struct vty *vty, struct gprs_ns2_nse *nse)
 	}
 }
 
-static int config_write_ns(struct vty *vty)
-{
-	unsigned int i;
-
-	vty_out(vty, "ns%s", VTY_NEWLINE);
-
-	for (i = 0; i < ARRAY_SIZE(vty_nsi->timeout); i++)
-		vty_out(vty, " timer %s %u%s",
-			get_value_string(gprs_ns_timer_strs, i),
-			vty_nsi->timeout[i], VTY_NEWLINE);
-
-	return 0;
-}
-
 static int config_write_ns_nse(struct vty *vty)
 {
 	struct gprs_ns2_nse *nse;
@@ -439,6 +425,30 @@ static int config_write_ns_bind(struct vty *vty)
 
 	return 0;
 }
+
+static int config_write_ns(struct vty *vty)
+{
+	unsigned int i;
+	int ret;
+
+	vty_out(vty, "ns%s", VTY_NEWLINE);
+
+	for (i = 0; i < ARRAY_SIZE(vty_nsi->timeout); i++)
+		vty_out(vty, " timer %s %u%s",
+			get_value_string(gprs_ns_timer_strs, i),
+			vty_nsi->timeout[i], VTY_NEWLINE);
+
+	ret = config_write_ns_bind(vty);
+	if (ret)
+		return ret;
+
+	ret = config_write_ns_nse(vty);
+	if (ret)
+		return ret;
+
+	return 0;
+}
+
 
 static struct cmd_node ns_bind_node = {
 	L_NS_BIND_NODE,
@@ -1665,7 +1675,7 @@ int gprs_ns2_vty_init(struct gprs_ns2_inst *nsi)
 	install_lib_element(L_NS_NODE, &cfg_ns_bind_cmd);
 	install_lib_element(L_NS_NODE, &cfg_no_ns_bind_cmd);
 
-	install_node(&ns_bind_node, config_write_ns_bind);
+	install_node(&ns_bind_node, NULL);
 	install_lib_element(L_NS_BIND_NODE, &cfg_ns_bind_listen_cmd);
 	install_lib_element(L_NS_BIND_NODE, &cfg_no_ns_bind_listen_cmd);
 	install_lib_element(L_NS_BIND_NODE, &cfg_ns_bind_dscp_cmd);
@@ -1676,7 +1686,7 @@ int gprs_ns2_vty_init(struct gprs_ns2_inst *nsi)
 	install_lib_element(L_NS_BIND_NODE, &cfg_no_ns_bind_fr_cmd);
 	/* TODO: accept-ip-sns when SGSN SNS has been implemented */
 
-	install_node(&ns_nse_node, config_write_ns_nse);
+	install_node(&ns_nse_node, NULL);
 	install_lib_element(L_NS_NSE_NODE, &cfg_ns_nse_nsvc_fr_cmd);
 	install_lib_element(L_NS_NSE_NODE, &cfg_no_ns_nse_nsvci_cmd);
 	install_lib_element(L_NS_NSE_NODE, &cfg_no_ns_nse_nsvc_fr_dlci_cmd);
