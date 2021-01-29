@@ -27,6 +27,7 @@ enum osmo_bts_features {
 	BTS_FEAT_PAGING_COORDINATION,	/* BTS hands CS paging to PCU/PACCH */
 	BTS_FEAT_IPV6_NSVC,
 	BTS_FEAT_ACCH_REP,
+	BTS_FEAT_CCN, /* Is CCN supported by the cell? TS 44.060 sec 8.8.2 */
 	_NUM_BTS_FEAT
 };
 

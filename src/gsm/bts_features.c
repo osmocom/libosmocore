@@ -42,6 +42,7 @@ const struct value_string osmo_bts_features_descs[] = {
 	{ BTS_FEAT_PAGING_COORDINATION,	"BSS Paging Coordination" },
 	{ BTS_FEAT_IPV6_NSVC,		"NSVC IPv6" },
 	{ BTS_FEAT_ACCH_REP,		"FACCH/SACCH Repetition" },
+	{ BTS_FEAT_CCN,			"Cell Change Notification (CCN)" },
 	{ 0, NULL }
 };
 
