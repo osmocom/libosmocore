@@ -268,6 +268,54 @@ static void test_gen_oa(void)
 	printf("Result: len(%d) data(%s)\n", len, osmo_hexdump(oa, len));
 }
 
+static void test_enc_large_msg(void)
+{
+	uint8_t enc_buf[2048 * 7 / 8];
+	char large_msg[2048 + 1];
+	int i, j, nsep, noct = 0;
+
+	printf("\nRunning %s\n", __func__);
+
+	/* Expected chunks (repeated) in the output buffer */
+	const uint8_t exp_chunk[] = { 0xc1, 0x60, 0x30, 0x18, 0x0c, 0x06, 0x83 };
+
+	/* Length variants to be tested */
+	static const size_t nlen[] = { 2048, 1024, 555, 512, 260, 255, 250 };
+
+	memset(&large_msg[0], (int) 'A', sizeof(large_msg) - 1);
+
+	for (i = 0; i < ARRAY_SIZE(nlen); i++) {
+		/* Clear the output buffer first */
+		memset(&enc_buf[0], 0x00, sizeof(enc_buf));
+		/* Limit length of the input string */
+		large_msg[nlen[i]] = '\0';
+
+		/* How many octets we expect to be used? */
+		int noct_exp = nlen[i] * 7 / 8;
+		if (nlen[i] % 8 != 0)
+			noct_exp++;
+
+		/* Encode a sequence of 'A' repeated nlen[i] times */
+		nsep = gsm_7bit_encode_n(&enc_buf[0], sizeof(enc_buf), large_msg, &noct);
+		printf("gsm_7bit_encode_n(len=%zu) processed %d septets (expected %zu): %s\n",
+		       nlen[i], nsep, nlen[i], nsep == nlen[i] ? "OK" : "FAIL");
+		printf("gsm_7bit_encode_n(len=%zu) used %d octets in the buffer (expected %d): %s\n",
+		       nlen[i], noct, noct_exp, noct == noct_exp ? "OK" : "FAIL");
+
+		/* The encoding result is expected to consist of repeated chunks */
+		for (j = 0; j < noct_exp; j += sizeof(exp_chunk)) {
+			size_t len = OSMO_MIN(noct_exp - j, sizeof(exp_chunk));
+			if (nlen[i] % 8 != 0) /* skip incomplete octets */
+				len--;
+			if (memcmp(&enc_buf[j], exp_chunk, len) != 0) {
+				printf("\tUnexpected chunk at enc_buf[%d:%zu]: %s\n",
+				       j, len, osmo_hexdump(&enc_buf[j], len));
+				break; /* No need to show them all */
+			}
+		}
+	}
+}
+
 int main(int argc, char** argv)
 {
 	printf("SMS testing\n");
@@ -396,6 +444,7 @@ int main(int argc, char** argv)
 
 	test_octet_return();
 	test_gen_oa();
+	test_enc_large_msg();
 
 	printf("OK\n");
 	return 0;
