@@ -247,7 +247,12 @@ static int fr_dlci_rx_cb(void *cb_data, struct msgb *msg)
 
 static int handle_netif_write(struct osmo_fd *ofd, struct msgb *msg)
 {
-	return write(ofd->fd, msgb_data(msg), msgb_length(msg));
+	int rc = write(ofd->fd, msgb_data(msg), msgb_length(msg));
+	/* write_queue expects a "-errno" type return value in case of failure */
+	if (rc == -1)
+		return -errno;
+	else
+		return rc;
 }
 
 /*! determine if given bind is for FR-GRE encapsulation. */
