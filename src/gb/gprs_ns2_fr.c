@@ -4,7 +4,7 @@
  * 3GPP TS 08.16 version 8.0.1 Release 1999 / ETSI TS 101 299 V8.0.1 (2002-05)
  * as well as its successor 3GPP TS 48.016 */
 
-/* (C) 2009-2010,2014,2017 by Harald Welte <laforge@gnumonks.org>
+/* (C) 2009-2021 by Harald Welte <laforge@gnumonks.org>
  * (C) 2020 sysmocom - s.f.m.c. GmbH
  * Author: Alexander Couzens <lynxis@fe80.eu>
  *
@@ -51,9 +51,11 @@
 #include <osmocom/core/msgb.h>
 #include <osmocom/core/select.h>
 #include <osmocom/core/socket.h>
+#include <osmocom/core/timer.h>
 #include <osmocom/core/talloc.h>
-#include <osmocom/core/write_queue.h>
 #include <osmocom/gprs/gprs_ns2.h>
+#include <osmocom/gprs/protocol/gsm_08_16.h>
+#include <osmocom/gprs/protocol/gsm_08_18.h>
 
 #ifdef ENABLE_LIBMNL
 #include <osmocom/core/mnl.h>
@@ -72,6 +74,14 @@
 # define IPPROTO_GRE 47
 #endif
 
+#define E1_LINERATE 2048000
+#define E1_SLOTS_TOTAL 32
+#define E1_SLOTS_USED 31
+/* usable bitrate of the E1 superchannel with 31 of 32 timeslots */
+#define SUPERCHANNEL_LINERATE (E1_LINERATE*E1_SLOTS_USED)/E1_SLOTS_TOTAL
+/* nanoseconds per bit (504) */
+#define BIT_DURATION_NS (1000000000 / SUPERCHANNEL_LINERATE)
+
 struct gre_hdr {
 	uint16_t flags;
 	uint16_t ptype;
@@ -88,9 +98,19 @@ struct gprs_ns2_vc_driver vc_driver_fr = {
 struct priv_bind {
 	char netif[IFNAMSIZ];
 	struct osmo_fr_link *link;
-	struct osmo_wqueue wqueue;
 	int ifindex;
 	bool if_running;
+	/* backlog queue for AF_PACKET / ENOBUFS handling (see OS#4993) */
+	struct {
+		/* file-descriptor for AF_PACKET socket */
+		struct osmo_fd ofd;
+		/* list of msgb (backlog) */
+		struct llist_head list;
+		/* timer to trigger next attempt of AF_PACKET write */
+		struct osmo_timer_list timer;
+		/* re-try after that many micro-seconds */
+		uint32_t retry_us;
+	} backlog;
 };
 
 struct priv_vc {
@@ -138,6 +158,7 @@ static void dump_vty(const struct gprs_ns2_vc_bind *bind, struct vty *vty, bool 
 static void free_bind(struct gprs_ns2_vc_bind *bind)
 {
 	struct priv_bind *priv;
+	struct msgb *msg, *msg2;
 
 	OSMO_ASSERT(gprs_ns2_is_fr_bind(bind));
 	if (!bind)
@@ -147,8 +168,13 @@ static void free_bind(struct gprs_ns2_vc_bind *bind)
 
 	OSMO_ASSERT(llist_empty(&bind->nsvc));
 
+	osmo_timer_del(&priv->backlog.timer);
+	llist_for_each_entry_safe(msg, msg2, &priv->backlog.list, list) {
+		msgb_free(msg);
+	}
+
 	osmo_fr_link_free(priv->link);
-	osmo_fd_close(&priv->wqueue.bfd);
+	osmo_fd_close(&priv->backlog.ofd);
 	talloc_free(priv);
 }
 
@@ -200,15 +226,21 @@ int gprs_ns2_find_vc_by_dlci(struct gprs_ns2_vc_bind *bind,
 }
 
 /* PDU from the network interface towards the fr layer (upwards) */
-static int handle_netif_read(struct osmo_fd *bfd)
+static int fr_netif_ofd_cb(struct osmo_fd *bfd, uint32_t what)
 {
 	struct gprs_ns2_vc_bind *bind = bfd->data;
 	struct priv_bind *priv = bind->priv;
-	struct msgb *msg = msgb_alloc(NS_ALLOC_SIZE, "Gb/NS/FR/GRE Rx");
+	struct msgb *msg;
 	struct sockaddr_ll sll;
 	socklen_t sll_len = sizeof(sll);
 	int rc = 0;
 
+	/* we only handle read here. write to AF_PACKET sockets cannot be triggered
+	 * by select or poll, see OS#4995 */
+	if (!(what & OSMO_FD_READ))
+		return 0;
+
+	msg = msgb_alloc(NS_ALLOC_SIZE, "Gb/NS/FR/GRE Rx");
 	if (!msg)
 		return -ENOMEM;
 
@@ -245,18 +277,35 @@ static int fr_dlci_rx_cb(void *cb_data, struct msgb *msg)
 	return rc;
 }
 
-static int handle_netif_write(struct osmo_fd *ofd, struct msgb *msg)
+static int fr_netif_write_one(struct gprs_ns2_vc_bind *bind, struct msgb *msg)
 {
-	struct gprs_ns2_vc_bind *bind = ofd->data;
+	struct priv_bind *priv = bind->priv;
+	unsigned int len = msgb_length(msg);
 	int rc;
 
-	rc = write(ofd->fd, msgb_data(msg), msgb_length(msg));
-	/* write_queue expects a "-errno" type return value in case of failure */
-	if (rc == -1) {
-		LOGBIND(bind, LOGL_ERROR, "error during write to AF_PACKET: %s\n", strerror(errno));
-		return -errno;
-	} else
-		return rc;
+	/* estimate the retry time based on the data rate it takes to transmit */
+	priv->backlog.retry_us = (BIT_DURATION_NS * 8 * len) / 1000;
+
+	rc = write(priv->backlog.ofd.fd, msgb_data(msg), len);
+	if (rc == len) {
+		msgb_free(msg);
+		return 0;
+	} else if (rc < 0) {
+		/* don't free, the caller might want to re-transmit */
+		switch (errno) {
+		case EAGAIN:
+		case ENOBUFS:
+			return -errno;
+		default:
+			LOGBIND(bind, LOGL_ERROR, "error during write to AF_PACKET: %s\n", strerror(errno));
+			return -errno;
+		}
+	} else {
+		/* short write */
+		LOGBIND(bind, LOGL_ERROR, "short write on AF_PACKET: %d < %d\n", rc, len);
+		msgb_free(msg);
+		return 0;
+	}
 }
 
 /*! determine if given bind is for FR-GRE encapsulation. */
@@ -274,16 +323,108 @@ static int fr_vc_sendmsg(struct gprs_ns2_vc *nsvc, struct msgb *msg)
 	return osmo_fr_tx_dlc(msg);
 }
 
+static void enqueue_at_head(struct gprs_ns2_vc_bind *bind, struct msgb *msg)
+{
+	struct priv_bind *priv = bind->priv;
+	llist_add(&msg->list, &priv->backlog.list);
+	osmo_timer_schedule(&priv->backlog.timer, 0, priv->backlog.retry_us);
+}
+
+static void enqueue_at_tail(struct gprs_ns2_vc_bind *bind, struct msgb *msg)
+{
+	struct priv_bind *priv = bind->priv;
+	llist_add_tail(&msg->list, &priv->backlog.list);
+	osmo_timer_schedule(&priv->backlog.timer, 0, priv->backlog.retry_us);
+}
+
+#define LMI_Q933A_DLCI 0
+
+/* enqueue to backlog (LMI, signaling) or drop (userdata msg) */
+static void backlog_enqueue_or_free(struct gprs_ns2_vc_bind *bind, struct msgb *msg)
+{
+	uint8_t dlci = msg->data[0];
+	uint8_t ns_pdu_type;
+	uint16_t bvci;
+
+	if (msgb_length(msg) < 1)
+		goto out_free;
+
+	/* we want to enqueue only Q.933 LMI traffic or NS signaling; NOT user traffic */
+	switch (dlci) {
+	case LMI_Q933A_DLCI:
+		/* enqueue Q.933 LMI at head of queue */
+		enqueue_at_head(bind, msg);
+		return;
+	default:
+		if (msgb_length(msg) < 3)
+			break;
+		ns_pdu_type = msg->data[2];
+		switch (ns_pdu_type) {
+		case NS_PDUT_UNITDATA:
+			if (msgb_length(msg) < 6)
+				break;
+			bvci = osmo_load16be(msg->data + 4);
+			/* enqueue BVCI=0 traffic at tail of queue */
+			if (bvci == BVCI_SIGNALLING) {
+				enqueue_at_tail(bind, msg);
+				return;
+			}
+			break;
+		default:
+			/* enqueue NS signaling traffic at head of queue */
+			enqueue_at_head(bind, msg);
+			return;
+		}
+		break;
+	}
+
+out_free:
+	/* drop everything that is not LMI, NS-signaling or BVCI-0 */
+	msgb_free(msg);
+}
+
+static void fr_backlog_timer_cb(void *data)
+{
+	struct gprs_ns2_vc_bind *bind = data;
+	struct priv_bind *priv = bind->priv;
+	int i, rc;
+
+	/* attempt to send up to 10 messages in every timer */
+	for (i = 0; i < 10; i++) {
+		struct msgb *msg = msgb_dequeue(&priv->backlog.list);
+		if (!msg)
+			break;
+
+		rc = fr_netif_write_one(bind, msg);
+		if (rc < 0) {
+			/* re-add at head of list */
+			llist_add(&msg->list, &priv->backlog.list);
+			break;
+		}
+	}
+
+	/* re-start timer if we still have data in the queue */
+	if (!llist_empty(&priv->backlog.list))
+		osmo_timer_schedule(&priv->backlog.timer, 0, priv->backlog.retry_us);
+}
+
 /* PDU from the frame relay layer towards the network interface (downwards) */
 int fr_tx_cb(void *data, struct msgb *msg)
 {
 	struct gprs_ns2_vc_bind *bind = data;
 	struct priv_bind *priv = bind->priv;
+	int rc;
 
-	if (osmo_wqueue_enqueue(&priv->wqueue, msg)) {
-		LOGBIND(bind, LOGL_ERROR, "frame relay %s: failed to enqueue message\n", priv->netif);
-		msgb_free(msg);
-		return -EINVAL;
+	if (llist_empty(&priv->backlog.list)) {
+		/* attempt to transmit right now */
+		rc = fr_netif_write_one(bind, msg);
+		if (rc < 0) {
+			/* enqueue to backlog in case it fails */
+			backlog_enqueue_or_free(bind, msg);
+		}
+	} else {
+		/* enqueue to backlog */
+		backlog_enqueue_or_free(bind, msg);
 	}
 
 	return 0;
@@ -643,11 +784,11 @@ int gprs_ns2_fr_bind(struct gprs_ns2_inst *nsi,
 	rc = open_socket(priv->ifindex, bind);
 	if (rc < 0)
 		goto err_fr;
-	osmo_wqueue_init(&priv->wqueue, 10);
-	priv->wqueue.write_cb = handle_netif_write;
-	priv->wqueue.read_cb = handle_netif_read;
-	osmo_fd_setup(&priv->wqueue.bfd, rc, OSMO_FD_READ, osmo_wqueue_bfd_cb, bind, 0);
-	rc = osmo_fd_register(&priv->wqueue.bfd);
+	INIT_LLIST_HEAD(&priv->backlog.list);
+	priv->backlog.retry_us = 2500; /* start with some non-zero value; this corrsponds to 496 bytes */
+	osmo_timer_setup(&priv->backlog.timer, fr_backlog_timer_cb, bind);
+	osmo_fd_setup(&priv->backlog.ofd, rc, OSMO_FD_READ, fr_netif_ofd_cb, bind, 0);
+	rc = osmo_fd_register(&priv->backlog.ofd);
 	if (rc < 0)
 		goto err_fd;
 
@@ -667,7 +808,7 @@ int gprs_ns2_fr_bind(struct gprs_ns2_inst *nsi,
 	return rc;
 
 err_fd:
-	close(priv->wqueue.bfd.fd);
+	close(priv->backlog.ofd.fd);
 err_fr:
 	osmo_fr_link_free(fr_link);
 err_priv:
