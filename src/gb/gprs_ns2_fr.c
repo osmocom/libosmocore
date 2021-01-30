@@ -340,7 +340,7 @@ static void enqueue_at_tail(struct gprs_ns2_vc_bind *bind, struct msgb *msg)
 #define LMI_Q933A_DLCI 0
 
 /* enqueue to backlog (LMI, signaling) or drop (userdata msg) */
-static void backlog_enqueue_or_free(struct gprs_ns2_vc_bind *bind, struct msgb *msg)
+static int backlog_enqueue_or_free(struct gprs_ns2_vc_bind *bind, struct msgb *msg)
 {
 	uint8_t dlci = msg->data[0];
 	uint8_t ns_pdu_type;
@@ -354,7 +354,7 @@ static void backlog_enqueue_or_free(struct gprs_ns2_vc_bind *bind, struct msgb *
 	case LMI_Q933A_DLCI:
 		/* enqueue Q.933 LMI at head of queue */
 		enqueue_at_head(bind, msg);
-		return;
+		return 0;
 	default:
 		if (msgb_length(msg) < 3)
 			break;
@@ -367,13 +367,13 @@ static void backlog_enqueue_or_free(struct gprs_ns2_vc_bind *bind, struct msgb *
 			/* enqueue BVCI=0 traffic at tail of queue */
 			if (bvci == BVCI_SIGNALLING) {
 				enqueue_at_tail(bind, msg);
-				return;
+				return 0;
 			}
 			break;
 		default:
 			/* enqueue NS signaling traffic at head of queue */
 			enqueue_at_head(bind, msg);
-			return;
+			return 0;
 		}
 		break;
 	}
@@ -381,6 +381,7 @@ static void backlog_enqueue_or_free(struct gprs_ns2_vc_bind *bind, struct msgb *
 out_free:
 	/* drop everything that is not LMI, NS-signaling or BVCI-0 */
 	msgb_free(msg);
+	return -1;
 }
 
 static void fr_backlog_timer_cb(void *data)
@@ -420,11 +421,11 @@ int fr_tx_cb(void *data, struct msgb *msg)
 		rc = fr_netif_write_one(bind, msg);
 		if (rc < 0) {
 			/* enqueue to backlog in case it fails */
-			backlog_enqueue_or_free(bind, msg);
+			return backlog_enqueue_or_free(bind, msg);
 		}
 	} else {
 		/* enqueue to backlog */
-		backlog_enqueue_or_free(bind, msg);
+		return backlog_enqueue_or_free(bind, msg);
 	}
 
 	return 0;
