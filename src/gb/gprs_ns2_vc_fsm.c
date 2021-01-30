@@ -204,6 +204,7 @@ static void alive_timeout_handler(void *data)
 		osmo_timer_schedule(&priv->alive.timer, nsi->timeout[NS_TOUT_TNS_ALIVE], 0);
 		break;
 	case NS_TOUT_TNS_ALIVE:
+		rate_ctr_inc(&priv->nsvc->ctrg->ctr[NS_CTR_LOST_ALIVE]);
 		priv->alive.N++;
 
 		if (priv->alive.N <= nsi->timeout[NS_TOUT_TNS_ALIVE_RETRIES]) {
@@ -296,8 +297,10 @@ static void ns2_st_blocked_onenter(struct osmo_fsm_inst *fi, uint32_t old_state)
 {
 	struct gprs_ns2_vc_priv *priv = fi->priv;
 
-	if (old_state != GPRS_NS2_ST_BLOCKED)
+	if (old_state != GPRS_NS2_ST_BLOCKED) {
 		priv->N = 0;
+		rate_ctr_inc(&priv->nsvc->ctrg->ctr[NS_CTR_BLOCKED]);
+	}
 
 	if (priv->om_blocked) {
 		/* we are already blocked after a RESET */
@@ -480,6 +483,7 @@ static int ns2_vc_fsm_timer_cb(struct osmo_fsm_inst *fi)
 	switch (fi->state) {
 	case GPRS_NS2_ST_RESET:
 		if (priv->initiate_reset) {
+			rate_ctr_inc(&priv->nsvc->ctrg->ctr[NS_CTR_LOST_RESET]);
 			priv->N++;
 			if (priv->N <= nsi->timeout[NS_TOUT_TNS_RESET_RETRIES]) {
 				osmo_fsm_inst_state_chg(fi, GPRS_NS2_ST_RESET, nsi->timeout[NS_TOUT_TNS_RESET], 0);
