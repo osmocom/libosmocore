@@ -168,6 +168,9 @@ int ns2_validate(struct gprs_ns2_vc *nsvc,
 
 static int ns_vc_tx(struct gprs_ns2_vc *nsvc, struct msgb *msg)
 {
+	rate_ctr_inc(&nsvc->ctrg->ctr[NS_CTR_PKTS_OUT]);
+	rate_ctr_add(&nsvc->ctrg->ctr[NS_CTR_BYTES_OUT], msgb_length(msg));
+
 	return nsvc->bind->send_vc(nsvc, msg);
 }
 

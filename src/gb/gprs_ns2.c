@@ -1053,6 +1053,9 @@ int ns2_recv_vc(struct gprs_ns2_vc *nsvc,
 	log_set_context(LOG_CTX_GB_NSE, nsvc->nse);
 	log_set_context(LOG_CTX_GB_NSVC, nsvc);
 
+	rate_ctr_inc(&nsvc->ctrg->ctr[NS_CTR_PKTS_IN]);
+	rate_ctr_add(&nsvc->ctrg->ctr[NS_CTR_BYTES_IN], msg->len);
+
 	if (msg->len < sizeof(struct gprs_ns_hdr))
 		return -EINVAL;
 
