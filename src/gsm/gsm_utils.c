@@ -325,12 +325,13 @@ int gsm_septet_pack(uint8_t *result, const uint8_t *rdata, size_t septet_len, ui
 	int i = 0, z = 0;
 	uint8_t cb, nb;
 	int shift = 0;
-	uint8_t *data = calloc(septet_len + 1, sizeof(uint8_t));
+	uint8_t *data = malloc(septet_len + 1);
 
 	if (padding) {
 		shift = 7 - padding;
 		/* the first zero is needed for padding */
 		memcpy(data + 1, rdata, septet_len);
+		data[0] = 0x00;
 		septet_len++;
 	} else
 		memcpy(data, rdata, septet_len);
@@ -384,7 +385,7 @@ int gsm_7bit_encode_n(uint8_t *result, size_t n, const char *data, int *octets)
 	size_t max_septets = n * 8 / 7;
 
 	/* prepare for the worst case, every character expanding to two bytes */
-	uint8_t *rdata = calloc(strlen(data) * 2, sizeof(uint8_t));
+	uint8_t *rdata = malloc(strlen(data) * 2);
 	y = gsm_septet_encode(rdata, data);
 
 	if (y > max_septets) {
