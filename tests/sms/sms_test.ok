@@ -21,20 +21,15 @@ Result: len(12) data(14 d0 4f 78 d9 2d 9c 0e c3 e2 31 19 )
 
 Running test_enc_large_msg
 gsm_7bit_encode_n(len=2048) processed 2048 septets (expected 2048): OK
-gsm_7bit_encode_n(len=2048) used 0 octets in the buffer (expected 1792): FAIL
-	Unexpected chunk at enc_buf[0:7]: 00 00 00 00 00 00 00 
+gsm_7bit_encode_n(len=2048) used 1792 octets in the buffer (expected 1792): OK
 gsm_7bit_encode_n(len=1024) processed 1024 septets (expected 1024): OK
-gsm_7bit_encode_n(len=1024) used 0 octets in the buffer (expected 896): FAIL
-	Unexpected chunk at enc_buf[0:7]: 00 00 00 00 00 00 00 
+gsm_7bit_encode_n(len=1024) used 896 octets in the buffer (expected 896): OK
 gsm_7bit_encode_n(len=555) processed 555 septets (expected 555): OK
-gsm_7bit_encode_n(len=555) used 38 octets in the buffer (expected 486): FAIL
-	Unexpected chunk at enc_buf[35:6]: c1 60 10 00 00 00 
+gsm_7bit_encode_n(len=555) used 486 octets in the buffer (expected 486): OK
 gsm_7bit_encode_n(len=512) processed 512 septets (expected 512): OK
-gsm_7bit_encode_n(len=512) used 0 octets in the buffer (expected 448): FAIL
-	Unexpected chunk at enc_buf[0:7]: 00 00 00 00 00 00 00 
+gsm_7bit_encode_n(len=512) used 448 octets in the buffer (expected 448): OK
 gsm_7bit_encode_n(len=260) processed 260 septets (expected 260): OK
-gsm_7bit_encode_n(len=260) used 4 octets in the buffer (expected 228): FAIL
-	Unexpected chunk at enc_buf[0:6]: c1 60 30 08 00 00 
+gsm_7bit_encode_n(len=260) used 228 octets in the buffer (expected 228): OK
 gsm_7bit_encode_n(len=255) processed 255 septets (expected 255): OK
 gsm_7bit_encode_n(len=255) used 224 octets in the buffer (expected 224): OK
 gsm_7bit_encode_n(len=250) processed 250 septets (expected 250): OK

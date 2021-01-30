@@ -384,7 +384,7 @@ int main(int argc, char** argv)
 	memcpy(tmp, septet_data, concatenated_part1_septet_length);
 
 	/* In our case: test_multiple_decode[0].ud_hdr_ind equals number of padding bits*/
-	octet_length = gsm_septets2octets(coded, tmp, concatenated_part1_septet_length, test_multiple_encode[0].ud_hdr_ind);
+	octet_length = gsm_septet_pack(coded, tmp, concatenated_part1_septet_length, test_multiple_encode[0].ud_hdr_ind);
 
 	/* copy header */
 	memset(tmp, 0x42, sizeof(tmp));
@@ -402,7 +402,7 @@ int main(int argc, char** argv)
 	memcpy(tmp, septet_data + concatenated_part1_septet_length, concatenated_part2_septet_length);
 
 	/* In our case: test_multiple_decode[1].ud_hdr_ind equals number of padding bits*/
-	octet_length = gsm_septets2octets(coded, tmp, concatenated_part2_septet_length, test_multiple_encode[1].ud_hdr_ind);
+	octet_length = gsm_septet_pack(coded, tmp, concatenated_part2_septet_length, test_multiple_encode[1].ud_hdr_ind);
 
 	/* copy header */
 	memset(tmp, 0x42, sizeof(tmp));

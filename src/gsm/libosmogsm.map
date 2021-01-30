@@ -478,6 +478,7 @@ osmo_dump_gsmtime_c;
 
 gsm_milenage;
 gsm_septet_encode;
+gsm_septet_pack;
 gsm_septets2octets;
 
 lapd_dl_exit;

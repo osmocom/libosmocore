@@ -324,7 +324,7 @@ int gsm_septet_encode(uint8_t *result, const char *data)
  *  \param[in] septet_len Length of \a rdata
  *  \param[in] padding padding bits at start
  *  \returns number of bytes used in \a result */
-int gsm_septets2octets(uint8_t *result, const uint8_t *rdata, uint8_t septet_len, uint8_t padding)
+int gsm_septet_pack(uint8_t *result, const uint8_t *rdata, size_t septet_len, uint8_t padding)
 {
 	int i = 0, z = 0;
 	uint8_t cb, nb;
@@ -369,6 +369,12 @@ int gsm_septets2octets(uint8_t *result, const uint8_t *rdata, uint8_t septet_len
 	return z;
 }
 
+/*! Backwards compatibility wrapper for gsm_septets_pack(), deprecated. */
+int gsm_septets2octets(uint8_t *result, const uint8_t *rdata, uint8_t septet_len, uint8_t padding)
+{
+	return gsm_septet_pack(result, rdata, septet_len, padding);
+}
+
 /*! GSM 7-bit alphabet TS 03.38 6.2.1 Character packing
  *  \param[out] result Caller-provided output buffer
  *  \param[in] n Maximum length of \a result in bytes
@@ -393,7 +399,7 @@ int gsm_7bit_encode_n(uint8_t *result, size_t n, const char *data, int *octets)
 		y = max_septets;
 	}
 
-	o = gsm_septets2octets(result, rdata, y, 0);
+	o = gsm_septet_pack(result, rdata, y, 0);
 
 	if (octets)
 		*octets = o;
