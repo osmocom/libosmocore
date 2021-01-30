@@ -166,6 +166,11 @@ int ns2_validate(struct gprs_ns2_vc *nsvc,
 }
 
 
+static int ns_vc_tx(struct gprs_ns2_vc *nsvc, struct msgb *msg)
+{
+	return nsvc->bind->send_vc(nsvc, msg);
+}
+
 /* transmit functions */
 static int ns2_tx_simple(struct gprs_ns2_vc *nsvc, uint8_t pdu_type)
 {
@@ -183,7 +188,7 @@ static int ns2_tx_simple(struct gprs_ns2_vc *nsvc, uint8_t pdu_type)
 
 	nsh->pdu_type = pdu_type;
 
-	return nsvc->bind->send_vc(nsvc, msg);
+	return ns_vc_tx(nsvc, msg);
 }
 
 /*! Transmit a NS-BLOCK on a given NS-VC.
@@ -216,7 +221,7 @@ int ns2_tx_block(struct gprs_ns2_vc *nsvc, uint8_t cause)
 	msgb_tvlv_put(msg, NS_IE_CAUSE, 1, &cause);
 	msgb_tvlv_put(msg, NS_IE_VCI, 2, (uint8_t *) &nsvci);
 
-	return nsvc->bind->send_vc(nsvc, msg);
+	return ns_vc_tx(nsvc, msg);
 }
 
 /*! Transmit a NS-BLOCK-ACK on a given NS-VC.
@@ -245,7 +250,7 @@ int ns2_tx_block_ack(struct gprs_ns2_vc *nsvc)
 
 	msgb_tvlv_put(msg, NS_IE_VCI, 2, (uint8_t *) &nsvci);
 
-	return nsvc->bind->send_vc(nsvc, msg);
+	return ns_vc_tx(nsvc, msg);
 }
 
 /*! Transmit a NS-RESET on a given NS-VC.
@@ -278,7 +283,7 @@ int ns2_tx_reset(struct gprs_ns2_vc *nsvc, uint8_t cause)
 	msgb_tvlv_put(msg, NS_IE_VCI, 2, (uint8_t *) &nsvci);
 	msgb_tvlv_put(msg, NS_IE_NSEI, 2, (uint8_t *) &nsei);
 
-	return nsvc->bind->send_vc(nsvc, msg);
+	return ns_vc_tx(nsvc, msg);
 }
 
 /*! Transmit a NS-RESET-ACK on a given NS-VC.
@@ -313,7 +318,7 @@ int ns2_tx_reset_ack(struct gprs_ns2_vc *nsvc)
 	msgb_tvlv_put(msg, NS_IE_VCI, 2, (uint8_t *)&nsvci);
 	msgb_tvlv_put(msg, NS_IE_NSEI, 2, (uint8_t *)&nsei);
 
-	return nsvc->bind->send_vc(nsvc, msg);
+	return ns_vc_tx(nsvc, msg);
 }
 
 /*! Transmit a NS-UNBLOCK on a given NS-VC.
@@ -399,7 +404,7 @@ int ns2_tx_unit_data(struct gprs_ns2_vc *nsvc,
 	nsh->data[1] = bvci >> 8;
 	nsh->data[2] = bvci & 0xff;
 
-	return nsvc->bind->send_vc(nsvc, msg);
+	return ns_vc_tx(nsvc, msg);
 }
 
 /*! Transmit a NS-STATUS on a given NS-VC.
@@ -454,7 +459,7 @@ int ns2_tx_status(struct gprs_ns2_vc *nsvc, uint8_t cause,
 	if (cause == NS_CAUSE_BVCI_UNKNOWN)
 		msgb_tvlv_put(msg, NS_IE_VCI, 2, (uint8_t *)&bvci);
 
-	return nsvc->bind->send_vc(nsvc, msg);
+	return ns_vc_tx(nsvc, msg);
 }
 
 
@@ -514,7 +519,7 @@ int ns2_tx_sns_ack(struct gprs_ns2_vc *nsvc, uint8_t trans_id, uint8_t *cause,
 			      (const uint8_t *)ip6_elems);
 	}
 
-	return nsvc->bind->send_vc(nsvc, msg);
+	return ns_vc_tx(nsvc, msg);
 }
 
 /*! Encode + Transmit a SNS-CONFIG as per Section 9.3.4.
@@ -569,7 +574,7 @@ int ns2_tx_sns_config(struct gprs_ns2_vc *nsvc, bool end_flag,
 			      (const uint8_t *)ip6_elems);
 	}
 
-	return nsvc->bind->send_vc(nsvc, msg);
+	return ns_vc_tx(nsvc, msg);
 }
 
 /*! Encode + Transmit a SNS-CONFIG-ACK as per Section 9.3.5.
@@ -608,7 +613,7 @@ int ns2_tx_sns_config_ack(struct gprs_ns2_vc *nsvc, uint8_t *cause)
 	if (cause)
 		msgb_tvlv_put(msg, NS_IE_CAUSE, 1, cause);
 
-	return nsvc->bind->send_vc(nsvc, msg);
+	return ns_vc_tx(nsvc, msg);
 }
 
 
@@ -657,7 +662,7 @@ int ns2_tx_sns_size(struct gprs_ns2_vc *nsvc, bool reset_flag, uint16_t max_nr_n
 	if (ip6_ep_nr >= 0)
 		msgb_tv16_put(msg, NS_IE_IPv6_EP_NR, ip6_ep_nr);
 
-	return nsvc->bind->send_vc(nsvc, msg);
+	return ns_vc_tx(nsvc, msg);
 }
 
 /*! Encode + Transmit a SNS-SIZE-ACK as per Section 9.3.8.
@@ -692,7 +697,7 @@ int ns2_tx_sns_size_ack(struct gprs_ns2_vc *nsvc, uint8_t *cause)
 	if (cause)
 		msgb_tvlv_put(msg, NS_IE_CAUSE, 1, cause);
 
-	return nsvc->bind->send_vc(nsvc, msg);
+	return ns_vc_tx(nsvc, msg);
 }
 
 
