@@ -373,6 +373,9 @@ static void ns2_st_unblocked_on_enter(struct osmo_fsm_inst *fi, uint32_t old_sta
 	struct gprs_ns2_vc *nsvc = priv->nsvc;
 	struct gprs_ns2_nse *nse = nsvc->nse;
 
+	if (old_state != GPRS_NS2_ST_UNBLOCKED)
+		rate_ctr_inc(&nsvc->ctrg->ctr[NS_CTR_UNBLOCKED]);
+
 	priv->accept_unitdata = true;
 	ns2_nse_notify_unblocked(nsvc, true);
 	ns2_prim_status_ind(nse, nsvc, 0, GPRS_NS2_AFF_CAUSE_VC_RECOVERY);

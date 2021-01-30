@@ -167,6 +167,7 @@ static const struct rate_ctr_desc nsvc_ctr_description[] = {
 	[NS_CTR_BYTES_OUT]	= { "bytes:out",	"Bytes at NS Level    (Out)" },
 	[NS_CTR_BYTES_OUT_DROP]	= { "bytes:out:drop",	"Dropped Bytes        (Out)" },
 	[NS_CTR_BLOCKED]	= { "blocked",		"NS-VC Block count         " },
+	[NS_CTR_UNBLOCKED]	= { "unblocked",	"NS-VC Unblock count       " },
 	[NS_CTR_DEAD] 		= { "dead",		"NS-VC gone dead count     " },
 	[NS_CTR_REPLACED]	= { "replaced",		"NS-VC replaced other count" },
 	[NS_CTR_NSEI_CHG]	= { "nsei-chg",		"NS-VC changed NSEI count  " },
