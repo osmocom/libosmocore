@@ -46,23 +46,6 @@
 		LOGNSVC(nsvc, LOGL_DEBUG, "invalid packet %s with SNS\n", reason);	\
 	} while (0)
 
-enum ns_ctr {
-	NS_CTR_PKTS_IN,
-	NS_CTR_PKTS_OUT,
-	NS_CTR_BYTES_IN,
-	NS_CTR_BYTES_OUT,
-	NS_CTR_BLOCKED,
-	NS_CTR_DEAD,
-	NS_CTR_REPLACED,
-	NS_CTR_NSEI_CHG,
-	NS_CTR_INV_VCI,
-	NS_CTR_INV_NSEI,
-	NS_CTR_LOST_ALIVE,
-	NS_CTR_LOST_RESET,
-};
-
-
-
 static int ns2_validate_reset(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp, uint8_t *cause)
 {
 	if (!TLVP_PRES_LEN(tp, NS_IE_CAUSE, 1) ||

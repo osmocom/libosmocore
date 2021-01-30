@@ -85,6 +85,20 @@ enum ns2_cs {
 	NS2_CS_ERROR,       /*!< Failed to process message */
 };
 
+enum ns_ctr {
+	NS_CTR_PKTS_IN,
+	NS_CTR_PKTS_OUT,
+	NS_CTR_BYTES_IN,
+	NS_CTR_BYTES_OUT,
+	NS_CTR_BLOCKED,
+	NS_CTR_DEAD,
+	NS_CTR_REPLACED,
+	NS_CTR_NSEI_CHG,
+	NS_CTR_INV_VCI,
+	NS_CTR_INV_NSEI,
+	NS_CTR_LOST_ALIVE,
+	NS_CTR_LOST_RESET,
+};
 
 #define NSE_S_BLOCKED	0x0001
 #define NSE_S_ALIVE	0x0002

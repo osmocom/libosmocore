@@ -160,18 +160,18 @@ const struct value_string gprs_ns2_cause_strs[] = {
 };
 
 static const struct rate_ctr_desc nsvc_ctr_description[] = {
-	{ "packets:in", "Packets at NS Level  ( In)" },
-	{ "packets:out","Packets at NS Level  (Out)" },
-	{ "bytes:in",	"Bytes at NS Level    ( In)" },
-	{ "bytes:out",	"Bytes at NS Level    (Out)" },
-	{ "blocked",	"NS-VC Block count         " },
-	{ "dead",	"NS-VC gone dead count     " },
-	{ "replaced",	"NS-VC replaced other count" },
-	{ "nsei-chg",	"NS-VC changed NSEI count  " },
-	{ "inv-nsvci",	"NS-VCI was invalid count  " },
-	{ "inv-nsei",	"NSEI was invalid count    " },
-	{ "lost:alive",	"ALIVE ACK missing count   " },
-	{ "lost:reset",	"RESET ACK missing count   " },
+	[NS_CTR_PKTS_IN]	= { "packets:in", 	"Packets at NS Level  ( In)" },
+	[NS_CTR_PKTS_OUT] 	= { "packets:out",	"Packets at NS Level  (Out)" },
+	[NS_CTR_BYTES_IN]	= { "bytes:in",		"Bytes at NS Level    ( In)" },
+	[NS_CTR_BYTES_OUT]	= { "bytes:out",	"Bytes at NS Level    (Out)" },
+	[NS_CTR_BLOCKED]	= { "blocked",		"NS-VC Block count         " },
+	[NS_CTR_DEAD] 		= { "dead",		"NS-VC gone dead count     " },
+	[NS_CTR_REPLACED]	= { "replaced",		"NS-VC replaced other count" },
+	[NS_CTR_NSEI_CHG]	= { "nsei-chg",		"NS-VC changed NSEI count  " },
+	[NS_CTR_INV_VCI]	= { "inv-nsvci",	"NS-VCI was invalid count  " },
+	[NS_CTR_INV_NSEI]	= { "inv-nsei",		"NSEI was invalid count    " },
+	[NS_CTR_LOST_ALIVE]	= { "lost:alive",	"ALIVE ACK missing count   " },
+	[NS_CTR_LOST_RESET]	= { "lost:reset",	"RESET ACK missing count   " },
 };
 
 static const struct rate_ctr_group_desc nsvc_ctrg_desc = {
@@ -184,7 +184,7 @@ static const struct rate_ctr_group_desc nsvc_ctrg_desc = {
 
 
 static const struct osmo_stat_item_desc nsvc_stat_description[] = {
-	{ "alive.delay", "ALIVE response time        ", "ms", 16, 0 },
+	[NS_STAT_ALIVE_DELAY] = { "alive.delay", "ALIVE response time        ", "ms", 16, 0 },
 };
 
 static const struct osmo_stat_item_group_desc nsvc_statg_desc = {
