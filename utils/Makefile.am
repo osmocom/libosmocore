@@ -29,7 +29,7 @@ endif
 if ENABLE_EXT_TESTS
 if ENABLE_GB
 noinst_PROGRAMS += osmo-ns-dummy
-osmo_ns_dummy_SOURCES = osmo-ns-dummy.c
+osmo_ns_dummy_SOURCES = osmo-ns-dummy.c osmo-ns-dummy-vty.c
 osmo_ns_dummy_LDADD = $(LDADD) $(TALLOC_LIBS) \
 			$(top_builddir)/src/gb/libosmogb.la \
 			$(top_builddir)/src/vty/libosmovty.la \

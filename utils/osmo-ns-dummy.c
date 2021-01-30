@@ -199,6 +199,7 @@ int bssgp_prim_cb(struct osmo_prim_hdr *oph, void *ctx)
 	return 0;
 }
 
+extern int nsdummy_vty_init(struct gprs_ns2_inst *nsi);
 
 int main (int argc, char *argv[])
 {
@@ -230,6 +231,7 @@ int main (int argc, char *argv[])
 	}
 
 	gprs_ns2_vty_init(nsi);
+	nsdummy_vty_init(nsi);
 	rc = vty_read_config_file(config_file, NULL);
 	if (rc < 0 && config_given) {
 		fprintf(stderr, "Failed to parse the config file: '%s'\n",
