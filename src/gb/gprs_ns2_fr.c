@@ -247,11 +247,15 @@ static int fr_dlci_rx_cb(void *cb_data, struct msgb *msg)
 
 static int handle_netif_write(struct osmo_fd *ofd, struct msgb *msg)
 {
-	int rc = write(ofd->fd, msgb_data(msg), msgb_length(msg));
+	struct gprs_ns2_vc_bind *bind = ofd->data;
+	int rc;
+
+	rc = write(ofd->fd, msgb_data(msg), msgb_length(msg));
 	/* write_queue expects a "-errno" type return value in case of failure */
-	if (rc == -1)
+	if (rc == -1) {
+		LOGBIND(bind, LOGL_ERROR, "error during write to AF_PACKET: %s\n", strerror(errno));
 		return -errno;
-	else
+	} else
 		return rc;
 }
 
