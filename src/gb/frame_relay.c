@@ -791,13 +791,13 @@ int osmo_fr_rx(struct msgb *msg)
 			msg->dst = dlc;
 			return dlc->rx_cb(dlc->cb_data, msg);
 		} else {
-			LOGPFRL(link, LOGL_NOTICE, "DLCI %u not yet active, discarding\n", dlci);
+			LOGPFRL(link, LOGL_NOTICE, "DLCI %u not yet active. Discarding Rx PDU\n", dlci);
 		}
 	} else {
 		if (link->unknown_dlc_rx_cb)
 			return link->unknown_dlc_rx_cb(link->unknown_dlc_rx_cb_data, msg);
 		else
-			LOGPFRL(link, LOGL_NOTICE, "DLCI %u doesn't exist, discarding\n", dlci);
+			LOGPFRL(link, LOGL_NOTICE, "DLCI %u doesn't exist. Discarding Rx PDU\n", dlci);
 	}
 
 out:
