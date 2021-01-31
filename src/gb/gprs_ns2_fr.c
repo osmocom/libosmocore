@@ -179,6 +179,17 @@ static void free_bind(struct gprs_ns2_vc_bind *bind)
 	talloc_free(priv);
 }
 
+static void fr_dlci_status_cb(struct osmo_fr_dlc *dlc, void *cb_data, bool active)
+{
+	struct gprs_ns2_vc *nsvc = cb_data;
+
+	if (active) {
+		ns2_vc_fsm_start(nsvc);
+	} else {
+		ns2_vc_force_unconfigured(nsvc);
+	}
+}
+
 static struct priv_vc *fr_alloc_vc(struct gprs_ns2_vc_bind *bind,
 				   struct gprs_ns2_vc *nsvc,
 				   uint16_t dlci)
@@ -200,6 +211,7 @@ static struct priv_vc *fr_alloc_vc(struct gprs_ns2_vc_bind *bind,
 
 	priv->dlc->cb_data = nsvc;
 	priv->dlc->rx_cb = fr_dlci_rx_cb;
+	priv->dlc->status_cb = fr_dlci_status_cb;
 
 	return priv;
 }
@@ -898,8 +910,6 @@ struct gprs_ns2_vc *gprs_ns2_fr_connect(struct gprs_ns2_vc_bind *bind,
 
 	nsvc->nsvci = nsvci;
 	nsvc->nsvci_is_valid = true;
-
-	ns2_vc_fsm_start(nsvc);
 
 	return nsvc;
 
