@@ -430,8 +430,12 @@ static void check_link_state(struct osmo_fr_link *link, bool valid)
 
 		LOGPFRL(link, LOGL_NOTICE, "Link recovered\n");
 		link->state = true;
-		if (link->role == FR_ROLE_USER_EQUIPMENT)
+		if (link->role == FR_ROLE_USER_EQUIPMENT) {
+			/* make sure the next STATUS ENQUIRY is for a full
+			 * status report to get the configred DLCs ASAP */
+			link->polling_count = 0;
 			return;
+		}
 
 		llist_for_each_entry(dlc, &link->dlc_list, list) {
 			if (!dlc->add && !dlc->del)
