@@ -274,6 +274,9 @@ struct gprs_ns2_vc *ns2_vc_alloc(struct gprs_ns2_vc_bind *bind,
 				 enum gprs_ns2_vc_mode vc_mode,
 				 const char *id);
 
+int ns2_bind_alloc(struct gprs_ns2_inst *nsi, const char *name,
+		   struct gprs_ns2_vc_bind **result);
+
 struct msgb *ns2_msgb_alloc(void);
 
 void ns2_sns_write_vty(struct vty *vty, const struct gprs_ns2_nse *nse);

@@ -315,11 +315,8 @@ int gprs_ns2_ip_bind(struct gprs_ns2_inst *nsi,
 	struct priv_bind *priv;
 	int rc;
 
-	if (!name)
+	if (local->u.sa.sa_family != AF_INET && local->u.sa.sa_family != AF_INET6)
 		return -EINVAL;
-
-	if (gprs_ns2_bind_by_name(nsi, name))
-		return -EALREADY;
 
 	bind = gprs_ns2_ip_bind_by_sockaddr(nsi, local);
 	if (bind) {
@@ -327,20 +324,9 @@ int gprs_ns2_ip_bind(struct gprs_ns2_inst *nsi,
 		return -EBUSY;
 	}
 
-	bind = talloc_zero(nsi, struct gprs_ns2_vc_bind);
-	if (!bind)
-		return -ENOSPC;
-
-	bind->name = talloc_strdup(bind, name);
-	if (!bind->name) {
-		talloc_free(bind);
-		return -ENOSPC;
-	}
-
-	if (local->u.sa.sa_family != AF_INET && local->u.sa.sa_family != AF_INET6) {
-		talloc_free(bind);
-		return -EINVAL;
-	}
+	rc = ns2_bind_alloc(nsi, name, &bind);
+	if (rc < 0)
+		return rc;
 
 	bind->driver = &vc_driver_ip;
 	bind->ll = GPRS_NS2_LL_UDP;
@@ -351,24 +337,21 @@ int gprs_ns2_ip_bind(struct gprs_ns2_inst *nsi,
 	bind->send_vc = nsip_vc_sendmsg;
 	bind->free_vc = free_vc;
 	bind->dump_vty = dump_vty;
-	bind->nsi = nsi;
 
 	priv = bind->priv = talloc_zero(bind, struct priv_bind);
 	if (!priv) {
-		talloc_free(bind);
+		gprs_ns2_free_bind(bind);
 		return -ENOSPC;
 	}
 	priv->fd.cb = nsip_fd_cb;
 	priv->fd.data = bind;
 	priv->addr = *local;
-	INIT_LLIST_HEAD(&bind->nsvc);
 
 	rc = osmo_sock_init_osa_ofd(&priv->fd, SOCK_DGRAM, IPPROTO_UDP,
 				 local, NULL,
 				 OSMO_SOCK_F_BIND);
 	if (rc < 0) {
-		talloc_free(priv);
-		talloc_free(bind);
+		gprs_ns2_free_bind(bind);
 		return rc;
 	}
 
@@ -382,7 +365,6 @@ int gprs_ns2_ip_bind(struct gprs_ns2_inst *nsi,
 				dscp, rc, errno);
 	}
 
-	llist_add(&bind->list, &nsi->binding);
 	if (result)
 		*result = bind;
 

@@ -1353,4 +1353,36 @@ int ns2_count_transfer_cap(struct gprs_ns2_nse *nse,
 	return transfer_cap;
 }
 
+/*! common allocation + low-level initialization of a bind. Called by vc-drivers */
+int ns2_bind_alloc(struct gprs_ns2_inst *nsi, const char *name,
+		   struct gprs_ns2_vc_bind **result)
+{
+	struct gprs_ns2_vc_bind *bind;
+
+	if (!name)
+		return -EINVAL;
+
+	if (gprs_ns2_bind_by_name(nsi, name))
+		return -EALREADY;
+
+	bind = talloc_zero(nsi, struct gprs_ns2_vc_bind);
+	if (!bind)
+		return -ENOSPC;
+
+	bind->name = talloc_strdup(bind, name);
+	if (!bind->name) {
+		talloc_free(bind);
+		return -ENOSPC;
+	}
+
+	bind->nsi = nsi;
+	INIT_LLIST_HEAD(&bind->nsvc);
+	llist_add(&bind->list, &nsi->binding);
+
+	if (result)
+		*result = bind;
+
+	return 0;
+}
+
 /*! @} */

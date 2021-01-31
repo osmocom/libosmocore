@@ -719,21 +719,15 @@ int gprs_ns2_fr_bind(struct gprs_ns2_inst *nsi,
 	struct osmo_fr_link *fr_link;
 	int rc = 0;
 
-	if (!name)
+	if (strlen(netif) > IFNAMSIZ)
 		return -EINVAL;
 
 	if (gprs_ns2_bind_by_name(nsi, name))
 		return -EALREADY;
 
-	bind = talloc_zero(nsi, struct gprs_ns2_vc_bind);
-	if (!bind)
-		return -ENOSPC;
-
-	bind->name = talloc_strdup(bind, name);
-	if (!bind->name) {
-		rc = -ENOSPC;
-		goto err_bind;
-	}
+	rc = ns2_bind_alloc(nsi, name, &bind);
+	if (rc < 0)
+		return rc;
 
 	bind->driver = &vc_driver_fr;
 	bind->ll = GPRS_NS2_LL_FR;
@@ -742,27 +736,19 @@ int gprs_ns2_fr_bind(struct gprs_ns2_inst *nsi,
 	bind->send_vc = fr_vc_sendmsg;
 	bind->free_vc = free_vc;
 	bind->dump_vty = dump_vty;
-	bind->nsi = nsi;
 	priv = bind->priv = talloc_zero(bind, struct priv_bind);
 	if (!priv) {
 		rc = -ENOSPC;
-		goto err_name;
+		goto err_bind;
 	}
 
-	if (strlen(netif) > IFNAMSIZ) {
-		rc = -EINVAL;
-		goto err_priv;
-	}
 	OSMO_STRLCPY_ARRAY(priv->netif, netif);
-
-	if (result)
-		*result = bind;
 
 	/* FIXME: move fd handling into socket.c */
 	fr_link = osmo_fr_link_alloc(fr_network, fr_role, netif);
 	if (!fr_link) {
 		rc = -EINVAL;
-		goto err_priv;
+		goto err_bind;
 	}
 
 	fr_link->tx_cb = fr_tx_cb;
@@ -793,9 +779,6 @@ int gprs_ns2_fr_bind(struct gprs_ns2_inst *nsi,
 	if (rc < 0)
 		goto err_fd;
 
-	INIT_LLIST_HEAD(&bind->nsvc);
-	llist_add(&bind->list, &nsi->binding);
-
 #ifdef ENABLE_LIBMNL
 	if (!nsi->linkmon_mnl)
 		nsi->linkmon_mnl = osmo_mnl_init(nsi, NETLINK_ROUTE, RTMGRP_LINK, linkmon_mnl_cb, nsi);
@@ -806,18 +789,17 @@ int gprs_ns2_fr_bind(struct gprs_ns2_inst *nsi,
 		linkmon_initial_dump(nsi->linkmon_mnl);
 #endif
 
+	if (result)
+		*result = bind;
+
 	return rc;
 
 err_fd:
 	close(priv->backlog.ofd.fd);
 err_fr:
 	osmo_fr_link_free(fr_link);
-err_priv:
-	talloc_free(priv);
-err_name:
-	talloc_free((char *)bind->name);
 err_bind:
-	talloc_free(bind);
+	gprs_ns2_free_bind(bind);
 
 	return rc;
 }

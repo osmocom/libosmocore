@@ -537,29 +537,22 @@ int gprs_ns2_frgre_bind(struct gprs_ns2_inst *nsi,
 			int dscp,
 			struct gprs_ns2_vc_bind **result)
 {
-	struct gprs_ns2_vc_bind *bind = talloc_zero(nsi, struct gprs_ns2_vc_bind);
+	struct gprs_ns2_vc_bind *bind;
 	struct priv_bind *priv;
 	int rc;
 
-	if (!name)
-		return -ENOSPC;
-
-	if (gprs_ns2_bind_by_name(nsi, name))
-		return -EALREADY;
-
-	if (!bind)
-		return -ENOSPC;
-
-	if (local->u.sa.sa_family != AF_INET && local->u.sa.sa_family != AF_INET6) {
-		talloc_free(bind);
+	if (local->u.sa.sa_family != AF_INET && local->u.sa.sa_family != AF_INET6)
 		return -EINVAL;
+
+	bind = gprs_ns2_bind_by_name(nsi, name);
+	if (bind) {
+		*result = bind;
+		return -EALREADY;
 	}
 
-	bind->name = talloc_strdup(bind, name);
-	if (!bind->name) {
-		talloc_free(bind);
-		return -ENOSPC;
-	}
+	rc = ns2_bind_alloc(nsi, name, &bind);
+	if (rc < 0)
+		return rc;
 
 	bind->driver = &vc_driver_frgre;
 	bind->ll = GPRS_NS2_LL_FR_GRE;
@@ -571,7 +564,7 @@ int gprs_ns2_frgre_bind(struct gprs_ns2_inst *nsi,
 
 	priv = bind->priv = talloc_zero(bind, struct priv_bind);
 	if (!priv) {
-		talloc_free(bind);
+		gprs_ns2_free_bind(bind);
 		return -ENOSPC;
 	}
 	priv->fd.cb = frgre_fd_cb;
@@ -579,14 +572,11 @@ int gprs_ns2_frgre_bind(struct gprs_ns2_inst *nsi,
 	priv->addr = *local;
 	INIT_LLIST_HEAD(&bind->nsvc);
 
-	llist_add(&bind->list, &nsi->binding);
-
 	rc = osmo_sock_init_osa_ofd(&priv->fd, SOCK_RAW, IPPROTO_GRE,
 				 local, NULL,
 				 OSMO_SOCK_F_BIND);
 	if (rc < 0) {
-		talloc_free(priv);
-		talloc_free(bind);
+		gprs_ns2_free_bind(bind);
 		return rc;
 	}
 

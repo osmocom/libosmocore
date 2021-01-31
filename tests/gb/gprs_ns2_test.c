@@ -104,20 +104,17 @@ static int vc_sendmsg(struct gprs_ns2_vc *nsvc, struct msgb *msg)
 
 static struct gprs_ns2_vc_bind *dummy_bind(struct gprs_ns2_inst *nsi, const char *name)
 {
-	struct gprs_ns2_vc_bind *bind = talloc_zero(nsi, struct gprs_ns2_vc_bind);
+	struct gprs_ns2_vc_bind *bind = NULL;
+	OSMO_ASSERT(ns2_bind_alloc(nsi, name, &bind) == 0);
 	OSMO_ASSERT(bind);
 
-	bind->name = talloc_strdup(bind, name);
 	bind->driver = &vc_driver_dummy;
 	bind->ll = GPRS_NS2_LL_UDP;
 	bind->transfer_capability = 42;
-	bind->nsi = nsi;
 	bind->send_vc = vc_sendmsg;
 	bind->priv = talloc_zero(bind, struct osmo_wqueue);
 	struct osmo_wqueue *queue = bind->priv;
 
-	INIT_LLIST_HEAD(&bind->nsvc);
-	llist_add(&bind->list, &nsi->binding);
 	osmo_wqueue_init(queue, 100);
 
 	return bind;
@@ -150,16 +147,13 @@ static struct gprs_ns2_vc *loopback_nsvc(struct gprs_ns2_vc_bind *bind, struct g
 /* a loop back bind to use the tx_ functions from gprs_ns2_message.c */
 static struct gprs_ns2_vc_bind *loopback_bind(struct gprs_ns2_inst *nsi, const char *name)
 {
-	struct gprs_ns2_vc_bind *bind = talloc_zero(nsi, struct gprs_ns2_vc_bind);
+	struct gprs_ns2_vc_bind *bind = NULL;
+	OSMO_ASSERT(ns2_bind_alloc(nsi, name, &bind) == 0)
 	OSMO_ASSERT(bind);
-	bind->name = talloc_strdup(bind, name);
 	bind->driver = &vc_driver_loopback;
 	bind->ll = GPRS_NS2_LL_UDP;
 	bind->transfer_capability = 99;
-	bind->nsi = nsi;
 	bind->send_vc = loopback_sendmsg;
-	INIT_LLIST_HEAD(&bind->nsvc);
-	llist_add(&bind->list, &nsi->binding);
 	return bind;
 }
 
