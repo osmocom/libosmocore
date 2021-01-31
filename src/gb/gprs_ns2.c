@@ -1367,12 +1367,12 @@ int ns2_bind_alloc(struct gprs_ns2_inst *nsi, const char *name,
 
 	bind = talloc_zero(nsi, struct gprs_ns2_vc_bind);
 	if (!bind)
-		return -ENOSPC;
+		return -ENOMEM;
 
 	bind->name = talloc_strdup(bind, name);
 	if (!bind->name) {
 		talloc_free(bind);
-		return -ENOSPC;
+		return -ENOMEM;
 	}
 
 	bind->nsi = nsi;

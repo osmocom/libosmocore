@@ -565,7 +565,7 @@ int gprs_ns2_frgre_bind(struct gprs_ns2_inst *nsi,
 	priv = bind->priv = talloc_zero(bind, struct priv_bind);
 	if (!priv) {
 		gprs_ns2_free_bind(bind);
-		return -ENOSPC;
+		return -ENOMEM;
 	}
 	priv->fd.cb = frgre_fd_cb;
 	priv->fd.data = bind;

@@ -738,7 +738,7 @@ int gprs_ns2_fr_bind(struct gprs_ns2_inst *nsi,
 	bind->dump_vty = dump_vty;
 	priv = bind->priv = talloc_zero(bind, struct priv_bind);
 	if (!priv) {
-		rc = -ENOSPC;
+		rc = -ENOMEM;
 		goto err_bind;
 	}
 
