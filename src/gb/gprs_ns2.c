@@ -508,17 +508,17 @@ struct gprs_ns2_vc *ns2_vc_alloc(struct gprs_ns2_vc_bind *bind, struct gprs_ns2_
 	nsvc->sig_weight = 1;
 	nsvc->data_weight = 1;
 
-	nsvc->ctrg = rate_ctr_group_alloc(nsvc, &nsvc_ctrg_desc, bind->nsi->rate_ctr_idx);
+	nsvc->ctrg = rate_ctr_group_alloc(nsvc, &nsvc_ctrg_desc, bind->nsi->nsvc_rate_ctr_idx);
 	if (!nsvc->ctrg) {
 		goto err;
 	}
-	nsvc->statg = osmo_stat_item_group_alloc(nsvc, &nsvc_statg_desc, bind->nsi->rate_ctr_idx);
+	nsvc->statg = osmo_stat_item_group_alloc(nsvc, &nsvc_statg_desc, bind->nsi->nsvc_rate_ctr_idx);
 	if (!nsvc->statg)
 		goto err_group;
 	if (!ns2_vc_fsm_alloc(nsvc, id, initiater))
 		goto err_statg;
 
-	bind->nsi->rate_ctr_idx++;
+	bind->nsi->nsvc_rate_ctr_idx++;
 
 	llist_add(&nsvc->list, &nse->nsvc);
 	llist_add(&nsvc->blist, &bind->nsvc);

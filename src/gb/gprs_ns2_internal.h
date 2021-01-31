@@ -128,7 +128,7 @@ struct gprs_ns2_inst {
 	uint16_t timeout[NS_TIMERS_COUNT];
 
 	/*! workaround for rate counter until rate counter accepts char str as index */
-	uint32_t rate_ctr_idx;
+	uint32_t nsvc_rate_ctr_idx;
 
 	/*! libmnl netlink socket for link state monitoring */
 	struct osmo_mnl *linkmon_mnl;
