@@ -1484,6 +1484,7 @@ DEFUN(show_nse, show_nse_cmd, "show ns (nsei|nsvc) <0-65535> [stats]",
 static int nsvc_force_unconf_cb(struct gprs_ns2_vc *nsvc, void *ctx)
 {
 	ns2_vc_force_unconfigured(nsvc);
+	ns2_vc_fsm_start(nsvc);
 	return 0;
 }
 
