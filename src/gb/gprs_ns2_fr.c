@@ -47,6 +47,7 @@
 
 #include <osmocom/gprs/frame_relay.h>
 #include <osmocom/core/byteswap.h>
+#include <osmocom/core/stat_item.h>
 #include <osmocom/core/logging.h>
 #include <osmocom/core/msgb.h>
 #include <osmocom/core/select.h>
@@ -327,6 +328,7 @@ static void enqueue_at_head(struct gprs_ns2_vc_bind *bind, struct msgb *msg)
 {
 	struct priv_bind *priv = bind->priv;
 	llist_add(&msg->list, &priv->backlog.list);
+	osmo_stat_item_inc(bind->statg->items[NS2_BIND_STAT_BACKLOG_LEN], 1);
 	osmo_timer_schedule(&priv->backlog.timer, 0, priv->backlog.retry_us);
 }
 
@@ -334,6 +336,7 @@ static void enqueue_at_tail(struct gprs_ns2_vc_bind *bind, struct msgb *msg)
 {
 	struct priv_bind *priv = bind->priv;
 	llist_add_tail(&msg->list, &priv->backlog.list);
+	osmo_stat_item_inc(bind->statg->items[NS2_BIND_STAT_BACKLOG_LEN], 1);
 	osmo_timer_schedule(&priv->backlog.timer, 0, priv->backlog.retry_us);
 }
 
@@ -402,6 +405,7 @@ static void fr_backlog_timer_cb(void *data)
 			llist_add(&msg->list, &priv->backlog.list);
 			break;
 		}
+		osmo_stat_item_dec(bind->statg->items[NS2_BIND_STAT_BACKLOG_LEN], 1);
 	}
 
 	/* re-start timer if we still have data in the queue */

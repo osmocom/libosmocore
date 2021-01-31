@@ -72,8 +72,12 @@ enum nsvc_timer_mode {
 	_NSVC_TIMER_NR,
 };
 
-enum ns_stat {
+enum ns2_vc_stat {
 	NS_STAT_ALIVE_DELAY,
+};
+
+enum ns2_bind_stat {
+	NS2_BIND_STAT_BACKLOG_LEN,
 };
 
 /*! Osmocom NS2 VC create status */
@@ -129,6 +133,7 @@ struct gprs_ns2_inst {
 
 	/*! workaround for rate counter until rate counter accepts char str as index */
 	uint32_t nsvc_rate_ctr_idx;
+	uint32_t bind_rate_ctr_idx;
 
 	/*! libmnl netlink socket for link state monitoring */
 	struct osmo_mnl *linkmon_mnl;
@@ -251,6 +256,8 @@ struct gprs_ns2_vc_bind {
 	/*! allow to show information for the vty */
 	void (*dump_vty)(const struct gprs_ns2_vc_bind *bind,
 			 struct vty *vty, bool stats);
+
+	struct osmo_stat_item_group *statg;
 };
 
 struct gprs_ns2_vc_driver {

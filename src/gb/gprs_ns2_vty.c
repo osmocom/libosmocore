@@ -1374,6 +1374,10 @@ static void dump_bind(struct vty *vty, const struct gprs_ns2_vc_bind *bind, bool
 {
 	if (bind->dump_vty)
 		bind->dump_vty(bind, vty, stats);
+
+	if (stats) {
+		vty_out_stat_item_group(vty, "  ", bind->statg);
+	}
 }
 
 static void dump_ns_bind(struct vty *vty, const struct gprs_ns2_inst *nsi, bool stats)

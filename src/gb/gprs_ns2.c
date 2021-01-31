@@ -198,6 +198,18 @@ static const struct osmo_stat_item_group_desc nsvc_statg_desc = {
 	.class_id = OSMO_STATS_CLASS_PEER,
 };
 
+const struct osmo_stat_item_desc nsbind_stat_description[] = {
+	[NS2_BIND_STAT_BACKLOG_LEN] = { "tx_backlog_length",	"Transmit backlog length", "packets", 16, 0 },
+};
+
+static const struct osmo_stat_item_group_desc nsbind_statg_desc = {
+	.group_name_prefix = "ns.bind",
+	.group_description = "NS Bind Statistics",
+	.num_items = ARRAY_SIZE(nsbind_stat_description),
+	.item_desc = nsbind_stat_description,
+	.class_id = OSMO_STATS_CLASS_PEER,
+};
+
 const struct value_string gprs_ns2_aff_cause_prim_strs[] = {
 	{ GPRS_NS2_AFF_CAUSE_VC_FAILURE,	"NSVC failure" },
 	{ GPRS_NS2_AFF_CAUSE_VC_RECOVERY,	"NSVC recovery" },
@@ -1245,6 +1257,7 @@ void gprs_ns2_free_bind(struct gprs_ns2_vc_bind *bind)
 		bind->driver->free_bind(bind);
 
 	llist_del(&bind->list);
+	osmo_stat_item_group_free(bind->statg);
 	talloc_free((char *)bind->name);
 	talloc_free(bind);
 }
@@ -1375,9 +1388,17 @@ int ns2_bind_alloc(struct gprs_ns2_inst *nsi, const char *name,
 		return -ENOMEM;
 	}
 
+	bind->statg = osmo_stat_item_group_alloc(bind, &nsbind_statg_desc, nsi->bind_rate_ctr_idx);
+	if (!bind->statg) {
+		talloc_free(bind);
+		return -ENOMEM;
+	}
+
 	bind->nsi = nsi;
 	INIT_LLIST_HEAD(&bind->nsvc);
 	llist_add(&bind->list, &nsi->binding);
+
+	nsi->bind_rate_ctr_idx++;
 
 	if (result)
 		*result = bind;
