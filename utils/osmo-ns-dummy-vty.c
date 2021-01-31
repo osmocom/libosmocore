@@ -46,8 +46,9 @@
 #include <osmocom/vty/stats.h>
 #include <osmocom/vty/misc.h>
 
-static struct gprs_ns2_inst *g_nsi;
+extern struct gprs_ns2_inst *g_nsi;
 static struct llist_head g_ns_traf_gens = LLIST_HEAD_INIT(g_ns_traf_gens);
+int g_mirror_mode;
 
 /* one NS traffic generator instance.  You can have as many of these as you want,
  * just as long as they have unique names */
@@ -167,6 +168,7 @@ static int config_write_ntg(struct vty *vty)
 		vty_out(vty, " lsp %u%s", ntg->cfg.lsp, VTY_NEWLINE);
 		vty_out(vty, " lsp-mode %s%s", ntg->cfg.lsp_randomize ? "randomized" : "fixed", VTY_NEWLINE);
 	}
+	vty_out(vty, "mirror-mode %s%s", g_mirror_mode ? "enable" : "disable", VTY_NEWLINE);
 
 	return 0;
 }
@@ -288,12 +290,26 @@ DEFUN(gen_traffic, gen_traffic_cmd,
 	return CMD_SUCCESS;
 }
 
-int nsdummy_vty_init(struct gprs_ns2_inst *nsi)
+DEFUN(mirror_mode, mirror_mode_cmd,
+	"mirror-mode (enable|disable)",
+	"Configure mirroring of incoming NS-UNITDATA\n"
+	"Enable mirroring of incoming NS-UNITDATA\n"
+	"Disable mirroring of incoming NS-UNITDATA\n")
 {
-	g_nsi = nsi;
+	if (!strcmp(argv[0], "enable"))
+		g_mirror_mode = true;
+	else
+		g_mirror_mode = false;
 
+	return CMD_SUCCESS;
+}
+
+
+int nsdummy_vty_init(void)
+{
 	/* configuration of traffic generators via CONFIG / NTG node */
 	install_element(CONFIG_NODE, &gen_traffic_cmd);
+	install_element(CONFIG_NODE, &mirror_mode_cmd);
 	install_node(&ntg_node, config_write_ntg);
 	install_element(NTG_NODE, &ntg_nsei_cmd);
 	install_element(NTG_NODE, &ntg_bvci_cmd);

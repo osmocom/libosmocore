@@ -28,6 +28,7 @@ static bool config_given = false;
 static bool daemonize = false;
 static int vty_port = 0;
 static char *config_file = NULL;
+struct gprs_ns2_inst *g_nsi;
 
 static const char vty_copyright[] =
 	"Copyright (C) 2020 by by sysmocom - s.f.m.c. GmbH\r\n"
@@ -185,9 +186,27 @@ void sighandler(int sigset)
 	}
 }
 
+extern int g_mirror_mode;
+
 /* called by the ns layer */
 int gprs_ns_prim_cb(struct osmo_prim_hdr *oph, void *ctx)
 {
+	struct osmo_gprs_ns2_prim *nsp = container_of(oph, struct osmo_gprs_ns2_prim, oph);
+
+	switch (oph->primitive) {
+	case GPRS_NS2_PRIM_UNIT_DATA:
+		if (g_mirror_mode) {
+			/* simply switch indication->request and resubmit */
+			oph->operation = PRIM_OP_REQUEST;
+			msgb_pull_to_l3(oph->msg);
+			nsp->u.unitdata.link_selector = rand(); /* ensure random distribution */
+			return gprs_ns2_recv_prim(g_nsi, oph);
+		}
+		break;
+	default:
+		break;
+	}
+
 	if (oph->msg)
 		msgb_free(oph->msg);
 
@@ -199,12 +218,11 @@ int bssgp_prim_cb(struct osmo_prim_hdr *oph, void *ctx)
 	return 0;
 }
 
-extern int nsdummy_vty_init(struct gprs_ns2_inst *nsi);
+extern int nsdummy_vty_init(void);
 
 int main (int argc, char *argv[])
 {
 	void *ctx = tall_nsdummy_ctx = talloc_named_const(NULL, 0, "osmo-ns-dummy");
-	struct gprs_ns2_inst *nsi;
 	int rc = 0;
 
 	osmo_init_logging2(ctx, &log_info);
@@ -224,14 +242,14 @@ int main (int argc, char *argv[])
 
 	handle_options(argc, argv);
 
-	nsi = gprs_ns2_instantiate(ctx, gprs_ns_prim_cb, NULL);
-	if (!nsi) {
+	g_nsi = gprs_ns2_instantiate(ctx, gprs_ns_prim_cb, NULL);
+	if (!g_nsi) {
 		LOGP(DLNS, LOGL_ERROR, "Failed to create NS instance\n");
 		exit(1);
 	}
 
-	gprs_ns2_vty_init(nsi);
-	nsdummy_vty_init(nsi);
+	gprs_ns2_vty_init(g_nsi);
+	nsdummy_vty_init();
 	rc = vty_read_config_file(config_file, NULL);
 	if (rc < 0 && config_given) {
 		fprintf(stderr, "Failed to parse the config file: '%s'\n",
@@ -270,7 +288,7 @@ int main (int argc, char *argv[])
 	}
 
 	telnet_exit();
-	gprs_ns2_free(nsi);
+	gprs_ns2_free(g_nsi);
 
 	talloc_report_full(tall_nsdummy_ctx, stderr);
 	talloc_free(tall_nsdummy_ctx);
