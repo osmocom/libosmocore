@@ -48,7 +48,7 @@ enum gprs_ns2_ll {
 	GPRS_NS2_LL_FR_GRE,	/*!< NS/FR/GRE/IP */
 };
 
-/*! Osmocom NS primitives according to 48.016 5.2 Service primitves */
+/*! Osmocom NS primitives according to 48.016 5.2 Service primitives */
 enum gprs_ns2_prim {
 	GPRS_NS2_PRIM_UNIT_DATA,
 	GPRS_NS2_PRIM_CONGESTION,
@@ -66,7 +66,7 @@ static inline const char *gprs_ns2_prim_str(enum gprs_ns2_prim val)
 static inline const char *gprs_ns2_lltype_str(enum gprs_ns2_ll val)
 { return get_value_string(gprs_ns2_lltype_strs, val); }
 
-/*! Osmocom NS primitives according to 48.016 5.2.2.4 Service primitves */
+/*! Osmocom NS primitives according to 48.016 5.2.2.4 Service primitives */
 enum gprs_ns2_congestion_cause {
 	GPRS_NS2_CONG_CAUSE_BACKWARD_BEGIN,
 	GPRS_NS2_CONG_CAUSE_BACKWARD_END,
@@ -74,7 +74,7 @@ enum gprs_ns2_congestion_cause {
 	GPRS_NS2_CONG_CAUSE_FORWARD_END,
 };
 
-/*! Osmocom NS primitives according to 48.016 5.2.2.6 Service primitves */
+/*! Osmocom NS primitives according to 48.016 5.2.2.6 Service primitives */
 enum gprs_ns2_affecting_cause {
 	GPRS_NS2_AFF_CAUSE_VC_FAILURE,
 	GPRS_NS2_AFF_CAUSE_VC_RECOVERY,
@@ -88,11 +88,11 @@ enum gprs_ns2_affecting_cause {
 
 extern const struct value_string gprs_ns2_aff_cause_prim_strs[];
 
-/*! Obtain a human-readable string for NS affective cause in primitives */
+/*! Obtain a human-readable string for NS affecting cause in primitives */
 static inline const char *gprs_ns2_aff_cause_prim_str(enum gprs_ns2_affecting_cause val)
 { return get_value_string(gprs_ns2_aff_cause_prim_strs, val); }
 
-/*! Osmocom NS primitives according to 48.016 5.2.2.7 Service primitves */
+/*! Osmocom NS primitives according to 48.016 5.2.2.7 Service primitives */
 enum gprs_ns2_change_ip_endpoint {
 	GRPS_NS2_ENDPOINT_NO_CHANGE,
 	GPRS_NS2_ENDPOINT_REQUEST_CHANGE,
