@@ -225,6 +225,12 @@ static void alive_timeout_handler(void *data)
 	}
 }
 
+
+static void ns2_st_unconfigured_onenter(struct osmo_fsm_inst *fi, uint32_t old_state)
+{
+	stop_test_procedure(fi->priv);
+}
+
 static void ns2_st_unconfigured(struct osmo_fsm_inst *fi, uint32_t event, void *data)
 {
 	struct gprs_ns2_vc_priv *priv = fi->priv;
@@ -433,6 +439,7 @@ static const struct osmo_fsm_state ns2_vc_states[] = {
 		.out_state_mask = S(GPRS_NS2_ST_RESET) | S(GPRS_NS2_ST_ALIVE),
 		.name = "UNCONFIGURED",
 		.action = ns2_st_unconfigured,
+		.onenter = ns2_st_unconfigured_onenter,
 	},
 	[GPRS_NS2_ST_RESET] = {
 		.in_event_mask = S(GPRS_NS2_EV_RX_RESET_ACK) | S(GPRS_NS2_EV_RX_RESET),
