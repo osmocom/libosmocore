@@ -784,18 +784,21 @@ int osmo_fr_rx(struct msgb *msg)
 		goto out;
 	}
 
-	llist_for_each_entry(dlc, &link->dlc_list, list) {
-		if (dlc->dlci == dlci) {
+	dlc = osmo_fr_dlc_by_dlci(link, dlci);
+	if (dlc) {
+		if (dlc->active) {
 			/* dispatch to handler of respective DLC */
 			msg->dst = dlc;
 			return dlc->rx_cb(dlc->cb_data, msg);
+		} else {
+			LOGPFRL(link, LOGL_NOTICE, "DLCI %u not yet active, discarding\n", dlci);
 		}
+	} else {
+		if (link->unknown_dlc_rx_cb)
+			return link->unknown_dlc_rx_cb(link->unknown_dlc_rx_cb_data, msg);
+		else
+			LOGPFRL(link, LOGL_NOTICE, "DLCI %u doesn't exist, discarding\n", dlci);
 	}
-
-	if (link->unknown_dlc_rx_cb)
-		return link->unknown_dlc_rx_cb(link->unknown_dlc_rx_cb_data, msg);
-	else
-		LOGPFRL(link, LOGL_NOTICE, "DLCI %u doesn't exist, discarding\n", dlci);
 
 out:
 	msgb_free(msg);
