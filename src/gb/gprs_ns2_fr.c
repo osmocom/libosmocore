@@ -198,7 +198,7 @@ static struct priv_vc *fr_alloc_vc(struct gprs_ns2_vc_bind *bind,
 		return NULL;
 	}
 
-	priv->dlc->rx_cb_data = nsvc;
+	priv->dlc->cb_data = nsvc;
 	priv->dlc->rx_cb = fr_dlci_rx_cb;
 
 	return priv;
@@ -756,7 +756,7 @@ int gprs_ns2_fr_bind(struct gprs_ns2_inst *nsi,
 	}
 
 	fr_link->tx_cb = fr_tx_cb;
-	fr_link->tx_cb_data = bind;
+	fr_link->cb_data = bind;
 	priv->link = fr_link;
 
 	priv->ifindex = rc = devname2ifindex(netif);

@@ -189,6 +189,18 @@ static inline void dlci_to_q922(uint8_t *hdr, uint16_t dlci)
 	hdr[1] = ((dlci << 4) & 0xF0) | 0x01;
 }
 
+static void dlc_set_active(struct osmo_fr_dlc *dlc, bool active)
+{
+	if (active == dlc->active)
+		return;
+
+	dlc->active = active;
+
+	LOGPFRL(dlc->link, LOGL_NOTICE, "DLCI %u became %s\n", dlc->dlci, active ? "active" : "inactive");
+	if (dlc->status_cb)
+		dlc->status_cb(dlc, dlc->cb_data, active);
+}
+
 /* allocate a message buffer and put Q.933 Annex A headers (L2 + L3) */
 static struct msgb *q933_msgb_alloc(uint16_t dlci, uint8_t prot_disc, uint8_t msg_type)
 {
@@ -285,7 +297,7 @@ static int tx_lmi_q933_status_enq(struct osmo_fr_link *link, uint8_t rep_type)
 	msgb_tlv_put(resp, Q933_IEI_REPORT_TYPE, 1, &rep_type);
 	msgb_put_link_int_verif(resp, link);
 
-	return link->tx_cb(link->tx_cb_data, resp);
+	return link->tx_cb(link->cb_data, resp);
 }
 
 /* Send a Q.933 STATUS of given type over given link */
@@ -327,7 +339,7 @@ static int tx_lmi_q933_status(struct osmo_fr_link *link, uint8_t rep_type)
 		break;
 	}
 
-	return link->tx_cb(link->tx_cb_data, resp);
+	return link->tx_cb(link->cb_data, resp);
 }
 
 
@@ -369,7 +381,7 @@ static int rx_lmi_q933_status_enq(struct msgb *msg, struct tlv_parsed *tp)
 				continue;
 
 			if (dlc->add) {
-				dlc->active = link->state;
+				dlc_set_active(dlc, link->state);
 				dlc->add = false;
 			}
 
@@ -417,11 +429,11 @@ static void check_link_state(struct osmo_fr_link *link, bool valid)
 
 		LOGPFRL(link, LOGL_NOTICE, "Link failed\n");
 		link->state = false;
-		if (link->role == FR_ROLE_USER_EQUIPMENT)
-			return;
+		if (link->status_cb)
+			link->status_cb(link, link->cb_data, link->state);
 
 		llist_for_each_entry(dlc, &link->dlc_list, list) {
-			dlc->active = false;
+			dlc_set_active(dlc, false);
 		}
 	} else {
 		/* good link */
@@ -430,16 +442,21 @@ static void check_link_state(struct osmo_fr_link *link, bool valid)
 
 		LOGPFRL(link, LOGL_NOTICE, "Link recovered\n");
 		link->state = true;
+		if (link->status_cb)
+			link->status_cb(link, link->cb_data, link->state);
+
 		if (link->role == FR_ROLE_USER_EQUIPMENT) {
 			/* make sure the next STATUS ENQUIRY is for a full
 			 * status report to get the configred DLCs ASAP */
 			link->polling_count = 0;
+			/* we must not proceed further below if we're in user role,
+			 * as otherwise link recovery would set all DLCs as active */
 			return;
 		}
 
 		llist_for_each_entry(dlc, &link->dlc_list, list) {
 			if (!dlc->add && !dlc->del)
-				dlc->active = true;
+				dlc_set_active(dlc, true);
 		}
 	}
 }
@@ -508,7 +525,7 @@ static int parse_full_pvc_status(struct osmo_fr_link *link, struct tlv_parsed *t
 		 *                   using the optional single PVC asynchronous status report.
 		 * Ignoring the delete. */
 		dlc->add = pvc->new;
-		dlc->active = pvc->active;
+		dlc_set_active(dlc, pvc->active);
 		dlc->del = 0;
 	}
 
@@ -523,7 +540,7 @@ static int parse_full_pvc_status(struct osmo_fr_link *link, struct tlv_parsed *t
 		}
 
 		if (!found) {
-			dlc->active = false;
+			dlc_set_active(dlc, false);
 			dlc->del = true;
 		}
 	}
@@ -575,7 +592,7 @@ static int parse_link_pvc_status(struct osmo_fr_link *link, struct tlv_parsed *t
 			dlc->del = 1;
 		} else {
 			dlc->add = pvc->new;
-			dlc->active = pvc->active;
+			dlc_set_active(dlc, pvc->active);
 			dlc->del = 0;
 		}
 	}
@@ -771,7 +788,7 @@ int osmo_fr_rx(struct msgb *msg)
 		if (dlc->dlci == dlci) {
 			/* dispatch to handler of respective DLC */
 			msg->dst = dlc;
-			return dlc->rx_cb(dlc->rx_cb_data, msg);
+			return dlc->rx_cb(dlc->cb_data, msg);
 		}
 	}
 
@@ -816,7 +833,7 @@ int osmo_fr_tx_dlc(struct msgb *msg)
 	dlci_to_q922(frh, dlc->dlci);
 
 	msg->dst = link;
-	return link->tx_cb(link->tx_cb_data, msg);
+	return link->tx_cb(link->cb_data, msg);
 }
 
 /* Every T391 seconds, the user equipment sends a STATUS ENQUIRY

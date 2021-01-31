@@ -87,11 +87,15 @@ struct osmo_fr_link {
 	/* list of data link connections at this link */
 	struct llist_head dlc_list;
 
+	/* optional call-back to be called for each PDU received on an unknown DLC */
 	int (*unknown_dlc_rx_cb)(void *cb_data, struct msgb *msg);
 	void *unknown_dlc_rx_cb_data;
 
+	/* call-back to be called for transmitting on the underlying hardware */
 	int (*tx_cb)(void *data, struct msgb *msg);
-	void *tx_cb_data;
+	/* optional call-back to be called each time the status changes active/inactive */
+	void (*status_cb)(struct osmo_fr_link *link, void *cb_data, bool active);
+	void *cb_data;
 };
 
 /* Frame Relay Data Link Connection */
@@ -113,8 +117,11 @@ struct osmo_fr_dlc {
 	 * NET must wait until USER confirms it implicitly by a seq number check */
 	bool state_send;
 
+	/* call-back to be called for each PDU received on this DLC */
 	int (*rx_cb)(void *cb_data, struct msgb *msg);
-	void *rx_cb_data;
+	/* optional call-back to be called each time the status changes active/inactive */
+	void (*status_cb)(struct osmo_fr_dlc *dlc, void *cb_data, bool active);
+	void *cb_data;
 };
 
 /* allocate a frame relay network */
