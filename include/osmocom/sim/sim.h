@@ -283,7 +283,7 @@ struct osim_card_sw {
 	} u;
 };
 
-#define OSIM_CARD_SW_LAST	(const struct osim_card_sw) {	\
+#define OSIM_CARD_SW_LAST	{			\
 	.code = 0, .mask = 0, .type = SW_TYPE_NONE,	\
 	.class = SW_CLS_NONE, .u.str = NULL		\
 }
