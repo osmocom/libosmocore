@@ -365,9 +365,13 @@ static struct gprs_ns2_vc *ns2_load_sharing_modulor(
 		uint32_t load_selector)
 {
 	struct gprs_ns2_vc *tmp;
-	uint32_t mod = (bvci + load_selector) % nse->nsvc_count;
+	uint32_t mod;
 	uint32_t i = 0;
 
+	if (nse->nsvc_count == 0)
+		return NULL;
+
+	mod = (bvci + load_selector) % nse->nsvc_count;
 	llist_for_each_entry(tmp, &nse->nsvc, list) {
 		if (!ns2_vc_is_unblocked(tmp))
 			continue;
@@ -456,6 +460,9 @@ int gprs_ns2_recv_prim(struct gprs_ns2_inst *nsi, struct osmo_prim_hdr *oph)
 	nse = gprs_ns2_nse_by_nsei(nsi, nsei);
 	if (!nse)
 		return -EINVAL;
+
+	if (!nse->alive)
+		return 0;
 
 	nsvc = ns2_load_sharing(nse, bvci, nsp->u.unitdata.link_selector);
 
