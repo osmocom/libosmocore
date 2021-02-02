@@ -311,10 +311,14 @@ static int fr_netif_write_one(struct gprs_ns2_vc_bind *bind, struct msgb *msg)
 		switch (errno) {
 		case EAGAIN:
 		case ENOBUFS:
+			/* not a real error, but more a normal event on AF_PACKET */
+			/* don't free the message and let the caller re-enqueue */
 			return -errno;
 		default:
+			/* an actual error, like -ENETDOWN, -EMSGSIZE */
 			LOGBIND(bind, LOGL_ERROR, "error during write to AF_PACKET: %s\n", strerror(errno));
-			return -errno;
+			msgb_free(msg);
+			return 0;
 		}
 	} else {
 		/* short write */
