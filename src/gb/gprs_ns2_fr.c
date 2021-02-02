@@ -105,7 +105,9 @@ struct priv_bind {
 	struct {
 		/* file-descriptor for AF_PACKET socket */
 		struct osmo_fd ofd;
-		/* list of msgb (backlog) */
+		/* LMI bucket (we only store the last LMI message, no need to queue */
+		struct msgb *lmi_msg;
+		/* list of NS msgb (backlog) */
 		struct llist_head list;
 		/* timer to trigger next attempt of AF_PACKET write */
 		struct osmo_timer_list timer;
@@ -173,6 +175,7 @@ static void free_bind(struct gprs_ns2_vc_bind *bind)
 	llist_for_each_entry_safe(msg, msg2, &priv->backlog.list, list) {
 		msgb_free(msg);
 	}
+	msgb_free(priv->backlog.lmi_msg);
 
 	osmo_fr_link_free(priv->link);
 	osmo_fd_close(&priv->backlog.ofd);
@@ -357,6 +360,7 @@ static void enqueue_at_tail(struct gprs_ns2_vc_bind *bind, struct msgb *msg)
 /* enqueue to backlog (LMI, signaling) or drop (userdata msg) */
 static int backlog_enqueue_or_free(struct gprs_ns2_vc_bind *bind, struct msgb *msg)
 {
+	struct priv_bind *priv = bind->priv;
 	uint8_t dlci = msg->data[0];
 	uint8_t ns_pdu_type;
 	uint16_t bvci;
@@ -367,8 +371,9 @@ static int backlog_enqueue_or_free(struct gprs_ns2_vc_bind *bind, struct msgb *m
 	/* we want to enqueue only Q.933 LMI traffic or NS signaling; NOT user traffic */
 	switch (dlci) {
 	case LMI_Q933A_DLCI:
-		/* enqueue Q.933 LMI at head of queue */
-		enqueue_at_head(bind, msg);
+		/* always store only the last LMI message in the lmi_msg bucket */
+		msgb_free(priv->backlog.lmi_msg);
+		priv->backlog.lmi_msg = msg;
 		return 0;
 	default:
 		if (msgb_length(msg) < 3)
@@ -405,6 +410,15 @@ static void fr_backlog_timer_cb(void *data)
 	struct priv_bind *priv = bind->priv;
 	int i, rc;
 
+	/* first try to get rid of the LMI message, if any */
+	if (priv->backlog.lmi_msg) {
+		rc = fr_netif_write_one(bind, priv->backlog.lmi_msg);
+		if (rc < 0)
+			goto restart_timer;
+		/* fr_netif_write_one() has just free'd it */
+		priv->backlog.lmi_msg = NULL;
+	}
+
 	/* attempt to send up to 10 messages in every timer */
 	for (i = 0; i < 10; i++) {
 		struct msgb *msg = msgb_dequeue(&priv->backlog.list);
@@ -420,6 +434,7 @@ static void fr_backlog_timer_cb(void *data)
 		osmo_stat_item_dec(bind->statg->items[NS2_BIND_STAT_BACKLOG_LEN], 1);
 	}
 
+restart_timer:
 	/* re-start timer if we still have data in the queue */
 	if (!llist_empty(&priv->backlog.list))
 		osmo_timer_schedule(&priv->backlog.timer, 0, priv->backlog.retry_us);
