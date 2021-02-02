@@ -376,6 +376,10 @@ static int backlog_enqueue_or_free(struct gprs_ns2_vc_bind *bind, struct msgb *m
 		priv->backlog.lmi_msg = msg;
 		return 0;
 	default:
+		/* there's no point in trying to enqueue messages if the interface is down */
+		if (!priv->if_running)
+			break;
+
 		if (msgb_length(msg) < 3)
 			break;
 		ns_pdu_type = msg->data[2];
@@ -559,6 +563,35 @@ static struct gprs_ns2_vc_bind *bind4netdev(struct gprs_ns2_inst *nsi, const cha
 	return NULL;
 }
 
+static void link_state_change(struct gprs_ns2_vc_bind *bind, bool if_running)
+{
+	struct priv_bind *bpriv = bind->priv;
+	struct msgb *msg, *msg2;
+
+	if (bpriv->if_running == if_running)
+		return;
+
+	LOGBIND(bind, LOGL_NOTICE, "FR net-device '%s': Physical link state changed: %s\n",
+		bpriv->netif, if_running ? "UP" : "DOWN");
+
+	/* free any backlog, both on IFUP and IFDOWN. Keep the LMI, as it makes
+	 * sense to get one out of the door ASAP. */
+	llist_for_each_entry_safe(msg, msg2, &bpriv->backlog.list, list) {
+		msgb_free(msg);
+	}
+
+	if (if_running) {
+		/* interface just came up */
+		if (bpriv->backlog.lmi_msg)
+			osmo_timer_schedule(&bpriv->backlog.timer, 0, bpriv->backlog.retry_us);
+	} else {
+		/* interface just went down; no need to retransmit */
+		osmo_timer_del(&bpriv->backlog.timer);
+	}
+
+	bpriv->if_running = if_running;
+}
+
 /* handle a single netlink message received via libmnl */
 static int linkmon_mnl_cb(const struct nlmsghdr *nlh, void *data)
 {
@@ -586,15 +619,8 @@ static int linkmon_mnl_cb(const struct nlmsghdr *nlh, void *data)
 	if_running = !!(ifm->ifi_flags & IFF_RUNNING);
 
 	bind = bind4netdev(nsi, ifname);
-	if (bind) {
-		struct priv_bind *bpriv = bind->priv;
-		if (bpriv->if_running != if_running) {
-			/* update running state */
-			LOGBIND(bind, LOGL_NOTICE, "FR net-device '%s': Physical link state changed: %s\n",
-				ifname, if_running ? "UP" : "DOWN");
-			bpriv->if_running = if_running;
-		}
-	}
+	if (bind)
+		link_state_change(bind, if_running);
 
 	return MNL_CB_OK;
 }
