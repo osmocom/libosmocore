@@ -529,8 +529,8 @@ int gprs_ns2_is_frgre_bind(struct gprs_ns2_vc_bind *bind)
  *  \param[in] nsi NS instance in which to create the bind
  *  \param[in] local local address on which to bind
  *  \param[in] dscp DSCP/TOS bits to use for transmitted data on this bind
- *  \param[out] result pointer to created bind
- *  \return 0 on success; negative on error */
+ *  \param[out] result pointer to the created bind or if a bind with the name exists return the bind.
+ *  \return 0 on success; negative on error. -EALREADY returned in case a bind with the name exists */
 int gprs_ns2_frgre_bind(struct gprs_ns2_inst *nsi,
 			const char *name,
 			const struct osmo_sockaddr *local,
@@ -546,7 +546,8 @@ int gprs_ns2_frgre_bind(struct gprs_ns2_inst *nsi,
 
 	bind = gprs_ns2_bind_by_name(nsi, name);
 	if (bind) {
-		*result = bind;
+		if (result)
+			*result = bind;
 		return -EALREADY;
 	}
 

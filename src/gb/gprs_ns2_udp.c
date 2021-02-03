@@ -303,8 +303,8 @@ struct gprs_ns2_vc_bind *gprs_ns2_ip_bind_by_sockaddr(struct gprs_ns2_inst *nsi,
  *  \param[in] nsi NS Instance in which to create the NSVC
  *  \param[in] local the local address to bind to
  *  \param[in] dscp the DSCP/TOS bits used for transmitted data
- *  \param[out] result if set, returns the bind object
- *  \return 0 on success; negative in case of error */
+ *  \param[out] result pointer to the created bind or if a bind with the name exists return the bind.
+ *  \return 0 on success; negative on error. -EALREADY returned in case a bind with the name exists */
 int gprs_ns2_ip_bind(struct gprs_ns2_inst *nsi,
 		     const char *name,
 		     const struct osmo_sockaddr *local,
@@ -320,7 +320,8 @@ int gprs_ns2_ip_bind(struct gprs_ns2_inst *nsi,
 
 	bind = gprs_ns2_ip_bind_by_sockaddr(nsi, local);
 	if (bind) {
-		*result = bind;
+		if (result)
+			*result = bind;
 		return -EBUSY;
 	}
 
