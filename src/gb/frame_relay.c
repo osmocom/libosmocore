@@ -585,6 +585,7 @@ static int parse_link_pvc_status(struct osmo_fr_link *link, struct tlv_parsed *t
 			dlc = osmo_fr_dlc_alloc(link, dlci);
 			if (!dlc) {
 				LOGPFRL(link, LOGL_ERROR, "Rx STATUS: Could not create DLC %d\n", dlci);
+				continue;
 			}
 		}
 
