@@ -161,10 +161,10 @@ static void free_bind(struct gprs_ns2_vc_bind *bind)
 	struct priv_bind *priv;
 	struct msgb *msg, *msg2;
 
-	OSMO_ASSERT(gprs_ns2_is_fr_bind(bind));
 	if (!bind)
 		return;
 
+	OSMO_ASSERT(gprs_ns2_is_fr_bind(bind));
 	priv = bind->priv;
 
 	OSMO_ASSERT(llist_empty(&bind->nsvc));
