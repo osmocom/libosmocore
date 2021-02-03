@@ -1298,6 +1298,25 @@ int gsm48_construct_ra(uint8_t *buf, const struct gprs_ra_id *raid)
 	return 6;
 }
 
+/*! Compare a TS 04.08 Routing Area Identifier
+ *  \param[in] raid1 first Routing Area ID to compare.
+ *  \param[in] raid2 second Routing Area ID to compare.
+ *  \returns true if raid1 and raid2 match, false otherwise. */
+bool gsm48_ra_equal(const struct gprs_ra_id *raid1, const struct gprs_ra_id *raid2)
+{
+	if (raid1->mcc != raid2->mcc)
+		return false;
+	if (raid1->mnc != raid2->mnc)
+		return false;
+	if (raid1->mnc_3_digits != raid2->mnc_3_digits)
+		return false;
+	if (raid1->lac != raid2->lac)
+		return false;
+	if (raid1->rac != raid2->rac)
+		return false;
+	return true;
+}
+
 /*! Determine number of paging sub-channels
  *  \param[in] chan_desc Control Channel Description
  *  \returns number of paging sub-channels

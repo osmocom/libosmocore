@@ -104,6 +104,7 @@ int osmo_mobile_identity_encode_msgb(struct msgb *msg, const struct osmo_mobile_
 void gsm48_parse_ra(struct gprs_ra_id *raid, const uint8_t *buf);
 void gsm48_encode_ra(struct gsm48_ra_id *out, const struct gprs_ra_id *raid);
 int gsm48_construct_ra(uint8_t *buf, const struct gprs_ra_id *raid) OSMO_DEPRECATED("Use gsm48_encode_ra() instead");
+bool gsm48_ra_equal(const struct gprs_ra_id *raid1, const struct gprs_ra_id *raid2);
 
 int gsm48_number_of_paging_subchannels(struct gsm48_control_channel_descr *chan_desc);
 

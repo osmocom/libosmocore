@@ -326,6 +326,7 @@ osmo_gsm48_rest_octets_si4_decode;
 gsm48_rr_msg_name;
 gsm48_cc_state_name;
 gsm48_construct_ra;
+gsm48_ra_equal;
 gsm48_encode_ra;
 gsm48_hdr_gmm_cipherable;
 gsm48_decode_bcd_number;
