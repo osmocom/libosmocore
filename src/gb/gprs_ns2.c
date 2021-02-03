@@ -577,7 +577,7 @@ void gprs_ns2_free_nsvc(struct gprs_ns2_vc *nsvc)
 	ns2_nse_notify_unblocked(nsvc, false);
 
 	/* check if sns is using this VC */
-	ns2_sns_free_nsvc(nsvc);
+	ns2_sns_replace_nsvc(nsvc);
 	osmo_fsm_inst_term(nsvc->fi, OSMO_FSM_TERM_REQUEST, NULL);
 
 	/* let the driver/bind clean up it's internal state */
@@ -1175,6 +1175,7 @@ void ns2_nse_notify_unblocked(struct gprs_ns2_vc *nsvc, bool unblocked)
 {
 	struct gprs_ns2_nse *nse = nsvc->nse;
 
+	ns2_sns_notify_alive(nse, nsvc, unblocked);
 	ns2_nse_data_sum(nse);
 
 	if (unblocked == nse->alive)

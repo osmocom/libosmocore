@@ -80,6 +80,7 @@ enum gprs_sns_event {
 	GPRS_SNS_EV_DELETE,
 	GPRS_SNS_EV_CHANGE_WEIGHT,
 	GPRS_SNS_EV_NO_NSVC,
+	GPRS_SNS_EV_NSVC_ALIVE,		/*!< a NS-VC became alive */
 };
 
 static const struct value_string gprs_sns_event_names[] = {
@@ -93,6 +94,7 @@ static const struct value_string gprs_sns_event_names[] = {
 	{ GPRS_SNS_EV_DELETE,		"DELETE" },
 	{ GPRS_SNS_EV_CHANGE_WEIGHT,	"CHANGE_WEIGHT" },
 	{ GPRS_SNS_EV_NO_NSVC,		"NO_NSVC" },
+	{ GPRS_SNS_EV_NSVC_ALIVE,	"NSVC_ALIVE"},
 	{ 0, NULL }
 };
 
@@ -122,6 +124,8 @@ struct ns2_sns_state {
 	int bind_offset;
 	/* timer N */
 	int N;
+	/* true if at least one nsvc is alive */
+	bool alive;
 
 	/* local configuration to send to the remote end */
 	struct gprs_ns_ie_ip4_elem *ip4_local;
@@ -227,13 +231,13 @@ const struct osmo_sockaddr *gprs_ns2_nse_sns_remote(struct gprs_ns2_nse *nse)
 	return &gss->initial->saddr;
 }
 
-/*! called when a nsvc is beeing freed */
-void ns2_sns_free_nsvc(struct gprs_ns2_vc *nsvc)
+/*! called when a nsvc is beeing freed or the nsvc became dead */
+void ns2_sns_replace_nsvc(struct gprs_ns2_vc *nsvc)
 {
-	struct gprs_ns2_nse *nse;
+	struct gprs_ns2_nse *nse = nsvc->nse;
 	struct gprs_ns2_vc *tmp;
+	struct osmo_fsm_inst *fi = nse->bss_sns_fi;
 	struct ns2_sns_state *gss;
-	struct osmo_fsm_inst *fi = nsvc->nse->bss_sns_fi;
 
 	if (!fi)
 		return;
@@ -242,17 +246,26 @@ void ns2_sns_free_nsvc(struct gprs_ns2_vc *nsvc)
 	if (nsvc != gss->sns_nsvc)
 		return;
 
-	nse = nsvc->nse;
-	if (nse->alive) {
-		/* choose a different sns nsvc */
+	gss->sns_nsvc = NULL;
+	if (gss->alive) {
 		llist_for_each_entry(tmp, &nse->nsvc, list) {
-			if (ns2_vc_is_unblocked(tmp))
+			if (ns2_vc_is_unblocked(tmp)) {
 				gss->sns_nsvc = tmp;
+				return;
+			}
 		}
 	} else {
-		gss->sns_nsvc = NULL;
-		osmo_fsm_inst_dispatch(fi, GPRS_SNS_EV_NO_NSVC, NULL);
+		/* the SNS is waiting for its first NS-VC to come up
+		 * choose any other nsvc */
+		llist_for_each_entry(tmp, &nse->nsvc, list) {
+			if (nsvc != tmp) {
+				gss->sns_nsvc = tmp;
+				return;
+			}
+		}
 	}
+
+	osmo_fsm_inst_dispatch(fi, GPRS_SNS_EV_NO_NSVC, NULL);
 }
 
 static void ns2_clear_ipv46_entries(struct ns2_sns_state *gss)
@@ -715,6 +728,7 @@ static void ns2_sns_st_size_onenter(struct osmo_fsm_inst *fi, uint32_t old_state
 	if (old_state != GPRS_SNS_ST_UNCONFIGURED)
 		ns2_prim_status_ind(gss->nse, NULL, 0, GPRS_NS2_AFF_CAUSE_SNS_FAILURE);
 
+	gss->alive = false;
 	ns2_clear_ipv46_entries(gss);
 
 	/* no initial available */
@@ -873,6 +887,18 @@ static void ns2_sns_st_config_bss_onenter(struct osmo_fsm_inst *fi, uint32_t old
 	}
 }
 
+/* calculate the timeout of the configured state. the configured
+ * state will fail if not at least one NS-VC is alive within X second.
+ */
+static inline int ns_sns_configured_timeout(struct osmo_fsm_inst *fi)
+{
+	int secs;
+	struct gprs_ns2_inst *nsi = nse_inst_from_fi(fi)->nsi;
+	secs = nsi->timeout[NS_TOUT_TNS_ALIVE] * nsi->timeout[NS_TOUT_TNS_ALIVE_RETRIES];
+	secs += nsi->timeout[NS_TOUT_TNS_TEST];
+
+	return secs;
+}
 
 static void ns_sns_st_config_sgsn_ip4(struct osmo_fsm_inst *fi, uint32_t event, void *data)
 {
@@ -917,7 +943,7 @@ static void ns_sns_st_config_sgsn_ip4(struct osmo_fsm_inst *fi, uint32_t event, 
 		ns2_tx_sns_config_ack(gss->sns_nsvc, NULL);
 		/* start the test procedure on ALL NSVCs! */
 		gprs_ns2_start_alive_all_nsvcs(nse);
-		osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_CONFIGURED, 0, 0);
+		osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_CONFIGURED, ns_sns_configured_timeout(fi), 3);
 	} else {
 		/* just send CONFIG-ACK */
 		ns2_tx_sns_config_ack(gss->sns_nsvc, NULL);
@@ -1259,6 +1285,9 @@ static void ns2_sns_st_configured(struct osmo_fsm_inst *fi, uint32_t event, void
 	case GPRS_SNS_EV_CHANGE_WEIGHT:
 		ns2_sns_st_configured_change(fi, gss, tp);
 		break;
+	case GPRS_SNS_EV_NSVC_ALIVE:
+		osmo_timer_del(&fi->timer);
+		break;
 	}
 }
 
@@ -1307,7 +1336,8 @@ static const struct osmo_fsm_state ns2_sns_bss_states[] = {
 	[GPRS_SNS_ST_CONFIGURED] = {
 		.in_event_mask = S(GPRS_SNS_EV_ADD) |
 				 S(GPRS_SNS_EV_DELETE) |
-				 S(GPRS_SNS_EV_CHANGE_WEIGHT),
+				 S(GPRS_SNS_EV_CHANGE_WEIGHT) |
+				 S(GPRS_SNS_EV_NSVC_ALIVE),
 		.out_state_mask = S(GPRS_SNS_ST_UNCONFIGURED) |
 				  S(GPRS_SNS_ST_SIZE),
 		.name = "CONFIGURED",
@@ -1339,6 +1369,10 @@ static int ns2_sns_fsm_bss_timer_cb(struct osmo_fsm_inst *fi)
 		} else {
 			osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_CONFIG_BSS, nsi->timeout[NS_TOUT_TSNS_PROV], 2);
 		}
+		break;
+	case 3:
+		LOGPFSML(fi, LOGL_ERROR, "NSE %d: Config succeeded but no NS-VC came online. Selecting next IP-SNS endpoint.\n", nse->nsei);
+		osmo_fsm_inst_dispatch(fi, GPRS_SNS_EV_SELECT_ENDPOINT, NULL);
 		break;
 	}
 	return 0;
@@ -1707,6 +1741,46 @@ int gprs_ns2_sns_count(struct gprs_ns2_nse *nse)
 		count++;
 
 	return count;
+}
+
+void ns2_sns_notify_alive(struct gprs_ns2_nse *nse, struct gprs_ns2_vc *nsvc, bool alive)
+{
+	struct ns2_sns_state *gss;
+	struct gprs_ns2_vc *tmp;
+
+	if (!nse->bss_sns_fi)
+		return;
+
+	gss = nse->bss_sns_fi->priv;
+	if(nse->bss_sns_fi->state != GPRS_SNS_ST_CONFIGURED)
+		return;
+
+	if (alive == gss->alive)
+		return;
+
+	/* check if this is the current SNS NS-VC */
+	if (nsvc == gss->sns_nsvc) {
+		/* only replace the SNS NS-VC if there are other alive NS-VC.
+		 * There aren't any other alive NS-VC when the SNS fsm just reached CONFIGURED
+		 * and couldn't confirm yet if the NS-VC comes up */
+		if (gss->alive && !alive)
+			ns2_sns_replace_nsvc(nsvc);
+	}
+
+	if (alive) {
+		gss->alive = true;
+		osmo_fsm_inst_dispatch(nse->bss_sns_fi, GPRS_SNS_EV_NSVC_ALIVE, NULL);
+	} else {
+		/* is there at least another alive nsvc? */
+		llist_for_each_entry(tmp, &nse->nsvc, list) {
+			if (ns2_vc_is_unblocked(tmp))
+				return;
+		}
+
+		/* all NS-VC have failed */
+		gss->alive = false;
+		osmo_fsm_inst_dispatch(nse->bss_sns_fi, GPRS_SNS_EV_NO_NSVC, NULL);
+	}
 }
 
 /* initialize osmo_ctx on main tread */
