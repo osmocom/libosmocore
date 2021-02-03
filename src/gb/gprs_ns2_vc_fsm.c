@@ -81,13 +81,13 @@ struct gprs_ns2_vc_priv {
  * - UNCONFIGURED -> RESET -> BLOCK -> UNBLOCKED
  *
  * Without RESET/BLOCK, the state should follow:
- * - UNCONFIGURED -> ALIVE -> UNBLOCKED
+ * - UNCONFIGURED -> RECOVERY -> UNBLOCKED
  *
  * The UNBLOCKED and TEST states are used to send ALIVE PDU using the timeout Tns-test and Tns-alive.
  * UNBLOCKED -> TEST: on expire of Tns-Test, send Alive PDU.
  * TEST -> UNBLOCKED: on receive of Alive_Ack PDU, go into UNBLOCKED.
  *
- * The ALIVE state is used as intermediate, because a VC is only valid if it received an Alive ACK when
+ * The RECOVERY state is used as intermediate, because a VC is only valid if it received an Alive ACK when
  * not using RESET/BLOCK procedure.
  */
 
@@ -97,7 +97,7 @@ enum gprs_ns2_vc_state {
 	GPRS_NS2_ST_BLOCKED,
 	GPRS_NS2_ST_UNBLOCKED, /* allows sending NS_UNITDATA */
 
-	GPRS_NS2_ST_ALIVE, /* only used when not using RESET/BLOCK procedure */
+	GPRS_NS2_ST_RECOVERING, /* only used when not using RESET/BLOCK procedure */
 };
 
 enum gprs_ns2_vc_event {
@@ -217,7 +217,7 @@ static void alive_timeout_handler(void *data)
 			if (priv->nsvc->mode == GPRS_NS2_VC_MODE_BLOCKRESET) {
 				osmo_fsm_inst_state_chg(fi, GPRS_NS2_ST_RESET, nsi->timeout[NS_TOUT_TNS_RESET], 0);
 			} else {
-				osmo_fsm_inst_state_chg(fi, GPRS_NS2_ST_ALIVE, nsi->timeout[NS_TOUT_TNS_ALIVE], 0);
+				osmo_fsm_inst_state_chg(fi, GPRS_NS2_ST_RECOVERING, nsi->timeout[NS_TOUT_TNS_ALIVE], 0);
 			}
 		}
 		break;
@@ -244,7 +244,7 @@ static void ns2_st_unconfigured(struct osmo_fsm_inst *fi, uint32_t event, void *
 	case GPRS_NS2_EV_REQ_START:
 		switch (priv->nsvc->mode) {
 		case GPRS_NS2_VC_MODE_ALIVE:
-			osmo_fsm_inst_state_chg(fi, GPRS_NS2_ST_ALIVE, nsi->timeout[NS_TOUT_TNS_ALIVE], NS_TOUT_TNS_ALIVE);
+			osmo_fsm_inst_state_chg(fi, GPRS_NS2_ST_RECOVERING, nsi->timeout[NS_TOUT_TNS_ALIVE], NS_TOUT_TNS_ALIVE);
 			break;
 		case GPRS_NS2_VC_MODE_BLOCKRESET:
 			osmo_fsm_inst_state_chg(fi, GPRS_NS2_ST_RESET, nsi->timeout[NS_TOUT_TNS_RESET], NS_TOUT_TNS_RESET);
@@ -422,7 +422,7 @@ static void ns2_st_alive_onenter(struct osmo_fsm_inst *fi, uint32_t old_state)
 	priv->alive.mode = NS_TOUT_TNS_TEST;
 	osmo_timer_schedule(&priv->alive.timer, nsi->timeout[NS_TOUT_TNS_TEST], 0);
 
-	if (old_state != GPRS_NS2_ST_ALIVE)
+	if (old_state != GPRS_NS2_ST_RECOVERING)
 		priv->N = 0;
 
 	ns2_tx_alive(priv->nsvc);
@@ -437,7 +437,7 @@ static void ns2_st_alive_onleave(struct osmo_fsm_inst *fi, uint32_t next_state)
 static const struct osmo_fsm_state ns2_vc_states[] = {
 	[GPRS_NS2_ST_UNCONFIGURED] = {
 		.in_event_mask = S(GPRS_NS2_EV_REQ_START),
-		.out_state_mask = S(GPRS_NS2_ST_RESET) | S(GPRS_NS2_ST_ALIVE),
+		.out_state_mask = S(GPRS_NS2_ST_RESET) | S(GPRS_NS2_ST_RECOVERING),
 		.name = "UNCONFIGURED",
 		.action = ns2_st_unconfigured,
 		.onenter = ns2_st_unconfigured_onenter,
@@ -465,7 +465,7 @@ static const struct osmo_fsm_state ns2_vc_states[] = {
 	[GPRS_NS2_ST_UNBLOCKED] = {
 		.in_event_mask = S(GPRS_NS2_EV_RX_BLOCK) | S(GPRS_NS2_EV_RX_UNBLOCK_ACK) |
 				 S(GPRS_NS2_EV_RX_UNBLOCK),
-		.out_state_mask = S(GPRS_NS2_ST_RESET) | S(GPRS_NS2_ST_ALIVE) |
+		.out_state_mask = S(GPRS_NS2_ST_RESET) | S(GPRS_NS2_ST_RECOVERING) |
 				  S(GPRS_NS2_ST_BLOCKED) |
 				  S(GPRS_NS2_ST_UNCONFIGURED),
 		.name = "UNBLOCKED",
@@ -473,13 +473,13 @@ static const struct osmo_fsm_state ns2_vc_states[] = {
 		.onenter = ns2_st_unblocked_on_enter,
 	},
 
-	/* ST_ALIVE is only used on VC without RESET/BLOCK */
-	[GPRS_NS2_ST_ALIVE] = {
+	/* ST_RECOVERING is only used on VC without RESET/BLOCK */
+	[GPRS_NS2_ST_RECOVERING] = {
 		.in_event_mask = S(GPRS_NS2_EV_RX_ALIVE_ACK),
-		.out_state_mask = S(GPRS_NS2_ST_ALIVE) |
+		.out_state_mask = S(GPRS_NS2_ST_RECOVERING) |
 				  S(GPRS_NS2_ST_UNBLOCKED) |
 				  S(GPRS_NS2_ST_UNCONFIGURED),
-		.name = "ALIVE",
+		.name = "RECOVERING",
 		.action = ns2_st_alive,
 		.onenter = ns2_st_alive_onenter,
 		.onleave = ns2_st_alive_onleave,
@@ -523,14 +523,14 @@ static int ns2_vc_fsm_timer_cb(struct osmo_fsm_inst *fi)
 			}
 		}
 		break;
-	case GPRS_NS2_ST_ALIVE:
+	case GPRS_NS2_ST_RECOVERING:
 		if (priv->initiate_reset) {
 			priv->N++;
 			if (priv->N <= nsi->timeout[NS_TOUT_TNS_ALIVE_RETRIES]) {
-				osmo_fsm_inst_state_chg(fi, GPRS_NS2_ST_ALIVE, 0, 0);
+				osmo_fsm_inst_state_chg(fi, GPRS_NS2_ST_RECOVERING, 0, 0);
 			} else {
 				priv->N = 0;
-				osmo_fsm_inst_state_chg(fi, GPRS_NS2_ST_ALIVE, 0, 0);
+				osmo_fsm_inst_state_chg(fi, GPRS_NS2_ST_RECOVERING, 0, 0);
 			}
 			break;
 		}
@@ -606,7 +606,7 @@ static void ns2_vc_fsm_allstate_action(struct osmo_fsm_inst *fi,
 		break;
 	case GPRS_NS2_EV_RX_ALIVE_ACK:
 		/* for VCs without RESET/BLOCK/UNBLOCK, the connections comes after ALIVE_ACK unblocked */
-		if (fi->state == GPRS_NS2_ST_ALIVE)
+		if (fi->state == GPRS_NS2_ST_RECOVERING)
 			ns2_st_alive(fi, event, data);
 		else
 			recv_test_procedure(fi);
@@ -630,7 +630,7 @@ static void ns2_vc_fsm_allstate_action(struct osmo_fsm_inst *fi,
 				      0, msg);
 			break;
 		/* ALIVE can receive UNITDATA if the ALIVE_ACK is lost */
-		case GPRS_NS2_ST_ALIVE:
+		case GPRS_NS2_ST_RECOVERING:
 		case GPRS_NS2_ST_UNBLOCKED:
 			ns2_recv_unitdata(fi, msg);
 			return;
