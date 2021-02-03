@@ -351,11 +351,17 @@ static struct msgb *read_nsfrgre_msg(struct osmo_fd *bfd, int *error,
 	switch (osmo_ntohs(greh->ptype)) {
 	case GRE_PTYPE_IPv4:
 		/* IPv4 messages might be GRE keepalives */
-		*error = handle_rx_gre_ipv4(bfd, msg, iph, greh);
+		if (iph)
+			*error = handle_rx_gre_ipv4(bfd, msg, iph, greh);
+		else
+			*error = -EIO;
 		goto out_err;
 		break;
 	case GRE_PTYPE_IPv6:
-		*error = handle_rx_gre_ipv6(bfd, msg, ip6h, greh);
+		if (ip6h)
+			*error = handle_rx_gre_ipv6(bfd, msg, ip6h, greh);
+		else
+			*error = -EIO;
 		goto out_err;
 		break;
 	case GRE_PTYPE_FR:
