@@ -26,7 +26,7 @@ override_dh_auto_test:
 	dh_auto_test || (find . -name testsuite.log -exec cat {} \; ; false)
 
 override_dh_auto_configure:
-	dh_auto_configure -- --enable-static --disable-sctp-tests
+	dh_auto_configure -- --enable-static --disable-sctp-tests --enable-systemd-logging
 
 override_dh_clean:
 	dh_clean

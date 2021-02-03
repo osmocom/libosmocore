@@ -31,6 +31,7 @@ BuildRequires:  pkgconfig(libpcsclite)
 BuildRequires:  pkgconfig(libusb-1.0)
 BuildRequires:  pkgconfig(talloc) >= 2.0.1
 BuildRequires:  pkgconfig(libmnl)
+BuildRequires:  pkgconfig(libsystemd)
 
 %description
 libosmocore is a package with various utility functions that were
@@ -305,7 +306,7 @@ applications that want to make use of libosmousb.
 %build
 echo "%version" >.tarball-version
 autoreconf -fiv
-%configure --enable-shared --disable-static \
+%configure --enable-shared --disable-static --enable-systemd-logging \
 	--includedir="%_includedir/%name"
 make %{?_smp_mflags} V=1
 

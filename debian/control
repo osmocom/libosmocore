@@ -18,6 +18,7 @@ Build-Depends: debhelper (>= 9),
                libsctp-dev,
                libusb-1.0-0-dev,
                libmnl-dev,
+               libsystemd-dev,
                python3:native
 Standards-Version: 3.9.8
 Vcs-Git: git://git.osmocom.org/libosmocore.git
