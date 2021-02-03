@@ -339,7 +339,11 @@ static struct msgb *read_nsfrgre_msg(struct osmo_fd *bfd, int *error,
 		break;
 	}
 
-	greh = (struct gre_hdr *) (msg->data + iph->ihl*4);
+	if (iph)
+		greh = (struct gre_hdr *) (msg->data + iph->ihl*4);
+	else
+		greh = (struct gre_hdr *) (msg->data + sizeof(struct ip6_hdr));
+
 	if (greh->flags) {
 		LOGBIND(bind, LOGL_NOTICE, "Unknown GRE flags 0x%04x\n", osmo_ntohs(greh->flags));
 	}
