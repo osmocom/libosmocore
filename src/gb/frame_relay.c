@@ -343,6 +343,20 @@ static int tx_lmi_q933_status(struct osmo_fr_link *link, uint8_t rep_type)
 }
 
 
+static void link_set_failed(struct osmo_fr_link *link)
+{
+	struct osmo_fr_dlc *dlc;
+
+	LOGPFRL(link, LOGL_NOTICE, "Link failed\n");
+	link->state = false;
+	if (link->status_cb)
+		link->status_cb(link, link->cb_data, link->state);
+
+	llist_for_each_entry(dlc, &link->dlc_list, list) {
+		dlc_set_active(dlc, false);
+	}
+}
+
 /* Q.933 */
 static int rx_lmi_q933_status_enq(struct msgb *msg, struct tlv_parsed *tp)
 {
@@ -427,14 +441,7 @@ static void check_link_state(struct osmo_fr_link *link, bool valid)
 		if (!link->state)
 			return;
 
-		LOGPFRL(link, LOGL_NOTICE, "Link failed\n");
-		link->state = false;
-		if (link->status_cb)
-			link->status_cb(link, link->cb_data, link->state);
-
-		llist_for_each_entry(dlc, &link->dlc_list, list) {
-			dlc_set_active(dlc, false);
-		}
+		link_set_failed(link);
 	} else {
 		/* good link */
 		if (link->state)
