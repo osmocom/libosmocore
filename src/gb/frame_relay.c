@@ -382,9 +382,19 @@ static int rx_lmi_q933_status_enq(struct msgb *msg, struct tlv_parsed *tp)
 	link_int_rx = TLVP_VAL(tp, Q933_IEI_LINK_INT_VERIF);
 	link->last_rx_seq = link_int_rx[0];
 
+	/* this is a bit of a hack.  Q.933 explicitly forbids either side from ever
+	 * sending a sequence number of '0'.  Values start from '1' and are modulo 256,
+	 * but '0' is always skipped.  So if the peer is sending us a "last received
+	 * sequence number of '0' it means it has not yet received any packets from us,
+	 * which in turn can only mean that it has just been restarted.  Let's treat
+	 * this as "service affecting condition" and notify upper layers.  This helps
+	 * particularly in recovering from rapidly re-starting peers, where the Q.933
+	 * nor NS have time to actually detect the connection was lost.  Se OS#4974 */
+	if (link_int_rx[1] == 0) {
+		link_set_failed(link);
 	/* the network checks the receive sequence number received from
 	 * the user equipment against its send sequence counter */
-	if (link_int_rx[1] != link->last_tx_seq) {
+	} else if (link_int_rx[1] != link->last_tx_seq) {
 		check_link_state(link, false);
 		link->err_count++;
 	} else {
