@@ -4,6 +4,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <osmocom/core/endian.h>
 
 /*! Fixed BVCI definitions (Section 5.4.1) */
 #define BVCI_SIGNALLING	0x0000

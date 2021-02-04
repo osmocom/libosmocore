@@ -123,6 +123,7 @@ struct q933_a_hdr {
 
 /* Value part of the Q.933 Annex A.3.3 IE */
 struct q933_a_pvc_sts {
+#if OSMO_IS_LITTLE_ENDIAN
 	uint8_t dlci_msb:6,
 		spare:1,
 		ext0:1;
@@ -136,6 +137,12 @@ struct q933_a_pvc_sts {
 		spare2:3,
 		ext2:1;
 
+#elif OSMO_IS_BIG_ENDIAN
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+	uint8_t ext0:1, spare:1, dlci_msb:6;
+	uint8_t ext1:1, dlci_lsb:4, space1:3;
+	uint8_t ext2:1, spare2:3, new:1, delete:1, active:1, reserved:1;
+#endif
 } __attribute__((packed));
 
 /* RX Message: 14 [ 00 01 03 08 00 75  95 01 01 00 03 02 01 00 ] */

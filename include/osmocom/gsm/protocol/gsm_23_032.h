@@ -50,8 +50,13 @@ enum gad_type {
 };
 
 struct gad_raw_head {
+#if OSMO_IS_LITTLE_ENDIAN
 	uint8_t spare:4,
 		type:4;
+#elif OSMO_IS_BIG_ENDIAN
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+	uint8_t type:4, spare:4;
+#endif
 } __attribute__ ((packed));
 
 struct gad_raw_ell_point {
@@ -61,14 +66,23 @@ struct gad_raw_ell_point {
 } __attribute__ ((packed));
 
 struct gad_raw_ell_point_unc_circle {
+#if OSMO_IS_LITTLE_ENDIAN
 	struct gad_raw_head h; /*!< type = GAD_TYPE_ELL_POINT_UNC_CIRCLE */
 	uint8_t lat[3];
 	uint8_t lon[3];
 	uint8_t unc:7,
 		spare2:1;
+#elif OSMO_IS_BIG_ENDIAN
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+	struct gad_raw_head h;
+	uint8_t lat[3];
+	uint8_t lon[3];
+	uint8_t spare2:1, unc:7;
+#endif
 } __attribute__ ((packed));
 
 struct gad_raw_ell_point_unc_ellipse {
+#if OSMO_IS_LITTLE_ENDIAN
 	struct gad_raw_head h; /*!< type = GAD_TYPE_ELL_POINT_UNC_ELLIPSE */
 	uint8_t lat[3];
 	uint8_t lon[3];
@@ -79,12 +93,27 @@ struct gad_raw_ell_point_unc_ellipse {
 	uint8_t major_ori;
 	uint8_t confidence:7,
 		spare3:1;
+#elif OSMO_IS_BIG_ENDIAN
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+	struct gad_raw_head h;
+	uint8_t lat[3];
+	uint8_t lon[3];
+	uint8_t spare1:1, unc_semi_major:7;
+	uint8_t spare2:1, unc_semi_minor:7;
+	uint8_t major_ori;
+	uint8_t spare3:1, confidence:7;
+#endif
 } __attribute__ ((packed));
 
 struct gad_raw_polygon {
 	struct {
+#if OSMO_IS_LITTLE_ENDIAN
 		uint8_t num_points:4;
 		uint8_t type:4; /*!< type = GAD_TYPE_POLYGON */
+#elif OSMO_IS_BIG_ENDIAN
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+		uint8_t type:4, num_points:4;
+#endif
 	} h;
 	struct {
 		uint8_t lat[3];
@@ -100,6 +129,7 @@ struct gad_raw_ell_point_alt {
 } __attribute__ ((packed));
 
 struct gad_raw_ell_point_alt_unc_ell {
+#if OSMO_IS_LITTLE_ENDIAN
 	struct gad_raw_head h; /*!< type = GAD_TYPE_ELL_POINT_ALT_UNC_ELL */
 	uint8_t lat[3];
 	uint8_t lon[3];
@@ -113,9 +143,22 @@ struct gad_raw_ell_point_alt_unc_ell {
 		spare3:1;
 	uint8_t confidence:7,
 		spare4:1;
+#elif OSMO_IS_BIG_ENDIAN
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+	struct gad_raw_head h;
+	uint8_t lat[3];
+	uint8_t lon[3];
+	uint8_t alt[2];
+	uint8_t spare1:1, unc_semi_major:7;
+	uint8_t spare2:1, unc_semi_minor:7;
+	uint8_t major_ori;
+	uint8_t spare3:1, unc_alt:7;
+	uint8_t spare4:1, confidence:7;
+#endif
 } __attribute__ ((packed));
 
 struct gad_raw_ell_arc {
+#if OSMO_IS_LITTLE_ENDIAN
 	struct gad_raw_head h; /*!< type = GAD_TYPE_ELL_ARC */
 	uint8_t lat[3];
 	uint8_t lon[3];
@@ -126,9 +169,21 @@ struct gad_raw_ell_arc {
 	uint8_t incl_angle;
 	uint8_t confidence:7,
 		spare2:1;
+#elif OSMO_IS_BIG_ENDIAN
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+	struct gad_raw_head h;
+	uint8_t lat[3];
+	uint8_t lon[3];
+	uint8_t inner_r[2];
+	uint8_t spare1:1, unc_r:7;
+	uint8_t ofs_angle;
+	uint8_t incl_angle;
+	uint8_t spare2:1, confidence:7;
+#endif
 } __attribute__ ((packed));
 
 struct gad_raw_ha_ell_point_unc_ell {
+#if OSMO_IS_LITTLE_ENDIAN
 	struct gad_raw_head h; /*!< type = GAD_TYPE_HA_ELL_POINT_UNC_ELLIPSE */
 	uint8_t lat[4];
 	uint8_t lon[4];
@@ -138,9 +193,21 @@ struct gad_raw_ha_ell_point_unc_ell {
 	uint8_t major_ori;
 	uint8_t confidence:7,
 		spare1:1;
+#elif OSMO_IS_BIG_ENDIAN
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+	struct gad_raw_head h;
+	uint8_t lat[4];
+	uint8_t lon[4];
+	uint8_t alt[3];
+	uint8_t unc_semi_major;
+	uint8_t unc_semi_minor;
+	uint8_t major_ori;
+	uint8_t spare1:1, confidence:7;
+#endif
 } __attribute__ ((packed));
 
 struct gad_raw_ha_ell_point_alt_unc_ell {
+#if OSMO_IS_LITTLE_ENDIAN
 	struct gad_raw_head h; /*!< type = GAD_TYPE_HA_ELL_POINT_ALT_UNC_ELL */
 	uint8_t lat[4];
 	uint8_t lon[4];
@@ -153,6 +220,19 @@ struct gad_raw_ha_ell_point_alt_unc_ell {
 	uint8_t unc_alt;
 	uint8_t v_confidence:7,
 		spare2:1;
+#elif OSMO_IS_BIG_ENDIAN
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+	struct gad_raw_head h;
+	uint8_t lat[4];
+	uint8_t lon[4];
+	uint8_t alt[3];
+	uint8_t unc_semi_major;
+	uint8_t unc_semi_minor;
+	uint8_t major_ori;
+	uint8_t spare1:1, h_confidence:7;
+	uint8_t unc_alt;
+	uint8_t spare2:1, v_confidence:7;
+#endif
 } __attribute__ ((packed));
 
 /*! GAD PDU in network-byte-order according to 3GPP TS 23.032 GAD: Universal Geographical Area Description. */
