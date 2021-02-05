@@ -977,7 +977,7 @@ struct osmo_fr_dlc *osmo_fr_dlc_alloc(struct osmo_fr_link *link, uint16_t dlci)
 	llist_add_tail(&dlc->list, &link->dlc_list);
 
 	dlc->add = true;
-	tx_lmi_q933_status(link, Q933_IEI_PVC_STATUS);
+	tx_lmi_q933_status(link, Q933_REPT_SINGLE_PVC_ASYNC_STS);
 
 	return dlc;
 }
