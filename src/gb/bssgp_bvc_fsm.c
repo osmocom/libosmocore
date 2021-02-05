@@ -819,5 +819,5 @@ uint32_t bssgp_bvc_get_features_negotiated(struct osmo_fsm_inst *fi)
 
 static __attribute__((constructor)) void on_dso_load_bvc_fsm(void)
 {
-	osmo_fsm_register(&bssgp_bvc_fsm);
+	OSMO_ASSERT(osmo_fsm_register(&bssgp_bvc_fsm) == 0);
 }
