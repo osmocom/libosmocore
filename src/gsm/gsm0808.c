@@ -494,8 +494,6 @@ struct msgb *gsm0808_create_ass2(const struct gsm0808_channel_type *ct,
 {
 	/* See also: 3GPP TS 48.008 3.2.1.1 ASSIGNMENT REQUEST */
 	struct msgb *msg;
-	uint16_t cic_sw;
-	uint32_t ci_sw;
 
 	/* Mandatory emelent! */
 	OSMO_ASSERT(ct);
@@ -513,11 +511,8 @@ struct msgb *gsm0808_create_ass2(const struct gsm0808_channel_type *ct,
 	gsm0808_enc_channel_type(msg, ct);
 
 	/* Circuit Identity Code 3.2.2.2  */
-	if (cic) {
-		cic_sw = osmo_htons(*cic);
-		msgb_tv_fixed_put(msg, GSM0808_IE_CIRCUIT_IDENTITY_CODE,
-				  sizeof(cic_sw), (uint8_t *) & cic_sw);
-	}
+	if (cic)
+		msgb_tv16_put(msg, GSM0808_IE_CIRCUIT_IDENTITY_CODE, *cic);
 
 	/* AoIP: AoIP Transport Layer Address (MGW) 3.2.2.102 */
 	if (ss) {
@@ -531,17 +526,9 @@ struct msgb *gsm0808_create_ass2(const struct gsm0808_channel_type *ct,
 	/* AoIP: Call Identifier 3.2.2.105 */
 	if (ci) {
 		/* NOTE: 3GPP TS 48.008, section 3.2.2.105 specifies that
-		   the least significant byte should be transmitted first.
-		   On x86, this would mean that the endieness is already
-		   correct, however a platform independed implementation
-		   is required: */
-#ifndef OSMO_IS_LITTLE_ENDIAN
-		ci_sw = osmo_swab32(*ci);
-#else
-		ci_sw = *ci;
-#endif
-		msgb_tv_fixed_put(msg, GSM0808_IE_CALL_ID, sizeof(ci_sw),
-				  (uint8_t *) & ci_sw);
+		 * the least significant byte shall be transmitted first. */
+		msgb_v_put(msg, GSM0808_IE_CALL_ID);
+		osmo_store32le(*ci, msgb_put(msg, sizeof(*ci)));
 	}
 
 	if (kc)
