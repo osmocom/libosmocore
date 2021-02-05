@@ -852,6 +852,7 @@ static void ns2_sns_st_size_onenter(struct osmo_fsm_inst *fi, uint32_t old_state
 static void ns2_sns_st_config_bss(struct osmo_fsm_inst *fi, uint32_t event, void *data)
 {
 	struct tlv_parsed *tp = NULL;
+	struct gprs_ns2_nse *nse = nse_inst_from_fi(fi);
 
 	switch (event) {
 	case GPRS_SNS_EV_CONFIG_ACK:
@@ -861,7 +862,7 @@ static void ns2_sns_st_config_bss(struct osmo_fsm_inst *fi, uint32_t event, void
 							 gprs_ns2_cause_str(*TLVP_VAL(tp, NS_IE_CAUSE)));
 			/* TODO: What to do? */
 		} else {
-			osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_CONFIG_SGSN, 0, 0);
+			osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_CONFIG_SGSN, nse->nsi->timeout[NS_TOUT_TSNS_PROV], 3);
 		}
 		break;
 	default:
@@ -943,10 +944,11 @@ static void ns_sns_st_config_sgsn_ip4(struct osmo_fsm_inst *fi, uint32_t event, 
 		ns2_tx_sns_config_ack(gss->sns_nsvc, NULL);
 		/* start the test procedure on ALL NSVCs! */
 		gprs_ns2_start_alive_all_nsvcs(nse);
-		osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_CONFIGURED, ns_sns_configured_timeout(fi), 3);
+		osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_CONFIGURED, ns_sns_configured_timeout(fi), 4);
 	} else {
 		/* just send CONFIG-ACK */
 		ns2_tx_sns_config_ack(gss->sns_nsvc, NULL);
+		osmo_timer_schedule(&fi->timer, nse->nsi->timeout[NS_TOUT_TSNS_PROV], 0);
 	}
 }
 
@@ -1364,13 +1366,21 @@ static int ns2_sns_fsm_bss_timer_cb(struct osmo_fsm_inst *fi)
 		break;
 	case 2:
 		if (gss->N >= nsi->timeout[NS_TOUT_TSNS_CONFIG_RETRIES]) {
-			LOGPFSML(fi, LOGL_ERROR, "NSE %d: Config retries failed. Selecting next IP-SNS endpoint.\n", nse->nsei);
+			LOGPFSML(fi, LOGL_ERROR, "NSE %d: BSS Config retries failed. Selecting next IP-SNS endpoint.\n", nse->nsei);
 			osmo_fsm_inst_dispatch(fi, GPRS_SNS_EV_SELECT_ENDPOINT, NULL);
 		} else {
 			osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_CONFIG_BSS, nsi->timeout[NS_TOUT_TSNS_PROV], 2);
 		}
 		break;
 	case 3:
+		if (gss->N >= nsi->timeout[NS_TOUT_TSNS_CONFIG_RETRIES]) {
+			LOGPFSML(fi, LOGL_ERROR, "NSE %d: SGSN Config retries failed. Selecting next IP-SNS endpoint.\n", nse->nsei);
+			osmo_fsm_inst_dispatch(fi, GPRS_SNS_EV_SELECT_ENDPOINT, NULL);
+		} else {
+			osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_CONFIG_SGSN, nsi->timeout[NS_TOUT_TSNS_PROV], 3);
+		}
+		break;
+	case 4:
 		LOGPFSML(fi, LOGL_ERROR, "NSE %d: Config succeeded but no NS-VC came online. Selecting next IP-SNS endpoint.\n", nse->nsei);
 		osmo_fsm_inst_dispatch(fi, GPRS_SNS_EV_SELECT_ENDPOINT, NULL);
 		break;
