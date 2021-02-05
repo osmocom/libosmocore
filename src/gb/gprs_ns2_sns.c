@@ -727,6 +727,9 @@ static void ns2_sns_st_size_onenter(struct osmo_fsm_inst *fi, uint32_t old_state
 	/* on a generic failure, the timer callback will recover */
 	if (old_state != GPRS_SNS_ST_UNCONFIGURED)
 		ns2_prim_status_ind(gss->nse, NULL, 0, GPRS_NS2_AFF_CAUSE_SNS_FAILURE);
+	if (old_state != GPRS_SNS_ST_SIZE)
+		gss->N = 0;
+
 
 	gss->alive = false;
 	ns2_clear_ipv46_entries(gss);
@@ -873,6 +876,10 @@ static void ns2_sns_st_config_bss(struct osmo_fsm_inst *fi, uint32_t event, void
 static void ns2_sns_st_config_bss_onenter(struct osmo_fsm_inst *fi, uint32_t old_state)
 {
 	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
+
+	if (old_state != GPRS_SNS_ST_CONFIG_BSS)
+		gss->N = 0;
+
 	/* Transmit SNS-CONFIG */
 	switch (gss->ip) {
 	case IPv4:
@@ -999,7 +1006,16 @@ static void ns_sns_st_config_sgsn_ip6(struct osmo_fsm_inst *fi, uint32_t event, 
 	} else {
 		/* just send CONFIG-ACK */
 		ns2_tx_sns_config_ack(gss->sns_nsvc, NULL);
+		osmo_timer_schedule(&fi->timer, nse->nsi->timeout[NS_TOUT_TSNS_PROV], 0);
 	}
+}
+
+static void ns2_sns_st_config_sgsn_onenter(struct osmo_fsm_inst *fi, uint32_t old_state)
+{
+	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
+
+	if (old_state != GPRS_SNS_ST_CONFIG_SGSN)
+		gss->N = 0;
 }
 
 static void ns2_sns_st_config_sgsn(struct osmo_fsm_inst *fi, uint32_t event, void *data)
@@ -1334,6 +1350,7 @@ static const struct osmo_fsm_state ns2_sns_bss_states[] = {
 				  S(GPRS_SNS_ST_SIZE),
 		.name = "CONFIG_SGSN",
 		.action = ns2_sns_st_config_sgsn,
+		.onenter = ns2_sns_st_config_sgsn_onenter,
 	},
 	[GPRS_SNS_ST_CONFIGURED] = {
 		.in_event_mask = S(GPRS_SNS_EV_ADD) |
