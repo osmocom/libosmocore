@@ -406,7 +406,7 @@ static inline uint8_t *msgb_tl_put(struct msgb *msg, uint8_t tag)
 	return len;
 }
 
-/*! put (append) a TV16 field to a \ref msgb
+/*! put (append) a TV16 field (network order) to the given msgb
  *  \returns pointer to first byte after newly-put information */
 static inline uint8_t *msgb_tv16_put(struct msgb *msg, uint8_t tag, uint16_t val)
 {
@@ -414,7 +414,7 @@ static inline uint8_t *msgb_tv16_put(struct msgb *msg, uint8_t tag, uint16_t val
 	return tv16_put(buf, tag, val);
 }
 
-/*! put (append) a TV32 field to a \ref msgb
+/*! put (append) a TV32 field (network order) to the given msgb
  *  \returns pointer to first byte after newly-put information */
 static inline uint8_t *msgb_tv32_put(struct msgb *msg, uint8_t tag, uint32_t val)
 {
