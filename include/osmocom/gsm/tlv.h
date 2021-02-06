@@ -414,6 +414,16 @@ static inline uint8_t *msgb_tv16_put(struct msgb *msg, uint8_t tag, uint16_t val
 	return tv16_put(buf, tag, val);
 }
 
+/*! put (append) a TV32 field to a \ref msgb
+ *  \returns pointer to first byte after newly-put information */
+static inline uint8_t *msgb_tv32_put(struct msgb *msg, uint8_t tag, uint32_t val)
+{
+	uint8_t *buf = msgb_put(msg, 1 + 4);
+	*buf++ = tag;
+	osmo_store32be(val, buf);
+	return msg->tail;
+}
+
 /*! push (prepend) a TLV field to a \ref msgb
  *  \returns pointer to first byte of newly-pushed information */
 static inline uint8_t *msgb_tlv_push(struct msgb *msg, uint8_t tag, uint8_t len, const uint8_t *val)
