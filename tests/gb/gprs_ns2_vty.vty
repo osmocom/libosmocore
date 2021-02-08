@@ -30,4 +30,5 @@ OsmoNSdummy(config-ns-bind)# listen 127.0.0.14 42999
 OsmoNSdummy(config-ns-bind)# end
 OsmoNSdummy# show ns
 UDP bind: 127.0.0.14:42999 DSCP: 0
+  IP-SNS signalling weight: 1 data weight: 1
   0 NS-VC: 

@@ -215,6 +215,8 @@ struct gprs_ns2_vc *gprs_ns2_ip_connect_inactive(struct gprs_ns2_vc_bind *bind,
 					const struct osmo_sockaddr *remote,
 					struct gprs_ns2_nse *nse,
 					uint16_t nsvci);
+void gprs_ns2_ip_bind_set_sns_weight(struct gprs_ns2_vc_bind *bind,
+				     uint8_t signalling, uint8_t data);
 
 void gprs_ns2_free_bind(struct gprs_ns2_vc_bind *bind);
 void gprs_ns2_free_binds(struct gprs_ns2_inst *nsi);

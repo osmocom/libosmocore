@@ -104,6 +104,8 @@ static void dump_vty(const struct gprs_ns2_vc_bind *bind,
 	}
 
 	vty_out(vty, "UDP bind: %s:%d DSCP: %d%s", sockstr.ip, sockstr.port, priv->dscp, VTY_NEWLINE);
+	vty_out(vty, "  IP-SNS signalling weight: %u data weight: %u%s",
+		bind->sns_sig_weight, bind->sns_data_weight, VTY_NEWLINE);
 	vty_out(vty, "  %lu NS-VC: %s", nsvcs, VTY_NEWLINE);
 
 	llist_for_each_entry(nsvc, &bind->nsvc, blist) {
@@ -566,4 +568,17 @@ struct gprs_ns2_vc_bind *ns2_ip_get_bind_by_index(struct gprs_ns2_inst *nsi,
 	}
 
 	return NULL;
+}
+
+/*! set the signalling and data weight for this bind
+ * \param[in] bind
+ * \param[in] signalling the signalling weight
+ * \param[in] data the data weight
+ */
+void gprs_ns2_ip_bind_set_sns_weight(struct gprs_ns2_vc_bind *bind, uint8_t signalling, uint8_t data)
+{
+	OSMO_ASSERT(gprs_ns2_is_ip_bind(bind));
+	bind->sns_sig_weight = signalling;
+	bind->sns_data_weight = data;
+	ns2_sns_update_weights(bind);
 }

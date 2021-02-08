@@ -796,8 +796,8 @@ static void ns2_sns_st_size_onenter(struct osmo_fsm_inst *fi, uint32_t old_state
 			}
 
 			ip4_elems->udp_port = sa->u.sin.sin_port;
-			ip4_elems->sig_weight = 2;
-			ip4_elems->data_weight = 1;
+			ip4_elems->sig_weight = bind->sns_sig_weight;
+			ip4_elems->data_weight = bind->sns_data_weight;
 			ip4_elems++;
 		}
 
@@ -835,8 +835,8 @@ static void ns2_sns_st_size_onenter(struct osmo_fsm_inst *fi, uint32_t old_state
 			}
 
 			ip6_elems->udp_port = sa->u.sin.sin_port;
-			ip6_elems->sig_weight = 2;
-			ip6_elems->data_weight = 1;
+			ip6_elems->sig_weight = bind->sns_sig_weight;
+			ip6_elems->data_weight = bind->sns_data_weight;
 
 			ip6_elems++;
 		}
@@ -1808,6 +1808,14 @@ void ns2_sns_notify_alive(struct gprs_ns2_nse *nse, struct gprs_ns2_vc *nsvc, bo
 		gss->alive = false;
 		osmo_fsm_inst_dispatch(nse->bss_sns_fi, GPRS_SNS_EV_NO_NSVC, NULL);
 	}
+}
+
+/* Update SNS weights
+ * \param[in] nsvc the NSVC which should be updated
+ */
+void ns2_sns_update_weights(struct gprs_ns2_vc_bind *bind)
+{
+	/* TODO: implement weights after binds per sns implemented */
 }
 
 /* initialize osmo_ctx on main tread */

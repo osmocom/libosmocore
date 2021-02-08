@@ -257,6 +257,11 @@ struct gprs_ns2_vc_bind {
 	void (*dump_vty)(const struct gprs_ns2_vc_bind *bind,
 			 struct vty *vty, bool stats);
 
+	/*! the IP-SNS signalling weight when doing dynamic configuration */
+	uint8_t sns_sig_weight;
+	/*! the IP-SNS data weight when doing dynamic configuration */
+	uint8_t sns_data_weight;
+
 	struct osmo_stat_item_group *statg;
 };
 
@@ -352,6 +357,7 @@ struct osmo_fsm_inst *ns2_sns_bss_fsm_alloc(struct gprs_ns2_nse *nse,
 					     const char *id);
 void ns2_sns_replace_nsvc(struct gprs_ns2_vc *nsvc);
 void ns2_sns_notify_alive(struct gprs_ns2_nse *nse, struct gprs_ns2_vc *nsvc, bool alive);
+void ns2_sns_update_weights(struct gprs_ns2_vc_bind *bind);
 
 /* vc */
 struct osmo_fsm_inst *ns2_vc_fsm_alloc(struct gprs_ns2_vc *nsvc,

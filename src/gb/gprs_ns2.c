@@ -1409,6 +1409,8 @@ int ns2_bind_alloc(struct gprs_ns2_inst *nsi, const char *name,
 		return -ENOMEM;
 	}
 
+	bind->sns_sig_weight = 1;
+	bind->sns_data_weight = 1;
 	bind->nsi = nsi;
 	INIT_LLIST_HEAD(&bind->nsvc);
 	llist_add(&bind->list, &nsi->binding);

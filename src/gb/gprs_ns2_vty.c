@@ -66,6 +66,8 @@ struct vty_bind {
 	int dscp;
 	bool accept_ipaccess;
 	bool accept_sns;
+	uint8_t ip_sns_sig_weight;
+	uint8_t ip_sns_data_weight;
 };
 
 /* TODO: this should into osmo timer */
@@ -118,6 +120,8 @@ static struct vty_bind *vty_bind_alloc(const char *name)
 		return NULL;
 	}
 
+	vbind->ip_sns_sig_weight = 1;
+	vbind->ip_sns_data_weight = 1;
 	llist_add(&vbind->list, &binds);
 	return vbind;
 }
@@ -328,6 +332,8 @@ static void config_write_vbind(struct vty *vty, struct vty_bind *vbind)
 			vty_out(vty, "  accept-ipaccess%s", VTY_NEWLINE);
 		if (vbind->dscp)
 			vty_out(vty, "  dscp %u%s", vbind->dscp, VTY_NEWLINE);
+		vty_out(vty, "   ip-sns signalling-weight %u data-weight %u%s",
+			vbind->ip_sns_sig_weight, vbind->ip_sns_data_weight, VTY_NEWLINE);
 		break;
 	default:
 		return;
@@ -611,6 +617,34 @@ DEFUN(cfg_no_ns_bind_ipaccess, cfg_no_ns_bind_ipaccess_cmd,
 	return CMD_SUCCESS;
 }
 
+DEFUN(cfg_ns_bind_ip_sns_weight, cfg_ns_bind_ip_sns_weight_cmd,
+      "ip-sns signalling-weight <0-254> data-weight <0-254>",
+      "IP SNS\n"
+      "signalling weight used by IP-SNS dynamic configuration\n"
+      "signalling weight used by IP-SNS dynamic configuration\n"
+      "data weight used by IP-SNS dynamic configuration\n"
+      "data weight used by IP-SNS dynamic configuration\n")
+{
+	struct vty_bind *vbind = vty->index;
+	struct gprs_ns2_vc_bind *bind;
+
+	int signalling = atoi(argv[0]);
+	int data = atoi(argv[1]);
+
+	if (vbind->ll != GPRS_NS2_LL_UDP) {
+		vty_out(vty, "ip-sns signalling-weight <0-254> data-weight <0-254> can be only used with UDP bind%s",
+			VTY_NEWLINE);
+		return CMD_WARNING;
+	}
+
+	vbind->ip_sns_data_weight = data;
+	vbind->ip_sns_sig_weight = signalling;
+	bind = gprs_ns2_bind_by_name(vty_nsi, vbind->name);
+	if (bind)
+		gprs_ns2_ip_bind_set_sns_weight(bind, signalling, data);
+
+	return CMD_SUCCESS;
+}
 
 DEFUN(cfg_ns_bind_fr, cfg_ns_bind_fr_cmd,
       "fr NETIF (fr|frnet)",
@@ -1686,6 +1720,7 @@ int gprs_ns2_vty_init(struct gprs_ns2_inst *nsi)
 	install_lib_element(L_NS_BIND_NODE, &cfg_no_ns_bind_listen_cmd);
 	install_lib_element(L_NS_BIND_NODE, &cfg_ns_bind_dscp_cmd);
 	install_lib_element(L_NS_BIND_NODE, &cfg_no_ns_bind_dscp_cmd);
+	install_lib_element(L_NS_BIND_NODE, &cfg_ns_bind_ip_sns_weight_cmd);
 	install_lib_element(L_NS_BIND_NODE, &cfg_ns_bind_ipaccess_cmd);
 	install_lib_element(L_NS_BIND_NODE, &cfg_no_ns_bind_ipaccess_cmd);
 	install_lib_element(L_NS_BIND_NODE, &cfg_ns_bind_fr_cmd);
