@@ -1634,7 +1634,7 @@ void ns2_sns_write_vty(struct vty *vty, const struct gprs_ns2_nse *nse)
 		/* It's unlikely that an error happens, but let's better be safe. */
 		if (osmo_sockaddr_str_from_sockaddr(&addr_str, &endpoint->saddr.u.sas) != 0)
 			addr_str = (struct osmo_sockaddr_str) { .ip = "<INVALID>" };
-		vty_out(vty, "  ip-sns %s %u%s", addr_str.ip, addr_str.port, VTY_NEWLINE);
+		vty_out(vty, "  ip-sns-remote %s %u%s", addr_str.ip, addr_str.port, VTY_NEWLINE);
 	}
 }
 

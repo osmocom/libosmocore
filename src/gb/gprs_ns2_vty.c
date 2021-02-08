@@ -1201,8 +1201,8 @@ DEFUN(cfg_no_ns_nse_nsvc_ipa, cfg_no_ns_nse_nsvc_ipa_cmd,
 	return CMD_SUCCESS;
 }
 
-DEFUN(cfg_ns_nse_ip_sns, cfg_ns_nse_ip_sns_cmd,
-      "ip-sns " VTY_IPV46_CMD " <1-65535>",
+DEFUN(cfg_ns_nse_ip_sns_remote, cfg_ns_nse_ip_sns_remote_cmd,
+      "ip-sns-remote " VTY_IPV46_CMD " <1-65535>",
       "SNS Initial Endpoint\n"
       "SGSN IPv4 Address\n" "SGSN IPv6 Address\n"
       "SGSN UDP Port\n"
@@ -1273,8 +1273,8 @@ err:
 	return CMD_WARNING;
 }
 
-DEFUN(cfg_no_ns_nse_ip_sns, cfg_no_ns_nse_ip_sns_cmd,
-      "no ip-sns " VTY_IPV46_CMD " <1-65535>",
+DEFUN(cfg_no_ns_nse_ip_sns_remote, cfg_no_ns_nse_ip_sns_remote_cmd,
+      "no ip-sns-remote " VTY_IPV46_CMD " <1-65535>",
       NO_STR
       "Delete a SNS Initial Endpoint\n"
       "SGSN IPv4 Address\n" "SGSN IPv6 Address\n"
@@ -1699,8 +1699,8 @@ int gprs_ns2_vty_init(struct gprs_ns2_inst *nsi)
 	install_lib_element(L_NS_NSE_NODE, &cfg_no_ns_nse_nsvc_udp_cmd);
 	install_lib_element(L_NS_NSE_NODE, &cfg_ns_nse_nsvc_ipa_cmd);
 	install_lib_element(L_NS_NSE_NODE, &cfg_no_ns_nse_nsvc_ipa_cmd);
-	install_lib_element(L_NS_NSE_NODE, &cfg_ns_nse_ip_sns_cmd);
-	install_lib_element(L_NS_NSE_NODE, &cfg_no_ns_nse_ip_sns_cmd);
+	install_lib_element(L_NS_NSE_NODE, &cfg_ns_nse_ip_sns_remote_cmd);
+	install_lib_element(L_NS_NSE_NODE, &cfg_no_ns_nse_ip_sns_remote_cmd);
 
 	return 0;
 }
