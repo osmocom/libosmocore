@@ -128,6 +128,7 @@ static void vty_bind_free(struct vty_bind *vbind)
 		return;
 
 	llist_del(&vbind->list);
+	talloc_free(vbind);
 }
 
 static struct cmd_node ns_node = {
