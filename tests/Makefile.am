@@ -42,6 +42,7 @@ check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
 		 bsslap/bsslap_test					\
 		 bssmap_le/bssmap_le_test				\
 		 it_q/it_q_test						\
+		 gsm48/rest_octets_test					\
 		 $(NULL)
 
 if ENABLE_MSGFILE
@@ -138,6 +139,9 @@ gsm29205_gsm29205_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 
 gsm0408_gsm0408_test_SOURCES = gsm0408/gsm0408_test.c
 gsm0408_gsm0408_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
+
+gsm48_rest_octets_test_SOURCES = gsm48/rest_octets_test.c
+gsm48_rest_octets_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 
 gprs_gprs_test_SOURCES = gprs/gprs_test.c
 gprs_gprs_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
@@ -399,6 +403,7 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
 	     bsslap/bsslap_test.ok \
 	     bssmap_le/bssmap_le_test.ok \
 	     it_q/it_q_test.ok \
+	     gsm48/rest_octets_test.ok \
 	     $(NULL)
 
 if ENABLE_LIBSCTP

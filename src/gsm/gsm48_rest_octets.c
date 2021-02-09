@@ -749,6 +749,119 @@ int osmo_gsm48_rest_octets_si6_encode(uint8_t *data, const struct osmo_gsm48_si6
 	return bv.data_len;
 }
 
+
+static unsigned int decode_t3192(unsigned int t3192)
+{
+	/* See also 3GPP TS 44.060
+	   Table 12.24.2: GPRS Cell Options information element details */
+	static const unsigned int decode_t3192_tbl[8] = {500, 1000, 1500, 0, 80, 120, 160, 200};
+	OSMO_ASSERT(t3192 <= 7);
+	return decode_t3192_tbl[t3192];
+}
+
+static unsigned int decode_drx_timer(unsigned int drx)
+{
+	static const unsigned int decode_drx_timer_tbl[8] = {0, 1, 2, 4, 8, 16, 32, 64};
+	OSMO_ASSERT(drx <= 7);
+	return decode_drx_timer_tbl[drx];
+}
+
+static int decode_gprs_cell_opt(struct osmo_gprs_cell_options *gco, struct bitvec *bv)
+{
+	gco->nmo = bitvec_get_uint(bv, 2);
+	gco->t3168 = (bitvec_get_uint(bv, 3) + 1) * 500;
+	gco->t3192 = decode_t3192(bitvec_get_uint(bv, 3));
+	gco->drx_timer_max = decode_drx_timer(bitvec_get_uint(bv, 3));
+
+	/* ACCESS_BURST_TYPE: */
+	bitvec_get_uint(bv, 1);
+	/* CONTROL_ACK_TYPE: */
+	gco->ctrl_ack_type_use_block = bitvec_get_uint(bv, 1);
+	gco->bs_cv_max = bitvec_get_uint(bv, 4);
+
+	if (bitvec_get_uint(bv, 1)) {
+		bitvec_get_uint(bv, 3);	/* DEC */
+		bitvec_get_uint(bv, 3);	/* INC */
+		bitvec_get_uint(bv, 3);	/* MAX */
+	}
+
+	if (bitvec_get_uint(bv, 1)) {
+		int ext_len = bitvec_get_uint(bv, 6);
+		if (ext_len < 0)
+			return ext_len;
+		unsigned int cur_bit = bv->cur_bit;
+		/* Extension Information */
+		/* R99 extension: */
+		gco->ext_info.egprs_supported = bitvec_get_uint(bv, 1);
+		if (gco->ext_info.egprs_supported) {
+			gco->ext_info.use_egprs_p_ch_req = !bitvec_get_uint(bv, 1);
+			gco->ext_info.bep_period = bitvec_get_uint(bv, 4);
+		}
+		gco->ext_info.pfc_supported = bitvec_get_uint(bv, 1);
+		gco->ext_info.dtm_supported = bitvec_get_uint(bv, 1);
+		gco->ext_info.bss_paging_coordination = bitvec_get_uint(bv, 1);
+		/* REL-4 extension: */
+		gco->ext_info.ccn_active = bitvec_get_uint(bv, 1);
+		bitvec_get_uint(bv, 1); /* NW_EXT_UTBF */
+		bv->cur_bit = cur_bit + ext_len + 1;
+	}
+	return 0;
+}
+
+static void decode_gprs_pwr_ctrl_pars(struct osmo_gprs_power_ctrl_pars *pcp, struct bitvec *bv)
+{
+	pcp->alpha = bitvec_get_uint(bv, 4);
+	pcp->t_avg_w = bitvec_get_uint(bv,5);
+	pcp->t_avg_t = bitvec_get_uint(bv, 5);
+	pcp->pc_meas_chan = bitvec_get_uint(bv, 1);
+	pcp->n_avg_i = bitvec_get_uint(bv, 4);
+}
+
+/*! Decode SI13 Rest Octests (04.08 Chapter 10.5.2.37b).
+ *  \param[out] si13 decoded SI13 rest octets
+ *  \param[in] encoded SI13 rest octets
+ *  \returns parsed bits on success, negative on error */
+int osmo_gsm48_rest_octets_si13_decode(struct osmo_gsm48_si13_info *si13, const uint8_t *data)
+{
+	struct osmo_gprs_cell_options *co = &si13->cell_opts;
+	struct osmo_gprs_power_ctrl_pars *pcp = &si13->pwr_ctrl_pars;
+	struct bitvec bv;
+	int rc;
+
+	memset(&bv, 0, sizeof(bv));
+	bv.data = (uint8_t *) data;
+	bv.data_len = 20;
+
+	memset(si13, 0, sizeof(*si13));
+
+
+	if (bitvec_get_bit_high(&bv) == H) {
+		si13->bcch_change_mark = bitvec_get_uint(&bv, 3);
+		si13->si_change_field = bitvec_get_uint(&bv, 4);
+		if (bitvec_get_uint(&bv, 1)) {
+			si13->bcch_change_mark = bitvec_get_uint(&bv, 2);
+			/* FIXME: implement parsing GPRS Mobile Allocation IE */
+			return -ENOTSUP;
+		}
+		if (bitvec_get_uint(&bv, 1)) {
+			/* PBCCH present in cell */
+			/* FIXME: parse not implemented */
+			return -ENOTSUP;
+		} else {
+			/* PBCCH not present in cell */
+			si13->rac = bitvec_get_uint(&bv, 8);
+			si13->spgc_ccch_sup = bitvec_get_uint(&bv, 1);
+			si13->prio_acc_thr = bitvec_get_uint(&bv, 3);
+			si13->net_ctrl_ord = bitvec_get_uint(&bv, 2);
+			if ((rc = decode_gprs_cell_opt(co, &bv)) < 0)
+				return rc;
+
+			decode_gprs_pwr_ctrl_pars(pcp, &bv);
+		}
+	}
+	return bv.cur_bit;
+}
+
 /* GPRS Mobile Allocation as per TS 04.60 Chapter 12.10a:
    < GPRS Mobile Allocation IE > ::=
      < HSN : bit (6) >

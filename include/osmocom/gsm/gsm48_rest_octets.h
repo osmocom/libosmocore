@@ -120,7 +120,8 @@ struct osmo_gsm48_si13_info {
 	uint8_t prio_acc_thr;
 };
 
-/* Generate SI13 Rest Octests (Chapter 10.5.2.37b) */
+/* Parse/Generate SI13 Rest Octests (Chapter 10.5.2.37b) */
+int osmo_gsm48_rest_octets_si13_decode(struct osmo_gsm48_si13_info *si13, const uint8_t *data);
 int osmo_gsm48_rest_octets_si13_encode(uint8_t *data, const struct osmo_gsm48_si13_info *si13);
 
 /* Parse SI3 Rest Octets */
