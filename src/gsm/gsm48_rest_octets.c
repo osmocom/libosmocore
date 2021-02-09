@@ -906,9 +906,8 @@ static int append_gprs_cell_opt(struct bitvec *bv,
 		bitvec_set_bit(bv, 0);
 	} else {
 		/* extension information */
-
-		/* R99 extension: */
 		bitvec_set_bit(bv, 1);
+		/* R99 extension: */
 		if (!gco->ext_info.egprs_supported) {
 			/* 6bit length of extension */
 			bitvec_set_uint(bv, (1 + 5)-1, 6);
