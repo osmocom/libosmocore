@@ -807,6 +807,7 @@ int gprs_ns2_fr_bind(struct gprs_ns2_inst *nsi,
 		goto err_bind;
 	}
 
+	INIT_LLIST_HEAD(&priv->backlog.list);
 	OSMO_STRLCPY_ARRAY(priv->netif, netif);
 
 	/* FIXME: move fd handling into socket.c */
@@ -836,7 +837,6 @@ int gprs_ns2_fr_bind(struct gprs_ns2_inst *nsi,
 	rc = open_socket(priv->ifindex, bind);
 	if (rc < 0)
 		goto err_fr;
-	INIT_LLIST_HEAD(&priv->backlog.list);
 	priv->backlog.retry_us = 2500; /* start with some non-zero value; this corrsponds to 496 bytes */
 	osmo_timer_setup(&priv->backlog.timer, fr_backlog_timer_cb, bind);
 	osmo_fd_setup(&priv->backlog.ofd, rc, OSMO_FD_READ, fr_netif_ofd_cb, bind, 0);
