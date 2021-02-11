@@ -863,6 +863,7 @@ err_fd:
 	close(priv->backlog.ofd.fd);
 err_fr:
 	osmo_fr_link_free(fr_link);
+	priv->link = NULL;
 err_bind:
 	gprs_ns2_free_bind(bind);
 
