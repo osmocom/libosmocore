@@ -43,14 +43,14 @@ You can clone from the official libosmocore.git repository using
 
 	git clone git://git.osmocom.org/libosmocore.git
 
-There is a cgit interface at <http://git.osmocom.org/libosmocore/>
+There is a cgit interface at <https://git.osmocom.org/libosmocore/>
 
 Documentation
 -------------
 
 Doxygen-generated API documentation is generated during the build
 process, but also available online for each of the sub-libraries at
-<http://ftp.osmocom.org/api/latest/libosmocore/>
+<https://ftp.osmocom.org/api/latest/libosmocore/>
 
 Mailing List
 ------------
