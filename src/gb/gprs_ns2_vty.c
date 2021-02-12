@@ -332,7 +332,7 @@ static void config_write_vbind(struct vty *vty, struct vty_bind *vbind)
 			vty_out(vty, "  accept-ipaccess%s", VTY_NEWLINE);
 		if (vbind->dscp)
 			vty_out(vty, "  dscp %u%s", vbind->dscp, VTY_NEWLINE);
-		vty_out(vty, "   ip-sns signalling-weight %u data-weight %u%s",
+		vty_out(vty, "  ip-sns signalling-weight %u data-weight %u%s",
 			vbind->ip_sns_sig_weight, vbind->ip_sns_data_weight, VTY_NEWLINE);
 		break;
 	default:
