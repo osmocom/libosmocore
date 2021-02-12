@@ -1038,14 +1038,8 @@ DEFUN(cfg_no_ns_nse_nsvci, cfg_no_ns_nse_nsvci_cmd,
 	return CMD_SUCCESS;
 }
 
-DEFUN(cfg_ns_nse_nsvc_udp, cfg_ns_nse_nsvc_udp_cmd,
-      "nsvc udp BIND " VTY_IPV46_CMD " <1-65535>",
-      "NS Virtual Connection\n"
-      "NS over UDP\n"
-      "A unique bind identifier created by ns bind\n"
-      "Remote IPv4 Address\n" "Remote IPv6 Address\n"
-      "Remote UDP Port\n"
-      )
+static int ns_nse_nsvc_udp_cmds(struct vty *vty, const char *bind_name, const char *remote_char, uint16_t port,
+				uint16_t sig_weight, uint16_t data_weight)
 {
 	struct gprs_ns2_vc_bind *bind;
 	struct gprs_ns2_vc *nsvc;
@@ -1053,10 +1047,8 @@ DEFUN(cfg_ns_nse_nsvc_udp, cfg_ns_nse_nsvc_udp_cmd,
 	bool dialect_modified = false;
 	bool ll_modified = false;
 
-	const char *bind_name = argv[0];
 	struct osmo_sockaddr_str remote_str;
 	struct osmo_sockaddr remote;
-	uint16_t port = atoi(argv[2]);
 
 	if (nse->ll == GPRS_NS2_LL_UNDEF) {
 		nse->ll = GPRS_NS2_LL_UDP;
@@ -1078,7 +1070,7 @@ DEFUN(cfg_ns_nse_nsvc_udp, cfg_ns_nse_nsvc_udp_cmd,
 		goto err;
 	}
 
-	if (osmo_sockaddr_str_from_str(&remote_str, argv[1], port)) {
+	if (osmo_sockaddr_str_from_str(&remote_str, remote_char, port)) {
 		vty_out(vty, "Can not parse IPv4/IPv6 or port.%s", VTY_NEWLINE);
 		goto err;
 	}
@@ -1106,6 +1098,8 @@ DEFUN(cfg_ns_nse_nsvc_udp, cfg_ns_nse_nsvc_udp_cmd,
 		vty_out(vty, "Can not create NS-VC.%s", VTY_NEWLINE);
 		goto err;
 	}
+	nsvc->sig_weight = sig_weight;
+	nsvc->data_weight = data_weight;
 	nsvc->persistent = true;
 
 	return CMD_SUCCESS;
@@ -1116,6 +1110,45 @@ err:
 	if (dialect_modified)
 		nse->dialect = GPRS_NS2_DIALECT_UNDEF;
 	return CMD_WARNING;
+}
+
+DEFUN(cfg_ns_nse_nsvc_udp, cfg_ns_nse_nsvc_udp_cmd,
+      "nsvc udp BIND " VTY_IPV46_CMD " <1-65535>",
+      "NS Virtual Connection\n"
+      "NS over UDP\n"
+      "A unique bind identifier created by ns bind\n"
+      "Remote IPv4 Address\n" "Remote IPv6 Address\n"
+      "Remote UDP Port\n")
+{
+	const char *bind_name = argv[0];
+	const char *remote = argv[1];
+	uint16_t port = atoi(argv[2]);
+	uint16_t sig_weight = 1;
+	uint16_t data_weight = 1;
+
+	return ns_nse_nsvc_udp_cmds(vty, bind_name, remote, port, sig_weight, data_weight);
+}
+
+DEFUN(cfg_ns_nse_nsvc_udp_weights, cfg_ns_nse_nsvc_udp_weights_cmd,
+      "nsvc udp BIND " VTY_IPV46_CMD " <1-65535> signalling-weight <0-254> data-weight <0-254>",
+      "NS Virtual Connection\n"
+      "NS over UDP\n"
+      "A unique bind identifier created by ns bind\n"
+      "Remote IPv4 Address\n" "Remote IPv6 Address\n"
+      "Remote UDP Port\n"
+      "Signalling weight of the NSVC (default = 1)\n"
+      "Signalling weight of the NSVC (default = 1)\n"
+      "Data weight of the NSVC (default = 1)\n"
+      "Data weight of the NSVC (default = 1)\n"
+      )
+{
+	const char *bind_name = argv[0];
+	const char *remote = argv[1];
+	uint16_t port = atoi(argv[2]);
+	uint16_t sig_weight = atoi(argv[3]);
+	uint16_t data_weight = atoi(argv[4]);
+
+	return ns_nse_nsvc_udp_cmds(vty, bind_name, remote, port, sig_weight, data_weight);
 }
 
 DEFUN(cfg_no_ns_nse_nsvc_udp, cfg_no_ns_nse_nsvc_udp_cmd,
@@ -2033,6 +2066,7 @@ int gprs_ns2_vty_init(struct gprs_ns2_inst *nsi)
 	install_lib_element(L_NS_NSE_NODE, &cfg_no_ns_nse_nsvci_cmd);
 	install_lib_element(L_NS_NSE_NODE, &cfg_no_ns_nse_nsvc_fr_dlci_cmd);
 	install_lib_element(L_NS_NSE_NODE, &cfg_ns_nse_nsvc_udp_cmd);
+	install_lib_element(L_NS_NSE_NODE, &cfg_ns_nse_nsvc_udp_weights_cmd);
 	install_lib_element(L_NS_NSE_NODE, &cfg_no_ns_nse_nsvc_udp_cmd);
 	install_lib_element(L_NS_NSE_NODE, &cfg_ns_nse_nsvc_ipa_cmd);
 	install_lib_element(L_NS_NSE_NODE, &cfg_no_ns_nse_nsvc_ipa_cmd);
