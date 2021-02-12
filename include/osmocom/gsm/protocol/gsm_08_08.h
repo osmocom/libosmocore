@@ -49,12 +49,12 @@ struct dtap_header {
 		uint8_t link_id;  /* Backward compatibility */
 		struct {
 #if OSMO_IS_LITTLE_ENDIAN
-			uint8_t dlci_cc:2,
+			uint8_t dlci_sapi:3, /* enum gsm0406_dlci_sapi */
 			dlci_spare:3,
-			dlci_sapi:3; /* enum gsm0406_dlc_sapi */
+			dlci_cc:2;
 #elif OSMO_IS_BIG_ENDIAN
 /* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
-			uint8_t dlci_sapi:3, dlci_spare:3, dlci_cc:2;
+			uint8_t dlci_cc:2, dlci_spare:3, dlci_sapi:3;
 #endif
 		};
 	};
