@@ -70,7 +70,7 @@ struct gprs_ns2_vc_priv {
 		struct osmo_timer_list timer;
 		enum ns2_timeout mode;
 		int N;
-		struct timeval timer_started;
+		struct timespec timer_started;
 	} alive;
 };
 
@@ -155,7 +155,7 @@ static void start_test_procedure(struct gprs_ns2_vc_priv *priv)
 	priv->alive.mode = NS_TOUT_TNS_ALIVE;
 	priv->alive.N = 0;
 
-	osmo_gettimeofday(&priv->alive.timer_started, NULL);
+	osmo_clock_gettime(CLOCK_MONOTONIC, &priv->alive.timer_started);
 	ns2_tx_alive(priv->nsvc);
 	osmo_timer_schedule(&priv->alive.timer, nsi->timeout[NS_TOUT_TNS_ALIVE], 0);
 }
@@ -167,11 +167,15 @@ static void stop_test_procedure(struct gprs_ns2_vc_priv *priv)
 
 static int alive_timer_elapsed_ms(struct gprs_ns2_vc_priv *priv)
 {
-	struct timeval now, elapsed;
-	osmo_gettimeofday(&now, NULL);
-	timersub(&now, &priv->alive.timer_started, &elapsed);
+	struct timespec now, elapsed;
 
-	return 1000 * elapsed.tv_sec + elapsed.tv_usec / 1000;
+	if (osmo_clock_gettime(CLOCK_MONOTONIC, &now) != 0)
+		return 0;
+
+	timespecsub(&now, &priv->alive.timer_started, &elapsed);
+	LOGNSVC(priv->nsvc, LOGL_ERROR, "elapsed: %ld, now: %ld, saved: %ld.\n",
+		elapsed.tv_sec, now.tv_sec, priv->alive.timer_started.tv_sec);
+	return elapsed.tv_sec * 1000 + (elapsed.tv_nsec / 1000000);
 }
 
 static void recv_test_procedure(struct osmo_fsm_inst *fi)
