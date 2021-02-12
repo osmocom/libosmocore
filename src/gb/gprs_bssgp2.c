@@ -217,8 +217,9 @@ struct msgb *bssgp2_enc_bvc_reset_ack(uint16_t bvci, const struct gprs_ra_id *ra
 /*! Encode BSSGP STATUS PDU as per TS 48.018 Section 10.4.14.
  *  \param[in] cause BSSGP Cause value
  *  \param[in] bvci optional BVCI - only encoded if non-NULL
- *  \param[in] msg optional message buffer containing PDU in error - only encoded if non-NULL */
-struct msgb *bssgp2_enc_status(uint8_t cause, const uint16_t *bvci, const struct msgb *orig_msg)
+ *  \param[in] msg optional message buffer containing PDU in error - only encoded if non-NULL
+ *  \param[in] max_pdu_len Maximum BSSGP PDU size the NS layer accepts */
+struct msgb *bssgp2_enc_status(uint8_t cause, const uint16_t *bvci, const struct msgb *orig_msg, uint16_t max_pdu_len)
 {
 	struct msgb *msg = bssgp_msgb_alloc();
 	struct bssgp_normal_hdr *bgph;
@@ -229,12 +230,22 @@ struct msgb *bssgp2_enc_status(uint8_t cause, const uint16_t *bvci, const struct
 	bgph = (struct bssgp_normal_hdr *) msgb_put(msg, sizeof(*bgph));
 	bgph->pdu_type = BSSGP_PDUT_STATUS;
 	msgb_tvlv_put(msg, BSSGP_IE_CAUSE, 1, &cause);
+	/* FIXME: Require/encode BVCI only if cause is BVCI unknown/blocked
+	 * See 3GPP TS 48.018 Ch. 10.4.14 */
 	if (bvci) {
 		uint16_t _bvci = osmo_htons(*bvci);
 		msgb_tvlv_put(msg, BSSGP_IE_BVCI, 2, (uint8_t *) &_bvci);
 	}
-	if (orig_msg)
-		msgb_tvlv_put(msg, BSSGP_IE_PDU_IN_ERROR, msgb_bssgp_len(orig_msg), msgb_bssgph(orig_msg));
+	if (orig_msg) {
+		uint32_t orig_len, max_orig_len;
+		/* Calculate how big the reply would be: the BSSGP msg so far + size of the PDU IN ERROR including tvl */
+		orig_len = msgb_bssgp_len(orig_msg);
+		max_orig_len = msgb_length(msg) + TVLV_GROSS_LEN(orig_len);
+		/* Truncate the difference between max_orig_len and mtu */
+		if (max_orig_len > max_pdu_len)
+			orig_len -= max_orig_len - max_pdu_len;
+		msgb_tvlv_put(msg, BSSGP_IE_PDU_IN_ERROR, orig_len, msgb_bssgph(orig_msg));
+	}
 
 	return msg;
 }

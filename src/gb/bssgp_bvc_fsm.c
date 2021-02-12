@@ -238,7 +238,7 @@ static void _tx_status(struct osmo_fsm_inst *fi, enum gprs_bssgp_cause cause, co
 	if (cause == BSSGP_CAUSE_UNKNOWN_BVCI || cause == BSSGP_CAUSE_BVCI_BLOCKED)
 		bvci = &bfp->bvci;
 
-	tx = bssgp2_enc_status(cause, bvci, rx);
+	tx = bssgp2_enc_status(cause, bvci, rx, bfp->max_pdu_len);
 
 	if (msgb_bvci(rx) == 0)
 		fi_tx_sig(fi, tx);

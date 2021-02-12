@@ -59,7 +59,7 @@ struct msgb *bssgp2_enc_bvc_reset(uint16_t bvci, enum gprs_bssgp_cause cause,
 struct msgb *bssgp2_enc_bvc_reset_ack(uint16_t bvci, const struct gprs_ra_id *ra_id, uint16_t cell_id,
 				      const uint8_t *feat_bm, const uint8_t *ext_feat_bm);
 
-struct msgb *bssgp2_enc_status(uint8_t cause, const uint16_t *bvci, const struct msgb *orig_msg);
+struct msgb *bssgp2_enc_status(uint8_t cause, const uint16_t *bvci, const struct msgb *orig_msg, uint16_t max_pdu_len);
 
 
 int bssgp2_dec_fc_bvc(struct bssgp2_flow_ctrl *fc, const struct tlv_parsed *tp);
