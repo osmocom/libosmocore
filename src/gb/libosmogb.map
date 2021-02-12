@@ -93,9 +93,9 @@ bssgp_bvc_fsm_alloc_ptp_sgsn;
 bssgp_bvc_fsm_set_ops;
 bssgp_bvc_fsm_is_unblocked;
 bssgp_bvc_fsm_get_block_cause;
-bssgp_bvc_get_features_advertised;
-bssgp_bvc_get_features_received;
-bssgp_bvc_get_features_negotiated;
+bssgp_bvc_fsm_get_features_advertised;
+bssgp_bvc_fsm_get_features_received;
+bssgp_bvc_fsm_get_features_negotiated;
 bssgp_bvc_fsm_set_max_pdu_len;
 bssgp_bvc_fsm_get_max_pdu_len;
 

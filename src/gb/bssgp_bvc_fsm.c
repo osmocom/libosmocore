@@ -794,7 +794,7 @@ uint8_t bssgp_bvc_fsm_get_block_cause(struct osmo_fsm_inst *fi)
 }
 
 /*! Return the advertised features / extended features. */
-uint32_t bssgp_bvc_get_features_advertised(struct osmo_fsm_inst *fi)
+uint32_t bssgp_bvc_fsm_get_features_advertised(struct osmo_fsm_inst *fi)
 {
 	struct bvc_fsm_priv *bfp = fi->priv;
 
@@ -803,7 +803,7 @@ uint32_t bssgp_bvc_get_features_advertised(struct osmo_fsm_inst *fi)
 }
 
 /*! Return the received features / extended features. */
-uint32_t bssgp_bvc_get_features_received(struct osmo_fsm_inst *fi)
+uint32_t bssgp_bvc_fsm_get_features_received(struct osmo_fsm_inst *fi)
 {
 	struct bvc_fsm_priv *bfp = fi->priv;
 
@@ -812,7 +812,7 @@ uint32_t bssgp_bvc_get_features_received(struct osmo_fsm_inst *fi)
 }
 
 /*! Return the negotiated features / extended features. */
-uint32_t bssgp_bvc_get_features_negotiated(struct osmo_fsm_inst *fi)
+uint32_t bssgp_bvc_fsm_get_features_negotiated(struct osmo_fsm_inst *fi)
 {
 	struct bvc_fsm_priv *bfp = fi->priv;
 

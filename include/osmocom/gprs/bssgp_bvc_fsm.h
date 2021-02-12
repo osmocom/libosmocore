@@ -61,9 +61,9 @@ bool bssgp_bvc_fsm_is_unblocked(struct osmo_fsm_inst *fi);
 
 uint8_t bssgp_bvc_fsm_get_block_cause(struct osmo_fsm_inst *fi);
 
-uint32_t bssgp_bvc_get_features_advertised(struct osmo_fsm_inst *fi);
-uint32_t bssgp_bvc_get_features_received(struct osmo_fsm_inst *fi);
-uint32_t bssgp_bvc_get_features_negotiated(struct osmo_fsm_inst *fi);
+uint32_t bssgp_bvc_fsm_get_features_advertised(struct osmo_fsm_inst *fi);
+uint32_t bssgp_bvc_fsm_get_features_received(struct osmo_fsm_inst *fi);
+uint32_t bssgp_bvc_fsm_get_features_negotiated(struct osmo_fsm_inst *fi);
 
 void bssgp_bvc_fsm_set_max_pdu_len(struct osmo_fsm_inst *fi, uint16_t max_pdu_len);
 uint16_t bssgp_bvc_fsm_get_max_pdu_len(const struct osmo_fsm_inst *fi);
