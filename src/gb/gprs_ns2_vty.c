@@ -102,7 +102,7 @@ static struct vty_bind *vty_bind_by_name(const char *name)
 {
 	struct vty_bind *vbind;
 	llist_for_each_entry(vbind, &binds, list) {
-		if (!strncmp(vbind->name, name, strlen(vbind->name)))
+		if (!strcmp(vbind->name, name))
 			return vbind;
 	}
 	return NULL;
