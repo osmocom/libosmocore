@@ -205,6 +205,7 @@ static void alive_timeout_handler(void *data)
 	case NS_TOUT_TNS_TEST:
 		priv->alive.mode = NS_TOUT_TNS_ALIVE;
 		priv->alive.N = 0;
+		osmo_clock_gettime(CLOCK_MONOTONIC, &priv->alive.timer_started);
 		ns2_tx_alive(priv->nsvc);
 		osmo_timer_schedule(&priv->alive.timer, nsi->timeout[NS_TOUT_TNS_ALIVE], 0);
 		break;
