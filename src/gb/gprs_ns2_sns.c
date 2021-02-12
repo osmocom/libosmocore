@@ -81,6 +81,8 @@ enum gprs_sns_event {
 	GPRS_SNS_EV_CHANGE_WEIGHT,
 	GPRS_SNS_EV_NO_NSVC,
 	GPRS_SNS_EV_NSVC_ALIVE,		/*!< a NS-VC became alive */
+	GPRS_SNS_EV_REQ_ADD_BIND,
+	GPRS_SNS_EV_REQ_DELETE_BIND,
 };
 
 static const struct value_string gprs_sns_event_names[] = {
@@ -95,12 +97,19 @@ static const struct value_string gprs_sns_event_names[] = {
 	{ GPRS_SNS_EV_CHANGE_WEIGHT,	"CHANGE_WEIGHT" },
 	{ GPRS_SNS_EV_NO_NSVC,		"NO_NSVC" },
 	{ GPRS_SNS_EV_NSVC_ALIVE,	"NSVC_ALIVE"},
+	{ GPRS_SNS_EV_REQ_ADD_BIND,	"ADD_BIND"},
+	{ GPRS_SNS_EV_REQ_DELETE_BIND,	"DELETE_BIND"},
 	{ 0, NULL }
 };
 
 struct sns_endpoint {
 	struct llist_head list;
 	struct osmo_sockaddr saddr;
+};
+
+struct ns2_sns_bind {
+	struct llist_head list;
+	struct gprs_ns2_vc_bind *bind;
 };
 
 struct ns2_sns_state {
@@ -110,6 +119,10 @@ struct ns2_sns_state {
 
 	/* holds the list of initial SNS endpoints */
 	struct llist_head sns_endpoints;
+	/* list of used struct ns2_sns_bind  */
+	struct llist_head binds;
+	/* pointer to the bind which was used to initiate the SNS connection */
+	struct ns2_sns_bind *initial_bind;
 	/* prevent recursive reselection */
 	bool reselection_running;
 
@@ -120,8 +133,6 @@ struct ns2_sns_state {
 	struct sns_endpoint *initial;
 	/* all SNS PDU will be sent over this nsvc */
 	struct gprs_ns2_vc *sns_nsvc;
-	/* iterate over the binds after all remote has been tested */
-	int bind_offset;
 	/* timer N */
 	int N;
 	/* true if at least one nsvc is alive */
@@ -718,7 +729,7 @@ static void ns2_sns_st_size_onenter(struct osmo_fsm_inst *fi, uint32_t old_state
 	struct gprs_ns_ie_ip4_elem *ip4_elems;
 	struct gprs_ns_ie_ip6_elem *ip6_elems;
 	struct gprs_ns2_vc_bind *bind;
-	struct gprs_ns2_inst *nsi = gss->nse->nsi;
+	struct ns2_sns_bind *sbind;
 	struct osmo_sockaddr *remote;
 	const struct osmo_sockaddr *sa;
 	struct osmo_sockaddr local;
@@ -741,22 +752,24 @@ static void ns2_sns_st_size_onenter(struct osmo_fsm_inst *fi, uint32_t old_state
 	remote = &gss->initial->saddr;
 
 	/* count how many bindings are available (only UDP binds) */
-	count = ns2_ip_count_bind(nsi, remote);
+	count = llist_count(&gss->binds);
 	if (count == 0) {
 		/* TODO: logging */
 		return;
 	}
 
-	bind = ns2_ip_get_bind_by_index(nsi, remote, gss->bind_offset);
-	if (!bind) {
-		if (gss->bind_offset) {
-			gss->bind_offset = 0;
-			bind = ns2_ip_get_bind_by_index(nsi, remote, gss->bind_offset);
+	/* take the first bind or take the next bind */
+	if (!gss->initial_bind) {
+		gss->initial_bind = llist_first_entry(&gss->binds, struct ns2_sns_bind, list);
+	} else {
+		if (gss->initial_bind->list.next != &gss->binds) {
+			gss->initial_bind = llist_entry(gss->initial_bind->list.next, struct ns2_sns_bind, list);
+		} else {
+			gss->initial_bind = llist_first_entry(&gss->binds, struct ns2_sns_bind, list);
 		}
-
-		if (!bind)
-			return;
 	}
+
+	bind = gss->initial_bind->bind;
 
 	/* setup the NSVC */
 	if (!gss->sns_nsvc) {
@@ -773,11 +786,8 @@ static void ns2_sns_st_size_onenter(struct osmo_fsm_inst *fi, uint32_t old_state
 			return;
 
 		gss->ip4_local = ip4_elems;
-
-		llist_for_each_entry(bind, &nsi->binding, list) {
-			if (!gprs_ns2_is_ip_bind(bind))
-				continue;
-
+		llist_for_each_entry(sbind, &gss->binds, list) {
+			bind = sbind->bind;
 			sa = gprs_ns2_ip_bind_sockaddr(bind);
 			if (!sa)
 				continue;
@@ -813,10 +823,8 @@ static void ns2_sns_st_size_onenter(struct osmo_fsm_inst *fi, uint32_t old_state
 
 		gss->ip6_local = ip6_elems;
 
-		llist_for_each_entry(bind, &nsi->binding, list) {
-			if (!gprs_ns2_is_ip_bind(bind))
-				continue;
-
+		llist_for_each_entry(sbind, &gss->binds, list) {
+			bind = sbind->bind;
 			sa = gprs_ns2_ip_bind_sockaddr(bind);
 			if (!sa)
 				continue;
@@ -1409,6 +1417,8 @@ static void ns2_sns_st_all_action(struct osmo_fsm_inst *fi, uint32_t event, void
 {
 	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
 	struct gprs_ns2_nse *nse = nse_inst_from_fi(fi);
+	struct ns2_sns_bind *sbind;
+	struct gprs_ns2_vc *nsvc, *nsvc2;
 
 	/* reset when receiving GPRS_SNS_EV_NO_NSVC */
 	switch (event) {
@@ -1428,19 +1438,16 @@ static void ns2_sns_st_all_action(struct osmo_fsm_inst *fi, uint32_t event, void
 		ns2_clear_ipv46_entries(gss);
 
 		/* Choose the next sns endpoint. */
-		if (llist_empty(&gss->sns_endpoints)) {
+		if (llist_empty(&gss->sns_endpoints) || llist_empty(&gss->binds)) {
 			gss->initial = NULL;
 			ns2_prim_status_ind(gss->nse, NULL, 0, GPRS_NS2_AFF_CAUSE_SNS_NO_ENDPOINTS);
 			osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_UNCONFIGURED, 0, 3);
 			return;
 		} else if (!gss->initial) {
 			gss->initial = llist_first_entry(&gss->sns_endpoints, struct sns_endpoint, list);
-			gss->bind_offset = 0;
 		} else if (gss->initial->list.next == &gss->sns_endpoints) {
 			/* last entry, continue with first */
 			gss->initial = llist_first_entry(&gss->sns_endpoints, struct sns_endpoint, list);
-			gss->bind_offset++;
-			gss->bind_offset %= ns2_ip_count_bind(nse->nsi, &gss->initial->saddr);
 		} else {
 			/* next element is an entry */
 			gss->initial = llist_entry(gss->initial->list.next, struct sns_endpoint, list);
@@ -1448,6 +1455,50 @@ static void ns2_sns_st_all_action(struct osmo_fsm_inst *fi, uint32_t event, void
 
 		gss->reselection_running = false;
 		osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_SIZE, nse->nsi->timeout[NS_TOUT_TSNS_PROV], 1);
+		break;
+	case GPRS_SNS_EV_REQ_ADD_BIND:
+		sbind = data;
+		switch (fi->state) {
+		case GPRS_SNS_ST_UNCONFIGURED:
+			osmo_fsm_inst_dispatch(nse->bss_sns_fi, GPRS_SNS_EV_SELECT_ENDPOINT, NULL);
+			break;
+		case GPRS_SNS_ST_SIZE:
+			/* TODO: add the ip4 element to the list */
+			break;
+		case GPRS_SNS_ST_CONFIG_BSS:
+		case GPRS_SNS_ST_CONFIG_SGSN:
+		case GPRS_SNS_ST_CONFIGURED:
+			/* TODO: add to SNS-IP procedure queue & add nsvc() */
+			break;
+		}
+		break;
+	case GPRS_SNS_EV_REQ_DELETE_BIND:
+		sbind = data;
+		switch (fi->state) {
+		case GPRS_SNS_ST_UNCONFIGURED:
+			break;
+		case GPRS_SNS_ST_SIZE:
+			/* TODO: remove the ip4 element from the list */
+			llist_for_each_entry_safe(nsvc, nsvc2, &nse->nsvc, list) {
+				if (nsvc->bind == sbind->bind) {
+					gprs_ns2_free_nsvc(nsvc);
+				}
+			}
+			break;
+		case GPRS_SNS_ST_CONFIG_BSS:
+		case GPRS_SNS_ST_CONFIG_SGSN:
+		case GPRS_SNS_ST_CONFIGURED:
+			/* TODO: do an delete SNS-IP procedure */
+			/* TODO: remove the ip4 element to the list */
+			llist_for_each_entry_safe(nsvc, nsvc2, &nse->nsvc, list) {
+				if (nsvc->bind == sbind->bind) {
+					gprs_ns2_free_nsvc(nsvc);
+				}
+			}
+			break;
+		}
+		/* if this is the last bind, the free_nsvc() will trigger a reselection */
+		talloc_free(sbind);
 		break;
 	}
 }
@@ -1457,7 +1508,9 @@ static struct osmo_fsm gprs_ns2_sns_bss_fsm = {
 	.states = ns2_sns_bss_states,
 	.num_states = ARRAY_SIZE(ns2_sns_bss_states),
 	.allstate_event_mask = S(GPRS_SNS_EV_NO_NSVC) |
-			       S(GPRS_SNS_EV_SELECT_ENDPOINT),
+			       S(GPRS_SNS_EV_SELECT_ENDPOINT) |
+			       S(GPRS_SNS_EV_REQ_ADD_BIND) |
+			       S(GPRS_SNS_EV_REQ_DELETE_BIND),
 	.allstate_action = ns2_sns_st_all_action,
 	.cleanup = NULL,
 	.timer_cb = ns2_sns_fsm_bss_timer_cb,
@@ -1488,6 +1541,7 @@ struct osmo_fsm_inst *ns2_sns_bss_fsm_alloc(struct gprs_ns2_nse *nse,
 	fi->priv = gss;
 	gss->nse = nse;
 	INIT_LLIST_HEAD(&gss->sns_endpoints);
+	INIT_LLIST_HEAD(&gss->binds);
 
 	return fi;
 err:
@@ -1808,6 +1862,69 @@ void ns2_sns_notify_alive(struct gprs_ns2_nse *nse, struct gprs_ns2_vc *nsvc, bo
 		gss->alive = false;
 		osmo_fsm_inst_dispatch(nse->bss_sns_fi, GPRS_SNS_EV_NO_NSVC, NULL);
 	}
+}
+
+int gprs_ns2_sns_add_bind(struct gprs_ns2_nse *nse,
+			  struct gprs_ns2_vc_bind *bind)
+{
+	struct ns2_sns_state *gss;
+	struct ns2_sns_bind *tmp;
+
+	OSMO_ASSERT(nse->bss_sns_fi);
+	gss = nse->bss_sns_fi->priv;
+
+	if (!gprs_ns2_is_ip_bind(bind)) {
+		return -EINVAL;
+	}
+
+	if (!llist_empty(&gss->binds)) {
+		llist_for_each_entry(tmp, &gss->binds, list) {
+			if (tmp->bind == bind)
+				return -EALREADY;
+		}
+	}
+
+	tmp = talloc_zero(gss, struct ns2_sns_bind);
+	if (!tmp)
+		return -ENOMEM;
+	tmp->bind = bind;
+	llist_add_tail(&tmp->list, &gss->binds);
+
+	osmo_fsm_inst_dispatch(nse->bss_sns_fi, GPRS_SNS_EV_REQ_ADD_BIND, tmp);
+	return 0;
+}
+
+/* Remove a bind from the SNS. All assosiated NSVC must be removed. */
+int gprs_ns2_sns_del_bind(struct gprs_ns2_nse *nse,
+			     struct gprs_ns2_vc_bind *bind)
+{
+	struct ns2_sns_state *gss;
+	struct ns2_sns_bind *tmp, *tmp2;
+	bool found = false;
+
+	if (!nse->bss_sns_fi)
+		return -EINVAL;
+
+	gss = nse->bss_sns_fi->priv;
+	if (gss->initial_bind && gss->initial_bind->bind == bind) {
+		if (gss->initial_bind->list.prev == &gss->binds)
+			gss->initial_bind = NULL;
+		else
+			gss->initial_bind = llist_entry(gss->initial_bind->list.prev, struct ns2_sns_bind, list);
+	}
+
+	llist_for_each_entry_safe(tmp, tmp2, &gss->binds, list) {
+		if (tmp->bind == bind) {
+			llist_del(&tmp->list);
+			found = true;
+		}
+	}
+
+	if (!found)
+		return -ENOENT;
+
+	osmo_fsm_inst_dispatch(nse->bss_sns_fi, GPRS_SNS_EV_REQ_DELETE_BIND, tmp);
+	return 0;
 }
 
 /* Update SNS weights

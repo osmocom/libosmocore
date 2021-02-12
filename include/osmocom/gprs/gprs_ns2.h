@@ -230,6 +230,8 @@ int gprs_ns2_sns_add_endpoint(struct gprs_ns2_nse *nse,
 				   const struct osmo_sockaddr *saddr);
 int gprs_ns2_sns_del_endpoint(struct gprs_ns2_nse *nse,
 				   const struct osmo_sockaddr *saddr);
+int gprs_ns2_sns_add_bind(struct gprs_ns2_nse *nse, struct gprs_ns2_vc_bind *bind);
+int gprs_ns2_sns_del_bind(struct gprs_ns2_nse *nse, struct gprs_ns2_vc_bind *bind);
 const struct osmo_sockaddr *gprs_ns2_nse_sns_remote(struct gprs_ns2_nse *nse);
 
 const struct osmo_sockaddr *gprs_ns2_ip_vc_remote(const struct gprs_ns2_vc *nsvc);

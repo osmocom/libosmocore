@@ -1269,11 +1269,18 @@ void gprs_ns2_start_alive_all_nsvcs(struct gprs_ns2_nse *nse)
 void gprs_ns2_free_bind(struct gprs_ns2_vc_bind *bind)
 {
 	struct gprs_ns2_vc *nsvc, *tmp;
+	struct gprs_ns2_nse *nse;
 	if (!bind)
 		return;
 
 	llist_for_each_entry_safe(nsvc, tmp, &bind->nsvc, blist) {
 		gprs_ns2_free_nsvc(nsvc);
+	}
+
+	if (gprs_ns2_is_ip_bind(bind)) {
+		llist_for_each_entry(nse, &bind->nsi->nse, list) {
+			gprs_ns2_sns_del_bind(nse, bind);
+		}
 	}
 
 	if (bind->driver->free_bind)
