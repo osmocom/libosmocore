@@ -377,6 +377,12 @@ static void bssgp_bvc_fsm_wait_reset_ack(struct osmo_fsm_inst *fi, uint32_t even
 	struct msgb *rx = NULL, *tx;
 
 	switch (event) {
+	case BSSGP_BVCFSM_E_RX_RESET:
+		/* 48.018 Section 8.4.3: If the BSS (or SGSN) has sent a BVC-RESET PDU for a BVCI to
+		 * the SGSN (or BSS) and is awaiting a BVC-RESET-ACK PDU in response, but instead
+		 * receives a BVC-RESET PDU indicating the same BVCI, then this shall be interpreted
+		 * as a BVC-RESET ACK PDU and the T2 timer shall be stopped. */
+		/* fall-through */
 	case BSSGP_BVCFSM_E_RX_RESET_ACK:
 		rx = data;
 		tp = (const struct tlv_parsed *) msgb_bcid(rx);
@@ -606,7 +612,8 @@ static const struct osmo_fsm_state bssgp_bvc_fsm_states[] = {
 	},
 	[BSSGP_BVCFSM_S_WAIT_RESET_ACK]= {
 		.name = "WAIT_RESET_ACK",
-		.in_event_mask = S(BSSGP_BVCFSM_E_RX_RESET_ACK),
+		.in_event_mask = S(BSSGP_BVCFSM_E_RX_RESET_ACK) |
+				 S(BSSGP_BVCFSM_E_RX_RESET),
 		.out_state_mask = S(BSSGP_BVCFSM_S_UNBLOCKED) |
 				  S(BSSGP_BVCFSM_S_BLOCKED) |
 				  S(BSSGP_BVCFSM_S_WAIT_RESET_ACK),
