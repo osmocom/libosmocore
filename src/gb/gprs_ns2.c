@@ -482,33 +482,43 @@ int gprs_ns2_recv_prim(struct gprs_ns2_inst *nsi, struct osmo_prim_hdr *oph)
 	struct gprs_ns2_vc *nsvc = NULL;
 	uint16_t bvci, nsei;
 	uint8_t sducontrol = 0;
+	int rc = 0;
 
-	if (oph->sap != SAP_NS)
-		return -EINVAL;
+	if (oph->sap != SAP_NS) {
+		rc = -EINVAL;
+		goto out;
+	}
 
 	nsp = container_of(oph, struct osmo_gprs_ns2_prim, oph);
 
-	if (oph->operation != PRIM_OP_REQUEST || oph->primitive != GPRS_NS2_PRIM_UNIT_DATA)
-		return -EINVAL;
+	if (oph->operation != PRIM_OP_REQUEST || oph->primitive != GPRS_NS2_PRIM_UNIT_DATA) {
+		rc = -EINVAL;
+		goto out;
+	}
 
-	if (!oph->msg)
-		return -EINVAL;
+	if (!oph->msg) {
+		rc = -EINVAL;
+		goto out;
+	}
 
 	bvci = nsp->bvci;
 	nsei = nsp->nsei;
 
 	nse = gprs_ns2_nse_by_nsei(nsi, nsei);
-	if (!nse)
-		return -EINVAL;
+	if (!nse) {
+		rc = -EINVAL;
+		goto out;
+	}
 
-	if (!nse->alive)
-		return 0;
+	if (!nse->alive) {
+		goto out;
+	}
 
 	nsvc = ns2_load_sharing(nse, bvci, nsp->u.unitdata.link_selector);
 
 	/* TODO: send a status primitive back */
 	if (!nsvc)
-		return 0;
+		goto out;
 
 	if (nsp->u.unitdata.change == GPRS_NS2_ENDPOINT_REQUEST_CHANGE)
 		sducontrol = 1;
@@ -516,6 +526,10 @@ int gprs_ns2_recv_prim(struct gprs_ns2_inst *nsi, struct osmo_prim_hdr *oph)
 		sducontrol = 2;
 
 	return ns2_tx_unit_data(nsvc, bvci, sducontrol, oph->msg);
+
+out:
+	msgb_free(oph->msg);
+	return rc;
 }
 
 /*! Send a STATUS.ind primitive to the specified NS instance user.
