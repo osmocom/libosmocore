@@ -1760,6 +1760,48 @@ static void test_gsm0808_enc_dec_cell_id_global()
 	msgb_free(msg);
 }
 
+static void test_gsm0808_enc_dec_cell_id_global_ps()
+{
+	struct gsm0808_cell_id enc_cgi = {
+		.id_discr = CELL_IDENT_WHOLE_GLOBAL,
+		.id.global = {
+			.lai = {
+				.plmn = { .mcc = 123, .mnc = 456 },
+				.lac = 0x2342
+			},
+			.cell_identity = 0x423,
+		}
+	};
+	struct gsm0808_cell_id enc_cgi_ps = {
+		.id_discr = CELL_IDENT_WHOLE_GLOBAL_PS,
+		.id.global_ps = {
+			.rai = {
+				.lac = {
+					.plmn = { .mcc = 123, .mnc = 456 },
+					.lac = 0x2342
+				},
+				.rac = 0xcc,
+			},
+			.cell_identity = 0x423,
+		}
+	};
+	struct msgb *msg_cgi, *msg_cgi_ps;
+	uint8_t rc_enc;
+
+	msg_cgi = msgb_alloc(1024, "output buffer (CGI)");
+	rc_enc = gsm0808_enc_cell_id(msg_cgi, &enc_cgi);
+	OSMO_ASSERT(rc_enc > 0);
+
+	msg_cgi_ps = msgb_alloc(1024, "output buffer (CGI-PS)");
+	rc_enc = gsm0808_enc_cell_id(msg_cgi_ps, &enc_cgi_ps);
+	OSMO_ASSERT(rc_enc > 0);
+
+	OSMO_ASSERT(msgb_eq(msg_cgi, msg_cgi_ps));
+
+	msgb_free(msg_cgi);
+	msgb_free(msg_cgi_ps);
+}
+
 static void test_gsm0808_sc_cfg_from_gsm48_mr_cfg_single(struct gsm48_multi_rate_conf *cfg)
 {
 	uint16_t s15_s0;
@@ -2462,6 +2504,7 @@ int main(int argc, char **argv)
 	test_gsm0808_enc_dec_cell_id_ci();
 	test_gsm0808_enc_dec_cell_id_lac_and_ci();
 	test_gsm0808_enc_dec_cell_id_global();
+	test_gsm0808_enc_dec_cell_id_global_ps();
 	test_gsm0808_sc_cfg_from_gsm48_mr_cfg();
 	test_gsm48_mr_cfg_from_gsm0808_sc_cfg();
 

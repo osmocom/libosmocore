@@ -877,6 +877,7 @@ int gsm0808_decode_cell_id_u(union gsm0808_cell_id_u *out, enum CELL_IDENT discr
 		/* Does not have any list items */
 		break;
 	case CELL_IDENT_WHOLE_GLOBAL_PS:
+		/* 3GPP TS 48.018 sec 11.3.9 "Cell Identifier" */
 		if (len < 8)
 			return -EINVAL;
 		decode_lai(buf, (struct osmo_location_area_id *)&out->global_ps.rai); /* rai contains lai + non-decoded rac */
@@ -925,6 +926,7 @@ void gsm0808_msgb_put_cell_id_u(struct msgb *msg, enum CELL_IDENT id_discr, cons
 		/* Does not have any list items */
 		break;
 	case CELL_IDENT_WHOLE_GLOBAL_PS: {
+		/* 3GPP TS 48.018 sec 11.3.9 "Cell Identifier" */
 		const struct osmo_cell_global_id_ps *id = &u->global_ps;
 		struct gsm48_loc_area_id lai;
 		gsm48_generate_lai2(&lai, &id->rai.lac);
@@ -949,6 +951,7 @@ uint8_t gsm0808_enc_cell_id_list2(struct msgb *msg,
 	uint8_t *old_tail;
 	uint8_t *tlv_len;
 	unsigned int i;
+	uint8_t id_discr;
 
 	OSMO_ASSERT(msg);
 	OSMO_ASSERT(cil);
@@ -957,11 +960,25 @@ uint8_t gsm0808_enc_cell_id_list2(struct msgb *msg,
 	tlv_len = msgb_put(msg, 1);
 	old_tail = msg->tail;
 
-	msgb_put_u8(msg, cil->id_discr & 0x0f);
+	/* CGI-PS is an osmocom-specific type. In here we don't care about the
+	 * PS part, only the CS one. */
+	if (cil->id_discr == CELL_IDENT_WHOLE_GLOBAL_PS)
+		id_discr = CELL_IDENT_WHOLE_GLOBAL;
+	else
+		id_discr = cil->id_discr & 0x0f;
+
+	msgb_put_u8(msg, id_discr);
 
 	OSMO_ASSERT(cil->id_list_len <= GSM0808_CELL_ID_LIST2_MAXLEN);
-	for (i = 0; i < cil->id_list_len; i++)
-		gsm0808_msgb_put_cell_id_u(msg, cil->id_discr, &cil->id_list[i]);
+	for (i = 0; i < cil->id_list_len; i++) {
+		if (cil->id_discr == CELL_IDENT_WHOLE_GLOBAL_PS) {
+			union gsm0808_cell_id_u u;
+			cell_id_to_cgi(&u.global, cil->id_discr, &cil->id_list[i]);
+			gsm0808_msgb_put_cell_id_u(msg, CELL_IDENT_WHOLE_GLOBAL, &u);
+		} else {
+			gsm0808_msgb_put_cell_id_u(msg, cil->id_discr, &cil->id_list[i]);
+		}
+	}
 
 	*tlv_len = (uint8_t) (msg->tail - old_tail);
 	return *tlv_len + 2;
