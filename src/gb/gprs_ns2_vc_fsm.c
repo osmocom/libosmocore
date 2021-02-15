@@ -173,8 +173,6 @@ static int alive_timer_elapsed_ms(struct gprs_ns2_vc_priv *priv)
 		return 0;
 
 	timespecsub(&now, &priv->alive.timer_started, &elapsed);
-	LOGNSVC(priv->nsvc, LOGL_ERROR, "elapsed: %ld, now: %ld, saved: %ld.\n",
-		elapsed.tv_sec, now.tv_sec, priv->alive.timer_started.tv_sec);
 	return elapsed.tv_sec * 1000 + (elapsed.tv_nsec / 1000000);
 }
 
