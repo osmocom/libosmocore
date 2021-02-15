@@ -450,18 +450,18 @@ int ns2_tx_status(struct gprs_ns2_vc *nsvc, uint8_t cause,
 
 	msgb_tvlv_put(msg, NS_IE_CAUSE, 1, &cause);
 
-	/* Section 9.2.7.1: Static conditions for NS-VCI */
-	if (cause == NS_CAUSE_NSVC_BLOCKED ||
-	    cause == NS_CAUSE_NSVC_UNKNOWN)
-		msgb_tvlv_put(msg, NS_IE_VCI, 2, (uint8_t *)&nsvci);
-
-	/* Section 9.2.7.2: Static conditions for NS PDU */
 	switch (cause) {
+	case NS_CAUSE_NSVC_BLOCKED:
+	case NS_CAUSE_NSVC_UNKNOWN:
+		/* Section 9.2.7.1: Static conditions for NS-VCI */
+		msgb_tvlv_put(msg, NS_IE_VCI, 2, (uint8_t *)&nsvci);
+		break;
 	case NS_CAUSE_SEM_INCORR_PDU:
 	case NS_CAUSE_PDU_INCOMP_PSTATE:
 	case NS_CAUSE_PROTO_ERR_UNSPEC:
 	case NS_CAUSE_INVAL_ESSENT_IE:
 	case NS_CAUSE_MISSING_ESSENT_IE:
+		/* Section 9.2.7.2: Static conditions for NS PDU */
 		/* ensure the PDU doesn't exceed the MTU */
 		orig_len = msgb_l2len(orig_msg);
 		max_orig_len = msgb_length(msg) + TVLV_GROSS_LEN(orig_len);
@@ -469,13 +469,14 @@ int ns2_tx_status(struct gprs_ns2_vc *nsvc, uint8_t cause,
 			orig_len -= max_orig_len - nsvc->bind->mtu;
 		msgb_tvlv_put(msg, NS_IE_PDU, orig_len, orig_msg->l2h);
 		break;
+	case NS_CAUSE_BVCI_UNKNOWN:
+		/* Section 9.2.7.3: Static conditions for BVCI */
+		msgb_tvlv_put(msg, NS_IE_VCI, 2, (uint8_t *)&bvci);
+		break;
+
 	default:
 		break;
 	}
-
-	/* Section 9.2.7.3: Static conditions for BVCI */
-	if (cause == NS_CAUSE_BVCI_UNKNOWN)
-		msgb_tvlv_put(msg, NS_IE_VCI, 2, (uint8_t *)&bvci);
 
 	return ns_vc_tx(nsvc, msg);
 }
