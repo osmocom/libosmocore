@@ -767,6 +767,52 @@ int gsm0808_dec_encrypt_info(struct gsm0808_encrypt_info *ei,
 	return (int)(elem - old_elem);
 }
 
+/* Store individual Cell Identifier information in a CGI, without clearing the remaining ones.
+ * This is useful to supplement one CGI with information from more than one Cell Identifier,
+ * which in turn is useful to match Cell Identifiers of differing kinds to each other.
+ * Before first invocation, clear the *dst struct externally, this function does only write those members
+ * that are present in parameter u.
+ */
+static void cell_id_to_cgi(struct osmo_cell_global_id *dst,
+			   enum CELL_IDENT discr, const union gsm0808_cell_id_u *u)
+{
+	switch (discr) {
+	case CELL_IDENT_WHOLE_GLOBAL:
+		*dst = u->global;
+		return;
+
+	case CELL_IDENT_WHOLE_GLOBAL_PS:
+		dst->lai = u->global_ps.rai.lac;
+		dst->cell_identity = u->global_ps.cell_identity;
+		return;
+
+	case CELL_IDENT_LAC_AND_CI:
+		dst->lai.lac = u->lac_and_ci.lac;
+		dst->cell_identity = u->lac_and_ci.ci;
+		return;
+
+	case CELL_IDENT_CI:
+		dst->cell_identity = u->ci;
+		return;
+
+	case CELL_IDENT_LAI_AND_LAC:
+		dst->lai = u->lai_and_lac;
+		return;
+
+	case CELL_IDENT_LAC:
+		dst->lai.lac = u->lac;
+		return;
+
+	case CELL_IDENT_NO_CELL:
+	case CELL_IDENT_BSS:
+	case CELL_IDENT_UTRAN_PLMN_LAC_RNC:
+	case CELL_IDENT_UTRAN_RNC:
+	case CELL_IDENT_UTRAN_LAC_RNC:
+		/* No values to set. */
+		return;
+	}
+}
+
 /* Return the size of the value part of a cell identifier of given type */
 int gsm0808_cell_id_size(enum CELL_IDENT discr)
 {
@@ -1616,52 +1662,6 @@ int gsm0808_cell_id_u_name(char *buf, size_t buflen,
 		/* For CELL_IDENT_BSS and CELL_IDENT_NO_CELL, just print the discriminator.
 		 * Same for kinds we have no string representation of yet. */
 		return snprintf(buf, buflen, "%s", gsm0808_cell_id_discr_name(id_discr));
-	}
-}
-
-/* Store individual Cell Identifier information in a CGI, without clearing the remaining ones.
- * This is useful to supplement one CGI with information from more than one Cell Identifier,
- * which in turn is useful to match Cell Identifiers of differing kinds to each other.
- * Before first invocation, clear the *dst struct externally, this function does only write those members
- * that are present in parameter u.
- */
-static void cell_id_to_cgi(struct osmo_cell_global_id *dst,
-			   enum CELL_IDENT discr, const union gsm0808_cell_id_u *u)
-{
-	switch (discr) {
-	case CELL_IDENT_WHOLE_GLOBAL:
-		*dst = u->global;
-		return;
-
-	case CELL_IDENT_WHOLE_GLOBAL_PS:
-		dst->lai = u->global_ps.rai.lac;
-		dst->cell_identity = u->global_ps.cell_identity;
-		return;
-
-	case CELL_IDENT_LAC_AND_CI:
-		dst->lai.lac = u->lac_and_ci.lac;
-		dst->cell_identity = u->lac_and_ci.ci;
-		return;
-
-	case CELL_IDENT_CI:
-		dst->cell_identity = u->ci;
-		return;
-
-	case CELL_IDENT_LAI_AND_LAC:
-		dst->lai = u->lai_and_lac;
-		return;
-
-	case CELL_IDENT_LAC:
-		dst->lai.lac = u->lac;
-		return;
-
-	case CELL_IDENT_NO_CELL:
-	case CELL_IDENT_BSS:
-	case CELL_IDENT_UTRAN_PLMN_LAC_RNC:
-	case CELL_IDENT_UTRAN_RNC:
-	case CELL_IDENT_UTRAN_LAC_RNC:
-		/* No values to set. */
-		return;
 	}
 }
 
