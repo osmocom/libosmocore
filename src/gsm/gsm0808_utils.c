@@ -1787,6 +1787,14 @@ void gsm0808_cell_id_from_cgi(struct gsm0808_cell_id *cid, enum CELL_IDENT id_di
 		cid->id.global = *cgi;
 		return;
 
+	case CELL_IDENT_WHOLE_GLOBAL_PS:
+		cid->id.global_ps = (struct osmo_cell_global_id_ps){
+			.rai = {
+				.lac = cgi->lai,
+			},
+			.cell_identity = cgi->cell_identity,
+		};
+		return;
 	case CELL_IDENT_LAC_AND_CI:
 		cid->id.lac_and_ci = (struct osmo_lac_and_ci_id){
 			.lac = cgi->lai.lac,
