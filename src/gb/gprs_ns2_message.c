@@ -432,6 +432,7 @@ int ns2_tx_status(struct gprs_ns2_vc *nsvc, uint8_t cause,
 	struct msgb *msg = ns2_msgb_alloc();
 	struct gprs_ns_hdr *nsh;
 	uint16_t nsvci = osmo_htons(nsvc->nsvci);
+	unsigned int orig_len, max_orig_len;
 
 	log_set_context(LOG_CTX_GB_NSE, nsvc->nse);
 	log_set_context(LOG_CTX_GB_NSVC, nsvc);
@@ -461,8 +462,12 @@ int ns2_tx_status(struct gprs_ns2_vc *nsvc, uint8_t cause,
 	case NS_CAUSE_PROTO_ERR_UNSPEC:
 	case NS_CAUSE_INVAL_ESSENT_IE:
 	case NS_CAUSE_MISSING_ESSENT_IE:
-		msgb_tvlv_put(msg, NS_IE_PDU, msgb_l2len(orig_msg),
-			      orig_msg->l2h);
+		/* ensure the PDU doesn't exceed the MTU */
+		orig_len = msgb_l2len(orig_msg);
+		max_orig_len = msgb_length(msg) + TVLV_GROSS_LEN(orig_len);
+		if (max_orig_len > nsvc->bind->mtu)
+			orig_len -= max_orig_len - nsvc->bind->mtu;
+		msgb_tvlv_put(msg, NS_IE_PDU, orig_len, orig_msg->l2h);
 		break;
 	default:
 		break;
