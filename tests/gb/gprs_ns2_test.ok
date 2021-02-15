@@ -20,6 +20,14 @@
 ---- Try to receive over blocked NSVC[0]
 ---- Receive over NSVC[1]
 --- Finish unitdata test
+--- Testing unitdata weight test
+---- Create NSE + Binds
+---- Create NSVC[0]
+---- Create NSVC[1]
+---- Create NSVC[2]
+---- Send UNITDATA to all NSVCs
+---- Send BSSGP data to the NSE to test unitdata over NSVC[1]
+--- Finish unitdata weight test
 --- Testing mtu test
 ---- Create NSE + Binds
 ---- Create NSVC[0]

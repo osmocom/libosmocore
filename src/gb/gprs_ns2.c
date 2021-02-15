@@ -384,6 +384,45 @@ static struct gprs_ns2_vc *ns2_load_sharing_modulor(
 	return NULL;
 }
 
+/* 4.4.2 Load Sharing function for the IP Sub-Network
+ *
+ * Implement a simple approach for UDP load sharing of data weight based on the modulo of the lsp.
+ *
+ * E.g. 3 NSVC: 1st weight 5, 2nd weight 3, 3rd weight 1, lsp = 3.
+ * sum all weights = 9
+ * target_weight = lsp % sum = 3
+ *
+ * 1st NSVC will be the target for 0-4
+ * 2nd NSVC will be the target for 5-7
+ * 3rd NSVC will be the target for 8
+ *
+ * The 1st NSVC will be used.
+ * E.g. lsp = 7. The 2nd NSVC will used.
+ */
+static struct gprs_ns2_vc *ns2_load_sharing_weight_modulo(
+		struct gprs_ns2_nse *nse,
+		uint16_t bvci,
+		uint32_t load_selector)
+{
+	struct gprs_ns2_vc *tmp;
+	uint32_t mod;
+	uint32_t i = 0;
+
+	if (nse->nsvc_count == 0)
+		return NULL;
+
+	mod = (bvci + load_selector) % nse->sum_data_weight;
+	llist_for_each_entry(tmp, &nse->nsvc, list) {
+		if (!ns2_vc_is_unblocked(tmp))
+			continue;
+		if (i == mod || mod < i + tmp->data_weight)
+			return tmp;
+		i += tmp->data_weight;
+	}
+
+	return NULL;
+}
+
 /* pick the first available data NSVC - no load sharing */
 struct gprs_ns2_vc *ns2_load_sharing_first(struct gprs_ns2_nse *nse)
 {
@@ -421,7 +460,7 @@ static struct gprs_ns2_vc *ns2_load_sharing(
 			nsvc = ns2_load_sharing_signal(nse);
 		} else {
 			/* data with load sharing parameter */
-			nsvc = ns2_load_sharing_first(nse);
+			nsvc = ns2_load_sharing_weight_modulo(nse, bvci, link_selector);
 		}
 		break;
 	}

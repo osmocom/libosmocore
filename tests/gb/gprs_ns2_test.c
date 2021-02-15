@@ -60,6 +60,18 @@ static int ns_prim_cb(struct osmo_prim_hdr *oph, void *ctx)
 	return 0;
 }
 
+static int gp_send_to_ns(struct gprs_ns2_inst *nsi, struct msgb *msg, uint16_t nsei, uint16_t bvci, uint32_t lsp)
+{
+	struct osmo_gprs_ns2_prim nsp = {};
+	nsp.nsei = nsei;
+	nsp.bvci = bvci;
+	nsp.u.unitdata.link_selector = lsp;
+	osmo_prim_init(&nsp.oph, SAP_NS, GPRS_NS2_PRIM_UNIT_DATA,
+			PRIM_OP_REQUEST, msg);
+	return gprs_ns2_recv_prim(nsi, &nsp.oph);
+}
+
+
 static struct msgb *get_pdu(struct gprs_ns2_vc_bind *bind, enum ns_pdu_type pdu_type)
 {
 	struct gprs_ns_hdr *nsh;
@@ -86,6 +98,12 @@ static bool find_pdu(struct gprs_ns2_vc_bind *bind, enum ns_pdu_type pdu_type)
 	}
 
 	return false;
+}
+
+static unsigned int count_pdus(struct gprs_ns2_vc_bind *bind)
+{
+	struct osmo_wqueue *queue = bind->priv;
+	return llist_count(&queue->msg_queue);
 }
 
 static void clear_pdus(struct gprs_ns2_vc_bind *bind)
@@ -370,6 +388,81 @@ void test_unitdata(void *ctx)
 	printf("--- Finish unitdata test\n");
 }
 
+void test_unitdata_weights(void *ctx)
+{
+	struct gprs_ns2_inst *nsi;
+	struct gprs_ns2_vc_bind *bind[3];
+	struct gprs_ns2_vc_bind *loopbind;
+	struct gprs_ns2_nse *nse;
+	struct gprs_ns2_vc *nsvc[3];
+	struct gprs_ns2_vc *loop[3];
+
+	struct msgb *msg, *other;
+	char idbuf[32];
+	int i;
+
+	printf("--- Testing unitdata weight test\n");
+	osmo_wqueue_clear(unitdata);
+	printf("---- Create NSE + Binds\n");
+	nsi = gprs_ns2_instantiate(ctx, ns_prim_cb, NULL);
+	bind[0] = dummy_bind(nsi, "bblock1");
+	bind[1] = dummy_bind(nsi, "bblock2");
+	bind[2] = dummy_bind(nsi, "bblock3");
+	loopbind = loopback_bind(nsi, "loopback");
+	nse = gprs_ns2_create_nse(nsi, 1004, GPRS_NS2_LL_UDP, GPRS_NS2_DIALECT_STATIC_ALIVE);
+	OSMO_ASSERT(nse);
+
+	/* data weights are
+	 * nsvc[0] = 1
+	 * nsvc[1] = 2
+	 * nsvc[2] = 3
+	 */
+	for (i = 0; i < 3; i++) {
+		printf("---- Create NSVC[%d]\n", i);
+		snprintf(idbuf, sizeof(idbuf), "NSE%05u-dummy-%i", nse->nsei, i);
+		nsvc[i] = ns2_vc_alloc(bind[i], nse, false, GPRS_NS2_VC_MODE_ALIVE, idbuf);
+		loop[i] = loopback_nsvc(loopbind, nsvc[i]);
+		OSMO_ASSERT(nsvc[i]);
+		nsvc[i]->data_weight = i + 1;
+		ns2_vc_fsm_start(nsvc[i]);
+		OSMO_ASSERT(!ns2_vc_is_unblocked(nsvc[i]));
+		ns2_tx_alive_ack(loop[i]);
+		OSMO_ASSERT(ns2_vc_is_unblocked(nsvc[i]));
+	}
+
+	/* all nsvcs are alive */
+	printf("---- Send UNITDATA to all NSVCs\n");
+	for (i = 0; i < 3; i++) {
+		msg = generate_unitdata("test_unitdata_weight");
+		ns2_recv_vc(nsvc[i], msg);
+		other = msgb_dequeue(&unitdata->msg_queue);
+		OSMO_ASSERT(msg == other);
+		other = msgb_dequeue(&unitdata->msg_queue);
+		OSMO_ASSERT(NULL == other);
+		msgb_free(msg);
+	}
+
+	/* nsvc[1] should be still good */
+	printf("---- Send BSSGP data to the NSE to test unitdata over NSVC[1]\n");
+	for (i = 0; i < 3; i++)
+		clear_pdus(bind[i]);
+
+	for (i = 0; i < 12; i++) {
+		msg = generate_unitdata("test_unitdata_weight2");
+		gp_send_to_ns(nsi, msg, 1004, 1, i + 1);
+	}
+
+	for (i = 0; i < 3; i++)
+		fprintf(stderr, "count_pdus(bind[%d]) = %d\n", i, count_pdus(bind[i]));
+
+	for (i = 0; i < 3; i++) {
+		OSMO_ASSERT(count_pdus(bind[i]) == nsvc[i]->data_weight * 2);
+	}
+
+	gprs_ns2_free(nsi);
+	printf("--- Finish unitdata weight test\n");
+}
+
 void test_mtu(void *ctx)
 {
 	struct gprs_ns2_inst *nsi;
@@ -440,6 +533,7 @@ int main(int argc, char **argv)
 	test_nse_transfer_cap(ctx);
 	test_block_unblock_nsvc(ctx);
 	test_unitdata(ctx);
+	test_unitdata_weights(ctx);
 	test_mtu(ctx);
 	printf("===== NS2 protocol test END\n\n");
 
