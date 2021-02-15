@@ -1470,7 +1470,7 @@ static struct osmo_fsm gprs_ns2_sns_bss_fsm = {
 /*! Allocate an IP-SNS FSM for the BSS side.
  *  \param[in] nse NS Entity in which the FSM runs
  *  \param[in] id string identifier
- *  \retruns FSM instance on success; NULL on error */
+ *  \returns FSM instance on success; NULL on error */
 struct osmo_fsm_inst *ns2_sns_bss_fsm_alloc(struct gprs_ns2_nse *nse,
 					    const char *id)
 {
@@ -1499,7 +1499,7 @@ err:
  *  \param[in] nsvc NS-VC on which the message was received
  *  \param[in] msg message buffer of the IP-SNS message
  *  \param[in] tp parsed TLV structure of message
- *  \retruns 0 on success; negative on error */
+ *  \returns 0 on success; negative on error */
 int ns2_sns_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp)
 {
 	struct gprs_ns2_nse *nse = nsvc->nse;
