@@ -596,6 +596,27 @@ static void link_state_change(struct gprs_ns2_vc_bind *bind, bool if_running)
 	bpriv->if_running = if_running;
 }
 
+static void mtu_change(struct gprs_ns2_vc_bind *bind, uint32_t mtu)
+{
+	struct priv_bind *bpriv = bind->priv;
+	struct gprs_ns2_nse *nse;
+
+	if (mtu == bind->mtu)
+		return;
+
+	LOGBIND(bind, LOGL_INFO, "MTU changed from %d to %d.\n",
+		bind->mtu, mtu);
+
+	/* 2 byte DLCI header */
+	bind->mtu = mtu - 2;
+	if (!bpriv->if_running)
+		return;
+
+	llist_for_each_entry(nse, &bind->nsi->nse, list) {
+		ns2_nse_update_mtu(nse);
+	}
+}
+
 /* handle a single netlink message received via libmnl */
 static int linkmon_mnl_cb(const struct nlmsghdr *nlh, void *data)
 {
@@ -623,8 +644,14 @@ static int linkmon_mnl_cb(const struct nlmsghdr *nlh, void *data)
 	if_running = !!(ifm->ifi_flags & IFF_RUNNING);
 
 	bind = bind4netdev(nsi, ifname);
-	if (bind)
-		link_state_change(bind, if_running);
+	if (!bind)
+		return MNL_CB_OK;
+
+	if (tb[IFLA_MTU]) {
+		mtu_change(bind, mnl_attr_get_u32(tb[IFLA_MTU]));
+	}
+
+	link_state_change(bind, if_running);
 
 	return MNL_CB_OK;
 }
