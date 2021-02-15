@@ -499,7 +499,7 @@ static void test_create_ass2()
 		GSM0808_SCT_CSD | 0x90,
 		0xc0,
 		GSM0808_IE_CALL_ID,
-		0xce, 0xfa, 0xad, 0xde, /* CallID */		
+		0xce, 0xfa, 0xad, 0xde, /* CallID */
 		0x83, 0x45, 0x45, 0x45, 0x45, 0x45, 0x45, 0x45, 0x45, 0x45, 0x45, 0x45, 0x45, 0x45, 0x45, 0x45, 0x45, /* Kc */
 		GSM0808_IE_GLOBAL_CALL_REF, 0x0d, /* GCR, length */
 		0x03, 0x44, 0x44, 0x44, /* GCR, Net ID */
@@ -1974,7 +1974,7 @@ static void test_gsm0808_sc_cfg_from_gsm48_mr_cfg(void)
 	cfg.m10_2 = 0;
 	cfg.m12_2 = 0;
 	test_gsm0808_sc_cfg_from_gsm48_mr_cfg_single(&cfg);
-	
+
 }
 
 static void test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single(uint16_t s15_s0)
