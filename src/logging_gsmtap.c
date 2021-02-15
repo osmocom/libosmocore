@@ -38,6 +38,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include <unistd.h>
 
 #ifdef HAVE_STRINGS_H
 #include <strings.h>
@@ -52,6 +53,8 @@
 #include <osmocom/core/byteswap.h>
 
 #define	GSMTAP_LOG_MAX_SIZE 4096
+
+static uint32_t logging_gsmtap_pid;
 
 static void _gsmtap_raw_output(struct log_target *target, int subsys,
 			       unsigned int level, const char *file,
@@ -82,6 +85,7 @@ static void _gsmtap_raw_output(struct log_target *target, int subsys,
 	/* Logging header */
 	golh = (struct gsmtap_osmocore_log_hdr *) msgb_put(msg, sizeof(*golh));
 	OSMO_STRLCPY_ARRAY(golh->proc_name, target->tgt_gsmtap.ident);
+	golh->pid = logging_gsmtap_pid;
 	if (subsys_name)
 		OSMO_STRLCPY_ARRAY(golh->subsys, subsys_name + 1);
 	else
@@ -151,6 +155,9 @@ struct log_target *log_target_create_gsmtap(const char *host, uint16_t port,
 
 	target->type = LOG_TGT_TYPE_GSMTAP;
 	target->raw_output = _gsmtap_raw_output;
+
+	if (!logging_gsmtap_pid)
+		logging_gsmtap_pid = (uint32_t)getpid();
 
 	return target;
 }
