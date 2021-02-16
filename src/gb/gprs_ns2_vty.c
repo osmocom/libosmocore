@@ -1093,6 +1093,15 @@ static int ns_nse_nsvc_udp_cmds(struct vty *vty, const char *bind_name, const ch
 		goto err;
 	}
 
+	nsvc = gprs_ns2_nsvc_by_sockaddr_bind(bind, &remote);
+	if (nsvc) {
+		if (nsvc->nse == nse)
+			vty_out(vty, "Specified NSVC is already present in this NSE.%s", VTY_NEWLINE);
+		else
+			vty_out(vty, "Specified NSVC is already present in another NSE%05u.%s", nsvc->nse->nsei, VTY_NEWLINE);
+		goto err;
+	}
+
 	nsvc = gprs_ns2_ip_connect(bind, &remote, nse, 0);
 	if (!nsvc) {
 		vty_out(vty, "Can not create NS-VC.%s", VTY_NEWLINE);
