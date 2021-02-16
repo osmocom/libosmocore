@@ -360,7 +360,7 @@ static struct gprs_ns2_vc *ns2_load_sharing_signal(struct gprs_ns2_nse *nse)
 }
 
 /* 4.4.1 Load Sharing function for the Frame Relay Sub-Network */
-static struct gprs_ns2_vc *ns2_load_sharing_modulor(
+static struct gprs_ns2_vc *ns2_load_sharing_modulo(
 		struct gprs_ns2_nse *nse,
 		uint16_t bvci,
 		uint32_t load_selector)
@@ -451,7 +451,7 @@ static struct gprs_ns2_vc *ns2_load_sharing(
 
 	switch (nse->ll) {
 	case GPRS_NS2_LL_FR:
-		nsvc = ns2_load_sharing_modulor(nse, bvci, link_selector);
+		nsvc = ns2_load_sharing_modulo(nse, bvci, link_selector);
 		break;
 	case GPRS_NS2_LL_UDP:
 	default:
