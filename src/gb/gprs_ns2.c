@@ -217,6 +217,7 @@ const struct value_string gprs_ns2_aff_cause_prim_strs[] = {
 	{ GPRS_NS2_AFF_CAUSE_RECOVERY,		"NSE recovery" },
 	{ GPRS_NS2_AFF_CAUSE_SNS_CONFIGURED,	"NSE SNS configured" },
 	{ GPRS_NS2_AFF_CAUSE_SNS_FAILURE,	"NSE SNS failure" },
+	{ GPRS_NS2_AFF_CAUSE_SNS_NO_ENDPOINTS,	"NSE SNS no endpoints"},
 	{ GPRS_NS2_AFF_CAUSE_MTU_CHANGE,	"NSE MTU changed" },
 	{ 0, NULL }
 };
