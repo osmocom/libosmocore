@@ -134,6 +134,16 @@ AC_DEFUN([CHECK_TM_INCLUDES_TM_GMTOFF], [
 
 CHECK_TM_INCLUDES_TM_GMTOFF
 
+# Check if gettid is available (despite not being documented in glibc doc,
+# it requires __USE_GNU on some systems)
+# C compiler is used since __USE_GNU seems to be always defined for g++.
+save_CPPFLAGS=$CPPFLAGS
+AC_LANG_PUSH(C)
+CPPFLAGS="$CPPFLAGS -D_GNU_SOURCE"
+AC_CHECK_FUNCS([gettid])
+AC_LANG_POP(C)
+CPPFLAGS=$save_CPPFLAGS
+
 dnl Check if We need to apply workaround for TLS bug on ARM platform for GCC < 7.3.0:
 ARG_ENABLE_DETECT_TLS_GCC_ARM_BUG
 

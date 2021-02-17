@@ -25,6 +25,7 @@ libosmocore_la_SOURCES = context.c timer.c timer_gettimeofday.c timer_clockgetti
 			 conv_acc.c conv_acc_generic.c sercomm.c prbs.c \
 			 isdnhdlc.c \
 			 tdef.c \
+			 thread.c \
 			 sockaddr_str.c \
 			 use_count.c \
 			 exec.c \

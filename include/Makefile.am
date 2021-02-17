@@ -53,6 +53,7 @@ nobase_include_HEADERS = \
                        osmocom/core/strrb.h \
                        osmocom/core/talloc.h \
                        osmocom/core/tdef.h \
+		       osmocom/core/thread.h \
                        osmocom/core/timer.h \
                        osmocom/core/timer_compat.h \
                        osmocom/core/utils.h \
