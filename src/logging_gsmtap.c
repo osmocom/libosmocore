@@ -157,7 +157,7 @@ struct log_target *log_target_create_gsmtap(const char *host, uint16_t port,
 	target->raw_output = _gsmtap_raw_output;
 
 	if (!logging_gsmtap_pid)
-		logging_gsmtap_pid = (uint32_t)getpid();
+		osmo_store32be((uint32_t)getpid(), &logging_gsmtap_pid);
 
 	return target;
 }
