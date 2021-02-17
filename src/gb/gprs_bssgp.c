@@ -93,28 +93,40 @@ struct bssgp_bvc_ctx *btsctx_by_raid_cid(const struct gprs_ra_id *raid, uint16_t
 	return NULL;
 }
 
-/*! Transmit a BVC-RESET message with a given nsei and bvci (Chapter 10.4.12)
+/* Transmit a BVC-RESET or BVC-RESET-ACK with a given nsei and bvci (Chapter 10.4.12)
+ *  \param[in] pdu Either BSSGP_PDUT_BVC_RESET or BSSGP_PDUT_BVC_RESET_ACK
  *  \param[in] nsei The NSEI to transmit over
  *  \param[in] bvci BVCI of the BVC to reset
- *  \param[in] cause The cause of the reset
+ *  \param[in] cause The cause of the reset only valid for BSSGP_PDUT_BVC_RESET.
  *  \param[in] ra_id Pointer to the ra_id to include. If NULL no cell information will be included
  *  \param[in] cell_id The cell_id to include (if ra_id is not NULL)
+ *  returns >= 0 on success, on error < 0.
  */
-int bssgp_tx_bvc_reset_nsei_bvci(uint16_t nsei, uint16_t bvci, enum gprs_bssgp_cause cause, const struct gprs_ra_id *ra_id, uint16_t cell_id)
+static int tx_bvc_reset_nsei_bvci(enum bssgp_pdu_type pdu, uint16_t nsei, uint16_t bvci,
+				  enum gprs_bssgp_cause cause, const struct gprs_ra_id *ra_id, uint16_t cell_id)
 {
 	struct msgb *msg = bssgp_msgb_alloc();
 	struct bssgp_normal_hdr *bgph =
 		(struct bssgp_normal_hdr *) msgb_put(msg, sizeof(*bgph));
 	uint16_t _bvci = osmo_htons(bvci);
 
+	OSMO_ASSERT(pdu == BSSGP_PDUT_BVC_RESET || pdu == BSSGP_PDUT_BVC_RESET_ACK);
+
 	msgb_nsei(msg) = nsei;
 	msgb_bvci(msg) = 0; /* Signalling */
-	bgph->pdu_type = BSSGP_PDUT_BVC_RESET;
-	LOGP(DLBSSGP, LOGL_NOTICE, "BSSGP (BVCI=%u) Tx BVC-RESET "
-		"CAUSE=%s\n", bvci, bssgp_cause_str(cause));
+	bgph->pdu_type = pdu;
+
 
 	msgb_tvlv_put(msg, BSSGP_IE_BVCI, 2, (uint8_t *) &_bvci);
-	msgb_tvlv_put(msg, BSSGP_IE_CAUSE, 1, (uint8_t *) &cause);
+
+	if (pdu == BSSGP_PDUT_BVC_RESET) {
+		msgb_tvlv_put(msg, BSSGP_IE_CAUSE, 1, (uint8_t *) &cause);
+		LOGP(DLBSSGP, LOGL_NOTICE, "BSSGP (BVCI=%u) Tx BVC-RESET "
+			"CAUSE=%s\n", bvci, bssgp_cause_str(cause));
+	} else {
+		LOGP(DLBSSGP, LOGL_NOTICE, "BSSGP (BVCI=%u) Tx BVC-RESET-ACK\n", bvci);
+	}
+
 	if (ra_id) {
 		uint8_t bssgp_cid[8];
 		bssgp_create_cell_id(bssgp_cid, ra_id, cell_id);
@@ -124,6 +136,31 @@ int bssgp_tx_bvc_reset_nsei_bvci(uint16_t nsei, uint16_t bvci, enum gprs_bssgp_c
 	/* Optional: Feature Bitmap */
 
 	return bssgp_ns_send(bssgp_ns_send_data, msg);
+}
+
+/*! Transmit a BVC-RESET message with a given nsei and bvci (Chapter 10.4.12)
+ *  \param[in] nsei The NSEI to transmit over
+ *  \param[in] bvci BVCI of the BVC to reset
+ *  \param[in] cause The cause of the reset
+ *  \param[in] ra_id Pointer to the ra_id to include. If NULL no cell information will be included
+ *  \param[in] cell_id The cell_id to include (if ra_id is not NULL)
+ *  returns >= 0 on success, on error < 0.
+ */
+int bssgp_tx_bvc_reset_nsei_bvci(uint16_t nsei, uint16_t bvci, enum gprs_bssgp_cause cause, const struct gprs_ra_id *ra_id, uint16_t cell_id)
+{
+	return tx_bvc_reset_nsei_bvci(BSSGP_PDUT_BVC_RESET, nsei, bvci, cause, ra_id, cell_id);
+}
+
+/*! Transmit a BVC-RESET-ACK message with a given nsei and bvci (Chapter 10.4.12)
+ *  \param[in] nsei The NSEI to transmit over
+ *  \param[in] bvci BVCI of the BVC to reset
+ *  \param[in] ra_id Pointer to the ra_id to include. If NULL no cell information will be included
+ *  \param[in] cell_id The cell_id to include (if ra_id is not NULL)
+ *  returns >= 0 on success, on error < 0.
+ */
+int bssgp_tx_bvc_reset_ack_nsei_bvci(uint16_t nsei, uint16_t bvci, const struct gprs_ra_id *ra_id, uint16_t cell_id)
+{
+	return tx_bvc_reset_nsei_bvci(BSSGP_PDUT_BVC_RESET_ACK, nsei, bvci, 0, ra_id, cell_id);
 }
 
 /*! Initiate reset procedure for all PTP BVC on a given NSEI.
@@ -178,6 +215,7 @@ struct bssgp_bvc_ctx *btsctx_alloc(uint16_t bvci, uint16_t nsei)
 		return NULL;
 	ctx->bvci = bvci;
 	ctx->nsei = nsei;
+	ctx->is_sgsn = true;
 	/* FIXME: BVCI is not unique, only BVCI+NSEI ?!? */
 	ctx->ctrg = rate_ctr_group_alloc(ctx, &bssgp_ctrg_desc, bvci);
 	if (!ctx->ctrg)
@@ -350,7 +388,7 @@ static int bssgp_rx_bvc_reset(struct msgb *msg, struct tlv_parsed *tp,
 
 	/* When we receive a BVC-RESET PDU (at least of a PTP BVCI), the BSS
 	 * informs us about its RAC + Cell ID, so we can create a mapping */
-	if (bvci != 0 && bvci != 1) {
+	if (bctx->is_sgsn && bvci != 0 && bvci != 1) {
 		if (!TLVP_PRES_LEN(tp, BSSGP_IE_CELL_ID, 8)) {
 			LOGP(DLBSSGP, LOGL_ERROR, "BSSGP BVCI=%u Rx RESET "
 				"missing mandatory IE\n", bvci);
@@ -363,6 +401,13 @@ static int bssgp_rx_bvc_reset(struct msgb *msg, struct tlv_parsed *tp,
 		     osmo_rai_name(&bctx->ra_id), bctx->cell_id, bvci);
 	}
 
+	/* Acknowledge the RESET to the BTS */
+	if (bvci == 0 || bvci == 1 || bctx->is_sgsn)
+		bssgp_tx_simple_bvci(BSSGP_PDUT_BVC_RESET_ACK,
+				     nsei, bvci, ns_bvci);
+	else
+		bssgp_tx_bvc_reset_ack_nsei_bvci(nsei, bvci, &bctx->ra_id, bctx->cell_id);
+
 	/* Send NM_BVC_RESET.ind to NM */
 	memset(&nmp, 0, sizeof(nmp));
 	nmp.nsei = nsei;
@@ -372,10 +417,6 @@ static int bssgp_rx_bvc_reset(struct msgb *msg, struct tlv_parsed *tp,
 	osmo_prim_init(&nmp.oph, SAP_BSSGP_NM, PRIM_NM_BVC_RESET,
 			PRIM_OP_INDICATION, msg);
 	bssgp_prim_cb(&nmp.oph, NULL);
-
-	/* Acknowledge the RESET to the BTS */
-	bssgp_tx_simple_bvci(BSSGP_PDUT_BVC_RESET_ACK,
-			     nsei, bvci, ns_bvci);
 	return 0;
 }
 
@@ -972,6 +1013,9 @@ static int bssgp_rx_ptp(struct msgb *msg, struct tlv_parsed *tp,
 	case BSSGP_PDUT_STATUS:
 		/* This is already handled in bssgp_rcvmsg() */
 		break;
+	case BSSGP_PDUT_BVC_RESET:
+		rc = bssgp_rx_bvc_reset(msg, tp, bctx->bvci);
+		break;
 	case BSSGP_PDUT_DOWNLOAD_BSS_PFC:
 	case BSSGP_PDUT_CREATE_BSS_PFC_ACK:
 	case BSSGP_PDUT_CREATE_BSS_PFC_NACK:
@@ -1060,7 +1104,7 @@ static int bssgp_rx_sign(struct msgb *msg, struct tlv_parsed *tp,
 		LOGP(DLBSSGP, LOGL_ERROR, "BSSGP BVCI=%u Rx BVC-RESET-ACK\n", bvci);
 		break;
 	case BSSGP_PDUT_BVC_RESET:
-		/* BSS tells us that BVC init is required */
+		/* SGSN or BSS tells us that BVC init is required */
 		if (!TLVP_PRES_LEN(tp, BSSGP_IE_BVCI, 2) ||
 		    !TLVP_PRES_LEN(tp, BSSGP_IE_CAUSE, 1)) {
 			LOGP(DLBSSGP, LOGL_ERROR, "BSSGP Rx BVC-RESET "

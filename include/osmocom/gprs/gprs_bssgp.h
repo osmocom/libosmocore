@@ -125,6 +125,8 @@ struct bssgp_bvc_ctx {
 	/*! default bucket leak rate of per-MS bucket in octests/s */
 	uint32_t r_default_ms;
 
+	/*! BSS or SGSN. This defines the local state. */
+	bool is_sgsn;
 	/* we might want to add this as a shortcut later, avoiding the NSVC
 	 * lookup for every packet, similar to a routing cache */
 	//struct gprs_nsvc *nsvc;
