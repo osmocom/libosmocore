@@ -51,10 +51,11 @@
 #include <osmocom/core/logging.h>
 #include <osmocom/core/timer.h>
 #include <osmocom/core/byteswap.h>
+#include <osmocom/core/thread.h>
 
 #define	GSMTAP_LOG_MAX_SIZE 4096
 
-static uint32_t logging_gsmtap_pid;
+static __thread uint32_t logging_gsmtap_tid;
 
 static void _gsmtap_raw_output(struct log_target *target, int subsys,
 			       unsigned int level, const char *file,
@@ -85,7 +86,9 @@ static void _gsmtap_raw_output(struct log_target *target, int subsys,
 	/* Logging header */
 	golh = (struct gsmtap_osmocore_log_hdr *) msgb_put(msg, sizeof(*golh));
 	OSMO_STRLCPY_ARRAY(golh->proc_name, target->tgt_gsmtap.ident);
-	golh->pid = logging_gsmtap_pid;
+	if (logging_gsmtap_tid == 0)
+		osmo_store32be((uint32_t)osmo_gettid(), &logging_gsmtap_tid);
+	golh->pid = logging_gsmtap_tid;
 	if (subsys_name)
 		OSMO_STRLCPY_ARRAY(golh->subsys, subsys_name + 1);
 	else
@@ -155,9 +158,6 @@ struct log_target *log_target_create_gsmtap(const char *host, uint16_t port,
 
 	target->type = LOG_TGT_TYPE_GSMTAP;
 	target->raw_output = _gsmtap_raw_output;
-
-	if (!logging_gsmtap_pid)
-		osmo_store32be((uint32_t)getpid(), &logging_gsmtap_pid);
 
 	return target;
 }
