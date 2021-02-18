@@ -64,6 +64,7 @@
 #include <osmocom/core/utils.h>
 #include <osmocom/core/logging.h>
 #include <osmocom/core/timer.h>
+#include <osmocom/core/thread.h>
 
 #include <osmocom/vty/logging.h>	/* for LOGGING_STR. */
 
@@ -82,6 +83,8 @@ struct log_info *osmo_log_info;
 static struct log_context log_context;
 void *tall_log_ctx = NULL;
 LLIST_HEAD(osmo_log_target_list);
+
+static __thread long int logging_tid;
 
 #if (!EMBEDDED)
 /*! This mutex must be held while using osmo_log_target_list or any of its
@@ -473,6 +476,14 @@ static void _output(struct log_target *target, unsigned int subsys,
 			buf[offset + ret - 1] = ' ';
 			OSMO_SNPRINTF_RET(ret, rem, offset, len);
 		}
+		if (target->print_tid) {
+			if (logging_tid == 0)
+				logging_tid = (long int)osmo_gettid();
+			ret = snprintf(buf + offset, rem, "%ld ", logging_tid);
+			if (ret < 0)
+				goto err;
+			OSMO_SNPRINTF_RET(ret, rem, offset, len);
+		}
 		if (target->print_category) {
 			ret = snprintf(buf + offset, rem, "%s%s%s%s ",
 				       target->use_color ? level_color(level) : "",
@@ -778,6 +789,15 @@ void log_set_print_extended_timestamp(struct log_target *target, int print_times
 	target->print_ext_timestamp = print_timestamp;
 }
 
+/*! Enable or disable printing of timestamps while logging
+ *  \param[in] target Log target to be affected
+ *  \param[in] print_tid Enable (1) or disable (0) Thread ID logging
+ */
+void log_set_print_tid(struct log_target *target, int print_tid)
+{
+	target->print_tid = print_tid;
+}
+
 /*! Use log_set_print_filename2() instead.
  * Call log_set_print_filename2() with LOG_FILENAME_PATH or LOG_FILENAME_NONE, *as well as* call
  * log_set_print_category_hex() with the argument passed to this function. This is to mirror legacy
@@ -917,6 +937,7 @@ struct log_target *log_target_create(void)
 	/* global settings */
 	target->use_color = 1;
 	target->print_timestamp = 0;
+	target->print_tid = 0;
 	target->print_filename2 = LOG_FILENAME_PATH;
 	target->print_category_hex = true;
 

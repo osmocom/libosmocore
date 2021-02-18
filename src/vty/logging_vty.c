@@ -225,6 +225,22 @@ DEFUN(logging_prnt_ext_timestamp,
 	RET_WITH_UNLOCK(CMD_SUCCESS);
 }
 
+DEFUN(logging_prnt_tid,
+      logging_prnt_tid_cmd,
+      "logging print thread-id (0|1)",
+	LOGGING_STR "Log output settings\n"
+	"Configure log message logging Thread ID\n"
+	"Don't prefix each log message\n"
+	"Prefix each log message with current Thread ID\n")
+{
+	struct log_target *tgt;
+
+	ACQUIRE_VTY_LOG_TGT_WITH_LOCK(vty, tgt);
+
+	log_set_print_tid(tgt, atoi(argv[0]));
+	RET_WITH_UNLOCK(CMD_SUCCESS);
+}
+
 DEFUN(logging_prnt_cat,
       logging_prnt_cat_cmd,
       "logging print category (0|1)",
@@ -1003,6 +1019,8 @@ static int config_write_log_single(struct vty *vty, struct log_target *tgt)
 		tgt->print_category_hex ? 1 : 0, VTY_NEWLINE);
 	vty_out(vty, " logging print category %d%s",
 		tgt->print_category ? 1 : 0, VTY_NEWLINE);
+	vty_out(vty, " logging print thread-id %d%s",
+		tgt->print_tid ? 1 : 0, VTY_NEWLINE);
 	if (tgt->print_ext_timestamp)
 		vty_out(vty, " logging print extended-timestamp 1%s", VTY_NEWLINE);
 	else
@@ -1134,6 +1152,7 @@ void logging_vty_add_cmds()
 	install_lib_element_ve(&logging_use_clr_cmd);
 	install_lib_element_ve(&logging_prnt_timestamp_cmd);
 	install_lib_element_ve(&logging_prnt_ext_timestamp_cmd);
+	install_lib_element_ve(&logging_prnt_tid_cmd);
 	install_lib_element_ve(&logging_prnt_cat_cmd);
 	install_lib_element_ve(&logging_prnt_cat_hex_cmd);
 	install_lib_element_ve(&logging_prnt_level_cmd);
@@ -1168,6 +1187,7 @@ void logging_vty_add_cmds()
 	install_lib_element(CFG_LOG_NODE, &logging_use_clr_cmd);
 	install_lib_element(CFG_LOG_NODE, &logging_prnt_timestamp_cmd);
 	install_lib_element(CFG_LOG_NODE, &logging_prnt_ext_timestamp_cmd);
+	install_lib_element(CFG_LOG_NODE, &logging_prnt_tid_cmd);
 	install_lib_element(CFG_LOG_NODE, &logging_prnt_cat_cmd);
 	install_lib_element(CFG_LOG_NODE, &logging_prnt_cat_hex_cmd);
 	install_lib_element(CFG_LOG_NODE, &logging_prnt_level_cmd);

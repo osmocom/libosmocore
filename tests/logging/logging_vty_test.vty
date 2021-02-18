@@ -48,6 +48,7 @@ logging_vty_test# list
   logging color (0|1)
   logging timestamp (0|1)
   logging print extended-timestamp (0|1)
+  logging print thread-id (0|1)
   logging print category (0|1)
   logging print category-hex (0|1)
   logging print level (0|1)

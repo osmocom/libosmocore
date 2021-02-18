@@ -281,6 +281,8 @@ struct log_target {
 	unsigned int use_color:1;
 	/*! should log messages be prefixed with a timestamp? */
 	unsigned int print_timestamp:1;
+	/*! should log messages be prefixed with the logger Thread ID? */
+	unsigned int print_tid:1;
 	/*! DEPRECATED: use print_filename2 instead. */
 	unsigned int print_filename:1;
 	/*! should log messages be prefixed with a category name? */
@@ -374,6 +376,7 @@ void log_set_all_filter(struct log_target *target, int);
 void log_set_use_color(struct log_target *target, int);
 void log_set_print_extended_timestamp(struct log_target *target, int);
 void log_set_print_timestamp(struct log_target *target, int);
+void log_set_print_tid(struct log_target *target, int);
 void log_set_print_filename(struct log_target *target, int);
 void log_set_print_filename2(struct log_target *target, enum log_filename_type lft);
 void log_set_print_filename_pos(struct log_target *target, enum log_filename_pos pos);
