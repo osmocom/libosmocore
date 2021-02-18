@@ -65,6 +65,8 @@ int main(int argc, char **argv)
 	log_add_target(ringbuf_target);
 	log_set_all_filter(ringbuf_target, 1);
 	log_set_print_filename(ringbuf_target, 0);
+	log_set_print_category(ringbuf_target, 0);
+	log_set_print_category_hex(ringbuf_target, 0);
 
 	log_parse_category_mask(ringbuf_target, "DRLL:DCC");
 	log_parse_category_mask(ringbuf_target, "DRLL");

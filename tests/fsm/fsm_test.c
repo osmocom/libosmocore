@@ -414,6 +414,8 @@ int main(int argc, char **argv)
 	log_add_target(stderr_target);
 	log_set_print_filename(stderr_target, 0);
 	log_set_use_color(stderr_target, 0);
+	log_set_print_category(stderr_target, 0);
+	log_set_print_category_hex(stderr_target, 0);
 	g_ctrl = ctrl_handle_alloc(NULL, NULL, NULL);
 
 	g_ctx = NULL;

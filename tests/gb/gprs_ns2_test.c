@@ -524,6 +524,8 @@ int main(int argc, char **argv)
 	log_set_use_color(osmo_stderr_target, 0);
 	log_set_print_filename(osmo_stderr_target, 0);
 	log_set_print_filename(osmo_stderr_target, 0);
+	log_set_print_category(osmo_stderr_target, 0);
+	log_set_print_category_hex(osmo_stderr_target, 0);
 	log_set_log_level(osmo_stderr_target, LOGL_INFO);
 	unitdata = talloc_zero(ctx, struct osmo_wqueue);
 	osmo_wqueue_init(unitdata, 100);

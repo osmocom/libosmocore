@@ -73,6 +73,8 @@ int main(int argc, char **argv)
 	stderr_target = log_target_create_stderr();
 	log_add_target(stderr_target);
 	log_set_print_filename(stderr_target, 0);
+	log_set_print_category_hex(stderr_target, 0);
+	log_set_print_category(stderr_target, 0);
 
 	test_wqueue_limit();
 
