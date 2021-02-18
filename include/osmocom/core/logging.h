@@ -377,7 +377,7 @@ void log_set_use_color(struct log_target *target, int);
 void log_set_print_extended_timestamp(struct log_target *target, int);
 void log_set_print_timestamp(struct log_target *target, int);
 void log_set_print_tid(struct log_target *target, int);
-void log_set_print_filename(struct log_target *target, int);
+void log_set_print_filename(struct log_target *target, int) OSMO_DEPRECATED("Use log_set_print_filename2() instead");
 void log_set_print_filename2(struct log_target *target, enum log_filename_type lft);
 void log_set_print_filename_pos(struct log_target *target, enum log_filename_pos pos);
 void log_set_print_category(struct log_target *target, int);
