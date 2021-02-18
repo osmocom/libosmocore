@@ -16,3 +16,14 @@ probe libosmocore_log_done = process("libosmocore").mark("log_done")
 {
  probestr = sprintf("%s", $$name);
 }
+
+probe libosmocore_stats_start = process("libosmocore").mark("statsd_start")
+{
+ count = $arg1;
+ probestr = sprintf("%s(count=%d), $$name, count);
+}
+
+probe libosmocore_stats_done = process("libosmocore").mark("statsd_done")
+{
+ probestr = sprintf("%s", $$name);
+}

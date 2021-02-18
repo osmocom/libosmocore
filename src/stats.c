@@ -90,6 +90,17 @@
 #include <osmocom/core/counter.h>
 #include <osmocom/core/msgb.h>
 
+#ifdef HAVE_SYSTEMTAP
+/* include the generated probes header and put markers in code */
+#include "probes.h"
+#define TRACE(probe) probe
+#define TRACE_ENABLED(probe) probe ## _ENABLED()
+#else
+/* Wrap the probe to allow it to be removed when no systemtap available */
+#define TRACE(probe)
+#define TRACE_ENABLED(probe) (0)
+#endif /* HAVE_SYSTEMTAP */
+
 #define STATS_DEFAULT_INTERVAL 5 /* secs */
 #define STATS_DEFAULT_BUFLEN 256
 
@@ -781,6 +792,7 @@ static void flush_all_reporters()
 int osmo_stats_report()
 {
 	/* per group actions */
+	TRACE(LIBOSMOCORE_STATS_START());
 	osmo_counters_for_each(handle_counter, NULL);
 	rate_ctr_for_each_group(rate_ctr_group_handler, NULL);
 	osmo_stat_item_for_each_group(osmo_stat_item_group_handler, NULL);
@@ -788,6 +800,7 @@ int osmo_stats_report()
 	/* global actions */
 	osmo_stat_item_discard_all(&current_stat_item_index);
 	flush_all_reporters();
+	TRACE(LIBOSMOCORE_STATS_DONE());
 
 	return 0;
 }
