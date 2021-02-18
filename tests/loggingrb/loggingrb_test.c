@@ -64,7 +64,7 @@ int main(int argc, char **argv)
 	ringbuf_target = log_target_create_rb(0x1000);
 	log_add_target(ringbuf_target);
 	log_set_all_filter(ringbuf_target, 1);
-	log_set_print_filename(ringbuf_target, 0);
+	log_set_print_filename2(ringbuf_target, LOG_FILENAME_NONE);
 	log_set_print_category(ringbuf_target, 0);
 	log_set_print_category_hex(ringbuf_target, 0);
 

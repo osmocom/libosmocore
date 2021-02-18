@@ -227,8 +227,7 @@ int main (int argc, char *argv[])
 
 	osmo_init_logging2(ctx, &log_info);
 	log_set_use_color(osmo_stderr_target, 0);
-	log_set_print_filename(osmo_stderr_target, 0);
-	log_set_print_filename(osmo_stderr_target, 0);
+	log_set_print_filename2(osmo_stderr_target, LOG_FILENAME_NONE);
 	log_set_log_level(osmo_stderr_target, LOGL_INFO);
 	msgb_talloc_ctx_init(ctx, 0);
 	osmo_stats_init(ctx);
