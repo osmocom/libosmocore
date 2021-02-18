@@ -939,7 +939,8 @@ struct log_target *log_target_create(void)
 	target->print_timestamp = 0;
 	target->print_tid = 0;
 	target->print_filename2 = LOG_FILENAME_PATH;
-	target->print_category_hex = true;
+	target->print_category_hex = false;
+	target->print_category = true;
 
 	/* global log level */
 	target->loglevel = 0;
