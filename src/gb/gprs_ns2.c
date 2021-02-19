@@ -831,12 +831,15 @@ void gprs_ns2_free_nse(struct gprs_ns2_nse *nse)
 		return;
 
 	nse->alive = false;
+	if (nse->bss_sns_fi) {
+		osmo_fsm_inst_term(nse->bss_sns_fi, OSMO_FSM_TERM_REQUEST, NULL);
+		nse->bss_sns_fi = NULL;
+	}
+
 	gprs_ns2_free_nsvcs(nse);
 	ns2_prim_status_ind(nse, NULL, 0, GPRS_NS2_AFF_CAUSE_FAILURE);
 
 	llist_del(&nse->list);
-	if (nse->bss_sns_fi)
-		osmo_fsm_inst_term(nse->bss_sns_fi, OSMO_FSM_TERM_REQUEST, NULL);
 	talloc_free(nse);
 }
 
