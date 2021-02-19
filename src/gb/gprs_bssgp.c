@@ -113,9 +113,8 @@ static int tx_bvc_reset_nsei_bvci(enum bssgp_pdu_type pdu, uint16_t nsei, uint16
 	OSMO_ASSERT(pdu == BSSGP_PDUT_BVC_RESET || pdu == BSSGP_PDUT_BVC_RESET_ACK);
 
 	msgb_nsei(msg) = nsei;
-	msgb_bvci(msg) = 0; /* Signalling */
+	msgb_bvci(msg) = BVCI_SIGNALLING;
 	bgph->pdu_type = pdu;
-
 
 	msgb_tvlv_put(msg, BSSGP_IE_BVCI, 2, (uint8_t *) &_bvci);
 
@@ -388,7 +387,7 @@ static int bssgp_rx_bvc_reset(struct msgb *msg, struct tlv_parsed *tp,
 
 	/* When we receive a BVC-RESET PDU (at least of a PTP BVCI), the BSS
 	 * informs us about its RAC + Cell ID, so we can create a mapping */
-	if (bctx->is_sgsn && bvci != 0 && bvci != 1) {
+	if (bctx->is_sgsn && bvci != BVCI_SIGNALLING && bvci != BVCI_PTM) {
 		if (!TLVP_PRES_LEN(tp, BSSGP_IE_CELL_ID, 8)) {
 			LOGP(DLBSSGP, LOGL_ERROR, "BSSGP BVCI=%u Rx RESET "
 				"missing mandatory IE\n", bvci);
@@ -402,7 +401,7 @@ static int bssgp_rx_bvc_reset(struct msgb *msg, struct tlv_parsed *tp,
 	}
 
 	/* Acknowledge the RESET to the BTS */
-	if (bvci == 0 || bvci == 1 || bctx->is_sgsn)
+	if (bvci == BVCI_SIGNALLING || bvci == BVCI_PTM || bctx->is_sgsn)
 		bssgp_tx_simple_bvci(BSSGP_PDUT_BVC_RESET_ACK,
 				     nsei, bvci, ns_bvci);
 	else
