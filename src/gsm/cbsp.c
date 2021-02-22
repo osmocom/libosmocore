@@ -352,7 +352,12 @@ static int cbsp_enc_reset_fail(struct msgb *msg, const struct osmo_cbsp_reset_fa
 /* 8.1.3.18a KEEP ALIVE */
 static int cbsp_enc_keep_alive(struct msgb *msg, const struct osmo_cbsp_keep_alive *in)
 {
-	msgb_tv_put(msg, CBSP_IEI_KEEP_ALIVE_REP_PERIOD, in->repetition_period);
+	int rperiod = encode_wperiod(in->repetition_period);
+	if (in->repetition_period > 120)
+		return -EINVAL;
+	if (rperiod < 0)
+		return -EINVAL;
+	msgb_tv_put(msg, CBSP_IEI_KEEP_ALIVE_REP_PERIOD, rperiod);
 	return 0;
 }
 
@@ -1083,12 +1088,14 @@ static int cbsp_dec_reset_fail(struct osmo_cbsp_reset_failure *out, const struct
 static int cbsp_dec_keep_alive(struct osmo_cbsp_keep_alive *out, const struct tlv_parsed *tp,
 				struct msgb *in, void *ctx)
 {
+	uint8_t rperiod;
 	if (!TLVP_PRES_LEN(tp, CBSP_IEI_KEEP_ALIVE_REP_PERIOD, 1)) {
 		osmo_cbsp_errstr = "missing/short mandatory IE";
 		return -EINVAL;
 	}
 
-	out->repetition_period = *TLVP_VAL(tp, CBSP_IEI_KEEP_ALIVE_REP_PERIOD);
+	rperiod = *TLVP_VAL(tp, CBSP_IEI_KEEP_ALIVE_REP_PERIOD);
+	out->repetition_period = decode_wperiod(rperiod);
 	return 0;
 }
 
