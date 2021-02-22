@@ -130,13 +130,13 @@ static int encode_wperiod(uint32_t secs)
 	if (secs <= 10)
 		return secs;
 	if (secs <= 30)
-		return (secs-10)/2;
+		return 10 + (secs-10)/2;
 	if (secs <= 120)
-		return (secs-30)/5;
+		return 30 + (secs-30)/5;
 	if (secs <= 600)
-		return (secs-120)/10;
+		return 120 + (secs-120)/10;
 	if (secs <= 60*60)
-		return (secs-600)/30;
+		return 600 + (secs-600)/30;
 	osmo_cbsp_errstr = "warning period out of range";
 	return -1;
 }
