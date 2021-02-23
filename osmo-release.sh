@@ -164,7 +164,7 @@ fi
 
 set -e
 if [ -f "TODO-RELEASE" ]; then
-	grep '#' TODO-RELEASE > TODO-RELEASE.clean
+	grep '#' TODO-RELEASE > TODO-RELEASE.clean || true
 	mv TODO-RELEASE.clean TODO-RELEASE
 	git add TODO-RELEASE
 fi
