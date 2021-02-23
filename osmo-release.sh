@@ -41,7 +41,7 @@ check_configureac_debctrl_deps_match() {
 			if [ "z$debctrl_match_count" != "z1" ]; then
 				echo "WARN: configure.ac <$dep, $ver> matches debian/control $debctrl_match_count times, manual check required!"
 			else # 1 match:
-				parsed_match=$(echo "$debctrl_match" | tr -d "(" | tr -d ")" | tr -d "," | tr -d " " | sed "s/>=/ /g")
+				parsed_match=$(echo "$debctrl_match" | tr -d "(" | tr -d ")" | tr -d "," | tr -d " " | tr -d "\t" | sed "s/>=/ /g")
 				debctrl_dep=$(echo "$parsed_match" | cut -d " " -f 1 | sed "s/-dev//g")
 				debctrl_ver=$(echo "$parsed_match" | cut -d " " -f 2)
 				if [ "z$dep" != "z$debctrl_dep" ] || [ "z$ver" != "z$debctrl_ver" ]; then
