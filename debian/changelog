@@ -1,3 +1,562 @@
+libosmocore (1.5.0) unstable; urgency=medium
+
+  [ Vadim Yanitskiy ]
+  * debian/control: change maintainer to the Osmocom team / mailing list
+  * vty/command: cosmetic: simplify conditions in in config_list_cmd
+  * vty/command: cosmetic: fix formatting of config_help_cmd
+  * vty/command: cosmetic: drop redundant line break
+  * vty/command: fix switch / case coding style in vty_go_parent()
+  * vty/command: cosmetic: swap i and j in vty_dump_element()
+  * gsm0808: add gsm0808_create_sapi_reject_cause()
+  * macaddr: fix osmo_get_macaddr(): return -1 if no device is found
+  * macaddr: fix osmo_macaddr_parse(): return meaningful error codes
+  * lapdm_pad_msgb(): cosmetic: use GSM_MACBLOCK_PADDING
+  * lapd_test: fix wrong comment in lapdm_establish()
+  * lapd_test: rename func=UA (RR) CM Service Request: s/ua/ua_cm/
+  * lapd_test: fix: print all messages to stdout, not stderr
+  * lapd_test: add a test checking SAPI0/SAPI3 prioritization
+  * lapdm: fix SAPI-0/SAPI-3 frame prioritization on DCCH
+  * logging: refactor and simplify log_target_destroy()
+  * logging: fix log_target_destroy(): properly close syslog
+  * logging: fix memleak in log_target_create_file()
+  * vty: fix 'Unsigned compared against 0' generate_cpu_hex_mask()
+  * gsm0808: fix: do not encode invalid encryption algorithm
+  * vty: add program specific attributes to VTY commands
+  * vty: print program specific attributes in the XML reference
+  * vty: cosmetic: drop redundant 'break' statements
+  * vty: cosmetic: s/width/cmd_width/g in vty_describe_command()
+  * vty: cosmetic: fix missing curly braces in vty_describe_command()
+  * vty/command: introduce new attribute CMD_ATTR_IMMEDIATE
+  * vty/command: reflect global attributes in the XML reference
+  * tests: do not ignore stderr of vty_test, also match it
+  * vty: check for duplicate flags in application specific attributes
+  * vty: check for reserved flags in application specific attributes
+  * vty/command: add global command attribute CMD_ATTR_NODE_EXIT
+  * vty/command: add CMD_ATTR_LIB_COMMAND and install() API wrappers
+  * vty: use install_lib_element() and install_lib_element_ve()
+  * vty/command: introduce API for the library specific attributes
+  * vty: introduce and use VTY_CMD_USR_ATTR_NUM
+  * vty/command: introduce a command to list attributes
+  * vty/command: print attribute flags in the output of 'list'
+  * tests/vty: verify 'show vty-attributes' / 'list' commands
+  * vty/command: assign flags to CMD_ATTR_{IMMEDIATE,NODE_EXIT}
+  * vty/command: restrict the use of '.', '!', and '@' as flags
+  * vty: fix vty_dump_element(): do not print empty <attributes>
+  * socket: make the arguments of osmo_sockaddr_cmp() const
+  * gprs_ns2: make struct osmo_sockaddr pointers const
+  * rsl: rsl_chan_nr_str_buf(): use ABIS_RSL_CHAN_NR_CBITS_* macros
+  * logging: introduce 'systemd-journal' target
+  * vty: introduce the expert mode and a command to enable it
+  * vty/command: make some 'struct cmd_element' pointers const
+  * vty/command: introduce vty_dump_xml_ref_mode()
+  * vty/command: add CMD_ATTR_HIDDEN to CMD_ATTR_PUBLIC_MASK
+  * application: do not document unrelated forward-declarations
+  * vty/command: fix: restrict the expert mode to the current session
+  * fix spelling in 'value_string' arrays: existAnt -> existEnt
+  * gsm48: add missing RR cause value definitions
+  * vty/command: add 'hidden only' VTY reference generation mode
+  * bts_features: add missing description for BTS_FEAT_ACCH_REP
+  * core/linuxlist: do not use 'new' as a parameter name
+  * protocol/gsm_08_58.h: add ip.access Power Control structures
+  * protocol/gsm_08_58.h: add Osmocom specific EWMA AVG algo
+  * logging: revert color of LGLOBAL category back to white
+  * gsm_08_58: fix wrong field order in 'struct ipac_preproc_pc_thresh'
+  * gsm_08_58: add flexible array member to 'struct ipac_preproc_ave_cfg'
+  * gsmtap_util: SNR can be negative, use a signed integer
+  * gprs_ns2_sns: always check rc of osmo_sockaddr_str_from_sockaddr()
+  * gprs_ns2_fr: fix resource leaks due to early return in set_ifupdown()
+  * gprs_bssgp: fix uninitialized struct fields in bssgp_create_rim_ri()
+  * bts_features: s/Repeation/Repetition/ in osmo_bts_features_descs[]
+  * gprs_bssgp: abuse gsm48_encode_ra() to encode TAC
+  * fixup: configure.ac: fix: do not define HAVE_NEON unconditionally
+  * gsm_7bit_encode_n(): test encoding of more than 250 septets
+  * gsm_7bit_encode_n(): fix integer overflow in gsm_septets2octets()
+  * gsm0808: use msgb_tv16_put() and osmo_store32be()
+  * bssgp_bvc_fsm: check return value of osmo_fsm_register()
+  * tlv: add msgb_tv32_put(), similar to msgb_tv16_put()
+  * tlv: clarify documentation for msgb_tv{16,32}_put()
+
+  [ Eric ]
+  * vty cpu sched: do not assert if sched impossible
+  * pkgconfig: link to mnl if available
+
+  [ Pau Espin Pedrol ]
+  * vty: Fix cpu-sched VTY node name
+  * sock: osmo_sock_init2_multiaddr: decouple addr resolution from socket creation
+  * socket: multiaddr: Support IPv4 + IPv6 addresses in SCTP associations
+  * socket: Log proper getaddrinfo() error
+  * osmo_sock_get_ip_and_port(): Support IPv6 sockets
+  * l1sap.h: Fix typo in doxygen documentation
+  * osmo_sock_inti2_multiaddr: Fix memleak and free uninitialized mem
+  * socker: Remove AI_ADDRCONFIG from getaddrinfo flags
+  * tests: Split SCTP tests to its own file and run them conditionally
+  * ipa: Fix wrong output log formatting
+  * socket: Allow binding to :: (IPv6) and connecting to IPv4-only on the remote
+  * socket: Add support for AF_INET6 in osmo_sockaddr_to_str_and_uint()
+  * socket: Use AF_UNSPEC instead of PF_UNSPEC calling getaddrinfo
+  * socket: Fix stack-buffer-overflow in osmo_sock_local_ip()
+  * socket: fix wrong ipv6 dst buf size passed in osmo_sock_local_ip
+  * socket: Add some osmo_sockaddr print helpers
+  * tests: Add test to showcase osmo_sock_init2 bug with AF_UNSPEC
+  * socket: Fix bug in osmo_sock_init2(AF_UNSPEC) matching IP versions
+  * logging: Avoid printing OSMO_LOGCOLOR_END if no color was used
+  * osmo_strlcpy: Avoid calling memcpy with size=0
+  * osmo_strlcpy: Clarify length calculation
+  * cosmetic: Fix typo in API doc
+  * gprs_ns2_udp: Avoid dangling freed struct in list if binding fails
+  * vty: Fix left shifting out of range on signed variable
+  * cosmetic: vty: Fix trailing whitespace
+  * gsm: Fix make distcheck with parallel make
+  * contrib: jenkins: Enable parallel make in make distcheck
+  * lapdm: Drop log lines printing fmt=B
+  * lapdm: Split lapd_rx_u() spaghetti into one function per message type
+  * lapdm: Allow SABM L=0 in Timer Recovery State
+  * gb: ns2_sns: Fix missing trailing newline char in log line
+  * gb: ns2_sns: Add missing value_string entry for GPRS_SNS_EV_NO_NSVC
+  * vty: Mark cpu_sched_vty commands with attr immediate
+  * tdef: Introduce OSMO_TDEF_US unit
+  * tests: Fix tdef_test on 32bit platforms
+  * bitvec: Fix left shifting out of range on signed variable
+  * cosmetic: serial: Fix typo in comment
+  * serial: Fix typo in debug log line
+  * serial: Log error if tcgetattr() or tcsetattr() fail
+  * serial: Introduce API osmo_serial_speed_t
+  * Revert "tests: Fix tdef_test on 32bit platforms"
+  * tests: Fix tdef_test on 32bit platforms
+  * statsd report: Fix wrong fmt specificier generating wrong stats
+  * gsm: Add enum for Network Feature Support IE
+  * Include mnl.h iif --enable-libmnl
+  * gb: Import mnl.h iif --enable-libmnl
+  * bssgp: Remove newly added log line warning about NOOP
+  * rest_octets: add Serving Cell Priority Parameters
+  * gsm: si13: Fix encode of EGPRS_PACKET_CHANNEL_REQUEST
+  * si2quater: fix budget calculation for multiple EARFCNs
+  * gsm: append_eutran_neib_cell: Fix SI2quater EARFCN list
+  * GPRS Cell Options (SI13): Add REL-4 CCN_ACTIVE bit
+  * Revert "rest_octets: fix encoding of 3G Early Classmark Sending Restriction"
+  * rest_octets: Fix decoding of SI3 3G Early Classmark Sending Restriction
+  * gitignore: Ignore *~
+  * ctrl: Allow handling CTRL get/set replies in user defined code
+  * Intoduce Packet Switch CGI
+  * ctrl: ports.h: Add OSMO_CTRL_PORT_BSC_NEIGH
+  * gsm: Add missing osmo_*_cmp symbols to libosmogsm.map
+  * gsm: Introduce osmo_{rai,cgi_ps}_cmp() APIs
+  * gprs_bssgp_prim.h: Add missing includes
+  * Revert "gprs_ns2: drop gprs_ns2_vty, rename vty2 -> vty"
+  * ctrl_connection: Initialize write_queue.bfd.fd to -1 during allocation
+  * cosmetic: fix typo in comment
+  * gsm: Fix wrong length in SI13 GPRS Cell Options IE
+  * gsm: bts_features: Introduce BTS_FEAT_CCN
+  * Fix struct bitfields on big endian systems
+  * cosmetic: Move comment one line below in append_gprs_cell_opt
+  * gsm: Fix bitfield order in dtap_header
+  * comsetic: gsm0808_test: Fix trailing whitespace
+  * gsm: Support converting to cgi-ps in gsm0808_cell_id_from_cgi()
+  * gsm0808_utils: Move static function further up in file
+  * gsm: Fix encoding of gsm0808_cell_id_list2 with CGI-PS types
+  * logging: gsmtap: Fill PID field for each message
+  * Introduce osmo_gettid() API
+  * logging: gsmtap: Fix fill PID field not stored in network byte order
+  * logging: gsmtap: Store TID instead of PID in pkt hdr
+  * gsm: Introduce API osmo_gsm48_rest_octets_si13_decode
+  * logging: Allow prefixing thread ID to each log line
+  * tests: Set print_category values explicitly
+  * Drop use of log_set_print_filename() API inside libosmocore
+  * logging: Deprecate API log_set_print_filename
+  * osmo-release.sh: Omit tab whitespace matching debian/control versions
+
+  [ Harald Welte ]
+  * gsmtap: Add definitions for E1/T1 payload (LAPD, TRAU, FR) in GSMTAP
+  * Add VTY + CTRL ports for upcoming OsmoSMLC
+  * gprs_ns2_sns: Fix compilation on Debian 8
+  * ipaccess.h: Add more enum values and 'official' names
+  * ns2: Improve/extend doxygen comments for new ns2 implementation
+  * ns2: Use NULL and not '0' when returning a NULL-Pointer
+  * gprs_ns2: Mark gprs_ns2_validate_* as static
+  * write_queue: Add osmo_wqueue_enqueue_quiet()
+  * write_queue: use msgb_{en,de}queue_count()
+  * write_queue: Re-enqueue msgb if write_cb returns -EAGAIN
+  * logging_vty: set osmo_stderr_target to NULL on "no log stderr"
+  * logging: Introduce MAX_LOG_SIZE for the magic number 4096
+  * bssgp: Don't include RA-ID in BVC-RESET for BVCI=0 (signalling)
+  * bssmap_le/bsslap tests: We must use %td for ptrdiff_t printing
+  * osmo_float_str_to_int: When using strtoll(), use LLONG_{MAX,MIN}
+  * gprs_ns2: Fix parsing of SNS-{ADD,DEL,CHANGE_WEIGHT}
+  * gsm48_rest_octets: Add parser for SI4 rest octets
+  * [cosmetic] rest_octets: Follow coding style regarding {}
+  * ns2: More verbose comments on gprs_ns2_vc_mode
+  * select: Introduce osmo_fd_{read,write}_{enable,disable}()
+  * select: Migrate over to poll()
+  * card_fs_usim.c: Add support for DF.5GS directory
+  * Revert "gsm_04_08: add parser for Mobile Station Classmark 3"
+  * card_fs_usim: Add definitions of DF.ProSe and DF.ACDC
+  * bssgp: Input argument to bssgp_tlv_parse() should be 'const'
+  * ns2: permit multiple nsvci in one nse in VTY
+  * frame_relay: Fix some spelling/language issues
+  * Revert "ns2: permit multiple nsvci in one nse in VTY"
+  * gprs_ns2_vty: Fix VTY documentation errors
+  * frame_relay: Fix null pointer dereference in DLC/PVC delete
+  * frame_relay: Fix error path on ioctl() failure
+  * gprs_ns2: Introduce gprs_ns2_lltype_str() for link layer name
+  * gprs_ns2_fr: Print Frame Relay 'role' in VTY
+  * gprs-ns2: Fix stringification of NS/FR NSVCI
+  * gprs_ns2: Don't return an empty string in case of unknown LL
+  * cosmetic: frame_relay: Fix typos
+  * gprs_ns2: Print link layer and global ALIVE/DEAD state
+  * gprs_ns2_vty: Differentiate 'show ns binds' and 'show ns entities'
+  * gprs_ns2_vty: Show NSVCI in dump_nsvc()
+  * gprs_ns_vty: Unify display of NSVCI on VTY in 'show ns entities'
+  * gprs_ns2_vty: Print all relevant data on each NS-VC
+  * gprs_ns2_udp.c: Fix typo - it's a DSCP and not a DCSP
+  * Integrate libmnl (minimal netlink) library with libosmocore select loop
+  * gprs_ns2_fr: Monitor the kernel net-device link state
+  * gsm_08_18.h: Update enums for message types and IEs with Release 15
+  * gprs_ns2_vty: Re-introduce a 'show ns' command
+  * libosmogb: Add missing LIBMNL_CFLAGS
+  * mnl: Use mnl_socket_open() insatead of mnl_socket_open2()
+  * gprs_ns2_fr: remove include <linux/if.h>
+  * bssgp: Use TLVP_PRES_LEN instead of TLVP_PRESENT
+  * gprs_ns2: Use TLVP_PRES_LEN instead of TLVP_PRESENT
+  * bssgp: Update bssgp_pdu_strings with Release 15
+  * bssgp: Fix typo in BSSGP Message Type enum
+  * Add hlist and hashtable from Linux kernel
+  * Use explicit type-casting in hlist_del() for C++ compatibility
+  * gsm_08_18.h: Add some PDU definitions still missing
+  * hash/log2: Add generic implementations of fls() and fls64()
+  * log2.h: Use uintXX_t instead of kernel specific types
+  * log2.h: Avoid redefining __always_inline
+  * ns2: Accept NS-UNBLOCK-ACK in UNBLOCKED state
+  * Introduce 'osmo_tlv_prot' abstraction for validation of TLV protocols
+  * tlv: Introduce enum with error codes for TLV parser functions
+  * bssgp: Add osmo_tlv_prot_def for BSSGP
+  * gsm_08_18.h: Add #defines for [extended] feature bits
+  * tlv.h: Add msgb_tvlv_put_{16,32}be()
+  * logging: Introduce DLBSSGP logging constant
+  * gb: Add beginnings of a new BSSGP implementation
+  * logging: Assing different 8bit colors to built-in subsystems
+  * bssgp2: Encoding + Decoding functions for BVC and MS flow control
+  * bssgp_bvc_fsm: Add basic BVC flow control rx/tx support
+  * gprs_ns2_fr.c: Skip extraneous FIONBIO
+  * gprs_ns2_fr: guard against race between socket(AF_PACKET) and bind()
+  * gprs_ns2_fr: use ETH_P_HDLC instead of ETH_P_ALL
+  * Fix VTY syntax for newly-introduced NS2 timers
+  * gors_ns2_vty: Fix saving of new NS2 timers
+  * gprs_ns2_fr: Avoid stringop-truncation warning
+  * gprs_ns2_fr: Use OSMO_STRLCPY_ARRAY() where possible
+  * fsm: Add osmo_fsm_inst_broadcast_children()
+  * vty: Fix left shifting out of range on signed variable
+  * lapd_core: Don't dereference data link after sending PRIM_DL_REL
+  * cbsp: Fix encoding of "ETWS Warning Security Info" IE
+  * cbsp: Fix osmo_cbsp_recv_buffered() for KEEP-ALIVE-COMPLETE
+  * cbsp: Fix parsing DCS in decode of WRITE-REPLACE
+  * Add inter-thread queue
+  * tlv_parser: Fix various out-of-bounds accesses
+  * gprs_ns2_fr: reduce duplication between gprs_ns2_fr_connect / connect2
+  * gprs_ns2: Give NS-VC FSMs a proper name/identifier
+  * ns2: delay NS_AFF_CAUSE_RECOVERY until NS-VC for data + sig are unblocked
+  * vty/fsm_vty: Add vty_out_fsm2() + vty_out_fsm_inst2() with prefix
+  * ns2: Properly indent VTY output
+  * ns2: Unify logging context via log macros
+  * logging_vty: Fix saving of "logging print file .. last"
+  * gprs_ns2_test: Fix compilation on Debian 8
+  * Revert "gprs_ns2_vc_fsm: check NSVCI match the NSE"
+  * Revert "gprs_ns2_vc_fsm: check NSEI match the NSE"
+  * ns2: Use proper return value from write_queue callback function
+  * ns2: Log ERROR if we cannot transmit a packet due to ENOBUFS
+  * osmo-ns-dummy: Add simple NS traffic generator
+  * ns2: Work around AF_PACKET socket ENOBUFS problems
+  * ns2: Use named array initializers to avoid mistakes
+  * ns2: encapsulate calls to nsvc->bind->send_vc()
+  * ns2: Increment Rx and Tx byte / packet counters
+  * ns2: Properly report packet drops in FR code
+  * ns2: count number of dropped packets / bytes on transmit
+  * ns2: Implement more rate counters
+  * ns2: Add a rate_ctr for each NS-UNBLOCK
+  * ns2: Move to one common/shared ns2_bind_alloc()
+  * ns2: Memory allocation failures are ENOMEM, not ENOSPC
+  * ns2: Rename nsi->rate_ctr_idx to nsi->nsvc_rate_ctr_idx
+  * ns2: Introduce a per-bind stat_item group with backlog length
+  * ns2: Fix typos in comments
+  * ns2: Print NS-STATUS.ind primitives to the log
+  * ns2: cosmetic: fix indent levels
+  * frame_relay: Send "Fuil Status" ENQUIRY after link recovers
+  * frame_relay: Add status call-backs for link + DLC status changes
+  * frame_relay: Discard received messages for DLC not yet active
+  * frame_relay: cosmetic: Unify log syntax when discarding Rx packets
+  * ns2: Don't automatically re-start FSM at FORCE_UNCONFIGURED
+  * ns2: Stop test procedure when going into unconfigured state
+  * ns2: Don't start sending NS-RESET until FR DLC is available
+  * osmo-ns-dummy: Add "mirror-mode" to mirror back any received packets
+  * initial support for static userspace probes via systemtap
+  * Enable systemd-journald log target in debian + rpm packaging
+  * gb: frame_relay: Factor-out function to set link as dead
+  * gb: frame_relay: Detect link outage on "last receive seq nr == 0"
+  * frame_relay; Fix Q.933 async STATUS at DLC creation
+  * ns2: Name NSVC FSM events consistently
+  * ns2: Don't queue Q.933 LMI messages; only store most recent ones
+  * ns2: improve backlog handling on interface up/down
+  * ns2: Don't try to add packets to the backlog on real errors
+  * README.md: Use https everywhere
+  * ns2_fr: Fix null pointer deref in error path
+  * ns2_fr: Fix heap-use-after-free in error recovery path
+  * BVC FSM: Treat overlapping BVC-RESET as implicit ACK
+  * support for stats static userspace probes via systemtap
+  * CBSP: fix encoding/decoding of keep-alive repetition period
+  * CBSP: Fix encoding of warning period
+
+  [ Neels Hofmeyr ]
+  * comment: mention spec reference in cbsp.[ch]
+  * comment: typo in cbsp.h
+  * bitXXgen: ensure not reading/storing past valid size
+  * bitXXgen: add bitgen_test.c
+  * bitXXgen: add osmo_loadXXbe_ext_2() to get right-adjusted values
+  * add osmo_use_count_to_str_c()
+  * osmo_use_count_to_str: make robust against unused use_count
+  * add osmo_float_str_to_int() and osmo_int_to_float_str_*()
+  * add GAD coding for Location Services
+  * add BSSLAP coding for Location Services
+  * add BSSMAP-LE coding for Location Services
+  * add BSSMAP coding for Location Services
+  * doc tweaks for osmo_float_str_to_int(), osmo_int_to_float_str*()
+  * gad.c: try to workaround warning for "h.type >= 0"
+  * gad.c: fix rc for osmo_gad_enc_ell_point_unc_circle()
+  * gprs_ns2_fr.c: compiler error: replace strncpy() with OSMO_STRLCPY_ARRAY()
+  * fix strncpy bug in gprs_ns2_fr_bind()
+
+  [ Alexander Couzens ]
+  * sockaddr_str: add osmo_sockaddr_str_from_str2() which doesn't set the port
+  * tests/socket: add testcase test_get_ip_and_port
+  * socket: introduce osmo_sock_init_osa & osmo_sock_init_osa_ofd
+  * socket: add osmo_sockaddr_cmp()
+  * gb/gprs_bssgp: remove superfluous whitespace
+  * gb/common_vty: use void *
+  * add osmo_sockaddr_local_ip() to determine the local address for a remote.
+  * Gb: add a second NS implementation
+  * libgb/ns: allow to create NS_ALIVE NSVC
+  * gb/gprs_bssgb: check if talloc failed on btsctx->fc
+  * gb/gprs_bssgb: ensure the fc timer has been stopped when freeing bssgp_bvc
+  * ns2: remove bssgp specific msgb->cb parts
+  * ns2: vty: add missing docs for IPv6 address
+  * ns2: check the specific bit of NS SDU Control bits
+  * ns2: refactor nsvc_by_ functions
+  * ns2: ns2_recv_vc: remove unused parameter nsi
+  * ns2: vty: fix behavior of vtyvc_by_nsei when vtyvc isn't found
+  * ns2: refactor handle_nsip_read/handle_nsfrgre_read
+  * ns2: fix a msg leak when receiving REJECTED messages
+  * gsm_12_21: add osmo_oml_nsvc_address_type for OML NM_ATT_OSMO_NS_LINK_CFG
+  * ns2: parse the return code of gprs_ns2_ip_bind
+  * ns2: refactor ns2_prim_status_ind()
+  * ns2: status ind: add additional flags (first and persistent)
+  * ns2: vty: show all nse
+  * ns2: vty: allow the users (pcu/sgsn) to set a default bind
+  * ns2: vty: on `show ns` add information of NS binds
+  * gprs_ns2_vty_create: remove bind pointer check
+  * gprs_ns2: gprs_ns2_free(): add missing talloc_free
+  * gprs_ns2: fix SNS_ADD for IPv4
+  * gprs_ns2: fix empty prefix in TLV Parse error
+  * gprs_ns2: add gprs_ns2_ip_bind_by_sockaddr() to search for binds by sockaddr
+  * gprs_ns2: gprs_ns2_ip_bind() check if the bind already exists
+  * gprs_ns2: add gprs_ns2_nse_nsei() to get the nsei of a nse
+  * gprs_ns2: add gprs_ns2_free_binds() to free all binds
+  * gprs_ns2: add gprs_ns2_free_nses() to free all NS-E
+  * gprs_ns2: const the return value of gprs_ns2_ip_vc_sockaddr / gprs_ns2_ip_bind_sockaddr
+  * gprs_ns2: rename gprs_ns2_ip_vc_sockaddr -> gprs_ns2_ip_vc_remote
+  * gprs_ns2: add gprs_ns2_ip_vc_local() return the local sockaddr
+  * gprs_ns2: add gprs_ns2_nse_sns_remote() returns the initial SNS address
+  * gprs_ns2: gprs_ns2_ip_vc_remote() the nsvc can be also const
+  * gprs_ns2: add gprs_ns2_nse_foreach_nsvc()
+  * gprs_ns2: Partial revert 48f63867 allow to create NS_ALIVE NSVC
+  * gprs_ns2: add gprs_ns2_ip_vc_equal()
+  * add osmo_sockaddr_to_str_buf/osmo_sockaddr_to_str
+  * gprs_ns2: remove the nsvc fsm timer when cleaning up the fsm
+  * ns2: add value strings for ns2_affecting_cause_prim_str & ns2_prim_str
+  * gprs_ns2: convert gprs_ns2_cause_str into an static inline
+  * libosmocore: change the memory management of NS2
+  * ns2: fixup gprs_ns2_prim_strs
+  * ns2: check if ns_vc_alloc() fails in bind_connect()
+  * ns2: add support for frame relay
+  * ns2: implement link sharing selector
+  * ns2: move LL into public api
+  * ns2: move link layer type into NSE
+  * ns2: remove obsolete type GPRS_NS2_LL_E1
+  * gprs_ns2_fr: remove include <linux/if.h>
+  * gprs_ns2: fix typo in comment
+  * gprs_ns2: use switch() case instead of multiple if in ns2_create_vc()
+  * gprs_ns2_sns: add missing transistion UNCONFIGURED -> SIZE
+  * gprs_ns2_sns: dynamic calculate the maximum NS-VCs
+  * gprs_ns2_sns: add missing S() to allow GPRS_SNS_EV_NO_NSVC happen
+  * gprs_ns2_sns: fix whitespaces and superflous comment
+  * gprs_ns2_sns: correct dynamic calculation
+  * gprs_ns2: introduce NS dialects
+  * gprs_ns2: move allocation of the SNS fsm into create_nse
+  * gprs_ns2: add member name to bind
+  * gprs_ns2: rework gprs_ns2_fr_connect*()
+  * gprs_ns2: add gprs_ns2_free_nsvcs() to free all NS-VC of a NSE
+  * gprs_ns2_sns: rework IP-SNS initial remote
+  * gprs_ns2_sns: use different binds for the initial connection
+  * gprs_ns2_sns: introduce SNS Size/Config retries
+  * gprs_ns2: make nsvc argument const
+  * gprs_ns2: add gprs_ns2_fr_bind_role() to retrieve the fr role
+  * gprs_ns2: on ns2_create_vc parse the tlv before using it
+  * gprs_ns2_vty: udp: fixup dialect changes
+  * gprs_ns2: fr: fix crash when frame relay interface doesn't exists
+  * gprs_ns2: improve handling of TLV errors on new nsvcs
+  * gprs_ns2: don't pass the return code of reject_status_msg
+  * gprs_ns2: fr: implement a write queue
+  * gprs_ns2: fr: setup the device to correct FR/LMI settings
+  * gprs_ns2: add new vty2
+  * gprs_ns2: sns: correct log message when no nsvcs available
+  * gprs_ns2: sns: don't send duplicated packets on retries
+  * gprs_ns2: sns: add log message when size/config retries exhausted
+  * gprs_ns2: don't start unconfigured fsm via FORCE_UNCONFIGURED
+  * gprs_ns2: fix force-unconfigured for IP-SNS NSE
+  * frame_relay: prevent null pointer exception when talloc fails
+  * frame_relay: link_alloc: move log message to the end
+  * gprs_ns2: rework frame relay load distribution function
+  * gprs_ns2_fr: setup_device: allow to setup a new dahdi device
+  * gprs_ns2: fr: check the device state before changing state
+  * gprs_ns2: use zero initialized memory for vty_binds
+  * utils: add osmo-ns-dummy
+  * gprs_ns2: call python vty tests
+  * gprs_ns2: set transfer cap in NS Status primitive
+  * gprs_ns2: check if persistent nsei or nsvc exists when creating dynamic NSE
+  * osmo-ns-dummy: allow to create dynamic NSEs
+  * gprs_ns2_vc: answer UNBLOCK on unblocked nsvc
+  * gprs_ns2: when calling nsvc_force_unconf for a dynamic NSE drop the NSE.
+  * gprs_ns2_sns: clear local and remote entries when SNS failed
+  * gprs_ns2: flag then NSE as dead in nse_free()
+  * gprs_ns2_vc_fsm: fix spaces and remove wrong comment
+  * test: gprs_ns2: don't leak the talloc context
+  * test: gprs_ns2: replace free_bind() with clear_pdus()
+  * test: gprs_ns2: free the nsi after each test
+  * gprs_ns2: add assert on most bind calls
+  * gprs_ns2: allow to use free_vc() with NULL
+  * osmo-ns-dummy: don't leak primitive messages
+  * gprs_ns2: implement BLOCK/UNBLOCK of a NSVC by vty
+  * gprs_ns2: correct handle BLOCK message on initator
+  * gprs_ns2_vc_fsm: rename all event to match RX_ or REQ_
+  * gprs_ns2_vc_fsm: ensure all state is resetted via force_unconf
+  * gprs_ns2_vc_fsm: in RESET accept RESET as ACK
+  * gprs_ns2_vc_fsm: fix transitions for ALIVE state
+  * gprs_ns2_message: remove wrong comment
+  * gprs_ns2_vc_fsm: check NSEI match the NSE
+  * gprs_ns2_vc_fsm: check NSVCI match the NSE
+  * tests: gprs_ns2: add unitdata unit test
+  * gprs_ns2: always pass a tp to gprs_ns2_vc_rx
+  * gprs_ns2_vc_fsm: check NSEI match the NSE
+  * gprs_ns2_vc_fsm: check NSVCI match the NSE
+  * gprs_ns2: drop GPRS_ prefix of gprs_ns2_cs
+  * gprs_ns2: drop prefix of all internal exposed function
+  * gprs_ns2: drop the public prefix gprs_ from all static functions/structs/..
+  * gprs_ns2: refactor: ensure all enums have GPRS_NS2_
+  * gprs_ns2: drop gprs_ns2_vty, rename vty2 -> vty
+  * gprs_ns2: drop gprs_ns2_vty, rename vty2 -> vty
+  * gprs_ns2: remove api call gprs_ns2_dynamic_create_nse
+  * gprs_ns2: introduce gprs_ns2_vty_init_reduced() for the PCU
+  * gprs_ns2: correct vty config write
+  * gprs_ns2: prevent division by zero in load_sharing
+  * gprs_ns2_vc_fsm: reset ALIVE N counter when restarting the test procedure.
+  * gprs_ns2_vc_fsm: rename ST_ALIVE -> ST_RECOVERING
+  * gprs_ns2: unify the handling of **result when bind already present.
+  * gprs_ns2_fr: free_bind(): first do the NULL check before using members
+  * frame_relay: fix NULL pointer deref
+  * gprs_ns2_frgre: set a correct gre pointer for ipv6
+  * gprs_ns2_frgre: check iph/ip6h before passing them to rx functions
+  * gprs_ns2_sns: rework tracking of NS-VC unblocked/alive state
+  * gprs_ns2_sns: add timeout to ST_CONFIG_SGSN
+  * gprs_ns2_sns: reset the N of timeout when entering a new state
+  * gprs_ns2: rename vty-command ip-sns -> ip-sns-remote
+  * gprs_ns2_vty: fix memory leak of vty_binds
+  * gprs_ns2: add signalling & data weights for UDP binds
+  * gprs_ns2_vc_fsm: use CLOCK_MONOTONIC for alive elapsed timer
+  * gprs_ns2_vc_fsm: reset the alive elapsed timeout everytime
+  * gprs_ns2_vty: use strcmp() instead of strncmp()
+  * gprs_ns2_vc_fsm: remove debug line of the alive_timer
+  * gprs_ns2: fix comment of alive NS-VC
+  * gprs_ns2_sns: fix typo in doxygen comment
+  * gprs_ns2: inform the NS user (BSSGP) about the MTU of a NSE
+  * gprs_ns2: rework IP-SNS binds
+  * gprs_ns2_vty: add optional argument signalling and data weights to `nsvc udp`
+  * gprs_ns2: implement a simple load sharing for UDP
+  * gprs_ns2: fix typo in function name ns2_load_sharing_modulo
+  * gprs_ns2: make gprs_ns2_recv_prim() always take msgb ownership
+  * gprs_ns2_sns: rename fsm events to include RX or REQ prefix
+  * gprs_ns2_fr: pass MTU changes to the NSE
+  * gprs_ns2: truncate the NS_STATUS to the MTU
+  * gprs_ns2_message: tx_status: move all cause dependent code into the switch/case
+  * gprs_ns2: add value_string for GPRS_NS2_AFF_CAUSE_SNS_NO_ENDPOINTS
+  * gprs_ns2: ensure no duplicate UDP NSVC can be created
+  * gprs_ns2: free_nse: free the SNS fsm early
+
+  [ Daniel Willmann ]
+  * gsm_08_16.h: Add missing header
+  * gprs_ns2: Make reason const
+  * libosmogb: Add a function to tx BVC RESET by nsei/bvci
+  * Add exported function btsctx_alloc to public header
+  * ns2: Add gprs_ns2_nsvc_state_name() to get the current state of a VC
+  * ns2: Send NSVC representation in NS_AFF_CAUSE_VC_* status indication
+  * ns2: Improve NSVC output
+  * ns2: Split 'initiater' into initiate_{reset,block}
+  * ns2: Add a function to set the NSVC FSM back to unconfigured
+  * ns2: Add a VTY command to reset NSVC FSM
+  * ns2: Fix docs for some NS2 vty commands
+  * logging: Calculate LOG_MAX_{CTX,FILTERS} from the enum
+  * ns2: Add log filtering by NSE/NSEI, fix NSVC filter on receive
+  * ns2: Fix argv index in logging filter VTY commands
+  * Declare osmo_ctx_init() in talloc.h
+  * bssgp: Add SUSPEND_NACK to osmo_pdef_bssgp
+  * logging: Remove duplicate color for DLSMS
+  * ns2_frgre: Fix missing break statement for recv from IPV6
+  * bssgp_bvc_fsm: Handle block request from application correctly
+  * NS2: Fix bind selection of SNS NSVCs
+  * ns2: Add sanity check
+  * Refactor ns2_nsvc_create_ip*
+  * ns2: Fix memory leak in IP-SNS
+  * ns2: Fix assert when removing a bind listen
+  * ns2: Fix incompatible VTY configs when writing config
+  * tests/gb: Add more complex osmo-ns-dummy.cfg
+  * bssgp_bvc_fsm: Set/get maximum BSSGP PDU length
+  * bssgp2_enc_status: Truncate STATUS message to maximum PDU length
+  * bssgp_bvc_fsm: Consistent naming
+
+  [ Philipp Maier ]
+  * command: add library command attribute for libosmo-sccp
+  * command: add library command attribute for libosmo-abis
+  * gsm_08_58: add proprietary IE to signal Repeated ACCH Capability
+  * gsm_04_08: add parser for Mobile Station Classmark 3
+  * gsm_04_08: add parser for Mobile Station Classmark 3
+  * bts_features: add feature BTS_FEAT_ACCH_REP
+  * gsm_08_58: add struct for RSL_IE_OSMO_REP_ACCH_CAP
+  * gsm_08_58: add rxqual field to RSL_IE_OSMO_REP_ACCH_CAP
+  * gprs_bssgp_util: complete bssgp_pdu_strings
+  * gprs_bssgp: add IE parser/generator for RIM Routing Information
+  * gprs_bssgp: add handling for BSSGP RIM primitives
+  * gsm_08_18: add struct to parse RIM PDU Indications
+  * bssgp_rim: add encoder/decoder for NACC related RIM containers
+  * bssgp_rim: move bssgp_parse_rim_ri and bssgp_create_rim_ri to gprs_bssgp_rim
+  * gprs_bssgp: add utilities to send and parse BSSGP rim PDUs
+  * gprs_bssgp_rim: Return with EOPNOTSUPP on unsupported containers
+  * gprs_bssgp_rim: fix bug in dub_tlvp_header()
+  * gprs_bssgp_rim: add value strings for enum bssgp_nacc_cause
+  * gprs_bssgp_rim: add value strings for enum bssgp_ran_inf_app_id
+  * gprs_bssgp_rim: add value strings for enum bssgp_rim_routing_info_discr
+  * gprs_bssgp_rim: add functions to convert a RIM-RI to a string
+  * gprs_bssgp_rim: cosmetic: connect routing identifier strings with "-"
+  * gprs_bssgp: log source and destination RIM routing information
+  * gprs_bssgp: agregate RIM related code in gprs_bssgp_rim.c
+  * gsm48: add compare function for struct gprs_ra_id
+  * gsm_08_58, gsm_44_004: add struct for l1 information
+
+  [ laforge ]
+  * Revert "pkgconfig: link to mnl if available"
+
+  [ Oliver Smith ]
+  * tests/*: fix control reaches end of non-void func
+  * configure.ac: set -std=gnu11
+  * sim: fix gcc 4.9.2 + -std=gnu11 error
+
+ -- Pau Espin Pedrol <pespin@espeweb.net>  Tue, 23 Feb 2021 14:03:31 +0100
+
 libosmocore (1.4.0) unstable; urgency=medium
 
   [ Pau Espin Pedrol ]

@@ -7,10 +7,3 @@
 # If any interfaces have been added since the last public release: c:r:a + 1.
 # If any interfaces have been removed or changed since the last public release: c:r:0.
 #library	what			description / commit summary line
-libosmogsm	new API			gsm0808_create_sapi_reject_cause() with cause argument
-libosmogsm	ABI change		struct osmo_gprs_cell_options size changed (new field at the end)
-libosmogsm	API change		struct ipac_preproc_ave_cfg: new zero-sized flexible array member at end
-libosmovty	ABI change		struct cmd_element: add a field for program specific attributes
-libosmovty	ABI change		struct vty_app_info: optional program specific attributes description
-libosmoctrl     ABI change		struct ctrl_handle changed size (new field "reply_cb" at the end)
-libosmogsm	new API			osmo_rai_cmp(), osmo_cgi_ps_cmp()

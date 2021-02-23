@@ -1,7 +1,7 @@
 # This is _NOT_ the library release version, it's an API version.
 # Please read chapter "Library interface versions" of the libtool documentation
 # before making any modifications: https://www.gnu.org/software/libtool/manual/html_node/Versioning.html
-LIBVERSION=8:1:4
+LIBVERSION=9:0:0
 
 AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include
 AM_CFLAGS = -Wall $(TALLOC_CFLAGS)
