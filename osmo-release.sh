@@ -196,9 +196,6 @@ if [ "z$LIBVERS" != "z" ]; then
 			exit 1
 		fi
 	fi
-	if [ "z$DRY_RUN" != "z0" ]; then
-		exit 0
-	fi
 fi
 
 if [ "z$DRY_RUN" != "z0" ]; then
