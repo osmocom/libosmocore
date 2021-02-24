@@ -201,21 +201,19 @@ libversion_rpmspecin_match() {
 
 
 BUMPVER=`command -v bumpversion`
-GIT_TOPDIR="$(git rev-parse --show-toplevel)"
-NEW_VER=`bumpversion --list --current-version $VERSION $REL --allow-dirty | awk -F '=' '{ print $2 }'`
-LIBVERS=`git grep -n LIBVERSION | grep  '=' | grep am | grep -v LDFLAGS`
-MAKEMOD=`git diff --cached -GLIBVERSION --stat | grep Makefile.am`
-ISODATE=`date -I`
-
 if [ "z$BUMPVER" = "z" ]; then
 	echo Unable to find 'bumpversion' command.
 	exit 1
 fi
-
+NEW_VER=`$BUMPVER --list --current-version $VERSION $REL --allow-dirty | awk -F '=' '{ print $2 }'`
 if [ "z$NEW_VER" = "z" ]; then
 	echo "Please fix versioning to match http://semver.org/ spec (current is $VERSION) before proceeding."
 	exit 1
 fi
+GIT_TOPDIR="$(git rev-parse --show-toplevel)"
+LIBVERS=`git grep -n LIBVERSION | grep  '=' | grep am | grep -v LDFLAGS`
+MAKEMOD=`git diff --cached -GLIBVERSION --stat | grep Makefile.am`
+ISODATE=`date -I`
 
 echo "Releasing $VERSION -> $NEW_VER..."
 
