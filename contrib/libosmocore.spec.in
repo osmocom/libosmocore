@@ -367,7 +367,7 @@ make %{?_smp_mflags} check || (find . -name testsuite.log -exec cat {} +)
 
 %files -n libosmocore17
 %defattr(-,root,root)
-%_libdir/libosmocore.so.16*
+%_libdir/libosmocore.so.17*
 
 %files -n libosmocore-devel
 %defattr(-,root,root)
@@ -393,7 +393,7 @@ make %{?_smp_mflags} check || (find . -name testsuite.log -exec cat {} +)
 
 %files -n libosmogb12
 %defattr(-,root,root)
-%_libdir/libosmogb.so.11*
+%_libdir/libosmogb.so.12*
 
 %files -n libosmogb-devel
 %defattr(-,root,root)
@@ -405,7 +405,7 @@ make %{?_smp_mflags} check || (find . -name testsuite.log -exec cat {} +)
 
 %files -n libosmogsm16
 %defattr(-,root,root)
-%_libdir/libosmogsm.so.15*
+%_libdir/libosmogsm.so.16*
 
 %files -n libosmogsm-devel
 %defattr(-,root,root)
@@ -430,7 +430,7 @@ make %{?_smp_mflags} check || (find . -name testsuite.log -exec cat {} +)
 
 %files -n libosmovty9
 %defattr(-,root,root)
-%_libdir/libosmovty.so.4*
+%_libdir/libosmovty.so.9*
 
 %files -n libosmovty-devel
 %defattr(-,root,root)
