@@ -21,16 +21,19 @@ libversion_to_deb_major() {
 	echo "$major"
 }
 
-# Make sure that depedency requirement versions match in configure.ac vs debian/control.
-#eg: "PKG_CHECK_MODULES(LIBOSMOCORE, libosmocore >= 1.1.0)" vs "libosmocore-dev (>= 1.0.0),"
-check_configureac_debctrl_deps_match() {
+get_configureac_pkg_check_modules_list() {
 	if [ -f "${GIT_TOPDIR}/openbsc/configure.ac" ]; then
 		configureac_file="openbsc/configure.ac"
 	else
 		configureac_file="configure.ac"
 	fi
-	configureac_list=$(grep -e "PKG_CHECK_MODULES(" "${GIT_TOPDIR}/${configureac_file}" | cut -d "," -f 2 | tr -d ")" | tr -d "[" | tr -d "]" | tr -d " " | sed "s/>=/ /g")
-	echo "$configureac_list" | \
+	grep -e "PKG_CHECK_MODULES(" "${GIT_TOPDIR}/${configureac_file}" | cut -d "," -f 2 | tr -d ")" | tr -d "[" | tr -d "]" | tr -d " " | sed "s/>=/ /g"
+}
+
+# Make sure that depedency requirement versions match in configure.ac vs debian/control.
+#eg: "PKG_CHECK_MODULES(LIBOSMOCORE, libosmocore >= 1.1.0)" vs "libosmocore-dev (>= 1.0.0),"
+check_configureac_debctrl_deps_match() {
+	get_configureac_pkg_check_modules_list | \
 	{ return_error=0
 	while read -r dep ver; do
 
@@ -64,6 +67,45 @@ check_configureac_debctrl_deps_match() {
 		exit 1
 	fi
 	echo "OK: dependency specific versions in configure.ac and debian/control match"
+}
+
+# Make sure that depedency requirement versions match in configure.ac vs contrib/*.spec.in.
+#eg: "PKG_CHECK_MODULES(LIBOSMOCORE, libosmocore >= 1.1.0)" vs "pkgconfig(libosmocore-dev) >= 1.0.0,"
+check_configureac_rpmspecin_deps_match() {
+	get_configureac_pkg_check_modules_list | \
+	{ return_error=0
+	while read -r dep ver; do
+
+		rpmspecin_match="$(grep -e "pkgconfig(${dep})" ${GIT_TOPDIR}/contrib/*.spec.in | grep BuildRequires | grep pkgconfig | grep ">=")"
+		rpmspecin_match_count="$(echo "$rpmspecin_match" | grep -c ">=")"
+		if [ "z$rpmspecin_match_count" != "z0" ]; then
+			#echo "Dependency <$dep, $ver> from configure.ac matched in contrib/*.spec.in! ($rpmspecin_match_count)"
+			if [ "z$rpmspecin_match_count" != "z1" ]; then
+				echo "WARN: configure.ac <$dep, $ver> matches contrib/*.spec.in $rpmspecin_match_count times, manual check required!"
+			else # 1 match:
+				parsed_match=$(echo "$rpmspecin_match" | tr -d "(" | tr -d ")" | tr -d ":" | tr -d " " | tr -d "\t" | sed "s/BuildRequires//g" | sed "s/pkgconfig//g" |sed "s/>=/ /g")
+				rpmspecin_dep=$(echo "$parsed_match" | cut -d " " -f 1)
+				rpmspecin_ver=$(echo "$parsed_match" | cut -d " " -f 2)
+				if [ "z$dep" != "z$rpmspecin_dep" ] || [ "z$ver" != "z$rpmspecin_ver" ]; then
+					echo "ERROR: configure.ac <$dep, $ver> does NOT match contrib/*.spec.in <$rpmspecin_dep, $rpmspecin_ver>!"
+					return_error=1
+				#else
+				#	echo "OK: configure.ac <$dep, $ver> matches contrib/*.spec.in <$debctrl_dep, $debctrl_ver>"
+				fi
+			fi
+		fi
+	done
+	if [ $return_error -ne 0 ]; then
+		exit 1
+	fi
+	}
+
+	# catch and forward exit from pipe subshell "while read":
+	if [ $? -ne 0 ]; then
+		echo "ERROR: exiting due to previous errors"
+		exit 1
+	fi
+	echo "OK: dependency specific versions in configure.ac and contrib/*.spec.in match"
 }
 
 # Make sure that patches under debian/patches/ apply:
@@ -102,6 +144,7 @@ fi
 echo "Releasing $VERSION -> $NEW_VER..."
 
 check_configureac_debctrl_deps_match
+check_configureac_rpmspecin_deps_match
 check_debian_patch_apply
 
 if [ "z$LIBVERS" != "z" ]; then
