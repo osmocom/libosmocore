@@ -190,7 +190,7 @@ void dump_bssgp_ran_inf_req_rim_cont(struct bssgp_ran_inf_req_rim_cont *rim_cont
 	if (rim_cont->son_trans_app_id) {
 		printf(" son_trans_app_id: %s\n",
 		       osmo_hexdump_nospc(rim_cont->son_trans_app_id, rim_cont->son_trans_app_id_len));
-		printf(" son_trans_app_id_len: %lu\n", rim_cont->son_trans_app_id_len);
+		printf(" son_trans_app_id_len: %zu\n", rim_cont->son_trans_app_id_len);
 	}
 }
 
@@ -272,7 +272,7 @@ static void dump_bssgp_app_err_cont_nacc(struct bssgp_app_err_cont_nacc *app_con
 	printf("  macc_cause = %02x\n", app_cont->nacc_cause);
 	if (app_cont->err_app_cont) {
 		printf("  err_app_cont: %s\n", osmo_hexdump_nospc(app_cont->err_app_cont, app_cont->err_app_cont_len));
-		printf("  err_app_cont_len: %lu\n", app_cont->err_app_cont_len);
+		printf("  err_app_cont_len: %zu\n", app_cont->err_app_cont_len);
 	}
 }
 
@@ -317,7 +317,7 @@ static void dump_bssgp_ran_inf_rim_cont(struct bssgp_ran_inf_rim_cont *rim_cont)
 	if (rim_cont->son_trans_app_id) {
 		printf(" son_trans_app_id: %s\n",
 		       osmo_hexdump_nospc(rim_cont->son_trans_app_id, rim_cont->son_trans_app_id_len));
-		printf(" son_trans_app_id_len: %lu\n", rim_cont->son_trans_app_id_len);
+		printf(" son_trans_app_id_len: %zu\n", rim_cont->son_trans_app_id_len);
 	}
 }
 
@@ -454,7 +454,7 @@ static void dump_bssgp_ran_inf_ack_rim_cont(struct bssgp_ran_inf_ack_rim_cont *r
 	if (rim_cont->son_trans_app_id) {
 		printf(" son_trans_app_id: %s\n",
 		       osmo_hexdump_nospc(rim_cont->son_trans_app_id, rim_cont->son_trans_app_id_len));
-		printf(" son_trans_app_id_len: %lu\n", rim_cont->son_trans_app_id_len);
+		printf(" son_trans_app_id_len: %zu\n", rim_cont->son_trans_app_id_len);
 	}
 }
 
@@ -504,12 +504,12 @@ void dump_bssgp_ran_inf_err_rim_cont(struct bssgp_ran_inf_err_rim_cont *rim_cont
 	printf(" prot_ver = %u\n", rim_cont->prot_ver);
 	if (rim_cont->err_pdu) {
 		printf(" err_pdu: %s\n", osmo_hexdump_nospc(rim_cont->err_pdu, rim_cont->err_pdu_len));
-		printf(" err_pdu_len: %lu\n", rim_cont->err_pdu_len);
+		printf(" err_pdu_len: %zu\n", rim_cont->err_pdu_len);
 	}
 	if (rim_cont->son_trans_app_id) {
 		printf(" son_trans_app_id: %s\n",
 		       osmo_hexdump_nospc(rim_cont->son_trans_app_id, rim_cont->son_trans_app_id_len));
-		printf(" son_trans_app_id_len: %lu\n", rim_cont->son_trans_app_id_len);
+		printf(" son_trans_app_id_len: %zu\n", rim_cont->son_trans_app_id_len);
 	}
 }
 
