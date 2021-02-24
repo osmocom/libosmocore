@@ -1,3 +1,13 @@
+libosmocore (1.5.1) unstable; urgency=medium
+
+  [ Pau Espin Pedrol ]
+  * osmo-release.sh: Fix rc!=0 on TODO-RELEASE file without comment lines
+
+  [ Harald Welte ]
+  * attempt to fix RPM spec file after recent soversion bump
+
+ -- Harald Welte <laforge@osmocom.org>  Wed, 24 Feb 2021 09:35:21 +0100
+
 libosmocore (1.5.0) unstable; urgency=medium
 
   [ Vadim Yanitskiy ]
