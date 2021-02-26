@@ -247,7 +247,24 @@ if [ -f "TODO-RELEASE" ]; then
 	git add TODO-RELEASE
 fi
 
-gbp dch --debian-tag='%(version)s' --auto --meta --git-author --multimaint-merge --ignore-branch --new-version="$NEW_VER"
+# Add missing epoch (OS#5046)
+DEB_VER=$(head -1 debian/changelog | cut -d ' ' -f 2 | sed 's,(,,'  | sed 's,),,')
+NEW_VER_WITH_EPOCH="$NEW_VER"
+case "$DEB_VER" in
+*:*)
+	epoch="$(echo "$DEB_VER" | cut -d: -f1)"
+	NEW_VER_WITH_EPOCH="$epoch:$NEW_VER"
+	;;
+esac
+
+gbp dch \
+	--debian-tag='%(version)s' \
+	--auto \
+	--meta \
+	--git-author \
+	--multimaint-merge \
+	--ignore-branch \
+	--new-version="$NEW_VER_WITH_EPOCH"
 dch -r -m --distribution "unstable" ""
 git add ${GIT_TOPDIR}/debian/changelog
 bumpversion --current-version $VERSION $REL --tag --commit --tag-name $NEW_VER --allow-dirty
