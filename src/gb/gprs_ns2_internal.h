@@ -348,6 +348,25 @@ int ns2_tx_sns_size(struct gprs_ns2_vc *nsvc, bool reset_flag, uint16_t max_nr_n
 			 int ip4_ep_nr, int ip6_ep_nr);
 int ns2_tx_sns_size_ack(struct gprs_ns2_vc *nsvc, uint8_t *cause);
 
+int ns2_tx_sns_add(struct gprs_ns2_vc *nsvc,
+		   uint8_t trans_id,
+		   const struct gprs_ns_ie_ip4_elem *ip4_elems,
+		   unsigned int num_ip4_elems,
+		   const struct gprs_ns_ie_ip6_elem *ip6_elems,
+		   unsigned int num_ip6_elems);
+int ns2_tx_sns_change_weight(struct gprs_ns2_vc *nsvc,
+			     uint8_t trans_id,
+			     const struct gprs_ns_ie_ip4_elem *ip4_elems,
+			     unsigned int num_ip4_elems,
+			     const struct gprs_ns_ie_ip6_elem *ip6_elems,
+			     unsigned int num_ip6_elems);
+int ns2_tx_sns_del(struct gprs_ns2_vc *nsvc,
+		   uint8_t trans_id,
+		   const struct gprs_ns_ie_ip4_elem *ip4_elems,
+		   unsigned int num_ip4_elems,
+		   const struct gprs_ns_ie_ip6_elem *ip6_elems,
+		   unsigned int num_ip6_elems);
+
 /* transmit message over a VC */
 int ns2_tx_block(struct gprs_ns2_vc *nsvc, uint8_t cause);
 int ns2_tx_block_ack(struct gprs_ns2_vc *nsvc);

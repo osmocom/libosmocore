@@ -471,6 +471,122 @@ int ns2_tx_status(struct gprs_ns2_vc *nsvc, uint8_t cause,
 	return ns_vc_tx(nsvc, msg);
 }
 
+/*! Encode + Transmit a SNS-ADD/SNS-CHANGE-WEIGHT as per Section 9.3.2/9.3.3.
+ *  \param[in] nsvc NS-VC through which to transmit the SNS-CONFIG
+ *  \param[in] pdu The PDU type to send out
+ *  \param[in] trans_id The transaction id
+ *  \param[in] ip4_elems Array of IPv4 Elements
+ *  \param[in] num_ip4_elems number of ip4_elems
+ *  \param[in] ip6_elems Array of IPv6 Elements
+ *  \param[in] num_ip6_elems number of ip6_elems
+ *  \returns 0 on success; negative in case of error */
+static int ns2_tx_sns_procedure(struct gprs_ns2_vc *nsvc,
+				enum ns_pdu_type pdu,
+				uint8_t trans_id,
+				const struct gprs_ns_ie_ip4_elem *ip4_elems,
+				unsigned int num_ip4_elems,
+				const struct gprs_ns_ie_ip6_elem *ip6_elems,
+				unsigned int num_ip6_elems)
+{
+	struct msgb *msg;
+	struct gprs_ns_hdr *nsh;
+	uint16_t nsei;
+
+	if (!nsvc)
+		return -EINVAL;
+
+	if (!ip4_elems && !ip6_elems)
+		return -EINVAL;
+
+	msg = ns2_msgb_alloc();
+
+	log_set_context(LOG_CTX_GB_NSE, nsvc->nse);
+	log_set_context(LOG_CTX_GB_NSVC, nsvc);
+	if (!msg)
+		return -ENOMEM;
+
+	if (!nsvc->nse->bss_sns_fi) {
+		LOGNSVC(nsvc, LOGL_ERROR, "Cannot transmit SNS on NSVC without SNS active\n");
+		msgb_free(msg);
+		return -EIO;
+	}
+
+	nsei = osmo_htons(nsvc->nse->nsei);
+
+	msg->l2h = msgb_put(msg, sizeof(*nsh));
+	nsh = (struct gprs_ns_hdr *) msg->l2h;
+	nsh->pdu_type = pdu;
+	msgb_tvlv_put(msg, NS_IE_NSEI, 2, (uint8_t *)&nsei);
+	msgb_v_put(msg, trans_id);
+
+	/* List of IP4 Elements 10.3.2c */
+	if (ip4_elems) {
+		msgb_tvlv_put(msg, NS_IE_IPv4_LIST, num_ip4_elems*sizeof(struct gprs_ns_ie_ip4_elem),
+			      (const uint8_t *)ip4_elems);
+	} else if (ip6_elems) {
+		/* List of IP6 elements 10.3.2d */
+		msgb_tvlv_put(msg, NS_IE_IPv6_LIST, num_ip6_elems*sizeof(struct gprs_ns_ie_ip6_elem),
+			      (const uint8_t *)ip6_elems);
+	}
+
+	return ns_vc_tx(nsvc, msg);
+}
+
+/*! Encode + Transmit a SNS-ADD as per Section 9.3.2.
+ *  \param[in] nsvc NS-VC through which to transmit the SNS-CONFIG
+ *  \param[in] trans_id The transaction id
+ *  \param[in] ip4_elems Array of IPv4 Elements
+ *  \param[in] num_ip4_elems number of ip4_elems
+ *  \param[in] ip6_elems Array of IPv6 Elements
+ *  \param[in] num_ip6_elems number of ip6_elems
+ *  \returns 0 on success; negative in case of error */
+int ns2_tx_sns_add(struct gprs_ns2_vc *nsvc,
+		   uint8_t trans_id,
+		   const struct gprs_ns_ie_ip4_elem *ip4_elems,
+		   unsigned int num_ip4_elems,
+		   const struct gprs_ns_ie_ip6_elem *ip6_elems,
+		   unsigned int num_ip6_elems)
+{
+	return ns2_tx_sns_procedure(nsvc, SNS_PDUT_ADD, trans_id, ip4_elems, num_ip4_elems, ip6_elems, num_ip6_elems);
+}
+
+/*! Encode + Transmit a SNS-CHANGE-WEIGHT as per Section 9.3.3.
+ *  \param[in] nsvc NS-VC through which to transmit the SNS-CONFIG
+ *  \param[in] trans_id The transaction id
+ *  \param[in] ip4_elems Array of IPv4 Elements
+ *  \param[in] num_ip4_elems number of ip4_elems
+ *  \param[in] ip6_elems Array of IPv6 Elements
+ *  \param[in] num_ip6_elems number of ip6_elems
+ *  \returns 0 on success; negative in case of error */
+int ns2_tx_sns_change_weight(struct gprs_ns2_vc *nsvc,
+			     uint8_t trans_id,
+			     const struct gprs_ns_ie_ip4_elem *ip4_elems,
+			     unsigned int num_ip4_elems,
+			     const struct gprs_ns_ie_ip6_elem *ip6_elems,
+			     unsigned int num_ip6_elems)
+{
+	return ns2_tx_sns_procedure(nsvc, SNS_PDUT_CHANGE_WEIGHT, trans_id, ip4_elems, num_ip4_elems, ip6_elems, num_ip6_elems);
+}
+
+/*! Encode + Transmit a SNS-DEL as per Section 9.3.6.
+ *  \param[in] nsvc NS-VC through which to transmit the SNS-CONFIG
+ *  \param[in] trans_id The transaction id
+ *  \param[in] ip4_elems Array of IPv4 Elements
+ *  \param[in] num_ip4_elems number of ip4_elems
+ *  \param[in] ip6_elems Array of IPv6 Elements
+ *  \param[in] num_ip6_elems number of ip6_elems
+ *  \returns 0 on success; negative in case of error */
+int ns2_tx_sns_del(struct gprs_ns2_vc *nsvc,
+		   uint8_t trans_id,
+		   const struct gprs_ns_ie_ip4_elem *ip4_elems,
+		   unsigned int num_ip4_elems,
+		   const struct gprs_ns_ie_ip6_elem *ip6_elems,
+		   unsigned int num_ip6_elems)
+{
+	/* TODO: IP Address field */
+	return ns2_tx_sns_procedure(nsvc, SNS_PDUT_DELETE, trans_id, ip4_elems, num_ip4_elems, ip6_elems, num_ip6_elems);
+}
+
 
 /*! Encode + Transmit a SNS-ACK as per Section 9.3.1.
  *  \param[in] nsvc NS-VC through which to transmit the ACK
