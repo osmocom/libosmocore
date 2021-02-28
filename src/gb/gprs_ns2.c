@@ -1455,8 +1455,9 @@ int ns2_count_transfer_cap(struct gprs_ns2_nse *nse,
 		if (ns2_vc_is_unblocked(nsvc))
 			active_nsvcs++;
 	}
-	/* an alive nse should always have active_nsvcs */
-	OSMO_ASSERT(active_nsvcs);
+
+	if (!active_nsvcs)
+		return 0;
 
 	active_binds = talloc_zero_array(nse, struct gprs_ns2_vc_bind*, active_nsvcs);
 	if (!active_binds)
