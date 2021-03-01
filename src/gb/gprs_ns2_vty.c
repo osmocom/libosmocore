@@ -2069,6 +2069,31 @@ DEFUN_HIDDEN(nsvc_force_unconf, nsvc_force_unconf_cmd,
 	return CMD_SUCCESS;
 }
 
+DEFUN(nse_restart_sns, nse_restart_sns_cmd,
+      "nse <0-65535> restart-sns",
+      "NSE specific commands\n"
+      "NS Entity ID (NSEI)\n"
+      "Restart SNS procedure\n")
+{
+	struct gprs_ns2_inst *nsi = vty_nsi;
+	struct gprs_ns2_nse *nse;
+
+	uint16_t id = atoi(argv[0]);
+	nse = gprs_ns2_nse_by_nsei(nsi, id);
+	if (!nse) {
+		vty_out(vty, "Could not find NSE for NSEI %u%s", id, VTY_NEWLINE);
+		return CMD_WARNING;
+	}
+
+	if (nse->dialect != GPRS_NS2_DIALECT_SNS) {
+		vty_out(vty, "Given NSEI %u doesn't use IP-SNS%s", id, VTY_NEWLINE);
+		return CMD_WARNING;
+	}
+
+	gprs_ns2_free_nsvcs(nse);
+	return CMD_SUCCESS;
+}
+
 DEFUN(nsvc_block, nsvc_block_cmd,
       "nsvc <0-65535> (block|unblock|reset)",
       "NS Virtual Connection\n"
@@ -2236,6 +2261,7 @@ int gprs_ns2_vty_init_reduced(struct gprs_ns2_inst *nsi)
 
 	install_lib_element(ENABLE_NODE, &nsvc_force_unconf_cmd);
 	install_lib_element(ENABLE_NODE, &nsvc_block_cmd);
+	install_lib_element(ENABLE_NODE, &nse_restart_sns_cmd);
 
 	install_lib_element(CFG_LOG_NODE, &logging_fltr_nse_cmd);
 	install_lib_element(CFG_LOG_NODE, &logging_fltr_nsvc_cmd);
