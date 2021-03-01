@@ -699,31 +699,31 @@ static int osmo_stat_item_handler(
 	int have_value;
 
 	have_value = osmo_stat_item_get_next(item, &idx, &value) > 0;
-	if (!have_value)
+	if (!have_value) {
 		/* Send the last value in case a flush is requested */
 		value = osmo_stat_item_get_last(item);
+	} else {
+		int32_t next_val;
+		/* If we have multiple values only send the max */
+		while (osmo_stat_item_get_next(item, &idx, &next_val) > 0)
+			value = OSMO_MAX(value, next_val);
+	}
 
-	do {
-		llist_for_each_entry(srep, &osmo_stats_reporter_list, list) {
-			if (!srep->running)
-				continue;
+	llist_for_each_entry(srep, &osmo_stats_reporter_list, list) {
+		if (!srep->running)
+			continue;
 
-			if (!have_value && !srep->force_single_flush)
-				continue;
+		if (!have_value && !srep->force_single_flush)
+			continue;
 
-			if (!osmo_stats_reporter_check_config(srep,
-					statg->idx, statg->desc->class_id))
-				continue;
+		if (!osmo_stats_reporter_check_config(srep,
+				statg->idx, statg->desc->class_id))
+			continue;
 
-			osmo_stats_reporter_send_item(srep, statg,
-				item->desc, value);
-		}
+		osmo_stats_reporter_send_item(srep, statg,
+			item->desc, value);
 
-		if (!have_value)
-			break;
-
-		have_value = osmo_stat_item_get_next(item, &idx, &value) > 0;
-	} while (have_value);
+	}
 
 	return 0;
 }

@@ -100,6 +100,12 @@ report (group 1, counter 1 update):
 report (group 1, item 1 update):
   test2: item p= g=test.one i=1 n=item.a v=10 u=ma
   test1: item p= g=test.one i=1 n=item.a v=10 u=ma
+report (group 1, item 1 update twice):
+  test2: item p= g=test.one i=1 n=item.a v=10 u=ma
+  test1: item p= g=test.one i=1 n=item.a v=10 u=ma
+report (group 1, item 1 update twice, check max):
+  test2: item p= g=test.one i=1 n=item.a v=20 u=ma
+  test1: item p= g=test.one i=1 n=item.a v=20 u=ma
 report (remove statg1, ctrg1):
   test2: counter p= g=ctr-test:one_dot i=3 n=ctr:a v=0 d=0
   test1: counter p= g=ctr-test:one_dot i=3 n=ctr:a v=0 d=0

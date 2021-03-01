@@ -440,6 +440,20 @@ static void test_reporting()
 	osmo_stats_report();
 	OSMO_ASSERT(send_count == 2);
 
+	printf("report (group 1, item 1 update twice):\n");
+	osmo_stat_item_set(statg1->items[TEST_A_ITEM], 10);
+	osmo_stat_item_set(statg1->items[TEST_A_ITEM], 10);
+	send_count = 0;
+	osmo_stats_report();
+	OSMO_ASSERT(send_count == 2);
+
+	printf("report (group 1, item 1 update twice, check max):\n");
+	osmo_stat_item_set(statg1->items[TEST_A_ITEM], 20);
+	osmo_stat_item_set(statg1->items[TEST_A_ITEM], 10);
+	send_count = 0;
+	osmo_stats_report();
+	OSMO_ASSERT(send_count == 2);
+
 	printf("report (remove statg1, ctrg1):\n");
 	/* force single flush */
 	srep1->force_single_flush = 1;
