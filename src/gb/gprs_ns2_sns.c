@@ -3,7 +3,7 @@
  * 3GPP TS 08.16 version 8.0.1 Release 1999 / ETSI TS 101 299 V8.0.1 (2002-05)
  * as well as its successor 3GPP TS 48.016 */
 
-/* (C) 2018 by Harald Welte <laforge@gnumonks.org>
+/* (C) 2018-2021 by Harald Welte <laforge@gnumonks.org>
  * (C) 2020 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
  * Author: Alexander Couzens <lynxis@fe80.eu>
  *
@@ -204,6 +204,14 @@ static int ip6_weight_sum(const struct gprs_ns_ie_ip6_elem *ip6, unsigned int nu
 }
 #define ip6_weight_sum_data(x,y)	ip6_weight_sum(x, y, true)
 #define ip6_weight_sum_sig(x,y)		ip6_weight_sum(x, y, false)
+
+static int nss_weight_sum(const struct ns2_sns_state *nss, bool data_weight)
+{
+	return ip4_weight_sum(nss->ip4_remote, nss->num_ip4_remote, data_weight) +
+	       ip6_weight_sum(nss->ip6_remote, nss->num_ip6_remote, data_weight);
+}
+#define nss_weight_sum_data(nss)	nss_weight_sum(nss, true)
+#define nss_weight_sum_sig(nss)		nss_weight_sum(nss, false)
 
 static struct gprs_ns2_vc *nsvc_by_ip4_elem(struct gprs_ns2_nse *nse,
 					    const struct gprs_ns_ie_ip4_elem *ip4)
@@ -926,106 +934,54 @@ static inline int ns_sns_configured_timeout(struct osmo_fsm_inst *fi)
 	return secs;
 }
 
-static void ns_sns_st_config_sgsn_ip4(struct osmo_fsm_inst *fi, uint32_t event, void *data)
+/* append the remote endpoints from the parsed TLV array to the ns2_sns_state */
+static int ns_sns_append_remote_eps(struct osmo_fsm_inst *fi, const struct tlv_parsed *tp)
 {
 	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
-	struct gprs_ns2_nse *nse = nse_inst_from_fi(fi);
-	const struct gprs_ns_ie_ip4_elem *v4_list;
-	unsigned int num_v4;
-	struct tlv_parsed *tp = NULL;
 
-	uint8_t cause;
+	if (TLVP_PRESENT(tp, NS_IE_IPv4_LIST)) {
+		const struct gprs_ns_ie_ip4_elem *v4_list;
+		unsigned int num_v4;
+		v4_list = (const struct gprs_ns_ie_ip4_elem *) TLVP_VAL(tp, NS_IE_IPv4_LIST);
+		num_v4 = TLVP_LEN(tp, NS_IE_IPv4_LIST) / sizeof(*v4_list);
 
-	tp = (struct tlv_parsed *) data;
+		if (num_v4 && gss->ip6_remote)
+			return -NS_CAUSE_INVAL_NR_IPv4_EP;
 
-	if (!TLVP_PRESENT(tp, NS_IE_IPv4_LIST)) {
-		cause = NS_CAUSE_INVAL_NR_IPv4_EP;
-		ns2_tx_sns_config_ack(gss->sns_nsvc, &cause);
-		osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_UNCONFIGURED, 0, 0);
-		return;
+		/* realloc to the new size */
+		gss->ip4_remote = talloc_realloc(gss, gss->ip4_remote,
+						 struct gprs_ns_ie_ip4_elem,
+						 gss->num_ip4_remote + num_v4);
+		/* append the new entries to the end of the list */
+		memcpy(&gss->ip4_remote[gss->num_ip4_remote], v4_list, num_v4*sizeof(*v4_list));
+		gss->num_ip4_remote += num_v4;
+
+		LOGPFSML(fi, LOGL_INFO, "Rx SNS-CONFIG: Remote IPv4 list now %u entries\n",
+			 gss->num_ip4_remote);
 	}
-	v4_list = (const struct gprs_ns_ie_ip4_elem *) TLVP_VAL(tp, NS_IE_IPv4_LIST);
-	num_v4 = TLVP_LEN(tp, NS_IE_IPv4_LIST) / sizeof(*v4_list);
-	/* realloc to the new size */
-	gss->ip4_remote = talloc_realloc(gss, gss->ip4_remote,
-					 struct gprs_ns_ie_ip4_elem,
-					 gss->num_ip4_remote+num_v4);
-	/* append the new entries to the end of the list */
-	memcpy(&gss->ip4_remote[gss->num_ip4_remote], v4_list, num_v4*sizeof(*v4_list));
-	gss->num_ip4_remote += num_v4;
 
-	LOGPFSML(fi, LOGL_INFO, "Rx SNS-CONFIG: Remote IPv4 list now %u entries\n",
-					 gss->num_ip4_remote);
-	if (event == GPRS_SNS_EV_RX_CONFIG_END) {
-		/* check if sum of data / sig weights == 0 */
-		if (ip4_weight_sum_data(gss->ip4_remote, gss->num_ip4_remote) == 0 ||
-				ip4_weight_sum_sig(gss->ip4_remote, gss->num_ip4_remote) == 0) {
-			cause = NS_CAUSE_INVAL_WEIGH;
-			ns2_tx_sns_config_ack(gss->sns_nsvc, &cause);
-			osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_UNCONFIGURED, 0, 0);
-			return;
-		}
-		create_missing_nsvcs(fi);
-		ns2_tx_sns_config_ack(gss->sns_nsvc, NULL);
-		/* start the test procedure on ALL NSVCs! */
-		gprs_ns2_start_alive_all_nsvcs(nse);
-		osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_CONFIGURED, ns_sns_configured_timeout(fi), 4);
-	} else {
-		/* just send CONFIG-ACK */
-		ns2_tx_sns_config_ack(gss->sns_nsvc, NULL);
-		osmo_timer_schedule(&fi->timer, nse->nsi->timeout[NS_TOUT_TSNS_PROV], 0);
+	if (TLVP_PRESENT(tp, NS_IE_IPv6_LIST)) {
+		const struct gprs_ns_ie_ip6_elem *v6_list;
+		unsigned int num_v6;
+		v6_list = (const struct gprs_ns_ie_ip6_elem *) TLVP_VAL(tp, NS_IE_IPv6_LIST);
+		num_v6 = TLVP_LEN(tp, NS_IE_IPv6_LIST) / sizeof(*v6_list);
+
+		if (num_v6 && gss->ip4_remote)
+			return -NS_CAUSE_INVAL_NR_IPv6_EP;
+
+		/* realloc to the new size */
+		gss->ip6_remote = talloc_realloc(gss, gss->ip6_remote,
+						 struct gprs_ns_ie_ip6_elem,
+						 gss->num_ip6_remote + num_v6);
+		/* append the new entries to the end of the list */
+		memcpy(&gss->ip6_remote[gss->num_ip6_remote], v6_list, num_v6*sizeof(*v6_list));
+		gss->num_ip6_remote += num_v6;
+
+		LOGPFSML(fi, LOGL_INFO, "Rx SNS-CONFIG: Remote IPv6 list now %u entries\n",
+			 gss->num_ip6_remote);
 	}
-}
 
-static void ns_sns_st_config_sgsn_ip6(struct osmo_fsm_inst *fi, uint32_t event, void *data)
-{
-	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
-	struct gprs_ns2_nse *nse = nse_inst_from_fi(fi);
-	const struct gprs_ns_ie_ip6_elem *v6_list;
-	unsigned int num_v6;
-	struct tlv_parsed *tp = NULL;
-
-	uint8_t cause;
-
-	tp = (struct tlv_parsed *) data;
-
-	if (!TLVP_PRESENT(tp, NS_IE_IPv6_LIST)) {
-		cause = NS_CAUSE_INVAL_NR_IPv6_EP;
-		ns2_tx_sns_config_ack(gss->sns_nsvc, &cause);
-		osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_UNCONFIGURED, 0, 0);
-		return;
-	}
-	v6_list = (const struct gprs_ns_ie_ip6_elem *) TLVP_VAL(tp, NS_IE_IPv6_LIST);
-	num_v6 = TLVP_LEN(tp, NS_IE_IPv6_LIST) / sizeof(*v6_list);
-	/* realloc to the new size */
-	gss->ip6_remote = talloc_realloc(gss, gss->ip6_remote,
-					 struct gprs_ns_ie_ip6_elem,
-					 gss->num_ip6_remote+num_v6);
-	/* append the new entries to the end of the list */
-	memcpy(&gss->ip6_remote[gss->num_ip6_remote], v6_list, num_v6*sizeof(*v6_list));
-	gss->num_ip6_remote += num_v6;
-
-	LOGPFSML(fi, LOGL_INFO, "Rx SNS-CONFIG: Remote IPv6 list now %u entries\n",
-					 gss->num_ip6_remote);
-	if (event == GPRS_SNS_EV_RX_CONFIG_END) {
-		/* check if sum of data / sig weights == 0 */
-		if (ip6_weight_sum_data(gss->ip6_remote, gss->num_ip6_remote) == 0 ||
-				ip6_weight_sum_sig(gss->ip6_remote, gss->num_ip6_remote) == 0) {
-			cause = NS_CAUSE_INVAL_WEIGH;
-			ns2_tx_sns_config_ack(gss->sns_nsvc, &cause);
-			osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_UNCONFIGURED, 0, 0);
-			return;
-		}
-		create_missing_nsvcs(fi);
-		ns2_tx_sns_config_ack(gss->sns_nsvc, NULL);
-		/* start the test procedure on ALL NSVCs! */
-		gprs_ns2_start_alive_all_nsvcs(nse);
-		osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_CONFIGURED, 0, 0);
-	} else {
-		/* just send CONFIG-ACK */
-		ns2_tx_sns_config_ack(gss->sns_nsvc, NULL);
-		osmo_timer_schedule(&fi->timer, nse->nsi->timeout[NS_TOUT_TSNS_PROV], 0);
-	}
+	return 0;
 }
 
 static void ns2_sns_st_config_sgsn_onenter(struct osmo_fsm_inst *fi, uint32_t old_state)
@@ -1039,29 +995,37 @@ static void ns2_sns_st_config_sgsn_onenter(struct osmo_fsm_inst *fi, uint32_t ol
 static void ns2_sns_st_config_sgsn(struct osmo_fsm_inst *fi, uint32_t event, void *data)
 {
 	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
+	struct gprs_ns2_nse *nse = nse_inst_from_fi(fi);
+	uint8_t cause;
+	int rc;
 
 	switch (event) {
 	case GPRS_SNS_EV_RX_CONFIG_END:
 	case GPRS_SNS_EV_RX_CONFIG:
-
-#if 0		/* part of incoming SNS-SIZE (doesn't happen on BSS side */
-		if (TLVP_PRESENT(tp, NS_IE_RESET_FLAG)) {
-			/* reset all existing config */
-			if (gss->ip4_remote)
-				talloc_free(gss->ip4_remote);
-			gss->num_ip4_remote = 0;
+		rc = ns_sns_append_remote_eps(fi, data);
+		if (rc < 0) {
+			cause = -rc;
+			ns2_tx_sns_config_ack(gss->sns_nsvc, &cause);
+			osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_UNCONFIGURED, 0, 0);
+			return;
 		}
-#endif
-		/* TODO: reject IPv6 elements on IPv4 mode and vice versa */
-		switch (gss->ip) {
-		case IPv4:
-			ns_sns_st_config_sgsn_ip4(fi, event, data);
-			break;
-		case IPv6:
-			ns_sns_st_config_sgsn_ip6(fi, event, data);
-			break;
-		default:
-			OSMO_ASSERT(0);
+		if (event == GPRS_SNS_EV_RX_CONFIG_END) {
+			/* check if sum of data / sig weights == 0 */
+			if (nss_weight_sum_data(gss) == 0 || nss_weight_sum_sig(gss) == 0) {
+				cause = NS_CAUSE_INVAL_WEIGH;
+				ns2_tx_sns_config_ack(gss->sns_nsvc, &cause);
+				osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_UNCONFIGURED, 0, 0);
+				return;
+			}
+			create_missing_nsvcs(fi);
+			ns2_tx_sns_config_ack(gss->sns_nsvc, NULL);
+			/* start the test procedure on ALL NSVCs! */
+			gprs_ns2_start_alive_all_nsvcs(nse);
+			osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_CONFIGURED, 0, 0);
+		} else {
+			/* just send CONFIG-ACK */
+			ns2_tx_sns_config_ack(gss->sns_nsvc, NULL);
+			osmo_timer_schedule(&fi->timer, nse->nsi->timeout[NS_TOUT_TSNS_PROV], 0);
 		}
 		break;
 	default:
