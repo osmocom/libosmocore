@@ -1387,49 +1387,14 @@ static int ns2_sns_fsm_bss_timer_cb(struct osmo_fsm_inst *fi)
 	return 0;
 }
 
+/* common allstate-action for both roles */
 static void ns2_sns_st_all_action(struct osmo_fsm_inst *fi, uint32_t event, void *data)
 {
-	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
 	struct gprs_ns2_nse *nse = nse_inst_from_fi(fi);
 	struct ns2_sns_bind *sbind;
 	struct gprs_ns2_vc *nsvc, *nsvc2;
 
-	/* reset when receiving GPRS_SNS_EV_REQ_NO_NSVC */
 	switch (event) {
-	case GPRS_SNS_EV_REQ_NO_NSVC:
-		/* ignore reselection running */
-		if (gss->reselection_running)
-			break;
-
-		LOGPFSML(fi, LOGL_ERROR, "NSE %d: no remaining NSVC, resetting SNS FSM\n", nse->nsei);
-		osmo_fsm_inst_dispatch(fi, GPRS_SNS_EV_REQ_SELECT_ENDPOINT, NULL);
-		break;
-	case GPRS_SNS_EV_REQ_SELECT_ENDPOINT:
-		/* tear down previous state
-		 * gprs_ns2_free_nsvcs() will trigger NO_NSVC, prevent this from triggering a reselection */
-		gss->reselection_running = true;
-		gprs_ns2_free_nsvcs(nse);
-		ns2_clear_ipv46_entries(gss);
-
-		/* Choose the next sns endpoint. */
-		if (llist_empty(&gss->sns_endpoints) || llist_empty(&gss->binds)) {
-			gss->initial = NULL;
-			ns2_prim_status_ind(gss->nse, NULL, 0, GPRS_NS2_AFF_CAUSE_SNS_NO_ENDPOINTS);
-			osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_UNCONFIGURED, 0, 3);
-			return;
-		} else if (!gss->initial) {
-			gss->initial = llist_first_entry(&gss->sns_endpoints, struct sns_endpoint, list);
-		} else if (gss->initial->list.next == &gss->sns_endpoints) {
-			/* last entry, continue with first */
-			gss->initial = llist_first_entry(&gss->sns_endpoints, struct sns_endpoint, list);
-		} else {
-			/* next element is an entry */
-			gss->initial = llist_entry(gss->initial->list.next, struct sns_endpoint, list);
-		}
-
-		gss->reselection_running = false;
-		osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_SIZE, nse->nsi->timeout[NS_TOUT_TSNS_PROV], 1);
-		break;
 	case GPRS_SNS_EV_REQ_ADD_BIND:
 		sbind = data;
 		switch (fi->state) {
@@ -1477,6 +1442,54 @@ static void ns2_sns_st_all_action(struct osmo_fsm_inst *fi, uint32_t event, void
 	}
 }
 
+/* allstate-action for BSS role */
+static void ns2_sns_st_all_action_bss(struct osmo_fsm_inst *fi, uint32_t event, void *data)
+{
+	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
+	struct gprs_ns2_nse *nse = nse_inst_from_fi(fi);
+
+	/* reset when receiving GPRS_SNS_EV_REQ_NO_NSVC */
+	switch (event) {
+	case GPRS_SNS_EV_REQ_NO_NSVC:
+		/* ignore reselection running */
+		if (gss->reselection_running)
+			break;
+
+		LOGPFSML(fi, LOGL_ERROR, "NSE %d: no remaining NSVC, resetting SNS FSM\n", nse->nsei);
+		osmo_fsm_inst_dispatch(fi, GPRS_SNS_EV_REQ_SELECT_ENDPOINT, NULL);
+		break;
+	case GPRS_SNS_EV_REQ_SELECT_ENDPOINT:
+		/* tear down previous state
+		 * gprs_ns2_free_nsvcs() will trigger NO_NSVC, prevent this from triggering a reselection */
+		gss->reselection_running = true;
+		gprs_ns2_free_nsvcs(nse);
+		ns2_clear_ipv46_entries(gss);
+
+		/* Choose the next sns endpoint. */
+		if (llist_empty(&gss->sns_endpoints) || llist_empty(&gss->binds)) {
+			gss->initial = NULL;
+			ns2_prim_status_ind(gss->nse, NULL, 0, GPRS_NS2_AFF_CAUSE_SNS_NO_ENDPOINTS);
+			osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_UNCONFIGURED, 0, 3);
+			return;
+		} else if (!gss->initial) {
+			gss->initial = llist_first_entry(&gss->sns_endpoints, struct sns_endpoint, list);
+		} else if (gss->initial->list.next == &gss->sns_endpoints) {
+			/* last entry, continue with first */
+			gss->initial = llist_first_entry(&gss->sns_endpoints, struct sns_endpoint, list);
+		} else {
+			/* next element is an entry */
+			gss->initial = llist_entry(gss->initial->list.next, struct sns_endpoint, list);
+		}
+
+		gss->reselection_running = false;
+		osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_SIZE, nse->nsi->timeout[NS_TOUT_TSNS_PROV], 1);
+		break;
+	default:
+		ns2_sns_st_all_action(fi, event, data);
+		break;
+	}
+}
+
 static struct osmo_fsm gprs_ns2_sns_bss_fsm = {
 	.name = "GPRS-NS2-SNS-BSS",
 	.states = ns2_sns_bss_states,
@@ -1485,7 +1498,7 @@ static struct osmo_fsm gprs_ns2_sns_bss_fsm = {
 			       S(GPRS_SNS_EV_REQ_SELECT_ENDPOINT) |
 			       S(GPRS_SNS_EV_REQ_ADD_BIND) |
 			       S(GPRS_SNS_EV_REQ_DELETE_BIND),
-	.allstate_action = ns2_sns_st_all_action,
+	.allstate_action = ns2_sns_st_all_action_bss,
 	.cleanup = NULL,
 	.timer_cb = ns2_sns_fsm_bss_timer_cb,
 	.event_names = gprs_sns_event_names,
