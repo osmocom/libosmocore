@@ -713,14 +713,19 @@ static int do_sns_add(struct osmo_fsm_inst *fi,
 
 static void ns2_sns_st_unconfigured(struct osmo_fsm_inst *fi, uint32_t event, void *data)
 {
+	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
+	OSMO_ASSERT(gss->role == GPRS_SNS_ROLE_BSS);
 	/* empty state - SNS Select will start by ns2_sns_st_all_action() */
 }
 
 static void ns2_sns_st_size(struct osmo_fsm_inst *fi, uint32_t event, void *data)
 {
+	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
 	struct gprs_ns2_nse *nse = nse_inst_from_fi(fi);
 	struct gprs_ns2_inst *nsi = nse->nsi;
 	struct tlv_parsed *tp = NULL;
+
+	OSMO_ASSERT(gss->role == GPRS_SNS_ROLE_BSS);
 
 	switch (event) {
 	case GPRS_SNS_EV_RX_SIZE_ACK:
@@ -849,6 +854,8 @@ static void ns2_sns_st_size_onenter(struct osmo_fsm_inst *fi, uint32_t old_state
 {
 	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
 
+	OSMO_ASSERT(gss->role == GPRS_SNS_ROLE_BSS);
+
 	/* on a generic failure, the timer callback will recover */
 	if (old_state != GPRS_SNS_ST_UNCONFIGURED)
 		ns2_prim_status_ind(gss->nse, NULL, 0, GPRS_NS2_AFF_CAUSE_SNS_FAILURE);
@@ -890,8 +897,11 @@ static void ns2_sns_st_size_onenter(struct osmo_fsm_inst *fi, uint32_t old_state
 
 static void ns2_sns_st_config_bss(struct osmo_fsm_inst *fi, uint32_t event, void *data)
 {
-	struct tlv_parsed *tp = NULL;
+	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
 	struct gprs_ns2_nse *nse = nse_inst_from_fi(fi);
+	struct tlv_parsed *tp = NULL;
+
+	OSMO_ASSERT(gss->role == GPRS_SNS_ROLE_BSS);
 
 	switch (event) {
 	case GPRS_SNS_EV_RX_CONFIG_ACK:
@@ -912,6 +922,8 @@ static void ns2_sns_st_config_bss(struct osmo_fsm_inst *fi, uint32_t event, void
 static void ns2_sns_st_config_bss_onenter(struct osmo_fsm_inst *fi, uint32_t old_state)
 {
 	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
+
+	OSMO_ASSERT(gss->role == GPRS_SNS_ROLE_BSS);
 
 	if (old_state != GPRS_SNS_ST_CONFIG_BSS)
 		gss->N = 0;
@@ -998,6 +1010,8 @@ static void ns2_sns_st_config_sgsn_onenter(struct osmo_fsm_inst *fi, uint32_t ol
 {
 	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
 
+	OSMO_ASSERT(gss->role == GPRS_SNS_ROLE_BSS);
+
 	if (old_state != GPRS_SNS_ST_CONFIG_SGSN)
 		gss->N = 0;
 }
@@ -1008,6 +1022,8 @@ static void ns2_sns_st_config_sgsn(struct osmo_fsm_inst *fi, uint32_t event, voi
 	struct gprs_ns2_nse *nse = nse_inst_from_fi(fi);
 	uint8_t cause;
 	int rc;
+
+	OSMO_ASSERT(gss->role == GPRS_SNS_ROLE_BSS);
 
 	switch (event) {
 	case GPRS_SNS_EV_RX_CONFIG_END:
