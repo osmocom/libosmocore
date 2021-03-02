@@ -364,6 +364,7 @@ struct gprs_ns2_vc_bind *ns2_ip_get_bind_by_index(struct gprs_ns2_inst *nsi,
 int ns2_sns_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp);
 struct osmo_fsm_inst *ns2_sns_bss_fsm_alloc(struct gprs_ns2_nse *nse,
 					     const char *id);
+struct osmo_fsm_inst *ns2_sns_sgsn_fsm_alloc(struct gprs_ns2_nse *nse, const char *id);
 void ns2_sns_replace_nsvc(struct gprs_ns2_vc *nsvc);
 void ns2_sns_notify_alive(struct gprs_ns2_nse *nse, struct gprs_ns2_vc *nsvc, bool alive);
 void ns2_sns_update_weights(struct gprs_ns2_vc_bind *bind);
