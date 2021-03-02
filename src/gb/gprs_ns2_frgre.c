@@ -447,7 +447,7 @@ static int handle_nsfrgre_read(struct osmo_fd *bfd)
 	rc = ns2_find_vc_by_dlci(bind, dlci, &nsvc);
 	if (rc) {
 		/* VC not found */
-		rc = ns2_create_vc(bind, msg, "newconnection", &reject, &nsvc);
+		rc = ns2_create_vc(bind, msg, &saddr, "newconnection", &reject, &nsvc);
 		switch (rc) {
 		case NS2_CS_FOUND:
 			break;

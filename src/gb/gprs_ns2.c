@@ -868,12 +868,14 @@ static inline int ns2_tlv_parse(struct tlv_parsed *dec,
 /*! Create a new NS-VC based on a [received] message. Depending on the bind it might create a NSE.
  *  \param[in] bind the bind through which msg was received
  *  \param[in] msg the actual received message
+ *  \param[in] remote address of remote peer sending message
  *  \param[in] logname A name to describe the VC. E.g. ip address pair
  *  \param[out] reject A message filled to be sent back. Only used in failure cases.
  *  \param[out] success A pointer which will be set to the new VC on success
  *  \return enum value indicating the status, e.g. GPRS_NS2_CS_CREATED */
 enum ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 			  struct msgb *msg,
+			  const struct osmo_sockaddr *remote,
 			  const char *logname,
 			  struct msgb **reject,
 			  struct gprs_ns2_vc **success)

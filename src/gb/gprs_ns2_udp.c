@@ -231,7 +231,7 @@ static int handle_nsip_read(struct osmo_fd *bfd)
 	nsvc = gprs_ns2_nsvc_by_sockaddr_bind(bind, &saddr);
 	if (!nsvc) {
 		/* VC not found */
-		rc = ns2_create_vc(bind, msg, "newconnection", &reject, &nsvc);
+		rc = ns2_create_vc(bind, msg, &saddr, "newconnection", &reject, &nsvc);
 		switch (rc) {
 		case NS2_CS_FOUND:
 			break;

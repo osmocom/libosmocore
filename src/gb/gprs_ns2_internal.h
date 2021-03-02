@@ -279,6 +279,7 @@ struct gprs_ns2_vc_driver {
 
 enum ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 			       struct msgb *msg,
+			       const struct osmo_sockaddr *remote,
 			       const char *logname,
 			       struct msgb **reject,
 			       struct gprs_ns2_vc **success);
