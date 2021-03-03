@@ -462,6 +462,8 @@ static void config_write_vbind(struct vty *vty, struct vty_bind *vbind)
 		}
 		if (vbind->accept_ipaccess)
 			vty_out(vty, "  accept-ipaccess%s", VTY_NEWLINE);
+		if (vbind->accept_sns)
+			vty_out(vty, "  accept-dynamic-ip-sns%s", VTY_NEWLINE);
 		if (vbind->dscp)
 			vty_out(vty, "  dscp %u%s", vbind->dscp, VTY_NEWLINE);
 		vty_out(vty, "  ip-sns signalling-weight %u data-weight %u%s",
@@ -754,6 +756,51 @@ DEFUN(cfg_no_ns_bind_ipaccess, cfg_no_ns_bind_ipaccess_cmd,
 	bind = gprs_ns2_bind_by_name(vty_nsi, vbind->name);
 	if (bind)
 		bind->accept_ipaccess = false;
+
+	return CMD_SUCCESS;
+}
+
+DEFUN(cfg_ns_bind_accept_sns, cfg_ns_bind_accept_sns_cmd,
+      "accept-dynamic-ip-sns",
+      "Allow to create dynamic NS Entities by IP-SNS PDUs\n"
+      )
+{
+	struct vty_bind *vbind = vty->index;
+	struct gprs_ns2_vc_bind *bind;
+
+	if (vbind->ll != GPRS_NS2_LL_UDP) {
+		vty_out(vty, "accept-dynamic-ip-sns can be only used with UDP bind%s",
+			VTY_NEWLINE);
+		return CMD_WARNING;
+	}
+
+	vbind->accept_sns = true;
+	bind = gprs_ns2_bind_by_name(vty_nsi, vbind->name);
+	if (bind)
+		bind->accept_sns = true;
+
+	return CMD_SUCCESS;
+}
+
+DEFUN(cfg_no_ns_bind_accept_sns, cfg_no_ns_bind_accept_sns_cmd,
+      "no accept-dynamic-ip-sns",
+      NO_STR
+      "Disable dynamic creation of NS Entities by IP-SNS PDUs\n"
+      )
+{
+	struct vty_bind *vbind = vty->index;
+	struct gprs_ns2_vc_bind *bind;
+
+	if (vbind->ll != GPRS_NS2_LL_UDP) {
+		vty_out(vty, "no accept-dynamic-ip-sns can be only used with UDP bind%s",
+			VTY_NEWLINE);
+		return CMD_WARNING;
+	}
+
+	vbind->accept_sns = false;
+	bind = gprs_ns2_bind_by_name(vty_nsi, vbind->name);
+	if (bind)
+		bind->accept_sns = false;
 
 	return CMD_SUCCESS;
 }
@@ -2062,7 +2109,8 @@ int gprs_ns2_vty_init(struct gprs_ns2_inst *nsi)
 	install_lib_element(L_NS_BIND_NODE, &cfg_no_ns_bind_ipaccess_cmd);
 	install_lib_element(L_NS_BIND_NODE, &cfg_ns_bind_fr_cmd);
 	install_lib_element(L_NS_BIND_NODE, &cfg_no_ns_bind_fr_cmd);
-	/* TODO: accept-ip-sns when SGSN SNS has been implemented */
+	install_lib_element(L_NS_BIND_NODE, &cfg_ns_bind_accept_sns_cmd);
+	install_lib_element(L_NS_BIND_NODE, &cfg_no_ns_bind_accept_sns_cmd);
 
 	install_node(&ns_nse_node, NULL);
 	install_lib_element(L_NS_NSE_NODE, &cfg_ns_nse_nsvc_fr_cmd);
