@@ -907,6 +907,54 @@ static inline int ns2_tlv_parse(struct tlv_parsed *dec,
 	return rc;
 }
 
+static enum ns2_cs ns2_create_vc_sns(struct gprs_ns2_vc_bind *bind,
+			  const struct osmo_sockaddr *remote,
+			  struct gprs_ns2_vc **success, uint16_t nsei)
+{
+	struct gprs_ns2_vc *nsvc;
+	struct gprs_ns2_nse *nse;
+
+	nsvc = gprs_ns2_nsvc_by_sockaddr_bind(bind, remote);
+	/* ns2_create_vc() is only called if no NS-VC could be found */
+	OSMO_ASSERT(!nsvc);
+
+	nse = gprs_ns2_nse_by_nsei(bind->nsi, nsei);
+	if (!nse) {
+		if (!bind->accept_sns) {
+			struct osmo_sockaddr_str remote_str;
+			osmo_sockaddr_str_from_sockaddr(&remote_str, &remote->u.sas);
+			/* no dynamic creation of IP-SNS NSE permitted */
+			LOGP(DLNS, LOGL_ERROR, "[%s]:%u: Dynamic creation of NSE(%05u) via IP-SNS not "
+			     "permitted. Check your config.\n", remote_str.ip, remote_str.port, nsei);
+			return NS2_CS_ERROR;
+		}
+		nse = gprs_ns2_create_nse2(bind->nsi, nsei, bind->ll, GPRS_NS2_DIALECT_SNS, true);
+		if (!nse) {
+			LOGP(DLNS, LOGL_ERROR, "Failed to create NSE(%05u)\n", nsei);
+			return NS2_CS_ERROR;
+		}
+		gprs_ns2_sns_add_bind(nse, bind);
+		/* TODO: add (configured) list of other binds */
+	} else {
+		/* nsei already known */
+		if (nse->ll != bind->ll) {
+			LOGNSE(nse, LOGL_ERROR, "Received NS-RESET with wrong linklayer(%s)"
+				" for already known NSE(%s)\n", gprs_ns2_lltype_str(bind->ll),
+				gprs_ns2_lltype_str(nse->ll));
+			return NS2_CS_SKIPPED;
+		}
+	}
+
+	nsvc = ns2_ip_bind_connect(bind, nse, remote);
+	if (!nsvc)
+		return NS2_CS_SKIPPED;
+
+	nsvc->nsvci_is_valid = false;
+
+	*success = nsvc;
+
+	return NS2_CS_CREATED;
+}
 
 /*! Create a new NS-VC based on a [received] message. Depending on the bind it might create a NSE.
  *  \param[in] bind the bind through which msg was received
@@ -944,6 +992,20 @@ enum ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 	 * an unknown pdu type should be ignored */
 	tlv = ns2_tlv_parse(&tp, nsh->data,
 			   msgb_l2len(msg) - sizeof(*nsh), 0, 0);
+
+	if (bind->ll == GPRS_NS2_LL_UDP && nsh->pdu_type == SNS_PDUT_SIZE && tlv >= 0) {
+		uint16_t nsei;
+
+		if (!TLVP_PRES_LEN(&tp, NS_IE_NSEI, 2)) {
+			rc = reject_status_msg(msg, &tp, reject, NS_CAUSE_MISSING_ESSENT_IE);
+			if (rc < 0)
+				LOGP(DLNS, LOGL_ERROR, "Failed to generate reject message (%d)\n", rc);
+			return NS2_CS_REJECTED;
+		}
+		nsei = tlvp_val16be(&tp, NS_IE_NSEI);
+		/* Create NS-VC, and if required, even NSE dynamically */
+		return ns2_create_vc_sns(bind, remote, success, nsei);
+	}
 
 	switch (nsh->pdu_type) {
 	case NS_PDUT_STATUS:
