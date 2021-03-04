@@ -49,8 +49,6 @@
 
 #define S(x)	(1 << (x))
 
-#define DNS 10
-
 struct gprs_ns2_vc_priv {
 	struct gprs_ns2_vc *nsvc;
 	/* how often the timer was triggered */
@@ -687,7 +685,6 @@ static struct osmo_fsm ns2_vc_fsm = {
 	.allstate_action = ns2_vc_fsm_allstate_action,
 	.cleanup = ns2_vc_fsm_clean,
 	.timer_cb = ns2_vc_fsm_timer_cb,
-	/* .log_subsys = DNS, "is not constant" */
 	.event_names = ns2_vc_event_names,
 	.pre_term = NULL,
 	.log_subsys = DLNS,

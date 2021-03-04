@@ -1516,7 +1516,6 @@ static struct osmo_fsm gprs_ns2_sns_bss_fsm = {
 	.allstate_action = ns2_sns_st_all_action,
 	.cleanup = NULL,
 	.timer_cb = ns2_sns_fsm_bss_timer_cb,
-	/* .log_subsys = DNS, "is not constant" */
 	.event_names = gprs_sns_event_names,
 	.pre_term = NULL,
 	.log_subsys = DLNS,
