@@ -723,8 +723,7 @@ static void ns2_sns_st_size(struct osmo_fsm_inst *fi, uint32_t event, void *data
 	}
 }
 
-/* setup all dynamic SNS settings, create a new nsvc and send the SIZE */
-static void ns2_sns_st_size_onenter(struct osmo_fsm_inst *fi, uint32_t old_state)
+static void ns2_sns_compute_local_ep_from_binds(struct osmo_fsm_inst *fi)
 {
 	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
 	struct gprs_ns_ie_ip4_elem *ip4_elems;
@@ -736,14 +735,6 @@ static void ns2_sns_st_size_onenter(struct osmo_fsm_inst *fi, uint32_t old_state
 	struct osmo_sockaddr local;
 	int count;
 
-	/* on a generic failure, the timer callback will recover */
-	if (old_state != GPRS_SNS_ST_UNCONFIGURED)
-		ns2_prim_status_ind(gss->nse, NULL, 0, GPRS_NS2_AFF_CAUSE_SNS_FAILURE);
-	if (old_state != GPRS_SNS_ST_SIZE)
-		gss->N = 0;
-
-
-	gss->alive = false;
 	ns2_clear_ipv46_entries(gss);
 
 	/* no initial available */
@@ -757,27 +748,6 @@ static void ns2_sns_st_size_onenter(struct osmo_fsm_inst *fi, uint32_t old_state
 	if (count == 0) {
 		LOGPFSML(fi, LOGL_ERROR, "No local binds for this NSE -> cannot determine IP endpoints\n");
 		return;
-	}
-
-	/* take the first bind or take the next bind */
-	if (!gss->initial_bind) {
-		gss->initial_bind = llist_first_entry(&gss->binds, struct ns2_sns_bind, list);
-	} else {
-		if (gss->initial_bind->list.next != &gss->binds) {
-			gss->initial_bind = llist_entry(gss->initial_bind->list.next, struct ns2_sns_bind, list);
-		} else {
-			gss->initial_bind = llist_first_entry(&gss->binds, struct ns2_sns_bind, list);
-		}
-	}
-
-	bind = gss->initial_bind->bind;
-
-	/* setup the NSVC */
-	if (!gss->sns_nsvc) {
-		gss->sns_nsvc = ns2_ip_bind_connect(bind, gss->nse, remote);
-		if (!gss->sns_nsvc)
-			return;
-		gss->sns_nsvc->sns_only = true;
 	}
 
 	switch (gss->ip) {
@@ -854,6 +824,45 @@ static void ns2_sns_st_size_onenter(struct osmo_fsm_inst *fi, uint32_t old_state
 		gss->num_max_nsvcs = OSMO_MAX(gss->num_max_ip6_remote * gss->num_ip6_local, 8);
 		break;
 	}
+}
+
+/* setup all dynamic SNS settings, create a new nsvc and send the SIZE */
+static void ns2_sns_st_size_onenter(struct osmo_fsm_inst *fi, uint32_t old_state)
+{
+	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
+
+	/* on a generic failure, the timer callback will recover */
+	if (old_state != GPRS_SNS_ST_UNCONFIGURED)
+		ns2_prim_status_ind(gss->nse, NULL, 0, GPRS_NS2_AFF_CAUSE_SNS_FAILURE);
+	if (old_state != GPRS_SNS_ST_SIZE)
+		gss->N = 0;
+
+	gss->alive = false;
+
+	ns2_sns_compute_local_ep_from_binds(fi);
+
+	/* take the first bind or take the next bind */
+	if (!gss->initial_bind) {
+		gss->initial_bind = llist_first_entry(&gss->binds, struct ns2_sns_bind, list);
+	} else {
+		if (gss->initial_bind->list.next != &gss->binds) {
+			gss->initial_bind = llist_entry(gss->initial_bind->list.next, struct ns2_sns_bind, list);
+		} else {
+			gss->initial_bind = llist_first_entry(&gss->binds, struct ns2_sns_bind, list);
+		}
+	}
+
+
+	/* setup the NSVC */
+	if (!gss->sns_nsvc) {
+		struct gprs_ns2_vc_bind *bind = gss->initial_bind->bind;
+		struct osmo_sockaddr *remote = &gss->initial->saddr;
+		gss->sns_nsvc = ns2_ip_bind_connect(bind, gss->nse, remote);
+		if (!gss->sns_nsvc)
+			return;
+		gss->sns_nsvc->sns_only = true;
+	}
+
 
 	if (gss->num_max_ip4_remote > 0)
 		ns2_tx_sns_size(gss->sns_nsvc, true, gss->num_max_nsvcs, gss->num_max_ip4_remote, -1);
