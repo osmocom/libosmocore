@@ -2123,14 +2123,23 @@ static void ns2_sns_st_all_action_sgsn(struct osmo_fsm_inst *fi, uint32_t event,
 	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
 	struct tlv_parsed *tp = NULL;
 	uint8_t flag;
+	uint8_t cause;
 
 	OSMO_ASSERT(gss->role == GPRS_SNS_ROLE_SGSN);
 
 	switch (event) {
 	case GPRS_SNS_EV_RX_SIZE:
 		tp = (struct tlv_parsed *) data;
-		if (!TLVP_PRES_LEN(tp, NS_IE_RESET_FLAG, 1)) {
-			uint8_t cause = NS_CAUSE_MISSING_ESSENT_IE;
+		/* check for mandatory / conditional IEs */
+		if (!TLVP_PRES_LEN(tp, NS_IE_RESET_FLAG, 1) ||
+		    !TLVP_PRES_LEN(tp, NS_IE_MAX_NR_NSVC, 2)) {
+			cause = NS_CAUSE_MISSING_ESSENT_IE;
+			ns2_tx_sns_size_ack(gss->sns_nsvc, &cause);
+			break;
+		}
+		if (!TLVP_PRES_LEN(tp, NS_IE_IPv4_EP_NR, 2) &&
+		    !TLVP_PRES_LEN(tp, NS_IE_IPv6_EP_NR, 2)) {
+			cause = NS_CAUSE_MISSING_ESSENT_IE;
 			ns2_tx_sns_size_ack(gss->sns_nsvc, &cause);
 			break;
 		}
