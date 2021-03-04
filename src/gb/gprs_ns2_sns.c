@@ -446,7 +446,6 @@ static int add_remote_ip4_elem(struct ns2_sns_state *gss, const struct gprs_ns_i
 		if (memcmp(&gss->ip4_remote[i], ip4, sizeof(*ip4)))
 			continue;
 		/* TODO: log message duplicate */
-		/* TODO: check if this is the correct cause code */
 		return -NS_CAUSE_PROTO_ERR_UNSPEC;
 	}
 
