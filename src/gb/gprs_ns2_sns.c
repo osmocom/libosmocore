@@ -298,16 +298,21 @@ void ns2_sns_replace_nsvc(struct gprs_ns2_vc *nsvc)
 	osmo_fsm_inst_dispatch(fi, GPRS_SNS_EV_REQ_NO_NSVC, NULL);
 }
 
-static void ns2_clear_ipv46_entries(struct ns2_sns_state *gss)
+static void ns2_clear_ipv46_entries_local(struct ns2_sns_state *gss)
 {
 	TALLOC_FREE(gss->ip4_local);
-	TALLOC_FREE(gss->ip4_remote);
 	TALLOC_FREE(gss->ip6_local);
-	TALLOC_FREE(gss->ip6_remote);
 
 	gss->num_ip4_local = 0;
-	gss->num_ip4_remote = 0;
 	gss->num_ip6_local = 0;
+}
+
+static void ns2_clear_ipv46_entries_remote(struct ns2_sns_state *gss)
+{
+	TALLOC_FREE(gss->ip4_remote);
+	TALLOC_FREE(gss->ip6_remote);
+
+	gss->num_ip4_remote = 0;
 	gss->num_ip6_remote = 0;
 }
 
@@ -757,7 +762,7 @@ static void ns2_sns_compute_local_ep_from_binds(struct osmo_fsm_inst *fi)
 	struct osmo_sockaddr local;
 	int count;
 
-	ns2_clear_ipv46_entries(gss);
+	ns2_clear_ipv46_entries_local(gss);
 
 	/* no initial available */
 	if (gss->role == GPRS_SNS_ROLE_BSS) {
@@ -1490,7 +1495,8 @@ static void ns2_sns_st_all_action_bss(struct osmo_fsm_inst *fi, uint32_t event, 
 		 * gprs_ns2_free_nsvcs() will trigger NO_NSVC, prevent this from triggering a reselection */
 		gss->reselection_running = true;
 		gprs_ns2_free_nsvcs(nse);
-		ns2_clear_ipv46_entries(gss);
+		ns2_clear_ipv46_entries_local(gss);
+		ns2_clear_ipv46_entries_remote(gss);
 
 		/* Choose the next sns endpoint. */
 		if (llist_empty(&gss->sns_endpoints) || llist_empty(&gss->binds)) {
@@ -2132,8 +2138,10 @@ static void ns2_sns_st_all_action_sgsn(struct osmo_fsm_inst *fi, uint32_t event,
 		if (flag & 1) {
 			struct gprs_ns2_vc *nsvc, *nsvc2;
 			/* clear all state */
+			osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_UNCONFIGURED, 0, 0);
 			gss->N = 0;
-			ns2_clear_ipv46_entries(gss);
+			ns2_clear_ipv46_entries_local(gss);
+			ns2_clear_ipv46_entries_remote(gss);
 			llist_for_each_entry_safe(nsvc, nsvc2, &gss->nse->nsvc, list) {
 				if (nsvc == gss->sns_nsvc) {
 					/* keep the NSVC we need for SNS, but unconfigure it */
