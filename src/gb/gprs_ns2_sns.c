@@ -812,7 +812,6 @@ static void ns2_sns_compute_local_ep_from_binds(struct osmo_fsm_inst *fi)
 		}
 
 		gss->num_ip4_local = count;
-		gss->num_max_ip4_remote = 4;
 		gss->num_max_nsvcs = OSMO_MAX(gss->num_max_ip4_remote * gss->num_ip4_local, 8);
 		break;
 	case IPv6:
@@ -849,7 +848,6 @@ static void ns2_sns_compute_local_ep_from_binds(struct osmo_fsm_inst *fi)
 			ip6_elems++;
 		}
 		gss->num_ip6_local = count;
-		gss->num_max_ip6_remote = 4;
 		gss->num_max_nsvcs = OSMO_MAX(gss->num_max_ip6_remote * gss->num_ip6_local, 8);
 		break;
 	}
@@ -1560,6 +1558,9 @@ struct osmo_fsm_inst *ns2_sns_bss_fsm_alloc(struct gprs_ns2_nse *nse,
 	fi->priv = gss;
 	gss->nse = nse;
 	gss->role = GPRS_SNS_ROLE_BSS;
+	/* The SGSN doesn't tell the BSS, so we assume there's always sufficient */
+	gss->num_max_ip4_remote = 8192;
+	gss->num_max_ip6_remote = 8192;
 	INIT_LLIST_HEAD(&gss->sns_endpoints);
 	INIT_LLIST_HEAD(&gss->binds);
 
