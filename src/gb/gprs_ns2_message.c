@@ -515,6 +515,9 @@ int ns2_tx_sns_ack(struct gprs_ns2_vc *nsvc, uint8_t trans_id, uint8_t *cause,
 		return -EIO;
 	}
 
+	LOGNSVC(nsvc, LOGL_INFO, "Tx SNS-ACK (trans_id=%u, cause=%s, num_ip4=%u, num_ip6=%u)\n",
+		trans_id, cause ? gprs_ns2_cause_str(*cause) : "NULL", num_ip4_elems, num_ip6_elems);
+
 	nsei = osmo_htons(nsvc->nse->nsei);
 
 	msg->l2h = msgb_put(msg, sizeof(*nsh));
@@ -573,6 +576,9 @@ int ns2_tx_sns_config(struct gprs_ns2_vc *nsvc, bool end_flag,
 		return -EIO;
 	}
 
+	LOGNSVC(nsvc, LOGL_INFO, "Tx SNS-CONFIG (end_flag=%u, num_ip4=%u, num_ip6=%u)\n",
+		end_flag, num_ip4_elems, num_ip6_elems);
+
 	nsei = osmo_htons(nsvc->nse->nsei);
 
 	msg->l2h = msgb_put(msg, sizeof(*nsh));
@@ -621,6 +627,9 @@ int ns2_tx_sns_config_ack(struct gprs_ns2_vc *nsvc, uint8_t *cause)
 		return -EIO;
 	}
 
+	LOGNSVC(nsvc, LOGL_INFO, "Tx SNS-CONFIG-ACK (cause=%s)\n",
+		cause ? gprs_ns2_cause_str(*cause) : "NULL");
+
 	nsei = osmo_htons(nsvc->nse->nsei);
 
 	msg->l2h = msgb_put(msg, sizeof(*nsh));
@@ -666,6 +675,9 @@ int ns2_tx_sns_size(struct gprs_ns2_vc *nsvc, bool reset_flag, uint16_t max_nr_n
 		return -EIO;
 	}
 
+	LOGNSVC(nsvc, LOGL_INFO, "Tx SNS-SIZE (reset=%u, max_nr_nsvc=%u, num_ip4=%u, num_ip6=%u)\n",
+		reset_flag, max_nr_nsvc, ip4_ep_nr, ip6_ep_nr);
+
 	nsei = osmo_htons(nsvc->nse->nsei);
 
 	msg->l2h = msgb_put(msg, sizeof(*nsh));
@@ -704,6 +716,9 @@ int ns2_tx_sns_size_ack(struct gprs_ns2_vc *nsvc, uint8_t *cause)
 		msgb_free(msg);
 		return -EIO;
 	}
+
+	LOGNSVC(nsvc, LOGL_INFO, "Tx SNS-SIZE-ACK (cause=%s)\n",
+		cause ? gprs_ns2_cause_str(*cause) : "NULL");
 
 	nsei = osmo_htons(nsvc->nse->nsei);
 
