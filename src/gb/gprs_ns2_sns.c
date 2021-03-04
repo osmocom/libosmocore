@@ -806,7 +806,7 @@ static void ns2_sns_compute_local_ep_from_binds(struct osmo_fsm_inst *fi)
 
 	switch (gss->ip) {
 	case IPv4:
-		ip4_elems = talloc_zero_size(fi, sizeof(struct gprs_ns_ie_ip4_elem) * count);
+		ip4_elems = talloc_realloc(fi, gss->ip4_local, struct gprs_ns_ie_ip4_elem, count);
 		if (!ip4_elems)
 			return;
 
@@ -841,7 +841,7 @@ static void ns2_sns_compute_local_ep_from_binds(struct osmo_fsm_inst *fi)
 		break;
 	case IPv6:
 		/* IPv6 */
-		ip6_elems = talloc_zero_size(fi, sizeof(struct gprs_ns_ie_ip6_elem) * count);
+		ip6_elems = talloc_realloc(fi, gss->ip6_local, struct gprs_ns_ie_ip6_elem, count);
 		if (!ip6_elems)
 			return;
 
@@ -919,7 +919,6 @@ static void ns2_sns_st_bss_size_onenter(struct osmo_fsm_inst *fi, uint32_t old_s
 		 * by the SGSN using the auto-configuration procedures */
 		gss->sns_nsvc->sns_only = true;
 	}
-
 
 	if (gss->num_max_ip4_remote > 0)
 		ns2_tx_sns_size(gss->sns_nsvc, true, gss->num_max_nsvcs, gss->num_ip4_local, -1);
