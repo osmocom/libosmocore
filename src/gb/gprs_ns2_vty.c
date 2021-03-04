@@ -3,6 +3,7 @@
 
 /* (C) 2020 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
  * Author: Alexander Couzens <lynxis@fe80.eu>
+ * (C) 2021 by Harald Welte <laforge@osmocom.org>
  *
  * All Rights Reserved
  *
@@ -59,6 +60,7 @@ static struct gprs_ns2_inst *vty_nsi = NULL;
 static struct osmo_fr_network *vty_fr_network = NULL;
 static struct llist_head binds;
 static struct llist_head nses;
+static struct llist_head ip_sns_default_binds;
 
 struct vty_bind {
 	struct llist_head list;
@@ -576,6 +578,7 @@ static int config_write_ns_bind(struct vty *vty)
 
 static int config_write_ns(struct vty *vty)
 {
+	struct vty_nse_bind *vbind;
 	unsigned int i;
 	int ret;
 
@@ -589,6 +592,10 @@ static int config_write_ns(struct vty *vty)
 	ret = config_write_ns_bind(vty);
 	if (ret)
 		return ret;
+
+	llist_for_each_entry(vbind, &ip_sns_default_binds, list) {
+		vty_out(vty, " ip-sns-default bind %s%s", vbind->vbind->name, VTY_NEWLINE);
+	}
 
 	ret = config_write_ns_nse(vty);
 	if (ret)
@@ -1583,6 +1590,95 @@ DEFUN(cfg_no_ns_nse_ip_sns_remote, cfg_no_ns_nse_ip_sns_remote_cmd,
 	return CMD_SUCCESS;
 }
 
+/* add all IP-SNS default binds to the given NSE */
+int ns2_sns_add_sns_default_binds(struct gprs_ns2_nse *nse)
+{
+	struct vty_nse_bind *vnse_bind;
+	int count = 0;
+
+	OSMO_ASSERT(nse->ll == GPRS_NS2_LL_UDP);
+	OSMO_ASSERT(nse->dialect == GPRS_NS2_DIALECT_SNS);
+
+	llist_for_each_entry(vnse_bind, &ip_sns_default_binds, list) {
+		struct gprs_ns2_vc_bind *bind = gprs_ns2_bind_by_name(vty_nsi, vnse_bind->vbind->name);
+		/* the bind might not yet created because "listen" is missing. */
+		if (!bind)
+			continue;
+		gprs_ns2_sns_add_bind(nse, bind);
+		count++;
+	}
+	return count;
+}
+
+DEFUN(cfg_ns_ip_sns_default_bind, cfg_ns_ip_sns_default_bind_cmd,
+      "ip-sns-default bind ID",
+      "Defaults for dynamically created NSEs created by IP-SNS in SGSN role\n"
+      "IP SNS binds\n"
+      "Name of NS udp bind whose IP endpoint will be used as IP-SNS local endpoint. Can be given multiple times.\n")
+{
+	struct vty_bind *vbind;
+	struct vty_nse_bind *vnse_bind;
+	const char *name = argv[0];
+
+	vbind = vty_bind_by_name(name);
+	if (!vbind) {
+		vty_out(vty, "Can not find the given bind '%s'%s", name, VTY_NEWLINE);
+		return CMD_WARNING;
+	}
+
+	if (vbind->ll != GPRS_NS2_LL_UDP) {
+		vty_out(vty, "ip-sns-default bind can only be used with UDP bind%s", VTY_NEWLINE);
+		return CMD_WARNING;
+	}
+
+	llist_for_each_entry(vnse_bind, &ip_sns_default_binds, list) {
+		if (vnse_bind->vbind == vbind)
+			return CMD_SUCCESS;
+	}
+
+	vnse_bind = talloc(vty_nsi, struct vty_nse_bind);
+	if (!vnse_bind)
+		return CMD_WARNING;
+	vnse_bind->vbind = vbind;
+
+	llist_add_tail(&vnse_bind->list, &ip_sns_default_binds);
+
+	return CMD_SUCCESS;
+}
+
+DEFUN(cfg_no_ns_ip_sns_default_bind, cfg_no_ns_ip_sns_default_bind_cmd,
+      "no ip-sns-default bind ID",
+      NO_STR "Defaults for dynamically created NSEs created by IP-SNS in SGSN role\n"
+      "IP SNS binds\n"
+      "Name of NS udp bind whose IP endpoint will be removed as IP-SNS local endpoint.\n")
+{
+	struct vty_bind *vbind;
+	struct vty_nse_bind *vnse_bind;
+	const char *name = argv[0];
+
+	vbind = vty_bind_by_name(name);
+	if (!vbind) {
+		vty_out(vty, "Can not find the given bind '%s'%s", name, VTY_NEWLINE);
+		return CMD_WARNING;
+	}
+
+	if (vbind->ll != GPRS_NS2_LL_UDP) {
+		vty_out(vty, "ip-sns-default bind can only be used with UDP bind%s", VTY_NEWLINE);
+		return CMD_WARNING;
+	}
+
+	llist_for_each_entry(vnse_bind, &ip_sns_default_binds, list) {
+		if (vnse_bind->vbind == vbind) {
+			llist_del(&vnse_bind->list);
+			talloc_free(vnse_bind);
+			return CMD_SUCCESS;
+		}
+	}
+
+	vty_out(vty, "Bind '%s' was not an ip-sns-default bind%s", name, VTY_NEWLINE);
+	return CMD_WARNING;
+}
+
 DEFUN(cfg_ns_nse_ip_sns_bind, cfg_ns_nse_ip_sns_bind_cmd,
       "ip-sns-bind BINDID",
       "IP SNS binds\n"
@@ -2059,6 +2155,7 @@ int gprs_ns2_vty_init_reduced(struct gprs_ns2_inst *nsi)
 	vty_nsi = nsi;
 	INIT_LLIST_HEAD(&binds);
 	INIT_LLIST_HEAD(&nses);
+	INIT_LLIST_HEAD(&ip_sns_default_binds);
 
 	vty_fr_network = osmo_fr_network_alloc(nsi);
 	if (!vty_fr_network)
@@ -2097,6 +2194,9 @@ int gprs_ns2_vty_init(struct gprs_ns2_inst *nsi)
 	install_lib_element(L_NS_NODE, &cfg_no_ns_nsei_cmd);
 	install_lib_element(L_NS_NODE, &cfg_ns_bind_cmd);
 	install_lib_element(L_NS_NODE, &cfg_no_ns_bind_cmd);
+
+	install_lib_element(L_NS_NODE, &cfg_ns_ip_sns_default_bind_cmd);
+	install_lib_element(L_NS_NODE, &cfg_no_ns_ip_sns_default_bind_cmd);
 
 	install_node(&ns_bind_node, NULL);
 	install_lib_element(L_NS_BIND_NODE, &cfg_ns_bind_listen_cmd);
