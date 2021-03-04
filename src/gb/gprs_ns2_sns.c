@@ -756,7 +756,7 @@ static void ns2_sns_st_size_onenter(struct osmo_fsm_inst *fi, uint32_t old_state
 	/* count how many bindings are available (only UDP binds) */
 	count = llist_count(&gss->binds);
 	if (count == 0) {
-		/* TODO: logging */
+		LOGPFSML(fi, LOGL_ERROR, "No local binds for this NSE -> cannot determine IP endpoints\n");
 		return;
 	}
 
