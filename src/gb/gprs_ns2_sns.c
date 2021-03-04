@@ -750,6 +750,31 @@ static void ns2_sns_st_bss_size(struct osmo_fsm_inst *fi, uint32_t event, void *
 	}
 }
 
+static int ns2_sns_count_num_local_ep(struct osmo_fsm_inst *fi, enum ns2_sns_type stype)
+{
+	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
+	struct ns2_sns_bind *sbind;
+	int count = 0;
+
+	llist_for_each_entry(sbind, &gss->binds, list) {
+		const struct osmo_sockaddr *sa = gprs_ns2_ip_bind_sockaddr(sbind->bind);
+		if (!sa)
+			continue;
+
+		switch (stype) {
+		case IPv4:
+			if (sa->u.sas.ss_family == AF_INET)
+				count++;
+			break;
+		case IPv6:
+			if (sa->u.sas.ss_family == AF_INET6)
+				count++;
+			break;
+		}
+	}
+	return count;
+}
+
 static void ns2_sns_compute_local_ep_from_binds(struct osmo_fsm_inst *fi)
 {
 	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
@@ -2019,7 +2044,6 @@ static void ns2_sns_st_sgsn_wait_config_ack_onenter(struct osmo_fsm_inst *fi, ui
 	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
 	OSMO_ASSERT(gss->role == GPRS_SNS_ROLE_SGSN);
 
-	ns2_sns_compute_local_ep_from_binds(fi);
 	/* transmit SGSN-oriented SNS-CONFIG */
 	ns2_tx_sns_config(gss->sns_nsvc, true, gss->ip4_local, gss->num_ip4_local,
 			  gss->ip6_local, gss->num_ip6_local);
@@ -2123,6 +2147,7 @@ static void ns2_sns_st_all_action_sgsn(struct osmo_fsm_inst *fi, uint32_t event,
 {
 	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
 	struct tlv_parsed *tp = NULL;
+	size_t num_local_eps, num_remote_eps;
 	uint8_t flag;
 	uint8_t cause;
 
@@ -2144,6 +2169,39 @@ static void ns2_sns_st_all_action_sgsn(struct osmo_fsm_inst *fi, uint32_t event,
 			ns2_tx_sns_size_ack(gss->sns_nsvc, &cause);
 			break;
 		}
+		if (TLVP_PRES_LEN(tp, NS_IE_IPv4_EP_NR, 2))
+			gss->num_max_ip4_remote = tlvp_val16be(tp, NS_IE_IPv4_EP_NR);
+		if (TLVP_PRES_LEN(tp, NS_IE_IPv6_EP_NR, 2))
+			gss->num_max_ip6_remote = tlvp_val16be(tp, NS_IE_IPv6_EP_NR);
+		/* decide if we go for IPv4 or IPv6 */
+		if (gss->num_max_ip6_remote && ns2_sns_count_num_local_ep(fi, IPv6)) {
+			gss->ip = IPv6;
+			num_local_eps = gss->num_ip6_local;
+			num_remote_eps = gss->num_max_ip6_remote;
+		} else if (gss->num_max_ip4_remote && ns2_sns_count_num_local_ep(fi, IPv4)) {
+			gss->ip = IPv4;
+			num_local_eps = gss->num_ip4_local;
+			num_remote_eps = gss->num_max_ip4_remote;
+		} else {
+			if (gss->num_ip4_local && !gss->num_max_ip4_remote)
+				cause = NS_CAUSE_INVAL_NR_IPv4_EP;
+			else
+				cause = NS_CAUSE_INVAL_NR_IPv6_EP;
+			ns2_tx_sns_size_ack(gss->sns_nsvc, &cause);
+			break;
+		}
+		ns2_sns_compute_local_ep_from_binds(fi);
+		/* ensure number of NS-VCs is sufficient for full mesh */
+		gss->num_max_nsvcs = tlvp_val16be(tp, NS_IE_MAX_NR_NSVC);
+		if (gss->num_max_nsvcs < num_remote_eps * num_local_eps) {
+			LOGPFSML(fi, LOGL_ERROR, "%zu local and %zu remote EPs, requires %zu NS-VC, "
+				 "but BSS supports only %zu maximum NS-VCs\n", num_local_eps,
+				 num_remote_eps, num_local_eps * num_remote_eps, gss->num_max_nsvcs);
+			cause = NS_CAUSE_INVAL_NR_NS_VC;
+			ns2_tx_sns_size_ack(gss->sns_nsvc, &cause);
+			break;
+		}
+		/* perform state reset, if requested */
 		flag = *TLVP_VAL(tp, NS_IE_RESET_FLAG);
 		if (flag & 1) {
 			struct gprs_ns2_vc *nsvc, *nsvc2;
