@@ -352,9 +352,9 @@ DEFUN(cfg_no_ns_nsei, cfg_no_ns_nsei_cmd,
 /* TODO: add fr/gre */
 DEFUN(cfg_ns_bind, cfg_ns_bind_cmd,
       "bind (fr|udp) ID",
-      "Binding\n"
+      "Configure local Bind\n"
       "Frame Relay\n" "UDP/IP\n"
-      "a unique identifier for this bind to reference NS-VCs\n"
+      "Unique identifier for this bind (to reference from NS-VCs, NSEs, ...)\n"
       )
 {
 	const char *nstype = argv[0];
@@ -398,8 +398,8 @@ DEFUN(cfg_ns_bind, cfg_ns_bind_cmd,
 DEFUN(cfg_no_ns_bind, cfg_no_ns_bind_cmd,
       "no bind ID",
       NO_STR
-      "Delete a binding\n"
-      "a unique identifier for this bind to reference NS-VCs\n"
+      "Delete a bind\n"
+      "Unique identifier for this bind\n"
       )
 {
 	struct vty_bind *vbind;
@@ -599,9 +599,9 @@ static struct cmd_node ns_bind_node = {
 
 DEFUN(cfg_ns_bind_listen, cfg_ns_bind_listen_cmd,
       "listen " VTY_IPV46_CMD " <1-65535>",
-      "Binding\n"
-      "IPv4 Address\n" "IPv6 Address\n"
-      "Port\n"
+      "Configure local IP + Port of this bind\n"
+      "Local IPv4 Address\n" "Local IPv6 Address\n"
+      "Local UDP Port\n"
       )
 {
 	struct vty_bind *vbind = vty->index;
@@ -1540,7 +1540,7 @@ DEFUN(cfg_no_ns_nse_ip_sns_remote, cfg_no_ns_nse_ip_sns_remote_cmd,
 DEFUN(cfg_ns_nse_ip_sns_bind, cfg_ns_nse_ip_sns_bind_cmd,
       "ip-sns-bind BINDID",
       "IP SNS binds\n"
-      "A udp bind which this SNS will be used. The bind must be already exists. Can be given multiple times.\n")
+      "Name of NS udp bind whose IP endpoint will be used as IP-SNS local endpoint. Can be given multiple times.\n")
 {
 	struct gprs_ns2_nse *nse = vty->index;
 	struct gprs_ns2_vc_bind *bind;
@@ -1641,7 +1641,7 @@ DEFUN(cfg_no_ns_nse_ip_sns_bind, cfg_no_ns_nse_ip_sns_bind_cmd,
       "no ip-sns-bind BINDID",
       NO_STR
       "IP SNS binds\n"
-      "A udp bind which this SNS will be used.\n")
+      "Name of NS udp bind whose IP endpoint will not be used as IP-SNS local endpoint\n")
 {
 	struct gprs_ns2_nse *nse = vty->index;
 	struct gprs_ns2_vc_bind *bind;
