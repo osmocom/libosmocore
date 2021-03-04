@@ -933,8 +933,9 @@ static enum ns2_cs ns2_create_vc_sns(struct gprs_ns2_vc_bind *bind,
 			LOGP(DLNS, LOGL_ERROR, "Failed to create NSE(%05u)\n", nsei);
 			return NS2_CS_ERROR;
 		}
-		gprs_ns2_sns_add_bind(nse, bind);
-		/* TODO: add (configured) list of other binds */
+		/* add configured list of default binds; if that fails, use only current bind */
+		if (!ns2_sns_add_sns_default_binds(nse))
+			gprs_ns2_sns_add_bind(nse, bind);
 	} else {
 		/* nsei already known */
 		if (nse->ll != bind->ll) {

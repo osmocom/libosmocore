@@ -388,3 +388,6 @@ void ns2_nse_notify_unblocked(struct gprs_ns2_vc *nsvc, bool unblocked);
 enum gprs_ns2_vc_mode ns2_dialect_to_vc_mode(enum gprs_ns2_dialect dialect);
 int ns2_count_transfer_cap(struct gprs_ns2_nse *nse,
 			   uint16_t bvci);
+
+/* vty */
+int ns2_sns_add_sns_default_binds(struct gprs_ns2_nse *nse);
