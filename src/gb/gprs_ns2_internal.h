@@ -182,6 +182,9 @@ struct gprs_ns2_nse {
 
 	/*! MTU of a NS PDU. This is the lowest MTU of all NSVCs */
 	uint16_t mtu;
+
+	/*! are we implementing the SGSN role? */
+	bool ip_sns_role_sgsn;
 };
 
 /*! Structure representing a single NS-VC */
