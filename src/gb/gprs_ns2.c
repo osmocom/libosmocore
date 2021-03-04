@@ -776,9 +776,11 @@ struct gprs_ns2_vc *gprs_ns2_nsvc_by_nsvci(struct gprs_ns2_inst *nsi, uint16_t n
 /*! Create a NS Entity within given NS instance.
  *  \param[in] nsi NS instance in which to create NS Entity
  *  \param[in] nsei NS Entity Identifier of to-be-created NSE
+ *  \param[in] local_sgsn_role Does local side implement SGSN role?
  *  \returns newly-allocated NS-E in successful case; NULL on error */
-struct gprs_ns2_nse *gprs_ns2_create_nse(struct gprs_ns2_inst *nsi, uint16_t nsei,
-					 enum gprs_ns2_ll linklayer, enum gprs_ns2_dialect dialect)
+struct gprs_ns2_nse *gprs_ns2_create_nse2(struct gprs_ns2_inst *nsi, uint16_t nsei,
+					  enum gprs_ns2_ll linklayer, enum gprs_ns2_dialect dialect,
+					  bool local_sgsn_role)
 {
 	struct gprs_ns2_nse *nse;
 
@@ -792,6 +794,7 @@ struct gprs_ns2_nse *gprs_ns2_create_nse(struct gprs_ns2_inst *nsi, uint16_t nse
 	if (!nse)
 		return NULL;
 	nse->dialect = GPRS_NS2_DIALECT_UNDEF;
+	nse->sgsn_role = local_sgsn_role;
 
 	if (ns2_nse_set_dialect(nse, dialect) < 0) {
 		talloc_free(nse);
@@ -820,7 +823,10 @@ int ns2_nse_set_dialect(struct gprs_ns2_nse *nse, enum gprs_ns2_dialect dialect)
 	case GPRS_NS2_DIALECT_UNDEF:
 		if (dialect == GPRS_NS2_DIALECT_SNS) {
 			snprintf(sns, sizeof(sns), "NSE%05u-SNS", nse->nsei);
-			nse->bss_sns_fi = ns2_sns_bss_fsm_alloc(nse, sns);
+			if (nse->sgsn_role)
+				nse->bss_sns_fi = ns2_sns_sgsn_fsm_alloc(nse, sns);
+			else
+				nse->bss_sns_fi = ns2_sns_bss_fsm_alloc(nse, sns);
 			if (!nse->bss_sns_fi)
 				return -1;
 		}
@@ -839,6 +845,16 @@ int ns2_nse_set_dialect(struct gprs_ns2_nse *nse, enum gprs_ns2_dialect dialect)
 	}
 
 	return 0;
+}
+
+/*! Create a NS Entity within given NS instance.
+ *  \param[in] nsi NS instance in which to create NS Entity
+ *  \param[in] nsei NS Entity Identifier of to-be-created NSE
+ *  \returns newly-allocated NS-E in successful case; NULL on error */
+struct gprs_ns2_nse *gprs_ns2_create_nse(struct gprs_ns2_inst *nsi, uint16_t nsei,
+					 enum gprs_ns2_ll linklayer, enum gprs_ns2_dialect dialect)
+{
+	return gprs_ns2_create_nse2(nsi, nsei, linklayer, dialect, false);
 }
 
 /*! Return the NSEI
