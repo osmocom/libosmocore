@@ -106,7 +106,14 @@ enum node_type {
 	 * When adding new nodes to the libosmocore project, these nodes can be
 	 * used to avoid ABI changes for unrelated projects.
 	 */
+	RESERVED1_NODE,		/*!< Reserved for later extensions */
+	RESERVED2_NODE,		/*!< Reserved for later extensions */
 	RESERVED3_NODE,		/*!< Reserved for later extensions */
+	RESERVED4_NODE,		/*!< Reserved for later extensions */
+	RESERVED5_NODE,		/*!< Reserved for later extensions */
+	RESERVED6_NODE,		/*!< Reserved for later extensions */
+	RESERVED7_NODE,		/*!< Reserved for later extensions */
+	RESERVED8_NODE,		/*!< Reserved for later extensions */
 
 	_LAST_OSMOVTY_NODE
 };
