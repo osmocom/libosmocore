@@ -270,15 +270,19 @@ DEFUN(cfg_ns_timer, cfg_ns_timer_cmd,
 }
 
 DEFUN(cfg_ns_nsei, cfg_ns_nsei_cmd,
-      "nse <0-65535>",
+      "nse <0-65535> [sgsn-role]",
       "Persistent NS Entity\n"
       "NS Entity ID (NSEI)\n"
+      "Create NSE in SGSN role (default: BSS)\n"
       )
 {
 	struct gprs_ns2_nse *nse;
 	struct vty_nse *vnse;
 	uint16_t nsei = atoi(argv[0]);
+	bool sgsn_role = false;
 	bool free_vnse = false;
+	if (argc > 1 && !strcmp(argv[1], "sgsn-role"))
+		sgsn_role = true;
 
 	vnse = vty_nse_by_nsei(nsei);
 	if (!vnse) {
@@ -292,7 +296,8 @@ DEFUN(cfg_ns_nsei, cfg_ns_nsei_cmd,
 
 	nse = gprs_ns2_nse_by_nsei(vty_nsi, nsei);
 	if (!nse) {
-		nse = gprs_ns2_create_nse(vty_nsi, nsei, GPRS_NS2_LL_UNDEF, GPRS_NS2_DIALECT_UNDEF);
+		nse = gprs_ns2_create_nse2(vty_nsi, nsei, GPRS_NS2_LL_UNDEF, GPRS_NS2_DIALECT_UNDEF,
+					   sgsn_role);
 		if (!nse) {
 			vty_out(vty, "Failed to create NSE!%s", VTY_NEWLINE);
 			goto err;

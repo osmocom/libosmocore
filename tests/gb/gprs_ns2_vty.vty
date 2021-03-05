@@ -18,7 +18,7 @@ OsmoNSdummy(config)# ns
 OsmoNSdummy(config-ns)# list
 ...
   timer (tns-block|tns-block-retries|tns-reset|tns-reset-retries|tns-test|tns-alive|tns-alive-retries|tsns-prov|tsns-size-retries|tsns-config-retries) <0-65535>
-  nse <0-65535>
+  nse <0-65535> [sgsn-role]
   no nse <0-65535>
   bind (fr|udp) ID
   no bind ID
