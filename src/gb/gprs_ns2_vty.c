@@ -900,7 +900,7 @@ DEFUN(cfg_ns_nse_nsvc_fr, cfg_ns_nse_nsvc_fr_cmd,
 	}
 
 	if (nse->dialect == GPRS_NS2_DIALECT_UNDEF) {
-		nse->dialect = GPRS_NS2_DIALECT_STATIC_RESETBLOCK;
+		ns2_nse_set_dialect(nse, GPRS_NS2_DIALECT_STATIC_RESETBLOCK);
 		dialect_modified = true;
 	}
 
@@ -935,7 +935,7 @@ err:
 	if (ll_modified)
 		nse->ll = GPRS_NS2_LL_UNDEF;
 	if (dialect_modified)
-		nse->dialect = GPRS_NS2_DIALECT_UNDEF;
+		ns2_nse_set_dialect(nse, GPRS_NS2_DIALECT_UNDEF);
 
 	return CMD_WARNING;
 }
@@ -986,7 +986,7 @@ DEFUN(cfg_no_ns_nse_nsvc_fr_dlci, cfg_no_ns_nse_nsvc_fr_dlci_cmd,
 	gprs_ns2_free_nsvc(nsvc);
 	if (llist_empty(&nse->nsvc)) {
 		nse->ll = GPRS_NS2_LL_UNDEF;
-		nse->dialect = GPRS_NS2_DIALECT_UNDEF;
+		ns2_nse_set_dialect(nse, GPRS_NS2_DIALECT_UNDEF);
 	}
 
 	return CMD_SUCCESS;
@@ -1032,7 +1032,7 @@ DEFUN(cfg_no_ns_nse_nsvci, cfg_no_ns_nse_nsvci_cmd,
 	gprs_ns2_free_nsvc(nsvc);
 	if (llist_empty(&nse->nsvc)) {
 		nse->ll = GPRS_NS2_LL_UNDEF;
-		nse->dialect = GPRS_NS2_DIALECT_UNDEF;
+		ns2_nse_set_dialect(nse, GPRS_NS2_DIALECT_UNDEF);
 	}
 
 	return CMD_SUCCESS;
@@ -1056,7 +1056,7 @@ static int ns_nse_nsvc_udp_cmds(struct vty *vty, const char *bind_name, const ch
 	}
 
 	if (nse->dialect == GPRS_NS2_DIALECT_UNDEF) {
-		nse->dialect = GPRS_NS2_DIALECT_STATIC_ALIVE;
+		ns2_nse_set_dialect(nse, GPRS_NS2_DIALECT_STATIC_ALIVE);
 		dialect_modified = true;
 	}
 
@@ -1117,7 +1117,7 @@ err:
 	if (ll_modified)
 		nse->ll = GPRS_NS2_LL_UNDEF;
 	if (dialect_modified)
-		nse->dialect = GPRS_NS2_DIALECT_UNDEF;
+		ns2_nse_set_dialect(nse, GPRS_NS2_DIALECT_UNDEF);
 	return CMD_WARNING;
 }
 
@@ -1232,7 +1232,7 @@ DEFUN(cfg_no_ns_nse_nsvc_udp, cfg_no_ns_nse_nsvc_udp_cmd,
 	gprs_ns2_free_nsvc(nsvc);
 	if (llist_empty(&nse->nsvc)) {
 		nse->ll = GPRS_NS2_LL_UNDEF;
-		nse->dialect = GPRS_NS2_DIALECT_UNDEF;
+		ns2_nse_set_dialect(nse, GPRS_NS2_DIALECT_UNDEF);
 	}
 
 	return CMD_SUCCESS;
@@ -1267,7 +1267,7 @@ DEFUN(cfg_ns_nse_nsvc_ipa, cfg_ns_nse_nsvc_ipa_cmd,
 	}
 
 	if (nse->dialect == GPRS_NS2_DIALECT_UNDEF) {
-		nse->dialect = GPRS_NS2_DIALECT_IPACCESS;
+		ns2_nse_set_dialect(nse, GPRS_NS2_DIALECT_IPACCESS);
 		dialect_modified = true;
 	}
 
@@ -1317,7 +1317,7 @@ err:
 	if (ll_modified)
 		nse->ll = GPRS_NS2_LL_UNDEF;
 	if (dialect_modified)
-		nse->dialect = GPRS_NS2_DIALECT_UNDEF;
+		ns2_nse_set_dialect(nse, GPRS_NS2_DIALECT_UNDEF);
 	return CMD_WARNING;
 }
 
@@ -1407,7 +1407,7 @@ DEFUN(cfg_no_ns_nse_nsvc_ipa, cfg_no_ns_nse_nsvc_ipa_cmd,
 	gprs_ns2_free_nsvc(nsvc);
 	if (llist_empty(&nse->nsvc)) {
 		nse->ll = GPRS_NS2_LL_UNDEF;
-		nse->dialect = GPRS_NS2_DIALECT_UNDEF;
+		ns2_nse_set_dialect(nse, GPRS_NS2_DIALECT_UNDEF);
 	}
 
 	return CMD_SUCCESS;
@@ -1436,12 +1436,8 @@ DEFUN(cfg_ns_nse_ip_sns_remote, cfg_ns_nse_ip_sns_remote_cmd,
 	}
 
 	if (nse->dialect == GPRS_NS2_DIALECT_UNDEF) {
-		char sns[16];
-		snprintf(sns, sizeof(sns), "NSE%05u-SNS", nse->nsei);
-		nse->bss_sns_fi = ns2_sns_bss_fsm_alloc(nse, sns);
-		if (!nse->bss_sns_fi)
+		if (ns2_nse_set_dialect(nse, GPRS_NS2_DIALECT_SNS) < 0)
 			goto err;
-		nse->dialect = GPRS_NS2_DIALECT_SNS;
 		dialect_modified = true;
 	}
 
@@ -1481,7 +1477,7 @@ err:
 	if (ll_modified)
 		nse->ll = GPRS_NS2_LL_UNDEF;
 	if (dialect_modified)
-		nse->dialect = GPRS_NS2_DIALECT_UNDEF;
+		ns2_nse_set_dialect(nse, GPRS_NS2_DIALECT_UNDEF);
 	return CMD_WARNING;
 }
 
@@ -1528,10 +1524,8 @@ DEFUN(cfg_no_ns_nse_ip_sns_remote, cfg_no_ns_nse_ip_sns_remote_cmd,
 		return CMD_SUCCESS;
 	} else {
 		/* clean up nse to allow other nsvc commands */
-		osmo_fsm_inst_term(nse->bss_sns_fi, OSMO_FSM_TERM_REQUEST, NULL);
-		nse->bss_sns_fi = NULL;
+		ns2_nse_set_dialect(nse, GPRS_NS2_DIALECT_UNDEF);
 		nse->ll = GPRS_NS2_LL_UNDEF;
-		nse->dialect = GPRS_NS2_DIALECT_UNDEF;
 	}
 
 	return CMD_SUCCESS;
@@ -1557,12 +1551,8 @@ DEFUN(cfg_ns_nse_ip_sns_bind, cfg_ns_nse_ip_sns_bind_cmd,
 	}
 
 	if (nse->dialect == GPRS_NS2_DIALECT_UNDEF) {
-		char sns[16];
-		snprintf(sns, sizeof(sns), "NSE%05u-SNS", nse->nsei);
-		nse->bss_sns_fi = ns2_sns_bss_fsm_alloc(nse, sns);
-		if (!nse->bss_sns_fi)
+		if (ns2_nse_set_dialect(nse, GPRS_NS2_DIALECT_SNS) < 0)
 			goto err;
-		nse->dialect = GPRS_NS2_DIALECT_SNS;
 		dialect_modified = true;
 	}
 
@@ -1632,7 +1622,7 @@ err:
 	if (ll_modified)
 		nse->ll = GPRS_NS2_LL_UNDEF;
 	if (dialect_modified)
-		nse->dialect = GPRS_NS2_DIALECT_UNDEF;
+		ns2_nse_set_dialect(nse, GPRS_NS2_DIALECT_UNDEF);
 
 	return CMD_WARNING;
 }
@@ -1698,10 +1688,8 @@ DEFUN(cfg_no_ns_nse_ip_sns_bind, cfg_no_ns_nse_ip_sns_bind_cmd,
 
 	if (!vty_nse_check_sns(nse)) {
 		/* clean up nse to allow other nsvc commands */
-		osmo_fsm_inst_term(nse->bss_sns_fi, OSMO_FSM_TERM_REQUEST, NULL);
-		nse->bss_sns_fi = NULL;
+		ns2_nse_set_dialect(nse, GPRS_NS2_DIALECT_UNDEF);
 		nse->ll = GPRS_NS2_LL_UNDEF;
-		nse->dialect = GPRS_NS2_DIALECT_UNDEF;
 	}
 
 	return CMD_SUCCESS;

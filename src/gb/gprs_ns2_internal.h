@@ -306,6 +306,7 @@ void ns2_prim_status_ind(struct gprs_ns2_nse *nse,
 			 enum gprs_ns2_affecting_cause cause);
 void ns2_nse_notify_alive(struct gprs_ns2_vc *nsvc, bool alive);
 void ns2_nse_update_mtu(struct gprs_ns2_nse *nse);
+int ns2_nse_set_dialect(struct gprs_ns2_nse *nse, enum gprs_ns2_dialect dialect);
 
 /* message */
 int ns2_validate(struct gprs_ns2_vc *nsvc,

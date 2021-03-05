@@ -781,7 +781,6 @@ struct gprs_ns2_nse *gprs_ns2_create_nse(struct gprs_ns2_inst *nsi, uint16_t nse
 					 enum gprs_ns2_ll linklayer, enum gprs_ns2_dialect dialect)
 {
 	struct gprs_ns2_nse *nse;
-	char sns[16];
 
 	nse = gprs_ns2_nse_by_nsei(nsi, nsei);
 	if (nse) {
@@ -792,17 +791,13 @@ struct gprs_ns2_nse *gprs_ns2_create_nse(struct gprs_ns2_inst *nsi, uint16_t nse
 	nse = talloc_zero(nsi, struct gprs_ns2_nse);
 	if (!nse)
 		return NULL;
+	nse->dialect = GPRS_NS2_DIALECT_UNDEF;
 
-	if (dialect == GPRS_NS2_DIALECT_SNS) {
-		snprintf(sns, sizeof(sns), "NSE%05u-SNS", nsei);
-		nse->bss_sns_fi = ns2_sns_bss_fsm_alloc(nse, sns);
-		if (!nse->bss_sns_fi) {
-			talloc_free(nse);
-			return NULL;
-		}
+	if (ns2_nse_set_dialect(nse, dialect) < 0) {
+		talloc_free(nse);
+		return NULL;
 	}
 
-	nse->dialect = dialect;
 	nse->ll = linklayer;
 	nse->nsei = nsei;
 	nse->nsi = nsi;
@@ -812,6 +807,38 @@ struct gprs_ns2_nse *gprs_ns2_create_nse(struct gprs_ns2_inst *nsi, uint16_t nse
 	INIT_LLIST_HEAD(&nse->nsvc);
 
 	return nse;
+}
+
+int ns2_nse_set_dialect(struct gprs_ns2_nse *nse, enum gprs_ns2_dialect dialect)
+{
+	char sns[16];
+
+	if (nse->dialect == dialect)
+		return 0;
+
+	switch (nse->dialect) {
+	case GPRS_NS2_DIALECT_UNDEF:
+		if (dialect == GPRS_NS2_DIALECT_SNS) {
+			snprintf(sns, sizeof(sns), "NSE%05u-SNS", nse->nsei);
+			nse->bss_sns_fi = ns2_sns_bss_fsm_alloc(nse, sns);
+			if (!nse->bss_sns_fi)
+				return -1;
+		}
+		nse->dialect = dialect;
+		break;
+	default:
+		if (dialect == GPRS_NS2_DIALECT_UNDEF) {
+			if (nse->bss_sns_fi)
+				osmo_fsm_inst_term(nse->bss_sns_fi, OSMO_FSM_TERM_REQUEST, NULL);
+			nse->bss_sns_fi = NULL;
+			nse->dialect = GPRS_NS2_DIALECT_UNDEF;
+		} else {
+			/* we don't support arbitrary changes without going through UNDEF first */
+			return -EPERM;
+		}
+	}
+
+	return 0;
 }
 
 /*! Return the NSEI
