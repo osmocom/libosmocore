@@ -245,7 +245,9 @@ static void ns2_st_unconfigured(struct osmo_fsm_inst *fi, uint32_t event, void *
 	case GPRS_NS2_EV_REQ_START:
 		switch (priv->nsvc->mode) {
 		case GPRS_NS2_VC_MODE_ALIVE:
-			osmo_fsm_inst_state_chg(fi, GPRS_NS2_ST_RECOVERING, nsi->timeout[NS_TOUT_TNS_ALIVE], NS_TOUT_TNS_ALIVE);
+			/* In IP-SNS, the NS-VC are assumed initially alive, until the alive
+			 * procedure should fail at some future point */
+			osmo_fsm_inst_state_chg(fi, GPRS_NS2_ST_UNBLOCKED, 0, 0);
 			break;
 		case GPRS_NS2_VC_MODE_BLOCKRESET:
 			osmo_fsm_inst_state_chg(fi, GPRS_NS2_ST_RESET, nsi->timeout[NS_TOUT_TNS_RESET], NS_TOUT_TNS_RESET);
@@ -428,17 +430,13 @@ static void ns2_st_alive_onenter(struct osmo_fsm_inst *fi, uint32_t old_state)
 
 	ns2_tx_alive(priv->nsvc);
 	ns2_nse_notify_unblocked(priv->nsvc, false);
-}
-
-static void ns2_st_alive_onleave(struct osmo_fsm_inst *fi, uint32_t next_state)
-{
-	start_test_procedure(fi->priv);
+	start_test_procedure(priv);
 }
 
 static const struct osmo_fsm_state ns2_vc_states[] = {
 	[GPRS_NS2_ST_UNCONFIGURED] = {
 		.in_event_mask = S(GPRS_NS2_EV_REQ_START),
-		.out_state_mask = S(GPRS_NS2_ST_RESET) | S(GPRS_NS2_ST_RECOVERING),
+		.out_state_mask = S(GPRS_NS2_ST_RESET) | S(GPRS_NS2_ST_UNBLOCKED),
 		.name = "UNCONFIGURED",
 		.action = ns2_st_unconfigured,
 		.onenter = ns2_st_unconfigured_onenter,
@@ -483,7 +481,6 @@ static const struct osmo_fsm_state ns2_vc_states[] = {
 		.name = "RECOVERING",
 		.action = ns2_st_alive,
 		.onenter = ns2_st_alive_onenter,
-		.onleave = ns2_st_alive_onleave,
 	},
 };
 
