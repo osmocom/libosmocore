@@ -914,6 +914,9 @@ static void ns2_sns_st_bss_size_onenter(struct osmo_fsm_inst *fi, uint32_t old_s
 		gss->sns_nsvc = ns2_ip_bind_connect(bind, gss->nse, remote);
 		if (!gss->sns_nsvc)
 			return;
+		/* A pre-configured endpoint shall not be used for NSE data or signalling traffic
+		 * (with the exception of Size and Configuration procedures) unless it is configured
+		 * by the SGSN using the auto-configuration procedures */
 		gss->sns_nsvc->sns_only = true;
 	}
 

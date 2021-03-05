@@ -220,6 +220,7 @@ struct gprs_ns2_vc {
 	void *priv;
 
 	bool nsvci_is_valid;
+	/*! should this NS-VC only be used for SNS-SIZE and SNS-CONFIG? */
 	bool sns_only;
 
 	struct rate_ctr_group *ctrg;

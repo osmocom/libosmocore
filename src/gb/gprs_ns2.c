@@ -1422,6 +1422,9 @@ void gprs_ns2_start_alive_all_nsvcs(struct gprs_ns2_nse *nse)
 	OSMO_ASSERT(nse);
 
 	llist_for_each_entry(nsvc, &nse->nsvc, list) {
+		/* A pre-configured endpoint shall not be used for NSE data or signalling traffic
+		 * (with the exception of Size and Configuration procedures) unless it is
+		 * configured by the SGSN using the auto-configuration procedures */
 		if (nsvc->sns_only)
 			continue;
 
