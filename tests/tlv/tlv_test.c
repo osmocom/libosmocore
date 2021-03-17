@@ -423,6 +423,37 @@ static void test_tlv_parser_bounds()
 	OSMO_ASSERT(TLVP_VAL(&dec, 0x23) == NULL);
 }
 
+static void test_tlv_lens()
+{
+	uint16_t buf_len;
+	uint8_t buf[512];
+	uint8_t val[512] = { 0 };
+	uint16_t x;
+
+
+	for (x = 0; x < 16; x++) {
+		buf_len  = lv_put(buf, x, val) - buf;
+		OSMO_ASSERT(buf_len == LV_GROSS_LEN(x));
+		buf_len = tlv_put(buf, 0x23, x, val) - buf;
+		OSMO_ASSERT(buf_len == TLV_GROSS_LEN(x));
+		buf_len = tlv16_put(buf, 0x23, x, (uint16_t *) val) - buf;
+		OSMO_ASSERT(buf_len == TLV16_GROSS_LEN(x));
+		buf_len = tl16v_put(buf, 0x23, x, val) - buf;
+		OSMO_ASSERT(buf_len == TL16V_GROSS_LEN(x));
+		buf_len = t16lv_put(buf, 0x2342, x, val) - buf;
+		OSMO_ASSERT(buf_len == T16LV_GROSS_LEN(x));
+		buf_len = tvlv_put(buf, 0x23, x, val) - buf;
+		OSMO_ASSERT(buf_len == TVLV_GROSS_LEN(x));
+	}
+
+	for (x = 250; x < 300; x++) {
+		buf_len = tl16v_put(buf, 0x23, x, val) - buf;
+		OSMO_ASSERT(buf_len == TL16V_GROSS_LEN(x));
+		buf_len = tvlv_put(buf, 0x23, x, val) - buf;
+		OSMO_ASSERT(buf_len == TVLV_GROSS_LEN(x));
+	}
+}
+
 int main(int argc, char **argv)
 {
 	//osmo_init_logging2(ctx, &info);
@@ -431,6 +462,7 @@ int main(int argc, char **argv)
 	test_tlv_repeated_ie();
 	test_tlv_encoder();
 	test_tlv_parser_bounds();
+	test_tlv_lens();
 
 	printf("Done.\n");
 	return EXIT_SUCCESS;

@@ -148,7 +148,7 @@ static inline uint8_t *tl16v_put(uint8_t *buf, uint8_t tag, uint16_t len,
 	*buf++ = len >> 8;
 	*buf++ = len & 0xff;
 	memcpy(buf, val, len);
-	return buf + len*2;
+	return buf + len;
 }
 
 /*! put (append) a TL16 field. */
@@ -168,7 +168,7 @@ static inline uint8_t *t16lv_put(uint8_t *buf, uint16_t tag, uint8_t len,
 	*buf++ = tag & 0xff;
 	*buf++ = len;
 	memcpy(buf, val, len);
-	return buf + len + 2;
+	return buf + len;
 }
 
 /*! put (append) a TvLV field */
