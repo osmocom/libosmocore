@@ -120,6 +120,7 @@ static void stat_test(void)
 	value = osmo_stat_item_get_last(statg->items[TEST_A_ITEM]);
 	OSMO_ASSERT(value == -1);
 
+	fprintf(stderr, "osmo_stat_item_get_next rc == 0\n");
 	rc = osmo_stat_item_get_next(statg->items[TEST_A_ITEM], &rd_a, &value);
 	OSMO_ASSERT(rc == 0);
 
@@ -128,13 +129,16 @@ static void stat_test(void)
 	value = osmo_stat_item_get_last(statg->items[TEST_A_ITEM]);
 	OSMO_ASSERT(value == 1);
 
+	fprintf(stderr, "osmo_stat_item_get_next rc > 0\n");
 	rc = osmo_stat_item_get_next(statg->items[TEST_A_ITEM], &rd_a, &value);
 	OSMO_ASSERT(rc > 0);
 	OSMO_ASSERT(value == 1);
 
+	fprintf(stderr, "osmo_stat_item_get_next rc == 0\n");
 	rc = osmo_stat_item_get_next(statg->items[TEST_A_ITEM], &rd_a, &value);
 	OSMO_ASSERT(rc == 0);
 
+	fprintf(stderr, "osmo_stat_item_get_next rc > 0\n");
 	for (i = 2; i <= 32; i++) {
 		osmo_stat_item_set(statg->items[TEST_A_ITEM], i);
 		osmo_stat_item_set(statg->items[TEST_B_ITEM], 1000 + i);
@@ -220,17 +224,20 @@ static void stat_test(void)
 	rc = osmo_stat_item_discard(statg->items[TEST_A_ITEM], &rd_a);
 	OSMO_ASSERT(rc > 0);
 
+	fprintf(stderr, "osmo_stat_item_get_next rc == 0\n");
 	rc = osmo_stat_item_discard(statg->items[TEST_A_ITEM], &rd_a);
 	OSMO_ASSERT(rc == 0);
 
 	rc = osmo_stat_item_get_next(statg->items[TEST_A_ITEM], &rd_a, &value);
 	OSMO_ASSERT(rc == 0);
 
+	fprintf(stderr, "osmo_stat_item_get_next rc > 0\n");
 	osmo_stat_item_set(statg->items[TEST_A_ITEM], 98);
 	rc = osmo_stat_item_get_next(statg->items[TEST_A_ITEM], &rd_a, &value);
 	OSMO_ASSERT(rc > 0);
 	OSMO_ASSERT(value == 98);
 
+	fprintf(stderr, "osmo_stat_item_get_next rc == 0\n");
 	rc = osmo_stat_item_get_next(statg->items[TEST_A_ITEM], &rd_a, &value);
 	OSMO_ASSERT(rc == 0);
 

@@ -60,6 +60,7 @@
 #include <osmocom/core/talloc.h>
 #include <osmocom/core/timer.h>
 #include <osmocom/core/stat_item.h>
+#include <osmocom/core/logging.h>
 
 /*! global list of stat_item groups */
 static LLIST_HEAD(osmo_stat_item_groups);
@@ -241,6 +242,10 @@ int osmo_stat_item_get_next(const struct osmo_stat_item *item, int32_t *next_idx
 	*value = item_value->value;
 
 	idx_delta = item_value->id + 1 - *next_idx;
+
+	if (idx_delta > 1) {
+		LOGP(DLSTATS, LOGL_ERROR, "%s: %d stats values skipped\n", item->desc->name, idx_delta - 1);
+	}
 
 	*next_idx = item_value->id + 1;
 
