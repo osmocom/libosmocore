@@ -8,11 +8,13 @@ LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/gsm/libosmogsm.la
 if ENABLE_UTILITIES
 EXTRA_DIST = conv_gen.py conv_codes_gsm.py
 
-bin_PROGRAMS += osmo-arfcn osmo-auc-gen osmo-config-merge
+bin_PROGRAMS += osmo-arfcn osmo-auc-gen osmo-config-merge osmo-aka-verify
 
 osmo_arfcn_SOURCES = osmo-arfcn.c
 
 osmo_auc_gen_SOURCES = osmo-auc-gen.c
+
+osmo_aka_verify_SOURCES = osmo-aka-verify.c
 
 osmo_config_merge_SOURCES = osmo-config-merge.c
 osmo_config_merge_LDADD = $(LDADD) $(TALLOC_LIBS)
