@@ -1870,18 +1870,15 @@ static void dump_nse(struct vty *vty, const struct gprs_ns2_nse *nse, bool stats
 {
 	struct gprs_ns2_vc *nsvc;
 
+	if (persistent_only && !nse->persistent)
+		return;
+
 	vty_out(vty, "NSEI %05u: %s, %s%s", nse->nsei, gprs_ns2_lltype_str(nse->ll),
 		nse->alive ? "ALIVE" : "DEAD", VTY_NEWLINE);
 
 	ns2_sns_dump_vty(vty, " ", nse, stats);
-	llist_for_each_entry(nsvc, &nse->nsvc, list) {
-		if (persistent_only) {
-			if (nsvc->persistent)
-				ns2_vty_dump_nsvc(vty, nsvc, stats);
-		} else {
-			ns2_vty_dump_nsvc(vty, nsvc, stats);
-		}
-	}
+	llist_for_each_entry(nsvc, &nse->nsvc, list)
+		ns2_vty_dump_nsvc(vty, nsvc, stats);
 }
 
 static void dump_bind(struct vty *vty, const struct gprs_ns2_vc_bind *bind, bool stats)
