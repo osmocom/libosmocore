@@ -1869,6 +1869,7 @@ void ns2_vty_dump_nsvc(struct vty *vty, struct gprs_ns2_vc *nsvc, bool stats)
 static void dump_nse(struct vty *vty, const struct gprs_ns2_nse *nse, bool stats, bool persistent_only)
 {
 	struct gprs_ns2_vc *nsvc;
+	unsigned int nsvcs = 0;
 
 	if (persistent_only && !nse->persistent)
 		return;
@@ -1877,6 +1878,10 @@ static void dump_nse(struct vty *vty, const struct gprs_ns2_nse *nse, bool stats
 		nse->alive ? "ALIVE" : "DEAD", VTY_NEWLINE);
 
 	ns2_sns_dump_vty(vty, " ", nse, stats);
+	llist_for_each_entry(nsvc, &nse->nsvc, list) {
+		nsvcs++;
+	}
+	vty_out(vty, "  %u NS-VC:%s", nsvcs, VTY_NEWLINE);
 	llist_for_each_entry(nsvc, &nse->nsvc, list)
 		ns2_vty_dump_nsvc(vty, nsvc, stats);
 }
