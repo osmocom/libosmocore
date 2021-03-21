@@ -2044,6 +2044,7 @@ DEFUN(nsvc_block, nsvc_block_cmd,
 {
 	struct gprs_ns2_inst *nsi = vty_nsi;
 	struct gprs_ns2_vc *nsvc;
+	int rc;
 
 	uint16_t id = atoi(argv[0]);
 
@@ -2054,11 +2055,34 @@ DEFUN(nsvc_block, nsvc_block_cmd,
 	}
 
 	if (!strcmp(argv[1], "block")) {
-		ns2_vc_block(nsvc);
+		rc = ns2_vc_block(nsvc);
+		switch (rc) {
+		case 0:
+			vty_out(vty, "The NS-VC %05u will be blocked.%s", id, VTY_NEWLINE);
+			return CMD_SUCCESS;
+		case -EALREADY:
+			vty_out(vty, "The NS-VC %05u is already blocked.%s", id, VTY_NEWLINE);
+			return CMD_ERR_NOTHING_TODO;
+		default:
+			vty_out(vty, "An unknown error %d happend on NS-VC %05u.%s", rc, id, VTY_NEWLINE);
+			return CMD_WARNING;
+		}
 	} else if (!strcmp(argv[1], "unblock")) {
-		ns2_vc_unblock(nsvc);
+		rc = ns2_vc_unblock(nsvc);
+		switch (rc) {
+		case 0:
+			vty_out(vty, "The NS-VC %05u will be unblocked.%s", id, VTY_NEWLINE);
+			return CMD_SUCCESS;
+		case -EALREADY:
+			vty_out(vty, "The NS-VC %05u is already unblocked.%s", id, VTY_NEWLINE);
+			return CMD_ERR_NOTHING_TODO;
+		default:
+			vty_out(vty, "An unknown error %d happend on NS-VC %05u.%s", rc, id, VTY_NEWLINE);
+			return CMD_WARNING;
+		}
 	} else {
 		ns2_vc_reset(nsvc);
+		vty_out(vty, "The NS-VC %05u has been resetted.%s", id, VTY_NEWLINE);
 	}
 
 	return CMD_SUCCESS;
