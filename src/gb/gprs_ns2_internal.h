@@ -396,6 +396,7 @@ int ns2_vc_is_alive(struct gprs_ns2_vc *nsvc);
 int ns2_vc_is_unblocked(struct gprs_ns2_vc *nsvc);
 int ns2_vc_block(struct gprs_ns2_vc *nsvc);
 int ns2_vc_unblock(struct gprs_ns2_vc *nsvc);
+void ns2_vty_dump_nsvc(struct vty *vty, struct gprs_ns2_vc *nsvc, bool stats);
 
 /* nse */
 void ns2_nse_notify_unblocked(struct gprs_ns2_vc *nsvc, bool unblocked);

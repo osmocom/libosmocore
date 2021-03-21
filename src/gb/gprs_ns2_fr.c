@@ -135,7 +135,7 @@ static void free_vc(struct gprs_ns2_vc *nsvc)
 	nsvc->priv = NULL;
 }
 
-static void dump_vty(const struct gprs_ns2_vc_bind *bind, struct vty *vty, bool _stats)
+static void dump_vty(const struct gprs_ns2_vc_bind *bind, struct vty *vty, bool stats)
 {
 	struct priv_bind *priv;
 	struct gprs_ns2_vc *nsvc;
@@ -151,7 +151,7 @@ static void dump_vty(const struct gprs_ns2_vc_bind *bind, struct vty *vty, bool 
 		osmo_fr_role_str(fr_link->role), priv->if_running ? "UP" : "DOWN", VTY_NEWLINE);
 
 	llist_for_each_entry(nsvc, &bind->nsvc, blist) {
-		vty_out(vty, "    NSVCI %05u: %s%s", nsvc->nsvci, gprs_ns2_ll_str(nsvc), VTY_NEWLINE);
+		ns2_vty_dump_nsvc(vty, nsvc, stats);
 	}
 
 	priv = bind->priv;

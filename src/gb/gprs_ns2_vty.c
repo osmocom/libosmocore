@@ -1845,7 +1845,7 @@ DEFUN(cfg_no_ns_nse_ip_sns_bind, cfg_no_ns_nse_ip_sns_bind_cmd,
 }
 
 /* non-config commands */
-static void dump_nsvc(struct vty *vty, struct gprs_ns2_vc *nsvc, bool stats)
+void ns2_vty_dump_nsvc(struct vty *vty, struct gprs_ns2_vc *nsvc, bool stats)
 {
 	char nsvci_str[32];
 
@@ -1877,9 +1877,9 @@ static void dump_nse(struct vty *vty, const struct gprs_ns2_nse *nse, bool stats
 	llist_for_each_entry(nsvc, &nse->nsvc, list) {
 		if (persistent_only) {
 			if (nsvc->persistent)
-				dump_nsvc(vty, nsvc, stats);
+				ns2_vty_dump_nsvc(vty, nsvc, stats);
 		} else {
-			dump_nsvc(vty, nsvc, stats);
+			ns2_vty_dump_nsvc(vty, nsvc, stats);
 		}
 	}
 }
@@ -1989,7 +1989,7 @@ DEFUN(show_nse, show_nse_cmd, "show ns (nsei|nsvc) <0-65535> [stats]",
 			return CMD_WARNING;
 		}
 
-		dump_nsvc(vty, nsvc, show_stats);
+		ns2_vty_dump_nsvc(vty, nsvc, show_stats);
 	}
 
 	return CMD_SUCCESS;
