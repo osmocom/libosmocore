@@ -2035,11 +2035,12 @@ DEFUN_HIDDEN(nsvc_force_unconf, nsvc_force_unconf_cmd,
 }
 
 DEFUN(nsvc_block, nsvc_block_cmd,
-      "nsvc <0-65535> (block|unblock)",
+      "nsvc <0-65535> (block|unblock|reset)",
       "NS Virtual Connection\n"
       NSVCI_STR
       "Block a NSVC. As cause code O&M intervention will be used.\n"
-      "Unblock a NSVC. As cause code O&M intervention will be used.\n")
+      "Unblock a NSVC. As cause code O&M intervention will be used.\n"
+      "Reset a NSVC. As cause code O&M intervention will be used.\n")
 {
 	struct gprs_ns2_inst *nsi = vty_nsi;
 	struct gprs_ns2_vc *nsvc;
@@ -2054,8 +2055,10 @@ DEFUN(nsvc_block, nsvc_block_cmd,
 
 	if (!strcmp(argv[1], "block")) {
 		ns2_vc_block(nsvc);
-	} else {
+	} else if (!strcmp(argv[1], "unblock")) {
 		ns2_vc_unblock(nsvc);
+	} else {
+		ns2_vc_reset(nsvc);
 	}
 
 	return CMD_SUCCESS;

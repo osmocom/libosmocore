@@ -115,6 +115,7 @@ enum gprs_ns2_vc_event {
 	GPRS_NS2_EV_RX_UNITDATA,
 
 	GPRS_NS2_EV_REQ_FORCE_UNCONFIGURED,	/* called via vty for tests */
+	GPRS_NS2_EV_REQ_OM_RESET,		/* vty cmd: reset */
 	GPRS_NS2_EV_REQ_OM_BLOCK,		/* vty cmd: block */
 	GPRS_NS2_EV_REQ_OM_UNBLOCK,		/* vty cmd: unblock*/
 };
@@ -132,6 +133,7 @@ static const struct value_string ns2_vc_event_names[] = {
 	{ GPRS_NS2_EV_RX_STATUS,		"RX-STATUS" },
 	{ GPRS_NS2_EV_RX_UNITDATA,		"RX-UNITDATA" },
 	{ GPRS_NS2_EV_REQ_FORCE_UNCONFIGURED,	"REQ-FORCE_UNCONFIGURED" },
+	{ GPRS_NS2_EV_REQ_OM_RESET,		"REQ-O&M-RESET"},
 	{ GPRS_NS2_EV_REQ_OM_BLOCK,		"REQ-O&M-BLOCK"},
 	{ GPRS_NS2_EV_REQ_OM_UNBLOCK,		"REQ-O&M-UNBLOCK"},
 	{ 0, NULL }
@@ -611,6 +613,15 @@ static void ns2_vc_fsm_allstate_action(struct osmo_fsm_inst *fi,
 	struct msgb *msg = data;
 
 	switch (event) {
+	case GPRS_NS2_EV_REQ_OM_RESET:
+		if (priv->nsvc->mode != GPRS_NS2_VC_MODE_BLOCKRESET)
+			break;
+		/* move the FSM into reset */
+		if (fi->state != GPRS_NS2_ST_RESET) {
+			priv->initiate_reset = true;
+			osmo_fsm_inst_state_chg(fi, GPRS_NS2_ST_RESET, nsi->timeout[NS_TOUT_TNS_RESET], NS_TOUT_TNS_RESET);
+		}
+		break;
 	case GPRS_NS2_EV_RX_RESET:
 		if (priv->nsvc->mode != GPRS_NS2_VC_MODE_BLOCKRESET)
 			break;
@@ -710,6 +721,7 @@ static struct osmo_fsm ns2_vc_fsm = {
 			       S(GPRS_NS2_EV_RX_ALIVE) |
 			       S(GPRS_NS2_EV_RX_ALIVE_ACK) |
 			       S(GPRS_NS2_EV_REQ_FORCE_UNCONFIGURED) |
+			       S(GPRS_NS2_EV_REQ_OM_RESET) |
 			       S(GPRS_NS2_EV_REQ_OM_BLOCK) |
 			       S(GPRS_NS2_EV_REQ_OM_UNBLOCK),
 	.allstate_action = ns2_vc_fsm_allstate_action,
@@ -781,6 +793,14 @@ int ns2_vc_block(struct gprs_ns2_vc *nsvc)
 int ns2_vc_unblock(struct gprs_ns2_vc *nsvc)
 {
 	return osmo_fsm_inst_dispatch(nsvc->fi, GPRS_NS2_EV_REQ_OM_UNBLOCK, NULL);
+}
+
+/*! Reset a NS-VC.
+ *  \param nsvc the virtual circuit
+ *  \return 0 on success; negative on error */
+int ns2_vc_reset(struct gprs_ns2_vc *nsvc)
+{
+	return osmo_fsm_inst_dispatch(nsvc->fi, GPRS_NS2_EV_REQ_OM_RESET, NULL);
 }
 
 /*! entry point for messages from the driver/VL
