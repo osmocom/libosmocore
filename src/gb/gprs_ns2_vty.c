@@ -1854,15 +1854,15 @@ void ns2_vty_dump_nsvc(struct vty *vty, struct gprs_ns2_vc *nsvc, bool stats)
 	else
 		snprintf(nsvci_str, sizeof(nsvci_str), "none");
 
-	vty_out(vty, " NSVCI %s: %s %s data_weight=%u sig_weight=%u %s%s", nsvci_str,
+	vty_out(vty, "   NSVCI %s: %s %s data_weight=%u sig_weight=%u %s%s", nsvci_str,
 		osmo_fsm_inst_state_name(nsvc->fi),
 		nsvc->persistent ? "PERSIST" : "DYNAMIC",
 		nsvc->data_weight, nsvc->sig_weight,
 		gprs_ns2_ll_str(nsvc), VTY_NEWLINE);
 
 	if (stats) {
-		vty_out_rate_ctr_group(vty, "  ", nsvc->ctrg);
-		vty_out_stat_item_group(vty, "  ", nsvc->statg);
+		vty_out_rate_ctr_group(vty, "    ", nsvc->ctrg);
+		vty_out_stat_item_group(vty, "    ", nsvc->statg);
 	}
 }
 
