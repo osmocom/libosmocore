@@ -106,7 +106,7 @@ static void dump_vty(const struct gprs_ns2_vc_bind *bind,
 	vty_out(vty, "UDP bind: %s:%d DSCP: %d%s", sockstr.ip, sockstr.port, priv->dscp, VTY_NEWLINE);
 	vty_out(vty, "  IP-SNS signalling weight: %u data weight: %u%s",
 		bind->sns_sig_weight, bind->sns_data_weight, VTY_NEWLINE);
-	vty_out(vty, "  %lu NS-VC: %s", nsvcs, VTY_NEWLINE);
+	vty_out(vty, "  %lu NS-VC:%s", nsvcs, VTY_NEWLINE);
 
 	llist_for_each_entry(nsvc, &bind->nsvc, blist) {
 		ns2_vty_dump_nsvc(vty, nsvc, stats);
