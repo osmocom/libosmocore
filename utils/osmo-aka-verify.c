@@ -19,6 +19,7 @@ int milenage_f1(const uint8_t *opc, const uint8_t *k, const uint8_t *_rand,
 		const uint8_t *sqn, const uint8_t *amf, uint8_t *mac_a, uint8_t *mac_s);
 int milenage_f2345(const uint8_t *opc, const uint8_t *k, const uint8_t *_rand,
 		   uint8_t *res, uint8_t *ck, uint8_t *ik, uint8_t *ak, uint8_t *akstar);
+int milenage_opc_gen(uint8_t *opc, const uint8_t *k, const uint8_t *op);
 
 static int milenage_check(const uint8_t *opc, const uint8_t *k, const uint8_t *sqn, const uint8_t *_rand,
 			  const uint8_t *autn, uint8_t *ck, uint8_t *ik, uint8_t *res, size_t *res_len,
@@ -204,7 +205,10 @@ static int handle_options(int argc, char **argv)
 		printf("Warning: You may want to specify AMF\n");
 
 	if (opc_is_op) {
-		/* FIXME */
+		uint8_t op[16];
+		memcpy(op, g_opc, 16);
+		rc = milenage_opc_gen(g_opc, g_k, op);
+		OSMO_ASSERT(rc == 0);
 	}
 
 	return 0;
