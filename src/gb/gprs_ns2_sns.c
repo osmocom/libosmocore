@@ -66,11 +66,12 @@ enum ns2_sns_role {
 	GPRS_SNS_ROLE_SGSN,
 };
 
+/* BSS-side-only states _ST_BSS_; SGSN-side only states _ST_SGSN_; others shared */
 enum gprs_sns_bss_state {
 	GPRS_SNS_ST_UNCONFIGURED,
-	GPRS_SNS_ST_SIZE,		/*!< SNS-SIZE procedure ongoing */
-	GPRS_SNS_ST_CONFIG_BSS,		/*!< SNS-CONFIG procedure (BSS->SGSN) ongoing */
-	GPRS_SNS_ST_CONFIG_SGSN,	/*!< SNS-CONFIG procedure (SGSN->BSS) ongoing */
+	GPRS_SNS_ST_BSS_SIZE,			/*!< SNS-SIZE procedure ongoing */
+	GPRS_SNS_ST_BSS_CONFIG_BSS,		/*!< SNS-CONFIG procedure (BSS->SGSN) ongoing */
+	GPRS_SNS_ST_BSS_CONFIG_SGSN,		/*!< SNS-CONFIG procedure (SGSN->BSS) ongoing */
 	GPRS_SNS_ST_CONFIGURED,
 	GPRS_SNS_ST_SGSN_WAIT_CONFIG,		/* !< SGSN role: Wait for CONFIG from BSS */
 	GPRS_SNS_ST_SGSN_WAIT_CONFIG_ACK,	/* !< SGSN role: Wait for CONFIG-ACK from BSS */
@@ -711,14 +712,14 @@ static int do_sns_add(struct osmo_fsm_inst *fi,
 }
 
 
-static void ns2_sns_st_unconfigured(struct osmo_fsm_inst *fi, uint32_t event, void *data)
+static void ns2_sns_st_bss_unconfigured(struct osmo_fsm_inst *fi, uint32_t event, void *data)
 {
 	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
 	OSMO_ASSERT(gss->role == GPRS_SNS_ROLE_BSS);
 	/* empty state - SNS Select will start by ns2_sns_st_all_action() */
 }
 
-static void ns2_sns_st_size(struct osmo_fsm_inst *fi, uint32_t event, void *data)
+static void ns2_sns_st_bss_size(struct osmo_fsm_inst *fi, uint32_t event, void *data)
 {
 	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
 	struct gprs_ns2_nse *nse = nse_inst_from_fi(fi);
@@ -735,7 +736,7 @@ static void ns2_sns_st_size(struct osmo_fsm_inst *fi, uint32_t event, void *data
 				 gprs_ns2_cause_str(*TLVP_VAL(tp, NS_IE_CAUSE)));
 			/* TODO: What to do? */
 		} else {
-			osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_CONFIG_BSS,
+			osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_BSS_CONFIG_BSS,
 						nsi->timeout[NS_TOUT_TSNS_PROV], 2);
 		}
 		break;
@@ -850,7 +851,7 @@ static void ns2_sns_compute_local_ep_from_binds(struct osmo_fsm_inst *fi)
 }
 
 /* setup all dynamic SNS settings, create a new nsvc and send the SIZE */
-static void ns2_sns_st_size_onenter(struct osmo_fsm_inst *fi, uint32_t old_state)
+static void ns2_sns_st_bss_size_onenter(struct osmo_fsm_inst *fi, uint32_t old_state)
 {
 	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
 
@@ -859,7 +860,7 @@ static void ns2_sns_st_size_onenter(struct osmo_fsm_inst *fi, uint32_t old_state
 	/* on a generic failure, the timer callback will recover */
 	if (old_state != GPRS_SNS_ST_UNCONFIGURED)
 		ns2_prim_status_ind(gss->nse, NULL, 0, GPRS_NS2_AFF_CAUSE_SNS_FAILURE);
-	if (old_state != GPRS_SNS_ST_SIZE)
+	if (old_state != GPRS_SNS_ST_BSS_SIZE)
 		gss->N = 0;
 
 	gss->alive = false;
@@ -895,7 +896,7 @@ static void ns2_sns_st_size_onenter(struct osmo_fsm_inst *fi, uint32_t old_state
 		ns2_tx_sns_size(gss->sns_nsvc, true, gss->num_max_nsvcs, -1, gss->num_max_ip6_remote);
 }
 
-static void ns2_sns_st_config_bss(struct osmo_fsm_inst *fi, uint32_t event, void *data)
+static void ns2_sns_st_bss_config_bss(struct osmo_fsm_inst *fi, uint32_t event, void *data)
 {
 	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
 	struct gprs_ns2_nse *nse = nse_inst_from_fi(fi);
@@ -911,7 +912,7 @@ static void ns2_sns_st_config_bss(struct osmo_fsm_inst *fi, uint32_t event, void
 							 gprs_ns2_cause_str(*TLVP_VAL(tp, NS_IE_CAUSE)));
 			/* TODO: What to do? */
 		} else {
-			osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_CONFIG_SGSN, nse->nsi->timeout[NS_TOUT_TSNS_PROV], 3);
+			osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_BSS_CONFIG_SGSN, nse->nsi->timeout[NS_TOUT_TSNS_PROV], 3);
 		}
 		break;
 	default:
@@ -919,13 +920,13 @@ static void ns2_sns_st_config_bss(struct osmo_fsm_inst *fi, uint32_t event, void
 	}
 }
 
-static void ns2_sns_st_config_bss_onenter(struct osmo_fsm_inst *fi, uint32_t old_state)
+static void ns2_sns_st_bss_config_bss_onenter(struct osmo_fsm_inst *fi, uint32_t old_state)
 {
 	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
 
 	OSMO_ASSERT(gss->role == GPRS_SNS_ROLE_BSS);
 
-	if (old_state != GPRS_SNS_ST_CONFIG_BSS)
+	if (old_state != GPRS_SNS_ST_BSS_CONFIG_BSS)
 		gss->N = 0;
 
 	/* Transmit SNS-CONFIG */
@@ -1006,17 +1007,17 @@ static int ns_sns_append_remote_eps(struct osmo_fsm_inst *fi, const struct tlv_p
 	return 0;
 }
 
-static void ns2_sns_st_config_sgsn_onenter(struct osmo_fsm_inst *fi, uint32_t old_state)
+static void ns2_sns_st_bss_config_sgsn_onenter(struct osmo_fsm_inst *fi, uint32_t old_state)
 {
 	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
 
 	OSMO_ASSERT(gss->role == GPRS_SNS_ROLE_BSS);
 
-	if (old_state != GPRS_SNS_ST_CONFIG_SGSN)
+	if (old_state != GPRS_SNS_ST_BSS_CONFIG_SGSN)
 		gss->N = 0;
 }
 
-static void ns2_sns_st_config_sgsn(struct osmo_fsm_inst *fi, uint32_t event, void *data)
+static void ns2_sns_st_bss_config_sgsn(struct osmo_fsm_inst *fi, uint32_t event, void *data)
 {
 	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
 	struct gprs_ns2_nse *nse = nse_inst_from_fi(fi);
@@ -1326,39 +1327,39 @@ static void ns2_sns_st_configured_onenter(struct osmo_fsm_inst *fi, uint32_t old
 static const struct osmo_fsm_state ns2_sns_bss_states[] = {
 	[GPRS_SNS_ST_UNCONFIGURED] = {
 		.in_event_mask = 0, /* handled by all_state_action */
-		.out_state_mask = S(GPRS_SNS_ST_SIZE),
+		.out_state_mask = S(GPRS_SNS_ST_BSS_SIZE),
 		.name = "UNCONFIGURED",
-		.action = ns2_sns_st_unconfigured,
+		.action = ns2_sns_st_bss_unconfigured,
 	},
-	[GPRS_SNS_ST_SIZE] = {
+	[GPRS_SNS_ST_BSS_SIZE] = {
 		.in_event_mask = S(GPRS_SNS_EV_RX_SIZE_ACK),
 		.out_state_mask = S(GPRS_SNS_ST_UNCONFIGURED) |
-				  S(GPRS_SNS_ST_SIZE) |
-				  S(GPRS_SNS_ST_CONFIG_BSS),
-		.name = "SIZE",
-		.action = ns2_sns_st_size,
-		.onenter = ns2_sns_st_size_onenter,
+				  S(GPRS_SNS_ST_BSS_SIZE) |
+				  S(GPRS_SNS_ST_BSS_CONFIG_BSS),
+		.name = "BSS_SIZE",
+		.action = ns2_sns_st_bss_size,
+		.onenter = ns2_sns_st_bss_size_onenter,
 	},
-	[GPRS_SNS_ST_CONFIG_BSS] = {
+	[GPRS_SNS_ST_BSS_CONFIG_BSS] = {
 		.in_event_mask = S(GPRS_SNS_EV_RX_CONFIG_ACK),
 		.out_state_mask = S(GPRS_SNS_ST_UNCONFIGURED) |
-				  S(GPRS_SNS_ST_CONFIG_BSS) |
-				  S(GPRS_SNS_ST_CONFIG_SGSN) |
-				  S(GPRS_SNS_ST_SIZE),
-		.name = "CONFIG_BSS",
-		.action = ns2_sns_st_config_bss,
-		.onenter = ns2_sns_st_config_bss_onenter,
+				  S(GPRS_SNS_ST_BSS_CONFIG_BSS) |
+				  S(GPRS_SNS_ST_BSS_CONFIG_SGSN) |
+				  S(GPRS_SNS_ST_BSS_SIZE),
+		.name = "BSS_CONFIG_BSS",
+		.action = ns2_sns_st_bss_config_bss,
+		.onenter = ns2_sns_st_bss_config_bss_onenter,
 	},
-	[GPRS_SNS_ST_CONFIG_SGSN] = {
+	[GPRS_SNS_ST_BSS_CONFIG_SGSN] = {
 		.in_event_mask = S(GPRS_SNS_EV_RX_CONFIG) |
 				 S(GPRS_SNS_EV_RX_CONFIG_END),
 		.out_state_mask = S(GPRS_SNS_ST_UNCONFIGURED) |
-				  S(GPRS_SNS_ST_CONFIG_SGSN) |
+				  S(GPRS_SNS_ST_BSS_CONFIG_SGSN) |
 				  S(GPRS_SNS_ST_CONFIGURED) |
-				  S(GPRS_SNS_ST_SIZE),
-		.name = "CONFIG_SGSN",
-		.action = ns2_sns_st_config_sgsn,
-		.onenter = ns2_sns_st_config_sgsn_onenter,
+				  S(GPRS_SNS_ST_BSS_SIZE),
+		.name = "BSS_CONFIG_SGSN",
+		.action = ns2_sns_st_bss_config_sgsn,
+		.onenter = ns2_sns_st_bss_config_sgsn_onenter,
 	},
 	[GPRS_SNS_ST_CONFIGURED] = {
 		.in_event_mask = S(GPRS_SNS_EV_RX_ADD) |
@@ -1366,7 +1367,7 @@ static const struct osmo_fsm_state ns2_sns_bss_states[] = {
 				 S(GPRS_SNS_EV_RX_CHANGE_WEIGHT) |
 				 S(GPRS_SNS_EV_REQ_NSVC_ALIVE),
 		.out_state_mask = S(GPRS_SNS_ST_UNCONFIGURED) |
-				  S(GPRS_SNS_ST_SIZE),
+				  S(GPRS_SNS_ST_BSS_SIZE),
 		.name = "CONFIGURED",
 		.action = ns2_sns_st_configured,
 		.onenter = ns2_sns_st_configured_onenter,
@@ -1386,7 +1387,7 @@ static int ns2_sns_fsm_bss_timer_cb(struct osmo_fsm_inst *fi)
 			LOGPFSML(fi, LOGL_ERROR, "NSE %d: Size retries failed. Selecting next IP-SNS endpoint.\n", nse->nsei);
 			osmo_fsm_inst_dispatch(fi, GPRS_SNS_EV_REQ_SELECT_ENDPOINT, NULL);
 		} else {
-			osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_SIZE, nsi->timeout[NS_TOUT_TSNS_PROV], 1);
+			osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_BSS_SIZE, nsi->timeout[NS_TOUT_TSNS_PROV], 1);
 		}
 		break;
 	case 2:
@@ -1394,7 +1395,7 @@ static int ns2_sns_fsm_bss_timer_cb(struct osmo_fsm_inst *fi)
 			LOGPFSML(fi, LOGL_ERROR, "NSE %d: BSS Config retries failed. Selecting next IP-SNS endpoint.\n", nse->nsei);
 			osmo_fsm_inst_dispatch(fi, GPRS_SNS_EV_REQ_SELECT_ENDPOINT, NULL);
 		} else {
-			osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_CONFIG_BSS, nsi->timeout[NS_TOUT_TSNS_PROV], 2);
+			osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_BSS_CONFIG_BSS, nsi->timeout[NS_TOUT_TSNS_PROV], 2);
 		}
 		break;
 	case 3:
@@ -1402,7 +1403,7 @@ static int ns2_sns_fsm_bss_timer_cb(struct osmo_fsm_inst *fi)
 			LOGPFSML(fi, LOGL_ERROR, "NSE %d: SGSN Config retries failed. Selecting next IP-SNS endpoint.\n", nse->nsei);
 			osmo_fsm_inst_dispatch(fi, GPRS_SNS_EV_REQ_SELECT_ENDPOINT, NULL);
 		} else {
-			osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_CONFIG_SGSN, nsi->timeout[NS_TOUT_TSNS_PROV], 3);
+			osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_BSS_CONFIG_SGSN, nsi->timeout[NS_TOUT_TSNS_PROV], 3);
 		}
 		break;
 	case 4:
@@ -1427,11 +1428,11 @@ static void ns2_sns_st_all_action(struct osmo_fsm_inst *fi, uint32_t event, void
 		case GPRS_SNS_ST_UNCONFIGURED:
 			osmo_fsm_inst_dispatch(nse->bss_sns_fi, GPRS_SNS_EV_REQ_SELECT_ENDPOINT, NULL);
 			break;
-		case GPRS_SNS_ST_SIZE:
+		case GPRS_SNS_ST_BSS_SIZE:
 			/* TODO: add the ip4 element to the list */
 			break;
-		case GPRS_SNS_ST_CONFIG_BSS:
-		case GPRS_SNS_ST_CONFIG_SGSN:
+		case GPRS_SNS_ST_BSS_CONFIG_BSS:
+		case GPRS_SNS_ST_BSS_CONFIG_SGSN:
 		case GPRS_SNS_ST_CONFIGURED:
 			/* TODO: add to SNS-IP procedure queue & add nsvc() */
 			break;
@@ -1442,7 +1443,7 @@ static void ns2_sns_st_all_action(struct osmo_fsm_inst *fi, uint32_t event, void
 		switch (fi->state) {
 		case GPRS_SNS_ST_UNCONFIGURED:
 			break;
-		case GPRS_SNS_ST_SIZE:
+		case GPRS_SNS_ST_BSS_SIZE:
 			/* TODO: remove the ip4 element from the list */
 			llist_for_each_entry_safe(nsvc, nsvc2, &nse->nsvc, list) {
 				if (nsvc->bind == sbind->bind) {
@@ -1450,8 +1451,8 @@ static void ns2_sns_st_all_action(struct osmo_fsm_inst *fi, uint32_t event, void
 				}
 			}
 			break;
-		case GPRS_SNS_ST_CONFIG_BSS:
-		case GPRS_SNS_ST_CONFIG_SGSN:
+		case GPRS_SNS_ST_BSS_CONFIG_BSS:
+		case GPRS_SNS_ST_BSS_CONFIG_SGSN:
 		case GPRS_SNS_ST_CONFIGURED:
 			/* TODO: do an delete SNS-IP procedure */
 			/* TODO: remove the ip4 element to the list */
@@ -1508,7 +1509,7 @@ static void ns2_sns_st_all_action_bss(struct osmo_fsm_inst *fi, uint32_t event, 
 		}
 
 		gss->reselection_running = false;
-		osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_SIZE, nse->nsi->timeout[NS_TOUT_TSNS_PROV], 1);
+		osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_BSS_SIZE, nse->nsi->timeout[NS_TOUT_TSNS_PROV], 1);
 		break;
 	default:
 		ns2_sns_st_all_action(fi, event, data);
