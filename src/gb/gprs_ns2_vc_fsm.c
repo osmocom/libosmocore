@@ -149,6 +149,8 @@ static void start_test_procedure(struct osmo_fsm_inst *fi, bool start_tx_alive)
 	struct gprs_ns2_inst *nsi = priv->nsvc->nse->nsi;
 	unsigned int tout_idx;
 
+	LOGPFSML(fi, LOGL_ERROR, "Starting test procedure\n");
+
 	if (osmo_timer_pending(&priv->alive.timer)) {
 		if (start_tx_alive) {
 			if (priv->alive.mode == NS_TOUT_TNS_ALIVE)
@@ -175,8 +177,12 @@ static void start_test_procedure(struct osmo_fsm_inst *fi, bool start_tx_alive)
 	osmo_timer_schedule(&priv->alive.timer, nsi->timeout[tout_idx], 0);
 }
 
-static void stop_test_procedure(struct gprs_ns2_vc_priv *priv)
+static void stop_test_procedure(struct osmo_fsm_inst *fi)
 {
+	struct gprs_ns2_vc_priv *priv = fi->priv;
+
+	LOGPFSML(fi, LOGL_ERROR, "Stopping test procedure\n");
+
 	osmo_timer_del(&priv->alive.timer);
 }
 
@@ -252,7 +258,7 @@ static void ns2_st_unconfigured_onenter(struct osmo_fsm_inst *fi, uint32_t old_s
 	struct gprs_ns2_vc_priv *priv = fi->priv;
 
 	priv->accept_unitdata = false;
-	stop_test_procedure(priv);
+	stop_test_procedure(fi);
 }
 
 static void ns2_st_unconfigured(struct osmo_fsm_inst *fi, uint32_t event, void *data)
@@ -296,7 +302,7 @@ static void ns2_st_reset_onenter(struct osmo_fsm_inst *fi, uint32_t old_state)
 	if (priv->initiate_reset)
 		ns2_tx_reset(priv->nsvc, NS_CAUSE_OM_INTERVENTION);
 
-	stop_test_procedure(priv);
+	stop_test_procedure(fi);
 	ns2_nse_notify_unblocked(priv->nsvc, false);
 }
 
@@ -457,10 +463,10 @@ static void ns2_st_alive(struct osmo_fsm_inst *fi, uint32_t event, void *data)
 static void ns2_st_alive_onenter(struct osmo_fsm_inst *fi, uint32_t old_state)
 {
 	struct gprs_ns2_vc_priv *priv = fi->priv;
-	struct gprs_ns2_inst *nsi = ns_inst_from_fi(fi);
+//	struct gprs_ns2_inst *nsi = ns_inst_from_fi(fi);
 
-	priv->alive.mode = NS_TOUT_TNS_TEST;
-	osmo_timer_schedule(&priv->alive.timer, nsi->timeout[NS_TOUT_TNS_TEST], 0);
+//	priv->alive.mode = NS_TOUT_TNS_TEST;
+//	osmo_timer_schedule(&priv->alive.timer, nsi->timeout[NS_TOUT_TNS_TEST], 0);
 
 	if (old_state != GPRS_NS2_ST_RECOVERING)
 		priv->N = 0;
@@ -704,9 +710,8 @@ static void ns2_vc_fsm_allstate_action(struct osmo_fsm_inst *fi,
 static void ns2_vc_fsm_clean(struct osmo_fsm_inst *fi,
 				  enum osmo_fsm_term_cause cause)
 {
-	struct gprs_ns2_vc_priv *priv = fi->priv;
-
-	osmo_timer_del(&priv->alive.timer);
+	LOGPFSML(fi, LOGL_ERROR, "Cleaning it up and removing the timer\n");
+	stop_test_procedure(fi);
 }
 
 static struct osmo_fsm ns2_vc_fsm = {
