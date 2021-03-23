@@ -896,9 +896,9 @@ static void ns2_sns_st_bss_size_onenter(struct osmo_fsm_inst *fi, uint32_t old_s
 
 
 	if (gss->num_max_ip4_remote > 0)
-		ns2_tx_sns_size(gss->sns_nsvc, true, gss->num_max_nsvcs, gss->num_max_ip4_remote, -1);
+		ns2_tx_sns_size(gss->sns_nsvc, true, gss->num_max_nsvcs, gss->num_ip4_local, -1);
 	else
-		ns2_tx_sns_size(gss->sns_nsvc, true, gss->num_max_nsvcs, -1, gss->num_max_ip6_remote);
+		ns2_tx_sns_size(gss->sns_nsvc, true, gss->num_max_nsvcs, -1, gss->num_ip6_local);
 }
 
 static void ns2_sns_st_bss_config_bss(struct osmo_fsm_inst *fi, uint32_t event, void *data)
