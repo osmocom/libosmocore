@@ -143,19 +143,38 @@ static inline struct gprs_ns2_inst *ns_inst_from_fi(struct osmo_fsm_inst *fi)
 	return priv->nsvc->nse->nsi;
 }
 
-static void start_test_procedure(struct gprs_ns2_vc_priv *priv)
+/* Start the NS-TEST procedure, either with transmitting a tx_alive,
+ * (start_tx_alive==true) or with starting tns-test */
+static void start_test_procedure(struct osmo_fsm_inst *fi, bool start_tx_alive)
 {
+	struct gprs_ns2_vc_priv *priv = fi->priv;
 	struct gprs_ns2_inst *nsi = priv->nsvc->nse->nsi;
+	unsigned int tout_idx;
 
-	if (osmo_timer_pending(&priv->alive.timer))
-		return;
+	if (osmo_timer_pending(&priv->alive.timer)) {
+		if (start_tx_alive) {
+			if (priv->alive.mode == NS_TOUT_TNS_ALIVE)
+				return;
+		} else {
+			if (priv->alive.mode == NS_TOUT_TNS_TEST)
+				return;
+		}
+	}
 
-	priv->alive.mode = NS_TOUT_TNS_ALIVE;
 	priv->alive.N = 0;
 
-	osmo_clock_gettime(CLOCK_MONOTONIC, &priv->alive.timer_started);
-	ns2_tx_alive(priv->nsvc);
-	osmo_timer_schedule(&priv->alive.timer, nsi->timeout[NS_TOUT_TNS_ALIVE], 0);
+	if (start_tx_alive) {
+		priv->alive.mode = NS_TOUT_TNS_ALIVE;
+		osmo_clock_gettime(CLOCK_MONOTONIC, &priv->alive.timer_started);
+		ns2_tx_alive(priv->nsvc);
+		tout_idx = NS_TOUT_TNS_ALIVE;
+	} else {
+		priv->alive.mode = NS_TOUT_TNS_TEST;
+		tout_idx = NS_TOUT_TNS_TEST;
+	}
+	LOGPFSML(fi, LOGL_DEBUG, "Starting Tns-%s of %u seconds\n",
+		 tout_idx == NS_TOUT_TNS_ALIVE ? "alive" : "test", nsi->timeout[tout_idx]);
+	osmo_timer_schedule(&priv->alive.timer, nsi->timeout[tout_idx], 0);
 }
 
 static void stop_test_procedure(struct gprs_ns2_vc_priv *priv)
@@ -163,6 +182,7 @@ static void stop_test_procedure(struct gprs_ns2_vc_priv *priv)
 	osmo_timer_del(&priv->alive.timer);
 }
 
+/* how many milliseconds have expired since the last alive timer start? */
 static int alive_timer_elapsed_ms(struct gprs_ns2_vc_priv *priv)
 {
 	struct timespec now, elapsed;
@@ -174,6 +194,7 @@ static int alive_timer_elapsed_ms(struct gprs_ns2_vc_priv *priv)
 	return elapsed.tv_sec * 1000 + (elapsed.tv_nsec / 1000000);
 }
 
+/* we just received a NS-ALIVE-ACK; re-schedule after Tns-test */
 static void recv_test_procedure(struct osmo_fsm_inst *fi)
 {
 	struct gprs_ns2_vc_priv *priv = fi->priv;
@@ -326,7 +347,7 @@ static void ns2_st_blocked_onenter(struct osmo_fsm_inst *fi, uint32_t old_state)
 		ns2_tx_unblock(priv->nsvc);
 	}
 
-	start_test_procedure(priv);
+	start_test_procedure(fi, true);
 }
 
 static void ns2_st_blocked(struct osmo_fsm_inst *fi, uint32_t event, void *data)
@@ -392,6 +413,12 @@ static void ns2_st_unblocked_on_enter(struct osmo_fsm_inst *fi, uint32_t old_sta
 	priv->accept_unitdata = true;
 	ns2_nse_notify_unblocked(nsvc, true);
 	ns2_prim_status_ind(nse, nsvc, 0, GPRS_NS2_AFF_CAUSE_VC_RECOVERY);
+
+	/* the closest interpretation of the spec would start Tns-test here first,
+	 * and only send a NS-ALIVE after Tns-test has expired (i.e. setting the
+	 * second argument to 'false'.  However, being quick in detecting unavailability
+	 * of a NS-VC seems like a good idea */
+	start_test_procedure(fi, true);
 }
 
 static void ns2_st_unblocked(struct osmo_fsm_inst *fi, uint32_t event, void *data)
@@ -431,9 +458,8 @@ static void ns2_st_alive_onenter(struct osmo_fsm_inst *fi, uint32_t old_state)
 	if (old_state != GPRS_NS2_ST_RECOVERING)
 		priv->N = 0;
 
-	ns2_tx_alive(priv->nsvc);
 	ns2_nse_notify_unblocked(priv->nsvc, false);
-	start_test_procedure(priv);
+	start_test_procedure(fi, true);
 }
 
 static const struct osmo_fsm_state ns2_vc_states[] = {
