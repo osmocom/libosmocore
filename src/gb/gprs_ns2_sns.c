@@ -388,7 +388,7 @@ static int create_missing_nsvcs(struct osmo_fsm_inst *fi)
 	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
 	struct gprs_ns2_nse *nse = nse_inst_from_fi(fi);
 	struct gprs_ns2_vc *nsvc;
-	struct gprs_ns2_vc_bind *bind;
+	struct ns2_sns_bind *sbind;
 	struct osmo_sockaddr remote = { };
 	unsigned int i;
 
@@ -400,8 +400,10 @@ static int create_missing_nsvcs(struct osmo_fsm_inst *fi)
 		remote.u.sin.sin_addr.s_addr = ip4->ip_addr;
 		remote.u.sin.sin_port = ip4->udp_port;
 
-		/* iterate over all local binds */
-		llist_for_each_entry(bind, &nse->nsi->binding, list) {
+		/* iterate over all local binds within this SNS */
+		llist_for_each_entry(sbind, &gss->binds, list) {
+			struct gprs_ns2_vc_bind *bind = sbind->bind;
+
 			/* we only care about UDP binds */
 			if (bind->ll != GPRS_NS2_LL_UDP)
 				continue;
@@ -430,8 +432,10 @@ static int create_missing_nsvcs(struct osmo_fsm_inst *fi)
 		remote.u.sin6.sin6_addr = ip6->ip_addr;
 		remote.u.sin6.sin6_port = ip6->udp_port;
 
-		/* iterate over all local binds */
-		llist_for_each_entry(bind, &nse->nsi->binding, list) {
+		/* iterate over all local binds within this SNS */
+		llist_for_each_entry(sbind, &gss->binds, list) {
+			struct gprs_ns2_vc_bind *bind = sbind->bind;
+
 			if (bind->ll != GPRS_NS2_LL_UDP)
 				continue;
 
