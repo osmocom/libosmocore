@@ -1243,7 +1243,7 @@ int gprs_ns2_nse_foreach_nsvc(struct gprs_ns2_nse *nse, gprs_ns2_foreach_nsvc_cb
 
 /*! Bottom-side entry-point for received NS PDU from the driver/bind
  * \param[in] nsvc NS-VC for which the message was received
- * \param msg the received message. Ownership is trasnferred, caller must not free it!
+ * \param msg the received message. Ownership is transferred, caller must not free it!
  * \return 0 on success; negative on error */
 int ns2_recv_vc(struct gprs_ns2_vc *nsvc,
 		struct msgb *msg)
@@ -1258,8 +1258,10 @@ int ns2_recv_vc(struct gprs_ns2_vc *nsvc,
 	rate_ctr_inc(&nsvc->ctrg->ctr[NS_CTR_PKTS_IN]);
 	rate_ctr_add(&nsvc->ctrg->ctr[NS_CTR_BYTES_IN], msg->len);
 
-	if (msg->len < sizeof(struct gprs_ns_hdr))
-		return -EINVAL;
+	if (msg->len < sizeof(struct gprs_ns_hdr)) {
+		rc = -EINVAL;
+		goto freemsg;
+	}
 
 	if (nsh->pdu_type != NS_PDUT_UNITDATA)
 		LOG_NS_RX_SIGNAL(nsvc, nsh->pdu_type);
@@ -1273,11 +1275,10 @@ int ns2_recv_vc(struct gprs_ns2_vc *nsvc,
 				   msgb_l2len(msg) - sizeof(*nsh)-1, 0, 0);
 		if (rc < 0) {
 			LOGP(DLNS, LOGL_NOTICE, "Error during TLV Parse in %s\n", msgb_hexdump(msg));
-			return rc;
+			goto freemsg;
 		}
 		/* All sub-network service related message types */
-		rc = ns2_sns_rx(nsvc, msg, &tp);
-		break;
+		return ns2_sns_rx(nsvc, msg, &tp);
 	case SNS_PDUT_ACK:
 	case SNS_PDUT_ADD:
 	case SNS_PDUT_CHANGE_WEIGHT:
@@ -1287,14 +1288,13 @@ int ns2_recv_vc(struct gprs_ns2_vc *nsvc,
 				   msgb_l2len(msg) - sizeof(*nsh)-5, 0, 0);
 		if (rc < 0) {
 			LOGP(DLNS, LOGL_NOTICE, "Error during TLV Parse in %s\n", msgb_hexdump(msg));
-			return rc;
+			goto freemsg;
 		}
 		tp.lv[NS_IE_NSEI].val = nsh->data+2;
 		tp.lv[NS_IE_NSEI].len = 2;
 		tp.lv[NS_IE_TRANS_ID].val = nsh->data+4;
 		tp.lv[NS_IE_TRANS_ID].len = 1;
-		rc = ns2_sns_rx(nsvc, msg, &tp);
-		break;
+		return ns2_sns_rx(nsvc, msg, &tp);
 	case SNS_PDUT_CONFIG_ACK:
 	case SNS_PDUT_SIZE:
 	case SNS_PDUT_SIZE_ACK:
@@ -1302,15 +1302,12 @@ int ns2_recv_vc(struct gprs_ns2_vc *nsvc,
 				   msgb_l2len(msg) - sizeof(*nsh), 0, 0);
 		if (rc < 0) {
 			LOGP(DLNS, LOGL_NOTICE, "Error during TLV Parse in %s\n", msgb_hexdump(msg));
-			return rc;
+			goto freemsg;
 		}
 		/* All sub-network service related message types */
-		rc = ns2_sns_rx(nsvc, msg, &tp);
-		break;
-
+		return ns2_sns_rx(nsvc, msg, &tp);
 	case NS_PDUT_UNITDATA:
-		rc = ns2_vc_rx(nsvc, msg, &tp);
-		break;
+		return ns2_vc_rx(nsvc, msg, &tp);
 	default:
 		rc = ns2_tlv_parse(&tp, nsh->data,
 				   msgb_l2len(msg) - sizeof(*nsh), 0, 0);
@@ -1320,9 +1317,10 @@ int ns2_recv_vc(struct gprs_ns2_vc *nsvc,
 				ns2_tx_status(nsvc, NS_CAUSE_PROTO_ERR_UNSPEC, 0, msg);
 			return rc;
 		}
-		rc = ns2_vc_rx(nsvc, msg, &tp);
-		break;
+		return ns2_vc_rx(nsvc, msg, &tp);
 	}
+freemsg:
+	msgb_free(msg);
 
 	return rc;
 }

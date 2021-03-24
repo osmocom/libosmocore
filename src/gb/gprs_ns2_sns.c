@@ -1614,11 +1614,13 @@ int ns2_sns_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp
 	uint16_t nsei = nsvc->nse->nsei;
 	struct ns2_sns_state *gss;
 	struct osmo_fsm_inst *fi;
+	int rc = 0;
 
 	if (!nse->bss_sns_fi) {
 		LOGNSVC(nsvc, LOGL_NOTICE, "Rx %s for NS Instance that has no SNS!\n",
 			get_value_string(gprs_ns_pdu_strings, nsh->pdu_type));
-		return -EINVAL;
+		rc = -EINVAL;
+		goto out;
 	}
 
 	/* FIXME: how to resolve SNS FSM Instance by NSEI (SGSN)? */
@@ -1661,10 +1663,13 @@ int ns2_sns_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp
 	default:
 		LOGPFSML(fi, LOGL_ERROR, "NSEI=%u Rx unknown SNS PDU type %s\n", nsei,
 			 get_value_string(gprs_ns_pdu_strings, nsh->pdu_type));
-		return -EINVAL;
+		rc = -EINVAL;
 	}
 
-	return 0;
+out:
+	msgb_free(msg);
+
+	return rc;
 }
 
 #include <osmocom/vty/vty.h>

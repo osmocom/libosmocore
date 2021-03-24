@@ -883,7 +883,8 @@ int ns2_vc_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp)
 	default:
 		LOGPFSML(fi, LOGL_ERROR, "NSEI=%u Rx unknown NS PDU type %s\n", nsvc->nse->nsei,
 			 get_value_string(gprs_ns_pdu_strings, nsh->pdu_type));
-		return -EINVAL;
+		rc = -EINVAL;
+		break;
 	}
 
 out:
