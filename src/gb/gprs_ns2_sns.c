@@ -367,6 +367,21 @@ static void ns2_nsvc_create_ip6(struct osmo_fsm_inst *fi,
 	ns2_vc_create_ip(fi, nse, &remote, ip6->sig_weight, ip6->data_weight);
 }
 
+static struct gprs_ns2_vc *nsvc_for_bind_and_remote(struct gprs_ns2_nse *nse,
+						    struct gprs_ns2_vc_bind *bind,
+						    const struct osmo_sockaddr *remote)
+{
+	struct gprs_ns2_vc *nsvc;
+
+	llist_for_each_entry(nsvc, &nse->nsvc, list) {
+		if (nsvc->bind != bind)
+			continue;
+
+		if (!osmo_sockaddr_cmp(remote, gprs_ns2_ip_vc_remote(nsvc)))
+			return nsvc;
+	}
+	return NULL;
+}
 
 static int create_missing_nsvcs(struct osmo_fsm_inst *fi)
 {
@@ -377,6 +392,7 @@ static int create_missing_nsvcs(struct osmo_fsm_inst *fi)
 	struct osmo_sockaddr remote = { };
 	unsigned int i;
 
+	/* iterate over all remote IPv4 endpoints */
 	for (i = 0; i < gss->num_ip4_remote; i++) {
 		const struct gprs_ns_ie_ip4_elem *ip4 = &gss->ip4_remote[i];
 
@@ -384,22 +400,14 @@ static int create_missing_nsvcs(struct osmo_fsm_inst *fi)
 		remote.u.sin.sin_addr.s_addr = ip4->ip_addr;
 		remote.u.sin.sin_port = ip4->udp_port;
 
+		/* iterate over all local binds */
 		llist_for_each_entry(bind, &nse->nsi->binding, list) {
-			bool found = false;
+			/* we only care about UDP binds */
 			if (bind->ll != GPRS_NS2_LL_UDP)
 				continue;
 
-			llist_for_each_entry(nsvc, &nse->nsvc, list) {
-				if (nsvc->bind != bind)
-					continue;
-
-				if (!osmo_sockaddr_cmp(&remote, gprs_ns2_ip_vc_remote(nsvc))) {
-					found = true;
-					break;
-				}
-			}
-
-			if (!found) {
+			nsvc = nsvc_for_bind_and_remote(nse, bind, &remote);
+			if (!nsvc) {
 				nsvc = gprs_ns2_ip_connect_inactive(bind, &remote, nse, 0);
 				if (!nsvc) {
 					/* TODO: add to a list to send back a NS-STATUS */
@@ -414,6 +422,7 @@ static int create_missing_nsvcs(struct osmo_fsm_inst *fi)
 		}
 	}
 
+	/* iterate over all remote IPv4 endpoints */
 	for (i = 0; i < gss->num_ip6_remote; i++) {
 		const struct gprs_ns_ie_ip6_elem *ip6 = &gss->ip6_remote[i];
 
@@ -421,22 +430,14 @@ static int create_missing_nsvcs(struct osmo_fsm_inst *fi)
 		remote.u.sin6.sin6_addr = ip6->ip_addr;
 		remote.u.sin6.sin6_port = ip6->udp_port;
 
+		/* iterate over all local binds */
 		llist_for_each_entry(bind, &nse->nsi->binding, list) {
-			bool found = false;
 			if (bind->ll != GPRS_NS2_LL_UDP)
 				continue;
 
-			llist_for_each_entry(nsvc, &nse->nsvc, list) {
-				if (nsvc->bind != bind)
-					continue;
-
-				if (!osmo_sockaddr_cmp(&remote, gprs_ns2_ip_vc_remote(nsvc))) {
-					found = true;
-					break;
-				}
-			}
-
-			if (!found) {
+			/* we only care about UDP binds */
+			nsvc = nsvc_for_bind_and_remote(nse, bind, &remote);
+			if (!nsvc) {
 				nsvc = gprs_ns2_ip_connect_inactive(bind, &remote, nse, 0);
 				if (!nsvc) {
 					/* TODO: add to a list to send back a NS-STATUS */
