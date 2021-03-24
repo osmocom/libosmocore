@@ -2179,10 +2179,12 @@ static void ns2_sns_st_all_action_sgsn(struct osmo_fsm_inst *fi, uint32_t event,
 		/* decide if we go for IPv4 or IPv6 */
 		if (gss->num_max_ip6_remote && ns2_sns_count_num_local_ep(fi, IPv6)) {
 			gss->ip = IPv6;
+			ns2_sns_compute_local_ep_from_binds(fi);
 			num_local_eps = gss->num_ip6_local;
 			num_remote_eps = gss->num_max_ip6_remote;
 		} else if (gss->num_max_ip4_remote && ns2_sns_count_num_local_ep(fi, IPv4)) {
 			gss->ip = IPv4;
+			ns2_sns_compute_local_ep_from_binds(fi);
 			num_local_eps = gss->num_ip4_local;
 			num_remote_eps = gss->num_max_ip4_remote;
 		} else {
@@ -2193,7 +2195,6 @@ static void ns2_sns_st_all_action_sgsn(struct osmo_fsm_inst *fi, uint32_t event,
 			ns2_tx_sns_size_ack(gss->sns_nsvc, &cause);
 			break;
 		}
-		ns2_sns_compute_local_ep_from_binds(fi);
 		/* ensure number of NS-VCs is sufficient for full mesh */
 		gss->num_max_nsvcs = tlvp_val16be(tp, NS_IE_MAX_NR_NSVC);
 		if (gss->num_max_nsvcs < num_remote_eps * num_local_eps) {
@@ -2224,6 +2225,7 @@ static void ns2_sns_st_all_action_sgsn(struct osmo_fsm_inst *fi, uint32_t event,
 					gprs_ns2_free_nsvc(nsvc);
 				}
 			}
+			ns2_sns_compute_local_ep_from_binds(fi);
 		}
 		/* send SIZE_ACK */
 		ns2_tx_sns_size_ack(gss->sns_nsvc, NULL);
