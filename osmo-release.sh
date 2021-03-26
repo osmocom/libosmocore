@@ -73,6 +73,12 @@ check_configureac_debctrl_deps_match() {
 # Make sure that depedency requirement versions match in configure.ac vs contrib/*.spec.in.
 #eg: "PKG_CHECK_MODULES(LIBOSMOCORE, libosmocore >= 1.1.0)" vs "pkgconfig(libosmocore-dev) >= 1.0.0,"
 check_configureac_rpmspecin_deps_match() {
+	# Some projects don't have rpm spec files:
+	if [ "z$(find "${GIT_TOPDIR}/contrib" -name "*.spec.in" | wc -l)" = "z0" ]; then
+		echo "INFO: Project has no 'contrib/*.spec.in' files, skipping RPM specific configure.ac dependency version checks"
+		return
+	fi
+
 	get_configureac_pkg_check_modules_list | \
 	{ return_error=0
 	while read -r dep ver; do
@@ -169,6 +175,12 @@ libversion_deb_match() {
 }
 
 libversion_rpmspecin_match() {
+	# Some projects don't have rpm spec files:
+	if [ "z$(find "${GIT_TOPDIR}/contrib" -name "*.spec.in" | wc -l)" = "z0" ]; then
+		echo "INFO: Project has no 'contrib/*.spec.in' files, skipping RPM specific LIBVERSION checks"
+		return
+	fi
+
 	echo "$LIBVERS" | while read -r line; do
 		libversion=$(echo "$line" | cut -d "=" -f 2 | tr -d "[:space:]")
 		major="$(libversion_to_lib_major "$libversion")"
