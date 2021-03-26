@@ -90,8 +90,8 @@ static void stat_test(void)
 	const struct osmo_stat_item *sitem1, *sitem2;
 	int rc;
 	int32_t value;
-	int32_t next_id_a = 0;
-	int32_t next_id_b = 0;
+	int32_t next_id_a = 1;
+	int32_t next_id_b = 1;
 	int i;
 
 	OSMO_ASSERT(statg != NULL);
@@ -129,7 +129,7 @@ static void stat_test(void)
 	OSMO_ASSERT(value == 1);
 
 	rc = osmo_stat_item_get_next(statg->items[TEST_A_ITEM], &next_id_a, &value);
-	OSMO_ASSERT(rc > 0);
+	OSMO_ASSERT(rc == 1);
 	OSMO_ASSERT(value == 1);
 
 	rc = osmo_stat_item_get_next(statg->items[TEST_A_ITEM], &next_id_a, &value);
@@ -140,28 +140,28 @@ static void stat_test(void)
 		osmo_stat_item_set(statg->items[TEST_B_ITEM], 1000 + i);
 
 		rc = osmo_stat_item_get_next(statg->items[TEST_A_ITEM], &next_id_a, &value);
-		OSMO_ASSERT(rc > 0);
+		OSMO_ASSERT(rc == 1);
 		OSMO_ASSERT(value == i);
 
 		rc = osmo_stat_item_get_next(statg->items[TEST_B_ITEM], &next_id_b, &value);
-		OSMO_ASSERT(rc > 0);
+		OSMO_ASSERT(rc == 1);
 		OSMO_ASSERT(value == 1000 + i);
 	}
 
 	/* check if dec & inc is working */
 	osmo_stat_item_set(statg->items[TEST_A_ITEM], 42);
 	rc = osmo_stat_item_get_next(statg->items[TEST_A_ITEM], &next_id_a, &value);
-	OSMO_ASSERT(rc > 0);
+	OSMO_ASSERT(rc == 1);
 	OSMO_ASSERT(value == 42);
 
 	osmo_stat_item_dec(statg->items[TEST_A_ITEM], 21);
 	rc = osmo_stat_item_get_next(statg->items[TEST_A_ITEM], &next_id_a, &value);
-	OSMO_ASSERT(rc > 0);
+	OSMO_ASSERT(rc == 1);
 	OSMO_ASSERT(value == 21);
 
 	osmo_stat_item_inc(statg->items[TEST_A_ITEM], 21);
 	rc = osmo_stat_item_get_next(statg->items[TEST_A_ITEM], &next_id_a, &value);
-	OSMO_ASSERT(rc > 0);
+	OSMO_ASSERT(rc == 1);
 	OSMO_ASSERT(value == 42);
 
 	/* Keep 2 in FIFO */
@@ -173,20 +173,20 @@ static void stat_test(void)
 		osmo_stat_item_set(statg->items[TEST_B_ITEM], 1000 + i);
 
 		rc = osmo_stat_item_get_next(statg->items[TEST_A_ITEM], &next_id_a, &value);
-		OSMO_ASSERT(rc > 0);
+		OSMO_ASSERT(rc == 1);
 		OSMO_ASSERT(value == i-1);
 
 		rc = osmo_stat_item_get_next(statg->items[TEST_B_ITEM], &next_id_b, &value);
-		OSMO_ASSERT(rc > 0);
+		OSMO_ASSERT(rc == 1);
 		OSMO_ASSERT(value == 1000 + i-1);
 	}
 
 	rc = osmo_stat_item_get_next(statg->items[TEST_A_ITEM], &next_id_a, &value);
-	OSMO_ASSERT(rc > 0);
+	OSMO_ASSERT(rc == 1);
 	OSMO_ASSERT(value == 64);
 
 	rc = osmo_stat_item_get_next(statg->items[TEST_B_ITEM], &next_id_b, &value);
-	OSMO_ASSERT(rc > 0);
+	OSMO_ASSERT(rc == 1);
 	OSMO_ASSERT(value == 1000 + 64);
 
 	/* Overrun FIFOs */
@@ -196,29 +196,29 @@ static void stat_test(void)
 	}
 
 	rc = osmo_stat_item_get_next(statg->items[TEST_A_ITEM], &next_id_a, &value);
-	OSMO_ASSERT(rc > 0);
+	OSMO_ASSERT(rc == 93 - 65 + 1);
 	OSMO_ASSERT(value == 93);
 
 	for (i = 94; i <= 96; i++) {
 		rc = osmo_stat_item_get_next(statg->items[TEST_A_ITEM], &next_id_a, &value);
-		OSMO_ASSERT(rc > 0);
+		OSMO_ASSERT(rc == 1);
 		OSMO_ASSERT(value == i);
 	}
 
 	rc = osmo_stat_item_get_next(statg->items[TEST_B_ITEM], &next_id_b, &value);
-	OSMO_ASSERT(rc > 0);
+	OSMO_ASSERT(rc == 90 - 65 + 1);
 	OSMO_ASSERT(value == 1000 + 90);
 
 	for (i = 91; i <= 96; i++) {
 		rc = osmo_stat_item_get_next(statg->items[TEST_B_ITEM], &next_id_b, &value);
-		OSMO_ASSERT(rc > 0);
+		OSMO_ASSERT(rc == 1);
 		OSMO_ASSERT(value == 1000 + i);
 	}
 
 	/* Test Discard (single item) */
 	osmo_stat_item_set(statg->items[TEST_A_ITEM], 97);
 	rc = osmo_stat_item_discard(statg->items[TEST_A_ITEM], &next_id_a);
-	OSMO_ASSERT(rc > 0);
+	OSMO_ASSERT(rc == 1);
 
 	rc = osmo_stat_item_discard(statg->items[TEST_A_ITEM], &next_id_a);
 	OSMO_ASSERT(rc == 0);
@@ -228,7 +228,7 @@ static void stat_test(void)
 
 	osmo_stat_item_set(statg->items[TEST_A_ITEM], 98);
 	rc = osmo_stat_item_get_next(statg->items[TEST_A_ITEM], &next_id_a, &value);
-	OSMO_ASSERT(rc > 0);
+	OSMO_ASSERT(rc == 1);
 	OSMO_ASSERT(value == 98);
 
 	rc = osmo_stat_item_get_next(statg->items[TEST_A_ITEM], &next_id_a, &value);
