@@ -107,7 +107,6 @@
 static LLIST_HEAD(osmo_stats_reporter_list);
 static void *osmo_stats_ctx = NULL;
 static int is_initialised = 0;
-static int32_t current_stat_item_next_id = 0;
 
 static struct osmo_stats_config s_stats_config = {
 	.interval = STATS_DEFAULT_INTERVAL,
@@ -236,12 +235,27 @@ void osmo_stats_reporter_free(struct osmo_stats_reporter *srep)
 	talloc_free(srep);
 }
 
+static int osmo_stats_discard_item(struct osmo_stat_item_group *statg, struct osmo_stat_item *item, void *sctx_)
+{
+	return osmo_stat_item_discard(item, &item->stats_next_id);
+}
+
+static int osmo_stats_discard_group(struct osmo_stat_item_group *statg, void *sctx_)
+{
+	return osmo_stat_item_for_each_item(statg, &osmo_stats_discard_item, NULL);
+}
+
+static int osmo_stats_discard_all()
+{
+	return osmo_stat_item_for_each_group(&osmo_stats_discard_group, NULL);
+}
+
 /*! Initilize the stats reporting module; call this once in your program
  *  \param[in] ctx Talloc context from which stats related memory is allocated */
 void osmo_stats_init(void *ctx)
 {
 	osmo_stats_ctx = ctx;
-	osmo_stat_item_discard_all(&current_stat_item_next_id);
+	osmo_stats_discard_all();
 
 	is_initialised = 1;
 	start_timer();
@@ -694,18 +708,17 @@ static int osmo_stat_item_handler(
 	struct osmo_stat_item_group *statg, struct osmo_stat_item *item, void *sctx_)
 {
 	struct osmo_stats_reporter *srep;
-	int32_t next_id = current_stat_item_next_id;
 	int32_t value;
 	int have_value;
 
-	have_value = osmo_stat_item_get_next(item, &next_id, &value) > 0;
+	have_value = osmo_stat_item_get_next(item, &item->stats_next_id, &value) > 0;
 	if (!have_value) {
 		/* Send the last value in case a flush is requested */
 		value = osmo_stat_item_get_last(item);
 	} else {
 		int32_t next_val;
 		/* If we have multiple values only send the max */
-		while (osmo_stat_item_get_next(item, &next_id, &next_val) > 0)
+		while (osmo_stat_item_get_next(item, &item->stats_next_id, &next_val) > 0)
 			value = OSMO_MAX(value, next_val);
 	}
 
@@ -798,7 +811,7 @@ int osmo_stats_report()
 	osmo_stat_item_for_each_group(osmo_stat_item_group_handler, NULL);
 
 	/* global actions */
-	osmo_stat_item_discard_all(&current_stat_item_next_id);
+	osmo_stats_discard_all();
 	flush_all_reporters();
 	TRACE(LIBOSMOCORE_STATS_DONE());
 

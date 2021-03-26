@@ -37,14 +37,15 @@
  *
  *  The only supported value type is an int32_t.
  *
- *  Getting values from the osmo_stat_item does not modify its state to
- *  allow for multiple independent back-ends retrieving values (e.g. VTY
- *  and statd).
+ *  Getting values from osmo_stat_item is usually done at a high level
+ *  through the stats API (stats.c). It uses item->stats_next_id to
+ *  store what has been sent to all enabled reporters. It is also
+ *  possible to read from osmo_stat_item directly, without modifying
+ *  its state, by storing next_id outside of osmo_stat_item.
  *
  *  Each value stored in the FIFO of an osmo_stat_item has an associated
- *  value_id.  The value_id is derived from an application-wide globally
- *  incrementing counter, so (until the counter wraps) more recent
- *  values will have higher values.
+ *  value_id.  The value_id is increased with each value, so (until the
+ *  counter wraps) more recent values will have higher values.
  *
  *  When a new value is set, the oldest value in the FIFO gets silently
  *  overwritten.  Lost values are skipped when getting values from the
@@ -74,14 +75,13 @@
 
 #include <osmocom/core/utils.h>
 #include <osmocom/core/linuxlist.h>
+#include <osmocom/core/logging.h>
 #include <osmocom/core/talloc.h>
 #include <osmocom/core/timer.h>
 #include <osmocom/core/stat_item.h>
 
 /*! global list of stat_item groups */
 static LLIST_HEAD(osmo_stat_item_groups);
-/*! counter for assigning globally unique value identifiers */
-static int32_t global_value_id = 0;
 
 /*! talloc context from which we allocate */
 static void *tall_stat_item_ctx;
@@ -146,7 +146,7 @@ struct osmo_stat_item_group *osmo_stat_item_group_alloc(void *ctx,
 
 		group->items[item_idx] = item;
 		item->last_offs = desc->item_desc[item_idx].num_values - 1;
-		item->last_value_index = -1;
+		item->stats_next_id = 1;
 		item->desc = &desc->item_desc[item_idx];
 
 		for (i = 0; i <= item->last_offs; i++) {
@@ -199,16 +199,16 @@ void osmo_stat_item_dec(struct osmo_stat_item *item, int32_t value)
  */
 void osmo_stat_item_set(struct osmo_stat_item *item, int32_t value)
 {
+	int32_t id = item->values[item->last_offs].id + 1;
+	if (id == OSMO_STAT_ITEM_NOVALUE_ID)
+		id++;
+
 	item->last_offs += 1;
 	if (item->last_offs >= item->desc->num_values)
 		item->last_offs = 0;
 
-	global_value_id += 1;
-	if (global_value_id == OSMO_STAT_ITEM_NOVALUE_ID)
-		global_value_id += 1;
-
 	item->values[item->last_offs].value = value;
-	item->values[item->last_offs].id    = global_value_id;
+	item->values[item->last_offs].id    = id;
 }
 
 /*! Retrieve the next value from the osmo_stat_item object.
@@ -276,10 +276,8 @@ int osmo_stat_item_discard(const struct osmo_stat_item *item, int32_t *next_id)
 /*! Skip all values of all items and update \a next_id accordingly */
 int osmo_stat_item_discard_all(int32_t *next_id)
 {
-	int discarded = global_value_id + 1 - *next_id;
-	*next_id = global_value_id + 1;
-
-	return discarded;
+	LOGP(DLSTATS, LOGL_ERROR, "osmo_stat_item_discard_all is deprecated (no-op)\n");
+	return 0;
 }
 
 /*! Initialize the stat item module. Call this once from your program.
@@ -382,7 +380,7 @@ void osmo_stat_item_reset(struct osmo_stat_item *item)
 	unsigned int i;
 
 	item->last_offs = item->desc->num_values - 1;
-	item->last_value_index = -1;
+	item->stats_next_id = 1;
 
 	for (i = 0; i <= item->last_offs; i++) {
 		item->values[i].value = item->desc->default_value;

@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 
+#include <osmocom/core/defs.h>
 #include <osmocom/core/linuxlist.h>
 
 struct osmo_stat_item_desc;
@@ -23,9 +24,11 @@ struct osmo_stat_item_value {
 struct osmo_stat_item {
 	/*! back-reference to the item description */
 	const struct osmo_stat_item_desc *desc;
-	/*! the index of the freshest value */
-	int32_t last_value_index;
-	/*! offset to the freshest value in the value FIFO */
+	/* internal use by stats API (stats.c): the id of the next value to
+	 * be read from the FIFO. If accessing osmo_stat_item directly, without
+	 * the stats API, store this value elsewhere. */
+	int32_t stats_next_id;
+	/*! the index of the last value written to the FIFO */
 	int16_t last_offs;
 	/*! value FIFO */
 	struct osmo_stat_item_value values[0];
@@ -98,7 +101,8 @@ static int32_t osmo_stat_item_get_last(const struct osmo_stat_item *item);
 
 int osmo_stat_item_discard(const struct osmo_stat_item *item, int32_t *next_id);
 
-int osmo_stat_item_discard_all(int32_t *next_id);
+int osmo_stat_item_discard_all(int32_t *next_id)
+	OSMO_DEPRECATED("Use osmo_stat_item_discard with item-specific next_id instead");
 
 typedef int (*osmo_stat_item_handler_t)(
 	struct osmo_stat_item_group *, struct osmo_stat_item *, void *);

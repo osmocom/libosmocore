@@ -234,21 +234,6 @@ static void stat_test(void)
 	rc = osmo_stat_item_get_next(statg->items[TEST_A_ITEM], &next_id_a, &value);
 	OSMO_ASSERT(rc == 0);
 
-	/* Test Discard (all items) */
-	osmo_stat_item_set(statg->items[TEST_A_ITEM], 99);
-	osmo_stat_item_set(statg->items[TEST_A_ITEM], 100);
-	osmo_stat_item_set(statg->items[TEST_A_ITEM], 101);
-	osmo_stat_item_set(statg->items[TEST_B_ITEM], 99);
-	osmo_stat_item_set(statg->items[TEST_B_ITEM], 100);
-
-	rc = osmo_stat_item_discard_all(&next_id_a);
-	rc = osmo_stat_item_discard_all(&next_id_b);
-
-	rc = osmo_stat_item_get_next(statg->items[TEST_A_ITEM], &next_id_a, &value);
-	OSMO_ASSERT(rc == 0);
-	rc = osmo_stat_item_get_next(statg->items[TEST_B_ITEM], &next_id_b, &value);
-	OSMO_ASSERT(rc == 0);
-
 	osmo_stat_item_group_free(statg);
 
 	sgrp2 = osmo_stat_item_get_group_by_name_idx("test.one", 0);
