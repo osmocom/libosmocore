@@ -52,6 +52,23 @@
  *
  */
 
+/* Struct overview:
+ * Each osmo_stat_item is attached to an osmo_stat_item_group, which is
+ * attached to the global osmo_stat_item_groups list.
+ *
+ *                       osmo_stat_item_groups
+ *                           /           \
+ *                        group1        group2
+ *                       /      \
+ *                    item1    item2
+ *                      |
+ *                   values
+ *                  /      \
+ *                 1        2
+ *                 |-id     |-id
+ *                 '-value  '-value
+ */
+
 #include <stdint.h>
 #include <string.h>
 
