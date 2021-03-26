@@ -195,6 +195,7 @@ static void stat_test(void)
 		osmo_stat_item_set(statg->items[TEST_B_ITEM], 1000 + i);
 	}
 
+	fprintf(stderr, "Skipping %d values\n", 93 - 65);
 	rc = osmo_stat_item_get_next(statg->items[TEST_A_ITEM], &next_id_a, &value);
 	OSMO_ASSERT(rc == 93 - 65 + 1);
 	OSMO_ASSERT(value == 93);
@@ -205,6 +206,7 @@ static void stat_test(void)
 		OSMO_ASSERT(value == i);
 	}
 
+	fprintf(stderr, "Skipping %d values\n", 90 - 65);
 	rc = osmo_stat_item_get_next(statg->items[TEST_B_ITEM], &next_id_b, &value);
 	OSMO_ASSERT(rc == 90 - 65 + 1);
 	OSMO_ASSERT(value == 1000 + 90);

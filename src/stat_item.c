@@ -261,6 +261,10 @@ int osmo_stat_item_get_next(const struct osmo_stat_item *item, int32_t *next_id,
 
 	*next_id = item_value->id + 1;
 
+	if (id_delta > 1) {
+		LOGP(DLSTATS, LOGL_ERROR, "%s: %d stats values skipped\n", item->desc->name, id_delta - 1);
+	}
+
 	return id_delta;
 }
 
