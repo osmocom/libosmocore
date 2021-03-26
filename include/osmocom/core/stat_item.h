@@ -91,14 +91,14 @@ struct osmo_stat_item_group *osmo_stat_item_get_group_by_name_idx(
 const struct osmo_stat_item *osmo_stat_item_get_by_name(
 	const struct osmo_stat_item_group *statg, const char *name);
 
-int osmo_stat_item_get_next(const struct osmo_stat_item *item, int32_t *idx, int32_t *value);
+int osmo_stat_item_get_next(const struct osmo_stat_item *item, int32_t *next_id, int32_t *value);
 
 /*! Get the last (freshest) value */
 static int32_t osmo_stat_item_get_last(const struct osmo_stat_item *item);
 
-int osmo_stat_item_discard(const struct osmo_stat_item *item, int32_t *idx);
+int osmo_stat_item_discard(const struct osmo_stat_item *item, int32_t *next_id);
 
-int osmo_stat_item_discard_all(int32_t *idx);
+int osmo_stat_item_discard_all(int32_t *next_id);
 
 typedef int (*osmo_stat_item_handler_t)(
 	struct osmo_stat_item_group *, struct osmo_stat_item *, void *);

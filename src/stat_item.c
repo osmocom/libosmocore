@@ -195,33 +195,33 @@ void osmo_stat_item_set(struct osmo_stat_item *item, int32_t value)
 }
 
 /*! Retrieve the next value from the osmo_stat_item object.
- * If a new value has been set, it is returned. The idx is used to decide
+ * If a new value has been set, it is returned. The next_id is used to decide
  * which value to return.
- * On success, *idx is updated to refer to the next unread value. If
- * values have been missed due to FIFO overflow, *idx is incremented by
+ * On success, *next_id is updated to refer to the next unread value. If
+ * values have been missed due to FIFO overflow, *next_id is incremented by
  * (1 + num_lost).
  * This way, the osmo_stat_item object can be kept stateless from the reader's
  * perspective and therefore be used by several backends simultaneously.
  *
- * \param val	the osmo_stat_item object
- * \param idx	identifies the next value to be read
- * \param value	a pointer to store the value
+ * \param val     the osmo_stat_item object
+ * \param next_id identifies the next value to be read
+ * \param value   a pointer to store the value
  * \returns  the increment of the index (0: no value has been read,
  *           1: one value has been taken,
  *           (1+n): n values have been skipped, one has been taken)
  */
-int osmo_stat_item_get_next(const struct osmo_stat_item *item, int32_t *next_idx,
+int osmo_stat_item_get_next(const struct osmo_stat_item *item, int32_t *next_id,
 	int32_t *value)
 {
 	const struct osmo_stat_item_value *next_value;
 	const struct osmo_stat_item_value *item_value = NULL;
-	int idx_delta;
+	int id_delta;
 	int next_offs;
 
 	next_offs = item->last_offs;
 	next_value = &item->values[next_offs];
 
-	while (next_value->id - *next_idx >= 0 &&
+	while (next_value->id - *next_id >= 0 &&
 		next_value->id != OSMO_STAT_ITEM_NOVALUE_ID)
 	{
 		item_value = next_value;
@@ -240,27 +240,27 @@ int osmo_stat_item_get_next(const struct osmo_stat_item *item, int32_t *next_idx
 
 	*value = item_value->value;
 
-	idx_delta = item_value->id + 1 - *next_idx;
+	id_delta = item_value->id + 1 - *next_id;
 
-	*next_idx = item_value->id + 1;
+	*next_id = item_value->id + 1;
 
-	return idx_delta;
+	return id_delta;
 }
 
-/*! Skip/discard all values of this item and update \a idx accordingly */
-int osmo_stat_item_discard(const struct osmo_stat_item *item, int32_t *idx)
+/*! Skip/discard all values of this item and update \a next_id accordingly */
+int osmo_stat_item_discard(const struct osmo_stat_item *item, int32_t *next_id)
 {
-	int discarded = item->values[item->last_offs].id + 1 - *idx;
-	*idx = item->values[item->last_offs].id + 1;
+	int discarded = item->values[item->last_offs].id + 1 - *next_id;
+	*next_id = item->values[item->last_offs].id + 1;
 
 	return discarded;
 }
 
-/*! Skip all values of all items and update \a idx accordingly */
-int osmo_stat_item_discard_all(int32_t *idx)
+/*! Skip all values of all items and update \a next_id accordingly */
+int osmo_stat_item_discard_all(int32_t *next_id)
 {
-	int discarded = global_value_id + 1 - *idx;
-	*idx = global_value_id + 1;
+	int discarded = global_value_id + 1 - *next_id;
+	*next_id = global_value_id + 1;
 
 	return discarded;
 }
