@@ -43,6 +43,7 @@ const struct value_string osmo_bts_features_descs[] = {
 	{ BTS_FEAT_IPV6_NSVC,		"NSVC IPv6" },
 	{ BTS_FEAT_ACCH_REP,		"FACCH/SACCH Repetition" },
 	{ BTS_FEAT_CCN,			"Cell Change Notification (CCN)" },
+	{ BTS_FEAT_VAMOS,		"VAMOS (Voice services over Adaptive Multi-user channels on One Slot)" },
 	{ 0, NULL }
 };
 

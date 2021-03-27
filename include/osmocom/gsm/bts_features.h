@@ -28,6 +28,7 @@ enum osmo_bts_features {
 	BTS_FEAT_IPV6_NSVC,
 	BTS_FEAT_ACCH_REP,
 	BTS_FEAT_CCN, /* Is CCN supported by the cell? TS 44.060 sec 8.8.2 */
+	BTS_FEAT_VAMOS, /* Is the BTS VAMOS capable? */
 	_NUM_BTS_FEAT
 };
 
