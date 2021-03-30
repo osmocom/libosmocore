@@ -1922,6 +1922,8 @@ DEFUN_HIDDEN(show_ns, show_ns_cmd, "show ns",
 {
 	dump_ns_entities(vty, vty_nsi, false, false);
 	dump_ns_bind(vty, vty_nsi, false);
+	if (vty_fr_network && llist_count(&vty_fr_network->links))
+		osmo_fr_network_dump_vty(vty, vty_fr_network);
 	return CMD_SUCCESS;
 }
 

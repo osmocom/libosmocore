@@ -1014,3 +1014,38 @@ struct osmo_fr_dlc *osmo_fr_dlc_by_dlci(struct osmo_fr_link *link, uint16_t dlci
 	}
 	return NULL;
 }
+
+
+#include <osmocom/vty/vty.h>
+#include <osmocom/vty/tdef_vty.h>
+
+static void fr_dlc_dump_vty(struct vty *vty, const struct osmo_fr_dlc *dlc)
+{
+	vty_out(vty, "  FR DLC %05u: %s%s%s%s", dlc->dlci,
+		dlc->active ? "ACTIVE" : "INACTIVE",
+		dlc->add ? " ADDED" : "", dlc->del ? " DELETED" : "", VTY_NEWLINE);
+}
+
+static void fr_link_dump_vty(struct vty *vty, const struct osmo_fr_link *link)
+{
+	const struct osmo_fr_dlc *dlc;
+
+	vty_out(vty, "FR Link '%s': Role %s, LastRxSeq %u, LastTxSeq %u%s",
+		link->name, link->role == FR_ROLE_USER_EQUIPMENT ? "USER" : "NETWORK",
+		link->last_rx_seq, link->last_tx_seq, VTY_NEWLINE);
+	llist_for_each_entry(dlc, &link->dlc_list, list) {
+		fr_dlc_dump_vty(vty, dlc);
+	}
+}
+
+void osmo_fr_network_dump_vty(struct vty *vty, const struct osmo_fr_network *net)
+{
+	struct osmo_fr_link *link;
+
+	vty_out(vty, "FR Network: N391 %u, N392 %u, N393 %u%s",
+		net->n391, net->n392, net->n393, VTY_NEWLINE);
+	osmo_tdef_vty_out_all(vty, net->T_defs, "    ");
+	llist_for_each_entry(link, &net->links, list) {
+		fr_link_dump_vty(vty, link);
+	}
+}
