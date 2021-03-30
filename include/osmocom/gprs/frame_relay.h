@@ -131,6 +131,7 @@ struct osmo_fr_dlc {
 
 /* allocate a frame relay network */
 struct osmo_fr_network *osmo_fr_network_alloc(void *ctx);
+void osmo_fr_network_free(struct osmo_fr_network *net);
 
 /* allocate a frame relay link in a given network */
 struct osmo_fr_link *osmo_fr_link_alloc(struct osmo_fr_network *net, enum osmo_fr_role role, const char *name);

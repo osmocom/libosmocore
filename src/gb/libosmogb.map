@@ -100,6 +100,7 @@ bssgp_bvc_fsm_set_max_pdu_len;
 bssgp_bvc_fsm_get_max_pdu_len;
 
 osmo_fr_network_alloc;
+osmo_fr_network_free;
 osmo_fr_link_alloc;
 osmo_fr_link_free;
 osmo_fr_dlc_alloc;
