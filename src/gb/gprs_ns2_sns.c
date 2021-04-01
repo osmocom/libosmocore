@@ -1355,7 +1355,19 @@ static void ns2_sns_st_configured(struct osmo_fsm_inst *fi, uint32_t event, void
 
 static void ns2_sns_st_configured_onenter(struct osmo_fsm_inst *fi, uint32_t old_state)
 {
+	struct gprs_ns2_vc *nsvc;
+	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
 	struct gprs_ns2_nse *nse = nse_inst_from_fi(fi);
+	/* NS-VC status updates are only parsed in ST_CONFIGURED.
+	 * Do an initial check if there are any nsvc alive atm */
+	llist_for_each_entry(nsvc, &nse->nsvc, list) {
+		if (ns2_vc_is_unblocked(nsvc)) {
+			gss->alive = true;
+			osmo_timer_del(&fi->timer);
+			break;
+		}
+	}
+
 	ns2_prim_status_ind(nse, NULL, 0, GPRS_NS2_AFF_CAUSE_SNS_CONFIGURED);
 }
 
