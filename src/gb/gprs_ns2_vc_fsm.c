@@ -460,8 +460,8 @@ static void ns2_st_alive_onenter(struct osmo_fsm_inst *fi, uint32_t old_state)
 	if (old_state != GPRS_NS2_ST_RECOVERING)
 		priv->N = 0;
 
-	ns2_nse_notify_unblocked(priv->nsvc, false);
 	start_test_procedure(fi, true);
+	ns2_nse_notify_unblocked(priv->nsvc, false);
 }
 
 static const struct osmo_fsm_state ns2_vc_states[] = {
