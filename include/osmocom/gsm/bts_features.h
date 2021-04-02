@@ -40,6 +40,11 @@ static inline const char *osmo_bts_features_desc(enum osmo_bts_features val)
 const char *osmo_bts_feature_name(enum osmo_bts_features feature)
 	OSMO_DEPRECATED("Use osmo_bts_features_desc() instead");
 
+extern const struct value_string osmo_bts_features_names[];
+
+static inline const char *osmo_bts_features_name(enum osmo_bts_features val)
+{ return get_value_string(osmo_bts_features_names, val); }
+
 static inline int osmo_bts_set_feature(struct bitvec *features, enum osmo_bts_features feature)
 {
 	OSMO_ASSERT(_NUM_BTS_FEAT < MAX_BTS_FEATURES);

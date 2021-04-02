@@ -47,8 +47,33 @@ const struct value_string osmo_bts_features_descs[] = {
 	{ 0, NULL }
 };
 
-/*! return string representation of a BTS feature */
+/*! return description string of a BTS feature (osmo_bts_features_descs).
+ * To get the plain feature name, use osmo_bts_features_name() instead. */
 const char *osmo_bts_feature_name(enum osmo_bts_features feature)
 {
 	return get_value_string(osmo_bts_features_descs, feature);
 }
+
+const struct value_string osmo_bts_features_names[] = {
+	{ BTS_FEAT_HSCSD, "HSCSD" },
+	{ BTS_FEAT_GPRS, "GPRS" },
+	{ BTS_FEAT_EGPRS, "EGPRS" },
+	{ BTS_FEAT_ECSD, "ECSD" },
+	{ BTS_FEAT_HOPPING, "HOPPING" },
+	{ BTS_FEAT_MULTI_TSC, "MULTI_TSC" },
+	{ BTS_FEAT_OML_ALERTS, "OML_ALERTS" },
+	{ BTS_FEAT_AGCH_PCH_PROP, "AGCH_PCH_PROP" },
+	{ BTS_FEAT_CBCH, "CBCH" },
+	{ BTS_FEAT_SPEECH_F_V1, "SPEECH_F_V1" },
+	{ BTS_FEAT_SPEECH_H_V1, "SPEECH_H_V1" },
+	{ BTS_FEAT_SPEECH_F_EFR, "SPEECH_F_EFR" },
+	{ BTS_FEAT_SPEECH_F_AMR, "SPEECH_F_AMR" },
+	{ BTS_FEAT_SPEECH_H_AMR, "SPEECH_H_AMR" },
+	{ BTS_FEAT_ETWS_PN, "ETWS_PN" },
+	{ BTS_FEAT_PAGING_COORDINATION, "PAGING_COORDINATION" },
+	{ BTS_FEAT_IPV6_NSVC, "IPV6_NSVC" },
+	{ BTS_FEAT_ACCH_REP, "ACCH_REP" },
+	{ BTS_FEAT_CCN, "CCN" },
+	{ BTS_FEAT_VAMOS, "VAMOS" },
+	{}
+};
