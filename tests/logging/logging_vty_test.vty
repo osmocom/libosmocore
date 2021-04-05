@@ -526,3 +526,6 @@ DAA ERROR This is the log message
 logging_vty_test# logp lglobal debug This log message is not echoed
 logging_vty_test# logp lglobal notice This log message is echoed
 DLGLOBAL NOTICE This log message is echoed
+
+logging_vty_test# logp lctrl notice This is a CTRL specific message
+DLCTRL NOTICE This is a CTRL specific message

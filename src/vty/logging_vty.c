@@ -1110,6 +1110,23 @@ DEFUN(vty_logp,
 	int category = log_parse_category(argv[0]);
 	int level = log_parse_level(argv[1]);
 	char *str = argv_concat(argv, argc, 2);
+
+	if (level < 0) {
+		vty_out(vty, "%% Invalid level '%s'%s", argv[1], VTY_NEWLINE);
+		return CMD_WARNING;
+	}
+
+	if (category < 0) {
+		vty_out(vty, "%% Invalid category '%s'%s", argv[0], VTY_NEWLINE);
+		return CMD_WARNING;
+	}
+
+	/* Properly handle library specific sub-systems */
+	if ((unsigned int) category >= osmo_log_info->num_cat_user) {
+		category -= osmo_log_info->num_cat_user - 1;
+		category *= -1;
+	}
+
 	LOGP(category, level, "%s\n", str);
 	return CMD_SUCCESS;
 }
