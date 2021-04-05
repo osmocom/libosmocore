@@ -131,7 +131,7 @@ DEFUN(enable_logging,
 
 	conn = (struct telnet_connection *) vty->priv;
 	if (conn->dbg) {
-		vty_out(vty, "Logging already enabled.%s", VTY_NEWLINE);
+		vty_out(vty, "%% Logging already enabled.%s", VTY_NEWLINE);
 		return CMD_WARNING;
 	}
 
@@ -158,7 +158,7 @@ struct log_target *osmo_log_vty2tgt(struct vty *vty)
 
 	conn = (struct telnet_connection *) vty->priv;
 	if (!conn->dbg)
-		vty_out(vty, "Logging was not enabled.%s", VTY_NEWLINE);
+		vty_out(vty, "%% Logging was not enabled.%s", VTY_NEWLINE);
 
 	return conn->dbg;
 }
@@ -372,12 +372,12 @@ DEFUN(logging_level,
 	int level = log_parse_level(argv[1]);
 
 	if (level < 0) {
-		vty_out(vty, "Invalid level '%s'%s", argv[1], VTY_NEWLINE);
+		vty_out(vty, "%% Invalid level '%s'%s", argv[1], VTY_NEWLINE);
 		return CMD_WARNING;
 	}
 
 	if (category < 0) {
-		vty_out(vty, "Invalid category '%s'%s", argv[0], VTY_NEWLINE);
+		vty_out(vty, "%% Invalid category '%s'%s", argv[0], VTY_NEWLINE);
 		return CMD_WARNING;
 	}
 
@@ -595,7 +595,7 @@ gDEFUN(cfg_description, cfg_description_cmd,
 	char **dptr = vty->index_sub;
 
 	if (!dptr) {
-		vty_out(vty, "vty->index_sub == NULL%s", VTY_NEWLINE);
+		vty_out(vty, "%% vty->index_sub == NULL%s", VTY_NEWLINE);
 		return CMD_WARNING;
 	}
 
@@ -616,7 +616,7 @@ gDEFUN(cfg_no_description, cfg_no_description_cmd,
 	char **dptr = vty->index_sub;
 
 	if (!dptr) {
-		vty_out(vty, "vty->index_sub == NULL%s", VTY_NEWLINE);
+		vty_out(vty, "%% vty->index_sub == NULL%s", VTY_NEWLINE);
 		return CMD_WARNING;
 	}
 
