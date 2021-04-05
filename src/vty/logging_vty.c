@@ -372,12 +372,12 @@ DEFUN(logging_level,
 	int level = log_parse_level(argv[1]);
 
 	if (level < 0) {
-		vty_out(vty, "Invalid level `%s'%s", argv[1], VTY_NEWLINE);
+		vty_out(vty, "Invalid level '%s'%s", argv[1], VTY_NEWLINE);
 		return CMD_WARNING;
 	}
 
 	if (category < 0) {
-		vty_out(vty, "Invalid category `%s'%s", argv[0], VTY_NEWLINE);
+		vty_out(vty, "Invalid category '%s'%s", argv[0], VTY_NEWLINE);
 		return CMD_WARNING;
 	}
 
@@ -889,7 +889,7 @@ DEFUN(cfg_log_file, cfg_log_file_cmd,
 	if (!tgt) {
 		tgt = log_target_create_file(fname);
 		if (!tgt) {
-			vty_out(vty, "%% Unable to create file `%s'%s",
+			vty_out(vty, "%% Unable to create file '%s'%s",
 				fname, VTY_NEWLINE);
 			RET_WITH_UNLOCK(CMD_WARNING);
 		}
@@ -913,7 +913,7 @@ DEFUN(cfg_no_log_file, cfg_no_log_file_cmd,
 	log_tgt_mutex_lock();
 	tgt = log_target_find(LOG_TGT_TYPE_FILE, fname);
 	if (!tgt) {
-		vty_out(vty, "%% No such log file `%s'%s",
+		vty_out(vty, "%% No such log file '%s'%s",
 			fname, VTY_NEWLINE);
 		RET_WITH_UNLOCK(CMD_WARNING);
 	}
