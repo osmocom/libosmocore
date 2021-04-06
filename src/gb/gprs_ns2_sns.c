@@ -1368,6 +1368,10 @@ static void ns2_sns_st_configured_onenter(struct osmo_fsm_inst *fi, uint32_t old
 		}
 	}
 
+	/* remove the initial NSVC if the NSVC isn't part of the configuration */
+	if (gss->sns_nsvc->sns_only)
+		gprs_ns2_free_nsvc(gss->sns_nsvc);
+
 	ns2_prim_status_ind(nse, NULL, 0, GPRS_NS2_AFF_CAUSE_SNS_CONFIGURED);
 }
 
