@@ -709,7 +709,7 @@ static int osmo_stat_item_handler(
 {
 	struct osmo_stats_reporter *srep;
 	int32_t value;
-	int have_value;
+	bool have_value;
 
 	have_value = osmo_stat_item_get_next(item, &item->stats_next_id, &value) > 0;
 	if (!have_value) {
