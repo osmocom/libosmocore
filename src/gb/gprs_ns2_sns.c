@@ -1378,7 +1378,8 @@ static void ns2_sns_st_configured_onenter(struct osmo_fsm_inst *fi, uint32_t old
 static const struct osmo_fsm_state ns2_sns_bss_states[] = {
 	[GPRS_SNS_ST_UNCONFIGURED] = {
 		.in_event_mask = 0, /* handled by all_state_action */
-		.out_state_mask = S(GPRS_SNS_ST_BSS_SIZE),
+		.out_state_mask = S(GPRS_SNS_ST_UNCONFIGURED) |
+				  S(GPRS_SNS_ST_BSS_SIZE),
 		.name = "UNCONFIGURED",
 		.action = ns2_sns_st_bss_unconfigured,
 	},
