@@ -785,7 +785,7 @@ int ns2_vc_force_unconfigured(struct gprs_ns2_vc *nsvc)
 int ns2_vc_block(struct gprs_ns2_vc *nsvc)
 {
 	struct gprs_ns2_vc_priv *priv = nsvc->fi->priv;
-	if (priv->initiate_block)
+	if (priv->om_blocked)
 		return -EALREADY;
 
 	return osmo_fsm_inst_dispatch(nsvc->fi, GPRS_NS2_EV_REQ_OM_BLOCK, NULL);
@@ -797,7 +797,7 @@ int ns2_vc_block(struct gprs_ns2_vc *nsvc)
 int ns2_vc_unblock(struct gprs_ns2_vc *nsvc)
 {
 	struct gprs_ns2_vc_priv *priv = nsvc->fi->priv;
-	if (!priv->initiate_block)
+	if (!priv->om_blocked)
 		return -EALREADY;
 
 	return osmo_fsm_inst_dispatch(nsvc->fi, GPRS_NS2_EV_REQ_OM_UNBLOCK, NULL);
