@@ -1579,7 +1579,7 @@ int gsm48_mr_cfg_from_gsm0808_sc_cfg(struct gsm48_multi_rate_conf *cfg,
 	/* Rate 5,15k can never be selected (see table) */
 	cfg->m5_15 = 0;
 
-	if (s15_s0 & GSM0808_SC_CFG_AMR_4_75_5_90_7_40_12_20 & 0xff) {
+	if (s15_s0 & GSM0808_SC_CFG_AMR_4_75_5_90_7_40_12_20) {
 		/* Table Table 7.11.3.1.3-2 lists one mode that selects 4
 		 * rates at once (Config-NB-Code = 1). The rates selected
 		 * are known to be compatible between GERAN and UTRAN, since
