@@ -833,6 +833,11 @@ static uint8_t put_old_bss_to_new_bss_information(struct msgb *msg,
 		msgb_tlv_put(msg, GSM0808_FE_IE_CURRENT_CHANNEL_TYPE_2, 2, val);
 	}
 
+	if (i->last_eutran_plmn_id_present) {
+		msgb_put_u8(msg, GSM0808_FE_IE_LAST_USED_EUTRAN_PLMN_ID);
+		osmo_plmn_to_bcd(msgb_put(msg, 3), &i->last_eutran_plmn_id);
+	}
+
 	*tlv_len = (uint8_t) (msg->tail - old_tail);
 	return *tlv_len + 2;
 }

@@ -126,6 +126,9 @@ struct gsm0808_old_bss_to_new_bss_info {
 		uint8_t field;
 	} current_channel_type_2;
 
+	bool last_eutran_plmn_id_present;
+	struct osmo_plmn_id last_eutran_plmn_id;
+
 	/* more items are defined in the spec and may be added later */
 	bool more_items; /*< always set this to false */
 };
