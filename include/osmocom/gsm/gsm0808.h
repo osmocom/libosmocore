@@ -255,7 +255,7 @@ struct gsm0808_handover_complete {
 
 	bool chosen_encr_alg_present;
 	uint8_t chosen_encr_alg;
-	
+
 	bool chosen_channel_present;
 	uint8_t chosen_channel;
 
