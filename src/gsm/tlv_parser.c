@@ -433,7 +433,7 @@ int tlv_parse2(struct tlv_parsed *dec, int dec_multiples,
 	return num_parsed;
 }
 
-/*! take a master (src) tlvdev and fill up all empty slots in 'dst'
+/*! take a master (src) tlv_definition and fill up all empty slots in 'dst'
  *  \param dst TLV parser definition that is to be patched
  *  \param[in] src TLV parser definition whose content is patched into \a dst */
 void tlv_def_patch(struct tlv_definition *dst, const struct tlv_definition *src)
