@@ -372,6 +372,8 @@ gsm48_generate_mid;
 gsm48_generate_mid_from_imsi;
 gsm48_generate_mid_from_tmsi;
 gsm48_mi_to_string;
+gsm48_chan_mode_to_vamos;
+gsm48_chan_mode_to_non_vamos;
 osmo_mobile_identity_to_str_buf;
 osmo_mobile_identity_to_str_c;
 osmo_mobile_identity_cmp;

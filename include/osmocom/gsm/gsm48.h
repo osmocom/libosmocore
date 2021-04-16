@@ -118,3 +118,6 @@ struct gsm48_hdr *gsm48_push_l3hdr(struct msgb *msg,
 
 #define gsm48_push_l3hdr_tid(msg, pdisc, tid, msg_type) \
 	gsm48_push_l3hdr(msg, (pdisc & 0x0f) | (tid << 4), msg_type)
+
+enum gsm48_chan_mode gsm48_chan_mode_to_vamos(enum gsm48_chan_mode mode);
+enum gsm48_chan_mode gsm48_chan_mode_to_non_vamos(enum gsm48_chan_mode mode);

@@ -432,8 +432,54 @@ const struct value_string gsm48_chan_mode_names[] = {
 	{ GSM48_CMODE_DATA_12k0,	"DATA_12k0" },
 	{ GSM48_CMODE_DATA_6k0,		"DATA_6k0" },
 	{ GSM48_CMODE_DATA_3k6,		"DATA_3k6" },
+	{ GSM48_CMODE_SPEECH_V1_VAMOS,	"SPEECH_V1_VAMOS" },
+	{ GSM48_CMODE_SPEECH_V2_VAMOS,	"SPEECH_V2_VAMOS" },
+	{ GSM48_CMODE_SPEECH_V3_VAMOS,	"SPEECH_V3_VAMOS" },
+	{ GSM48_CMODE_SPEECH_V5_VAMOS,	"SPEECH_V5_VAMOS" },
 	{ 0,				NULL },
 };
+
+/*! Translate GSM48_CMODE_SPEECH_* to its corresponding GSM48_CMODE_SPEECH_*_VAMOS mode.
+ * If the mode has no equivalent VAMOS mode, return a negative value.
+ */
+enum gsm48_chan_mode gsm48_chan_mode_to_vamos(enum gsm48_chan_mode mode)
+{
+	switch (mode) {
+	case GSM48_CMODE_SPEECH_V1:
+	case GSM48_CMODE_SPEECH_V1_VAMOS:
+		return GSM48_CMODE_SPEECH_V1_VAMOS;
+	case GSM48_CMODE_SPEECH_EFR:
+	case GSM48_CMODE_SPEECH_V2_VAMOS:
+		return GSM48_CMODE_SPEECH_V2_VAMOS;
+	case GSM48_CMODE_SPEECH_AMR:
+	case GSM48_CMODE_SPEECH_V3_VAMOS:
+		return GSM48_CMODE_SPEECH_V3_VAMOS;
+	case GSM48_CMODE_SPEECH_V5_VAMOS:
+		return GSM48_CMODE_SPEECH_V5_VAMOS;
+	default:
+		return -1;
+	}
+}
+
+/*! Translate GSM48_CMODE_SPEECH_*_VAMOS to its corresponding GSM48_CMODE_SPEECH_* non-vamos mode.
+ * If the mode has no equivalent non-VAMOS mode, return a negative value.
+ */
+enum gsm48_chan_mode gsm48_chan_mode_to_non_vamos(enum gsm48_chan_mode mode)
+{
+	switch (mode) {
+	case GSM48_CMODE_SPEECH_V1_VAMOS:
+	case GSM48_CMODE_SPEECH_V1:
+		return GSM48_CMODE_SPEECH_V1;
+	case GSM48_CMODE_SPEECH_V2_VAMOS:
+	case GSM48_CMODE_SPEECH_EFR:
+		return GSM48_CMODE_SPEECH_EFR;
+	case GSM48_CMODE_SPEECH_V3_VAMOS:
+	case GSM48_CMODE_SPEECH_AMR:
+		return GSM48_CMODE_SPEECH_AMR;
+	default:
+		return -1;
+	}
+}
 
 const struct value_string gsm_chan_t_names[] = {
 	{ GSM_LCHAN_NONE,	"NONE" },

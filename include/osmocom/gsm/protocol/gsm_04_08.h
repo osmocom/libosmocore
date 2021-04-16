@@ -749,6 +749,10 @@ enum gsm48_chan_mode {
 	GSM48_CMODE_DATA_12k0	= 0x03,
 	GSM48_CMODE_DATA_6k0	= 0x0b,
 	GSM48_CMODE_DATA_3k6	= 0x13,
+	GSM48_CMODE_SPEECH_V1_VAMOS	= 0xc1,
+	GSM48_CMODE_SPEECH_V2_VAMOS	= 0xc2,
+	GSM48_CMODE_SPEECH_V3_VAMOS	= 0xc3,
+	GSM48_CMODE_SPEECH_V5_VAMOS	= 0xc5,
 };
 
 extern const struct value_string gsm48_chan_mode_names[];
