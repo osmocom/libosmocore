@@ -217,6 +217,7 @@ static int vty_nse_remove_vbind(struct vty_nse *vnse, struct vty_bind *vbind)
 		if (vnse_bind->vbind == vbind) {
 			llist_del(&vnse_bind->list);
 			talloc_free(vnse_bind);
+			return 0;
 		}
 	}
 
