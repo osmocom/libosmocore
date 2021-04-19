@@ -495,6 +495,13 @@ enum rsl_cmod_spd {
 #define RSL_CMOD_SP_GSM4	0x31
 #define RSL_CMOD_SP_GSM5	0x09
 #define RSL_CMOD_SP_GSM6	0x0d
+/* non-transparent data (asymmetric) */
+#define RSL_CMOD_CSD_NTA_43k5_14k5	0x61	/* asymmetric 43.5 kbit/s (DL) + 14.5 kbit/s (UL) */
+#define RSL_CMOD_CSD_NTA_29k0_14k5	0x62	/* asymmetric 29.0 kbit/s (DL) + 14.5 kbit/s (UL) */
+#define RSL_CMOD_CSD_NTA_43k5_29k0	0x63	/* asymmetric 43.5 kbit/s (DL) + 29.0 kbit/s (UL) */
+#define RSL_CMOD_CSD_NTA_14k5_43k5	0x69	/* asymmetric 14.5 kbit/s (DL) + 43.5 kbit/s (UL) */
+#define RSL_CMOD_CSD_NTA_14k5_29k0	0x6a	/* asymmetric 14.5 kbit/s (DL) + 29.0 kbit/s (UL) */
+#define RSL_CMOD_CSD_NTA_29k0_43k5	0x6b	/* asymmetric 29.0 kbit/s (DL) + 43.5 kbit/s (UL) */
 /* non-transparent data */
 #define RSL_CMOD_CSD_NT_43k5	0x74
 #define RSL_CMOD_CSD_NT_28k8	0x71
