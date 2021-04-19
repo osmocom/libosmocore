@@ -1995,6 +1995,7 @@ int gprs_ns2_sns_del_bind(struct gprs_ns2_nse *nse,
 		if (tmp->bind == bind) {
 			llist_del(&tmp->list);
 			found = true;
+			break;
 		}
 	}
 
