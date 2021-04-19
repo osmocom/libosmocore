@@ -487,6 +487,9 @@ enum rsl_cmod_spd {
 #define RSL_CMOD_SP_GSM1	0x01
 #define RSL_CMOD_SP_GSM2	0x11
 #define RSL_CMOD_SP_GSM3	0x21
+#define RSL_CMOD_SP_GSM4	0x31
+#define RSL_CMOD_SP_GSM5	0x09
+#define RSL_CMOD_SP_GSM6	0x0d
 /* non-transparent data */
 #define RSL_CMOD_CSD_NT_43k5	0x74
 #define RSL_CMOD_CSD_NT_28k8	0x71
