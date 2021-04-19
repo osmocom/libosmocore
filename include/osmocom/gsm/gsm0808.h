@@ -311,6 +311,7 @@ struct msgb *gsm0808_create_dtap(struct msgb *msg, uint8_t link_id);
 void gsm0808_prepend_dtap_header(struct msgb *msg, uint8_t link_id);
 
 const struct tlv_definition *gsm0808_att_tlvdef(void);
+extern const struct tlv_definition gsm0808_old_bss_to_new_bss_info_att_tlvdef;
 
 /*! Parse BSSAP TLV structure using \ref tlv_parse */
 #define osmo_bssap_tlv_parse(dec, buf, len) tlv_parse(dec, gsm0808_att_tlvdef(), buf, len, 0, 0)

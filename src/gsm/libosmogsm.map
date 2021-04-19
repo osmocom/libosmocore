@@ -154,6 +154,7 @@ gsm0503_mcs8;
 gsm0503_mcs9;
 
 gsm0808_att_tlvdef;
+gsm0808_old_bss_to_new_bss_info_att_tlvdef;
 gsm0808_bssap_name;
 gsm0808_bssmap_name;
 gsm0808_cause_name;
