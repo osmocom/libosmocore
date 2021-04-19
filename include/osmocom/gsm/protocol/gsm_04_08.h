@@ -1729,6 +1729,7 @@ static inline const char *osmo_lu_type_name(uint8_t lu_type)
 #define GSM48_IE_CHDES_2_AFTER	0x64
 #define GSM48_IE_MODE_SEC_CH	0x66
 #define GSM48_IE_F_CH_SEQ_AFTER	0x69
+#define GSM48_IE_EXTENDED_TSC_SET	0x6d
 #define GSM48_IE_MA_AFTER	0x72
 #define GSM48_IE_BA_RANGE	0x73
 #define GSM48_IE_GROUP_CHDES	0x74

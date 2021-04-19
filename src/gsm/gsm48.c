@@ -124,6 +124,7 @@ const struct tlv_definition gsm48_rr_att_tlvdef = {
 		[GSM48_IE_CHDES_2_AFTER]	= { TLV_TYPE_FIXED, 3 },
 		[GSM48_IE_MODE_SEC_CH]		= { TLV_TYPE_TV },
 		[GSM48_IE_F_CH_SEQ_AFTER]		= { TLV_TYPE_FIXED, 9 },
+		[GSM48_IE_EXTENDED_TSC_SET]	= { TLV_TYPE_TV },
 		[GSM48_IE_MA_AFTER]		= { TLV_TYPE_TLV },
 		[GSM48_IE_BA_RANGE]		= { TLV_TYPE_TLV },
 		[GSM48_IE_GROUP_CHDES]		= { TLV_TYPE_TLV },
