@@ -791,7 +791,7 @@ struct msgb *gsm0808_create_paging(const char *imsi, const uint32_t *tmsi,
 {
 	struct gsm0808_cell_id_list2 cil2 = {};
 
-	/* Mandatory emelents! */
+	/* Mandatory elements! */
 	OSMO_ASSERT(cil);
 
 	if (cil->id_list_len > GSM0808_CELL_ID_LIST2_MAXLEN)
