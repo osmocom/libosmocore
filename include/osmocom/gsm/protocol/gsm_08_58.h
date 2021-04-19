@@ -479,10 +479,15 @@ enum rsl_cmod_spd {
 	RSL_CMOD_SPD_DATA	= 0x02,
 	RSL_CMOD_SPD_SIGN	= 0x03,
 };
-#define RSL_CMOD_CRT_SDCCH	0x01
-#define RSL_CMOD_CRT_TCH_Bm	0x08	/* full-rate */
-#define RSL_CMOD_CRT_TCH_Lm	0x09	/* half-rate */
-/* FIXME: More CRT types */
+#define RSL_CMOD_CRT_SDCCH		0x01
+#define RSL_CMOD_CRT_TCH_Bm		0x08	/* full-rate */
+#define RSL_CMOD_CRT_TCH_Lm		0x09	/* half-rate */
+#define RSL_CMOD_CRT_TCH_BI_Bm		0x0a	/* full-rate: bi-directional (multislot) */
+#define RSL_CMOD_CRT_TCH_UNI_Bm		0x1a	/* full-rate: uni-directional (multislot) */
+#define RSL_CMOD_CRT_TCH_GROUP_Bm	0x18	/* full-rate: group call channel */
+#define RSL_CMOD_CRT_TCH_GROUP_Lm	0x19	/* half-rate: group call channel */
+#define RSL_CMOD_CRT_TCH_BCAST_Bm	0x28	/* full-rate: broadcast call channel */
+#define RSL_CMOD_CRT_TCH_BCAST_Lm	0x29	/* half-rate: broadcast call channel */
 /* Speech */
 #define RSL_CMOD_SP_GSM1	0x01
 #define RSL_CMOD_SP_GSM2	0x11
