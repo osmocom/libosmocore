@@ -357,6 +357,7 @@ enum abis_rsl_ie {
 
 	/* Osmocom specific */
 	RSL_IE_OSMO_REP_ACCH_CAP= 0x60,
+	RSL_IE_OSMO_TRAINING_SEQUENCE	= 0x61,
 
 	/* ip.access */
 	RSL_IE_IPAC_SRTP_CONFIG	= 0xe0,
