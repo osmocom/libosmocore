@@ -489,6 +489,8 @@ enum rsl_cmod_spd {
 #define RSL_CMOD_CRT_TCH_GROUP_Lm	0x19	/* half-rate: group call channel */
 #define RSL_CMOD_CRT_TCH_BCAST_Bm	0x28	/* full-rate: broadcast call channel */
 #define RSL_CMOD_CRT_TCH_BCAST_Lm	0x29	/* half-rate: broadcast call channel */
+#define RSL_CMOD_CRT_OSMO_TCH_VAMOS_Bm	0x88	/* full-rate in VAMOS mode */
+#define RSL_CMOD_CRT_OSMO_TCH_VAMOS_Lm	0x89	/* half-rate in VAMOS mode */
 /* Speech */
 #define RSL_CMOD_SP_GSM1	0x01
 #define RSL_CMOD_SP_GSM2	0x11
