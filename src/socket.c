@@ -972,11 +972,12 @@ int osmo_sock_init(uint16_t family, uint16_t type, uint8_t proto,
 /*! fill \ref osmo_fd for a give sfd
  *  \param[out] ofd file descriptor (will be filled in)
  *  \param[in] sfd socket file descriptor
+ *  \param[in] flags flags like \ref OSMO_SOCK_F_CONNECT
  *  \returns socket fd on success; negative on error
  *
  * This function fills the \a ofd structure.
  */
-static inline int osmo_fd_init_ofd(struct osmo_fd *ofd, int sfd)
+static inline int osmo_fd_init_ofd(struct osmo_fd *ofd, int sfd, unsigned int flags)
 {
 	int rc;
 
@@ -985,6 +986,14 @@ static inline int osmo_fd_init_ofd(struct osmo_fd *ofd, int sfd)
 
 	ofd->fd = sfd;
 	ofd->when = OSMO_FD_READ;
+
+	/* if we're doing a non-blocking connect, the completion will be signaled
+	 * by marking the fd as WRITE-able.  So in this exceptional case, we're
+	 * also interested in when the socket becomes write-able */
+	if ((flags & (OSMO_SOCK_F_CONNECT|OSMO_SOCK_F_NONBLOCK)) ==
+	     (OSMO_SOCK_F_CONNECT|OSMO_SOCK_F_NONBLOCK)) {
+		ofd->when |= OSMO_FD_WRITE;
+	}
 
 	rc = osmo_fd_register(ofd);
 	if (rc < 0) {
@@ -1011,7 +1020,7 @@ static inline int osmo_fd_init_ofd(struct osmo_fd *ofd, int sfd)
 int osmo_sock_init_ofd(struct osmo_fd *ofd, int family, int type, int proto,
 			const char *host, uint16_t port, unsigned int flags)
 {
-	return osmo_fd_init_ofd(ofd, osmo_sock_init(family, type, proto, host, port, flags));
+	return osmo_fd_init_ofd(ofd, osmo_sock_init(family, type, proto, host, port, flags), flags);
 }
 
 /*! Initialize a socket and fill \ref osmo_fd
@@ -1034,14 +1043,14 @@ int osmo_sock_init2_ofd(struct osmo_fd *ofd, int family, int type, int proto,
 			const char *remote_host, uint16_t remote_port, unsigned int flags)
 {
 	return osmo_fd_init_ofd(ofd, osmo_sock_init2(family, type, proto, local_host,
-					local_port, remote_host, remote_port, flags));
+					local_port, remote_host, remote_port, flags), flags);
 }
 
 int osmo_sock_init_osa_ofd(struct osmo_fd *ofd, int type, int proto,
 			const struct osmo_sockaddr *local,
 			const struct osmo_sockaddr *remote, unsigned int flags)
 {
-	return osmo_fd_init_ofd(ofd, osmo_sock_init_osa(type, proto, local, remote, flags));
+	return osmo_fd_init_ofd(ofd, osmo_sock_init_osa(type, proto, local, remote, flags), flags);
 }
 
 /*! Initialize a socket and fill \ref sockaddr
@@ -1313,7 +1322,7 @@ err:
 int osmo_sock_unix_init_ofd(struct osmo_fd *ofd, uint16_t type, uint8_t proto,
 			    const char *socket_path, unsigned int flags)
 {
-	return osmo_fd_init_ofd(ofd, osmo_sock_unix_init(type, proto, socket_path, flags));
+	return osmo_fd_init_ofd(ofd, osmo_sock_unix_init(type, proto, socket_path, flags), flags);
 }
 
 /*! Get the IP and/or port number on socket in separate string buffers.
