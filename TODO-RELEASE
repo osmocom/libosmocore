@@ -9,3 +9,4 @@
 #library	what			description / commit summary line
 libosmovty	_LAST_OSMOVTY_NODE 	Raise _LAST_OSMOVTY_NODE by introducing some RESERVED*_NODE
 libosmogsm      gsm0808_old_bss_to_new_bss_info ABI break (struct changes size), gsm0808_old_bss_to_new_bss_info_att_tlvdef symbol added
+libosmosim	osim_card_hdl		ABI + API breakage due to new struct members

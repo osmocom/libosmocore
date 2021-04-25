@@ -11,6 +11,13 @@
 #define APDU_HDR_LEN	5
 #define MAX_AID_LEN	16 /* Table 13.2 of TS 102 221 */
 
+
+/*! Maximum Answer-To-Reset (ATR) size in bytes
+ *  @note defined in ISO/IEC 7816-3:2006(E) section 8.2.1 as 32, on top the initial character TS of section 8.1
+ *  @remark technical there is no size limitation since Yi present in T0,TDi will indicate if more interface bytes are present, including TDi+i
+ */
+#define OSIM_MAX_ATR_LEN 33
+
 /*! command-response pairs cases
  *
  * Enumeration used to identify the APDU structure based on command-response pair case , as specified in ISO/IEC 7816-3:2006(E) §12.1.
@@ -409,6 +416,10 @@ struct osim_card_hdl {
 
 	/*! list of applications found on card */
 	struct llist_head apps;
+
+	/*! ATR (Answer To Reset) of the card */
+	uint8_t atr[OSIM_MAX_ATR_LEN];
+	unsigned int atr_len;
 };
 
 struct osim_chan_hdl {

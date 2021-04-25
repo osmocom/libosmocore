@@ -56,6 +56,27 @@ struct pcsc_reader_state {
 	char *name;
 };
 
+static int pcsc_get_atr(struct osim_card_hdl *card)
+{
+	struct osim_reader_hdl *rh = card->reader;
+	struct pcsc_reader_state *st = rh->priv;
+	char pbReader[MAX_READERNAME];
+	DWORD dwReaderLen = sizeof(pbReader);
+	DWORD dwAtrLen = sizeof(card->atr);
+	DWORD dwState, dwProt;
+	long rc;
+
+	rc = SCardStatus(st->hCard, pbReader, &dwReaderLen, &dwState, &dwProt,
+			 card->atr, &dwAtrLen);
+	PCSC_ERROR(rc, "SCardStatus");
+	card->atr_len = dwAtrLen;
+
+	return 0;
+
+end:
+	return -EIO;
+}
+
 static struct osim_reader_hdl *pcsc_reader_open(int num, const char *id, void *ctx)
 {
 	struct osim_reader_hdl *rh;
@@ -129,6 +150,8 @@ static struct osim_card_hdl *pcsc_card_open(struct osim_reader_hdl *rh,
 	chan = talloc_zero(card, struct osim_chan_hdl);
 	chan->card = card;
 	llist_add(&chan->list, &card->channels);
+
+	pcsc_get_atr(card);
 
 	return card;
 
