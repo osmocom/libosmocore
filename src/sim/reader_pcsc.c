@@ -41,10 +41,7 @@
 if (rv != SCARD_S_SUCCESS) { \
 	fprintf(stderr, text ": %s (0x%lX)\n", pcsc_stringify_error(rv), rv); \
 	goto end; \
-} else { \
-        printf(text ": OK\n\n"); \
 }
-
 
 
 struct pcsc_reader_state {
@@ -166,13 +163,10 @@ static int pcsc_transceive(struct osim_reader_hdl *rh, struct msgb *msg)
 	DWORD rlen = msgb_tailroom(msg);
 	LONG rc;
 
-	printf("TX: %s\n", osmo_hexdump(msg->data, msg->len));
-
 	rc = SCardTransmit(st->hCard, st->pioSendPci, msg->data, msgb_length(msg),
 			   &st->pioRecvPci, msg->tail, &rlen);
 	PCSC_ERROR(rc, "SCardEndTransaction");
 
-	printf("RX: %s\n", osmo_hexdump(msg->tail, rlen));
 	msgb_put(msg, rlen);
 	msgb_apdu_le(msg) = rlen;
 

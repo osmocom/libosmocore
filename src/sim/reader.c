@@ -123,7 +123,6 @@ transceive_again:
 
 	/* save SW */
 	sw = msgb_apdu_sw(tmsg);
-	printf("sw = 0x%04x\n", sw);
 	msgb_apdu_sw(amsg) = sw;
 
 	switch (msgb_apdu_case(amsg)) {
