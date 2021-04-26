@@ -883,6 +883,15 @@ static void ns2_sns_compute_local_ep_from_binds(struct osmo_fsm_inst *fi)
 	}
 }
 
+static void ns2_sns_choose_next_bind(struct ns2_sns_state *gss)
+{
+	/* take the first bind or take the next bind */
+	if (!gss->initial_bind || gss->initial_bind->list.next == &gss->binds)
+		gss->initial_bind = llist_first_entry_or_null(&gss->binds, struct ns2_sns_bind, list);
+	else
+		gss->initial_bind = llist_entry(gss->initial_bind->list.next, struct ns2_sns_bind, list);
+}
+
 /* setup all dynamic SNS settings, create a new nsvc and send the SIZE */
 static void ns2_sns_st_bss_size_onenter(struct osmo_fsm_inst *fi, uint32_t old_state)
 {
@@ -899,18 +908,7 @@ static void ns2_sns_st_bss_size_onenter(struct osmo_fsm_inst *fi, uint32_t old_s
 	gss->alive = false;
 
 	ns2_sns_compute_local_ep_from_binds(fi);
-
-	/* take the first bind or take the next bind */
-	if (!gss->initial_bind) {
-		gss->initial_bind = llist_first_entry(&gss->binds, struct ns2_sns_bind, list);
-	} else {
-		if (gss->initial_bind->list.next != &gss->binds) {
-			gss->initial_bind = llist_entry(gss->initial_bind->list.next, struct ns2_sns_bind, list);
-		} else {
-			gss->initial_bind = llist_first_entry(&gss->binds, struct ns2_sns_bind, list);
-		}
-	}
-
+	ns2_sns_choose_next_bind(gss);
 
 	/* setup the NSVC */
 	if (!gss->sns_nsvc) {
