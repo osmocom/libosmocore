@@ -1802,6 +1802,14 @@ int osmo_sock_set_dscp(int fd, uint8_t dscp)
 	return setsockopt(fd, IPPROTO_IP, IP_TOS, &tos, sizeof(tos));
 }
 
+/*! Set the priority value of a socket.
+ *  \param[in] prio priority value. Values outside 0..6 require CAP_NET_ADMIN.
+ *  \returns 0 on success; negative on error. */
+int osmo_sock_set_priority(int fd, int prio)
+{
+	/* and write it back to the kernel */
+	return setsockopt(fd, SOL_SOCKET, SO_PRIORITY, &prio, sizeof(prio));
+}
 
 #endif /* HAVE_SYS_SOCKET_H */
 
