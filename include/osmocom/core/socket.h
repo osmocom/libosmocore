@@ -122,5 +122,7 @@ const char *osmo_sockaddr_to_str(const struct osmo_sockaddr *sockaddr);
 char *osmo_sockaddr_to_str_buf(char *buf, size_t buf_len,
 			       const struct osmo_sockaddr *sockaddr);
 
+int osmo_sock_set_dscp(int fd, uint8_t dscp);
+
 #endif /* (!EMBEDDED) */
 /*! @} */

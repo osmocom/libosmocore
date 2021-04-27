@@ -1776,6 +1776,32 @@ char *osmo_sockaddr_to_str_buf(char *buf, size_t buf_len,
 	return buf;
 }
 
+/*! Set the DSCP (differentiated services code point) of a socket.
+ *  \param[in] dscp DSCP value in range 0..63
+ *  \returns 0 on success; negative on error. */
+int osmo_sock_set_dscp(int fd, uint8_t dscp)
+{
+	uint8_t tos;
+	socklen_t tos_len = sizeof(tos);
+	int rc;
+
+	/* DSCP is a 6-bit value stored in the upper 6 bits of the 8-bit TOS */
+	if (dscp > 63)
+		return -EINVAL;
+
+	/* read the original value */
+	rc = getsockopt(fd, IPPROTO_IP, IP_TOS, &tos, &tos_len);
+	if (rc < 0)
+		return rc;
+
+	/* mask-in the DSCP into the upper 6 bits */
+	tos &= 0x03;
+	tos |= dscp << 2;
+
+	/* and write it back to the kernel */
+	return setsockopt(fd, IPPROTO_IP, IP_TOS, &tos, sizeof(tos));
+}
+
 
 #endif /* HAVE_SYS_SOCKET_H */
 
