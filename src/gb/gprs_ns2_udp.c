@@ -320,6 +320,9 @@ int gprs_ns2_ip_bind(struct gprs_ns2_inst *nsi,
 	if (local->u.sa.sa_family != AF_INET && local->u.sa.sa_family != AF_INET6)
 		return -EINVAL;
 
+	if (dscp < 0 || dscp > 63)
+		return -EINVAL;
+
 	bind = gprs_ns2_ip_bind_by_sockaddr(nsi, local);
 	if (bind) {
 		if (result)
@@ -361,8 +364,7 @@ int gprs_ns2_ip_bind(struct gprs_ns2_inst *nsi,
 	if (dscp > 0) {
 		priv->dscp = dscp;
 
-		rc = setsockopt(priv->fd.fd, IPPROTO_IP, IP_TOS,
-				&dscp, sizeof(dscp));
+		rc = osmo_sock_set_dscp(priv->fd.fd, dscp);
 		if (rc < 0)
 			LOGBIND(bind, LOGL_ERROR, "Failed to set the DSCP to %d with ret(%d) errno(%d)\n",
 				dscp, rc, errno);

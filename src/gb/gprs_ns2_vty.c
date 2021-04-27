@@ -679,7 +679,7 @@ DEFUN(cfg_no_ns_bind_listen, cfg_no_ns_bind_listen_cmd,
 }
 
 DEFUN(cfg_ns_bind_dscp, cfg_ns_bind_dscp_cmd,
-      "dscp <0-255>",
+      "dscp <0-63>",
       "Set DSCP/TOS on the UDP socket\n" "DSCP Value\n")
 {
 	struct vty_bind *vbind = vty->index;
