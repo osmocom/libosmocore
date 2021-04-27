@@ -162,7 +162,7 @@ const struct osmo_tdef_state_timeout *osmo_tdef_get_state_timeout(uint32_t state
 				      __FILE__, __LINE__)
 int _osmo_tdef_fsm_inst_state_chg(struct osmo_fsm_inst *fi, uint32_t state,
 				  const struct osmo_tdef_state_timeout *timeouts_array,
-				  const struct osmo_tdef *tdefs, unsigned long default_timeout,
+				  const struct osmo_tdef *tdefs, signed long default_timeout,
 				  const char *file, int line);
 
 /*! Manage timer definitions in named groups.
