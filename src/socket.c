@@ -1800,25 +1800,54 @@ char *osmo_sockaddr_to_str_buf(char *buf, size_t buf_len,
  *  \returns 0 on success; negative on error. */
 int osmo_sock_set_dscp(int fd, uint8_t dscp)
 {
+	struct sockaddr_storage local_addr;
+	socklen_t local_addr_len = sizeof(local_addr);
 	uint8_t tos;
 	socklen_t tos_len = sizeof(tos);
+	int tclass;
+	socklen_t tclass_len = sizeof(tclass);
 	int rc;
 
 	/* DSCP is a 6-bit value stored in the upper 6 bits of the 8-bit TOS */
 	if (dscp > 63)
 		return -EINVAL;
 
-	/* read the original value */
-	rc = getsockopt(fd, IPPROTO_IP, IP_TOS, &tos, &tos_len);
+	rc = getsockname(fd, (struct sockaddr *)&local_addr, &local_addr_len);
 	if (rc < 0)
 		return rc;
 
-	/* mask-in the DSCP into the upper 6 bits */
-	tos &= 0x03;
-	tos |= dscp << 2;
+	switch (local_addr.ss_family) {
+	case AF_INET:
+		/* read the original value */
+		rc = getsockopt(fd, IPPROTO_IP, IP_TOS, &tos, &tos_len);
+		if (rc < 0)
+			return rc;
+		/* mask-in the DSCP into the upper 6 bits */
+		tos &= 0x03;
+		tos |= dscp << 2;
+		/* and write it back to the kernel */
+		rc = setsockopt(fd, IPPROTO_IP, IP_TOS, &tos, sizeof(tos));
+		break;
+	case AF_INET6:
+		/* read the original value */
+		rc = getsockopt(fd, IPPROTO_IPV6, IPV6_TCLASS, &tclass, &tclass_len);
+		if (rc < 0)
+			return rc;
+		/* mask-in the DSCP into the upper 6 bits */
+		tclass &= 0x03;
+		tclass |= dscp << 2;
+		/* and write it back to the kernel */
+		rc = setsockopt(fd, IPPROTO_IPV6, IPV6_TCLASS, &tclass, sizeof(tclass));
+		break;
+	case AF_UNSPEC:
+	default:
+		LOGP(DLGLOBAL, LOGL_ERROR, "No DSCP support for socket family %u\n",
+		     local_addr.ss_family);
+		rc = -1;
+		break;
+	}
 
-	/* and write it back to the kernel */
-	return setsockopt(fd, IPPROTO_IP, IP_TOS, &tos, sizeof(tos));
+	return rc;
 }
 
 /*! Set the priority value of a socket.
