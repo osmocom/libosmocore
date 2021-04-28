@@ -134,7 +134,9 @@ static int addrinfo_helper_multi(struct addrinfo **addrinfo, uint16_t family, ui
 
 static int socket_helper_tail(int sfd, unsigned int flags)
 {
-	int on = 1;
+	int rc, on = 1;
+	uint8_t dscp = GET_OSMO_SOCK_F_DSCP(flags);
+	uint8_t prio = GET_OSMO_SOCK_F_PRIO(flags);
 
 	if (flags & OSMO_SOCK_F_NONBLOCK) {
 		if (ioctl(sfd, FIONBIO, (unsigned char *)&on) < 0) {
@@ -143,6 +145,24 @@ static int socket_helper_tail(int sfd, unsigned int flags)
 				strerror(errno));
 			close(sfd);
 			return -EINVAL;
+		}
+	}
+
+	if (dscp) {
+		rc = osmo_sock_set_dscp(sfd, dscp);
+		if (rc) {
+			LOGP(DLGLOBAL, LOGL_ERROR, "cannot set IP DSCP of socket to %u: %s\n",
+			     dscp, strerror(errno));
+			/* we consider this a non-fatal error */
+		}
+	}
+
+	if (prio) {
+		rc = osmo_sock_set_priority(sfd, prio);
+		if (rc) {
+			LOGP(DLGLOBAL, LOGL_ERROR, "cannot set priority of socket to %u: %s\n",
+			     prio, strerror(errno));
+			/* we consider this a non-fatal error */
 		}
 	}
 

@@ -44,6 +44,15 @@ struct osmo_sockaddr {
 /*! use SO_REUSEADDR on UDP ports (required for multicast) */
 #define OSMO_SOCK_F_UDP_REUSEADDR (1 << 5)
 
+/*! use OSMO_SOCK_F_DSCP(x) to set IP DSCP 'x' for packets transmitted on the socket */
+#define OSMO_SOCK_F_DSCP(x)	(((x)&0x3f) << 24)
+#define GET_OSMO_SOCK_F_DSCP(f)	(((f) >> 24) & 0x3f)
+
+/*! use OSMO_SOCK_F_PRIO(x) to set priority 'x' for packets transmitted on the socket */
+#define OSMO_SOCK_F_PRIO(x)	(((x)&0xff) << 16)
+#define GET_OSMO_SOCK_F_PRIO(f)	(((f) >> 16) & 0xff)
+
+
 /*! maximum number of local or remote addresses supported by an osmo_sock instance */
 #define OSMO_SOCK_MAX_ADDRS 32
 
