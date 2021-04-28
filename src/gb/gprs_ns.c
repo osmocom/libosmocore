@@ -2068,7 +2068,8 @@ int gprs_ns_nsip_listen(struct gprs_ns_inst *nsi)
 		    osmo_sock_init2_ofd(&nsi->nsip.fd, AF_INET, SOCK_DGRAM,
 					IPPROTO_UDP, inet_ntoa(in),
 					nsi->nsip.local_port, remote_str,
-					nsi->nsip.remote_port, OSMO_SOCK_F_BIND | OSMO_SOCK_F_CONNECT);
+					nsi->nsip.remote_port, OSMO_SOCK_F_BIND | OSMO_SOCK_F_CONNECT |
+					OSMO_SOCK_F_BIND | OSMO_SOCK_F_DSCP(nsi->nsip.dscp));
 
 		LOGP(DNS, LOGL_NOTICE,
 		     "Listening for nsip packets from %s:%u on %s:%u\n",
@@ -2076,7 +2077,8 @@ int gprs_ns_nsip_listen(struct gprs_ns_inst *nsi)
 	} else {
 		/* Accept UDP packets from any source IP/Port */
 		ret = osmo_sock_init_ofd(&nsi->nsip.fd, AF_INET, SOCK_DGRAM,
-					 IPPROTO_UDP, inet_ntoa(in), nsi->nsip.local_port, OSMO_SOCK_F_BIND);
+					 IPPROTO_UDP, inet_ntoa(in), nsi->nsip.local_port,
+					 OSMO_SOCK_F_BIND | OSMO_SOCK_F_DSCP(nsi->nsip.dscp));
 
 		LOGP(DNS, LOGL_NOTICE, "Listening for nsip packets on %s:%u\n", inet_ntoa(in), nsi->nsip.local_port);
 	}
@@ -2086,13 +2088,6 @@ int gprs_ns_nsip_listen(struct gprs_ns_inst *nsi)
 		nsi->nsip.fd.data = NULL;
 		return ret;
 	}
-
-	ret = setsockopt(nsi->nsip.fd.fd, IPPROTO_IP, IP_TOS,
-				&nsi->nsip.dscp, sizeof(nsi->nsip.dscp));
-	if (ret < 0)
-		LOGP(DNS, LOGL_ERROR,
-			"Failed to set the DSCP to %d with ret(%d) errno(%d)\n",
-			nsi->nsip.dscp, ret, errno);
 
 	LOGP(DNS, LOGL_NOTICE, "NS UDP socket at %s:%d\n", inet_ntoa(in), nsi->nsip.local_port);
 
