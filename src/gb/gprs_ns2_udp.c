@@ -514,16 +514,18 @@ int gprs_ns2_ip_bind_set_dscp(struct gprs_ns2_vc_bind *bind, int dscp)
 	struct priv_bind *priv;
 	int rc = 0;
 
+	if (dscp < 0 || dscp > 63)
+		return -EINVAL;
+
 	OSMO_ASSERT(gprs_ns2_is_ip_bind(bind));
 	priv = bind->priv;
 
 	if (dscp != priv->dscp) {
 		priv->dscp = dscp;
 
-		rc = setsockopt(priv->fd.fd, IPPROTO_IP, IP_TOS,
-				&dscp, sizeof(dscp));
+		rc = osmo_sock_set_dscp(priv->fd.fd, dscp);
 		if (rc < 0) {
-			LOGBIND(bind, LOGL_ERROR, "Failed to set the DSCP to %d with ret(%d) errno(%d)\n",
+			LOGBIND(bind, LOGL_ERROR, "Failed to set the DSCP to %u with ret(%d) errno(%d)\n",
 				dscp, rc, errno);
 		}
 	}
