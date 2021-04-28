@@ -352,22 +352,14 @@ int gprs_ns2_ip_bind(struct gprs_ns2_inst *nsi,
 	priv->fd.cb = nsip_fd_cb;
 	priv->fd.data = bind;
 	priv->addr = *local;
+	priv->dscp = dscp;
 
 	rc = osmo_sock_init_osa_ofd(&priv->fd, SOCK_DGRAM, IPPROTO_UDP,
 				 local, NULL,
-				 OSMO_SOCK_F_BIND);
+				 OSMO_SOCK_F_BIND | OSMO_SOCK_F_DSCP(priv->dscp));
 	if (rc < 0) {
 		gprs_ns2_free_bind(bind);
 		return rc;
-	}
-
-	if (dscp > 0) {
-		priv->dscp = dscp;
-
-		rc = osmo_sock_set_dscp(priv->fd.fd, dscp);
-		if (rc < 0)
-			LOGBIND(bind, LOGL_ERROR, "Failed to set the DSCP to %d with ret(%d) errno(%d)\n",
-				dscp, rc, errno);
 	}
 
 	/* IPv4: max fragmented payload can be (13 bit) * 8 byte => 65535.

@@ -589,23 +589,14 @@ int gprs_ns2_frgre_bind(struct gprs_ns2_inst *nsi,
 	priv->fd.data = bind;
 	priv->addr = *local;
 	INIT_LLIST_HEAD(&bind->nsvc);
+	priv->dscp = dscp;
 
 	rc = osmo_sock_init_osa_ofd(&priv->fd, SOCK_RAW, IPPROTO_GRE,
 				 local, NULL,
-				 OSMO_SOCK_F_BIND);
+				 OSMO_SOCK_F_BIND | OSMO_SOCK_F_DSCP(priv->dscp));
 	if (rc < 0) {
 		gprs_ns2_free_bind(bind);
 		return rc;
-	}
-
-	if (dscp > 0) {
-		priv->dscp = dscp;
-
-		rc = setsockopt(priv->fd.fd, IPPROTO_IP, IP_TOS,
-				&dscp, sizeof(dscp));
-		if (rc < 0)
-			LOGBIND(bind, LOGL_ERROR, "Failed to set the DSCP to %d with ret(%d) errno(%d)\n",
-				dscp, rc, errno);
 	}
 
 	if (result)
