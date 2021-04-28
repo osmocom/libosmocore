@@ -132,9 +132,26 @@ static int addrinfo_helper_multi(struct addrinfo **addrinfo, uint16_t family, ui
 }
 #endif /* HAVE_LIBSCTP*/
 
+static int socket_helper_tail(int sfd, unsigned int flags)
+{
+	int on = 1;
+
+	if (flags & OSMO_SOCK_F_NONBLOCK) {
+		if (ioctl(sfd, FIONBIO, (unsigned char *)&on) < 0) {
+			LOGP(DLGLOBAL, LOGL_ERROR,
+				"cannot set this socket unblocking: %s\n",
+				strerror(errno));
+			close(sfd);
+			return -EINVAL;
+		}
+	}
+
+	return 0;
+}
+
 static int socket_helper(const struct addrinfo *rp, unsigned int flags)
 {
-	int sfd, on = 1;
+	int sfd, rc;
 
 	sfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
 	if (sfd == -1) {
@@ -142,21 +159,17 @@ static int socket_helper(const struct addrinfo *rp, unsigned int flags)
 			"unable to create socket: %s\n", strerror(errno));
 		return sfd;
 	}
-	if (flags & OSMO_SOCK_F_NONBLOCK) {
-		if (ioctl(sfd, FIONBIO, (unsigned char *)&on) < 0) {
-			LOGP(DLGLOBAL, LOGL_ERROR,
-				"cannot set this socket unblocking: %s\n",
-				strerror(errno));
-			close(sfd);
-			sfd = -EINVAL;
-		}
-	}
+
+	rc = socket_helper_tail(sfd, flags);
+	if (rc < 0)
+		return rc;
+
 	return sfd;
 }
 
 static int socket_helper_osa(const struct osmo_sockaddr *addr, uint16_t type, uint8_t proto, unsigned int flags)
 {
-	int sfd, on = 1;
+	int sfd, rc;
 
 	sfd = socket(addr->u.sa.sa_family, type, proto);
 	if (sfd == -1) {
@@ -164,15 +177,11 @@ static int socket_helper_osa(const struct osmo_sockaddr *addr, uint16_t type, ui
 			"unable to create socket: %s\n", strerror(errno));
 		return sfd;
 	}
-	if (flags & OSMO_SOCK_F_NONBLOCK) {
-		if (ioctl(sfd, FIONBIO, (unsigned char *)&on) < 0) {
-			LOGP(DLGLOBAL, LOGL_ERROR,
-				"cannot set this socket unblocking: %s\n",
-				strerror(errno));
-			close(sfd);
-			sfd = -EINVAL;
-		}
-	}
+
+	rc = socket_helper_tail(sfd, flags);
+	if (rc < 0)
+		return rc;
+
 	return sfd;
 }
 
@@ -621,7 +630,7 @@ static bool addrinfo_has_in6addr_any(const struct addrinfo **result, size_t resu
 
 static int socket_helper_multiaddr(uint16_t family, uint16_t type, uint8_t proto, unsigned int flags)
 {
-	int sfd, on = 1;
+	int sfd, rc;
 
 	sfd = socket(family, type, proto);
 	if (sfd == -1) {
@@ -629,15 +638,11 @@ static int socket_helper_multiaddr(uint16_t family, uint16_t type, uint8_t proto
 			"Unable to create socket: %s\n", strerror(errno));
 		return sfd;
 	}
-	if (flags & OSMO_SOCK_F_NONBLOCK) {
-		if (ioctl(sfd, FIONBIO, (unsigned char *)&on) < 0) {
-			LOGP(DLGLOBAL, LOGL_ERROR,
-				"Cannot set this socket unblocking: %s\n",
-				strerror(errno));
-			close(sfd);
-			sfd = -EINVAL;
-		}
-	}
+
+	rc = socket_helper_tail(sfd, flags);
+	if (rc < 0)
+		return rc;
+
 	return sfd;
 }
 
@@ -1218,7 +1223,7 @@ int osmo_sock_unix_init(uint16_t type, uint8_t proto,
 			const char *socket_path, unsigned int flags)
 {
 	struct sockaddr_un local;
-	int sfd, rc, on = 1;
+	int sfd, rc;
 	unsigned int namelen;
 
 	if ((flags & (OSMO_SOCK_F_BIND | OSMO_SOCK_F_CONNECT)) ==
@@ -1258,15 +1263,9 @@ int osmo_sock_unix_init(uint16_t type, uint8_t proto,
 			goto err;
 	}
 
-	if (flags & OSMO_SOCK_F_NONBLOCK) {
-		if (ioctl(sfd, FIONBIO, (unsigned char *)&on) < 0) {
-			LOGP(DLGLOBAL, LOGL_ERROR,
-			     "cannot set this socket unblocking: %s\n",
-			     strerror(errno));
-			close(sfd);
-			return -EINVAL;
-		}
-	}
+	rc = socket_helper_tail(sfd, flags);
+	if (rc < 0)
+		return rc;
 
 	rc = osmo_sock_init_tail(sfd, type, flags);
 	if (rc < 0) {
