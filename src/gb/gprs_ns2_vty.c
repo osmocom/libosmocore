@@ -67,6 +67,7 @@ struct vty_bind {
 	const char *name;
 	enum gprs_ns2_ll ll;
 	int dscp;
+	uint8_t priority;
 	bool accept_ipaccess;
 	bool accept_sns;
 	uint8_t ip_sns_sig_weight;
@@ -468,6 +469,8 @@ static void config_write_vbind(struct vty *vty, struct vty_bind *vbind)
 			vty_out(vty, "  accept-dynamic-ip-sns%s", VTY_NEWLINE);
 		if (vbind->dscp)
 			vty_out(vty, "  dscp %u%s", vbind->dscp, VTY_NEWLINE);
+		if (vbind->priority)
+			vty_out(vty, "  priority %u%s", vbind->priority, VTY_NEWLINE);
 		vty_out(vty, "  ip-sns signalling-weight %u data-weight %u%s",
 			vbind->ip_sns_sig_weight, vbind->ip_sns_data_weight, VTY_NEWLINE);
 		break;
@@ -718,6 +721,28 @@ DEFUN(cfg_no_ns_bind_dscp, cfg_no_ns_bind_dscp_cmd,
 	bind = gprs_ns2_bind_by_name(vty_nsi, vbind->name);
 	if (bind)
 		gprs_ns2_ip_bind_set_dscp(bind, dscp);
+
+	return CMD_SUCCESS;
+}
+
+DEFUN(cfg_ns_bind_priority, cfg_ns_bind_priority_cmd,
+      "priority <0-255>",
+      "Set socket priority on the UDP socket\n" "Priority Value (>6 requires CAP_NET_ADMIN)\n")
+{
+	struct vty_bind *vbind = vty->index;
+	struct gprs_ns2_vc_bind *bind;
+	uint8_t prio = atoi(argv[0]);
+
+	if (vbind->ll != GPRS_NS2_LL_UDP) {
+		vty_out(vty, "dscp can be only used with UDP bind%s",
+			VTY_NEWLINE);
+		return CMD_WARNING;
+	}
+
+	vbind->priority = prio;
+	bind = gprs_ns2_bind_by_name(vty_nsi, vbind->name);
+	if (bind)
+		gprs_ns2_ip_bind_set_priority(bind, prio);
 
 	return CMD_SUCCESS;
 }
@@ -2235,6 +2260,7 @@ int gprs_ns2_vty_init(struct gprs_ns2_inst *nsi)
 	install_lib_element(L_NS_BIND_NODE, &cfg_no_ns_bind_listen_cmd);
 	install_lib_element(L_NS_BIND_NODE, &cfg_ns_bind_dscp_cmd);
 	install_lib_element(L_NS_BIND_NODE, &cfg_no_ns_bind_dscp_cmd);
+	install_lib_element(L_NS_BIND_NODE, &cfg_ns_bind_priority_cmd);
 	install_lib_element(L_NS_BIND_NODE, &cfg_ns_bind_ip_sns_weight_cmd);
 	install_lib_element(L_NS_BIND_NODE, &cfg_ns_bind_ipaccess_cmd);
 	install_lib_element(L_NS_BIND_NODE, &cfg_no_ns_bind_ipaccess_cmd);

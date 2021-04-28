@@ -49,6 +49,7 @@ struct priv_bind {
 	struct osmo_fd fd;
 	struct osmo_sockaddr addr;
 	int dscp;
+	uint8_t priority;
 };
 
 struct priv_vc {
@@ -103,7 +104,8 @@ static void dump_vty(const struct gprs_ns2_vc_bind *bind,
 		nsvcs++;
 	}
 
-	vty_out(vty, "UDP bind: %s:%d DSCP: %d%s", sockstr.ip, sockstr.port, priv->dscp, VTY_NEWLINE);
+	vty_out(vty, "UDP bind: %s:%d DSCP: %d Priority: %u%s", sockstr.ip, sockstr.port,
+		priv->dscp, priv->priority, VTY_NEWLINE);
 	vty_out(vty, "  IP-SNS signalling weight: %u data weight: %u%s",
 		bind->sns_sig_weight, bind->sns_data_weight, VTY_NEWLINE);
 	vty_out(vty, "  %lu NS-VC:%s", nsvcs, VTY_NEWLINE);
@@ -524,6 +526,29 @@ int gprs_ns2_ip_bind_set_dscp(struct gprs_ns2_vc_bind *bind, int dscp)
 
 	return rc;
 }
+
+/*! Set the socket priority of the given bind. */
+int gprs_ns2_ip_bind_set_priority(struct gprs_ns2_vc_bind *bind, uint8_t priority)
+{
+	struct priv_bind *priv;
+	int rc = 0;
+
+	OSMO_ASSERT(gprs_ns2_is_ip_bind(bind));
+	priv = bind->priv;
+
+	if (priority != priv->priority) {
+		priv->priority = priority;
+
+		rc = osmo_sock_set_priority(priv->fd.fd, priority);
+		if (rc < 0) {
+			LOGBIND(bind, LOGL_ERROR, "Failed to set the priority to %u with ret(%d) errno(%d)\n",
+				priority, rc, errno);
+		}
+	}
+
+	return rc;
+}
+
 
 /*! Count UDP binds compatible with remote */
 int ns2_ip_count_bind(struct gprs_ns2_inst *nsi, struct osmo_sockaddr *remote)

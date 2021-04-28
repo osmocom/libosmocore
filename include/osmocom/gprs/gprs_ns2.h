@@ -246,6 +246,7 @@ bool gprs_ns2_ip_vc_equal(const struct gprs_ns2_vc *nsvc,
 const struct osmo_sockaddr *gprs_ns2_ip_bind_sockaddr(struct gprs_ns2_vc_bind *bind);
 int gprs_ns2_is_ip_bind(struct gprs_ns2_vc_bind *bind);
 int gprs_ns2_ip_bind_set_dscp(struct gprs_ns2_vc_bind *bind, int dscp);
+int gprs_ns2_ip_bind_set_priority(struct gprs_ns2_vc_bind *bind, uint8_t priority);
 struct gprs_ns2_vc *gprs_ns2_nsvc_by_sockaddr_bind(
 		struct gprs_ns2_vc_bind *bind,
 		const struct osmo_sockaddr *saddr);
