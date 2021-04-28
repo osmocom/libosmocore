@@ -554,6 +554,9 @@ int gprs_ns2_frgre_bind(struct gprs_ns2_inst *nsi,
 	if (local->u.sa.sa_family != AF_INET && local->u.sa.sa_family != AF_INET6)
 		return -EINVAL;
 
+	if (dscp < 0 || dscp > 63)
+		return -EINVAL;
+
 	bind = gprs_ns2_bind_by_name(nsi, name);
 	if (bind) {
 		if (result)
