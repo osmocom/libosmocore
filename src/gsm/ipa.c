@@ -388,7 +388,7 @@ struct msgb *ipa_ccm_make_id_resp(const struct ipaccess_unit *dev,
 		tag = msgb_put(msg, 3 + strlen(str) + 1);
 		tag[0] = 0x00;
 		tag[1] = 1 + strlen(str) + 1;
-		tag[2] = ies_req[1];
+		tag[2] = ies_req[i];
 		memcpy(tag + 3, str, strlen(str) + 1);
 	}
 	ipa_prepend_header(msg, IPAC_PROTO_IPACCESS);
