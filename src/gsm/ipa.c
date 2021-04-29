@@ -412,9 +412,13 @@ struct msgb *ipa_ccm_make_id_resp_from_req(const struct ipaccess_unit *dev,
 	/* build a array of the IEIs */
 	while (len >= 2) {
 		uint8_t t_len, t_tag;
-		len -= 2;
+		len -= 2; /* subtract the length of the two bytes read below */
 		t_len = *cur++;
 		t_tag = *cur++;
+
+		/* as the 'tag' is included in the length of t_len, this cannot happen */
+		if (t_len == 0)
+			break;
 
 		if (t_len > len + 1) {
 			LOGP(DLINP, LOGL_ERROR, "IPA CCM tag 0x%02x does not fit\n", t_tag);
@@ -423,13 +427,14 @@ struct msgb *ipa_ccm_make_id_resp_from_req(const struct ipaccess_unit *dev,
 
 		ies[num_ies++] = t_tag;
 
-		cur += t_len;
+		/* we need to subtract one from t_len to account for the tag */
+		cur += t_len - 1;
 		/* prevent any unsigned integer underflow due to somebody sending us
 		 * messages with wrong length values */
 		if (len <= t_len)
 			len = 0;
 		else
-			len -= t_len;
+			len -= t_len - 1;
 	}
 	return ipa_ccm_make_id_resp(dev, ies, num_ies);
 }
