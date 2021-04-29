@@ -135,7 +135,7 @@ void osmo_timer_del(struct osmo_timer_list *timer)
  * This function can be used to determine whether a given timer
  * has alredy expired (returns 0) or is still pending (returns 1)
  */
-int osmo_timer_pending(struct osmo_timer_list *timer)
+int osmo_timer_pending(const struct osmo_timer_list *timer)
 {
 	return timer->active;
 }

@@ -75,7 +75,7 @@ void osmo_timer_schedule(struct osmo_timer_list *timer, int seconds, int microse
 
 void osmo_timer_del(struct osmo_timer_list *timer);
 
-int osmo_timer_pending(struct osmo_timer_list *timer);
+int osmo_timer_pending(const struct osmo_timer_list *timer);
 
 int osmo_timer_remaining(const struct osmo_timer_list *timer,
 			 const struct timeval *now,
