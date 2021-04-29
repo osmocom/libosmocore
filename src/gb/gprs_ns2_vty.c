@@ -470,7 +470,7 @@ static void config_write_vbind(struct vty *vty, struct vty_bind *vbind)
 		if (vbind->dscp)
 			vty_out(vty, "  dscp %u%s", vbind->dscp, VTY_NEWLINE);
 		if (vbind->priority)
-			vty_out(vty, "  priority %u%s", vbind->priority, VTY_NEWLINE);
+			vty_out(vty, "  socket-priority %u%s", vbind->priority, VTY_NEWLINE);
 		vty_out(vty, "  ip-sns signalling-weight %u data-weight %u%s",
 			vbind->ip_sns_sig_weight, vbind->ip_sns_data_weight, VTY_NEWLINE);
 		break;
@@ -726,7 +726,7 @@ DEFUN(cfg_no_ns_bind_dscp, cfg_no_ns_bind_dscp_cmd,
 }
 
 DEFUN(cfg_ns_bind_priority, cfg_ns_bind_priority_cmd,
-      "priority <0-255>",
+      "socket-priority <0-255>",
       "Set socket priority on the UDP socket\n" "Priority Value (>6 requires CAP_NET_ADMIN)\n")
 {
 	struct vty_bind *vbind = vty->index;
