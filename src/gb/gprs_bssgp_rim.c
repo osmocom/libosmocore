@@ -1059,7 +1059,7 @@ int bssgp_parse_rim_pdu(struct bssgp_ran_information_pdu *pdu, const struct msgb
 /*! Encode a given rim-pdu struct into a message buffer.
  *  \param[out] pdu user provided memory that contains the RAN INFORMATION PDU to encode.
  *  \returns BSSGP message buffer on sccess, NULL on error. */
-struct msgb *bssgp_encode_rim_pdu(const struct bssgp_ran_information_pdu *pdu)
+struct msgb *bssgp_enc_rim_pdu(const struct bssgp_ran_information_pdu *pdu)
 {
 	struct msgb *msg = bssgp_msgb_alloc();
 	struct bssgp_normal_hdr *bgph;
@@ -1160,7 +1160,7 @@ int bssgp_tx_rim(const struct bssgp_ran_information_pdu *pdu, uint16_t nsei)
 	char ri_dest_str[64];
 
 	/* Encode RIM PDU into mesage buffer */
-	msg = bssgp_encode_rim_pdu(pdu);
+	msg = bssgp_enc_rim_pdu(pdu);
 	if (!msg) {
 		LOGP(DLBSSGP, LOGL_ERROR,
 		     "BSSGP RIM (NSEI=%u) unable to encode BSSGP RIM PDU\n", nsei);
