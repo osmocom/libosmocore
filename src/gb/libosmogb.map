@@ -20,7 +20,6 @@ bssgp_enc_ran_inf_req_rim_cont;
 bssgp_enc_ran_inf_app_cont_nacc;
 bssgp_enc_ran_inf_app_err_rim_cont;
 bssgp_enc_ran_inf_rim_cont;
-bssgp_enc_rim_pdu;
 bssgp_fc_in;
 bssgp_fc_init;
 bssgp_fc_ms_init;
