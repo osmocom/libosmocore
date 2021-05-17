@@ -457,7 +457,7 @@ extern struct cmd_element config_exit_cmd;
 extern struct cmd_element config_help_cmd;
 extern struct cmd_element config_list_cmd;
 extern struct cmd_element config_end_cmd;
-char *host_config_file();
+const char *host_config_file(void);
 void host_config_set(const char *);
 
 char *osmo_asciidoc_escape(const char *inp);

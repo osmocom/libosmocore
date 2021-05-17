@@ -4219,6 +4219,11 @@ void host_config_set(const char *filename)
 	host.config = talloc_strdup(tall_vty_cmd_ctx, filename);
 }
 
+const char *host_config_file(void)
+{
+	return host.config;
+}
+
 /*! Deprecated, now happens implicitly when calling install_node().
  * Users of the API may still attempt to call this function, hence
  * leave it here as a no-op. */
