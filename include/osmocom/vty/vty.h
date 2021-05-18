@@ -141,7 +141,7 @@ struct vty {
 #define TELNET_NAWS_SB_LEN 5
 	/*! sub-negotiation buffer */
 	unsigned char sb_buf[TELNET_NAWS_SB_LEN];
-	/*! How many subnegotiation characters have we received?  
+	/*! How many subnegotiation characters have we received?
 	 *
 	 * We just drop those that do not fit in the buffer. */
 	size_t sb_len;
@@ -210,6 +210,7 @@ struct vty_app_info {
 /* Prototypes. */
 void vty_init(struct vty_app_info *app_info);
 int vty_read_config_file(const char *file_name, void *priv);
+int vty_read_config_filep(FILE *confp, void *priv);
 void vty_init_vtysh (void);
 void vty_reset (void);
 struct vty *vty_new (void);

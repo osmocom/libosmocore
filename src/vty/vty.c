@@ -1462,9 +1462,13 @@ int vty_read(struct vty *vty)
 	return 0;
 }
 
-/* Read up configuration file */
-static int
-vty_read_file(FILE *confp, void *priv)
+/* Read up configuration from a file stream */
+/*! Read up VTY configuration from a file stream
+ *  \param[in] confp file pointer of the stream for the configuration file
+ *  \param[in] priv private data to be passed to \ref vty_read_file
+ *  \returns Zero on success, non-zero on error
+ */
+int vty_read_config_filep(FILE *confp, void *priv)
 {
 	int ret;
 	struct vty *vty;
@@ -1870,7 +1874,7 @@ int vty_read_config_file(const char *file_name, void *priv)
 	if (!cfile)
 		return -ENOENT;
 
-	rc = vty_read_file(cfile, priv);
+	rc = vty_read_config_filep(cfile, priv);
 	fclose(cfile);
 
 	host_config_set(file_name);
