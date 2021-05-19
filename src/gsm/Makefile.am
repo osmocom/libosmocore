@@ -33,7 +33,8 @@ libgsmint_la_SOURCES =  a5.c rxlev_stat.c tlv_parser.c comp128.c comp128v23.c \
 			gsup.c gsup_sms.c gprs_gea.c gsm0503_conv.c oap.c gsm0808_utils.c \
 			gsm23003.c gsm23236.c mncc.c bts_features.c oap_client.c \
 			gsm29118.c gsm48_rest_octets.c cbsp.c gsm48049.c i460_mux.c \
-			gad.c bsslap.c bssmap_le.c
+			gad.c bsslap.c bssmap_le.c kdf.c
+
 libgsmint_la_LDFLAGS = -no-undefined
 libgsmint_la_LIBADD = $(top_builddir)/src/libosmocore.la
 
@@ -44,6 +45,10 @@ libosmogsm_la_LIBADD = libgsmint.la $(TALLOC_LIBS)
 if ENABLE_GNUTLS
 AM_CPPFLAGS += $(LIBGNUTLS_CFLAGS)
 libosmogsm_la_LIBADD += $(LIBGNUTLS_LIBS)
+else
+noinst_HEADERS += kdf/sha1.h kdf/sha256.h kdf/common.h kdf/sha1_i.h kdf/sha256_i.h
+libgsmint_la_SOURCES +=  kdf/sha256.c kdf/sha256-internal.c \
+                        kdf/sha1.c kdf/sha1-internal.c
 endif
 
 EXTRA_DIST = libosmogsm.map

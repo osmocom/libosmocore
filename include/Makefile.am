@@ -62,6 +62,7 @@ nobase_include_HEADERS = \
                        osmocom/core/use_count.h \
                        osmocom/crypt/auth.h \
                        osmocom/crypt/gprs_cipher.h \
+                       osmocom/crypt/kdf.h \
 		       osmocom/ctrl/control_cmd.h \
 		       osmocom/ctrl/control_if.h \
 		       osmocom/ctrl/ports.h \

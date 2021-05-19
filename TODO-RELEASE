@@ -14,3 +14,4 @@ libosmocore	osmo_tdef_fsm_inst_state_chg	change default_timeout arg from unsigne
 libosmovty      vty_read_config_filep   New API
 libosmosim	osim_card_{reset,close}	New API
 libosmocore     struct rate_ctr_group, osmo_stat_item_group_desc ABI breakage due to new struct members
+libosmgsm      kdf functions   New API

@@ -547,6 +547,12 @@ osmo_auth_supported;
 osmo_auth_c3;
 osmo_sub_auth_type_names;
 
+osmo_kdf_kc128;
+osmo_kdf_kasme;
+osmo_kdf_enb;
+osmo_kdf_nh;
+osmo_kdf_nas;
+
 osmo_rsl2sitype;
 osmo_sitype2rsl;
 
