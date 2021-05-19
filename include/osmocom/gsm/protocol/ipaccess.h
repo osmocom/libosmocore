@@ -39,6 +39,7 @@ enum ipaccess_proto_ext {
 	IPAC_PROTO_EXT_GSUP	= 0x05,		/* GSUP GPRS extension */
 	IPAC_PROTO_EXT_OAP	= 0x06,		/* Osmocom Authn Protocol */
 	IPAC_PROTO_EXT_RSPRO	= 0x07,		/* Remote SIM protocol */
+	IPAC_PROTO_EXT_PCU	= 0x08,		/* BSC<->BTS<->PCU communication */
 };
 
 enum ipaccess_msgtype {
