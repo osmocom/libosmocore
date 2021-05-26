@@ -159,6 +159,7 @@ uint8_t rsl_enc_chan_nr(uint8_t type, uint8_t subch, uint8_t timeslot)
 
 	switch (type) {
 	case RSL_CHAN_Lm_ACCHs:
+	case RSL_CHAN_OSMO_VAMOS_Lm_ACCHs:
 		subch &= 0x01;
 		break;
 	case RSL_CHAN_SDCCH4_ACCH:
@@ -195,6 +196,7 @@ int rsl_dec_chan_nr(uint8_t chan_nr, uint8_t *type, uint8_t *subch, uint8_t *tim
 	case RSL_CHAN_OSMO_PDCH:
 	case RSL_CHAN_OSMO_CBCH4:
 	case RSL_CHAN_OSMO_CBCH8:
+	case RSL_CHAN_OSMO_VAMOS_Bm_ACCHs:
 		*type = chan_nr & RSL_CHAN_NR_MASK;
 		*subch = 0;
 		break;
@@ -208,6 +210,9 @@ int rsl_dec_chan_nr(uint8_t chan_nr, uint8_t *type, uint8_t *subch, uint8_t *tim
 		} else if ((chan_nr & 0xc0) == RSL_CHAN_SDCCH8_ACCH) {
 			*type = RSL_CHAN_SDCCH8_ACCH;
 			*subch = (chan_nr >> 3) & 0x7;
+		} else if ((chan_nr & 0xf0) == RSL_CHAN_OSMO_VAMOS_Lm_ACCHs) {
+			*type = RSL_CHAN_OSMO_VAMOS_Lm_ACCHs;
+			*subch = (chan_nr >> 3) & 0x1;
 		} else
 			return -EINVAL;
 	}
@@ -246,6 +251,10 @@ char *rsl_chan_nr_str_buf(char *buf, size_t buf_len, uint8_t chan_nr)
 		snprintf(buf, buf_len, "CBCH(SDCCH/4) on TS%d", ts);
 	else if (cbits == ABIS_RSL_CHAN_NR_CBITS_OSMO_CBCH8)
 		snprintf(buf, buf_len, "CBCH(SDCCH/8) on TS%d", ts);
+	else if (cbits == ABIS_RSL_CHAN_NR_CBITS_OSMO_VAMOS_Bm_ACCHs)
+		snprintf(buf, buf_len, "VAMOS TCH/F on TS%d", ts);
+	else if ((cbits & 0x1e) == ABIS_RSL_CHAN_NR_CBITS_OSMO_VAMOS_Lm_ACCHs(0))
+		snprintf(buf, buf_len, "VAMOS TCH/H(%u) on TS%d", cbits & 0x01, ts);
 	else
 		snprintf(buf, buf_len, "UNKNOWN on TS%d", ts);
 

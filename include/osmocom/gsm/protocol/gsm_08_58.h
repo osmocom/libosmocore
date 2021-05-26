@@ -53,6 +53,10 @@ union abis_rsl_chan_nr {
 #define ABIS_RSL_CHAN_NR_CBITS_OSMO_CBCH4	0x19 /*< non-standard, for CBCH/SDCCH4 */
 #define ABIS_RSL_CHAN_NR_CBITS_OSMO_CBCH8	0x1a /*< non-standard, for CBCH/SDCCH8 */
 
+/* non-standard, Osmocom specific Bm/Lm equivalents for VAMOS */
+#define ABIS_RSL_CHAN_NR_CBITS_OSMO_VAMOS_Bm_ACCHs	0x1d		/*< VAMOS TCH/F */
+#define ABIS_RSL_CHAN_NR_CBITS_OSMO_VAMOS_Lm_ACCHs(ss)	(0x1e + (ss))	/*< VAMOS TCH/H */
+
 /* Link Identifier 9.3.2 */
 union abis_rsl_link_id {
 #if OSMO_IS_BIG_ENDIAN
@@ -454,6 +458,10 @@ enum {
 #define RSL_CHAN_OSMO_PDCH	0xc0	/*< non-standard, for dyn TS */
 #define RSL_CHAN_OSMO_CBCH4	0xc8	/*< non-standard, for CBCH/SDCCH4 */
 #define RSL_CHAN_OSMO_CBCH8	0xd0	/*< non-standard, for CBCH/SDCCH8 */
+
+/* non-standard, Osmocom specific Bm/Lm equivalents for VAMOS */
+#define RSL_CHAN_OSMO_VAMOS_Bm_ACCHs	0xe8	/* VAMOS TCH/F */
+#define RSL_CHAN_OSMO_VAMOS_Lm_ACCHs	0xf0	/* VAMOS TCH/H */
 
 /* Chapter 9.3.3 */
 #define RSL_ACT_TYPE_INITIAL	0x00

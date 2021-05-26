@@ -63,12 +63,14 @@ uint8_t chantype_rsl2gsmtap2(uint8_t rsl_chantype, uint8_t link_id, bool user_pl
 
 	switch (rsl_chantype) {
 	case RSL_CHAN_Bm_ACCHs:
+	case RSL_CHAN_OSMO_VAMOS_Bm_ACCHs:
 		if (user_plane)
 			ret = GSMTAP_CHANNEL_VOICE_F;
 		else
 			ret = GSMTAP_CHANNEL_FACCH_F;
 		break;
 	case RSL_CHAN_Lm_ACCHs:
+	case RSL_CHAN_OSMO_VAMOS_Lm_ACCHs:
 		if (user_plane)
 			ret = GSMTAP_CHANNEL_VOICE_H;
 		else
