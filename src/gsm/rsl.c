@@ -187,38 +187,30 @@ int rsl_dec_chan_nr(uint8_t chan_nr, uint8_t *type, uint8_t *subch, uint8_t *tim
 {
 	*timeslot = chan_nr & 0x7;
 
-	if ((chan_nr & 0xf8) == RSL_CHAN_Bm_ACCHs) {
-		*type = RSL_CHAN_Bm_ACCHs;
+	switch (chan_nr & RSL_CHAN_NR_MASK) {
+	case RSL_CHAN_Bm_ACCHs:
+	case RSL_CHAN_BCCH:
+	case RSL_CHAN_RACH:
+	case RSL_CHAN_PCH_AGCH:
+	case RSL_CHAN_OSMO_PDCH:
+	case RSL_CHAN_OSMO_CBCH4:
+	case RSL_CHAN_OSMO_CBCH8:
+		*type = chan_nr & RSL_CHAN_NR_MASK;
 		*subch = 0;
-	} else if ((chan_nr & 0xf0) == RSL_CHAN_Lm_ACCHs) {
-		*type = RSL_CHAN_Lm_ACCHs;
-		*subch = (chan_nr >> 3) & 0x1;
-	} else if ((chan_nr & 0xe0) == RSL_CHAN_SDCCH4_ACCH) {
-		*type = RSL_CHAN_SDCCH4_ACCH;
-		*subch = (chan_nr >> 3) & 0x3;
-	} else if ((chan_nr & 0xc0) == RSL_CHAN_SDCCH8_ACCH) {
-		*type = RSL_CHAN_SDCCH8_ACCH;
-		*subch = (chan_nr >> 3) & 0x7;
-	} else if ((chan_nr & 0xf8) == RSL_CHAN_BCCH) {
-		*type = RSL_CHAN_BCCH;
-		*subch = 0;
-	} else if ((chan_nr & 0xf8) == RSL_CHAN_RACH) {
-		*type = RSL_CHAN_RACH;
-		*subch = 0;
-	} else if ((chan_nr & 0xf8) == RSL_CHAN_PCH_AGCH) {
-		*type = RSL_CHAN_PCH_AGCH;
-		*subch = 0;
-	} else if ((chan_nr & 0xf8) == RSL_CHAN_OSMO_PDCH) {
-		*type = RSL_CHAN_OSMO_PDCH;
-		*subch = 0;
-	} else if ((chan_nr & 0xf8) == RSL_CHAN_OSMO_CBCH4) {
-		*type = RSL_CHAN_OSMO_CBCH4;
-		*subch = 0;
-	} else if ((chan_nr & 0xf8) == RSL_CHAN_OSMO_CBCH8) {
-		*type = RSL_CHAN_OSMO_CBCH8;
-		*subch = 0;
-	} else
-		return -EINVAL;
+		break;
+	default:
+		if ((chan_nr & 0xf0) == RSL_CHAN_Lm_ACCHs) {
+			*type = RSL_CHAN_Lm_ACCHs;
+			*subch = (chan_nr >> 3) & 0x1;
+		} else if ((chan_nr & 0xe0) == RSL_CHAN_SDCCH4_ACCH) {
+			*type = RSL_CHAN_SDCCH4_ACCH;
+			*subch = (chan_nr >> 3) & 0x3;
+		} else if ((chan_nr & 0xc0) == RSL_CHAN_SDCCH8_ACCH) {
+			*type = RSL_CHAN_SDCCH8_ACCH;
+			*subch = (chan_nr >> 3) & 0x7;
+		} else
+			return -EINVAL;
+	}
 
 	return 0;
 }
