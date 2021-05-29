@@ -463,22 +463,19 @@ enum gsm48_chan_mode gsm48_chan_mode_to_vamos(enum gsm48_chan_mode mode)
 }
 
 /*! Translate GSM48_CMODE_SPEECH_*_VAMOS to its corresponding GSM48_CMODE_SPEECH_* non-vamos mode.
- * If the mode has no equivalent non-VAMOS mode, return a negative value.
+ * If the mode is not a VAMOS mode, return the unchanged mode.
  */
 enum gsm48_chan_mode gsm48_chan_mode_to_non_vamos(enum gsm48_chan_mode mode)
 {
 	switch (mode) {
 	case GSM48_CMODE_SPEECH_V1_VAMOS:
-	case GSM48_CMODE_SPEECH_V1:
 		return GSM48_CMODE_SPEECH_V1;
 	case GSM48_CMODE_SPEECH_V2_VAMOS:
-	case GSM48_CMODE_SPEECH_EFR:
 		return GSM48_CMODE_SPEECH_EFR;
 	case GSM48_CMODE_SPEECH_V3_VAMOS:
-	case GSM48_CMODE_SPEECH_AMR:
 		return GSM48_CMODE_SPEECH_AMR;
 	default:
-		return -1;
+		return mode;
 	}
 }
 
