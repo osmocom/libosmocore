@@ -65,6 +65,8 @@ struct osmo_stat_item_group {
 	const struct osmo_stat_item_group_desc *desc;
 	/*! The index of this value group within its class */
 	unsigned int idx;
+	/*! Optional string-based identifier to be used instead of index at report time */
+	char *name;
 	/*! Actual counter structures below */
 	struct osmo_stat_item *items[0];
 };
@@ -80,6 +82,7 @@ static inline void osmo_stat_item_group_udp_idx(
 	grp->idx = idx;
 }
 struct osmo_stat_item *osmo_stat_item_group_get_item(struct osmo_stat_item_group *grp, unsigned int idx);
+void osmo_stat_item_group_set_name(struct osmo_stat_item_group *statg, const char *name);
 void osmo_stat_item_group_free(struct osmo_stat_item_group *statg);
 
 void osmo_stat_item_inc(struct osmo_stat_item *item, int32_t value);

@@ -177,6 +177,16 @@ struct osmo_stat_item *osmo_stat_item_group_get_item(struct osmo_stat_item_group
 	return grp->items[idx];
 }
 
+/*! Set a name for the statistics item group to be used instead of index value
+  at report time.
+ *  \param[in] statg Statistics item group
+ *  \param[in] name Name identifier to assign to the statistics item group
+ */
+void osmo_stat_item_group_set_name(struct osmo_stat_item_group *statg, const char *name)
+{
+	osmo_talloc_replace_string(statg, &statg->name, name);
+}
+
 /*! Increase the stat_item to the given value.
  *  This function adds a new value for the given stat_item at the end of
  *  the FIFO.

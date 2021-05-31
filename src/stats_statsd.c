@@ -89,7 +89,7 @@ static void osmo_stats_reporter_sanitize_name(char *buf)
 }
 
 static int osmo_stats_reporter_statsd_send(struct osmo_stats_reporter *srep,
-	const char *name1, unsigned int index1, const char *name2, int64_t value,
+	const char *name1, const char *index1, const char *name2, int64_t value,
 	const char *unit)
 {
 	char *buf;
@@ -101,13 +101,13 @@ static int osmo_stats_reporter_statsd_send(struct osmo_stats_reporter *srep,
 
 	if (prefix) {
 		if (name1)
-			fmt = "%1$s.%2$s.%6$u.%3$s:%4$" PRId64 "|%5$s";
+			fmt = "%1$s.%2$s.%6$s.%3$s:%4$" PRId64 "|%5$s";
 		else
 			fmt = "%1$s.%2$0.0s%3$s:%4$" PRId64 "|%5$s";
 	} else {
 		prefix = "";
 		if (name1)
-			fmt = "%1$s%2$s.%6$u.%3$s:%4$" PRId64 "|%5$s";
+			fmt = "%1$s%2$s.%6$s.%3$s:%4$" PRId64 "|%5$s";
 		else
 			fmt = "%1$s%2$0.0s%3$s:%4$" PRId64 "|%5$s";
 	}
@@ -162,32 +162,42 @@ static int osmo_stats_reporter_statsd_send_counter(struct osmo_stats_reporter *s
 	const struct rate_ctr_desc *desc,
 	int64_t value, int64_t delta)
 {
-	if (ctrg)
-		return osmo_stats_reporter_statsd_send(srep,
-			ctrg->desc->group_name_prefix,
-			ctrg->idx,
-			desc->name, delta, "c");
-	else
-		return osmo_stats_reporter_statsd_send(srep,
-			NULL, 0,
-			desc->name, delta, "c");
+	char buf_idx[64];
+	const char *idx_name = buf_idx;
+	const char *prefix;
+
+	if (ctrg) {
+		prefix = ctrg->desc->group_name_prefix;
+		if (ctrg->name)
+			idx_name = ctrg->name;
+		else
+			snprintf(buf_idx, sizeof(buf_idx), "%u", ctrg->idx);
+	} else {
+		prefix = NULL;
+		buf_idx[0] = '0';
+		buf_idx[1] = '\n';
+	}
+	return osmo_stats_reporter_statsd_send(srep, prefix, idx_name, desc->name, delta, "c");
 }
 
 static int osmo_stats_reporter_statsd_send_item(struct osmo_stats_reporter *srep,
 	const struct osmo_stat_item_group *statg,
 	const struct osmo_stat_item_desc *desc, int64_t value)
 {
-	if (value < 0) {
-		return osmo_stats_reporter_statsd_send(srep,
-				statg->desc->group_name_prefix,
-				statg->idx,
-				desc->name, 0, "g");
-	} else {
-		return osmo_stats_reporter_statsd_send(srep,
-			statg->desc->group_name_prefix,
-			statg->idx,
-			desc->name, value, "g");
+	char buf_idx[64];
+	char *idx_name;
+	if (statg->name)
+		idx_name = statg->name;
+	else {
+		snprintf(buf_idx, sizeof(buf_idx), "%u", statg->idx);
+		idx_name = buf_idx;
 	}
+
+	if (value < 0)
+		value = 0;
+
+	return osmo_stats_reporter_statsd_send(srep, statg->desc->group_name_prefix,
+					       idx_name, desc->name, value, "g");
 }
 #endif /* !EMBEDDED */
 

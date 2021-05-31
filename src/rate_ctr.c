@@ -273,6 +273,16 @@ struct rate_ctr *rate_ctr_group_get_ctr(struct rate_ctr_group *grp, unsigned int
 	return &grp->ctr[idx];
 }
 
+/*! Set a name for the group of counters be used instead of index value
+  at report time.
+ *  \param[in] grp Rate counter group
+ *  \param[in] name Name identifier to assign to the rate counter group
+ */
+void rate_ctr_group_set_name(struct rate_ctr_group *grp, const char *name)
+{
+	osmo_talloc_replace_string(grp, &grp->name, name);
+}
+
 /*! Add a number to the counter */
 void rate_ctr_add(struct rate_ctr *ctr, int inc)
 {
