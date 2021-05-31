@@ -44,6 +44,7 @@ const struct value_string osmo_bts_features_descs[] = {
 	{ BTS_FEAT_ACCH_REP,		"FACCH/SACCH Repetition" },
 	{ BTS_FEAT_CCN,			"Cell Change Notification (CCN)" },
 	{ BTS_FEAT_VAMOS,		"VAMOS (Voice services over Adaptive Multi-user channels on One Slot)" },
+	{ BTS_FEAT_ABIS_OSMO_PCU,	"OsmoPCU over OML link IPA multiplex" },
 	{ 0, NULL }
 };
 
@@ -75,5 +76,6 @@ const struct value_string osmo_bts_features_names[] = {
 	{ BTS_FEAT_ACCH_REP, "ACCH_REP" },
 	{ BTS_FEAT_CCN, "CCN" },
 	{ BTS_FEAT_VAMOS, "VAMOS" },
+	{ BTS_FEAT_ABIS_OSMO_PCU, "ABIS_OSMO_PCU" },
 	{}
 };
