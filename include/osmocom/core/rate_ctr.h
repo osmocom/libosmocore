@@ -61,7 +61,7 @@ struct rate_ctr_group {
 	const struct rate_ctr_group_desc *desc;
 	/*! The index of this ctr_group within its class */
 	unsigned int idx;
-	/*! Actual counter structures below */
+	/*! Actual counter structures below. Don't access it directly, use APIs below! */
 	struct rate_ctr ctr[0];
 };
 
@@ -73,6 +73,8 @@ static inline void rate_ctr_group_upd_idx(struct rate_ctr_group *grp, unsigned i
 {
 	grp->idx = idx;
 }
+
+struct rate_ctr *rate_ctr_group_get_ctr(struct rate_ctr_group *grp, unsigned int idx);
 
 void rate_ctr_group_free(struct rate_ctr_group *grp);
 
@@ -93,7 +95,7 @@ static inline void rate_ctr_inc(struct rate_ctr *ctr)
  *  \param idx index into \a ctrg counter group */
 static inline void rate_ctr_inc2(struct rate_ctr_group *ctrg, unsigned int idx)
 {
-	rate_ctr_inc(&ctrg->ctr[idx]);
+	rate_ctr_inc(rate_ctr_group_get_ctr(ctrg, idx));
 }
 
 

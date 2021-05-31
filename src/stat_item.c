@@ -167,6 +167,16 @@ void osmo_stat_item_group_free(struct osmo_stat_item_group *grp)
 	talloc_free(grp);
 }
 
+/*! Get statistics item from group, identified by index idx
+ *  \param[in] grp Rate counter group
+ *  \param[in] idx Index of the counter to retrieve
+ *  \returns rate counter requested
+ */
+struct osmo_stat_item *osmo_stat_item_group_get_item(struct osmo_stat_item_group *grp, unsigned int idx)
+{
+	return grp->items[idx];
+}
+
 /*! Increase the stat_item to the given value.
  *  This function adds a new value for the given stat_item at the end of
  *  the FIFO.

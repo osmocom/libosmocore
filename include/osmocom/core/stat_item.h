@@ -79,7 +79,7 @@ static inline void osmo_stat_item_group_udp_idx(
 {
 	grp->idx = idx;
 }
-
+struct osmo_stat_item *osmo_stat_item_group_get_item(struct osmo_stat_item_group *grp, unsigned int idx);
 void osmo_stat_item_group_free(struct osmo_stat_item_group *statg);
 
 void osmo_stat_item_inc(struct osmo_stat_item *item, int32_t value);

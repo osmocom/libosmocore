@@ -263,6 +263,16 @@ void rate_ctr_group_free(struct rate_ctr_group *grp)
 	talloc_free(grp);
 }
 
+/*! Get rate counter from group, identified by index idx
+ *  \param[in] grp Rate counter group
+ *  \param[in] idx Index of the counter to retrieve
+ *  \returns rate counter requested
+ */
+struct rate_ctr *rate_ctr_group_get_ctr(struct rate_ctr_group *grp, unsigned int idx)
+{
+	return &grp->ctr[idx];
+}
+
 /*! Add a number to the counter */
 void rate_ctr_add(struct rate_ctr *ctr, int inc)
 {
