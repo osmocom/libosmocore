@@ -462,6 +462,7 @@ enum {
 /* non-standard, Osmocom specific Bm/Lm equivalents for VAMOS */
 #define RSL_CHAN_OSMO_VAMOS_Bm_ACCHs	0xe8	/* VAMOS TCH/F */
 #define RSL_CHAN_OSMO_VAMOS_Lm_ACCHs	0xf0	/* VAMOS TCH/H */
+#define RSL_CHAN_OSMO_VAMOS_MASK	0xe0	/* VAMOS TCH/{F,H} */
 
 /* Chapter 9.3.3 */
 #define RSL_ACT_TYPE_INITIAL	0x00
