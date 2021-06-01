@@ -156,6 +156,34 @@ end:
 	return NULL;
 }
 
+static int pcsc_card_reset(struct osim_card_hdl *card, bool cold_reset)
+{
+	struct pcsc_reader_state *st = card->reader->priv;
+	LONG rc;
+
+	rc = SCardReconnect(st->hCard, SCARD_SHARE_SHARED, SCARD_PROTOCOL_T0,
+			    cold_reset ? SCARD_UNPOWER_CARD : SCARD_RESET_CARD,
+			    &st->dwActiveProtocol);
+	PCSC_ERROR(rc, "SCardReconnect");
+
+	return 0;
+end:
+	return -EIO;
+}
+
+static int pcsc_card_close(struct osim_card_hdl *card)
+{
+	struct pcsc_reader_state *st = card->reader->priv;
+	LONG rc;
+
+	rc = SCardDisconnect(st->hCard, SCARD_UNPOWER_CARD);
+	PCSC_ERROR(rc, "SCardDisconnect");
+
+	return 0;
+end:
+	return -EIO;
+}
+
 
 static int pcsc_transceive(struct osim_reader_hdl *rh, struct msgb *msg)
 {
@@ -179,6 +207,8 @@ const struct osim_reader_ops pcsc_reader_ops = {
 	.name = "PC/SC",
 	.reader_open = pcsc_reader_open,
 	.card_open = pcsc_card_open,
+	.card_reset = pcsc_card_reset,
+	.card_close = pcsc_card_close,
 	.transceive = pcsc_transceive,
 };
 

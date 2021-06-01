@@ -277,3 +277,24 @@ struct osim_card_hdl *osim_card_open(struct osim_reader_hdl *rh, enum osim_proto
 
 	return ch;
 }
+
+int osim_card_reset(struct osim_card_hdl *card, bool cold_reset)
+{
+	struct osim_reader_hdl *rh = card->reader;
+
+	return rh->ops->card_reset(card, cold_reset);
+}
+
+int osim_card_close(struct osim_card_hdl *card)
+{
+	struct osim_reader_hdl *rh = card->reader;
+	int rc;
+
+	rc = rh->ops->card_close(card);
+
+	card->reader = NULL;
+	talloc_free(card);
+	rh->card = NULL;
+
+	return rc;
+}

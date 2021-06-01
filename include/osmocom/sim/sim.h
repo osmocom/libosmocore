@@ -375,6 +375,8 @@ struct osim_reader_ops {
 	const char *name;
 	struct osim_reader_hdl *(*reader_open)(int idx, const char *name, void *ctx);
 	struct osim_card_hdl *(*card_open)(struct osim_reader_hdl *rh, enum osim_proto proto);
+	int (*card_reset)(struct osim_card_hdl *card, bool cold_reset);
+	int (*card_close)(struct osim_card_hdl *card);
 	int (*transceive)(struct osim_reader_hdl *rh, struct msgb *msg);
 };
 
@@ -441,4 +443,6 @@ int osim_transceive_apdu(struct osim_chan_hdl *st, struct msgb *amsg);
 struct osim_reader_hdl *osim_reader_open(enum osim_reader_driver drv, int idx,
 					 const char *name, void *ctx);
 struct osim_card_hdl *osim_card_open(struct osim_reader_hdl *rh, enum osim_proto proto);
+int osim_card_reset(struct osim_card_hdl *card, bool cold_reset);
+int osim_card_close(struct osim_card_hdl *card);
 #endif /* _OSMOCOM_SIM_H */
