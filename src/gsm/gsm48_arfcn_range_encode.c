@@ -166,6 +166,10 @@ int osmo_gsm48_range_enc_determine_range(const int *arfcns, const int size, int 
 {
 	int max = 0;
 
+	/* don't dereference arfcns[] array if size is 0 */
+	if (size == 0)
+		return OSMO_GSM48_ARFCN_RANGE_128;
+
 	/*
 	 * Go for the easiest. And pick arfcns[0] == f0.
 	 */
