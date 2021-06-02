@@ -450,8 +450,8 @@ struct osmo_fsm_inst *osmo_fsm_inst_alloc(struct osmo_fsm *fsm, void *ctx, void 
 	osmo_timer_setup(&fi->timer, fsm_tmr_cb, fi);
 
 	if (osmo_fsm_inst_update_id(fi, id) < 0) {
-			fsm_free_or_steal(fi);
-			return NULL;
+		fsm_free_or_steal(fi);
+		return NULL;
 	}
 
 	INIT_LLIST_HEAD(&fi->proc.children);
