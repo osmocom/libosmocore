@@ -980,7 +980,8 @@ enum ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 	enum gprs_ns2_vc_mode vc_mode;
 	uint16_t nsvci;
 	uint16_t nsei;
-	char idbuf[32];
+	const struct osmo_sockaddr *local;
+	char idbuf[256], tmp[INET6_ADDRSTRLEN + 8];
 
 	int rc, tlv;
 
@@ -1113,8 +1114,12 @@ enum ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 
 	nsvci = tlvp_val16be(&tp, NS_IE_VCI);
 	vc_mode = ns2_dialect_to_vc_mode(dialect);
-	snprintf(idbuf, sizeof(idbuf), "%s-NSE%05u-NSVC%05u", gprs_ns2_lltype_str(nse->ll),
-		 nse->nsei, nsvci);
+
+	local = gprs_ns2_ip_bind_sockaddr(bind);
+	osmo_sockaddr_to_str_buf(tmp, sizeof(tmp), local);
+	snprintf(idbuf, sizeof(idbuf), "%s-NSE%05u-NSVC%05u-%s-%s", gprs_ns2_lltype_str(nse->ll),
+		 nse->nsei, nsvci, tmp, osmo_sockaddr_to_str(remote));
+	osmo_identifier_sanitize_buf(idbuf, NULL, '_');
 	nsvc = ns2_vc_alloc(bind, nse, false, vc_mode, idbuf);
 	if (!nsvc)
 		return NS2_CS_SKIPPED;

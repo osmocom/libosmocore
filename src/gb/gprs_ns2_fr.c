@@ -976,8 +976,9 @@ struct gprs_ns2_vc *gprs_ns2_fr_connect(struct gprs_ns2_vc_bind *bind,
 		goto err;
 	}
 
-	snprintf(idbuf, sizeof(idbuf), "%s-%s-DLCI%u-NSE%05u-NSVC%05u", gprs_ns2_lltype_str(nse->ll),
-		 bpriv->netif, dlci, nse->nsei, nsvci);
+	snprintf(idbuf, sizeof(idbuf), "NSE%05u-NSVC%05u-%s-%s-DLCI%u", nse->nsei, nsvci,
+		 gprs_ns2_lltype_str(nse->ll), bpriv->netif, dlci);
+	osmo_identifier_sanitize_buf(idbuf, NULL, '_');
 	nsvc = ns2_vc_alloc(bind, nse, true, GPRS_NS2_VC_MODE_BLOCKRESET, idbuf);
 	if (!nsvc)
 		goto err;
