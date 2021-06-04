@@ -441,7 +441,7 @@ static int bssgp_rx_bvc_block(struct msgb *msg, struct tlv_parsed *tp)
 		return bssgp_tx_status(BSSGP_CAUSE_UNKNOWN_BVCI, &bvci, msg);
 
 	ptp_ctx->state |= BVC_S_BLOCKED;
-	rate_ctr_inc(&ptp_ctx->ctrg->ctr[BSSGP_CTR_BLOCKED]);
+	rate_ctr_inc(rate_ctr_group_get_ctr(ptp_ctx->ctrg, BSSGP_CTR_BLOCKED));
 
 	/* Send NM_BVC_BLOCK.ind to NM */
 	memset(&nmp, 0, sizeof(nmp));
@@ -634,7 +634,7 @@ static int bssgp_rx_llc_disc(struct msgb *msg, struct tlv_parsed *tp,
 	DEBUGP(DLBSSGP, "BSSGP BVCI=%u TLLI=%08x Rx LLC DISCARDED\n",
 		ctx->bvci, tlli);
 
-	rate_ctr_inc(&ctx->ctrg->ctr[BSSGP_CTR_DISCARDED]);
+	rate_ctr_inc(rate_ctr_group_get_ctr(ctx->ctrg, BSSGP_CTR_DISCARDED));
 
 	/* send NM_LLC_DISCARDED to NM */
 	memset(&nmp, 0, sizeof(nmp));
@@ -675,7 +675,7 @@ int bssgp_rx_status(struct msgb *msg, struct tlv_parsed *tp,
 	}
 
 	if (bctx)
-		rate_ctr_inc(&bctx->ctrg->ctr[BSSGP_CTR_STATUS]);
+		rate_ctr_inc(rate_ctr_group_get_ctr(bctx->ctrg, BSSGP_CTR_STATUS));
 
 	/* send NM_STATUS to NM */
 	memset(&nmp, 0, sizeof(nmp));
@@ -1194,8 +1194,8 @@ int bssgp_rcvmsg(struct msgb *msg)
 
 	if (bctx) {
 		log_set_context(LOG_CTX_GB_BVC, bctx);
-		rate_ctr_inc(&bctx->ctrg->ctr[BSSGP_CTR_PKTS_IN]);
-		rate_ctr_add(&bctx->ctrg->ctr[BSSGP_CTR_BYTES_IN],
+		rate_ctr_inc(rate_ctr_group_get_ctr(bctx->ctrg, BSSGP_CTR_PKTS_IN));
+		rate_ctr_add(rate_ctr_group_get_ctr(bctx->ctrg, BSSGP_CTR_BYTES_IN),
 			     msgb_bssgp_len(msg));
 	}
 
@@ -1319,8 +1319,8 @@ int bssgp_tx_dl_ud(struct msgb *msg, uint16_t pdu_lifetime,
 	budh->tlli = osmo_htonl(msgb_tlli(msg));
 	budh->pdu_type = BSSGP_PDUT_DL_UNITDATA;
 
-	rate_ctr_inc(&bctx->ctrg->ctr[BSSGP_CTR_PKTS_OUT]);
-	rate_ctr_add(&bctx->ctrg->ctr[BSSGP_CTR_BYTES_OUT], msg->len);
+	rate_ctr_inc(rate_ctr_group_get_ctr(bctx->ctrg, BSSGP_CTR_PKTS_OUT));
+	rate_ctr_add(rate_ctr_group_get_ctr(bctx->ctrg, BSSGP_CTR_BYTES_OUT), msg->len);
 
 	/* Identifiers down: BVCI, NSEI (in msgb->cb) */
 

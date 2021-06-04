@@ -486,8 +486,8 @@ static int gprs_ns_tx(struct gprs_nsvc *nsvc, struct msgb *msg)
 	}
 
 	/* Increment number of Uplink bytes */
-	rate_ctr_inc(&nsvc->ctrg->ctr[NS_CTR_PKTS_OUT]);
-	rate_ctr_add(&nsvc->ctrg->ctr[NS_CTR_BYTES_OUT], msgb_l2len(msg));
+	rate_ctr_inc(rate_ctr_group_get_ctr(nsvc->ctrg, NS_CTR_PKTS_OUT));
+	rate_ctr_add(rate_ctr_group_get_ctr(nsvc->ctrg, NS_CTR_BYTES_OUT), msgb_l2len(msg));
 
 	switch (nsvc->ll) {
 	case GPRS_NS_LL_UDP:
@@ -643,7 +643,7 @@ int gprs_ns_tx_block(struct gprs_nsvc *nsvc, uint8_t cause)
 
 	/* be conservative and mark it as blocked even now! */
 	ns_mark_blocked(nsvc);
-	rate_ctr_inc(&nsvc->ctrg->ctr[NS_CTR_BLOCKED]);
+	rate_ctr_inc(rate_ctr_group_get_ctr(nsvc->ctrg, NS_CTR_BLOCKED));
 
 	msg->l2h = msgb_put(msg, sizeof(*nsh));
 	nsh = (struct gprs_ns_hdr *) msg->l2h;
@@ -781,15 +781,15 @@ static void gprs_ns_timer_cb(void *data)
 	switch (nsvc->timer_mode) {
 	case NSVC_TIMER_TNS_ALIVE:
 		/* Tns-alive case: we expired without response ! */
-		rate_ctr_inc(&nsvc->ctrg->ctr[NS_CTR_LOST_ALIVE]);
+		rate_ctr_inc(rate_ctr_group_get_ctr(nsvc->ctrg, NS_CTR_LOST_ALIVE));
 		nsvc->alive_retries++;
 		if (nsvc->alive_retries >
 			nsvc->nsi->timeout[NS_TOUT_TNS_ALIVE_RETRIES]) {
 			/* mark as dead (and blocked unless IP-SNS) */
-			rate_ctr_inc(&nsvc->ctrg->ctr[NS_CTR_DEAD]);
+			rate_ctr_inc(rate_ctr_group_get_ctr(nsvc->ctrg, NS_CTR_DEAD));
 			if (!nsvc->nsi->bss_sns_fi && nsvc->nsi->nsip.use_reset_block_unblock) {
 				ns_set_state(nsvc, NSE_S_BLOCKED);
-				rate_ctr_inc(&nsvc->ctrg->ctr[NS_CTR_BLOCKED]);
+				rate_ctr_inc(rate_ctr_group_get_ctr(nsvc->ctrg, NS_CTR_BLOCKED));
 			} else
 				ns_set_state(nsvc, 0);
 			LOGP(DNS, LOGL_NOTICE,
@@ -816,7 +816,7 @@ static void gprs_ns_timer_cb(void *data)
 		nsvc_start_timer(nsvc, NSVC_TIMER_TNS_ALIVE);
 		break;
 	case NSVC_TIMER_TNS_RESET:
-		rate_ctr_inc(&nsvc->ctrg->ctr[NS_CTR_LOST_RESET]);
+		rate_ctr_inc(rate_ctr_group_get_ctr(nsvc->ctrg, NS_CTR_LOST_RESET));
 		if (!(nsvc->state & NSE_S_RESET))
 			LOGP(DNS, LOGL_NOTICE,
 				"NSEI=%u Reset timed out but RESET flag is not set\n",
@@ -1251,7 +1251,7 @@ static int gprs_ns_rx_reset(struct gprs_nsvc **nsvc, struct msgb *msg)
 			ns_osmo_signal_dispatch_mismatch(*nsvc, msg,
 							 NS_PDUT_RESET,
 							 NS_IE_VCI);
-			rate_ctr_inc(&(*nsvc)->ctrg->ctr[NS_CTR_INV_VCI]);
+			rate_ctr_inc(rate_ctr_group_get_ctr((*nsvc)->ctrg, NS_CTR_INV_VCI));
 			gprs_ns_tx_reset_ack(*nsvc);
 			return 0;
 		}
@@ -1277,14 +1277,14 @@ static int gprs_ns_rx_reset(struct gprs_nsvc **nsvc, struct msgb *msg)
 			ns_osmo_signal_dispatch_mismatch(*nsvc, msg,
 							 NS_PDUT_RESET,
 							 NS_IE_NSEI);
-			rate_ctr_inc(&(*nsvc)->ctrg->ctr[NS_CTR_INV_NSEI]);
+			rate_ctr_inc(rate_ctr_group_get_ctr((*nsvc)->ctrg, NS_CTR_INV_NSEI));
 			rc = gprs_ns_tx_reset_ack(*nsvc);
 			CHECK_TX_RC(rc, *nsvc);
 			return 0;
 		}
 
 		/* NSEI has changed */
-		rate_ctr_inc(&(*nsvc)->ctrg->ctr[NS_CTR_NSEI_CHG]);
+		rate_ctr_inc(rate_ctr_group_get_ctr((*nsvc)->ctrg, NS_CTR_NSEI_CHG));
 		(*nsvc)->nsei = nsei;
 	}
 
@@ -1292,7 +1292,7 @@ static int gprs_ns_rx_reset(struct gprs_nsvc **nsvc, struct msgb *msg)
 	ns_set_state(*nsvc, NSE_S_BLOCKED | NSE_S_ALIVE);
 
 	if (orig_nsvc) {
-		rate_ctr_inc(&(*nsvc)->ctrg->ctr[NS_CTR_REPLACED]);
+		rate_ctr_inc(rate_ctr_group_get_ctr((*nsvc)->ctrg, NS_CTR_REPLACED));
 		ns_osmo_signal_dispatch_replaced(*nsvc, orig_nsvc);
 
 		/* Update the ll info fields */
@@ -1390,7 +1390,7 @@ static int gprs_ns_rx_reset_ack(struct gprs_nsvc **nsvc, struct msgb *msg)
 			ns_osmo_signal_dispatch_mismatch(*nsvc, msg,
 							 NS_PDUT_RESET_ACK,
 							 NS_IE_VCI);
-			rate_ctr_inc(&(*nsvc)->ctrg->ctr[NS_CTR_INV_VCI]);
+			rate_ctr_inc(rate_ctr_group_get_ctr((*nsvc)->ctrg, NS_CTR_INV_VCI));
 			LOGP(DNS, LOGL_ERROR,
 			     "NS RESET ACK Unknown NS-VCI %d (%s NSEI=%d) "
 			     "from %s\n",
@@ -1401,7 +1401,7 @@ static int gprs_ns_rx_reset_ack(struct gprs_nsvc **nsvc, struct msgb *msg)
 		}
 
 		/* Notify others */
-		rate_ctr_inc(&(*nsvc)->ctrg->ctr[NS_CTR_REPLACED]);
+		rate_ctr_inc(rate_ctr_group_get_ctr((*nsvc)->ctrg, NS_CTR_REPLACED));
 		ns_osmo_signal_dispatch_replaced(*nsvc, orig_nsvc);
 
 		/* Update the ll info fields */
@@ -1415,7 +1415,7 @@ static int gprs_ns_rx_reset_ack(struct gprs_nsvc **nsvc, struct msgb *msg)
 			ns_osmo_signal_dispatch_mismatch(*nsvc, msg,
 							 NS_PDUT_RESET_ACK,
 							 NS_IE_NSEI);
-			rate_ctr_inc(&(*nsvc)->ctrg->ctr[NS_CTR_INV_NSEI]);
+			rate_ctr_inc(rate_ctr_group_get_ctr((*nsvc)->ctrg, NS_CTR_INV_NSEI));
 			LOGP(DNS, LOGL_ERROR,
 			     "NS RESET ACK Unknown NSEI %d (NS-VCI=%u) from %s\n",
 			     nsei, nsvci, gprs_ns_ll_str(*nsvc));
@@ -1423,14 +1423,14 @@ static int gprs_ns_rx_reset_ack(struct gprs_nsvc **nsvc, struct msgb *msg)
 		}
 
 		/* NSEI has changed */
-		rate_ctr_inc(&(*nsvc)->ctrg->ctr[NS_CTR_NSEI_CHG]);
+		rate_ctr_inc(rate_ctr_group_get_ctr((*nsvc)->ctrg, NS_CTR_NSEI_CHG));
 		(*nsvc)->nsei = nsei;
 	}
 
 	/* Mark NS-VC as blocked and alive */
 	ns_set_state(*nsvc, NSE_S_BLOCKED | NSE_S_ALIVE);
 	ns_set_remote_state(*nsvc, NSE_S_BLOCKED | NSE_S_ALIVE);
-	rate_ctr_inc(&(*nsvc)->ctrg->ctr[NS_CTR_BLOCKED]);
+	rate_ctr_inc(rate_ctr_group_get_ctr((*nsvc)->ctrg, NS_CTR_BLOCKED));
 	if ((*nsvc)->persistent || (*nsvc)->remote_end_is_sgsn) {
 		/* stop RESET timer */
 		osmo_timer_del(&(*nsvc)->timer);
@@ -1471,7 +1471,7 @@ static int gprs_ns_rx_block(struct gprs_nsvc *nsvc, struct msgb *msg)
 	//nsvci = (uint16_t *) TLVP_VAL(&tp, NS_IE_VCI);
 
 	ns_osmo_signal_dispatch(nsvc, S_NS_BLOCK, *cause);
-	rate_ctr_inc(&nsvc->ctrg->ctr[NS_CTR_BLOCKED]);
+	rate_ctr_inc(rate_ctr_group_get_ctr(nsvc->ctrg, NS_CTR_BLOCKED));
 
 	return gprs_ns_tx_block_ack(nsvc);
 }
@@ -1705,7 +1705,7 @@ int gprs_ns_vc_create(struct gprs_ns_inst *nsi, struct msgb *msg,
 		existing_nsvc->nsei  = nsei;
 
 		/* Do statistics */
-		rate_ctr_inc(&existing_nsvc->ctrg->ctr[NS_CTR_NSEI_CHG]);
+		rate_ctr_inc(rate_ctr_group_get_ctr(existing_nsvc->ctrg, NS_CTR_NSEI_CHG));
 	}
 
 	*new_nsvc = existing_nsvc;
@@ -1734,8 +1734,8 @@ int gprs_ns_process_msg(struct gprs_ns_inst *nsi, struct msgb *msg,
 	log_set_context(LOG_CTX_GB_NSVC, *nsvc);
 
 	/* Increment number of Incoming bytes */
-	rate_ctr_inc(&(*nsvc)->ctrg->ctr[NS_CTR_PKTS_IN]);
-	rate_ctr_add(&(*nsvc)->ctrg->ctr[NS_CTR_BYTES_IN], msgb_l2len(msg));
+	rate_ctr_inc(rate_ctr_group_get_ctr((*nsvc)->ctrg, NS_CTR_PKTS_IN));
+	rate_ctr_add(rate_ctr_group_get_ctr((*nsvc)->ctrg, NS_CTR_BYTES_IN), msgb_l2len(msg));
 
 	if (nsvc_is_not_used(*nsvc) && !ns_is_sns(nsh->pdu_type) && nsh->pdu_type != NS_PDUT_STATUS) {
 		LOGP(DNS, LOGL_NOTICE, "NSEI=%u Rx %s on unused/pre-configured endpoint, discarding\n",
@@ -1762,7 +1762,7 @@ int gprs_ns_process_msg(struct gprs_ns_inst *nsi, struct msgb *msg,
 	case NS_PDUT_ALIVE_ACK:
 		ns_mark_alive(*nsvc);
 		if ((*nsvc)->timer_mode == NSVC_TIMER_TNS_ALIVE)
-			osmo_stat_item_set((*nsvc)->statg->items[NS_STAT_ALIVE_DELAY],
+			osmo_stat_item_set(osmo_stat_item_group_get_item((*nsvc)->statg, NS_STAT_ALIVE_DELAY),
 				nsvc_timer_elapsed_ms(*nsvc));
 		/* stop Tns-alive and start Tns-test */
 		nsvc_start_timer(*nsvc, NSVC_TIMER_TNS_TEST);

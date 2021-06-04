@@ -262,7 +262,7 @@ static void dump_rate_ctr_group(FILE *stream, const char *prefix,
 	unsigned int i;
 
 	for (i = 0; i < ctrg->desc->num_ctr; i++) {
-		struct rate_ctr *ctr = &ctrg->ctr[i];
+		struct rate_ctr *ctr = rate_ctr_group_get_ctr(ctrg, i);
 		if (ctr->current && !strchr(ctrg->desc->ctr_desc[i].name, ':'))
 			fprintf(stream, " %s%s: %llu%s",
 				prefix, ctrg->desc->ctr_desc[i].description,

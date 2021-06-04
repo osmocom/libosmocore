@@ -589,12 +589,12 @@ static uint64_t get_rate_ctr_value(const struct rate_ctr *ctr, int intv, const c
 	}
 }
 
-static int get_rate_ctr_group_idx(const struct rate_ctr_group *ctrg, int intv, struct ctrl_cmd *cmd)
+static int get_rate_ctr_group_idx(struct rate_ctr_group *ctrg, int intv, struct ctrl_cmd *cmd)
 {
 	unsigned int i;
 	for (i = 0; i < ctrg->desc->num_ctr; i++) {
 		ctrl_cmd_reply_printf(cmd, "%s %"PRIu64";", ctrg->desc->ctr_desc[i].name,
-				      get_rate_ctr_value(&ctrg->ctr[i], intv, ctrg->desc->group_name_prefix));
+				      get_rate_ctr_value(rate_ctr_group_get_ctr(ctrg, i), intv, ctrg->desc->group_name_prefix));
 		if (!cmd->reply) {
 			cmd->reply = "OOM";
 			return CTRL_CMD_ERROR;

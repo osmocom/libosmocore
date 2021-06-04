@@ -347,7 +347,7 @@ static void enqueue_at_head(struct gprs_ns2_vc_bind *bind, struct msgb *msg)
 {
 	struct priv_bind *priv = bind->priv;
 	llist_add(&msg->list, &priv->backlog.list);
-	osmo_stat_item_inc(bind->statg->items[NS2_BIND_STAT_BACKLOG_LEN], 1);
+	osmo_stat_item_inc(osmo_stat_item_group_get_item(bind->statg, NS2_BIND_STAT_BACKLOG_LEN), 1);
 	osmo_timer_schedule(&priv->backlog.timer, 0, priv->backlog.retry_us);
 }
 
@@ -355,7 +355,7 @@ static void enqueue_at_tail(struct gprs_ns2_vc_bind *bind, struct msgb *msg)
 {
 	struct priv_bind *priv = bind->priv;
 	llist_add_tail(&msg->list, &priv->backlog.list);
-	osmo_stat_item_inc(bind->statg->items[NS2_BIND_STAT_BACKLOG_LEN], 1);
+	osmo_stat_item_inc(osmo_stat_item_group_get_item(bind->statg, NS2_BIND_STAT_BACKLOG_LEN), 1);
 	osmo_timer_schedule(&priv->backlog.timer, 0, priv->backlog.retry_us);
 }
 
@@ -439,7 +439,7 @@ static void fr_backlog_timer_cb(void *data)
 			llist_add(&msg->list, &priv->backlog.list);
 			break;
 		}
-		osmo_stat_item_dec(bind->statg->items[NS2_BIND_STAT_BACKLOG_LEN], 1);
+		osmo_stat_item_dec(osmo_stat_item_group_get_item(bind->statg, NS2_BIND_STAT_BACKLOG_LEN), 1);
 	}
 
 restart_timer:

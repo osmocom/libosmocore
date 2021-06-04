@@ -466,8 +466,8 @@ int bssgp_tx_ul_ud(struct bssgp_bvc_ctx *bctx, uint32_t tlli,
 	msgb_nsei(msg) = bctx->nsei;
 	msgb_bvci(msg) = bctx->bvci;
 
-	rate_ctr_inc(&bctx->ctrg->ctr[BSSGP_CTR_PKTS_OUT]);
-	rate_ctr_add(&bctx->ctrg->ctr[BSSGP_CTR_BYTES_OUT], msg->len);
+	rate_ctr_inc(rate_ctr_group_get_ctr(bctx->ctrg, BSSGP_CTR_PKTS_OUT));
+	rate_ctr_add(rate_ctr_group_get_ctr(bctx->ctrg, BSSGP_CTR_BYTES_OUT), msg->len);
 
 	return bssgp_ns_send(bssgp_ns_send_data, msg);
 }

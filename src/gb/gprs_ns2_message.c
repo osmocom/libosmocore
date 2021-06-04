@@ -174,11 +174,11 @@ static int ns_vc_tx(struct gprs_ns2_vc *nsvc, struct msgb *msg)
 
 	rc = nsvc->bind->send_vc(nsvc, msg);
 	if (rc < 0) {
-		rate_ctr_inc(&nsvc->ctrg->ctr[NS_CTR_PKTS_OUT_DROP]);
-		rate_ctr_add(&nsvc->ctrg->ctr[NS_CTR_BYTES_OUT_DROP], bytes);
+		rate_ctr_inc(rate_ctr_group_get_ctr(nsvc->ctrg, NS_CTR_PKTS_OUT_DROP));
+		rate_ctr_add(rate_ctr_group_get_ctr(nsvc->ctrg, NS_CTR_BYTES_OUT_DROP), bytes);
 	} else {
-		rate_ctr_inc(&nsvc->ctrg->ctr[NS_CTR_PKTS_OUT]);
-		rate_ctr_add(&nsvc->ctrg->ctr[NS_CTR_BYTES_OUT], bytes);
+		rate_ctr_inc(rate_ctr_group_get_ctr(nsvc->ctrg, NS_CTR_PKTS_OUT));
+		rate_ctr_add(rate_ctr_group_get_ctr(nsvc->ctrg, NS_CTR_BYTES_OUT), bytes);
 	}
 
 	return rc;
@@ -223,7 +223,7 @@ int ns2_tx_block(struct gprs_ns2_vc *nsvc, uint8_t cause)
 	if (!msg)
 		return -ENOMEM;
 
-	rate_ctr_inc(&nsvc->ctrg->ctr[NS_CTR_BLOCKED]);
+	rate_ctr_inc(rate_ctr_group_get_ctr(nsvc->ctrg, NS_CTR_BLOCKED));
 
 	msg->l2h = msgb_put(msg, sizeof(*nsh));
 	nsh = (struct gprs_ns_hdr *) msg->l2h;
