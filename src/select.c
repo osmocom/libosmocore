@@ -69,6 +69,11 @@ struct poll_state {
 static __thread struct poll_state g_poll;
 #endif /* FORCE_IO_SELECT */
 
+/*! See osmo_select_shutdown_request() */
+static int _osmo_select_shutdown_requested = 0;
+/*! See osmo_select_shutdown_request() */
+static bool _osmo_select_shutdown_done = false;
+
 /*! Set up an osmo-fd. Will not register it.
  *  \param[inout] ofd Osmo FD to be set-up
  *  \param[in] fd OS-level file descriptor number
@@ -316,6 +321,7 @@ static int poll_disp_fds(int n_fd)
 	struct osmo_fd *ufd;
 	unsigned int i;
 	int work = 0;
+	int shutdown_pending_writes = 0;
 
 	for (i = 0; i < n_fd; i++) {
 		struct pollfd *p = &g_poll.poll[i];
@@ -340,6 +346,11 @@ static int poll_disp_fds(int n_fd)
 		/* make sure we never report more than the user requested */
 		flags &= ufd->when;
 
+		if (_osmo_select_shutdown_requested > 0) {
+			if (ufd->when & OSMO_FD_WRITE)
+				shutdown_pending_writes++;
+		}
+
 		if (flags) {
 			work = 1;
 			/* make sure to clear any log context before processing the next incoming message
@@ -350,6 +361,9 @@ static int poll_disp_fds(int n_fd)
 			ufd->cb(ufd, flags);
 		}
 	}
+
+	if (_osmo_select_shutdown_requested > 0 && !shutdown_pending_writes)
+		_osmo_select_shutdown_done = true;
 
 	return work;
 }
@@ -370,7 +384,8 @@ static int _osmo_select_main(int polling)
 		return 0;
 
 	/* fire timers */
-	osmo_timers_update();
+	if (!_osmo_select_shutdown_requested)
+		osmo_timers_update();
 
 	OSMO_ASSERT(osmo_ctx->select);
 
@@ -595,6 +610,59 @@ osmo_signalfd_setup(void *ctx, sigset_t set, osmo_signalfd_cb *cb, void *data)
 }
 
 #endif /* HAVE_SYS_SIGNALFD_H */
+
+/*! Request osmo_select_* to only service pending OSMO_FD_WRITE requests. Once all writes are done,
+ * osmo_select_shutdown_done() returns true. This allows for example to send all outbound packets before terminating the
+ * process.
+ *
+ * Usage example:
+ *
+ * static void signal_handler(int signum)
+ * {
+ *         fprintf(stdout, "signal %u received\n", signum);
+ *
+ *         switch (signum) {
+ *         case SIGINT:
+ *         case SIGTERM:
+ *                 // If the user hits Ctrl-C the third time, just terminate immediately.
+ *                 if (osmo_select_shutdown_requested() >= 2)
+ *                         exit(-1);
+ *                 // Request write-only mode in osmo_select_main_ctx()
+ *                 osmo_select_shutdown_request();
+ *                 break;
+ *         [...]
+ * }
+ *
+ * main()
+ * {
+ *         signal(SIGINT, &signal_handler);
+ *         signal(SIGTERM, &signal_handler);
+ *
+ *         [...]
+ *
+ *         // After the signal_handler issued osmo_select_shutdown_request(), osmo_select_shutdown_done() returns true
+ *         // as soon as all write queues are empty.
+ *         while (!osmo_select_shutdown_done()) {
+ *                 osmo_select_main_ctx(0);
+ *         }
+ * }
+ */
+void osmo_select_shutdown_request()
+{
+	_osmo_select_shutdown_requested++;
+};
+
+/*! Return the number of times osmo_select_shutdown_request() was called before. */
+int osmo_select_shutdown_requested()
+{
+	return _osmo_select_shutdown_requested;
+};
+
+/*! Return true after osmo_select_shutdown_requested() was called, and after an osmo_select poll loop found no more
+ * pending OSMO_FD_WRITE on any registered socket. */
+bool osmo_select_shutdown_done() {
+	return _osmo_select_shutdown_done;
+};
 
 /*! @} */
 

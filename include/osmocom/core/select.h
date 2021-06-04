@@ -105,5 +105,8 @@ struct osmo_signalfd {
 struct osmo_signalfd *
 osmo_signalfd_setup(void *ctx, sigset_t set, osmo_signalfd_cb *cb, void *data);
 
+void osmo_select_shutdown_request();
+int osmo_select_shutdown_requested();
+bool osmo_select_shutdown_done();
 
 /*! @} */
