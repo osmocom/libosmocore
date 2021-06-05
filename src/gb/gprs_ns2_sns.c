@@ -1519,6 +1519,54 @@ static void ns2_sns_st_all_action(struct osmo_fsm_inst *fi, uint32_t event, void
 	}
 }
 
+/* validate the bss configuration (sns endpoint and binds)
+ * - no endpoints -> invalid
+ * - no binds -> invalid
+ * - only v4 sns endpoints, only v6 binds -> invalid
+ * - only v4 sns endpoints, but v4 sig weights == 0 -> invalid ...
+ */
+static int ns2_sns_bss_valid_configuration(struct ns2_sns_state *gss)
+{
+	struct ns2_sns_bind *sbind;
+	struct sns_endpoint *endpoint;
+	const struct osmo_sockaddr *addr;
+	int v4_sig = 0, v4_data = 0, v6_sig = 0, v6_data = 0;
+	bool v4_endpoints = false;
+	bool v6_endpoints = false;
+
+	if (llist_empty(&gss->sns_endpoints) || llist_empty(&gss->binds))
+		return 0;
+
+	llist_for_each_entry(sbind, &gss->binds, list) {
+		addr = gprs_ns2_ip_bind_sockaddr(sbind->bind);
+		if (!addr)
+			continue;
+		switch (addr->u.sa.sa_family) {
+		case AF_INET:
+			v4_sig += sbind->bind->sns_sig_weight;
+			v4_data += sbind->bind->sns_data_weight;
+			break;
+		case AF_INET6:
+			v6_sig += sbind->bind->sns_sig_weight;
+			v6_data += sbind->bind->sns_data_weight;
+			break;
+		}
+	}
+
+	llist_for_each_entry(endpoint, &gss->sns_endpoints, list) {
+		switch (endpoint->saddr.u.sa.sa_family) {
+		case AF_INET:
+			v4_endpoints = true;
+			break;
+		case AF_INET6:
+			v6_endpoints = true;
+			break;
+		}
+	}
+
+	return (v4_endpoints && v4_sig && v4_data) || (v6_endpoints && v6_sig && v6_data);
+}
+
 /* allstate-action for BSS role */
 static void ns2_sns_st_all_action_bss(struct osmo_fsm_inst *fi, uint32_t event, void *data)
 {
@@ -1544,7 +1592,7 @@ static void ns2_sns_st_all_action_bss(struct osmo_fsm_inst *fi, uint32_t event, 
 		ns2_clear_ipv46_entries_remote(gss);
 
 		/* Choose the next sns endpoint. */
-		if (llist_empty(&gss->sns_endpoints) || llist_empty(&gss->binds)) {
+		if (!ns2_sns_bss_valid_configuration(gss)) {
 			gss->initial = NULL;
 			ns2_prim_status_ind(gss->nse, NULL, 0, GPRS_NS2_AFF_CAUSE_SNS_NO_ENDPOINTS);
 			osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_UNCONFIGURED, 0, 3);
