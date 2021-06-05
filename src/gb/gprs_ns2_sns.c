@@ -295,22 +295,13 @@ void ns2_sns_replace_nsvc(struct gprs_ns2_vc *nsvc)
 	osmo_fsm_inst_dispatch(fi, GPRS_SNS_EV_REQ_NO_NSVC, NULL);
 }
 
-static void ns2_clear_ipv46_entries_local(struct ns2_sns_state *gss)
+static void ns2_clear_elems(struct ns2_sns_elems *elems)
 {
-	TALLOC_FREE(gss->local.ip4);
-	TALLOC_FREE(gss->local.ip6);
+	TALLOC_FREE(elems->ip4);
+	TALLOC_FREE(elems->ip6);
 
-	gss->local.num_ip4 = 0;
-	gss->local.num_ip6 = 0;
-}
-
-static void ns2_clear_ipv46_entries_remote(struct ns2_sns_state *gss)
-{
-	TALLOC_FREE(gss->remote.ip4);
-	TALLOC_FREE(gss->remote.ip6);
-
-	gss->remote.num_ip4 = 0;
-	gss->remote.num_ip6 = 0;
+	elems->num_ip4 = 0;
+	elems->num_ip6 = 0;
 }
 
 static void ns2_vc_create_ip(struct osmo_fsm_inst *fi, struct gprs_ns2_nse *nse, const struct osmo_sockaddr *remote,
@@ -789,7 +780,7 @@ static void ns2_sns_compute_local_ep_from_binds(struct osmo_fsm_inst *fi)
 	struct osmo_sockaddr local;
 	int count;
 
-	ns2_clear_ipv46_entries_local(gss);
+	ns2_clear_elems(&gss->local);
 
 	/* no initial available */
 	if (gss->role == GPRS_SNS_ROLE_BSS) {
@@ -1585,8 +1576,8 @@ static void ns2_sns_st_all_action_bss(struct osmo_fsm_inst *fi, uint32_t event, 
 		 * gprs_ns2_free_nsvcs() will trigger NO_NSVC, prevent this from triggering a reselection */
 		gss->reselection_running = true;
 		gprs_ns2_free_nsvcs(nse);
-		ns2_clear_ipv46_entries_local(gss);
-		ns2_clear_ipv46_entries_remote(gss);
+		ns2_clear_elems(&gss->local);
+		ns2_clear_elems(&gss->remote);
 
 		/* Choose the next sns endpoint. */
 		if (!ns2_sns_bss_valid_configuration(gss)) {
@@ -2282,8 +2273,8 @@ static void ns2_sns_st_all_action_sgsn(struct osmo_fsm_inst *fi, uint32_t event,
 			/* clear all state */
 			osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_UNCONFIGURED, 0, 0);
 			gss->N = 0;
-			ns2_clear_ipv46_entries_local(gss);
-			ns2_clear_ipv46_entries_remote(gss);
+			ns2_clear_elems(&gss->local);
+			ns2_clear_elems(&gss->remote);
 			llist_for_each_entry_safe(nsvc, nsvc2, &gss->nse->nsvc, list) {
 				if (nsvc == gss->sns_nsvc) {
 					/* keep the NSVC we need for SNS, but unconfigure it */
