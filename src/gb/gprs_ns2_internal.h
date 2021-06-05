@@ -60,8 +60,8 @@ struct vty;
 struct gprs_ns2_vc_driver;
 struct gprs_ns2_vc_bind;
 
-#define NS_TIMERS_COUNT 10
-#define NS_TIMERS "(tns-block|tns-block-retries|tns-reset|tns-reset-retries|tns-test|tns-alive|tns-alive-retries|tsns-prov|tsns-size-retries|tsns-config-retries)"
+#define NS_TIMERS_COUNT 11
+#define NS_TIMERS "(tns-block|tns-block-retries|tns-reset|tns-reset-retries|tns-test|tns-alive|tns-alive-retries|tsns-prov|tsns-size-retries|tsns-config-retries|tsns-procedures-retries)"
 #define NS_TIMERS_HELP	\
 	"(un)blocking Timer (Tns-block) timeout\n"		\
 	"(un)blocking Timer (Tns-block) number of retries\n"	\
@@ -73,6 +73,7 @@ struct gprs_ns2_vc_bind;
 	"SNS Provision Timer (Tsns-prov) timeout\n"		\
 	"SNS Size number of retries\n"				\
 	"SNS Config number of retries\n"			\
+	"SNS Procedures number of retries\n"			\
 
 /* Educated guess - LLC user payload is 1500 bytes plus possible headers */
 #define NS_ALLOC_SIZE	3072
@@ -89,6 +90,7 @@ enum ns2_timeout {
 	NS_TOUT_TSNS_PROV,
 	NS_TOUT_TSNS_SIZE_RETRIES,
 	NS_TOUT_TSNS_CONFIG_RETRIES,
+	NS_TOUT_TSNS_PROCEDURES_RETRIES,
 };
 
 enum nsvc_timer_mode {
@@ -336,6 +338,7 @@ enum ns2_sns_event {
 	NS2_SNS_EV_REQ_NSVC_ALIVE,		/*!< a NS-VC became alive */
 	NS2_SNS_EV_REQ_ADD_BIND,		/*!< add a new local bind to this NSE */
 	NS2_SNS_EV_REQ_DELETE_BIND,		/*!< remove a local bind from this NSE */
+	NS2_SNS_EV_REQ_CHANGE_WEIGHT,		/*!< a bind changed its weight */
 };
 
 enum ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
