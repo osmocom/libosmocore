@@ -56,11 +56,6 @@
 
 #define S(x)	(1 << (x))
 
-enum ns2_sns_type {
-	IPv4,
-	IPv6,
-};
-
 enum ns2_sns_role {
 	GPRS_SNS_ROLE_BSS,
 	GPRS_SNS_ROLE_SGSN,
@@ -132,7 +127,8 @@ struct ns2_sns_elems {
 struct ns2_sns_state {
 	struct gprs_ns2_nse *nse;
 
-	enum ns2_sns_type ip;
+	/* containing the address family AF_* */
+	int family;
 	enum ns2_sns_role role;		/* local role: BSS or SGSN */
 
 	/* holds the list of initial SNS endpoints */
@@ -666,14 +662,14 @@ static int do_sns_add(struct osmo_fsm_inst *fi,
 	/* Upon receiving an SNS-ADD PDU, if the consequent number of IPv4 endpoints
 	 * exceeds the number of IPv4 endpoints supported by the NSE, the NSE shall send
 	 * an SNS-ACK PDU with a cause code set to "Invalid number of IP4 Endpoints". */
-	switch (gss->ip) {
-	case IPv4:
+	switch (gss->family) {
+	case AF_INET:
 		if (gss->remote.num_ip4 >= gss->num_max_ip4_remote)
 			return -NS_CAUSE_INVAL_NR_NS_VC;
 		/* TODO: log message duplicate */
 		rc = add_ip4_elem(gss, &gss->remote, ip4);
 		break;
-	case IPv6:
+	case AF_INET6:
 		if (gss->remote.num_ip6 >= gss->num_max_ip6_remote)
 			return -NS_CAUSE_INVAL_NR_NS_VC;
 		/* TODO: log message duplicate */
@@ -690,8 +686,8 @@ static int do_sns_add(struct osmo_fsm_inst *fi,
 	/* Upon receiving an SNS-ADD PDU containing an already configured IP endpoint the
 	 * NSE shall send an SNS-ACK PDU with the cause code "Protocol error -
 	 * unspecified" */
-	switch (gss->ip) {
-	case IPv4:
+	switch (gss->family) {
+	case AF_INET:
 		nsvc = nsvc_by_ip4_elem(nse, ip4);
 		if (nsvc) {
 			/* the nsvc should be already in sync with the ip4 / ip6 elements */
@@ -701,7 +697,7 @@ static int do_sns_add(struct osmo_fsm_inst *fi,
 		/* TODO: failure case */
 		ns2_nsvc_create_ip4(fi, nse, ip4);
 		break;
-	case IPv6:
+	case AF_INET6:
 		nsvc = nsvc_by_ip6_elem(nse, ip6);
 		if (nsvc) {
 			/* the nsvc should be already in sync with the ip4 / ip6 elements */
@@ -752,7 +748,7 @@ static void ns2_sns_st_bss_size(struct osmo_fsm_inst *fi, uint32_t event, void *
 	}
 }
 
-static int ns2_sns_count_num_local_ep(struct osmo_fsm_inst *fi, enum ns2_sns_type stype)
+static int ns2_sns_count_num_local_ep(struct osmo_fsm_inst *fi, int ip_proto)
 {
 	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
 	struct ns2_sns_bind *sbind;
@@ -763,12 +759,12 @@ static int ns2_sns_count_num_local_ep(struct osmo_fsm_inst *fi, enum ns2_sns_typ
 		if (!sa)
 			continue;
 
-		switch (stype) {
-		case IPv4:
+		switch (ip_proto) {
+		case AF_INET:
 			if (sa->u.sas.ss_family == AF_INET)
 				count++;
 			break;
-		case IPv6:
+		case AF_INET6:
 			if (sa->u.sas.ss_family == AF_INET6)
 				count++;
 			break;
@@ -806,8 +802,8 @@ static void ns2_sns_compute_local_ep_from_binds(struct osmo_fsm_inst *fi)
 		return;
 	}
 
-	switch (gss->ip) {
-	case IPv4:
+	switch (gss->family) {
+	case AF_INET:
 		ip4_elems = talloc_realloc(fi, gss->local.ip4, struct gprs_ns_ie_ip4_elem, count);
 		if (!ip4_elems)
 			return;
@@ -841,7 +837,7 @@ static void ns2_sns_compute_local_ep_from_binds(struct osmo_fsm_inst *fi)
 		gss->local.num_ip4 = count;
 		gss->num_max_nsvcs = OSMO_MAX(gss->num_max_ip4_remote * gss->local.num_ip4, 8);
 		break;
-	case IPv6:
+	case AF_INET6:
 		/* IPv6 */
 		ip6_elems = talloc_realloc(fi, gss->local.ip6, struct gprs_ns_ie_ip6_elem, count);
 		if (!ip6_elems)
@@ -960,13 +956,13 @@ static void ns2_sns_st_bss_config_bss_onenter(struct osmo_fsm_inst *fi, uint32_t
 		gss->N = 0;
 
 	/* Transmit SNS-CONFIG */
-	switch (gss->ip) {
-	case IPv4:
+	switch (gss->family) {
+	case AF_INET:
 		ns2_tx_sns_config(gss->sns_nsvc, true,
 				  gss->local.ip4, gss->local.num_ip4,
 				  NULL, 0);
 		break;
-	case IPv6:
+	case AF_INET6:
 		ns2_tx_sns_config(gss->sns_nsvc, true,
 				  NULL, 0,
 				  gss->local.ip6, gss->local.num_ip6);
@@ -1109,7 +1105,7 @@ static void ns2_sns_st_configured_add(struct osmo_fsm_inst *fi,
 	 */
 
 	trans_id = *TLVP_VAL(tp, NS_IE_TRANS_ID);
-	if (gss->ip == IPv4) {
+	if (gss->family == AF_INET) {
 		if (!TLVP_PRESENT(tp, NS_IE_IPv4_LIST)) {
 			cause = NS_CAUSE_INVAL_NR_IPv4_EP;
 			ns2_tx_sns_ack(gss->sns_nsvc, trans_id, &cause, NULL, 0, NULL, 0);
@@ -1173,7 +1169,7 @@ static void ns2_sns_st_configured_delete(struct osmo_fsm_inst *fi,
 	 * TODO: check if IPv4_LIST/IPv6_LIST and IP_ADDR is present at the same time
 	 */
 	trans_id = *TLVP_VAL(tp, NS_IE_TRANS_ID);
-	if (gss->ip == IPv4) {
+	if (gss->family == AF_INET) {
 		if (TLVP_PRESENT(tp, NS_IE_IPv4_LIST)) {
 			v4_list = (const struct gprs_ns_ie_ip4_elem *) TLVP_VAL(tp, NS_IE_IPv4_LIST);
 			num_v4 = TLVP_LEN(tp, NS_IE_IPv4_LIST) / sizeof(*v4_list);
@@ -2247,13 +2243,13 @@ static void ns2_sns_st_all_action_sgsn(struct osmo_fsm_inst *fi, uint32_t event,
 		if (TLVP_PRES_LEN(tp, NS_IE_IPv6_EP_NR, 2))
 			gss->num_max_ip6_remote = tlvp_val16be(tp, NS_IE_IPv6_EP_NR);
 		/* decide if we go for IPv4 or IPv6 */
-		if (gss->num_max_ip6_remote && ns2_sns_count_num_local_ep(fi, IPv6)) {
-			gss->ip = IPv6;
+		if (gss->num_max_ip6_remote && ns2_sns_count_num_local_ep(fi, AF_INET6)) {
+			gss->family = AF_INET6;
 			ns2_sns_compute_local_ep_from_binds(fi);
 			num_local_eps = gss->local.num_ip6;
 			num_remote_eps = gss->num_max_ip6_remote;
-		} else if (gss->num_max_ip4_remote && ns2_sns_count_num_local_ep(fi, IPv4)) {
-			gss->ip = IPv4;
+		} else if (gss->num_max_ip4_remote && ns2_sns_count_num_local_ep(fi, AF_INET)) {
+			gss->family = AF_INET;
 			ns2_sns_compute_local_ep_from_binds(fi);
 			num_local_eps = gss->local.num_ip4;
 			num_remote_eps = gss->num_max_ip4_remote;
