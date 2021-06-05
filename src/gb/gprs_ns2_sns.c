@@ -122,6 +122,13 @@ struct ns2_sns_bind {
 	struct gprs_ns2_vc_bind *bind;
 };
 
+struct ns2_sns_elems {
+	struct gprs_ns_ie_ip4_elem *ip4;
+	unsigned int num_ip4;
+	struct gprs_ns_ie_ip6_elem *ip6;
+	unsigned int num_ip6;
+};
+
 struct ns2_sns_state {
 	struct gprs_ns2_nse *nse;
 
@@ -150,26 +157,16 @@ struct ns2_sns_state {
 	bool alive;
 
 	/* local configuration to send to the remote end */
-	struct gprs_ns_ie_ip4_elem *ip4_local;
-	size_t num_ip4_local;
+	struct ns2_sns_elems local;
 
-	/* local configuration to send to the remote end */
-	struct gprs_ns_ie_ip6_elem *ip6_local;
-	size_t num_ip6_local;
+	/* remote configuration as received */
+	struct ns2_sns_elems remote;
 
 	/* local configuration about our capabilities in terms of connections to
 	 * remote (SGSN) side */
 	size_t num_max_nsvcs;
 	size_t num_max_ip4_remote;
 	size_t num_max_ip6_remote;
-
-	/* remote configuration as received */
-	struct gprs_ns_ie_ip4_elem *ip4_remote;
-	unsigned int num_ip4_remote;
-
-	/* remote configuration as received */
-	struct gprs_ns_ie_ip6_elem *ip6_remote;
-	unsigned int num_ip6_remote;
 };
 
 static inline struct gprs_ns2_nse *nse_inst_from_fi(struct osmo_fsm_inst *fi)
@@ -216,8 +213,8 @@ static int ip6_weight_sum(const struct gprs_ns_ie_ip6_elem *ip6, unsigned int nu
 
 static int nss_weight_sum(const struct ns2_sns_state *nss, bool data_weight)
 {
-	return ip4_weight_sum(nss->ip4_remote, nss->num_ip4_remote, data_weight) +
-	       ip6_weight_sum(nss->ip6_remote, nss->num_ip6_remote, data_weight);
+	return ip4_weight_sum(nss->remote.ip4, nss->remote.num_ip4, data_weight) +
+	       ip6_weight_sum(nss->remote.ip6, nss->remote.num_ip6, data_weight);
 }
 #define nss_weight_sum_data(nss)	nss_weight_sum(nss, true)
 #define nss_weight_sum_sig(nss)		nss_weight_sum(nss, false)
@@ -300,20 +297,20 @@ void ns2_sns_replace_nsvc(struct gprs_ns2_vc *nsvc)
 
 static void ns2_clear_ipv46_entries_local(struct ns2_sns_state *gss)
 {
-	TALLOC_FREE(gss->ip4_local);
-	TALLOC_FREE(gss->ip6_local);
+	TALLOC_FREE(gss->local.ip4);
+	TALLOC_FREE(gss->local.ip6);
 
-	gss->num_ip4_local = 0;
-	gss->num_ip6_local = 0;
+	gss->local.num_ip4 = 0;
+	gss->local.num_ip6 = 0;
 }
 
 static void ns2_clear_ipv46_entries_remote(struct ns2_sns_state *gss)
 {
-	TALLOC_FREE(gss->ip4_remote);
-	TALLOC_FREE(gss->ip6_remote);
+	TALLOC_FREE(gss->remote.ip4);
+	TALLOC_FREE(gss->remote.ip6);
 
-	gss->num_ip4_remote = 0;
-	gss->num_ip6_remote = 0;
+	gss->remote.num_ip4 = 0;
+	gss->remote.num_ip6 = 0;
 }
 
 static void ns2_vc_create_ip(struct osmo_fsm_inst *fi, struct gprs_ns2_nse *nse, const struct osmo_sockaddr *remote,
@@ -393,8 +390,8 @@ static int create_missing_nsvcs(struct osmo_fsm_inst *fi)
 	unsigned int i;
 
 	/* iterate over all remote IPv4 endpoints */
-	for (i = 0; i < gss->num_ip4_remote; i++) {
-		const struct gprs_ns_ie_ip4_elem *ip4 = &gss->ip4_remote[i];
+	for (i = 0; i < gss->remote.num_ip4; i++) {
+		const struct gprs_ns_ie_ip4_elem *ip4 = &gss->remote.ip4[i];
 
 		remote.u.sin.sin_family = AF_INET;
 		remote.u.sin.sin_addr.s_addr = ip4->ip_addr;
@@ -425,8 +422,8 @@ static int create_missing_nsvcs(struct osmo_fsm_inst *fi)
 	}
 
 	/* iterate over all remote IPv4 endpoints */
-	for (i = 0; i < gss->num_ip6_remote; i++) {
-		const struct gprs_ns_ie_ip6_elem *ip6 = &gss->ip6_remote[i];
+	for (i = 0; i < gss->remote.num_ip6; i++) {
+		const struct gprs_ns_ie_ip6_elem *ip6 = &gss->remote.ip6[i];
 
 		remote.u.sin6.sin6_family = AF_INET6;
 		remote.u.sin6.sin6_addr = ip6->ip_addr;
@@ -465,21 +462,21 @@ static int add_remote_ip4_elem(struct ns2_sns_state *gss, const struct gprs_ns_i
 {
 	unsigned int i;
 
-	if (gss->num_ip4_remote >= gss->num_max_ip4_remote)
+	if (gss->remote.num_ip4 >= gss->num_max_ip4_remote)
 		return -NS_CAUSE_INVAL_NR_NS_VC;
 
 	/* check for duplicates */
-	for (i = 0; i < gss->num_ip4_remote; i++) {
-		if (memcmp(&gss->ip4_remote[i], ip4, sizeof(*ip4)))
+	for (i = 0; i < gss->remote.num_ip4; i++) {
+		if (memcmp(&gss->remote.ip4[i], ip4, sizeof(*ip4)))
 			continue;
 		/* TODO: log message duplicate */
 		return -NS_CAUSE_PROTO_ERR_UNSPEC;
 	}
 
-	gss->ip4_remote = talloc_realloc(gss, gss->ip4_remote, struct gprs_ns_ie_ip4_elem,
-					 gss->num_ip4_remote+1);
-	gss->ip4_remote[gss->num_ip4_remote] = *ip4;
-	gss->num_ip4_remote += 1;
+	gss->remote.ip4 = talloc_realloc(gss, gss->remote.ip4, struct gprs_ns_ie_ip4_elem,
+					 gss->remote.num_ip4+1);
+	gss->remote.ip4[gss->remote.num_ip4] = *ip4;
+	gss->remote.num_ip4 += 1;
 	return 0;
 }
 
@@ -488,12 +485,12 @@ static int remove_remote_ip4_elem(struct ns2_sns_state *gss, const struct gprs_n
 {
 	unsigned int i;
 
-	for (i = 0; i < gss->num_ip4_remote; i++) {
-		if (memcmp(&gss->ip4_remote[i], ip4, sizeof(*ip4)))
+	for (i = 0; i < gss->remote.num_ip4; i++) {
+		if (memcmp(&gss->remote.ip4[i], ip4, sizeof(*ip4)))
 			continue;
 		/* all array elements < i remain as they are; all > i are shifted left by one */
-		memmove(&gss->ip4_remote[i], &gss->ip4_remote[i+1], gss->num_ip4_remote-i-1);
-		gss->num_ip4_remote -= 1;
+		memmove(&gss->remote.ip4[i], &gss->remote.ip4[i+1], gss->remote.num_ip4-i-1);
+		gss->remote.num_ip4 -= 1;
 		return 0;
 	}
 	return -1;
@@ -504,13 +501,13 @@ static int update_remote_ip4_elem(struct ns2_sns_state *gss, const struct gprs_n
 {
 	unsigned int i;
 
-	for (i = 0; i < gss->num_ip4_remote; i++) {
-		if (gss->ip4_remote[i].ip_addr != ip4->ip_addr ||
-		    gss->ip4_remote[i].udp_port != ip4->udp_port)
+	for (i = 0; i < gss->remote.num_ip4; i++) {
+		if (gss->remote.ip4[i].ip_addr != ip4->ip_addr ||
+		    gss->remote.ip4[i].udp_port != ip4->udp_port)
 			continue;
 
-		gss->ip4_remote[i].sig_weight = ip4->sig_weight;
-		gss->ip4_remote[i].data_weight = ip4->data_weight;
+		gss->remote.ip4[i].sig_weight = ip4->sig_weight;
+		gss->remote.ip4[i].data_weight = ip4->data_weight;
 		return 0;
 	}
 	return -1;
@@ -519,13 +516,13 @@ static int update_remote_ip4_elem(struct ns2_sns_state *gss, const struct gprs_n
 /* Add a given remote IPv6 element to gprs_sns_state */
 static int add_remote_ip6_elem(struct ns2_sns_state *gss, const struct gprs_ns_ie_ip6_elem *ip6)
 {
-	if (gss->num_ip6_remote >= gss->num_max_ip6_remote)
+	if (gss->remote.num_ip6 >= gss->num_max_ip6_remote)
 		return -NS_CAUSE_INVAL_NR_NS_VC;
 
-	gss->ip6_remote = talloc_realloc(gss, gss->ip6_remote, struct gprs_ns_ie_ip6_elem,
-					 gss->num_ip6_remote+1);
-	gss->ip6_remote[gss->num_ip6_remote] = *ip6;
-	gss->num_ip6_remote += 1;
+	gss->remote.ip6 = talloc_realloc(gss, gss->remote.ip6, struct gprs_ns_ie_ip6_elem,
+					 gss->remote.num_ip6+1);
+	gss->remote.ip6[gss->remote.num_ip6] = *ip6;
+	gss->remote.num_ip6 += 1;
 	return 0;
 }
 
@@ -534,12 +531,12 @@ static int remove_remote_ip6_elem(struct ns2_sns_state *gss, const struct gprs_n
 {
 	unsigned int i;
 
-	for (i = 0; i < gss->num_ip6_remote; i++) {
-		if (memcmp(&gss->ip6_remote[i], ip6, sizeof(*ip6)))
+	for (i = 0; i < gss->remote.num_ip6; i++) {
+		if (memcmp(&gss->remote.ip6[i], ip6, sizeof(*ip6)))
 			continue;
 		/* all array elements < i remain as they are; all > i are shifted left by one */
-		memmove(&gss->ip6_remote[i], &gss->ip6_remote[i+1], gss->num_ip6_remote-i-1);
-		gss->num_ip6_remote -= 1;
+		memmove(&gss->remote.ip6[i], &gss->remote.ip6[i+1], gss->remote.num_ip6-i-1);
+		gss->remote.num_ip6 -= 1;
 		return 0;
 	}
 	return -1;
@@ -550,12 +547,12 @@ static int update_remote_ip6_elem(struct ns2_sns_state *gss, const struct gprs_n
 {
 	unsigned int i;
 
-	for (i = 0; i < gss->num_ip6_remote; i++) {
-		if (memcmp(&gss->ip6_remote[i].ip_addr, &ip6->ip_addr, sizeof(ip6->ip_addr)) ||
-		    gss->ip6_remote[i].udp_port != ip6->udp_port)
+	for (i = 0; i < gss->remote.num_ip6; i++) {
+		if (memcmp(&gss->remote.ip6[i].ip_addr, &ip6->ip_addr, sizeof(ip6->ip_addr)) ||
+		    gss->remote.ip6[i].udp_port != ip6->udp_port)
 			continue;
-		gss->ip6_remote[i].sig_weight = ip6->sig_weight;
-		gss->ip6_remote[i].data_weight = ip6->data_weight;
+		gss->remote.ip6[i].sig_weight = ip6->sig_weight;
+		gss->remote.ip6[i].data_weight = ip6->data_weight;
 		return 0;
 	}
 	return -1;
@@ -811,11 +808,11 @@ static void ns2_sns_compute_local_ep_from_binds(struct osmo_fsm_inst *fi)
 
 	switch (gss->ip) {
 	case IPv4:
-		ip4_elems = talloc_realloc(fi, gss->ip4_local, struct gprs_ns_ie_ip4_elem, count);
+		ip4_elems = talloc_realloc(fi, gss->local.ip4, struct gprs_ns_ie_ip4_elem, count);
 		if (!ip4_elems)
 			return;
 
-		gss->ip4_local = ip4_elems;
+		gss->local.ip4 = ip4_elems;
 		llist_for_each_entry(sbind, &gss->binds, list) {
 			bind = sbind->bind;
 			sa = gprs_ns2_ip_bind_sockaddr(bind);
@@ -841,16 +838,16 @@ static void ns2_sns_compute_local_ep_from_binds(struct osmo_fsm_inst *fi)
 			ip4_elems++;
 		}
 
-		gss->num_ip4_local = count;
-		gss->num_max_nsvcs = OSMO_MAX(gss->num_max_ip4_remote * gss->num_ip4_local, 8);
+		gss->local.num_ip4 = count;
+		gss->num_max_nsvcs = OSMO_MAX(gss->num_max_ip4_remote * gss->local.num_ip4, 8);
 		break;
 	case IPv6:
 		/* IPv6 */
-		ip6_elems = talloc_realloc(fi, gss->ip6_local, struct gprs_ns_ie_ip6_elem, count);
+		ip6_elems = talloc_realloc(fi, gss->local.ip6, struct gprs_ns_ie_ip6_elem, count);
 		if (!ip6_elems)
 			return;
 
-		gss->ip6_local = ip6_elems;
+		gss->local.ip6 = ip6_elems;
 
 		llist_for_each_entry(sbind, &gss->binds, list) {
 			bind = sbind->bind;
@@ -877,8 +874,8 @@ static void ns2_sns_compute_local_ep_from_binds(struct osmo_fsm_inst *fi)
 
 			ip6_elems++;
 		}
-		gss->num_ip6_local = count;
-		gss->num_max_nsvcs = OSMO_MAX(gss->num_max_ip6_remote * gss->num_ip6_local, 8);
+		gss->local.num_ip6 = count;
+		gss->num_max_nsvcs = OSMO_MAX(gss->num_max_ip6_remote * gss->local.num_ip6, 8);
 		break;
 	}
 }
@@ -924,9 +921,9 @@ static void ns2_sns_st_bss_size_onenter(struct osmo_fsm_inst *fi, uint32_t old_s
 	}
 
 	if (gss->num_max_ip4_remote > 0)
-		ns2_tx_sns_size(gss->sns_nsvc, true, gss->num_max_nsvcs, gss->num_ip4_local, -1);
+		ns2_tx_sns_size(gss->sns_nsvc, true, gss->num_max_nsvcs, gss->local.num_ip4, -1);
 	else
-		ns2_tx_sns_size(gss->sns_nsvc, true, gss->num_max_nsvcs, -1, gss->num_ip6_local);
+		ns2_tx_sns_size(gss->sns_nsvc, true, gss->num_max_nsvcs, -1, gss->local.num_ip6);
 }
 
 static void ns2_sns_st_bss_config_bss(struct osmo_fsm_inst *fi, uint32_t event, void *data)
@@ -966,13 +963,13 @@ static void ns2_sns_st_bss_config_bss_onenter(struct osmo_fsm_inst *fi, uint32_t
 	switch (gss->ip) {
 	case IPv4:
 		ns2_tx_sns_config(gss->sns_nsvc, true,
-				  gss->ip4_local, gss->num_ip4_local,
+				  gss->local.ip4, gss->local.num_ip4,
 				  NULL, 0);
 		break;
 	case IPv6:
 		ns2_tx_sns_config(gss->sns_nsvc, true,
 				  NULL, 0,
-				  gss->ip6_local, gss->num_ip6_local);
+				  gss->local.ip6, gss->local.num_ip6);
 		break;
 	}
 }
@@ -1001,19 +998,19 @@ static int ns_sns_append_remote_eps(struct osmo_fsm_inst *fi, const struct tlv_p
 		v4_list = (const struct gprs_ns_ie_ip4_elem *) TLVP_VAL(tp, NS_IE_IPv4_LIST);
 		num_v4 = TLVP_LEN(tp, NS_IE_IPv4_LIST) / sizeof(*v4_list);
 
-		if (num_v4 && gss->ip6_remote)
+		if (num_v4 && gss->remote.ip6)
 			return -NS_CAUSE_INVAL_NR_IPv4_EP;
 
 		/* realloc to the new size */
-		gss->ip4_remote = talloc_realloc(gss, gss->ip4_remote,
+		gss->remote.ip4 = talloc_realloc(gss, gss->remote.ip4,
 						 struct gprs_ns_ie_ip4_elem,
-						 gss->num_ip4_remote + num_v4);
+						 gss->remote.num_ip4 + num_v4);
 		/* append the new entries to the end of the list */
-		memcpy(&gss->ip4_remote[gss->num_ip4_remote], v4_list, num_v4*sizeof(*v4_list));
-		gss->num_ip4_remote += num_v4;
+		memcpy(&gss->remote.ip4[gss->remote.num_ip4], v4_list, num_v4*sizeof(*v4_list));
+		gss->remote.num_ip4 += num_v4;
 
 		LOGPFSML(fi, LOGL_INFO, "Rx SNS-CONFIG: Remote IPv4 list now %u entries\n",
-			 gss->num_ip4_remote);
+			 gss->remote.num_ip4);
 	}
 
 	if (TLVP_PRESENT(tp, NS_IE_IPv6_LIST)) {
@@ -1022,19 +1019,19 @@ static int ns_sns_append_remote_eps(struct osmo_fsm_inst *fi, const struct tlv_p
 		v6_list = (const struct gprs_ns_ie_ip6_elem *) TLVP_VAL(tp, NS_IE_IPv6_LIST);
 		num_v6 = TLVP_LEN(tp, NS_IE_IPv6_LIST) / sizeof(*v6_list);
 
-		if (num_v6 && gss->ip4_remote)
+		if (num_v6 && gss->remote.ip4)
 			return -NS_CAUSE_INVAL_NR_IPv6_EP;
 
 		/* realloc to the new size */
-		gss->ip6_remote = talloc_realloc(gss, gss->ip6_remote,
+		gss->remote.ip6 = talloc_realloc(gss, gss->remote.ip6,
 						 struct gprs_ns_ie_ip6_elem,
-						 gss->num_ip6_remote + num_v6);
+						 gss->remote.num_ip6 + num_v6);
 		/* append the new entries to the end of the list */
-		memcpy(&gss->ip6_remote[gss->num_ip6_remote], v6_list, num_v6*sizeof(*v6_list));
-		gss->num_ip6_remote += num_v6;
+		memcpy(&gss->remote.ip6[gss->remote.num_ip6], v6_list, num_v6*sizeof(*v6_list));
+		gss->remote.num_ip6 += num_v6;
 
-		LOGPFSML(fi, LOGL_INFO, "Rx SNS-CONFIG: Remote IPv6 list now %u entries\n",
-			 gss->num_ip6_remote);
+		LOGPFSML(fi, LOGL_INFO, "Rx SNS-CONFIG: Remote IPv6 list now %d entries\n",
+			 gss->remote.num_ip6);
 	}
 
 	return 0;
@@ -1204,9 +1201,9 @@ static void ns2_sns_st_configured_delete(struct osmo_fsm_inst *fi,
 				return;
 			}
 			/* make a copy as do_sns_delete() will change the array underneath us */
-			ip4_remote = talloc_memdup(fi, gss->ip4_remote,
-						   gss->num_ip4_remote * sizeof(*v4_list));
-			for (i = 0; i < gss->num_ip4_remote; i++) {
+			ip4_remote = talloc_memdup(fi, gss->remote.ip4,
+						   gss->remote.num_ip4 * sizeof(*v4_list));
+			for (i = 0; i < gss->remote.num_ip4; i++) {
 				if (ip4_remote[i].ip_addr == ip_addr) {
 					rc = do_sns_delete(fi, &ip4_remote[i], NULL);
 					if (rc < 0) {
@@ -1255,9 +1252,9 @@ static void ns2_sns_st_configured_delete(struct osmo_fsm_inst *fi,
 			}
 			memcpy(&ip6_addr, (ie+1), sizeof(struct in6_addr));
 			/* make a copy as do_sns_delete() will change the array underneath us */
-			ip6_remote = talloc_memdup(fi, gss->ip6_remote,
-						   gss->num_ip6_remote * sizeof(*v4_list));
-			for (i = 0; i < gss->num_ip6_remote; i++) {
+			ip6_remote = talloc_memdup(fi, gss->remote.ip6,
+						   gss->remote.num_ip6 * sizeof(*v4_list));
+			for (i = 0; i < gss->remote.num_ip6; i++) {
 				if (!memcmp(&ip6_remote[i].ip_addr, &ip6_addr, sizeof(struct in6_addr))) {
 					rc = do_sns_delete(fi, NULL, &ip6_remote[i]);
 					if (rc < 0) {
@@ -1774,24 +1771,24 @@ void ns2_sns_dump_vty(struct vty *vty, const char *prefix, const struct gprs_ns2
 	vty_out(vty, "%sMaximum number of remote  NS-VCs: %zu, IPv4 Endpoints: %zu, IPv6 Endpoints: %zu%s",
 		prefix, gss->num_max_nsvcs, gss->num_max_ip4_remote, gss->num_max_ip6_remote, VTY_NEWLINE);
 
-	if (gss->num_ip4_local && gss->num_ip4_remote) {
+	if (gss->local.num_ip4 && gss->remote.num_ip4) {
 		vty_out(vty, "%sLocal IPv4 Endpoints:%s", prefix, VTY_NEWLINE);
-		for (i = 0; i < gss->num_ip4_local; i++)
-			vty_dump_sns_ip4(vty, prefix, &gss->ip4_local[i]);
+		for (i = 0; i < gss->local.num_ip4; i++)
+			vty_dump_sns_ip4(vty, prefix, &gss->local.ip4[i]);
 
 		vty_out(vty, "%sRemote IPv4 Endpoints:%s", prefix, VTY_NEWLINE);
-		for (i = 0; i < gss->num_ip4_remote; i++)
-			vty_dump_sns_ip4(vty, prefix, &gss->ip4_remote[i]);
+		for (i = 0; i < gss->remote.num_ip4; i++)
+			vty_dump_sns_ip4(vty, prefix, &gss->remote.ip4[i]);
 	}
 
-	if (gss->num_ip6_local && gss->num_ip6_remote) {
+	if (gss->local.num_ip6 && gss->remote.num_ip6) {
 		vty_out(vty, "%sLocal IPv6 Endpoints:%s", prefix, VTY_NEWLINE);
-		for (i = 0; i < gss->num_ip6_local; i++)
-			vty_dump_sns_ip6(vty, prefix, &gss->ip6_local[i]);
+		for (i = 0; i < gss->local.num_ip6; i++)
+			vty_dump_sns_ip6(vty, prefix, &gss->local.ip6[i]);
 
 		vty_out(vty, "%sRemote IPv6 Endpoints:%s", prefix, VTY_NEWLINE);
-		for (i = 0; i < gss->num_ip6_remote; i++)
-			vty_dump_sns_ip6(vty, prefix, &gss->ip6_remote[i]);
+		for (i = 0; i < gss->remote.num_ip6; i++)
+			vty_dump_sns_ip6(vty, prefix, &gss->remote.ip6[i]);
 	}
 }
 
@@ -2052,8 +2049,8 @@ int gprs_ns2_sns_del_bind(struct gprs_ns2_nse *nse,
 	return 0;
 }
 
-/* Update SNS weights
- * \param[in] nsvc the NSVC which should be updated
+/* Update SNS weights for a bind (local endpoint).
+ * \param[in] bind the bind which has been updated
  */
 void ns2_sns_update_weights(struct gprs_ns2_vc_bind *bind)
 {
@@ -2121,8 +2118,8 @@ static void ns2_sns_st_sgsn_wait_config_ack_onenter(struct osmo_fsm_inst *fi, ui
 	OSMO_ASSERT(gss->role == GPRS_SNS_ROLE_SGSN);
 
 	/* transmit SGSN-oriented SNS-CONFIG */
-	ns2_tx_sns_config(gss->sns_nsvc, true, gss->ip4_local, gss->num_ip4_local,
-			  gss->ip6_local, gss->num_ip6_local);
+	ns2_tx_sns_config(gss->sns_nsvc, true, gss->local.ip4, gss->local.num_ip4,
+			  gss->local.ip6, gss->local.num_ip6);
 }
 
 /* We're waiting for SNS-CONFIG-ACK from the BSS (in response to our outbound SNS-CONFIG) */
@@ -2253,15 +2250,15 @@ static void ns2_sns_st_all_action_sgsn(struct osmo_fsm_inst *fi, uint32_t event,
 		if (gss->num_max_ip6_remote && ns2_sns_count_num_local_ep(fi, IPv6)) {
 			gss->ip = IPv6;
 			ns2_sns_compute_local_ep_from_binds(fi);
-			num_local_eps = gss->num_ip6_local;
+			num_local_eps = gss->local.num_ip6;
 			num_remote_eps = gss->num_max_ip6_remote;
 		} else if (gss->num_max_ip4_remote && ns2_sns_count_num_local_ep(fi, IPv4)) {
 			gss->ip = IPv4;
 			ns2_sns_compute_local_ep_from_binds(fi);
-			num_local_eps = gss->num_ip4_local;
+			num_local_eps = gss->local.num_ip4;
 			num_remote_eps = gss->num_max_ip4_remote;
 		} else {
-			if (gss->num_ip4_local && !gss->num_max_ip4_remote)
+			if (gss->local.num_ip4 && !gss->num_max_ip4_remote)
 				cause = NS_CAUSE_INVAL_NR_IPv4_EP;
 			else
 				cause = NS_CAUSE_INVAL_NR_IPv6_EP;
