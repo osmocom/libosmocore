@@ -593,6 +593,32 @@ static int update_ip6_elem(struct ns2_sns_state *gss, struct ns2_sns_elems *elem
 	return -1;
 }
 
+static int remove_bind_elem(struct ns2_sns_state *gss, struct ns2_sns_elems *elems, struct ns2_sns_bind *sbind)
+{
+	struct gprs_ns_ie_ip4_elem ip4;
+	struct gprs_ns_ie_ip6_elem ip6;
+	const struct osmo_sockaddr *saddr = gprs_ns2_ip_bind_sockaddr(sbind->bind);
+
+	switch (saddr->u.sa.sa_family) {
+	case AF_INET:
+		ip4.ip_addr = saddr->u.sin.sin_addr.s_addr;
+		ip4.udp_port = saddr->u.sin.sin_port;
+		ip4.sig_weight = sbind->bind->sns_sig_weight;
+		ip4.data_weight = sbind->bind->sns_data_weight;
+		return remove_ip4_elem(gss, elems, &ip4);
+	case AF_INET6:
+		memcpy(&ip6.ip_addr, &saddr->u.sin6.sin6_addr, sizeof(struct in6_addr));
+		ip6.udp_port = saddr->u.sin.sin_port;
+		ip6.sig_weight = sbind->bind->sns_sig_weight;
+		ip6.data_weight = sbind->bind->sns_data_weight;
+		return remove_ip6_elem(gss, elems, &ip6);
+	default:
+		return -1;
+	}
+
+	return -1;
+}
+
 static int do_sns_change_weight(struct osmo_fsm_inst *fi, const struct gprs_ns_ie_ip4_elem *ip4, const struct gprs_ns_ie_ip6_elem *ip6)
 {
 	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
@@ -1485,6 +1511,12 @@ static void ns2_sns_st_local_procedure_onenter(struct osmo_fsm_inst *fi, uint32_
 		else
 			ns2_tx_sns_change_weight(gss->sns_nsvc, gss->current_procedure->trans_id, NULL, 0, &gss->current_procedure->ip6, 1);
 		break;
+	case SNS_PROC_DEL:
+		if (gss->family == AF_INET)
+			ns2_tx_sns_del(gss->sns_nsvc, gss->current_procedure->trans_id, &gss->current_procedure->ip4, 1, NULL, 0);
+		else
+			ns2_tx_sns_del(gss->sns_nsvc, gss->current_procedure->trans_id, NULL, 0, &gss->current_procedure->ip6, 1);
+		break;
 	default:
 		break;
 	}
@@ -1597,8 +1629,11 @@ static void ns2_sns_st_local_procedure(struct osmo_fsm_inst *fi, uint32_t event,
 				add_ip6_elem(gss, &gss->local, &gss->current_procedure->ip6);
 				break;
 			}
-			create_nsvc_for_new_sbind(gss, gss->current_procedure->sbind);
-			gprs_ns2_start_alive_all_nsvcs(nse);
+			/* the sbind can be NULL if the bind has been released by del_bind */
+			if (gss->current_procedure->sbind) {
+				create_nsvc_for_new_sbind(gss, gss->current_procedure->sbind);
+				gprs_ns2_start_alive_all_nsvcs(nse);
+			}
 			break;
 		case SNS_PROC_CHANGE_WEIGHT:
 			switch (gss->family) {
@@ -1629,6 +1664,16 @@ static void ns2_sns_st_local_procedure(struct osmo_fsm_inst *fi, uint32_t event,
 				break;
 			default:
 				OSMO_ASSERT(0);
+			}
+			break;
+		case SNS_PROC_DEL:
+			switch (gss->family) {
+			case AF_INET:
+				remove_ip4_elem(gss, &gss->local, &gss->current_procedure->ip4);
+				break;
+			case AF_INET6:
+				remove_ip6_elem(gss, &gss->local, &gss->current_procedure->ip6);
+				break;
 			}
 			break;
 		default:
@@ -1847,6 +1892,8 @@ static void ns2_add_procedure(struct ns2_sns_state *gss, struct ns2_sns_bind *sb
 	switch (procedure_type) {
 	case SNS_PROC_ADD:
 		break;
+	case SNS_PROC_DEL:
+		break;
 	case SNS_PROC_CHANGE_WEIGHT:
 		llist_for_each_entry(procedure, &gss->procedures, list) {
 			if (procedure->sbind == sbind && procedure->procedure == procedure_type &&
@@ -1877,8 +1924,16 @@ static void ns2_add_procedure(struct ns2_sns_state *gss, struct ns2_sns_bind *sb
 	if (!procedure)
 		return;
 
+	switch (procedure_type) {
+	case SNS_PROC_ADD:
+	case SNS_PROC_CHANGE_WEIGHT:
+		procedure->sbind = sbind;
+		break;
+	default:
+		break;
+	}
+
 	llist_add_tail(&procedure->list, &gss->procedures);
-	procedure->sbind = sbind;
 	procedure->procedure = procedure_type;
 	procedure->sig_weight = sbind->bind->sns_sig_weight;
 	procedure->data_weight = sbind->bind->sns_data_weight;
@@ -1891,7 +1946,6 @@ static void ns2_add_procedure(struct ns2_sns_state *gss, struct ns2_sns_bind *sb
 		procedure->ip4.data_weight = sbind->bind->sns_data_weight;
 		break;
 	case AF_INET6:
-
 		memcpy(&procedure->ip6.ip_addr, &saddr->u.sin6.sin6_addr, sizeof(struct in6_addr));
 		procedure->ip6.udp_port = saddr->u.sin.sin_port;
 		procedure->ip6.sig_weight = sbind->bind->sns_sig_weight;
@@ -1946,6 +2000,7 @@ static void ns2_sns_st_all_action(struct osmo_fsm_inst *fi, uint32_t event, void
 	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
 	struct ns2_sns_bind *sbind;
 	struct gprs_ns2_vc *nsvc, *nsvc2;
+	struct ns2_sns_procedure *procedure;
 
 	switch (event) {
 	case GPRS_SNS_EV_REQ_ADD_BIND:
@@ -2018,25 +2073,39 @@ static void ns2_sns_st_all_action(struct osmo_fsm_inst *fi, uint32_t event, void
 		case GPRS_SNS_ST_UNCONFIGURED:
 			break;
 		case GPRS_SNS_ST_BSS_SIZE:
-			/* TODO: remove the ip4 element from the list */
 			llist_for_each_entry_safe(nsvc, nsvc2, &nse->nsvc, list) {
 				if (nsvc->bind == sbind->bind) {
 					gprs_ns2_free_nsvc(nsvc);
 				}
 			}
+			osmo_fsm_inst_dispatch(fi, GPRS_SNS_EV_REQ_SELECT_ENDPOINT, NULL);
 			break;
 		case GPRS_SNS_ST_BSS_CONFIG_BSS:
 		case GPRS_SNS_ST_BSS_CONFIG_SGSN:
 		case GPRS_SNS_ST_CONFIGURED:
-			/* TODO: do an delete SNS-IP procedure */
-			/* TODO: remove the ip4 element to the list */
+		case GPRS_SNS_ST_LOCAL_PROCEDURE:
+			remove_bind_elem(gss, &gss->local_procedure, sbind);
+			if (ip46_weight_sum(&gss->local_procedure, true) == 0 ||
+					ip46_weight_sum(&gss->local_procedure, false) == 0) {
+				LOGPFSML(fi, LOGL_ERROR, "NSE %d: weight become invalid because of removing bind %s. Resetting the configuration\n",
+					 nse->nsei, sbind->bind->name);
+				sns_failed(fi, NULL);
+				break;
+			}
 			llist_for_each_entry_safe(nsvc, nsvc2, &nse->nsvc, list) {
 				if (nsvc->bind == sbind->bind) {
 					gprs_ns2_free_nsvc(nsvc);
 				}
 			}
+			/* ensure other procedures doesn't use the sbind */
+			llist_for_each_entry(procedure, &gss->procedures, list) {
+				if (procedure->sbind == sbind)
+					procedure->sbind = NULL;
+			}
+			ns2_add_procedure(gss, sbind, SNS_PROC_DEL);
 			break;
 		}
+
 		/* if this is the last bind, the free_nsvc() will trigger a reselection */
 		talloc_free(sbind);
 		break;
