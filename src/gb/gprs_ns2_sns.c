@@ -1600,6 +1600,7 @@ static void ns2_sns_st_all_action_bss(struct osmo_fsm_inst *fi, uint32_t event, 
 			gss->initial = llist_entry(gss->initial->list.next, struct sns_endpoint, list);
 		}
 
+		gss->family = gss->initial->saddr.u.sa.sa_family;
 		gss->reselection_running = false;
 		osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_BSS_SIZE, nse->nsi->timeout[NS_TOUT_TSNS_PROV], 1);
 		break;
