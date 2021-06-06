@@ -209,13 +209,13 @@ static int ip6_weight_sum(const struct ns2_sns_elems *elems, bool data_weight)
 #define ip6_weight_sum_data(elems)		ip6_weight_sum(elems, true)
 #define ip6_weight_sum_sig(elems)		ip6_weight_sum(elems, false)
 
-static int nss_weight_sum(const struct ns2_sns_state *nss, bool data_weight)
+static int ip46_weight_sum(const struct ns2_sns_elems *elems, bool data_weight)
 {
-	return ip4_weight_sum(&nss->remote, data_weight) +
-	       ip6_weight_sum(&nss->remote, data_weight);
+	return ip4_weight_sum(elems, data_weight) +
+	       ip6_weight_sum(elems, data_weight);
 }
-#define nss_weight_sum_data(nss)	nss_weight_sum(nss, true)
-#define nss_weight_sum_sig(nss)		nss_weight_sum(nss, false)
+#define ip46_weight_sum_data(elems)		ip46_weight_sum(elems, true)
+#define ip46_weight_sum_sig(elems)		ip46_weight_sum(elems, false)
 
 static struct gprs_ns2_vc *nsvc_by_ip4_elem(struct gprs_ns2_nse *nse,
 					    const struct gprs_ns_ie_ip4_elem *ip4)
@@ -1068,7 +1068,7 @@ static void ns2_sns_st_bss_config_sgsn(struct osmo_fsm_inst *fi, uint32_t event,
 		}
 		if (event == GPRS_SNS_EV_RX_CONFIG_END) {
 			/* check if sum of data / sig weights == 0 */
-			if (nss_weight_sum_data(gss) == 0 || nss_weight_sum_sig(gss) == 0) {
+			if (ip46_weight_sum_data(&gss->remote) == 0 || ip46_weight_sum_sig(&gss->remote) == 0) {
 				cause = NS_CAUSE_INVAL_WEIGH;
 				ns2_tx_sns_config_ack(gss->sns_nsvc, &cause);
 				osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_UNCONFIGURED, 0, 0);
@@ -2095,7 +2095,7 @@ static void ns2_sns_st_sgsn_wait_config(struct osmo_fsm_inst *fi, uint32_t event
 		/* only change state if last CONFIG was received */
 		if (event == GPRS_SNS_EV_RX_CONFIG_END) {
 			/* ensure sum of data weight / sig weights is > 0 */
-			if (nss_weight_sum_data(gss) == 0 || nss_weight_sum_sig(gss) == 0) {
+			if (ip46_weight_sum_data(&gss->remote) == 0 || ip46_weight_sum_sig(&gss->remote) == 0) {
 				cause = NS_CAUSE_INVAL_WEIGH;
 				ns2_tx_sns_config_ack(gss->sns_nsvc, &cause);
 				osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_UNCONFIGURED, 0, 0);
