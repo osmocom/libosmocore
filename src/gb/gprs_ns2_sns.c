@@ -93,6 +93,8 @@ static const struct value_string gprs_sns_event_names[] = {
 	{ 0, NULL }
 };
 
+#define GPRS_SNS_FLAG_KEEP_SELECT_ENDPOINT_ORDER (void *) 1
+
 enum sns_procedure {
 	SNS_PROC_NONE,		/*!< used as invalid/idle value */
 	SNS_PROC_ADD,
@@ -1473,6 +1475,12 @@ static void ns2_sns_st_local_procedure_onenter(struct osmo_fsm_inst *fi, uint32_
 
 	/* also takes care of retransmitting */
 	switch (gss->current_procedure->procedure) {
+	case SNS_PROC_ADD:
+		if (gss->family == AF_INET)
+			ns2_tx_sns_add(gss->sns_nsvc, gss->current_procedure->trans_id, &gss->current_procedure->ip4, 1, NULL, 0);
+		else
+			ns2_tx_sns_add(gss->sns_nsvc, gss->current_procedure->trans_id, NULL, 0, &gss->current_procedure->ip6, 1);
+		break;
 	case SNS_PROC_CHANGE_WEIGHT:
 		if (gss->family == AF_INET)
 			ns2_tx_sns_change_weight(gss->sns_nsvc, gss->current_procedure->trans_id, &gss->current_procedure->ip4, 1, NULL, 0);
@@ -1481,6 +1489,65 @@ static void ns2_sns_st_local_procedure_onenter(struct osmo_fsm_inst *fi, uint32_
 		break;
 	default:
 		break;
+	}
+}
+
+static void create_nsvc_for_new_sbind(struct ns2_sns_state *gss, struct ns2_sns_bind *sbind)
+{
+	struct gprs_ns2_nse *nse = gss->nse;
+	struct gprs_ns2_vc_bind *bind = sbind->bind;
+	struct gprs_ns2_vc *nsvc;
+	struct osmo_sockaddr remote = { };
+	unsigned int i;
+
+	/* iterate over all remote IPv4 endpoints */
+	for (i = 0; i < gss->remote.num_ip4; i++) {
+		const struct gprs_ns_ie_ip4_elem *ip4 = &gss->remote.ip4[i];
+
+		remote.u.sin.sin_family = AF_INET;
+		remote.u.sin.sin_addr.s_addr = ip4->ip_addr;
+		remote.u.sin.sin_port = ip4->udp_port;
+		/* we only care about UDP binds */
+		if (bind->ll != GPRS_NS2_LL_UDP)
+			continue;
+
+		nsvc = nsvc_for_bind_and_remote(nse, bind, &remote);
+		if (!nsvc) {
+			nsvc = gprs_ns2_ip_connect_inactive(bind, &remote, nse, 0);
+			if (!nsvc) {
+				/* TODO: add to a list to send back a NS-STATUS */
+				continue;
+			}
+		}
+
+		/* update data / signalling weight */
+		nsvc->data_weight = ip4->data_weight;
+		nsvc->sig_weight = ip4->sig_weight;
+		nsvc->sns_only = false;
+	}
+
+	/* iterate over all remote IPv4 endpoints */
+	for (i = 0; i < gss->remote.num_ip6; i++) {
+		const struct gprs_ns_ie_ip6_elem *ip6 = &gss->remote.ip6[i];
+
+		remote.u.sin6.sin6_family = AF_INET6;
+		remote.u.sin6.sin6_addr = ip6->ip_addr;
+		remote.u.sin6.sin6_port = ip6->udp_port;
+
+		/* we only care about UDP binds */
+		nsvc = nsvc_for_bind_and_remote(nse, bind, &remote);
+		if (!nsvc) {
+			nsvc = gprs_ns2_ip_connect_inactive(bind, &remote, nse, 0);
+			if (!nsvc) {
+				/* TODO: add to a list to send back a NS-STATUS */
+				continue;
+			}
+		}
+
+		/* update data / signalling weight */
+		nsvc->data_weight = ip6->data_weight;
+		nsvc->sig_weight = ip6->sig_weight;
+		nsvc->sns_only = false;
 	}
 }
 
@@ -1523,6 +1590,18 @@ static void ns2_sns_st_local_procedure(struct osmo_fsm_inst *fi, uint32_t event,
 		}
 
 		switch (gss->current_procedure->procedure) {
+		case SNS_PROC_ADD:
+			switch (gss->family) {
+			case AF_INET:
+				add_ip4_elem(gss, &gss->local, &gss->current_procedure->ip4);
+				break;
+			case AF_INET6:
+				add_ip6_elem(gss, &gss->local, &gss->current_procedure->ip6);
+				break;
+			}
+			create_nsvc_for_new_sbind(gss, gss->current_procedure->sbind);
+			gprs_ns2_start_alive_all_nsvcs(nse);
+			break;
 		case SNS_PROC_CHANGE_WEIGHT:
 			switch (gss->family) {
 			case AF_INET:
@@ -1758,7 +1837,6 @@ static int ns2_update_weight_entry(struct ns2_sns_state *gss, struct ns2_sns_bin
 		OSMO_ASSERT(0);
 	}
 }
-
 static void ns2_add_procedure(struct ns2_sns_state *gss, struct ns2_sns_bind *sbind,
 			      enum sns_procedure procedure_type)
 {
@@ -1766,10 +1844,11 @@ static void ns2_add_procedure(struct ns2_sns_state *gss, struct ns2_sns_bind *sb
 	const struct osmo_sockaddr *saddr;
 	saddr = gprs_ns2_ip_bind_sockaddr(sbind->bind);
 
-	if (saddr->u.sa.sa_family != gss->family)
-		return;
+	OSMO_ASSERT(saddr->u.sa.sa_family == gss->family);
 
 	switch (procedure_type) {
+	case SNS_PROC_ADD:
+		break;
 	case SNS_PROC_CHANGE_WEIGHT:
 		llist_for_each_entry(procedure, &gss->procedures, list) {
 			if (procedure->sbind == sbind && procedure->procedure == procedure_type &&
@@ -1791,39 +1870,37 @@ static void ns2_add_procedure(struct ns2_sns_state *gss, struct ns2_sns_bind *sb
 				return;
 			}
 		}
-
-		procedure = talloc_zero(gss, struct ns2_sns_procedure);
-		if (!procedure)
-			return;
-
-		procedure->sbind = sbind;
-		procedure->procedure = procedure_type;
-		procedure->sig_weight = sbind->bind->sns_sig_weight;
-		procedure->data_weight = sbind->bind->sns_data_weight;
-
-		switch(gss->family) {
-		case AF_INET:
-
-			procedure->ip4.ip_addr = saddr->u.sin.sin_addr.s_addr;
-			procedure->ip4.udp_port = saddr->u.sin.sin_port;
-			procedure->ip4.sig_weight = sbind->bind->sns_sig_weight;
-			procedure->ip4.data_weight = sbind->bind->sns_data_weight;
-			break;
-		case AF_INET6:
-
-			memcpy(&procedure->ip6.ip_addr, &saddr->u.sin6.sin6_addr, sizeof(struct in6_addr));
-			procedure->ip6.udp_port = saddr->u.sin.sin_port;
-			procedure->ip6.sig_weight = sbind->bind->sns_sig_weight;
-			procedure->ip6.data_weight = sbind->bind->sns_data_weight;
-			break;
-		default:
-			OSMO_ASSERT(0);
-		}
-
-		llist_add_tail(&procedure->list, &gss->procedures);
 		break;
 	default:
 		return;
+	}
+
+	procedure = talloc_zero(gss, struct ns2_sns_procedure);
+	if (!procedure)
+		return;
+
+	llist_add_tail(&procedure->list, &gss->procedures);
+	procedure->sbind = sbind;
+	procedure->procedure = procedure_type;
+	procedure->sig_weight = sbind->bind->sns_sig_weight;
+	procedure->data_weight = sbind->bind->sns_data_weight;
+
+	switch(gss->family) {
+	case AF_INET:
+		procedure->ip4.ip_addr = saddr->u.sin.sin_addr.s_addr;
+		procedure->ip4.udp_port = saddr->u.sin.sin_port;
+		procedure->ip4.sig_weight = sbind->bind->sns_sig_weight;
+		procedure->ip4.data_weight = sbind->bind->sns_data_weight;
+		break;
+	case AF_INET6:
+
+		memcpy(&procedure->ip6.ip_addr, &saddr->u.sin6.sin6_addr, sizeof(struct in6_addr));
+		procedure->ip6.udp_port = saddr->u.sin.sin_port;
+		procedure->ip6.sig_weight = sbind->bind->sns_sig_weight;
+		procedure->ip6.data_weight = sbind->bind->sns_data_weight;
+		break;
+	default:
+		OSMO_ASSERT(0);
 	}
 
 	if (gss->nse->bss_sns_fi->state == GPRS_SNS_ST_CONFIGURED) {
@@ -1832,6 +1909,37 @@ static void ns2_add_procedure(struct ns2_sns_state *gss, struct ns2_sns_bind *sb
 	}
 }
 
+/* add an entrypoint to sns_endpoints */
+static int ns2_sns_add_elements(struct ns2_sns_state *gss, struct ns2_sns_bind *sbind,
+				struct ns2_sns_elems *elems)
+{
+	const struct osmo_sockaddr *saddr;
+	struct gprs_ns_ie_ip4_elem ip4;
+	struct gprs_ns_ie_ip6_elem ip6;
+	int rc = -1;
+
+	saddr = gprs_ns2_ip_bind_sockaddr(sbind->bind);
+	OSMO_ASSERT(saddr->u.sa.sa_family == gss->family);
+
+	switch (gss->family) {
+	case AF_INET:
+		ip4.ip_addr = saddr->u.sin.sin_addr.s_addr;
+		ip4.udp_port= saddr->u.sin.sin_port;
+		ip4.sig_weight = sbind->bind->sns_sig_weight;
+		ip4.data_weight = sbind->bind->sns_data_weight;
+		rc = add_ip4_elem(gss, elems, &ip4);
+		break;
+	case AF_INET6:
+		memcpy(&ip6.ip_addr, &saddr->u.sin6.sin6_addr, sizeof(struct in6_addr));
+		ip6.udp_port= saddr->u.sin.sin_port;
+		ip6.sig_weight = sbind->bind->sns_sig_weight;
+		ip6.data_weight = sbind->bind->sns_data_weight;
+		rc = add_ip6_elem(gss, elems, &ip6);
+		break;
+	}
+
+	return rc;
+}
 
 /* common allstate-action for both roles */
 static void ns2_sns_st_all_action(struct osmo_fsm_inst *fi, uint32_t event, void *data)
@@ -1846,15 +1954,63 @@ static void ns2_sns_st_all_action(struct osmo_fsm_inst *fi, uint32_t event, void
 		sbind = data;
 		switch (fi->state) {
 		case GPRS_SNS_ST_UNCONFIGURED:
-			osmo_fsm_inst_dispatch(nse->bss_sns_fi, NS2_SNS_EV_REQ_SELECT_ENDPOINT, NULL);
+			if (gss->role == GPRS_SNS_ROLE_BSS)
+				osmo_fsm_inst_dispatch(nse->bss_sns_fi, NS2_SNS_EV_REQ_SELECT_ENDPOINT, NULL);
 			break;
 		case GPRS_SNS_ST_BSS_SIZE:
-			/* TODO: add the ip4 element to the list */
+			switch (gss->family) {
+			case AF_INET:
+				if (gss->num_max_ip4_remote <= gss->local.num_ip4 ||
+					 gss->num_max_ip4_remote * (gss->local.num_ip4 + 1) > gss->num_max_nsvcs) {
+					osmo_fsm_inst_dispatch(nse->bss_sns_fi, NS2_SNS_EV_REQ_SELECT_ENDPOINT, GPRS_SNS_FLAG_KEEP_SELECT_ENDPOINT_ORDER);
+					return;
+				}
+				break;
+			case AF_INET6:
+				if (gss->num_max_ip6_remote <= gss->local.num_ip6 ||
+						gss->num_max_ip6_remote * (gss->local.num_ip6 + 1) > gss->num_max_nsvcs) {
+					osmo_fsm_inst_dispatch(nse->bss_sns_fi, NS2_SNS_EV_REQ_SELECT_ENDPOINT, GPRS_SNS_FLAG_KEEP_SELECT_ENDPOINT_ORDER);
+					return;
+				}
+				break;
+			}
+			ns2_sns_add_elements(gss, sbind, &gss->local);
 			break;
 		case GPRS_SNS_ST_BSS_CONFIG_BSS:
 		case GPRS_SNS_ST_BSS_CONFIG_SGSN:
 		case GPRS_SNS_ST_CONFIGURED:
-			/* TODO: add to SNS-IP procedure queue & add nsvc() */
+			switch (gss->family) {
+			case AF_INET:
+				if (gss->num_max_ip4_remote <= gss->local.num_ip4) {
+					LOGPFSML(fi, LOGL_ERROR,
+						 "NSE %d: ignoring bind %s because there are too many endpoints for the SNS.\n",
+						 nse->nsei, sbind->bind->name);
+					return;
+				}
+				if (gss->remote.num_ip4 * (gss->local.num_ip4 + 1) > gss->num_max_nsvcs) {
+					LOGPFSML(fi, LOGL_ERROR,
+						 "NSE %d: ignoring bind %s because there are too many endpoints for the SNS.\n",
+						 nse->nsei, sbind->bind->name);
+					return;
+				}
+				break;
+			case AF_INET6:
+				if (gss->num_max_ip6_remote <= gss->local.num_ip6) {
+					LOGPFSML(fi, LOGL_ERROR,
+						 "NSE %d: ignoring bind %s because there are too many endpoints for the SNS.\n",
+						 nse->nsei, sbind->bind->name);
+					return;
+				}
+				if (gss->remote.num_ip6 * (gss->local.num_ip6 + 1) > gss->num_max_nsvcs) {
+					LOGPFSML(fi, LOGL_ERROR,
+						 "NSE %d: ignoring bind %s because there are too many endpoints for the SNS.\n",
+						 nse->nsei, sbind->bind->name);
+					return;
+				}
+				break;
+			}
+			ns2_sns_add_elements(gss, sbind, &gss->local_procedure);
+			ns2_add_procedure(gss, sbind, SNS_PROC_ADD);
 			break;
 		}
 		break;
@@ -1975,6 +2131,7 @@ static void ns2_sns_st_all_action_bss(struct osmo_fsm_inst *fi, uint32_t event, 
 		break;
 	case NS2_SNS_EV_REQ_FREE_NSVCS:
 	case NS2_SNS_EV_REQ_SELECT_ENDPOINT:
+		/* TODO: keep the order of binds when data == GPRS_SNS_FLAG_KEEP_SELECT_ENDPOINT_ORDER */
 		/* tear down previous state
 		 * gprs_ns2_free_nsvcs() will trigger NO_NSVC, prevent this from triggering a reselection */
 		gss->reselection_running = true;
