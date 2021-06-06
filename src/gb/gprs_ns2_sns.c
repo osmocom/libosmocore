@@ -449,7 +449,8 @@ static int create_missing_nsvcs(struct osmo_fsm_inst *fi)
 }
 
 /* Add a given remote IPv4 element to gprs_sns_state */
-static int add_remote_ip4_elem(struct ns2_sns_state *gss, const struct gprs_ns_ie_ip4_elem *ip4)
+static int add_ip4_elem(struct ns2_sns_state *gss, struct ns2_sns_elems *elems,
+			const struct gprs_ns_ie_ip4_elem *ip4)
 {
 	unsigned int i;
 
@@ -457,93 +458,98 @@ static int add_remote_ip4_elem(struct ns2_sns_state *gss, const struct gprs_ns_i
 		return -NS_CAUSE_INVAL_NR_NS_VC;
 
 	/* check for duplicates */
-	for (i = 0; i < gss->remote.num_ip4; i++) {
-		if (memcmp(&gss->remote.ip4[i], ip4, sizeof(*ip4)))
+	for (i = 0; i < elems->num_ip4; i++) {
+		if (memcmp(&elems->ip4[i], ip4, sizeof(*ip4)))
 			continue;
 		/* TODO: log message duplicate */
 		return -NS_CAUSE_PROTO_ERR_UNSPEC;
 	}
 
-	gss->remote.ip4 = talloc_realloc(gss, gss->remote.ip4, struct gprs_ns_ie_ip4_elem,
-					 gss->remote.num_ip4+1);
-	gss->remote.ip4[gss->remote.num_ip4] = *ip4;
-	gss->remote.num_ip4 += 1;
+	elems->ip4 = talloc_realloc(gss, elems->ip4, struct gprs_ns_ie_ip4_elem,
+					 elems->num_ip4+1);
+	elems->ip4[elems->num_ip4] = *ip4;
+	elems->num_ip4 += 1;
 	return 0;
 }
 
 /* Remove a given remote IPv4 element from gprs_sns_state */
-static int remove_remote_ip4_elem(struct ns2_sns_state *gss, const struct gprs_ns_ie_ip4_elem *ip4)
+static int remove_ip4_elem(struct ns2_sns_state *gss, struct ns2_sns_elems *elems,
+			   const struct gprs_ns_ie_ip4_elem *ip4)
 {
 	unsigned int i;
 
-	for (i = 0; i < gss->remote.num_ip4; i++) {
-		if (memcmp(&gss->remote.ip4[i], ip4, sizeof(*ip4)))
+	for (i = 0; i < elems->num_ip4; i++) {
+		if (memcmp(&elems->ip4[i], ip4, sizeof(*ip4)))
 			continue;
 		/* all array elements < i remain as they are; all > i are shifted left by one */
-		memmove(&gss->remote.ip4[i], &gss->remote.ip4[i+1], gss->remote.num_ip4-i-1);
-		gss->remote.num_ip4 -= 1;
+		memmove(&elems->ip4[i], &elems->ip4[i+1], elems->num_ip4-i-1);
+		elems->num_ip4 -= 1;
 		return 0;
 	}
 	return -1;
 }
 
 /* update the weights for specified remote IPv4 */
-static int update_remote_ip4_elem(struct ns2_sns_state *gss, const struct gprs_ns_ie_ip4_elem *ip4)
+static int update_ip4_elem(struct ns2_sns_state *gss, struct ns2_sns_elems *elems,
+			   const struct gprs_ns_ie_ip4_elem *ip4)
 {
 	unsigned int i;
 
-	for (i = 0; i < gss->remote.num_ip4; i++) {
-		if (gss->remote.ip4[i].ip_addr != ip4->ip_addr ||
-		    gss->remote.ip4[i].udp_port != ip4->udp_port)
+	for (i = 0; i < elems->num_ip4; i++) {
+		if (elems->ip4[i].ip_addr != ip4->ip_addr ||
+		    elems->ip4[i].udp_port != ip4->udp_port)
 			continue;
 
-		gss->remote.ip4[i].sig_weight = ip4->sig_weight;
-		gss->remote.ip4[i].data_weight = ip4->data_weight;
+		elems->ip4[i].sig_weight = ip4->sig_weight;
+		elems->ip4[i].data_weight = ip4->data_weight;
 		return 0;
 	}
 	return -1;
 }
 
 /* Add a given remote IPv6 element to gprs_sns_state */
-static int add_remote_ip6_elem(struct ns2_sns_state *gss, const struct gprs_ns_ie_ip6_elem *ip6)
+static int add_ip6_elem(struct ns2_sns_state *gss, struct ns2_sns_elems *elems,
+			const struct gprs_ns_ie_ip6_elem *ip6)
 {
-	if (gss->remote.num_ip6 >= gss->num_max_ip6_remote)
+	if (elems->num_ip6 >= gss->num_max_ip6_remote)
 		return -NS_CAUSE_INVAL_NR_NS_VC;
 
-	gss->remote.ip6 = talloc_realloc(gss, gss->remote.ip6, struct gprs_ns_ie_ip6_elem,
-					 gss->remote.num_ip6+1);
-	gss->remote.ip6[gss->remote.num_ip6] = *ip6;
-	gss->remote.num_ip6 += 1;
+	elems->ip6 = talloc_realloc(gss, elems->ip6, struct gprs_ns_ie_ip6_elem,
+					 elems->num_ip6+1);
+	elems->ip6[elems->num_ip6] = *ip6;
+	elems->num_ip6 += 1;
 	return 0;
 }
 
 /* Remove a given remote IPv6 element from gprs_sns_state */
-static int remove_remote_ip6_elem(struct ns2_sns_state *gss, const struct gprs_ns_ie_ip6_elem *ip6)
+static int remove_ip6_elem(struct ns2_sns_state *gss, struct ns2_sns_elems *elems,
+			   const struct gprs_ns_ie_ip6_elem *ip6)
 {
 	unsigned int i;
 
-	for (i = 0; i < gss->remote.num_ip6; i++) {
-		if (memcmp(&gss->remote.ip6[i], ip6, sizeof(*ip6)))
+	for (i = 0; i < elems->num_ip6; i++) {
+		if (memcmp(&elems->ip6[i], ip6, sizeof(*ip6)))
 			continue;
 		/* all array elements < i remain as they are; all > i are shifted left by one */
-		memmove(&gss->remote.ip6[i], &gss->remote.ip6[i+1], gss->remote.num_ip6-i-1);
-		gss->remote.num_ip6 -= 1;
+		memmove(&elems->ip6[i], &elems->ip6[i+1], elems->num_ip6-i-1);
+		elems->num_ip6 -= 1;
 		return 0;
 	}
 	return -1;
 }
 
 /* update the weights for specified remote IPv6 */
-static int update_remote_ip6_elem(struct ns2_sns_state *gss, const struct gprs_ns_ie_ip6_elem *ip6)
+static int update_ip6_elem(struct ns2_sns_state *gss, struct ns2_sns_elems *elems,
+			   const struct gprs_ns_ie_ip6_elem *ip6)
 {
 	unsigned int i;
 
-	for (i = 0; i < gss->remote.num_ip6; i++) {
-		if (memcmp(&gss->remote.ip6[i].ip_addr, &ip6->ip_addr, sizeof(ip6->ip_addr)) ||
-		    gss->remote.ip6[i].udp_port != ip6->udp_port)
+	for (i = 0; i < elems->num_ip6; i++) {
+		if (memcmp(&elems->ip6[i].ip_addr, &ip6->ip_addr, sizeof(ip6->ip_addr)) ||
+		    elems->ip6[i].udp_port != ip6->udp_port)
 			continue;
-		gss->remote.ip6[i].sig_weight = ip6->sig_weight;
-		gss->remote.ip6[i].data_weight = ip6->data_weight;
+		elems->ip6[i].sig_weight = ip6->sig_weight;
+		elems->ip6[i].data_weight = ip6->data_weight;
 		return 0;
 	}
 	return -1;
@@ -566,7 +572,7 @@ static int do_sns_change_weight(struct osmo_fsm_inst *fi, const struct gprs_ns_i
 	 * SNS-ACK PDU with a cause code of "Invalid weights". */
 
 	if (ip4) {
-		if (update_remote_ip4_elem(gss, ip4))
+		if (update_ip4_elem(gss, &gss->remote, ip4))
 			return -NS_CAUSE_UNKN_IP_EP;
 
 		/* copy over. Both data structures use network byte order */
@@ -576,7 +582,7 @@ static int do_sns_change_weight(struct osmo_fsm_inst *fi, const struct gprs_ns_i
 		new_signal = ip4->sig_weight;
 		new_data = ip4->data_weight;
 	} else if (ip6) {
-		if (update_remote_ip6_elem(gss, ip6))
+		if (update_ip6_elem(gss, &gss->remote, ip6))
 			return -NS_CAUSE_UNKN_IP_EP;
 
 		/* copy over. Both data structures use network byte order */
@@ -619,14 +625,14 @@ static int do_sns_delete(struct osmo_fsm_inst *fi,
 	struct osmo_sockaddr sa = {};
 
 	if (ip4) {
-		if (remove_remote_ip4_elem(gss, ip4) < 0)
+		if (remove_ip4_elem(gss, &gss->remote, ip4) < 0)
 			return -NS_CAUSE_UNKN_IP_EP;
 		/* copy over. Both data structures use network byte order */
 		sa.u.sin.sin_addr.s_addr = ip4->ip_addr;
 		sa.u.sin.sin_port = ip4->udp_port;
 		sa.u.sin.sin_family = AF_INET;
 	} else if (ip6) {
-		if (remove_remote_ip6_elem(gss, ip6))
+		if (remove_ip6_elem(gss, &gss->remote, ip6))
 			return -NS_CAUSE_UNKN_IP_EP;
 
 		/* copy over. Both data structures use network byte order */
@@ -665,10 +671,10 @@ static int do_sns_add(struct osmo_fsm_inst *fi,
 	 * an SNS-ACK PDU with a cause code set to "Invalid number of IP4 Endpoints". */
 	switch (gss->ip) {
 	case IPv4:
-		rc = add_remote_ip4_elem(gss, ip4);
+		rc = add_ip4_elem(gss, &gss->remote, ip4);
 		break;
 	case IPv6:
-		rc = add_remote_ip6_elem(gss, ip6);
+		rc = add_ip6_elem(gss, &gss->remote, ip6);
 		break;
 	default:
 		/* the gss->ip is initialized with the bss */
