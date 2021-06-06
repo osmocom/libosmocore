@@ -454,15 +454,11 @@ static int add_ip4_elem(struct ns2_sns_state *gss, struct ns2_sns_elems *elems,
 {
 	unsigned int i;
 
-	if (gss->remote.num_ip4 >= gss->num_max_ip4_remote)
-		return -NS_CAUSE_INVAL_NR_NS_VC;
-
 	/* check for duplicates */
 	for (i = 0; i < elems->num_ip4; i++) {
 		if (memcmp(&elems->ip4[i], ip4, sizeof(*ip4)))
 			continue;
-		/* TODO: log message duplicate */
-		return -NS_CAUSE_PROTO_ERR_UNSPEC;
+		return -1;
 	}
 
 	elems->ip4 = talloc_realloc(gss, elems->ip4, struct gprs_ns_ie_ip4_elem,
@@ -511,8 +507,6 @@ static int update_ip4_elem(struct ns2_sns_state *gss, struct ns2_sns_elems *elem
 static int add_ip6_elem(struct ns2_sns_state *gss, struct ns2_sns_elems *elems,
 			const struct gprs_ns_ie_ip6_elem *ip6)
 {
-	if (elems->num_ip6 >= gss->num_max_ip6_remote)
-		return -NS_CAUSE_INVAL_NR_NS_VC;
 
 	elems->ip6 = talloc_realloc(gss, elems->ip6, struct gprs_ns_ie_ip6_elem,
 					 elems->num_ip6+1);
@@ -671,9 +665,15 @@ static int do_sns_add(struct osmo_fsm_inst *fi,
 	 * an SNS-ACK PDU with a cause code set to "Invalid number of IP4 Endpoints". */
 	switch (gss->ip) {
 	case IPv4:
+		if (gss->remote.num_ip4 >= gss->num_max_ip4_remote)
+			return -NS_CAUSE_INVAL_NR_NS_VC;
+		/* TODO: log message duplicate */
 		rc = add_ip4_elem(gss, &gss->remote, ip4);
 		break;
 	case IPv6:
+		if (gss->remote.num_ip6 >= gss->num_max_ip6_remote)
+			return -NS_CAUSE_INVAL_NR_NS_VC;
+		/* TODO: log message duplicate */
 		rc = add_ip6_elem(gss, &gss->remote, ip6);
 		break;
 	default:
@@ -682,7 +682,7 @@ static int do_sns_add(struct osmo_fsm_inst *fi,
 	}
 
 	if (rc)
-		return rc;
+		return -NS_CAUSE_PROTO_ERR_UNSPEC;
 
 	/* Upon receiving an SNS-ADD PDU containing an already configured IP endpoint the
 	 * NSE shall send an SNS-ACK PDU with the cause code "Protocol error -
