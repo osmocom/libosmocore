@@ -452,10 +452,8 @@ static int create_missing_nsvcs(struct osmo_fsm_inst *fi)
 static int add_ip4_elem(struct ns2_sns_state *gss, struct ns2_sns_elems *elems,
 			const struct gprs_ns_ie_ip4_elem *ip4)
 {
-	unsigned int i;
-
 	/* check for duplicates */
-	for (i = 0; i < elems->num_ip4; i++) {
+	for (unsigned int i = 0; i < elems->num_ip4; i++) {
 		if (memcmp(&elems->ip4[i], ip4, sizeof(*ip4)))
 			continue;
 		return -1;
@@ -507,6 +505,13 @@ static int update_ip4_elem(struct ns2_sns_state *gss, struct ns2_sns_elems *elem
 static int add_ip6_elem(struct ns2_sns_state *gss, struct ns2_sns_elems *elems,
 			const struct gprs_ns_ie_ip6_elem *ip6)
 {
+	/* check for duplicates */
+	for (unsigned int i = 0; i < elems->num_ip6; i++) {
+		if (memcmp(&elems->ip6[i].ip_addr, &ip6->ip_addr, sizeof(ip6->ip_addr)) ||
+		    elems->ip6[i].udp_port != ip6->udp_port)
+			continue;
+		return -1;
+	}
 
 	elems->ip6 = talloc_realloc(gss, elems->ip6, struct gprs_ns_ie_ip6_elem,
 					 elems->num_ip6+1);
