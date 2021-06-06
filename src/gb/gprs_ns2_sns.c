@@ -176,45 +176,43 @@ static inline struct gprs_ns2_nse *nse_inst_from_fi(struct osmo_fsm_inst *fi)
 }
 
 /* helper function to compute the sum of all (data or signaling) weights */
-static int ip4_weight_sum(const struct gprs_ns_ie_ip4_elem *ip4, unsigned int num,
-			  bool data_weight)
+static int ip4_weight_sum(const struct ns2_sns_elems *elems, bool data_weight)
 {
 	unsigned int i;
 	int weight_sum = 0;
 
-	for (i = 0; i < num; i++) {
+	for (i = 0; i < elems->num_ip4; i++) {
 		if (data_weight)
-			weight_sum += ip4[i].data_weight;
+			weight_sum += elems->ip4[i].data_weight;
 		else
-			weight_sum += ip4[i].sig_weight;
+			weight_sum += elems->ip4[i].sig_weight;
 	}
 	return weight_sum;
 }
-#define ip4_weight_sum_data(x,y)	ip4_weight_sum(x, y, true)
-#define ip4_weight_sum_sig(x,y)		ip4_weight_sum(x, y, false)
+#define ip4_weight_sum_data(elems)		ip4_weight_sum(elems, true)
+#define ip4_weight_sum_sig(elems)		ip4_weight_sum(elems, false)
 
 /* helper function to compute the sum of all (data or signaling) weights */
-static int ip6_weight_sum(const struct gprs_ns_ie_ip6_elem *ip6, unsigned int num,
-			  bool data_weight)
+static int ip6_weight_sum(const struct ns2_sns_elems *elems, bool data_weight)
 {
 	unsigned int i;
 	int weight_sum = 0;
 
-	for (i = 0; i < num; i++) {
+	for (i = 0; i < elems->num_ip6; i++) {
 		if (data_weight)
-			weight_sum += ip6[i].data_weight;
+			weight_sum += elems->ip6[i].data_weight;
 		else
-			weight_sum += ip6[i].sig_weight;
+			weight_sum += elems->ip6[i].sig_weight;
 	}
 	return weight_sum;
 }
-#define ip6_weight_sum_data(x,y)	ip6_weight_sum(x, y, true)
-#define ip6_weight_sum_sig(x,y)		ip6_weight_sum(x, y, false)
+#define ip6_weight_sum_data(elems)		ip6_weight_sum(elems, true)
+#define ip6_weight_sum_sig(elems)		ip6_weight_sum(elems, false)
 
 static int nss_weight_sum(const struct ns2_sns_state *nss, bool data_weight)
 {
-	return ip4_weight_sum(nss->remote.ip4, nss->remote.num_ip4, data_weight) +
-	       ip6_weight_sum(nss->remote.ip6, nss->remote.num_ip6, data_weight);
+	return ip4_weight_sum(&nss->remote, data_weight) +
+	       ip6_weight_sum(&nss->remote, data_weight);
 }
 #define nss_weight_sum_data(nss)	nss_weight_sum(nss, true)
 #define nss_weight_sum_sig(nss)		nss_weight_sum(nss, false)
