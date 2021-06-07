@@ -117,6 +117,8 @@ static inline void osmo_talloc_replace_string(void *ctx, char **dst, const char 
 	*dst = talloc_strdup(ctx, newstr);
 }
 
+void osmo_talloc_replace_string_fmt(void *ctx, char **dst, const char *fmt, ...);
+
 /*! Append to a string and re-/allocate if necessary.
  * \param[in] ctx  Talloc context to use for initial allocation.
  * \param[in,out] dest  char* to re-/allocate and append to.

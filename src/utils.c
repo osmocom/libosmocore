@@ -1493,4 +1493,25 @@ int osmo_str_to_int(int *result, const char *str, int base, int min_val, int max
 	return rc;
 }
 
+/*! Replace a string using talloc and release its prior content (if any).
+ *  This is a format string capable equivalent of osmo_talloc_replace_string().
+ * \param[in] ctx Talloc context to use for allocation.
+ * \param[out] dst Pointer to string, will be updated with ptr to new string.
+ * \param[in] fmt Format string that will be copied to newly allocated string. */
+void osmo_talloc_replace_string_fmt(void *ctx, char **dst, const char *fmt, ...)
+{
+	char *name = NULL;
+
+	if (fmt != NULL) {
+		va_list ap;
+
+		va_start(ap, fmt);
+		name = talloc_vasprintf(ctx, fmt, ap);
+		va_end(ap);
+	}
+
+	talloc_free(*dst);
+	*dst = name;
+}
+
 /*! @} */
