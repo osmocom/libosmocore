@@ -606,6 +606,7 @@ struct gprs_ns2_vc *ns2_vc_alloc(struct gprs_ns2_vc_bind *bind, struct gprs_ns2_
 
 	bind->nsi->nsvc_rate_ctr_idx++;
 
+	rate_ctr_group_set_name(nsvc->ctrg, id);
 	osmo_stat_item_group_set_name(nsvc->statg, id);
 
 	llist_add(&nsvc->list, &nse->nsvc);
