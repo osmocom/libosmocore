@@ -1005,6 +1005,9 @@ struct msgb *gsm0808_create_handover_request(const struct gsm0808_handover_reque
 		msgb_tv_fixed_put(msg, GSM0808_IE_CALL_ID, 4, val);
 	}
 
+	if (params->more_items && params->kc128_present)
+		gsm0808_enc_kc128(msg, params->kc128);
+
 	if (params->global_call_reference && params->global_call_reference_len) {
 		msgb_tlv_put(msg, GSM0808_IE_GLOBAL_CALL_REF,
 			     params->global_call_reference_len, params->global_call_reference);

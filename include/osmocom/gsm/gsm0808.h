@@ -218,7 +218,12 @@ struct gsm0808_handover_request {
 	uint8_t global_call_reference_len;
 
 	/* more items are defined in the spec and may be added later */
-	bool more_items; /*!< always set this to false */
+	bool more_items; /*!< set this to true iff any fields below are used */
+
+	bool kc128_present;
+	uint8_t kc128[16];
+
+	bool more_items2; /*!< always set this to false */
 };
 struct msgb *gsm0808_create_handover_request(const struct gsm0808_handover_request *params);
 
