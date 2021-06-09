@@ -721,6 +721,8 @@ uint8_t gsm0808_enc_encrypt_info(struct msgb *msg,
 	}
 
 	msgb_put_u8(msg, perm_algo);
+	/* FIXME: 48.008 3.2.2.10 Encryption Information says:
+	 * "When present, the key shall be 8 octets long." */
 	ptr = msgb_put(msg, ei->key_len);
 	memcpy(ptr, ei->key, ei->key_len);
 
@@ -760,6 +762,8 @@ int gsm0808_dec_encrypt_info(struct gsm0808_encrypt_info *ei,
 	}
 	ei->perm_algo_len = perm_algo_len;
 
+	/* FIXME: 48.008 3.2.2.10 Encryption Information says:
+	 * "When present, the key shall be 8 octets long." */
 	ei->key_len = len - 1;
 	memcpy(ei->key, elem, ei->key_len);
 	elem+=ei->key_len;
