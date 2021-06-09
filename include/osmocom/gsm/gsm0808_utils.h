@@ -125,6 +125,8 @@ uint8_t gsm0808_enc_encrypt_info(struct msgb *msg,
 				 const struct gsm0808_encrypt_info *ei);
 int gsm0808_dec_encrypt_info(struct gsm0808_encrypt_info *ei,
 			     const uint8_t *elem, uint8_t len);
+int gsm0808_enc_kc128(struct msgb *msg, const uint8_t *kc128);
+int gsm0808_dec_kc128(uint8_t *kc128, const uint8_t *elem, uint8_t len);
 uint8_t gsm0808_enc_cell_id_list2(struct msgb *msg, const struct gsm0808_cell_id_list2 *cil);
 uint8_t gsm0808_enc_cell_id_list(struct msgb *msg,
 				 const struct gsm0808_cell_id_list *cil)

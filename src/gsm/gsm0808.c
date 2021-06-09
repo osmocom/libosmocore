@@ -228,22 +228,32 @@ struct msgb *gsm0808_create_clear_command2(uint8_t cause, bool csfb_ind)
 	return msg;
 }
 
-/*! Create BSSMAP Cipher Mode Command message
+/*! Superseded by gsm0808_create_cipher2() to include Kc128.
+ * Create BSSMAP Cipher Mode Command message (without Kc128).
  *  \param[in] ei Mandatory Encryption Information
+ *  \param[in] kc128 optional kc128 key for A5/4
  *  \param[in] cipher_response_mode optional 1-byte Cipher Response Mode
  *  \returns callee-allocated msgb with BSSMAP Cipher Mode Command message */
 struct msgb *gsm0808_create_cipher(const struct gsm0808_encrypt_info *ei,
 				   const uint8_t *cipher_response_mode)
 {
+	struct gsm0808_cipher_mode_command cmc = {
+		.ei = *ei,
+		.cipher_response_mode_present = (cipher_response_mode != NULL),
+		.cipher_response_mode = (cipher_response_mode ? *cipher_response_mode : 0),
+	};
+	return gsm0808_create_cipher2(&cmc);
+}
+
+/*! Create BSSMAP Cipher Mode Command message.
+ *  \param[in] cmc  Information to encode.
+ *  \returns callee-allocated msgb with BSSMAP Cipher Mode Command message */
+struct msgb *gsm0808_create_cipher2(const struct gsm0808_cipher_mode_command *cmc)
+{
 	/* See also: 3GPP TS 48.008 3.2.1.30 CIPHER MODE COMMAND */
 	struct msgb *msg;
 
-	/* Mandatory emelent! */
-	OSMO_ASSERT(ei);
-
-	msg =
-	    msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM,
-				"cipher-mode-command");
+	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "cipher-mode-command");
 	if (!msg)
 		return NULL;
 
@@ -251,12 +261,16 @@ struct msgb *gsm0808_create_cipher(const struct gsm0808_encrypt_info *ei,
 	msgb_v_put(msg, BSS_MAP_MSG_CIPHER_MODE_CMD);
 
 	/* Encryption Information 3.2.2.10 */
-	gsm0808_enc_encrypt_info(msg, ei);
+	gsm0808_enc_encrypt_info(msg, &cmc->ei);
 
 	/* Cipher Response Mode 3.2.2.34 */
-	if (cipher_response_mode)
+	if (cmc->cipher_response_mode_present)
 		msgb_tv_put(msg, GSM0808_IE_CIPHER_RESPONSE_MODE,
-			    *cipher_response_mode);
+			    cmc->cipher_response_mode);
+
+	/* Kc128 3.2.2.109 */
+	if (cmc->kc128_present)
+		gsm0808_enc_kc128(msg, cmc->kc128);
 
 	/* pre-pend the header */
 	msg->l3h =

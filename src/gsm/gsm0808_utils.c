@@ -767,6 +767,30 @@ int gsm0808_dec_encrypt_info(struct gsm0808_encrypt_info *ei,
 	return (int)(elem - old_elem);
 }
 
+/*! Encode TS 48.008 Kc128 IE.
+ *  \param[out] msg  Message Buffer to which IE is to be appended.
+ *  \param[in] kc128  Pointer to 16 bytes of Kc128 key data.
+ *  \returns number of bytes appended to msg */
+int gsm0808_enc_kc128(struct msgb *msg, const uint8_t *kc128)
+{
+	uint8_t *start = msg->tail;
+	msgb_tv_fixed_put(msg, GSM0808_IE_KC_128, 16, kc128);
+	return msg->tail - start;
+}
+
+/*! Decode TS 48.008 Kc128 IE.
+ *  \param[out] kc128  Target buffer for received Kc128 key, 16 bytes long.
+ *  \param[in] elem  IE value to be decoded (without IE discriminator).
+ *  \param[in] len  Length of elem in bytes.
+ *  \returns number of bytes parsed; negative on error */
+int gsm0808_dec_kc128(uint8_t *kc128, const uint8_t *elem, uint8_t len)
+{
+	if (len != 16)
+		return -EINVAL;
+	memcpy(kc128, elem, 16);
+	return len;
+}
+
 /* Store individual Cell Identifier information in a CGI, without clearing the remaining ones.
  * This is useful to supplement one CGI with information from more than one Cell Identifier,
  * which in turn is useful to match Cell Identifiers of differing kinds to each other.
