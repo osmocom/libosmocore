@@ -489,8 +489,14 @@ static int control_write_cb(struct osmo_fd *bfd, struct msgb *msg)
 		control_close_conn(ccon);
 		return -EBADF;
 	}
-	if (rc != msg->len)
+	if (rc < 0) {
 		LOGP(DLCTRL, LOGL_ERROR, "Failed to write message to the CTRL connection.\n");
+		return 0;
+	}
+	if (rc < msg->len) {
+		msgb_pull(msg, rc);
+		return -EAGAIN;
+	}
 
 	return 0;
 }
