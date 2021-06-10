@@ -524,7 +524,7 @@ static inline int msgb_l3trim(struct msgb *msg, int l3len)
  * followed by \ref msgb_reserve in order to create a new \ref msgb with
  * user-specified amount of headroom.
  */
-static inline struct msgb *msgb_alloc_headroom_c(const void *ctx, int size, int headroom,
+static inline struct msgb *msgb_alloc_headroom_c(const void *ctx, uint16_t size, uint16_t headroom,
 						 const char *name)
 {
 	osmo_static_assert(size >= headroom, headroom_bigger);
@@ -546,7 +546,7 @@ static inline struct msgb *msgb_alloc_headroom_c(const void *ctx, int size, int 
  * followed by \ref msgb_reserve in order to create a new \ref msgb with
  * user-specified amount of headroom.
  */
-static inline struct msgb *msgb_alloc_headroom(int size, int headroom,
+static inline struct msgb *msgb_alloc_headroom(uint16_t size, uint16_t headroom,
 						const char *name)
 {
 	osmo_static_assert(size >= headroom, headroom_bigger);
