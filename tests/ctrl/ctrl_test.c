@@ -117,11 +117,14 @@ static void assert_test(struct ctrl_handle *ctrl, struct ctrl_connection *ccon, 
 	} else {
 		struct msgb *sent_msg = msgb_dequeue(&ccon->write_queue.msg_queue);
 		OSMO_ASSERT(sent_msg);
-		msgb_put_u8(sent_msg, 0);
 
-		printf("replied: '%s'\n", osmo_escape_str((char*)msgb_l2(sent_msg), -1));
+		char *strbuf = talloc_size(sent_msg, msgb_l2len(sent_msg) + 1);
+		memcpy(strbuf, msgb_l2(sent_msg), msgb_l2len(sent_msg));
+		strbuf[msgb_l2len(sent_msg)] = '\0';
+
+		printf("replied: '%s'\n", osmo_escape_str(strbuf, -1));
 		OSMO_ASSERT(t->reply_str);
-		OSMO_ASSERT(!strcmp(t->reply_str, (char*)msgb_l2(sent_msg)));
+		OSMO_ASSERT(!strcmp(t->reply_str, strbuf));
 		msgb_free(sent_msg);
 	}
 	osmo_wqueue_clear(&ccon->write_queue);

@@ -516,15 +516,12 @@ err:
  *  \returns callee-allocated message buffer containing the encoded \a cmd; NULL on error */
 struct msgb *ctrl_cmd_make(struct ctrl_cmd *cmd)
 {
-	struct msgb *msg;
+	struct msgb *msg = NULL;
+	char *strbuf;
+	size_t len;
 	const char *type;
-	char *tmp;
 
 	if (!cmd->id)
-		return NULL;
-
-	msg = msgb_alloc_headroom(4096, 128, "ctrl command make");
-	if (!msg)
 		return NULL;
 
 	type = get_value_string(ctrl_type_vals, cmd->type);
@@ -532,76 +529,48 @@ struct msgb *ctrl_cmd_make(struct ctrl_cmd *cmd)
 	switch (cmd->type) {
 	case CTRL_TYPE_GET:
 		if (!cmd->variable)
-			goto err;
-
-		tmp = talloc_asprintf(cmd, "%s %s %s", type, cmd->id, cmd->variable);
-		if (!tmp) {
-			LOGP(DLCTRL, LOGL_ERROR, "Failed to allocate cmd.\n");
-			goto err;
-		}
-
-		msg->l2h = msgb_put(msg, strlen(tmp));
-		memcpy(msg->l2h, tmp, strlen(tmp));
-		talloc_free(tmp);
+			return NULL;
+		strbuf = talloc_asprintf(cmd, "%s %s %s", type, cmd->id, cmd->variable);
 		break;
 	case CTRL_TYPE_SET:
 		if (!cmd->variable || !cmd->value)
-			goto err;
-
-		tmp = talloc_asprintf(cmd, "%s %s %s %s", type, cmd->id, cmd->variable,
-				cmd->value);
-		if (!tmp) {
-			LOGP(DLCTRL, LOGL_ERROR, "Failed to allocate cmd.\n");
-			goto err;
-		}
-
-		msg->l2h = msgb_put(msg, strlen(tmp));
-		memcpy(msg->l2h, tmp, strlen(tmp));
-		talloc_free(tmp);
+			return NULL;
+		strbuf = talloc_asprintf(cmd, "%s %s %s %s", type, cmd->id,
+					 cmd->variable, cmd->value);
 		break;
 	case CTRL_TYPE_GET_REPLY:
 	case CTRL_TYPE_SET_REPLY:
 	case CTRL_TYPE_TRAP:
 		if (!cmd->variable || !cmd->reply)
-			goto err;
-
-		tmp = talloc_asprintf(cmd, "%s %s %s %s", type, cmd->id, cmd->variable,
-				cmd->reply);
-		if (!tmp) {
-			LOGP(DLCTRL, LOGL_ERROR, "Failed to allocate cmd.\n");
-			goto err;
-		}
-
-		msg->l2h = msgb_put(msg, strlen(tmp));
-		memcpy(msg->l2h, tmp, strlen(tmp));
-		talloc_free(tmp);
+			return NULL;
+		strbuf = talloc_asprintf(cmd, "%s %s %s %s", type, cmd->id,
+					 cmd->variable, cmd->reply);
 		break;
 	case CTRL_TYPE_ERROR:
 		if (!cmd->reply)
-			goto err;
-
-		tmp = talloc_asprintf(cmd, "%s %s %s", type, cmd->id,
-				cmd->reply);
-		if (!tmp) {
-			LOGP(DLCTRL, LOGL_ERROR, "Failed to allocate cmd.\n");
-			goto err;
-		}
-
-		msg->l2h = msgb_put(msg, strlen(tmp));
-		memcpy(msg->l2h, tmp, strlen(tmp));
-		talloc_free(tmp);
+			return NULL;
+		strbuf = talloc_asprintf(cmd, "%s %s %s", type, cmd->id, cmd->reply);
 		break;
 	default:
 		LOGP(DLCTRL, LOGL_NOTICE, "Unknown command type %i\n", cmd->type);
-		goto err;
-		break;
+		return NULL;
 	}
 
-	return msg;
+	if (!strbuf) {
+		LOGP(DLCTRL, LOGL_ERROR, "Failed to allocate cmd.\n");
+		goto ret;
+	}
+	len = strlen(strbuf);
 
-err:
-	msgb_free(msg);
-	return NULL;
+	msg = msgb_alloc_headroom(len + 128, 128, "ctrl ERROR command make");
+	if (!msg)
+		goto ret;
+	msg->l2h = msgb_put(msg, len);
+	memcpy(msg->l2h, strbuf, len);
+
+ret:
+	talloc_free(strbuf);
+	return msg;
 }
 
 /*! Build a deferred control command state and keep it the per-connection list of deferred commands.
