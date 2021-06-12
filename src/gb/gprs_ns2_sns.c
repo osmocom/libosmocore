@@ -2246,12 +2246,16 @@ static void ns2_sns_st_all_action_sgsn(struct osmo_fsm_inst *fi, uint32_t event,
 		    !TLVP_PRES_LEN(tp, NS_IE_MAX_NR_NSVC, 2)) {
 			cause = NS_CAUSE_MISSING_ESSENT_IE;
 			ns2_tx_sns_size_ack(gss->sns_nsvc, &cause);
+			if (fi->state == GPRS_SNS_ST_UNCONFIGURED)
+				sns_failed(fi, "Rx Size: Missing essential IE");
 			break;
 		}
 		if (!TLVP_PRES_LEN(tp, NS_IE_IPv4_EP_NR, 2) &&
 		    !TLVP_PRES_LEN(tp, NS_IE_IPv6_EP_NR, 2)) {
 			cause = NS_CAUSE_MISSING_ESSENT_IE;
 			ns2_tx_sns_size_ack(gss->sns_nsvc, &cause);
+			if (fi->state == GPRS_SNS_ST_UNCONFIGURED)
+				sns_failed(fi, "Rx Size: Missing essential IE");
 			break;
 		}
 		if (TLVP_PRES_LEN(tp, NS_IE_IPv4_EP_NR, 2))
@@ -2275,6 +2279,8 @@ static void ns2_sns_st_all_action_sgsn(struct osmo_fsm_inst *fi, uint32_t event,
 			else
 				cause = NS_CAUSE_INVAL_NR_IPv6_EP;
 			ns2_tx_sns_size_ack(gss->sns_nsvc, &cause);
+			if (fi->state == GPRS_SNS_ST_UNCONFIGURED)
+				sns_failed(fi, "Rx Size: Invalid Nr of IPv4/IPv6 EPs");
 			break;
 		}
 		/* ensure number of NS-VCs is sufficient for full mesh */
@@ -2285,6 +2291,8 @@ static void ns2_sns_st_all_action_sgsn(struct osmo_fsm_inst *fi, uint32_t event,
 				 num_remote_eps, num_local_eps * num_remote_eps, gss->num_max_nsvcs);
 			cause = NS_CAUSE_INVAL_NR_NS_VC;
 			ns2_tx_sns_size_ack(gss->sns_nsvc, &cause);
+			if (fi->state == GPRS_SNS_ST_UNCONFIGURED)
+				sns_failed(fi, NULL);
 			break;
 		}
 		/* perform state reset, if requested */
@@ -2309,6 +2317,12 @@ static void ns2_sns_st_all_action_sgsn(struct osmo_fsm_inst *fi, uint32_t event,
 			}
 			ns2_sns_compute_local_ep_from_binds(fi);
 		}
+
+		if (fi->state == GPRS_SNS_ST_UNCONFIGURED && !(flag & 1)) {
+			sns_failed(fi, "Rx Size without Reset flag, but NSE is unknown");
+			break;
+		}
+
 		/* send SIZE_ACK */
 		ns2_tx_sns_size_ack(gss->sns_nsvc, NULL);
 		/* only wait for SNS-CONFIG in case of Reset flag */
