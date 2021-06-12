@@ -171,6 +171,26 @@ static inline struct gprs_ns2_nse *nse_inst_from_fi(struct osmo_fsm_inst *fi)
 	return gss->nse;
 }
 
+/* The SNS has failed. Etither restart the SNS (BSS) or remove the SNS (SGSN) */
+#define sns_failed(fi, reason) \
+	_sns_failed(fi, reason, __FILE__, __LINE__)
+static void _sns_failed(struct osmo_fsm_inst *fi, const char *reason, const char *file, int line)
+{
+	struct ns2_sns_state *gss = fi->priv;
+
+	if (reason)
+		LOGPFSML(fi, LOGL_ERROR, "NSE %d: SNS failed: %s\n", gss->nse->nsei, reason);
+
+	if (gss->role == GPRS_SNS_ROLE_SGSN) {
+		if (!gss->nse->persistent)
+			gprs_ns2_free_nse(gss->nse);
+		else
+			_osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_UNCONFIGURED, 0, 0, file, line);
+	} else {
+		_osmo_fsm_inst_dispatch(fi, GPRS_SNS_EV_REQ_SELECT_ENDPOINT, NULL, file, line);
+	}
+}
+
 /* helper function to compute the sum of all (data or signaling) weights */
 static int ip4_weight_sum(const struct ns2_sns_elems *elems, bool data_weight)
 {
@@ -1427,31 +1447,27 @@ static int ns2_sns_fsm_bss_timer_cb(struct osmo_fsm_inst *fi)
 	switch (fi->T) {
 	case 1:
 		if (gss->N >= nsi->timeout[NS_TOUT_TSNS_SIZE_RETRIES]) {
-			LOGPFSML(fi, LOGL_ERROR, "NSE %d: Size retries failed. Selecting next IP-SNS endpoint.\n", nse->nsei);
-			osmo_fsm_inst_dispatch(fi, GPRS_SNS_EV_REQ_SELECT_ENDPOINT, NULL);
+			sns_failed(fi, "Size retries failed. Selecting next IP-SNS endpoint.");
 		} else {
 			osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_BSS_SIZE, nsi->timeout[NS_TOUT_TSNS_PROV], 1);
 		}
 		break;
 	case 2:
 		if (gss->N >= nsi->timeout[NS_TOUT_TSNS_CONFIG_RETRIES]) {
-			LOGPFSML(fi, LOGL_ERROR, "NSE %d: BSS Config retries failed. Selecting next IP-SNS endpoint.\n", nse->nsei);
-			osmo_fsm_inst_dispatch(fi, GPRS_SNS_EV_REQ_SELECT_ENDPOINT, NULL);
+			sns_failed(fi, "BSS Config retries failed. Selecting next IP-SNS endpoint");
 		} else {
 			osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_BSS_CONFIG_BSS, nsi->timeout[NS_TOUT_TSNS_PROV], 2);
 		}
 		break;
 	case 3:
 		if (gss->N >= nsi->timeout[NS_TOUT_TSNS_CONFIG_RETRIES]) {
-			LOGPFSML(fi, LOGL_ERROR, "NSE %d: SGSN Config retries failed. Selecting next IP-SNS endpoint.\n", nse->nsei);
-			osmo_fsm_inst_dispatch(fi, GPRS_SNS_EV_REQ_SELECT_ENDPOINT, NULL);
+			sns_failed(fi, "SGSN Config retries failed. Selecting next IP-SNS endpoint.");
 		} else {
 			osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_BSS_CONFIG_SGSN, nsi->timeout[NS_TOUT_TSNS_PROV], 3);
 		}
 		break;
 	case 4:
-		LOGPFSML(fi, LOGL_ERROR, "NSE %d: Config succeeded but no NS-VC came online. Selecting next IP-SNS endpoint.\n", nse->nsei);
-		osmo_fsm_inst_dispatch(fi, GPRS_SNS_EV_REQ_SELECT_ENDPOINT, NULL);
+		sns_failed(fi, "Config succeeded but no NS-VC came online. Selecting next IP-SNS endpoint.");
 		break;
 	}
 	return 0;
@@ -1573,8 +1589,7 @@ static void ns2_sns_st_all_action_bss(struct osmo_fsm_inst *fi, uint32_t event, 
 		if (gss->reselection_running)
 			break;
 
-		LOGPFSML(fi, LOGL_ERROR, "NSE %d: no remaining NSVC, resetting SNS FSM\n", nse->nsei);
-		osmo_fsm_inst_dispatch(fi, GPRS_SNS_EV_REQ_SELECT_ENDPOINT, NULL);
+		sns_failed(fi, "no remaining NSVC, resetting SNS FSM");
 		break;
 	case GPRS_SNS_EV_REQ_SELECT_ENDPOINT:
 		/* tear down previous state
