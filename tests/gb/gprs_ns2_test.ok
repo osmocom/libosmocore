@@ -11,6 +11,11 @@
 ---- Create NSVC[i]
 ---- Create NSVC[i]
 --- Finish NSE block unblock nsvc
+--- Testing NSE block unblock nsvc2
+---- Create NSE + Binds
+---- Create NSVC[i]
+---- Create NSVC[i]
+--- Finish NSE block unblock nsvc2
 --- Testing unitdata test
 ---- Create NSE + Binds
 ---- Create NSVC[0]

@@ -338,6 +338,7 @@ static void ns2_st_blocked_onenter(struct osmo_fsm_inst *fi, uint32_t old_state)
 		rate_ctr_inc(rate_ctr_group_get_ctr(priv->nsvc->ctrg, NS_CTR_BLOCKED));
 	}
 
+	ns2_nse_notify_unblocked(priv->nsvc, false);
 	if (priv->om_blocked) {
 		/* we are already blocked after a RESET */
 		if (old_state == GPRS_NS2_ST_RESET) {

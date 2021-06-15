@@ -302,6 +302,72 @@ void test_block_unblock_nsvc(void *ctx)
 	printf("--- Finish NSE block unblock nsvc\n");
 }
 
+/* setup NSE with 2x NSVCs.
+ * block 1st NSVC
+ * block 2nd NSVC
+ * unblock 1st NSVC */
+void test_block_unblock_nsvc2(void *ctx)
+{
+	struct gprs_ns2_inst *nsi;
+	struct gprs_ns2_vc_bind *bind[2];
+	struct gprs_ns2_nse *nse;
+	struct gprs_ns2_vc *nsvc[2];
+	struct gprs_ns_hdr *nsh;
+	struct msgb *msg;
+	char idbuf[32];
+	int i;
+
+	printf("--- Testing NSE block unblock nsvc2\n");
+	printf("---- Create NSE + Binds\n");
+	nsi = gprs_ns2_instantiate(ctx, ns_prim_cb, NULL);
+	bind[0] = dummy_bind(nsi, "bblock1");
+	bind[1] = dummy_bind(nsi, "bblock2");
+	nse = gprs_ns2_create_nse(nsi, 1001, GPRS_NS2_LL_UDP, GPRS_NS2_DIALECT_STATIC_RESETBLOCK);
+	OSMO_ASSERT(nse);
+
+	for (i=0; i<2; i++) {
+		printf("---- Create NSVC[i]\n");
+		snprintf(idbuf, sizeof(idbuf), "NSE%05u-dummy-%i", nse->nsei, i);
+		nsvc[i] = ns2_vc_alloc(bind[i], nse, false, GPRS_NS2_VC_MODE_BLOCKRESET, idbuf);
+		OSMO_ASSERT(nsvc[i]);
+		nsvc[i]->fi->state = 3;	/* HACK: 3 = GPRS_NS2_ST_UNBLOCKED */
+		/* ensure the fi->state works correct */
+		OSMO_ASSERT(ns2_vc_is_unblocked(nsvc[i]));
+		ns2_nse_notify_unblocked(nsvc[i], true);
+	}
+
+	OSMO_ASSERT(nse->alive);
+	/* both nsvcs are unblocked and alive. Let's block them. */
+	OSMO_ASSERT(!find_pdu(bind[0], NS_PDUT_BLOCK));
+	clear_pdus(bind[0]);
+	ns2_vc_block(nsvc[0]);
+	OSMO_ASSERT(find_pdu(bind[0], NS_PDUT_BLOCK));
+	clear_pdus(bind[0]);
+	OSMO_ASSERT(nse->alive);
+
+	OSMO_ASSERT(!find_pdu(bind[1], NS_PDUT_BLOCK));
+	clear_pdus(bind[1]);
+	ns2_vc_block(nsvc[1]);
+	OSMO_ASSERT(find_pdu(bind[1], NS_PDUT_BLOCK));
+	clear_pdus(bind[1]);
+	OSMO_ASSERT(!nse->alive);
+
+	/* now unblocking the 1st NSVC */
+	ns2_vc_unblock(nsvc[0]);
+	OSMO_ASSERT(find_pdu(bind[0], NS_PDUT_UNBLOCK));
+	clear_pdus(bind[0]);
+	msg = msgb_alloc_headroom(NS_ALLOC_SIZE, NS_ALLOC_HEADROOM, "test_unblock");
+	msg->l2h = msgb_put(msg, sizeof(*nsh));
+	nsh = (struct gprs_ns_hdr *) msg->l2h;
+	nsh->pdu_type = NS_PDUT_UNBLOCK_ACK;
+	ns2_recv_vc(nsvc[0], msg);
+	OSMO_ASSERT(nse->alive);
+
+	OSMO_ASSERT(ns2_vc_is_unblocked(nsvc[0]));
+	gprs_ns2_free(nsi);
+	printf("--- Finish NSE block unblock nsvc2\n");
+}
+
 static struct msgb *generate_unitdata(const char *msgname)
 {
 	struct gprs_ns_hdr *nsh;
@@ -533,6 +599,7 @@ int main(int argc, char **argv)
 	printf("===== NS2 protocol test START\n");
 	test_nse_transfer_cap(ctx);
 	test_block_unblock_nsvc(ctx);
+	test_block_unblock_nsvc2(ctx);
 	test_unitdata(ctx);
 	test_unitdata_weights(ctx);
 	test_mtu(ctx);
