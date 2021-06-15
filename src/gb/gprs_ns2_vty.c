@@ -141,7 +141,7 @@ static struct vty_bind *vty_bind_alloc(const char *name)
 
 	vbind->ip_sns_sig_weight = 1;
 	vbind->ip_sns_data_weight = 1;
-	llist_add(&vbind->list, &binds);
+	llist_add_tail(&vbind->list, &binds);
 	return vbind;
 }
 
@@ -172,7 +172,7 @@ static struct vty_nse *vty_nse_alloc(uint16_t nsei)
 
 	vnse->nsei = nsei;
 	INIT_LLIST_HEAD(&vnse->binds);
-	llist_add(&vnse->list, &nses);
+	llist_add_tail(&vnse->list, &nses);
 	return vnse;
 }
 

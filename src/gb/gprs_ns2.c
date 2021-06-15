@@ -609,8 +609,8 @@ struct gprs_ns2_vc *ns2_vc_alloc(struct gprs_ns2_vc_bind *bind, struct gprs_ns2_
 	rate_ctr_group_set_name(nsvc->ctrg, id);
 	osmo_stat_item_group_set_name(nsvc->statg, id);
 
-	llist_add(&nsvc->list, &nse->nsvc);
-	llist_add(&nsvc->blist, &bind->nsvc);
+	llist_add_tail(&nsvc->list, &nse->nsvc);
+	llist_add_tail(&nsvc->blist, &bind->nsvc);
 	ns2_nse_update_mtu(nse);
 
 	return nsvc;
@@ -809,7 +809,7 @@ struct gprs_ns2_nse *gprs_ns2_create_nse2(struct gprs_ns2_inst *nsi, uint16_t ns
 	nse->nsi = nsi;
 	nse->first = true;
 	nse->mtu = 0;
-	llist_add(&nse->list, &nsi->nse);
+	llist_add_tail(&nse->list, &nsi->nse);
 	INIT_LLIST_HEAD(&nse->nsvc);
 
 	return nse;
@@ -1633,7 +1633,7 @@ int ns2_bind_alloc(struct gprs_ns2_inst *nsi, const char *name,
 	bind->sns_data_weight = 1;
 	bind->nsi = nsi;
 	INIT_LLIST_HEAD(&bind->nsvc);
-	llist_add(&bind->list, &nsi->binding);
+	llist_add_tail(&bind->list, &nsi->binding);
 
 	nsi->bind_rate_ctr_idx++;
 
