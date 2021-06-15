@@ -181,6 +181,7 @@ static void start_test_procedure(struct osmo_fsm_inst *fi, bool start_tx_alive)
 
 static void stop_test_procedure(struct gprs_ns2_vc_priv *priv)
 {
+	osmo_stat_item_set(osmo_stat_item_group_get_item(priv->nsvc->statg, NS_STAT_ALIVE_DELAY), 0);
 	osmo_timer_del(&priv->alive.timer);
 }
 
