@@ -1873,18 +1873,17 @@ DEFUN(cfg_no_ns_nse_ip_sns_bind, cfg_no_ns_nse_ip_sns_bind_cmd,
 /* non-config commands */
 void ns2_vty_dump_nsvc(struct vty *vty, struct gprs_ns2_vc *nsvc, bool stats)
 {
-	char nsvci_str[32];
-
 	if (nsvc->nsvci_is_valid)
-		snprintf(nsvci_str, sizeof(nsvci_str), "%05u", nsvc->nsvci);
+		vty_out(vty, "   NSVCI %05u: %s %s %s%s", nsvc->nsvci,
+			osmo_fsm_inst_state_name(nsvc->fi),
+			nsvc->persistent ? "PERSIST" : "DYNAMIC",
+			gprs_ns2_ll_str(nsvc), VTY_NEWLINE);
 	else
-		snprintf(nsvci_str, sizeof(nsvci_str), "none");
-
-	vty_out(vty, "   NSVCI %s: %s %s data_weight=%u sig_weight=%u %s%s", nsvci_str,
-		osmo_fsm_inst_state_name(nsvc->fi),
-		nsvc->persistent ? "PERSIST" : "DYNAMIC",
-		nsvc->data_weight, nsvc->sig_weight,
-		gprs_ns2_ll_str(nsvc), VTY_NEWLINE);
+		vty_out(vty, "   %s %s sig_weight=%u data_weight=%u %s%s",
+			osmo_fsm_inst_state_name(nsvc->fi),
+			nsvc->persistent ? "PERSIST" : "DYNAMIC",
+			nsvc->sig_weight, nsvc->data_weight,
+			gprs_ns2_ll_str(nsvc), VTY_NEWLINE);
 
 	if (stats) {
 		vty_out_rate_ctr_group(vty, "    ", nsvc->ctrg);
