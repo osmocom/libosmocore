@@ -483,4 +483,6 @@ extern const struct value_string vty_ref_gen_mode_desc[];
 int vty_dump_xml_ref_mode(FILE *stream, enum vty_ref_gen_mode mode);
 int vty_dump_xml_ref(FILE *stream) OSMO_DEPRECATED("Use vty_dump_xml_ref_mode() instead");
 
+int vty_cmd_range_match(const char *range, const char *str);
+
 /*! @} */

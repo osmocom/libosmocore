@@ -1477,7 +1477,7 @@ static enum match_type cmd_ipv6_prefix_match(const char *str)
 #error "LONG_MAX not defined!"
 #endif
 
-static int cmd_range_match(const char *range, const char *str)
+int vty_cmd_range_match(const char *range, const char *str)
 {
 	char *p;
 	char buf[DECIMAL_STRLEN_MAX_UNSIGNED + 1];
@@ -1600,7 +1600,7 @@ cmd_match(const char *str, const char *command,
 		return VARARG_MATCH;
 	else if (CMD_RANGE(str))
 	{
-		if (cmd_range_match(str, command))
+		if (vty_cmd_range_match(str, command))
 			return RANGE_MATCH;
 	}
 #ifdef HAVE_IPV6
@@ -1797,7 +1797,7 @@ is_cmd_ambiguous(char *command, vector v, int index, enum match_type type)
 				}
 				break;
 			case RANGE_MATCH:
-				if (cmd_range_match
+				if (vty_cmd_range_match
 				    (str, command)) {
 					if (matched
 					    && strcmp(matched,
@@ -1890,7 +1890,7 @@ static const char *cmd_entry_function_desc(const char *src, const char *dst)
 		return dst;
 
 	if (CMD_RANGE(dst)) {
-		if (cmd_range_match(dst, src))
+		if (vty_cmd_range_match(dst, src))
 			return dst;
 		else
 			return NULL;
