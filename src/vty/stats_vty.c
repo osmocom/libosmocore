@@ -415,13 +415,6 @@ static int asciidoc_handle_counter(struct osmo_counter *counter, void *sctx_)
 
 static void asciidoc_counter_generate(struct vty *vty)
 {
-	if (osmo_counters_count() == 0)
-	{
-		vty_out(vty, "// there are no ungrouped osmo_counters%s",
-			VTY_NEWLINE);
-		return;
-	}
-
 	vty_out(vty, "// ungrouped osmo_counters%s", VTY_NEWLINE);
 	vty_out(vty, ".ungrouped osmo counters%s", VTY_NEWLINE);
 	vty_out(vty, "[options=\"header\"]%s", VTY_NEWLINE);
@@ -542,13 +535,19 @@ DEFUN(show_stats_asciidoc_table,
 	vty_out(vty, "// generating tables for rate_ctr_group%s", VTY_NEWLINE);
 	rate_ctr_for_each_group(asciidoc_rate_ctr_group_handler, vty);
 
-	vty_out(vty, "== Osmo Stat Items%s%s", VTY_NEWLINE, VTY_NEWLINE);
+	vty_out(vty, "=== Osmo Stat Items%s%s", VTY_NEWLINE, VTY_NEWLINE);
 	vty_out(vty, "// generating tables for osmo_stat_items%s", VTY_NEWLINE);
 	osmo_stat_item_for_each_group(asciidoc_osmo_stat_item_group_handler, vty);
 
-	vty_out(vty, "== Osmo Counters%s%s", VTY_NEWLINE, VTY_NEWLINE);
-	vty_out(vty, "// generating tables for osmo_counters%s", VTY_NEWLINE);
-	asciidoc_counter_generate(vty);
+	if (osmo_counters_count() == 0)
+	{
+		vty_out(vty, "// there are no ungrouped osmo_counters%s",
+			VTY_NEWLINE);
+	} else {
+		vty_out(vty, "=== Osmo Counters%s%s", VTY_NEWLINE, VTY_NEWLINE);
+		vty_out(vty, "// generating tables for osmo_counters%s", VTY_NEWLINE);
+		asciidoc_counter_generate(vty);
+	}
 	return CMD_SUCCESS;
 }
 
