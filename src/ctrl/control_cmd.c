@@ -207,7 +207,7 @@ failure:
 }
 
 /*! Install a given command definition at a given CTRL node.
- *  \param[in] node CTRL node at whihc \a cmd is to be installed
+ *  \param[in] node CTRL node at which \a cmd is to be installed
  *  \param[in] cmd command definition to be installed
  *  \returns 0 on success; negative on error */
 int ctrl_cmd_install(enum ctrl_node_type node, struct ctrl_cmd_element *cmd)
