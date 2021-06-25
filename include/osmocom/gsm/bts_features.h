@@ -30,6 +30,7 @@ enum osmo_bts_features {
 	BTS_FEAT_CCN, /* Is CCN supported by the cell? TS 44.060 sec 8.8.2 */
 	BTS_FEAT_VAMOS, /* Is the BTS VAMOS capable? */
 	BTS_FEAT_ABIS_OSMO_PCU, /* BTS supports forwarding data to PCUIF over IPA OML multiplex */
+	BTS_FEAT_BCCH_POWER_RED,
 	_NUM_BTS_FEAT
 };
 

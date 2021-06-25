@@ -45,6 +45,7 @@ const struct value_string osmo_bts_features_descs[] = {
 	{ BTS_FEAT_CCN,			"Cell Change Notification (CCN)" },
 	{ BTS_FEAT_VAMOS,		"VAMOS (Voice services over Adaptive Multi-user channels on One Slot)" },
 	{ BTS_FEAT_ABIS_OSMO_PCU,	"OsmoPCU over OML link IPA multiplex" },
+	{ BTS_FEAT_BCCH_POWER_RED,	"BCCH carrier power reduction mode" },
 	{ 0, NULL }
 };
 
@@ -77,5 +78,6 @@ const struct value_string osmo_bts_features_names[] = {
 	{ BTS_FEAT_CCN, "CCN" },
 	{ BTS_FEAT_VAMOS, "VAMOS" },
 	{ BTS_FEAT_ABIS_OSMO_PCU, "ABIS_OSMO_PCU" },
+	{ BTS_FEAT_BCCH_POWER_RED, "BCCH_PWR_RED" },
 	{}
 };
