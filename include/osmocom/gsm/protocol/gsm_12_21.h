@@ -564,8 +564,10 @@ enum abis_nm_chan_comb {
 	NM_CHANC_IPAC_TCHFull_PDCH = 0x80,
 	NM_CHANC_IPAC_TCHFull_TCHHalf = 0x81,
 	/* osmocom */
-	NM_CHANC_OSMO_TCHFull_TCHHalf_PDCH = 0x90,
+	NM_CHANC_OSMO_DYN = 0x90,
 };
+/* Backward compatibility with older naming: */
+#define NM_CHANC_OSMO_TCHFull_TCHHalf_PDCH NM_CHANC_OSMO_DYN
 
 /*! Event Type (Section 9.4.16) */
 enum abis_nm_event_type {

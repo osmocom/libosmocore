@@ -213,9 +213,11 @@ enum gsm_phys_chan_config {
 	GSM_PCHAN_UNKNOWN,
 	GSM_PCHAN_CCCH_SDCCH4_CBCH,
 	GSM_PCHAN_SDCCH8_SACCH8C_CBCH,
-	GSM_PCHAN_TCH_F_TCH_H_PDCH,
+	GSM_PCHAN_OSMO_DYN,
 	_GSM_PCHAN_MAX
 };
+/* Backward compatibility with older naming: */
+#define GSM_PCHAN_TCH_F_TCH_H_PDCH GSM_PCHAN_OSMO_DYN
 
 /* Osmocom internal, not part of any gsm spec */
 enum gsm_chan_t {
