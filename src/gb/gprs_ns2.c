@@ -414,6 +414,8 @@ static struct gprs_ns2_vc *ns2_load_sharing_weight_modulo(
 
 	mod = (bvci + load_selector) % nse->sum_data_weight;
 	llist_for_each_entry(tmp, &nse->nsvc, list) {
+		if (tmp->data_weight == 0)
+			continue;
 		if (!ns2_vc_is_unblocked(tmp))
 			continue;
 		if (i == mod || mod < i + tmp->data_weight)
