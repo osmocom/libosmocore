@@ -238,6 +238,12 @@ static inline void llist_splice_init(struct llist_head *llist,
 #define llist_last_entry(ptr, type, member) \
 	llist_entry((ptr)->prev, type, member)
 
+/*! Return the last element of the list.
+ *  \param head the llist head of the list.
+ *  \returns last element of the list, head if the list is empty.
+ */
+#define llist_last(head) (head)->prev
+
 /*! Get the first element from a list, or NULL.
  *  \param ptr    the list head to take the element from.
  *  \param type   the type of the struct this is embedded in.
