@@ -562,11 +562,11 @@ void ns2_prim_status_ind(struct gprs_ns2_nse *nse,
 		nsp.u.status.nsvc = gprs_ns2_ll_str_buf(nsvc_str, sizeof(nsvc_str), nsvc);
 		LOGNSVC(nsvc, LOGL_NOTICE, "NS-STATUS.ind(bvci=%05u): cause=%s, transfer=%d, first=%d, mtu=%d\n",
 			nsp.bvci, gprs_ns2_aff_cause_prim_str(nsp.u.status.cause),
-			nsp.u.status.transfer, nsp.u.status.first, nse->mtu);
+			nsp.u.status.transfer, nsp.u.status.first, nsp.u.status.mtu);
 	} else {
 		LOGNSE(nse, LOGL_NOTICE, "NS-STATUS.ind(bvci=%05u): cause=%s, transfer=%d, first=%d, mtu=%d\n",
 			nsp.bvci, gprs_ns2_aff_cause_prim_str(nsp.u.status.cause),
-			nsp.u.status.transfer, nsp.u.status.first, nse->mtu);
+			nsp.u.status.transfer, nsp.u.status.first, nsp.u.status.mtu);
 	}
 
 	osmo_prim_init(&nsp.oph, SAP_NS, GPRS_NS2_PRIM_STATUS, PRIM_OP_INDICATION, NULL);
