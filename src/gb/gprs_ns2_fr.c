@@ -601,14 +601,18 @@ static void mtu_change(struct gprs_ns2_vc_bind *bind, uint32_t mtu)
 	struct priv_bind *bpriv = bind->priv;
 	struct gprs_ns2_nse *nse;
 
+	/* 2 byte DLCI header */
+	if (mtu <= 2)
+		return;
+	mtu -= 2;
+
 	if (mtu == bind->mtu)
 		return;
 
 	LOGBIND(bind, LOGL_INFO, "MTU changed from %d to %d.\n",
-		bind->mtu, mtu);
+		bind->mtu + 2, mtu + 2);
 
-	/* 2 byte DLCI header */
-	bind->mtu = mtu - 2;
+	bind->mtu = mtu;
 	if (!bpriv->if_running)
 		return;
 
