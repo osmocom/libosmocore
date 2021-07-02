@@ -41,6 +41,7 @@ int bssgp_prim_cb(struct osmo_prim_hdr *oph, void *ctx)
 static struct log_info info = {};
 static struct osmo_wqueue *unitdata = NULL;
 static struct osmo_gprs_ns2_prim last_nse_recovery = {};
+static struct osmo_gprs_ns2_prim last_nse_mtu_change = {};
 
 static int ns_prim_cb(struct osmo_prim_hdr *oph, void *ctx)
 {
@@ -54,8 +55,12 @@ static int ns_prim_cb(struct osmo_prim_hdr *oph, void *ctx)
 			msgb_free(oph->msg);
 		}
 	}
-	if (oph->primitive == GPRS_NS2_PRIM_STATUS && nsp->u.status.cause == GPRS_NS2_AFF_CAUSE_RECOVERY) {
-		last_nse_recovery = *nsp;
+	if (oph->primitive == GPRS_NS2_PRIM_STATUS) {
+		if (nsp->u.status.cause == GPRS_NS2_AFF_CAUSE_RECOVERY) {
+			last_nse_recovery = *nsp;
+		} else if (nsp->u.status.cause == GPRS_NS2_AFF_CAUSE_MTU_CHANGE) {
+			last_nse_mtu_change = *nsp;
+		}
 	}
 	return 0;
 }
@@ -578,6 +583,10 @@ void test_mtu(void *ctx)
 	printf("---- Check if got mtu reported\n");
 	/* 1b NS PDU type, 1b NS SDU control, 2b BVCI */
 	OSMO_ASSERT(last_nse_recovery.u.status.mtu == 123 - 4);
+
+	bind[0]->mtu = 100;
+	ns2_nse_update_mtu(nse);
+	OSMO_ASSERT(last_nse_mtu_change.u.status.mtu == 100 - 4);
 
 	gprs_ns2_free(nsi);
 	printf("--- Finish unitdata test\n");

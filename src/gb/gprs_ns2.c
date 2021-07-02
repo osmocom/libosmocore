@@ -1552,7 +1552,7 @@ void ns2_nse_update_mtu(struct gprs_ns2_nse *nse)
 
 	nse->mtu = mtu;
 	if (nse->alive)
-		ns2_prim_status_ind(nsvc->nse, NULL, 0, GPRS_NS2_AFF_CAUSE_MTU_CHANGE);
+		ns2_prim_status_ind(nse, NULL, 0, GPRS_NS2_AFF_CAUSE_MTU_CHANGE);
 }
 
 /*! calculate the transfer capabilities for a nse
