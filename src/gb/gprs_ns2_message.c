@@ -798,7 +798,7 @@ int ns2_tx_sns_size(struct gprs_ns2_vc *nsvc, bool reset_flag, uint16_t max_nr_n
 		msgb_tv16_put(msg, NS_IE_IPv6_EP_NR, ip6_ep_nr);
 
 	LOG_NS_SIGNAL(nsvc, "Tx", nsh->pdu_type, LOGL_INFO,
-		      " (reset=%u, max_nr_nsvc=%u, num_ip4=%u, num_ip6=%u)\n",
+		      " (reset=%u, max_nr_nsvc=%u, num_ip4=%d, num_ip6=%d)\n",
 		      reset_flag, max_nr_nsvc, ip4_ep_nr, ip6_ep_nr);
 	return ns_vc_tx(nsvc, msg);
 }
