@@ -423,7 +423,7 @@ DEFUN(cfg_no_ns_bind, cfg_no_ns_bind_cmd,
 	vty_bind_free(vbind);
 	bind = gprs_ns2_bind_by_name(vty_nsi, name);
 	if (bind)
-		bind->driver->free_bind(bind);
+		gprs_ns2_free_bind(bind);
 	return CMD_SUCCESS;
 }
 
@@ -678,7 +678,7 @@ DEFUN(cfg_no_ns_bind_listen, cfg_no_ns_bind_listen_cmd,
 		return CMD_ERR_NOTHING_TODO;
 
 	OSMO_ASSERT(bind->ll == GPRS_NS2_LL_UDP);
-	bind->driver->free_bind(bind);
+	gprs_ns2_free_bind(bind);
 	return CMD_SUCCESS;
 }
 
@@ -939,7 +939,7 @@ DEFUN(cfg_no_ns_bind_fr, cfg_no_ns_bind_fr_cmd,
 		return CMD_WARNING;
 	}
 
-	bind->driver->free_bind(bind);
+	gprs_ns2_free_bind(bind);
 	return CMD_SUCCESS;
 }
 

@@ -83,3 +83,7 @@ OsmoNSdummy(config-ns-nse)# ip-sns-remote 127.0.0.1 22222
 OsmoNSdummy(config-ns-nse)# ip-sns-remote 127.0.0.1 22222
 Specified SNS endpoint already part of the NSE.
 OsmoNSdummy(config-ns-nse)# exit
+OsmoNSdummy(config-ns)# no bind abc
+OsmoNSdummy(config-ns)# no bind abc77
+bind abc77 does not exist!
+OsmoNSdummy(config-ns)# exit
