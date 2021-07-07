@@ -687,7 +687,7 @@ bool osmo_identifier_valid(const char *str)
  * To guarantee passing osmo_separated_identifiers_valid(), replace_with must not itself be an illegal character. If in
  * doubt, use '-'.
  * \param[inout] str  Identifier to sanitize, must be nul terminated and in a writable buffer.
- * \param[in] sep_chars  Additional characters that are allowed besides osmo_identifier_illegal_chars.
+ * \param[in] sep_chars  Additional characters that are to be replaced besides osmo_identifier_illegal_chars.
  * \param[in] replace_with  Replace any illegal characters with this character.
  */
 void osmo_identifier_sanitize_buf(char *str, const char *sep_chars, char replace_with)
