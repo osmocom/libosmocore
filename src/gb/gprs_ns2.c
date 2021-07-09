@@ -159,7 +159,7 @@ const struct value_string gprs_ns2_cause_strs[] = {
 	{ 0, NULL }
 };
 
-static const struct rate_ctr_desc nsvc_ctr_description[] = {
+static const struct rate_ctr_desc ns_ctr_description[] = {
 	[NS_CTR_PKTS_IN]	= { "packets:in", 	"Packets at NS Level  ( In)" },
 	[NS_CTR_PKTS_OUT] 	= { "packets:out",	"Packets at NS Level  (Out)" },
 	[NS_CTR_PKTS_OUT_DROP] 	= { "packets:out:drop",	"Dropped Packets      (Out)" },
@@ -177,11 +177,19 @@ static const struct rate_ctr_desc nsvc_ctr_description[] = {
 	[NS_CTR_LOST_RESET]	= { "lost:reset",	"RESET ACK missing count   " },
 };
 
+static const struct rate_ctr_group_desc nse_ctrg_desc = {
+	.group_name_prefix = "ns:nse",
+	.group_description = "NSE Peer Statistics",
+	.num_ctr = ARRAY_SIZE(ns_ctr_description),
+	.ctr_desc = ns_ctr_description,
+	.class_id = OSMO_STATS_CLASS_PEER,
+};
+
 static const struct rate_ctr_group_desc nsvc_ctrg_desc = {
 	.group_name_prefix = "ns:nsvc",
 	.group_description = "NSVC Peer Statistics",
-	.num_ctr = ARRAY_SIZE(nsvc_ctr_description),
-	.ctr_desc = nsvc_ctr_description,
+	.num_ctr = ARRAY_SIZE(ns_ctr_description),
+	.ctr_desc = ns_ctr_description,
 	.class_id = OSMO_STATS_CLASS_PEER,
 };
 
@@ -806,6 +814,12 @@ struct gprs_ns2_nse *gprs_ns2_create_nse2(struct gprs_ns2_inst *nsi, uint16_t ns
 		return NULL;
 	}
 
+	nse->ctrg = rate_ctr_group_alloc(nse, &nse_ctrg_desc, nsei);
+	if (!nse->ctrg) {
+		talloc_free(nse);
+		return NULL;
+	}
+
 	nse->ll = linklayer;
 	nse->nsei = nsei;
 	nse->nsi = nsi;
@@ -886,6 +900,7 @@ void gprs_ns2_free_nse(struct gprs_ns2_nse *nse)
 
 	gprs_ns2_free_nsvcs(nse);
 	ns2_prim_status_ind(nse, NULL, 0, GPRS_NS2_AFF_CAUSE_FAILURE);
+	rate_ctr_group_free(nse->ctrg);
 
 	llist_del(&nse->list);
 	talloc_free(nse);
@@ -1265,8 +1280,8 @@ int ns2_recv_vc(struct gprs_ns2_vc *nsvc,
 	log_set_context(LOG_CTX_GB_NSE, nsvc->nse);
 	log_set_context(LOG_CTX_GB_NSVC, nsvc);
 
-	rate_ctr_inc(rate_ctr_group_get_ctr(nsvc->ctrg, NS_CTR_PKTS_IN));
-	rate_ctr_add(rate_ctr_group_get_ctr(nsvc->ctrg, NS_CTR_BYTES_IN), msg->len);
+	RATE_CTR_INC_NS(nsvc, NS_CTR_PKTS_IN);
+	RATE_CTR_ADD_NS(nsvc, NS_CTR_BYTES_IN, msg->len);
 
 	if (msg->len < sizeof(struct gprs_ns_hdr)) {
 		rc = -EINVAL;

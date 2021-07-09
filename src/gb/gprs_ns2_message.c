@@ -174,11 +174,11 @@ static int ns_vc_tx(struct gprs_ns2_vc *nsvc, struct msgb *msg)
 
 	rc = nsvc->bind->send_vc(nsvc, msg);
 	if (rc < 0) {
-		rate_ctr_inc(rate_ctr_group_get_ctr(nsvc->ctrg, NS_CTR_PKTS_OUT_DROP));
-		rate_ctr_add(rate_ctr_group_get_ctr(nsvc->ctrg, NS_CTR_BYTES_OUT_DROP), bytes);
+		RATE_CTR_INC_NS(nsvc, NS_CTR_PKTS_OUT_DROP);
+		RATE_CTR_ADD_NS(nsvc, NS_CTR_BYTES_OUT_DROP, bytes);
 	} else {
-		rate_ctr_inc(rate_ctr_group_get_ctr(nsvc->ctrg, NS_CTR_PKTS_OUT));
-		rate_ctr_add(rate_ctr_group_get_ctr(nsvc->ctrg, NS_CTR_BYTES_OUT), bytes);
+		RATE_CTR_INC_NS(nsvc, NS_CTR_PKTS_OUT);
+		RATE_CTR_ADD_NS(nsvc, NS_CTR_BYTES_OUT, bytes);
 	}
 
 	return rc;

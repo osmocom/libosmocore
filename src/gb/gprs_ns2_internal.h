@@ -38,6 +38,20 @@
 #define LOG_NS_RX_SIGNAL(nsvc, pdu_type) LOG_NS_SIGNAL(nsvc, "Rx", pdu_type, LOGL_INFO, "\n")
 #define LOG_NS_TX_SIGNAL(nsvc, pdu_type) LOG_NS_SIGNAL(nsvc, "Tx", pdu_type, LOGL_INFO, "\n")
 
+#define RATE_CTR_INC_NS(nsvc, ctr) \
+	do { \
+		struct gprs_ns2_vc *_nsvc = (nsvc); \
+		rate_ctr_inc(rate_ctr_group_get_ctr(_nsvc->ctrg, ctr)); \
+		rate_ctr_inc(rate_ctr_group_get_ctr(_nsvc->nse->ctrg, ctr)); \
+	} while (0)
+
+#define RATE_CTR_ADD_NS(nsvc, ctr, val) \
+	do { \
+		struct gprs_ns2_vc *_nsvc = (nsvc); \
+		rate_ctr_add(rate_ctr_group_get_ctr(_nsvc->ctrg, ctr), val); \
+		rate_ctr_add(rate_ctr_group_get_ctr(_nsvc->nse->ctrg, ctr), val); \
+	} while (0)
+
 
 struct osmo_fsm_inst;
 struct tlv_parsed;
@@ -198,6 +212,9 @@ struct gprs_ns2_nse {
 
 	/*! are we implementing the SGSN role? */
 	bool ip_sns_role_sgsn;
+
+	/*! NSE-wide statistics */
+	struct rate_ctr_group *ctrg;
 };
 
 /*! Structure representing a single NS-VC */
