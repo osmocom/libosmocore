@@ -46,6 +46,7 @@ Boston, MA  02110-1301, USA. */
 #include <osmocom/vty/command.h>
 
 #include <osmocom/core/talloc.h>
+#include <osmocom/core/timer.h>
 #include <osmocom/core/utils.h>
 
 #ifndef MAXPATHLEN
@@ -62,6 +63,9 @@ Boston, MA  02110-1301, USA. */
 #define CONFIGFILE_MASK 022
 
 void *tall_vty_cmd_ctx;
+
+/* Set by on_dso_load_starttime() for "show uptime". */
+static struct timespec starttime;
 
 /* Command vector which includes some level of command lists. Normally
    each daemon maintains each own cmdvec. */
@@ -3037,6 +3041,23 @@ DEFUN(show_online_help,
 	return CMD_SUCCESS;
 }
 
+DEFUN(show_uptime,
+      show_uptime_cmd, "show uptime", SHOW_STR "Displays how long the program has been running\n")
+{
+	struct timespec now;
+	osmo_clock_gettime(CLOCK_MONOTONIC, &now);
+
+	time_t uptime = now.tv_sec - starttime.tv_sec;
+	int d = uptime / (3600 * 24);
+	int h = uptime / 3600 % 24;
+	int m = uptime / 60 % 60;
+	int s = uptime % 60;
+
+	vty_out(vty, "%s has been running for %dd %dh %dm %ds%s", host.app_info->name, d, h, m, s, VTY_NEWLINE);
+
+	return CMD_SUCCESS;
+}
+
 /* Help display function for all node. */
 gDEFUN(config_help,
       config_help_cmd, "help", "Description of the interactive help system\n")
@@ -4346,6 +4367,7 @@ void cmd_init(int terminal)
 	install_node(&config_node, config_write_host);
 
 	/* Each node's basic commands. */
+	install_lib_element(VIEW_NODE, &show_uptime_cmd);
 	install_lib_element(VIEW_NODE, &show_version_cmd);
 	install_lib_element(VIEW_NODE, &show_online_help_cmd);
 	if (terminal) {
@@ -4397,6 +4419,11 @@ void cmd_init(int terminal)
 
 	}
 	srand(time(NULL));
+}
+
+static __attribute__((constructor)) void on_dso_load_starttime(void)
+{
+	osmo_clock_gettime(CLOCK_MONOTONIC, &starttime);
 }
 
 /* FIXME: execute this section in the unit test instead */
