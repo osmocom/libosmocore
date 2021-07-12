@@ -38,13 +38,16 @@ Boston, MA  02110-1301, USA. */
 #include <ctype.h>
 #include <time.h>
 #include <limits.h>
+#include <signal.h>
 #include <sys/time.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 
 #include <osmocom/vty/vector.h>
 #include <osmocom/vty/vty.h>
 #include <osmocom/vty/command.h>
 
+#include <osmocom/core/logging.h>
 #include <osmocom/core/talloc.h>
 #include <osmocom/core/timer.h>
 #include <osmocom/core/utils.h>
@@ -3022,6 +3025,18 @@ gDEFUN(config_exit,
 	return CMD_SUCCESS;
 }
 
+DEFUN(shutdown,
+      shutdown_cmd, "shutdown", "Request a shutdown of the program\n")
+{
+	LOGP(DLGLOBAL, LOGL_INFO, "Shutdown requested from telnet\n");
+	vty_out(vty, "%s is shutting down. Bye!%s", host.app_info->name, VTY_NEWLINE);
+
+	/* Same exit path as if it was killed by the service manager */
+	kill(getpid(), SIGTERM);
+
+	return CMD_SUCCESS;
+}
+
 /* Show version. */
 DEFUN(show_version,
       show_version_cmd, "show version", SHOW_STR "Displays program version\n")
@@ -4394,6 +4409,7 @@ void cmd_init(int terminal)
 		install_lib_element(ENABLE_NODE, &config_disable_cmd);
 		install_lib_element(ENABLE_NODE, &config_terminal_cmd);
 		install_lib_element(ENABLE_NODE, &copy_runningconfig_startupconfig_cmd);
+		install_lib_element(ENABLE_NODE, &shutdown_cmd);
 	}
 	install_lib_element(ENABLE_NODE, &show_startup_config_cmd);
 	install_lib_element(ENABLE_NODE, &show_version_cmd);
