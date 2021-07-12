@@ -254,7 +254,10 @@ static void alive_timeout_handler(void *data)
 
 static void ns2_st_unconfigured_onenter(struct osmo_fsm_inst *fi, uint32_t old_state)
 {
+	struct gprs_ns2_vc_priv *priv = fi->priv;
+
 	stop_test_procedure(fi->priv);
+	ns2_nse_notify_unblocked(priv->nsvc, false);
 }
 
 static void ns2_st_unconfigured(struct osmo_fsm_inst *fi, uint32_t event, void *data)

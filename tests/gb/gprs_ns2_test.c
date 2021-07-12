@@ -592,6 +592,56 @@ void test_mtu(void *ctx)
 	printf("--- Finish unitdata test\n");
 }
 
+void test_unconfigured(void *ctx)
+{
+	struct gprs_ns2_inst *nsi;
+	struct gprs_ns2_vc_bind *bind[2];
+	struct gprs_ns2_vc_bind *loopbind;
+	struct gprs_ns2_nse *nse;
+	struct gprs_ns2_vc *nsvc[2];
+	struct gprs_ns2_vc *loop[2];
+
+	char idbuf[32];
+	int i;
+
+	printf("--- Testing force unconfigured\n");
+	osmo_wqueue_clear(unitdata);
+	printf("---- Create NSE + Binds\n");
+	nsi = gprs_ns2_instantiate(ctx, ns_prim_cb, NULL);
+	bind[0] = dummy_bind(nsi, "bblock1");
+	bind[1] = dummy_bind(nsi, "bblock2");
+	loopbind = loopback_bind(nsi, "loopback");
+	nse = gprs_ns2_create_nse(nsi, 1004, GPRS_NS2_LL_UDP, GPRS_NS2_DIALECT_STATIC_RESETBLOCK);
+	OSMO_ASSERT(nse);
+
+	for (i=0; i<2; i++) {
+		printf("---- Create NSVC[%d]\n", i);
+		snprintf(idbuf, sizeof(idbuf), "NSE%05u-dummy-%i", nse->nsei, i);
+		nsvc[i] = ns2_vc_alloc(bind[i], nse, false, GPRS_NS2_VC_MODE_BLOCKRESET, idbuf);
+		loop[i] = loopback_nsvc(loopbind, nsvc[i]);
+		OSMO_ASSERT(nsvc[i]);
+		ns2_vc_fsm_start(nsvc[i]);
+		OSMO_ASSERT(!ns2_vc_is_unblocked(nsvc[i]));
+		ns2_tx_reset(loop[i], NS_CAUSE_OM_INTERVENTION);
+		ns2_tx_unblock(loop[i]);
+		OSMO_ASSERT(ns2_vc_is_unblocked(nsvc[i]));
+	}
+
+	/* both nsvcs are unblocked and alive */
+	printf("---- Check if NSE is alive\n");
+	OSMO_ASSERT(nse->alive);
+
+	ns2_vc_force_unconfigured(nsvc[0]);
+	OSMO_ASSERT(nse->alive);
+
+	ns2_vc_force_unconfigured(nsvc[1]);
+	printf("---- Check if NSE is dead\n");
+	OSMO_ASSERT(!nse->alive);
+
+	gprs_ns2_free(nsi);
+	printf("--- Finish force unconfigured test\n");
+}
+
 int main(int argc, char **argv)
 {
 	void *ctx = talloc_named_const(NULL, 0, "gprs_ns2_test");
@@ -611,6 +661,7 @@ int main(int argc, char **argv)
 	test_block_unblock_nsvc2(ctx);
 	test_unitdata(ctx);
 	test_unitdata_weights(ctx);
+	test_unconfigured(ctx);
 	test_mtu(ctx);
 	printf("===== NS2 protocol test END\n\n");
 

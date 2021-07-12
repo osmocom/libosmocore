@@ -33,6 +33,13 @@
 ---- Send UNITDATA to all NSVCs
 ---- Send BSSGP data to the NSE to test unitdata over NSVC[1]
 --- Finish unitdata weight test
+--- Testing force unconfigured
+---- Create NSE + Binds
+---- Create NSVC[0]
+---- Create NSVC[1]
+---- Check if NSE is alive
+---- Check if NSE is dead
+--- Finish force unconfigured test
 --- Testing mtu test
 ---- Create NSE + Binds
 ---- Create NSVC[0]
