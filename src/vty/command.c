@@ -3041,6 +3041,13 @@ DEFUN(show_online_help,
 	return CMD_SUCCESS;
 }
 
+DEFUN(show_pid,
+      show_pid_cmd, "show pid", SHOW_STR "Displays the process ID\n")
+{
+	vty_out(vty, "%d%s", getpid(), VTY_NEWLINE);
+	return CMD_SUCCESS;
+}
+
 DEFUN(show_uptime,
       show_uptime_cmd, "show uptime", SHOW_STR "Displays how long the program has been running\n")
 {
@@ -4367,6 +4374,7 @@ void cmd_init(int terminal)
 	install_node(&config_node, config_write_host);
 
 	/* Each node's basic commands. */
+	install_lib_element(VIEW_NODE, &show_pid_cmd);
 	install_lib_element(VIEW_NODE, &show_uptime_cmd);
 	install_lib_element(VIEW_NODE, &show_version_cmd);
 	install_lib_element(VIEW_NODE, &show_online_help_cmd);
