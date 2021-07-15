@@ -894,7 +894,9 @@ int osmo_sock_init(uint16_t family, uint16_t type, uint8_t proto,
 		   const char *host, uint16_t port, unsigned int flags)
 {
 	struct addrinfo *result, *rp;
-	int sfd, rc, on = 1;
+	int sfd = -1; /* initialize to avoid uninitialized false warnings on some gcc versions (11.1.0) */
+	int on = 1;
+	int rc;
 
 	if ((flags & (OSMO_SOCK_F_BIND | OSMO_SOCK_F_CONNECT)) ==
 		     (OSMO_SOCK_F_BIND | OSMO_SOCK_F_CONNECT)) {

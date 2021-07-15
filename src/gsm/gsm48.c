@@ -601,8 +601,8 @@ int osmo_mobile_identity_decode(struct osmo_mobile_identity *mi, const uint8_t *
 {
 	int rc;
 	int nibbles_len;
-	char *str;
-	size_t str_size;
+	char *str = NULL; /* initialize to avoid uninitialized false warnings on some gcc versions (11.1.0) */
+	size_t str_size = 0; /* initialize to avoid uninitialized false warnings on some gcc versions (11.1.0) */
 
 	if (!mi_data || mi_len < 1)
 		return -EBADMSG;
@@ -677,21 +677,18 @@ int osmo_mobile_identity_decode(struct osmo_mobile_identity *mi, const uint8_t *
 			goto return_error;
 		}
 		rc = osmo_bcd2str(str, str_size, mi_data, 1, 1 + nibbles_len, allow_hex);
-		/* rc checked below */
-		break;
+		/* check mi->str printing rc */
+		if (rc < 1 || rc >= str_size) {
+			rc = -EBADMSG;
+			goto return_error;
+		}
+		return 0;
 
 	default:
 		/* Already handled above, but as future bug paranoia: */
 		rc = -EINVAL;
 		goto return_error;
 	}
-
-	/* check mi->str printing rc */
-	if (rc < 1 || rc >= str_size) {
-		rc = -EBADMSG;
-		goto return_error;
-	}
-	return 0;
 
 return_error:
 	*mi = (struct osmo_mobile_identity){
