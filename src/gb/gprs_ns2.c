@@ -639,9 +639,9 @@ err:
  *  \param[in] nsvc NS-VC to destroy */
 void gprs_ns2_free_nsvc(struct gprs_ns2_vc *nsvc)
 {
-	if (!nsvc)
+	if (!nsvc || nsvc->freed)
 		return;
-
+	nsvc->freed = true;
 	ns2_prim_status_ind(nsvc->nse, nsvc, 0, GPRS_NS2_AFF_CAUSE_VC_FAILURE);
 
 	llist_del(&nsvc->list);
@@ -671,7 +671,7 @@ void gprs_ns2_free_nsvcs(struct gprs_ns2_nse *nse)
 {
 	struct gprs_ns2_vc *nsvc, *tmp;
 
-	if (!nse)
+	if (!nse || nse->freed)
 		return;
 
 	llist_for_each_entry_safe(nsvc, tmp, &nse->nsvc, list) {
@@ -889,9 +889,10 @@ uint16_t gprs_ns2_nse_nsei(struct gprs_ns2_nse *nse)
  *  \param[in] nse NS Entity to destroy */
 void gprs_ns2_free_nse(struct gprs_ns2_nse *nse)
 {
-	if (!nse)
+	if (!nse || nse->freed)
 		return;
 
+	nse->freed = true;
 	nse->alive = false;
 	if (nse->bss_sns_fi) {
 		osmo_fsm_inst_term(nse->bss_sns_fi, OSMO_FSM_TERM_REQUEST, NULL);
@@ -1466,9 +1467,10 @@ void gprs_ns2_free_bind(struct gprs_ns2_vc_bind *bind)
 {
 	struct gprs_ns2_vc *nsvc, *tmp;
 	struct gprs_ns2_nse *nse;
-	if (!bind)
+	if (!bind || bind->freed)
 		return;
 
+	bind->freed = true;
 	llist_for_each_entry_safe(nsvc, tmp, &bind->nsvc, blist) {
 		gprs_ns2_free_nsvc(nsvc);
 	}

@@ -215,6 +215,9 @@ struct gprs_ns2_nse {
 
 	/*! NSE-wide statistics */
 	struct rate_ctr_group *ctrg;
+
+	/*! recursive anchor */
+	bool freed;
 };
 
 /*! Structure representing a single NS-VC */
@@ -259,6 +262,9 @@ struct gprs_ns2_vc {
 	enum gprs_ns2_vc_mode mode;
 
 	struct osmo_fsm_inst *fi;
+
+	/*! recursive anchor */
+	bool freed;
 };
 
 /*! Structure repesenting a bind instance. E.g. IPv4 listen port. */
@@ -303,6 +309,9 @@ struct gprs_ns2_vc_bind {
 	uint8_t sns_data_weight;
 
 	struct osmo_stat_item_group *statg;
+
+	/*! recursive anchor */
+	bool freed;
 };
 
 struct gprs_ns2_vc_driver {
