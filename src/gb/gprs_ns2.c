@@ -889,6 +889,7 @@ uint16_t gprs_ns2_nse_nsei(struct gprs_ns2_nse *nse)
  *  \param[in] nse NS Entity to destroy */
 void gprs_ns2_free_nse(struct gprs_ns2_nse *nse)
 {
+	struct gprs_ns2_vc *nsvc, *nsvc2;
 	if (!nse || nse->freed)
 		return;
 
@@ -902,6 +903,9 @@ void gprs_ns2_free_nse(struct gprs_ns2_nse *nse)
 	gprs_ns2_free_nsvcs(nse);
 	ns2_prim_status_ind(nse, NULL, 0, GPRS_NS2_AFF_CAUSE_FAILURE);
 	rate_ctr_group_free(nse->ctrg);
+	llist_for_each_entry_safe(nsvc, nsvc2, &nse->nsvc, list) {
+		gprs_ns2_free_nsvc(nsvc);
+	}
 
 	llist_del(&nse->list);
 	talloc_free(nse);
