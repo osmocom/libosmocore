@@ -196,6 +196,7 @@ static void _sns_failed(struct osmo_fsm_inst *fi, const char *reason, const char
 	if (reason)
 		LOGPFSMLSRC(fi, LOGL_ERROR, file, line, "NSE %d: SNS failed: %s\n", gss->nse->nsei, reason);
 
+	gss->alive = false;
 	if (gss->role == GPRS_SNS_ROLE_SGSN) {
 		if (!gss->nse->persistent)
 			gprs_ns2_free_nse(gss->nse);
@@ -2584,22 +2585,36 @@ void ns2_sns_notify_alive(struct gprs_ns2_nse *nse, struct gprs_ns2_vc *nsvc, bo
 		return;
 
 	gss = nse->bss_sns_fi->priv;
-	if(nse->bss_sns_fi->state != GPRS_SNS_ST_CONFIGURED && nse->bss_sns_fi->state != GPRS_SNS_ST_LOCAL_PROCEDURE)
+	if (nse->bss_sns_fi->state != GPRS_SNS_ST_CONFIGURED && nse->bss_sns_fi->state != GPRS_SNS_ST_LOCAL_PROCEDURE)
 		return;
+
+	if (gss->alive && nse->sum_sig_weight == 0) {
+		sns_failed(nse->bss_sns_fi, "No signalling NSVC available");
+		return;
+	}
+
+	/* check if this is the current SNS NS-VC */
+	if (nsvc == gss->sns_nsvc && !alive) {
+		/* only replace the SNS NS-VC if there are other alive NS-VC.
+		 * There aren't any other alive NS-VC when the SNS fsm just reached CONFIGURED
+		 * and couldn't confirm yet if the NS-VC comes up */
+		llist_for_each_entry(tmp, &nse->nsvc, list) {
+			if (nsvc == tmp)
+				continue;
+			if (ns2_vc_is_unblocked(nsvc)) {
+				ns2_sns_replace_nsvc(nsvc);
+				break;
+			}
+		}
+	}
 
 	if (alive == gss->alive)
 		return;
 
-	/* check if this is the current SNS NS-VC */
-	if (nsvc == gss->sns_nsvc) {
-		/* only replace the SNS NS-VC if there are other alive NS-VC.
-		 * There aren't any other alive NS-VC when the SNS fsm just reached CONFIGURED
-		 * and couldn't confirm yet if the NS-VC comes up */
-		if (gss->alive && !alive)
-			ns2_sns_replace_nsvc(nsvc);
-	}
-
 	if (alive) {
+		/* we need at least a signalling NSVC before become alive */
+		if (nse->sum_sig_weight == 0)
+			return;
 		gss->alive = true;
 		osmo_fsm_inst_dispatch(nse->bss_sns_fi, GPRS_SNS_EV_REQ_NSVC_ALIVE, NULL);
 	} else {
