@@ -273,7 +273,7 @@ enum gprs_sns_bss_state {
 	GPRS_SNS_ST_CONFIGURED,
 };
 
-enum gprs_sns_event {
+enum gprs_ns2_sns_event {
 	GPRS_SNS_EV_START,
 	GPRS_SNS_EV_SIZE,
 	GPRS_SNS_EV_SIZE_ACK,
