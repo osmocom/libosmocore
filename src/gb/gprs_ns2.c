@@ -669,7 +669,7 @@ void gprs_ns2_free_nsvc(struct gprs_ns2_vc *nsvc)
  */
 void gprs_ns2_free_nsvcs(struct gprs_ns2_nse *nse)
 {
-	struct gprs_ns2_vc *nsvc, *tmp;
+	struct gprs_ns2_vc *nsvc;
 
 	if (!nse || nse->freed)
 		return;
@@ -677,7 +677,8 @@ void gprs_ns2_free_nsvcs(struct gprs_ns2_nse *nse)
 	if (nse->bss_sns_fi) {
 		osmo_fsm_inst_dispatch(nse->bss_sns_fi, GPRS_SNS_EV_REQ_FREE_NSVCS, NULL);
 	} else {
-		llist_for_each_entry_safe(nsvc, tmp, &nse->nsvc, list) {
+		while (!llist_empty(&nse->nsvc)) {
+			nsvc = llist_first_entry(&nse->nsvc, struct gprs_ns2_vc, list);
 			gprs_ns2_free_nsvc(nsvc);
 		}
 	}
@@ -893,7 +894,7 @@ uint16_t gprs_ns2_nse_nsei(struct gprs_ns2_nse *nse)
  *  \param[in] nse NS Entity to destroy */
 void gprs_ns2_free_nse(struct gprs_ns2_nse *nse)
 {
-	struct gprs_ns2_vc *nsvc, *nsvc2;
+	struct gprs_ns2_vc *nsvc;
 	if (!nse || nse->freed)
 		return;
 
@@ -907,7 +908,8 @@ void gprs_ns2_free_nse(struct gprs_ns2_nse *nse)
 	gprs_ns2_free_nsvcs(nse);
 	ns2_prim_status_ind(nse, NULL, 0, GPRS_NS2_AFF_CAUSE_FAILURE);
 	rate_ctr_group_free(nse->ctrg);
-	llist_for_each_entry_safe(nsvc, nsvc2, &nse->nsvc, list) {
+	while (!llist_empty(&nse->nsvc)) {
+		nsvc = llist_first_entry(&nse->nsvc, struct gprs_ns2_vc, list);
 		gprs_ns2_free_nsvc(nsvc);
 	}
 
@@ -917,9 +919,10 @@ void gprs_ns2_free_nse(struct gprs_ns2_nse *nse)
 
 void gprs_ns2_free_nses(struct gprs_ns2_inst *nsi)
 {
-	struct gprs_ns2_nse *nse, *ntmp;
+	struct gprs_ns2_nse *nse;
 
-	llist_for_each_entry_safe(nse, ntmp, &nsi->nse, list) {
+	while (!llist_empty(&nsi->nse)) {
+		nse = llist_first_entry(&nsi->nse, struct gprs_ns2_nse, list);
 		gprs_ns2_free_nse(nse);
 	}
 }
@@ -1473,20 +1476,21 @@ void gprs_ns2_start_alive_all_nsvcs(struct gprs_ns2_nse *nse)
  *  \param[in] bind the bind we want to destroy */
 void gprs_ns2_free_bind(struct gprs_ns2_vc_bind *bind)
 {
-	struct gprs_ns2_vc *nsvc, *tmp;
+	struct gprs_ns2_vc *nsvc;
 	struct gprs_ns2_nse *nse;
 	if (!bind || bind->freed)
 		return;
 
 	bind->freed = true;
-	llist_for_each_entry_safe(nsvc, tmp, &bind->nsvc, blist) {
-		gprs_ns2_free_nsvc(nsvc);
-	}
-
 	if (gprs_ns2_is_ip_bind(bind)) {
 		llist_for_each_entry(nse, &bind->nsi->nse, list) {
 			gprs_ns2_sns_del_bind(nse, bind);
 		}
+	}
+
+	while (!llist_empty(&bind->nsvc)) {
+		nsvc = llist_first_entry(&bind->nsvc, struct gprs_ns2_vc, blist);
+		gprs_ns2_free_nsvc(nsvc);
 	}
 
 	if (bind->driver->free_bind)
@@ -1500,9 +1504,10 @@ void gprs_ns2_free_bind(struct gprs_ns2_vc_bind *bind)
 
 void gprs_ns2_free_binds(struct gprs_ns2_inst *nsi)
 {
-	struct gprs_ns2_vc_bind *bind, *tbind;
+	struct gprs_ns2_vc_bind *bind;
 
-	llist_for_each_entry_safe(bind, tbind, &nsi->binding, list) {
+	while (!llist_empty(&nsi->binding)) {
+		bind = llist_first_entry(&nsi->binding, struct gprs_ns2_vc_bind, list);
 		gprs_ns2_free_bind(bind);
 	}
 }
