@@ -72,23 +72,6 @@ enum gprs_sns_bss_state {
 	GPRS_SNS_ST_SGSN_WAIT_CONFIG_ACK,	/* !< SGSN role: Wait for CONFIG-ACK from BSS */
 };
 
-enum gprs_sns_event {
-	GPRS_SNS_EV_REQ_SELECT_ENDPOINT,	/*!< Select a SNS endpoint from the list */
-	GPRS_SNS_EV_RX_SIZE,
-	GPRS_SNS_EV_RX_SIZE_ACK,
-	GPRS_SNS_EV_RX_CONFIG,
-	GPRS_SNS_EV_RX_CONFIG_END,		/*!< SNS-CONFIG with end flag received */
-	GPRS_SNS_EV_RX_CONFIG_ACK,
-	GPRS_SNS_EV_RX_ADD,
-	GPRS_SNS_EV_RX_DELETE,
-	GPRS_SNS_EV_RX_CHANGE_WEIGHT,
-	GPRS_SNS_EV_RX_ACK,			/*!< Rx of SNS-ACK (response to ADD/DELETE/CHG_WEIGHT */
-	GPRS_SNS_EV_REQ_NO_NSVC,		/*!< no more NS-VC remaining (all dead) */
-	GPRS_SNS_EV_REQ_NSVC_ALIVE,		/*!< a NS-VC became alive */
-	GPRS_SNS_EV_REQ_ADD_BIND,		/*!< add a new local bind to this NSE */
-	GPRS_SNS_EV_REQ_DELETE_BIND,		/*!< remove a local bind from this NSE */
-};
-
 static const struct value_string gprs_sns_event_names[] = {
 	{ GPRS_SNS_EV_REQ_SELECT_ENDPOINT,	"REQ_SELECT_ENDPOINT" },
 	{ GPRS_SNS_EV_RX_SIZE,			"RX_SIZE" },

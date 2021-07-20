@@ -320,6 +320,23 @@ struct gprs_ns2_vc_driver {
 	void (*free_bind)(struct gprs_ns2_vc_bind *driver);
 };
 
+enum gprs_ns2_sns_event {
+	GPRS_SNS_EV_REQ_SELECT_ENDPOINT,	/*!< Select a SNS endpoint from the list */
+	GPRS_SNS_EV_RX_SIZE,
+	GPRS_SNS_EV_RX_SIZE_ACK,
+	GPRS_SNS_EV_RX_CONFIG,
+	GPRS_SNS_EV_RX_CONFIG_END,		/*!< SNS-CONFIG with end flag received */
+	GPRS_SNS_EV_RX_CONFIG_ACK,
+	GPRS_SNS_EV_RX_ADD,
+	GPRS_SNS_EV_RX_DELETE,
+	GPRS_SNS_EV_RX_CHANGE_WEIGHT,
+	GPRS_SNS_EV_RX_ACK,			/*!< Rx of SNS-ACK (response to ADD/DELETE/CHG_WEIGHT */
+	GPRS_SNS_EV_REQ_NO_NSVC,		/*!< no more NS-VC remaining (all dead) */
+	GPRS_SNS_EV_REQ_NSVC_ALIVE,		/*!< a NS-VC became alive */
+	GPRS_SNS_EV_REQ_ADD_BIND,		/*!< add a new local bind to this NSE */
+	GPRS_SNS_EV_REQ_DELETE_BIND,		/*!< remove a local bind from this NSE */
+};
+
 enum ns2_cs ns2_create_vc(struct gprs_ns2_vc_bind *bind,
 			       struct msgb *msg,
 			       const struct osmo_sockaddr *remote,
