@@ -1583,7 +1583,8 @@ static void ns2_sns_st_all_action_bss(struct osmo_fsm_inst *fi, uint32_t event, 
 		/* tear down previous state
 		 * gprs_ns2_free_nsvcs() will trigger NO_NSVC, prevent this from triggering a reselection */
 		gss->reselection_running = true;
-		llist_for_each_entry_safe(nsvc, nsvc2, &nse->nsvc, list) {
+		while (!llist_empty(&nse->nsvc)) {
+			nsvc = llist_first_entry(&nse->nsvc, struct gprs_ns2_vc, list);
 			gprs_ns2_free_nsvc(nsvc);
 		}
 		ns2_clear_elems(&gss->local);
