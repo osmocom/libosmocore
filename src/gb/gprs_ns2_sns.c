@@ -2059,6 +2059,29 @@ void ns2_sns_update_weights(struct gprs_ns2_vc_bind *bind)
  * SGSN role
  ***********************************************************************/
 
+/* cleanup all state. If nsvc is given, don't remove this nsvc. (nsvc is given when a SIZE PDU received) */
+static void ns2_clear_sgsn(struct ns2_sns_state *gss, struct gprs_ns2_vc *size_nsvc)
+{
+	struct gprs_ns2_vc *nsvc, *nsvc2;
+
+	ns2_clear_elems(&gss->local);
+	ns2_clear_elems(&gss->remote);
+	llist_for_each_entry_safe(nsvc, nsvc2, &gss->nse->nsvc, list) {
+		/* Ignore the NSVC over which the SIZE PDU got received */
+		if (size_nsvc && size_nsvc == nsvc)
+			continue;
+
+		gprs_ns2_free_nsvc(nsvc);
+	}
+}
+
+static void ns2_sns_st_sgsn_unconfigured_onenter(struct osmo_fsm_inst *fi, uint32_t old_state)
+{
+	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
+
+	ns2_clear_sgsn(gss, NULL);
+}
+
 static void ns2_sns_st_sgsn_unconfigured(struct osmo_fsm_inst *fi, uint32_t event, void *data)
 {
 	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
@@ -2154,6 +2177,7 @@ static const struct osmo_fsm_state ns2_sns_sgsn_states[] = {
 				  S(GPRS_SNS_ST_SGSN_WAIT_CONFIG),
 		.name = "UNCONFIGURED",
 		.action = ns2_sns_st_sgsn_unconfigured,
+		.onenter = ns2_sns_st_sgsn_unconfigured_onenter,
 	},
 	[GPRS_SNS_ST_SGSN_WAIT_CONFIG] = {
 		.in_event_mask = S(NS2_SNS_EV_RX_CONFIG) |
@@ -2167,6 +2191,7 @@ static const struct osmo_fsm_state ns2_sns_sgsn_states[] = {
 	[GPRS_SNS_ST_SGSN_WAIT_CONFIG_ACK] = {
 		.in_event_mask = S(NS2_SNS_EV_RX_CONFIG_ACK),
 		.out_state_mask = S(GPRS_SNS_ST_UNCONFIGURED) |
+				  S(GPRS_SNS_ST_SGSN_WAIT_CONFIG) |
 				  S(GPRS_SNS_ST_SGSN_WAIT_CONFIG_ACK) |
 				  S(GPRS_SNS_ST_CONFIGURED),
 		.name = "SGSN_WAIT_CONFIG_ACK",
@@ -2178,7 +2203,8 @@ static const struct osmo_fsm_state ns2_sns_sgsn_states[] = {
 				 S(NS2_SNS_EV_RX_DELETE) |
 				 S(NS2_SNS_EV_RX_CHANGE_WEIGHT) |
 				 S(NS2_SNS_EV_REQ_NSVC_ALIVE),
-		.out_state_mask = S(GPRS_SNS_ST_UNCONFIGURED),
+		.out_state_mask = S(GPRS_SNS_ST_UNCONFIGURED) |
+				  S(GPRS_SNS_ST_SGSN_WAIT_CONFIG),
 		.name = "CONFIGURED",
 		/* shared with BSS side; once configured there's no difference */
 		.action = ns2_sns_st_configured,
@@ -2281,23 +2307,14 @@ static void ns2_sns_st_all_action_sgsn(struct osmo_fsm_inst *fi, uint32_t event,
 		/* perform state reset, if requested */
 		flag = *TLVP_VAL(tp, NS_IE_RESET_FLAG);
 		if (flag & 1) {
-			struct gprs_ns2_vc *nsvc, *nsvc2;
 			/* clear all state */
-			osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_UNCONFIGURED, 0, 0);
+			/* TODO: ensure gss->sns_nsvc is always the NSVC on which we received the SIZE PDU */
 			gss->N = 0;
-			ns2_clear_elems(&gss->local);
-			ns2_clear_elems(&gss->remote);
-			llist_for_each_entry_safe(nsvc, nsvc2, &gss->nse->nsvc, list) {
-				if (nsvc == gss->sns_nsvc) {
-					/* keep the NSVC we need for SNS, but unconfigure it */
-					nsvc->sig_weight = 0;
-					nsvc->data_weight = 0;
-					ns2_vc_force_unconfigured(nsvc);
-				} else {
-					/* free all other NS-VCs */
-					gprs_ns2_free_nsvc(nsvc);
-				}
-			}
+			ns2_clear_sgsn(gss, gss->sns_nsvc);
+			/* keep the NSVC we need for SNS, but unconfigure it */
+			gss->sns_nsvc->sig_weight = 0;
+			gss->sns_nsvc->data_weight = 0;
+			ns2_vc_force_unconfigured(gss->sns_nsvc);
 			ns2_sns_compute_local_ep_from_binds(fi);
 		}
 
