@@ -2227,6 +2227,7 @@ static void ns2_sns_st_all_action_bss(struct osmo_fsm_inst *fi, uint32_t event, 
 			gss->initial = NULL;
 			ns2_prim_status_ind(gss->nse, NULL, 0, GPRS_NS2_AFF_CAUSE_SNS_NO_ENDPOINTS);
 			osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_UNCONFIGURED, 0, 3);
+			gss->reselection_running = false;
 			return;
 		} else if (!gss->initial) {
 			gss->initial = llist_first_entry(&gss->sns_endpoints, struct sns_endpoint, list);
