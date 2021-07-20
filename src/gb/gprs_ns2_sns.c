@@ -1565,7 +1565,6 @@ static void ns2_sns_st_all_action_bss(struct osmo_fsm_inst *fi, uint32_t event, 
 {
 	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
 	struct gprs_ns2_nse *nse = nse_inst_from_fi(fi);
-	struct gprs_ns2_vc *nsvc, *nsvc2;
 
 	/* reset when receiving NS2_SNS_EV_REQ_NO_NSVC */
 	switch (event) {
@@ -1581,9 +1580,7 @@ static void ns2_sns_st_all_action_bss(struct osmo_fsm_inst *fi, uint32_t event, 
 		/* tear down previous state
 		 * gprs_ns2_free_nsvcs() will trigger NO_NSVC, prevent this from triggering a reselection */
 		gss->reselection_running = true;
-		llist_for_each_entry_safe(nsvc, nsvc2, &nse->nsvc, list) {
-			gprs_ns2_free_nsvc(nsvc);
-		}
+		ns2_free_nsvcs(nse);
 		ns2_clear_elems(&gss->local);
 		ns2_clear_elems(&gss->remote);
 

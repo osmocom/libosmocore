@@ -354,6 +354,7 @@ struct gprs_ns2_vc *ns2_vc_alloc(struct gprs_ns2_vc_bind *bind,
 				 enum gprs_ns2_vc_mode vc_mode,
 				 const char *id);
 
+void ns2_free_nsvcs(struct gprs_ns2_nse *nse);
 int ns2_bind_alloc(struct gprs_ns2_inst *nsi, const char *name,
 		   struct gprs_ns2_vc_bind **result);
 
