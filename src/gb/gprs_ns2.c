@@ -1388,8 +1388,8 @@ void ns2_nse_notify_unblocked(struct gprs_ns2_vc *nsvc, bool unblocked)
 {
 	struct gprs_ns2_nse *nse = nsvc->nse;
 
-	ns2_sns_notify_alive(nse, nsvc, unblocked);
 	ns2_nse_data_sum(nse);
+	ns2_sns_notify_alive(nse, nsvc, unblocked);
 
 	if (unblocked == nse->alive)
 		return;
