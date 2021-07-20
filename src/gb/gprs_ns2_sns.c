@@ -199,7 +199,7 @@ static void _sns_failed(struct osmo_fsm_inst *fi, const char *reason, const char
 	struct ns2_sns_state *gss = fi->priv;
 
 	if (reason)
-		LOGPFSML(fi, LOGL_ERROR, "NSE %d: SNS failed: %s\n", gss->nse->nsei, reason);
+		LOGPFSMLSRC(fi, LOGL_ERROR, file, line, "NSE %d: SNS failed: %s\n", gss->nse->nsei, reason);
 
 	if (gss->role == GPRS_SNS_ROLE_SGSN) {
 		if (!gss->nse->persistent)
