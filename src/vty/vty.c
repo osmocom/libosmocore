@@ -459,6 +459,7 @@ static int vty_command(struct vty *vty)
 
 static const char telnet_backward_char = 0x08;
 static const char telnet_space_char = ' ';
+static const char telnet_escape_char = 0x1B;
 
 /* Basic function to write buffer to vty. */
 static void vty_write(struct vty *vty, const char *buf, size_t nbytes)
@@ -856,6 +857,19 @@ static void vty_down_level(struct vty *vty)
 		(*config_exit_cmd.func) (NULL, vty, 0, NULL);
 	vty_prompt(vty);
 	vty->cp = 0;
+}
+
+/* When '^L' is typed, clear all lines above the current one. */
+static void vty_clear_screen(struct vty *vty)
+{
+	vty_out(vty, "%c%s%c%s",
+		telnet_escape_char,
+		"[2J", /* Erase Screen */
+		telnet_escape_char,
+		"[H" /* Cursor Home */
+	);
+	vty_prompt(vty);
+	vty_redraw_line(vty);
 }
 
 /* When '^Z' is received from vty, move down to the enable mode. */
@@ -1401,6 +1415,9 @@ int vty_read(struct vty *vty)
 			break;
 		case CONTROL('K'):
 			vty_kill_line(vty);
+			break;
+		case CONTROL('L'):
+			vty_clear_screen(vty);
 			break;
 		case CONTROL('N'):
 			vty_next_line(vty);
