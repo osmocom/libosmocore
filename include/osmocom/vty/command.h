@@ -99,7 +99,7 @@ enum node_type {
 	L_CS7_SCCPADDR_NODE,	/*!< SS7 SCCP Address */
 	L_CS7_SCCPADDR_GT_NODE,	/*!< SS7 SCCP Global Title */
 
-	L_CPU_SCHED_NODE,		/*!< CPU Sched related options node */
+	L_CPU_SCHED_NODE,	/*!< CPU Sched related options node */
 	L_NS_BIND_NODE,		/*!< NS bind node */
 	L_NS_NSE_NODE,		/*!< NS NSE node */
 	/*
