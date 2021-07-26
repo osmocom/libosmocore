@@ -77,6 +77,7 @@ static int _bssgp_tx_dl_ud(struct bssgp_flow_control *fc, struct msgb *msg,
 /* callback to be backward compatible with old users which do not set the bssgp_ns_send function */
 static int _gprs_ns_sendmsg(void *ctx, struct msgb *msg)
 {
+	OSMO_ASSERT(bssgp_nsi);
 	return gprs_ns_sendmsg(bssgp_nsi, msg);
 }
 
