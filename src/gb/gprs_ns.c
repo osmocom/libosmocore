@@ -29,7 +29,7 @@
  *  @{
  *
  * GPRS Networks Service (NS) messages on the Gb interface
- * 3GPP TS 08.16 version 8.0.1 Release 1999 / ETSI TS 101 299 V8.0.1 (2002-05) 
+ * 3GPP TS 08.16 version 8.0.1 Release 1999 / ETSI TS 101 299 V8.0.1 (2002-05)
  *
  * Some introduction into NS:  NS is used typically on top of frame relay,
  * but in the ip.access world it is encapsulated in UDP packets.  It serves
@@ -1076,7 +1076,7 @@ int gprs_ns_tx_sns_size_ack(struct gprs_nsvc *nsvc, uint8_t *cause)
  * if the NS-VC is ALIVE and not BLOCKED.  After that, it adds a NS
  * header for the NS-UNITDATA message type and sends it off.
  *
- * Section 9.2.10: transmit side / NS-UNITDATA-REQUEST primitive 
+ * Section 9.2.10: transmit side / NS-UNITDATA-REQUEST primitive
  */
 int gprs_ns_sendmsg(struct gprs_ns_inst *nsi, struct msgb *msg)
 {
