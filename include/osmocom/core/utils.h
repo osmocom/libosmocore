@@ -224,7 +224,7 @@ struct osmo_strbuf {
 			(STRBUF).pos = (STRBUF).buf; \
 		size_t _sb_remain = (STRBUF).buf ? (STRBUF).len - ((STRBUF).pos - (STRBUF).buf) : 0; \
 		int _sb_l = func((STRBUF).pos, _sb_remain, ##args); \
-		if (_sb_l < 0 || _sb_l > _sb_remain) \
+		if (_sb_l < 0 || (size_t)_sb_l > _sb_remain) \
 			(STRBUF).pos = (STRBUF).buf + (STRBUF).len; \
 		else if ((STRBUF).pos) \
 			(STRBUF).pos += _sb_l; \
