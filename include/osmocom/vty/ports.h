@@ -8,12 +8,14 @@
 
 #pragma once
 
+#define OSMO_VTY_PORT_PCAP_CLIENT	4227
+#define OSMO_VTY_PORT_PCAP_SERVER	4228
 /* 4236 used by control interface */
 #define OSMO_VTY_PORT_TRX		4237
 /* 4238 used by osmo-bts control interface */
 #define OSMO_VTY_PORT_STP		4239
-#define OSMO_VTY_PORT_PCU		4240	/* also: osmo_pcap_client */
-#define OSMO_VTY_PORT_BTS		4241	/* also: osmo_pcap_server */
+#define OSMO_VTY_PORT_PCU		4240
+#define OSMO_VTY_PORT_BTS		4241
 #define OSMO_VTY_PORT_NITB_BSC		4242
 #define OSMO_VTY_PORT_BSC_MGCP		4243
 #define OSMO_VTY_PORT_MGW		OSMO_VTY_PORT_BSC_MGCP
