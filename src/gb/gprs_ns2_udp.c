@@ -247,7 +247,9 @@ static int handle_nsip_read(struct osmo_fd *bfd)
 			goto out;
 		case NS2_CS_CREATED:
 			ns2_driver_alloc_vc(bind, nsvc, &saddr);
-			ns2_vc_fsm_start(nsvc);
+			/* only start the fsm for non SNS. SNS will take care of its own */
+			if (nsvc->nse->dialect != GPRS_NS2_DIALECT_SNS)
+				ns2_vc_fsm_start(nsvc);
 			break;
 		}
 	}
