@@ -674,8 +674,12 @@ void gprs_ns2_free_nsvcs(struct gprs_ns2_nse *nse)
 	if (!nse || nse->freed)
 		return;
 
-	llist_for_each_entry_safe(nsvc, tmp, &nse->nsvc, list) {
-		gprs_ns2_free_nsvc(nsvc);
+	if (nse->bss_sns_fi) {
+		osmo_fsm_inst_dispatch(nse->bss_sns_fi, NS2_SNS_EV_REQ_FREE_NSVCS, NULL);
+	} else {
+		llist_for_each_entry_safe(nsvc, tmp, &nse->nsvc, list) {
+			gprs_ns2_free_nsvc(nsvc);
+		}
 	}
 }
 

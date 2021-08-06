@@ -332,6 +332,7 @@ enum ns2_sns_event {
 	NS2_SNS_EV_RX_CHANGE_WEIGHT,
 	NS2_SNS_EV_RX_ACK,			/*!< Rx of SNS-ACK (response to ADD/DELETE/CHG_WEIGHT */
 	NS2_SNS_EV_REQ_NO_NSVC,		/*!< no more NS-VC remaining (all dead) */
+	NS2_SNS_EV_REQ_FREE_NSVCS,		/*!< free all NS-VCs */
 	NS2_SNS_EV_REQ_NSVC_ALIVE,		/*!< a NS-VC became alive */
 	NS2_SNS_EV_REQ_ADD_BIND,		/*!< add a new local bind to this NSE */
 	NS2_SNS_EV_REQ_DELETE_BIND,		/*!< remove a local bind from this NSE */
