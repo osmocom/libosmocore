@@ -84,6 +84,7 @@ static const struct value_string gprs_sns_event_names[] = {
 	{ GPRS_SNS_EV_RX_ACK,			"RX_ACK" },
 	{ GPRS_SNS_EV_RX_CHANGE_WEIGHT,		"RX_CHANGE_WEIGHT" },
 	{ GPRS_SNS_EV_REQ_NO_NSVC,		"REQ_NO_NSVC" },
+	{ GPRS_SNS_EV_REQ_FREE_NSVCS,		"REQ_FREE_NSVCS" },
 	{ GPRS_SNS_EV_REQ_NSVC_ALIVE,		"REQ_NSVC_ALIVE"},
 	{ GPRS_SNS_EV_REQ_ADD_BIND,		"REQ_ADD_BIND"},
 	{ GPRS_SNS_EV_REQ_DELETE_BIND,		"REQ_DELETE_BIND"},
@@ -1564,6 +1565,7 @@ static void ns2_sns_st_all_action_bss(struct osmo_fsm_inst *fi, uint32_t event, 
 {
 	struct ns2_sns_state *gss = (struct ns2_sns_state *) fi->priv;
 	struct gprs_ns2_nse *nse = nse_inst_from_fi(fi);
+	struct gprs_ns2_vc *nsvc, *nsvc2;
 
 	/* reset when receiving GPRS_SNS_EV_REQ_NO_NSVC */
 	switch (event) {
@@ -1574,11 +1576,14 @@ static void ns2_sns_st_all_action_bss(struct osmo_fsm_inst *fi, uint32_t event, 
 
 		sns_failed(fi, "no remaining NSVC, resetting SNS FSM");
 		break;
+	case GPRS_SNS_EV_REQ_FREE_NSVCS:
 	case GPRS_SNS_EV_REQ_SELECT_ENDPOINT:
 		/* tear down previous state
 		 * gprs_ns2_free_nsvcs() will trigger NO_NSVC, prevent this from triggering a reselection */
 		gss->reselection_running = true;
-		gprs_ns2_free_nsvcs(nse);
+		llist_for_each_entry_safe(nsvc, nsvc2, &nse->nsvc, list) {
+			gprs_ns2_free_nsvc(nsvc);
+		}
 		ns2_clear_elems(&gss->local);
 		ns2_clear_elems(&gss->remote);
 
@@ -1613,6 +1618,7 @@ static struct osmo_fsm gprs_ns2_sns_bss_fsm = {
 	.states = ns2_sns_bss_states,
 	.num_states = ARRAY_SIZE(ns2_sns_bss_states),
 	.allstate_event_mask = S(GPRS_SNS_EV_REQ_NO_NSVC) |
+			       S(GPRS_SNS_EV_REQ_FREE_NSVCS) |
 			       S(GPRS_SNS_EV_REQ_SELECT_ENDPOINT) |
 			       S(GPRS_SNS_EV_REQ_ADD_BIND) |
 			       S(GPRS_SNS_EV_REQ_DELETE_BIND),
@@ -2329,6 +2335,9 @@ static void ns2_sns_st_all_action_sgsn(struct osmo_fsm_inst *fi, uint32_t event,
 		if (flag & 1)
 			osmo_fsm_inst_state_chg(fi, GPRS_SNS_ST_SGSN_WAIT_CONFIG, 0, 0);
 		break;
+	case GPRS_SNS_EV_REQ_FREE_NSVCS:
+		sns_failed(fi, "On user request to free all NSVCs");
+		break;
 	default:
 		ns2_sns_st_all_action(fi, event, data);
 		break;
@@ -2341,6 +2350,7 @@ static struct osmo_fsm gprs_ns2_sns_sgsn_fsm = {
 	.num_states = ARRAY_SIZE(ns2_sns_sgsn_states),
 	.allstate_event_mask = S(GPRS_SNS_EV_RX_SIZE) |
 			       S(GPRS_SNS_EV_REQ_NO_NSVC) |
+			       S(GPRS_SNS_EV_REQ_FREE_NSVCS) |
 			       S(GPRS_SNS_EV_REQ_ADD_BIND) |
 			       S(GPRS_SNS_EV_REQ_DELETE_BIND),
 	.allstate_action = ns2_sns_st_all_action_sgsn,
