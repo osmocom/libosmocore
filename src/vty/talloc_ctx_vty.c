@@ -108,6 +108,8 @@ static void talloc_ctx_walk_cb(const void *chunk, int depth,
 filter_bypass:
 
 	if (is_ref) {
+		printf("%*sreference to: %s\n",
+			depth * 2, "", chunk_name);
 		vty_out(vty, "%*sreference to: %s%s",
 			depth * 2, "", chunk_name, VTY_NEWLINE);
 		return;
@@ -117,6 +119,10 @@ filter_bypass:
 	chunk_size = talloc_total_size(chunk);
 
 	if (depth == 0) {
+		printf("%stalloc report on '%s' "
+			"(total %6zu bytes in %3zu blocks)\n",
+			(max_depth < 0 ? "full " : ""), chunk_name,
+			chunk_size, chunk_blocks);
 		vty_out(vty, "%stalloc report on '%s' "
 			"(total %6zu bytes in %3zu blocks)%s",
 			(max_depth < 0 ? "full " : ""), chunk_name,
@@ -124,6 +130,11 @@ filter_bypass:
 		return;
 	}
 
+	printf("%*s%-30s contains %6zu bytes "
+		"in %3zu blocks (ref %zu) %p\n", depth * 2, "",
+		chunk_name, chunk_size, chunk_blocks,
+		talloc_reference_count(chunk),
+		chunk);
 	vty_out(vty, "%*s%-30s contains %6zu bytes "
 		"in %3zu blocks (ref %zu) %p%s", depth * 2, "",
 		chunk_name, chunk_size, chunk_blocks,
