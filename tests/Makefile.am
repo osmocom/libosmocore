@@ -421,6 +421,185 @@ noinst_HEADERS = conv/conv.h
 
 TESTSUITE = $(srcdir)/testsuite
 
+update_exp: $(check_PROGRAMS)
+	a5/a5_test \
+		>$(srcdir)/a5/a5_test.ok
+	abis/abis_test \
+		>$(srcdir)/abis/abis_test.ok
+if ENABLE_CTRL
+	ctrl/ctrl_test \
+		>$(srcdir)/ctrl/ctrl_test.ok
+endif
+	kasumi/kasumi_test \
+		>$(srcdir)/kasumi/kasumi_test.ok
+	bits/bitrev_test \
+		>$(srcdir)/bits/bitrev_test.ok
+	bitvec/bitvec_test \
+		>$(srcdir)/bitvec/bitvec_test.ok
+	bits/bitcomp_test \
+		>$(srcdir)/bits/bitcomp_test.ok
+	bits/bitfield_test \
+		>$(srcdir)/bits/bitfield_test.ok
+	conv/conv_test \
+		>$(srcdir)/conv/conv_test.ok
+	conv/conv_gsm0503_test \
+		>$(srcdir)/conv/conv_gsm0503_test.ok
+	coding/coding_test \
+		>$(srcdir)/coding/coding_test.ok
+	msgb/msgb_test \
+		>$(srcdir)/msgb/msgb_test.ok
+	gea/gea_test \
+		>$(srcdir)/gea/gea_test.ok
+if ENABLE_MSGFILE
+	cp $(srcdir)/msgfile/msgconfig.cfg .
+	msgfile/msgfile_test \
+		>$(srcdir)/msgfile/msgfile_test.ok
+endif
+	sms/sms_test \
+		>$(srcdir)/sms/sms_test.ok
+	smscb/smscb_test \
+		>$(srcdir)/smscb/smscb_test.ok
+	ussd/ussd_test \
+		>$(srcdir)/ussd/ussd_test.ok
+	auth/milenage_test \
+		>$(srcdir)/auth/milenage_test.ok
+	comp128/comp128_test \
+		>$(srcdir)/comp128/comp128_test.ok
+	lapd/lapd_test \
+		>$(srcdir)/lapd/lapd_test.ok
+	gsm0502/gsm0502_test \
+		>$(srcdir)/gsm0502/gsm0502_test.ok
+	dtx/dtx_gsm0503_test \
+		>$(srcdir)/dtx/dtx_gsm0503_test.ok
+	gsm0808/gsm0808_test \
+		>$(srcdir)/gsm0808/gsm0808_test.ok
+	gsm29205/gsm29205_test \
+		>$(srcdir)/gsm29205/gsm29205_test.ok
+	gsm0408/gsm0408_test \
+		>$(srcdir)/gsm0408/gsm0408_test.ok
+	gsm48/rest_octets_test \
+		>$(srcdir)/gsm48/rest_octets_test.ok
+	gprs/gprs_test \
+		>$(srcdir)/gprs/gprs_test.ok
+	logging/logging_test \
+		>$(srcdir)/logging/logging_test.ok \
+		2>$(srcdir)/logging/logging_test.err
+	codec/codec_test \
+		>$(srcdir)/codec/codec_test.ok
+	codec/codec_ecu_fr_test \
+		>$(srcdir)/codec/codec_ecu_fr_test.ok
+if ENABLE_GB
+	fr/fr_test \
+		>$(srcdir)/fr/fr_test.ok
+endif
+	loggingrb/loggingrb_test \
+		>$(srcdir)/loggingrb/logging_test.ok \
+		2>$(srcdir)/loggingrb/logging_test.err
+	strrb/strrb_test \
+		>$(srcdir)/strrb/strrb_test.ok
+if ENABLE_VTY
+	cp $(srcdir)/vty/*.cfg .
+	vty/vty_test \
+		>$(srcdir)/vty/vty_test.ok \
+		2>$(srcdir)/vty/vty_test.err
+endif
+if ENABLE_GB
+	gb/gprs_bssgp_test \
+		>$(srcdir)/gb/gprs_bssgp_test.ok
+	gb/gprs_bssgp_rim_test \
+		>$(srcdir)/gb/gprs_bssgp_rim_test.ok
+	gb/gprs_ns_test \
+		>$(srcdir)/gb/gprs_ns_test.ok
+	gb/gprs_ns2_test \
+		>$(srcdir)/gb/gprs_ns2_test.ok
+endif
+if ENABLE_UTILITIES
+	utils/utils_test \
+		>$(srcdir)/utils/utils_test.ok
+endif
+if !EMBEDDED
+	stats/stats_test \
+		>$(srcdir)/stats/stats_test.ok \
+		2>$(srcdir)/stats/stats_test.err
+endif
+	write_queue/wqueue_test \
+		>$(srcdir)/write_queue/wqueue_test.ok
+if ENABLE_GB
+	$(srcdir)/gb/bssgp_fc_tests.sh gb \
+		>$(srcdir)/gb/bssgp_fc_tests.ok \
+		2>$(srcdir)/gb/bssgp_fc_tests.err
+endif
+if ENABLE_PCSC
+	sim/sim_test \
+		>$(srcdir)/sim/sim_test.ok
+endif
+	timer/timer_test \
+		>$(srcdir)/timer/timer_test.ok
+	timer/clk_override_test \
+		>$(srcdir)/timer/clk_override_test.ok
+	tlv/tlv_test \
+		>$(srcdir)/tlv/tlv_test.ok
+	gsup/gsup_test \
+		>$(srcdir)/gsup/gsup_test.ok \
+		2>$(srcdir)/gsup/gsup_test.err
+if ENABLE_CTRL
+	fsm/fsm_test \
+		>$(srcdir)/fsm/fsm_test.ok \
+		2>$(srcdir)/fsm/fsm_test.err
+	fsm/fsm_dealloc_test \
+		2>$(srcdir)/fsm/fsm_dealloc_test.err
+endif
+	oap/oap_test \
+		>$(srcdir)/oap/oap_test.ok
+	oap/oap_client_test \
+		>$(srcdir)/oap/oap_client_test.ok \
+		2>$(srcdir)/oap/oap_client_test.err
+	socket/socket_test \
+		>$(srcdir)/socket/socket_test.ok \
+		2>$(srcdir)/socket/socket_test.err
+	socket/socket_sctp_test \
+		>$(srcdir)/socket/socket_sctp_test.ok \
+		2>$(srcdir)/socket/socket_sctp_test.err
+	$(srcdir)/osmo-auc-gen/osmo-auc-gen_test.sh ../utils/osmo-auc-gen \
+		>$(srcdir)/osmo-auc-gen/osmo-auc-gen_test.ok \
+		2>$(srcdir)/osmo-auc-gen/osmo-auc-gen_test.err
+	endian/endian_test \
+		>$(srcdir)/endian/endian_test.ok
+	sercomm/sercomm_test \
+		>$(srcdir)/sercomm/sercomm_test.ok
+	prbs/prbs_test \
+		>$(srcdir)/prbs/prbs_test.ok
+	gsm23003/gsm23003_test \
+		>$(srcdir)/gsm23003/gsm23003_test.ok
+	gsm23236/gsm23236_test \
+		>$(srcdir)/gsm23236/gsm23236_test.ok
+	tdef/tdef_test \
+		>$(srcdir)/tdef/tdef_test.ok
+	sockaddr_str/sockaddr_str_test \
+		>$(srcdir)/sockaddr_str/sockaddr_str_test.ok
+	use_count/use_count_test \
+		>$(srcdir)/use_count/use_count_test.ok \
+		2>$(srcdir)/use_count/use_count_test.err
+	context/context_test \
+		>$(srcdir)/context/context_test.ok
+if !EMBEDDED
+	exec/exec_test \
+		>$(srcdir)/exec/exec_test.ok \
+		2>$(srcdir)/exec/exec_test.err
+endif
+	i460_mux/i460_mux_test \
+		>$(srcdir)/i460_mux/i460_mux_test.ok
+	bitgen/bitgen_test \
+		>$(srcdir)/bitgen/bitgen_test.ok
+	gad/gad_test \
+		>$(srcdir)/gad/gad_test.ok
+	bsslap/bsslap_test \
+		>$(srcdir)/bsslap/bsslap_test.ok
+	bssmap_le/bssmap_le_test \
+		>$(srcdir)/bssmap_le/bssmap_le_test.ok
+	it_q/it_q_test \
+		>$(srcdir)/it_q/it_q_test.ok
+
 check-local: atconfig $(TESTSUITE)
 	[ -e /proc/cpuinfo ] && cat /proc/cpuinfo
 	$(SHELL) '$(TESTSUITE)' $(TESTSUITEFLAGS)
