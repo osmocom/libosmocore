@@ -442,6 +442,16 @@ static void test_reporting()
 	osmo_stats_report();
 	OSMO_ASSERT(send_count == 2);
 
+	fprintf(stderr, "report (group 1, item 1 no update, send last item (!= last max), OS#5215):\n");
+	send_count = 0;
+	osmo_stats_report();
+	OSMO_ASSERT(send_count == 0); /* BUG: should be 2! */
+
+	fprintf(stderr, "report (group 1, item 1 no update, nothing to send):\n");
+	send_count = 0;
+	osmo_stats_report();
+	OSMO_ASSERT(send_count == 0);
+
 	fprintf(stderr, "report (remove statg1, ctrg1):\n");
 	/* force single flush */
 	srep1->force_single_flush = 1;
