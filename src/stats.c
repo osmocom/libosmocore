@@ -715,12 +715,19 @@ static int osmo_stat_item_handler(
 	if (!have_value) {
 		/* Send the last value in case a flush is requested */
 		value = osmo_stat_item_get_last(item);
+
+		/* Also send it in case a different max value was sent
+		 * previously (OS#5215) */
+		if (!item->stats_last_sent_was_max)
+			have_value = 1;
 	} else {
 		int32_t next_val;
 		/* If we have multiple values only send the max */
 		while (osmo_stat_item_get_next(item, &item->stats_next_id, &next_val) > 0)
 			value = OSMO_MAX(value, next_val);
 	}
+
+	item->stats_last_sent_was_max = (osmo_stat_item_get_last(item) == value);
 
 	llist_for_each_entry(srep, &osmo_stats_reporter_list, list) {
 		if (!srep->running)

@@ -28,6 +28,10 @@ struct osmo_stat_item {
 	 * be read from the FIFO. If accessing osmo_stat_item directly, without
 	 * the stats API, store this value elsewhere. */
 	int32_t stats_next_id;
+	/* internal use by stats API: indicate if the last value sent to
+	 * reporters was actually the last value in the FIFO. This may not be
+	 * the case, as always a max of 1 or more values gets sent (OS#5215) */
+	bool stats_last_sent_was_max;
 	/*! the index of the last value written to the FIFO */
 	int16_t last_offs;
 	/*! value FIFO */
