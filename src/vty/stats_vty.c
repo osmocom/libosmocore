@@ -586,19 +586,12 @@ static int reset_rate_ctr_group_handler(struct rate_ctr_group *ctrg, void *sctx_
         return 0;
 }
 
-static int reset_osmo_stat_item_group_handler(struct osmo_stat_item_group *statg, void *sctx_)
-{
-        osmo_stat_item_group_reset(statg);
-        return 0;
-}
-
 DEFUN(stats_reset,
       stats_reset_cmd,
       "stats reset",
-      STATS_STR "Reset all stats\n")
+      STATS_STR "Reset all rate counter stats\n")
 {
         rate_ctr_for_each_group(reset_rate_ctr_group_handler, NULL);
-        osmo_stat_item_for_each_group(reset_osmo_stat_item_group_handler, NULL);
 	return CMD_SUCCESS;
 }
 
