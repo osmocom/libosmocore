@@ -47,6 +47,9 @@ enum osmo_amr_type {
        AMR_NO_DATA = 15,
 };
 
+static inline const char *osmo_amr_type_name(enum osmo_amr_type type)
+{ return get_value_string(osmo_amr_type_names, type); }
+
 enum osmo_amr_quality {
        AMR_BAD = 0,
        AMR_GOOD = 1
