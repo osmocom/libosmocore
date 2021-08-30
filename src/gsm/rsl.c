@@ -621,6 +621,10 @@ const struct tlv_definition rsl_ipac_eie_tlvdef = {
 		[RSL_IPAC_EIE_3G_NCELL_LIST]	= { TLV_TYPE_TLV },
 		[RSL_IPAC_EIE_SDCCH_CTL_PARAM]	= { TLV_TYPE_TV },
 		[RSL_IPAC_EIE_AMR_CONV_THRESH] 	= { TLV_TYPE_FIXED, 9 },
+		/* Osmocom extensions: */
+		[RSL_IPAC_EIE_OSMO_MEAS_AVG_CFG]= { TLV_TYPE_TLV },
+		[RSL_IPAC_EIE_OSMO_MS_PWR_CTL]	= { TLV_TYPE_TLV },
+		[RSL_IPAC_EIE_OSMO_PC_THRESH_COMP]= { TLV_TYPE_TLV },
 	},
 };
 

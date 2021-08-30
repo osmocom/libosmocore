@@ -799,8 +799,14 @@ enum rsl_ipac_embedded_ie {
 	RSL_IPAC_EIE_SDCCH_CTL_PARAM	= 0x1a,
 	RSL_IPAC_EIE_AMR_CONV_THRESH 	= 0x1b,
 
+	/* Osmocom specific extensions: */
+	RSL_IPAC_EIE_OSMO_MEAS_AVG_CFG	= 0xf0,
+	RSL_IPAC_EIE_OSMO_MS_PWR_CTL	= 0xf1,
+	RSL_IPAC_EIE_OSMO_PC_THRESH_COMP = 0xf2,
+
 };
 
+/* Value of TLV IE RSL_IPAC_EIE_MEAS_AVG_CFG */
 struct ipac_preproc_ave_cfg {
 #if OSMO_IS_LITTLE_ENDIAN
 	uint8_t h_reqave:5,
@@ -817,7 +823,32 @@ struct ipac_preproc_ave_cfg {
 #endif
 }__attribute__ ((packed));
 
-/*! MS/BS Power Control Thresholds */
+
+struct osmo_preproc_ave_cfg_field {
+#if OSMO_IS_LITTLE_ENDIAN
+	uint8_t h_reqave:5,
+		ave_enabled:1,
+		reserved:2;
+	uint8_t h_reqt:5,
+		ave_method:3;
+#elif OSMO_IS_BIG_ENDIAN
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+	uint8_t reserved:2, ave_enabled:1, h_reqave:5;
+	uint8_t ave_method:3, h_reqt:5;
+#endif
+}__attribute__ ((packed));
+/* Value of TLV IE RSL_IPAC_EIE_OSMO_MEAS_AVG_CFG: */
+struct osmo_preproc_ave_cfg {
+	struct osmo_preproc_ave_cfg_field ci_fr;
+	struct osmo_preproc_ave_cfg_field ci_hr;
+	struct osmo_preproc_ave_cfg_field ci_amr_fr;
+	struct osmo_preproc_ave_cfg_field ci_amr_hr;
+	struct osmo_preproc_ave_cfg_field ci_sdcch;
+	struct osmo_preproc_ave_cfg_field ci_gprs;
+	uint8_t params[0]; /* Contains params for each above, appended one after the other */
+}__attribute__ ((packed));
+
+/*! MS/BS Power Control Thresholds (RSL_IPAC_EIE_MS_PWR_CTL) */
 struct ipac_preproc_pc_thresh {
 #if OSMO_IS_LITTLE_ENDIAN
 	uint8_t l_rxlev:6, reserved_l_rxlev:2;
@@ -830,6 +861,17 @@ struct ipac_preproc_pc_thresh {
 	uint8_t reserved_l_rxqual:1, l_rxqual:3,
 		reserved_u_rxqual:1, u_rxqual:3;
 #endif
+}__attribute__ ((packed));
+
+/*! Osmocom extension for: MS/BS Power Control Thresholds (RSL_IPAC_EIE_OSMO_MS_PWR_CTL) */
+struct osmo_preproc_pc_thresh {
+	/* Carrier-to-Interference (C/I), in dB: */
+	int8_t l_ci_fr; int8_t u_ci_fr; /* FR/EFR */
+	int8_t l_ci_hr; int8_t u_ci_hr; /* HR */
+	int8_t l_ci_amr_fr; int8_t u_ci_amr_fr; /* AMR FR */
+	int8_t l_ci_amr_hr; int8_t u_ci_amr_hr; /* AMR HR */
+	int8_t l_ci_sdcch; int8_t u_ci_sdcch; /* SDCCH */
+	int8_t l_ci_gprs; int8_t u_ci_gprs; /* GPRS */
 }__attribute__ ((packed));
 
 /*! Handover Thresholds */
@@ -860,7 +902,7 @@ struct ipac_preproc_ho_thresh {
 #endif
 }__attribute__ ((packed));
 
-/*! PC Threshold Comparators */
+/*! PC Threshold Comparators (RSL_IPAC_EIE_PC_THRESH_COMP) */
 struct ipac_preproc_pc_comp {
 #if OSMO_IS_LITTLE_ENDIAN
 	uint8_t p1:5, reserved_p1:3;
@@ -885,6 +927,30 @@ struct ipac_preproc_pc_comp {
 	uint8_t reserved_pc:3, pc_interval:5;
 	uint8_t inc_step_size:4, red_step_size:4;
 #endif
+}__attribute__ ((packed));
+
+/*! Osmocom extension for: PC Threshold Comparators (RSL_IPAC_EIE_OSMO_PC_THRESH_COMP) */
+struct ipac_preproc_pc_comp_field {
+#if OSMO_IS_LITTLE_ENDIAN
+	uint8_t lower_p:5, reserved_lower_p:3;
+	uint8_t lower_n:5, reserved_lower_n:3;
+	uint8_t upper_p:5, reserved_upper_p:3;
+	uint8_t upper_n:5, reserved_upper_n:3;
+#elif OSMO_IS_BIG_ENDIAN
+	uint8_t reserved_lower_p:3, lower_p:5;
+	uint8_t reserved_lower_n:3, lower_n:5;
+	uint8_t reserved_upper_p:3, upper_p:5;
+	uint8_t reserved_upper_n:3, upper_n:5;
+	#endif
+}__attribute__ ((packed));
+struct osmo_preproc_pc_comp {
+	/* Used for Carrier-to-Interference (C/I), in dB: */
+	struct ipac_preproc_pc_comp_field ci_fr;
+	struct ipac_preproc_pc_comp_field ci_hr;
+	struct ipac_preproc_pc_comp_field ci_amr_fr;
+	struct ipac_preproc_pc_comp_field ci_amr_hr;
+	struct ipac_preproc_pc_comp_field ci_sdcch;
+	struct ipac_preproc_pc_comp_field ci_gprs;
 }__attribute__ ((packed));
 
 /*! HO Threshold Comparators */
