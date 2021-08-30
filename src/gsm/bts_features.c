@@ -47,6 +47,7 @@ const struct value_string osmo_bts_features_descs[] = {
 	{ BTS_FEAT_ABIS_OSMO_PCU,	"OsmoPCU over OML link IPA multiplex" },
 	{ BTS_FEAT_BCCH_POWER_RED,	"BCCH carrier power reduction mode" },
 	{ BTS_FEAT_DYN_TS_SDCCH8,	"Dynamic Timeslot configuration as SDCCH8" },
+	{ BTS_FEAT_ACCH_TEMP_OVP,	"FACCH/SACCH Temporary overpower" },
 	{ 0, NULL }
 };
 

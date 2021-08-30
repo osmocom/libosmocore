@@ -32,6 +32,7 @@ enum osmo_bts_features {
 	BTS_FEAT_ABIS_OSMO_PCU, /* BTS supports forwarding data to PCUIF over IPA OML multiplex */
 	BTS_FEAT_BCCH_POWER_RED,
 	BTS_FEAT_DYN_TS_SDCCH8, /* Osmo Dynamic TS supports configured as SDCCH8 */
+	BTS_FEAT_ACCH_TEMP_OVP, /* FACCH/SACCH Temporary overpower */
 	_NUM_BTS_FEAT
 };
 
