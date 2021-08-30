@@ -139,6 +139,11 @@ struct abis_rsl_osmo_rep_acch_cap {
 #endif
 } __attribute__ ((packed));
 
+/* Osmocom specific IE to negotiate temporary overpower of ACCH channels */
+struct abis_rsl_osmo_temp_ovp_acch_cap {
+	uint8_t overpower_db;
+} __attribute__ ((packed));
+
 /* Chapter 9.1 */
 /* RSL Message Discriminator: RLL */
 #define ABIS_RSL_MDISC_RLL		0x02
@@ -362,6 +367,7 @@ enum abis_rsl_ie {
 	/* Osmocom specific */
 	RSL_IE_OSMO_REP_ACCH_CAP= 0x60,
 	RSL_IE_OSMO_TRAINING_SEQUENCE	= 0x61,
+	RSL_IE_OSMO_TEMP_OVP_ACCH_CAP	= 0x62,
 
 	/* ip.access */
 	RSL_IE_IPAC_SRTP_CONFIG	= 0xe0,
