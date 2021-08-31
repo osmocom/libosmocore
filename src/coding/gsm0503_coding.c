@@ -3007,7 +3007,7 @@ int gsm0503_tch_ahs_encode(ubit_t *bursts, const uint8_t *tch_data, int len,
 		return -1;
 	}
 
-	memcpy(cB, gsm0503_afs_ic_ubit[id], 4);
+	memcpy(cB, gsm0503_ahs_ic_ubit[id], 4);
 
 	gsm0503_tch_hr_interleave(cB, iB);
 
