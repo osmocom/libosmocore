@@ -123,19 +123,19 @@ struct abis_rsl_cchan_hdr {
 /* Osmocom specific IE to negotiate repeated ACCH capabilities */
 struct abis_rsl_osmo_rep_acch_cap {
 #if OSMO_IS_BIG_ENDIAN
-		uint8_t reserved:1,
-			rxqual:3,
-			ul_sacch:1,
-			dl_sacch:1,
-			dl_facch_all:1,
-			dl_facch_cmd:1;
+	uint8_t reserved:1,
+		rxqual:3,
+		ul_sacch:1,
+		dl_sacch:1,
+		dl_facch_all:1,
+		dl_facch_cmd:1;
 #elif OSMO_IS_LITTLE_ENDIAN
-		uint8_t dl_facch_cmd:1,
-			dl_facch_all:1,
-			dl_sacch:1,
-			ul_sacch:1,
-			rxqual:3,
-			reserved:1;
+	uint8_t dl_facch_cmd:1,
+		dl_facch_all:1,
+		dl_sacch:1,
+		ul_sacch:1,
+		rxqual:3,
+		reserved:1;
 #endif
 } __attribute__ ((packed));
 
