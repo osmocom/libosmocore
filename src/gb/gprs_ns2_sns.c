@@ -2326,8 +2326,7 @@ int ns2_sns_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp
 	/* FIXME: how to resolve SNS FSM Instance by NSEI (SGSN)? */
 	fi = nse->bss_sns_fi;
 	gss = (struct ns2_sns_state *) fi->priv;
-	if (!gss->sns_nsvc)
-		gss->sns_nsvc = nsvc;
+	gss->sns_nsvc = nsvc;
 
 	LOGPFSML(fi, LOGL_DEBUG, "NSEI=%u Rx SNS PDU type %s\n", nsei,
 		 get_value_string(gprs_ns_pdu_strings, nsh->pdu_type));
