@@ -1479,14 +1479,14 @@ void gprs_ns2_free_bind(struct gprs_ns2_vc_bind *bind)
 		return;
 
 	bind->freed = true;
-	llist_for_each_entry_safe(nsvc, tmp, &bind->nsvc, blist) {
-		gprs_ns2_free_nsvc(nsvc);
-	}
-
 	if (gprs_ns2_is_ip_bind(bind)) {
 		llist_for_each_entry(nse, &bind->nsi->nse, list) {
 			gprs_ns2_sns_del_bind(nse, bind);
 		}
+	}
+
+	llist_for_each_entry_safe(nsvc, tmp, &bind->nsvc, blist) {
+		gprs_ns2_free_nsvc(nsvc);
 	}
 
 	if (bind->driver->free_bind)
