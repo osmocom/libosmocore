@@ -2732,6 +2732,7 @@ static void ns2_clear_sgsn(struct ns2_sns_state *gss, struct gprs_ns2_vc *size_n
 	ns2_clear_procedures(gss);
 	ns2_clear_elems(&gss->local);
 	ns2_clear_elems(&gss->remote);
+	gss->block_no_nsvc_events = true;
 	llist_for_each_entry_safe(nsvc, nsvc2, &gss->nse->nsvc, list) {
 		/* Ignore the NSVC over which the SIZE PDU got received */
 		if (size_nsvc && size_nsvc == nsvc)
@@ -2739,6 +2740,7 @@ static void ns2_clear_sgsn(struct ns2_sns_state *gss, struct gprs_ns2_vc *size_n
 
 		gprs_ns2_free_nsvc(nsvc);
 	}
+	gss->block_no_nsvc_events = false;
 }
 
 static void ns2_sns_st_sgsn_unconfigured_onenter(struct osmo_fsm_inst *fi, uint32_t old_state)
