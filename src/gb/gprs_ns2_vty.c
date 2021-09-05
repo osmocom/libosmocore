@@ -1900,8 +1900,10 @@ static void dump_nse(struct vty *vty, const struct gprs_ns2_nse *nse, bool stats
 	if (persistent_only && !nse->persistent)
 		return;
 
-	vty_out(vty, "NSEI %05u: %s, %s%s", nse->nsei, gprs_ns2_lltype_str(nse->ll),
-		nse->alive ? "ALIVE" : "DEAD", VTY_NEWLINE);
+	vty_out(vty, "NSEI %05u: %s, %s since ", nse->nsei, gprs_ns2_lltype_str(nse->ll),
+		nse->alive ? "ALIVE" : "DEAD");
+	vty_out_uptime(vty, &nse->ts_alive_change);
+	vty_out_newline(vty);
 
 	ns2_sns_dump_vty(vty, " ", nse, stats);
 	llist_for_each_entry(nsvc, &nse->nsvc, list) {

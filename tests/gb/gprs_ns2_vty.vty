@@ -38,7 +38,7 @@ OsmoNSdummy(config-ns)# nse 1234
 OsmoNSdummy(config-ns-nse)# nsvc udp abc 127.0.0.15 9496
 OsmoNSdummy(config-ns-nse)# end
 OsmoNSdummy# show ns
-NSEI 01234: UDP, DEAD
+NSEI 01234: UDP, DEAD since 0d 0h 0m 0s
   1 NS-VC:
    RECOVERING PERSIST sig_weight=1 data_weight=1 udp)[127.0.0.14]:42999<>[127.0.0.15]:9496
 UDP bind: 127.0.0.14:42999 DSCP: 0 Priority: 0
@@ -52,7 +52,7 @@ OsmoNSdummy(config-ns-nse)# nsvc udp abc 127.0.0.16 9496 signalling-weight 0 dat
 OsmoNSdummy(config-ns-nse)# nsvc udp abc 127.0.0.17 9496 signalling-weight 0 data-weight 0
 OsmoNSdummy(config-ns-nse)# end
 OsmoNSdummy# show ns
-NSEI 01234: UDP, DEAD
+NSEI 01234: UDP, DEAD since 0d 0h 0m 0s
   3 NS-VC:
    RECOVERING PERSIST sig_weight=1 data_weight=1 udp)[127.0.0.14]:42999<>[127.0.0.15]:9496
    RECOVERING PERSIST sig_weight=0 data_weight=9 udp)[127.0.0.14]:42999<>[127.0.0.16]:9496

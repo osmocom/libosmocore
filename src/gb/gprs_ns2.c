@@ -838,6 +838,7 @@ struct gprs_ns2_nse *gprs_ns2_create_nse2(struct gprs_ns2_inst *nsi, uint16_t ns
 	nse->mtu = 0;
 	llist_add_tail(&nse->list, &nsi->nse);
 	INIT_LLIST_HEAD(&nse->nsvc);
+	osmo_clock_gettime(CLOCK_MONOTONIC, &nse->ts_alive_change);
 
 	return nse;
 }
@@ -1400,6 +1401,7 @@ void ns2_nse_notify_unblocked(struct gprs_ns2_vc *nsvc, bool unblocked)
 	/* wait until both data_weight and sig_weight are != 0 before declaring NSE as alive */
 	if (unblocked && nse->sum_data_weight && nse->sum_sig_weight) {
 		nse->alive = true;
+		osmo_clock_gettime(CLOCK_MONOTONIC, &nse->ts_alive_change);
 		ns2_prim_status_ind(nse, NULL, 0, GPRS_NS2_AFF_CAUSE_RECOVERY);
 		nse->first = false;
 		return;
@@ -1408,6 +1410,7 @@ void ns2_nse_notify_unblocked(struct gprs_ns2_vc *nsvc, bool unblocked)
 	if (nse->alive && (nse->sum_data_weight == 0 || nse->sum_sig_weight == 0)) {
 		/* nse became unavailable */
 		nse->alive = false;
+		osmo_clock_gettime(CLOCK_MONOTONIC, &nse->ts_alive_change);
 		ns2_prim_status_ind(nse, NULL, 0, GPRS_NS2_AFF_CAUSE_FAILURE);
 	}
 }

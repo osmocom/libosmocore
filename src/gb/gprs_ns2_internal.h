@@ -220,6 +220,9 @@ struct gprs_ns2_nse {
 
 	/*! recursive anchor */
 	bool freed;
+
+	/*! when the NSE became alive or dead */
+	struct timespec ts_alive_change;
 };
 
 /*! Structure representing a single NS-VC */
