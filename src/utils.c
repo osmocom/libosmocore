@@ -1405,4 +1405,98 @@ char *osmo_int_to_float_str_c(void *ctx, int64_t val, unsigned int precision)
 	OSMO_NAME_C_IMPL(ctx, 16, "ERROR", osmo_int_to_float_str_buf, val, precision)
 }
 
+/*! Convert a string of a number to int64_t, including all common strtoll() validity checks.
+ * It's not so trivial to call strtoll() and properly verify that the input string was indeed a valid number string.
+ * \param[out] result  Buffer for the resulting integer number, or NULL if the caller is only interested in the
+ *                     validation result (returned rc).
+ * \param[in] str  The string to convert.
+ * \param[in] base  The integer base, i.e. 10 for decimal numbers or 16 for hexadecimal, as in strtoll().
+ * \param[in] min_val  The smallest valid number expected in the string.
+ * \param[in] max_val  The largest valid number expected in the string.
+ * \return 0 on success, -EOVERFLOW if the number in the string exceeds int64_t, -ENOTSUPP if the base is not supported,
+ * -ERANGE if the converted number exceeds the range [min_val..max_val] but is still within int64_t range, -E2BIG if
+ * surplus characters follow after the number, -EINVAL if the string does not contain a number. In case of -ERANGE and
+ * -E2BIG, the converted number is still accurately returned in result. In case of -EOVERFLOW, the returned value is
+ * clamped to INT64_MIN..INT64_MAX.
+ */
+int osmo_str_to_int64(int64_t *result, const char *str, int base, int64_t min_val, int64_t max_val)
+{
+	long long int val;
+	char *endptr;
+	if (result)
+		*result = 0;
+	if (!str || !*str)
+		return -EINVAL;
+	errno = 0;
+	val = strtoll(str, &endptr, base);
+	/* In case the number string exceeds long long int range, strtoll() clamps the returned value to LLONG_MIN or
+	 * LLONG_MAX. Make sure of the same here with respect to int64_t. */
+	if (val < INT64_MIN) {
+		if (result)
+			*result = INT64_MIN;
+		return -ERANGE;
+	}
+	if (val > INT64_MAX) {
+		if (result)
+			*result = INT64_MAX;
+		return -ERANGE;
+	}
+	if (result)
+		*result = (int64_t)val;
+	switch (errno) {
+	case 0:
+		break;
+	case ERANGE:
+		return -EOVERFLOW;
+	default:
+	case EINVAL:
+		return -ENOTSUP;
+	}
+	if (!endptr || *endptr) {
+		/* No chars were converted */
+		if (endptr == str)
+			return -EINVAL;
+		/* Or there are surplus chars after the converted number */
+		return -E2BIG;
+	}
+	if (val < min_val || val > max_val)
+		return -ERANGE;
+	return 0;
+}
+
+/*! Convert a string of a number to int, including all common strtoll() validity checks.
+ * Same as osmo_str_to_int64() but using the plain int data type.
+ * \param[out] result  Buffer for the resulting integer number, or NULL if the caller is only interested in the
+ *                     validation result (returned rc).
+ * \param[in] str  The string to convert.
+ * \param[in] base  The integer base, i.e. 10 for decimal numbers or 16 for hexadecimal, as in strtoll().
+ * \param[in] min_val  The smallest valid number expected in the string.
+ * \param[in] max_val  The largest valid number expected in the string.
+ * \return 0 on success, -EOVERFLOW if the number in the string exceeds int range, -ENOTSUPP if the base is not supported,
+ * -ERANGE if the converted number exceeds the range [min_val..max_val] but is still within int range, -E2BIG if
+ * surplus characters follow after the number, -EINVAL if the string does not contain a number. In case of -ERANGE and
+ * -E2BIG, the converted number is still accurately returned in result. In case of -EOVERFLOW, the returned value is
+ * clamped to INT_MIN..INT_MAX.
+ */
+int osmo_str_to_int(int *result, const char *str, int base, int min_val, int max_val)
+{
+	int64_t val;
+	int rc = osmo_str_to_int64(&val, str, base, min_val, max_val);
+	/* In case the number string exceeds long long int range, strtoll() clamps the returned value to LLONG_MIN or
+	 * LLONG_MAX. Make sure of the same here with respect to int. */
+	if (val < INT_MIN) {
+		if (result)
+			*result = INT_MIN;
+		return -EOVERFLOW;
+	}
+	if (val > INT_MAX) {
+		if (result)
+			*result = INT_MAX;
+		return -EOVERFLOW;
+	}
+	if (result)
+		*result = (int)val;
+	return rc;
+}
+
 /*! @} */

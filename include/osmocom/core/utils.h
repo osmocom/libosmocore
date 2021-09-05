@@ -283,6 +283,9 @@ int osmo_float_str_to_int(int64_t *val, const char *str, unsigned int precision)
 int osmo_int_to_float_str_buf(char *buf, size_t buflen, int64_t val, unsigned int precision);
 char *osmo_int_to_float_str_c(void *ctx, int64_t val, unsigned int precision);
 
+int osmo_str_to_int64(int64_t *result, const char *str, int base, int64_t min_val, int64_t max_val);
+int osmo_str_to_int(int *result, const char *str, int base, int min_val, int max_val);
+
 /*! Translate a buffer function to a talloc context function.
  * This is the full function body of a char *foo_name_c(void *ctx, val...) function, implemented by an
  * int foo_name_buf(buf, buflen, val...) function:

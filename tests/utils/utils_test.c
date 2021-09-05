@@ -1694,11 +1694,18 @@ struct float_str_to_int_test float_str_to_int_tests[] = {
 };
 const char *errno_str(int rc)
 {
-	if (rc == -EINVAL)
+	switch (rc) {
+	case -EINVAL:
 		return "=-EINVAL";
-	if (rc == -ERANGE)
+	case -ERANGE:
 		return "=-ERANGE";
-	return "";
+	case -E2BIG:
+		return "=-E2BIG";
+	case -EOVERFLOW:
+		return "=-EOVERFLOW";
+	default:
+		return "";
+	}
 }
 void test_float_str_to_int()
 {
@@ -1884,6 +1891,190 @@ void test_int_to_float_str()
 	}
 }
 
+struct str_to_int_test {
+	const char *str;
+	int base;
+	int min_val;
+	int max_val;
+	int expect_rc;
+	int expect_val;
+};
+/* Avoid using INT_MAX and INT_MIN because that would produce different test output on different architectures */
+struct str_to_int_test str_to_int_tests[] = {
+	{ NULL, 10, -1000, 1000, -EINVAL, 0 },
+	{ "", 10, -1000, 1000, -EINVAL, 0 },
+	{ " ", 10, -1000, 1000, -EINVAL, 0 },
+	{ "-", 10, -1000, 1000, -EINVAL, 0 },
+	{ "--", 10, -1000, 1000, -EINVAL, 0 },
+	{ "+", 10, -1000, 1000, -EINVAL, 0 },
+	{ "++", 10, -1000, 1000, -EINVAL, 0 },
+
+	{ "0", 10, -1000, 1000, 0, 0 },
+	{ "1", 10, -1000, 1000, 0, 1 },
+	{ "+1", 10, -1000, 1000, 0, 1 },
+	{ "-1", 10, -1000, 1000, 0, -1 },
+	{ "1000", 10, -1000, 1000, 0, 1000 },
+	{ "+1000", 10, -1000, 1000, 0, 1000 },
+	{ "-1000", 10, -1000, 1000, 0, -1000 },
+	{ "1001", 10, -1000, 1000, -ERANGE, 1001 },
+	{ "+1001", 10, -1000, 1000, -ERANGE, 1001 },
+	{ "-1001", 10, -1000, 1000, -ERANGE, -1001 },
+
+	{ "0", 16, -1000, 1000, 0, 0 },
+	{ "1", 16, -1000, 1000, 0, 1 },
+	{ "0x1", 16, -1000, 1000, 0, 1 },
+	{ "+1", 16, -1000, 1000, 0, 1 },
+	{ "-1", 16, -1000, 1000, 0, -1 },
+	{ "+0x1", 16, -1000, 1000, 0, 1 },
+	{ "-0x1", 16, -1000, 1000, 0, -1 },
+	{ "3e8", 16, -1000, 1000, 0, 1000 },
+	{ "3E8", 16, -1000, 1000, 0, 1000 },
+	{ "0x3e8", 16, -1000, 1000, 0, 1000 },
+	{ "0x3E8", 16, -1000, 1000, 0, 1000 },
+	{ "+3e8", 16, -1000, 1000, 0, 1000 },
+	{ "+3E8", 16, -1000, 1000, 0, 1000 },
+	{ "+0x3e8", 16, -1000, 1000, 0, 1000 },
+	{ "+0x3E8", 16, -1000, 1000, 0, 1000 },
+	{ "-3e8", 16, -1000, 1000, 0, -1000 },
+	{ "-3E8", 16, -1000, 1000, 0, -1000 },
+	{ "-0x3e8", 16, -1000, 1000, 0, -1000 },
+	{ "-0x3E8", 16, -1000, 1000, 0, -1000 },
+	{ "3e9", 16, -1000, 1000, -ERANGE, 1001 },
+	{ "3E9", 16, -1000, 1000, -ERANGE, 1001 },
+	{ "0x3e9", 16, -1000, 1000, -ERANGE, 1001 },
+	{ "0x3E9", 16, -1000, 1000, -ERANGE, 1001 },
+	{ "+3e9", 16, -1000, 1000, -ERANGE, 1001 },
+	{ "+3E9", 16, -1000, 1000, -ERANGE, 1001 },
+	{ "+0x3e9", 16, -1000, 1000, -ERANGE, 1001 },
+	{ "+0x3E9", 16, -1000, 1000, -ERANGE, 1001 },
+	{ "-3e9", 16, -1000, 1000, -ERANGE, -1001 },
+	{ "-3E9", 16, -1000, 1000, -ERANGE, -1001 },
+	{ "-0x3e9", 16, -1000, 1000, -ERANGE, -1001 },
+	{ "-0x3E9", 16, -1000, 1000, -ERANGE, -1001 },
+
+	{ "garble", 10, -1000, 1000, -EINVAL, 0 },
+	{ "-garble", 10, -1000, 1000, -EINVAL, 0 },
+	{ "0x123", 10, -1000, 1000, -E2BIG, 0 },
+	{ "123potatoes", 10, -1000, 1000, -E2BIG, 123 },
+	{ "123 potatoes", 10, -1000, 1000, -E2BIG, 123 },
+	{ "123 ", 10, -1000, 1000, -E2BIG, 123 },
+	{ "123.4", 10, -1000, 1000, -E2BIG, 123 },
+};
+void test_str_to_int()
+{
+	const struct str_to_int_test *t;
+	printf("--- %s\n", __func__);
+	for (t = str_to_int_tests; (t - str_to_int_tests) < ARRAY_SIZE(str_to_int_tests); t++) {
+		int rc;
+		int val;
+		rc = osmo_str_to_int(&val, t->str, t->base, t->min_val, t->max_val);
+		printf("osmo_str_to_int(%s, %d, %d, %d) -> rc=%d%s val=%d\n",
+		       osmo_quote_str(t->str, -1), t->base, t->min_val, t->max_val, rc, errno_str(rc), val);
+
+		if (rc != t->expect_rc)
+			printf("  ERROR: expected rc=%d%s\n", t->expect_rc, errno_str(t->expect_rc));
+		if (val != t->expect_val)
+			printf("  ERROR: expected val=%d\n", t->expect_val);
+	}
+}
+
+struct str_to_int64_test {
+	const char *str;
+	int base;
+	int64_t min_val;
+	int64_t max_val;
+	int expect_rc;
+	int64_t expect_val;
+};
+struct str_to_int64_test str_to_int64_tests[] = {
+	{ NULL, 10, -1000, 1000, -EINVAL, 0 },
+	{ "", 10, -1000, 1000, -EINVAL, 0 },
+	{ " ", 10, -1000, 1000, -EINVAL, 0 },
+	{ "-", 10, -1000, 1000, -EINVAL, 0 },
+	{ "--", 10, -1000, 1000, -EINVAL, 0 },
+	{ "+", 10, -1000, 1000, -EINVAL, 0 },
+	{ "++", 10, -1000, 1000, -EINVAL, 0 },
+
+	{ "0", 10, -1000, 1000, 0, 0 },
+	{ "1", 10, -1000, 1000, 0, 1 },
+	{ "+1", 10, -1000, 1000, 0, 1 },
+	{ "-1", 10, -1000, 1000, 0, -1 },
+	{ "1000", 10, -1000, 1000, 0, 1000 },
+	{ "+1000", 10, -1000, 1000, 0, 1000 },
+	{ "-1000", 10, -1000, 1000, 0, -1000 },
+	{ "1001", 10, -1000, 1000, -ERANGE, 1001 },
+	{ "+1001", 10, -1000, 1000, -ERANGE, 1001 },
+	{ "-1001", 10, -1000, 1000, -ERANGE, -1001 },
+
+	{ "0", 16, -1000, 1000, 0, 0 },
+	{ "1", 16, -1000, 1000, 0, 1 },
+	{ "0x1", 16, -1000, 1000, 0, 1 },
+	{ "+1", 16, -1000, 1000, 0, 1 },
+	{ "-1", 16, -1000, 1000, 0, -1 },
+	{ "+0x1", 16, -1000, 1000, 0, 1 },
+	{ "-0x1", 16, -1000, 1000, 0, -1 },
+	{ "3e8", 16, -1000, 1000, 0, 1000 },
+	{ "3E8", 16, -1000, 1000, 0, 1000 },
+	{ "0x3e8", 16, -1000, 1000, 0, 1000 },
+	{ "0x3E8", 16, -1000, 1000, 0, 1000 },
+	{ "+3e8", 16, -1000, 1000, 0, 1000 },
+	{ "+3E8", 16, -1000, 1000, 0, 1000 },
+	{ "+0x3e8", 16, -1000, 1000, 0, 1000 },
+	{ "+0x3E8", 16, -1000, 1000, 0, 1000 },
+	{ "-3e8", 16, -1000, 1000, 0, -1000 },
+	{ "-3E8", 16, -1000, 1000, 0, -1000 },
+	{ "-0x3e8", 16, -1000, 1000, 0, -1000 },
+	{ "-0x3E8", 16, -1000, 1000, 0, -1000 },
+	{ "3e9", 16, -1000, 1000, -ERANGE, 1001 },
+	{ "3E9", 16, -1000, 1000, -ERANGE, 1001 },
+	{ "0x3e9", 16, -1000, 1000, -ERANGE, 1001 },
+	{ "0x3E9", 16, -1000, 1000, -ERANGE, 1001 },
+	{ "+3e9", 16, -1000, 1000, -ERANGE, 1001 },
+	{ "+3E9", 16, -1000, 1000, -ERANGE, 1001 },
+	{ "+0x3e9", 16, -1000, 1000, -ERANGE, 1001 },
+	{ "+0x3E9", 16, -1000, 1000, -ERANGE, 1001 },
+	{ "-3e9", 16, -1000, 1000, -ERANGE, -1001 },
+	{ "-3E9", 16, -1000, 1000, -ERANGE, -1001 },
+	{ "-0x3e9", 16, -1000, 1000, -ERANGE, -1001 },
+	{ "-0x3E9", 16, -1000, 1000, -ERANGE, -1001 },
+
+	{ "garble", 10, -1000, 1000, -EINVAL, 0 },
+	{ "-garble", 10, -1000, 1000, -EINVAL, 0 },
+	{ "0x123", 10, -1000, 1000, -E2BIG, 0 },
+	{ "123potatoes", 10, -1000, 1000, -E2BIG, 123 },
+	{ "123 potatoes", 10, -1000, 1000, -E2BIG, 123 },
+	{ "123 ", 10, -1000, 1000, -E2BIG, 123 },
+	{ "123.4", 10, -1000, 1000, -E2BIG, 123 },
+
+	{ "-9223372036854775808", 10, INT64_MIN, INT64_MAX, 0, INT64_MIN },
+	{ "9223372036854775807", 10, INT64_MIN, INT64_MAX, 0, INT64_MAX },
+
+	{ "-9223372036854775809", 10, INT64_MIN, INT64_MAX, -EOVERFLOW, INT64_MIN },
+	{ "9223372036854775808", 10, INT64_MIN, INT64_MAX, -EOVERFLOW, INT64_MAX },
+
+	{ "-9223372036854775808", 10, -1000, 1000, -ERANGE, INT64_MIN },
+	{ "9223372036854775807", 10, -1000, 1000, -ERANGE, INT64_MAX },
+	{ "-9223372036854775809", 10, -1000, 1000, -EOVERFLOW, INT64_MIN },
+	{ "9223372036854775808", 10, -1000, 1000, -EOVERFLOW, INT64_MAX },
+};
+void test_str_to_int64()
+{
+	const struct str_to_int64_test *t;
+	printf("--- %s\n", __func__);
+	for (t = str_to_int64_tests; (t - str_to_int64_tests) < ARRAY_SIZE(str_to_int64_tests); t++) {
+		int rc;
+		int64_t val;
+		rc = osmo_str_to_int64(&val, t->str, t->base, t->min_val, t->max_val);
+		printf("osmo_str_to_int64(%s, %d, %"PRId64", %"PRId64") -> rc=%d%s val=%"PRId64"\n",
+		       osmo_quote_str(t->str, -1), t->base, t->min_val, t->max_val, rc, errno_str(rc), val);
+
+		if (rc != t->expect_rc)
+			printf("  ERROR: expected rc=%d%s\n", t->expect_rc, errno_str(t->expect_rc));
+		if (val != t->expect_val)
+			printf("  ERROR: expected val=%"PRId64"\n", t->expect_val);
+	}
+}
+
 int main(int argc, char **argv)
 {
 	static const struct log_info log_info = {};
@@ -1911,5 +2102,7 @@ int main(int argc, char **argv)
 	osmo_strnchr_test();
 	test_float_str_to_int();
 	test_int_to_float_str();
+	test_str_to_int();
+	test_str_to_int64();
 	return 0;
 }

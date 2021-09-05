@@ -869,3 +869,123 @@ osmo_int_to_float_str_buf(-100000000, 23) -> rc=18 str="-0.000000000000001"
 osmo_int_to_float_str_buf(9223372036854775807, 23) -> rc=25 str="0.00009223372036854775807"
 osmo_int_to_float_str_buf(-9223372036854775807, 23) -> rc=26 str="-0.00009223372036854775807"
 osmo_int_to_float_str_buf(-9223372036854775808, 23) -> rc=4 str="-ERR"
+--- test_str_to_int
+osmo_str_to_int(NULL, 10, -1000, 1000) -> rc=-22=-EINVAL val=0
+osmo_str_to_int("", 10, -1000, 1000) -> rc=-22=-EINVAL val=0
+osmo_str_to_int(" ", 10, -1000, 1000) -> rc=-22=-EINVAL val=0
+osmo_str_to_int("-", 10, -1000, 1000) -> rc=-22=-EINVAL val=0
+osmo_str_to_int("--", 10, -1000, 1000) -> rc=-22=-EINVAL val=0
+osmo_str_to_int("+", 10, -1000, 1000) -> rc=-22=-EINVAL val=0
+osmo_str_to_int("++", 10, -1000, 1000) -> rc=-22=-EINVAL val=0
+osmo_str_to_int("0", 10, -1000, 1000) -> rc=0 val=0
+osmo_str_to_int("1", 10, -1000, 1000) -> rc=0 val=1
+osmo_str_to_int("+1", 10, -1000, 1000) -> rc=0 val=1
+osmo_str_to_int("-1", 10, -1000, 1000) -> rc=0 val=-1
+osmo_str_to_int("1000", 10, -1000, 1000) -> rc=0 val=1000
+osmo_str_to_int("+1000", 10, -1000, 1000) -> rc=0 val=1000
+osmo_str_to_int("-1000", 10, -1000, 1000) -> rc=0 val=-1000
+osmo_str_to_int("1001", 10, -1000, 1000) -> rc=-34=-ERANGE val=1001
+osmo_str_to_int("+1001", 10, -1000, 1000) -> rc=-34=-ERANGE val=1001
+osmo_str_to_int("-1001", 10, -1000, 1000) -> rc=-34=-ERANGE val=-1001
+osmo_str_to_int("0", 16, -1000, 1000) -> rc=0 val=0
+osmo_str_to_int("1", 16, -1000, 1000) -> rc=0 val=1
+osmo_str_to_int("0x1", 16, -1000, 1000) -> rc=0 val=1
+osmo_str_to_int("+1", 16, -1000, 1000) -> rc=0 val=1
+osmo_str_to_int("-1", 16, -1000, 1000) -> rc=0 val=-1
+osmo_str_to_int("+0x1", 16, -1000, 1000) -> rc=0 val=1
+osmo_str_to_int("-0x1", 16, -1000, 1000) -> rc=0 val=-1
+osmo_str_to_int("3e8", 16, -1000, 1000) -> rc=0 val=1000
+osmo_str_to_int("3E8", 16, -1000, 1000) -> rc=0 val=1000
+osmo_str_to_int("0x3e8", 16, -1000, 1000) -> rc=0 val=1000
+osmo_str_to_int("0x3E8", 16, -1000, 1000) -> rc=0 val=1000
+osmo_str_to_int("+3e8", 16, -1000, 1000) -> rc=0 val=1000
+osmo_str_to_int("+3E8", 16, -1000, 1000) -> rc=0 val=1000
+osmo_str_to_int("+0x3e8", 16, -1000, 1000) -> rc=0 val=1000
+osmo_str_to_int("+0x3E8", 16, -1000, 1000) -> rc=0 val=1000
+osmo_str_to_int("-3e8", 16, -1000, 1000) -> rc=0 val=-1000
+osmo_str_to_int("-3E8", 16, -1000, 1000) -> rc=0 val=-1000
+osmo_str_to_int("-0x3e8", 16, -1000, 1000) -> rc=0 val=-1000
+osmo_str_to_int("-0x3E8", 16, -1000, 1000) -> rc=0 val=-1000
+osmo_str_to_int("3e9", 16, -1000, 1000) -> rc=-34=-ERANGE val=1001
+osmo_str_to_int("3E9", 16, -1000, 1000) -> rc=-34=-ERANGE val=1001
+osmo_str_to_int("0x3e9", 16, -1000, 1000) -> rc=-34=-ERANGE val=1001
+osmo_str_to_int("0x3E9", 16, -1000, 1000) -> rc=-34=-ERANGE val=1001
+osmo_str_to_int("+3e9", 16, -1000, 1000) -> rc=-34=-ERANGE val=1001
+osmo_str_to_int("+3E9", 16, -1000, 1000) -> rc=-34=-ERANGE val=1001
+osmo_str_to_int("+0x3e9", 16, -1000, 1000) -> rc=-34=-ERANGE val=1001
+osmo_str_to_int("+0x3E9", 16, -1000, 1000) -> rc=-34=-ERANGE val=1001
+osmo_str_to_int("-3e9", 16, -1000, 1000) -> rc=-34=-ERANGE val=-1001
+osmo_str_to_int("-3E9", 16, -1000, 1000) -> rc=-34=-ERANGE val=-1001
+osmo_str_to_int("-0x3e9", 16, -1000, 1000) -> rc=-34=-ERANGE val=-1001
+osmo_str_to_int("-0x3E9", 16, -1000, 1000) -> rc=-34=-ERANGE val=-1001
+osmo_str_to_int("garble", 10, -1000, 1000) -> rc=-22=-EINVAL val=0
+osmo_str_to_int("-garble", 10, -1000, 1000) -> rc=-22=-EINVAL val=0
+osmo_str_to_int("0x123", 10, -1000, 1000) -> rc=-7=-E2BIG val=0
+osmo_str_to_int("123potatoes", 10, -1000, 1000) -> rc=-7=-E2BIG val=123
+osmo_str_to_int("123 potatoes", 10, -1000, 1000) -> rc=-7=-E2BIG val=123
+osmo_str_to_int("123 ", 10, -1000, 1000) -> rc=-7=-E2BIG val=123
+osmo_str_to_int("123.4", 10, -1000, 1000) -> rc=-7=-E2BIG val=123
+--- test_str_to_int64
+osmo_str_to_int64(NULL, 10, -1000, 1000) -> rc=-22=-EINVAL val=0
+osmo_str_to_int64("", 10, -1000, 1000) -> rc=-22=-EINVAL val=0
+osmo_str_to_int64(" ", 10, -1000, 1000) -> rc=-22=-EINVAL val=0
+osmo_str_to_int64("-", 10, -1000, 1000) -> rc=-22=-EINVAL val=0
+osmo_str_to_int64("--", 10, -1000, 1000) -> rc=-22=-EINVAL val=0
+osmo_str_to_int64("+", 10, -1000, 1000) -> rc=-22=-EINVAL val=0
+osmo_str_to_int64("++", 10, -1000, 1000) -> rc=-22=-EINVAL val=0
+osmo_str_to_int64("0", 10, -1000, 1000) -> rc=0 val=0
+osmo_str_to_int64("1", 10, -1000, 1000) -> rc=0 val=1
+osmo_str_to_int64("+1", 10, -1000, 1000) -> rc=0 val=1
+osmo_str_to_int64("-1", 10, -1000, 1000) -> rc=0 val=-1
+osmo_str_to_int64("1000", 10, -1000, 1000) -> rc=0 val=1000
+osmo_str_to_int64("+1000", 10, -1000, 1000) -> rc=0 val=1000
+osmo_str_to_int64("-1000", 10, -1000, 1000) -> rc=0 val=-1000
+osmo_str_to_int64("1001", 10, -1000, 1000) -> rc=-34=-ERANGE val=1001
+osmo_str_to_int64("+1001", 10, -1000, 1000) -> rc=-34=-ERANGE val=1001
+osmo_str_to_int64("-1001", 10, -1000, 1000) -> rc=-34=-ERANGE val=-1001
+osmo_str_to_int64("0", 16, -1000, 1000) -> rc=0 val=0
+osmo_str_to_int64("1", 16, -1000, 1000) -> rc=0 val=1
+osmo_str_to_int64("0x1", 16, -1000, 1000) -> rc=0 val=1
+osmo_str_to_int64("+1", 16, -1000, 1000) -> rc=0 val=1
+osmo_str_to_int64("-1", 16, -1000, 1000) -> rc=0 val=-1
+osmo_str_to_int64("+0x1", 16, -1000, 1000) -> rc=0 val=1
+osmo_str_to_int64("-0x1", 16, -1000, 1000) -> rc=0 val=-1
+osmo_str_to_int64("3e8", 16, -1000, 1000) -> rc=0 val=1000
+osmo_str_to_int64("3E8", 16, -1000, 1000) -> rc=0 val=1000
+osmo_str_to_int64("0x3e8", 16, -1000, 1000) -> rc=0 val=1000
+osmo_str_to_int64("0x3E8", 16, -1000, 1000) -> rc=0 val=1000
+osmo_str_to_int64("+3e8", 16, -1000, 1000) -> rc=0 val=1000
+osmo_str_to_int64("+3E8", 16, -1000, 1000) -> rc=0 val=1000
+osmo_str_to_int64("+0x3e8", 16, -1000, 1000) -> rc=0 val=1000
+osmo_str_to_int64("+0x3E8", 16, -1000, 1000) -> rc=0 val=1000
+osmo_str_to_int64("-3e8", 16, -1000, 1000) -> rc=0 val=-1000
+osmo_str_to_int64("-3E8", 16, -1000, 1000) -> rc=0 val=-1000
+osmo_str_to_int64("-0x3e8", 16, -1000, 1000) -> rc=0 val=-1000
+osmo_str_to_int64("-0x3E8", 16, -1000, 1000) -> rc=0 val=-1000
+osmo_str_to_int64("3e9", 16, -1000, 1000) -> rc=-34=-ERANGE val=1001
+osmo_str_to_int64("3E9", 16, -1000, 1000) -> rc=-34=-ERANGE val=1001
+osmo_str_to_int64("0x3e9", 16, -1000, 1000) -> rc=-34=-ERANGE val=1001
+osmo_str_to_int64("0x3E9", 16, -1000, 1000) -> rc=-34=-ERANGE val=1001
+osmo_str_to_int64("+3e9", 16, -1000, 1000) -> rc=-34=-ERANGE val=1001
+osmo_str_to_int64("+3E9", 16, -1000, 1000) -> rc=-34=-ERANGE val=1001
+osmo_str_to_int64("+0x3e9", 16, -1000, 1000) -> rc=-34=-ERANGE val=1001
+osmo_str_to_int64("+0x3E9", 16, -1000, 1000) -> rc=-34=-ERANGE val=1001
+osmo_str_to_int64("-3e9", 16, -1000, 1000) -> rc=-34=-ERANGE val=-1001
+osmo_str_to_int64("-3E9", 16, -1000, 1000) -> rc=-34=-ERANGE val=-1001
+osmo_str_to_int64("-0x3e9", 16, -1000, 1000) -> rc=-34=-ERANGE val=-1001
+osmo_str_to_int64("-0x3E9", 16, -1000, 1000) -> rc=-34=-ERANGE val=-1001
+osmo_str_to_int64("garble", 10, -1000, 1000) -> rc=-22=-EINVAL val=0
+osmo_str_to_int64("-garble", 10, -1000, 1000) -> rc=-22=-EINVAL val=0
+osmo_str_to_int64("0x123", 10, -1000, 1000) -> rc=-7=-E2BIG val=0
+osmo_str_to_int64("123potatoes", 10, -1000, 1000) -> rc=-7=-E2BIG val=123
+osmo_str_to_int64("123 potatoes", 10, -1000, 1000) -> rc=-7=-E2BIG val=123
+osmo_str_to_int64("123 ", 10, -1000, 1000) -> rc=-7=-E2BIG val=123
+osmo_str_to_int64("123.4", 10, -1000, 1000) -> rc=-7=-E2BIG val=123
+osmo_str_to_int64("-9223372036854775808", 10, -9223372036854775808, 9223372036854775807) -> rc=0 val=-9223372036854775808
+osmo_str_to_int64("9223372036854775807", 10, -9223372036854775808, 9223372036854775807) -> rc=0 val=9223372036854775807
+osmo_str_to_int64("-9223372036854775809", 10, -9223372036854775808, 9223372036854775807) -> rc=-75=-EOVERFLOW val=-9223372036854775808
+osmo_str_to_int64("9223372036854775808", 10, -9223372036854775808, 9223372036854775807) -> rc=-75=-EOVERFLOW val=9223372036854775807
+osmo_str_to_int64("-9223372036854775808", 10, -1000, 1000) -> rc=-34=-ERANGE val=-9223372036854775808
+osmo_str_to_int64("9223372036854775807", 10, -1000, 1000) -> rc=-34=-ERANGE val=9223372036854775807
+osmo_str_to_int64("-9223372036854775809", 10, -1000, 1000) -> rc=-75=-EOVERFLOW val=-9223372036854775808
+osmo_str_to_int64("9223372036854775808", 10, -1000, 1000) -> rc=-75=-EOVERFLOW val=9223372036854775807
