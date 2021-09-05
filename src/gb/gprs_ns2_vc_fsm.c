@@ -414,8 +414,10 @@ static void ns2_st_unblocked_on_enter(struct osmo_fsm_inst *fi, uint32_t old_sta
 	struct gprs_ns2_vc *nsvc = priv->nsvc;
 	struct gprs_ns2_nse *nse = nsvc->nse;
 
-	if (old_state != GPRS_NS2_ST_UNBLOCKED)
+	if (old_state != GPRS_NS2_ST_UNBLOCKED) {
 		RATE_CTR_INC_NS(nsvc, NS_CTR_UNBLOCKED);
+		osmo_clock_gettime(CLOCK_MONOTONIC, &nsvc->ts_alive_change);
+	}
 
 	priv->accept_unitdata = true;
 	ns2_nse_notify_unblocked(nsvc, true);

@@ -270,6 +270,9 @@ struct gprs_ns2_vc {
 
 	/*! recursive anchor */
 	bool freed;
+
+	/*! when the NSVC became alive or dead */
+	struct timespec ts_alive_change;
 };
 
 /*! Structure repesenting a bind instance. E.g. IPv4 listen port. */

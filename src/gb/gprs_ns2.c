@@ -621,6 +621,7 @@ struct gprs_ns2_vc *ns2_vc_alloc(struct gprs_ns2_vc_bind *bind, struct gprs_ns2_
 
 	llist_add_tail(&nsvc->list, &nse->nsvc);
 	llist_add_tail(&nsvc->blist, &bind->nsvc);
+	osmo_clock_gettime(CLOCK_MONOTONIC, &nsvc->ts_alive_change);
 	ns2_nse_update_mtu(nse);
 
 	return nsvc;
