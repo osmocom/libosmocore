@@ -438,6 +438,7 @@ static void ns2_st_unblocked(struct osmo_fsm_inst *fi, uint32_t event, void *dat
 		break;
 	case GPRS_NS2_EV_RX_BLOCK:
 		priv->initiate_block = false;
+		priv->accept_unitdata = false;
 		ns2_tx_block_ack(priv->nsvc);
 		osmo_fsm_inst_state_chg(fi, GPRS_NS2_ST_BLOCKED,
 					0, 2);
