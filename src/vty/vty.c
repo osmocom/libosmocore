@@ -66,6 +66,7 @@
 #include <osmocom/vty/command.h>
 #include <osmocom/vty/buffer.h>
 #include <osmocom/core/talloc.h>
+#include <osmocom/core/timer.h>
 #include <osmocom/core/utils.h>
 
 #ifndef MAXPATHLEN
@@ -336,6 +337,25 @@ int vty_out_newline(struct vty *vty)
 	const char *p = vty_newline(vty);
 	buffer_put(vty->obuf, p, strlen(p));
 	return 0;
+}
+
+/*! calculates the time difference of a give timespec to the current time
+ *  and prints in a human readable format (days, hours, minutes, seconds).
+ */
+int vty_out_uptime(struct vty *vty, const struct timespec *starttime)
+{
+	struct timespec now;
+	struct timespec uptime;
+
+	osmo_clock_gettime(CLOCK_MONOTONIC, &now);
+	timespecsub(&now, starttime, &uptime);
+
+	int d = uptime.tv_sec / (3600 * 24);
+	int h = uptime.tv_sec / 3600 % 24;
+	int m = uptime.tv_sec / 60 % 60;
+	int s = uptime.tv_sec % 60;
+
+	return vty_out(vty, "%dd %dh %dm %ds", d, h, m, s);
 }
 
 /*! return the current index of a given VTY */

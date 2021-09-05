@@ -3066,18 +3066,9 @@ DEFUN(show_pid,
 DEFUN(show_uptime,
       show_uptime_cmd, "show uptime", SHOW_STR "Displays how long the program has been running\n")
 {
-	struct timespec now;
-	struct timespec uptime;
-
-	osmo_clock_gettime(CLOCK_MONOTONIC, &now);
-	timespecsub(&now, &starttime, &uptime);
-
-	int d = uptime.tv_sec / (3600 * 24);
-	int h = uptime.tv_sec / 3600 % 24;
-	int m = uptime.tv_sec / 60 % 60;
-	int s = uptime.tv_sec % 60;
-
-	vty_out(vty, "%s has been running for %dd %dh %dm %ds%s", host.app_info->name, d, h, m, s, VTY_NEWLINE);
+	vty_out(vty, "%s has been running for ", host.app_info->name);
+	vty_out_uptime(vty, &starttime);
+	vty_out_newline(vty);
 
 	return CMD_SUCCESS;
 }

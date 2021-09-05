@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <stdbool.h>
+#include <time.h>
 
 #include <osmocom/core/linuxlist.h>
 #include <osmocom/core/defs.h>
@@ -219,6 +220,7 @@ bool vty_is_active(struct vty *vty);
 int vty_out (struct vty *, const char *, ...) VTY_PRINTF_ATTRIBUTE(2, 3);
 int vty_out_va(struct vty *vty, const char *format, va_list ap);
 int vty_out_newline(struct vty *);
+int vty_out_uptime(struct vty *vty, const struct timespec *starttime);
 int vty_read(struct vty *vty);
 //void vty_time_print (struct vty *, int);
 void vty_close (struct vty *);
