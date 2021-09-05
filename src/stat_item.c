@@ -333,6 +333,26 @@ struct osmo_stat_item_group *osmo_stat_item_get_group_by_name_idx(
 	return NULL;
 }
 
+/*! Search for item group based on group name and index's name.
+ *  \param[in] name Name of stats_item_group we want to find.
+ *  \param[in] idx_name Index of the group we want to find, by the index's name (osmo_stat_item_group->name).
+ *  \returns pointer to group, if found; NULL otherwise. */
+struct osmo_stat_item_group *osmo_stat_item_get_group_by_name_idxname(const char *group_name, const char *idx_name)
+{
+	struct osmo_stat_item_group *statg;
+
+	llist_for_each_entry(statg, &osmo_stat_item_groups, list) {
+		if (!statg->desc || !statg->name)
+			continue;
+		if (strcmp(statg->desc->group_name_prefix, group_name))
+			continue;
+		if (strcmp(statg->name, idx_name))
+			continue;
+		return statg;
+	}
+	return NULL;
+}
+
 /*! Search for item based on group + item name
  *  \param[in] statg group in which to search for the item
  *  \param[in] name name of item to search within \a statg

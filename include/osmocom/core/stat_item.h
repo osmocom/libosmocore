@@ -97,6 +97,7 @@ int osmo_stat_item_init(void *tall_ctx);
 
 struct osmo_stat_item_group *osmo_stat_item_get_group_by_name_idx(
 	const char *name, const unsigned int idx);
+struct osmo_stat_item_group *osmo_stat_item_get_group_by_name_idxname(const char *group_name, const char *idx_name);
 
 const struct osmo_stat_item *osmo_stat_item_get_by_name(
 	const struct osmo_stat_item_group *statg, const char *name);
