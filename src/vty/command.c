@@ -1349,7 +1349,6 @@ static enum match_type cmd_ipv6_prefix_match(const char *str)
 	int colons = 0, nums = 0, double_colon = 0;
 	int mask;
 	const char *sp = NULL;
-	char *endptr = NULL;
 
 	if (str == NULL)
 		return PARTLY_MATCH;
@@ -1447,11 +1446,7 @@ static enum match_type cmd_ipv6_prefix_match(const char *str)
 	if (state < STATE_MASK)
 		return PARTLY_MATCH;
 
-	mask = strtol(str, &endptr, 10);
-	if (*endptr != '\0')
-		return NO_MATCH;
-
-	if (mask < 0 || mask > 128)
+	if (osmo_str_to_int(&mask, str, 10, 0, 128))
 		return NO_MATCH;
 
 /* I don't know why mask < 13 makes command match partly.
@@ -3794,16 +3789,7 @@ DEFUN(config_terminal_length, config_terminal_length_cmd,
       "Set number of lines on a screen\n"
       "Number of lines on screen (0 for no pausing)\n")
 {
-	int lines;
-	char *endptr = NULL;
-
-	lines = strtol(argv[0], &endptr, 10);
-	if (lines < 0 || lines > 512 || *endptr != '\0') {
-		vty_out(vty, "length is malformed%s", VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-	vty->lines = lines;
-
+	vty->lines = atoi(argv[0]);
 	return CMD_SUCCESS;
 }
 
@@ -3822,16 +3808,7 @@ DEFUN(service_terminal_length, service_terminal_length_cmd,
       "System wide terminal length configuration\n"
       "Number of lines of VTY (0 means no line control)\n")
 {
-	int lines;
-	char *endptr = NULL;
-
-	lines = strtol(argv[0], &endptr, 10);
-	if (lines < 0 || lines > 512 || *endptr != '\0') {
-		vty_out(vty, "length is malformed%s", VTY_NEWLINE);
-		return CMD_WARNING;
-	}
-	host.lines = lines;
-
+	host.lines = atoi(argv[0]);
 	return CMD_SUCCESS;
 }
 

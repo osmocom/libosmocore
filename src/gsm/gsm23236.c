@@ -436,27 +436,13 @@ char *osmo_nri_ranges_to_str_c(void *ctx, const struct osmo_nri_ranges *nri_rang
  */
 static int osmo_nri_parse(int16_t *dst, const char *str)
 {
-	char *endp;
-	int64_t val;
+	int val;
 	int base = 10;
-
-	if (osmo_str_startswith(str, "0x")) {
-		str += 2;
+	if (osmo_str_startswith(str, "0x"))
 		base = 16;
-	}
-
-	if (!str || !str[0])
+	if (osmo_str_to_int(&val, str, base, 0, INT16_MAX))
 		return -1;
-
-	errno = 0;
-	val = strtoull(str, &endp, base);
-	if (errno || *endp != '\0')
-		return -1;
-
-	if (val < 0 || val > INT16_MAX)
-		return -1;
-
-	*dst = val;
+	*dst = (int16_t)val;
 	return 0;
 }
 

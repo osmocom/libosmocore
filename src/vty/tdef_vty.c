@@ -50,10 +50,9 @@
  */
 struct osmo_tdef *osmo_tdef_vty_parse_T_arg(struct vty *vty, struct osmo_tdef *tdefs, const char *T_str)
 {
-	long l;
+	int l;
 	int T;
 	struct osmo_tdef *t;
-	char *endptr;
 	const char *T_nr_str;
 	int sign = 1;
 
@@ -77,9 +76,7 @@ struct osmo_tdef *osmo_tdef_vty_parse_T_arg(struct vty *vty, struct osmo_tdef *t
 		return NULL;
 	}
 
-	errno = 0;
-	l = strtol(T_nr_str, &endptr, 10);
-	if (errno || *endptr || l > INT_MAX || l < 0) {
+	if (osmo_str_to_int(&l, T_nr_str, 10, 0, INT_MAX)) {
 		vty_out(vty, "%% Invalid T timer argument (should be 'T1234' or 'X1234'): '%s'%s", T_str, VTY_NEWLINE);
 		return NULL;
 	}

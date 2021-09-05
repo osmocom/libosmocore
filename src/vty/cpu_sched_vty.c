@@ -276,7 +276,6 @@ static bool proc_name_exists(const char *name, pid_t *res_pid)
 static enum sched_vty_thread_id procname2pid(pid_t *res_pid, const char *str, bool applynow)
 {
 	size_t i, len;
-	char *end;
 	bool is_pid = true;
 
 	if (strcmp(str, "all") == 0) {
@@ -297,12 +296,12 @@ static enum sched_vty_thread_id procname2pid(pid_t *res_pid, const char *str, bo
 		}
 	}
 	if (is_pid) {
-		errno = 0;
-		*res_pid = strtoul(str, &end, 0);
-		if ((errno == ERANGE && *res_pid == ULONG_MAX) || (errno && !*res_pid) ||
-		    str == end) {
+		int64_t val;
+		if (osmo_str_to_int64(&val, str, 0, 0, INT64_MAX))
 			return SCHED_VTY_THREAD_UNKNOWN;
-		}
+		*res_pid = (pid_t)val;
+		if (*res_pid != val)
+			return SCHED_VTY_THREAD_UNKNOWN;
 		if (!applynow || proc_tid_exists(*res_pid))
 			return SCHED_VTY_THREAD_ID;
 		else

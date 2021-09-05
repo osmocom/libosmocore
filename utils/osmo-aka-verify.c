@@ -123,6 +123,7 @@ static int handle_options(int argc, char **argv)
 	bool opc_is_set = false;
 	bool amf_is_set = false;
 	bool opc_is_op = false;
+	int64_t val64;
 
 	while (1) {
 		int c;
@@ -169,7 +170,8 @@ static int handle_options(int argc, char **argv)
 			amf_is_set = true;
 			break;
 		case 's':
-			g_sqn = strtoull(optarg, 0, 10);
+			rc = osmo_str_to_int64(&val64, optarg, 10, 0, INT64_MAX);
+			g_sqn = (unsigned long long)val64;
 			sqn_is_set = true;
 			break;
 		case 'r':

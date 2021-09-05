@@ -487,22 +487,23 @@ void osmo_plmn_from_bcd(const uint8_t *bcd_src, struct osmo_plmn_id *plmn)
  */
 int osmo_mnc_from_str(const char *mnc_str, uint16_t *mnc, bool *mnc_3_digits)
 {
-	long int _mnc = 0;
+	int _mnc = 0;
 	bool _mnc_3_digits = false;
-	char *endptr;
 	int rc = 0;
 
 	if (!mnc_str || !isdigit((unsigned char)mnc_str[0]) || strlen(mnc_str) > 3)
 		return -EINVAL;
 
-	errno = 0;
-	_mnc = strtol(mnc_str, &endptr, 10);
-	if (errno)
-		rc = -errno;
-	else if (*endptr)
+	rc = osmo_str_to_int(&_mnc, mnc_str, 10, 0, 999);
+	/* Heed the API definition to return -EINVAL in case of surplus chars */
+	if (rc == -E2BIG)
 		return -EINVAL;
-	if (_mnc < 0 || _mnc > 999)
-		return -ERANGE;
+	/* Heed the API definition to always return negative errno */
+	if (rc > 0)
+		return -rc;
+	if (rc < 0)
+		return rc;
+
 	_mnc_3_digits = strlen(mnc_str) > 2;
 
 	if (mnc)

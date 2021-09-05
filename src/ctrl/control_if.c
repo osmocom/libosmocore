@@ -84,20 +84,16 @@ static LLIST_HEAD(ctrl_lookup_helpers);
  *  \returns 1 on success; 0 in case of error */
 int ctrl_parse_get_num(vector vline, int i, long *num)
 {
-	char *token, *tmp;
+	char *token;
+	int64_t val;
 
 	if (i >= vector_active(vline))
 		return 0;
 	token = vector_slot(vline, i);
 
-	errno = 0;
-	if (token[0] == '\0')
+	if (osmo_str_to_int64(&val, token, 10, LONG_MIN, LONG_MAX))
 		return 0;
-
-	*num = strtol(token, &tmp, 10);
-	if (tmp[0] != '\0' || errno != 0)
-		return 0;
-
+	*num = (long)val;
 	return 1;
 }
 
