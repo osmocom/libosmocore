@@ -206,12 +206,18 @@ static int ns2_tx_simple(struct gprs_ns2_vc *nsvc, uint8_t pdu_type)
 /*! Transmit a NS-BLOCK on a given NS-VC.
  *  \param[in] vc NS-VC on which the NS-BLOCK is to be transmitted
  *  \param[in] cause Numeric NS Cause value
+ *  \param[in] nsvci if given this NSVCI will be encoded. If NULL the nsvc->nsvci will be used.
  *  \returns 0 in case of success */
-int ns2_tx_block(struct gprs_ns2_vc *nsvc, uint8_t cause)
+int ns2_tx_block(struct gprs_ns2_vc *nsvc, uint8_t cause, uint16_t *nsvci)
 {
 	struct msgb *msg;
 	struct gprs_ns_hdr *nsh;
-	uint16_t nsvci = osmo_htons(nsvc->nsvci);
+	uint16_t encoded_nsvci;
+
+	if (nsvci)
+		encoded_nsvci = osmo_htons(*nsvci);
+	else
+		encoded_nsvci = osmo_htons(nsvc->nsvci);
 
 	log_set_context(LOG_CTX_GB_NSE, nsvc->nse);
 	log_set_context(LOG_CTX_GB_NSVC, nsvc);
@@ -229,7 +235,7 @@ int ns2_tx_block(struct gprs_ns2_vc *nsvc, uint8_t cause)
 	nsh->pdu_type = NS_PDUT_BLOCK;
 
 	msgb_tvlv_put(msg, NS_IE_CAUSE, 1, &cause);
-	msgb_tvlv_put(msg, NS_IE_VCI, 2, (uint8_t *) &nsvci);
+	msgb_tvlv_put(msg, NS_IE_VCI, 2, (uint8_t *) &encoded_nsvci);
 
 	LOG_NS_SIGNAL(nsvc, "Tx", nsh->pdu_type, LOGL_INFO, " cause=%s\n", gprs_ns2_cause_str(cause));
 	return ns_vc_tx(nsvc, msg);
@@ -237,12 +243,18 @@ int ns2_tx_block(struct gprs_ns2_vc *nsvc, uint8_t cause)
 
 /*! Transmit a NS-BLOCK-ACK on a given NS-VC.
  *  \param[in] nsvc NS-VC on which the NS-BLOCK is to be transmitted
+ *  \param[in] nsvci if given this NSVCI will be encoded. If NULL the nsvc->nsvci will be used.
  *  \returns 0 in case of success */
-int ns2_tx_block_ack(struct gprs_ns2_vc *nsvc)
+int ns2_tx_block_ack(struct gprs_ns2_vc *nsvc, uint16_t *nsvci)
 {
 	struct msgb *msg;
 	struct gprs_ns_hdr *nsh;
-	uint16_t nsvci = osmo_htons(nsvc->nsvci);
+	uint16_t encoded_nsvci;
+
+	if (nsvci)
+		encoded_nsvci = osmo_htons(*nsvci);
+	else
+		encoded_nsvci = osmo_htons(nsvc->nsvci);
 
 	log_set_context(LOG_CTX_GB_NSE, nsvc->nse);
 	log_set_context(LOG_CTX_GB_NSVC, nsvc);
@@ -257,7 +269,7 @@ int ns2_tx_block_ack(struct gprs_ns2_vc *nsvc)
 	nsh = (struct gprs_ns_hdr *) msg->l2h;
 	nsh->pdu_type = NS_PDUT_BLOCK_ACK;
 
-	msgb_tvlv_put(msg, NS_IE_VCI, 2, (uint8_t *) &nsvci);
+	msgb_tvlv_put(msg, NS_IE_VCI, 2, (uint8_t *) &encoded_nsvci);
 
 	LOG_NS_TX_SIGNAL(nsvc, nsh->pdu_type);
 	return ns_vc_tx(nsvc, msg);

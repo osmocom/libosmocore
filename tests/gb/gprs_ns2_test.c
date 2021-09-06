@@ -439,7 +439,7 @@ void test_unitdata(void *ctx)
 
 	printf("---- Send Block NSVC[0]\n");
 	ns2_vc_block(nsvc[0]);
-	ns2_tx_block_ack(loop[0]);
+	ns2_tx_block_ack(loop[0], NULL);
 
 	/* try to receive a unitdata - this should be dropped & freed by NS */
 	printf("---- Try to receive over blocked NSVC[0]\n");

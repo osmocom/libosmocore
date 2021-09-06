@@ -422,8 +422,8 @@ int ns2_tx_sns_del(struct gprs_ns2_vc *nsvc,
 		   unsigned int num_ip6_elems);
 
 /* transmit message over a VC */
-int ns2_tx_block(struct gprs_ns2_vc *nsvc, uint8_t cause);
-int ns2_tx_block_ack(struct gprs_ns2_vc *nsvc);
+int ns2_tx_block(struct gprs_ns2_vc *nsvc, uint8_t cause, uint16_t *nsvci);
+int ns2_tx_block_ack(struct gprs_ns2_vc *nsvc, uint16_t *nsvci);
 
 int ns2_tx_reset(struct gprs_ns2_vc *nsvc, uint8_t cause);
 int ns2_tx_reset_ack(struct gprs_ns2_vc *nsvc);

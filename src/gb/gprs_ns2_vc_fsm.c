@@ -348,7 +348,7 @@ static void ns2_st_blocked_onenter(struct osmo_fsm_inst *fi, uint32_t old_state)
 		if (old_state == GPRS_NS2_ST_RESET) {
 			osmo_timer_del(&fi->timer);
 		} else {
-			ns2_tx_block(priv->nsvc, NS_CAUSE_OM_INTERVENTION);
+			ns2_tx_block(priv->nsvc, NS_CAUSE_OM_INTERVENTION, NULL);
 		}
 	} else if (priv->initiate_block) {
 		ns2_tx_unblock(priv->nsvc);
@@ -369,12 +369,12 @@ static void ns2_st_blocked(struct osmo_fsm_inst *fi, uint32_t event, void *data)
 			break;
 		case GPRS_NS2_EV_RX_BLOCK:
 			priv->accept_unitdata = false;
-			ns2_tx_block_ack(priv->nsvc);
+			ns2_tx_block_ack(priv->nsvc, NULL);
 			osmo_timer_del(&fi->timer);
 			break;
 		case GPRS_NS2_EV_RX_UNBLOCK:
 			priv->accept_unitdata = false;
-			ns2_tx_block(priv->nsvc, NS_CAUSE_OM_INTERVENTION);
+			ns2_tx_block(priv->nsvc, NS_CAUSE_OM_INTERVENTION, NULL);
 			osmo_timer_add(&fi->timer);
 			break;
 		}
@@ -382,7 +382,7 @@ static void ns2_st_blocked(struct osmo_fsm_inst *fi, uint32_t event, void *data)
 		switch (event) {
 		case GPRS_NS2_EV_RX_BLOCK:
 			/* TODO: BLOCK is a UNBLOCK_NACK */
-			ns2_tx_block_ack(priv->nsvc);
+			ns2_tx_block_ack(priv->nsvc, NULL);
 			break;
 		case GPRS_NS2_EV_RX_UNBLOCK:
 			ns2_tx_unblock_ack(priv->nsvc);
@@ -397,7 +397,7 @@ static void ns2_st_blocked(struct osmo_fsm_inst *fi, uint32_t event, void *data)
 		/* we are on the receiving end. The initiator who sent RESET is responsible to UNBLOCK! */
 		switch (event) {
 		case GPRS_NS2_EV_RX_BLOCK:
-			ns2_tx_block_ack(priv->nsvc);
+			ns2_tx_block_ack(priv->nsvc, NULL);
 			break;
 		case GPRS_NS2_EV_RX_UNBLOCK:
 			ns2_tx_unblock_ack(priv->nsvc);
@@ -441,7 +441,7 @@ static void ns2_st_unblocked(struct osmo_fsm_inst *fi, uint32_t event, void *dat
 	case GPRS_NS2_EV_RX_BLOCK:
 		priv->initiate_block = false;
 		priv->accept_unitdata = false;
-		ns2_tx_block_ack(priv->nsvc);
+		ns2_tx_block_ack(priv->nsvc, NULL);
 		osmo_fsm_inst_state_chg(fi, GPRS_NS2_ST_BLOCKED,
 					0, 2);
 		break;
