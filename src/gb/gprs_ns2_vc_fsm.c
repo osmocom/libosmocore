@@ -616,7 +616,9 @@ static void ns2_vc_fsm_allstate_action(struct osmo_fsm_inst *fi,
 {
 	struct gprs_ns2_vc_priv *priv = fi->priv;
 	struct gprs_ns2_inst *nsi = ns_inst_from_fi(fi);
+	struct tlv_parsed *tp;
 	struct msgb *msg = data;
+	uint8_t cause;
 
 	switch (event) {
 	case GPRS_NS2_EV_REQ_OM_RESET:
@@ -707,6 +709,27 @@ static void ns2_vc_fsm_allstate_action(struct osmo_fsm_inst *fi,
 		if (fi->state == GPRS_NS2_ST_BLOCKED)
 			osmo_fsm_inst_state_chg(fi, GPRS_NS2_ST_BLOCKED, nsi->timeout[NS_TOUT_TNS_BLOCK], 0);
 		break;
+	case GPRS_NS2_EV_RX_STATUS:
+		tp = data;
+		cause = tlvp_val8(tp, NS_IE_CAUSE, 0);
+		switch (cause) {
+		case NS_CAUSE_NSVC_BLOCKED:
+			if (fi->state != GPRS_NS2_ST_BLOCKED) {
+				LOG_NS_SIGNAL(priv->nsvc, "Rx", NS_PDUT_STATUS, LOGL_ERROR, ": remote side reported blocked state.\n");
+				priv->initiate_block = false;
+				priv->accept_unitdata = false;
+				osmo_fsm_inst_state_chg(fi, GPRS_NS2_ST_BLOCKED, nsi->timeout[NS_TOUT_TNS_BLOCK], 0);
+			}
+			break;
+		case NS_CAUSE_NSVC_UNKNOWN:
+			if (fi->state != GPRS_NS2_ST_RESET && fi->state != GPRS_NS2_ST_UNCONFIGURED) {
+				LOG_NS_SIGNAL(priv->nsvc, "Rx", NS_PDUT_STATUS, LOGL_ERROR, ": remote side reported unknown nsvc.\n");
+				osmo_fsm_inst_state_chg(fi, GPRS_NS2_ST_RESET, nsi->timeout[NS_TOUT_TNS_RESET], 0);
+			}
+			break;
+		}
+
+		break;
 	}
 }
 
@@ -726,6 +749,7 @@ static struct osmo_fsm ns2_vc_fsm = {
 			       S(GPRS_NS2_EV_RX_RESET) |
 			       S(GPRS_NS2_EV_RX_ALIVE) |
 			       S(GPRS_NS2_EV_RX_ALIVE_ACK) |
+			       S(GPRS_NS2_EV_RX_STATUS) |
 			       S(GPRS_NS2_EV_REQ_FORCE_UNCONFIGURED) |
 			       S(GPRS_NS2_EV_REQ_OM_RESET) |
 			       S(GPRS_NS2_EV_REQ_OM_BLOCK) |
@@ -894,6 +918,9 @@ int ns2_vc_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp)
 		/* UNITDATA have to free msg because it might send the msg layer upwards */
 		osmo_fsm_inst_dispatch(fi, GPRS_NS2_EV_RX_UNITDATA, msg);
 		return 0;
+	case NS_PDUT_STATUS:
+		osmo_fsm_inst_dispatch(fi, GPRS_NS2_EV_RX_STATUS, tp);
+		break;
 	default:
 		LOGPFSML(fi, LOGL_ERROR, "NSEI=%u Rx unknown NS PDU type %s\n", nsvc->nse->nsei,
 			 get_value_string(gprs_ns_pdu_strings, nsh->pdu_type));
