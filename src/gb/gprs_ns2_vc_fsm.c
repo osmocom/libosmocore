@@ -853,7 +853,7 @@ int ns2_vc_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp)
 		}
 	}
 
-	if (nsvc->nsvci_is_valid && TLVP_PRESENT(tp,  NS_IE_VCI)) {
+	if (nsvc->nsvci_is_valid && TLVP_PRESENT(tp, NS_IE_VCI)) {
 		nsvci = tlvp_val16be(tp, NS_IE_VCI);
 		if (nsvci != nsvc->nsvci) {
 			/* 48.016 § 7.3.1 send RESET_ACK to wrong NSVCI + ignore */
