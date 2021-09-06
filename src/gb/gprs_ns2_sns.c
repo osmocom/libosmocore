@@ -3021,7 +3021,9 @@ static void ns2_sns_st_all_action_sgsn(struct osmo_fsm_inst *fi, uint32_t event,
 			/* keep the NSVC we need for SNS, but unconfigure it */
 			gss->sns_nsvc->sig_weight = 0;
 			gss->sns_nsvc->data_weight = 0;
+			gss->block_no_nsvc_events = true;
 			ns2_vc_force_unconfigured(gss->sns_nsvc);
+			gss->block_no_nsvc_events = false;
 			ns2_sns_compute_local_ep_from_binds(fi);
 		}
 
