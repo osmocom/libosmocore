@@ -103,6 +103,11 @@ static int ns2_validate_status(struct gprs_ns2_vc *nsvc, struct msgb *msg, struc
 			*cause = NS_CAUSE_MISSING_ESSENT_IE;
 			return -1;
 		}
+
+		if (nsvc->mode != GPRS_NS2_VC_MODE_BLOCKRESET) {
+			*cause = NS_CAUSE_PDU_INCOMP_PSTATE;
+			return -1;
+		}
 		break;
 	case NS_CAUSE_SEM_INCORR_PDU:
 	case NS_CAUSE_PDU_INCOMP_PSTATE:
