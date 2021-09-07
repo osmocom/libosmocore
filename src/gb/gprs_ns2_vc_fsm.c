@@ -861,6 +861,7 @@ int ns2_vc_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp)
 	/* TODO: handle BLOCK/UNBLOCK/ALIVE with different VCI */
 
 	if (ns2_validate(nsvc, nsh->pdu_type, msg, tp, &cause)) {
+		/* don't answer on a STATUS with a STATUS */
 		if (nsh->pdu_type != NS_PDUT_STATUS) {
 			rc = ns2_tx_status(nsvc, cause, 0, msg);
 			goto out;
