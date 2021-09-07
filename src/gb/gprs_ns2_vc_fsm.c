@@ -118,6 +118,7 @@ enum gprs_ns2_vc_event {
 	GPRS_NS2_EV_REQ_OM_RESET,		/* vty cmd: reset */
 	GPRS_NS2_EV_REQ_OM_BLOCK,		/* vty cmd: block */
 	GPRS_NS2_EV_REQ_OM_UNBLOCK,		/* vty cmd: unblock*/
+	GPRS_NS2_EV_RX_BLOCK_FOREIGN,		/* received a BLOCK over another NSVC */
 };
 
 static const struct value_string ns2_vc_event_names[] = {
@@ -127,6 +128,7 @@ static const struct value_string ns2_vc_event_names[] = {
 	{ GPRS_NS2_EV_RX_UNBLOCK,		"RX-UNBLOCK" },
 	{ GPRS_NS2_EV_RX_UNBLOCK_ACK,		"RX-UNBLOCK_ACK" },
 	{ GPRS_NS2_EV_RX_BLOCK,			"RX-BLOCK" },
+	{ GPRS_NS2_EV_RX_BLOCK_FOREIGN,		"RX-BLOCK_FOREIGN" },
 	{ GPRS_NS2_EV_RX_BLOCK_ACK,		"RX-BLOCK_ACK" },
 	{ GPRS_NS2_EV_RX_ALIVE,			"RX-ALIVE" },
 	{ GPRS_NS2_EV_RX_ALIVE_ACK,		"RX-ALIVE_ACK" },
@@ -368,8 +370,12 @@ static void ns2_st_blocked(struct osmo_fsm_inst *fi, uint32_t event, void *data)
 			osmo_timer_del(&fi->timer);
 			break;
 		case GPRS_NS2_EV_RX_BLOCK:
-			priv->accept_unitdata = false;
 			ns2_tx_block_ack(priv->nsvc, NULL);
+			/* fall through */
+		case GPRS_NS2_EV_RX_BLOCK_FOREIGN:
+			/* the BLOCK ACK for foreign BLOCK PDUs (rx over another nsvc) will be sent
+			 * from the receiving nsvc */
+			priv->accept_unitdata = false;
 			osmo_timer_del(&fi->timer);
 			break;
 		case GPRS_NS2_EV_RX_UNBLOCK:
@@ -380,6 +386,9 @@ static void ns2_st_blocked(struct osmo_fsm_inst *fi, uint32_t event, void *data)
 		}
 	} else if (priv->initiate_block) {
 		switch (event) {
+		case GPRS_NS2_EV_RX_BLOCK_FOREIGN:
+			/* the block ack will be sent by the rx NSVC */
+			break;
 		case GPRS_NS2_EV_RX_BLOCK:
 			/* TODO: BLOCK is a UNBLOCK_NACK */
 			ns2_tx_block_ack(priv->nsvc, NULL);
@@ -396,6 +405,9 @@ static void ns2_st_blocked(struct osmo_fsm_inst *fi, uint32_t event, void *data)
 	} else {
 		/* we are on the receiving end. The initiator who sent RESET is responsible to UNBLOCK! */
 		switch (event) {
+		case GPRS_NS2_EV_RX_BLOCK_FOREIGN:
+			/* the block ack will be sent by the rx NSVC */
+			break;
 		case GPRS_NS2_EV_RX_BLOCK:
 			ns2_tx_block_ack(priv->nsvc, NULL);
 			break;
@@ -439,9 +451,13 @@ static void ns2_st_unblocked(struct osmo_fsm_inst *fi, uint32_t event, void *dat
 		ns2_tx_unblock_ack(priv->nsvc);
 		break;
 	case GPRS_NS2_EV_RX_BLOCK:
+		ns2_tx_block_ack(priv->nsvc, NULL);
+		/* fall through */
+	case GPRS_NS2_EV_RX_BLOCK_FOREIGN:
+		/* the BLOCK ACK for foreign BLOCK PDUs (rx over another nsvc) will be sent
+		 * from the receiving nsvc */
 		priv->initiate_block = false;
 		priv->accept_unitdata = false;
-		ns2_tx_block_ack(priv->nsvc, NULL);
 		osmo_fsm_inst_state_chg(fi, GPRS_NS2_ST_BLOCKED,
 					0, 2);
 		break;
@@ -493,7 +509,8 @@ static const struct osmo_fsm_state ns2_vc_states[] = {
 	},
 	[GPRS_NS2_ST_BLOCKED] = {
 		.in_event_mask = S(GPRS_NS2_EV_RX_BLOCK) | S(GPRS_NS2_EV_RX_BLOCK_ACK) |
-		S(GPRS_NS2_EV_RX_UNBLOCK) | S(GPRS_NS2_EV_RX_UNBLOCK_ACK),
+				 S(GPRS_NS2_EV_RX_UNBLOCK) | S(GPRS_NS2_EV_RX_UNBLOCK_ACK) |
+				 S(GPRS_NS2_EV_RX_BLOCK_FOREIGN),
 		.out_state_mask = S(GPRS_NS2_ST_RESET) |
 				  S(GPRS_NS2_ST_UNBLOCKED) |
 				  S(GPRS_NS2_ST_BLOCKED) |
@@ -504,7 +521,7 @@ static const struct osmo_fsm_state ns2_vc_states[] = {
 	},
 	[GPRS_NS2_ST_UNBLOCKED] = {
 		.in_event_mask = S(GPRS_NS2_EV_RX_BLOCK) | S(GPRS_NS2_EV_RX_UNBLOCK_ACK) |
-				 S(GPRS_NS2_EV_RX_UNBLOCK),
+				 S(GPRS_NS2_EV_RX_UNBLOCK) | S(GPRS_NS2_EV_RX_BLOCK_FOREIGN),
 		.out_state_mask = S(GPRS_NS2_ST_RESET) | S(GPRS_NS2_ST_RECOVERING) |
 				  S(GPRS_NS2_ST_BLOCKED) |
 				  S(GPRS_NS2_ST_UNCONFIGURED),
@@ -889,20 +906,24 @@ int ns2_vc_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp)
 				ns2_tx_reset_ack(nsvc);
 				LOG_NS_SIGNAL(nsvc, "Rx", nsh->pdu_type, LOGL_ERROR, " with wrong NSVCI (exp: %05u, got %05u). Ignoring PDU.\n", nsvc->nsvci, nsvci);
 				goto out;
-			} else if (nsh->pdu_type == NS_PDUT_STATUS) {
-				/* this is a PDU received over a NSVC and reports a status for another NSVC */
+			} else if (nsh->pdu_type == NS_PDUT_BLOCK || nsh->pdu_type == NS_PDUT_STATUS) {
+				/* this is a PDU received over a NSVC and reports a status/block for another NSVC */
 				target_nsvc = gprs_ns2_nsvc_by_nsvci(nsvc->nse->nsi,  nsvci);
 				if (!target_nsvc) {
-					LOGPFSML(fi, LOGL_ERROR, "Received a STATUS PDU for unknown NSVC (NSVCI %d)\n", nsvci);
+					LOGPFSML(fi, LOGL_ERROR, "Received a %s PDU for unknown NSVC (NSVCI %d)\n",
+						 get_value_string(gprs_ns_pdu_strings, nsh->pdu_type), nsvci);
+					if (nsh->pdu_type == NS_PDUT_BLOCK)
+						ns2_tx_status(nsvc, NS_CAUSE_NSVC_UNKNOWN, 0, msg, &nsvci);
 					goto out;
 				}
 
 				if (target_nsvc->nse != nsvc->nse) {
-					LOGPFSML(fi, LOGL_ERROR, "Received a STATUS PDU for a NSVC (NSVCI %d) but it belongs to a different NSE!\n", nsvci);
+					LOGPFSML(fi, LOGL_ERROR, "Received a %s PDU for a NSVC (NSVCI %d) but it belongs to a different NSE!\n",
+						 get_value_string(gprs_ns_pdu_strings, nsh->pdu_type), nsvci);
 					goto out;
 				}
 
-				/* the status will be passed to the nsvc/target nsvc in the switch */
+				/* the status/block will be passed to the nsvc/target nsvc in the switch */
 			} else {
 				LOG_NS_SIGNAL(nsvc, "Rx", nsh->pdu_type, LOGL_ERROR, " with wrong NSVCI=%05u. Ignoring PDU.\n", nsvci);
 				goto out;
@@ -918,7 +939,12 @@ int ns2_vc_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp)
 		osmo_fsm_inst_dispatch(fi, GPRS_NS2_EV_RX_RESET_ACK, tp);
 		break;
 	case NS_PDUT_BLOCK:
-		osmo_fsm_inst_dispatch(fi, GPRS_NS2_EV_RX_BLOCK, tp);
+		if (target_nsvc != nsvc) {
+			osmo_fsm_inst_dispatch(target_nsvc->fi, GPRS_NS2_EV_RX_BLOCK_FOREIGN, tp);
+			ns2_tx_block_ack(nsvc, &nsvci);
+		} else {
+			osmo_fsm_inst_dispatch(fi, GPRS_NS2_EV_RX_BLOCK, tp);
+		}
 		break;
 	case NS_PDUT_BLOCK_ACK:
 		osmo_fsm_inst_dispatch(fi, GPRS_NS2_EV_RX_BLOCK_ACK, tp);
