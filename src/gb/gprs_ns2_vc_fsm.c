@@ -851,6 +851,7 @@ int ns2_vc_reset(struct gprs_ns2_vc *nsvc)
 int ns2_vc_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp)
 {
 	struct gprs_ns_hdr *nsh = (struct gprs_ns_hdr *) msg->l2h;
+	struct gprs_ns2_vc *target_nsvc = nsvc;
 	struct osmo_fsm_inst *fi = nsvc->fi;
 	int rc = 0;
 	uint8_t cause;
@@ -884,11 +885,26 @@ int ns2_vc_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp)
 		nsvci = tlvp_val16be(tp, NS_IE_VCI);
 		if (nsvci != nsvc->nsvci) {
 			/* 48.016 § 7.3.1 send RESET_ACK to wrong NSVCI + ignore */
-			if (nsh->pdu_type == NS_PDUT_RESET)
+			if (nsh->pdu_type == NS_PDUT_RESET) {
 				ns2_tx_reset_ack(nsvc);
+			} else if (nsh->pdu_type == NS_PDUT_STATUS) {
+				/* this is a PDU received over a NSVC and reports a status for another NSVC */
+				target_nsvc = gprs_ns2_nsvc_by_nsvci(nsvc->nse->nsi,  nsvci);
+				if (!target_nsvc) {
+					LOGPFSML(fi, LOGL_ERROR, "Received a STATUS PDU for unknown NSVC (NSVCI %d)\n", nsvci);
+					goto out;
+				}
 
-			LOG_NS_SIGNAL(nsvc, "Rx", nsh->pdu_type, LOGL_ERROR, " with wrong NSVCI=%05u. Ignoring PDU.\n", nsvci);
-			goto out;
+				if (target_nsvc->nse != nsvc->nse) {
+					LOGPFSML(fi, LOGL_ERROR, "Received a STATUS PDU for a NSVC (NSVCI %d) but it belongs to a different NSE!\n", nsvci);
+					goto out;
+				}
+
+				/* the status will be passed to the nsvc/target nsvc in the switch */
+			} else {
+				LOG_NS_SIGNAL(nsvc, "Rx", nsh->pdu_type, LOGL_ERROR, " with wrong NSVCI=%05u. Ignoring PDU.\n", nsvci);
+				goto out;
+			}
 		}
 	}
 
@@ -922,7 +938,7 @@ int ns2_vc_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp)
 		osmo_fsm_inst_dispatch(fi, GPRS_NS2_EV_RX_UNITDATA, msg);
 		return 0;
 	case NS_PDUT_STATUS:
-		osmo_fsm_inst_dispatch(fi, GPRS_NS2_EV_RX_STATUS, tp);
+		osmo_fsm_inst_dispatch(target_nsvc->fi, GPRS_NS2_EV_RX_STATUS, tp);
 		break;
 	default:
 		LOGPFSML(fi, LOGL_ERROR, "NSEI=%u Rx unknown NS PDU type %s\n", nsvc->nse->nsei,
