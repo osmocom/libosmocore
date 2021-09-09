@@ -207,6 +207,12 @@ static void vty_auth(struct vty *vty)
 	}
 }
 
+void vty_flush(struct vty *vty)
+{
+	if (vty->obuf)
+		buffer_flush_all(vty->obuf, vty->fd);
+}
+
 /*! Close a given vty interface. */
 void vty_close(struct vty *vty)
 {

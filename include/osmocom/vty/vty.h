@@ -222,6 +222,7 @@ int vty_out_newline(struct vty *);
 int vty_read(struct vty *vty);
 //void vty_time_print (struct vty *, int);
 void vty_close (struct vty *);
+void vty_flush(struct vty *vty);
 char *vty_get_cwd (void);
 void vty_log (const char *level, const char *proto, const char *fmt, va_list);
 int vty_config_lock (struct vty *);
