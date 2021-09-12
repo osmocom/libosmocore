@@ -35,6 +35,7 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+#include <limits.h>
 
 #include <arpa/inet.h>
 
@@ -53,6 +54,7 @@
 
 #include <osmocom/core/msgb.h>
 #include <osmocom/core/rate_ctr.h>
+#include <osmocom/core/stat_item.h>
 #include <osmocom/core/select.h>
 #include <osmocom/core/counter.h>
 #include <osmocom/core/talloc.h>
@@ -729,6 +731,100 @@ static int verify_rate_ctr(struct ctrl_cmd *cmd, const char *value, void *data)
 	return 0;
 }
 
+/* Expose all stat_item groups on CTRL, as read-only variables of the form:
+ * stat_item.(last|...).group_name.N.item_name
+ * stat_item.(last|...).group_name.by_name.group_idx_name.item_name
+ */
+CTRL_CMD_DEFINE_RO(stat_item, "stat_item *");
+static int get_stat_item(struct ctrl_cmd *cmd, void *data)
+{
+	char *dup;
+	char *saveptr;
+	char *value_type;
+	char *group_name;
+	char *group_idx_str;
+	char *item_name;
+	char *tmp;
+	int32_t val;
+	struct osmo_stat_item_group *statg;
+	const struct osmo_stat_item *stat_item;
+
+	/* cmd will be freed in control_if.c after handling here, so no need to free the dup string. */
+	dup = talloc_strdup(cmd, cmd->variable);
+	if (!dup) {
+		cmd->reply = "OOM";
+		return CTRL_CMD_ERROR;
+	}
+
+	/* Split off the first "stat_item." part */
+	tmp = strtok_r(dup, ".", &saveptr);
+	if (!tmp || strcmp(tmp, "stat_item") != 0)
+		goto format_error;
+
+	/* Split off the "last." part (validated further below) */
+	value_type = strtok_r(NULL, ".", &saveptr);
+	if (!value_type)
+		goto format_error;
+
+	/* Split off the "group_name." part */
+	group_name = strtok_r(NULL, ".", &saveptr);
+	if (!group_name)
+		goto format_error;
+
+	/* Split off the "N." part */
+	group_idx_str = strtok_r(NULL, ".", &saveptr);
+	if (!group_idx_str)
+		goto format_error;
+	if (strcmp(group_idx_str, "by_name") == 0) {
+		/* The index is not given by "N" but by "by_name.foo". Get the "foo" idx-name */
+		group_idx_str = strtok_r(NULL, ".", &saveptr);
+		statg = osmo_stat_item_get_group_by_name_idxname(group_name, group_idx_str);
+	} else {
+		int idx;
+		if (osmo_str_to_int(&idx, group_idx_str, 10, 0, INT_MAX))
+			goto format_error;
+		statg = osmo_stat_item_get_group_by_name_idx(group_name, idx);
+	}
+	if (!statg) {
+		cmd->reply = "Stat group with given name and index not found";
+		return CTRL_CMD_ERROR;
+	}
+
+	/* Split off the "item_name" part */
+	item_name = strtok_r(NULL, ".", &saveptr);
+	if (!item_name)
+		goto format_error;
+	stat_item = osmo_stat_item_get_by_name(statg, item_name);
+	if (!stat_item) {
+		cmd->reply = "No such stat item found";
+		return CTRL_CMD_ERROR;
+	}
+
+	tmp = strtok_r(NULL, "", &saveptr);
+	if (tmp) {
+		cmd->reply = "Garbage after stat item name";
+		return CTRL_CMD_ERROR;
+	}
+
+	if (!strcmp(value_type, "last"))
+		val = osmo_stat_item_get_last(stat_item);
+	else
+		goto format_error;
+
+	cmd->reply = talloc_asprintf(cmd, "%"PRIu32, val);
+	if (!cmd->reply) {
+		cmd->reply = "OOM";
+		return CTRL_CMD_ERROR;
+	}
+
+	return CTRL_CMD_REPLY;
+
+format_error:
+	cmd->reply = "Stat item must be of form stat_item.type.group_name.N.item_name,"
+		" e.g. 'stat_item.last.bsc.0.msc_num:connected'";
+	return CTRL_CMD_ERROR;
+}
+
 /* counter */
 CTRL_CMD_DEFINE(counter, "counter *");
 static int get_counter(struct ctrl_cmd *cmd, void *data)
@@ -814,6 +910,9 @@ static int ctrl_init(unsigned int node_count)
 		goto err;
 
 	ret = ctrl_cmd_install(CTRL_NODE_ROOT, &cmd_rate_ctr);
+	if (ret)
+		goto err_vec;
+	ret = ctrl_cmd_install(CTRL_NODE_ROOT, &cmd_stat_item);
 	if (ret)
 		goto err_vec;
 	ret = ctrl_cmd_install(CTRL_NODE_ROOT, &cmd_counter);
