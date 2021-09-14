@@ -20,3 +20,4 @@ libosmocore	osmo_stat_item		API breakage: remove functions osmo_stat_item_get_ne
 libosmocore	osmo_stat_item_value	API breakage: struct definition removed, because no known users exist / no users should exist.
 libosmocore	osmo_stat_item		ABI breakage: struct osmo_stat_item made opaque.
 libosmocore	osmo_stat_item		No FIFO buffer of values used anymore, the "skipped values" error is no longer possible.
+libosmocore	stats reporting		for osmo_stat_item, values are now never repeated from one stats report to the next.

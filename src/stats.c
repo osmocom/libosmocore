@@ -700,15 +700,11 @@ static int osmo_stat_item_handler(
 		if (!srep->running)
 			continue;
 
-		/* If no new stat values have been set in the current reporting period, skip resending the value.
-		 * However, if the previously sent value is not the same as the current value, then do send the changed
-		 * value (while n == 0, the last value from the previous reporting period is in item->value.max == .last
-		 * == .min, which was put in new_value above).
-		 * Also if the stats reporter is set to resend all values, also do resend the current value regardless
-		 * of repetitions.
+		/* If the previously reported value is the same as the current value, skip resending the value.
+		 * However, if the stats reporter is set to resend all values, do resend the current value regardless of
+		 * repetitions.
 		 */
-		if ((!item->value.n && new_value == prev_reported_value)
-		    && !srep->force_single_flush)
+		if (new_value == prev_reported_value && !srep->force_single_flush)
 			continue;
 
 		if (!osmo_stats_reporter_check_config(srep,

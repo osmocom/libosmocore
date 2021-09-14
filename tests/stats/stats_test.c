@@ -443,10 +443,10 @@ static void test_reporting()
 	osmo_stat_item_set(osmo_stat_item_group_get_item(statg1, TEST_A_ITEM), 10);
 	do_report(0, 2);
 
-	fprintf(stderr, "report (group 1, item 1 update twice):\n");
+	fprintf(stderr, "report (group 1, item 1 update twice, with same value):\n");
 	osmo_stat_item_set(osmo_stat_item_group_get_item(statg1, TEST_A_ITEM), 10);
 	osmo_stat_item_set(osmo_stat_item_group_get_item(statg1, TEST_A_ITEM), 10);
-	do_report(0, 2);
+	do_report(0, 0);
 
 	fprintf(stderr, "report (group 1, item 1 update twice, check max):\n");
 	osmo_stat_item_set(osmo_stat_item_group_get_item(statg1, TEST_A_ITEM), 20);

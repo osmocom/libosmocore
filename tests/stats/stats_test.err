@@ -114,10 +114,8 @@ report (group 1, item 1 update):
   test2: item p= g=test.one i=1 n=item.a v=10 u=ma
   test1: item p= g=test.one i=1 n=item.a v=10 u=ma
 reported: 0 counter vals, 2 stat item vals
-report (group 1, item 1 update twice):
-  test2: item p= g=test.one i=1 n=item.a v=10 u=ma
-  test1: item p= g=test.one i=1 n=item.a v=10 u=ma
-reported: 0 counter vals, 2 stat item vals
+report (group 1, item 1 update twice, with same value):
+reported: 0 counter vals, 0 stat item vals
 report (group 1, item 1 update twice, check max):
   test2: item p= g=test.one i=1 n=item.a v=20 u=ma
   test1: item p= g=test.one i=1 n=item.a v=20 u=ma
