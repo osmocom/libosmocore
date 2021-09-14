@@ -181,46 +181,24 @@ static __attribute__((constructor)) void {{prefix}}_fsm_register(void)
 
 		return template.render(**vars(s))
 
-fsm = FSM(head='#include <osmocom/bsc/lcs.h>',
-	  prefix = 'lcs_loc_req',
-	  priv = 'lcs_loc_req',
+fsm = FSM(head='#include <osmocom/bsc/time_cc.h>',
+	  prefix = 'time_cc',
+	  priv = 'time_cc',
 	  states = (
-		    State('init',
-			  ('start',),
-			  ('wait_location_response',),
+		    State('disabled',
+			  ('false', 'true'),
+			  ('counting_false', 'counting_true',),
 			  onenter=False,
 			 ),
-		    State('wait_location_response',
-			  ('rx_le_perform_location_response',),
-			  ('got_location_response', ),
+		    State('counting_false',
+			  ('false', 'true'),
+			  ('counting_false', 'counting_true', 'disabled'),
 			 ),
-		    State('got_location_response',
-			  (),
-			  (),
+		    State('counting_true',
+			  ('false', 'true'),
+			  ('counting_false', 'counting_true', 'disabled'),
 			 ),
 		   )
 	 )
-with open('lcs_loc_req.c', 'w') as f:
-	f.write(fsm.to_c())
-
-fsm = FSM(head='#include <osmocom/bsc/lcs.h>',
-	  prefix = 'lcs_ta_req',
-	  priv = 'lcs_ta_req',
-	  states = (
-		    State('init',
-			  ('start',),
-			  ('wait_ta', 'got_ta'),
-			  onenter=False,
-			 ),
-		    State('wait_ta',
-			  ('ta',),
-			  ('got_ta', ),
-			 ),
-		    State('got_ta',
-			  (),
-			  (),
-			 ),
-		   )
-	 )
-with open('lcs_ta_req.c', 'w') as f:
+with open('time_cc.c', 'w') as f:
 	f.write(fsm.to_c())
