@@ -15,4 +15,8 @@ libosmovty      vty_read_config_filep   New API
 libosmosim	osim_card_{reset,close}	New API
 libosmocore     struct rate_ctr_group, osmo_stat_item_group_desc ABI breakage due to new struct members
 libosmgsm      kdf functions   New API
-libosmocore	osmo_stat_item		ABI + API breakage due to new struct members
+libosmocore	osmo_stat_item		API breakage: remove members stats_next_id, last_offs and values[], no users should exist.
+libosmocore	osmo_stat_item		API breakage: remove functions osmo_stat_item_get_next(), osmo_stat_item_discard(), osmo_stat_item_discard_all(), no users should exist.
+libosmocore	osmo_stat_item_value	API breakage: struct definition removed, because no known users exist / no users should exist.
+libosmocore	osmo_stat_item		ABI breakage: struct osmo_stat_item made opaque.
+libosmocore	osmo_stat_item		No FIFO buffer of values used anymore, the "skipped values" error is no longer possible.

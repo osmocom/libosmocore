@@ -101,6 +101,8 @@
 #define TRACE_ENABLED(probe) (0)
 #endif /* HAVE_SYSTEMTAP */
 
+#include <stat_item_internal.h>
+
 #define STATS_DEFAULT_INTERVAL 5 /* secs */
 #define STATS_DEFAULT_BUFLEN 256
 
@@ -235,28 +237,11 @@ void osmo_stats_reporter_free(struct osmo_stats_reporter *srep)
 	talloc_free(srep);
 }
 
-static int osmo_stats_discard_item(struct osmo_stat_item_group *statg, struct osmo_stat_item *item, void *sctx_)
-{
-	return osmo_stat_item_discard(item, &item->stats_next_id);
-}
-
-static int osmo_stats_discard_group(struct osmo_stat_item_group *statg, void *sctx_)
-{
-	return osmo_stat_item_for_each_item(statg, &osmo_stats_discard_item, NULL);
-}
-
-static int osmo_stats_discard_all()
-{
-	return osmo_stat_item_for_each_group(&osmo_stats_discard_group, NULL);
-}
-
-/*! Initilize the stats reporting module; call this once in your program
+/*! Initialize the stats reporting module; call this once in your program.
  *  \param[in] ctx Talloc context from which stats related memory is allocated */
 void osmo_stats_init(void *ctx)
 {
 	osmo_stats_ctx = ctx;
-	osmo_stats_discard_all();
-
 	is_initialised = 1;
 	start_timer();
 }
@@ -708,42 +693,32 @@ static int osmo_stat_item_handler(
 	struct osmo_stat_item_group *statg, struct osmo_stat_item *item, void *sctx_)
 {
 	struct osmo_stats_reporter *srep;
-	int32_t value;
-	bool have_value;
-
-	have_value = osmo_stat_item_get_next(item, &item->stats_next_id, &value) > 0;
-	if (!have_value) {
-		/* Send the last value in case a flush is requested */
-		value = osmo_stat_item_get_last(item);
-
-		/* Also send it in case a different max value was sent
-		 * previously (OS#5215) */
-		if (!item->stats_last_sent_was_max)
-			have_value = 1;
-	} else {
-		int32_t next_val;
-		/* If we have multiple values only send the max */
-		while (osmo_stat_item_get_next(item, &item->stats_next_id, &next_val) > 0)
-			value = OSMO_MAX(value, next_val);
-	}
-
-	item->stats_last_sent_was_max = (osmo_stat_item_get_last(item) == value);
+	int32_t prev_reported_value = item->reported.max;
+	int32_t new_value = item->value.max;
 
 	llist_for_each_entry(srep, &osmo_stats_reporter_list, list) {
 		if (!srep->running)
 			continue;
 
-		if (!have_value && !srep->force_single_flush)
+		/* If no new stat values have been set in the current reporting period, skip resending the value.
+		 * However, if the previously sent value is not the same as the current value, then do send the changed
+		 * value (while n == 0, the last value from the previous reporting period is in item->value.max == .last
+		 * == .min, which was put in new_value above).
+		 * Also if the stats reporter is set to resend all values, also do resend the current value regardless
+		 * of repetitions.
+		 */
+		if ((!item->value.n && new_value == prev_reported_value)
+		    && !srep->force_single_flush)
 			continue;
 
 		if (!osmo_stats_reporter_check_config(srep,
 				statg->idx, statg->desc->class_id))
 			continue;
 
-		osmo_stats_reporter_send_item(srep, statg,
-			item->desc, value);
-
+		osmo_stats_reporter_send_item(srep, statg, item->desc, new_value);
 	}
+
+	osmo_stat_item_flush(item);
 
 	return 0;
 }
@@ -818,7 +793,6 @@ int osmo_stats_report()
 	osmo_stat_item_for_each_group(osmo_stat_item_group_handler, NULL);
 
 	/* global actions */
-	osmo_stats_discard_all();
 	flush_all_reporters();
 	TRACE(LIBOSMOCORE_STATS_DONE());
 

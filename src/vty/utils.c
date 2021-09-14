@@ -247,12 +247,11 @@ static int osmo_stat_item_handler(
 {
 	struct vty_out_context *vctx = vctx_;
 	struct vty *vty = vctx->vty;
-	const char *unit =
-		item->desc->unit != OSMO_STAT_ITEM_NO_UNIT ?
-		item->desc->unit : "";
+	const struct osmo_stat_item_desc *desc = osmo_stat_item_get_desc(item);
+	const char *unit = (desc->unit != OSMO_STAT_ITEM_NO_UNIT) ? desc->unit : "";
 
 	vty_out(vty, " %s%s: %8" PRIi32 " %s%s",
-		vctx->prefix, item->desc->description,
+		vctx->prefix, desc->description,
 		osmo_stat_item_get_last(item),
 		unit, VTY_NEWLINE);
 

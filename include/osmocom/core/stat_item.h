@@ -14,36 +14,16 @@ struct osmo_stat_item_desc;
 #define OSMO_STAT_ITEM_NOVALUE_ID 0
 #define OSMO_STAT_ITEM_NO_UNIT NULL
 
-/*! Individual entry in value FIFO */
-struct osmo_stat_item_value {
-	int32_t id;		/*!< identifier of value */
-	int32_t value;		/*!< actual value */
-};
-
-/*! data we keep for each actual item */
-struct osmo_stat_item {
-	/*! back-reference to the item description */
-	const struct osmo_stat_item_desc *desc;
-	/* internal use by stats API (stats.c): the id of the next value to
-	 * be read from the FIFO. If accessing osmo_stat_item directly, without
-	 * the stats API, store this value elsewhere. */
-	int32_t stats_next_id;
-	/* internal use by stats API: indicate if the last value sent to
-	 * reporters was actually the last value in the FIFO. This may not be
-	 * the case, as always a max of 1 or more values gets sent (OS#5215) */
-	bool stats_last_sent_was_max;
-	/*! the index of the last value written to the FIFO */
-	int16_t last_offs;
-	/*! value FIFO */
-	struct osmo_stat_item_value values[0];
-};
+/*! data we keep for each actual item. Access via API functions only.
+ * (This struct was made opaque after libosmocore 1.5.1)*/
+struct osmo_stat_item;
 
 /*! Statistics item description */
 struct osmo_stat_item_desc {
 	const char *name;	/*!< name of the item */
 	const char *description;/*!< description of the item */
 	const char *unit;	/*!< unit of a value */
-	unsigned int num_values;/*!< number of values to store in FIFO */
+	unsigned int num_values;/*!< DEPRECATED, this value is ignored after libosmocore version 1.5.1 */
 	int32_t default_value;	/*!< default value */
 };
 
@@ -102,15 +82,9 @@ struct osmo_stat_item_group *osmo_stat_item_get_group_by_name_idxname(const char
 const struct osmo_stat_item *osmo_stat_item_get_by_name(
 	const struct osmo_stat_item_group *statg, const char *name);
 
-int osmo_stat_item_get_next(const struct osmo_stat_item *item, int32_t *next_id, int32_t *value);
+int32_t osmo_stat_item_get_last(const struct osmo_stat_item *item);
 
-/*! Get the last (freshest) value */
-static int32_t osmo_stat_item_get_last(const struct osmo_stat_item *item);
-
-int osmo_stat_item_discard(const struct osmo_stat_item *item, int32_t *next_id);
-
-int osmo_stat_item_discard_all(int32_t *next_id)
-	OSMO_DEPRECATED("Use osmo_stat_item_discard with item-specific next_id instead");
+void osmo_stat_item_flush(struct osmo_stat_item *item);
 
 typedef int (*osmo_stat_item_handler_t)(
 	struct osmo_stat_item_group *, struct osmo_stat_item *, void *);
@@ -122,12 +96,20 @@ int osmo_stat_item_for_each_item(struct osmo_stat_item_group *statg,
 
 int osmo_stat_item_for_each_group(osmo_stat_item_group_handler_t handle_group, void *data);
 
-static inline int32_t osmo_stat_item_get_last(const struct osmo_stat_item *item)
-{
-	return item->values[item->last_offs].value;
-}
-
 void osmo_stat_item_reset(struct osmo_stat_item *item);
 void osmo_stat_item_group_reset(struct osmo_stat_item_group *statg);
+
+const struct osmo_stat_item_desc *osmo_stat_item_get_desc(struct osmo_stat_item *item);
+
+/* DEPRECATION: up until libosmocore 1.5.1, this API also defined
+ * - struct osmo_stat_item_value
+ * - osmo_stat_item_get_next()
+ * - osmo_stat_item_discard()
+ * - osmo_stat_item_discard_all()
+ * Despite our principle of never breaking API compatibility, we have decided to remove these, because there are no
+ * known users. These items were never practically used/usable outside of libosmocore since the generic stats reporter
+ * (stats.c) was introduced.
+ * We also decided to make struct osmo_stat_item opaque to allow future changes of the struct without API breakage.
+ */
 
 /*! @} */

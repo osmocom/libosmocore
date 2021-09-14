@@ -29,6 +29,8 @@
 #include <osmocom/core/rate_ctr.h>
 #include <osmocom/core/stats.h>
 
+#include <stat_item_internal.h>
+
 #include <stdio.h>
 #include <inttypes.h>
 
@@ -88,11 +90,10 @@ static void stat_test(void)
 
 	struct osmo_stat_item_group *sgrp2;
 	const struct osmo_stat_item *sitem1, *sitem2;
-	int rc;
 	int32_t value;
-	int32_t next_id_a = 1;
-	int32_t next_id_b = 1;
 	int i;
+	int64_t sum1;
+	int64_t sum2;
 
 	OSMO_ASSERT(statg != NULL);
 
@@ -117,124 +118,144 @@ static void stat_test(void)
 	OSMO_ASSERT(sitem2 != sitem1);
 	OSMO_ASSERT(sitem2 == osmo_stat_item_group_get_item(statg, TEST_B_ITEM));
 
+	/* No value set yet, expecting default value from osmo_stat_item_desc definition above. */
 	value = osmo_stat_item_get_last(osmo_stat_item_group_get_item(statg, TEST_A_ITEM));
 	OSMO_ASSERT(value == -1);
 
-	rc = osmo_stat_item_get_next(osmo_stat_item_group_get_item(statg, TEST_A_ITEM), &next_id_a, &value);
-	OSMO_ASSERT(rc == 0);
-
+	/* No value set yet, expecting new value in all fields */
 	osmo_stat_item_set(osmo_stat_item_group_get_item(statg, TEST_A_ITEM), 1);
-
+	sum1 = 1;
 	value = osmo_stat_item_get_last(osmo_stat_item_group_get_item(statg, TEST_A_ITEM));
 	OSMO_ASSERT(value == 1);
+	OSMO_ASSERT(sitem1->value.n == 1);
+	OSMO_ASSERT(sitem1->value.min == 1);
+	OSMO_ASSERT(sitem1->value.last == 1);
+	OSMO_ASSERT(sitem1->value.max == 1);
+	OSMO_ASSERT(sitem1->value.sum == 1);
 
-	rc = osmo_stat_item_get_next(osmo_stat_item_group_get_item(statg, TEST_A_ITEM), &next_id_a, &value);
-	OSMO_ASSERT(rc == 1);
-	OSMO_ASSERT(value == 1);
-
-	rc = osmo_stat_item_get_next(osmo_stat_item_group_get_item(statg, TEST_A_ITEM), &next_id_a, &value);
-	OSMO_ASSERT(rc == 0);
-
+	sum2 = 0;
 	for (i = 2; i <= 32; i++) {
 		osmo_stat_item_set(osmo_stat_item_group_get_item(statg, TEST_A_ITEM), i);
+		sum1 += i;
 		osmo_stat_item_set(osmo_stat_item_group_get_item(statg, TEST_B_ITEM), 1000 + i);
-
-		rc = osmo_stat_item_get_next(osmo_stat_item_group_get_item(statg, TEST_A_ITEM), &next_id_a, &value);
-		OSMO_ASSERT(rc == 1);
-		OSMO_ASSERT(value == i);
-
-		rc = osmo_stat_item_get_next(osmo_stat_item_group_get_item(statg, TEST_B_ITEM), &next_id_b, &value);
-		OSMO_ASSERT(rc == 1);
-		OSMO_ASSERT(value == 1000 + i);
+		sum2 += 1000 + i;
 	}
+	OSMO_ASSERT(sitem1->value.n == 32);
+	OSMO_ASSERT(sitem1->value.min == 1);
+	OSMO_ASSERT(sitem1->value.last == 32);
+	OSMO_ASSERT(sitem1->value.max == 32);
+	OSMO_ASSERT(sitem1->value.sum == sum1);
+
+	OSMO_ASSERT(sitem2->value.n == 31);
+	OSMO_ASSERT(sitem2->value.min == 1002);
+	OSMO_ASSERT(sitem2->value.last == 1032);
+	OSMO_ASSERT(sitem2->value.max == 1032);
+	OSMO_ASSERT(sitem2->value.sum == sum2);
 
 	/* check if dec & inc is working */
 	osmo_stat_item_set(osmo_stat_item_group_get_item(statg, TEST_A_ITEM), 42);
-	rc = osmo_stat_item_get_next(osmo_stat_item_group_get_item(statg, TEST_A_ITEM), &next_id_a, &value);
-	OSMO_ASSERT(rc == 1);
-	OSMO_ASSERT(value == 42);
+	sum1 += 42;
+	OSMO_ASSERT(sitem1->value.n == 33);
+	OSMO_ASSERT(sitem1->value.min == 1);
+	OSMO_ASSERT(sitem1->value.last == 42);
+	OSMO_ASSERT(osmo_stat_item_get_last(osmo_stat_item_group_get_item(statg, TEST_A_ITEM)) == 42);
+	OSMO_ASSERT(sitem1->value.max == 42);
+	OSMO_ASSERT(sitem1->value.sum == sum1);
 
 	osmo_stat_item_dec(osmo_stat_item_group_get_item(statg, TEST_A_ITEM), 21);
-	rc = osmo_stat_item_get_next(osmo_stat_item_group_get_item(statg, TEST_A_ITEM), &next_id_a, &value);
-	OSMO_ASSERT(rc == 1);
-	OSMO_ASSERT(value == 21);
+	sum1 += 42 - 21;
+	OSMO_ASSERT(sitem1->value.n == 34);
+	OSMO_ASSERT(sitem1->value.min == 1);
+	OSMO_ASSERT(sitem1->value.last == 21);
+	OSMO_ASSERT(osmo_stat_item_get_last(osmo_stat_item_group_get_item(statg, TEST_A_ITEM)) == 21);
+	OSMO_ASSERT(sitem1->value.max == 42);
+	OSMO_ASSERT(sitem1->value.sum == sum1);
 
 	osmo_stat_item_inc(osmo_stat_item_group_get_item(statg, TEST_A_ITEM), 21);
-	rc = osmo_stat_item_get_next(osmo_stat_item_group_get_item(statg, TEST_A_ITEM), &next_id_a, &value);
-	OSMO_ASSERT(rc == 1);
-	OSMO_ASSERT(value == 42);
+	sum1 += 42;
+	OSMO_ASSERT(sitem1->value.n == 35);
+	OSMO_ASSERT(sitem1->value.min == 1);
+	OSMO_ASSERT(sitem1->value.last == 42);
+	OSMO_ASSERT(osmo_stat_item_get_last(osmo_stat_item_group_get_item(statg, TEST_A_ITEM)) == 42);
+	OSMO_ASSERT(sitem1->value.max == 42);
+	OSMO_ASSERT(sitem1->value.sum == sum1);
 
-	/* Keep 2 in FIFO */
-	osmo_stat_item_set(osmo_stat_item_group_get_item(statg, TEST_A_ITEM), 33);
-	osmo_stat_item_set(osmo_stat_item_group_get_item(statg, TEST_B_ITEM), 1000 + 33);
+	/* Test item flush, reporting period elapsing */
+	osmo_stat_item_flush(osmo_stat_item_group_get_item(statg, TEST_A_ITEM));
+	OSMO_ASSERT(sitem1->value.n == 0);
+	OSMO_ASSERT(sitem1->value.min == 42);
+	OSMO_ASSERT(sitem1->value.last == 42);
+	OSMO_ASSERT(osmo_stat_item_get_last(osmo_stat_item_group_get_item(statg, TEST_A_ITEM)) == 42);
+	OSMO_ASSERT(sitem1->value.max == 42);
+	OSMO_ASSERT(sitem1->value.sum == 0);
 
-	for (i = 34; i <= 64; i++) {
-		osmo_stat_item_set(osmo_stat_item_group_get_item(statg, TEST_A_ITEM), i);
-		osmo_stat_item_set(osmo_stat_item_group_get_item(statg, TEST_B_ITEM), 1000 + i);
+	/* Still see the previous reporting period in reported.* */
+	OSMO_ASSERT(sitem1->reported.n == 35);
+	OSMO_ASSERT(sitem1->reported.min == 1);
+	OSMO_ASSERT(sitem1->reported.last == 42);
+	OSMO_ASSERT(sitem1->reported.max == 42);
+	OSMO_ASSERT(sitem1->reported.sum == sum1);
 
-		rc = osmo_stat_item_get_next(osmo_stat_item_group_get_item(statg, TEST_A_ITEM), &next_id_a, &value);
-		OSMO_ASSERT(rc == 1);
-		OSMO_ASSERT(value == i-1);
-
-		rc = osmo_stat_item_get_next(osmo_stat_item_group_get_item(statg, TEST_B_ITEM), &next_id_b, &value);
-		OSMO_ASSERT(rc == 1);
-		OSMO_ASSERT(value == 1000 + i-1);
-	}
-
-	rc = osmo_stat_item_get_next(osmo_stat_item_group_get_item(statg, TEST_A_ITEM), &next_id_a, &value);
-	OSMO_ASSERT(rc == 1);
-	OSMO_ASSERT(value == 64);
-
-	rc = osmo_stat_item_get_next(osmo_stat_item_group_get_item(statg, TEST_B_ITEM), &next_id_b, &value);
-	OSMO_ASSERT(rc == 1);
-	OSMO_ASSERT(value == 1000 + 64);
-
-	/* Overrun FIFOs */
-	for (i = 65; i <= 96; i++) {
-		osmo_stat_item_set(osmo_stat_item_group_get_item(statg, TEST_A_ITEM), i);
-		osmo_stat_item_set(osmo_stat_item_group_get_item(statg, TEST_B_ITEM), 1000 + i);
-	}
-
-	fprintf(stderr, "Skipping %d values\n", 93 - 65);
-	rc = osmo_stat_item_get_next(osmo_stat_item_group_get_item(statg, TEST_A_ITEM), &next_id_a, &value);
-	OSMO_ASSERT(rc == 93 - 65 + 1);
-	OSMO_ASSERT(value == 93);
-
-	for (i = 94; i <= 96; i++) {
-		rc = osmo_stat_item_get_next(osmo_stat_item_group_get_item(statg, TEST_A_ITEM), &next_id_a, &value);
-		OSMO_ASSERT(rc == 1);
-		OSMO_ASSERT(value == i);
-	}
-
-	fprintf(stderr, "Skipping %d values\n", 90 - 65);
-	rc = osmo_stat_item_get_next(osmo_stat_item_group_get_item(statg, TEST_B_ITEM), &next_id_b, &value);
-	OSMO_ASSERT(rc == 90 - 65 + 1);
-	OSMO_ASSERT(value == 1000 + 90);
-
-	for (i = 91; i <= 96; i++) {
-		rc = osmo_stat_item_get_next(osmo_stat_item_group_get_item(statg, TEST_B_ITEM), &next_id_b, &value);
-		OSMO_ASSERT(rc == 1);
-		OSMO_ASSERT(value == 1000 + i);
-	}
-
-	/* Test Discard (single item) */
+	/* After a flush, the first item replaces the last, min and max */
 	osmo_stat_item_set(osmo_stat_item_group_get_item(statg, TEST_A_ITEM), 97);
-	rc = osmo_stat_item_discard(osmo_stat_item_group_get_item(statg, TEST_A_ITEM), &next_id_a);
-	OSMO_ASSERT(rc == 1);
+	OSMO_ASSERT(sitem1->value.n == 1);
+	OSMO_ASSERT(sitem1->value.min == 97);
+	OSMO_ASSERT(sitem1->value.last == 97);
+	OSMO_ASSERT(osmo_stat_item_get_last(osmo_stat_item_group_get_item(statg, TEST_A_ITEM)) == 97);
+	OSMO_ASSERT(sitem1->value.max == 97);
+	OSMO_ASSERT(sitem1->value.sum == 97);
 
-	rc = osmo_stat_item_discard(osmo_stat_item_group_get_item(statg, TEST_A_ITEM), &next_id_a);
-	OSMO_ASSERT(rc == 0);
+	/* ...and still see the previous reporting period in reported.* */
+	OSMO_ASSERT(sitem1->reported.n == 35);
+	OSMO_ASSERT(sitem1->reported.min == 1);
+	OSMO_ASSERT(sitem1->reported.last == 42);
+	OSMO_ASSERT(sitem1->reported.max == 42);
+	OSMO_ASSERT(sitem1->reported.sum == sum1);
 
-	rc = osmo_stat_item_get_next(osmo_stat_item_group_get_item(statg, TEST_A_ITEM), &next_id_a, &value);
-	OSMO_ASSERT(rc == 0);
+	/* If an entire reporting period elapses without a new value, the last seen value remains. */
+	osmo_stat_item_flush(osmo_stat_item_group_get_item(statg, TEST_A_ITEM));
+	osmo_stat_item_flush(osmo_stat_item_group_get_item(statg, TEST_A_ITEM));
+	OSMO_ASSERT(sitem1->value.n == 0);
+	OSMO_ASSERT(sitem1->value.min == 97);
+	OSMO_ASSERT(sitem1->value.last == 97);
+	OSMO_ASSERT(osmo_stat_item_get_last(osmo_stat_item_group_get_item(statg, TEST_A_ITEM)) == 97);
+	OSMO_ASSERT(sitem1->value.max == 97);
+	OSMO_ASSERT(sitem1->value.sum == 0);
 
-	osmo_stat_item_set(osmo_stat_item_group_get_item(statg, TEST_A_ITEM), 98);
-	rc = osmo_stat_item_get_next(osmo_stat_item_group_get_item(statg, TEST_A_ITEM), &next_id_a, &value);
-	OSMO_ASSERT(rc == 1);
-	OSMO_ASSERT(value == 98);
+	/* now the previous reporting period got turned around */
+	OSMO_ASSERT(sitem1->reported.n == 0);
+	OSMO_ASSERT(sitem1->reported.min == 97);
+	OSMO_ASSERT(sitem1->reported.last == 97);
+	OSMO_ASSERT(sitem1->reported.max == 97);
+	OSMO_ASSERT(sitem1->reported.sum == 0);
 
-	rc = osmo_stat_item_get_next(osmo_stat_item_group_get_item(statg, TEST_A_ITEM), &next_id_a, &value);
-	OSMO_ASSERT(rc == 0);
+	/* Another empty reporting period, everything remained the same. */
+	osmo_stat_item_flush(osmo_stat_item_group_get_item(statg, TEST_A_ITEM));
+	OSMO_ASSERT(sitem1->value.n == 0);
+	OSMO_ASSERT(sitem1->value.min == 97);
+	OSMO_ASSERT(sitem1->value.last == 97);
+	OSMO_ASSERT(osmo_stat_item_get_last(osmo_stat_item_group_get_item(statg, TEST_A_ITEM)) == 97);
+	OSMO_ASSERT(sitem1->value.max == 97);
+	OSMO_ASSERT(sitem1->value.sum == 0);
+	OSMO_ASSERT(sitem1->reported.n == 0);
+	OSMO_ASSERT(sitem1->reported.min == 97);
+	OSMO_ASSERT(sitem1->reported.last == 97);
+	OSMO_ASSERT(sitem1->reported.max == 97);
+	OSMO_ASSERT(sitem1->reported.sum == 0);
+
+	/* Test Reset, place back to default value. The previously reported value remains the same. */
+	osmo_stat_item_reset(osmo_stat_item_group_get_item(statg, TEST_A_ITEM));
+	OSMO_ASSERT(sitem1->value.n == 0);
+	OSMO_ASSERT(sitem1->value.min == -1);
+	OSMO_ASSERT(sitem1->value.last == -1);
+	OSMO_ASSERT(osmo_stat_item_get_last(osmo_stat_item_group_get_item(statg, TEST_A_ITEM)) == -1);
+	OSMO_ASSERT(sitem1->value.max == -1);
+	OSMO_ASSERT(sitem1->value.sum == 0);
+	OSMO_ASSERT(sitem1->reported.n == 0);
+	OSMO_ASSERT(sitem1->reported.min == 97);
+	OSMO_ASSERT(sitem1->reported.last == 97);
+	OSMO_ASSERT(sitem1->reported.max == 97);
+	OSMO_ASSERT(sitem1->reported.sum == 0);
 
 	osmo_stat_item_group_free(statg);
 

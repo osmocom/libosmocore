@@ -475,10 +475,11 @@ static int asciidoc_osmo_stat_item_handler(
 {
 	struct vty *vty = sctx_;
 
-	char *name = osmo_asciidoc_escape(item->desc->name);
-	char *description = osmo_asciidoc_escape(item->desc->description);
+	const struct osmo_stat_item_desc *desc = osmo_stat_item_get_desc(item);
+	char *name = osmo_asciidoc_escape(desc->name);
+	char *description = osmo_asciidoc_escape(desc->description);
 	char *group_name_prefix = osmo_asciidoc_escape(statg->desc->group_name_prefix);
-	char *unit = osmo_asciidoc_escape(item->desc->unit);
+	char *unit = osmo_asciidoc_escape(desc->unit);
 
 	/* | Name | Reference | Description | Unit | */
 	vty_out(vty, "| %s | <<%s_%s>> | %s | %s%s",

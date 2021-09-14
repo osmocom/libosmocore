@@ -1,7 +1,3 @@
-Skipping 28 values
-DLSTATS ERROR item.a: 28 stats values skipped
-Skipping 25 values
-DLSTATS ERROR item.b: 25 stats values skipped
 Start test: test_reporting
 DLGLOBAL ERROR counter group 'ctr-test:one' already exists for index 2, instead using index 3. This is a software bug that needs fixing.
 DLGLOBAL ERROR 'ctr-test.one_dot' is not a valid counter group identifier

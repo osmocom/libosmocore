@@ -87,6 +87,7 @@ utils_utils_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 
 stats_stats_test_SOURCES = stats/stats_test.c
 stats_stats_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
+stats_stats_test_CPPFLAGS = $(AM_CPPFLAGS) -I$(top_srcdir)/src
 
 a5_a5_test_SOURCES = a5/a5_test.c
 a5_a5_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libgsmint.la
