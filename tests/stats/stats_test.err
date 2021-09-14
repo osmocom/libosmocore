@@ -31,6 +31,7 @@ report (initial):
   test1: item p= g=test.one i=1 n=item.a v=-1 u=ma
   test2: item p= g=test.one i=1 n=item.b v=-1 u=kb
   test1: item p= g=test.one i=1 n=item.b v=-1 u=kb
+reported: 12 counter vals, 8 stat item vals
 report (srep1 global):
   test2: counter p= g=ctr-test:one_dot i=3 n=ctr:a v=0 d=0
   test2: counter p= g=ctr-test:one_dot i=3 n=ctr:b v=0 d=0
@@ -42,6 +43,7 @@ report (srep1 global):
   test2: item p= g=test.one i=2 n=item.b v=-1 u=kb
   test2: item p= g=test.one i=1 n=item.a v=-1 u=ma
   test2: item p= g=test.one i=1 n=item.b v=-1 u=kb
+reported: 6 counter vals, 4 stat item vals
 report (srep1 peer):
   test2: counter p= g=ctr-test:one_dot i=3 n=ctr:a v=0 d=0
   test2: counter p= g=ctr-test:one_dot i=3 n=ctr:b v=0 d=0
@@ -57,6 +59,7 @@ report (srep1 peer):
   test1: item p= g=test.one i=1 n=item.a v=-1 u=ma
   test2: item p= g=test.one i=1 n=item.b v=-1 u=kb
   test1: item p= g=test.one i=1 n=item.b v=-1 u=kb
+reported: 6 counter vals, 8 stat item vals
 report (srep1 subscriber):
   test2: counter p= g=ctr-test:one_dot i=3 n=ctr:a v=0 d=0
   test1: counter p= g=ctr-test:one_dot i=3 n=ctr:a v=0 d=0
@@ -78,6 +81,7 @@ report (srep1 subscriber):
   test1: item p= g=test.one i=1 n=item.a v=-1 u=ma
   test2: item p= g=test.one i=1 n=item.b v=-1 u=kb
   test1: item p= g=test.one i=1 n=item.b v=-1 u=kb
+reported: 12 counter vals, 8 stat item vals
 report (srep2 disabled):
   test2: close
   test1: counter p= g=ctr-test:one_dot i=3 n=ctr:a v=0 d=0
@@ -90,6 +94,7 @@ report (srep2 disabled):
   test1: item p= g=test.one i=2 n=item.b v=-1 u=kb
   test1: item p= g=test.one i=1 n=item.a v=-1 u=ma
   test1: item p= g=test.one i=1 n=item.b v=-1 u=kb
+reported: 6 counter vals, 4 stat item vals
 report (srep2 enabled, no flush forced):
   test2: open
   test2: counter p= g=ctr-test:one_dot i=3 n=ctr:a v=0 d=0
@@ -102,23 +107,31 @@ report (srep2 enabled, no flush forced):
   test2: item p= g=test.one i=2 n=item.b v=-1 u=kb
   test2: item p= g=test.one i=1 n=item.a v=-1 u=ma
   test2: item p= g=test.one i=1 n=item.b v=-1 u=kb
+reported: 6 counter vals, 4 stat item vals
 report (should be empty):
+reported: 0 counter vals, 0 stat item vals
 report (group 1, counter 1 update):
   test2: counter p= g=ctr-test:one i=1 n=ctr:a v=1 d=1
   test1: counter p= g=ctr-test:one i=1 n=ctr:a v=1 d=1
+reported: 2 counter vals, 0 stat item vals
 report (group 1, item 1 update):
   test2: item p= g=test.one i=1 n=item.a v=10 u=ma
   test1: item p= g=test.one i=1 n=item.a v=10 u=ma
+reported: 0 counter vals, 2 stat item vals
 report (group 1, item 1 update twice):
   test2: item p= g=test.one i=1 n=item.a v=10 u=ma
   test1: item p= g=test.one i=1 n=item.a v=10 u=ma
+reported: 0 counter vals, 2 stat item vals
 report (group 1, item 1 update twice, check max):
   test2: item p= g=test.one i=1 n=item.a v=20 u=ma
   test1: item p= g=test.one i=1 n=item.a v=20 u=ma
+reported: 0 counter vals, 2 stat item vals
 report (group 1, item 1 no update, send last item (!= last max), OS#5215):
   test2: item p= g=test.one i=1 n=item.a v=10 u=ma
   test1: item p= g=test.one i=1 n=item.a v=10 u=ma
+reported: 0 counter vals, 2 stat item vals
 report (group 1, item 1 no update, nothing to send):
+reported: 0 counter vals, 0 stat item vals
 report (remove statg1, ctrg1):
   test2: counter p= g=ctr-test:one_dot i=3 n=ctr:a v=0 d=0
   test1: counter p= g=ctr-test:one_dot i=3 n=ctr:a v=0 d=0
@@ -132,6 +145,7 @@ report (remove statg1, ctrg1):
   test1: item p= g=test.one i=2 n=item.a v=-1 u=ma
   test2: item p= g=test.one i=2 n=item.b v=-1 u=kb
   test1: item p= g=test.one i=2 n=item.b v=-1 u=kb
+reported: 8 counter vals, 4 stat item vals
 report (remove srep1):
   test1: close
   test2: counter p= g=ctr-test:one_dot i=3 n=ctr:a v=0 d=0
@@ -140,12 +154,16 @@ report (remove srep1):
   test2: counter p= g=ctr-test:one i=2 n=ctr:b v=0 d=0
   test2: item p= g=test.one i=2 n=item.a v=-1 u=ma
   test2: item p= g=test.one i=2 n=item.b v=-1 u=kb
+reported: 4 counter vals, 2 stat item vals
 report (remove statg2):
   test2: counter p= g=ctr-test:one_dot i=3 n=ctr:a v=0 d=0
   test2: counter p= g=ctr-test:one_dot i=3 n=ctr:b v=0 d=0
   test2: counter p= g=ctr-test:one i=2 n=ctr:a v=0 d=0
   test2: counter p= g=ctr-test:one i=2 n=ctr:b v=0 d=0
+reported: 4 counter vals, 0 stat item vals
 report (remove srep2):
   test2: close
+reported: 0 counter vals, 0 stat item vals
 report (remove ctrg2, should be empty):
+reported: 0 counter vals, 0 stat item vals
 End test: test_reporting
