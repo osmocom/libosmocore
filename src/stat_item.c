@@ -94,7 +94,7 @@ static void *tall_stat_item_ctx;
  *  \param[in] idx Index of new stat item group
  */
 struct osmo_stat_item_group *osmo_stat_item_group_alloc(void *ctx,
-					    const struct osmo_stat_item_group_desc *desc,
+					    const struct osmo_stat_item_group_desc *group_desc,
 					    unsigned int idx)
 {
 	unsigned int group_size;
@@ -105,7 +105,7 @@ struct osmo_stat_item_group *osmo_stat_item_group_alloc(void *ctx,
 	struct osmo_stat_item_group *group;
 
 	group_size = sizeof(struct osmo_stat_item_group) +
-			desc->num_items * sizeof(struct osmo_stat_item *);
+			group_desc->num_items * sizeof(struct osmo_stat_item *);
 
 	if (!ctx)
 		ctx = tall_stat_item_ctx;
@@ -114,15 +114,15 @@ struct osmo_stat_item_group *osmo_stat_item_group_alloc(void *ctx,
 	if (!group)
 		return NULL;
 
-	group->desc = desc;
+	group->desc = group_desc;
 	group->idx = idx;
 
 	/* Get combined size of all items */
-	for (item_idx = 0; item_idx < desc->num_items; item_idx++) {
+	for (item_idx = 0; item_idx < group_desc->num_items; item_idx++) {
 		unsigned int size;
 		size = sizeof(struct osmo_stat_item) +
 			sizeof(struct osmo_stat_item_value) *
-			desc->item_desc[item_idx].num_values;
+			group_desc->item_desc[item_idx].num_values;
 		/* Align to pointer size */
 		size = (size + sizeof(void *) - 1) & ~(sizeof(void *) - 1);
 
@@ -139,18 +139,18 @@ struct osmo_stat_item_group *osmo_stat_item_group_alloc(void *ctx,
 	}
 
 	/* Update item pointers */
-	for (item_idx = 0; item_idx < desc->num_items; item_idx++) {
+	for (item_idx = 0; item_idx < group_desc->num_items; item_idx++) {
 		struct osmo_stat_item *item = (struct osmo_stat_item *)
 			((uint8_t *)items + (unsigned long)group->items[item_idx]);
 		unsigned int i;
 
 		group->items[item_idx] = item;
-		item->last_offs = desc->item_desc[item_idx].num_values - 1;
+		item->last_offs = group_desc->item_desc[item_idx].num_values - 1;
 		item->stats_next_id = 1;
-		item->desc = &desc->item_desc[item_idx];
+		item->desc = &group_desc->item_desc[item_idx];
 
 		for (i = 0; i <= item->last_offs; i++) {
-			item->values[i].value = desc->item_desc[item_idx].default_value;
+			item->values[i].value = group_desc->item_desc[item_idx].default_value;
 			item->values[i].id = OSMO_STAT_ITEM_NOVALUE_ID;
 		}
 	}

@@ -77,7 +77,7 @@ struct osmo_stat_item_group {
 
 struct osmo_stat_item_group *osmo_stat_item_group_alloc(
 	void *ctx,
-	const struct osmo_stat_item_group_desc *desc,
+	const struct osmo_stat_item_group_desc *group_desc,
 	unsigned int idx);
 
 static inline void osmo_stat_item_group_udp_idx(
