@@ -1,7 +1,7 @@
 /*! \file osmo-auc-gen.c
  * GSM/GPRS/3G authentication testing tool. */
 /*
- * (C) 2010-2012 by Harald Welte <laforge@gnumonks.org>
+ * (C) 2010-2021 by Harald Welte <laforge@gnumonks.org>
  *
  * All Rights Reserved
  *
@@ -34,7 +34,19 @@
 
 #include <osmocom/crypt/auth.h>
 #include <osmocom/core/utils.h>
+#include <osmocom/core/base64.h>
 #include <osmocom/gsm/gsm_utils.h>
+
+static void print_base64(const char *fmt, const uint8_t *data, unsigned int len)
+{
+	uint8_t outbuf[256];
+	size_t olen;
+
+	OSMO_ASSERT(osmo_base64_encode(outbuf, sizeof(outbuf), &olen, data, len) == 0);
+	OSMO_ASSERT(sizeof(outbuf) > olen);
+	outbuf[olen] = '\0';
+	printf(fmt, outbuf);
+}
 
 static void dump_triplets_dat(struct osmo_auth_vector *vec)
 {
@@ -53,10 +65,17 @@ static void dump_auth_vec(struct osmo_auth_vector *vec)
 	printf("RAND:\t%s\n", osmo_hexdump_nospc(vec->rand, sizeof(vec->rand)));
 
 	if (vec->auth_types & OSMO_AUTH_TYPE_UMTS) {
+		uint8_t inbuf[sizeof(vec->rand) + sizeof(vec->autn)];
+
 		printf("AUTN:\t%s\n", osmo_hexdump_nospc(vec->autn, sizeof(vec->autn)));
 		printf("IK:\t%s\n", osmo_hexdump_nospc(vec->ik, sizeof(vec->ik)));
 		printf("CK:\t%s\n", osmo_hexdump_nospc(vec->ck, sizeof(vec->ck)));
 		printf("RES:\t%s\n", osmo_hexdump_nospc(vec->res, vec->res_len));
+
+		memcpy(inbuf, vec->rand, sizeof(vec->rand));
+		memcpy(inbuf + sizeof(vec->rand), vec->autn, sizeof(vec->autn));
+		print_base64("IMS nonce:\t%s\n", inbuf, sizeof(inbuf));
+		print_base64("IMS res:\t%s\n", vec->res, vec->res_len);
 	}
 
 	if (vec->auth_types & OSMO_AUTH_TYPE_GSM) {
