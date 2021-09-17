@@ -446,3 +446,9 @@ AT_KEYWORDS([it_q])
 cat $abs_srcdir/it_q/it_q_test.ok > expout
 AT_CHECK([$abs_top_builddir/tests/it_q/it_q_test], [0], [expout], [ignore])
 AT_CLEANUP
+
+AT_SETUP([base64])
+AT_KEYWORDS([base64])
+cat $abs_srcdir/base64/base64_test.ok > expout
+AT_CHECK([$abs_top_builddir/tests/base64/base64_test], [0], [expout], [ignore])
+AT_CLEANUP

@@ -6,6 +6,7 @@ nobase_include_HEADERS = \
                        osmocom/codec/gsm610_bits.h \
                        osmocom/core/application.h \
                        osmocom/core/backtrace.h \
+                       osmocom/core/base64.h \
                        osmocom/core/bit16gen.h \
                        osmocom/core/bit32gen.h \
                        osmocom/core/bit64gen.h \

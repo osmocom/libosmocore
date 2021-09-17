@@ -43,6 +43,7 @@ check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
 		 bssmap_le/bssmap_le_test				\
 		 it_q/it_q_test						\
 		 gsm48/rest_octets_test					\
+		 base64/base64_test					\
 		 $(NULL)
 
 if ENABLE_MSGFILE
@@ -78,6 +79,8 @@ endif
 if ENABLE_GB
 check_PROGRAMS += gb/bssgp_fc_test gb/gprs_bssgp_test gb/gprs_bssgp_rim_test gb/gprs_ns_test gb/gprs_ns2_test fr/fr_test
 endif
+
+base64_base64_test_SOURCES = base64/base64_test.c
 
 utils_utils_test_SOURCES = utils/utils_test.c
 utils_utils_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
@@ -405,6 +408,7 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
 	     bssmap_le/bssmap_le_test.ok \
 	     it_q/it_q_test.ok \
 	     gsm48/rest_octets_test.ok \
+	     base64/base64_test.ok \
 	     $(NULL)
 
 if ENABLE_LIBSCTP
