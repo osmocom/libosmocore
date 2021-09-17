@@ -207,7 +207,7 @@ int main(int argc, char **argv)
 				fprintf(stderr, "Only UMTS has SQN\n");
 				exit(2);
 			}
-			sqn = strtoull(optarg, 0, 10);
+			sqn = strtoull(optarg, 0, 0);
 			sqn_is_set = 1;
 			break;
 		case 'i':
