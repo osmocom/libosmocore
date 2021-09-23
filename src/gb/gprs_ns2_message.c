@@ -432,13 +432,14 @@ int ns2_tx_unit_data(struct gprs_ns2_vc *nsvc,
  *  \param[in] cause Numeric NS cause value
  *  \param[in] bvci BVCI to be reset within NSVC
  *  \param[in] orig_msg message causing the STATUS
+ *  \param[in] nsvci if given this NSVCI will be encoded. If NULL the nsvc->nsvci will be used.
  *  \returns 0 in case of success */
 int ns2_tx_status(struct gprs_ns2_vc *nsvc, uint8_t cause,
-		       uint16_t bvci, struct msgb *orig_msg)
+		  uint16_t bvci, struct msgb *orig_msg, uint16_t *nsvci)
 {
 	struct msgb *msg = ns2_msgb_alloc();
 	struct gprs_ns_hdr *nsh;
-	uint16_t nsvci = osmo_htons(nsvc->nsvci);
+	uint16_t encoded_nsvci;
 	unsigned int orig_len, max_orig_len;
 
 	log_set_context(LOG_CTX_GB_NSE, nsvc->nse);
@@ -459,7 +460,11 @@ int ns2_tx_status(struct gprs_ns2_vc *nsvc, uint8_t cause,
 	case NS_CAUSE_NSVC_BLOCKED:
 	case NS_CAUSE_NSVC_UNKNOWN:
 		/* Section 9.2.7.1: Static conditions for NS-VCI */
-		msgb_tvlv_put(msg, NS_IE_VCI, 2, (uint8_t *)&nsvci);
+		if (nsvci)
+			encoded_nsvci = osmo_htons(*nsvci);
+		else
+			encoded_nsvci = osmo_htons(nsvc->nsvci);
+		msgb_tvlv_put(msg, NS_IE_VCI, 2, (uint8_t *)&encoded_nsvci);
 		break;
 	case NS_CAUSE_SEM_INCORR_PDU:
 	case NS_CAUSE_PDU_INCOMP_PSTATE:

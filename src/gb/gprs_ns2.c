@@ -1356,7 +1356,7 @@ int ns2_recv_vc(struct gprs_ns2_vc *nsvc,
 		if (rc < 0) {
 			LOGP(DLNS, LOGL_NOTICE, "Error during TLV Parse\n");
 			if (nsh->pdu_type != NS_PDUT_STATUS)
-				ns2_tx_status(nsvc, NS_CAUSE_PROTO_ERR_UNSPEC, 0, msg);
+				ns2_tx_status(nsvc, NS_CAUSE_PROTO_ERR_UNSPEC, 0, msg, NULL);
 			return rc;
 		}
 		return ns2_vc_rx(nsvc, msg, &tp);

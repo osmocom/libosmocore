@@ -439,7 +439,7 @@ int ns2_tx_unit_data(struct gprs_ns2_vc *nsvc,
 		     struct msgb *msg);
 
 int ns2_tx_status(struct gprs_ns2_vc *nsvc, uint8_t cause,
-		       uint16_t bvci, struct msgb *orig_msg);
+		  uint16_t bvci, struct msgb *orig_msg, uint16_t *nsvci);
 
 /* driver */
 struct gprs_ns2_vc *ns2_ip_bind_connect(struct gprs_ns2_vc_bind *bind,

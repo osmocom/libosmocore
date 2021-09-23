@@ -679,7 +679,7 @@ static void ns2_vc_fsm_allstate_action(struct osmo_fsm_inst *fi,
 
 			ns2_tx_status(priv->nsvc,
 				      NS_CAUSE_NSVC_BLOCKED,
-				      0, msg);
+				      0, msg, NULL);
 			break;
 		/* ALIVE can receive UNITDATA if the ALIVE_ACK is lost */
 		case GPRS_NS2_ST_RECOVERING:
@@ -863,7 +863,7 @@ int ns2_vc_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp)
 	if (ns2_validate(nsvc, nsh->pdu_type, msg, tp, &cause)) {
 		/* don't answer on a STATUS with a STATUS */
 		if (nsh->pdu_type != NS_PDUT_STATUS) {
-			rc = ns2_tx_status(nsvc, cause, 0, msg);
+			rc = ns2_tx_status(nsvc, cause, 0, msg, NULL);
 			goto out;
 		}
 	}
