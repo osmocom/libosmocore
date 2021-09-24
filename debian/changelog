@@ -1,3 +1,10 @@
+libosmocore (1.5.2) unstable; urgency=medium
+
+  [ Philipp Maier ]
+  * gsm0503_coding: use ahs tables when encoding ahs codec id
+
+ -- Oliver Smith <osmith@sysmocom.de>  Fri, 24 Sep 2021 14:09:53 +0200
+
 libosmocore (1.5.1) unstable; urgency=medium
 
   [ Pau Espin Pedrol ]
