@@ -1129,6 +1129,25 @@ static int sockaddr_equal(const struct sockaddr *a,
 	return 0;
 }
 
+/* linux has a default route:
+local 127.0.0.0/8 dev lo  proto kernel  scope host  src 127.0.0.1
+*/
+static int sockaddr_is_local_routed(const struct sockaddr *a)
+{
+#if __linux__
+	if (a->sa_family != AF_INET)
+		return 0;
+
+	uint32_t address = ((struct sockaddr_in *)a)->sin_addr.s_addr; /* already BE */
+	uint32_t eightmask = htonl(0xff000000); /* /8 mask */
+	uint32_t local_prefix_127 = htonl(0x7f000000); /* 127.0.0.0 */
+
+	if ((address & eightmask) == local_prefix_127)
+		return 1;
+#endif
+	return 0;
+}
+
 /*! Determine if the given address is a local address
  *  \param[in] addr Socket Address
  *  \param[in] addrlen Length of socket address in bytes
@@ -1137,6 +1156,9 @@ static int sockaddr_equal(const struct sockaddr *a,
 int osmo_sockaddr_is_local(struct sockaddr *addr, unsigned int addrlen)
 {
 	struct ifaddrs *ifaddr, *ifa;
+
+	if (sockaddr_is_local_routed(addr))
+		return 1;
 
 	if (getifaddrs(&ifaddr) == -1) {
 		LOGP(DLGLOBAL, LOGL_ERROR, "getifaddrs:"
