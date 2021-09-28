@@ -28,5 +28,5 @@ enum meas_rep_field {
 	MEAS_REP_UL_RXQUAL_SUB,
 };
 
-size_t gsm0858_rsl_ul_meas_enc(struct gsm_meas_rep_unidir *mru, bool dtxd_used,
+size_t gsm0858_rsl_ul_meas_enc(const struct gsm_meas_rep_unidir *mru, bool dtxd_used,
 			   uint8_t *buf);

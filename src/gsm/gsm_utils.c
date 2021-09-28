@@ -493,7 +493,7 @@ int osmo_get_rand_id(uint8_t *out, size_t len)
  *  \param[out] buf Pre-allocated bufer for storing IE
  *  \returns Number of bytes filled in buf
  */
-size_t gsm0858_rsl_ul_meas_enc(struct gsm_meas_rep_unidir *mru, bool dtxd_used,
+size_t gsm0858_rsl_ul_meas_enc(const struct gsm_meas_rep_unidir *mru, bool dtxd_used,
 			uint8_t *buf)
 {
 	buf[0] = dtxd_used ? (1 << 6) : 0;
