@@ -11,7 +11,7 @@ struct gsm_rx_lev_qual {
 	uint8_t rx_qual;
 };
 
-/* unidirectional measumrement report */
+/* unidirectional measurement report */
 struct gsm_meas_rep_unidir {
 	struct gsm_rx_lev_qual full;
 	struct gsm_rx_lev_qual sub;
