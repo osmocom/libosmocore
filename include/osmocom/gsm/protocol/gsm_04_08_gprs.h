@@ -291,6 +291,7 @@ enum gsm48_pdp_type_nr {
 	PDP_TYPE_N_ETSI_PPP		= 0x01,
 	PDP_TYPE_N_IETF_IPv4		= 0x21,
 	PDP_TYPE_N_IETF_IPv6		= 0x57,
+	PDP_TYPE_N_IETF_IPv4v6		= 0x8D,
 };
 
 /* Figure 10.5.138/24.008 / Chapter 10.5.6.5 */
