@@ -31,7 +31,7 @@ static inline void osmo_counter_inc(struct osmo_counter *ctr)
 }
 
 /*! Get current value of counter */
-OSMO_DEPRECATED("Implement as osmo_stat_item instead")
+OSMO_DEPRECATED_OUTSIDE("Implement as osmo_stat_item instead")
 static inline unsigned long osmo_counter_get(struct osmo_counter *ctr)
 {
 	return ctr->value;

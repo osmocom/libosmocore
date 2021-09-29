@@ -90,7 +90,7 @@ void lapdm_entity_init2(struct lapdm_entity *le, enum lapdm_mode mode,
 void lapdm_entity_init3(struct lapdm_entity *le, enum lapdm_mode mode,
 			const int *t200_ms, int n200, const char *name_pfx);
 void lapdm_channel_init(struct lapdm_channel *lc, enum lapdm_mode mode)
-	OSMO_DEPRECATED("Use lapdm_channel_init3() instead");
+	OSMO_DEPRECATED_OUTSIDE("Use lapdm_channel_init3() instead");
 int lapdm_channel_init2(struct lapdm_channel *lc, enum lapdm_mode mode,
 			const int *t200_ms_dcch, const int *t200_ms_acch, enum gsm_chan_t chan_t);
 int lapdm_channel_init3(struct lapdm_channel *lc, enum lapdm_mode mode,
