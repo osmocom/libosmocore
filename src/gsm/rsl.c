@@ -268,7 +268,7 @@ char *rsl_chan_nr_str_buf(char *buf, size_t buf_len, uint8_t chan_nr)
  */
 const char *rsl_chan_nr_str(uint8_t chan_nr)
 {
-	static __thread char str[20];
+	static __thread char str[32];
 	return rsl_chan_nr_str_buf(str, sizeof(str), chan_nr);
 }
 
@@ -279,10 +279,10 @@ const char *rsl_chan_nr_str(uint8_t chan_nr)
  */
 char *rsl_chan_nr_str_c(const void *ctx, uint8_t chan_nr)
 {
-	char *str = talloc_size(ctx, 20);
+	char *str = talloc_size(ctx, 32);
 	if (!str)
 		return NULL;
-	return rsl_chan_nr_str_buf(str, 20, chan_nr);
+	return rsl_chan_nr_str_buf(str, 32, chan_nr);
 }
 
 static const struct value_string rsl_err_vals[] = {
