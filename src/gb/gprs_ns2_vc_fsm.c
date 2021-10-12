@@ -876,7 +876,7 @@ int ns2_vc_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp)
 			if (nsh->pdu_type == NS_PDUT_RESET)
 				ns2_tx_reset_ack(nsvc);
 
-			LOG_NS_SIGNAL(nsvc, "Rx", nsh->pdu_type, LOGL_ERROR, " with wrong NSEI=%05u. Ignoring PDU.\n", nsei);
+			LOG_NS_SIGNAL(nsvc, "Rx", nsh->pdu_type, LOGL_ERROR, " with wrong NSEI (exp: %05u, got %05u). Ignoring PDU.\n", nsvc->nse->nsei, nsei);
 			goto out;
 		}
 	}
