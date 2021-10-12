@@ -887,6 +887,8 @@ int ns2_vc_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp)
 			/* 48.016 § 7.3.1 send RESET_ACK to wrong NSVCI + ignore */
 			if (nsh->pdu_type == NS_PDUT_RESET) {
 				ns2_tx_reset_ack(nsvc);
+				LOG_NS_SIGNAL(nsvc, "Rx", nsh->pdu_type, LOGL_ERROR, " with wrong NSVCI (exp: %05u, got %05u). Ignoring PDU.\n", nsvc->nsvci, nsvci);
+				goto out;
 			} else if (nsh->pdu_type == NS_PDUT_STATUS) {
 				/* this is a PDU received over a NSVC and reports a status for another NSVC */
 				target_nsvc = gprs_ns2_nsvc_by_nsvci(nsvc->nse->nsi,  nsvci);
