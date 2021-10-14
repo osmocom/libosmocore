@@ -159,7 +159,7 @@ static const struct log_info_cat internal_cat[OSMO_NUM_DLIB] = {
 		.description = "LAPD in libosmogsm",
 		.loglevel = LOGL_NOTICE,
 		.enabled = 1,
-		.color = "\033[38;5;21m",
+		.color = "\033[38;5;12m",
 	},
 	[INT2IDX(DLINP)] = {
 		.name = "DLINP",
