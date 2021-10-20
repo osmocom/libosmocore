@@ -141,7 +141,17 @@ struct abis_rsl_osmo_rep_acch_cap {
 
 /* Osmocom specific IE to negotiate temporary overpower of ACCH channels */
 struct abis_rsl_osmo_temp_ovp_acch_cap {
-	uint8_t overpower_db;
+#if OSMO_IS_BIG_ENDIAN
+	uint8_t sacch_enable:1,
+		facch_enable:1,
+		rxqual:3,
+		overpower_db:3;
+#elif OSMO_IS_LITTLE_ENDIAN
+	uint8_t overpower_db:3,
+		rxqual:3,
+		facch_enable:1,
+		sacch_enable:1;
+#endif
 } __attribute__ ((packed));
 
 /* Chapter 9.1 */
