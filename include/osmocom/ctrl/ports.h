@@ -28,4 +28,6 @@
 /* 4266 used by D-GSM mDNS */
 #define OSMO_CTRL_PORT_MGW	4267
 #define OSMO_CTRL_PORT_SMLC	4272
+/* 4273 used by VTY interface */
+#define OSMO_CTRL_PORT_HNODEB	4274
 /* When adding/changing port numbers, keep docs and wiki in sync. See above. */
