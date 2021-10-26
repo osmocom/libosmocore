@@ -652,7 +652,7 @@ static int rx_lmi_q933_status(struct msgb *msg, struct tlv_parsed *tp)
 
 	/* check for mandatory IEs */
 	if (!TLVP_PRES_LEN(tp, Q933_IEI_REPORT_TYPE, 1)) {
-		LOGPFRL(link, LOGL_NOTICE, "Rx STATUSL: Missing TLV Q933 Report Type\n");
+		LOGPFRL(link, LOGL_NOTICE, "Rx STATUS: Missing TLV Q933 Report Type\n");
 		return -1;
 	}
 

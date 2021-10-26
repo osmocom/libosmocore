@@ -83,11 +83,6 @@
 /* nanoseconds per bit (504) */
 #define BIT_DURATION_NS (1000000000 / SUPERCHANNEL_LINERATE)
 
-struct gre_hdr {
-	uint16_t flags;
-	uint16_t ptype;
-} __attribute__ ((packed));
-
 static void free_bind(struct gprs_ns2_vc_bind *bind);
 static int fr_dlci_rx_cb(void *cb_data, struct msgb *msg);
 
@@ -256,13 +251,13 @@ static int fr_netif_ofd_cb(struct osmo_fd *bfd, uint32_t what)
 	if (!(what & OSMO_FD_READ))
 		return 0;
 
-	msg = msgb_alloc(NS_ALLOC_SIZE, "Gb/NS/FR/GRE Rx");
+	msg = msgb_alloc(NS_ALLOC_SIZE, "Gb/NS/FR Rx");
 	if (!msg)
 		return -ENOMEM;
 
 	rc = recvfrom(bfd->fd, msg->data, NS_ALLOC_SIZE, 0, (struct sockaddr *)&sll, &sll_len);
 	if (rc < 0) {
-		LOGBIND(bind, LOGL_ERROR, "recv error %s during NS-FR-GRE recv\n", strerror(errno));
+		LOGBIND(bind, LOGL_ERROR, "recv error %s during NS-FR recv\n", strerror(errno));
 		goto out_err;
 	} else if (rc == 0) {
 		goto out_err;
