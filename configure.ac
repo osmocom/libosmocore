@@ -150,7 +150,7 @@ ARG_ENABLE_DETECT_TLS_GCC_ARM_BUG
 dnl Generate the output
 AC_CONFIG_HEADER(config.h)
 
-PKG_CHECK_MODULES(TALLOC, [talloc >= 2.0.1])
+PKG_CHECK_MODULES(TALLOC, [talloc >= 2.1.0])
 
 AC_ARG_ENABLE([pcsc], [AS_HELP_STRING([--disable-pcsc], [Build without PC/SC support])],
     [
