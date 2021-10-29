@@ -1,5 +1,7 @@
 #pragma once
 
+#include <osmocom/core/endian.h>
+
 /* TS 44.004 Section 7.1 */
 
 struct gsm_sacch_l1_hdr {
