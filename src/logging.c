@@ -1090,33 +1090,20 @@ struct log_target *log_target_create_file_stream(const char *fname)
 
 /*! switch from non-blocking/write-queue to blocking + buffered stream output
  *  \param[in] target log target which we should switch
- *  \return 0 on success; 1 if already switched before; negative on error */
+ *  \return 0 on success; 1 if already switched before; negative on error
+ *  Must be called with mutex osmo_log_tgt_mutex held, see log_tgt_mutex_lock.
+ */
 int log_target_file_switch_to_stream(struct log_target *target)
 {
 	struct osmo_wqueue *wq;
-	const char *name;
 
 	if (!target)
 		return -ENODEV;
-
-	/* this only works for file/stderr targets */
-	switch (target->type) {
-	case LOG_TGT_TYPE_FILE:
-		name = target->tgt_file.fname;
-		break;
-	case LOG_TGT_TYPE_STDERR:
-		name = "stderr";
-		break;
-	default:
-		return -EINVAL;
-	}
 
 	if (target->tgt_file.out) {
 		/* target has already been switched over */
 		return 1;
 	}
-
-	LOGP(DLGLOBAL, LOGL_INFO, "Switching log target '%s' to blocking stream I/O\n", name);
 
 	wq = target->tgt_file.wqueue;
 	OSMO_ASSERT(wq);
@@ -1127,8 +1114,6 @@ int log_target_file_switch_to_stream(struct log_target *target)
 	else
 		target->tgt_file.out = fopen(target->tgt_file.fname, "a");
 	if (!target->tgt_file.out) {
-		LOGP(DLGLOBAL, LOGL_ERROR, "Cannot open log target '%s' as blocking stream I/O: %s\n",
-		     name, strerror(errno));
 		return -EIO;
 	}
 
@@ -1156,34 +1141,21 @@ int log_target_file_switch_to_stream(struct log_target *target)
 
 /*! switch from blocking + buffered file output to non-blocking write-queue based output.
  *  \param[in] target log target which we should switch
- *  \return 0 on success; 1 if already switched before; negative on error */
+ *  \return 0 on success; 1 if already switched before; negative on error
+ *  Must be called with mutex osmo_log_tgt_mutex held, see log_tgt_mutex_lock.
+ */
 int log_target_file_switch_to_wqueue(struct log_target *target)
 {
 	struct osmo_wqueue *wq;
-	const char *name;
 	int rc;
 
 	if (!target)
 		return -ENODEV;
 
-	/* this only works for file/stderr targets */
-	switch (target->type) {
-	case LOG_TGT_TYPE_FILE:
-		name = target->tgt_file.fname;
-		break;
-	case LOG_TGT_TYPE_STDERR:
-		name = "stderr";
-		break;
-	default:
-		return -EINVAL;
-	}
-
 	if (!target->tgt_file.out) {
 		/* target has already been switched over */
 		return 1;
 	}
-
-	LOGP(DLGLOBAL, LOGL_INFO, "Switching log target '%s' to non-blocking I/O\n", name);
 
 	/* we create a ~640kB sized talloc pool within the write-queue to ensure individual
 	 * log lines (stored as msgbs) will not put result in malloc() calls, and also to
@@ -1198,8 +1170,6 @@ int log_target_file_switch_to_wqueue(struct log_target *target)
 	if (target->type == LOG_TGT_TYPE_FILE) {
 		rc = open(target->tgt_file.fname, O_WRONLY|O_APPEND|O_CREAT|O_NONBLOCK, 0660);
 		if (rc < 0) {
-			LOGP(DLGLOBAL, LOGL_ERROR, "Cannot open log target '%s' as non-blocking I/O: %s\n",
-			     name, strerror(errno));
 			talloc_free(wq);
 			return -errno;
 		}
