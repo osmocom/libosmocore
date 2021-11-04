@@ -593,6 +593,12 @@ struct gsm48_meas_res {
 #endif
 } __attribute__ ((packed));
 
+/*! Check if the given mr contains valid measurement results */
+static inline bool gsm48_meas_res_is_valid(const struct gsm48_meas_res *mr)
+{
+	return (mr->meas_valid == 0); /* 0 means valid */
+}
+
 /* Chapter 10.5.2.21aa */
 struct gsm48_multi_rate_conf {
 #if OSMO_IS_LITTLE_ENDIAN
