@@ -2,10 +2,10 @@ stats_vty_test> en
 stats_vty_test# configure terminal
 stats_vty_test(config)# list
 ...
-  stats reporter statsd
-  no stats reporter statsd
-  stats reporter log
-  no stats reporter log
+  stats reporter statsd [NAME]
+  no stats reporter statsd [NAME]
+  stats reporter log [NAME]
+  no stats reporter log [NAME]
   stats interval <0-65535>
 ...
 
@@ -146,6 +146,72 @@ stats reporter log
   prefix log-prefix
   enable
 ...
+
+
+stats_vty_test(config)# ### Create an additional statsd reporter
+stats_vty_test(config)# stats reporter statsd statsd-foo
+stats_vty_test(config-stats)# level global
+stats_vty_test(config-stats)# prefix statsd-one-prefix
+stats_vty_test(config-stats)# remote-ip 192.168.2.200
+stats_vty_test(config-stats)# remote-port 9696
+stats_vty_test(config-stats)# flush-period 1
+stats_vty_test(config-stats)# exit
+
+stats_vty_test(config)# ### Create an additional log reporter
+stats_vty_test(config)# stats reporter log log-bar
+stats_vty_test(config-stats)# level global
+stats_vty_test(config-stats)# prefix log-bar-prefix
+stats_vty_test(config-stats)# flush-period 2
+stats_vty_test(config-stats)# exit
+
+stats_vty_test(config)# ### Create an additional log reporter
+stats_vty_test(config)# stats reporter log log-zoo
+stats_vty_test(config-stats)# level global
+stats_vty_test(config-stats)# prefix log-zoo-prefix
+stats_vty_test(config-stats)# flush-period 3
+stats_vty_test(config-stats)# exit
+
+stats_vty_test(config)# ### We should have 5 reporters now
+stats_vty_test(config)# show running-config
+...
+stats reporter statsd
+  disable
+  remote-ip 192.168.1.200
+  remote-port 6969
+  level subscriber
+  prefix statsd-prefix
+  enable
+stats reporter log
+  disable
+  level peer
+  prefix log-prefix
+  enable
+stats reporter statsd statsd-foo
+  disable
+  remote-ip 192.168.2.200
+  remote-port 9696
+  level global
+  prefix statsd-one-prefix
+  flush-period 1
+stats reporter log log-bar
+  disable
+  level global
+  prefix log-bar-prefix
+  flush-period 2
+stats reporter log log-zoo
+  disable
+  level global
+  prefix log-zoo-prefix
+  flush-period 3
+...
+
+
+stats_vty_test(config)# ### Test removing reporters
+stats_vty_test(config)# no stats reporter statsd statsd-foo
+stats_vty_test(config)# no stats reporter log log-bar
+stats_vty_test(config)# no stats reporter log log-zoo
+stats_vty_test(config)# show running-config
+... !(foo|bar|zoo)
 
 
 stats_vty_test(config)# stats interval 1337

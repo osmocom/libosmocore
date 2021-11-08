@@ -106,7 +106,7 @@
 #define STATS_DEFAULT_INTERVAL 5 /* secs */
 #define STATS_DEFAULT_BUFLEN 256
 
-static LLIST_HEAD(osmo_stats_reporter_list);
+LLIST_HEAD(osmo_stats_reporter_list);
 static void *osmo_stats_ctx = NULL;
 static int is_initialised = 0;
 

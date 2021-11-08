@@ -269,14 +269,20 @@ DEFUN(cfg_stats_reporter_flush_period, cfg_stats_reporter_flush_period_cmd,
 }
 
 DEFUN(cfg_stats_reporter_statsd, cfg_stats_reporter_statsd_cmd,
-	"stats reporter statsd",
-	CFG_STATS_STR CFG_REPORTER_STR "Report to a STATSD server\n")
+	"stats reporter statsd [NAME]",
+	CFG_STATS_STR CFG_REPORTER_STR
+	"Report to a STATSD server\n"
+	"Name of the reporter\n")
 {
 	struct osmo_stats_reporter *srep;
+	const char *name = NULL;
 
-	srep = osmo_stats_reporter_find(OSMO_STATS_REPORTER_STATSD, NULL);
+	if (argc > 0)
+		name = argv[0];
+
+	srep = osmo_stats_reporter_find(OSMO_STATS_REPORTER_STATSD, name);
 	if (!srep) {
-		srep = osmo_stats_reporter_create_statsd(NULL);
+		srep = osmo_stats_reporter_create_statsd(name);
 		if (!srep) {
 			vty_out(vty, "%% Unable to create statsd reporter%s",
 				VTY_NEWLINE);
@@ -293,12 +299,18 @@ DEFUN(cfg_stats_reporter_statsd, cfg_stats_reporter_statsd_cmd,
 }
 
 DEFUN(cfg_no_stats_reporter_statsd, cfg_no_stats_reporter_statsd_cmd,
-	"no stats reporter statsd",
-	NO_STR CFG_STATS_STR CFG_REPORTER_STR "Report to a STATSD server\n")
+	"no stats reporter statsd [NAME]",
+	NO_STR CFG_STATS_STR CFG_REPORTER_STR
+	"Report to a STATSD server\n"
+	"Name of the reporter\n")
 {
 	struct osmo_stats_reporter *srep;
+	const char *name = NULL;
 
-	srep = osmo_stats_reporter_find(OSMO_STATS_REPORTER_STATSD, NULL);
+	if (argc > 0)
+		name = argv[0];
+
+	srep = osmo_stats_reporter_find(OSMO_STATS_REPORTER_STATSD, name);
 	if (!srep) {
 		vty_out(vty, "%% No statsd logging active%s",
 			VTY_NEWLINE);
@@ -311,14 +323,20 @@ DEFUN(cfg_no_stats_reporter_statsd, cfg_no_stats_reporter_statsd_cmd,
 }
 
 DEFUN(cfg_stats_reporter_log, cfg_stats_reporter_log_cmd,
-	"stats reporter log",
-	CFG_STATS_STR CFG_REPORTER_STR "Report to the logger\n")
+	"stats reporter log [NAME]",
+	CFG_STATS_STR CFG_REPORTER_STR
+	"Report to the logger\n"
+	"Name of the reporter\n")
 {
 	struct osmo_stats_reporter *srep;
+	const char *name = NULL;
 
-	srep = osmo_stats_reporter_find(OSMO_STATS_REPORTER_LOG, NULL);
+	if (argc > 0)
+		name = argv[0];
+
+	srep = osmo_stats_reporter_find(OSMO_STATS_REPORTER_LOG, name);
 	if (!srep) {
-		srep = osmo_stats_reporter_create_log(NULL);
+		srep = osmo_stats_reporter_create_log(name);
 		if (!srep) {
 			vty_out(vty, "%% Unable to create log reporter%s",
 				VTY_NEWLINE);
@@ -335,12 +353,18 @@ DEFUN(cfg_stats_reporter_log, cfg_stats_reporter_log_cmd,
 }
 
 DEFUN(cfg_no_stats_reporter_log, cfg_no_stats_reporter_log_cmd,
-	"no stats reporter log",
-	NO_STR CFG_STATS_STR CFG_REPORTER_STR "Report to the logger\n")
+	"no stats reporter log [NAME]",
+	NO_STR CFG_STATS_STR CFG_REPORTER_STR
+	"Report to the logger\n"
+	"Name of the reporter\n")
 {
 	struct osmo_stats_reporter *srep;
+	const char *name = NULL;
 
-	srep = osmo_stats_reporter_find(OSMO_STATS_REPORTER_LOG, NULL);
+	if (argc > 0)
+		name = argv[0];
+
+	srep = osmo_stats_reporter_find(OSMO_STATS_REPORTER_LOG, name);
 	if (!srep) {
 		vty_out(vty, "%% No log reporting active%s",
 			VTY_NEWLINE);
@@ -598,17 +622,21 @@ DEFUN(stats_reset,
 
 static int config_write_stats_reporter(struct vty *vty, struct osmo_stats_reporter *srep)
 {
-	if (srep == NULL)
-		return 0;
+	const char *type = NULL;
 
 	switch (srep->type) {
 	case OSMO_STATS_REPORTER_STATSD:
-		vty_out(vty, "stats reporter statsd%s", VTY_NEWLINE);
+		type = "statsd";
 		break;
 	case OSMO_STATS_REPORTER_LOG:
-		vty_out(vty, "stats reporter log%s", VTY_NEWLINE);
+		type = "log";
 		break;
 	}
+
+	vty_out(vty, "stats reporter %s", type);
+	if (srep->name != NULL)
+		vty_out(vty, " %s", srep->name);
+	vty_out(vty, "%s", VTY_NEWLINE);
 
 	vty_out(vty, "  disable%s", VTY_NEWLINE);
 
@@ -652,11 +680,9 @@ static int config_write_stats(struct vty *vty)
 {
 	struct osmo_stats_reporter *srep;
 
-	/* TODO: loop through all reporters */
-	srep = osmo_stats_reporter_find(OSMO_STATS_REPORTER_STATSD, NULL);
-	config_write_stats_reporter(vty, srep);
-	srep = osmo_stats_reporter_find(OSMO_STATS_REPORTER_LOG, NULL);
-	config_write_stats_reporter(vty, srep);
+	/* Loop through all reporters */
+	llist_for_each_entry(srep, &osmo_stats_reporter_list, list)
+		config_write_stats_reporter(vty, srep);
 
 	vty_out(vty, "stats interval %d%s", osmo_stats_config->interval, VTY_NEWLINE);
 
