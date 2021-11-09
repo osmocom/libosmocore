@@ -312,8 +312,8 @@ DEFUN(cfg_no_stats_reporter_statsd, cfg_no_stats_reporter_statsd_cmd,
 
 	srep = osmo_stats_reporter_find(OSMO_STATS_REPORTER_STATSD, name);
 	if (!srep) {
-		vty_out(vty, "%% No statsd logging active%s",
-			VTY_NEWLINE);
+		vty_out(vty, "%% There is no such statsd reporter with name '%s'%s",
+			name ? name : "", VTY_NEWLINE);
 		return CMD_WARNING;
 	}
 
@@ -366,8 +366,8 @@ DEFUN(cfg_no_stats_reporter_log, cfg_no_stats_reporter_log_cmd,
 
 	srep = osmo_stats_reporter_find(OSMO_STATS_REPORTER_LOG, name);
 	if (!srep) {
-		vty_out(vty, "%% No log reporting active%s",
-			VTY_NEWLINE);
+		vty_out(vty, "%% There is no such log reporter with name '%s'%s",
+			name ? name : "", VTY_NEWLINE);
 		return CMD_WARNING;
 	}
 

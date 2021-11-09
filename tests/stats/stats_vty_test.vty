@@ -203,6 +203,11 @@ stats_vty_test(config)# no stats reporter log log-zoo
 stats_vty_test(config)# show running-config
 ... !(foo|bar|zoo)
 
+stats_vty_test(config)# no stats reporter statsd statsd-foo
+% There is no such statsd reporter with name 'statsd-foo'
+stats_vty_test(config)# no stats reporter log log-zoo
+% There is no such log reporter with name 'log-zoo'
+
 
 stats_vty_test(config)# stats interval 1337
 stats_vty_test(config)# show running-config
