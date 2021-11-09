@@ -34,11 +34,11 @@ stats_vty_test(config-stats)# list
 
 stats_vty_test(config-stats)# show running-config
 ...
+stats interval 5
 stats reporter statsd
   disable
   level global
   no prefix
-stats interval 5
 ...
 
 stats_vty_test(config-stats)# level subscriber

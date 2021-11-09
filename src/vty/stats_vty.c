@@ -680,11 +680,11 @@ static int config_write_stats(struct vty *vty)
 {
 	struct osmo_stats_reporter *srep;
 
+	vty_out(vty, "stats interval %d%s", osmo_stats_config->interval, VTY_NEWLINE);
+
 	/* Loop through all reporters */
 	llist_for_each_entry(srep, &osmo_stats_reporter_list, list)
 		config_write_stats_reporter(vty, srep);
-
-	vty_out(vty, "stats interval %d%s", osmo_stats_config->interval, VTY_NEWLINE);
 
 	return 1;
 }
