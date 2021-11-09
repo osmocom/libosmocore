@@ -36,9 +36,9 @@ stats_vty_test(config-stats)# show running-config
 ...
 stats interval 5
 stats reporter statsd
-  disable
   level global
   no prefix
+  disable
 ...
 
 stats_vty_test(config-stats)# level subscriber
@@ -46,7 +46,6 @@ stats_vty_test(config-stats)# prefix statsd-prefix
 stats_vty_test(config-stats)# show running-config
 ...
 stats reporter statsd
-  disable
   level subscriber
   prefix statsd-prefix
 ...
@@ -56,7 +55,6 @@ stats_vty_test(config-stats)# remote-port 6969
 stats_vty_test(config-stats)# show running-config
 ...
 stats reporter statsd
-  disable
   remote-ip 192.168.1.200
   remote-port 6969
 ... !local-ip
@@ -65,7 +63,6 @@ stats_vty_test(config-stats)# local-ip 192.168.1.100
 stats_vty_test(config-stats)# show running-config
 ...
 stats reporter statsd
-  disable
   remote-ip 192.168.1.200
   remote-port 6969
   local-ip 192.168.1.100
@@ -81,7 +78,6 @@ stats_vty_test(config-stats)# mtu 1337
 stats_vty_test(config-stats)# show running-config
 ...
 stats reporter statsd
-  disable
   remote-ip 192.168.1.200
   remote-port 6969
   mtu 1337
@@ -97,7 +93,6 @@ stats_vty_test(config-stats)# flush-period 43556
 stats_vty_test(config-stats)# show running-config
 ...
 stats reporter statsd
-  disable
   remote-ip 192.168.1.200
   remote-port 6969
   level subscriber
@@ -116,7 +111,6 @@ stats_vty_test(config-stats)# exit
 stats_vty_test(config)# show running-config
 ...
 stats reporter statsd
-  disable
   remote-ip 192.168.1.200
   remote-port 6969
   level subscriber
@@ -134,14 +128,12 @@ stats_vty_test(config-stats)# exit
 stats_vty_test(config)# show running-config
 ...
 stats reporter statsd
-  disable
   remote-ip 192.168.1.200
   remote-port 6969
   level subscriber
   prefix statsd-prefix
   enable
 stats reporter log
-  disable
   level peer
   prefix log-prefix
   enable
@@ -175,34 +167,32 @@ stats_vty_test(config)# ### We should have 5 reporters now
 stats_vty_test(config)# show running-config
 ...
 stats reporter statsd
-  disable
   remote-ip 192.168.1.200
   remote-port 6969
   level subscriber
   prefix statsd-prefix
   enable
 stats reporter log
-  disable
   level peer
   prefix log-prefix
   enable
 stats reporter statsd statsd-foo
-  disable
   remote-ip 192.168.2.200
   remote-port 9696
   level global
   prefix statsd-one-prefix
   flush-period 1
-stats reporter log log-bar
   disable
+stats reporter log log-bar
   level global
   prefix log-bar-prefix
   flush-period 2
-stats reporter log log-zoo
   disable
+stats reporter log log-zoo
   level global
   prefix log-zoo-prefix
   flush-period 3
+  disable
 ...
 
 

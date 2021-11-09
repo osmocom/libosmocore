@@ -638,8 +638,6 @@ static int config_write_stats_reporter(struct vty *vty, struct osmo_stats_report
 		vty_out(vty, " %s", srep->name);
 	vty_out(vty, "%s", VTY_NEWLINE);
 
-	vty_out(vty, "  disable%s", VTY_NEWLINE);
-
 	if (srep->have_net_config) {
 		if (srep->dest_addr_str)
 			vty_out(vty, "  remote-ip %s%s",
@@ -672,6 +670,8 @@ static int config_write_stats_reporter(struct vty *vty, struct osmo_stats_report
 
 	if (srep->enabled)
 		vty_out(vty, "  enable%s", VTY_NEWLINE);
+	else
+		vty_out(vty, "  disable%s", VTY_NEWLINE);
 
 	return 1;
 }
