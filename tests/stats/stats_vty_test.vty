@@ -1,0 +1,155 @@
+stats_vty_test> en
+stats_vty_test# configure terminal
+stats_vty_test(config)# list
+...
+  stats reporter statsd
+  no stats reporter statsd
+  stats reporter log
+  no stats reporter log
+  stats interval <0-65535>
+...
+
+stats_vty_test(config)# ### No reporters shall be configured by default
+stats_vty_test(config)# show running-config
+... !stats reporter
+
+
+stats_vty_test(config)# ### Create a statsd reporter
+stats_vty_test(config)# stats reporter statsd
+stats_vty_test(config-stats)# list
+...
+  local-ip ADDR
+  no local-ip
+  remote-ip ADDR
+  remote-port <1-65535>
+  mtu <100-65535>
+  no mtu
+  prefix PREFIX
+  no prefix
+  level (global|peer|subscriber)
+  enable
+  disable
+  flush-period <0-65535>
+...
+
+stats_vty_test(config-stats)# show running-config
+...
+stats reporter statsd
+  disable
+  level global
+  no prefix
+stats interval 5
+...
+
+stats_vty_test(config-stats)# level subscriber
+stats_vty_test(config-stats)# prefix statsd-prefix
+stats_vty_test(config-stats)# show running-config
+...
+stats reporter statsd
+  disable
+  level subscriber
+  prefix statsd-prefix
+...
+
+stats_vty_test(config-stats)# remote-ip 192.168.1.200
+stats_vty_test(config-stats)# remote-port 6969
+stats_vty_test(config-stats)# show running-config
+...
+stats reporter statsd
+  disable
+  remote-ip 192.168.1.200
+  remote-port 6969
+... !local-ip
+
+stats_vty_test(config-stats)# local-ip 192.168.1.100
+stats_vty_test(config-stats)# show running-config
+...
+stats reporter statsd
+  disable
+  remote-ip 192.168.1.200
+  remote-port 6969
+  local-ip 192.168.1.100
+...
+
+stats_vty_test(config-stats)# no local-ip
+stats_vty_test(config-stats)# show running-config
+...
+stats reporter statsd
+... !local-ip
+
+stats_vty_test(config-stats)# mtu 1337
+stats_vty_test(config-stats)# show running-config
+...
+stats reporter statsd
+  disable
+  remote-ip 192.168.1.200
+  remote-port 6969
+  mtu 1337
+...
+
+stats_vty_test(config-stats)# no mtu
+stats_vty_test(config-stats)# show running-config
+...
+stats reporter statsd
+... !mtu
+
+stats_vty_test(config-stats)# flush-period 43556
+stats_vty_test(config-stats)# show running-config
+...
+stats reporter statsd
+  disable
+  remote-ip 192.168.1.200
+  remote-port 6969
+  level subscriber
+  prefix statsd-prefix
+  flush-period 43556
+...
+
+stats_vty_test(config-stats)# flush-period 0
+stats_vty_test(config-stats)# show running-config
+...
+stats reporter statsd
+... !flush-period
+
+stats_vty_test(config-stats)# enable
+stats_vty_test(config-stats)# exit
+stats_vty_test(config)# show running-config
+...
+stats reporter statsd
+  disable
+  remote-ip 192.168.1.200
+  remote-port 6969
+  level subscriber
+  prefix statsd-prefix
+  enable
+...
+
+
+stats_vty_test(config)# ### Create a statsd reporter
+stats_vty_test(config)# stats reporter log
+stats_vty_test(config-stats)# level peer
+stats_vty_test(config-stats)# prefix log-prefix
+stats_vty_test(config-stats)# enable
+stats_vty_test(config-stats)# exit
+stats_vty_test(config)# show running-config
+...
+stats reporter statsd
+  disable
+  remote-ip 192.168.1.200
+  remote-port 6969
+  level subscriber
+  prefix statsd-prefix
+  enable
+stats reporter log
+  disable
+  level peer
+  prefix log-prefix
+  enable
+...
+
+
+stats_vty_test(config)# stats interval 1337
+stats_vty_test(config)# show running-config
+...
+stats interval 1337
+...

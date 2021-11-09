@@ -73,6 +73,7 @@ endif
 if !EMBEDDED
 check_PROGRAMS += \
 	stats/stats_test \
+	stats/stats_vty_test \
 	exec/exec_test
 endif
 
@@ -88,6 +89,9 @@ utils_utils_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 stats_stats_test_SOURCES = stats/stats_test.c
 stats_stats_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 stats_stats_test_CPPFLAGS = $(AM_CPPFLAGS) -I$(top_srcdir)/src
+
+stats_stats_vty_test_SOURCES = stats/stats_vty_test.c
+stats_stats_vty_test_LDADD = $(LDADD) $(top_builddir)/src/vty/libosmovty.la
 
 a5_a5_test_SOURCES = a5/a5_test.c
 a5_a5_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libgsmint.la
@@ -374,6 +378,7 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
 	     comp128/comp128_test.ok bits/bitfield_test.ok		\
 	     utils/utils_test.ok utils/utils_test.err 			\
 	     stats/stats_test.ok stats/stats_test.err			\
+	     stats/stats_vty_test.vty					\
 	     bitvec/bitvec_test.ok msgb/msgb_test.ok bits/bitcomp_test.ok \
 	     sim/sim_test.ok tlv/tlv_test.ok abis/abis_test.ok		\
 	     gsup/gsup_test.ok gsup/gsup_test.err			\
@@ -677,12 +682,19 @@ vty-test-tdef:
 		-r "$(top_builddir)/tests/tdef/tdef_vty_test_dynamic" \
 		$(U) $(srcdir)/tdef/tdef_vty_test_dynamic.vty
 
+vty-test-stats:
+	osmo_verify_transcript_vty.py -v \
+		-p 42042 \
+		-r "$(top_builddir)/tests/stats/stats_vty_test" \
+		$(U) $(srcdir)/stats/*.vty
+
 # don't run vty tests concurrently so that the ports don't conflict
 vty-test:
 	$(MAKE) vty-test-logging
 	$(MAKE) vty-test-vty
 	$(MAKE) vty-test-tdef
 	$(MAKE) vty-test-ns2
+	$(MAKE) vty-test-stats
 
 ctrl-test:
 	echo "No CTRL tests exist currently"
