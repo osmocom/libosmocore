@@ -223,7 +223,7 @@ struct osmo_stats_reporter *osmo_stats_reporter_alloc(enum osmo_stats_reporter_t
 		srep->name = talloc_strdup(srep, name);
 	srep->fd = -1;
 
-	llist_add(&srep->list, &osmo_stats_reporter_list);
+	llist_add_tail(&srep->list, &osmo_stats_reporter_list);
 
 	return srep;
 }
