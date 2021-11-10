@@ -1392,11 +1392,16 @@ void ns2_nse_data_sum(struct gprs_ns2_nse *nse)
 void ns2_nse_notify_unblocked(struct gprs_ns2_vc *nsvc, bool unblocked)
 {
 	struct gprs_ns2_nse *nse = nsvc->nse;
+	struct gprs_ns2_inst *nsi = nse->nsi;
+	uint16_t nsei = nse->nsei;
 
 	ns2_nse_data_sum(nse);
 	ns2_sns_notify_alive(nse, nsvc, unblocked);
 
-	if (unblocked == nse->alive)
+	/* NSE could have been freed, try to get it again */
+	nse = gprs_ns2_nse_by_nsei(nsi, nsei);
+
+	if (!nse || unblocked == nse->alive)
 		return;
 
 	/* wait until both data_weight and sig_weight are != 0 before declaring NSE as alive */
