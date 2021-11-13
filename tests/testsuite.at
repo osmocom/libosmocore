@@ -452,3 +452,9 @@ AT_KEYWORDS([base64])
 cat $abs_srcdir/base64/base64_test.ok > expout
 AT_CHECK([$abs_top_builddir/tests/base64/base64_test], [0], [expout], [ignore])
 AT_CLEANUP
+
+AT_SETUP([time_cc])
+AT_KEYWORDS([time_cc])
+cat $abs_srcdir/time_cc/time_cc_test.ok > expout
+AT_CHECK([$abs_top_builddir/tests/time_cc/time_cc_test], [0], [expout], [ignore])
+AT_CLEANUP

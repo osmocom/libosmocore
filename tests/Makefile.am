@@ -42,6 +42,7 @@ check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
 		 bsslap/bsslap_test					\
 		 bssmap_le/bssmap_le_test				\
 		 it_q/it_q_test						\
+		 time_cc/time_cc_test					\
 		 gsm48/rest_octets_test					\
 		 base64/base64_test					\
 		 $(NULL)
@@ -324,6 +325,9 @@ bssmap_le_bssmap_le_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 it_q_it_q_test_SOURCES = it_q/it_q_test.c
 it_q_it_q_test_LDADD = $(LDADD)
 
+time_cc_time_cc_test_SOURCES = time_cc/time_cc_test.c
+time_cc_time_cc_test_LDADD = $(LDADD)
+
 # The `:;' works around a Bash 3.2 bug when the output is not writeable.
 $(srcdir)/package.m4: $(top_srcdir)/configure.ac
 	:;{ \
@@ -413,6 +417,7 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
 	     bsslap/bsslap_test.ok \
 	     bssmap_le/bssmap_le_test.ok \
 	     it_q/it_q_test.ok \
+	     time_cc/time_cc_test.ok \
 	     gsm48/rest_octets_test.ok \
 	     base64/base64_test.ok \
 	     $(NULL)
@@ -609,6 +614,8 @@ endif
 		>$(srcdir)/bssmap_le/bssmap_le_test.ok
 	it_q/it_q_test \
 		>$(srcdir)/it_q/it_q_test.ok
+	time_cc/time_cc_test \
+		>$(srcdir)/time_cc/time_cc_test.ok
 
 check-local: atconfig $(TESTSUITE)
 	[ -e /proc/cpuinfo ] && cat /proc/cpuinfo
