@@ -354,6 +354,10 @@ static void rate_ctr_timer_cb(void *data)
  *  \returns 0 on success; negative on error */
 int rate_ctr_init(void *tall_ctx)
 {
+	/* ignore repeated initialization */
+	if (osmo_timer_pending(&rate_ctr_timer))
+		return 0;
+
 	tall_rate_ctr_ctx = tall_ctx;
 	osmo_timer_setup(&rate_ctr_timer, rate_ctr_timer_cb, NULL);
 	osmo_timer_schedule(&rate_ctr_timer, 1, 0);
