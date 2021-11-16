@@ -29,7 +29,7 @@ BuildRequires:  xz
 BuildRequires:  pkgconfig(gnutls) >= 2.12.0
 BuildRequires:  pkgconfig(libpcsclite)
 BuildRequires:  pkgconfig(libusb-1.0)
-BuildRequires:  pkgconfig(talloc) >= 2.0.1
+BuildRequires:  pkgconfig(talloc) >= 2.1.0
 BuildRequires:  pkgconfig(libmnl)
 BuildRequires:  pkgconfig(libsystemd)
 
