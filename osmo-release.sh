@@ -223,7 +223,7 @@ if [ "z$NEW_VER" = "z" ]; then
 	exit 1
 fi
 GIT_TOPDIR="$(git rev-parse --show-toplevel)"
-LIBVERS=`git grep -n LIBVERSION | grep  '=' | grep am | grep -v LDFLAGS`
+LIBVERS=`git grep -n LIBVERSION | grep  '=' | grep am | grep -v LDFLAGS | grep -v osmo-release.sh`
 MAKEMOD=`git diff --cached -GLIBVERSION --stat | grep Makefile.am`
 ISODATE=`date -I`
 
