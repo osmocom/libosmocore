@@ -14,7 +14,7 @@ Build-Depends: debhelper (>= 9),
                doxygen,
                libpcsclite-dev,
                pkg-config,
-               libtalloc-dev,
+               libtalloc-dev (>= 2.1.0),
                libsctp-dev,
                libusb-1.0-0-dev,
                libmnl-dev,
@@ -319,7 +319,7 @@ Architecture: any
 Multi-Arch: same
 Section: libdevel
 Depends: libosmocore,
-         libtalloc-dev,
+         libtalloc-dev (>= 2.1.0),
          ${misc:Depends}
 Description: Development headers for Open Source MObile COMmunications CORE library
  The header files provided by this package may be used to develop
