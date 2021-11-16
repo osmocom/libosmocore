@@ -70,6 +70,7 @@ utils/osmo-arfcn
 utils/osmo-auc-gen
 utils/osmo-config-merge
 utils/osmo-sim-test
+utils/osmo-aka-verify
 
 doc/codec
 doc/coding
