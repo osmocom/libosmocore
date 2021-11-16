@@ -242,7 +242,7 @@ void osmo_tdef_vty_out_all(struct vty *vty, struct osmo_tdef *tdefs, const char 
 
 /*! Write current timer configuration arguments to the vty. Skip all entries that reflect their default value.
  * The passed prefix string must contain both necessary indent and the VTY command the specific implementation is using.
- * See tdef_vty_test_config_subnode.c and tdef_vty_test_dynamic.c for examples.
+ * See tdef_vty_config_subnode_test.c and tdef_vty_dynamic_test.c for examples.
  * \param[in] vty  VTY context.
  * \param[in] tdefs  Array of timers to print, ended with a fully zero-initialized entry.
  * \param[in] prefix_fmt  Arbitrary string to start each line with, with variable printf like arguments.

@@ -45,7 +45,7 @@
 /* ------------------- HERE IS THE INTERESTING TDEF RELEVANT PART ------------------- */
 
 /* This example keeps several separate timer groups and offers 'timer' VTY commands at the root of the config node. See
- * the tdef_vty_test_config_root.vty transcript test.
+ * the tdef_vty_config_root_test.vty transcript test.
  */
 
 static struct osmo_tdef tdefs_test[] = {
@@ -102,7 +102,7 @@ enum tdef_vty_test_nodes {
 /* This example puts 'timer' configuration commands directly at the root of the CONFIG_NODE.
  * This TIMER_NODE is merely needed as a hook for the vty_write() command, but becomes an empty node in the VTY docs.
  * It is possible to cheat around needing this if you choose to config_write_timer() in another root nodes' write cb.
- * Another example using a 'network' subnode is \ref tdef_vty_test_config_subnode.c */
+ * Another example using a 'network' subnode is \ref tdef_vty_config_subnode_test.c */
 static struct cmd_node timer_node = {
 	TIMER_NODE,
 	"%s(config-timer)# ",

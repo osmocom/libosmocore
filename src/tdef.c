@@ -52,18 +52,18 @@
  * By keeping separate osmo_tdef arrays, several groups of timers can be kept
  * separately. The VTY tests in tests/tdef/ showcase different schemes:
  *
- * - \ref tests/vty/tdef_vty_test_config_root.c:
+ * - \ref tests/vty/tdef_vty_config_root_test.c:
  *   Keep several timer definitions in separately named groups: showcase the
  *   osmo_tdef_vty_groups*() API. Each timer group exists exactly once.
  *
- * - \ref tests/vty/tdef_vty_test_config_subnode.c:
+ * - \ref tests/vty/tdef_vty_config_subnode_test.c:
  *   Keep a single list of timers without separate grouping.
  *   Put this list on a specific subnode below the CONFIG_NODE.
  *   There could be several separate subnodes with timers like this, i.e.
  *   continuing from this example, sets of timers could be separated by placing
  *   timers in specific config subnodes instead of using the global group name.
  *
- * - \ref tests/vty/tdef_vty_test_dynamic.c:
+ * - \ref tests/vty/tdef_vty_dynamic_test.c:
  *   Dynamically allocate timer definitions per each new created object.
  *   Thus there can be an arbitrary number of independent timer definitions, one
  *   per allocated object.

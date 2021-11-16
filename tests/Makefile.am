@@ -28,9 +28,9 @@ check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
 		 oap/oap_client_test gsm29205/gsm29205_test		\
 		 logging/logging_vty_test				\
 		 vty/vty_transcript_test				\
-		 tdef/tdef_test tdef/tdef_vty_test_config_root		\
-		 tdef/tdef_vty_test_config_subnode			\
-		 tdef/tdef_vty_test_dynamic				\
+		 tdef/tdef_test tdef/tdef_vty_config_root_test		\
+		 tdef/tdef_vty_config_subnode_test			\
+		 tdef/tdef_vty_dynamic_test				\
 		 sockaddr_str/sockaddr_str_test				\
 		 use_count/use_count_test				\
 		 context/context_test					\
@@ -286,14 +286,14 @@ gsm23236_gsm23236_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 tdef_tdef_test_SOURCES = tdef/tdef_test.c
 tdef_tdef_test_LDADD = $(LDADD)
 
-tdef_tdef_vty_test_config_root_SOURCES = tdef/tdef_vty_test_config_root.c
-tdef_tdef_vty_test_config_root_LDADD = $(LDADD) $(top_builddir)/src/vty/libosmovty.la
+tdef_tdef_vty_config_root_test_SOURCES = tdef/tdef_vty_config_root_test.c
+tdef_tdef_vty_config_root_test_LDADD = $(LDADD) $(top_builddir)/src/vty/libosmovty.la
 
-tdef_tdef_vty_test_config_subnode_SOURCES = tdef/tdef_vty_test_config_subnode.c
-tdef_tdef_vty_test_config_subnode_LDADD = $(LDADD) $(top_builddir)/src/vty/libosmovty.la
+tdef_tdef_vty_config_subnode_test_SOURCES = tdef/tdef_vty_config_subnode_test.c
+tdef_tdef_vty_config_subnode_test_LDADD = $(LDADD) $(top_builddir)/src/vty/libosmovty.la
 
-tdef_tdef_vty_test_dynamic_SOURCES = tdef/tdef_vty_test_dynamic.c
-tdef_tdef_vty_test_dynamic_LDADD = $(LDADD) $(top_builddir)/src/vty/libosmovty.la
+tdef_tdef_vty_dynamic_test_SOURCES = tdef/tdef_vty_dynamic_test.c
+tdef_tdef_vty_dynamic_test_LDADD = $(LDADD) $(top_builddir)/src/vty/libosmovty.la
 
 sockaddr_str_sockaddr_str_test_SOURCES = sockaddr_str/sockaddr_str_test.c
 sockaddr_str_sockaddr_str_test_LDADD = $(LDADD)
@@ -402,9 +402,9 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
 	     vty/vty_transcript_test.vty				\
 	     tdef/tdef_test.ok \
 	     tdef/tdef_test_range_64bit.ok \
-	     tdef/tdef_vty_test_config_root.vty	\
-	     tdef/tdef_vty_test_config_subnode.vty \
-	     tdef/tdef_vty_test_dynamic.vty \
+	     tdef/tdef_vty_config_root_test.vty	\
+	     tdef/tdef_vty_config_subnode_test.vty \
+	     tdef/tdef_vty_dynamic_test.vty \
 	     sockaddr_str/sockaddr_str_test.ok \
 	     use_count/use_count_test.ok use_count/use_count_test.err \
 	     context/context_test.ok \
@@ -678,16 +678,16 @@ vty-test-vty:
 vty-test-tdef:
 	osmo_verify_transcript_vty.py -v \
 		-p 42042 \
-		-r "$(top_builddir)/tests/tdef/tdef_vty_test_config_root" \
-		$(U) $(srcdir)/tdef/tdef_vty_test_config_root.vty
+		-r "$(top_builddir)/tests/tdef/tdef_vty_config_root_test" \
+		$(U) $(srcdir)/tdef/tdef_vty_config_root_test.vty
 	osmo_verify_transcript_vty.py -v \
 		-p 42042 \
-		-r "$(top_builddir)/tests/tdef/tdef_vty_test_config_subnode" \
-		$(U) $(srcdir)/tdef/tdef_vty_test_config_subnode.vty
+		-r "$(top_builddir)/tests/tdef/tdef_vty_config_subnode_test" \
+		$(U) $(srcdir)/tdef/tdef_vty_config_subnode_test.vty
 	osmo_verify_transcript_vty.py -v \
 		-p 42042 \
-		-r "$(top_builddir)/tests/tdef/tdef_vty_test_dynamic" \
-		$(U) $(srcdir)/tdef/tdef_vty_test_dynamic.vty
+		-r "$(top_builddir)/tests/tdef/tdef_vty_dynamic_test" \
+		$(U) $(srcdir)/tdef/tdef_vty_dynamic_test.vty
 
 vty-test-stats:
 	osmo_verify_transcript_vty.py -v \

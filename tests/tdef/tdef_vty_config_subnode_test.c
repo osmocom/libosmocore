@@ -46,7 +46,7 @@
 
 /* This example keeps a single global timer group and offers a custom 'timer' VTY command in a 'network' subnode below
  * the CONFIG_NODE.
- * the tdef_vty_test_config_subnode.vty transcript test.
+ * the tdef_vty_config_subnode_test.vty transcript test.
  */
 
 static struct osmo_tdef global_tdefs[] = {
