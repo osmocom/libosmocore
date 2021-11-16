@@ -7,17 +7,3 @@
 # If any interfaces have been added since the last public release: c:r:a + 1.
 # If any interfaces have been removed or changed since the last public release: c:r:0.
 #library	what			description / commit summary line
-libosmovty	_LAST_OSMOVTY_NODE 	Raise _LAST_OSMOVTY_NODE by introducing some RESERVED*_NODE
-libosmogsm      gsm0808_old_bss_to_new_bss_info ABI break (struct changes size), gsm0808_old_bss_to_new_bss_info_att_tlvdef symbol added
-libosmosim	osim_card_hdl		ABI + API breakage due to new struct members
-libosmocore	osmo_tdef_fsm_inst_state_chg	change default_timeout arg from unsigned long to long type (API breakage, not ABI)
-libosmovty      vty_read_config_filep   New API
-libosmosim	osim_card_{reset,close}	New API
-libosmocore     struct rate_ctr_group, osmo_stat_item_group_desc ABI breakage due to new struct members
-libosmgsm      kdf functions   New API
-libosmocore	osmo_stat_item		API breakage: remove members stats_next_id, last_offs and values[], no users should exist.
-libosmocore	osmo_stat_item		API breakage: remove functions osmo_stat_item_get_next(), osmo_stat_item_discard(), osmo_stat_item_discard_all(), no users should exist.
-libosmocore	osmo_stat_item_value	API breakage: struct definition removed, because no known users exist / no users should exist.
-libosmocore	osmo_stat_item		ABI breakage: struct osmo_stat_item made opaque.
-libosmocore	osmo_stat_item		No FIFO buffer of values used anymore, the "skipped values" error is no longer possible.
-libosmocore	stats reporting		for osmo_stat_item, values are now never repeated from one stats report to the next.
