@@ -491,8 +491,10 @@ uint64_t bitvec_read_field(struct bitvec *bv, unsigned int *read_index, unsigned
 	errno = 0;
 
 	for (i = 0; i < len; i++) {
-		int bit = bitvec_get_bit_pos((const struct bitvec *)bv, bv->cur_bit);
-		if (bit)
+		unsigned int bytenum = bytenum_from_bitnum(bv->cur_bit);
+		unsigned int bitnum = 7 - (bv->cur_bit % 8);
+
+		if (bv->data[bytenum] & (1 << bitnum))
 			ui |= ((uint64_t)1 << (len - i - 1));
 		bv->cur_bit++;
 	}
