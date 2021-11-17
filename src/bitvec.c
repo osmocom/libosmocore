@@ -480,15 +480,18 @@ uint64_t bitvec_read_field(struct bitvec *bv, unsigned int *read_index, unsigned
 {
 	unsigned int i;
 	uint64_t ui = 0;
+
+	/* Prevent bitvec overrun due to incorrect index and/or length */
+	if (len && bytenum_from_bitnum(*read_index + len - 1) >= bv->data_len) {
+		errno = EOVERFLOW;
+		return 0;
+	}
+
 	bv->cur_bit = *read_index;
 	errno = 0;
 
 	for (i = 0; i < len; i++) {
 		int bit = bitvec_get_bit_pos((const struct bitvec *)bv, bv->cur_bit);
-		if (bit < 0) {
-			errno = -bit;
-			break;
-		}
 		if (bit)
 			ui |= ((uint64_t)1 << (len - i - 1));
 		bv->cur_bit++;

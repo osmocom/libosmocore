@@ -185,7 +185,7 @@ bitvec_read_field(idx=10, len=5) => 16 (success)
 bitvec_read_field(idx=10, len=3) => 5 (success)
 bitvec_read_field(idx=10, len=1) => 1 (success)
 bitvec_read_field(idx=512, len=16) => 0 (error)
-bitvec_read_field(idx=0, len=65) => bd5b7ddffdd7b5db (error)
+bitvec_read_field(idx=0, len=65) => 0 (error)
 bitvec_read_field(idx=64, len=16) => 0 (error)
 
 bitvec ok.
