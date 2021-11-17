@@ -542,9 +542,9 @@ int main(int argc, char **argv)
 			/* Reserved for libraries */
 			[VTY_TEST_ATTR_UPPER]	= 'X',
 			/* Reserved for global attribues */
-			[VTY_TEST_ATTR_RAFC_DOT]	'.',
-			[VTY_TEST_ATTR_RAFC_EXCL]	'!',
-			[VTY_TEST_ATTR_RAFC_AT]		'@',
+			[VTY_TEST_ATTR_RAFC_DOT]	= '.',
+			[VTY_TEST_ATTR_RAFC_EXCL]	= '!',
+			[VTY_TEST_ATTR_RAFC_AT]		= '@',
 		},
 	};
 
