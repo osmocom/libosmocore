@@ -36,7 +36,7 @@ AT_CLEANUP
 AT_SETUP([bitvec])
 AT_KEYWORDS([bitvec])
 cat $abs_srcdir/bitvec/bitvec_test.ok > expout
-AT_CHECK([$abs_top_builddir/tests/bitvec/bitvec_test], [0], [expout], [ignore])
+AT_CHECK([$abs_top_builddir/tests/bitvec/bitvec_test], [0], [expout])
 AT_CLEANUP
 
 AT_SETUP([bitcomp])
