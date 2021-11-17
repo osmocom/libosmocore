@@ -237,7 +237,8 @@ static void test_bitvec_read_field(void)
 #define _bitvec_read_field(idx, len) \
 	readIndex = idx; \
 	field = bitvec_read_field(&bv, &readIndex, len); \
-	printf("bitvec_read_field(idx=%u, len=%u) => %" PRIx64 "\n", idx, len, field);
+	printf("bitvec_read_field(idx=%u, len=%u) => %" PRIx64 " (%s)\n", \
+	       idx, len, field, errno == 0 ? "success" : "error");
 
 	_bitvec_read_field(0, 64);
 	_bitvec_read_field(0, 32);

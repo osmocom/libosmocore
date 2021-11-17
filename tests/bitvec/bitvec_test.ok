@@ -171,21 +171,21 @@ bitvec_runlength....
 bitvec bytes used.
 
 test bitvec_read_field():
-bitvec_read_field(idx=0, len=64) => deadbeeffeebdaed
-bitvec_read_field(idx=0, len=32) => deadbeef
-bitvec_read_field(idx=0, len=16) => dead
-bitvec_read_field(idx=0, len=8) => de
-bitvec_read_field(idx=0, len=0) => 0
-bitvec_read_field(idx=8, len=8) => ad
-bitvec_read_field(idx=8, len=4) => a
-bitvec_read_field(idx=8, len=0) => 0
-bitvec_read_field(idx=10, len=9) => 16d
-bitvec_read_field(idx=10, len=7) => 5b
-bitvec_read_field(idx=10, len=5) => 16
-bitvec_read_field(idx=10, len=3) => 5
-bitvec_read_field(idx=10, len=1) => 1
-bitvec_read_field(idx=512, len=16) => ffffffffffffffea
-bitvec_read_field(idx=0, len=65) => ffffffffffffffea
-bitvec_read_field(idx=64, len=16) => ffffffffffffffea
+bitvec_read_field(idx=0, len=64) => deadbeeffeebdaed (success)
+bitvec_read_field(idx=0, len=32) => deadbeef (success)
+bitvec_read_field(idx=0, len=16) => dead (success)
+bitvec_read_field(idx=0, len=8) => de (success)
+bitvec_read_field(idx=0, len=0) => 0 (success)
+bitvec_read_field(idx=8, len=8) => ad (success)
+bitvec_read_field(idx=8, len=4) => a (success)
+bitvec_read_field(idx=8, len=0) => 0 (success)
+bitvec_read_field(idx=10, len=9) => 16d (success)
+bitvec_read_field(idx=10, len=7) => 5b (success)
+bitvec_read_field(idx=10, len=5) => 16 (success)
+bitvec_read_field(idx=10, len=3) => 5 (success)
+bitvec_read_field(idx=10, len=1) => 1 (success)
+bitvec_read_field(idx=512, len=16) => 0 (error)
+bitvec_read_field(idx=0, len=65) => bd5b7ddffdd7b5db (error)
+bitvec_read_field(idx=64, len=16) => 0 (error)
 
 bitvec ok.
