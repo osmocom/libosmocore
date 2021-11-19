@@ -1250,7 +1250,7 @@ int osmo_float_str_to_int(int64_t *val, const char *str, unsigned int precision)
 			if (point)
 				return -EINVAL;
 			point = p;
-		} else if (!isdigit(*p))
+		} else if (!isdigit((unsigned char)*p))
 			return -EINVAL;
 	}
 
