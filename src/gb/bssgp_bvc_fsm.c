@@ -415,8 +415,8 @@ static void bssgp_bvc_fsm_unblocked(struct osmo_fsm_inst *fi, uint32_t event, vo
 		rx = data;
 		tp = (const struct tlv_parsed *) msgb_bcid(rx);
 		/* If BVC-UNBLOCK-ACK PDU is received by an BSS for the signalling BVC, the PDU is ignored. */
-		LOGPFSML(fi, LOGL_ERROR, "Rx BVC-UNBLOCK-ACK on BVCI=0 is illegal\n");
 		if (bfp->bvci == 0) {
+			LOGPFSML(fi, LOGL_ERROR, "Rx BVC-UNBLOCK-ACK on BVCI=0 is illegal\n");
 			if (!bfp->role_sgsn)
 				break;
 			_tx_status(fi, BSSGP_CAUSE_SEM_INCORR_PDU, rx);
