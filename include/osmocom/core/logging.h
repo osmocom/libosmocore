@@ -15,6 +15,10 @@
 #define DEBUG
 #endif
 
+#ifdef LIBOSMOCORE_NO_LOGGING
+#undef DEBUG
+#endif
+
 #ifdef DEBUG
 /*! Log a debug message through the Osmocom logging framework
  *  \param[in] ss logging subsystem (e.g. \ref DLGLOBAL)
