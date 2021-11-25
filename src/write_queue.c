@@ -106,7 +106,7 @@ void osmo_wqueue_init(struct osmo_wqueue *queue, int max_length)
 /*! Enqueue a new \ref msgb into a write queue (without logging full queue events)
  *  \param[in] queue Write queue to be used
  *  \param[in] data to-be-enqueued message buffer
- *  \returns 0 on success; negative on error
+ *  \returns 0 on success; negative on error (MESSAGE NOT FREED IN CASE OF ERROR).
  */
 int osmo_wqueue_enqueue_quiet(struct osmo_wqueue *queue, struct msgb *data)
 {
@@ -122,7 +122,7 @@ int osmo_wqueue_enqueue_quiet(struct osmo_wqueue *queue, struct msgb *data)
 /*! Enqueue a new \ref msgb into a write queue
  *  \param[in] queue Write queue to be used
  *  \param[in] data to-be-enqueued message buffer
- *  \returns 0 on success; negative on error
+ *  \returns 0 on success; negative on error (MESSAGE NOT FREED IN CASE OF ERROR).
  */
 int osmo_wqueue_enqueue(struct osmo_wqueue *queue, struct msgb *data)
 {
