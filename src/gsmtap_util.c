@@ -323,6 +323,20 @@ int gsmtap_sendmsg(struct gsmtap_inst *gti, struct msgb *msg)
 	}
 }
 
+/*! Send a \ref msgb through a GSMTAP source; free the message even if tx queue full.
+ *  \param[in] gti GSMTAP instance
+ *  \param[in] msg message buffer; always freed, caller must not reference it later.
+ *  \return 0 in case of success; negative in case of error
+ */
+int gsmtap_sendmsg_free(struct gsmtap_inst *gti, struct msgb *msg)
+{
+	int rc;
+	rc = gsmtap_sendmsg(gti, msg);
+	if (rc < 0)
+		msgb_free(msg);
+	return rc;
+}
+
 /*! send an arbitrary type through GSMTAP.
  *  See \ref gsmtap_makemsg_ex for arguments
  */

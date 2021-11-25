@@ -48,6 +48,7 @@ struct gsmtap_inst *gsmtap_source_init(const char *host, uint16_t port,
 int gsmtap_source_add_sink(struct gsmtap_inst *gti);
 
 int gsmtap_sendmsg(struct gsmtap_inst *gti, struct msgb *msg);
+int gsmtap_sendmsg_free(struct gsmtap_inst *gti, struct msgb *msg);
 
 int gsmtap_send_ex(struct gsmtap_inst *gti, uint8_t type, uint16_t arfcn, uint8_t ts,
 		uint8_t chan_type, uint8_t ss, uint32_t fn,
