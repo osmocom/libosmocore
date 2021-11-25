@@ -992,7 +992,10 @@ static void _file_raw_output(struct log_target *target, int subsys, unsigned int
 	}
 	/* if we reach here, either we already had elements in the write_queue, or the synchronous write
 	 * failed: enqueue the message to the write_queue (backlog) */
-	osmo_wqueue_enqueue_quiet(target->tgt_file.wqueue, msg);
+	if (osmo_wqueue_enqueue_quiet(target->tgt_file.wqueue, msg) < 0) {
+		msgb_free(msg);
+		/* TODO: increment some counter so we can see that messages were dropped */
+	}
 }
 #endif
 
