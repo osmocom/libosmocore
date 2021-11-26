@@ -137,7 +137,8 @@ void logp(int subsys, const char *file, int line, int cont, const char *format, 
 #define DLNSDATA	-22	/*!< Osmocom NS layer data pdus */
 #define DLNSSIGNAL	-23	/*!< Osmocom NS layer signal pdus */
 #define DLIUUP		-24	/*!< Osmocom IuUP layer */
-#define OSMO_NUM_DLIB	24	/*!< Number of logging sub-systems in libraries */
+#define DLPFCP		-25	/*!< Osmocom Packet Forwarding Control Protocol */
+#define OSMO_NUM_DLIB	25	/*!< Number of logging sub-systems in libraries */
 
 /* Colors that can be used in log_info_cat.color */
 #define OSMO_LOGCOLOR_NORMAL NULL

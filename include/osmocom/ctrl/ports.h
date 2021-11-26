@@ -30,4 +30,6 @@
 #define OSMO_CTRL_PORT_SMLC	4272
 /* 4273 used by VTY interface */
 #define OSMO_CTRL_PORT_HNODEB	4274
+/* 4275: OSMO_VTY_PORT_UPF */
+#define OSMO_CTRL_PORT_UPF	4276
 /* When adding/changing port numbers, keep docs and wiki in sync. See above. */

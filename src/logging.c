@@ -301,6 +301,12 @@ static const struct log_info_cat internal_cat[OSMO_NUM_DLIB] = {
 		.enabled = 1, .loglevel = LOGL_NOTICE,
 		.color = "\033[38;5;65m",
 	},
+	[INT2IDX(DLPFCP)] = {
+		.name = "DLPFCP",
+		.description = "libosmo-pfcp Packet Forwarding Control Protocol",
+		.enabled = 1, .loglevel = LOGL_NOTICE,
+		.color = "\033[38;5;51m",
+	},
 };
 
 void assert_loginfo(const char *src)
