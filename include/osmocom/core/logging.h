@@ -53,11 +53,15 @@ void logp(int subsys, const char *file, int line, int cont, const char *format, 
  *  \param[in] fmt format string
  *  \param[in] args variable argument list
  */
+#ifndef LIBOSMOCORE_NO_LOGGING
 #define LOGPC(ss, level, fmt, args...) \
 	do { \
 		if (log_check_level(ss, level)) \
 			logp2(ss, level, __FILE__, __LINE__, 1, fmt, ##args); \
 	} while(0)
+#else
+#define LOGPC(ss, level, fmt, args...)
+#endif
 
 /*! Log through the Osmocom logging framework with explicit source.
  *  If caller_file is passed as NULL, __FILE__ and __LINE__ are used
@@ -87,6 +91,7 @@ void logp(int subsys, const char *file, int line, int cont, const char *format, 
  *  \param[in] fmt format string
  *  \param[in] args variable argument list
  */
+#ifndef LIBOSMOCORE_NO_LOGGING
 #define LOGPSRCC(ss, level, caller_file, caller_line, cont, fmt, args...) \
 	do { \
 		if (log_check_level(ss, level)) {\
@@ -96,6 +101,9 @@ void logp(int subsys, const char *file, int line, int cont, const char *format, 
 				logp2(ss, level, __FILE__, __LINE__, cont, fmt, ##args); \
 		}\
 	} while(0)
+#else
+#define LOGPSRCC(ss, level, caller_file, caller_line, cont, fmt, args...)
+#endif
 
 /*! different log levels */
 #define LOGL_DEBUG	1	/*!< debugging information */

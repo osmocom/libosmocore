@@ -366,6 +366,17 @@ then
 	AC_DEFINE([PANIC_INFLOOP],[1],[Use infinite loop on panic rather than fprintf/abort])
 fi
 
+AC_ARG_ENABLE(log_macros,
+	[AS_HELP_STRING(
+		[--disable-log-macros],
+		[Disable logging macros that are also used internally to print information]
+	)],
+	[log_macros="yes"], [log_macros="no"])
+if test x"$log_macros" == x"yes"
+then
+	AC_DEFINE([LIBOSMOCORE_NO_LOGGING],[1],[Disable logging macros])
+fi
+
 AC_ARG_ENABLE(sanitize,
 	[AS_HELP_STRING(
 		[--enable-sanitize],
