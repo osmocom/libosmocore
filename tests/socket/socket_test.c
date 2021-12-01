@@ -345,9 +345,11 @@ static void test_osa_str(void)
 	OSMO_ASSERT(!strncmp("[::1]:42", result, sizeof(buf)));
 
 	memset(&buf[0], 0, sizeof(buf));
-	result = osmo_sockaddr_to_str_buf(buf, 8, &localhost6);
 	printf("Checking osmo_sockaddr_to_str_buf too short IPv6\n");
-	OSMO_ASSERT(!strncmp("[::1]:4", result, sizeof(buf)));
+	result = osmo_sockaddr_to_str_buf(buf, 8, &localhost6);
+	OSMO_ASSERT(result == NULL);
+	osmo_sockaddr_to_str_buf2(buf, 8, &localhost6);
+	OSMO_ASSERT(!strncmp("[::1]:4", buf, sizeof(buf)));
 
 	memset(&buf[0], 0, sizeof(buf));
 	result = osmo_sockaddr_to_str_buf(buf, 5, &localhost6);

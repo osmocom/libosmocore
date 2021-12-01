@@ -1776,7 +1776,57 @@ const char *osmo_sockaddr_to_str(const struct osmo_sockaddr *sockaddr)
 	return osmo_sockaddr_to_str_buf(buf, sizeof(buf), sockaddr);
 }
 
-/*! string-format a given osmo_sockaddr address into a user-supplied buffer
+/*! string-format a given osmo_sockaddr address into a user-supplied buffer.
+ * Same as osmo_sockaddr_to_str_buf() but returns a would-be length in snprintf() style.
+ *  \param[in] buf user-supplied output buffer
+ *  \param[in] buf_len size of the user-supplied output buffer in bytes
+ *  \param[in] sockaddr the osmo_sockaddr to print
+ *  \return number of characters that would be written if the buffer is large enough, like snprintf().
+ */
+int osmo_sockaddr_to_str_buf2(char *buf, size_t buf_len, const struct osmo_sockaddr *sockaddr)
+{
+	struct osmo_strbuf sb = { .buf = buf, .len = buf_len };
+	uint16_t port = 0;
+
+	if (!sockaddr) {
+		OSMO_STRBUF_PRINTF(sb, "NULL");
+		return sb.chars_needed;
+	}
+
+	switch (sockaddr->u.sa.sa_family) {
+	case AF_INET:
+		OSMO_STRBUF_APPEND(sb, osmo_sockaddr_to_str_and_uint, &port, &sockaddr->u.sa);
+		if (port)
+			OSMO_STRBUF_PRINTF(sb, ":%u", port);
+		break;
+	case AF_INET6:
+		OSMO_STRBUF_PRINTF(sb, "[");
+		OSMO_STRBUF_APPEND(sb, osmo_sockaddr_to_str_and_uint, &port, &sockaddr->u.sa);
+		OSMO_STRBUF_PRINTF(sb, "]");
+		if (port)
+			OSMO_STRBUF_PRINTF(sb, ":%u", port);
+		break;
+	default:
+		OSMO_STRBUF_PRINTF(sb, "unsupported family %d", sockaddr->u.sa.sa_family);
+		break;
+	}
+
+	return sb.chars_needed;
+}
+
+/*! string-format a given osmo_sockaddr address into a talloc allocated buffer.
+ * Like osmo_sockaddr_to_str_buf2() but returns a talloc allocated string.
+ *  \param[in] ctx  talloc context to allocate from, e.g. OTC_SELECT.
+ *  \param[in] sockaddr  the osmo_sockaddr to print.
+ *  \return human readable string.
+ */
+char *osmo_sockaddr_to_str_c(void *ctx, const struct osmo_sockaddr *sockaddr)
+{
+	OSMO_NAME_C_IMPL(ctx, 64, "ERROR", osmo_sockaddr_to_str_buf2, sockaddr)
+}
+
+/*! string-format a given osmo_sockaddr address into a user-supplied buffer.
+ * Like osmo_sockaddr_to_str_buf2() but returns buf, or NULL if too short.
  *  \param[in] buf user-supplied output buffer
  *  \param[in] buf_len size of the user-supplied output buffer in bytes
  *  \param[in] sockaddr the osmo_sockaddr to print
@@ -1785,43 +1835,9 @@ const char *osmo_sockaddr_to_str(const struct osmo_sockaddr *sockaddr)
 char *osmo_sockaddr_to_str_buf(char *buf, size_t buf_len,
 			    const struct osmo_sockaddr *sockaddr)
 {
-	uint16_t port = 0;
-	size_t written;
-	if (buf_len < 5)
+	int chars_needed = osmo_sockaddr_to_str_buf2(buf, buf_len, sockaddr);
+	if (chars_needed >= buf_len)
 		return NULL;
-
-	if (!sockaddr)
-		return NULL;
-
-	switch (sockaddr->u.sa.sa_family) {
-	case AF_INET:
-		written = osmo_sockaddr_to_str_and_uint(buf, buf_len, &port, &sockaddr->u.sa);
-		if (written + 1 >= buf_len && port)
-			return NULL;
-		if (port)
-			snprintf(buf + written, buf_len - written, ":%u", port);
-		break;
-	case AF_INET6:
-		buf[0] = '[';
-		written = osmo_sockaddr_to_str_and_uint(buf + 1, buf_len - 1, &port, &sockaddr->u.sa);
-		if (written + 2 >= buf_len)
-			return NULL;
-
-		if (written + 3 >= buf_len && port)
-			return NULL;
-
-		if (port)
-			snprintf(buf + 1 + written, buf_len - written - 1, "]:%u", port);
-		else {
-			buf[written + 1] = ']';
-			buf[written + 2] = 0;
-		}
-		break;
-	default:
-		snprintf(buf, buf_len, "unsupported family %d", sockaddr->u.sa.sa_family);
-		return buf;
-	}
-
 	return buf;
 }
 

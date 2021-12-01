@@ -130,6 +130,8 @@ int osmo_sockaddr_cmp(const struct osmo_sockaddr *a,
 const char *osmo_sockaddr_to_str(const struct osmo_sockaddr *sockaddr);
 char *osmo_sockaddr_to_str_buf(char *buf, size_t buf_len,
 			       const struct osmo_sockaddr *sockaddr);
+int osmo_sockaddr_to_str_buf2(char *buf, size_t buf_len, const struct osmo_sockaddr *sockaddr);
+char *osmo_sockaddr_to_str_c(void *ctx, const struct osmo_sockaddr *sockaddr);
 
 int osmo_sock_set_dscp(int fd, uint8_t dscp);
 int osmo_sock_set_priority(int fd, int prio);
