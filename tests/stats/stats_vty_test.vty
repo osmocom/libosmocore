@@ -7,6 +7,7 @@ stats_vty_test(config)# list
   stats reporter log [NAME]
   no stats reporter log [NAME]
   stats interval <0-65535>
+  stats-tcp interval <0-65535>
 ...
 
 stats_vty_test(config)# ### No reporters shall be configured by default

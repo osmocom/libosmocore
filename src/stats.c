@@ -85,6 +85,7 @@
 #include <osmocom/core/select.h>
 #include <osmocom/core/counter.h>
 #include <osmocom/core/msgb.h>
+#include <osmocom/core/stats_tcp.h>
 
 #ifdef HAVE_SYSTEMTAP
 /* include the generated probes header and put markers in code */
@@ -240,6 +241,10 @@ void osmo_stats_init(void *ctx)
 	osmo_stats_ctx = ctx;
 	is_initialised = 1;
 	start_timer();
+
+	/* Make sure that the tcp-stats interval timer also runs at its
+	 * preconfigured rate. The vty might change this setting later. */
+	osmo_stats_tcp_set_interval(osmo_tcp_stats_config->interval);
 }
 
 /*! Find a stats_reporter of given \a type and \a name.

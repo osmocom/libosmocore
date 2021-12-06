@@ -516,6 +516,28 @@ dnl Check if the compiler supports runtime SIMD detection
 CHECK_BUILTIN_SUPPORT([__builtin_cpu_supports],
   [Runtime SIMD detection will be disabled])
 
+dnl There are some members in struct tcp_info that might not exist on all linux versions
+AC_CHECK_MEMBER([struct tcp_info.tcpi_rwnd_limited],
+		AC_DEFINE([HAVE_TCP_INFO_TCPI_RWND_LIMITED],
+		[1],
+		[Define to 1 if your <linux/tcp.h> header file have the tcpi_rwnd_limited member in struct tcp_info]),
+		[],
+		[#include <linux/tcp.h>])
+
+AC_CHECK_MEMBER([struct tcp_info.tcpi_sndbuf_limited],
+		AC_DEFINE([HAVE_TCP_INFO_TCPI_SNDBUF_LIMITED],
+		[1],
+		[Define to 1 if your <linux/tcp.h> header file have the tcpi_sndbuf_limited member in struct tcp_info]),
+		[],
+		[#include <linux/tcp.h>])
+
+AC_CHECK_MEMBER([struct tcp_info.tcpi_reord_seen],
+		AC_DEFINE([HAVE_TCP_INFO_TCPI_REORD_SEEN],
+		[1],
+		[Define to 1 if your <linux/tcp.h> header file have the tcpi_reord_seen member in struct tcp_info]),
+		[],
+		[#include <linux/tcp.h>])
+
 AC_MSG_RESULT([CFLAGS="$CFLAGS"])
 AC_MSG_RESULT([CPPFLAGS="$CPPFLAGS"])
 

@@ -33,6 +33,8 @@
 #include <osmocom/core/logging.h>
 #include <osmocom/core/talloc.h>
 #include <osmocom/core/utils.h>
+#include <osmocom/core/stat_item.h>
+#include <osmocom/core/stats_tcp.h>
 
 #include "../config.h"
 
@@ -181,6 +183,9 @@ void osmo_fd_unregister(struct osmo_fd *fd)
 #ifndef FORCE_IO_SELECT
 	g_poll.num_registered--;
 #endif /* FORCE_IO_SELECT */
+
+	/* If existent, free any statistical data */
+	osmo_stats_tcp_osmo_fd_unregister(fd);
 }
 
 /*! Close a file descriptor, mark it as closed + unregister from select loop abstraction

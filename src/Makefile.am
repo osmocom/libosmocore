@@ -22,6 +22,7 @@ libosmocore_la_SOURCES = context.c timer.c timer_gettimeofday.c timer_clockgetti
 			 conv.c application.c rbtree.c strrb.c \
 			 loggingrb.c crc8gen.c crc16gen.c crc32gen.c crc64gen.c \
 			 macaddr.c stat_item.c stats.c stats_statsd.c prim.c \
+			 stats_tcp.c \
 			 conv_acc.c conv_acc_generic.c sercomm.c prbs.c \
 			 isdnhdlc.c \
 			 tdef.c \

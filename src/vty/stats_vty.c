@@ -33,6 +33,7 @@
 #include <osmocom/core/stats.h>
 #include <osmocom/core/counter.h>
 #include <osmocom/core/rate_ctr.h>
+#include <osmocom/core/stats_tcp.h>
 
 #define CFG_STATS_STR "Configure stats sub-system\n"
 #define CFG_REPORTER_STR "Configure a stats reporter\n"
@@ -389,6 +390,32 @@ DEFUN(cfg_stats_interval, cfg_stats_interval_cmd,
 	return CMD_SUCCESS;
 }
 
+DEFUN(cfg_tcp_stats_interval, cfg_tcp_stats_interval_cmd,
+	"stats-tcp interval <0-65535>",
+	CFG_STATS_STR "Set the tcp socket stats polling interval\n"
+	"Interval in seconds (0 disables the polling interval)\n")
+{
+	int rc;
+	int interval = atoi(argv[0]);
+	rc = osmo_stats_tcp_set_interval(interval);
+	if (rc < 0) {
+		vty_out(vty, "%% Unable to set interval: %s%s",
+			strerror(-rc), VTY_NEWLINE);
+		return CMD_WARNING;
+	}
+
+	return CMD_SUCCESS;
+}
+
+DEFUN(cfg_tcp_stats_batch_size, cfg_tcp_stats_batch_size_cmd,
+	"stats-tcp batch-size <1-65535>",
+	CFG_STATS_STR "Set the number of tcp sockets that are processed per stats polling interval\n"
+	"Number of sockets per interval\n")
+{
+	osmo_tcp_stats_config->batch_size = atoi(argv[0]);
+	return CMD_SUCCESS;
+}
+
 DEFUN(show_stats,
       show_stats_cmd,
       "show stats",
@@ -677,6 +704,10 @@ static int config_write_stats(struct vty *vty)
 	struct osmo_stats_reporter *srep;
 
 	vty_out(vty, "stats interval %d%s", osmo_stats_config->interval, VTY_NEWLINE);
+	if (osmo_tcp_stats_config->interval != TCP_STATS_DEFAULT_INTERVAL)
+		vty_out(vty, "stats-tcp interval %d%s", osmo_tcp_stats_config->interval, VTY_NEWLINE);
+	if (osmo_tcp_stats_config->batch_size != TCP_STATS_DEFAULT_BATCH_SIZE)
+		vty_out(vty, "stats-tcp batch-size %d%s", osmo_tcp_stats_config->batch_size, VTY_NEWLINE);
 
 	/* Loop through all reporters */
 	llist_for_each_entry(srep, &osmo_stats_reporter_list, list)
@@ -699,6 +730,8 @@ void osmo_stats_vty_add_cmds()
 	install_lib_element(CONFIG_NODE, &cfg_stats_reporter_log_cmd);
 	install_lib_element(CONFIG_NODE, &cfg_no_stats_reporter_log_cmd);
 	install_lib_element(CONFIG_NODE, &cfg_stats_interval_cmd);
+	install_lib_element(CONFIG_NODE, &cfg_tcp_stats_interval_cmd);
+	install_lib_element(CONFIG_NODE, &cfg_tcp_stats_batch_size_cmd);
 
 	install_node(&cfg_stats_node, config_write_stats);
 
