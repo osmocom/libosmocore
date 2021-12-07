@@ -151,6 +151,8 @@ static void talloc_ctx_walk(const char *ctx, const char *depth,
 	/* Determine a context for report */
 	if (!strncmp(ctx, "app", 3))
 		talloc_ctx = host.app_info->tall_ctx;
+	else if (!strcmp(ctx, "global"))
+		talloc_ctx = OTC_GLOBAL;
 	else if (!strncmp(ctx, "all", 3))
 		talloc_ctx = NULL;
 
@@ -167,11 +169,12 @@ static void talloc_ctx_walk(const char *ctx, const char *depth,
 }
 
 #define BASE_CMD_STR \
-	"show talloc-context (application|all) (full|brief|DEPTH)"
+	"show talloc-context (application|global|all) (full|brief|DEPTH)"
 
 #define BASE_CMD_DESCR \
 	SHOW_STR "Show talloc memory hierarchy\n" \
 	"Application's context\n" \
+	"Global context (OTC_GLOBAL)\n" \
 	"All contexts, if NULL-context tracking is enabled\n" \
 	"Display a full talloc memory hierarchy\n" \
 	"Display a brief talloc memory hierarchy\n" \
