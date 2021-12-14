@@ -11,9 +11,9 @@ c: 0 (-)
 3 foos
 
 A few gets and puts, logging source file information
-DFOO NOTICE foo(a){IN_USE}: a +1 barring: now used by 1 (barring) (use_count_test.c:223)
-DFOO NOTICE foo(b){IN_USE}: b +1 barring: now used by 1 (barring) (use_count_test.c:225)
-DFOO NOTICE foo(b){IN_USE}: b +1 fighting: now used by 2 (barring,fighting) (use_count_test.c:226)
+DFOO NOTICE foo(a){IN_USE}: a +1 barring: now used by 1 (barring) (use_count_test.c:219)
+DFOO NOTICE foo(b){IN_USE}: b +1 barring: now used by 1 (barring) (use_count_test.c:221)
+DFOO NOTICE foo(b){IN_USE}: b +1 fighting: now used by 2 (barring,fighting) (use_count_test.c:222)
 
 all use counts:
 a: 1 (barring)
@@ -22,7 +22,7 @@ c: 0 (-)
 3 foos
 
 Attempt to get more than one on limited 'barring' user:
-DFOO ERROR foo(b){IN_USE}: Attempt to get more than one barring (use_count_test.c:231)
+DFOO ERROR foo(b){IN_USE}: Attempt to get more than one barring (use_count_test.c:227)
 osmo_use_count_get_put(b, barring, 1) returned error: -34 Numerical result out of range
 
 all use counts:
@@ -32,7 +32,7 @@ c: 0 (-)
 3 foos
 
 Put away one user of b
-DFOO NOTICE foo(b){IN_USE}: b -1 barring: now used by 1 (fighting) (use_count_test.c:235)
+DFOO NOTICE foo(b){IN_USE}: b -1 barring: now used by 1 (fighting) (use_count_test.c:231)
 
 all use counts:
 a: 1 (barring)
