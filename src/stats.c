@@ -407,7 +407,7 @@ int osmo_stats_reporter_set_flush_period(struct osmo_stats_reporter *srep, unsig
 
 /*! Set the name prefix of a given stats_reporter.
  *  \param[in] srep stats_reporter whose name prefix is to be set
- *  \param[in] prefix NAme perfix to pre-pend for any reported value
+ *  \param[in] prefix Name prefix to pre-pend for any reported value
  *  \returns 0 on success; negative on error */
 int osmo_stats_reporter_set_name_prefix(struct osmo_stats_reporter *srep, const char *prefix)
 {
