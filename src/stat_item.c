@@ -224,6 +224,9 @@ struct osmo_stat_item_group *osmo_stat_item_group_alloc(void *ctx,
 /*! Free the memory for the specified group of stat items */
 void osmo_stat_item_group_free(struct osmo_stat_item_group *grp)
 {
+	if (!grp)
+		return;
+
 	llist_del(&grp->list);
 	talloc_free(grp);
 }
