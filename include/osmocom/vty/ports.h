@@ -44,4 +44,6 @@
 /* 4274 used by control interface */
 #define OSMO_VTY_PORT_UPF		4275
 /* 4276: OSMO_CTRL_PORT_UPF */
+#define OSMO_VTY_PORT_PFCP_TOOL		4277
+/* 4278: OSMO_CTRL_PORT_UPF */
 /* When adding/changing port numbers, keep docs and wiki in sync. See above. */

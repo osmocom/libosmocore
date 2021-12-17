@@ -32,4 +32,6 @@
 #define OSMO_CTRL_PORT_HNODEB	4274
 /* 4275: OSMO_VTY_PORT_UPF */
 #define OSMO_CTRL_PORT_UPF	4276
+/* 4277: OSMO_VTY_PORT_PFCP_TOOL */
+#define OSMO_CTRL_PORT_PFCP_TOOL	4278
 /* When adding/changing port numbers, keep docs and wiki in sync. See above. */
