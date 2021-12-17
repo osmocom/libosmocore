@@ -484,8 +484,8 @@ int osmo_sock_init2(uint16_t family, uint16_t type, uint8_t proto,
 }
 
 #define _SOCKADDR_TO_STR(dest, sockaddr) do { \
-		if (osmo_sockaddr_str_from_sockaddr(&dest, &sockaddr->u.sas)) \
-			osmo_strlcpy(dest.ip, "Invalid IP", 11); \
+		if (osmo_sockaddr_str_from_sockaddr(dest, &sockaddr->u.sas)) \
+			osmo_strlcpy((dest)->ip, "Invalid IP", 11); \
 	} while (0)
 
 /*! Initialize a socket (including bind and/or connect)
@@ -520,7 +520,8 @@ int osmo_sock_init_osa(uint16_t type, uint8_t proto,
 		        unsigned int flags)
 {
 	int sfd = -1, rc, on = 1;
-	struct osmo_sockaddr_str sastr = {};
+	struct osmo_sockaddr_str _sastr = {};
+	struct osmo_sockaddr_str *sastr = &_sastr;
 
 	if ((flags & (OSMO_SOCK_F_BIND | OSMO_SOCK_F_CONNECT)) == 0) {
 		LOGP(DLGLOBAL, LOGL_ERROR, "invalid: you have to specify either "
@@ -551,8 +552,8 @@ int osmo_sock_init_osa(uint16_t type, uint8_t proto,
 		sfd = socket_helper_osa(local, type, proto, flags);
 		if (sfd < 0) {
 			_SOCKADDR_TO_STR(sastr, local);
-			LOGP(DLGLOBAL, LOGL_ERROR, "no suitable local addr found for: %s:%u\n",
-				sastr.ip, sastr.port);
+			LOGP(DLGLOBAL, LOGL_ERROR, "no suitable local addr found for: " OSMO_SOCKADDR_STR_FMT "\n",
+			     OSMO_SOCKADDR_STR_FMT_ARGS(sastr));
 			return -ENODEV;
 		}
 
@@ -562,10 +563,8 @@ int osmo_sock_init_osa(uint16_t type, uint8_t proto,
 			if (rc < 0) {
 				_SOCKADDR_TO_STR(sastr, local);
 				LOGP(DLGLOBAL, LOGL_ERROR,
-				     "cannot setsockopt socket:"
-				     " %s:%u: %s\n",
-				     sastr.ip, sastr.port,
-				     strerror(errno));
+				     "cannot setsockopt socket: " OSMO_SOCKADDR_STR_FMT ": %s\n",
+				     OSMO_SOCKADDR_STR_FMT_ARGS(sastr), strerror(errno));
 				close(sfd);
 				return rc;
 			}
@@ -573,8 +572,8 @@ int osmo_sock_init_osa(uint16_t type, uint8_t proto,
 
 		if (bind(sfd, &local->u.sa, sizeof(struct osmo_sockaddr)) == -1) {
 			_SOCKADDR_TO_STR(sastr, local);
-			LOGP(DLGLOBAL, LOGL_ERROR, "unable to bind socket: %s:%u: %s\n",
-			     sastr.ip, sastr.port, strerror(errno));
+			LOGP(DLGLOBAL, LOGL_ERROR, "unable to bind socket: " OSMO_SOCKADDR_STR_FMT ": %s\n",
+				     OSMO_SOCKADDR_STR_FMT_ARGS(sastr), strerror(errno));
 			close(sfd);
 			return -1;
 		}
@@ -596,8 +595,8 @@ int osmo_sock_init_osa(uint16_t type, uint8_t proto,
 		rc = connect(sfd, &remote->u.sa, sizeof(struct osmo_sockaddr));
 		if (rc != 0 && errno != EINPROGRESS) {
 			_SOCKADDR_TO_STR(sastr, remote);
-			LOGP(DLGLOBAL, LOGL_ERROR, "unable to connect socket: %s:%u: %s\n",
-			     sastr.ip, sastr.port, strerror(errno));
+			LOGP(DLGLOBAL, LOGL_ERROR, "unable to connect socket: " OSMO_SOCKADDR_STR_FMT ": %s\n",
+			     OSMO_SOCKADDR_STR_FMT_ARGS(sastr), strerror(errno));
 			close(sfd);
 			return rc;
 		}
