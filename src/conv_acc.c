@@ -483,10 +483,27 @@ static void _traceback_rec(struct vdecoder *dec,
  */
 static int traceback(struct vdecoder *dec, uint8_t *out, int term, int len)
 {
-	int i, sum, max = -1;
-	unsigned path, state = 0;
+	int i, j, sum, max = -1;
+	unsigned path, state = 0, state_scan;
 
-	if (term != CONV_TERM_FLUSH) {
+	if (term == CONV_TERM_TAIL_BITING) {
+		for (i = 0; i < dec->trellis.num_states; i++) {
+			state_scan = i;
+			for (j = len - 1; j >= 0; j--) {
+				path = dec->paths[j][state_scan] + 1;
+				state_scan = vstate_lshift(state_scan, dec->k, path);
+			}
+			if (state_scan != i)
+				continue;
+			sum = dec->trellis.sums[i];
+			if (sum > max) {
+				max = sum;
+				state = i;
+			}
+		}
+	}
+
+	if ((max < 0) && (term != CONV_TERM_FLUSH)) {
 		for (i = 0; i < dec->trellis.num_states; i++) {
 			sum = dec->trellis.sums[i];
 			if (sum > max) {

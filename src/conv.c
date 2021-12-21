@@ -526,37 +526,86 @@ osmo_conv_decode_flush(struct osmo_conv_decoder *decoder,
 }
 
 int
-osmo_conv_decode_get_output(struct osmo_conv_decoder *decoder,
-                            ubit_t *output, int has_flush, int end_state)
+osmo_conv_decode_get_best_end_state(struct osmo_conv_decoder *decoder)
 {
 	const struct osmo_conv_code *code = decoder->code;
 
-	int min_ae;
-	uint8_t min_state, cur_state;
-	int i, s, n;
+	int min_ae, min_state;
+	int s;
 
-	uint8_t *sh_ptr;
+	/* If flushed, we _know_ the end state */
+	if (code->term == CONV_TERM_FLUSH)
+		return 0;
 
-	/* End state ? */
-	if (end_state < 0) {
-		/* Find state with least error */
-		min_ae = MAX_AE;
-		min_state = 0xff;
+	/* Search init */
+	min_state = -1;
+	min_ae = MAX_AE;
+
+	/* If tail biting, we search for the minimum path metric that
+	 * gives a circular traceback (i.e. start_state == end_state */
+	if (code->term == CONV_TERM_TAIL_BITING) {
+		int t, n, i;
+		uint8_t *sh_ptr;
 
 		for (s=0; s<decoder->n_states; s++)
 		{
+			/* Check if that state traces back to itself */
+			n = decoder->o_idx;
+			sh_ptr = &decoder->state_history[decoder->n_states * (n-1)];
+			t = s;
+
+			for (i=n-1; i>=0; i--) {
+				t = sh_ptr[t];
+				sh_ptr -= decoder->n_states;
+			}
+
+			if (s != t)
+				continue;
+
+			/* If it does, consider it */
 			if (decoder->ae[s] < min_ae) {
 				min_ae = decoder->ae[s];
 				min_state = s;
 			}
 		}
 
-		if (min_state == 0xff)
-			return -1;
-	} else {
-		min_state = (uint8_t) end_state;
-		min_ae = decoder->ae[end_state];
+		if (min_ae < MAX_AE)
+			return min_state;
 	}
+
+	/* Finally, just the lowest path metric */
+	for (s = 0; s < decoder->n_states; s++) {
+		/* Is it smaller ? */
+		if (decoder->ae[s] < min_ae) {
+			min_ae = decoder->ae[s];
+			min_state = s;
+		}
+	}
+
+	return min_state;
+}
+
+int
+osmo_conv_decode_get_output(struct osmo_conv_decoder *decoder,
+			    ubit_t *output, int has_flush, int end_state)
+{
+	const struct osmo_conv_code *code = decoder->code;
+
+	int min_ae;
+	uint8_t min_state, cur_state;
+	int i, n;
+
+	uint8_t *sh_ptr;
+
+	/* End state ? */
+	if (end_state < 0)
+		end_state = osmo_conv_decode_get_best_end_state(decoder);
+
+	if (end_state < 0)
+		return -1;
+
+	min_state = (uint8_t) end_state;
+	min_ae = decoder->ae[end_state];
 
 	/* Traceback */
 	cur_state = min_state;
@@ -598,8 +647,8 @@ osmo_conv_decode_get_output(struct osmo_conv_decoder *decoder,
  *
  * This is an all-in-one function, taking care of
  * \ref osmo_conv_decode_init, \ref osmo_conv_decode_scan,
- * \ref osmo_conv_decode_flush, \ref osmo_conv_decode_get_output and
- * \ref osmo_conv_decode_deinit.
+ * \ref osmo_conv_decode_flush, \ref osmo_conv_decode_get_best_end_state,
+ * \ref osmo_conv_decode_get_output and \ref osmo_conv_decode_deinit.
  */
 int
 osmo_conv_decode(const struct osmo_conv_code *code,
@@ -626,7 +675,7 @@ osmo_conv_decode(const struct osmo_conv_code *code,
 
 	rv = osmo_conv_decode_get_output(&decoder, output,
 		code->term == CONV_TERM_FLUSH,		/* has_flush */
-		code->term == CONV_TERM_FLUSH ? 0 : -1	/* end_state */
+		-1					/* end_state */
 	);
 
 	osmo_conv_decode_deinit(&decoder);
