@@ -372,14 +372,20 @@ static int _osmo_select_main(int polling)
 {
 	unsigned int n_poll;
 	int rc;
+	int timeout = 0;
 
 	/* prepare read and write fdsets */
 	n_poll = poll_fill_fds();
 
-	if (!polling)
+	if (!polling) {
 		osmo_timers_prepare();
+		timeout = osmo_timers_nearest_ms();
 
-	rc = poll(g_poll.poll, n_poll, polling ? 0 : osmo_timers_nearest_ms());
+		if (_osmo_select_shutdown_requested && timeout == -1)
+			timeout = 0;
+	}
+
+	rc = poll(g_poll.poll, n_poll, timeout);
 	if (rc < 0)
 		return 0;
 
