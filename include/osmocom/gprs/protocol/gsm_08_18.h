@@ -362,13 +362,12 @@ enum bssgp_rim_pdu_type {
 /* RIM PDU Indications
  * 3GPP TS 48.018, section 11.3.65.0 */
 struct bssgp_rim_pdu_ind {
-#if OSMO_IS_BIG_ENDIAN
-		uint8_t reserved:4,
-			pdu_type_ext:3,
-			ack_requested:1;
-#elif OSMO_IS_LITTLE_ENDIAN
+#if OSMO_IS_LITTLE_ENDIAN
 		uint8_t ack_requested:1,
 			pdu_type_ext:3,
 			reserved:4;
+#elif OSMO_IS_BIG_ENDIAN
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+		uint8_t reserved:4, pdu_type_ext:3, ack_requested:1;
 #endif
 } __attribute__ ((packed));

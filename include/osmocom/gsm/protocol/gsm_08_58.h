@@ -118,35 +118,29 @@ struct abis_rsl_cchan_hdr {
 
 /* Osmocom specific IE to negotiate repeated ACCH capabilities */
 struct abis_rsl_osmo_rep_acch_cap {
-#if OSMO_IS_BIG_ENDIAN
-	uint8_t reserved:1,
-		rxqual:3,
-		ul_sacch:1,
-		dl_sacch:1,
-		dl_facch_all:1,
-		dl_facch_cmd:1;
-#elif OSMO_IS_LITTLE_ENDIAN
+#if OSMO_IS_LITTLE_ENDIAN
 	uint8_t dl_facch_cmd:1,
 		dl_facch_all:1,
 		dl_sacch:1,
 		ul_sacch:1,
 		rxqual:3,
 		reserved:1;
+#elif OSMO_IS_BIG_ENDIAN
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+	uint8_t reserved:1, rxqual:3, ul_sacch:1, dl_sacch:1, dl_facch_all:1, dl_facch_cmd:1;
 #endif
 } __attribute__ ((packed));
 
 /* Osmocom specific IE to negotiate temporary overpower of ACCH channels */
 struct abis_rsl_osmo_temp_ovp_acch_cap {
-#if OSMO_IS_BIG_ENDIAN
-	uint8_t sacch_enable:1,
-		facch_enable:1,
-		rxqual:3,
-		overpower_db:3;
-#elif OSMO_IS_LITTLE_ENDIAN
+#if OSMO_IS_LITTLE_ENDIAN
 	uint8_t overpower_db:3,
 		rxqual:3,
 		facch_enable:1,
 		sacch_enable:1;
+#elif OSMO_IS_BIG_ENDIAN
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+	uint8_t sacch_enable:1, facch_enable:1, rxqual:3, overpower_db:3;
 #endif
 } __attribute__ ((packed));
 
@@ -862,10 +856,10 @@ struct ipac_preproc_pc_thresh {
 	uint8_t u_rxqual:3, reserved_u_rxqual:1,
 		l_rxqual:3, reserved_l_rxqual:1;
 #elif OSMO_IS_BIG_ENDIAN
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
 	uint8_t reserved_l_rxlev:2, l_rxlev:6;
 	uint8_t reserved_u_rxlev:2, u_rxlev:6;
-	uint8_t reserved_l_rxqual:1, l_rxqual:3,
-		reserved_u_rxqual:1, u_rxqual:3;
+	uint8_t reserved_l_rxqual:1, l_rxqual:3, reserved_u_rxqual:1, u_rxqual:3;
 #endif
 }__attribute__ ((packed));
 
@@ -922,6 +916,7 @@ struct ipac_preproc_pc_comp {
 	uint8_t pc_interval:5, reserved_pc:3;
 	uint8_t red_step_size:4, inc_step_size:4;
 #elif OSMO_IS_BIG_ENDIAN
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
 	uint8_t reserved_p1:3, p1:5;
 	uint8_t reserved_n1:3, n1:5;
 	uint8_t reserved_p2:3, p2:5;
@@ -943,11 +938,12 @@ struct ipac_preproc_pc_comp_field {
 	uint8_t upper_p:5, reserved_upper_p:3;
 	uint8_t upper_n:5, reserved_upper_n:3;
 #elif OSMO_IS_BIG_ENDIAN
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
 	uint8_t reserved_lower_p:3, lower_p:5;
 	uint8_t reserved_lower_n:3, lower_n:5;
 	uint8_t reserved_upper_p:3, upper_p:5;
 	uint8_t reserved_upper_n:3, upper_n:5;
-	#endif
+#endif
 }__attribute__ ((packed));
 struct osmo_preproc_pc_comp {
 	/* Used for Carrier-to-Interference (C/I), in dB: */
@@ -1051,17 +1047,15 @@ struct ipac_preproc_cfg {
 };
 
 struct rsl_l1_info {
-#if OSMO_IS_BIG_ENDIAN
-		uint8_t	ms_pwr:5,
-			fpc_epc:1,
-			srr_sro:1,
-			reserved:1;
-		uint8_t ta;
-#elif OSMO_IS_LITTLE_ENDIAN
+#if OSMO_IS_LITTLE_ENDIAN
 		uint8_t reserved:1,
 			srr_sro:1,
 			fpc_epc:1,
 			ms_pwr:5;
+		uint8_t ta;
+#elif OSMO_IS_BIG_ENDIAN
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+		uint8_t ms_pwr:5, fpc_epc:1, srr_sro:1, reserved:1;
 		uint8_t ta;
 #endif
 } __attribute__ ((packed));
