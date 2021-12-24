@@ -134,8 +134,12 @@ static void fill_stats(struct stats_tcp_entry *stats_tcp_entry)
 	osmo_stat_item_set(osmo_stat_item_group_get_item(stats_tcp_entry->stats_tcp, STATS_TCP_RTT), tcp_info.tcpi_rtt);
 	osmo_stat_item_set(osmo_stat_item_group_get_item(stats_tcp_entry->stats_tcp, STATS_TCP_RCV_RTT),
 			   tcp_info.tcpi_rcv_rtt);
+#if HAVE_TCP_INFO_TCPI_NOTSENT_BYTES == 1
 	osmo_stat_item_set(osmo_stat_item_group_get_item(stats_tcp_entry->stats_tcp, STATS_TCP_NOTSENT_BYTES),
 			   tcp_info.tcpi_notsent_bytes);
+#else
+	osmo_stat_item_set(osmo_stat_item_group_get_item(stats_tcp_entry->stats_tcp, STATS_TCP_NOTSENT_BYTES), -1);
+#endif
 
 #if HAVE_TCP_INFO_TCPI_RWND_LIMITED == 1
 	osmo_stat_item_set(osmo_stat_item_group_get_item(stats_tcp_entry->stats_tcp, STATS_TCP_RWND_LIMITED),
