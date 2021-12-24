@@ -493,7 +493,7 @@ static bool iuup_rx_initialization(struct osmo_iuup_instance *iui, struct osmo_i
 	struct iuup_ctrl_init_tail *itail;
 	enum iuup_error_cause err_cause;
 	uint8_t num_rfci = 0;
-	unsigned int i;
+	int i;
 	bool is_last;
 	uint16_t remote_mask, match_mask;
 	struct osmo_iuup_tnl_prim *resp;
