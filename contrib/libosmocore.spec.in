@@ -54,7 +54,8 @@ originally developed as part of the OpenBSC project.
 
 This package contains a program for frequency calculation for GSM
 called "osmo-arfcn", and a program called "osmo-auc-gen" that is used
-for testing GSM authentication.
+for testing GSM authentication, as well as "osmo-config-merge", a tool
+for merging Osmocom configuration files.
 
 %package -n libosmocodec0
 Summary:        GSM 06.10, 06.20, 06.60, 06.90 codec library
