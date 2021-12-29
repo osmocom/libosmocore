@@ -67,6 +67,7 @@
 #include <osmocom/core/thread.h>
 #include <osmocom/core/select.h>
 #include <osmocom/core/write_queue.h>
+#include <osmocom/core/gsmtap_util.h>
 
 #include <osmocom/vty/logging.h>	/* for LOGGING_STR. */
 
@@ -1312,6 +1313,9 @@ void log_target_destroy(struct log_target *target)
 		}
 		talloc_free((void *)target->tgt_file.fname);
 		target->tgt_file.fname = NULL;
+		break;
+	case LOG_TGT_TYPE_GSMTAP:
+		gsmtap_source_free(target->tgt_gsmtap.gsmtap_inst);
 		break;
 #ifdef HAVE_SYSLOG_H
 	case LOG_TGT_TYPE_SYSLOG:

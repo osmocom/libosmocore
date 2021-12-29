@@ -486,6 +486,22 @@ struct gsmtap_inst *gsmtap_source_init(const char *host, uint16_t port,
 	return gti;
 }
 
+void gsmtap_source_free(struct gsmtap_inst *gti)
+{
+	if (gti->ofd_wq_mode) {
+		osmo_fd_unregister(&gti->wq.bfd);
+		osmo_wqueue_clear(&gti->wq);
+
+		if (gti->sink_ofd.fd != -1) {
+			osmo_fd_unregister(&gti->sink_ofd);
+			close(gti->sink_ofd.fd);
+		}
+	}
+
+	close(gti->wq.bfd.fd);
+	talloc_free(gti);
+}
+
 #endif /* HAVE_SYS_SOCKET_H */
 
 const struct value_string gsmtap_gsm_channel_names[] = {

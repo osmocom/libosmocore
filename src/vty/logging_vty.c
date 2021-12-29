@@ -830,6 +830,27 @@ DEFUN(cfg_log_gsmtap, cfg_log_gsmtap_cmd,
 	RET_WITH_UNLOCK(CMD_SUCCESS);
 }
 
+DEFUN(cfg_no_log_gsmtap, cfg_no_log_gsmtap_cmd,
+	"no log gsmtap [HOSTNAME]",
+	NO_STR LOG_STR "Logging via GSMTAP\n"
+	"Host name to send the GSMTAP logging to (UDP port 4729)\n")
+{
+	const char *hostname = argc ? argv[0] : "127.0.0.1";
+	struct log_target *tgt;
+
+	log_tgt_mutex_lock();
+	tgt = log_target_find(LOG_TGT_TYPE_GSMTAP, hostname);
+	if (tgt == NULL) {
+		vty_out(vty, "%% Unable to find GSMTAP log target for %s%s",
+			hostname, VTY_NEWLINE);
+		RET_WITH_UNLOCK(CMD_WARNING);
+	}
+
+	log_target_destroy(tgt);
+
+	RET_WITH_UNLOCK(CMD_SUCCESS);
+}
+
 DEFUN(cfg_log_stderr, cfg_log_stderr_cmd,
 	"log stderr [blocking-io]",
 	LOG_STR "Logging via STDERR of the process\n"
@@ -1245,4 +1266,5 @@ void logging_vty_add_cmds()
 	install_lib_element(CONFIG_NODE, &cfg_log_systemd_journal_cmd);
 	install_lib_element(CONFIG_NODE, &cfg_no_log_systemd_journal_cmd);
 	install_lib_element(CONFIG_NODE, &cfg_log_gsmtap_cmd);
+	install_lib_element(CONFIG_NODE, &cfg_no_log_gsmtap_cmd);
 }

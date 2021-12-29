@@ -44,6 +44,7 @@ int gsmtap_source_add_sink_fd(int gsmtap_fd);
 
 struct gsmtap_inst *gsmtap_source_init(const char *host, uint16_t port,
 					int ofd_wq_mode);
+void gsmtap_source_free(struct gsmtap_inst *gti);
 
 int gsmtap_source_add_sink(struct gsmtap_inst *gti);
 
