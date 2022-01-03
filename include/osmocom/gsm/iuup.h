@@ -80,9 +80,10 @@ struct osmo_iuup_rnl_status {
 			enum iuup_error_distance distance;
 		} error_event;
 		struct {
-			uint16_t supported_versions_mask;
-			uint8_t num_subflows;
+			uint16_t mode_version;
+			uint8_t data_pdu_type;
 			uint8_t num_rfci;
+			uint8_t num_subflows;
 			uint16_t subflow_sizes[IUUP_MAX_RFCIS][IUUP_MAX_SUBFLOWS];
 			bool IPTIs_present;
 			uint8_t IPTIs[IUUP_MAX_RFCIS]; /* values range 0-15, 4 bits */

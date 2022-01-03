@@ -440,9 +440,17 @@ static int _passive_init_user_prim_cb(struct osmo_prim_hdr *oph, void *ctx)
 
 	printf("%s()\n", __func__);
 
-	OSMO_ASSERT(OSMO_PRIM_HDR(&irp->oph) == OSMO_PRIM(OSMO_IUUP_RNL_DATA, PRIM_OP_INDICATION));
-	printf("User: UL len=%u: %s\n", msgb_l3len(msg),
-	       osmo_hexdump((const unsigned char *) msgb_l3(msg), msgb_l3len(msg)));
+	switch (_passive_init_user_rx_prim) {
+	case 0:
+		OSMO_ASSERT(OSMO_PRIM_HDR(&irp->oph) == OSMO_PRIM(OSMO_IUUP_RNL_STATUS, PRIM_OP_INDICATION));
+		OSMO_ASSERT(irp->u.status.procedure == IUUP_PROC_INIT);
+		break;
+	case 1:
+	default:
+		OSMO_ASSERT(OSMO_PRIM_HDR(&irp->oph) == OSMO_PRIM(OSMO_IUUP_RNL_DATA, PRIM_OP_INDICATION));
+		printf("User: UL len=%u: %s\n", msgb_l3len(msg),
+		       osmo_hexdump((const unsigned char *) msgb_l3(msg), msgb_l3len(msg)));
+	}
 
 	_passive_init_user_rx_prim++;
 	msgb_free(oph->msg);
@@ -496,7 +504,7 @@ void test_passive_init(void)
 	memcpy(hdr14, iuup_initialization, sizeof(iuup_initialization));
 	OSMO_ASSERT((rc = osmo_iuup_tnl_prim_up(iui, tnp)) == 0);
 	OSMO_ASSERT(_passive_init_transport_rx_prim == 1); /* We receive an Init ACK */
-	OSMO_ASSERT(_passive_init_user_rx_prim == 0);
+	OSMO_ASSERT(_passive_init_user_rx_prim == 1); /* We receive the Status-Init.ind */
 
 	/* Send IuUP incoming data to the implementation: */
 	tnp = osmo_iuup_tnl_prim_alloc(iuup_test_ctx, OSMO_IUUP_TNL_UNITDATA, PRIM_OP_INDICATION, IUUP_MSGB_SIZE);
@@ -505,7 +513,7 @@ void test_passive_init(void)
 	memcpy(hdr0, iuup_data, sizeof(iuup_data));
 	OSMO_ASSERT((rc = osmo_iuup_tnl_prim_up(iui, tnp)) == 0);
 	/* We receive it in RNL: */
-	OSMO_ASSERT(_passive_init_user_rx_prim == 1);
+	OSMO_ASSERT(_passive_init_user_rx_prim == 2);
 
 	/* Now in opposite direction, RNL->[IuuP]->TNL: */
 	rnp = osmo_iuup_rnl_prim_alloc(iuup_test_ctx, OSMO_IUUP_RNL_DATA, PRIM_OP_REQUEST, IUUP_MSGB_SIZE);

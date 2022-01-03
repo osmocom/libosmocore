@@ -358,6 +358,25 @@ static struct osmo_iuup_tnl_prim *tnp_ctrl_init_alloc(struct osmo_iuup_instance 
 	return itp;
 }
 
+static struct osmo_iuup_rnl_prim *irp_init_ind_alloc(struct osmo_iuup_instance *iui)
+{
+	struct osmo_iuup_rnl_prim *irp;
+
+	irp = osmo_iuup_rnl_prim_alloc(iui, OSMO_IUUP_RNL_STATUS, PRIM_OP_INDICATION, IUUP_MSGB_SIZE);
+	irp->u.status.procedure = IUUP_PROC_INIT;
+	irp->u.status.u.initialization.mode_version = iui->mode_version;
+	irp->u.status.u.initialization.data_pdu_type = iui->config.data_pdu_type;
+	irp->u.status.u.initialization.num_subflows = iui->config.num_subflows;
+	irp->u.status.u.initialization.num_rfci = iui->config.num_rfci;
+	memcpy(irp->u.status.u.initialization.subflow_sizes, iui->config.subflow_sizes,
+	       IUUP_MAX_RFCIS * IUUP_MAX_SUBFLOWS * sizeof(iui->config.subflow_sizes[0][0]));
+	irp->u.status.u.initialization.IPTIs_present = iui->config.IPTIs_present;
+	if (iui->config.IPTIs_present)
+		memcpy(irp->u.status.u.initialization.IPTIs, iui->config.IPTIs,
+		       IUUP_MAX_RFCIS * sizeof(iui->config.IPTIs[0]));
+	return irp;
+}
+
 /* transform a RNL data primitive into a TNL data primitive (down the stack) */
 static struct osmo_iuup_tnl_prim *rnl_to_tnl_data(struct osmo_iuup_instance *iui,
 						  struct osmo_iuup_rnl_prim *irp)
@@ -496,6 +515,7 @@ static bool iuup_rx_initialization(struct osmo_iuup_instance *iui, struct osmo_i
 	int i;
 	bool is_last;
 	uint16_t remote_mask, match_mask;
+	struct osmo_iuup_rnl_prim *irp;
 	struct osmo_iuup_tnl_prim *resp;
 
 	/* TODO: whenever we check message boundaries, length, etc. and we fail, send NACK */
@@ -579,6 +599,9 @@ static bool iuup_rx_initialization(struct osmo_iuup_instance *iui, struct osmo_i
 	iui->config.num_rfci = num_rfci;
 	iui->config.num_subflows = ihdr->num_subflows_per_rfci;
 	iui->config.data_pdu_type = itail->data_pdu_type;
+
+	irp = irp_init_ind_alloc(iui);
+	iui->user_prim_cb(&irp->oph, iui->user_prim_priv);
 
 	LOGPFSML(iui->fi, LOGL_DEBUG, "Tx Initialization ACK\n");
 	resp = itp_ctrl_ack_alloc(iui, IUUP_PROC_INIT, hdr->frame_nr);
