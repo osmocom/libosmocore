@@ -1,7 +1,7 @@
 #pragma once
 
 #define TCP_STATS_DEFAULT_INTERVAL 0	/* secs */
-#define TCP_STATS_DEFAULT_BATCH_SIZE 1	/* sockets per interval */
+#define TCP_STATS_DEFAULT_BATCH_SIZE 5	/* sockets per interval */
 
 struct osmo_tcp_stats_config {
 	/* poll interval in seconds, use osmo_stats_tcp_set_interval() to manipulate this value */
