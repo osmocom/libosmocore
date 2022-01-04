@@ -601,7 +601,8 @@ static int _output_buf(char *buf, int buf_len, struct log_target *target, unsign
 		OSMO_SNPRINTF_RET(ret, rem, offset, len);
 	}
 err:
-	buf[buf_len-1] = '\0';
+	len = OSMO_MIN(buf_len - 1, len);
+	buf[len] = '\0';
 	return len;
 }
 
