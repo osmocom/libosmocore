@@ -527,7 +527,7 @@ static bool iuup_rx_initialization(struct osmo_iuup_instance *iui, struct osmo_i
 		} else {
 			uint8_t *subflow_size = ihdr_rfci->subflow_length;
 			for (i = 0; i < ihdr->num_subflows_per_rfci; i++) {
-				iui->config.subflow_sizes[ihdr_rfci->rfci][i] = osmo_load16be(subflow_size);
+				iui->config.subflow_sizes[ihdr_rfci->rfci][i] = *subflow_size;
 				subflow_size++;
 			}
 		}
