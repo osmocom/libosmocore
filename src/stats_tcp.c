@@ -83,7 +83,7 @@ static struct osmo_stat_item_desc stats_tcp_item_desc[] = {
 	[STATS_TCP_NOTSENT_BYTES] = { "tcp:notsent_bytes", "bytes not yet sent", "", 60, 0 },
 	[STATS_TCP_RWND_LIMITED] = { "tcp:rwnd_limited", "time (usec) limited by receive window", "", 60, 0 },
 	[STATS_TCP_SNDBUF_LIMITED] = { "tcp:sndbuf_limited", "Time (usec) limited by send buffer", "", 60, 0 },
-	[STATS_TCP_REORD_SEEN] = { "tcp:sndbuf_limited", "reordering events seen", "", 60, 0 },
+	[STATS_TCP_REORD_SEEN] = { "tcp:reord_seen", "reordering events seen", "", 60, 0 },
 };
 
 static struct osmo_stat_item_group_desc stats_tcp_desc = {
