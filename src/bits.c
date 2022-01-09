@@ -188,7 +188,7 @@ int osmo_ubit2pbit_ext(pbit_t *out, unsigned int out_ofs,
                        const ubit_t *in, unsigned int in_ofs,
                        unsigned int num_bits, int lsb_mode)
 {
-	int i, op, bn;
+	unsigned int i, op, bn;
 	for (i=0; i<num_bits; i++) {
 		op = out_ofs + i;
 		bn = lsb_mode ? (op&7) : (7-(op&7));
@@ -213,7 +213,7 @@ int osmo_pbit2ubit_ext(ubit_t *out, unsigned int out_ofs,
                        const pbit_t *in, unsigned int in_ofs,
                        unsigned int num_bits, int lsb_mode)
 {
-	int i, ip, bn;
+	unsigned int i, ip, bn;
 	for (i=0; i<num_bits; i++) {
 		ip = in_ofs + i;
 		bn = lsb_mode ? (ip&7) : (7-(ip&7));
@@ -304,7 +304,7 @@ uint32_t osmo_revbytebits_8(uint8_t x)
  */
 void osmo_revbytebits_buf(uint8_t *buf, int len)
 {
-	unsigned int i;
+	int i;
 
 	for (i = 0; i < len; i++)
 		buf[i] = flip_table[buf[i]];
