@@ -1259,7 +1259,7 @@ struct log_target *log_target_create_file(const char *fname)
  *  \returns Log target (if found), NULL otherwise
  *  Must be called with mutex osmo_log_tgt_mutex held, see log_tgt_mutex_lock.
  */
-struct log_target *log_target_find(int type, const char *fname)
+struct log_target *log_target_find(enum log_target_type type, const char *fname)
 {
 	struct log_target *tgt;
 

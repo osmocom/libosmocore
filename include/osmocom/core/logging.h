@@ -431,7 +431,7 @@ int log_targets_reopen(void);
 void log_add_target(struct log_target *target);
 void log_del_target(struct log_target *target);
 
-struct log_target *log_target_find(int type, const char *fname);
+struct log_target *log_target_find(enum log_target_type type, const char *fname);
 
 void log_enable_multithread(void);
 
