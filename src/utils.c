@@ -202,7 +202,7 @@ int osmo_str2bcd(uint8_t *dst, size_t dst_size, const char *digits, int start_ni
 		if (end_nibble & 1)
 			end_nibble++;
 	}
-	if ((end_nibble / 2) > dst_size)
+	if ((unsigned int) (end_nibble / 2) > dst_size)
 		return -ENOMEM;
 
 	for (nibble_i = start_nibble; nibble_i < end_nibble; nibble_i++) {
@@ -237,7 +237,7 @@ int osmo_str2bcd(uint8_t *dst, size_t dst_size, const char *digits, int start_ni
  *  \param[in] max_len maximum space in output buffer
  *  \returns number of parsed octets, or -1 on error
  */
-int osmo_hexparse(const char *str, uint8_t *b, int max_len)
+int osmo_hexparse(const char *str, uint8_t *b, unsigned int max_len)
 
 {
 	char c;
@@ -312,7 +312,7 @@ const char *osmo_hexdump_buf(char *out_buf, size_t out_buf_size, const unsigned 
 	for (i = 0; i < len; i++) {
 		const char *delimp = delim;
 		int len_remain = out_buf_size - (cur - out_buf) - 1;
-		if (len_remain < (2 + delim_len)
+		if (len_remain < (int) (2 + delim_len)
 		    && !(!delim_after_last && i == (len - 1) && len_remain >= 2))
 			break;
 
@@ -340,7 +340,7 @@ const char *osmo_hexdump_buf(char *out_buf, size_t out_buf_size, const unsigned 
  */
 char *osmo_ubit_dump_buf(char *buf, size_t buf_len, const uint8_t *bits, unsigned int len)
 {
-	int i;
+	unsigned int i;
 
 	if (len > buf_len-1)
 		len = buf_len-1;
@@ -1222,7 +1222,7 @@ int osmo_float_str_to_int(int64_t *val, const char *str, unsigned int precision)
 	int64_t precision_factor;
 	int64_t integer_max;
 	int64_t decimal_max;
-	int i;
+	unsigned int i;
 
 	OSMO_ASSERT(val);
 	*val = 0;

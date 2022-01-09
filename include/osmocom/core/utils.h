@@ -40,7 +40,7 @@
 
 /*! A mapping between human-readable string and numeric value */
 struct value_string {
-	int value;		/*!< numeric value */
+	uint32_t value;		/*!< numeric value */
 	const char *str;	/*!< human-readable string */
 };
 
@@ -57,7 +57,7 @@ uint8_t osmo_char2bcd(char c);
 int osmo_bcd2str(char *dst, size_t dst_size, const uint8_t *bcd, int start_nibble, int end_nibble, bool allow_hex);
 int osmo_str2bcd(uint8_t *dst, size_t dst_size, const char *digits, int start_nibble, int end_nibble, bool allow_hex);
 
-int osmo_hexparse(const char *str, uint8_t *b, int max_len);
+int osmo_hexparse(const char *str, uint8_t *b, unsigned int max_len);
 
 char *osmo_ubit_dump_buf(char *buf, size_t buf_len, const uint8_t *bits, unsigned int len);
 char *osmo_ubit_dump(const uint8_t *bits, unsigned int len);
@@ -323,7 +323,7 @@ int osmo_str_to_int(int *result, const char *str, int base, int min_val, int max
 	_needed = FUNC_BUF(_str, _len, ## FUNC_BUF_ARGS); \
 	if (_needed < 0) \
 		goto OSMO_NAME_C_on_error; \
-	if (_needed < _len) \
+	if ((unsigned int) _needed < _len) \
 		return _str; \
 	_len = _needed + 1; \
 	if (_str) \
