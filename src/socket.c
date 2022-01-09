@@ -114,7 +114,7 @@ static struct addrinfo *addrinfo_helper(uint16_t family, uint16_t type, uint8_t 
 static int addrinfo_helper_multi(struct addrinfo **addrinfo, uint16_t family, uint16_t type, uint8_t proto,
 					const char **hosts, size_t host_cnt, uint16_t port, bool passive)
 {
-	int i, j;
+	unsigned int i, j;
 
 	for (i = 0; i < host_cnt; i++) {
 		addrinfo[i] = addrinfo_helper(family, type, proto, hosts[i], port, passive);
@@ -210,7 +210,8 @@ static int socket_helper_osa(const struct osmo_sockaddr *addr, uint16_t type, ui
 static int multiaddr_snprintf(char* buf, size_t buf_len, const char **hosts, size_t host_cnt)
 {
 	int len = 0, offset = 0, rem = buf_len;
-	int ret, i;
+	size_t i;
+	int ret;
 	char *after;
 
 	if (buf_len < 3)
@@ -665,7 +666,7 @@ static int socket_helper_multiaddr(uint16_t family, uint16_t type, uint8_t proto
 /* Build array of addresses taking first addrinfo result of the requested family
  * for each host in addrs_buf. */
 static int addrinfo_to_sockaddr(uint16_t family, const struct addrinfo **result,
-				const char **hosts, int host_cont,
+				const char **hosts, unsigned int host_cont,
 				uint8_t *addrs_buf, size_t addrs_buf_len) {
 	size_t host_idx, offset = 0;
 	const struct addrinfo *rp;
@@ -721,7 +722,7 @@ int osmo_sock_init2_multiaddr(uint16_t family, uint16_t type, uint8_t proto,
 {
 	struct addrinfo *res_loc[OSMO_SOCK_MAX_ADDRS], *res_rem[OSMO_SOCK_MAX_ADDRS];
 	int sfd = -1, rc, on = 1;
-	int i;
+	unsigned int i;
 	bool loc_has_v4addr, rem_has_v4addr;
 	bool loc_has_v6addr, rem_has_v6addr;
 	struct sockaddr_in6 addrs_buf[OSMO_SOCK_MAX_ADDRS];

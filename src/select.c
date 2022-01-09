@@ -316,7 +316,7 @@ static unsigned int poll_fill_fds(void)
 }
 
 /* iterate over first n_fd entries of g_poll.poll + dispatch */
-static int poll_disp_fds(int n_fd)
+static int poll_disp_fds(unsigned int n_fd)
 {
 	struct osmo_fd *ufd;
 	unsigned int i;
