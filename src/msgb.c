@@ -426,11 +426,11 @@ int msgb_resize_area(struct msgb *msg, uint8_t *area,
  */
 char *msgb_hexdump_buf(char *buf, size_t buf_len, const struct msgb *msg)
 {
-	int buf_offs = 0;
+	unsigned int buf_offs = 0;
 	int nchars;
 	const unsigned char *start = msg->data;
 	const unsigned char *lxhs[4];
-	int i;
+	unsigned int i;
 
 	lxhs[0] = msg->l1h;
 	lxhs[1] = msg->l2h;
