@@ -197,7 +197,8 @@ int bitvec_get_bit_high(struct bitvec *bv)
  *  \return 0 on success; negative in case of error */
 int bitvec_set_bits(struct bitvec *bv, const enum bit_value *bits, unsigned int count)
 {
-	int i, rc;
+	unsigned int i;
+	int rc;
 
 	for (i = 0; i < count; i++) {
 		rc = bitvec_set_bit(bv, bits[i]);
@@ -260,7 +261,7 @@ int16_t bitvec_get_int16_msb(const struct bitvec *bv, unsigned int num_bits)
  *  \return integer value retrieved from bit vector */
 int bitvec_get_uint(struct bitvec *bv, unsigned int num_bits)
 {
-	int i;
+	unsigned int i;
 	unsigned int ui = 0;
 
 	for (i = 0; i < num_bits; i++) {
@@ -603,7 +604,7 @@ unsigned bitvec_rl(const struct bitvec *bv, bool b)
  *  \returns Number of consecutive bits of \p b in \p bv and cur_bit will
  *  \go to cur_bit + number of consecutive bit
  */
-unsigned bitvec_rl_curbit(struct bitvec *bv, bool b, int max_bits)
+unsigned bitvec_rl_curbit(struct bitvec *bv, bool b, unsigned int max_bits)
 {
 	unsigned i = 0;
 	unsigned j = 8;
