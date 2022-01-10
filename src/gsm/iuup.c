@@ -835,7 +835,7 @@ static int iuup_verify_pdu(const uint8_t *data, unsigned int len)
 
 	header_crc_computed = osmo_iuup_compute_header_crc(data, len);
 	if (iuup_get_hdr_crc(data) != header_crc_computed) {
-		LOGP(DLIUUP, LOGL_NOTICE, "Checksum error: rx 0x%02x vs exp 0x%02x\n",
+		LOGP(DLIUUP, LOGL_NOTICE, "Header Checksum error: rx 0x%02x vs exp 0x%02x\n",
 		     iuup_get_hdr_crc(data), header_crc_computed);
 		return -EIO;
 	}
@@ -849,7 +849,7 @@ static int iuup_verify_pdu(const uint8_t *data, unsigned int len)
 		payload_crc = ((uint16_t)t0h->payload_crc_hi << 8) | t0h->payload_crc_lo;
 		payload_crc_computed = osmo_iuup_compute_payload_crc(data, len);
 		if (payload_crc != payload_crc_computed)
-			return -EIO;
+			goto payload_crc_err;
 		break;
 	case IUUP_PDU_T_CONTROL:
 		t14h = (struct iuup_pdutype14_hdr *) data;
@@ -857,13 +857,18 @@ static int iuup_verify_pdu(const uint8_t *data, unsigned int len)
 			payload_crc = ((uint16_t)t14h->payload_crc_hi << 8) | t14h->payload_crc_lo;
 			payload_crc_computed = osmo_iuup_compute_payload_crc(data, len);
 			if (payload_crc != payload_crc_computed)
-				return -EIO;
+				goto payload_crc_err;
 		}
 		break;
 	default:
 		return -EINVAL;
 	}
 	return 0;
+
+payload_crc_err:
+	LOGP(DLIUUP, LOGL_NOTICE, "Payload Checksum error (pdu type %u): rx 0x%02x vs exp 0x%02x\n",
+	     pdu_type, payload_crc, payload_crc_computed);
+	return -EIO;
 }
 
 /* A IuUP TNL SAP primitive from transport (lower layer) */
