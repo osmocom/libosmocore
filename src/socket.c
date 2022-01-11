@@ -1254,6 +1254,23 @@ uint16_t osmo_sockaddr_port(const struct sockaddr *sa)
 	return 0;
 }
 
+/*! Set sockaddr port content (to network byte order).
+ *  \param[out] sa  sockaddr to set the port of.
+ *  \param[in] port  port nr to set.
+ */
+void osmo_sockaddr_set_port(struct sockaddr *sa, uint16_t port)
+{
+	struct osmo_sockaddr *osa = (struct osmo_sockaddr *)sa;
+	switch (osa->u.sa.sa_family) {
+	case AF_INET6:
+		osa->u.sin6.sin6_port = htons(port);
+		return;
+	case AF_INET:
+		osa->u.sin.sin_port = htons(port);
+		return;
+	}
+}
+
 /*! Initialize a unix domain socket (including bind/connect)
  *  \param[in] type Socket type like SOCK_DGRAM, SOCK_STREAM
  *  \param[in] proto Protocol like IPPROTO_TCP, IPPROTO_UDP
