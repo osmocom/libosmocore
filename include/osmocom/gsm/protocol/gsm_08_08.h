@@ -52,7 +52,7 @@ struct dtap_header {
 #if OSMO_IS_LITTLE_ENDIAN
 			uint8_t dlci_sapi:3, /* enum gsm0406_dlci_sapi */
 			dlci_spare:3,
-			dlci_cc:2;
+			dlci_cc:2; /* enum gsm0808_dlci_cc */
 #elif OSMO_IS_BIG_ENDIAN
 /* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
 			uint8_t dlci_cc:2, dlci_spare:3, dlci_sapi:3;
@@ -61,6 +61,13 @@ struct dtap_header {
 	};
 	uint8_t length;
 } __attribute__((packed));
+
+/* 3GPP TS 48.006 9.3.2 "Transfer of DTAP messages", C2C1 bits */
+enum gsm0808_dlci_cc {
+	DLCI_CC_UNSPEC = 0,
+	DLCI_CC_FACCH_SDCCH = 2,
+	DLCI_CC_SACCH = 3,
+};
 
 /* Data Link Control SAPI, GSM 08.06 § 6.3.2, GSM 04.06 § 3.3.3 */
 enum gsm0406_dlci_sapi {
