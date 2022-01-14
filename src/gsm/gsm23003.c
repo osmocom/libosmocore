@@ -445,14 +445,12 @@ void osmo_plmn_to_bcd(uint8_t *bcd_dst, const struct osmo_plmn_id *plmn)
 	}
 }
 
-/* Convert given 3-byte BCD buffer to integers and write results to *mcc and
- * *mnc. The first three BCD digits result in the MCC and the remaining ones in
- * the MNC. Return mnc_3_digits as false if the MNC's most significant digit is encoded as 0xF, true
- * otherwise; i.e. true if MNC > 99 or if it is represented with leading zeros instead of 0xF.
+/* Convert given 3-byte BCD buffer to integers and write results to plmn->mcc and plmn->mnc. The first three BCD digits
+ * result in the MCC and the remaining ones in the MNC. Set plmn->mnc_3_digits as false if the MNC's most significant
+ * digit is encoded as 0xF, true otherwise; i.e. true if MNC > 99 or if it is represented with leading zeros instead of
+ * 0xF.
  * \param[in] bcd_src 	3-byte BCD buffer containing MCC+MNC representations.
- * \param[out] mcc 	MCC result buffer, or NULL.
- * \param[out] mnc	MNC result buffer, or NULL.
- * \param[out] mnc_3_digits	Result buffer for 3-digit flag, or NULL.
+ * \param[out] plmn     user provided memory to store the result.
  */
 void osmo_plmn_from_bcd(const uint8_t *bcd_src, struct osmo_plmn_id *plmn)
 {
