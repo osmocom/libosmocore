@@ -160,15 +160,15 @@ enum iuup_fsm_event {
 };
 
 static const struct value_string iuup_fsm_event_names[] = {
-	{ IUUP_FSM_EVT_IUUP_CONFIG_REQ,		"IuUP-CONFIG.req" },
-	{ IUUP_FSM_EVT_IUUP_DATA_REQ,		"IuUP-DATA.req" },
-	{ IUUP_FSM_EVT_IUUP_DATA_IND,		"IuUP-DATA.ind" },
-	{ IUUP_FSM_EVT_IUUP_STATUS_REQ,		"IuUP-STATUS.req" },
-	{ IUUP_FSM_EVT_IUUP_STATUS_IND,		"IuUP-STATUS.ind" },
-	{ IUUP_FSM_EVT_SSASAR_UNITDATA_REQ,	"SSSAR-UNITDATA.req" },
-	{ IUUP_FSM_EVT_SSASAR_UNITDATA_IND,	"SSSAR-UNITDATA.ind" },
-	{ IUUP_FSM_EVT_IUUP_UNITDATA_REQ,	"IuUP-UNITDATA.req" },
-	{ IUUP_FSM_EVT_IUUP_UNITDATA_IND,	"IuUP-UNITDATA.ind" },
+	{ IUUP_FSM_EVT_IUUP_CONFIG_REQ,		"IuUP-CONFIG-req" },
+	{ IUUP_FSM_EVT_IUUP_DATA_REQ,		"IuUP-DATA-req" },
+	{ IUUP_FSM_EVT_IUUP_DATA_IND,		"IuUP-DATA-ind" },
+	{ IUUP_FSM_EVT_IUUP_STATUS_REQ,		"IuUP-STATUS-req" },
+	{ IUUP_FSM_EVT_IUUP_STATUS_IND,		"IuUP-STATUS-ind" },
+	{ IUUP_FSM_EVT_SSASAR_UNITDATA_REQ,	"SSSAR-UNITDATA-req" },
+	{ IUUP_FSM_EVT_SSASAR_UNITDATA_IND,	"SSSAR-UNITDATA-ind" },
+	{ IUUP_FSM_EVT_IUUP_UNITDATA_REQ,	"IuUP-UNITDATA-req" },
+	{ IUUP_FSM_EVT_IUUP_UNITDATA_IND,	"IuUP-UNITDATA-ind" },
 	{ IUUP_FSM_EVT_INIT,			"INIT" },
 	{ IUUP_FSM_EVT_LAST_INIT_ACK,		"LAST_INIT_ACK" },
 	{ IUUP_FSM_EVT_INIT_NACK,		"INIT_NACK" },
@@ -789,7 +789,7 @@ static const struct osmo_fsm_state iuup_fsm_states[] = {
 				 S(IUUP_FSM_EVT_SSASAR_UNITDATA_REQ) |
 				 S(IUUP_FSM_EVT_SSASAR_UNITDATA_IND),
 		.out_state_mask = S(IUUP_FSM_ST_NULL),
-		.name = "TrM Data Transfer Ready",
+		.name = "TrM_Data_Transfer_Ready",
 		.action = iuup_fsm_trm_data,
 	},
 	[IUUP_FSM_ST_INIT] = {
@@ -808,7 +808,7 @@ static const struct osmo_fsm_state iuup_fsm_states[] = {
 				 S(IUUP_FSM_EVT_IUUP_DATA_IND),
 		.out_state_mask = S(IUUP_FSM_ST_NULL) |
 				  S(IUUP_FSM_ST_INIT),
-		.name = "SMpSDU Data Transfer Ready",
+		.name = "SMpSDU_Data_Transfer_Ready",
 		.action = iuup_fsm_smpsdu_data,
 	},
 };
