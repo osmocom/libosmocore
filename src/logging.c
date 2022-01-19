@@ -754,6 +754,18 @@ void logp2(int subsys, unsigned int level, const char *file, int line, int cont,
 	TRACE(LIBOSMOCORE_LOG_DONE());
 }
 
+/* This logging function is used as a fallback when the logging framework is
+ * not is not properly initialized. */
+void logp_stub(const char *file, int line, int cont, const char *format, ...)
+{
+	va_list ap;
+	if (!cont)
+		fprintf(stderr, "%s:%d ", file, line);
+	va_start(ap, format);
+	vfprintf(stderr, format, ap);
+	va_end(ap);
+}
+
 /*! Register a new log target with the logging core
  *  \param[in] target Log target to be registered
  */

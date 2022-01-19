@@ -11,6 +11,8 @@
 #include <osmocom/core/defs.h>
 #include <osmocom/core/linuxlist.h>
 
+extern struct log_info *osmo_log_info;
+
 #ifndef DEBUG
 #define DEBUG
 #endif
@@ -56,6 +58,10 @@ void logp(int subsys, const char *file, int line, int cont, const char *format, 
 #ifndef LIBOSMOCORE_NO_LOGGING
 #define LOGPC(ss, level, fmt, args...) \
 	do { \
+		if (!osmo_log_info) { \
+			logp_stub(__FILE__, __LINE__, 1, fmt, ##args);	\
+			break; \
+		} \
 		if (log_check_level(ss, level)) \
 			logp2(ss, level, __FILE__, __LINE__, 1, fmt, ##args); \
 	} while(0)
@@ -94,6 +100,13 @@ void logp(int subsys, const char *file, int line, int cont, const char *format, 
 #ifndef LIBOSMOCORE_NO_LOGGING
 #define LOGPSRCC(ss, level, caller_file, caller_line, cont, fmt, args...) \
 	do { \
+		if (!osmo_log_info) { \
+			if (caller_file) \
+				logp_stub(caller_file, caller_line, cont, fmt, ##args); \
+			else \
+				logp_stub(__FILE__, __LINE__, cont, fmt, ##args); \
+			break; \
+		} \
 		if (log_check_level(ss, level)) {\
 			if (caller_file) \
 				logp2(ss, level, caller_file, caller_line, cont, fmt, ##args); \
@@ -381,7 +394,9 @@ struct log_target {
 void logp2(int subsys, unsigned int level, const char *file,
 	   int line, int cont, const char *format, ...)
 				__attribute__ ((format (printf, 6, 7)));
+void logp_stub(const char *file, int line, int cont, const char *format, ...);
 int log_init(const struct log_info *inf, void *talloc_ctx);
+int log_initialized(void);
 void log_fini(void);
 int log_check_level(int subsys, unsigned int level);
 
