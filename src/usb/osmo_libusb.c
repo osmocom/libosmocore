@@ -99,7 +99,7 @@ static void osmo_usb_added_cb(int fd, short events, void *user_data)
 static void osmo_usb_removed_cb(int fd, void *user_data)
 {
 	struct osmo_fd *ofd = osmo_fd_get_by_fd(fd);
-	if (!fd)
+	if (!ofd)
 		return;
 	osmo_fd_unregister(ofd);
 	talloc_free(ofd);
