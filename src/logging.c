@@ -586,6 +586,7 @@ static int _output_buf(char *buf, int buf_len, struct log_target *target, unsign
 			break;
 		case LOG_FILENAME_PATH:
 			offset--;
+			len--;
 			ret = snprintf(buf + offset, rem, " (%s:%d)\n", file, line);
 			if (ret < 0)
 				goto err;
@@ -593,6 +594,7 @@ static int _output_buf(char *buf, int buf_len, struct log_target *target, unsign
 			break;
 		case LOG_FILENAME_BASENAME:
 			offset--;
+			len--;
 			ret = snprintf(buf + offset, rem, " (%s:%d)\n", const_basename(file), line);
 			if (ret < 0)
 				goto err;
