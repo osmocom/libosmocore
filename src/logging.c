@@ -580,19 +580,19 @@ static int _output_buf(char *buf, int buf_len, struct log_target *target, unsign
 	 * message in '\n'. If so, nip the last '\n' away, insert the source file info and re-append an
 	 * '\n'. All this to allow LOGP("start..."); LOGPC("...end\n") constructs. */
 	if (target->print_filename_pos == LOG_FILENAME_POS_LINE_END
-	    && offset > 0 && buf[offset-1] == '\n') {
+	    && offset > 0 && buf[offset - 1] == '\n') {
 		switch (target->print_filename2) {
 		case LOG_FILENAME_NONE:
 			break;
 		case LOG_FILENAME_PATH:
-			offset --;
+			offset--;
 			ret = snprintf(buf + offset, rem, " (%s:%d)\n", file, line);
 			if (ret < 0)
 				goto err;
 			OSMO_SNPRINTF_RET(ret, rem, offset, len);
 			break;
 		case LOG_FILENAME_BASENAME:
-			offset --;
+			offset--;
 			ret = snprintf(buf + offset, rem, " (%s:%d)\n", const_basename(file), line);
 			if (ret < 0)
 				goto err;
