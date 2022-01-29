@@ -168,11 +168,18 @@ cat $abs_srcdir/gprs/gprs_test.ok > expout
 AT_CHECK([$abs_top_builddir/tests/gprs/gprs_test], [0], [expout], [ignore])
 AT_CLEANUP
 
-AT_SETUP([logging])
-AT_KEYWORDS([logging])
+AT_SETUP([logging_stream])
+AT_KEYWORDS([logging_stream])
 cat $abs_srcdir/logging/logging_test.ok > expout
-cat $abs_srcdir/logging/logging_test.err > experr
-AT_CHECK([$abs_top_builddir/tests/logging/logging_test], [0], [expout], [experr])
+cat $abs_srcdir/logging/logging_test_stream.err > experr
+AT_CHECK([$abs_top_builddir/tests/logging/logging_test stream], [0], [expout], [experr])
+AT_CLEANUP
+
+AT_SETUP([logging_wqueue])
+AT_KEYWORDS([logging_wqueue])
+cat $abs_srcdir/logging/logging_test.ok > expout
+cat $abs_srcdir/logging/logging_test_wqueue.err > experr
+AT_CHECK([$abs_top_builddir/tests/logging/logging_test wqueue], [0], [expout], [experr])
 AT_CLEANUP
 
 AT_SETUP([codec])

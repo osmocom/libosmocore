@@ -78,6 +78,11 @@ int main(int argc, char **argv)
 	log_set_print_category(stderr_target, 1);
 	log_set_use_color(stderr_target, 0);
 
+	if (argc > 1 && !strcmp(argv[1], "wqueue"))
+		log_target_file_switch_to_wqueue(stderr_target);
+	else
+		log_target_file_switch_to_stream(stderr_target);
+
 	log_parse_category_mask(stderr_target, "DRLL:DCC");
 	log_parse_category_mask(stderr_target, "DRLL");
 
