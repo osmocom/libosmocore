@@ -130,5 +130,13 @@ int main(int argc, char **argv)
 	log_set_category_filter(stderr_target, DLGLOBAL, 1, LOGL_DEBUG);
 	DEBUGP(DLGLOBAL, "You should see this (DLGLOBAL on DEBUG)\n");
 
+	/* Test printing of the filename */
+	log_set_print_filename2(stderr_target, LOG_FILENAME_BASENAME);
+
+	log_set_print_filename_pos(stderr_target, LOG_FILENAME_POS_HEADER_END);
+	DEBUGP(DLGLOBAL, "A message with source info printed first\n");
+	log_set_print_filename_pos(stderr_target, LOG_FILENAME_POS_LINE_END);
+	DEBUGP(DLGLOBAL, "A message with source info printed last\n");
+
 	return 0;
 }
