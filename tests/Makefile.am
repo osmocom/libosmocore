@@ -363,9 +363,7 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
              gb/gprs_ns2_test.ok					\
              gprs/gprs_test.ok kasumi/kasumi_test.ok			\
              msgfile/msgfile_test.ok msgfile/msgconfig.cfg		\
-             logging/logging_test.ok					\
-             logging/logging_test_stream.err				\
-             logging/logging_test_wqueue.err				\
+             logging/logging_test.ok logging/logging_test.err		\
              logging/logging_vty_test.vty				\
              fr/fr_test.ok loggingrb/logging_test.ok			\
              loggingrb/logging_test.err	strrb/strrb_test.ok		\
@@ -503,12 +501,9 @@ endif
 		>$(srcdir)/gsm48/rest_octets_test.ok
 	gprs/gprs_test \
 		>$(srcdir)/gprs/gprs_test.ok
-	logging/logging_test wqueue \
+	logging/logging_test \
 		>$(srcdir)/logging/logging_test.ok \
-		2>$(srcdir)/logging/logging_test_wqueue.err
-	logging/logging_test stream \
-		>$(srcdir)/logging/logging_test.ok \
-		2>$(srcdir)/logging/logging_test_stream.err
+		2>$(srcdir)/logging/logging_test.err
 	codec/codec_test \
 		>$(srcdir)/codec/codec_test.ok
 	codec/codec_ecu_fr_test \
