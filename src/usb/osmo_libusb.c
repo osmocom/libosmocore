@@ -735,6 +735,8 @@ int osmo_libusb_get_ep_addrs(libusb_device_handle *devh, unsigned int if_num,
 int osmo_libusb_init(libusb_context **pluctx)
 {
 	libusb_context *luctx = NULL;
+	const struct libusb_pollfd **pfds;
+
 	int rc;
 
 	rc = libusb_init(pluctx);
@@ -749,6 +751,17 @@ int osmo_libusb_init(libusb_context **pluctx)
 #endif
 
 	libusb_set_pollfd_notifiers(luctx, osmo_usb_added_cb, osmo_usb_removed_cb, luctx);
+
+	/* get the initial file descriptors which were created even before during libusb_init() */
+	pfds = libusb_get_pollfds(luctx);
+	if (pfds) {
+		const struct libusb_pollfd **pfds2 = pfds;
+		const struct libusb_pollfd *pfd;
+		/* synthesize 'add' call-backs. not sure why libusb doesn't do that by itself? */
+		for (pfd = *pfds2; pfd; pfd = *++pfds2)
+			osmo_usb_added_cb(pfd->fd, pfd->events, luctx);
+		libusb_free_pollfds(pfds);
+	}
 
 	return 0;
 }
