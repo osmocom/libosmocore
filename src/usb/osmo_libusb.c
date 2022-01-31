@@ -740,8 +740,10 @@ int osmo_libusb_init(libusb_context **pluctx)
 	int rc;
 
 	rc = libusb_init(pluctx);
-	if (rc != 0)
+	if (rc != 0) {
+		LOGP(DLUSB, LOGL_ERROR, "Error initializing libusb: %s\n", libusb_strerror(rc));
 		return rc;
+	}
 
 	if (pluctx)
 		luctx = *pluctx;
