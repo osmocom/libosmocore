@@ -754,7 +754,7 @@ int osmo_print_n(char *buf, size_t bufsize, const char *str, size_t n)
  *                           the non-legacy format also escapes those as "\xNN" sequences.
  * \return Number of characters that would be written if bufsize were large enough excluding '\0' (like snprintf()).
  */
-static size_t _osmo_escape_str_buf(char *buf, size_t bufsize, const char *str, int in_len, bool legacy_format)
+static int _osmo_escape_str_buf(char *buf, size_t bufsize, const char *str, int in_len, bool legacy_format)
 {
 	struct osmo_strbuf sb = { .buf = buf, .len = bufsize };
 	int in_pos = 0;
@@ -826,6 +826,18 @@ done:
  * \param[in] bufsize  sizeof(buf).
  * \param[in] str  A string that may contain any characters.
  * \param[in] in_len  Pass -1 to print until nul char, or >= 0 to force a length (also past nul chars).
+ * \return Number of characters that would be written if bufsize were large enough excluding '\0' (like snprintf()).
+ */
+int osmo_escape_str_buf3(char *buf, size_t bufsize, const char *str, int in_len)
+{
+	return _osmo_escape_str_buf(buf, bufsize, str, in_len, false);
+}
+
+/*! Return the string with all non-printable characters escaped.
+ * \param[out] buf  string buffer to write escaped characters to.
+ * \param[in] bufsize  sizeof(buf).
+ * \param[in] str  A string that may contain any characters.
+ * \param[in] in_len  Pass -1 to print until nul char, or >= 0 to force a length (also past nul chars).
  * \return The output buffer (buf).
  */
 char *osmo_escape_str_buf2(char *buf, size_t bufsize, const char *str, int in_len)
@@ -881,6 +893,20 @@ static size_t _osmo_quote_str_buf(char *buf, size_t bufsize, const char *str, in
 		OSMO_STRBUF_PRINTF(sb, "\"");
 	}
 	return sb.chars_needed;
+}
+
+/*! Like osmo_escape_str_buf3(), but returns double-quotes around a string, or "NULL" for a NULL string.
+ * This allows passing any char* value and get its C representation as string.
+ * The function signature is suitable for OSMO_STRBUF_APPEND_NOLEN().
+ * \param[out] buf  string buffer to write escaped characters to.
+ * \param[in] bufsize  sizeof(buf).
+ * \param[in] str  A string that may contain any characters.
+ * \param[in] in_len  Pass -1 to print until nul char, or >= 0 to force a length.
+ * \return Number of characters that would be written if bufsize were large enough excluding '\0' (like snprintf()).
+ */
+int osmo_quote_str_buf3(char *buf, size_t bufsize, const char *str, int in_len)
+{
+	return _osmo_quote_str_buf(buf, bufsize, str, in_len, false);
 }
 
 /*! Like osmo_escape_str_buf2(), but returns double-quotes around a string, or "NULL" for a NULL string.
