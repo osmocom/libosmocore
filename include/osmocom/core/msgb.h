@@ -234,7 +234,7 @@ static inline int msgb_headroom(const struct msgb *msgb)
 static inline unsigned char *msgb_put(struct msgb *msgb, unsigned int len)
 {
 	unsigned char *tmp = msgb->tail;
-	if (msgb_tailroom(msgb) < (int) len)
+	if (OSMO_UNLIKELY(msgb_tailroom(msgb) < (int) len))
 		MSGB_ABORT(msgb, "Not enough tailroom msgb_put"
 			   " (allocated %u, head at %u, len %u, tailroom %u < want tailroom %u)\n",
 			   msgb->data_len - sizeof(struct msgb),
@@ -282,7 +282,7 @@ static inline void msgb_put_u32(struct msgb *msgb, uint32_t word)
  */
 static inline unsigned char *msgb_get(struct msgb *msgb, unsigned int len)
 {
-	if (msgb_length(msgb) < len)
+	if (OSMO_UNLIKELY(msgb_length(msgb) < len))
 		MSGB_ABORT(msgb, "msgb too small to get %u (len %u)\n",
 			   len, msgb_length(msgb));
 	msgb->tail -= len;
@@ -334,7 +334,7 @@ static inline uint32_t msgb_get_u32(struct msgb *msgb)
  */
 static inline unsigned char *msgb_push(struct msgb *msgb, unsigned int len)
 {
-	if (msgb_headroom(msgb) < (int) len)
+	if (OSMO_UNLIKELY(msgb_headroom(msgb) < (int) len))
 		MSGB_ABORT(msgb, "Not enough headroom msgb_push"
 			   " (allocated %u, head at %u < want headroom %u, len %u, tailroom %u)\n",
 			   msgb->data_len - sizeof(struct msgb),
@@ -397,7 +397,7 @@ static inline unsigned char *msgb_push_tl(struct msgb *msgb, uint8_t tag)
  */
 static inline unsigned char *msgb_pull(struct msgb *msgb, unsigned int len)
 {
-	if (msgb_length(msgb) < len)
+	if (OSMO_UNLIKELY(msgb_length(msgb) < len))
 		MSGB_ABORT(msgb, "msgb too small to pull %u (len %u)\n",
 			   len, msgb_length(msgb));
 	msgb->len -= len;
@@ -488,9 +488,9 @@ static inline void msgb_reserve(struct msgb *msg, int len)
  */
 static inline int msgb_trim(struct msgb *msg, int len)
 {
-	if (len < 0)
+	if (OSMO_UNLIKELY(len < 0))
 		MSGB_ABORT(msg, "Negative length is not allowed\n");
-	if (len > msg->data_len)
+	if (OSMO_UNLIKELY(len > msg->data_len))
 		return -1;
 
 	msg->len = len;
@@ -526,7 +526,7 @@ static inline struct msgb *msgb_alloc_headroom_c(const void *ctx, uint16_t size,
 	osmo_static_assert(size >= headroom, headroom_bigger);
 
 	struct msgb *msg = msgb_alloc_c(ctx, size, name);
-	if (msg)
+	if (OSMO_LIKELY(msg))
 		msgb_reserve(msg, headroom);
 	return msg;
 }
@@ -548,7 +548,7 @@ static inline struct msgb *msgb_alloc_headroom(uint16_t size, uint16_t headroom,
 	osmo_static_assert(size >= headroom, headroom_bigger);
 
 	struct msgb *msg = msgb_alloc(size, name);
-	if (msg)
+	if (OSMO_LIKELY(msg))
 		msgb_reserve(msg, headroom);
 	return msg;
 }
