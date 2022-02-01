@@ -38,6 +38,15 @@
 /*! Copy a C-string into a sized buffer using sizeof to detect buffer's size */
 #define OSMO_STRLCPY_ARRAY(array, src) osmo_strlcpy(array, src, sizeof(array))
 
+/*! Branch prediction optimizations */
+#if defined(__GNUC__)
+#define OSMO_LIKELY(exp) __builtin_expect(!!(exp), 1)
+#define OSMO_UNLIKELY(exp) __builtin_expect(!!(exp), 0)
+#else
+#define OSMO_LIKELY(exp) exp
+#define OSMO_UNLIKELY(exp) exp
+#endif
+
 /*! A mapping between human-readable string and numeric value */
 struct value_string {
 	uint32_t value;		/*!< numeric value */
