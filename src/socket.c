@@ -1744,7 +1744,7 @@ int osmo_sockaddr_to_octets(uint8_t *dst, size_t dst_maxlen, const struct osmo_s
 {
 	const void *addr;
 	size_t len;
-	switch (os->u.sin.sin_family) {
+	switch (os->u.sa.sa_family) {
 	case AF_INET:
 		addr = &os->u.sin.sin_addr;
 		len = sizeof(os->u.sin.sin_addr);
@@ -1776,7 +1776,7 @@ int osmo_sockaddr_from_octets(struct osmo_sockaddr *os, const void *src, size_t 
 	*os = (struct osmo_sockaddr){0};
 	switch (src_len) {
 	case sizeof(os->u.sin.sin_addr):
-		os->u.sin.sin_family = AF_INET;
+		os->u.sa.sa_family = AF_INET;
 		addr = &os->u.sin.sin_addr;
 		len = sizeof(os->u.sin.sin_addr);
 		break;
