@@ -1733,6 +1733,65 @@ int osmo_sockaddr_local_ip(struct osmo_sockaddr *local_ip, const struct osmo_soc
 	return rc;
 }
 
+/*! Copy the addr part, the IP address octets in network byte order, to a buffer.
+ * Useful for encoding network protocols.
+ * \param[out] dst  Write octets to this buffer.
+ * \param[in] dst_maxlen  Space available in buffer.
+ * \param[in] os  Sockaddr to copy IP of.
+ * \return nr of octets written on success, negative on error.
+ */
+int osmo_sockaddr_to_octets(uint8_t *dst, size_t dst_maxlen, const struct osmo_sockaddr *os)
+{
+	const void *addr;
+	size_t len;
+	switch (os->u.sin.sin_family) {
+	case AF_INET:
+		addr = &os->u.sin.sin_addr;
+		len = sizeof(os->u.sin.sin_addr);
+		break;
+	case AF_INET6:
+		addr = &os->u.sin6.sin6_addr;
+		len = sizeof(os->u.sin6.sin6_addr);
+		break;
+	default:
+		return -ENOTSUP;
+	}
+	if (dst_maxlen < len)
+		return -ENOSPC;
+	memcpy(dst, addr, len);
+	return len;
+}
+
+/*! Copy the addr part, the IP address octets in network byte order, from a buffer.
+ * Useful for decoding network protocols.
+ * \param[out] os  Write IP address to this sockaddr.
+ * \param[in] src  Source buffer to read IP address octets from.
+ * \param[in] src_len  Number of octets to copy.
+ * \return number of octets read on success, negative on error.
+ */
+int osmo_sockaddr_from_octets(struct osmo_sockaddr *os, const void *src, size_t src_len)
+{
+	void *addr;
+	size_t len;
+	*os = (struct osmo_sockaddr){0};
+	switch (src_len) {
+	case sizeof(os->u.sin.sin_addr):
+		os->u.sin.sin_family = AF_INET;
+		addr = &os->u.sin.sin_addr;
+		len = sizeof(os->u.sin.sin_addr);
+		break;
+	case sizeof(os->u.sin6.sin6_addr):
+		os->u.sin6.sin6_family = AF_INET6;
+		addr = &os->u.sin6.sin6_addr;
+		len = sizeof(os->u.sin6.sin6_addr);
+		break;
+	default:
+		return -ENOTSUP;
+	}
+	memcpy(addr, src, len);
+	return len;
+}
+
 /*! Compare two osmo_sockaddr.
  * \param[in] a
  * \param[in] b
