@@ -112,7 +112,7 @@ do {								\
  */
 #define OSMO_ASSERT(exp)    \
 do { \
-	if (!(exp)) { \
+	if (OSMO_UNLIKELY(!(exp))) { \
 		osmo_panic("Assert failed %s %s:%d\n", #exp, __FILE__, __LINE__); \
 	} \
 } while (0); /* some code invokes OSMO_ASSERT() without the semicolon */
