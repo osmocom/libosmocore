@@ -119,8 +119,7 @@ static void fill_stats(struct stats_tcp_entry *stats_tcp_entry)
 
 	/* Update statistics */
 	if (stats_tcp_entry->name)
-		snprintf(stat_name, sizeof(stat_name), "%s,%s", stats_tcp_entry->name,
-			 osmo_sock_get_name2(stats_tcp_entry->fd->fd));
+		snprintf(stat_name, sizeof(stat_name), "%s", stats_tcp_entry->name);
 	else
 		snprintf(stat_name, sizeof(stat_name), "%s", osmo_sock_get_name2(stats_tcp_entry->fd->fd));
 	osmo_stat_item_group_set_name(stats_tcp_entry->stats_tcp, stat_name);
