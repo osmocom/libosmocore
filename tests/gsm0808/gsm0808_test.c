@@ -1072,6 +1072,18 @@ static void test_gsm0808_enc_dec_encrypt_info()
 	msgb_free(msg);
 }
 
+static void test_gsm0808_dec_cell_id_list_srvcc()
+{
+	/* taken from a pcap file of a real-world 3rd party MSC (SYS#5838) */
+	const uint8_t enc_cil[] = { 0x0b, 0x2, 0xf2, 0x10, 0x4e, 0x20, 0x15, 0xbe};
+	struct gsm0808_cell_id_list2 dec_cil;
+	int rc;
+
+	rc = gsm0808_dec_cell_id_list2(&dec_cil, enc_cil, sizeof(enc_cil));
+	/* Not yet supported: */
+	OSMO_ASSERT(rc == -EINVAL);
+}
+
 static void test_gsm0808_enc_dec_cell_id_list_lac()
 {
 	struct gsm0808_cell_id_list2 enc_cil;
@@ -2490,6 +2502,7 @@ int main(int argc, char **argv)
 	test_gsm0808_enc_dec_cell_id_list_multi_ci();
 	test_gsm0808_enc_dec_cell_id_list_multi_lac_and_ci();
 	test_gsm0808_enc_dec_cell_id_list_multi_global();
+	test_gsm0808_dec_cell_id_list_srvcc();
 
 	test_cell_id_list_add();
 
