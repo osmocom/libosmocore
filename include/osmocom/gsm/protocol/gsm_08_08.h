@@ -25,9 +25,10 @@ enum CELL_IDENT {
 	CELL_IDENT_UTRAN_PLMN_LAC_RNC	= 8,
 	CELL_IDENT_UTRAN_RNC		= 9,
 	CELL_IDENT_UTRAN_LAC_RNC	= 10,
+	CELL_IDENT_SAI	= 11,
 
-	/* Not in 03.03 nor 08.08 */
-	CELL_IDENT_WHOLE_GLOBAL_PS	= 11, /* CGI with + RAC */
+	/* Not in 03.03 nor 08.08. Place them > 0x0f (discr_id is 4 bits) */
+	CELL_IDENT_WHOLE_GLOBAL_PS	= 128, /* CGI + RAC, TS 48.018 8c.1.4.1.1 */
 };
 /* Keep this misnamed CELL_IDENT for API backwards compatibility (see OS#3124). */
 #define CELL_IDENT_LAI_AND_LAC CELL_IDENT_LAI
