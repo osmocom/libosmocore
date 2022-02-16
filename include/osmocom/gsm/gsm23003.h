@@ -30,6 +30,9 @@ struct osmo_cell_global_id {
 	uint16_t cell_identity;
 };
 
+/* 3GPP TS 48.018:
+ * 8c.1.4.1.1 GERAN BSS identification (RIM)
+ * sec 11.3.9 Cell Identifier */
 struct osmo_cell_global_id_ps {
 	struct osmo_routing_area_id rai;
 	uint16_t cell_identity;
@@ -134,6 +137,10 @@ const char *osmo_cgi_ps_name(const struct osmo_cell_global_id_ps *cgi_ps);
 const char *osmo_cgi_ps_name2(const struct osmo_cell_global_id_ps *cgi_ps);
 char *osmo_cgi_ps_name_buf(char *buf, size_t buf_len, const struct osmo_cell_global_id_ps *cgi_ps);
 char *osmo_cgi_ps_name_c(const void *ctx, const struct osmo_cell_global_id_ps *cgi_ps);
+const char *osmo_sai_name(const struct osmo_service_area_id *sai);
+const char *osmo_sai_name2(const struct osmo_service_area_id *sai);
+char *osmo_sai_name_buf(char *buf, size_t buf_len, const struct osmo_service_area_id *sai);
+char *osmo_sai_name_c(const void *ctx, const struct osmo_service_area_id *sai);
 const char *osmo_gummei_name(const struct osmo_gummei *gummei);
 char *osmo_gummei_name_buf(char *buf, size_t buf_len, const struct osmo_gummei *gummei);
 char *osmo_gummei_name_c(const void *ctx, const struct osmo_gummei *gummei);

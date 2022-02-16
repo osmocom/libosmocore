@@ -1080,8 +1080,9 @@ static void test_gsm0808_dec_cell_id_list_srvcc()
 	int rc;
 
 	rc = gsm0808_dec_cell_id_list2(&dec_cil, enc_cil, sizeof(enc_cil));
-	/* Not yet supported: */
-	OSMO_ASSERT(rc == -EINVAL);
+	OSMO_ASSERT(rc == sizeof(enc_cil));
+	OSMO_ASSERT(dec_cil.id_discr = CELL_IDENT_SAI);
+	OSMO_ASSERT(dec_cil.id_list_len = 1);
 }
 
 static void test_gsm0808_enc_dec_cell_id_list_lac()

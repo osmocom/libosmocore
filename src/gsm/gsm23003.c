@@ -368,6 +368,51 @@ char *osmo_cgi_ps_name_c(const void *ctx, const struct osmo_cell_global_id_ps *c
 	return osmo_cgi_ps_name_buf(buf, 32, cgi_ps);
 }
 
+/*! Return MCC-MNC-LAC-SAC as string, in caller-provided output buffer.
+ * \param[out] buf caller-allocated output buffer
+ * \param[in] buf_len size of buf in bytes
+ * \param[in] sai  SAI to encode.
+ * \returns buf
+ */
+char *osmo_sai_name_buf(char *buf, size_t buf_len, const struct osmo_service_area_id *sai)
+{
+	snprintf(buf, buf_len, "%s-%u", osmo_lai_name(&sai->lai), sai->sac);
+	return buf;
+}
+
+/*! Return MCC-MNC-LAC-SAC as string, in a static buffer.
+ * \param[in] sai  SAI to encode.
+ * \returns Static string buffer.
+ */
+const char *osmo_sai_name(const struct osmo_service_area_id *sai)
+{
+	static __thread char buf[32];
+	return osmo_sai_name_buf(buf, sizeof(buf), sai);
+}
+
+/*! Same as osmo_cgi_name(), but uses a different static buffer.
+ * Useful for printing two distinct CGIs in the same printf format.
+ * \param[in] sai  SAI to encode.
+ * \returns Static string buffer.
+ */
+const char *osmo_sai_name2(const struct osmo_service_area_id *sai)
+{
+	static __thread char buf[32];
+	return osmo_sai_name_buf(buf, sizeof(buf), sai);
+}
+
+/*! Return MCC-MNC-LAC-SAC as string, in a talloc-allocated output buffer.
+ * \param[in] ctx talloc context from which to allocate output buffer
+ * \param[in] sai  SAI to encode.
+ * \returns string representation of CGI in dynamically-allocated buffer.
+ */
+char *osmo_sai_name_c(const void *ctx, const struct osmo_service_area_id *sai)
+{
+	char *buf = talloc_size(ctx, 32);
+	return osmo_sai_name_buf(buf, 32, sai);
+}
+
+
 static void to_bcd(uint8_t *bcd, uint16_t val)
 {
 	bcd[2] = val % 10;

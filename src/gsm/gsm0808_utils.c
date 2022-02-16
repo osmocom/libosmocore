@@ -831,6 +831,10 @@ static void cell_id_to_cgi(struct osmo_cell_global_id *dst,
 		dst->lai.lac = u->lac;
 		return;
 
+	case CELL_IDENT_SAI:
+		dst->lai = u->sai.lai;
+		return;
+
 	case CELL_IDENT_NO_CELL:
 	case CELL_IDENT_BSS:
 	case CELL_IDENT_UTRAN_PLMN_LAC_RNC:
@@ -858,6 +862,8 @@ int gsm0808_cell_id_size(enum CELL_IDENT discr)
 	case CELL_IDENT_BSS:
 	case CELL_IDENT_NO_CELL:
 		return 0;
+	case CELL_IDENT_SAI:
+		return 7;
 	case CELL_IDENT_WHOLE_GLOBAL_PS:
 		return 8;
 	default:
@@ -903,6 +909,12 @@ int gsm0808_decode_cell_id_u(union gsm0808_cell_id_u *out, enum CELL_IDENT discr
 	case CELL_IDENT_BSS:
 	case CELL_IDENT_NO_CELL:
 		/* Does not have any list items */
+		break;
+	case CELL_IDENT_SAI:
+		if (len < 7)
+			return -EINVAL;
+		decode_lai(buf, &out->sai.lai);
+		out->sai.sac = osmo_load16be(buf + sizeof(struct gsm48_loc_area_id));
 		break;
 	case CELL_IDENT_WHOLE_GLOBAL_PS:
 		/* 3GPP TS 48.018 sec 11.3.9 "Cell Identifier" */
@@ -953,6 +965,16 @@ void gsm0808_msgb_put_cell_id_u(struct msgb *msg, enum CELL_IDENT id_discr, cons
 	case CELL_IDENT_NO_CELL:
 		/* Does not have any list items */
 		break;
+
+	case CELL_IDENT_SAI: {
+		const struct osmo_service_area_id *id = &u->sai;
+		struct gsm48_loc_area_id lai;
+		gsm48_generate_lai2(&lai, &id->lai);
+		memcpy(msgb_put(msg, sizeof(lai)), &lai, sizeof(lai));
+		msgb_put_u16(msg, id->sac);
+		break;
+	}
+
 	case CELL_IDENT_WHOLE_GLOBAL_PS: {
 		/* 3GPP TS 48.018 sec 11.3.9 "Cell Identifier" */
 		const struct osmo_cell_global_id_ps *id = &u->global_ps;
@@ -1166,6 +1188,31 @@ static int parse_cell_id_lac_list(struct gsm0808_cell_id_list2 *cil, const uint8
 	return i;
 }
 
+static int parse_cell_id_sai_list(struct gsm0808_cell_id_list2 *cil, const uint8_t *data, size_t remain, size_t *consumed)
+{
+	struct osmo_service_area_id *id;
+	uint16_t *sac_be;
+	size_t lai_offset;
+	int i = 0;
+	const size_t elemlen = sizeof(struct gsm48_loc_area_id) + sizeof(*sac_be);
+
+	*consumed = 0;
+	while (remain >= elemlen) {
+		if (i >= GSM0808_CELL_ID_LIST2_MAXLEN)
+			return -ENOSPC;
+		id = &cil->id_list[i].sai;
+		lai_offset = i * elemlen;
+		decode_lai(&data[lai_offset], &id->lai);
+		sac_be = (uint16_t *)(&data[lai_offset + sizeof(struct gsm48_loc_area_id)]);
+		id->sac = osmo_load16be(sac_be);
+		*consumed += elemlen;
+		remain -= elemlen;
+		i++;
+	}
+
+	return i;
+}
+
 /*! Decode Cell Identifier List IE
  *  \param[out] cil Caller-provided memory to store Cell ID list
  *  \param[in] elem IE value to be decoded
@@ -1210,6 +1257,12 @@ int gsm0808_dec_cell_id_list2(struct gsm0808_cell_id_list2 *cil,
 	case CELL_IDENT_NO_CELL:
 		/* Does not have any list items */
 		break;
+	case CELL_IDENT_SAI:
+		list_len = parse_cell_id_sai_list(cil, elem, len, &bytes_elem);
+		break;
+	case CELL_IDENT_UTRAN_PLMN_LAC_RNC:
+	case CELL_IDENT_UTRAN_RNC:
+	case CELL_IDENT_UTRAN_LAC_RNC:
 	default:
 		/* Remaining cell identification types are not implemented. */
 		return -EINVAL;
@@ -1703,6 +1756,8 @@ int gsm0808_cell_id_u_name(char *buf, size_t buflen,
 		return snprintf(buf, buflen, "%s", osmo_cgi_name(&u->global));
 	case CELL_IDENT_WHOLE_GLOBAL_PS:
 		return snprintf(buf, buflen, "%s", osmo_cgi_ps_name(&u->global_ps));
+	case CELL_IDENT_SAI:
+		return snprintf(buf, buflen, "%s", osmo_sai_name(&u->sai));
 	default:
 		/* For CELL_IDENT_BSS and CELL_IDENT_NO_CELL, just print the discriminator.
 		 * Same for kinds we have no string representation of yet. */
@@ -1859,6 +1914,12 @@ void gsm0808_cell_id_from_cgi(struct gsm0808_cell_id *cid, enum CELL_IDENT id_di
 		cid->id.lac = cgi->lai.lac;
 		return;
 
+	case CELL_IDENT_SAI:
+		cid->id.sai = (struct osmo_service_area_id){
+			.lai = cgi->lai,
+		};
+		return;
+
 	case CELL_IDENT_NO_CELL:
 	case CELL_IDENT_BSS:
 	case CELL_IDENT_UTRAN_PLMN_LAC_RNC:
@@ -1905,6 +1966,10 @@ int gsm0808_cell_id_to_cgi(struct osmo_cell_global_id *cgi, const struct gsm0808
 		cgi->lai.lac = cid->id.lac;
 		return OSMO_CGI_PART_LAC;
 
+	case CELL_IDENT_SAI:
+		cgi->lai = cid->id.sai.lai;
+		return OSMO_CGI_PART_PLMN | OSMO_CGI_PART_LAC;
+
 	case CELL_IDENT_NO_CELL:
 	case CELL_IDENT_BSS:
 	case CELL_IDENT_UTRAN_PLMN_LAC_RNC:
@@ -1927,6 +1992,7 @@ const struct value_string gsm0808_cell_id_discr_names[] = {
 	{ CELL_IDENT_UTRAN_PLMN_LAC_RNC, "UTRAN-PLMN-LAC-RNC" },
 	{ CELL_IDENT_UTRAN_RNC, "UTRAN-RNC" },
 	{ CELL_IDENT_UTRAN_LAC_RNC, "UTRAN-LAC-RNC" },
+	{ CELL_IDENT_SAI, "SAI" },
 	{ CELL_IDENT_WHOLE_GLOBAL_PS, "CGI-PS"},
 	{ 0, NULL }
 };
