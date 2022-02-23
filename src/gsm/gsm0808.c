@@ -1045,6 +1045,12 @@ struct msgb *gsm0808_create_handover_request_ack2(const struct gsm0808_handover_
 	if (params->aoip_transport_layer)
 		gsm0808_enc_aoip_trasp_addr(msg, params->aoip_transport_layer);
 
+	/* AoIP: add Codec List (BSS Supported) 3.2.2.103.
+	 * (codec_list_bss_supported was added to struct gsm0808_handover_request_ack later than speech_codec_chosen
+	 * below, but it needs to come before it in the message coding). */
+	if (params->more_items && params->codec_list_bss_supported.len)
+		gsm0808_enc_speech_codec_list(msg, &params->codec_list_bss_supported);
+
 	/* AoIP: Speech Codec (Chosen) 3.2.2.104 */
 	if (params->speech_codec_chosen_present)
 		gsm0808_enc_speech_codec(msg, &params->speech_codec_chosen);

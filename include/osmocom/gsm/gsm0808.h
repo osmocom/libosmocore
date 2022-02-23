@@ -246,8 +246,12 @@ struct gsm0808_handover_request_ack {
 
 	const struct sockaddr_storage *aoip_transport_layer;
 
+	bool more_items; /*!< set this to true iff any fields below are used */
+
+	struct gsm0808_speech_codec_list codec_list_bss_supported; /*< omit when .len == 0 */
+
 	/* more items are defined in the spec and may be added later */
-	bool more_items; /*!< always set this to false */
+	bool more_items2; /*!< always set this to false */
 };
 struct msgb *gsm0808_create_handover_request_ack2(const struct gsm0808_handover_request_ack *params);
 
