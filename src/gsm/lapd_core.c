@@ -942,7 +942,7 @@ static int lapd_rx_u_sabm(struct msgb *msg, struct lapd_msg_ctx *lctx)
 		dl->cont_res = lapd_msgb_alloc(length, "CONT RES");
 		memcpy(msgb_put(dl->cont_res, length), msg->l3h,
 			length);
-		LOGDL(dl, LOGL_NOTICE, "Store content res.\n");
+		LOGDL(dl, LOGL_INFO, "Store content res.\n");
 	}
 	/* send notification to L3 */
 	if (length == 0) {
