@@ -537,7 +537,8 @@ libusb_device_handle *osmo_libusb_open_claim_interface(void *ctx, libusb_context
 		addr = libusb_get_device_address(*dev);
 		path = osmo_libusb_dev_get_path_buf(pathbuf, sizeof(pathbuf), *dev);
 		if ((ifm->addr && addr == ifm->addr) ||
-		    (strlen(ifm->path) && !strcmp(path, ifm->path))) {
+		    (strlen(ifm->path) && !strcmp(path, ifm->path)) ||
+		    (!ifm->addr && !strlen(ifm->path) && !list[1] /* only one device */)) {
 			rc = libusb_open(*dev, &usb_devh);
 			if (rc < 0) {
 				fprintf(stderr, "Cannot open device: %s\n", libusb_error_name(rc));
