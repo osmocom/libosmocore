@@ -120,8 +120,6 @@ static void osmo_time_cc_report(struct osmo_time_cc *tc, uint64_t now)
 {
 	uint64_t delta;
 	uint64_t n;
-	if (!tc->cfg.rate_ctr)
-		return;
 	/* We report a sum "rounded up", ahead of time. If the granularity period has not yet elapsed after the last
 	 * reporting, do not report again yet. */
 	if (tc->reported_sum > tc->sum)
@@ -139,7 +137,8 @@ static void osmo_time_cc_report(struct osmo_time_cc *tc, uint64_t now)
 	/* integer sanity, since rate_ctr_add() takes an int argument. */
 	if (n > INT_MAX)
 		n = INT_MAX;
-	rate_ctr_add(tc->cfg.rate_ctr, n);
+	if (tc->cfg.rate_ctr)
+		rate_ctr_add(tc->cfg.rate_ctr, n);
 	/* Store the increments of gran_usec that were counted. */
 	tc->reported_sum += n * GRAN_USEC(tc);
 }
@@ -205,7 +204,7 @@ static void osmo_time_cc_schedule_timer(struct osmo_time_cc *tc, uint64_t now)
 		next_event = OSMO_MIN(next_event, next_forget_time);
 	}
 	/* Next rate_ctr increment? */
-	if (tc->flag_state && tc->cfg.rate_ctr) {
+	if (tc->flag_state) {
 		uint64_t next_inc = now + (tc->reported_sum - tc->sum) + ROUND_THRESHOLD_USEC(tc);
 		next_event = OSMO_MIN(next_event, next_inc);
 	}
