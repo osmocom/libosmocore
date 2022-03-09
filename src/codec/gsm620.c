@@ -264,12 +264,6 @@ const uint16_t gsm620_voiced_bitorder[112] = {
 	81,	/* Code 3:7 */
 };
 
-static inline uint16_t mask(const uint8_t msb)
-{
-	const uint16_t m = (uint16_t)1  << (msb - 1);
-	return (m - 1) ^ m;
-}
-
 /*! Check whether RTP frame contains HR SID code word according to
  *  TS 101 318 §5.2.2
  *  \param[in] rtp_payload Buffer with RTP payload
@@ -278,15 +272,15 @@ static inline uint16_t mask(const uint8_t msb)
  */
 bool osmo_hr_check_sid(const uint8_t *rtp_payload, size_t payload_len)
 {
-	uint8_t i, bits[] = { 1, 2, 8, 9, 5, 4, 9, 5, 4, 9, 5, 4, 9, 5 };
-	struct bitvec bv;
-	bv.data = (uint8_t *) rtp_payload;
-	bv.data_len = payload_len;
-	bv.cur_bit = 33;
+	struct bitvec bv = {
+		.data = (uint8_t *)rtp_payload,
+		.data_len = payload_len,
+	};
 
-	/* code word is all 1 at given bits, numbered from 1, MODE is always 3 */
-	for (i = 0; i < ARRAY_SIZE(bits); i++)
-		if (bitvec_get_uint(&bv, bits[i]) != mask(bits[i]))
+	/* A SID frame is identified by a SID codeword consisting of 79 bits which are all 1,
+	 * so we basically check if all bits in range r34..r112 (inclusive) are 1. */
+	for (bv.cur_bit = 33; bv.cur_bit < bv.data_len * 8; bv.cur_bit++)
+		if (bitvec_get_bit_pos(&bv, bv.cur_bit) != ONE)
 			return false;
 
 	return true;
