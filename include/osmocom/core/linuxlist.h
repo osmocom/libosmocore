@@ -328,8 +328,7 @@ static inline void llist_splice_init(struct llist_head *llist,
 	     pos = llist_entry(pos->member.next, typeof(*pos), member),	\
 		     prefetch(pos->member.next))
 
-/*! Iterate over llist of given type, safe against removal of
- *  non-consecutive(!) llist entries.
+/*! Iterate over llist of given type, safe against removal of llist entry.
  *  \param pos    the 'type *' to use as a loop counter.
  *  \param n      another 'type *' to use as temporary storage.
  *  \param head   the head of the list over which to iterate.
