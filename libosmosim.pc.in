@@ -6,6 +6,6 @@ includedir=@includedir@
 Name: Osmocom SIM card related utilities Library
 Description: C Utility Library
 Version: @VERSION@
-Libs: -L${libdir} @TALLOC_LIBS@ -losmosim -losmocore
+Requires: talloc, libosmocore
+Libs: -L${libdir} -losmosim
 Cflags: -I${includedir}/
-

@@ -6,6 +6,6 @@ includedir=@includedir@
 Name: Osmocom VTY Interface Library
 Description: C Utility Library
 Version: @VERSION@
-Libs: -L${libdir} @TALLOC_LIBS@ -losmovty -losmocore
+Requires: libosmocore
+Libs: -L${libdir} -losmovty
 Cflags: -I${includedir}/
-
