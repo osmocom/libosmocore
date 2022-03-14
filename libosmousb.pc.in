@@ -6,6 +6,6 @@ includedir=@includedir@
 Name: Osmocom libusb (USB) integration
 Description: C Utility Library
 Version: @VERSION@
-Libs: -L${libdir} @TALLOC_LIBS@ -losmousb -losmocore
+Requires: talloc, libusb-1.0, libosmocore
+Libs: -L${libdir} -losmousb
 Cflags: -I${includedir}/
-
