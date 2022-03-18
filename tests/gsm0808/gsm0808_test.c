@@ -474,7 +474,7 @@ static void test_dec_perform_location_report_sys5891()
 	printf("Testing decoding Perform Location Report SYS#5891\n");
 
 	rc = tlv_parse(&tp, gsm0808_att_tlvdef(), hex+1, sizeof(hex)-1, 0, 0);
-	OSMO_ASSERT(rc < 0);
+	OSMO_ASSERT(rc == 5);
 }
 
 static void test_create_ass()
