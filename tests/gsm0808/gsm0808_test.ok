@@ -916,4 +916,5 @@ Testing decoding CONFUSION
   Diagnostics error octet location 0 (Error location not determined)
   Diagnostics error bit location 15 (Reserved value)
   Diagnostics message that provoked the error: 00 03 25 03 25 
+Testing decoding Perform Location Report SYS#5891
 Done

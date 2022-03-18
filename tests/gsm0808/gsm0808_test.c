@@ -424,6 +424,59 @@ static void test_dec_confusion()
 	       osmo_hexdump(diag->msg, diag_len-2));
 }
 
+/* Test Perform Location Report SYS#5891 */
+static void test_dec_perform_location_report_sys5891()
+{
+/*	Message Type Perform Location Request
+	Location Type
+		Element ID: 0x44
+		Length: 1
+		Location Information: current geographic location (0x00)
+	Cell Identifier/CI (25911)
+		Element ID: 0x05
+		Length: 8
+		0000 .... = Spare bit(s): 0x00
+		.... 0000 = Cell identification discriminator: The whole Cell Global Identification, CGI, is used to identify the cells. (0)
+		Mobile Country Code (MCC): (removed))
+		Mobile Network Code (MNC): (removed))
+		Cell LAC: 0x001e (30)
+		Cell CI: 0x6537 (25911)
+	LCS Client Type
+		Element ID: 0x48
+		Length: 1
+		0011 .... = Client Category: Emergency Services (0x03)
+		.... 0000 = Client Subtype: unspecified (0x00)
+	LCS Priority
+		Element ID: 0x43
+		Length: 1
+		Periodicity: highest (0)
+	LCS QoS
+		Element ID: 0x3e
+		Length: 4
+		0000 00.. = Spare: 0x00
+		.... ..0. = Velocity Requested: do not report velocity (0x00)
+		.... ...0 = Vertical Coordinate Indicator: vertical coordinate not requested (0x00)
+		1... .... = Horizontal Accuracy Indicator: horizontal accuracy is specified (0x01)
+		.001 0010 = Horizontal Accuracy: 0x12
+		0... .... = Vertical Accuracy Indicator: vertical accuracy is not specified (0x00)
+		.000 0000 = Spare: 0x00
+		00.. .... = Response Time Category: Response Time is not specified (0x00)
+*/
+	const uint8_t hex[] = {
+		0x2b, 0x44, 0x01, 0x00, 0x05, 0x08, 0x00, 0xab, 0xbc, 0xcd, 0x00, 0x1e,
+		0x65, 0x37, 0x48, 0x01, 0x30, 0x43, 0x01, 0x00, 0x3e, 0x04, 0x00, 0x92,
+		0x00, 0x00
+	};
+
+	struct tlv_parsed tp;
+	int rc;
+
+	printf("Testing decoding Perform Location Report SYS#5891\n");
+
+	rc = tlv_parse(&tp, gsm0808_att_tlvdef(), hex+1, sizeof(hex)-1, 0, 0);
+	OSMO_ASSERT(rc < 0);
+}
+
 static void test_create_ass()
 {
 	static const uint8_t res1[] =
@@ -2525,6 +2578,7 @@ int main(int argc, char **argv)
 	test_gsm0808_cell_id_to_from_cgi();
 
 	test_dec_confusion();
+	test_dec_perform_location_report_sys5891();
 
 	printf("Done\n");
 	return EXIT_SUCCESS;
