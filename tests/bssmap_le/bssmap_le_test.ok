@@ -9,3 +9,4 @@
 [7] CONNECTION ORIENTED INFORMATON: ok (encoded len = 8)
 [8] CONNECTION ORIENTED INFORMATON: ok (encoded len = 13)
 [9] CONNECTION ORIENTED INFORMATON: ok (encoded len = 10)
+[10] PERFORM LOCATION REQUEST: ok (encoded len = 25)

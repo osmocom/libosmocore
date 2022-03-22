@@ -118,6 +118,36 @@ struct bssmap_le_pdu bssmap_le_test_pdus[] = {
 			},
 		},
 	},
+	{
+		.msg_type = BSSMAP_LE_MSGT_PERFORM_LOC_REQ,
+		.perform_loc_req = {
+			.location_type = {
+				.location_information = BSSMAP_LE_LOC_INFO_CURRENT_GEOGRAPHIC,
+			},
+
+			.cell_id = {
+				.id_discr = CELL_IDENT_LAC_AND_CI,
+				.id.lac_and_ci = {
+					.lac = 23,
+					.ci = 42,
+				},
+			},
+
+			.lcs_client_type_present = true,
+			.lcs_client_type = BSSMAP_LE_LCS_CTYPE_EMERG_SVC_UNSPECIFIED,
+
+			.more_items = true,
+
+			.lcs_priority_present = true,
+			.lcs_priority = 0x00, /* highest */
+
+			.lcs_qos_present = true,
+			.lcs_qos = {
+				.ha_ind = 1,
+				.ha_val = 0x12,
+			},
+		},
+	},
 };
 
 void test_bssmap_le_enc_dec()

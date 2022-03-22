@@ -25,6 +25,8 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+
+#include <osmocom/core/endian.h>
 #include <osmocom/gsm/protocol/gsm_48_071.h>
 #include <osmocom/gsm/protocol/gsm_23_032.h>
 #include <osmocom/gsm/gsm0808_utils.h>
@@ -57,6 +59,21 @@ struct lcs_cause_ie {
 	bool diag_val_present;
 	uint8_t diag_val;
 };
+
+/* 3GPP TS 49.031 10.16 LCS QoS IE */
+struct osmo_bssmap_le_lcs_qos {
+#if OSMO_IS_LITTLE_ENDIAN
+	uint8_t vert:1, vel:1, spare1:6;
+	uint8_t ha_val:7, ha_ind:1;
+	uint8_t va_val:7, va_ind:1;
+	uint8_t spare3:6, rt:2;
+#elif OSMO_IS_BIG_ENDIAN
+	uint8_t spare1:6, vel:1, vert:1;
+	uint8_t ha_ind:1, ha_val:7;
+	uint8_t va_ind:1, va_val:7;
+	uint8_t rt:2, spare3:6;
+#endif
+} __attribute__ ((packed));
 
 enum bssap_le_msg_discr {
 	BSSAP_LE_MSG_DISCR_BSSMAP_LE = 0,
@@ -167,7 +184,15 @@ struct bssmap_le_perform_loc_req {
 	bool apdu_present;
 	struct bsslap_pdu apdu;
 
-	bool more_items; /*!< always set this to false */
+	bool more_items; /*!< set this to true iff any fields below are used */
+
+	bool lcs_priority_present;
+	uint8_t lcs_priority; /*!< see in 3GPP TS 29.002 */
+
+	bool lcs_qos_present;
+	struct osmo_bssmap_le_lcs_qos lcs_qos;
+
+	bool more_items2; /*!< always set this to false */
 };
 
 struct bssmap_le_perform_loc_resp {

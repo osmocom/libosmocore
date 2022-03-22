@@ -261,6 +261,57 @@ static int osmo_bssmap_le_ie_dec_lcs_client_type(enum bssmap_le_lcs_client_type 
 	}
 }
 
+/*! Encode full BSSMAP-LE LCS Priority IE, including IEI tag and length.
+ * \param[inout] msg  Message buffer to append to.
+ * \param[in] priority  Value to enconde.
+ * \returns length of bytes written to the msgb.
+ */
+static uint8_t osmo_bssmap_le_ie_enc_lcs_priority(struct msgb *msg, uint8_t priority)
+{
+	OSMO_ASSERT(msg);
+	msgb_put_u8(msg, BSSMAP_LE_IEI_LCS_PRIORITY);
+	/* length */
+	msgb_put_u8(msg, 1);
+	msgb_put_u8(msg, priority);
+	return 3;
+}
+
+static int osmo_bssmap_le_ie_dec_lcs_priority(uint8_t *priority,
+					      enum bssmap_le_msgt msgt, enum bssmap_le_iei iei,
+					      struct osmo_bssmap_le_err **err, void *err_ctx,
+					      const uint8_t *elem, uint8_t len)
+{
+	if (!elem || len != 1)
+		DEC_ERR(-EINVAL, msgt, iei, LCS_CAUSE_UNSPECIFIED, "unexpected length");
+
+	*priority = elem[0];
+	return 0;
+}
+
+/*! Encode full BSSMAP-LE LCS QoS IE, including IEI tag and length.
+ * \param[inout] msg  Message buffer to append to.
+ * \param[in] priority  Value to enconde.
+ * \returns length of bytes written to the msgb.
+ */
+static uint8_t osmo_bssmap_le_ie_enc_lcs_qos(struct msgb *msg, const struct osmo_bssmap_le_lcs_qos *qos)
+{
+	OSMO_ASSERT(msg);
+	msgb_tlv_put(msg, BSSMAP_LE_IEI_LCS_QoS, sizeof(*qos), (const uint8_t *)qos);
+	return 2 + sizeof(*qos);
+}
+
+static int osmo_bssmap_le_ie_dec_lcs_qos(struct osmo_bssmap_le_lcs_qos *qos,
+					 enum bssmap_le_msgt msgt, enum bssmap_le_iei iei,
+					 struct osmo_bssmap_le_err **err, void *err_ctx,
+					 const uint8_t *elem, uint8_t len)
+{
+	if (!elem || len != sizeof(*qos))
+		DEC_ERR(-EINVAL, msgt, iei, LCS_CAUSE_UNSPECIFIED, "unexpected length");
+
+	memcpy(qos, elem, len);
+	return 0;
+}
+
 /*! Encode the value part of 3GPP TS 49.031 10.13 LCS Cause, without IEI and len.
  * Identically used in 3GPP TS 48.008 3.2.2.66. Usage example:
  *
@@ -472,6 +523,12 @@ static int osmo_bssmap_le_enc_perform_loc_req(struct msgb *msg, const struct bss
 	if (params->lcs_client_type_present)
 		osmo_bssmap_le_ie_enc_lcs_client_type(msg, params->lcs_client_type);
 
+	if (params->more_items && params->lcs_priority_present)
+		osmo_bssmap_le_ie_enc_lcs_priority(msg, params->lcs_priority);
+
+	if (params->more_items && params->lcs_qos_present)
+		osmo_bssmap_le_ie_enc_lcs_qos(msg, &params->lcs_qos);
+
 	if (params->apdu_present) {
 		int rc = osmo_bssmap_le_ie_enc_apdu(msg, &params->apdu);
 		if (rc < 0)
@@ -509,10 +566,17 @@ static int osmo_bssmap_le_dec_perform_loc_req(struct bssmap_le_perform_loc_req *
 			 &params->cell_id);
 	DEC_IE_OPTIONAL_FLAG(msgt, BSSMAP_LE_IEI_LCS_CLIENT_TYPE, osmo_bssmap_le_ie_dec_lcs_client_type,
 			&params->lcs_client_type, params->lcs_client_type_present);
+	DEC_IE_OPTIONAL_FLAG(msgt, BSSMAP_LE_IEI_LCS_PRIORITY, osmo_bssmap_le_ie_dec_lcs_priority,
+			&params->lcs_priority, params->lcs_priority_present);
+	DEC_IE_OPTIONAL_FLAG(msgt, BSSMAP_LE_IEI_LCS_QoS, osmo_bssmap_le_ie_dec_lcs_qos,
+			&params->lcs_qos, params->lcs_qos_present);
 	DEC_IE_OPTIONAL_FLAG(msgt, BSSMAP_LE_IEI_APDU, osmo_bssmap_le_ie_dec_apdu, &params->apdu,
 			params->apdu_present);
 	DEC_IE_OPTIONAL(msgt, BSSMAP_LE_IEI_IMSI, osmo_bssmap_le_ie_dec_imsi, &params->imsi);
 	DEC_IE_OPTIONAL(msgt, BSSMAP_LE_IEI_IMEI, osmo_bssmap_le_ie_dec_imei, &params->imei);
+
+	if (params->lcs_priority_present || params->lcs_qos_present)
+		params->more_items = true;
 
 	return 0;
 }
