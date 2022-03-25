@@ -129,6 +129,7 @@ License:        GPL-2.0-only AND GPL-2.0-or-later
 Group:          Development/Libraries/C and C++
 Requires:       libosmocore18 = %version
 Requires:       libtalloc-devel
+Requires:       lksctp-tools-devel
 
 %description -n libosmocore-devel
 libosmocore is a library with various utility functions shared
