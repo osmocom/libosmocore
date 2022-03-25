@@ -320,6 +320,8 @@ Multi-Arch: same
 Section: libdevel
 Depends: libosmocore,
          libtalloc-dev (>= 2.1.0),
+         libsctp-dev,
+         libusb-1.0-0-dev,
          ${misc:Depends}
 Description: Development headers for Open Source MObile COMmunications CORE library
  The header files provided by this package may be used to develop
