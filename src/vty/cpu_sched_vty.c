@@ -25,6 +25,8 @@
 
 #define _GNU_SOURCE
 
+#include "../../config.h"
+
 #include <string.h>
 #include <stdlib.h>
 #include <errno.h>
@@ -637,8 +639,10 @@ int osmo_cpu_sched_vty_apply_localthread(void)
 		return 0;
 	}
 
+#ifdef HAVE_PTHREAD_GETNAME_NP
 	if (pthread_getname_np(pthread_self(), name, sizeof(name)) == 0)
 		has_name = true;
+#endif
 
 	/* Get latest matching mask for the thread */
 	pthread_mutex_lock(&sched_vty_opts->cpu_affinity_li_mutex);

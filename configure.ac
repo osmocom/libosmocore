@@ -78,6 +78,24 @@ AC_SUBST(BACKTRACE_LIB)
 # check for pthread (PTHREAD_CFLAGS, PTHREAD_LIBS)
 AX_PTHREAD
 
+AC_MSG_CHECKING(for pthread_getname_np(pthread_t, char*, size_t))
+saved_CFLAGS="$CFLAGS"
+saved_LIBS="$LIBS"
+CFLAGS="$CFLAGS $PTHREAD_CFLAGS"
+LIBS="$LIBS $PTHREAD_LIBS"
+AC_LINK_IFELSE(
+	       [AC_LANG_PROGRAM(
+		[#define _GNU_SOURCE
+		 #include <pthread.h>],
+		[pthread_getname_np(pthread_self(),"example",0)])],
+	       [AC_MSG_RESULT(yes)
+	        AC_DEFINE(HAVE_PTHREAD_GETNAME_NP,1,
+		 [Have function pthread_setname_np(const char*)])],
+	       [AC_MSG_RESULT(no)])
+CFLAGS="$saved_CFLAGS"
+LIBS="$saved_LIBS"
+
+
 # check for old glibc < 2.17 to get clock_gettime
 AC_SEARCH_LIBS([clock_gettime], [rt posix4],
 	       [AC_DEFINE(HAVE_CLOCK_GETTIME, 1, [Define if clock_gettime is available])
