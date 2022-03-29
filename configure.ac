@@ -223,16 +223,22 @@ AC_ARG_ENABLE([libsctp], [AS_HELP_STRING([--disable-libsctp], [Do not enable soc
 	[ENABLE_LIBSCTP=$enableval], [ENABLE_LIBSCTP="yes"])
 AM_CONDITIONAL(ENABLE_LIBSCTP, test x"$ENABLE_LIBSCTP" = x"yes")
 AS_IF([test "x$ENABLE_LIBSCTP" = "xyes"], [
-	old_LIBS=$LIBS
-	AC_SEARCH_LIBS([sctp_bindx], [sctp], [
-		AC_DEFINE(HAVE_LIBSCTP, 1, [Define 1 to enable SCTP support])
-		AC_SUBST(HAVE_LIBSCTP, [1])
-		if test -n "$ac_lib"; then
-			AC_SUBST(LIBSCTP_LIBS, [-l$ac_lib])
-		fi
-		], [
-		AC_MSG_ERROR([sctp_bindx not found in searched libs])])
-	LIBS=$old_LIBS
+	AC_DEFINE(HAVE_LIBSCTP, 1, [Define 1 to enable SCTP support])
+	# Attempt finding .pc, otherwise set manually (<1.0.17 have no .pc file)
+	PKG_CHECK_MODULES(LIBSCTP, libsctp,
+		[AC_SUBST(LIBSCTP_PC, [libsctp])],
+		[
+		AC_MSG_NOTICE([libsctp.pc not found (building against <1.0.17 ?), attempting manual lib lookup])
+		old_LIBS=$LIBS
+		AC_SEARCH_LIBS([sctp_bindx], [sctp], [
+			AC_SUBST(HAVE_LIBSCTP, [1])
+			if test -n "$ac_lib"; then
+				AC_SUBST(LIBSCTP_LIBS, [-l$ac_lib])
+			fi
+			], [
+			AC_MSG_ERROR([sctp_bindx not found in searched libs])])
+		LIBS=$old_LIBS
+	])
 ])
 
 AC_ARG_ENABLE([sctp-tests], [AS_HELP_STRING([--disable-sctp-tests], [Do not run socket tests requiring system SCTP support])],

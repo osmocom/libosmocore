@@ -7,7 +7,7 @@ Name: Osmocom Core Library
 Description: C Utility Library
 Version: @VERSION@
 Requires: talloc
-Requires.private: libsctp
+Requires.private: @LIBSCTP_PC@
 Libs: -L${libdir} -losmocore
-Libs.private: @PTHREAD_LIBS@
+Libs.private: @PTHREAD_LIBS@ @LIBSCTP_LIBS@
 Cflags: -I${includedir}/ @PTHREAD_CFLAGS@
