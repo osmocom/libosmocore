@@ -9,3 +9,4 @@
 #library	what			description / commit summary line
 libosmogsm      ABI BREAKAGE            CELL_IDENT_WHOLE_GLOBAL_PS changed enum number
 libosmogsm	add struct member	Add codec_list_bss_supported to gsm0808_handover_request_ack (more_items flag ensures ABI compat)
+libosmogb	ABI BREAKAGE		Add reset_ack_notification function pointer to struct bssgp_bvc_fsm_ops
