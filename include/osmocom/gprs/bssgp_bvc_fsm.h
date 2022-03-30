@@ -40,6 +40,8 @@ struct bssgp_bvc_fsm_ops {
 	void (*reset_notification)(uint16_t nsei, uint16_t bvci, const struct gprs_ra_id *ra_id,
 				   uint16_t cell_id, uint8_t cause, void *priv);
 	void (*rx_fc_bvc)(uint16_t nsei, uint16_t bvci, const struct bssgp2_flow_ctrl *fc, void *priv);
+	void (*reset_ack_notification)(uint16_t nsei, uint16_t bvci, const struct gprs_ra_id *ra_id,
+				   uint16_t cell_id, uint8_t cause, void *priv);
 };
 
 struct osmo_fsm_inst *

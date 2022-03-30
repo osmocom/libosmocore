@@ -375,6 +375,7 @@ static void bssgp_bvc_fsm_wait_reset_ack(struct osmo_fsm_inst *fi, uint32_t even
 	struct bvc_fsm_priv *bfp = fi->priv;
 	const struct tlv_parsed *tp = NULL;
 	struct msgb *rx = NULL, *tx;
+	uint8_t cause;
 
 	switch (event) {
 	case BSSGP_BVCFSM_E_RX_RESET:
@@ -385,6 +386,7 @@ static void bssgp_bvc_fsm_wait_reset_ack(struct osmo_fsm_inst *fi, uint32_t even
 		/* fall-through */
 	case BSSGP_BVCFSM_E_RX_RESET_ACK:
 		rx = data;
+		cause = bfp->last_reset_cause;
 		tp = (const struct tlv_parsed *) msgb_bcid(rx);
 		if (bfp->bvci == 0)
 			update_negotiated_features(fi, tp);
@@ -398,6 +400,8 @@ static void bssgp_bvc_fsm_wait_reset_ack(struct osmo_fsm_inst *fi, uint32_t even
 			osmo_fsm_inst_state_chg(fi, BSSGP_BVCFSM_S_BLOCKED, T1_SECS, T1);
 		} else
 			osmo_fsm_inst_state_chg(fi, BSSGP_BVCFSM_S_UNBLOCKED, 0, 0);
+		if (bfp->ops && bfp->ops->reset_ack_notification)
+			bfp->ops->reset_ack_notification(bfp->nsei, bfp->bvci, &bfp->ra_id, bfp->cell_id, cause, bfp->ops_priv);
 		break;
 	}
 }
