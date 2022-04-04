@@ -38,4 +38,5 @@ len: 13
 file_id:  09 07 05 
 file_ver: 06 07 08 
 test_dual_sw_config(): OK
+Testing decoding IPAC_DLCX_IND
 OK.

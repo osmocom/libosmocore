@@ -133,6 +133,7 @@ const struct tlv_definition rsl_att_tlvdef = {
 		[RSL_IE_IPAC_LOCAL_PORT]	= { TLV_TYPE_FIXED, 2 },
 		[RSL_IE_IPAC_SPEECH_MODE]	= { TLV_TYPE_TV },
 		[RSL_IE_IPAC_LOCAL_IP]		= { TLV_TYPE_FIXED, 4 },
+		[RSL_IE_IPAC_CONN_STAT]		= { TLV_TYPE_TLV, 28 },
 		[RSL_IE_IPAC_CONN_ID]		= { TLV_TYPE_FIXED, 2 },
 		[RSL_IE_IPAC_RTP_CSD_FMT]	= { TLV_TYPE_TV },
 		[RSL_IE_IPAC_RTP_JIT_BUF]	= { TLV_TYPE_FIXED, 2 },

@@ -193,6 +193,52 @@ static void test_sw_descr()
 	msgb_free(msg);
 }
 
+/* Test decode IPAC_DLCX_IND obtained from SYS#5915 */
+static void test_dec_ipac_dlc_indx()
+{
+/* Radio Signalling Link (RSL)
+	0111 111. = Message discriminator: ip.access Vendor Specific messages (63)
+	.... ...0 = T bit: Not considered transparent by BTS
+	.111 0110 = Message type: ip.access DLCX INDication (0x76)
+	Channel number IE
+		Element identifier: Channel Number (0x01)
+		0000 1... = C-bits: Bm + ACCH (1)
+		.... .110 = Time slot number (TN): 6
+	Element identifier: Connection Identifier (0xf8)
+		ip.access Connection ID: 0
+	Element identifier: Connection Statistics (0xf6)
+		[1 byte length here, val = 28 (0x1c)]
+		Packets Sent: 1202
+		Octets Sent: 45052
+		Packets Received: 556
+		Octets Received: 24580
+		Packets Lost: 0
+		Inter-arrival Jitter: 0
+		Average Tx Delay: 0
+	Cause IE
+		Element identifier: Cause (0x1a)
+		Length: 1
+		0... .... = Extension: No Extension
+		.000 .... = Class: Normal event (0)
+		.000 1111 = Cause Value: normal event, unspecified (15)
+*/
+	const uint8_t hex[] = {
+		0x7e, 0x76, 0x01, 0x0e, 0xf8, 0x00, 0x00, 0xf6, 0x1c, 0x00, 0x00, 0x04, 0xb2, 0x00, 0x00, 0xaf,
+		0xfc, 0x00, 0x00, 0x02, 0x2c, 0x00, 0x00, 0x60, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+		0x00, 0x00, 0x00, 0x00, 0x00, 0x1a, 0x01, 0x0f
+	};
+	struct abis_rsl_dchan_hdr *dh = (struct abis_rsl_dchan_hdr *)&hex[0];
+
+	struct tlv_parsed tp;
+	int rc;
+
+	printf("Testing decoding IPAC_DLCX_IND\n");
+
+	rc = rsl_tlv_parse(&tp, dh->data, sizeof(hex) - sizeof(*dh));
+
+	OSMO_ASSERT(rc == 3);
+}
+
 int main(int argc, char **argv)
 {
 	void *ctx = talloc_named_const(NULL, 0, "abis_test");
@@ -202,6 +248,7 @@ int main(int argc, char **argv)
 	test_simple_sw_config();
 	test_simple_sw_short();
 	test_dual_sw_config();
+	test_dec_ipac_dlc_indx();
 
 	printf("OK.\n");
 
