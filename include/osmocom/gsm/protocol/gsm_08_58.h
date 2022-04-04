@@ -385,9 +385,9 @@ enum abis_rsl_ie {
 	RSL_IE_IPAC_RTP_CSD_FMT	= 0xf9,
 	RSL_IE_IPAC_RTP_JIT_BUF	= 0xfa,
 	RSL_IE_IPAC_RTP_COMPR	= 0xfb,
-	RSL_IE_IPAC_RTP_PAYLOAD2= 0xfc,
+	RSL_IE_IPAC_RTP_PAYLOAD2 = 0xfc,
 	RSL_IE_IPAC_RTP_MPLEX	= 0xfd,
-	RSL_IE_IPAC_RTP_MPLEX_ID= 0xfe,
+	RSL_IE_IPAC_RTP_MPLEX_ID = 0xfe,
 };
 
 /* Ericsson specific IEs, clash with above partially, so they're not

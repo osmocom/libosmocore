@@ -28,6 +28,21 @@ verify_gsm0808_tlv_definition() {
 }
 verify_gsm0808_tlv_definition
 
+verify_gsm_08_05_tlv_definition() {
+    set +x;
+    enums=$(grep "RSL_IE_" include/osmocom/gsm/protocol/gsm_08_58.h | grep -e "=" -e ",$" | awk '{ print $1 }' | tr -d ',')
+    counted_enums=$(for f in $enums; do printf "%-60s %s\n" "$f" "$(grep -c "\[$f\]" src/gsm/rsl.c)"; done)
+    # TODO: Add RSL_IE_SIEMENS_* to the tlv struct definitions.
+    missing_enums=$(echo "$counted_enums" | grep -v RSL_IE_SIEMENS |grep "0$" || true)
+    if [ "x$missing_enums" != "x" ]; then
+        echo "Missing IEs in src/gsm/rsl.c!"
+        echo "$missing_enums"
+        exit 1
+    fi
+    set -x;
+}
+verify_gsm_08_05_tlv_definition
+
 prep_build() {
     _src_dir="$1"
     _build_dir="$2"
