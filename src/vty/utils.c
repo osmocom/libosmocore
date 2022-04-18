@@ -21,6 +21,7 @@
  */
 
 #include <stdint.h>
+#include <stdbool.h>
 #include <inttypes.h>
 #include <string.h>
 #include <ctype.h>
@@ -44,6 +45,7 @@ struct vty_out_context {
 	struct vty *vty;
 	const char *prefix;
 	int max_level;
+	bool skip_zero;
 };
 
 static int rate_ctr_handler(
@@ -52,6 +54,9 @@ static int rate_ctr_handler(
 {
 	struct vty_out_context *vctx = vctx_;
 	struct vty *vty = vctx->vty;
+
+	if (vctx->skip_zero && ctr->current == 0)
+		return 0;
 
 	vty_out(vty, " %s%s: %8" PRIu64 " "
 		"(%" PRIu64 "/s %" PRIu64 "/m %" PRIu64 "/h %" PRIu64 "/d)%s",
@@ -69,15 +74,22 @@ static int rate_ctr_handler(
  *  \param[in] vty The VTY to which it should be printed
  *  \param[in] prefix Any additional log prefix ahead of each line
  *  \param[in] ctrg Rate counter group to be printed
+ *  \param[in] skip_zero Skip all zero-valued counters
  */
-void vty_out_rate_ctr_group(struct vty *vty, const char *prefix,
-			    struct rate_ctr_group *ctrg)
+void vty_out_rate_ctr_group2(struct vty *vty, const char *prefix,
+			     struct rate_ctr_group *ctrg, bool skip_zero)
 {
-	struct vty_out_context vctx = {vty, prefix};
+	struct vty_out_context vctx = {vty, prefix, 0, skip_zero};
 
 	vty_out(vty, "%s%s:%s", prefix, ctrg->desc->group_description, VTY_NEWLINE);
 
 	rate_ctr_for_each_counter(ctrg, rate_ctr_handler, &vctx);
+}
+
+void vty_out_rate_ctr_group(struct vty *vty, const char *prefix,
+			   struct rate_ctr_group *ctrg)
+{
+	vty_out_rate_ctr_group2(vty, prefix, ctrg, false);
 }
 
 static char *
@@ -103,7 +115,12 @@ static int rate_ctr_handler_fmt(
 	struct vty_out_context *vctx = vctx_;
 	struct vty *vty = vctx->vty;
 	const char *fmt = vctx->prefix;
-	char *s = talloc_strdup(vty, "");
+	char *s;
+
+	if (vctx->skip_zero && ctr->current == 0)
+		return 0;
+
+	s = talloc_strdup(vty, "");
 	OSMO_ASSERT(s);
 
 	while (*fmt) {
@@ -205,14 +222,20 @@ static int rate_ctr_handler_fmt(
  *  \param[in] vty The VTY to which it should be printed
  *  \param[in] ctrg Rate counter group to be printed
  *  \param[in] fmt A format which may contain the above directives.
+ *  \param[in] skip_zero Skip all zero-valued counters
  */
-void vty_out_rate_ctr_group_fmt(struct vty *vty, const char *fmt,
-				struct rate_ctr_group *ctrg)
+void vty_out_rate_ctr_group_fmt2(struct vty *vty, const char *fmt,
+				 struct rate_ctr_group *ctrg, bool skip_zero)
 {
-	struct vty_out_context vctx = {vty, fmt};
+	struct vty_out_context vctx = {vty, fmt, 0, skip_zero};
 	rate_ctr_for_each_counter(ctrg, rate_ctr_handler_fmt, &vctx);
 }
 
+void vty_out_rate_ctr_group_fmt(struct vty *vty, const char *fmt,
+				struct rate_ctr_group *ctrg)
+{
+	vty_out_rate_ctr_group_fmt2(vty, fmt, ctrg, false);
+}
 static int rate_ctr_group_handler(struct rate_ctr_group *ctrg, void *vctx_)
 {
 	struct vty_out_context *vctx = vctx_;
@@ -244,12 +267,14 @@ static int osmo_stat_item_handler(
 	struct vty_out_context *vctx = vctx_;
 	struct vty *vty = vctx->vty;
 	const struct osmo_stat_item_desc *desc = osmo_stat_item_get_desc(item);
+	int32_t value = osmo_stat_item_get_last(item);
 	const char *unit = (desc->unit != OSMO_STAT_ITEM_NO_UNIT) ? desc->unit : "";
 
+	if (vctx->skip_zero && value == 0)
+		return 0;
+
 	vty_out(vty, " %s%s: %8" PRIi32 " %s%s",
-		vctx->prefix, desc->description,
-		osmo_stat_item_get_last(item),
-		unit, VTY_NEWLINE);
+		vctx->prefix, desc->description, value, unit, VTY_NEWLINE);
 
 	return 0;
 }
@@ -258,15 +283,22 @@ static int osmo_stat_item_handler(
  *  \param[in] vty The VTY to which it should be printed
  *  \param[in] prefix Any additional log prefix ahead of each line
  *  \param[in] statg Stat item group to be printed
+ *  \param[in] skip_zero Skip all zero-valued counters
  */
-void vty_out_stat_item_group(struct vty *vty, const char *prefix,
-			     struct osmo_stat_item_group *statg)
+void vty_out_stat_item_group2(struct vty *vty, const char *prefix,
+			      struct osmo_stat_item_group *statg, bool skip_zero)
 {
-	struct vty_out_context vctx = {vty, prefix};
+	struct vty_out_context vctx = {vty, prefix, 0, skip_zero};
 
 	vty_out(vty, "%s%s:%s", prefix, statg->desc->group_description,
 		VTY_NEWLINE);
 	osmo_stat_item_for_each_item(statg, osmo_stat_item_handler, &vctx);
+}
+
+void vty_out_stat_item_group(struct vty *vty, const char *prefix,
+			     struct osmo_stat_item_group *statg)
+{
+	return vty_out_stat_item_group2(vty, prefix, statg, false);
 }
 
 static int osmo_stat_item_group_handler(struct osmo_stat_item_group *statg, void *vctx_)
@@ -298,21 +330,22 @@ static int handle_counter(struct osmo_counter *counter, void *vctx_)
 	struct vty_out_context *vctx = vctx_;
 	struct vty *vty = vctx->vty;
 	const char *description = counter->description;
+	unsigned long value = osmo_counter_get(counter);
+
+	if (vctx->skip_zero && value == 0)
+		return 0;
 
 	if (!counter->description)
 		description = counter->name;
 
-	vty_out(vty, " %s%s: %8lu%s",
-		vctx->prefix, description,
-		osmo_counter_get(counter), VTY_NEWLINE);
+	vty_out(vty, " %s%s: %8lu%s", vctx->prefix, description, value, VTY_NEWLINE);
 
 	return 0;
 }
 
-void vty_out_statistics_partial(struct vty *vty, const char *prefix,
-	int max_level)
+void vty_out_statistics_partial2(struct vty *vty, const char *prefix, int max_level, bool skip_zero)
 {
-	struct vty_out_context vctx = {vty, prefix, max_level};
+	struct vty_out_context vctx = {vty, prefix, max_level, skip_zero};
 
 	vty_out(vty, "%sUngrouped counters:%s", prefix, VTY_NEWLINE);
 	osmo_counters_for_each(handle_counter, &vctx);
@@ -320,9 +353,19 @@ void vty_out_statistics_partial(struct vty *vty, const char *prefix,
 	osmo_stat_item_for_each_group(osmo_stat_item_group_handler, &vctx);
 }
 
+void vty_out_statistics_partial(struct vty *vty, const char *prefix, int max_level)
+{
+	return vty_out_statistics_partial2(vty, prefix, max_level, false);
+}
+
+void vty_out_statistics_full2(struct vty *vty, const char *prefix, bool skip_zero)
+{
+	vty_out_statistics_partial2(vty, prefix, INT_MAX, skip_zero);
+}
+
 void vty_out_statistics_full(struct vty *vty, const char *prefix)
 {
-	vty_out_statistics_partial(vty, prefix, INT_MAX);
+	vty_out_statistics_full2(vty, prefix, false);
 }
 
 /*! Generate a VTY command string from value_string */

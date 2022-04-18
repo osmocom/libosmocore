@@ -1,5 +1,5 @@
 /*
- * (C) 2009-2010 by Harald Welte <laforge@gnumonks.org>
+ * (C) 2009-2022 by Harald Welte <laforge@gnumonks.org>
  * (C) 2009-2014 by Holger Hans Peter Freyther
  * (C) 2015      by sysmocom - s.f.m.c. GmbH
  * All Rights Reserved
@@ -39,6 +39,7 @@
 #define CFG_REPORTER_STR "Configure a stats reporter\n"
 
 #define SHOW_STATS_STR "Show statistical values\n"
+#define SKIP_ZERO_STR "Skip items with total count zero\n"
 
 #define STATS_STR "Stats related commands\n"
 
@@ -418,25 +419,32 @@ DEFUN(cfg_tcp_stats_batch_size, cfg_tcp_stats_batch_size_cmd,
 
 DEFUN(show_stats,
       show_stats_cmd,
-      "show stats",
-      SHOW_STR SHOW_STATS_STR)
+      "show stats [skip-zero]",
+      SHOW_STR SHOW_STATS_STR SKIP_ZERO_STR)
 {
-	vty_out_statistics_full(vty, "");
+	bool skip_zero = false;
+	if (argc > 0)
+		skip_zero = true;
+
+	vty_out_statistics_full2(vty, "", skip_zero);
 
 	return CMD_SUCCESS;
 }
 
 DEFUN(show_stats_level,
       show_stats_level_cmd,
-      "show stats level (global|peer|subscriber)",
+      "show stats level (global|peer|subscriber) [skip-zero]",
       SHOW_STR SHOW_STATS_STR
       "Set the maximum group level\n"
       "Show global groups only\n"
       "Show global and network peer related groups\n"
-      "Show global, peer, and subscriber groups\n")
+      "Show global, peer, and subscriber groups\n" SKIP_ZERO_STR)
 {
 	int level = get_string_value(stats_class_strs, argv[0]);
-	vty_out_statistics_partial(vty, "", level);
+	bool skip_zero = false;
+	if (argc > 1)
+		skip_zero = true;
+	vty_out_statistics_partial2(vty, "", level, skip_zero);
 
 	return CMD_SUCCESS;
 }
@@ -599,23 +607,32 @@ DEFUN(show_stats_asciidoc_table,
 	return CMD_SUCCESS;
 }
 
+struct rctr_vty_ctx {
+	struct vty *vty;
+	bool skip_zero;
+};
+
 static int rate_ctr_group_handler(struct rate_ctr_group *ctrg, void *sctx_)
 {
-	struct vty *vty = sctx_;
+	struct rctr_vty_ctx *sctx = sctx_;
+	struct vty *vty = sctx->vty;
 	vty_out(vty, "%s %u", ctrg->desc->group_description, ctrg->idx);
 	if (ctrg->name != NULL)
 		vty_out(vty, " (%s)", ctrg->name);
 	vty_out(vty, ":%s", VTY_NEWLINE);
-	vty_out_rate_ctr_group_fmt(vty, "%25n: %10c (%S/s %M/m %H/h %D/d) %d", ctrg);
+	vty_out_rate_ctr_group_fmt2(vty, "%25n: %10c (%S/s %M/m %H/h %D/d) %d", ctrg, sctx->skip_zero);
 	return 0;
 }
 
 DEFUN(show_rate_counters,
       show_rate_counters_cmd,
-      "show rate-counters",
-      SHOW_STR "Show all rate counters\n")
+      "show rate-counters [skip-zero]",
+      SHOW_STR "Show all rate counters\n" SKIP_ZERO_STR)
 {
-	rate_ctr_for_each_group(rate_ctr_group_handler, vty);
+	struct rctr_vty_ctx rctx = { .vty = vty, .skip_zero = false };
+	if (argc > 0)
+		rctx.skip_zero = true;
+	rate_ctr_for_each_group(rate_ctr_group_handler, &rctx);
 	return CMD_SUCCESS;
 }
 
