@@ -22,8 +22,8 @@
 #include <stdio.h>
 #include <regex.h>
 #include <string.h>
-#include <talloc.h>
 
+#include <osmocom/core/talloc.h>
 #include <osmocom/vty/command.h>
 #include <osmocom/vty/vty.h>
 

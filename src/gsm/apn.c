@@ -24,8 +24,8 @@
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <talloc.h>
 
+#include <osmocom/core/talloc.h>
 #include <osmocom/gsm/apn.h>
 
 #define APN_OI_GPRS_FMT	"mnc%03u.mcc%03u.gprs"

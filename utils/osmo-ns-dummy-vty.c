@@ -21,7 +21,6 @@
  *
  */
 
-#include <talloc.h>
 #include <errno.h>
 #include <string.h>
 #include <stdio.h>
@@ -30,6 +29,7 @@
 #include <inttypes.h>
 
 
+#include <osmocom/core/talloc.h>
 #include <osmocom/core/select.h>
 #include <osmocom/core/application.h>
 #include <osmocom/core/stats.h>
