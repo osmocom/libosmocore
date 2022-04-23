@@ -163,19 +163,19 @@ static bool detect_interleaved_ahs_id_marker(int *n_errors, int *n_bits_total, c
 	return *n_errors < *n_bits_total / 8;
 }
 
-/* Detect a an FR AMR SID_FIRST frame by its identifcation marker */
+/* Detect an FR AMR SID_FIRST frame by its identifcation marker */
 static bool detect_afs_sid_first(int *n_errors, int *n_bits_total, const ubit_t * ubits)
 {
 	return detect_afs_id_marker(n_errors, n_bits_total, ubits, 32, 53, id_marker_0, 9);
 }
 
-/* Detect an FR AMR SID_FIRST frame by its identification marker */
+/* Detect an FR AMR SID_UPDATE frame by its identification marker */
 static bool detect_afs_sid_update(int *n_errors, int *n_bits_total, const ubit_t * ubits)
 {
 	return detect_afs_id_marker(n_errors, n_bits_total, ubits, 36, 53, id_marker_0, 9);
 }
 
-/* Detect an FR AMR SID_FIRST frame by its repeating coded inband data */
+/* Detect an FR AMR ONSET frame by its repeating coded inband data */
 static bool detect_afs_onset(int *n_errors, int *n_bits_total, const ubit_t * ubits)
 {
 	bool rc;
