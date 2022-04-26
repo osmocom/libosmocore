@@ -1732,6 +1732,16 @@ static void test_power_ctrl()
 	VERIFY(rc, <, 0);
 }
 
+static void test_rach_tx_integer_raw2val()
+{
+	unsigned int raw;
+	for (raw = 0; raw <= 0x0f; raw++) {
+		unsigned int val = rach_tx_integer_raw2val(raw);
+		printf("rach_tx_integer_raw2val(0x0%x): %u slots used to spread transmission\n",
+			raw, val);
+	}
+}
+
 int main(int argc, char **argv)
 {
 	test_bearer_cap();
@@ -1750,6 +1760,7 @@ int main(int argc, char **argv)
 	test_print_encoding();
 	test_range_encoding();
 	test_power_ctrl();
+	test_rach_tx_integer_raw2val();
 
 	return EXIT_SUCCESS;
 }

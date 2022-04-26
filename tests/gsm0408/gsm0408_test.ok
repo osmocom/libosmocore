@@ -791,3 +791,19 @@ Random range test: range 127, max num ARFCNs 29
 Random range test: range 255, max num ARFCNs 22
 Random range test: range 511, max num ARFCNs 18
 Random range test: range 1023, max num ARFCNs 16
+rach_tx_integer_raw2val(0x00): 3 slots used to spread transmission
+rach_tx_integer_raw2val(0x01): 4 slots used to spread transmission
+rach_tx_integer_raw2val(0x02): 5 slots used to spread transmission
+rach_tx_integer_raw2val(0x03): 6 slots used to spread transmission
+rach_tx_integer_raw2val(0x04): 7 slots used to spread transmission
+rach_tx_integer_raw2val(0x05): 8 slots used to spread transmission
+rach_tx_integer_raw2val(0x06): 9 slots used to spread transmission
+rach_tx_integer_raw2val(0x07): 10 slots used to spread transmission
+rach_tx_integer_raw2val(0x08): 11 slots used to spread transmission
+rach_tx_integer_raw2val(0x09): 12 slots used to spread transmission
+rach_tx_integer_raw2val(0x0a): 14 slots used to spread transmission
+rach_tx_integer_raw2val(0x0b): 16 slots used to spread transmission
+rach_tx_integer_raw2val(0x0c): 20 slots used to spread transmission
+rach_tx_integer_raw2val(0x0d): 25 slots used to spread transmission
+rach_tx_integer_raw2val(0x0e): 32 slots used to spread transmission
+rach_tx_integer_raw2val(0x0f): 50 slots used to spread transmission

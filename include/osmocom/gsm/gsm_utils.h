@@ -152,6 +152,13 @@ static inline int rach_max_trans_raw2val(int raw) {
 	const int tbl[4] = { 1, 2, 4, 7 };
 	return tbl[raw & 3];
 }
+static inline uint8_t rach_tx_integer_raw2val(uint8_t raw) {
+	const int tbl[6] = { 14, 16, 20, 25, 32, 50 };
+	raw &= 0x0f;
+	if (raw <= 9)
+		return raw + 3;
+	return tbl[raw - 10];
+}
 
 #define	ARFCN_PCS	0x8000
 #define	ARFCN_UPLINK	0x4000
