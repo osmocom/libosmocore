@@ -294,7 +294,7 @@ enum log_filename_pos {
 
 /*! structure representing a logging target */
 struct log_target {
-        struct llist_head entry;		/*!< linked list */
+	struct llist_head entry;		/*!< linked list */
 
 	/*! Internal data for filtering */
 	int filter_map;
