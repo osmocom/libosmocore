@@ -522,9 +522,11 @@ enum abis_nm_adm_state {
 
 /*! OML Availability State (Section 9.4.7) */
 enum abis_nm_avail_state {
-	NM_AVSTATE_IN_TEST	= 1,
+	NM_AVSTATE_IN_TEST	= 0,
+	NM_AVSTATE_FAILED	= 1,
 	NM_AVSTATE_POWER_OFF	= 2,
 	NM_AVSTATE_OFF_LINE	= 3,
+	/* <not used> = 4, */
 	NM_AVSTATE_DEPENDENCY	= 5,
 	NM_AVSTATE_DEGRADED	= 6,
 	NM_AVSTATE_NOT_INSTALLED= 7,
