@@ -1,3 +1,4 @@
+/* 3GPP TS 12.21, nowadays 3GPP TS 52.021 */
 /*
  * (C) 2008-2009 by Harald Welte <laforge@gnumonks.org>
  * All Rights Reserved
