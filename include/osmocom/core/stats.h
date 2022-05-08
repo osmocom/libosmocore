@@ -108,7 +108,7 @@ extern struct llist_head osmo_stats_reporter_list;
 extern struct osmo_stats_config *osmo_stats_config;
 
 void osmo_stats_init(void *ctx);
-int osmo_stats_report();
+int osmo_stats_report(void);
 
 int osmo_stats_set_interval(int interval);
 

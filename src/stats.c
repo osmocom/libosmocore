@@ -175,7 +175,7 @@ static int osmo_stats_timer_cb(struct osmo_fd *ofd, unsigned int what)
 	return 0;
 }
 
-static int start_timer()
+static int start_timer(void)
 {
 	int rc;
 	int interval = osmo_stats_config->interval;
@@ -758,7 +758,7 @@ static int handle_counter(struct osmo_counter *counter, void *sctx_)
 
 /*** main reporting function ***/
 
-static void flush_all_reporters()
+static void flush_all_reporters(void)
 {
 	struct osmo_stats_reporter *srep;
 
@@ -781,7 +781,7 @@ static void flush_all_reporters()
 	}
 }
 
-int osmo_stats_report()
+int osmo_stats_report(void)
 {
 	/* per group actions */
 	TRACE(LIBOSMOCORE_STATS_START());
