@@ -671,6 +671,11 @@ static int config_write_stats_reporter(struct vty *vty, struct osmo_stats_report
 	case OSMO_STATS_REPORTER_LOG:
 		type = "log";
 		break;
+	default:
+		/* don't try to save unknown stats reporters to the VTY.  Imagine some
+		 * application registering a new application specific stats reporter that
+		 * this VTY code knows nothing about! */
+		return 0;
 	}
 
 	vty_out(vty, "stats reporter %s", type);
