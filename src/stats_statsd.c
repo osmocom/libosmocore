@@ -54,6 +54,8 @@ struct osmo_stats_reporter *osmo_stats_reporter_create_statsd(const char *name)
 {
 	struct osmo_stats_reporter *srep;
 	srep = osmo_stats_reporter_alloc(OSMO_STATS_REPORTER_STATSD, name);
+	if (!srep)
+		return NULL;
 
 	srep->have_net_config = 1;
 

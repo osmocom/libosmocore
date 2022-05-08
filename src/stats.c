@@ -214,7 +214,9 @@ struct osmo_stats_reporter *osmo_stats_reporter_alloc(enum osmo_stats_reporter_t
 {
 	struct osmo_stats_reporter *srep;
 	srep = talloc_zero(osmo_stats_ctx, struct osmo_stats_reporter);
-	OSMO_ASSERT(srep);
+	if (!srep)
+		return NULL;
+
 	srep->type = type;
 	if (name)
 		srep->name = talloc_strdup(srep, name);
@@ -486,6 +488,8 @@ int osmo_stats_reporter_udp_open(struct osmo_stats_reporter *srep)
 	}
 
 	srep->buffer = msgb_alloc(buffer_size, "stats buffer");
+	if (!srep->buffer)
+		goto failed;
 
 	return 0;
 
@@ -569,6 +573,8 @@ struct osmo_stats_reporter *osmo_stats_reporter_create_log(const char *name)
 {
 	struct osmo_stats_reporter *srep;
 	srep = osmo_stats_reporter_alloc(OSMO_STATS_REPORTER_LOG, name);
+	if (!srep)
+		return NULL;
 
 	srep->have_net_config = 0;
 
