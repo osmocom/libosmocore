@@ -93,7 +93,7 @@ int main(int argc, char **argv)
 {
 	int arfcn, freq, pcs = 0, uplink = -1;
 	int opt;
-	char *param;
+	char *param = NULL;
 	enum program_mode mode = MODE_NONE;
 
 	while ((opt = getopt(argc, argv, "pa:f:udh")) != -1) {
