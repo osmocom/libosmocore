@@ -547,7 +547,7 @@ static int osmo_conv_decode_ber_punctured(const struct osmo_conv_code *code,
 		return res;
 
 	coded_len = osmo_conv_encode(code, output, recoded);
-	OSMO_ASSERT(sizeof(recoded) / sizeof(recoded[0]) >= coded_len);
+	OSMO_ASSERT(ARRAY_SIZE(recoded) >= coded_len);
 
 	/* Count bit errors */
 	if (n_errors) {
