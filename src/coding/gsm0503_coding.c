@@ -2162,7 +2162,6 @@ int gsm0503_tch_afs_decode_dtx(uint8_t *tch_data, const sbit_t *bursts,
 	*n_errors = 0; *n_bits_total = 0;
 	static ubit_t sid_first_dummy[64] = { 0 };
 	sbit_t sid_update_enc[256];
-	uint8_t dtx_prev;
 
 	for (i=0; i<8; i++) {
 		gsm0503_tch_burst_unmap(&iB[i * 114], &bursts[i * 116], &h, i >> 2);
@@ -2183,8 +2182,9 @@ int gsm0503_tch_afs_decode_dtx(uint8_t *tch_data, const sbit_t *bursts,
 
 	/* Determine the DTX frame type (SID_UPDATE, ONSET etc...) */
 	if (dtx) {
+		const enum gsm0503_amr_dtx_frames dtx_prev = *dtx;
+
 		osmo_sbit2ubit(cBd, cB, 456);
-		dtx_prev = *dtx;
 		*dtx = gsm0503_detect_afs_dtx_frame(n_errors, n_bits_total, cBd);
 
 		if (dtx_prev == AFS_SID_UPDATE && *dtx == AMR_OTHER) {
@@ -2612,7 +2612,6 @@ int gsm0503_tch_ahs_decode_dtx(uint8_t *tch_data, const sbit_t *bursts, int odd,
 	int i, j, k, best = 0, rv, len, steal = 0, id = 0;
 	ubit_t cBd[456];
 	static ubit_t sid_first_dummy[64] = { 0 };
-	uint8_t dtx_prev;
 
 	/* only unmap the stealing bits */
 	if (!odd) {
@@ -2658,8 +2657,9 @@ int gsm0503_tch_ahs_decode_dtx(uint8_t *tch_data, const sbit_t *bursts, int odd,
 
 	/* Determine the DTX frame type (SID_UPDATE, ONSET etc...) */
 	if (dtx) {
+		const enum gsm0503_amr_dtx_frames dtx_prev = *dtx;
+
 		osmo_sbit2ubit(cBd, cB, 456);
-		dtx_prev = *dtx;
 		*dtx = gsm0503_detect_ahs_dtx_frame(n_errors, n_bits_total, cBd);
 
 		if (dtx_prev == AHS_SID_UPDATE && *dtx == AMR_OTHER) {
