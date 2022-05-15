@@ -2187,12 +2187,15 @@ int gsm0503_tch_afs_decode_dtx(uint8_t *tch_data, const sbit_t *bursts,
 		osmo_sbit2ubit(cBd, cB, 456);
 		*dtx = gsm0503_detect_afs_dtx_frame(n_errors, n_bits_total, cBd);
 
-		if (dtx_prev == AFS_SID_UPDATE && *dtx == AMR_OTHER) {
+		switch (*dtx) {
+		case AMR_OTHER:
 			/* NOTE: The AFS_SID_UPDATE frame is splitted into
 			 * two half rate frames. If the id marker frame
 			 * (AFS_SID_UPDATE) is detected the following frame
 			 * contains the actual comfort noised data part of
 			 * (AFS_SID_UPDATE_CN). */
+			if (dtx_prev != AFS_SID_UPDATE)
+				break;
 			*dtx = AFS_SID_UPDATE_CN;
 
 			extract_afs_sid_update(sid_update_enc, cB);
@@ -2212,16 +2215,18 @@ int gsm0503_tch_afs_decode_dtx(uint8_t *tch_data, const sbit_t *bursts,
 			tch_amr_reassemble(tch_data, conv, 39);
 			len = 5;
 			goto out;
-		} else if (*dtx == AFS_SID_FIRST) {
+		case AFS_SID_FIRST:
 			tch_amr_sid_update_append(sid_first_dummy, 0,
 						  (codec_mode_req) ? codec[*ft]
 						  : codec[id]);
 			tch_amr_reassemble(tch_data, conv, 39);
 			len = 5;
 			goto out;
-		} else if (*dtx == AFS_ONSET) {
+		case AFS_ONSET:
 			len = 0;
 			goto out;
+		default:
+			break;
 		}
 	}
 
@@ -2662,12 +2667,15 @@ int gsm0503_tch_ahs_decode_dtx(uint8_t *tch_data, const sbit_t *bursts, int odd,
 		osmo_sbit2ubit(cBd, cB, 456);
 		*dtx = gsm0503_detect_ahs_dtx_frame(n_errors, n_bits_total, cBd);
 
-		if (dtx_prev == AHS_SID_UPDATE && *dtx == AMR_OTHER) {
+		switch (*dtx) {
+		case AMR_OTHER:
 			/* NOTE: The AHS_SID_UPDATE frame is splitted into
 			 * two half rate frames. If the id marker frame
 			 * (AHS_SID_UPDATE) is detected the following frame
 			 * contains the actual comfort noised data part of
 			 * (AHS_SID_UPDATE_CN). */
+			if (dtx_prev != AHS_SID_UPDATE)
+				break;
 			*dtx = AHS_SID_UPDATE_CN;
 
 			osmo_conv_decode_ber(&gsm0503_tch_axs_sid_update,
@@ -2686,19 +2694,22 @@ int gsm0503_tch_ahs_decode_dtx(uint8_t *tch_data, const sbit_t *bursts, int odd,
 			tch_amr_reassemble(tch_data, conv, 39);
 			len = 5;
 			goto out;
-		} else if (*dtx == AHS_SID_FIRST_P2) {
+		case AHS_SID_FIRST_P2:
 			tch_amr_sid_update_append(sid_first_dummy, 0,
 						  (codec_mode_req) ? codec[*ft]
 						  : codec[id]);
 			tch_amr_reassemble(tch_data, sid_first_dummy, 39);
 			len = 5;
 			goto out;
-		} else if (*dtx == AHS_SID_UPDATE || *dtx == AHS_ONSET
-			   || *dtx == AHS_SID_FIRST_INH
-			   || *dtx == AHS_SID_UPDATE_INH
-			   || *dtx == AHS_SID_FIRST_P1) {
+		case AHS_SID_UPDATE:
+		case AHS_ONSET:
+		case AHS_SID_FIRST_INH:
+		case AHS_SID_UPDATE_INH:
+		case AHS_SID_FIRST_P1:
 			len = 0;
 			goto out;
+		default:
+			break;
 		}
 	}
 
