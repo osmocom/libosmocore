@@ -2222,6 +2222,7 @@ int gsm0503_tch_afs_decode_dtx(uint8_t *tch_data, const sbit_t *bursts,
 			tch_amr_reassemble(tch_data, conv, 39);
 			len = 5;
 			goto out;
+		case AFS_SID_UPDATE:
 		case AFS_ONSET:
 			len = 0;
 			goto out;
