@@ -61,7 +61,7 @@ void vty_out_fsm2(struct vty *vty, const char *prefix, struct osmo_fsm *fsm)
 	if (fsm->event_names) {
 		for (evt_name = fsm->event_names; evt_name->str != NULL; evt_name++) {
 			vty_out(vty, "%s Event %02u (0x%08x): '%s'%s", prefix, evt_name->value,
-				(1 << evt_name->value), evt_name->str, VTY_NEWLINE);
+				(1U << evt_name->value), evt_name->str, VTY_NEWLINE);
 		}
 	} else
 		vty_out(vty, "%s No event names are defined for this FSM! Please fix!%s", prefix, VTY_NEWLINE);
