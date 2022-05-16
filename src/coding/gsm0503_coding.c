@@ -2171,6 +2171,12 @@ int gsm0503_tch_afs_decode_dtx(uint8_t *tch_data, const sbit_t *bursts,
 	gsm0503_tch_fr_deinterleave(cB, iB);
 
 	if (steal > 0) {
+		/* If not NULL, dtx indicates type of previously decoded TCH/AFS frame.
+		 * It's normally updated by gsm0503_detect_afs_dtx_frame(), which is not
+		 * reached in case of FACCH.  Reset it here to avoid FACCH/F frames being
+		 * misinterpreted as AMR's special DTX frames. */
+		if (dtx != NULL)
+			*dtx = AMR_OTHER;
 		rv = _xcch_decode_cB(tch_data, cB, n_errors, n_bits_total);
 		if (rv) {
 			/* Error decoding FACCH frame */
@@ -2633,6 +2639,13 @@ int gsm0503_tch_ahs_decode_dtx(uint8_t *tch_data, const sbit_t *bursts, int odd,
 
 	/* if we found a stole FACCH, but only at correct alignment */
 	if (steal > 0) {
+		/* If not NULL, dtx indicates type of previously decoded TCH/AHS frame.
+		 * It's normally updated by gsm0503_detect_ahs_dtx_frame(), which is not
+		 * reached in case of FACCH.  Reset it here to avoid FACCH/H frames being
+		 * misinterpreted as AMR's special DTX frames. */
+		if (dtx != NULL)
+			*dtx = AMR_OTHER;
+
 		for (i = 0; i < 6; i++) {
 			gsm0503_tch_burst_unmap(&iB[i * 114],
 				&bursts[i * 116], NULL, i >> 2);
