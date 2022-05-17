@@ -21,7 +21,11 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <osmocom/core/utils.h>
+#include <osmocom/coding/gsm0503_coding.h>
 #include <osmocom/coding/gsm0503_amr_dtx.h>
+
+/* Length of payload bits in a Normal Burst */
+#define BURST_PLEN	(57 * 2 + 2)
 
 char sample_afs_sid_frame[] =
     {
@@ -108,6 +112,109 @@ void test_gsm0503_detect_ahs_dtx_frame(char *string)
 	       n_errors, n_bits_total);
 }
 
+static void test_gsm0503_tch_afhs_decode_dtx(const sbit_t *bursts, size_t offset,
+					     enum gsm0503_amr_dtx_frames *amr_last_dtx,
+					     bool full_rate, const char *test_desc)
+{
+	uint8_t tch_data[128]; /* just to be safe */
+	int n_errors = 0, n_bits_total = 0;
+	int rc;
+
+	printf("Running %s(at offset=%zu): testing %s\n", __func__, offset, test_desc);
+
+	/* Dummy (not really important) values */
+	uint8_t codec[4] = { 0, 1, 2, 3 };
+	int codecs = ARRAY_SIZE(codec);
+	uint8_t ul_cmr = 0;
+	uint8_t ul_ft = 0;
+
+	if (full_rate) {
+		rc = gsm0503_tch_afs_decode_dtx(&tch_data[0], &bursts[offset], false,
+						codec, codecs, &ul_ft, &ul_cmr,
+						&n_errors, &n_bits_total,
+						(uint8_t *)amr_last_dtx);
+	} else {
+		rc = gsm0503_tch_ahs_decode_dtx(&tch_data[0], &bursts[offset], false, false,
+						codec, codecs, &ul_ft, &ul_cmr,
+						&n_errors, &n_bits_total,
+						(uint8_t *)amr_last_dtx);
+	}
+	printf(" ==> gsm0503_tch_a%cs_decode_dtx() yields '%s' (rc=%d, BER %d/%d)\n",
+	       full_rate ? 'f' : 'h', gsm0503_amr_dtx_frame_name(*amr_last_dtx),
+	       rc, n_errors, n_bits_total);
+	if (rc > 0)
+		printf(" ====> tch_data[] = { %s }\n", osmo_hexdump_nospc(tch_data, rc));
+}
+
+static void test_gsm0503_tch_afhs_decode_dtx_sid_update(void)
+{
+	enum gsm0503_amr_dtx_frames amr_last_dtx = AMR_OTHER;
+	sbit_t bursts[BURST_PLEN * 12]; /* 12 bursts */
+	int rc;
+
+	/* 456 soft-bits containing an AFS_SID_UPDATE frame (captured on the air) */
+	const char *afs_sid_update = \
+		"94 81 83 76 7b 81 6b 7f 76 8c 81 81 81 86 71 7f 75 81 6d 7a 81 6b 7f 78 8a 87 70 75 8e"
+		"81 8d 7f 81 70 72 81 7f 85 86 7f 93 81 8a 74 7f 71 89 8a 75 7f 7f 78 8c 81 8b 7f 81 7f"
+		"7f 7f 70 8a 8b 7f 90 81 81 81 8a 77 7f 7f 70 81 70 71 86 8e 7f 81 7f 81 75 72 87 8c 76"
+		"7f 72 8e 81 81 81 81 92 7f 8c 81 92 7f 8c 89 7f 81 7f 8f 8b 77 76 86 8c 78 73 88 81 8b"
+		"81 7f 8c 85 77 7b 8d 81 81 81 8b 7f 81 7f 8e 81 8e 7f 8a 8a 7f 93 85 6b 7f 7f 72 81 6f"
+		"76 89 81 81 81 8a 73 7f 72 88 87 73 7f 73 81 7f 81 7f 92 87 73 78 81 6f 7f 71 81 76 77"
+		"6f 81 7f 81 71 7f 6e 81 75 77 83 81 81 90 7f 8b 88 76 76 8a 8d 76 74 81 7f 92 81 81 8b"
+		"78 72 81 77 76 81 6c 7c 8b 81 81 8d 7f 8b 81 8e 74 7f 7f 72 81 7f 81 74 7f 71 81 75 7f"
+		"8e 81 81 8c 72 79 85 8c 78 75 8c 8a 7f 90 81 8e 77 77 81 70 7f 7f 71 81 7f 81 7f 8e 89"
+		"7f 8f 81 8f 7f 8c 8d 7f 81 7f 81 6f 7f 71 8a 87 7f 81 6f 77 81 7f 8d 88 73 79 8a 8a 7f"
+		"7f 7f 7f 7f 76 8b 81 8c 77 7c 8a 81 91 7f 81 76 79 81 71 7f 7f 6f 84 8e 78 7f 7f 7f 74"
+		"88 86 7b 77 81 6f 7f 7f 7f 7f 7f 75 81 70 7f 76 89 81 81 81 8d 78 74 84 81 8e 7f 8d 8a"
+		"7f 79 8c 87 7f 81 7f 81 6f 7f 75 8d 8a 7f 81 7f 92 81 81 85 76 7f 6f 8c 88 6c 7f 73 91"
+		"81 8d 71 7f 7f 73 8d 88 7f 81 7f 91 86 6f 7f 73 8e 81 8d 79 78 81 72 74 8c 86 72 7f 77"
+		"6e 81 7f 81 77 76 81 72 74 81 6f 7f 6f 8d 81 91 7f 81 6d 7f 6d 81 6c 7f 6c 81 7f 81 7f"
+		"8c 8b 7f 8e 89 74 74 8c 81 81 81 81 81 92 7f 8e 8b 7f 93 81 8f 7f 90 81 8d 74 7b 8b 89";
+
+	memset(&bursts[0], 0, sizeof(bursts));
+	rc = osmo_hexparse(afs_sid_update, (uint8_t *)&bursts[BURST_PLEN * 4], BURST_PLEN * 8);
+	OSMO_ASSERT(rc == BURST_PLEN * 4);
+
+	/* Test detection of AFS_SID_UPDATE (marker) */
+	test_gsm0503_tch_afhs_decode_dtx(&bursts[0], BURST_PLEN * 0, &amr_last_dtx, true /* AFS */,
+					 "detection of AFS_SID_UPDATE");
+
+	/* Test decoding of AFS_SID_UPDATE_CN (actual SID) */
+	test_gsm0503_tch_afhs_decode_dtx(&bursts[0], BURST_PLEN * 4, &amr_last_dtx, true /* AFS */,
+					 "decoding of AFS_SID_UPDATE");
+
+	/* 456 soft-bits containing an AHS_SID_UPDATE frame (captured on the air) */
+	const char *ahs_sid_update = \
+		"81 67 7f 7f 7f 71 8f 88 6f 73 81 7e 81 6b 7f 7e 7d 6f 8f 8a 72 76 92 81 82 81 8f 6d 6f"
+		"81 7f 92 8c 7f 97 81 8e 6f 7f 7c 7f 6e 81 7e 81 6e 73 81 7f 93 8d 6f 7f 6c 81 6b 7f 72"
+		"7c 7c 7d 7f 6f 8f 81 94 7f 92 8d 6e 7d 7d 7f 6c 8b 8e 73 71 81 7f 92 90 7f 81 6e 6e 81"
+		"7f 94 8e 70 7f 6e 8c 8d 77 7f 6a 81 7f 81 70 6d 81 6c 71 8c 91 7f 90 8e 73 6e 81 6d 7f"
+		"81 8b 71 6e 81 7f 82 7c 81 7f 81 6d 73 81 6c 6d 81 6d 7f 6e 81 7e 81 6b 7f 7f 7f 6b 81"
+		"6e 6f 81 68 7f 71 91 81 82 81 8e 70 7f 7c 7d 7f 70 81 7f 91 8f 7f 81 6c 7f 71 81 6d 74"
+		"6f 8f 81 92 7f 82 7f 91 8b 7f 81 6b 7f 6d 81 6b 6f 81 6f 6e 90 81 81 92 7f 94 81 95 7f"
+		"96 81 96 70 7f 72 8f 81 95 7f 81 6f 70 81 7f 90 92 7f 81 6c 70 81 6b 7f 6f 8d 8d 7f 81"
+		"77 81 6a 7e 7e 73 92 8c 7f 81 6a 7f 6c 8e 8e 6e 7f 71 8e 8d 7e 81 6d 7f 6c 81 6d 6c 81"
+		"7f 94 81 92 7f 97 81 92 6e 7f 70 8c 8b 73 73 91 81 93 7f 81 70 72 81 7d 81 71 70 81 7f"
+		"7d 7f 6d 90 8d 73 76 92 81 92 6f 7d 7d 70 91 81 8f 73 75 8c 90 7f 94 81 91 70 7f 7d 7e"
+		"70 8d 8d 73 7f 7c 7e 6a 81 7e 81 6d 7f 6a 81 6f 7f 7f 71 8e 81 82 81 81 81 96 72 7e 7d"
+		"81 8d 7f 81 68 7f 7e 7c 7b 7f 6c 81 6a 7f 7f 71 8f 8d 7f 81 6c 72 8e 88 70 70 81 6d 70"
+		"8d 90 7f 81 7e 95 81 94 7f 92 8b 6e 7f 7f 70 8c 8c 73 75 91 81 91 6d 7d 7e 7b 7c 7d 71"
+		"6c 89 91 7f 81 7f 95 81 93 7f 95 90 7f 81 6d 70 81 6f 75 8c 8e 75 71 81 6e 70 8d 8d 7f"
+		"91 92 7f 81 7f 94 8d 70 71 81 6e 6d 81 6e 75 8e 81 93 70 7f 70 8f 8c 7f 81 6d 6f 81 6a";
+
+	memset(&bursts[0], 0, sizeof(bursts));
+	rc = osmo_hexparse(ahs_sid_update, (uint8_t *)&bursts[BURST_PLEN * 2], BURST_PLEN * 10);
+	OSMO_ASSERT(rc == BURST_PLEN * 4);
+
+	/* Test detection and decoding of AHS_SID_UPDATE */
+	test_gsm0503_tch_afhs_decode_dtx(&bursts[0], BURST_PLEN * 0, &amr_last_dtx, false /* AHS */,
+					 "detection/decoding of AHS_SID_UPDATE");
+	test_gsm0503_tch_afhs_decode_dtx(&bursts[0], BURST_PLEN * 2, &amr_last_dtx, false /* AHS */,
+					 "detection/decoding of AHS_SID_UPDATE");
+	test_gsm0503_tch_afhs_decode_dtx(&bursts[0], BURST_PLEN * 4, &amr_last_dtx, false /* AHS */,
+					 "detection/decoding of AHS_SID_UPDATE");
+}
+
 int main(int argc, char **argv)
 {
 	printf("FR AMR DTX FRAMES:\n");
@@ -121,6 +228,8 @@ int main(int argc, char **argv)
 	test_gsm0503_detect_ahs_dtx_frame(sample_ahs_onset_frame);
 	test_gsm0503_detect_ahs_dtx_frame(sample_sid_first_inh_frame);
 	test_gsm0503_detect_ahs_dtx_frame(sample_sid_update_inh_frame);
+
+	test_gsm0503_tch_afhs_decode_dtx_sid_update();
 
 	return EXIT_SUCCESS;
 }
