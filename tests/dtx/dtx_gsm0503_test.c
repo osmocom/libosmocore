@@ -215,6 +215,32 @@ static void test_gsm0503_tch_afhs_decode_dtx_sid_update(void)
 					 "detection/decoding of AHS_SID_UPDATE");
 }
 
+static void test_gsm0503_tch_afhs_decode_dtx_facch(void)
+{
+	enum gsm0503_amr_dtx_frames amr_last_dtx;
+	sbit_t bursts[BURST_PLEN * 8]; /* 8 bursts */
+	unsigned int i;
+
+	/* Set stealing bits to provoke FACCH/[FH] detection */
+	for (i = 0; i < 8; i++) {
+		sbit_t *burst = &bursts[BURST_PLEN * i];
+		memset(&burst[0], 0, BURST_PLEN);
+		burst[i >> 2 ? 57 : 58] = -127;
+	}
+
+	amr_last_dtx = AFS_SID_UPDATE;
+	test_gsm0503_tch_afhs_decode_dtx(&bursts[0], BURST_PLEN * 0,
+					 &amr_last_dtx, true /* AFS */,
+					 "tagging of FACCH/F");
+	OSMO_ASSERT(amr_last_dtx == AMR_OTHER);
+
+	amr_last_dtx = AHS_SID_UPDATE;
+	test_gsm0503_tch_afhs_decode_dtx(&bursts[0], BURST_PLEN * 0,
+					 &amr_last_dtx, false /* AHS */,
+					 "tagging of FACCH/H");
+	OSMO_ASSERT(amr_last_dtx == AMR_OTHER);
+}
+
 int main(int argc, char **argv)
 {
 	printf("FR AMR DTX FRAMES:\n");
@@ -230,6 +256,7 @@ int main(int argc, char **argv)
 	test_gsm0503_detect_ahs_dtx_frame(sample_sid_update_inh_frame);
 
 	test_gsm0503_tch_afhs_decode_dtx_sid_update();
+	test_gsm0503_tch_afhs_decode_dtx_facch();
 
 	return EXIT_SUCCESS;
 }
