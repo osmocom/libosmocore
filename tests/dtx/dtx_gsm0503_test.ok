@@ -17,10 +17,10 @@ Running test_gsm0503_tch_afhs_decode_dtx(at offset=464): testing decoding of AFS
 Running test_gsm0503_tch_afhs_decode_dtx(at offset=0): testing detection/decoding of AHS_SID_UPDATE
  ==> gsm0503_tch_ahs_decode_dtx() yields 'AMR_OTHER (audio)' (rc=-1, BER 109/212)
 Running test_gsm0503_tch_afhs_decode_dtx(at offset=232): testing detection/decoding of AHS_SID_UPDATE
- ==> gsm0503_tch_ahs_decode_dtx() yields 'AHS_SID_UPDATE (marker)' (rc=0, BER 0/212)
-Running test_gsm0503_tch_afhs_decode_dtx(at offset=464): testing detection/decoding of AHS_SID_UPDATE
- ==> gsm0503_tch_ahs_decode_dtx() yields 'AHS_SID_UPDATE_CN (audio)' (rc=5, BER 106/212)
+ ==> gsm0503_tch_ahs_decode_dtx() yields 'AHS_SID_UPDATE_CN (audio)' (rc=5, BER 0/424)
  ====> tch_data[] = { 6003ccb270 }
+Running test_gsm0503_tch_afhs_decode_dtx(at offset=464): testing detection/decoding of AHS_SID_UPDATE
+ ==> gsm0503_tch_ahs_decode_dtx() yields 'AMR_OTHER (audio)' (rc=-1, BER 111/212)
 Running test_gsm0503_tch_afhs_decode_dtx(at offset=0): testing tagging of FACCH/F
  ==> gsm0503_tch_afs_decode_dtx() yields 'AMR_OTHER (audio)' (rc=-1, BER 456/456)
 Running test_gsm0503_tch_afhs_decode_dtx(at offset=0): testing tagging of FACCH/H

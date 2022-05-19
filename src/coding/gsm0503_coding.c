@@ -2676,25 +2676,38 @@ int gsm0503_tch_ahs_decode_dtx(uint8_t *tch_data, const sbit_t *bursts, int odd,
 
 	/* Determine the DTX frame type (SID_UPDATE, ONSET etc...) */
 	if (dtx) {
-		const enum gsm0503_amr_dtx_frames dtx_prev = *dtx;
+		int n_bits_total_sid;
+		int n_errors_sid;
 
 		osmo_sbit2ubit(cBd, cB, 456);
 		*dtx = gsm0503_detect_ahs_dtx_frame(n_errors, n_bits_total, cBd);
+		/* TODO: detect and handle AHS_SID_UPDATE + AHS_SID_UPDATE_INH */
 
 		switch (*dtx) {
-		case AMR_OTHER:
-			/* NOTE: The AHS_SID_UPDATE frame is splitted into
-			 * two half rate frames. If the id marker frame
-			 * (AHS_SID_UPDATE) is detected the following frame
-			 * contains the actual comfort noised data part of
-			 * (AHS_SID_UPDATE_CN). */
-			if (dtx_prev != AHS_SID_UPDATE)
-				break;
+		case AHS_SID_UPDATE:
+			/* cB[] contains 16 bits of coded in-band data and 212 bits containing
+			 * the identification marker.  We need to unmap/deinterleave 114 odd
+			 * bits from the last two blocks, 114 even bits from the first two
+			 * blocks and combine them together. */
+			gsm0503_tch_burst_unmap(&iB[0 * 114], &bursts[2 * 116], NULL, 0);
+			gsm0503_tch_burst_unmap(&iB[1 * 114], &bursts[3 * 116], NULL, 0);
+			gsm0503_tch_burst_unmap(&iB[2 * 114], &bursts[0 * 116], NULL, 1);
+			gsm0503_tch_burst_unmap(&iB[3 * 114], &bursts[1 * 116], NULL, 1);
+			gsm0503_tch_hr_deinterleave(cB, iB);
+
+			/* cB[] is expected to contain 16 bits of coded in-band data and
+			 * 212 bits containing the coded data (53 bits coded at 1/4 rate). */
 			*dtx = AHS_SID_UPDATE_CN;
 
 			osmo_conv_decode_ber(&gsm0503_tch_axs_sid_update,
-					     cB + 16, conv, n_errors,
-					     n_bits_total);
+					     cB + 16, conv, &n_errors_sid,
+					     &n_bits_total_sid);
+			/* gsm0503_detect_ahs_dtx_frame() calculates BER for the marker,
+			 * osmo_conv_decode_ber() calculates BER for the coded data. */
+			if (n_errors != NULL)
+				*n_errors += n_errors_sid;
+			if (n_bits_total != NULL)
+				*n_bits_total += n_bits_total_sid;
 			rv = osmo_crc16gen_check_bits(&gsm0503_amr_crc14, conv,
 						      35, conv + 35);
 			if (rv != 0) {
@@ -2715,7 +2728,6 @@ int gsm0503_tch_ahs_decode_dtx(uint8_t *tch_data, const sbit_t *bursts, int odd,
 			tch_amr_reassemble(tch_data, sid_first_dummy, 39);
 			len = 5;
 			goto out;
-		case AHS_SID_UPDATE:
 		case AHS_ONSET:
 		case AHS_SID_FIRST_INH:
 		case AHS_SID_UPDATE_INH:
