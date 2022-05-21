@@ -2157,7 +2157,7 @@ int gsm0503_tch_afs_decode_dtx(uint8_t *tch_data, const sbit_t *bursts,
 {
 	sbit_t iB[912], cB[456], h;
 	ubit_t d[244], p[6], conv[250];
-	int i, j, k, best = 0, rv, len, steal = 0, id = 0;
+	int i, j, k, best = 0, rv, len, steal = 0, id = -1;
 	ubit_t cBd[456];
 	*n_errors = 0; *n_bits_total = 0;
 	static ubit_t sid_first_dummy[64] = { 0 };
@@ -2202,6 +2202,7 @@ int gsm0503_tch_afs_decode_dtx(uint8_t *tch_data, const sbit_t *bursts,
 			 * (AFS_SID_UPDATE_CN). */
 			if (dtx_prev != AFS_SID_UPDATE)
 				break;
+			/* TODO: parse CMI _and_ CMC/CMR (16 + 16 bit) */
 			*dtx = AFS_SID_UPDATE_CN;
 
 			extract_afs_sid_update(sid_update_enc, cB);
@@ -2217,19 +2218,19 @@ int gsm0503_tch_afs_decode_dtx(uint8_t *tch_data, const sbit_t *bursts,
 
 			tch_amr_sid_update_append(conv, 1,
 						  (codec_mode_req) ? codec[*ft]
-						  : codec[id]);
+						  : codec[id > 0 ? id : 0]);
 			tch_amr_reassemble(tch_data, conv, 39);
 			len = 5;
 			goto out;
-		case AFS_SID_FIRST:
+		case AFS_SID_FIRST: /* TODO: parse CMI or CMC/CMR (16 bit) */
 			tch_amr_sid_update_append(sid_first_dummy, 0,
 						  (codec_mode_req) ? codec[*ft]
-						  : codec[id]);
+						  : codec[id > 0 ? id : 0]);
 			tch_amr_reassemble(tch_data, conv, 39);
 			len = 5;
 			goto out;
-		case AFS_SID_UPDATE:
-		case AFS_ONSET:
+		case AFS_SID_UPDATE: /* TODO: parse CMI _and_ CMC/CMR (16 + 16 bit) */
+		case AFS_ONSET: /* TODO: parse CMI or CMC/CMR (N * 16 - M bit) */
 			len = 0;
 			goto out;
 		default:
@@ -2399,10 +2400,12 @@ int gsm0503_tch_afs_decode_dtx(uint8_t *tch_data, const sbit_t *bursts,
 
 out:
 	/* Change codec request / indication, if frame is valid */
-	if (codec_mode_req)
-		*cmr = id;
-	else
-		*ft = id;
+	if (id != -1) {
+		if (codec_mode_req)
+			*cmr = id;
+		else
+			*ft = id;
+	}
 
 	return len;
 }
@@ -2621,7 +2624,7 @@ int gsm0503_tch_ahs_decode_dtx(uint8_t *tch_data, const sbit_t *bursts, int odd,
 {
 	sbit_t iB[912], cB[456], h;
 	ubit_t d[244], p[6], conv[135];
-	int i, j, k, best = 0, rv, len, steal = 0, id = 0;
+	int i, j, k, best = 0, rv, len, steal = 0, id = -1;
 	ubit_t cBd[456];
 	static ubit_t sid_first_dummy[64] = { 0 };
 
@@ -2684,7 +2687,7 @@ int gsm0503_tch_ahs_decode_dtx(uint8_t *tch_data, const sbit_t *bursts, int odd,
 		/* TODO: detect and handle AHS_SID_UPDATE + AHS_SID_UPDATE_INH */
 
 		switch (*dtx) {
-		case AHS_SID_UPDATE:
+		case AHS_SID_UPDATE: /* TODO: parse CMI _and_ CMC/CMR (16 + 16 bit) */
 			/* cB[] contains 16 bits of coded in-band data and 212 bits containing
 			 * the identification marker.  We need to unmap/deinterleave 114 odd
 			 * bits from the last two blocks, 114 even bits from the first two
@@ -2717,21 +2720,21 @@ int gsm0503_tch_ahs_decode_dtx(uint8_t *tch_data, const sbit_t *bursts, int odd,
 
 			tch_amr_sid_update_append(conv, 1,
 						  (codec_mode_req) ? codec[*ft]
-						  : codec[id]);
+						  : codec[id > 0 ? id : 0]);
 			tch_amr_reassemble(tch_data, conv, 39);
 			len = 5;
 			goto out;
-		case AHS_SID_FIRST_P2:
+		case AHS_SID_FIRST_P2: /* TODO: parse CMI or CMC/CMR (N * 16 - M bit) */
 			tch_amr_sid_update_append(sid_first_dummy, 0,
 						  (codec_mode_req) ? codec[*ft]
-						  : codec[id]);
+						  : codec[id > 0 ? id : 0]);
 			tch_amr_reassemble(tch_data, sid_first_dummy, 39);
 			len = 5;
 			goto out;
-		case AHS_ONSET:
-		case AHS_SID_FIRST_INH:
-		case AHS_SID_UPDATE_INH:
-		case AHS_SID_FIRST_P1:
+		case AHS_ONSET: /* TODO: parse CMI or CMC/CMR (N * 16 - M bit) */
+		case AHS_SID_FIRST_INH: /* TODO: parse CMI or CMC/CMR (16 bit) */
+		case AHS_SID_UPDATE_INH: /* TODO: parse CMI or CMC/CMR (16 bit) */
+		case AHS_SID_FIRST_P1: /* TODO: parse CMI or CMC/CMR (16 bit) */
 			len = 0;
 			goto out;
 		default:
@@ -2885,10 +2888,12 @@ int gsm0503_tch_ahs_decode_dtx(uint8_t *tch_data, const sbit_t *bursts, int odd,
 
 out:
 	/* Change codec request / indication, if frame is valid */
-	if (codec_mode_req)
-		*cmr = id;
-	else
-		*ft = id;
+	if (id != -1) {
+		if (codec_mode_req)
+			*cmr = id;
+		else
+			*ft = id;
+	}
 
 	return len;
 }
