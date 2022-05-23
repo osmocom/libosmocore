@@ -1,14 +1,14 @@
 FR AMR DTX FRAMES:
- ==> AFS_SID_FIRST, n_errors=0, n_bits_total=212
- ==> AFS_SID_UPDATE (marker), n_errors=0, n_bits_total=212
- ==> AFS_ONSET, n_errors=0, n_bits_total=228
+ ==> AFS_SID_FIRST, n_errors=0, n_bits_total=212, mode_id=-1
+ ==> AFS_SID_UPDATE (marker), n_errors=0, n_bits_total=212, mode_id=-1
+ ==> AFS_ONSET, n_errors=0, n_bits_total=228, mode_id=0
 HR AMR DTX FRAMES:
- ==> AHS_SID_UPDATE (marker), n_errors=0, n_bits_total=212
- ==> AHS_SID_FIRST_P1, n_errors=0, n_bits_total=212
- ==> AHS_SID_FIRST_P2, n_errors=0, n_bits_total=114
- ==> AHS_ONSET, n_errors=0, n_bits_total=114
- ==> AHS_SID_FIRST_INH, n_errors=0, n_bits_total=212
- ==> AHS_SID_UPDATE_INH, n_errors=0, n_bits_total=212
+ ==> AHS_SID_UPDATE (marker), n_errors=0, n_bits_total=212, mode_id=-1
+ ==> AHS_SID_FIRST_P1, n_errors=0, n_bits_total=212, mode_id=-1
+ ==> AHS_SID_FIRST_P2, n_errors=0, n_bits_total=114, mode_id=0
+ ==> AHS_ONSET, n_errors=0, n_bits_total=114, mode_id=0
+ ==> AHS_SID_FIRST_INH, n_errors=0, n_bits_total=212, mode_id=-1
+ ==> AHS_SID_UPDATE_INH, n_errors=0, n_bits_total=212, mode_id=-1
 Running test_gsm0503_tch_afhs_decode_dtx(at offset=0): testing detection of AFS_SID_UPDATE
  ==> gsm0503_tch_afs_decode_dtx() yields 'AFS_SID_UPDATE (marker)' (rc=0, BER 0/212)
 Running test_gsm0503_tch_afhs_decode_dtx(at offset=464): testing decoding of AFS_SID_UPDATE

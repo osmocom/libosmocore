@@ -72,7 +72,7 @@ char sample_sid_update_inh_frame[] =
 "xBxBxBxBxBxBxBxBxBxBxBxBxBxBxBxBx0x1x0x0x1x1x1x1x0x0x1x0x0x1x1x1x1x0x0x1x0x0x1x1x1x1x0x0x1x0x0x1x1x1x1x0x0x1x0x0x1x1x1x1x0x0x1x0x0x1x1x1x1x0x0x1x0x0x1x1x1x1x0x0x1x0x0x1x1x1x1x0x0x1x0x0x1x1x1x1x0x0x1x0x0x1x1x1x1x0x0x1x0x0x1x1x1x1x0x0x1x0x0x1x1x1x1x0x0x1x0x0x1x1x1x1x0x0x1x0x0x1x1x1x1x0x0x1x0x0x1x1x1x1x0x0x1x0x0x1x1x1x1x0x0x1x0x0x1x1x1x1x0x0x1x0x0x1x1x1x1x0x0x1x0x0x1x1x1x1x0x0x1x0x0x1x1x1x1x0x0x1x0x0x1x1x1x1x0x0x1x0x0x1x1x1x1x0x0x1x0x0x1x1x1x1x0x0x1x0x0x1"
 };
 
-unsigned int string_to_ubit(ubit_t * ubits, char *string)
+unsigned int string_to_sbit(sbit_t *sbits, char *string)
 {
 	unsigned int len;
 	unsigned int i;
@@ -80,7 +80,7 @@ unsigned int string_to_ubit(ubit_t * ubits, char *string)
 	len = strlen(string);
 
 	for (i = 0; i < len; i++) {
-		ubits[i] = string[i] & 1;
+		sbits[i] = string[i] == '1' ? -127 : 127;
 	}
 
 	return len;
@@ -88,28 +88,32 @@ unsigned int string_to_ubit(ubit_t * ubits, char *string)
 
 void test_gsm0503_detect_afs_dtx_frame(char *string)
 {
-	ubit_t ubits[512];
+	sbit_t sbits[512];
 	uint8_t dtx_frame_type;
 	int n_errors;
 	int n_bits_total;
+	int mode_id = -1;
 
-	string_to_ubit(ubits, string);
-	dtx_frame_type = gsm0503_detect_afs_dtx_frame(&n_errors, &n_bits_total, ubits);
-	printf(" ==> %s, n_errors=%i, n_bits_total=%i\n", gsm0503_amr_dtx_frame_name(dtx_frame_type),
-	       n_errors, n_bits_total);
+	string_to_sbit(sbits, string);
+	dtx_frame_type = gsm0503_detect_afs_dtx_frame2(&n_errors, &n_bits_total, &mode_id, sbits);
+	printf(" ==> %s, n_errors=%d, n_bits_total=%d, mode_id=%d\n",
+	       gsm0503_amr_dtx_frame_name(dtx_frame_type),
+	       n_errors, n_bits_total, mode_id);
 }
 
 void test_gsm0503_detect_ahs_dtx_frame(char *string)
 {
-	ubit_t ubits[512];
+	sbit_t sbits[512];
 	uint8_t dtx_frame_type;
 	int n_errors;
 	int n_bits_total;
+	int mode_id = -1;
 
-	string_to_ubit(ubits, string);
-	dtx_frame_type = gsm0503_detect_ahs_dtx_frame(&n_errors, &n_bits_total, ubits);
-	printf(" ==> %s, n_errors=%i, n_bits_total=%i\n", gsm0503_amr_dtx_frame_name(dtx_frame_type),
-	       n_errors, n_bits_total);
+	string_to_sbit(sbits, string);
+	dtx_frame_type = gsm0503_detect_ahs_dtx_frame2(&n_errors, &n_bits_total, &mode_id, sbits);
+	printf(" ==> %s, n_errors=%d, n_bits_total=%d, mode_id=%d\n",
+	       gsm0503_amr_dtx_frame_name(dtx_frame_type),
+	       n_errors, n_bits_total, mode_id);
 }
 
 static void test_gsm0503_tch_afhs_decode_dtx(const sbit_t *bursts, size_t offset,

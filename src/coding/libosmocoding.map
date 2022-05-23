@@ -123,6 +123,8 @@ gsm0503_amr_dtx_frame_names;
 gsm0503_amr_dtx_frame_name;
 gsm0503_detect_afs_dtx_frame;
 gsm0503_detect_ahs_dtx_frame;
+gsm0503_detect_afs_dtx_frame2;
+gsm0503_detect_ahs_dtx_frame2;
 
 local: *;
 };

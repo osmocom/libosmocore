@@ -2158,7 +2158,6 @@ int gsm0503_tch_afs_decode_dtx(uint8_t *tch_data, const sbit_t *bursts,
 	sbit_t iB[912], cB[456], h;
 	ubit_t d[244], p[6], conv[250];
 	int i, j, k, best = 0, rv, len, steal = 0, id = -1;
-	ubit_t cBd[456];
 	*n_errors = 0; *n_bits_total = 0;
 	static ubit_t sid_first_dummy[64] = { 0 };
 	sbit_t sid_update_enc[256];
@@ -2172,7 +2171,7 @@ int gsm0503_tch_afs_decode_dtx(uint8_t *tch_data, const sbit_t *bursts,
 
 	if (steal > 0) {
 		/* If not NULL, dtx indicates type of previously decoded TCH/AFS frame.
-		 * It's normally updated by gsm0503_detect_afs_dtx_frame(), which is not
+		 * It's normally updated by gsm0503_detect_afs_dtx_frame2(), which is not
 		 * reached in case of FACCH.  Reset it here to avoid FACCH/F frames being
 		 * misinterpreted as AMR's special DTX frames. */
 		if (dtx != NULL)
@@ -2190,8 +2189,7 @@ int gsm0503_tch_afs_decode_dtx(uint8_t *tch_data, const sbit_t *bursts,
 	if (dtx) {
 		const enum gsm0503_amr_dtx_frames dtx_prev = *dtx;
 
-		osmo_sbit2ubit(cBd, cB, 456);
-		*dtx = gsm0503_detect_afs_dtx_frame(n_errors, n_bits_total, cBd);
+		*dtx = gsm0503_detect_afs_dtx_frame2(n_errors, n_bits_total, &id, cB);
 
 		switch (*dtx) {
 		case AMR_OTHER:
@@ -2230,7 +2228,7 @@ int gsm0503_tch_afs_decode_dtx(uint8_t *tch_data, const sbit_t *bursts,
 			len = 5;
 			goto out;
 		case AFS_SID_UPDATE: /* TODO: parse CMI _and_ CMC/CMR (16 + 16 bit) */
-		case AFS_ONSET: /* TODO: parse CMI or CMC/CMR (N * 16 - M bit) */
+		case AFS_ONSET:
 			len = 0;
 			goto out;
 		default:
@@ -2625,7 +2623,6 @@ int gsm0503_tch_ahs_decode_dtx(uint8_t *tch_data, const sbit_t *bursts, int odd,
 	sbit_t iB[912], cB[456], h;
 	ubit_t d[244], p[6], conv[135];
 	int i, j, k, best = 0, rv, len, steal = 0, id = -1;
-	ubit_t cBd[456];
 	static ubit_t sid_first_dummy[64] = { 0 };
 
 	/* only unmap the stealing bits */
@@ -2643,7 +2640,7 @@ int gsm0503_tch_ahs_decode_dtx(uint8_t *tch_data, const sbit_t *bursts, int odd,
 	/* if we found a stole FACCH, but only at correct alignment */
 	if (steal > 0) {
 		/* If not NULL, dtx indicates type of previously decoded TCH/AHS frame.
-		 * It's normally updated by gsm0503_detect_ahs_dtx_frame(), which is not
+		 * It's normally updated by gsm0503_detect_ahs_dtx_frame2(), which is not
 		 * reached in case of FACCH.  Reset it here to avoid FACCH/H frames being
 		 * misinterpreted as AMR's special DTX frames. */
 		if (dtx != NULL)
@@ -2682,8 +2679,7 @@ int gsm0503_tch_ahs_decode_dtx(uint8_t *tch_data, const sbit_t *bursts, int odd,
 		int n_bits_total_sid;
 		int n_errors_sid;
 
-		osmo_sbit2ubit(cBd, cB, 456);
-		*dtx = gsm0503_detect_ahs_dtx_frame(n_errors, n_bits_total, cBd);
+		*dtx = gsm0503_detect_ahs_dtx_frame2(n_errors, n_bits_total, &id, cB);
 		/* TODO: detect and handle AHS_SID_UPDATE + AHS_SID_UPDATE_INH */
 
 		switch (*dtx) {
@@ -2705,7 +2701,7 @@ int gsm0503_tch_ahs_decode_dtx(uint8_t *tch_data, const sbit_t *bursts, int odd,
 			osmo_conv_decode_ber(&gsm0503_tch_axs_sid_update,
 					     cB + 16, conv, &n_errors_sid,
 					     &n_bits_total_sid);
-			/* gsm0503_detect_ahs_dtx_frame() calculates BER for the marker,
+			/* gsm0503_detect_ahs_dtx_frame2() calculates BER for the marker,
 			 * osmo_conv_decode_ber() calculates BER for the coded data. */
 			if (n_errors != NULL)
 				*n_errors += n_errors_sid;
@@ -2724,14 +2720,14 @@ int gsm0503_tch_ahs_decode_dtx(uint8_t *tch_data, const sbit_t *bursts, int odd,
 			tch_amr_reassemble(tch_data, conv, 39);
 			len = 5;
 			goto out;
-		case AHS_SID_FIRST_P2: /* TODO: parse CMI or CMC/CMR (N * 16 - M bit) */
+		case AHS_SID_FIRST_P2:
 			tch_amr_sid_update_append(sid_first_dummy, 0,
 						  (codec_mode_req) ? codec[*ft]
 						  : codec[id > 0 ? id : 0]);
 			tch_amr_reassemble(tch_data, sid_first_dummy, 39);
 			len = 5;
 			goto out;
-		case AHS_ONSET: /* TODO: parse CMI or CMC/CMR (N * 16 - M bit) */
+		case AHS_ONSET:
 		case AHS_SID_FIRST_INH: /* TODO: parse CMI or CMC/CMR (16 bit) */
 		case AHS_SID_UPDATE_INH: /* TODO: parse CMI or CMC/CMR (16 bit) */
 		case AHS_SID_FIRST_P1: /* TODO: parse CMI or CMC/CMR (16 bit) */
