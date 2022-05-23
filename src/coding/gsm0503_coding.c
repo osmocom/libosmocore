@@ -2115,6 +2115,26 @@ int gsm0503_tch_hr_encode(ubit_t *bursts, const uint8_t *tch_data, int len)
 	return 0;
 }
 
+/* TCH/AFS: parse codec ID (CMI or CMC/CMR) from coded in-band data (16 bit) */
+static uint8_t gsm0503_tch_afs_decode_inband(const sbit_t *cB)
+{
+	unsigned int id = 0, best = 0;
+	unsigned int i, j, k;
+
+	for (i = 0; i < 4; i++) {
+		/* FIXME: why not using remaining (16 - 8) soft-bits here? */
+		for (j = 0, k = 0; j < 8; j++)
+			k += abs(((int)gsm0503_afs_ic_sbit[i][j]) - ((int)cB[j]));
+
+		if (i == 0 || k < best) {
+			best = k;
+			id = i;
+		}
+	}
+
+	return id;
+}
+
 /*! Perform channel decoding of a TCH/AFS channel according TS 05.03
  *  \param[out] tch_data Codec frame in RTP payload format
  *  \param[in] bursts buffer containing the symbols of 8 bursts
@@ -2157,7 +2177,7 @@ int gsm0503_tch_afs_decode_dtx(uint8_t *tch_data, const sbit_t *bursts,
 {
 	sbit_t iB[912], cB[456], h;
 	ubit_t d[244], p[6], conv[250];
-	int i, j, k, best = 0, rv, len, steal = 0, id = -1;
+	int i, rv, len, steal = 0, id = -1;
 	*n_errors = 0; *n_bits_total = 0;
 	static ubit_t sid_first_dummy[64] = { 0 };
 	sbit_t sid_update_enc[256];
@@ -2236,18 +2256,8 @@ int gsm0503_tch_afs_decode_dtx(uint8_t *tch_data, const sbit_t *bursts,
 		}
 	}
 
-	for (i = 0; i < 4; i++) {
-		for (j = 0, k = 0; j < 8; j++)
-			k += abs(((int)gsm0503_afs_ic_sbit[i][j]) - ((int)cB[j]));
-
-		if (i == 0 || k < best) {
-			best = k;
-			id = i;
-		}
-	}
-
-	/* Check if indicated codec fits into range of codecs */
-	if (id >= codecs) {
+	/* Parse codec ID (CMI or CMC/CMR) and check if it fits into range of codecs */
+	if ((id = gsm0503_tch_afs_decode_inband(&cB[0])) >= codecs) {
 		/* Codec mode out of range, return id */
 		return id;
 	}
@@ -2578,6 +2588,26 @@ invalid_length:
 	return -1;
 }
 
+/* TCH/AHS: parse codec ID (CMI or CMC/CMR) from coded in-band data (16 bit) */
+static uint8_t gsm0503_tch_ahs_decode_inband(const sbit_t *cB)
+{
+	unsigned int id = 0, best = 0;
+	unsigned int i, j, k;
+
+	for (i = 0, k = 0; i < 4; i++) {
+		/* FIXME: why not using remaining (16 - 4) soft-bits here? */
+		for (j = 0, k = 0; j < 4; j++)
+			k += abs(((int)gsm0503_ahs_ic_sbit[i][j]) - ((int)cB[j]));
+
+		if (i == 0 || k < best) {
+			best = k;
+			id = i;
+		}
+	}
+
+	return id;
+}
+
 /*! Perform channel decoding of a TCH/AFS channel according TS 05.03
  *  \param[out] tch_data Codec frame in RTP payload format
  *  \param[in] bursts buffer containing the symbols of 8 bursts
@@ -2622,7 +2652,7 @@ int gsm0503_tch_ahs_decode_dtx(uint8_t *tch_data, const sbit_t *bursts, int odd,
 {
 	sbit_t iB[912], cB[456], h;
 	ubit_t d[244], p[6], conv[135];
-	int i, j, k, best = 0, rv, len, steal = 0, id = -1;
+	int i, rv, len, steal = 0, id = -1;
 	static ubit_t sid_first_dummy[64] = { 0 };
 
 	/* only unmap the stealing bits */
@@ -2738,18 +2768,8 @@ int gsm0503_tch_ahs_decode_dtx(uint8_t *tch_data, const sbit_t *bursts, int odd,
 		}
 	}
 
-	for (i = 0; i < 4; i++) {
-		for (j = 0, k = 0; j < 4; j++)
-			k += abs(((int)gsm0503_ahs_ic_sbit[i][j]) - ((int)cB[j]));
-
-		if (i == 0 || k < best) {
-			best = k;
-			id = i;
-		}
-	}
-
-	/* Check if indicated codec fits into range of codecs */
-	if (id >= codecs) {
+	/* Parse codec ID (CMI or CMC/CMR) and check if it fits into range of codecs */
+	if ((id = gsm0503_tch_ahs_decode_inband(&cB[0])) >= codecs) {
 		/* Codec mode out of range, return id */
 		return id;
 	}
