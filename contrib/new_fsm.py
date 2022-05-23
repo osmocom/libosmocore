@@ -181,24 +181,26 @@ static __attribute__((constructor)) void {{prefix}}_fsm_register(void)
 
 		return template.render(**vars(s))
 
-fsm = FSM(head='#include <osmocom/bsc/time_cc.h>',
-	  prefix = 'time_cc',
-	  priv = 'time_cc',
+fsm = FSM(head='#include <osmocom/hnbgw/pfcp_cp_peer.h>',
+	  prefix = 'pfcp_cp_peer',
+	  priv = 'pfcp_cp_peer',
 	  states = (
-		    State('disabled',
-			  ('false', 'true'),
-			  ('counting_false', 'counting_true',),
+		    State('wait_retry',
+			  (),
+			  ('wait_assoc_setup_resp',)
+			 ),
+		    State('wait_assoc_setup_resp',
+			  ('rx_assoc_setup_resp',),
+			  ('associated',),
+			 ),
+		    State('associated',
+			  ('rx_assoc_update_req',),
+			  ('wait_assoc_setup_resp','graceful_release'),
 			  onenter=False,
 			 ),
-		    State('counting_false',
-			  ('false', 'true'),
-			  ('counting_false', 'counting_true', 'disabled'),
-			 ),
-		    State('counting_true',
-			  ('false', 'true'),
-			  ('counting_false', 'counting_true', 'disabled'),
-			 ),
+		    State('graceful_release',
+			  (),()),
 		   )
 	 )
-with open('time_cc.c', 'w') as f:
+with open('pfcp_cp_peer.c', 'w') as f:
 	f.write(fsm.to_c())
