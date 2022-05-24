@@ -286,12 +286,9 @@ static struct osmo_iuup_tnl_prim *tnp_ctrl_init_alloc(struct osmo_iuup_instance 
 	struct iuup_ctrl_init_rfci_hdr *ihdr_rfci;
 	struct iuup_ctrl_init_tail *itail;
 	unsigned int i, j;
-	uint8_t num_subflows, num_rfci;
 	uint16_t payload_crc;
+	uint8_t rfci_cnt;
 	struct msgb *msg;
-
-	num_subflows = iui->config.num_subflows;
-	num_rfci = iui->config.num_rfci;
 
 	itp = osmo_iuup_tnl_prim_alloc(iui, OSMO_IUUP_TNL_UNITDATA, PRIM_OP_REQUEST, IUUP_MSGB_SIZE);
 	msg = itp->oph.msg;
@@ -307,42 +304,68 @@ static struct osmo_iuup_tnl_prim *tnp_ctrl_init_alloc(struct osmo_iuup_instance 
 
 	ihdr = (struct iuup_ctrl_init_hdr *)msgb_put(msg, sizeof(*ihdr));
 	ihdr->chain_ind = 0; /* this frame is the last frame for the procedure. TODO: support several */
-	ihdr->num_subflows_per_rfci = num_subflows;
+	ihdr->num_subflows_per_rfci = iui->config.num_subflows;
 	ihdr->ti = iui->config.IPTIs_present ? 1 : 0;
 	ihdr->spare = 0;
 
 	/* RFCI + subflow size part: */
-	for (i = 0; i < num_rfci; i++) {
-		bool last = (i+1 == num_rfci);
-		uint8_t len_size = 1;
-		for (j = 0; j < num_subflows; j++) {
-			if (iui->config.subflow_sizes[i][j] > UINT8_MAX)
+	rfci_cnt = 0;
+	for (i = 0; i < ARRAY_SIZE(iui->config.rfci); i++) {
+		bool last;
+		uint8_t len_size;
+		struct osmo_iuup_rfci *rfci = &iui->config.rfci[i];
+		if (!rfci->used)
+			continue;
+		rfci_cnt++;
+		last = (rfci_cnt == iui->config.num_rfci);
+
+		len_size = 1;
+		for (j = 0; j < iui->config.num_subflows; j++) {
+			if (rfci->subflow_sizes[j] > UINT8_MAX)
 				len_size = 2;
 		}
-		ihdr_rfci = (struct iuup_ctrl_init_rfci_hdr *)msgb_put(msg, sizeof(*ihdr_rfci) + len_size * num_subflows);
-		ihdr_rfci->rfci = i;
+
+		ihdr_rfci = (struct iuup_ctrl_init_rfci_hdr *)msgb_put(msg, sizeof(*ihdr_rfci) + len_size * iui->config.num_subflows);
+		ihdr_rfci->rfci = rfci->id;
 		ihdr_rfci->li = len_size - 1;
 		ihdr_rfci->lri = last;
 		if (len_size == 2) {
 			uint16_t *buf = (uint16_t *)&ihdr_rfci->subflow_length[0];
-			for (j = 0; j < num_subflows; j++)
-				osmo_store16be(iui->config.subflow_sizes[i][j], buf++);
+			for (j = 0; j < iui->config.num_subflows; j++)
+				osmo_store16be(rfci->subflow_sizes[j], buf++);
 		} else {
-			for (j = 0; j < num_subflows; j++)
-				ihdr_rfci->subflow_length[j] = iui->config.subflow_sizes[i][j];
+			for (j = 0; j < iui->config.num_subflows; j++)
+				ihdr_rfci->subflow_length[j] = rfci->subflow_sizes[j];
 		}
+		/* early loop termination: */
+		if (last)
+			break;
+	}
+	/* Sanity check: */
+	if (rfci_cnt != iui->config.num_rfci) {
+		LOGP(DLIUUP, LOGL_ERROR, "rfci_cnt %u != num_rfci %u\n",
+			 rfci_cnt, iui->config.num_rfci);
+		msgb_free(msg);
+		return NULL;
 	}
 
 	if (iui->config.IPTIs_present) {
-		uint8_t num_bytes = (num_rfci + 1) / 2;
+		uint8_t num_bytes = (iui->config.num_rfci + 1) / 2;
 		uint8_t *buf = msgb_put(msg, num_bytes);
-		for (i = 0; i < num_bytes - 1; i++)
-			buf[i] = iui->config.IPTIs[i*2] << 4 |
-			      (iui->config.IPTIs[i*2 + 1] & 0x0f);
-		buf[i] = iui->config.IPTIs[i*2] << 4;
-		if (!(num_rfci & 0x01)) /* is even: */
-			buf[i] |= (iui->config.IPTIs[i*2 + 1] & 0x0f);
-
+		rfci_cnt = 0;
+		for (i = 0; i < ARRAY_SIZE(iui->config.rfci); i++) {
+			struct osmo_iuup_rfci *rfci = &iui->config.rfci[i];
+			if (!rfci->used)
+				continue;
+			if (!(rfci_cnt & 0x01)) /* is even: */
+				buf[rfci_cnt / 2] = (((uint8_t)rfci->IPTI) << 4);
+			else
+				buf[rfci_cnt / 2] |= (rfci->IPTI & 0x0F);
+			rfci_cnt++;
+			/* early loop termination: */
+			if (rfci_cnt == iui->config.num_rfci)
+				break;
+		}
 	}
 
 	itail = (struct iuup_ctrl_init_tail *)msgb_put(msg, sizeof(*itail));
@@ -368,12 +391,8 @@ static struct osmo_iuup_rnl_prim *irp_init_ind_alloc(struct osmo_iuup_instance *
 	irp->u.status.u.initialization.data_pdu_type = iui->config.data_pdu_type;
 	irp->u.status.u.initialization.num_subflows = iui->config.num_subflows;
 	irp->u.status.u.initialization.num_rfci = iui->config.num_rfci;
-	memcpy(irp->u.status.u.initialization.subflow_sizes, iui->config.subflow_sizes,
-	       IUUP_MAX_RFCIS * IUUP_MAX_SUBFLOWS * sizeof(iui->config.subflow_sizes[0][0]));
 	irp->u.status.u.initialization.IPTIs_present = iui->config.IPTIs_present;
-	if (iui->config.IPTIs_present)
-		memcpy(irp->u.status.u.initialization.IPTIs, iui->config.IPTIs,
-		       IUUP_MAX_RFCIS * sizeof(iui->config.IPTIs[0]));
+	memcpy(irp->u.status.u.initialization.rfci, iui->config.rfci, sizeof(iui->config.rfci));
 	return irp;
 }
 
@@ -530,24 +549,27 @@ static bool iuup_rx_initialization(struct osmo_iuup_instance *iui, struct osmo_i
 	ihdr_rfci = (struct iuup_ctrl_init_rfci_hdr *)ihdr->rfci_data;
 
 	do {
+		struct osmo_iuup_rfci *rfci = &iui->config.rfci[num_rfci];
 		uint8_t l_size_bytes = ihdr_rfci->li + 1;
 		is_last = ihdr_rfci->lri;
-		if (ihdr_rfci->rfci != num_rfci) {
-			LOGPFSML(iui->fi, LOGL_NOTICE, "Initialization: Unexpected RFCI %u at position %u received\n",
-				 ihdr_rfci->rfci, num_rfci);
+		if (num_rfci >= IUUP_MAX_RFCIS) {
+			LOGPFSML(iui->fi, LOGL_NOTICE, "Initialization: Too many RFCIs received (%u)\n",
+					 num_rfci);
 			err_cause = IUUP_ERR_CAUSE_UNEXPECTED_RFCI;
 			goto send_nack;
 		}
+		rfci->used = 1;
+		rfci->id = ihdr_rfci->rfci;
 		if (l_size_bytes == 2) {
 			uint16_t *subflow_size = (uint16_t *)ihdr_rfci->subflow_length;
 			for (i = 0; i < ihdr->num_subflows_per_rfci; i++) {
-				iui->config.subflow_sizes[ihdr_rfci->rfci][i] = osmo_load16be(subflow_size);
+				rfci->subflow_sizes[i] = osmo_load16be(subflow_size);
 				subflow_size++;
 			}
 		} else {
 			uint8_t *subflow_size = ihdr_rfci->subflow_length;
 			for (i = 0; i < ihdr->num_subflows_per_rfci; i++) {
-				iui->config.subflow_sizes[ihdr_rfci->rfci][i] = *subflow_size;
+				rfci->subflow_sizes[i] = *subflow_size;
 				subflow_size++;
 			}
 		}
@@ -561,19 +583,18 @@ static bool iuup_rx_initialization(struct osmo_iuup_instance *iui, struct osmo_i
 		uint8_t num_bytes = (num_rfci + 1) / 2;
 		iui->config.IPTIs_present = true;
 		for (i = 0; i < num_bytes - 1; i++) {
-			iui->config.IPTIs[i*2] = *buf >> 4;
-			iui->config.IPTIs[i*2 + 1] = *buf & 0x0f;
+			iui->config.rfci[i*2].IPTI = *buf >> 4;
+			iui->config.rfci[i*2 + 1].IPTI = *buf & 0x0f;
 			buf++;
 		}
-		iui->config.IPTIs[i*2] = *buf >> 4;
+		iui->config.rfci[i*2].IPTI = *buf >> 4;
 		if (!(num_rfci & 0x01)) /* is even: */
-			iui->config.IPTIs[i*2 + 1] = *buf & 0x0f;
+			iui->config.rfci[i*2 + 1].IPTI = *buf & 0x0f;
 		buf++;
 		itail = (struct iuup_ctrl_init_tail *)buf;
 	} else {
 		itail = (struct iuup_ctrl_init_tail *)ihdr_rfci;
 	}
-
 	if (itail->data_pdu_type > 1) {
 		LOGPFSML(iui->fi, LOGL_NOTICE, "Initialization: Unexpected Data PDU Type %u received\n", itail->data_pdu_type);
 		err_cause = IUUP_ERR_CAUSE_UNEXPECTED_VALUE;

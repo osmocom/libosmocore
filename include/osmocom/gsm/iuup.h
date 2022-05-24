@@ -42,6 +42,14 @@ struct osmo_iuup_rnl_config_timer {
 	uint32_t t_ms;	/* time in ms */
 	uint32_t n_max;	/* max number of repetitions */
 };
+struct osmo_iuup_rfci {
+	uint8_t used:1,
+			spare1:1,
+			id:6;
+	uint8_t spare2:4,
+			IPTI:4; /* values range 0-15, 4 bits */;
+	uint16_t subflow_sizes[IUUP_MAX_SUBFLOWS];
+};
 struct osmo_iuup_rnl_config {
 	/* transparent (true) or SMpSDU (false): */
 	bool transparent;
@@ -56,9 +64,8 @@ struct osmo_iuup_rnl_config {
 	uint16_t supported_versions_mask;
 	uint8_t num_rfci;
 	uint8_t num_subflows;
-	uint16_t subflow_sizes[IUUP_MAX_RFCIS][IUUP_MAX_SUBFLOWS];
 	bool IPTIs_present;
-	uint8_t IPTIs[IUUP_MAX_RFCIS]; /* values range 0-15, 4 bits */
+	struct osmo_iuup_rfci rfci[IUUP_MAX_RFCIS];
 
 	/* TODO: Indication of delivery of erroneous SDUs*/
 	struct osmo_iuup_rnl_config_timer t_init;
@@ -84,9 +91,8 @@ struct osmo_iuup_rnl_status {
 			uint8_t data_pdu_type;
 			uint8_t num_rfci;
 			uint8_t num_subflows;
-			uint16_t subflow_sizes[IUUP_MAX_RFCIS][IUUP_MAX_SUBFLOWS];
 			bool IPTIs_present;
-			uint8_t IPTIs[IUUP_MAX_RFCIS]; /* values range 0-15, 4 bits */
+			struct osmo_iuup_rfci rfci[IUUP_MAX_RFCIS];
 		} initialization;
 		struct {
 		} rate_control;
