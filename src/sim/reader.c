@@ -40,7 +40,7 @@ static int get_sw(struct msgb *resp)
 {
 	int ret;
 
-	if (!msgb_apdu_de(resp) || msgb_apdu_le(resp) < 2)
+	if (!resp->l2h || msgb_apdu_le(resp) < 2)
 		return -EIO;
 
 	ret = msgb_get_u16(resp);
