@@ -44,10 +44,10 @@ struct osmo_iuup_rnl_config_timer {
 };
 struct osmo_iuup_rfci {
 	uint8_t used:1,
-			spare1:1,
-			id:6;
+		spare1:1,
+		id:6;
 	uint8_t spare2:4,
-			IPTI:4; /* values range 0-15, 4 bits */;
+		IPTI:4; /* values range 0-15, 4 bits */;
 	uint16_t subflow_sizes[IUUP_MAX_SUBFLOWS];
 };
 struct osmo_iuup_rnl_config {
