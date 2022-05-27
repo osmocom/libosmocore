@@ -593,6 +593,7 @@ static bool iuup_rx_initialization(struct osmo_iuup_instance *iui, struct osmo_i
 		buf++;
 		itail = (struct iuup_ctrl_init_tail *)buf;
 	} else {
+		iui->config.IPTIs_present = false;
 		itail = (struct iuup_ctrl_init_tail *)ihdr_rfci;
 	}
 	if (itail->data_pdu_type > 1) {

@@ -43,4 +43,8 @@ _passive_init_user_prim_cb()
 User: UL len=31: 08 55 6d 94 4c 71 a1 a0 81 e7 ea d2 04 24 44 80 00 0e cd 82 b8 11 18 00 00 97 c4 79 4e 77 40 
 _passive_init_transport_prim_cb()
 Transport: DL len=35: 01 00 e3 ff 08 55 6d 94 4c 71 a1 a0 81 e7 ea d2 04 24 44 80 00 0e cd 82 b8 11 18 00 00 97 c4 79 4e 77 40 
+sys={0.000000}, clock_override_set
+_decode_passive_init_2_rfci_no_iptis_user_prim_cb(): Initialization decoded fine!
+_decode_passive_init_2_rfci_no_iptis_transport_prim_cb()
+Transport: DL len=4: e4 00 24 00 
 OK.
