@@ -173,6 +173,24 @@ static int uicc046_cla_ins_helper(const struct osim_cla_ins_case *cic,
 	return 0;
 }
 
+static int gp_cla_ins_helper(const struct osim_cla_ins_case *cic,
+				  const uint8_t *hdr)
+{
+	uint8_t ins = hdr[1];
+	uint8_t p1 = hdr[2];
+
+	switch (ins) {
+	case 0xE2:	/* STORE DATA */
+		switch (p1 & 0x01) {
+		case 1:
+			return 4;
+		default:
+			return 3;
+		}
+	}
+	return 0;
+}
+
 /* ETSI TS 102 221, Table 10.5, CLA = 0x8x, 0xCx or 0xEx */
 static const uint8_t uicc_ins_tbl_8ce[256] = {
 	[0xF2]		= 2,	/* STATUS */
@@ -188,6 +206,19 @@ static const uint8_t uicc_ins_tbl_80[256] = {
 	[0xC2]		= 4,	/* ENVELOPE */
 	[0x12]		= 2,	/* FETCH */
 	[0x14]		= 3,	/* TERMINAL RESPONSE */
+};
+
+/* Card Specification v2.3.1*/
+static const uint8_t gp_ins_tbl_8ce[256] = {
+	[0xE4]		= 4,	/* DELETE */
+	[0xE2]		= 0x80,	/* STORE DATA */
+	[0xCA]		= 4,	/* GET DATA */
+	[0xCB]		= 4,	/* GET DATA */
+	[0xF2]		= 4,	/* GET STATUS */
+	[0xE6]		= 4,	/* INSTALL */
+	[0xE8]		= 4,	/* LOAD */
+	[0xD8]		= 4,	/* PUT KEY */
+	[0xF0]		= 3,	/* SET STATUS */
 };
 
 static const struct osim_cla_ins_case uicc_ins_case[] = {
@@ -222,6 +253,21 @@ static const struct osim_cla_ins_case uicc_ins_case[] = {
 		.cla		= 0xE0,
 		.cla_mask	= 0xF0,
 		.ins_tbl	= uicc_ins_tbl_8ce,
+	}, {
+		.cla		= 0x80,
+		.cla_mask	= 0xF0,
+		.helper		= gp_cla_ins_helper,
+		.ins_tbl	= gp_ins_tbl_8ce,
+	}, {
+		.cla		= 0xC0,
+		.cla_mask	= 0xF0,
+		.helper		= gp_cla_ins_helper,
+		.ins_tbl	= gp_ins_tbl_8ce,
+	}, {
+		.cla		= 0xE0,
+		.cla_mask	= 0xF0,
+		.helper		= gp_cla_ins_helper,
+		.ins_tbl	= gp_ins_tbl_8ce,
 	},
 };
 
@@ -269,7 +315,23 @@ static const struct osim_cla_ins_case uicc_sim_ins_case[] = {
 		.cla		= 0xE0,
 		.cla_mask	= 0xF0,
 		.ins_tbl	= uicc_ins_tbl_8ce,
+	}, {
+		.cla		= 0x80,
+		.cla_mask	= 0xF0,
+		.helper		= gp_cla_ins_helper,
+		.ins_tbl	= gp_ins_tbl_8ce,
+	}, {
+		.cla		= 0xC0,
+		.cla_mask	= 0xF0,
+		.helper		= gp_cla_ins_helper,
+		.ins_tbl	= gp_ins_tbl_8ce,
+	}, {
+		.cla		= 0xE0,
+		.cla_mask	= 0xF0,
+		.helper		= gp_cla_ins_helper,
+		.ins_tbl	= gp_ins_tbl_8ce,
 	},
+
 };
 
 const struct osim_cla_ins_card_profile osim_uicc_sim_cic_profile = {
@@ -301,7 +363,7 @@ int osim_determine_apdu_case(const struct osim_cla_ins_card_profile *prof,
 		case 0x80:
 			return cic->helper(cic, hdr);
 		case 0x00:
-			/* continue with fruther cic, rather than abort
+			/* continue with further cic, rather than abort
 			 * now */
 			continue;
 		default:
