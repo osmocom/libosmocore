@@ -1477,4 +1477,25 @@ discard_msg:
 	return rc;
 }
 
+/*! value_string[] for enum osmo_cbsp_cause. */
+const struct value_string osmo_cbsp_cause_names[] = {
+	{ OSMO_CBSP_CAUSE_PARAM_NOT_RECOGNISED, "Parameter-not-recognised" },
+	{ OSMO_CBSP_CAUSE_PARAM_VALUE_INVALID, "Parameter-value-invalid" },
+	{ OSMO_CBSP_CAUSE_MSG_REF_NOT_IDENTIFIED, "Message-reference-not-identified" },
+	{ OSMO_CBSP_CAUSE_CELL_ID_NOT_VALID, "Cell-identity-not-valid" },
+	{ OSMO_CBSP_CAUSE_UNRECOGNISED_MESSAGE, "Unrecognised-message" },
+	{ OSMO_CBSP_CAUSE_MISSING_MANDATORY_ELEMENT, "Missing-mandatory-element" },
+	{ OSMO_CBSP_CAUSE_BSC_CAPACITY_EXCEEDED, "BSC-capacity-exceeded" },
+	{ OSMO_CBSP_CAUSE_CELL_MEMORY_EXCEEDED, "Cell-memory-exceeded" },
+	{ OSMO_CBSP_CAUSE_BSC_MEMORY_EXCEEDED, "BSC-memory-exceeded" },
+	{ OSMO_CBSP_CAUSE_CELL_BROADCAST_NOT_SUPPORTED, "Cell-broadcast-not-supported" },
+	{ OSMO_CBSP_CAUSE_CELL_BROADCAST_NOT_OPERATIONAL, "Cell-broadcast-not-operational" },
+	{ OSMO_CBSP_CAUSE_INCOMPATIBLE_DRX_PARAM, "Incompatible-DRX-parameter:"},
+	{ OSMO_CBSP_CAUSE_EXT_CHAN_NOT_SUPPORTED, "Extended-channel-not-supported"},
+	{ OSMO_CBSP_CAUSE_MSG_REF_ALREADY_USED, "Message-reference-already-used"},
+	{ OSMO_CBSP_CAUSE_UNSPECIFIED_ERROR, "Unspecified-error"},
+	{ OSMO_CBSP_CAUSE_LAI_OR_LAC_NOT_VALID, "LAI-or-LAC-not-valid"},
+	{ 0, NULL }
+};
+
 #endif /* HAVE_SYS_SOCKET_H */

@@ -71,7 +71,7 @@ struct osmo_cbsp_fail_ent {
 	struct llist_head list;		/* entry in a fail_list below */
 	enum CELL_IDENT id_discr;
 	union gsm0808_cell_id_u cell_id;
-	uint8_t cause;
+	uint8_t cause;			/* enum osmo_cbsp_cause */
 };
 
 
@@ -241,6 +241,30 @@ struct osmo_cbsp_error_ind {
 	enum cbsp_channel_ind *channel_ind;
 };
 
+/* 8.2.13 Cause */
+enum osmo_cbsp_cause {
+	OSMO_CBSP_CAUSE_PARAM_NOT_RECOGNISED = 0,
+	OSMO_CBSP_CAUSE_PARAM_VALUE_INVALID,
+	OSMO_CBSP_CAUSE_MSG_REF_NOT_IDENTIFIED,
+	OSMO_CBSP_CAUSE_CELL_ID_NOT_VALID,
+	OSMO_CBSP_CAUSE_UNRECOGNISED_MESSAGE,
+	OSMO_CBSP_CAUSE_MISSING_MANDATORY_ELEMENT,
+	OSMO_CBSP_CAUSE_BSC_CAPACITY_EXCEEDED,
+	OSMO_CBSP_CAUSE_CELL_MEMORY_EXCEEDED,
+	OSMO_CBSP_CAUSE_BSC_MEMORY_EXCEEDED,
+	OSMO_CBSP_CAUSE_CELL_BROADCAST_NOT_SUPPORTED,
+	OSMO_CBSP_CAUSE_CELL_BROADCAST_NOT_OPERATIONAL,
+	OSMO_CBSP_CAUSE_INCOMPATIBLE_DRX_PARAM,
+	OSMO_CBSP_CAUSE_EXT_CHAN_NOT_SUPPORTED,
+	OSMO_CBSP_CAUSE_MSG_REF_ALREADY_USED,
+	OSMO_CBSP_CAUSE_UNSPECIFIED_ERROR,
+	OSMO_CBSP_CAUSE_LAI_OR_LAC_NOT_VALID,
+};
+extern const struct value_string osmo_cbsp_cause_names[];
+static inline const char *osmo_cbsp_cause_name(enum osmo_cbsp_cause cause)
+{
+	return get_value_string(osmo_cbsp_cause_names, cause);
+}
 
 /* decoded CBSP message */
 struct osmo_cbsp_decoded {
