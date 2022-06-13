@@ -826,7 +826,8 @@ static const struct osmo_fsm_state iuup_fsm_states[] = {
 		.action = iuup_fsm_init,
 	},
 	[IUUP_FSM_ST_SMpSDU_DATA_XFER_READY] = {
-		.in_event_mask = S(IUUP_FSM_EVT_IUUP_DATA_REQ) |
+		.in_event_mask = S(IUUP_FSM_EVT_IUUP_CONFIG_REQ) |
+				 S(IUUP_FSM_EVT_IUUP_DATA_REQ) |
 				 S(IUUP_FSM_EVT_IUUP_DATA_IND),
 		.out_state_mask = S(IUUP_FSM_ST_NULL) |
 				  S(IUUP_FSM_ST_INIT),
