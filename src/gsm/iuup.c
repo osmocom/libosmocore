@@ -734,6 +734,7 @@ static void iuup_fsm_init(struct osmo_fsm_inst *fi, uint32_t event, void *data)
 	}
 }
 
+/* 3GPP TS 25.415 B.2.3 "Support Mode Data Transfer Ready State" */
 static void iuup_fsm_smpsdu_data(struct osmo_fsm_inst *fi, uint32_t event, void *data)
 {
 	struct osmo_iuup_instance *iui = fi->priv;
@@ -744,6 +745,14 @@ static void iuup_fsm_smpsdu_data(struct osmo_fsm_inst *fi, uint32_t event, void 
 	case IUUP_FSM_EVT_IUUP_CONFIG_REQ:
 		irp = data;
 		osmo_fsm_inst_state_chg(fi, IUUP_FSM_ST_NULL, 0, 0);
+		break;
+	case IUUP_FSM_EVT_INIT:
+		/* "In case of handover or relocation, Initialisation procedures
+		 * may have to be performed and Iu UP instance may have to enter
+		 * the initialisation state." */
+		itp = data;
+		if (!iuup_rx_initialization(iui, itp))
+			osmo_fsm_inst_state_chg(fi, IUUP_FSM_ST_INIT, 0, 0);
 		break;
 	case IUUP_FSM_EVT_IUUP_DATA_REQ:
 		/* Data coming down from RNL (user) towards TNL (transport) */
@@ -821,6 +830,7 @@ static const struct osmo_fsm_state iuup_fsm_states[] = {
 	},
 	[IUUP_FSM_ST_SMpSDU_DATA_XFER_READY] = {
 		.in_event_mask = S(IUUP_FSM_EVT_IUUP_CONFIG_REQ) |
+				 S(IUUP_FSM_EVT_INIT) |
 				 S(IUUP_FSM_EVT_IUUP_DATA_REQ) |
 				 S(IUUP_FSM_EVT_IUUP_DATA_IND),
 		.out_state_mask = S(IUUP_FSM_ST_NULL) |
