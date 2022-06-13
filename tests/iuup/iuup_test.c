@@ -528,6 +528,112 @@ void test_passive_init(void)
 	osmo_iuup_instance_free(iui);
 }
 
+/****************************
+ * test_passive_init_retrans
+ ****************************/
+static unsigned int _passive_init_retrans_user_rx_prim = 0;
+static int _passive_init_retrans_user_prim_cb(struct osmo_prim_hdr *oph, void *ctx)
+{
+	struct osmo_iuup_rnl_prim *irp = (struct osmo_iuup_rnl_prim *)oph;
+	struct msgb *msg = oph->msg;
+
+	printf("%s()\n", __func__);
+
+	switch (_passive_init_retrans_user_rx_prim) {
+	case 0:
+	/* FIXME expected case: case 1: */
+		OSMO_ASSERT(OSMO_PRIM_HDR(&irp->oph) == OSMO_PRIM(OSMO_IUUP_RNL_STATUS, PRIM_OP_INDICATION));
+		OSMO_ASSERT(irp->u.status.procedure == IUUP_PROC_INIT);
+		break;
+	/* FIXME current case: */
+	case 1:
+	case 2:
+	default:
+		OSMO_ASSERT(OSMO_PRIM_HDR(&irp->oph) == OSMO_PRIM(OSMO_IUUP_RNL_DATA, PRIM_OP_INDICATION));
+		printf("User: UL len=%u: %s\n", msgb_l3len(msg),
+		       osmo_hexdump((const unsigned char *) msgb_l3(msg), msgb_l3len(msg)));
+	}
+
+	_passive_init_retrans_user_rx_prim++;
+	msgb_free(oph->msg);
+	return 0;
+}
+void test_passive_init_retrans(void)
+{
+	/* Here we check the passive INIT code path, aka receiving INIT and
+	 * returning INIT_ACK/NACK. We emulate the peer not receiving the INIT
+	 * ACK and hence retransmitting the INIT. The IuUP stack should then
+	 * push the new INIT info up the stack and ACK it. */
+	struct osmo_iuup_instance *iui;
+	struct osmo_iuup_rnl_prim *rnp;
+	struct osmo_iuup_tnl_prim *tnp;
+	struct iuup_pdutype14_hdr *hdr14;
+	struct iuup_pdutype0_hdr *hdr0;
+	int rc;
+
+	/* reset global var, we reuse it together wth callback from test_passive_init(): */
+	_passive_init_transport_rx_prim = 0;
+
+	iui = osmo_iuup_instance_alloc(iuup_test_ctx, __func__);
+	OSMO_ASSERT(iui);
+	osmo_iuup_instance_set_user_prim_cb(iui, _passive_init_retrans_user_prim_cb, NULL);
+	osmo_iuup_instance_set_transport_prim_cb(iui, _passive_init_transport_prim_cb, NULL);
+
+	clock_override_set(0, 0);
+
+	/* Tx CONFIG.req */
+	rnp = osmo_iuup_rnl_prim_alloc(iuup_test_ctx, OSMO_IUUP_RNL_CONFIG, PRIM_OP_REQUEST, IUUP_MSGB_SIZE);
+	rnp->u.config = def_configure_req;
+	rnp->u.config.active = false;
+	OSMO_ASSERT((rc = osmo_iuup_rnl_prim_down(iui, rnp)) == 0);
+	/* STATUS-INIT.req is NOT transmitted automatically: */
+	OSMO_ASSERT(_passive_init_transport_rx_prim == 0);
+
+	/* Send Init: */
+	tnp = osmo_iuup_tnl_prim_alloc(iuup_test_ctx, OSMO_IUUP_TNL_UNITDATA, PRIM_OP_INDICATION, IUUP_MSGB_SIZE);
+	tnp->oph.msg->l2h = msgb_put(tnp->oph.msg, sizeof(iuup_initialization));
+	hdr14 = (struct iuup_pdutype14_hdr *)msgb_l2(tnp->oph.msg);
+	memcpy(hdr14, iuup_initialization, sizeof(iuup_initialization));
+	OSMO_ASSERT((rc = osmo_iuup_tnl_prim_up(iui, tnp)) == 0);
+	OSMO_ASSERT(_passive_init_transport_rx_prim == 1); /* We receive an Init ACK */
+	OSMO_ASSERT(_passive_init_retrans_user_rx_prim == 1); /* We receive the Status-Init.ind */
+
+	/* Send Init (retrans): */
+	tnp = osmo_iuup_tnl_prim_alloc(iuup_test_ctx, OSMO_IUUP_TNL_UNITDATA, PRIM_OP_INDICATION, IUUP_MSGB_SIZE);
+	tnp->oph.msg->l2h = msgb_put(tnp->oph.msg, sizeof(iuup_initialization));
+	hdr14 = (struct iuup_pdutype14_hdr *)msgb_l2(tnp->oph.msg);
+	memcpy(hdr14, iuup_initialization, sizeof(iuup_initialization));
+	/* FIXME: unexpected result, should be fixed: */
+	OSMO_ASSERT((rc = osmo_iuup_tnl_prim_up(iui, tnp)) < 0); /* INIT not perrmited */
+	OSMO_ASSERT(_passive_init_transport_rx_prim == 1); /* We receive an Init ACK */
+	OSMO_ASSERT(_passive_init_retrans_user_rx_prim == 1); /* We receive the Status-Init.ind */
+	/* FIXME: expected result: */
+	//OSMO_ASSERT((rc = osmo_iuup_tnl_prim_up(iui, tnp)) == 0);
+	//OSMO_ASSERT(_passive_init_transport_rx_prim == 2); /* We receive another Init ACK */
+	//OSMO_ASSERT(_passive_init_retrans_user_rx_prim == 2); /* We receive another Status-Init.ind */
+
+	/* Send IuUP incoming data to the implementation: */
+	tnp = osmo_iuup_tnl_prim_alloc(iuup_test_ctx, OSMO_IUUP_TNL_UNITDATA, PRIM_OP_INDICATION, IUUP_MSGB_SIZE);
+	tnp->oph.msg->l2h = msgb_put(tnp->oph.msg, sizeof(iuup_data));
+	hdr0 = (struct iuup_pdutype0_hdr *)msgb_l2(tnp->oph.msg);
+	memcpy(hdr0, iuup_data, sizeof(iuup_data));
+	OSMO_ASSERT((rc = osmo_iuup_tnl_prim_up(iui, tnp)) == 0);
+	/* We receive it in RNL: */
+	OSMO_ASSERT(_passive_init_retrans_user_rx_prim == 2);
+
+	/* Now in opposite direction, RNL->[IuuP]->TNL: */
+	rnp = osmo_iuup_rnl_prim_alloc(iuup_test_ctx, OSMO_IUUP_RNL_DATA, PRIM_OP_REQUEST, IUUP_MSGB_SIZE);
+	rnp->u.data.rfci = 0;
+	rnp->u.data.frame_nr = 1;
+	rnp->u.data.fqc = IUUP_FQC_FRAME_GOOD;
+	rnp->oph.msg->l3h = msgb_put(rnp->oph.msg, sizeof(iuup_data) - 4);
+	memcpy(rnp->oph.msg->l3h, iuup_data + 4, sizeof(iuup_data) - 4);
+	OSMO_ASSERT((rc = osmo_iuup_rnl_prim_down(iui, rnp)) == 0);
+	OSMO_ASSERT(_passive_init_transport_rx_prim == 2); /* We receive data in TNL */
+
+	osmo_iuup_instance_free(iui);
+}
+
 static int _decode_passive_init_2_rfci_no_iptis_user_prim_cb(struct osmo_prim_hdr *oph, void *ctx)
 {
 	struct osmo_iuup_rnl_prim *irp = (struct osmo_iuup_rnl_prim *)oph;
@@ -658,6 +764,7 @@ int main(int argc, char **argv)
 	test_init_nack_retrans();
 	test_init_ack();
 	test_passive_init();
+	test_passive_init_retrans();
 	test_decode_passive_init_2_rfci_no_iptis();
 
 	printf("OK.\n");
