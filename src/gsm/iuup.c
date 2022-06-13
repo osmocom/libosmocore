@@ -757,12 +757,6 @@ static void iuup_fsm_smpsdu_data(struct osmo_fsm_inst *fi, uint32_t event, void 
 		irp = tnl_to_rnl_data(itp);
 		iui->user_prim_cb(&irp->oph, iui->user_prim_priv);
 		break;
-	case IUUP_FSM_EVT_IUUP_UNITDATA_REQ:
-	case IUUP_FSM_EVT_IUUP_UNITDATA_IND:
-	case IUUP_FSM_EVT_SSASAR_UNITDATA_REQ:
-	case IUUP_FSM_EVT_SSASAR_UNITDATA_IND:
-		/* no state change */
-		break;
 	}
 }
 
