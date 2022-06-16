@@ -1092,6 +1092,7 @@ static int config_write_host(struct vty *vty)
 static vector cmd_node_vector(vector v, enum node_type ntype)
 {
 	struct cmd_node *cnode = vector_slot(v, ntype);
+	OSMO_ASSERT(cnode != NULL);
 	return cnode->cmd_vector;
 }
 
