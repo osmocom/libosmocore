@@ -1,6 +1,6 @@
 Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Upstream-Name: libosmocore
-Source: git://git.osmocom.org/libosmocore.git
+Source: https://gitea.osmocom.org/osmocom/libosmocore
 
 Files: *
 Copyright: 2008      Daniel Willmann <daniel@totalueberwachung.de>

@@ -21,8 +21,8 @@ Build-Depends: debhelper (>= 9),
                libsystemd-dev,
                python3:native
 Standards-Version: 3.9.8
-Vcs-Git: git://git.osmocom.org/libosmocore.git
-Vcs-Browser: http://git.osmocom.org/libosmocore/
+Vcs-Git: https://gitea.osmocom.org/osmocom/libosmocore
+Vcs-Browser: https://gitea.osmocom.org/osmocom/libosmocore
 Homepage: https://projects.osmocom.org/projects/libosmocore
 
 Package: libosmocore

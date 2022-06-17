@@ -41,9 +41,9 @@ GIT Repository
 
 You can clone from the official libosmocore.git repository using
 
-	git clone git://git.osmocom.org/libosmocore.git
+	git clone https://gitea.osmocom.org/osmocom/libosmocore
 
-There is a cgit interface at <https://git.osmocom.org/libosmocore/>
+There is a web interface at <https://gitea.osmocom.org/osmocom/libosmocore>
 
 Documentation
 -------------
