@@ -162,7 +162,7 @@ void test_bssmap_le_enc_dec()
 			.bssmap_le = *pdu,
 		};
 		struct bssap_le_pdu dec_pdu;
-		struct osmo_bssap_le_err *err;
+		struct osmo_bssap_le_err *err = NULL;
 		void *loop_ctx;
 		int rc;
 
