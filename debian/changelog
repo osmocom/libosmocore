@@ -1,3 +1,163 @@
+libosmocore (1.7.0) unstable; urgency=medium
+
+  [ Vadim Yanitskiy ]
+  * .gitignore: add utils/osmo-aka-verify binary
+  * tests/vty: fix use of GNU 'missing =' extension in designator
+  * debian/control: minimum version of libtalloc-dev must be >= 2.1.0
+  * tests/tdef: rename the binaries to end with '_test'
+  * tdef: fix wrong path in documentation: tests/vty -> tests/tdef
+  * bitvec_read_field(): indicate errors using errno
+  * bitvec_read_field(): fix incorrect bit-shift issue found by UBSan
+  * bitvec_read_field(): optimize by expanding bytenum_from_bitnum()
+  * tests/testsuite.at: ensure empty stderr for the bitvec_test
+  * VTY: enable talloc introspection for OTC_GLOBAL
+  * VTY: implement 'no log gsmtap [HOSTNAME]' command
+  * contrib/libosmocore.spec.in: mention osmo-config-merge in utils
+  * gsm_7bit_encode_n(): use regular malloc() instead of calloc()
+  * tests/logging: ensure both stream and wqueue modes are tested
+  * tests/logging: also test printing the filename information
+  * logging: fix coding style issues in _output_buf()
+  * logging: fix printing of '\0' when filename printed last
+  * tests/logging: merge both logging_test_{stream,wqueue}.err
+  * core/utils.h: add OSMO_LIKELY / OSMO_UNLIKELY macros
+  * core/utils.h: wrap OSMO_ASSERT() with do { ... } while (0)
+  * core/msgb.h: make use of OSMO_LIKELY / OSMO_UNLIKELY
+  * core/utils.h: make use of OSMO_LIKELY in OSMO_ASSERT
+  * libosmocodec: osmo_hr_check_sid(): simplify the logic
+  * contrib/jenkins_amd64.sh: remove FreeBSD specific quirks
+  * bssmap_le: support additional IEs in Perform Location Request
+  * Use internal <osmocom/core/talloc.h> everywhere
+  * coding: fix comments for detect_afs_sid_{first,update,onset}
+  * coding: cosmetic: move 'dtx_prev' to the scope where it's used
+  * coding: use switch statement in gsm0503_tch_a[fh]s_decode_dtx()
+  * coding: properly handle AFS_SID_UPDATE frames in DTX mode
+  * coding: prevent marking FACCH frames as AMR's special DTX frames
+  * tests/dtx: test detection/decoding of A[FH]S_SID_UPDATE
+  * tests/dtx: test tagging of FACCH/[FH] frames
+  * coding: fix decoding of AHS_SID_UPDATE frames (BER ~50%)
+  * coding: do not reset codec ID on receipt of DTX frames
+  * coding: add gsm0503_detect_a[fh]s_dtx_frame2()
+  * coding: separate gsm0503_tch_a[fh]s_decode_inband()
+
+  [ Eric ]
+  * fix isdigit taking unsigned as input
+  * logging: allow disabling macros using a new define: LIBOSMOCORE_NO_LOGGING
+
+  [ Daniel Willmann ]
+  * bssgp_bvc_fsm: Move log message to the correct place
+  * bssgp_bvc_fsm: Add a hook to notify when a reset was acknowledged
+
+  [ Harald Welte ]
+  * logging: Fix memory leak in case async log write queue overflows
+  * write_queue: Document it that caller is responsible if enqueue fails
+  * gsmtap: Add gsmtap_sendmsg_free() as alternative to gsmtap_sendmsg()
+  * Introduce CRC and FSM for IuUP (user plane) as used in 3G RTP data
+  * tcp_stats: fix compilation on CentOS 7
+  * iuup: Fix signed/unsigned loop counter control flow issue
+  * src/conv.c: Align better with Osmocom coding style
+  * bitvec: Fix -Wsign-compare warnings
+  * utils: Fix -Wsign-compare warnings
+  * log_taget_find() should use enum log_target_type, not int
+  * bits.c: Fix -Wsign-compare warnings
+  * socket, select: Fix -Wsign-compare warnings
+  * msgb: Fix -Wsign-compare warnings
+  * osmo_libusb: Fix NULL check in osmo_usb_removed_cb()
+  * osmo_libusb: Use libusb_get_pollfds() to get initial file descriptors
+  * osmo_libusb: Print log message on libusb initialization error
+  * gsm0808: Test if we properly decode a SRVCC cell identifier list
+  * usb: Match device by VID/PID without path/addr if it is unique
+  * clean-up pkg-config files: Make use of "Requires" as documented
+  * debian/control: libosmocore-dev must depend on libsctp-dev and libusb-1.0-0-dev
+  * libosmo{gb,vty}.pc.in: Add talloc to 'Requires'
+  * libosmocore.spec: Make libosmocore-devel require libsctp
+  * libosmovty: Link libosmovty against libpthread
+  * vty: Support platforms that don't support pthread_getname_np()
+  * vty: Add a 'skip-zero' version of 'show stats' and 'show rate-counters'
+  * stats: Functions with no arguments should specify(void)
+  * stats: Avoid NULL pointer deref in allocation failure paths.
+  * stats: don't try to save unknown stats reporter types
+  * fsm_vty: use unsigned int when left-shifting 31 bits!
+  * update git URLs (git -> https; gitea)
+
+  [ Eric Wild ]
+  * logging: make LIBOSMOCORE_NO_LOGGING work as expected
+
+  [ Oliver Smith ]
+  * treewide: remove FSF address
+  * select_main: don't poll forever during shutdown
+  * Cosmetic: linuxlist.h: fix misleading comment
+
+  [ Philipp Maier ]
+  * stats: fix typo
+  * stat_item: tolerate NULL pointer argument in osmo_stat_item_group_free
+  * select: gather statistics for TCP connections
+  * stats_tcp: use a default batch size of 5 instead of 1
+  * stats_tcp: fix stats item identifier
+  * gsm23003: fix docstring for osmo_plmn_from_bcd()
+  * iuup: do not use illegal characters in state/event names.
+  * logging: log to stderr when logging is not initialized
+  * reader: more meaningful null pointer check in get_sw
+
+  [ Pau Espin Pedrol ]
+  * include/: Adapt some headers to match contrib/struct_endianess.py format
+  * logging: Fix Not enough tailroom msgb_put in _output_buf callers
+  * osmo-release.sh: Use variable containing bumpversion path everywhere
+  * iuup: Fix decoding of 1byte-length subflow size fields
+  * iuup: Submit RNL-STATUS-Initialization.ind upon rx of Init
+  * iuup: Improve CRC checksum error logging
+  * gsm: [ABI BREAK] Support CellId SAI, change CellId CGI-PS id number
+  * gsm: lapd_core:  Change log line NOTICE->INFO
+  * gsm0808_test: Add new unit test showing dec error
+  * gsm0808: Fix decoding of IE GSM0808_IE_LCS_CLIENT_TYPE
+  * cosmetic: gsm_08_08.h: Add space between assignment sides
+  * gsm0808: Add missing IEs in bss_att_tlvdef
+  * jenkins: Validate IEs are added to tlv_definition
+  * libosmocore.pc.in: put libsctp in Requires.private
+  * configure: Support libsctp < 1.0.17 without libsctp.pc
+  * rsl: Fix tlv_parse of IPAC_DLCX_IND message
+  * jenkins: Validate gsm 08.58 IEs are added to tlv_definition
+  * gsm: Introduce helper rach_tx_integer_raw2val()
+  * cosmetic: logging.h: fix indentation
+  * gsm_12_21.h: Fix abis_nm_avail_state InTest and Failed values
+  * gsm_12_21.h: Add header description pointing to TS files
+  * coding: Refactor function to avoid gcc false positive warn
+  * osmo-arfcn: Fix false positive in gcc 12.1.0
+  * coding: Use ARRAY_SIZE macro
+  * iuup: Rework API to support RFCI IDs != RFCI index
+  * cosmetic: iuup.h: Fix indentation
+  * iuup: Fix IPTIs_present not set to 0 if no IPTIs received
+  * cbsp: Add enum and value string for Cause
+  * iuup: Add missing state to bitmask for st SMpSDU_Data_Transfer_Ready
+  * iuup: Drop unused events
+  * tests/iuup: Showcase IuUP stack not answering subsequent Init msgs
+  * iuup: Fix Handling of subsequent Initialization msgs
+  * vty: command.c: Add assert
+
+  [ Sylvain Munaut ]
+  * conv: Fix the traceback for tail biting codes
+  * build: Disable libusb and libmnl for embedded builds
+
+  [ Neels Hofmeyr ]
+  * PFCP: add DLPFCP and osmo-upf port numbers
+  * ports.h: add osmo-pfcp-tool ports
+  * add osmo_sockaddr_to_str_c(), osmo_sockaddr_to_str_buf2()
+  * log: socket.c: rather use the osmo_sockaddr_str _FMT
+  * add osmo_quote_str_buf3, osmo_escape_str_buf3
+  * add osmo_sockaddr_from/to_octets()
+  * follow-up to osmo_sockaddr_from/to_octets()
+  * BSSAP: HO Request Ack: add missing Codec List (BSS Supported)
+  * add osmo_sockaddr_set_port()
+  * osmo_time_cc: rate_ctr presence should not affect counting
+  * cosmetic tweak in Makefile.am
+
+  [ Michael Iedema ]
+  * stats: use tcp stat names as provided
+
+  [ Karsten Ohme ]
+  * APDU parsing support for GlobalPlatform
+
+ -- Pau Espin Pedrol <pespin@sysmocom.de>  Tue, 28 Jun 2022 17:00:51 +0200
+
 libosmocore (1.6.0) unstable; urgency=medium
 
   [ Pau Espin Pedrol ]

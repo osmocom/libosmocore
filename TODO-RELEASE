@@ -7,9 +7,3 @@
 # If any interfaces have been added since the last public release: c:r:a + 1.
 # If any interfaces have been removed or changed since the last public release: c:r:0.
 #library	what			description / commit summary line
-libosmogsm      ABI BREAKAGE            CELL_IDENT_WHOLE_GLOBAL_PS changed enum number
-libosmogsm	add struct member	Add codec_list_bss_supported to gsm0808_handover_request_ack (more_items flag ensures ABI compat)
-libosmogb	ABI BREAKAGE		Add reset_ack_notification function pointer to struct bssgp_bvc_fsm_ops
-libosmogsm      add API                 Add rach_tx_integer_raw2val() in gsm_utils.h
-libosmogsm      add API                 iuup.h
-libosmogsm      add API                 cbsp.h enum osmo_cbsp_cause, osmo_cbsp_cause_name(s)

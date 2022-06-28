@@ -31,9 +31,9 @@ Architecture: any
 Multi-Arch: foreign
 Depends: libosmocodec0 (= ${binary:Version}),
          libosmocoding0 (= ${binary:Version}),
-         libosmocore18 (= ${binary:Version}),
-         libosmogb12 (= ${binary:Version}),
-         libosmogsm17 (= ${binary:Version}),
+         libosmocore19 (= ${binary:Version}),
+         libosmogb14 (= ${binary:Version}),
+         libosmogsm18 (= ${binary:Version}),
          libosmovty9 (= ${binary:Version}),
          libosmoctrl0 (= ${binary:Version}),
          libosmosim2 (= ${binary:Version}),
@@ -115,7 +115,7 @@ Description: Documentation for the osmo coding library
  .
  This package contains the documentation for the libosmocoding library.
 
-Package: libosmocore18
+Package: libosmocore19
 Section: libs
 Architecture: any
 Multi-Arch: same
@@ -129,14 +129,14 @@ Description: Osmo Core library
  (at least) other programs that are developed in the sphere of Free Software /
  Open Source mobile communication.
  .
- The libosmocore18 library in particular is a collection of common code used in
+ The libosmocore library in particular is a collection of common code used in
  various sub-projects inside the Osmocom family of projects.
 
 Package: libosmocore-doc
 Architecture: all
 Section: doc
 Depends: ${misc:Depends},
-         libosmocore18,
+         libosmocore19,
          libjs-jquery,
          libosmocodec-doc,
          libosmocoding-doc,
@@ -151,7 +151,7 @@ Description: Documentation for the Osmo Core library
  .
  This package contains the documentation for the libosmocore library.
 
-Package: libosmogb12
+Package: libosmogb14
 Section: libs
 Architecture: any
 Multi-Arch: same
@@ -172,7 +172,7 @@ Package: libosmogb-doc
 Architecture: all
 Section: doc
 Depends: ${misc:Depends},
-         libosmogb12,
+         libosmogb14,
          libjs-jquery
 Description: Documentation for the Osmo GPRS Gb library
  This is part of the libosmocore "meta"-library. The libosmocore library
@@ -183,7 +183,7 @@ Description: Documentation for the Osmo GPRS Gb library
  .
  This package contains the documentation for the libosmogb library.
 
-Package: libosmogsm17
+Package: libosmogsm18
 Section: libs
 Architecture: any
 Multi-Arch: same
@@ -207,7 +207,7 @@ Package: libosmogsm-doc
 Architecture: all
 Section: doc
 Depends: ${misc:Depends},
-         libosmogsm17,
+         libosmogsm18,
          libjs-jquery
 Description: Documentation for the Osmo GSM utility library
  This is part of the libosmocore "meta"-library. The libosmocore library
