@@ -1441,6 +1441,10 @@ int osmo_cbsp_recv_buffered(void *ctx, int fd, struct msgb **rmsg, struct msgb *
 
 	needed = len - msgb_l2len(msg);
 	if (needed > 0) {
+		if (needed > msgb_tailroom(msg)) {
+			rc = -ENOMEM;
+			goto discard_msg;
+		}
 		rc = recv(fd, msg->tail, needed, 0);
 		if (rc == 0)
 			goto discard_msg;
