@@ -476,6 +476,8 @@ static struct osmo_iuup_rnl_prim *tnl_to_rnl_data(struct osmo_iuup_tnl_prim *itp
 		dt.frame_nr = h1->frame_nr;
 		dt.fqc = h1->fqc;
 		break;
+	default:
+		OSMO_ASSERT(0);
 	}
 
 	/* pull up to the IuUP payload and push a new primitive header in front */
