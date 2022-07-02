@@ -203,7 +203,7 @@ int gsm48_decode_bearer_cap(struct gsm_mncc_bearer_cap *bcap,
 	case GSM_MNCC_BCAP_SPEECH:
 		i = 1;
 		s = 0;
-		while(!(lv[i] & 0x80)) {
+		while (!(lv[i] & 0x80)) {
 			i++; /* octet 3a etc */
 			if (in_len < i)
 				return 0;
@@ -218,7 +218,7 @@ int gsm48_decode_bearer_cap(struct gsm_mncc_bearer_cap *bcap,
 	case GSM_MNCC_BCAP_UNR_DIG:
 	case GSM_MNCC_BCAP_FAX_G3:
 		i = 1;
-		while(!(lv[i] & 0x80)) {
+		while (!(lv[i] & 0x80)) {
 			i++; /* octet 3a etc */
 			if (in_len < i)
 				return 0;
@@ -232,7 +232,7 @@ int gsm48_decode_bearer_cap(struct gsm_mncc_bearer_cap *bcap,
 			return 0;
 		bcap->data.rate_adaption = (lv[i] >> 3) & 3;
 		bcap->data.sig_access = lv[i] & 7;
-		while(!(lv[i] & 0x80)) {
+		while (!(lv[i] & 0x80)) {
 			i++; /* octet 5a etc */
 			if (in_len < i)
 				return 0;
