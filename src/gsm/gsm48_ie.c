@@ -203,6 +203,23 @@ int gsm48_decode_bearer_cap(struct gsm_mncc_bearer_cap *bcap,
 	case GSM_MNCC_BCAP_SPEECH:
 		i = 1;
 		s = 0;
+		if ((lv[1] & 0x80) != 0) { /* octet 3a is absent */
+			switch (bcap->radio) {
+			case GSM48_BCAP_RRQ_FR_ONLY:
+				bcap->speech_ver[s++] = GSM48_BCAP_SV_FR;
+				break;
+			case GSM48_BCAP_RRQ_DUAL_HR:
+				bcap->speech_ver[s++] = GSM48_BCAP_SV_HR;
+				bcap->speech_ver[s++] = GSM48_BCAP_SV_FR;
+				break;
+			case GSM48_BCAP_RRQ_DUAL_FR:
+				bcap->speech_ver[s++] = GSM48_BCAP_SV_FR;
+				bcap->speech_ver[s++] = GSM48_BCAP_SV_HR;
+				break;
+			}
+			bcap->speech_ver[s] = -1; /* end of list */
+			return 0;
+		}
 		while (!(lv[i] & 0x80)) {
 			i++; /* octet 3a etc */
 			if (in_len < i)
