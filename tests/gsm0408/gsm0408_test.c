@@ -84,6 +84,7 @@ static int test_bearer_cap()
 
 	for (i = 0; i < ARRAY_SIZE(bcap_tests); i++) {
 		struct msgb *msg = msgb_alloc(100, "test");
+		bool pass = false;
 		int lv_len;
 
 		memset(&bc, 0, sizeof(bc));
@@ -93,7 +94,7 @@ static int test_bearer_cap()
 		if (rc < 0) {
 			fprintf(stderr, "Error decoding %s\n",
 				bcap_tests[i].name);
-			return rc;
+			goto verdict;
 		}
 		if (memcmp(&bc, bcap_tests[i].bc, sizeof(bc))) {
 			fprintf(stderr, "Incorrect decoded result of %s:\n",
@@ -102,7 +103,7 @@ static int test_bearer_cap()
 				osmo_hexdump((uint8_t *) bcap_tests[i].bc, sizeof(bc)));
 			fprintf(stderr, " is:     %s\n",
 				osmo_hexdump((uint8_t *) &bc, sizeof(bc)));
-			return -1;
+			goto verdict;
 		}
 
 		/* also test re-encode? */
@@ -110,7 +111,7 @@ static int test_bearer_cap()
 		if (rc < 0) {
 			fprintf(stderr, "Error encoding %s\n",
 				bcap_tests[i].name);
-			return rc;
+			goto verdict;
 		}
 		lv_len = bcap_tests[i].lv[0]+1;
 		if (memcmp(msg->data, bcap_tests[i].lv, lv_len)) {
@@ -120,10 +121,14 @@ static int test_bearer_cap()
 				osmo_hexdump(bcap_tests[i].lv, lv_len));
 			fprintf(stderr, " is:     %s\n",
 				osmo_hexdump(msg->data, msg->len));
-			return -1;
+			goto verdict;
 		}
 
-		printf("Test `%s' passed\n", bcap_tests[i].name);
+		/* all checks passed */
+		pass = true;
+
+verdict:
+		printf("Test `%s' %sed\n", bcap_tests[i].name, pass ? "pass" : "fail");
 		msgb_free(msg);
 	}
 
