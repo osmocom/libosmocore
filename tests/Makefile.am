@@ -354,7 +354,8 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
              timer/timer_test.ok sms/sms_test.ok ussd/ussd_test.ok	\
              smscb/smscb_test.ok bits/bitrev_test.ok a5/a5_test.ok	\
              conv/conv_test.ok auth/milenage_test.ok ctrl/ctrl_test.ok	\
-             lapd/lapd_test.ok gsm0408/gsm0408_test.ok			\
+             lapd/lapd_test.ok						\
+             gsm0408/gsm0408_test.ok gsm0408/gsm0408_test.err		\
              gsm0808/gsm0808_test.ok gb/bssgp_fc_tests.err		\
              gb/bssgp_fc_tests.ok gb/bssgp_fc_tests.sh			\
              gb/gprs_bssgp_test.ok gb/gprs_ns_test.ok gea/gea_test.ok	\
@@ -496,7 +497,8 @@ endif
 	gsm29205/gsm29205_test \
 		>$(srcdir)/gsm29205/gsm29205_test.ok
 	gsm0408/gsm0408_test \
-		>$(srcdir)/gsm0408/gsm0408_test.ok
+		2>$(srcdir)/gsm0408/gsm0408_test.err \
+		1>$(srcdir)/gsm0408/gsm0408_test.ok
 	gsm48/rest_octets_test \
 		>$(srcdir)/gsm48/rest_octets_test.ok
 	gprs/gprs_test \

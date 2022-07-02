@@ -65,6 +65,18 @@ static const struct gsm_mncc_bearer_cap bcap_speech_all = {
 	},
 };
 
+static const uint8_t speech_no3a_lv[] = { 0x01, 0xa0 };
+
+static const struct gsm_mncc_bearer_cap bcap_speech_no3a = {
+	.transfer =	GSM48_BCAP_ITCAP_SPEECH,
+	.mode =		GSM48_BCAP_TMOD_CIRCUIT,
+	.coding =	GSM48_BCAP_CODING_GSM_STD,
+	.radio =	GSM48_BCAP_RRQ_FR_ONLY,
+	.speech_ver = {
+		0, -1,
+	},
+};
+
 
 struct bcap_test {
 	const uint8_t *lv;
@@ -75,6 +87,7 @@ struct bcap_test {
 static const struct bcap_test bcap_tests[] = {
 	{ csd_9600_v110_lv, &bcap_csd_9600_v110, "CSD 9600/V.110/transparent" },
 	{ speech_all_lv, &bcap_speech_all, "Speech, all codecs" },
+	{ speech_no3a_lv, &bcap_speech_no3a, "Speech, without octet 3a" },
 };
 
 static int test_bearer_cap()

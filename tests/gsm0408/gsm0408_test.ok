@@ -1,5 +1,6 @@
 Test `CSD 9600/V.110/transparent' passed
 Test `Speech, all codecs' passed
+Test `Speech, without octet 3a' failed
 Simple TMSI encoding test....passed
 Simple IMSI encoding test....passed: [10] 17 08 99 10 07 00 00 00 64 02 
 

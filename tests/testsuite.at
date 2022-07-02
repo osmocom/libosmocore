@@ -153,7 +153,8 @@ AT_CLEANUP
 AT_SETUP([gsm0408])
 AT_KEYWORDS([gsm0408])
 cat $abs_srcdir/gsm0408/gsm0408_test.ok > expout
-AT_CHECK([$abs_top_builddir/tests/gsm0408/gsm0408_test], [0], [expout], [ignore])
+cat $abs_srcdir/gsm0408/gsm0408_test.err > experr
+AT_CHECK([$abs_top_builddir/tests/gsm0408/gsm0408_test], [0], [expout], [experr])
 AT_CLEANUP
 
 AT_SETUP([gsm48_rest_octets])
