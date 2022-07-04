@@ -1064,7 +1064,6 @@ struct msgb *bssgp_encode_rim_pdu(const struct bssgp_ran_information_pdu *pdu)
 	struct msgb *msg = bssgp_msgb_alloc();
 	struct bssgp_normal_hdr *bgph;
 	uint8_t rim_ri_buf[BSSGP_RIM_ROUTING_INFO_MAXLEN];
-	uint8_t *rim_cont_buf;
 	int rc;
 
 	if (!msg)
@@ -1105,7 +1104,7 @@ struct msgb *bssgp_encode_rim_pdu(const struct bssgp_ran_information_pdu *pdu)
 
 	/* Put RIM container */
 	if (pdu->decoded_present) {
-		rim_cont_buf = talloc_zero_size(msg, msg->data_len);
+		uint8_t *rim_cont_buf = talloc_zero_size(msg, msg->data_len);
 		if (!rim_cont_buf)
 			goto error;
 
@@ -1130,8 +1129,10 @@ struct msgb *bssgp_encode_rim_pdu(const struct bssgp_ran_information_pdu *pdu)
 			/* The API user must set the iei properly! */
 			OSMO_ASSERT(false);
 		}
-		if (rc < 0)
+		if (rc < 0) {
+			talloc_free(rim_cont_buf);
 			goto error;
+		}
 
 		msgb_tvlv_put(msg, pdu->rim_cont_iei, rc, rim_cont_buf);
 		talloc_free(rim_cont_buf);
@@ -1143,7 +1144,6 @@ struct msgb *bssgp_encode_rim_pdu(const struct bssgp_ran_information_pdu *pdu)
 
 	return msg;
 error:
-	talloc_free(rim_cont_buf);
 	msgb_free(msg);
 	return 0;
 }
