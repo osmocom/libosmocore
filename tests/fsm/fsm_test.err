@@ -137,9 +137,9 @@ Test_FSM{NULL}: State change to ONE (T4242, 1337ms)
 Total time passed: 0.500000 s
 Total time passed: 0.750000 s
 Total time passed: 1.100000 s
-Test_FSM{ONE}: Timeout of T4242
 Total time passed: 1.300000 s
 Total time passed: 1.337000 s
+Test_FSM{ONE}: Timeout of T4242
 Test_FSM{ONE}: Terminating (cause = OSMO_FSM_TERM_REQUEST)
 Test_FSM{ONE}: Freeing instance
 Test_FSM{ONE}: Deallocated

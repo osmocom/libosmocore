@@ -441,15 +441,13 @@ static void test_state_chg_Tms(void)
 	OSMO_ASSERT(timeout_fired == -1);
 
 	fake_time_passes(0, 350000); /* +350ms, 1s 100ms total */
-	/* OSMO_ASSERT(timeout_fired == -1); */
-
-	/* FIXME: the timeout expires here, earlier than expected */
+	OSMO_ASSERT(timeout_fired == -1);
 
 	fake_time_passes(0, 200000); /* +200ms, 1s 300ms total */
-	/* OSMO_ASSERT(timeout_fired == -1); */
+	OSMO_ASSERT(timeout_fired == -1);
 
 	fake_time_passes(0, 37000); /* +37ms, 1s 337ms total */
-	/* OSMO_ASSERT(timeout_fired == 4242); */
+	OSMO_ASSERT(timeout_fired == 4242);
 
 	osmo_fsm_inst_term(fi, OSMO_FSM_TERM_REQUEST, NULL);
 

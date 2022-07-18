@@ -685,8 +685,11 @@ static int state_chg(struct osmo_fsm_inst *fi, uint32_t new_state,
 	if (!keep_timer
 	    || (keep_timer && !osmo_timer_pending(&fi->timer))) {
 		fi->T = T;
-		if (timeout_ms)
-			osmo_timer_schedule(&fi->timer, timeout_ms / 1000, timeout_ms % 1000);
+		if (timeout_ms) {
+			osmo_timer_schedule(&fi->timer,
+			      /* seconds */ (timeout_ms / 1000),
+			 /* microseconds */ (timeout_ms % 1000) * 1000);
+		}
 	}
 
 	/* Call 'onenter' last, user might terminate FSM from there */
