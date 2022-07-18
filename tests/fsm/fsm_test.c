@@ -386,6 +386,76 @@ static void test_state_chg_T()
 	fprintf(stderr, "--- %s() done\n", __func__);
 }
 
+/* Test setting a state timeout with second granularity */
+static void test_state_chg_Ts(void)
+{
+	struct osmo_fsm_inst *fi;
+
+	fprintf(stderr, "\n--- %s()\n", __func__);
+
+	fsm.timer_cb = &timer_cb;
+	timeout_fired = -1;
+	fake_time_start();
+
+	fi = osmo_fsm_inst_alloc(&fsm, g_ctx, NULL, LOGL_DEBUG, NULL);
+	OSMO_ASSERT(fi);
+
+	osmo_fsm_inst_state_chg(fi, ST_ONE, 8, 4242);
+	OSMO_ASSERT(timeout_fired == -1);
+
+	fake_time_passes(3, 0); /* +3s */
+	OSMO_ASSERT(timeout_fired == -1);
+
+	fake_time_passes(2, 500000); /* +2.5s */
+	OSMO_ASSERT(timeout_fired == -1);
+
+	fake_time_passes(2, 500000); /* +2.5s */
+	OSMO_ASSERT(timeout_fired == 4242);
+
+	osmo_fsm_inst_term(fi, OSMO_FSM_TERM_REQUEST, NULL);
+
+	fprintf(stderr, "--- %s() done\n", __func__);
+}
+
+/* Test setting a state timeout with millisecond granularity */
+static void test_state_chg_Tms(void)
+{
+	struct osmo_fsm_inst *fi;
+
+	fprintf(stderr, "\n--- %s()\n", __func__);
+
+	fsm.timer_cb = &timer_cb;
+	timeout_fired = -1;
+	fake_time_start();
+
+	fi = osmo_fsm_inst_alloc(&fsm, g_ctx, NULL, LOGL_DEBUG, NULL);
+	OSMO_ASSERT(fi);
+
+	osmo_fsm_inst_state_chg_ms(fi, ST_ONE, 1337, 4242); /* 1s 337ms */
+	OSMO_ASSERT(timeout_fired == -1);
+
+	fake_time_passes(0, 500000); /* +500ms, 500ms total */
+	OSMO_ASSERT(timeout_fired == -1);
+
+	fake_time_passes(0, 250000); /* +250ms, 750ms total */
+	OSMO_ASSERT(timeout_fired == -1);
+
+	fake_time_passes(0, 350000); /* +350ms, 1s 100ms total */
+	/* OSMO_ASSERT(timeout_fired == -1); */
+
+	/* FIXME: the timeout expires here, earlier than expected */
+
+	fake_time_passes(0, 200000); /* +200ms, 1s 300ms total */
+	/* OSMO_ASSERT(timeout_fired == -1); */
+
+	fake_time_passes(0, 37000); /* +37ms, 1s 337ms total */
+	/* OSMO_ASSERT(timeout_fired == 4242); */
+
+	osmo_fsm_inst_term(fi, OSMO_FSM_TERM_REQUEST, NULL);
+
+	fprintf(stderr, "--- %s() done\n", __func__);
+}
+
 static const struct log_info_cat default_categories[] = {
 	[DMAIN] = {
 		.name = "DMAIN",
@@ -434,6 +504,8 @@ int main(int argc, char **argv)
 	test_id_api();
 	test_state_chg_keep_timer();
 	test_state_chg_T();
+	test_state_chg_Ts();
+	test_state_chg_Tms();
 
 	osmo_fsm_unregister(&fsm);
 	exit(0);

@@ -116,3 +116,31 @@ Test_FSM{TWO}: Terminating (cause = OSMO_FSM_TERM_REQUEST)
 Test_FSM{TWO}: Freeing instance
 Test_FSM{TWO}: Deallocated
 --- test_state_chg_T() done
+
+--- test_state_chg_Ts()
+Total time passed: 0.000000 s
+Test_FSM{NULL}: Allocated
+Test_FSM{NULL}: State change to ONE (T4242, 8s)
+Total time passed: 3.000000 s
+Total time passed: 5.500000 s
+Total time passed: 8.000000 s
+Test_FSM{ONE}: Timeout of T4242
+Test_FSM{ONE}: Terminating (cause = OSMO_FSM_TERM_REQUEST)
+Test_FSM{ONE}: Freeing instance
+Test_FSM{ONE}: Deallocated
+--- test_state_chg_Ts() done
+
+--- test_state_chg_Tms()
+Total time passed: 0.000000 s
+Test_FSM{NULL}: Allocated
+Test_FSM{NULL}: State change to ONE (T4242, 1337ms)
+Total time passed: 0.500000 s
+Total time passed: 0.750000 s
+Total time passed: 1.100000 s
+Test_FSM{ONE}: Timeout of T4242
+Total time passed: 1.300000 s
+Total time passed: 1.337000 s
+Test_FSM{ONE}: Terminating (cause = OSMO_FSM_TERM_REQUEST)
+Test_FSM{ONE}: Freeing instance
+Test_FSM{ONE}: Deallocated
+--- test_state_chg_Tms() done
