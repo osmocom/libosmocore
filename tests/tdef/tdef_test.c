@@ -143,6 +143,7 @@ static void test_tdef_set_and_get()
 
 	printf("setting 7 = 42\n");
 	t = osmo_tdef_get_entry(tdefs, 7);
+	OSMO_ASSERT(t != NULL);
 	OSMO_ASSERT(osmo_tdef_val_in_range(t, 42));
 	t->val = 42;
 	print_tdef_info(7);
