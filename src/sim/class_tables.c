@@ -113,7 +113,7 @@ static const uint8_t uicc_ins_tbl_046[256] = {
 	[0xD6]	= 3,	/* UPDATE BINARY */
 	[0xB2]	= 2,	/* READ RECORD */
 	[0xDC]	= 3,	/* UPDATE RECORD */
-	[0xA2]	= 4,	/* SEEK */
+	[0xA2]	= 4,	/* SEARCH RECORD */
 	[0x20]	= 3,	/* VERIFY PIN */
 	[0x24]	= 3,	/* CHANGE PIN */
 	[0x26]	= 3,	/* DISABLE PIN */
@@ -198,6 +198,7 @@ static const uint8_t uicc_ins_tbl_8ce[256] = {
 	[0xCB]		= 4,	/* RETRIEVE DATA */
 	[0xDB]		= 3,	/* SET DATA */
 	[0xAA]		= 3,	/* TERMINAL CAPABILITY */
+	[0x78]		= 4,	/* GET IDENTITY */
 };
 
 /* ETSI TS 102 221, Table 10.5, CLA = 0x80 */
@@ -206,6 +207,8 @@ static const uint8_t uicc_ins_tbl_80[256] = {
 	[0xC2]		= 4,	/* ENVELOPE */
 	[0x12]		= 2,	/* FETCH */
 	[0x14]		= 3,	/* TERMINAL RESPONSE */
+	[0x76]		= 4,	/* SUSPEND UICC */
+	[0x7A]		= 4,	/* EXCHANGE CAPABILITIES */
 };
 
 /* Card Specification v2.3.1*/
