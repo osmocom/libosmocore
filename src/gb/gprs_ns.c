@@ -352,8 +352,7 @@ struct gprs_nsvc *gprs_nsvc_create2(struct gprs_ns_inst *nsi, uint16_t nsvci,
  */
 void gprs_nsvc_delete(struct gprs_nsvc *nsvc)
 {
-	if (osmo_timer_pending(&nsvc->timer))
-		osmo_timer_del(&nsvc->timer);
+	osmo_timer_del(&nsvc->timer);
 	llist_del(&nsvc->list);
 	rate_ctr_group_free(nsvc->ctrg);
 	osmo_stat_item_group_free(nsvc->statg);
@@ -750,8 +749,7 @@ static void nsvc_start_timer(struct gprs_nsvc *nsvc, enum nsvc_timer_mode mode)
 		nsvc->nsei, get_value_string(timer_mode_strs, mode),
 		seconds);
 
-	if (osmo_timer_pending(&nsvc->timer))
-		osmo_timer_del(&nsvc->timer);
+	osmo_timer_del(&nsvc->timer);
 
 	osmo_gettimeofday(&nsvc->timer_started, NULL);
 	nsvc->timer_mode = mode;
