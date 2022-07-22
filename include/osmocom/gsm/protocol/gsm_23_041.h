@@ -2,6 +2,16 @@
 
 #include <osmocom/core/endian.h>
 
+/* Section 9.3.24: Warning-Type */
+enum gsm23041_warning_type_value {
+	CBS_ETWS_WARN_TYPE_EARTHQUAKE = 0,
+	CBS_ETWS_WARN_TYPE_TSUNAMI = 1,
+	CBS_ETWS_WARN_TYPE_EARTHQUAKE_AND_TSUNAMI = 2,
+	CBS_ETWS_WARN_TYPE_TEST = 3,
+	CBS_ETWS_WARN_TYPE_OTHER = 4,
+	/* 0000101-1111111 Reserved for future use */
+};
+
 /* Section 9.4.1.2: GSM Message Format */
 struct gsm23041_msg_param_gsm {
 	uint16_t serial_nr;
