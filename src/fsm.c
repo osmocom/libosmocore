@@ -576,7 +576,7 @@ void osmo_fsm_inst_free(struct osmo_fsm_inst *fi)
  *  \param[in] event Event integer value
  *  \returns string rendering of the event
  */
-const char *osmo_fsm_event_name(struct osmo_fsm *fsm, uint32_t event)
+const char *osmo_fsm_event_name(const struct osmo_fsm *fsm, uint32_t event)
 {
 	static __thread char buf[32];
 	if (!fsm->event_names) {
@@ -590,7 +590,7 @@ const char *osmo_fsm_event_name(struct osmo_fsm *fsm, uint32_t event)
  *  \param[in] fi FSM instance
  *  \returns string rendering of the FSM identity
  */
-const char *osmo_fsm_inst_name(struct osmo_fsm_inst *fi)
+const char *osmo_fsm_inst_name(const struct osmo_fsm_inst *fi)
 {
 	if (!fi)
 		return "NULL";
@@ -606,7 +606,7 @@ const char *osmo_fsm_inst_name(struct osmo_fsm_inst *fi)
  *  \param[in] state FSM state number
  *  \returns string rendering of the FSM state
  */
-const char *osmo_fsm_state_name(struct osmo_fsm *fsm, uint32_t state)
+const char *osmo_fsm_state_name(const struct osmo_fsm *fsm, uint32_t state)
 {
 	static __thread char buf[32];
 	if (state >= fsm->num_states) {
