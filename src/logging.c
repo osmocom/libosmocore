@@ -307,6 +307,12 @@ static const struct log_info_cat internal_cat[OSMO_NUM_DLIB] = {
 		.enabled = 1, .loglevel = LOGL_NOTICE,
 		.color = "\033[38;5;51m",
 	},
+	[INT2IDX(DLCSN1)] = {
+		.name = "DLCSN1",
+		.description = "libosmo-csn1 Concrete Syntax Notation 1 codec",
+		.enabled = 1, .loglevel = LOGL_NOTICE,
+		.color = "\033[38;5;11m",
+	},
 };
 
 void assert_loginfo(const char *src)
