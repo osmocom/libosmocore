@@ -15,7 +15,11 @@ noinst_HEADERS = common_vty.h gb_internal.h gprs_bssgp_internal.h gprs_ns2_inter
 if ENABLE_GB
 lib_LTLIBRARIES = libosmogb.la
 
-libosmogb_la_LDFLAGS = $(LTLDFLAGS_OSMOGB) -version-info $(LIBVERSION)
+libosmogb_la_LDFLAGS = \
+		$(LTLDFLAGS_OSMOGB) \
+		-version-info $(LIBVERSION) \
+		-no-undefined \
+		$(NULL)
 libosmogb_la_LIBADD = $(TALLOC_LIBS) \
 		$(top_builddir)/src/libosmocore.la \
 		$(top_builddir)/src/vty/libosmovty.la \

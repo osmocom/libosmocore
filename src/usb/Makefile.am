@@ -12,7 +12,10 @@ if ENABLE_LIBUSB
 lib_LTLIBRARIES = libosmousb.la
 
 libosmousb_la_SOURCES = osmo_libusb.c
-libosmousb_la_LDFLAGS = -version-info $(LIBVERSION)
+libosmousb_la_LDFLAGS = \
+	-version-info $(LIBVERSION) \
+	-no-undefined \
+	$(NULL)
 libosmousb_la_LIBADD = \
 	$(top_builddir)/src/libosmocore.la \
 	$(TALLOC_LIBS) \

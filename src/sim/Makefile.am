@@ -15,7 +15,10 @@ lib_LTLIBRARIES = libosmosim.la
 libosmosim_la_SOURCES = core.c reader.c class_tables.c \
 			card_fs_sim.c card_fs_usim.c card_fs_uicc.c \
 			card_fs_isim.c card_fs_hpsim.c card_fs_tetra.c
-libosmosim_la_LDFLAGS = -version-info $(LIBVERSION)
+libosmosim_la_LDFLAGS = \
+	-version-info $(LIBVERSION) \
+	-no-undefined \
+	$(NULL)
 libosmosim_la_LIBADD = \
 	$(top_builddir)/src/libosmocore.la \
 	$(top_builddir)/src/gsm/libosmogsm.la \
