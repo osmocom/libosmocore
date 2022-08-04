@@ -639,6 +639,7 @@ static int cbsp_dec_write_repl(struct osmo_cbsp_write_replace *out, const struct
 				struct msgb *in, void *ctx)
 {
 	unsigned int i;
+	int rc;
 
 	/* check for mandatory IEs */
 	if (!TLVP_PRESENT(tp, CBSP_IEI_MSG_ID) ||
@@ -656,8 +657,10 @@ static int cbsp_dec_write_repl(struct osmo_cbsp_write_replace *out, const struct
 	}
 
 	INIT_LLIST_HEAD(&out->cell_list.list);
-	cbsp_decode_cell_list(&out->cell_list, ctx, TLVP_VAL(tp, CBSP_IEI_CELL_LIST),
-			      TLVP_LEN(tp, CBSP_IEI_CELL_LIST));
+	rc = cbsp_decode_cell_list(&out->cell_list, ctx, TLVP_VAL(tp, CBSP_IEI_CELL_LIST),
+				   TLVP_LEN(tp, CBSP_IEI_CELL_LIST));
+	if (rc < 0)
+		return rc;
 
 	if (TLVP_PRESENT(tp, CBSP_IEI_CHANNEL_IND)) {
 		uint8_t num_of_pages;
@@ -718,6 +721,8 @@ static int cbsp_dec_write_repl(struct osmo_cbsp_write_replace *out, const struct
 static int cbsp_dec_write_repl_compl(struct osmo_cbsp_write_replace_complete *out,
 				     const struct tlv_parsed *tp, struct msgb *in, void *ctx)
 {
+	int rc;
+
 	if (!TLVP_PRES_LEN(tp, CBSP_IEI_MSG_ID, 2) ||
 	    !TLVP_PRES_LEN(tp, CBSP_IEI_NEW_SERIAL_NR, 2)) {
 		osmo_cbsp_errstr = "missing/short mandatory IE";
@@ -733,14 +738,18 @@ static int cbsp_dec_write_repl_compl(struct osmo_cbsp_write_replace_complete *ou
 
 	INIT_LLIST_HEAD(&out->num_compl_list.list);
 	if (TLVP_PRES_LEN(tp, CBSP_IEI_NUM_BCAST_COMPL_LIST, 7)) {
-		cbsp_decode_num_compl_list(&out->num_compl_list, ctx,
-					   TLVP_VAL(tp, CBSP_IEI_NUM_BCAST_COMPL_LIST),
-					   TLVP_LEN(tp, CBSP_IEI_NUM_BCAST_COMPL_LIST));
+		rc = cbsp_decode_num_compl_list(&out->num_compl_list, ctx,
+						TLVP_VAL(tp, CBSP_IEI_NUM_BCAST_COMPL_LIST),
+						TLVP_LEN(tp, CBSP_IEI_NUM_BCAST_COMPL_LIST));
+		if (rc < 0)
+			return rc;
 	}
 
 	INIT_LLIST_HEAD(&out->cell_list.list);
-	cbsp_decode_cell_list(&out->cell_list, ctx, TLVP_VAL(tp, CBSP_IEI_CELL_LIST),
-			      TLVP_LEN(tp, CBSP_IEI_CELL_LIST));
+	rc = cbsp_decode_cell_list(&out->cell_list, ctx, TLVP_VAL(tp, CBSP_IEI_CELL_LIST),
+				   TLVP_LEN(tp, CBSP_IEI_CELL_LIST));
+	if (rc < 0)
+		return rc;
 
 	if (TLVP_PRES_LEN(tp, CBSP_IEI_CHANNEL_IND, 1)) {
 		out->channel_ind = talloc(ctx, enum cbsp_channel_ind);
@@ -753,6 +762,8 @@ static int cbsp_dec_write_repl_compl(struct osmo_cbsp_write_replace_complete *ou
 static int cbsp_dec_write_repl_fail(struct osmo_cbsp_write_replace_failure *out,
 				    const struct tlv_parsed *tp, struct msgb *in, void *ctx)
 {
+	int rc;
+
 	if (!TLVP_PRES_LEN(tp, CBSP_IEI_MSG_ID, 2) ||
 	    !TLVP_PRES_LEN(tp, CBSP_IEI_NEW_SERIAL_NR, 2) ||
 	    !TLVP_PRES_LEN(tp, CBSP_IEI_FAILURE_LIST, 5)) {
@@ -768,21 +779,27 @@ static int cbsp_dec_write_repl_fail(struct osmo_cbsp_write_replace_failure *out,
 	}
 
 	INIT_LLIST_HEAD(&out->fail_list);
-	cbsp_decode_fail_list(&out->fail_list, ctx,
-			      TLVP_VAL(tp, CBSP_IEI_FAILURE_LIST),
-			      TLVP_LEN(tp, CBSP_IEI_FAILURE_LIST));
+	rc = cbsp_decode_fail_list(&out->fail_list, ctx,
+				   TLVP_VAL(tp, CBSP_IEI_FAILURE_LIST),
+				   TLVP_LEN(tp, CBSP_IEI_FAILURE_LIST));
+	if (rc < 0)
+		return rc;
 
 	INIT_LLIST_HEAD(&out->num_compl_list.list);
 	if (TLVP_PRES_LEN(tp, CBSP_IEI_NUM_BCAST_COMPL_LIST, 7)) {
-		cbsp_decode_num_compl_list(&out->num_compl_list, ctx,
-					   TLVP_VAL(tp, CBSP_IEI_NUM_BCAST_COMPL_LIST),
-					   TLVP_LEN(tp, CBSP_IEI_NUM_BCAST_COMPL_LIST));
+		rc = cbsp_decode_num_compl_list(&out->num_compl_list, ctx,
+						TLVP_VAL(tp, CBSP_IEI_NUM_BCAST_COMPL_LIST),
+						TLVP_LEN(tp, CBSP_IEI_NUM_BCAST_COMPL_LIST));
+		if (rc < 0)
+			return rc;
 	}
 
 	INIT_LLIST_HEAD(&out->cell_list.list);
 	if (TLVP_PRES_LEN(tp, CBSP_IEI_CELL_LIST, 1)) {
-		cbsp_decode_cell_list(&out->cell_list, ctx, TLVP_VAL(tp, CBSP_IEI_CELL_LIST),
-				      TLVP_LEN(tp, CBSP_IEI_CELL_LIST));
+		rc = cbsp_decode_cell_list(&out->cell_list, ctx, TLVP_VAL(tp, CBSP_IEI_CELL_LIST),
+					   TLVP_LEN(tp, CBSP_IEI_CELL_LIST));
+		if (rc < 0)
+			return rc;
 	}
 
 	if (TLVP_PRES_LEN(tp, CBSP_IEI_CHANNEL_IND, 1)) {
@@ -796,6 +813,8 @@ static int cbsp_dec_write_repl_fail(struct osmo_cbsp_write_replace_failure *out,
 static int cbsp_dec_kill(struct osmo_cbsp_kill *out, const struct tlv_parsed *tp,
 			 struct msgb *in, void *ctx)
 {
+	int rc;
+
 	if (!TLVP_PRES_LEN(tp, CBSP_IEI_MSG_ID, 2) ||
 	    !TLVP_PRES_LEN(tp, CBSP_IEI_OLD_SERIAL_NR, 2) ||
 	    !TLVP_PRES_LEN(tp, CBSP_IEI_CELL_LIST, 1)) {
@@ -807,8 +826,10 @@ static int cbsp_dec_kill(struct osmo_cbsp_kill *out, const struct tlv_parsed *tp
 	out->old_serial_nr = tlvp_val16be(tp, CBSP_IEI_OLD_SERIAL_NR);
 
 	INIT_LLIST_HEAD(&out->cell_list.list);
-	cbsp_decode_cell_list(&out->cell_list, ctx, TLVP_VAL(tp, CBSP_IEI_CELL_LIST),
-			      TLVP_LEN(tp, CBSP_IEI_CELL_LIST));
+	rc = cbsp_decode_cell_list(&out->cell_list, ctx, TLVP_VAL(tp, CBSP_IEI_CELL_LIST),
+				   TLVP_LEN(tp, CBSP_IEI_CELL_LIST));
+	if (rc < 0)
+		return rc;
 
 	if (TLVP_PRES_LEN(tp, CBSP_IEI_CHANNEL_IND, 1)) {
 		out->channel_ind = talloc(ctx, enum cbsp_channel_ind);
@@ -821,6 +842,8 @@ static int cbsp_dec_kill(struct osmo_cbsp_kill *out, const struct tlv_parsed *tp
 static int cbsp_dec_kill_compl(struct osmo_cbsp_kill_complete *out, const struct tlv_parsed *tp,
 				struct msgb *in, void *ctx)
 {
+	int rc;
+
 	if (!TLVP_PRES_LEN(tp, CBSP_IEI_MSG_ID, 2) ||
 	    !TLVP_PRES_LEN(tp, CBSP_IEI_OLD_SERIAL_NR, 2) ||
 	    !TLVP_PRES_LEN(tp, CBSP_IEI_CELL_LIST, 1)) {
@@ -833,14 +856,18 @@ static int cbsp_dec_kill_compl(struct osmo_cbsp_kill_complete *out, const struct
 
 	INIT_LLIST_HEAD(&out->num_compl_list.list);
 	if (TLVP_PRES_LEN(tp, CBSP_IEI_NUM_BCAST_COMPL_LIST, 7)) {
-		cbsp_decode_num_compl_list(&out->num_compl_list, ctx,
-					   TLVP_VAL(tp, CBSP_IEI_NUM_BCAST_COMPL_LIST),
-					   TLVP_LEN(tp, CBSP_IEI_NUM_BCAST_COMPL_LIST));
+		rc = cbsp_decode_num_compl_list(&out->num_compl_list, ctx,
+						TLVP_VAL(tp, CBSP_IEI_NUM_BCAST_COMPL_LIST),
+						TLVP_LEN(tp, CBSP_IEI_NUM_BCAST_COMPL_LIST));
+		if (rc < 0)
+			return rc;
 	}
 
 	INIT_LLIST_HEAD(&out->cell_list.list);
-	cbsp_decode_cell_list(&out->cell_list, ctx, TLVP_VAL(tp, CBSP_IEI_CELL_LIST),
-			      TLVP_LEN(tp, CBSP_IEI_CELL_LIST));
+	rc = cbsp_decode_cell_list(&out->cell_list, ctx, TLVP_VAL(tp, CBSP_IEI_CELL_LIST),
+				   TLVP_LEN(tp, CBSP_IEI_CELL_LIST));
+	if (rc < 0)
+		return rc;
 
 	if (TLVP_PRES_LEN(tp, CBSP_IEI_CHANNEL_IND, 1)) {
 		out->channel_ind = talloc(ctx, enum cbsp_channel_ind);
@@ -853,6 +880,8 @@ static int cbsp_dec_kill_compl(struct osmo_cbsp_kill_complete *out, const struct
 static int cbsp_dec_kill_fail(struct osmo_cbsp_kill_failure *out, const struct tlv_parsed *tp,
 			      struct msgb *in, void *ctx)
 {
+	int rc;
+
 	if (!TLVP_PRES_LEN(tp, CBSP_IEI_MSG_ID, 2) ||
 	    !TLVP_PRES_LEN(tp, CBSP_IEI_OLD_SERIAL_NR, 2) ||
 	    !TLVP_PRES_LEN(tp, CBSP_IEI_FAILURE_LIST, 5)) {
@@ -864,21 +893,27 @@ static int cbsp_dec_kill_fail(struct osmo_cbsp_kill_failure *out, const struct t
 	out->old_serial_nr = tlvp_val16be(tp, CBSP_IEI_OLD_SERIAL_NR);
 
 	INIT_LLIST_HEAD(&out->fail_list);
-	cbsp_decode_fail_list(&out->fail_list, ctx,
-			      TLVP_VAL(tp, CBSP_IEI_FAILURE_LIST),
-			      TLVP_LEN(tp, CBSP_IEI_FAILURE_LIST));
+	rc = cbsp_decode_fail_list(&out->fail_list, ctx,
+				   TLVP_VAL(tp, CBSP_IEI_FAILURE_LIST),
+				   TLVP_LEN(tp, CBSP_IEI_FAILURE_LIST));
+	if (rc < 0)
+		return rc;
 
 	INIT_LLIST_HEAD(&out->num_compl_list.list);
 	if (TLVP_PRES_LEN(tp, CBSP_IEI_NUM_BCAST_COMPL_LIST, 7)) {
-		cbsp_decode_num_compl_list(&out->num_compl_list, ctx,
-					   TLVP_VAL(tp, CBSP_IEI_NUM_BCAST_COMPL_LIST),
-					   TLVP_LEN(tp, CBSP_IEI_NUM_BCAST_COMPL_LIST));
+		rc = cbsp_decode_num_compl_list(&out->num_compl_list, ctx,
+						TLVP_VAL(tp, CBSP_IEI_NUM_BCAST_COMPL_LIST),
+						TLVP_LEN(tp, CBSP_IEI_NUM_BCAST_COMPL_LIST));
+		if (rc < 0)
+			return rc;
 	}
 
 	INIT_LLIST_HEAD(&out->cell_list.list);
 	if (TLVP_PRES_LEN(tp, CBSP_IEI_CELL_LIST, 1)) {
-		cbsp_decode_cell_list(&out->cell_list, ctx, TLVP_VAL(tp, CBSP_IEI_CELL_LIST),
-				      TLVP_LEN(tp, CBSP_IEI_CELL_LIST));
+		rc = cbsp_decode_cell_list(&out->cell_list, ctx, TLVP_VAL(tp, CBSP_IEI_CELL_LIST),
+					   TLVP_LEN(tp, CBSP_IEI_CELL_LIST));
+		if (rc < 0)
+			return rc;
 	}
 
 	if (TLVP_PRES_LEN(tp, CBSP_IEI_CHANNEL_IND, 1)) {
@@ -892,6 +927,8 @@ static int cbsp_dec_kill_fail(struct osmo_cbsp_kill_failure *out, const struct t
 static int cbsp_dec_load_query(struct osmo_cbsp_load_query *out, const struct tlv_parsed *tp,
 				struct msgb *in, void *ctx)
 {
+	int rc;
+
 	if (!TLVP_PRES_LEN(tp, CBSP_IEI_CELL_LIST, 1) ||
 	    !TLVP_PRES_LEN(tp, CBSP_IEI_CHANNEL_IND, 1)) {
 		osmo_cbsp_errstr = "missing/short mandatory IE";
@@ -899,8 +936,10 @@ static int cbsp_dec_load_query(struct osmo_cbsp_load_query *out, const struct tl
 	}
 
 	INIT_LLIST_HEAD(&out->cell_list.list);
-	cbsp_decode_cell_list(&out->cell_list, ctx, TLVP_VAL(tp, CBSP_IEI_CELL_LIST),
-			      TLVP_LEN(tp, CBSP_IEI_CELL_LIST));
+	rc = cbsp_decode_cell_list(&out->cell_list, ctx, TLVP_VAL(tp, CBSP_IEI_CELL_LIST),
+				   TLVP_LEN(tp, CBSP_IEI_CELL_LIST));
+	if (rc < 0)
+		return rc;
 
 	out->channel_ind = *TLVP_VAL(tp, CBSP_IEI_CHANNEL_IND);
 	return 0;
@@ -910,6 +949,8 @@ static int cbsp_dec_load_query(struct osmo_cbsp_load_query *out, const struct tl
 static int cbsp_dec_load_query_compl(struct osmo_cbsp_load_query_complete *out,
 				     const struct tlv_parsed *tp, struct msgb *in, void *ctx)
 {
+	int rc;
+
 	if (!TLVP_PRES_LEN(tp, CBSP_IEI_RR_LOADING_LIST, 6) ||
 	    !TLVP_PRES_LEN(tp, CBSP_IEI_CHANNEL_IND, 1)) {
 		osmo_cbsp_errstr = "missing/short mandatory IE";
@@ -917,9 +958,11 @@ static int cbsp_dec_load_query_compl(struct osmo_cbsp_load_query_complete *out,
 	}
 
 	INIT_LLIST_HEAD(&out->loading_list.list);
-	cbsp_decode_loading_list(&out->loading_list, ctx,
-				 TLVP_VAL(tp, CBSP_IEI_RR_LOADING_LIST),
-				 TLVP_LEN(tp, CBSP_IEI_RR_LOADING_LIST));
+	rc = cbsp_decode_loading_list(&out->loading_list, ctx,
+				      TLVP_VAL(tp, CBSP_IEI_RR_LOADING_LIST),
+				      TLVP_LEN(tp, CBSP_IEI_RR_LOADING_LIST));
+	if (rc < 0)
+		return rc;
 
 	out->channel_ind = *TLVP_VAL(tp, CBSP_IEI_CHANNEL_IND);
 	return 0;
@@ -929,6 +972,8 @@ static int cbsp_dec_load_query_compl(struct osmo_cbsp_load_query_complete *out,
 static int cbsp_dec_load_query_fail(struct osmo_cbsp_load_query_failure *out,
 				    const struct tlv_parsed *tp, struct msgb *in, void *ctx)
 {
+	int rc;
+
 	if (!TLVP_PRES_LEN(tp, CBSP_IEI_FAILURE_LIST, 5) ||
 	    !TLVP_PRES_LEN(tp, CBSP_IEI_CHANNEL_IND, 1)) {
 		osmo_cbsp_errstr = "missing/short mandatory IE";
@@ -936,25 +981,29 @@ static int cbsp_dec_load_query_fail(struct osmo_cbsp_load_query_failure *out,
 	}
 
 	INIT_LLIST_HEAD(&out->fail_list);
-	cbsp_decode_fail_list(&out->fail_list, ctx,
-			      TLVP_VAL(tp, CBSP_IEI_FAILURE_LIST),
-			      TLVP_LEN(tp, CBSP_IEI_FAILURE_LIST));
+	rc = cbsp_decode_fail_list(&out->fail_list, ctx,
+				   TLVP_VAL(tp, CBSP_IEI_FAILURE_LIST),
+				   TLVP_LEN(tp, CBSP_IEI_FAILURE_LIST));
+	if (rc < 0)
+		return rc;
 
 	out->channel_ind = *TLVP_VAL(tp, CBSP_IEI_CHANNEL_IND);
 
 	INIT_LLIST_HEAD(&out->loading_list.list);
 	if (TLVP_PRES_LEN(tp, CBSP_IEI_RR_LOADING_LIST, 6)) {
-		cbsp_decode_loading_list(&out->loading_list, ctx,
-					 TLVP_VAL(tp, CBSP_IEI_RR_LOADING_LIST),
-					 TLVP_LEN(tp, CBSP_IEI_RR_LOADING_LIST));
+		rc = cbsp_decode_loading_list(&out->loading_list, ctx,
+					      TLVP_VAL(tp, CBSP_IEI_RR_LOADING_LIST),
+					      TLVP_LEN(tp, CBSP_IEI_RR_LOADING_LIST));
 	}
-	return 0;
+	return rc;
 }
 
 /* 8.1.3.10 STATUS QUERY */
 static int cbsp_dec_msg_status_query(struct osmo_cbsp_msg_status_query *out,
 				     const struct tlv_parsed *tp, struct msgb *in, void *ctx)
 {
+	int rc;
+
 	if (!TLVP_PRES_LEN(tp, CBSP_IEI_MSG_ID, 2) ||
 	    !TLVP_PRES_LEN(tp, CBSP_IEI_OLD_SERIAL_NR, 2) ||
 	    !TLVP_PRES_LEN(tp, CBSP_IEI_CELL_LIST, 1) ||
@@ -967,8 +1016,10 @@ static int cbsp_dec_msg_status_query(struct osmo_cbsp_msg_status_query *out,
 	out->old_serial_nr = tlvp_val16be(tp, CBSP_IEI_OLD_SERIAL_NR);
 
 	INIT_LLIST_HEAD(&out->cell_list.list);
-	cbsp_decode_cell_list(&out->cell_list, ctx, TLVP_VAL(tp, CBSP_IEI_CELL_LIST),
-			      TLVP_LEN(tp, CBSP_IEI_CELL_LIST));
+	rc = cbsp_decode_cell_list(&out->cell_list, ctx, TLVP_VAL(tp, CBSP_IEI_CELL_LIST),
+				   TLVP_LEN(tp, CBSP_IEI_CELL_LIST));
+	if (rc < 0)
+		return rc;
 
 	out->channel_ind = *TLVP_VAL(tp, CBSP_IEI_CHANNEL_IND);
 	return 0;
@@ -978,6 +1029,8 @@ static int cbsp_dec_msg_status_query(struct osmo_cbsp_msg_status_query *out,
 static int cbsp_dec_msg_status_query_compl(struct osmo_cbsp_msg_status_query_complete *out,
 					   const struct tlv_parsed *tp, struct msgb *in, void *ctx)
 {
+	int rc;
+
 	if (!TLVP_PRES_LEN(tp, CBSP_IEI_MSG_ID, 2) ||
 	    !TLVP_PRES_LEN(tp, CBSP_IEI_OLD_SERIAL_NR, 2) ||
 	    !TLVP_PRES_LEN(tp, CBSP_IEI_NUM_BCAST_COMPL_LIST, 7) ||
@@ -990,9 +1043,11 @@ static int cbsp_dec_msg_status_query_compl(struct osmo_cbsp_msg_status_query_com
 	out->old_serial_nr = tlvp_val16be(tp, CBSP_IEI_OLD_SERIAL_NR);
 
 	INIT_LLIST_HEAD(&out->num_compl_list.list);
-	cbsp_decode_num_compl_list(&out->num_compl_list, ctx,
-				   TLVP_VAL(tp, CBSP_IEI_NUM_BCAST_COMPL_LIST),
-				   TLVP_LEN(tp, CBSP_IEI_NUM_BCAST_COMPL_LIST));
+	rc = cbsp_decode_num_compl_list(&out->num_compl_list, ctx,
+					TLVP_VAL(tp, CBSP_IEI_NUM_BCAST_COMPL_LIST),
+					TLVP_LEN(tp, CBSP_IEI_NUM_BCAST_COMPL_LIST));
+	if (rc < 0)
+		return rc;
 	out->channel_ind = *TLVP_VAL(tp, CBSP_IEI_CHANNEL_IND);
 	return 0;
 }
@@ -1001,6 +1056,8 @@ static int cbsp_dec_msg_status_query_compl(struct osmo_cbsp_msg_status_query_com
 static int cbsp_dec_msg_status_query_fail(struct osmo_cbsp_msg_status_query_failure *out,
 					  const struct tlv_parsed *tp, struct msgb *in, void *ctx)
 {
+	int rc;
+
 	if (!TLVP_PRES_LEN(tp, CBSP_IEI_MSG_ID, 2) ||
 	    !TLVP_PRES_LEN(tp, CBSP_IEI_OLD_SERIAL_NR, 2) ||
 	    !TLVP_PRES_LEN(tp, CBSP_IEI_FAILURE_LIST, 5) ||
@@ -1013,17 +1070,21 @@ static int cbsp_dec_msg_status_query_fail(struct osmo_cbsp_msg_status_query_fail
 	out->old_serial_nr = tlvp_val16be(tp, CBSP_IEI_OLD_SERIAL_NR);
 
 	INIT_LLIST_HEAD(&out->fail_list);
-	cbsp_decode_fail_list(&out->fail_list, ctx,
-			      TLVP_VAL(tp, CBSP_IEI_FAILURE_LIST),
-			      TLVP_LEN(tp, CBSP_IEI_FAILURE_LIST));
+	rc = cbsp_decode_fail_list(&out->fail_list, ctx,
+				   TLVP_VAL(tp, CBSP_IEI_FAILURE_LIST),
+				   TLVP_LEN(tp, CBSP_IEI_FAILURE_LIST));
+	if (rc < 0)
+		return rc;
 
 	out->channel_ind = *TLVP_VAL(tp, CBSP_IEI_CHANNEL_IND);
 
 	INIT_LLIST_HEAD(&out->num_compl_list.list);
 	if (TLVP_PRES_LEN(tp, CBSP_IEI_NUM_BCAST_COMPL_LIST, 7)) {
-		cbsp_decode_num_compl_list(&out->num_compl_list, ctx,
-					   TLVP_VAL(tp, CBSP_IEI_NUM_BCAST_COMPL_LIST),
-					   TLVP_LEN(tp, CBSP_IEI_NUM_BCAST_COMPL_LIST));
+		rc = cbsp_decode_num_compl_list(&out->num_compl_list, ctx,
+						TLVP_VAL(tp, CBSP_IEI_NUM_BCAST_COMPL_LIST),
+						TLVP_LEN(tp, CBSP_IEI_NUM_BCAST_COMPL_LIST));
+		if (rc < 0)
+			return rc;
 	}
 	return 0;
 }
@@ -1032,14 +1093,19 @@ static int cbsp_dec_msg_status_query_fail(struct osmo_cbsp_msg_status_query_fail
 static int cbsp_dec_reset(struct osmo_cbsp_reset *out, const struct tlv_parsed *tp,
 			  struct msgb *in, void *ctx)
 {
+	int rc;
+
 	if (!TLVP_PRES_LEN(tp, CBSP_IEI_CELL_LIST, 1)) {
 		osmo_cbsp_errstr = "missing/short mandatory IE";
 		return -EINVAL;
 	}
 
 	INIT_LLIST_HEAD(&out->cell_list.list);
-	cbsp_decode_cell_list(&out->cell_list, ctx, TLVP_VAL(tp, CBSP_IEI_CELL_LIST),
-			      TLVP_LEN(tp, CBSP_IEI_CELL_LIST));
+	rc = cbsp_decode_cell_list(&out->cell_list, ctx, TLVP_VAL(tp, CBSP_IEI_CELL_LIST),
+				   TLVP_LEN(tp, CBSP_IEI_CELL_LIST));
+	if (rc < 0)
+		return rc;
+
 	return 0;
 }
 
@@ -1047,14 +1113,19 @@ static int cbsp_dec_reset(struct osmo_cbsp_reset *out, const struct tlv_parsed *
 static int cbsp_dec_reset_compl(struct osmo_cbsp_reset_complete *out, const struct tlv_parsed *tp,
 				struct msgb *in, void *ctx)
 {
+	int rc;
+
 	if (!TLVP_PRES_LEN(tp, CBSP_IEI_CELL_LIST, 1)) {
 		osmo_cbsp_errstr = "missing/short mandatory IE";
 		return -EINVAL;
 	}
 
 	INIT_LLIST_HEAD(&out->cell_list.list);
-	cbsp_decode_cell_list(&out->cell_list, ctx, TLVP_VAL(tp, CBSP_IEI_CELL_LIST),
-			      TLVP_LEN(tp, CBSP_IEI_CELL_LIST));
+	rc = cbsp_decode_cell_list(&out->cell_list, ctx, TLVP_VAL(tp, CBSP_IEI_CELL_LIST),
+				   TLVP_LEN(tp, CBSP_IEI_CELL_LIST));
+	if (rc < 0)
+		return rc;
+
 	return 0;
 }
 
@@ -1062,20 +1133,26 @@ static int cbsp_dec_reset_compl(struct osmo_cbsp_reset_complete *out, const stru
 static int cbsp_dec_reset_fail(struct osmo_cbsp_reset_failure *out, const struct tlv_parsed *tp,
 				struct msgb *in, void *ctx)
 {
+	int rc;
+
 	if (!TLVP_PRES_LEN(tp, CBSP_IEI_FAILURE_LIST, 5)) {
 		osmo_cbsp_errstr = "missing/short mandatory IE";
 		return -EINVAL;
 	}
 
 	INIT_LLIST_HEAD(&out->fail_list);
-	cbsp_decode_fail_list(&out->fail_list, ctx,
-			      TLVP_VAL(tp, CBSP_IEI_FAILURE_LIST),
-			      TLVP_LEN(tp, CBSP_IEI_FAILURE_LIST));
+	rc = cbsp_decode_fail_list(&out->fail_list, ctx,
+				   TLVP_VAL(tp, CBSP_IEI_FAILURE_LIST),
+				   TLVP_LEN(tp, CBSP_IEI_FAILURE_LIST));
+	if (rc < 0)
+		return rc;
 
 	INIT_LLIST_HEAD(&out->cell_list.list);
 	if (TLVP_PRES_LEN(tp, CBSP_IEI_CELL_LIST, 1)) {
-		cbsp_decode_cell_list(&out->cell_list, ctx, TLVP_VAL(tp, CBSP_IEI_CELL_LIST),
-				      TLVP_LEN(tp, CBSP_IEI_CELL_LIST));
+		rc = cbsp_decode_cell_list(&out->cell_list, ctx, TLVP_VAL(tp, CBSP_IEI_CELL_LIST),
+					   TLVP_LEN(tp, CBSP_IEI_CELL_LIST));
+		if (rc < 0)
+			return rc;
 	}
 	return 0;
 }
@@ -1106,6 +1183,8 @@ static int cbsp_dec_keep_alive_compl(struct osmo_cbsp_keep_alive_complete *out,
 static int cbsp_dec_restart(struct osmo_cbsp_restart *out, const struct tlv_parsed *tp,
 			    struct msgb *in, void *ctx)
 {
+	int rc;
+
 	if (!TLVP_PRES_LEN(tp, CBSP_IEI_CELL_LIST, 1) ||
 	    !TLVP_PRES_LEN(tp, CBSP_IEI_BCAST_MSG_TYPE, 1) ||
 	    !TLVP_PRES_LEN(tp, CBSP_IEI_RECOVERY_IND, 1)) {
@@ -1114,8 +1193,10 @@ static int cbsp_dec_restart(struct osmo_cbsp_restart *out, const struct tlv_pars
 	}
 
 	INIT_LLIST_HEAD(&out->cell_list.list);
-	cbsp_decode_cell_list(&out->cell_list, ctx, TLVP_VAL(tp, CBSP_IEI_CELL_LIST),
-			      TLVP_LEN(tp, CBSP_IEI_CELL_LIST));
+	rc = cbsp_decode_cell_list(&out->cell_list, ctx, TLVP_VAL(tp, CBSP_IEI_CELL_LIST),
+				   TLVP_LEN(tp, CBSP_IEI_CELL_LIST));
+	if (rc < 0)
+		return rc;
 
 	out->bcast_msg_type = *TLVP_VAL(tp, CBSP_IEI_BCAST_MSG_TYPE);
 	out->recovery_ind = *TLVP_VAL(tp, CBSP_IEI_RECOVERY_IND);
@@ -1126,6 +1207,8 @@ static int cbsp_dec_restart(struct osmo_cbsp_restart *out, const struct tlv_pars
 static int cbsp_dec_failure(struct osmo_cbsp_failure *out, const struct tlv_parsed *tp,
 			    struct msgb *in, void *ctx)
 {
+	int rc;
+
 	if (!TLVP_PRES_LEN(tp, CBSP_IEI_FAILURE_LIST, 5) ||
 	    !TLVP_PRES_LEN(tp, CBSP_IEI_BCAST_MSG_TYPE, 1)) {
 		osmo_cbsp_errstr = "missing/short mandatory IE";
@@ -1133,9 +1216,11 @@ static int cbsp_dec_failure(struct osmo_cbsp_failure *out, const struct tlv_pars
 	}
 
 	INIT_LLIST_HEAD(&out->fail_list);
-	cbsp_decode_fail_list(&out->fail_list, ctx,
-			      TLVP_VAL(tp, CBSP_IEI_FAILURE_LIST),
-			      TLVP_LEN(tp, CBSP_IEI_FAILURE_LIST));
+	rc = cbsp_decode_fail_list(&out->fail_list, ctx,
+				   TLVP_VAL(tp, CBSP_IEI_FAILURE_LIST),
+				   TLVP_LEN(tp, CBSP_IEI_FAILURE_LIST));
+	if (rc < 0)
+		return rc;
 
 	out->bcast_msg_type = *TLVP_VAL(tp, CBSP_IEI_BCAST_MSG_TYPE);
 	return 0;
