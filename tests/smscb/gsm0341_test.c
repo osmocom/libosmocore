@@ -25,7 +25,7 @@
 #include <osmocom/core/utils.h>
 #include <osmocom/core/msgb.h>
 
-struct gsm341_ms_message *gen_msg_from_text(uint16_t msg_id, const char *text)
+struct gsm341_ms_message *gen_msg_from_text(uint16_t msg_id, uint8_t msg_code, const char *text)
 {
 	struct gsm341_ms_message *cbmsg;
 	int text_len = strlen(text);
@@ -34,11 +34,11 @@ struct gsm341_ms_message *gen_msg_from_text(uint16_t msg_id, const char *text)
 	uint8_t payload[text_len];
 	int payload_octets;
 
-	srand(time(NULL));
+	//srand(time(NULL));
 
 	gsm_7bit_encode_n(payload, sizeof(payload), text, &payload_octets);
 	//cbmsg = gsm0341_build_msg(NULL, 0, rand(), 0, msg_id, 0x0f, 1, 1, payload, payload_octets);
-	cbmsg = gsm0341_build_msg(NULL, 0, rand(), 0, msg_id, 0x00, 1, 1, payload, payload_octets);
+	cbmsg = gsm0341_build_msg(NULL, 0, msg_code, 0, msg_id, 0x00, 1, 1, payload, payload_octets);
 
 	printf("%s\n", osmo_hexdump_nospc((uint8_t *)cbmsg, sizeof(*cbmsg)+payload_octets));
 
@@ -50,6 +50,7 @@ int main(int argc, char **argv)
 	uint16_t msg_id = GSM341_MSGID_ETWS_CMAS_MONTHLY_TEST;
 	char *text = "Mahlzeit!";
 	char tbuf[GSM341_MAX_CHARS+1];
+	struct gsm341_ms_message *cbmsg;
 
 	if (argc > 1)
 		msg_id = atoi(argv[1]);
@@ -63,7 +64,8 @@ int main(int argc, char **argv)
 			sizeof(tbuf)-strlen(text));
 	tbuf[GSM341_MAX_CHARS] = 0;
 
-	gen_msg_from_text(msg_id, tbuf);
+	cbmsg = gen_msg_from_text(msg_id, 1, tbuf);
+	talloc_free(cbmsg);
 
 	return EXIT_SUCCESS;
 }

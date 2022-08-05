@@ -9,13 +9,13 @@ LDADD += $(top_builddir)/tests/libsercomstub.a
 endif
 
 check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
-                 smscb/smscb_test bits/bitrev_test a5/a5_test		\
+                 bits/bitrev_test a5/a5_test		                \
                  conv/conv_test auth/milenage_test lapd/lapd_test	\
                  gsm0808/gsm0808_test gsm0408/gsm0408_test		\
 		 gprs/gprs_test	kasumi/kasumi_test gea/gea_test		\
 		 logging/logging_test codec/codec_test			\
 		 loggingrb/loggingrb_test strrb/strrb_test              \
-		 comp128/comp128_test smscb/gsm0341_test		\
+		 comp128/comp128_test                         		\
 		 bitvec/bitvec_test msgb/msgb_test bits/bitcomp_test	\
 		 bits/bitfield_test					\
 		 tlv/tlv_test gsup/gsup_test oap/oap_test		\
@@ -46,6 +46,8 @@ check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
 		 gsm48/rest_octets_test					\
 		 base64/base64_test					\
 		 iuup/iuup_test						\
+		 smscb/smscb_test                                       \
+		 smscb/gsm0341_test                                     \
 		 $(NULL)
 
 if ENABLE_MSGFILE
@@ -352,7 +354,7 @@ $(srcdir)/package.m4: $(top_srcdir)/configure.ac
 
 EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
              timer/timer_test.ok sms/sms_test.ok ussd/ussd_test.ok	\
-             smscb/smscb_test.ok bits/bitrev_test.ok a5/a5_test.ok	\
+             bits/bitrev_test.ok a5/a5_test.ok				\
              conv/conv_test.ok auth/milenage_test.ok ctrl/ctrl_test.ok	\
              lapd/lapd_test.ok						\
              gsm0408/gsm0408_test.ok gsm0408/gsm0408_test.err		\
@@ -426,6 +428,8 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
 	     gsm48/rest_octets_test.ok \
 	     base64/base64_test.ok \
 	     iuup/iuup_test.ok \
+	     smscb/smscb_test.ok \
+	     smscb/gsm0341_test.ok \
 	     $(NULL)
 
 if ENABLE_LIBSCTP
@@ -480,6 +484,8 @@ endif
 		>$(srcdir)/sms/sms_test.ok
 	smscb/smscb_test \
 		>$(srcdir)/smscb/smscb_test.ok
+	smscb/gsm0341_test \
+		>$(srcdir)/smscb/gsm0341_test.ok
 	ussd/ussd_test \
 		>$(srcdir)/ussd/ussd_test.ok
 	auth/milenage_test \
