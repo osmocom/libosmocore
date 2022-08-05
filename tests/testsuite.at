@@ -108,6 +108,12 @@ cat $abs_srcdir/smscb/gsm0341_test.ok > expout
 AT_CHECK([$abs_top_builddir/tests/smscb/gsm0341_test], [0], [expout])
 AT_CLEANUP
 
+AT_SETUP([smscb_cbsp])
+AT_KEYWORDS([smscb_cbsp])
+cat $abs_srcdir/smscb/cbsp_test.ok > expout
+AT_CHECK([$abs_top_builddir/tests/smscb/cbsp_test], [0], [expout])
+AT_CLEANUP
+
 AT_SETUP([ussd])
 AT_KEYWORDS([ussd])
 cat $abs_srcdir/ussd/ussd_test.ok > expout

@@ -537,8 +537,8 @@ static int cbsp_decode_fail_list(struct llist_head *fl, void *ctx,
 		struct osmo_cbsp_fail_ent *ent = talloc_zero(ctx, struct osmo_cbsp_fail_ent);
 		unsigned int len_remain = len - (cur - buf);
 		OSMO_ASSERT(ent);
-		ent->id_discr = cur[0];
-		rc = gsm0808_decode_cell_id_u(&ent->cell_id, ent->id_discr, cur+1, len_remain-1);
+		ent->id_discr = *cur++;
+		rc = gsm0808_decode_cell_id_u(&ent->cell_id, ent->id_discr, cur, len_remain-1);
 		if (rc < 0) {
 			osmo_cbsp_errstr = "fail list: error decoding cell_id_union";
 			return rc;

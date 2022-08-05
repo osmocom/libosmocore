@@ -48,6 +48,7 @@ check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
 		 iuup/iuup_test						\
 		 smscb/smscb_test                                       \
 		 smscb/gsm0341_test                                     \
+		 smscb/cbsp_test                                        \
 		 $(NULL)
 
 if ENABLE_MSGFILE
@@ -170,6 +171,9 @@ smscb_smscb_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 
 smscb_gsm0341_test_SOURCES = smscb/gsm0341_test.c
 smscb_gsm0341_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
+
+smscb_cbsp_test_SOURCES = smscb/cbsp_test.c
+smscb_cbsp_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 
 sms_sms_test_SOURCES = sms/sms_test.c
 sms_sms_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
@@ -430,6 +434,7 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
 	     iuup/iuup_test.ok \
 	     smscb/smscb_test.ok \
 	     smscb/gsm0341_test.ok \
+	     smscb/cbsp_test.ok \
 	     $(NULL)
 
 if ENABLE_LIBSCTP
@@ -486,6 +491,8 @@ endif
 		>$(srcdir)/smscb/smscb_test.ok
 	smscb/gsm0341_test \
 		>$(srcdir)/smscb/gsm0341_test.ok
+	smscb/cbsp_test \
+		>$(srcdir)/smscb/cbsp_test.ok
 	ussd/ussd_test \
 		>$(srcdir)/ussd/ussd_test.ok
 	auth/milenage_test \
