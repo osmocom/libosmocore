@@ -1261,6 +1261,7 @@ static int cbsp_dec_error_ind(struct osmo_cbsp_error_ind *out, const struct tlv_
  *  \returns callee-allocated decoded representation of CBSP message; NULL on error */
 struct osmo_cbsp_decoded *osmo_cbsp_decode(void *ctx, struct msgb *in)
 {
+	OSMO_ASSERT(in->l1h != NULL && in->l2h != NULL);
 	struct osmo_cbsp_decoded *out = talloc_zero(ctx, struct osmo_cbsp_decoded);
 	const struct cbsp_header *h = msgb_l1(in);
 	struct tlv_parsed tp[16]; /* max. number of pages in a given CBS message */
