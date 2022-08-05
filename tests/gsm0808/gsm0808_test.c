@@ -924,6 +924,28 @@ static void test_enc_dec_aoip_trasp_addr_v6()
 	msgb_free(msg);
 }
 
+static void test_enc_aoip_trasp_addr_msg_too_small()
+{
+	struct msgb *msg;
+	struct sockaddr_storage enc_addr;
+	struct sockaddr_in enc_addr_in;
+	uint8_t rc_enc;
+
+	memset(&enc_addr_in, 0, sizeof(enc_addr_in));
+	enc_addr_in.sin_family = AF_INET;
+	enc_addr_in.sin_port = htons(1234);
+	inet_aton("255.0.255.255", &enc_addr_in.sin_addr);
+
+	memset(&enc_addr, 0, sizeof(enc_addr));
+	memcpy(&enc_addr, &enc_addr_in, sizeof(enc_addr_in));
+
+	msg = msgb_alloc(7, "output buffer");
+	rc_enc = gsm0808_enc_aoip_trasp_addr(msg, &enc_addr);
+	OSMO_ASSERT(rc_enc == 0);
+
+	msgb_free(msg);
+}
+
 static void test_gsm0808_enc_dec_speech_codec()
 {
 	struct gsm0808_speech_codec enc_sc = {
@@ -2540,6 +2562,7 @@ int main(int argc, char **argv)
 
 	test_enc_dec_aoip_trasp_addr_v4();
 	test_enc_dec_aoip_trasp_addr_v6();
+	test_enc_aoip_trasp_addr_msg_too_small();
 	test_gsm0808_enc_dec_speech_codec();
 	test_gsm0808_enc_dec_speech_codec_ext_with_cfg();
 	test_gsm0808_enc_dec_speech_codec_with_cfg();

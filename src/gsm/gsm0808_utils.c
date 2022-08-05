@@ -78,7 +78,7 @@ uint8_t gsm0808_enc_cause(struct msgb *msg, uint16_t cause)
 /*! Encode TS 08.08 AoIP transport address IE
  *  \param[out] msg Message Buffer to which to append IE
  *  \param[in] ss Socket Address to be used in IE
- *  \returns number of bytes added to \a msg */
+ *  \returns number of bytes added to \a msg; 0 if msg is too small */
 uint8_t gsm0808_enc_aoip_trasp_addr(struct msgb *msg,
 				    const struct sockaddr_storage *ss)
 {
@@ -87,16 +87,27 @@ uint8_t gsm0808_enc_aoip_trasp_addr(struct msgb *msg,
 	struct sockaddr_in6 *sin6;
 	uint16_t port = 0;
 	uint8_t *ptr;
-	uint8_t *old_tail;
-	uint8_t *tlv_len;
+	const uint8_t len_tl = 2;
+	uint8_t len_v = sizeof(port);
 
 	OSMO_ASSERT(msg);
 	OSMO_ASSERT(ss);
 	OSMO_ASSERT(ss->ss_family == AF_INET || ss->ss_family == AF_INET6);
 
+	switch (ss->ss_family) {
+	case AF_INET:
+		len_v += IP_V4_ADDR_LEN;
+		break;
+	case AF_INET6:
+		len_v += IP_V6_ADDR_LEN;
+		break;
+	}
+
+	if (msgb_tailroom(msg) < len_tl + len_v)
+		return 0;
+
 	msgb_put_u8(msg, GSM0808_IE_AOIP_TRASP_ADDR);
-	tlv_len = msgb_put(msg,1);
-	old_tail = msg->tail;
+	msgb_put_u8(msg, len_v);
 
 	switch (ss->ss_family) {
 	case AF_INET:
@@ -114,9 +125,7 @@ uint8_t gsm0808_enc_aoip_trasp_addr(struct msgb *msg,
 	}
 
 	msgb_put_u16(msg, port);
-
-	*tlv_len = (uint8_t) (msg->tail - old_tail);
-	return *tlv_len + 2;
+	return len_tl + len_v;
 }
 
 /*! Decode TS 08.08 AoIP transport address IE
