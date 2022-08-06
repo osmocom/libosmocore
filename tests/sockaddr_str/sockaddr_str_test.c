@@ -24,7 +24,10 @@
 #include <errno.h>
 #include <string.h>
 #include <osmocom/core/sockaddr_str.h>
+#include <osmocom/core/application.h>
+#include <osmocom/core/logging.h>
 #include <osmocom/core/utils.h>
+#include <osmocom/core/socket.h>
 #include <netinet/in.h>
 
 struct osmo_sockaddr_str oip_data[] = {
@@ -259,10 +262,62 @@ static void test_osmo_sockaddr_str_cmp()
 	}
 }
 
-int main(int argc, char **argv)
+static int test_sockaddr_strs_dump(void *ctx, struct osmo_sockaddr_str *xdata, size_t count)
 {
-	sockaddr_str_test_conversions();
-	test_osmo_sockaddr_str_cmp();
-	return 0;
+	char buf[OSMO_SOCK_NAME_MAXLEN * OSMO_SOCK_MAX_ADDRS * 2];
+	struct osmo_sockaddr_str *sa_strs[OSMO_SOCK_MAX_ADDRS];
+	int i, j, rc;
+
+	for (i = 0, j = 0; j < count && i < OSMO_SOCK_MAX_ADDRS; j++) {//ARRAY_SIZE(oip_data)
+		sa_strs[i] = talloc_zero(ctx, struct osmo_sockaddr_str);
+		struct sockaddr_storage tmp;
+		if (osmo_sockaddr_str_to_sockaddr(&xdata[j], &tmp) == 0) {//&oip_data[j]
+			rc = osmo_sockaddr_str_from_sockaddr(sa_strs[i], &tmp);
+			if (rc < 0) {
+				printf("osmo_sockaddr_str_from_sockaddr(%d) failed on ", i);
+				dump_oip(&xdata[j]);//&oip_data[j]
+				return rc;
+			}
+			i++;
+		}
+	}
+	rc = osmo_sockaddr_strs_to_str(buf, sizeof(buf), (const struct osmo_sockaddr_str **)sa_strs, i);
+	printf("\nTest data [%d == %ld]: %s\n", rc, strlen(buf), buf);
+	return rc;
 }
 
+const struct log_info_cat default_categories[] = {
+};
+
+static struct log_info info = {
+	.cat = default_categories,
+	.num_cat = ARRAY_SIZE(default_categories),
+};
+
+int main(int argc, char **argv)
+{
+	int rc;
+	void *ctx = talloc_named_const(NULL, 0, "sockaddr_str__test");
+	osmo_init_logging2(ctx, &info);
+	log_set_use_color(osmo_stderr_target, 0);
+	log_set_print_filename2(osmo_stderr_target, LOG_FILENAME_NONE);
+	log_set_print_category(osmo_stderr_target, 0);
+	log_set_print_category_hex(osmo_stderr_target, 0);
+
+	sockaddr_str_test_conversions();
+	test_osmo_sockaddr_str_cmp();
+
+	rc = test_sockaddr_strs_dump(ctx, oip_data, ARRAY_SIZE(oip_data));
+	if (rc < 0)
+		return EXIT_FAILURE;
+
+	rc = test_sockaddr_strs_dump(ctx, oip_data, 1);
+	if (rc < 0)
+		return EXIT_FAILURE;
+
+	rc = test_sockaddr_strs_dump(ctx, oip_data, 0);
+	if (rc < 0)
+		return EXIT_FAILURE;
+
+	return EXIT_SUCCESS;
+}
