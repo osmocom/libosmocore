@@ -103,3 +103,4 @@ libosmocore-*-coverage*
 coverage-cobertura.xml
 
 contrib/libosmocore.spec
+/utils/osmo-ns-dummy
