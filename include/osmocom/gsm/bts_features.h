@@ -33,6 +33,7 @@ enum osmo_bts_features {
 	BTS_FEAT_BCCH_POWER_RED,
 	BTS_FEAT_DYN_TS_SDCCH8, /* Osmo Dynamic TS supports configured as SDCCH8 */
 	BTS_FEAT_ACCH_TEMP_OVP, /* FACCH/SACCH Temporary overpower */
+	BTS_FEAT_OSMUX, /* Osmux (Osmocom RTP muxing) support */
 	_NUM_BTS_FEAT
 };
 

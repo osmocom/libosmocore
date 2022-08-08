@@ -43,6 +43,7 @@ const struct value_string osmo_bts_features_descs[] = {
 	{ BTS_FEAT_BCCH_POWER_RED,	"BCCH carrier power reduction mode" },
 	{ BTS_FEAT_DYN_TS_SDCCH8,	"Dynamic Timeslot configuration as SDCCH8" },
 	{ BTS_FEAT_ACCH_TEMP_OVP,	"FACCH/SACCH Temporary overpower" },
+	{ BTS_FEAT_OSMUX,		"Osmux (Osmocom RTP multiplexing)" },
 	{ 0, NULL }
 };
 
