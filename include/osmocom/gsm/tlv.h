@@ -322,7 +322,7 @@ static inline uint8_t *v_put(uint8_t *buf, uint8_t val)
 }
 
 /*! put (append) a TV field */
-static inline uint8_t *tv_put(uint8_t *buf, uint8_t tag, 
+static inline uint8_t *tv_put(uint8_t *buf, uint8_t tag,
 				uint8_t val)
 {
 	*buf++ = tag;
@@ -344,7 +344,7 @@ static inline uint8_t *tv_fixed_put(uint8_t *buf, uint8_t tag,
  *  \param[in] tag Tag value
  *  \param[in] val Value (in host byte order!)
  */
-static inline uint8_t *tv16_put(uint8_t *buf, uint8_t tag, 
+static inline uint8_t *tv16_put(uint8_t *buf, uint8_t tag,
 				 uint16_t val)
 {
 	*buf++ = tag;
