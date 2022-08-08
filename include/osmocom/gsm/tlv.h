@@ -543,7 +543,7 @@ int tlv_encode(struct msgb *msg, const struct tlv_definition *def, const struct 
 int tlv_encode_ordered(struct msgb *msg, const struct tlv_definition *def, const struct tlv_parsed *tp,
 			const uint8_t *tag_order, unsigned int tag_order_len);
 
-#define TLVP_PRESENT(x, y)	((x)->lv[y].val)
+#define TLVP_PRESENT(x, y)	(!!((x)->lv[y].val))
 #define TLVP_LEN(x, y)		(x)->lv[y].len
 #define TLVP_VAL(x, y)		(x)->lv[y].val
 
