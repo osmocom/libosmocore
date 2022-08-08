@@ -184,6 +184,38 @@ int osmo_ip_str_type(const char *ip)
 	return AF_UNSPEC;
 }
 
+/*! Guess whether struct sockaddr with AF_UNSPEC family has valid IPv4 or IPv6 address.
+ * The IPv6 is tried first to take into account "IPv4 mapped addresses".
+ * \param[in] src  Generic struct sockaddr pointer.
+ * \return AF_INET or AF_INET6, AF_UNSPEC or original sa_family which are unsigned type according to <sys/socket.h>.
+ */
+unsigned osmo_sockaddr_guess_unspec(const struct sockaddr *src)
+{
+	int rc;
+	struct osmo_sockaddr_str sa;
+	struct osmo_sockaddr_str *tmp = &sa;
+	const struct sockaddr_in6 *src6 = (const struct sockaddr_in6 *)src;
+	const struct sockaddr_in *src4 = (const struct sockaddr_in *)src;
+
+	if (!src)
+		return AF_UNSPEC;
+
+	if (src->sa_family != AF_UNSPEC)
+		return src->sa_family;
+
+	/* IPv6? */
+	rc = osmo_sockaddr_str_from_in6_addr(tmp, &src6->sin6_addr, osmo_ntohs(src6->sin6_port));
+	if (rc == 0 && osmo_ip_str_type(tmp->ip) == AF_INET6)
+		return AF_INET6;
+
+	/* IPv4? */
+	rc = osmo_sockaddr_str_from_in_addr(tmp, &src4->sin_addr, osmo_ntohs(src4->sin_port));
+	if (rc == 0 && osmo_ip_str_type(tmp->ip) == AF_INET)
+		return AF_INET;
+
+	return AF_UNSPEC;
+}
+
 /*! Safely copy the given ip string to sockaddr_str, classify to AF_INET or AF_INET6.
  * Data will be written to sockaddr_str even if an error is returned.
  * \param[out] sockaddr_str  The instance to copy to.
@@ -317,7 +349,7 @@ int osmo_sockaddr_str_from_sockaddr_in(struct osmo_sockaddr_str *sockaddr_str, c
 		return -ENOSPC;
 	if (!src)
 		return -EINVAL;
-	if (src->sin_family != AF_INET)
+	if (src->sin_family != AF_INET && osmo_sockaddr_guess_unspec((const struct sockaddr *)src) != AF_INET)
 		return -EINVAL;
 	return osmo_sockaddr_str_from_in_addr(sockaddr_str, &src->sin_addr, osmo_ntohs(src->sin_port));
 }
@@ -333,7 +365,7 @@ int osmo_sockaddr_str_from_sockaddr_in6(struct osmo_sockaddr_str *sockaddr_str, 
 		return -ENOSPC;
 	if (!src)
 		return -EINVAL;
-	if (src->sin6_family != AF_INET6)
+	if (src->sin6_family != AF_INET6 && osmo_sockaddr_guess_unspec((const struct sockaddr *)src) != AF_INET6)
 		return -EINVAL;
 	return osmo_sockaddr_str_from_in6_addr(sockaddr_str, &src->sin6_addr, osmo_ntohs(src->sin6_port));
 }
