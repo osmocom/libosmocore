@@ -540,11 +540,16 @@ enum gsm0808_paging_info {
 	GSM0808_PAGINF_FOR_USSD		= 0x02,
 };
 
-/*! 3GPP TS 48.008 3.2.2.104 Speech Codec */
+/*! 3GPP TS 48.008 3.2.2.104 Speech Codec.
+ * Valid if (fi || pi || pt) == true, otherwise ignore. */
 struct gsm0808_speech_codec {
+	/*! Full IP: AoIP with compressed speech via RTP/UDP/IP. */
 	bool fi;
+	/*! PCMoIP: PCM over A-Interface via RTP/UPD/IP. */
 	bool pi;
+	/*! PCMoTDM: PCM over A-Interface with TDM as transport. */
 	bool pt;
+	/*! TFO (Inband Tandem Free Operation). Only valid if (pi || pt) == true. */
 	bool tf;
 	/*! See enum gsm0808_speech_codec_type. */
 	uint8_t type;
