@@ -78,5 +78,7 @@ const struct value_string osmo_bts_features_names[] = {
 	{ BTS_FEAT_ABIS_OSMO_PCU, "ABIS_OSMO_PCU" },
 	{ BTS_FEAT_BCCH_POWER_RED, "BCCH_PWR_RED" },
 	{ BTS_FEAT_DYN_TS_SDCCH8, "DYN_TS_SDCCH8" },
+	{ BTS_FEAT_ACCH_TEMP_OVP, "ACCH_TEMP_OVP" },
+	{ BTS_FEAT_OSMUX, "OSMUX" },
 	{}
 };
