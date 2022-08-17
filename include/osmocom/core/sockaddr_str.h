@@ -41,7 +41,6 @@ struct sockaddr_in6;
  */
 
 int osmo_ip_str_type(const char *ip);
-unsigned osmo_sockaddr_guess_unspec(const struct sockaddr *src);
 
 struct osmo_sockaddr_str {
 	/*! AF_INET for IPv4 address, or AF_INET6 for IPv6 address. */
