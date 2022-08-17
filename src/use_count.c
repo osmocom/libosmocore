@@ -235,6 +235,8 @@ int _osmo_use_count_get_put(struct osmo_use_count *uc, const char *use, int32_t 
 {
 	struct osmo_use_count_entry *e;
 	int32_t old_use_count;
+	if (!uc)
+		return -EINVAL;
 	if (!change)
 		return 0;
 
