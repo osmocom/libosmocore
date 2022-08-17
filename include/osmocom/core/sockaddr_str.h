@@ -59,14 +59,12 @@ struct osmo_sockaddr_str {
  *     struct osmo_sockaddr_str *my_sockaddr_str = ...;
  *     printf("got " OSMO_SOCKADDR_STR_FMT "\n", OSMO_SOCKADDR_STR_FMT_ARGS(my_sockaddr_str));
  */
-#define OSMO_SOCKADDR_STR_NO_PORT_FMT "%s%s%s"
-#define OSMO_SOCKADDR_STR_NO_PORT_FMT_ARGS(R) \
-	((R) && (R)->af == AF_INET6) ? "[" : "", \
-	(R) ? (R)->ip : "NULL", \
-	((R) && (R)->af == AF_INET6) ? "]" : ""
-
-#define OSMO_SOCKADDR_STR_FMT OSMO_SOCKADDR_STR_NO_PORT_FMT ":%u"
-#define OSMO_SOCKADDR_STR_FMT_ARGS(R) OSMO_SOCKADDR_STR_NO_PORT_FMT_ARGS(R), (R) ? (R)->port : 0
+#define OSMO_SOCKADDR_STR_FMT "%s%s%s:%u"
+#define OSMO_SOCKADDR_STR_FMT_ARGS(R) \
+	((R) && (R)->af == AF_INET6)? "[" : "", \
+	(R)? (R)->ip : "NULL", \
+	((R) && (R)->af == AF_INET6)? "]" : "", \
+	(R)? (R)->port : 0
 
 bool osmo_sockaddr_str_is_set(const struct osmo_sockaddr_str *sockaddr_str);
 bool osmo_sockaddr_str_is_nonzero(const struct osmo_sockaddr_str *sockaddr_str);
@@ -90,7 +88,6 @@ int osmo_sockaddr_str_to_32h(const struct osmo_sockaddr_str *sockaddr_str, uint3
 int osmo_sockaddr_str_to_sockaddr_in(const struct osmo_sockaddr_str *sockaddr_str, struct sockaddr_in *dst);
 int osmo_sockaddr_str_to_sockaddr_in6(const struct osmo_sockaddr_str *sockaddr_str, struct sockaddr_in6 *dst);
 int osmo_sockaddr_str_to_sockaddr(const struct osmo_sockaddr_str *sockaddr_str, struct sockaddr_storage *dst);
-int osmo_sockaddr_strs_to_str(char *buf, size_t buf_len, const struct osmo_sockaddr_str **sa_str, size_t sa_str_count);
 
 int osmo_sockaddr_str_from_32n(struct osmo_sockaddr_str *sockaddr_str, uint32_t ip, uint16_t port)
 	OSMO_DEPRECATED("osmo_sockaddr_str_from_32n() actually uses *host* byte order. Use osmo_sockaddr_str_from_32h() instead");

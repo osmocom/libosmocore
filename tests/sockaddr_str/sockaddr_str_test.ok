@@ -937,9 +937,3 @@ test_osmo_sockaddr_str_cmp
   osmo_sockaddr_str_cmp(): [0::]:5(zero) > 0.0.0.0:5(zero)
   osmo_sockaddr_str_cmp(): [0::]:5(zero) == [::]:5(zero)
   osmo_sockaddr_str_cmp(): [0::]:5(zero) == [0::]:5(zero)
-
-Test data [179 == 179]: (1.2.3.4|0.0.0.0|255.255.255.255|[1:2:3::4]|[::]|[::1]|[ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]|[ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff]|1.2.3.4|[::1:a09:807]|0.0.0.0|[::]|[::])
-
-Test data [7 == 7]: 1.2.3.4
-
-Test data [2 == 2]: ()

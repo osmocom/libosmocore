@@ -541,48 +541,5 @@ int osmo_sockaddr_str_to_sockaddr(const struct osmo_sockaddr_str *sockaddr_str, 
 	}
 }
 
-/*! Convert array of osmo_sockaddr_str address strings into a string representation of the address set, in the form:
- * buf_len == 0: "()"
- * buf_len == 1: "hostA"
- * buf_len >= 2: (hostA|hostB|...|...)
- * The port information is ignored.
- * \param[out] buf The buffer to store address set representation in.
- * \param[in] buf_len The size of buffer for address set representation.
- * \param[in] sa_str The array of osmo_sockaddr_str structs.
- * \param[in] sa_str_count Number of osmo_sockaddr_str structs to convert.
- * \return 0 on success, negative on error.
- */
-int osmo_sockaddr_strs_to_str(char *buf, size_t buf_len, const struct osmo_sockaddr_str **sa_str, size_t sa_str_count)
-{
-	size_t i;
-	struct osmo_strbuf sb = { .buf = buf, .len = buf_len };
-	char *after;
-
-	if (buf_len < 3)
-		return -ENOMEM;
-
-	if (sa_str_count != 1)
-		OSMO_STRBUF_PRINTF(sb, "(");
-
-	for (i = 0; i < sa_str_count; i++) {
-		if (sa_str_count == 1)
-			after = "";
-		else
-			after = (i == (sa_str_count - 1)) ? ")" : "|";
-
-		if (sa_str[i])
-			OSMO_STRBUF_PRINTF(sb, OSMO_SOCKADDR_STR_NO_PORT_FMT "%s",
-							   OSMO_SOCKADDR_STR_NO_PORT_FMT_ARGS(sa_str[i]), after);
-	}
-
-	if (sa_str_count == 0)
-		OSMO_STRBUF_PRINTF(sb, ")");
-
-	if (sb.chars_needed >= buf_len)
-		return -ENOSPC;
-
-	return sb.chars_needed;
-}
-
 /*! @} */
 #endif // HAVE_NETINET_IN_H
