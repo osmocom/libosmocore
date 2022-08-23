@@ -141,55 +141,55 @@ Decoding zero length Mobile Identities
     returned empty string
 
 test_struct_mobile_identity()
-LU with IMSI 901700000004620: rc = 0, mi = IMSI-901700000004620 ok
-LU with TMSI 0x0980ad8a: rc = 0, mi = TMSI-0x0980AD8A ok
-LU with invalid MI type: rc = -22 ok
-LU with truncated IMSI MI: rc = -74 ok
-LU with too short IMSI MI (12345): rc = -74 ok
-LU with just long enough IMSI MI 123456: rc = 0, mi = IMSI-123456 ok
-LU with max length IMSI MI 123456789012345: rc = 0, mi = IMSI-123456789012345 ok
-LU with just too long IMSI MI 1234567890123456: rc = -74 ok
-LU with truncated TMSI MI: rc = -74 ok
-LU with odd length TMSI: rc = -74 ok
-LU with too long TMSI MI: rc = -74 ok
-LU with too short TMSI: rc = -74 ok
-CM Service Request with IMSI 123456: rc = 0, mi = IMSI-123456 ok
-CM Service Request with TMSI 0x5a42e404: rc = 0, mi = TMSI-0x5A42E404 ok
-CM Service Request with shorter CM2, with IMSI 123456: rc = 0, mi = IMSI-123456 ok
-CM Service Request with longer CM2, with IMSI 123456: rc = 0, mi = IMSI-123456 ok
-CM Service Request with shorter CM2, with TMSI 0x00000000: rc = 0, mi = TMSI-0x00000000 ok
-CM Service Request with invalid MI type: rc = -22 ok
-CM Service Request with truncated IMSI MI: rc = -74 ok
-CM Service Request with truncated TMSI MI: rc = -74 ok
-CM Service Request with odd length TMSI: rc = -74 ok
-CM Service Request with too long TMSI MI: rc = -74 ok
-CM Service Request with too short TMSI: rc = -74 ok
-CM Service Reestablish Request with TMSI 0x5a42e404: rc = 0, mi = TMSI-0x5A42E404 ok
-Paging Response with IMSI 1234567: rc = 0, mi = IMSI-1234567 ok
-Paging Response with TMSI 0xb48883de: rc = 0, mi = TMSI-0xB48883DE ok
-Paging Response with TMSI, with unused nibble not 0xf: rc = -74 ok
-Paging Response with too short IMEI (1234567): rc = -74 ok
-Paging Response with IMEI 123456789012345: rc = 0, mi = IMEI-123456789012345 ok
-Paging Response with IMEI 12345678901234 (no Luhn checksum): rc = 0, mi = IMEI-12345678901234 ok
-Paging Response with IMEISV 1234567890123456: rc = 0, mi = IMEI-SV-1234567890123456 ok
-Paging Response with too short IMEISV 123456789012345: rc = -74 ok
-Paging Response with too long IMEISV 12345678901234567: rc = -74 ok
-Paging Response with IMSI 123456789012345 and flipped ODD bit: rc = -74 ok
-IMSI-Detach with IMSI 901700000004620: rc = 0, mi = IMSI-901700000004620 ok
-IMSI-Detach with TMSI 0x0980ad8a: rc = 0, mi = TMSI-0x0980AD8A ok
-IMSI-Detach with invalid MI type: rc = -22 ok
-IMSI-Detach with truncated IMSI MI: rc = -74 ok
-IMSI-Detach with too short IMSI MI (12345): rc = -74 ok
-IMSI-Detach with just long enough IMSI MI 123456: rc = 0, mi = IMSI-123456 ok
-IMSI-Detach with max length IMSI MI 123456789012345: rc = 0, mi = IMSI-123456789012345 ok
-IMSI-Detach with just too long IMSI MI 1234567890123456: rc = -74 ok
-IMSI-Detach with truncated TMSI MI: rc = -74 ok
-IMSI-Detach with odd length TMSI: rc = -74 ok
-IMSI-Detach with too long TMSI MI: rc = -74 ok
-IMSI-Detach with too short TMSI: rc = -74 ok
-Identity Response with IMSI 901700000004620: rc = 0, mi = IMSI-901700000004620 ok
-Identity Response with IMEI 123456789012345: rc = 0, mi = IMEI-123456789012345 ok
-Identity Response with IMEISV 9876543210987654: rc = 0, mi = IMEI-SV-9876543210987654 ok
+LU with IMSI 901700000004620: rc == 0, mi = IMSI-901700000004620 ok
+LU with TMSI 0x0980ad8a: rc == 0, mi = TMSI-0x0980AD8A ok
+LU with invalid MI type: rc != 0 ok
+LU with truncated IMSI MI: rc != 0 ok
+LU with too short IMSI MI (12345): rc != 0 ok
+LU with just long enough IMSI MI 123456: rc == 0, mi = IMSI-123456 ok
+LU with max length IMSI MI 123456789012345: rc == 0, mi = IMSI-123456789012345 ok
+LU with just too long IMSI MI 1234567890123456: rc != 0 ok
+LU with truncated TMSI MI: rc != 0 ok
+LU with odd length TMSI: rc != 0 ok
+LU with too long TMSI MI: rc != 0 ok
+LU with too short TMSI: rc != 0 ok
+CM Service Request with IMSI 123456: rc == 0, mi = IMSI-123456 ok
+CM Service Request with TMSI 0x5a42e404: rc == 0, mi = TMSI-0x5A42E404 ok
+CM Service Request with shorter CM2, with IMSI 123456: rc == 0, mi = IMSI-123456 ok
+CM Service Request with longer CM2, with IMSI 123456: rc == 0, mi = IMSI-123456 ok
+CM Service Request with shorter CM2, with TMSI 0x00000000: rc == 0, mi = TMSI-0x00000000 ok
+CM Service Request with invalid MI type: rc != 0 ok
+CM Service Request with truncated IMSI MI: rc != 0 ok
+CM Service Request with truncated TMSI MI: rc != 0 ok
+CM Service Request with odd length TMSI: rc != 0 ok
+CM Service Request with too long TMSI MI: rc != 0 ok
+CM Service Request with too short TMSI: rc != 0 ok
+CM Service Reestablish Request with TMSI 0x5a42e404: rc == 0, mi = TMSI-0x5A42E404 ok
+Paging Response with IMSI 1234567: rc == 0, mi = IMSI-1234567 ok
+Paging Response with TMSI 0xb48883de: rc == 0, mi = TMSI-0xB48883DE ok
+Paging Response with TMSI, with unused nibble not 0xf: rc != 0 ok
+Paging Response with too short IMEI (1234567): rc != 0 ok
+Paging Response with IMEI 123456789012345: rc == 0, mi = IMEI-123456789012345 ok
+Paging Response with IMEI 12345678901234 (no Luhn checksum): rc == 0, mi = IMEI-12345678901234 ok
+Paging Response with IMEISV 1234567890123456: rc == 0, mi = IMEI-SV-1234567890123456 ok
+Paging Response with too short IMEISV 123456789012345: rc != 0 ok
+Paging Response with too long IMEISV 12345678901234567: rc != 0 ok
+Paging Response with IMSI 123456789012345 and flipped ODD bit: rc != 0 ok
+IMSI-Detach with IMSI 901700000004620: rc == 0, mi = IMSI-901700000004620 ok
+IMSI-Detach with TMSI 0x0980ad8a: rc == 0, mi = TMSI-0x0980AD8A ok
+IMSI-Detach with invalid MI type: rc != 0 ok
+IMSI-Detach with truncated IMSI MI: rc != 0 ok
+IMSI-Detach with too short IMSI MI (12345): rc != 0 ok
+IMSI-Detach with just long enough IMSI MI 123456: rc == 0, mi = IMSI-123456 ok
+IMSI-Detach with max length IMSI MI 123456789012345: rc == 0, mi = IMSI-123456789012345 ok
+IMSI-Detach with just too long IMSI MI 1234567890123456: rc != 0 ok
+IMSI-Detach with truncated TMSI MI: rc != 0 ok
+IMSI-Detach with odd length TMSI: rc != 0 ok
+IMSI-Detach with too long TMSI MI: rc != 0 ok
+IMSI-Detach with too short TMSI: rc != 0 ok
+Identity Response with IMSI 901700000004620: rc == 0, mi = IMSI-901700000004620 ok
+Identity Response with IMEI 123456789012345: rc == 0, mi = IMEI-123456789012345 ok
+Identity Response with IMEISV 9876543210987654: rc == 0, mi = IMEI-SV-9876543210987654 ok
 
 BSD number encoding / decoding test
 - Running test: regular 9-digit MSISDN

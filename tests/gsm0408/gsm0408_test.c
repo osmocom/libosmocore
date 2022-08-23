@@ -1168,7 +1168,7 @@ void test_struct_mobile_identity()
 		rc = osmo_mobile_identity_decode_from_l3(&mi, msg, false);
 		msgb_free(msg);
 
-		printf("%s: rc = %d", t->label, rc);
+		printf("%s: %s", t->label, rc ? "rc != 0" : "rc == 0");
 		if (!rc) {
 			printf(", mi = %s", osmo_mobile_identity_to_str_c(OTC_SELECT, &mi));
 		}
@@ -1177,7 +1177,7 @@ void test_struct_mobile_identity()
 		    && ((rc != 0) || !osmo_mobile_identity_cmp(&mi, &t->expect_mi))) {
 			printf(" ok");
 		} else {
-			printf("  ERROR: Expected rc = %d", t->expect_rc);
+			printf("  ERROR: Got rc = %d, expected rc = %d", rc, t->expect_rc);
 			if (!t->expect_rc)
 				printf(", mi = %s", osmo_mobile_identity_to_str_c(OTC_SELECT, &t->expect_mi));
 		}
