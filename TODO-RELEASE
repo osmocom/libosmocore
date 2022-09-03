@@ -8,3 +8,4 @@
 # If any interfaces have been removed or changed since the last public release: c:r:0.
 #library	what			description / commit summary line
 libosmocore new API osmo_sockaddr_is_any()
+libosmocore	ABI breakage		OSMO_NUM_DLIB change affecting internal_cat[]
