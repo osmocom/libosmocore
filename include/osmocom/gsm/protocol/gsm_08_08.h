@@ -568,7 +568,44 @@ struct gsm0808_speech_codec {
  *
  *  Default values for FR_AMR_WB, OFR_AMR_WB and OHR_AMR_WB:
  *  See also: 3GPP TS 26.103, Table 5.7-1: Allowed Configurations
- *  for the Adaptive Multi-Rate - Wideband Codec Types */
+ *  for the Adaptive Multi-Rate - Wideband Codec Types
+ *
+ * This is a copy of 3GPP TS 28.062, Table 7.11.3.1.3-2:
+ *
+ *       S0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15
+ * 12,20    (x)                x                    x  x
+ * 10,20                    x                 x  x
+ * 7,95                  x                          x  x
+ * 7,40      x        x                 x  x
+ * 6,70            x                 x  x  x  x  x
+ * 5,90      x  x                 x  x  x  x  x  x  x  x
+ * 5,15
+ * 4,75   x  x                    x  x  x  x  x  x  x  x
+ *
+ * OM     F  F  F  F  F  F  F  F  F  F  F  A  F  A  F  A
+ *
+ * HR     Y  Y  Y  Y  Y  Y        Y  Y  Y
+ * FR     Y  Y  Y  Y  Y  Y  Y  Y  Y  Y  Y  Y  Y  Y  Y  Y
+ *
+ * Each bit allows one Codec Configuration.
+ * E.g. when bit S3 is set, look at column labeled "3", and see that only 6,7k is active in this configuration; it is
+ * "F" forbidden to change in Optimisation Mode, "Y" HR AMR supports this mode, and "Y" FR AMR can also do it.
+ *
+ * This means that whichever configuration is chosen from S0 thru S15, there are never more than four rates active.
+ *
+ * The spec praises S1 as the most desired configuration: "because it leads in all call cases to TFO/TrFO compatible
+ * connections with optimal voice quality." (Since HR AMR supports up to 7.95k, it seems that S14 would be more optimal
+ * voice quality, but it is not marked as supported by HR AMR.)
+ *
+ * For FR_AMR below, the default of 0x57ff means:
+ *  0x57ff = 0101 0111 1111 1111
+ *            ^14  ^10         ^0
+ * allow config 0 thru 10, and configs 12 and 14.
+ *
+ * For HR_AMR, drop all those where there is no "Y" in the HR row:
+ *  0x073f = 0000 0111 0011 1111
+ *           ^15  ^11   ^6     ^0
+ */
 enum gsm0808_speech_codec_defaults {
 	GSM0808_SC_CFG_DEFAULT_FR_AMR		= 0x57ff,
 	GSM0808_SC_CFG_DEFAULT_HR_AMR		= 0x073f,
@@ -578,9 +615,12 @@ enum gsm0808_speech_codec_defaults {
 	GSM0808_SC_CFG_DEFAULT_OHR_AMR_WB	= 0x01,
 };
 
-/*! Default speech codec configurations broken down by reate.
+/*! Default speech codec configurations broken down by rate.
  *  See also: 3GPP TS 28.062, Table 7.11.3.1.3-2: Preferred Configurations for
- *  the Adaptive Multi-Rate Codec Types. */
+ *  the Adaptive Multi-Rate Codec Types.
+ *
+ * Set all Sn bits that have this rate listed as active.
+ */
 enum gsm0808_speech_codec_rate_defaults {
 	GSM0808_SC_CFG_DEFAULT_AMR_4_75 = 0xff03,
 	GSM0808_SC_CFG_DEFAULT_AMR_5_15 = 0x0000,
@@ -592,9 +632,12 @@ enum gsm0808_speech_codec_rate_defaults {
 	GSM0808_SC_CFG_DEFAULT_AMR_12_2 = 0xc082
 };
 
-/*! Single speech codec configurations broken down by reate.
+/*! Single speech codec configurations broken down by rate.
  *  See also: 3GPP TS 28.062, Table 7.11.3.1.3-2: Preferred Configurations for
- *  the Adaptive Multi-Rate Codec Types. */
+ *  the Adaptive Multi-Rate Codec Types.
+ *
+ * Set bit Sn (S0 = 0x01), where Sn is identified by a descriptive name.
+ */
 enum gsm0808_speech_codec_rate {
 	GSM0808_SC_CFG_AMR_4_75 = 0x0001,
 	GSM0808_SC_CFG_AMR_4_75_5_90_7_40_12_20 = 0x0002,
