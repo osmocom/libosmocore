@@ -149,8 +149,15 @@ int gsm0808_dec_cell_id(struct gsm0808_cell_id *ci, const uint8_t *elem, uint8_t
 int gsm0808_chan_type_to_speech_codec(uint8_t perm_spch);
 int gsm0808_speech_codec_from_chan_type(struct gsm0808_speech_codec *sc,
 					uint8_t perm_spch);
-uint16_t gsm0808_sc_cfg_from_gsm48_mr_cfg(const struct gsm48_multi_rate_conf *cfg, bool fr);
-int gsm48_mr_cfg_from_gsm0808_sc_cfg(struct gsm48_multi_rate_conf *cfg, uint16_t s15_s0);
+
+uint16_t gsm0808_sc_cfg_from_amr_modes(uint8_t modes, bool full_rate);
+uint8_t gsm0808_sc_cfg_get_all_amr_modes(uint16_t s15_s0, bool full_rate);
+uint8_t gsm0808_sc_cfg_get_best_amr_modes(uint16_t s15_s0, bool full_rate);
+
+uint16_t gsm0808_sc_cfg_from_gsm48_mr_cfg(const struct gsm48_multi_rate_conf *cfg, bool fr)
+	OSMO_DEPRECATED("use gsm0808_sc_cfg_from_amr_modes() with fixed behavior");
+int gsm48_mr_cfg_from_gsm0808_sc_cfg(struct gsm48_multi_rate_conf *cfg, uint16_t s15_s0)
+	OSMO_DEPRECATED("use gsm0808_sc_cfg_get_best_amr_modes() or gsm0808_sc_cfg_get_all_amr_modes()");
 
 /*! \returns 3GPP TS 08.08 §3.2.2.5 Class of a given Cause */
 static inline enum gsm0808_cause_class gsm0808_cause_class(enum gsm0808_cause cause)

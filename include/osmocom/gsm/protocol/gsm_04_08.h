@@ -622,6 +622,16 @@ struct gsm48_multi_rate_conf {
 #endif
 } __attribute__((packed));
 
+static inline uint8_t gsm48_multi_rate_conf_get_amr_modes(const struct gsm48_multi_rate_conf *cfg)
+{
+	return ((uint8_t *)cfg)[1];
+}
+
+static inline void gsm48_multi_rate_conf_set_amr_modes(struct gsm48_multi_rate_conf *cfg, uint8_t modes)
+{
+	((uint8_t *)cfg)[1] = modes;
+}
+
 /* Chapter 10.5.2.28(a) */
 struct gsm48_power_cmd {
 #if OSMO_IS_LITTLE_ENDIAN

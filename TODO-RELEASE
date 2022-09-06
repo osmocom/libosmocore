@@ -8,3 +8,5 @@
 # If any interfaces have been removed or changed since the last public release: c:r:0.
 #library	what			description / commit summary line
 libosmogsm  new header osmocom/gsm/protocol/gsm_44_060.h
+libosmogsm	gsm0808_sc_cfg_from_gsm48_mr_cfg()	Deprecate; replacement is gsm0808_sc_cfg_from_amr_modes().
+libosmogsm	gsm48_mr_cfg_from_gsm0808_sc_cfg()	Deprecate; replacement is gsm0808_sc_cfg_get_best_amr_modes().

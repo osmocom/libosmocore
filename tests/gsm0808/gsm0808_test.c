@@ -2094,11 +2094,11 @@ static void test_gsm0808_sc_cfg_from_gsm48_mr_cfg_single(struct gsm48_multi_rate
 	printf("Input:\n");
 	print_mr_cfg(cfg);
 
-	s15_s0 = gsm0808_sc_cfg_from_gsm48_mr_cfg(cfg, true);
+	s15_s0 = gsm0808_sc_cfg_from_amr_modes(gsm48_multi_rate_conf_get_amr_modes(cfg), true);
 	printf("Result (fr):\n");
 	print_s15_s0(s15_s0, true);
 
-	s15_s0 = gsm0808_sc_cfg_from_gsm48_mr_cfg(cfg, false);
+	s15_s0 = gsm0808_sc_cfg_from_amr_modes(gsm48_multi_rate_conf_get_amr_modes(cfg), false);
 	printf("Result (hr):\n");
 	print_s15_s0(s15_s0, false);
 
@@ -2109,7 +2109,7 @@ static void test_gsm0808_sc_cfg_from_gsm48_mr_cfg(void)
 {
 	struct gsm48_multi_rate_conf cfg;
 
-	printf("Testing gsm0808_sc_cfg_from_gsm48_mr_cfg():\n");
+	printf("Testing gsm0808_sc_cfg_from_amr_modes():\n");
 
 	memset(&cfg, 0, sizeof(cfg));
 
@@ -2297,26 +2297,22 @@ static void test_gsm0808_sc_cfg_from_gsm48_mr_cfg(void)
 
 static void test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single(uint16_t s15_s0)
 {
-	struct gsm48_multi_rate_conf cfg;
-	int rc;
+	struct gsm48_multi_rate_conf cfg = {};
 
 	printf("Input:\n");
 	print_s15_s0(s15_s0, true);
 
-	rc = gsm48_mr_cfg_from_gsm0808_sc_cfg(&cfg, s15_s0);
+	gsm48_multi_rate_conf_set_amr_modes(&cfg, gsm0808_sc_cfg_get_best_amr_modes(s15_s0, true));
 
 	printf("Output:\n");
 	print_mr_cfg(&cfg);
-
-	if (rc != 0)
-		printf(" Result invalid!\n");
 
 	printf("\n");
 }
 
 void test_gsm48_mr_cfg_from_gsm0808_sc_cfg(void)
 {
-	printf("Testing gsm48_mr_cfg_from_gsm0808_sc_cfg():\n");
+	printf("Testing gsm0808_sc_cfg_get_best_amr_modes():\n");
 
 	/* Test with settings as defined in 3GPP TS 28.062, Table 7.11.3.1.3-2,
 	 * (up to four codecs may become selected) */
