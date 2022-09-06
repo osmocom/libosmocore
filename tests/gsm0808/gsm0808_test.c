@@ -2026,29 +2026,81 @@ static void test_gsm0808_enc_dec_cell_id_global_ps(void)
 	msgb_free(msg_cgi_ps);
 }
 
+static void print_s15_s0(uint16_t s15_s0, bool full_rate)
+{
+	int i;
+	printf(" S15-S0 = 0x%04x = 0b" OSMO_BIN_SPEC OSMO_BIN_SPEC "\n", s15_s0,
+	       OSMO_BIN_PRINT(s15_s0 >> 8), OSMO_BIN_PRINT(s15_s0));
+	for (i = 0; i < 16; i++) {
+		uint8_t modes;
+		int m;
+		int space;
+
+		if (!(s15_s0 & (1 << i)))
+			continue;
+
+		space = 6;
+		if (i < 10)
+			space++;
+
+		printf(" S%d", i);
+
+		modes = gsm0808_amr_modes_from_cfg[full_rate ? 1 : 0][i];
+		if (!modes) {
+			printf(" (empty)\n");
+			continue;
+		}
+
+		for (m = 0; m < 8; m++) {
+			if (!(modes & (1 << m))) {
+				/* avoid whitespace at line ends -- accumulate whitespace width until there is
+				 * non-whitespace to actually be printed.*/
+				space += 8;
+				continue;
+			}
+			printf("%*s", space, gsm0808_amr_mode_name(m));
+			space = 8;
+		}
+		printf("\n");
+	}
+}
+
+static void print_mr_cfg(const struct gsm48_multi_rate_conf *cfg)
+{
+	printf(" cfg.smod=%u spare=%u icmi=%u nscb=%u ver=%u\n",
+	       cfg->smod, cfg->spare, cfg->icmi, cfg->nscb, cfg->ver);
+	printf("    ");
+#define PRINT_MODE_BIT(NAME) do { \
+		if (cfg->NAME) \
+			printf(" " #NAME "=1"); \
+		else \
+			printf(" -------"); \
+	} while (0)
+	PRINT_MODE_BIT(m4_75);
+	PRINT_MODE_BIT(m5_15);
+	PRINT_MODE_BIT(m5_90);
+	PRINT_MODE_BIT(m6_70);
+	PRINT_MODE_BIT(m7_40);
+	PRINT_MODE_BIT(m7_95);
+	PRINT_MODE_BIT(m10_2);
+	PRINT_MODE_BIT(m12_2);
+	printf("\n");
+}
+
 static void test_gsm0808_sc_cfg_from_gsm48_mr_cfg_single(struct gsm48_multi_rate_conf *cfg)
 {
 	uint16_t s15_s0;
 
 	printf("Input:\n");
-	printf(" m4_75= %u   smod=  %u\n", cfg->m4_75, cfg->smod);
-	printf(" m5_15= %u   spare= %u\n", cfg->m5_15, cfg->spare);
-	printf(" m5_90= %u   icmi=  %u\n", cfg->m5_90, cfg->icmi);
-	printf(" m6_70= %u   nscb=  %u\n", cfg->m6_70, cfg->nscb);
-	printf(" m7_40= %u   ver=   %u\n", cfg->m7_40, cfg->ver);
-	printf(" m7_95= %u\n", cfg->m7_95);
-	printf(" m10_2= %u\n", cfg->m10_2);
-	printf(" m12_2= %u\n", cfg->m12_2);
+	print_mr_cfg(cfg);
 
 	s15_s0 = gsm0808_sc_cfg_from_gsm48_mr_cfg(cfg, true);
 	printf("Result (fr):\n");
-	printf(" S15-S0 = %04x = 0b" OSMO_BIN_SPEC OSMO_BIN_SPEC "\n", s15_s0,
-	       OSMO_BIN_PRINT(s15_s0 >> 8), OSMO_BIN_PRINT(s15_s0));
+	print_s15_s0(s15_s0, true);
 
 	s15_s0 = gsm0808_sc_cfg_from_gsm48_mr_cfg(cfg, false);
 	printf("Result (hr):\n");
-	printf(" S15-S0 = %04x = 0b" OSMO_BIN_SPEC OSMO_BIN_SPEC "\n", s15_s0,
-	       OSMO_BIN_PRINT(s15_s0 >> 8), OSMO_BIN_PRINT(s15_s0));
+	print_s15_s0(s15_s0, false);
 
 	printf("\n");
 }
@@ -2249,20 +2301,12 @@ static void test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single(uint16_t s15_s0)
 	int rc;
 
 	printf("Input:\n");
-	printf(" S15-S0 = %04x = 0b" OSMO_BIN_SPEC OSMO_BIN_SPEC "\n", s15_s0,
-	       OSMO_BIN_PRINT(s15_s0 >> 8), OSMO_BIN_PRINT(s15_s0));
+	print_s15_s0(s15_s0, true);
 
 	rc = gsm48_mr_cfg_from_gsm0808_sc_cfg(&cfg, s15_s0);
 
 	printf("Output:\n");
-	printf(" m4_75= %u   smod=  %u\n", cfg.m4_75, cfg.smod);
-	printf(" m5_15= %u   spare= %u\n", cfg.m5_15, cfg.spare);
-	printf(" m5_90= %u   icmi=  %u\n", cfg.m5_90, cfg.icmi);
-	printf(" m6_70= %u   nscb=  %u\n", cfg.m6_70, cfg.nscb);
-	printf(" m7_40= %u   ver=   %u\n", cfg.m7_40, cfg.ver);
-	printf(" m7_95= %u\n", cfg.m7_95);
-	printf(" m10_2= %u\n", cfg.m10_2);
-	printf(" m12_2= %u\n", cfg.m12_2);
+	print_mr_cfg(&cfg);
 
 	if (rc != 0)
 		printf(" Result invalid!\n");
