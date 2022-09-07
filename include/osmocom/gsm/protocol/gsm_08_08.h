@@ -687,6 +687,29 @@ enum gsm0808_speech_codec_rate {
 	GSM0808_SC_CFG_AMR_12_2 = 0x0080,
 };
 
+/* Bit index of a mode as returned by gsm0808_amr_modes_from_cfg[].
+ * Example:
+ *   if (gsm0808_amr_modes_from_cfg[full_rate ? 1 : 0][9] & GSM0808_AMR_MODE_4_75)
+ *       printf("S9 supports 4k75");
+ */
+enum gsm0808_amr_mode {
+	GSM0808_AMR_MODE_4_75 = 0,
+	GSM0808_AMR_MODE_5_15,
+	GSM0808_AMR_MODE_5_90,
+	GSM0808_AMR_MODE_6_70,
+	GSM0808_AMR_MODE_7_40,
+	GSM0808_AMR_MODE_7_95,
+	GSM0808_AMR_MODE_10_2,
+	GSM0808_AMR_MODE_12_2,
+};
+extern const struct value_string gsm0808_amr_mode_names[];
+static inline const char *gsm0808_amr_mode_name(enum gsm0808_amr_mode val)
+{
+	return get_value_string(gsm0808_amr_mode_names, val);
+}
+
+extern const uint8_t gsm0808_amr_modes_from_cfg[2][16];
+
 /* 3GPP TS 48.008 3.2.2.103 Speech Codec List */
 #define SPEECH_CODEC_MAXLEN 255
 struct gsm0808_speech_codec_list {

@@ -2028,4 +2028,101 @@ const struct value_string gsm0808_lcls_status_names[] = {
 	{ 0, NULL }
 };
 
+/* Convert one S0-S15 bit to its set of AMR modes, for HR AMR and FR AMR.
+ * This is 3GPP TS 28.062 Table 7.11.3.1.3-2: "Preferred Configurations", with some configurations removed as specified
+ * in 3GPP TS 48.008 3.2.2.103:
+ *
+ *  FR_AMR is coded ‘0011’.
+ *  S11, S13 and S15 are reserved and coded with zeroes.
+ *
+ *  HR_AMR is coded ‘0100’.
+ *  S6 - S7 and S11 – S15 are reserved and coded with zeroes.
+ *
+ * Meaning: for FR, exclude all Optimisation Mode configurations.
+ * For HR, exclude all that are not supported by HR AMR -- drop all that include at least one of
+ * 10.2 or 12.2.
+ *
+ * Also, for HR, drop 12.2k from S1.
+ *
+ * The first array dimension is 0 for half rate and 1 for full rate.
+ * The second array dimension is the configuration number (0..15) aka Sn.
+ * The values are bitmask combinations of (1 << GSM0808_AMR_MODE_nnnn).
+ *
+ * For example, accumulate all modes that are possible in a given my_s15_s0:
+ *
+ *   uint8_t modes = 0;
+ *   for (s_bit = 0; s_bit < 15; s_bit++)
+ *       if (my_s15_s0 & (1 << s_bit))
+ *           modes |= gsm0808_amr_modes_from_cfg[full_rate ? 1 : 0][s_bit];
+ *   for (i = 0; i < 8; i++)
+ *       if (modes & (1 << i))
+ *           printf(" %s", gsm0808_amr_mode_name(i));
+ */
+const uint8_t gsm0808_amr_modes_from_cfg[2][16] = {
+#define B(X) (1 << (GSM0808_AMR_MODE_##X))
+	/* HR */
+	{
+		/* Sn = modes */
+		 [0] = B(4_75),
+		 [1] = B(4_75)         | B(5_90)           | B(7_40),
+		 [2] = B(5_90),
+		 [3] = B(6_70),
+		 [4] = B(7_40),
+		 [5] = B(7_95),
+		 [6] = 0,
+		 [7] = 0,
+
+		 [8] = B(4_75)         | B(5_90),
+		 [9] = B(4_75)         | B(5_90) | B(6_70),
+		[10] = B(4_75)         | B(5_90) | B(6_70) | B(7_40),
+		[11] = 0,
+		[12] = 0,
+		[13] = 0,
+		[14] = 0,
+		[15] = 0,
+	},
+	/* FR */
+	{
+		/* Sn = modes */
+		 [0] = B(4_75),
+		 [1] = B(4_75)         | B(5_90)           | B(7_40)                     | B(12_2),
+		 [2] = B(5_90),
+		 [3] = B(6_70),
+		 [4] = B(7_40),
+		 [5] = B(7_95),
+		 [6] = B(10_2),
+		 [7] = B(12_2),
+
+		 [8] = B(4_75)         | B(5_90),
+		 [9] = B(4_75)         | B(5_90) | B(6_70),
+		[10] = B(4_75)         | B(5_90) | B(6_70) | B(7_40),
+		[11] = 0,
+		[12] = B(4_75)         | B(5_90) | B(6_70)                     | B(10_2),
+		[13] = 0,
+		[14] = B(4_75)         | B(5_90)                     | B(7_95)           | B(12_2),
+		[15] = 0,
+	}
+};
+
+/* AMR mode names from GSM0808_AMR_MODE_*, for use with gsm0808_amr_modes_from_cfg.
+ *
+ * For example:
+ *   printf("S9: ");
+ *   uint8_t s9_modes = gsm0808_amr_modes_from_cfg[full_rate ? 1 : 0][9];
+ *   for (bit = 0; bit < 8; bit++)
+ *       if (s9_modes & (1 << bit))
+ *           printf("%s,", gsm0808_amr_mode_name(bit));
+ */
+const struct value_string gsm0808_amr_mode_names[] = {
+	{ GSM0808_AMR_MODE_4_75, "4.75" },
+	{ GSM0808_AMR_MODE_5_15, "5.15" },
+	{ GSM0808_AMR_MODE_5_90, "5.90" },
+	{ GSM0808_AMR_MODE_6_70, "6.70" },
+	{ GSM0808_AMR_MODE_7_40, "7.40" },
+	{ GSM0808_AMR_MODE_7_95, "7.95" },
+	{ GSM0808_AMR_MODE_10_2, "10.2" },
+	{ GSM0808_AMR_MODE_12_2, "12.2" },
+	{}
+};
+
 /*! @} */
