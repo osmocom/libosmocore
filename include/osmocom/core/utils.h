@@ -33,7 +33,7 @@
 /*! Make a value_string entry from an enum value name */
 #define OSMO_VALUE_STRING(x) { x, #x }
 /*! Number of bytes necessary to store given BITS */
-#define OSMO_BYTES_FOR_BITS(BITS) ((BITS + 8 - 1) / 8)
+#define OSMO_BYTES_FOR_BITS(BITS) (((BITS) + 7) / 8)
 
 /*! Copy a C-string into a sized buffer using sizeof to detect buffer's size */
 #define OSMO_STRLCPY_ARRAY(array, src) osmo_strlcpy(array, src, sizeof(array))
