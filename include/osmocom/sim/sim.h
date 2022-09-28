@@ -2,8 +2,7 @@
  * Routines for helping with SIM (ISO/IEC 7816-4 more generally) communication.
  */
 
-#ifndef _OSMOCOM_SIM_H
-#define _OSMOCOM_SIM_H
+#pragma once
 
 #include <osmocom/core/msgb.h>
 #include <osmocom/core/linuxlist.h>
@@ -445,4 +444,3 @@ struct osim_reader_hdl *osim_reader_open(enum osim_reader_driver drv, int idx,
 struct osim_card_hdl *osim_card_open(struct osim_reader_hdl *rh, enum osim_proto proto);
 int osim_card_reset(struct osim_card_hdl *card, bool cold_reset);
 int osim_card_close(struct osim_card_hdl *card);
-#endif /* _OSMOCOM_SIM_H */

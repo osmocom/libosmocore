@@ -2,8 +2,7 @@
  *  Osmocom Sercomm HDLC (de)multiplex.
  */
 
-#ifndef _SERCOMM_H
-#define _SERCOMM_H
+#pragma once
 
 #include <osmocom/core/msgb.h>
 
@@ -110,5 +109,3 @@ static inline struct msgb *osmo_sercomm_alloc_msgb(unsigned int len)
 }
 
 /*! @} */
-
-#endif /* _SERCOMM_H */

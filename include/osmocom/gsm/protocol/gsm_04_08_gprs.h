@@ -1,7 +1,6 @@
 /*! \file gsm_04_08_gprs.h */
 
-#ifndef _GSM48_GPRS_H
-#define _GSM48_GPRS_H
+#pragma once
 
 #include <stdint.h>
 #include <stdbool.h>
@@ -465,6 +464,3 @@ struct gsm48_qos {
 	/* octet 16 */
 	uint8_t guar_bitrate_down_ext;
 };
-
-
-#endif /* _GSM48_GPRS_H */

@@ -22,8 +22,7 @@
  * GNU General Public License for more details.
  */
 
-#ifndef __ISDNHDLC_H__
-#define __ISDNHDLC_H__
+#pragma once
 
 #include <stdint.h>
 
@@ -76,5 +75,3 @@ extern void	osmo_isdnhdlc_out_init(struct osmo_isdnhdlc_vars *hdlc, uint32_t fea
 
 extern int	osmo_isdnhdlc_encode(struct osmo_isdnhdlc_vars *hdlc, const uint8_t *src,
 				     uint16_t slen, int *count, uint8_t *dst, int dsize);
-
-#endif /* __ISDNHDLC_H__ */
