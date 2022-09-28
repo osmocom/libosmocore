@@ -85,6 +85,7 @@ bssgp2_enc_fc_bvc;
 bssgp2_enc_fc_bvc_ack;
 bssgp2_enc_fc_ms;
 bssgp2_enc_fc_ms_ack;
+bssgp2_enc_flush_ll;
 bssgp2_enc_status;
 
 bssgp_bvc_fsm_alloc_sig_bss;

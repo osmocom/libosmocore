@@ -349,6 +349,35 @@ struct msgb *bssgp2_enc_fc_bvc(const struct bssgp2_flow_ctrl *fc, enum bssgp_fc_
 	return msg;
 }
 
+/*! Encode BSSGP FLUSH-LL PDU as per TS 48.018 Section 10.4.1.
+ *  \param[in] tlli - the TLLI of the MS
+ *  \param[in] old_bvci BVCI
+ *  \param[in] new_bvci2 optional BVCI - only encoded if non-NULL
+ *  \param[in] nsei optional - only encoded if non-NULL
+ *  \returns encoded PDU or NULL in case of error */
+struct msgb *bssgp2_enc_flush_ll(uint32_t tlli, uint16_t old_bvci,
+				 const uint16_t *new_bvci, const uint16_t *nsei)
+{
+	struct msgb *msg = bssgp_msgb_alloc();
+	struct bssgp_normal_hdr *bgph;
+
+	if (!msg)
+		return NULL;
+
+	bgph = (struct bssgp_normal_hdr *) msgb_put(msg, sizeof(*bgph));
+	bgph->pdu_type = BSSGP_PDUT_FLUSH_LL;
+
+	msgb_tvlv_put_32be(msg, BSSGP_IE_TLLI, tlli);
+	msgb_tvlv_put_16be(msg, BSSGP_IE_BVCI, old_bvci);
+	if (new_bvci)
+		msgb_tvlv_put_16be(msg, BSSGP_IE_BVCI, *new_bvci);
+
+	if (nsei)
+		msgb_tvlv_put_16be(msg, BSSGP_IE_BVCI, *nsei);
+
+	return msg;
+}
+
 /*! Encode a FLOW-CONTROL-BVC-ACK PDU as per TS 48.018 Section 10.4.4.
  *  \param[in] tag the tag IE value to encode
  *  \returns encoded PDU or NULL in case of error */
