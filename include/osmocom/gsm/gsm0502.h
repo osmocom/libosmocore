@@ -16,10 +16,10 @@
 
 /*! Return the sum of two specified TDMA frame numbers (summation) */
 #define GSM_TDMA_FN_SUM(a, b) \
-	((a + b) % GSM_TDMA_HYPERFRAME)
+	(((a) + (b)) % GSM_TDMA_HYPERFRAME)
 /*! Return the difference of two specified TDMA frame numbers (subtraction) */
 #define GSM_TDMA_FN_SUB(a, b) \
-	((a + GSM_TDMA_HYPERFRAME - b) % GSM_TDMA_HYPERFRAME)
+	(((a) + GSM_TDMA_HYPERFRAME - (b)) % GSM_TDMA_HYPERFRAME)
 /*! Return the *minimum* difference of two specified TDMA frame numbers (distance) */
 #define GSM_TDMA_FN_DIFF(a, b) \
 	OSMO_MIN(GSM_TDMA_FN_SUB(a, b), GSM_TDMA_FN_SUB(b, a))
