@@ -144,6 +144,7 @@ static inline struct msgb *msgb_dequeue_count(struct llist_head *queue,
  */
 static inline unsigned int msgb_l1len(const struct msgb *msgb)
 {
+	OSMO_ASSERT(msgb->l1h);
 	return msgb->tail - (uint8_t *)msgb_l1(msgb);
 }
 
@@ -156,6 +157,7 @@ static inline unsigned int msgb_l1len(const struct msgb *msgb)
  */
 static inline unsigned int msgb_l2len(const struct msgb *msgb)
 {
+	OSMO_ASSERT(msgb->l2h);
 	return msgb->tail - (uint8_t *)msgb_l2(msgb);
 }
 
@@ -168,6 +170,7 @@ static inline unsigned int msgb_l2len(const struct msgb *msgb)
  */
 static inline unsigned int msgb_l3len(const struct msgb *msgb)
 {
+	OSMO_ASSERT(msgb->l3h);
 	return msgb->tail - (uint8_t *)msgb_l3(msgb);
 }
 
@@ -180,6 +183,7 @@ static inline unsigned int msgb_l3len(const struct msgb *msgb)
  */
 static inline unsigned int msgb_l4len(const struct msgb *msgb)
 {
+	OSMO_ASSERT(msgb->l4h);
 	return msgb->tail - (uint8_t *)msgb_sms(msgb);
 }
 
