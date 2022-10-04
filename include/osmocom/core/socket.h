@@ -31,6 +31,7 @@ struct osmo_sockaddr {
 };
 
 int osmo_sockaddr_is_local(struct sockaddr *addr, unsigned int addrlen);
+int osmo_sockaddr_is_any(const struct osmo_sockaddr *addr);
 
 unsigned int osmo_sockaddr_to_str_and_uint(char *addr, unsigned int addr_len, uint16_t *port,
 					   const struct sockaddr *sa);

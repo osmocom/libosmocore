@@ -1175,6 +1175,26 @@ int osmo_sockaddr_is_local(struct sockaddr *addr, unsigned int addrlen)
 	return 0;
 }
 
+/*! Determine if the given address is an ANY address ("0.0.0.0", "::"). Port is not checked.
+ *  \param[in] addr Socket Address
+ *  \param[in] addrlen Length of socket address in bytes
+ *  \returns 1 if address is ANY, 0 otherwise. -1 is address family not supported/detected.
+ */
+int osmo_sockaddr_is_any(const struct osmo_sockaddr *addr)
+{
+	switch (addr->u.sa.sa_family) {
+	case AF_INET6: {
+		struct in6_addr ip6_any = IN6ADDR_ANY_INIT;
+		return memcmp(&addr->u.sin6.sin6_addr,
+			      &ip6_any, sizeof(ip6_any)) == 0;
+		}
+	case AF_INET:
+		return addr->u.sin.sin_addr.s_addr == INADDR_ANY;
+	default:
+		return -1;
+	}
+}
+
 /*! Convert sockaddr_in to IP address as char string and port as uint16_t.
  *  \param[out] addr  String buffer to write IP address to, or NULL.
  *  \param[out] addr_len  Size of \a addr.
