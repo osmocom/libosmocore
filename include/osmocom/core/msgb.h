@@ -184,7 +184,7 @@ static inline unsigned int msgb_l3len(const struct msgb *msgb)
 static inline unsigned int msgb_l4len(const struct msgb *msgb)
 {
 	OSMO_ASSERT(msgb->l4h);
-	return msgb->tail - (uint8_t *)msgb_sms(msgb);
+	return msgb->tail - (uint8_t *)msgb_l4(msgb);
 }
 
 /*! determine the length of the header
