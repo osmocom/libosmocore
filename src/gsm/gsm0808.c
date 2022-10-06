@@ -373,7 +373,7 @@ struct msgb *gsm0808_create_lcls_conn_ctrl(enum gsm0808_lcls_config config,
 	if (config != GSM0808_LCLS_CFG_NA)
 		msgb_tv_put(msg, GSM0808_IE_LCLS_CONFIG, config);
 	if (control != GSM0808_LCLS_CSC_NA)
-		msgb_tv_put(msg, GSM0808_IE_LCLS_CONFIG, control);
+		msgb_tv_put(msg, GSM0808_IE_LCLS_CONN_STATUS_CTRL, control);
 	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
 
 	return msg;
