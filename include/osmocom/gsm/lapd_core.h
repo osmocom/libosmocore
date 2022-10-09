@@ -138,7 +138,7 @@ struct lapd_datalink {
 	int reestablish; /*!< enable reestablish support */
 	int n200, n200_est_rel; /*!< number of retranmissions */
 	struct lapd_msg_ctx lctx; /*!< LAPD context */
-	int maxf; /*!< maximum frame size (after defragmentation) */ 
+	int maxf; /*!< maximum frame size (after defragmentation) */
 	uint8_t k; /*!< maximum number of unacknowledged frames */
 	uint8_t v_range; /*!< range of sequence numbers */
 	uint8_t v_send;	/*!< seq nr of next I frame to be transmitted */
