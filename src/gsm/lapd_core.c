@@ -1706,7 +1706,7 @@ int lapd_ph_data_ind(struct msgb *msg, struct lapd_msg_ctx *lctx)
 		rc = lapd_rx_i(msg, lctx);
 		break;
 	default:
-		LOGDL(lctx->dl, LOGL_NOTICE, "unknown LAPD format\n");
+		LOGDL(lctx->dl, LOGL_NOTICE, "unknown LAPD format 0x%02x\n", lctx->format);
 		msgb_free(msg);
 		rc = -EINVAL;
 	}
