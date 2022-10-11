@@ -69,6 +69,7 @@
 //#define TEST_CONTENT_RESOLUTION_NETWORK
 
 #include <stdio.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
 #include <errno.h>
@@ -742,7 +743,8 @@ static void lapd_acknowledge(struct lapd_msg_ctx *lctx)
 {
 	struct lapd_datalink *dl = lctx->dl;
 	uint8_t nr = lctx->n_recv;
-	int s = 0, rej = 0, t200_reset = 0;
+	int s = 0, rej = 0;
+	bool t200_reset = false;
 	int i, h;
 
 	/* supervisory frame ? */
@@ -768,7 +770,7 @@ static void lapd_acknowledge(struct lapd_msg_ctx *lctx)
 		 * receipt of a valid I frame with N(R) higher than V(A),
 		 * or an REJ with an N(R) equal to V(A). */
 		if ((!rej && nr != dl->v_ack) || (rej && nr == dl->v_ack)) {
-		 	t200_reset = 1;
+			t200_reset = true;
 			lapd_stop_t200(dl);
 			/* 5.5.3.1 Note 1 + 2 imply timer recovery cond. */
 		}
