@@ -767,8 +767,7 @@ static void lapd_acknowledge(struct lapd_msg_ctx *lctx)
 		 * link layer entity shall reset the timer T200 on
 		 * receipt of a valid I frame with N(R) higher than V(A),
 		 * or an REJ with an N(R) equal to V(A). */
-		if ((!rej && nr != dl->v_ack)
-		 || (rej && nr == dl->v_ack)) {
+		if ((!rej && nr != dl->v_ack) || (rej && nr == dl->v_ack)) {
 		 	t200_reset = 1;
 			lapd_stop_t200(dl);
 			/* 5.5.3.1 Note 1 + 2 imply timer recovery cond. */
@@ -777,8 +776,7 @@ static void lapd_acknowledge(struct lapd_msg_ctx *lctx)
 		 * N(R) is called valid, if and only if
 		 * (N(R)-V(A)) mod 8 <= (V(S)-V(A)) mod 8.
 		 */
-		if (sub_mod(nr, dl->v_ack, dl->v_range)
-				> sub_mod(dl->v_send, dl->v_ack, dl->v_range)) {
+		if (sub_mod(nr, dl->v_ack, dl->v_range) > sub_mod(dl->v_send, dl->v_ack, dl->v_range)) {
 			LOGDL(dl, LOGL_NOTICE, "N(R) sequence error\n");
 			mdl_error(MDL_CAUSE_SEQ_ERR, lctx);
 		}
