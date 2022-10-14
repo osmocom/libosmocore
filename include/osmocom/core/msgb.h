@@ -70,6 +70,8 @@ extern int msgb_resize_area(struct msgb *msg, uint8_t *area,
 	int old_size, int new_size);
 extern struct msgb *msgb_copy(const struct msgb *msg, const char *name);
 extern struct msgb *msgb_copy_c(const void *ctx, const struct msgb *msg, const char *name);
+extern struct msgb *msgb_copy_resize(const struct msgb *msg, uint16_t new_len, const char *name);
+extern struct msgb *msgb_copy_resize_c(const void *ctx, const struct msgb *msg, uint16_t new_len, const char *name);
 static int msgb_test_invariant(const struct msgb *msg) __attribute__((pure));
 
 /*! Free all msgbs from a queue built with msgb_enqueue().

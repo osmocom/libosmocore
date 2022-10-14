@@ -314,30 +314,38 @@ void *msgb_talloc_ctx_init(void *root_ctx, unsigned int pool_size)
 	return tall_msgb_ctx;
 }
 
-/*! Copy an msgb.
+/*! Copy an msgb with memory reallocation.
  *
- *  This function allocates a new msgb, copies the data buffer of msg,
- *  and adjusts the pointers (incl l1h-l4h) accordingly. The cb part
- *  is not copied.
+ *  This function allocates a new msgb with new_len size, copies the data buffer of msg,
+ *  and adjusts the pointers (incl l1h-l4h) accordingly. The cb part is not copied.
+ *  \param[in] ctx  talloc context on which allocation happens
  *  \param[in] msg  The old msgb object
- *  \param[in] name Human-readable name to be associated with msgb
+ *  \param[in] new_len The length of new msgb object
+ *  \param[in] name Human-readable name to be associated with new msgb
  */
-struct msgb *msgb_copy_c(const void *ctx, const struct msgb *msg, const char *name)
+struct msgb *msgb_copy_resize_c(const void *ctx, const struct msgb *msg, uint16_t new_len, const char *name)
 {
 	struct msgb *new_msg;
 
-	new_msg = msgb_alloc_c(ctx, msg->data_len, name);
+	if (new_len < msgb_length(msg)) {
+		LOGP(DLGLOBAL, LOGL_ERROR,
+			 "Data from old msgb (%u bytes) won't fit into new msgb (%u bytes) after reallocation\n",
+			 msgb_length(msg), new_len);
+		return NULL;
+	}
+
+	new_msg = msgb_alloc_c(ctx, new_len, name);
 	if (!new_msg)
 		return NULL;
-
-	/* copy data */
-	memcpy(new_msg->_data, msg->_data, new_msg->data_len);
 
 	/* copy header */
 	new_msg->len = msg->len;
 	new_msg->data += msg->data - msg->_data;
 	new_msg->head += msg->head - msg->_data;
 	new_msg->tail += msg->tail - msg->_data;
+
+	/* copy data */
+	memcpy(new_msg->data, msg->data, msgb_length(msg));
 
 	if (msg->l1h)
 		new_msg->l1h = new_msg->_data + (msg->l1h - msg->_data);
@@ -349,6 +357,32 @@ struct msgb *msgb_copy_c(const void *ctx, const struct msgb *msg, const char *na
 		new_msg->l4h = new_msg->_data + (msg->l4h - msg->_data);
 
 	return new_msg;
+}
+
+/*! Copy an msgb with memory reallocation.
+ *
+ *  This function allocates a new msgb with new_len size, copies the data buffer of msg,
+ *  and adjusts the pointers (incl l1h-l4h) accordingly. The cb part is not copied.
+ *  \param[in] msg  The old msgb object
+ *  \param[in] name Human-readable name to be associated with new msgb
+ */
+struct msgb *msgb_copy_resize(const struct msgb *msg, uint16_t new_len, const char *name)
+{
+	return msgb_copy_resize_c(tall_msgb_ctx, msg, new_len, name);
+}
+
+/*! Copy an msgb.
+ *
+ *  This function allocates a new msgb, copies the data buffer of msg,
+ *  and adjusts the pointers (incl l1h-l4h) accordingly. The cb part
+ *  is not copied.
+ *  \param[in] ctx  talloc context on which allocation happens
+ *  \param[in] msg  The old msgb object
+ *  \param[in] name Human-readable name to be associated with msgb
+ */
+struct msgb *msgb_copy_c(const void *ctx, const struct msgb *msg, const char *name)
+{
+	return msgb_copy_resize_c(ctx, msg, msg->data_len, name);
 }
 
 /*! Copy an msgb.
