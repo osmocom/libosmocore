@@ -181,7 +181,7 @@ int osmo_pbit2ubit(ubit_t *out, const pbit_t *in, unsigned int num_bits)
  *  \param[in] in input buffer of unpacked bits
  *  \param[in] in_ofs offset into input buffer
  *  \param[in] num_bits number of bits
- *  \param[in] lsb_mode Encode bits in LSB orde instead of MSB
+ *  \param[in] lsb_mode Encode bits in LSB order instead of MSB
  *  \returns length in bytes (max written offset of output buffer + 1)
  */
 int osmo_ubit2pbit_ext(pbit_t *out, unsigned int out_ofs,
@@ -206,7 +206,7 @@ int osmo_ubit2pbit_ext(pbit_t *out, unsigned int out_ofs,
  *  \param[in] in input buffer of packed bits
  *  \param[in] in_ofs offset into input buffer
  *  \param[in] num_bits number of bits
- *  \param[in] lsb_mode Encode bits in LSB orde instead of MSB
+ *  \param[in] lsb_mode Encode bits in LSB order instead of MSB
  *  \returns length in bytes (max written offset of output buffer + 1)
  */
 int osmo_pbit2ubit_ext(ubit_t *out, unsigned int out_ofs,
