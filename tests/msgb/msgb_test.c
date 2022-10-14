@@ -161,13 +161,25 @@ static void test_msgb_copy()
 	OSMO_ASSERT(msgb_l1len(msg) == msgb_l1len(msg2));
 	OSMO_ASSERT(msgb_l2len(msg) == msgb_l2len(msg2));
 	OSMO_ASSERT(msgb_l3len(msg) == msgb_l3len(msg2));
-	OSMO_ASSERT(msg->tail - msg->l4h == msg2->tail - msg2->l4h);
+	OSMO_ASSERT(msgb_l4len(msg) == msgb_l4len(msg2));
 
-	for (i = 0; i < msgb_length(msg2); i++)
-		OSMO_ASSERT(msg2->data[i] == (uint8_t)i);
+	if (!msgb_eq_data_print(msg2, msg->data, msgb_length(msg)))
+		printf("copy test failed!\n");
+
+	if (!msgb_eq_l1_data_print(msg2, msgb_l1(msg), msgb_l1len(msg)))
+		printf("copy test failed at L1!\n");
+	if (!msgb_eq_l2_data_print(msg2, msgb_l2(msg), msgb_l2len(msg)))
+		printf("copy test failed at L2!\n");
+	if (!msgb_eq_l3_data_print(msg2, msgb_l3(msg), msgb_l3len(msg)))
+		printf("copy test failed at L3!\n");
+	if (!msgb_eq_l4_data_print(msg2, msgb_l4(msg), msgb_l4len(msg)))
+		printf("copy test failed at L4!\n");
 
 	printf("Src: %s\n", msgb_hexdump(msg));
-	printf("Dst: %s\n", msgb_hexdump(msg));
+	printf("Dst: %s\n", msgb_hexdump(msg2));
+
+	OSMO_ASSERT(msgb_test_invariant(msg));
+	OSMO_ASSERT(msgb_test_invariant(msg2));
 
 	msgb_free(msg);
 	msgb_free(msg2);
