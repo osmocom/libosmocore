@@ -38,6 +38,7 @@
 #define OSMO_VTY_PORT_CBC		4264
 #define OSMO_VTY_PORT_UECUPS		4268
 #define OSMO_VTY_PORT_E1D		4269
+#define OSMO_VTY_PORT_ISDNTAP		4270
 #define OSMO_VTY_PORT_SMLC		4271
 /* 4272 used by control interface */
 #define OSMO_VTY_PORT_HNODEB		4273
