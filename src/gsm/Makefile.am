@@ -4,7 +4,7 @@
 LIBVERSION=18:0:0
 
 AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include $(TALLOC_CFLAGS)
-AM_CFLAGS = -Wall ${GCC_FVISIBILITY_HIDDEN}
+AM_CFLAGS = -Wall
 
 if ENABLE_PSEUDOTALLOC
 AM_CPPFLAGS += -I$(top_srcdir)/src/pseudotalloc
