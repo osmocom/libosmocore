@@ -96,7 +96,7 @@ struct priv_bind {
 	struct osmo_fr_link *link;
 	int ifindex;
 	bool if_running;
-	/* backlog queue for AF_PACKET / ENOBUFS handling (see OS#4993) */
+	/* backlog queue for AF_PACKET / ENOBUFS handling (see OS#4995) */
 	struct {
 		/* file-descriptor for AF_PACKET socket */
 		struct osmo_fd ofd;
