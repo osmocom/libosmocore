@@ -179,7 +179,6 @@ uint32_t gsm0502_fn_remap(uint32_t fn, enum gsm0502_fn_remap_channel channel)
 	uint8_t fn_cycle;
 	uint8_t i;
 	int sub = -1;
-	uint32_t fn_map;
 	struct fn_remap_table *table;
 
 	OSMO_ASSERT(channel < ARRAY_SIZE(fn_remap_table_ptr));
@@ -199,9 +198,7 @@ uint32_t gsm0502_fn_remap(uint32_t fn, enum gsm0502_fn_remap_channel channel)
 		return fn;
 	}
 
-	fn_map = (fn + GSM_MAX_FN - sub) % GSM_MAX_FN;
-
-	return fn_map;
+	return GSM_TDMA_FN_SUB(fn, sub);
 }
 
 /* Magic numbers (RNTABLE) for pseudo-random hopping sequence generation. */
