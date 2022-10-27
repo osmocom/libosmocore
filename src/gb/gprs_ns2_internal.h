@@ -271,6 +271,9 @@ struct gprs_ns2_vc {
 	/*! recursive anchor */
 	bool freed;
 
+	/*! if blocked by O&M/vty */
+	bool om_blocked;
+
 	/*! when the NSVC became alive or dead */
 	struct timespec ts_alive_change;
 };

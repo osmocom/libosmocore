@@ -1875,18 +1875,21 @@ DEFUN(cfg_no_ns_nse_ip_sns_bind, cfg_no_ns_nse_ip_sns_bind_cmd,
 void ns2_vty_dump_nsvc(struct vty *vty, struct gprs_ns2_vc *nsvc, bool stats)
 {
 	if (nsvc->nsvci_is_valid)
-		vty_out(vty, "   NSVCI %05u: %s %s %s %s since ", nsvc->nsvci,
+		vty_out(vty, "   NSVCI %05u: %s %s %s %s %ssince ", nsvc->nsvci,
 			osmo_fsm_inst_state_name(nsvc->fi),
 			nsvc->persistent ? "PERSIST" : "DYNAMIC",
 			gprs_ns2_ll_str(nsvc),
-			ns2_vc_is_unblocked(nsvc) ? "ALIVE" : "DEAD");
+			ns2_vc_is_unblocked(nsvc) ? "ALIVE" : "DEAD",
+			nsvc->om_blocked ? "(blocked by O&M/vty) " :
+				!ns2_vc_is_unblocked(nsvc) ? "(cause: remote) " : "");
 	else
-		vty_out(vty, "   %s %s sig_weight=%u data_weight=%u %s %s since ",
+		vty_out(vty, "   %s %s sig_weight=%u data_weight=%u %s %s %ssince ",
 			osmo_fsm_inst_state_name(nsvc->fi),
 			nsvc->persistent ? "PERSIST" : "DYNAMIC",
 			nsvc->sig_weight, nsvc->data_weight,
 			gprs_ns2_ll_str(nsvc),
-			ns2_vc_is_unblocked(nsvc) ? "ALIVE" : "DEAD");
+			ns2_vc_is_unblocked(nsvc) ? "ALIVE" : "DEAD",
+				!ns2_vc_is_unblocked(nsvc) ? "(cause: remote) " : "");
 
 	vty_out_uptime(vty, &nsvc->ts_alive_change);
 	vty_out_newline(vty);

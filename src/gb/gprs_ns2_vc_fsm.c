@@ -58,8 +58,6 @@ struct gprs_ns2_vc_priv {
 	bool initiator;
 	bool initiate_block;
 	bool initiate_reset;
-	/* if blocked by O&M/vty */
-	bool om_blocked;
 	/* if unitdata is forwarded to the user */
 	bool accept_unitdata;
 
@@ -268,7 +266,7 @@ static void ns2_st_unconfigured(struct osmo_fsm_inst *fi, uint32_t event, void *
 	struct gprs_ns2_inst *nsi = priv->nsvc->nse->nsi;
 
 	priv->initiate_reset = priv->initiate_block = priv->initiator;
-	priv->om_blocked = false;
+	priv->nsvc->om_blocked = false;
 
 	switch (event) {
 	case GPRS_NS2_EV_REQ_START:
@@ -345,7 +343,7 @@ static void ns2_st_blocked_onenter(struct osmo_fsm_inst *fi, uint32_t old_state)
 	}
 
 	ns2_nse_notify_unblocked(priv->nsvc, false);
-	if (priv->om_blocked) {
+	if (priv->nsvc->om_blocked) {
 		/* we are already blocked after a RESET */
 		if (old_state == GPRS_NS2_ST_RESET) {
 			osmo_timer_del(&fi->timer);
@@ -363,7 +361,7 @@ static void ns2_st_blocked(struct osmo_fsm_inst *fi, uint32_t event, void *data)
 {
 	struct gprs_ns2_vc_priv *priv = fi->priv;
 
-	if (priv->om_blocked) {
+	if (priv->nsvc->om_blocked) {
 		switch (event) {
 		case GPRS_NS2_EV_RX_BLOCK_ACK:
 			priv->accept_unitdata = false;
@@ -563,7 +561,7 @@ static int ns2_vc_fsm_timer_cb(struct osmo_fsm_inst *fi)
 	case GPRS_NS2_ST_BLOCKED:
 		if (priv->initiate_block) {
 			priv->N++;
-			if (priv->om_blocked) {
+			if (priv->nsvc->om_blocked) {
 				if (priv->N <= nsi->timeout[NS_TOUT_TNS_BLOCK_RETRIES]) {
 					osmo_fsm_inst_state_chg(fi, GPRS_NS2_ST_BLOCKED, nsi->timeout[NS_TOUT_TNS_BLOCK], 0);
 				} else {
@@ -717,14 +715,14 @@ static void ns2_vc_fsm_allstate_action(struct osmo_fsm_inst *fi,
 	case GPRS_NS2_EV_REQ_OM_BLOCK:
 		/* vty cmd: block */
 		priv->initiate_block = true;
-		priv->om_blocked = true;
+		priv->nsvc->om_blocked = true;
 		osmo_fsm_inst_state_chg(fi, GPRS_NS2_ST_BLOCKED, nsi->timeout[NS_TOUT_TNS_BLOCK], 0);
 		break;
 	case GPRS_NS2_EV_REQ_OM_UNBLOCK:
 		/* vty cmd: unblock*/
-		if (!priv->om_blocked)
+		if (!priv->nsvc->om_blocked)
 			return;
-		priv->om_blocked = false;
+		priv->nsvc->om_blocked = false;
 		if (fi->state == GPRS_NS2_ST_BLOCKED)
 			osmo_fsm_inst_state_chg(fi, GPRS_NS2_ST_BLOCKED, nsi->timeout[NS_TOUT_TNS_BLOCK], 0);
 		break;
@@ -834,7 +832,7 @@ int ns2_vc_force_unconfigured(struct gprs_ns2_vc *nsvc)
 int ns2_vc_block(struct gprs_ns2_vc *nsvc)
 {
 	struct gprs_ns2_vc_priv *priv = nsvc->fi->priv;
-	if (priv->om_blocked)
+	if (priv->nsvc->om_blocked)
 		return -EALREADY;
 
 	return osmo_fsm_inst_dispatch(nsvc->fi, GPRS_NS2_EV_REQ_OM_BLOCK, NULL);
@@ -846,7 +844,7 @@ int ns2_vc_block(struct gprs_ns2_vc *nsvc)
 int ns2_vc_unblock(struct gprs_ns2_vc *nsvc)
 {
 	struct gprs_ns2_vc_priv *priv = nsvc->fi->priv;
-	if (!priv->om_blocked)
+	if (!priv->nsvc->om_blocked)
 		return -EALREADY;
 
 	return osmo_fsm_inst_dispatch(nsvc->fi, GPRS_NS2_EV_REQ_OM_UNBLOCK, NULL);
