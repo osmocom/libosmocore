@@ -90,7 +90,7 @@ void dump_oip(const struct osmo_sockaddr_str *oip)
 	printf("{ .af = %s, .ip = %s, .port = %u }\n", af_name(oip->af), osmo_quote_str(oip->ip, -1), oip->port);
 }
 
-void sockaddr_str_test_conversions()
+void sockaddr_str_test_conversions(void)
 {
 	int i;
 	char buf[1024];
@@ -235,7 +235,7 @@ void sockaddr_str_test_conversions()
 
 }
 
-static void test_osmo_sockaddr_str_cmp()
+static void test_osmo_sockaddr_str_cmp(void)
 {
 	int i;
 	printf("\n\n%s\n", __func__);

@@ -90,7 +90,7 @@ static const struct bcap_test bcap_tests[] = {
 	{ speech_no3a_lv, &bcap_speech_no3a, "Speech, without octet 3a" },
 };
 
-static int test_bearer_cap()
+static int test_bearer_cap(void)
 {
 	struct gsm_mncc_bearer_cap bc;
 	int i, rc;
@@ -1154,7 +1154,7 @@ struct mobile_identity_tc mobile_identity_tests[] = {
 	},
 };
 
-void test_struct_mobile_identity()
+void test_struct_mobile_identity(void)
 {
 	struct mobile_identity_tc *t;
 	printf("%s()\n", __func__);
@@ -1316,7 +1316,7 @@ static const struct bcd_number_test {
 	},
 };
 
-static void test_bcd_number_encode_decode()
+static void test_bcd_number_encode_decode(void)
 {
 	const struct bcd_number_test *test;
 	uint8_t buf_enc[0xff] = { 0xff };
@@ -1550,7 +1550,7 @@ static void test_random_range_encoding(int range, int max_arfcn_num)
 	}
 }
 
-static void test_range_encoding()
+static void test_range_encoding(void)
 {
 	int *arfcns;
 	int arfcns_num = 0;
@@ -1611,7 +1611,7 @@ static int range512[] = {
 			__FILE__, __LINE__, (int) res, # cmp, (int) wanted);	\
 	}
 
-static void test_arfcn_filter()
+static void test_arfcn_filter(void)
 {
 	int arfcns[50], i, res, f0_included;
 	for (i = 0; i < ARRAY_SIZE(arfcns); ++i)
@@ -1644,7 +1644,7 @@ static void test_arfcn_filter()
 		VERIFY(arfcns[i], ==, ((i + 1) * 2) - 1);
 }
 
-static void test_print_encoding()
+static void test_print_encoding(void)
 {
 	int rc;
 	int w[17];
@@ -1669,7 +1669,7 @@ static void test_print_encoding()
 	printf("Range512: %s\n", osmo_hexdump(chan_list, ARRAY_SIZE(chan_list)));
 }
 
-static void test_si_range_helpers()
+static void test_si_range_helpers(void)
 {
 	int ws[(sizeof(freqs1)/sizeof(freqs1[0]))];
 	int i, f0 = 0xFFFFFF;
@@ -1708,7 +1708,7 @@ static void test_si_range_helpers()
 	VERIFY(f0, ==, 1);
 }
 
-static void test_power_ctrl()
+static void test_power_ctrl(void)
 {
 	int8_t rc8;
 	int rc;
@@ -1750,7 +1750,7 @@ static void test_power_ctrl()
 	VERIFY(rc, <, 0);
 }
 
-static void test_rach_tx_integer_raw2val()
+static void test_rach_tx_integer_raw2val(void)
 {
 	unsigned int raw;
 	for (raw = 0; raw <= 0x0f; raw++) {

@@ -188,7 +188,7 @@ static void check_lv_shift_data_len(size_t data_len,
 	}
 }
 
-static void test_tlv_shift_functions()
+static void test_tlv_shift_functions(void)
 {
 	uint8_t test_data[1024];
 	uint8_t buf[1024];
@@ -250,7 +250,7 @@ static void test_tlv_shift_functions()
 /* Most GSM related protocols clearly indicate that in case of duplicate
  * IEs, only the first occurrence shall be used, while any further occurrences
  * shall be ignored.  See e.g. 3GPP TS 24.008 Section 8.6.3 */
-static void test_tlv_repeated_ie()
+static void test_tlv_repeated_ie(void)
 {
 	uint8_t test_data[768];
 	int i, rc;
@@ -288,7 +288,7 @@ static void test_tlv_repeated_ie()
 	OSMO_ASSERT(dec3[2].lv[tag].val == &test_data[2 + 3 + 3]);
 }
 
-static void test_tlv_encoder()
+static void test_tlv_encoder(void)
 {
 	const uint8_t enc_ies[] = {
 		0x17, 0x14,	0x06, 0x2b, 0x12, 0x2b, 0x0b, 0x40, 0x2b, 0xb7, 0x05, 0xd0, 0x63, 0x82, 0x95, 0x03, 0x05, 0x40,
@@ -332,7 +332,7 @@ static void test_tlv_encoder()
 	msgb_free(msg);
 }
 
-static void test_tlv_parser_bounds()
+static void test_tlv_parser_bounds(void)
 {
 	struct tlv_definition tdef;
 	struct tlv_parsed dec;
@@ -423,7 +423,7 @@ static void test_tlv_parser_bounds()
 	OSMO_ASSERT(TLVP_VAL(&dec, 0x23) == NULL);
 }
 
-static void test_tlv_lens()
+static void test_tlv_lens(void)
 {
 	uint16_t buf_len;
 	uint8_t buf[512];

@@ -4,7 +4,7 @@
 #include <osmocom/core/msgb.h>
 #include <osmocom/gsm/gad.h>
 
-void test_gad_lat_lon_dec_enc_stability()
+void test_gad_lat_lon_dec_enc_stability(void)
 {
 	uint32_t lat_enc;
 	uint32_t lon_enc;
@@ -49,7 +49,7 @@ struct osmo_gad gad_test_values[] = {
 	},
 };
 
-void test_gad_enc_dec()
+void test_gad_enc_dec(void)
 {
 	int i;
 	printf("--- %s\n", __func__);
@@ -115,7 +115,7 @@ loop_end:
 	}
 }
 
-void test_gad_to_str()
+void test_gad_to_str(void)
 {
 	int i;
 	printf("--- %s\n", __func__);
@@ -134,7 +134,7 @@ void test_gad_to_str()
 	}
 }
 
-int main()
+int main(int argc, char **argv)
 {
 	test_gad_lat_lon_dec_enc_stability();
 	test_gad_enc_dec();

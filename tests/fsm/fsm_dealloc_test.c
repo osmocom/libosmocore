@@ -290,7 +290,7 @@ void obj_set_other(struct obj *a, struct obj *b)
 	obj_add_other(b, a);
 }
 
-static struct scene *scene_alloc()
+static struct scene *scene_alloc(void)
 {
 	struct scene *s = talloc_zero(ctx, struct scene);
 	s->use_count.talloc_object = s;
@@ -419,7 +419,7 @@ static void trigger_tests(void *loop_ctx)
 	}
 }
 
-void test_osmo_fsm_term_safely()
+void test_osmo_fsm_term_safely(void)
 {
 	fprintf(stderr, "\n\n%s()\n", __func__);
 	osmo_fsm_term_safely(true);
@@ -428,7 +428,7 @@ void test_osmo_fsm_term_safely()
 	fprintf(stderr, "\n\n%s() done\n", __func__);
 }
 
-void test_osmo_fsm_set_dealloc_ctx()
+void test_osmo_fsm_set_dealloc_ctx(void)
 {
 	fprintf(stderr, "\n\n%s()\n", __func__);
 	void *dealloc_ctx = talloc_named_const(ctx, 0, "fsm_dealloc");

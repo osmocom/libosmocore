@@ -192,7 +192,7 @@ static struct foo *foo_alloc(const char *name, size_t static_entries)
 	return foo;
 }
 
-void print_foos()
+void print_foos(void)
 {
 	int count = 0;
 	struct foo *foo;
@@ -204,7 +204,7 @@ void print_foos()
 	fprintf(stderr, "%d foos\n\n", count);
 }
 
-static void test_use_count_fsm()
+static void test_use_count_fsm(void)
 {
 	struct foo *a, *b, *c;
 	log("\n%s()\n", __func__);

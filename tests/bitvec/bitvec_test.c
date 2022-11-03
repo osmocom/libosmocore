@@ -69,7 +69,7 @@ static inline void test_set(struct bitvec *bv, enum bit_value bit)
 	printf("         %s [%d]\n\n", lol, bv->cur_bit);
 }
 
-static void test_byte_ops()
+static void test_byte_ops(void)
 {
 	struct bitvec bv;
 	const uint8_t *in = (const uint8_t *)"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
@@ -162,7 +162,7 @@ static inline void test_bitvec_rl_curbit(struct bitvec *bv, bool b, int max_bits
 	OSMO_ASSERT(num == result);
 }
 
-static void test_array()
+static void test_array(void)
 {
 	struct bitvec b;
 	uint8_t d[4096];
@@ -181,7 +181,7 @@ static void test_array()
 	test_array_item(17, &b, n, array, n * 3);
 }
 
-static void test_used_bytes()
+static void test_used_bytes(void)
 {
 	struct bitvec b;
 	uint8_t d[32];
@@ -204,7 +204,7 @@ static void test_used_bytes()
 	}
 }
 
-static void test_tailroom()
+static void test_tailroom(void)
 {
 	struct bitvec b;
 	uint8_t d[32];

@@ -183,7 +183,7 @@ void test_fr_concealment_core(void)
 }
 
 /* Simulate a real life situation: voice frames with a few dropouts */
-void test_fr_concealment_realistic()
+void test_fr_concealment_realistic(void)
 {
 	struct osmo_ecu_fr_state state;
 	uint8_t frame[GSM_FR_BYTES];
@@ -219,7 +219,7 @@ void test_fr_concealment_realistic()
 }
 
 /* Simulate a real life situation: voice frames with a few dropouts, using generic core */
-void test_fr_concealment_realistic_core()
+void test_fr_concealment_realistic_core(void)
 {
 	struct osmo_ecu_state *state = osmo_ecu_init(NULL, OSMO_ECU_CODEC_FR);
 	uint8_t frame[GSM_FR_BYTES];

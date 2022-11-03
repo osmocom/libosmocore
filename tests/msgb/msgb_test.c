@@ -61,7 +61,7 @@ static int osmo_panic_try(volatile int *exception, int setjmp_result)
 	return *exception == 0;
 }
 
-static void test_msgb_api()
+static void test_msgb_api(void)
 {
 	struct msgb *msg = msgb_alloc_headroom(4096, 128, "data");
 	unsigned char *cptr = NULL;
@@ -117,7 +117,7 @@ static void test_msgb_api()
 	msgb_free(msg);
 }
 
-static void test_msgb_api_errors()
+static void test_msgb_api_errors(void)
 {
 	struct msgb *msg = msgb_alloc_headroom(4096, 128, "data");
 	volatile int e = 0;
@@ -138,7 +138,7 @@ static void test_msgb_api_errors()
 	osmo_set_panic_handler(NULL);
 }
 
-static void test_msgb_copy()
+static void test_msgb_copy(void)
 {
 	struct msgb *msg = msgb_alloc_headroom(4096, 128, "data");
 	struct msgb *msg2;
@@ -185,7 +185,7 @@ static void test_msgb_copy()
 	msgb_free(msg2);
 }
 
-static void test_msgb_resize_area()
+static void test_msgb_resize_area(void)
 {
 	struct msgb *msg = msgb_alloc_headroom(4096, 128, "data");
 	int rc;
@@ -285,7 +285,7 @@ static void test_msgb_resize_area()
 	osmo_set_panic_handler(NULL);
 }
 
-static void test_msgb_printf()
+static void test_msgb_printf(void)
 {
 	struct msgb *msg;
 	struct msgb *msg_ref;

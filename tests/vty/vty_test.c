@@ -476,7 +476,7 @@ DEFUN(cfg_range_baseboth, cfg_range_baseboth_cmd,
 	return CMD_SUCCESS;
 }
 
-void test_vty_add_cmds()
+void test_vty_add_cmds(void)
 {
 	install_element(CONFIG_NODE, &cfg_ret_warning_cmd);
 	install_element(CONFIG_NODE, &cfg_ret_success_cmd);
@@ -507,7 +507,7 @@ void test_vty_add_cmds()
 	install_element_ve(&cfg_range_baseboth_cmd);
 }
 
-void test_is_cmd_ambiguous()
+void test_is_cmd_ambiguous(void)
 {
 	struct vty *vty;
 	struct vty_test test;
@@ -526,7 +526,7 @@ void test_is_cmd_ambiguous()
 	destroy_test_vty(&test, vty);
 }
 
-void test_numeric_range()
+void test_numeric_range(void)
 {
 	struct vty *vty;
 	struct vty_test test;
@@ -541,7 +541,7 @@ void test_numeric_range()
 	destroy_test_vty(&test, vty);
 }
 
-void test_ranges()
+void test_ranges(void)
 {
 	struct vty *vty;
 	struct vty_test test;

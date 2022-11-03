@@ -215,7 +215,7 @@ static const struct test_case test_decode[] =
 	},
 };
 
-static void test_octet_return()
+static void test_octet_return(void)
 {
 	char out[256];
 	int oct, septets;

@@ -340,7 +340,7 @@ static void _do_report(int expect_counter_vals, int expect_stat_item_vals, int l
 
 #define do_report(A, B) _do_report(A, B, __LINE__)
 
-static void test_reporting()
+static void test_reporting(void)
 {
 	struct osmo_stats_reporter *srep1, *srep2, *srep;
 	struct osmo_stat_item_group *statg1, *statg2;

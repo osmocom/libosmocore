@@ -77,7 +77,7 @@ static const struct si13_test test_si13_arr[] = {
 	},
 };
 
-static void test_si13()
+static void test_si13(void)
 {
 	int i, rc;
 	uint8_t data[GSM_MACBLOCK_LEN];

@@ -28,7 +28,7 @@
 #include <string.h>
 #include <errno.h>
 
-static void test_gcr()
+static void test_gcr(void)
 {
 	static const uint8_t res[] = {
 		0x03, /* .net_len */

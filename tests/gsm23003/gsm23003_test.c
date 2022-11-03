@@ -54,7 +54,7 @@ static struct {
 	{ NULL, false },
 };
 
-bool test_valid_imsi()
+bool test_valid_imsi(void)
 {
 	int i;
 	bool pass = true;
@@ -97,7 +97,7 @@ static struct {
 	{ NULL, false },
 };
 
-bool test_valid_msisdn()
+bool test_valid_msisdn(void)
 {
 	int i;
 	bool pass = true;
@@ -138,7 +138,7 @@ static struct {
 	{ NULL, false, false },
 };
 
-bool test_valid_imei()
+bool test_valid_imei(void)
 {
 	int i;
 	bool pass = true;
@@ -185,7 +185,7 @@ static struct test_mnc_from_str test_mnc_from_strs[] = {
 	{ "023 ", { -EINVAL, 0, false } },
 };
 
-static bool test_mnc_from_str()
+static bool test_mnc_from_str(void)
 {
 	int i;
 	bool pass = true;
@@ -209,7 +209,7 @@ static bool test_mnc_from_str()
 	return pass;
 }
 
-static bool test_gummei_name()
+static bool test_gummei_name(void)
 {
 	static const struct osmo_gummei gummei = {
 		.plmn = { .mcc = 901, .mnc = 70 },
@@ -226,7 +226,7 @@ static bool test_gummei_name()
 	return pass;
 }
 
-static bool test_domain_gen()
+static bool test_domain_gen(void)
 {
 	static const struct osmo_gummei gummei = {
 		.plmn = { .mcc = 901, .mnc = 70 },
@@ -252,7 +252,7 @@ static bool test_domain_gen()
 }
 
 
-static bool test_domain_parse()
+static bool test_domain_parse(void)
 {
 	static const char *mme_dom_valid = "mmec01.mmegiA001.mme.epc.mnc070.mcc901.3gppnetwork.org";
 	static const char *home_dom_valid = "epc.mnc070.mcc901.3gppnetwork.org";

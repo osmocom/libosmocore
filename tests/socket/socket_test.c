@@ -150,7 +150,7 @@ static int test_sockinit2(void)
 	return 0;
 }
 
-static int test_get_ip_and_port()
+static int test_get_ip_and_port(void)
 {
 	int fd, rc;
 	char ip[INET6_ADDRSTRLEN] = { };

@@ -150,7 +150,7 @@ struct bssmap_le_pdu bssmap_le_test_pdus[] = {
 	},
 };
 
-void test_bssmap_le_enc_dec()
+void test_bssmap_le_enc_dec(void)
 {
 	struct bssmap_le_pdu *pdu;
 	printf("--- %s\n", __func__);
@@ -200,7 +200,7 @@ loop_end:
 	}
 }
 
-int main()
+int main(int argc, char **argv)
 {
 	test_bssmap_le_enc_dec();
 	return 0;

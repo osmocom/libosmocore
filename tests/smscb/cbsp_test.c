@@ -81,7 +81,7 @@ static struct msgb *msgb_from_hex(unsigned int size, const char *hex)
 	return msg;
 }
 
-static void test_decode()
+static void test_decode(void)
 {
 	struct msgb *msg;
 	struct osmo_cbsp_decoded *cbsp_dec;

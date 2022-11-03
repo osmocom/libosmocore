@@ -88,7 +88,7 @@ static int milenage_check(const uint8_t *opc, const uint8_t *k, const uint8_t *s
 }
 
 
-static void help()
+static void help(void)
 {
 	printf( "Static SIM card parameters:\n"
 		"-k  --key\tSpecify Ki / K\n"

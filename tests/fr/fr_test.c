@@ -52,7 +52,7 @@ int socket(int domain, int type, int protocol)
 	return fd;
 }
 
-void bssgp_prim_cb()
+void bssgp_prim_cb(void)
 {
 }
 

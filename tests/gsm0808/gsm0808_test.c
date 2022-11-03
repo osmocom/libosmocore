@@ -111,7 +111,7 @@ static void test_create_layer3(void)
 	msgb_free(in_msg);
 }
 
-static void test_create_layer3_aoip()
+static void test_create_layer3_aoip(void)
 {
 	static const uint8_t res[] = {
 		0x00, 0x17, 0x57, 0x05, 0x08, 0x00, 0x77, 0x62,
@@ -148,7 +148,7 @@ static void test_create_layer3_aoip()
 	msgb_free(in_msg);
 }
 
-static void test_create_reset()
+static void test_create_reset(void)
 {
 	static const uint8_t res[] = { 0x00, 0x04, 0x30, 0x04, 0x01, 0x20 };
 	struct msgb *msg;
@@ -159,7 +159,7 @@ static void test_create_reset()
 	msgb_free(msg);
 }
 
-static void test_create_reset_ack()
+static void test_create_reset_ack(void)
 {
 	static const uint8_t res[] = { 0x00, 0x01, 0x31 };
 	struct msgb *msg;
@@ -171,7 +171,7 @@ static void test_create_reset_ack()
 }
 
 
-static void test_create_clear_command()
+static void test_create_clear_command(void)
 {
 	static const uint8_t res[] = { 0x20, 0x04, 0x01, 0x23 };
 	struct msgb *msg;
@@ -182,7 +182,7 @@ static void test_create_clear_command()
 	msgb_free(msg);
 }
 
-static void test_create_clear_command2()
+static void test_create_clear_command2(void)
 {
 	static const uint8_t res[] = { 0x00, 0x04, 0x20, 0x04, 0x01, 0x23 };
 	struct msgb *msg;
@@ -193,7 +193,7 @@ static void test_create_clear_command2()
 	msgb_free(msg);
 }
 
-static void test_create_clear_command2_csfb()
+static void test_create_clear_command2_csfb(void)
 {
 	static const uint8_t res[] = { 0x00, 0x05, 0x20, 0x04, 0x01, 0x23, 0x8F };
 	struct msgb *msg;
@@ -204,7 +204,7 @@ static void test_create_clear_command2_csfb()
 	msgb_free(msg);
 }
 
-static void test_create_clear_complete()
+static void test_create_clear_complete(void)
 {
 	static const uint8_t res[] = { 0x00, 0x01, 0x21 };
 	struct msgb *msg;
@@ -215,7 +215,7 @@ static void test_create_clear_complete()
 	msgb_free(msg);
 }
 
-static void test_create_cipher()
+static void test_create_cipher(void)
 {
 	static const uint8_t res[] =
 	    { 0x00, 0x0c, 0x53, 0x0a, 0x09, 0x03, 0xaa,
@@ -255,7 +255,7 @@ static void test_create_cipher()
 	msgb_free(msg);
 }
 
-static void test_create_cipher_complete()
+static void test_create_cipher_complete(void)
 {
 	static const uint8_t res1[] = {
 		0x00, 0x08, 0x55, 0x20, 0x03, 0x23, 0x42, 0x21, 0x2c, 0x04 };
@@ -312,7 +312,7 @@ static inline void parse_cipher_reject(struct msgb *msg, uint8_t exp)
 		       rc, exp, OSMO_BIT_PRINT(exp), msgb_hexdump(msg));
 }
 
-static void test_create_cipher_reject()
+static void test_create_cipher_reject(void)
 {
 	static const uint8_t res[] = { 0x00, 0x04, 0x59, 0x04, 0x01, 0x23 };
 	enum gsm0808_cause cause = GSM0808_CAUSE_CCCH_OVERLOAD;
@@ -327,7 +327,7 @@ static void test_create_cipher_reject()
 	msgb_free(msg);
 }
 
-static void test_create_cipher_reject_ext()
+static void test_create_cipher_reject_ext(void)
 {
 	static const uint8_t res[] = { 0x00, 0x05, 0x59, 0x04, 0x02, 0xd0, 0xFA };
 	uint8_t cause = 0xFA;
@@ -342,7 +342,7 @@ static void test_create_cipher_reject_ext()
 	msgb_free(msg);
 }
 
-static void test_create_cm_u()
+static void test_create_cm_u(void)
 {
 	static const uint8_t res[] = {
 		0x00, 0x07, 0x54, 0x12, 0x01, 0x23, 0x13, 0x01, 0x42 };
@@ -364,7 +364,7 @@ static void test_create_cm_u()
 	msgb_free(msg);
 }
 
-static void test_create_sapi_reject()
+static void test_create_sapi_reject(void)
 {
 	static const uint8_t res[] = { 0x00, 0x06, 0x25, 0x18, 0x03, 0x04, 0x01, 0x25 };
 	struct msgb *msg;
@@ -375,7 +375,7 @@ static void test_create_sapi_reject()
 	msgb_free(msg);
 }
 
-static void test_dec_confusion()
+static void test_dec_confusion(void)
 {
 	static const uint8_t hex[] =
 		{ 0x26, 0x04, 0x01, 0x52, 0x1f, 0x07, 0x00, 0xff, 0x00, 0x03, 0x25, 0x03, 0x25 };
@@ -425,7 +425,7 @@ static void test_dec_confusion()
 }
 
 /* Test Perform Location Report SYS#5891 */
-static void test_dec_perform_location_report_sys5891()
+static void test_dec_perform_location_report_sys5891(void)
 {
 /*	Message Type Perform Location Request
 	Location Type
@@ -477,7 +477,7 @@ static void test_dec_perform_location_report_sys5891()
 	OSMO_ASSERT(rc == 5);
 }
 
-static void test_create_ass()
+static void test_create_ass(void)
 {
 	static const uint8_t res1[] =
 	    { 0x00, 0x0a, 0x01, 0x0b, 0x04, 0x01, 0x0b, 0xa1, 0x25, 0x01, 0x00,
@@ -527,7 +527,7 @@ static void test_create_ass()
 	msgb_free(msg);
 }
 
-static void test_create_ass2()
+static void test_create_ass2(void)
 {
 	static const uint8_t res[] = {
 		BSSAP_MSG_BSS_MANAGEMENT,
@@ -604,7 +604,7 @@ static void test_create_ass2()
 	msgb_free(msg);
 }
 
-static void test_create_ass_compl()
+static void test_create_ass_compl(void)
 {
 	static const uint8_t res1[] = {
 		0x00, 0x09, 0x02, 0x15, 0x23, 0x21, 0x42, 0x2c,
@@ -623,7 +623,7 @@ static void test_create_ass_compl()
 	msgb_free(msg);
 }
 
-static void test_create_ass_compl_aoip()
+static void test_create_ass_compl_aoip(void)
 {
 	struct sockaddr_storage ss;
 	struct sockaddr_in sin;
@@ -660,7 +660,7 @@ static void test_create_ass_compl_aoip()
 	msgb_free(msg);
 }
 
-static void test_create_ass_fail()
+static void test_create_ass_fail(void)
 {
 	static const uint8_t res1[] = { 0x00, 0x04, 0x03, 0x04, 0x01, 0x23 };
 	static const uint8_t res2[] = {
@@ -678,7 +678,7 @@ static void test_create_ass_fail()
 	msgb_free(msg);
 }
 
-static void test_create_ass_fail_aoip()
+static void test_create_ass_fail_aoip(void)
 {
 	static const uint8_t res1[] =
 	    { 0x00, 0x0d, 0x03, 0x04, 0x01, 0x23, GSM0808_IE_SPEECH_CODEC_LIST,
@@ -704,7 +704,7 @@ static void test_create_ass_fail_aoip()
 	msgb_free(msg);
 }
 
-static void test_create_clear_rqst()
+static void test_create_clear_rqst(void)
 {
 	static const uint8_t res[] = { 0x00, 0x04, 0x22, 0x04, 0x01, 0x23 };
 	struct msgb *msg;
@@ -715,7 +715,7 @@ static void test_create_clear_rqst()
 	msgb_free(msg);
 }
 
-static void test_create_paging()
+static void test_create_paging(void)
 {
 	static const uint8_t res[] =
 	    { 0x00, 0x10, 0x52, 0x08, 0x08, 0x09, 0x10, 0x10, 0x00, 0x00, 0x00,
@@ -755,7 +755,7 @@ static void test_create_paging()
 	msgb_free(msg);
 }
 
-static void test_create_dtap()
+static void test_create_dtap(void)
 {
 	static const uint8_t res[] = { 0x01, 0x03, 0x02, 0x23, 0x42 };
 	struct msgb *msg, *l3;
@@ -772,7 +772,7 @@ static void test_create_dtap()
 	msgb_free(l3);
 }
 
-static void test_prepend_dtap()
+static void test_prepend_dtap(void)
 {
 	static const uint8_t res[] = { 0x01, 0x03, 0x02, 0x23, 0x42 };
 	struct msgb *in_msg;
@@ -789,7 +789,7 @@ static void test_prepend_dtap()
 	msgb_free(in_msg);
 }
 
-static void test_enc_dec_lcls()
+static void test_enc_dec_lcls(void)
 {
 	static const uint8_t res[] = {
 		GSM0808_IE_GLOBAL_CALL_REF,
@@ -867,7 +867,7 @@ static void test_enc_dec_lcls()
 	msgb_free(msg);
 }
 
-static void test_enc_dec_aoip_trasp_addr_v4()
+static void test_enc_dec_aoip_trasp_addr_v4(void)
 {
 	struct sockaddr_storage enc_addr;
 	struct sockaddr_storage dec_addr;
@@ -895,7 +895,7 @@ static void test_enc_dec_aoip_trasp_addr_v4()
 	msgb_free(msg);
 }
 
-static void test_enc_dec_aoip_trasp_addr_v6()
+static void test_enc_dec_aoip_trasp_addr_v6(void)
 {
 	struct sockaddr_storage enc_addr;
 	struct sockaddr_storage dec_addr;
@@ -924,7 +924,7 @@ static void test_enc_dec_aoip_trasp_addr_v6()
 	msgb_free(msg);
 }
 
-static void test_enc_aoip_trasp_addr_msg_too_small()
+static void test_enc_aoip_trasp_addr_msg_too_small(void)
 {
 	struct msgb *msg;
 	struct sockaddr_storage enc_addr;
@@ -946,7 +946,7 @@ static void test_enc_aoip_trasp_addr_msg_too_small()
 	msgb_free(msg);
 }
 
-static void test_gsm0808_enc_dec_speech_codec()
+static void test_gsm0808_enc_dec_speech_codec(void)
 {
 	struct gsm0808_speech_codec enc_sc = {
 		.pi = true,
@@ -971,7 +971,7 @@ static void test_gsm0808_enc_dec_speech_codec()
 }
 
 
-static void test_gsm0808_enc_dec_speech_codec_with_cfg()
+static void test_gsm0808_enc_dec_speech_codec_with_cfg(void)
 {
 	struct gsm0808_speech_codec enc_sc = {
 		.pi = true,
@@ -996,7 +996,7 @@ static void test_gsm0808_enc_dec_speech_codec_with_cfg()
 	msgb_free(msg);
 }
 
-static void test_gsm0808_enc_dec_speech_codec_ext_with_cfg()
+static void test_gsm0808_enc_dec_speech_codec_ext_with_cfg(void)
 {
 	struct gsm0808_speech_codec enc_sc = {
 		.pi = true,
@@ -1021,7 +1021,7 @@ static void test_gsm0808_enc_dec_speech_codec_ext_with_cfg()
 	msgb_free(msg);
 }
 
-static void test_gsm0808_enc_dec_speech_codec_list()
+static void test_gsm0808_enc_dec_speech_codec_list(void)
 {
 	struct gsm0808_speech_codec_list enc_scl = {
 		.codec = {
@@ -1064,7 +1064,7 @@ static void test_gsm0808_enc_dec_speech_codec_list()
 	msgb_free(msg);
 }
 
-static void test_gsm0808_enc_dec_empty_speech_codec_list()
+static void test_gsm0808_enc_dec_empty_speech_codec_list(void)
 {
 	struct gsm0808_speech_codec_list enc_scl = {
 		.len = 0,
@@ -1086,7 +1086,7 @@ static void test_gsm0808_enc_dec_empty_speech_codec_list()
 	msgb_free(msg);
 }
 
-static void test_gsm0808_enc_dec_channel_type()
+static void test_gsm0808_enc_dec_channel_type(void)
 {
 	struct gsm0808_channel_type enc_ct = {
 		.ch_indctr = GSM0808_CHAN_SPEECH,
@@ -1117,7 +1117,7 @@ static void test_gsm0808_enc_dec_channel_type()
 	msgb_free(msg);
 }
 
-static void test_gsm0808_enc_dec_encrypt_info()
+static void test_gsm0808_enc_dec_encrypt_info(void)
 {
 	struct gsm0808_encrypt_info enc_ei = {
 		.perm_algo = { GSM0808_ALG_ID_A5_0, GSM0808_ALG_ID_A5_1 },
@@ -1147,7 +1147,7 @@ static void test_gsm0808_enc_dec_encrypt_info()
 	msgb_free(msg);
 }
 
-static void test_gsm0808_dec_cell_id_list_srvcc()
+static void test_gsm0808_dec_cell_id_list_srvcc(void)
 {
 	/* taken from a pcap file of a real-world 3rd party MSC (SYS#5838) */
 	const uint8_t enc_cil[] = { 0x0b, 0x2, 0xf2, 0x10, 0x4e, 0x20, 0x15, 0xbe};
@@ -1160,7 +1160,7 @@ static void test_gsm0808_dec_cell_id_list_srvcc()
 	OSMO_ASSERT(dec_cil.id_list_len = 1);
 }
 
-static void test_gsm0808_enc_dec_cell_id_list_lac()
+static void test_gsm0808_enc_dec_cell_id_list_lac(void)
 {
 	struct gsm0808_cell_id_list2 enc_cil;
 	struct gsm0808_cell_id_list2 dec_cil;
@@ -1187,7 +1187,7 @@ static void test_gsm0808_enc_dec_cell_id_list_lac()
 	msgb_free(msg);
 }
 
-static void test_gsm0808_enc_dec_cell_id_list_single_lac()
+static void test_gsm0808_enc_dec_cell_id_list_single_lac(void)
 {
 	struct gsm0808_cell_id_list2 enc_cil;
 	struct gsm0808_cell_id_list2 dec_cil;
@@ -1216,7 +1216,7 @@ static void test_gsm0808_enc_dec_cell_id_list_single_lac()
 	msgb_free(msg);
 }
 
-static void test_gsm0808_enc_dec_cell_id_list_multi_lac()
+static void test_gsm0808_enc_dec_cell_id_list_multi_lac(void)
 {
 	struct gsm0808_cell_id_list2 enc_cil;
 	struct gsm0808_cell_id_list2 dec_cil;
@@ -1252,7 +1252,7 @@ static void test_gsm0808_enc_dec_cell_id_list_multi_lac()
 	msgb_free(msg);
 }
 
-static void test_gsm0808_enc_dec_cell_id_list_bss()
+static void test_gsm0808_enc_dec_cell_id_list_bss(void)
 {
 	struct gsm0808_cell_id_list2 enc_cil;
 	struct gsm0808_cell_id_list2 dec_cil;
@@ -1275,7 +1275,7 @@ static void test_gsm0808_enc_dec_cell_id_list_bss()
 	msgb_free(msg);
 }
 
-static void test_gsm0808_enc_dec_cell_id_list_multi_lai_and_lac()
+static void test_gsm0808_enc_dec_cell_id_list_multi_lai_and_lac(void)
 {
 	struct gsm0808_cell_id_list2 enc_cil;
 	struct gsm0808_cell_id_list2 dec_cil;
@@ -1331,7 +1331,7 @@ static void test_gsm0808_enc_dec_cell_id_list_multi_lai_and_lac()
 	msgb_free(msg);
 }
 
-static void test_gsm0808_enc_dec_cell_id_list_multi_ci()
+static void test_gsm0808_enc_dec_cell_id_list_multi_ci(void)
 {
 	struct gsm0808_cell_id_list2 enc_cil;
 	struct gsm0808_cell_id_list2 dec_cil;
@@ -1365,7 +1365,7 @@ static void test_gsm0808_enc_dec_cell_id_list_multi_ci()
 	msgb_free(msg);
 }
 
-static void test_gsm0808_enc_dec_cell_id_list_multi_lac_and_ci()
+static void test_gsm0808_enc_dec_cell_id_list_multi_lac_and_ci(void)
 {
 	struct gsm0808_cell_id_list2 enc_cil;
 	struct gsm0808_cell_id_list2 dec_cil;
@@ -1406,7 +1406,7 @@ static void test_gsm0808_enc_dec_cell_id_list_multi_lac_and_ci()
 	msgb_free(msg);
 }
 
-static void test_gsm0808_enc_dec_cell_id_list_multi_global()
+static void test_gsm0808_enc_dec_cell_id_list_multi_global(void)
 {
 	struct gsm0808_cell_id_list2 enc_cil;
 	struct gsm0808_cell_id_list2 dec_cil;
@@ -1479,7 +1479,7 @@ static void print_cil(const struct gsm0808_cell_id_list2 *cil)
 	printf("     cell_id_list == %s\n", gsm0808_cell_id_list_name(cil));
 }
 
-void test_cell_id_list_add() {
+void test_cell_id_list_add(void) {
 	size_t zu;
 
 	const struct gsm0808_cell_id_list2 cgi1 = {
@@ -1661,7 +1661,7 @@ void test_cell_id_list_add() {
 	printf("------- %s done\n", __func__);
 }
 
-static void test_gsm0808_enc_dec_cell_id_lac()
+static void test_gsm0808_enc_dec_cell_id_lac(void)
 {
 	struct gsm0808_cell_id enc_ci = {
 		.id_discr = CELL_IDENT_LAC,
@@ -1687,7 +1687,7 @@ static void test_gsm0808_enc_dec_cell_id_lac()
 	msgb_free(msg);
 }
 
-static void test_gsm0808_enc_dec_cell_id_bss()
+static void test_gsm0808_enc_dec_cell_id_bss(void)
 {
 	struct gsm0808_cell_id enc_ci = {
 		.id_discr = CELL_IDENT_BSS,
@@ -1709,7 +1709,7 @@ static void test_gsm0808_enc_dec_cell_id_bss()
 	msgb_free(msg);
 }
 
-static void test_gsm0808_enc_dec_cell_id_no_cell()
+static void test_gsm0808_enc_dec_cell_id_no_cell(void)
 {
 	struct gsm0808_cell_id enc_ci = {
 		.id_discr = CELL_IDENT_NO_CELL,
@@ -1731,7 +1731,7 @@ static void test_gsm0808_enc_dec_cell_id_no_cell()
 	msgb_free(msg);
 }
 
-static void test_gsm0808_enc_dec_cell_id_lai_and_lac()
+static void test_gsm0808_enc_dec_cell_id_lai_and_lac(void)
 {
 	struct gsm0808_cell_id enc_ci = {
 		.id_discr = CELL_IDENT_LAI_AND_LAC,
@@ -1762,7 +1762,7 @@ static void test_gsm0808_enc_dec_cell_id_lai_and_lac()
 	msgb_free(msg);
 }
 
-static void test_gsm0808_enc_dec_cell_id_ci()
+static void test_gsm0808_enc_dec_cell_id_ci(void)
 {
 	struct gsm0808_cell_id enc_ci = {
 		.id_discr = CELL_IDENT_CI,
@@ -1785,7 +1785,7 @@ static void test_gsm0808_enc_dec_cell_id_ci()
 	msgb_free(msg);
 }
 
-static void test_gsm0808_enc_dec_cell_id_lac_and_ci()
+static void test_gsm0808_enc_dec_cell_id_lac_and_ci(void)
 {
 	struct gsm0808_cell_id enc_ci = {
 		.id_discr = CELL_IDENT_LAC_AND_CI,
@@ -1812,7 +1812,7 @@ static void test_gsm0808_enc_dec_cell_id_lac_and_ci()
 	msgb_free(msg);
 }
 
-static void test_gsm0808_enc_dec_cell_id_global()
+static void test_gsm0808_enc_dec_cell_id_global(void)
 {
 	struct gsm0808_cell_id enc_ci = {
 		.id_discr = CELL_IDENT_WHOLE_GLOBAL,
@@ -1844,7 +1844,7 @@ static void test_gsm0808_enc_dec_cell_id_global()
 	msgb_free(msg);
 }
 
-static void test_gsm0808_enc_dec_cell_id_global_ps()
+static void test_gsm0808_enc_dec_cell_id_global_ps(void)
 {
 	struct gsm0808_cell_id enc_cgi = {
 		.id_discr = CELL_IDENT_WHOLE_GLOBAL,
@@ -2130,7 +2130,7 @@ static void test_gsm48_mr_cfg_from_gsm0808_sc_cfg_single(uint16_t s15_s0)
 	printf("\n");
 }
 
-void test_gsm48_mr_cfg_from_gsm0808_sc_cfg()
+void test_gsm48_mr_cfg_from_gsm0808_sc_cfg(void)
 {
 	printf("Testing gsm48_mr_cfg_from_gsm0808_sc_cfg():\n");
 
@@ -2315,7 +2315,7 @@ static const struct test_cell_id_matching_data test_cell_id_matching_tests[] = {
 	{ .id = cgi_23_042_23_5, .match_id = cgi_23_99_23_5, .expect_match = false, .expect_exact_match = false },
 };
 
-static void test_cell_id_matching()
+static void test_cell_id_matching(void)
 {
 	int i;
 	bool ok = true;
@@ -2478,7 +2478,7 @@ static const struct gsm0808_cell_id test_gsm0808_cell_id_to_from_cgi_data[] = {
 	{ .id_discr = 423 },
 };
 
-static void test_gsm0808_cell_id_to_from_cgi()
+static void test_gsm0808_cell_id_to_from_cgi(void)
 {
 	int i;
 	int j;

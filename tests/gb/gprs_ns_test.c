@@ -420,7 +420,7 @@ static int expire_nsvc_timer(struct gprs_nsvc *nsvc)
 	return rc;
 }
 
-static void test_nsvc()
+static void test_nsvc(void)
 {
 	struct gprs_ns_inst *nsi = gprs_ns_instantiate(gprs_ns_callback, NULL);
 	struct sockaddr_in peer[1] = {{0},};
@@ -459,7 +459,7 @@ static void test_nsvc()
 	alarm(0);
 }
 
-static void test_ignored_messages()
+static void test_ignored_messages(void)
 {
 	struct gprs_ns_inst *nsi = gprs_ns_instantiate(gprs_ns_callback, NULL);
 	struct sockaddr_in peer[1] = {{0},};
@@ -486,7 +486,7 @@ static void test_ignored_messages()
 	nsi = NULL;
 }
 
-static void test_bss_port_changes()
+static void test_bss_port_changes(void)
 {
 	struct gprs_ns_inst *nsi = gprs_ns_instantiate(gprs_ns_callback, NULL);
 	struct sockaddr_in peer[4] = {{0},};
@@ -540,7 +540,7 @@ static void test_bss_port_changes()
 	nsi = NULL;
 }
 
-static void test_bss_reset_ack()
+static void test_bss_reset_ack(void)
 {
 	struct gprs_ns_inst *nsi = gprs_ns_instantiate(gprs_ns_callback, NULL);
 	struct sockaddr_in peer[4] = {{0},};
@@ -687,7 +687,7 @@ static void test_bss_reset_ack()
 }
 
 
-static void test_sgsn_reset()
+static void test_sgsn_reset(void)
 {
 	struct gprs_ns_inst *nsi = gprs_ns_instantiate(gprs_ns_callback, NULL);
 	struct sockaddr_in sgsn_peer= {0};
@@ -765,7 +765,7 @@ static void test_sgsn_reset()
 	nsi = NULL;
 }
 
-static void test_sgsn_reset_invalid_state()
+static void test_sgsn_reset_invalid_state(void)
 {
 	struct gprs_ns_inst *nsi = gprs_ns_instantiate(gprs_ns_callback, NULL);
 	struct sockaddr_in sgsn_peer= {0};
@@ -833,7 +833,7 @@ static void test_sgsn_reset_invalid_state()
 	nsi = NULL;
 }
 
-static void test_sgsn_output()
+static void test_sgsn_output(void)
 {
 	struct gprs_ns_inst *nsi = gprs_ns_instantiate(gprs_ns_callback, NULL);
 	struct sockaddr_in sgsn_peer= {0};

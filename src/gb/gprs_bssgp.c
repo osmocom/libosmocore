@@ -1428,7 +1428,7 @@ void bssgp_fc_flush_queue(struct bssgp_flow_control *fc)
 /*!
  * \brief Flush the queues of all BSSGP contexts.
  */
-void bssgp_flush_all_queues()
+void bssgp_flush_all_queues(void)
 {
 	struct bssgp_bvc_ctx *bctx;
 

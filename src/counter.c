@@ -75,7 +75,7 @@ int osmo_counters_for_each(int (*handle_counter)(struct osmo_counter *, void *),
 
 /*! Counts the registered counter
  *  \returns amount of counters */
-int osmo_counters_count()
+int osmo_counters_count(void)
 {
 	return llist_count(&counters);
 }

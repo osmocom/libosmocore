@@ -49,7 +49,7 @@
 					OSMO_MIN((TIME_CC)->cfg.round_threshold_usec, GRAN_USEC(TIME_CC)) \
 					: (GRAN_USEC(TIME_CC) / 2))
 
-static uint64_t time_now_usec()
+static uint64_t time_now_usec(void)
 {
 	struct timespec tp;
 	if (osmo_clock_gettime(CLOCK_MONOTONIC, &tp))

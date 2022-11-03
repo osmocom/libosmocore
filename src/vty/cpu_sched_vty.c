@@ -89,7 +89,7 @@ static struct cmd_node sched_node = {
 };
 
 /* returns number of configured CPUs in the system, or negative otherwise */
-static int get_num_cpus() {
+static int get_num_cpus(void) {
 	static unsigned int num_cpus = 0;
 	long ln;
 

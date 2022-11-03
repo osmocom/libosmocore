@@ -86,7 +86,7 @@ uint32_t facch_h1_fn_samples[] = { 500728, 500771, 500797, 500841, 500875, 50091
 	502782, 502825, 502869, 502903, 502955, 502999
 };
 
-static void test_gsm0502_fn_remap()
+static void test_gsm0502_fn_remap(void)
 {
 	unsigned int i;
         uint32_t fn_begin;

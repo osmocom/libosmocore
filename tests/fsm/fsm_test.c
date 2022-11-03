@@ -172,7 +172,7 @@ static struct osmo_fsm_inst *foo(void)
 	return fi;
 }
 
-static void test_id_api()
+static void test_id_api(void)
 {
 	struct osmo_fsm_inst *fi;
 
@@ -280,7 +280,7 @@ const struct timeval fake_time_start_time = { 123, 456 };
 	osmo_timers_update(); \
 } while (0)
 
-void fake_time_start()
+void fake_time_start(void)
 {
 	struct timespec *clock_override;
 
@@ -301,7 +301,7 @@ static int timer_cb(struct osmo_fsm_inst *fi)
 	return 0;
 }
 
-static void test_state_chg_keep_timer()
+static void test_state_chg_keep_timer(void)
 {
 	struct osmo_fsm_inst *fi;
 
@@ -349,7 +349,7 @@ static void test_state_chg_keep_timer()
 	fprintf(stderr, "--- %s() done\n", __func__);
 }
 
-static void test_state_chg_T()
+static void test_state_chg_T(void)
 {
 	struct osmo_fsm_inst *fi;
 

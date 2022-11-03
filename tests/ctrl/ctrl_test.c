@@ -334,7 +334,7 @@ static const struct one_test test_messages_list[] = {
 	},
 };
 
-static void test_messages()
+static void test_messages(void)
 {
 	struct ctrl_handle *ctrl;
 	struct ctrl_connection *ccon;
@@ -390,7 +390,7 @@ static int verify_test_defer(struct ctrl_cmd *cmd, const char *value, void *data
 	return 0;
 }
 
-static void test_deferred_cmd()
+static void test_deferred_cmd(void)
 {
 	struct ctrl_handle *ctrl;
 	struct ctrl_connection *ccon;

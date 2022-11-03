@@ -78,7 +78,7 @@ DEFUN(log_sweep, log_sweep_cmd,
 	return CMD_SUCCESS;
 }
 
-static void vty_commands_init()
+static void vty_commands_init(void)
 {
 	install_element_ve(&log_sweep_cmd);
 }
@@ -121,7 +121,7 @@ const struct log_info log_info = {
 	.num_cat = ARRAY_SIZE(default_categories),
 };
 
-static void print_help()
+static void print_help(void)
 {
 	printf( "options:\n"
 		"  -h	--help		this text\n"

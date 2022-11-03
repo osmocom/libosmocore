@@ -125,7 +125,7 @@ static void test_tdef_get(bool test_range)
 	}
 }
 
-static void test_tdef_get_nonexisting()
+static void test_tdef_get_nonexisting(void)
 {
 	printf("\n%s()\n", __func__);
 
@@ -136,7 +136,7 @@ static void test_tdef_get_nonexisting()
 	print_tdef_get(tdefs, 5, OSMO_TDEF_US);
 }
 
-static void test_tdef_set_and_get()
+static void test_tdef_set_and_get(void)
 {
 	struct osmo_tdef *t;
 	printf("\n%s()\n", __func__);
@@ -317,7 +317,7 @@ const struct timeval fake_time_start_time = { 123, 456 };
 	osmo_timers_update(); \
 } while (0)
 
-void fake_time_start()
+void fake_time_start(void)
 {
 	struct timespec *clock_override;
 

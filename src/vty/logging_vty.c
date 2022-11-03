@@ -1196,7 +1196,7 @@ static void gen_vty_logp_cmd_strs(struct cmd_element *cmd)
 
 /*! Register logging related commands to the VTY. Call this once from
  *  your application if you want to support those commands. */
-void logging_vty_add_cmds()
+void logging_vty_add_cmds(void)
 {
 	install_lib_element_ve(&enable_logging_cmd);
 	install_lib_element_ve(&disable_logging_cmd);

@@ -742,7 +742,7 @@ static int config_write_stats(struct vty *vty)
  *  Call this once during your application initialization if you would
  *  like to have stats VTY commands enabled.
  */
-void osmo_stats_vty_add_cmds()
+void osmo_stats_vty_add_cmds(void)
 {
 	install_lib_element_ve(&show_stats_cmd);
 	install_lib_element_ve(&show_stats_level_cmd);

@@ -73,7 +73,7 @@ struct msgb *gsm0808_create_cipher2(const struct gsm0808_cipher_mode_command *cm
 struct msgb *gsm0808_create_cipher_complete(struct msgb *layer3, uint8_t alg_id);
 struct msgb *gsm0808_create_cipher_reject(enum gsm0808_cause cause);
 struct msgb *gsm0808_create_cipher_reject_ext(enum gsm0808_cause_class class, uint8_t ext);
-struct msgb *gsm0808_create_classmark_request();
+struct msgb *gsm0808_create_classmark_request(void);
 struct msgb *gsm0808_create_classmark_update(const uint8_t *cm2, uint8_t cm2_len,
 					     const uint8_t *cm3, uint8_t cm3_len);
 struct msgb *gsm0808_create_sapi_reject_cause(uint8_t link_id, uint16_t cause);
@@ -269,8 +269,8 @@ struct gsm0808_handover_command {
 };
 struct msgb *gsm0808_create_handover_command(const struct gsm0808_handover_command *params);
 
-struct msgb *gsm0808_create_handover_detect();
-struct msgb *gsm0808_create_handover_succeeded();
+struct msgb *gsm0808_create_handover_detect(void);
+struct msgb *gsm0808_create_handover_succeeded(void);
 
 struct gsm0808_handover_complete {
 	bool rr_cause_present;

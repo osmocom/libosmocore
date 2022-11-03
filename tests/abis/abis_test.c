@@ -167,7 +167,7 @@ static inline void chk_descr(struct msgb *msg, const char *f_id, const char *f_v
 	}
 }
 
-static void test_sw_descr()
+static void test_sw_descr(void)
 {
 	const char *f_id = "TEST.L0L", *f_ver = "0.1.666~deadbeeffacefeed-dirty";
 	uint8_t chain[] = { 0x42, 0x12, 0x00, 0x03, 0x01, 0x02, 0x03, 0x13, 0x00, 0x03, 0x03, 0x04, 0x05, 0x42, 0x12,
@@ -194,7 +194,7 @@ static void test_sw_descr()
 }
 
 /* Test decode IPAC_DLCX_IND obtained from SYS#5915 */
-static void test_dec_ipac_dlc_indx()
+static void test_dec_ipac_dlc_indx(void)
 {
 /* Radio Signalling Link (RSL)
 	0111 111. = Message discriminator: ip.access Vendor Specific messages (63)

@@ -418,7 +418,7 @@ struct msgb *gsm0808_create_lcls_notification(enum gsm0808_lcls_status status, b
 
 /*! Create BSSMAP Classmark Request message
  *  \returns callee-allocated msgb with BSSMAP Classmark Request message */
-struct msgb *gsm0808_create_classmark_request()
+struct msgb *gsm0808_create_classmark_request(void)
 {
 	struct msgb *msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM,
 					       "classmark-request");
@@ -1110,7 +1110,7 @@ struct msgb *gsm0808_create_handover_command(const struct gsm0808_handover_comma
 /*! Create BSSMAP HANDOVER DETECT message, 3GPP TS 48.008 3.2.1.40.
  * Sent from the MT BSC back to the MSC when the MS has sent a handover RACH request and the MT BSC has
  * received the Handover Detect message. */
-struct msgb *gsm0808_create_handover_detect()
+struct msgb *gsm0808_create_handover_detect(void)
 {
 	struct msgb *msg;
 
@@ -1129,7 +1129,7 @@ struct msgb *gsm0808_create_handover_detect()
 
 /*! Create BSSMAP HANDOVER SUCCEEDED message, 3GPP TS 48.008 3.2.1.13.
  * Sent from the MSC back to the old BSS to notify that the MS has successfully accessed the new BSS. */
-struct msgb *gsm0808_create_handover_succeeded()
+struct msgb *gsm0808_create_handover_succeeded(void)
 {
 	struct msgb *msg;
 

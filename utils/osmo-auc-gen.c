@@ -85,7 +85,7 @@ static struct osmo_sub_auth_data test_aud = {
 	.algo = OSMO_AUTH_ALG_NONE,
 };
 
-static void help()
+static void help(void)
 {
 	int alg;
 	printf( "-2  --2g\tUse 2G (GSM) authentication\n"

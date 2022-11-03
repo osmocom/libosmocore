@@ -37,7 +37,7 @@
 
 void *root_ctx = NULL;
 
-static void print_help()
+static void print_help(void)
 {
 	printf( "options:\n"
 		"  -h	--help		this text\n"
@@ -315,7 +315,7 @@ DEFUN_ATTR_USRATTR(cfg_attr_hidden_app_attr_unbelievable,
 	return CMD_SUCCESS;
 }
 
-static void init_vty_cmds()
+static void init_vty_cmds(void)
 {
 	install_element_ve(&single0_cmd);
 	install_element_ve(&multi0_cmd);

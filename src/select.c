@@ -653,20 +653,20 @@ osmo_signalfd_setup(void *ctx, sigset_t set, osmo_signalfd_cb *cb, void *data)
  *         }
  * }
  */
-void osmo_select_shutdown_request()
+void osmo_select_shutdown_request(void)
 {
 	_osmo_select_shutdown_requested++;
 };
 
 /*! Return the number of times osmo_select_shutdown_request() was called before. */
-int osmo_select_shutdown_requested()
+int osmo_select_shutdown_requested(void)
 {
 	return _osmo_select_shutdown_requested;
 };
 
 /*! Return true after osmo_select_shutdown_requested() was called, and after an osmo_select poll loop found no more
  * pending OSMO_FD_WRITE on any registered socket. */
-bool osmo_select_shutdown_done() {
+bool osmo_select_shutdown_done(void) {
 	return _osmo_select_shutdown_done;
 };
 

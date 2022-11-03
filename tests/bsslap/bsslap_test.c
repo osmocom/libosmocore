@@ -48,7 +48,7 @@ struct bsslap_pdu bsslap_test_pdus[] = {
 	},
 };
 
-void test_bsslap_enc_dec()
+void test_bsslap_enc_dec(void)
 {
 	struct bsslap_pdu *pdu;
 	printf("--- %s\n", __func__);
@@ -96,7 +96,7 @@ loop_end:
 	}
 }
 
-int main()
+int main(int argc, char **argv)
 {
 	test_bsslap_enc_dec();
 	return 0;

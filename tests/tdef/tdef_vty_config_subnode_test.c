@@ -102,7 +102,7 @@ static int config_write_gsmnet(struct vty *vty)
 	return CMD_SUCCESS;
 }
 
-static void gsmnet_init_vty()
+static void gsmnet_init_vty(void)
 {
 	install_node(&gsmnet_node, config_write_gsmnet);
 	install_element(CONFIG_NODE, &cfg_net_cmd);
@@ -116,7 +116,7 @@ static void gsmnet_init_vty()
 
 void *root_ctx = NULL;
 
-static void print_help()
+static void print_help(void)
 {
 	printf( "options:\n"
 		"  -h	--help		this text\n"

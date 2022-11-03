@@ -179,7 +179,7 @@ static int config_write_member(struct vty *vty)
 	return CMD_SUCCESS;
 }
 
-static void member_init_vty()
+static void member_init_vty(void)
 {
 	install_node(&member_node, config_write_member);
 	install_element(CONFIG_NODE, &cfg_member_cmd);
@@ -190,7 +190,7 @@ static void member_init_vty()
 
 /* ------------------- THE REST is just boilerplate osmo main() ------------------- */
 
-static void print_help()
+static void print_help(void)
 {
 	printf( "options:\n"
 		"  -h	--help		this text\n"

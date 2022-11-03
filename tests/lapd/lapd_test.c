@@ -376,7 +376,7 @@ static int ms_to_bts_tx_cb(struct msgb *msg, struct lapdm_entity *le, void *_ctx
 	return 0;
 }
 
-static void test_lapdm_polling()
+static void test_lapdm_polling(void)
 {
 	printf("I do some very simple LAPDm test.\n");
 
@@ -470,7 +470,7 @@ static void test_lapdm_polling()
 	lapdm_channel_exit(&ms_to_bts_channel);
 }
 
-static void test_lapdm_contention_resolution()
+static void test_lapdm_contention_resolution(void)
 {
 	printf("I test contention resultion by having two mobiles collide and "
 		"first mobile repeating SABM.\n");
@@ -523,7 +523,7 @@ static void test_lapdm_contention_resolution()
 	lapdm_channel_exit(&bts_to_ms_channel);
 }
 
-static void test_lapdm_early_release()
+static void test_lapdm_early_release(void)
 {
 	printf("I test RF channel release of an unestablished channel.\n");
 
@@ -603,7 +603,7 @@ static void lapdm_establish(const uint8_t *est_req, size_t est_req_size)
 	msgb_free(msg);
 }
 
-static void test_lapdm_establishment()
+static void test_lapdm_establishment(void)
 {
 	printf("I test RF channel establishment.\n");
 	printf("Testing SAPI3/SDCCH\n");
@@ -677,7 +677,7 @@ static void dump_queue(struct llist_head *head)
 	printf("\n");
 }
 
-static void test_lapdm_desync()
+static void test_lapdm_desync(void)
 {
 	printf("I test if desync problems exist in LAPDm\n");
 

@@ -342,7 +342,7 @@ static struct {
 	{ "DeafBeddedBabeAcceededFadedDecaff", 32, 32, false, false },
 };
 
-bool test_is_hexstr()
+bool test_is_hexstr(void)
 {
 	int i;
 	bool pass = true;
@@ -1023,7 +1023,7 @@ struct osmo_str_tolowupper_test_data osmo_str_tolowupper_tests[] = {
 };
 
 
-static void osmo_str_tolowupper_test()
+static void osmo_str_tolowupper_test(void)
 {
 	int i;
 	char buf[128];
@@ -1197,7 +1197,7 @@ int strbuf_cascade(char *buf, size_t buflen)
 	return sb.chars_needed;
 }
 
-void strbuf_test()
+void strbuf_test(void)
 {
 	char buf[256];
 	int rc;
@@ -1230,7 +1230,7 @@ void strbuf_test()
 	printf("(need %d chars, had size=63) %s\n", rc, buf);
 }
 
-void strbuf_test_nolen()
+void strbuf_test_nolen(void)
 {
 	char buf[20];
 	struct osmo_strbuf sb = { .buf = buf, .len = sizeof(buf) };
@@ -1256,7 +1256,7 @@ static void startswith_test_str(const char *str, const char *startswith_str, boo
 		printf("   ERROR: EXPECTED %s\n", expect_rc ? "true" : "false");
 }
 
-static void startswith_test()
+static void startswith_test(void)
 {
 	printf("\n%s()\n", __func__);
 	startswith_test_str(NULL, NULL, true);
@@ -1301,7 +1301,7 @@ static char *foo_name_c_zero_null(void *ctx, const char *arg)
         OSMO_NAME_C_IMPL(ctx, 0, NULL, foo_name_buf, arg)
 }
 
-static void name_c_impl_test()
+static void name_c_impl_test(void)
 {
 	char *test_strs[] = {
 		"test",
@@ -1703,7 +1703,7 @@ const char *errno_str(int rc)
 		return "";
 	}
 }
-void test_float_str_to_int()
+void test_float_str_to_int(void)
 {
 	const struct float_str_to_int_test *t;
 	printf("--- %s\n", __func__);
@@ -1865,7 +1865,7 @@ struct int_to_float_str_test int_to_float_str_tests[] = {
 	{ 23, -9223372036854775807, "-0.00009223372036854775807" },
 	{ 23, INT64_MIN, "-ERR" },
 };
-void test_int_to_float_str()
+void test_int_to_float_str(void)
 {
 	const struct int_to_float_str_test *t;
 	printf("--- %s\n", __func__);
@@ -1956,7 +1956,7 @@ struct str_to_int_test str_to_int_tests[] = {
 	{ "123 ", 10, -1000, 1000, -E2BIG, 123 },
 	{ "123.4", 10, -1000, 1000, -E2BIG, 123 },
 };
-void test_str_to_int()
+void test_str_to_int(void)
 {
 	const struct str_to_int_test *t;
 	printf("--- %s\n", __func__);
@@ -2053,7 +2053,7 @@ struct str_to_int64_test str_to_int64_tests[] = {
 	{ "-9223372036854775809", 10, -1000, 1000, -EOVERFLOW, INT64_MIN },
 	{ "9223372036854775808", 10, -1000, 1000, -EOVERFLOW, INT64_MAX },
 };
-void test_str_to_int64()
+void test_str_to_int64(void)
 {
 	const struct str_to_int64_test *t;
 	printf("--- %s\n", __func__);

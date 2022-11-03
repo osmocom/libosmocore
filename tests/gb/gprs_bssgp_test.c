@@ -173,7 +173,7 @@ static void test_bssgp_status(void)
 	printf("----- %s END\n", __func__);
 }
 
-static void test_bssgp_bad_reset()
+static void test_bssgp_bad_reset(void)
 {
 	struct msgb *msg;
 	uint16_t bvci_be = htons(2);
@@ -256,7 +256,7 @@ static void test_bssgp_flow_control_bvc(void)
 	printf("----- %s END\n", __func__);
 }
 
-static void test_bssgp_msgb_copy()
+static void test_bssgp_msgb_copy(void)
 {
 	struct msgb *msg, *msg2;
 	uint16_t bvci_be = htons(2);

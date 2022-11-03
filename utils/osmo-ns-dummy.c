@@ -43,7 +43,7 @@ static struct vty_app_info vty_info = {
 	.copyright	= vty_copyright,
 };
 
-static void print_help()
+static void print_help(void)
 {
 	printf( "Some useful options:\n"
 		"  -h	--help			This text\n"

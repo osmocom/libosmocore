@@ -138,7 +138,7 @@ struct nri_v_get_set_test nri_v_get_set_tests[] = {
 	},
 };
 
-void test_nri_v_get_set()
+void test_nri_v_get_set(void)
 {
 	struct nri_v_get_set_test *t;
 
@@ -222,7 +222,7 @@ struct nri_validate_tc nri_validate_tests[] = {
 	{ .nri = INT16_MAX, .nri_bitlen = 0, .expect_rc = 1 },
 };
 
-void test_nri_validate()
+void test_nri_validate(void)
 {
 	struct nri_validate_tc *t;
 	printf("\n%s()\n", __func__);
@@ -327,7 +327,7 @@ struct nri_range_validate_tc nri_range_validate_tests[] = {
 
 };
 
-void test_nri_range_validate()
+void test_nri_range_validate(void)
 {
 	struct nri_range_validate_tc *t;
 	printf("\n%s()\n", __func__);
@@ -357,7 +357,7 @@ void dump_list(const struct osmo_nri_ranges *nri_ranges)
 	printf("};\n");
 }
 
-void test_nri_list()
+void test_nri_list(void)
 {
 	struct osmo_nri_ranges *nri_ranges = osmo_nri_ranges_alloc(ctx);
 	printf("\n%s()\n", __func__);
@@ -545,7 +545,7 @@ void test_nri_list()
 	DEL(100, 1);
 }
 
-void test_nri_limit_by_ranges()
+void test_nri_limit_by_ranges(void)
 {
 	const uint8_t nri_bitlen = 8;
 	const int16_t expect_nri_vals[] = { 10, 20, 21, 30, 31, 32 };
@@ -594,7 +594,7 @@ void test_nri_limit_by_ranges()
 	}
 }
 
-int main()
+int main(int argc, char **argv)
 {
 	ctx = talloc_named_const(NULL, 0, "nri_test");
 

@@ -52,7 +52,7 @@ void osmo_counter_free(struct osmo_counter *ctr)
 
 int osmo_counters_for_each(int (*handle_counter)(struct osmo_counter *, void *), void *data);
 
-int osmo_counters_count();
+int osmo_counters_count(void);
 
 struct osmo_counter *osmo_counter_get_by_name(const char *name);
 

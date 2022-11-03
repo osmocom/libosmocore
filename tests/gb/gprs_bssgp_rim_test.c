@@ -60,7 +60,7 @@ void dump_rim_ri(struct bssgp_rim_routing_info *ri)
 	}
 }
 
-static void test_bssgp_parse_rim_ri()
+static void test_bssgp_parse_rim_ri(void)
 {
 	int rc;
 	struct bssgp_rim_routing_info result;
@@ -94,7 +94,7 @@ static void test_bssgp_parse_rim_ri()
 	printf("----- %s END\n", __func__);
 }
 
-static void test_bssgp_create_rim_ri()
+static void test_bssgp_create_rim_ri(void)
 {
 	int rc;
 	struct bssgp_rim_routing_info ri;
@@ -194,7 +194,7 @@ void dump_bssgp_ran_inf_req_rim_cont(struct bssgp_ran_inf_req_rim_cont *rim_cont
 	}
 }
 
-static void test_bssgp_dec_ran_inf_req_rim_cont_nacc()
+static void test_bssgp_dec_ran_inf_req_rim_cont_nacc(void)
 {
 	int rc;
 	struct bssgp_ran_inf_req_rim_cont rim_cont_dec;
@@ -212,7 +212,7 @@ static void test_bssgp_dec_ran_inf_req_rim_cont_nacc()
 	printf("----- %s END\n", __func__);
 }
 
-static void test_bssgp_enc_ran_inf_req_rim_cont_nacc()
+static void test_bssgp_enc_ran_inf_req_rim_cont_nacc(void)
 {
 	int rc;
 	struct bssgp_ran_inf_req_rim_cont rim_cont = { };
@@ -321,7 +321,7 @@ static void dump_bssgp_ran_inf_rim_cont(struct bssgp_ran_inf_rim_cont *rim_cont)
 	}
 }
 
-static void test_bssgp_dec_ran_inf_rim_cont_nacc()
+static void test_bssgp_dec_ran_inf_rim_cont_nacc(void)
 {
 	int rc;
 	struct bssgp_ran_inf_rim_cont rim_cont_dec;
@@ -346,7 +346,7 @@ static void test_bssgp_dec_ran_inf_rim_cont_nacc()
 	printf("----- %s END\n", __func__);
 }
 
-static void test_bssgp_dec_ran_inf_rim_cont_err_nacc()
+static void test_bssgp_dec_ran_inf_rim_cont_err_nacc(void)
 {
 	int rc;
 	struct bssgp_ran_inf_rim_cont rim_cont_dec;
@@ -364,7 +364,7 @@ static void test_bssgp_dec_ran_inf_rim_cont_err_nacc()
 	printf("----- %s END\n", __func__);
 }
 
-static void test_bssgp_enc_ran_inf_rim_cont_nacc()
+static void test_bssgp_enc_ran_inf_rim_cont_nacc(void)
 {
 	int rc;
 	struct bssgp_ran_inf_rim_cont rim_cont = { };
@@ -415,7 +415,7 @@ static void test_bssgp_enc_ran_inf_rim_cont_nacc()
 	printf("----- %s END\n", __func__);
 }
 
-static void test_bssgp_enc_ran_inf_rim_cont_err_nacc()
+static void test_bssgp_enc_ran_inf_rim_cont_err_nacc(void)
 {
 	int rc;
 	struct bssgp_ran_inf_rim_cont rim_cont = { };
@@ -458,7 +458,7 @@ static void dump_bssgp_ran_inf_ack_rim_cont(struct bssgp_ran_inf_ack_rim_cont *r
 	}
 }
 
-static void test_bssgp_dec_ran_inf_ack_rim_cont()
+static void test_bssgp_dec_ran_inf_ack_rim_cont(void)
 {
 	int rc;
 	struct bssgp_ran_inf_ack_rim_cont rim_cont_dec;
@@ -474,7 +474,7 @@ static void test_bssgp_dec_ran_inf_ack_rim_cont()
 	printf("----- %s END\n", __func__);
 }
 
-static void test_bssgp_enc_ran_inf_ack_rim_cont()
+static void test_bssgp_enc_ran_inf_ack_rim_cont(void)
 {
 	int rc;
 	struct bssgp_ran_inf_ack_rim_cont rim_cont = { };
@@ -513,7 +513,7 @@ void dump_bssgp_ran_inf_err_rim_cont(struct bssgp_ran_inf_err_rim_cont *rim_cont
 	}
 }
 
-static void test_bssgp_dec_ran_inf_err_rim_cont()
+static void test_bssgp_dec_ran_inf_err_rim_cont(void)
 {
 	int rc;
 	struct bssgp_ran_inf_err_rim_cont rim_cont_dec;
@@ -530,7 +530,7 @@ static void test_bssgp_dec_ran_inf_err_rim_cont()
 	printf("----- %s END\n", __func__);
 }
 
-static void test_bssgp_enc_ran_inf_err_rim_cont()
+static void test_bssgp_enc_ran_inf_err_rim_cont(void)
 {
 	int rc;
 	struct bssgp_ran_inf_err_rim_cont rim_cont = { };
@@ -578,7 +578,7 @@ void dump_bssgp_ran_inf_app_err_rim_cont(struct bssgp_ran_inf_app_err_rim_cont *
 	}
 }
 
-static void test_bssgp_dec_ran_inf_app_err_rim_cont_nacc()
+static void test_bssgp_dec_ran_inf_app_err_rim_cont_nacc(void)
 {
 	int rc;
 	struct bssgp_ran_inf_app_err_rim_cont rim_cont_dec;
@@ -597,7 +597,7 @@ static void test_bssgp_dec_ran_inf_app_err_rim_cont_nacc()
 	printf("----- %s END\n", __func__);
 }
 
-static void test_bssgp_enc_ran_inf_app_err_rim_cont_nacc()
+static void test_bssgp_enc_ran_inf_app_err_rim_cont_nacc(void)
 {
 	int rc;
 	struct bssgp_ran_inf_app_err_rim_cont rim_cont = { };
@@ -623,7 +623,7 @@ static void test_bssgp_enc_ran_inf_app_err_rim_cont_nacc()
 	printf("----- %s END\n", __func__);
 }
 
-static void test_bssgp_dec_ran_inf_req_app_cont_nacc()
+static void test_bssgp_dec_ran_inf_req_app_cont_nacc(void)
 {
 	int rc;
 	struct bssgp_ran_inf_req_app_cont_nacc app_cont_dec;
@@ -639,7 +639,7 @@ static void test_bssgp_dec_ran_inf_req_app_cont_nacc()
 	printf("----- %s END\n", __func__);
 }
 
-static void test_bssgp_enc_ran_inf_req_app_cont_nacc()
+static void test_bssgp_enc_ran_inf_req_app_cont_nacc(void)
 {
 	int rc;
 	struct bssgp_ran_inf_req_app_cont_nacc app_cont = { };
@@ -662,7 +662,7 @@ static void test_bssgp_enc_ran_inf_req_app_cont_nacc()
 	printf("----- %s END\n", __func__);
 }
 
-static void test_bssgp_dec_ran_inf_app_cont_nacc()
+static void test_bssgp_dec_ran_inf_app_cont_nacc(void)
 {
 	int rc;
 	struct bssgp_ran_inf_app_cont_nacc app_cont_dec;
@@ -682,7 +682,7 @@ static void test_bssgp_dec_ran_inf_app_cont_nacc()
 	printf("----- %s END\n", __func__);
 }
 
-static void test_bssgp_enc_ran_inf_app_cont_nacc()
+static void test_bssgp_enc_ran_inf_app_cont_nacc(void)
 {
 	int rc;
 	struct bssgp_ran_inf_app_cont_nacc app_cont = { };
@@ -721,7 +721,7 @@ static void test_bssgp_enc_ran_inf_app_cont_nacc()
 	printf("----- %s END\n", __func__);
 }
 
-static void test_bssgp_dec_app_err_cont_nacc()
+static void test_bssgp_dec_app_err_cont_nacc(void)
 {
 	int rc;
 	struct bssgp_app_err_cont_nacc app_cont_dec;
@@ -737,7 +737,7 @@ static void test_bssgp_dec_app_err_cont_nacc()
 	printf("----- %s END\n", __func__);
 }
 
-static void test_bssgp_enc_app_err_cont_nacc()
+static void test_bssgp_enc_app_err_cont_nacc(void)
 {
 	int rc;
 	struct bssgp_app_err_cont_nacc app_cont = { };

@@ -235,7 +235,7 @@ int bssgp_fc_in(struct bssgp_flow_control *fc, struct msgb *msg,
 int bssgp_fc_ms_init(struct bssgp_flow_control *fc_ms, uint16_t bvci,
 		     uint16_t nsei, uint32_t max_queue_depth);
 
-void bssgp_flush_all_queues();
+void bssgp_flush_all_queues(void);
 void bssgp_fc_flush_queue(struct bssgp_flow_control *fc);
 
 /* gprs_bssgp_vty.c */
