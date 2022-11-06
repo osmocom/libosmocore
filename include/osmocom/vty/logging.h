@@ -6,7 +6,12 @@
 #define FILTER_STR	"Filter log messages\n"
 
 struct log_info;
-void logging_vty_add_cmds(void);
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstrict-prototypes"
+/* note this undefined argument declaration is intentional. There used
+ * to be an argument until 2017 which we no longer need .*/
+void logging_vty_add_cmds();
+#pragma GCC diagnostic pop
 void logging_vty_add_deprecated_subsys(void *ctx, const char *name);
 struct vty;
 struct log_target *osmo_log_vty2tgt(struct vty *vty);
