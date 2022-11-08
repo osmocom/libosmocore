@@ -3,8 +3,8 @@
 # before making any modifications: https://www.gnu.org/software/libtool/manual/html_node/Versioning.html
 LIBVERSION=3:1:3
 
-AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include $(TALLOC_CFLAGS)
-AM_CFLAGS = -Wall
+AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include
+AM_CFLAGS = -Wall $(TALLOC_CFLAGS)
 
 if ENABLE_PSEUDOTALLOC
 AM_CPPFLAGS += -I$(top_srcdir)/src/pseudotalloc

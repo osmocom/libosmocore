@@ -3,7 +3,8 @@
 # before making any modifications: https://www.gnu.org/software/libtool/manual/html_node/Versioning.html
 LIBVERSION=7:0:7
 
-AM_CFLAGS = -Wall $(all_includes) -I$(top_srcdir)/include -I$(top_builddir)/include $(TALLOC_CFLAGS)
+AM_CPPFLAGS = $(all_includes) -I$(top_srcdir)/include -I$(top_builddir)/include
+AM_CFLAGS = -Wall $(TALLOC_CFLAGS)
 
 if ENABLE_CTRL
 lib_LTLIBRARIES = libosmoctrl.la

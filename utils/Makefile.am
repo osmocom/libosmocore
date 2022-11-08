@@ -1,8 +1,8 @@
 
 bin_PROGRAMS =
 noinst_PROGRAMS =
-AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include $(TALLOC_CFLAGS)
-AM_CFLAGS = -Wall $(PTHREAD_CFLAGS)
+AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include
+AM_CFLAGS = -Wall $(TALLOC_CFLAGS) $(PTHREAD_CFLAGS)
 LDADD = $(top_builddir)/src/libosmocore.la $(top_builddir)/src/gsm/libosmogsm.la $(PTHREAD_LIBS)
 
 if ENABLE_UTILITIES

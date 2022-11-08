@@ -3,8 +3,8 @@
 # before making any modifications: https://www.gnu.org/software/libtool/manual/html_node/Versioning.html
 LIBVERSION=18:0:0
 
-AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include $(TALLOC_CFLAGS)
-AM_CFLAGS = -Wall
+AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include
+AM_CFLAGS = -Wall $(TALLOC_CFLAGS)
 
 if ENABLE_PSEUDOTALLOC
 AM_CPPFLAGS += -I$(top_srcdir)/src/pseudotalloc
@@ -43,7 +43,7 @@ libosmogsm_la_LDFLAGS = $(LTLDFLAGS_OSMOGSM) -version-info $(LIBVERSION) -no-und
 libosmogsm_la_LIBADD = libgsmint.la $(TALLOC_LIBS)
 
 if ENABLE_GNUTLS
-AM_CPPFLAGS += $(LIBGNUTLS_CFLAGS)
+AM_CFLAGS += $(LIBGNUTLS_CFLAGS)
 libosmogsm_la_LIBADD += $(LIBGNUTLS_LIBS)
 else
 noinst_HEADERS += kdf/sha1.h kdf/sha256.h kdf/common.h kdf/sha1_i.h kdf/sha256_i.h
