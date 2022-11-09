@@ -5,7 +5,7 @@
  * of the linux 2.4 netfilter subsystem. */
 /*
  * (C) 2000-2020 by Harald Welte <laforge@gnumonks.org>
- * All Rights Reserverd.
+ * All Rights Reserved.
  *
  * SPDX-License-Identifier: GPL-2.0+
  *
