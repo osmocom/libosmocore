@@ -1738,6 +1738,20 @@ static int lapd_udata_req(struct osmo_dlsap_prim *dp, struct lapd_msg_ctx *lctx)
 	return dl->send_ph_data_req(&nctx, msg);
 }
 
+static void msg_to_tx_hist(struct lapd_history *tx_hist, const struct msgb *msg, int length, int more)
+{
+	tx_hist->msg = lapd_msgb_alloc(msg->len, "HIST");
+	tx_hist->more = more;
+	msgb_put(tx_hist->msg, msg->len);
+	if (length)
+		memcpy(tx_hist->msg->data, msg->l3h, msg->len);
+}
+
+static void msg_to_tx_hist0(struct lapd_datalink *dl, const struct msgb *msg)
+{
+	return msg_to_tx_hist(&dl->tx_hist[0], msg, msg->len, 0);
+}
+
 /* request link establishment */
 static int lapd_est_req(struct osmo_dlsap_prim *dp, struct lapd_msg_ctx *lctx)
 {
@@ -1776,11 +1790,8 @@ static int lapd_est_req(struct osmo_dlsap_prim *dp, struct lapd_msg_ctx *lctx)
 	nctx.more = 0;
 
 	/* Transmit-buffer carries exactly one segment */
-	dl->tx_hist[0].msg = lapd_msgb_alloc(msg->len, "HIST");
-	msgb_put(dl->tx_hist[0].msg, msg->len);
-	if (msg->len)
-		memcpy(dl->tx_hist[0].msg->data, msg->l3h, msg->len);
-	dl->tx_hist[0].more = 0;
+	msg_to_tx_hist0(dl, msg);
+
 	/* set Vs to 0, because it is used as index when resending SABM */
 	dl->v_send = 0;
 
@@ -1913,11 +1924,8 @@ static int lapd_send_i(struct lapd_msg_ctx *lctx, int line)
 			memcpy(msg->l3h, dl->send_buffer->l3h + dl->send_out,
 				length);
 		/* store in tx_hist */
-		dl->tx_hist[h].msg = lapd_msgb_alloc(msg->len, "HIST");
-		msgb_put(dl->tx_hist[h].msg, msg->len);
-		if (length)
-			memcpy(dl->tx_hist[h].msg->data, msg->l3h, msg->len);
-		dl->tx_hist[h].more = nctx.more;
+		msg_to_tx_hist(&dl->tx_hist[h], msg, length, nctx.more);
+
 		/* Add length to track how much is already in the tx buffer */
 		dl->send_out += length;
 	} else {
@@ -2038,11 +2046,8 @@ static int lapd_res_req(struct osmo_dlsap_prim *dp, struct lapd_msg_ctx *lctx)
 	nctx.length = 0;
 	nctx.more = 0;
 
-	dl->tx_hist[0].msg = lapd_msgb_alloc(msg->len, "HIST");
-	msgb_put(dl->tx_hist[0].msg, msg->len);
-	if (msg->len)
-		memcpy(dl->tx_hist[0].msg->data, msg->l3h, msg->len);
-	dl->tx_hist[0].more = 0;
+	msg_to_tx_hist0(dl, msg);
+
 	/* set Vs to 0, because it is used as index when resending SABM */
 	dl->v_send = 0;
 
@@ -2102,11 +2107,8 @@ static int lapd_rel_req(struct osmo_dlsap_prim *dp, struct lapd_msg_ctx *lctx)
 	nctx.length = 0;
 	nctx.more = 0;
 
-	dl->tx_hist[0].msg = lapd_msgb_alloc(msg->len, "HIST");
-	msgb_put(dl->tx_hist[0].msg, msg->len);
-	if (msg->len)
-		memcpy(dl->tx_hist[0].msg->data, msg->l3h, msg->len);
-	dl->tx_hist[0].more = 0;
+	msg_to_tx_hist0(dl, msg);
+
 	/* set Vs to 0, because it is used as index when resending DISC */
 	dl->v_send = 0;
 
