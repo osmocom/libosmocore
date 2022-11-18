@@ -154,7 +154,8 @@ void logp(int subsys, const char *file, int line, int cont, const char *format, 
 #define DLCSN1		-26	/*!< CSN.1 (Concrete Syntax Notation 1) codec */
 #define DLM2PA		-27	/*!< Osmocom M2PA (libosmo-sigtran) */
 #define DLM2UA		-28	/*!< Reserved for future Osmocom M2UA (libosmo-sigtran) */
-#define OSMO_NUM_DLIB	28	/*!< Number of logging sub-systems in libraries */
+#define DLIO		-29	/*!< Osmocom IO sub-system */
+#define OSMO_NUM_DLIB	29	/*!< Number of logging sub-systems in libraries */
 
 /* Colors that can be used in log_info_cat.color */
 #define OSMO_LOGCOLOR_NORMAL NULL

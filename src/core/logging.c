@@ -313,6 +313,12 @@ static const struct log_info_cat internal_cat[OSMO_NUM_DLIB] = {
 		.enabled = 1, .loglevel = LOGL_NOTICE,
 		.color = "\033[38;5;11m",
 	},
+	[INT2IDX(DLIO)] = {
+		.name = "DLIO",
+		.description = "libosmocore IO Subsystem",
+		.enabled = 1, .loglevel = LOGL_NOTICE,
+		.color = "\033[38;5;67m",
+	},
 };
 
 void assert_loginfo(const char *src)

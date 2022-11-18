@@ -37,6 +37,7 @@ osmocore_HEADERS = \
 	msgb.h \
 	netdev.h \
 	netns.h \
+	osmo_io.h \
 	panic.h \
 	prbs.h \
 	prim.h \
