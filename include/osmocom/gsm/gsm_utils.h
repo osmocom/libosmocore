@@ -33,6 +33,7 @@
 	} while (0)
 
 #define GSM_MAX_FN	(26*51*2048)
+#define GSM_FN_UNSET	0xFFFFFFFF
 
 /* Max length of random identifier which can be requested via osmo_get_rand_id() */
 #define OSMO_MAX_RAND_ID_LEN 16
