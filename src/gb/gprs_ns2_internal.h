@@ -6,6 +6,7 @@
 #include <stdint.h>
 
 #include <osmocom/core/logging.h>
+#include <osmocom/core/rate_ctr.h>
 #include <osmocom/gprs/protocol/gsm_08_16.h>
 #include <osmocom/gprs/gprs_ns2.h>
 

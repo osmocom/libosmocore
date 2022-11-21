@@ -28,6 +28,7 @@
 
 #include <errno.h>
 
+#include <osmocom/core/osmo_io.h>
 #include <osmocom/core/select.h>
 #include <osmocom/core/sockaddr_str.h>
 #include <osmocom/core/socket.h>
@@ -46,7 +47,7 @@ struct gprs_ns2_vc_driver vc_driver_ip = {
 };
 
 struct priv_bind {
-	struct osmo_fd fd;
+	struct osmo_io_fd *iofd;
 	struct osmo_sockaddr addr;
 	int dscp;
 	uint8_t priority;
@@ -68,7 +69,8 @@ static void free_bind(struct gprs_ns2_vc_bind *bind)
 
 	priv = bind->priv;
 
-	osmo_fd_close(&priv->fd);
+	osmo_iofd_free(priv->iofd);
+	priv->iofd = NULL;
 	talloc_free(priv);
 }
 
@@ -143,17 +145,11 @@ struct gprs_ns2_vc *gprs_ns2_nsvc_by_sockaddr_bind(struct gprs_ns2_vc_bind *bind
 
 static inline int nsip_sendmsg(struct gprs_ns2_vc_bind *bind,
 			       struct msgb *msg,
-			       struct osmo_sockaddr *dest)
+			       const struct osmo_sockaddr *dest)
 {
-	int rc;
 	struct priv_bind *priv = bind->priv;
 
-	rc = sendto(priv->fd.fd, msg->data, msg->len, 0,
-		    &dest->u.sa, sizeof(*dest));
-
-	msgb_free(msg);
-
-	return rc;
+	return osmo_iofd_sendto_msgb(priv->iofd, msg, 0, dest);
 }
 
 /*! send the msg and free it afterwards.
@@ -171,40 +167,7 @@ static int nsip_vc_sendmsg(struct gprs_ns2_vc *nsvc, struct msgb *msg)
 	return rc;
 }
 
-/* Read a single NS-over-IP message */
-static struct msgb *read_nsip_msg(struct osmo_fd *bfd, int *error, struct osmo_sockaddr *saddr,
-				  const struct gprs_ns2_vc_bind *bind)
-{
-	struct msgb *msg = ns2_msgb_alloc();
-	int ret = 0;
-	socklen_t saddr_len = sizeof(*saddr);
-
-	if (!msg) {
-		*error = -ENOMEM;
-		return NULL;
-	}
-
-	ret = recvfrom(bfd->fd, msg->data, NS_ALLOC_SIZE - NS_ALLOC_HEADROOM, 0,
-			&saddr->u.sa, &saddr_len);
-	if (ret < 0) {
-		LOGBIND(bind, LOGL_ERROR, "recv error %s during NSIP recvfrom %s\n",
-			strerror(errno), osmo_sock_get_name2(bfd->fd));
-		msgb_free(msg);
-		*error = ret;
-		return NULL;
-	} else if (ret == 0) {
-		msgb_free(msg);
-		*error = ret;
-		return NULL;
-	}
-
-	msg->l2h = msg->data;
-	msgb_put(msg, ret);
-
-	return msg;
-}
-
-static struct priv_vc *ns2_driver_alloc_vc(struct gprs_ns2_vc_bind *bind, struct gprs_ns2_vc *nsvc, struct osmo_sockaddr *remote)
+static struct priv_vc *ns2_driver_alloc_vc(struct gprs_ns2_vc_bind *bind, struct gprs_ns2_vc *nsvc, const struct osmo_sockaddr *remote)
 {
 	struct priv_vc *priv = talloc_zero(bind, struct priv_vc);
 	if (!priv)
@@ -216,24 +179,22 @@ static struct priv_vc *ns2_driver_alloc_vc(struct gprs_ns2_vc_bind *bind, struct
 	return priv;
 }
 
-static int handle_nsip_read(struct osmo_fd *bfd)
+static void handle_nsip_recvfrom(struct osmo_io_fd *iofd, int error, struct msgb *msg,
+				 const struct osmo_sockaddr *saddr)
 {
 	int rc = 0;
-	int error = 0;
-	struct gprs_ns2_vc_bind *bind = bfd->data;
-	struct osmo_sockaddr saddr;
+	struct gprs_ns2_vc_bind *bind = osmo_iofd_get_data(iofd);
 	struct gprs_ns2_vc *nsvc;
-	struct msgb *msg = read_nsip_msg(bfd, &error, &saddr, bind);
+
 	struct msgb *reject;
 
-	if (!msg)
-		return -EINVAL;
+	msg->l2h = msgb_data(msg);
 
 	/* check if a vc is available */
-	nsvc = gprs_ns2_nsvc_by_sockaddr_bind(bind, &saddr);
+	nsvc = gprs_ns2_nsvc_by_sockaddr_bind(bind, saddr);
 	if (!nsvc) {
 		/* VC not found */
-		rc = ns2_create_vc(bind, msg, &saddr, "newconnection", &reject, &nsvc);
+		rc = ns2_create_vc(bind, msg, saddr, "newconnection", &reject, &nsvc);
 		switch (rc) {
 		case NS2_CS_FOUND:
 			break;
@@ -243,10 +204,10 @@ static int handle_nsip_read(struct osmo_fd *bfd)
 			goto out;
 		case NS2_CS_REJECTED:
 			/* nsip_sendmsg will free reject */
-			rc = nsip_sendmsg(bind, reject, &saddr);
+			rc = nsip_sendmsg(bind, reject, saddr);
 			goto out;
 		case NS2_CS_CREATED:
-			ns2_driver_alloc_vc(bind, nsvc, &saddr);
+			ns2_driver_alloc_vc(bind, nsvc, saddr);
 			/* only start the fsm for non SNS. SNS will take care of its own */
 			if (nsvc->nse->dialect != GPRS_NS2_DIALECT_SNS)
 				ns2_vc_fsm_start(nsvc);
@@ -254,29 +215,31 @@ static int handle_nsip_read(struct osmo_fd *bfd)
 		}
 	}
 
-	return ns2_recv_vc(nsvc, msg);
+	ns2_recv_vc(nsvc, msg);
+	return;
 
 out:
 	msgb_free(msg);
-	return rc;
 }
 
-static int handle_nsip_write(struct osmo_fd *bfd)
+static void handle_nsip_sendto(struct osmo_io_fd *iofd, int res,
+			       const struct msgb *msg,
+			       const struct osmo_sockaddr *daddr)
 {
-	/* FIXME: actually send the data here instead of nsip_sendmsg() */
-	return -EIO;
-}
+	struct gprs_ns2_vc_bind *bind = osmo_iofd_get_data(iofd);
+	struct gprs_ns2_vc *nsvc;
 
-static int nsip_fd_cb(struct osmo_fd *bfd, unsigned int what)
-{
-	int rc = 0;
+	nsvc = gprs_ns2_nsvc_by_sockaddr_bind(bind, daddr);
+	if (!nsvc)
+		return;
 
-	if (what & OSMO_FD_READ)
-		rc = handle_nsip_read(bfd);
-	if (what & OSMO_FD_WRITE)
-		rc = handle_nsip_write(bfd);
-
-	return rc;
+	if (OSMO_LIKELY(res >= 0)) {
+		RATE_CTR_INC_NS(nsvc, NS_CTR_PKTS_OUT);
+		RATE_CTR_ADD_NS(nsvc, NS_CTR_BYTES_OUT, res);
+	} else {
+		RATE_CTR_INC_NS(nsvc, NS_CTR_PKTS_OUT_DROP);
+		RATE_CTR_ADD_NS(nsvc, NS_CTR_BYTES_OUT_DROP, msgb_length(msg));
+	}
 }
 
 /*! Find NS bind for a given socket address
@@ -321,6 +284,11 @@ int gprs_ns2_ip_bind(struct gprs_ns2_inst *nsi,
 	struct priv_bind *priv;
 	int rc;
 
+	struct osmo_io_ops ioops = {
+		.sendto_cb = &handle_nsip_sendto,
+		.recvfrom_cb = &handle_nsip_recvfrom,
+	};
+
 	if (local->u.sa.sa_family != AF_INET && local->u.sa.sa_family != AF_INET6)
 		return -EINVAL;
 
@@ -353,18 +321,24 @@ int gprs_ns2_ip_bind(struct gprs_ns2_inst *nsi,
 		gprs_ns2_free_bind(bind);
 		return -ENOMEM;
 	}
-	priv->fd.cb = nsip_fd_cb;
-	priv->fd.data = bind;
+
 	priv->addr = *local;
 	priv->dscp = dscp;
 
-	rc = osmo_sock_init_osa_ofd(&priv->fd, SOCK_DGRAM, IPPROTO_UDP,
+	rc = osmo_sock_init_osa(SOCK_DGRAM, IPPROTO_UDP,
 				 local, NULL,
 				 OSMO_SOCK_F_BIND | OSMO_SOCK_F_DSCP(priv->dscp));
 	if (rc < 0) {
 		gprs_ns2_free_bind(bind);
 		return rc;
 	}
+
+	priv->iofd = osmo_iofd_setup(bind, rc, "NS bind", OSMO_IO_FD_MODE_RECVFROM_SENDTO, &ioops, bind);
+	osmo_iofd_register(priv->iofd, rc);
+	osmo_iofd_set_alloc_info(priv->iofd, 4096, 128);
+
+	osmo_iofd_read_enable(priv->iofd);
+	osmo_iofd_write_enable(priv->iofd);
 
 	/* IPv4: max fragmented payload can be (13 bit) * 8 byte => 65535.
 	 * IPv6: max payload can be 65535 (RFC 2460).
@@ -521,7 +495,7 @@ int gprs_ns2_ip_bind_set_dscp(struct gprs_ns2_vc_bind *bind, int dscp)
 	if (dscp != priv->dscp) {
 		priv->dscp = dscp;
 
-		rc = osmo_sock_set_dscp(priv->fd.fd, dscp);
+		rc = osmo_sock_set_dscp(osmo_iofd_get_fd(priv->iofd), dscp);
 		if (rc < 0) {
 			LOGBIND(bind, LOGL_ERROR, "Failed to set the DSCP to %u with ret(%d) errno(%d)\n",
 				dscp, rc, errno);
@@ -543,7 +517,7 @@ int gprs_ns2_ip_bind_set_priority(struct gprs_ns2_vc_bind *bind, uint8_t priorit
 	if (priority != priv->priority) {
 		priv->priority = priority;
 
-		rc = osmo_sock_set_priority(priv->fd.fd, priority);
+		rc = osmo_sock_set_priority(osmo_iofd_get_fd(priv->iofd), priority);
 		if (rc < 0) {
 			LOGBIND(bind, LOGL_ERROR, "Failed to set the priority to %u with ret(%d) errno(%d)\n",
 				priority, rc, errno);
