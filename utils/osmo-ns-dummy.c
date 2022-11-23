@@ -8,7 +8,8 @@
 #include <osmocom/core/select.h>
 #include <osmocom/core/application.h>
 #include <osmocom/core/stats.h>
-
+#include <osmocom/ctrl/control_if.h>
+#include <osmocom/ctrl/control_vty.h>
 #include <osmocom/gprs/gprs_ns2.h>
 #include <osmocom/vty/vty.h>
 #include <osmocom/vty/telnet_interface.h>
@@ -27,6 +28,7 @@ static bool quit = false;
 static bool config_given = false;
 static bool daemonize = false;
 static int vty_port = 0;
+static int ctrl_port = 0;
 static char *config_file = NULL;
 struct gprs_ns2_inst *g_nsi;
 
@@ -51,6 +53,7 @@ static void print_help(void)
 		"  -V	--version		Print version\n"
 		"  -D	--daemonize		Fork the process into a background daemon\n"
 		"  -p   --vty-port PORT		Set the vty port to listen on.\n"
+		"  -r   --ctrl-port PORT	Set the ctrl port to listen on.\n"
 		"\nVTY reference generation:\n"
 		"    	--vty-ref-mode MODE	VTY reference generation mode (e.g. 'expert').\n"
 		"    	--vty-ref-xml		Generate the VTY reference XML output and exit.\n"
@@ -93,12 +96,13 @@ static void handle_options(int argc, char **argv)
 			{ "version", 0, 0, 'V' },
 			{ "daemonize", 0, 0, 'D' },
 			{ "vty-port", 1, 0, 'p' },
+			{ "ctrl-port", 1, 0, 'r' },
 			{ "vty-ref-mode", 1, &long_option, 1 },
 			{ "vty-ref-xml", 0, &long_option, 2 },
 			{ 0, 0, 0, 0 }
 		};
 
-		c = getopt_long(argc, argv, "hc:p:VD",
+		c = getopt_long(argc, argv, "hc:p:r:VD",
 				long_options, &option_idx);
 		if (c == -1)
 			break;
@@ -120,7 +124,14 @@ static void handle_options(int argc, char **argv)
 		case 'p':
 			vty_port = atoi(optarg);
 			if (vty_port < 0 || vty_port > 65535) {
-				fprintf(stderr, "Invalid port %d given!\n", vty_port);
+				fprintf(stderr, "Invalid VTY port %d given!\n", vty_port);
+				exit(1);
+			}
+			break;
+		case 'r':
+			ctrl_port = atoi(optarg);
+			if (ctrl_port < 0 || ctrl_port > 65535) {
+				fprintf(stderr, "Invalid CTRL port %d given!\n", ctrl_port);
 				exit(1);
 			}
 			break;
@@ -223,6 +234,7 @@ extern int nsdummy_vty_init(void);
 int main (int argc, char *argv[])
 {
 	void *ctx = tall_nsdummy_ctx = talloc_named_const(NULL, 0, "osmo-ns-dummy");
+	struct ctrl_handle *ctrl;
 	int rc = 0;
 
 	osmo_init_logging2(ctx, &log_info);
@@ -235,6 +247,7 @@ int main (int argc, char *argv[])
 
 	vty_info.tall_ctx = ctx;
 	vty_init(&vty_info);
+	ctrl_vty_init(ctx);
 	logging_vty_add_cmds();
 	osmo_stats_vty_add_cmds();
 	osmo_talloc_vty_add_cmds();
@@ -264,6 +277,14 @@ int main (int argc, char *argv[])
 	if (rc < 0) {
 		fprintf(stderr, "Error initializing telnet\n");
 		exit(1);
+	}
+
+	if (ctrl_port > 0) {
+		ctrl = ctrl_interface_setup_dynip(NULL, ctrl_vty_get_bind_addr(), ctrl_port, NULL);
+		if (!ctrl) {
+			fprintf(stderr, "Failed to initialize control interface. Exiting.\n");
+			exit(1);
+		}
 	}
 
 	signal(SIGINT, sighandler);

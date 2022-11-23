@@ -35,6 +35,7 @@ osmo_ns_dummy_SOURCES = osmo-ns-dummy.c osmo-ns-dummy-vty.c
 osmo_ns_dummy_LDADD = $(LDADD) $(TALLOC_LIBS) \
 			$(top_builddir)/src/gb/libosmogb.la \
 			$(top_builddir)/src/vty/libosmovty.la \
+			$(top_builddir)/src/ctrl/libosmoctrl.la \
 			$(top_builddir)/src/gsm/libosmogsm.la
 osmo_ns_dummy_CFLAGS = $(TALLOC_CFLAGS)
 endif
