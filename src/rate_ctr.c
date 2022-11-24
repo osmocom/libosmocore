@@ -53,14 +53,17 @@
  *
  * \file rate_ctr.c */
 
+#include <errno.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
+#include <unistd.h>
+#include <inttypes.h>
 
 #include <osmocom/core/utils.h>
 #include <osmocom/core/linuxlist.h>
 #include <osmocom/core/talloc.h>
-#include <osmocom/core/timer.h>
+#include <osmocom/core/select.h>
 #include <osmocom/core/rate_ctr.h>
 #include <osmocom/core/logging.h>
 
@@ -310,7 +313,7 @@ static void interval_expired(struct rate_ctr *ctr, enum rate_ctr_intv intv)
 		ctr->intv[intv+1].rate += ctr->intv[intv].rate;
 }
 
-static struct osmo_timer_list rate_ctr_timer;
+static struct osmo_fd rate_ctr_timer = { .fd = -1 };
 static uint64_t timer_ticks;
 
 /* The one-second interval has expired */
@@ -331,18 +334,35 @@ static void rate_ctr_group_intv(struct rate_ctr_group *grp)
 	}
 }
 
-static void rate_ctr_timer_cb(void *data)
+static int rate_ctr_timer_cb(struct osmo_fd *ofd, unsigned int what)
 {
 	struct rate_ctr_group *ctrg;
+	uint64_t expire_count;
+	int rc;
 
-	/* Increment number of ticks before we calculate intervals,
-	 * as a counter value of 0 would already wrap all counters */
-	timer_ticks++;
+	/* check that the timer has actually expired */
+	if (!(what & OSMO_FD_READ))
+		return 0;
 
-	llist_for_each_entry(ctrg, &rate_ctr_groups, list)
-		rate_ctr_group_intv(ctrg);
+	/* read from timerfd: number of expirations of periodic timer */
+	rc = read(ofd->fd, (void *) &expire_count, sizeof(expire_count));
+	if (rc < 0 && errno == EAGAIN)
+		return 0;
 
-	osmo_timer_schedule(&rate_ctr_timer, 1, 0);
+	OSMO_ASSERT(rc == sizeof(expire_count));
+
+	if (expire_count > 1)
+		LOGP(DLGLOBAL, LOGL_NOTICE, "Stats timer expire_count=%" PRIu64 ": We missed %" PRIu64 " timers\n",
+		     expire_count, expire_count - 1);
+
+	do { /* Increment number of ticks before we calculate intervals,
+	      * as a counter value of 0 would already wrap all counters */
+		timer_ticks++;
+		llist_for_each_entry(ctrg, &rate_ctr_groups, list)
+			rate_ctr_group_intv(ctrg);
+	} while (--expire_count);
+
+	return 0;
 }
 
 /*! Initialize the counter module. Call this once from your application.
@@ -350,13 +370,27 @@ static void rate_ctr_timer_cb(void *data)
  *  \returns 0 on success; negative on error */
 int rate_ctr_init(void *tall_ctx)
 {
+	struct timespec ts_interval = { .tv_sec = 1, .tv_nsec = 0 };
+	int rc;
+
 	/* ignore repeated initialization */
-	if (osmo_timer_pending(&rate_ctr_timer))
+	if (osmo_fd_is_registered(&rate_ctr_timer))
 		return 0;
 
 	tall_rate_ctr_ctx = tall_ctx;
-	osmo_timer_setup(&rate_ctr_timer, rate_ctr_timer_cb, NULL);
-	osmo_timer_schedule(&rate_ctr_timer, 1, 0);
+
+	rc = osmo_timerfd_setup(&rate_ctr_timer, rate_ctr_timer_cb, NULL);
+	if (rc < 0) {
+		LOGP(DLGLOBAL, LOGL_ERROR, "Failed to setup the timer with error code %d (fd=%d)\n",
+		     rc, rate_ctr_timer.fd);
+		return rc;
+	}
+
+	rc = osmo_timerfd_schedule(&rate_ctr_timer, NULL, &ts_interval);
+	if (rc < 0) {
+		LOGP(DLGLOBAL, LOGL_ERROR, "Failed to schedule the timer with error code %d (fd=%d)\n",
+		     rc, rate_ctr_timer.fd);
+	}
 
 	return 0;
 }
