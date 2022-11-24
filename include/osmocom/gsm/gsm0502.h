@@ -33,7 +33,7 @@
 
 /* Table 5 Clause 7 TS 05.02 */
 static inline unsigned int
-gsm0502_get_n_pag_blocks(struct gsm48_control_channel_descr *chan_desc)
+gsm0502_get_n_pag_blocks(const struct gsm48_control_channel_descr *chan_desc)
 {
 	if (chan_desc->ccch_conf == RSL_BCCH_CCCH_CONF_1_C)
 		return 3 - chan_desc->bs_ag_blks_res;
@@ -58,7 +58,7 @@ gsm0502_get_paging_group(uint64_t imsi, unsigned int bs_cc_chans,
 }
 
 unsigned int
-gsm0502_calc_paging_group(struct gsm48_control_channel_descr *chan_desc, uint64_t imsi);
+gsm0502_calc_paging_group(const struct gsm48_control_channel_descr *chan_desc, uint64_t imsi);
 
 enum gsm0502_fn_remap_channel {
 	FN_REMAP_TCH_F,

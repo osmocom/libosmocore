@@ -34,7 +34,7 @@
 #include <inttypes.h>
 
 unsigned int
-gsm0502_calc_paging_group(struct gsm48_control_channel_descr *chan_desc, uint64_t imsi)
+gsm0502_calc_paging_group(const struct gsm48_control_channel_descr *chan_desc, uint64_t imsi)
 {
 	int ccch_conf;
 	int bs_cc_chans;

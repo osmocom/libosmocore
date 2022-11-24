@@ -1361,7 +1361,7 @@ bool gsm48_ra_equal(const struct gprs_ra_id *raid1, const struct gprs_ra_id *rai
  *  Uses From Table 10.5.33 of GSM 04.08 to determine the number of
  *  paging sub-channels in the given control channel configuration
  */
-int gsm48_number_of_paging_subchannels(struct gsm48_control_channel_descr *chan_desc)
+int gsm48_number_of_paging_subchannels(const struct gsm48_control_channel_descr *chan_desc)
 {
 	unsigned int n_pag_blocks = gsm0502_get_n_pag_blocks(chan_desc);
 

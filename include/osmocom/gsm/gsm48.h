@@ -106,7 +106,7 @@ void gsm48_encode_ra(struct gsm48_ra_id *out, const struct gprs_ra_id *raid);
 int gsm48_construct_ra(uint8_t *buf, const struct gprs_ra_id *raid) OSMO_DEPRECATED("Use gsm48_encode_ra() instead");
 bool gsm48_ra_equal(const struct gprs_ra_id *raid1, const struct gprs_ra_id *raid2);
 
-int gsm48_number_of_paging_subchannels(struct gsm48_control_channel_descr *chan_desc);
+int gsm48_number_of_paging_subchannels(const struct gsm48_control_channel_descr *chan_desc);
 
 void gsm48_mcc_mnc_to_bcd(uint8_t *bcd_dst, uint16_t mcc, uint16_t mnc)
 	OSMO_DEPRECATED("Use osmo_plmn_to_bcd() instead, to not lose leading zeros in the MNC");
