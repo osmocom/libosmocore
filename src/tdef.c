@@ -200,8 +200,10 @@ void osmo_tdefs_reset(struct osmo_tdef *tdefs)
  * \param[in] tdefs  Array of timer definitions, last entry must be fully zero initialized.
  * \param[in] T  Timer number to get the value for.
  * \param[in] as_unit  Return timeout value in this unit.
- * \param[in] val_if_not_present  Fallback value to return if no timeout is defined.
+ * \param[in] val_if_not_present  Fallback value to return if no timeout is defined; if this is a negative number, a
+ *                                missing T timer definition aborts the program via OSMO_ASSERT().
  * \return Timeout value in the unit given by as_unit, rounded up if necessary, or val_if_not_present.
+ *         If val_if_not_present is negative and no T timer is defined, trigger OSMO_ASSERT() and do not return.
  */
 unsigned long osmo_tdef_get(const struct osmo_tdef *tdefs, int T, enum osmo_tdef_unit as_unit, long val_if_not_present)
 {
