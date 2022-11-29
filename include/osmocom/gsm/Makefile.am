@@ -29,6 +29,7 @@ osmogsm_HEADERS = \
 	gsm23003.h \
 	gsm23236.h \
 	gsm29118.h \
+	gsm44021.h \
 	gsm48.h \
 	gsm48_arfcn_range_encode.h \
 	gsm48_ie.h \

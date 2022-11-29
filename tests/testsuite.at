@@ -502,3 +502,9 @@ AT_KEYWORDS([v110_test_ra1])
 cat $abs_srcdir/v110/test_ra1.ok > expout
 AT_CHECK([$abs_top_builddir/tests/v110/test_ra1], [], [expout],[])
 AT_CLEANUP
+
+AT_SETUP([gsm44021_test_frame_csd])
+AT_KEYWORDS([gsm44021_test_frame_csd])
+cat $abs_srcdir/gsm44021/test_frame_csd.ok > expout
+AT_CHECK([$abs_top_builddir/tests/gsm44021/test_frame_csd], [], [expout],[])
+AT_CLEANUP

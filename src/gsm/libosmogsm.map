@@ -791,5 +791,11 @@ osmo_iuup_rnl_prim_down;
 osmo_iuup_rnl_prim_alloc;
 osmo_iuup_tnl_prim_alloc;
 
+osmo_csd_12k_6k_decode_frame;
+osmo_csd_12k_6k_encode_frame;
+osmo_csd_3k6_decode_frame;
+osmo_csd_3k6_encode_frame;
+osmo_csd_ubit_dump;
+
 local: *;
 };
