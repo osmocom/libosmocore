@@ -60,6 +60,7 @@ osmocore_HEADERS = \
 	utils.h \
 	write_queue.h \
 	sockaddr_str.h \
+	soft_uart.h \
 	time_cc.h \
 	use_count.h \
 	socket_compat.h \

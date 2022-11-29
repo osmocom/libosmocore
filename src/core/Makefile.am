@@ -63,6 +63,7 @@ libosmocore_la_SOURCES = \
 	signal.c \
 	sockaddr_str.c \
 	socket.c \
+	soft_uart.c \
 	stat_item.c \
 	stats.c \
 	stats_statsd.c \
