@@ -13,7 +13,7 @@ endif
 noinst_LTLIBRARIES = libisdnint.la
 lib_LTLIBRARIES = libosmoisdn.la
 
-libisdnint_la_SOURCES = i460_mux.c lapd_core.c
+libisdnint_la_SOURCES = i460_mux.c lapd_core.c v110.c
 
 libisdnint_la_LDFLAGS = -no-undefined
 libisdnint_la_LIBADD = $(top_builddir)/src/core/libosmocore.la

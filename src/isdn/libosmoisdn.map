@@ -21,5 +21,14 @@ osmo_i460_subchan_del;
 osmo_i460_subchan_count;
 osmo_i460_ts_init;
 
+osmo_v110_decode_frame;
+osmo_v110_encode_frame;
+osmo_v110_ubit_dump;
+osmo_v110_sync_ra1_get_user_data_chunk_bitlen;
+osmo_v110_sync_ra1_get_user_data_rate;
+osmo_v110_sync_ra1_get_intermediate_rate;
+osmo_v110_sync_ra1_user_to_ir;
+osmo_v110_sync_ra1_ir_to_user;
+
 local: *;
 };
