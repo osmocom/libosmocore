@@ -50,6 +50,7 @@ override_dh_clean:
 	$(RM) -r doc/core/
 	$(RM) -r doc/ctrl/
 	$(RM) -r doc/gsm/
+	$(RM) -r doc/isdn/
 	$(RM) -r doc/gb/
 	$(RM) -r doc/vty/html/
 	$(RM) -r doc/vty/latex/

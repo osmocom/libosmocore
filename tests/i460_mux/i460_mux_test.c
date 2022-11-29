@@ -1,7 +1,7 @@
 
 #include <osmocom/core/utils.h>
 
-#include <osmocom/gsm/i460_mux.h>
+#include <osmocom/isdn/i460_mux.h>
 
 static void bits_cb(struct osmo_i460_subchan *schan, void *user_data,
 		    const ubit_t *bits, unsigned int num_bits)

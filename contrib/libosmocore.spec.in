@@ -211,6 +211,8 @@ License:        GPL-2.0-or-later AND AGPL-3.0-or-later
 Group:          Development/Libraries/C and C++
 Requires:       libosmocore-devel = %version
 Requires:       libosmogsm18 = %version
+Requires:       libosmoisdn-devel = %version
+Requires:       libosmoisdn0 = %version
 
 %description -n libosmogsm-devel
 The libosmogsm library in particular is a collection of common code
@@ -218,6 +220,34 @@ used in various GSM related sub-projects inside the Osmocom family of
 projects. It includes A5/1 and A5/2 ciphers, COMP128v1, a LAPDm
 implementation, a GSM TLV parser, SMS utility routines as well as
 protocol definitions for a series of protocols.
+
+This subpackage contains libraries and header files for developing
+applications that want to make use of libosmogsm.
+
+%package -n libosmoisdn0
+Summary:        Osmocom ISDN utility library
+License:        GPL-2.0-or-later
+Group:          System/Libraries
+
+%description -n libosmoisdn0
+libosmocore is a package with various utility functions that were
+originally developed as part of the OpenBSC project.
+
+The libosmoisdn library in particular is a collection of common code used in
+various ISDN related sub-projects inside the Osmocom family of projects. It
+includes an I.460 sub-channel multiplex and a generic LAPD core.
+
+%package -n libosmoisdn-devel
+Summary:        Development files for the Osmocom ISDN utility library
+License:        GPL-2.0-or-later
+Group:          Development/Libraries/C and C++
+Requires:       libosmocore-devel = %version
+Requires:       libosmoisdn0 = %version
+
+%description -n libosmoisdn-devel
+The libosmoisdn library in particular is a collection of common code used in
+various ISDN related sub-projects inside the Osmocom family of projects. It
+includes an I.460 sub-channel multiplex and a generic LAPD core.
 
 This subpackage contains libraries and header files for developing
 applications that want to make use of libosmogsm.
@@ -332,6 +362,8 @@ make %{?_smp_mflags} check || (find . -name testsuite.log -exec cat {} +)
 %postun -n libosmogb14 -p /sbin/ldconfig
 %post   -n libosmogsm18 -p /sbin/ldconfig
 %postun -n libosmogsm18 -p /sbin/ldconfig
+%post   -n libosmoisdn0 -p /sbin/ldconfig
+%postun -n libosmoisdn0 -p /sbin/ldconfig
 %post   -n libosmosim2 -p /sbin/ldconfig
 %postun -n libosmosim2 -p /sbin/ldconfig
 %post   -n libosmovty9 -p /sbin/ldconfig
@@ -417,6 +449,18 @@ make %{?_smp_mflags} check || (find . -name testsuite.log -exec cat {} +)
 %_includedir/%name/osmocom/crypt/
 %_libdir/libosmogsm.so
 %_libdir/pkgconfig/libosmogsm.pc
+
+%files -n libosmoisdn0
+%defattr(-,root,root)
+%_libdir/libosmoisdn.so.0*
+
+%files -n libosmoisdn-devel
+%defattr(-,root,root)
+%dir %_includedir/%name
+%dir %_includedir/%name/osmocom
+%_includedir/%name/osmocom/isdn/
+%_libdir/libosmoisdn.so
+%_libdir/pkgconfig/libosmoisdn.pc
 
 %files -n libosmosim2
 %defattr(-,root,root)

@@ -25,18 +25,18 @@ libgsmint_la_SOURCES =  a5.c rxlev_stat.c tlv_parser.c comp128.c comp128v23.c \
 			gsm48_ie.c gsm0808.c sysinfo.c \
 			gprs_cipher_core.c gprs_rlc.c gsm0480.c abis_nm.c gsm0502.c \
 			gsm0411_utils.c gsm0411_smc.c gsm0411_smr.c gsm0414.c \
-			lapd_core.c lapdm.c kasumi.c gsm29205.c gsm_04_08_gprs.c \
+			lapdm.c kasumi.c gsm29205.c gsm_04_08_gprs.c \
 			auth_core.c auth_comp128v1.c auth_comp128v23.c auth_xor.c \
 			auth_milenage.c milenage/aes-encblock.c gea.c \
 			milenage/aes-internal.c milenage/aes-internal-enc.c \
 			milenage/milenage.c gan.c ipa.c gsm0341.c apn.c \
 			gsup.c gsup_sms.c gprs_gea.c gsm0503_conv.c oap.c gsm0808_utils.c \
 			gsm23003.c gsm23236.c mncc.c bts_features.c oap_client.c \
-			gsm29118.c gsm48_rest_octets.c cbsp.c gsm48049.c i460_mux.c \
+			gsm29118.c gsm48_rest_octets.c cbsp.c gsm48049.c \
 			gad.c bsslap.c bssmap_le.c kdf.c iuup.c
 
 libgsmint_la_LDFLAGS = -no-undefined
-libgsmint_la_LIBADD = $(top_builddir)/src/core/libosmocore.la
+libgsmint_la_LIBADD = $(top_builddir)/src/core/libosmocore.la $(top_builddir)/src/isdn/libosmoisdn.la
 
 libosmogsm_la_SOURCES =
 libosmogsm_la_LDFLAGS = $(LTLDFLAGS_OSMOGSM) -version-info $(LIBVERSION) -no-undefined

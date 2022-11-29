@@ -3,6 +3,7 @@ SUBDIRS = \
 	vty \
 	codec \
 	gsm \
+	isdn \
 	crypt \
 	coding \
 	gprs \

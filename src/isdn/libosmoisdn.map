@@ -1,0 +1,24 @@
+LIBOSMOISDN_1.0 {
+global:
+
+tall_lapd_ctx;
+lapd_dl_exit;
+lapd_dl_init;
+lapd_dl_init2;
+lapd_dl_set_name;
+lapd_dl_reset;
+lapd_msgb_alloc;
+lapd_ph_data_ind;
+lapd_recv_dlsap;
+lapd_set_mode;
+lapd_state_names;
+
+osmo_i460_demux_in;
+osmo_i460_mux_enqueue;
+osmo_i460_mux_out;
+osmo_i460_subchan_add;
+osmo_i460_subchan_del;
+osmo_i460_ts_init;
+
+local: *;
+};

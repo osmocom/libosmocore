@@ -21,7 +21,7 @@
 #include <osmocom/core/bits.h>
 #include <osmocom/core/utils.h>
 #include <osmocom/core/msgb.h>
-#include <osmocom/gsm/i460_mux.h>
+#include <osmocom/isdn/i460_mux.h>
 
 /* count the number of sub-channels in this I460 slot */
 static int osmo_i460_subchan_count(struct osmo_i460_timeslot *ts)

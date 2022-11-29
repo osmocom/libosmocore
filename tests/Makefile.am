@@ -160,7 +160,7 @@ gprs_gprs_test_SOURCES = gprs/gprs_test.c
 gprs_gprs_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 
 lapd_lapd_test_SOURCES = lapd/lapd_test.c
-lapd_lapd_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
+lapd_lapd_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la $(top_builddir)/src/isdn/libosmoisdn.la
 
 msgb_msgb_test_SOURCES = msgb/msgb_test.c
 
@@ -315,7 +315,7 @@ exec_exec_test_SOURCES = exec/exec_test.c
 exec_exec_test_LDADD = $(LDADD)
 
 i460_mux_i460_mux_test_SOURCES = i460_mux/i460_mux_test.c
-i460_mux_i460_mux_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
+i460_mux_i460_mux_test_LDADD = $(LDADD) $(top_builddir)/src/isdn/libosmoisdn.la
 
 bitgen_bitgen_test_SOURCES = bitgen/bitgen_test.c
 bitgen_bitgen_test_LDADD = $(LDADD)

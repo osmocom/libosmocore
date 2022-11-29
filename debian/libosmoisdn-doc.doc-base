@@ -1,0 +1,7 @@
+Document: libosmoisdn-doc
+Title: Documentation for the libosmoisdn library
+Section: Programming
+
+Format: HTML
+Index: /usr/share/doc/libosmocore/isdn/html/index.html
+Files: /usr/share/doc/libosmocore/isdn/html/*.html

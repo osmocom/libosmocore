@@ -53,12 +53,14 @@ case $host in
 *)
 	LTLDFLAGS_OSMOGB='-Wl,--version-script=$(srcdir)/libosmogb.map'
 	LTLDFLAGS_OSMOGSM='-Wl,--version-script=$(srcdir)/libosmogsm.map'
+	LTLDFLAGS_OSMOISDN='-Wl,--version-script=$(srcdir)/libosmoisdn.map'
 	LTLDFLAGS_OSMOCODING='-Wl,--version-script=$(srcdir)/libosmocoding.map'
 	LTLDFLAGS_OSMOCTRL='-Wl,--version-script=$(srcdir)/libosmoctrl.map'
 	;;
 esac
 AC_SUBST(LTLDFLAGS_OSMOGB)
 AC_SUBST(LTLDFLAGS_OSMOGSM)
+AC_SUBST(LTLDFLAGS_OSMOISDN)
 AC_SUBST(LTLDFLAGS_OSMOCODING)
 AC_SUBST(LTLDFLAGS_OSMOCTRL)
 
@@ -580,6 +582,7 @@ AC_OUTPUT(
 	libosmocoding.pc
 	libosmovty.pc
 	libosmogsm.pc
+	libosmoisdn.pc
 	libosmogb.pc
 	libosmoctrl.pc
 	libosmosim.pc
@@ -595,6 +598,7 @@ AC_OUTPUT(
 	include/osmocom/gprs/protocol/Makefile
 	include/osmocom/gsm/Makefile
 	include/osmocom/gsm/protocol/Makefile
+	include/osmocom/isdn/Makefile
 	include/osmocom/sim/Makefile
 	include/osmocom/usb/Makefile
 	include/osmocom/vty/Makefile
@@ -606,6 +610,7 @@ AC_OUTPUT(
 	src/sim/Makefile
 	src/usb/Makefile
 	src/gsm/Makefile
+	src/isdn/Makefile
 	src/gb/Makefile
 	src/ctrl/Makefile
 	src/pseudotalloc/Makefile
@@ -616,6 +621,7 @@ AC_OUTPUT(
 	utils/osmo-stat-dummy/Makefile
 	Doxyfile.core
 	Doxyfile.gsm
+	Doxyfile.isdn
 	Doxyfile.vty
 	Doxyfile.codec
 	Doxyfile.coding

@@ -36,7 +36,7 @@ Copyright: 2011 Harald Welte <laforge@gnumonks.org>
 License: GPL-2+
 
 Files: src/gsm/gsm48_ie.c
-       src/gsm/lapd_core.c
+       src/isdn/lapd_core.c
        src/gsm/lapdm.c
 Copyright: 2008,2010-2011 Harald Welte <laforge@gnumonks.org>
            2009-2011      Andreas Eversberg <jolly@eversberg.eu>

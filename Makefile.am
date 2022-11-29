@@ -12,7 +12,7 @@ SUBDIRS = \
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libosmocore.pc libosmocodec.pc libosmovty.pc libosmogsm.pc \
 		 libosmogb.pc libosmoctrl.pc libosmocoding.pc libosmosim.pc \
-		 libosmousb.pc
+		 libosmousb.pc libosmoisdn.pc
 
 aclocaldir = $(datadir)/aclocal
 dist_aclocal_DATA = m4/osmo_ac_code_coverage.m4 \
@@ -47,6 +47,7 @@ EXTRA_DIST = \
 HTML = \
 	$(top_builddir)/doc/core/html/index.html \
 	$(top_builddir)/doc/gsm/html/index.html \
+	$(top_builddir)/doc/isdn/html/index.html \
 	$(top_builddir)/doc/vty/html/index.html \
 	$(top_builddir)/doc/codec/html/index.html \
 	$(top_builddir)/doc/coding/html/index.html \
@@ -98,6 +99,14 @@ $(top_builddir)/doc/libosmogsm.tag.prep: $(top_builddir)/Doxyfile.gsm \
 	rm -rf $(top_builddir)/doc/gsm; mkdir -p $(top_builddir)/doc/gsm
 	rm -rf $(top_builddir)/doc/libosmogsm.map
 	-$(DOXYGEN) $(top_builddir)/Doxyfile.gsm
+	touch "$@"
+
+$(top_builddir)/doc/libosmoisdn.tag.prep: $(top_builddir)/Doxyfile.isdn \
+		$(top_srcdir)/include/osmocom/isdn/*.h \
+		$(top_srcdir)/src/isdn/*.c
+	rm -rf $(top_builddir)/doc/isdn; mkdir -p $(top_builddir)/doc/isdn
+	rm -rf $(top_builddir)/doc/libosmoisdn.map
+	-$(DOXYGEN) $(top_builddir)/Doxyfile.isdn
 	touch "$@"
 
 # Don't delete the entire doc/vty, it contains example.xml and vtydoc.xsd (OS#3986)
@@ -155,6 +164,7 @@ $(top_builddir)/doc/libosmogb.tag.prep: $(top_builddir)/Doxyfile.gb \
 
 $(top_builddir)/doc/core/html/index.html: $(top_builddir)/doc/libosmocore.tag.prep \
 		$(top_builddir)/doc/libosmogsm.tag.prep \
+		$(top_builddir)/doc/libosmoisdn.tag.prep \
 		$(top_builddir)/doc/libosmovty.tag.prep \
 		$(top_builddir)/doc/libosmocodec.tag.prep \
 		$(top_builddir)/doc/libosmocoding.tag.prep \
@@ -165,6 +175,7 @@ $(top_builddir)/doc/core/html/index.html: $(top_builddir)/doc/libosmocore.tag.pr
 
 $(top_builddir)/doc/gsm/html/index.html: $(top_builddir)/doc/libosmogsm.tag.prep \
 		$(top_builddir)/doc/libosmocore.tag.prep \
+		$(top_builddir)/doc/libosmoisdn.tag.prep \
 		$(top_builddir)/doc/libosmovty.tag.prep \
 		$(top_builddir)/doc/libosmocodec.tag.prep \
 		$(top_builddir)/doc/libosmocoding.tag.prep \
@@ -173,10 +184,22 @@ $(top_builddir)/doc/gsm/html/index.html: $(top_builddir)/doc/libosmogsm.tag.prep
 	rm -rf $(top_builddir)/doc/gsm; mkdir -p $(top_builddir)/doc/gsm
 	$(DOXYGEN) Doxyfile.gsm
 
+$(top_builddir)/doc/isdn/html/index.html: $(top_builddir)/doc/libosmoisdn.tag.prep \
+		$(top_builddir)/doc/libosmocore.tag.prep \
+		$(top_builddir)/doc/libosmogsm.tag.prep \
+		$(top_builddir)/doc/libosmovty.tag.prep \
+		$(top_builddir)/doc/libosmocodec.tag.prep \
+		$(top_builddir)/doc/libosmocoding.tag.prep \
+		$(top_builddir)/doc/libosmoctrl.tag.prep \
+		$(top_builddir)/doc/libosmogb.tag.prep
+	rm -rf $(top_builddir)/doc/isdn; mkdir -p $(top_builddir)/doc/isdn
+	$(DOXYGEN) Doxyfile.isdn
+
 # Don't delete the entire doc/vty, it contains example.xml and vtydoc.xsd (OS#3986)
 $(top_builddir)/doc/vty/html/index.html: $(top_builddir)/doc/libosmovty.tag.prep \
 		$(top_builddir)/doc/libosmocore.tag.prep \
 		$(top_builddir)/doc/libosmogsm.tag.prep \
+		$(top_builddir)/doc/libosmoisdn.tag.prep \
 		$(top_builddir)/doc/libosmocodec.tag.prep \
 		$(top_builddir)/doc/libosmocoding.tag.prep \
 		$(top_builddir)/doc/libosmoctrl.tag.prep \
@@ -187,6 +210,7 @@ $(top_builddir)/doc/vty/html/index.html: $(top_builddir)/doc/libosmovty.tag.prep
 $(top_builddir)/doc/codec/html/index.html: $(top_builddir)/doc/libosmocodec.tag.prep \
 		$(top_builddir)/doc/libosmocore.tag.prep \
 		$(top_builddir)/doc/libosmogsm.tag.prep \
+		$(top_builddir)/doc/libosmoisdn.tag.prep \
 		$(top_builddir)/doc/libosmovty.tag.prep \
 		$(top_builddir)/doc/libosmocoding.tag.prep \
 		$(top_builddir)/doc/libosmoctrl.tag.prep \
@@ -197,6 +221,7 @@ $(top_builddir)/doc/codec/html/index.html: $(top_builddir)/doc/libosmocodec.tag.
 $(top_builddir)/doc/coding/html/index.html: $(top_builddir)/doc/libosmocoding.tag.prep \
 		$(top_builddir)/doc/libosmocore.tag.prep \
 		$(top_builddir)/doc/libosmogsm.tag.prep \
+		$(top_builddir)/doc/libosmoisdn.tag.prep \
 		$(top_builddir)/doc/libosmovty.tag.prep \
 		$(top_builddir)/doc/libosmocodec.tag.prep \
 		$(top_builddir)/doc/libosmoctrl.tag.prep \
@@ -207,6 +232,7 @@ $(top_builddir)/doc/coding/html/index.html: $(top_builddir)/doc/libosmocoding.ta
 $(top_builddir)/doc/ctrl/html/index.html: $(top_builddir)/doc/libosmoctrl.tag.prep \
 		$(top_builddir)/doc/libosmocore.tag.prep \
 		$(top_builddir)/doc/libosmogsm.tag.prep \
+		$(top_builddir)/doc/libosmoisdn.tag.prep \
 		$(top_builddir)/doc/libosmovty.tag.prep \
 		$(top_builddir)/doc/libosmocodec.tag.prep \
 		$(top_builddir)/doc/libosmocoding.tag.prep \
@@ -217,6 +243,7 @@ $(top_builddir)/doc/ctrl/html/index.html: $(top_builddir)/doc/libosmoctrl.tag.pr
 $(top_builddir)/doc/gb/html/index.html: $(top_builddir)/doc/libosmogb.tag.prep \
 		$(top_builddir)/doc/libosmocore.tag.prep \
 		$(top_builddir)/doc/libosmogsm.tag.prep \
+		$(top_builddir)/doc/libosmoisdn.tag.prep \
 		$(top_builddir)/doc/libosmovty.tag.prep \
 		$(top_builddir)/doc/libosmocodec.tag.prep \
 		$(top_builddir)/doc/libosmocoding.tag.prep \
@@ -229,9 +256,9 @@ install-data-hook:
 	cd $(DESTDIR)$(htmldir) && tar xf html.tar && rm -f html.tar
 
 uninstall-hook:
-	cd $(DESTDIR)$(htmldir) && rm -rf {core,gsm,vty,codec,coding,ctrl,gb}
+	cd $(DESTDIR)$(htmldir) && rm -rf {core,gsm,isdn,vty,codec,coding,ctrl,gb}
 
-DX_CLEAN = doc/{core,gsm,vty,codec,coding,ctrl,gb}/html/search/* doc/{core,gsm,vty,codec,coding,ctrl,gb}/{html,latex}/* doc/html.tar doc/{core,gsm,vty,codec,coding,ctrl,gb}/doxygen_sqlite3.db doc/*.tag doc/*.tag.prep
+DX_CLEAN = doc/{core,gsm,isdn,vty,codec,coding,ctrl,gb}/html/search/* doc/{core,gsm,isdn,vty,codec,coding,ctrl,gb}/{html,latex}/* doc/html.tar doc/{core,gsm,isdn,vty,codec,coding,ctrl,gb}/doxygen_sqlite3.db doc/*.tag doc/*.tag.prep
 endif
 
 MOSTLYCLEANFILES = $(DX_CLEAN)

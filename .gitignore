@@ -37,6 +37,7 @@ libosmocore-*.tar.*
 Doxyfile.core
 Doxyfile.ctrl
 Doxyfile.gsm
+Doxyfile.isdn
 Doxyfile.vty
 Doxyfile.codec
 Doxyfile.coding
@@ -80,6 +81,7 @@ doc/vty/latex
 doc/vty/html
 doc/vty/doxygen_sqlite3.db
 doc/gsm
+doc/isdn
 doc/gb
 doc/html.tar
 doc/*.tag

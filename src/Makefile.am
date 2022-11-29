@@ -1,6 +1,7 @@
 SUBDIRS = \
 	core \
 	vty \
+	isdn \
 	codec \
 	gsm \
 	coding \
