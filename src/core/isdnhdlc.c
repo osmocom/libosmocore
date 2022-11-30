@@ -97,13 +97,12 @@ check_frame(struct osmo_isdnhdlc_vars *hdlc)
   When a new flag is found, the complete frame has been received
   and the CRC is checked.
   If a valid frame is found, the function returns the frame length
-  excluding the CRC with the bit HDLC_END_OF_FRAME set.
+  excluding the CRC.
   If the beginning of a valid frame is found, the function returns
   the length.
   If a framing error is found (too many 1s and not a flag) the function
-  returns the length with the bit OSMO_HDLC_FRAMING_ERROR set.
-  If a CRC error is found the function returns the length with the
-  bit OSMO_HDLC_CRC_ERROR set.
+  returns -OSMO_HDLC_FRAMING_ERROR.
+  If a CRC error is found the function returns -OSMO_HDLC_CRC_ERROR.
   If the frame length exceeds the destination buffer size, the function
   returns the length with the bit OSMO_HDLC_LENGTH_ERROR set.
 
