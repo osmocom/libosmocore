@@ -48,3 +48,7 @@ endif
 v110_decode_SOURCES = v110_decode.c
 v110_decode_LDADD = $(LDADD) $(top_builddir)/src/isdn/libosmoisdn.la -losmotrau # HACK!
 noinst_PROGRAMS += v110_decode
+
+hdlc_decode_SOURCES = hdlc_decode.c
+hdlc_decode_LDADD = $(LDADD) #$(top_builddir)/src/isdn/libosmoisdn.la -losmotrau # HACK!
+noinst_PROGRAMS += hdlc_decode
