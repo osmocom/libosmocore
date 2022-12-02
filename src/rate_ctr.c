@@ -306,11 +306,6 @@ static void interval_expired(struct rate_ctr *ctr, enum rate_ctr_intv intv)
 	ctr->intv[intv].rate = ctr->current - ctr->intv[intv].last;
 	/* save current counter for next interval */
 	ctr->intv[intv].last = ctr->current;
-
-	/* update the rate of the next bigger interval.  This will
-	 * be overwritten when that next larger interval expires */
-	if (intv + 1 < ARRAY_SIZE(ctr->intv))
-		ctr->intv[intv+1].rate += ctr->intv[intv].rate;
 }
 
 static struct osmo_fd rate_ctr_timer = { .fd = -1 };
