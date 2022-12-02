@@ -179,6 +179,11 @@
 #define GSMTAP_E1T1_RAW		0x03	/* raw/transparent B-channel */
 #define GSMTAP_E1T1_TRAU16	0x04	/* 16k TRAU frames; sub-slot 0-3 */
 #define GSMTAP_E1T1_TRAU8	0x05	/* 8k TRAU frames; sub-slot 0-7 */
+#define GSMTAP_E1T1_V5EF	0x06	/* V5 Envelope Function */
+#define GSMTAP_E1T1_X75		0x07	/* X.75 B-channel data */
+#define GSMTAP_E1T1_V120	0x08	/* V.120 B-channel data */
+#define GSMTAP_E1T1_V110	0x09	/* V.110 B-channel data */
+#define GSMTAP_E1T1_H221	0x0a	/* H.221 B-channel data */
 
 /* flags for the ARFCN */
 #define GSMTAP_ARFCN_F_PCS	0x8000
