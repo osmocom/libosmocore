@@ -29,6 +29,10 @@ endif
 endif
 
 if ENABLE_EXT_TESTS
+SUBDIRS = \
+	osmo-stat-dummy \
+	$(NULL)
+
 if ENABLE_GB
 noinst_PROGRAMS += osmo-ns-dummy
 osmo_ns_dummy_SOURCES = osmo-ns-dummy.c osmo-ns-dummy-vty.c

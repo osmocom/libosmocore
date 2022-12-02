@@ -599,6 +599,7 @@ AC_OUTPUT(
 	tests/Makefile
 	tests/atlocal
 	utils/Makefile
+	utils/osmo-stat-dummy/Makefile
 	Doxyfile.core
 	Doxyfile.gsm
 	Doxyfile.vty
