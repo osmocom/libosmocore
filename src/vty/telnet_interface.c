@@ -94,7 +94,7 @@ int telnet_init_dynif(void *tall_ctx, void *priv, const char *ip, int port)
 	if (rc < 0) {
 		LOGP(DLGLOBAL, LOGL_ERROR, "Cannot bind telnet at %s %d\n",
 		     ip, port);
-		return -1;
+		return rc;
 	}
 
 	LOGP(DLGLOBAL, LOGL_NOTICE, "Available via telnet %s %d\n", ip, port);
