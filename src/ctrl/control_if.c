@@ -47,6 +47,7 @@
 
 #include <osmocom/ctrl/control_cmd.h>
 #include <osmocom/ctrl/control_if.h>
+#include <osmocom/ctrl/control_vty.h>
 
 #include <osmocom/core/msgb.h>
 #include <osmocom/core/rate_ctr.h>
@@ -878,7 +879,7 @@ static int verify_counter(struct ctrl_cmd *cmd, const char *value, void *data)
 struct ctrl_handle *ctrl_interface_setup(void *data, uint16_t port,
 					 ctrl_cmd_lookup lookup)
 {
-	return ctrl_interface_setup_dynip(data, "127.0.0.1", port, lookup);
+	return ctrl_interface_setup2(data, port, lookup, 0);
 }
 
 static int ctrl_initialized = 0;
@@ -1030,6 +1031,18 @@ struct ctrl_handle *ctrl_interface_setup_dynip(void *data,
 	return ctrl_interface_setup_dynip2(data, bind_addr, port, lookup, 0);
 }
 
+/*! Initializes CTRL interface using the configured bind addr/port.
+ *  \param[in] data Pointer which will be made available to each set_..() get_..() verify_..() control command function
+ *  \param[in] default_port TCP port number to bind to if not explicitly configured
+ *  \param[in] lookup Lookup function pointer, can be NULL
+ *  \param[in] node_count Number of CTRL nodes to allocate, 0 for default.
+ */
+struct ctrl_handle *ctrl_interface_setup2(void *data, uint16_t default_port, ctrl_cmd_lookup lookup,
+					  unsigned int node_count)
+{
+	return ctrl_interface_setup_dynip2(data, ctrl_vty_get_bind_addr(), ctrl_vty_get_bind_port(default_port), lookup,
+					   node_count);
+}
 
 /*! Install a lookup helper function for control nodes
  *  This function is used by e.g. library code to install lookup helpers

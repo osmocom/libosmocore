@@ -26,16 +26,20 @@
 
 static void *ctrl_vty_ctx = NULL;
 static const char *ctrl_vty_bind_addr = NULL;
+/* Port the CTRL should bind to: -1 means not configured */
+static int ctrl_bind_port = -1;
 
 DEFUN(cfg_ctrl_bind_addr,
       cfg_ctrl_bind_addr_cmd,
-      "bind A.B.C.D",
+      "bind A.B.C.D [<0-65535>]",
       "Set bind address to listen for Control connections\n"
-      "Local IP address (default 127.0.0.1)\n")
+      "Local IP address (default 127.0.0.1)\n"
+      "Local TCP port number\n")
 {
 	talloc_free((char*)ctrl_vty_bind_addr);
 	ctrl_vty_bind_addr = NULL;
 	ctrl_vty_bind_addr = talloc_strdup(ctrl_vty_ctx, argv[0]);
+	ctrl_bind_port = argc > 1 ? atoi(argv[1]) : -1;
 	return CMD_SUCCESS;
 }
 
@@ -44,6 +48,11 @@ const char *ctrl_vty_get_bind_addr(void)
 	if (!ctrl_vty_bind_addr)
 		return "127.0.0.1";
 	return ctrl_vty_bind_addr;
+}
+
+uint16_t ctrl_vty_get_bind_port(uint16_t default_port)
+{
+	return ctrl_bind_port >= 0 ? ctrl_bind_port : default_port;
 }
 
 static struct cmd_node ctrl_node = {

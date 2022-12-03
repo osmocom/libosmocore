@@ -36,19 +36,20 @@ struct ctrl_handle *ctrl_handle_alloc2(void *ctx, void *data,
 				       unsigned int node_count);
 struct ctrl_handle *ctrl_interface_setup(void *data, uint16_t port,
 					 ctrl_cmd_lookup lookup);
+struct ctrl_handle *ctrl_interface_setup2(void *data, uint16_t default_port, ctrl_cmd_lookup lookup,
+					  unsigned int node_count);
 struct ctrl_handle *ctrl_interface_setup_dynip(void *data,
 					       const char *bind_addr,
 					       uint16_t port,
-					       ctrl_cmd_lookup lookup);
+					       ctrl_cmd_lookup lookup) OSMO_DEPRECATED_OUTSIDE_LIBOSMOCORE;
 struct ctrl_handle *ctrl_interface_setup_dynip2(void *data,
 						const char *bind_addr,
 						uint16_t port,
 						ctrl_cmd_lookup lookup,
-						unsigned int node_count);
+						unsigned int node_count) OSMO_DEPRECATED_OUTSIDE_LIBOSMOCORE;
 struct ctrl_connection *osmo_ctrl_conn_alloc(void *ctx, void *data);
 int ctrl_cmd_handle(struct ctrl_handle *ctrl, struct ctrl_cmd *cmd, void *data);
 struct ctrl_cmd *ctrl_cmd_exec_from_string(struct ctrl_handle *ch, const char *cmdstr);
 
 int ctrl_lookup_register(ctrl_cmd_lookup lookup);
-
 int ctrl_handle_msg(struct ctrl_handle *ctrl, struct ctrl_connection *ccon, struct msgb *msg);

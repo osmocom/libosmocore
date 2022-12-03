@@ -280,7 +280,7 @@ int main (int argc, char *argv[])
 	}
 
 	if (ctrl_port > 0) {
-		ctrl = ctrl_interface_setup_dynip(NULL, ctrl_vty_get_bind_addr(), ctrl_port, NULL);
+		ctrl = ctrl_interface_setup(NULL, ctrl_port, NULL);
 		if (!ctrl) {
 			fprintf(stderr, "Failed to initialize control interface. Exiting.\n");
 			exit(1);

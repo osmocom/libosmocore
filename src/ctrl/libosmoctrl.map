@@ -22,12 +22,14 @@ ctrl_handle_alloc; /* could be removed? */
 ctrl_handle_alloc2; /* could be removed? */
 ctrl_handle_msg; /* only used in unit test */
 ctrl_interface_setup;
+ctrl_interface_setup2;
 ctrl_interface_setup_dynip;
 ctrl_interface_setup_dynip2;
 ctrl_lookup_register;
 ctrl_parse_get_num;
 ctrl_type_vals;
 ctrl_vty_get_bind_addr;
+ctrl_vty_get_bind_port;
 ctrl_vty_init;
 osmo_ctrl_conn_alloc;
 
