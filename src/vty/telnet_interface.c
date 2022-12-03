@@ -80,6 +80,9 @@ int telnet_init_dynif(void *tall_ctx, void *priv, const char *ip, int port)
 {
 	int rc;
 
+	if (port < 0)
+		return -EINVAL;
+
 	tall_telnet_ctx = talloc_named_const(tall_ctx, 1,
 			"telnet_connection");
 
