@@ -221,7 +221,7 @@ static uint8_t enc_speech_codec(struct msgb *msg,
 	/* See also 3GPP TS 48.008 3.2.2.103 Speech Codec List */
 	uint8_t header = 0;
 	uint8_t *old_tail;
-	bool type_extended = false;
+	bool type_extended;
 
 	/* Note: Extended codec types are codec types that require 8 instead
 	 * of 4 bit to fully specify the selected codec. In the following,
