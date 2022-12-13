@@ -209,10 +209,10 @@ static void decode_lai(const uint8_t *data, struct osmo_location_area_id *decode
 	gsm48_decode_lai2(&lai, decoded);
 }
 
-/* Helper function for gsm0808_enc_speech_codec()
- * and gsm0808_enc_speech_codec_list() */
-static uint8_t enc_speech_codec(struct msgb *msg,
-				const struct gsm0808_speech_codec *sc)
+/* Helper function for gsm0808_enc_speech_codec[_list]().
+ * Returns number of bytes appended; negative on error. */
+static int enc_speech_codec(struct msgb *msg,
+			    const struct gsm0808_speech_codec *sc)
 {
 	/* See also 3GPP TS 48.008 3.2.2.103 Speech Codec List */
 	uint8_t header = 0;
@@ -240,8 +240,7 @@ static uint8_t enc_speech_codec(struct msgb *msg,
 		break;
 	default:
 		/* Invalid codec type specified */
-		OSMO_ASSERT(false);
-		break;
+		return -EINVAL;
 	}
 
 	old_tail = msg->tail;
@@ -277,11 +276,13 @@ static uint8_t enc_speech_codec(struct msgb *msg,
 	case GSM0808_SCT_FR5:
 	case GSM0808_SCT_HR4:
 	case GSM0808_SCT_CSD:
-		OSMO_ASSERT((sc->cfg & 0xff00) == 0);
+		if (sc->cfg >> 8)
+			return -EINVAL;
 		msgb_put_u8(msg, (uint8_t) sc->cfg & 0xff);
 		break;
 	default:
-		OSMO_ASSERT(sc->cfg == 0);
+		if (sc->cfg != 0)
+			return -EINVAL;
 		break;
 	}
 
@@ -291,22 +292,36 @@ static uint8_t enc_speech_codec(struct msgb *msg,
 /*! Encode TS 08.08 Speech Codec IE
  *  \param[out] msg Message Buffer to which IE will be appended
  *  \param[in] sc Speech Codec to be encoded into IE
- *  \returns number of bytes appended to \a msg */
-uint8_t gsm0808_enc_speech_codec(struct msgb *msg,
-				 const struct gsm0808_speech_codec *sc)
+ *  \returns number of bytes appended to \a msg; negative on error */
+int gsm0808_enc_speech_codec2(struct msgb *msg,
+			      const struct gsm0808_speech_codec *sc)
 {
 	/*! See also 3GPP TS 48.008 3.2.2.103 Speech Codec List */
-	uint8_t *old_tail;
 	uint8_t *tlv_len;
+	int rc;
 
 	msgb_put_u8(msg, GSM0808_IE_SPEECH_CODEC);
 	tlv_len = msgb_put(msg, 1);
-	old_tail = msg->tail;
 
-	enc_speech_codec(msg, sc);
+	rc = enc_speech_codec(msg, sc);
+	if (rc < 0)
+		return rc;
 
-	*tlv_len = (uint8_t) (msg->tail - old_tail);
+	*tlv_len = rc;
 	return *tlv_len + 2;
+}
+
+/*! Deprecated: gsm0808_enc_speech_codec2() wrapper for backwards compatibility.
+ * Mimics the old behavior: crash on missing and/or invalid input. */
+uint8_t gsm0808_enc_speech_codec(struct msgb *msg,
+				 const struct gsm0808_speech_codec *sc)
+{
+	int rc;
+
+	rc = gsm0808_enc_speech_codec2(msg, sc);
+	OSMO_ASSERT(rc > 0);
+
+	return rc;
 }
 
 /*! Decode TS 08.08 Speech Codec IE
@@ -392,15 +407,14 @@ int gsm0808_dec_speech_codec(struct gsm0808_speech_codec *sc,
 /*! Encode TS 08.08 Speech Codec list
  *  \param[out] msg  Message Buffer to which IE is to be appended
  *  \param[in] scl Speech Codec List to be encoded into IE
- *  \returns number of bytes added to \a msg */
-uint8_t gsm0808_enc_speech_codec_list(struct msgb *msg,
-				      const struct gsm0808_speech_codec_list *scl)
+ *  \returns number of bytes added to \a msg; negative on error */
+int gsm0808_enc_speech_codec_list2(struct msgb *msg,
+				   const struct gsm0808_speech_codec_list *scl)
 {
 	/*! See also 3GPP TS 48.008 3.2.2.103 Speech Codec List */
 	uint8_t *old_tail;
 	uint8_t *tlv_len;
 	unsigned int i;
-	uint8_t rc;
 	unsigned int bytes_used = 0;
 
 	msgb_put_u8(msg, GSM0808_IE_SPEECH_CODEC_LIST);
@@ -408,14 +422,29 @@ uint8_t gsm0808_enc_speech_codec_list(struct msgb *msg,
 	old_tail = msg->tail;
 
 	for (i = 0; i < scl->len; i++) {
-		rc = enc_speech_codec(msg, &scl->codec[i]);
-		OSMO_ASSERT(rc >= 1);
+		int rc = enc_speech_codec(msg, &scl->codec[i]);
+		if (rc < 1)
+			return rc;
 		bytes_used += rc;
-		OSMO_ASSERT(bytes_used <= 255);
+		if (bytes_used > 0xff)
+			return -EOVERFLOW;
 	}
 
 	*tlv_len = (uint8_t) (msg->tail - old_tail);
 	return *tlv_len + 2;
+}
+
+/*! Deprecated: gsm0808_enc_speech_codec_list2() wrapper for backwards compatibility.
+ * Mimics the old behavior: crash on missing and/or invalid input. */
+uint8_t gsm0808_enc_speech_codec_list(struct msgb *msg,
+				      const struct gsm0808_speech_codec_list *scl)
+{
+	int rc;
+
+	rc = gsm0808_enc_speech_codec_list2(msg, scl);
+	OSMO_ASSERT(rc > 0);
+
+	return rc;
 }
 
 /*! Decode TS 08.08 Speech Codec list IE

@@ -111,12 +111,17 @@ uint8_t gsm0808_enc_lcls(struct msgb *msg, const struct osmo_lcls *lcls);
 int gsm0808_dec_lcls(struct osmo_lcls *lcls, const struct tlv_parsed *tp);
 
 uint8_t gsm0808_enc_speech_codec(struct msgb *msg,
-				 const struct gsm0808_speech_codec *sc);
+				 const struct gsm0808_speech_codec *sc)
+	OSMO_DEPRECATED("use gsm0808_enc_speech_codec2() instead");
+int gsm0808_enc_speech_codec2(struct msgb *msg,
+			      const struct gsm0808_speech_codec *sc);
 int gsm0808_dec_speech_codec(struct gsm0808_speech_codec *sc,
 			     const uint8_t *elem, uint8_t len);
 uint8_t gsm0808_enc_speech_codec_list(struct msgb *msg,
-				      const struct gsm0808_speech_codec_list
-				      *scl);
+				      const struct gsm0808_speech_codec_list *scl)
+	OSMO_DEPRECATED("use gsm0808_enc_speech_codec_list2() instead");
+int gsm0808_enc_speech_codec_list2(struct msgb *msg,
+				   const struct gsm0808_speech_codec_list *scl);
 int gsm0808_dec_speech_codec_list(struct gsm0808_speech_codec_list *scl,
 				  const uint8_t *elem, uint8_t len);
 uint8_t gsm0808_enc_channel_type(struct msgb *msg,
