@@ -264,7 +264,6 @@ static uint8_t enc_speech_codec(struct msgb *msg,
 		msgb_put_u8(msg, header);
 		msgb_put_u8(msg, sc->type);
 	} else {
-		OSMO_ASSERT(sc->type < 0x0f);
 		header |= sc->type;
 		msgb_put_u8(msg, header);
 	}
