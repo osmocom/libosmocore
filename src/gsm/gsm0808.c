@@ -100,13 +100,19 @@ struct msgb *gsm0808_create_layer3_2(const struct msgb *msg_l3, const struct osm
 		     msgb_l3len(msg_l3), msg_l3->l3h);
 
 	/* AoIP: add Codec List (BSS Supported) 3.2.2.103 */
-	if (scl)
-		gsm0808_enc_speech_codec_list(msg, scl);
+	if (scl) {
+		if (gsm0808_enc_speech_codec_list2(msg, scl) < 0)
+			goto exit_free;
+	}
 
 	/* push the bssmap header */
 	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
 
 	return msg;
+
+exit_free:
+	msgb_free(msg);
+	return NULL;
 }
 
 /*! Create "Complete L3 Info" for A, legacy implementation.
@@ -530,8 +536,10 @@ struct msgb *gsm0808_create_ass2(const struct gsm0808_channel_type *ct,
 	}
 
 	/* AoIP: Codec List (MSC Preferred) 3.2.2.103 */
-	if (scl)
-		gsm0808_enc_speech_codec_list(msg, scl);
+	if (scl) {
+		if (gsm0808_enc_speech_codec_list2(msg, scl) < 0)
+			goto exit_free;
+	}
 
 	/* AoIP: Call Identifier 3.2.2.105 */
 	if (ci) {
@@ -552,6 +560,10 @@ struct msgb *gsm0808_create_ass2(const struct gsm0808_channel_type *ct,
 	    msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
 
 	return msg;
+
+exit_free:
+	msgb_free(msg);
+	return NULL;
 }
 
 /*! Create BSSMAP Assignment Request message, 3GPP TS 48.008 §3.2.1.1.
@@ -616,12 +628,16 @@ struct msgb *gsm0808_create_ass_compl2(uint8_t rr_cause, uint8_t chosen_channel,
 		gsm0808_enc_aoip_trasp_addr(msg, ss);
 
 	/* AoIP: Speech Codec (Chosen) 3.2.2.104 */
-	if (sc)
-		gsm0808_enc_speech_codec(msg, sc);
+	if (sc) {
+		if (gsm0808_enc_speech_codec2(msg, sc) < 0)
+			goto exit_free;
+	}
 
 	/* AoIP: add Codec List (BSS Supported) 3.2.2.103 */
-	if (scl)
-		gsm0808_enc_speech_codec_list(msg, scl);
+	if (scl) {
+		if (gsm0808_enc_speech_codec_list2(msg, scl) < 0)
+			goto exit_free;
+	}
 
 	/* FIXME: write LSA identifier 3.2.2.15 - see 3GPP TS 43.073 */
 
@@ -632,6 +648,10 @@ struct msgb *gsm0808_create_ass_compl2(uint8_t rr_cause, uint8_t chosen_channel,
 	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
 
 	return msg;
+
+exit_free:
+	msgb_free(msg);
+	return NULL;
 }
 
 /*! Create BSSMAP Assignment Completed message
@@ -693,13 +713,19 @@ struct msgb *gsm0808_create_ass_fail(uint8_t cause, const uint8_t *rr_cause,
 	/* Circuit pool list 3.2.2.46 */
 
 	/* AoIP: add Codec List (BSS Supported) 3.2.2.103 */
-	if (scl)
-		gsm0808_enc_speech_codec_list(msg, scl);
+	if (scl) {
+		if (gsm0808_enc_speech_codec_list2(msg, scl) < 0)
+			goto exit_free;
+	}
 
 	/* update the size */
 	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
 
 	return msg;
+
+exit_free:
+	msgb_free(msg);
+	return NULL;
 }
 
 /*! Create BSSMAP Assignment Failure message
@@ -992,8 +1018,10 @@ struct msgb *gsm0808_create_handover_request(const struct gsm0808_handover_reque
 	if (params->aoip_transport_layer)
 		gsm0808_enc_aoip_trasp_addr(msg, params->aoip_transport_layer);
 
-	if (params->codec_list_msc_preferred)
-		gsm0808_enc_speech_codec_list(msg, params->codec_list_msc_preferred);
+	if (params->codec_list_msc_preferred) {
+		if (gsm0808_enc_speech_codec_list2(msg, params->codec_list_msc_preferred) < 0)
+			goto exit_free;
+	}
 
 	if (params->call_id_present) {
 		uint8_t val[4];
@@ -1013,6 +1041,10 @@ struct msgb *gsm0808_create_handover_request(const struct gsm0808_handover_reque
 	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
 
 	return msg;
+
+exit_free:
+	msgb_free(msg);
+	return NULL;
 }
 
 /*! Create BSSMAP HANDOVER REQUEST ACKNOWLEDGE message, 3GPP TS 48.008 3.2.1.10.
@@ -1048,17 +1080,25 @@ struct msgb *gsm0808_create_handover_request_ack2(const struct gsm0808_handover_
 	/* AoIP: add Codec List (BSS Supported) 3.2.2.103.
 	 * (codec_list_bss_supported was added to struct gsm0808_handover_request_ack later than speech_codec_chosen
 	 * below, but it needs to come before it in the message coding). */
-	if (params->more_items && params->codec_list_bss_supported.len)
-		gsm0808_enc_speech_codec_list(msg, &params->codec_list_bss_supported);
+	if (params->more_items && params->codec_list_bss_supported.len) {
+		if (gsm0808_enc_speech_codec_list2(msg, &params->codec_list_bss_supported) < 0)
+			goto exit_free;
+	}
 
 	/* AoIP: Speech Codec (Chosen) 3.2.2.104 */
-	if (params->speech_codec_chosen_present)
-		gsm0808_enc_speech_codec(msg, &params->speech_codec_chosen);
+	if (params->speech_codec_chosen_present) {
+		if (gsm0808_enc_speech_codec2(msg, &params->speech_codec_chosen) < 0)
+			goto exit_free;
+	}
 
 	/* prepend header with final length */
 	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
 
 	return msg;
+
+exit_free:
+	msgb_free(msg);
+	return NULL;
 }
 
 /*! Same as gsm0808_create_handover_request_ack2() but with less parameters.
@@ -1164,12 +1204,16 @@ struct msgb *gsm0808_create_handover_complete(const struct gsm0808_handover_comp
 		msgb_tlv_put(msg, GSM0808_IE_RR_CAUSE, 1, &params->rr_cause);
 
 	/* AoIP: Speech Codec (Chosen) 3.2.2.104 */
-	if (params->speech_codec_chosen_present)
-		gsm0808_enc_speech_codec(msg, &params->speech_codec_chosen);
+	if (params->speech_codec_chosen_present) {
+		if (gsm0808_enc_speech_codec2(msg, &params->speech_codec_chosen) < 0)
+			goto exit_free;
+	}
 
 	/* AoIP: add Codec List (BSS Supported) 3.2.2.103 */
-	if (params->codec_list_bss_supported.len)
-		gsm0808_enc_speech_codec_list(msg, &params->codec_list_bss_supported);
+	if (params->codec_list_bss_supported.len) {
+		if (gsm0808_enc_speech_codec_list2(msg, &params->codec_list_bss_supported) < 0)
+			goto exit_free;
+	}
 
 	/* Chosen Encryption Algorithm 3.2.2.44 */
 	if (params->chosen_encr_alg_present && params->chosen_encr_alg > 0)
@@ -1183,6 +1227,10 @@ struct msgb *gsm0808_create_handover_complete(const struct gsm0808_handover_comp
 	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
 
 	return msg;
+
+exit_free:
+	msgb_free(msg);
+	return NULL;
 }
 
 /*! Create BSSMAP HANDOVER FAILURE message, 3GPP TS 48.008 3.2.1.16.
@@ -1206,13 +1254,19 @@ struct msgb *gsm0808_create_handover_failure(const struct gsm0808_handover_failu
 		msgb_tlv_put(msg, GSM0808_IE_RR_CAUSE, 1, &params->rr_cause);
 
 	/* AoIP: add Codec List (BSS Supported) 3.2.2.103 */
-	if (params->codec_list_bss_supported.len)
-		gsm0808_enc_speech_codec_list(msg, &params->codec_list_bss_supported);
+	if (params->codec_list_bss_supported.len) {
+		if (gsm0808_enc_speech_codec_list2(msg, &params->codec_list_bss_supported) < 0)
+			goto exit_free;
+	}
 
 	/* prepend header with final length */
 	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
 
 	return msg;
+
+exit_free:
+	msgb_free(msg);
+	return NULL;
 }
 
 /*! Create BSSMAP HANDOVER PERFORMED message, 3GPP TS 48.008 3.2.1.25.
@@ -1248,8 +1302,10 @@ struct msgb *gsm0808_create_handover_performed(const struct gsm0808_handover_per
 		msgb_tv_put(msg, GSM0808_IE_SPEECH_VERSION, params->speech_version_chosen);
 
 	/* AoIP: Speech Codec (chosen) 3.2.2.104 */
-	if (params->speech_codec_chosen_present)
-		gsm0808_enc_speech_codec(msg, &params->speech_codec_chosen);
+	if (params->speech_codec_chosen_present) {
+		if (gsm0808_enc_speech_codec2(msg, &params->speech_codec_chosen) < 0)
+			goto exit_free;
+	}
 
 	/* LCLS-BSS-Status 3.2.2.119 */
 	if (params->lcls_bss_status_present)
@@ -1259,6 +1315,10 @@ struct msgb *gsm0808_create_handover_performed(const struct gsm0808_handover_per
 	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
 
 	return msg;
+
+exit_free:
+	msgb_free(msg);
+	return NULL;
 }
 
 /*! Create BSSMAP COMMON ID message, 3GPP TS 48.008 3.2.1.68.

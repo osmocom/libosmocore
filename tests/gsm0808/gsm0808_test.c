@@ -959,7 +959,7 @@ static void test_gsm0808_enc_dec_speech_codec(void)
 	int rc_dec;
 
 	msg = msgb_alloc(1024, "output buffer");
-	rc_enc = gsm0808_enc_speech_codec(msg, &enc_sc);
+	rc_enc = gsm0808_enc_speech_codec2(msg, &enc_sc);
 	OSMO_ASSERT(rc_enc == 3);
 
 	rc_dec = gsm0808_dec_speech_codec(&dec_sc, msg->data + 2, msg->len - 2);
@@ -985,7 +985,7 @@ static void test_gsm0808_enc_dec_speech_codec_with_cfg(void)
 	int rc_dec;
 
 	msg = msgb_alloc(1024, "output buffer");
-	rc_enc = gsm0808_enc_speech_codec(msg, &enc_sc);
+	rc_enc = gsm0808_enc_speech_codec2(msg, &enc_sc);
 	OSMO_ASSERT(rc_enc == 5);
 
 	rc_dec = gsm0808_dec_speech_codec(&dec_sc, msg->data + 2, msg->len - 2);
@@ -1010,7 +1010,7 @@ static void test_gsm0808_enc_dec_speech_codec_ext_with_cfg(void)
 	int rc_dec;
 
 	msg = msgb_alloc(1024, "output buffer");
-	rc_enc = gsm0808_enc_speech_codec(msg, &enc_sc);
+	rc_enc = gsm0808_enc_speech_codec2(msg, &enc_sc);
 	OSMO_ASSERT(rc_enc == 5);
 
 	rc_dec = gsm0808_dec_speech_codec(&dec_sc, msg->data + 2, msg->len - 2);
@@ -1053,7 +1053,7 @@ static void test_gsm0808_enc_dec_speech_codec_list(void)
 	int rc_dec;
 
 	msg = msgb_alloc(1024, "output buffer");
-	rc_enc = gsm0808_enc_speech_codec_list(msg, &enc_scl);
+	rc_enc = gsm0808_enc_speech_codec_list2(msg, &enc_scl);
 	OSMO_ASSERT(rc_enc == 9);
 
 	rc_dec = gsm0808_dec_speech_codec_list(&dec_scl, msg->data + 2, msg->len - 2);
@@ -1075,7 +1075,7 @@ static void test_gsm0808_enc_dec_empty_speech_codec_list(void)
 	int rc_dec;
 
 	msg = msgb_alloc(1024, "output buffer");
-	rc_enc = gsm0808_enc_speech_codec_list(msg, &enc_scl);
+	rc_enc = gsm0808_enc_speech_codec_list2(msg, &enc_scl);
 	OSMO_ASSERT(rc_enc == 2);
 
 	rc_dec = gsm0808_dec_speech_codec_list(&dec_scl, msg->data + 2, msg->len - 2);
