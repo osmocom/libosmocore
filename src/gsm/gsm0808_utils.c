@@ -227,7 +227,7 @@ static uint8_t enc_speech_codec(struct msgb *msg,
 	 * of 4 bit to fully specify the selected codec. In the following,
 	 * we check if we work with an extended type or not. We also check
 	 * if the codec type is valid at all. */
-	switch(sc->type) {
+	switch (sc->type) {
 	case GSM0808_SCT_FR1:
 	case GSM0808_SCT_FR2:
 	case GSM0808_SCT_FR3:
