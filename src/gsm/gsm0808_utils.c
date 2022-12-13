@@ -215,8 +215,8 @@ static void decode_lai(const uint8_t *data, struct osmo_location_area_id *decode
 
 /* Helper function for gsm0808_enc_speech_codec()
  * and gsm0808_enc_speech_codec_list() */
-static uint8_t enc_speech_codec(struct msgb *msg,
-				const struct gsm0808_speech_codec *sc)
+static int enc_speech_codec(struct msgb *msg,
+			    const struct gsm0808_speech_codec *sc)
 {
 	/* See also 3GPP TS 48.008 3.2.2.103 Speech Codec List */
 	uint8_t header = 0;
@@ -244,8 +244,7 @@ static uint8_t enc_speech_codec(struct msgb *msg,
 		break;
 	default:
 		/* Invalid codec type specified */
-		OSMO_ASSERT(false);
-		break;
+		return -EINVAL;
 	}
 
 	old_tail = msg->tail;
@@ -264,7 +263,6 @@ static uint8_t enc_speech_codec(struct msgb *msg,
 		msgb_put_u8(msg, header);
 		msgb_put_u8(msg, sc->type);
 	} else {
-		OSMO_ASSERT(sc->type < 0x0f);
 		header |= sc->type;
 		msgb_put_u8(msg, header);
 	}
@@ -282,12 +280,13 @@ static uint8_t enc_speech_codec(struct msgb *msg,
 	case GSM0808_SCT_FR5:
 	case GSM0808_SCT_HR4:
 	case GSM0808_SCT_CSD:
-		OSMO_ASSERT((sc->cfg & 0xff00) == 0);
+		if ((sc->cfg & 0xff00) != 0)
+			return -EINVAL;
 		msgb_put_u8(msg, (uint8_t) sc->cfg & 0xff);
 		break;
 	default:
-		OSMO_ASSERT(sc->cfg == 0);
-		break;
+		if (sc->cfg != 0)
+			return -EINVAL;
 	}
 
 	return (uint8_t) (msg->tail - old_tail);
@@ -311,11 +310,15 @@ uint8_t gsm0808_enc_speech_codec(struct msgb *msg,
 	tlv_len = msgb_put(msg, 1);
 	old_tail = msg->tail;
 
-	enc_speech_codec(msg, sc);
+	if (enc_speech_codec(msg, sc) < 0)
+		now what
 
 	*tlv_len = (uint8_t) (msg->tail - old_tail);
 	return *tlv_len + 2;
 }
+
+int gsm0808_enc_speech_codec2(struct msgb *msg, const struct gsm0808_speech_codec *sc)
+	...
 
 /*! Decode TS 08.08 Speech Codec IE
  *  \param[out] sc Caller-allocated memory for Speech Codec
