@@ -90,8 +90,6 @@ uint8_t gsm0808_enc_aoip_trasp_addr(struct msgb *msg,
 	const uint8_t len_tl = 2;
 	uint8_t len_v = sizeof(port);
 
-	OSMO_ASSERT(msg);
-	OSMO_ASSERT(ss);
 	OSMO_ASSERT(ss->ss_family == AF_INET || ss->ss_family == AF_INET6);
 
 	switch (ss->ss_family) {
@@ -141,7 +139,6 @@ int gsm0808_dec_aoip_trasp_addr(struct sockaddr_storage *ss,
 	struct sockaddr_in6 sin6;
 	const uint8_t *old_elem = elem;
 
-	OSMO_ASSERT(ss);
 	if (!elem)
 		return -EINVAL;
 	if (len == 0)
@@ -189,7 +186,6 @@ int gsm0808_dec_aoip_trasp_addr(struct sockaddr_storage *ss,
  *  \returns number of bytes parsed */
 int gsm0808_dec_osmux_cid(uint8_t *cid, const uint8_t *elem, uint8_t len)
 {
-	OSMO_ASSERT(cid);
 	if (!elem)
 		return -EINVAL;
 	if (len != 1)
@@ -303,9 +299,6 @@ uint8_t gsm0808_enc_speech_codec(struct msgb *msg,
 	uint8_t *old_tail;
 	uint8_t *tlv_len;
 
-	OSMO_ASSERT(msg);
-	OSMO_ASSERT(sc);
-
 	msgb_put_u8(msg, GSM0808_IE_SPEECH_CODEC);
 	tlv_len = msgb_put(msg, 1);
 	old_tail = msg->tail;
@@ -328,7 +321,6 @@ int gsm0808_dec_speech_codec(struct gsm0808_speech_codec *sc,
 	uint8_t header;
 	const uint8_t *old_elem = elem;
 
-	OSMO_ASSERT(sc);
 	if (!elem)
 		return -EINVAL;
 	if (len == 0)
@@ -411,9 +403,6 @@ uint8_t gsm0808_enc_speech_codec_list(struct msgb *msg,
 	uint8_t rc;
 	unsigned int bytes_used = 0;
 
-	OSMO_ASSERT(msg);
-	OSMO_ASSERT(scl);
-
 	msgb_put_u8(msg, GSM0808_IE_SPEECH_CODEC_LIST);
 	tlv_len = msgb_put(msg, 1);
 	old_tail = msg->tail;
@@ -443,7 +432,6 @@ int gsm0808_dec_speech_codec_list(struct gsm0808_speech_codec_list *scl,
 	int rc;
 	uint8_t decoded = 0;
 
-	OSMO_ASSERT(scl);
 	if (!elem)
 		return -EINVAL;
 
@@ -480,8 +468,6 @@ uint8_t gsm0808_enc_channel_type(struct msgb *msg,
 	uint8_t *old_tail;
 	uint8_t *tlv_len;
 
-	OSMO_ASSERT(msg);
-	OSMO_ASSERT(ct);
 	OSMO_ASSERT(ct->perm_spch_len <= CHANNEL_TYPE_ELEMENT_MAXLEN - 2);
 
 	/* FIXME: Implement encoding support for Data
@@ -522,7 +508,6 @@ int gsm0808_dec_channel_type(struct gsm0808_channel_type *ct,
 	uint8_t byte;
 	const uint8_t *old_elem = elem;
 
-	OSMO_ASSERT(ct);
 	if (!elem)
 		return -EINVAL;
 	if (len < 3 || len > 11)
@@ -711,8 +696,6 @@ uint8_t gsm0808_enc_encrypt_info(struct msgb *msg,
 	uint8_t *old_tail;
 	uint8_t *tlv_len;
 
-	OSMO_ASSERT(msg);
-	OSMO_ASSERT(ei);
 	OSMO_ASSERT(ei->key_len <= ARRAY_SIZE(ei->key));
 	OSMO_ASSERT(ei->perm_algo_len <= ENCRY_INFO_PERM_ALGO_MAXLEN);
 
@@ -751,7 +734,6 @@ int gsm0808_dec_encrypt_info(struct gsm0808_encrypt_info *ei,
 	unsigned int perm_algo_len = 0;
 	const uint8_t *old_elem = elem;
 
-	OSMO_ASSERT(ei);
 	if (!elem)
 		return -EINVAL;
 	if (len == 0)
@@ -1011,9 +993,6 @@ uint8_t gsm0808_enc_cell_id_list2(struct msgb *msg,
 	unsigned int i;
 	uint8_t id_discr;
 
-	OSMO_ASSERT(msg);
-	OSMO_ASSERT(cil);
-
 	msgb_put_u8(msg, GSM0808_IE_CELL_IDENTIFIER_LIST);
 	tlv_len = msgb_put(msg, 1);
 	old_tail = msg->tail;
@@ -1054,9 +1033,6 @@ uint8_t gsm0808_enc_cell_id_list(struct msgb *msg,
 	uint8_t *old_tail;
 	uint8_t *tlv_len;
 	unsigned int i;
-
-	OSMO_ASSERT(msg);
-	OSMO_ASSERT(cil);
 
 	msgb_put_u8(msg, GSM0808_IE_CELL_IDENTIFIER_LIST);
 	tlv_len = msgb_put(msg, 1);
@@ -1233,7 +1209,6 @@ int gsm0808_dec_cell_id_list2(struct gsm0808_cell_id_list2 *cil,
 	size_t bytes_elem = 0;
 	int list_len = 0;
 
-	OSMO_ASSERT(cil);
 	if (!elem)
 		return -EINVAL;
 	if (len == 0)
@@ -1301,7 +1276,6 @@ int gsm0808_dec_cell_id_list(struct gsm0808_cell_id_list *cil,
 	const uint8_t *old_elem = elem;
 	unsigned int item_count = 0;
 
-	OSMO_ASSERT(cil);
 	if (!elem)
 		return -EINVAL;
 	if (len == 0)
@@ -1458,9 +1432,6 @@ uint8_t gsm0808_enc_cell_id(struct msgb *msg, const struct gsm0808_cell_id *ci)
 		.id_list = { ci->id },
 		.id_list_len = 1,
 	};
-
-	OSMO_ASSERT(msg);
-	OSMO_ASSERT(ci);
 
 	ie_tag = msg->tail;
 	rc = gsm0808_enc_cell_id_list2(msg, &cil);
