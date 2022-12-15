@@ -58,6 +58,7 @@ gsmtap_type_names;
 log_add_target;
 log_category_name;
 log_check_level;
+log_cache_update;
 log_del_target;
 log_enable_multithread;
 log_fini;

@@ -409,7 +409,7 @@ int log_set_context(uint8_t ctx, void *value);
 
 /* filter on the targets */
 void log_set_all_filter(struct log_target *target, int);
-
+void log_cache_update(int mapped_subsys, uint8_t enabled, uint8_t level);
 void log_set_use_color(struct log_target *target, int);
 void log_set_print_extended_timestamp(struct log_target *target, int);
 void log_set_print_timestamp(struct log_target *target, int);
