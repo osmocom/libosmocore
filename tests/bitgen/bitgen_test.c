@@ -14,17 +14,17 @@
 			for (at_idx = 0; at_idx < len; at_idx++) { \
 				uint##SIZE##_t read_val = 0; \
 				memset(buf, 0, sizeof(buf)); \
-				osmo_store##SIZE####BE_LE##_ext(val, &buf[at_idx], len); \
+				osmo_store##SIZE##BE_LE##_ext(val, &buf[at_idx], len); \
 				printf("osmo_store" #SIZE #BE_LE "_ext(0x%" PRIx##SIZE ", &buf[%d], %d) = %s\n", \
 				       val, \
 				       at_idx, len, osmo_hexdump(buf, sizeof(buf))); \
 				\
-				read_val = osmo_load##SIZE####BE_LE##_ext(&buf[at_idx], len); \
+				read_val = osmo_load##SIZE##BE_LE##_ext(&buf[at_idx], len); \
 				printf("osmo_load" #SIZE #BE_LE "_ext(&buf[%d], %d) = 0x%" PRIx##SIZE "\n", \
 				       at_idx, len, read_val); \
 				\
 				if (!strcmp(#BE_LE, "be")) { \
-					read_val = osmo_load##SIZE####BE_LE##_ext_2(&buf[at_idx], len); \
+					read_val = osmo_load##SIZE##BE_LE##_ext_2(&buf[at_idx], len); \
 					printf("osmo_load" #SIZE #BE_LE "_ext_2(&buf[%d], %d) = 0x%" PRIx##SIZE "\n", \
 					       at_idx, len, read_val); \
 				} \
