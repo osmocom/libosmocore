@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include <osmocom/core/defs.h>
 #include <osmocom/core/logging.h>
 #include <osmocom/core/select.h>
 
@@ -41,9 +42,12 @@ struct telnet_connection {
 	struct log_target *dbg;
 };
 
-int telnet_init(void *tall_ctx, void *priv, int port);
-int telnet_init_dynif(void *tall_ctx, void *priv, const char *ip, int port);
 int telnet_init_default(void *tall_ctx, void *priv, int default_port);
+
+int telnet_init(void *tall_ctx, void *priv, int port)
+	OSMO_DEPRECATED("This function ignores dynamic port configuration. Use telnet_init_default() instead");
+int telnet_init_dynif(void *tall_ctx, void *priv, const char *ip, int port)
+	OSMO_DEPRECATED("This function ignores dynamic port configuration. Use telnet_init_default() instead");
 
 void telnet_exit(void);
 

@@ -42,7 +42,7 @@
  *  process in order to enable interactive command-line introspection,
  *  interaction and configuration.
  *
- *  You typically call \ref telnet_init or \ref telnet_init_dynif once
+ *  You typically call telnet_init_default once
  *  from your application code to enable this.
  */
 
@@ -60,23 +60,8 @@ static struct osmo_fd server_socket = {
 	.priv_nr    = 0,
 };
 
-/*! Initialize telnet based VTY interface listening to 127.0.0.1
- *  \param[in] tall_ctx \ref talloc context
- *  \param[in] priv private data to be passed to callback
- *  \param[in] port TCP port number to bind to
- */
-int telnet_init(void *tall_ctx, void *priv, int port)
-{
-	return telnet_init_dynif(tall_ctx, priv, "127.0.0.1", port);
-}
-
-/*! Initialize telnet based VTY interface
- *  \param[in] tall_ctx \ref talloc context
- *  \param[in] priv private data to be passed to callback
- *  \param[in] ip IP to listen to ('::1' for localhost, '::0' for all, ...)
- *  \param[in] port TCP port number to bind to
- */
-int telnet_init_dynif(void *tall_ctx, void *priv, const char *ip, int port)
+/* Helper for deprecating telnet_init_dynif(), which previously held this code */
+static int _telnet_init_dynif(void *tall_ctx, void *priv, const char *ip, int port)
 {
 	int rc;
 
@@ -104,6 +89,29 @@ int telnet_init_dynif(void *tall_ctx, void *priv, const char *ip, int port)
 	return 0;
 }
 
+/*! Initialize telnet based VTY interface listening to 127.0.0.1
+ *  \param[in] tall_ctx \ref talloc context
+ *  \param[in] priv private data to be passed to callback
+ *  \param[in] port TCP port number to bind to
+ *  \deprecated use telnet_init_default() instead
+ */
+int telnet_init(void *tall_ctx, void *priv, int port)
+{
+	return _telnet_init_dynif(tall_ctx, priv, "127.0.0.1", port);
+}
+
+/*! Initialize telnet based VTY interface
+ *  \param[in] tall_ctx \ref talloc context
+ *  \param[in] priv private data to be passed to callback
+ *  \param[in] ip IP to listen to ('::1' for localhost, '::0' for all, ...)
+ *  \param[in] port TCP port number to bind to
+ *  \deprecated use telnet_init_default() instead
+ */
+int telnet_init_dynif(void *tall_ctx, void *priv, const char *ip, int port)
+{
+	return _telnet_init_dynif(tall_ctx, priv, ip, port);
+}
+
 /*! Initializes telnet based VTY interface using the configured bind addr/port.
  *  \param[in] tall_ctx \ref talloc context
  *  \param[in] priv private data to be passed to callback
@@ -111,8 +119,8 @@ int telnet_init_dynif(void *tall_ctx, void *priv, const char *ip, int port)
  */
 int telnet_init_default(void *tall_ctx, void *priv, int default_port)
 {
-	return telnet_init_dynif(tall_ctx, priv, vty_get_bind_addr(),
-				 vty_get_bind_port(default_port));
+	return _telnet_init_dynif(tall_ctx, priv, vty_get_bind_addr(),
+				  vty_get_bind_port(default_port));
 }
 
 
