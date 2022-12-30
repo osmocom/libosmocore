@@ -880,8 +880,9 @@ static int32_t smod(int32_t n, int32_t m)
  *  \param[in] cd Cell Channel Description IE
  *  \param[in] len Length of \a cd in bytes
  *  \returns 0 on success; negative on error */
-int gsm48_decode_freq_list(struct gsm_sysinfo_freq *f, uint8_t *cd,
-			   uint8_t len, uint8_t mask, uint8_t frqt)
+int gsm48_decode_freq_list(struct gsm_sysinfo_freq *f,
+			   const uint8_t *cd, uint8_t len,
+			   uint8_t mask, uint8_t frqt)
 {
 	int i;
 
