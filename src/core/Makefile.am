@@ -4,7 +4,7 @@
 LIBVERSION=20:0:0
 
 AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include -I$(top_builddir)
-AM_CFLAGS = -Wall $(TALLOC_CFLAGS) $(PTHREAD_CFLAGS) $(LIBSCTP_CFLAGS) $(LIBMNL_CFLAGS)
+AM_CFLAGS = -Wall $(TALLOC_CFLAGS) $(PTHREAD_CFLAGS) $(LIBSCTP_CFLAGS) $(LIBMNL_CFLAGS) $(URING_CFLAGS)
 
 if ENABLE_PSEUDOTALLOC
 AM_CPPFLAGS += -I$(top_srcdir)/src/pseudotalloc
@@ -18,6 +18,7 @@ libosmocore_la_LIBADD = \
 	$(LIBRARY_RT) \
 	$(PTHREAD_LIBS) \
 	$(LIBSCTP_LIBS) \
+	$(URING_LIBS) \
 	$(NULL)
 
 libosmocore_la_SOURCES = \
@@ -154,6 +155,10 @@ probes.lo: probes.d
 
 BUILT_SOURCES += probes.h probes.lo
 libosmocore_la_LIBADD += probes.lo
+endif
+
+if ENABLE_URING
+libosmocore_la_SOURCES += osmo_io_uring.c
 endif
 
 crc%gen.c: crcXXgen.c.tpl

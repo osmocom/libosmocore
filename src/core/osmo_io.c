@@ -47,6 +47,7 @@
 
 const struct value_string osmo_io_backend_names[] = {
 	{ OSMO_IO_BACKEND_POLL, "poll" },
+	{ OSMO_IO_BACKEND_IO_URING, "io_uring" },
 	{ 0, NULL }
 };
 
@@ -55,12 +56,21 @@ static enum osmo_io_backend g_io_backend;
 /* Used by some tests, can't be static */
 struct iofd_backend_ops osmo_iofd_ops;
 
+#if defined(HAVE_URING)
+void osmo_iofd_uring_init(void);
+#endif
+
 /*! initialize osmo_io for the current thread */
 void osmo_iofd_init(void)
 {
 	switch (g_io_backend) {
 	case OSMO_IO_BACKEND_POLL:
 		break;
+#if defined(HAVE_URING)
+	case OSMO_IO_BACKEND_IO_URING:
+		osmo_iofd_uring_init();
+		break;
+#endif
 	default:
 		OSMO_ASSERT(0);
 		break;
@@ -78,6 +88,11 @@ static __attribute__((constructor(103))) void on_dso_load_osmo_io(void)
 	if (!strcmp("POLL", backend)) {
 		g_io_backend = OSMO_IO_BACKEND_POLL;
 		osmo_iofd_ops = iofd_poll_ops;
+#if defined(HAVE_URING)
+	} else if (!strcmp("IO_URING", backend)) {
+		g_io_backend = OSMO_IO_BACKEND_IO_URING;
+		osmo_iofd_ops = iofd_uring_ops;
+#endif
 	} else {
 		fprintf(stderr, "Invalid osmo_io backend requested: \"%s\"\nCheck the environment variable %s\n", backend, OSMO_IO_BACKEND_ENV);
 		exit(1);

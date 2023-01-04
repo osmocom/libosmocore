@@ -95,6 +95,9 @@ static void test_connected(void)
 
 	osmo_iofd_free(iofd1);
 	osmo_iofd_free(iofd2);
+
+	for (int i = 0; i < 128; i++)
+		osmo_select_main(1);
 }
 
 static void recvfrom_cb(struct osmo_io_fd *iofd, int rc, struct msgb *msg,
@@ -147,6 +150,9 @@ static void test_unconnected(void)
 
 	osmo_iofd_free(iofd1);
 	osmo_iofd_free(iofd2);
+
+	for (int i = 0; i < 128; i++)
+		osmo_select_main(1);
 }
 static const struct log_info_cat default_categories[] = {
 };

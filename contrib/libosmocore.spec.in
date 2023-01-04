@@ -32,6 +32,7 @@ BuildRequires:  pkgconfig(libusb-1.0)
 BuildRequires:  pkgconfig(talloc) >= 2.1.0
 BuildRequires:  pkgconfig(libmnl)
 BuildRequires:  pkgconfig(libsystemd)
+BuildRequires:  pkgconfig(liburing)
 
 %description
 libosmocore is a package with various utility functions that were

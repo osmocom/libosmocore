@@ -175,6 +175,20 @@ AC_CONFIG_HEADER(config.h)
 
 PKG_CHECK_MODULES(TALLOC, [talloc >= 2.1.0])
 
+AC_ARG_ENABLE([uring], [AS_HELP_STRING([--disable-uring], [Build without io_uring support])],
+    [
+        ENABLE_URING=$enableval
+    ],
+    [
+        ENABLE_URING="yes"
+    ])
+AS_IF([test "x$ENABLE_URING" = "xyes"], [
+	PKG_CHECK_MODULES(URING, [liburing >= 0.7])
+	AC_DEFINE([HAVE_URING],[1],[Build with io_uring support])
+])
+AM_CONDITIONAL(ENABLE_URING, test "x$ENABLE_URING" = "xyes")
+AC_SUBST(ENABLE_URING)
+
 AC_ARG_ENABLE([pcsc], [AS_HELP_STRING([--disable-pcsc], [Build without PC/SC support])],
     [
         ENABLE_PCSC=$enableval

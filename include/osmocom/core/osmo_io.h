@@ -27,6 +27,7 @@ enum osmo_io_fd_mode {
 
 enum osmo_io_backend {
 	OSMO_IO_BACKEND_POLL,
+	OSMO_IO_BACKEND_IO_URING,
 };
 
 extern const struct value_string osmo_io_backend_names[];
