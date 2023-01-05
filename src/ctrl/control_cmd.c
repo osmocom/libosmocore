@@ -210,6 +210,16 @@ int ctrl_cmd_install(enum ctrl_node_type node, struct ctrl_cmd_element *cmd)
 {
 	vector cmds_vec;
 
+	/* If this assert triggers, it means the program forgot to initialize
+	 * the CTRL interface first by calling ctrl_handle_alloc(2)() directly
+	 * or indirectly through ctrl_interface_setup_dynip(2)()
+	 */
+	if (!ctrl_node_vec) {
+		LOGP(DLCTRL, LOGL_ERROR,
+		     "ctrl_handle must be initialized prior to installing cmds.\n");
+		return -ENODEV;
+	}
+
 	cmds_vec = vector_lookup_ensure(ctrl_node_vec, node);
 
 	if (!cmds_vec) {
