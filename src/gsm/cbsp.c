@@ -30,7 +30,7 @@
 #include <osmocom/gsm/cbsp.h>
 #include <osmocom/gsm/gsm0808_utils.h>
 
-const __thread char *osmo_cbsp_errstr;
+__thread const char *osmo_cbsp_errstr;
 
 struct msgb *osmo_cbsp_msgb_alloc(void *ctx, const char *name)
 {
