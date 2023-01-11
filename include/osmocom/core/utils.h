@@ -182,6 +182,18 @@ int osmo_print_n(char *buf, size_t bufsize, const char *str, size_t n);
 
 uint32_t osmo_isqrt32(uint32_t x);
 
+/*! Floored Modulo (See also: Daan Leijen, Division and Modulus for Computer Scientists).
+ * \param[in] x dividend.
+ * \param[in] y divisor.
+ * \returns remainder of x divided by y. */
+#define OSMO_MOD_FLR(x, y) (((x) > 0 && (y) < 0) || ((x) < 0 && (y) > 0) ? (x) % (y) + (y) : (x) % (y))
+
+/*! Euclidean Modulo (See also: Daan Leijen, Division and Modulus for Computer Scientists).
+ * \param[in] x dividend.
+ * \param[in] y divisor.
+ * \returns remainder of x divided by y. */
+#define OSMO_MOD_EUC(x, y) ((x) % (y) < 0 ? (y) > 0 ? (x) % (y) + (y) : (x) % (y) - (y) : (x) % (y))
+
 char osmo_luhn(const char* in, int in_len);
 
 /*! State for OSMO_STRBUF_APPEND() and OSMO_STRBUF_PRINTF(). See there for examples. */

@@ -354,6 +354,36 @@ strcmp("NULL", osmo_quote_cstr_c(ctx, NULL, -1)) == 0
 
 Testing integer square-root
 
+Testing built in truncated modulo for comparison:
+ 8 mod 3 = 2 = 2
+ 8 mod -3 = 2 = 2
+ -8 mod 3 = -2 = -2
+ -8 mod -3 = -2 = -2
+ 1 mod 2 = 1 = 1
+ 1 mod -2 = 1 = 1
+ -1 mod 2 = -1 = -1
+ -1 mod -2 = -1 = -1
+
+Testing OSMO_MOD_FLR():
+ 8 mod_flr 3 = 2 = 2
+ 8 mod_flr -3 = -1 = -1
+ -8 mod_flr 3 = 1 = 1
+ -8 mod_flr -3 = -2 = -2
+ 1 mod_flr 2 = 1 = 1
+ 1 mod_flr -2 = -1 = -1
+ -1 mod_flr 2 = 1 = 1
+ -1 mod_flr -2 = -1 = -1
+
+Testing OSMO_MOD_EUC():
+ 8 mod_euc 3 = 2 = 2
+ 8 mod_euc -3 = 2 = 2
+ -8 mod_euc 3 = 1 = 1
+ -8 mod_euc -3 = 1 = 1
+ 1 mod_euc 2 = 1 = 1
+ 1 mod_euc -2 = 1 = 1
+ -1 mod_euc 2 = 1 = 1
+ -1 mod_euc -2 = 1 = 1
+
 osmo_sockaddr_to_str_and_uint_test
 [0] [0.0.0.0]:0 addr_len=20 --> [0.0.0.0]:0 rc=7
 [1] [255.255.255.255]:65535 addr_len=20 --> [255.255.255.255]:65535 rc=15

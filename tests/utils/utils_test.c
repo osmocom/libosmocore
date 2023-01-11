@@ -766,6 +766,65 @@ static void isqrt_test(void)
 	}
 }
 
+static void mod_test_mod(int x, int y, int expected_result)
+{
+	int result;
+	result = x % y;
+	printf(" %d mod %d = %d = %d\n", x, y, result, expected_result);
+	OSMO_ASSERT(result == expected_result);
+}
+
+static void mod_test_mod_flr(int x, int y, int expected_result)
+{
+	int result;
+	result = OSMO_MOD_FLR(x, y);
+	printf(" %d mod_flr %d = %d = %d\n", x, y, result, expected_result);
+	OSMO_ASSERT(result == expected_result);
+}
+
+static void mod_test_mod_euc(int x, int y, int expected_result)
+{
+	int result;
+	result = OSMO_MOD_EUC(x, y);
+	printf(" %d mod_euc %d = %d = %d\n", x, y, result, expected_result);
+	OSMO_ASSERT(result == expected_result);
+}
+
+static void mod_test(void)
+{
+	/* See also: Daan Leijen, Division and Modulus for Computer
+	 * Scientists, section 1.3 */
+
+	printf("\nTesting built in truncated modulo for comparison:\n");
+	mod_test_mod(8, 3, 2);
+	mod_test_mod(8, -3, 2);
+	mod_test_mod(-8, 3, -2);
+	mod_test_mod(-8, -3, -2);
+	mod_test_mod(1, 2, 1);
+	mod_test_mod(1, -2, 1);
+	mod_test_mod(-1, 2, -1);
+	mod_test_mod(-1, -2, -1);
+
+	printf("\nTesting OSMO_MOD_FLR():\n");
+	mod_test_mod_flr(8, 3, 2);
+	mod_test_mod_flr(8, -3, -1);
+	mod_test_mod_flr(-8, 3, 1);
+	mod_test_mod_flr(-8, -3, -2);
+	mod_test_mod_flr(1, 2, 1);
+	mod_test_mod_flr(1, -2, -1);
+	mod_test_mod_flr(-1, 2, 1);
+	mod_test_mod_flr(-1, -2, -1);
+
+	printf("\nTesting OSMO_MOD_EUC():\n");
+	mod_test_mod_euc(8, 3, 2);
+	mod_test_mod_euc(8, -3, 2);
+	mod_test_mod_euc(-8, 3, 1);
+	mod_test_mod_euc(-8, -3, 1);
+	mod_test_mod_euc(1, 2, 1);
+	mod_test_mod_euc(1, -2, 1);
+	mod_test_mod_euc(-1, 2, 1);
+	mod_test_mod_euc(-1, -2, 1);
+}
 
 struct osmo_sockaddr_to_str_and_uint_test_case {
 	uint16_t port;
@@ -2088,6 +2147,7 @@ int main(int argc, char **argv)
 	str_escape3_test();
 	str_quote3_test();
 	isqrt_test();
+	mod_test();
 	osmo_sockaddr_to_str_and_uint_test();
 	osmo_str_tolowupper_test();
 	strbuf_test();
