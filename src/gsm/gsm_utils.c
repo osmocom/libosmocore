@@ -887,8 +887,19 @@ char *gsm_fn_as_gsmtime_str(uint32_t fn)
  *  \returns GSM Frame Number */
 uint32_t gsm_gsmtime2fn(struct gsm_time *time)
 {
-	/* TS 05.02 Chapter 4.3.3 TDMA frame number */
-	return (51 * ((time->t3 - time->t2 + 26) % 26) + time->t3 + (26 * 51 * time->t1));
+	uint32_t fn;
+
+	/* See also:
+	 * 3GPP TS 44.018, section 10.5.2.38, 3GPP TS 45.002 section 4.3.3, and
+	 * 3GPP TS 48.058, section 9.3.8 */
+	fn = 51 * OSMO_MOD_FLR((time->t3-time->t2), 26) + time->t3 + 51 * 26 * time->t1;
+
+	/* Note: Corrupted input values may cause a resulting frame number
+	 * larger then the maximum permitted value of GSM_MAX_FN. Even though
+	 * the caller is expected to check the input values beforehand we must
+	 * make sure that the result cannot exceed the value range of a valid
+	 * GSM frame number. */
+	return fn % GSM_MAX_FN;
 }
 
 char *osmo_dump_gsmtime_buf(char *buf, size_t buf_len, const struct gsm_time *tm)
