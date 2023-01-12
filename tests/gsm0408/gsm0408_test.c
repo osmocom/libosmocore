@@ -1760,6 +1760,27 @@ static void test_rach_tx_integer_raw2val(void)
 	}
 }
 
+static void test_gsm_gsmtime2fn(void)
+{
+	struct gsm_time gsm_time;
+	uint32_t fn;
+	uint32_t fn_recovered;
+
+	for (fn = 0; fn < 42432; fn++) {
+		gsm_time.t1 = (fn / 1326) % 32;
+		gsm_time.t2 = fn % 26;
+		gsm_time.t3 = fn % 51;
+
+		fn_recovered = gsm_gsmtime2fn(&gsm_time);
+
+		if (fn_recovered != fn) {
+			printf(" Wrong frame number computed! t1=%d, t2=%d, t3=%d ==> fn=%d, expected fn=%d\n",
+			       gsm_time.t1, gsm_time.t2, gsm_time.t3, fn_recovered, fn);
+			OSMO_ASSERT(false);
+		}
+	}
+}
+
 int main(int argc, char **argv)
 {
 	test_bearer_cap();
@@ -1779,6 +1800,7 @@ int main(int argc, char **argv)
 	test_range_encoding();
 	test_power_ctrl();
 	test_rach_tx_integer_raw2val();
+	test_gsm_gsmtime2fn();
 
 	return EXIT_SUCCESS;
 }
