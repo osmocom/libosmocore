@@ -1291,6 +1291,63 @@ void osmo_sockaddr_set_port(struct sockaddr *sa, uint16_t port)
 	}
 }
 
+static unsigned int in6_addr_netmask_to_prefixlen(const struct in6_addr *netmask)
+{
+	#if defined(__linux__)
+		#define ADDRFIELD(i) s6_addr32[i]
+	#else
+		#define ADDRFIELD(i) __u6_addr.__u6_addr32[i]
+	#endif
+
+	unsigned int i, j, prefix = 0;
+
+	for (j = 0; j < 4; j++) {
+		uint32_t bits = netmask->ADDRFIELD(j);
+		uint8_t *b = (uint8_t *)&bits;
+		for (i = 0; i < 4; i++) {
+			while (b[i] & 0x80) {
+				prefix++;
+				b[i] = b[i] << 1;
+			}
+		}
+	}
+
+	#undef ADDRFIELD
+
+	return prefix;
+}
+
+static unsigned int in_addr_netmask_to_prefixlen(const struct in_addr *netmask)
+{
+	uint32_t bits = netmask->s_addr;
+	uint8_t *b = (uint8_t *)&bits;
+	unsigned int i, prefix = 0;
+
+	for (i = 0; i < 4; i++) {
+		while (b[i] & 0x80) {
+			prefix++;
+			b[i] = b[i] << 1;
+		}
+	}
+	return prefix;
+}
+
+/*! Convert netmask to prefix length representation
+ *  \param[in] netmask sockaddr containing a netmask (consecutive list of 1-bit followed by consecutive list of 0-bit)
+ *  \returns prefix length representation of the netmask (count of 1-bit from the start of the netmask), negative on error.
+ */
+int osmo_sockaddr_netmask_to_prefixlen(const struct osmo_sockaddr *netmask)
+{
+	switch (netmask->u.sa.sa_family) {
+	case AF_INET6:
+		return in6_addr_netmask_to_prefixlen(&netmask->u.sin6.sin6_addr);
+	case AF_INET:
+		return in_addr_netmask_to_prefixlen(&netmask->u.sin.sin_addr);
+	default:
+		return -ENOTSUP;
+	}
+}
+
 /*! Initialize a unix domain socket (including bind/connect)
  *  \param[in] type Socket type like SOCK_DGRAM, SOCK_STREAM
  *  \param[in] proto Protocol like IPPROTO_TCP, IPPROTO_UDP

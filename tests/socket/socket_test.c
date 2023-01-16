@@ -385,6 +385,63 @@ static void test_osa_str(void)
 	OSMO_ASSERT(!strncmp("[2003:1234:5678:90ab:cdef:1234:4321:4321]:23420", result, sizeof(buf)));
 }
 
+static void test_osa_netmask_prefixlen(void)
+{
+	struct osmo_sockaddr ipv4;
+	struct osmo_sockaddr ipv6;
+	int rc;
+
+	ipv4.u.sin = (struct sockaddr_in){
+		.sin_family = AF_INET,
+	};
+
+	ipv4.u.sin.sin_addr.s_addr = inet_addr("0.0.0.0");
+	rc = osmo_sockaddr_netmask_to_prefixlen(&ipv4);
+	OSMO_ASSERT(rc == 0);
+
+	ipv4.u.sin.sin_addr.s_addr = inet_addr("255.0.0.0");
+	rc = osmo_sockaddr_netmask_to_prefixlen(&ipv4);
+	OSMO_ASSERT(rc == 8);
+
+	ipv4.u.sin.sin_addr.s_addr = inet_addr("255.255.0.0");
+	rc = osmo_sockaddr_netmask_to_prefixlen(&ipv4);
+	OSMO_ASSERT(rc == 16);
+
+	ipv4.u.sin.sin_addr.s_addr = inet_addr("255.255.255.0");
+	rc = osmo_sockaddr_netmask_to_prefixlen(&ipv4);
+	OSMO_ASSERT(rc == 24);
+
+	ipv4.u.sin.sin_addr.s_addr = inet_addr("255.255.255.255");
+	rc = osmo_sockaddr_netmask_to_prefixlen(&ipv4);
+	OSMO_ASSERT(rc == 32);
+
+	ipv4.u.sin.sin_addr.s_addr = inet_addr("0.255.0.0");
+	rc = osmo_sockaddr_netmask_to_prefixlen(&ipv4);
+	/* FIXME: This shows the implementation is not that robust checking validity of input netmask: */
+	OSMO_ASSERT(rc == 8);
+
+	ipv6.u.sin6 = (struct sockaddr_in6){
+		.sin6_family = AF_INET6,
+	};
+
+	inet_pton(AF_INET6, "fe::", &ipv6.u.sin6.sin6_addr);
+	rc = osmo_sockaddr_netmask_to_prefixlen(&ipv6);
+	OSMO_ASSERT(rc == 7);
+
+	inet_pton(AF_INET6, "ff::", &ipv6.u.sin6.sin6_addr);
+	rc = osmo_sockaddr_netmask_to_prefixlen(&ipv6);
+	OSMO_ASSERT(rc == 8);
+
+	inet_pton(AF_INET6, "ff:ff::", &ipv6.u.sin6.sin6_addr);
+	rc = osmo_sockaddr_netmask_to_prefixlen(&ipv6);
+	OSMO_ASSERT(rc == 16);
+
+	inet_pton(AF_INET6, "ff:ff::ff", &ipv6.u.sin6.sin6_addr);
+	rc = osmo_sockaddr_netmask_to_prefixlen(&ipv6);
+	/* FIXME: This shows the implementation is not that robust checking validity of input netmask: */
+	OSMO_ASSERT(rc == 24);
+}
+
 const struct log_info_cat default_categories[] = {
 };
 
@@ -407,6 +464,7 @@ int main(int argc, char *argv[])
 	test_get_ip_and_port();
 	test_sockinit_osa();
 	test_osa_str();
+	test_osa_netmask_prefixlen();
 
 	return EXIT_SUCCESS;
 }

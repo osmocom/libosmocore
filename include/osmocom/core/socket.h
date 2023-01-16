@@ -50,6 +50,8 @@ int osmo_sockaddr_cmp(const struct osmo_sockaddr *a,
 int osmo_sockaddr_to_octets(uint8_t *dst, size_t dst_maxlen, const struct osmo_sockaddr *os);
 int osmo_sockaddr_from_octets(struct osmo_sockaddr *os, const void *src, size_t src_len);
 
+int osmo_sockaddr_netmask_to_prefixlen(const struct osmo_sockaddr *addr);
+
 const char *osmo_sockaddr_to_str(const struct osmo_sockaddr *sockaddr);
 char *osmo_sockaddr_to_str_buf(char *buf, size_t buf_len,
 			       const struct osmo_sockaddr *sockaddr);
