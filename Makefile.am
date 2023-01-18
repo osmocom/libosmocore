@@ -1,6 +1,6 @@
 ACLOCAL_AMFLAGS = -I m4
 
-AM_CPPFLAGS = $(all_includes) -I$(top_srcdir)/include
+AM_CPPFLAGS = -I$(top_srcdir)/include
 SUBDIRS = \
 	include \
 	src \

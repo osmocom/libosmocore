@@ -3,7 +3,7 @@
 # before making any modifications: https://www.gnu.org/software/libtool/manual/html_node/Versioning.html
 LIBVERSION=3:1:1
 
-AM_CPPFLAGS = $(all_includes) -I$(top_srcdir)/include -I$(top_builddir)/include
+AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include
 AM_CFLAGS = -fPIC -Wall $(TALLOC_CFLAGS)
 AM_LDFLAGS = $(COVERAGE_LDFLAGS)
 
