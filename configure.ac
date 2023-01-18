@@ -585,6 +585,19 @@ AC_OUTPUT(
 	libosmosim.pc
 	libosmousb.pc
 	include/Makefile
+	include/osmocom/Makefile
+	include/osmocom/codec/Makefile
+	include/osmocom/coding/Makefile
+	include/osmocom/core/Makefile
+	include/osmocom/crypt/Makefile
+	include/osmocom/ctrl/Makefile
+	include/osmocom/gprs/Makefile
+	include/osmocom/gprs/protocol/Makefile
+	include/osmocom/gsm/Makefile
+	include/osmocom/gsm/protocol/Makefile
+	include/osmocom/sim/Makefile
+	include/osmocom/usb/Makefile
+	include/osmocom/vty/Makefile
 	src/Makefile
 	src/core/Makefile
 	src/vty/Makefile
