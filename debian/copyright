@@ -13,23 +13,23 @@ License: GPL-2+
 
 Files: include/osmocom/core/loggingrb.h
        include/osmocom/core/strrb.h
-       src/strrb.c
-       src/loggingrb.c
+       src/core/strrb.c
+       src/core/loggingrb.c
 Copyright: 2012-2013 Katerina Barone-Adesi <kat.obsc@gmail.com>
 License: GPL-2+
 
 Files: include/osmocom/core/linuxrbtree.h
-       src/rbtree.c
+       src/core/rbtree.c
 Copyright: 1999 Andrea Arcangeli <andrea@suse.de>
            2002 David Woodhouse <dwmw2@infradead.org>
 License: GPL-2+
 
 Files: include/osmocom/core/crc16.h
-       src/crc16.c
+       src/core/crc16.c
 Copyright: 2005 Ben Gardner <bgardner@wabtec.com>
 License: GPL-2
 
-Files: src/utils.c
+Files: src/core/utils.c
 Copyright: 2011 Harald Welte <laforge@gnumonks.org>
            2011 Sylvain Munaut <tnt@246tNt.com>
            2014 Nils O. Selåsdal <noselasd@fiane.dyndns.org>
@@ -100,8 +100,8 @@ Copyright: 1997,1998 Kunihiro Ishiguro
 License: GPL-2+
 
 Files: include/osmocom/core/stats.h
-       src/stat_item.c
-       src/stats.c
+       src/core/stat_item.c
+       src/core/stats.c
        src/vty/stats_vty.c
        tests/stats/stats_test.c
 Copyright: 2009-2010 by Harald Welte <laforge@gnumonks.org>

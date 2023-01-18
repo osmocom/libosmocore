@@ -20,7 +20,7 @@ libosmosim_la_LDFLAGS = \
 	-no-undefined \
 	$(NULL)
 libosmosim_la_LIBADD = \
-	$(top_builddir)/src/libosmocore.la \
+	$(top_builddir)/src/core/libosmocore.la \
 	$(top_builddir)/src/gsm/libosmogsm.la \
 	$(TALLOC_LIBS)
 if ENABLE_PCSC

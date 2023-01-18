@@ -21,7 +21,7 @@ libosmogb_la_LDFLAGS = \
 		-no-undefined \
 		$(NULL)
 libosmogb_la_LIBADD = $(TALLOC_LIBS) \
-		$(top_builddir)/src/libosmocore.la \
+		$(top_builddir)/src/core/libosmocore.la \
 		$(top_builddir)/src/vty/libosmovty.la \
 		$(top_builddir)/src/gsm/libosmogsm.la
 

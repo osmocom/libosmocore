@@ -14,5 +14,5 @@ libosmovty_la_SOURCES = buffer.c command.c vty.c vector.c utils.c \
 			fsm_vty.c talloc_ctx_vty.c \
 			cpu_sched_vty.c tdef_vty.c
 libosmovty_la_LDFLAGS = -version-info $(LIBVERSION) -no-undefined
-libosmovty_la_LIBADD = $(top_builddir)/src/libosmocore.la $(TALLOC_LIBS) $(PTHREAD_LIBS)
+libosmovty_la_LIBADD = $(top_builddir)/src/core/libosmocore.la $(TALLOC_LIBS) $(PTHREAD_LIBS)
 endif

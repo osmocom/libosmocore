@@ -27,9 +27,11 @@ libosmocoding_la_LDFLAGS = \
 	$(LIBVERSION) \
 	-no-undefined \
 	$(TALLOC_LIBS)
+
 libosmocoding_la_LIBADD = \
-	../libosmocore.la \
-	../gsm/libosmogsm.la \
-	../codec/libosmocodec.la
+	$(top_builddir)/src/core/libosmocore.la \
+	$(top_builddir)/src/gsm/libosmogsm.la \
+	$(top_builddir)/src/codec/libosmocodec.la \
+	$(NULL)
 
 EXTRA_DIST = libosmocoding.map

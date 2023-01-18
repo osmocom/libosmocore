@@ -586,6 +586,7 @@ AC_OUTPUT(
 	libosmousb.pc
 	include/Makefile
 	src/Makefile
+	src/core/Makefile
 	src/vty/Makefile
 	src/codec/Makefile
 	src/coding/Makefile

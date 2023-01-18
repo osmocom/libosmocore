@@ -36,7 +36,7 @@ libgsmint_la_SOURCES =  a5.c rxlev_stat.c tlv_parser.c comp128.c comp128v23.c \
 			gad.c bsslap.c bssmap_le.c kdf.c iuup.c
 
 libgsmint_la_LDFLAGS = -no-undefined
-libgsmint_la_LIBADD = $(top_builddir)/src/libosmocore.la
+libgsmint_la_LIBADD = $(top_builddir)/src/core/libosmocore.la
 
 libosmogsm_la_SOURCES =
 libosmogsm_la_LDFLAGS = $(LTLDFLAGS_OSMOGSM) -version-info $(LIBVERSION) -no-undefined

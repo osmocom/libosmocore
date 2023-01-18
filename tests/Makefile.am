@@ -1,7 +1,7 @@
 AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include
 AM_CFLAGS = -Wall $(TALLOC_CFLAGS) $(PTHREAD_CFLAGS)
 AM_LDFLAGS = -no-install
-LDADD = $(top_builddir)/src/libosmocore.la $(TALLOC_LIBS) $(PTHREAD_LIBS)
+LDADD = $(top_builddir)/src/core/libosmocore.la $(TALLOC_LIBS) $(PTHREAD_LIBS)
 
 if ENABLE_SERCOM_STUB
 noinst_LIBRARIES = libsercomstub.a
@@ -93,7 +93,7 @@ utils_utils_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 
 stats_stats_test_SOURCES = stats/stats_test.c
 stats_stats_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
-stats_stats_test_CPPFLAGS = $(AM_CPPFLAGS) -I$(top_srcdir)/src
+stats_stats_test_CPPFLAGS = $(AM_CPPFLAGS) -I$(top_srcdir)/src/core
 
 stats_stats_vty_test_SOURCES = stats/stats_vty_test.c
 stats_stats_vty_test_LDADD = $(LDADD) $(top_builddir)/src/vty/libosmovty.la
@@ -209,7 +209,7 @@ gb_gprs_ns2_test_SOURCES = gb/gprs_ns2_test.c
 gb_gprs_ns2_test_LDADD = $(LDADD) $(LIBRARY_DLSYM) \
 			$(top_builddir)/src/vty/libosmovty.la \
 			$(top_builddir)/src/gsm/libosmogsm.la \
-			$(top_builddir)/src/libosmocore.la \
+			$(top_builddir)/src/core/libosmocore.la \
 			$(top_builddir)/src/gb/libosmogb-test.la
 if ENABLE_LIBMNL
 gb_gprs_ns2_test_LDADD += $(LIBMNL_LIBS)

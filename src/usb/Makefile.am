@@ -17,7 +17,7 @@ libosmousb_la_LDFLAGS = \
 	-no-undefined \
 	$(NULL)
 libosmousb_la_LIBADD = \
-	$(top_builddir)/src/libosmocore.la \
+	$(top_builddir)/src/core/libosmocore.la \
 	$(TALLOC_LIBS) \
 	$(LIBUSB_LIBS)
 
