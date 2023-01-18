@@ -19,7 +19,7 @@
  *
  */
 
-#include "../config.h"
+#include "config.h"
 
 #include <osmocom/core/gsmtap_util.h>
 #include <osmocom/core/logging.h>

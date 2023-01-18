@@ -1,4 +1,4 @@
-AM_CPPFLAGS = -I. -I$(top_srcdir)/include -I$(top_builddir)/include
+AM_CPPFLAGS = -I. -I$(top_srcdir)/include -I$(top_builddir)/include -I$(top_builddir)
 AM_CFLAGS = -Wall
 
 if ENABLE_PSEUDOTALLOC

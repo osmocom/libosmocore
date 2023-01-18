@@ -21,7 +21,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../../config.h"
+#include "config.h"
 
 #include <osmocom/vty/command.h>
 #include <osmocom/vty/buffer.h>

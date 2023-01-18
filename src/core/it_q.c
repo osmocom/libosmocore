@@ -32,7 +32,7 @@
  * and call a queue-specific callback function.
  */
 
-#include "../config.h"
+#include "config.h"
 
 #ifdef HAVE_SYS_EVENTFD_H
 

@@ -36,7 +36,7 @@
 #include <osmocom/core/stat_item.h>
 #include <osmocom/core/stats_tcp.h>
 
-#include "../config.h"
+#include "config.h"
 
 #if defined(HAVE_SYS_SELECT_H) && defined(HAVE_POLL_H)
 #include <sys/select.h>

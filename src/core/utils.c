@@ -459,7 +459,7 @@ char *osmo_osmo_hexdump_nospc(const unsigned char *buf, int len)
 	__attribute__((weak, alias("osmo_hexdump_nospc")));
 #endif
 
-#include "../config.h"
+#include "config.h"
 #ifdef HAVE_CTYPE_H
 #include <ctype.h>
 /*! Convert an entire string to lower case

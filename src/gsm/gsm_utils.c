@@ -92,7 +92,7 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "../../config.h"
+#include "config.h"
 
 #if (!EMBEDDED)
 /* FIXME: this can be removed once we bump glibc requirements to 2.25: */

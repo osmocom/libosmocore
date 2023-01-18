@@ -27,7 +27,7 @@
  *  @{
  * \file logging_gsmtap.c */
 
-#include "../config.h"
+#include "config.h"
 
 #include <stdarg.h>
 #include <stdlib.h>

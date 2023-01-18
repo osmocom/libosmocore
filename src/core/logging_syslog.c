@@ -22,7 +22,7 @@
  *  @{
  * \file logging_syslog.c */
 
-#include "../config.h"
+#include "config.h"
 
 #ifdef HAVE_SYSLOG_H
 

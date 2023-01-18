@@ -32,7 +32,7 @@
 #include <osmocom/core/logging.h>
 #include <osmocom/core/bits.h>
 
-#include "../config.h"
+#include "config.h"
 
 void *ctx = NULL;
 

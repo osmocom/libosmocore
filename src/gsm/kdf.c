@@ -22,7 +22,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "../../config.h"
+#include "config.h"
 #if (USE_GNUTLS)
 #include <gnutls/gnutls.h>
 #include <gnutls/crypto.h>

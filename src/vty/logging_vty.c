@@ -20,7 +20,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../../config.h"
+#include "config.h"
 
 #include <osmocom/core/talloc.h>
 #include <osmocom/core/logging.h>

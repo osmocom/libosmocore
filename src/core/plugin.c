@@ -23,7 +23,7 @@
  *  @{
  * \file plugin.c */
 
-#include "../config.h"
+#include "config.h"
 
 #if HAVE_DLFCN_H
 

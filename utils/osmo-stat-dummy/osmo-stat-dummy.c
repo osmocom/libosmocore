@@ -36,7 +36,7 @@
 #include <osmocom/vty/stats.h>
 #include <osmocom/vty/misc.h>
 
-#include "../../config.h"
+#include "config.h"
 
 void *tall_statdummy_ctx  = NULL;
 static bool quit = false;

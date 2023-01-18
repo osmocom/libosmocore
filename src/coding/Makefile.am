@@ -5,7 +5,9 @@ LIBVERSION=2:0:2
 
 AM_CPPFLAGS = \
 	-I"$(top_srcdir)/include" \
-	-I"$(top_builddir)/include"
+	-I"$(top_builddir)/include" \
+	-I"$(top_builddir)" \
+	$(NULL)
 AM_CFLAGS = -Wall $(TALLOC_CFLAGS)
 
 if ENABLE_PSEUDOTALLOC
