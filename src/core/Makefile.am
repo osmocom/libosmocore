@@ -12,29 +12,68 @@ endif
 
 lib_LTLIBRARIES = libosmocore.la
 
-libosmocore_la_LIBADD = $(BACKTRACE_LIB) $(TALLOC_LIBS) $(LIBRARY_RT) $(PTHREAD_LIBS) $(LIBSCTP_LIBS)
-libosmocore_la_SOURCES = context.c timer.c timer_gettimeofday.c timer_clockgettime.c \
-			 select.c signal.c msgb.c bits.c \
-			 bitvec.c bitcomp.c counter.c fsm.c \
-			 write_queue.c utils.c socket.c \
-			 logging.c logging_syslog.c logging_gsmtap.c rate_ctr.c \
-			 gsmtap_util.c crc16.c panic.c backtrace.c \
-			 conv.c application.c rbtree.c strrb.c \
-			 loggingrb.c crc8gen.c crc16gen.c crc32gen.c crc64gen.c \
-			 macaddr.c stat_item.c stats.c stats_statsd.c prim.c \
-			 stats_tcp.c \
-			 conv_acc.c conv_acc_generic.c sercomm.c prbs.c \
-			 isdnhdlc.c \
-			 tdef.c \
-			 thread.c \
-			 time_cc.c \
-			 sockaddr_str.c \
-			 use_count.c \
-			 exec.c \
-			 it_q.c \
-			 probes.d \
-			 base64.c \
-			 $(NULL)
+libosmocore_la_LIBADD = \
+	$(BACKTRACE_LIB) \
+	$(TALLOC_LIBS) \
+	$(LIBRARY_RT) \
+	$(PTHREAD_LIBS) \
+	$(LIBSCTP_LIBS) \
+	$(NULL)
+
+libosmocore_la_SOURCES = \
+	application.c \
+	backtrace.c \
+	base64.c \
+	bits.c \
+	bitvec.c \
+	bitcomp.c \
+	context.c \
+	conv.c \
+	conv_acc.c \
+	conv_acc_generic.c \
+	counter.c \
+	crc16.c \
+	crc8gen.c \
+	crc16gen.c \
+	crc32gen.c \
+	crc64gen.c \
+	exec.c \
+	fsm.c \
+	gsmtap_util.c \
+	isdnhdlc.c \
+	it_q.c \
+	logging.c \
+	logging_syslog.c \
+	logging_gsmtap.c \
+	loggingrb.c \
+	macaddr.c \
+	msgb.c \
+	panic.c \
+	prbs.c \
+	prim.c \
+	rate_ctr.c \
+	rbtree.c \
+	select.c \
+	sercomm.c \
+	signal.c \
+	sockaddr_str.c \
+	socket.c \
+	stat_item.c \
+	stats.c \
+	stats_statsd.c \
+	stats_tcp.c \
+	strrb.c \
+	tdef.c \
+	thread.c \
+	time_cc.c \
+	timer.c \
+	timer_gettimeofday.c \
+	timer_clockgettime.c \
+	use_count.c \
+	utils.c \
+	write_queue.c \
+	probes.d \
+	$(NULL)
 
 if HAVE_SSSE3
 libosmocore_la_SOURCES += conv_acc_sse.c
