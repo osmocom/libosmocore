@@ -35,6 +35,7 @@ osmocore_HEADERS = \
 	stats.h \
 	macaddr.h \
 	msgb.h \
+	netns.h \
 	panic.h \
 	prbs.h \
 	prim.h \
