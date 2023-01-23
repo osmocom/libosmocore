@@ -44,6 +44,8 @@ const struct value_string osmo_bts_features_descs[] = {
 	{ BTS_FEAT_DYN_TS_SDCCH8,	"Dynamic Timeslot configuration as SDCCH8" },
 	{ BTS_FEAT_ACCH_TEMP_OVP,	"FACCH/SACCH Temporary overpower" },
 	{ BTS_FEAT_OSMUX,		"Osmux (Osmocom RTP multiplexing)" },
+	{ BTS_FEAT_VBS,			"Voice Broadcast Service" },
+	{ BTS_FEAT_VGCS,		"Voice Group Call Service" },
 	{ 0, NULL }
 };
 
