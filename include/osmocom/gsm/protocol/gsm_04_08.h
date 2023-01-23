@@ -1540,6 +1540,21 @@ void gsm48_set_dtx(struct gsm48_cell_options *op, enum gsm48_dtx_mode full,
 
 #define GSM48_MT_RR_APP_INFO		0x38
 
+/* 3GPP TS 44.018 Table 10.4.2 */
+#define GSM48_MT_RR_SH_SI10		0x0
+#define GSM48_MT_RR_SH_FACCH		0x1
+#define GSM48_MT_RR_SH_UL_FREE		0x2
+#define GSM48_MT_RR_SH_MEAS_REP		0x4
+#define GSM48_MT_RR_SH_MEAS_INFO	0x5
+#define GSM48_MT_RR_SH_VGCS_RECON	0x6
+#define GSM48_MT_RR_SH_VGCS_RECON2	0x7
+#define GSM48_MT_RR_SH_VGCS_INFO	0x8
+#define GSM48_MT_RR_SH_VGCS_SMS		0x9
+#define GSM48_MT_RR_SH_SI10bis		0xA
+#define GSM48_MT_RR_SH_SI10ter		0xB
+#define GSM48_MT_RR_SH_VGCS_NEIGH	0xC
+#define GSM48_MT_RR_SH_APP_DATA		0xD
+
 /* Table 10.2/3GPP TS 04.08 */
 #define GSM48_MT_MM_IMSI_DETACH_IND	0x01
 #define GSM48_MT_MM_LOC_UPD_ACCEPT	0x02

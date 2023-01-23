@@ -419,6 +419,29 @@ const char *gsm48_rr_msg_name(uint8_t msgtype)
 	return get_value_string(rr_msg_names, msgtype);
 }
 
+/* 3GPP TS 44.018 Table 10.4.2 */
+static const struct value_string rr_msg_type_short_names[] = {
+	{ GSM48_MT_RR_SH_SI10,		"System Information Type 10" },
+	{ GSM48_MT_RR_SH_FACCH,		"Notification/FACCH" },
+	{ GSM48_MT_RR_SH_UL_FREE,	"Uplink Free" },
+	{ GSM48_MT_RR_SH_MEAS_REP,	"Enhanced Measurement Report (uplink)" },
+	{ GSM48_MT_RR_SH_MEAS_INFO,	"Measurement Information (downlink)" },
+	{ GSM48_MT_RR_SH_VGCS_RECON,	"VBS/VGCS Reconfigure" },
+	{ GSM48_MT_RR_SH_VGCS_RECON2,	"VBS/VGCS Reconfigure2" },
+	{ GSM48_MT_RR_SH_VGCS_INFO,	"VGCS Additional Information" },
+	{ GSM48_MT_RR_SH_VGCS_SMS,	"VGCS SMS Information" },
+	{ GSM48_MT_RR_SH_SI10bis,	"System Information Type 10bis" },
+	{ GSM48_MT_RR_SH_SI10ter,	"System Information Type 10ter" },
+	{ GSM48_MT_RR_SH_VGCS_NEIGH,	"VGCS Neighbour Cell Information" },
+	{ GSM48_MT_RR_SH_APP_DATA,	"Notify Application Data" },
+	{ 0,				NULL }
+};
+
+/*! return string representation of RR Message Type using the RR short protocol discriminator */
+const char *gsm48_rr_msg_type_short_name(uint8_t msgtype)
+{
+	return get_value_string(rr_msg_type_short_names, msgtype);
+}
 
 const struct value_string gsm48_chan_mode_names[] = {
 	{ GSM48_CMODE_SIGN,		"SIGNALLING" },
