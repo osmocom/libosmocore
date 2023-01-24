@@ -55,6 +55,7 @@ osmocore_HEADERS = \
 	thread.h \
 	timer.h \
 	timer_compat.h \
+	tun.h \
 	utils.h \
 	write_queue.h \
 	sockaddr_str.h \

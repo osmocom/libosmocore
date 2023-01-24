@@ -11,3 +11,4 @@ libosmocore new API osmo_sockaddr_is_any(), osmo_sockaddr_netmask_to_prefixlen()
 libosmocore	ABI breakage		OSMO_NUM_DLIB change affecting internal_cat[]
 libosmocore new API osmo_netns_*()
 libosmocore new API osmo_netdev_*()
+libosmocore new API osmo_tundev_*()

@@ -71,6 +71,7 @@ libosmocore_la_SOURCES = \
 	timer.c \
 	timer_gettimeofday.c \
 	timer_clockgettime.c \
+	tun.c \
 	use_count.c \
 	utils.c \
 	write_queue.c \
