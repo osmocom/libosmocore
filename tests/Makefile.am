@@ -211,9 +211,6 @@ gb_gprs_ns2_test_LDADD = $(LDADD) $(LIBRARY_DLSYM) \
 			$(top_builddir)/src/gsm/libosmogsm.la \
 			$(top_builddir)/src/core/libosmocore.la \
 			$(top_builddir)/src/gb/libosmogb-test.la
-if ENABLE_LIBMNL
-gb_gprs_ns2_test_LDADD += $(LIBMNL_LIBS)
-endif
 
 logging_logging_test_SOURCES = logging/logging_test.c
 

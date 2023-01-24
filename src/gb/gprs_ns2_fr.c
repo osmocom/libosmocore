@@ -55,12 +55,9 @@
 #include <osmocom/core/timer.h>
 #include <osmocom/core/talloc.h>
 #include <osmocom/gprs/gprs_ns2.h>
+#include <osmocom/core/netdev.h>
 #include <osmocom/gprs/protocol/gsm_08_16.h>
 #include <osmocom/gprs/protocol/gsm_08_18.h>
-
-#ifdef ENABLE_LIBMNL
-#include <osmocom/core/mnl.h>
-#endif
 
 #include "config.h"
 #include "common_vty.h"
@@ -92,6 +89,7 @@ struct gprs_ns2_vc_driver vc_driver_fr = {
 };
 
 struct priv_bind {
+	struct osmo_netdev *netdev;
 	char netif[IFNAMSIZ];
 	struct osmo_fr_link *link;
 	int ifindex;
@@ -172,6 +170,7 @@ static void free_bind(struct gprs_ns2_vc_bind *bind)
 	}
 	msgb_free(priv->backlog.lmi_msg);
 
+	osmo_netdev_free(priv->netdev);
 	osmo_fr_link_free(priv->link);
 	osmo_fd_close(&priv->backlog.ofd);
 	talloc_free(priv);
@@ -515,60 +514,14 @@ static int open_socket(int ifindex, const struct gprs_ns2_vc_bind *nsbind)
 	return fd;
 }
 
-#ifdef ENABLE_LIBMNL
-
-#include <osmocom/core/mnl.h>
-#include <linux/if_link.h>
-#include <linux/rtnetlink.h>
-
-#ifndef ARPHRD_FRAD
-#define ARPHRD_FRAD  770
-#endif
-
-/* validate the netlink attributes */
-static int data_attr_cb(const struct nlattr *attr, void *data)
+static int gprs_n2_fr_ifupdown_ind_cb(struct osmo_netdev *netdev, bool if_running)
 {
-	const struct nlattr **tb = data;
-	int type = mnl_attr_get_type(attr);
-
-	if (mnl_attr_type_valid(attr, IFLA_MAX) < 0)
-		return MNL_CB_OK;
-
-	switch (type) {
-	case IFLA_MTU:
-		if (mnl_attr_validate(attr, MNL_TYPE_U32) < 0)
-			return MNL_CB_ERROR;
-		break;
-	case IFLA_IFNAME:
-		if (mnl_attr_validate(attr, MNL_TYPE_STRING) < 0)
-			return MNL_CB_ERROR;
-		break;
-	}
-	tb[type] = attr;
-	return MNL_CB_OK;
-}
-
-/* find the bind for the netdev (if any) */
-static struct gprs_ns2_vc_bind *bind4netdev(struct gprs_ns2_inst *nsi, const char *ifname)
-{
-	struct gprs_ns2_vc_bind *bind;
-
-	llist_for_each_entry(bind, &nsi->binding, list) {
-		struct priv_bind *bpriv = bind->priv;
-		if (!strcmp(bpriv->netif, ifname))
-			return bind;
-	}
-
-	return NULL;
-}
-
-static void link_state_change(struct gprs_ns2_vc_bind *bind, bool if_running)
-{
+	struct gprs_ns2_vc_bind *bind = osmo_netdev_get_priv_data(netdev);
 	struct priv_bind *bpriv = bind->priv;
 	struct msgb *msg, *msg2;
 
 	if (bpriv->if_running == if_running)
-		return;
+		return 0;
 
 	LOGBIND(bind, LOGL_NOTICE, "FR net-device '%s': Physical link state changed: %s\n",
 		bpriv->netif, if_running ? "UP" : "DOWN");
@@ -589,92 +542,35 @@ static void link_state_change(struct gprs_ns2_vc_bind *bind, bool if_running)
 	}
 
 	bpriv->if_running = if_running;
+	return 0;
 }
 
-static void mtu_change(struct gprs_ns2_vc_bind *bind, uint32_t mtu)
+static int gprs_n2_fr_mtu_chg_cb(struct osmo_netdev *netdev, uint32_t new_mtu)
 {
+	struct gprs_ns2_vc_bind *bind = osmo_netdev_get_priv_data(netdev);
 	struct priv_bind *bpriv = bind->priv;
 	struct gprs_ns2_nse *nse;
 
 	/* 2 byte DLCI header */
-	if (mtu <= 2)
-		return;
-	mtu -= 2;
+	if (new_mtu <= 2)
+		return 0;
+	new_mtu -= 2;
 
-	if (mtu == bind->mtu)
-		return;
+	if (new_mtu == bind->mtu)
+		return 0;
 
 	LOGBIND(bind, LOGL_INFO, "MTU changed from %d to %d.\n",
-		bind->mtu + 2, mtu + 2);
+		bind->mtu + 2, new_mtu + 2);
 
-	bind->mtu = mtu;
+	bind->mtu = new_mtu;
 	if (!bpriv->if_running)
-		return;
+		return 0;
 
 	llist_for_each_entry(nse, &bind->nsi->nse, list) {
 		ns2_nse_update_mtu(nse);
 	}
+	return 0;
 }
-
-/* handle a single netlink message received via libmnl */
-static int linkmon_mnl_cb(const struct nlmsghdr *nlh, void *data)
-{
-	struct osmo_mnl *omnl = data;
-	struct gprs_ns2_vc_bind *bind;
-	struct nlattr *tb[IFLA_MAX+1] = {};
-	struct ifinfomsg *ifm = mnl_nlmsg_get_payload(nlh);
-	struct gprs_ns2_inst *nsi;
-	const char *ifname;
-	bool if_running;
-
-	OSMO_ASSERT(omnl);
-	OSMO_ASSERT(ifm);
-
-	nsi = omnl->priv;
-
-	if (ifm->ifi_type != ARPHRD_FRAD)
-		return MNL_CB_OK;
-
-	mnl_attr_parse(nlh, sizeof(*ifm), data_attr_cb, tb);
-
-	if (!tb[IFLA_IFNAME])
-		return MNL_CB_OK;
-	ifname = mnl_attr_get_str(tb[IFLA_IFNAME]);
-	if_running = !!(ifm->ifi_flags & IFF_RUNNING);
-
-	bind = bind4netdev(nsi, ifname);
-	if (!bind)
-		return MNL_CB_OK;
-
-	if (tb[IFLA_MTU]) {
-		mtu_change(bind, mnl_attr_get_u32(tb[IFLA_MTU]));
-	}
-
-	link_state_change(bind, if_running);
-
-	return MNL_CB_OK;
-}
-
-/* trigger one initial dump of all link information */
-static void linkmon_initial_dump(struct osmo_mnl *omnl)
-{
-	char buf[MNL_SOCKET_BUFFER_SIZE];
-	struct nlmsghdr *nlh = mnl_nlmsg_put_header(buf);
-	struct rtgenmsg *rt;
-
-	nlh->nlmsg_type = RTM_GETLINK;
-	nlh->nlmsg_flags = NLM_F_REQUEST | NLM_F_DUMP;
-	nlh->nlmsg_seq = time(NULL);
-	rt = mnl_nlmsg_put_extra_header(nlh, sizeof(struct rtgenmsg));
-	rt->rtgen_family = AF_PACKET;
-
-	if (mnl_socket_sendto(omnl->mnls, nlh, nlh->nlmsg_len) < 0) {
-		LOGP(DLNS, LOGL_ERROR, "linkmon: Cannot send rtnetlink message: %s\n", strerror(errno));
-	}
-
-	/* the response[s] will be handled just like the events */
-}
-#endif /* LIBMNL */
 
 static int set_ifupdown(const char *netif, bool up)
 {
@@ -854,32 +750,37 @@ int gprs_ns2_fr_bind(struct gprs_ns2_inst *nsi,
 		goto err_fr;
 	}
 
+	priv->netdev = osmo_netdev_alloc(bind, name);
+	if (!priv->netdev) {
+		rc = -ENOENT;
+		goto err_fr;
+	}
+	osmo_netdev_set_priv_data(priv->netdev, bind);
+	osmo_netdev_set_ifupdown_ind_cb(priv->netdev, gprs_n2_fr_ifupdown_ind_cb);
+	osmo_netdev_set_mtu_chg_cb(priv->netdev, gprs_n2_fr_mtu_chg_cb);
+	rc = osmo_netdev_set_ifindex(priv->netdev, priv->ifindex);
+	if (rc < 0)
+		goto err_free_netdev;
+	rc = osmo_netdev_register(priv->netdev);
+	if (rc < 0)
+		goto err_free_netdev;
+
 	/* set protocol frame relay and lmi */
 	rc = setup_device(priv->netif, bind);
 	if(rc < 0) {
 		LOGBIND(bind, LOGL_ERROR, "Failed to setup the interface %s for frame relay and lmi\n", netif);
-		goto err_fr;
+		goto err_free_netdev;
 	}
 
 	rc = open_socket(priv->ifindex, bind);
 	if (rc < 0)
-		goto err_fr;
+		goto err_free_netdev;
 	priv->backlog.retry_us = 2500; /* start with some non-zero value; this corrsponds to 496 bytes */
 	osmo_timer_setup(&priv->backlog.timer, fr_backlog_timer_cb, bind);
 	osmo_fd_setup(&priv->backlog.ofd, rc, OSMO_FD_READ, fr_netif_ofd_cb, bind, 0);
 	rc = osmo_fd_register(&priv->backlog.ofd);
 	if (rc < 0)
 		goto err_fd;
-
-#ifdef ENABLE_LIBMNL
-	if (!nsi->linkmon_mnl)
-		nsi->linkmon_mnl = osmo_mnl_init(nsi, NETLINK_ROUTE, RTMGRP_LINK, linkmon_mnl_cb, nsi);
-
-	/* we get a new full dump after every bind. which is a bit excessive. But that's just once
-	 * at start-up, so we can get away with it */
-	if (nsi->linkmon_mnl)
-		linkmon_initial_dump(nsi->linkmon_mnl);
-#endif
 
 	if (result)
 		*result = bind;
@@ -888,6 +789,9 @@ int gprs_ns2_fr_bind(struct gprs_ns2_inst *nsi,
 
 err_fd:
 	close(priv->backlog.ofd.fd);
+err_free_netdev:
+	osmo_netdev_free(priv->netdev);
+	priv->netdev = NULL;
 err_fr:
 	osmo_fr_link_free(fr_link);
 	priv->link = NULL;

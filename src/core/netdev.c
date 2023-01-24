@@ -470,6 +470,29 @@ static int netdev_netns_ctx_mnl_cb(const struct nlmsghdr *nlh, void *data)
 	return MNL_CB_OK;
 }
 
+/* Trigger an initial dump of the iface to get link information */
+static int netdev_mnl_request_initial_dump(struct osmo_mnl *omnl, unsigned int if_index)
+{
+	char buf[MNL_SOCKET_BUFFER_SIZE];
+	struct nlmsghdr *nlh = mnl_nlmsg_put_header(buf);
+	struct ifinfomsg *ifm;
+
+	nlh->nlmsg_type	= RTM_GETLINK;
+	nlh->nlmsg_flags = NLM_F_REQUEST | NLM_F_ACK;
+	nlh->nlmsg_seq = time(NULL);
+
+	ifm = mnl_nlmsg_put_extra_header(nlh, sizeof(*ifm));
+	ifm->ifi_family = AF_UNSPEC;
+	ifm->ifi_index = if_index;
+
+	if (mnl_socket_sendto(omnl->mnls, nlh, nlh->nlmsg_len) < 0) {
+		LOGP(DLGLOBAL, LOGL_ERROR, "mnl_socket_sendto\n");
+		return -EIO;
+	}
+
+	return 0;
+}
+
 static int netdev_mnl_set_ifupdown(struct osmo_mnl *omnl, unsigned int if_index,
 				   const char *dev_name, bool up)
 {
@@ -668,6 +691,10 @@ int osmo_netdev_register(struct osmo_netdev *netdev)
 		goto err_put_exit;
 	}
 	osmo_talloc_replace_string(netdev, &netdev->dev_name, ifnamebuf);
+
+#if ENABLE_LIBMNL
+	rc = netdev_mnl_request_initial_dump(netdev->netns_ctx->omnl, netdev->ifindex);
+#endif
 
 	NETDEV_NETNS_EXIT(netdev, &switch_state, "register");
 
