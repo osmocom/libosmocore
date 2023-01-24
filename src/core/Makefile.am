@@ -48,6 +48,7 @@ libosmocore_la_SOURCES = \
 	loggingrb.c \
 	macaddr.c \
 	msgb.c \
+	netdev.c \
 	netns.c \
 	panic.c \
 	prbs.c \
