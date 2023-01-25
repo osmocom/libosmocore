@@ -233,7 +233,7 @@ AC_ARG_ENABLE([libmnl],
 	)],
 	[mnl=$enableval], [mnl="yes"])
 AS_IF([test "x$mnl" = "xyes"], [
-	PKG_CHECK_MODULES(LIBMNL, libmnl)
+	PKG_CHECK_MODULES(LIBMNL, libmnl, [AC_SUBST(LIBMNL_PC, [libmnl])])
 	AC_DEFINE([ENABLE_LIBMNL], [1], [Enable netlink socket support via libmnl])
 ])
 AM_CONDITIONAL(ENABLE_LIBMNL, test "x$mnl" = "xyes")

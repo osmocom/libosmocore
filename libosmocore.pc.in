@@ -6,7 +6,7 @@ includedir=@includedir@
 Name: Osmocom Core Library
 Description: C Utility Library
 Version: @VERSION@
-Requires: talloc
+Requires: talloc @LIBMNL_PC@
 Requires.private: @LIBSCTP_PC@
 Libs: -L${libdir} -losmocore
 Libs.private: @PTHREAD_LIBS@ @LIBSCTP_LIBS@
