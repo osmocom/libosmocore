@@ -94,9 +94,12 @@
 #include <osmocom/core/linuxlist.h>
 #include <osmocom/core/logging.h>
 #include <osmocom/core/socket.h>
-#include <osmocom/core/mnl.h>
 #include <osmocom/core/netns.h>
 #include <osmocom/core/netdev.h>
+
+#if ENABLE_LIBMNL
+#include <osmocom/core/mnl.h>
+#endif
 
 #define IFINDEX_UNUSED 0
 
@@ -114,7 +117,9 @@ struct netdev_netns_ctx {
 	unsigned int refcount; /* Number of osmo_netdev currently registered on this netns */
 	const char *netns_name; /* default netns has empty string "" (never NULL!) */
 	int netns_fd; /* FD to the netns with name "netns_name" above */
+#if ENABLE_LIBMNL
 	struct osmo_mnl *omnl;
+#endif
 };
 
 static struct netdev_netns_ctx *netdev_netns_ctx_alloc(void *ctx, const char *netns_name)
@@ -141,10 +146,12 @@ static void netdev_netns_ctx_free(struct netdev_netns_ctx *netns_ctx)
 
 	llist_del(&netns_ctx->entry);
 
+#if ENABLE_LIBMNL
 	if (netns_ctx->omnl) {
 		osmo_mnl_destroy(netns_ctx->omnl);
 		netns_ctx->omnl = NULL;
 	}
+#endif
 
 	if (netns_ctx->netns_fd != -1) {
 		close(netns_ctx->netns_fd);
@@ -153,7 +160,9 @@ static void netdev_netns_ctx_free(struct netdev_netns_ctx *netns_ctx)
 	talloc_free(netns_ctx);
 }
 
+#if ENABLE_LIBMNL
 static int netdev_netns_ctx_mnl_cb(const struct nlmsghdr *nlh, void *data);
+#endif
 
 static int netdev_netns_ctx_init(struct netdev_netns_ctx *netns_ctx)
 {
@@ -179,8 +188,12 @@ static int netdev_netns_ctx_init(struct netdev_netns_ctx *netns_ctx)
 		}
 	}
 
+#if ENABLE_LIBMNL
 	netns_ctx->omnl = osmo_mnl_init(NULL, NETLINK_ROUTE, RTMGRP_LINK, netdev_netns_ctx_mnl_cb, netns_ctx);
 	rc = (netns_ctx->omnl ? 0 : -EFAULT);
+#else
+	rc = 0;
+#endif
 
 	/* switch back to default namespace */
 	if (netns_ctx->netns_name[0] != '\0') {
@@ -312,6 +325,7 @@ struct osmo_netdev {
 		} \
 	} while (0)
 
+#if ENABLE_LIBMNL
 /* validate the netlink attributes */
 static int netdev_mnl_data_attr_cb(const struct nlattr *attr, void *data)
 {
@@ -596,6 +610,7 @@ static int netdev_mnl_add_route(struct osmo_mnl *omnl,
 
 	return 0;
 }
+#endif /* if ENABLE_LIBMNL */
 
 /*! Allocate a new netdev object.
  *  \param[in] ctx talloc context to use as a parent when allocating the netdev object
@@ -833,8 +848,13 @@ int osmo_netdev_ifupdown(struct osmo_netdev *netdev, bool ifupdown)
 
 	NETDEV_NETNS_ENTER(netdev, &switch_state, "ifupdown");
 
+#if ENABLE_LIBMNL
 	rc = netdev_mnl_set_ifupdown(netdev->netns_ctx->omnl, netdev->ifindex,
 				     netdev->dev_name, ifupdown);
+#else
+	LOGNETDEV(netdev, LOGL_ERROR, "%s: NOT SUPPORTED. Build libosmocore with --enable-libmnl.\n", __func__);
+	rc = -ENOTSUP;
+#endif
 
 	NETDEV_NETNS_EXIT(netdev, &switch_state, "ifupdown");
 
@@ -861,7 +881,12 @@ int osmo_netdev_add_addr(struct osmo_netdev *netdev, const struct osmo_sockaddr 
 
 	NETDEV_NETNS_ENTER(netdev, &switch_state, "Add address");
 
+#if ENABLE_LIBMNL
 	rc = netdev_mnl_add_addr(netdev->netns_ctx->omnl, netdev->ifindex, addr, prefixlen);
+#else
+	LOGNETDEV(netdev, LOGL_ERROR, "%s: NOT SUPPORTED. Build libosmocore with --enable-libmnl.\n", __func__);
+	rc = -ENOTSUP;
+#endif
 
 	NETDEV_NETNS_EXIT(netdev, &switch_state, "Add address");
 
@@ -893,7 +918,12 @@ int osmo_netdev_add_route(struct osmo_netdev *netdev, const struct osmo_sockaddr
 
 	NETDEV_NETNS_ENTER(netdev, &switch_state, "Add route");
 
+#if ENABLE_LIBMNL
 	rc = netdev_mnl_add_route(netdev->netns_ctx->omnl, netdev->ifindex, dst_addr, dst_prefixlen, gw_addr);
+#else
+	LOGNETDEV(netdev, LOGL_ERROR, "%s: NOT SUPPORTED. Build libosmocore with --enable-libmnl.\n", __func__);
+	rc = -ENOTSUP;
+#endif
 
 	NETDEV_NETNS_EXIT(netdev, &switch_state, "Add route");
 
