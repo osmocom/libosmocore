@@ -33,6 +33,29 @@ struct osmo_sockaddr {
 int osmo_sockaddr_is_local(struct sockaddr *addr, unsigned int addrlen);
 int osmo_sockaddr_is_any(const struct osmo_sockaddr *addr);
 
+/*! Return the size of the variant used in the address
+ *  NOTE: This does not return the size of the in{,6}_addr, but rather the size of the
+ *  surrounding sockaddr_in{,6}.
+ *  \param[in] addr the osmo_sockaddr to get the size of
+ *  \return the size of the struct variant being used. If the value in sa_family is unsupported it will return
+ *  the size of struct osmo_sockaddr. Returns 0 if addr is NULL. This way it can simply be a wrapper for sendto()
+ *  which can be called with NULL/0 for dest_addr / addrlen (and then behaves like a send() call).
+ */
+static inline socklen_t osmo_sockaddr_size(const struct osmo_sockaddr *addr)
+{
+	if (!addr)
+		return 0;
+
+	switch (addr->u.sa.sa_family) {
+	case AF_INET:
+		return sizeof(struct sockaddr_in);
+	case AF_INET6:
+		return sizeof(struct sockaddr_in6);
+	default:
+		return sizeof(struct osmo_sockaddr);
+	}
+}
+
 unsigned int osmo_sockaddr_to_str_and_uint(char *addr, unsigned int addr_len, uint16_t *port,
 					   const struct sockaddr *sa);
 size_t osmo_sockaddr_in_to_str_and_uint(char *addr, unsigned int addr_len, uint16_t *port,
