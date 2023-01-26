@@ -46,7 +46,7 @@ osmo_static_assert(sizeof(struct gsm48_system_information_type_4) == 13, _si4_si
 /* bs11 forgot the l2 len, 0-6 rest octets */
 osmo_static_assert(sizeof(struct gsm48_system_information_type_5) == 18, _si5_size);
 osmo_static_assert(sizeof(struct gsm48_system_information_type_6) == 11, _si6_size);
-
+osmo_static_assert(sizeof(struct gsm48_system_information_type_10) == 1, _si10_size);
 osmo_static_assert(sizeof(struct gsm48_system_information_type_13) == 3, _si13_size);
 
 static const uint8_t sitype2rsl[_MAX_SYSINFO_TYPE] = {

@@ -1134,6 +1134,20 @@ struct gsm48_system_information_type_6 {
 #endif
 } __attribute__ ((packed));
 
+/* Section 9.1.50 System Information type 10 (ASCI) */
+struct gsm48_system_information_type_10 {
+#if OSMO_IS_LITTLE_ENDIAN
+	uint8_t rr_short_pd:1,	/* < RR short PD : bit > See 3GPP TS 24.007 §11.3.2 */
+		msg_type:5,	/* < message type : bit(5) > See 3GPP TS 44.018 Table 10.4.2 */
+		l2_header:2;	/* < short layer 2 header : bit(2) > See 3GPP TS 44.006 §6.4a */
+	uint8_t rest_octets[0];	/* < SI10 Rest Octets : bit(160) > See 3GPP TS 44.018 §10.5.2.44 */
+#elif OSMO_IS_BIG_ENDIAN
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+	uint8_t l2_header:2, msg_type:5, rr_short_pd:1;
+	uint8_t rest_octets[0];
+#endif
+} __attribute__ ((packed));
+
 /* Section 9.1.43a System Information type 13 */
 struct gsm48_system_information_type_13 {
 	struct gsm48_system_information_type_header header;
