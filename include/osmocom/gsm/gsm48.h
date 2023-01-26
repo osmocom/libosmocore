@@ -35,6 +35,7 @@ extern const struct tlv_definition gsm48_mm_att_tlvdef;
 const char *gsm48_cc_state_name(uint8_t state);
 const char *gsm48_cc_msg_name(uint8_t msgtype);
 const char *gsm48_rr_msg_name(uint8_t msgtype);
+const char *gsm48_rr_short_pd_msg_name(uint8_t msgtype);
 const char *rr_cause_name(uint8_t cause);
 const char *osmo_rai_name(const struct gprs_ra_id *rai);
 char *osmo_rai_name_buf(char *buf, size_t buf_len, const struct gprs_ra_id *rai);

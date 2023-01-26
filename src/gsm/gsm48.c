@@ -438,7 +438,7 @@ static const struct value_string rr_msg_type_short_names[] = {
 };
 
 /*! return string representation of RR Message Type using the RR short protocol discriminator */
-const char *gsm48_rr_msg_type_short_name(uint8_t msgtype)
+const char *gsm48_rr_short_pd_msg_name(uint8_t msgtype)
 {
 	return get_value_string(rr_msg_type_short_names, msgtype);
 }
