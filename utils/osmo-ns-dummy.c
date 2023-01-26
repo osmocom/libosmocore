@@ -272,8 +272,7 @@ int main (int argc, char *argv[])
 		fprintf(stderr, "No config file: '%s' Using default config.\n",
 			config_file);
 
-	rc = telnet_init_dynif(ctx, NULL, vty_get_bind_addr(),
-			       vty_port);
+	rc = telnet_init_default(ctx, NULL, vty_port);
 	if (rc < 0) {
 		fprintf(stderr, "Error initializing telnet\n");
 		exit(1);
