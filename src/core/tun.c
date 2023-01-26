@@ -407,7 +407,8 @@ err_close_tun:
 	close(tundev->wqueue.bfd.fd);
 	tundev->wqueue.bfd.fd = -1;
 err_restore_ns:
-	osmo_netns_switch_exit(&switch_state);
+	if (tundev->netns_name)
+		osmo_netns_switch_exit(&switch_state);
 err_close_netns_fd:
 	if (netns_fd >= 0)
 		close(netns_fd);
