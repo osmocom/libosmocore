@@ -88,7 +88,7 @@ doc/*.tag
 doc/*.tag.prep
 tags
 
-src/crc*gen.c
+src/core/crc*gen.c
 src/gsm/gsm0503_conv.c
 src/gsm/*_gen.c
 include/osmocom/core/crc*gen.h
