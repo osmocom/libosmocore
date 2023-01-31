@@ -500,6 +500,42 @@ enum gsm0808_permitted_speech {
 	GSM0808_PERM_HR6	= 0x45, /*!< OHR AMR */
 };
 
+/* 3GPP TS 48.008 3.2.2.11 Channel Type
+ * Transparent: Data Rate */
+enum gsm0808_data_rate_transp {
+	GSM0808_DATA_RATE_TRANSP_32000	  = 0x3a,
+	GSM0808_DATA_RATE_TRANSP_28800	  = 0x39,
+	GSM0808_DATA_RATE_TRANSP_14400	  = 0x18,
+	GSM0808_DATA_RATE_TRANSP_09600	  = 0x10,
+	GSM0808_DATA_RATE_TRANSP_04800	  = 0x11,
+	GSM0808_DATA_RATE_TRANSP_02400	  = 0x12,
+	GSM0808_DATA_RATE_TRANSP_01200	  = 0x13,
+	GSM0808_DATA_RATE_TRANSP_00600	  = 0x14,
+	GSM0808_DATA_RATE_TRANSP_01200_75 = 0x15,
+};
+
+/* 3GPP TS 48.008 3.2.2.11 Channel Type
+ * Non-Transparent: Radio Interface Data Rate (preferred) */
+enum gsm0808_data_rate_non_transp {
+	GSM0808_DATA_RATE_NON_TRANSP_12000_6000	= 0x00,
+	GSM0808_DATA_RATE_NON_TRANSP_43500	= 0x34,
+	GSM0808_DATA_RATE_NON_TRANSP_29000	= 0x31,
+	GSM0808_DATA_RATE_NON_TRANSP_14500	= 0x14,
+	GSM0808_DATA_RATE_NON_TRANSP_12000	= 0x10,
+	GSM0808_DATA_RATE_NON_TRANSP_06000	= 0x11,
+};
+
+/* 3GPP TS 48.008 3.2.2.11 Channel Type
+ * Non-Transparent: Allowed Radio Interface Data Rate (all possible allowed) */
+enum gsm0808_data_rate_allowed_r_if {
+	GSM0808_DATA_RATE_NON_TRANSP_ALLOWED_43500 = 0x40,
+	GSM0808_DATA_RATE_NON_TRANSP_ALLOWED_32000 = 0x20,
+	GSM0808_DATA_RATE_NON_TRANSP_ALLOWED_29000 = 0x10,
+	GSM0808_DATA_RATE_NON_TRANSP_ALLOWED_14500 = 0x08,
+	GSM0808_DATA_RATE_NON_TRANSP_ALLOWED_12000 = 0x02,
+	GSM0808_DATA_RATE_NON_TRANSP_ALLOWED_06000 = 0x01,
+};
+
 extern const struct value_string gsm0808_permitted_speech_names[];
 static inline const char *gsm0808_permitted_speech_name(enum gsm0808_permitted_speech val)
 { return get_value_string(gsm0808_permitted_speech_names, val); }
@@ -658,13 +694,32 @@ struct gsm0808_speech_codec_list {
 	uint8_t len;
 };
 
+/* 3GPP TS 48.008 3.2.2.11 Channel Type
+ * Asymmetry Preference (used for data, non-transparent service) */
+enum gsm0808_channel_type_asym_pref {
+	GSM0808_CT_ASYM_PREF_NOT_APPLICABLE = 0,
+	GSM0808_CT_ASYM_PREF_UL		    = 1,
+	GSM0808_CT_ASYM_PREF_DL		    = 2,
+	GSM0808_CT_ASYM_PREF_SPARE	    = 3,
+};
+
 /* 3GPP TS 48.008 3.2.2.11 Channel Type */
 #define CH_TYPE_PERM_SPCH_MAXLEN 9
 struct gsm0808_channel_type {
 	uint8_t ch_indctr;
 	uint8_t ch_rate_type;
+
+	/* Speech only */
 	uint8_t perm_spch[CH_TYPE_PERM_SPCH_MAXLEN];
 	unsigned int perm_spch_len;
+
+	/* Data only */
+	bool data_transparent;
+	uint8_t data_rate;
+	bool data_rate_allowed_is_set;
+	uint8_t data_rate_allowed;
+	bool data_asym_pref_is_set;
+	enum gsm0808_channel_type_asym_pref data_asym_pref;
 };
 
 /* 3GPP TS 48.008 3.2.2.10 Encryption Information */

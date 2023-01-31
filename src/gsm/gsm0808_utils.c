@@ -499,12 +499,6 @@ uint8_t gsm0808_enc_channel_type(struct msgb *msg,
 
 	OSMO_ASSERT(ct->perm_spch_len <= CHANNEL_TYPE_ELEMENT_MAXLEN - 2);
 
-	/* FIXME: Implement encoding support for Data
-	 * and Speech + CTM Text Telephony */
-	if ((ct->ch_indctr & 0x0f) != GSM0808_CHAN_SPEECH
-	    && (ct->ch_indctr & 0x0f) != GSM0808_CHAN_SIGN)
-		OSMO_ASSERT(false);
-
 	msgb_put_u8(msg, GSM0808_IE_CHANNEL_TYPE);
 	tlv_len = msgb_put(msg, 1);
 	old_tail = msg->tail;
@@ -512,12 +506,44 @@ uint8_t gsm0808_enc_channel_type(struct msgb *msg,
 	msgb_put_u8(msg, ct->ch_indctr & 0x0f);
 	msgb_put_u8(msg, ct->ch_rate_type);
 
-	for (i = 0; i < ct->perm_spch_len; i++) {
-		byte = ct->perm_spch[i];
+	switch (ct->ch_indctr) {
+	case GSM0808_CHAN_DATA:
+		byte = ct->data_rate;
 
-		if (i < ct->perm_spch_len - 1)
-			byte |= 0x80;
+		if (ct->data_transparent)
+			byte |= 0x40; /* Set T/NT */
+
+		if (ct->data_rate_allowed_is_set) {
+			OSMO_ASSERT(!ct->data_transparent);
+			byte |= 0x80; /* Set ext */
+			msgb_put_u8(msg, byte);
+
+			byte = ct->data_rate_allowed;
+			if (ct->data_asym_pref_is_set) {
+				byte |= 0x80; /* Set ext */
+				msgb_put_u8(msg, byte);
+
+				/* Set asymmetry indication, rest is spare */
+				byte = ct->data_asym_pref << 5;
+			}
+		}
 		msgb_put_u8(msg, byte);
+		break;
+	case GSM0808_CHAN_SPEECH:
+	case GSM0808_CHAN_SPEECH_CTM_TEXT_TELEPHONY:
+		for (i = 0; i < ct->perm_spch_len; i++) {
+			byte = ct->perm_spch[i];
+
+			if (i < ct->perm_spch_len - 1)
+				byte |= 0x80;
+			msgb_put_u8(msg, byte);
+		}
+		break;
+	case GSM0808_CHAN_SIGN:
+		/* Octet 5 is spare */
+		break;
+	default:
+		OSMO_ASSERT(false);
 	}
 
 	*tlv_len = (uint8_t) (msg->tail - old_tail);
@@ -549,17 +575,57 @@ int gsm0808_dec_channel_type(struct gsm0808_channel_type *ct,
 	ct->ch_rate_type = (*elem) & 0x0f;
 	elem++;
 
-	for (i = 0; i < ARRAY_SIZE(ct->perm_spch); i++) {
-		if (elem - old_elem >= len)
-			return -EOVERFLOW;
-
+	switch (ct->ch_indctr) {
+	case GSM0808_CHAN_DATA:
 		byte = *elem;
 		elem++;
-		ct->perm_spch[i] = byte & 0x7f;
-		if ((byte & 0x80) == 0x00)
-			break;
+		ct->data_transparent = byte & 0x40; /* T/NT */
+		ct->data_rate = byte & 0x3f;
+
+		/* Optional extension for non-transparent service */
+		if (byte & 0x80) {
+			if (ct->data_transparent)
+				return -EINVAL;
+			if (elem - old_elem >= len)
+				return -EOVERFLOW;
+			byte = *elem;
+			elem++;
+
+			ct->data_rate_allowed_is_set = true;
+			ct->data_rate_allowed = byte & 0x7f;
+
+			/* Optional extension */
+			if (byte & 0x80) {
+				if (elem - old_elem >= len)
+					return -EOVERFLOW;
+				byte = *elem;
+				elem++;
+
+				ct->data_asym_pref_is_set = true;
+				ct->data_asym_pref = byte & 0x60 >> 5;
+			}
+		}
+		break;
+	case GSM0808_CHAN_SPEECH:
+	case GSM0808_CHAN_SPEECH_CTM_TEXT_TELEPHONY:
+		for (i = 0; i < ARRAY_SIZE(ct->perm_spch); i++) {
+			if (elem - old_elem >= len)
+				return -EOVERFLOW;
+
+			byte = *elem;
+			elem++;
+			ct->perm_spch[i] = byte & 0x7f;
+			if ((byte & 0x80) == 0x00)
+				break;
+		}
+		ct->perm_spch_len = i + 1;
+		break;
+	case GSM0808_CHAN_SIGN:
+		/* Octet 5 is spare */
+		break;
+	default:
+		return -ENOTSUP;
 	}
-	ct->perm_spch_len = i + 1;
 
 	return (int)(elem - old_elem);
 }

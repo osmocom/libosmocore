@@ -1086,6 +1086,88 @@ static void test_gsm0808_enc_dec_empty_speech_codec_list(void)
 	msgb_free(msg);
 }
 
+static void test_gsm0808_enc_dec_channel_type_data(void)
+{
+	struct gsm0808_channel_type enc_ct = {
+		.ch_indctr = GSM0808_CHAN_DATA,
+		.ch_rate_type = GSM0808_DATA_HALF_PREF,
+
+		.data_transparent = true,
+		.data_rate = GSM0808_DATA_RATE_TRANSP_04800,
+	};
+	struct gsm0808_channel_type dec_ct = {};
+	struct msgb *msg;
+	uint8_t ct_enc_expected[] = { GSM0808_IE_CHANNEL_TYPE,
+		0x03, 0x02, 0x0b, 0x51,
+	};
+	uint8_t rc_enc;
+	int rc_dec;
+
+	msg = msgb_alloc(1024, "output buffer");
+	rc_enc = gsm0808_enc_channel_type(msg, &enc_ct);
+	OSMO_ASSERT(rc_enc == 5);
+	if (memcmp(ct_enc_expected, msg->data, msg->len)) {
+		printf("   got: %s\n", osmo_hexdump(msg->data, msg->len));
+		printf("expect: %s\n", osmo_hexdump(ct_enc_expected, sizeof(ct_enc_expected)));
+		OSMO_ASSERT(false);
+	}
+
+	rc_dec = gsm0808_dec_channel_type(&dec_ct, msg->data + 2, msg->len - 2);
+	OSMO_ASSERT(rc_dec == 3);
+	OSMO_ASSERT(dec_ct.ch_indctr == enc_ct.ch_indctr);
+	OSMO_ASSERT(dec_ct.ch_rate_type == enc_ct.ch_rate_type);
+	OSMO_ASSERT(dec_ct.data_transparent == enc_ct.data_transparent);
+	OSMO_ASSERT(dec_ct.data_rate == enc_ct.data_rate);
+	OSMO_ASSERT(dec_ct.data_rate_allowed_is_set == enc_ct.data_rate_allowed_is_set);
+	OSMO_ASSERT(dec_ct.data_asym_pref_is_set == enc_ct.data_asym_pref_is_set);
+
+	msgb_free(msg);
+}
+
+static void test_gsm0808_enc_dec_channel_type_data_asym_pref(void)
+{
+	struct gsm0808_channel_type enc_ct = {
+		.ch_indctr = GSM0808_CHAN_DATA,
+		.ch_rate_type = GSM0808_DATA_HALF_PREF,
+
+		.data_transparent = false,
+		.data_rate = GSM0808_DATA_RATE_NON_TRANSP_06000,
+		.data_rate_allowed_is_set = true,
+		.data_rate_allowed = GSM0808_DATA_RATE_NON_TRANSP_ALLOWED_06000
+				     | GSM0808_DATA_RATE_NON_TRANSP_ALLOWED_12000
+				     | GSM0808_DATA_RATE_NON_TRANSP_ALLOWED_14500,
+		.data_asym_pref_is_set = true,
+		.data_asym_pref = GSM0808_CT_ASYM_PREF_UL,
+	};
+	struct gsm0808_channel_type dec_ct = {};
+	struct msgb *msg;
+	uint8_t ct_enc_expected[] = { GSM0808_IE_CHANNEL_TYPE,
+		0x05, 0x02, 0x0b, 0x91, 0x8b, 0x20,
+	};
+	uint8_t rc_enc;
+	int rc_dec;
+
+	msg = msgb_alloc(1024, "output buffer");
+	rc_enc = gsm0808_enc_channel_type(msg, &enc_ct);
+	OSMO_ASSERT(rc_enc == 7);
+	if (memcmp(ct_enc_expected, msg->data, msg->len)) {
+		printf("   got: %s\n", osmo_hexdump(msg->data, msg->len));
+		printf("expect: %s\n", osmo_hexdump(ct_enc_expected, sizeof(ct_enc_expected)));
+		OSMO_ASSERT(false);
+	}
+
+	rc_dec = gsm0808_dec_channel_type(&dec_ct, msg->data + 2, msg->len - 2);
+	OSMO_ASSERT(rc_dec == 5);
+	OSMO_ASSERT(dec_ct.ch_indctr == enc_ct.ch_indctr);
+	OSMO_ASSERT(dec_ct.ch_rate_type == enc_ct.ch_rate_type);
+	OSMO_ASSERT(dec_ct.data_transparent == enc_ct.data_transparent);
+	OSMO_ASSERT(dec_ct.data_rate == enc_ct.data_rate);
+	OSMO_ASSERT(dec_ct.data_rate_allowed_is_set == enc_ct.data_rate_allowed_is_set);
+	OSMO_ASSERT(dec_ct.data_asym_pref_is_set == enc_ct.data_asym_pref_is_set);
+
+	msgb_free(msg);
+}
+
 static void test_gsm0808_enc_dec_channel_type_speech(void)
 {
 	struct gsm0808_channel_type enc_ct = {
@@ -1122,9 +1204,29 @@ static void test_gsm0808_dec_channel_type_err(void)
 	struct gsm0808_channel_type ct;
 	int rc;
 
+	/* Unknown channel indicator */
+	const uint8_t hex1[] = { 0x05, 0x0b, 0xa1, 0x25 };
+	rc = gsm0808_dec_channel_type(&ct, hex1, sizeof(hex1));
+	OSMO_ASSERT(rc == -ENOTSUP);
+
+	/* Data: ext in Octet 5 with transparent service */
+	const uint8_t hex2[] = { 0x02, 0x0b, 0xc0, 0x00 };
+	rc = gsm0808_dec_channel_type(&ct, hex2, sizeof(hex2));
+	OSMO_ASSERT(rc == -EINVAL);
+
+	/* Data: ext in Octet 5, but too short */
+	const uint8_t hex3[] = { 0x02, 0x0b, 0x80 };
+	rc = gsm0808_dec_channel_type(&ct, hex3, sizeof(hex3));
+	OSMO_ASSERT(rc == -EOVERFLOW);
+
+	/* Data: ext in Octet 5a, but too short */
+	const uint8_t hex4[] = { 0x02, 0x0b, 0x80, 0x80 };
+	rc = gsm0808_dec_channel_type(&ct, hex4, sizeof(hex4));
+	OSMO_ASSERT(rc == -EOVERFLOW);
+
 	/* Speech: extension bit is set in last byte */
-	const uint8_t hex[] = { 0x01, 0x0b, 0xa1, 0xa5 };
-	rc = gsm0808_dec_channel_type(&ct, hex, sizeof(hex));
+	const uint8_t hex5[] = { 0x01, 0x0b, 0xa1, 0xa5 };
+	rc = gsm0808_dec_channel_type(&ct, hex5, sizeof(hex5));
 	OSMO_ASSERT(rc == -EOVERFLOW);
 }
 
@@ -2579,6 +2681,8 @@ int main(int argc, char **argv)
 	test_gsm0808_enc_dec_speech_codec_with_cfg();
 	test_gsm0808_enc_dec_speech_codec_list();
 	test_gsm0808_enc_dec_empty_speech_codec_list();
+	test_gsm0808_enc_dec_channel_type_data();
+	test_gsm0808_enc_dec_channel_type_data_asym_pref();
 	test_gsm0808_enc_dec_channel_type_speech();
 	test_gsm0808_dec_channel_type_err();
 	test_gsm0808_enc_dec_encrypt_info();
