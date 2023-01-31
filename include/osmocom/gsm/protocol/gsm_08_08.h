@@ -443,6 +443,7 @@ enum gsm0808_chan_indicator {
 	GSM0808_CHAN_SPEECH = 1,
 	GSM0808_CHAN_DATA   = 2,
 	GSM0808_CHAN_SIGN   = 3,
+	GSM0808_CHAN_SPEECH_CTM_TEXT_TELEPHONY = 4,
 };
 
 /* GSM 08.08 3.2.2.11 Channel Type */
