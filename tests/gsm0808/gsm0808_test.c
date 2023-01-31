@@ -1086,7 +1086,7 @@ static void test_gsm0808_enc_dec_empty_speech_codec_list(void)
 	msgb_free(msg);
 }
 
-static void test_gsm0808_enc_dec_channel_type(void)
+static void test_gsm0808_enc_dec_channel_type_speech(void)
 {
 	struct gsm0808_channel_type enc_ct = {
 		.ch_indctr = GSM0808_CHAN_SPEECH,
@@ -2579,7 +2579,7 @@ int main(int argc, char **argv)
 	test_gsm0808_enc_dec_speech_codec_with_cfg();
 	test_gsm0808_enc_dec_speech_codec_list();
 	test_gsm0808_enc_dec_empty_speech_codec_list();
-	test_gsm0808_enc_dec_channel_type();
+	test_gsm0808_enc_dec_channel_type_speech();
 	test_gsm0808_dec_channel_type_err();
 	test_gsm0808_enc_dec_encrypt_info();
 
