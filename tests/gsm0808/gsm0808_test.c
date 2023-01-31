@@ -1117,6 +1117,17 @@ static void test_gsm0808_enc_dec_channel_type(void)
 	msgb_free(msg);
 }
 
+static void test_gsm0808_dec_channel_type_err(void)
+{
+	struct gsm0808_channel_type ct;
+	int rc;
+
+	/* Speech: extension bit is set in last byte */
+	const uint8_t hex[] = { 0x01, 0x0b, 0xa1, 0xa5 };
+	rc = gsm0808_dec_channel_type(&ct, hex, sizeof(hex));
+	OSMO_ASSERT(rc == -EOVERFLOW);
+}
+
 static void test_gsm0808_enc_dec_encrypt_info(void)
 {
 	struct gsm0808_encrypt_info enc_ei = {
@@ -2569,6 +2580,7 @@ int main(int argc, char **argv)
 	test_gsm0808_enc_dec_speech_codec_list();
 	test_gsm0808_enc_dec_empty_speech_codec_list();
 	test_gsm0808_enc_dec_channel_type();
+	test_gsm0808_dec_channel_type_err();
 	test_gsm0808_enc_dec_encrypt_info();
 
 	test_gsm0808_enc_dec_cell_id_list_lac();

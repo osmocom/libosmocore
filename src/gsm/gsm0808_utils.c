@@ -550,6 +550,9 @@ int gsm0808_dec_channel_type(struct gsm0808_channel_type *ct,
 	elem++;
 
 	for (i = 0; i < ARRAY_SIZE(ct->perm_spch); i++) {
+		if (elem - old_elem >= len)
+			return -EOVERFLOW;
+
 		byte = *elem;
 		elem++;
 		ct->perm_spch[i] = byte & 0x7f;
