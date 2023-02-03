@@ -108,9 +108,14 @@ EXTRA_DIST = \
 	conv_acc_neon_impl.h \
 	crcXXgen.c.tpl \
 	stat_item_internal.h \
+	libosmocore.map \
 	$(NULL)
 
-libosmocore_la_LDFLAGS = -version-info $(LIBVERSION) -no-undefined
+libosmocore_la_LDFLAGS = \
+	$(LTLDFLAGS_OSMOCORE) \
+	-version-info \
+	$(LIBVERSION) \
+	-no-undefined
 
 if ENABLE_PLUGIN
 libosmocore_la_SOURCES += plugin.c

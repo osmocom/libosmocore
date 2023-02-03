@@ -55,6 +55,7 @@ case $host in
 	LTLDFLAGS_OSMOGSM='-Wl,--version-script=$(srcdir)/libosmogsm.map'
 	LTLDFLAGS_OSMOISDN='-Wl,--version-script=$(srcdir)/libosmoisdn.map'
 	LTLDFLAGS_OSMOCODING='-Wl,--version-script=$(srcdir)/libosmocoding.map'
+	LTLDFLAGS_OSMOCORE='-Wl,--version-script=$(srcdir)/libosmocore.map'
 	LTLDFLAGS_OSMOCTRL='-Wl,--version-script=$(srcdir)/libosmoctrl.map'
 	;;
 esac
@@ -62,6 +63,7 @@ AC_SUBST(LTLDFLAGS_OSMOGB)
 AC_SUBST(LTLDFLAGS_OSMOGSM)
 AC_SUBST(LTLDFLAGS_OSMOISDN)
 AC_SUBST(LTLDFLAGS_OSMOCODING)
+AC_SUBST(LTLDFLAGS_OSMOCORE)
 AC_SUBST(LTLDFLAGS_OSMOCTRL)
 
 dnl checks for header files
