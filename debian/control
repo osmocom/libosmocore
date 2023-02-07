@@ -31,7 +31,7 @@ Architecture: any
 Multi-Arch: foreign
 Depends: libosmocodec0 (= ${binary:Version}),
          libosmocoding0 (= ${binary:Version}),
-         libosmocore19 (= ${binary:Version}),
+         libosmocore20 (= ${binary:Version}),
          libosmogb14 (= ${binary:Version}),
          libosmogsm18 (= ${binary:Version}),
          libosmoisdn0 (= ${binary:Version}),
@@ -116,7 +116,7 @@ Description: Documentation for the osmo coding library
  .
  This package contains the documentation for the libosmocoding library.
 
-Package: libosmocore19
+Package: libosmocore20
 Section: libs
 Architecture: any
 Multi-Arch: same
@@ -137,7 +137,7 @@ Package: libosmocore-doc
 Architecture: all
 Section: doc
 Depends: ${misc:Depends},
-         libosmocore19,
+         libosmocore20,
          libjs-jquery,
          libosmocodec-doc,
          libosmocoding-doc,

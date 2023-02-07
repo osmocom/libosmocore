@@ -1,3 +1,155 @@
+libosmocore (1.8.0) unstable; urgency=medium
+
+  [ Vadim Yanitskiy ]
+  * fix uninitialized err pointer passed to osmo_bssap_le_dec()
+  * gsm0408_test: do not return early in test_bearer_cap()
+  * gsm0408_test: add a testcase for gsm48_decode_bearer_cap()
+  * gsm48_ie: fix coding style: while is not a function
+  * gb: fix uninitialized ptr access in bssgp_encode_rim_pdu()
+  * fsm: add unit tests verifying state timeout s/ms accuracy
+  * fsm: fix state_chg(): pass microseconds to osmo_timer_schedule()
+  * tests/tdef: assert pointer returned by osmo_tdef_get_entry()
+  * gb/gprs_ns: call osmo_timer_del() unconditionally
+  * fsm: osmo_fsm_{event,inst,state}_name(): make *fi pointer const
+  * logging: add a new category DLCSN1 for libosmo-csn1
+  * {gb,sim,usb}: ensure -no-undefined is present in *_la_LDFLAGS
+  * include: use '#pragma once' everywhere
+  * gsm0502: use parentheses in GSM_TDMA_FN_{SUM,SUB} macros
+  * configure.ac: fix 'AM_CONDITIONAL(ENABLE_GNUTLS, false)' listed twice
+  * {gsm,gb}/Makefile.am: drop undefined $GCC_FVISIBILITY_HIDDEN
+  * gsm0502: gsm0502_fn_remap(): use GSM_TDMA_FN_SUB() macro
+  * */Makefile.am: do not mix up AM_CFLAGS with AM_CPPFLAGS
+  * gsm0808: cosmetic: switch is not a function
+  * gsm0808: remove unneeded assignment in enc_speech_codec()
+  * gsm0808: remove redundant assert() in enc_speech_codec()
+  * gsm0808: remove over-defensive assert()s for function parameters
+  * gsm0808: add gsm0808_enc_speech_codec[_list]2()
+  * gsm0808: use new gsm0808_enc_speech_codec[_list]2() API
+  * gsm48_ie: gsm48_decode_freq_list(): make 'cd' argument const
+
+  [ Pau Espin Pedrol ]
+  * iuup: Explicitly mark default case as unexpected with assert
+  * cbsp: avoid potential msgb write overflow in osmo_cbsp_recv_buffered
+  * gsm_23_041.h: Define CBS ETWS Warning Type values
+  * cbsp: Return error if decoding any of the cell id lists fail
+  * tests: Run smscb/gsm0341_test during make check
+  * cbsp: Guard against malformed msgb without l1h,l2h being passed
+  * cbsp: Fix decoding of Fail List
+  * cosmetic: tlv.h: Fix trailing whistespace
+  * tlv.h: Fix TLVP_PRESENT returning a pointer instead of a boolean
+  * gsm: Add BTS feature for Osmux
+  * gsm: rsl: Define new osmocom extension TLV IE to pass Osmux CID
+  * gsm: bts_features: Add missing entries to osmo_bts_features_names
+  * utils.h: protect param with parenthesis in OSMO_BYTES_FOR_BITS()
+  * vty: Allow using hex representations in cmd numeric ranges
+  * socket.h: Reorder sockaddr APIs to have them all together
+  * socket: Introduce API osmo_sockaddr_is_any
+  * gsm: constify several readonly params
+  * ctrl: error if program forgot to initialize the ctr handler before installing cmds
+  * socket.h: Introduce API osmo_sockaddr_netmask_to_prefixlen()
+  * Move src/*.{c,h} to src/core/
+  * src/core/Makefile.am: reformat SOURCES list
+  * Split include/Makefile.am content into subdirs
+  * Makefile.am: Remove unexsiting all_includes variable
+  * Fix all references to config.h
+  * Introduce netns API
+  * Introduce netdev API
+  * Introduce tundev API
+  * configure --enable-libmnl: Add libmnl to libosmocore.pc.in Requires
+  * netdev: Fix compilation building with --disable-libmnl
+  * tun: Fix potential unpaired call to osmo_netns_switch_exit()
+  * gprs_ns2_fr: use osmo_netdev to monitor and operate network device
+  * debian/rules: Fix moved path crc*gen.c
+
+  [ Mychaela Falconia ]
+  * gsm48_ie: fix parsing of Bearer capability IE without octet 3a
+
+  [ Harald Welte ]
+  * sim/class_tables: Add GET IDENTITY, SUSPEND UICC, EXCHANGE CAPABILITIES
+  * allocate VTY port number 4270 for osmo-isdntap
+  * logging.h: Allocate DLM2PA and DLM2UA for libosmo-sigtran
+  * Support building with -Werror=strict-prototypes / -Werror=old-style-definition
+  * Disable -Wstrict-prototypes for logging_vty_add_cmds()
+  * vty/logging.h: Avoid -Werror=pragmas error in C++ code
+  * Add -Werror=implicit-int -Werror=int-conversion -Werror=old-style-definition
+  * Fix typos in copyright statements.
+  * gsmtap.h: Add definitions for various ISDN sub-types
+  * create libosmoisdn sub-library
+  * isdndlc: Fix documentation
+
+  [ Oliver Smith ]
+  * gsm0808_enc_aoip_trasp_addr: add length check
+  * utils/osmo-stat-dummy: check for ENABLE_UTILITIES
+  * d/control: libosmocore-dev: depend on libmnl-dev
+  * gsm_08_08.h: fix typo in GSM0808_DATA_FULL_PREF
+
+  [ Alexander Couzens ]
+  * gprs_ns2: add vty `nse <0-65535> restart sns`
+  * gb: add bssgp2_enc_flush_ll encode FLUSH-LL
+
+  [ Neels Hofmeyr ]
+  * enrich API doc for gsm0808_speech_codec
+  * gsm0408_test: do not print errno in expected output
+  * comments: gsm_08_08.h: AMR cfg: explain in much more detail
+  * osmo_tdef_get(): clarify API doc on val_if_not_present
+
+  [ Max ]
+  * Ignore osmo-ns-dummy
+  * Add function to guess AF_UNSPEC address
+  * Add osmo_sockaddr_strs_to_str()
+  * cosmetic: remove trailing space
+  * cosmetic: make linter happy with LAPD code
+  * LAPD: log unknown format value
+  * LAPD: use bool for T200 reset flags
+  * msgb: expand copy test
+  * doc: correct typo in ticket reference
+  * msgb: introduce extended copy functions
+  * Add define for unset Frame Number
+  * LAPD: move tx_hist code into static functions
+  * osmo-ns-dummy: add ctrl interface
+  * jenkins_arm.sh: disable external tests
+  * vty: fix doc typo
+  * telnet_init_dynif: propagate error
+  * telnet_init_dynif: don't allow negative port
+  * rate_ctr: convert to timerfd
+  * rate_ctr: drop rate estimation code
+  * osmo-stat-dummy: add rate counters and statsd tester
+  * ctrl: add optional port to bind command
+  * ASCI: add VBS/VGCS support to BTS features list
+  * SI: add RR short PD message types
+  * Fixup .gitignore
+  * SI: add missing header
+  * Add SI10 support
+
+  [ neels ]
+  * Revert "Add osmo_sockaddr_strs_to_str()"
+  * Revert "Add function to guess AF_UNSPEC address"
+
+  [ Daniel Willmann ]
+  * use_count: Return if uc is NULL
+
+  [ Keith Whyte ]
+  * Fix LCLS-CONNECT-CONTROL generation
+  * Fix Typo in gsm0808_msgt_names[]
+
+  [ Philipp Maier ]
+  * msgb: assert msgb->lXh to be not NULL
+  * msgb: do not use msgb_l4 instead of msgb_sms
+  * bits: fix typo
+  * uitils: add floored and euclidian modulo functions
+  * gsm0408_test: add unittest for gsm_gsmtime2fn()
+  * gsm_utils: improve gsm_gsmtime2fn()
+
+  [ arehbein ]
+  * gb/vty: Show if NSVC is blocked locally by O&M/vty or by remote
+  * libosmocore: Deprecate APIs telnet_init(_dynip)()
+  * libosmocore:  Transition to use of 'telnet_init_default'
+
+  [ Eric ]
+  * bitgen test: fix concat macro
+
+ -- Pau Espin Pedrol <pespin@sysmocom.de>  Tue, 07 Feb 2023 11:20:41 +0100
+
 libosmocore (1.7.0) unstable; urgency=medium
 
   [ Vadim Yanitskiy ]
