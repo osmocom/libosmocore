@@ -40,10 +40,10 @@ override_dh_clean:
 	$(RM) include/osmocom/core/crc32gen.h
 	$(RM) include/osmocom/core/crc64gen.h
 	$(RM) include/osmocom/core/crc8gen.h
-	$(RM) src/crc16gen.c
-	$(RM) src/crc32gen.c
-	$(RM) src/crc64gen.c
-	$(RM) src/crc8gen.c
+	$(RM) src/core/crc16gen.c
+	$(RM) src/core/crc32gen.c
+	$(RM) src/core/crc64gen.c
+	$(RM) src/core/crc8gen.c
 	$(RM) tests/package.m4
 	$(RM) tests/testsuite
 	$(RM) -r doc/codec/
