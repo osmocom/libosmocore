@@ -249,7 +249,7 @@ static int osmo_sock_init_tail(int fd, uint16_t type, unsigned int flags)
 			if (rc < 0) {
 				LOGP(DLGLOBAL, LOGL_ERROR, "unable to listen on socket: %s\n",
 					strerror(errno));
-				return rc;
+				return -errno;
 			}
 			break;
 		}
@@ -1393,7 +1393,7 @@ int osmo_sock_unix_init(uint16_t type, uint8_t proto,
 
 	sfd = socket(AF_UNIX, type, proto);
 	if (sfd < 0)
-		return -1;
+		return -errno;
 
 	if (flags & OSMO_SOCK_F_CONNECT) {
 		rc = connect(sfd, (struct sockaddr *)&local, namelen);
@@ -1413,13 +1413,13 @@ int osmo_sock_unix_init(uint16_t type, uint8_t proto,
 	rc = osmo_sock_init_tail(sfd, type, flags);
 	if (rc < 0) {
 		close(sfd);
-		sfd = -1;
+		sfd = rc;
 	}
 
 	return sfd;
 err:
 	close(sfd);
-	return -1;
+	return -errno;
 }
 
 /*! Initialize a unix domain socket and fill \ref osmo_fd
