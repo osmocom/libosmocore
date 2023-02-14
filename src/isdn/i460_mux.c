@@ -119,10 +119,10 @@ static void demux_subchan_extract_bits(struct osmo_i460_subchan *schan, const ui
 	}
 }
 
-/*! Data from E1 timeslot into de-multiplexer
- *  \param[in] ts timeslot state
- *  \param[in] data input data bytes as received from E1/T1
- *  \param[in] data_len length of data in bytes */
+/*! Feed multiplexed data (from an E1 timeslot) into de-multiplexer.
+ *  \param[in] ts timeslot state.
+ *  \param[in] data input data bytes as received from E1/T1.
+ *  \param[in] data_len length of data in bytes. */
 void osmo_i460_demux_in(struct osmo_i460_timeslot *ts, const uint8_t *data, size_t data_len)
 {
 	struct osmo_i460_subchan *schan;
@@ -262,11 +262,10 @@ static uint8_t mux_timeslot_provide_bits(struct osmo_i460_timeslot *ts)
 }
 
 
-/*! Data from E1 timeslot into de-multiplexer
- *  \param[in] ts timeslot state
- *  \param[out] out caller-provided buffer where to store generated output bytes
- *  \param[in] out_len number of bytes to be stored at out
- */
+/*! Get multiplexed data from de-multiplexer (for feeding it into an E1 timeslot).
+ *  \param[in] ts timeslot state.
+ *  \param[out] out caller-provided buffer where to store generated output bytes.
+ *  \param[in] out_len number of bytes to be stored at out. */
 int osmo_i460_mux_out(struct osmo_i460_timeslot *ts, uint8_t *out, size_t out_len)
 {
 	int i;
