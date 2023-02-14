@@ -18,6 +18,7 @@ osmo_i460_mux_enqueue;
 osmo_i460_mux_out;
 osmo_i460_subchan_add;
 osmo_i460_subchan_del;
+osmo_i460_subchan_count;
 osmo_i460_ts_init;
 
 local: *;

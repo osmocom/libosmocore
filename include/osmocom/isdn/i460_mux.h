@@ -113,4 +113,6 @@ osmo_i460_subchan_add(void *ctx, struct osmo_i460_timeslot *ts, const struct osm
 
 void osmo_i460_subchan_del(struct osmo_i460_subchan *schan);
 
+int osmo_i460_subchan_count(struct osmo_i460_timeslot *ts);
+
 /*! @} */
