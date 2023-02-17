@@ -13,9 +13,8 @@
 #include <string.h>
 
 #include <osmocom/core/utils.h>
-#include <osmocom/gprs/gprs_rlc.h>
 #include <osmocom/coding/gsm0503_coding.h>
-#include <osmocom/gprs/protocol/gsm_04_60.h>
+#include <osmocom/gsm/protocol/gsm_44_060.h>
 
 #define EGPRS_CPS_TYPE1_TBL_SZ		29
 #define EGPRS_CPS_TYPE2_TBL_SZ		8

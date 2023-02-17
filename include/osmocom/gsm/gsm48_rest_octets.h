@@ -2,7 +2,7 @@
 
 #include <stdbool.h>
 #include <osmocom/gsm/sysinfo.h>
-#include <osmocom/gprs/protocol/gsm_04_60.h>
+#include <osmocom/gsm/protocol/gsm_44_060.h>
 
 /* 16 is the max. number of SI2quater messages according to 3GPP TS 44.018 Table 10.5.2.33b.1:
    4-bit index is used (2#1111 = 10#15) */

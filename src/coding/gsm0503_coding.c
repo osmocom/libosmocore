@@ -31,9 +31,7 @@
 #include <osmocom/core/crcgen.h>
 #include <osmocom/core/endian.h>
 
-#include <osmocom/gprs/protocol/gsm_04_60.h>
-#include <osmocom/gprs/gprs_rlc.h>
-
+#include <osmocom/gsm/protocol/gsm_44_060.h>
 #include <osmocom/gsm/protocol/gsm_04_08.h>
 #include <osmocom/gsm/gsm0503.h>
 #include <osmocom/codec/codec.h>
