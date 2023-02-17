@@ -160,7 +160,8 @@ struct gprs_rlc_dl_header_egprs_3 {
 #endif
 } __attribute__ ((packed));
 
-/* TS 03.60 Chapter 6.3.3.1: Network Mode of Operation */
+/* TS 44.060 Table 12.24.2
+* Meaning of values documented in TS 23.060 Chapter 6.3.3.1: Network Mode of Operation */
 enum osmo_gprs_nmo {
 	GPRS_NMO_I	= 0,	/* CS pagin on GPRS paging or traffic channel */
 	GPRS_NMO_II	= 1,	/* all paging on CCCH */
