@@ -22,7 +22,7 @@ struct gsm23041_msg_param_gsm {
 		uint8_t num_pages:4,
 			page_nr:4;
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 		uint8_t page_nr:4, num_pages:4;
 #endif
 	} page_param;

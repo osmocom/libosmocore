@@ -24,7 +24,7 @@ struct iuup_pdutype0_hdr {
 	/* payload part */
 	uint8_t payload[0];
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	uint8_t pdu_type:4, frame_nr:4;
 	uint8_t fqc:2, rfci:6;
 	uint8_t header_crc:6, payload_crc_hi:2;
@@ -47,7 +47,7 @@ struct iuup_pdutype1_hdr {
 	/* payload part */
 	uint8_t payload[0];
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	uint8_t pdu_type:4, frame_nr:4;
 	uint8_t fqc:2, rfci:6;
 	uint8_t header_crc:6, spare:2;
@@ -70,7 +70,7 @@ struct iuup_pdutype14_hdr {
 	/* payload part */
 	uint8_t payload[0];
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	uint8_t pdu_type:4, ack_nack:2, frame_nr:2;
 	uint8_t mode_version:4, proc_ind:4;
 	uint8_t header_crc:6, payload_crc_hi:2;
@@ -87,7 +87,7 @@ struct iuup_ctrl_init_rfci_hdr {
 		lri:1;
 	uint8_t subflow_length[0]; /* 1 or 2 bytes depending on li */
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	uint8_t lri:1, li:1, rfci:6;
 	uint8_t subflow_length[0];
 #endif
@@ -100,7 +100,7 @@ struct iuup_ctrl_init_hdr {
 		spare:3;
 	uint8_t rfci_data[0]; /* struct iuup_ctrl_init_rfci_hdr* */
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	uint8_t spare:3, ti:1, num_subflows_per_rfci:3, chain_ind:1;
 	uint8_t rfci_data[0]; /* struct iuup_ctrl_init_rfci_hdr* */
 ;
@@ -113,7 +113,7 @@ struct iuup_ctrl_init_tail {
 		data_pdu_type:4;
 	uint8_t spare_extension[0];
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	uint16_t versions_supported;
 	uint8_t data_pdu_type:4, spare:4;
 	uint8_t spare_extension[0];
@@ -128,7 +128,7 @@ struct iuup_ctrl_error_event {
 		error_distance:2;
 	uint8_t spare_extension[0];
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	struct iuup_pdutype14_hdr hdr;
 	uint8_t error_distance:2, error_cause:6;
 	uint8_t spare_extension[0];
@@ -149,7 +149,7 @@ struct iuup_ctrl_nack {
 		error_cause:6;
 	uint8_t spare_extension[0];
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	struct iuup_pdutype14_hdr hdr;
 	uint8_t error_cause:6, spare:2;
 	uint8_t spare_extension[0];

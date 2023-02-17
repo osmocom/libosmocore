@@ -138,7 +138,7 @@ struct q933_a_pvc_sts {
 		ext2:1;
 
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	uint8_t ext0:1, spare:1, dlci_msb:6;
 	uint8_t ext1:1, dlci_lsb:4, space1:3;
 	uint8_t ext2:1, spare2:3, new:1, delete:1, active:1, reserved:1;

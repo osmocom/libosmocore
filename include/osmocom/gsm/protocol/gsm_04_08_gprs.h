@@ -128,7 +128,7 @@ struct gsm48_ra_upd_ack {
 	struct gsm48_ra_id ra_id; /* 10.5.5.15 */
 	uint8_t data[0];
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	uint8_t upd_result:4, force_stby:4;
 	uint8_t ra_upd_timer;
 	struct gsm48_ra_id ra_id;
@@ -157,7 +157,7 @@ struct gsm48_attach_ack {
 	struct gsm48_ra_id ra_id; /* 10.5.5.15 */
 	uint8_t data[0];
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	uint8_t force_stby:4, att_result:4;
 	uint8_t ra_upd_timer;
 	uint8_t radio_prio;
@@ -175,7 +175,7 @@ struct gsm48_auth_ciph_req {
 		ac_ref_nr:4;	/* 10.5.5.19 */
 	uint8_t data[0];
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	uint8_t imeisv_req:4, ciph_alg:4;
 	uint8_t ac_ref_nr:4, force_stby:4;
 	uint8_t data[0];
@@ -189,7 +189,7 @@ struct gsm48_auth_ciph_resp {
 		spare:4;
 	uint8_t data[0];
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	uint8_t spare:4, ac_ref_nr:4;
 	uint8_t data[0];
 #endif

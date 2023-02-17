@@ -12,7 +12,7 @@ struct gsm_sacch_l1_hdr {
 			reserved:1;
 		uint8_t ta;
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 		uint8_t	reserved:1, srr_sro:1, fpc_epc:1, ms_pwr:5;
 		uint8_t ta;
 #endif

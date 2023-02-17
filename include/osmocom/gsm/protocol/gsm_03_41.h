@@ -25,7 +25,7 @@ struct gsm341_ms_message {
 		uint8_t update:4;
 		uint8_t code_lo:4;
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 		uint8_t gs:2, code_hi:6;
 		uint8_t code_lo:4, update:4;
 #endif
@@ -36,7 +36,7 @@ struct gsm341_ms_message {
 		uint8_t language:4;
 		uint8_t group:4;
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 		uint8_t group:4, language:4;
 #endif
 	} dcs;
@@ -45,7 +45,7 @@ struct gsm341_ms_message {
 		uint8_t total:4;
 		uint8_t current:4;
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 		uint8_t current:4, total:4;
 #endif
 	} page;
@@ -63,7 +63,7 @@ struct gsm341_etws_message {
 		uint8_t update:4;
 		uint8_t code_lo:4;
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 		uint8_t gs:2, alert:1, popup:1, code_hi:4;
 		uint8_t code_lo:4, update:4;
 #endif

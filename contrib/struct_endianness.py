@@ -253,7 +253,7 @@ def handle_struct_body(body_str):
         new_lines = ['#if OSMO_IS_LITTLE_ENDIAN\n']
         new_lines.append(body_str)
         new_lines.append('#elif OSMO_IS_BIG_ENDIAN\n'
-                         '/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */\n')
+                         '/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */\n')
         new_lines.append(big_endian_body_str)
         new_lines.append('\n#endif\n')
         return ''.join(new_lines)

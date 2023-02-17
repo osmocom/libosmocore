@@ -30,7 +30,7 @@ struct gsm414_close_mslot_loop_cmd {
 		loop_mech:3,
 		tn:3;
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	uint8_t tn:3, loop_mech:3, chc:2;
 #endif
 } __attribute__((packed));
@@ -43,7 +43,7 @@ struct gsm414_close_mslot_loop_ack {
 		chc:2,
 		spare:2;
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	uint8_t spare:2, chc:2, loop_mech:3, err_ind:1;
 #endif
 } __attribute__((packed));
@@ -70,7 +70,7 @@ struct gsm414_gprs_test_mode_cmd {
 		dl_tx_offset:3,
 		_spare:4;
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	uint16_t d:12,
 		spare:3,
 		l:1;
@@ -86,7 +86,7 @@ struct gsm414_egprs_st_sb_loop_cmd {
 		dl_tx_offset:3,
 		m:1;
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	uint8_t m:1, dl_tx_offset:3, _spare:4;
 #endif
 } __attribute__((packed));

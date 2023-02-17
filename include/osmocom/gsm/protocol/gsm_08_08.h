@@ -54,7 +54,7 @@ struct dtap_header {
 			dlci_spare:3,
 			dlci_cc:2;
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 			uint8_t dlci_cc:2, dlci_spare:3, dlci_sapi:3;
 #endif
 		};
@@ -783,7 +783,7 @@ struct gsm0808_diagnostics {
 	uint8_t error_pointer_bit_spare:4,
 			error_pointer_bit:4;
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	uint8_t error_pointer_bit:4, error_pointer_bit_spare:4;
 #endif
 	uint8_t msg[0]; /*! received message which provoked the error */

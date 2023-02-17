@@ -367,7 +367,7 @@ struct bssgp_rim_pdu_ind {
 			pdu_type_ext:3,
 			reserved:4;
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 		uint8_t reserved:4, pdu_type_ext:3, ack_requested:1;
 #endif
 } __attribute__ ((packed));

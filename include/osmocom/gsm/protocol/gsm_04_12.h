@@ -23,7 +23,7 @@ struct gsm412_block_type {
 		lpd : 2,
 		spare : 1;
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	uint8_t	spare:1, lpd:2, lb:1, seq_nr:4;
 #endif
 } __attribute__((packed));
@@ -37,7 +37,7 @@ struct gsm412_sched_msg {
 	uint8_t cbsms_msg_map[6];
 	uint8_t data[0];
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	uint8_t type:2, beg_slot_nr:6;
 	uint8_t spare2:1, spare1:1, end_slot_nr:6;
 	uint8_t cbsms_msg_map[6];

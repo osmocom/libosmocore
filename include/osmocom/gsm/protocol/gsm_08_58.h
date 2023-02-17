@@ -126,7 +126,7 @@ struct abis_rsl_osmo_rep_acch_cap {
 		rxqual:3,
 		reserved:1;
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	uint8_t reserved:1, rxqual:3, ul_sacch:1, dl_sacch:1, dl_facch_all:1, dl_facch_cmd:1;
 #endif
 } __attribute__ ((packed));
@@ -139,7 +139,7 @@ struct abis_rsl_osmo_temp_ovp_acch_cap {
 		facch_enable:1,
 		sacch_enable:1;
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	uint8_t sacch_enable:1, facch_enable:1, rxqual:3, overpower_db:3;
 #endif
 } __attribute__ ((packed));
@@ -666,7 +666,7 @@ struct rsl_ie_cb_cmd_type {
 	uint8_t def_bcast:1;
 	uint8_t command:4;
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	uint8_t command:4, def_bcast:1, spare:1, last_block:2;
 #endif
 } __attribute__ ((packed));
@@ -817,7 +817,7 @@ struct ipac_preproc_ave_cfg {
 		ave_method:3;
 	uint8_t params[0];
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	uint8_t reserved:1, param_id:2, h_reqave:5;
 	uint8_t ave_method:3, h_reqt:5;
 	uint8_t params[0];
@@ -833,7 +833,7 @@ struct osmo_preproc_ave_cfg_field {
 	uint8_t h_reqt:5,
 		ave_method:3;
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	uint8_t reserved:2, ave_enabled:1, h_reqave:5;
 	uint8_t ave_method:3, h_reqt:5;
 #endif
@@ -857,7 +857,7 @@ struct ipac_preproc_pc_thresh {
 	uint8_t u_rxqual:3, reserved_u_rxqual:1,
 		l_rxqual:3, reserved_l_rxqual:1;
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	uint8_t reserved_l_rxlev:2, l_rxlev:6;
 	uint8_t reserved_u_rxlev:2, u_rxlev:6;
 	uint8_t reserved_l_rxqual:1, l_rxqual:3, reserved_u_rxqual:1, u_rxqual:3;
@@ -893,7 +893,7 @@ struct ipac_preproc_ho_thresh {
 	uint8_t ms_range_max:6,
 		reserved_ms_range:2;
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	uint8_t reserved_l_rxlev_ul:2, l_rxlev_ul_h:6;
 	uint8_t reserved_l_rxlev_dl:2, l_rxlev_dl_h:6;
 	uint8_t reserved_rxlev_ul:2, rxlev_ul_ih:6;
@@ -917,7 +917,7 @@ struct ipac_preproc_pc_comp {
 	uint8_t pc_interval:5, reserved_pc:3;
 	uint8_t red_step_size:4, inc_step_size:4;
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	uint8_t reserved_p1:3, p1:5;
 	uint8_t reserved_n1:3, n1:5;
 	uint8_t reserved_p2:3, p2:5;
@@ -939,7 +939,7 @@ struct ipac_preproc_pc_comp_field {
 	uint8_t upper_p:5, reserved_upper_p:3;
 	uint8_t upper_n:5, reserved_upper_n:3;
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	uint8_t reserved_lower_p:3, lower_p:5;
 	uint8_t reserved_lower_n:3, lower_n:5;
 	uint8_t reserved_upper_p:3, upper_p:5;
@@ -980,7 +980,7 @@ struct ipac_preproc_ho_comp {
 	uint8_t reserved;
 
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	uint8_t reserved_p5:3, p5:5;
 	uint8_t reserved_n5:3, n5:5;
 	uint8_t reserved_p6:3, p6:5;
@@ -1003,7 +1003,7 @@ struct ipac_preproc_ho_candidates {
 		s:1,
 		reserved1:1;
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	uint8_t reserved0:2, bsic:6;
 	uint8_t reserved1:1, s:1, ba_used:1, bcch_freq:5;
 #endif
@@ -1018,7 +1018,7 @@ struct ipac_preproc_ncell_dflts {
 	uint8_t ms_txpwr_max_def:5,
 		reserved_ms_txpwr_max_def:3;
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	uint8_t reserved_rxlev_min_def:2, rxlev_min_def:6;
 	uint8_t reserved_ho_margin_def:3, ho_margin_def:5;
 	uint8_t reserved_ms_txpwr_max_def:3, ms_txpwr_max_def:5;
@@ -1031,7 +1031,7 @@ struct ipac_preproc_ho_ctl_param {
 		sdcch_ho_umts:1,
 		reserved:6;
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	uint8_t reserved:6, sdcch_ho_umts:1, sdcch_ho_gsm:1;
 #endif
 }__attribute__ ((packed));
@@ -1055,7 +1055,7 @@ struct rsl_l1_info {
 			ms_pwr:5;
 		uint8_t ta;
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 		uint8_t ms_pwr:5, fpc_epc:1, srr_sro:1, reserved:1;
 		uint8_t ta;
 #endif

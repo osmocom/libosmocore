@@ -1,7 +1,7 @@
 /*! \file endian.h
  *
  * GNU and FreeBSD have various ways to express the
- * endianess but none of them is similiar enough. This
+ * endianness but none of them is similar enough. This
  * will create two defines that allows to decide on the
  * endian. The following will be defined to either 0 or
  * 1 at the end of the file.

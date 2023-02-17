@@ -28,7 +28,7 @@ struct gprs_rlc_ul_header_egprs_1 {
 	uint8_t spare_lo:6,
 		 dummy:2;
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	uint8_t tfi_hi:2, cv:4, si:1, r:1;
 	uint8_t bsn1_hi:5, tfi_lo:3;
 	uint8_t bsn2_hi:2, bsn1_lo:6;
@@ -56,7 +56,7 @@ struct gprs_rlc_ul_header_egprs_2 {
 	uint8_t spare_lo:5,
 		 dummy:3;
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	uint8_t tfi_hi:2, cv:4, si:1, r:1;
 	uint8_t bsn1_hi:5, tfi_lo:3;
 	uint8_t cps_hi:2, bsn1_lo:6;
@@ -83,7 +83,7 @@ struct gprs_rlc_ul_header_egprs_3 {
 		 spare:1,
 		 dummy:1;
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	uint8_t tfi_hi:2, cv:4, si:1, r:1;
 	uint8_t bsn1_hi:5, tfi_lo:3;
 	uint8_t cps_hi:2, bsn1_lo:6;
@@ -106,7 +106,7 @@ struct gprs_rlc_dl_header_egprs_1 {
 	uint8_t bsn2_lo:3,
 		 cps:5;
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	uint8_t tfi_hi:1, rrbp:2, es_p:2, usf:3;
 	uint8_t bsn1_hi:2, pr:2, tfi_lo:4;
 	uint8_t bsn1_mid:8;
@@ -129,7 +129,7 @@ struct gprs_rlc_dl_header_egprs_2 {
 		 cps:3,
 		 dummy:4;
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	uint8_t tfi_hi:1, rrbp:2, es_p:2, usf:3;
 	uint8_t bsn1_hi:2, pr:2, tfi_lo:4;
 	uint8_t bsn1_mid:8;
@@ -152,7 +152,7 @@ struct gprs_rlc_dl_header_egprs_3 {
 		 spb:2,
 		 dummy:1;
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	uint8_t tfi_hi:1, rrbp:2, es_p:2, usf:3;
 	uint8_t bsn1_hi:2, pr:2, tfi_lo:4;
 	uint8_t bsn1_mid:8;

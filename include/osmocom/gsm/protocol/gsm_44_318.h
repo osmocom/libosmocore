@@ -162,7 +162,7 @@ struct gan_rc_csr_hdr {
 	uint8_t msg_type;
 	uint8_t data[0];
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	uint16_t len;
 	uint8_t skip_ind:4, pdisc:4;
 	uint8_t msg_type;
@@ -190,7 +190,7 @@ struct gan_cch_desc_ie {
 		spare2:2;
 	uint8_t access_class[2];
 #elif OSMO_IS_BIG_ENDIAN
-/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianess.py) */
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	uint8_t mscr:1, att:1, dtm:1, gprs:1, nmo:2, ecmc:1, spare:1;
 	uint8_t t3212;
 	uint8_t rac;
