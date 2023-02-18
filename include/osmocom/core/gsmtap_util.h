@@ -39,11 +39,15 @@ static inline int gsmtap_inst_fd(struct gsmtap_inst *gti)
 }
 
 int gsmtap_source_init_fd(const char *host, uint16_t port);
+int gsmtap_source_init_fd2(const char *local_host, uint16_t local_port, const char *rem_host, uint16_t rem_port);
 
 int gsmtap_source_add_sink_fd(int gsmtap_fd);
 
 struct gsmtap_inst *gsmtap_source_init(const char *host, uint16_t port,
 					int ofd_wq_mode);
+struct gsmtap_inst *gsmtap_source_init2(const char *local_host, uint16_t local_port,
+					const char *rem_host, uint16_t rem_port, int ofd_wq_mode);
+
 void gsmtap_source_free(struct gsmtap_inst *gti);
 
 int gsmtap_source_add_sink(struct gsmtap_inst *gti);
