@@ -237,7 +237,7 @@ struct msgb *gsmtap_makemsg(uint16_t arfcn, uint8_t ts, uint8_t chan_type,
  *  \param[in] port UDP port number in host byte order
  *  \return file descriptor of the new socket
  *
- * Opens a GSMTAP source (sending) socket, conncet it to host/port and
+ * Opens a GSMTAP source (sending) socket, connect it to host/port and
  * return resulting fd.  If \a host is NULL, the destination address
  * will be localhost.  If \a port is 0, the default \ref
  * GSMTAP_UDP_PORT will be used.
