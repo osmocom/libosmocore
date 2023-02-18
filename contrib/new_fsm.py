@@ -8,7 +8,7 @@ def as_tuple(str_or_tuple):
 	return tuple(str_or_tuple)
 
 class State:
-	def __init__(s, name, events, out_states, onenter=True):
+	def __init__(s, name, events=(), out_states=(), onenter=True):
 		s.name = name
 		s.const = name.upper()
 		s.events = as_tuple(events)
@@ -181,26 +181,67 @@ static __attribute__((constructor)) void {{prefix}}_fsm_register(void)
 
 		return template.render(**vars(s))
 
-fsm = FSM(head='#include <osmocom/hnbgw/pfcp_cp_peer.h>',
-	  prefix = 'pfcp_cp_peer',
-	  priv = 'pfcp_cp_peer',
+fsm = FSM(head='#include <osmocom/hnbgw/context_map.h>',
+	  prefix = 'cm_rua',
+	  priv = 'hnbgw_context_map',
 	  states = (
-		    State('wait_retry',
-			  (),
-			  ('wait_assoc_setup_resp',)
+		    State('init',
+			  events=(),
+			  out_states=('connected',),
+			  onenter=False
 			 ),
-		    State('wait_assoc_setup_resp',
-			  ('rx_assoc_setup_resp',),
-			  ('associated',),
+		    State('connected',
+			  events=('rx_id_direct_transfer',
+				  'ranap_msg',
+				  'sccp_rlsd'),
+			  out_states=('disconnected',),
+			  onenter=False
 			 ),
-		    State('associated',
-			  ('rx_assoc_update_req',),
-			  ('wait_assoc_setup_resp','graceful_release'),
-			  onenter=False,
+		    State('disconnected',
 			 ),
-		    State('graceful_release',
-			  (),()),
 		   )
 	 )
-with open('pfcp_cp_peer.c', 'w') as f:
+with open('context_map_rua.c', 'w') as f:
+	f.write(fsm.to_c())
+
+fsm = FSM(head='#include <osmocom/hnbgw/context_map.h>',
+	  prefix = 'cm_sccp',
+	  priv = 'hnbgw_context_map',
+	  states = (
+		    State('init',
+			  events=('ranap_msg',
+				 ),
+			  out_states=('wait_cc',
+				     ),
+			  onenter=False
+			 ),
+		    State('wait_cc',
+			  events=('rx_connection_confirm',
+				 ),
+			  out_states=('connected',
+				     ),
+			  onenter=False
+			 ),
+		    State('connected',
+			  events=('rx_data_form_1',
+				  'ranap_msg',
+				  'rua_disc',
+				 ),
+			  out_states=('wait_rlc',
+				      'disconnected',
+				     ),
+			  onenter=False
+			 ),
+		    State('wait_rlc',
+			  events=('rx_release_complete',
+				 ),
+			  out_states=('disconnected',
+				     ),
+			  onenter=False
+			 ),
+		    State('disconnected',
+			 ),
+		   )
+	 )
+with open('context_map_sccp.c', 'w') as f:
 	f.write(fsm.to_c())
