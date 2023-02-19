@@ -541,6 +541,7 @@ uint8_t gsm0808_enc_channel_type(struct msgb *msg,
 		break;
 	case GSM0808_CHAN_SIGN:
 		/* Octet 5 is spare */
+		msgb_put_u8(msg, 0);
 		break;
 	default:
 		OSMO_ASSERT(false);
