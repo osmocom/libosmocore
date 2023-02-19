@@ -825,7 +825,7 @@ int gsm48_decode_ssversion(struct gsm_mncc_ssversion *ssv,
 {
 	uint8_t in_len = lv[0];
 
-	if (in_len < 1 || in_len < sizeof(ssv->info))
+	if (in_len < 1 || in_len > sizeof(ssv->info))
 		return -EINVAL;
 
 	memcpy(ssv->info, lv + 1, in_len);
