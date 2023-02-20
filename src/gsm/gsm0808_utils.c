@@ -573,7 +573,7 @@ int gsm0808_dec_channel_type(struct gsm0808_channel_type *ct,
 
 	ct->ch_indctr = (*elem) & 0x0f;
 	elem++;
-	ct->ch_rate_type = (*elem) & 0x0f;
+	ct->ch_rate_type = *elem;
 	elem++;
 
 	switch (ct->ch_indctr) {
