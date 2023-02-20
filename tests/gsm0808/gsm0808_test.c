@@ -1199,6 +1199,33 @@ static void test_gsm0808_enc_dec_channel_type_speech(void)
 	msgb_free(msg);
 }
 
+static void test_gsm0808_enc_dec_channel_type_sign(void)
+{
+	struct gsm0808_channel_type enc_ct = {
+		.ch_indctr = GSM0808_CHAN_SIGN,
+		.ch_rate_type = GSM0808_SIGN_FULL_PREF_NO_CHANGE,
+	};
+	struct gsm0808_channel_type dec_ct = {};
+	struct msgb *msg;
+	uint8_t ct_enc_expected[] = { GSM0808_IE_CHANNEL_TYPE,
+		0x03, 0x03, 0x1a, 0x00
+	};
+	uint8_t rc_enc;
+	int rc_dec;
+
+	msg = msgb_alloc(1024, "output buffer");
+	rc_enc = gsm0808_enc_channel_type(msg, &enc_ct);
+	OSMO_ASSERT(rc_enc == 5);
+	OSMO_ASSERT(memcmp(ct_enc_expected, msg->data, msg->len) == 0);
+
+	rc_dec = gsm0808_dec_channel_type(&dec_ct, msg->data + 2, msg->len - 2);
+	OSMO_ASSERT(rc_dec == 2);
+	OSMO_ASSERT(enc_ct.ch_indctr == dec_ct.ch_indctr);
+	OSMO_ASSERT(enc_ct.ch_rate_type == dec_ct.ch_rate_type);
+
+	msgb_free(msg);
+}
+
 static void test_gsm0808_dec_channel_type_err(void)
 {
 	struct gsm0808_channel_type ct;
@@ -2684,6 +2711,7 @@ int main(int argc, char **argv)
 	test_gsm0808_enc_dec_channel_type_data();
 	test_gsm0808_enc_dec_channel_type_data_asym_pref();
 	test_gsm0808_enc_dec_channel_type_speech();
+	test_gsm0808_enc_dec_channel_type_sign();
 	test_gsm0808_dec_channel_type_err();
 	test_gsm0808_enc_dec_encrypt_info();
 
