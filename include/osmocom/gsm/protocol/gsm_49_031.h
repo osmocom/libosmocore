@@ -68,6 +68,7 @@ struct osmo_bssmap_le_lcs_qos {
 	uint8_t va_val:7, va_ind:1;
 	uint8_t spare3:6, rt:2;
 #elif OSMO_IS_BIG_ENDIAN
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
 	uint8_t spare1:6, vel:1, vert:1;
 	uint8_t ha_ind:1, ha_val:7;
 	uint8_t va_ind:1, va_val:7;
