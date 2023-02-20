@@ -232,7 +232,7 @@ struct msgb *gsmtap_makemsg(uint16_t arfcn, uint8_t ts, uint8_t chan_type,
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-/*! Create a new (sending) GSMTAP source socket 
+/*! Create a new (sending) GSMTAP source socket
  *  \param[in] host host name or IP address in string format
  *  \param[in] port UDP port number in host byte order
  *  \return file descriptor of the new socket
