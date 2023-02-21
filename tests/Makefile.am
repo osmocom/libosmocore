@@ -49,6 +49,7 @@ check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
 		 smscb/smscb_test                                       \
 		 smscb/gsm0341_test                                     \
 		 smscb/cbsp_test                                        \
+		 auth/xor2g_test                                        \
 		 $(NULL)
 
 if ENABLE_MSGFILE
@@ -109,6 +110,9 @@ comp128_comp128_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 
 auth_milenage_test_SOURCES = auth/milenage_test.c
 auth_milenage_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
+
+auth_xor2g_test_SOURCES = auth/xor2g_test.c
+auth_xor2g_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
 
 abis_abis_test_SOURCES = abis/abis_test.c
 abis_abis_test_LDADD = $(LDADD) $(top_builddir)/src/gsm/libosmogsm.la
@@ -357,6 +361,7 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
              timer/timer_test.ok sms/sms_test.ok ussd/ussd_test.ok	\
              bits/bitrev_test.ok a5/a5_test.ok				\
              conv/conv_test.ok auth/milenage_test.ok ctrl/ctrl_test.ok	\
+             auth/xor2g_test.ok						\
              lapd/lapd_test.ok						\
              gsm0408/gsm0408_test.ok gsm0408/gsm0408_test.err		\
              gsm0808/gsm0808_test.ok gb/bssgp_fc_tests.err		\
