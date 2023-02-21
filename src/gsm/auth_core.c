@@ -208,7 +208,7 @@ static const struct value_string auth_alg_vals[] = {
 	{ OSMO_AUTH_ALG_COMP128v1, "COMP128v1" },
 	{ OSMO_AUTH_ALG_COMP128v2, "COMP128v2" },
 	{ OSMO_AUTH_ALG_COMP128v3, "COMP128v3" },
-	{ OSMO_AUTH_ALG_XOR, "XOR" },
+	{ OSMO_AUTH_ALG_XOR_3G, "XOR-3G" },
 	{ OSMO_AUTH_ALG_MILENAGE, "MILENAGE" },
 	{ OSMO_AUTH_ALG_XOR_2G, "XOR-2G" },
 	{ 0, NULL }

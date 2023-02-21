@@ -168,8 +168,8 @@ static int xor_gen_vec_auts(struct osmo_auth_vector *vec,
 }
 
 static struct osmo_auth_impl xor_alg = {
-	.algo = OSMO_AUTH_ALG_XOR,
-	.name = "XOR (libosmogsm built-in)",
+	.algo = OSMO_AUTH_ALG_XOR_3G,
+	.name = "XOR-3G (libosmogsm built-in)",
 	.priority = 1000,
 	.gen_vec = &xor_gen_vec,
 	.gen_vec_auts = &xor_gen_vec_auts,

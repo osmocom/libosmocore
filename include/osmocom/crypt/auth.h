@@ -30,11 +30,14 @@ enum osmo_auth_algo {
 	OSMO_AUTH_ALG_COMP128v1,
 	OSMO_AUTH_ALG_COMP128v2,
 	OSMO_AUTH_ALG_COMP128v3,
-	OSMO_AUTH_ALG_XOR,
+	OSMO_AUTH_ALG_XOR_3G,
 	OSMO_AUTH_ALG_MILENAGE,
 	OSMO_AUTH_ALG_XOR_2G,
 	_OSMO_AUTH_ALG_NUM,
 };
+/* Backwards-compatibility. We used to call XOR-3G just "XOR" which became ambiguous when
+ * we started to add XOR-2G support. */
+#define OSMO_AUTH_ALG_XOR OSMO_AUTH_ALG_XOR_3G
 
 /*! permanent (secret) subscriber auth data */
 struct osmo_sub_auth_data {
