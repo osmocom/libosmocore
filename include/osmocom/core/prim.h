@@ -30,7 +30,11 @@ enum osmo_prim_operation {
 	PRIM_OP_CONFIRM,	/*!< confirm */
 };
 
-extern const struct value_string osmo_prim_op_names[5];
+extern const struct value_string osmo_prim_op_names[];
+static inline const char *osmo_prim_operation_name(enum osmo_prim_operation val)
+{
+	return get_value_string(osmo_prim_op_names, val);
+}
 
 /*!< The upper 8 byte of the technology, the lower 24 bits for the SAP */
 #define _SAP_GSM_SHIFT	24
