@@ -22,6 +22,8 @@
 #include <osmocom/core/linuxlist.h>
 #include <osmocom/core/msgb.h>
 
+#define OSMO_I460_NUM_SUBCHAN 8
+
 /* I.460 sub-slot rate */
 enum osmo_i460_rate {
 	OSMO_I460_RATE_NONE,		/* disabled */
@@ -69,7 +71,7 @@ struct osmo_i460_subchan {
 };
 
 struct osmo_i460_timeslot {
-	struct osmo_i460_subchan schan[8];
+	struct osmo_i460_subchan schan[OSMO_I460_NUM_SUBCHAN];
 };
 
 /*! description of a sub-channel; passed by caller */
