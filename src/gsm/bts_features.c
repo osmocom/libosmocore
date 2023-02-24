@@ -82,5 +82,7 @@ const struct value_string osmo_bts_features_names[] = {
 	{ BTS_FEAT_DYN_TS_SDCCH8, "DYN_TS_SDCCH8" },
 	{ BTS_FEAT_ACCH_TEMP_OVP, "ACCH_TEMP_OVP" },
 	{ BTS_FEAT_OSMUX, "OSMUX" },
+	{ BTS_FEAT_VBS, "VBS" },
+	{ BTS_FEAT_VGCS, "VGCS" },
 	{}
 };
