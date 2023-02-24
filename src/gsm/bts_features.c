@@ -16,6 +16,7 @@
  *  GNU General Public License for more details.
  */
 
+#include <osmocom/core/utils.h>
 #include <osmocom/gsm/bts_features.h>
 
 const struct value_string osmo_bts_features_descs[] = {
@@ -48,6 +49,9 @@ const struct value_string osmo_bts_features_descs[] = {
 	{ BTS_FEAT_VGCS,		"Voice Group Call Service" },
 	{ 0, NULL }
 };
+
+/* Ensure that all BTS_FEAT_* entries are present in osmo_bts_features_descs[] */
+osmo_static_assert(ARRAY_SIZE(osmo_bts_features_descs) == _NUM_BTS_FEAT + 1, _bts_features_descs);
 
 /*! return description string of a BTS feature (osmo_bts_features_descs).
  * To get the plain feature name, use osmo_bts_features_name() instead. */
@@ -86,3 +90,6 @@ const struct value_string osmo_bts_features_names[] = {
 	{ BTS_FEAT_VGCS, "VGCS" },
 	{}
 };
+
+/* Ensure that all BTS_FEAT_* entries are present in osmo_bts_features_names[] */
+osmo_static_assert(ARRAY_SIZE(osmo_bts_features_names) == _NUM_BTS_FEAT + 1, _bts_features_names);

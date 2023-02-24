@@ -7,7 +7,7 @@
 
 /* N. B: always add new features to the end of the list (right before _NUM_BTS_FEAT) to avoid breaking compatibility
    with BTS compiled against earlier version of this header. Also make sure that the description strings
-   osmo_bts_features_descs[] in gsm_data.c are also updated accordingly! */
+   osmo_bts_features_{descs,names}[] in bts_features.c are also updated accordingly! */
 enum osmo_bts_features {
 	BTS_FEAT_HSCSD,
 	BTS_FEAT_GPRS,
