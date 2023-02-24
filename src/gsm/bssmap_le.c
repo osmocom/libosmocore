@@ -180,7 +180,7 @@ int osmo_bssmap_le_ie_dec_location_type(struct bssmap_le_location_type *lt,
 					struct osmo_bssmap_le_err **err, void *err_ctx,
 					const uint8_t *elem, uint8_t len)
 {
-	*lt = (struct bssmap_le_location_type){};
+	memset(lt, 0x00, sizeof(*lt));
 
 	if (!elem || len < 1)
 		DEC_ERR(-EINVAL, msgt, iei, LCS_CAUSE_UNSPECIFIED, "zero length");
@@ -348,7 +348,7 @@ int osmo_lcs_cause_dec(struct lcs_cause_ie *lcs_cause,
 		       struct osmo_bssmap_le_err **err, void *err_ctx,
 		       const uint8_t *data, uint8_t len)
 {
-	*lcs_cause = (struct lcs_cause_ie){};
+	memset(lcs_cause, 0x00, sizeof(*lcs_cause));
 
 	if (!data || len < 1)
 		DEC_ERR(-EINVAL, msgt, iei, LCS_CAUSE_UNSPECIFIED, "zero length");
@@ -558,7 +558,7 @@ static int osmo_bssmap_le_dec_perform_loc_req(struct bssmap_le_perform_loc_req *
 					      struct osmo_bssmap_le_err **err, void *err_ctx,
 					      const struct tlv_parsed *tp)
 {
-	*params = (struct bssmap_le_perform_loc_req){};
+	memset(params, 0x00, sizeof(*params));
 
 	DEC_IE_MANDATORY(msgt, BSSMAP_LE_IEI_LOCATION_TYPE, osmo_bssmap_le_ie_dec_location_type,
 			 &params->location_type);
@@ -606,7 +606,7 @@ static int osmo_bssmap_le_dec_perform_loc_resp(struct bssmap_le_perform_loc_resp
 					       struct osmo_bssmap_le_err **err, void *err_ctx,
 					       const struct tlv_parsed *tp)
 {
-	*params = (struct bssmap_le_perform_loc_resp){};
+	memset(params, 0x00, sizeof(*params));
 
 	DEC_IE_OPTIONAL_FLAG(msgt, BSSMAP_LE_IEI_GEO_LOCATION, osmo_bssmap_le_ie_dec_gad, &params->location_estimate,
 			     params->location_estimate_present);
@@ -630,7 +630,7 @@ static int osmo_bssmap_le_dec_perform_loc_abort(struct lcs_cause_ie *params,
 						struct osmo_bssmap_le_err **err, void *err_ctx,
 						const struct tlv_parsed *tp)
 {
-	*params = (struct lcs_cause_ie){};
+	memset(params, 0x00, sizeof(*params));
 
 	DEC_IE_MANDATORY(msgt, BSSMAP_LE_IEI_LCS_CAUSE, osmo_lcs_cause_dec, params);
 	return 0;
@@ -647,7 +647,8 @@ static int osmo_bssmap_le_dec_conn_oriented_info(struct bssmap_le_conn_oriented_
 						 struct osmo_bssmap_le_err **err, void *err_ctx,
 						 const struct tlv_parsed *tp)
 {
-	*params = (struct bssmap_le_conn_oriented_info){};
+	memset(params, 0x00, sizeof(*params));
+
 	DEC_IE_MANDATORY(msgt, BSSMAP_LE_IEI_APDU, osmo_bssmap_le_ie_dec_apdu, &params->apdu);
 	return 0;
 }
@@ -711,7 +712,7 @@ static int osmo_bssmap_le_dec(struct bssmap_le_pdu *pdu,
 	int ies_len;
 	struct tlv_parsed tp;
 
-	*pdu = (struct bssmap_le_pdu){};
+	memset(pdu, 0x00, sizeof(*pdu));
 
 	if (len < 1)
 		DEC_ERR(-EINVAL, -1, -1, LCS_CAUSE_UNSPECIFIED, "zero length");
@@ -798,7 +799,7 @@ int osmo_bssap_le_dec(struct bssap_le_pdu *pdu, struct osmo_bssap_le_err **err, 
 		return RC; \
 	} while(0)
 
-	*pdu = (struct bssap_le_pdu){};
+	memset(pdu, 0x00, sizeof(*pdu));
 
 	h = msgb_l2(msg);
 	if (!h)

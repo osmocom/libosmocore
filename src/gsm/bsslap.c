@@ -217,7 +217,7 @@ int osmo_bsslap_dec(struct bsslap_pdu *pdu,
 	int ies_len;
 	struct tlv_parsed tp;
 
-	*pdu = (struct bsslap_pdu){};
+	memset(pdu, 0x00, sizeof(*pdu));
 	if (err)
 		*err = NULL;
 
