@@ -191,7 +191,7 @@ static inline uint8_t iuup_get_hdr_crc(const uint8_t *data)
 #define IUUP_MSGB_HEADROOM_MIN_REQUIRED	(OSMO_MAX(sizeof(struct osmo_iuup_tnl_prim), sizeof(struct osmo_iuup_rnl_prim)) + (PTR_ALIGNMENT_BYTES - 1))
 static inline struct msgb *osmo_iuup_msgb_alloc_c(void *ctx, size_t size)
 {
-	osmo_static_assert(size > IUUP_MSGB_HEADROOM_MIN_REQUIRED, iuup_msgb_alloc_headroom_bigger);
+	OSMO_ASSERT(size > IUUP_MSGB_HEADROOM_MIN_REQUIRED);
 	return msgb_alloc_headroom_c(ctx, size, IUUP_MSGB_HEADROOM_MIN_REQUIRED, "iuup-msgb");
 }
 
