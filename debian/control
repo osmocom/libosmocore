@@ -143,7 +143,9 @@ Depends: ${misc:Depends},
          libosmocoding-doc,
          libosmogsm-doc,
          libosmoisdn-doc,
-         libosmovty-doc
+         libosmovty-doc,
+         libosmoctrl-doc,
+         libosmogb-doc
 Description: Documentation for the Osmo Core library
  This is part of the libosmocore "meta"-library. The libosmocore library
  contains various utility functions that were originally developed as part of
