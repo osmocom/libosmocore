@@ -145,7 +145,9 @@ Depends: ${misc:Depends},
          libosmoisdn-doc,
          libosmovty-doc,
          libosmoctrl-doc,
-         libosmogb-doc
+         libosmogb-doc,
+         libosmosim-doc,
+         libosmousb-doc
 Description: Documentation for the Osmo Core library
  This is part of the libosmocore "meta"-library. The libosmocore library
  contains various utility functions that were originally developed as part of
@@ -334,6 +336,21 @@ Description: Osmo SIM library
  .
  The libosmosim library in particular contains routines for SIM card access.
 
+Package: libosmosim-doc
+Architecture: all
+Section: doc
+Depends: ${misc:Depends},
+         libosmosim2,
+         libjs-jquery
+Description: Documentation for the Osmo SIM library
+ This is part of the libosmocore "meta"-library. The libosmocore library
+ contains various utility functions that were originally developed as part of
+ the OpenBSC project, but which are of a more generic nature and thus useful to
+ (at least) other programs that are developed in the sphere of Free Software /
+ Open Source mobile communication.
+ .
+ This package contains the documentation for the libosmosim library.
+
 Package: libosmousb0
 Section: libs
 Architecture: any
@@ -350,6 +367,21 @@ Description: Osmo USB library
  .
  The libosmosub library in particular contains routines for USB device access
  via libusb-1.0, integrated into the libosmocore select event loop.
+
+Package: libosmousb-doc
+Architecture: all
+Section: doc
+Depends: ${misc:Depends},
+         libosmousb0,
+         libjs-jquery
+Description: Documentation for the Osmo USB library
+ This is part of the libosmocore "meta"-library. The libosmocore library
+ contains various utility functions that were originally developed as part of
+ the OpenBSC project, but which are of a more generic nature and thus useful to
+ (at least) other programs that are developed in the sphere of Free Software /
+ Open Source mobile communication.
+ .
+ This package contains the documentation for the libosmousb library.
 
 Package: libosmocore-dev
 Architecture: any

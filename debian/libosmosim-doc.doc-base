@@ -1,0 +1,7 @@
+Document: libosmosim-doc
+Title: Documentation for the libosmosim library
+Section: Programming
+
+Format: HTML
+Index: /usr/share/doc/libosmocore/sim/html/index.html
+Files: /usr/share/doc/libosmocore/sim/html/*.html

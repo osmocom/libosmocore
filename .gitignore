@@ -42,6 +42,8 @@ Doxyfile.vty
 Doxyfile.codec
 Doxyfile.coding
 Doxyfile.gb
+Doxyfile.sim
+Doxyfile.usb
 
 debian/autoreconf.after
 debian/autoreconf.before
@@ -83,6 +85,8 @@ doc/vty/doxygen_sqlite3.db
 doc/gsm
 doc/isdn
 doc/gb
+doc/sim
+doc/usb
 doc/html.tar
 doc/*.tag
 doc/*.tag.prep
