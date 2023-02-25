@@ -471,8 +471,10 @@ int gsmtap_source_add_sink(struct gsmtap_inst *gti)
 
 
 /*! Open GSMTAP source socket, connect and register osmo_fd
- *  \param[in] host host name or IP address in string format
- *  \param[in] port UDP port number in host byte order
+ *  \param[in] local_host IP address in string format
+ *  \param[in] local_port UDP port number in host byte order
+ *  \param[in] rem_host host name or IP address in string format
+ *  \param[in] rem_port UDP port number in host byte order
  *  \param[in] ofd_wq_mode Register \ref osmo_wqueue (1) or not (0)
  *  \return callee-allocated \ref gsmtap_inst
  *
