@@ -253,7 +253,7 @@ Description: Documentation for the Osmo ISDN utility library
  (at least) other programs that are developed in the sphere of Free Software /
  Open Source mobile communication.
  .
- This package contains the documentation for the libosmoisdnm library.
+ This package contains the documentation for the libosmoisdn library.
 
 Package: libosmovty9
 Section: libs
