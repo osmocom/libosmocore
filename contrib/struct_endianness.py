@@ -261,7 +261,7 @@ def handle_struct_body(body_str):
         return body_str
 
 def _check_file(f):
-    if not (f.endswith('.h') or f.endswith('.c') or f.endswith('.cpp')):
+    if not f.endswith(('.h', '.c', '.cpp')):
         return
 
     # section the file into
