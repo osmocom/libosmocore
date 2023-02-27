@@ -532,7 +532,7 @@ static int gprs_ns_tx_simple(struct gprs_nsvc *nsvc, uint8_t pdu_type)
 
 /*! Transmit a NS-RESET on a given NSVC
  *  \param[in] nsvc NS-VC used for transmission
- *  \paam[in] cause Numeric NS cause value
+ *  \param[in] cause Numeric NS cause value
  */
 int gprs_ns_tx_reset(struct gprs_nsvc *nsvc, uint8_t cause)
 {

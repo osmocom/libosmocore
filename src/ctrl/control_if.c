@@ -96,7 +96,7 @@ int ctrl_parse_get_num(vector vline, int i, long *num)
 
 /*! Send a CTRL command to all connections.
  *  \param[in] ctrl global control handle
- *  \param[in] cmd command to send to all connections in \ctrl
+ *  \param[in] cmd command to send to all connections in ctrl
  *  \returns number of times the command has been sent */
 int ctrl_cmd_send_to_all(struct ctrl_handle *ctrl, struct ctrl_cmd *cmd)
 {
@@ -1048,7 +1048,7 @@ struct ctrl_handle *ctrl_interface_setup2(void *data, uint16_t default_port, ctr
  *  This function is used by e.g. library code to install lookup helpers
  *  for additional nodes in the control interface.
  *  \param[in] lookup The lookup helper function
- *  \retuns - on success; negative on error.
+ *  \returns - on success; negative on error.
  */
 int ctrl_lookup_register(ctrl_cmd_lookup lookup)
 {

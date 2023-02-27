@@ -74,7 +74,7 @@ static bool str_in_list(const char **list, const char *key)
  *
  *  Constraints: Keys up to a maximum length of 255 characters are supported.
  *
- *  \oaram[out] out caller-allocated array of pointers for the generated output
+ *  \param[out] out caller-allocated array of pointers for the generated output
  *  \param[in] out_len size of out (number of pointers)
  *  \param[in] in input environment (NULL-terminated list of pointers like **environ)
  *  \param[in] whitelist whitelist of permitted keys in environment (like **environ)
@@ -131,7 +131,7 @@ int osmo_environment_filter(char **out, size_t out_len, char **in, const char **
  *  Constraints: If the same key exists in 'out' and 'in', duplicate keys are
  *  generated.  It is a simple append, without any duplicate checks.
  *
- *  \oaram[out] out caller-allocated array of pointers for the generated output
+ *  \param[out] out caller-allocated array of pointers for the generated output
  *  \param[in] out_len size of out (number of pointers)
  *  \param[in] in input environment (NULL-terminated list of pointers like **environ)
  *  \returns number of entries filled in 'out'; negative on error */

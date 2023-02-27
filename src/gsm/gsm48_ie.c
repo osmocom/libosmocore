@@ -369,7 +369,7 @@ int gsm48_encode_bearer_cap(struct msgb *msg, int lv_only,
 /*! Decode TS 04.08 Call Control Capabilities IE (10.5.4.5a)
  *  \param[out] Caller-provided memory for decoded CC capabilities
  *  \param[in] lv Length-Value of IE
- *  \retursns 0 on success; negative on error */
+ *  \returns 0 on success; negative on error */
 int gsm48_decode_cccap(struct gsm_mncc_cccap *ccap, const uint8_t *lv)
 {
 	uint8_t in_len = lv[0];

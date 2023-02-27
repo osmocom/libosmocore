@@ -293,7 +293,7 @@ enum sms_alphabet gsm338_get_sms_alphabet(uint8_t dcs)
  *  \param[in] type GSM340_TYPE_*
  *  \param[in] plan Numbering Plan
  *  \param[in] number string containing number
- *  \reurns number of bytes of \a oa that have been used */
+ *  \returns number of bytes of \a oa that have been used */
 int gsm340_gen_oa(uint8_t *oa, unsigned int oa_len, uint8_t type,
 	uint8_t plan, const char *number)
 {
@@ -348,7 +348,7 @@ int gsm411_push_rp_header(struct msgb *msg, uint8_t rp_msg_type,
  *  \param[in] proto Protocol
  *  \param[in] trans Transaction
  *  \param[in] msg_type Message Type
- *  \retrns 0 */
+ *  \returns 0 */
 int gsm411_push_cp_header(struct msgb *msg, uint8_t proto, uint8_t trans,
 			     uint8_t msg_type)
 {

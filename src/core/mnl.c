@@ -54,7 +54,7 @@ static int osmo_mnl_fd_cb(struct osmo_fd *ofd, unsigned int what)
 }
 
 /*! create an osmocom-wrapped limnl netlink socket.
- *  \parma[in] ctx talloc context from which to allocate
+ *  \param[in] ctx talloc context from which to allocate
  *  \param[in] bus netlink socket bus ID (see NETLINK_* constants)
  *  \param[in] groups groups of messages to bind/subscribe to
  *  \param[in] mnl_cb callback function called for each incoming message

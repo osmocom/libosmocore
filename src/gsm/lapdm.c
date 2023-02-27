@@ -253,7 +253,7 @@ int lapdm_channel_init2(struct lapdm_channel *lc, enum lapdm_mode mode,
  *  \param[in] t200_ms_dcch per-SAPI array of T200 in milli-seconds for DCCH
  *  \param[in] t200_ms_acch per-SAPI array of T200 in milli-seconds for SACCH
  *  \param[in] chan_t GSM channel type (to correctly set N200)
- *  \parma[in] name_pfx human-readable name (copied by function + extended with ACCH/DCCH)
+ *  \param[in] name_pfx human-readable name (copied by function + extended with ACCH/DCCH)
  */
 int lapdm_channel_init3(struct lapdm_channel *lc, enum lapdm_mode mode,
 			const int *t200_ms_dcch, const int *t200_ms_acch, enum gsm_chan_t chan_t,

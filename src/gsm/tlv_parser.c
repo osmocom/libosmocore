@@ -126,7 +126,7 @@ int osmo_tlvp_merge(struct tlv_parsed *dst, const struct tlv_parsed *src)
  *  \param[inout] msg Caller-allocated message buffer with sufficient tailroom
  *  \param[in] type TLV type/format to use during encode
  *  \param[in] tag Tag of TLV to be encoded
- *  \parma[in] len Length of TLV to be encoded
+ *  \param[in] len Length of TLV to be encoded
  *  \param[in] val Value part of TLV to be encoded
  *  \returns 0 on success; negative in case of error */
 int tlv_encode_one(struct msgb *msg, enum tlv_type type, uint8_t tag,

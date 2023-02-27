@@ -197,7 +197,7 @@ static ubit_t mux_schan_provide_bit(struct osmo_i460_subchan *schan)
 
 /*! provide one byte with the subchan-specific bits of given sub-channel.
  *  \param[in] schan sub-channel that is to provide bits
- *  \parma[out] mask bitmask of those bits filled in
+ *  \param[out] mask bitmask of those bits filled in
  *  \returns bits of given sub-channel */
 static uint8_t mux_subchan_provide_bits(struct osmo_i460_subchan *schan, uint8_t *mask)
 {

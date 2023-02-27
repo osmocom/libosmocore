@@ -44,7 +44,7 @@ static const struct osmo_ecu_ops *g_ecu_ops[_NUM_OSMO_ECU_CODECS];
 
 /*! initialize an ECU instance for given codec.
  *  \param[in] ctx talloc context from which to allocate
- *  \parma[in] codec codec for which to initialize/create ECU */
+ *  \param[in] codec codec for which to initialize/create ECU */
 struct osmo_ecu_state *osmo_ecu_init(void *ctx, enum osmo_ecu_codec codec)
 {
 	if (codec >= ARRAY_SIZE(g_ecu_ops))

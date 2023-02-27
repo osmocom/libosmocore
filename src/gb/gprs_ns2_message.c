@@ -282,7 +282,7 @@ int ns2_tx_block_ack(struct gprs_ns2_vc *nsvc, uint16_t *nsvci)
 
 /*! Transmit a NS-RESET on a given NS-VC.
  *  \param[in] nsvc NS-VC used for transmission
- *  \paam[in] cause Numeric NS cause value
+ *  \param[in] cause Numeric NS cause value
  *  \returns 0 in case of success */
 int ns2_tx_reset(struct gprs_ns2_vc *nsvc, uint8_t cause)
 {
