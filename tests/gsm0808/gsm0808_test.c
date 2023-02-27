@@ -1098,7 +1098,7 @@ static void test_gsm0808_enc_dec_channel_type_data(void)
 	struct gsm0808_channel_type dec_ct = {};
 	struct msgb *msg;
 	uint8_t ct_enc_expected[] = { GSM0808_IE_CHANNEL_TYPE,
-		0x03, 0x02, 0x0b, 0x51,
+		0x03, 0x02, 0x0b, 0x11,
 	};
 	uint8_t rc_enc;
 	int rc_dec;
@@ -1142,7 +1142,7 @@ static void test_gsm0808_enc_dec_channel_type_data_asym_pref(void)
 	struct gsm0808_channel_type dec_ct = {};
 	struct msgb *msg;
 	uint8_t ct_enc_expected[] = { GSM0808_IE_CHANNEL_TYPE,
-		0x05, 0x02, 0x0b, 0x91, 0x8b, 0x20,
+		0x05, 0x02, 0x0b, 0xd1, 0x8b, 0x20,
 	};
 	uint8_t rc_enc;
 	int rc_dec;
@@ -1237,17 +1237,17 @@ static void test_gsm0808_dec_channel_type_err(void)
 	OSMO_ASSERT(rc == -ENOTSUP);
 
 	/* Data: ext in Octet 5 with transparent service */
-	const uint8_t hex2[] = { 0x02, 0x0b, 0xc0, 0x00 };
+	const uint8_t hex2[] = { 0x02, 0x0b, 0x80, 0x00 };
 	rc = gsm0808_dec_channel_type(&ct, hex2, sizeof(hex2));
 	OSMO_ASSERT(rc == -EINVAL);
 
 	/* Data: ext in Octet 5, but too short */
-	const uint8_t hex3[] = { 0x02, 0x0b, 0x80 };
+	const uint8_t hex3[] = { 0x02, 0x0b, 0xc0 };
 	rc = gsm0808_dec_channel_type(&ct, hex3, sizeof(hex3));
 	OSMO_ASSERT(rc == -EOVERFLOW);
 
 	/* Data: ext in Octet 5a, but too short */
-	const uint8_t hex4[] = { 0x02, 0x0b, 0x80, 0x80 };
+	const uint8_t hex4[] = { 0x02, 0x0b, 0xc0, 0x80 };
 	rc = gsm0808_dec_channel_type(&ct, hex4, sizeof(hex4));
 	OSMO_ASSERT(rc == -EOVERFLOW);
 

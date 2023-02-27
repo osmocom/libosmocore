@@ -510,7 +510,7 @@ uint8_t gsm0808_enc_channel_type(struct msgb *msg,
 	case GSM0808_CHAN_DATA:
 		byte = ct->data_rate;
 
-		if (ct->data_transparent)
+		if (!ct->data_transparent)
 			byte |= 0x40; /* Set T/NT */
 
 		if (ct->data_rate_allowed_is_set) {
@@ -580,7 +580,7 @@ int gsm0808_dec_channel_type(struct gsm0808_channel_type *ct,
 	case GSM0808_CHAN_DATA:
 		byte = *elem;
 		elem++;
-		ct->data_transparent = byte & 0x40; /* T/NT */
+		ct->data_transparent = !(byte & 0x40); /* T/NT */
 		ct->data_rate = byte & 0x3f;
 
 		/* Optional extension for non-transparent service */
