@@ -234,9 +234,7 @@ static int set_##cmdname(struct ctrl_cmd *cmd, void *_data) \
  *  \param[in] cmdname symbol name of the command related function
  *  \param[in] cmdstr string name exposed on CTRL
  *  \param[in] dtype name of outer struct of user data
- *  \param[in] element name of field within \a dtype
- *  \param[in] min minimum permitted integer value
- *  \param[in] max maximum permitted integer value */
+ *  \param[in] element name of field within \a dtype */
 #define CTRL_CMD_DEFINE_STRING(cmdname, cmdstr, dtype, element) \
 	CTRL_HELPER_GET_STRING(cmdname, dtype, element) \
 	CTRL_HELPER_SET_STRING(cmdname, dtype, element) \
