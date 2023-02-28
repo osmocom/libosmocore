@@ -559,7 +559,9 @@ rb_prev;
 rb_replace_node;
 sercomm_drv_lock;
 sercomm_drv_unlock;
+tall_ctr_ctx; /* deprecated */
 tall_log_ctx;
+tall_msgb_ctx; /* deprecated */
 
 local: *;
 };
