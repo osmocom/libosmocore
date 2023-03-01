@@ -496,51 +496,59 @@ enum rsl_cmod_spd {
 	RSL_CMOD_SPD_DATA	= 0x02,
 	RSL_CMOD_SPD_SIGN	= 0x03,
 };
-#define RSL_CMOD_CRT_SDCCH		0x01
-#define RSL_CMOD_CRT_TCH_Bm		0x08	/* full-rate */
-#define RSL_CMOD_CRT_TCH_Lm		0x09	/* half-rate */
-#define RSL_CMOD_CRT_TCH_BI_Bm		0x0a	/* full-rate: bi-directional (multislot) */
-#define RSL_CMOD_CRT_TCH_UNI_Bm		0x1a	/* full-rate: uni-directional (multislot) */
-#define RSL_CMOD_CRT_TCH_GROUP_Bm	0x18	/* full-rate: group call channel */
-#define RSL_CMOD_CRT_TCH_GROUP_Lm	0x19	/* half-rate: group call channel */
-#define RSL_CMOD_CRT_TCH_BCAST_Bm	0x28	/* full-rate: broadcast call channel */
-#define RSL_CMOD_CRT_TCH_BCAST_Lm	0x29	/* half-rate: broadcast call channel */
-#define RSL_CMOD_CRT_OSMO_TCH_VAMOS_Bm	0x88	/* full-rate in VAMOS mode */
-#define RSL_CMOD_CRT_OSMO_TCH_VAMOS_Lm	0x89	/* half-rate in VAMOS mode */
-/* Speech */
-#define RSL_CMOD_SP_GSM1	0x01
-#define RSL_CMOD_SP_GSM2	0x11
-#define RSL_CMOD_SP_GSM3	0x21
-#define RSL_CMOD_SP_GSM4	0x31
-#define RSL_CMOD_SP_GSM5	0x09
-#define RSL_CMOD_SP_GSM6	0x0d
-/* non-transparent data (asymmetric) */
-#define RSL_CMOD_CSD_NTA_43k5_14k5	0x61	/* asymmetric 43.5 kbit/s (DL) + 14.5 kbit/s (UL) */
-#define RSL_CMOD_CSD_NTA_29k0_14k5	0x62	/* asymmetric 29.0 kbit/s (DL) + 14.5 kbit/s (UL) */
-#define RSL_CMOD_CSD_NTA_43k5_29k0	0x63	/* asymmetric 43.5 kbit/s (DL) + 29.0 kbit/s (UL) */
-#define RSL_CMOD_CSD_NTA_14k5_43k5	0x69	/* asymmetric 14.5 kbit/s (DL) + 43.5 kbit/s (UL) */
-#define RSL_CMOD_CSD_NTA_14k5_29k0	0x6a	/* asymmetric 14.5 kbit/s (DL) + 29.0 kbit/s (UL) */
-#define RSL_CMOD_CSD_NTA_29k0_43k5	0x6b	/* asymmetric 29.0 kbit/s (DL) + 43.5 kbit/s (UL) */
-/* non-transparent data */
-#define RSL_CMOD_CSD_NT_43k5	0x74
-#define RSL_CMOD_CSD_NT_28k8	0x71
-#define RSL_CMOD_CSD_NT_14k5	0x58
-#define RSL_CMOD_CSD_NT_12k0	0x50
-#define RSL_CMOD_CSD_NT_6k0	0x51
+/*! Channel rate and type */
+enum rsl_cmod_crt {
+	RSL_CMOD_CRT_SDCCH		= 0x01,
+	RSL_CMOD_CRT_TCH_Bm		= 0x08,	/* full-rate */
+	RSL_CMOD_CRT_TCH_Lm		= 0x09,	/* half-rate */
+	RSL_CMOD_CRT_TCH_BI_Bm		= 0x0a,	/* full-rate: bi-directional (multislot) */
+	RSL_CMOD_CRT_TCH_UNI_Bm		= 0x1a,	/* full-rate: uni-directional (multislot) */
+	RSL_CMOD_CRT_TCH_GROUP_Bm	= 0x18,	/* full-rate: group call channel */
+	RSL_CMOD_CRT_TCH_GROUP_Lm	= 0x19,	/* half-rate: group call channel */
+	RSL_CMOD_CRT_TCH_BCAST_Bm	= 0x28,	/* full-rate: broadcast call channel */
+	RSL_CMOD_CRT_TCH_BCAST_Lm	= 0x29,	/* half-rate: broadcast call channel */
+	RSL_CMOD_CRT_OSMO_TCH_VAMOS_Bm	= 0x88,	/* full-rate in VAMOS mode */
+	RSL_CMOD_CRT_OSMO_TCH_VAMOS_Lm	= 0x89,	/* half-rate in VAMOS mode */
+};
+/*! Speech */
+enum rsl_cmod_sp {
+	RSL_CMOD_SP_GSM1	= 0x01,
+	RSL_CMOD_SP_GSM2	= 0x11,
+	RSL_CMOD_SP_GSM3	= 0x21,
+	RSL_CMOD_SP_GSM4	= 0x31,
+	RSL_CMOD_SP_GSM5	= 0x09,
+	RSL_CMOD_SP_GSM6	= 0x0d,
+};
+/*! Non-transparent data */
+enum rsl_cmod_csd_nt {
+	RSL_CMOD_CSD_NTA_43k5_14k5	= 0x61,	/* asymmetric 43.5 kbit/s (DL) + 14.5 kbit/s (UL) */
+	RSL_CMOD_CSD_NTA_29k0_14k5	= 0x62,	/* asymmetric 29.0 kbit/s (DL) + 14.5 kbit/s (UL) */
+	RSL_CMOD_CSD_NTA_43k5_29k0	= 0x63,	/* asymmetric 43.5 kbit/s (DL) + 29.0 kbit/s (UL) */
+	RSL_CMOD_CSD_NTA_14k5_43k5	= 0x69,	/* asymmetric 14.5 kbit/s (DL) + 43.5 kbit/s (UL) */
+	RSL_CMOD_CSD_NTA_14k5_29k0	= 0x6a,	/* asymmetric 14.5 kbit/s (DL) + 29.0 kbit/s (UL) */
+	RSL_CMOD_CSD_NTA_29k0_43k5	= 0x6b,	/* asymmetric 29.0 kbit/s (DL) + 43.5 kbit/s (UL) */
+	RSL_CMOD_CSD_NT_43k5		= 0x74,
+	RSL_CMOD_CSD_NT_28k8		= 0x71,
+	RSL_CMOD_CSD_NT_14k5		= 0x58,
+	RSL_CMOD_CSD_NT_12k0		= 0x50,
+	RSL_CMOD_CSD_NT_6k0		= 0x51,
+};
 /* legacy #defines with wrong name */
 #define RSL_CMOD_SP_NT_14k5	RSL_CMOD_CSD_NT_14k5
 #define RSL_CMOD_SP_NT_12k0	RSL_CMOD_CSD_NT_12k0
 #define RSL_CMOD_SP_NT_6k0	RSL_CMOD_CSD_NT_6k0
-/* transparent data */
-#define RSL_CMOD_CSD_T_32000	0x38
-#define RSL_CMOD_CSD_T_29000	0x39
-#define RSL_CMOD_CSD_T_14400	0x18
-#define RSL_CMOD_CSD_T_9600	0x10
-#define RSL_CMOD_CSD_T_4800	0x11
-#define RSL_CMOD_CSD_T_2400	0x12
-#define RSL_CMOD_CSD_T_1200	0x13
-#define RSL_CMOD_CSD_T_600	0x14
-#define RSL_CMOD_CSD_T_1200_75	0x15
+/*! Transparent data */
+enum rsl_cmod_csd_t {
+	RSL_CMOD_CSD_T_32000	= 0x38,
+	RSL_CMOD_CSD_T_29000	= 0x39,
+	RSL_CMOD_CSD_T_14400	= 0x18,
+	RSL_CMOD_CSD_T_9600	= 0x10,
+	RSL_CMOD_CSD_T_4800	= 0x11,
+	RSL_CMOD_CSD_T_2400	= 0x12,
+	RSL_CMOD_CSD_T_1200	= 0x13,
+	RSL_CMOD_CSD_T_600	= 0x14,
+	RSL_CMOD_CSD_T_1200_75	= 0x15,
+};
 
 /*! RSL Channel Identification IE (Chapter 9.3.5) */
 struct rsl_ie_chan_ident {
