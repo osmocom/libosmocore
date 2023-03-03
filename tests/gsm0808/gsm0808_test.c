@@ -1093,7 +1093,7 @@ static void test_gsm0808_enc_dec_channel_type_data(void)
 		.ch_rate_type = GSM0808_DATA_HALF_PREF,
 
 		.data_transparent = true,
-		.data_rate = GSM0808_DATA_RATE_TRANSP_04800,
+		.data_rate = GSM0808_DATA_RATE_TRANSP_4k8,
 	};
 	struct gsm0808_channel_type dec_ct = {};
 	struct msgb *msg;
@@ -1131,11 +1131,11 @@ static void test_gsm0808_enc_dec_channel_type_data_asym_pref(void)
 		.ch_rate_type = GSM0808_DATA_HALF_PREF,
 
 		.data_transparent = false,
-		.data_rate = GSM0808_DATA_RATE_NON_TRANSP_06000,
+		.data_rate = GSM0808_DATA_RATE_NON_TRANSP_6k0,
 		.data_rate_allowed_is_set = true,
-		.data_rate_allowed = GSM0808_DATA_RATE_NON_TRANSP_ALLOWED_06000
-				     | GSM0808_DATA_RATE_NON_TRANSP_ALLOWED_12000
-				     | GSM0808_DATA_RATE_NON_TRANSP_ALLOWED_14500,
+		.data_rate_allowed = GSM0808_DATA_RATE_NON_TRANSP_ALLOWED_6k0
+				     | GSM0808_DATA_RATE_NON_TRANSP_ALLOWED_12k0
+				     | GSM0808_DATA_RATE_NON_TRANSP_ALLOWED_14k5,
 		.data_asym_pref_is_set = true,
 		.data_asym_pref = GSM0808_CT_ASYM_PREF_UL,
 	};
