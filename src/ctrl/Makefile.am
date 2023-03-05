@@ -22,5 +22,6 @@ libosmoctrl_la_SOURCES += control_vty.c
 endif
 
 EXTRA_DIST = libosmoctrl.map
+EXTRA_libosmoctrl_la_DEPENDENCIES = libosmoctrl.map
 
 endif

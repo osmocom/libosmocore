@@ -37,3 +37,4 @@ libosmocoding_la_LIBADD = \
 	$(NULL)
 
 EXTRA_DIST = libosmocoding.map
+EXTRA_libosmocoding_la_DEPENDENCIES = libosmocoding.map

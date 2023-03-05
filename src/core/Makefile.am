@@ -111,6 +111,8 @@ EXTRA_DIST = \
 	libosmocore.map \
 	$(NULL)
 
+EXTRA_libosmocore_la_DEPENDENCIES = libosmocore.map
+
 libosmocore_la_LDFLAGS = \
 	$(LTLDFLAGS_OSMOCORE) \
 	-version-info \

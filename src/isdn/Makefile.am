@@ -23,3 +23,4 @@ libosmoisdn_la_LDFLAGS = $(LTLDFLAGS_OSMOISDN) -version-info $(LIBVERSION) -no-u
 libosmoisdn_la_LIBADD = libisdnint.la $(TALLOC_LIBS)
 
 EXTRA_DIST = libosmoisdn.map
+EXTRA_libosmoisdn_la_DEPENDENCIES = libosmoisdn.map

@@ -40,3 +40,4 @@ libosmogb_test_la_SOURCES= $(libosmogb_la_SOURCES)
 endif
 
 EXTRA_DIST = libosmogb.map
+EXTRA_libosmogb_la_DEPENDENCIES = libosmogb.map
