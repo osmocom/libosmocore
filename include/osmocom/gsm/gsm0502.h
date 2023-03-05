@@ -31,6 +31,36 @@
 #define GSM_TDMA_FN_DEC(fn) \
 	((fn) = GSM_TDMA_FN_SUB((fn), 1))
 
+/* 5.2.3.1 Normal burst for GMSK (1 bit per symbol) */
+#define GSM_NBITS_NB_GMSK_TAIL		3
+#define GSM_NBITS_NB_GMSK_PAYLOAD	(2 * 58)
+#define GSM_NBITS_NB_GMSK_TRAIN_SEQ	26
+#define GSM_NBITS_NB_GMSK_BURST		148  /* without guard period */
+
+/* 5.2.3.3 Normal burst for 8-PSK (3 bits per symbol) */
+#define GSM_NBITS_NB_8PSK_TAIL		(GSM_NBITS_NB_GMSK_TAIL * 3)
+#define GSM_NBITS_NB_8PSK_PAYLOAD	(GSM_NBITS_NB_GMSK_PAYLOAD * 3)
+#define GSM_NBITS_NB_8PSK_TRAIN_SEQ	(GSM_NBITS_NB_GMSK_TRAIN_SEQ * 3)
+#define GSM_NBITS_NB_8PSK_BURST		(GSM_NBITS_NB_GMSK_BURST * 3)
+
+/* 5.2.5 Synchronization burst (also GMSK) */
+#define GSM_NBITS_SB_GMSK_TAIL		GSM_NBITS_NB_GMSK_TAIL
+#define GSM_NBITS_SB_GMSK_PAYLOAD	(2 * 39)
+#define GSM_NBITS_SB_GMSK_ETRAIN_SEQ	64
+#define GSM_NBITS_SB_GMSK_BURST		GSM_NBITS_NB_GMSK_BURST
+
+/* 5.2.6 Dummy burst (also GMSK) */
+#define GSM_NBITS_DB_GMSK_TAIL		GSM_NBITS_NB_GMSK_TAIL
+#define GSM_NBITS_DB_GMSK_MIXED		142
+#define GSM_NBITS_DB_GMSK_BURST		GSM_NBITS_NB_GMSK_BURST
+
+/* 5.2.7 Access burst (also GMSK) */
+#define GSM_NBITS_AB_GMSK_ETAIL		8
+#define GSM_NBITS_AB_GMSK_SYNCH_SEQ	41
+#define GSM_NBITS_AB_GMSK_PAYLOAD	36
+#define GSM_NBITS_AB_GMSK_TAIL		GSM_NBITS_NB_GMSK_TAIL
+#define GSM_NBITS_AB_GMSK_BURST		GSM_NBITS_NB_GMSK_BURST
+
 /* Table 5 Clause 7 TS 05.02 */
 static inline unsigned int
 gsm0502_get_n_pag_blocks(const struct gsm48_control_channel_descr *chan_desc)
