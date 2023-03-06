@@ -744,10 +744,10 @@ enum rsl_ipac_speech_mode_m {
 
 /* RSL_IE_IPAC_RTP_CSD_FMT, lower four bits */
 enum rsl_ipac_rtp_csd_format_d {
-	RSL_IPAC_RTP_CSD_EXT_TRAU = 0,
-	RSL_IPAC_RTP_CSD_NON_TRAU = 1,
-	RSL_IPAC_RTP_CSD_TRAU_BTS = 2,
-	RSL_IPAC_RTP_CSD_IWF_FREE = 3,
+	RSL_IPAC_RTP_CSD_EXT_TRAU = 0,	/*!< TRAU-like RTP format, without leading zero-bits */
+	RSL_IPAC_RTP_CSD_NON_TRAU = 1,	/*!< packed 16k (252/288 bit) / 8k (126 bit) in RTP */
+	RSL_IPAC_RTP_CSD_TRAU_BTS = 2,	/*!< TRAU in BTS; V.110 in RTP/CLEARMODE */
+	RSL_IPAC_RTP_CSD_IWF_FREE = 3,	/*!< unknown proprietary IWF-free BTS-BTS data */
 };
 /* RSL_IE_IPAC_RTP_CSD_FMT, upper four bits */
 enum rsl_ipac_rtp_csd_format_ir {
