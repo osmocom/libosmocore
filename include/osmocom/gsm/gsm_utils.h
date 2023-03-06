@@ -181,7 +181,7 @@ void gsm_fn2gsmtime(struct gsm_time *time, uint32_t fn);
 char *gsm_fn_as_gsmtime_str(uint32_t fn);
 
 /* Convert from GSM time to frame number */
-uint32_t gsm_gsmtime2fn(struct gsm_time *time);
+uint32_t gsm_gsmtime2fn(const struct gsm_time *time);
 
 /* Returns static buffer with string representation of a GSM Time */
 char *osmo_dump_gsmtime(const struct gsm_time *tm);

@@ -885,7 +885,7 @@ char *gsm_fn_as_gsmtime_str(uint32_t fn)
 /*! Encode decoded \ref gsm_time to Frame Number
  *  \param[in] time GSM Time in decoded structure
  *  \returns GSM Frame Number */
-uint32_t gsm_gsmtime2fn(struct gsm_time *time)
+uint32_t gsm_gsmtime2fn(const struct gsm_time *time)
 {
 	uint32_t fn;
 
