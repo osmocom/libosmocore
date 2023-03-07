@@ -198,6 +198,10 @@ enum osmo_gsup_message_type {
 	OSMO_GSUP_MSGT_E_ABORT					= 0b01001011,
 
 	OSMO_GSUP_MSGT_ROUTING_ERROR				= 0b01001110,
+
+	OSMO_GSUP_MSGT_EPDG_TUNNEL_REQUEST			= 0b01010000,
+	OSMO_GSUP_MSGT_EPDG_TUNNEL_ERROR			= 0b01010001,
+	OSMO_GSUP_MSGT_EPDG_TUNNEL_RESULT			= 0b01010010,
 };
 
 #define OSMO_GSUP_MSGT_E_ROUTING_ERROR OSMO_GSUP_MSGT_ROUTING_ERROR
@@ -281,6 +285,7 @@ enum osmo_gsup_message_class {
 	OSMO_GSUP_MESSAGE_CLASS_SMS = 2,
 	OSMO_GSUP_MESSAGE_CLASS_USSD = 3,
 	OSMO_GSUP_MESSAGE_CLASS_INTER_MSC = 4,
+	OSMO_GSUP_MESSAGE_CLASS_IPSEC_EPDG = 5,
 	/* Keep this as last entry with a value of max(enum osmo_gsup_message_class) + 1.
 	 * This value shall serve as the size for an array to aid de-muxing all known GSUP classes. */
 	OSMO_GSUP_MESSAGE_CLASS_ARRAYSIZE
