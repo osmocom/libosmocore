@@ -8,7 +8,7 @@ AM_CPPFLAGS = \
 	-I"$(top_builddir)/include" \
 	-I"$(top_builddir)" \
 	$(NULL)
-AM_CFLAGS = -Wall $(TALLOC_CFLAGS)
+AM_CFLAGS = -Wall
 
 if ENABLE_PSEUDOTALLOC
 AM_CPPFLAGS += -I$(top_srcdir)/src/pseudotalloc
@@ -25,10 +25,9 @@ libosmocoding_la_SOURCES = \
 	gsm0503_amr_dtx.c
 libosmocoding_la_LDFLAGS = \
 	$(LTLDFLAGS_OSMOCODING) \
-	-version-info \
-	$(LIBVERSION) \
+	-version-info $(LIBVERSION) \
 	-no-undefined \
-	$(TALLOC_LIBS)
+	$(NULL)
 
 libosmocoding_la_LIBADD = \
 	$(top_builddir)/src/core/libosmocore.la \
