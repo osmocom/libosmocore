@@ -716,6 +716,7 @@ endif
 # pass -u to osmo_verify_transcript_vty.py by doing:
 #   make vty-test U=-u
 
+if ENABLE_GB
 vty-test-ns2:
 	$(MAKE) -C $(top_builddir)/utils osmo-ns-dummy
 	osmo_verify_transcript_vty.py -v \
@@ -724,6 +725,10 @@ vty-test-ns2:
 		$(U) $(srcdir)/gb/gprs_ns2*.vty
 	osmotestvty.py -p $(abs_top_srcdir)/tests/gb -w $(abs_top_builddir)/tests/gb -v
 	osmotestconfig.py -p $(abs_top_srcdir)/tests/gb -w $(abs_top_builddir)/tests/gb -v
+else
+vty-test-ns2:
+	echo "Not running vty-test-ns2 because osmo-ns-dummy is not built (--disable-gb)"
+endif
 
 vty-test-logging:
 	osmo_verify_transcript_vty.py -v \
