@@ -1327,12 +1327,12 @@ void log_target_destroy(struct log_target *target)
 		}
 		wq = target->tgt_file.wqueue;
 		if (wq) {
+			osmo_fd_unregister(&wq->bfd);
 			if (wq->bfd.fd >= 0) {
 				if (target->type == LOG_TGT_TYPE_FILE)
 					close(wq->bfd.fd);
 				wq->bfd.fd = -1;
 			}
-			osmo_fd_unregister(&wq->bfd);
 			osmo_wqueue_clear(wq);
 			talloc_free(wq);
 			target->tgt_file.wqueue = NULL;
