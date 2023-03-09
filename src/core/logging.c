@@ -579,11 +579,20 @@ static const char *const_basename(const char *path)
 static int get_timestamp(struct timeval *tv, struct tm *tm, const struct log_target *target)
 {
 	osmo_gettimeofday(tv, NULL);
+	switch (target->timezone) {
+	case LOG_TIMEZONE_LOCALTIME:
 #ifdef HAVE_LOCALTIME_R
-	return (localtime_r(&tv->tv_sec, tm) != NULL) ? 0 : -1;
-#else
-	return -1;
+		return (localtime_r(&tv->tv_sec, tm) != NULL) ? 0 : -1;
 #endif
+		/* If there is no localtime_r() function, then maybe gmtime_r() is available instead? */
+	case LOG_TIMEZONE_UTC:
+#ifdef HAVE_GMTIME_R
+		return (gmtime_r(&tv->tv_sec, tm) != NULL) ? 0 : -1;
+#endif
+		/* If there is no gmtime_r() function, then print no timestamp. */
+	default:
+		return -1;
+	}
 }
 
 /*! main output formatting function for log lines.
@@ -958,6 +967,15 @@ void log_set_use_color(struct log_target *target, int use_color)
 void log_set_print_timestamp(struct log_target *target, int print_timestamp)
 {
 	log_set_print_timestamp2(target, print_timestamp ? LOG_TIMESTAMP_CTIME : LOG_TIMESTAMP_NONE);
+}
+
+/*! Switch logging timezone between UTC or local time.
+ *  \param[in] target Log target to be affected.
+ *  \param[in] timezone Timezone to set.
+ */
+void log_set_timezone(struct log_target *target, enum log_timezone timezone)
+{
+	target->timezone = timezone;
 }
 
 /*! Use log_set_print_timestamp2(LOG_TIMESTAMP_DATE_PACKED) instead.

@@ -297,6 +297,11 @@ enum log_filename_pos {
 	LOG_FILENAME_POS_LINE_END,
 };
 
+enum log_timezone {
+	LOG_TIMEZONE_LOCALTIME,
+	LOG_TIMEZONE_UTC,
+};
+
 /*! Format of the timestamp printed */
 enum log_timestamp_format {
 	LOG_TIMESTAMP_NONE,
@@ -411,6 +416,8 @@ struct log_target {
 	/* Where on a log line to put the source file info. */
 	enum log_filename_pos print_filename_pos;
 
+	/* Set timezone for timestamps (if at all enabled) */
+	enum log_timezone timezone;
 	/* Timestamp format */
 	enum log_timestamp_format timestamp_format;
 };
@@ -438,6 +445,7 @@ void log_set_print_extended_timestamp(struct log_target *target, int flag)
 void log_set_print_timestamp(struct log_target *target, int flag)
 	OSMO_DEPRECATED("Use log_set_print_timestamp2(LOG_TIMESTAMP_CTIME) instead");
 void log_set_print_timestamp2(struct log_target *target, enum log_timestamp_format format);
+void log_set_timezone(struct log_target *target, enum log_timezone timezone);
 void log_set_print_tid(struct log_target *target, int);
 void log_set_print_filename(struct log_target *target, int) OSMO_DEPRECATED("Use log_set_print_filename2() instead");
 void log_set_print_filename2(struct log_target *target, enum log_filename_type lft);
