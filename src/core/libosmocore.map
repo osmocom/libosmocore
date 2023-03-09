@@ -83,6 +83,7 @@ log_set_print_level;
 log_set_print_tid;
 log_set_print_timestamp;
 log_set_use_color;
+log_set_timezone;
 log_target_create;
 log_target_create_file;
 log_target_create_file_stream;

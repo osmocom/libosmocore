@@ -48,6 +48,7 @@ logging_vty_test# list
   logging color (0|1)
   logging timestamp (0|1)
   logging print extended-timestamp (0|1)
+  logging timezone (localtime|utc)
   logging print thread-id (0|1)
   logging print category (0|1)
   logging print category-hex (0|1)
@@ -67,12 +68,17 @@ logging_vty_test# logging ?
   color         Configure color-printing for log messages
   timestamp     Configure log message timestamping
   print         Log output settings
+  timezone      Configure time zone for log message timestamping
   set-log-mask  Set the logmask of this logging target
   level         Set the log level for a specified category
 
 logging_vty_test# logging timestamp ?
   0  Don't prefix each log message
   1  Prefix each log message with current timestamp
+
+logging_vty_test# logging timezone ?
+  localtime  Log timestamps in the system's local time
+  utc        Log timestamps in Coordinated Universal Time (UTC)
 
 logging_vty_test# logging level ?
 ... ! all
@@ -151,6 +157,24 @@ logging_vty_test# logging print file basename ?
 
 logging_vty_test# configure terminal
 logging_vty_test(config)# log stderr
+
+logging_vty_test(config-log)# show running-config
+...
+log stderr
+... !logging timezone
+logging_vty_test(config-log)# logging timezone utc
+logging_vty_test(config-log)# show running-config
+...
+log stderr
+... !logging timezone
+ logging timezone utc
+... !logging timezone
+logging_vty_test(config-log)# logging timezone localtime
+logging_vty_test(config-log)# show running-config
+...
+log stderr
+... !logging timezone
+
 logging_vty_test(config-log)# show running-config
 ...
 log stderr

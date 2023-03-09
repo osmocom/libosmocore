@@ -295,6 +295,11 @@ enum log_filename_pos {
 	LOG_FILENAME_POS_LINE_END,
 };
 
+enum log_timezone {
+	LOG_TIMEZONE_LOCALTIME,
+	LOG_TIMEZONE_UTC,
+};
+
 /*! structure representing a logging target */
 struct log_target {
 	struct llist_head entry;		/*!< linked list */
@@ -391,6 +396,9 @@ struct log_target {
 	enum log_filename_type print_filename2;
 	/* Where on a log line to put the source file info. */
 	enum log_filename_pos print_filename_pos;
+
+	/* Set timezone for timestamps (if at all enabled) */
+	enum log_timezone timezone;
 };
 
 /* use the above macros */
@@ -412,6 +420,7 @@ void log_set_all_filter(struct log_target *target, int);
 void log_set_use_color(struct log_target *target, int);
 void log_set_print_extended_timestamp(struct log_target *target, int);
 void log_set_print_timestamp(struct log_target *target, int);
+void log_set_timezone(struct log_target *target, enum log_timezone timezone);
 void log_set_print_tid(struct log_target *target, int);
 void log_set_print_filename(struct log_target *target, int) OSMO_DEPRECATED("Use log_set_print_filename2() instead");
 void log_set_print_filename2(struct log_target *target, enum log_filename_type lft);

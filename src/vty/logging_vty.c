@@ -190,6 +190,22 @@ DEFUN(logging_use_clr,
 	RET_WITH_UNLOCK(CMD_SUCCESS);
 }
 
+DEFUN(logging_timezone,
+      logging_timezone_cmd,
+      "logging timezone (localtime|utc)",
+	LOGGING_STR "Configure time zone for log message timestamping\n"
+	"Log timestamps in the system's local time\n"
+	"Log timestamps in Coordinated Universal Time (UTC)\n")
+{
+	struct log_target *tgt;
+	ACQUIRE_VTY_LOG_TGT_WITH_LOCK(vty, tgt);
+	if (strcmp(argv[0], "utc") == 0)
+		log_set_timezone(tgt, LOG_TIMEZONE_UTC);
+	else
+		log_set_timezone(tgt, LOG_TIMEZONE_LOCALTIME);
+	RET_WITH_UNLOCK(CMD_SUCCESS);
+}
+
 DEFUN(logging_prnt_timestamp,
       logging_prnt_timestamp_cmd,
       "logging timestamp (0|1)",
@@ -1061,6 +1077,17 @@ static int config_write_log_single(struct vty *vty, struct log_target *tgt)
 	else
 		vty_out(vty, " logging timestamp %u%s",
 			tgt->print_timestamp ? 1 : 0, VTY_NEWLINE);
+
+	switch (tgt->timezone) {
+	case LOG_TIMEZONE_UTC:
+		vty_out(vty, " logging timezone utc%s", VTY_NEWLINE);
+		break;
+	default:
+	case LOG_TIMEZONE_LOCALTIME:
+		/* write nothing, since LOG_TIMEZONE_LOCALTIME is the default */
+		break;
+	}
+
 	if (tgt->print_level)
 		vty_out(vty, " logging print level 1%s", VTY_NEWLINE);
 	vty_out(vty, " logging print file %s%s%s",
@@ -1204,6 +1231,7 @@ void logging_vty_add_cmds(void)
 	install_lib_element_ve(&logging_use_clr_cmd);
 	install_lib_element_ve(&logging_prnt_timestamp_cmd);
 	install_lib_element_ve(&logging_prnt_ext_timestamp_cmd);
+	install_lib_element_ve(&logging_timezone_cmd);
 	install_lib_element_ve(&logging_prnt_tid_cmd);
 	install_lib_element_ve(&logging_prnt_cat_cmd);
 	install_lib_element_ve(&logging_prnt_cat_hex_cmd);
@@ -1239,6 +1267,7 @@ void logging_vty_add_cmds(void)
 	install_lib_element(CFG_LOG_NODE, &logging_use_clr_cmd);
 	install_lib_element(CFG_LOG_NODE, &logging_prnt_timestamp_cmd);
 	install_lib_element(CFG_LOG_NODE, &logging_prnt_ext_timestamp_cmd);
+	install_lib_element(CFG_LOG_NODE, &logging_timezone_cmd);
 	install_lib_element(CFG_LOG_NODE, &logging_prnt_tid_cmd);
 	install_lib_element(CFG_LOG_NODE, &logging_prnt_cat_cmd);
 	install_lib_element(CFG_LOG_NODE, &logging_prnt_cat_hex_cmd);

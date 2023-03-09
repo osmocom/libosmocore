@@ -464,6 +464,25 @@ static const char *const_basename(const char *path)
 	return bn + 1;
 }
 
+static int get_timestamp(struct timeval *tv, struct tm *tm, const struct log_target *target)
+{
+	osmo_gettimeofday(tv, NULL);
+	switch (target->timezone) {
+	case LOG_TIMEZONE_LOCALTIME:
+#ifdef HAVE_LOCALTIME_R
+		return (localtime_r(&tv->tv_sec, tm) != NULL) ? 0 : -1;
+#endif
+		/* If there is no localtime_r() function, then maybe gmtime_r() is available instead? */
+	case LOG_TIMEZONE_UTC:
+#ifdef HAVE_GMTIME_R
+		return (gmtime_r(&tv->tv_sec, tm) != NULL) ? 0 : -1;
+#endif
+		/* If there is no gmtime_r() function, then print no timestamp. */
+	default:
+		return -1;
+	}
+}
+
 /*! main output formatting function for log lines.
  *  \param[out] buf caller-allocated output buffer for the generated string
  *  \param[in] buf_len number of bytes available in buf
@@ -494,12 +513,9 @@ static int _output_buf(char *buf, int buf_len, struct log_target *target, unsign
 		}
 	}
 	if (!cont) {
-		if (target->print_ext_timestamp) {
-#ifdef HAVE_LOCALTIME_R
-			struct tm tm;
-			struct timeval tv;
-			osmo_gettimeofday(&tv, NULL);
-			localtime_r(&tv.tv_sec, &tm);
+		struct timeval tv;
+		struct tm tm;
+		if (target->print_ext_timestamp && get_timestamp(&tv, &tm, target) == 0) {
 			ret = snprintf(buf + offset, rem, "%04d%02d%02d%02d%02d%02d%03d ",
 					tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
 					tm.tm_hour, tm.tm_min, tm.tm_sec,
@@ -507,14 +523,10 @@ static int _output_buf(char *buf, int buf_len, struct log_target *target, unsign
 			if (ret < 0)
 				goto err;
 			OSMO_SNPRINTF_RET(ret, rem, offset, len);
-#endif
-		} else if (target->print_timestamp) {
-			time_t tm;
-			if ((tm = time(NULL)) == (time_t) -1)
-				goto err;
+		} else if (target->print_timestamp && get_timestamp(&tv, &tm, target) == 0) {
 			/* Get human-readable representation of time.
 			   man ctime: we need at least 26 bytes in buf */
-			if (rem < 26 || !ctime_r(&tm, buf + offset))
+			if (rem < 26 || !asctime_r(&tm, buf + offset))
 				goto err;
 			ret = strlen(buf + offset);
 			if (ret <= 0)
@@ -849,6 +861,15 @@ void log_set_use_color(struct log_target *target, int use_color)
 void log_set_print_timestamp(struct log_target *target, int print_timestamp)
 {
 	target->print_timestamp = print_timestamp;
+}
+
+/*! Switch logging timezone between UTC or local time.
+ *  \param[in] target Log target to be affected.
+ *  \param[in] timezone Timezone to set.
+ */
+void log_set_timezone(struct log_target *target, enum log_timezone timezone)
+{
+	target->timezone = timezone;
 }
 
 /*! Enable or disable printing of extended timestamps while logging
