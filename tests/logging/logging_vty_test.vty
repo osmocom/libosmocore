@@ -230,6 +230,29 @@ logging_vty_test(config-log)# exit
 logging_vty_test(config)# no log stderr
 logging_vty_test(config)# exit
 
+logging_vty_test# logging timezone utc
+
+logging_vty_test# logging timestamp 1
+logging_vty_test# log-test
+Sun Sep 23 20:55:00 1979 DAA DEBUG :)
+
+logging_vty_test# logging print extended-timestamp 1
+logging_vty_test# log-test
+19790923205500423423 DAA DEBUG :)
+
+logging_vty_test# logging timestamp 0
+logging_vty_test# log-test
+19790923205500423423 DAA DEBUG :)
+
+logging_vty_test# logging timestamp 1
+logging_vty_test# logging print extended-timestamp 0
+logging_vty_test# log-test
+Sun Sep 23 20:55:00 1979 DAA DEBUG :)
+
+logging_vty_test# logging timestamp 0
+logging_vty_test# log-test
+DAA DEBUG :)
+
 logging_vty_test# log-sweep
 DAA DEBUG Log message for DAA on level LOGL_DEBUG
 DAA INFO Log message for DAA on level LOGL_INFO
