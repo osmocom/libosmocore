@@ -70,6 +70,10 @@ logging_vty_test# logging ?
   set-log-mask  Set the logmask of this logging target
   level         Set the log level for a specified category
 
+logging_vty_test# logging timestamp ?
+  0  Don't prefix each log message
+  1  Prefix each log message with current timestamp
+
 logging_vty_test# logging level ?
 ... ! all
   aa         Antropomorphic Armadillos (AA)
@@ -109,6 +113,98 @@ logging_vty_test# logging level set-all ?
   error   Log error messages and higher levels
   fatal   Log only fatal messages
 
+logging_vty_test# logging print ?
+  extended-timestamp  Configure log message timestamping
+  thread-id           Configure log message logging Thread ID
+  category            Configure log message
+  category-hex        Configure log message
+  level               Configure log message
+  file                Configure log message
+
+logging_vty_test# logging print extended-timestamp ?
+  0  Don't prefix each log message
+  1  Prefix each log message with current timestamp with YYYYMMDDhhmmssnnn
+
+logging_vty_test# logging print thread-id ?
+  0  Don't prefix each log message
+  1  Prefix each log message with current Thread ID
+
+logging_vty_test# logging print category ?
+  0  Don't prefix each log message
+  1  Prefix each log message with category/subsystem name
+
+logging_vty_test# logging print category-hex ?
+  0  Don't prefix each log message
+  1  Prefix each log message with category/subsystem nr in hex ('<000b>')
+
+logging_vty_test# logging print level ?
+  0  Don't prefix each log message
+  1  Prefix each log message with the log level name
+
+logging_vty_test# logging print file ?
+  0         Don't prefix each log message
+  1         Prefix each log message with the source file and line
+  basename  Prefix each log message with the source file's basename (strip leading paths) and line
+
+logging_vty_test# logging print file basename ?
+  [last]  Log source file info at the end of a log line. If omitted, log source file info just before the log text.
+
+logging_vty_test# configure terminal
+logging_vty_test(config)# log stderr
+logging_vty_test(config-log)# show running-config
+...
+log stderr
+... !timestamp
+ logging timestamp 0
+... !timestamp
+
+logging_vty_test(config-log)# logging timestamp 1
+logging_vty_test(config-log)# show running-config
+...
+log stderr
+... !timestamp
+ logging timestamp 1
+... !timestamp
+
+logging_vty_test(config-log)# ### with 'extended-timestamp 1', 'logging timestamp' is not shown
+logging_vty_test(config-log)# logging print extended-timestamp 1
+logging_vty_test(config-log)# show running-config
+...
+log stderr
+... !timestamp
+ logging print extended-timestamp 1
+... !timestamp
+
+logging_vty_test(config-log)# ### 'logging timestamp 0' effect not shown while 'extended-timestamp' == 1
+logging_vty_test(config-log)# logging timestamp 0
+logging_vty_test(config-log)# show running-config
+...
+log stderr
+... !timestamp
+ logging print extended-timestamp 1
+... !timestamp
+
+logging_vty_test(config-log)# ### 'logging timestamp 1' remains set upon 'extended-timestamp 0'
+logging_vty_test(config-log)# logging timestamp 1
+logging_vty_test(config-log)# logging print extended-timestamp 0
+logging_vty_test(config-log)# show running-config
+...
+log stderr
+... !timestamp
+ logging timestamp 1
+... !timestamp
+
+logging_vty_test(config-log)# logging timestamp 0
+logging_vty_test(config-log)# show running-config
+...
+log stderr
+... !timestamp
+ logging timestamp 0
+... !timestamp
+
+logging_vty_test(config-log)# exit
+logging_vty_test(config)# no log stderr
+logging_vty_test(config)# exit
 
 logging_vty_test# log-sweep
 DAA DEBUG Log message for DAA on level LOGL_DEBUG
