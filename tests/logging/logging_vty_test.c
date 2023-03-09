@@ -25,6 +25,7 @@
 #include <osmocom/core/logging.h>
 #include <osmocom/core/utils.h>
 #include <osmocom/core/application.h>
+#include <osmocom/core/timer.h>
 
 #include <osmocom/vty/command.h>
 #include <osmocom/vty/logging.h>
@@ -78,9 +79,18 @@ DEFUN(log_sweep, log_sweep_cmd,
 	return CMD_SUCCESS;
 }
 
+DEFUN(log_test, log_test_cmd,
+      "log-test",
+      "Log one DEBUG on category 'aa'\n")
+{
+	LOGP(DAA, LOGL_DEBUG, ":)\n");
+	return CMD_SUCCESS;
+}
+
 static void vty_commands_init(void)
 {
 	install_element_ve(&log_sweep_cmd);
+	install_element_ve(&log_test_cmd);
 }
 
 static const struct log_info_cat default_categories[] = {
@@ -279,6 +289,9 @@ int main(int argc, char **argv)
 			return 6;
 		}
 	}
+
+	osmo_gettimeofday_override = true;
+	osmo_gettimeofday_override_time = (struct timeval){ 306968100, 423423423 };
 
 	while (!quit) {
 		log_reset_context();
