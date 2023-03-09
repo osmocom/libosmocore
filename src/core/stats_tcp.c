@@ -247,8 +247,10 @@ int osmo_stats_tcp_osmo_fd_unregister(const struct osmo_fd *fd)
 	pthread_mutex_lock(&stats_tcp_lock);
 	llist_for_each_entry(stats_tcp_entry, &stats_tcp, entry) {
 		if (fd->fd == stats_tcp_entry->fd->fd) {
-			/* In case we want to remove exactly that item which is also selected as the current itemy, we
-			 * must designate either a different item or invalidate the current item. */
+			/* In case we want to remove exactly that item which is also
+			 * selected as the current item, we must designate either a
+			 * different item or invalidate the current item.
+			 */
 			if (stats_tcp_entry == stats_tcp_entry_cur) {
 				if (llist_count(&stats_tcp) > 2)
 					next_stats_tcp_entry();
