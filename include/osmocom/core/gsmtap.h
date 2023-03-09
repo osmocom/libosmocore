@@ -49,6 +49,7 @@
 #define GSMTAP_TYPE_QC_DIAG		0x11	/* Qualcomm DIAG frame */
 #define GSMTAP_TYPE_LTE_NAS		0x12	/* LTE Non-Access Stratum */
 #define GSMTAP_TYPE_E1T1		0x13	/* E1/T1 Lines */
+#define GSMTAP_TYPE_GSM_RLP		0x14	/* GSM RLP frames as per 3GPP TS 24.022 */
 
 /* ====== DO NOT MAKE UNAPPROVED MODIFICATIONS HERE ===== */
 
