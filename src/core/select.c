@@ -54,6 +54,39 @@ static __thread int maxfd = 0;
 static __thread struct llist_head osmo_fds; /* TLS cannot use LLIST_HEAD() */
 static __thread int unregistered_count;
 
+/* Array of struct osmo_fd * (size "max_fd") ordered by "ofd->fd" */
+static __thread struct {
+	struct osmo_fd **table;
+	unsigned int size;
+} osmo_fd_lookup;
+
+static void osmo_fd_lookup_table_extend(unsigned int new_max_fd)
+{
+	unsigned int min_new_size;
+	unsigned int pw2;
+	unsigned int new_size;
+
+	/* First calculate the minimally required new size of the array in bytes: */
+	min_new_size = (new_max_fd + 1) * sizeof(struct osmo_fd *);
+	/* Now find the lower power of two of min_new_size (in bytes): */
+	pw2 = 32 - __builtin_clz(min_new_size);
+	/* get next (upper side) power of 2: */
+	pw2++;
+	OSMO_ASSERT(pw2 <= 31); /* Avoid shifting more than 31 bits */
+	new_size = 1 << (pw2 + 1);
+
+	/* Let's make it at least 1024B, to avoid reallocating quickly at startup */
+	if (new_size < 1024)
+		new_size = 1024;
+	if (new_size > osmo_fd_lookup.size) {
+		uint8_t *ptr = talloc_realloc_size(OTC_GLOBAL, osmo_fd_lookup.table, new_size);
+		OSMO_ASSERT(ptr);
+		memset(ptr + osmo_fd_lookup.size, 0, new_size - osmo_fd_lookup.size);
+		osmo_fd_lookup.table = (struct osmo_fd **)ptr;
+		osmo_fd_lookup.size = new_size;
+	}
+}
+
 #ifndef FORCE_IO_SELECT
 struct poll_state {
 	/* array of pollfd */
@@ -142,8 +175,10 @@ int osmo_fd_register(struct osmo_fd *fd)
 		return flags;
 
 	/* Register FD */
-	if (fd->fd > maxfd)
+	if (fd->fd > maxfd) {
 		maxfd = fd->fd;
+		osmo_fd_lookup_table_extend(maxfd);
+	}
 
 #ifdef OSMO_FD_CHECK
 	if (osmo_fd_is_registered(fd)) {
@@ -166,6 +201,7 @@ int osmo_fd_register(struct osmo_fd *fd)
 #endif /* FORCE_IO_SELECT */
 
 	llist_add_tail(&fd->list, &osmo_fds);
+	osmo_fd_lookup.table[fd->fd] = fd;
 
 	return 0;
 }
@@ -180,6 +216,9 @@ void osmo_fd_unregister(struct osmo_fd *fd)
 	 * osmo_fd_is_registered() */
 	unregistered_count++;
 	llist_del(&fd->list);
+	OSMO_ASSERT(fd->fd >= 0);
+	OSMO_ASSERT(fd->fd <= maxfd);
+	osmo_fd_lookup.table[fd->fd] = NULL;
 #ifndef FORCE_IO_SELECT
 	g_poll.num_registered--;
 #endif /* FORCE_IO_SELECT */
@@ -464,19 +503,16 @@ int osmo_select_main_ctx(int polling)
  *  \returns \ref osmo_fd for \ref fd; NULL in case it doesn't exist */
 struct osmo_fd *osmo_fd_get_by_fd(int fd)
 {
-	struct osmo_fd *ofd;
-
-	llist_for_each_entry(ofd, &osmo_fds, list) {
-		if (ofd->fd == fd)
-			return ofd;
-	}
-	return NULL;
+	if (fd > maxfd)
+		return NULL;
+	return osmo_fd_lookup.table[fd];
 }
 
 /*! initialize the osmocom select abstraction for the current thread */
 void osmo_select_init(void)
 {
 	INIT_LLIST_HEAD(&osmo_fds);
+	osmo_fd_lookup_table_extend(0);
 }
 
 /* ensure main thread always has pre-initialized osmo_fds */
