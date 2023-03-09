@@ -595,6 +595,7 @@ const struct value_string gsmtap_type_names[] = {
 	{ GSMTAP_TYPE_QC_DIAG,		"Qualcomm DIAG" },
 	{ GSMTAP_TYPE_LTE_NAS,		"LTE Non-Access Stratum" },
 	{ GSMTAP_TYPE_E1T1,		"E1/T1 lines" },
+	{ GSMTAP_TYPE_GSM_RLP,		"GSM Radio Link Protocol" },
 	{ 0, NULL }
 };
 
