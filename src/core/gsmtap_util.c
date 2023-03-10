@@ -583,6 +583,8 @@ const struct value_string gsmtap_type_names[] = {
 	{ GSMTAP_TYPE_TETRA_I1,		"TETRA V+D"  },
 	{ GSMTAP_TYPE_TETRA_I1_BURST,	"TETRA bursts" },
 	{ GSMTAP_TYPE_WMX_BURST,	"WiMAX burst" },
+	{ GSMTAP_TYPE_GB_LLC,		"GPRS Gb LLC" },
+	{ GSMTAP_TYPE_GB_SNDCP,		"GPRS Gb SNDCP" },
 	{ GSMTAP_TYPE_GMR1_UM,		"GMR-1 air interfeace (MES-MS<->GTS)"},
 	{ GSMTAP_TYPE_UMTS_RLC_MAC,	"UMTS RLC/MAC" },
 	{ GSMTAP_TYPE_UMTS_RRC,		"UMTS RRC" },
@@ -591,6 +593,8 @@ const struct value_string gsmtap_type_names[] = {
 	{ GSMTAP_TYPE_LTE_MAC_FRAMED,	"LTE MAC with context hdr" },
 	{ GSMTAP_TYPE_OSMOCORE_LOG,	"libosmocore logging" },
 	{ GSMTAP_TYPE_QC_DIAG,		"Qualcomm DIAG" },
+	{ GSMTAP_TYPE_LTE_NAS,		"LTE Non-Access Stratum" },
+	{ GSMTAP_TYPE_E1T1,		"E1/T1 lines" },
 	{ 0, NULL }
 };
 
