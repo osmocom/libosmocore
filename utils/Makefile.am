@@ -18,13 +18,12 @@ osmo_aka_verify_SOURCES = osmo-aka-verify.c
 
 osmo_config_merge_SOURCES = osmo-config-merge.c
 osmo_config_merge_LDADD = $(LDADD) $(TALLOC_LIBS)
-osmo_config_merge_CFLAGS = $(TALLOC_CFLAGS)
 
 if ENABLE_PCSC
 noinst_PROGRAMS += osmo-sim-test
 osmo_sim_test_SOURCES = osmo-sim-test.c
 osmo_sim_test_LDADD = $(LDADD) $(top_builddir)/src/sim/libosmosim.la $(PCSC_LIBS)
-osmo_sim_test_CFLAGS = $(PCSC_CFLAGS)
+osmo_sim_test_CFLAGS = $(AM_CFLAGS) $(PCSC_CFLAGS)
 endif
 endif
 
@@ -41,6 +40,5 @@ osmo_ns_dummy_LDADD = $(LDADD) $(TALLOC_LIBS) \
 			$(top_builddir)/src/vty/libosmovty.la \
 			$(top_builddir)/src/ctrl/libosmoctrl.la \
 			$(NULL)
-osmo_ns_dummy_CFLAGS = $(TALLOC_CFLAGS)
 endif
 endif
