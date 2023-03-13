@@ -35,6 +35,7 @@ grep contains "$f" \
 	| grep -v '^$' \
 	| grep -v '^[0-9]\+$' \
 	| sed 's/0x[0-9a-fA-F]\+/N/g' \
+	| sed 's/\<[0-9a-fA-F]\+\>/N/g' \
 	| sed 's/[0-9]\+/N/g' \
 	| sort \
 	> "$mangled"
