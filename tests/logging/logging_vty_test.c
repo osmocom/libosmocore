@@ -285,10 +285,10 @@ int main(int argc, char **argv)
 		osmo_select_main(0);
 	}
 
-	log_fini();
+	talloc_report(tall_vty_ctx, stderr);
+	talloc_report_full(root_ctx, stderr);
 
-	talloc_free(root_ctx);
-	talloc_free(tall_vty_ctx);
+	log_fini();
 
 	return 0;
 }
