@@ -534,8 +534,9 @@ void osmo_select_init(void)
 	osmo_fd_lookup_table_extend(0);
 }
 
-/* ensure main thread always has pre-initialized osmo_fds */
-static __attribute__((constructor)) void on_dso_load_select(void)
+/* ensure main thread always has pre-initialized osmo_fds
+ * priority 102: must run after on_dso_load_ctx */
+static __attribute__((constructor(102))) void on_dso_load_select(void)
 {
 	osmo_select_init();
 }

@@ -39,7 +39,7 @@ int osmo_ctx_init(const char *id)
 }
 
 /* initialize osmo_ctx on main tread */
-static __attribute__((constructor)) void on_dso_load_ctx(void)
+static __attribute__((constructor(101))) void on_dso_load_ctx(void)
 {
 	OSMO_ASSERT(osmo_ctx_init("main") == 0);
 }
