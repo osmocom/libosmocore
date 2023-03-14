@@ -198,26 +198,30 @@ gb_bssgp_fc_test_LDADD = $(LDADD) $(top_builddir)/src/gb/libosmogb.la \
 			 $(top_builddir)/src/gsm/libosmogsm.la
 
 gb_gprs_bssgp_test_SOURCES = gb/gprs_bssgp_test.c
-gb_gprs_bssgp_test_LDADD = $(LDADD) $(top_builddir)/src/gb/libosmogb.la $(LIBRARY_DLSYM) \
+gb_gprs_bssgp_test_LDADD = $(LDADD) $(top_builddir)/src/gb/libosmogb.la \
 			   $(top_builddir)/src/vty/libosmovty.la \
 			   $(top_builddir)/src/gsm/libosmogsm.la \
-			   $(top_builddir)/src/gb/libosmogb.la
+			   $(top_builddir)/src/gb/libosmogb.la \
+			   $(LIBRARY_DLSYM)
 
 gb_gprs_bssgp_rim_test_SOURCES = gb/gprs_bssgp_rim_test.c
-gb_gprs_bssgp_rim_test_LDADD = $(LDADD) $(top_builddir)/src/gb/libosmogb.la $(LIBRARY_DLSYM) \
-			       $(top_builddir)/src/gb/libosmogb.la
+gb_gprs_bssgp_rim_test_LDADD = $(LDADD) $(top_builddir)/src/gb/libosmogb.la \
+			       $(top_builddir)/src/gb/libosmogb.la \
+			       $(LIBRARY_DLSYM)
 
 gb_gprs_ns_test_SOURCES = gb/gprs_ns_test.c
-gb_gprs_ns_test_LDADD = $(LDADD) $(top_builddir)/src/gb/libosmogb.la $(LIBRARY_DLSYM) \
+gb_gprs_ns_test_LDADD = $(LDADD) $(top_builddir)/src/gb/libosmogb.la \
 			$(top_builddir)/src/vty/libosmovty.la \
-			$(top_builddir)/src/gsm/libosmogsm.la
+			$(top_builddir)/src/gsm/libosmogsm.la \
+			$(LIBRARY_DLSYM)
 
 gb_gprs_ns2_test_SOURCES = gb/gprs_ns2_test.c
-gb_gprs_ns2_test_LDADD = $(LDADD) $(LIBRARY_DLSYM) \
+gb_gprs_ns2_test_LDADD = $(LDADD) \
 			$(top_builddir)/src/vty/libosmovty.la \
 			$(top_builddir)/src/gsm/libosmogsm.la \
 			$(top_builddir)/src/core/libosmocore.la \
-			$(top_builddir)/src/gb/libosmogb-test.la
+			$(top_builddir)/src/gb/libosmogb-test.la \
+			$(LIBRARY_DLSYM)
 
 logging_logging_test_SOURCES = logging/logging_test.c
 
@@ -228,9 +232,10 @@ vty_vty_transcript_test_SOURCES = vty/vty_transcript_test.c
 vty_vty_transcript_test_LDADD = $(LDADD) $(top_builddir)/src/vty/libosmovty.la
 
 fr_fr_test_SOURCES = fr/fr_test.c
-fr_fr_test_LDADD = $(LDADD) $(top_builddir)/src/gb/libosmogb.la $(LIBRARY_DLSYM) \
+fr_fr_test_LDADD = $(LDADD) $(top_builddir)/src/gb/libosmogb.la \
 		   $(top_builddir)/src/vty/libosmovty.la \
-		   $(top_builddir)/src/gsm/libosmogsm.la
+		   $(top_builddir)/src/gsm/libosmogsm.la \
+		   $(LIBRARY_DLSYM)
 
 codec_codec_test_SOURCES = codec/codec_test.c
 codec_codec_test_LDADD = $(LDADD) $(top_builddir)/src/codec/libosmocodec.la
