@@ -151,6 +151,9 @@ bool osmo_fd_is_registered(struct osmo_fd *fd)
 /*! Register a new file descriptor with select loop abstraction
  *  \param[in] fd osmocom file descriptor to be registered
  *  \returns 0 on success; negative in case of error
+ *
+ *  The API expects fd field of the struct osmo_fd to remain unchanged while
+ *  registered, ie until osmo_fd_unregister() is called on it.
  */
 int osmo_fd_register(struct osmo_fd *fd)
 {
@@ -208,6 +211,9 @@ int osmo_fd_register(struct osmo_fd *fd)
 
 /*! Unregister a file descriptor from select loop abstraction
  *  \param[in] fd osmocom file descriptor to be unregistered
+ *
+ *  This function must be called before changing the value of the fd field in
+ *  the struct osmo_fd.
  */
 void osmo_fd_unregister(struct osmo_fd *fd)
 {
