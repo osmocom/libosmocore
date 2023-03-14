@@ -1161,6 +1161,7 @@ int log_target_file_switch_to_stream(struct log_target *target)
 	if (target->type == LOG_TGT_TYPE_FILE) {
 		osmo_fd_unregister(&wq->bfd);
 		close(wq->bfd.fd);
+		wq->bfd.fd = -1;
 	}
 
 	/* release the queue itself */
@@ -1327,8 +1328,8 @@ void log_target_destroy(struct log_target *target)
 		}
 		wq = target->tgt_file.wqueue;
 		if (wq) {
-			osmo_fd_unregister(&wq->bfd);
 			if (wq->bfd.fd >= 0) {
+				osmo_fd_unregister(&wq->bfd);
 				if (target->type == LOG_TGT_TYPE_FILE)
 					close(wq->bfd.fd);
 				wq->bfd.fd = -1;
@@ -1375,8 +1376,8 @@ int log_target_file_reopen(struct log_target *target)
 			return -errno;
 	} else {
 		wq = target->tgt_file.wqueue;
-		osmo_fd_unregister(&wq->bfd);
 		if (wq->bfd.fd >= 0) {
+			osmo_fd_unregister(&wq->bfd);
 			close(wq->bfd.fd);
 			wq->bfd.fd = -1;
 		}
