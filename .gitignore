@@ -72,6 +72,7 @@ tests/*/*_test
 utils/osmo-arfcn
 utils/osmo-auc-gen
 utils/osmo-config-merge
+utils/osmo-gsmtap-logsend
 utils/osmo-sim-test
 utils/osmo-aka-verify
 
