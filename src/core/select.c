@@ -223,13 +223,25 @@ void osmo_fd_unregister(struct osmo_fd *fd)
 	 * osmo_fd_is_registered() */
 	unregistered_count++;
 	llist_del(&fd->list);
-	OSMO_ASSERT(fd->fd >= 0);
-	OSMO_ASSERT(fd->fd <= maxfd);
-	osmo_fd_lookup.table[fd->fd] = NULL;
 #ifndef FORCE_IO_SELECT
 	g_poll.num_registered--;
 #endif /* FORCE_IO_SELECT */
 
+	if (OSMO_UNLIKELY(fd->fd < 0  || fd->fd > maxfd)) {
+		/* Some old users used to incorrectly set fd = -1 *before* calling osmo_unregister().
+		 * Hence, in order to keep backward compatibility it's not possible to assert() here.
+		 * Instead, print an error message since this is actually a bug in the API user. */
+#ifdef OSMO_FD_CHECK
+		osmo_panic("osmo_fd_unregister(fd=%u) out of expected range (0..%u), fix your code!!!\n",
+			   fd->fd, maxfd);
+#else
+		fprintf(stderr, "osmo_fd_unregister(fd=%u) out of expected range (0..%u), fix your code!!!\n",
+			fd->fd, maxfd);
+		return;
+#endif
+	}
+
+	osmo_fd_lookup.table[fd->fd] = NULL;
 	/* If existent, free any statistical data */
 	osmo_stats_tcp_osmo_fd_unregister(fd);
 }
