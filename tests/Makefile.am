@@ -54,6 +54,7 @@ check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
 		 auth/xor2g_test                                        \
 		 v110/frame_test                                        \
 		 v110/ra1_test                                          \
+		 v110/ta_test                                           \
 		 gsm44021/frame_csd_test                                \
 		 osmo_io/osmo_io_test					\
 		 soft_uart/soft_uart_test				\
@@ -373,6 +374,9 @@ v110_frame_test_LDADD = $(top_builddir)/src/isdn/libosmoisdn.la $(LDADD)
 v110_ra1_test_SOURCES = v110/ra1_test.c
 v110_ra1_test_LDADD = $(top_builddir)/src/isdn/libosmoisdn.la $(LDADD)
 
+v110_ta_test_SOURCES = v110/ta_test.c
+v110_ta_test_LDADD = $(top_builddir)/src/isdn/libosmoisdn.la $(LDADD)
+
 gsm44021_frame_csd_test_SOURCES = gsm44021/frame_csd_test.c
 gsm44021_frame_csd_test_LDADD = $(top_builddir)/src/isdn/libosmoisdn.la \
 				$(top_builddir)/src/gsm/libosmogsm.la \
@@ -493,6 +497,7 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
 	     smscb/cbsp_test.ok \
 	     v110/frame_test.ok \
 	     v110/ra1_test.ok \
+	     v110/ta_test.err \
 	     gsm44021/frame_csd_test.ok \
 	     osmo_io/osmo_io_test.ok osmo_io/osmo_io_test.err \
 	     soft_uart/soft_uart_test.ok \
@@ -712,6 +717,8 @@ endif
 		>$(srcdir)/v110/frame_test.ok
 	v110/ra1_test \
 		>$(srcdir)/v110/ra1_test.ok
+	v110/ta_test \
+		2>$(srcdir)/v110/ta_test.err
 	gsm44021/frame_csd_test \
 		>$(srcdir)/gsm44021/frame_csd_test.ok
 	osmo_io/osmo_io_test \

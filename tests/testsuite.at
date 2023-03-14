@@ -511,6 +511,12 @@ cat $abs_srcdir/v110/ra1_test.ok > expout
 AT_CHECK([$abs_top_builddir/tests/v110/ra1_test], [], [expout],[])
 AT_CLEANUP
 
+AT_SETUP([v110_ta_test])
+AT_KEYWORDS([v110_ta_test])
+cat $abs_srcdir/v110/ta_test.err > experr
+AT_CHECK([$abs_top_builddir/tests/v110/ta_test], [], [], [experr])
+AT_CLEANUP
+
 AT_SETUP([gsm44021_frame_csd_test])
 AT_KEYWORDS([gsm44021_frame_csd_test])
 cat $abs_srcdir/gsm44021/frame_csd_test.ok > expout

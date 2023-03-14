@@ -33,5 +33,19 @@ osmo_v110_sync_ra1_get_intermediate_rate;
 osmo_v110_sync_ra1_user_to_ir;
 osmo_v110_sync_ra1_ir_to_user;
 
+osmo_v110_ta_alloc;
+osmo_v110_ta_free;
+osmo_v110_ta_set_timer_val_ms;
+osmo_v110_ta_frame_in;
+osmo_v110_ta_frame_out;
+osmo_v110_ta_sync_ind;
+osmo_v110_ta_desync_ind;
+osmo_v110_ta_get_status;
+osmo_v110_ta_get_circuit;
+osmo_v110_ta_set_circuit;
+
+osmo_v110_ta_circuit_names;
+osmo_v110_ta_circuit_descs;
+
 local: *;
 };
