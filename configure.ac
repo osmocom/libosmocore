@@ -312,7 +312,7 @@ AC_ARG_ENABLE([force_io_select],
 	)],
 	[force_io_select=$enableval], [force_io_select="no"])
 AS_IF([test "x$force_io_select" = "xyes"], [
-	AC_DEFINE([FORCE_IO_SELECT], [1], [Force the use of select() instaed of poll()])
+	AC_DEFINE([FORCE_IO_SELECT], [1], [Force the use of select() instead of poll()])
 ])
 
 AC_ARG_ENABLE(msgfile,
