@@ -212,6 +212,7 @@ int osmo_fd_register(struct osmo_fd *fd)
 /*! Unregister a file descriptor from select loop abstraction
  *  \param[in] fd osmocom file descriptor to be unregistered
  *
+ *  Caller is responsible for ensuring the fd is really registered before calling this API.
  *  This function must be called before changing the value of the fd field in
  *  the struct osmo_fd.
  */
