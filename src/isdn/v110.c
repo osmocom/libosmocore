@@ -242,7 +242,8 @@ static int v110_adapt_IR8000_to_2400(ubit_t *d_out, size_t out_len, const struct
 	if (out_len < 24)
 		return -ENOSPC;
 
-	if (fr->e_bits[1] != 1 || fr->e_bits[1] != 1 || fr->e_bits[2] != 0)
+	/* Table 6c / V.110 */
+	if (fr->e_bits[0] != 1 || fr->e_bits[1] != 1 || fr->e_bits[2] != 0)
 		return -EINVAL;
 
 	for (int i = 0; i < 24; i++) {
