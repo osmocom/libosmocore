@@ -10,7 +10,7 @@
 static void test_ra1(enum osmo_v100_sync_ra1_rate rate)
 {
 	int user_rate = osmo_v110_sync_ra1_get_user_data_rate(rate);
-	int user_data_chunk_bits = osmo_v110_sync_ra1_get_user_data_chunk_bitlen(rate);
+	int user_data_chunk_bits;
 	struct osmo_v110_decoded_frame fr;
 	ubit_t user_bits[48];
 	ubit_t bits[80];
@@ -18,6 +18,9 @@ static void test_ra1(enum osmo_v100_sync_ra1_rate rate)
 	int rc;
 
 	printf("\n======= User data rate %u\n", user_rate);
+
+	user_data_chunk_bits = osmo_v110_sync_ra1_get_user_data_chunk_bitlen(rate);
+	OSMO_ASSERT(user_data_chunk_bits >= 0);
 
 	/* we abuse the fact that ubit_t is 8bit so we can actually
 	 * store integer values to clearly identify which bit ends up where */
