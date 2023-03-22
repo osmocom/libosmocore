@@ -206,8 +206,8 @@ DEFUN(logging_timezone,
 	RET_WITH_UNLOCK(CMD_SUCCESS);
 }
 
-DEFUN(logging_prnt_timestamp,
-      logging_prnt_timestamp_cmd,
+DEFUN(logging_timestamp,
+      logging_timestamp_cmd,
       "logging timestamp (0|1)",
 	LOGGING_STR "Configure log message timestamping\n"
 	"Don't prefix each log message\n"
@@ -1229,7 +1229,7 @@ void logging_vty_add_cmds(void)
 	install_lib_element_ve(&disable_logging_cmd);
 	install_lib_element_ve(&logging_fltr_all_cmd);
 	install_lib_element_ve(&logging_use_clr_cmd);
-	install_lib_element_ve(&logging_prnt_timestamp_cmd);
+	install_lib_element_ve(&logging_timestamp_cmd);
 	install_lib_element_ve(&logging_prnt_ext_timestamp_cmd);
 	install_lib_element_ve(&logging_timezone_cmd);
 	install_lib_element_ve(&logging_prnt_tid_cmd);
@@ -1265,7 +1265,7 @@ void logging_vty_add_cmds(void)
 	install_node(&cfg_log_node, config_write_log);
 	install_lib_element(CFG_LOG_NODE, &logging_fltr_all_cmd);
 	install_lib_element(CFG_LOG_NODE, &logging_use_clr_cmd);
-	install_lib_element(CFG_LOG_NODE, &logging_prnt_timestamp_cmd);
+	install_lib_element(CFG_LOG_NODE, &logging_timestamp_cmd);
 	install_lib_element(CFG_LOG_NODE, &logging_prnt_ext_timestamp_cmd);
 	install_lib_element(CFG_LOG_NODE, &logging_timezone_cmd);
 	install_lib_element(CFG_LOG_NODE, &logging_prnt_tid_cmd);
