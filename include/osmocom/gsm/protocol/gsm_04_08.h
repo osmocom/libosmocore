@@ -763,6 +763,25 @@ enum gsm48_chan_mode {
 	/*! Speech: OHR AMR (O-TCH/AHS) */
 	GSM48_CMODE_SPEECH_V6	= 0x83,
 
+	/* ECSD: 43.5 kbit/s (DL) + 14.5 kbit/s (UL) */
+	GSM48_CMODE_DATA_43k5_14k5	= 0x61,
+	/* ECSD: 29.0 kbit/s (DL) + 14.5 kbit/s (UL) */
+	GSM48_CMODE_DATA_29k0_14k5	= 0x62,
+	/* ECSD: 43.5 kbit/s (DL) + 29.0 kbit/s (UL) */
+	GSM48_CMODE_DATA_43k5_29k0	= 0x64,
+	/* ECSD: 14.5 kbit/s (DL) + 43.5 kbit/s (UL) */
+	GSM48_CMODE_DATA_14k5_43k5	= 0x67,
+	/* ECSD: 14.5 kbit/s (DL) + 29.0 kbit/s (UL) */
+	GSM48_CMODE_DATA_14k5_29k0	= 0x65,
+	/* ECSD: 29.0 kbit/s (DL) + 43.5 kbit/s (UL) */
+	GSM48_CMODE_DATA_29k0_43k5	= 0x66,
+
+	/*! ECSD: 43.5 kbit/s radio interface rate, 43.2 kbit/s services (E-TCH/F43.2) */
+	GSM48_CMODE_DATA_43k5	= 0x27,
+	/*! ECSD: 32.0 kbit/s radio interface rate, 32.0 kbit/s services (E-TCH/F32.0) */
+	GSM48_CMODE_DATA_32k0	= 0x63,
+	/*! ECSD: 29.0 kbit/s radio interface rate, 28.8 kbit/s services (E-TCH/F28.8) */
+	GSM48_CMODE_DATA_29k0	= 0x43,
 	/*! CSD: 14.5 kbit/s radio interface rate, 14.4 kbit/s services (TCH/F14.4) */
 	GSM48_CMODE_DATA_14k5	= 0x0f,
 	/*! CSD: 12.0 kbit/s radio interface rate, 9.6 kbit/s services (TCH/F9.6) */
