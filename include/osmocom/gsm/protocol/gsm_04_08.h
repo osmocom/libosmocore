@@ -756,6 +756,12 @@ enum gsm48_chan_mode {
 	GSM48_CMODE_SPEECH_EFR	= 0x21, /*!< a.k.a. V2 */
 	/*! Speech: AMR (TCH/AFS or TCH/AHS) */
 	GSM48_CMODE_SPEECH_AMR	= 0x41, /*!< a.k.a. V3 */
+	/*! Speech: OFR AMR-WB (O-TCH/WFS) or OHR AMR-WB (O-TCH/WHS) */
+	GSM48_CMODE_SPEECH_V4	= 0x81,
+	/*! Speech: FR AMR-WB (TCH/WFS) */
+	GSM48_CMODE_SPEECH_V5	= 0x82,
+	/*! Speech: OHR AMR (O-TCH/AHS) */
+	GSM48_CMODE_SPEECH_V6	= 0x83,
 
 	/*! CSD: 14.5 kbit/s radio interface rate, 14.4 kbit/s services (TCH/F14.4) */
 	GSM48_CMODE_DATA_14k5	= 0x0f,
@@ -772,7 +778,7 @@ enum gsm48_chan_mode {
 	GSM48_CMODE_SPEECH_V2_VAMOS	= 0xc2,
 	/*! Same as GSM48_CMODE_SPEECH_AMR, in VAMOS mode */
 	GSM48_CMODE_SPEECH_V3_VAMOS	= 0xc3,
-	/*! Speech: FR AMR-WB, in VAMOS mode */
+	/*! Speech: GSM48_CMODE_SPEECH_V5, in VAMOS mode */
 	GSM48_CMODE_SPEECH_V5_VAMOS	= 0xc5,
 };
 
