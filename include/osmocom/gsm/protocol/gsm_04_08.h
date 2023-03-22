@@ -1734,6 +1734,10 @@ static inline const char *osmo_lu_type_name(uint8_t lu_type)
 #define GSM48_IE_FRQSHORT_AFTER	0x02
 #define GSM48_IE_MUL_RATE_CFG	0x03	/* 10.5.2.21aa */
 #define GSM48_IE_FREQ_L_AFTER	0x05
+#define GSM48_IE_GROUP_CIP_SEQ_HO 0x08 /* HO = Half Octet Tag */
+#define GSM48_IE_CIP_MODE_SET_HO 0x09 /* HO = Half Octet Tag */
+#define GSM48_IE_GPRS_RESUMPT_HO 0xc0 /* HO = Half Octet Tag */
+#define GSM48_IE_SYNC_IND_HO	0x0d /* HO = Half Octet Tag */
 #define GSM48_IE_MSLOT_DESC	0x10
 #define GSM48_IE_CHANMODE_2	0x11
 #define GSM48_IE_FRQSHORT_BEFORE 0x12
@@ -1775,20 +1779,21 @@ static inline const char *osmo_lu_type_name(uint8_t lu_type)
 #define GSM48_IE_START_TIME	0x7c
 #define GSM48_IE_INDIVIDUAL_PRIORITIES 0x7c /* 44.018 Section 9.1.7 */
 #define GSM48_IE_TIMING_ADVANCE	0x7d
-#define GSM48_IE_GROUP_CIP_SEQ	0x80
-#define GSM48_IE_CIP_MODE_SET	0x90
-#define GSM48_IE_GPRS_RESUMPT	0xc0
-#define GSM48_IE_SYNC_IND	0xd0
+#define GSM48_IE_GROUP_CIP_SEQ 0x80 /* DEPRECATED, use GSM48_IE_GROUP_CIP_SEQ_HO instead */
+#define GSM48_IE_CIP_MODE_SET  0x90  /* DEPRECATED, use GSM48_IE_CIP_MODE_SET_HO instead */
+#define GSM48_IE_GPRS_RESUMPT  0xc0 /* DEPRECATED, use GSM48_IE_GPRS_RESUMPT_HO instead */
+#define GSM48_IE_SYNC_IND      0xd0 /* DEPRECATED, use GSM48_IE_SYNC_IND_HO instead */
 /* System Information 4 (types are equal IEs above) */
 #define GSM48_IE_CBCH_CHAN_DESC	0x64
 #define GSM48_IE_CBCH_MOB_AL	0x72
 
 /* Additional MM elements */
+#define GSM48_IE_PRIORITY_LEV_HO 0x08 /* HO = Half Octet Tag */
 #define GSM48_IE_LOCATION_AREA	0x13
 #define GSM48_IE_AUTN		0x20
 #define GSM48_IE_AUTH_RES_EXT	0x21
 #define GSM48_IE_AUTS		0x22
-#define GSM48_IE_PRIORITY_LEV	0x80
+#define GSM48_IE_PRIORITY_LEV	0x80 /* DEPRECATED, use GSM48_IE_PRIORITY_LEV_HO instead */
 #define GSM48_IE_FOLLOW_ON_PROC	0xa1
 #define GSM48_IE_CTS_PERMISSION	0xa2
 

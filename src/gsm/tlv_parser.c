@@ -241,7 +241,9 @@ int tlv_parse_one(uint8_t *o_tag, uint16_t *o_len, const uint8_t **o_val,
 	*o_tag = tag;
 
 	/* single octet TV IE */
-	if (def->def[tag & 0xf0].type == TLV_TYPE_SINGLE_TV) {
+	if (def->def[tag >> 4].type == TLV_TYPE_SINGLE_TV
+	    /* backward compat for old IEs with half-octet tag defined as 0xN0: */
+	    || ((tag > 0x0f) && (def->def[tag & 0xf0].type == TLV_TYPE_SINGLE_TV))) {
 		*o_tag = tag & 0xf0;
 		*o_val = buf;
 		*o_len = 1;

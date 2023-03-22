@@ -8,3 +8,4 @@
 # If any interfaces have been removed or changed since the last public release: c:r:0.
 #library	what			description / commit summary line
 libosmogsm  new header osmocom/gsm/protocol/gsm_44_060.h
+libosmocore ADD     new defines in osmocom/gsm/protocol/gsm_04_08.h (old ones marked deprecated)
