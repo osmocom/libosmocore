@@ -746,18 +746,33 @@ struct gsm48_chan_mode_modify {
 	uint8_t mode;
 } __attribute__ ((packed));
 
+/*! 10.5.2.6 Channel Mode value */
 enum gsm48_chan_mode {
+	/*! Signalling only (TCH/F or TCH/H)  */
 	GSM48_CMODE_SIGN	= 0x00,
+	/*! Speech: FR (TCH/FS) or HR (TCH/HS) */
 	GSM48_CMODE_SPEECH_V1	= 0x01,
-	GSM48_CMODE_SPEECH_EFR	= 0x21,
-	GSM48_CMODE_SPEECH_AMR	= 0x41,
+	/*! Speech: EFR (TCH/EFS) */
+	GSM48_CMODE_SPEECH_EFR	= 0x21, /*!< a.k.a. V2 */
+	/*! Speech: AMR (TCH/AFS or TCH/AHS) */
+	GSM48_CMODE_SPEECH_AMR	= 0x41, /*!< a.k.a. V3 */
+
+	/*! CSD: 14.5 kbit/s radio interface rate, 14.4 kbit/s services (TCH/F14.4) */
 	GSM48_CMODE_DATA_14k5	= 0x0f,
+	/*! CSD: 12.0 kbit/s radio interface rate, 9.6 kbit/s services (TCH/F9.6) */
 	GSM48_CMODE_DATA_12k0	= 0x03,
+	/*! CSD: 6.0 kbit/s radio interface rate, 4.8 kbit/s services (TCH/{F,H}4.8) */
 	GSM48_CMODE_DATA_6k0	= 0x0b,
+	/*! CSD: 3.6 kbit/s radio interface rate, 2.4 kbit/s and less services (TCH/{F,H}2.4) */
 	GSM48_CMODE_DATA_3k6	= 0x13,
+
+	/*! Same as GSM48_CMODE_SPEECH_V1, in VAMOS mode */
 	GSM48_CMODE_SPEECH_V1_VAMOS	= 0xc1,
+	/*! Same as GSM48_CMODE_SPEECH_EFR, in VAMOS mode */
 	GSM48_CMODE_SPEECH_V2_VAMOS	= 0xc2,
+	/*! Same as GSM48_CMODE_SPEECH_AMR, in VAMOS mode */
 	GSM48_CMODE_SPEECH_V3_VAMOS	= 0xc3,
+	/*! Speech: FR AMR-WB, in VAMOS mode */
 	GSM48_CMODE_SPEECH_V5_VAMOS	= 0xc5,
 };
 
