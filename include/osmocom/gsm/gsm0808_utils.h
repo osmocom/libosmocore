@@ -188,37 +188,34 @@ static inline uint8_t gsm0808_current_channel_type_1(enum gsm_chan_t type)
 static inline enum gsm0808_permitted_speech gsm0808_permitted_speech(enum gsm_chan_t type,
 								     enum gsm48_chan_mode mode)
 {
-	switch (mode) {
-	case GSM48_CMODE_SPEECH_V1:
-		switch (type) {
-		case GSM_LCHAN_TCH_F:
-			return GSM0808_PERM_FR1;
-		case GSM_LCHAN_TCH_H:
-			return GSM0808_PERM_HR1;
-		default:
-			return 0;
-		}
-	case GSM48_CMODE_SPEECH_EFR:
-		switch (type) {
-		case GSM_LCHAN_TCH_F:
-			return GSM0808_PERM_FR2;
-		case GSM_LCHAN_TCH_H:
-			return GSM0808_PERM_HR2;
-		default:
-			return 0;
-		}
-	case GSM48_CMODE_SPEECH_AMR:
-		switch (type) {
-		case GSM_LCHAN_TCH_F:
-			return GSM0808_PERM_FR3;
-		case GSM_LCHAN_TCH_H:
-			return GSM0808_PERM_HR3;
-		default:
-			return 0;
-		}
+#define MODE_TYPE(mode, type) ((mode << 16) | type)
+
+	switch (MODE_TYPE(mode, type)) {
+	case MODE_TYPE(GSM48_CMODE_SPEECH_V1, GSM_LCHAN_TCH_F):
+		return GSM0808_PERM_FR1;
+	case MODE_TYPE(GSM48_CMODE_SPEECH_V1, GSM_LCHAN_TCH_H):
+		return GSM0808_PERM_HR1;
+	case MODE_TYPE(GSM48_CMODE_SPEECH_EFR, GSM_LCHAN_TCH_F):
+		return GSM0808_PERM_FR2;
+	case MODE_TYPE(GSM48_CMODE_SPEECH_EFR, GSM_LCHAN_TCH_H):
+		return GSM0808_PERM_HR2; /* (deprecated) */
+	case MODE_TYPE(GSM48_CMODE_SPEECH_AMR, GSM_LCHAN_TCH_F):
+		return GSM0808_PERM_FR3;
+	case MODE_TYPE(GSM48_CMODE_SPEECH_AMR, GSM_LCHAN_TCH_H):
+		return GSM0808_PERM_HR3;
+	case MODE_TYPE(GSM48_CMODE_SPEECH_V4, GSM_LCHAN_TCH_F):
+		return GSM0808_PERM_FR4;
+	case MODE_TYPE(GSM48_CMODE_SPEECH_V4, GSM_LCHAN_TCH_H):
+		return GSM0808_PERM_HR4;
+	case MODE_TYPE(GSM48_CMODE_SPEECH_V5, GSM_LCHAN_TCH_F):
+		return GSM0808_PERM_FR5; /* FR only */
+	case MODE_TYPE(GSM48_CMODE_SPEECH_V6, GSM_LCHAN_TCH_H):
+		return GSM0808_PERM_HR6; /* HR only */
 	default:
 		return 0;
 	}
+
+#undef MODE_TYPE
 }
 
 /*! Return 3GPP TS 48.008 3.2.2.33 Chosen Channel. */
@@ -230,6 +227,9 @@ static inline uint8_t gsm0808_chosen_channel(enum gsm_chan_t type, enum gsm48_ch
 	case GSM48_CMODE_SPEECH_V1:
 	case GSM48_CMODE_SPEECH_EFR:
 	case GSM48_CMODE_SPEECH_AMR:
+	case GSM48_CMODE_SPEECH_V4:
+	case GSM48_CMODE_SPEECH_V5:
+	case GSM48_CMODE_SPEECH_V6:
 		channel_mode = 0x9;
 		break;
 	case GSM48_CMODE_SIGN:
@@ -246,6 +246,33 @@ static inline uint8_t gsm0808_chosen_channel(enum gsm_chan_t type, enum gsm48_ch
 		break;
 	case GSM48_CMODE_DATA_3k6:
 		channel_mode = 0xd;
+		break;
+	case GSM48_CMODE_DATA_29k0:
+		channel_mode = 0x1;
+		break;
+	case GSM48_CMODE_DATA_32k0:
+		channel_mode = 0x2;
+		break;
+	case GSM48_CMODE_DATA_43k5:
+		channel_mode = 0x3;
+		break;
+	case GSM48_CMODE_DATA_43k5_14k5:
+		channel_mode = 0x4;
+		break;
+	case GSM48_CMODE_DATA_29k0_14k5:
+		channel_mode = 0x5;
+		break;
+	case GSM48_CMODE_DATA_43k5_29k0:
+		channel_mode = 0x6;
+		break;
+	case GSM48_CMODE_DATA_14k5_43k5:
+		channel_mode = 0x7;
+		break;
+	case GSM48_CMODE_DATA_14k5_29k0:
+		channel_mode = 0xa;
+		break;
+	case GSM48_CMODE_DATA_29k0_43k5:
+		channel_mode = 0xf;
 		break;
 	default:
 		return 0;
@@ -264,6 +291,7 @@ static inline uint8_t gsm0808_chosen_channel(enum gsm_chan_t type, enum gsm48_ch
 	case GSM_LCHAN_TCH_H:
 		channel = 0x9;
 		break;
+	/* TODO: more than 1 TCHs? */
 	default:
 		return 0;
 	}
