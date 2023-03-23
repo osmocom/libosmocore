@@ -86,6 +86,15 @@ void rate_ctr_group_free(struct rate_ctr_group *grp);
  *  \param inc quantity to increment \a ctr by */
 void rate_ctr_add(struct rate_ctr *ctr, int inc);
 
+/*! Increment the counter by \a inc
+ *  \param ctrg \ref rate_ctr_group of counter
+ *  \param idx index into \a ctrg counter group
+ *  \param inc quantity to increment \a ctr by */
+static inline void rate_ctr_add2(struct rate_ctr_group *ctrg, unsigned int idx, int inc)
+{
+	rate_ctr_add(rate_ctr_group_get_ctr(ctrg, idx), inc);
+}
+
 /*! Increment the counter by 1
  *  \param ctr \ref rate_ctr to increment */
 static inline void rate_ctr_inc(struct rate_ctr *ctr)
