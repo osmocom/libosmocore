@@ -20,6 +20,10 @@
  */
 
 #include <stdint.h>
+#include <stdbool.h>
+
+#include <osmocom/core/bitvec.h>
+#include <osmocom/core/utils.h>
 #include <osmocom/codec/codec.h>
 
 /* GSM EFR - subjective importance bit ordering */
@@ -253,3 +257,43 @@ const uint16_t gsm660_bitorder[260] = {
 	243,					/* 258 -> PULSE 4_9: b0     */
 	246,					/* 259 -> PULSE 4_10: b0    */
 };
+
+/*! Check whether RTP frame contains EFR SID code word according to
+ *  TS 101 318 §5.3.2
+ *  \param[in] rtp_payload Buffer with RTP payload
+ *  \param[in] payload_len Length of payload
+ *  \returns true if code word is found, false otherwise
+ */
+bool osmo_efr_check_sid(const uint8_t *rtp_payload, size_t payload_len)
+{
+	struct bitvec bv;
+	uint16_t i;
+	static const uint8_t sid_code_word_bits[95] = {
+		/* bit numbers relative to "pure" EFR frame beginning,
+		 * not counting the signature bits. */
+		   45,  46,  48,  49,  50,  51,  52,  53,  54,  55,
+		   56,  57,  58,  59,  60,  61,  62,  63,  64,  65,
+		   66,  67,  68,  94,  95,  96,  98,  99, 100, 101,
+		  102, 103, 104, 105, 106, 107, 108, 109, 110, 111,
+		  112, 113, 114, 115, 116, 117, 118, 148, 149, 150,
+		  151, 152, 153, 154, 155, 156, 157, 158, 159, 160,
+		  161, 162, 163, 164, 165, 166, 167, 168, 169, 170,
+		  171, 196, 197, 198, 199, 200, 201, 202, 203, 204,
+		  205, 206, 207, 208, 209, 212, 213, 214, 215, 216,
+		  217, 218, 219, 220, 221 };
+
+	/* signature does not match Enhanced Full Rate SID */
+	if ((rtp_payload[0] >> 4) != 0xC)
+		return false;
+
+	bv.data = (uint8_t *) rtp_payload;
+	bv.data_len = payload_len;
+
+	/* code word is all 1 at given bits */
+	for (i = 0; i < ARRAY_SIZE(sid_code_word_bits); i++) {
+		if (bitvec_get_bit_pos(&bv, sid_code_word_bits[i]+4) != ONE)
+			return false;
+	}
+
+	return true;
+}
