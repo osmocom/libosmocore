@@ -101,15 +101,24 @@ enum gsm48_gprs_ie_mm {
 };
 
 enum gsm48_gprs_ie_sm {
+	GSM48_IE_GSM_RADIO_PRIO		= 0x08,	/* 10.5.7.2 */
+	GSM48_IE_GSM_DEV_PROP		= 0x0C,	/* 10.5.7.8 */
 	GSM48_IE_GSM_APN		= 0x28,	/* 10.5.6.1 */
 	GSM48_IE_GSM_PROTO_CONF_OPT	= 0x27,	/* 10.5.6.3 */
 	GSM48_IE_GSM_PDP_ADDR		= 0x2b, /* 10.5.6.4 */
 	GSM48_IE_GSM_AA_TMR		= 0x29,	/* 10.5.7.3 */
+	GSM48_IE_GSM_QOS		= 0x30,	/* 10.5.6.5 */
+	GSM48_IE_GSM_TFT		= 0x31,	/* 10.5.6.12 */
+	GSM48_IE_GSM_LLC_SAPI		= 0x32,	/* 10.5.6.9 */
+	GSM48_IE_GSM_MBIFOM_CONT	= 0x33,	/* 10.5.6.21 */
+	GSM48_IE_GSM_PFI		= 0x34,	/* 10.5.6.11 */
 	GSM48_IE_GSM_NAME_FULL		= 0x43, /* 10.5.3.5a */
 	GSM48_IE_GSM_NAME_SHORT		= 0x45, /* 10.5.3.5a */
 	GSM48_IE_GSM_TIMEZONE		= 0x46, /* 10.5.3.8 */
 	GSM48_IE_GSM_UTC_AND_TZ		= 0x47, /* 10.5.3.9 */
 	GSM48_IE_GSM_LSA_ID		= 0x48, /* 10.5.3.11 */
+	GSM48_IE_GSM_EXT_QOS		= 0x5C, /* 10.5.6.5B */
+	GSM48_IE_GSM_EXT_PROTO_CONF_OPT	= 0x7B, /* 10.5.6.3a */
 
 	/* Fake IEs that are not present on the Layer3 air interface,
 	 * but which we use to simplify internal APIs */
