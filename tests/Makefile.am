@@ -717,7 +717,7 @@ endif
 #   make vty-test U=-u
 
 if ENABLE_GB
-vty-test-ns2:
+vty-test-ns2: $(top_builddir)/utils/osmo-ns-dummy
 	$(MAKE) -C $(top_builddir)/utils osmo-ns-dummy
 	osmo_verify_transcript_vty.py -v \
 		-p 42042 \
@@ -730,19 +730,21 @@ vty-test-ns2:
 	echo "Not running vty-test-ns2 because osmo-ns-dummy is not built (--disable-gb)"
 endif
 
-vty-test-logging:
+vty-test-logging: $(top_builddir)/tests/logging/logging_vty_test
 	osmo_verify_transcript_vty.py -v \
 		-p 42042 \
 		-r "$(top_builddir)/tests/logging/logging_vty_test" \
 		$(U) $(srcdir)/logging/*.vty
 
-vty-test-vty:
+vty-test-vty: $(top_builddir)/tests/vty/vty_transcript_test
 	osmo_verify_transcript_vty.py -v \
 		-p 42042 \
 		-r "$(top_builddir)/tests/vty/vty_transcript_test" \
 		$(U) $(srcdir)/vty/*.vty
 
-vty-test-tdef:
+vty-test-tdef: $(top_builddir)/tests/tdef/tdef_vty_config_root_test \
+	       $(top_builddir)/tests/tdef/tdef_vty_config_subnode_test \
+	       $(top_builddir)/tests/tdef/tdef_vty_dynamic_test
 	osmo_verify_transcript_vty.py -v \
 		-p 42042 \
 		-r "$(top_builddir)/tests/tdef/tdef_vty_config_root_test" \
@@ -756,7 +758,7 @@ vty-test-tdef:
 		-r "$(top_builddir)/tests/tdef/tdef_vty_dynamic_test" \
 		$(U) $(srcdir)/tdef/tdef_vty_dynamic_test.vty
 
-vty-test-stats:
+vty-test-stats: $(top_builddir)/tests/stats/stats_vty_test
 	osmo_verify_transcript_vty.py -v \
 		-p 42042 \
 		-r "$(top_builddir)/tests/stats/stats_vty_test" \
