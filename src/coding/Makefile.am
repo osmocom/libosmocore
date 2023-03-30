@@ -8,7 +8,7 @@ AM_CPPFLAGS = \
 	-I"$(top_builddir)/include" \
 	-I"$(top_builddir)" \
 	$(NULL)
-AM_CFLAGS = -Wall
+AM_CFLAGS = -Wall $(TALLOC_CFLAGS)
 
 if ENABLE_PSEUDOTALLOC
 AM_CPPFLAGS += -I$(top_srcdir)/src/pseudotalloc
