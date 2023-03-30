@@ -52,12 +52,12 @@
  * This function creates and initializes a ringbuffer.
  * Note that the ringbuffer stores at most rb_size - 1 messages.
  */
-struct osmo_strrb *osmo_strrb_create(TALLOC_CTX * ctx, size_t rb_size)
+struct osmo_strrb *osmo_strrb_create(void *talloc_ctx, size_t rb_size)
 {
 	struct osmo_strrb *rb = NULL;
 	unsigned int i;
 
-	rb = talloc_zero(ctx, struct osmo_strrb);
+	rb = talloc_zero(talloc_ctx, struct osmo_strrb);
 	if (!rb)
 		goto alloc_error;
 

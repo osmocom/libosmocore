@@ -23,7 +23,6 @@
  * \file bitvec.h */
 
 #include <stdint.h>
-#include <osmocom/core/talloc.h>
 #include <osmocom/core/defs.h>
 #include <stdbool.h>
 
@@ -61,7 +60,7 @@ int bitvec_find_bit_pos(const struct bitvec *bv, unsigned int n, enum bit_value 
 int bitvec_spare_padding(struct bitvec *bv, unsigned int up_to_bit);
 int bitvec_get_bytes(struct bitvec *bv, uint8_t *bytes, unsigned int count);
 int bitvec_set_bytes(struct bitvec *bv, const uint8_t *bytes, unsigned int count);
-struct bitvec *bitvec_alloc(unsigned int size, TALLOC_CTX *bvctx);
+struct bitvec *bitvec_alloc(unsigned int size, void *bvctx);
 void bitvec_free(struct bitvec *bv);
 int bitvec_unhex(struct bitvec *bv, const char *src);
 unsigned int bitvec_pack(const struct bitvec *bv, uint8_t *buffer);

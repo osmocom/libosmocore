@@ -395,7 +395,7 @@ int bitvec_set_bytes(struct bitvec *bv, const uint8_t *bytes, unsigned int count
  *  \param[in] size Number of bytes in the vector
  *  \param[in] ctx Context from which to allocate
  *  \return pointer to allocated vector; NULL in case of error */
-struct bitvec *bitvec_alloc(unsigned int size, TALLOC_CTX *ctx)
+struct bitvec *bitvec_alloc(unsigned int size, void *ctx)
 {
 	struct bitvec *bv = talloc(ctx, struct bitvec);
 	if (!bv)

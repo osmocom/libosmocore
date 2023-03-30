@@ -26,8 +26,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <osmocom/core/talloc.h>
-
 /*! A structure representing an osmocom string ringbuffer */
 
 #define RB_MAX_MESSAGE_SIZE 240
@@ -38,7 +36,7 @@ struct osmo_strrb {
 	char **buffer;		/*!< storage for messages */
 };
 
-struct osmo_strrb *osmo_strrb_create(TALLOC_CTX * ctx, size_t rb_size);
+struct osmo_strrb *osmo_strrb_create(void *talloc_ctx, size_t rb_size);
 bool osmo_strrb_is_empty(const struct osmo_strrb *rb);
 const char *osmo_strrb_get_nth(const struct osmo_strrb *rb,
 			       unsigned int string_index);
