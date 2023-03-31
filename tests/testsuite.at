@@ -508,3 +508,11 @@ AT_KEYWORDS([gsm44021_test_frame_csd])
 cat $abs_srcdir/gsm44021/test_frame_csd.ok > expout
 AT_CHECK([$abs_top_builddir/tests/gsm44021/test_frame_csd], [], [expout],[])
 AT_CLEANUP
+
+AT_SETUP([osmo_io])
+AT_KEYWORDS([osmo_io])
+cat $abs_srcdir/osmo_io/osmo_io_test.ok > expout
+cat $abs_srcdir/osmo_io/osmo_io_test.err > experr
+touch experr
+AT_CHECK([$abs_top_builddir/tests/osmo_io/osmo_io_test], [0], [expout], [experr])
+AT_CLEANUP

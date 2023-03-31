@@ -1,0 +1,8 @@
+Running test_connected
+ep1: write() returned rc=16
+ep2: read() msg with len=16
+01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f 10 
+Running test_unconnected
+ep1: sendto() returned rc=16
+ep2: recvfrom() msg with len=16
+01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f 10 

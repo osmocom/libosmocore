@@ -53,6 +53,7 @@ check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
 		 v110/test_frame                                        \
 		 v110/test_ra1                                          \
 		 gsm44021/test_frame_csd                                \
+		 osmo_io/osmo_io_test					\
 		 $(NULL)
 
 if ENABLE_MSGFILE
@@ -367,6 +368,8 @@ gsm44021_test_frame_csd_LDADD = $(top_builddir)/src/isdn/libosmoisdn.la \
 				$(top_builddir)/src/gsm/libosmogsm.la \
 				$(LDADD)
 
+osmo_io_osmo_io_test_SOURCES = osmo_io/osmo_io_test.c
+
 
 # The `:;' works around a Bash 3.2 bug when the output is not writeable.
 $(srcdir)/package.m4: $(top_srcdir)/configure.ac
@@ -469,6 +472,7 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
 	     v110/test_frame.ok \
 	     v110/test_ra1.ok \
 	     gsm44021/test_frame_csd.ok \
+	     osmo_io/osmo_io_test.ok osmo_io/osmo_io_test.err \
 	     $(NULL)
 
 if ENABLE_LIBSCTP
@@ -678,6 +682,10 @@ endif
 		>$(srcdir)/v110/test_ra1.ok
 	gsm44021/test_frame_csd \
 		>$(srcdir)/gsm44021/test_frame_csd.ok
+	osmo_io/osmo_io_test \
+		>$(srcdir)/osmo_io/osmo_io_test.ok \
+		2>$(srcdir)/osmo_io/osmo_io_test.err
+
 
 check-local: atconfig $(TESTSUITE)
 	[ -e /proc/cpuinfo ] && cat /proc/cpuinfo
