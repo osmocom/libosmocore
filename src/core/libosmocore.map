@@ -360,6 +360,7 @@ osmo_sockaddr_set_port;
 osmo_sockaddr_str_cmp;
 osmo_sockaddr_str_from_32;
 osmo_sockaddr_str_from_32h;
+osmo_sockaddr_str_from_128;
 osmo_sockaddr_str_from_32n;
 osmo_sockaddr_str_from_in6_addr;
 osmo_sockaddr_str_from_in_addr;

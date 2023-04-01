@@ -299,6 +299,25 @@ int osmo_sockaddr_str_from_32h(struct osmo_sockaddr_str *sockaddr_str, uint32_t 
 	return osmo_sockaddr_str_from_32(sockaddr_str, osmo_ntohl(ip), port);
 }
 
+/*! Convert IPv6 address from 128bit network-byte-order to osmo_sockaddr_str, and set port.
+ * \param[out] sockaddr_str  The instance to copy to.
+ * \param[in] ip  128bit IPv6 address data.
+ * \param[in] port  Port number.
+ * \return 0 on success, negative on error.
+ */
+int osmo_sockaddr_str_from_128(struct osmo_sockaddr_str *sockaddr_str, uint8_t *ip, uint16_t port)
+{
+	if (!sockaddr_str)
+		return -ENOSPC;
+	*sockaddr_str = (struct osmo_sockaddr_str){
+		.af = AF_INET6,
+		.port = port,
+	};
+	if (!inet_ntop(AF_INET6, ip, sockaddr_str->ip, sizeof(sockaddr_str->ip)))
+		return -ENOSPC;
+	return 0;
+}
+
 /*! DEPRECATED: the name suggests a conversion from network byte order, but actually converts from host byte order. Use
  * osmo_sockaddr_str_from_32 for network byte order and osmo_sockaddr_str_from_32h for host byte order. */
 int osmo_sockaddr_str_from_32n(struct osmo_sockaddr_str *sockaddr_str, uint32_t ip, uint16_t port)

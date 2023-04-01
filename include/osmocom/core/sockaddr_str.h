@@ -76,6 +76,7 @@ int osmo_sockaddr_str_from_in_addr(struct osmo_sockaddr_str *sockaddr_str, const
 int osmo_sockaddr_str_from_in6_addr(struct osmo_sockaddr_str *sockaddr_str, const struct in6_addr *addr, uint16_t port);
 int osmo_sockaddr_str_from_32(struct osmo_sockaddr_str *sockaddr_str, uint32_t ip, uint16_t port);
 int osmo_sockaddr_str_from_32h(struct osmo_sockaddr_str *sockaddr_str, uint32_t ip, uint16_t port);
+int osmo_sockaddr_str_from_128(struct osmo_sockaddr_str *sockaddr_str, uint8_t *ip, uint16_t port);
 int osmo_sockaddr_str_from_sockaddr_in(struct osmo_sockaddr_str *sockaddr_str, const struct sockaddr_in *src);
 int osmo_sockaddr_str_from_sockaddr_in6(struct osmo_sockaddr_str *sockaddr_str, const struct sockaddr_in6 *src);
 int osmo_sockaddr_str_from_sockaddr(struct osmo_sockaddr_str *sockaddr_str, const struct sockaddr_storage *src);
