@@ -79,3 +79,6 @@ struct msgb *ipa_msg_alloc(int headroom);
 
 int ipa_msg_recv(int fd, struct msgb **rmsg);
 int ipa_msg_recv_buffered(int fd, struct msgb **rmsg, struct msgb **tmp_msg);
+
+/* Callback for segmenting TCP stream data into IPA packets */
+int ipa_segmentation_cb(struct msgb *msg);

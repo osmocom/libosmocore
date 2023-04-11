@@ -30,6 +30,7 @@
 #include <stdint.h>
 #include <errno.h>
 #include <stdlib.h>
+#include <inttypes.h>
 
 #include <sys/types.h>
 
@@ -716,6 +717,34 @@ struct msgb *ipa_msg_alloc(int headroom)
 	if (!nmsg)
 		return NULL;
 	return nmsg;
+}
+
+/*! Segmentation callback used by libosmo-netif streaming backend
+ *  See definition of `struct osmo_io_ops` for callback semantics
+ *  \param[in] msg	Original `struct msgb` received via osmo_io
+ *  \returns		The total packet length indicated by the first header,
+ *			otherwise
+ *			-EAGAIN,  if the header has not been read yet,
+ *			-ENOBUFS, if the header declares a payload too large
+ */
+int ipa_segmentation_cb(struct msgb *msg)
+{
+	const struct ipaccess_head *hh = (const struct ipaccess_head *) msg->data;
+	size_t payload_len, total_len;
+	size_t available = msgb_length(msg) + msgb_tailroom(msg);
+	if (msgb_length(msg) < sizeof(*hh)) {
+		/* Haven't even read the entire header */
+		return -EAGAIN;
+	}
+	payload_len = osmo_ntohs(hh->len);
+	total_len = sizeof(*hh) + payload_len;
+	if (OSMO_UNLIKELY(available < total_len)) {
+		LOGP(DLINP, LOGL_ERROR, "Not enough space left in message buffer. "
+					"Have %zu octets, but need %zu\n",
+					available, total_len);
+		return -ENOBUFS;
+	}
+	return total_len;
 }
 
 /*! @} */

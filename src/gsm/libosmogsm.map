@@ -689,6 +689,7 @@ ipa_ccm_id_get_parse;
 ipa_ccm_id_resp_parse;
 ipa_ccm_make_id_resp;
 ipa_ccm_make_id_resp_from_req;
+ipa_segmentation_cb;
 ipa_msg_alloc;
 ipa_msg_recv;
 ipa_msg_recv_buffered;
