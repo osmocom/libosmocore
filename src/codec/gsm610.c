@@ -389,3 +389,44 @@ enum osmo_gsm631_sid_class osmo_fr_sid_classify(const uint8_t *rtp_payload)
 	else
 		return OSMO_GSM631_SID_CLASS_VALID;
 }
+
+/*! Preen potentially-SID FR codec frame in RTP format, ensuring that it is
+ *  either a speech frame or a valid SID, and if the latter, making it a
+ *  perfect, error-free SID frame.
+ *  \param[in] rtp_payload Buffer with RTP payload - must be writable!
+ *  \returns true if the frame is good, false otherwise
+ */
+bool osmo_fr_sid_preen(uint8_t *rtp_payload)
+{
+	enum osmo_gsm631_sid_class sidc;
+	uint8_t *p, sub;
+
+	sidc = osmo_fr_sid_classify(rtp_payload);
+	switch (sidc) {
+	case OSMO_GSM631_SID_CLASS_SPEECH:
+		return true;
+	case OSMO_GSM631_SID_CLASS_INVALID:
+		return false;
+	case OSMO_GSM631_SID_CLASS_VALID:
+		/* "Rejuvenate" this SID frame, correcting any errors:
+		 * zero out all bits that aren't LARc or Xmaxc, thereby
+		 * clearing all SID code word bits and all unused/reserved
+		 * bits. */
+		p = rtp_payload + 5;	/* skip magic+LARc */
+		for (sub = 0; sub < 4; sub++) {
+			*p++ = 0;
+			*p++ &= 0x1F;
+			*p++ &= 0x80;
+			*p++ = 0;
+			*p++ = 0;
+			*p++ = 0;
+			*p++ = 0;
+		}
+		return true;
+	default:
+		/* There are only 3 possible SID classifications per GSM 06.31
+		 * section 6.1.1, thus any other return value is a grave error
+		 * in the code. */
+		OSMO_ASSERT(0);
+	}
+}

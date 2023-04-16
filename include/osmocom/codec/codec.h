@@ -94,6 +94,8 @@ bool osmo_efr_check_sid(const uint8_t *rtp_payload, size_t payload_len);
 
 enum osmo_gsm631_sid_class osmo_fr_sid_classify(const uint8_t *rtp_payload);
 enum osmo_gsm631_sid_class osmo_efr_sid_classify(const uint8_t *rtp_payload);
+bool osmo_fr_sid_preen(uint8_t *rtp_payload);
+bool osmo_efr_sid_preen(uint8_t *rtp_payload);
 
 int osmo_amr_rtp_enc(uint8_t *payload, uint8_t cmr, enum osmo_amr_type ft,
 		     enum osmo_amr_quality bfi);
