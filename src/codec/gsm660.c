@@ -258,6 +258,21 @@ const uint16_t gsm660_bitorder[260] = {
 	246,					/* 259 -> PULSE 4_10: b0    */
 };
 
+static const uint8_t sid_code_word_bits[95] = {
+	/* bit numbers are relative to "pure" EFR frame beginning,
+	 * not counting the signature bits. */
+	   45,  46,  48,  49,  50,  51,  52,  53,  54,  55,
+	   56,  57,  58,  59,  60,  61,  62,  63,  64,  65,
+	   66,  67,  68,  94,  95,  96,  98,  99, 100, 101,
+	  102, 103, 104, 105, 106, 107, 108, 109, 110, 111,
+	  112, 113, 114, 115, 116, 117, 118, 148, 149, 150,
+	  151, 152, 153, 154, 155, 156, 157, 158, 159, 160,
+	  161, 162, 163, 164, 165, 166, 167, 168, 169, 170,
+	  171, 196, 197, 198, 199, 200, 201, 202, 203, 204,
+	  205, 206, 207, 208, 209, 212, 213, 214, 215, 216,
+	  217, 218, 219, 220, 221
+};
+
 /*! Check whether RTP frame contains EFR SID code word according to
  *  TS 101 318 §5.3.2
  *  \param[in] rtp_payload Buffer with RTP payload
@@ -268,19 +283,6 @@ bool osmo_efr_check_sid(const uint8_t *rtp_payload, size_t payload_len)
 {
 	struct bitvec bv;
 	uint16_t i;
-	static const uint8_t sid_code_word_bits[95] = {
-		/* bit numbers relative to "pure" EFR frame beginning,
-		 * not counting the signature bits. */
-		   45,  46,  48,  49,  50,  51,  52,  53,  54,  55,
-		   56,  57,  58,  59,  60,  61,  62,  63,  64,  65,
-		   66,  67,  68,  94,  95,  96,  98,  99, 100, 101,
-		  102, 103, 104, 105, 106, 107, 108, 109, 110, 111,
-		  112, 113, 114, 115, 116, 117, 118, 148, 149, 150,
-		  151, 152, 153, 154, 155, 156, 157, 158, 159, 160,
-		  161, 162, 163, 164, 165, 166, 167, 168, 169, 170,
-		  171, 196, 197, 198, 199, 200, 201, 202, 203, 204,
-		  205, 206, 207, 208, 209, 212, 213, 214, 215, 216,
-		  217, 218, 219, 220, 221 };
 
 	/* signature does not match Enhanced Full Rate SID */
 	if ((rtp_payload[0] >> 4) != 0xC)
@@ -296,4 +298,56 @@ bool osmo_efr_check_sid(const uint8_t *rtp_payload, size_t payload_len)
 	}
 
 	return true;
+}
+
+/*! Classify potentially-SID EFR codec frame in RTP format according
+ *  to the rules of GSM 06.81 §6.1.1
+ *  \param[in] rtp_payload Buffer with RTP payload
+ *  \returns enum osmo_gsm631_sid_class, with symbolic values
+ *  OSMO_GSM631_SID_CLASS_SPEECH, OSMO_GSM631_SID_CLASS_INVALID or
+ *  OSMO_GSM631_SID_CLASS_VALID corresponding to the 3 possible bit-counting
+ *  classifications prescribed by the spec.
+ *
+ *  Differences between the more familiar osmo_efr_check_sid() and the present
+ *  function are:
+ *
+ *  1. osmo_efr_check_sid() returns true only if the SID frame is absolutely
+ *     perfect, with all 95 bits of the SID code word set.  However, the
+ *     rules of GSM 06.81 §6.1.1 allow up to one bit to be in error,
+ *     and the frame is still accepted as valid SID.
+ *
+ *  2. The third possible state of invalid SID is not handled at all by the
+ *     simpler osmo_efr_check_sid() function.
+ *
+ *  3. osmo_efr_check_sid() includes a check for 0xC RTP signature, and returns
+ *     false if that signature nibble is wrong.  That check is not included
+ *     in the present version because there is no place for it in the
+ *     ETSI-prescribed classification, it is neither speech nor SID.  The
+ *     assumption is that this function is used to classify the bit content
+ *     of received codec frames, not their RTP encoding - the latter needs
+ *     to be validated beforehand.
+ *
+ *  Which function should one use?  The answer depends on the specific
+ *  circumstances, and needs to be addressed on a case-by-case basis.
+ */
+enum osmo_gsm631_sid_class osmo_efr_sid_classify(const uint8_t *rtp_payload)
+{
+	struct bitvec bv;
+	uint16_t i, n;
+
+	bv.data = (uint8_t *) rtp_payload;
+	bv.data_len = GSM_EFR_BYTES;
+
+	/* count not-SID-matching bits per the spec */
+	n = 0;
+	for (i = 0; i < ARRAY_SIZE(sid_code_word_bits); i++) {
+		if (bitvec_get_bit_pos(&bv, sid_code_word_bits[i]+4) != ONE)
+			n++;
+		if (n >= 16)
+			return OSMO_GSM631_SID_CLASS_SPEECH;
+	}
+	if (n >= 2)
+		return OSMO_GSM631_SID_CLASS_INVALID;
+	else
+		return OSMO_GSM631_SID_CLASS_VALID;
 }

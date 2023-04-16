@@ -296,6 +296,21 @@ const uint16_t gsm610_bitorder[260] = {
 	29,	/* LARc5:0 */
 };
 
+static const uint16_t sid_code_word_bits[95] = {
+	/* bit numbers are relative to the RTP frame beginning,
+	 * with signature bits included in the count. */
+	57, 58, 60, 61, 63, 64, 66, 67, 69, 70, 72, 73,
+	75, 76, 78, 79, 81, 82, 84, 85, 87, 88, 90, 91,
+	93, 94, 113, 114, 116, 117, 119, 120, 122, 123,
+	125, 126, 128, 129, 131, 132, 134, 135, 137,
+	138, 140, 141, 143, 144, 146, 147, 149, 150,
+	169, 170, 172, 173, 175, 176, 178, 179, 181,
+	182, 184, 185, 187, 188, 190, 191, 193, 194,
+	196, 197, 199, 200, 202, 203, 205, 206, 225,
+	226, 228, 229, 231, 232, 234, 235, 237, 240,
+	243, 246, 249, 252, 255, 258, 261
+};
+
 /*! Check whether RTP frame contains FR SID code word according to
  *  TS 101 318 §5.1.2
  *  \param[in] rtp_payload Buffer with RTP payload
@@ -305,16 +320,7 @@ const uint16_t gsm610_bitorder[260] = {
 bool osmo_fr_check_sid(const uint8_t *rtp_payload, size_t payload_len)
 {
 	struct bitvec bv;
-	uint16_t i, z_bits[] = { 57, 58, 60, 61, 63, 64, 66, 67, 69, 70, 72, 73,
-				 75, 76, 78, 79, 81, 82, 84, 85, 87, 88, 90, 91,
-				 93, 94, 113, 114, 116, 117, 119, 120, 122, 123,
-				 125, 126, 128, 129, 131, 132, 134, 135, 137,
-				 138, 140, 141, 143, 144, 146, 147, 149, 150,
-				 169, 170, 172, 173, 175, 176, 178, 179, 181,
-				 182, 184, 185, 187, 188, 190, 191, 193, 194,
-				 196, 197, 199, 200, 202, 203, 205, 206, 225,
-				 226, 228, 229, 231, 232, 234, 235, 237, 240,
-				 243, 246, 249, 252, 255, 258, 261 };
+	uint16_t i;
 
 	/* signature does not match Full Rate SID */
 	if ((rtp_payload[0] >> 4) != 0xD)
@@ -323,10 +329,63 @@ bool osmo_fr_check_sid(const uint8_t *rtp_payload, size_t payload_len)
 	bv.data = (uint8_t *) rtp_payload;
 	bv.data_len = payload_len;
 
-	/* code word is all 0 at given bits, numbered from 1 */
-	for (i = 0; i < ARRAY_SIZE(z_bits); i++)
-		if (bitvec_get_bit_pos(&bv, z_bits[i]) != ZERO)
+	/* code word is all 0 at given bits */
+	for (i = 0; i < ARRAY_SIZE(sid_code_word_bits); i++) {
+		if (bitvec_get_bit_pos(&bv, sid_code_word_bits[i]) != ZERO)
 			return false;
+	}
 
 	return true;
+}
+
+/*! Classify potentially-SID FR codec frame in RTP format according
+ *  to the rules of GSM 06.31 §6.1.1
+ *  \param[in] rtp_payload Buffer with RTP payload
+ *  \returns enum osmo_gsm631_sid_class, with symbolic values
+ *  OSMO_GSM631_SID_CLASS_SPEECH, OSMO_GSM631_SID_CLASS_INVALID or
+ *  OSMO_GSM631_SID_CLASS_VALID corresponding to the 3 possible bit-counting
+ *  classifications prescribed by the spec.
+ *
+ *  Differences between the more familiar osmo_fr_check_sid() and the present
+ *  function are:
+ *
+ *  1. osmo_fr_check_sid() returns true only if the SID frame is absolutely
+ *     perfect, with all 95 bits of the SID code word zeroed.  However, the
+ *     rules of GSM 06.31 §6.1.1 allow up to one bit to be in error,
+ *     and the frame is still accepted as valid SID.
+ *
+ *  2. The third possible state of invalid SID is not handled at all by the
+ *     simpler osmo_fr_check_sid() function.
+ *
+ *  3. osmo_fr_check_sid() includes a check for 0xD RTP signature, and returns
+ *     false if that signature nibble is wrong.  That check is not included
+ *     in the present version because there is no place for it in the
+ *     ETSI-prescribed classification, it is neither speech nor SID.  The
+ *     assumption is that this function is used to classify the bit content
+ *     of received codec frames, not their RTP encoding - the latter needs
+ *     to be validated beforehand.
+ *
+ *  Which function should one use?  The answer depends on the specific
+ *  circumstances, and needs to be addressed on a case-by-case basis.
+ */
+enum osmo_gsm631_sid_class osmo_fr_sid_classify(const uint8_t *rtp_payload)
+{
+	struct bitvec bv;
+	uint16_t i, n;
+
+	bv.data = (uint8_t *) rtp_payload;
+	bv.data_len = GSM_FR_BYTES;
+
+	/* count not-SID-matching bits per the spec */
+	n = 0;
+	for (i = 0; i < ARRAY_SIZE(sid_code_word_bits); i++) {
+		if (bitvec_get_bit_pos(&bv, sid_code_word_bits[i]) != ZERO)
+			n++;
+		if (n >= 16)
+			return OSMO_GSM631_SID_CLASS_SPEECH;
+	}
+	if (n >= 2)
+		return OSMO_GSM631_SID_CLASS_INVALID;
+	else
+		return OSMO_GSM631_SID_CLASS_VALID;
 }

@@ -81,9 +81,20 @@ static inline bool osmo_amr_is_speech(enum osmo_amr_type ft)
 	}
 }
 
+/* SID ternary classification per GSM 06.31 & 06.81 section 6.1.1 */
+enum osmo_gsm631_sid_class {
+       OSMO_GSM631_SID_CLASS_SPEECH  = 0,
+       OSMO_GSM631_SID_CLASS_INVALID = 1,
+       OSMO_GSM631_SID_CLASS_VALID   = 2,
+};
+
 bool osmo_fr_check_sid(const uint8_t *rtp_payload, size_t payload_len);
 bool osmo_hr_check_sid(const uint8_t *rtp_payload, size_t payload_len);
 bool osmo_efr_check_sid(const uint8_t *rtp_payload, size_t payload_len);
+
+enum osmo_gsm631_sid_class osmo_fr_sid_classify(const uint8_t *rtp_payload);
+enum osmo_gsm631_sid_class osmo_efr_sid_classify(const uint8_t *rtp_payload);
+
 int osmo_amr_rtp_enc(uint8_t *payload, uint8_t cmr, enum osmo_amr_type ft,
 		     enum osmo_amr_quality bfi);
 int osmo_amr_rtp_dec(const uint8_t *payload, int payload_len, uint8_t *cmr,
