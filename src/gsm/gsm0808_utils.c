@@ -2210,4 +2210,367 @@ char *gsm0808_channel_type_name_c(const void *ctx, const struct gsm0808_channel_
 	return gsm0808_channel_type_name_buf(buf, 128, ct);
 }
 
+/*! Encode Group Call Reference IE (3GPP TS 48.008 3.2.2.55).
+ *  \param[out] msg Message Buffer to which IE is to be appended
+ *  \param[in] gc Group Call Reference to be encoded
+ *  \returns number of bytes appended to \a msg */
+uint8_t gsm0808_enc_group_callref(struct msgb *msg, const struct gsm0808_group_callref *gc)
+{
+	uint8_t *old_tail;
+	uint8_t *tlv_len;
+
+	OSMO_ASSERT(msg);
+	OSMO_ASSERT(gc);
+
+	msgb_put_u8(msg, GSM0808_IE_GROUP_CALL_REFERENCE);
+	tlv_len = msgb_put(msg, 1);
+	old_tail = msg->tail;
+
+	memcpy(msgb_put(msg, sizeof(*gc)), gc, sizeof(*gc));
+
+	*tlv_len = (uint8_t) (msg->tail - old_tail);
+	return *tlv_len + 2;
+}
+
+/*! Decode Group Call Reference IE (3GPP TS 48.008 3.2.2.55).
+ *  \param[out] gc Group Call Reference structure to store data
+ *  \param[in] elem IE value to be decoded.
+ *  \param[in] len Length of \a elem in bytes.
+ *  \returns number of bytes parsed; negative on error */
+int gsm0808_dec_group_callref(struct gsm0808_group_callref *gc, const uint8_t *elem, uint8_t len)
+{
+	OSMO_ASSERT(gc);
+	OSMO_ASSERT(elem);
+
+	if (len != sizeof(*gc))
+		return -EINVAL;
+
+	memcpy(gc, elem, sizeof(*gc));
+
+	return len;
+}
+
+/*! Encode Priority IE (3GPP TS 48.008 3.2.2.18).
+ *  \param[out] msg Message Buffer to which IE is to be appended
+ *  \param[in] pri Priority to be encoded
+ *  \returns number of bytes appended to \a msg */
+uint8_t gsm0808_enc_priority(struct msgb *msg, const struct gsm0808_priority *pri)
+{
+	uint8_t *old_tail;
+	uint8_t *tlv_len;
+
+	OSMO_ASSERT(msg);
+	OSMO_ASSERT(pri);
+
+	msgb_put_u8(msg, GSM0808_IE_PRIORITY);
+	tlv_len = msgb_put(msg, 1);
+	old_tail = msg->tail;
+
+	memcpy(msgb_put(msg, sizeof(*pri)), pri, sizeof(*pri));
+
+	*tlv_len = (uint8_t) (msg->tail - old_tail);
+	return *tlv_len + 2;
+}
+
+/*! Decode Priority IE (3GPP TS 48.008 3.2.2.18).
+ *  \param[out] pri Priority structure to store data
+ *  \param[in] elem IE value to be decoded.
+ *  \param[in] len Length of \a elem in bytes.
+ *  \returns number of bytes parsed; negative on error */
+int gsm0808_dec_priority(struct gsm0808_priority *pri, const uint8_t *elem, uint8_t len)
+{
+	OSMO_ASSERT(pri);
+	OSMO_ASSERT(elem);
+
+	if (len != sizeof(*pri))
+		return -EINVAL;
+
+	memcpy(pri, elem, sizeof(*pri));
+
+	return len;
+}
+
+/*! Encode VGCS Feature Flags IE (3GPP TS 48.008 3.2.2.88).
+ *  \param[out] msg Message Buffer to which IE is to be appended
+ *  \param[in] ff VGCS Feature Flags to be encoded
+ *  \returns number of bytes appended to \a msg */
+uint8_t gsm0808_enc_vgcs_feature_flags(struct msgb *msg, const struct gsm0808_vgcs_feature_flags *ff)
+{
+	uint8_t *old_tail;
+	uint8_t *tlv_len;
+
+	OSMO_ASSERT(msg);
+	OSMO_ASSERT(ff);
+
+	msgb_put_u8(msg, GSM0808_IE_VGCS_FEATURE_FLAGS);
+	tlv_len = msgb_put(msg, 1);
+	old_tail = msg->tail;
+
+	memcpy(msgb_put(msg, sizeof(*ff)), ff, sizeof(*ff));
+
+	*tlv_len = (uint8_t) (msg->tail - old_tail);
+	return *tlv_len + 2;
+}
+
+/*! Decode VGCS Feature Flags IE (3GPP TS 48.008 3.2.2.88).
+ *  \param[out] ff VGCS Feature Flags structure to store data
+ *  \param[in] elem IE value to be decoded.
+ *  \param[in] len Length of \a elem in bytes.
+ *  \returns number of bytes parsed; negative on error */
+int gsm0808_dec_vgcs_feature_flags(struct gsm0808_vgcs_feature_flags *ff, const uint8_t *elem, uint8_t len)
+{
+	OSMO_ASSERT(ff);
+	OSMO_ASSERT(elem);
+
+	if (len != sizeof(*ff))
+		return -EINVAL;
+
+	memcpy(ff, elem, sizeof(*ff));
+
+	return len;
+}
+
+/*! Encode Data Identity IE (3GPP TS 48.008 3.2.2.99).
+ *  \param[out] msg Message Buffer to which IE is to be appended
+ *  \param[in] di Data Identity to be encoded
+ *  \returns number of bytes appended to \a msg */
+uint8_t gsm0808_enc_data_identity(struct msgb *msg, const struct gsm0808_data_identity *ti)
+{
+	uint8_t *old_tail;
+	uint8_t *tlv_len;
+
+	OSMO_ASSERT(msg);
+	OSMO_ASSERT(ti);
+
+	msgb_put_u8(msg, GSM0808_IE_DATA_IDENTITY);
+	tlv_len = msgb_put(msg, 1);
+	old_tail = msg->tail;
+
+	memcpy(msgb_put(msg, sizeof(*ti)), ti, sizeof(*ti));
+
+	*tlv_len = (uint8_t) (msg->tail - old_tail);
+	return *tlv_len + 2;
+}
+
+/*! Decode Data Identity IE (3GPP TS 48.008 3.2.2.99).
+ *  \param[out] di Data Identity structure to store data
+ *  \param[in] elem IE value to be decoded.
+ *  \param[in] len Length of \a elem in bytes.
+ *  \returns number of bytes parsed; negative on error */
+int gsm0808_dec_data_identity(struct gsm0808_data_identity *ti, const uint8_t *elem, uint8_t len)
+{
+	OSMO_ASSERT(ti);
+	OSMO_ASSERT(elem);
+
+	if (len < sizeof(*ti))
+		return -EINVAL;
+
+	memcpy(ti, elem, sizeof(*ti));
+
+	return len;
+}
+
+/*! Encode MSISDN IE (3GPP TS 48.008 3.2.2.101).
+ *  \param[out] msg Message Buffer to which IE is to be appended
+ *  \param[in] msisdn MSISDN to be encoded
+ *  \returns number of bytes appended to \a msg */
+uint8_t gsm0808_enc_msisdn(struct msgb *msg, const char *msisdn)
+{
+	uint8_t *tlv_len;
+	uint8_t bcd_lv[11];
+	int rc;
+
+	OSMO_ASSERT(msg);
+	OSMO_ASSERT(msisdn);
+
+	rc = gsm48_encode_bcd_number(bcd_lv, sizeof(bcd_lv), 0, msisdn);
+	if (rc < 1)
+		return 0;
+
+	msgb_put_u8(msg, GSM0808_IE_MSISDN);
+	tlv_len = msgb_put(msg, rc);
+
+	memcpy(tlv_len, bcd_lv, rc);
+
+	*tlv_len = rc - 1;
+	return *tlv_len + 2;
+}
+
+/*! Decode MSISDN IE (3GPP TS 48.008 3.2.2.101).
+ *  \param[out] msisdn MSISDN structure to store data
+ *  \param[in] elem IE value to be decoded.
+ *  \param[in] len Length of \a elem in bytes.
+ *  \returns number of bytes parsed; negative on error */
+int gsm0808_dec_msisdn(char *msisdn, const char *elem, uint8_t len)
+{
+	OSMO_ASSERT(msisdn);
+	OSMO_ASSERT(elem);
+
+	if (len < 1)
+		return -EINVAL;
+
+	gsm48_decode_bcd_number(msisdn, MSISDN_MAXLEN + 1, (uint8_t *)(elem - 1), 0);
+
+	return len;
+}
+
+/*! Encode Talker Identity IE (3GPP TS 48.008 3.2.2.91).
+ *  \param[out] msg Message Buffer to which IE is to be appended
+ *  \param[in] ti Talker Identity to be encoded
+ *  \returns number of bytes appended to \a msg */
+uint8_t gsm0808_enc_talker_identity(struct msgb *msg, const struct gsm0808_talker_identity *ti)
+{
+	uint8_t *old_tail;
+	uint8_t *tlv_len;
+	uint8_t *ptr;
+	unsigned int bytes;
+
+	OSMO_ASSERT(msg);
+	OSMO_ASSERT(ti);
+
+	msgb_put_u8(msg, GSM0808_IE_TALKER_IDENTITY);
+	tlv_len = msgb_put(msg, 1);
+	old_tail = msg->tail;
+
+	bytes = (ti->id_bits + 7) >> 3;
+	ptr = msgb_put(msg, 1 + bytes);
+	ptr[0] = -ti->id_bits & 0x7;
+	memcpy(ptr + 1, ti->talker_id, bytes);
+
+	*tlv_len = (uint8_t) (msg->tail - old_tail);
+	return *tlv_len + 2;
+}
+
+/*! Decode Talker Identity IE (3GPP TS 48.008 3.2.2.91).
+ *  \param[out] ti Talker Identity structure to store data
+ *  \param[in] elem IE value to be decoded.
+ *  \param[in] len Length of \a elem in bytes.
+ *  \returns number of bytes parsed; negative on error */
+int gsm0808_dec_talker_identity(struct gsm0808_talker_identity *ti, const uint8_t *elem, uint8_t len)
+{
+	OSMO_ASSERT(ti);
+	OSMO_ASSERT(elem);
+
+	if (len < 2)
+		return -EINVAL;
+	unsigned int bytes;
+
+	bytes = len - 1;
+	if (bytes > TALKER_IDENTITY_MAXLEN)
+		return -EINVAL;
+	ti->id_bits = (bytes << 3) - (elem[0] & 0x7);
+	memcpy(ti->talker_id, elem + 1, bytes);
+
+	return len;
+}
+
+/*! Encode Assignment Requirements IE (3GPP TS 48.008 3.2.2.52).
+ *  \param[out] msg Message Buffer to which IE is to be appended
+ *  \param[in] ar Assignment Requirement to be encoded
+ *  \returns number of bytes appended to \a msg */
+uint8_t gsm0808_enc_assign_req(struct msgb *msg, const enum gsm0808_assignment_requirement ar)
+{
+	uint8_t *ptr;
+
+	OSMO_ASSERT(msg);
+
+	msgb_put_u8(msg, GSM0808_IE_ASSIGNMENT_REQUIREMENT);
+
+	ptr = msgb_put(msg, 1);
+	ptr[0] = ar;
+
+	return 2;
+}
+
+/*! Decode Assignment Requirements IE (3GPP TS 48.008 3.2.2.52).
+ *  \param[out] ar Assignment Requirements enum to store data
+ *  \param[in] elem IE value to be decoded.
+ *  \param[in] len Length of \a elem in bytes.
+ *  \returns number of bytes parsed; negative on error */
+int gsm0808_dec_assign_req(enum gsm0808_assignment_requirement *ar, const uint8_t *elem, uint8_t len)
+{
+	OSMO_ASSERT(ar);
+	OSMO_ASSERT(elem);
+
+	if (len != 1)
+		return -EINVAL;
+
+	*ar = elem[0];
+
+	return 1;
+}
+
+/*! Encode Cell Identifier List Segment IE (3GPP TS 48.008 3.2.2.27a).
+ *  \param[out] msg Message Buffer to which IE is to be appended
+ *  \param[in] ie_type Type of IE to use (5 different lists are specified.)
+ *  \param[in] ci Cell Identifier List Segment to be encoded
+ *  \returns number of bytes appended to \a msg */
+uint8_t gsm0808_enc_cell_id_list_segment(struct msgb *msg, uint8_t ie_type,
+					 const struct gsm0808_cell_id_list_segment *ci)
+{
+	uint8_t *old_tail;
+	uint8_t *tlv_len;
+	int rc;
+
+	OSMO_ASSERT(msg);
+	OSMO_ASSERT(ci);
+
+	msgb_put_u8(msg, ie_type);
+	tlv_len = msgb_put(msg, 1);
+	old_tail = msg->tail;
+
+	msgb_put_u8(msg, (ci->seq_last << 4) | ci->seq_number);
+
+	rc = gsm0808_enc_cell_id_list2(msg, &ci->cil);
+	if (rc <= 0)
+		return rc;
+
+	*tlv_len = (uint8_t) (msg->tail - old_tail);
+	return *tlv_len + 2;
+}
+
+/*! Decode Cell Identifier List Segment IE (3GPP TS 48.008 3.2.2.27a).
+ *  \param[out] ci Cell Identifier List Segment structure to store data
+ *  \param[in] elem IE value to be decoded.
+ *  \param[in] len Length of \a elem in bytes.
+ *  \returns number of bytes parsed; negative on error */
+int gsm0808_dec_cell_id_list_segment(struct gsm0808_cell_id_list_segment *ci, const uint8_t *elem, uint8_t len)
+{
+	int rc;
+
+	OSMO_ASSERT(ci);
+	OSMO_ASSERT(elem);
+
+	if (len < 1)
+		return -EINVAL;
+
+	ci->seq_last = elem[0] >> 4;
+	ci->seq_number = elem[0] & 0x0f;
+
+	rc = gsm0808_dec_cell_id_list2(&ci->cil, elem + 1, len - 1);
+	if (rc < 0)
+		return rc;
+
+	return len;
+}
+
+/*! Decode Call Identifier IE (3GPP TS 48.008 3.2.2.105).
+ *  \param[out] ci Call Identifier structure to store data
+ *  \param[in] elem IE value to be decoded.
+ *  \param[in] len Length of \a elem in bytes.
+ *  \returns number of bytes parsed; negative on error */
+int gsm0808_dec_call_id(uint32_t *ci, const uint8_t *elem, uint8_t len)
+{
+	OSMO_ASSERT(ci);
+	OSMO_ASSERT(elem);
+
+	if (len != 4)
+		return -EINVAL;
+
+	/* The Call Identifier is stored as little endian. */
+	*ci = osmo_load32le(elem);
+
+	return 4;
+}
+
 /*! @} */
