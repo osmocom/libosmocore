@@ -18,6 +18,7 @@ osmogsmproto_HEADERS = \
 	gsm_29_118.h \
 	gsm_44_004.h \
 	gsm_44_060.h \
+	gsm_44_068.h \
 	gsm_44_318.h \
 	gsm_48_049.h \
 	gsm_48_071.h \

@@ -471,6 +471,13 @@ gsm48_pdisc_msgtype_name_buf;
 gsm48_pdisc_msgtype_name_c;
 gsm48_reject_value_names;
 
+osmo_gsm44068_msg_type_names;
+osmo_gsm44068_priority_level_names;
+osmo_gsm44068_cause_names;
+osmo_gsm44068_call_state_names;
+osmo_gsm44068_talker_priority_names;
+osmo_gsm44068_att_tlvdef;
+
 gsm_7bit_decode;
 gsm_7bit_decode_ussd;
 gsm_7bit_encode;
