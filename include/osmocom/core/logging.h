@@ -428,6 +428,8 @@ int log_parse_category(const char *category);
 void log_set_category_filter(struct log_target *target, int category,
 			       int enable, int level);
 
+const char *log_subsys_name(const struct log_info *log_info, int cat_idx);
+
 /* management of the targets */
 struct log_target *log_target_create(void);
 void log_target_destroy(struct log_target *target);

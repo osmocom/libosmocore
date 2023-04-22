@@ -322,8 +322,7 @@ static void add_category_strings(char **cmd_str_p, char **doc_str_p,
 	for (i = 0; i < categories->num_cat; i++) {
 		if (categories->cat[i].name == NULL)
 			continue;
-		/* skip the leading 'D' in each category name, hence '+ 1' */
-		osmo_str_tolower_buf(buf, sizeof(buf), categories->cat[i].name + 1);
+		osmo_str_tolower_buf(buf, sizeof(buf), log_subsys_name(categories, i));
 		osmo_talloc_asprintf(tall_log_ctx, *cmd_str_p, "%s%s",
 				     i ? "|" : "", buf);
 		osmo_talloc_asprintf(tall_log_ctx, *doc_str_p, "%s\n",
@@ -523,7 +522,7 @@ static void vty_print_logtarget(struct vty *vty, const struct log_info *info,
 		if (!info->cat[i].name)
 			continue;
 		vty_out(vty, "  %-10s %-10s %-8s %s%s",
-			info->cat[i].name+1, log_level_str(cat->loglevel),
+			log_subsys_name(info, i), log_level_str(cat->loglevel),
 			cat->enabled ? "Enabled" : "Disabled",
  			info->cat[i].description,
 			VTY_NEWLINE);
@@ -1088,7 +1087,7 @@ static int config_write_log_single(struct vty *vty, struct log_target *tgt)
 		if (!osmo_log_info->cat[i].name)
 			continue;
 
-		osmo_str_tolower_buf(cat_name, sizeof(cat_name), osmo_log_info->cat[i].name + 1);
+		osmo_str_tolower_buf(cat_name, sizeof(cat_name), log_subsys_name(osmo_log_info, i));
 
 		level_str = get_value_string_or_null(loglevel_strs, cat->loglevel);
 		if (!level_str) {

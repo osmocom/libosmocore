@@ -348,6 +348,13 @@ const char *log_level_str(unsigned int lvl)
 	return get_value_string(loglevel_strs, lvl);
 }
 
+/* skip the leading 'D' in category name */
+const char *log_subsys_name(const struct log_info *log_info, int cat_idx)
+{
+	const char *name = log_info->cat[cat_idx].name;
+	return name + 1;
+}
+
 /*! parse a human-readable log category into numeric form
  *  \param[in] category human-readable log category name
  *  \returns numeric category value, or -EINVAL otherwise
@@ -361,7 +368,7 @@ int log_parse_category(const char *category)
 	for (i = 0; i < osmo_log_info->num_cat; ++i) {
 		if (osmo_log_info->cat[i].name == NULL)
 			continue;
-		if (!strcasecmp(osmo_log_info->cat[i].name+1, category))
+		if (!strcasecmp(log_subsys_name(osmo_log_info, i), category))
 			return i;
 	}
 
