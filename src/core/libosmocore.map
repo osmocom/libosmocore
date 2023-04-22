@@ -67,6 +67,7 @@ logp2;
 log_parse_category;
 log_parse_category_mask;
 log_parse_level;
+log_subsys_strip_leading_char;
 log_subsys_name;
 logp_stub;
 log_reset_context;

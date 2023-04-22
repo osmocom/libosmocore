@@ -348,11 +348,32 @@ const char *log_level_str(unsigned int lvl)
 	return get_value_string(loglevel_strs, lvl);
 }
 
+static bool g_subsys_strip_leading_char = true;
+
+/** Set whether on the VTY, the leading 'D' commonly in use for category names should be stripped.
+ * If true, a category name 'DMAIN' will be identified on VTY as 'main'.
+ * If false, a category name 'FOO' will be identified on VTY as 'foo' (instead of 'oo').
+ *
+ * This must be called *before* logging_vty_add_cmds() to take effect!
+ *
+ * There is a common coding style in osmocom that all category names start with a 'D'.
+ * This flag allows programs to name logging categories without a leading 'D'.
+ * \param[in] do_strip  true to strip leading D on VTY, false to use names as-is.
+ */
+void log_subsys_strip_leading_char(bool do_strip)
+{
+	g_subsys_strip_leading_char = do_strip;
+}
+
 /* skip the leading 'D' in category name */
 const char *log_subsys_name(const struct log_info *log_info, int cat_idx)
 {
 	const char *name = log_info->cat[cat_idx].name;
-	return name + 1;
+	/* The category names in internal_cat[] will always have a leading 'D'. */
+	if (g_subsys_strip_leading_char
+	    || cat_idx >= log_info->num_cat_user)
+		return name + 1;
+	return name;
 }
 
 /*! parse a human-readable log category into numeric form

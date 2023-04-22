@@ -428,6 +428,7 @@ int log_parse_category(const char *category);
 void log_set_category_filter(struct log_target *target, int category,
 			       int enable, int level);
 
+void log_subsys_strip_leading_char(bool do_strip);
 const char *log_subsys_name(const struct log_info *log_info, int cat_idx);
 
 /* management of the targets */
