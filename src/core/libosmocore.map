@@ -161,6 +161,8 @@ osmo_counters_count;
 osmo_counters_for_each;
 osmo_crc16;
 osmo_crc16_ccitt;
+osmo_crc16_ccitt_table;
+osmo_crc16_table;
 osmo_crc16gen_check_bits;
 osmo_crc16gen_compute_bits;
 osmo_crc16gen_set_bits;
