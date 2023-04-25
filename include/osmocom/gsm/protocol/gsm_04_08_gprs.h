@@ -82,6 +82,7 @@ extern const struct value_string *gprs_upd_t_strs;
 
 enum gsm48_gprs_ie_mm {
 	GSM48_IE_GMM_CIPH_CKSN		= 0x08, /* 10.5.1.2 */
+	GSM48_IE_GMM_PTMSI_TYPE		= 0x0e, /* 10.5.5.29 */
 	GSM48_IE_GMM_TIMER_READY	= 0x17,	/* 10.5.7.3 */
 	GSM48_IE_GMM_ALLOC_PTMSI	= 0x18,	/* 10.5.1.4 */
 	GSM48_IE_GMM_PTMSI_SIG		= 0x19,	/* 10.5.5.8 */
