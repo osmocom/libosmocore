@@ -118,10 +118,10 @@ static void dump_vty(const struct gprs_ns2_vc_bind *bind,
 
 /*! Find a NS-VC by its remote socket address.
  *  \param[in] bind in which to search
- *  \param[in] saddr remote peer socket adddress to search
+ *  \param[in] rem_addr remote peer socket address to search
  *  \returns NS-VC matching sockaddr; NULL if none found */
 struct gprs_ns2_vc *gprs_ns2_nsvc_by_sockaddr_bind(struct gprs_ns2_vc_bind *bind,
-						   const struct osmo_sockaddr *saddr)
+						   const struct osmo_sockaddr *rem_addr)
 {
 	struct gprs_ns2_vc *nsvc;
 	struct priv_vc *vcpriv;
@@ -130,9 +130,9 @@ struct gprs_ns2_vc *gprs_ns2_nsvc_by_sockaddr_bind(struct gprs_ns2_vc_bind *bind
 
 	llist_for_each_entry(nsvc, &bind->nsvc, blist) {
 		vcpriv = nsvc->priv;
-		if (vcpriv->remote.u.sa.sa_family != saddr->u.sa.sa_family)
+		if (vcpriv->remote.u.sa.sa_family != rem_addr->u.sa.sa_family)
 			continue;
-		if (osmo_sockaddr_cmp(&vcpriv->remote, saddr))
+		if (osmo_sockaddr_cmp(&vcpriv->remote, rem_addr))
 			continue;
 
 		return nsvc;

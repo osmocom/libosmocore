@@ -249,7 +249,7 @@ int gprs_ns2_ip_bind_set_dscp(struct gprs_ns2_vc_bind *bind, int dscp);
 int gprs_ns2_ip_bind_set_priority(struct gprs_ns2_vc_bind *bind, uint8_t priority);
 struct gprs_ns2_vc *gprs_ns2_nsvc_by_sockaddr_bind(
 		struct gprs_ns2_vc_bind *bind,
-		const struct osmo_sockaddr *saddr);
+		const struct osmo_sockaddr *rem_addr);
 
 int gprs_ns2_frgre_bind(struct gprs_ns2_inst *nsi,
 			const char *name,
