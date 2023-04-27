@@ -503,6 +503,8 @@ static int frgre_vc_sendmsg(struct gprs_ns2_vc *nsvc, struct msgb *msg)
 	uint16_t dlci = osmo_htons(bindpriv->dlci);
 	uint8_t *frh;
 	struct gre_hdr *greh;
+	unsigned int vc_len = msgb_length(msg);
+	int rc;
 
 	/* Prepend the FR header */
 	frh = msgb_push(msg, 2);
@@ -514,7 +516,15 @@ static int frgre_vc_sendmsg(struct gprs_ns2_vc *nsvc, struct msgb *msg)
 	greh->flags = 0;
 	greh->ptype = osmo_htons(GRE_PTYPE_FR);
 
-	return frgre_sendmsg(bind, msg, &vcpriv->remote);
+	rc = frgre_sendmsg(bind, msg, &vcpriv->remote);
+	if (OSMO_LIKELY(rc >= 0)) {
+		RATE_CTR_INC_NS(nsvc, NS_CTR_PKTS_OUT);
+		RATE_CTR_ADD_NS(nsvc, NS_CTR_BYTES_OUT, rc);
+	} else {
+		RATE_CTR_INC_NS(nsvc, NS_CTR_PKTS_OUT_DROP);
+		RATE_CTR_ADD_NS(nsvc, NS_CTR_BYTES_OUT_DROP, vc_len);
+	}
+	return rc;
 }
 
 static int frgre_fd_cb(struct osmo_fd *bfd, unsigned int what)

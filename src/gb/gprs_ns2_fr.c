@@ -332,9 +332,19 @@ int gprs_ns2_is_fr_bind(struct gprs_ns2_vc_bind *bind)
 static int fr_vc_sendmsg(struct gprs_ns2_vc *nsvc, struct msgb *msg)
 {
 	struct priv_vc *vcpriv = nsvc->priv;
+	unsigned int vc_len = msgb_length(msg);
+	int rc;
 
 	msg->dst = vcpriv->dlc;
-	return osmo_fr_tx_dlc(msg);
+	rc = osmo_fr_tx_dlc(msg);
+	if (OSMO_LIKELY(rc >= 0)) {
+		RATE_CTR_INC_NS(nsvc, NS_CTR_PKTS_OUT);
+		RATE_CTR_ADD_NS(nsvc, NS_CTR_BYTES_OUT, vc_len);
+	} else {
+		RATE_CTR_INC_NS(nsvc, NS_CTR_PKTS_OUT_DROP);
+		RATE_CTR_ADD_NS(nsvc, NS_CTR_BYTES_OUT_DROP, vc_len);
+	}
+	return rc;
 }
 
 static void enqueue_at_head(struct gprs_ns2_vc_bind *bind, struct msgb *msg)
