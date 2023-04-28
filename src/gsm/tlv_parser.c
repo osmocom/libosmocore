@@ -225,7 +225,11 @@ int tlv_encode_ordered(struct msgb *msg, const struct tlv_definition *def, const
  *  \param[in] def structure defining the valid TLV tags / configurations
  *  \param[in] buf the input data buffer to be parsed
  *  \param[in] buf_len length of the input data buffer
- *  \returns number of bytes consumed by the TLV entry / IE parsed; negative in case of error
+ *  \returns number of bytes consumed by the TLV entry / IE parsed; negative in case of error.
+ *
+ * In IEs of type TLV_TYPE_SINGLE_TV, the data pointer \ref o_val will point to the
+ * byte shared by both the Tag and te Value, hence the tag is to be trimmed
+ * by the caller.
  */
 int tlv_parse_one(uint8_t *o_tag, uint16_t *o_len, const uint8_t **o_val,
 		  const struct tlv_definition *def,
@@ -241,9 +245,13 @@ int tlv_parse_one(uint8_t *o_tag, uint16_t *o_len, const uint8_t **o_val,
 	*o_tag = tag;
 
 	/* single octet TV IE */
-	if (def->def[tag >> 4].type == TLV_TYPE_SINGLE_TV
+	if (def->def[tag >> 4].type == TLV_TYPE_SINGLE_TV) {
+		*o_tag = tag >> 4;
+		*o_val = buf;
+		*o_len = 1;
+		return 1;
+	} else if ((tag > 0x0f) && (def->def[tag & 0xf0].type == TLV_TYPE_SINGLE_TV)) {
 	    /* backward compat for old IEs with half-octet tag defined as 0xN0: */
-	    || ((tag > 0x0f) && (def->def[tag & 0xf0].type == TLV_TYPE_SINGLE_TV))) {
 		*o_tag = tag & 0xf0;
 		*o_val = buf;
 		*o_len = 1;

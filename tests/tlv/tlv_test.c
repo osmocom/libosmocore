@@ -470,14 +470,12 @@ static void test_tlv_type_single_tv(void)
 
 	rc = tlv_parse(&tp, &att_tlvdef, buf, sizeof(buf), 0, 0);
 	OSMO_ASSERT(rc == 1);
-	OSMO_ASSERT(!TLVP_PRESENT(&tp, SAMPLE_SINGLE_TV_IE)); //FIXME!
+	OSMO_ASSERT(TLVP_PRESENT(&tp, SAMPLE_SINGLE_TV_IE));
 	val = TLVP_VAL(&tp, SAMPLE_SINGLE_TV_IE);
-	OSMO_ASSERT(!val); //FIXME!
-#if 0
+	OSMO_ASSERT(val);
 	OSMO_ASSERT(val == &buf[0]);
 	OSMO_ASSERT(*val == buf[0]);
 	OSMO_ASSERT((*val & 0x0f) == exp_val);
-#endif
 }
 
 int main(int argc, char **argv)
