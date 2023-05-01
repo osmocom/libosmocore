@@ -177,3 +177,37 @@ vty_transcript_test(config-attr-test)# foo-hidden ?
   [expert-mode]  But can be seen in the expert mode
 vty_transcript_test(config-attr-test)# app-hidden-unbelievable?
   app-hidden-unbelievable  Hidden, but still unbelievable help message
+
+vty_transcript_test(config-attr-test)# exit
+
+vty_transcript_test(config)# nest A
+vty_transcript_test(config-a)# state
+A
+vty_transcript_test(config-a)# nest B
+vty_transcript_test(config-b)# state
+B
+vty_transcript_test(config-b)# nest C
+vty_transcript_test(config-c)# state
+C
+vty_transcript_test(config-c)# exit
+vty_transcript_test(config-b)# state
+C
+vty_transcript_test(config-b)# ### ^ EXPECTED ERROR: this should say B
+vty_transcript_test(config-b)# exit
+vty_transcript_test(config-a)# state
+C
+vty_transcript_test(config-a)# ### ^ EXPECTED ERROR: this should say A
+vty_transcript_test(config-a)# nest B2
+vty_transcript_test(config-b)# state
+B2
+vty_transcript_test(config-b)# nest C2
+vty_transcript_test(config-c)# state
+C2
+vty_transcript_test(config-c)# exit
+vty_transcript_test(config-b)# state
+C2
+vty_transcript_test(config-b)# ### ^ EXPECTED ERROR: this should say B2
+vty_transcript_test(config-b)# exit
+vty_transcript_test(config-a)# state
+C2
+vty_transcript_test(config-a)# ### ^ EXPECTED ERROR: this should say A

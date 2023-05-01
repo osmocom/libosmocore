@@ -211,6 +211,9 @@ DEFUN(multi2, multi2_cmd,
 
 enum {
 	ATTR_TEST_NODE = _LAST_OSMOVTY_NODE + 1,
+	NEST_A_NODE,
+	NEST_B_NODE,
+	NEST_C_NODE,
 };
 
 static struct cmd_node attr_test_node = {
@@ -315,6 +318,62 @@ DEFUN_ATTR_USRATTR(cfg_attr_hidden_app_attr_unbelievable,
 	return CMD_SUCCESS;
 }
 
+static struct cmd_node nest_a_node = {
+	NEST_A_NODE,
+	"%s(config-a)# ",
+	1
+};
+
+static struct cmd_node nest_b_node = {
+	NEST_B_NODE,
+	"%s(config-b)# ",
+	1
+};
+
+static struct cmd_node nest_c_node = {
+	NEST_C_NODE,
+	"%s(config-c)# ",
+	1
+};
+
+DEFUN(cfg_nest_a, cfg_nest_a_cmd,
+      "nest NAME",
+      "Enter nest level a\n"
+      "Set a name to mark the node's state\n")
+{
+	vty->index = talloc_strdup(root_ctx, argv[0]);
+	vty->node = NEST_A_NODE;
+	return CMD_SUCCESS;
+}
+
+DEFUN(cfg_nest_b, cfg_nest_b_cmd,
+      "nest NAME",
+      "Enter nest level b\n"
+      "Set a name to mark the node's state\n")
+{
+	vty->index = talloc_strdup(root_ctx, argv[0]);
+	vty->node = NEST_B_NODE;
+	return CMD_SUCCESS;
+}
+
+DEFUN(cfg_nest_c, cfg_nest_c_cmd,
+      "nest NAME",
+      "Enter nest level c\n"
+      "Set a name to mark the node's state\n")
+{
+	vty->index = talloc_strdup(root_ctx, argv[0]);
+	vty->node = NEST_C_NODE;
+	return CMD_SUCCESS;
+}
+
+DEFUN(cfg_nest_state, cfg_nest_state_cmd,
+      "state",
+      "Show this node's mark\n")
+{
+	vty_out(vty, "%s%s", (const char *)vty->index, VTY_NEWLINE);
+	return CMD_SUCCESS;
+}
+
 static void init_vty_cmds(void)
 {
 	install_element_ve(&single0_cmd);
@@ -336,6 +395,17 @@ static void init_vty_cmds(void)
 	install_element(ATTR_TEST_NODE, &cfg_app_attr_unbelievable_magnificent_cmd);
 	install_element(ATTR_TEST_NODE, &cfg_app_attr_unbelievable_wonderful_cmd);
 	install_element(ATTR_TEST_NODE, &cfg_attr_hidden_app_attr_unbelievable_cmd);
+
+	install_element(CONFIG_NODE, &cfg_nest_a_cmd);
+	install_node(&nest_a_node, NULL);
+	install_element(NEST_A_NODE, &cfg_nest_b_cmd);
+	install_node(&nest_b_node, NULL);
+	install_element(NEST_B_NODE, &cfg_nest_c_cmd);
+	install_node(&nest_c_node, NULL);
+
+	install_element(NEST_A_NODE, &cfg_nest_state_cmd);
+	install_element(NEST_B_NODE, &cfg_nest_state_cmd);
+	install_element(NEST_C_NODE, &cfg_nest_state_cmd);
 }
 
 int main(int argc, char **argv)
