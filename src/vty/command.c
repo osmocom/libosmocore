@@ -2438,6 +2438,7 @@ static bool vty_pop_parent(struct vty *vty)
 	llist_del(&parent->entry);
 	vty->node = parent->node;
 	vty->priv = parent->priv;
+	vty->index = parent->index;
 	if (vty->indent)
 		talloc_free(vty->indent);
 	vty->indent = parent->indent;
@@ -2648,6 +2649,7 @@ cmd_execute_command_real(vector vline, struct vty *vty,
 		struct vty_parent_node this_node = {
 				.node = vty->node,
 				.priv = vty->priv,
+				.index = vty->index,
 				.indent = vty->indent,
 			};
 		struct vty_parent_node *parent = vty_parent(vty);
@@ -2923,6 +2925,7 @@ int config_from_file(struct vty *vty, FILE * fp)
 		this_node = (struct vty_parent_node){
 				.node = vty->node,
 				.priv = vty->priv,
+				.index = vty->index,
 				.indent = vty->indent,
 			};
 

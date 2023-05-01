@@ -61,6 +61,7 @@ struct vty_parent_node {
 
 	/*! private data, specified by creator */
 	void *priv;
+	void *index;
 
 	/*! Node status of this vty */
 	int node;

@@ -191,12 +191,10 @@ vty_transcript_test(config-c)# state
 C
 vty_transcript_test(config-c)# exit
 vty_transcript_test(config-b)# state
-C
-vty_transcript_test(config-b)# ### ^ EXPECTED ERROR: this should say B
+B
 vty_transcript_test(config-b)# exit
 vty_transcript_test(config-a)# state
-C
-vty_transcript_test(config-a)# ### ^ EXPECTED ERROR: this should say A
+A
 vty_transcript_test(config-a)# nest B2
 vty_transcript_test(config-b)# state
 B2
@@ -205,9 +203,7 @@ vty_transcript_test(config-c)# state
 C2
 vty_transcript_test(config-c)# exit
 vty_transcript_test(config-b)# state
-C2
-vty_transcript_test(config-b)# ### ^ EXPECTED ERROR: this should say B2
+B2
 vty_transcript_test(config-b)# exit
 vty_transcript_test(config-a)# state
-C2
-vty_transcript_test(config-a)# ### ^ EXPECTED ERROR: this should say A
+A
