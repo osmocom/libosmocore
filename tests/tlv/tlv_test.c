@@ -454,6 +454,32 @@ static void test_tlv_lens(void)
 	}
 }
 
+static void test_tlv_type_single_tv(void)
+{
+	#define SAMPLE_SINGLE_TV_IE 0x08
+	const struct tlv_definition att_tlvdef = {
+		.def = {
+			[SAMPLE_SINGLE_TV_IE]	= { TLV_TYPE_SINGLE_TV, 0 },
+		},
+	};
+	struct tlv_parsed tp;
+	int rc;
+	uint8_t exp_val = 0x03;
+	uint8_t buf[] = { (SAMPLE_SINGLE_TV_IE << 4) | (exp_val & 0x0f) };
+	const uint8_t *val;
+
+	rc = tlv_parse(&tp, &att_tlvdef, buf, sizeof(buf), 0, 0);
+	OSMO_ASSERT(rc == 1);
+	OSMO_ASSERT(!TLVP_PRESENT(&tp, SAMPLE_SINGLE_TV_IE)); //FIXME!
+	val = TLVP_VAL(&tp, SAMPLE_SINGLE_TV_IE);
+	OSMO_ASSERT(!val); //FIXME!
+#if 0
+	OSMO_ASSERT(val == &buf[0]);
+	OSMO_ASSERT(*val == buf[0]);
+	OSMO_ASSERT((*val & 0x0f) == exp_val);
+#endif
+}
+
 int main(int argc, char **argv)
 {
 	//osmo_init_logging2(ctx, &info);
@@ -463,6 +489,7 @@ int main(int argc, char **argv)
 	test_tlv_encoder();
 	test_tlv_parser_bounds();
 	test_tlv_lens();
+	test_tlv_type_single_tv();
 
 	printf("Done.\n");
 	return EXIT_SUCCESS;
