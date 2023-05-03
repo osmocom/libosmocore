@@ -15,6 +15,10 @@
 /* TS 101318 Chapter 5.3: 244 bits + 4bit sig */
 #define GSM_EFR_BYTES	31
 
+/* Number of bytes of an GSM_HR RTP payload */
+#define GSM_HR_BYTES_RTP_RFC5993 (GSM_HR_BYTES + 1)
+#define GSM_HR_BYTES_RTP_TS101318 (GSM_HR_BYTES)
+
 extern const uint16_t gsm610_bitorder[];	/* FR */
 extern const uint16_t gsm620_unvoiced_bitorder[]; /* HR unvoiced */
 extern const uint16_t gsm620_voiced_bitorder[];   /* HR voiced */
