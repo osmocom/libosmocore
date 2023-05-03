@@ -863,11 +863,13 @@ int osmo_mobile_identity_encode_msgb(struct msgb *msg, const struct osmo_mobile_
  * osmo_mobile_identity.
  *
  * \param[out] mi  Return buffer for decoded Mobile Identity.
- * \param[in] msg  The Complete Layer 3 message to extract from (LU, CM Service Req or Paging Resp).
+ * \param[in] l3_data  The Complete Layer 3 message to extract from (LU, CM Service Req or Paging Resp).
+ * \param[in] l3_len  Length of l3_data in bytes.
  * \returns 0 on success, negative on error: return codes as defined in osmo_mobile_identity_decode(), or
  *          -ENOTSUP = not a Complete Layer 3 message,
  */
-int osmo_mobile_identity_decode_from_l3(struct osmo_mobile_identity *mi, struct msgb *msg, bool allow_hex)
+int osmo_mobile_identity_decode_from_l3_buf(struct osmo_mobile_identity *mi, const uint8_t *l3_data, size_t l3_len,
+					    bool allow_hex)
 {
 	const struct gsm48_hdr *gh;
 	int8_t pdisc = 0;
@@ -886,10 +888,10 @@ int osmo_mobile_identity_decode_from_l3(struct osmo_mobile_identity *mi, struct 
 		.tmsi = GSM_RESERVED_TMSI,
 	};
 
-	if (msgb_l3len(msg) < sizeof(*gh))
+	if (l3_len < sizeof(*gh))
 		return -EBADMSG;
 
-	gh = msgb_l3(msg);
+	gh = (void *)l3_data;
 	pdisc = gsm48_hdr_pdisc(gh);
 	mtype = gsm48_hdr_msg_type(gh);
 
@@ -899,12 +901,12 @@ int osmo_mobile_identity_decode_from_l3(struct osmo_mobile_identity *mi, struct 
 		switch (mtype) {
 		case GSM48_MT_MM_LOC_UPD_REQUEST:
 			/* First make sure that lu-> can be dereferenced */
-			if (msgb_l3len(msg) < sizeof(*gh) + sizeof(*lu))
+			if (l3_len < sizeof(*gh) + sizeof(*lu))
 				return -EBADMSG;
 
 			/* Now we know there is enough msgb data to read a lu->mi_len, so also check that */
 			lu = (struct gsm48_loc_upd_req*)gh->data;
-			if (msgb_l3len(msg) < sizeof(*gh) + sizeof(*lu) + lu->mi_len)
+			if (l3_len < sizeof(*gh) + sizeof(*lu) + lu->mi_len)
 				return -EBADMSG;
 			mi_data = lu->mi;
 			mi_len = lu->mi_len;
@@ -914,7 +916,7 @@ int osmo_mobile_identity_decode_from_l3(struct osmo_mobile_identity *mi, struct 
 		case GSM48_MT_MM_CM_REEST_REQ:
 			/* Unfortunately in Phase1 the Classmark2 length is variable, so we cannot
 			 * just use gsm48_service_request struct, and need to parse it manually. */
-			if (msgb_l3len(msg) < sizeof(*gh) + 2)
+			if (l3_len < sizeof(*gh) + 2)
 				return -EBADMSG;
 
 			cm2_len = gh->data[1];
@@ -922,7 +924,7 @@ int osmo_mobile_identity_decode_from_l3(struct osmo_mobile_identity *mi, struct 
 			goto got_cm2;
 
 		case GSM48_MT_MM_IMSI_DETACH_IND:
-			if (msgb_l3len(msg) < sizeof(*gh) + sizeof(*idi))
+			if (l3_len < sizeof(*gh) + sizeof(*idi))
 				return -EBADMSG;
 			idi = (struct gsm48_imsi_detach_ind*) gh->data;
 			mi_data = idi->mi;
@@ -930,7 +932,7 @@ int osmo_mobile_identity_decode_from_l3(struct osmo_mobile_identity *mi, struct 
 			goto got_mi;
 
 		case GSM48_MT_MM_ID_RESP:
-			if (msgb_l3len(msg) < sizeof(*gh) + 2)
+			if (l3_len < sizeof(*gh) + 2)
 				return -EBADMSG;
 			mi_data = gh->data+1;
 			mi_len = gh->data[0];
@@ -945,7 +947,7 @@ int osmo_mobile_identity_decode_from_l3(struct osmo_mobile_identity *mi, struct 
 
 		switch (mtype) {
 		case GSM48_MT_RR_PAG_RESP:
-			if (msgb_l3len(msg) < sizeof(*gh) + sizeof(*paging_response))
+			if (l3_len < sizeof(*gh) + sizeof(*paging_response))
 				return -EBADMSG;
 			paging_response = (struct gsm48_pag_resp*)gh->data;
 			cm2_len = paging_response->cm2_len;
@@ -964,7 +966,7 @@ got_cm2:
 	/* MI (Mobile Identity) LV follows the Classmark2 */
 
 	/* There must be at least a mi_len byte after the CM2 */
-	if (cm2_buf + cm2_len + 1 > msg->tail)
+	if (cm2_buf + cm2_len + 1 > l3_data + l3_len)
 		return -EBADMSG;
 
 	mi_start = cm2_buf + cm2_len;
@@ -973,10 +975,25 @@ got_cm2:
 
 got_mi:
 	/* mi_data points at the start of the Mobile Identity coding of mi_len bytes */
-	if (mi_data + mi_len > msg->tail)
+	if (mi_data + mi_len > l3_data + l3_len)
 		return -EBADMSG;
 
 	return osmo_mobile_identity_decode(mi, mi_data, mi_len, allow_hex);
+}
+
+/*! Extract Mobile Identity from a Complete Layer 3 message.
+ *
+ * Determine the Mobile Identity data and call osmo_mobile_identity_decode() to return a decoded struct
+ * osmo_mobile_identity.
+ *
+ * \param[out] mi  Return buffer for decoded Mobile Identity.
+ * \param[in] msg  The Complete Layer 3 message to extract from (LU, CM Service Req or Paging Resp).
+ * \returns 0 on success, negative on error: return codes as defined in osmo_mobile_identity_decode(), or
+ *          -ENOTSUP = not a Complete Layer 3 message,
+ */
+int osmo_mobile_identity_decode_from_l3(struct osmo_mobile_identity *mi, struct msgb *msg, bool allow_hex)
+{
+	return osmo_mobile_identity_decode_from_l3_buf(mi, msgb_l3(msg), msgb_l3len(msg), allow_hex);
 }
 
 /*! Return a human readable representation of a struct osmo_mobile_identity.

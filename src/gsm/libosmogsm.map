@@ -391,6 +391,7 @@ osmo_mobile_identity_to_str_buf;
 osmo_mobile_identity_to_str_c;
 osmo_mobile_identity_cmp;
 osmo_mobile_identity_decode;
+osmo_mobile_identity_decode_from_l3_buf;
 osmo_mobile_identity_decode_from_l3;
 osmo_mobile_identity_encoded_len;
 osmo_mobile_identity_encode_buf;

@@ -96,6 +96,8 @@ char *osmo_mobile_identity_to_str_c(void *ctx, const struct osmo_mobile_identity
 int osmo_mobile_identity_cmp(const struct osmo_mobile_identity *a, const struct osmo_mobile_identity *b);
 int osmo_mobile_identity_decode(struct osmo_mobile_identity *mi, const uint8_t *mi_data, uint8_t mi_len,
 				bool allow_hex);
+int osmo_mobile_identity_decode_from_l3_buf(struct osmo_mobile_identity *mi, const uint8_t *l3_data, size_t l3_len,
+					    bool allow_hex);
 int osmo_mobile_identity_decode_from_l3(struct osmo_mobile_identity *mi, struct msgb *msg, bool allow_hex);
 int osmo_mobile_identity_encoded_len(const struct osmo_mobile_identity *mi, int *mi_digits);
 int osmo_mobile_identity_encode_buf(uint8_t *buf, size_t buflen, const struct osmo_mobile_identity *mi, bool allow_hex);
