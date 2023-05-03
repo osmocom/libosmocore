@@ -9,3 +9,4 @@
 #library	what			description / commit summary line
 libosmogsm  new header osmocom/gsm/protocol/gsm_44_060.h
 libosmocore ADD     new defines in osmocom/gsm/protocol/gsm_04_08.h (old ones marked deprecated)
+libosmovty	drop API		drop struct vty_parent_node from public API, it should never have been public
