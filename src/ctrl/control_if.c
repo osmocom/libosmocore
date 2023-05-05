@@ -628,6 +628,15 @@ static int ctrl_rate_ctr_group_handler(struct rate_ctr_group *ctrg, void *data)
 	return 0;
 }
 
+int list_ctrg_in_reply(struct rate_ctr_group *ctrg, void *_cmd)
+{
+	struct ctrl_cmd *cmd = _cmd;
+	if (!ctrg->desc)
+		return 0;
+	ctrl_cmd_reply_printf(cmd, "%s.%u\n", ctrg->desc->group_name_prefix, ctrg->idx);
+	return 0;
+}
+
 /* rate_ctr */
 CTRL_CMD_DEFINE(rate_ctr, "rate_ctr *");
 static int get_rate_ctr(struct ctrl_cmd *cmd, void *data)
@@ -692,8 +701,10 @@ static int get_rate_ctr(struct ctrl_cmd *cmd, void *data)
 
 	ctrg = rate_ctr_get_group_by_name_idx(ctr_group, idx);
 	if (!ctrg) {
+		ctrl_cmd_reply_printf(cmd, "Counter group not found: '%s.%u'\n", ctr_group, idx);
+
+		rate_ctr_for_each_group(list_ctrg_in_reply, cmd);
 		talloc_free(dup);
-		cmd->reply = "Counter group with given name and index not found";
 		goto err;
 	}
 
@@ -704,7 +715,16 @@ static int get_rate_ctr(struct ctrl_cmd *cmd, void *data)
 
 	ctr = rate_ctr_get_by_name(ctrg, saveptr);
 	if (!ctr) {
-		cmd->reply = "Counter name not found.";
+		//cmd->reply = "Counter name not found.";
+		ctrl_cmd_reply_printf(cmd, "Counter name not found: '%s'\n", saveptr);
+
+		int i;
+		const struct rate_ctr_desc *ctr_desc;
+
+		for (i = 0; ctrg->desc && i < ctrg->desc->num_ctr; i++) {
+			ctr_desc = &ctrg->desc->ctr_desc[i];
+			ctrl_cmd_reply_printf(cmd, "%s\n", ctr_desc->name);
+		}
 		talloc_free(dup);
 		goto err;
 	}
