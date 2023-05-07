@@ -399,10 +399,15 @@ int osmo_tundev_open(struct osmo_tundev *tundev)
 	if (rc < 0)
 		goto err_close_tun;
 
-	osmo_fd_register(&tundev->wqueue.bfd);
+	rc = osmo_fd_register(&tundev->wqueue.bfd);
+	if (rc < 0)
+		goto err_unregister_netdev;
+
 	tundev->opened = true;
 	return 0;
 
+err_unregister_netdev:
+	osmo_netdev_unregister(tundev->netdev);
 err_close_tun:
 	close(tundev->wqueue.bfd.fd);
 	tundev->wqueue.bfd.fd = -1;
