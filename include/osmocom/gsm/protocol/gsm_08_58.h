@@ -673,7 +673,7 @@ struct rsl_ie_chan_ident {
 #define RSL_CHANNEED_TCH_F	0x02
 #define RSL_CHANNEED_TCH_ForH	0x03
 
-/*! RSL Cell Broadcast Command (Chapter 9.3.45) */
+/*! RSL Cell Broadcast Command (Chapter 9.3.41) */
 struct rsl_ie_cb_cmd_type {
 #if OSMO_IS_LITTLE_ENDIAN
 	uint8_t last_block:2;
