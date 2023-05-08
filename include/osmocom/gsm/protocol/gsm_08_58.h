@@ -699,6 +699,23 @@ struct rsl_ie_cb_cmd_type {
 #define RSL_CB_CMD_LASTBLOCK_2		2
 #define RSL_CB_CMD_LASTBLOCK_3		3
 
+/*! NCH DRX Information (Chapter 9.3.47) */
+struct rsl_ie_nch_drx_info {
+#if OSMO_IS_LITTLE_ENDIAN
+	uint8_t nln:2;
+	uint8_t emlpp_priority:3;
+	uint8_t nln_status:1;
+	uint8_t spare:2;
+#elif OSMO_IS_BIG_ENDIAN
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
+	uint8_t spare:2, nln_status:1, emlpp_priority:3, nln:2;
+#endif
+} __attribute__ ((packed));
+
+/*! Command Indicator (Chapter 9.3.48) */
+#define RSL_CMD_INDICATOR_START	0x00
+#define RSL_CMD_INDICATOR_STOP	0x01
+
 /* Chapter 3.3.2.3 Brocast control channel */
 /* CCCH-CONF, NC is not combined */
 #define RSL_BCCH_CCCH_CONF_1_NC	0x00
