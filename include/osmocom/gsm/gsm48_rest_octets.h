@@ -13,6 +13,9 @@
 
 /* generate SI1 rest octets */
 int osmo_gsm48_rest_octets_si1_encode(uint8_t *data, uint8_t *nch_pos, int is1800_net);
+int osmo_gsm48_si1ro_nch_pos_decode(uint8_t value, uint8_t *num_blocks, uint8_t *first_block);
+int osmo_gsm48_si1ro_nch_pos_encode(uint8_t num_blocks, uint8_t first_block);
+
 int osmo_gsm48_rest_octets_si2quater_encode(uint8_t *data, uint8_t si2q_index, uint8_t si2q_count,
 					    const uint16_t *uarfcn_list, size_t *u_offset,
 					    size_t uarfcn_length, uint16_t *scramble_list,

@@ -336,6 +336,8 @@ osmo_gsm48_rest_octets_si13_decode;
 osmo_gsm48_rest_octets_si13_encode;
 osmo_gsm48_rest_octets_si3_decode;
 osmo_gsm48_rest_octets_si4_decode;
+osmo_gsm48_si1ro_nch_pos_encode;
+osmo_gsm48_si1ro_nch_pos_decode;
 gsm48_rr_short_pd_msg_name;
 gsm48_rr_msg_name;
 gsm48_cc_state_name;

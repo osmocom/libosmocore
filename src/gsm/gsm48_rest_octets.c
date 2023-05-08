@@ -59,6 +59,82 @@ int osmo_gsm48_rest_octets_si1_encode(uint8_t *data, uint8_t *nch_pos, int is180
 	return bv.data_len;
 }
 
+struct nch_pos {
+	uint8_t num_blocks;
+	uint8_t first_block;
+};
+
+/* 3GPP TS 44.010 Table 10.5.2.32.1b */
+static const struct nch_pos si1ro_nch_positions[] = {
+	[0x00] = {1,  0},
+	[0x01] = {1,  1},
+	[0x02] = {1,  2},
+	[0x03] = {1,  3},
+	[0x04] = {1,  4},
+	[0x05] = {1,  5},
+	[0x06] = {1,  6},
+
+	[0x07] = {2,  0},
+	[0x08] = {2,  1},
+	[0x08] = {2,  2},
+	[0x0a] = {2,  3},
+	[0x0b] = {2,  4},
+	[0x0c] = {2,  5},
+
+	[0x0d] = {3,  0},
+	[0x0e] = {3,  1},
+	[0x0f] = {3,  2},
+	[0x10] = {3,  3},
+	[0x11] = {3,  4},
+
+	[0x12] = {4,  0},
+	[0x13] = {4,  1},
+	[0x14] = {4,  2},
+	[0x15] = {4,  3},
+
+	[0x16] = {5,  0},
+	[0x17] = {5,  1},
+	[0x18] = {5,  2},
+
+	[0x19] = {6,  0},
+	[0x1a] = {6,  1},
+
+	[0x1b] = {7,  0},
+};
+
+/*! Decode the 5-bit 'NCH position' field within SI1 Rest Octets.
+ *  \param[in] value 5-bit value from SI1 rest octets
+ *  \param[out] num_blocks Number of CCCH used for NCH
+ *  \param[out] first_block First CCCH block used for NCH
+ *  \returns 0 on success; negative in case of error */
+int osmo_gsm48_si1ro_nch_pos_decode(uint8_t value, uint8_t *num_blocks, uint8_t *first_block)
+{
+	if (value >= ARRAY_SIZE(si1ro_nch_positions))
+		return -EINVAL;
+
+	*num_blocks = si1ro_nch_positions[value].num_blocks;
+	*first_block = si1ro_nch_positions[value].first_block;
+
+	return 0;
+}
+
+/*! Encode the 5-bit 'NCH position' field within SI1 Rest Octets.
+ *  \param[in] num_blocks Number of CCCH used for NCH
+ *  \param[in] first_block First CCCH block used for NCH
+ *  \returns 5-bit value for SI1 rest octets on success; negative in case of error */
+int osmo_gsm48_si1ro_nch_pos_encode(uint8_t num_blocks, uint8_t first_block)
+{
+	unsigned int i;
+
+	for (i = 0; i < ARRAY_SIZE(si1ro_nch_positions); i++) {
+		if (si1ro_nch_positions[i].num_blocks == num_blocks &&
+		    si1ro_nch_positions[i].first_block == first_block) {
+			return i;
+		}
+	}
+	return -EINVAL;
+}
+
 /* Append Repeated E-UTRAN Neighbour Cell to bitvec: see 3GPP TS 44.018 Table 10.5.2.33b.1 */
 static inline bool append_eutran_neib_cell(struct bitvec *bv, const struct osmo_earfcn_si2q *e, size_t *e_offset,
 					   uint8_t budget)
