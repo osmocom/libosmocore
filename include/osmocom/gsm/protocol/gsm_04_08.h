@@ -944,6 +944,20 @@ struct gsm48_hdr {
 	uint8_t data[0];
 } __attribute__ ((packed));
 
+/* Short header */
+struct gsm48_hdr_sh {
+#if OSMO_IS_LITTLE_ENDIAN
+	uint8_t	l2_header:2,	/* < short layer 2 header : bit(2) > See 3GPP TS 44.006 §6.4a */
+		msg_type:5,	/* < message type : bit(5) > See 3GPP TS 44.018 Table 10.4.2 */
+		rr_short_pd:1;	/* < RR short PD : bit > See 3GPP TS 24.007 §11.3.2 */
+	uint8_t data[0];
+#elif OSMO_IS_BIG_ENDIAN
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
+	uint8_t	rr_short_pd:1, msg_type:5, l2_header:2;
+	uint8_t data[0];
+#endif
+} __attribute__ ((packed));
+
 /* Section 9.1.3x System information Type header */
 struct gsm48_system_information_type_header {
 #if OSMO_IS_LITTLE_ENDIAN
@@ -1406,6 +1420,9 @@ struct gsm48_rr_status {
 #define GSM48_PDISC_EXTEND	0x0e
 #define GSM48_PDISC_TEST	0x0f	/* as per 11.10, 04.14 */
 #define GSM48_PDISC_MASK	0x0f
+
+/* Section 11.3.2.1 3GPP TS 24.007: Short PDISC */
+#define GSM48_PDISC_SH_RR	0
 
 extern const struct value_string gsm48_pdisc_names[];
 static inline const char *gsm48_pdisc_name(uint8_t val)
