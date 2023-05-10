@@ -57,6 +57,7 @@
 #define LAPDm_ADDR_SAPI(addr) (((addr) >> 2) & 0x7)
 #define LAPDm_ADDR_CR(addr) (((addr) >> 1) & 0x1)
 #define LAPDm_ADDR_EA(addr) ((addr) & 0x1)
+#define LAPDm_ADDR_SHORT_L2(addr) ((addr) & 0x3)
 
 /* TS 04.06 Table 3 / Section 3.4.3 */
 #define LAPDm_CTRL_I(nr, ns, p)	((((nr) & 0x7) << 5) | (((p) & 0x1) << 4) | (((ns) & 0x7) << 1))
@@ -725,15 +726,24 @@ static int l2_ph_data_ind(struct msgb *msg, struct lapdm_entity *le,
 		if (mctx.link_id & 0x40) {
 			/* It was received from network on SACCH */
 
-			/* If UI on SACCH sent by BTS, lapdm_fmt must be B4 */
-			if (le->mode == LAPDM_MODE_MS
-			 && LAPDm_CTRL_is_U(msg->l2h[3])
-			 && LAPDm_CTRL_U_BITS(msg->l2h[3]) == 0) {
+			/* A Short L3 header has both bits == 0. */
+			if (LAPDm_ADDR_SHORT_L2(msg->l2h[2]) == 0) {
+				mctx.lapdm_fmt = LAPDm_FMT_Bter;
+				n201 = N201_Bter_SACCH;
+				sapi = 0;
+			} else if (le->mode == LAPDM_MODE_MS
+				&& LAPDm_CTRL_is_U(msg->l2h[3])
+				&& LAPDm_CTRL_U_BITS(msg->l2h[3]) == 0) {
+				/* If UI on SACCH sent by BTS, lapdm_fmt must be B4 */
 				mctx.lapdm_fmt = LAPDm_FMT_B4;
 				n201 = N201_B4;
+				/* sapi is found after two-btyte L1 header */
+				sapi = (msg->l2h[2] >> 2) & 7;
 			} else {
 				mctx.lapdm_fmt = LAPDm_FMT_B;
 				n201 = N201_AB_SACCH;
+				/* sapi is found after two-btyte L1 header */
+				sapi = (msg->l2h[2] >> 2) & 7;
 			}
 			/* SACCH frames have a two-byte L1 header that
 			 * OsmocomBB L1 doesn't strip */
@@ -741,11 +751,17 @@ static int l2_ph_data_ind(struct msgb *msg, struct lapdm_entity *le,
 			mctx.ta_ind = msg->l2h[1];
 			msgb_pull(msg, 2);
 			msg->l2h += 2;
-			sapi = (msg->l2h[0] >> 2) & 7;
 		} else {
-			mctx.lapdm_fmt = LAPDm_FMT_B;
-			n201 = N201_AB_SDCCH;
-			sapi = (msg->l2h[0] >> 2) & 7;
+			/* A Short L3 header has both bits == 0. */
+			if (LAPDm_ADDR_SHORT_L2(msg->l2h[2]) == 0) {
+				mctx.lapdm_fmt = LAPDm_FMT_Bter;
+				n201 = N201_Bter_SDCCH;
+				sapi = 0;
+			} else {
+				mctx.lapdm_fmt = LAPDm_FMT_B;
+				n201 = N201_AB_SDCCH;
+				sapi = (msg->l2h[0] >> 2) & 7;
+			}
 		}
 	}
 
@@ -838,9 +854,7 @@ static int l2_ph_data_ind(struct msgb *msg, struct lapdm_entity *le,
 		rc = lapd_ph_data_ind(msg, &lctx);
 		break;
 	case LAPDm_FMT_Bter:
-		/* FIXME */
-		msgb_free(msg);
-		break;
+		/* fall-through */
 	case LAPDm_FMT_Bbis:
 		/* directly pass up to layer3 */
 		msg->l3h = msg->l2h;
