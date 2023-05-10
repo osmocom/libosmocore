@@ -33,6 +33,8 @@ extern const uint16_t gsm690_5_9_bitorder[];	/* AMR  5.9  kbits */
 extern const uint16_t gsm690_5_15_bitorder[];	/* AMR  5.15 kbits */
 extern const uint16_t gsm690_4_75_bitorder[];	/* AMR  4.75 kbits */
 
+extern const uint8_t osmo_gsm611_silence_frame[GSM_FR_BYTES];
+
 extern const struct value_string osmo_amr_type_names[];
 
 enum osmo_amr_type {

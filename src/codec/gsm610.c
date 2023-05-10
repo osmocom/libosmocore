@@ -296,6 +296,20 @@ const uint16_t gsm610_bitorder[260] = {
 	29,	/* LARc5:0 */
 };
 
+/*
+ * Table 1 in section 6 of 3GPP TS 46.011 (substitution and muting of lost
+ * frames) specifies a silence frame in the form of GSM 06.10 parameters;
+ * the following const datum is this GSM 06.11 silence frame in GSM-FR
+ * RTP encoding.
+ */
+const uint8_t osmo_gsm611_silence_frame[GSM_FR_BYTES] = {
+	0xDA, 0xA7, 0xAA, 0xA5, 0x1A,
+	0x50, 0x20, 0x38, 0xE4, 0x6D, 0xB9, 0x1B,
+	0x50, 0x20, 0x38, 0xE4, 0x6D, 0xB9, 0x1B,
+	0x50, 0x20, 0x38, 0xE4, 0x6D, 0xB9, 0x1B,
+	0x50, 0x20, 0x38, 0xE4, 0x6D, 0xB9, 0x1B,
+};
+
 static const uint16_t sid_code_word_bits[95] = {
 	/* bit numbers are relative to the RTP frame beginning,
 	 * with signature bits included in the count. */
