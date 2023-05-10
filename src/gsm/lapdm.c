@@ -1030,6 +1030,7 @@ static int rslms_rx_rll_udata_req(struct msgb *msg, struct lapdm_datalink *dl)
 	uint8_t sapi = link_id & 7;
 	struct tlv_parsed tv;
 	int length, ui_bts;
+	bool use_b_ter;
 
 	if (!le) {
 		LOGDL(&dl->dl, LOGL_ERROR, "lapdm_datalink without entity error\n");
@@ -1055,8 +1056,10 @@ static int rslms_rx_rll_udata_req(struct msgb *msg, struct lapdm_datalink *dl)
 	}
 	msg->l3h = (uint8_t *) TLVP_VAL(&tv, RSL_IE_L3_INFO);
 	length = TLVP_LEN(&tv, RSL_IE_L3_INFO);
+	/* check for Bter frame */
+	use_b_ter = (length == ((link_id & 0x40) ? 21 : 23) && sapi == 0);
 	/* check if the layer3 message length exceeds N201 */
-	if (length + ((link_id & 0x40) ? 4 : 2) + !ui_bts > 23) {
+	if (length + ((link_id & 0x40) ? 4 : 2) + !ui_bts > 23 && !use_b_ter) {
 		LOGDL(&dl->dl, LOGL_ERROR, "frame too large: %d > N201(%d) "
 			"(discarding)\n", length,
 			((link_id & 0x40) ? 18 : 20) + ui_bts);
@@ -1071,11 +1074,14 @@ static int rslms_rx_rll_udata_req(struct msgb *msg, struct lapdm_datalink *dl)
 	msgb_trim(msg, length);
 
 	/* Push L1 + LAPDm header on msgb */
-	msg->l2h = msgb_push(msg, 2 + !ui_bts);
-	msg->l2h[0] = LAPDm_ADDR(LAPDm_LPD_NORMAL, sapi, dl->dl.cr.loc2rem.cmd);
-	msg->l2h[1] = LAPDm_CTRL_U(LAPDm_U_UI, 0);
-	if (!ui_bts)
-		msg->l2h[2] = LAPDm_LEN(length);
+	if (!use_b_ter) {
+		msg->l2h = msgb_push(msg, 2 + !ui_bts);
+		msg->l2h[0] = LAPDm_ADDR(LAPDm_LPD_NORMAL, sapi, dl->dl.cr.loc2rem.cmd);
+		msg->l2h[1] = LAPDm_CTRL_U(LAPDm_U_UI, 0);
+		if (!ui_bts)
+			msg->l2h[2] = LAPDm_LEN(length);
+	} else
+		msg->l2h = msg->data;
 	if (link_id & 0x40) {
 		msg->l2h = msgb_push(msg, 2);
 		msg->l2h[0] = le->tx_power;
