@@ -61,7 +61,7 @@ static void iofd_poll_ofd_cb_recvmsg_sendmsg(struct osmo_fd *ofd, unsigned int w
 		hdr.hdr.msg_iov = &hdr.iov[0];
 		hdr.hdr.msg_iovlen = 1;
 		hdr.hdr.msg_name = &hdr.osa.u.sa;
-		hdr.hdr.msg_namelen = osmo_sockaddr_size(&hdr.osa);
+		hdr.hdr.msg_namelen = sizeof(struct osmo_sockaddr);
 
 		rc = recvmsg(ofd->fd, &hdr.hdr, flags);
 		if (rc > 0)
