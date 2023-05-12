@@ -151,7 +151,7 @@ void test_fr_concealment_core(void)
 	int i, rc;
 	int j = 0;
 
-	printf("=> Testing FR concealment (simple, consecutive bad frames)\n");
+	printf("=> Testing FR concealment (simple, using ECU abstraction)\n");
 
 	while (sample_frame_hex[j] != NULL) {
 		/* Parse frame from string to hex */
