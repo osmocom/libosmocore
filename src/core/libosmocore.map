@@ -267,6 +267,7 @@ osmo_iofd_register;
 osmo_iofd_sendto_msgb;
 osmo_iofd_set_alloc_info;
 osmo_iofd_set_data;
+osmo_iofd_set_ioops;
 osmo_iofd_set_priv_nr;
 osmo_iofd_setup;
 osmo_iofd_txqueue_clear;

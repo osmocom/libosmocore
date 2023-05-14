@@ -599,4 +599,12 @@ const char *osmo_iofd_get_name(const struct osmo_io_fd *iofd)
 	return iofd->name;
 }
 
+/*! Set the osmo_io_ops for an iofd
+ *  \param[in] iofd Target iofd file descriptor
+ *  \param[in] ioops osmo_io_ops structure to be set */
+void osmo_iofd_set_ioops(struct osmo_io_fd *iofd, const struct osmo_io_ops *ioops)
+{
+	iofd->io_ops = *ioops;
+}
+
 #endif /* defined(__linux__) */
