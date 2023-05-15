@@ -606,7 +606,7 @@ static int _xcch_decode_cB(uint8_t *l2_data, const sbit_t *cB,
 
 /*! convenience wrapper for encoding to coded bits
  *  \param[out] cB caller-allocated buffer for 456 coded bits as per TS 05.03 4.1.3
- *  \param[out] l2_data to-be-encoded L2 Frame
+ *  \param[in] l2_data to-be-encoded L2 Frame
  *  \returns 0 */
 static int _xcch_encode_cB(ubit_t *cB, const uint8_t *l2_data)
 {
