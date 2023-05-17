@@ -1804,7 +1804,7 @@ static void tch_efr_unreorder(ubit_t *s, ubit_t *p, const ubit_t *w)
 	s[119] = (sum >= 2);
 	memcpy(s + 121, w + 125, 53);
 	sum = s[172] + w[178] + w[179];
-	s[172] = (sum > 2);
+	s[172] = (sum >= 2);
 	memcpy(s + 174, w + 180, 50);
 	sum = s[222] + w[230] + w[231];
 	s[222] = (sum >= 2);
