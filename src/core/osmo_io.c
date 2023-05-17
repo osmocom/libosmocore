@@ -395,8 +395,7 @@ void osmo_iofd_read_disable(struct osmo_io_fd *iofd)
 void osmo_iofd_write_enable(struct osmo_io_fd *iofd)
 {
 	iofd->write_enabled = true;
-	if (iofd->tx_queue.current_length > 0)
-		osmo_iofd_ops.write_enable(iofd);
+	osmo_iofd_ops.write_enable(iofd);
 }
 
 /*! Disable writing to this iofd
