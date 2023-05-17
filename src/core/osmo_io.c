@@ -219,7 +219,7 @@ struct iofd_msghdr *iofd_txqueue_dequeue(struct osmo_io_fd *iofd)
 */
 static enum iofd_seg_act iofd_handle_segmentation(struct osmo_io_fd *iofd, struct msgb *msg, struct msgb **pending_out)
 {
-	int pending_len, msg_len;
+	int extra_len, msg_len;
 	struct msgb *msg_pending;
 
 	msg_len = msgb_length(msg);
@@ -229,27 +229,41 @@ static enum iofd_seg_act iofd_handle_segmentation(struct osmo_io_fd *iofd, struc
 		return IOFD_SEG_ACT_HANDLE_ONE;
 	}
 
-	int len = iofd->io_ops.segmentation_cb(msg, msg_len);
-
-	pending_len = msg_len - len;
-	/* No segmentation needed, return */
-	if (pending_len == 0) {
+	int len = iofd->io_ops.segmentation_cb(msg);
+	if (len == -EAGAIN) {
+		goto defer;
+	} else if (len < 0) {
+		/* Something is wrong, skip this msgb */
+		LOGPIO(iofd, LOGL_ERROR, "segmentation_cb returned error (%d), skipping msg of size %d\n", len, msg_len);
 		*pending_out = NULL;
-		return IOFD_SEG_ACT_HANDLE_ONE;
-	} else if (pending_len < 0) {
-		*pending_out = msg;
+		msgb_free(msg);
 		return IOFD_SEG_ACT_DEFER;
 	}
 
-	/* Copy the pending data over */
+	extra_len = msg_len - len;
+	/* No segmentation needed, return the whole msgb */
+	if (extra_len == 0) {
+		*pending_out = NULL;
+		return IOFD_SEG_ACT_HANDLE_ONE;
+	/* segment is incomplete */
+	} else if (extra_len < 0) {
+		goto defer;
+	}
+
+	/* msgb contains more than one segment */
+	/* Copy the trailing data over */
 	msg_pending = iofd_msgb_alloc(iofd);
-	memcpy(msgb_data(msg_pending), msgb_data(msg) + len, pending_len);
-	msgb_put(msg_pending, pending_len);
+	memcpy(msgb_data(msg_pending), msgb_data(msg) + len, extra_len);
+	msgb_put(msg_pending, extra_len);
 	*pending_out = msg_pending;
 
 	/* Trim the original msgb to size */
 	msgb_trim(msg, len);
 	return IOFD_SEG_ACT_HANDLE_MORE;
+
+defer:
+	*pending_out = msg;
+	return IOFD_SEG_ACT_DEFER;
 }
 
 /*! Restore message boundaries on read() and pass individual messages to the read callback

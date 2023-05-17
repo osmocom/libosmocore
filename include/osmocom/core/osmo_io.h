@@ -42,8 +42,12 @@ struct osmo_io_ops {
 			/*! call-back function when write has completed on fd */
 			void (*write_cb)(struct osmo_io_fd *iofd, int res,
 					 const struct msgb *msg);
-			/*! call-back function to segment the data returned by read_cb */
-			int (*segmentation_cb)(struct msgb *msg, int data_len);
+			/*! call-back function to segment the data at message boundaries.
+			 *  Needs to return the size of the next message. If it returns
+			 *  -EAGAIN or a value larger than msgb_length() (message is incomplete)
+			 *  osmo_io will wait for more data to be read. Other negative values
+			 *  cause the msg to be discarded. */
+			int (*segmentation_cb)(struct msgb *msg);
 		};
 
 		/* mode OSMO_IO_FD_MODE_RECVFROM_SENDTO: */
