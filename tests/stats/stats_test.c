@@ -1,6 +1,6 @@
 /* tests for statistics */
 /*
- * (C) 2015 sysmocom - s.m.f.c. GmbH
+ * (C) 2015 sysmocom - s.f.m.c. GmbH
  *
  * All Rights Reserved
  *
