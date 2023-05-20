@@ -700,7 +700,7 @@ void gsm0503_tch_hr_interleave(const ubit_t *cB, ubit_t *iB)
  * of coded data starts with every fourth burst and is distributed over
  * 22 bursts.
  *
- * Also used for TCH/F4.8, TCH/H4.8, TCH/F2.4 and TCH/H2.4 and TCH/F14.4 */
+ * Also used for TCH/F4.8, TCH/H4.8, and TCH/H2.4 and TCH/F14.4 */
 void gsm0503_tch_f96_interleave(const ubit_t *cB, ubit_t *iB)
 {
 	int j, k, B;
