@@ -89,4 +89,24 @@ int gsm0503_rach_ext_decode_ber(uint16_t *ra, const sbit_t *burst, uint8_t bsic,
 int gsm0503_sch_encode(ubit_t *burst, const uint8_t *sb_info);
 int gsm0503_sch_decode(uint8_t *sb_info, const sbit_t *burst);
 
+int gsm0503_tch_fr96_encode(ubit_t *bursts, const ubit_t *data);
+int gsm0503_tch_fr96_decode(ubit_t *data, const sbit_t *bursts,
+			    int *n_errors, int *n_bits_total);
+
+int gsm0503_tch_fr48_encode(ubit_t *bursts, const ubit_t *data);
+int gsm0503_tch_fr48_decode(ubit_t *data, const sbit_t *bursts,
+			    int *n_errors, int *n_bits_total);
+
+int gsm0503_tch_hr48_encode(ubit_t *bursts, const ubit_t *data);
+int gsm0503_tch_hr48_decode(ubit_t *data, const sbit_t *bursts,
+			    int *n_errors, int *n_bits_total);
+
+int gsm0503_tch_hr24_encode(ubit_t *bursts, const ubit_t *data);
+int gsm0503_tch_hr24_decode(ubit_t *data, const sbit_t *bursts,
+			    int *n_errors, int *n_bits_total);
+
+int gsm0503_tch_fr144_encode(ubit_t *bursts, const ubit_t *data);
+int gsm0503_tch_fr144_decode(ubit_t *data, const sbit_t *bursts,
+			     int *n_errors, int *n_bits_total);
+
 /*! @} */

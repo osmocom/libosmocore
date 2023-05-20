@@ -3292,4 +3292,301 @@ int gsm0503_sch_encode(ubit_t *burst, const uint8_t *sb_info)
 	return 0;
 }
 
+/*
+ * GSM CSD transcoding
+ */
+
+static inline void _tch_csd_burst_map(ubit_t *burst, const ubit_t *iB)
+{
+	for (unsigned int i = 0; i < 57; i++) {
+		burst[i] |= iB[i];
+		burst[59 + i] |= iB[57 + i];
+	}
+
+	burst[57] = 0; /* hl(B) */
+	burst[58] = 0; /* hu(B) */
+}
+
+/*! Perform channel encoding of a TCH/F9.6 channel as per section 3.3.
+ *  \param[out] bursts Caller-allocated buffer for symbols of 22 bursts,
+ *                     22 * 2 * 58 == 2552 bits total.
+ *  \param[in] data Data to be encoded (240 unpacked bits).
+ *  \returns 0 in case of success; negative on error. */
+int gsm0503_tch_fr96_encode(ubit_t *bursts, const ubit_t *data)
+{
+	ubit_t iB[22 * 114], cB[4 * 114];
+	ubit_t conv[4 * 60 + 4];
+
+	/* 3.3.2 Block code: b1(60) + b2(60) + b3(60) + b4(60) + pad(4) */
+	memcpy(&conv[0], &data[0], 4 * 60);
+	memset(&conv[240], 0, 4);
+
+	/* 3.3.3 Convolutional encoder */
+	osmo_conv_encode(&gsm0503_tch_f96, &conv[0], &cB[0]);
+
+	/* 3.3.4 Interleaving */
+	memset(&iB[0], 0, sizeof(iB));
+	gsm0503_tch_f96_interleave(&cB[0], &iB[0]);
+
+	/* 3.3.5 Mapping on a burst: as specified for TCH/FS in subclause 3.1.4 */
+	for (unsigned int i = 0; i < 22; i++)
+		_tch_csd_burst_map(&bursts[i * 116], &iB[i * 114]);
+
+	return 0;
+}
+
+/*! Perform channel decoding of a TCH/F9.6 channel as per section 3.3.
+ *  \param[out] data Caller-allocated buffer for decoded data (240 unpacked bits).
+ *  \param[in] bursts Buffer containing the symbols of 22 bursts,
+ *                    22 * 2 * 58 == 2552 bits total.
+ *  \param[out] n_errors Number of detected bit errors.
+ *  \param[out] n_bits_total Total number of bits.
+ *  \returns Number of unpacked bits used in the output buffer; negative on error. */
+int gsm0503_tch_fr96_decode(ubit_t *data, const sbit_t *bursts,
+			    int *n_errors, int *n_bits_total)
+{
+	sbit_t iB[22 * 114], cB[4 * 114];
+	ubit_t conv[4 * 60 + 4];
+
+	/* 3.3.5 Mapping on a burst: as specified for TCH/FS in subclause 3.1.4 */
+	for (unsigned int i = 0; i < 22; i++) {
+		memcpy(&iB[i * 114], &bursts[i * 116], 57);
+		memcpy(&iB[i * 114 + 57], &bursts[i * 116 + 59], 57);
+	}
+
+	/* 3.3.4 Interleaving */
+	gsm0503_tch_f96_deinterleave(&cB[0], &iB[0]);
+
+	/* 3.3.3 Convolutional encoder */
+	osmo_conv_decode_ber(&gsm0503_tch_f96, &cB[0], &conv[0], n_errors, n_bits_total);
+
+	/* 3.3.2 Block code: b1(60) + b2(60) + b3(60) + b4(60) + pad(4) */
+	memcpy(&data[0], &conv[0], 4 * 60);
+
+	return 4 * 60;
+}
+
+/*! Perform channel encoding of a TCH/F4.8 channel as per section 3.4.
+ *  \param[out] bursts Caller-allocated buffer for symbols of 22 bursts,
+ *                     22 * 2 * 58 == 2552 bits total.
+ *  \param[in] data Data to be encoded (120 unpacked bits).
+ *  \returns 0 in case of success; negative on error */
+int gsm0503_tch_fr48_encode(ubit_t *bursts, const ubit_t *data)
+{
+	ubit_t iB[22 * 114], cB[4 * 114];
+	ubit_t conv[2 * 60 + 32];
+
+	/* 3.4.2 Block code:
+	 *
+	 * Sixteen bits equal to 0 are added to the 60 information bits, the result
+	 * being a block of 76 bits, {u(0),u(1),...,u(75)}, with:
+	 *
+	 * u(19k+p) = d(15k+p)    for k = 0,1,2,3 and p = 0,1,...,14;
+	 * u(19k+p) = 0           for k = 0,1,2,3 and p = 15,16,17,18.
+	 *
+	 * Two such blocks forming a block of 152 bits: u1 + u2. */
+	for (unsigned int k = 0; k < 2 * 4; k++) {
+		memcpy(&conv[19 * k], &data[15 * k], 15);
+		memset(&conv[19 * k + 15], 0, 4);
+	}
+
+	/* 3.4.3 Convolutional encoder */
+	osmo_conv_encode(&gsm0503_tch_f48, &conv[0], &cB[0]);
+
+	/* 3.4.4 Interleaving: as specified for the TCH/F9.6 in subclause 3.3.4 */
+	memset(&iB[0], 0, sizeof(iB));
+	gsm0503_tch_f96_interleave(&cB[0], &iB[0]);
+
+	/* 3.4.5 Mapping on a burst: as specified for TCH/FS in subclause 3.1.4 */
+	for (unsigned int i = 0; i < 22; i++)
+		_tch_csd_burst_map(&bursts[i * 116], &iB[i * 114]);
+
+	return 0;
+}
+
+/*! Perform channel decoding of a TCH/F4.8 channel as per section 3.4.
+ *  \param[out] data Caller-allocated buffer for decoded data (120 unpacked bits).
+ *  \param[in] bursts Buffer containing the symbols of 22 bursts,
+ *                    22 * 2 * 58 == 2552 bits total.
+ *  \param[out] n_errors Number of detected bit errors.
+ *  \param[out] n_bits_total Total number of bits.
+ *  \returns Number of unpacked bits used in the output buffer; negative on error. */
+int gsm0503_tch_fr48_decode(ubit_t *data, const sbit_t *bursts,
+			    int *n_errors, int *n_bits_total)
+{
+	sbit_t iB[22 * 114], cB[4 * 114];
+	ubit_t conv[2 * 60 + 32];
+
+	/* 3.4.5 Mapping on a burst: as specified for TCH/FS in subclause 3.1.4 */
+	for (unsigned int i = 0; i < 22; i++) {
+		memcpy(&iB[i * 114], &bursts[i * 116], 57);
+		memcpy(&iB[i * 114 + 57], &bursts[i * 116 + 59], 57);
+	}
+
+	/* 3.4.4 Interleaving: as specified for the TCH/F9.6 in subclause 3.3.4 */
+	gsm0503_tch_f96_deinterleave(&cB[0], &iB[0]);
+
+	/* 3.4.3 Convolutional encoder */
+	osmo_conv_decode_ber(&gsm0503_tch_f48, &cB[0], &conv[0], n_errors, n_bits_total);
+
+	/* 3.4.2 Block code:
+	 *
+	 * Sixteen bits equal to 0 are added to the 60 information bits, the result
+	 * being a block of 76 bits, {u(0),u(1),...,u(75)}, with:
+	 *
+	 * u(19k+p) = d(15k+p)    for k = 0,1,2,3 and p = 0,1,...,14;
+	 * u(19k+p) = 0           for k = 0,1,2,3 and p = 15,16,17,18.
+	 *
+	 * Two such blocks forming a block of 152 bits: u1 + u2. */
+	for (unsigned int k = 0; k < 2 * 4; k++)
+		memcpy(&data[15 * k], &conv[19 * k], 15);
+
+	return 2 * 60;
+}
+
+/*! Perform channel encoding of a TCH/H4.8 channel as per section 3.5.
+ *  The algorithm is identical to TCH/F9.6, so it's just a wrapper.
+ *  \param[out] bursts Caller-allocated buffer for symbols of 22 bursts,
+ *                     22 * 2 * 58 == 2552 bits total.
+ *  \param[in] data Data to be encoded (240 unpacked bits).
+ *  \returns 0 in case of success; negative on error */
+int gsm0503_tch_hr48_encode(ubit_t *bursts, const ubit_t *data)
+{
+	return gsm0503_tch_fr96_encode(bursts, data);
+}
+
+/*! Perform channel decoding of a TCH/H4.8 channel as per section 3.5.
+ *  The algorithm is identical to TCH/F9.6, so it's just a wrapper.
+ *  \param[out] data Caller-allocated buffer for decoded data (240 unpacked bits).
+ *  \param[in] bursts Buffer containing the symbols of 22 bursts,
+ *                    22 * 2 * 58 == 2552 bits total.
+ *  \param[out] n_errors Number of detected bit errors.
+ *  \param[out] n_bits_total Total number of bits.
+ *  \returns Number of unpacked bits used in the output buffer; negative on error. */
+int gsm0503_tch_hr48_decode(ubit_t *data, const sbit_t *bursts,
+			    int *n_errors, int *n_bits_total)
+{
+	return gsm0503_tch_fr96_decode(data, bursts, n_errors, n_bits_total);
+}
+
+/*! Perform channel encoding of a TCH/H2.4 channel as per section 3.7.
+ *  \param[out] bursts Caller-allocated buffer for symbols of 22 bursts,
+ *                     22 * 2 * 58 == 2552 bits total.
+ *  \param[in] data Data to be encoded (144 unpacked bits).
+ *  \returns 0 in case of success; negative on error */
+int gsm0503_tch_hr24_encode(ubit_t *bursts, const ubit_t *data)
+{
+	ubit_t iB[22 * 114], cB[4 * 114];
+	ubit_t conv[2 * 72 + 8];
+
+	/* 3.7.2 Block code: d1(72) + pad(4) + d2(72) + pad(4) */
+	memset(&conv[0], 0, sizeof(conv));
+	memcpy(&conv[0], &data[0], 72);
+	memcpy(&conv[76], &data[72], 72);
+
+	/* 3.7.3 Convolutional encoder: as specified for the TCH/F4.8 in subclause 3.4.3 */
+	osmo_conv_encode(&gsm0503_tch_f48, &conv[0], &cB[0]);
+
+	/* 3.7.4 Interleaving: as specified for the TCH/F9.6 in subclause 3.3.4 */
+	memset(&iB[0], 0, sizeof(iB));
+	gsm0503_tch_f96_interleave(&cB[0], &iB[0]);
+
+	/* 3.7.5 Mapping on a burst: as specified for TCH/FS in subclause 3.1.4 */
+	for (unsigned int i = 0; i < 22; i++)
+		_tch_csd_burst_map(&bursts[i * 116], &iB[i * 114]);
+
+	return 0;
+}
+
+/*! Perform channel decoding of a TCH/H2.4 channel as per section 3.7.
+ *  \param[out] data Caller-allocated buffer for decoded data (144 unpacked bits).
+ *  \param[in] bursts Buffer containing the symbols of 22 bursts,
+ *                    22 * 2 * 58 == 2552 bits total.
+ *  \param[out] n_errors Number of detected bit errors.
+ *  \param[out] n_bits_total Total number of bits.
+ *  \returns Number of unpacked bits used in the output buffer; negative on error. */
+int gsm0503_tch_hr24_decode(ubit_t *data, const sbit_t *bursts,
+			    int *n_errors, int *n_bits_total)
+{
+	sbit_t iB[22 * 114], cB[4 * 114];
+	ubit_t conv[120 + 32];
+
+	/* 3.7.5 Mapping on a burst: as specified for TCH/FS in subclause 3.1.4 */
+	for (unsigned int i = 0; i < 22; i++) {
+		memcpy(&iB[i * 114], &bursts[i * 116], 57);
+		memcpy(&iB[i * 114 + 57], &bursts[i * 116 + 59], 57);
+	}
+
+	/* 3.7.4 Interleaving: as specified for the TCH/F9.6 in subclause 3.3.4 */
+	gsm0503_tch_f96_deinterleave(&cB[0], &iB[0]);
+
+	/* 3.7.3 Convolutional encoder: as specified for the TCH/F4.8 in subclause 3.4.3 */
+	osmo_conv_decode_ber(&gsm0503_tch_f48, &cB[0], &conv[0], n_errors, n_bits_total);
+
+	/* 3.7.2 Block code: d1(72) + pad(4) + d2(72) + pad(4) */
+	memcpy(&data[0], &conv[0], 72);
+	memcpy(&data[72], &conv[76], 72);
+
+	return 2 * 72;
+}
+
+/*! Perform channel encoding of a TCH/F14.4 channel as per section 3.8.
+ *  \param[out] bursts Caller-allocated buffer for symbols of 22 bursts,
+ *                     22 * 2 * 58 == 2552 bits total.
+ *  \param[in] data Data to be encoded (290 unpacked bits).
+ *  \returns 0 in case of success; negative on error */
+int gsm0503_tch_fr144_encode(ubit_t *bursts, const ubit_t *data)
+{
+	ubit_t iB[22 * 114], cB[4 * 114];
+	ubit_t conv[290 + 4];
+
+	/* 3.8.2 Block code: b(290) + pad(4) */
+	memcpy(&conv[0], &data[0], 290);
+	memset(&conv[290], 0, 4);
+
+	/* 3.8.3 Convolutional encoder */
+	osmo_conv_encode(&gsm0503_tch_f144, &conv[0], &cB[0]);
+
+	/* 3.8.4 Interleaving */
+	memset(&iB[0], 0, sizeof(iB));
+	gsm0503_tch_f96_interleave(&cB[0], &iB[0]);
+
+	/* 3.8.5 Mapping on a burst: as specified for TCH/FS in subclause 3.1.4 */
+	for (unsigned int i = 0; i < 22; i++)
+		_tch_csd_burst_map(&bursts[i * 116], &iB[i * 114]);
+
+	return 0;
+}
+
+/*! Perform channel decoding of a TCH/14.4 channel as per section 3.8.
+ *  \param[out] data Caller-allocated buffer for decoded data (290 unpacked bits).
+ *  \param[in] bursts Buffer containing the symbols of 22 bursts,
+ *                    22 * 2 * 58 == 2552 bits total.
+ *  \param[out] n_errors Number of detected bit errors.
+ *  \param[out] n_bits_total Total number of bits.
+ *  \returns Number of unpacked bits used in the output buffer; negative on error. */
+int gsm0503_tch_fr144_decode(ubit_t *data, const sbit_t *bursts,
+			     int *n_errors, int *n_bits_total)
+{
+	sbit_t iB[22 * 114], cB[4 * 114];
+	ubit_t conv[294];
+
+	/* 3.8.5 Mapping on a burst: as specified for TCH/FS in subclause 3.1.4 */
+	for (unsigned int i = 0; i < 22; i++) {
+		memcpy(&iB[i * 114], &bursts[i * 116], 57);
+		memcpy(&iB[i * 114 + 57], &bursts[i * 116 + 59], 57);
+	}
+
+	/* 3.8.4 Interleaving: as specified for the TCH/F9.6 in subclause 3.3.4 */
+	gsm0503_tch_f96_deinterleave(&cB[0], &iB[0]);
+
+	/* 3.8.3 Convolutional encoder */
+	osmo_conv_decode_ber(&gsm0503_tch_f144, &cB[0], &conv[0], n_errors, n_bits_total);
+
+	/* 3.8.2 Block code: b(290) + pad(4) */
+	memcpy(&data[0], &conv[0], 290);
+
+	return 290;
+}
+
 /*! @} */

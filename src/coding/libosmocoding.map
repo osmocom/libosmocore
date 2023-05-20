@@ -129,5 +129,16 @@ gsm0503_detect_ahs_dtx_frame;
 gsm0503_detect_afs_dtx_frame2;
 gsm0503_detect_ahs_dtx_frame2;
 
+gsm0503_tch_fr96_encode;
+gsm0503_tch_fr96_decode;
+gsm0503_tch_fr48_encode;
+gsm0503_tch_fr48_decode;
+gsm0503_tch_hr48_encode;
+gsm0503_tch_hr48_decode;
+gsm0503_tch_hr24_encode;
+gsm0503_tch_hr24_decode;
+gsm0503_tch_fr144_encode;
+gsm0503_tch_fr144_decode;
+
 local: *;
 };

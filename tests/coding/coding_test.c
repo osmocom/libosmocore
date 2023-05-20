@@ -489,6 +489,92 @@ uint8_t test_speech_fr[33];
 uint8_t test_speech_efr[31];
 uint8_t test_speech_hr[14];
 
+struct csd_test_case {
+	const char *name;
+	unsigned int num_bits;
+	int (*enc_fn)(ubit_t *out, const ubit_t *in);
+	int (*dec_fn)(ubit_t *out, const sbit_t *in, int *ne, int *nb);
+};
+
+static const struct csd_test_case csd_tests[] = {
+	{
+		.name = "TCH/F9.6",
+		.num_bits = 4 * 60,
+		.enc_fn = &gsm0503_tch_fr96_encode,
+		.dec_fn = &gsm0503_tch_fr96_decode,
+	},
+	{
+		.name = "TCH/F4.8",
+		.num_bits = 2 * 60,
+		.enc_fn = &gsm0503_tch_fr48_encode,
+		.dec_fn = &gsm0503_tch_fr48_decode,
+	},
+	{
+		.name = "TCH/H4.8",
+		.num_bits = 4 * 60,
+		.enc_fn = &gsm0503_tch_hr48_encode,
+		.dec_fn = &gsm0503_tch_hr48_decode,
+	},
+	{
+		.name = "TCH/H2.4",
+		.num_bits = 2 * 72,
+		.enc_fn = &gsm0503_tch_hr24_encode,
+		.dec_fn = &gsm0503_tch_hr24_decode,
+	},
+	{
+		.name = "TCH/F14.4",
+		.num_bits = 290,
+		.enc_fn = &gsm0503_tch_fr144_encode,
+		.dec_fn = &gsm0503_tch_fr144_decode,
+	},
+};
+
+static void test_csd(const struct csd_test_case *tc)
+{
+	const uint8_t patterns[] = { 0x00, 0xaa, 0xff };
+	ubit_t bursts_u[116 * (22 + 8)] = { 0 };
+	sbit_t bursts_s[116 * (22 + 8)] = { 0 };
+	ubit_t data[512];
+	int rc;
+
+	/* Encode three data blocks, each block filled-in with a pattern */
+	for (unsigned int i = 0; i < ARRAY_SIZE(patterns); i++) {
+		for (unsigned int j = 0; j < tc->num_bits; j++)
+			data[j] = (patterns[i] & (1 << (j % 8))) != 0;
+
+		rc = tc->enc_fn(&bursts_u[i * 4 * 116], &data[0]);
+		CHECK_RC_OR_RET(rc == 0, "encoding");
+	}
+
+	/* TODO: test FACCH stealing */
+
+	/* Prepare soft-bits */
+	osmo_ubit2sbit(&bursts_s[0], &bursts_u[0], sizeof(bursts_s));
+
+	/* Decode the soft-bits, print decoded blocks */
+	for (unsigned int i = 0; i < ARRAY_SIZE(patterns); i++) {
+		int n_errors, n_bits_total;
+
+		rc = tc->dec_fn(&data[0], &bursts_s[i * 4 * 116],
+				&n_errors, &n_bits_total);
+		CHECK_RC_OR_RET(rc == tc->num_bits, "decoding");
+
+		printf("%s(%s): block #%u (pattern 0x%02x): n_errors=%d / n_bits_total=%d\n",
+		       __func__, tc->name, i, patterns[i], n_errors, n_bits_total);
+
+		for (unsigned int j = 0; j < tc->num_bits; j++) {
+			if (j && j % 64 == 0)
+				printf("\n");
+			else if (j && j % 8 == 0)
+				printf(" ");
+			printf("%c", data[j] ? '1' : '0');
+		}
+		printf("\n");
+	}
+
+	printf("\n");
+}
+
 int main(int argc, char **argv)
 {
 	int i, len_l2, len_mb;
@@ -548,6 +634,10 @@ int main(int argc, char **argv)
 			test_pdtch(&test_macblock[i], 54);
 		}
 	}
+
+	printf("\nTesting CSD functions:\n");
+	for (i = 0; i < ARRAY_SIZE(csd_tests); i++)
+		test_csd(&csd_tests[i]);
 
 	printf("Success\n");
 
