@@ -1860,7 +1860,7 @@ int gsm0503_tch_fr_decode(uint8_t *tch_data, const sbit_t *bursts,
 			return -1;
 		}
 
-		return 23;
+		return GSM_MACBLOCK_LEN;
 	}
 
 	osmo_conv_decode_ber(&gsm0503_tch_fr, cB, conv, n_errors, n_bits_total);
