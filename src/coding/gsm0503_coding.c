@@ -1997,7 +1997,7 @@ int gsm0503_tch_hr_decode(uint8_t *tch_data, const sbit_t *bursts, int odd,
 			steal -= h;
 		}
 
-		for (i = 2; i < 5; i++) {
+		for (i = 2; i < 6; i++) {
 			gsm0503_tch_burst_unmap(NULL, &bursts[i * 116], &h, 1);
 			steal -= h;
 		}
