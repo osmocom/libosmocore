@@ -2633,7 +2633,7 @@ static uint8_t gsm0503_tch_ahs_decode_inband(const sbit_t *cB)
 	return id;
 }
 
-/*! Perform channel decoding of a TCH/AFS channel according TS 05.03
+/*! Perform channel decoding of a TCH/AHS channel according TS 05.03
  *  \param[out] tch_data Codec frame in RTP payload format
  *  \param[in] bursts buffer containing the symbols of 6 bursts
  *  \param[in] odd Is this an odd (1) or even (0) frame number?
@@ -2656,7 +2656,7 @@ int gsm0503_tch_ahs_decode(uint8_t *tch_data, const sbit_t *bursts, int odd,
 					  n_bits_total, NULL);
 }
 
-/*! Perform channel decoding of a TCH/AFS channel according TS 05.03
+/*! Perform channel decoding of a TCH/AHS channel according TS 05.03
  *  \param[out] tch_data Codec frame in RTP payload format
  *  \param[in] bursts buffer containing the symbols of 6 bursts
  *  \param[in] odd Is this an odd (1) or even (0) frame number?
