@@ -1976,7 +1976,7 @@ coding_efr_fr:
 
 /*! Perform channel decoding of a HR(v1) channel according TS 05.03
  *  \param[out] tch_data Codec frame in TS 101 318 canonical format
- *  \param[in] bursts buffer containing the symbols of 8 bursts
+ *  \param[in] bursts buffer containing the symbols of 6 bursts
  *  \param[in] odd Odd (1) or even (0) frame number
  *  \param[out] n_errors Number of detected bit errors
  *  \param[out] n_bits_total Total number of bits
@@ -2054,7 +2054,7 @@ int gsm0503_tch_hr_decode2(uint8_t *tch_data, const sbit_t *bursts, int odd,
 /*! Perform channel decoding of a HR(v1) channel according TS 05.03,
  *  deprecated legacy API.
  *  \param[out] tch_data Codec frame in pseudo-RFC5993 format
- *  \param[in] bursts buffer containing the symbols of 8 bursts
+ *  \param[in] bursts buffer containing the symbols of 6 bursts
  *  \param[in] odd Odd (1) or even (0) frame number
  *  \param[out] n_errors Number of detected bit errors
  *  \param[out] n_bits_total Total number of bits
@@ -2635,7 +2635,7 @@ static uint8_t gsm0503_tch_ahs_decode_inband(const sbit_t *cB)
 
 /*! Perform channel decoding of a TCH/AFS channel according TS 05.03
  *  \param[out] tch_data Codec frame in RTP payload format
- *  \param[in] bursts buffer containing the symbols of 8 bursts
+ *  \param[in] bursts buffer containing the symbols of 6 bursts
  *  \param[in] odd Is this an odd (1) or even (0) frame number?
  *  \param[in] codec_mode_req is this CMR (1) or CMC (0)
  *  \param[in] codec array of active codecs (active codec set)
@@ -2658,7 +2658,7 @@ int gsm0503_tch_ahs_decode(uint8_t *tch_data, const sbit_t *bursts, int odd,
 
 /*! Perform channel decoding of a TCH/AFS channel according TS 05.03
  *  \param[out] tch_data Codec frame in RTP payload format
- *  \param[in] bursts buffer containing the symbols of 8 bursts
+ *  \param[in] bursts buffer containing the symbols of 6 bursts
  *  \param[in] odd Is this an odd (1) or even (0) frame number?
  *  \param[in] codec_mode_req is this CMR (1) or CMC (0)
  *  \param[in] codec array of active codecs (active codec set)
