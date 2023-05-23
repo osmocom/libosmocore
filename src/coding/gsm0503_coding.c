@@ -1572,16 +1572,14 @@ static void tch_fr_disassemble(ubit_t *b_bits,
 	}
 }
 
-/* assemble a HR codec frame in format as used inside RTP */
+/* assemble a HR codec frame in the canonical format of ETSI TS 101 318 */
 static void tch_hr_reassemble(uint8_t *tch_data, const ubit_t *b_bits)
 {
-	int i, j;
+	int i;
 
-	tch_data[0] = 0x00; /* F = 0, FT = 000 */
-	memset(tch_data + 1, 0, 14);
-
-	for (i = 0, j = 8; i < 112; i++, j++)
-		tch_data[j >> 3] |= (b_bits[i] << (7 - (j & 7)));
+	memset(tch_data, 0, GSM_HR_BYTES);
+	for (i = 0; i < 112; i++)
+		tch_data[i >> 3] |= (b_bits[i] << (7 - (i & 7)));
 }
 
 static void tch_hr_disassemble(ubit_t *b_bits, const uint8_t *tch_data)
@@ -1977,13 +1975,13 @@ coding_efr_fr:
 }
 
 /*! Perform channel decoding of a HR(v1) channel according TS 05.03
- *  \param[out] tch_data Codec frame in RTP payload format
+ *  \param[out] tch_data Codec frame in TS 101 318 canonical format
  *  \param[in] bursts buffer containing the symbols of 8 bursts
  *  \param[in] odd Odd (1) or even (0) frame number
  *  \param[out] n_errors Number of detected bit errors
  *  \param[out] n_bits_total Total number of bits
  *  \returns length of bytes used in \a tch_data output buffer; negative on error */
-int gsm0503_tch_hr_decode(uint8_t *tch_data, const sbit_t *bursts, int odd,
+int gsm0503_tch_hr_decode2(uint8_t *tch_data, const sbit_t *bursts, int odd,
 	int *n_errors, int *n_bits_total)
 {
 	sbit_t iB[912], cB[456], h;
@@ -2050,7 +2048,35 @@ int gsm0503_tch_hr_decode(uint8_t *tch_data, const sbit_t *bursts, int odd,
 
 	tch_hr_reassemble(tch_data, b);
 
-	return 15;
+	return GSM_HR_BYTES;
+}
+
+/*! Perform channel decoding of a HR(v1) channel according TS 05.03,
+ *  deprecated legacy API.
+ *  \param[out] tch_data Codec frame in pseudo-RFC5993 format
+ *  \param[in] bursts buffer containing the symbols of 8 bursts
+ *  \param[in] odd Odd (1) or even (0) frame number
+ *  \param[out] n_errors Number of detected bit errors
+ *  \param[out] n_bits_total Total number of bits
+ *  \returns length of bytes used in \a tch_data output buffer; negative on error
+ *
+ *  The HR1 codec frame format returned by this function is pseudo-RFC5993,
+ *  not true RFC 5993, as there is no SID classification being done
+ *  and the FT bits in the ToC octet are always set to 0 - but this
+ *  arguably-bogus format is the legacy public API.
+ */
+int gsm0503_tch_hr_decode(uint8_t *tch_data, const sbit_t *bursts, int odd,
+	int *n_errors, int *n_bits_total)
+{
+	int rc;
+
+	rc = gsm0503_tch_hr_decode2(tch_data, bursts, odd, n_errors,
+				    n_bits_total);
+	if (rc != GSM_HR_BYTES)
+		return rc;
+	memmove(tch_data + 1, tch_data, GSM_HR_BYTES);
+	tch_data[0] = 0x00;	/* FT=0, note absence of SID classification */
+	return GSM_HR_BYTES_RTP_RFC5993;
 }
 
 /*! Perform channel encoding on a TCH/HS channel according to TS 05.03

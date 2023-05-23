@@ -50,6 +50,9 @@ int gsm0503_tch_fr_decode(uint8_t *tch_data, const sbit_t *bursts, int net_order
 
 int gsm0503_tch_hr_encode(ubit_t *bursts, const uint8_t *tch_data, int len);
 int gsm0503_tch_hr_decode(uint8_t *tch_data, const sbit_t *bursts, int odd,
+	int *n_errors, int *n_bits_total)
+	OSMO_DEPRECATED("Use gsm0503_tch_hr_decode2() instead");
+int gsm0503_tch_hr_decode2(uint8_t *tch_data, const sbit_t *bursts, int odd,
 	int *n_errors, int *n_bits_total);
 
 int gsm0503_tch_afs_encode(ubit_t *bursts, const uint8_t *tch_data, int len,
