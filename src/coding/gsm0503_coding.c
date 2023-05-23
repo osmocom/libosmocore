@@ -1586,10 +1586,10 @@ static void tch_hr_reassemble(uint8_t *tch_data, const ubit_t *b_bits)
 
 static void tch_hr_disassemble(ubit_t *b_bits, const uint8_t *tch_data)
 {
-	int i, j;
+	int i;
 
-	for (i = 0, j = 8; i < 112; i++, j++)
-		b_bits[i] = (tch_data[j >> 3] >> (7 - (j & 7))) & 1;
+	for (i = 0; i < 112; i++)
+		b_bits[i] = (tch_data[i >> 3] >> (7 - (i & 7))) & 1;
 }
 
 /* assemble a EFR codec frame in format as used inside RTP */
@@ -2065,7 +2065,10 @@ int gsm0503_tch_hr_encode(ubit_t *bursts, const uint8_t *tch_data, int len)
 	int i;
 
 	switch (len) {
-	case 15: /* TCH HR */
+	case GSM_HR_BYTES_RTP_RFC5993:	/* TCH HR with RFC 5993 prefix */
+		tch_data++;
+		/* fall-through */
+	case GSM_HR_BYTES:	/* TCH HR in "pure" form */
 		tch_hr_disassemble(b, tch_data);
 
 		tch_hr_b_to_d(d, b);
@@ -2086,7 +2089,6 @@ int gsm0503_tch_hr_encode(ubit_t *bursts, const uint8_t *tch_data, int len)
 			gsm0503_tch_burst_map(&iB[i * 114],
 				&bursts[i * 116], &h, i >> 1);
 		}
-
 		break;
 	case GSM_MACBLOCK_LEN: /* FACCH */
 		_xcch_encode_cB(cB, tch_data);
@@ -2104,7 +2106,6 @@ int gsm0503_tch_hr_encode(ubit_t *bursts, const uint8_t *tch_data, int len)
 			gsm0503_tch_burst_map(&iB[i * 114 + 456],
 				&bursts[i * 116], &h, 1);
 		}
-
 		break;
 	default:
 		return -1;
