@@ -107,6 +107,7 @@ gsm0503_tch_fr_encode;
 gsm0503_tch_fr_decode;
 gsm0503_tch_hr_encode;
 gsm0503_tch_hr_decode;
+gsm0503_tch_hr_decode2;
 gsm0503_tch_afs_encode;
 gsm0503_tch_afs_decode;
 gsm0503_tch_afs_decode_dtx;
