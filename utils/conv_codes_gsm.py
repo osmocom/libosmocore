@@ -68,7 +68,7 @@ conv_codes = [
 
 	# TCH/F4.8 definition
 	ConvolutionalCode(
-		152,
+		148,
 		[
 		    (G1, 1),
 		    (G2, 1),
