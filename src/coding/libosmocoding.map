@@ -140,5 +140,10 @@ gsm0503_tch_hr24_decode;
 gsm0503_tch_fr144_encode;
 gsm0503_tch_fr144_decode;
 
+gsm0503_tch_fr_facch_encode;
+gsm0503_tch_fr_facch_decode;
+gsm0503_tch_hr_facch_encode;
+gsm0503_tch_hr_facch_decode;
+
 local: *;
 };

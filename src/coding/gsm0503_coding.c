@@ -3589,4 +3589,138 @@ int gsm0503_tch_fr144_decode(ubit_t *data, const sbit_t *bursts,
 	return 290;
 }
 
+/*
+ * FACCH/[FH] transcoding
+ */
+
+/*! Perform channel encoding of a FACCH/F data as per section 4.2.
+ *  \param[out] bursts Caller-allocated buffer for symbols of 8 bursts,
+ *                     8 * 2 * 58 == 928 bits total.
+ *  \param[in] data FACCH MAC block to be encoded (GSM_MACBLOCK_LEN).
+ *  \returns 0 in case of success; negative on error */
+int gsm0503_tch_fr_facch_encode(ubit_t *bursts, const uint8_t *data)
+{
+	ubit_t iB[8 * 114], cB[4 * 114];
+	const ubit_t h = 1;
+
+	/* 4.2.1-3 as specified for the SACCH in 4.1.1-3 */
+	_xcch_encode_cB(&cB[0], &data[0]);
+
+	/* 4.2.4 Interleaving: as specified for the TCH/FS in subclause 3.1.3 */
+	gsm0503_tch_fr_interleave(&cB[0], &iB[0]);
+
+	/* 4.2.5 Mapping on a Burst:
+	 * - hu(B)=1 the even numbered bits in the first 4 bursts and
+	 * - hl(B)=1 the odd numbered bits of the last 4 bursts are stolen. */
+	for (unsigned int i = 0; i < 8; i++)
+		gsm0503_tch_burst_map(&iB[i * 114], &bursts[i * 116], &h, i >> 2);
+
+	return 0;
+}
+
+/*! Perform channel decoding of a FACCH/F data as per section 4.2.
+ *  \param[out] data Caller-allocated buffer for decoded FACCH (GSM_MACBLOCK_LEN).
+ *  \param[in] bursts Buffer containing the symbols of 8 bursts,
+ *                     8 * 2 * 58 == 928 bits total.
+ *  \param[out] n_errors Number of detected bit errors.
+ *  \param[out] n_bits_total Total number of bits.
+ *  \returns Number of bytes used in the output buffer; negative on error. */
+int gsm0503_tch_fr_facch_decode(uint8_t *data, const sbit_t *bursts,
+				int *n_errors, int *n_bits_total)
+{
+	sbit_t iB[8 * 114], cB[4 * 114];
+	int steal = 0;
+
+	/* FACCH decision: sum of 4 first hu(B) and 4 last hl(B) soft-bits */
+	for (unsigned int i = 0; i < 4; i++)
+		steal -= bursts[i * 116 + 58]; /* hu(B) */
+	for (unsigned int i = 4; i < 8; i++)
+		steal -= bursts[i * 116 + 57]; /* hl(B) */
+	if (steal <= 0)
+		return -1;
+
+	/* 4.2.5 Mapping on a Burst:
+	 * - hu(B)=1 the even numbered bits in the first 4 bursts and
+	 * - hl(B)=1 the odd numbered bits of the last 4 bursts are stolen. */
+	for (unsigned int i = 0; i < 8; i++)
+		gsm0503_tch_burst_unmap(&iB[i * 114], &bursts[i * 116], NULL, i >> 2);
+
+	/* 4.2.4 Interleaving: as specified for the TCH/FS in subclause 3.1.3 */
+	gsm0503_tch_fr_deinterleave(&cB[0], &iB[0]);
+
+	/* 4.2.1-3 as specified for the SACCH in 4.1.1-3 */
+	if (_xcch_decode_cB(&data[0], &cB[0], n_errors, n_bits_total) != 0)
+		return -1;
+
+	return GSM_MACBLOCK_LEN;
+}
+
+/*! Perform channel encoding of a FACCH/H data as per section 4.3.
+ *  \param[out] bursts Caller-allocated buffer for symbols of 6 bursts,
+ *                     6 * 2 * 58 == 696 bits total.
+ *  \param[in] data FACCH MAC block to be encoded (GSM_MACBLOCK_LEN).
+ *  \returns 0 in case of success; negative on error */
+int gsm0503_tch_hr_facch_encode(ubit_t *bursts, const uint8_t *data)
+{
+	ubit_t iB[8 * 114], cB[4 * 114];
+	const ubit_t h = 1;
+
+	/* 4.3.1-3 as specified for the SACCH in 4.1.1-3 */
+	_xcch_encode_cB(&cB[0], &data[0]);
+
+	/* 4.3.4 Interleaving */
+	gsm0503_tch_fr_interleave(&cB[0], &iB[0]);
+
+	/* 4.3.5 Mapping on a Burst:
+	 * - hu(B)=1 the even numbered bits of the first 2 bursts,
+	 * - hu(B)=1 & hl(B)=1 all bits of the middle 2 bursts and
+	 * - hl(B)=1 the odd numbered bits of the last 2 bursts are stolen. */
+	for (unsigned int i = 0; i < 6; i++)
+		gsm0503_tch_burst_map(&iB[i * 114], &bursts[i * 116], &h, i >> 2);
+	for (unsigned int i = 2; i < 4; i++)
+		gsm0503_tch_burst_map(&iB[i * 114 + 456], &bursts[i * 116], &h, 1);
+
+	return 0;
+}
+
+/*! Perform channel decoding of a FACCH/H data as per section 4.3.
+ *  \param[out] data Caller-allocated buffer for decoded FACCH (GSM_MACBLOCK_LEN).
+ *  \param[in] bursts Buffer containing the symbols of 6 bursts,
+ *                     6 * 2 * 58 == 696 bits total.
+ *  \param[out] n_errors Number of detected bit errors.
+ *  \param[out] n_bits_total Total number of bits.
+ *  \returns Number of bytes used in the output buffer; negative on error. */
+int gsm0503_tch_hr_facch_decode(uint8_t *data, const sbit_t *bursts,
+				int *n_errors, int *n_bits_total)
+{
+	sbit_t iB[8 * 114], cB[4 * 114];
+	int steal = 0;
+
+	/* FACCH decision: sum of 4 first hu(B) and 4 last hl(B) soft-bits */
+	for (unsigned int i = 0; i < 4; i++)
+		steal -= bursts[i * 116 + 58]; /* hu(B) */
+	for (unsigned int i = 2; i < 6; i++)
+		steal -= bursts[i * 116 + 57]; /* hl(B) */
+	if (steal <= 0)
+		return -1;
+
+	/* 4.3.5 Mapping on a Burst:
+	 * - hu(B)=1 the even numbered bits of the first 2 bursts,
+	 * - hu(B)=1 & hl(B)=1 all bits of the middle 2 bursts and
+	 * - hl(B)=1 the odd numbered bits of the last 2 bursts are stolen. */
+	for (unsigned int i = 0; i < 6; i++)
+		gsm0503_tch_burst_unmap(&iB[i * 114], &bursts[i * 116], NULL, i >> 2);
+	for (unsigned int i = 2; i < 4; i++)
+		gsm0503_tch_burst_unmap(&iB[i * 114 + 456], &bursts[i * 116], NULL, 1);
+
+	/* 4.3.4 Interleaving */
+	gsm0503_tch_fr_deinterleave(&cB[0], &iB[0]);
+
+	/* 4.3.1-3 as specified for the SACCH in 4.1.1-3 */
+	if (_xcch_decode_cB(&data[0], &cB[0], n_errors, n_bits_total) != 0)
+		return -1;
+
+	return GSM_MACBLOCK_LEN;
+}
+
 /*! @} */

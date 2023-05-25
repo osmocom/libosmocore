@@ -24,6 +24,7 @@
 #include <osmocom/core/bits.h>
 #include <osmocom/core/utils.h>
 
+#include <osmocom/gsm/protocol/gsm_04_08.h>
 #include <osmocom/coding/gsm0503_coding.h>
 
 #define DUMP_U_AT(b, x, u) do {						\
@@ -308,6 +309,51 @@ static void test_hr(uint8_t *speech, int len)
 		n_errors, n_bits_total, (float)n_errors/n_bits_total);
 
 	OSMO_ASSERT(!memcmp(speech, result, len));
+
+	printf("\n");
+}
+
+static void test_facch(const uint8_t *data, bool half_rate)
+{
+	ubit_t bursts_u[116 * 8 * 2] = { 0 };
+	sbit_t bursts_s[116 * 8 * 2] = { 0 };
+	int rc;
+
+	/* Encode the given FACCH message three times (at different offsets) */
+	printf("%s(FACCH/%c): encoding: %s\n",
+	       __func__, half_rate ? 'H' : 'F',
+	       osmo_hexdump(&data[0], GSM_MACBLOCK_LEN));
+	for (unsigned int i = 0; i < 3; i++) {
+		ubit_t *pos = &bursts_u[116 * 4 * i];
+
+		if (half_rate)
+			rc = gsm0503_tch_hr_facch_encode(pos, &data[0]);
+		else
+			rc = gsm0503_tch_fr_facch_encode(pos, &data[0]);
+		CHECK_RC_OR_RET(rc == 0, "encoding");
+	}
+
+	/* Prepare soft-bits */
+	osmo_ubit2sbit(bursts_s, bursts_u, sizeof(bursts_s));
+
+	/* Decode three FACCH messages (at different offsets) */
+	for (unsigned int i = 0; i < 3; i++) {
+		const sbit_t *pos = &bursts_s[116 * 4 * i];
+		uint8_t result[GSM_MACBLOCK_LEN];
+		int n_errors, n_bits_total;
+
+		if (half_rate)
+			rc = gsm0503_tch_hr_facch_decode(&result[0], pos,
+							 &n_errors, &n_bits_total);
+		else
+			rc = gsm0503_tch_fr_facch_decode(&result[0], pos,
+							 &n_errors, &n_bits_total);
+		CHECK_RC_OR_RET(rc == GSM_MACBLOCK_LEN, "decoding");
+
+		printf("%s(FACCH/%c): decoded (BER=%d/%d): %s\n",
+		       __func__, half_rate ? 'H' : 'F', n_errors, n_bits_total,
+		       osmo_hexdump(result, GSM_MACBLOCK_LEN));
+	}
 
 	printf("\n");
 }
@@ -634,6 +680,13 @@ int main(int argc, char **argv)
 			test_pdtch(&test_macblock[i], 54);
 		}
 	}
+
+	printf("\nTesting FACCH/F codec:\n");
+	for (i = 0; i < ARRAY_SIZE(test_l2); i++)
+		test_facch(test_l2[i], false);
+	printf("\nTesting FACCH/H codec:\n");
+	for (i = 0; i < ARRAY_SIZE(test_l2); i++)
+		test_facch(test_l2[i], true);
 
 	printf("\nTesting CSD functions:\n");
 	for (i = 0; i < ARRAY_SIZE(csd_tests); i++)

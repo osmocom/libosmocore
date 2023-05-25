@@ -368,6 +368,40 @@ S-Bits:
 81 81 81 81 7f 7f 7f 7f 81 81 7f 81 7f 7f 81 7f 81 81 7f 81 7f 7f 7f 7f 81 81 7f 81 81 81 81 7f 7f 7f 7f 81 7f 7f 81 7f 7f 81 7f 7f 7f 7f 7f 81 7f 7f 7f 81 7f 7f 81 81 7f  7f  81  7f 7f 7f 7f 7f 7f 81 81 7f 81 81 7f 81 81 7f 81 7f 7f 7f 81 81 81 81 81 7f 81 81 81 81 7f 7f 81 81 7f 7f 81 81 7f 81 81 7f 7f 7f 7f 7f 81 81 81 81 7f 7f 7f 81 7f 7f 7f 81 
 7f 7f 81 7f 7f 7f 81 81 7f 7f 81 81 7f 81 7f 81 81 7f 7f 81 81 7f 81 81 7f 7f 81 7f 81 81 81 7f 7f 81 7f 7f 7f 81 7f 7f 7f 81 81 7f 81 81 7f 81 7f 81 81 81 7f 7f 7f 7f 7f  81  7f  7f 7f 7f 7f 81 7f 7f 7f 7f 7f 81 7f 7f 81 7f 81 81 7f 7f 7f 81 81 81 81 81 81 81 7f 7f 81 7f 81 81 81 7f 81 7f 81 81 7f 7f 7f 7f 7f 7f 7f 81 81 81 7f 81 81 7f 7f 7f 81 7f 
 
+Testing FACCH/F codec:
+test_facch(FACCH/F): encoding: 03 03 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+test_facch(FACCH/F): decoded (BER=0/456): 03 03 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+test_facch(FACCH/F): decoded (BER=0/456): 03 03 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+test_facch(FACCH/F): decoded (BER=0/456): 03 03 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+
+test_facch(FACCH/F): encoding: a3 af 5f 00 36 43 44 ab d9 6d 7d 62 24 c9 d2 92 fa 27 5d 71 7a 59 a8 
+test_facch(FACCH/F): decoded (BER=0/456): a3 af 5f 00 36 43 44 ab d9 6d 7d 62 24 c9 d2 92 fa 27 5d 71 7a 59 a8 
+test_facch(FACCH/F): decoded (BER=0/456): a3 af 5f 00 36 43 44 ab d9 6d 7d 62 24 c9 d2 92 fa 27 5d 71 7a 59 a8 
+test_facch(FACCH/F): decoded (BER=0/456): a3 af 5f 00 36 43 44 ab d9 6d 7d 62 24 c9 d2 92 fa 27 5d 71 7a 59 a8 
+
+test_facch(FACCH/F): encoding: 01 02 03 00 05 06 07 08 09 0a 0b 0c 0d 0e 0f 10 11 12 13 14 15 16 17 
+test_facch(FACCH/F): decoded (BER=0/456): 01 02 03 00 05 06 07 08 09 0a 0b 0c 0d 0e 0f 10 11 12 13 14 15 16 17 
+test_facch(FACCH/F): decoded (BER=0/456): 01 02 03 00 05 06 07 08 09 0a 0b 0c 0d 0e 0f 10 11 12 13 14 15 16 17 
+test_facch(FACCH/F): decoded (BER=0/456): 01 02 03 00 05 06 07 08 09 0a 0b 0c 0d 0e 0f 10 11 12 13 14 15 16 17 
+
+
+Testing FACCH/H codec:
+test_facch(FACCH/H): encoding: 03 03 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+test_facch(FACCH/H): decoded (BER=0/456): 03 03 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+test_facch(FACCH/H): decoded (BER=0/456): 03 03 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+test_facch(FACCH/H): decoded (BER=0/456): 03 03 01 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
+
+test_facch(FACCH/H): encoding: a3 af 5f 00 36 43 44 ab d9 6d 7d 62 24 c9 d2 92 fa 27 5d 71 7a 59 a8 
+test_facch(FACCH/H): decoded (BER=0/456): a3 af 5f 00 36 43 44 ab d9 6d 7d 62 24 c9 d2 92 fa 27 5d 71 7a 59 a8 
+test_facch(FACCH/H): decoded (BER=0/456): a3 af 5f 00 36 43 44 ab d9 6d 7d 62 24 c9 d2 92 fa 27 5d 71 7a 59 a8 
+test_facch(FACCH/H): decoded (BER=0/456): a3 af 5f 00 36 43 44 ab d9 6d 7d 62 24 c9 d2 92 fa 27 5d 71 7a 59 a8 
+
+test_facch(FACCH/H): encoding: 01 02 03 00 05 06 07 08 09 0a 0b 0c 0d 0e 0f 10 11 12 13 14 15 16 17 
+test_facch(FACCH/H): decoded (BER=0/456): 01 02 03 00 05 06 07 08 09 0a 0b 0c 0d 0e 0f 10 11 12 13 14 15 16 17 
+test_facch(FACCH/H): decoded (BER=0/456): 01 02 03 00 05 06 07 08 09 0a 0b 0c 0d 0e 0f 10 11 12 13 14 15 16 17 
+test_facch(FACCH/H): decoded (BER=0/456): 01 02 03 00 05 06 07 08 09 0a 0b 0c 0d 0e 0f 10 11 12 13 14 15 16 17 
+
+
 Testing CSD functions:
 test_csd(TCH/F9.6): block #0 (pattern 0x00): n_errors=0 / n_bits_total=456
 00000000 00000000 00000000 00000000 00000000 00000000 00000000 00000000

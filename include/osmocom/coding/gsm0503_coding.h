@@ -109,4 +109,12 @@ int gsm0503_tch_fr144_encode(ubit_t *bursts, const ubit_t *data);
 int gsm0503_tch_fr144_decode(ubit_t *data, const sbit_t *bursts,
 			     int *n_errors, int *n_bits_total);
 
+int gsm0503_tch_fr_facch_encode(ubit_t *bursts, const uint8_t *data);
+int gsm0503_tch_fr_facch_decode(uint8_t *data, const sbit_t *bursts,
+				int *n_errors, int *n_bits_total);
+
+int gsm0503_tch_hr_facch_encode(ubit_t *bursts, const uint8_t *data);
+int gsm0503_tch_hr_facch_decode(uint8_t *data, const sbit_t *bursts,
+				int *n_errors, int *n_bits_total);
+
 /*! @} */
