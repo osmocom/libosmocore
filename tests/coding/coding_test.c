@@ -640,10 +640,7 @@ static void test_csd(const struct csd_test_case *tc, bool facch)
 			rc = gsm0503_tch_fr_facch_decode(&data[0], &bursts_s[116 * 4],
 							 &n_errors, &n_bits_total);
 		}
-#if 0
-		/* FIXME: there's something wrong with CSD mapping */
 		CHECK_RC_OR_RET(rc == GSM_MACBLOCK_LEN, "decoding FACCH");
-#endif
 
 		printf("%s(%s): FACCH/%c (pattern 0x2b): n_errors=%d / n_bits_total=%d\n",
 		       __func__, tc->name, tc->half_rate ? 'H' : 'F', n_errors, n_bits_total);

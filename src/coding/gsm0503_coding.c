@@ -3298,13 +3298,23 @@ int gsm0503_sch_encode(ubit_t *burst, const uint8_t *sb_info)
 
 static inline void _tch_csd_burst_map(ubit_t *burst, const ubit_t *iB)
 {
-	for (unsigned int i = 0; i < 57; i++) {
-		burst[i] |= iB[i];
-		burst[59 + i] |= iB[57 + i];
+	unsigned int i;
+
+	/* hu(B): copy *even* numbered bits if not stolen by FACCH */
+	if (burst[58] == 0) {
+		for (i = 0; i < 57; i += 2)
+			burst[i] |= iB[i];
+		for (i = 58; i < 114; i += 2)
+			burst[i + 2] |= iB[i];
 	}
 
-	burst[57] = 0; /* hl(B) */
-	burst[58] = 0; /* hu(B) */
+	/* hl(B): copy *odd* numbered bits if not stolen by FACCH */
+	if (burst[57] == 0) {
+		for (i = 1; i < 57; i += 2)
+			burst[i] |= iB[i];
+		for (i = 57; i < 114; i += 2)
+			burst[i + 2] |= iB[i];
+	}
 }
 
 /*! Perform channel encoding of a TCH/F9.6 channel as per section 3.3.
