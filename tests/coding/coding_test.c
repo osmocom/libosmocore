@@ -299,7 +299,7 @@ static void test_hr(uint8_t *speech, int len)
 	memset(bursts_s + 6, 0, 20);
 
 	/* Decode, correcting errors */
-	rc = gsm0503_tch_hr_decode(result, bursts_s, 0,
+	rc = gsm0503_tch_hr_decode2(result, bursts_s, 0,
 		&n_errors, &n_bits_total);
 	CHECK_RC_OR_RET(rc == len, "decoding");
 
@@ -487,7 +487,7 @@ static const sbit_t test_rach_11bit[6][36] = {
 
 uint8_t test_speech_fr[33];
 uint8_t test_speech_efr[31];
-uint8_t test_speech_hr[15];
+uint8_t test_speech_hr[14];
 
 int main(int argc, char **argv)
 {
@@ -533,7 +533,6 @@ int main(int argc, char **argv)
 
 	for (i = 0; i < sizeof(test_speech_hr); i++)
 		test_speech_hr[i] = i * 17;
-	test_speech_hr[0] = 0x00;
 	test_hr(test_speech_hr, sizeof(test_speech_hr));
 
 	for (i = 0; i < len_l2; i++)
