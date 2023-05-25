@@ -540,6 +540,7 @@ struct csd_test_case {
 	unsigned int num_bits;
 	int (*enc_fn)(ubit_t *out, const ubit_t *in);
 	int (*dec_fn)(ubit_t *out, const sbit_t *in, int *ne, int *nb);
+	bool half_rate;
 };
 
 static const struct csd_test_case csd_tests[] = {
@@ -560,12 +561,14 @@ static const struct csd_test_case csd_tests[] = {
 		.num_bits = 4 * 60,
 		.enc_fn = &gsm0503_tch_hr48_encode,
 		.dec_fn = &gsm0503_tch_hr48_decode,
+		.half_rate = true,
 	},
 	{
 		.name = "TCH/H2.4",
 		.num_bits = 2 * 72,
 		.enc_fn = &gsm0503_tch_hr24_encode,
 		.dec_fn = &gsm0503_tch_hr24_decode,
+		.half_rate = true,
 	},
 	{
 		.name = "TCH/F14.4",
@@ -575,7 +578,7 @@ static const struct csd_test_case csd_tests[] = {
 	},
 };
 
-static void test_csd(const struct csd_test_case *tc)
+static void test_csd(const struct csd_test_case *tc, bool facch)
 {
 	const uint8_t patterns[] = { 0x00, 0xaa, 0xff };
 	ubit_t bursts_u[116 * (22 + 8)] = { 0 };
@@ -590,9 +593,17 @@ static void test_csd(const struct csd_test_case *tc)
 
 		rc = tc->enc_fn(&bursts_u[i * 4 * 116], &data[0]);
 		CHECK_RC_OR_RET(rc == 0, "encoding");
-	}
 
-	/* TODO: test FACCH stealing */
+		/* Test FACCH bitstealing */
+		if (facch && i == 1) {
+			memset(&data, GSM_MACBLOCK_PADDING, GSM_MACBLOCK_LEN);
+			if (tc->half_rate)
+				rc = gsm0503_tch_hr_facch_encode(&bursts_u[116 * 4], &data[0]);
+			else
+				rc = gsm0503_tch_fr_facch_encode(&bursts_u[116 * 4], &data[0]);
+			CHECK_RC_OR_RET(rc == 0, "encoding FACCH");
+		}
+	}
 
 	/* Prepare soft-bits */
 	osmo_ubit2sbit(&bursts_s[0], &bursts_u[0], sizeof(bursts_s));
@@ -616,6 +627,27 @@ static void test_csd(const struct csd_test_case *tc)
 			printf("%c", data[j] ? '1' : '0');
 		}
 		printf("\n");
+	}
+
+	/* Test FACCH bitstealing if requested */
+	if (facch) {
+		int n_errors = 0, n_bits_total = 0;
+
+		if (tc->half_rate) {
+			rc = gsm0503_tch_hr_facch_decode(&data[0], &bursts_s[116 * 4],
+							 &n_errors, &n_bits_total);
+		} else {
+			rc = gsm0503_tch_fr_facch_decode(&data[0], &bursts_s[116 * 4],
+							 &n_errors, &n_bits_total);
+		}
+#if 0
+		/* FIXME: there's something wrong with CSD mapping */
+		CHECK_RC_OR_RET(rc == GSM_MACBLOCK_LEN, "decoding FACCH");
+#endif
+
+		printf("%s(%s): FACCH/%c (pattern 0x2b): n_errors=%d / n_bits_total=%d\n",
+		       __func__, tc->name, tc->half_rate ? 'H' : 'F', n_errors, n_bits_total);
+		printf("%s\n", osmo_hexdump(&data[0], GSM_MACBLOCK_LEN));
 	}
 
 	printf("\n");
@@ -688,9 +720,12 @@ int main(int argc, char **argv)
 	for (i = 0; i < ARRAY_SIZE(test_l2); i++)
 		test_facch(test_l2[i], true);
 
-	printf("\nTesting CSD functions:\n");
+	printf("\nTesting CSD functions (no FACCH):\n");
 	for (i = 0; i < ARRAY_SIZE(csd_tests); i++)
-		test_csd(&csd_tests[i]);
+		test_csd(&csd_tests[i], false);
+	printf("\nTesting CSD functions (with FACCH):\n");
+	for (i = 0; i < ARRAY_SIZE(csd_tests); i++)
+		test_csd(&csd_tests[i], true);
 
 	printf("Success\n");
 
