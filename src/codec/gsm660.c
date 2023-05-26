@@ -352,6 +352,42 @@ enum osmo_gsm631_sid_class osmo_efr_sid_classify(const uint8_t *rtp_payload)
 		return OSMO_GSM631_SID_CLASS_VALID;
 }
 
+/*! Reset the SID field of a potentially corrupted, but still valid GSM-EFR
+ *  SID frame in RTP encoding to its pristine state (full SID code word).
+ *  \param[in] rtp_payload Buffer with RTP payload - must be writable!
+ *
+ *  Per GSM 06.62 section 5.3, a freshly minted SID frame consists of 58 bits
+ *  of comfort noise parameters (LSF and 4 times fixed codebook gain), 95 bits
+ *  of SID code word (all 1s) and 91 unused bits (all 0s).  Network elements
+ *  that receive SID frames from call leg A uplink and need to retransmit them
+ *  on leg B downlink should "rejuvenate" received SID frames prior to
+ *  retransmission by resetting the SID field to its pristine state of all 1s;
+ *  this function does the job.
+ *
+ *  Potential TODO: it would be nice to also zero out the remaining 91 bits
+ *  which the spec leaves as reserved, clearing out leg A radio bit errors -
+ *  but do we really need to?
+ */
+void osmo_efr_sid_reset(uint8_t *rtp_payload)
+{
+	/* set all 95 SID code word bits to 1 */
+	rtp_payload[6]  |= 0x6F;
+	rtp_payload[7]   = 0xFF;
+	rtp_payload[8]   = 0xFF;
+	rtp_payload[9]  |= 0x80;
+	rtp_payload[12] |= 0x3B;
+	rtp_payload[13]  = 0xFF;
+	rtp_payload[14]  = 0xFF;
+	rtp_payload[15] |= 0xE0;
+	rtp_payload[19]  = 0xFF;
+	rtp_payload[20]  = 0xFF;
+	rtp_payload[21]  = 0xFF;
+	rtp_payload[25]  = 0xFF;
+	rtp_payload[26] |= 0xFC;
+	rtp_payload[27]  = 0xFF;
+	rtp_payload[28] |= 0xC0;
+}
+
 /*! Preen potentially-SID EFR codec frame in RTP format, ensuring that it is
  *  either a speech frame or a valid SID, and if the latter, making it a
  *  perfect, error-free SID frame.
@@ -369,23 +405,8 @@ bool osmo_efr_sid_preen(uint8_t *rtp_payload)
 	case OSMO_GSM631_SID_CLASS_INVALID:
 		return false;
 	case OSMO_GSM631_SID_CLASS_VALID:
-		/* "Rejuvenate" this SID frame, correcting any errors:
-		 * set all 95 SID code word bits to 1. */
-		rtp_payload[6]  |= 0x6F;
-		rtp_payload[7]   = 0xFF;
-		rtp_payload[8]   = 0xFF;
-		rtp_payload[9]  |= 0x80;
-		rtp_payload[12] |= 0x3B;
-		rtp_payload[13]  = 0xFF;
-		rtp_payload[14]  = 0xFF;
-		rtp_payload[15] |= 0xE0;
-		rtp_payload[19]  = 0xFF;
-		rtp_payload[20]  = 0xFF;
-		rtp_payload[21]  = 0xFF;
-		rtp_payload[25]  = 0xFF;
-		rtp_payload[26] |= 0xFC;
-		rtp_payload[27]  = 0xFF;
-		rtp_payload[28] |= 0xC0;
+		/* "Rejuvenate" this SID frame, correcting any errors */
+		osmo_efr_sid_reset(rtp_payload);
 		return true;
 	default:
 		/* There are only 3 possible SID classifications per GSM 06.81

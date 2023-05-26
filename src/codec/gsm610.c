@@ -404,6 +404,35 @@ enum osmo_gsm631_sid_class osmo_fr_sid_classify(const uint8_t *rtp_payload)
 		return OSMO_GSM631_SID_CLASS_VALID;
 }
 
+/*! Reset the SID field and the unused bits of a potentially corrupted,
+ *  but still valid GSM-FR SID frame in RTP encoding to their pristine state.
+ *  \param[in] rtp_payload Buffer with RTP payload - must be writable!
+ *
+ *  Per GSM 06.12 section 5.2, a freshly minted SID frame carries 60 bits
+ *  of comfort noise parameters (LARc and 4 times Xmaxc), while the remaining
+ *  200 bits are all zeros; the latter 200 all-0 bits further break down into
+ *  95 bits of SID field (checked by receivers to detect SID) and 105 unused
+ *  bits which receivers are told to ignore.  Network elements that receive
+ *  SID frames from call leg A uplink and need to retransmit them on leg B
+ *  downlink should "rejuvenate" received SID frames prior to retransmission;
+ *  this function does the job.
+ */
+void osmo_fr_sid_reset(uint8_t *rtp_payload)
+{
+	uint8_t *p, sub;
+
+	p = rtp_payload + 5;	/* skip magic+LARc */
+	for (sub = 0; sub < 4; sub++) {
+		*p++ = 0;
+		*p++ &= 0x1F;	/* upper 5 bits of Xmaxc field */
+		*p++ &= 0x80;	/* and the lsb spilling into the next byte */
+		*p++ = 0;
+		*p++ = 0;
+		*p++ = 0;
+		*p++ = 0;
+	}
+}
+
 /*! Preen potentially-SID FR codec frame in RTP format, ensuring that it is
  *  either a speech frame or a valid SID, and if the latter, making it a
  *  perfect, error-free SID frame.
@@ -413,7 +442,6 @@ enum osmo_gsm631_sid_class osmo_fr_sid_classify(const uint8_t *rtp_payload)
 bool osmo_fr_sid_preen(uint8_t *rtp_payload)
 {
 	enum osmo_gsm631_sid_class sidc;
-	uint8_t *p, sub;
 
 	sidc = osmo_fr_sid_classify(rtp_payload);
 	switch (sidc) {
@@ -422,20 +450,8 @@ bool osmo_fr_sid_preen(uint8_t *rtp_payload)
 	case OSMO_GSM631_SID_CLASS_INVALID:
 		return false;
 	case OSMO_GSM631_SID_CLASS_VALID:
-		/* "Rejuvenate" this SID frame, correcting any errors:
-		 * zero out all bits that aren't LARc or Xmaxc, thereby
-		 * clearing all SID code word bits and all unused/reserved
-		 * bits. */
-		p = rtp_payload + 5;	/* skip magic+LARc */
-		for (sub = 0; sub < 4; sub++) {
-			*p++ = 0;
-			*p++ &= 0x1F;
-			*p++ &= 0x80;
-			*p++ = 0;
-			*p++ = 0;
-			*p++ = 0;
-			*p++ = 0;
-		}
+		/* "Rejuvenate" this SID frame, correcting any errors */
+		osmo_fr_sid_reset(rtp_payload);
 		return true;
 	default:
 		/* There are only 3 possible SID classifications per GSM 06.31
