@@ -21,6 +21,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include <osmocom/core/bitvec.h>
 #include <osmocom/core/utils.h>
@@ -284,4 +285,32 @@ bool osmo_hr_check_sid(const uint8_t *rtp_payload, size_t payload_len)
 			return false;
 
 	return true;
+}
+
+/*! Reset the SID field of a potentially corrupted, but still valid GSM-HR
+ *  SID frame in TS 101 318 format to its pristine state (full SID codeword).
+ *  \param[in] rtp_payload Buffer with RTP payload - must be writable!
+ *
+ *  Per GSM 06.22 section 5.3, a freshly minted SID frame consists of 33 bits
+ *  of comfort noise parameters and 79 bits of SID codeword (all 1s).  Network
+ *  elements that receive SID frames from call leg A uplink and need to
+ *  retransmit them on leg B downlink should "rejuvenate" received SID frames
+ *  prior to retransmission by resetting the SID field to its pristine state
+ *  of all 1s; this function does the job.
+ *
+ *  Important note: because of HR-specific quirks (lack of exact bit counting
+ *  rules in GSM 06.41 spec compared to 06.31 & 06.81, plus the fact that such
+ *  bit counting can only be done efficiently in the GSM 05.03 channel decoder
+ *  prior to bit reordering based on voiced or unvoiced mode), a generic
+ *  (usable from any network element) SID classification function similar to
+ *  osmo_{fr,efr}_sid_classify() unfortunately cannot exist for HR.  Therefore,
+ *  the triggering condition for invoking this SID rejuvenation/reset function
+ *  can only be an out-of-band SID indication, as in GSM 08.61 TRAU frames
+ *  or RFC 5993 ToC octet.
+ */
+void osmo_hr_sid_reset(uint8_t *rtp_payload)
+{
+	/* set all 79 SID codeword bits to 1 */
+	rtp_payload[4] |= 0x7F;
+	memset(rtp_payload + 5, 0xFF, 9);
 }

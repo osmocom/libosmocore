@@ -131,6 +131,7 @@ bool osmo_fr_sid_preen(uint8_t *rtp_payload);
 bool osmo_efr_sid_preen(uint8_t *rtp_payload);
 
 void osmo_fr_sid_reset(uint8_t *rtp_payload);
+void osmo_hr_sid_reset(uint8_t *rtp_payload);
 void osmo_efr_sid_reset(uint8_t *rtp_payload);
 
 int osmo_amr_rtp_enc(uint8_t *payload, uint8_t cmr, enum osmo_amr_type ft,
