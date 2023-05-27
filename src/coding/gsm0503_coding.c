@@ -1941,6 +1941,20 @@ coding_efr_fr:
 		osmo_conv_encode(&gsm0503_tch_fr, conv, cB);
 		h = 0;
 		break;
+	case 0:			/* no data, induce BFI in the receiver */
+		/* Do the same thing that sysmoBTS PHY does when fed a 0-length
+		 * payload for DL: set all u(k) bits to 0, and do the same
+		 * with all class 2 bits.  This operation is NOT the same as
+		 * an FR codec frame of all zero bits: with all-zeros d(k) input
+		 * the CRC3 function will produce 111 output, whereas we
+		 * transmit 000 in those parity bits too.  The result will be
+		 * an induced BFI (bad frame indication) condition in the
+		 * receiver, for both TCH/FS and TCH/EFS decoders. */
+		memset(conv, 0, sizeof(conv));
+		memset(cB + 378, 0, 78);
+		osmo_conv_encode(&gsm0503_tch_fr, conv, cB);
+		h = 0;
+		break;
 	case GSM_MACBLOCK_LEN: /* FACCH */
 		_xcch_encode_cB(cB, tch_data);
 		h = 1;
@@ -2084,8 +2098,9 @@ int gsm0503_tch_hr_encode(ubit_t *bursts, const uint8_t *tch_data, int len)
 		tch_hr_b_to_d(d, b);
 		osmo_crc8gen_set_bits(&gsm0503_tch_fr_crc3, d + 73, 22, p);
 		tch_hr_reorder(conv, d, p);
-		osmo_conv_encode(&gsm0503_tch_hr, conv, cB);
 		memcpy(cB + 211, d + 95, 17);
+hr_conv_coding:
+		osmo_conv_encode(&gsm0503_tch_hr, conv, cB);
 		h = 0;
 		gsm0503_tch_hr_interleave(cB, iB);
 		for (i = 0; i < 4; i++) {
@@ -2093,6 +2108,11 @@ int gsm0503_tch_hr_encode(ubit_t *bursts, const uint8_t *tch_data, int len)
 				&bursts[i * 116], &h, i >> 1);
 		}
 		break;
+	case 0:			/* no data, induce BFI in the receiver */
+		/* see comments in gsm0503_tch_fr_encode() - same deal here */
+		memset(conv, 0, sizeof(conv));
+		memset(cB + 211, 0, 17);
+		goto hr_conv_coding;
 	case GSM_MACBLOCK_LEN: /* FACCH */
 		_xcch_encode_cB(cB, tch_data);
 		h = 1;
