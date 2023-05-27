@@ -1925,40 +1925,25 @@ int gsm0503_tch_fr_encode(ubit_t *bursts, const uint8_t *tch_data,
 
 	switch (len) {
 	case GSM_EFR_BYTES: /* TCH EFR */
-
 		tch_efr_disassemble(s, tch_data);
-
 		tch_efr_protected(s, b);
-
 		osmo_crc8gen_set_bits(&gsm0503_tch_efr_crc8, b, 65, p);
-
 		tch_efr_reorder(w, s, p);
-
 		tch_efr_w_to_d(d, w);
-
 		goto coding_efr_fr;
 	case GSM_FR_BYTES: /* TCH FR */
 		tch_fr_disassemble(w, tch_data, net_order);
-
 		tch_fr_b_to_d(d, w);
-
 coding_efr_fr:
 		osmo_crc8gen_set_bits(&gsm0503_tch_fr_crc3, d, 50, p);
-
 		tch_fr_reorder(conv, d, p);
-
 		memcpy(cB + 378, d + 182, 78);
-
 		osmo_conv_encode(&gsm0503_tch_fr, conv, cB);
-
 		h = 0;
-
 		break;
 	case GSM_MACBLOCK_LEN: /* FACCH */
 		_xcch_encode_cB(cB, tch_data);
-
 		h = 1;
-
 		break;
 	default:
 		return -1;
@@ -2096,21 +2081,13 @@ int gsm0503_tch_hr_encode(ubit_t *bursts, const uint8_t *tch_data, int len)
 		/* fall-through */
 	case GSM_HR_BYTES:	/* TCH HR in "pure" form */
 		tch_hr_disassemble(b, tch_data);
-
 		tch_hr_b_to_d(d, b);
-
 		osmo_crc8gen_set_bits(&gsm0503_tch_fr_crc3, d + 73, 22, p);
-
 		tch_hr_reorder(conv, d, p);
-
 		osmo_conv_encode(&gsm0503_tch_hr, conv, cB);
-
 		memcpy(cB + 211, d + 95, 17);
-
 		h = 0;
-
 		gsm0503_tch_hr_interleave(cB, iB);
-
 		for (i = 0; i < 4; i++) {
 			gsm0503_tch_burst_map(&iB[i * 114],
 				&bursts[i * 116], &h, i >> 1);
@@ -2118,16 +2095,12 @@ int gsm0503_tch_hr_encode(ubit_t *bursts, const uint8_t *tch_data, int len)
 		break;
 	case GSM_MACBLOCK_LEN: /* FACCH */
 		_xcch_encode_cB(cB, tch_data);
-
 		h = 1;
-
 		gsm0503_tch_fr_interleave(cB, iB);
-
 		for (i = 0; i < 6; i++) {
 			gsm0503_tch_burst_map(&iB[i * 114],
 				&bursts[i * 116], &h, i >> 2);
 		}
-
 		for (i = 2; i < 4; i++) {
 			gsm0503_tch_burst_map(&iB[i * 114 + 456],
 				&bursts[i * 116], &h, 1);
