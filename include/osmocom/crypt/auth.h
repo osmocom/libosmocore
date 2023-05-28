@@ -33,6 +33,7 @@ enum osmo_auth_algo {
 	OSMO_AUTH_ALG_XOR_3G,
 	OSMO_AUTH_ALG_MILENAGE,
 	OSMO_AUTH_ALG_XOR_2G,
+	OSMO_AUTH_ALG_TUAK,
 	_OSMO_AUTH_ALG_NUM,
 };
 /* Backwards-compatibility. We used to call XOR-3G just "XOR" which became ambiguous when

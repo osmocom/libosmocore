@@ -328,6 +328,7 @@ static const struct value_string auth_alg_vals[] = {
 	{ OSMO_AUTH_ALG_XOR_3G, "XOR-3G" },
 	{ OSMO_AUTH_ALG_MILENAGE, "MILENAGE" },
 	{ OSMO_AUTH_ALG_XOR_2G, "XOR-2G" },
+	{ OSMO_AUTH_ALG_TUAK, "TUAK" },
 	{ 0, NULL }
 };
 
