@@ -363,4 +363,33 @@ void osmo_auth_c3(uint8_t kc[], const uint8_t ck[], const uint8_t ik[])
 		kc[i] = ck[i] ^ ck[i + 8] ^ ik[i] ^ ik[i + 8];
 }
 
+/*! Derive GSM SRES from UMTS [X]RES (auth function c2 from 3GPP TS 33.103 Section 6.8.1.2
+ *  \param[out] sres GSM SRES value, 4 byte target buffer
+ *  \param[in] res UMTS XRES, 4..16 bytes input buffer
+ *  \param[in] res_len length of res parameter (in bytes)
+ *  \param[in] sres_deriv_func SRES derivation function (1 or 2, see 3GPP TS 55.205 Section 4
+ */
+void osmo_auth_c2(uint8_t sres[4], const uint8_t *res, size_t res_len, uint8_t sres_deriv_func)
+{
+	uint8_t xres[16];
+
+	OSMO_ASSERT(sres_deriv_func == 1 || sres_deriv_func == 2);
+	OSMO_ASSERT(res_len <= sizeof(xres));
+
+	memcpy(xres, res, res_len);
+
+	/* zero-pad the end, if XRES is < 16 bytes */
+	if (res_len < sizeof(xres))
+		memset(xres+res_len, 0, sizeof(xres)-res_len);
+
+	if (sres_deriv_func == 1) {
+		/* SRES derivation function #1 */
+		for (unsigned int i = 0; i < 4; i++)
+			sres[i] = xres[i] ^ xres[4+i] ^ xres[8+i] ^ xres[12+i];
+	} else {
+		/* SRES derivation function #2 */
+		memcpy(sres, xres, 4);
+	}
+}
+
 /*! @} */

@@ -144,5 +144,6 @@ const char *osmo_auth_alg_name(enum osmo_auth_algo alg);
 enum osmo_auth_algo osmo_auth_alg_parse(const char *name);
 
 void osmo_auth_c3(uint8_t kc[], const uint8_t ck[], const uint8_t ik[]);
+void osmo_auth_c2(uint8_t sres[4], const uint8_t *res, size_t res_len, uint8_t sres_deriv_func);
 
 /* @} */
