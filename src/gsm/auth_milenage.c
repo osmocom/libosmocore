@@ -55,6 +55,8 @@ static int milenage_gen_vec(struct osmo_auth_vector *vec,
 	uint64_t seq_1;
 	int rc;
 
+	OSMO_ASSERT(aud->algo == OSMO_AUTH_ALG_MILENAGE);
+
 	opc = gen_opc_if_needed(aud, gen_opc);
 	if (!opc)
 		return -1;
@@ -149,6 +151,8 @@ static int milenage_gen_vec_auts(struct osmo_auth_vector *vec,
 	uint8_t gen_opc[16];
 	const uint8_t *opc;
 	int rc;
+
+	OSMO_ASSERT(aud->algo == OSMO_AUTH_ALG_MILENAGE);
 
 	opc = gen_opc_if_needed(aud, gen_opc);
 

@@ -48,6 +48,8 @@ static int xor2g_gen_vec(struct osmo_auth_vector *vec,
 {
 	uint8_t res1[16];
 
+	OSMO_ASSERT(aud->algo == OSMO_AUTH_ALG_XOR_2G);
+
 	if (aud->type != OSMO_AUTH_TYPE_GSM)
 		return -ENOTSUP;
 

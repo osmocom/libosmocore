@@ -50,6 +50,8 @@ static int xor_gen_vec(struct osmo_auth_vector *vec,
 	uint8_t ak[6], xmac[8];
 	int i;
 
+	OSMO_ASSERT(aud->algo == OSMO_AUTH_ALG_XOR_3G);
+
 	/* Step 1: xdout = (ki or k) ^ rand */
 	if (aud->type == OSMO_AUTH_TYPE_GSM)
 		xor(xdout, aud->u.gsm.ki, _rand, sizeof(xdout));
@@ -133,6 +135,8 @@ static int xor_gen_vec_auts(struct osmo_auth_vector *vec,
 	uint8_t xdout[16], cdout[8];
 	uint8_t ak[6], xmac[8];
 	uint8_t sqnms[6];
+
+	OSMO_ASSERT(aud->algo == OSMO_AUTH_ALG_XOR_3G);
 
 	/* Step 1: xdout = (ki or k) ^ rand */
 	if (aud->type == OSMO_AUTH_TYPE_GSM)
