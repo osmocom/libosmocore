@@ -167,7 +167,7 @@ int osmo_auth_3g_from_2g(struct osmo_auth_vector *vec)
 }
 
 /*! Generate authentication vector
- *  \param[out] vec Generated authentication vector
+ *  \param[out] vec Generated authentication vector. See below!
  *  \param[in] aud Subscriber-specific key material
  *  \param[in] _rand Random challenge to be used
  *  \returns 0 on success, negative error on failure
@@ -176,7 +176,12 @@ int osmo_auth_3g_from_2g(struct osmo_auth_vector *vec)
  * computing authentication triples/quintuples based on the permanent
  * subscriber data and a random value.  The result is what is forwarded
  * by the AUC via HLR and VLR to the MSC which will then be able to
- * invoke authentication with the MS
+ * invoke authentication with the MS.
+ *
+ * Contrary to the older osmo_auth_gen_vec(), the caller must specify
+ * the desired RES length in the vec->res_len field prior to calling
+ * this function.  The requested length must match the capabilities of
+ * the chosen algorithm (e.g. 4/8 for MILENAGE).
  */
 int osmo_auth_gen_vec2(struct osmo_auth_vector *vec,
 		       struct osmo_sub_auth_data2 *aud,
@@ -216,6 +221,12 @@ int osmo_auth_gen_vec(struct osmo_auth_vector *vec,
 	struct osmo_sub_auth_data2 aud2;
 	int rc;
 
+	if (aud->type == OSMO_AUTH_TYPE_UMTS) {
+		/* old API callers are not expected to initialize this struct field,
+		 * and always expect an 8-byte RES value */
+		vec->res_len = 8;
+	}
+
 	rc = auth_data2auth_data2(&aud2, aud);
 	if (rc < 0)
 		return rc;
@@ -228,7 +239,7 @@ int osmo_auth_gen_vec(struct osmo_auth_vector *vec,
 }
 
 /*! Generate authentication vector and re-sync sequence
- *  \param[out] vec Generated authentication vector
+ *  \param[out] vec Generated authentication vector. See below!
  *  \param[in] aud Subscriber-specific key material
  *  \param[in] auts AUTS value sent by the SIM/MS
  *  \param[in] rand_auts RAND value sent by the SIM/MS
@@ -241,6 +252,11 @@ int osmo_auth_gen_vec(struct osmo_auth_vector *vec,
  * AUTS and RAND values returned by the SIM/MS.  This special variant is
  * needed if the sequence numbers between MS and AUC have for some
  * reason become different.
+ *
+ * Contrary to the older osmo_auth_gen_vec_auts(), the caller must specify
+ * the desired RES length in the vec->res_len field prior to calling
+ * this function.  The requested length must match the capabilities of
+ * the chosen algorithm (e.g. 4/8 for MILENAGE).
  */
 int osmo_auth_gen_vec_auts2(struct osmo_auth_vector *vec,
 			    struct osmo_sub_auth_data2 *aud,
@@ -284,6 +300,12 @@ int osmo_auth_gen_vec_auts(struct osmo_auth_vector *vec,
 {
 	struct osmo_sub_auth_data2 aud2;
 	int rc;
+
+	if (aud->type == OSMO_AUTH_TYPE_UMTS) {
+		/* old API callers are not expected to initialize this struct field,
+		 * and always expect an 8-byte RES value */
+		vec->res_len = 8;
+	}
 
 	rc = auth_data2auth_data2(&aud2, aud);
 	if (rc < 0)

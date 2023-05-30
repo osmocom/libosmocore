@@ -62,6 +62,8 @@ static int milenage_gen_vec(struct osmo_auth_vector *vec,
 		return -EINVAL;
 	if (aud->u.umts.opc_len != 16)
 		return -EINVAL;
+	if (vec->res_len != 4 && vec->res_len != 8)
+		return -EINVAL;
 
 	opc = gen_opc_if_needed(aud, gen_opc);
 	if (!opc)
@@ -135,7 +137,7 @@ static int milenage_gen_vec(struct osmo_auth_vector *vec,
 	milenage_generate(opc, aud->u.umts.amf, aud->u.umts.k,
 			  sqn, _rand,
 			  vec->autn, vec->ik, vec->ck, vec->res, &res_len);
-	vec->res_len = res_len;
+
 	rc = gsm_milenage(opc, aud->u.umts.k, _rand, vec->sres, vec->kc);
 	if (rc < 0)
 		return rc;

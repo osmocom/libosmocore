@@ -98,6 +98,7 @@ static void help(void)
 		"-s  --sqn\tSpecify SQN (only for 3G)\n"
 		"-i  --ind\tSpecify IND slot for new SQN after AUTS (only for 3G)\n"
 		"-l  --ind-len\tSpecify IND bit length (default=5) (only for 3G)\n"
+		"-L  --res-len\tSpecify RES byte length (default=8) (only for 3G)\n"
 		"-A  --auts\tSpecify AUTS (only for 3G)\n"
 		"-r  --rand\tSpecify random value\n"
 		"-I  --ipsec\tOutput in triplets.dat format for strongswan\n");
@@ -123,10 +124,12 @@ int main(int argc, char **argv)
 	int fmt_triplets_dat = 0;
 	uint64_t ind_mask = 0;
 
-	printf("osmo-auc-gen (C) 2011-2012 by Harald Welte\n");
+	printf("osmo-auc-gen (C) 2011-2023 by Harald Welte\n");
 	printf("This is FREE SOFTWARE with ABSOLUTELY NO WARRANTY\n\n");
 
 	memset(_auts, 0, sizeof(_auts));
+	memset(vec, 0, sizeof(*vec));
+	vec->res_len = 8; /* default */
 
 	while (1) {
 		int c;
@@ -141,6 +144,7 @@ int main(int argc, char **argv)
 			{ "sqn", 1, 0, 's' },
 			{ "ind", 1, 0, 'i' },
 			{ "ind-len", 1, 0, 'l' },
+			{ "res-len", 1, 0, 'L' },
 			{ "rand", 1, 0, 'r' },
 			{ "auts", 1, 0, 'A' },
 			{ "help", 0, 0, 'h' },
@@ -149,7 +153,7 @@ int main(int argc, char **argv)
 
 		rc = 0;
 
-		c = getopt_long(argc, argv, "23a:k:o:f:s:i:l:r:hO:A:I", long_options,
+		c = getopt_long(argc, argv, "23a:k:o:f:s:i:l:L:r:hO:A:I", long_options,
 				&option_index);
 
 		if (c == -1)
@@ -265,6 +269,14 @@ int main(int argc, char **argv)
 			}
 			test_aud.u.umts.ind_bitlen = atoi(optarg);
 			break;
+		case 'L':
+			rc = atoi(optarg);
+			if (rc != 4 && rc != 8 && rc != 16) {
+				fprintf(stderr, "Invalid RES length %u\n", rc);
+				exit(2);
+			}
+			vec->res_len = rc;
+			break;
 		case 'r':
 			rc = osmo_hexparse(optarg, _rand, sizeof(_rand));
 			if (rc != sizeof(_rand)) {
@@ -312,8 +324,6 @@ int main(int argc, char **argv)
 			" -2 or -3, as well as an algorithm to use.\n");
 		exit(2);
 	}
-
-	memset(vec, 0, sizeof(*vec));
 
 	if (test_aud.type == OSMO_AUTH_TYPE_UMTS) {
 		uint64_t seq_1 = 1LL << test_aud.u.umts.ind_bitlen;

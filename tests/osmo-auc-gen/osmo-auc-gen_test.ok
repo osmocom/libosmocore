@@ -1,7 +1,7 @@
 
 
 > osmo-auc-gen -3 -a milenage -r 6a61050765caa32c90371370e5d6dc2d -k 1dc4f974325cce611e54f516dc1fec56 -o 2a48162ff3edca4adf0b7b5e527d6c16 -s 0
-osmo-auc-gen (C) 2011-2012 by Harald Welte
+osmo-auc-gen (C) 2011-2023 by Harald Welte
 This is FREE SOFTWARE with ABSOLUTELY NO WARRANTY
 
 RAND:	6a61050765caa32c90371370e5d6dc2d
@@ -18,7 +18,7 @@ IND:	0
 
 
 > osmo-auc-gen -3 -a milenage -r 6a61050765caa32c90371370e5d6dc2d -k 1dc4f974325cce611e54f516dc1fec56 -o 2a48162ff3edca4adf0b7b5e527d6c16 -s 1
-osmo-auc-gen (C) 2011-2012 by Harald Welte
+osmo-auc-gen (C) 2011-2023 by Harald Welte
 This is FREE SOFTWARE with ABSOLUTELY NO WARRANTY
 
 RAND:	6a61050765caa32c90371370e5d6dc2d
@@ -35,7 +35,7 @@ IND:	1
 
 
 > osmo-auc-gen -3 -a milenage -r 6a61050765caa32c90371370e5d6dc2d -k 1dc4f974325cce611e54f516dc1fec56 -o 2a48162ff3edca4adf0b7b5e527d6c16 -s 23
-osmo-auc-gen (C) 2011-2012 by Harald Welte
+osmo-auc-gen (C) 2011-2023 by Harald Welte
 This is FREE SOFTWARE with ABSOLUTELY NO WARRANTY
 
 RAND:	6a61050765caa32c90371370e5d6dc2d
@@ -52,7 +52,7 @@ IND:	23
 
 
 > osmo-auc-gen -3 -a milenage -r 1dc4f974325cce611e54f516dc1fec56 -k 2a48162ff3edca4adf0b7b5e527d6c16 -o 6a61050765caa32c90371370e5d6dc2d -s 42
-osmo-auc-gen (C) 2011-2012 by Harald Welte
+osmo-auc-gen (C) 2011-2023 by Harald Welte
 This is FREE SOFTWARE with ABSOLUTELY NO WARRANTY
 
 RAND:	1dc4f974325cce611e54f516dc1fec56
@@ -69,7 +69,7 @@ IND:	10
 
 
 > osmo-auc-gen -3 -a milenage -r 2a48162ff3edca4adf0b7b5e527d6c16 -k 6a61050765caa32c90371370e5d6dc2d -o 1dc4f974325cce611e54f516dc1fec56 -s 99
-osmo-auc-gen (C) 2011-2012 by Harald Welte
+osmo-auc-gen (C) 2011-2023 by Harald Welte
 This is FREE SOFTWARE with ABSOLUTELY NO WARRANTY
 
 RAND:	2a48162ff3edca4adf0b7b5e527d6c16
@@ -86,7 +86,7 @@ IND:	3
 
 
 > osmo-auc-gen -3 -a milenage -r 6a61050765caa32c90371370e5d6dc2d -k 2a48162ff3edca4adf0b7b5e527d6c16 -o 1dc4f974325cce611e54f516dc1fec56 -s 281474976710655
-osmo-auc-gen (C) 2011-2012 by Harald Welte
+osmo-auc-gen (C) 2011-2023 by Harald Welte
 This is FREE SOFTWARE with ABSOLUTELY NO WARRANTY
 
 RAND:	6a61050765caa32c90371370e5d6dc2d
@@ -103,7 +103,7 @@ IND:	31
 
 
 > osmo-auc-gen -3 -a milenage -r 39fa2f4e3d523d8619a73b4f65c3e14d -k EB215756028D60E3275E613320AEC880 -o FB2A3D1B360F599ABAB99DB8669F8308 -A 979498b1f72d3e28c59fa2e72f9c
-osmo-auc-gen (C) 2011-2012 by Harald Welte
+osmo-auc-gen (C) 2011-2023 by Harald Welte
 This is FREE SOFTWARE with ABSOLUTELY NO WARRANTY
 
 RAND:	39fa2f4e3d523d8619a73b4f65c3e14d
@@ -121,7 +121,7 @@ SQN.MS:	23
 
 
 > osmo-auc-gen -3 -a milenage -r 39fa2f4e3d523d8619a73b4f65c3e14d -k EB215756028D60E3275E613320AEC880 -o FB2A3D1B360F599ABAB99DB8669F8308 -A 979498b1f72d3e28c59fa2e72f9c --ind 5
-osmo-auc-gen (C) 2011-2012 by Harald Welte
+osmo-auc-gen (C) 2011-2023 by Harald Welte
 This is FREE SOFTWARE with ABSOLUTELY NO WARRANTY
 
 RAND:	39fa2f4e3d523d8619a73b4f65c3e14d
@@ -139,7 +139,7 @@ SQN.MS:	23
 
 
 > osmo-auc-gen -3 -a milenage -r 39fa2f4e3d523d8619a73b4f65c3e14d -k EB215756028D60E3275E613320AEC880 -o FB2A3D1B360F599ABAB99DB8669F8308 -A 979498b1f72d3e28c59fa2e72f9c --ind 23
-osmo-auc-gen (C) 2011-2012 by Harald Welte
+osmo-auc-gen (C) 2011-2023 by Harald Welte
 This is FREE SOFTWARE with ABSOLUTELY NO WARRANTY
 
 RAND:	39fa2f4e3d523d8619a73b4f65c3e14d
@@ -157,7 +157,7 @@ SQN.MS:	23
 
 
 > osmo-auc-gen -3 -a milenage -r 39fa2f4e3d523d8619a73b4f65c3e14d -k EB215756028D60E3275E613320AEC880 -o FB2A3D1B360F599ABAB99DB8669F8308 -A 979498b1f72d3e28c59fa2e72f9c --ind 31
-osmo-auc-gen (C) 2011-2012 by Harald Welte
+osmo-auc-gen (C) 2011-2023 by Harald Welte
 This is FREE SOFTWARE with ABSOLUTELY NO WARRANTY
 
 RAND:	39fa2f4e3d523d8619a73b4f65c3e14d
@@ -175,7 +175,7 @@ SQN.MS:	23
 
 
 > osmo-auc-gen -3 -a milenage -r 39fa2f4e3d523d8619a73b4f65c3e14d -k EB215756028D60E3275E613320AEC880 -o FB2A3D1B360F599ABAB99DB8669F8308 -A 979498b1f72d3e28c59fa2e72f9c --ind-len 0
-osmo-auc-gen (C) 2011-2012 by Harald Welte
+osmo-auc-gen (C) 2011-2023 by Harald Welte
 This is FREE SOFTWARE with ABSOLUTELY NO WARRANTY
 
 RAND:	39fa2f4e3d523d8619a73b4f65c3e14d
@@ -193,7 +193,7 @@ SQN.MS:	23
 
 
 > osmo-auc-gen -3 -a milenage -r 39fa2f4e3d523d8619a73b4f65c3e14d -k EB215756028D60E3275E613320AEC880 -o FB2A3D1B360F599ABAB99DB8669F8308 -A 979498b1f72d3e28c59fa2e72f9c --ind-len 1
-osmo-auc-gen (C) 2011-2012 by Harald Welte
+osmo-auc-gen (C) 2011-2023 by Harald Welte
 This is FREE SOFTWARE with ABSOLUTELY NO WARRANTY
 
 RAND:	39fa2f4e3d523d8619a73b4f65c3e14d
@@ -211,7 +211,7 @@ SQN.MS:	23
 
 
 > osmo-auc-gen -3 -a milenage -r 39fa2f4e3d523d8619a73b4f65c3e14d -k EB215756028D60E3275E613320AEC880 -o FB2A3D1B360F599ABAB99DB8669F8308 -A 979498b1f72d3e28c59fa2e72f9c --ind-len 1 --ind 1
-osmo-auc-gen (C) 2011-2012 by Harald Welte
+osmo-auc-gen (C) 2011-2023 by Harald Welte
 This is FREE SOFTWARE with ABSOLUTELY NO WARRANTY
 
 RAND:	39fa2f4e3d523d8619a73b4f65c3e14d
@@ -229,7 +229,7 @@ SQN.MS:	23
 
 
 > osmo-auc-gen -3 -a milenage -r 39fa2f4e3d523d8619a73b4f65c3e14d -k EB215756028D60E3275E613320AEC880 -o FB2A3D1B360F599ABAB99DB8669F8308 -A 979498b1f72d3e28c59fa2e72f9c --ind-len 8
-osmo-auc-gen (C) 2011-2012 by Harald Welte
+osmo-auc-gen (C) 2011-2023 by Harald Welte
 This is FREE SOFTWARE with ABSOLUTELY NO WARRANTY
 
 RAND:	39fa2f4e3d523d8619a73b4f65c3e14d
@@ -247,7 +247,7 @@ SQN.MS:	23
 
 
 > osmo-auc-gen -3 -a milenage -r 39fa2f4e3d523d8619a73b4f65c3e14d -k EB215756028D60E3275E613320AEC880 -o FB2A3D1B360F599ABAB99DB8669F8308 -A 979498b1f72d3e28c59fa2e72f9c --ind-len 8 --ind 1
-osmo-auc-gen (C) 2011-2012 by Harald Welte
+osmo-auc-gen (C) 2011-2023 by Harald Welte
 This is FREE SOFTWARE with ABSOLUTELY NO WARRANTY
 
 RAND:	39fa2f4e3d523d8619a73b4f65c3e14d
@@ -266,27 +266,27 @@ SQN.MS:	23
 
 expecting error:
 > osmo-auc-gen -3 -a milenage -r 39fa2f4e3d523d8619a73b4f65c3e14d -k EB215756028D60E3275E613320AEC880 -o FB2A3D1B360F599ABAB99DB8669F8308 -A 979498b1f72d3e28c59fa2e72f9c --ind -1
-osmo-auc-gen (C) 2011-2012 by Harald Welte
+osmo-auc-gen (C) 2011-2023 by Harald Welte
 This is FREE SOFTWARE with ABSOLUTELY NO WARRANTY
 
 
 
 expecting error:
 > osmo-auc-gen -3 -a milenage -r 39fa2f4e3d523d8619a73b4f65c3e14d -k EB215756028D60E3275E613320AEC880 -o FB2A3D1B360F599ABAB99DB8669F8308 -A 979498b1f72d3e28c59fa2e72f9c --ind 32
-osmo-auc-gen (C) 2011-2012 by Harald Welte
+osmo-auc-gen (C) 2011-2023 by Harald Welte
 This is FREE SOFTWARE with ABSOLUTELY NO WARRANTY
 
 
 
 expecting error:
 > osmo-auc-gen -3 -a milenage -r 39fa2f4e3d523d8619a73b4f65c3e14d -k EB215756028D60E3275E613320AEC880 -o FB2A3D1B360F599ABAB99DB8669F8308 -A 979498b1f72d3e28c59fa2e72f9c --ind 42
-osmo-auc-gen (C) 2011-2012 by Harald Welte
+osmo-auc-gen (C) 2011-2023 by Harald Welte
 This is FREE SOFTWARE with ABSOLUTELY NO WARRANTY
 
 
 
 expecting error:
 > osmo-auc-gen -3 -a milenage -r 39fa2f4e3d523d8619a73b4f65c3e14d -k EB215756028D60E3275E613320AEC880 -o FB2A3D1B360F599ABAB99DB8669F8308 -A 979498b1f72d3e28c59fa2e72f9c --ind-len 0 --ind 1
-osmo-auc-gen (C) 2011-2012 by Harald Welte
+osmo-auc-gen (C) 2011-2023 by Harald Welte
 This is FREE SOFTWARE with ABSOLUTELY NO WARRANTY
 

@@ -91,7 +91,7 @@ struct osmo_auth_vector {
 	uint8_t ck[OSMO_A5_MAX_KEY_LEN_BYTES];		/*!< ciphering key */
 	uint8_t ik[OSMO_A5_MAX_KEY_LEN_BYTES];		/*!< integrity key */
 	uint8_t res[16];	/*!< authentication result */
-	uint8_t res_len;	/*!< length (in bytes) of res: 8..16 bytes */
+	uint8_t res_len;	/*!< length (in bytes) of res: 4..16 bytes */
 	uint8_t kc[8];		/*!< Kc for GSM encryption (A5) */
 	uint8_t sres[4];	/*!< authentication result for GSM */
 	uint32_t auth_types;	/*!< bitmask of OSMO_AUTH_TYPE_* */
