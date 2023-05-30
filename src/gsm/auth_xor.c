@@ -43,7 +43,7 @@ static void xor(uint8_t *out, const uint8_t *a, const uint8_t *b, size_t len)
 
 /* 3GPP TS 34.108, section 8.1.2.1 */
 static int xor_gen_vec(struct osmo_auth_vector *vec,
-		       struct osmo_sub_auth_data *aud,
+		       struct osmo_sub_auth_data2 *aud,
 		       const uint8_t *_rand)
 {
 	uint8_t xdout[16], cdout[8];
@@ -125,7 +125,7 @@ static int xor_gen_vec(struct osmo_auth_vector *vec,
 
 /* 3GPP TS 34.108, section 8.1.2.2 */
 static int xor_gen_vec_auts(struct osmo_auth_vector *vec,
-			    struct osmo_sub_auth_data *aud,
+			    struct osmo_sub_auth_data2 *aud,
 			    const uint8_t *auts,
 			    const uint8_t *rand_auts,
 			    const uint8_t *_rand)

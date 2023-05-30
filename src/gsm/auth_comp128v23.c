@@ -29,7 +29,7 @@
  */
 
 static int c128v2_gen_vec(struct osmo_auth_vector *vec,
-			  struct osmo_sub_auth_data *aud,
+			  struct osmo_sub_auth_data2 *aud,
 			  const uint8_t *_rand)
 {
 	comp128v2(aud->u.gsm.ki, _rand, vec->sres, vec->kc);
@@ -46,7 +46,7 @@ static struct osmo_auth_impl c128v2_alg = {
 };
 
 static int c128v3_gen_vec(struct osmo_auth_vector *vec,
-			  struct osmo_sub_auth_data *aud,
+			  struct osmo_sub_auth_data2 *aud,
 			  const uint8_t *_rand)
 {
 	comp128v3(aud->u.gsm.ki, _rand, vec->sres, vec->kc);

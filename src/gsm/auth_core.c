@@ -1,4 +1,4 @@
-/* (C) 2010-2012 by Harald Welte <laforge@gnumonks.org>
+/* (C) 2010-2023 by Harald Welte <laforge@gnumonks.org>
  *
  * All Rights Reserved
  *
@@ -35,6 +35,35 @@
  * \file auth_core.c */
 
 static LLIST_HEAD(osmo_auths);
+
+/* generate auth_data2 from auth_data (for legacy API/ABI compatibility */
+static int auth_data2auth_data2(struct osmo_sub_auth_data2 *out, const struct osmo_sub_auth_data *in)
+{
+	out->type = in->type;
+	out->algo = in->algo;
+	switch (in->type) {
+	case OSMO_AUTH_TYPE_NONE:
+		return 0;
+	case OSMO_AUTH_TYPE_GSM:
+		memcpy(out->u.gsm.ki, in->u.gsm.ki, sizeof(out->u.gsm.ki));
+		break;
+	case OSMO_AUTH_TYPE_UMTS:
+		memcpy(out->u.umts.opc, in->u.umts.opc, sizeof(in->u.umts.opc));
+		out->u.umts.opc_len = sizeof(in->u.umts.opc);
+		memcpy(out->u.umts.k, in->u.umts.k, sizeof(in->u.umts.k));
+		out->u.umts.k_len = sizeof(in->u.umts.k);
+		memcpy(out->u.umts.amf, in->u.umts.amf, sizeof(out->u.umts.amf));
+		out->u.umts.sqn = in->u.umts.sqn;
+		out->u.umts.opc_is_op = in->u.umts.opc_is_op;
+		out->u.umts.ind_bitlen = in->u.umts.ind_bitlen;
+		out->u.umts.ind = in->u.umts.ind;
+		out->u.umts.sqn_ms = in->u.umts.sqn_ms;
+		break;
+	default:
+		return -EINVAL;
+	}
+	return 0;
+}
 
 static struct osmo_auth_impl *selected_auths[_OSMO_AUTH_ALG_NUM];
 
@@ -149,9 +178,9 @@ int osmo_auth_3g_from_2g(struct osmo_auth_vector *vec)
  * by the AUC via HLR and VLR to the MSC which will then be able to
  * invoke authentication with the MS
  */
-int osmo_auth_gen_vec(struct osmo_auth_vector *vec,
-		      struct osmo_sub_auth_data *aud,
-		      const uint8_t *_rand)
+int osmo_auth_gen_vec2(struct osmo_auth_vector *vec,
+		       struct osmo_sub_auth_data2 *aud,
+		       const uint8_t *_rand)
 {
 	struct osmo_auth_impl *impl = selected_auths[aud->algo];
 	int rc;
@@ -160,6 +189,71 @@ int osmo_auth_gen_vec(struct osmo_auth_vector *vec,
 		return -ENOENT;
 
 	rc = impl->gen_vec(vec, aud, _rand);
+	if (rc < 0)
+		return rc;
+
+	memcpy(vec->rand, _rand, sizeof(vec->rand));
+
+	return 0;
+}
+
+/*! Generate authentication vector
+ *  \param[out] vec Generated authentication vector
+ *  \param[in] aud Subscriber-specific key material
+ *  \param[in] _rand Random challenge to be used
+ *  \returns 0 on success, negative error on failure
+ *
+ * This function performs the core cryptographic function of the AUC,
+ * computing authentication triples/quintuples based on the permanent
+ * subscriber data and a random value.  The result is what is forwarded
+ * by the AUC via HLR and VLR to the MSC which will then be able to
+ * invoke authentication with the MS
+ */
+int osmo_auth_gen_vec(struct osmo_auth_vector *vec,
+		      struct osmo_sub_auth_data *aud,
+		      const uint8_t *_rand)
+{
+	struct osmo_sub_auth_data2 aud2;
+	int rc;
+
+	rc = auth_data2auth_data2(&aud2, aud);
+	if (rc < 0)
+		return rc;
+
+	rc = osmo_auth_gen_vec2(vec, &aud2, _rand);
+	if (aud->type == OSMO_AUTH_TYPE_UMTS)
+		aud->u.umts.sqn = aud2.u.umts.sqn;
+
+	return rc;
+}
+
+/*! Generate authentication vector and re-sync sequence
+ *  \param[out] vec Generated authentication vector
+ *  \param[in] aud Subscriber-specific key material
+ *  \param[in] auts AUTS value sent by the SIM/MS
+ *  \param[in] rand_auts RAND value sent by the SIM/MS
+ *  \param[in] _rand Random challenge to be used to generate vector
+ *  \returns 0 on success, negative error on failure
+ *
+ * This function performs a special variant of the core cryptographic
+ * function of the AUC: computing authentication triples/quintuples
+ * based on the permanent subscriber data, a random value as well as the
+ * AUTS and RAND values returned by the SIM/MS.  This special variant is
+ * needed if the sequence numbers between MS and AUC have for some
+ * reason become different.
+ */
+int osmo_auth_gen_vec_auts2(struct osmo_auth_vector *vec,
+			    struct osmo_sub_auth_data2 *aud,
+			    const uint8_t *auts, const uint8_t *rand_auts,
+			    const uint8_t *_rand)
+{
+	struct osmo_auth_impl *impl = selected_auths[aud->algo];
+	int rc;
+
+	if (!impl || !impl->gen_vec_auts)
+		return -ENOENT;
+
+	rc = impl->gen_vec_auts(vec, aud, auts, rand_auts, _rand);
 	if (rc < 0)
 		return rc;
 
@@ -188,19 +282,20 @@ int osmo_auth_gen_vec_auts(struct osmo_auth_vector *vec,
 			   const uint8_t *auts, const uint8_t *rand_auts,
 			   const uint8_t *_rand)
 {
-	struct osmo_auth_impl *impl = selected_auths[aud->algo];
+	struct osmo_sub_auth_data2 aud2;
 	int rc;
 
-	if (!impl || !impl->gen_vec_auts)
-		return -ENOENT;
-
-	rc = impl->gen_vec_auts(vec, aud, auts, rand_auts, _rand);
+	rc = auth_data2auth_data2(&aud2, aud);
 	if (rc < 0)
 		return rc;
 
-	memcpy(vec->rand, _rand, sizeof(vec->rand));
+	rc = osmo_auth_gen_vec_auts2(vec, &aud2, auts, rand_auts, _rand);
+	if (aud->type == OSMO_AUTH_TYPE_UMTS) {
+		aud->u.umts.sqn = aud2.u.umts.sqn;
+		aud->u.umts.sqn_ms = aud2.u.umts.sqn_ms;
+	}
 
-	return 0;
+	return rc;
 }
 
 static const struct value_string auth_alg_vals[] = {

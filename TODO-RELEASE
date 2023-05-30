@@ -13,3 +13,5 @@ libosmovty	drop API		drop struct vty_parent_node from public API, it should neve
 libosmocore ADD     new API osmo_io_*()
 libosmocoding	ADD	new gsm0503_tch_hr_decode2() public API, previous API
 			gsm0503_tch_hr_decode() marked as deprecated
+libosmogsm	ADD	new osmo_sub_auth_data2 / osmo_auth_gen_vec2 / osmo_auth_gen_vec_auts2
+libosmogsm	MODIFY	osmo_auth_impl callback function signature change. No known external users

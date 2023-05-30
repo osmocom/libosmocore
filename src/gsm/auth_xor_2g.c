@@ -43,8 +43,8 @@ static void xor(uint8_t *out, const uint8_t *a, const uint8_t *b, size_t len)
 
 /* GSM XOR-2G algorithm as specified in Annex 4 (A.4.1.2) of 3GPP TS 51.010-1. */
 static int xor2g_gen_vec(struct osmo_auth_vector *vec,
-		       struct osmo_sub_auth_data *aud,
-		       const uint8_t *_rand)
+			 struct osmo_sub_auth_data2 *aud,
+			 const uint8_t *_rand)
 {
 	uint8_t res1[16];
 

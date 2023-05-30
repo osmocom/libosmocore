@@ -28,7 +28,7 @@
  *  @{
  */
 
-static const uint8_t *gen_opc_if_needed(const struct osmo_sub_auth_data *aud, uint8_t *gen_opc)
+static const uint8_t *gen_opc_if_needed(const struct osmo_sub_auth_data2 *aud, uint8_t *gen_opc)
 {
 	int rc;
 
@@ -43,7 +43,7 @@ static const uint8_t *gen_opc_if_needed(const struct osmo_sub_auth_data *aud, ui
 }
 
 static int milenage_gen_vec(struct osmo_auth_vector *vec,
-			    struct osmo_sub_auth_data *aud,
+			    struct osmo_sub_auth_data2 *aud,
 			    const uint8_t *_rand)
 {
 	size_t res_len = sizeof(vec->res);
@@ -141,7 +141,7 @@ static int milenage_gen_vec(struct osmo_auth_vector *vec,
 }
 
 static int milenage_gen_vec_auts(struct osmo_auth_vector *vec,
-				 struct osmo_sub_auth_data *aud,
+				 struct osmo_sub_auth_data2 *aud,
 				 const uint8_t *auts, const uint8_t *rand_auts,
 				 const uint8_t *_rand)
 {
