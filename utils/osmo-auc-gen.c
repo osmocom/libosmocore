@@ -1,7 +1,7 @@
 /*! \file osmo-auc-gen.c
  * GSM/GPRS/3G authentication testing tool. */
 /*
- * (C) 2010-2021 by Harald Welte <laforge@gnumonks.org>
+ * (C) 2010-2023 by Harald Welte <laforge@gnumonks.org>
  *
  * All Rights Reserved
  *
@@ -80,7 +80,7 @@ static void dump_auth_vec(struct osmo_auth_vector *vec)
 	}
 }
 
-static struct osmo_sub_auth_data test_aud = {
+static struct osmo_sub_auth_data2 test_aud = {
 	.type = OSMO_AUTH_TYPE_NONE,
 	.algo = OSMO_AUTH_ALG_NONE,
 };
@@ -174,10 +174,21 @@ int main(int argc, char **argv)
 			case OSMO_AUTH_TYPE_GSM:
 				rc = osmo_hexparse(optarg, test_aud.u.gsm.ki,
 						   sizeof(test_aud.u.gsm.ki));
+				if (rc != sizeof(test_aud.u.gsm.ki)) {
+					fprintf(stderr, "Invalid Ki length %d\n", rc);
+					exit(2);
+				}
 				break;
 			case OSMO_AUTH_TYPE_UMTS:
 				rc = osmo_hexparse(optarg, test_aud.u.umts.k,
 						   sizeof(test_aud.u.umts.k));
+				/* 3GPP TS 33.102 6.3.7: "The authentication key (K) shall have a length of
+				 * 128 bits or 256 bits." */
+				if (rc != 16 && rc != 32) {
+					fprintf(stderr, "Invalid K length %d\n", rc);
+					exit(2);
+				}
+				test_aud.u.umts.k_len = rc;
 				break;
 			default:
 				fprintf(stderr, "please specify 2g/3g first!\n");
@@ -190,6 +201,11 @@ int main(int argc, char **argv)
 			}
 			rc = osmo_hexparse(optarg, test_aud.u.umts.opc,
 					   sizeof(test_aud.u.umts.opc));
+			if (rc != 16 && rc != 32) {
+				fprintf(stderr, "Invalid OPC length %d\n", rc);
+				exit(2);
+			}
+			test_aud.u.umts.opc_len = rc;
 			test_aud.u.umts.opc_is_op = 0;
 			break;
 		case 'O':
@@ -199,6 +215,11 @@ int main(int argc, char **argv)
 			}
 			rc = osmo_hexparse(optarg, test_aud.u.umts.opc,
 					   sizeof(test_aud.u.umts.opc));
+			if (rc != 16 && rc != 32) {
+				fprintf(stderr, "Invalid OP length %d\n", rc);
+				exit(2);
+			}
+			test_aud.u.umts.opc_len = rc;
 			test_aud.u.umts.opc_is_op = 1;
 			break;
 		case 'A':
@@ -216,6 +237,10 @@ int main(int argc, char **argv)
 			}
 			rc = osmo_hexparse(optarg, test_aud.u.umts.amf,
 					   sizeof(test_aud.u.umts.amf));
+			if (rc != 2) {
+				fprintf(stderr, "Invalid AMF length %d\n", rc);
+				exit(2);
+			}
 			break;
 		case 's':
 			if (test_aud.type != OSMO_AUTH_TYPE_UMTS) {
@@ -242,6 +267,10 @@ int main(int argc, char **argv)
 			break;
 		case 'r':
 			rc = osmo_hexparse(optarg, _rand, sizeof(_rand));
+			if (rc != sizeof(_rand)) {
+				fprintf(stderr, "Invalid RAND length %d\n", rc);
+				exit(2);
+			}
 			rand_is_set = 1;
 			break;
 		case 'I':
@@ -316,9 +345,9 @@ int main(int argc, char **argv)
 	}
 
 	if (!auts_is_set)
-		rc = osmo_auth_gen_vec(vec, &test_aud, _rand);
+		rc = osmo_auth_gen_vec2(vec, &test_aud, _rand);
 	else
-		rc = osmo_auth_gen_vec_auts(vec, &test_aud, _auts, _rand, _rand);
+		rc = osmo_auth_gen_vec_auts2(vec, &test_aud, _auts, _rand, _rand);
 	if (rc < 0) {
 		if (!auts_is_set)
 			fprintf(stderr, "error generating auth vector\n");
