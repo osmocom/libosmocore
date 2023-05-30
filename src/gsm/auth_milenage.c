@@ -19,6 +19,7 @@
  *
  */
 
+#include <errno.h>
 #include <osmocom/crypt/auth.h>
 #include <osmocom/core/bits.h>
 #include "milenage/common.h"
@@ -56,6 +57,11 @@ static int milenage_gen_vec(struct osmo_auth_vector *vec,
 	int rc;
 
 	OSMO_ASSERT(aud->algo == OSMO_AUTH_ALG_MILENAGE);
+
+	if (aud->u.umts.k_len != 16)
+		return -EINVAL;
+	if (aud->u.umts.opc_len != 16)
+		return -EINVAL;
 
 	opc = gen_opc_if_needed(aud, gen_opc);
 	if (!opc)
@@ -153,6 +159,11 @@ static int milenage_gen_vec_auts(struct osmo_auth_vector *vec,
 	int rc;
 
 	OSMO_ASSERT(aud->algo == OSMO_AUTH_ALG_MILENAGE);
+
+	if (aud->u.umts.k_len != 16)
+		return -EINVAL;
+	if (aud->u.umts.opc_len != 16)
+		return -EINVAL;
 
 	opc = gen_opc_if_needed(aud, gen_opc);
 

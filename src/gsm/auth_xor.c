@@ -55,9 +55,11 @@ static int xor_gen_vec(struct osmo_auth_vector *vec,
 	/* Step 1: xdout = (ki or k) ^ rand */
 	if (aud->type == OSMO_AUTH_TYPE_GSM)
 		xor(xdout, aud->u.gsm.ki, _rand, sizeof(xdout));
-	else if (aud->type == OSMO_AUTH_TYPE_UMTS)
+	else if (aud->type == OSMO_AUTH_TYPE_UMTS) {
+		if (aud->u.umts.k_len != 16)
+			return -EINVAL;
 		xor(xdout, aud->u.umts.k, _rand, sizeof(xdout));
-	else
+	} else
 		return -ENOTSUP;
 
 	/**
@@ -141,9 +143,11 @@ static int xor_gen_vec_auts(struct osmo_auth_vector *vec,
 	/* Step 1: xdout = (ki or k) ^ rand */
 	if (aud->type == OSMO_AUTH_TYPE_GSM)
 		xor(xdout, aud->u.gsm.ki, _rand, sizeof(xdout));
-	else if (aud->type == OSMO_AUTH_TYPE_UMTS)
+	else if (aud->type == OSMO_AUTH_TYPE_UMTS) {
+		if (aud->u.umts.k_len != 16)
+			return -EINVAL;
 		xor(xdout, aud->u.umts.k, _rand, sizeof(xdout));
-	else
+	} else
 		return -ENOTSUP;
 
 	/* Step 2: ak = xdout[2-8] */
