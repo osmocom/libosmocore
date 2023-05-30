@@ -54,7 +54,6 @@ static int milenage_gen_vec(struct osmo_auth_vector *vec,
 	uint8_t sqn[6];
 	uint64_t ind_mask;
 	uint64_t seq_1;
-	int rc;
 
 	OSMO_ASSERT(aud->algo == OSMO_AUTH_ALG_MILENAGE);
 
@@ -138,9 +137,8 @@ static int milenage_gen_vec(struct osmo_auth_vector *vec,
 			  sqn, _rand,
 			  vec->autn, vec->ik, vec->ck, vec->res, &res_len);
 
-	rc = gsm_milenage(opc, aud->u.umts.k, _rand, vec->sres, vec->kc);
-	if (rc < 0)
-		return rc;
+	osmo_auth_c3(vec->kc, vec->ck, vec->ik);
+	osmo_auth_c2(vec->sres, vec->res, vec->res_len, 1);
 
 	vec->auth_types = OSMO_AUTH_TYPE_UMTS | OSMO_AUTH_TYPE_GSM;
 
