@@ -1302,6 +1302,14 @@ struct gsm48_imm_ass_rej {
 	uint8_t rest[0];
 } __attribute__ ((packed));
 
+/* Section 9.1.21b */
+struct gsm48_notification_nch {
+	uint8_t l2_plen;
+	uint8_t proto_discr;
+	uint8_t msg_type;
+	uint8_t data[0];
+} __attribute__((packed));
+
 /* Section 9.1.22 */
 struct gsm48_paging1 {
 #if OSMO_IS_LITTLE_ENDIAN
