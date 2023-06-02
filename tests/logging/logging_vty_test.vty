@@ -268,6 +268,10 @@ logging_vty_test# logging print timestamp date-packed
 logging_vty_test# log-test
 19790923205500423423 DAA DEBUG :)
 
+logging_vty_test# logging print timestamp date
+logging_vty_test# log-test
+1979-09-23,20:55:00.423423 DAA DEBUG :)
+
 logging_vty_test# logging print timestamp none
 logging_vty_test# log-test
 DAA DEBUG :)
