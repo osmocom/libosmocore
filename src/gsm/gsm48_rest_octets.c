@@ -76,7 +76,7 @@ static const struct nch_pos si1ro_nch_positions[] = {
 
 	[0x07] = {2,  0},
 	[0x08] = {2,  1},
-	[0x08] = {2,  2},
+	[0x09] = {2,  2},
 	[0x0a] = {2,  3},
 	[0x0b] = {2,  4},
 	[0x0c] = {2,  5},
