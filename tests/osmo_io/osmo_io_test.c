@@ -49,7 +49,7 @@ static void read_cb(struct osmo_io_fd *iofd, int rc, struct msgb *msg)
 	talloc_free(msg);
 }
 
-static void write_cb(struct osmo_io_fd *iofd, int rc, const struct msgb *msg)
+static void write_cb(struct osmo_io_fd *iofd, int rc, struct msgb *msg)
 {
 	printf("%s: write() returned rc=%d\n", osmo_iofd_get_name(iofd), rc);
 }
@@ -109,7 +109,7 @@ static void recvfrom_cb(struct osmo_io_fd *iofd, int rc, struct msgb *msg,
 	talloc_free(msg);
 }
 
-static void sendto_cb(struct osmo_io_fd *iofd, int rc, const struct msgb *msg,
+static void sendto_cb(struct osmo_io_fd *iofd, int rc, struct msgb *msg,
 		      const struct osmo_sockaddr *daddr)
 {
 	printf("%s: sendto() returned rc=%d\n", osmo_iofd_get_name(iofd), rc);

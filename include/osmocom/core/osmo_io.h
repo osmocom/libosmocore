@@ -41,7 +41,7 @@ struct osmo_io_ops {
 			void (*read_cb)(struct osmo_io_fd *iofd, int res, struct msgb *msg);
 			/*! call-back function when write has completed on fd */
 			void (*write_cb)(struct osmo_io_fd *iofd, int res,
-					 const struct msgb *msg);
+					 struct msgb *msg);
 			/*! call-back function to segment the data at message boundaries.
 			 *  Needs to return the size of the next message. If it returns
 			 *  -EAGAIN or a value larger than msgb_length() (message is incomplete)
@@ -58,7 +58,7 @@ struct osmo_io_ops {
 					    const struct osmo_sockaddr *saddr);
 			/*! call-back function emulating sendto */
 			void (*sendto_cb)(struct osmo_io_fd *iofd, int res,
-					  const struct msgb *msg,
+					  struct msgb *msg,
 					  const struct osmo_sockaddr *daddr);
 		};
 	};

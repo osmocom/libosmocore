@@ -223,7 +223,7 @@ out:
 }
 
 static void handle_nsip_sendto(struct osmo_io_fd *iofd, int res,
-			       const struct msgb *msg,
+			       struct msgb *msg,
 			       const struct osmo_sockaddr *daddr)
 {
 	struct gprs_ns2_vc_bind *bind = osmo_iofd_get_data(iofd);
