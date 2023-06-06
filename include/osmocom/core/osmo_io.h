@@ -52,14 +52,14 @@ struct osmo_io_ops {
 
 		/* mode OSMO_IO_FD_MODE_RECVFROM_SENDTO: */
 		struct {
-			/*! call-back function emulating sendto */
-			void (*sendto_cb)(struct osmo_io_fd *iofd, int res,
-					  const struct msgb *msg,
-					  const struct osmo_sockaddr *daddr);
 			/*! call-back function emulating recvfrom */
 			void (*recvfrom_cb)(struct osmo_io_fd *iofd, int res,
 					    struct msgb *msg,
 					    const struct osmo_sockaddr *saddr);
+			/*! call-back function emulating sendto */
+			void (*sendto_cb)(struct osmo_io_fd *iofd, int res,
+					  const struct msgb *msg,
+					  const struct osmo_sockaddr *daddr);
 		};
 	};
 };
