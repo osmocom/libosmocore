@@ -337,9 +337,6 @@ int gprs_ns2_ip_bind(struct gprs_ns2_inst *nsi,
 	osmo_iofd_register(priv->iofd, rc);
 	osmo_iofd_set_alloc_info(priv->iofd, 4096, 128);
 
-	osmo_iofd_read_enable(priv->iofd);
-	osmo_iofd_write_enable(priv->iofd);
-
 	/* IPv4: max fragmented payload can be (13 bit) * 8 byte => 65535.
 	 * IPv6: max payload can be 65535 (RFC 2460).
 	 * UDP header = 8 byte */

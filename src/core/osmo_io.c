@@ -170,7 +170,7 @@ int iofd_txqueue_enqueue(struct osmo_io_fd *iofd, struct iofd_msghdr *msghdr)
 	llist_add_tail(&msghdr->list, &iofd->tx_queue.msg_queue);
 	iofd->tx_queue.current_length++;
 
-	if (iofd->write_enabled && iofd->tx_queue.current_length == 1)
+	if (iofd->tx_queue.current_length == 1)
 		osmo_iofd_ops.write_enable(iofd);
 
 	return 0;
@@ -368,46 +368,6 @@ int osmo_iofd_sendto_msgb(struct osmo_io_fd *iofd, struct msgb *msg, int sendto_
 	return 0;
 }
 
-/*! Enable reading from this iofd
- *
- *  \param[in] iofd the file descriptor
- */
-void osmo_iofd_read_enable(struct osmo_io_fd *iofd)
-{
-	iofd->read_enabled = true;
-	osmo_iofd_ops.read_enable(iofd);
-}
-
-/*! Disable reading from this iofd
- *
- *  \param[in] iofd the file descriptor
- */
-void osmo_iofd_read_disable(struct osmo_io_fd *iofd)
-{
-	iofd->read_enabled = false;
-	osmo_iofd_ops.read_disable(iofd);
-}
-
-/*! Enable writing to this iofd
- *
- *  \param[in] iofd the file descriptor
- */
-void osmo_iofd_write_enable(struct osmo_io_fd *iofd)
-{
-	iofd->write_enabled = true;
-	osmo_iofd_ops.write_enable(iofd);
-}
-
-/*! Disable writing to this iofd
- *
- *  \param[in] iofd the file descriptor
- */
-void osmo_iofd_write_disable(struct osmo_io_fd *iofd)
-{
-	iofd->write_enabled = false;
-	osmo_iofd_ops.write_disable(iofd);
-}
-
 /*! Allocate and setup a new iofd
  *  \param[in] ctx the parent context from which to allocate
  *  \param[in] fd the underlying system file descriptor
@@ -454,14 +414,19 @@ struct osmo_io_fd *osmo_iofd_setup(const void *ctx, int fd, const char *name, en
 */
 int osmo_iofd_register(struct osmo_io_fd *iofd, int fd)
 {
+	int rc = 0;
+
 	if (fd >= 0)
 		iofd->fd = fd;
 	iofd->closed = false;
 
 	if (osmo_iofd_ops.register_fd)
-		return osmo_iofd_ops.register_fd(iofd);
+		rc = osmo_iofd_ops.register_fd(iofd);
 
-	return 0;
+	osmo_iofd_ops.read_enable(iofd);
+	osmo_iofd_ops.write_enable(iofd);
+
+	return rc;
 }
 
 /*! Unregister the fd from the underlying backend

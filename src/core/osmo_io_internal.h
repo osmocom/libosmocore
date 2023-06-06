@@ -38,12 +38,10 @@ struct osmo_io_fd {
 	enum osmo_io_fd_mode mode;
 
 	/*! flags to guard closing/freeing of iofd */
+	/* TODO: Move to bitfield */
 	bool closed;
 	bool in_callback;
 	bool to_free;
-
-	bool write_enabled;
-	bool read_enabled;
 
 	/*! human-readable name to associte with fd */
 	const char *name;

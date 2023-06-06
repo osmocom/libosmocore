@@ -74,10 +74,6 @@ unsigned int osmo_iofd_txqueue_len(struct osmo_io_fd *iofd);
 void osmo_iofd_txqueue_clear(struct osmo_io_fd *iofd);
 int osmo_iofd_close(struct osmo_io_fd *iofd);
 void osmo_iofd_free(struct osmo_io_fd *iofd);
-void osmo_iofd_read_enable(struct osmo_io_fd *iofd);
-void osmo_iofd_read_disable(struct osmo_io_fd *iofd);
-void osmo_iofd_write_enable(struct osmo_io_fd *iofd);
-void osmo_iofd_write_disable(struct osmo_io_fd *iofd);
 
 int osmo_iofd_write_msgb(struct osmo_io_fd *iofd, struct msgb *msg);
 int osmo_iofd_sendto_msgb(struct osmo_io_fd *iofd, struct msgb *msg, int sendto_flags,

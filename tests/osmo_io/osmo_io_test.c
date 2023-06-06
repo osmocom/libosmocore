@@ -85,10 +85,6 @@ static void test_connected(void)
 	memcpy(buf, TESTDATA, sizeof(TESTDATA));
 
 	osmo_iofd_write_msgb(iofd1, msg);
-	osmo_iofd_write_enable(iofd1);
-	osmo_iofd_write_enable(iofd2);
-	osmo_iofd_read_enable(iofd1);
-	osmo_iofd_read_enable(iofd2);
 
 
 	/* Allow enough cycles to handle the messages */
@@ -142,11 +138,6 @@ static void test_unconnected(void)
 	memcpy(buf, TESTDATA, sizeof(TESTDATA));
 
 	osmo_iofd_sendto_msgb(iofd1, msg, 0, NULL);
-	osmo_iofd_write_enable(iofd1);
-	osmo_iofd_write_enable(iofd2);
-	osmo_iofd_read_enable(iofd1);
-	osmo_iofd_read_enable(iofd2);
-
 
 	/* Allow enough cycles to handle the messages */
 	for (int i = 0; i < 128; i++)
