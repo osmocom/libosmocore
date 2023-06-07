@@ -341,6 +341,171 @@ static void test_lai_encode_decode(void)
 	}
 }
 
+static struct osmo_routing_area_id test_osmo_routing_area_id_items[] = {
+	{
+		.lac = {
+			.plmn = {
+				.mcc = 77,
+				.mnc = 121,
+			},
+			.lac = 666,
+		},
+		.rac = 5,
+	},
+	{
+		.lac = {
+			.plmn = {
+				.mcc = 84,
+				.mnc = 98,
+			},
+			.lac = 11,
+		},
+		.rac = 89,
+	},
+	{
+		.lac = {
+			.plmn = {
+				.mcc = 0,
+				.mnc = 0,
+				.mnc_3_digits = false,
+				/* expecting 000-00, BCD = 00 f0 00 */
+			},
+			.lac = 0,
+		},
+		.rac = 0,
+	},
+	{
+		.lac = {
+			.plmn = {
+				.mcc = 0,
+				.mnc = 0,
+				.mnc_3_digits = true,
+				/* expecting 000-000, BCD = 00 00 00 */
+			},
+			.lac = 0,
+		},
+		.rac = 0,
+	},
+	{
+		.lac = {
+			.plmn = {
+				.mcc = 999,
+				.mnc = 999,
+			},
+			.lac = 65535,
+		},
+		.rac = 255,
+	},
+	{
+		.lac = {
+			.plmn = {
+				.mcc = 1,
+				.mnc = 2,
+				.mnc_3_digits = false,
+				/* expecting 001-02, BCD = 00 f1 20 */
+			},
+			.lac = 23,
+		},
+		.rac = 42,
+	},
+	{
+		.lac = {
+			.plmn = {
+				.mcc = 1,
+				.mnc = 2,
+				.mnc_3_digits = true,
+				/* expecting 001-002, BCD = 00 21 00 */
+			},
+			.lac = 23,
+		},
+		.rac = 42,
+	},
+	{
+		.lac = {
+			.plmn = {
+				.mcc = 12,
+				.mnc = 34,
+				.mnc_3_digits = false,
+				/* expecting 012-34, BCD = 10 f2 43 */
+			},
+			.lac = 56,
+		},
+		.rac = 78,
+	},
+	{
+		.lac = {
+			.plmn = {
+				.mcc = 12,
+				.mnc = 34,
+				.mnc_3_digits = true,
+				/* expecting 012-034, BCD = 10 42 30 */
+			},
+			.lac = 23,
+		},
+		.rac = 42,
+	},
+	{
+		.lac = {
+			.plmn = {
+				.mcc = 123,
+				.mnc = 456,
+				.mnc_3_digits = false,
+				/* expecting 123-456, BCD = 21 63 54 (false flag has no effect) */
+			},
+			.lac = 23,
+		},
+		.rac = 42,
+	},
+	{
+		.lac = {
+			.plmn = {
+				.mcc = 123,
+				.mnc = 456,
+				.mnc_3_digits = true,
+				/* expecting 123-456, BCD = 21 63 54 (same) */
+			},
+			.lac = 23,
+		},
+		.rac = 42,
+	},
+};
+
+static inline void dump_osmo_routing_area_id(const struct osmo_routing_area_id *raid)
+{
+	printf("%s%s", osmo_rai_name2(raid), raid->lac.plmn.mnc_3_digits ? " (3-digit MNC)" : "");
+}
+
+static inline void check_osmo_routing_area_id(const struct osmo_routing_area_id *raid)
+{
+	uint8_t buf[sizeof(struct gsm48_ra_id)] = {};
+	struct osmo_routing_area_id raid0 = {};
+	int rc;
+
+	printf("RA ID: ");
+	dump_osmo_routing_area_id(raid);
+
+	rc = osmo_routing_area_id_encode_buf(buf, sizeof(buf), raid);
+	printf("osmo_routing_area_id_encode_buf(): %src=%d\n", osmo_hexdump(buf, sizeof(buf)), rc);
+
+	rc = osmo_routing_area_id_decode(&raid0, buf, sizeof(buf));
+	printf("osmo_routing_area_id_decode(): ");
+	dump_osmo_routing_area_id(&raid0);
+	printf(" rc=%d\n", rc);
+
+	if (osmo_rai_cmp(raid, &raid0))
+		printf("FAIL\n");
+	else
+		printf("ok\n");
+}
+
+static void test_osmo_routing_area_id(void)
+{
+	int i;
+	printf("==%s()==\n", __func__);
+	for (i = 0; i < ARRAY_SIZE(test_osmo_routing_area_id_items); i++)
+		check_osmo_routing_area_id(&test_osmo_routing_area_id_items[i]);
+}
+
 static void dump_cm3(struct gsm48_classmark3 *cm3)
 {
 	printf("mult_band_supp=%02x\n", cm3->mult_band_supp);
@@ -1792,6 +1957,7 @@ int main(int argc, char **argv)
 	test_bcd_number_encode_decode();
 	test_ra_cap();
 	test_lai_encode_decode();
+	test_osmo_routing_area_id();
 	test_decode_classmark3();
 
 	test_si_range_helpers();

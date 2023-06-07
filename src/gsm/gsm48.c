@@ -1334,7 +1334,64 @@ int gsm48_mi_to_string(char *string, int str_len, const uint8_t *mi, int mi_len)
 	return 1;
 }
 
-/*! Parse TS 04.08 Routing Area Identifier
+/*! Decode to struct osmo_routing_area_id from a 3GPP TS 24.008 § 10.5.5.15 Routing area identification.
+ * \param[out] dst  Store the decoded result here.
+ * \param[in] ra_data  The start of a Routing Area ID in encoded form, to be decoded.
+ * \param[in] ra_data_len  Buffer size available to read from at *ra_data.
+ * \return the number of decoded bytes on success, or negative on error (if the input buffer is too small).
+ */
+int osmo_routing_area_id_decode(struct osmo_routing_area_id *dst, const uint8_t *ra_data, size_t ra_data_len)
+{
+	const struct gsm48_ra_id *ra_id;
+	if (ra_data_len < sizeof(*ra_id))
+		return -ENOSPC;
+
+	gsm48_decode_lai2((void *)ra_data, &dst->lac);
+
+	ra_id = (void *)ra_data;
+	dst->rac = ra_id->rac;
+
+	return sizeof(*ra_id);
+}
+
+/*! Encode struct osmo_routing_area_id to a 3GPP TS 24.008 § 10.5.5.15 Routing area identification: write to a buffer.
+ * \param[out] buf  Return buffer for encoded Mobile Identity.
+ * \param[in] buflen  sizeof(buf).
+ * \param[in] src  RA to encode.
+ * \return Amount of bytes written to buf, or negative on error.
+ */
+int osmo_routing_area_id_encode_buf(uint8_t *buf, size_t buflen, const struct osmo_routing_area_id *src)
+{
+	struct gsm48_ra_id *ra_id;
+	if (buflen < sizeof(*ra_id))
+		return -ENOSPC;
+
+	gsm48_generate_lai2((void *)buf, &src->lac);
+
+	ra_id = (void *)buf;
+	ra_id->rac = src->rac;
+
+	return sizeof(*ra_id);
+}
+
+/*! Encode struct osmo_routing_area_id to a 3GPP TS 24.008 § 10.5.5.15 Routing area identification: append to msgb.
+ * To succeed, the msgb must have tailroom >= sizeof(struct gsm48_ra_id).
+ * \param[out] msg  Append to this msgb.
+ * \param[in] src  Encode this Routing Area ID.
+ * \return Number of bytes appended to msgb, or negative on error.
+ */
+int osmo_routing_area_id_encode_msgb(struct msgb *msg, const struct osmo_routing_area_id *src)
+{
+	int rc = osmo_routing_area_id_encode_buf(msg->tail, msgb_tailroom(msg), src);
+	if (rc <= 0)
+		return rc;
+	msgb_put(msg, rc);
+	return rc;
+}
+
+/*! Parse TS 04.08 Routing Area Identifier.
+ * Preferably use osmo_routing_area_id_decode() instead: struct osmo_routing_area_id is better integrated with other API
+ * like osmo_plmn_cmp().
  *  \param[out] Caller-provided memory for decoded RA ID
  *  \param[in] buf Input buffer pointing to RAI IE value */
 void gsm48_parse_ra(struct gprs_ra_id *raid, const uint8_t *buf)

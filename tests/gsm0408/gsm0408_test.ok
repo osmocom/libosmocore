@@ -386,6 +386,40 @@ RA test...passed
   Encoded 21 63 54 00 17 
   gsm48_decode_lai2() gives  123-456-23 (3-digit MNC)
   passed
+==test_osmo_routing_area_id()==
+RA ID: 077-121-666-5osmo_routing_area_id_encode_buf(): 70 17 21 02 9a 05 rc=6
+osmo_routing_area_id_decode(): 077-121-666-5 (3-digit MNC) rc=6
+ok
+RA ID: 084-98-11-89osmo_routing_area_id_encode_buf(): 80 f4 89 00 0b 59 rc=6
+osmo_routing_area_id_decode(): 084-98-11-89 rc=6
+ok
+RA ID: 000-00-0-0osmo_routing_area_id_encode_buf(): 00 f0 00 00 00 00 rc=6
+osmo_routing_area_id_decode(): 000-00-0-0 rc=6
+ok
+RA ID: 000-000-0-0 (3-digit MNC)osmo_routing_area_id_encode_buf(): 00 00 00 00 00 00 rc=6
+osmo_routing_area_id_decode(): 000-000-0-0 (3-digit MNC) rc=6
+ok
+RA ID: 999-999-65535-255osmo_routing_area_id_encode_buf(): 99 99 99 ff ff ff rc=6
+osmo_routing_area_id_decode(): 999-999-65535-255 (3-digit MNC) rc=6
+ok
+RA ID: 001-02-23-42osmo_routing_area_id_encode_buf(): 00 f1 20 00 17 2a rc=6
+osmo_routing_area_id_decode(): 001-02-23-42 rc=6
+ok
+RA ID: 001-002-23-42 (3-digit MNC)osmo_routing_area_id_encode_buf(): 00 21 00 00 17 2a rc=6
+osmo_routing_area_id_decode(): 001-002-23-42 (3-digit MNC) rc=6
+ok
+RA ID: 012-34-56-78osmo_routing_area_id_encode_buf(): 10 f2 43 00 38 4e rc=6
+osmo_routing_area_id_decode(): 012-34-56-78 rc=6
+ok
+RA ID: 012-034-23-42 (3-digit MNC)osmo_routing_area_id_encode_buf(): 10 42 30 00 17 2a rc=6
+osmo_routing_area_id_decode(): 012-034-23-42 (3-digit MNC) rc=6
+ok
+RA ID: 123-456-23-42osmo_routing_area_id_encode_buf(): 21 63 54 00 17 2a rc=6
+osmo_routing_area_id_decode(): 123-456-23-42 (3-digit MNC) rc=6
+ok
+RA ID: 123-456-23-42 (3-digit MNC)osmo_routing_area_id_encode_buf(): 21 63 54 00 17 2a rc=6
+osmo_routing_area_id_decode(): 123-456-23-42 (3-digit MNC) rc=6
+ok
 =====cm3_1=====
 mult_band_supp=06
 a5_bits=00
