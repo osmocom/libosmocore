@@ -421,11 +421,13 @@ int osmo_iofd_register(struct osmo_io_fd *iofd, int fd)
 
 	if (fd >= 0)
 		iofd->fd = fd;
-	iofd->closed = false;
 
 	if (osmo_iofd_ops.register_fd)
 		rc = osmo_iofd_ops.register_fd(iofd);
+	if (rc)
+		return rc;
 
+	iofd->closed = false;
 	osmo_iofd_ops.read_enable(iofd);
 	osmo_iofd_ops.write_enable(iofd);
 
