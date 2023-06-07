@@ -362,7 +362,7 @@ static int tx_ph_data_enqueue(struct lapdm_datalink *dl, struct msgb *msg,
 		*msgb_push(msg, 1) = link_id;
 		*msgb_push(msg, 1) = chan_nr;
 		msgb_enqueue(&dl->dl.tx_queue, msg);
-		return -EBUSY;
+		return 0;
 	}
 
 	osmo_prim_init(&pp.oph, SAP_GSM_PH, PRIM_PH_DATA,
