@@ -26,10 +26,10 @@
 #include <osmocom/gsm/protocol/gsm_23_003.h>
 #include <osmocom/core/utils.h>
 
+#include <osmocom/core/socket_compat.h>
+
 #define BSSMAP_MSG_SIZE 1024
 #define BSSMAP_MSG_HEADROOM 512
-
-struct sockaddr_storage;
 
 struct msgb;
 struct gsm0808_cell_id_list2;
@@ -331,6 +331,243 @@ struct gsm0808_handover_performed {
 	bool more_items; /*< always set this to false */
 };
 struct msgb *gsm0808_create_handover_performed(const struct gsm0808_handover_performed *params);
+
+/*! 3GPP TS 48.008 §3.2.1.50 VGCS/VBS SETUP */
+struct gsm0808_vgcs_vbs_setup {
+	struct gsm0808_group_callref callref;
+
+	bool priority_present;
+	struct gsm0808_priority priority;
+
+	bool vgcs_feature_flags_present;
+	struct gsm0808_vgcs_feature_flags flags;
+};
+struct msgb *gsm0808_create_vgcs_vbs_setup(const struct gsm0808_vgcs_vbs_setup *params);
+
+/*! 3GPP TS 48.008 §3.2.1.51 VGCS/VBS SETUP ACK */
+struct gsm0808_vgcs_vbs_setup_ack {
+	bool vgcs_feature_flags_present;
+	struct gsm0808_vgcs_feature_flags flags;
+};
+struct msgb *gsm0808_create_vgcs_vbs_setup_ack(const struct gsm0808_vgcs_vbs_setup_ack *params);
+
+/*! 3GPP TS 48.008 §3.2.1.52 VGCS/VBS SETUP REFUSE */
+struct msgb *gsm0808_create_vgcs_vbs_setup_refuse(enum gsm0808_cause cause);
+
+/*! 3GPP TS 48.008 §3.2.1.53 VGCS/VBS ASSIGNMENT REQUEST */
+struct gsm0808_vgcs_vbs_assign_req {
+	struct gsm0808_channel_type channel_type;
+	enum gsm0808_assignment_requirement ass_req;
+	struct gsm0808_cell_id cell_identifier;
+	struct gsm0808_group_callref callref;
+
+	bool priority_present;
+	struct gsm0808_priority priority;
+
+	bool cic_present;
+	uint16_t cic;
+
+	bool downlink_dtx_flag_present;
+	enum gsm0808_downlink_dtx_flag downlink_dtx_flag;
+
+	bool encryption_information_present;
+	struct gsm0808_encrypt_info encryption_information;
+
+	bool vstk_rand_present;
+	uint8_t vstk_rand[5];
+
+	bool vstk_present;
+	uint8_t vstk[16];
+
+	bool cils_present;
+	struct gsm0808_cell_id_list_segment cils;
+
+	bool aoip_transport_layer_present;
+	struct sockaddr_storage aoip_transport_layer;
+
+	bool call_id_present;
+	uint32_t call_id;
+
+	bool codec_list_present;
+	struct gsm0808_speech_codec_list codec_list_msc_preferred;
+};
+struct msgb *gsm0808_create_vgcs_vbs_assign_req(const struct gsm0808_vgcs_vbs_assign_req *params);
+
+/*! 3GPP TS 48.008 §3.2.1.54 VGCS/VBS ASSIGNMENT RESULT */
+struct gsm0808_vgcs_vbs_assign_res {
+	struct gsm0808_channel_type channel_type;
+	struct gsm0808_cell_id cell_identifier;
+
+	bool chosen_channel_present;
+	uint8_t chosen_channel;
+
+	bool cic_present;
+	uint16_t cic;
+
+	bool circuit_pool_present;
+	uint8_t circuit_pool;
+
+	bool aoip_transport_layer_present;
+	struct sockaddr_storage aoip_transport_layer;
+
+	bool codec_present;
+	struct gsm0808_speech_codec codec_msc_chosen;
+
+	bool call_id_present;
+	uint32_t call_id;
+};
+struct msgb *gsm0808_create_vgcs_vbs_assign_res(const struct gsm0808_vgcs_vbs_assign_res *params);
+
+/*! 3GPP TS 48.008 §3.2.1.55 VGCS/VBS ASSIGNMENT FAILURE */
+struct gsm0808_vgcs_vbs_assign_fail {
+	enum gsm0808_cause cause;
+
+	bool circuit_pool_present;
+	uint8_t circuit_pool;
+
+	bool cpl_present;
+	struct gsm0808_circuit_pool_list cpl;
+
+	bool codec_list_present;
+	struct gsm0808_speech_codec_list codec_list_bss_supported;
+};
+struct msgb *gsm0808_create_vgcs_vbs_assign_fail(const struct gsm0808_vgcs_vbs_assign_fail *params);
+
+/*! 3GPP TS 48.008 §3.2.1.57 (VGCS) UPLINK REQUEST */
+struct gsm0808_uplink_request {
+	bool talker_priority_present;
+	enum gsm0808_talker_priority talker_priority;
+
+	bool cell_identifier_present;
+	struct gsm0808_cell_id cell_identifier;
+
+	bool l3_present;
+	struct gsm0808_layer_3_information l3;
+
+	bool mi_present;
+	struct osmo_mobile_identity mi;
+};
+struct msgb *gsm0808_create_uplink_request(const struct gsm0808_uplink_request *params);
+
+/*! 3GPP TS 48.008 §3.2.1.58 (VGCS) UPLINK REQUEST ACKNOWLEDGE */
+struct gsm0808_uplink_request_ack {
+	bool talker_priority_present;
+	enum gsm0808_talker_priority talker_priority;
+
+	bool emerg_set_ind_present;
+
+	bool talker_identity_present;
+	struct gsm0808_talker_identity talker_identity;
+};
+struct msgb *gsm0808_create_uplink_request_ack(const struct gsm0808_uplink_request_ack *params);
+
+/*! 3GPP TS 48.008 §3.2.1.59 (VGCS) UPLINK REQUEST CONFIRM */
+struct gsm0808_uplink_request_cnf {
+	struct gsm0808_cell_id cell_identifier;
+
+	bool talker_identity_present;
+	struct gsm0808_talker_identity talker_identity;
+
+	/* mandatory! */
+	struct gsm0808_layer_3_information l3;
+};
+struct msgb *gsm0808_create_uplink_request_cnf(const struct gsm0808_uplink_request_cnf *params);
+
+/*! 3GPP TS 48.008 §3.2.1.59a (VGCS) UPLINK APPLICATION DATA */
+struct gsm0808_uplink_app_data {
+	struct gsm0808_cell_id cell_identifier;
+	struct gsm0808_layer_3_information l3;
+	bool bt_ind;
+};
+struct msgb *gsm0808_create_uplink_app_data(const struct gsm0808_uplink_app_data *params);
+
+/*! 3GPP TS 48.008 §3.2.1.60 (VGCS) UPLINK RELEASE INDICATION */
+struct gsm0808_uplink_release_ind {
+	enum gsm0808_cause cause;
+
+	bool talker_priority_present;
+	enum gsm0808_talker_priority talker_priority;
+};
+struct msgb *gsm0808_create_uplink_release_ind(const struct gsm0808_uplink_release_ind *params);
+
+/*! 3GPP TS 48.008 §3.2.1.61 (VGCS) UPLINK REJECT COMMAND */
+struct gsm0808_uplink_reject_cmd {
+	enum gsm0808_cause cause;
+
+	bool current_talker_priority_present;
+	enum gsm0808_talker_priority current_talker_priority;
+	bool rejected_talker_priority_present;
+	enum gsm0808_talker_priority rejected_talker_priority;
+
+	bool talker_identity_present;
+	struct gsm0808_talker_identity talker_identity;
+};
+struct msgb *gsm0808_create_uplink_reject_cmd(const struct gsm0808_uplink_reject_cmd *params);
+
+/*! 3GPP TS 48.008 §3.2.1.62 (VGCS) UPLINK RELEASE COMMAND */
+struct msgb *gsm0808_create_uplink_release_cmd(const enum gsm0808_cause cause);
+
+/*! 3GPP TS 48.008 §3.2.1.63 (VGCS) UPLINK SEIZED COMMAND */
+struct gsm0808_uplink_seized_cmd {
+	enum gsm0808_cause cause;
+
+	bool talker_priority_present;
+	enum gsm0808_talker_priority talker_priority;
+
+	bool emerg_set_ind_present;
+
+	bool talker_identity_present;
+	struct gsm0808_talker_identity talker_identity;
+};
+struct msgb *gsm0808_create_uplink_seized_cmd(const struct gsm0808_uplink_seized_cmd *params);
+
+/*! 3GPP TS 48.008 §3.2.1.78 VGCS ADDITIONAL INFORMATION */
+struct msgb *gsm0808_create_vgcs_additional_info(const struct gsm0808_talker_identity *ti);
+
+/*! 3GPP TS 48.008 §3.2.1.79 VGCS/VBS AREA CELL INFO */
+struct gsm0808_vgcs_vbs_area_cell_info {
+	struct gsm0808_cell_id_list_segment cils;
+
+	bool ass_req_present;
+	enum gsm0808_assignment_requirement ass_req;
+};
+struct msgb *gsm0808_create_vgcs_vbs_area_cell_info(const struct gsm0808_vgcs_vbs_area_cell_info *params);
+
+/*! 3GPP TS 48.008 §3.2.1.80 VGCS/VBS ASSIGNMENT STATUS */
+struct gsm0808_vgcs_vbs_assign_stat {
+	/* established cells */
+	bool cils_est_present;
+	struct gsm0808_cell_id_list_segment cils_est;
+
+	/* cells to be established */
+	bool cils_tbe_present;
+	struct gsm0808_cell_id_list_segment cils_tbe;
+
+	/* released cells - no user present */
+	bool cils_rel_present;
+	struct gsm0808_cell_id_list_segment cils_rel;
+
+	/* not established cells - no establishment possible */
+	bool cils_ne_present;
+	struct gsm0808_cell_id_list_segment cils_ne;
+
+	bool cell_status_present;
+	enum gsm0808_vgcs_vbs_cell_status cell_status;
+};
+struct msgb *gsm0808_create_vgcs_vbs_assign_stat(const struct gsm0808_vgcs_vbs_assign_stat *params);
+
+/*! 3GPP TS 48.008 §3.2.1.81 VGCS SMS */
+struct msgb *gsm0808_create_vgcs_sms(const struct gsm0808_sms_to_vgcs *sms);
+
+/*! 3GPP TS 48.008 §3.2.1.82 (VGCS/VBS) NOTIFICATION DATA */
+struct gsm0808_notification_data {
+	struct gsm0808_application_data app_data;
+	struct gsm0808_data_identity data_ident;
+
+	bool msisdn_present;
+	char msisdn[MSISDN_MAXLEN + 1];
+};
+struct msgb *gsm0808_create_notification_data(const struct gsm0808_notification_data *parms);
 
 struct msgb *gsm0808_create_dtap(struct msgb *msg, uint8_t link_id);
 void gsm0808_prepend_dtap_header(struct msgb *msg, uint8_t link_id);

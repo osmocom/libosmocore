@@ -17,6 +17,8 @@
  *
  */
 
+#include "config.h"
+
 #include <string.h>
 
 #include <osmocom/core/byteswap.h>
@@ -1514,6 +1516,657 @@ struct msgb *gsm0808_create_perform_location_abort(const struct lcs_cause_ie *lc
 	return msg;
 }
 
+/*! Create BSSMAP VGCS/VBS SETUP message, 3GPP TS 48.008 3.2.1.50.
+ * Sent from the MSC to the BSC to request VGCS/VBS call. */
+struct msgb *gsm0808_create_vgcs_vbs_setup(const struct gsm0808_vgcs_vbs_setup *params)
+{
+	struct msgb *msg;
+
+	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "BSSMAP-VGCS/VBS-SETUP");
+	if (!msg)
+		return NULL;
+
+	/* Message Type, 3.2.2.1 */
+	msgb_v_put(msg, BSS_MAP_MSG_VGCS_VBS_SETUP);
+
+	/* Group Call Reference, 3.2.2.55 */
+	gsm0808_enc_group_callref(msg, &params->callref);
+
+	/* Priority, 3.2.2.18 */
+	if (params->priority_present)
+		gsm0808_enc_priority(msg, &params->priority);
+
+	/* VGCS Feature Flags, 3.2.2.88 */
+	if (params->vgcs_feature_flags_present)
+		gsm0808_enc_vgcs_feature_flags(msg, &params->flags);
+
+	/* prepend header with final length */
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
+
+	return msg;
+}
+
+/*! Create BSSMAP VGCS/VBS SETUP ACK message, 3GPP TS 48.008 3.2.1.51.
+ * Sent from the BSC to the MSC to confirm VGCS/VBS call. */
+struct msgb *gsm0808_create_vgcs_vbs_setup_ack(const struct gsm0808_vgcs_vbs_setup_ack *params)
+{
+	struct msgb *msg;
+
+	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "BSSMAP-VGCS/VBS-SETUP-ACK");
+	if (!msg)
+		return NULL;
+
+	/* Message Type, 3.2.2.1 */
+	msgb_v_put(msg, BSS_MAP_MSG_VGCS_VBS_SETUP_ACK);
+
+	/* VGCS Feature Flags, 3.2.2.88 */
+	if (params->vgcs_feature_flags_present)
+		gsm0808_enc_vgcs_feature_flags(msg, &params->flags);
+
+	/* prepend header with final length */
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
+
+	return msg;
+}
+
+/*! Create BSSMAP VGCS/VBS SETUP REFUSE message, 3GPP TS 48.008 3.2.1.52.
+ * Sent from the BSC to the MSC to reject VGCS/VBS call. */
+struct msgb *gsm0808_create_vgcs_vbs_setup_refuse(enum gsm0808_cause cause)
+{
+	struct msgb *msg;
+
+	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "BSSMAP-VGCS/VBS-SETUP-REFUSE");
+	if (!msg)
+		return NULL;
+
+	/* Message Type, 3.2.2.1 */
+	msgb_v_put(msg, BSS_MAP_MSG_VGCS_VBS_SETUP_REFUSE);
+
+	/* Cause, 3.2.2.5 */
+	gsm0808_enc_cause(msg, cause);
+
+	/* prepend header with final length */
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
+
+	return msg;
+}
+
+/*! Create BSSMAP VGCS/VBS ASSIGNMENT REQUEST message, 3GPP TS 48.008 3.2.1.53.
+ * Sent from the MSC to the BSC to assign radio resources for a VGCS/VBS. */
+struct msgb *gsm0808_create_vgcs_vbs_assign_req(const struct gsm0808_vgcs_vbs_assign_req *params)
+{
+	struct msgb *msg;
+
+	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "BSSMAP-VGCS/VBS-ASSIGNMENT-REQUEST");
+	if (!msg)
+		return NULL;
+
+	/* Message Type, 3.2.2.1 */
+	msgb_v_put(msg, BSS_MAP_MSG_VGCS_VBS_ASSIGNMENT_RQST);
+
+	/* Channel Type, 3.2.2.11 */
+	gsm0808_enc_channel_type(msg, &params->channel_type);
+
+	/* Assignment Requrirement, 3.2.2.52 */
+	gsm0808_enc_assign_req(msg, params->ass_req);
+
+	/* Cell Identifier, 3.2.2.17 */
+	gsm0808_enc_cell_id(msg, &params->cell_identifier);
+
+	/* Group Call Reference, 3.2.2.55 */
+	gsm0808_enc_group_callref(msg, &params->callref);
+
+	/* Priority, 3.2.2.18 */
+	if (params->priority_present)
+		gsm0808_enc_priority(msg, &params->priority);
+
+	/* Circuit Identity Code, 3.2.2.2 */
+	if (params->cic_present)
+		msgb_tv16_put(msg, GSM0808_IE_CIRCUIT_IDENTITY_CODE, params->cic);
+
+	/* Downlink DTX Flag, 3.2.2.26 */
+	if (params->downlink_dtx_flag_present)
+		msgb_tv_put(msg, GSM0808_IE_DOWNLINK_DTX_FLAG, params->downlink_dtx_flag);
+
+	/* Encryption Information, 3.2.2.10 */
+	if (params->encryption_information_present)
+		gsm0808_enc_encrypt_info(msg, &params->encryption_information);
+
+	/* VSTK_RAND Imformation, 3.2.2.83 */
+	if (params->vstk_rand_present)
+		msgb_tlv_put(msg, GSM0808_IE_VSTK_RAND_INFO, sizeof(params->vstk_rand), params->vstk_rand);
+
+	/* VSTK Information, 3.2.2.84 */
+	if (params->vstk_present)
+		msgb_tlv_put(msg, GSM0808_IE_VSTK_INFO, sizeof(params->vstk), params->vstk);
+
+	/* Cell Identifier List Segment, 3.2.2.27a */
+	if (params->cils_present)
+		gsm0808_enc_cell_id_list_segment(msg, GSM0808_IE_CELL_ID_LIST_SEGMENT, &params->cils);
+
+	/* AoIP Transport Layer Address (MGW), 3.2.2.102 */
+	if (params->aoip_transport_layer_present)
+		gsm0808_enc_aoip_trasp_addr(msg, &params->aoip_transport_layer);
+
+	/* Call Identifier, 3.2.2.105 */
+	if (params->call_id_present) {
+		/* NOTE: 3GPP TS 48.008, section 3.2.2.105 specifies that
+		 * the least significant byte shall be transmitted first. */
+		msgb_v_put(msg, GSM0808_IE_CALL_ID);
+		osmo_store32le(params->call_id, msgb_put(msg, sizeof(uint32_t)));
+	}
+
+	/* Codec List (MSC Preferred) 3.2.2.103 */
+	if (params->codec_list_present) {
+		if (gsm0808_enc_speech_codec_list2(msg, &params->codec_list_msc_preferred) < 0)
+			goto exit_free;
+	}
+
+	/* prepend header with final length */
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
+
+	return msg;
+
+exit_free:
+	msgb_free(msg);
+	return NULL;
+}
+
+/*! Create BSSMAP VGCS/VBS ASSIGNMENT RESULT message, 3GPP TS 48.008 3.2.1.54.
+ * Sent from the BSC to the MSC to indicate assignment/deassingment of radio resources for a VGCS/VBS. */
+struct msgb *gsm0808_create_vgcs_vbs_assign_res(const struct gsm0808_vgcs_vbs_assign_res *params)
+{
+	struct msgb *msg;
+
+	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "BSSMAP-VGCS/VBS-ASSIGNMENT-RESULT");
+	if (!msg)
+		return NULL;
+
+	/* Message Type, 3.2.2.1 */
+	msgb_v_put(msg, BSS_MAP_MSG_VGCS_VBS_ASSIGNMENT_RESULT);
+
+	/* Channel Type, 3.2.2.11 */
+	gsm0808_enc_channel_type(msg, &params->channel_type);
+
+	/* Cell Identifier, 3.2.2.17 */
+	gsm0808_enc_cell_id(msg, &params->cell_identifier);
+
+	/* Chosen Channel, 3.2.2.33 */
+	if (params->chosen_channel_present)
+		msgb_tv_put(msg, GSM0808_IE_CHOSEN_CHANNEL, params->chosen_channel);
+
+	/* Circuit Identity Code, 3.2.2.2 */
+	if (params->cic_present)
+		msgb_tv16_put(msg, GSM0808_IE_CIRCUIT_IDENTITY_CODE, params->cic);
+
+	/* Circuit Pool, 3.2.2.45 */
+	if (params->circuit_pool_present)
+		msgb_tv_put(msg, GSM0808_IE_CIRCUIT_POOL, params->circuit_pool);
+
+	/* AoIP Transport Layer Address (BSS), 3.2.2.102 */
+	if (params->aoip_transport_layer_present)
+		gsm0808_enc_aoip_trasp_addr(msg, &params->aoip_transport_layer);
+
+	/* Codec (MSC Chosen) 3.2.2.103 */
+	if (params->codec_present) {
+		if (gsm0808_enc_speech_codec2(msg, &params->codec_msc_chosen) < 0)
+			goto exit_free;
+	}
+
+	/* Call Identifier, 3.2.2.105 */
+	if (params->call_id_present) {
+		/* NOTE: 3GPP TS 48.008, section 3.2.2.105 specifies that
+		 * the least significant byte shall be transmitted first. */
+		msgb_v_put(msg, GSM0808_IE_CALL_ID);
+		osmo_store32le(params->call_id, msgb_put(msg, sizeof(uint32_t)));
+	}
+
+	/* prepend header with final length */
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
+
+	return msg;
+
+exit_free:
+	msgb_free(msg);
+	return NULL;
+}
+
+/*! Create BSSMAP VGCS/VBS ASSIGNMENT FAILURE message, 3GPP TS 48.008 3.2.1.55.
+ * Sent from the BSC to the MSC to indicate assignment failure for a VGCS/VBS. */
+struct msgb *gsm0808_create_vgcs_vbs_assign_fail(const struct gsm0808_vgcs_vbs_assign_fail *params)
+{
+	struct msgb *msg;
+
+	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "BSSMAP-VGCS/VBS-ASSIGNMENT-RESULT");
+	if (!msg)
+		return NULL;
+
+	/* Message Type, 3.2.2.1 */
+	msgb_v_put(msg, BSS_MAP_MSG_VGCS_VBS_ASSIGNMENT_FAILURE);
+
+	/* Cause, 3.2.2.5 */
+	gsm0808_enc_cause(msg, params->cause);
+
+	/* Circuit Pool, 3.2.2.45 */
+	if (params->circuit_pool_present)
+		msgb_tv_put(msg, GSM0808_IE_CIRCUIT_POOL, params->circuit_pool);
+
+	/* Circuit Pool List, 3.2.2.46 */
+	if (params->circuit_pool_present)
+		msgb_tlv_put(msg, GSM0808_IE_CIRCUIT_POOL_LIST, params->cpl.list_len, params->cpl.pool);
+
+	/* Codec List (BSS Supported) 3.2.2.103 */
+	if (params->codec_list_present)
+		gsm0808_enc_speech_codec_list2(msg, &params->codec_list_bss_supported);
+
+	/* prepend header with final length */
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
+
+	return msg;
+}
+
+/*! Create BSSMAP VGCS/VBS QUEUING INDICATION message, 3GPP TS 48.008 3.2.1.56.
+ * Sent from the BSC to the MSC to indicate delay in assignment for a VGCS/VBS. */
+struct msgb *gsm0808_create_vgcs_queuing_ind(void)
+{
+	struct msgb *msg;
+	uint8_t val = BSS_MAP_MSG_VGCS_VBS_QUEUING_INDICATION;
+
+	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "BSSMAP-VGCS/VBS-QUEUING-INDICATION");
+	if (!msg)
+		return NULL;
+
+	msg->l3h = msg->data;
+	msgb_tlv_put(msg, BSSAP_MSG_BSS_MANAGEMENT, 1, &val);
+
+	return msg;
+}
+
+/*! Create BSSMAP (VGCS) UPLINK REQUEST message, 3GPP TS 48.008 3.2.1.57.
+ * Sent from the BSC to the MSC to indicate that a mobile requested access to uplink. */
+struct msgb *gsm0808_create_uplink_request(const struct gsm0808_uplink_request *params)
+{
+	struct msgb *msg;
+	int rc;
+
+	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "BSSMAP-UPLINK-REQUEST");
+	if (!msg)
+		return NULL;
+
+	/* Message Type, 3.2.2.1 */
+	msgb_v_put(msg, BSS_MAP_MSG_UPLINK_RQST);
+
+	/* Talker Priority, 3.2.2.89 */
+	if (params->talker_priority_present)
+		msgb_tv_put(msg, GSM0808_IE_TALKER_PRIORITY, params->talker_priority);
+
+	/* Cell Identifier, 3.2.2.17 */
+	if (params->cell_identifier_present)
+		gsm0808_enc_cell_id(msg, &params->cell_identifier);
+
+	/* Layer 3 Information, 3.2.2.24 */
+	if (params->l3_present)
+		msgb_tlv_put(msg, GSM0808_IE_LAYER_3_INFORMATION, params->l3.l3_len, params->l3.l3);
+
+	/* Mobile Identity,  3.2.2.41 */
+	if (params->mi_present) {
+		rc = osmo_mobile_identity_encode_msgb(msg, &params->mi, false);
+		if (rc < 0) {
+			msgb_free(msg);
+			return NULL;
+		}
+	}
+
+	/* prepend header with final length */
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
+
+	return msg;
+}
+
+/*! Create BSSMAP (VGCS) UPLINK REQUEST ACKNOWLEDGE message, 3GPP TS 48.008 3.2.1.58.
+ * Sent from the MSC to the BSC to indicate that access to uplink was granted. */
+struct msgb *gsm0808_create_uplink_request_ack(const struct gsm0808_uplink_request_ack *params)
+{
+	struct msgb *msg;
+
+	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "BSSMAP-UPLINK-REQUEST-ACKNOWLEDGE");
+	if (!msg)
+		return NULL;
+
+	/* Message Type, 3.2.2.1 */
+	msgb_v_put(msg, BSS_MAP_MSG_UPLINK_RQST_ACKNOWLEDGE);
+
+	/* Talker Priority, 3.2.2.89 */
+	if (params->talker_priority_present)
+		msgb_tv_put(msg, GSM0808_IE_TALKER_PRIORITY, params->talker_priority);
+
+	/* Emergency set indication, 3.2.2.90 */
+	if (params->emerg_set_ind_present)
+		msgb_v_put(msg, GSM0808_IE_EMERGENCY_SET_INDICATION);
+
+	/* Talker Identity, 3.2.2.91 */
+	if (params->talker_identity_present)
+		gsm0808_enc_talker_identity(msg, &params->talker_identity);
+
+	/* prepend header with final length */
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
+
+	return msg;
+}
+
+/*! Create BSSMAP (VGCS) UPLINK CONFIRM message, 3GPP TS 48.008 3.2.1.59.
+ * Sent from the BSC to the MSC to indicate that access to uplink was has been successfully established. */
+struct msgb *gsm0808_create_uplink_request_cnf(const struct gsm0808_uplink_request_cnf *params)
+{
+	struct msgb *msg;
+
+	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "BSSMAP-UPLINK-REQUEST-CONFIRM");
+	if (!msg)
+		return NULL;
+
+	/* Message Type, 3.2.2.1 */
+	msgb_v_put(msg, BSS_MAP_MSG_UPLINK_RQST_CONFIRMATION);
+
+	/* Cell Identifier, 3.2.2.17 */
+	gsm0808_enc_cell_id(msg, &params->cell_identifier);
+
+	/* Talker Identity, 3.2.2.91 */
+	if (params->talker_identity_present)
+		gsm0808_enc_talker_identity(msg, &params->talker_identity);
+
+	/* Layer 3 Information, 3.2.2.24 */
+	msgb_tlv_put(msg, GSM0808_IE_LAYER_3_INFORMATION, params->l3.l3_len, params->l3.l3);
+
+	/* prepend header with final length */
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
+
+	return msg;
+}
+
+/*! Create BSSMAP (VGCS) UPLINK APPLICATION DATA message, 3GPP TS 48.008 3.2.1.59a.
+ * Sent from the BSC to the MSC to pass L3 info from the talker. */
+struct msgb *gsm0808_create_uplink_app_data(const struct gsm0808_uplink_app_data *params)
+{
+	struct msgb *msg;
+	uint8_t val;
+
+	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "BSSMAP-UPLINK-APPLICATION-DATA");
+	if (!msg)
+		return NULL;
+
+	/* Message Type, 3.2.2.1 */
+	msgb_v_put(msg, BSS_MAP_MSG_UPLINK_APP_DATA);
+
+	/* Cell Identifier, 3.2.2.17 */
+	gsm0808_enc_cell_id(msg, &params->cell_identifier);
+
+	/* Layer 3 Information, 3.2.2.24 */
+	msgb_tlv_put(msg, GSM0808_IE_LAYER_3_INFORMATION, params->l3.l3_len, params->l3.l3);
+
+	/* Application Data Information, 3.2.2.100 */
+	val = params->bt_ind;
+	msgb_tlv_put(msg, GSM0808_IE_APP_DATA_INFO, 1, &val);
+
+	/* prepend header with final length */
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
+
+	return msg;
+}
+
+/*! Create BSSMAP (VGCS) UPLINK RELEASE INDICATION message, 3GPP TS 48.008 3.2.1.60.
+ * Sent from the BSC to the MSC to indicate that the uplink has been released. */
+struct msgb *gsm0808_create_uplink_release_ind(const struct gsm0808_uplink_release_ind *params)
+{
+	struct msgb *msg;
+
+	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "BSSMAP-UPLINK-RELEASE-INDICATION");
+	if (!msg)
+		return NULL;
+
+	/* Message Type, 3.2.2.1 */
+	msgb_v_put(msg, BSS_MAP_MSG_UPLINK_RELEASE_INDICATION);
+
+	/* Cause, 3.2.2.5 */
+	gsm0808_enc_cause(msg, params->cause);
+
+	/* Talker Priority, 3.2.2.89 */
+	if (params->talker_priority_present)
+		msgb_tv_put(msg, GSM0808_IE_TALKER_PRIORITY, params->talker_priority);
+
+	/* prepend header with final length */
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
+
+	return msg;
+}
+
+/*! Create BSSMAP (VGCS) UPLINK REJECT COMMAND message, 3GPP TS 48.008 3.2.1.61.
+ * Sent from the MSC to the BSC to indicate that the uplink is not available for allocation. */
+struct msgb *gsm0808_create_uplink_reject_cmd(const struct gsm0808_uplink_reject_cmd *params)
+{
+	struct msgb *msg;
+
+	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "BSSMAP-UPLINK-REJECT-COMMAND");
+	if (!msg)
+		return NULL;
+
+	/* Message Type, 3.2.2.1 */
+	msgb_v_put(msg, BSS_MAP_MSG_UPLINK_REJECT_CMD);
+
+	/* Cause, 3.2.2.5 */
+	gsm0808_enc_cause(msg, params->cause);
+
+	/* Talker Priority, 3.2.2.89 */
+	if (params->current_talker_priority_present)
+		msgb_tv_put(msg, GSM0808_IE_TALKER_PRIORITY, params->current_talker_priority);
+
+	/* Talker Priority, 3.2.2.89 */
+	if (params->rejected_talker_priority_present)
+		msgb_tv_put(msg, GSM0808_IE_TALKER_PRIORITY, params->rejected_talker_priority);
+
+	/* Talker Identity, 3.2.2.91 */
+	if (params->talker_identity_present)
+		gsm0808_enc_talker_identity(msg, &params->talker_identity);
+
+	/* prepend header with final length */
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
+
+	return msg;
+}
+
+/*! Create BSSMAP (VGCS) UPLINK RELEASE COMMAND message, 3GPP TS 48.008 3.2.1.62.
+ * Sent from the MSC to the BSC to indicate that the uplink is available for allocation. */
+struct msgb *gsm0808_create_uplink_release_cmd(const enum gsm0808_cause cause)
+{
+	struct msgb *msg;
+
+	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "BSSMAP-UPLINK-RELEASE-COMMAND");
+	if (!msg)
+		return NULL;
+
+	/* Message Type, 3.2.2.1 */
+	msgb_v_put(msg, BSS_MAP_MSG_UPLINK_RELEASE_CMD);
+
+	/* Cause, 3.2.2.5 */
+	gsm0808_enc_cause(msg, cause);
+
+	/* prepend header with final length */
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
+
+	return msg;
+}
+
+/*! Create BSSMAP (VGCS) UPLINK SEIZED COMMAND message, 3GPP TS 48.008 3.2.1.62.
+ * Sent from the MSC to the BSC to indicate that the uplink is no longer available for allocation. */
+struct msgb *gsm0808_create_uplink_seized_cmd(const struct gsm0808_uplink_seized_cmd *params)
+{
+	struct msgb *msg;
+
+	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "BSSMAP-UPLINK-SEIZED-COMMAND");
+	if (!msg)
+		return NULL;
+
+	/* Message Type, 3.2.2.1 */
+	msgb_v_put(msg, BSS_MAP_MSG_UPLINK_SEIZED_CMD);
+
+	/* Cause, 3.2.2.5 */
+	gsm0808_enc_cause(msg, params->cause);
+
+	/* Talker Priority, 3.2.2.89 */
+	if (params->talker_priority_present)
+		msgb_tv_put(msg, GSM0808_IE_TALKER_PRIORITY, params->talker_priority);
+
+	/* Emergency set indication, 3.2.2.90 */
+	if (params->emerg_set_ind_present)
+		msgb_v_put(msg, GSM0808_IE_EMERGENCY_SET_INDICATION);
+
+	/* Talker Identity, 3.2.2.91 */
+	if (params->talker_identity_present)
+		gsm0808_enc_talker_identity(msg, &params->talker_identity);
+
+	/* prepend header with final length */
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
+
+	return msg;
+}
+
+/*! Create BSSMAP VGCS ADDITIONAL INFORMATION message, 3GPP TS 48.008 3.2.1.78.
+ * Sent from the MSC to the BSC to transfer talker identity. */
+struct msgb *gsm0808_create_vgcs_additional_info(const struct gsm0808_talker_identity *ti)
+{
+	struct msgb *msg;
+
+	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "BSSMAP-VGCS-ADDITIONAL-INFO");
+	if (!msg)
+		return NULL;
+
+	/* Message Type, 3.2.2.1 */
+	msgb_v_put(msg, BSS_MAP_MSG_VGCS_ADDL_INFO);
+
+	/* Talker Identity, 3.2.2.91 */
+	gsm0808_enc_talker_identity(msg, ti);
+
+	/* prepend header with final length */
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
+
+	return msg;
+}
+
+/*! Create BSSMAP VGCS/VBS AREA CELL INFO message, 3GPP TS 48.008 3.2.1.79.
+ * Sent from the BSC to the MSC to transfer additional infos about cells. */
+struct msgb *gsm0808_create_vgcs_vbs_area_cell_info(const struct gsm0808_vgcs_vbs_area_cell_info *params)
+{
+	struct msgb *msg;
+
+	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "BSSMAP-VGCS/VBS-AREA-CELL-INFO");
+	if (!msg)
+		return NULL;
+
+	/* Message Type, 3.2.2.1 */
+	msgb_v_put(msg, BSS_MAP_MSG_VGCS_VBS_ASSIGNMENT_RQST);
+
+	/* Cell Identifier List Segment, 3.2.2.27a */
+	gsm0808_enc_cell_id_list_segment(msg, GSM0808_IE_CELL_ID_LIST_SEGMENT, &params->cils);
+
+	/* Assignment Requrirement, 3.2.2.52 */
+	if (params->ass_req_present)
+		gsm0808_enc_assign_req(msg, params->ass_req);
+
+	/* prepend header with final length */
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
+
+	return msg;
+}
+
+/*! Create BSSMAP VGCS/VBS ASSIGNMENT STATUS message, 3GPP TS 48.008 3.2.1.80.
+ * Sent from the BSC to the MSC to indicate assignment status for each cell. */
+struct msgb *gsm0808_create_vgcs_vbs_assign_stat(const struct gsm0808_vgcs_vbs_assign_stat *params)
+{
+	struct msgb *msg;
+	uint8_t val;
+
+	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "BSSMAP-VGCS/VBS-ASSIGNMENT-STATUS");
+	if (!msg)
+		return NULL;
+
+	/* Message Type, 3.2.2.1 */
+	msgb_v_put(msg, BSS_MAP_MSG_VGCS_VBS_ASSIGNMENT_STATUS);
+
+	/* Cell Identifier List Segment, 3.2.2.27b */
+	if (params->cils_est_present)
+		gsm0808_enc_cell_id_list_segment(msg, GSM0808_IE_CELL_ID_LIST_SEG_EST_CELLS, &params->cils_est);
+	/* Cell Identifier List Segment, 3.2.2.27c */
+	if (params->cils_tbe_present)
+		gsm0808_enc_cell_id_list_segment(msg, GSM0808_IE_CELL_ID_LIST_SEG_CELLS_TBE, &params->cils_tbe);
+	/* Cell Identifier List Segment, 3.2.2.27e */
+	if (params->cils_rel_present)
+		gsm0808_enc_cell_id_list_segment(msg, GSM0808_IE_CELL_ID_LIST_SEG_REL_CELLS, &params->cils_rel);
+	/* Cell Identifier List Segment, 3.2.2.27f */
+	if (params->cils_ne_present)
+		gsm0808_enc_cell_id_list_segment(msg, GSM0808_IE_CELL_ID_LIST_SEG_NE_CELLS, &params->cils_ne);
+
+	/* VGCS/VBS Cell Status, 3.2.2.94 */
+	if (params->cell_status_present) {
+		val = params->cell_status;
+		msgb_tlv_put(msg, GSM0808_IE_VGCS_VBS_CELL_STATUS, 1, &val);
+	}
+
+	/* prepend header with final length */
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
+
+	return msg;
+}
+
+/*! Create BSSMAP VGCS SMS message, 3GPP TS 48.008 3.2.1.81.
+ * Sent from the MSC to the BSC to send an SMS to VGCS. */
+struct msgb *gsm0808_create_vgcs_sms(const struct gsm0808_sms_to_vgcs *sms)
+{
+	struct msgb *msg;
+
+	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "BSSMAP-VGCS-SMS");
+	if (!msg)
+		return NULL;
+
+	/* SMS to VGCS, 3.2.2.92 */
+	msgb_tlv_put(msg, GSM0808_IE_VGCS_VBS_CELL_STATUS, sms->sms_len, sms->sms);
+
+	/* prepend header with final length */
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
+
+	return msg;
+}
+
+/*! Create BSSMAP (VGCS/VBS) NOTIFICATION DATA message, 3GPP TS 48.008 3.2.1.82.
+ * Sent from the MSC to the BSC to send application specific data. */
+struct msgb *gsm0808_create_notification_data(const struct gsm0808_notification_data *params)
+{
+	struct msgb *msg;
+
+	msg = msgb_alloc_headroom(BSSMAP_MSG_SIZE, BSSMAP_MSG_HEADROOM, "BSSMAP-VGCS-SMS");
+	if (!msg)
+		return NULL;
+
+	/* Message Type, 3.2.2.1 */
+	msgb_v_put(msg, BSS_MAP_MSG_NOTIFICATION_DATA);
+
+	/* Application Data, 3.2.2.98 */
+	msgb_tlv_put(msg, GSM0808_IE_APP_DATA, params->app_data.data_len, params->app_data.data);
+
+	/* Data Identity, 3.2.2.99 */
+	gsm0808_enc_data_identity(msg, &params->data_ident);
+
+	/* MSISDN, 3.2.2.101 */
+	if (params->msisdn_present)
+		gsm0808_enc_msisdn(msg, params->msisdn);
+
+	/* prepend header with final length */
+	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
+
+	return msg;
+}
+
+/* Note that EMERGENCY RESET INDICATION and EMERGENCY RESET COMMAND cannot be implemented, due to lack of
+ * message type information in the specifications. */
+
 /* As per 3GPP TS 48.008 version 11.7.0 Release 11 */
 static const struct tlv_definition bss_att_tlvdef = {
 	.def = {
@@ -1775,7 +2428,9 @@ static const struct value_string gsm0808_msgt_names[] = {
 	{ BSS_MAP_MSG_VGCS_VBS_ASSIGNMENT_RQST,	"VGCS/VBS ASSIGN REQ" },
 	{ BSS_MAP_MSG_VGCS_VBS_ASSIGNMENT_RESULT, "VGCS/VBS ASSIGN RES" },
 	{ BSS_MAP_MSG_VGCS_VBS_ASSIGNMENT_FAILURE, "VGCS/VBS ASSIGN FAIL" },
+	{ BSS_MAP_MSG_VGCS_VBS_ASSIGNMENT_STATUS, "VGCS/VBS ASSIGN STATUS" },
 	{ BSS_MAP_MSG_VGCS_VBS_QUEUING_INDICATION, "VGCS/VBS QUEUING IND" },
+	{ BSS_MAP_MSG_VGCS_VBS_AREA_CELL_INFO,	"VGCS/VBS AREA CELL INFO" },
 	{ BSS_MAP_MSG_UPLINK_RQST,		"UPLINK REQ" },
 	{ BSS_MAP_MSG_UPLINK_RQST_ACKNOWLEDGE,	"UPLINK REQ ACK" },
 	{ BSS_MAP_MSG_UPLINK_RQST_CONFIRMATION,	"UPLINK REQ CONF" },
@@ -1784,6 +2439,7 @@ static const struct value_string gsm0808_msgt_names[] = {
 	{ BSS_MAP_MSG_UPLINK_RELEASE_CMD,	"UPLINK REL CMD" },
 	{ BSS_MAP_MSG_UPLINK_SEIZED_CMD,	"UPLINK SEIZED CMD" },
 	{ BSS_MAP_MSG_VGCS_ADDL_INFO,		"VGCS ADDL INFO" },
+	{ BSS_MAP_MSG_VGCS_SMS,			"VGCS SMS" },
 	{ BSS_MAP_MSG_NOTIFICATION_DATA,	"NOTIF DATA" },
 	{ BSS_MAP_MSG_UPLINK_APP_DATA,		"UPLINK APP DATA" },
 
