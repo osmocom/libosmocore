@@ -62,6 +62,7 @@ osmocore_HEADERS = \
 	sockaddr_str.h \
 	time_cc.h \
 	use_count.h \
+	socket_compat.h \
 	$(NULL)
 
 if ENABLE_PLUGIN
@@ -93,3 +94,9 @@ bit%gen.h: bitXXgen.h.tpl
 crc%gen.h: crcXXgen.h.tpl
 	$(AM_V_GEN)$(MKDIR_P) $(dir $@)
 	$(AM_V_GEN)sed -e's/XX/$*/g' $< > $@
+
+socket_compat.h: socket_compat.h.tpl
+	$(AM_V_GEN)$(MKDIR_P) $(dir $@)
+	$(AM_V_GEN)sed -e's/XX/$(HAVE_SYS_SOCKET_H)/g' $< > $@
+
+EXTRA_DIST = socket_compat.h.tpl

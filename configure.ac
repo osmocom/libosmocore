@@ -69,6 +69,7 @@ AC_SUBST(LTLDFLAGS_OSMOCTRL)
 dnl checks for header files
 AC_HEADER_STDC
 AC_CHECK_HEADERS(execinfo.h poll.h sys/select.h sys/socket.h sys/signalfd.h sys/eventfd.h sys/timerfd.h syslog.h ctype.h netinet/tcp.h netinet/in.h)
+AC_CHECK_DECL(HAVE_SYS_SOCKET_H, AC_SUBST(HAVE_SYS_SOCKET_H, 1), AC_SUBST(HAVE_SYS_SOCKET_H, 0))
 # for src/conv.c
 AC_FUNC_ALLOCA
 AC_SEARCH_LIBS([dlopen], [dl dld], [LIBRARY_DLOPEN="$LIBS";LIBS=""])
