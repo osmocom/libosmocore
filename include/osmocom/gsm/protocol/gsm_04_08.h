@@ -1202,6 +1202,13 @@ struct gsm48_system_information_type_10 {
 #endif
 } __attribute__ ((packed));
 
+/* TS 44.018 Section 9.1.49 */
+struct gsm0408_vgcs_ul_grant {
+	struct gsm48_hdr hdr;
+	struct gsm48_req_ref req_ref;
+	uint8_t ta;
+} __attribute__ ((packed));
+
 /* Section 9.1.43a System Information type 13 */
 struct gsm48_system_information_type_13 {
 	struct gsm48_system_information_type_header header;
