@@ -219,28 +219,29 @@ struct iofd_msghdr *iofd_txqueue_dequeue(struct osmo_io_fd *iofd)
 */
 static enum iofd_seg_act iofd_handle_segmentation(struct osmo_io_fd *iofd, struct msgb *msg, struct msgb **pending_out)
 {
-	int extra_len, msg_len;
+	int extra_len, received_len;
 	struct msgb *msg_pending;
 
-	msg_len = msgb_length(msg);
+	received_len = msgb_length(msg);
 
 	if (!iofd->io_ops.segmentation_cb) {
 		*pending_out = NULL;
 		return IOFD_SEG_ACT_HANDLE_ONE;
 	}
 
-	int len = iofd->io_ops.segmentation_cb(msg);
-	if (len == -EAGAIN) {
+	int expected_len = iofd->io_ops.segmentation_cb(msg);
+	if (expected_len == -EAGAIN) {
 		goto defer;
-	} else if (len < 0) {
+	} else if (expected_len < 0) {
 		/* Something is wrong, skip this msgb */
-		LOGPIO(iofd, LOGL_ERROR, "segmentation_cb returned error (%d), skipping msg of size %d\n", len, msg_len);
+		LOGPIO(iofd, LOGL_ERROR, "segmentation_cb returned error (%d), skipping msg of size %d\n",
+		       expected_len, received_len);
 		*pending_out = NULL;
 		msgb_free(msg);
 		return IOFD_SEG_ACT_DEFER;
 	}
 
-	extra_len = msg_len - len;
+	extra_len = received_len - expected_len;
 	/* No segmentation needed, return the whole msgb */
 	if (extra_len == 0) {
 		*pending_out = NULL;
@@ -253,12 +254,12 @@ static enum iofd_seg_act iofd_handle_segmentation(struct osmo_io_fd *iofd, struc
 	/* msgb contains more than one segment */
 	/* Copy the trailing data over */
 	msg_pending = iofd_msgb_alloc(iofd);
-	memcpy(msgb_data(msg_pending), msgb_data(msg) + len, extra_len);
+	memcpy(msgb_data(msg_pending), msgb_data(msg) + expected_len, extra_len);
 	msgb_put(msg_pending, extra_len);
 	*pending_out = msg_pending;
 
 	/* Trim the original msgb to size */
-	msgb_trim(msg, len);
+	msgb_trim(msg, expected_len);
 	return IOFD_SEG_ACT_HANDLE_MORE;
 
 defer:
