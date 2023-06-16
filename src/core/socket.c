@@ -1550,6 +1550,11 @@ int osmo_sock_get_name_buf(char *str, size_t str_len, int fd)
 	char portbuf_l[6], portbuf_r[6];
 	int rc;
 
+	if (fd < 0) {
+		osmo_strlcpy(str, "<error-bad-fd>", str_len);
+		return -EBADF;
+	}
+
 	/* get local */
 	if ((rc = osmo_sock_get_ip_and_port(fd, hostbuf_l, sizeof(hostbuf_l), portbuf_l, sizeof(portbuf_l), true))) {
 		osmo_strlcpy(str, "<error-in-getsockname>", str_len);
