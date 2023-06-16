@@ -56,7 +56,7 @@ static void iofd_poll_ofd_cb_recvmsg_sendmsg(struct osmo_fd *ofd, unsigned int w
 		}
 
 		hdr.msg = msg;
-		hdr.iov[0].iov_base = msgb_data(msg);
+		hdr.iov[0].iov_base = msg->tail;
 		hdr.iov[0].iov_len = msgb_tailroom(msg);
 		hdr.hdr.msg_iov = &hdr.iov[0];
 		hdr.hdr.msg_iovlen = 1;
