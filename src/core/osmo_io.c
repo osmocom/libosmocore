@@ -128,7 +128,8 @@ struct msgb *iofd_msgb_alloc(struct osmo_io_fd *iofd)
 
 	OSMO_ASSERT(iofd->msgb_alloc.size < 0xffff - headroom);
 	return msgb_alloc_headroom_c(iofd->msgb_alloc.ctx,
-				     iofd->msgb_alloc.size + headroom, headroom, iofd->name);
+				     iofd->msgb_alloc.size + headroom, headroom,
+				     iofd->name ? : "iofd_msgb");
 }
 
 /*! return the pending msgb in iofd or NULL if there is none*/
@@ -388,7 +389,8 @@ struct osmo_io_fd *osmo_iofd_setup(const void *ctx, int fd, const char *name, en
 	iofd->fd = fd;
 	iofd->mode = mode;
 
-	iofd->name = talloc_strdup(iofd, name);
+	if (name)
+		iofd->name = talloc_strdup(iofd, name);
 
 	if (ioops)
 		iofd->io_ops = *ioops;
@@ -576,6 +578,14 @@ int osmo_iofd_get_fd(const struct osmo_io_fd *iofd)
 const char *osmo_iofd_get_name(const struct osmo_io_fd *iofd)
 {
 	return iofd->name;
+}
+
+/*! Set the name of the file descriptor
+ *  \param[in] iofd the file descriptor
+ *  \param[in] name the name to set on the file descriptor */
+void osmo_iofd_set_name(struct osmo_io_fd *iofd, const char *name)
+{
+	osmo_talloc_replace_string(iofd, &iofd->name, name);
 }
 
 /*! Set the osmo_io_ops for an iofd

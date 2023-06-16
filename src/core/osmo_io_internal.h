@@ -44,7 +44,7 @@ struct osmo_io_fd {
 	bool to_free;
 
 	/*! human-readable name to associte with fd */
-	const char *name;
+	char *name;
 
 	/*! send/recv (msg) callback functions */
 	struct osmo_io_ops io_ops;
