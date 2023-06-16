@@ -38,6 +38,11 @@
 
 #define TEST_START() printf("Running %s\n", __func__)
 
+static uint8_t TESTDATA[] = {
+	1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16
+};
+
+
 static void *ctx = NULL;
 
 static void read_cb(struct osmo_io_fd *iofd, int rc, struct msgb *msg)
@@ -51,7 +56,15 @@ static void read_cb(struct osmo_io_fd *iofd, int rc, struct msgb *msg)
 
 static void write_cb(struct osmo_io_fd *iofd, int rc, struct msgb *msg)
 {
+	uint8_t *buf;
 	printf("%s: write() returned rc=%d\n", osmo_iofd_get_name(iofd), rc);
+	if (rc == 0) {
+		msg = msgb_alloc(1024, "Test data");
+		buf = msgb_put(msg, sizeof(TESTDATA));
+		memcpy(buf, TESTDATA, sizeof(TESTDATA));
+
+		osmo_iofd_write_msgb(iofd, msg);
+	}
 }
 
 struct osmo_io_ops ioops_conn_read_write = {
@@ -59,16 +72,10 @@ struct osmo_io_ops ioops_conn_read_write = {
 	.write_cb = write_cb,
 };
 
-uint8_t TESTDATA[] = {
-	1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16
-};
-
 static void test_connected(void)
 {
 	int fds[2] = {0, 0}, rc;
 	struct osmo_io_fd *iofd1, *iofd2;
-	struct msgb *msg;
-	uint8_t *buf;
 
 	TEST_START();
 
@@ -79,13 +86,6 @@ static void test_connected(void)
 	osmo_iofd_register(iofd1, fds[0]);
 	iofd2 = osmo_iofd_setup(ctx, fds[1], "ep2", OSMO_IO_FD_MODE_READ_WRITE, &ioops_conn_read_write, NULL);
 	osmo_iofd_register(iofd2, fds[1]);
-
-	msg = msgb_alloc(1024, "Test data");
-	buf = msgb_put(msg, sizeof(TESTDATA));
-	memcpy(buf, TESTDATA, sizeof(TESTDATA));
-
-	osmo_iofd_write_msgb(iofd1, msg);
-
 
 	/* Allow enough cycles to handle the messages */
 	for (int i = 0; i < 128; i++)
