@@ -42,6 +42,7 @@
 #include <osmocom/gsm/protocol/gsm_08_58.h>
 #include <osmocom/gsm/protocol/gsm_04_08_gprs.h>
 #include <osmocom/gsm/protocol/gsm_23_003.h>
+#include <osmocom/gsm/protocol/gsm_44_068.h>
 
 /*! \addtogroup gsm0408
  *  @{
@@ -1754,6 +1755,10 @@ char *gsm48_pdisc_msgtype_name_buf(char *buf, size_t buf_len, uint8_t pdisc, uin
 		break;
 	case GSM48_PDISC_CC:
 		msgt_names = gsm48_cc_msgtype_names;
+		break;
+	case GSM48_PDISC_GROUP_CC:
+	case GSM48_PDISC_BCAST_CC:
+		msgt_names = osmo_gsm44068_msg_type_names;
 		break;
 	case GSM48_PDISC_NC_SS:
 		msgt_names = gsm48_nc_ss_msgtype_names;
