@@ -2997,7 +2997,7 @@ return_invalid_indent:
 /* Configration from terminal */
 DEFUN(config_terminal,
       config_terminal_cmd,
-      "configure terminal",
+      "configure [terminal]",
       "Configuration from vty interface\n" "Configuration terminal\n")
 {
 	if (vty_config_lock(vty))
