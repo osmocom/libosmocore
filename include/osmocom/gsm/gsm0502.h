@@ -105,3 +105,5 @@ uint32_t gsm0502_fn_remap(uint32_t fn, enum gsm0502_fn_remap_channel channel);
 uint16_t gsm0502_hop_seq_gen(const struct gsm_time *t,
 			     uint8_t hsn, uint8_t maio,
 			     size_t n, const uint16_t *ma);
+
+int gsm0502_fn2ccch_block(uint32_t fn);

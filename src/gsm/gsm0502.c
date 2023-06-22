@@ -260,3 +260,38 @@ uint16_t gsm0502_hop_seq_gen(const struct gsm_time *t,
 
 	return ma ? ma[mai] : mai;
 }
+
+#define CB_FCCH		-1
+#define CB_SCH		-2
+#define CB_BCCH		-3
+#define CB_IDLE		-4
+
+/* Clause 7 Table 3 and Figure 8a */
+static const int ccch_block_table[51] = {
+	CB_FCCH, CB_SCH,			/* 0..1 */
+	CB_BCCH, CB_BCCH, CB_BCCH, CB_BCCH,	/* 2..5: BCCH */
+	0, 0, 0, 0,				/* 6..9: B0 */
+	CB_FCCH, CB_SCH,			/* 10..11 */
+	1, 1, 1, 1,				/* 12..15: B1 */
+	2, 2, 2, 2,				/* 16..19: B2 */
+	CB_FCCH, CB_SCH,			/* 20..21 */
+	3, 3, 3, 3,				/* 22..25: B3 */
+	4, 4, 4, 4,				/* 26..29: B4 */
+	CB_FCCH, CB_SCH,			/* 30..31 */
+	5, 5, 5, 5,				/* 32..35: B5 */
+	6, 6, 6, 6,				/* 36..39: B6 */
+	CB_FCCH, CB_SCH,			/* 40..41 */
+	7, 7, 7, 7,				/* 42..45: B7 */
+	8, 8, 8, 8,				/* 46..49: B8 */
+	CB_IDLE					/* 50: Idle */
+};
+
+/*! Calculate CCCH block number from the given TDMA frame number.
+ *  \param[in] fn TDMA frame number (of first or last burst).
+ *  \returns CCCH block number 0..8 or a negative value,
+ *           if the given frame number cannot carry CCCH.
+ */
+int gsm0502_fn2ccch_block(uint32_t fn)
+{
+	return ccch_block_table[fn % 51];
+}
