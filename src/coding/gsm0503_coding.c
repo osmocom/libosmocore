@@ -2262,7 +2262,7 @@ int gsm0503_tch_afs_decode_dtx(uint8_t *tch_data, const sbit_t *bursts,
 			tch_amr_sid_update_append(sid_first_dummy, 0,
 						  (codec_mode_req) ? codec[*ft]
 						  : codec[id > 0 ? id : 0]);
-			tch_amr_reassemble(tch_data, conv, 39);
+			tch_amr_reassemble(tch_data, sid_first_dummy, 39);
 			len = 5;
 			goto out;
 		case AFS_SID_UPDATE: /* TODO: parse CMI _and_ CMC/CMR (16 + 16 bit) */
