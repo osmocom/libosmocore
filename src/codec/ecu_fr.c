@@ -95,6 +95,7 @@ struct fr_ecu_state {
 	uint8_t sid_xmaxc;
 	uint8_t sid_reemit_count;
 	struct osmo_prbs_state prng;
+	bool last_input_was_sid;
 };
 
 /* This function is the frame input to the ECU - all inputs to this
@@ -110,6 +111,7 @@ static void fr_ecu_input(struct fr_ecu_state *fr, const uint8_t *frame)
 	case OSMO_GSM631_SID_CLASS_SPEECH:
 		memcpy(fr->speech_frame, frame, GSM_FR_BYTES);
 		fr->pr_state = STATE_SPEECH;
+		fr->last_input_was_sid = false;
 		return;
 	case OSMO_GSM631_SID_CLASS_INVALID:
 		/* GSM 06.31 section 6.1.2 says: "an invalid SID frame
@@ -136,6 +138,7 @@ static void fr_ecu_input(struct fr_ecu_state *fr, const uint8_t *frame)
 		 * GSM 06.31 an invalid SID is still an accepted SID frame
 		 * for the purpose of "lost SID" logic. */
 		fr->sid_reemit_count = 0;
+		fr->last_input_was_sid = true;
 		return;
 	case OSMO_GSM631_SID_CLASS_VALID:
 		/* save LARc part */
@@ -144,6 +147,7 @@ static void fr_ecu_input(struct fr_ecu_state *fr, const uint8_t *frame)
 		fr->sid_xmaxc = ((frame[27] & 0x1F) << 1) | (frame[28] >> 7);
 		fr->pr_state = STATE_SID;
 		fr->sid_reemit_count = 0;
+		fr->last_input_was_sid = true;
 		return;
 	default:
 		/* There are only 3 possible SID classifications per GSM 06.31
@@ -320,10 +324,18 @@ static int ecu_fr_frame_out(struct osmo_ecu_state *st, uint8_t *frame_out)
 	return GSM_FR_BYTES;
 }
 
+static bool ecu_fr_is_dtx_pause(struct osmo_ecu_state *st)
+{
+	struct fr_ecu_state *fr = (struct fr_ecu_state *) &st->data;
+
+	return fr->last_input_was_sid;
+}
+
 static const struct osmo_ecu_ops osmo_ecu_ops_fr = {
 	.init = ecu_fr_init,
 	.frame_in = ecu_fr_frame_in,
 	.frame_out = ecu_fr_frame_out,
+	.is_dtx_pause = ecu_fr_is_dtx_pause,
 };
 
 static __attribute__((constructor)) void on_dso_load_ecu_fr(void)

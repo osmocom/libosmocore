@@ -96,6 +96,20 @@ int osmo_ecu_frame_out(struct osmo_ecu_state *st, uint8_t *frame_out)
 	return g_ecu_ops[st->codec]->frame_out(st, frame_out);
 }
 
+/*! check if the current state of this ECU is a DTX pause.
+ *  \param[in] st ECU state/instance on which to operate
+ *  \return true if DTX pause, false otherwise */
+bool osmo_ecu_is_dtx_pause(struct osmo_ecu_state *st)
+{
+	if (st->codec >= ARRAY_SIZE(g_ecu_ops))
+		return false;
+	if (!g_ecu_ops[st->codec])
+		return false;
+	if (!g_ecu_ops[st->codec]->is_dtx_pause)
+		return false;
+	return g_ecu_ops[st->codec]->is_dtx_pause(st);
+}
+
 /***********************************************************************
  * low-level API for ECU implementations
  ***********************************************************************/
