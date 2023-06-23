@@ -909,55 +909,32 @@ int lapdm_phsap_up(struct osmo_prim_hdr *oph, struct lapdm_entity *le)
 	if (oph->sap != SAP_GSM_PH) {
 		LOGP(DLLAPD, LOGL_ERROR, "primitive for unknown SAP %u\n",
 			oph->sap);
-		rc = -ENODEV;
-		goto free;
+		msgb_free(oph->msg);
+		return -ENODEV;
 	}
 
-	switch (oph->primitive) {
-	case PRIM_PH_DATA:
-		if (oph->operation != PRIM_OP_INDICATION) {
-			LOGP(DLLAPD, LOGL_ERROR, "PH_DATA is not INDICATION %u\n",
-				oph->operation);
-			rc = -ENODEV;
-			goto free;
-		}
+	switch (OSMO_PRIM_HDR(oph)) {
+	case OSMO_PRIM(PRIM_PH_DATA, PRIM_OP_INDICATION):
 		rc = l2_ph_data_ind(oph->msg, le, pp->u.data.chan_nr,
 				    pp->u.data.link_id);
 		break;
-	case PRIM_PH_RTS:
-		if (oph->operation != PRIM_OP_INDICATION) {
-			LOGP(DLLAPD, LOGL_ERROR, "PH_RTS is not INDICATION %u\n",
-				oph->operation);
-			rc = -ENODEV;
-			goto free;
-		}
+	case OSMO_PRIM(PRIM_PH_RTS, PRIM_OP_INDICATION):
 		rc = l2_ph_data_conf(oph->msg, le);
 		break;
-	case PRIM_PH_RACH:
-		switch (oph->operation) {
-		case PRIM_OP_INDICATION:
-			rc = l2_ph_rach_ind(le, pp->u.rach_ind.ra, pp->u.rach_ind.fn,
-					    pp->u.rach_ind.acc_delay);
-			break;
-		case PRIM_OP_CONFIRM:
-			rc = l2_ph_chan_conf(oph->msg, le, pp->u.rach_ind.fn);
-			break;
-		default:
-			rc = -EIO;
-			goto free;
-		}
+	case OSMO_PRIM(PRIM_PH_RACH, PRIM_OP_INDICATION):
+		rc = l2_ph_rach_ind(le, pp->u.rach_ind.ra, pp->u.rach_ind.fn,
+				    pp->u.rach_ind.acc_delay);
+		break;
+	case OSMO_PRIM(PRIM_PH_RACH, PRIM_OP_CONFIRM):
+		rc = l2_ph_chan_conf(oph->msg, le, pp->u.rach_ind.fn);
 		break;
 	default:
 		LOGP(DLLAPD, LOGL_ERROR, "Unknown primitive %u\n",
 			oph->primitive);
-		rc = -EINVAL;
-		goto free;
+		msgb_free(oph->msg);
+		return -EINVAL;
 	}
 
-	return rc;
-
-free:
-	msgb_free(oph->msg);
 	return rc;
 }
 
