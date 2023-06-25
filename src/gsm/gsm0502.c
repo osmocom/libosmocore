@@ -293,5 +293,5 @@ static const int ccch_block_table[51] = {
  */
 int gsm0502_fn2ccch_block(uint32_t fn)
 {
-	return ccch_block_table[fn % 51];
+	return ccch_block_table[fn % ARRAY_SIZE(ccch_block_table)];
 }
