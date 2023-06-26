@@ -51,7 +51,7 @@ static void iofd_poll_ofd_cb_recvmsg_sendmsg(struct osmo_fd *ofd, unsigned int w
 		struct iofd_msghdr hdr;
 		msg = iofd_msgb_pending_or_alloc(iofd);
 		if (!msg) {
-			LOGP(DLIO, LOGL_ERROR, "iofd(%s): Could not get msgb for reading\n", iofd->name);
+			LOGPIO(iofd, LOGL_ERROR, "Could not allocate msgb for reading\n");
 			OSMO_ASSERT(0);
 		}
 
