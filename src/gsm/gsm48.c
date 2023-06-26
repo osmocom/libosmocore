@@ -955,6 +955,17 @@ int osmo_mobile_identity_decode_from_l3_buf(struct osmo_mobile_identity *mi, con
 			cm2_buf = (uint8_t*)&paging_response->cm2;
 			goto got_cm2;
 
+		case GSM48_MT_RR_TALKER_IND:
+			/* Check minimum size: Header + CM2 LV + minimum MI LV */
+			if (l3_len < sizeof(*gh) + 4 + 2)
+				return -EBADMSG;
+			/* CM2 shall be always 3 bytes in length */
+			if (gh->data[0] != 3)
+				return -EBADMSG;
+			cm2_len = gh->data[0];
+			cm2_buf = gh->data + 1;
+			goto got_cm2;
+
 		default:
 			break;
 		}
