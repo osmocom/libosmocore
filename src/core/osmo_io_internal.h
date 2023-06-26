@@ -29,6 +29,19 @@ struct iofd_backend_ops {
 	void (*read_disable)(struct osmo_io_fd *iofd);
 };
 
+#define IOFD_FLAG_CLOSED (1<<0)
+#define IOFD_FLAG_IN_CALLBACK (1<<1)
+#define IOFD_FLAG_TO_FREE (1<<2)
+#define IOFD_FLAG_NOTIFY_CONNECTED (1<<3)
+
+#define IOFD_FLAG_SET(iofd, flag) \
+	(iofd)->flags |= (flag)
+
+#define IOFD_FLAG_UNSET(iofd, flag) \
+	(iofd)->flags &= ~(flag)
+
+#define IOFD_FLAG_ISSET(iofd, flag) ((iofd)->flags & (flag))
+
 struct osmo_io_fd {
 	/*! linked list for internal management */
 	struct llist_head list;
@@ -38,10 +51,7 @@ struct osmo_io_fd {
 	enum osmo_io_fd_mode mode;
 
 	/*! flags to guard closing/freeing of iofd */
-	/* TODO: Move to bitfield */
-	bool closed;
-	bool in_callback;
-	bool to_free;
+	uint32_t flags;
 
 	/*! human-readable name to associte with fd */
 	char *name;

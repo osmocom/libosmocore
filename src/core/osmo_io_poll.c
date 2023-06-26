@@ -81,7 +81,7 @@ static void iofd_poll_ofd_cb_recvmsg_sendmsg(struct osmo_fd *ofd, unsigned int w
 		}
 	}
 
-	if (iofd->closed)
+	if (IOFD_FLAG_ISSET(iofd, IOFD_FLAG_CLOSED))
 		return;
 
 	if (what & OSMO_FD_WRITE) {
@@ -126,11 +126,11 @@ static int iofd_poll_ofd_cb_dispatch(struct osmo_fd *ofd, unsigned int what)
 {
 	struct osmo_io_fd *iofd = ofd->data;
 
-	iofd->in_callback = true;
+	IOFD_FLAG_SET(iofd, IOFD_FLAG_IN_CALLBACK);
 	iofd_poll_ofd_cb_recvmsg_sendmsg(ofd, what);
-	iofd->in_callback = false;
+	IOFD_FLAG_UNSET(iofd, IOFD_FLAG_IN_CALLBACK);
 
-	if (iofd->to_free) {
+	if (IOFD_FLAG_ISSET(iofd, IOFD_FLAG_TO_FREE)) {
 		talloc_free(iofd);
 		return 0;
 	}

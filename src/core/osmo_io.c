@@ -388,6 +388,7 @@ struct osmo_io_fd *osmo_iofd_setup(const void *ctx, int fd, const char *name, en
 
 	iofd->fd = fd;
 	iofd->mode = mode;
+	IOFD_FLAG_SET(iofd, IOFD_FLAG_CLOSED);
 
 	if (name)
 		iofd->name = talloc_strdup(iofd, name);
@@ -427,7 +428,7 @@ int osmo_iofd_register(struct osmo_io_fd *iofd, int fd)
 	if (rc)
 		return rc;
 
-	iofd->closed = false;
+	IOFD_FLAG_UNSET(iofd, IOFD_FLAG_CLOSED);
 	osmo_iofd_ops.read_enable(iofd);
 	osmo_iofd_ops.write_enable(iofd);
 
@@ -443,6 +444,7 @@ int osmo_iofd_unregister(struct osmo_io_fd *iofd)
 {
 	if (osmo_iofd_ops.unregister_fd)
 		return osmo_iofd_ops.unregister_fd(iofd);
+	IOFD_FLAG_SET(iofd, IOFD_FLAG_CLOSED);
 
 	return 0;
 }
@@ -483,12 +485,12 @@ void osmo_iofd_free(struct osmo_io_fd *iofd)
 
 	osmo_iofd_close(iofd);
 
-	if (!iofd->in_callback) {
+	if (!IOFD_FLAG_ISSET(iofd, IOFD_FLAG_IN_CALLBACK)) {
 		talloc_free(iofd);
 	} else {
 		/* Prevent our parent context from freeing us prematurely */
 		talloc_steal(NULL, iofd);
-		iofd->to_free = true;
+		IOFD_FLAG_SET(iofd, IOFD_FLAG_TO_FREE);
 	}
 }
 
@@ -503,10 +505,10 @@ int osmo_iofd_close(struct osmo_io_fd *iofd)
 {
 	int rc = 0;
 
-	if (iofd->closed)
+	if (IOFD_FLAG_ISSET(iofd, IOFD_FLAG_CLOSED))
 		return rc;
 
-	iofd->closed = true;
+	IOFD_FLAG_SET(iofd, IOFD_FLAG_CLOSED);
 
 	/* Free pending msgs in tx queue */
 	osmo_iofd_txqueue_clear(iofd);
