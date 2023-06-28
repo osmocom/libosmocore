@@ -531,6 +531,9 @@ struct gsmtap_inst *gsmtap_source_init(const char *host, uint16_t port,
 
 void gsmtap_source_free(struct gsmtap_inst *gti)
 {
+	if (!gti)
+		return;
+
 	if (gti->ofd_wq_mode) {
 		osmo_fd_unregister(&gti->wq.bfd);
 		osmo_wqueue_clear(&gti->wq);
