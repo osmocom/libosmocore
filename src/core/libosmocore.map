@@ -273,6 +273,7 @@ osmo_iofd_txqueue_clear;
 osmo_iofd_txqueue_len;
 osmo_iofd_unregister;
 osmo_iofd_uring_init;
+osmo_iofd_notify_connected;
 osmo_iofd_write_msgb;
 osmo_ip_str_type;
 osmo_isdnhdlc_decode;

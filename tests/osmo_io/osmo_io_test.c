@@ -86,6 +86,8 @@ static void test_connected(void)
 	osmo_iofd_register(iofd1, fds[0]);
 	iofd2 = osmo_iofd_setup(ctx, fds[1], "ep2", OSMO_IO_FD_MODE_READ_WRITE, &ioops_conn_read_write, NULL);
 	osmo_iofd_register(iofd2, fds[1]);
+	// Explicitly check if ep1 is connected through write_cb
+	osmo_iofd_notify_connected(iofd1);
 
 	/* Allow enough cycles to handle the messages */
 	for (int i = 0; i < 128; i++)

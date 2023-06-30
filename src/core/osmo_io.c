@@ -433,7 +433,9 @@ int osmo_iofd_register(struct osmo_io_fd *iofd, int fd)
 
 	IOFD_FLAG_UNSET(iofd, IOFD_FLAG_CLOSED);
 	osmo_iofd_ops.read_enable(iofd);
-	osmo_iofd_ops.write_enable(iofd);
+
+	if (iofd->tx_queue.current_length > 0)
+		osmo_iofd_ops.write_enable(iofd);
 
 	return rc;
 }
@@ -602,5 +604,15 @@ void osmo_iofd_set_ioops(struct osmo_io_fd *iofd, const struct osmo_io_ops *ioop
 {
 	iofd->io_ops = *ioops;
 }
+
+/*! Notify the user if/when the socket is connected
+ *  When the socket is connected the write_cb will be called.
+ *  \param[in] iofd the file descriptor */
+void osmo_iofd_notify_connected(struct osmo_io_fd *iofd)
+{
+	OSMO_ASSERT(iofd->mode == OSMO_IO_FD_MODE_READ_WRITE);
+	osmo_iofd_ops.write_enable(iofd);
+}
+
 
 #endif /* defined(__linux__) */
