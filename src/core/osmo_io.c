@@ -171,7 +171,7 @@ int iofd_txqueue_enqueue(struct osmo_io_fd *iofd, struct iofd_msghdr *msghdr)
 	llist_add_tail(&msghdr->list, &iofd->tx_queue.msg_queue);
 	iofd->tx_queue.current_length++;
 
-	if (iofd->tx_queue.current_length == 1)
+	if (iofd->tx_queue.current_length == 1 && !IOFD_FLAG_ISSET(iofd, IOFD_FLAG_CLOSED))
 		osmo_iofd_ops.write_enable(iofd);
 
 	return 0;
@@ -188,6 +188,9 @@ void iofd_txqueue_enqueue_front(struct osmo_io_fd *iofd, struct iofd_msghdr *msg
 {
 	llist_add(&msghdr->list, &iofd->tx_queue.msg_queue);
 	iofd->tx_queue.current_length++;
+
+	if (iofd->tx_queue.current_length == 1 && !IOFD_FLAG_ISSET(iofd, IOFD_FLAG_CLOSED))
+		osmo_iofd_ops.write_enable(iofd);
 }
 
 /*! Dequeue a message from the front
