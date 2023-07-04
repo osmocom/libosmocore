@@ -479,7 +479,7 @@ int ipa_ccm_rcvmsg_base(struct msgb *msg, struct osmo_fd *bfd)
 	case IPAC_MSGT_PING:
 		ret = ipa_ccm_send_pong(bfd->fd);
 		if (ret < 0) {
-			LOGP(DLINP, LOGL_ERROR, "Cannot send PING "
+			LOGP(DLINP, LOGL_ERROR, "Cannot send PONG "
 			     "message. Reason: %s\n", strerror(errno));
 			break;
 		}
