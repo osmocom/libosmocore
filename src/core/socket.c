@@ -561,19 +561,21 @@ int osmo_sock_init_osa(uint16_t type, uint8_t proto,
 			rc = setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR,
 					&on, sizeof(on));
 			if (rc < 0) {
+				int err = errno;
 				_SOCKADDR_TO_STR(sastr, local);
 				LOGP(DLGLOBAL, LOGL_ERROR,
 				     "cannot setsockopt socket: " OSMO_SOCKADDR_STR_FMT ": %s\n",
-				     OSMO_SOCKADDR_STR_FMT_ARGS(sastr), strerror(errno));
+				     OSMO_SOCKADDR_STR_FMT_ARGS(sastr), strerror(err));
 				close(sfd);
 				return rc;
 			}
 		}
 
 		if (bind(sfd, &local->u.sa, sizeof(struct osmo_sockaddr)) == -1) {
+			int err = errno;
 			_SOCKADDR_TO_STR(sastr, local);
 			LOGP(DLGLOBAL, LOGL_ERROR, "unable to bind socket: " OSMO_SOCKADDR_STR_FMT ": %s\n",
-				     OSMO_SOCKADDR_STR_FMT_ARGS(sastr), strerror(errno));
+				     OSMO_SOCKADDR_STR_FMT_ARGS(sastr), strerror(err));
 			close(sfd);
 			return -1;
 		}
@@ -594,9 +596,10 @@ int osmo_sock_init_osa(uint16_t type, uint8_t proto,
 
 		rc = connect(sfd, &remote->u.sa, sizeof(struct osmo_sockaddr));
 		if (rc != 0 && errno != EINPROGRESS) {
+			int err = errno;
 			_SOCKADDR_TO_STR(sastr, remote);
 			LOGP(DLGLOBAL, LOGL_ERROR, "unable to connect socket: " OSMO_SOCKADDR_STR_FMT ": %s\n",
-			     OSMO_SOCKADDR_STR_FMT_ARGS(sastr), strerror(errno));
+			     OSMO_SOCKADDR_STR_FMT_ARGS(sastr), strerror(err));
 			close(sfd);
 			return rc;
 		}
@@ -798,12 +801,13 @@ int osmo_sock_init2_multiaddr(uint16_t family, uint16_t type, uint8_t proto,
 		rc = setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR,
 				&on, sizeof(on));
 		if (rc < 0) {
+			int err = errno;
 			multiaddr_snprintf(strbuf, sizeof(strbuf), local_hosts, local_hosts_cnt);
 			LOGP(DLGLOBAL, LOGL_ERROR,
 			     "cannot setsockopt socket:"
 			     " %s:%u: %s\n",
 			     strbuf, local_port,
-			     strerror(errno));
+			     strerror(err));
 			goto ret_close;
 		}
 
@@ -821,9 +825,10 @@ int osmo_sock_init2_multiaddr(uint16_t family, uint16_t type, uint8_t proto,
 
 		rc = sctp_bindx(sfd, (struct sockaddr *)addrs_buf, local_hosts_cnt, SCTP_BINDX_ADD_ADDR);
 		if (rc == -1) {
+			int err = errno;
 			multiaddr_snprintf(strbuf, sizeof(strbuf), local_hosts, local_hosts_cnt);
 			LOGP(DLGLOBAL, LOGL_NOTICE, "unable to bind socket: %s:%u: %s\n",
-			     strbuf, local_port, strerror(errno));
+			     strbuf, local_port, strerror(err));
 			rc = -ENODEV;
 			goto ret_close;
 		}
@@ -843,9 +848,10 @@ int osmo_sock_init2_multiaddr(uint16_t family, uint16_t type, uint8_t proto,
 
 		rc = sctp_connectx(sfd, (struct sockaddr *)addrs_buf, remote_hosts_cnt, NULL);
 		if (rc != 0 && errno != EINPROGRESS) {
+			int err = errno;
 			multiaddr_snprintf(strbuf, sizeof(strbuf), remote_hosts, remote_hosts_cnt);
 			LOGP(DLGLOBAL, LOGL_ERROR, "unable to connect socket: %s:%u: %s\n",
-				strbuf, remote_port, strerror(errno));
+				strbuf, remote_port, strerror(err));
 			rc = -ENODEV;
 			goto ret_close;
 		}
