@@ -223,10 +223,8 @@ struct iofd_msghdr *iofd_txqueue_dequeue(struct osmo_io_fd *iofd)
 */
 static enum iofd_seg_act iofd_handle_segmentation(struct osmo_io_fd *iofd, struct msgb *msg, struct msgb **pending_out)
 {
-	int extra_len, received_len;
+	int extra_len, received_len_post_segm_cb;
 	struct msgb *msg_pending;
-
-	received_len = msgb_length(msg);
 
 	if (!iofd->io_ops.segmentation_cb) {
 		*pending_out = NULL;
@@ -234,18 +232,19 @@ static enum iofd_seg_act iofd_handle_segmentation(struct osmo_io_fd *iofd, struc
 	}
 
 	int expected_len = iofd->io_ops.segmentation_cb(msg);
+	received_len_post_segm_cb = msgb_length(msg);
 	if (expected_len == -EAGAIN) {
 		goto defer;
 	} else if (expected_len < 0) {
 		/* Something is wrong, skip this msgb */
 		LOGPIO(iofd, LOGL_ERROR, "segmentation_cb returned error (%d), skipping msg of size %d\n",
-		       expected_len, received_len);
+		       expected_len, received_len_post_segm_cb);
 		*pending_out = NULL;
 		msgb_free(msg);
 		return IOFD_SEG_ACT_DEFER;
 	}
 
-	extra_len = received_len - expected_len;
+	extra_len = received_len_post_segm_cb - expected_len;
 	/* No segmentation needed, return the whole msgb */
 	if (extra_len == 0) {
 		*pending_out = NULL;
