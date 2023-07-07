@@ -101,6 +101,10 @@ int gsm0503_tch_hr48_encode(ubit_t *bursts, const ubit_t *data);
 int gsm0503_tch_hr48_decode(ubit_t *data, const sbit_t *bursts,
 			    int *n_errors, int *n_bits_total);
 
+int gsm0503_tch_fr24_encode(ubit_t *bursts, const ubit_t *data);
+int gsm0503_tch_fr24_decode(ubit_t *data, const sbit_t *bursts,
+			    int *n_errors, int *n_bits_total);
+
 int gsm0503_tch_hr24_encode(ubit_t *bursts, const ubit_t *data);
 int gsm0503_tch_hr24_decode(ubit_t *data, const sbit_t *bursts,
 			    int *n_errors, int *n_bits_total);

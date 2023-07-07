@@ -564,8 +564,14 @@ static const struct csd_test_case csd_tests[] = {
 		.half_rate = true,
 	},
 	{
+		.name = "TCH/F2.4",
+		.num_bits = 2 * 36,
+		.enc_fn = &gsm0503_tch_fr24_encode,
+		.dec_fn = &gsm0503_tch_fr24_decode,
+	},
+	{
 		.name = "TCH/H2.4",
-		.num_bits = 2 * 72,
+		.num_bits = 4 * 36,
 		.enc_fn = &gsm0503_tch_hr24_encode,
 		.dec_fn = &gsm0503_tch_hr24_decode,
 		.half_rate = true,

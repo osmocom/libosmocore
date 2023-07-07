@@ -135,6 +135,8 @@ gsm0503_tch_fr48_encode;
 gsm0503_tch_fr48_decode;
 gsm0503_tch_hr48_encode;
 gsm0503_tch_hr48_decode;
+gsm0503_tch_fr24_encode;
+gsm0503_tch_fr24_decode;
 gsm0503_tch_hr24_encode;
 gsm0503_tch_hr24_decode;
 gsm0503_tch_fr144_encode;

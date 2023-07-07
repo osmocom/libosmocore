@@ -3472,6 +3472,54 @@ int gsm0503_tch_hr48_decode(ubit_t *data, const sbit_t *bursts,
 	return gsm0503_tch_fr96_decode(data, bursts, n_errors, n_bits_total);
 }
 
+/*! Perform channel encoding of a TCH/F2.4 channel as per section 3.6.
+ *  \param[out] bursts Caller-allocated buffer for symbols of 8 bursts,
+ *                     8 * 2 * 58 == 928 bits total.
+ *  \param[in] data Data to be encoded (72 unpacked bits).
+ *  \returns 0 in case of success; negative on error */
+int gsm0503_tch_fr24_encode(ubit_t *bursts, const ubit_t *data)
+{
+	ubit_t iB[8 * 114], cB[4 * 114];
+	const ubit_t h = 0;
+
+	/* 3.6.{1-3} Block code and Convolutional encoder */
+	osmo_conv_encode(&gsm0503_tch_f24, &data[0], &cB[0]);
+
+	/* 3.6.4 Interleaving: as specified for the TCH/FS in subclause 3.1.3 */
+	gsm0503_tch_fr_interleave(&cB[0], &iB[0]);
+
+	/* 3.6.5 Mapping on a burst: as specified for TCH/FS in subclause 3.1.4 */
+	for (unsigned int i = 0; i < 8; i++)
+		gsm0503_tch_burst_map(&iB[i * 114], &bursts[i * 116], &h, i >> 2);
+
+	return 0;
+}
+
+/*! Perform channel decoding of a TCH/F2.4 channel as per section 3.6.
+ *  \param[out] data Caller-allocated buffer for decoded data (72 unpacked bits).
+ *  \param[in] bursts Buffer containing the symbols of 8 bursts,
+ *                    8 * 2 * 58 == 928 bits total.
+ *  \param[out] n_errors Number of detected bit errors.
+ *  \param[out] n_bits_total Total number of bits.
+ *  \returns Number of unpacked bits used in the output buffer; negative on error. */
+int gsm0503_tch_fr24_decode(ubit_t *data, const sbit_t *bursts,
+			    int *n_errors, int *n_bits_total)
+{
+	sbit_t iB[8 * 114], cB[4 * 114];
+
+	/* 3.6.5 Mapping on a burst: as specified for TCH/FS in subclause 3.1.4 */
+	for (unsigned int i = 0; i < 8; i++)
+		gsm0503_tch_burst_unmap(&iB[i * 114], &bursts[i * 116], NULL, i >> 2);
+
+	/* 3.6.4 Interleaving: as specified for the TCH/FS in subclause 3.1.3 */
+	gsm0503_tch_fr_deinterleave(&cB[0], &iB[0]);
+
+	/* 3.6.{1-3} Block code and Convolutional encoder */
+	osmo_conv_decode_ber(&gsm0503_tch_f24, &cB[0], &data[0], n_errors, n_bits_total);
+
+	return 72;
+}
+
 /*! Perform channel encoding of a TCH/H2.4 channel as per section 3.7.
  *  \param[out] bursts Caller-allocated buffer for symbols of 22 bursts,
  *                     22 * 2 * 58 == 2552 bits total.
