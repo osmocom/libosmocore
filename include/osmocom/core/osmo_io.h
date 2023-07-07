@@ -86,6 +86,7 @@ int osmo_iofd_sendto_msgb(struct osmo_io_fd *iofd, struct msgb *msg, int sendto_
 			  const struct osmo_sockaddr *dest);
 
 void osmo_iofd_set_alloc_info(struct osmo_io_fd *iofd, unsigned int size, unsigned int headroom);
+void osmo_iofd_set_txqueue_max_length(struct osmo_io_fd *iofd, unsigned int size);
 void *osmo_iofd_get_data(const struct osmo_io_fd *iofd);
 void osmo_iofd_set_data(struct osmo_io_fd *iofd, void *data);
 

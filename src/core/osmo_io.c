@@ -542,6 +542,15 @@ void osmo_iofd_set_alloc_info(struct osmo_io_fd *iofd, unsigned int size, unsign
 	iofd->msgb_alloc.size = size;
 }
 
+/*! Set the maximum number of messages enqueued for sending.
+ *  \param[in] iofd the file descriptor
+ *  \param[in] size the maximum size of the transmit queue
+ */
+void osmo_iofd_set_txqueue_max_length(struct osmo_io_fd *iofd, unsigned int max_length)
+{
+	iofd->tx_queue.max_length = max_length;
+}
+
 /*! Get the associated user-data from an iofd
  *  \param[in] iofd the file descriptor
  *  \returns the data that was previously set with \ref osmo_iofd_setup()
