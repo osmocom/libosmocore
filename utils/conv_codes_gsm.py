@@ -66,6 +66,24 @@ conv_codes = [
 		]
 	),
 
+	# TCH/H2.4 definition
+	ConvolutionalCode(
+		72,
+		[
+		    (G1, 1),
+		    (G2, 1),
+		    (G3, 1),
+		],
+		name = "tch_h24",
+		description = [
+			"TCH/H2.4 convolutional code:",
+			"72 bits blocks, rate 1/3, k = 5",
+			"G1 = 1 + D + D3 + D4",
+			"G2 = 1 + D2 + D4",
+			"G3 = 1 + D + D2 + D3 + D4",
+		]
+	),
+
 	# TCH/F4.8 definition
 	ConvolutionalCode(
 		148,

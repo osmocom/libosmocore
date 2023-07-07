@@ -3480,15 +3480,10 @@ int gsm0503_tch_hr48_decode(ubit_t *data, const sbit_t *bursts,
 int gsm0503_tch_hr24_encode(ubit_t *bursts, const ubit_t *data)
 {
 	ubit_t iB[22 * 114], cB[4 * 114];
-	ubit_t conv[2 * 72 + 8];
 
-	/* 3.7.2 Block code: d1(72) + pad(4) + d2(72) + pad(4) */
-	memset(&conv[0], 0, sizeof(conv));
-	memcpy(&conv[0], &data[0], 72);
-	memcpy(&conv[76], &data[72], 72);
-
-	/* 3.7.3 Convolutional encoder: as specified for the TCH/F4.8 in subclause 3.4.3 */
-	osmo_conv_encode(&gsm0503_tch_f48, &conv[0], &cB[0]);
+	/* 3.7.{1-3} Block code and Convolutional encoder */
+	osmo_conv_encode(&gsm0503_tch_h24, &data[ 0], &cB[  0]);
+	osmo_conv_encode(&gsm0503_tch_h24, &data[72], &cB[228]);
 
 	/* 3.7.4 Interleaving: as specified for the TCH/F9.6 in subclause 3.3.4 */
 	memset(&iB[0], 0, sizeof(iB));
@@ -3511,8 +3506,8 @@ int gsm0503_tch_hr24_encode(ubit_t *bursts, const ubit_t *data)
 int gsm0503_tch_hr24_decode(ubit_t *data, const sbit_t *bursts,
 			    int *n_errors, int *n_bits_total)
 {
+	int n_errors_l[2], n_bits_total_l[2];
 	sbit_t iB[22 * 114], cB[4 * 114];
-	ubit_t conv[120 + 32];
 
 	/* 3.7.5 Mapping on a burst: as specified for TCH/FS in subclause 3.1.4 */
 	for (unsigned int i = 0; i < 22; i++) {
@@ -3523,12 +3518,15 @@ int gsm0503_tch_hr24_decode(ubit_t *data, const sbit_t *bursts,
 	/* 3.7.4 Interleaving: as specified for the TCH/F9.6 in subclause 3.3.4 */
 	gsm0503_tch_f96_deinterleave(&cB[0], &iB[0]);
 
-	/* 3.7.3 Convolutional encoder: as specified for the TCH/F4.8 in subclause 3.4.3 */
-	osmo_conv_decode_ber(&gsm0503_tch_f48, &cB[0], &conv[0], n_errors, n_bits_total);
+	/* 3.7.{1-3} Block code and Convolutional encoder */
+	osmo_conv_decode_ber(&gsm0503_tch_h24, &cB[  0], &data[ 0], &n_errors_l[0], &n_bits_total_l[0]);
+	osmo_conv_decode_ber(&gsm0503_tch_h24, &cB[228], &data[72], &n_errors_l[1], &n_bits_total_l[1]);
 
-	/* 3.7.2 Block code: d1(72) + pad(4) + d2(72) + pad(4) */
-	memcpy(&data[0], &conv[0], 72);
-	memcpy(&data[72], &conv[76], 72);
+	if (n_errors)
+		*n_errors = n_errors_l[0] + n_errors_l[1];
+
+	if (n_bits_total)
+		*n_bits_total = n_bits_total_l[0] + n_bits_total_l[1];
 
 	return 2 * 72;
 }

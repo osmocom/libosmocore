@@ -14,6 +14,14 @@
 [..] Encoding / Decoding cycle : OK
 [..] Encoding / Decoding cycle : OK
 
+[+] Testing: gsm0503_tch_h24
+[.] Input length  : ret =  72  exp =  72 -> OK
+[.] Output length : ret = 228  exp = 228 -> OK
+[.] Random vector checks:
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+[..] Encoding / Decoding cycle : OK
+
 [+] Testing: gsm0503_tch_f48
 [.] Input length  : ret = 148  exp = 148 -> OK
 [.] Output length : ret = 456  exp = 456 -> OK

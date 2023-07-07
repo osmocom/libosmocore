@@ -123,6 +123,7 @@ gsm0503_cs2_np;
 gsm0503_cs3_np;
 gsm0503_tch_fr;
 gsm0503_tch_f24;
+gsm0503_tch_h24;
 gsm0503_tch_f48;
 gsm0503_tch_f96;
 gsm0503_tch_f144;
