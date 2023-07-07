@@ -533,6 +533,7 @@ int osmo_iofd_close(struct osmo_io_fd *iofd)
 }
 
 /*! Set the size and headroom of the msgb allocated when receiving messages
+ *  \param[in] iofd the file descriptor
  *  \param[in] size the size of the msgb when receiving data
  *  \param[in] headroom the headroom of the msgb when receiving data
  */
