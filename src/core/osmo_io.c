@@ -226,6 +226,9 @@ static enum iofd_seg_act iofd_handle_segmentation(struct osmo_io_fd *iofd, struc
 	int extra_len, received_len;
 	struct msgb *msg_pending;
 
+	/* Save the start of message before segmentation_cb (which could change it) */
+	uint8_t *data = msg->data;
+
 	received_len = msgb_length(msg);
 
 	if (!iofd->io_ops.segmentation_cb) {
@@ -258,12 +261,14 @@ static enum iofd_seg_act iofd_handle_segmentation(struct osmo_io_fd *iofd, struc
 	/* msgb contains more than one segment */
 	/* Copy the trailing data over */
 	msg_pending = iofd_msgb_alloc(iofd);
-	memcpy(msgb_data(msg_pending), msgb_data(msg) + expected_len, extra_len);
+	memcpy(msgb_data(msg_pending), data + expected_len, extra_len);
 	msgb_put(msg_pending, extra_len);
 	*pending_out = msg_pending;
 
-	/* Trim the original msgb to size */
-	msgb_trim(msg, expected_len);
+	/* Trim the original msgb to size. Don't use msgb_trim because we need to reference
+	 * msg->data from before it might have been modified by the segmentation_cb(). */
+	msg->len = expected_len;
+	msg->tail = data + expected_len;
 	return IOFD_SEG_ACT_HANDLE_MORE;
 
 defer:

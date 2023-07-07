@@ -46,7 +46,11 @@ struct osmo_io_ops {
 			 *  Needs to return the size of the next message. If it returns
 			 *  -EAGAIN or a value larger than msgb_length() (message is incomplete)
 			 *  osmo_io will wait for more data to be read. Other negative values
-			 *  cause the msg to be discarded. */
+			 *  cause the msg to be discarded.
+			 *  If a full message was received (segmentation_cb() returns a value <= msgb_length())
+			 *  the msgb will be trimmed to size by osmo_io and forwarded to the read call-back. Any
+			 *  parsing done to the msgb by segmentation_cb() will be preserved for the read_cb()
+			 *  (e.g. setting lxh or msgb->cb). */
 			int (*segmentation_cb)(struct msgb *msg);
 		};
 
