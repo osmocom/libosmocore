@@ -773,4 +773,11 @@ static inline const char *msgb_hexdump_l4(const struct msgb *msg)
 	return osmo_hexdump((const unsigned char*) msgb_l4(msg), msgb_l4len(msg));
 }
 
+/*! Macro for checking a simple condition (to avoid accidental bugs)
+ *  \param[in] msg Target 'struct msg *'
+ *  \param[in] len_from_msg_metadata Length of data as expected from metadata of msg
+ *  \returns boolean indicating if the data segment starting at msg->data is incomplete
+ */
+#define msgb_segment_is_incomplete(len_from_msg_metadata, msg)\
+	(len_from_msg_metadata > (msg)->len)
 /*! @} */
