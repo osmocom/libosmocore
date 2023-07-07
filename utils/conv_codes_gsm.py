@@ -77,7 +77,7 @@ conv_codes = [
 		name = "tch_f48",
 		description = [
 			"TCH/F4.8 convolutional code:",
-			"152 bits blocks, rate 1/3, k = 5",
+			"148 bits blocks, rate 1/3, k = 5",
 			"G1 = 1 + D + D3 + D4",
 			"G2 = 1 + D2 + D4",
 			"G3 = 1 + D + D2 + D3 + D4",
