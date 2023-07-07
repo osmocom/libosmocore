@@ -3322,7 +3322,7 @@ int gsm0503_tch_fr96_encode(ubit_t *bursts, const ubit_t *data)
 
 	/* 3.3.2 Block code: b1(60) + b2(60) + b3(60) + b4(60) + pad(4) */
 	memcpy(&conv[0], &data[0], 4 * 60);
-	memset(&conv[240], 0, 4);
+	/* pad(4) is set to 0 by osmo_conv_encode() below */
 
 	/* 3.3.3 Convolutional encoder */
 	osmo_conv_encode(&gsm0503_tch_f96, &conv[0], &cB[0]);
@@ -3543,7 +3543,7 @@ int gsm0503_tch_fr144_encode(ubit_t *bursts, const ubit_t *data)
 
 	/* 3.8.2 Block code: b(290) + pad(4) */
 	memcpy(&conv[0], &data[0], 290);
-	memset(&conv[290], 0, 4);
+	/* pad(4) is set to 0 by osmo_conv_encode() below */
 
 	/* 3.8.3 Convolutional encoder */
 	osmo_conv_encode(&gsm0503_tch_f144, &conv[0], &cB[0]);
