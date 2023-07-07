@@ -127,13 +127,13 @@ static inline struct msgb *msgb_dequeue_count(struct llist_head *queue,
 #endif
 
 /*! obtain L1 header of msgb */
-#define msgb_l1(m)	((void *)(m->l1h))
+#define msgb_l1(m)	((void *)((m)->l1h))
 /*! obtain L2 header of msgb */
-#define msgb_l2(m)	((void *)(m->l2h))
+#define msgb_l2(m)	((void *)((m)->l2h))
 /*! obtain L3 header of msgb */
-#define msgb_l3(m)	((void *)(m->l3h))
+#define msgb_l3(m)	((void *)((m)->l3h))
 /*! obtain L4 header of msgb */
-#define msgb_l4(m)	((void *)(m->l4h))
+#define msgb_l4(m)	((void *)((m)->l4h))
 /*! obtain SMS header of msgb */
 #define msgb_sms(m)	msgb_l4(m)
 
