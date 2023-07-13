@@ -522,7 +522,7 @@ int osmo_select_main_ctx(int polling)
  *  \returns \ref osmo_fd for \ref fd; NULL in case it doesn't exist */
 struct osmo_fd *osmo_fd_get_by_fd(int fd)
 {
-	if (fd > maxfd)
+	if (fd > maxfd || fd < 0)
 		return NULL;
 	return osmo_fd_lookup.table[fd];
 }
