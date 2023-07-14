@@ -1,4 +1,7 @@
-/*! \file gsm0502.h */
+/*! \defgroup gsm0502 GSM 05.02 / 3GPP TS 45.002
+ *  @{
+ * \file gsm0502.h
+ */
 
 #pragma once
 
@@ -107,3 +110,5 @@ uint16_t gsm0502_hop_seq_gen(const struct gsm_time *t,
 			     size_t n, const uint16_t *ma);
 
 int gsm0502_fn2ccch_block(uint32_t fn);
+
+/*! @} */
