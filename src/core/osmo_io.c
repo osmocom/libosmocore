@@ -267,8 +267,8 @@ static enum iofd_seg_act iofd_handle_segmentation(struct osmo_io_fd *iofd, struc
 
 	/* Trim the original msgb to size. Don't use msgb_trim because we need to reference
 	 * msg->data from before it might have been modified by the segmentation_cb(). */
-	msg->len = expected_len;
 	msg->tail = data + expected_len;
+	msg->len = msg->tail - msg->data;
 	return IOFD_SEG_ACT_HANDLE_MORE;
 
 defer:
