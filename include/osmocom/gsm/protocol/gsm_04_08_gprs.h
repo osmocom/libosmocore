@@ -91,6 +91,7 @@ enum gsm48_gprs_ie_mm {
 	GSM48_IE_GMM_AUTH_SRES		= 0x22,	/* 10.5.3.2 */
 	GSM48_IE_GMM_IMEISV		= 0x23,	/* 10.5.1.4 */
 	GSM48_IE_GMM_CAUSE		= 0x25,	/* 10.5.5.14 */
+	GSM48_IE_GMM_RX_NPDU_NUM_LIST	= 0x26, /* 10.5.5.11 */
 	GSM48_IE_GMM_DRX_PARAM		= 0x27,	/* 10.5.5.6 */
 	GSM48_IE_GMM_AUTN		= 0x28,	/* 10.5.3.1.1 */
 	GSM48_IE_GMM_AUTH_RES_EXT	= 0x29, /* 10.5.3.2.1 */
