@@ -1756,13 +1756,19 @@ struct msgb *gsm0808_create_vgcs_vbs_assign_fail(const struct gsm0808_vgcs_vbs_a
 		msgb_tlv_put(msg, GSM0808_IE_CIRCUIT_POOL_LIST, params->cpl.list_len, params->cpl.pool);
 
 	/* Codec List (BSS Supported) 3.2.2.103 */
-	if (params->codec_list_present)
-		gsm0808_enc_speech_codec_list2(msg, &params->codec_list_bss_supported);
+	if (params->codec_list_present) {
+		if (gsm0808_enc_speech_codec_list2(msg, &params->codec_list_bss_supported) < 0)
+			goto exit_free;
+	}
 
 	/* prepend header with final length */
 	msg->l3h = msgb_tv_push(msg, BSSAP_MSG_BSS_MANAGEMENT, msgb_length(msg));
 
 	return msg;
+
+exit_free:
+	msgb_free(msg);
+	return NULL;
 }
 
 /*! Create BSSMAP VGCS/VBS QUEUING INDICATION message, 3GPP TS 48.008 3.2.1.56.
