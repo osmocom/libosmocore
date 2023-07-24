@@ -557,6 +557,12 @@ enum gsm0808_speech_codec_type {
 	GSM0808_SCT_CSD	= 0xfd, /*!< CSData (see also TS 26.103) */
 };
 
+/* Codec Extension (the real Codec Type follows in the next octet).
+ * This value is intentionally not included in gsm0808_speech_codec_type,
+ * because {enc,dec}_speech_codec() functions take care of the extended
+ * encoding internally.  It shall not be used in struct gsm0808_speech_codec. */
+#define GSM0808_SCT_EXT	0x0f
+
 extern const struct value_string gsm0808_speech_codec_type_names[];
 static inline const char *gsm0808_speech_codec_type_name(enum gsm0808_speech_codec_type val)
 { return get_value_string(gsm0808_speech_codec_type_names, val); }

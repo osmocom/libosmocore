@@ -2478,6 +2478,7 @@ const struct value_string gsm0808_speech_codec_type_names[] = {
 	{ GSM0808_SCT_HR3, "HR3" },
 	{ GSM0808_SCT_HR4, "HR4" },
 	{ GSM0808_SCT_HR6, "HR6" },
+	{ GSM0808_SCT_EXT, "Codec Extension" },
 	{ GSM0808_SCT_CSD, "CSD" },
 	{ 0, NULL }
 };

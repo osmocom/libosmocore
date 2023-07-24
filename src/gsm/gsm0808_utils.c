@@ -255,7 +255,7 @@ static int enc_speech_codec(struct msgb *msg,
 		header |= (1 << 4);
 
 	if (type_extended) {
-		header |= 0x0f;
+		header |= GSM0808_SCT_EXT;
 		msgb_put_u8(msg, header);
 		msgb_put_u8(msg, sc->type);
 	} else {
@@ -347,7 +347,7 @@ int gsm0808_dec_speech_codec(struct gsm0808_speech_codec *sc,
 
 	/* An extended codec type needs at least two fields,
 	 * bail if the input data length is not sufficient. */
-	if ((header & 0x0F) == 0x0F && len < 2)
+	if ((header & 0x0F) == GSM0808_SCT_EXT && len < 2)
 		return -EINVAL;
 
 	elem++;
@@ -362,7 +362,7 @@ int gsm0808_dec_speech_codec(struct gsm0808_speech_codec *sc,
 	if (header & (1 << 4))
 		sc->tf = true;
 
-	if ((header & 0x0F) != 0x0F) {
+	if ((header & 0x0F) != GSM0808_SCT_EXT) {
 		sc->type = (header & 0x0F);
 	} else {
 		sc->type = *elem;
