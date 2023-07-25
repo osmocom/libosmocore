@@ -351,7 +351,9 @@ int gsm48_encode_bearer_cap(struct msgb *msg, int lv_only,
 		lv[i++] = (bcap->data.parity & 7) |
 			  ((bcap->data.interm_rate & 3) << 5);
 		/* octet 6c */
-		lv[i] = 0x80 | (bcap->data.modem_type & 0x1f);
+		lv[i] = 0x80 |
+			((bcap->data.transp & 3) << 5) |
+			(bcap->data.modem_type & 0x1f);
 		break;
 	default:
 		return -EINVAL;
