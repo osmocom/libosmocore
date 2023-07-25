@@ -213,10 +213,18 @@ int osmo_system_nowait2(const char *command, const char **env_whitelist, char **
 	int rc;
 
 	if (user) {
+		if (getpw_buflen == -1) /* Value was indeterminate */
+			getpw_buflen = 16384; /* Should be more than enough */
 		char buf[getpw_buflen];
-		getpwnam_r(user, &_pw, buf, sizeof(buf), &pw);
-		if (!pw)
+		rc = getpwnam_r(user, &_pw, buf, sizeof(buf), &pw);
+		if (rc < 0) {
+			LOGP(DLGLOBAL, LOGL_ERROR, "getpwnam_r(\"%s\") failed: %s\n", user, strerror(-rc));
+			return rc;
+		}
+		if (!pw) {
+			LOGP(DLGLOBAL, LOGL_ERROR, "getpwnam_r(\"%s\"): user not found!\n", user);
 			return -EINVAL;
+		}
 	}
 
 	rc = fork();
@@ -264,6 +272,9 @@ int osmo_system_nowait2(const char *command, const char **env_whitelist, char **
 		return -EIO;
 	} else {
 		/* we are in the parent */
+		if (rc == -1)
+			LOGP(DLGLOBAL, LOGL_ERROR, "fork() error executing command '%s': %s\n",
+			     command, strerror(errno));
 		return rc;
 	}
 }
