@@ -245,16 +245,14 @@ static uint8_t mux_subchan_provide_bits(struct osmo_i460_subchan *schan, uint8_t
 /* provide one byte of multiplexed I.460 bits */
 static uint8_t mux_timeslot_provide_bits(struct osmo_i460_timeslot *ts)
 {
-	int i, count = 0;
 	uint8_t ret = 0xff; /* unused bits must be '1' as per I.460 */
 
-	for (i = 0; i < ARRAY_SIZE(ts->schan); i++) {
+	for (int i = 0; i < ARRAY_SIZE(ts->schan); i++) {
 		struct osmo_i460_subchan *schan = &ts->schan[i];
 		uint8_t bits, mask;
 
 		if (schan->rate == OSMO_I460_RATE_NONE)
 			continue;
-		count++;
 		bits = mux_subchan_provide_bits(schan, &mask);
 		ret &= ~mask;
 		ret |= bits;
