@@ -102,6 +102,8 @@ struct iofd_msghdr *iofd_msghdr_alloc(struct osmo_io_fd *iofd, enum iofd_msg_act
 			talloc_free(hdr);
 			return NULL;
 		}
+	} else {
+		talloc_steal(iofd->msgb_alloc.ctx, msg);
 	}
 
 	hdr->action = action;
