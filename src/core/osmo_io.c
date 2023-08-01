@@ -321,7 +321,7 @@ int osmo_iofd_write_msgb(struct osmo_io_fd *iofd, struct msgb *msg)
 	if (!msghdr)
 		return -ENOMEM;
 
-	msghdr->flags = 0;
+	msghdr->flags = MSG_NOSIGNAL;
 	msghdr->iov[0].iov_base = msgb_data(msghdr->msg);
 	msghdr->iov[0].iov_len = msgb_length(msghdr->msg);
 	msghdr->hdr.msg_iov = &msghdr->iov[0];
