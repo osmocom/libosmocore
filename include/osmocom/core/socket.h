@@ -94,6 +94,8 @@ char *osmo_sockaddr_to_str_c(void *ctx, const struct osmo_sockaddr *sockaddr);
 #define OSMO_SOCK_F_NO_MCAST_ALL  (1 << 4)
 /*! use SO_REUSEADDR on UDP ports (required for multicast) */
 #define OSMO_SOCK_F_UDP_REUSEADDR (1 << 5)
+/*! use SCTP_AUTH_SUPPORTED + SCTP_ASCONF_SUPPORTED on SCTP socket (required for ASCONF / Peer Primary Address feature) */
+#define OSMO_SOCK_F_SCTP_ASCONF_SUPPORTED (1 << 6)
 
 /*! use OSMO_SOCK_F_DSCP(x) to set IP DSCP 'x' for packets transmitted on the socket */
 #define OSMO_SOCK_F_DSCP(x)	(((x)&0x3f) << 24)

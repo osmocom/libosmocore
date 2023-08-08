@@ -696,6 +696,36 @@ static int addrinfo_to_sockaddr(uint16_t family, const struct addrinfo **result,
 	return 0;
 }
 
+static int setsockopt_sctp_auth_supported(int fd)
+{
+#ifdef SCTP_AUTH_SUPPORTED
+	struct sctp_assoc_value assoc_val = {
+		.assoc_id = SCTP_FUTURE_ASSOC,
+		.assoc_value = 1,
+	};
+	return setsockopt(fd, IPPROTO_SCTP, SCTP_AUTH_SUPPORTED, &assoc_val, sizeof(assoc_val));
+#else
+#pragma message "setsockopt(SCTP_AUTH_SUPPORTED) not supported! some SCTP features may not be available!"
+	LOGP(DLGLOBAL, LOGL_NOTICE, "Built without support for setsockopt(SCTP_AUTH_SUPPORTED), skipping\n");
+	return 0;
+#endif
+}
+
+static int setsockopt_sctp_asconf_supported(int fd)
+{
+#ifdef SCTP_ASCONF_SUPPORTED
+	struct sctp_assoc_value assoc_val = {
+		.assoc_id = SCTP_FUTURE_ASSOC,
+		.assoc_value = 1,
+	};
+	return setsockopt(fd, IPPROTO_SCTP, SCTP_ASCONF_SUPPORTED, &assoc_val, sizeof(assoc_val));
+#else
+#pragma message "setsockopt(SCTP_ASCONF_SUPPORTED) not supported! some SCTP features may not be available!"
+	LOGP(DLGLOBAL, LOGL_NOTICE, "Built without support for setsockopt(SCTP_ASCONF_SUPPORTED), skipping\n");
+	return 0;
+#endif
+}
+
 /*! Initialize a socket (including bind and/or connect) with multiple local or remote addresses.
  *  \param[in] family Address Family like AF_INET, AF_INET6, AF_UNSPEC
  *  \param[in] type Socket type like SOCK_DGRAM, SOCK_STREAM
@@ -809,6 +839,29 @@ int osmo_sock_init2_multiaddr(uint16_t family, uint16_t type, uint8_t proto,
 			     strbuf, local_port,
 			     strerror(err));
 			goto ret_close;
+		}
+
+		if (flags & OSMO_SOCK_F_SCTP_ASCONF_SUPPORTED) {
+			/* RFC 5061 4.2.7: ASCONF also requires AUTH feature. */
+			rc = setsockopt_sctp_auth_supported(sfd);
+			if (rc < 0) {
+				int err = errno;
+				multiaddr_snprintf(strbuf, sizeof(strbuf), local_hosts, local_hosts_cnt);
+				LOGP(DLGLOBAL, LOGL_ERROR,
+				     "cannot setsockopt(SCTP_AUTH_SUPPORTED) socket: %s:%u: %s\n",
+				     strbuf, local_port, strerror(err));
+				goto ret_close;
+			}
+
+			rc = setsockopt_sctp_asconf_supported(sfd);
+			if (rc < 0) {
+				int err = errno;
+				multiaddr_snprintf(strbuf, sizeof(strbuf), local_hosts, local_hosts_cnt);
+				LOGP(DLGLOBAL, LOGL_ERROR,
+				     "cannot setsockopt(SCTP_ASCONF_SUPPORTED) socket: %s:%u: %s\n",
+				     strbuf, local_port, strerror(err));
+				goto ret_close;
+			}
 		}
 
 		/* Build array of addresses taking first entry for each host.
