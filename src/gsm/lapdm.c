@@ -503,7 +503,7 @@ static int send_rslms_rll_l3(uint8_t msg_type, struct lapdm_msg_ctx *mctx,
 	int transparent = rsl_is_transparent(msg_type);
 
 	/* Add the RSL + RLL header */
-	rsl_rll_push_l3(msg, msg_type, mctx->chan_nr, mctx->link_id, transparent);
+	rsl_rll_push_l3_with_fn(msg, msg_type, mctx->chan_nr, mctx->link_id, transparent, mctx->fn);
 
 	/* send off the RSLms message to L3 */
 	return rslms_sendmsg(msg, mctx->dl->entity);
@@ -513,9 +513,13 @@ static int send_rslms_rll_l3(uint8_t msg_type, struct lapdm_msg_ctx *mctx,
 static int send_rslms_rll_l3_ui(struct lapdm_msg_ctx *mctx, struct msgb *msg)
 {
 	uint8_t l3_len = msg->tail - (uint8_t *)msgb_l3(msg);
+	uint32_t fn_be;
 
 	/* Add the RSL + RLL header */
 	msgb_tv16_push(msg, RSL_IE_L3_INFO, l3_len);
+
+	osmo_store32be(mctx->fn, &fn_be);
+	msgb_tlv_push(msg, RSL_IE_OSMO_ABS_FRAME_NUMBER, 4, (uint8_t *)&fn_be);
 
 	/* Add two non-standard IEs carrying MS power and TA values for B4 (SACCH) */
 	if (mctx->lapdm_fmt == LAPDm_FMT_B4) {
@@ -533,8 +537,12 @@ static int send_rll_simple(uint8_t msg_type, struct lapdm_msg_ctx *mctx)
 {
 	struct msgb *msg;
 	int transparent = rsl_is_transparent(msg_type);
+	uint32_t fn_be;
 
 	msg = rsl_rll_simple(msg_type, mctx->chan_nr, mctx->link_id, transparent);
+	/* Add FN to the end to keep backward compat: */
+	osmo_store32be(mctx->fn, &fn_be);
+	msgb_tlv_put(msg, RSL_IE_OSMO_ABS_FRAME_NUMBER, 4, (uint8_t *)&fn_be);
 
 	/* send off the RSLms message to L3 */
 	return rslms_sendmsg(msg, mctx->dl->entity);
@@ -543,10 +551,15 @@ static int send_rll_simple(uint8_t msg_type, struct lapdm_msg_ctx *mctx)
 static int rsl_rll_error(uint8_t cause, struct lapdm_msg_ctx *mctx)
 {
 	struct msgb *msg;
+	uint32_t fn_be;
 
 	LOGDL(&mctx->dl->dl, LOGL_NOTICE, "sending MDL-ERROR-IND %d\n", cause);
 	msg = rsl_rll_simple(RSL_MT_ERROR_IND, mctx->chan_nr, mctx->link_id, 0);
 	msgb_tlv_put(msg, RSL_IE_RLM_CAUSE, 1, &cause);
+	/* Add FN to the end to keep backward compat: */
+	osmo_store32be(mctx->fn, &fn_be);
+	msgb_tlv_put(msg, RSL_IE_OSMO_ABS_FRAME_NUMBER, 4, (uint8_t *)&fn_be);
+
 	return rslms_sendmsg(msg, mctx->dl->entity);
 }
 

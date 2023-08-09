@@ -561,6 +561,33 @@ void rsl_rll_push_l3(struct msgb *msg, uint8_t msg_type, uint8_t chan_nr,
 	rsl_rll_push_hdr(msg, msg_type, chan_nr, link_id, transparent);
 }
 
+/*! Wrap msgb in L3 Info IE and push a RSL RLL header
+ *  \param[in] msg Message Buffer to which L3 Header shall be appended
+ *  \param[in] msg_type RSL Message Type
+ *  \param[in] chan_hr RSL Channel Number
+ *  \param[in] link_id Link Identififer
+ *  \param[in] transparent Transparent to BTS (1) or not (0)
+ *  \param[in] fn Frame Number
+ */
+void rsl_rll_push_l3_with_fn(struct msgb *msg, uint8_t msg_type, uint8_t chan_nr,
+		     uint8_t link_id, int transparent, uint32_t fn)
+{
+	uint8_t l3_len = msg->tail - (uint8_t *)msgb_l3(msg);
+	uint32_t fn_be;
+
+	/* construct a RSLms RLL message (DATA INDICATION, UNIT DATA
+	 * INDICATION) and send it off via RSLms */
+
+	/* Push the L3 IE tag and length */
+	msgb_tv16_push(msg, RSL_IE_L3_INFO, l3_len);
+
+	osmo_store32be(fn, &fn_be);
+	msgb_tlv_push(msg, RSL_IE_OSMO_ABS_FRAME_NUMBER, 4, (uint8_t *)&fn_be);
+
+	/* Then push the RSL header */
+	rsl_rll_push_hdr(msg, msg_type, chan_nr, link_id, transparent);
+}
+
 /*! Create msgb with RSL RLL header
  *  \param[in] msg_type RSL Message Type
  *  \param[in] chan_nr RSL Channel Number

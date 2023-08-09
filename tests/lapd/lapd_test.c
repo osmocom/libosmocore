@@ -359,7 +359,7 @@ static int ms_to_bts_tx_cb(struct msgb *msg, struct lapdm_entity *le, void *_ctx
 		struct abis_rsl_rll_hdr hdr;
 
 		printf("MS: Verifying incoming primitive.\n");
-		OSMO_ASSERT(msg->len == sizeof(struct abis_rsl_rll_hdr));
+		OSMO_ASSERT(msg->len >= sizeof(struct abis_rsl_rll_hdr));
 
 		/* verify the header */
 		memset(&hdr, 0, sizeof(hdr));
