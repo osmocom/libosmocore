@@ -369,6 +369,7 @@ enum abis_rsl_ie {
 	RSL_IE_OSMO_TRAINING_SEQUENCE	= 0x61,
 	RSL_IE_OSMO_TEMP_OVP_ACCH_CAP	= 0x62,
 	RSL_IE_OSMO_OSMUX_CID		= 0x63,
+	RSL_IE_OSMO_ABS_FRAME_NUMBER	= 0x64, /* uint32_t fn in network byte order */
 
 	/* ip.access */
 	RSL_IE_IPAC_SRTP_CONFIG	= 0xe0,
