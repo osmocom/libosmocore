@@ -1171,8 +1171,8 @@ int bssgp_tx_rim(const struct bssgp_ran_information_pdu *pdu, uint16_t nsei)
 	msgb_bvci(msg) = 0;	/* Signalling */
 
 	bgph = (struct bssgp_normal_hdr *)msgb_bssgph(msg);
-	DEBUGP(DLBSSGP, "BSSGP BVCI=0 Tx RIM-PDU:%s, src=%s, dest=%s\n",
-	       bssgp_pdu_str(bgph->pdu_type),
+	DEBUGP(DLBSSGP, "BSSGP BVCI=0 NSEI=%u Tx RIM-PDU:%s, src=%s, dest=%s\n",
+	       nsei, bssgp_pdu_str(bgph->pdu_type),
 	       bssgp_rim_ri_name_buf(ri_src_str, sizeof(ri_src_str), &pdu->routing_info_src),
 	       bssgp_rim_ri_name_buf(ri_dest_str, sizeof(ri_dest_str), &pdu->routing_info_dest));
 
