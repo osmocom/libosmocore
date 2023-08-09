@@ -553,7 +553,7 @@ void rsl_rll_push_l3(struct msgb *msg, uint8_t msg_type, uint8_t chan_nr,
 	/* construct a RSLms RLL message (DATA INDICATION, UNIT DATA
 	 * INDICATION) and send it off via RSLms */
 
-	/* Push the L3 IE tag and lengh */
+	/* Push the L3 IE tag and length */
 	msgb_tv16_push(msg, RSL_IE_L3_INFO, l3_len);
 
 	/* Then push the RSL header */
