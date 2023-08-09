@@ -24,6 +24,7 @@ struct lapdm_msg_ctx {
 	uint8_t link_id;
 	uint8_t ta_ind;		/* TA indicated by network */
 	uint8_t tx_power_ind;	/* MS power indicated by network */
+	uint32_t fn;
 };
 
 /*! LAPDm datalink like TS 04.06 / Section 3.5.2 */

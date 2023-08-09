@@ -184,6 +184,7 @@ static int send(struct msgb *in_msg, struct lapdm_channel *chan)
 	/* LAPDm requires those... */
 	pp.u.data.chan_nr = 0;
 	pp.u.data.link_id = 0;
+	pp.u.data.fn = 0;
         /* feed into the LAPDm code of libosmogsm */
         rc = lapdm_phsap_up(&pp.oph, &chan->lapdm_dcch);
 	OSMO_ASSERT(rc == 0 || rc == -EBUSY);
@@ -206,6 +207,7 @@ static int send_buf(const uint8_t *buf, size_t len, struct lapdm_channel *chan)
 	/* LAPDm requires those... */
 	pp.u.data.chan_nr = 0;
 	pp.u.data.link_id = 0;
+	pp.u.data.fn = 0;
         /* feed into the LAPDm code of libosmogsm */
         rc = lapdm_phsap_up(&pp.oph, &chan->lapdm_dcch);
 	OSMO_ASSERT(rc == 0 || rc == -EBUSY);

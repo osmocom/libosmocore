@@ -700,7 +700,7 @@ static int lapdm_rx_not_permitted(const struct lapdm_entity *le,
 
 /* input into layer2 (from layer 1) */
 static int l2_ph_data_ind(struct msgb *msg, struct lapdm_entity *le,
-	uint8_t chan_nr, uint8_t link_id)
+	uint8_t chan_nr, uint8_t link_id, uint32_t fn)
 {
 	uint8_t cbits = chan_nr >> 3;
 	uint8_t sapi; /* we cannot take SAPI from link_id, as L1 has no clue */
@@ -715,6 +715,7 @@ static int l2_ph_data_ind(struct msgb *msg, struct lapdm_entity *le,
 	memset(&mctx, 0, sizeof(mctx));
 	mctx.chan_nr = chan_nr;
 	mctx.link_id = link_id;
+	mctx.fn = fn;
 
 	/* check for L1 chan_nr/link_id and determine LAPDm hdr format */
 	if (cbits == 0x10 || cbits == 0x12) {
@@ -916,7 +917,7 @@ int lapdm_phsap_up(struct osmo_prim_hdr *oph, struct lapdm_entity *le)
 	switch (OSMO_PRIM_HDR(oph)) {
 	case OSMO_PRIM(PRIM_PH_DATA, PRIM_OP_INDICATION):
 		rc = l2_ph_data_ind(oph->msg, le, pp->u.data.chan_nr,
-				    pp->u.data.link_id);
+				    pp->u.data.link_id, pp->u.data.fn);
 		break;
 	case OSMO_PRIM(PRIM_PH_RTS, PRIM_OP_INDICATION):
 		rc = l2_ph_data_conf(oph->msg, le);
