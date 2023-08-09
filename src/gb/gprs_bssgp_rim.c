@@ -1179,6 +1179,25 @@ int bssgp_tx_rim(const struct bssgp_ran_information_pdu *pdu, uint16_t nsei)
 	return bssgp_ns_send(bssgp_ns_send_data, msg);
 }
 
+/*! Send encoded RAN TRANSPARENT CONTAINER via BSSGP (3GPP TS 29.060, section 7.7.43).
+ *  \param[in] msg user provided memory for the encoded RAN TRANSPARENT CONTAINER to be sent.
+ *             (this function will take ownership of msg).
+ *  \param[in] nsei BSSGP network service entity identifier (NSEI).
+ *  \returns 0 on sccess, -EINVAL on error. */
+int bssgp_tx_rim_encoded(struct msgb *msg, uint16_t nsei)
+{
+	struct bssgp_normal_hdr *bgph;
+
+	msgb_nsei(msg) = nsei;
+	msgb_bvci(msg) = 0;	/* Signalling */
+
+	bgph = (struct bssgp_normal_hdr *)msgb_bssgph(msg);
+	DEBUGP(DLBSSGP, "BSSGP BVCI=0 NSEI=%u Tx RIM-PDU:%s\n",
+	       nsei, bssgp_pdu_str(bgph->pdu_type));
+
+	return bssgp_ns_send(bssgp_ns_send_data, msg);
+}
+
 /* For internal use only (called from gprs_bssgp.c) */
 int bssgp_rx_rim(struct msgb *msg, struct tlv_parsed *tp, uint16_t bvci)
 {

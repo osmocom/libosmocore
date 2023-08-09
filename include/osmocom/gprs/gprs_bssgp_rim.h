@@ -270,3 +270,4 @@ int bssgp_parse_rim_pdu(struct bssgp_ran_information_pdu *pdu, const struct msgb
 struct msgb *bssgp_encode_rim_pdu(const struct bssgp_ran_information_pdu *pdu);
 
 int bssgp_tx_rim(const struct bssgp_ran_information_pdu *pdu, uint16_t nsei);
+int bssgp_tx_rim_encoded(struct msgb *msg, uint16_t nsei);

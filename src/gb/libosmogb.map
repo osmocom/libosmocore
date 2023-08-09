@@ -56,6 +56,7 @@ bssgp_tx_resume;
 bssgp_tx_resume_ack;
 bssgp_tx_resume_nack;
 bssgp_tx_rim;
+bssgp_tx_rim_encoded;
 bssgp_tx_simple_bvci;
 bssgp_tx_status;
 bssgp_tx_suspend;
