@@ -93,17 +93,23 @@ static __attribute__((constructor(103))) void on_dso_load_osmo_io(void)
  *  \returns the newly allocated msghdr or NULL in case of error */
 struct iofd_msghdr *iofd_msghdr_alloc(struct osmo_io_fd *iofd, enum iofd_msg_action action, struct msgb *msg)
 {
-	struct iofd_msghdr *hdr = talloc_zero(iofd, struct iofd_msghdr);
-	if (!hdr)
-		return NULL;
+	bool free_msg = false;
+	struct iofd_msghdr *hdr;
+
 	if (!msg) {
 		msg = iofd_msgb_alloc(iofd);
-		if (!msg) {
-			talloc_free(hdr);
+		if (!msg)
 			return NULL;
-		}
+		free_msg = true;
 	} else {
-		talloc_steal(iofd->msgb_alloc.ctx, msg);
+		talloc_steal(iofd, msg);
+	}
+
+	hdr = talloc_zero(msg, struct iofd_msghdr);
+	if (!hdr) {
+		if (free_msg)
+			talloc_free(msg);
+		return NULL;
 	}
 
 	hdr->action = action;
@@ -129,7 +135,7 @@ struct msgb *iofd_msgb_alloc(struct osmo_io_fd *iofd)
 	uint16_t headroom = iofd->msgb_alloc.headroom;
 
 	OSMO_ASSERT(iofd->msgb_alloc.size < 0xffff - headroom);
-	return msgb_alloc_headroom_c(iofd->msgb_alloc.ctx,
+	return msgb_alloc_headroom_c(iofd,
 				     iofd->msgb_alloc.size + headroom, headroom,
 				     iofd->name ? : "iofd_msgb");
 }
@@ -304,6 +310,7 @@ void iofd_handle_segmented_read(struct osmo_io_fd *iofd, struct msgb *msg, int r
 
 void iofd_handle_recv(struct osmo_io_fd *iofd, struct msgb *msg, int rc, struct iofd_msghdr *hdr)
 {
+	talloc_steal(iofd->msgb_alloc.ctx, msg);
 	switch (iofd->mode) {
 	case OSMO_IO_FD_MODE_READ_WRITE:
 		iofd_handle_segmented_read(iofd, msg, rc);
