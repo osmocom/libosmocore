@@ -34,6 +34,7 @@ bssgp_nacc_cause_strs;
 bssgp_parse_cell_id;
 bssgp_parse_rim_pdu;
 bssgp_parse_rim_ri;
+bssgp_parse_rim_ra;
 bssgp_ran_inf_app_id_strs;
 bssgp_rim_routing_info_discr_strs;
 bssgp_rim_ri_name_buf;

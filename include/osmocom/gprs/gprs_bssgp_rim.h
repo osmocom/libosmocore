@@ -69,6 +69,7 @@ struct bssgp_rim_routing_info {
 char *bssgp_rim_ri_name_buf(char *buf, size_t buf_len, const struct bssgp_rim_routing_info *ri);
 const char *bssgp_rim_ri_name(const struct bssgp_rim_routing_info *ri);
 int bssgp_parse_rim_ri(struct bssgp_rim_routing_info *ri, const uint8_t *buf, unsigned int len);
+int bssgp_parse_rim_ra(struct bssgp_rim_routing_info *ri, const uint8_t *buf, unsigned int len, uint8_t discr);
 int bssgp_create_rim_ri(uint8_t *buf, const struct bssgp_rim_routing_info *ri);
 
 /* 3GPP TS 48.018, table 11.3.63.1.1: RAN-INFORMATION-REQUEST Application Container coding for NACC */

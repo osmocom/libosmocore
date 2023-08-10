@@ -49,12 +49,13 @@ const struct value_string bssgp_rim_routing_info_discr_strs[] = {
 	{ 0, NULL }
 };
 
-/*! Parse a RIM Routing information IE (3GPP TS 48.018, chapter 11.3.70).
+/*! Parse a RIM Routing address IE (3GPP TS 29.060, chapter 7.7.57 and 7.7.77).
  *  \param[out] ri user provided memory to store the parsed results.
- *  \param[in] buf input buffer of the value part of the IE.
+ *  \param[in] buf input buffer of the value part of the RIM Routing address IE.
+ *  \discr[in] discr value part (one byte) of the RIM Routing Address Discriminator IE.
  *  \returns length of parsed octets, -EINVAL on error. */
-int bssgp_parse_rim_ri(struct bssgp_rim_routing_info *ri, const uint8_t *buf,
-		       unsigned int len)
+int bssgp_parse_rim_ra(struct bssgp_rim_routing_info *ri, const uint8_t *buf,
+		       unsigned int len, uint8_t discr)
 {
 	struct gprs_ra_id raid_temp;
 
@@ -62,23 +63,22 @@ int bssgp_parse_rim_ri(struct bssgp_rim_routing_info *ri, const uint8_t *buf,
 	if (len < 2)
 		return -EINVAL;
 
-	ri->discr = buf[0] & 0x0f;
-	buf++;
+	ri->discr = discr;
 
 	switch (ri->discr) {
 	case BSSGP_RIM_ROUTING_INFO_GERAN:
-		if (len < 9)
+		if (len < 8)
 			return -EINVAL;
 		ri->geran.cid = bssgp_parse_cell_id(&ri->geran.raid, buf);
-		return 9;
+		return 8;
 	case BSSGP_RIM_ROUTING_INFO_UTRAN:
-		if (len < 9)
+		if (len < 8)
 			return -EINVAL;
 		gsm48_parse_ra(&ri->utran.raid, buf);
 		ri->utran.rncid = osmo_load16be(buf + 6);
-		return 9;
+		return 8;
 	case BSSGP_RIM_ROUTING_INFO_EUTRAN:
-		if (len < 7 || len > 14)
+		if (len < 6 || len > 13)
 			return -EINVAL;
 		/* Note: 3GPP TS 24.301 Figure 9.9.3.32.1 and 3GPP TS 24.008
 		 * Figure 10.5.130 specify MCC/MNC encoding in the same way,
@@ -88,12 +88,33 @@ int bssgp_parse_rim_ri(struct bssgp_rim_routing_info *ri, const uint8_t *buf,
 		ri->eutran.tai.mnc = raid_temp.mnc;
 		ri->eutran.tai.mnc_3_digits = raid_temp.mnc_3_digits;
 		ri->eutran.tai.tac = osmo_load16be(buf + 3);
-		memcpy(ri->eutran.global_enb_id, buf + 5, len - 6);
-	        ri->eutran.global_enb_id_len = len - 6;
+		memcpy(ri->eutran.global_enb_id, buf + 5, len - 5);
+		ri->eutran.global_enb_id_len = len - 5;
 		return len;
 	default:
 		return -EINVAL;
 	}
+}
+
+/*! Parse a RIM Routing information IE (3GPP TS 48.018, chapter 11.3.70).
+ *  \param[out] ri user provided memory to store the parsed results.
+ *  \param[in] buf input buffer of the value part of the IE.
+ *  \returns length of parsed octets, -EINVAL on error. */
+int bssgp_parse_rim_ri(struct bssgp_rim_routing_info *ri, const uint8_t *buf,
+		       unsigned int len)
+{
+	uint8_t discr;
+	int rc;
+
+	if (len < 1)
+		return -EINVAL;
+
+	discr = buf[0] & 0x0f;
+
+	rc = bssgp_parse_rim_ra(ri, buf + 1, len - 1, discr);
+	if (rc < 0)
+		return rc;
+	return rc + 1;
 }
 
 /*! Encode a RIM Routing information IE (3GPP TS 48.018, chapter 11.3.70).
