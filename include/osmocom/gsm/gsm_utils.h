@@ -188,6 +188,14 @@ char *osmo_dump_gsmtime(const struct gsm_time *tm);
 char *osmo_dump_gsmtime_buf(char *buf, size_t buf_len, const struct gsm_time *tm);
 char *osmo_dump_gsmtime_c(const void *ctx, const struct gsm_time *tm);
 
+/* Reduced Frame Number (3GPP TS 44.018 §10.5.2.38) */
+#define GSM_RFN_MODULUS 42432
+uint32_t gsm_rfn2fn(uint16_t rfn, uint32_t curr_fn);
+static inline uint16_t gsm_fn2rfn(uint32_t fn)
+{
+	return fn % GSM_RFN_MODULUS;
+}
+
 /* GSM TS 03.03 Chapter 2.6 */
 enum gprs_tlli_type {
 	TLLI_LOCAL,

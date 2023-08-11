@@ -544,6 +544,7 @@ gsm_gsmtime2fn;
 osmo_dump_gsmtime;
 osmo_dump_gsmtime_buf;
 osmo_dump_gsmtime_c;
+gsm_rfn2fn;
 
 gsm_milenage;
 gsm_septet_encode;

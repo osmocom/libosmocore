@@ -80,6 +80,7 @@
 #include <osmocom/gsm/gsm_utils.h>
 #include <osmocom/gsm/meas_rep.h>
 #include <osmocom/gsm/protocol/gsm_04_08.h>
+#include <osmocom/gsm/gsm0502.h>
 
 #include <stdlib.h>
 #include <stdint.h>
@@ -922,6 +923,45 @@ char *osmo_dump_gsmtime_c(const void *ctx, const struct gsm_time *tm)
 	if (!buf)
 		return NULL;
 	return osmo_dump_gsmtime_buf(buf, 64, tm);
+}
+
+#define GSM_RFN_THRESHOLD (GSM_RFN_MODULUS / 2)
+uint32_t gsm_rfn2fn(uint16_t rfn, uint32_t curr_fn)
+{
+	uint32_t curr_rfn;
+	uint32_t fn_rounded;
+	const uint32_t rfn32 = rfn; /* used as 32bit for calculations */
+
+	/* Ensure that all following calculations are performed with the
+	 * relative frame number */
+	OSMO_ASSERT(rfn32 < GSM_RFN_MODULUS);
+
+	/* Compute an internal relative frame number from the full internal
+	   frame number */
+	curr_rfn = gsm_fn2rfn(curr_fn);
+
+	/* Compute a "rounded" version of the internal frame number, which
+	 * exactly fits in the RFN_MODULUS raster */
+	fn_rounded = GSM_TDMA_FN_SUB(curr_fn, curr_rfn);
+
+	/* If the delta between the internal and the external relative frame
+	 * number exceeds a certain limit, we need to assume that the incoming
+	 * request belongs to a the previous rfn period. To correct this,
+	 * we roll back the rounded frame number by one RFN_MODULUS */
+	if (GSM_TDMA_FN_DIFF(rfn32, curr_rfn) > GSM_RFN_THRESHOLD) {
+		/* Race condition between rfn and curr_fn detected:  rfn belongs
+		to the previous RFN_MODULUS cycle, wrapping... */
+		if (fn_rounded < GSM_RFN_MODULUS) {
+			/* Corner case detected: wrapping crosses GSM_MAX_FN border */
+			fn_rounded = GSM_TDMA_FN_SUB(GSM_MAX_FN, (GSM_TDMA_FN_SUB(GSM_RFN_MODULUS, fn_rounded)));
+		} else {
+			fn_rounded = GSM_TDMA_FN_SUB(fn_rounded, GSM_RFN_MODULUS);
+		}
+	}
+
+	/* The real frame number is the sum of the rounded frame number and the
+	 * relative framenumber computed via RACH */
+	return GSM_TDMA_FN_SUM(fn_rounded, rfn32);
 }
 
 /*! append range1024 encoded data to bit vector

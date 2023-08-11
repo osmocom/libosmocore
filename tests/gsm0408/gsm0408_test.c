@@ -1946,6 +1946,31 @@ static void test_gsm_gsmtime2fn(void)
 	}
 }
 
+static void test_gsm_rfn2fn(void)
+{
+	unsigned int i;
+	struct {
+		uint32_t curr_fn;
+		uint16_t rfn;
+		uint32_t exp_fn;
+	} input[] = {
+		{ .curr_fn = 0,		.rfn = 0,	.exp_fn = 0 },
+		{ .curr_fn = 0,		.rfn = 4,	.exp_fn = 4 },
+		{ .curr_fn = 2229729,	.rfn = 23322,	.exp_fn = 2229786 },
+		{ .curr_fn = 2229777,	.rfn = 23322,	.exp_fn = 2229786 },
+		{ .curr_fn = 1320458,	.rfn = 5070,	.exp_fn = 1320462 },
+	};
+
+	for (i = 0; i < ARRAY_SIZE(input); i++) {
+		uint32_t fn = gsm_rfn2fn(input[i].rfn, input[i].curr_fn);
+		if (fn != input[i].exp_fn) {
+			printf("Wrong frame number computed! curr_fn=%u, rfn=%u ==> fn=%u, expected fn=%u\n",
+			       input[i].curr_fn, input[i].rfn, fn, input[i].exp_fn);
+			OSMO_ASSERT(false);
+		}
+	}
+}
+
 int main(int argc, char **argv)
 {
 	test_bearer_cap();
@@ -1967,6 +1992,7 @@ int main(int argc, char **argv)
 	test_power_ctrl();
 	test_rach_tx_integer_raw2val();
 	test_gsm_gsmtime2fn();
+	test_gsm_rfn2fn();
 
 	return EXIT_SUCCESS;
 }
