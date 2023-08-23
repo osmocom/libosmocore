@@ -126,7 +126,6 @@ const struct tlv_definition rsl_att_tlvdef = {
 		[RSL_IE_OSMO_TRAINING_SEQUENCE]	= { TLV_TYPE_TLV },
 		[RSL_IE_OSMO_TEMP_OVP_ACCH_CAP]	= { TLV_TYPE_TLV },
 		[RSL_IE_OSMO_OSMUX_CID]		= { TLV_TYPE_TLV },
-		[RSL_IE_OSMO_ABS_FRAME_NUMBER]	= { TLV_TYPE_TLV }, /* uint32_t fn in network byte order */
 		[RSL_IE_IPAC_SRTP_CONFIG]	= { TLV_TYPE_TLV },
 		[RSL_IE_IPAC_PROXY_UDP]		= { TLV_TYPE_FIXED, 2 },
 		[RSL_IE_IPAC_BSCMPL_TOUT]	= { TLV_TYPE_TV },
