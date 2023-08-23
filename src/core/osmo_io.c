@@ -302,6 +302,22 @@ void iofd_handle_segmented_read(struct osmo_io_fd *iofd, struct msgb *msg, int r
 	iofd->pending = pending;
 }
 
+void iofd_handle_recv(struct osmo_io_fd *iofd, struct msgb *msg, int rc, struct iofd_msghdr *hdr)
+{
+	switch (iofd->mode) {
+	case OSMO_IO_FD_MODE_READ_WRITE:
+		iofd_handle_segmented_read(iofd, msg, rc);
+		break;
+	case OSMO_IO_FD_MODE_RECVFROM_SENDTO:
+		iofd->io_ops.recvfrom_cb(iofd, rc, msg, &hdr->osa);
+		break;
+	case OSMO_IO_FD_MODE_SCTP_RECVMSG_SENDMSG:
+		/* TODO Implement */
+		OSMO_ASSERT(false);
+		break;
+	}
+}
+
 /* Public functions */
 
 /*! Send a message through a connected socket.

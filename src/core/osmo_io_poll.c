@@ -67,18 +67,7 @@ static void iofd_poll_ofd_cb_recvmsg_sendmsg(struct osmo_fd *ofd, unsigned int w
 		if (rc > 0)
 			msgb_put(msg, rc);
 
-		switch (iofd->mode) {
-		case OSMO_IO_FD_MODE_READ_WRITE:
-			iofd_handle_segmented_read(iofd, msg, rc);
-			break;
-		case OSMO_IO_FD_MODE_RECVFROM_SENDTO:
-			iofd->io_ops.recvfrom_cb(iofd, rc, msg, &hdr.osa);
-			break;
-		case OSMO_IO_FD_MODE_SCTP_RECVMSG_SENDMSG:
-			/* TODO Implement */
-			OSMO_ASSERT(false);
-			break;
-		}
+		iofd_handle_recv(iofd, msg, rc, &hdr);
 	}
 
 	if (IOFD_FLAG_ISSET(iofd, IOFD_FLAG_CLOSED))
