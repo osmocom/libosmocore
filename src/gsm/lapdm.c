@@ -857,6 +857,8 @@ static int l2_ph_data_ind(struct msgb *msg, struct lapdm_entity *le,
 	case LAPDm_FMT_Bter:
 		/* fall-through */
 	case LAPDm_FMT_Bbis:
+		/* Update context so that users can read fields like fn: */
+		memcpy(&mctx.dl->mctx, &mctx, sizeof(mctx.dl->mctx));
 		/* directly pass up to layer3 */
 		msg->l3h = msg->l2h;
 		msgb_pull_to_l3(msg);
