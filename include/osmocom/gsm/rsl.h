@@ -51,8 +51,6 @@ void rsl_rll_push_hdr(struct msgb *msg, uint8_t msg_type, uint8_t chan_nr,
 /* Push a RSL RLL header with L3_INFO IE */
 void rsl_rll_push_l3(struct msgb *msg, uint8_t msg_type, uint8_t chan_nr,
 		     uint8_t link_id, int transparent);
-void rsl_rll_push_l3_with_fn(struct msgb *msg, uint8_t msg_type, uint8_t chan_nr,
-		     uint8_t link_id, int transparent, uint32_t fn);
 
 /* Allocate msgb and fill with simple RSL RLL header */
 struct msgb *rsl_rll_simple(uint8_t msg_type, uint8_t chan_nr,
