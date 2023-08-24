@@ -25,8 +25,19 @@ override_dh_install:
 override_dh_auto_test:
 	dh_auto_test || (find . -name testsuite.log -exec cat {} \; ; false)
 
+# Set --disable-uring for debian < 11 based distributions
 override_dh_auto_configure:
-	dh_auto_configure -- --enable-static --disable-sctp-tests --enable-systemd-logging
+	set -x && \
+	CONFIGURE_FLAGS=" \
+		--disable-sctp-tests \
+		--enable-static \
+		--enable-systemd-logging \
+	"; \
+	base_ver="$$(dpkg -l base-files | grep "^ii" | awk '{print $$3}')"; \
+	if dpkg --compare-versions "$$base_ver" lt 11; then \
+		CONFIGURE_FLAGS="$$CONFIGURE_FLAGS --disable-uring"; \
+	fi; \
+	dh_auto_configure -- $$CONFIGURE_FLAGS
 
 override_dh_clean:
 	dh_clean

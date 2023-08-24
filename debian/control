@@ -19,6 +19,7 @@ Build-Depends: debhelper (>= 10),
                libusb-1.0-0-dev,
                libmnl-dev,
                libsystemd-dev,
+               base-files (<< 11) | liburing-dev,
                python3:native
 Standards-Version: 3.9.8
 Vcs-Git: https://gitea.osmocom.org/osmocom/libosmocore
