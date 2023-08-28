@@ -850,7 +850,8 @@ int osmo_sock_init2_multiaddr(uint16_t family, uint16_t type, uint8_t proto,
 				LOGP(DLGLOBAL, LOGL_ERROR,
 				     "cannot setsockopt(SCTP_AUTH_SUPPORTED) socket: %s:%u: %s\n",
 				     strbuf, local_port, strerror(err));
-				goto ret_close;
+				/* do not fail, some features such as Peer Primary Address won't be available
+				 * unless configured system-wide through sysctl */
 			}
 
 			rc = setsockopt_sctp_asconf_supported(sfd);
@@ -860,7 +861,8 @@ int osmo_sock_init2_multiaddr(uint16_t family, uint16_t type, uint8_t proto,
 				LOGP(DLGLOBAL, LOGL_ERROR,
 				     "cannot setsockopt(SCTP_ASCONF_SUPPORTED) socket: %s:%u: %s\n",
 				     strbuf, local_port, strerror(err));
-				goto ret_close;
+				/* do not fail, some features such as Peer Primary Address won't be available
+				 * unless configured system-wide through sysctl */
 			}
 		}
 
