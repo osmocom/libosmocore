@@ -80,6 +80,8 @@ struct gprs_ns2_vc_bind;
 #define NS_ALLOC_SIZE	3072
 #define NS_ALLOC_HEADROOM 20
 
+#define NS_DEFAULT_TXQUEUE_MAX_LENGTH 128
+
 enum ns2_timeout {
 	NS_TOUT_TNS_BLOCK,
 	NS_TOUT_TNS_BLOCK_RETRIES,
@@ -164,6 +166,8 @@ struct gprs_ns2_inst {
 	/*! workaround for rate counter until rate counter accepts char str as index */
 	uint32_t nsvc_rate_ctr_idx;
 	uint32_t bind_rate_ctr_idx;
+
+	uint32_t txqueue_max_length;
 };
 
 
@@ -450,6 +454,7 @@ int ns2_ip_count_bind(struct gprs_ns2_inst *nsi, struct osmo_sockaddr *remote);
 struct gprs_ns2_vc_bind *ns2_ip_get_bind_by_index(struct gprs_ns2_inst *nsi,
 						  struct osmo_sockaddr *remote,
 						  int index);
+void ns2_ip_set_txqueue_max_length(struct gprs_ns2_vc_bind *bind, unsigned int max_length);
 
 /* sns */
 int ns2_sns_rx(struct gprs_ns2_vc *nsvc, struct msgb *msg, struct tlv_parsed *tp);

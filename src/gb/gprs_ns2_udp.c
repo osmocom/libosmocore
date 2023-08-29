@@ -336,6 +336,7 @@ int gprs_ns2_ip_bind(struct gprs_ns2_inst *nsi,
 	priv->iofd = osmo_iofd_setup(bind, rc, "NS bind", OSMO_IO_FD_MODE_RECVFROM_SENDTO, &ioops, bind);
 	osmo_iofd_register(priv->iofd, rc);
 	osmo_iofd_set_alloc_info(priv->iofd, 4096, 128);
+	osmo_iofd_set_txqueue_max_length(priv->iofd, nsi->txqueue_max_length);
 
 	/* IPv4: max fragmented payload can be (13 bit) * 8 byte => 65535.
 	 * IPv6: max payload can be 65535 (RFC 2460).
@@ -572,6 +573,14 @@ struct gprs_ns2_vc_bind *ns2_ip_get_bind_by_index(struct gprs_ns2_inst *nsi,
 	}
 
 	return NULL;
+}
+
+void ns2_ip_set_txqueue_max_length(struct gprs_ns2_vc_bind *bind, unsigned int max_length)
+{
+	struct priv_bind *priv = bind->priv;
+	OSMO_ASSERT(gprs_ns2_is_ip_bind(bind));
+
+	osmo_iofd_set_txqueue_max_length(priv->iofd, max_length);
 }
 
 /*! set the signalling and data weight for this bind

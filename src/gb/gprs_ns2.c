@@ -1451,6 +1451,8 @@ struct gprs_ns2_inst *gprs_ns2_instantiate(void *ctx, osmo_prim_cb cb, void *cb_
 	nsi->timeout[NS_TOUT_TSNS_CONFIG_RETRIES] = 3;
 	nsi->timeout[NS_TOUT_TSNS_PROCEDURES_RETRIES] = 3;
 
+	nsi->txqueue_max_length = NS_DEFAULT_TXQUEUE_MAX_LENGTH;
+
 	return nsi;
 }
 

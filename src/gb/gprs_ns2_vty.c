@@ -36,6 +36,7 @@
 #include <osmocom/core/fsm.h>
 #include <osmocom/core/linuxlist.h>
 #include <osmocom/core/msgb.h>
+#include <osmocom/core/osmo_io.h>
 #include <osmocom/core/rate_ctr.h>
 #include <osmocom/core/select.h>
 #include <osmocom/core/talloc.h>
@@ -594,6 +595,9 @@ static int config_write_ns(struct vty *vty)
 		vty_out(vty, " timer %s %u%s",
 			get_value_string(gprs_ns_timer_strs, i),
 			vty_nsi->timeout[i], VTY_NEWLINE);
+
+	if (vty_nsi->txqueue_max_length != NS_DEFAULT_TXQUEUE_MAX_LENGTH)
+		vty_out(vty, " txqueue-max-length %u%s", vty_nsi->txqueue_max_length, VTY_NEWLINE);
 
 	ret = config_write_ns_bind(vty);
 	if (ret)
@@ -1707,6 +1711,27 @@ DEFUN(cfg_no_ns_ip_sns_default_bind, cfg_no_ns_ip_sns_default_bind_cmd,
 	return CMD_WARNING;
 }
 
+DEFUN(cfg_ns_txqueue_max_length, cfg_ns_txqueue_max_length_cmd,
+      "txqueue-max-length <1-4096>",
+      "Set the maximum length of the txqueue (for UDP)\n"
+      "Maximum length of the txqueue\n")
+{
+	struct gprs_ns2_vc_bind *bind;
+	uint32_t max_length = atoi(argv[0]);
+	vty_nsi->txqueue_max_length = max_length;
+
+
+	llist_for_each_entry(bind, &vty_nsi->binding, list) {
+		if (!gprs_ns2_is_ip_bind(bind))
+			continue;
+
+		ns2_ip_set_txqueue_max_length(bind, max_length);
+	}
+
+
+	return CMD_SUCCESS;
+}
+
 DEFUN(cfg_ns_nse_ip_sns_bind, cfg_ns_nse_ip_sns_bind_cmd,
       "ip-sns-bind BINDID",
       "IP SNS binds\n"
@@ -2291,6 +2316,8 @@ int gprs_ns2_vty_init(struct gprs_ns2_inst *nsi)
 
 	install_lib_element(L_NS_NODE, &cfg_ns_ip_sns_default_bind_cmd);
 	install_lib_element(L_NS_NODE, &cfg_no_ns_ip_sns_default_bind_cmd);
+
+	install_lib_element(L_NS_NODE, &cfg_ns_txqueue_max_length_cmd);
 
 	install_node(&ns_bind_node, NULL);
 	install_lib_element(L_NS_BIND_NODE, &cfg_ns_bind_listen_cmd);
