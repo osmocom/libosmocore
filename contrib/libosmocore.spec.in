@@ -32,7 +32,9 @@ BuildRequires:  pkgconfig(libusb-1.0)
 BuildRequires:  pkgconfig(talloc) >= 2.1.0
 BuildRequires:  pkgconfig(libmnl)
 BuildRequires:  pkgconfig(libsystemd)
+%if 0%{?centos_ver} != 7
 BuildRequires:  pkgconfig(liburing)
+%endif
 
 %description
 libosmocore is a package with various utility functions that were
@@ -339,8 +341,18 @@ applications that want to make use of libosmousb.
 %build
 echo "%version" >.tarball-version
 autoreconf -fiv
-%configure --enable-shared --disable-static --enable-systemd-logging \
+
+CONFIGURE_FLAGS="
+	--enable-shared \
+	--disable-static \
+	--enable-systemd-logging \
 	--includedir="%_includedir/%name"
+"
+%if 0%{?centos_ver} == 7
+	CONFIGURE_FLAGS="$CONFIGURE_FLAGS --disable-uring"
+%endif
+
+%configure $CONFIGURE_FLAGS
 make %{?_smp_mflags} V=1
 
 %install
