@@ -182,6 +182,7 @@ static int iofd_uring_submit_tx(struct osmo_io_fd *iofd);
 static void iofd_uring_handle_tx(struct iofd_msghdr *msghdr, int rc)
 {
 	struct osmo_io_fd *iofd = msghdr->iofd;
+	struct msgb *msg = msghdr->msg;
 
 	if (IOFD_FLAG_ISSET(iofd, IOFD_FLAG_CLOSED))
 		goto out_free;
@@ -189,27 +190,27 @@ static void iofd_uring_handle_tx(struct iofd_msghdr *msghdr, int rc)
 	/* Error during write */
 	if (rc < 0) {
 		if (msghdr->action == IOFD_ACT_WRITE)
-			iofd->io_ops.write_cb(iofd, rc, msghdr->msg);
+			iofd->io_ops.write_cb(iofd, rc, msg);
 		else if (msghdr->action == IOFD_ACT_SENDTO)
-			iofd->io_ops.sendto_cb(iofd, rc, msghdr->msg, &msghdr->osa);
+			iofd->io_ops.sendto_cb(iofd, rc, msg, &msghdr->osa);
 		else
 			OSMO_ASSERT(0);
 		goto out_free;
 	}
 
 	/* Incomplete write */
-	if (rc < msgb_length(msghdr->msg)) {
+	if (rc < msgb_length(msg)) {
 		/* Re-enqueue remaining data */
-		msgb_pull(msghdr->msg, rc);
-		msghdr->iov[0].iov_len = msgb_length(msghdr->msg);
+		msgb_pull(msg, rc);
+		msghdr->iov[0].iov_len = msgb_length(msg);
 		iofd_txqueue_enqueue_front(iofd, msghdr);
 		goto out;
 	}
 
 	if (msghdr->action == IOFD_ACT_WRITE)
-		iofd->io_ops.write_cb(iofd, rc, msghdr->msg);
+		iofd->io_ops.write_cb(iofd, rc, msg);
 	else if (msghdr->action == IOFD_ACT_SENDTO)
-		iofd->io_ops.sendto_cb(iofd, rc, msghdr->msg, &msghdr->osa);
+		iofd->io_ops.sendto_cb(iofd, rc, msg, &msghdr->osa);
 	else
 		OSMO_ASSERT(0);
 
