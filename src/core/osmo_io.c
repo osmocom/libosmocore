@@ -120,7 +120,7 @@ struct iofd_msghdr *iofd_msghdr_alloc(struct osmo_io_fd *iofd, enum iofd_msg_act
 		talloc_steal(iofd, msg);
 	}
 
-	hdr = talloc_zero(msg, struct iofd_msghdr);
+	hdr = talloc_zero(iofd, struct iofd_msghdr);
 	if (!hdr) {
 		if (free_msg)
 			talloc_free(msg);
