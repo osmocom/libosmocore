@@ -2,6 +2,7 @@ Source: libosmocore
 Maintainer: Osmocom team <openbsc@lists.osmocom.org>
 Section: libs
 Priority: optional
+# liburing-dev: don't try to install it on debian 10 and ubuntu 20.04
 Build-Depends: debhelper (>= 10),
                autotools-dev,
                autoconf,
@@ -19,7 +20,7 @@ Build-Depends: debhelper (>= 10),
                libusb-1.0-0-dev,
                libmnl-dev,
                libsystemd-dev,
-               base-files (<< 11) | liburing-dev,
+               liburing-dev | base-files (<< 11) | ubuntu-keyring (<< 2021),
                python3:native
 Standards-Version: 3.9.8
 Vcs-Git: https://gitea.osmocom.org/osmocom/libosmocore
