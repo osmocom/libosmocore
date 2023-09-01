@@ -790,6 +790,36 @@ enum ipac_bcch_info_type {
 	IPAC_BINF_CELL_ALLOC		= (1 << 2),
 };
 
+/*! ip.access NM_ATT_IPACC_RLC_CFG value */
+struct abis_nm_ipacc_att_rlc_cfg {
+	uint8_t t3142;
+	uint8_t t3169;
+	uint8_t t3191;
+	uint8_t t3193_10ms;
+	uint8_t t3195;
+	uint8_t n3101;
+	uint8_t n3103;
+	uint8_t n3105;
+	uint8_t rlc_cv_countdown;
+} __attribute__((packed));
+
+/*! ip.access NM_ATT_IPACC_RLC_CFG_2 value */
+struct abis_nm_ipacc_att_rlc_cfg_2 {
+	/* T downlink TBF extension (0..500, network order) */
+	uint16_t t_dl_tbf_ext_10ms;
+	/* T uplink TBF extension (0..500, network order) */
+	uint16_t t_ul_tbf_ext_10ms;
+	/* Initial CS to use: CS1 -> 1, CS2 -> 2, CS3 -> 3, CS4 -> 4 */
+	uint8_t initial_cs;
+} __attribute__((packed));
+
+/*! ip.access NM_ATT_IPACC_RLC_CFG_3 value */
+struct abis_nm_ipacc_att_rlc_cfg_3 {
+	/* Initial MCS to use when EGPRS is used:
+	 * MCS1 -> 1, MCS2 -> 2, ..., MCS9 -> 9 */
+	uint8_t initial_mcs;
+} __attribute__((packed));
+
 /*! Osmocom NSVC address type for NM_ATT_OSMO_NS_LINK_CFG */
 enum osmo_oml_nsvc_address_type {
 	OSMO_NSVC_ADDR_UNSPEC		= 0x00,
