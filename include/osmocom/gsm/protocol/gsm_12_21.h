@@ -790,6 +790,17 @@ enum ipac_bcch_info_type {
 	IPAC_BINF_CELL_ALLOC		= (1 << 2),
 };
 
+/*! ip.access NM_ATT_IPACC_NS_CFG value */
+struct abis_nm_ipacc_att_ns_cfg {
+	uint8_t un_blocking_timer;	/* (un)blocking Timer (Tns-block) timeout */
+	uint8_t un_blocking_retries;	/* (un)blocking Timer (Tns-block) number of retries */
+	uint8_t reset_timer;		/* Reset Timer (Tns-reset) timeout */
+	uint8_t reset_retries;		/* Reset Timer (Tns-reset) number of retries */
+	uint8_t test_timer;		/* Test Timer (Tns-test) timeout */
+	uint8_t alive_timer;		/* Alive Timer (Tns-alive) timeout */
+	uint8_t alive_retries;		/* Alive Timer (Tns-alive) number of retries */
+} __attribute__((packed));
+
 /*! ip.access NM_ATT_IPACC_BSSGP_CFG value */
 struct abis_nm_ipacc_att_bssgp_cfg {
 	uint8_t t1_s;			/* blocking timer (T1) */
