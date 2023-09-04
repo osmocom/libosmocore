@@ -707,6 +707,100 @@ static const enum abis_nm_chan_comb chcomb4pchan[] = {
 	/* FIXME: bounds check */
 };
 
+const struct value_string abis_nm_ipacc_freq_band_desc[] = {
+	{ NM_IPAC_F_FREQ_BAND_PGSM,	"P-GSM" },
+	{ NM_IPAC_F_FREQ_BAND_EGSM,	"E-GSM" },
+	{ NM_IPAC_F_FREQ_BAND_RGSM,	"R-GSM" },
+	{ NM_IPAC_F_FREQ_BAND_DCS,	"DCS-1800" },
+	{ NM_IPAC_F_FREQ_BAND_PCS,	"PCS-1900" },
+	{ NM_IPAC_F_FREQ_BAND_850,	"850" },
+	{ NM_IPAC_F_FREQ_BAND_480,	"480" },
+	{ NM_IPAC_F_FREQ_BAND_450,	"450" },
+	{ 0, NULL }
+};
+
+const struct value_string abis_nm_ipacc_ciph_algo_desc[] = {
+	{ NM_IPAC_F_CIPH_ALGO_A51,	"A5/1" },
+	{ NM_IPAC_F_CIPH_ALGO_A52,	"A5/2" },
+	{ NM_IPAC_F_CIPH_ALGO_A53,	"A5/3" },
+	{ NM_IPAC_F_CIPH_ALGO_A54,	"A5/4" },
+	{ NM_IPAC_F_CIPH_ALGO_A55,	"A5/5" },
+	{ NM_IPAC_F_CIPH_ALGO_A56,	"A5/6" },
+	{ NM_IPAC_F_CIPH_ALGO_A57,	"A5/7" },
+	{ NM_IPAC_F_CIPH_ALGO_A58,	"A5/8" },
+	{ 0, NULL }
+};
+
+const struct value_string abis_nm_ipacc_chant_desc[] = {
+	{ NM_IPAC_F_CHANT_TCHF,			"TCH/F" },
+	{ NM_IPAC_F_CHANT_TCHH,			"TCH/H" },
+	{ NM_IPAC_F_CHANT_SDCCH8,		"SDCCH/8" },
+	{ NM_IPAC_F_CHANT_BCCH,			"BCCH" },
+	{ NM_IPAC_F_CHANT_BCCH_SDCCH4,		"BCCH+SDCCH/4" },
+	{ NM_IPAC_F_CHANT_BCH,			"BCH" },
+	{ NM_IPAC_F_CHANT_BCCH_SDCCH4_CBCH,	"BCCH+SDCCH/4+CBCH" },
+	{ NM_IPAC_F_CHANT_SDCCH8_CBCH,		"SDCCH/8+CBCH" },
+	{ NM_IPAC_F_CHANT_PCCHF,		"PDCH/F" },
+	{ NM_IPAC_F_CHANT_TCHF_PDCHF,		"TCH/F or PDCH/F" },
+	{ NM_IPAC_F_CHANT_TCHH_PDCHH,		"TCH/H+PDCH/H" },
+	{ NM_IPAC_F_CHANT_TCHF_TCHH,		"TCH/F or TCH/H" },
+	{ 0, NULL }
+};
+
+const struct value_string abis_nm_ipacc_chanm_desc[] = {
+	{ NM_IPAC_F_CHANM_SPEECH_FS,		"FR1/FS" },
+	{ NM_IPAC_F_CHANM_SPEECH_EFS,		"FR2/EFS" },
+	{ NM_IPAC_F_CHANM_SPEECH_AFS,		"FR3/AFS" },
+	{ NM_IPAC_F_CHANM_SPEECH_HS,		"HR1/HS" },
+	{ NM_IPAC_F_CHANM_SPEECH_AHS,		"HR3/AHS" },
+	{ NM_IPAC_F_CHANM_CSD_NT_4k8,		"CSD NT 4.8 kbit/s" },
+	{ NM_IPAC_F_CHANM_CSD_NT_9k6,		"CSD NT 9.6 kbit/s" },
+	{ NM_IPAC_F_CHANM_CSD_NT_14k4,		"CSD NT 14.4 kbit/s" },
+	{ NM_IPAC_F_CHANM_CSD_T_1200_75,	"CSD T 1200/75 kbit/s" },
+	{ NM_IPAC_F_CHANM_CSD_T_600,		"CSD T 600 kbit/s" },
+	{ NM_IPAC_F_CHANM_CSD_T_1k2,		"CSD T 1k2 kbit/s" },
+	{ NM_IPAC_F_CHANM_CSD_T_2k4,		"CSD T 2.4 kbit/s" },
+	{ NM_IPAC_F_CHANM_CSD_T_4k8,		"CSD T 4.8 kbit/s" },
+	{ NM_IPAC_F_CHANM_CSD_T_9k6,		"CSD T 9.6 kbit/s" },
+	{ NM_IPAC_F_CHANM_CSD_T_14k4,		"CSD T 14.4 kbit/s" },
+	{ 0, NULL }
+};
+
+const struct value_string abis_nm_ipacc_gprs_coding_desc[] = {
+	{ NM_IPAC_F_GPRS_CODING_CS1,		"CS1" },
+	{ NM_IPAC_F_GPRS_CODING_CS2,		"CS2" },
+	{ NM_IPAC_F_GPRS_CODING_CS3,		"CS3" },
+	{ NM_IPAC_F_GPRS_CODING_CS4,		"CS4" },
+	{ NM_IPAC_F_GPRS_CODING_MCS1,		"MCS1" },
+	{ NM_IPAC_F_GPRS_CODING_MCS2,		"MCS2" },
+	{ NM_IPAC_F_GPRS_CODING_MCS3,		"MCS3" },
+	{ NM_IPAC_F_GPRS_CODING_MCS4,		"MCS4" },
+	{ NM_IPAC_F_GPRS_CODING_MCS5,		"MCS5" },
+	{ NM_IPAC_F_GPRS_CODING_MCS6,		"MCS6" },
+	{ NM_IPAC_F_GPRS_CODING_MCS7,		"MCS7" },
+	{ NM_IPAC_F_GPRS_CODING_MCS8,		"MCS8" },
+	{ NM_IPAC_F_GPRS_CODING_MCS9,		"MCS9" },
+	{ 0, NULL }
+};
+
+const struct value_string abis_nm_ipacc_rtp_feat_desc[] = {
+	{ NM_IPAC_F_RTP_FEAT_COMPR_CONTROL,	"Compression Control" },
+	{ NM_IPAC_F_RTP_FEAT_IR_8k,		"Intermediate Rate 8 kbit/s" },
+	{ NM_IPAC_F_RTP_FEAT_IR_16k,		"Intermediate Rate 16 kbit/s" },
+	{ NM_IPAC_F_RTP_FEAT_IR_32k,		"Intermediate Rate 32 kbit/s" },
+	{ NM_IPAC_F_RTP_FEAT_IR_64k,		"Intermediate Rate 64 kbit/s" },
+	{ NM_IPAC_F_RTP_FEAT_MULTIPLEX_RTP,	"RTP Multiplex" },
+	{ NM_IPAC_F_RTP_FEAT_MULTIPLEX_SRTP,	"SRTP Multiplex" },
+	{ 0, NULL }
+};
+
+const struct value_string abis_nm_ipacc_rsl_feat_desc[] = {
+	{ NM_IPAC_F_RSL_FEAT_PHYSICAL_CONTEXT,	"Physical Context" },
+	{ NM_IPAC_F_RSL_FEAT_DYN_PDCH_ACT,	"Dynamic PDCH Activation" },
+	{ NM_IPAC_F_RSL_FEAT_RTP_PT2,		"RTP Payload Type 2" },
+	{ 0, NULL }
+};
+
 /*! Pack 3GPP TS 12.21 § 8.8.2 Failure Event Report into msgb */
 struct msgb *abis_nm_fail_evt_rep(enum abis_nm_event_type t,
 				  enum abis_nm_severity s,

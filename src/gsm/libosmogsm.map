@@ -40,6 +40,14 @@ abis_nm_put_sw_file;
 abis_nm_get_sw_conf;
 abis_nm_get_sw_desc_len;
 
+abis_nm_ipacc_freq_band_desc;
+abis_nm_ipacc_ciph_algo_desc;
+abis_nm_ipacc_chant_desc;
+abis_nm_ipacc_chanm_desc;
+abis_nm_ipacc_gprs_coding_desc;
+abis_nm_ipacc_rtp_feat_desc;
+abis_nm_ipacc_rsl_feat_desc;
+
 osmo_sitype_strs;
 osmo_c4;
 osmo_get_rand_id;

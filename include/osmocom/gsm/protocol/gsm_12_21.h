@@ -775,6 +775,98 @@ enum ipac_eie {
 	NM_IPAC_EIE_BTS_ID		= 0x25,
 };
 
+/*! ip.access support flags for NM_IPAC_EIE_FREQ_BANDS */
+#define NM_IPAC_F_FREQ_BAND_PGSM		(1 << 0)
+#define NM_IPAC_F_FREQ_BAND_EGSM		(1 << 1)
+#define NM_IPAC_F_FREQ_BAND_RGSM		(1 << 2)
+#define NM_IPAC_F_FREQ_BAND_DCS			(1 << 3)
+#define NM_IPAC_F_FREQ_BAND_PCS			(1 << 4)
+#define NM_IPAC_F_FREQ_BAND_850			(1 << 5)
+#define NM_IPAC_F_FREQ_BAND_480			(1 << 6)
+#define NM_IPAC_F_FREQ_BAND_450			(1 << 7)
+
+/*! ip.access support flags for NM_IPAC_EIE_CIPH_ALGOS */
+#define NM_IPAC_F_CIPH_ALGO_A51			(1 << 0)
+#define NM_IPAC_F_CIPH_ALGO_A52			(1 << 1)
+#define NM_IPAC_F_CIPH_ALGO_A53			(1 << 2)
+#define NM_IPAC_F_CIPH_ALGO_A54			(1 << 3)
+#define NM_IPAC_F_CIPH_ALGO_A55			(1 << 4)
+#define NM_IPAC_F_CIPH_ALGO_A56			(1 << 5)
+#define NM_IPAC_F_CIPH_ALGO_A57			(1 << 6)
+#define NM_IPAC_F_CIPH_ALGO_A58			(1 << 7)
+
+/*! ip.access support flags for NM_IPAC_EIE_CHAN_TYPES (1st octet) */
+#define NM_IPAC_F_CHANT_TCHF			(1 << 0)
+#define NM_IPAC_F_CHANT_TCHH			(1 << 1)
+#define NM_IPAC_F_CHANT_SDCCH8			(1 << 2)
+#define NM_IPAC_F_CHANT_BCCH			(1 << 3)
+#define NM_IPAC_F_CHANT_BCCH_SDCCH4		(1 << 4)
+#define NM_IPAC_F_CHANT_BCH			(1 << 5)
+#define NM_IPAC_F_CHANT_BCCH_SDCCH4_CBCH	(1 << 6)
+#define NM_IPAC_F_CHANT_SDCCH8_CBCH		(1 << 7)
+/*! ip.access support flags for NM_IPAC_EIE_CHAN_TYPES (2nd octet) */
+#define NM_IPAC_F_CHANT_PCCHF			(1 << 8)
+#define NM_IPAC_F_CHANT_TCHF_PDCHF		(1 << 9)
+#define NM_IPAC_F_CHANT_TCHH_PDCHH		(1 << 10)
+#define NM_IPAC_F_CHANT_TCHF_TCHH		(1 << 11)
+
+/*! ip.access support flags for NM_IPAC_EIE_CHAN_MODES (speech codecs) */
+#define NM_IPAC_F_CHANM_SPEECH_FS		(1 << 0)
+#define NM_IPAC_F_CHANM_SPEECH_EFS		(1 << 1)
+#define NM_IPAC_F_CHANM_SPEECH_AFS		(1 << 2)
+#define NM_IPAC_F_CHANM_SPEECH_HS		(1 << 3)
+#define NM_IPAC_F_CHANM_SPEECH_AHS		(1 << 4)
+/*! ip.access support flags for NM_IPAC_EIE_CHAN_MODES (CSD non-transparent) */
+#define NM_IPAC_F_CHANM_CSD_NT_4k8		(1 << 8)
+#define NM_IPAC_F_CHANM_CSD_NT_9k6		(1 << 9)
+#define NM_IPAC_F_CHANM_CSD_NT_14k4		(1 << 10)
+/*! ip.access support flags for NM_IPAC_EIE_CHAN_MODES (CSD transparent) */
+#define NM_IPAC_F_CHANM_CSD_T_1200_75		(1 << 16)
+#define NM_IPAC_F_CHANM_CSD_T_600		(1 << 17)
+#define NM_IPAC_F_CHANM_CSD_T_1k2		(1 << 18)
+#define NM_IPAC_F_CHANM_CSD_T_2k4		(1 << 19)
+#define NM_IPAC_F_CHANM_CSD_T_4k8		(1 << 20)
+#define NM_IPAC_F_CHANM_CSD_T_9k6		(1 << 21)
+#define NM_IPAC_F_CHANM_CSD_T_14k4		(1 << 22)
+
+/*! ip.access support flags for NM_IPAC_EIE_GPRS_CODING (GPRS) */
+#define NM_IPAC_F_GPRS_CODING_CS1		(1 << 0)
+#define NM_IPAC_F_GPRS_CODING_CS2		(1 << 1)
+#define NM_IPAC_F_GPRS_CODING_CS3		(1 << 2)
+#define NM_IPAC_F_GPRS_CODING_CS4		(1 << 3)
+/*! ip.access support flags for NM_IPAC_EIE_GPRS_CODING (EGPRS) */
+#define NM_IPAC_F_GPRS_CODING_MCS1		(1 << 7)
+#define NM_IPAC_F_GPRS_CODING_MCS2		(1 << 8)
+#define NM_IPAC_F_GPRS_CODING_MCS3		(1 << 9)
+#define NM_IPAC_F_GPRS_CODING_MCS4		(1 << 10)
+#define NM_IPAC_F_GPRS_CODING_MCS5		(1 << 11)
+#define NM_IPAC_F_GPRS_CODING_MCS6		(1 << 12)
+#define NM_IPAC_F_GPRS_CODING_MCS7		(1 << 13)
+#define NM_IPAC_F_GPRS_CODING_MCS8		(1 << 14)
+#define NM_IPAC_F_GPRS_CODING_MCS9		(1 << 15)
+
+/*! ip.access support flags for NM_IPAC_EIE_RTP_FEATURES */
+#define NM_IPAC_F_RTP_FEAT_COMPR_CONTROL	(1 << 0) /* RTP Compression Control */
+#define NM_IPAC_F_RTP_FEAT_IR_8k		(1 << 1) /* IR  8 kbit/s */
+#define NM_IPAC_F_RTP_FEAT_IR_16k		(1 << 2) /* IR 16 kbit/s */
+#define NM_IPAC_F_RTP_FEAT_IR_32k		(1 << 3) /* IR 32 kbit/s */
+#define NM_IPAC_F_RTP_FEAT_IR_64k		(1 << 4) /* IR 64 kbit/s */
+#define NM_IPAC_F_RTP_FEAT_MULTIPLEX_RTP	(1 << 6) /* RTP Multiplexing */
+#define NM_IPAC_F_RTP_FEAT_MULTIPLEX_SRTP	(1 << 7) /* SRTP Multiplexing */
+
+/*! ip.access support flags for NM_IPAC_EIE_RSL_FEATURES */
+#define NM_IPAC_F_RSL_FEAT_PHYSICAL_CONTEXT	(1 << 0)
+#define NM_IPAC_F_RSL_FEAT_DYN_PDCH_ACT		(1 << 1)
+#define NM_IPAC_F_RSL_FEAT_RTP_PT2		(1 << 2)
+
+extern const struct value_string abis_nm_ipacc_freq_band_desc[];
+extern const struct value_string abis_nm_ipacc_ciph_algo_desc[];
+extern const struct value_string abis_nm_ipacc_chant_desc[];
+extern const struct value_string abis_nm_ipacc_chanm_desc[];
+extern const struct value_string abis_nm_ipacc_gprs_coding_desc[];
+extern const struct value_string abis_nm_ipacc_rtp_feat_desc[];
+extern const struct value_string abis_nm_ipacc_rsl_feat_desc[];
+
 /*! ip.access NWL BCCH information type */
 enum ipac_bcch_info_type {
 	IPAC_BINF_RXLEV			= (1 << 8),
