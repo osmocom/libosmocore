@@ -491,22 +491,22 @@ cat $abs_srcdir/iuup/iuup_test.ok > expout
 AT_CHECK([$abs_top_builddir/tests/iuup/iuup_test], [0], [expout], [ignore])
 AT_CLEANUP
 
-AT_SETUP([v110_test_frame])
-AT_KEYWORDS([v110_test_frame])
-cat $abs_srcdir/v110/test_frame.ok > expout
-AT_CHECK([$abs_top_builddir/tests/v110/test_frame], [], [expout],[])
+AT_SETUP([v110_frame_test])
+AT_KEYWORDS([v110_frame_test])
+cat $abs_srcdir/v110/frame_test.ok > expout
+AT_CHECK([$abs_top_builddir/tests/v110/frame_test], [], [expout],[])
 AT_CLEANUP
 
-AT_SETUP([v110_test_ra1])
-AT_KEYWORDS([v110_test_ra1])
-cat $abs_srcdir/v110/test_ra1.ok > expout
-AT_CHECK([$abs_top_builddir/tests/v110/test_ra1], [], [expout],[])
+AT_SETUP([v110_ra1_test])
+AT_KEYWORDS([v110_ra1_test])
+cat $abs_srcdir/v110/ra1_test.ok > expout
+AT_CHECK([$abs_top_builddir/tests/v110/ra1_test], [], [expout],[])
 AT_CLEANUP
 
-AT_SETUP([gsm44021_test_frame_csd])
-AT_KEYWORDS([gsm44021_test_frame_csd])
-cat $abs_srcdir/gsm44021/test_frame_csd.ok > expout
-AT_CHECK([$abs_top_builddir/tests/gsm44021/test_frame_csd], [], [expout],[])
+AT_SETUP([gsm44021_frame_csd_test])
+AT_KEYWORDS([gsm44021_frame_csd_test])
+cat $abs_srcdir/gsm44021/frame_csd_test.ok > expout
+AT_CHECK([$abs_top_builddir/tests/gsm44021/frame_csd_test], [], [expout],[])
 AT_CLEANUP
 
 AT_SETUP([osmo_io])

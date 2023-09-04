@@ -51,9 +51,9 @@ check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
 		 smscb/gsm0341_test                                     \
 		 smscb/cbsp_test                                        \
 		 auth/xor2g_test                                        \
-		 v110/test_frame                                        \
-		 v110/test_ra1                                          \
-		 gsm44021/test_frame_csd                                \
+		 v110/frame_test                                        \
+		 v110/ra1_test                                          \
+		 gsm44021/frame_csd_test                                \
 		 osmo_io/osmo_io_test					\
 		 $(NULL)
 
@@ -362,14 +362,14 @@ time_cc_time_cc_test_LDADD = $(LDADD)
 iuup_iuup_test_SOURCES = iuup/iuup_test.c
 iuup_iuup_test_LDADD = $(top_builddir)/src/gsm/libosmogsm.la $(LDADD)
 
-v110_test_frame_SOURCES = v110/test_frame.c
-v110_test_frame_LDADD = $(top_builddir)/src/isdn/libosmoisdn.la $(LDADD)
+v110_frame_test_SOURCES = v110/frame_test.c
+v110_frame_test_LDADD = $(top_builddir)/src/isdn/libosmoisdn.la $(LDADD)
 
-v110_test_ra1_SOURCES = v110/test_ra1.c
-v110_test_ra1_LDADD = $(top_builddir)/src/isdn/libosmoisdn.la $(LDADD)
+v110_ra1_test_SOURCES = v110/ra1_test.c
+v110_ra1_test_LDADD = $(top_builddir)/src/isdn/libosmoisdn.la $(LDADD)
 
-gsm44021_test_frame_csd_SOURCES = gsm44021/test_frame_csd.c
-gsm44021_test_frame_csd_LDADD = $(top_builddir)/src/isdn/libosmoisdn.la \
+gsm44021_frame_csd_test_SOURCES = gsm44021/frame_csd_test.c
+gsm44021_frame_csd_test_LDADD = $(top_builddir)/src/isdn/libosmoisdn.la \
 				$(top_builddir)/src/gsm/libosmogsm.la \
 				$(LDADD)
 
@@ -475,9 +475,9 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
 	     smscb/smscb_test.ok \
 	     smscb/gsm0341_test.ok \
 	     smscb/cbsp_test.ok \
-	     v110/test_frame.ok \
-	     v110/test_ra1.ok \
-	     gsm44021/test_frame_csd.ok \
+	     v110/frame_test.ok \
+	     v110/ra1_test.ok \
+	     gsm44021/frame_csd_test.ok \
 	     osmo_io/osmo_io_test.ok osmo_io/osmo_io_test.err \
 	     $(NULL)
 
@@ -684,12 +684,12 @@ endif
 		>$(srcdir)/time_cc/time_cc_test.ok
 	iuup/iuup_test \
 		>$(srcdir)/iuup/iuup_test.ok
-	v110/test_frame \
-		>$(srcdir)/v110/test_frame.ok
-	v110/test_ra1 \
-		>$(srcdir)/v110/test_ra1.ok
-	gsm44021/test_frame_csd \
-		>$(srcdir)/gsm44021/test_frame_csd.ok
+	v110/frame_test \
+		>$(srcdir)/v110/frame_test.ok
+	v110/ra1_test \
+		>$(srcdir)/v110/ra1_test.ok
+	gsm44021/frame_csd_test \
+		>$(srcdir)/gsm44021/frame_csd_test.ok
 	osmo_io/osmo_io_test \
 		>$(srcdir)/osmo_io/osmo_io_test.ok \
 		2>$(srcdir)/osmo_io/osmo_io_test.err
