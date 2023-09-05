@@ -58,10 +58,12 @@ static void iofd_poll_ofd_cb_recvmsg_sendmsg(struct osmo_fd *ofd, unsigned int w
 		hdr.msg = msg;
 		hdr.iov[0].iov_base = msg->tail;
 		hdr.iov[0].iov_len = msgb_tailroom(msg);
-		hdr.hdr.msg_iov = &hdr.iov[0];
-		hdr.hdr.msg_iovlen = 1;
-		hdr.hdr.msg_name = &hdr.osa.u.sa;
-		hdr.hdr.msg_namelen = sizeof(struct osmo_sockaddr);
+		hdr.hdr = (struct msghdr) {
+			.msg_iov = &hdr.iov[0],
+			.msg_iovlen = 1,
+			.msg_name = &hdr.osa.u.sa,
+			.msg_namelen = sizeof(struct osmo_sockaddr),
+		};
 
 		rc = recvmsg(ofd->fd, &hdr.hdr, flags);
 		if (rc > 0)
