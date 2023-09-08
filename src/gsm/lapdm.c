@@ -754,7 +754,7 @@ static int l2_ph_data_ind(struct msgb *msg, struct lapdm_entity *le,
 			msg->l2h += 2;
 		} else {
 			/* A Short L3 header has both bits == 0. */
-			if (LAPDm_ADDR_SHORT_L2(msg->l2h[2]) == 0) {
+			if (LAPDm_ADDR_SHORT_L2(msg->l2h[0]) == 0) {
 				mctx.lapdm_fmt = LAPDm_FMT_Bter;
 				n201 = N201_Bter_SDCCH;
 				sapi = 0;
