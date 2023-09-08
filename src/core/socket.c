@@ -696,33 +696,33 @@ static int addrinfo_to_sockaddr(uint16_t family, const struct addrinfo **result,
 	return 0;
 }
 
-static int setsockopt_sctp_auth_supported(int fd)
+static int setsockopt_sctp_auth_supported(int fd, uint32_t val)
 {
 #ifdef SCTP_AUTH_SUPPORTED
 	struct sctp_assoc_value assoc_val = {
 		.assoc_id = SCTP_FUTURE_ASSOC,
-		.assoc_value = 1,
+		.assoc_value = val,
 	};
 	return setsockopt(fd, IPPROTO_SCTP, SCTP_AUTH_SUPPORTED, &assoc_val, sizeof(assoc_val));
 #else
 #pragma message "setsockopt(SCTP_AUTH_SUPPORTED) not supported! some SCTP features may not be available!"
 	LOGP(DLGLOBAL, LOGL_NOTICE, "Built without support for setsockopt(SCTP_AUTH_SUPPORTED), skipping\n");
-	return 0;
+	return -ENOTSUP;
 #endif
 }
 
-static int setsockopt_sctp_asconf_supported(int fd)
+static int setsockopt_sctp_asconf_supported(int fd, uint32_t val)
 {
 #ifdef SCTP_ASCONF_SUPPORTED
 	struct sctp_assoc_value assoc_val = {
 		.assoc_id = SCTP_FUTURE_ASSOC,
-		.assoc_value = 1,
+		.assoc_value = val,
 	};
 	return setsockopt(fd, IPPROTO_SCTP, SCTP_ASCONF_SUPPORTED, &assoc_val, sizeof(assoc_val));
 #else
 #pragma message "setsockopt(SCTP_ASCONF_SUPPORTED) not supported! some SCTP features may not be available!"
 	LOGP(DLGLOBAL, LOGL_NOTICE, "Built without support for setsockopt(SCTP_ASCONF_SUPPORTED), skipping\n");
-	return 0;
+	return -ENOTSUP;
 #endif
 }
 
@@ -750,6 +750,38 @@ int osmo_sock_init2_multiaddr(uint16_t family, uint16_t type, uint8_t proto,
 		   const char **local_hosts, size_t local_hosts_cnt, uint16_t local_port,
 		   const char **remote_hosts, size_t remote_hosts_cnt, uint16_t remote_port,
 		   unsigned int flags)
+{
+	return osmo_sock_init2_multiaddr2(family, type, proto, local_hosts, local_hosts_cnt, local_port,
+					      remote_hosts, remote_hosts_cnt, remote_port, flags, NULL);
+}
+
+/*! Initialize a socket (including bind and/or connect) with multiple local or remote addresses.
+ *  \param[in] family Address Family like AF_INET, AF_INET6, AF_UNSPEC
+ *  \param[in] type Socket type like SOCK_DGRAM, SOCK_STREAM
+ *  \param[in] proto Protocol like IPPROTO_TCP, IPPROTO_UDP
+ *  \param[in] local_hosts array of char pointers (strings), each containing local host name or IP address in string form
+ *  \param[in] local_hosts_cnt length of local_hosts (in items)
+ *  \param[in] local_port local port number in host byte order
+ *  \param[in] remote_host array of char pointers (strings), each containing remote host name or IP address in string form
+ *  \param[in] remote_hosts_cnt length of remote_hosts (in items)
+ *  \param[in] remote_port remote port number in host byte order
+ *  \param[in] flags flags like \ref OSMO_SOCK_F_CONNECT
+ *  \param[in] pars Extra parameters for multi-address specific protocols, such as SCTP. Can be NULL.
+ *  \returns socket file descriptor on success; negative on error
+ *
+ * This function is similar to \ref osmo_sock_init2(), but can be passed an
+ * array of local or remote addresses for protocols supporting multiple
+ * addresses per socket, like SCTP (currently only one supported). This function
+ * should not be used by protocols not supporting this kind of features, but
+ * rather \ref osmo_sock_init2() should be used instead.
+ * See \ref osmo_sock_init2() for more information on flags and general behavior.
+ *
+ * pars: If "pars" parameter is passed to the function, sctp.version shall be set to 0.
+ */
+int osmo_sock_init2_multiaddr2(uint16_t family, uint16_t type, uint8_t proto,
+		   const char **local_hosts, size_t local_hosts_cnt, uint16_t local_port,
+		   const char **remote_hosts, size_t remote_hosts_cnt, uint16_t remote_port,
+		   unsigned int flags, struct osmo_sock_init2_multiaddr_pars *pars)
 
 {
 	struct addrinfo *res_loc[OSMO_SOCK_MAX_ADDRS], *res_rem[OSMO_SOCK_MAX_ADDRS];
@@ -768,6 +800,9 @@ int osmo_sock_init2_multiaddr(uint16_t family, uint16_t type, uint8_t proto,
 	   reused in the future for other protocols with multi-addr support */
 	if (proto != IPPROTO_SCTP)
 		return -ENOTSUP;
+
+	if (pars && pars->sctp.version != 0)
+		return -EINVAL;
 
 	if ((flags & (OSMO_SOCK_F_BIND | OSMO_SOCK_F_CONNECT)) == 0) {
 		LOGP(DLGLOBAL, LOGL_ERROR, "invalid: you have to specify either "
@@ -841,26 +876,32 @@ int osmo_sock_init2_multiaddr(uint16_t family, uint16_t type, uint8_t proto,
 			goto ret_close;
 		}
 
-		if (flags & OSMO_SOCK_F_SCTP_ASCONF_SUPPORTED) {
+		if (pars && pars->sctp.sockopt_auth_supported.set) {
 			/* RFC 5061 4.2.7: ASCONF also requires AUTH feature. */
-			rc = setsockopt_sctp_auth_supported(sfd);
+			rc = setsockopt_sctp_auth_supported(sfd, pars->sctp.sockopt_auth_supported.value);
 			if (rc < 0) {
 				int err = errno;
 				multiaddr_snprintf(strbuf, sizeof(strbuf), local_hosts, local_hosts_cnt);
 				LOGP(DLGLOBAL, LOGL_ERROR,
 				     "cannot setsockopt(SCTP_AUTH_SUPPORTED) socket: %s:%u: %s\n",
 				     strbuf, local_port, strerror(err));
+				if (pars->sctp.sockopt_auth_supported.abort_on_failure)
+					goto ret_close;
 				/* do not fail, some features such as Peer Primary Address won't be available
 				 * unless configured system-wide through sysctl */
 			}
+		}
 
-			rc = setsockopt_sctp_asconf_supported(sfd);
+		if (pars && pars->sctp.sockopt_asconf_supported.set) {
+			rc = setsockopt_sctp_asconf_supported(sfd, pars->sctp.sockopt_asconf_supported.value);
 			if (rc < 0) {
 				int err = errno;
 				multiaddr_snprintf(strbuf, sizeof(strbuf), local_hosts, local_hosts_cnt);
 				LOGP(DLGLOBAL, LOGL_ERROR,
 				     "cannot setsockopt(SCTP_ASCONF_SUPPORTED) socket: %s:%u: %s\n",
 				     strbuf, local_port, strerror(err));
+				if (pars->sctp.sockopt_asconf_supported.abort_on_failure)
+					goto ret_close;
 				/* do not fail, some features such as Peer Primary Address won't be available
 				 * unless configured system-wide through sysctl */
 			}

@@ -18,3 +18,4 @@ libosmogsm	MODIFY	osmo_auth_impl callback function signature change. No known ex
 libosmogsm	ADD	osmo_auth_c2
 libosmogsm	ADD	OSMO_AUTH_ALG_TUAK
 libosmogsm	ADD	new API msgb_tv32_push()
+libosmocore	ADD	osmo_sock_init2_multiaddr2()

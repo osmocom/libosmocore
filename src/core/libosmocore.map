@@ -419,6 +419,7 @@ osmo_sock_get_remote_ip_port;
 osmo_sock_init;
 osmo_sock_init2;
 osmo_sock_init2_multiaddr;
+osmo_sock_init2_multiaddr2;
 osmo_sock_init2_ofd;
 osmo_sock_init_ofd;
 osmo_sock_init_osa;

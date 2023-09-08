@@ -14,6 +14,8 @@
 
 #include <arpa/inet.h>
 
+#include <osmocom/core/defs.h>
+
 /*! maximum length of a socket name ("r=1.2.3.4:123<->l=5.6.7.8:987") */
 #define OSMO_SOCK_NAME_MAXLEN (2 + INET6_ADDRSTRLEN + 1 + 5 + 3 + 2 + INET6_ADDRSTRLEN + 1 + 5 + 1)
 
@@ -94,8 +96,6 @@ char *osmo_sockaddr_to_str_c(void *ctx, const struct osmo_sockaddr *sockaddr);
 #define OSMO_SOCK_F_NO_MCAST_ALL  (1 << 4)
 /*! use SO_REUSEADDR on UDP ports (required for multicast) */
 #define OSMO_SOCK_F_UDP_REUSEADDR (1 << 5)
-/*! use SCTP_AUTH_SUPPORTED + SCTP_ASCONF_SUPPORTED on SCTP socket (required for ASCONF / Peer Primary Address feature) */
-#define OSMO_SOCK_F_SCTP_ASCONF_SUPPORTED (1 << 6)
 
 /*! use OSMO_SOCK_F_DSCP(x) to set IP DSCP 'x' for packets transmitted on the socket */
 #define OSMO_SOCK_F_DSCP(x)	(((x)&0x3f) << 24)
@@ -116,9 +116,32 @@ int osmo_sock_init2(uint16_t family, uint16_t type, uint8_t proto,
 		   const char *local_host, uint16_t local_port,
 		   const char *remote_host, uint16_t remote_port, unsigned int flags);
 
+struct osmo_sock_init2_multiaddr_pars {
+	union {
+		struct {
+			uint8_t version; /* set to 0 */
+			struct {
+				bool set;
+				bool abort_on_failure;
+				uint32_t value;
+			} sockopt_auth_supported;
+			struct {
+				bool set;
+				bool abort_on_failure;
+				uint32_t value;
+			} sockopt_asconf_supported;
+		} sctp;
+	};
+};
 int osmo_sock_init2_multiaddr(uint16_t family, uint16_t type, uint8_t proto,
 		   const char **local_hosts, size_t local_hosts_cnt, uint16_t local_port,
-		   const char **remote_hosts, size_t remote_hosts_cnt, uint16_t remote_port, unsigned int flags);
+		   const char **remote_hosts, size_t remote_hosts_cnt, uint16_t remote_port, unsigned int flags)
+		   OSMO_DEPRECATED_OUTSIDE("Use osmo_sock_init2_multiaddr2() instead");
+int osmo_sock_init2_multiaddr2(uint16_t family, uint16_t type, uint8_t proto,
+		   const char **local_hosts, size_t local_hosts_cnt, uint16_t local_port,
+		   const char **remote_hosts, size_t remote_hosts_cnt, uint16_t remote_port,
+		   unsigned int flags, struct osmo_sock_init2_multiaddr_pars *pars);
+
 
 int osmo_sock_init_osa(uint16_t type, uint8_t proto,
 		    const struct osmo_sockaddr *local,
