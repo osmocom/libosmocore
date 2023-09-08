@@ -130,6 +130,18 @@ struct osmo_sock_init2_multiaddr_pars {
 				bool abort_on_failure;
 				uint32_t value;
 			} sockopt_asconf_supported;
+			struct {
+				bool set;
+				bool abort_on_failure;
+				bool num_ostreams_present;
+				bool max_instreams_present;
+				bool max_attempts_present;
+				bool max_init_timeo_present;
+				uint16_t num_ostreams_value;
+				uint16_t max_instreams_value;
+				uint16_t max_attempts_value;
+				uint16_t max_init_timeo_value;
+			} sockopt_initmsg;
 		} sctp;
 	};
 };

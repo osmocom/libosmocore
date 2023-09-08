@@ -726,6 +726,46 @@ static int setsockopt_sctp_asconf_supported(int fd, uint32_t val)
 #endif
 }
 
+static int setsockopt_sctp_initmsg(int fd, const struct osmo_sock_init2_multiaddr_pars *pars)
+{
+	if (!pars->sctp.sockopt_initmsg.num_ostreams_present &&
+	    !pars->sctp.sockopt_initmsg.max_instreams_present &&
+	    !pars->sctp.sockopt_initmsg.max_attempts_present &&
+	    !pars->sctp.sockopt_initmsg.max_init_timeo_present)
+		return 0; /* nothing to set/do */
+
+#ifdef SCTP_INITMSG
+	struct sctp_initmsg si = {0};
+	socklen_t si_len = sizeof(si);
+	int rc;
+
+	/* If at least one field not present, obtain current value from kernel: */
+	if (!pars->sctp.sockopt_initmsg.num_ostreams_present ||
+	    !pars->sctp.sockopt_initmsg.max_instreams_present ||
+	    !pars->sctp.sockopt_initmsg.max_attempts_present ||
+	    !pars->sctp.sockopt_initmsg.max_init_timeo_present) {
+		rc = getsockopt(fd, IPPROTO_SCTP, SCTP_INITMSG, &si, &si_len);
+		if (rc < 0)
+			return rc;
+	}
+
+	if (pars->sctp.sockopt_initmsg.num_ostreams_present)
+		si.sinit_num_ostreams = pars->sctp.sockopt_initmsg.num_ostreams_value;
+	if (pars->sctp.sockopt_initmsg.max_instreams_present)
+		si.sinit_max_instreams = pars->sctp.sockopt_initmsg.max_instreams_value;
+	if (pars->sctp.sockopt_initmsg.max_attempts_present)
+		si.sinit_max_attempts = pars->sctp.sockopt_initmsg.max_attempts_value;
+	if (pars->sctp.sockopt_initmsg.max_init_timeo_present)
+		si.sinit_max_init_timeo = pars->sctp.sockopt_initmsg.max_init_timeo_value;
+
+	return setsockopt(fd, IPPROTO_SCTP, SCTP_INITMSG, &si, sizeof(si));
+#else
+#pragma message "setsockopt(SCTP_INITMSG) not supported! some SCTP features may not be available!"
+	LOGP(DLGLOBAL, LOGL_NOTICE, "Built without support for setsockopt(SCTP_INITMSG), skipping\n");
+	return -ENOTSUP
+#endif
+}
+
 /*! Initialize a socket (including bind and/or connect) with multiple local or remote addresses.
  *  \param[in] family Address Family like AF_INET, AF_INET6, AF_UNSPEC
  *  \param[in] type Socket type like SOCK_DGRAM, SOCK_STREAM
@@ -904,6 +944,20 @@ int osmo_sock_init2_multiaddr2(uint16_t family, uint16_t type, uint8_t proto,
 					goto ret_close;
 				/* do not fail, some features such as Peer Primary Address won't be available
 				 * unless configured system-wide through sysctl */
+			}
+		}
+
+		if (pars && pars->sctp.sockopt_initmsg.set) {
+			rc = setsockopt_sctp_initmsg(sfd, pars);
+			if (rc < 0) {
+				int err = errno;
+				multiaddr_snprintf(strbuf, sizeof(strbuf), local_hosts, local_hosts_cnt);
+				LOGP(DLGLOBAL, LOGL_ERROR,
+				     "cannot setsockopt(SCTP_INITMSG) socket: %s:%u: %s\n",
+				     strbuf, local_port, strerror(err));
+				if (pars->sctp.sockopt_initmsg.abort_on_failure)
+					goto ret_close;
+				/* do not fail, some parameters will be left as the global default */
 			}
 		}
 
