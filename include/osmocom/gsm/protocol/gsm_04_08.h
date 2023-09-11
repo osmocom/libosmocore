@@ -1418,6 +1418,18 @@ struct gsm48_rr_status {
 	uint8_t rr_cause;
 } __attribute__((packed));
 
+/* Section 9.1.44 */
+struct gsm48_talker_indication {
+	uint8_t cm2_len;
+	struct gsm48_classmark2 cm2;
+	uint8_t data[0];
+} __attribute__((packed));
+
+/* Section 9.1.48 */
+struct gsm48_uplink_release {
+	uint8_t rr_cause;
+} __attribute__((packed));
+
 /* Section 10.2 + GSM 04.07 12.2.3.1.1 + 3GPP TS 24.007 11.2.3.1.1 */
 #define GSM48_PDISC_GROUP_CC	0x00
 #define GSM48_PDISC_BCAST_CC	0x01
