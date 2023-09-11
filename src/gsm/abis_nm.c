@@ -740,7 +740,7 @@ const struct value_string abis_nm_ipacc_chant_desc[] = {
 	{ NM_IPAC_F_CHANT_BCH,			"BCH" },
 	{ NM_IPAC_F_CHANT_BCCH_SDCCH4_CBCH,	"BCCH+SDCCH/4+CBCH" },
 	{ NM_IPAC_F_CHANT_SDCCH8_CBCH,		"SDCCH/8+CBCH" },
-	{ NM_IPAC_F_CHANT_PCCHF,		"PDCH/F" },
+	{ NM_IPAC_F_CHANT_PDCHF,		"PDCH/F" },
 	{ NM_IPAC_F_CHANT_TCHF_PDCHF,		"TCH/F or PDCH/F" },
 	{ NM_IPAC_F_CHANT_TCHH_PDCHH,		"TCH/H+PDCH/H" },
 	{ NM_IPAC_F_CHANT_TCHF_TCHH,		"TCH/F or TCH/H" },

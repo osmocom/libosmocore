@@ -805,7 +805,7 @@ enum ipac_eie {
 #define NM_IPAC_F_CHANT_BCCH_SDCCH4_CBCH	(1 << 6)
 #define NM_IPAC_F_CHANT_SDCCH8_CBCH		(1 << 7)
 /*! ip.access support flags for NM_IPAC_EIE_CHAN_TYPES (2nd octet) */
-#define NM_IPAC_F_CHANT_PCCHF			(1 << 8)
+#define NM_IPAC_F_CHANT_PDCHF			(1 << 8)
 #define NM_IPAC_F_CHANT_TCHF_PDCHF		(1 << 9)
 #define NM_IPAC_F_CHANT_TCHH_PDCHH		(1 << 10)
 #define NM_IPAC_F_CHANT_TCHF_TCHH		(1 << 11)
