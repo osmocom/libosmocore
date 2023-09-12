@@ -1,3 +1,290 @@
+libosmocore (1.9.0) unstable; urgency=medium
+
+  [ Oliver Smith ]
+  * gsm0808_dec_channel_type: add missing len check
+  * test_gsm0808_enc_dec_channel_type -> …_speech
+  * gsm0808_chan_indicator: add SPEECH_CTM_TEXT_TELEPHONY
+  * gsm0808_enc/dec_channel_type: support data
+  * Fix typo endianess -> endianness
+  * Run struct_endianness.py
+  * gsm0808_dec_channel_type: fix dec of ch_rate_type
+  * tests: add test_gsm0808_enc_dec_channel_type_sign
+  * gsm0808_enc/dec_channel_type: fix transparent flag
+  * libosmocore.map: add tall_{ctr/msgb}_ctx
+  * rsl: put values for Channel Mode into enums
+  * rsl: RSL_CMOD_CSD_T: make enum values consistent
+  * gsm0808: make CSD enum values consistent with RSL
+  * on_dso_load_select: run after on_dso_load_ctx
+  * debian: set compat level to 10
+  * debian: depend on liburing-dev for debian >= 11
+  * contrib/libosmocore.spec: centos7: disable uring
+  * debian: fix build on ubuntu 20.04 without liburing
+
+  [ Neels Hofmeyr ]
+  * add contrib/talloc_count.sh
+  * add osmo_prim_operation_name()
+  * add gsm0808_amr_modes_from_cfg
+  * improve test output for gsm0808_sc_cfg_from_gsm48_mr_cfg()
+  * fix 'make vty-test' for --disable-gb
+  * fix 'make vty-test' for --disable-external-tests --enable-gb
+  * contrib/talloc_count.sh: improve hexadecimal masking
+  * error log: osmo_sock_init2_multiaddr() v4/v6 mix
+  * logging vty: probe 'print' and 'logging timestamp' cmds
+  * vty: show bug in implicit go_parent_node
+  * vty: fix vty->index for implicit go_parent_node
+  * vty: move struct vty_parent_node to private API
+  * gsm: add osmo_mobile_identity_decode_from_l3_buf()
+  * gsm_04_08_gprs: add IEI "GMM TMSI Based NRI Container"
+  * improve API for osmo_routing_area_id
+
+  [ Max ]
+  * socket: propagate error in osmo_sock_unix_init() to the caller
+  * GSMTAP: fix typo
+  * GSMTAP: add gsmtap_source_init*2()
+  * GSMTAP: add missing parameter docstrings
+  * logging: print talloc report on exit from vty test
+
+  [ Philipp Maier ]
+  * i460_mux.c fix apidoc
+  * i460_mux: make osmo_i460_subchan_count public
+  * gsmtap_util: remove whitespace at the end of line
+  * i460_mux: add define constant for maximum number of subchannels
+  * codec: add define constants for RFC5993 and TS101318
+  * gprs_bssgp_rim: also print NSEI when sending RIM messages
+  * gprs_bssgp_rim: allow sending of encoded RIM messages
+  * gprs_bssgp_rim: add decoder for RIM ROUTING ADDRESS
+
+  [ Vadim Yanitskiy ]
+  * gsm: fix invalid check in gsm48_decode_ssversion()
+  * gsm: add missing features to osmo_bts_features_names[]
+  * gsm: ensure completeness of osmo_bts_features_{descs,names}[]
+  * gsm/{bsslap,bssmap_le}: zero-initialize structs using memset()
+  * msgb: use OSMO_ASSERT in msgb_alloc_headroom[_c]()
+  * gsm: use OSMO_ASSERT() in osmo_iuup_msgb_alloc_c()
+  * debian/control: make libosmocore-doc depend on libosmo{ctrl,gb}-doc
+  * debian/control: fix typo
+  * doxygen: also generate documentation for libosmo{sim,usb}
+  * contrib/struct_endianness.py: simplify file extension check
+  * doxygen: remove documentation for non-existent params
+  * doxygen: fix various typos in commands \param and \returns
+  * gsm0502: add burst length definitions from chapter 5.2
+  * coding: clean up Makefile.am
+  * utils/Makefile.am: remove duplicate libosmogsm.la
+  * utils/Makefile.am: do not overwrite AM_CFLAGS
+  * utils/osmo-stat-dummy/Makefile.am: drop empty variables
+  * gsmtap: add missing entries to gsmtap_type_names[]
+  * tests/v110: assert(user_data_chunk_bits) in test_ra1()
+  * isdn: fix identical operands in v110_adapt_IR8000_to_2400()
+  * gsm_04_08: document/clarify enum gsm48_chan_mode values
+  * gsm_04_08: add more enum gsm48_chan_mode speech values
+  * gsm_04_08: add more enum gsm48_chan_mode data values
+  * gsm0808: handle new enum gsm48_chan_mode speech/data values
+  * tests: make VTY tests depend on the respective binaries
+  * fixup (partial revert): "coding: clean up Makefile.am"
+  * core: remove unnecessary #include <osmocom/core/talloc.h>
+  * libosmocore.map: add missing symbols needed for osmo-qcdiag
+  * coding: fix doxygen doc for _xcch_encode_cB()
+  * copyright: fix typo: sysmocom s/s.m.f.c./s.f.m.c./ GmbH
+  * coding: use GSM_MACBLOCK_LEN gsm0503_tch_fr_decode()
+  * coding: gsm0503_tch_f96_[de]interleave() not applicable to TCH/F2.4
+  * coding: declare gsm0503_tch_f96_[de]interleave()
+  * coding: fix API doc: TCH/H needs 6 bursts, not 8
+  * coding: fix API doc: TCH/AFS vs TCH/AHS
+  * coding: use gsm0503_tch_hr_decode2() in coding_test
+  * gsm: fix convolutional code definition for TCH/F4.8
+  * coding: implement TCH/F9.6, TCH/[FH]4.8, TCH/H2.4, TCH/F14.4
+  * coding: implement dedicated codec API for FACCH/[FH]
+  * coding: test FACCH/[FH] bitstealing in test_csd()
+  * coding: fix _tch_csd_burst_map(): do not overwrite FACCH
+  * struct osmo_sub_auth_data: remove OSMO_DEPRECATED_OUTSIDE
+  * coding: fix a copy-paste bug in gsm0503_tch_afs_decode_dtx()
+  * gsm: add gsm0502_fn2ccch_block()
+  * gsm0502: cosmetic: use ARRAY_SIZE in gsm0502_fn2ccch_block()
+  * ipa: fix a typo in ipa_ccm_rcvmsg_base(): PING -> PONG
+  * core: fix pointer access in msgb_l[1-4] macros
+  * coding: remove redundant memset()s in gsm0503_tch_fr{96,144}_encode()
+  * coding: implement encoding/decoding API for TCH/F2.4
+  * lapdm: cosmetic: simplify lapdm_phsap_up(), use OSMO_PRIM[_HDR]
+  * gsm_08_08: define GSM0808_SCT_EXT (separately)
+  * gsm48_ie: fix gsm48_encode_bearer_cap(): encode bcap->data.transp
+  * isdn: mux_timeslot_provide_bits(): remove unused 'count'
+  * .gitignore: add include/osmocom/core/socket_compat.h
+  * tests/{v110,gsm44021}: change naming: 'test_' -> '_test'
+  * gsm_12_21.h: add flags for NM_ATT_IPACC_SUPP_FEATURES
+  * gsm_12_21.h: fix typo: NM_IPAC_F_CHANT_P{C->D}CHF
+
+  [ Pau Espin Pedrol ]
+  * gsm_04_60.h: Better describe origin of enum osmo_gprs_nmo
+  * Move libosmogsm TS 44.060 declarations under include/osmocom/gsm/
+  * libosmogb.pc.in: Fix missing dependency on libosmogsm
+  * gsm: gsm_gsmtime2fn(): constify param
+  * cosmetic: stats_tcp: Fix typo in comment
+  * logging: Unregister osmo_fd before closing fd
+  * select: Optimize osmo_fd_get_by_fd
+  * select.c: Clarify osmo_fd_(un)register() API expectations of registered fd
+  * select.c: Clarify osmo_fd_unregister() can only be called on registered osmo_fds
+  * configure.ac: Fix logic enabling osmo_fd fd checks
+  * configure.ac: Fix typo in enable flag description
+  * select.c: osmo_fd_unregister(): Avoid assert hit with old buggy users of the API
+  * tests/Makefile.am: Move system libs at the end of list
+  * tests/Makefile.am: Drop duplicated libosmogb.la in LDADD
+  * tests/Makefile.am: Move LDADD to right position
+  * logging.c: Sanitize calls to osmo_fd_unregister()
+  * Fix parsing of TLV_TYPE_SINGLE_TV
+  * gsm: Add missing TS 24.008 SM layer IEs
+  * gsm_04_08_gprs.h: Add missing GMM IEs for T3302 and T3346
+  * gsm_04_08_gprs.h: Add enum field for GMM 'P-TMSI type' IE
+  * gb: ns2: Rename parameter name in gprs_ns2_nsvc_by_sockaddr_bind()
+  * tlv: Show bug in decoded tlv_parsed for type TLV_TYPE_SINGLE_TV
+  * Fix 'Fix parsing of TLV_TYPE_SINGLE_TV'
+  * ns2: Count transmitted/dropped in each layer implementation
+  * cosmetic: codec/Makefile.am: list sources one file per line
+  * osmo_io: Make name optional, add _set_name() API
+  * socket: Cache errno before calling further functions
+  * gsm0502.h: Document spec number
+  * gsm: Add missing IE definition for GMM Receive N-PDU Number list
+  * exec: osmo_system_nowait2(): Improve logging and error checks
+  * sockaddr_str: Introduce macro OSMO_SOCKADDR_STR_FMT_ARGS_NOT_NULL
+  * cosmetic: lapdm: Fix typo in comment
+  * tlv: Introduce API msgb_tv32_push()
+  * lapdm: Track fn of primitives in struct lapdm_msg_ctx
+  * gsm: Introduce functions to convert between FN and RFN (Reduced FN)
+  * socket: Add osmo_sock_init flag to enable SCTP ASCONF features
+  * rsl: Introduce new osmocom extension IE RSL_IE_OSMO_ABS_FRAME_NUMBER
+  * lapdm: Append RSL_IE_OSMO_ABS_FRAME_NUMBER to RSLms msgs towards upper layers
+  * Revert "lapdm: Append RSL_IE_OSMO_ABS_FRAME_NUMBER to RSLms msgs towards upper layers"
+  * Revert "rsl: Introduce new osmocom extension IE RSL_IE_OSMO_ABS_FRAME_NUMBER"
+  * lapdm: Update public lapdm_msg_ctx upon CCCH data ind
+  * socket: Avoid aborting socket creation if setsockopt for ASCONF fails
+  * gsm_12_21.h: Introduce packed structs for NM_ATT_IPACC_RLC_CFG{,_2,_3} values
+  * gsm_12_21.h: Introduce packed structs for NM_ATT_IPACC_BSSGP_CFG values
+  * gsm_12_21.h: Introduce packed structs for NM_ATT_IPACC_NS_CFG values
+  * socket: Remove OSMO_SOCK_F_SCTP_ASCONF_SUPPORTED, add osmo_sock_init2_multiaddr2()
+  * socket: Support setsokopt SCTP_INITMSG in osmo_sock_init2_multiaddr2()
+
+  [ Matan Perelman ]
+  * gsm0808_enc_channel_type: Add spare byte
+
+  [ Harald Welte ]
+  * Implement the XOR-2G authentication algorithm
+  * New unit test for XOR-2G authentication
+  * Rename OSMO_AUTH_ALG_XOR to OSMO_AUTH_ALG_XOR_3G
+  * convolutional coding for CSD
+  * Interleaving for CSD
+  * libosmocore.map: Add two missing entries for gsmtap*2() API
+  * Makefile.am: Make libraries depend on .map files
+  * isdn: Add V.110 encoder/decoder
+  * gsm: TS 44.021 modified V.110 frame encoding/decoding support
+  * gsm_08_58: Document IPAC RTP CSD modes in at least a few words
+  * New osmo-gsmtap-logsend utility
+  * gsmtap.h: Define a packet type for encapsulation of GSM RLP frames
+  * rate_ctr: Add rate_ctr_add2() similar to rate_ctr_inc2()
+  * Add osmo_io with initial poll backend
+  * Add osmo_gsm48_si1ro_nch_pos_{encode,decode} functions
+  * cosmetic: Fix spec reference in RSL header file
+  * gsm_08_58.h: Add 'struct rsl_ie_nch_drx_info'
+  * libosmogsm: Support authentication with 256-bit K and/or OP/OPc
+  * libosmogsm: Add OSMO_ASSERT() to ensure correct algorithm
+  * libosmogsm: Ensure MILENAGE + XOR-3G K length is 128 bit
+  * osmo-auc-gen: Convert over to osmo_auth_gen_vec*2 API
+  * libosmogsm: Allow auth API caller to specify RES length
+  * libosmogsm: Factor out the C2 derivation function
+  * libosmogsm: Avoid executing MILENAGE crypto twice (for UMTS and GSM)
+  * libosmogsm: Add support for TUAK authentication algorithm
+  * gsmtap_source_free(): Don't crash if NULL is passed
+
+  [ Daniel Willmann ]
+  * Add libosmocore.map
+  * Add osmo_sockaddr_size() to return the size of the variant used
+  * tests: Add initial osmo_io tests
+  * osmo_io: Avoid read of uninitialized variable
+  * gpsr_ns2_udp: Use osmo_io_fd instead of osmo_fd
+  * osmo_io: Improve handling and documentation of segmentation_cb
+  * osmo_io: Support detecting non-blocking connect()
+  * osmo_io: Consistency - put read/recv callback first in osmo_io_ops
+  * osmo_io: Don't make msg in write_cb const
+  * osmo_io: Remove osmo_iofd_read/write_enable/disable
+  * socket: Ensure fd is not negative in osmo_sock_get_name_buf()
+  * osmo_io: Return early on error in osmo_iofd_register()
+  * osmo_io: Use LOGPIO instead of LOGP
+  * osmo_io: Use bitfield for various boolean flags
+  * osmo_io: Make the test more deterministic between backends
+  * osmo_io: Fix write_enable handling in iofd_txqueue
+  * osmo_io: Remove missing functions from map file
+  * osmo_io: Add osmo_iofd_notify_connected()
+  * osmo_io: Document expectation that segmentation_cb() can modify msgb
+  * osmo_io: Add function to change the maximum length of the tx_queue
+  * cosmetic: Fix doc comment
+  * osmo_io(cosmetic): End in a dot for doxygen AUTO_BRIEF
+  * osmo_io: Fix length calculation in iofd_handle_segmentation()
+  * osmo_io: Ensure correct ownership of msgb when sending
+  * osmo_io: Use MSG_NOSIGNAL to avoid SIGPIPE on write
+  * osmo_io: Add iofd_handle_recv()
+  * osmo_io: Avoid potential double free when sending msgb
+  * osmo_io: Add io_uring backend
+  * ns2: Add VTY option to change the max write queue size for UDP
+  * osmo_io: Change parent of msghdr to iofd (instead of msg)
+  * osmo_io: Use local variable to reference msghdr->msg
+
+  [ Eric ]
+  * fix _thread order
+  * logging: remove log_initialized(void)
+  * gsm48_rest_octets: fix wrong value
+
+  [ Mychaela N. Falconia ]
+  * codec: add osmo_efr_check_sid() function
+  * codec: add SID classification functions per GSM 06.31 & 06.81
+  * codec: add SID preening functions for FR & EFR
+  * codec: add osmo_{fr,efr}_is_any_sid() inline functions
+  * codec: add osmo_gsm611_silence_frame[] datum
+  * codec cosmetic: move old FR ECU code to ecu_fr_old.c
+  * codec: replace GSM-FR ECU with new implementation
+  * coding: fix decoding of EFR triplicated bits
+  * gsm0503_tch_hr_decode(): look at all 8 stealing bits
+  * gsm0503_tch_hr_encode(): accept both TS101318 and RFC5993 payloads
+  * gsm0503_tch_hr_decode2(): new function, emits TS101318 format
+  * libosmocoding.map: export gsm0503_tch_hr_decode2()
+  * coding cosmetic: gsm0503_tch_{fr,hr}_encode(): remove extra spacing
+  * codec: new functions osmo_{fr,efr}_sid_reset()
+  * codec: new function osmo_hr_sid_reset()
+  * coding: gsm0503_tch_{fr,hr}_encode(): add ability to emit BFI
+  * ecu: add is_dtx_pause() method
+
+  [ arehbein ]
+  * core: Check return value of osmo_fd_register()
+  * core: Add function to update osmo_io_ops field for osmo_io_fd
+  * core/osmo_io: Rename variables for readability
+  * core/osmo_io: Fix reception of partial packets
+  * gsm/ipa: Add segmentation callback
+  * Revert "gsm/ipa: Add segmentation callback"
+  * select: Prevent negative index lookup on osmo_fd_lookup.table
+
+  [ Andreas Eversberg ]
+  * ASCI: Add 3GPP TS 44.068 and 44.069 protocol definitions
+  * ASCI: Add IE transcoding according to 3GPP TS 48.008
+  * Added generation of include/osmocom/core/socket_compat.h
+  * ASCI: Add message definition and encoding according to 3GPP TS 48.008
+  * Add support for sending Bter UI frames at lapdm.c
+  * Add support for receiving Bter UI frames at lapdm.c
+  * Add short L3 header to gsm_04_08.h
+  * Fix short L3 header of SI 10 at gsm_04_08.h
+  * ASCI: Add Notification/NCH message to gsm_04_08.h
+  * lapdm: Do not return an error when enqueuing a frame
+  * Add VGCS UPLINK GRANT message structure to gsm_04_08.h
+  * ASCI: Also display group/broadcast call message names
+  * Allow 'configure <cr>' at VTY to enter config mode
+  * ASCI: Add decoding of mobile identity in TALKER INDICATION
+  * ASCI: Add missing check for return value of gsm0808_enc_speech_codec_list2()
+  * ASCI: Add BCC call state definitions
+  * LAPDM: Use correct offset to short header on recevied frame
+  * ASCI: Add definition for TALKER INDICATION and UPLINK RELEASE
+
+  [ Sylvain Munaut ]
+  * gsm: Fix comment for TCH/F4.8 code
+  * gsm: Improve the TCH/H2.4 coding routines
+
+ -- Pau Espin Pedrol <pespin@sysmocom.de>  Tue, 12 Sep 2023 13:15:52 +0200
+
 libosmocore (1.8.0) unstable; urgency=medium
 
   [ Vadim Yanitskiy ]

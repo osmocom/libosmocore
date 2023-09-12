@@ -7,15 +7,3 @@
 # If any interfaces have been added since the last public release: c:r:a + 1.
 # If any interfaces have been removed or changed since the last public release: c:r:0.
 #library	what			description / commit summary line
-libosmogsm  new header osmocom/gsm/protocol/gsm_44_060.h
-libosmocore ADD     new defines in osmocom/gsm/protocol/gsm_04_08.h (old ones marked deprecated)
-libosmovty	drop API		drop struct vty_parent_node from public API, it should never have been public
-libosmocore ADD     new API osmo_io_*()
-libosmocoding	ADD	new gsm0503_tch_hr_decode2() public API, previous API
-			gsm0503_tch_hr_decode() marked as deprecated
-libosmogsm	ADD	new osmo_sub_auth_data2 / osmo_auth_gen_vec2 / osmo_auth_gen_vec_auts2
-libosmogsm	MODIFY	osmo_auth_impl callback function signature change. No known external users
-libosmogsm	ADD	osmo_auth_c2
-libosmogsm	ADD	OSMO_AUTH_ALG_TUAK
-libosmogsm	ADD	new API msgb_tv32_push()
-libosmocore	ADD	osmo_sock_init2_multiaddr2()
