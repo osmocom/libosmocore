@@ -835,15 +835,15 @@ enum ipac_eie {
 #define NM_IPAC_F_GPRS_CODING_CS3		(1 << 2)
 #define NM_IPAC_F_GPRS_CODING_CS4		(1 << 3)
 /*! ip.access support flags for NM_IPAC_EIE_GPRS_CODING (EGPRS) */
-#define NM_IPAC_F_GPRS_CODING_MCS1		(1 << 7)
-#define NM_IPAC_F_GPRS_CODING_MCS2		(1 << 8)
-#define NM_IPAC_F_GPRS_CODING_MCS3		(1 << 9)
-#define NM_IPAC_F_GPRS_CODING_MCS4		(1 << 10)
-#define NM_IPAC_F_GPRS_CODING_MCS5		(1 << 11)
-#define NM_IPAC_F_GPRS_CODING_MCS6		(1 << 12)
-#define NM_IPAC_F_GPRS_CODING_MCS7		(1 << 13)
-#define NM_IPAC_F_GPRS_CODING_MCS8		(1 << 14)
-#define NM_IPAC_F_GPRS_CODING_MCS9		(1 << 15)
+#define NM_IPAC_F_GPRS_CODING_MCS1		(1 << 8)
+#define NM_IPAC_F_GPRS_CODING_MCS2		(1 << 9)
+#define NM_IPAC_F_GPRS_CODING_MCS3		(1 << 10)
+#define NM_IPAC_F_GPRS_CODING_MCS4		(1 << 11)
+#define NM_IPAC_F_GPRS_CODING_MCS5		(1 << 12)
+#define NM_IPAC_F_GPRS_CODING_MCS6		(1 << 13)
+#define NM_IPAC_F_GPRS_CODING_MCS7		(1 << 14)
+#define NM_IPAC_F_GPRS_CODING_MCS8		(1 << 15)
+#define NM_IPAC_F_GPRS_CODING_MCS9		(1 << 7)
 
 /*! ip.access support flags for NM_IPAC_EIE_RTP_FEATURES */
 #define NM_IPAC_F_RTP_FEAT_COMPR_CONTROL	(1 << 0) /* RTP Compression Control */
