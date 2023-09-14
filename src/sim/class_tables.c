@@ -222,6 +222,7 @@ static const uint8_t gp_ins_tbl_8ce[256] = {
 	[0xE8]		= 4,	/* LOAD */
 	[0xD8]		= 4,	/* PUT KEY */
 	[0xF0]		= 3,	/* SET STATUS */
+	[0xC0]		= 2,	/* GET RESPONSE */
 };
 
 static const struct osim_cla_ins_case uicc_ins_case[] = {
