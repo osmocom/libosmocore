@@ -147,4 +147,24 @@ void osmo_wqueue_clear(struct osmo_wqueue *queue)
 	queue->bfd.when &= ~OSMO_FD_WRITE;
 }
 
+/* Update write queue length & drop excess messages.
+ * \param[in] queue linked list header of message queue
+ * \param[in] len new max. wqueue length
+ * \returns Number of messages dropped.
+ *
+ * Messages beyond the new maximum message queue size will be dropped.
+ */
+size_t osmo_wqueue_set_maxlen(struct osmo_wqueue *queue, unsigned int len)
+{
+	size_t dropped_msgs = 0;
+	struct msgb *msg;
+	queue->max_length = len;
+	while (queue->current_length > queue->max_length) {
+		msg = msgb_dequeue_count(&queue->msg_queue, &queue->current_length);
+		msgb_free(msg);
+		dropped_msgs++;
+	}
+	return dropped_msgs;
+}
+
 /*! @} */

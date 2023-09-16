@@ -50,6 +50,7 @@ void osmo_wqueue_init(struct osmo_wqueue *queue, int max_length);
 void osmo_wqueue_clear(struct osmo_wqueue *queue);
 int osmo_wqueue_enqueue(struct osmo_wqueue *queue, struct msgb *data);
 int osmo_wqueue_enqueue_quiet(struct osmo_wqueue *queue, struct msgb *data);
+size_t osmo_wqueue_set_maxlen(struct osmo_wqueue *queue, unsigned int len);
 int osmo_wqueue_bfd_cb(struct osmo_fd *fd, unsigned int what);
 
 /*! @} */

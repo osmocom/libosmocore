@@ -565,6 +565,7 @@ osmo_wqueue_bfd_cb;
 osmo_wqueue_clear;
 osmo_wqueue_enqueue;
 osmo_wqueue_enqueue_quiet;
+osmo_wqueue_set_maxlen;
 osmo_wqueue_init;
 rate_ctr_add;
 rate_ctr_difference;
