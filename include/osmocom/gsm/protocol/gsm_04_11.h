@@ -62,6 +62,16 @@ enum gsm411_rp_ie {
 	GSM411_IE_RP_CAUSE		= 0x42,	/* 8.2.5.4 */
 };
 
+/* Sections 8.2.5.1 and 8.2.5.2 set limits on the length of an SMSC-address.
+ * The spec states these limits in terms of min and max values of the length
+ * octet in type 4 IEs SM-RP-OA and SM-RP-DA; these IE length limits translate
+ * into a minimum of 1 digit and a maximum of 20 digits.
+ */
+#define GSM411_SMSC_ADDR_MIN_OCTETS	2
+#define GSM411_SMSC_ADDR_MAX_OCTETS	11
+#define GSM411_SMSC_ADDR_MIN_DIGITS	1
+#define GSM411_SMSC_ADDR_MAX_DIGITS	20
+
 /* Chapter 8.2.5.4 Table 8.4 */
 enum gsm411_rp_cause {
 	/* valid only for MO */
