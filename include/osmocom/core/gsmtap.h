@@ -185,6 +185,7 @@
 #define GSMTAP_E1T1_V120	0x08	/* V.120 B-channel data */
 #define GSMTAP_E1T1_V110	0x09	/* V.110 B-channel data */
 #define GSMTAP_E1T1_H221	0x0a	/* H.221 B-channel data */
+#define GSMTAP_E1T1_PPP		0x0b	/* PPP */
 
 /* flags for the ARFCN */
 #define GSMTAP_ARFCN_F_PCS	0x8000
