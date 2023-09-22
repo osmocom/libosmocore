@@ -63,7 +63,7 @@ struct osmo_sockaddr_str {
 	((R)->af == AF_INET6) ? "[" : "", \
 	(R)->ip, \
 	((R)->af == AF_INET6) ? "]" : "", \
-	(R)->port : 0
+	(R)->port
 #define OSMO_SOCKADDR_STR_FMT_ARGS(R) \
 	((R) && (R)->af == AF_INET6) ? "[" : "", \
 	(R) ? (R)->ip : "NULL", \
