@@ -69,7 +69,7 @@ struct osmo_io_ops {
 	};
 };
 
-void osmo_io_init(void);
+void osmo_iofd_init(void);
 
 struct osmo_io_fd *osmo_iofd_setup(const void *ctx, int fd, const char *name,
 		  enum osmo_io_fd_mode mode, const struct osmo_io_ops *ioops, void *data);
