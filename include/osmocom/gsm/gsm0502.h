@@ -64,6 +64,25 @@
 #define GSM_NBITS_AB_GMSK_TAIL		GSM_NBITS_NB_GMSK_TAIL
 #define GSM_NBITS_AB_GMSK_BURST		GSM_NBITS_NB_GMSK_BURST
 
+/*! Compare the given TDMA FNs, taking the wrapping into account.
+ * \param[in] fn1 First TDMA Fn value to compare.
+ * \param[in] fn2 Second TDMA Fn value to compare.
+ * \returns similarly to memcmp(), -1 if fn1 goes before fn2;
+ *                                  0 if fn1 equals fn2;
+ *                                  1 if fn1 goes after fn2. */
+static inline int gsm0502_fn_compare(uint32_t fn1, uint32_t fn2)
+{
+	const uint32_t thresh = GSM_TDMA_HYPERFRAME / 2;
+
+	if (fn1 == fn2)
+		return 0;
+	if ((fn1 < fn2 && (fn2 - fn1) < thresh) ||
+	    (fn1 > fn2 && (fn1 - fn2) > thresh))
+		return -1;
+
+	return 1;
+}
+
 /* Table 5 Clause 7 TS 05.02 */
 static inline unsigned int
 gsm0502_get_n_pag_blocks(const struct gsm48_control_channel_descr *chan_desc)

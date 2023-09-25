@@ -148,8 +148,28 @@ static void test_gsm0502_fn_remap(void)
 	printf("\n");
 }
 
+static void test_gsm0502_fn_compare(void)
+{
+	OSMO_ASSERT(gsm0502_fn_compare(1337, 1337)		==  0);
+	OSMO_ASSERT(gsm0502_fn_compare(42, 1337)		== -1);
+	OSMO_ASSERT(gsm0502_fn_compare(1337, 42)		==  1);
+	OSMO_ASSERT(gsm0502_fn_compare(42, 0)			==  1);
+
+	/* 2715642 is very close to the Fn period (GSM_TDMA_HYPERFRAME) */
+	OSMO_ASSERT(gsm0502_fn_compare(2715642, 42)		== -1);
+	OSMO_ASSERT(gsm0502_fn_compare(42, 2715642)		==  1);
+	OSMO_ASSERT(gsm0502_fn_compare(0, 2715642)		==  1);
+
+	/* 1357824 is half of the Fn period (GSM_TDMA_HYPERFRAME) */
+	OSMO_ASSERT(gsm0502_fn_compare(1357820, 1357824)	== -1);
+	OSMO_ASSERT(gsm0502_fn_compare(1357820, 1357825)	== -1);
+	OSMO_ASSERT(gsm0502_fn_compare(1357824, 1357820)	==  1);
+	OSMO_ASSERT(gsm0502_fn_compare(1357825, 1357820)	==  1);
+}
+
 int main(int argc, char **argv)
 {
 	test_gsm0502_fn_remap();
+	test_gsm0502_fn_compare();
 	return EXIT_SUCCESS;
 }
