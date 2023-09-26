@@ -70,7 +70,7 @@
  * \returns similarly to memcmp(), -1 if fn1 goes before fn2;
  *                                  0 if fn1 equals fn2;
  *                                  1 if fn1 goes after fn2. */
-static inline int gsm0502_fn_compare(uint32_t fn1, uint32_t fn2)
+static inline int gsm0502_fncmp(uint32_t fn1, uint32_t fn2)
 {
 	const uint32_t thresh = GSM_TDMA_HYPERFRAME / 2;
 
