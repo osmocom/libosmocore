@@ -355,6 +355,12 @@ void iofd_handle_recv(struct osmo_io_fd *iofd, struct msgb *msg, int rc, struct 
 int osmo_iofd_write_msgb(struct osmo_io_fd *iofd, struct msgb *msg)
 {
 	int rc;
+
+	if (OSMO_UNLIKELY(!iofd->io_ops.write_cb)) {
+		LOGPIO(iofd, LOGL_ERROR, "write_cb not set, Rejecting msgb\n");
+		return -EINVAL;
+	}
+
 	struct iofd_msghdr *msghdr = iofd_msghdr_alloc(iofd, IOFD_ACT_WRITE, msg);
 	if (!msghdr)
 		return -ENOMEM;
@@ -392,6 +398,10 @@ int osmo_iofd_sendto_msgb(struct osmo_io_fd *iofd, struct msgb *msg, int sendto_
 	int rc;
 
 	OSMO_ASSERT(iofd->mode == OSMO_IO_FD_MODE_RECVFROM_SENDTO);
+	if (OSMO_UNLIKELY(!iofd->io_ops.sendto_cb)) {
+		LOGPIO(iofd, LOGL_ERROR, "sendto_cb not set, Rejecting msgb\n");
+		return -EINVAL;
+	}
 
 	struct iofd_msghdr *msghdr = iofd_msghdr_alloc(iofd, IOFD_ACT_SENDTO, msg);
 	if (!msghdr)
@@ -477,7 +487,8 @@ int osmo_iofd_register(struct osmo_io_fd *iofd, int fd)
 		return rc;
 
 	IOFD_FLAG_UNSET(iofd, IOFD_FLAG_CLOSED);
-	osmo_iofd_ops.read_enable(iofd);
+	if (iofd->io_ops.read_cb)
+		osmo_iofd_ops.read_enable(iofd);
 
 	if (iofd->tx_queue.current_length > 0)
 		osmo_iofd_ops.write_enable(iofd);
@@ -658,6 +669,24 @@ void osmo_iofd_set_name(struct osmo_io_fd *iofd, const char *name)
 void osmo_iofd_set_ioops(struct osmo_io_fd *iofd, const struct osmo_io_ops *ioops)
 {
 	iofd->io_ops = *ioops;
+
+	switch (iofd->mode) {
+	case OSMO_IO_FD_MODE_READ_WRITE:
+		if (iofd->io_ops.read_cb)
+			osmo_iofd_ops.read_enable(iofd);
+		else
+			osmo_iofd_ops.read_disable(iofd);
+		break;
+	case OSMO_IO_FD_MODE_RECVFROM_SENDTO:
+		if (iofd->io_ops.recvfrom_cb)
+			osmo_iofd_ops.read_enable(iofd);
+		else
+			osmo_iofd_ops.read_disable(iofd);
+		break;
+	case OSMO_IO_FD_MODE_SCTP_RECVMSG_SENDMSG:
+	default:
+		OSMO_ASSERT(0);
+	}
 }
 
 /*! Notify the user if/when the socket is connected.
