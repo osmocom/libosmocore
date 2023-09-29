@@ -154,7 +154,6 @@ int osmo_sock_init2_multiaddr2(uint16_t family, uint16_t type, uint8_t proto,
 		   const char **remote_hosts, size_t remote_hosts_cnt, uint16_t remote_port,
 		   unsigned int flags, struct osmo_sock_init2_multiaddr_pars *pars);
 
-
 int osmo_sock_init_osa(uint16_t type, uint8_t proto,
 		    const struct osmo_sockaddr *local,
 		    const struct osmo_sockaddr *remote,
@@ -191,6 +190,8 @@ int osmo_sock_get_local_ip_port(int fd, char *port, size_t len);
 int osmo_sock_get_remote_ip(int fd, char *host, size_t len);
 int osmo_sock_get_remote_ip_port(int fd, char *port, size_t len);
 
+int osmo_sock_multiaddr_add_local_addr(int sfd, const char **addrs, size_t addrs_cnt);
+int osmo_sock_multiaddr_del_local_addr(int sfd, const char **addrs, size_t addrs_cnt);
 
 int osmo_sock_mcast_loop_set(int fd, bool enable);
 int osmo_sock_mcast_ttl_set(int fd, uint8_t ttl);

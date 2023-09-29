@@ -1257,6 +1257,158 @@ int osmo_sock_init_sa(struct sockaddr *ss, uint16_t type,
 	return osmo_sock_init(ss->sa_family, type, proto, host, port, flags);
 }
 
+/*! Add addresses to the multi-address (SCTP) socket active binding set
+ *  \param[in] sfd The multi-address (SCTP) socket
+ *  \param[in] addrs array of char pointers (strings), each containing local host name or IP address in string form
+ *  \param[in] addrs_cnt length of addrs_hosts (in items)
+ *  \returns 0 on success; negative on error
+ *
+ * This function only supports SCTP sockets so far, and hence it should be
+ * called only on socket file descriptions referencing that kind of sockets.
+ */
+int osmo_sock_multiaddr_add_local_addr(int sfd, const char **addrs, size_t addrs_cnt)
+{
+	struct osmo_sockaddr osa;
+	socklen_t slen = sizeof(osa);
+	uint16_t sfd_family;
+	uint16_t type = SOCK_STREAM ;/* Fixme: we assume fd is SOCK_STREAM */
+	uint8_t proto = IPPROTO_SCTP; /* Fixme: we assume fd is IPPROTO_SCTP */
+	struct addrinfo *res[OSMO_SOCK_MAX_ADDRS];
+	uint16_t port;
+	struct sockaddr_in6 addrs_buf[OSMO_SOCK_MAX_ADDRS];
+	unsigned int i;
+	int rc;
+	bool res_has_v4addr = false, res_has_v6addr = false;
+
+	rc = getsockname(sfd, &osa.u.sa, &slen);
+	if (rc < 0)
+		return rc; /* TODO: log error? */
+	sfd_family = osa.u.sa.sa_family;
+	port = osmo_sockaddr_port(&osa.u.sa);
+
+	if (sfd_family != AF_INET && sfd_family != AF_INET6)
+		return -EINVAL;
+
+	rc = addrinfo_helper_multi(res, AF_UNSPEC, type, proto, addrs,
+				   addrs_cnt, port, true);
+	if (rc < 0)
+		return -EINVAL;
+
+	addrinfo_has_v4v6addr((const struct addrinfo **)res, addrs_cnt,
+			      &res_has_v4addr, &res_has_v6addr);
+	if (sfd_family == AF_INET && !res_has_v4addr) {
+		rc = -EINVAL;
+		goto ret_free;
+	}
+
+	uint16_t new_addr_family;
+	if (sfd_family == AF_INET)
+		new_addr_family = AF_INET;
+	else if (sfd_family == AF_INET6 && !res_has_v4addr)
+		new_addr_family = AF_INET6;
+	else
+		new_addr_family = AF_UNSPEC;
+	rc = addrinfo_to_sockaddr(new_addr_family, (const struct addrinfo **)res,
+				  addrs, addrs_cnt,
+				  (uint8_t *)addrs_buf, sizeof(addrs_buf));
+	if (rc < 0) {
+		rc = -ENODEV;
+		goto ret_free;
+	}
+
+	rc = sctp_bindx(sfd, (struct sockaddr *)addrs_buf, addrs_cnt, SCTP_BINDX_ADD_ADDR);
+	if (rc == -1) {
+		int err = errno;
+		char strbuf[512];
+		multiaddr_snprintf(strbuf, sizeof(strbuf), addrs, addrs_cnt);
+		LOGP(DLGLOBAL, LOGL_NOTICE, "Unable to bind socket to new addresses: %s:%u: %s\n",
+			strbuf, port, strerror(err));
+		rc = -ENODEV;
+		goto ret_free;
+	}
+
+ret_free:
+	for (i = 0; i < addrs_cnt; i++)
+		freeaddrinfo(res[i]);
+	return rc;
+}
+
+/*! Remove addresses from the multi-address (SCTP) socket active binding set
+ *  \param[in] sfd The multi-address (SCTP) socket
+ *  \param[in] addrs array of char pointers (strings), each containing local host name or IP address in string form
+ *  \param[in] addrs_cnt length of addrs_hosts (in items)
+ *  \returns 0 on success; negative on error
+ *
+ * This function only supports SCTP sockets so far, and hence it should be
+ * called only on socket file descriptions referencing that kind of sockets.
+ */
+int osmo_sock_multiaddr_del_local_addr(int sfd, const char **addrs, size_t addrs_cnt)
+{
+	struct osmo_sockaddr osa;
+	socklen_t slen = sizeof(osa);
+	uint16_t sfd_family;
+	uint16_t type = SOCK_STREAM ;/* Fixme: we assume fd is SOCK_STREAM */
+	uint8_t proto = IPPROTO_SCTP; /* Fixme: we assume fd is IPPROTO_SCTP */
+	struct addrinfo *res[OSMO_SOCK_MAX_ADDRS];
+	uint16_t port;
+	struct sockaddr_in6 addrs_buf[OSMO_SOCK_MAX_ADDRS];
+	unsigned int i;
+	int rc;
+	bool res_has_v4addr = false, res_has_v6addr = false;
+
+	rc = getsockname(sfd, &osa.u.sa, &slen);
+	if (rc < 0)
+		return rc; /* TODO: log error? */
+	sfd_family = osa.u.sa.sa_family;
+	port = osmo_sockaddr_port(&osa.u.sa);
+
+	if (sfd_family != AF_INET && sfd_family != AF_INET6)
+		return -EINVAL;
+
+	rc = addrinfo_helper_multi(res, AF_UNSPEC, type, proto, addrs,
+				   addrs_cnt, port, true);
+	if (rc < 0)
+		return -EINVAL;
+
+	addrinfo_has_v4v6addr((const struct addrinfo **)res, addrs_cnt,
+			      &res_has_v4addr, &res_has_v6addr);
+	if (sfd_family == AF_INET && !res_has_v4addr) {
+		rc = -EINVAL;
+		goto ret_free;
+	}
+
+	uint16_t del_addr_family;
+	if (sfd_family == AF_INET)
+		del_addr_family = AF_INET;
+	else if (sfd_family == AF_INET6 && !res_has_v4addr)
+		del_addr_family = AF_INET6;
+	else
+		del_addr_family = AF_UNSPEC;
+	rc = addrinfo_to_sockaddr(del_addr_family, (const struct addrinfo **)res,
+				  addrs, addrs_cnt,
+				  (uint8_t *)addrs_buf, sizeof(addrs_buf));
+	if (rc < 0) {
+		rc = -ENODEV;
+		goto ret_free;
+	}
+
+	rc = sctp_bindx(sfd, (struct sockaddr *)addrs_buf, addrs_cnt, SCTP_BINDX_REM_ADDR);
+	if (rc == -1) {
+		int err = errno;
+		char strbuf[512];
+		multiaddr_snprintf(strbuf, sizeof(strbuf), addrs, addrs_cnt);
+		LOGP(DLGLOBAL, LOGL_NOTICE, "Unable to unbind socket from addresses: %s:%u: %s\n",
+			strbuf, port, strerror(err));
+		rc = -ENODEV;
+		goto ret_free;
+	}
+
+ret_free:
+	for (i = 0; i < addrs_cnt; i++)
+		freeaddrinfo(res[i]);
+	return rc;
+}
+
 static int sockaddr_equal(const struct sockaddr *a,
 			  const struct sockaddr *b, unsigned int len)
 {

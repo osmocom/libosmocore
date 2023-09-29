@@ -431,6 +431,8 @@ osmo_sock_mcast_iface_set;
 osmo_sock_mcast_loop_set;
 osmo_sock_mcast_subscribe;
 osmo_sock_mcast_ttl_set;
+osmo_sock_multiaddr_add_local_addr;
+çosmo_sock_multiaddr_del_local_addr;
 osmo_sock_set_dscp;
 osmo_sock_set_priority;
 osmo_sock_unix_init;
