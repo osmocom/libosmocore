@@ -147,7 +147,7 @@ void osmo_wqueue_clear(struct osmo_wqueue *queue)
 	queue->bfd.when &= ~OSMO_FD_WRITE;
 }
 
-/* Update write queue length & drop excess messages.
+/*! Update write queue length & drop excess messages.
  * \param[in] queue linked list header of message queue
  * \param[in] len new max. wqueue length
  * \returns Number of messages dropped.
