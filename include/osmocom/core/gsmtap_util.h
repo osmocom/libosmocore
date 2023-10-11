@@ -24,19 +24,12 @@ struct msgb *gsmtap_makemsg(uint16_t arfcn, uint8_t ts, uint8_t chan_type,
 			    int8_t snr, const uint8_t *data, unsigned int len);
 
 /*! one gsmtap instance */
-struct gsmtap_inst {
-	int ofd_wq_mode;	/*!< wait queue mode? */
-	struct osmo_wqueue wq;	/*!< the wait queue */
-	struct osmo_fd sink_ofd;/*!< file descriptor */
-};
+struct gsmtap_inst;
 
-/*! obtain the file descriptor associated with a gsmtap instance
- *  \param[in] gti GSMTAP instance
- *  \returns file descriptor of GSMTAP instance */
-static inline int gsmtap_inst_fd(struct gsmtap_inst *gti)
-{
-	return gti->wq.bfd.fd;
-}
+int gsmtap_inst_fd(struct gsmtap_inst *gti)
+	OSMO_DEPRECATED("Use gsmtap_inst_fd2() instead");
+
+int gsmtap_inst_fd2(const struct gsmtap_inst *gti);
 
 int gsmtap_source_init_fd(const char *host, uint16_t port);
 int gsmtap_source_init_fd2(const char *local_host, uint16_t local_port, const char *rem_host, uint16_t rem_port);

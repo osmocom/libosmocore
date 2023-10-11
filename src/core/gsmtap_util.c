@@ -46,6 +46,28 @@
  *
  * \file gsmtap_util.c */
 
+/*! one gsmtap instance */
+struct gsmtap_inst {
+	int ofd_wq_mode;	/*!< wait queue mode? This field member may not be changed or moved (backwards compatibility) */
+	struct osmo_wqueue wq;	/*!< the wait queue. This field member may not be changed or moved (backwards compatibility) */
+	struct osmo_fd sink_ofd; /*!< file descriptor */
+};
+
+/*! Deprecated, use gsmtap_inst_fd2() instead
+ *  \param[in] gti GSMTAP instance
+ *  \returns file descriptor of GSMTAP instance */
+int gsmtap_inst_fd(struct gsmtap_inst *gti)
+{
+	return gsmtap_inst_fd2(gti);
+}
+
+/*! obtain the file descriptor associated with a gsmtap instance
+ *  \param[in] gti GSMTAP instance
+ *  \returns file descriptor of GSMTAP instance */
+int gsmtap_inst_fd2(const struct gsmtap_inst *gti)
+{
+	return gti->wq.bfd.fd;
+}
 
 /*! convert RSL channel number to GSMTAP channel type
  *  \param[in] rsl_chantype RSL channel type
@@ -330,7 +352,7 @@ int gsmtap_sendmsg(struct gsmtap_inst *gti, struct msgb *msg)
 		/* try immediate send and return error if any */
 		int rc;
 
-		rc = write(gsmtap_inst_fd(gti), msg->data, msg->len);
+		rc = write(gsmtap_inst_fd2(gti), msg->data, msg->len);
 		if (rc < 0) {
 			return rc;
 		} else if (rc >= msg->len) {
@@ -447,7 +469,7 @@ int gsmtap_source_add_sink(struct gsmtap_inst *gti)
 {
 	int fd, rc;
 
-	fd = gsmtap_source_add_sink_fd(gsmtap_inst_fd(gti));
+	fd = gsmtap_source_add_sink_fd(gsmtap_inst_fd2(gti));
 	if (fd < 0)
 		return fd;
 

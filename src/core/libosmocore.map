@@ -39,6 +39,8 @@ get_string_value;
 get_value_string;
 get_value_string_or_null;
 gsmtap_gsm_channel_names;
+gsmtap_inst_fd;
+gsmtap_inst_fd2;
 gsmtap_makemsg;
 gsmtap_makemsg_ex;
 gsmtap_send;
