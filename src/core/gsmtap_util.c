@@ -29,6 +29,7 @@
 #include <osmocom/core/select.h>
 #include <osmocom/core/socket.h>
 #include <osmocom/core/byteswap.h>
+#include <osmocom/core/utils.h>
 #include <osmocom/gsm/protocol/gsm_04_08.h>
 #include <osmocom/gsm/rsl.h>
 
@@ -46,12 +47,27 @@
  *
  * \file gsmtap_util.c */
 
-/*! one gsmtap instance */
+/*! one gsmtap instance
+ *  Until gsmtap_inst_fd() is removed from the API at some point in the future, we have to keep the first member as
+ *  'int' and the second as 'struct osmo_wqueue' (this effectively makes sure that the struct member wq.bfd.fd maintains
+ *  the same memory offset from the start of the struct) to ensure that inlined static 'instances' of gsmtap_inst_fd() in
+ *  old binaries keep working the way they used to even with gsmtap_inst objects obtained from newer versions of libosmocore */
 struct gsmtap_inst {
-	int ofd_wq_mode;	/*!< wait queue mode? This field member may not be changed or moved (backwards compatibility) */
-	struct osmo_wqueue wq;	/*!< the wait queue. This field member may not be changed or moved (backwards compatibility) */
-	struct osmo_fd sink_ofd; /*!< file descriptor */
+	int osmo_io_mode;	  /*!< Indicates whether or not to use Osmo IO mode for message output (thus enabling use of tx queues).
+				   *   This field member may not be changed or moved (backwards compatibility) */
+	struct osmo_wqueue wq;	  /*!< the wait queue. This field member may not be changed or moved (backwards compatibility) */
+
+	struct osmo_io_fd *out;	  /*!< Used when osmo_io_mode is nonzero */
+	struct osmo_fd sink_ofd;
 };
+
+struct _gsmtap_inst_legacy {
+	int ofd_wq_mode;
+	struct osmo_wqueue wq;
+	struct osmo_fd sink_ofd;
+};
+osmo_static_assert(offsetof(struct gsmtap_inst, wq) == offsetof(struct _gsmtap_inst_legacy, wq),
+		   gsmtap_inst_new_wq_offset_equals_legacy_wq_offset);
 
 /*! Deprecated, use gsmtap_inst_fd2() instead
  *  \param[in] gti GSMTAP instance
@@ -253,6 +269,7 @@ struct msgb *gsmtap_makemsg(uint16_t arfcn, uint8_t ts, uint8_t chan_type,
 
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <osmocom/core/osmo_io.h>
 
 /*! Create a new (sending) GSMTAP source socket
  *  \param[in] host host name or IP address in string format
@@ -346,8 +363,8 @@ int gsmtap_sendmsg(struct gsmtap_inst *gti, struct msgb *msg)
 	if (!gti)
 		return -ENODEV;
 
-	if (gti->ofd_wq_mode)
-		return osmo_wqueue_enqueue(&gti->wq, msg);
+	if (gti->osmo_io_mode)
+		return osmo_iofd_write_msgb(gti->out, msg);
 	else {
 		/* try immediate send and return error if any */
 		int rc;
@@ -416,35 +433,17 @@ int gsmtap_send(struct gsmtap_inst *gti, uint16_t arfcn, uint8_t ts,
 		signal_dbm, snr, data, len);
 }
 
-/* Callback from select layer if we can write to the socket */
-static int gsmtap_wq_w_cb(struct osmo_fd *ofd, struct msgb *msg)
-{
-	int rc;
-
-	rc = write(ofd->fd, msg->data, msg->len);
-	if (rc < 0) {
-		return rc;
-	}
-	if (rc != msg->len) {
-		return -EIO;
-	}
-
-	return 0;
-}
-
 /* Callback from select layer if we can read from the sink socket */
 static int gsmtap_sink_fd_cb(struct osmo_fd *fd, unsigned int flags)
 {
 	int rc;
 	uint8_t buf[4096];
-
 	if (!(flags & OSMO_FD_READ))
 		return 0;
 
 	rc = read(fd->fd, buf, sizeof(buf));
-	if (rc < 0) {
+	if (rc < 0)
 		return rc;
-	}
 	/* simply discard any data arriving on the socket */
 
 	return 0;
@@ -473,7 +472,7 @@ int gsmtap_source_add_sink(struct gsmtap_inst *gti)
 	if (fd < 0)
 		return fd;
 
-	if (gti->ofd_wq_mode) {
+	if (gti->osmo_io_mode) {
 		struct osmo_fd *sink_ofd;
 
 		sink_ofd = &gti->sink_ofd;
@@ -491,6 +490,12 @@ int gsmtap_source_add_sink(struct gsmtap_inst *gti)
 	return fd;
 }
 
+/* Registered in Osmo IO as a no-op to set the write callback. */
+static void gsmtap_ops_noop_cb(struct osmo_io_fd *iofd, int res, struct msgb *msg)
+{
+}
+
+static struct osmo_io_ops gsmtap_ops = { .write_cb = gsmtap_ops_noop_cb };
 
 /*! Open GSMTAP source socket, connect and register osmo_fd
  *  \param[in] local_host IP address in string format
@@ -509,27 +514,27 @@ struct gsmtap_inst *gsmtap_source_init2(const char *local_host, uint16_t local_p
 					const char *rem_host, uint16_t rem_port, int ofd_wq_mode)
 {
 	struct gsmtap_inst *gti;
-	int fd, rc;
+	int fd;
 
 	fd = gsmtap_source_init_fd2(local_host, local_port, rem_host, rem_port);
 	if (fd < 0)
 		return NULL;
 
 	gti = talloc_zero(NULL, struct gsmtap_inst);
-	gti->ofd_wq_mode = ofd_wq_mode;
+	gti->osmo_io_mode = ofd_wq_mode;
+	/* Still using the wq member for its 'fd' field only, since we are keeping it for now, anyways  */
 	gti->wq.bfd.fd = fd;
 	gti->sink_ofd.fd = -1;
 
 	if (ofd_wq_mode) {
-		osmo_wqueue_init(&gti->wq, 64);
-		gti->wq.write_cb = &gsmtap_wq_w_cb;
-
-		rc = osmo_fd_register(&gti->wq.bfd);
-		if (rc < 0) {
+		gti->out = osmo_iofd_setup(gti, gti->wq.bfd.fd, "gsmtap_inst.io_fd", OSMO_IO_FD_MODE_READ_WRITE, &gsmtap_ops, NULL);
+		if (gti->out == NULL) {
 			talloc_free(gti);
 			close(fd);
 			return NULL;
 		}
+		/* osmo write queue previously used was set up with value of 64 */
+		osmo_iofd_set_txqueue_max_length(gti->out, 64);
 	}
 
 	return gti;
@@ -556,9 +561,8 @@ void gsmtap_source_free(struct gsmtap_inst *gti)
 	if (!gti)
 		return;
 
-	if (gti->ofd_wq_mode) {
-		osmo_fd_unregister(&gti->wq.bfd);
-		osmo_wqueue_clear(&gti->wq);
+	if (gti->osmo_io_mode) {
+		osmo_iofd_free(gti->out);
 
 		if (gti->sink_ofd.fd != -1) {
 			osmo_fd_unregister(&gti->sink_ofd);
@@ -566,7 +570,6 @@ void gsmtap_source_free(struct gsmtap_inst *gti)
 		}
 	}
 
-	close(gti->wq.bfd.fd);
 	talloc_free(gti);
 }
 
