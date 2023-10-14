@@ -31,7 +31,7 @@
 #include <osmocom/core/msgb.h>
 
 
-static const uint8_t csd_9600_v110_lv[] = { 0x07, 0xa1, 0xb8, 0x89, 0x21, 0x15, 0x63, 0x80 };
+static const uint8_t csd_9600_v110_lv[] = { 0x07, 0xa1, 0x88, 0x89, 0x21, 0x15, 0x63, 0x80 };
 
 static const struct gsm_mncc_bearer_cap bcap_csd_9600_v110 = {
 	.transfer =	GSM48_BCAP_ITCAP_UNR_DIG_INF,

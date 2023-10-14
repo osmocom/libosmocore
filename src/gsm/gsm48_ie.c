@@ -339,7 +339,7 @@ int gsm48_encode_bearer_cap(struct msgb *msg, int lv_only,
 	case GSM48_BCAP_ITCAP_FAX_G3:
 		lv[i++] |= 0x80; /* last IE of octet 3 etc */
 		/* octet 4 */
-		lv[i++] = 0xb8;
+		lv[i++] = 0x88;
 		/* octet 5 */
 		lv[i++] = 0x80 | ((bcap->data.rate_adaption & 3) << 3)
 			  | (bcap->data.sig_access & 7);
