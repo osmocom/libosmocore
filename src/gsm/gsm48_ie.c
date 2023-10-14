@@ -233,6 +233,7 @@ int gsm48_decode_bearer_cap(struct gsm_mncc_bearer_cap *bcap,
 		}
 		break;
 	case GSM_MNCC_BCAP_UNR_DIG:
+	case GSM_MNCC_BCAP_AUDIO:
 	case GSM_MNCC_BCAP_FAX_G3:
 		i = 1;
 		while (!(lv[i] & 0x80)) {
@@ -334,6 +335,7 @@ int gsm48_encode_bearer_cap(struct msgb *msg, int lv_only,
 		lv[i] |= 0x80; /* last IE of octet 3 etc */
 		break;
 	case GSM48_BCAP_ITCAP_UNR_DIG_INF:
+	case GSM48_BCAP_ITCAP_3k1_AUDIO:
 	case GSM48_BCAP_ITCAP_FAX_G3:
 		lv[i++] |= 0x80; /* last IE of octet 3 etc */
 		/* octet 4 */
