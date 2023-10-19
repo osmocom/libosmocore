@@ -86,6 +86,10 @@ static void iofd_poll_ofd_cb_recvmsg_sendmsg(struct osmo_fd *ofd, unsigned int w
 				iofd_txqueue_enqueue_front(iofd, msghdr);
 				return;
 			}
+			if (rc == -EAGAIN) {
+				iofd_txqueue_enqueue_front(iofd, msghdr);
+				return;
+			}
 
 			switch (iofd->mode) {
 			case OSMO_IO_FD_MODE_READ_WRITE:
