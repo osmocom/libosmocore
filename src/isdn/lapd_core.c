@@ -593,6 +593,8 @@ static void lapd_t200_cb(void *data)
 	switch (dl->state) {
 	case LAPD_STATE_SABM_SENT:
 		/* 5.4.1.3 */
+		/* increment re-transmission counter */
+		dl->retrans_ctr++;
 		if (dl->retrans_ctr >= dl->n200_est_rel + 1) {
 			/* flush tx and send buffers */
 			lapd_dl_flush_tx(dl);
@@ -611,13 +613,13 @@ static void lapd_t200_cb(void *data)
 		}
 		/* retransmit SABM command */
 		lapd_send_resend(dl);
-		/* increment re-transmission counter */
-		dl->retrans_ctr++;
 		/* restart T200 (PH-READY-TO-SEND) */
 		lapd_start_t200(dl);
 		break;
 	case LAPD_STATE_DISC_SENT:
 		/* 5.4.4.3 */
+		/* increment re-transmission counter */
+		dl->retrans_ctr++;
 		if (dl->retrans_ctr >= dl->n200_est_rel + 1) {
 			/* send MDL ERROR INIDCATION to L3 */
 			mdl_error(MDL_CAUSE_T200_EXPIRED, &dl->lctx);
@@ -635,8 +637,6 @@ static void lapd_t200_cb(void *data)
 		}
 		/* retransmit DISC command */
 		lapd_send_resend(dl);
-		/* increment re-transmission counter */
-		dl->retrans_ctr++;
 		/* restart T200 (PH-READY-TO-SEND) */
 		lapd_start_t200(dl);
 		break;
