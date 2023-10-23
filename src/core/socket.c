@@ -1257,6 +1257,7 @@ int osmo_sock_init_sa(struct sockaddr *ss, uint16_t type,
 	return osmo_sock_init(ss->sa_family, type, proto, host, port, flags);
 }
 
+#ifdef HAVE_LIBSCTP
 /*! Add addresses to the multi-address (SCTP) socket active binding set
  *  \param[in] sfd The multi-address (SCTP) socket
  *  \param[in] addrs array of char pointers (strings), each containing local host name or IP address in string form
@@ -1408,6 +1409,7 @@ ret_free:
 		freeaddrinfo(res[i]);
 	return rc;
 }
+#endif /* HAVE_LIBSCTP */
 
 static int sockaddr_equal(const struct sockaddr *a,
 			  const struct sockaddr *b, unsigned int len)
