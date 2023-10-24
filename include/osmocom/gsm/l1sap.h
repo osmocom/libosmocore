@@ -27,6 +27,8 @@ enum osmo_mph_info_type {
 	PRIM_INFO_MODIFY,	/*!< Mode Modify of channel */
 	PRIM_INFO_ACT_CIPH,	/*!< Activation of ciphering */
 	PRIM_INFO_DEACT_CIPH,	/*!< Deactivation of ciphering */
+	PRIM_INFO_ACT_UL_ACC,	/*!< Activation of uplink access detection */
+	PRIM_INFO_DEACT_UL_ACC,	/*!< Deactivation of uplink access detection */
 };
 
 /*! PH-DATA presence information */
@@ -142,6 +144,11 @@ struct info_ciph_req_param {
 	uint8_t uplink;		/*!< Apply to uplink */
 };
 
+/*! for {ACT_UL_ACC,DEACT_UL_ACC} MPH-INFO.req */
+struct info_ulacc_req_param {
+	uint8_t chan_nr;	/*!< Channel Number (Like RSL) */
+};
+
 /*! for MPH-INFO.ind */
 struct mph_info_param {
 	enum osmo_mph_info_type type; /*!< Info message type */
@@ -151,6 +158,7 @@ struct mph_info_param {
 		struct info_act_req_param act_req;
 		struct info_act_cnf_param act_cnf;
 		struct info_ciph_req_param ciph_req;
+		struct info_ulacc_req_param ulacc_req;
 	} u;
 };
 
