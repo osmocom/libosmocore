@@ -58,7 +58,7 @@ struct gsmtap_inst {
 	struct osmo_wqueue wq;	  /*!< the wait queue. This field member may not be changed or moved (backwards compatibility) */
 
 	struct osmo_io_fd *out;	  /*!< Used when osmo_io_mode is nonzero */
-	struct osmo_fd sink_ofd;
+	int sink_fd;
 };
 
 struct _gsmtap_inst_legacy {
@@ -433,22 +433,6 @@ int gsmtap_send(struct gsmtap_inst *gti, uint16_t arfcn, uint8_t ts,
 		signal_dbm, snr, data, len);
 }
 
-/* Callback from select layer if we can read from the sink socket */
-static int gsmtap_sink_fd_cb(struct osmo_fd *fd, unsigned int flags)
-{
-	int rc;
-	uint8_t buf[4096];
-	if (!(flags & OSMO_FD_READ))
-		return 0;
-
-	rc = read(fd->fd, buf, sizeof(buf));
-	if (rc < 0)
-		return rc;
-	/* simply discard any data arriving on the socket */
-
-	return 0;
-}
-
 /*! Add a local sink to an existing GSMTAP source and return fd
  *  \param[in] gti existing GSMTAP source
  *  \returns file descriptor of locally bound receive socket
@@ -466,28 +450,7 @@ static int gsmtap_sink_fd_cb(struct osmo_fd *fd, unsigned int flags)
  */
 int gsmtap_source_add_sink(struct gsmtap_inst *gti)
 {
-	int fd, rc;
-
-	fd = gsmtap_source_add_sink_fd(gsmtap_inst_fd2(gti));
-	if (fd < 0)
-		return fd;
-
-	if (gti->osmo_io_mode) {
-		struct osmo_fd *sink_ofd;
-
-		sink_ofd = &gti->sink_ofd;
-		sink_ofd->fd = fd;
-		sink_ofd->when = OSMO_FD_READ;
-		sink_ofd->cb = gsmtap_sink_fd_cb;
-
-		rc = osmo_fd_register(sink_ofd);
-		if (rc < 0) {
-			close(fd);
-			return rc;
-		}
-	}
-
-	return fd;
+	return gti->sink_fd = gsmtap_source_add_sink_fd(gsmtap_inst_fd2(gti));
 }
 
 /* Registered in Osmo IO as a no-op to set the write callback. */
@@ -524,7 +487,7 @@ struct gsmtap_inst *gsmtap_source_init2(const char *local_host, uint16_t local_p
 	gti->osmo_io_mode = ofd_wq_mode;
 	/* Still using the wq member for its 'fd' field only, since we are keeping it for now, anyways  */
 	gti->wq.bfd.fd = fd;
-	gti->sink_ofd.fd = -1;
+	gti->sink_fd = -1;
 
 	if (ofd_wq_mode) {
 		gti->out = osmo_iofd_setup(gti, gti->wq.bfd.fd, "gsmtap_inst.io_fd", OSMO_IO_FD_MODE_READ_WRITE, &gsmtap_ops, NULL);
@@ -564,10 +527,11 @@ void gsmtap_source_free(struct gsmtap_inst *gti)
 	if (gti->osmo_io_mode) {
 		osmo_iofd_free(gti->out);
 
-		if (gti->sink_ofd.fd != -1) {
-			osmo_fd_unregister(&gti->sink_ofd);
-			close(gti->sink_ofd.fd);
+		if (gti->sink_fd != -1) {
+			close(gti->sink_fd);
+			gti->sink_fd = -1;
 		}
+
 	}
 
 	talloc_free(gti);
