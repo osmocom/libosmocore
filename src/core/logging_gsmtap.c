@@ -65,6 +65,7 @@ static void _gsmtap_raw_output(struct log_target *target, int subsys,
 	struct timeval tv;
 	int rc;
 	const char *file_basename;
+	unsigned int _level;
 
 	/* get timestamp ASAP */
 	osmo_gettimeofday(&tv, NULL);
@@ -114,7 +115,11 @@ static void _gsmtap_raw_output(struct log_target *target, int subsys,
 	}
 	msgb_put(msg, rc);
 
+	/* Ensure that any error occurring when sending the log message doesn't cause infinite recursion */
+	_level = target->loglevel;
+	target->loglevel = UINT8_MAX;
 	rc = gsmtap_sendmsg(target->tgt_gsmtap.gsmtap_inst, msg);
+	target->loglevel = _level;
 	if (rc)
 		msgb_free(msg);
 }
