@@ -15,6 +15,7 @@ check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
                  gsm0808/gsm0808_test gsm0408/gsm0408_test		\
 		 gprs/gprs_test	kasumi/kasumi_test gea/gea_test		\
 		 logging/logging_test codec/codec_test			\
+		 logging/logging_test_gsmtap				\
 		 loggingrb/loggingrb_test strrb/strrb_test              \
 		 comp128/comp128_test                         		\
 		 bitvec/bitvec_test msgb/msgb_test bits/bitcomp_test	\
@@ -242,6 +243,8 @@ logging_logging_test_SOURCES = logging/logging_test.c
 logging_logging_vty_test_SOURCES = logging/logging_vty_test.c
 logging_logging_vty_test_LDADD = $(top_builddir)/src/vty/libosmovty.la $(LDADD)
 
+logging_logging_test_gsmtap_SOURCES = logging/logging_test_gsmtap.c
+
 vty_vty_transcript_test_SOURCES = vty/vty_transcript_test.c
 vty_vty_transcript_test_LDADD = $(top_builddir)/src/vty/libosmovty.la $(LDADD)
 
@@ -419,6 +422,7 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
              msgfile/msgfile_test.ok msgfile/msgconfig.cfg		\
              logging/logging_test.ok logging/logging_test.err		\
              logging/logging_vty_test.vty				\
+	     logging/logging_test_gsmtap.err				\
              fr/fr_test.ok loggingrb/logging_test.ok			\
              loggingrb/logging_test.err	strrb/strrb_test.ok		\
              codec/codec_test.ok \
@@ -574,6 +578,8 @@ endif
 	logging/logging_test \
 		>$(srcdir)/logging/logging_test.ok \
 		2>$(srcdir)/logging/logging_test.err
+	logging/logging_test_gsmtap \
+		2>&1 |grep -v "enqueueing message failed" >$(srcdir)/logging/logging_test_gsmtap.err
 	codec/codec_test \
 		>$(srcdir)/codec/codec_test.ok
 	codec/codec_ecu_fr_test \
