@@ -616,7 +616,15 @@ static int _output_buf(char *buf, int buf_len, struct log_target *target, unsign
 	}
 
 	if (target->use_color && c_subsys) {
-		ret = snprintf(buf + offset, rem, OSMO_LOGCOLOR_END);
+		/* Ensure the last color escape is sent before the newline
+		* (to not clobber journald, which works on single-lines only) */
+		if (offset > 0 && buf[offset - 1] == '\n') {
+			offset--; rem++;
+			ret = snprintf(buf + offset, rem, OSMO_LOGCOLOR_END "\n");
+		} else {
+			ret = snprintf(buf + offset, rem, OSMO_LOGCOLOR_END);
+		}
+
 		if (ret < 0)
 			goto err;
 		OSMO_SNPRINTF_RET(ret, rem, offset, len);
