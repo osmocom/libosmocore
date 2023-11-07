@@ -32,9 +32,9 @@ enum osmo_soft_uart_parity_mode {
 };
 
 enum osmo_soft_uart_flags {
-	OSMO_SUART_F_FRAMING_ERROR,
-	OSMO_SUART_F_PARITY_ERROR,
-	OSMO_SUART_F_BREAK,
+	OSMO_SUART_F_FRAMING_ERROR	= (1 << 0),
+	OSMO_SUART_F_PARITY_ERROR	= (1 << 1),
+	OSMO_SUART_F_BREAK		= (1 << 2),
 };
 
 enum osmo_soft_uart_status {
