@@ -44,3 +44,7 @@ osmo_ns_dummy_LDADD = $(LDADD) $(TALLOC_LIBS) \
 			$(top_builddir)/src/ctrl/libosmoctrl.la \
 			$(NULL)
 endif
+
+v110_decode_SOURCES = v110_decode.c
+v110_decode_LDADD = $(LDADD) $(top_builddir)/src/isdn/libosmoisdn.la
+noinst_PROGRAMS += v110_decode
