@@ -84,6 +84,16 @@ enum lapd_state {
 	LAPD_STATE_TIMER_RECOV,
 };
 
+/*! lapd_flags */
+#define LAPD_F_RTS		0x0001
+
+/*! LAPD T200 state in RTS mode */
+enum lapd_t200_rts {
+	LAPD_T200_RTS_OFF = 0,
+	LAPD_T200_RTS_PENDING,
+	LAPD_T200_RTS_RUNNING,
+};
+
 /*! LAPD message format (I / S / U) */
 enum lapd_format {
 	LAPD_FORM_UKN = 0,
@@ -133,6 +143,7 @@ struct lapd_datalink {
 		struct lapd_cr_ent rem2loc;
 	} cr;
 	enum lapd_mode mode; /*!< current mode of link */
+	unsigned int lapd_flags; /*!< \ref lapd_flags to change processing */
 	int use_sabme; /*!< use SABME instead of SABM */
 	int reestablish; /*!< enable reestablish support */
 	int n200, n200_est_rel; /*!< number of retranmissions */
@@ -149,6 +160,7 @@ struct lapd_datalink {
 	uint8_t peer_busy; /*!< receiver busy on remote side */
 	int t200_sec, t200_usec; /*!< retry timer (default 1 sec) */
 	int t203_sec, t203_usec; /*!< retry timer (default 10 secs) */
+	enum lapd_t200_rts t200_rts; /*!< state of T200 in RTS mode */
 	struct osmo_timer_list t200; /*!< T200 timer */
 	struct osmo_timer_list t203; /*!< T203 timer */
 	uint8_t retrans_ctr; /*!< re-transmission counter */
@@ -169,8 +181,11 @@ void lapd_dl_init2(struct lapd_datalink *dl, uint8_t k, uint8_t v_range, int max
 void lapd_dl_set_name(struct lapd_datalink *dl, const char *name);
 void lapd_dl_exit(struct lapd_datalink *dl);
 void lapd_dl_reset(struct lapd_datalink *dl);
+int lapd_dl_set_flags(struct lapd_datalink *dl, unsigned int flags);
 int lapd_set_mode(struct lapd_datalink *dl, enum lapd_mode mode);
 int lapd_ph_data_ind(struct msgb *msg, struct lapd_msg_ctx *lctx);
+int lapd_ph_rts_ind(struct lapd_msg_ctx *lctx);
 int lapd_recv_dlsap(struct osmo_dlsap_prim *dp, struct lapd_msg_ctx *lctx);
+int lapd_t200_timeout(struct lapd_datalink *dl);
 
 /*! @} */

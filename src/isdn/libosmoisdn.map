@@ -7,11 +7,14 @@ lapd_dl_init;
 lapd_dl_init2;
 lapd_dl_set_name;
 lapd_dl_reset;
+lapd_dl_set_flags;
 lapd_msgb_alloc;
 lapd_ph_data_ind;
+lapd_ph_rts_ind;
 lapd_recv_dlsap;
 lapd_set_mode;
 lapd_state_names;
+lapd_t200_timeout;
 
 osmo_i460_demux_in;
 osmo_i460_mux_enqueue;

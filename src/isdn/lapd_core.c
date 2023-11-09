@@ -204,11 +204,35 @@ static inline const char *lapd_state_name(enum lapd_state state)
 
 static void lapd_start_t200(struct lapd_datalink *dl)
 {
-	if (osmo_timer_pending(&dl->t200))
-		return;
-	LOGDL(dl, LOGL_INFO, "start T200 (timeout=%d.%06ds)\n",
-	      dl->t200_sec, dl->t200_usec);
-	osmo_timer_schedule(&dl->t200, dl->t200_sec, dl->t200_usec);
+	if ((dl->lapd_flags & LAPD_F_RTS)) {
+		if (dl->t200_rts != LAPD_T200_RTS_OFF)
+			return;
+		LOGDL(dl, LOGL_INFO, "Start T200. (pending until triggered by RTS)\n");
+		dl->t200_rts = LAPD_T200_RTS_PENDING;
+	} else {
+		if (osmo_timer_pending(&dl->t200))
+			return;
+		LOGDL(dl, LOGL_INFO, "Start T200 (timeout=%d.%06ds).\n", dl->t200_sec, dl->t200_usec);
+		osmo_timer_schedule(&dl->t200, dl->t200_sec, dl->t200_usec);
+	}
+}
+
+/*! Handle timeout condition of T200 in RTS mode.
+ * The caller (LAPDm code) implements the T200 timer and must detect timeout condition.
+ * The function gets called by LAPDm code when it detects a timeout of T200.
+ *  \param[in] dl caller-allocated datalink structure */
+int lapd_t200_timeout(struct lapd_datalink *dl)
+{
+	OSMO_ASSERT((dl->lapd_flags & LAPD_F_RTS));
+
+	if (dl->t200_rts != LAPD_T200_RTS_RUNNING)
+		return -EINVAL;
+
+	dl->t200_rts = LAPD_T200_RTS_OFF;
+
+	lapd_t200_cb(dl);
+
+	return 0;
 }
 
 static void lapd_start_t203(struct lapd_datalink *dl)
@@ -221,10 +245,24 @@ static void lapd_start_t203(struct lapd_datalink *dl)
 
 static void lapd_stop_t200(struct lapd_datalink *dl)
 {
-	if (!osmo_timer_pending(&dl->t200))
-		return;
+	if ((dl->lapd_flags & LAPD_F_RTS)) {
+		if (dl->t200_rts == LAPD_T200_RTS_OFF)
+			return;
+		dl->t200_rts = LAPD_T200_RTS_OFF;
+	} else {
+		if (!osmo_timer_pending(&dl->t200))
+			return;
+		osmo_timer_del(&dl->t200);
+	}
 	LOGDL(dl, LOGL_INFO, "stop T200\n");
-	osmo_timer_del(&dl->t200);
+}
+
+static bool lapd_is_t200_started(struct lapd_datalink *dl)
+{
+	if ((dl->lapd_flags & LAPD_F_RTS))
+		return (dl->t200_rts != LAPD_T200_RTS_OFF);
+	else
+		return osmo_timer_pending(&dl->t200);
 }
 
 static void lapd_stop_t203(struct lapd_datalink *dl)
@@ -357,6 +395,21 @@ void lapd_dl_reset(struct lapd_datalink *dl)
 		return;
 	/* enter idle state (and remove eventual cont_res) */
 	lapd_dl_newstate(dl, LAPD_STATE_IDLE);
+}
+
+/*! Set lapd_flags to change behaviour
+ *  \param[in] dl \ref lapd_datalink instance
+ *  \param[in] flags \ref lapd_flags */
+int lapd_dl_set_flags(struct lapd_datalink *dl, unsigned int flags)
+{
+	if (lapd_is_t200_started(dl) && (flags & LAPD_F_RTS) != (dl->lapd_flags & LAPD_F_RTS)) {
+		LOGDL(dl, LOGL_ERROR, "Changing RTS flag not allowed while T200 is running.\n");
+		return -EINVAL;
+	}
+
+	dl->lapd_flags = flags;
+
+	return 0;
 }
 
 /* reset and de-allocate history buffer */
@@ -806,11 +859,8 @@ static void lapd_acknowledge(struct lapd_msg_ctx *lctx)
 	/* Stop T203, if running */
 	lapd_stop_t203(dl);
 	/* Start T203, if T200 is not running in MF EST state, if enabled */
-	if (!osmo_timer_pending(&dl->t200)
-	 && (dl->t203_sec || dl->t203_usec)
-	 && (dl->state == LAPD_STATE_MF_EST)) {
+	if (!lapd_is_t200_started(dl) && (dl->t203_sec || dl->t203_usec) && (dl->state == LAPD_STATE_MF_EST))
 		lapd_start_t203(dl);
-	}
 }
 
 /* L1 -> L2 */
@@ -1732,6 +1782,31 @@ int lapd_ph_data_ind(struct msgb *msg, struct lapd_msg_ctx *lctx)
 	return rc;
 }
 
+/*! Enqueue next LAPD frame and run pending T200. (Must be called when frame is ready to send.)
+ * The caller (LAPDm code) calls this function before it sends the next frame.
+ * If there is no frame in the TX queue, LAPD will enqueue next I-frame, if possible.
+ * If the T200 is pending, it is changed to running state.
+ *  \param[in] lctx LAPD context
+ *  \param[out] rc set to 1, if timer T200 state changed to running, set to 0, if not. */
+int lapd_ph_rts_ind(struct lapd_msg_ctx *lctx)
+{
+	struct lapd_datalink *dl = lctx->dl;
+
+	/* If there is no pending frame, try to enqueue next I frame. */
+	if (llist_empty(&dl->tx_queue) && (dl->state == LAPD_STATE_MF_EST || dl->state == LAPD_STATE_TIMER_RECOV)) {
+		/* Send an I frame, if there are pending outgoing messages. */
+		lapd_send_i(dl, __LINE__, true);
+	}
+
+	/* Run T200 at RTS, if pending. Tell caller that is has been started. (rc = 1) */
+	if (dl->t200_rts == LAPD_T200_RTS_PENDING) {
+		dl->t200_rts = LAPD_T200_RTS_RUNNING;
+		return 1;
+	}
+
+	return 0;
+}
+
 /* L3 -> L2 */
 
 /* send unit data */
@@ -1861,6 +1936,12 @@ static int lapd_send_i(struct lapd_datalink *dl, int line, bool rts)
 	if (!rts)
 		LOGDL(dl, LOGL_INFO, "%s() called from line %d\n", __func__, line);
 
+	if ((dl->lapd_flags & LAPD_F_RTS) && !llist_empty(&dl->tx_queue)) {
+		if (!rts)
+			LOGDL(dl, LOGL_INFO, "There is a frame in the TX queue, not checking for sending I frame.\n");
+		return rc;
+	}
+
 	next_frame:
 
 	if (dl->peer_busy) {
@@ -1978,7 +2059,7 @@ static int lapd_send_i(struct lapd_datalink *dl, int line, bool rts)
 	/* If timer T200 is not running at the time right before transmitting a
 	 * frame, when the PH-READY-TO-SEND primitive is received from the
 	 * physical layer., it shall be set. */
-	if (!osmo_timer_pending(&dl->t200)) {
+	if (!lapd_is_t200_started(dl)) {
 		/* stop Timer T203, if running */
 		lapd_stop_t203(dl);
 		/* start Timer T200 */
@@ -1987,7 +2068,11 @@ static int lapd_send_i(struct lapd_datalink *dl, int line, bool rts)
 
 	dl->send_ph_data_req(&nctx, msg);
 
-	rc = 0; /* we sent something */
+	/* When using RTS, we send only one frame. */
+	if ((dl->lapd_flags & LAPD_F_RTS))
+		return 0;
+
+	rc = 0; /* We sent an I frame, so sending RR frame is not required. */
 	goto next_frame;
 }
 

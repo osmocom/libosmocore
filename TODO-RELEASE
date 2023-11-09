@@ -9,3 +9,4 @@
 #library	what			description / commit summary line
 core      ADD       osmo_sock_multiaddr_{add,del}_local_addr()
 core      ADD       gsmtap_inst_fd2() core, DEPRECATE gsmtap_inst_fd()
+isdn		ABI change		add states and flags for external T200 handling
