@@ -2465,19 +2465,11 @@ int gsm0503_tch_afs_encode(ubit_t *bursts, const uint8_t *tch_data, int len,
 
 	h = 0;
 
-	if (codec_mode_req) {
-		if (cmr >= codecs) {
-			/* FIXME: CMR ID is not in codec list! */
-			return -1;
-		}
-		id = cmr;
-	} else {
-		if (ft >= codecs) {
-			/* FIXME: FT ID is not in codec list! */
-			return -1;
-		}
-		id = ft;
-	}
+	id = codec_mode_req ? cmr : ft;
+	if (OSMO_UNLIKELY(id >= ARRAY_SIZE(gsm0503_afs_ic_ubit)))
+		return -1;
+	if (OSMO_UNLIKELY(ft >= codecs))
+		return -1;
 
 	switch (codec[ft]) {
 	case 7: /* TCH/AFS12.2 */
@@ -2970,19 +2962,11 @@ int gsm0503_tch_ahs_encode(ubit_t *bursts, const uint8_t *tch_data, int len,
 
 	h = 0;
 
-	if (codec_mode_req) {
-		if (cmr >= codecs) {
-			/* FIXME: CMR ID %d not in codec list */
-			return -1;
-		}
-		id = cmr;
-	} else {
-		if (ft >= codecs) {
-			/* FIXME: FT ID %d not in codec list */
-			return -1;
-		}
-		id = ft;
-	}
+	id = codec_mode_req ? cmr : ft;
+	if (OSMO_UNLIKELY(id >= ARRAY_SIZE(gsm0503_ahs_ic_ubit)))
+		return -1;
+	if (OSMO_UNLIKELY(ft >= codecs))
+		return -1;
 
 	switch (codec[ft]) {
 	case 5: /* TCH/AHS7.95 */
