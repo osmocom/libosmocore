@@ -169,12 +169,17 @@ static void lapd_dl_flush_hist(struct lapd_datalink *dl)
 	}
 }
 
-static void lapd_dl_flush_tx(struct lapd_datalink *dl)
+static void lapd_dl_flush_tx_queue(struct lapd_datalink *dl)
 {
 	struct msgb *msg;
 
 	while ((msg = msgb_dequeue(&dl->tx_queue)))
 		msgb_free(msg);
+}
+
+static void lapd_dl_flush_tx(struct lapd_datalink *dl)
+{
+	lapd_dl_flush_tx_queue(dl);
 	lapd_dl_flush_hist(dl);
 }
 
@@ -1376,6 +1381,10 @@ static int lapd_rx_s(struct msgb *msg, struct lapd_msg_ctx *lctx)
 		/* 5.5.5 */
 		/* Set peer receiver busy condition */
 		dl->peer_busy = 1;
+		/* Flush pending messages in TX queue. */
+		lapd_dl_flush_tx_queue(dl);
+		/* stop Timer T200 */
+		lapd_stop_t200(dl);
 
 		if (lctx->p_f) {
 			if (lctx->cr == dl->cr.rem2loc.cmd) {
@@ -1416,6 +1425,8 @@ static int lapd_rx_s(struct msgb *msg, struct lapd_msg_ctx *lctx)
 			dl->peer_busy = 0;
 			/* V(S) and V(A) to the N(R) in the REJ frame */
 			dl->v_send = dl->v_ack = lctx->n_recv;
+			/* Flush pending messages in TX queue. */
+			lapd_dl_flush_tx_queue(dl);
 			/* stop Timer T200 */
 			lapd_stop_t200(dl);
 			/* 5.5.3.2 */
@@ -1452,6 +1463,8 @@ static int lapd_rx_s(struct msgb *msg, struct lapd_msg_ctx *lctx)
 			dl->peer_busy = 0;
 			/* V(S) and V(A) to the N(R) in the REJ frame */
 			dl->v_send = dl->v_ack = lctx->n_recv;
+			/* Flush pending messages in TX queue. */
+			lapd_dl_flush_tx_queue(dl);
 			/* stop Timer T200 */
 			lapd_stop_t200(dl);
 			/* 5.5.7 Clear timer recovery condition */
@@ -1461,6 +1474,8 @@ static int lapd_rx_s(struct msgb *msg, struct lapd_msg_ctx *lctx)
 			dl->peer_busy = 0;
 			/* V(S) and V(A) to the N(R) in the REJ frame */
 			dl->v_send = dl->v_ack = lctx->n_recv;
+			/* Flush pending messages in TX queue. */
+			lapd_dl_flush_tx_queue(dl);
 			/* 5.5.3.2 */
 			if (lctx->cr == dl->cr.rem2loc.cmd && lctx->p_f) {
 				if (!dl->own_busy && !dl->seq_err_cond) {
