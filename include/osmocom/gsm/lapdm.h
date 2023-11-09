@@ -33,6 +33,9 @@ struct lapdm_datalink {
 	struct lapdm_msg_ctx mctx; /*!< context of established connection */
 
 	struct lapdm_entity *entity; /*!< LAPDm entity we are part of */
+
+	uint32_t t200_fn;	/*!< T200 timer in frames */
+	uint32_t t200_timeout;	/*!< T200 timeout frame number */
 };
 
 /*! LAPDm datalink SAPIs */
@@ -119,6 +122,11 @@ void lapdm_channel_reset(struct lapdm_channel *lc);
 void lapdm_entity_set_flags(struct lapdm_entity *le, unsigned int flags);
 void lapdm_channel_set_flags(struct lapdm_channel *lc, unsigned int flags);
 
+void lapdm_entity_set_t200_fn(struct lapdm_entity *le, const uint32_t *t200_fn);
+void lapdm_channel_set_t200_fn(struct lapdm_channel *lc, const uint32_t *t200_fn_dcch, const uint32_t *t200_fn_acch);
+
 int lapdm_phsap_dequeue_prim(struct lapdm_entity *le, struct osmo_phsap_prim *pp);
+int lapdm_phsap_dequeue_prim_fn(struct lapdm_entity *le, struct osmo_phsap_prim *pp, uint32_t fn);
+void lapdm_t200_fn(struct lapdm_entity *le, uint32_t fn);
 
 /*! @} */

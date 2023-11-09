@@ -27,6 +27,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <inttypes.h>
 #include <string.h>
 #include <errno.h>
 
@@ -196,9 +197,9 @@ void lapdm_entity_init3(struct lapdm_entity *le, enum lapdm_mode mode,
 		char name[256];
 		if (name_pfx) {
 			snprintf(name, sizeof(name), "%s[%s]", name_pfx, i == 0 ? "0" : "3");
-			lapdm_dl_init(&le->datalink[i], le, t200_ms[i], n200, name);
+			lapdm_dl_init(&le->datalink[i], le, (t200_ms) ? t200_ms[i] : 0, n200, name);
 		} else
-			lapdm_dl_init(&le->datalink[i], le, t200_ms[i], n200, NULL);
+			lapdm_dl_init(&le->datalink[i], le, (t200_ms) ? t200_ms[i] : 0, n200, NULL);
 	}
 
 	lapdm_entity_set_mode(le, mode);
@@ -358,6 +359,18 @@ static int tx_ph_data_enqueue(struct lapdm_datalink *dl, struct msgb *msg,
 
 	/* if there is a pending message, queue it */
 	if (le->tx_pending || le->flags & LAPDM_ENT_F_POLLING_ONLY) {
+		struct msgb *old_msg;
+
+		/* In 'Polling only' mode there can be only one message. */
+		if (le->flags & LAPDM_ENT_F_POLLING_ONLY) {
+			/* Overwrite existing message by removing it first. */
+			if ((old_msg = msgb_dequeue(&dl->dl.tx_queue))) {
+				msgb_free(old_msg);
+				/* Reset V(S) to V(A), because there is no outstanding message now. */
+				dl->dl.v_send = dl->dl.v_ack;
+			}
+		}
+
 		*msgb_push(msg, 1) = pad;
 		*msgb_push(msg, 1) = link_id;
 		*msgb_push(msg, 1) = chan_nr;
@@ -377,21 +390,55 @@ static int tx_ph_data_enqueue(struct lapdm_datalink *dl, struct msgb *msg,
 	return le->l1_prim_cb(&pp.oph, le->l1_ctx);
 }
 
+/* Get transmit frame from queue, if any. In polling mode, indicate RTS to LAPD and start T200, if pending. */
+static struct msgb *tx_dequeue_msgb(struct lapdm_datalink *dl, uint32_t fn)
+{
+	struct msgb *msg;
+
+	/* Call RTS function of LAPD, to poll next frame. */
+	if (dl->entity->flags & LAPDM_ENT_F_POLLING_ONLY) {
+		struct lapd_msg_ctx lctx;
+		int rc;
+
+		/* Poll next frame. */
+		lctx.dl = &dl->dl;
+		rc = lapd_ph_rts_ind(&lctx);
+
+		/* If T200 has been started, calculate timeout FN. */
+		if (rc == 1) {
+			/* Set T200 in advance. */
+			dl->t200_timeout = fn;
+			ADD_MODULO(dl->t200_timeout, dl->t200_fn, GSM_MAX_FN);
+
+			LOGDL(&dl->dl, LOGL_INFO,
+			      "T200 running from FN %"PRIu32" to FN %"PRIu32" (%"PRIu32" frames).\n",
+			      fn, dl->t200_timeout, dl->t200_fn);
+		}
+	}
+
+	/* If there is no frame from LAPD, send UI frame, if any. */
+	msg = msgb_dequeue(&dl->dl.tx_queue);
+	if (msg)
+		LOGDL(&dl->dl, LOGL_INFO, "Sending frame from TX queue. (FN %"PRIu32")\n", fn);
+	return msg;
+}
+
 /* Dequeue a Downlink message for DCCH (dedicated channel) */
-static struct msgb *tx_dequeue_dcch_msgb(struct lapdm_entity *le)
+static struct msgb *tx_dequeue_dcch_msgb(struct lapdm_entity *le, uint32_t fn)
 {
 	struct msgb *msg;
 
 	/* SAPI=0 always has higher priority than SAPI=3 */
-	msg = msgb_dequeue(&le->datalink[DL_SAPI0].dl.tx_queue);
-	if (msg == NULL) /* no SAPI=0 messages, dequeue SAPI=3 (if any) */
-		msg = msgb_dequeue(&le->datalink[DL_SAPI3].dl.tx_queue);
+	msg = tx_dequeue_msgb(&le->datalink[DL_SAPI0], fn);
+	if (msg == NULL) { /* no SAPI=0 messages, dequeue SAPI=3 (if any) */
+		msg = tx_dequeue_msgb(&le->datalink[DL_SAPI3], fn);
+	}
 
 	return msg;
 }
 
 /* Dequeue a Downlink message for ACCH (associated channel) */
-static struct msgb *tx_dequeue_acch_msgb(struct lapdm_entity *le)
+static struct msgb *tx_dequeue_acch_msgb(struct lapdm_entity *le, uint32_t fn)
 {
 	struct lapdm_datalink *dl;
 	int last = le->last_tx_dequeue;
@@ -403,7 +450,7 @@ static struct msgb *tx_dequeue_acch_msgb(struct lapdm_entity *le)
 		/* next */
 		i = (i + 1) % n;
 		dl = &le->datalink[i];
-		if ((msg = msgb_dequeue(&dl->dl.tx_queue)))
+		if ((msg = tx_dequeue_msgb(dl, fn)))
 			break;
 	} while (i != last);
 
@@ -417,7 +464,7 @@ static struct msgb *tx_dequeue_acch_msgb(struct lapdm_entity *le)
 
 /*! dequeue a msg that's pending transmission via L1 and wrap it into
  * a osmo_phsap_prim */
-int lapdm_phsap_dequeue_prim(struct lapdm_entity *le, struct osmo_phsap_prim *pp)
+int lapdm_phsap_dequeue_prim_fn(struct lapdm_entity *le, struct osmo_phsap_prim *pp, uint32_t fn)
 {
 	struct msgb *msg;
 	uint8_t pad;
@@ -425,9 +472,9 @@ int lapdm_phsap_dequeue_prim(struct lapdm_entity *le, struct osmo_phsap_prim *pp
 	/* Dequeue depending on channel type: DCCH or ACCH.
 	 * See 3GPP TS 44.005, section 4.2.2 "Priority". */
 	if (le == &le->lapdm_ch->lapdm_dcch)
-		msg = tx_dequeue_dcch_msgb(le);
+		msg = tx_dequeue_dcch_msgb(le, fn);
 	else
-		msg = tx_dequeue_acch_msgb(le);
+		msg = tx_dequeue_acch_msgb(le, fn);
 	if (!msg)
 		return -ENODEV;
 
@@ -447,6 +494,57 @@ int lapdm_phsap_dequeue_prim(struct lapdm_entity *le, struct osmo_phsap_prim *pp
 	lapdm_pad_msgb(msg, pad);
 
 	return 0;
+}
+
+static void lapdm_t200_fn_dl(struct lapdm_datalink *dl, uint32_t fn)
+{
+	uint32_t diff;
+
+	OSMO_ASSERT((dl->dl.lapd_flags & LAPD_F_RTS));
+
+	/* If T200 is running, check if it has fired. */
+	if (dl->dl.t200_rts != LAPD_T200_RTS_RUNNING)
+		return;
+
+	/* Calculate how many frames fn is behind t200_timeout.
+	 * If it is negative (>= GSM_MAX_FN / 2), we have not reached t200_timeout yet.
+	 * If it is 0 or positive, we reached it or we are a bit too late, which is not a problem.
+	 */
+	diff = fn;
+	ADD_MODULO(diff, GSM_MAX_FN - dl->t200_timeout, GSM_MAX_FN);
+	if (diff >= GSM_MAX_FN / 2)
+		return;
+
+	LOGDL(&dl->dl, LOGL_INFO, "T200 timeout at FN %"PRIu32", detected at FN %"PRIu32".\n", dl->t200_timeout, fn);
+
+	lapd_t200_timeout(&dl->dl);
+}
+
+/*! Get receive frame number from L1. It is used to check the T200 timeout.
+ * This function is used if LAPD is in RTS mode only. (Applies if the LAPDM_ENT_F_POLLING_ONLY flag is set.)
+ * This function must be called for every valid or invalid data frame received.
+ * The frame number fn must be the frame number of the first burst of a data frame.
+ * This function must be called after the frame is delivered to layer 2.
+ * In case of TCH, this this function must be called for every speech frame received, meaning that there was no valid
+ * data frame. */
+void lapdm_t200_fn(struct lapdm_entity *le, uint32_t fn)
+{
+	unsigned int i;
+
+	if (!(le->flags & LAPDM_ENT_F_POLLING_ONLY)) {
+		LOGP(DLLAPD, LOGL_ERROR, "Function call not allowed on timer based T200.\n");
+		return;
+	}
+
+	for (i = 0; i < ARRAY_SIZE(le->datalink); i++)
+		lapdm_t200_fn_dl(&le->datalink[i], fn);
+}
+
+/*! dequeue a msg that's pending transmission via L1 and wrap it into
+ * a osmo_phsap_prim */
+int lapdm_phsap_dequeue_prim(struct lapdm_entity *le, struct osmo_phsap_prim *pp)
+{
+	return lapdm_phsap_dequeue_prim_fn(le, pp, 0);
 }
 
 /* get next frame from the tx queue. because the ms has multiple datalinks,
@@ -853,6 +951,7 @@ static int l2_ph_data_ind(struct msgb *msg, struct lapdm_entity *le,
 			return -EINVAL;
 		}
 		/* send to LAPD */
+		LOGDL(lctx.dl, LOGL_DEBUG, "Frame received at FN %"PRIu32".\n", fn);
 		rc = lapd_ph_data_ind(msg, &lctx);
 		break;
 	case LAPDm_FMT_Bter:
@@ -1494,7 +1593,20 @@ void lapdm_channel_reset(struct lapdm_channel *lc)
 /*! Set the flags of a LAPDm entity */
 void lapdm_entity_set_flags(struct lapdm_entity *le, unsigned int flags)
 {
+	unsigned int dl_flags = 0;
+	struct lapdm_datalink *dl;
+	int i;
+
 	le->flags = flags;
+
+	/* Set flags at LAPD. */
+	if (le->flags & LAPDM_ENT_F_POLLING_ONLY)
+		dl_flags |= LAPD_F_RTS;
+
+	for (i = 0; i < ARRAY_SIZE(le->datalink); i++) {
+		dl = &le->datalink[i];
+		lapd_dl_set_flags(&dl->dl, dl_flags);
+	}
 }
 
 /*! Set the flags of all LAPDm entities in a LAPDm channel */
@@ -1502,6 +1614,27 @@ void lapdm_channel_set_flags(struct lapdm_channel *lc, unsigned int flags)
 {
 	lapdm_entity_set_flags(&lc->lapdm_dcch, flags);
 	lapdm_entity_set_flags(&lc->lapdm_acch, flags);
+}
+
+/*! Set the T200 FN timer of a LAPDm entity
+ *  \param[in] \ref lapdm_entity
+ *  \param[in] t200_fn Array of T200 timeout in frame numbers for all SAPIs (0, 3) */
+void lapdm_entity_set_t200_fn(struct lapdm_entity *le, const uint32_t *t200_fn)
+{
+	unsigned int i;
+
+	for (i = 0; i < ARRAY_SIZE(le->datalink); i++)
+		le->datalink[i].t200_fn = t200_fn[i];
+}
+
+/*! Set the T200 FN timer of all LAPDm entities in a LAPDm channel
+ *  \param[in] \ref lapdm_channel
+ *  \param[in] t200_fn_dcch Array of T200 timeout in frame numbers for all SAPIs (0, 3) on SDCCH/FACCH
+ *  \param[in] t200_fn_acch Array of T200 timeout in frame numbers for all SAPIs (0, 3) on SACCH */
+void lapdm_channel_set_t200_fn(struct lapdm_channel *lc, const uint32_t *t200_fn_dcch, const uint32_t *t200_fn_acch)
+{
+	lapdm_entity_set_t200_fn(&lc->lapdm_dcch, t200_fn_dcch);
+	lapdm_entity_set_t200_fn(&lc->lapdm_acch, t200_fn_acch);
 }
 
 /*! @} */

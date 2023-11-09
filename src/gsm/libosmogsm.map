@@ -587,7 +587,11 @@ lapdm_entity_init3;
 lapdm_entity_reset;
 lapdm_entity_set_flags;
 lapdm_entity_set_mode;
+lapdm_entity_set_t200_fn;
+lapdm_channel_set_t200_fn;
 lapdm_phsap_dequeue_prim;
+lapdm_phsap_dequeue_prim_fn;
+lapdm_t200_fn;
 lapdm_phsap_up;
 lapdm_rslms_recvmsg;
 
