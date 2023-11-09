@@ -658,7 +658,8 @@ static int update_pending_frames(struct lapd_msg_ctx *lctx)
 					LAPDm_CTRL_PF_BIT(msg->l2h[1]));
 			rc = 0;
 		} else if (LAPDm_CTRL_is_S(msg->l2h[1])) {
-			LOGDL(dl, LOGL_ERROR, "Supervisory frame in queue, this shouldn't happen\n");
+			msg->l2h[1] = LAPDm_CTRL_S(dl->v_recv, LAPDm_CTRL_S_BITS(msg->l2h[1]),
+						   LAPDm_CTRL_PF_BIT(msg->l2h[1]));
 		}
 	}
 

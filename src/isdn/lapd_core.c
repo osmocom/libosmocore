@@ -1525,6 +1525,7 @@ static int lapd_rx_i(struct msgb *msg, struct lapd_msg_ctx *lctx)
 	uint8_t ns = lctx->n_send;
 	int length = lctx->length;
 	int rc;
+	bool i_frame_in_queue = false;
 
 	LOGDL(dl, LOGL_INFO, "I received in state %s on SAPI(%u)\n",
 	      lapd_state_name(dl->state), lctx->sapi);
@@ -1615,6 +1616,13 @@ static int lapd_rx_i(struct msgb *msg, struct lapd_msg_ctx *lctx)
 	dl->v_recv = inc_mod(dl->v_recv, dl->v_range);
 	LOGDL(dl, LOGL_INFO, "incrementing V(R) to %u\n", dl->v_recv);
 
+	/* Update all pending frames in the queue to the new V(R) state. */
+	if (dl->update_pending_frames) {
+		rc = dl->update_pending_frames(lctx);
+		if (!rc)
+			i_frame_in_queue = true;
+	}
+
 	/* 5.5.3.1: Acknowlege all transmitted frames up the the N(R)-1 */
 	lapd_acknowledge(lctx); /* V(A) is also set here */
 
@@ -1680,13 +1688,7 @@ static int lapd_rx_i(struct msgb *msg, struct lapd_msg_ctx *lctx)
 		if (!dl->own_busy) {
 			/* NOTE: V(R) is already set above */
 			rc = lapd_send_i(dl, __LINE__, false);
-
-			/* if update_pending_iframe returns 0 it updated
-			 * the lapd header of an iframe in the tx queue */
-			if (rc && dl->update_pending_frames)
-				rc = dl->update_pending_frames(lctx);
-
-			if (rc) {
+			if (rc && !i_frame_in_queue) {
 				LOGDL(dl, LOGL_INFO, "we are not busy and have no pending data, "
 				      "send RR\n");
 				/* Send RR with F=0 */
