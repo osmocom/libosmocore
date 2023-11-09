@@ -108,7 +108,7 @@
 
 static void lapd_t200_cb(void *data);
 static void lapd_t203_cb(void *data);
-static int lapd_send_i(struct lapd_msg_ctx *lctx, int line);
+static int lapd_send_i(struct lapd_datalink *dl, int line, bool rts);
 static int lapd_est_req(struct osmo_dlsap_prim *dp, struct lapd_msg_ctx *lctx);
 
 /* UTILITY FUNCTIONS */
@@ -1242,7 +1242,7 @@ static int lapd_rx_u_ua(struct msgb *msg, struct lapd_msg_ctx *lctx)
 	/* enter multiple-frame-established state */
 	lapd_dl_newstate(dl, LAPD_STATE_MF_EST);
 	/* send outstanding frames, if any (resume / reconnect) */
-	lapd_send_i(lctx, __LINE__);
+	lapd_send_i(dl, __LINE__, false);
 	/* send notification to L3 */
 	rc = send_dl_simple(PRIM_DL_EST, PRIM_OP_CONFIRM, lctx);
 	msgb_free(msg);
@@ -1365,7 +1365,7 @@ static int lapd_rx_s(struct msgb *msg, struct lapd_msg_ctx *lctx)
 			lapd_dl_newstate(dl, LAPD_STATE_MF_EST);
 		}
 		/* Send message, if possible due to acknowledged data */
-		lapd_send_i(lctx, __LINE__);
+		lapd_send_i(dl, __LINE__, false);
 
 		break;
 	case LAPD_S_RNR:
@@ -1402,7 +1402,7 @@ static int lapd_rx_s(struct msgb *msg, struct lapd_msg_ctx *lctx)
 			LOGDL(dl, LOGL_INFO, "RNR not polling/final state received\n");
 
 		/* Send message, if possible due to acknowledged data */
-		lapd_send_i(lctx, __LINE__);
+		lapd_send_i(dl, __LINE__, false);
 
 		break;
 	case LAPD_S_REJ:
@@ -1487,8 +1487,8 @@ static int lapd_rx_s(struct msgb *msg, struct lapd_msg_ctx *lctx)
 
 		/* FIXME: 5.5.4.2 2) */
 
-		/* Send message, if possible due to acknowledged data */
-		lapd_send_i(lctx, __LINE__);
+		/* Send message, if possible due to acknowledged data and new V(S) and V(A). */
+		lapd_send_i(dl, __LINE__, false);
 
 		break;
 	default:
@@ -1590,7 +1590,7 @@ static int lapd_rx_i(struct msgb *msg, struct lapd_msg_ctx *lctx)
 		lapd_acknowledge(lctx); /* V(A) is also set here */
 
 		/* Send message, if possible due to acknowledged data */
-		lapd_send_i(lctx, __LINE__);
+		lapd_send_i(dl, __LINE__, false);
 
 		return 0;
 	}
@@ -1664,7 +1664,7 @@ static int lapd_rx_i(struct msgb *msg, struct lapd_msg_ctx *lctx)
 		/* check if we are not in own receiver busy */
 		if (!dl->own_busy) {
 			/* NOTE: V(R) is already set above */
-			rc = lapd_send_i(lctx, __LINE__);
+			rc = lapd_send_i(dl, __LINE__, false);
 
 			/* if update_pending_iframe returns 0 it updated
 			 * the lapd header of an iframe in the tx queue */
@@ -1687,7 +1687,7 @@ static int lapd_rx_i(struct msgb *msg, struct lapd_msg_ctx *lctx)
 	}
 
 	/* Send message, if possible due to acknowledged data */
-	lapd_send_i(lctx, __LINE__);
+	lapd_send_i(dl, __LINE__, false);
 
 	return rc;
 }
@@ -1825,15 +1825,15 @@ static int lapd_data_req(struct osmo_dlsap_prim *dp, struct lapd_msg_ctx *lctx)
 	msgb_enqueue(&dl->send_queue, msg);
 
 	/* Send message, if possible */
-	lapd_send_i(&dl->lctx, __LINE__);
+	lapd_send_i(dl, __LINE__, false);
 
 	return 0;
 }
 
 /* Send next I frame from queued/buffered data */
-static int lapd_send_i(struct lapd_msg_ctx *lctx, int line)
+static int lapd_send_i(struct lapd_datalink *dl, int line, bool rts)
 {
-	struct lapd_datalink *dl = lctx->dl;
+	struct lapd_msg_ctx *lctx = &dl->lctx;
 	uint8_t k = dl->k;
 	uint8_t h;
 	struct msgb *msg;
@@ -1841,18 +1841,20 @@ static int lapd_send_i(struct lapd_msg_ctx *lctx, int line)
 	int rc = - 1; /* we sent nothing */
 	struct lapd_msg_ctx nctx;
 
-
-	LOGDL(dl, LOGL_INFO, "%s() called from line %d\n", __func__, line);
+	if (!rts)
+		LOGDL(dl, LOGL_INFO, "%s() called from line %d\n", __func__, line);
 
 	next_frame:
 
 	if (dl->peer_busy) {
-		LOGDL(dl, LOGL_INFO, "peer busy, not sending\n");
+		if (!rts)
+			LOGDL(dl, LOGL_INFO, "Peer busy, not sending.\n");
 		return rc;
 	}
 
 	if (dl->state == LAPD_STATE_TIMER_RECOV) {
-		LOGDL(dl, LOGL_INFO, "timer recovery, not sending\n");
+		if (!rts)
+			LOGDL(dl, LOGL_INFO, "Timer recovery, not sending.\n");
 		return rc;
 	}
 
@@ -1863,8 +1865,9 @@ static int lapd_send_i(struct lapd_msg_ctx *lctx, int line)
 	 * of the error recovery procedures as described in subclauses 5.5.4 and
 	 * 5.5.7. */
 	if (dl->v_send == add_mod(dl->v_ack, k, dl->v_range)) {
-		LOGDL(dl, LOGL_INFO, "k frames outstanding, not sending more "
-		      "(k=%u V(S)=%u V(A)=%u)\n", k, dl->v_send, dl->v_ack);
+		if (!rts)
+			LOGDL(dl, LOGL_INFO, "k frames outstanding, not sending more. (k=%u V(S)=%u V(A)=%u)\n",
+			      k, dl->v_send, dl->v_ack);
 		return rc;
 	}
 
@@ -1906,7 +1909,7 @@ static int lapd_send_i(struct lapd_msg_ctx *lctx, int line)
 		msg = lapd_msgb_alloc(length, "LAPD I");
 		msg->l3h = msgb_put(msg, length);
 		/* assemble message */
-		memcpy(&nctx, &dl->lctx, sizeof(nctx));
+		memcpy(&nctx, lctx, sizeof(nctx));
 		/* keep nctx.ldp */
 		/* keep nctx.sapi */
 		/* keep nctx.tei */
@@ -1936,7 +1939,7 @@ static int lapd_send_i(struct lapd_msg_ctx *lctx, int line)
 		msg = lapd_msgb_alloc(length, "LAPD I resend");
 		msg->l3h = msgb_put(msg, length);
 		/* assemble message */
-		memcpy(&nctx, &dl->lctx, sizeof(nctx));
+		memcpy(&nctx, lctx, sizeof(nctx));
 		/* keep nctx.ldp */
 		/* keep nctx.sapi */
 		/* keep nctx.tei */
