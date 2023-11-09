@@ -34,6 +34,7 @@ struct lapdm_datalink {
 
 	struct lapdm_entity *entity; /*!< LAPDm entity we are part of */
 
+	struct llist_head tx_ui_queue; /*!< UI frames to L1 */
 	uint32_t t200_fn;	/*!< T200 timer in frames */
 	uint32_t t200_timeout;	/*!< T200 timeout frame number */
 };

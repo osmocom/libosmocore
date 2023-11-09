@@ -200,6 +200,7 @@ void lapdm_entity_init3(struct lapdm_entity *le, enum lapdm_mode mode,
 			lapdm_dl_init(&le->datalink[i], le, (t200_ms) ? t200_ms[i] : 0, n200, name);
 		} else
 			lapdm_dl_init(&le->datalink[i], le, (t200_ms) ? t200_ms[i] : 0, n200, NULL);
+		INIT_LLIST_HEAD(&le->datalink[i].tx_ui_queue);
 	}
 
 	lapdm_entity_set_mode(le, mode);
@@ -296,6 +297,7 @@ void lapdm_entity_exit(struct lapdm_entity *le)
 	for (i = 0; i < ARRAY_SIZE(le->datalink); i++) {
 		dl = &le->datalink[i];
 		lapd_dl_exit(&dl->dl);
+		msgb_queue_free(&dl->tx_ui_queue);
 	}
 }
 
@@ -390,6 +392,33 @@ static int tx_ph_data_enqueue(struct lapdm_datalink *dl, struct msgb *msg,
 	return le->l1_prim_cb(&pp.oph, le->l1_ctx);
 }
 
+static int tx_ph_data_enqueue_ui(struct lapdm_datalink *dl, struct msgb *msg,
+				 uint8_t chan_nr, uint8_t link_id, uint8_t pad)
+{
+	struct lapdm_entity *le = dl->entity;
+	struct osmo_phsap_prim pp;
+
+	/* if there is a pending message, queue it */
+	if (le->tx_pending || le->flags & LAPDM_ENT_F_POLLING_ONLY) {
+		*msgb_push(msg, 1) = pad;
+		*msgb_push(msg, 1) = link_id;
+		*msgb_push(msg, 1) = chan_nr;
+		msgb_enqueue(&dl->tx_ui_queue, msg);
+		return 0;
+	}
+
+	osmo_prim_init(&pp.oph, SAP_GSM_PH, PRIM_PH_DATA,
+			PRIM_OP_REQUEST, msg);
+	pp.u.data.chan_nr = chan_nr;
+	pp.u.data.link_id = link_id;
+
+	/* send the frame now */
+	le->tx_pending = 0; /* disabled flow control */
+	lapdm_pad_msgb(msg, pad);
+
+	return le->l1_prim_cb(&pp.oph, le->l1_ctx);
+}
+
 /* Get transmit frame from queue, if any. In polling mode, indicate RTS to LAPD and start T200, if pending. */
 static struct msgb *tx_dequeue_msgb(struct lapdm_datalink *dl, uint32_t fn)
 {
@@ -420,6 +449,11 @@ static struct msgb *tx_dequeue_msgb(struct lapdm_datalink *dl, uint32_t fn)
 	msg = msgb_dequeue(&dl->dl.tx_queue);
 	if (msg)
 		LOGDL(&dl->dl, LOGL_INFO, "Sending frame from TX queue. (FN %"PRIu32")\n", fn);
+	else {
+		msg = msgb_dequeue(&dl->tx_ui_queue);
+		if (msg)
+			LOGDL(&dl->dl, LOGL_INFO, "Sending UI frame from TX queue. (FN %"PRIu32")\n", fn);
+	}
 	return msg;
 }
 
@@ -1183,7 +1217,7 @@ static int rslms_rx_rll_udata_req(struct msgb *msg, struct lapdm_datalink *dl)
 	}
 
 	/* Tramsmit */
-	return tx_ph_data_enqueue(dl, msg, chan_nr, link_id, 23);
+	return tx_ph_data_enqueue_ui(dl, msg, chan_nr, link_id, 23);
 }
 
 /* L3 requests transfer of acknowledged information */
@@ -1580,6 +1614,7 @@ void lapdm_entity_reset(struct lapdm_entity *le)
 	for (i = 0; i < ARRAY_SIZE(le->datalink); i++) {
 		dl = &le->datalink[i];
 		lapd_dl_reset(&dl->dl);
+		msgb_queue_free(&dl->tx_ui_queue);
 	}
 }
 
