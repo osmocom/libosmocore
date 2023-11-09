@@ -2447,7 +2447,7 @@ out:
  *  \param[in] cmr Codec Mode Request (used in codec_mode_req = 1 only)
  *  \returns 0 in case of success; negative on error */
 int gsm0503_tch_afs_encode(ubit_t *bursts, const uint8_t *tch_data, int len,
-	int codec_mode_req, uint8_t *codec, int codecs, uint8_t ft,
+	int codec_mode_req, const uint8_t *codec, int codecs, uint8_t ft,
 	uint8_t cmr)
 {
 	ubit_t iB[912], cB[456], h;
@@ -2935,7 +2935,7 @@ out:
  *  \param[in] cmr Codec Mode Request (used in codec_mode_req = 1 only)
  *  \returns 0 in case of success; negative on error */
 int gsm0503_tch_ahs_encode(ubit_t *bursts, const uint8_t *tch_data, int len,
-	int codec_mode_req, uint8_t *codec, int codecs, uint8_t ft,
+	int codec_mode_req, const uint8_t *codec, int codecs, uint8_t ft,
 	uint8_t cmr)
 {
 	ubit_t iB[912], cB[456], h;
