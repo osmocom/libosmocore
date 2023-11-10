@@ -442,7 +442,7 @@ static inline unsigned char *msgb_pull_to_l2(struct msgb *msg)
 
 /*! remove uint8 from front of message
  *  \param[in] msgb message buffer
- *  \returns 8bit value taken from end of msgb
+ *  \returns 8bit value taken from the front of msgb
  */
 static inline uint8_t msgb_pull_u8(struct msgb *msgb)
 {
@@ -452,7 +452,7 @@ static inline uint8_t msgb_pull_u8(struct msgb *msgb)
 
 /*! remove uint16 from front of message
  *  \param[in] msgb message buffer
- *  \returns 16bit value taken from end of msgb
+ *  \returns 16bit value taken from the front of msgb
  */
 static inline uint16_t msgb_pull_u16(struct msgb *msgb)
 {
@@ -462,7 +462,7 @@ static inline uint16_t msgb_pull_u16(struct msgb *msgb)
 
 /*! remove uint32 from front of message
  *  \param[in] msgb message buffer
- *  \returns 32bit value taken from end of msgb
+ *  \returns 32bit value taken from the front of msgb
  */
 static inline uint32_t msgb_pull_u32(struct msgb *msgb)
 {
