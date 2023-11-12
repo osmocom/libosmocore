@@ -75,6 +75,7 @@ struct osmo_soft_uart_cfg {
 struct osmo_soft_uart;
 
 struct osmo_soft_uart *osmo_soft_uart_alloc(void *ctx, const char *name);
+void osmo_soft_uart_free(struct osmo_soft_uart *suart);
 int osmo_soft_uart_configure(struct osmo_soft_uart *suart, const struct osmo_soft_uart_cfg *cfg);
 int osmo_soft_uart_enable(struct osmo_soft_uart *suart, bool rx, bool tx);
 

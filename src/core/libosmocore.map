@@ -440,6 +440,7 @@ osmo_sock_set_priority;
 osmo_sock_unix_init;
 osmo_sock_unix_init_ofd;
 osmo_soft_uart_alloc;
+osmo_soft_uart_free;
 osmo_soft_uart_configure;
 osmo_soft_uart_enable;
 osmo_soft_uart_rx_ubits;

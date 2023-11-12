@@ -220,6 +220,20 @@ struct osmo_soft_uart *osmo_soft_uart_alloc(void *ctx, const char *name)
 	return suart;
 }
 
+/*! Release memory taken by the given soft-UART.
+ * \param[in] suart soft-UART instance to be free()d. */
+void osmo_soft_uart_free(struct osmo_soft_uart *suart)
+{
+	if (suart == NULL)
+		return;
+
+	osmo_timer_del(&suart->rx.timer);
+	msgb_free(suart->rx.msg);
+
+	talloc_free((void *)suart->name);
+	talloc_free(suart);
+}
+
 /*! change soft-UART configuration to user-provided config */
 int osmo_soft_uart_configure(struct osmo_soft_uart *suart, const struct osmo_soft_uart_cfg *cfg)
 {
