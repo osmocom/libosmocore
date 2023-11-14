@@ -355,7 +355,6 @@ AT_SETUP([socket])
 AT_KEYWORDS([socket])
 cat $abs_srcdir/socket/socket_test.ok > expout
 cat $abs_srcdir/socket/socket_test.err > experr
-touch experr
 AT_CHECK([$abs_top_builddir/tests/socket/socket_test], [0], [expout], [experr])
 AT_CLEANUP
 
@@ -364,7 +363,6 @@ AT_KEYWORDS([socket_sctp])
 AT_SKIP_IF([! test -e $abs_top_builddir/tests/socket/socket_sctp_test])
 cat $abs_srcdir/socket/socket_sctp_test.ok > expout
 cat $abs_srcdir/socket/socket_sctp_test.err > experr
-touch experr
 AT_CHECK([$abs_top_builddir/tests/socket/socket_sctp_test], [0], [expout], [experr])
 AT_CLEANUP
 
@@ -513,6 +511,5 @@ AT_SETUP([osmo_io])
 AT_KEYWORDS([osmo_io])
 cat $abs_srcdir/osmo_io/osmo_io_test.ok > expout
 cat $abs_srcdir/osmo_io/osmo_io_test.err > experr
-touch experr
 AT_CHECK([$abs_top_builddir/tests/osmo_io/osmo_io_test], [0], [expout], [experr])
 AT_CLEANUP
