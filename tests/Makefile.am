@@ -55,6 +55,7 @@ check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
 		 v110/ra1_test                                          \
 		 gsm44021/frame_csd_test                                \
 		 osmo_io/osmo_io_test					\
+		 soft_uart/soft_uart_test				\
 		 $(NULL)
 
 if ENABLE_MSGFILE
@@ -375,6 +376,8 @@ gsm44021_frame_csd_test_LDADD = $(top_builddir)/src/isdn/libosmoisdn.la \
 
 osmo_io_osmo_io_test_SOURCES = osmo_io/osmo_io_test.c
 
+soft_uart_soft_uart_test_SOURCES = soft_uart/soft_uart_test.c
+
 
 # The `:;' works around a Bash 3.2 bug when the output is not writeable.
 $(srcdir)/package.m4: $(top_srcdir)/configure.ac
@@ -479,6 +482,7 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
 	     v110/ra1_test.ok \
 	     gsm44021/frame_csd_test.ok \
 	     osmo_io/osmo_io_test.ok osmo_io/osmo_io_test.err \
+	     soft_uart/soft_uart_test.ok \
 	     $(NULL)
 
 if ENABLE_LIBSCTP
@@ -693,6 +697,8 @@ endif
 	osmo_io/osmo_io_test \
 		>$(srcdir)/osmo_io/osmo_io_test.ok \
 		2>$(srcdir)/osmo_io/osmo_io_test.err
+	soft_uart/soft_uart_test \
+		>$(srcdir)/soft_uart/soft_uart.ok
 
 
 check-local: atconfig $(TESTSUITE)

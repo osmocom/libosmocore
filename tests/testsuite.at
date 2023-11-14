@@ -513,3 +513,9 @@ cat $abs_srcdir/osmo_io/osmo_io_test.ok > expout
 cat $abs_srcdir/osmo_io/osmo_io_test.err > experr
 AT_CHECK([$abs_top_builddir/tests/osmo_io/osmo_io_test], [0], [expout], [experr])
 AT_CLEANUP
+
+AT_SETUP([soft_uart])
+AT_KEYWORDS([soft_uart])
+cat $abs_srcdir/soft_uart/soft_uart_test.ok > expout
+AT_CHECK([$abs_top_builddir/tests/soft_uart/soft_uart_test], [0], [expout], [ignore])
+AT_CLEANUP
