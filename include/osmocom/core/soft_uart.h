@@ -68,6 +68,11 @@ struct osmo_soft_uart_cfg {
 	 * 'flags' is a bit-mask of osmo_soft_uart_flags,  */
 	void (*rx_cb)(void *priv, struct msgb *rx_data, unsigned int flags);
 
+	/*! transmit call-back. The implementation is expected to provide at most
+	 * tx_data->data_len characters (the actual amount is detetmined by the
+	 * number of requested bits and the effective UART configuration). */
+	void (*tx_cb)(void *priv, struct msgb *tx_data);
+
 	/*! modem status line change call-back. gets bitmask of osmo_soft_uart_status */
 	void (*status_change_cb)(void *priv, unsigned int status);
 };
@@ -86,5 +91,4 @@ int osmo_soft_uart_set_tx(struct osmo_soft_uart *suart, bool enable);
 int osmo_soft_uart_rx_ubits(struct osmo_soft_uart *suart, const ubit_t *ubits, size_t n_ubits);
 int osmo_soft_uart_tx_ubits(struct osmo_soft_uart *suart, ubit_t *ubits, size_t n_ubits);
 
-void osmo_soft_uart_tx(struct osmo_soft_uart *suart, struct msgb *tx_data);
 int osmo_soft_uart_set_status(struct osmo_soft_uart *suart, unsigned int status);

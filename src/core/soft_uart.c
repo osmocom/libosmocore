@@ -2,6 +2,7 @@
  *  Software UART implementation. */
 /*
  * (C) 2022 by Harald Welte <laforge@gnumonks.org>
+ * (C) 2023 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
  *
  * All Rights Reserved
  *
@@ -53,8 +54,8 @@ struct osmo_soft_uart {
 		bool running;
 		uint8_t bit_count;
 		uint8_t shift_reg;
-		struct msgb *msg;
-		struct llist_head queue;
+		ubit_t parity_bit; /* 0 (even) / 1 (odd) */
+		enum suart_flow_state flow_state;
 	} tx;
 };
 
@@ -79,7 +80,7 @@ static void suart_flush_rx(struct osmo_soft_uart *suart)
 		if (suart->cfg.rx_cb) {
 			suart->cfg.rx_cb(suart->cfg.priv, suart->rx.msg, suart->rx.flags);
 			/* call-back has taken ownership of msgb, no need to free() here */
-			suart->rx.msg = msgb_alloc_c(suart, suart->cfg.rx_buf_size, "soft_uart rx");
+			suart->rx.msg = msgb_alloc_c(suart, suart->cfg.rx_buf_size, "soft_uart_rx");
 		} else {
 			msgb_reset(suart->rx.msg);
 		}
@@ -191,29 +192,64 @@ int osmo_soft_uart_rx_ubits(struct osmo_soft_uart *suart, const ubit_t *ubits, s
  * Transmitter
  *************************************************************************/
 
-/*! Enqueue the given message buffer into the transmit queue of the soft-UART.
- * \param[in] suart soft-UART instance for transmitting data.
- * \param[in] tx_data message buffer containing to be transmitted data. */
-void osmo_soft_uart_tx(struct osmo_soft_uart *suart, struct msgb *tx_data)
-{
-	if (!suart->tx.msg)
-		suart->tx.msg = tx_data;
-	else
-		msgb_enqueue(&suart->tx.queue, tx_data);
-}
-
 /* pull a single bit out of the UART transmitter */
-static inline ubit_t osmo_uart_tx_bit(struct osmo_soft_uart *suart)
+static inline ubit_t osmo_uart_tx_bit(struct osmo_soft_uart *suart, struct msgb *msg)
 {
-	if (!suart->tx.running)
-		return 1;
+	ubit_t tx_bit = 1;
 
-	if (suart->tx.bit_count == 0) {
-		/* do we have anything to transmit? */
-		/* FIXME */
+	if (!suart->tx.running)
+		return tx_bit;
+
+	switch (suart->tx.flow_state) {
+	case SUART_FLOW_ST_IDLE:
+		if (msgb_length(msg) > 0) { /* if we have pending data */
+			suart->tx.shift_reg = msgb_pull_u8(msg);
+			suart->tx.flow_state = SUART_FLOW_ST_DATA;
+			suart->tx.bit_count = 0;
+			suart->tx.parity_bit = 0;
+			tx_bit = 0;
+		}
+		break;
+	case SUART_FLOW_ST_DATA:
+		tx_bit = suart->tx.shift_reg & 1;
+		suart->tx.parity_bit ^= tx_bit;
+		suart->tx.shift_reg >>= 1;
+		suart->tx.bit_count++;
+		if (suart->tx.bit_count >= suart->cfg.num_data_bits) {
+			/* we have transmitted all data bits */
+			if (suart->cfg.parity_mode != OSMO_SUART_PARITY_NONE)
+				suart->tx.flow_state = SUART_FLOW_ST_PARITY;
+			else
+				suart->tx.flow_state = SUART_FLOW_ST_STOP;
+		}
+		break;
+	case SUART_FLOW_ST_PARITY:
+		switch (suart->cfg.parity_mode) {
+		case OSMO_SUART_PARITY_EVEN:
+			/* number of 1-bits (in both data and parity) shall be even */
+			tx_bit = suart->tx.parity_bit;
+			break;
+		case OSMO_SUART_PARITY_ODD:
+			/* number of 1-bits (in both data and parity) shall be odd */
+			tx_bit = !suart->tx.parity_bit;
+			break;
+		case OSMO_SUART_PARITY_NONE:
+		default: /* shall not happen */
+			OSMO_ASSERT(0);
+		}
+
+		suart->tx.flow_state = SUART_FLOW_ST_STOP;
+		break;
+	case SUART_FLOW_ST_STOP:
+		suart->tx.bit_count++;
+		if (suart->tx.bit_count >= (suart->cfg.num_data_bits + suart->cfg.num_stop_bits)) {
+			/* we have transmitted all stop bits, we're done */
+			suart->tx.flow_state = SUART_FLOW_ST_IDLE;
+		}
+		break;
 	}
-	/* FIXME */
-	return 1;
+
+	return tx_bit;
 }
 
 /*! Pull a number of unpacked bits out of the soft-UART transmitter.
@@ -223,9 +259,28 @@ static inline ubit_t osmo_uart_tx_bit(struct osmo_soft_uart *suart)
  * \returns number of unpacked bits pulled; negative on error. */
 int osmo_soft_uart_tx_ubits(struct osmo_soft_uart *suart, ubit_t *ubits, size_t n_ubits)
 {
+	const struct osmo_soft_uart_cfg *cfg = &suart->cfg;
+	size_t n_frame_bits;
+	struct msgb *msg;
+
+	/* calculate UART frame size for the effective config */
+	n_frame_bits = 1 + cfg->num_data_bits + cfg->num_stop_bits;
+	if (cfg->parity_mode != OSMO_SUART_PARITY_NONE)
+		n_frame_bits += 1;
+
+	/* allocate a Tx buffer msgb */
+	msg = msgb_alloc_c(suart, n_ubits / n_frame_bits, "soft_uart_tx");
+	OSMO_ASSERT(msg != NULL);
+
+	/* call the .tx_cb() to populate the Tx buffer */
+	OSMO_ASSERT(cfg->tx_cb != NULL);
+	suart->cfg.tx_cb(cfg->priv, msg);
+
 	for (size_t i = 0; i < n_ubits; i++)
-		ubits[i] = osmo_uart_tx_bit(suart);
-	return n_ubits;
+		ubits[i] = osmo_uart_tx_bit(suart, msg);
+	msgb_free(msg);
+
+	return 0;
 }
 
 /*! Set the modem status lines of the given soft-UART.
@@ -300,7 +355,6 @@ int osmo_soft_uart_configure(struct osmo_soft_uart *suart, const struct osmo_sof
 	suart->cfg = *cfg;
 
 	osmo_timer_setup(&suart->rx.timer, suart_rx_timer_cb, suart);
-	INIT_LLIST_HEAD(&suart->tx.queue);
 
 	return 0;
 }
@@ -332,10 +386,11 @@ int osmo_soft_uart_set_rx(struct osmo_soft_uart *suart, bool enable)
 int osmo_soft_uart_set_tx(struct osmo_soft_uart *suart, bool enable)
 {
 	if (!enable && suart->tx.running) {
-		/* FIXME: Tx */
 		suart->tx.running = false;
+		suart->tx.flow_state = SUART_FLOW_ST_IDLE;
 	} else if (enable && !suart->tx.running) {
 		suart->tx.running = true;
+		suart->tx.flow_state = SUART_FLOW_ST_IDLE;
 	}
 
 	return 0;
