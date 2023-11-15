@@ -50,6 +50,7 @@ typedef int (*lapdm_cb_t)(struct msgb *msg, struct lapdm_entity *le, void *ctx);
 
 #define LAPDM_ENT_F_EMPTY_FRAME		0x0001
 #define LAPDM_ENT_F_POLLING_ONLY	0x0002
+#define LAPDM_ENT_F_DROP_2ND_REJ	0x0004
 
 /*! a LAPDm Entity */
 struct lapdm_entity {

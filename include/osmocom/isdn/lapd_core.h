@@ -86,6 +86,7 @@ enum lapd_state {
 
 /*! lapd_flags */
 #define LAPD_F_RTS		0x0001
+#define LAPD_F_DROP_2ND_REJ	0x0002
 
 /*! LAPD T200 state in RTS mode */
 enum lapd_t200_rts {

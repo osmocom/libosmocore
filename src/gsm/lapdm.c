@@ -1637,6 +1637,8 @@ void lapdm_entity_set_flags(struct lapdm_entity *le, unsigned int flags)
 	/* Set flags at LAPD. */
 	if (le->flags & LAPDM_ENT_F_POLLING_ONLY)
 		dl_flags |= LAPD_F_RTS;
+	if (le->flags & LAPDM_ENT_F_DROP_2ND_REJ)
+		dl_flags |= LAPD_F_DROP_2ND_REJ;
 
 	for (i = 0; i < ARRAY_SIZE(le->datalink); i++) {
 		dl = &le->datalink[i];

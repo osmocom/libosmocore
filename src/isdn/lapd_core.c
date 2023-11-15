@@ -1633,9 +1633,8 @@ static int lapd_rx_i(struct msgb *msg, struct lapd_msg_ctx *lctx)
 		      ns, dl->v_recv, lapd_state_name(dl->state));
 		/* discard data */
 		msgb_free(msg);
-		if (dl->seq_err_cond != 1) {
-			/* FIXME: help me understand what exactly todo here
-			*/
+		/* Send reject, but suppress second reject if LAPD_F_DROP_2ND_REJ flag is set. */
+		if (dl->seq_err_cond != 1 || !(dl->lapd_flags & LAPD_F_DROP_2ND_REJ)) {
 			dl->seq_err_cond = 1;
 			lapd_send_rej(lctx, lctx->p_f);
 		} else {
