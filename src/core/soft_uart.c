@@ -26,7 +26,7 @@
 #include <osmocom/core/timer.h>
 #include <osmocom/core/soft_uart.h>
 
-/*! one instance of a soft-uart */
+/*! Internal state of a soft-UART */
 struct osmo_soft_uart {
 	struct osmo_soft_uart_cfg cfg;
 	const char *name;
@@ -49,6 +49,7 @@ struct osmo_soft_uart {
 	} tx;
 };
 
+/*! Default soft-UART configuration (8-N-1) */
 static struct osmo_soft_uart_cfg suart_default_cfg = {
 	.num_data_bits = 8,
 	.num_stop_bits = 1,
@@ -154,7 +155,11 @@ static void suart_rx_timer_cb(void *data)
 	suart_flush_rx(suart);
 }
 
-/*! feed a number of unpacked bits into the soft-uart receiver */
+/*! Feed a number of unpacked bits into the soft-UART receiver.
+ * \param[in] suart soft-UART instance to feed bits into.
+ * \param[in] ubits pointer to the unpacked bits.
+ * \param[in] n_ubits number of unpacked bits to be fed.
+ * \returns 0 on success; negative on error. */
 int osmo_soft_uart_rx_ubits(struct osmo_soft_uart *suart, const ubit_t *ubits, size_t n_ubits)
 {
 	for (size_t i = 0; i < n_ubits; i++)
@@ -166,7 +171,9 @@ int osmo_soft_uart_rx_ubits(struct osmo_soft_uart *suart, const ubit_t *ubits, s
  * Transmitter
  *************************************************************************/
 
-/*! enqueue the given message buffer into the transmit queue of the UART. */
+/*! Enqueue the given message buffer into the transmit queue of the soft-UART.
+ * \param[in] suart soft-UART instance for transmitting data.
+ * \param[in] tx_data message buffer containing to be transmitted data. */
 void osmo_soft_uart_tx(struct osmo_soft_uart *suart, struct msgb *tx_data)
 {
 	if (!suart->tx.msg)
@@ -189,7 +196,11 @@ static inline ubit_t osmo_uart_tx_bit(struct osmo_soft_uart *suart)
 	return 1;
 }
 
-/*! pull then number of specified unpacked bits out of the UART Transmitter */
+/*! Pull a number of unpacked bits out of the soft-UART transmitter.
+ * \param[in] suart soft-UART instance to pull the bits from.
+ * \param[out] ubits pointer to a buffer where to store pulled bits.
+ * \param[in] n_ubits number of unpacked bits to be pulled.
+ * \returns number of unpacked bits pulled; negative on error. */
 int osmo_soft_uart_tx_ubits(struct osmo_soft_uart *suart, ubit_t *ubits, size_t n_ubits)
 {
 	for (size_t i = 0; i < n_ubits; i++)
@@ -197,7 +208,10 @@ int osmo_soft_uart_tx_ubits(struct osmo_soft_uart *suart, ubit_t *ubits, size_t 
 	return n_ubits;
 }
 
-/*! Set the modem status lines of the UART */
+/*! Set the modem status lines of the given soft-UART.
+ * \param[in] suart soft-UART instance to update the modem status.
+ * \param[in] status mask of osmo_soft_uart_status.
+ * \returns 0 on success; negative on error. */
 int osmo_soft_uart_set_status(struct osmo_soft_uart *suart, unsigned int status)
 {
 	/* FIXME: Tx */
@@ -209,6 +223,10 @@ int osmo_soft_uart_set_status(struct osmo_soft_uart *suart, unsigned int status)
  * Management / Initialization
  *************************************************************************/
 
+/*! Allocate a soft-UART instance.
+ * \param[in] ctx parent talloc context.
+ * \param[in] name name of the soft-UART instance.
+ * \returns pointer to allocated soft-UART instance; NULL on error. */
 struct osmo_soft_uart *osmo_soft_uart_alloc(void *ctx, const char *name)
 {
 	struct osmo_soft_uart *suart = talloc_zero(ctx, struct osmo_soft_uart);
@@ -234,7 +252,10 @@ void osmo_soft_uart_free(struct osmo_soft_uart *suart)
 	talloc_free(suart);
 }
 
-/*! change soft-UART configuration to user-provided config */
+/*! Change soft-UART configuration to the user-provided config.
+ * \param[in] suart soft-UART instance to be re-configured.
+ * \param[in] cfg the user-provided config to be applied.
+ * \returns 0 on success; negative on error. */
 int osmo_soft_uart_configure(struct osmo_soft_uart *suart, const struct osmo_soft_uart_cfg *cfg)
 {
 	/* consistency checks on the configuration */
@@ -260,6 +281,11 @@ int osmo_soft_uart_configure(struct osmo_soft_uart *suart, const struct osmo_sof
 	return 0;
 }
 
+/*! Enable/disable receiver and/or transmitter of the given soft-UART.
+ * \param[in] suart soft-UART instance to be re-configured.
+ * \param[in] rx enable/disable state of the receiver.
+ * \param[in] tx enable/disable state of the transmitter.
+ * \returns 0 on success; negative on error. */
 int osmo_soft_uart_enable(struct osmo_soft_uart *suart, bool rx, bool tx)
 {
 	if (!rx && suart->rx.running) {
