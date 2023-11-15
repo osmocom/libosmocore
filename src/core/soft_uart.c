@@ -43,7 +43,7 @@ struct osmo_soft_uart {
 		uint8_t bit_count;
 		uint8_t shift_reg;
 		struct msgb *msg;
-		ubit_t parity_bit;
+		ubit_t parity_bit; /* 0 (even) / 1 (odd) */
 		unsigned int flags;
 		unsigned int status;
 		struct osmo_timer_list timer;
@@ -117,13 +117,16 @@ static inline void osmo_uart_rx_bit(struct osmo_soft_uart *suart, const ubit_t b
 			suart->rx.flags = 0x00;
 			suart->rx.shift_reg = 0;
 			suart->rx.bit_count = 0;
+			suart->rx.parity_bit = 0;
 		}
 		break;
 	case SUART_FLOW_ST_DATA:
 		suart->rx.bit_count++;
 		suart->rx.shift_reg >>= 1;
-		if (bit != 0)
+		if (bit != 0) {
+			suart->rx.parity_bit = !suart->rx.parity_bit; /* flip */
 			suart->rx.shift_reg |= 0x80;
+		}
 		if (suart->rx.bit_count >= suart->cfg.num_data_bits) {
 			/* we have accumulated enough data bits */
 			if (suart->cfg.parity_mode != OSMO_SUART_PARITY_NONE)
@@ -133,7 +136,22 @@ static inline void osmo_uart_rx_bit(struct osmo_soft_uart *suart, const ubit_t b
 		}
 		break;
 	case SUART_FLOW_ST_PARITY:
-		/* TODO: actually verify parity */
+		switch (suart->cfg.parity_mode) {
+		case OSMO_SUART_PARITY_EVEN:
+			/* number of 1-bits (in both data and parity) shall be even */
+			if (suart->rx.parity_bit != bit)
+				suart->rx.flags |= OSMO_SUART_F_PARITY_ERROR;
+			break;
+		case OSMO_SUART_PARITY_ODD:
+			/* number of 1-bits (in both data and parity) shall be odd */
+			if (suart->rx.parity_bit == bit)
+				suart->rx.flags |= OSMO_SUART_F_PARITY_ERROR;
+			break;
+		case OSMO_SUART_PARITY_NONE: /* shall not happen */
+		default:
+			OSMO_ASSERT(0);
+		}
+
 		suart->rx.flow_state = SUART_FLOW_ST_STOP;
 		break;
 	case SUART_FLOW_ST_STOP:
