@@ -26,6 +26,14 @@
 #include <osmocom/core/timer.h>
 #include <osmocom/core/soft_uart.h>
 
+/*! Rx/Tx flow state of a soft-UART */
+enum suart_flow_state {
+	SUART_FLOW_ST_IDLE,	/*!< waiting for a start bit or Tx data */
+	SUART_FLOW_ST_DATA,	/*!< receiving/transmitting data bits */
+	SUART_FLOW_ST_PARITY,	/*!< receiving/transmitting parity bits */
+	SUART_FLOW_ST_STOP,	/*!< receiving/transmitting stop bits */
+};
+
 /*! Internal state of a soft-UART */
 struct osmo_soft_uart {
 	struct osmo_soft_uart_cfg cfg;
@@ -39,6 +47,7 @@ struct osmo_soft_uart {
 		unsigned int flags;
 		unsigned int status;
 		struct osmo_timer_list timer;
+		enum suart_flow_state flow_state;
 	} rx;
 	struct {
 		bool running;
@@ -98,50 +107,46 @@ static void suart_rx_ch(struct osmo_soft_uart *suart, uint8_t ch)
 /* receive a single bit */
 static inline void osmo_uart_rx_bit(struct osmo_soft_uart *suart, const ubit_t bit)
 {
-	unsigned int num_parity_bits = 0;
-
 	if (!suart->rx.running)
 		return;
 
-	if (suart->rx.bit_count == 0) {
-		/* start bit is 0.  Wait if there is none */
-		if (bit == 0) {
-			/* START bit */
-			suart->rx.flags = 0;
+	switch (suart->rx.flow_state) {
+	case SUART_FLOW_ST_IDLE:
+		if (bit == 0) { /* start bit condition */
+			suart->rx.flow_state = SUART_FLOW_ST_DATA;
+			suart->rx.flags = 0x00;
 			suart->rx.shift_reg = 0;
-			suart->rx.bit_count++;
-		}
-		return;
-	}
-
-	if (suart->cfg.parity_mode != OSMO_SUART_PARITY_NONE)
-		num_parity_bits = 1;
-
-	suart->rx.bit_count++;
-	if (suart->rx.bit_count <= 1 + suart->cfg.num_data_bits) {
-		/* DATA bit */
-		suart->rx.shift_reg = suart->rx.shift_reg >> 1;
-		if (bit)
-			suart->rx.shift_reg |= 0x80;
-	} else if (suart->cfg.parity_mode != OSMO_SUART_PARITY_NONE &&
-		   suart->rx.bit_count == 1 + suart->cfg.num_data_bits + 1) {
-		/* PARITY bit */
-		suart->rx.parity_bit = bit;
-		/* TODO: verify parity */
-		//suart->rx.flags |= OSMO_SUART_F_PARITY_ERROR;
-	} else if (suart->rx.bit_count <=
-		   1 + suart->cfg.num_data_bits + num_parity_bits + suart->cfg.num_stop_bits) {
-		/* STOP bit */
-		if (bit != 1) {
-			fprintf(stderr, "framing error: stop bit %u != 1\n", suart->rx.bit_count);
-			suart->rx.flags |= OSMO_SUART_F_FRAMING_ERROR;
-		}
-
-		if (suart->rx.bit_count == 1 + suart->cfg.num_data_bits + num_parity_bits + suart->cfg.num_stop_bits) {
-			//printf("Rx: 0x%02x %c\n", suart->rx.shift_reg, suart->rx.shift_reg);
-			suart_rx_ch(suart, suart->rx.shift_reg);
 			suart->rx.bit_count = 0;
 		}
+		break;
+	case SUART_FLOW_ST_DATA:
+		suart->rx.bit_count++;
+		suart->rx.shift_reg >>= 1;
+		if (bit != 0)
+			suart->rx.shift_reg |= 0x80;
+		if (suart->rx.bit_count >= suart->cfg.num_data_bits) {
+			/* we have accumulated enough data bits */
+			if (suart->cfg.parity_mode != OSMO_SUART_PARITY_NONE)
+				suart->rx.flow_state = SUART_FLOW_ST_PARITY;
+			else
+				suart->rx.flow_state = SUART_FLOW_ST_STOP;
+		}
+		break;
+	case SUART_FLOW_ST_PARITY:
+		/* TODO: actually verify parity */
+		suart->rx.flow_state = SUART_FLOW_ST_STOP;
+		break;
+	case SUART_FLOW_ST_STOP:
+		suart->rx.bit_count++;
+		if (bit != 1)
+			suart->rx.flags |= OSMO_SUART_F_FRAMING_ERROR;
+
+		if (suart->rx.bit_count >= (suart->cfg.num_data_bits + suart->cfg.num_stop_bits)) {
+			/* we have accumulated enough stop bits */
+			suart_rx_ch(suart, suart->rx.shift_reg);
+			suart->rx.flow_state = SUART_FLOW_ST_IDLE;
+		}
+		break;
 	}
 }
 
@@ -291,10 +296,12 @@ int osmo_soft_uart_set_rx(struct osmo_soft_uart *suart, bool enable)
 	if (!enable && suart->rx.running) {
 		suart_flush_rx(suart);
 		suart->rx.running = false;
+		suart->rx.flow_state = SUART_FLOW_ST_IDLE;
 	} else if (enable && !suart->rx.running) {
 		if (!suart->rx.msg)
 			suart->rx.msg = msgb_alloc_c(suart, suart->cfg.rx_buf_size, "soft_uart rx");
 		suart->rx.running = true;
+		suart->rx.flow_state = SUART_FLOW_ST_IDLE;
 	}
 
 	return 0;
