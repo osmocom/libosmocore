@@ -281,26 +281,34 @@ int osmo_soft_uart_configure(struct osmo_soft_uart *suart, const struct osmo_sof
 	return 0;
 }
 
-/*! Enable/disable receiver and/or transmitter of the given soft-UART.
+/*! Enable/disable receiver of the given soft-UART.
  * \param[in] suart soft-UART instance to be re-configured.
- * \param[in] rx enable/disable state of the receiver.
- * \param[in] tx enable/disable state of the transmitter.
+ * \param[in] enable enable/disable state of the receiver.
  * \returns 0 on success; negative on error. */
-int osmo_soft_uart_enable(struct osmo_soft_uart *suart, bool rx, bool tx)
+int osmo_soft_uart_set_rx(struct osmo_soft_uart *suart, bool enable)
 {
-	if (!rx && suart->rx.running) {
+	if (!enable && suart->rx.running) {
 		suart_flush_rx(suart);
 		suart->rx.running = false;
-	} else if (rx && !suart->rx.running) {
+	} else if (enable && !suart->rx.running) {
 		if (!suart->rx.msg)
 			suart->rx.msg = msgb_alloc_c(suart, suart->cfg.rx_buf_size, "soft_uart rx");
 		suart->rx.running = true;
 	}
 
-	if (!tx && suart->tx.running) {
+	return 0;
+}
+
+/*! Enable/disable transmitter of the given soft-UART.
+ * \param[in] suart soft-UART instance to be re-configured.
+ * \param[in] enable enable/disable state of the transmitter.
+ * \returns 0 on success; negative on error. */
+int osmo_soft_uart_set_tx(struct osmo_soft_uart *suart, bool enable)
+{
+	if (!enable && suart->tx.running) {
 		/* FIXME: Tx */
 		suart->tx.running = false;
-	} else if (tx && !suart->tx.running) {
+	} else if (enable && !suart->tx.running) {
 		suart->tx.running = true;
 	}
 
