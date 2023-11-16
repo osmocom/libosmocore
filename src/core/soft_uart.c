@@ -50,15 +50,12 @@ struct osmo_soft_uart {
 };
 
 /*! Default soft-UART configuration (8-N-1) */
-static struct osmo_soft_uart_cfg suart_default_cfg = {
+const struct osmo_soft_uart_cfg osmo_soft_uart_default_cfg = {
 	.num_data_bits = 8,
 	.num_stop_bits = 1,
 	.parity_mode = OSMO_SUART_PARITY_NONE,
 	.rx_buf_size = 1024,
 	.rx_timeout_ms = 100,
-	.priv = NULL,
-	.rx_cb = NULL,
-	.status_change_cb = NULL,
 };
 
 /*************************************************************************
@@ -226,14 +223,18 @@ int osmo_soft_uart_set_status(struct osmo_soft_uart *suart, unsigned int status)
 /*! Allocate a soft-UART instance.
  * \param[in] ctx parent talloc context.
  * \param[in] name name of the soft-UART instance.
+ * \param[in] cfg initial configuration of the soft-UART instance.
  * \returns pointer to allocated soft-UART instance; NULL on error. */
-struct osmo_soft_uart *osmo_soft_uart_alloc(void *ctx, const char *name)
+struct osmo_soft_uart *osmo_soft_uart_alloc(void *ctx, const char *name,
+					    const struct osmo_soft_uart_cfg *cfg)
 {
 	struct osmo_soft_uart *suart = talloc_zero(ctx, struct osmo_soft_uart);
 	if (!suart)
 		return NULL;
 	suart->name = talloc_strdup(suart, name);
-	suart->cfg = suart_default_cfg;
+
+	OSMO_ASSERT(cfg != NULL);
+	suart->cfg = *cfg;
 
 	return suart;
 }

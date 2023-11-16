@@ -72,9 +72,12 @@ struct osmo_soft_uart_cfg {
 	void (*status_change_cb)(void *priv, unsigned int status);
 };
 
+extern const struct osmo_soft_uart_cfg osmo_soft_uart_default_cfg;
+
 struct osmo_soft_uart;
 
-struct osmo_soft_uart *osmo_soft_uart_alloc(void *ctx, const char *name);
+struct osmo_soft_uart *osmo_soft_uart_alloc(void *ctx, const char *name,
+					    const struct osmo_soft_uart_cfg *cfg);
 void osmo_soft_uart_free(struct osmo_soft_uart *suart);
 int osmo_soft_uart_configure(struct osmo_soft_uart *suart, const struct osmo_soft_uart_cfg *cfg);
 int osmo_soft_uart_set_rx(struct osmo_soft_uart *suart, bool enable);
