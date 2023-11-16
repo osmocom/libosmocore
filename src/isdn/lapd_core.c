@@ -796,8 +796,9 @@ static void lapd_t203_cb(void *data)
 	lapd_start_t200(dl);
 }
 
-/* 5.5.3.1: Common function to acknowlege frames up to the given N(R) value */
-static void lapd_acknowledge(struct lapd_msg_ctx *lctx)
+/* 5.5.3.1: Common function to acknowlege frames up to the given N(R) value
+ * In case of a sequence error, the cause is returned with negative sign. */
+static int lapd_acknowledge(struct lapd_msg_ctx *lctx)
 {
 	struct lapd_datalink *dl = lctx->dl;
 	uint8_t nr = lctx->n_recv;
@@ -838,7 +839,7 @@ static void lapd_acknowledge(struct lapd_msg_ctx *lctx)
 		 */
 		if (sub_mod(nr, dl->v_ack, dl->v_range) > sub_mod(dl->v_send, dl->v_ack, dl->v_range)) {
 			LOGDL(dl, LOGL_NOTICE, "N(R) sequence error\n");
-			mdl_error(MDL_CAUSE_SEQ_ERR, lctx);
+			return -MDL_CAUSE_SEQ_ERR;
 		}
 	}
 
@@ -861,6 +862,8 @@ static void lapd_acknowledge(struct lapd_msg_ctx *lctx)
 	/* Start T203, if T200 is not running in MF EST state, if enabled */
 	if (!lapd_is_t200_started(dl) && (dl->t203_sec || dl->t203_usec) && (dl->state == LAPD_STATE_MF_EST))
 		lapd_start_t203(dl);
+
+	return 0;
 }
 
 /* L1 -> L2 */
@@ -1576,6 +1579,7 @@ static int lapd_rx_i(struct msgb *msg, struct lapd_msg_ctx *lctx)
 	int length = lctx->length;
 	int rc;
 	bool i_frame_in_queue = false;
+	int mdl_cause = 0;
 
 	LOGDL(dl, LOGL_INFO, "I received in state %s on SAPI(%u)\n",
 	      lapd_state_name(dl->state), lctx->sapi);
@@ -1652,7 +1656,9 @@ static int lapd_rx_i(struct msgb *msg, struct lapd_msg_ctx *lctx)
 		}
 		/* Even if N(s) sequence error, acknowledge to N(R)-1 */
 		/* 5.5.3.1: Acknowlege all transmitted frames up the N(R)-1 */
-		lapd_acknowledge(lctx); /* V(A) is also set here */
+		mdl_cause = lapd_acknowledge(lctx); /* V(A) is also set here */
+		if (mdl_cause < 0)
+			mdl_error(-mdl_cause, lctx);
 
 		/* Send message, if possible due to acknowledged data */
 		lapd_send_i(dl, __LINE__, false);
@@ -1673,7 +1679,7 @@ static int lapd_rx_i(struct msgb *msg, struct lapd_msg_ctx *lctx)
 	}
 
 	/* 5.5.3.1: Acknowlege all transmitted frames up the the N(R)-1 */
-	lapd_acknowledge(lctx); /* V(A) is also set here */
+	mdl_cause = lapd_acknowledge(lctx); /* V(A) is also set here */
 
 	/* Only if we are not in own receiver busy condition */
 	if (!dl->own_busy) {
@@ -1717,6 +1723,10 @@ static int lapd_rx_i(struct msgb *msg, struct lapd_msg_ctx *lctx)
 			return 0;
 	} else
 		LOGDL(dl, LOGL_INFO, "I frame ignored during own receiver busy condition\n");
+
+	/* Indicate sequence error, if exists. */
+	if (mdl_cause < 0)
+		mdl_error(-mdl_cause, lctx);
 
 	/* Check for P bit */
 	if (lctx->p_f) {
