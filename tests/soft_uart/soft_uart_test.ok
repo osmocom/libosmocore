@@ -18,7 +18,8 @@ suart_rx_cb(flags=00): 4c
 test_rx_exec() @ 96: flush the Rx buffer
 suart_rx_cb(flags=00): 4f 
 ======== test_rx(): testing 8-N-1 (framing errors)
-suart_rx_cb(flags=01): 00 aa 
+suart_rx_cb(flags=01): 00 
+suart_rx_cb(flags=01): aa 
 test_rx_exec() @ 41: flush the Rx buffer
 suart_rx_cb(flags=00): ff 
 ======== test_rx(): testing 8-N-2 (HELLO)
@@ -38,22 +39,28 @@ test_rx_exec() @ 110: flush the Rx buffer
 test_rx_exec() @ 112: flush the Rx buffer
 suart_rx_cb(flags=00): 4f 
 ======== test_rx(): testing 8-N-2 (framing errors)
-suart_rx_cb(flags=01): 00 aa 
+suart_rx_cb(flags=01): 00 
+suart_rx_cb(flags=01): aa 
+suart_rx_cb(flags=01): 55 
 test_rx_exec() @ 57: flush the Rx buffer
-suart_rx_cb(flags=00): 55 ff 
+suart_rx_cb(flags=00): ff 
 ======== test_rx(): testing 8-E-1 (invalid parity)
-suart_rx_cb(flags=02): 00 01 
-test_rx_exec() @ 49: flush the Rx buffer
+suart_rx_cb(flags=02): 00 
+suart_rx_cb(flags=02): 01 
 suart_rx_cb(flags=02): ff 
+test_rx_exec() @ 49: flush the Rx buffer
+suart_rx_cb(flags=02): 
 ======== test_rx(): testing 8-E-1 (valid parity)
 test_rx_exec() @ 63: flush the Rx buffer
 suart_rx_cb(flags=00): 00 ff aa 55 
 test_rx_exec() @ 120: flush the Rx buffer
 suart_rx_cb(flags=00): 80 e0 f8 fe 
 ======== test_rx(): testing 8-O-1 (invalid parity)
-suart_rx_cb(flags=02): 00 01 
-test_rx_exec() @ 42: flush the Rx buffer
+suart_rx_cb(flags=02): 00 
+suart_rx_cb(flags=02): 01 
 suart_rx_cb(flags=02): ff 
+test_rx_exec() @ 42: flush the Rx buffer
+suart_rx_cb(flags=02): 
 ======== test_rx(): testing 8-O-1 (valid parity)
 test_rx_exec() @ 63: flush the Rx buffer
 suart_rx_cb(flags=00): 00 ff aa 55 

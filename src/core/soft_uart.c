@@ -97,12 +97,13 @@ static void suart_rx_ch(struct osmo_soft_uart *suart, uint8_t ch)
 	msgb_put_u8(suart->rx.msg, ch);
 	msg_len = msgb_length(suart->rx.msg);
 
-	/* first character in new message: start timer */
-	if (msg_len == 1) {
+	if (msg_len >= suart->cfg.rx_buf_size || suart->rx.flags) {
+		/* either the buffer is full, or we hit a parity and/or a framing error */
+		osmo_soft_uart_flush_rx(suart);
+	} else if (msg_len == 1) {
+		/* first character in new message: start timer */
 		osmo_timer_schedule(&suart->rx.timer, suart->cfg.rx_timeout_ms / 1000,
 				    (suart->cfg.rx_timeout_ms % 1000) * 1000);
-	} else if (msg_len >= suart->cfg.rx_buf_size || suart->rx.flags) {
-		osmo_soft_uart_flush_rx(suart);
 	}
 }
 
