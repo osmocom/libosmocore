@@ -448,6 +448,7 @@ osmo_soft_uart_set_tx;
 osmo_soft_uart_rx_ubits;
 osmo_soft_uart_tx_ubits;
 osmo_soft_uart_set_status;
+osmo_soft_uart_flush_rx;
 osmo_stat_item_dec;
 osmo_stat_item_flush;
 osmo_stat_item_for_each_group;

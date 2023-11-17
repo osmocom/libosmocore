@@ -72,8 +72,9 @@ const struct osmo_soft_uart_cfg osmo_soft_uart_default_cfg = {
  * Receiver
  *************************************************************************/
 
-/* flush the receive buffer + allocate new one, as needed */
-static void suart_flush_rx(struct osmo_soft_uart *suart)
+/*! Flush the receive buffer, passing ownership of the msgb to the .rx_cb().
+ * \param[in] suart soft-UART instance holding the receive buffer. */
+void osmo_soft_uart_flush_rx(struct osmo_soft_uart *suart)
 {
 	if ((suart->rx.msg && msgb_length(suart->rx.msg)) || suart->rx.flags) {
 		osmo_timer_del(&suart->rx.timer);
@@ -101,7 +102,7 @@ static void suart_rx_ch(struct osmo_soft_uart *suart, uint8_t ch)
 		osmo_timer_schedule(&suart->rx.timer, suart->cfg.rx_timeout_ms / 1000,
 				    (suart->cfg.rx_timeout_ms % 1000) * 1000);
 	} else if (msg_len >= suart->cfg.rx_buf_size || suart->rx.flags) {
-		suart_flush_rx(suart);
+		osmo_soft_uart_flush_rx(suart);
 	}
 }
 
@@ -173,7 +174,7 @@ static inline void osmo_uart_rx_bit(struct osmo_soft_uart *suart, const ubit_t b
 static void suart_rx_timer_cb(void *data)
 {
 	struct osmo_soft_uart *suart = data;
-	suart_flush_rx(suart);
+	osmo_soft_uart_flush_rx(suart);
 }
 
 /*! Feed a number of unpacked bits into the soft-UART receiver.
@@ -349,7 +350,7 @@ int osmo_soft_uart_configure(struct osmo_soft_uart *suart, const struct osmo_sof
 
 	if (suart->cfg.rx_buf_size > cfg->rx_buf_size ||
 	    suart->cfg.rx_timeout_ms > cfg->rx_timeout_ms) {
-		suart_flush_rx(suart);
+		osmo_soft_uart_flush_rx(suart);
 	}
 
 	suart->cfg = *cfg;
@@ -366,7 +367,7 @@ int osmo_soft_uart_configure(struct osmo_soft_uart *suart, const struct osmo_sof
 int osmo_soft_uart_set_rx(struct osmo_soft_uart *suart, bool enable)
 {
 	if (!enable && suart->rx.running) {
-		suart_flush_rx(suart);
+		osmo_soft_uart_flush_rx(suart);
 		suart->rx.running = false;
 		suart->rx.flow_state = SUART_FLOW_ST_IDLE;
 	} else if (enable && !suart->rx.running) {

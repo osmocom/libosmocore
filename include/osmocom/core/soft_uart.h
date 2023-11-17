@@ -92,3 +92,4 @@ int osmo_soft_uart_rx_ubits(struct osmo_soft_uart *suart, const ubit_t *ubits, s
 int osmo_soft_uart_tx_ubits(struct osmo_soft_uart *suart, ubit_t *ubits, size_t n_ubits);
 
 int osmo_soft_uart_set_status(struct osmo_soft_uart *suart, unsigned int status);
+void osmo_soft_uart_flush_rx(struct osmo_soft_uart *suart);
