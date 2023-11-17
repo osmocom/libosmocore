@@ -491,16 +491,21 @@ struct gsmtap_inst *gsmtap_source_init2(const char *local_host, uint16_t local_p
 
 	if (ofd_wq_mode) {
 		gti->out = osmo_iofd_setup(gti, gti->wq.bfd.fd, "gsmtap_inst.io_fd", OSMO_IO_FD_MODE_READ_WRITE, &gsmtap_ops, NULL);
-		if (gti->out == NULL) {
-			talloc_free(gti);
-			close(fd);
-			return NULL;
-		}
+		if (gti->out == NULL)
+			goto err_cleanup;
+		if (osmo_iofd_register(gti->out, gti->wq.bfd.fd) < 0)
+			goto err_cleanup;
+
 		/* osmo write queue previously used was set up with value of 64 */
 		osmo_iofd_set_txqueue_max_length(gti->out, 64);
 	}
 
 	return gti;
+
+err_cleanup:
+	talloc_free(gti);
+	close(fd);
+	return NULL;
 }
 
 /*! Open GSMTAP source socket, connect and register osmo_fd
