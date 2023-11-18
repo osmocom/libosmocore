@@ -1,8 +1,8 @@
 /*! \file osmo_io.c
  * New osmocom async I/O API.
  *
- * (C) 2022 by Harald Welte <laforge@osmocom.org>
- * (C) 2022-2023 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
+ * (C) 2022-2024 by Harald Welte <laforge@osmocom.org>
+ * (C) 2022-2024 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
  * Author: Daniel Willmann <dwillmann@sysmocom.de>
  *
  * All Rights Reserved.
@@ -105,8 +105,10 @@ static __attribute__((constructor(103))) void on_dso_load_osmo_io(void)
  *  \param[in] iofd the osmo_io file structure
  *  \param[in] action the action this msg(hdr) is for (read, write, ..)
  *  \param[in] msg the msg buffer to use. Will allocate a new one if NULL
+ *  \param[in] cmsg_size size (in bytes) of iofd_msghdr.cmsg buffer. Can be 0 if cmsg is not used.
  *  \returns the newly allocated msghdr or NULL in case of error */
-struct iofd_msghdr *iofd_msghdr_alloc(struct osmo_io_fd *iofd, enum iofd_msg_action action, struct msgb *msg)
+struct iofd_msghdr *iofd_msghdr_alloc(struct osmo_io_fd *iofd, enum iofd_msg_action action, struct msgb *msg,
+				      size_t cmsg_size)
 {
 	bool free_msg = false;
 	struct iofd_msghdr *hdr;
@@ -120,7 +122,7 @@ struct iofd_msghdr *iofd_msghdr_alloc(struct osmo_io_fd *iofd, enum iofd_msg_act
 		talloc_steal(iofd, msg);
 	}
 
-	hdr = talloc_zero(iofd, struct iofd_msghdr);
+	hdr = talloc_zero_size(iofd, sizeof(struct iofd_msghdr) + cmsg_size);
 	if (!hdr) {
 		if (free_msg)
 			talloc_free(msg);
@@ -339,8 +341,10 @@ void iofd_handle_recv(struct osmo_io_fd *iofd, struct msgb *msg, int rc, struct 
 	case OSMO_IO_FD_MODE_RECVFROM_SENDTO:
 		iofd->io_ops.recvfrom_cb(iofd, rc, msg, &hdr->osa);
 		break;
-	case OSMO_IO_FD_MODE_SCTP_RECVMSG_SEND:
-		/* TODO Implement */
+	case OSMO_IO_FD_MODE_RECVMSG_SENDMSG:
+		iofd->io_ops.recvmsg_cb(iofd, rc, msg, &hdr->hdr);
+		break;
+	default:
 		OSMO_ASSERT(false);
 		break;
 	}
@@ -378,6 +382,9 @@ void iofd_handle_send_completion(struct osmo_io_fd *iofd, int rc, struct iofd_ms
 	case IOFD_ACT_SENDTO:
 		iofd->io_ops.sendto_cb(iofd, rc, msg, &msghdr->osa);
 		break;
+	case IOFD_ACT_SENDMSG:
+		iofd->io_ops.sendmsg_cb(iofd, rc, msg);
+		break;
 	default:
 		OSMO_ASSERT(0);
 	}
@@ -408,7 +415,7 @@ int osmo_iofd_write_msgb(struct osmo_io_fd *iofd, struct msgb *msg)
 		return -EINVAL;
 	}
 
-	struct iofd_msghdr *msghdr = iofd_msghdr_alloc(iofd, IOFD_ACT_WRITE, msg);
+	struct iofd_msghdr *msghdr = iofd_msghdr_alloc(iofd, IOFD_ACT_WRITE, msg, 0);
 	if (!msghdr)
 		return -ENOMEM;
 
@@ -450,7 +457,7 @@ int osmo_iofd_sendto_msgb(struct osmo_io_fd *iofd, struct msgb *msg, int sendto_
 		return -EINVAL;
 	}
 
-	struct iofd_msghdr *msghdr = iofd_msghdr_alloc(iofd, IOFD_ACT_SENDTO, msg);
+	struct iofd_msghdr *msghdr = iofd_msghdr_alloc(iofd, IOFD_ACT_SENDTO, msg, 0);
 	if (!msghdr)
 		return -ENOMEM;
 
@@ -475,14 +482,95 @@ int osmo_iofd_sendto_msgb(struct osmo_io_fd *iofd, struct msgb *msg, int sendto_
 	return 0;
 }
 
+/*! ismo_io equivalent of the sendmsg(2) socket API call
+ *
+ *  Appends the message to the internal transmit queue.
+ *  If the function returns success (0), it will take ownership of the msgb and
+ *  internally call msgb_free() after the write request completes.
+ *  In case of an error the msgb needs to be freed by the caller.
+ *  \param[in] iofd file descriptor to write to
+ *  \param[in] msg message buffer to send; is used to fill msgh->iov[]
+ *  \param[in] sendmsg_flags Flags to pass to the send call
+ *  \param[in] msgh 'struct msghdr' for name/control/flags. iov must be empty!
+ *  \returns 0 in case of success; a negative value in case of error
+ */
+int osmo_iofd_sendmsg_msgb(struct osmo_io_fd *iofd, struct msgb *msg, int sendmsg_flags, const struct msghdr *msgh)
+{
+	int rc;
+	struct iofd_msghdr *msghdr;
+
+	OSMO_ASSERT(iofd->mode == OSMO_IO_FD_MODE_RECVMSG_SENDMSG);
+	if (OSMO_UNLIKELY(!iofd->io_ops.sendmsg_cb)) {
+		LOGPIO(iofd, LOGL_ERROR, "sendmsg_cb not set, Rejecting msgb\n");
+		return -EINVAL;
+	}
+
+	if (OSMO_UNLIKELY(msgh->msg_namelen > sizeof(msghdr->osa))) {
+		LOGPIO(iofd, LOGL_ERROR, "osmo_iofd_sendmsg msg_namelen (%u) > supported %zu bytes\n",
+			msgh->msg_namelen, sizeof(msghdr->osa));
+		return -EINVAL;
+	}
+
+	if (OSMO_UNLIKELY(msgh->msg_iovlen)) {
+		LOGPIO(iofd, LOGL_ERROR, "osmo_iofd_sendmsg must have all in 'struct msgb', not in 'msg_iov'\n");
+		return -EINVAL;
+	}
+
+	msghdr = iofd_msghdr_alloc(iofd, IOFD_ACT_SENDMSG, msg, msgh->msg_controllen);
+	if (!msghdr)
+		return -ENOMEM;
+
+	/* copy over optional address */
+	if (msgh->msg_name) {
+		memcpy(&msghdr->osa, msgh->msg_name, msgh->msg_namelen);
+		msghdr->hdr.msg_name = &msghdr->osa.u.sa;
+		msghdr->hdr.msg_namelen = msgh->msg_namelen;
+	}
+
+	/* build iov from msgb */
+	msghdr->iov[0].iov_base = msgb_data(msghdr->msg);
+	msghdr->iov[0].iov_len = msgb_length(msghdr->msg);
+	msghdr->hdr.msg_iov = &msghdr->iov[0];
+	msghdr->hdr.msg_iovlen = 1;
+
+	/* copy over the cmsg from the msghdr */
+	if (msgh->msg_control && msgh->msg_controllen) {
+		msghdr->hdr.msg_control = msghdr->cmsg;
+		msghdr->hdr.msg_controllen = msgh->msg_controllen;
+		memcpy(msghdr->cmsg, msgh->msg_control, msgh->msg_controllen);
+	}
+
+	/* copy over msg_flags */
+	msghdr->hdr.msg_flags = sendmsg_flags;
+
+	rc = iofd_txqueue_enqueue(iofd, msghdr);
+	if (rc < 0) {
+		iofd_msghdr_free(msghdr);
+		LOGPIO(iofd, LOGL_ERROR, "enqueueing message failed (%d). Rejecting msgb\n", rc);
+		return rc;
+	}
+
+	return 0;
+}
+
 static int check_mode_callback_compat(enum osmo_io_fd_mode mode, const struct osmo_io_ops *ops)
 {
 	switch (mode) {
 	case OSMO_IO_FD_MODE_READ_WRITE:
 		if (ops->recvfrom_cb || ops->sendto_cb)
 			return false;
+		if (ops->recvmsg_cb || ops->sendmsg_cb)
+			return false;
 		break;
 	case OSMO_IO_FD_MODE_RECVFROM_SENDTO:
+		if (ops->read_cb || ops->write_cb)
+			return false;
+		if (ops->recvmsg_cb || ops->sendmsg_cb)
+			return false;
+		break;
+	case OSMO_IO_FD_MODE_RECVMSG_SENDMSG:
+		if (ops->recvfrom_cb || ops->sendto_cb)
+			return false;
 		if (ops->read_cb || ops->write_cb)
 			return false;
 		break;
@@ -511,6 +599,7 @@ struct osmo_io_fd *osmo_iofd_setup(const void *ctx, int fd, const char *name, en
 	switch (mode) {
 	case OSMO_IO_FD_MODE_READ_WRITE:
 	case OSMO_IO_FD_MODE_RECVFROM_SENDTO:
+	case OSMO_IO_FD_MODE_RECVMSG_SENDMSG:
 		break;
 	default:
 		return NULL;
@@ -547,6 +636,16 @@ struct osmo_io_fd *osmo_iofd_setup(const void *ctx, int fd, const char *name, en
 	return iofd;
 }
 
+/*! Set the size of the control message buffer allocated when submitting recvmsg */
+int osmo_iofd_set_cmsg_size(struct osmo_io_fd *iofd, size_t cmsg_size)
+{
+	if (iofd->mode != OSMO_IO_FD_MODE_RECVMSG_SENDMSG)
+		return -EINVAL;
+
+	iofd->cmsg_size = cmsg_size;
+	return 0;
+}
+
 /*! Register the fd with the underlying backend.
  *
  *  \param[in] iofd the iofd file descriptor
@@ -567,7 +666,8 @@ int osmo_iofd_register(struct osmo_io_fd *iofd, int fd)
 
 	IOFD_FLAG_UNSET(iofd, IOFD_FLAG_CLOSED);
 	if ((iofd->mode == OSMO_IO_FD_MODE_READ_WRITE && iofd->io_ops.read_cb) ||
-	    (iofd->mode == OSMO_IO_FD_MODE_RECVFROM_SENDTO && iofd->io_ops.recvfrom_cb)) {
+	    (iofd->mode == OSMO_IO_FD_MODE_RECVFROM_SENDTO && iofd->io_ops.recvfrom_cb) ||
+	    (iofd->mode == OSMO_IO_FD_MODE_RECVMSG_SENDMSG && iofd->io_ops.recvmsg_cb)) {
 		osmo_iofd_ops.read_enable(iofd);
 	}
 
@@ -767,7 +867,12 @@ int osmo_iofd_set_ioops(struct osmo_io_fd *iofd, const struct osmo_io_ops *ioops
 		else
 			osmo_iofd_ops.read_disable(iofd);
 		break;
-	case OSMO_IO_FD_MODE_SCTP_RECVMSG_SEND:
+	case OSMO_IO_FD_MODE_RECVMSG_SENDMSG:
+		if (iofd->io_ops.recvmsg_cb)
+			osmo_iofd_ops.read_enable(iofd);
+		else
+			osmo_iofd_ops.read_disable(iofd);
+		break;
 	default:
 		OSMO_ASSERT(0);
 	}
@@ -780,7 +885,8 @@ int osmo_iofd_set_ioops(struct osmo_io_fd *iofd, const struct osmo_io_ops *ioops
  *  \param[in] iofd the file descriptor */
 void osmo_iofd_notify_connected(struct osmo_io_fd *iofd)
 {
-	OSMO_ASSERT(iofd->mode == OSMO_IO_FD_MODE_READ_WRITE);
+	OSMO_ASSERT(iofd->mode == OSMO_IO_FD_MODE_READ_WRITE ||
+		    iofd->mode == OSMO_IO_FD_MODE_RECVMSG_SENDMSG);
 	OSMO_ASSERT(osmo_iofd_ops.notify_connected);
 	osmo_iofd_ops.notify_connected(iofd);
 }

@@ -4,6 +4,7 @@
 
 #include <unistd.h>
 #include <stdbool.h>
+#include <netinet/sctp.h>
 
 #include <osmocom/core/osmo_io.h>
 #include <osmocom/core/linuxlist.h>
@@ -72,6 +73,9 @@ struct osmo_io_fd {
 	/*! private number, extending \a data */
 	unsigned int priv_nr;
 
+	/*! size of iofd_msghdr.cmsg[] when allocated in recvmsg path */
+	size_t cmsg_size;
+
 	struct {
 		/*! talloc context from which to allocate msgb when reading */
 		const void *ctx;
@@ -109,7 +113,8 @@ enum iofd_msg_action {
 	IOFD_ACT_WRITE,
 	IOFD_ACT_RECVFROM,
 	IOFD_ACT_SENDTO,
-	// TODO: SCTP_*
+	IOFD_ACT_RECVMSG,
+	IOFD_ACT_SENDMSG,
 };
 
 
@@ -132,6 +137,9 @@ struct iofd_msghdr {
 	struct msgb *msg;
 	/*! I/O file descriptor on which we perform this I/O operation */
 	struct osmo_io_fd *iofd;
+
+	/*! control message buffer for passing sctp_sndrcvinfo along */
+	char cmsg[0]; /* size is determined by iofd->cmsg_size on recvmsg, and by mcghdr->msg_controllen on sendmsg */
 };
 
 enum iofd_seg_act {
@@ -140,7 +148,7 @@ enum iofd_seg_act {
 	IOFD_SEG_ACT_DEFER,
 };
 
-struct iofd_msghdr *iofd_msghdr_alloc(struct osmo_io_fd *iofd, enum iofd_msg_action action, struct msgb *msg);
+struct iofd_msghdr *iofd_msghdr_alloc(struct osmo_io_fd *iofd, enum iofd_msg_action action, struct msgb *msg, size_t cmsg_size);
 void iofd_msghdr_free(struct iofd_msghdr *msghdr);
 
 struct msgb *iofd_msgb_alloc(struct osmo_io_fd *iofd);

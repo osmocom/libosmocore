@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <sys/socket.h>
+
 #include <osmocom/core/linuxlist.h>
 #include <osmocom/core/logging.h>
 #include <osmocom/core/msgb.h>
@@ -21,8 +23,8 @@ enum osmo_io_fd_mode {
 	OSMO_IO_FD_MODE_READ_WRITE,
 	/*! use recvfrom() / sendto() calls */
 	OSMO_IO_FD_MODE_RECVFROM_SENDTO,
-	/*! emulate sctp_recvmsg() and sctp_send() */
-	OSMO_IO_FD_MODE_SCTP_RECVMSG_SEND,
+	/*! emulate recvmsg() / sendmsg() */
+	OSMO_IO_FD_MODE_RECVMSG_SENDMSG,
 };
 
 enum osmo_io_backend {
@@ -65,12 +67,20 @@ struct osmo_io_ops {
 				  struct msgb *msg,
 				  const struct osmo_sockaddr *daddr);
 	};
+
+	/* mode OSMO_IO_FD_MODE_RECVMSG_SENDMSG: */
+	struct {
+		void (*recvmsg_cb)(struct osmo_io_fd *iofd, int res,
+				   struct msgb *msg, const struct msghdr *msgh);
+		void (*sendmsg_cb)(struct osmo_io_fd *iofd, int res, struct msgb *msg);
+	};
 };
 
 void osmo_iofd_init(void);
 
 struct osmo_io_fd *osmo_iofd_setup(const void *ctx, int fd, const char *name,
 		  enum osmo_io_fd_mode mode, const struct osmo_io_ops *ioops, void *data);
+int osmo_iofd_set_cmsg_size(struct osmo_io_fd *iofd, size_t cmsg_size);
 int osmo_iofd_register(struct osmo_io_fd *iofd, int fd);
 int osmo_iofd_unregister(struct osmo_io_fd *iofd);
 unsigned int osmo_iofd_txqueue_len(struct osmo_io_fd *iofd);
@@ -83,6 +93,8 @@ void osmo_iofd_notify_connected(struct osmo_io_fd *iofd);
 int osmo_iofd_write_msgb(struct osmo_io_fd *iofd, struct msgb *msg);
 int osmo_iofd_sendto_msgb(struct osmo_io_fd *iofd, struct msgb *msg, int sendto_flags,
 			  const struct osmo_sockaddr *dest);
+int osmo_iofd_sendmsg_msgb(struct osmo_io_fd *iofd, struct msgb *msg, int sendmsg_flags,
+			   const struct msghdr *msgh);
 
 void osmo_iofd_set_alloc_info(struct osmo_io_fd *iofd, unsigned int size, unsigned int headroom);
 void osmo_iofd_set_txqueue_max_length(struct osmo_io_fd *iofd, unsigned int size);

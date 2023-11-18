@@ -49,6 +49,7 @@ static void iofd_poll_ofd_cb_recvmsg_sendmsg(struct osmo_fd *ofd, unsigned int w
 
 	if (what & OSMO_FD_READ) {
 		struct iofd_msghdr hdr;
+
 		msg = iofd_msgb_pending_or_alloc(iofd);
 		if (!msg) {
 			LOGPIO(iofd, LOGL_ERROR, "Could not allocate msgb for reading\n");
@@ -64,6 +65,10 @@ static void iofd_poll_ofd_cb_recvmsg_sendmsg(struct osmo_fd *ofd, unsigned int w
 			.msg_name = &hdr.osa.u.sa,
 			.msg_namelen = sizeof(struct osmo_sockaddr),
 		};
+		if (iofd->mode == OSMO_IO_FD_MODE_RECVMSG_SENDMSG) {
+			hdr.hdr.msg_control = alloca(iofd->cmsg_size);
+			hdr.hdr.msg_controllen = iofd->cmsg_size;
+		}
 
 		rc = recvmsg(ofd->fd, &hdr.hdr, flags);
 		if (rc > 0)
@@ -90,13 +95,15 @@ static void iofd_poll_ofd_cb_recvmsg_sendmsg(struct osmo_fd *ofd, unsigned int w
 			case OSMO_IO_FD_MODE_RECVFROM_SENDTO:
 				iofd->io_ops.sendto_cb(iofd, 0, NULL, NULL);
 				break;
+			case OSMO_IO_FD_MODE_RECVMSG_SENDMSG:
+				iofd->io_ops.sendmsg_cb(iofd, 0, NULL);
+				break;
 			default:
 				break;
 			}
 			if (osmo_iofd_txqueue_len(iofd) == 0)
 				iofd_poll_ops.write_disable(iofd);
 		}
-
 	}
 }
 
