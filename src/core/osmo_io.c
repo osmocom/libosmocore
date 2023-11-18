@@ -445,7 +445,18 @@ int osmo_iofd_sendto_msgb(struct osmo_io_fd *iofd, struct msgb *msg, int sendto_
 struct osmo_io_fd *osmo_iofd_setup(const void *ctx, int fd, const char *name, enum osmo_io_fd_mode mode,
 		  const struct osmo_io_ops *ioops, void *data)
 {
-	struct osmo_io_fd *iofd = talloc_zero(ctx, struct osmo_io_fd);
+	struct osmo_io_fd *iofd;
+
+	/* reject unsupported/unknown modes */
+	switch (mode) {
+	case OSMO_IO_FD_MODE_READ_WRITE:
+	case OSMO_IO_FD_MODE_RECVFROM_SENDTO:
+		break;
+	default:
+		return NULL;
+	}
+
+	iofd = talloc_zero(ctx, struct osmo_io_fd);
 	if (!iofd)
 		return NULL;
 
