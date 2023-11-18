@@ -111,16 +111,24 @@ enum iofd_msg_action {
 };
 
 
-/* serialized version of 'struct msghdr' employed by sendmsg/recvmsg */
+/*! serialized version of 'struct msghdr' employed by sendmsg/recvmsg */
 struct iofd_msghdr {
+	/*! entry into osmo_io_fd.tx_queue.msg_queue */
 	struct llist_head list;
 	enum iofd_msg_action action;
+	/*! the 'struct msghdr' we are wrapping/ecapsulating here */
 	struct msghdr hdr;
+	/*! socket address of the remote peer */
 	struct osmo_sockaddr osa;
+	/*! io-vector we need to pass as argument to sendmsg/recvmsg; is set up
+	 * to point into msg below */
 	struct iovec iov[1];
+	/*! flags we pass as argument to sendmsg / recvmsg */
 	int flags;
 
+	/*! message-buffer containing data for this I/O operation */
 	struct msgb *msg;
+	/*! I/O file descriptor on which we perform this I/O operation */
 	struct osmo_io_fd *iofd;
 };
 

@@ -59,6 +59,8 @@ struct osmo_io_uring {
 static __thread struct osmo_io_uring g_ring;
 
 static void iofd_uring_cqe(struct io_uring *ring);
+
+/*! read call-back for eventfd notifying us if entries are in the completion queue */
 static int iofd_uring_poll_cb(struct osmo_fd *ofd, unsigned int what)
 {
 	struct io_uring *ring = ofd->data;
@@ -157,6 +159,7 @@ static void iofd_uring_submit_recv(struct osmo_io_fd *iofd, enum iofd_msg_action
 	iofd->u.uring.read_msghdr = msghdr;
 }
 
+/*! completion call-back for READ/RECVFROM */
 static void iofd_uring_handle_recv(struct iofd_msghdr *msghdr, int rc)
 {
 	struct osmo_io_fd *iofd = msghdr->iofd;
@@ -179,6 +182,7 @@ static void iofd_uring_handle_recv(struct iofd_msghdr *msghdr, int rc)
 
 static int iofd_uring_submit_tx(struct osmo_io_fd *iofd);
 
+/*! completion call-back for WRITE/SENDTO */
 static void iofd_uring_handle_tx(struct iofd_msghdr *msghdr, int rc)
 {
 	struct osmo_io_fd *iofd = msghdr->iofd;
@@ -220,10 +224,12 @@ out_free:
 
 out:
 	iofd->u.uring.write_msghdr = NULL;
+	/* submit the next to-be-transmitted message for this file descriptor */
 	if (iofd->u.uring.write_enabled && !IOFD_FLAG_ISSET(iofd, IOFD_FLAG_CLOSED))
 		iofd_uring_submit_tx(iofd);
 }
 
+/*! handle completion of a single I/O message */
 static void iofd_uring_handle_completion(struct iofd_msghdr *msghdr, int res)
 {
 	struct osmo_io_fd *iofd = msghdr->iofd;
@@ -250,6 +256,7 @@ static void iofd_uring_handle_completion(struct iofd_msghdr *msghdr, int res)
 		talloc_free(iofd);
 }
 
+/*! process all pending completion queue entries in given io_uring */
 static void iofd_uring_cqe(struct io_uring *ring)
 {
 	int rc;
@@ -274,6 +281,7 @@ static void iofd_uring_cqe(struct io_uring *ring)
 	}
 }
 
+/*! will submit the next to-be-transmitted message for given iofd */
 static int iofd_uring_submit_tx(struct osmo_io_fd *iofd)
 {
 	struct io_uring_sqe *sqe;
