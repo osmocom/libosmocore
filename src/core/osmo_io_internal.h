@@ -4,6 +4,7 @@
 
 #include <unistd.h>
 #include <stdbool.h>
+#include <netinet/sctp.h>
 
 #include <osmocom/core/osmo_io.h>
 #include <osmocom/core/linuxlist.h>
@@ -109,7 +110,8 @@ enum iofd_msg_action {
 	IOFD_ACT_WRITE,
 	IOFD_ACT_RECVFROM,
 	IOFD_ACT_SENDTO,
-	// TODO: SCTP_*
+	IOFD_ACT_SCTP_RECVMSG,
+	IOFD_ACT_SCTP_SEND,
 };
 
 
@@ -125,6 +127,8 @@ struct iofd_msghdr {
 	/*! io-vector we need to pass as argument to sendmsg/recvmsg; is set up
 	 * to point into msg below */
 	struct iovec iov[1];
+	/*! control message buffer for passing sctp_sndrcvinfo along */
+	char cmsg[CMSG_SPACE(sizeof(struct sctp_sndrcvinfo))];
 	/*! flags we pass as argument to sendmsg / recvmsg */
 	int flags;
 

@@ -329,6 +329,8 @@ void iofd_handle_segmented_read(struct osmo_io_fd *iofd, struct msgb *msg, int r
  *  \param[in] hdr serialized msghdr containing state of completed I/O */
 void iofd_handle_recv(struct osmo_io_fd *iofd, struct msgb *msg, int rc, struct iofd_msghdr *hdr)
 {
+	struct cmsghdr *cmsg = NULL;
+
 	talloc_steal(iofd->msgb_alloc.ctx, msg);
 	switch (iofd->mode) {
 	case OSMO_IO_FD_MODE_READ_WRITE:
@@ -338,7 +340,25 @@ void iofd_handle_recv(struct osmo_io_fd *iofd, struct msgb *msg, int rc, struct 
 		iofd->io_ops.recvfrom_cb(iofd, rc, msg, &hdr->osa);
 		break;
 	case OSMO_IO_FD_MODE_SCTP_RECVMSG_SEND:
-		/* TODO Implement */
+		msgb_sctp_msg_flags(msg) = 0;
+		if (hdr->hdr.msg_flags & MSG_NOTIFICATION) {
+			msgb_sctp_msg_flags(msg) = OSMO_STREAM_SCTP_MSG_FLAGS_NOTIFICATION;
+		} else {
+			for (cmsg = CMSG_FIRSTHDR(&hdr->hdr); cmsg != NULL;
+			     cmsg = CMSG_NXTHDR(&hdr->hdr, cmsg)) {
+				if (cmsg->cmsg_level == IPPROTO_SCTP && cmsg->cmsg_type == SCTP_SNDRCV) {
+					struct sctp_sndrcvinfo *sinfo = (struct sctp_sndrcvinfo *)CMSG_DATA(cmsg);
+					msgb_sctp_ppid(msg) = htonl(sinfo->sinfo_ppid);
+					msgb_sctp_stream(msg) = sinfo->sinfo_stream;
+					break;
+				}
+			}
+			if (rc > 0 && !cmsg)
+				LOGPIO(iofd, LOGL_ERROR, "sctp_recvmsg without SNDRCV cmsg?!?\n");
+		}
+		iofd->io_ops.read_cb(iofd, rc, msg);
+		break;
+	default:
 		OSMO_ASSERT(false);
 		break;
 	}
@@ -371,6 +391,7 @@ void iofd_handle_send_completion(struct osmo_io_fd *iofd, int rc, struct iofd_ms
 	/* All other failure and success cases are handled here */
 	switch (msghdr->action) {
 	case IOFD_ACT_WRITE:
+	case IOFD_ACT_SCTP_SEND:
 		iofd->io_ops.write_cb(iofd, rc, msg);
 		break;
 	case IOFD_ACT_SENDTO:
@@ -473,6 +494,63 @@ int osmo_iofd_sendto_msgb(struct osmo_io_fd *iofd, struct msgb *msg, int sendto_
 	return 0;
 }
 
+/*! Send a message through a connected SCTP socket, similar to sctp_sendmsg().
+ *
+ *  Appends the message to the internal transmit queue.
+ *  If the function returns success (0), it will take ownership of the msgb and
+ *  internally call msgb_free() after the write request completes.
+ *  In case of an error the msgb needs to be freed by the caller.
+ *  \param[in] iofd file descriptor to write to
+ *  \param[in] msg message buffer to send; uses msgb_sctp_ppid/msg_sctp_stream
+ *  \param[in] sendmsg_flags Flags to pass to the send call
+ *  \returns 0 in case of success; a negative value in case of error
+ */
+int osmo_iofd_sctp_send_msgb(struct osmo_io_fd *iofd, struct msgb *msg, int sendmsg_flags)
+{
+	int rc;
+	struct cmsghdr *cmsg;
+	struct sctp_sndrcvinfo *sinfo;
+
+	OSMO_ASSERT(iofd->mode == OSMO_IO_FD_MODE_SCTP_RECVMSG_SEND);
+	if (OSMO_UNLIKELY(!iofd->io_ops.write_cb)) {
+		LOGPIO(iofd, LOGL_ERROR, "write_cb not set, Rejecting msgb\n");
+		return -EINVAL;
+	}
+
+	struct iofd_msghdr *msghdr = iofd_msghdr_alloc(iofd, IOFD_ACT_SCTP_SEND, msg);
+	if (!msghdr)
+		return -ENOMEM;
+
+	msghdr->hdr.msg_flags = sendmsg_flags;
+	msghdr->iov[0].iov_base = msgb_data(msghdr->msg);
+	msghdr->iov[0].iov_len = msgb_length(msghdr->msg);
+	msghdr->hdr.msg_iov = &msghdr->iov[0];
+	msghdr->hdr.msg_iovlen = 1;
+
+	/* put together sctp_sndrcvinfo, just like libsctp's sctp_sensmsg() */
+	msghdr->hdr.msg_control = msghdr->cmsg;
+	msghdr->hdr.msg_controllen = sizeof(msghdr->cmsg);
+
+	cmsg = CMSG_FIRSTHDR(&msghdr->hdr);
+	cmsg->cmsg_level = IPPROTO_SCTP;
+	cmsg->cmsg_type = SCTP_SNDRCV;
+	cmsg->cmsg_len = CMSG_LEN(sizeof(struct sctp_sndrcvinfo));
+	msghdr->hdr.msg_controllen = cmsg->cmsg_len;
+	sinfo = (struct sctp_sndrcvinfo *) CMSG_DATA(cmsg);
+	sinfo->sinfo_ppid = htonl(msgb_sctp_ppid(msg));
+	sinfo->sinfo_stream = msgb_sctp_stream(msg);
+
+	rc = iofd_txqueue_enqueue(iofd, msghdr);
+	if (rc < 0) {
+		iofd_msghdr_free(msghdr);
+		LOGPIO(iofd, LOGL_ERROR, "enqueueing message failed (%d). Rejecting msgb\n", rc);
+		return rc;
+	}
+
+	return 0;
+
+}
+
 /*! Allocate and setup a new iofd.
  *  \param[in] ctx the parent context from which to allocate
  *  \param[in] fd the underlying system file descriptor
@@ -491,6 +569,7 @@ struct osmo_io_fd *osmo_iofd_setup(const void *ctx, int fd, const char *name, en
 	switch (mode) {
 	case OSMO_IO_FD_MODE_READ_WRITE:
 	case OSMO_IO_FD_MODE_RECVFROM_SENDTO:
+	case OSMO_IO_FD_MODE_SCTP_RECVMSG_SEND:
 		break;
 	default:
 		return NULL;
@@ -728,6 +807,7 @@ void osmo_iofd_set_ioops(struct osmo_io_fd *iofd, const struct osmo_io_ops *ioop
 
 	switch (iofd->mode) {
 	case OSMO_IO_FD_MODE_READ_WRITE:
+	case OSMO_IO_FD_MODE_SCTP_RECVMSG_SEND:
 		if (iofd->io_ops.read_cb)
 			osmo_iofd_ops.read_enable(iofd);
 		else
@@ -739,7 +819,6 @@ void osmo_iofd_set_ioops(struct osmo_io_fd *iofd, const struct osmo_io_ops *ioop
 		else
 			osmo_iofd_ops.read_disable(iofd);
 		break;
-	case OSMO_IO_FD_MODE_SCTP_RECVMSG_SEND:
 	default:
 		OSMO_ASSERT(0);
 	}
@@ -750,7 +829,8 @@ void osmo_iofd_set_ioops(struct osmo_io_fd *iofd, const struct osmo_io_ops *ioop
  *  \param[in] iofd the file descriptor */
 void osmo_iofd_notify_connected(struct osmo_io_fd *iofd)
 {
-	OSMO_ASSERT(iofd->mode == OSMO_IO_FD_MODE_READ_WRITE);
+	OSMO_ASSERT(iofd->mode == OSMO_IO_FD_MODE_READ_WRITE ||
+		    iofd->mode == OSMO_IO_FD_MODE_SCTP_RECVMSG_SEND);
 	OSMO_ASSERT(osmo_iofd_ops.notify_connected);
 	osmo_iofd_ops.notify_connected(iofd);
 }

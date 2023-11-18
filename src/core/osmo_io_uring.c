@@ -3,6 +3,7 @@
  *
  * (C) 2022-2023 by sysmocom s.f.m.c.
  * Author: Daniel Willmann <daniel@sysmocom.de>
+ * (C) 2023 by Harald Welte <laforge@osmocom.org>
  *
  * All Rights Reserved.
  *
@@ -35,6 +36,8 @@
 #include <stdbool.h>
 #include <errno.h>
 
+#include <netinet/in.h>
+#include <netinet/sctp.h>
 #include <sys/eventfd.h>
 #include <liburing.h>
 
@@ -126,6 +129,10 @@ static void iofd_uring_submit_recv(struct osmo_io_fd *iofd, enum iofd_msg_action
 	switch (action) {
 	case IOFD_ACT_READ:
 		break;
+	case IOFD_ACT_SCTP_RECVMSG:
+		msghdr->hdr.msg_control = msghdr->cmsg;
+		msghdr->hdr.msg_controllen = sizeof(msghdr->cmsg);
+		/* fall-through */
 	case IOFD_ACT_RECVFROM:
 		msghdr->hdr.msg_iov = &msghdr->iov[0];
 		msghdr->hdr.msg_iovlen = 1;
@@ -146,6 +153,7 @@ static void iofd_uring_submit_recv(struct osmo_io_fd *iofd, enum iofd_msg_action
 	case IOFD_ACT_READ:
 		io_uring_prep_readv(sqe, iofd->fd, msghdr->iov, 1, 0);
 		break;
+	case IOFD_ACT_SCTP_RECVMSG:
 	case IOFD_ACT_RECVFROM:
 		io_uring_prep_recvmsg(sqe, iofd->fd, &msghdr->hdr, msghdr->flags);
 		break;
@@ -210,10 +218,12 @@ static void iofd_uring_handle_completion(struct iofd_msghdr *msghdr, int res)
 	switch (msghdr->action) {
 	case IOFD_ACT_READ:
 	case IOFD_ACT_RECVFROM:
+	case IOFD_ACT_SCTP_RECVMSG:
 		iofd_uring_handle_recv(msghdr, res);
 		break;
 	case IOFD_ACT_WRITE:
 	case IOFD_ACT_SENDTO:
+	case IOFD_ACT_SCTP_SEND:
 		iofd_uring_handle_tx(msghdr, res);
 		break;
 	default:
@@ -273,6 +283,7 @@ static int iofd_uring_submit_tx(struct osmo_io_fd *iofd)
 	switch (msghdr->action) {
 	case IOFD_ACT_WRITE:
 	case IOFD_ACT_SENDTO:
+	case IOFD_ACT_SCTP_SEND:
 		io_uring_prep_sendmsg(sqe, msghdr->iofd->fd, &msghdr->hdr, msghdr->flags);
 		break;
 	default:
@@ -341,14 +352,14 @@ static void iofd_uring_write_enable(struct osmo_io_fd *iofd)
 		}
 
 		msghdr->iov[0].iov_base = msgb_data(msg);
-		msghdr->iov[0].iov_len = msgb_tailroom(msg);
+		msghdr->iov[0].iov_len = msgb_length(msg);
 
 		sqe = io_uring_get_sqe(&g_ring.ring);
 		if (!sqe) {
 			LOGPIO(iofd, LOGL_ERROR, "Could not get io_uring_sqe\n");
 			OSMO_ASSERT(0);
 		}
-		// Prep msgb/iov
+
 		io_uring_prep_writev(sqe, iofd->fd, msghdr->iov, 1, 0);
 		io_uring_sqe_set_data(sqe, msghdr);
 
@@ -375,6 +386,9 @@ static void iofd_uring_read_enable(struct osmo_io_fd *iofd)
 		break;
 	case OSMO_IO_FD_MODE_RECVFROM_SENDTO:
 		iofd_uring_submit_recv(iofd, IOFD_ACT_RECVFROM);
+		break;
+	case OSMO_IO_FD_MODE_SCTP_RECVMSG_SEND:
+		iofd_uring_submit_recv(iofd, IOFD_ACT_SCTP_RECVMSG);
 		break;
 	default:
 		OSMO_ASSERT(0);

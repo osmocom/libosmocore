@@ -14,6 +14,16 @@
 #define LOGPIO(iofd, level, fmt, args...) \
 	LOGP(DLIO, level, "iofd(%s)" fmt, iofd->name, ## args)
 
+/*! \brief Access SCTP flags from the msgb control buffer */
+#define OSMO_STREAM_SCTP_MSG_FLAGS_NOTIFICATION 0x80 /* sctp_recvmsg() flags=MSG_NOTIFICATION, msgb_data() contains "union sctp_notification*" */
+#define msgb_sctp_msg_flags(msg)        (msg)->cb[2]
+
+/*! \brief Access the SCTP PPID from the msgb control buffer */
+#define msgb_sctp_ppid(msg)             (msg)->cb[3]
+/*! \brief Access the SCTP Stream ID from the msgb control buffer */
+#define msgb_sctp_stream(msg)           (msg)->cb[4]
+
+struct sctp_sndrcvinfo;
 struct osmo_io_fd;
 
 enum osmo_io_fd_mode {
@@ -36,7 +46,7 @@ static inline const char *osmo_io_backend_name(enum osmo_io_backend val)
 
 struct osmo_io_ops {
 	union {
-		/* mode OSMO_IO_FD_MODE_READ_WRITE: */
+		/* mode OSMO_IO_FD_MODE_READ_WRITE and OSMO_IO_FD_MODE_SCTP_RECVMSG_SEND: */
 		struct {
 			/*! call-back function when something was read from fd */
 			void (*read_cb)(struct osmo_io_fd *iofd, int res, struct msgb *msg);
@@ -85,6 +95,7 @@ void osmo_iofd_notify_connected(struct osmo_io_fd *iofd);
 int osmo_iofd_write_msgb(struct osmo_io_fd *iofd, struct msgb *msg);
 int osmo_iofd_sendto_msgb(struct osmo_io_fd *iofd, struct msgb *msg, int sendto_flags,
 			  const struct osmo_sockaddr *dest);
+int osmo_iofd_sctp_send_msgb(struct osmo_io_fd *iofd, struct msgb *msg, int sendmsg_flags);
 
 void osmo_iofd_set_alloc_info(struct osmo_io_fd *iofd, unsigned int size, unsigned int headroom);
 void osmo_iofd_set_txqueue_max_length(struct osmo_io_fd *iofd, unsigned int size);

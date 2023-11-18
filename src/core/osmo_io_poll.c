@@ -64,6 +64,10 @@ static void iofd_poll_ofd_cb_recvmsg_sendmsg(struct osmo_fd *ofd, unsigned int w
 			.msg_name = &hdr.osa.u.sa,
 			.msg_namelen = sizeof(struct osmo_sockaddr),
 		};
+		if (iofd->mode == OSMO_IO_FD_MODE_SCTP_RECVMSG_SEND) {
+			hdr.hdr.msg_control = hdr.cmsg;
+			hdr.hdr.msg_controllen = sizeof(hdr.cmsg);
+		}
 
 		rc = recvmsg(ofd->fd, &hdr.hdr, flags);
 		if (rc > 0)
@@ -81,10 +85,16 @@ static void iofd_poll_ofd_cb_recvmsg_sendmsg(struct osmo_fd *ofd, unsigned int w
 			rc = sendmsg(ofd->fd, &msghdr->hdr, msghdr->flags);
 			iofd_handle_send_completion(iofd, rc, msghdr);
 		} else {
-			if (iofd->mode == OSMO_IO_FD_MODE_READ_WRITE)
+			switch (iofd->mode) {
+			case OSMO_IO_FD_MODE_READ_WRITE:
+			case OSMO_IO_FD_MODE_SCTP_RECVMSG_SEND:
 				/* Socket is writable, but we have no data to send. A non-blocking/async
 				   connect() is signalled this way. */
 				iofd->io_ops.write_cb(iofd, 0, NULL);
+				break;
+			default:
+				break;
+			}
 			if (osmo_iofd_txqueue_len(iofd) == 0)
 				iofd_poll_ops.write_disable(iofd);
 		}
