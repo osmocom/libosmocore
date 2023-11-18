@@ -337,7 +337,7 @@ void iofd_handle_recv(struct osmo_io_fd *iofd, struct msgb *msg, int rc, struct 
 	case OSMO_IO_FD_MODE_RECVFROM_SENDTO:
 		iofd->io_ops.recvfrom_cb(iofd, rc, msg, &hdr->osa);
 		break;
-	case OSMO_IO_FD_MODE_SCTP_RECVMSG_SENDMSG:
+	case OSMO_IO_FD_MODE_SCTP_RECVMSG_SEND:
 		/* TODO Implement */
 		OSMO_ASSERT(false);
 		break;
@@ -688,7 +688,7 @@ void osmo_iofd_set_ioops(struct osmo_io_fd *iofd, const struct osmo_io_ops *ioop
 		else
 			osmo_iofd_ops.read_disable(iofd);
 		break;
-	case OSMO_IO_FD_MODE_SCTP_RECVMSG_SENDMSG:
+	case OSMO_IO_FD_MODE_SCTP_RECVMSG_SEND:
 	default:
 		OSMO_ASSERT(0);
 	}

@@ -98,7 +98,7 @@ static void iofd_poll_ofd_cb_recvmsg_sendmsg(struct osmo_fd *ofd, unsigned int w
 			case OSMO_IO_FD_MODE_RECVFROM_SENDTO:
 				iofd->io_ops.sendto_cb(iofd, rc, msg, &msghdr->osa);
 				break;
-			case OSMO_IO_FD_MODE_SCTP_RECVMSG_SENDMSG:
+			case OSMO_IO_FD_MODE_SCTP_RECVMSG_SEND:
 				OSMO_ASSERT(false);
 				break;
 			}

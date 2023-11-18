@@ -21,8 +21,8 @@ enum osmo_io_fd_mode {
 	OSMO_IO_FD_MODE_READ_WRITE,
 	/*! use recvfrom() / sendto() calls */
 	OSMO_IO_FD_MODE_RECVFROM_SENDTO,
-	/*! emulate sctp_recvmsg() and sctp_sendmsg() */
-	OSMO_IO_FD_MODE_SCTP_RECVMSG_SENDMSG,
+	/*! emulate sctp_recvmsg() and sctp_send() */
+	OSMO_IO_FD_MODE_SCTP_RECVMSG_SEND,
 };
 
 enum osmo_io_backend {
