@@ -29,6 +29,8 @@ enum osmo_soft_uart_parity_mode {
 	OSMO_SUART_PARITY_NONE,
 	OSMO_SUART_PARITY_EVEN,
 	OSMO_SUART_PARITY_ODD,
+	OSMO_SUART_PARITY_MARK,		/* always 1 */
+	OSMO_SUART_PARITY_SPACE,	/* always 0 */
 	_OSMO_SUART_PARITY_NUM
 };
 

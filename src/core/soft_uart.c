@@ -153,6 +153,16 @@ static inline void osmo_uart_rx_bit(struct osmo_soft_uart *suart, const ubit_t b
 			if (suart->rx.parity_bit == bit)
 				suart->rx.flags |= OSMO_SUART_F_PARITY_ERROR;
 			break;
+		case OSMO_SUART_PARITY_MARK:
+			/* parity bit must always be 1 */
+			if (bit != 1)
+				suart->rx.flags |= OSMO_SUART_F_PARITY_ERROR;
+			break;
+		case OSMO_SUART_PARITY_SPACE:
+			/* parity bit must always be 0 */
+			if (bit != 0)
+				suart->rx.flags |= OSMO_SUART_F_PARITY_ERROR;
+			break;
 		case OSMO_SUART_PARITY_NONE: /* shall not happen */
 		default:
 			OSMO_ASSERT(0);
@@ -237,6 +247,14 @@ static inline ubit_t osmo_uart_tx_bit(struct osmo_soft_uart *suart, struct msgb 
 		case OSMO_SUART_PARITY_ODD:
 			/* number of 1-bits (in both data and parity) shall be odd */
 			tx_bit = !suart->tx.parity_bit;
+			break;
+		case OSMO_SUART_PARITY_MARK:
+			/* parity bit must always be 1 */
+			tx_bit = 1;
+			break;
+		case OSMO_SUART_PARITY_SPACE:
+			/* parity bit must always be 0 */
+			tx_bit = 0;
 			break;
 		case OSMO_SUART_PARITY_NONE:
 		default: /* shall not happen */

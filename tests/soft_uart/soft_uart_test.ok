@@ -126,6 +126,36 @@ suart_rx_cb(flags=00): 10 20 40 80
 test_tx_rx_exec_one(n_bits_total=44): 00000100001 00000010001 00000001001 00000000101
 suart_tx_cb(len=0/4): 
 test_tx_rx_exec_one(n_bits_total=44): 11111111111 11111111111 11111111111 11111111111
+======== test_tx_rx(): testing 8-M-1
+suart_tx_cb(len=4/4): de ad be ef 
+suart_rx_cb(flags=00): de ad be ef 
+test_tx_rx_exec_one(n_bits_total=44): 00111101111 01011010111 00111110111 01111011111
+suart_tx_cb(len=4/4): 00 aa 55 ff 
+suart_rx_cb(flags=00): 00 aa 55 ff 
+test_tx_rx_exec_one(n_bits_total=44): 00000000011 00101010111 01010101011 01111111111
+suart_tx_cb(len=4/4): 01 02 04 08 
+suart_rx_cb(flags=00): 01 02 04 08 
+test_tx_rx_exec_one(n_bits_total=44): 01000000011 00100000011 00010000011 00001000011
+suart_tx_cb(len=4/4): 10 20 40 80 
+suart_rx_cb(flags=00): 10 20 40 80 
+test_tx_rx_exec_one(n_bits_total=44): 00000100011 00000010011 00000001011 00000000111
+suart_tx_cb(len=0/4): 
+test_tx_rx_exec_one(n_bits_total=44): 11111111111 11111111111 11111111111 11111111111
+======== test_tx_rx(): testing 8-S-1
+suart_tx_cb(len=4/4): de ad be ef 
+suart_rx_cb(flags=00): de ad be ef 
+test_tx_rx_exec_one(n_bits_total=44): 00111101101 01011010101 00111110101 01111011101
+suart_tx_cb(len=4/4): 00 aa 55 ff 
+suart_rx_cb(flags=00): 00 aa 55 ff 
+test_tx_rx_exec_one(n_bits_total=44): 00000000001 00101010101 01010101001 01111111101
+suart_tx_cb(len=4/4): 01 02 04 08 
+suart_rx_cb(flags=00): 01 02 04 08 
+test_tx_rx_exec_one(n_bits_total=44): 01000000001 00100000001 00010000001 00001000001
+suart_tx_cb(len=4/4): 10 20 40 80 
+suart_rx_cb(flags=00): 10 20 40 80 
+test_tx_rx_exec_one(n_bits_total=44): 00000100001 00000010001 00000001001 00000000101
+suart_tx_cb(len=0/4): 
+test_tx_rx_exec_one(n_bits_total=44): 11111111111 11111111111 11111111111 11111111111
 ======== test_tx_rx(): testing 6-N-1
 suart_tx_cb(len=4/4): de ad be ef 
 suart_rx_cb(flags=00): 1e 2d 3e 2f 

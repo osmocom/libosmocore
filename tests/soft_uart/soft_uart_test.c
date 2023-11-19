@@ -284,6 +284,18 @@ static void test_tx_rx(void)
 	osmo_soft_uart_configure(suart, &cfg);
 	test_tx_rx_exec(suart, (1 + 8 + 1 + 1));
 
+	printf("======== %s(): testing 8-M-1\n", __func__);
+	cfg = suart_test_default_cfg;
+	cfg.parity_mode = OSMO_SUART_PARITY_MARK;
+	osmo_soft_uart_configure(suart, &cfg);
+	test_tx_rx_exec(suart, (1 + 8 + 1 + 1));
+
+	printf("======== %s(): testing 8-S-1\n", __func__);
+	cfg = suart_test_default_cfg;
+	cfg.parity_mode = OSMO_SUART_PARITY_SPACE;
+	osmo_soft_uart_configure(suart, &cfg);
+	test_tx_rx_exec(suart, (1 + 8 + 1 + 1));
+
 	printf("======== %s(): testing 6-N-1\n", __func__);
 	cfg = suart_test_default_cfg;
 	cfg.num_data_bits = 6;
