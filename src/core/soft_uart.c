@@ -136,6 +136,9 @@ static inline void osmo_uart_rx_bit(struct osmo_soft_uart *suart, const ubit_t b
 				suart->rx.flow_state = SUART_FLOW_ST_PARITY;
 			else
 				suart->rx.flow_state = SUART_FLOW_ST_STOP;
+			/* align the register if needed */
+			if (suart->cfg.num_data_bits < 8)
+				suart->rx.shift_reg >>= (8 - suart->cfg.num_data_bits);
 		}
 		break;
 	case SUART_FLOW_ST_PARITY:
