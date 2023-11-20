@@ -217,7 +217,7 @@ static inline ubit_t osmo_uart_tx_bit(struct osmo_soft_uart *suart, struct msgb 
 
 	switch (suart->tx.flow_state) {
 	case SUART_FLOW_ST_IDLE:
-		if (msgb_length(msg) > 0) { /* if we have pending data */
+		if (msg && msgb_length(msg) > 0) { /* if we have pending data */
 			suart->tx.shift_reg = msgb_pull_u8(msg);
 			suart->tx.flow_state = SUART_FLOW_ST_DATA;
 			suart->tx.bit_count = 0;
@@ -283,21 +283,31 @@ static inline ubit_t osmo_uart_tx_bit(struct osmo_soft_uart *suart, struct msgb 
 int osmo_soft_uart_tx_ubits(struct osmo_soft_uart *suart, ubit_t *ubits, size_t n_ubits)
 {
 	const struct osmo_soft_uart_cfg *cfg = &suart->cfg;
-	size_t n_frame_bits;
-	struct msgb *msg;
+	size_t n_frame_bits, n_chars;
+	struct msgb *msg = NULL;
 
 	/* calculate UART frame size for the effective config */
 	n_frame_bits = 1 + cfg->num_data_bits + cfg->num_stop_bits;
 	if (cfg->parity_mode != OSMO_SUART_PARITY_NONE)
 		n_frame_bits += 1;
 
-	/* allocate a Tx buffer msgb */
-	msg = msgb_alloc_c(suart, n_ubits / n_frame_bits, "soft_uart_tx");
-	OSMO_ASSERT(msg != NULL);
+	/* calculate the number of characters we can fit into n_ubits */
+	n_chars = n_ubits / n_frame_bits;
+	if (n_chars == 0) {
+		/* we can transmit at least one character */
+		if (suart->tx.flow_state == SUART_FLOW_ST_IDLE)
+			n_chars = 1;
+	}
 
-	/* call the .tx_cb() to populate the Tx buffer */
-	OSMO_ASSERT(cfg->tx_cb != NULL);
-	suart->cfg.tx_cb(cfg->priv, msg);
+	if (n_chars > 0) {
+		/* allocate a Tx buffer msgb */
+		msg = msgb_alloc_c(suart, n_chars, "soft_uart_tx");
+		OSMO_ASSERT(msg != NULL);
+
+		/* call the .tx_cb() to populate the Tx buffer */
+		OSMO_ASSERT(cfg->tx_cb != NULL);
+		suart->cfg.tx_cb(cfg->priv, msg);
+	}
 
 	for (size_t i = 0; i < n_ubits; i++)
 		ubits[i] = osmo_uart_tx_bit(suart, msg);
