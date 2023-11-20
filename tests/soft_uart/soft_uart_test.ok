@@ -171,3 +171,75 @@ suart_rx_cb(flags=00): 10 20 00 00
 test_tx_rx_exec_one(n_bits_total=32): 00000101 00000011 00000001 00000001
 suart_tx_cb(len=0/4): 
 test_tx_rx_exec_one(n_bits_total=32): 11111111 11111111 11111111 11111111
+======== test_tx_rx_pull_n(): pulling 32 bits (1 at a time)
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+11111111111111111111111111111111
+======== test_tx_rx_pull_n(): feeding 32 bits into the receiver
+======== test_tx_rx_pull_n(): pulling 32 bits (2 at a time)
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+11111111111111111111111111111111
+======== test_tx_rx_pull_n(): feeding 32 bits into the receiver
+======== test_tx_rx_pull_n(): pulling 32 bits (4 at a time)
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+11111111111111111111111111111111
+======== test_tx_rx_pull_n(): feeding 32 bits into the receiver
+======== test_tx_rx_pull_n(): pulling 32 bits (8 at a time)
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+suart_tx_cb(len=0/0): 
+11111111111111111111111111111111
+======== test_tx_rx_pull_n(): feeding 32 bits into the receiver

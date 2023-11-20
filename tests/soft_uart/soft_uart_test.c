@@ -305,10 +305,46 @@ static void test_tx_rx(void)
 	osmo_soft_uart_free(suart);
 }
 
+static void test_tx_rx_pull_n(unsigned int n)
+{
+	struct osmo_soft_uart *suart;
+	ubit_t tx_buf[32];
+	int rc;
+
+	suart = osmo_soft_uart_alloc(NULL, __func__, &suart_test_default_cfg);
+	OSMO_ASSERT(suart != NULL);
+
+	osmo_soft_uart_set_tx(suart, true);
+	osmo_soft_uart_set_rx(suart, true);
+
+	g_tx_cb_cfg.data = (void *)"\x55";
+	g_tx_cb_cfg.data_len = 1;
+
+	printf("======== %s(): pulling %lu bits (%u at a time)\n", __func__, sizeof(tx_buf), n);
+	for (unsigned int i = 0; i < sizeof(tx_buf); i += n) {
+		rc = osmo_soft_uart_tx_ubits(suart, &tx_buf[i], n);
+		OSMO_ASSERT(rc == 0);
+	}
+	printf("%s\n", osmo_ubit_dump(&tx_buf[0], sizeof(tx_buf)));
+
+	printf("======== %s(): feeding %lu bits into the receiver\n", __func__, sizeof(tx_buf));
+	rc = osmo_soft_uart_rx_ubits(suart, &tx_buf[0], sizeof(tx_buf));
+	OSMO_ASSERT(rc == 0);
+	osmo_soft_uart_flush_rx(suart);
+
+	osmo_soft_uart_free(suart);
+}
+
 int main(int argc, char **argv)
 {
 	test_rx();
 	test_tx_rx();
+
+	/* test pulling small number of bits at a time */
+	test_tx_rx_pull_n(1);
+	test_tx_rx_pull_n(2);
+	test_tx_rx_pull_n(4);
+	test_tx_rx_pull_n(8);
 
 	return 0;
 }
