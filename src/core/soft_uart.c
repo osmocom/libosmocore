@@ -24,6 +24,7 @@
 #include <stdint.h>
 #include <errno.h>
 
+#include <osmocom/core/utils.h>
 #include <osmocom/core/timer.h>
 #include <osmocom/core/soft_uart.h>
 
@@ -285,6 +286,9 @@ int osmo_soft_uart_tx_ubits(struct osmo_soft_uart *suart, ubit_t *ubits, size_t 
 	const struct osmo_soft_uart_cfg *cfg = &suart->cfg;
 	size_t n_frame_bits, n_chars;
 	struct msgb *msg = NULL;
+
+	if (OSMO_UNLIKELY(n_ubits == 0))
+		return -EINVAL;
 
 	/* calculate UART frame size for the effective config */
 	n_frame_bits = 1 + cfg->num_data_bits + cfg->num_stop_bits;
