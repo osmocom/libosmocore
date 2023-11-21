@@ -356,6 +356,7 @@ int osmo_iofd_write_msgb(struct osmo_io_fd *iofd, struct msgb *msg)
 {
 	int rc;
 
+	OSMO_ASSERT(iofd->mode == OSMO_IO_FD_MODE_READ_WRITE);
 	if (OSMO_UNLIKELY(!iofd->io_ops.write_cb)) {
 		LOGPIO(iofd, LOGL_ERROR, "write_cb not set, Rejecting msgb\n");
 		return -EINVAL;
