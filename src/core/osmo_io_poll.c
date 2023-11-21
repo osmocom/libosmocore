@@ -78,33 +78,8 @@ static void iofd_poll_ofd_cb_recvmsg_sendmsg(struct osmo_fd *ofd, unsigned int w
 	if (what & OSMO_FD_WRITE) {
 		struct iofd_msghdr *msghdr = iofd_txqueue_dequeue(iofd);
 		if (msghdr) {
-			msg = msghdr->msg;
-
 			rc = sendmsg(ofd->fd, &msghdr->hdr, msghdr->flags);
-			if (rc > 0 && rc < msgb_length(msg)) {
-				msgb_pull(msg, rc);
-				iofd_txqueue_enqueue_front(iofd, msghdr);
-				return;
-			}
-			if (rc == -EAGAIN) {
-				iofd_txqueue_enqueue_front(iofd, msghdr);
-				return;
-			}
-
-			switch (iofd->mode) {
-			case OSMO_IO_FD_MODE_READ_WRITE:
-				iofd->io_ops.write_cb(iofd, rc, msg);
-				break;
-			case OSMO_IO_FD_MODE_RECVFROM_SENDTO:
-				iofd->io_ops.sendto_cb(iofd, rc, msg, &msghdr->osa);
-				break;
-			case OSMO_IO_FD_MODE_SCTP_RECVMSG_SEND:
-				OSMO_ASSERT(false);
-				break;
-			}
-
-			talloc_free(msghdr);
-			msgb_free(msg);
+			iofd_handle_send_completion(iofd, rc, msghdr);
 		} else {
 			if (iofd->mode == OSMO_IO_FD_MODE_READ_WRITE)
 				/* Socket is writable, but we have no data to send. A non-blocking/async

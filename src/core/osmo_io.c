@@ -344,6 +344,46 @@ void iofd_handle_recv(struct osmo_io_fd *iofd, struct msgb *msg, int rc, struct 
 	}
 }
 
+/*! completion handler: Calld by osmo_io backend after a given I/O operation has completed
+ *  \param[in] iofd I/O file-descriptor on which I/O has completed
+ *  \param[in] rc return value of the I/O operation
+ *  \param[in] msghdr serialized msghdr containing state of completed I/O
+ */
+void iofd_handle_send_completion(struct osmo_io_fd *iofd, int rc, struct iofd_msghdr *msghdr)
+{
+	struct msgb *msg = msghdr->msg;
+
+	/* Incomplete write */
+	if (rc > 0 && rc < msgb_length(msg)) {
+		/* Re-enqueue remaining data */
+		msgb_pull(msg, rc);
+		msghdr->iov[0].iov_len = msgb_length(msg);
+		iofd_txqueue_enqueue_front(iofd, msghdr);
+		return;
+	}
+
+	/* Reenqueue the complete msgb */
+	if (rc == -EAGAIN) {
+		iofd_txqueue_enqueue_front(iofd, msghdr);
+		return;
+	}
+
+	/* All other failure and success cases are handled here */
+	switch (msghdr->action) {
+	case IOFD_ACT_WRITE:
+		iofd->io_ops.write_cb(iofd, rc, msg);
+		break;
+	case IOFD_ACT_SENDTO:
+		iofd->io_ops.sendto_cb(iofd, rc, msg, &msghdr->osa);
+		break;
+	default:
+		OSMO_ASSERT(0);
+	}
+
+	msgb_free(msghdr->msg);
+	iofd_msghdr_free(msghdr);
+}
+
 /* Public functions */
 
 /*! Send a message through a connected socket.

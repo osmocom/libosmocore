@@ -186,43 +186,14 @@ static int iofd_uring_submit_tx(struct osmo_io_fd *iofd);
 static void iofd_uring_handle_tx(struct iofd_msghdr *msghdr, int rc)
 {
 	struct osmo_io_fd *iofd = msghdr->iofd;
-	struct msgb *msg = msghdr->msg;
 
-	if (IOFD_FLAG_ISSET(iofd, IOFD_FLAG_CLOSED))
-		goto out_free;
-
-	/* Error during write */
-	if (rc < 0) {
-		if (msghdr->action == IOFD_ACT_WRITE)
-			iofd->io_ops.write_cb(iofd, rc, msg);
-		else if (msghdr->action == IOFD_ACT_SENDTO)
-			iofd->io_ops.sendto_cb(iofd, rc, msg, &msghdr->osa);
-		else
-			OSMO_ASSERT(0);
-		goto out_free;
+	if (OSMO_UNLIKELY(IOFD_FLAG_ISSET(iofd, IOFD_FLAG_CLOSED))) {
+		msgb_free(msghdr->msg);
+		iofd_msghdr_free(msghdr);
+	} else {
+		iofd_handle_send_completion(iofd, rc, msghdr);
 	}
 
-	/* Incomplete write */
-	if (rc < msgb_length(msg)) {
-		/* Re-enqueue remaining data */
-		msgb_pull(msg, rc);
-		msghdr->iov[0].iov_len = msgb_length(msg);
-		iofd_txqueue_enqueue_front(iofd, msghdr);
-		goto out;
-	}
-
-	if (msghdr->action == IOFD_ACT_WRITE)
-		iofd->io_ops.write_cb(iofd, rc, msg);
-	else if (msghdr->action == IOFD_ACT_SENDTO)
-		iofd->io_ops.sendto_cb(iofd, rc, msg, &msghdr->osa);
-	else
-		OSMO_ASSERT(0);
-
-out_free:
-	msgb_free(msghdr->msg);
-	iofd_msghdr_free(msghdr);
-
-out:
 	iofd->u.uring.write_msghdr = NULL;
 	/* submit the next to-be-transmitted message for this file descriptor */
 	if (iofd->u.uring.write_enabled && !IOFD_FLAG_ISSET(iofd, IOFD_FLAG_CLOSED))
