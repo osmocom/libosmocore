@@ -315,6 +315,7 @@ static void test_osa_str(void)
 	const char *result;
 	struct osmo_sockaddr localhost4 = {};
 	struct osmo_sockaddr localhost6 = {};
+	struct osmo_sockaddr osa = {};
 
 	localhost4.u.sin = (struct sockaddr_in){
 		.sin_family = AF_INET,
@@ -383,6 +384,18 @@ static void test_osa_str(void)
 	result = osmo_sockaddr_to_str(&localhost6);
 	printf("Checking osmo_sockaddr_to_str_buf long IPv6 port static buffer\n");
 	OSMO_ASSERT(!strncmp("[2003:1234:5678:90ab:cdef:1234:4321:4321]:23420", result, sizeof(buf)));
+
+	printf("Checking osmo_sockaddr_from_str_and_uint for 0.0.0.0\n");
+	OSMO_ASSERT(osmo_sockaddr_from_str_and_uint(&osa, "0.0.0.0", 1234) == 0);
+	OSMO_ASSERT(osmo_sockaddr_is_any(&osa));
+
+	printf("Checking osmo_sockaddr_from_str_and_uint for ::\n");
+	OSMO_ASSERT(osmo_sockaddr_from_str_and_uint(&osa, "::", 1234) == 0);
+	OSMO_ASSERT(osmo_sockaddr_is_any(&osa));
+
+	printf("Checking osmo_sockaddr_from_str_and_uint for 1.2.3.4\n");
+	OSMO_ASSERT(osmo_sockaddr_from_str_and_uint(&osa, "1.2.3.4", 1234) == 0);
+	OSMO_ASSERT(!osmo_sockaddr_is_any(&osa));
 }
 
 static void test_osa_netmask_prefixlen(void)

@@ -374,6 +374,7 @@ osmo_signal_talloc_ctx_init;
 osmo_signal_unregister_handler;
 osmo_sockaddr_cmp;
 osmo_sockaddr_from_octets;
+osmo_sockaddr_from_str_and_uint;
 osmo_sockaddr_in_to_str_and_uint;
 osmo_sockaddr_is_any;
 osmo_sockaddr_is_local;

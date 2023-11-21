@@ -74,6 +74,7 @@ int osmo_sockaddr_cmp(const struct osmo_sockaddr *a,
 
 int osmo_sockaddr_to_octets(uint8_t *dst, size_t dst_maxlen, const struct osmo_sockaddr *os);
 int osmo_sockaddr_from_octets(struct osmo_sockaddr *os, const void *src, size_t src_len);
+int osmo_sockaddr_from_str_and_uint(struct osmo_sockaddr *osa_out, const char *ipstr, uint16_t port);
 
 int osmo_sockaddr_netmask_to_prefixlen(const struct osmo_sockaddr *addr);
 

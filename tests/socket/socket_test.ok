@@ -31,3 +31,6 @@ Checking osmo_sockaddr_to_str_buf only 5 bytes IPv6
 Checking osmo_sockaddr_to_str_buf long IPv6
 Checking osmo_sockaddr_to_str_buf long IPv6 port
 Checking osmo_sockaddr_to_str_buf long IPv6 port static buffer
+Checking osmo_sockaddr_from_str_and_uint for 0.0.0.0
+Checking osmo_sockaddr_from_str_and_uint for ::
+Checking osmo_sockaddr_from_str_and_uint for 1.2.3.4

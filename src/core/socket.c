@@ -1662,6 +1662,27 @@ int osmo_sockaddr_netmask_to_prefixlen(const struct osmo_sockaddr *netmask)
 	}
 }
 
+/*! Convert an IP address string (and port number) into a 'struct osmo_sockaddr'.
+ *  \param[out] osa_out caller-allocated osmo_sockaddr storage
+ *  \param[in] ipstr IP[v4,v6] address in string format
+ *  \param[in] port port number (host byte order)
+ *  \returns 0 on success; negative on error. */
+int osmo_sockaddr_from_str_and_uint(struct osmo_sockaddr *osa_out, const char *ipstr, uint16_t port)
+{
+	struct addrinfo *ai = addrinfo_helper(AF_UNSPEC, 0, 0, ipstr, port, true);
+
+	if (!ai)
+		return -EIO;
+
+	if (ai->ai_addrlen > sizeof(*osa_out))
+		return -ENOSPC;
+
+	memcpy(&osa_out->u.sa, ai->ai_addr, ai->ai_addrlen);
+	freeaddrinfo(ai);
+
+	return 0;
+}
+
 /*! Initialize a unix domain socket (including bind/connect)
  *  \param[in] type Socket type like SOCK_DGRAM, SOCK_STREAM
  *  \param[in] proto Protocol like IPPROTO_TCP, IPPROTO_UDP
