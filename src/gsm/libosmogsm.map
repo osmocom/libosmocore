@@ -864,5 +864,12 @@ osmo_csd_3k6_decode_frame;
 osmo_csd_3k6_encode_frame;
 osmo_csd_ubit_dump;
 
+osmo_rlp_decode;
+osmo_rlp_encode;
+osmo_rlp_fcs_compute;
+osmo_rlp_ftype_s_vals;
+osmo_rlp_ftype_u_vals;
+osmo_rlp_ftype_vals;
+
 local: *;
 };

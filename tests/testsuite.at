@@ -519,3 +519,9 @@ AT_KEYWORDS([soft_uart])
 cat $abs_srcdir/soft_uart/soft_uart_test.ok > expout
 AT_CHECK([$abs_top_builddir/tests/soft_uart/soft_uart_test], [0], [expout], [ignore])
 AT_CLEANUP
+
+AT_SETUP([rlp])
+AT_KEYWORDS([rlp])
+cat $abs_srcdir/rlp/rlp_test.ok > expout
+AT_CHECK([$abs_top_builddir/tests/rlp/rlp_test], [0], [expout], [ignore])
+AT_CLEANUP

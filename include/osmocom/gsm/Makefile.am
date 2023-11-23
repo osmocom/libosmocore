@@ -48,6 +48,7 @@ osmogsm_HEADERS = \
 	l1sap.h \
 	oap.h \
 	oap_client.h \
+	rlp.h \
 	rsl.h \
 	rxlev_stat.h \
 	sysinfo.h \
