@@ -51,7 +51,7 @@ enum osmo_soft_uart_status {
 struct osmo_soft_uart_cfg {
 	/*! number of data bits (typically 5, 6, 7 or 8) */
 	uint8_t num_data_bits;
-	/*! number of stop bots (typically 1 or 2) */
+	/*! number of stop bits (typically 1 or 2) */
 	uint8_t num_stop_bits;
 	/*! parity mode (none, even, odd) */
 	enum osmo_soft_uart_parity_mode parity_mode;
@@ -59,7 +59,7 @@ struct osmo_soft_uart_cfg {
 	 *  before calling the receive call-back */
 	unsigned int rx_buf_size;
 	/*! receive timeout; UART will flush receive buffer via the receive call-back
-	 * after indicated number of milli-seconds even if it is not full yet */
+	 * after indicated number of milliseconds even if it is not full yet */
 	unsigned int rx_timeout_ms;
 
 	/*! opaque application-private data; passed to call-backs */
@@ -71,7 +71,7 @@ struct osmo_soft_uart_cfg {
 	void (*rx_cb)(void *priv, struct msgb *rx_data, unsigned int flags);
 
 	/*! transmit call-back. The implementation is expected to provide at most
-	 * tx_data->data_len characters (the actual amount is detetmined by the
+	 * tx_data->data_len characters (the actual amount is determined by the
 	 * number of requested bits and the effective UART configuration). */
 	void (*tx_cb)(void *priv, struct msgb *tx_data);
 
