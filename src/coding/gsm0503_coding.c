@@ -2439,7 +2439,7 @@ out:
 /*! Perform channel encoding on a TCH/AFS channel according to TS 05.03
  *  \param[out] bursts caller-allocated output buffer for bursts bits
  *  \param[in] tch_data Codec input data in RTP payload format
- *  \param[in] len Length of \a tch_data in bytes
+ *  \param[in] len Length of \a tch_data in bytes or 0 to generate a bad frame
  *  \param[in] codec_mode_req Use CMR (1) or FT (0)
  *  \param[in] codec Array of codecs (active codec set)
  *  \param[in] codecs Number of entries in \a codec
@@ -2473,12 +2473,19 @@ int gsm0503_tch_afs_encode(ubit_t *bursts, const uint8_t *tch_data, int len,
 
 	switch (codec[ft]) {
 	case 7: /* TCH/AFS12.2 */
-		if (len != 31)
-			goto invalid_length;
+		if (!len) {
+			/* No data, induce BFI in the receiver by inverted CRC bits.
+			 * The data bit are all 0, so the correct parity bits would be 111111.  */
+			memset(d, 0, 244);
+			memset(p, 0, 6);
+		} else {
+			if (len != 31)
+				goto invalid_length;
 
-		tch_amr_disassemble(d, tch_data, 244);
+			tch_amr_disassemble(d, tch_data, 244);
 
-		osmo_crc8gen_set_bits(&gsm0503_amr_crc6, d, 81, p);
+			osmo_crc8gen_set_bits(&gsm0503_amr_crc6, d, 81, p);
+		}
 
 		tch_amr_merge(conv, d, p, 244, 81);
 
@@ -2486,12 +2493,18 @@ int gsm0503_tch_afs_encode(ubit_t *bursts, const uint8_t *tch_data, int len,
 
 		break;
 	case 6: /* TCH/AFS10.2 */
-		if (len != 26)
-			goto invalid_length;
+		if (!len) {
+			/* See comment above. */
+			memset(d, 0, 204);
+			memset(p, 0, 6);
+		} else {
+			if (len != 26)
+				goto invalid_length;
 
-		tch_amr_disassemble(d, tch_data, 204);
+			tch_amr_disassemble(d, tch_data, 204);
 
-		osmo_crc8gen_set_bits(&gsm0503_amr_crc6, d, 65, p);
+			osmo_crc8gen_set_bits(&gsm0503_amr_crc6, d, 65, p);
+		}
 
 		tch_amr_merge(conv, d, p, 204, 65);
 
@@ -2499,12 +2512,18 @@ int gsm0503_tch_afs_encode(ubit_t *bursts, const uint8_t *tch_data, int len,
 
 		break;
 	case 5: /* TCH/AFS7.95 */
-		if (len != 20)
-			goto invalid_length;
+		if (!len) {
+			/* See comment above. */
+			memset(d, 0, 159);
+			memset(p, 0, 6);
+		} else {
+			if (len != 20)
+				goto invalid_length;
 
-		tch_amr_disassemble(d, tch_data, 159);
+			tch_amr_disassemble(d, tch_data, 159);
 
-		osmo_crc8gen_set_bits(&gsm0503_amr_crc6, d, 75, p);
+			osmo_crc8gen_set_bits(&gsm0503_amr_crc6, d, 75, p);
+		}
 
 		tch_amr_merge(conv, d, p, 159, 75);
 
@@ -2512,12 +2531,18 @@ int gsm0503_tch_afs_encode(ubit_t *bursts, const uint8_t *tch_data, int len,
 
 		break;
 	case 4: /* TCH/AFS7.4 */
-		if (len != 19)
-			goto invalid_length;
+		if (!len) {
+			/* See comment above. */
+			memset(d, 0, 148);
+			memset(p, 0, 6);
+		} else {
+			if (len != 19)
+				goto invalid_length;
 
-		tch_amr_disassemble(d, tch_data, 148);
+			tch_amr_disassemble(d, tch_data, 148);
 
-		osmo_crc8gen_set_bits(&gsm0503_amr_crc6, d, 61, p);
+			osmo_crc8gen_set_bits(&gsm0503_amr_crc6, d, 61, p);
+		}
 
 		tch_amr_merge(conv, d, p, 148, 61);
 
@@ -2525,12 +2550,18 @@ int gsm0503_tch_afs_encode(ubit_t *bursts, const uint8_t *tch_data, int len,
 
 		break;
 	case 3: /* TCH/AFS6.7 */
-		if (len != 17)
-			goto invalid_length;
+		if (!len) {
+			/* See comment above. */
+			memset(d, 0, 134);
+			memset(p, 0, 6);
+		} else {
+			if (len != 17)
+				goto invalid_length;
 
-		tch_amr_disassemble(d, tch_data, 134);
+			tch_amr_disassemble(d, tch_data, 134);
 
-		osmo_crc8gen_set_bits(&gsm0503_amr_crc6, d, 55, p);
+			osmo_crc8gen_set_bits(&gsm0503_amr_crc6, d, 55, p);
+		}
 
 		tch_amr_merge(conv, d, p, 134, 55);
 
@@ -2538,12 +2569,18 @@ int gsm0503_tch_afs_encode(ubit_t *bursts, const uint8_t *tch_data, int len,
 
 		break;
 	case 2: /* TCH/AFS5.9 */
-		if (len != 15)
-			goto invalid_length;
+		if (!len) {
+			/* See comment above. */
+			memset(d, 0, 118);
+			memset(p, 0, 6);
+		} else {
+			if (len != 15)
+				goto invalid_length;
 
-		tch_amr_disassemble(d, tch_data, 118);
+			tch_amr_disassemble(d, tch_data, 118);
 
-		osmo_crc8gen_set_bits(&gsm0503_amr_crc6, d, 55, p);
+			osmo_crc8gen_set_bits(&gsm0503_amr_crc6, d, 55, p);
+		}
 
 		tch_amr_merge(conv, d, p, 118, 55);
 
@@ -2551,12 +2588,18 @@ int gsm0503_tch_afs_encode(ubit_t *bursts, const uint8_t *tch_data, int len,
 
 		break;
 	case 1: /* TCH/AFS5.15 */
-		if (len != 13)
-			goto invalid_length;
+		if (!len) {
+			/* See comment above. */
+			memset(d, 0, 103);
+			memset(p, 0, 6);
+		} else {
+			if (len != 13)
+				goto invalid_length;
 
-		tch_amr_disassemble(d, tch_data, 103);
+			tch_amr_disassemble(d, tch_data, 103);
 
-		osmo_crc8gen_set_bits(&gsm0503_amr_crc6, d, 49, p);
+			osmo_crc8gen_set_bits(&gsm0503_amr_crc6, d, 49, p);
+		}
 
 		tch_amr_merge(conv, d, p, 103, 49);
 
@@ -2564,12 +2607,18 @@ int gsm0503_tch_afs_encode(ubit_t *bursts, const uint8_t *tch_data, int len,
 
 		break;
 	case 0: /* TCH/AFS4.75 */
-		if (len != 12)
-			goto invalid_length;
+		if (!len) {
+			/* See comment above. */
+			memset(d, 0, 95);
+			memset(p, 0, 6);
+		} else {
+			if (len != 12)
+				goto invalid_length;
 
-		tch_amr_disassemble(d, tch_data, 95);
+			tch_amr_disassemble(d, tch_data, 95);
 
-		osmo_crc8gen_set_bits(&gsm0503_amr_crc6, d, 39, p);
+			osmo_crc8gen_set_bits(&gsm0503_amr_crc6, d, 39, p);
+		}
 
 		tch_amr_merge(conv, d, p, 95, 39);
 
@@ -2927,7 +2976,7 @@ out:
 /*! Perform channel encoding on a TCH/AHS channel according to TS 05.03
  *  \param[out] bursts caller-allocated output buffer for bursts bits
  *  \param[in] tch_data Codec input data in RTP payload format
- *  \param[in] len Length of \a tch_data in bytes
+ *  \param[in] len Length of \a tch_data in bytes or 0 to generate a bad frame
  *  \param[in] codec_mode_req Use CMR (1) or FT (0)
  *  \param[in] codec Array of codecs (active codec set)
  *  \param[in] codecs Number of entries in \a codec
@@ -2970,12 +3019,19 @@ int gsm0503_tch_ahs_encode(ubit_t *bursts, const uint8_t *tch_data, int len,
 
 	switch (codec[ft]) {
 	case 5: /* TCH/AHS7.95 */
-		if (len != 20)
-			goto invalid_length;
+		if (!len) {
+			/* No data, induce BFI in the receiver by inverted CRC bits.
+			 * The data bit are all 0, so the correct parity bits would be 111111.  */
+			memset(d, 0, 159);
+			memset(p, 0, 6);
+		} else {
+			if (len != 20)
+				goto invalid_length;
 
-		tch_amr_disassemble(d, tch_data, 159);
+			tch_amr_disassemble(d, tch_data, 159);
 
-		osmo_crc8gen_set_bits(&gsm0503_amr_crc6, d, 67, p);
+			osmo_crc8gen_set_bits(&gsm0503_amr_crc6, d, 67, p);
+		}
 
 		tch_amr_merge(conv, d, p, 123, 67);
 
@@ -2985,12 +3041,18 @@ int gsm0503_tch_ahs_encode(ubit_t *bursts, const uint8_t *tch_data, int len,
 
 		break;
 	case 4: /* TCH/AHS7.4 */
-		if (len != 19)
-			goto invalid_length;
+		if (!len) {
+			/* See comment above. */
+			memset(d, 0, 148);
+			memset(p, 0, 6);
+		} else {
+			if (len != 19)
+				goto invalid_length;
 
-		tch_amr_disassemble(d, tch_data, 148);
+			tch_amr_disassemble(d, tch_data, 148);
 
-		osmo_crc8gen_set_bits(&gsm0503_amr_crc6, d, 61, p);
+			osmo_crc8gen_set_bits(&gsm0503_amr_crc6, d, 61, p);
+		}
 
 		tch_amr_merge(conv, d, p, 120, 61);
 
@@ -3000,12 +3062,18 @@ int gsm0503_tch_ahs_encode(ubit_t *bursts, const uint8_t *tch_data, int len,
 
 		break;
 	case 3: /* TCH/AHS6.7 */
-		if (len != 17)
-			goto invalid_length;
+		if (!len) {
+			/* See comment above. */
+			memset(d, 0, 134);
+			memset(p, 0, 6);
+		} else {
+			if (len != 17)
+				goto invalid_length;
 
-		tch_amr_disassemble(d, tch_data, 134);
+			tch_amr_disassemble(d, tch_data, 134);
 
-		osmo_crc8gen_set_bits(&gsm0503_amr_crc6, d, 55, p);
+			osmo_crc8gen_set_bits(&gsm0503_amr_crc6, d, 55, p);
+		}
 
 		tch_amr_merge(conv, d, p, 110, 55);
 
@@ -3015,12 +3083,18 @@ int gsm0503_tch_ahs_encode(ubit_t *bursts, const uint8_t *tch_data, int len,
 
 		break;
 	case 2: /* TCH/AHS5.9 */
-		if (len != 15)
-			goto invalid_length;
+		if (!len) {
+			/* See comment above. */
+			memset(d, 0, 118);
+			memset(p, 0, 6);
+		} else {
+			if (len != 15)
+				goto invalid_length;
 
-		tch_amr_disassemble(d, tch_data, 118);
+			tch_amr_disassemble(d, tch_data, 118);
 
-		osmo_crc8gen_set_bits(&gsm0503_amr_crc6, d, 55, p);
+			osmo_crc8gen_set_bits(&gsm0503_amr_crc6, d, 55, p);
+		}
 
 		tch_amr_merge(conv, d, p, 102, 55);
 
@@ -3030,12 +3104,18 @@ int gsm0503_tch_ahs_encode(ubit_t *bursts, const uint8_t *tch_data, int len,
 
 		break;
 	case 1: /* TCH/AHS5.15 */
-		if (len != 13)
-			goto invalid_length;
+		if (!len) {
+			/* See comment above. */
+			memset(d, 0, 103);
+			memset(p, 0, 6);
+		} else {
+			if (len != 13)
+				goto invalid_length;
 
-		tch_amr_disassemble(d, tch_data, 103);
+			tch_amr_disassemble(d, tch_data, 103);
 
-		osmo_crc8gen_set_bits(&gsm0503_amr_crc6, d, 49, p);
+			osmo_crc8gen_set_bits(&gsm0503_amr_crc6, d, 49, p);
+		}
 
 		tch_amr_merge(conv, d, p, 91, 49);
 
@@ -3045,12 +3125,18 @@ int gsm0503_tch_ahs_encode(ubit_t *bursts, const uint8_t *tch_data, int len,
 
 		break;
 	case 0: /* TCH/AHS4.75 */
-		if (len != 12)
-			goto invalid_length;
+		if (!len) {
+			/* See comment above. */
+			memset(d, 0, 95);
+			memset(p, 0, 6);
+		} else {
+			if (len != 12)
+				goto invalid_length;
 
-		tch_amr_disassemble(d, tch_data, 95);
+			tch_amr_disassemble(d, tch_data, 95);
 
-		osmo_crc8gen_set_bits(&gsm0503_amr_crc6, d, 39, p);
+			osmo_crc8gen_set_bits(&gsm0503_amr_crc6, d, 39, p);
+		}
 
 		tch_amr_merge(conv, d, p, 83, 39);
 
