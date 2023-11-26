@@ -57,19 +57,21 @@ const struct value_string osmo_rlp_ftype_s_vals[] = {
 	{ 0, NULL }
 };
 
+/* number of bytes used up by FCS */
+#define FCS_SIZE_BYTES	3
 
 /*! decode a RLP frame into its abstract representation. Doesn't check FCS correctness.
  *  \param[out] out caller-allocated memory for output of decoded frame
  *  \param[in] version RLP version number to use when decoding
  *  \param[in] data raw RLP frame input data
- *  \param[in] data_len length of data (in octets)
+ *  \param[in] data_len length of data (in octets); must be 30 (240bit) or 72 (576bit)
  *  \returns 0 in case of success; negative on error */
 int osmo_rlp_decode(struct osmo_rlp_frame_decoded *out, uint8_t version, const uint8_t *data, size_t data_len)
 {
+	const uint8_t hdr_len = 2; /* will become a variable when we introduce v2 support */
 	uint8_t n_s, n_r;
 
-	/* we only support 240 bit so far */
-	if (data_len != 240/8)
+	if (data_len != 240/8 && data_len != 576/8)
 		return -EINVAL;
 
 	/* we only support version 0+1 so far */
@@ -82,7 +84,7 @@ int osmo_rlp_decode(struct osmo_rlp_frame_decoded *out, uint8_t version, const u
 	out->c_r = data[0] & 1;
 	n_s = (data[0] >> 3) | (data[1] & 1) << 5;
 	n_r = (data[1] >> 2);
-	out->fcs = (data[240/8-1] << 16) | (data[240/8-2]) << 8 | (data[240/8-3] << 0);
+	out->fcs = (data[data_len-1] << 16) | (data[data_len-2]) << 8 | (data[data_len-3] << 0);
 	out->p_f = (data[1] >> 1) & 1;
 
 	switch (n_s) {
@@ -90,8 +92,8 @@ int osmo_rlp_decode(struct osmo_rlp_frame_decoded *out, uint8_t version, const u
 		out->ftype = OSMO_RLP_FT_U;
 		out->u_ftype = n_r & 0x1f;
 		if (out->u_ftype == OSMO_RLP_U_FT_XID) {
-			memcpy(out->info, data+2, 240/8 - 5);
-			out->info_len = 240/8 - 5;
+			memcpy(out->info, data + hdr_len, data_len - (hdr_len + FCS_SIZE_BYTES));
+			out->info_len = data_len - (hdr_len + FCS_SIZE_BYTES);
 		}
 		break;
 	case 0x3e:
@@ -104,8 +106,8 @@ int osmo_rlp_decode(struct osmo_rlp_frame_decoded *out, uint8_t version, const u
 		out->s_ftype = (data[0] >> 1) & 3;
 		out->n_s = n_s;
 		out->n_r = n_r;
-		memcpy(out->info, data+2, 240/8 - 5);
-		out->info_len = 240/8 - 5;
+		memcpy(out->info, data + hdr_len, data_len - (hdr_len + FCS_SIZE_BYTES));
+		out->info_len = data_len - (2 + 3);
 		break;
 	}
 
@@ -114,12 +116,12 @@ int osmo_rlp_decode(struct osmo_rlp_frame_decoded *out, uint8_t version, const u
 
 /*! encode a RLP frame from its abstract representation. Generates FCS.
  *  \param[out] out caller-allocated output buffer
- *  \param[in] out_size size of output buffer (in octets)
+ *  \param[in] out_size size of output buffer (in octets); must be 30 (240bit) or 72 (576bit)
  *  \param[in] in decoded RLP frame which is to be encoded
  *  \returns number of output bytes used; negative on error */
 int osmo_rlp_encode(uint8_t *out, size_t out_size, const struct osmo_rlp_frame_decoded *in)
 {
-	uint8_t out_len = 240/8;
+	const uint8_t hdr_len = 2; /* will become a variable when we introduce v2 support */
 	uint8_t n_s, n_r, s_bits;
 	uint32_t fcs;
 
@@ -127,10 +129,10 @@ int osmo_rlp_encode(uint8_t *out, size_t out_size, const struct osmo_rlp_frame_d
 	if (in->version >= 2)
 		return -ENOTSUP;
 
-	if (out_size < out_len)
+	if (out_size != 240/8 && out_size != 576/8)
 		return -EINVAL;
 
-	memset(out, 0, out_len);
+	memset(out, 0, out_size);
 
 	if (in->c_r)
 		out[0] |= 0x01;
@@ -142,8 +144,11 @@ int osmo_rlp_encode(uint8_t *out, size_t out_size, const struct osmo_rlp_frame_d
 		n_s = 0x3f;
 		n_r = in->u_ftype;
 		s_bits = 0;
-		if (in->u_ftype == OSMO_RLP_U_FT_XID)
-			memcpy(out+2, in->info, in->info_len);
+		if (in->u_ftype == OSMO_RLP_U_FT_XID) {
+			if (in->info_len > out_size - (hdr_len + FCS_SIZE_BYTES))
+				return -EINVAL;
+			memcpy(out+hdr_len, in->info, in->info_len);
+		}
 		break;
 	case OSMO_RLP_FT_S:
 		n_s = 0x3e;
@@ -152,12 +157,12 @@ int osmo_rlp_encode(uint8_t *out, size_t out_size, const struct osmo_rlp_frame_d
 		break;
 	case OSMO_RLP_FT_IS:
 		/* we only support 240 bit so far */
-		if (in->info_len != 240/8 - 5)
+		if (in->info_len > out_size - (hdr_len + FCS_SIZE_BYTES))
 			return -EINVAL;
 		n_s = in->n_s;
 		n_r = in->n_r;
 		s_bits = in->s_ftype;
-		memcpy(out+2, in->info, in->info_len);
+		memcpy(out+hdr_len, in->info, in->info_len);
 		break;
 	default:
 		return -EINVAL;
@@ -174,12 +179,12 @@ int osmo_rlp_encode(uint8_t *out, size_t out_size, const struct osmo_rlp_frame_d
 	out[0] |= (s_bits & 3) << 1;
 
 	/* compute FCS + add it to end of frame */
-	fcs = osmo_rlp_fcs_compute(out, out_len - 3);
-	out[out_len - 3] = (fcs >> 0) & 0xff;
-	out[out_len - 2] = (fcs >> 8) & 0xff;
-	out[out_len - 1] = (fcs >> 16) & 0xff;
+	fcs = osmo_rlp_fcs_compute(out, out_size - FCS_SIZE_BYTES);
+	out[out_size - 3] = (fcs >> 0) & 0xff;
+	out[out_size - 2] = (fcs >> 8) & 0xff;
+	out[out_size - 1] = (fcs >> 16) & 0xff;
 
-	return out_len;
+	return out_size;
 }
 
 
