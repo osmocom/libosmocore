@@ -1,3 +1,10 @@
+libosmocore (1.9.1) unstable; urgency=medium
+
+  [ Manawyrm ]
+  * logging: ensure ANSI color escape is sent in same line/before newline
+
+ -- Oliver Smith <osmith@sysmocom.de>  Tue, 28 Nov 2023 11:21:41 +0100
+
 libosmocore (1.9.0) unstable; urgency=medium
 
   [ Oliver Smith ]
