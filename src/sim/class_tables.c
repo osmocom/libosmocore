@@ -19,7 +19,7 @@
 #include <osmocom/core/utils.h>
 #include <osmocom/sim/class_tables.h>
 
-static const uint8_t iso7816_ins_tbl[] = {
+static const uint8_t iso7816_ins_tbl[256] = {
 	[0xB0]	= 2,	/* READ BIN */
 	[0xD0]	= 3,	/* WRITE BIN */
 	[0xD6]	= 3,	/* UPDATE BIN */
