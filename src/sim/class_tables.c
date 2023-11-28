@@ -350,6 +350,13 @@ const uint8_t usim_ins_case[256] = {
 	[0x88]		= 4,	/* AUTHENTICATE */
 };
 
+/* https://learn.microsoft.com/en-us/windows-hardware/drivers/smartcard/discovery-process */
+static const uint8_t microsoft_discovery_ins_tbl[256] = {
+	[0xA4]	= 4,	/* SELECT FILE */
+	[0xCA]	= 2,	/* GET DATA */
+	[0xC0]	= 2,	/* GET RESPONSE */
+};
+
 int osim_determine_apdu_case(const struct osim_cla_ins_card_profile *prof,
 			     const uint8_t *hdr)
 {
@@ -374,5 +381,16 @@ int osim_determine_apdu_case(const struct osim_cla_ins_card_profile *prof,
 			return rc;
 		}
 	}
+	/* special handling for Microsoft who insists to use INS=0xCA in CLA=0x00 which is not
+	 * really part of GSM SIM, ETSI UICC or 3GPP USIM specifications, but only ISO7816. Rather than adding
+	 * it to each and every card profile, let's add the instructions listed at
+	 * https://learn.microsoft.com/en-us/windows-hardware/drivers/smartcard/discovery-process explicitly
+	 * here. They will only be used in case no more specific match was found in the actual profile above. */
+	if (cla == 0x00) {
+		rc = microsoft_discovery_ins_tbl[ins];
+		if (rc)
+			return rc;
+	}
+
 	return 0;
 }
