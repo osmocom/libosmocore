@@ -396,6 +396,22 @@ int osmo_soft_uart_configure(struct osmo_soft_uart *suart, const struct osmo_sof
 	return 0;
 }
 
+/*! Get a name for the given soft-UART instance.
+ * \param[in] suart soft-UART instance to get the name from.
+ * \returns name of the given soft-UART instance. */
+const char *osmo_soft_uart_get_name(const struct osmo_soft_uart *suart)
+{
+	return suart->name;
+}
+
+/*! Set a new name for the given soft-UART instance.
+ * \param[in] suart soft-UART instance to set the name for.
+ * \param[in] name the new name. */
+void osmo_soft_uart_set_name(struct osmo_soft_uart *suart, const char *name)
+{
+	osmo_talloc_replace_string(suart, (char **)&suart->name, name);
+}
+
 /*! Enable/disable receiver of the given soft-UART.
  * \param[in] suart soft-UART instance to be re-configured.
  * \param[in] enable enable/disable state of the receiver.

@@ -87,6 +87,10 @@ struct osmo_soft_uart *osmo_soft_uart_alloc(void *ctx, const char *name,
 					    const struct osmo_soft_uart_cfg *cfg);
 void osmo_soft_uart_free(struct osmo_soft_uart *suart);
 int osmo_soft_uart_configure(struct osmo_soft_uart *suart, const struct osmo_soft_uart_cfg *cfg);
+
+const char *osmo_soft_uart_get_name(const struct osmo_soft_uart *suart);
+void osmo_soft_uart_set_name(struct osmo_soft_uart *suart, const char *name);
+
 int osmo_soft_uart_set_rx(struct osmo_soft_uart *suart, bool enable);
 int osmo_soft_uart_set_tx(struct osmo_soft_uart *suart, bool enable);
 

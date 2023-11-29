@@ -444,6 +444,8 @@ osmo_soft_uart_default_cfg;
 osmo_soft_uart_alloc;
 osmo_soft_uart_free;
 osmo_soft_uart_configure;
+osmo_soft_uart_get_name;
+osmo_soft_uart_set_name;
 osmo_soft_uart_set_rx;
 osmo_soft_uart_set_tx;
 osmo_soft_uart_rx_ubits;
