@@ -280,7 +280,7 @@ static inline ubit_t osmo_uart_tx_bit(struct osmo_soft_uart *suart, struct msgb 
  * \param[in] suart soft-UART instance to pull the bits from.
  * \param[out] ubits pointer to a buffer where to store pulled bits.
  * \param[in] n_ubits number of unpacked bits to be pulled.
- * \returns number of unpacked bits pulled; negative on error. */
+ * \returns 0 on success; negative on error. */
 int osmo_soft_uart_tx_ubits(struct osmo_soft_uart *suart, ubit_t *ubits, size_t n_ubits)
 {
 	const struct osmo_soft_uart_cfg *cfg = &suart->cfg;
