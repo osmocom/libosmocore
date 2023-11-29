@@ -16,6 +16,7 @@
  *
  */
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdint.h>
 
@@ -256,9 +257,17 @@ static void test_tx_rx(void)
 {
 	struct osmo_soft_uart_cfg cfg;
 	struct osmo_soft_uart *suart;
+	int rc;
 
 	suart = osmo_soft_uart_alloc(NULL, __func__, &suart_test_default_cfg);
 	OSMO_ASSERT(suart != NULL);
+
+	/* expect -EAGAIN when the transmitter is not enabled */
+	rc = osmo_soft_uart_tx_ubits(suart, NULL, 42);
+	OSMO_ASSERT(rc == -EAGAIN);
+	/* expect -EAGAIN when the receiver is not enabled */
+	rc = osmo_soft_uart_rx_ubits(suart, NULL, 42);
+	OSMO_ASSERT(rc == -EAGAIN);
 
 	osmo_soft_uart_set_tx(suart, true);
 	osmo_soft_uart_set_rx(suart, true);

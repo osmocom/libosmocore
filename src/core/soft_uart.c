@@ -111,9 +111,6 @@ static void suart_rx_ch(struct osmo_soft_uart *suart, uint8_t ch)
 /* receive a single bit */
 static inline void osmo_uart_rx_bit(struct osmo_soft_uart *suart, const ubit_t bit)
 {
-	if (!suart->rx.running)
-		return;
-
 	switch (suart->rx.flow_state) {
 	case SUART_FLOW_ST_IDLE:
 		if (bit == 0) { /* start bit condition */
@@ -196,9 +193,12 @@ static void suart_rx_timer_cb(void *data)
  * \param[in] suart soft-UART instance to feed bits into.
  * \param[in] ubits pointer to the unpacked bits.
  * \param[in] n_ubits number of unpacked bits to be fed.
- * \returns 0 on success; negative on error. */
+ * \returns 0 on success; negative on error.
+ *          -EAGAIN indicates that the receiver is disabled. */
 int osmo_soft_uart_rx_ubits(struct osmo_soft_uart *suart, const ubit_t *ubits, size_t n_ubits)
 {
+	if (!suart->rx.running)
+		return -EAGAIN;
 	for (size_t i = 0; i < n_ubits; i++)
 		osmo_uart_rx_bit(suart, ubits[i]);
 	return 0;
@@ -212,9 +212,6 @@ int osmo_soft_uart_rx_ubits(struct osmo_soft_uart *suart, const ubit_t *ubits, s
 static inline ubit_t osmo_uart_tx_bit(struct osmo_soft_uart *suart, struct msgb *msg)
 {
 	ubit_t tx_bit = 1;
-
-	if (!suart->tx.running)
-		return tx_bit;
 
 	switch (suart->tx.flow_state) {
 	case SUART_FLOW_ST_IDLE:
@@ -280,7 +277,8 @@ static inline ubit_t osmo_uart_tx_bit(struct osmo_soft_uart *suart, struct msgb 
  * \param[in] suart soft-UART instance to pull the bits from.
  * \param[out] ubits pointer to a buffer where to store pulled bits.
  * \param[in] n_ubits number of unpacked bits to be pulled.
- * \returns 0 on success; negative on error. */
+ * \returns 0 on success; negative on error.
+ *          -EAGAIN indicates that the transmitter is disabled. */
 int osmo_soft_uart_tx_ubits(struct osmo_soft_uart *suart, ubit_t *ubits, size_t n_ubits)
 {
 	const struct osmo_soft_uart_cfg *cfg = &suart->cfg;
@@ -289,6 +287,9 @@ int osmo_soft_uart_tx_ubits(struct osmo_soft_uart *suart, ubit_t *ubits, size_t 
 
 	if (OSMO_UNLIKELY(n_ubits == 0))
 		return -EINVAL;
+
+	if (!suart->tx.running)
+		return -EAGAIN;
 
 	/* calculate UART frame size for the effective config */
 	n_frame_bits = 1 + cfg->num_data_bits + cfg->num_stop_bits;
