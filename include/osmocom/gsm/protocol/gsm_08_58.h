@@ -29,6 +29,7 @@
 
 /* Channel Number 9.3.1 */
 union abis_rsl_chan_nr {
+	struct {
 #if OSMO_IS_BIG_ENDIAN
 		uint8_t cbits:5,
 			tn:3;
@@ -36,7 +37,8 @@ union abis_rsl_chan_nr {
 		uint8_t tn:3,
 			cbits:5;
 #endif
-		uint8_t chan_nr;
+	} __attribute__ ((packed));
+	uint8_t chan_nr;
 } __attribute__ ((packed));
 #define ABIS_RSL_CHAN_NR_CBITS_Bm_ACCHs	0x01
 #define ABIS_RSL_CHAN_NR_CBITS_Lm_ACCHs(ss)	(0x02 + (ss))
@@ -55,6 +57,7 @@ union abis_rsl_chan_nr {
 
 /* Link Identifier 9.3.2 */
 union abis_rsl_link_id {
+	struct {
 #if OSMO_IS_BIG_ENDIAN
 		uint8_t cbits:2,
 			na:1,
@@ -66,7 +69,8 @@ union abis_rsl_link_id {
 			na:1,
 			cbits:2;
 #endif
-		uint8_t link_id;
+	} __attribute__ ((packed));
+	uint8_t link_id;
 } __attribute__ ((packed));
 #define ABIS_RSL_LINK_ID_CBITS_FACCH_SDCCH 0x00
 #define ABIS_RSL_LINK_ID_CBITS_SACCH 0x01
