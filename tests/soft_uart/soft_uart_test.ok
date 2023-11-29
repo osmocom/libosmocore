@@ -200,3 +200,48 @@ suart_tx_cb(len=1/1): 55
 01010101011111110101010101111111
 ======== test_tx_rx_pull_n(): feeding 32 bits into the receiver
 suart_rx_cb(flags=00): 55 55 
+======== test_modem_status(): initial status=0x00000000
+de-asserting DCD, which was not asserted
+asserting both RI and DCD, expecting the callback to be called twice
+suart_status_change_cb(status=0x00000008)
+suart_status_change_cb(status=0x0000000a)
+de-asserting RI, expecting the callback to be called
+suart_status_change_cb(status=0x00000002)
+resetting to 0x00, expecting the callback to be called
+suart_status_change_cb(status=0x00000000)
+======== test_flow_control_dtr_dsr(): initial status=0x00000000
+expecting osmo_soft_uart_tx_ubits() to yield nothing
+expecting osmo_soft_uart_rx_ubits() to yield nothing
+======== test_flow_control_dtr_dsr(): asserting both DTR and DSR
+suart_status_change_cb(status=0x00000001)
+suart_status_change_cb(status=0x00000005)
+expecting osmo_soft_uart_tx_ubits() to yield 40 bits (requesting 40 bits)
+suart_tx_cb(len=4/4): 42 42 42 42 
+0010000101001000010100100001010010000101
+expecting osmo_soft_uart_rx_ubits() to consume 40 bits and yield 4 chars
+suart_rx_cb(flags=00): 42 42 42 42 
+expecting osmo_soft_uart_tx_ubits() to yield 2 bits (requesting 2 bits)
+suart_tx_cb(len=1/1): 42 
+======== test_flow_control_dtr_dsr(): de-asserting DSR
+suart_status_change_cb(status=0x00000001)
+expecting osmo_soft_uart_tx_ubits() to yield 8 bits (requesting 40 bits)
+expecting osmo_soft_uart_rx_ubits() to consume 40 bits and yield a pending char
+suart_rx_cb(flags=00): 42 
+======== test_flow_control_rts_cts(): initial status=0x00000000
+expecting osmo_soft_uart_tx_ubits() to yield nothing
+expecting osmo_soft_uart_rx_ubits() to yield nothing
+======== test_flow_control_rts_cts(): asserting both CTS and RTS/RTR
+suart_status_change_cb(status=0x00000020)
+suart_status_change_cb(status=0x00000030)
+expecting osmo_soft_uart_tx_ubits() to yield 40 bits (requesting 40 bits)
+suart_tx_cb(len=4/4): 42 42 42 42 
+0010000101001000010100100001010010000101
+expecting osmo_soft_uart_rx_ubits() to consume 40 bits and yield 4 chars
+suart_rx_cb(flags=00): 42 42 42 42 
+expecting osmo_soft_uart_tx_ubits() to yield 2 bits (requesting 2 bits)
+suart_tx_cb(len=1/1): 42 
+======== test_flow_control_rts_cts(): de-asserting CTS
+suart_status_change_cb(status=0x00000010)
+expecting osmo_soft_uart_tx_ubits() to yield 8 bits (requesting 40 bits)
+expecting osmo_soft_uart_rx_ubits() to consume 40 bits and yield a pending char
+suart_rx_cb(flags=00): 42 

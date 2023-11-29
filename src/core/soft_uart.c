@@ -40,6 +40,8 @@ enum suart_flow_state {
 struct osmo_soft_uart {
 	struct osmo_soft_uart_cfg cfg;
 	const char *name;
+	/* modem status (bitmask of OSMO_SUART_STATUS_F_*) */
+	unsigned int status;
 	struct {
 		bool running;
 		uint8_t bit_count;
@@ -47,7 +49,6 @@ struct osmo_soft_uart {
 		struct msgb *msg;
 		ubit_t parity_bit; /* 0 (even) / 1 (odd) */
 		unsigned int flags;
-		unsigned int status;
 		struct osmo_timer_list timer;
 		enum suart_flow_state flow_state;
 	} rx;
@@ -67,6 +68,7 @@ const struct osmo_soft_uart_cfg osmo_soft_uart_default_cfg = {
 	.parity_mode = OSMO_SUART_PARITY_NONE,
 	.rx_buf_size = 1024,
 	.rx_timeout_ms = 100,
+	.flow_ctrl_mode = OSMO_SUART_FLOW_CTRL_NONE,
 };
 
 /*************************************************************************
@@ -273,11 +275,25 @@ static inline ubit_t suart_tx_bit(struct osmo_soft_uart *suart, struct msgb *msg
 	return tx_bit;
 }
 
+/* pull pending bits out of the UART */
+static size_t suart_tx_pending(struct osmo_soft_uart *suart, ubit_t *ubits, size_t n_ubits)
+{
+	size_t i;
+
+	for (i = 0; i < n_ubits; i++) {
+		if (suart->tx.flow_state == SUART_FLOW_ST_IDLE)
+			break;
+		ubits[i] = suart_tx_bit(suart, NULL);
+	}
+
+	return i;
+}
+
 /*! Pull a number of unpacked bits out of the soft-UART transmitter.
  * \param[in] suart soft-UART instance to pull the bits from.
  * \param[out] ubits pointer to a buffer where to store pulled bits.
  * \param[in] n_ubits number of unpacked bits to be pulled.
- * \returns number of bits pulled; negative on error.
+ * \returns number of bits pulled (may be less than n_ubits); negative on error.
  *          -EAGAIN indicates that the transmitter is disabled. */
 int osmo_soft_uart_tx_ubits(struct osmo_soft_uart *suart, ubit_t *ubits, size_t n_ubits)
 {
@@ -290,6 +306,24 @@ int osmo_soft_uart_tx_ubits(struct osmo_soft_uart *suart, ubit_t *ubits, size_t 
 
 	if (!suart->tx.running)
 		return -EAGAIN;
+
+	switch (suart->cfg.flow_ctrl_mode) {
+	case OSMO_SUART_FLOW_CTRL_DTR_DSR:
+		/* if DSR is de-asserted, Tx pending bits and suspend */
+		if (~suart->status & OSMO_SUART_STATUS_F_DSR)
+			return suart_tx_pending(suart, ubits, n_ubits);
+		/* else: keep transmitting as usual */
+		break;
+	case OSMO_SUART_FLOW_CTRL_RTS_CTS:
+		/* if CTS is de-asserted, Tx pending bits and suspend */
+		if (~suart->status & OSMO_SUART_STATUS_F_CTS)
+			return suart_tx_pending(suart, ubits, n_ubits);
+		/* else: keep transmitting as usual */
+		break;
+	case OSMO_SUART_FLOW_CTRL_NONE:
+	default:
+		break;
+	}
 
 	/* calculate UART frame size for the effective config */
 	n_frame_bits = 1 + cfg->num_data_bits + cfg->num_stop_bits;
@@ -321,14 +355,47 @@ int osmo_soft_uart_tx_ubits(struct osmo_soft_uart *suart, ubit_t *ubits, size_t 
 	return n_ubits;
 }
 
-/*! Set the modem status lines of the given soft-UART.
- * \param[in] suart soft-UART instance to update the modem status.
- * \param[in] status mask of osmo_soft_uart_status.
+/*! Get the modem status bitmask of the given soft-UART.
+ * \param[in] suart soft-UART instance to get the modem status.
+ * \returns bitmask of OSMO_SUART_STATUS_F_*. */
+unsigned int osmo_soft_uart_get_status(const struct osmo_soft_uart *suart)
+{
+	return suart->status;
+}
+
+/*! Set the modem status bitmask of the given soft-UART.
+ * \param[in] suart soft-UART instance to set the modem status.
+ * \param[in] status bitmask of OSMO_SUART_STATUS_F_*.
  * \returns 0 on success; negative on error. */
 int osmo_soft_uart_set_status(struct osmo_soft_uart *suart, unsigned int status)
 {
-	/* FIXME: Tx */
+	const struct osmo_soft_uart_cfg *cfg = &suart->cfg;
+
+	if (cfg->status_change_cb != NULL) {
+		if (suart->status != status)
+			cfg->status_change_cb(cfg->priv, status);
+	}
+
+	suart->status = status;
 	return 0;
+}
+
+/*! Activate/deactivate a modem status line of the given soft-UART.
+ * \param[in] suart soft-UART instance to update the modem status.
+ * \param[in] line a modem status line, one of OSMO_SUART_STATUS_F_*.
+ * \param[in] active activate (true) or deactivate (false) the line. */
+void osmo_soft_uart_set_status_line(struct osmo_soft_uart *suart,
+				    enum osmo_soft_uart_status line,
+				    bool active)
+{
+	unsigned int status = suart->status;
+
+	if (active) /* assert the given line */
+		status |= line;
+	else /* de-assert the given line */
+		status &= ~line;
+
+	osmo_soft_uart_set_status(suart, status);
 }
 
 

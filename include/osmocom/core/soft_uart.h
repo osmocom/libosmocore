@@ -4,6 +4,7 @@
  *  Software UART implementation. */
 /*
  * (C) 2022 by Harald Welte <laforge@gnumonks.org>
+ * (C) 2023 by sysmocom - s.f.m.c. GmbH <info@sysmocom.de>
  *
  * All Rights Reserved
  *
@@ -22,6 +23,8 @@
  */
 
 #include <stdint.h>
+#include <stdbool.h>
+
 #include <osmocom/core/bits.h>
 #include <osmocom/core/msgb.h>
 
@@ -43,12 +46,31 @@ enum osmo_soft_uart_flags {
 	OSMO_SUART_F_BREAK		= (1 << 2),	/*!< Break condition (not implemented) */
 };
 
-#if 0
+/*! Modem status "line" flags.
+ * https://en.wikipedia.org/wiki/RS-232#Data_and_control_signals */
 enum osmo_soft_uart_status {
-	/* RTS, CTS, ... */
-	_fixme,
+	OSMO_SUART_STATUS_F_DTR		= (1 << 0),	/*!< Data Terminal Ready */
+	OSMO_SUART_STATUS_F_DCD		= (1 << 1),	/*!< Data Carrier Detect */
+	OSMO_SUART_STATUS_F_DSR		= (1 << 2),	/*!< Data Set Ready */
+	OSMO_SUART_STATUS_F_RI		= (1 << 3),	/*!< Ring Indicator */
+	OSMO_SUART_STATUS_F_RTS_RTR	= (1 << 4),	/*!< Request To Send or Ready To Receive */
+	OSMO_SUART_STATUS_F_CTS		= (1 << 5),	/*!< Clear To Send */
 };
-#endif
+
+/*! Flow control mode.
+ * https://en.wikipedia.org/wiki/Flow_control_(data)#Hardware_flow_control */
+enum osmo_soft_uart_flow_ctrl_mode {
+	/*! No flow control */
+	OSMO_SUART_FLOW_CTRL_NONE,
+	/*! DTR/DSR flow control: Tx if DSR is active and drop DTR if cannot Rx anymore. */
+	OSMO_SUART_FLOW_CTRL_DTR_DSR,
+	/*! RTS/CTS flow control: Tx if CTS is active and drop RTS if cannot Rx anymore.
+	 * The technically correct name would be RTR/CTS, because the RTS signal actually
+	 * indicates readiness to *receive* data (Ready To Receive), and not really used
+	 * to request a transmission (Request To Send) nowadays.  Alternatively, the RTS
+	 * signal can be interpreted as "Request To Send to me". */
+	OSMO_SUART_FLOW_CTRL_RTS_CTS,
+};
 
 /*! Configuration for a soft-UART. */
 struct osmo_soft_uart_cfg {
@@ -92,12 +114,12 @@ struct osmo_soft_uart_cfg {
 	void (*tx_cb)(void *priv, struct msgb *tx_data);
 
 	/*! Modem status line change call-back.
-	 *
-	 * FIXME: flow control is not implemented, so it's never called.
-	 *
 	 * \param[in] priv opaque application-private data.
-	 * \param[in] status bit-mask of osmo_soft_uart_status. */
+	 * \param[in] status updated status; bit-mask of OSMO_SUART_STATUS_F_*. */
 	void (*status_change_cb)(void *priv, unsigned int status);
+
+	/*! "Hardware" flow control mode. */
+	enum osmo_soft_uart_flow_ctrl_mode flow_ctrl_mode;
 };
 
 extern const struct osmo_soft_uart_cfg osmo_soft_uart_default_cfg;
@@ -118,5 +140,10 @@ int osmo_soft_uart_set_tx(struct osmo_soft_uart *suart, bool enable);
 int osmo_soft_uart_rx_ubits(struct osmo_soft_uart *suart, const ubit_t *ubits, size_t n_ubits);
 int osmo_soft_uart_tx_ubits(struct osmo_soft_uart *suart, ubit_t *ubits, size_t n_ubits);
 
+unsigned int osmo_soft_uart_get_status(const struct osmo_soft_uart *suart);
 int osmo_soft_uart_set_status(struct osmo_soft_uart *suart, unsigned int status);
+void osmo_soft_uart_set_status_line(struct osmo_soft_uart *suart,
+				    enum osmo_soft_uart_status line,
+				    bool active);
+
 void osmo_soft_uart_flush_rx(struct osmo_soft_uart *suart);

@@ -48,6 +48,11 @@ static void suart_tx_cb(void *priv, struct msgb *msg)
 		__func__, msg->len, msg->data_len, msgb_hexdump(msg));
 }
 
+static void suart_status_change_cb(void *priv, unsigned int status)
+{
+	fprintf(stdout, "%s(status=0x%08x)\n", __func__, status);
+}
+
 static const struct osmo_soft_uart_cfg suart_test_default_cfg = {
 	.num_data_bits = 8,
 	.num_stop_bits = 1,
@@ -55,6 +60,7 @@ static const struct osmo_soft_uart_cfg suart_test_default_cfg = {
 	.rx_buf_size = 128,
 	.rx_cb = &suart_rx_cb,
 	.tx_cb = &suart_tx_cb,
+	.status_change_cb = &suart_status_change_cb,
 };
 
 static void test_rx_exec(struct osmo_soft_uart *suart,
@@ -344,6 +350,203 @@ static void test_tx_rx_pull_n(unsigned int n)
 	osmo_soft_uart_free(suart);
 }
 
+static void test_modem_status(void)
+{
+	struct osmo_soft_uart *suart;
+	unsigned int status;
+
+	suart = osmo_soft_uart_alloc(NULL, __func__, &suart_test_default_cfg);
+	OSMO_ASSERT(suart != NULL);
+
+	printf("======== %s(): initial status=0x%08x\n",
+	       __func__, osmo_soft_uart_get_status(suart));
+
+	printf("de-asserting DCD, which was not asserted\n");
+	osmo_soft_uart_set_status_line(suart, OSMO_SUART_STATUS_F_DCD, false);
+	OSMO_ASSERT(osmo_soft_uart_get_status(suart) == 0x00); /* no change */
+
+	printf("asserting both RI and DCD, expecting the callback to be called twice\n");
+	osmo_soft_uart_set_status_line(suart, OSMO_SUART_STATUS_F_RI, true);
+	osmo_soft_uart_set_status_line(suart, OSMO_SUART_STATUS_F_DCD, true);
+	status = osmo_soft_uart_get_status(suart);
+	OSMO_ASSERT(status == (OSMO_SUART_STATUS_F_RI | OSMO_SUART_STATUS_F_DCD));
+
+	printf("de-asserting RI, expecting the callback to be called\n");
+	osmo_soft_uart_set_status_line(suart, OSMO_SUART_STATUS_F_RI, false);
+	status = osmo_soft_uart_get_status(suart);
+	OSMO_ASSERT(status == (OSMO_SUART_STATUS_F_DCD));
+
+	printf("resetting to 0x00, expecting the callback to be called\n");
+	osmo_soft_uart_set_status(suart, 0x00);
+	OSMO_ASSERT(osmo_soft_uart_get_status(suart) == 0x00);
+
+	osmo_soft_uart_free(suart);
+}
+
+static void test_flow_control_dtr_dsr(void)
+{
+	struct osmo_soft_uart_cfg cfg;
+	struct osmo_soft_uart *suart;
+	ubit_t tx_buf[40];
+	int rc;
+
+	g_tx_cb_cfg.data = (void *)"\x42\x42\x42\x42";
+	g_tx_cb_cfg.data_len = 4;
+
+	cfg = suart_test_default_cfg;
+	cfg.flow_ctrl_mode = OSMO_SUART_FLOW_CTRL_DTR_DSR;
+
+	suart = osmo_soft_uart_alloc(NULL, __func__, &cfg);
+	OSMO_ASSERT(suart != NULL);
+
+	osmo_soft_uart_set_tx(suart, true);
+	osmo_soft_uart_set_rx(suart, true);
+
+	/* expect the initial status to be 0 (all lines de-asserted) */
+	printf("======== %s(): initial status=0x%08x\n",
+	       __func__, osmo_soft_uart_get_status(suart));
+
+	memset(&tx_buf[0], 1, sizeof(tx_buf)); /* pre-initialize */
+
+	printf("expecting osmo_soft_uart_tx_ubits() to yield nothing\n");
+	rc = osmo_soft_uart_tx_ubits(suart, &tx_buf[0], sizeof(tx_buf));
+	OSMO_ASSERT(rc == 0);
+
+	printf("expecting osmo_soft_uart_rx_ubits() to yield nothing\n");
+	rc = osmo_soft_uart_rx_ubits(suart, &tx_buf[0], sizeof(tx_buf));
+	OSMO_ASSERT(rc == 0);
+	osmo_soft_uart_flush_rx(suart);
+
+	/* both DTR and DSR are asserted, expect both Rx and Tx to work */
+	printf("======== %s(): asserting both DTR and DSR\n", __func__);
+	osmo_soft_uart_set_status_line(suart, OSMO_SUART_STATUS_F_DTR, true);
+	osmo_soft_uart_set_status_line(suart, OSMO_SUART_STATUS_F_DSR, true);
+
+	memset(&tx_buf[0], 1, sizeof(tx_buf)); /* pre-initialize */
+
+	printf("expecting osmo_soft_uart_tx_ubits() to "
+	       "yield %zu bits (requesting %zu bits)\n",
+	       sizeof(tx_buf), sizeof(tx_buf));
+	rc = osmo_soft_uart_tx_ubits(suart, &tx_buf[0], sizeof(tx_buf));
+	OSMO_ASSERT(rc == sizeof(tx_buf));
+	printf("%s\n", osmo_ubit_dump(&tx_buf[0], sizeof(tx_buf)));
+
+	printf("expecting osmo_soft_uart_rx_ubits() to "
+	       "consume %zu bits and yield %zu chars\n",
+	       sizeof(tx_buf), sizeof(tx_buf) / 10);
+	rc = osmo_soft_uart_rx_ubits(suart, &tx_buf[0], sizeof(tx_buf));
+	OSMO_ASSERT(rc == 0);
+	osmo_soft_uart_flush_rx(suart);
+
+	memset(&tx_buf[0], 1, sizeof(tx_buf)); /* pre-initialize */
+
+	/* make the transmitter consume one char, but pull only 2 bits */
+	printf("expecting osmo_soft_uart_tx_ubits() to "
+	       "yield 2 bits (requesting 2 bits)\n");
+	rc = osmo_soft_uart_tx_ubits(suart, &tx_buf[0], 2);
+	OSMO_ASSERT(rc == 2);
+
+	/* CTS gets de-asserted, the transmitter is shutting down */
+	printf("======== %s(): de-asserting DSR\n", __func__);
+	osmo_soft_uart_set_status_line(suart, OSMO_SUART_STATUS_F_DSR, false);
+
+	/* expect only the remaining 8 bits to be pulled out */
+	printf("expecting osmo_soft_uart_tx_ubits() to "
+	       "yield 8 bits (requesting %zu bits)\n", sizeof(tx_buf));
+	rc = osmo_soft_uart_tx_ubits(suart, &tx_buf[2], sizeof(tx_buf) - 2);
+	OSMO_ASSERT(rc == 8);
+
+	printf("expecting osmo_soft_uart_rx_ubits() to "
+	       "consume %zu bits and yield a pending char\n", sizeof(tx_buf));
+	rc = osmo_soft_uart_rx_ubits(suart, &tx_buf[0], sizeof(tx_buf));
+	OSMO_ASSERT(rc == 0);
+	osmo_soft_uart_flush_rx(suart);
+
+	osmo_soft_uart_free(suart);
+}
+
+static void test_flow_control_rts_cts(void)
+{
+	struct osmo_soft_uart_cfg cfg;
+	struct osmo_soft_uart *suart;
+	ubit_t tx_buf[40];
+	int rc;
+
+	g_tx_cb_cfg.data = (void *)"\x42\x42\x42\x42";
+	g_tx_cb_cfg.data_len = 4;
+
+	cfg = suart_test_default_cfg;
+	cfg.flow_ctrl_mode = OSMO_SUART_FLOW_CTRL_RTS_CTS;
+
+	suart = osmo_soft_uart_alloc(NULL, __func__, &cfg);
+	OSMO_ASSERT(suart != NULL);
+
+	osmo_soft_uart_set_tx(suart, true);
+	osmo_soft_uart_set_rx(suart, true);
+
+	/* expect the initial status to be 0 (all lines de-asserted) */
+	printf("======== %s(): initial status=0x%08x\n",
+	       __func__, osmo_soft_uart_get_status(suart));
+
+	memset(&tx_buf[0], 1, sizeof(tx_buf)); /* pre-initialize */
+
+	printf("expecting osmo_soft_uart_tx_ubits() to yield nothing\n");
+	rc = osmo_soft_uart_tx_ubits(suart, &tx_buf[0], sizeof(tx_buf));
+	OSMO_ASSERT(rc == 0);
+
+	printf("expecting osmo_soft_uart_rx_ubits() to yield nothing\n");
+	rc = osmo_soft_uart_rx_ubits(suart, &tx_buf[0], sizeof(tx_buf));
+	OSMO_ASSERT(rc == 0);
+	osmo_soft_uart_flush_rx(suart);
+
+	/* both RTS/RTR and CTS are asserted, expect both Rx and Tx to work */
+	printf("======== %s(): asserting both CTS and RTS/RTR\n", __func__);
+	osmo_soft_uart_set_status_line(suart, OSMO_SUART_STATUS_F_CTS, true);
+	osmo_soft_uart_set_status_line(suart, OSMO_SUART_STATUS_F_RTS_RTR, true);
+
+	memset(&tx_buf[0], 1, sizeof(tx_buf)); /* pre-initialize */
+
+	printf("expecting osmo_soft_uart_tx_ubits() to "
+	       "yield %zu bits (requesting %zu bits)\n",
+	       sizeof(tx_buf), sizeof(tx_buf));
+	rc = osmo_soft_uart_tx_ubits(suart, &tx_buf[0], sizeof(tx_buf));
+	OSMO_ASSERT(rc == sizeof(tx_buf));
+	printf("%s\n", osmo_ubit_dump(&tx_buf[0], sizeof(tx_buf)));
+
+	printf("expecting osmo_soft_uart_rx_ubits() to "
+	       "consume %zu bits and yield %zu chars\n",
+	       sizeof(tx_buf), sizeof(tx_buf) / 10);
+	rc = osmo_soft_uart_rx_ubits(suart, &tx_buf[0], sizeof(tx_buf));
+	OSMO_ASSERT(rc == 0);
+	osmo_soft_uart_flush_rx(suart);
+
+	memset(&tx_buf[0], 1, sizeof(tx_buf)); /* pre-initialize */
+
+	/* make the transmitter consume one char, but pull only 2 bits */
+	printf("expecting osmo_soft_uart_tx_ubits() to "
+	       "yield 2 bits (requesting 2 bits)\n");
+	rc = osmo_soft_uart_tx_ubits(suart, &tx_buf[0], 2);
+	OSMO_ASSERT(rc == 2);
+
+	/* CTS gets de-asserted, the transmitter is shutting down */
+	printf("======== %s(): de-asserting CTS\n", __func__);
+	osmo_soft_uart_set_status_line(suart, OSMO_SUART_STATUS_F_CTS, false);
+
+	/* expect only the remaining 8 bits to be pulled out */
+	printf("expecting osmo_soft_uart_tx_ubits() to "
+	       "yield 8 bits (requesting %zu bits)\n", sizeof(tx_buf));
+	rc = osmo_soft_uart_tx_ubits(suart, &tx_buf[2], sizeof(tx_buf) - 2);
+	OSMO_ASSERT(rc == 8);
+
+	printf("expecting osmo_soft_uart_rx_ubits() to "
+	       "consume %zu bits and yield a pending char\n", sizeof(tx_buf));
+	rc = osmo_soft_uart_rx_ubits(suart, &tx_buf[0], sizeof(tx_buf));
+	OSMO_ASSERT(rc == 0);
+	osmo_soft_uart_flush_rx(suart);
+
+	osmo_soft_uart_free(suart);
+}
+
 int main(int argc, char **argv)
 {
 	test_rx();
@@ -354,6 +557,11 @@ int main(int argc, char **argv)
 	test_tx_rx_pull_n(2);
 	test_tx_rx_pull_n(4);
 	test_tx_rx_pull_n(8);
+
+	/* test flow control */
+	test_modem_status();
+	test_flow_control_dtr_dsr();
+	test_flow_control_rts_cts();
 
 	return 0;
 }
