@@ -363,8 +363,8 @@ static int tx_ph_data_enqueue(struct lapdm_datalink *dl, struct msgb *msg,
 	if (le->tx_pending || le->flags & LAPDM_ENT_F_POLLING_ONLY) {
 		struct msgb *old_msg;
 
-		/* In 'Polling only' mode there can be only one message. */
-		if (le->flags & LAPDM_ENT_F_POLLING_ONLY) {
+		/* In 'RTS' mode there can be only one message. */
+		if (le->flags & LAPDM_ENT_F_RTS) {
 			/* Overwrite existing message by removing it first. */
 			if ((old_msg = msgb_dequeue(&dl->dl.tx_queue))) {
 				msgb_free(old_msg);
@@ -424,8 +424,8 @@ static struct msgb *tx_dequeue_msgb(struct lapdm_datalink *dl, uint32_t fn)
 {
 	struct msgb *msg;
 
-	/* Call RTS function of LAPD, to poll next frame. */
-	if (dl->entity->flags & LAPDM_ENT_F_POLLING_ONLY) {
+	/* Call RTS function of LAPD, to queue next frame. */
+	if (dl->entity->flags & LAPDM_ENT_F_RTS) {
 		struct lapd_msg_ctx lctx;
 		int rc;
 
@@ -1635,7 +1635,7 @@ void lapdm_entity_set_flags(struct lapdm_entity *le, unsigned int flags)
 	le->flags = flags;
 
 	/* Set flags at LAPD. */
-	if (le->flags & LAPDM_ENT_F_POLLING_ONLY)
+	if (le->flags & LAPDM_ENT_F_RTS)
 		dl_flags |= LAPD_F_RTS;
 	if (le->flags & LAPDM_ENT_F_DROP_2ND_REJ)
 		dl_flags |= LAPD_F_DROP_2ND_REJ;
