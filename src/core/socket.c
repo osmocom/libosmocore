@@ -1868,6 +1868,95 @@ int osmo_sock_get_ip_and_port(int fd, char *ip, size_t ip_len, char *port, size_
 	return 0;
 }
 
+/*! Get multiple IP addresses and/or port number on socket in separate string buffers
+ *  \param[in] fd file descriptor of socket.
+ *  \param[out] ip_proto IPPROTO of the socket, eg: IPPROTO_SCTP.
+ *  \param[out] ip Pointer to memory holding consecutive buffers of size ip_len.
+ *  \param[out] ip_cnt length ip array pointer. on return it contains the number of addresses found.
+ *  \param[in] ip_len length of each of the string buffer in the the ip array.
+ *  \param[out] port number (will be filled in when not NULL).
+ *  \param[in] port_len length of the port buffer.
+ *  \param[in] local (true) or remote (false) name will get looked at.
+ *  \returns 0 on success; negative otherwise.
+ *
+ * Upon return, ip_cnt can be set to a higher value than the one set by the
+ * caller. This can be used by the caller to find out the required array length
+ * and then obtaining by calling the function twice. Only up to ip_cnt addresses
+ * are filed in, as per the value provided by the caller.
+ *
+ * Usage example retrieving all (up to OSMO_SOCK_MAX_ADDRS, 32) bound IP addresses and bound port:
+ * char hostbuf[OSMO_SOCK_MAX_ADDRS][INET6_ADDRSTRLEN];
+ * size_t num_hostbuf = ARRAY_SIZE(hostbuf);
+ * char portbuf[6];
+ * rc = osmo_sock_multiaddr_get_ip_and_port(fd, IPPROTO_SCTP, &hostbuf[0][0], &num_hostbuf,
+ *					    sizeof(hostbuf[0]), portbuf, sizeof(portbuf), true);
+ * if (rc < 0)
+ *	goto error;
+ * if (num_hostbuf > ARRAY_SIZE(hostbuf))
+ *	goto not_enough_buffers;
+ */
+int osmo_sock_multiaddr_get_ip_and_port(int fd, int ip_proto, char *ip, size_t *ip_cnt, size_t ip_len,
+					char *port, size_t port_len, bool local)
+{
+	struct sockaddr *addrs = NULL;
+	unsigned int n_addrs, i;
+	void *addr_buf;
+	int rc;
+
+	switch (ip_proto) {
+	case IPPROTO_SCTP:
+		break; /* continue below */
+	default:
+		if (*ip_cnt == 0) {
+			*ip_cnt = 1;
+			return 0;
+		}
+		*ip_cnt = 1;
+		return osmo_sock_get_ip_and_port(fd, ip, ip_len, port, port_len, local);
+	}
+
+	rc = local ? sctp_getladdrs(fd, 0, &addrs) : sctp_getpaddrs(fd, 0, &addrs);
+	if (rc < 0)
+		return rc;
+	if (rc == 0)
+		return -ENOTCONN;
+
+	n_addrs = rc;
+	addr_buf = (void *)addrs;
+	for (i = 0; i < n_addrs; i++) {
+		struct sockaddr *sa_addr = (struct sockaddr *)addr_buf;
+		size_t addrlen;
+
+		if (i >= *ip_cnt)
+			break;
+
+		switch (sa_addr->sa_family) {
+		case AF_INET:
+			addrlen = sizeof(struct sockaddr_in);
+			break;
+		case AF_INET6:
+			addrlen = sizeof(struct sockaddr_in6);
+			break;
+		default:
+			rc = -EINVAL;
+			goto free_addrs_ret;
+		}
+
+		rc = getnameinfo(sa_addr, addrlen, &ip[i * ip_len], ip_len,
+				 port, port_len,
+				 NI_NUMERICHOST | NI_NUMERICSERV);
+		if (rc < 0)
+			goto free_addrs_ret;
+		addr_buf += addrlen;
+	}
+
+	*ip_cnt = n_addrs;
+	rc = 0;
+free_addrs_ret:
+	local ? sctp_freeladdrs(addrs) : sctp_freepaddrs(addrs);
+	return rc;
+}
+
 /*! Get local IP address on socket
  *  \param[in] fd file descriptor of socket
  *  \param[out] ip IP address (will be filled in)

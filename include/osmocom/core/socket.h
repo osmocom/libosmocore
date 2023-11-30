@@ -191,6 +191,8 @@ int osmo_sock_get_local_ip_port(int fd, char *port, size_t len);
 int osmo_sock_get_remote_ip(int fd, char *host, size_t len);
 int osmo_sock_get_remote_ip_port(int fd, char *port, size_t len);
 
+int osmo_sock_multiaddr_get_ip_and_port(int fd, int ip_proto, char *ip, size_t *ip_cnt, size_t ip_len,
+					char *port, size_t port_len, bool local);
 int osmo_sock_multiaddr_add_local_addr(int sfd, const char **addrs, size_t addrs_cnt);
 int osmo_sock_multiaddr_del_local_addr(int sfd, const char **addrs, size_t addrs_cnt);
 
