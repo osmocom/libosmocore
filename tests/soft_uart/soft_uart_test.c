@@ -217,7 +217,7 @@ static void test_tx_rx_exec_one(struct osmo_soft_uart *suart,
 	int rc;
 
 	rc = osmo_soft_uart_tx_ubits(suart, &tx_buf[0], n_bits_total);
-	OSMO_ASSERT(rc == 0);
+	OSMO_ASSERT(rc == n_bits_total);
 
 	rc = osmo_soft_uart_rx_ubits(suart, &tx_buf[0], n_bits_total);
 	OSMO_ASSERT(rc == 0);
@@ -332,7 +332,7 @@ static void test_tx_rx_pull_n(unsigned int n)
 	printf("======== %s(): pulling %lu bits (%u at a time)\n", __func__, sizeof(tx_buf), n);
 	for (unsigned int i = 0; i < sizeof(tx_buf); i += n) {
 		rc = osmo_soft_uart_tx_ubits(suart, &tx_buf[i], n);
-		OSMO_ASSERT(rc == 0);
+		OSMO_ASSERT(rc == n);
 	}
 	printf("%s\n", osmo_ubit_dump(&tx_buf[0], sizeof(tx_buf)));
 

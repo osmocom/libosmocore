@@ -277,7 +277,7 @@ static inline ubit_t suart_tx_bit(struct osmo_soft_uart *suart, struct msgb *msg
  * \param[in] suart soft-UART instance to pull the bits from.
  * \param[out] ubits pointer to a buffer where to store pulled bits.
  * \param[in] n_ubits number of unpacked bits to be pulled.
- * \returns 0 on success; negative on error.
+ * \returns number of bits pulled; negative on error.
  *          -EAGAIN indicates that the transmitter is disabled. */
 int osmo_soft_uart_tx_ubits(struct osmo_soft_uart *suart, ubit_t *ubits, size_t n_ubits)
 {
@@ -318,7 +318,7 @@ int osmo_soft_uart_tx_ubits(struct osmo_soft_uart *suart, ubit_t *ubits, size_t 
 		ubits[i] = suart_tx_bit(suart, msg);
 	msgb_free(msg);
 
-	return 0;
+	return n_ubits;
 }
 
 /*! Set the modem status lines of the given soft-UART.
