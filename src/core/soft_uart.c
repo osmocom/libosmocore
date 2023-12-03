@@ -109,7 +109,7 @@ static void suart_rx_ch(struct osmo_soft_uart *suart, uint8_t ch)
 }
 
 /* receive a single bit */
-static inline void osmo_uart_rx_bit(struct osmo_soft_uart *suart, const ubit_t bit)
+static inline void suart_rx_bit(struct osmo_soft_uart *suart, const ubit_t bit)
 {
 	switch (suart->rx.flow_state) {
 	case SUART_FLOW_ST_IDLE:
@@ -200,7 +200,7 @@ int osmo_soft_uart_rx_ubits(struct osmo_soft_uart *suart, const ubit_t *ubits, s
 	if (!suart->rx.running)
 		return -EAGAIN;
 	for (size_t i = 0; i < n_ubits; i++)
-		osmo_uart_rx_bit(suart, ubits[i]);
+		suart_rx_bit(suart, ubits[i]);
 	return 0;
 }
 
@@ -209,7 +209,7 @@ int osmo_soft_uart_rx_ubits(struct osmo_soft_uart *suart, const ubit_t *ubits, s
  *************************************************************************/
 
 /* pull a single bit out of the UART transmitter */
-static inline ubit_t osmo_uart_tx_bit(struct osmo_soft_uart *suart, struct msgb *msg)
+static inline ubit_t suart_tx_bit(struct osmo_soft_uart *suart, struct msgb *msg)
 {
 	ubit_t tx_bit = 1;
 
@@ -315,7 +315,7 @@ int osmo_soft_uart_tx_ubits(struct osmo_soft_uart *suart, ubit_t *ubits, size_t 
 	}
 
 	for (size_t i = 0; i < n_ubits; i++)
-		ubits[i] = osmo_uart_tx_bit(suart, msg);
+		ubits[i] = suart_tx_bit(suart, msg);
 	msgb_free(msg);
 
 	return 0;
