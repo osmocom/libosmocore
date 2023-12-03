@@ -25,19 +25,22 @@
 #include <osmocom/core/bits.h>
 #include <osmocom/core/msgb.h>
 
+/*! Parity mode.
+ * https://en.wikipedia.org/wiki/Parity_bit */
 enum osmo_soft_uart_parity_mode {
-	OSMO_SUART_PARITY_NONE,
-	OSMO_SUART_PARITY_EVEN,
-	OSMO_SUART_PARITY_ODD,
-	OSMO_SUART_PARITY_MARK,		/* always 1 */
-	OSMO_SUART_PARITY_SPACE,	/* always 0 */
+	OSMO_SUART_PARITY_NONE,		/*!< No parity bit */
+	OSMO_SUART_PARITY_EVEN,		/*!< Even parity */
+	OSMO_SUART_PARITY_ODD,		/*!< Odd parity */
+	OSMO_SUART_PARITY_MARK,		/*!< Always 1 */
+	OSMO_SUART_PARITY_SPACE,	/*!< Always 0 */
 	_OSMO_SUART_PARITY_NUM
 };
 
+/*! Flags passed to the application. */
 enum osmo_soft_uart_flags {
-	OSMO_SUART_F_FRAMING_ERROR	= (1 << 0),
-	OSMO_SUART_F_PARITY_ERROR	= (1 << 1),
-	OSMO_SUART_F_BREAK		= (1 << 2),
+	OSMO_SUART_F_FRAMING_ERROR	= (1 << 0),	/*!< Framing error occurred */
+	OSMO_SUART_F_PARITY_ERROR	= (1 << 1),	/*!< Parity error occurred */
+	OSMO_SUART_F_BREAK		= (1 << 2),	/*!< Break condition (not implemented) */
 };
 
 #if 0
@@ -47,35 +50,53 @@ enum osmo_soft_uart_status {
 };
 #endif
 
-/* configuration for a soft-uart */
+/*! Configuration for a soft-UART. */
 struct osmo_soft_uart_cfg {
-	/*! number of data bits (typically 5, 6, 7 or 8) */
+	/*! Number of data bits (typically 5, 6, 7 or 8). */
 	uint8_t num_data_bits;
-	/*! number of stop bits (typically 1 or 2) */
+	/*! Number of stop bits (typically 1 or 2). */
 	uint8_t num_stop_bits;
-	/*! parity mode (none, even, odd) */
+	/*! Parity mode (none, even, odd, space, mark). */
 	enum osmo_soft_uart_parity_mode parity_mode;
-	/*! size of receive buffer; UART will buffer up to that number of characters
-	 *  before calling the receive call-back */
+	/*! Size of the receive buffer; UART will buffer up to that number
+	 * of characters before calling the receive call-back. */
 	unsigned int rx_buf_size;
-	/*! receive timeout; UART will flush receive buffer via the receive call-back
-	 * after indicated number of milliseconds even if it is not full yet */
+	/*! Receive timeout; UART will flush the receive buffer via the receive call-back
+	 * after indicated number of milliseconds, even if it is not full yet. */
 	unsigned int rx_timeout_ms;
 
-	/*! opaque application-private data; passed to call-backs */
+	/*! Opaque application-private data; passed to call-backs. */
 	void *priv;
 
-	/*! receive call-back. Either rx_buf_size characters were received or rx_timeout_ms
-	 * expired, or an error flag was detected (related to last byte received).
-	 * 'flags' is a bit-mask of osmo_soft_uart_flags,  */
+	/*! Receive call-back of the application.
+	 *
+	 * Called if at least one of the following conditions is met:
+	 * a) rx_buf_size characters were received (Rx buffer is full);
+	 * b) rx_timeout_ms expired and Rx buffer is not empty;
+	 * c) a parity or framing error is occurred.
+	 *
+	 * \param[in] priv opaque application-private data.
+	 * \param[in] rx_data msgb holding the received data.
+	 *                    Must be free()ed by the application.
+	 * \param[in] flags bit-mask of OSMO_SUART_F_*. */
 	void (*rx_cb)(void *priv, struct msgb *rx_data, unsigned int flags);
 
-	/*! transmit call-back. The implementation is expected to provide at most
-	 * tx_data->data_len characters (the actual amount is determined by the
-	 * number of requested bits and the effective UART configuration). */
+	/*! Transmit call-back of the application.
+	 *
+	 * The implementation is expected to provide at most tx_data->data_len
+	 * characters (the actual amount is determined by the number of requested
+	 * bits and the effective UART configuration).
+	 *
+	 * \param[in] priv opaque application-private data.
+	 * \param[inout] tx_data msgb for writing to be transmitted data. */
 	void (*tx_cb)(void *priv, struct msgb *tx_data);
 
-	/*! modem status line change call-back. gets bitmask of osmo_soft_uart_status */
+	/*! Modem status line change call-back.
+	 *
+	 * FIXME: flow control is not implemented, so it's never called.
+	 *
+	 * \param[in] priv opaque application-private data.
+	 * \param[in] status bit-mask of osmo_soft_uart_status. */
 	void (*status_change_cb)(void *priv, unsigned int status);
 };
 
