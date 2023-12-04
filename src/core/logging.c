@@ -486,18 +486,18 @@ static int _output_buf(char *buf, int buf_len, struct log_target *target, unsign
 			unsigned int level, const char *file, int line, int cont,
 			const char *format, va_list ap)
 {
-	int ret, len = 0, offset = 0, rem = buf_len;
+	int ret;
 	const char *c_subsys = NULL;
+	struct osmo_strbuf sb = { .buf = buf, .len = buf_len };
+
+	/* safety net in case of encountering errors and returning nothing */
+	buf[0] = '\0';
 
 	/* are we using color */
 	if (target->use_color) {
 		c_subsys = color(subsys);
-		if (c_subsys) {
-			ret = snprintf(buf + offset, rem, "%s", c_subsys);
-			if (ret < 0)
-				goto err;
-			OSMO_SNPRINTF_RET(ret, rem, offset, len);
-		}
+		if (c_subsys)
+			OSMO_STRBUF_PRINTF(sb, "%s", c_subsys);
 	}
 	if (!cont) {
 		if (target->print_ext_timestamp) {
@@ -506,13 +506,10 @@ static int _output_buf(char *buf, int buf_len, struct log_target *target, unsign
 			struct timeval tv;
 			osmo_gettimeofday(&tv, NULL);
 			localtime_r(&tv.tv_sec, &tm);
-			ret = snprintf(buf + offset, rem, "%04d%02d%02d%02d%02d%02d%03d ",
-					tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
-					tm.tm_hour, tm.tm_min, tm.tm_sec,
-					(int)(tv.tv_usec / 1000));
-			if (ret < 0)
-				goto err;
-			OSMO_SNPRINTF_RET(ret, rem, offset, len);
+			OSMO_STRBUF_PRINTF(sb, "%04d%02d%02d%02d%02d%02d%03d ",
+					   tm.tm_year + 1900, tm.tm_mon + 1, tm.tm_mday,
+					   tm.tm_hour, tm.tm_min, tm.tm_sec,
+					   (int)(tv.tv_usec / 1000));
 #endif
 		} else if (target->print_timestamp) {
 			time_t tm;
@@ -520,97 +517,66 @@ static int _output_buf(char *buf, int buf_len, struct log_target *target, unsign
 				goto err;
 			/* Get human-readable representation of time.
 			   man ctime: we need at least 26 bytes in buf */
-			if (rem < 26 || !ctime_r(&tm, buf + offset))
+			if (OSMO_STRBUF_REMAIN(sb) < 26 || !ctime_r(&tm, sb.pos))
 				goto err;
-			ret = strlen(buf + offset);
+			ret = strnlen(sb.pos, 26);
 			if (ret <= 0)
 				goto err;
+			OSMO_STRBUF_ADDED_TAIL(sb, ret);
 			/* Get rid of useless final '\n' added by ctime_r. We want a space instead. */
-			buf[offset + ret - 1] = ' ';
-			OSMO_SNPRINTF_RET(ret, rem, offset, len);
+			OSMO_STRBUF_DROP_TAIL(sb, 1);
+			OSMO_STRBUF_PRINTF(sb, " ");
 		}
 		if (target->print_tid) {
 			if (logging_tid == 0)
 				logging_tid = (long int)osmo_gettid();
-			ret = snprintf(buf + offset, rem, "%ld ", logging_tid);
-			if (ret < 0)
-				goto err;
-			OSMO_SNPRINTF_RET(ret, rem, offset, len);
+			OSMO_STRBUF_PRINTF(sb, "%ld ", logging_tid);
 		}
-		if (target->print_category) {
-			ret = snprintf(buf + offset, rem, "%s%s%s%s ",
-				       target->use_color ? level_color(level) : "",
-				       log_category_name(subsys),
-				       target->use_color ? OSMO_LOGCOLOR_END : "",
-				       c_subsys ? c_subsys : "");
-			if (ret < 0)
-				goto err;
-			OSMO_SNPRINTF_RET(ret, rem, offset, len);
-		}
-		if (target->print_level) {
-			ret = snprintf(buf + offset, rem, "%s%s%s%s ",
-				       target->use_color ? level_color(level) : "",
-				       log_level_str(level),
-				       target->use_color ? OSMO_LOGCOLOR_END : "",
-				       c_subsys ? c_subsys : "");
-			if (ret < 0)
-				goto err;
-			OSMO_SNPRINTF_RET(ret, rem, offset, len);
-		}
-		if (target->print_category_hex) {
-			ret = snprintf(buf + offset, rem, "<%4.4x> ", subsys);
-			if (ret < 0)
-				goto err;
-			OSMO_SNPRINTF_RET(ret, rem, offset, len);
-		}
+		if (target->print_category)
+			OSMO_STRBUF_PRINTF(sb, "%s%s%s%s ",
+					   target->use_color ? level_color(level) : "",
+					   log_category_name(subsys),
+					   target->use_color ? OSMO_LOGCOLOR_END : "",
+					   c_subsys ? c_subsys : "");
+		if (target->print_level)
+			OSMO_STRBUF_PRINTF(sb, "%s%s%s%s ",
+					   target->use_color ? level_color(level) : "",
+					   log_level_str(level),
+					   target->use_color ? OSMO_LOGCOLOR_END : "",
+					   c_subsys ? c_subsys : "");
+		if (target->print_category_hex)
+			OSMO_STRBUF_PRINTF(sb, "<%4.4x> ", subsys);
 
 		if (target->print_filename_pos == LOG_FILENAME_POS_HEADER_END) {
 			switch (target->print_filename2) {
 			case LOG_FILENAME_NONE:
 				break;
 			case LOG_FILENAME_PATH:
-				ret = snprintf(buf + offset, rem, "%s:%d ", file, line);
-				if (ret < 0)
-					goto err;
-				OSMO_SNPRINTF_RET(ret, rem, offset, len);
+				OSMO_STRBUF_PRINTF(sb, "%s:%d ", file, line);
 				break;
 			case LOG_FILENAME_BASENAME:
-				ret = snprintf(buf + offset, rem, "%s:%d ", const_basename(file), line);
-				if (ret < 0)
-					goto err;
-				OSMO_SNPRINTF_RET(ret, rem, offset, len);
+				OSMO_STRBUF_PRINTF(sb, "%s:%d ", const_basename(file), line);
 				break;
 			}
 		}
 	}
-	ret = vsnprintf(buf + offset, rem, format, ap);
-	if (ret < 0)
-		goto err;
-	OSMO_SNPRINTF_RET(ret, rem, offset, len);
+	OSMO_STRBUF_APPEND(sb, vsnprintf, format, ap);
 
 	/* For LOG_FILENAME_POS_LAST, print the source file info only when the caller ended the log
 	 * message in '\n'. If so, nip the last '\n' away, insert the source file info and re-append an
 	 * '\n'. All this to allow LOGP("start..."); LOGPC("...end\n") constructs. */
 	if (target->print_filename_pos == LOG_FILENAME_POS_LINE_END
-	    && offset > 0 && buf[offset - 1] == '\n') {
+	    && sb.pos > sb.buf && *(sb.pos - 1) == '\n') {
 		switch (target->print_filename2) {
 		case LOG_FILENAME_NONE:
 			break;
 		case LOG_FILENAME_PATH:
-			offset--;
-			len--;
-			ret = snprintf(buf + offset, rem, " (%s:%d)\n", file, line);
-			if (ret < 0)
-				goto err;
-			OSMO_SNPRINTF_RET(ret, rem, offset, len);
+			OSMO_STRBUF_DROP_TAIL(sb, 1);
+			OSMO_STRBUF_PRINTF(sb, " (%s:%d)\n", file, line);
 			break;
 		case LOG_FILENAME_BASENAME:
-			offset--;
-			len--;
-			ret = snprintf(buf + offset, rem, " (%s:%d)\n", const_basename(file), line);
-			if (ret < 0)
-				goto err;
-			OSMO_SNPRINTF_RET(ret, rem, offset, len);
+			OSMO_STRBUF_DROP_TAIL(sb, 1);
+			OSMO_STRBUF_PRINTF(sb, " (%s:%d)\n", const_basename(file), line);
 			break;
 		}
 	}
@@ -618,21 +584,15 @@ static int _output_buf(char *buf, int buf_len, struct log_target *target, unsign
 	if (target->use_color && c_subsys) {
 		/* Ensure the last color escape is sent before the newline
 		* (to not clobber journald, which works on single-lines only) */
-		if (offset > 0 && buf[offset - 1] == '\n') {
-			offset--; rem++;
-			ret = snprintf(buf + offset, rem, OSMO_LOGCOLOR_END "\n");
+		if (sb.pos > sb.buf && *(sb.pos - 1) == '\n') {
+			OSMO_STRBUF_DROP_TAIL(sb, 1);
+			OSMO_STRBUF_PRINTF(sb, OSMO_LOGCOLOR_END "\n");
 		} else {
-			ret = snprintf(buf + offset, rem, OSMO_LOGCOLOR_END);
+			OSMO_STRBUF_PRINTF(sb, OSMO_LOGCOLOR_END);
 		}
-
-		if (ret < 0)
-			goto err;
-		OSMO_SNPRINTF_RET(ret, rem, offset, len);
 	}
 err:
-	len = OSMO_MIN(buf_len - 1, len);
-	buf[len] = '\0';
-	return len;
+	return OSMO_STRBUF_CHAR_COUNT(sb);
 }
 
 /* Format the log line for given target; use a stack buffer and call target->output */
