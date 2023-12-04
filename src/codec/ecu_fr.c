@@ -71,6 +71,7 @@
 
 #include <osmocom/codec/codec.h>
 #include <osmocom/codec/ecu.h>
+#include <osmocom/core/linuxlist.h>
 
 /* See TS 46.011, Chapter 6 Example solution */
 #define GSM611_XMAXC_REDUCE	4
@@ -89,6 +90,7 @@ enum ecu_principal_state {
 };
 
 struct fr_ecu_state {
+	struct osmo_ecu_state ecu_state;
 	enum ecu_principal_state pr_state;
 	uint8_t speech_frame[GSM_FR_BYTES];
 	uint8_t sid_prefix[SID_PREFIX_LEN];
@@ -283,27 +285,25 @@ static void fr_ecu_output(struct fr_ecu_state *fr, uint8_t *frame)
 
 static struct osmo_ecu_state *ecu_fr_init(void *ctx, enum osmo_ecu_codec codec)
 {
-	struct osmo_ecu_state *st;
 	struct fr_ecu_state *fr;
-	size_t size = sizeof(*st) + sizeof(*fr);
 
-	st = talloc_named_const(ctx, size, "ecu_state_FR");
-	if (!st)
-		return NULL;
-
-	memset(st, 0, size);
-	st->codec = codec;
-	fr = (struct fr_ecu_state *) &st->data;
+	fr = talloc_zero(ctx, struct fr_ecu_state);
+	fr->ecu_state.codec = codec;
 	fr->pr_state = STATE_NO_DATA;
 	osmo_prbs_state_init(&fr->prng, &osmo_prbs15);
 
-	return st;
+	return (struct osmo_ecu_state *) fr;
+}
+
+static inline struct fr_ecu_state *_osmo_ecu_state_get_fr(struct osmo_ecu_state *st)
+{
+	return (struct fr_ecu_state *)container_of(st, struct fr_ecu_state, ecu_state);
 }
 
 static int ecu_fr_frame_in(struct osmo_ecu_state *st, bool bfi, const uint8_t *frame,
 			   unsigned int frame_bytes)
 {
-	struct fr_ecu_state *fr = (struct fr_ecu_state *) &st->data;
+	struct fr_ecu_state *fr = _osmo_ecu_state_get_fr(st);
 
 	if (bfi)
 		return 0;
@@ -318,7 +318,7 @@ static int ecu_fr_frame_in(struct osmo_ecu_state *st, bool bfi, const uint8_t *f
 
 static int ecu_fr_frame_out(struct osmo_ecu_state *st, uint8_t *frame_out)
 {
-	struct fr_ecu_state *fr = (struct fr_ecu_state *) &st->data;
+	struct fr_ecu_state *fr = _osmo_ecu_state_get_fr(st);
 
 	fr_ecu_output(fr, frame_out);
 	return GSM_FR_BYTES;
@@ -326,7 +326,7 @@ static int ecu_fr_frame_out(struct osmo_ecu_state *st, uint8_t *frame_out)
 
 static bool ecu_fr_is_dtx_pause(struct osmo_ecu_state *st)
 {
-	struct fr_ecu_state *fr = (struct fr_ecu_state *) &st->data;
+	struct fr_ecu_state *fr = _osmo_ecu_state_get_fr(st);
 
 	return fr->last_input_was_sid;
 }
