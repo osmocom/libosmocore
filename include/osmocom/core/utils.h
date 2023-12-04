@@ -249,7 +249,7 @@ struct osmo_strbuf {
 #define OSMO_STRBUF_APPEND(STRBUF, func, args...) do { \
 		if (!(STRBUF).pos) \
 			(STRBUF).pos = (STRBUF).buf; \
-		size_t _sb_remain = (STRBUF).buf ? (STRBUF).len - ((STRBUF).pos - (STRBUF).buf) : 0; \
+		size_t _sb_remain = OSMO_STRBUF_REMAIN(STRBUF); \
 		int _sb_l = func((STRBUF).pos, _sb_remain, ##args); \
 		if (_sb_l < 0 || (size_t)_sb_l > _sb_remain) \
 			(STRBUF).pos = (STRBUF).buf + (STRBUF).len; \
@@ -281,6 +281,9 @@ struct osmo_strbuf {
 #define OSMO_STRBUF_PRINTF(STRBUF, fmt, args...) \
 	OSMO_STRBUF_APPEND(STRBUF, snprintf, fmt, ##args)
 
+/*! Return remaining space for characters and terminating nul in the given struct osmo_strbuf. */
+#define OSMO_STRBUF_REMAIN(STRBUF) ((STRBUF).buf ? (STRBUF).len - ((STRBUF).pos - (STRBUF).buf) : 0)
+
 /*! Like OSMO_STRBUF_APPEND(), but for function signatures that return the char* buffer instead of a length.
  * When using this function, the final STRBUF.chars_needed may not reflect the actual number of characters needed, since
  * that number cannot be obtained from this kind of function signature.
@@ -292,7 +295,7 @@ struct osmo_strbuf {
 #define OSMO_STRBUF_APPEND_NOLEN(STRBUF, func, args...) do { \
 		if (!(STRBUF).pos) \
 			(STRBUF).pos = (STRBUF).buf; \
-		size_t _sb_remain = (STRBUF).buf ? (STRBUF).len - ((STRBUF).pos - (STRBUF).buf) : 0; \
+		size_t _sb_remain = OSMO_STRBUF_REMAIN(STRBUF); \
 		if (_sb_remain) { \
 			func((STRBUF).pos, _sb_remain, ##args); \
 		} \
