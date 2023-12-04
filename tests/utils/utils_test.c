@@ -31,6 +31,7 @@
 #include <errno.h>
 #include <limits.h>
 #include <inttypes.h>
+#include <string.h>
 
 static void hexdump_test(void)
 {
@@ -1306,6 +1307,50 @@ void strbuf_test_nolen(void)
 	printf("%zu: %s (need=%zu)\n", sb.len, buf, sb.chars_needed);
 }
 
+void strbuf_test_tail_for_buflen(size_t buflen)
+{
+	char buf[buflen];
+	struct osmo_strbuf sb = { .buf = buf, .len = buflen };
+	printf("\n%s(%zu)\n", __func__, buflen);
+
+#define SHOW(N) \
+	printf(#N ": %s sb.chars_needed=%zu sb.pos=&sb.buf[%d]\n", \
+	       osmo_quote_str(buf, -1), sb.chars_needed, (int)(sb.pos - sb.buf))
+
+	/* shorten in steps using OSMO_STRBUF_DROP_TAIL(), removing and re-adding a trailing newline. */
+	OSMO_STRBUF_PRINTF(sb, "banananana\n");
+	SHOW(1);
+	OSMO_STRBUF_DROP_TAIL(sb, 3);
+	SHOW(2);
+	OSMO_STRBUF_PRINTF(sb, "\n");
+	SHOW(3);
+	OSMO_STRBUF_DROP_TAIL(sb, 3);
+	SHOW(4);
+	OSMO_STRBUF_PRINTF(sb, "\n");
+	SHOW(5);
+
+	/* drop trailing newline */
+	OSMO_STRBUF_DROP_TAIL(sb, 1);
+	SHOW(6);
+
+	/* test writing something to the end and letting OSMO_STRBUF_ADDED_TAIL() know later */
+	int n = OSMO_MIN(6, OSMO_STRBUF_REMAIN(sb));
+	if (n)
+		memcpy(sb.pos, "bread\n", n);
+	OSMO_STRBUF_ADDED_TAIL(sb, 6);
+	SHOW(7);
+}
+
+void strbuf_test_tail(void)
+{
+	strbuf_test_tail_for_buflen(64);
+	strbuf_test_tail_for_buflen(32);
+	strbuf_test_tail_for_buflen(16);
+	strbuf_test_tail_for_buflen(8);
+	strbuf_test_tail_for_buflen(4);
+	strbuf_test_tail_for_buflen(1);
+}
+
 static void startswith_test_str(const char *str, const char *startswith_str, bool expect_rc)
 {
 	bool rc = osmo_str_startswith(str, startswith_str);
@@ -2152,6 +2197,7 @@ int main(int argc, char **argv)
 	osmo_str_tolowupper_test();
 	strbuf_test();
 	strbuf_test_nolen();
+	strbuf_test_tail();
 	startswith_test();
 	name_c_impl_test();
 	osmo_print_n_test();

@@ -284,6 +284,12 @@ struct osmo_strbuf {
 /*! Return remaining space for characters and terminating nul in the given struct osmo_strbuf. */
 #define OSMO_STRBUF_REMAIN(STRBUF) ((STRBUF).buf ? (STRBUF).len - ((STRBUF).pos - (STRBUF).buf) : 0)
 
+/*! Return number of actual characters contained in struct osmo_strbuf (without terminating nul). */
+#define OSMO_STRBUF_CHAR_COUNT(STRBUF) ((STRBUF).buf && ((STRBUF).pos > (STRBUF).buf) ? \
+					OSMO_MIN((STRBUF).pos - (STRBUF).buf, \
+						 (STRBUF).len - 1) \
+					: 0)
+
 /*! Like OSMO_STRBUF_APPEND(), but for function signatures that return the char* buffer instead of a length.
  * When using this function, the final STRBUF.chars_needed may not reflect the actual number of characters needed, since
  * that number cannot be obtained from this kind of function signature.
@@ -306,6 +312,16 @@ struct osmo_strbuf {
 			(STRBUF).pos += _sb_l; \
 		(STRBUF).chars_needed += _sb_l; \
 	} while(0)
+
+void osmo_strbuf_drop_tail(struct osmo_strbuf *sb, size_t n_chars);
+/* Convenience macro. struct osmo_strbuf are typically static to a function scope. Avoid having to type '&', same as
+ * with all the other OSMO_STRBUF_* API. */
+#define OSMO_STRBUF_DROP_TAIL(STRBUF, N_CHARS) osmo_strbuf_drop_tail(&(STRBUF), N_CHARS)
+
+void osmo_strbuf_added_tail(struct osmo_strbuf *sb, size_t n_chars);
+/* Convenience macro. struct osmo_strbuf are typically static to a function scope. Avoid having to type '&', same as
+ * with all the other OSMO_STRBUF_* API. */
+#define OSMO_STRBUF_ADDED_TAIL(STRBUF, N_CHARS) osmo_strbuf_added_tail(&(STRBUF), N_CHARS)
 
 bool osmo_str_startswith(const char *str, const char *startswith_str);
 

@@ -1211,6 +1211,51 @@ char osmo_luhn(const char* in, int in_len)
 	return (sum * 9) % 10 + '0';
 }
 
+/*! Remove up to N chars from the end of an osmo_strbuf.
+ * |--char-count---| - - chars_needed - - |
+ *               |<---------drop----------|
+ */
+void osmo_strbuf_drop_tail(struct osmo_strbuf *sb, size_t n_chars)
+{
+	size_t drop_n;
+	if (sb->pos <= sb->buf)
+		return;
+	drop_n = OSMO_MIN(sb->chars_needed, n_chars);
+	sb->chars_needed -= drop_n;
+	/* chars_needed was reduced by n_chars, which may have been entirely behind the end of a full buffer, within the
+	 * hypothetical chars_needed. Modify the buffer tail pos only if the buffer is not or longer full now. */
+	if (sb->chars_needed >= OSMO_STRBUF_CHAR_COUNT(*sb))
+		return;
+	sb->pos = sb->buf + sb->chars_needed;
+	*sb->pos = '\0';
+}
+
+/*! Let osmo_strbuf know that n_chars characters (excluding nul) were written to the end of the buffer.
+ * If sb is nonempty, the n_chars are assumed to have been written to sb->pos. If sb is still empty and pos == NULL, the
+ * n_chars are assumed to have been written to the start of the buffer.
+ * Advance sb->pos and sb->chars_needed by at most n_chars, or up to sb->len - 1.
+ * Ensure nul termination. */
+void osmo_strbuf_added_tail(struct osmo_strbuf *sb, size_t n_chars)
+{
+	/* On init of an osmo_strbuf, sb->pos == NULL, which is defined as semantically identical to pointing at the
+	 * start of the buffer. A caller may just write to the buffer and call osmo_strbuf_added_tail(), in which case
+	 * still pos == NULL. pos != NULL happens as soon as the first OSMO_STRBUF_*() API has acted on the strbuf. */
+	if (!sb->pos)
+		sb->pos = sb->buf;
+	sb->chars_needed += n_chars;
+	/* first get remaining space, not counting trailing nul; but safeguard against empty buffer */
+	size_t n_added = OSMO_STRBUF_REMAIN(*sb);
+	if (n_added)
+		n_added--;
+	/* do not add more than fit in sb->len, still ensuring nul termination */
+	n_added = OSMO_MIN(n_added, n_chars);
+	if (n_added)
+		sb->pos += n_added;
+	/* when a strbuf is full, sb->pos may point after the final nul, so nul terminate only when pos is valid. */
+	if (sb->pos < sb->buf + sb->len)
+		*sb->pos = '\0';
+}
+
 /*! Compare start of a string.
  * This is an optimisation of 'strstr(str, startswith_str) == str' because it doesn't search through the entire string.
  * \param str  (Longer) string to compare.

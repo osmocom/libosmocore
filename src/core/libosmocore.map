@@ -510,6 +510,8 @@ osmo_strrb_elements;
 osmo_strrb_get_nth;
 _osmo_strrb_is_bufindex_valid;
 osmo_strrb_is_empty;
+osmo_strbuf_drop_tail;
+osmo_strbuf_added_tail;
 osmo_str_startswith;
 osmo_str_to_int;
 osmo_str_to_int64;
