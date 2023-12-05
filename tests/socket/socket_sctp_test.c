@@ -107,6 +107,7 @@ static int test_sockinit2_multiaddr(const char **addrv4_loc, const char **addrv6
 				       addrv4_rem, addrv4_size, listen_port_v4,
 				       OSMO_SOCK_F_BIND|OSMO_SOCK_F_CONNECT);
 	OSMO_ASSERT(fd >= 0);
+	close(fd);
 
 	printf("Checking osmo_sock_init2_multiaddr(AF_UNSPEC) must fail on mixed IPv4 & IPv6\n");
 	fd = osmo_sock_init2_multiaddr(AF_UNSPEC, SOCK_STREAM, IPPROTO_SCTP,
@@ -128,6 +129,7 @@ static int test_sockinit2_multiaddr(const char **addrv4_loc, const char **addrv6
 				       addrv4_rem, addrv4_size, listen_port_v4,
 				       OSMO_SOCK_F_BIND|OSMO_SOCK_F_CONNECT);
 	OSMO_ASSERT(fd >= 0);
+	close(fd);
 
 	printf("Checking osmo_sock_init2_multiaddr(AF_UNSPEC) BIND + CONNECT on IPv6\n");
 	fd = osmo_sock_init2_multiaddr(AF_UNSPEC, SOCK_STREAM, IPPROTO_SCTP,
@@ -135,6 +137,7 @@ static int test_sockinit2_multiaddr(const char **addrv4_loc, const char **addrv6
 				       addrv6_rem, addrv6_size, listen_port_v6,
 				       OSMO_SOCK_F_BIND|OSMO_SOCK_F_CONNECT);
 	OSMO_ASSERT(fd >= 0);
+	close(fd);
 
 	close(listen_fd_v4);
 	close(listen_fd_v6);
