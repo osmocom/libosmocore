@@ -133,11 +133,10 @@ static int decode_pdp_info(uint8_t *data, size_t data_len,
 	uint8_t tag;
 	uint8_t *value;
 	size_t value_len;
+	enum osmo_gsup_iei iei;
 
 	/* specific parts */
 	while (data_len > 0) {
-		enum osmo_gsup_iei iei;
-
 		rc = osmo_shift_tlv(&data, &data_len, &tag, &value, &value_len);
 		if (rc < 0)
 			return -GMM_CAUSE_PROTO_ERR_UNSPEC;
@@ -169,6 +168,20 @@ static int decode_pdp_info(uint8_t *data, size_t data_len,
 			pdp_info->pdp_charg_enc_len = value_len;
 			break;
 
+		case OSMO_GSUP_IPV4_IE:
+			if (value_len != sizeof(pdp_info->pdp_ipv4))
+				goto parse_error;
+			memcpy(&pdp_info->pdp_ipv4, value, value_len);
+			pdp_info->pdp_ipv4_set = 1;
+			break;
+
+		case OSMO_GSUP_IPV6_IE:
+			if (value_len != sizeof(pdp_info->pdp_ipv6))
+				goto parse_error;
+			memcpy(&pdp_info->pdp_ipv6, value, value_len);
+			pdp_info->pdp_ipv6_set = 1;
+			break;
+
 		default:
 			LOGP(DLGSUP, LOGL_ERROR,
 			     "GSUP IE type %d not expected in PDP info\n", iei);
@@ -177,6 +190,12 @@ static int decode_pdp_info(uint8_t *data, size_t data_len,
 	}
 
 	return 0;
+
+parse_error:
+	LOGP(DLGSUP, LOGL_ERROR,
+	     "GSUP IE type %d, length %zu invalid in PDP info\n", iei, value_len);
+
+	return -1;
 }
 
 static int decode_auth_info(uint8_t *data, size_t data_len,
@@ -621,6 +640,16 @@ static void encode_pdp_info(struct msgb *msg, enum osmo_gsup_iei iei,
 	if (pdp_info->pdp_charg_enc) {
 		msgb_tlv_put(msg, OSMO_GSUP_CHARG_CHAR_IE,
 				pdp_info->pdp_charg_enc_len, pdp_info->pdp_charg_enc);
+	}
+
+	if (pdp_info->pdp_ipv4_set) {
+		msgb_tlv_put(msg, OSMO_GSUP_IPV4_IE,
+				sizeof(pdp_info->pdp_ipv4), (void *) &pdp_info->pdp_ipv4);
+	}
+
+	if (pdp_info->pdp_ipv6_set) {
+		msgb_tlv_put(msg, OSMO_GSUP_IPV6_IE,
+				sizeof(pdp_info->pdp_ipv6), (void *) &pdp_info->pdp_ipv6);
 	}
 
 	/* Update length field */

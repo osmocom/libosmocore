@@ -47,6 +47,8 @@
 #include <osmocom/gsm/protocol/gsm_08_08.h>
 #include <osmocom/gsm/gsm_utils.h>
 #include <osmocom/crypt/auth.h>
+#include <netinet/in.h>
+
 
 #define OSMO_GSUP_PORT 4222
 
@@ -77,6 +79,8 @@ enum osmo_gsup_iei {
 	OSMO_GSUP_ACCESS_POINT_NAME_IE		= 0x12,
 	OSMO_GSUP_PDP_QOS_IE			= 0x13,
 	OSMO_GSUP_CHARG_CHAR_IE			= 0x14,
+	OSMO_GSUP_IPV4_IE			= 0x15,
+	OSMO_GSUP_IPV6_IE			= 0x16,
 	OSMO_GSUP_RAND_IE			= 0x20,
 	OSMO_GSUP_SRES_IE			= 0x21,
 	OSMO_GSUP_KC_IE				= 0x22,
@@ -277,6 +281,14 @@ struct osmo_gsup_pdp_info {
 	const uint8_t			*pdp_charg_enc;
 	/*! length (in octets) of pdp_charg_enc */
 	size_t				pdp_charg_enc_len;
+	/*! True if pdp_ipv4 is set */
+	bool				pdp_ipv4_set;
+	/*! IPv4 address of the PDP context */
+	struct in_addr			pdp_ipv4;
+	/*! True if pdp_ipv6 is set */
+	bool				pdp_ipv6_set;
+	/*! IPv6 address of the PDP context */
+	struct in6_addr			pdp_ipv6;
 };
 
 enum osmo_gsup_message_class {
