@@ -616,18 +616,45 @@ int osmo_sock_init_osa(uint16_t type, uint8_t proto,
 
 #ifdef HAVE_LIBSCTP
 
-/* Check whether there's an IPv6 Addr as first option of any addrinfo item in the addrinfo set */
+/* Check whether there's an addrinfo item in the addrinfo set with an IPv4 or IPv6 option */
 static void addrinfo_has_v4v6addr(const struct addrinfo **result, size_t result_count, bool *has_v4, bool *has_v6)
 {
 	size_t host_idx;
+	const struct addrinfo *rp;
 	*has_v4 = false;
 	*has_v6 = false;
 
 	for (host_idx = 0; host_idx < result_count; host_idx++) {
-		if (result[host_idx]->ai_family == AF_INET)
-			*has_v4 = true;
-		else if (result[host_idx]->ai_family == AF_INET6)
-			*has_v6 = true;
+		for (rp = result[host_idx]; rp != NULL; rp = rp->ai_next) {
+			if (result[host_idx]->ai_family == AF_INET)
+				*has_v4 = true;
+			else if (result[host_idx]->ai_family == AF_INET6)
+				*has_v6 = true;
+		}
+	}
+}
+
+/* Check whether there's an addrinfo item in the addrinfo set with only an IPv4 or IPv6 option */
+static void addrinfo_has_v4v6only_addr(const struct addrinfo **result, size_t result_count, bool *has_v4only, bool *has_v6only)
+{
+	size_t host_idx;
+	const struct addrinfo *rp;
+	*has_v4only = false;
+	*has_v6only = false;
+
+	for (host_idx = 0; host_idx < result_count; host_idx++) {
+		bool has_v4 = false;
+		bool has_v6 = false;
+		for (rp = result[host_idx]; rp != NULL; rp = rp->ai_next) {
+			if (rp->ai_family == AF_INET6)
+				has_v6 = true;
+			else
+				has_v4 = true;
+		}
+		if (has_v4 && !has_v6)
+			*has_v4only = true;
+		else if (has_v6 && !has_v4)
+			*has_v6only = true;
 	}
 }
 
@@ -636,13 +663,16 @@ static bool addrinfo_has_in6addr_any(const struct addrinfo **result, size_t resu
 {
 	size_t host_idx;
 	struct in6_addr in6addr_any = IN6ADDR_ANY_INIT;
+	const struct addrinfo *rp;
 
 	for (host_idx = 0; host_idx < result_count; host_idx++) {
-		if (result[host_idx]->ai_family != AF_INET6)
-			continue;
-		if (memcmp(&((struct sockaddr_in6 *)result[host_idx]->ai_addr)->sin6_addr,
-			   &in6addr_any, sizeof(in6addr_any)) == 0)
-			return true;
+		for (rp = result[host_idx]; rp != NULL; rp = rp->ai_next) {
+			if (rp->ai_family != AF_INET6)
+				continue;
+			if (memcmp(&((struct sockaddr_in6 *)rp->ai_addr)->sin6_addr,
+				&in6addr_any, sizeof(in6addr_any)) == 0)
+				return true;
+		}
 	}
 	return false;
 }
@@ -676,22 +706,28 @@ static int addrinfo_to_sockaddr(uint16_t family, const struct addrinfo **result,
 	for (host_idx = 0; host_idx < host_cont; host_idx++) {
 		/* Addresses are ordered based on RFC 3484, see man getaddrinfo */
 		for (rp = result[host_idx]; rp != NULL; rp = rp->ai_next) {
-			if (family != AF_UNSPEC && rp->ai_family != family)
-				continue;
-			if (offset + rp->ai_addrlen > addrs_buf_len) {
-				LOGP(DLGLOBAL, LOGL_ERROR, "Output buffer to small: %zu\n",
-				     addrs_buf_len);
-				return -ENOSPC;
+			if (family == AF_UNSPEC || rp->ai_family == family)
+				break;
+		}
+		if (!rp && family == AF_INET6) {
+			/* See if we can find an AF_INET addr for the AF_INET6 socket instead: */
+			for (rp = result[host_idx]; rp != NULL; rp = rp->ai_next) {
+				if (rp->ai_family == AF_INET)
+					break;
 			}
-			memcpy(addrs_buf + offset, rp->ai_addr, rp->ai_addrlen);
-			offset += rp->ai_addrlen;
-			break;
 		}
 		if (!rp) { /* No addr could be bound for this host! */
 			LOGP(DLGLOBAL, LOGL_ERROR, "No suitable remote address found for host: %s\n",
 			     hosts[host_idx]);
 			return -ENODEV;
 		}
+		if (offset + rp->ai_addrlen > addrs_buf_len) {
+			LOGP(DLGLOBAL, LOGL_ERROR, "Output buffer to small: %zu\n",
+				addrs_buf_len);
+			return -ENOSPC;
+		}
+		memcpy(addrs_buf + offset, rp->ai_addr, rp->ai_addrlen);
+		offset += rp->ai_addrlen;
 	}
 	return 0;
 }
@@ -827,14 +863,12 @@ int osmo_sock_init2_multiaddr2(uint16_t family, uint16_t type, uint8_t proto,
 	struct addrinfo *res_loc[OSMO_SOCK_MAX_ADDRS], *res_rem[OSMO_SOCK_MAX_ADDRS];
 	int sfd = -1, rc, on = 1;
 	unsigned int i;
-	bool loc_has_v4addr, rem_has_v4addr;
-	bool loc_has_v6addr, rem_has_v6addr;
+	bool loc_has_v4addr = false, loc_has_v6addr = false;
+	bool rem_has_v4addr = false, rem_has_v6addr = false;
+	bool loc_has_v4only_addr, rem_has_v4only_addr;
+	bool loc_has_v6only_addr, rem_has_v6only_addr;
 	struct sockaddr_in6 addrs_buf[OSMO_SOCK_MAX_ADDRS];
 	char strbuf[512];
-
-	/* updated later in case of AF_UNSPEC */
-	loc_has_v4addr = rem_has_v4addr = (family == AF_INET);
-	loc_has_v6addr = rem_has_v6addr = (family == AF_INET6);
 
 	/* TODO: So far this function is only aimed for SCTP, but could be
 	   reused in the future for other protocols with multi-addr support */
@@ -862,10 +896,17 @@ int osmo_sock_init2_multiaddr2(uint16_t family, uint16_t type, uint8_t proto,
 					   local_hosts_cnt, local_port, true);
 		if (rc < 0)
 			return -EINVAL;
-		/* Figure out if there's any IPV4 or IPv6 addr in the set */
-		if (family == AF_UNSPEC)
-			addrinfo_has_v4v6addr((const struct addrinfo **)res_loc, local_hosts_cnt,
-					      &loc_has_v4addr, &loc_has_v6addr);
+		/* Figure out if there's any IPv4 or IPv6 entry in the result set */
+		addrinfo_has_v4v6addr((const struct addrinfo **)res_loc, local_hosts_cnt,
+				       &loc_has_v4addr, &loc_has_v6addr);
+		/* Figure out if there's any IPv4-only or IPv6-only addr in the result set */
+		addrinfo_has_v4v6only_addr((const struct addrinfo **)res_loc, local_hosts_cnt,
+					   &loc_has_v4only_addr, &loc_has_v6only_addr);
+		if (family == AF_INET && loc_has_v6only_addr) {
+			LOGP(DLGLOBAL, LOGL_ERROR, "Cannot bind an IPv6 address to an AF_INET socket\n");
+			rc = -EINVAL;
+			goto ret_freeaddrinfo;
+		}
 	}
 	/* figure out remote side of socket */
 	if (flags & OSMO_SOCK_F_CONNECT) {
@@ -875,26 +916,44 @@ int osmo_sock_init2_multiaddr2(uint16_t family, uint16_t type, uint8_t proto,
 			rc = -EINVAL;
 			goto ret_freeaddrinfo_loc;
 		}
-		/* Figure out if there's any IPv4 or IPv6  addr in the set */
-		if (family == AF_UNSPEC)
-			addrinfo_has_v4v6addr((const struct addrinfo **)res_rem, remote_hosts_cnt,
-					      &rem_has_v4addr, &rem_has_v6addr);
+		/* Figure out if there's any IPv4 or IPv6 entry in the result set */
+		addrinfo_has_v4v6addr((const struct addrinfo **)res_rem, remote_hosts_cnt,
+				       &rem_has_v4addr, &rem_has_v6addr);
+		/* Figure out if there's any IPv4-only or IPv6-only addr in the result set */
+		addrinfo_has_v4v6only_addr((const struct addrinfo **)res_rem, remote_hosts_cnt,
+					   &rem_has_v4only_addr, &rem_has_v6only_addr);
+		if (family == AF_INET && rem_has_v6only_addr) {
+			LOGP(DLGLOBAL, LOGL_ERROR, "Cannot connect to an IPv6 address in an AF_INET socket\n");
+			rc = -EINVAL;
+			goto ret_freeaddrinfo;
+		}
 	}
 
-	if (((flags & OSMO_SOCK_F_BIND) && (flags & OSMO_SOCK_F_CONNECT)) &&
-	    !addrinfo_has_in6addr_any((const struct addrinfo **)res_loc, local_hosts_cnt) &&
+	/* Find out the socket family now if not established by caller:
+	 * Both are checked here through "or" here to account for "bind flag set,
+	 * connect flag not set" and viceversa. */
+	if (family == AF_UNSPEC) {
+		if (!loc_has_v6addr && !rem_has_v6addr)
+			family = AF_INET;
+		else
+			family = AF_INET6;
+	}
+
+	/* if both sets are used, make sure there's at least 1 address of the
+	 * same type on each set so that SCTP INIT/INIT-ACK can work. */
+	if (family == AF_INET6 && ((flags & OSMO_SOCK_F_BIND) && (flags & OSMO_SOCK_F_CONNECT)) &&
 	    (loc_has_v4addr != rem_has_v4addr || loc_has_v6addr != rem_has_v6addr)) {
-		LOGP(DLGLOBAL, LOGL_ERROR, "Invalid v4 vs v6 in local vs remote addresses: "
-		     "local:%s%s remote:%s%s\n",
-		     loc_has_v4addr ? " v4" : "", loc_has_v6addr ? " v6" : "",
-		     rem_has_v4addr ? " v4" : "", rem_has_v6addr ? " v6" : ""
-		     );
-		rc = -EINVAL;
-		goto ret_freeaddrinfo;
+		if (!addrinfo_has_in6addr_any((const struct addrinfo **)res_loc, local_hosts_cnt)) {
+			LOGP(DLGLOBAL, LOGL_ERROR, "Invalid v4 vs v6 in local vs remote addresses: "
+			     "local:%s%s remote:%s%s\n",
+			     loc_has_v4addr ? " v4" : "", loc_has_v6addr ? " v6" : "",
+			     rem_has_v4addr ? " v4" : "", rem_has_v6addr ? " v6" : "");
+			rc = -EINVAL;
+			goto ret_freeaddrinfo;
+		}
 	}
 
-	sfd = socket_helper_multiaddr(loc_has_v6addr ? AF_INET6 : AF_INET,
-				      type, proto, flags);
+	sfd = socket_helper_multiaddr(family, type, proto, flags);
 	if (sfd < 0) {
 		rc = sfd;
 		goto ret_freeaddrinfo;
