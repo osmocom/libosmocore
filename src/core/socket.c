@@ -959,23 +959,8 @@ int osmo_sock_init2_multiaddr2(uint16_t family, uint16_t type, uint8_t proto,
 		goto ret_freeaddrinfo;
 	}
 
-	if (flags & OSMO_SOCK_F_BIND) {
-		/* Since so far we only allow IPPROTO_SCTP in this function,
-		   no need to check below for "proto != IPPROTO_UDP || flags & OSMO_SOCK_F_UDP_REUSEADDR" */
-		rc = setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR,
-				&on, sizeof(on));
-		if (rc < 0) {
-			int err = errno;
-			multiaddr_snprintf(strbuf, sizeof(strbuf), local_hosts, local_hosts_cnt);
-			LOGP(DLGLOBAL, LOGL_ERROR,
-			     "cannot setsockopt socket:"
-			     " %s:%u: %s\n",
-			     strbuf, local_port,
-			     strerror(err));
-			goto ret_close;
-		}
-
-		if (pars && pars->sctp.sockopt_auth_supported.set) {
+	if (pars) {
+		if (pars->sctp.sockopt_auth_supported.set) {
 			/* RFC 5061 4.2.7: ASCONF also requires AUTH feature. */
 			rc = setsockopt_sctp_auth_supported(sfd, pars->sctp.sockopt_auth_supported.value);
 			if (rc < 0) {
@@ -991,7 +976,7 @@ int osmo_sock_init2_multiaddr2(uint16_t family, uint16_t type, uint8_t proto,
 			}
 		}
 
-		if (pars && pars->sctp.sockopt_asconf_supported.set) {
+		if (pars->sctp.sockopt_asconf_supported.set) {
 			rc = setsockopt_sctp_asconf_supported(sfd, pars->sctp.sockopt_asconf_supported.value);
 			if (rc < 0) {
 				int err = errno;
@@ -1006,7 +991,7 @@ int osmo_sock_init2_multiaddr2(uint16_t family, uint16_t type, uint8_t proto,
 			}
 		}
 
-		if (pars && pars->sctp.sockopt_initmsg.set) {
+		if (pars->sctp.sockopt_initmsg.set) {
 			rc = setsockopt_sctp_initmsg(sfd, pars);
 			if (rc < 0) {
 				int err = errno;
@@ -1018,6 +1003,23 @@ int osmo_sock_init2_multiaddr2(uint16_t family, uint16_t type, uint8_t proto,
 					goto ret_close;
 				/* do not fail, some parameters will be left as the global default */
 			}
+		}
+	}
+
+	if (flags & OSMO_SOCK_F_BIND) {
+		/* Since so far we only allow IPPROTO_SCTP in this function,
+		   no need to check below for "proto != IPPROTO_UDP || flags & OSMO_SOCK_F_UDP_REUSEADDR" */
+		rc = setsockopt(sfd, SOL_SOCKET, SO_REUSEADDR,
+				&on, sizeof(on));
+		if (rc < 0) {
+			int err = errno;
+			multiaddr_snprintf(strbuf, sizeof(strbuf), local_hosts, local_hosts_cnt);
+			LOGP(DLGLOBAL, LOGL_ERROR,
+			     "cannot setsockopt socket:"
+			     " %s:%u: %s\n",
+			     strbuf, local_port,
+			     strerror(err));
+			goto ret_close;
 		}
 
 		/* Build array of addresses taking first entry for each host.
