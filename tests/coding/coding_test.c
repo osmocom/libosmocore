@@ -441,11 +441,11 @@ static void test_pdtch(const struct test_macblock *tmb, int len)
 	case 34:
 	case 54:
 		l2[len - 1] &= 0x7f;
-		result[len - 1] &= 0x7f;
+		result[len - 1] = 0x00;
 		break;
 	case 40:
 		l2[len - 1] &= 0x07;
-		result[len - 1] &= 0x07;
+		result[len - 1] = 0x00;
 		break;
 	}
 
