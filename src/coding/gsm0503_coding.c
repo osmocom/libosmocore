@@ -1042,6 +1042,10 @@ int gsm0503_pdtch_decode(uint8_t *l2_data, const sbit_t *bursts, uint8_t *usf_p,
 		osmo_conv_decode_ber(&gsm0503_xcch, cB,
 			conv, n_errors, n_bits_total);
 
+		/* the three USF bits d(0),d(1),d(2) are *not* precoded */
+		if (usf_p)
+			*usf_p = (conv[0] << 2) | (conv[1] << 1) | (conv[2] << 0);
+
 		rv = osmo_crc64gen_check_bits(&gsm0503_fire_crc40,
 			conv, 184, conv + 184);
 		if (rv)
