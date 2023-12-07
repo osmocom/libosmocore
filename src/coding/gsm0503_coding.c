@@ -924,7 +924,7 @@ static int egprs_decode_data(uint8_t *l2_data, const sbit_t *c,
  *  \param usf_p unused argument ?!?
  *  \param[out] n_errors number of detected bit-errors
  *  \param[out] n_bits_total total number of decoded bits
- *  \returns 0 on success; negative on error */
+ *  \returns number of bytes decoded; negative on error */
 int gsm0503_pdtch_egprs_decode(uint8_t *l2_data, const sbit_t *bursts, uint16_t nbits,
 	uint8_t *usf_p, int *n_errors, int *n_bits_total)
 {
@@ -1013,7 +1013,7 @@ int gsm0503_pdtch_egprs_decode(uint8_t *l2_data, const sbit_t *bursts, uint16_t 
  *  \param[out] usf_p uplink stealing flag
  *  \param[out] n_errors number of detected bit-errors
  *  \param[out] n_bits_total total number of dcoded bits
- *  \returns 0 on success; negative on error */
+ *  \returns number of bytes decoded; negative on error */
 int gsm0503_pdtch_decode(uint8_t *l2_data, const sbit_t *bursts, uint8_t *usf_p,
 	int *n_errors, int *n_bits_total)
 {
