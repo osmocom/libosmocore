@@ -921,7 +921,7 @@ static int egprs_decode_data(uint8_t *l2_data, const sbit_t *c,
  *  \param[out] l2_data caller-allocated buffer for L2 Frame
  *  \param[in] bursts burst input data as soft unpacked bits
  *  \param[in] nbits number of bits in \a bursts
- *  \param usf_p unused argument ?!?
+ *  \param usf_p Uplink State Flag, FIXME: not implemented
  *  \param[out] n_errors number of detected bit-errors
  *  \param[out] n_bits_total total number of decoded bits
  *  \returns number of bytes decoded; negative on error */
@@ -1010,7 +1010,7 @@ int gsm0503_pdtch_egprs_decode(uint8_t *l2_data, const sbit_t *bursts, uint16_t 
 /*! Decode GPRS PDTCH
  *  \param[out] l2_data caller-allocated buffer for L2 Frame
  *  \param[in] bursts burst input data as soft unpacked bits
- *  \param[out] usf_p uplink stealing flag
+ *  \param[out] usf_p Uplink State Flag, only relevant for DL blocks
  *  \param[out] n_errors number of detected bit-errors
  *  \param[out] n_bits_total total number of dcoded bits
  *  \returns number of bytes decoded; negative on error */
@@ -1061,6 +1061,7 @@ int gsm0503_pdtch_decode(uint8_t *l2_data, const sbit_t *bursts, uint8_t *usf_p,
 		osmo_conv_decode_ber(&gsm0503_cs2_np, cB,
 			conv, n_errors, n_bits_total);
 
+		/* 5.1.2.2 a) the three USF bits d(0),d(1),d(2) are precoded into six bits */
 		for (i = 0; i < 8; i++) {
 			for (j = 0, k = 0; j < 6; j++)
 				k += abs(((int)gsm0503_usf2six[i][j]) - ((int)conv[j]));
@@ -1096,6 +1097,7 @@ int gsm0503_pdtch_decode(uint8_t *l2_data, const sbit_t *bursts, uint8_t *usf_p,
 		osmo_conv_decode_ber(&gsm0503_cs3_np, cB,
 			conv, n_errors, n_bits_total);
 
+		/* 5.1.3.2 a) the three USF bits d(0),d(1),d(2) are precoded into six bits */
 		for (i = 0; i < 8; i++) {
 			for (j = 0, k = 0; j < 6; j++)
 				k += abs(((int)gsm0503_usf2six[i][j]) - ((int)conv[j]));
@@ -1124,6 +1126,7 @@ int gsm0503_pdtch_decode(uint8_t *l2_data, const sbit_t *bursts, uint8_t *usf_p,
 		for (i = 12; i < 456; i++)
 			conv[i] = (cB[i] < 0) ? 1 : 0;
 
+		/* 5.1.4.2 a) the three USF bits d(0),d(1),d(2) are precoded into twelve bits */
 		for (i = 0; i < 8; i++) {
 			for (j = 0, k = 0; j < 12; j++)
 				k += abs(((int)gsm0503_usf2twelve_sbit[i][j]) - ((int)cB[j]));
