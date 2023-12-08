@@ -81,11 +81,9 @@ static void tc_enqueue_dequeue(void)
 	q1 = osmo_it_q_alloc(OTC_GLOBAL, "q1", 12, NULL, NULL);
 	OSMO_ASSERT(q1);
 
-#if 0
 	printf("try dequeueing from an empty queue\n");
 	osmo_it_q_dequeue(q1, &item, list);
 	OSMO_ASSERT(item == NULL);
-#endif
 
 	printf("adding queue entries up to the limit\n");
 	for (unsigned int i = 0; i < qlen; i++) {
@@ -101,11 +99,9 @@ static void tc_enqueue_dequeue(void)
 		talloc_free(item);
 	}
 
-#if 0
 	printf("try dequeueing from an empty queue\n");
 	osmo_it_q_dequeue(q1, &item, list);
 	OSMO_ASSERT(item == NULL);
-#endif
 
 	osmo_it_q_destroy(q1);
 }

@@ -245,7 +245,7 @@ int _osmo_it_q_enqueue(struct osmo_it_q *queue, struct llist_head *item)
 
 /*! Thread-safe de-queue from an inter-thread message queue.
  *  \param[in] queue Inter-thread queue from which to dequeue
- *  \returns dequeued message buffer; NULL if none available
+ *  \returns llist_head of dequeued message; NULL if none available
  */
 struct llist_head *_osmo_it_q_dequeue(struct osmo_it_q *queue)
 {
@@ -254,12 +254,9 @@ struct llist_head *_osmo_it_q_dequeue(struct osmo_it_q *queue)
 
 	pthread_mutex_lock(&queue->mutex);
 
-	if (llist_empty(&queue->list))
-		l = NULL;
-	l = queue->list.next;
-	OSMO_ASSERT(l);
-	llist_del(l);
-	queue->current_length--;
+	l = item_dequeue(&queue->list);
+	if (l != NULL)
+		queue->current_length--;
 
 	pthread_mutex_unlock(&queue->mutex);
 
