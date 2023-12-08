@@ -68,12 +68,14 @@ static void test_rx_exec(struct osmo_soft_uart *suart,
 {
 	for (unsigned int i = 0; input[i] != '\0'; i++) {
 		ubit_t ubit;
+		int rc;
 
 		switch (input[i]) {
 		case '0':
 		case '1':
 			ubit = input[i] - '0';
-			osmo_soft_uart_rx_ubits(suart, &ubit, 1);
+			rc = osmo_soft_uart_rx_ubits(suart, &ubit, 1);
+			OSMO_ASSERT(rc == 0); /* 0 on success */
 			break;
 		case 'F':
 			printf("%s() @ %u: flush the Rx buffer\n", __func__, i);
