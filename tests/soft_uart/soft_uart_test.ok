@@ -1,12 +1,14 @@
-======== test_rx(): testing 8-N-1 (no data)
+
+Executing test_rx
+======== testing 8-N-1 (no data)
 test_rx_exec() @ 0: flush the Rx buffer
 test_rx_exec() @ 6: flush the Rx buffer
 test_rx_exec() @ 12: flush the Rx buffer
-======== test_rx(): testing 8-N-1 (fill up flush)
+======== testing 8-N-1 (fill up flush)
 suart_rx_cb(flags=00): de ad be ef 
 suart_rx_cb(flags=00): 00 aa 55 ff 
 test_rx_exec() @ 101: flush the Rx buffer
-======== test_rx(): testing 8-N-1 (HELLO)
+======== testing 8-N-1 (HELLO)
 test_rx_exec() @ 18: flush the Rx buffer
 suart_rx_cb(flags=00): 48 
 test_rx_exec() @ 31: flush the Rx buffer
@@ -17,12 +19,12 @@ test_rx_exec() @ 70: flush the Rx buffer
 suart_rx_cb(flags=00): 4c 
 test_rx_exec() @ 96: flush the Rx buffer
 suart_rx_cb(flags=00): 4f 
-======== test_rx(): testing 8-N-1 (framing errors)
+======== testing 8-N-1 (framing errors)
 suart_rx_cb(flags=01): 00 
 suart_rx_cb(flags=01): aa 
 test_rx_exec() @ 41: flush the Rx buffer
 suart_rx_cb(flags=00): ff 
-======== test_rx(): testing 8-N-2 (HELLO)
+======== testing 8-N-2 (HELLO)
 test_rx_exec() @ 20: flush the Rx buffer
 test_rx_exec() @ 22: flush the Rx buffer
 suart_rx_cb(flags=00): 48 
@@ -38,35 +40,37 @@ suart_rx_cb(flags=00): 4c
 test_rx_exec() @ 110: flush the Rx buffer
 test_rx_exec() @ 112: flush the Rx buffer
 suart_rx_cb(flags=00): 4f 
-======== test_rx(): testing 8-N-2 (framing errors)
+======== testing 8-N-2 (framing errors)
 suart_rx_cb(flags=01): 00 
 suart_rx_cb(flags=01): aa 
 suart_rx_cb(flags=01): 55 
 test_rx_exec() @ 57: flush the Rx buffer
 suart_rx_cb(flags=00): ff 
-======== test_rx(): testing 8-E-1 (invalid parity)
+======== testing 8-E-1 (invalid parity)
 suart_rx_cb(flags=02): 00 
 suart_rx_cb(flags=02): 01 
 suart_rx_cb(flags=02): ff 
 test_rx_exec() @ 49: flush the Rx buffer
 suart_rx_cb(flags=02): 
-======== test_rx(): testing 8-E-1 (valid parity)
+======== testing 8-E-1 (valid parity)
 test_rx_exec() @ 63: flush the Rx buffer
 suart_rx_cb(flags=00): 00 ff aa 55 
 test_rx_exec() @ 120: flush the Rx buffer
 suart_rx_cb(flags=00): 80 e0 f8 fe 
-======== test_rx(): testing 8-O-1 (invalid parity)
+======== testing 8-O-1 (invalid parity)
 suart_rx_cb(flags=02): 00 
 suart_rx_cb(flags=02): 01 
 suart_rx_cb(flags=02): ff 
 test_rx_exec() @ 42: flush the Rx buffer
 suart_rx_cb(flags=02): 
-======== test_rx(): testing 8-O-1 (valid parity)
+======== testing 8-O-1 (valid parity)
 test_rx_exec() @ 63: flush the Rx buffer
 suart_rx_cb(flags=00): 00 ff aa 55 
 test_rx_exec() @ 120: flush the Rx buffer
 suart_rx_cb(flags=00): 80 e0 f8 fe 
-======== test_tx_rx(): testing 8-N-1
+
+Executing test_tx_rx
+======== testing 8-N-1
 suart_tx_cb(len=4/4): de ad be ef 
 suart_rx_cb(flags=00): de ad be ef 
 test_tx_rx_exec_one(n_bits_total=40): 0011110111 0101101011 0011111011 0111101111
@@ -81,7 +85,7 @@ suart_rx_cb(flags=00): 10 20 40 80
 test_tx_rx_exec_one(n_bits_total=40): 0000010001 0000001001 0000000101 0000000011
 suart_tx_cb(len=0/4): 
 test_tx_rx_exec_one(n_bits_total=40): 1111111111 1111111111 1111111111 1111111111
-======== test_tx_rx(): testing 8-N-2
+======== testing 8-N-2
 suart_tx_cb(len=4/4): de ad be ef 
 suart_rx_cb(flags=00): de ad be ef 
 test_tx_rx_exec_one(n_bits_total=44): 00111101111 01011010111 00111110111 01111011111
@@ -96,7 +100,7 @@ suart_rx_cb(flags=00): 10 20 40 80
 test_tx_rx_exec_one(n_bits_total=44): 00000100011 00000010011 00000001011 00000000111
 suart_tx_cb(len=0/4): 
 test_tx_rx_exec_one(n_bits_total=44): 11111111111 11111111111 11111111111 11111111111
-======== test_tx_rx(): testing 8-E-1
+======== testing 8-E-1
 suart_tx_cb(len=4/4): de ad be ef 
 suart_rx_cb(flags=00): de ad be ef 
 test_tx_rx_exec_one(n_bits_total=44): 00111101101 01011010111 00111110101 01111011111
@@ -111,7 +115,7 @@ suart_rx_cb(flags=00): 10 20 40 80
 test_tx_rx_exec_one(n_bits_total=44): 00000100011 00000010011 00000001011 00000000111
 suart_tx_cb(len=0/4): 
 test_tx_rx_exec_one(n_bits_total=44): 11111111111 11111111111 11111111111 11111111111
-======== test_tx_rx(): testing 8-O-1
+======== testing 8-O-1
 suart_tx_cb(len=4/4): de ad be ef 
 suart_rx_cb(flags=00): de ad be ef 
 test_tx_rx_exec_one(n_bits_total=44): 00111101111 01011010101 00111110111 01111011101
@@ -126,7 +130,7 @@ suart_rx_cb(flags=00): 10 20 40 80
 test_tx_rx_exec_one(n_bits_total=44): 00000100001 00000010001 00000001001 00000000101
 suart_tx_cb(len=0/4): 
 test_tx_rx_exec_one(n_bits_total=44): 11111111111 11111111111 11111111111 11111111111
-======== test_tx_rx(): testing 8-M-1
+======== testing 8-M-1
 suart_tx_cb(len=4/4): de ad be ef 
 suart_rx_cb(flags=00): de ad be ef 
 test_tx_rx_exec_one(n_bits_total=44): 00111101111 01011010111 00111110111 01111011111
@@ -141,7 +145,7 @@ suart_rx_cb(flags=00): 10 20 40 80
 test_tx_rx_exec_one(n_bits_total=44): 00000100011 00000010011 00000001011 00000000111
 suart_tx_cb(len=0/4): 
 test_tx_rx_exec_one(n_bits_total=44): 11111111111 11111111111 11111111111 11111111111
-======== test_tx_rx(): testing 8-S-1
+======== testing 8-S-1
 suart_tx_cb(len=4/4): de ad be ef 
 suart_rx_cb(flags=00): de ad be ef 
 test_tx_rx_exec_one(n_bits_total=44): 00111101101 01011010101 00111110101 01111011101
@@ -156,7 +160,7 @@ suart_rx_cb(flags=00): 10 20 40 80
 test_tx_rx_exec_one(n_bits_total=44): 00000100001 00000010001 00000001001 00000000101
 suart_tx_cb(len=0/4): 
 test_tx_rx_exec_one(n_bits_total=44): 11111111111 11111111111 11111111111 11111111111
-======== test_tx_rx(): testing 6-N-1
+======== testing 6-N-1
 suart_tx_cb(len=4/4): de ad be ef 
 suart_rx_cb(flags=00): 1e 2d 3e 2f 
 test_tx_rx_exec_one(n_bits_total=32): 00111101 01011011 00111111 01111011
@@ -171,36 +175,46 @@ suart_rx_cb(flags=00): 10 20 00 00
 test_tx_rx_exec_one(n_bits_total=32): 00000101 00000011 00000001 00000001
 suart_tx_cb(len=0/4): 
 test_tx_rx_exec_one(n_bits_total=32): 11111111 11111111 11111111 11111111
-======== test_tx_rx_pull_n(): pulling 32 bits (1 at a time)
+
+Executing test_tx_rx_pull_n
+======== pulling 32 bits (1 at a time)
 suart_tx_cb(len=1/1): 55 
 suart_tx_cb(len=1/1): 55 
 suart_tx_cb(len=1/1): 55 
 suart_tx_cb(len=1/1): 55 
 01010101010101010101010101010101
-======== test_tx_rx_pull_n(): feeding 32 bits into the receiver
+======== feeding 32 bits into the receiver
 suart_rx_cb(flags=00): 55 55 55 
-======== test_tx_rx_pull_n(): pulling 32 bits (2 at a time)
+
+Executing test_tx_rx_pull_n
+======== pulling 32 bits (2 at a time)
 suart_tx_cb(len=1/1): 55 
 suart_tx_cb(len=1/1): 55 
 suart_tx_cb(len=1/1): 55 
 suart_tx_cb(len=1/1): 55 
 01010101010101010101010101010101
-======== test_tx_rx_pull_n(): feeding 32 bits into the receiver
+======== feeding 32 bits into the receiver
 suart_rx_cb(flags=00): 55 55 55 
-======== test_tx_rx_pull_n(): pulling 32 bits (4 at a time)
+
+Executing test_tx_rx_pull_n
+======== pulling 32 bits (4 at a time)
 suart_tx_cb(len=1/1): 55 
 suart_tx_cb(len=1/1): 55 
 suart_tx_cb(len=1/1): 55 
 01010101011101010101011101010101
-======== test_tx_rx_pull_n(): feeding 32 bits into the receiver
+======== feeding 32 bits into the receiver
 suart_rx_cb(flags=00): 55 55 
-======== test_tx_rx_pull_n(): pulling 32 bits (8 at a time)
+
+Executing test_tx_rx_pull_n
+======== pulling 32 bits (8 at a time)
 suart_tx_cb(len=1/1): 55 
 suart_tx_cb(len=1/1): 55 
 01010101011111110101010101111111
-======== test_tx_rx_pull_n(): feeding 32 bits into the receiver
+======== feeding 32 bits into the receiver
 suart_rx_cb(flags=00): 55 55 
-======== test_modem_status(): initial status=0x00000000
+
+Executing test_modem_status
+initial status=0x00000000
 de-asserting DCD, which was not asserted
 asserting both RI and DCD, expecting the callback to be called twice
 suart_status_change_cb(status=0x00000008)
@@ -209,10 +223,12 @@ de-asserting RI, expecting the callback to be called
 suart_status_change_cb(status=0x00000002)
 resetting to 0x00, expecting the callback to be called
 suart_status_change_cb(status=0x00000000)
-======== test_flow_control_dtr_dsr(): initial status=0x00000000
+
+Executing test_flow_control_dtr_dsr
+initial status=0x00000000
 expecting osmo_soft_uart_tx_ubits() to yield nothing
 expecting osmo_soft_uart_rx_ubits() to yield nothing
-======== test_flow_control_dtr_dsr(): asserting both DTR and DSR
+======== asserting both DTR and DSR
 suart_status_change_cb(status=0x00000001)
 suart_status_change_cb(status=0x00000005)
 expecting osmo_soft_uart_tx_ubits() to yield 40 bits (requesting 40 bits)
@@ -222,15 +238,17 @@ expecting osmo_soft_uart_rx_ubits() to consume 40 bits and yield 4 chars
 suart_rx_cb(flags=00): 42 42 42 42 
 expecting osmo_soft_uart_tx_ubits() to yield 2 bits (requesting 2 bits)
 suart_tx_cb(len=1/1): 42 
-======== test_flow_control_dtr_dsr(): de-asserting DSR
+======== de-asserting DSR
 suart_status_change_cb(status=0x00000001)
 expecting osmo_soft_uart_tx_ubits() to yield 8 bits (requesting 40 bits)
 expecting osmo_soft_uart_rx_ubits() to consume 40 bits and yield a pending char
 suart_rx_cb(flags=00): 42 
-======== test_flow_control_rts_cts(): initial status=0x00000000
+
+Executing test_flow_control_rts_cts
+initial status=0x00000000
 expecting osmo_soft_uart_tx_ubits() to yield nothing
 expecting osmo_soft_uart_rx_ubits() to yield nothing
-======== test_flow_control_rts_cts(): asserting both CTS and RTS/RTR
+======== asserting both CTS and RTS/RTR
 suart_status_change_cb(status=0x00000020)
 suart_status_change_cb(status=0x00000030)
 expecting osmo_soft_uart_tx_ubits() to yield 40 bits (requesting 40 bits)
@@ -240,7 +258,7 @@ expecting osmo_soft_uart_rx_ubits() to consume 40 bits and yield 4 chars
 suart_rx_cb(flags=00): 42 42 42 42 
 expecting osmo_soft_uart_tx_ubits() to yield 2 bits (requesting 2 bits)
 suart_tx_cb(len=1/1): 42 
-======== test_flow_control_rts_cts(): de-asserting CTS
+======== de-asserting CTS
 suart_status_change_cb(status=0x00000010)
 expecting osmo_soft_uart_tx_ubits() to yield 8 bits (requesting 40 bits)
 expecting osmo_soft_uart_rx_ubits() to consume 40 bits and yield a pending char

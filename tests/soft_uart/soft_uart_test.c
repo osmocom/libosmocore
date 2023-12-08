@@ -24,6 +24,11 @@
 #include <osmocom/core/utils.h>
 #include <osmocom/core/soft_uart.h>
 
+#define SUART_TEST_BEGIN \
+	do { \
+		printf("\nExecuting %s\n", __func__); \
+	} while (0)
+
 static struct {
 	size_t data_len;
 	const uint8_t *data;
@@ -96,15 +101,17 @@ static void test_rx(void)
 	struct osmo_soft_uart_cfg cfg;
 	struct osmo_soft_uart *suart;
 
+	SUART_TEST_BEGIN;
+
 	suart = osmo_soft_uart_alloc(NULL, __func__, &suart_test_default_cfg);
 	OSMO_ASSERT(suart != NULL);
 
 	osmo_soft_uart_set_rx(suart, true);
 
-	printf("======== %s(): testing 8-N-1 (no data)\n", __func__);
+	printf("======== testing 8-N-1 (no data)\n");
 	test_rx_exec(suart, "F11111F11111F");
 
-	printf("======== %s(): testing 8-N-1 (fill up flush)\n", __func__);
+	printf("======== testing 8-N-1 (fill up flush)\n");
 	cfg = suart_test_default_cfg;
 	cfg.rx_buf_size = 4;
 	osmo_soft_uart_configure(suart, &cfg);
@@ -120,7 +127,7 @@ static void test_rx(void)
 		     "F" /* flush! (for sanity) */
 		     );
 
-	printf("======== %s(): testing 8-N-1 (HELLO)\n", __func__);
+	printf("======== testing 8-N-1 (HELLO)\n");
 	cfg = suart_test_default_cfg;
 	cfg.num_stop_bits = 1;
 	osmo_soft_uart_configure(suart, &cfg);
@@ -134,7 +141,7 @@ static void test_rx(void)
 		     "0 11110010 1F" /* 'O', flush! */
 		     );
 
-	printf("======== %s(): testing 8-N-1 (framing errors)\n", __func__);
+	printf("======== testing 8-N-1 (framing errors)\n");
 	test_rx_exec(suart, "11111" /* no data */
 		     "0 00000000 0" /* stop bit != 1, expect flush */
 		     "0 01010101 0" /* stop bit != 1, expect flush */
@@ -142,7 +149,7 @@ static void test_rx(void)
 		     "F" /* flush! */
 		     );
 
-	printf("======== %s(): testing 8-N-2 (HELLO)\n", __func__);
+	printf("======== testing 8-N-2 (HELLO)\n");
 	cfg = suart_test_default_cfg;
 	cfg.num_stop_bits = 2;
 	osmo_soft_uart_configure(suart, &cfg);
@@ -156,7 +163,7 @@ static void test_rx(void)
 		     "0 11110010 1F1F" /* 'O', flush! */
 		     );
 
-	printf("======== %s(): testing 8-N-2 (framing errors)\n", __func__);
+	printf("======== testing 8-N-2 (framing errors)\n");
 	test_rx_exec(suart, "11111" /* no data */
 		     "0 00000000 00" /* stop bit != 1, expect flush */
 		     "0 01010101 01" /* stop bit != 1, expect flush */
@@ -166,7 +173,7 @@ static void test_rx(void)
 		     );
 
 
-	printf("======== %s(): testing 8-E-1 (invalid parity)\n", __func__);
+	printf("======== testing 8-E-1 (invalid parity)\n");
 	cfg = suart_test_default_cfg;
 	cfg.parity_mode = OSMO_SUART_PARITY_EVEN;
 	osmo_soft_uart_configure(suart, &cfg);
@@ -176,7 +183,7 @@ static void test_rx(void)
 		     "0 11111111 1 1" /* odd parity, expect flush */
 		     "F" /* flush! (for sanity) */
 		     );
-	printf("======== %s(): testing 8-E-1 (valid parity)\n", __func__);
+	printf("======== testing 8-E-1 (valid parity)\n");
 	test_rx_exec(suart, "1111111" /* no data */
 		     "0 00000000 0 1"
 		     "0 11111111 0 1"
@@ -190,7 +197,7 @@ static void test_rx(void)
 		     "F" /* flush! */
 		     );
 
-	printf("======== %s(): testing 8-O-1 (invalid parity)\n", __func__);
+	printf("======== testing 8-O-1 (invalid parity)\n");
 	cfg = suart_test_default_cfg;
 	cfg.parity_mode = OSMO_SUART_PARITY_ODD;
 	osmo_soft_uart_configure(suart, &cfg);
@@ -200,7 +207,7 @@ static void test_rx(void)
 		     "0 11111111 0 1" /* even parity, expect flush */
 		     "F" /* flush! (for sanity) */
 		     );
-	printf("======== %s(): testing 8-O-1 (valid parity)\n", __func__);
+	printf("======== testing 8-O-1 (valid parity)\n");
 	test_rx_exec(suart, "1111111" /* no data */
 		     "0 00000000 1 1"
 		     "0 11111111 1 1"
@@ -267,6 +274,8 @@ static void test_tx_rx(void)
 	struct osmo_soft_uart *suart;
 	int rc;
 
+	SUART_TEST_BEGIN;
+
 	suart = osmo_soft_uart_alloc(NULL, __func__, &suart_test_default_cfg);
 	OSMO_ASSERT(suart != NULL);
 
@@ -280,40 +289,40 @@ static void test_tx_rx(void)
 	osmo_soft_uart_set_tx(suart, true);
 	osmo_soft_uart_set_rx(suart, true);
 
-	printf("======== %s(): testing 8-N-1\n", __func__);
+	printf("======== testing 8-N-1\n");
 	test_tx_rx_exec(suart, (1 + 8 + 1));
 
-	printf("======== %s(): testing 8-N-2\n", __func__);
+	printf("======== testing 8-N-2\n");
 	cfg = suart_test_default_cfg;
 	cfg.num_stop_bits = 2;
 	osmo_soft_uart_configure(suart, &cfg);
 	test_tx_rx_exec(suart, (1 + 8 + 2));
 
-	printf("======== %s(): testing 8-E-1\n", __func__);
+	printf("======== testing 8-E-1\n");
 	cfg = suart_test_default_cfg;
 	cfg.parity_mode = OSMO_SUART_PARITY_EVEN;
 	osmo_soft_uart_configure(suart, &cfg);
 	test_tx_rx_exec(suart, (1 + 8 + 1 + 1));
 
-	printf("======== %s(): testing 8-O-1\n", __func__);
+	printf("======== testing 8-O-1\n");
 	cfg = suart_test_default_cfg;
 	cfg.parity_mode = OSMO_SUART_PARITY_ODD;
 	osmo_soft_uart_configure(suart, &cfg);
 	test_tx_rx_exec(suart, (1 + 8 + 1 + 1));
 
-	printf("======== %s(): testing 8-M-1\n", __func__);
+	printf("======== testing 8-M-1\n");
 	cfg = suart_test_default_cfg;
 	cfg.parity_mode = OSMO_SUART_PARITY_MARK;
 	osmo_soft_uart_configure(suart, &cfg);
 	test_tx_rx_exec(suart, (1 + 8 + 1 + 1));
 
-	printf("======== %s(): testing 8-S-1\n", __func__);
+	printf("======== testing 8-S-1\n");
 	cfg = suart_test_default_cfg;
 	cfg.parity_mode = OSMO_SUART_PARITY_SPACE;
 	osmo_soft_uart_configure(suart, &cfg);
 	test_tx_rx_exec(suart, (1 + 8 + 1 + 1));
 
-	printf("======== %s(): testing 6-N-1\n", __func__);
+	printf("======== testing 6-N-1\n");
 	cfg = suart_test_default_cfg;
 	cfg.num_data_bits = 6;
 	osmo_soft_uart_configure(suart, &cfg);
@@ -328,6 +337,8 @@ static void test_tx_rx_pull_n(unsigned int n)
 	ubit_t tx_buf[32];
 	int rc;
 
+	SUART_TEST_BEGIN;
+
 	suart = osmo_soft_uart_alloc(NULL, __func__, &suart_test_default_cfg);
 	OSMO_ASSERT(suart != NULL);
 
@@ -337,14 +348,14 @@ static void test_tx_rx_pull_n(unsigned int n)
 	g_tx_cb_cfg.data = (void *)"\x55";
 	g_tx_cb_cfg.data_len = 1;
 
-	printf("======== %s(): pulling %lu bits (%u at a time)\n", __func__, sizeof(tx_buf), n);
+	printf("======== pulling %lu bits (%u at a time)\n", sizeof(tx_buf), n);
 	for (unsigned int i = 0; i < sizeof(tx_buf); i += n) {
 		rc = osmo_soft_uart_tx_ubits(suart, &tx_buf[i], n);
 		OSMO_ASSERT(rc == n);
 	}
 	printf("%s\n", osmo_ubit_dump(&tx_buf[0], sizeof(tx_buf)));
 
-	printf("======== %s(): feeding %lu bits into the receiver\n", __func__, sizeof(tx_buf));
+	printf("======== feeding %lu bits into the receiver\n", sizeof(tx_buf));
 	rc = osmo_soft_uart_rx_ubits(suart, &tx_buf[0], sizeof(tx_buf));
 	OSMO_ASSERT(rc == 0);
 	osmo_soft_uart_flush_rx(suart);
@@ -357,11 +368,12 @@ static void test_modem_status(void)
 	struct osmo_soft_uart *suart;
 	unsigned int status;
 
+	SUART_TEST_BEGIN;
+
 	suart = osmo_soft_uart_alloc(NULL, __func__, &suart_test_default_cfg);
 	OSMO_ASSERT(suart != NULL);
 
-	printf("======== %s(): initial status=0x%08x\n",
-	       __func__, osmo_soft_uart_get_status(suart));
+	printf("initial status=0x%08x\n", osmo_soft_uart_get_status(suart));
 
 	printf("de-asserting DCD, which was not asserted\n");
 	osmo_soft_uart_set_status_line(suart, OSMO_SUART_STATUS_F_DCD, false);
@@ -392,6 +404,8 @@ static void test_flow_control_dtr_dsr(void)
 	ubit_t tx_buf[40];
 	int rc;
 
+	SUART_TEST_BEGIN;
+
 	g_tx_cb_cfg.data = (void *)"\x42\x42\x42\x42";
 	g_tx_cb_cfg.data_len = 4;
 
@@ -405,8 +419,7 @@ static void test_flow_control_dtr_dsr(void)
 	osmo_soft_uart_set_rx(suart, true);
 
 	/* expect the initial status to be 0 (all lines de-asserted) */
-	printf("======== %s(): initial status=0x%08x\n",
-	       __func__, osmo_soft_uart_get_status(suart));
+	printf("initial status=0x%08x\n", osmo_soft_uart_get_status(suart));
 
 	memset(&tx_buf[0], 1, sizeof(tx_buf)); /* pre-initialize */
 
@@ -420,7 +433,7 @@ static void test_flow_control_dtr_dsr(void)
 	osmo_soft_uart_flush_rx(suart);
 
 	/* both DTR and DSR are asserted, expect both Rx and Tx to work */
-	printf("======== %s(): asserting both DTR and DSR\n", __func__);
+	printf("======== asserting both DTR and DSR\n");
 	osmo_soft_uart_set_status_line(suart, OSMO_SUART_STATUS_F_DTR, true);
 	osmo_soft_uart_set_status_line(suart, OSMO_SUART_STATUS_F_DSR, true);
 
@@ -449,7 +462,7 @@ static void test_flow_control_dtr_dsr(void)
 	OSMO_ASSERT(rc == 2);
 
 	/* CTS gets de-asserted, the transmitter is shutting down */
-	printf("======== %s(): de-asserting DSR\n", __func__);
+	printf("======== de-asserting DSR\n");
 	osmo_soft_uart_set_status_line(suart, OSMO_SUART_STATUS_F_DSR, false);
 
 	/* expect only the remaining 8 bits to be pulled out */
@@ -474,6 +487,8 @@ static void test_flow_control_rts_cts(void)
 	ubit_t tx_buf[40];
 	int rc;
 
+	SUART_TEST_BEGIN;
+
 	g_tx_cb_cfg.data = (void *)"\x42\x42\x42\x42";
 	g_tx_cb_cfg.data_len = 4;
 
@@ -487,8 +502,7 @@ static void test_flow_control_rts_cts(void)
 	osmo_soft_uart_set_rx(suart, true);
 
 	/* expect the initial status to be 0 (all lines de-asserted) */
-	printf("======== %s(): initial status=0x%08x\n",
-	       __func__, osmo_soft_uart_get_status(suart));
+	printf("initial status=0x%08x\n", osmo_soft_uart_get_status(suart));
 
 	memset(&tx_buf[0], 1, sizeof(tx_buf)); /* pre-initialize */
 
@@ -502,7 +516,7 @@ static void test_flow_control_rts_cts(void)
 	osmo_soft_uart_flush_rx(suart);
 
 	/* both RTS/RTR and CTS are asserted, expect both Rx and Tx to work */
-	printf("======== %s(): asserting both CTS and RTS/RTR\n", __func__);
+	printf("======== asserting both CTS and RTS/RTR\n");
 	osmo_soft_uart_set_status_line(suart, OSMO_SUART_STATUS_F_CTS, true);
 	osmo_soft_uart_set_status_line(suart, OSMO_SUART_STATUS_F_RTS_RTR, true);
 
@@ -531,7 +545,7 @@ static void test_flow_control_rts_cts(void)
 	OSMO_ASSERT(rc == 2);
 
 	/* CTS gets de-asserted, the transmitter is shutting down */
-	printf("======== %s(): de-asserting CTS\n", __func__);
+	printf("======== de-asserting CTS\n");
 	osmo_soft_uart_set_status_line(suart, OSMO_SUART_STATUS_F_CTS, false);
 
 	/* expect only the remaining 8 bits to be pulled out */
