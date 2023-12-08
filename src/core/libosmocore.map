@@ -439,6 +439,7 @@ osmo_sock_multiaddr_add_local_addr;
 osmo_sock_multiaddr_del_local_addr;
 osmo_sock_multiaddr_get_ip_and_port;
 osmo_sock_multiaddr_get_name_buf;
+osmo_sock_sctp_get_peer_addr_info;
 osmo_sock_set_dscp;
 osmo_sock_set_priority;
 osmo_sock_unix_init;

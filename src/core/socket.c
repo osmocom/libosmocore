@@ -2653,6 +2653,83 @@ int osmo_sock_set_priority(int fd, int prio)
 	return setsockopt(fd, SOL_SOCKET, SO_PRIORITY, &prio, sizeof(prio));
 }
 
+#ifdef HAVE_LIBSCTP
+/*! Fill in array of struct sctp_paddrinfo with each of the remote addresses of an SCTP socket
+ *  \param[in] fd file descriptor of SCTP socket
+ *  \param[out] pinfo Pointer to memory holding an array of struct sctp_paddrinfo (pinfo_cnt length).
+ *  \param[in,out] pinfo_cnt length of pinfo array (in elements). On return it contains the number of addresses found.
+ *  \returns 0 on success; negative otherwise
+ *
+ * Upon return, pinfo_cnt can be set to a higher value than the one set by the
+ * caller. This can be used by the caller to find out the required array length
+ * and then obtaining by calling the function twice. Only up to pinfo_cnt addresses
+ * are filled in, as per the value provided by the caller.
+ *
+ * Usage example retrieving struct sctp_paddrinfo for all (up to OSMO_SOCK_MAX_ADDRS, 32) remote IP addresses:
+ * struct sctp_paddrinfo pinfo[OSMO_SOCK_MAX_ADDRS];
+ * size_t pinfo_cnt = ARRAY_SIZE(pinfo);
+ * rc = osmo_sock_sctp_get_peer_addr_info(fd, &pinfo[0], &num_hostbuf, pinfo_cnt);
+ * if (rc < 0)
+ *	goto error;
+ * if (pinfo_cnt > ARRAY_SIZE(hostbuf))
+ *	goto not_enough_buffers;
+ */
+int osmo_sock_sctp_get_peer_addr_info(int fd, struct sctp_paddrinfo *pinfo, size_t *pinfo_cnt)
+{
+	struct sockaddr *addrs = NULL;
+	unsigned int n_addrs, i;
+	void *addr_buf;
+	int rc;
+	socklen_t optlen;
+
+	rc = sctp_getpaddrs(fd, 0, &addrs);
+
+	if (rc < 0)
+		return rc;
+	if (rc == 0)
+		return -ENOTCONN;
+
+	n_addrs = rc;
+	addr_buf = (void *)addrs;
+	for (i = 0; i < n_addrs; i++) {
+		struct sockaddr *sa_addr = (struct sockaddr *)addr_buf;
+		size_t addrlen;
+
+		switch (sa_addr->sa_family) {
+		case AF_INET:
+			addrlen = sizeof(struct sockaddr_in);
+			break;
+		case AF_INET6:
+			addrlen = sizeof(struct sockaddr_in6);
+			break;
+		default:
+			rc = -EINVAL;
+			goto free_addrs_ret;
+		}
+
+		if (i >= *pinfo_cnt) {
+			addr_buf += addrlen;
+			continue;
+		}
+
+		memset(&pinfo[i], 0, sizeof(pinfo[0]));
+		memcpy(&pinfo[i].spinfo_address, sa_addr, addrlen);
+		optlen = sizeof(pinfo[0]);
+		rc = getsockopt(fd, SOL_SCTP, SCTP_GET_PEER_ADDR_INFO, &pinfo[i], &optlen);
+		if (rc < 0)
+			goto free_addrs_ret;
+
+		addr_buf += addrlen;
+	}
+
+	*pinfo_cnt = n_addrs;
+	rc = 0;
+free_addrs_ret:
+	sctp_freepaddrs(addrs);
+	return rc;
+}
+#endif
+
 #endif /* HAVE_SYS_SOCKET_H */
 
 /*! @} */

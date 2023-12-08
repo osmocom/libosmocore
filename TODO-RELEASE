@@ -9,6 +9,7 @@
 #library	what			description / commit summary line
 core      ADD       osmo_sock_multiaddr_{add,del}_local_addr()
 core      ADD       osmo_sock_multiaddr_get_ip_and_port(), osmo_multiaddr_ip_and_port_snprintf(), osmo_sock_multiaddr_get_name_buf()
+core      ADD       osmo_sock_sctp_get_peer_addr_info()
 core      ADD       gsmtap_inst_fd2() core, DEPRECATE gsmtap_inst_fd()
 isdn		ABI change		add states and flags for external T200 handling
 gsm		ABI change		add T200 timer states to lapdm_datalink

@@ -22,6 +22,7 @@
 struct sockaddr_in;
 struct sockaddr;
 struct osmo_fd;
+struct sctp_paddrinfo;
 
 struct osmo_sockaddr {
 	union {
@@ -210,6 +211,8 @@ int osmo_sock_local_ip(char *local_ip, const char *remote_ip);
 
 int osmo_sock_set_dscp(int fd, uint8_t dscp);
 int osmo_sock_set_priority(int fd, int prio);
+
+int osmo_sock_sctp_get_peer_addr_info(int fd, struct sctp_paddrinfo *pinfo, size_t *pinfo_cnt);
 
 #endif /* (!EMBEDDED) */
 /*! @} */
