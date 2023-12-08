@@ -224,6 +224,27 @@ static void test_rx(void)
 	osmo_soft_uart_free(suart);
 }
 
+static void test_rx_flush(void)
+{
+	struct osmo_soft_uart *suart;
+
+	SUART_TEST_BEGIN;
+
+	suart = osmo_soft_uart_alloc(NULL, __func__, &suart_test_default_cfg);
+	OSMO_ASSERT(suart != NULL);
+
+	printf("calling osmo_soft_uart_flush_rx() while Rx disabled\n");
+	osmo_soft_uart_flush_rx(suart);
+
+	printf("enabling the receiver\n");
+	osmo_soft_uart_set_rx(suart, true);
+
+	printf("calling osmo_soft_uart_flush_rx() while Rx enabled, but no data\n");
+	osmo_soft_uart_flush_rx(suart);
+
+	osmo_soft_uart_free(suart);
+}
+
 static void test_tx_rx_exec_one(struct osmo_soft_uart *suart,
 				size_t n_bits_total, size_t n_bits_frame)
 {
@@ -566,6 +587,7 @@ static void test_flow_control_rts_cts(void)
 int main(int argc, char **argv)
 {
 	test_rx();
+	test_rx_flush();
 	test_tx_rx();
 
 	/* test pulling small number of bits at a time */

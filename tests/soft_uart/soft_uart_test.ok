@@ -51,7 +51,6 @@ suart_rx_cb(flags=02): 00
 suart_rx_cb(flags=02): 01 
 suart_rx_cb(flags=02): ff 
 test_rx_exec() @ 49: flush the Rx buffer
-suart_rx_cb(flags=02): 
 ======== testing 8-E-1 (valid parity)
 test_rx_exec() @ 63: flush the Rx buffer
 suart_rx_cb(flags=00): 00 ff aa 55 
@@ -62,12 +61,16 @@ suart_rx_cb(flags=02): 00
 suart_rx_cb(flags=02): 01 
 suart_rx_cb(flags=02): ff 
 test_rx_exec() @ 42: flush the Rx buffer
-suart_rx_cb(flags=02): 
 ======== testing 8-O-1 (valid parity)
 test_rx_exec() @ 63: flush the Rx buffer
 suart_rx_cb(flags=00): 00 ff aa 55 
 test_rx_exec() @ 120: flush the Rx buffer
 suart_rx_cb(flags=00): 80 e0 f8 fe 
+
+Executing test_rx_flush
+calling osmo_soft_uart_flush_rx() while Rx disabled
+enabling the receiver
+calling osmo_soft_uart_flush_rx() while Rx enabled, but no data
 
 Executing test_tx_rx
 ======== testing 8-N-1

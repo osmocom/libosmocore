@@ -79,7 +79,7 @@ const struct osmo_soft_uart_cfg osmo_soft_uart_default_cfg = {
  * \param[in] suart soft-UART instance holding the receive buffer. */
 void osmo_soft_uart_flush_rx(struct osmo_soft_uart *suart)
 {
-	if ((suart->rx.msg && msgb_length(suart->rx.msg)) || suart->rx.flags) {
+	if (suart->rx.msg && msgb_length(suart->rx.msg)) {
 		osmo_timer_del(&suart->rx.timer);
 		if (suart->cfg.rx_cb) {
 			suart->cfg.rx_cb(suart->cfg.priv, suart->rx.msg, suart->rx.flags);
