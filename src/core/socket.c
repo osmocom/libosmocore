@@ -905,7 +905,7 @@ int osmo_sock_init2_multiaddr2(uint16_t family, uint16_t type, uint8_t proto,
 		if (family == AF_INET && loc_has_v6only_addr) {
 			LOGP(DLGLOBAL, LOGL_ERROR, "Cannot bind an IPv6 address to an AF_INET socket\n");
 			rc = -EINVAL;
-			goto ret_freeaddrinfo;
+			goto ret_freeaddrinfo_loc;
 		}
 	}
 	/* figure out remote side of socket */
