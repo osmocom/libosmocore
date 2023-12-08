@@ -9,6 +9,11 @@ allocating q1
 adding queue entries up to the limit
 attempting to add more than the limit
 
+== Entering test case tc_enqueue_dequeue
+allocating q1
+adding queue entries up to the limit
+removing queue entries up to the limit
+
 == Entering test case tc_eventfd
 allocating q1
 adding 30 queue entries up to the limit

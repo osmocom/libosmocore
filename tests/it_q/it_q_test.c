@@ -68,6 +68,48 @@ static void tc_queue_length(void)
 	osmo_it_q_destroy(q1);
 }
 
+static void tc_enqueue_dequeue(void)
+{
+	const unsigned int qlen = 12;
+	struct it_q_test1 *item;
+	struct osmo_it_q *q1;
+	int rc;
+
+	ENTER_TC;
+
+	printf("allocating q1\n");
+	q1 = osmo_it_q_alloc(OTC_GLOBAL, "q1", 12, NULL, NULL);
+	OSMO_ASSERT(q1);
+
+#if 0
+	printf("try dequeueing from an empty queue\n");
+	osmo_it_q_dequeue(q1, &item, list);
+	OSMO_ASSERT(item == NULL);
+#endif
+
+	printf("adding queue entries up to the limit\n");
+	for (unsigned int i = 0; i < qlen; i++) {
+		item = talloc_zero(OTC_GLOBAL, struct it_q_test1);
+		rc = osmo_it_q_enqueue(q1, item, list);
+		OSMO_ASSERT(rc == 0);
+	}
+
+	printf("removing queue entries up to the limit\n");
+	for (unsigned int i = 0; i < qlen; i++) {
+		osmo_it_q_dequeue(q1, &item, list);
+		OSMO_ASSERT(item != NULL);
+		talloc_free(item);
+	}
+
+#if 0
+	printf("try dequeueing from an empty queue\n");
+	osmo_it_q_dequeue(q1, &item, list);
+	OSMO_ASSERT(item == NULL);
+#endif
+
+	osmo_it_q_destroy(q1);
+}
+
 static int g_read_cb_count;
 
 static void q_read_cb(struct osmo_it_q *q, struct llist_head *item)
@@ -115,6 +157,7 @@ int main(int argc, char **argv)
 {
 	tc_alloc();
 	tc_queue_length();
+	tc_enqueue_dequeue();
 	tc_eventfd();
 	return 0;
 }
