@@ -492,7 +492,7 @@ int osmo_soft_uart_set_rx(struct osmo_soft_uart *suart, bool enable)
 		suart->rx.flow_state = SUART_FLOW_ST_IDLE;
 	} else if (enable && !suart->rx.running) {
 		if (!suart->rx.msg)
-			suart->rx.msg = msgb_alloc_c(suart, suart->cfg.rx_buf_size, "soft_uart rx");
+			suart->rx.msg = msgb_alloc_c(suart, suart->cfg.rx_buf_size, "soft_uart_rx");
 		suart->rx.running = true;
 		suart->rx.flow_state = SUART_FLOW_ST_IDLE;
 	}
