@@ -91,18 +91,18 @@ struct vty_nse_bind {
 };
 
 /* TODO: this should into osmo timer */
-static const struct value_string gprs_ns_timer_strs[] = {
-	{ 0, "tns-block" },
-	{ 1, "tns-block-retries" },
-	{ 2, "tns-reset" },
-	{ 3, "tns-reset-retries" },
-	{ 4, "tns-test" },
-	{ 5, "tns-alive" },
-	{ 6, "tns-alive-retries" },
-	{ 7, "tsns-prov" },
-	{ 8, "tsns-size-retries" },
-	{ 9, "tsns-config-retries" },
-	{10, "tsns-procedures-retries" },
+const struct value_string gprs_ns_timer_strs[] = {
+	{ NS_TOUT_TNS_BLOCK,		   TNS_BLOCK_STR },
+	{ NS_TOUT_TNS_BLOCK_RETRIES,	   TNS_BLOCK_RETRIES_STR },
+	{ NS_TOUT_TNS_RESET,		   TNS_RESET_STR },
+	{ NS_TOUT_TNS_RESET_RETRIES,	   TNS_RESET_RETRIES_STR },
+	{ NS_TOUT_TNS_TEST,		   TNS_TEST_STR },
+	{ NS_TOUT_TNS_ALIVE,		   TNS_ALIVE_STR },
+	{ NS_TOUT_TNS_ALIVE_RETRIES,	   TNS_ALIVE_RETRIES_STR },
+	{ NS_TOUT_TSNS_PROV,		   TSNS_PROV_STR },
+	{ NS_TOUT_TSNS_SIZE_RETRIES,	   TSNS_SIZE_RETRIES_STR },
+	{ NS_TOUT_TSNS_CONFIG_RETRIES,	   TSNS_CONFIG_RETRIES_STR },
+	{ NS_TOUT_TSNS_PROCEDURES_RETRIES, TSNS_PROCEDURES_RETRIES_STR },
 	{ 0, NULL }
 };
 

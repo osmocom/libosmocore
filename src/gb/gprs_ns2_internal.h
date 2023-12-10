@@ -62,7 +62,22 @@ struct gprs_ns2_vc_driver;
 struct gprs_ns2_vc_bind;
 
 #define NS_TIMERS_COUNT 11
-#define NS_TIMERS "(tns-block|tns-block-retries|tns-reset|tns-reset-retries|tns-test|tns-alive|tns-alive-retries|tsns-prov|tsns-size-retries|tsns-config-retries|tsns-procedures-retries)"
+
+#define TNS_BLOCK_STR "tns-block"
+#define TNS_BLOCK_RETRIES_STR "tns-block-retries"
+#define TNS_RESET_STR "tns-reset"
+#define TNS_RESET_RETRIES_STR "tns-reset-retries"
+#define TNS_TEST_STR "tns-test"
+#define TNS_ALIVE_STR "tns-alive"
+#define TNS_ALIVE_RETRIES_STR "tns-alive-retries"
+#define TSNS_PROV_STR "tsns-prov"
+#define TSNS_SIZE_RETRIES_STR "tsns-size-retries"
+#define TSNS_CONFIG_RETRIES_STR "tsns-config-retries"
+#define TSNS_PROCEDURES_RETRIES_STR "tsns-procedures-retries"
+#define NS_TIMERS "(" TNS_BLOCK_STR "|" TNS_BLOCK_RETRIES_STR "|" TNS_RESET_STR "|" TNS_RESET_RETRIES_STR "|" TNS_TEST_STR "|"\
+	TNS_ALIVE_STR "|" TNS_ALIVE_RETRIES_STR "|" TSNS_PROV_STR "|" TSNS_SIZE_RETRIES_STR "|" TSNS_CONFIG_RETRIES_STR "|"\
+	TSNS_PROCEDURES_RETRIES_STR ")"
+
 #define NS_TIMERS_HELP	\
 	"(un)blocking Timer (Tns-block) timeout\n"		\
 	"(un)blocking Timer (Tns-block) number of retries\n"	\
