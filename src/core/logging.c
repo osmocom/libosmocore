@@ -488,7 +488,7 @@ static int _output_buf(char *buf, int buf_len, struct log_target *target, unsign
 {
 	int ret;
 	const char *c_subsys = NULL;
-	struct osmo_strbuf sb = { .buf = buf, .len = buf_len };
+	struct osmo_strbuf sb = { .buf = buf, .pos = buf, .len = buf_len };
 
 	/* safety net in case of encountering errors and returning nothing */
 	buf[0] = '\0';
