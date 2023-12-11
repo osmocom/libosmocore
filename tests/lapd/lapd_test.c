@@ -506,7 +506,7 @@ static void test_lapdm_contention_resolution(void)
 	cm2 = malloc(sizeof(cm));
 	memcpy(cm2, cm, sizeof(cm));
 	cm2[0] += 1;
-	send_sabm(&bts_to_ms_channel, 0, cm2, sizeof(cm2));
+	send_sabm(&bts_to_ms_channel, 0, cm2, sizeof(cm));
 	free(cm2);
 	rc = dequeue_prim(&bts_to_ms_channel.lapdm_dcch, &pp, "DCCH");
 	OSMO_ASSERT(rc == -ENODEV);
