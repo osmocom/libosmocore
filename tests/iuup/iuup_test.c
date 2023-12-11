@@ -727,14 +727,18 @@ void test_decode_passive_init_2_rfci_no_iptis(void)
 	rnp = osmo_iuup_rnl_prim_alloc(iuup_test_ctx, OSMO_IUUP_RNL_CONFIG, PRIM_OP_REQUEST, IUUP_MSGB_SIZE);
 	rnp->u.config = def_configure_req;
 	rnp->u.config.active = false;
-	OSMO_ASSERT((rc = osmo_iuup_rnl_prim_down(iui, rnp)) == 0);
+
+	rc = osmo_iuup_rnl_prim_down(iui, rnp);
+	OSMO_ASSERT(rc == 0);
 
 	/* Send Init: */
 	tnp = osmo_iuup_tnl_prim_alloc(iuup_test_ctx, OSMO_IUUP_TNL_UNITDATA, PRIM_OP_INDICATION, IUUP_MSGB_SIZE);
 	tnp->oph.msg->l2h = msgb_put(tnp->oph.msg, sizeof(iuup_init));
 	hdr14 = (struct iuup_pdutype14_hdr *)msgb_l2(tnp->oph.msg);
 	memcpy(hdr14, iuup_init, sizeof(iuup_init));
-	OSMO_ASSERT((rc = osmo_iuup_tnl_prim_up(iui, tnp)) == 0);
+
+	rc = osmo_iuup_tnl_prim_up(iui, tnp);
+	OSMO_ASSERT(rc == 0);
 
 	osmo_iuup_instance_free(iui);
 }
