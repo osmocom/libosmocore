@@ -297,11 +297,21 @@ static inline size_t _osmo_strbuf_remain(const struct osmo_strbuf *sb)
 #define OSMO_STRBUF_REMAIN(STRBUF) \
 	_osmo_strbuf_remain(&(STRBUF))
 
+/*! Get number of actual characters (without terminating nul) in the given struct osmo_strbuf.
+ * \param[in] sb  the string buffer to get the number of characters for.
+ * \returns number of actual characters (without terminating nul). */
+static inline size_t _osmo_strbuf_char_count(const struct osmo_strbuf *sb)
+{
+	if (OSMO_UNLIKELY(sb == NULL || sb->buf == NULL))
+		return 0;
+	if (sb->pos == NULL || sb->pos <= sb->buf)
+		return 0;
+	return OSMO_MIN(sb->pos - sb->buf, sb->len - 1);
+}
+
 /*! Return number of actual characters contained in struct osmo_strbuf (without terminating nul). */
-#define OSMO_STRBUF_CHAR_COUNT(STRBUF) ((STRBUF).buf && ((STRBUF).pos > (STRBUF).buf) ? \
-					OSMO_MIN((STRBUF).pos - (STRBUF).buf, \
-						 (STRBUF).len - 1) \
-					: 0)
+#define OSMO_STRBUF_CHAR_COUNT(STRBUF) \
+	_osmo_strbuf_char_count(&(STRBUF))
 
 /*! Like OSMO_STRBUF_APPEND(), but for function signatures that return the char* buffer instead of a length.
  * When using this function, the final STRBUF.chars_needed may not reflect the actual number of characters needed, since
