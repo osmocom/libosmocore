@@ -604,6 +604,37 @@ static void test_flow_control_rts_cts(void)
 	osmo_soft_uart_free(suart);
 }
 
+static void test_tx_pull(void)
+{
+	struct osmo_soft_uart *suart;
+	ubit_t tx_buf[25 * 2];
+	int rc;
+
+	SUART_TEST_BEGIN;
+
+	g_tx_cb_cfg.data = (void *)"\x42\x42\x42\x42\x42";
+	g_tx_cb_cfg.data_len = 5;
+
+	suart = osmo_soft_uart_alloc(NULL, __func__, &suart_test_default_cfg);
+	OSMO_ASSERT(suart != NULL);
+
+	osmo_soft_uart_set_tx(suart, true);
+
+	printf("pulling 25 bits (first time) out of the transmitter\n");
+	rc = osmo_soft_uart_tx_ubits(suart, &tx_buf[0], sizeof(tx_buf) / 2);
+	OSMO_ASSERT(rc == 25);
+
+	printf("pulling 25 bits (second time) out of the transmitter\n");
+	rc = osmo_soft_uart_tx_ubits(suart, &tx_buf[25], sizeof(tx_buf) / 2);
+	OSMO_ASSERT(rc == 25);
+
+	/* FIXME: we pull total 25 + 25 == 50 bits out of the transmitter, which is enough
+	 * to fit 5 characters (assuming 8-N-1).  However, the current impelementation would
+	 * pull only 2 + 2 == characters total, wasting 5 + 5 == 10 bits for padding. */
+
+	osmo_soft_uart_free(suart);
+}
+
 int main(int argc, char **argv)
 {
 	test_rx();
@@ -615,6 +646,8 @@ int main(int argc, char **argv)
 	test_tx_rx_pull_n(2);
 	test_tx_rx_pull_n(4);
 	test_tx_rx_pull_n(8);
+
+	test_tx_pull();
 
 	/* test flow control */
 	test_modem_status();

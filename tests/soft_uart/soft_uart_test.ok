@@ -220,6 +220,12 @@ suart_tx_cb(len=1/1): 55
 ======== feeding 32 bits into the receiver
 suart_rx_cb(flags=00): 55 55 
 
+Executing test_tx_pull
+pulling 25 bits (first time) out of the transmitter
+suart_tx_cb(len=2/2): 42 42 
+pulling 25 bits (second time) out of the transmitter
+suart_tx_cb(len=2/2): 42 42 
+
 Executing test_modem_status
 initial status=0x00000000
 de-asserting DCD, which was not asserted
