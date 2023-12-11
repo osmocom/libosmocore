@@ -281,8 +281,21 @@ struct osmo_strbuf {
 #define OSMO_STRBUF_PRINTF(STRBUF, fmt, args...) \
 	OSMO_STRBUF_APPEND(STRBUF, snprintf, fmt, ##args)
 
+/*! Get remaining space for characters and terminating nul in the given struct osmo_strbuf.
+ * \param[in] sb  the string buffer to get the remaining space for.
+ * \returns remaining space in the given struct osmo_strbuf. */
+static inline size_t _osmo_strbuf_remain(const struct osmo_strbuf *sb)
+{
+	if (OSMO_UNLIKELY(sb == NULL || sb->buf == NULL))
+		return 0;
+	if (sb->pos == NULL)
+		return sb->len;
+	return sb->len - (sb->pos - sb->buf);
+}
+
 /*! Return remaining space for characters and terminating nul in the given struct osmo_strbuf. */
-#define OSMO_STRBUF_REMAIN(STRBUF) ((STRBUF).buf ? (STRBUF).len - ((STRBUF).pos - (STRBUF).buf) : 0)
+#define OSMO_STRBUF_REMAIN(STRBUF) \
+	_osmo_strbuf_remain(&(STRBUF))
 
 /*! Return number of actual characters contained in struct osmo_strbuf (without terminating nul). */
 #define OSMO_STRBUF_CHAR_COUNT(STRBUF) ((STRBUF).buf && ((STRBUF).pos > (STRBUF).buf) ? \

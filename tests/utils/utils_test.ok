@@ -524,6 +524,13 @@ strbuf_test_tail_for_buflen(1)
 6: "" sb.chars_needed=6 sb.pos=&sb.buf[1]
 7: "" sb.chars_needed=12 sb.pos=&sb.buf[1]
 
+strbuf_test_remain_char_count
+remaining space: 20
+current char count: 0
+populating the buffer
+remaining space: 13
+current char count: 7
+
 startswith_test()
 osmo_str_startswith(NULL, NULL) == true
 osmo_str_startswith("", NULL) == true

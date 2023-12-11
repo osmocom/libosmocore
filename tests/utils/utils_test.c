@@ -1351,6 +1351,23 @@ void strbuf_test_tail(void)
 	strbuf_test_tail_for_buflen(1);
 }
 
+void strbuf_test_remain_char_count(void)
+{
+	char buf[20];
+	struct osmo_strbuf sb = { .buf = buf, .len = sizeof(buf) };
+
+	printf("\n%s\n", __func__);
+
+	printf("remaining space: %zu\n", OSMO_STRBUF_REMAIN(sb));
+	printf("current char count: %zu\n", OSMO_STRBUF_CHAR_COUNT(sb));
+
+	printf("populating the buffer\n");
+	OSMO_STRBUF_PRINTF(sb, "osmocom");
+
+	printf("remaining space: %zu\n", OSMO_STRBUF_REMAIN(sb));
+	printf("current char count: %zu\n", OSMO_STRBUF_CHAR_COUNT(sb));
+}
+
 static void startswith_test_str(const char *str, const char *startswith_str, bool expect_rc)
 {
 	bool rc = osmo_str_startswith(str, startswith_str);
@@ -2198,6 +2215,7 @@ int main(int argc, char **argv)
 	strbuf_test();
 	strbuf_test_nolen();
 	strbuf_test_tail();
+	strbuf_test_remain_char_count();
 	startswith_test();
 	name_c_impl_test();
 	osmo_print_n_test();
