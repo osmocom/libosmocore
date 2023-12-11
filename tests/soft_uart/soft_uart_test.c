@@ -226,6 +226,7 @@ static void test_rx(void)
 
 static void test_rx_flush(void)
 {
+	struct osmo_soft_uart_cfg cfg;
 	struct osmo_soft_uart *suart;
 
 	SUART_TEST_BEGIN;
@@ -241,6 +242,25 @@ static void test_rx_flush(void)
 
 	printf("calling osmo_soft_uart_flush_rx() while Rx enabled, but no data\n");
 	osmo_soft_uart_flush_rx(suart);
+
+	/* FIXME: this scenario demonstrates a problem that may occur when the user
+	 * flushes the Rx buffer manually while the soft-UART state reflects flags
+	 * of an incomplete symbol, for which we're waiting the stop bit. */
+	printf("testing corner case: manual flushing during a parity error (8-E-1)\n");
+	cfg = suart_test_default_cfg;
+	cfg.parity_mode = OSMO_SUART_PARITY_EVEN;
+	osmo_soft_uart_configure(suart, &cfg);
+	test_rx_exec(suart, "1111111" /* no data */
+		     "0 01010101 0 1" /* even parity, correct */
+		     "0 10101010 0 1" /* even parity, correct */
+		     "0 11111111 1"   /* odd parity, incorrect, but stop bit is pending */
+		     "F" /* manual flush happens before receiving the stop bit */
+		     "1" /* finally, the stop bit is received */
+		     );
+	/* test_rx_exec() @ 47: flush the Rx buffer
+	 * suart_rx_cb(flags=02): aa 55   <--- this is wrong, should be flags=00
+	 * suart_rx_cb(flags=02): ff      <--- this is expected due to odd parity */
+
 
 	osmo_soft_uart_free(suart);
 }

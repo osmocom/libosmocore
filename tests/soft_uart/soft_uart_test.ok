@@ -71,6 +71,10 @@ Executing test_rx_flush
 calling osmo_soft_uart_flush_rx() while Rx disabled
 enabling the receiver
 calling osmo_soft_uart_flush_rx() while Rx enabled, but no data
+testing corner case: manual flushing during a parity error (8-E-1)
+test_rx_exec() @ 47: flush the Rx buffer
+suart_rx_cb(flags=02): aa 55 
+suart_rx_cb(flags=02): ff 
 
 Executing test_tx_rx
 ======== testing 8-N-1
