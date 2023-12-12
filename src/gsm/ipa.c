@@ -267,34 +267,43 @@ int ipa_parse_unitid(const char *str, struct ipaccess_unit *unit_data)
 	return 0;
 }
 
+/*! Fill ud struct from tp structure.
+ *  \param[in,out] ud ipaccess_unit to fill
+ *  \param[in] tp the decoded TLV structure from eg. ID_RESP message
+ *  \returns zero on success, negative on error
+ *
+ * This function expects parameter ud's fields to be initialized to zero if not yet set.
+ * Existing incoming string pointer fields are expected to be allocated using
+ * talloc and will be deallocated as such if replaced with the content of tp.
+ **/
 int ipa_ccm_tlv_to_unitdata(struct ipaccess_unit *ud,
 			     const struct tlv_parsed *tp)
 {
 	int rc = 0;
 
 	if (TLVP_PRES_LEN(tp, IPAC_IDTAG_SERNR, 1))
-		ud->serno = talloc_strdup(ud, (char *)
-					TLVP_VAL(tp, IPAC_IDTAG_SERNR));
+		osmo_talloc_replace_string(ud, &ud->serno,
+					   (char *)TLVP_VAL(tp, IPAC_IDTAG_SERNR));
 
 	if (TLVP_PRES_LEN(tp, IPAC_IDTAG_UNITNAME, 1))
-		ud->unit_name = talloc_strdup(ud, (char *)
-					TLVP_VAL(tp, IPAC_IDTAG_UNITNAME));
+		osmo_talloc_replace_string(ud, &ud->unit_name,
+					   (char *)TLVP_VAL(tp, IPAC_IDTAG_UNITNAME));
 
 	if (TLVP_PRES_LEN(tp, IPAC_IDTAG_LOCATION1, 1))
-		ud->location1 = talloc_strdup(ud, (char *)
-					TLVP_VAL(tp, IPAC_IDTAG_LOCATION1));
+		osmo_talloc_replace_string(ud, &ud->location1,
+					   (char *)TLVP_VAL(tp, IPAC_IDTAG_LOCATION1));
 
 	if (TLVP_PRES_LEN(tp, IPAC_IDTAG_LOCATION2, 1))
-		ud->location2 = talloc_strdup(ud, (char *)
-					TLVP_VAL(tp, IPAC_IDTAG_LOCATION2));
+		osmo_talloc_replace_string(ud, &ud->location2,
+					   (char *)TLVP_VAL(tp, IPAC_IDTAG_LOCATION2));
 
 	if (TLVP_PRES_LEN(tp, IPAC_IDTAG_EQUIPVERS, 1))
-		ud->equipvers = talloc_strdup(ud, (char *)
-					TLVP_VAL(tp, IPAC_IDTAG_EQUIPVERS));
+		osmo_talloc_replace_string(ud, &ud->equipvers,
+					   (char *)TLVP_VAL(tp, IPAC_IDTAG_EQUIPVERS));
 
 	if (TLVP_PRES_LEN(tp, IPAC_IDTAG_SWVERSION, 1))
-		ud->swversion = talloc_strdup(ud, (char *)
-					TLVP_VAL(tp, IPAC_IDTAG_SWVERSION));
+		osmo_talloc_replace_string(ud, &ud->swversion,
+					   (char *)TLVP_VAL(tp, IPAC_IDTAG_SWVERSION));
 
 	if (TLVP_PRES_LEN(tp, IPAC_IDTAG_MACADDR, 17)) {
 		rc = osmo_macaddr_parse(ud->mac_addr, (char *)
