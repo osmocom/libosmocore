@@ -16,8 +16,19 @@
 
 #include <osmocom/core/defs.h>
 
+/*! maximum number of local or remote addresses supported by an osmo_sock instance */
+#define OSMO_SOCK_MAX_ADDRS 32
+
 /*! maximum length of a socket name ("r=1.2.3.4:123<->l=5.6.7.8:987") */
 #define OSMO_SOCK_NAME_MAXLEN (2 + INET6_ADDRSTRLEN + 1 + 5 + 3 + 2 + INET6_ADDRSTRLEN + 1 + 5 + 1)
+
+/*! maximum length of a multi-address socket peer (endpoint) name: (5.6.7.8|::9):987
+ * char '(' + OSMO_STREAM_MAX_ADDRS - 1 addr separators + chars "):" + port buffer + char '\0'
+ */
+#define OSMO_SOCK_MULTIADDR_PEER_STR_MAXLEN (INET6_ADDRSTRLEN * OSMO_SOCK_MAX_ADDRS + INET6_ADDRSTRLEN + 2 + 6 + 1)
+/*! maximum length of a multia-address socket name ("r=(::2|1.2.3.4):123<->l=(5.6.7.8|::9):987") */
+#define OSMO_SOCK_MULTIADDR_NAME_MAXLEN (OSMO_SOCK_MULTIADDR_PEER_STR_MAXLEN + 7)
+
 
 struct sockaddr_in;
 struct sockaddr;
@@ -107,9 +118,6 @@ char *osmo_sockaddr_to_str_c(void *ctx, const struct osmo_sockaddr *sockaddr);
 #define OSMO_SOCK_F_PRIO(x)	(((x)&0xff) << 16)
 #define GET_OSMO_SOCK_F_PRIO(f)	(((f) >> 16) & 0xff)
 
-
-/*! maximum number of local or remote addresses supported by an osmo_sock instance */
-#define OSMO_SOCK_MAX_ADDRS 32
 
 int osmo_sock_init(uint16_t family, uint16_t type, uint8_t proto,
 		   const char *host, uint16_t port, unsigned int flags);

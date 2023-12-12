@@ -2020,14 +2020,14 @@ char *osmo_sock_get_name(const void *ctx, int fd)
 
 /*! Format multiple IP addresses and/or port number into a combined string buffer
  *  \param[out] str  Destination string buffer.
- *  \param[in] str_len  sizeof(str).
+ *  \param[in] str_len  sizeof(str), usually OSMO_SOCK_MULTIADDR_PEER_STR_MAXLEN.
  *  \param[out] ip Pointer to memory holding ip_cnt consecutive buffers of size ip_len.
  *  \param[out] ip_cnt length ip array pointer. on return it contains the number of addresses found.
  *  \param[in] ip_len length of each of the string buffer in the the ip array.
  *  \param[out] port number (will be printed in when not NULL).
  *  \return String length as returned by snprintf(), or negative on error.
  *
- * This API expectes an ip array as the one filled in by
+ * This API expects an ip array as the one filled in by
  * osmo_sock_multiaddr_get_ip_and_port(), and hence it's a good companion for
  * that API.
  */
@@ -2065,7 +2065,7 @@ int osmo_multiaddr_ip_and_port_snprintf(char *str, size_t str_len,
 /*! Get address/port information on socket in provided string buffer, like "r=1.2.3.4:5<->l=6.7.8.9:10".
  * This does not include braces like osmo_sock_get_name().
  *  \param[out] str  Destination string buffer.
- *  \param[in] str_len  sizeof(str).
+ *  \param[in] str_len  sizeof(str), usually OSMO_SOCK_MULTIADDR_NAME_MAXLEN.
  *  \param[in] fd  File descriptor of socket.
  *  \param[in] fd IPPROTO of the socket, eg: IPPROTO_SCTP.
  *  \return String length as returned by snprintf(), or negative on error.
