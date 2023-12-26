@@ -41,6 +41,18 @@ static const struct value_string test_fsm_event_names[] = {
 	{ 0, NULL }
 };
 
+static void test_fsm_onenter(struct osmo_fsm_inst *fi, uint32_t prev_state)
+{
+	LOGPFSM(fi, "%s() prev_state=%s\n",
+		__func__, osmo_fsm_state_name(fi->fsm, prev_state));
+}
+
+static void test_fsm_onleave(struct osmo_fsm_inst *fi, uint32_t next_state)
+{
+	LOGPFSM(fi, "%s() next_state=%s\n",
+		__func__, osmo_fsm_state_name(fi->fsm, next_state));
+}
+
 static void test_fsm_null(struct osmo_fsm_inst *fi, uint32_t event, void *data)
 {
 	switch (event) {
@@ -86,17 +98,23 @@ static struct osmo_fsm_state test_fsm_states[] = {
 		.out_state_mask = (1 << ST_ONE),
 		.name = "NULL",
 		.action = test_fsm_null,
+		.onenter = test_fsm_onenter,
+		.onleave = test_fsm_onleave,
 	},
 	[ST_ONE]= {
 		.in_event_mask = (1 << EV_B),
 		.out_state_mask = (1 << ST_TWO),
 		.name = "ONE",
 		.action= test_fsm_one,
+		.onenter = test_fsm_onenter,
+		.onleave = test_fsm_onleave,
 	},
 	[ST_TWO]= {
 		.in_event_mask = 0,
 		.name = "TWO",
 		.action = NULL,
+		.onenter = test_fsm_onenter,
+		.onleave = test_fsm_onleave,
 	},
 };
 

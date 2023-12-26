@@ -3,9 +3,13 @@ Test_FSM(my_id){NULL}: Allocated
 Test_FSM(my_id){NULL}: Received Event EV_B
 Test_FSM(my_id){NULL}: Event EV_B not permitted
 Test_FSM(my_id){NULL}: Received Event EV_A
+Test_FSM(my_id){NULL}: test_fsm_onleave() next_state=ONE
 Test_FSM(my_id){NULL}: State change to ONE (no timeout)
+Test_FSM(my_id){ONE}: test_fsm_onenter() prev_state=NULL
 Test_FSM(my_id){ONE}: Received Event EV_B
+Test_FSM(my_id){ONE}: test_fsm_onleave() next_state=TWO
 Test_FSM(my_id){ONE}: State change to TWO (T2342, 1s)
+Test_FSM(my_id){TWO}: test_fsm_onenter() prev_state=ONE
 Test_FSM(my_id){TWO}: Timeout of T2342
 Timer
 Test_FSM(my_id){TWO}: Deallocated
@@ -83,16 +87,24 @@ Test_FSM(arbitrary_id){NULL}: Deallocated
 
 --- test_state_chg_keep_timer()
 Test_FSM{NULL}: Allocated
+Test_FSM{NULL}: test_fsm_onleave() next_state=ONE
 Test_FSM{NULL}: State change to ONE (no timeout)
+Test_FSM{ONE}: test_fsm_onenter() prev_state=NULL
+Test_FSM{ONE}: test_fsm_onleave() next_state=TWO
 Test_FSM{ONE}: State change to TWO (no timeout)
+Test_FSM{TWO}: test_fsm_onenter() prev_state=ONE
 Test_FSM{TWO}: Terminating (cause = OSMO_FSM_TERM_REQUEST)
 Test_FSM{TWO}: Freeing instance
 Test_FSM{TWO}: Deallocated
 Total time passed: 0.000000 s
 Test_FSM{NULL}: Allocated
+Test_FSM{NULL}: test_fsm_onleave() next_state=ONE
 Test_FSM{NULL}: State change to ONE (T10, 10s)
+Test_FSM{ONE}: test_fsm_onenter() prev_state=NULL
 Total time passed: 2.000342 s
+Test_FSM{ONE}: test_fsm_onleave() next_state=TWO
 Test_FSM{ONE}: State change to TWO (keeping T10, 7.999s remaining)
+Test_FSM{TWO}: test_fsm_onenter() prev_state=ONE
 Total time passed: 2.000342 s
 Total time passed: 9.999999 s
 Total time passed: 10.000000 s
@@ -104,14 +116,22 @@ Test_FSM{TWO}: Deallocated
 
 --- test_state_chg_T()
 Test_FSM{NULL}: Allocated
+Test_FSM{NULL}: test_fsm_onleave() next_state=ONE
 Test_FSM{NULL}: State change to ONE (T42, 23s)
+Test_FSM{ONE}: test_fsm_onenter() prev_state=NULL
+Test_FSM{ONE}: test_fsm_onleave() next_state=TWO
 Test_FSM{ONE}: State change to TWO (no timeout)
+Test_FSM{TWO}: test_fsm_onenter() prev_state=ONE
 Test_FSM{TWO}: Terminating (cause = OSMO_FSM_TERM_REQUEST)
 Test_FSM{TWO}: Freeing instance
 Test_FSM{TWO}: Deallocated
 Test_FSM{NULL}: Allocated
+Test_FSM{NULL}: test_fsm_onleave() next_state=ONE
 Test_FSM{NULL}: State change to ONE (T42, 23s)
+Test_FSM{ONE}: test_fsm_onenter() prev_state=NULL
+Test_FSM{ONE}: test_fsm_onleave() next_state=TWO
 Test_FSM{ONE}: State change to TWO (no timeout)
+Test_FSM{TWO}: test_fsm_onenter() prev_state=ONE
 Test_FSM{TWO}: Terminating (cause = OSMO_FSM_TERM_REQUEST)
 Test_FSM{TWO}: Freeing instance
 Test_FSM{TWO}: Deallocated
@@ -120,7 +140,9 @@ Test_FSM{TWO}: Deallocated
 --- test_state_chg_Ts()
 Total time passed: 0.000000 s
 Test_FSM{NULL}: Allocated
+Test_FSM{NULL}: test_fsm_onleave() next_state=ONE
 Test_FSM{NULL}: State change to ONE (T4242, 8s)
+Test_FSM{ONE}: test_fsm_onenter() prev_state=NULL
 Total time passed: 3.000000 s
 Total time passed: 5.500000 s
 Total time passed: 8.000000 s
@@ -133,7 +155,9 @@ Test_FSM{ONE}: Deallocated
 --- test_state_chg_Tms()
 Total time passed: 0.000000 s
 Test_FSM{NULL}: Allocated
+Test_FSM{NULL}: test_fsm_onleave() next_state=ONE
 Test_FSM{NULL}: State change to ONE (T4242, 1337ms)
+Test_FSM{ONE}: test_fsm_onenter() prev_state=NULL
 Total time passed: 0.500000 s
 Total time passed: 0.750000 s
 Total time passed: 1.100000 s
