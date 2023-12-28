@@ -709,7 +709,7 @@ endif
 		>$(srcdir)/osmo_io/osmo_io_test.ok \
 		2>$(srcdir)/osmo_io/osmo_io_test.err
 	soft_uart/soft_uart_test \
-		>$(srcdir)/soft_uart/soft_uart.ok \
+		>$(srcdir)/soft_uart/soft_uart.ok
 	rlp/rlp_test \
 		>$(srcdir)/rlp/rlp_test.ok \
 	$(NULL)
