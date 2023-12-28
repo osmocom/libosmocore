@@ -1,0 +1,55 @@
+DLIUUP IuUP(test_tinit_timeout_retrans){NULL}: Allocated
+DLIUUP IuUP(test_tinit_timeout_retrans){NULL}: Received Event IuUP-CONFIG-req
+DLIUUP IuUP(test_tinit_timeout_retrans){NULL}: state_chg to Initialisation
+DLIUUP IuUP(test_tinit_timeout_retrans){Initialisation}: Timeout of T1
+DLIUUP IuUP(test_tinit_timeout_retrans){Initialisation}: Timeout of T1
+DLIUUP IuUP(test_tinit_timeout_retrans){Initialisation}: Timeout of T1
+DLIUUP IuUP(test_tinit_timeout_retrans){Initialisation}: Timeout of T1
+DLIUUP IuUP(test_tinit_timeout_retrans){Initialisation}: Deallocated
+DLIUUP IuUP(test_init_nack_retrans){NULL}: Allocated
+DLIUUP IuUP(test_init_nack_retrans){NULL}: Received Event IuUP-CONFIG-req
+DLIUUP IuUP(test_init_nack_retrans){NULL}: state_chg to Initialisation
+DLIUUP IuUP(test_init_nack_retrans){Initialisation}: Received Event INIT_NACK
+DLIUUP IuUP(test_init_nack_retrans){Initialisation}: Rx Initialization NACK N=0/3
+DLIUUP IuUP(test_init_nack_retrans){Initialisation}: Received Event INIT_NACK
+DLIUUP IuUP(test_init_nack_retrans){Initialisation}: Rx Initialization NACK N=1/3
+DLIUUP IuUP(test_init_nack_retrans){Initialisation}: Received Event INIT_NACK
+DLIUUP IuUP(test_init_nack_retrans){Initialisation}: Rx Initialization NACK N=2/3
+DLIUUP IuUP(test_init_nack_retrans){Initialisation}: Received Event INIT_NACK
+DLIUUP IuUP(test_init_nack_retrans){Initialisation}: Rx Initialization NACK N=3/3
+DLIUUP IuUP(test_init_nack_retrans){Initialisation}: Deallocated
+DLIUUP IuUP(test_init_ack){NULL}: Allocated
+DLIUUP IuUP(test_init_ack){NULL}: Received Event IuUP-CONFIG-req
+DLIUUP IuUP(test_init_ack){NULL}: state_chg to Initialisation
+DLIUUP IuUP(test_init_ack){Initialisation}: Received Event LAST_INIT_ACK
+DLIUUP IuUP(test_init_ack){Initialisation}: state_chg to SMpSDU_Data_Transfer_Ready
+DLIUUP IuUP(test_init_ack){SMpSDU_Data_Transfer_Ready}: Received Event IuUP-DATA-ind
+DLIUUP IuUP(test_init_ack){SMpSDU_Data_Transfer_Ready}: Received Event IuUP-DATA-req
+DLIUUP IuUP(test_init_ack){SMpSDU_Data_Transfer_Ready}: Deallocated
+DLIUUP IuUP(test_passive_init){NULL}: Allocated
+DLIUUP IuUP(test_passive_init){NULL}: Received Event IuUP-CONFIG-req
+DLIUUP IuUP(test_passive_init){NULL}: state_chg to Initialisation
+DLIUUP IuUP(test_passive_init){Initialisation}: Received Event INIT
+DLIUUP IuUP(test_passive_init){Initialisation}: Tx Initialization ACK
+DLIUUP IuUP(test_passive_init){Initialisation}: state_chg to SMpSDU_Data_Transfer_Ready
+DLIUUP IuUP(test_passive_init){SMpSDU_Data_Transfer_Ready}: Received Event IuUP-DATA-ind
+DLIUUP IuUP(test_passive_init){SMpSDU_Data_Transfer_Ready}: Received Event IuUP-DATA-req
+DLIUUP IuUP(test_passive_init){SMpSDU_Data_Transfer_Ready}: Deallocated
+DLIUUP IuUP(test_passive_init_retrans){NULL}: Allocated
+DLIUUP IuUP(test_passive_init_retrans){NULL}: Received Event IuUP-CONFIG-req
+DLIUUP IuUP(test_passive_init_retrans){NULL}: state_chg to Initialisation
+DLIUUP IuUP(test_passive_init_retrans){Initialisation}: Received Event INIT
+DLIUUP IuUP(test_passive_init_retrans){Initialisation}: Tx Initialization ACK
+DLIUUP IuUP(test_passive_init_retrans){Initialisation}: state_chg to SMpSDU_Data_Transfer_Ready
+DLIUUP IuUP(test_passive_init_retrans){SMpSDU_Data_Transfer_Ready}: Received Event INIT
+DLIUUP IuUP(test_passive_init_retrans){SMpSDU_Data_Transfer_Ready}: Tx Initialization ACK
+DLIUUP IuUP(test_passive_init_retrans){SMpSDU_Data_Transfer_Ready}: Received Event IuUP-DATA-ind
+DLIUUP IuUP(test_passive_init_retrans){SMpSDU_Data_Transfer_Ready}: Received Event IuUP-DATA-req
+DLIUUP IuUP(test_passive_init_retrans){SMpSDU_Data_Transfer_Ready}: Deallocated
+DLIUUP IuUP(test_decode_passive_init_2_rfci_no_iptis){NULL}: Allocated
+DLIUUP IuUP(test_decode_passive_init_2_rfci_no_iptis){NULL}: Received Event IuUP-CONFIG-req
+DLIUUP IuUP(test_decode_passive_init_2_rfci_no_iptis){NULL}: state_chg to Initialisation
+DLIUUP IuUP(test_decode_passive_init_2_rfci_no_iptis){Initialisation}: Received Event INIT
+DLIUUP IuUP(test_decode_passive_init_2_rfci_no_iptis){Initialisation}: Tx Initialization ACK
+DLIUUP IuUP(test_decode_passive_init_2_rfci_no_iptis){Initialisation}: state_chg to SMpSDU_Data_Transfer_Ready
+DLIUUP IuUP(test_decode_passive_init_2_rfci_no_iptis){SMpSDU_Data_Transfer_Ready}: Deallocated

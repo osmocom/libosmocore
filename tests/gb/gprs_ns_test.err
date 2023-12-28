@@ -1,0 +1,147 @@
+NSVCI=65534 Creating NS-VC with Signal weight 1, Data weight 1
+NSVCI=65535 Creating NS-VC with Signal weight 1, Data weight 1
+Creating NS-VC for BSS at 1.2.3.4:1111
+NSVCI=65535(invalid) Rx NS RESET (NSEI=4096, NSVCI=4097, cause=O&M intervention)
+NSEI=4096 Tx NS RESET ACK (NSVCI=4097)
+NSVCI=65535 Creating NS-VC with Signal weight 1, Data weight 1
+Creating NS-VC for BSS at 1.2.3.4:1111
+NSVCI=65535(invalid) Rx NS RESET (NSEI=4096, NSVCI=4097, cause=O&M intervention)
+NSEI=4096 Tx NS RESET ACK (NSVCI=4097)
+NSVCI=65535 Creating NS-VC with Signal weight 1, Data weight 1
+Creating NS-VC for BSS at 1.2.3.4:1111
+NSVCI=65535(invalid) Rx NS RESET (NSEI=4096, NSVCI=4097, cause=O&M intervention)
+NSEI=4096 Tx NS RESET ACK (NSVCI=4097)
+NSVCI=65535 Creating NS-VC with Signal weight 1, Data weight 1
+Creating NS-VC for BSS at 1.2.3.4:1111
+NSVCI=65535(invalid) Rx NS RESET (NSEI=4096, NSVCI=4097, cause=O&M intervention)
+NSEI=4096 Tx NS RESET ACK (NSVCI=4097)
+NSVCI=65534 Creating NS-VC with Signal weight 1, Data weight 1
+Ignoring NS STATUS from 1.2.3.4:1111 for non-existing NS-VC
+Ignoring NS ALIVE ACK from 1.2.3.4:1111 for non-existing NS-VC
+Ignoring NS RESET ACK from 1.2.3.4:1111 for non-existing NS-VC
+NSVCI=65534 Creating NS-VC with Signal weight 1, Data weight 1
+NSVCI=65535 Creating NS-VC with Signal weight 1, Data weight 1
+Creating NS-VC for BSS at 1.2.3.4:1111
+NSVCI=65535(invalid) Rx NS RESET (NSEI=4386, NSVCI=4386, cause=O&M intervention)
+NSEI=4386 Tx NS RESET ACK (NSVCI=4386)
+NSEI=4386 Rx NS UNBLOCK
+NSVCI=4386 Rx NS RESET (NSEI=4386, NSVCI=4386, cause=O&M intervention)
+NSEI=4386 Tx NS RESET ACK (NSVCI=4386)
+NSVCI=65535 Creating NS-VC with Signal weight 1, Data weight 1
+Creating NS-VC for BSS at 1.2.3.4:3333
+NSVCI=65535(invalid) Rx NS RESET (NSEI=4386, NSVCI=13124, cause=O&M intervention)
+NSEI=4386 Tx NS RESET ACK (NSVCI=13124)
+NS-VC changed NSEI (NSVCI=4386) from 4386 to 13124
+NSVCI=4386 Rx NS RESET (NSEI=13124, NSVCI=4386, cause=O&M intervention)
+NSEI=13124 Tx NS RESET ACK (NSVCI=4386)
+NSVCI=13124 Rx NS RESET (NSEI=4386, NSVCI=4386, cause=O&M intervention)
+NS-VC changed link (NSVCI=4386) from 1.2.3.4:3333 to 1.2.3.4:4444
+NSEI=4386 Tx NS RESET ACK (NSVCI=4386)
+NSVCI=4386 Rx NS RESET (NSEI=4386, NSVCI=4386, cause=O&M intervention)
+NSEI=4386 Tx NS RESET ACK (NSVCI=4386)
+NSVCI=65534 Creating NS-VC with Signal weight 1, Data weight 1
+NSVCI=65535 Creating NS-VC with Signal weight 1, Data weight 1
+Creating NS-VC for BSS at 1.2.3.4:1111
+NSVCI=65535(invalid) Rx NS RESET (NSEI=4096, NSVCI=4097, cause=O&M intervention)
+NSEI=4096 Tx NS RESET ACK (NSVCI=4097)
+NSEI=4096 Rx NS UNBLOCK
+NSVCI=65535 Creating NS-VC with Signal weight 1, Data weight 1
+Creating NS-VC for BSS at 1.2.3.4:2222
+NSVCI=65535(invalid) Rx NS RESET (NSEI=8192, NSVCI=8193, cause=O&M intervention)
+NSEI=8192 Tx NS RESET ACK (NSVCI=8193)
+NSEI=8192 Rx NS UNBLOCK
+NSEI=4096 RESET procedure based on API request
+NSEI=4096 Tx NS RESET (NSVCI=4097, cause=O&M intervention)
+NSVCI=4097 Rx NS RESET ACK (NSEI=4096, NSVCI=4097)
+NSEI=8192 RESET procedure based on API request
+NSEI=8192 Tx NS RESET (NSVCI=8193, cause=O&M intervention)
+NSVCI=8193 Rx NS RESET ACK (NSEI=4096, NSVCI=4097)
+NS-VC changed link (NSVCI=4097) from 1.2.3.4:2222 to 1.2.3.4:1111
+NSEI=8192 RESET procedure based on API request
+NSEI=8192 Tx NS RESET (NSVCI=8193, cause=O&M intervention)
+failed to send NS message via UDP: Operation not permitted
+NSEI=8192, error resetting NS-VC
+NSEI=4096 RESET procedure based on API request
+NSEI=4096 Tx NS RESET (NSVCI=4097, cause=O&M intervention)
+NSVCI=4097 Rx NS RESET ACK (NSEI=4096, NSVCI=4097)
+NSVCI=8193 Rx NS RESET (NSEI=8192, NSVCI=8193, cause=O&M intervention)
+NSEI=8192 Tx NS RESET ACK (NSVCI=8193)
+NSEI=8192 Rx NS UNBLOCK
+NSVCI=4097 Rx NS RESET (NSEI=61440, NSVCI=4097, cause=O&M intervention)
+NSEI=61440 Tx NS RESET ACK (NSVCI=4097)
+NSVCI=4097 Rx NS RESET (NSEI=4096, NSVCI=61441, cause=O&M intervention)
+Creating NS-VC 61441 replacing 4097 at 1.2.3.4:2222
+NSVCI=61441 Creating NS-VC with Signal weight 1, Data weight 1
+NSEI=4096 Tx NS RESET ACK (NSVCI=61441)
+NSVCI=61441 Rx NS RESET (NSEI=4096, NSVCI=4097, cause=O&M intervention)
+NS-VC changed link (NSVCI=4097) from 1.2.3.4:2222 to 0.0.0.0:0
+NSEI=4096 Tx NS RESET ACK (NSVCI=4097)
+NSVCI=4097 Rx NS RESET ACK (NSEI=4096, NSVCI=4097)
+NS RESET ACK Discarding unexpected message for NS-VCI 4097 from SGSN NSEI=4096
+NSEI=4096 RESET procedure based on API request
+NSEI=4096 Tx NS RESET (NSVCI=4097, cause=O&M intervention)
+NSVCI=4097 Rx NS RESET ACK (NSEI=61440, NSVCI=4097)
+NSEI=61440 RESET procedure based on API request
+NSEI=61440 Tx NS RESET (NSVCI=4097, cause=O&M intervention)
+NSVCI=4097 Rx NS RESET ACK (NSEI=4096, NSVCI=61441)
+NS-VC changed link (NSVCI=61441) from 1.2.3.4:2222 to 0.0.0.0:0
+NSVCI=61441 Rx NS RESET (NSEI=4096, NSVCI=4097, cause=O&M intervention)
+NS-VC changed link (NSVCI=4097) from 1.2.3.4:2222 to 0.0.0.0:0
+NSEI=4096 Tx NS RESET ACK (NSVCI=4097)
+NSEI=4096 Rx NS UNBLOCK
+NSEI=4096 RESET procedure based on API request
+NSEI=4096 Tx NS RESET (NSVCI=4097, cause=O&M intervention)
+NSEI=4096 Rx NS UNBLOCK ACK
+NSVCI=4097 Rx NS RESET ACK (NSEI=4096, NSVCI=4097)
+NS RESET ACK Discarding unexpected message for NS-VCI 4097 from SGSN NSEI=4096
+NSEI=4096 Reset timed out but RESET flag is not set
+NSEI=4096 Tx NS RESET (NSVCI=4097, cause=O&M intervention)
+NSVCI=4097 Rx NS RESET ACK (NSEI=4096, NSVCI=4097)
+NSVCI=65534 Creating NS-VC with Signal weight 1, Data weight 1
+NSVCI=257 Creating NS-VC with Signal weight 1, Data weight 1
+NSEI=256 RESET procedure based on API request
+NSEI=256 Tx NS RESET (NSVCI=257, cause=O&M intervention)
+NSVCI=257 Rx NS RESET ACK (NSEI=256, NSVCI=257)
+NSEI=256 Tx NS UNBLOCK (NSVCI=257)
+NSEI=256 Rx NS UNBLOCK ACK
+NSVCI=257 Rx NS RESET (NSEI=256, NSVCI=257, cause=O&M intervention)
+NSEI=256 Tx NS RESET ACK (NSVCI=257)
+NSVCI=257 Rx NS RESET (NSEI=61440, NSVCI=257, cause=O&M intervention)
+NSEI=256 Tx NS RESET ACK (NSVCI=257)
+NSVCI=257 Rx NS RESET (NSEI=256, NSVCI=61441, cause=O&M intervention)
+NSEI=256 Tx NS RESET ACK (NSVCI=257)
+NSVCI=257 Rx NS RESET (NSEI=256, NSVCI=257, cause=O&M intervention)
+NSEI=256 Tx NS RESET ACK (NSVCI=257)
+NSVCI=257 Rx NS RESET ACK (NSEI=256, NSVCI=257)
+NS RESET ACK Discarding unexpected message for NS-VCI 257 from SGSN NSEI=256
+NSEI=256 RESET procedure based on API request
+NSEI=256 Tx NS RESET (NSVCI=257, cause=O&M intervention)
+NSVCI=257 Rx NS RESET ACK (NSEI=57344, NSVCI=257)
+NS RESET ACK Unknown NSEI 57344 (NS-VCI=257) from 5.6.7.8:32000
+NSEI=256 RESET procedure based on API request
+NSEI=256 Tx NS RESET (NSVCI=257, cause=O&M intervention)
+NSVCI=257 Rx NS RESET ACK (NSEI=256, NSVCI=57345)
+NS RESET ACK Unknown NS-VCI 57345 (SGSN NSEI=256) from 5.6.7.8:32000
+NSVCI=65534 Creating NS-VC with Signal weight 1, Data weight 1
+NSVCI=257 Creating NS-VC with Signal weight 1, Data weight 1
+NSEI=256 RESET procedure based on API request
+NSEI=256 Tx NS RESET (NSVCI=257, cause=O&M intervention)
+NSVCI=257 Rx NS RESET ACK (NSEI=256, NSVCI=257)
+NSEI=256 Tx NS UNBLOCK (NSVCI=257)
+NSEI=256 Rx NS UNBLOCK ACK
+NSEI=256 Tns-alive expired more then 10 times, blocking NS-VC
+NSEI=256 RESET procedure based on API request
+NSEI=256 Tx NS RESET (NSVCI=257, cause=PDU not compatible with protocol state)
+NSVCI=257 Rx NS RESET ACK (NSEI=256, NSVCI=257)
+NSEI=256 Tx NS UNBLOCK (NSVCI=257)
+NSEI=256 Rx NS UNBLOCK ACK
+NSVCI=65534 Creating NS-VC with Signal weight 1, Data weight 1
+Unable to resolve NSEI 256 to NS-VC!
+NSVCI=257 Creating NS-VC with Signal weight 1, Data weight 1
+NSEI=256 RESET procedure based on API request
+NSEI=256 Tx NS RESET (NSVCI=257, cause=O&M intervention)
+All NS-VCs for NSEI 256 are either dead or blocked!
+NSVCI=257 Rx NS RESET ACK (NSEI=256, NSVCI=257)
+NSEI=256 Tx NS UNBLOCK (NSVCI=257)
+All NS-VCs for NSEI 256 are either dead or blocked!
+NSEI=256 Rx NS UNBLOCK ACK

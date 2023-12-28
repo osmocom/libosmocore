@@ -262,13 +262,15 @@ AT_CLEANUP
 AT_SETUP([gprs-ns])
 AT_KEYWORDS([gprs-ns])
 cat $abs_srcdir/gb/gprs_ns_test.ok > expout
-AT_CHECK([$abs_top_builddir/tests/gb/gprs_ns_test], [0], [expout], [ignore])
+cat $abs_srcdir/gb/gprs_ns_test.err > experr
+AT_CHECK([$abs_top_builddir/tests/gb/gprs_ns_test], [0], [expout], [experr])
 AT_CLEANUP
 
 AT_SETUP([gprs-ns2])
 AT_KEYWORDS([gprs-ns2])
 cat $abs_srcdir/gb/gprs_ns2_test.ok > expout
-AT_CHECK([$abs_top_builddir/tests/gb/gprs_ns2_test], [0], [expout], [ignore])
+cat $abs_srcdir/gb/gprs_ns2_test.err > experr
+AT_CHECK([$abs_top_builddir/tests/gb/gprs_ns2_test], [0], [expout], [experr])
 AT_CLEANUP
 
 AT_SETUP([utils])
@@ -492,7 +494,8 @@ AT_CLEANUP
 AT_SETUP([iuup])
 AT_KEYWORDS([iuup])
 cat $abs_srcdir/iuup/iuup_test.ok > expout
-AT_CHECK([$abs_top_builddir/tests/iuup/iuup_test], [0], [expout], [ignore])
+cat $abs_srcdir/iuup/iuup_test.err > experr
+AT_CHECK([$abs_top_builddir/tests/iuup/iuup_test], [0], [expout], [experr])
 AT_CLEANUP
 
 AT_SETUP([v110_frame_test])

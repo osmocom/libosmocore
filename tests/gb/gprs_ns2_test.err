@@ -1,0 +1,139 @@
+NSE(01001) NS-STATUS.ind(bvci=00000): cause=NSE recovery, transfer=42, first=1, mtu=119
+NSE(01001) NS-STATUS.ind(bvci=00000): cause=NSE failure, transfer=0, first=0, mtu=119
+NSE(01001)-NSVC(none) NS-STATUS.ind(bvci=00000): cause=NSVC failure, transfer=0, first=0, mtu=119
+NSE(01001)-NSVC(none) NS-STATUS.ind(bvci=00000): cause=NSVC failure, transfer=0, first=0, mtu=119
+NSE(01001)-NSVC(none) NS-STATUS.ind(bvci=00000): cause=NSVC failure, transfer=0, first=0, mtu=119
+NSE(01001) NS-STATUS.ind(bvci=00000): cause=NSE recovery, transfer=42, first=1, mtu=119
+NSE(01001)-NSVC(none) Tx NS-BLOCK cause=O&M intervention
+NSE(01001)-NSVC(none) Tx NS-ALIVE
+NSE(01001)-NSVC(none) Tx NS-UNBLOCK
+NSE(01001)-NSVC(none) Rx NS-UNBLOCK-ACK
+NSE(01001)-NSVC(none) NS-STATUS.ind(bvci=00000): cause=NSVC recovery, transfer=84, first=0, mtu=119
+NSE(01001) NS-STATUS.ind(bvci=00000): cause=NSE failure, transfer=0, first=0, mtu=119
+NSE(01001)-NSVC(none) NS-STATUS.ind(bvci=00000): cause=NSVC failure, transfer=0, first=0, mtu=119
+NSE(01001)-NSVC(none) NS-STATUS.ind(bvci=00000): cause=NSVC failure, transfer=0, first=0, mtu=119
+NSE(01001) NS-STATUS.ind(bvci=00000): cause=NSE recovery, transfer=42, first=1, mtu=119
+NSE(01001)-NSVC(none) Tx NS-BLOCK cause=O&M intervention
+NSE(01001)-NSVC(none) Tx NS-ALIVE
+NSE(01001) NS-STATUS.ind(bvci=00000): cause=NSE failure, transfer=0, first=0, mtu=119
+NSE(01001)-NSVC(none) Tx NS-BLOCK cause=O&M intervention
+NSE(01001)-NSVC(none) Tx NS-ALIVE
+NSE(01001)-NSVC(none) Tx NS-UNBLOCK
+NSE(01001)-NSVC(none) Rx NS-UNBLOCK-ACK
+NSE(01001) NS-STATUS.ind(bvci=00000): cause=NSE recovery, transfer=42, first=0, mtu=119
+NSE(01001)-NSVC(none) NS-STATUS.ind(bvci=00000): cause=NSVC recovery, transfer=42, first=0, mtu=119
+NSE(01001) NS-STATUS.ind(bvci=00000): cause=NSE failure, transfer=0, first=0, mtu=119
+NSE(01001)-NSVC(none) NS-STATUS.ind(bvci=00000): cause=NSVC failure, transfer=0, first=0, mtu=119
+NSE(01001)-NSVC(none) NS-STATUS.ind(bvci=00000): cause=NSVC failure, transfer=0, first=0, mtu=119
+NSE(01004)-NSVC(none) Tx NS-RESET cause=O&M intervention
+NSE(01004)-NSVC(none) Rx NS-RESET
+NSE(01004)-NSVC(none) Tx NS-RESET-ACK
+NSE(01004)-NSVC(none) Tx NS-ALIVE
+NSE(01004)-NSVC(none) Tx NS-UNBLOCK
+NSE(01004)-NSVC(none) Rx NS-UNBLOCK
+NSE(01004)-NSVC(none) Tx NS-UNBLOCK-ACK
+NSE(01004) NS-STATUS.ind(bvci=00000): cause=NSE recovery, transfer=42, first=1, mtu=119
+NSE(01004)-NSVC(none) NS-STATUS.ind(bvci=00000): cause=NSVC recovery, transfer=42, first=0, mtu=119
+NSE(01004)-NSVC(none) Tx NS-RESET cause=O&M intervention
+NSE(01004)-NSVC(none) Rx NS-RESET
+NSE(01004)-NSVC(none) Tx NS-RESET-ACK
+NSE(01004)-NSVC(none) Tx NS-ALIVE
+NSE(01004)-NSVC(none) Tx NS-UNBLOCK
+NSE(01004)-NSVC(none) Rx NS-UNBLOCK
+NSE(01004)-NSVC(none) Tx NS-UNBLOCK-ACK
+NSE(01004)-NSVC(none) NS-STATUS.ind(bvci=00000): cause=NSVC recovery, transfer=84, first=0, mtu=119
+NSE(01004)-NSVC(none) Rx NS-UNITDATA
+NSE(01004)-NSVC(none) Rx NS-UNITDATA
+NSE(01004)-NSVC(none) Tx NS-BLOCK cause=O&M intervention
+NSE(01004)-NSVC(none) Tx NS-BLOCK-ACK
+NSE(01004)-NSVC(none) Rx NS-BLOCK-ACK
+NSE(01004)-NSVC(none) Rx NS-UNITDATA
+NSE(01004)-NSVC(none) Rx NS-UNITDATA
+NSE(01004)-NSVC(none) Tx NS-STATUS cause=NS-VC blocked
+NSE(01004)-NSVC(none) Rx NS-UNITDATA
+NSE(01004)-NSVC(none) Rx NS-UNITDATA
+NSE(01004) NS-STATUS.ind(bvci=00000): cause=NSE failure, transfer=0, first=0, mtu=119
+NSE(01004)-NSVC(none) NS-STATUS.ind(bvci=00000): cause=NSVC failure, transfer=0, first=0, mtu=119
+NSE(01004)-NSVC(none) NS-STATUS.ind(bvci=00000): cause=NSVC failure, transfer=0, first=0, mtu=119
+NSE(01004)-NSVC(none) Tx NS-ALIVE
+NSE(01004)-NSVC(none) Tx NS-ALIVE-ACK
+NSE(01004)-NSVC(none) Rx NS-ALIVE-ACK
+NSE(01004) NS-STATUS.ind(bvci=00000): cause=NSE recovery, transfer=42, first=1, mtu=119
+NSE(01004)-NSVC(none) NS-STATUS.ind(bvci=00000): cause=NSVC recovery, transfer=42, first=0, mtu=119
+NSE(01004)-NSVC(none) Tx NS-ALIVE
+NSE(01004)-NSVC(none) Tx NS-ALIVE-ACK
+NSE(01004)-NSVC(none) Rx NS-ALIVE-ACK
+NSE(01004)-NSVC(none) NS-STATUS.ind(bvci=00000): cause=NSVC recovery, transfer=84, first=0, mtu=119
+NSE(01004)-NSVC(none) Tx NS-ALIVE
+NSE(01004)-NSVC(none) Tx NS-ALIVE-ACK
+NSE(01004)-NSVC(none) Rx NS-ALIVE-ACK
+NSE(01004)-NSVC(none) NS-STATUS.ind(bvci=00000): cause=NSVC recovery, transfer=126, first=0, mtu=119
+NSE(01004)-NSVC(none) Rx NS-UNITDATA
+NSE(01004)-NSVC(none) Rx NS-UNITDATA
+NSE(01004)-NSVC(none) Rx NS-UNITDATA
+NSE(01004)-NSVC(none) Rx NS-UNITDATA
+NSE(01004)-NSVC(none) Rx NS-UNITDATA
+NSE(01004)-NSVC(none) Rx NS-UNITDATA
+NSE(01004)-NSVC(none) Tx NS-UNITDATA
+NSE(01004)-NSVC(none) Tx NS-UNITDATA
+NSE(01004)-NSVC(none) Tx NS-UNITDATA
+NSE(01004)-NSVC(none) Tx NS-UNITDATA
+NSE(01004)-NSVC(none) Tx NS-UNITDATA
+NSE(01004)-NSVC(none) Tx NS-UNITDATA
+NSE(01004)-NSVC(none) Tx NS-UNITDATA
+NSE(01004)-NSVC(none) Tx NS-UNITDATA
+NSE(01004)-NSVC(none) Tx NS-UNITDATA
+NSE(01004)-NSVC(none) Tx NS-UNITDATA
+NSE(01004)-NSVC(none) Tx NS-UNITDATA
+NSE(01004)-NSVC(none) Tx NS-UNITDATA
+count_pdus(bind[0]) = 2
+count_pdus(bind[1]) = 4
+count_pdus(bind[2]) = 6
+NSE(01004) NS-STATUS.ind(bvci=00000): cause=NSE failure, transfer=0, first=0, mtu=119
+NSE(01004)-NSVC(none) NS-STATUS.ind(bvci=00000): cause=NSVC failure, transfer=0, first=0, mtu=119
+NSE(01004)-NSVC(none) NS-STATUS.ind(bvci=00000): cause=NSVC failure, transfer=0, first=0, mtu=119
+NSE(01004)-NSVC(none) NS-STATUS.ind(bvci=00000): cause=NSVC failure, transfer=0, first=0, mtu=119
+NSE(01004)-NSVC(none) Tx NS-RESET cause=O&M intervention
+NSE(01004)-NSVC(none) Rx NS-RESET
+NSE(01004)-NSVC(none) Tx NS-RESET-ACK
+NSE(01004)-NSVC(none) Tx NS-ALIVE
+NSE(01004)-NSVC(none) Tx NS-UNBLOCK
+NSE(01004)-NSVC(none) Rx NS-UNBLOCK
+NSE(01004)-NSVC(none) Tx NS-UNBLOCK-ACK
+NSE(01004) NS-STATUS.ind(bvci=00000): cause=NSE recovery, transfer=42, first=1, mtu=119
+NSE(01004)-NSVC(none) NS-STATUS.ind(bvci=00000): cause=NSVC recovery, transfer=42, first=0, mtu=119
+NSE(01004)-NSVC(none) Tx NS-RESET cause=O&M intervention
+NSE(01004)-NSVC(none) Rx NS-RESET
+NSE(01004)-NSVC(none) Tx NS-RESET-ACK
+NSE(01004)-NSVC(none) Tx NS-ALIVE
+NSE(01004)-NSVC(none) Tx NS-UNBLOCK
+NSE(01004)-NSVC(none) Rx NS-UNBLOCK
+NSE(01004)-NSVC(none) Tx NS-UNBLOCK-ACK
+NSE(01004)-NSVC(none) NS-STATUS.ind(bvci=00000): cause=NSVC recovery, transfer=84, first=0, mtu=119
+NSE(01004) NS-STATUS.ind(bvci=00000): cause=NSE failure, transfer=0, first=0, mtu=119
+NSE(01004) NS-STATUS.ind(bvci=00000): cause=NSE failure, transfer=0, first=0, mtu=119
+NSE(01004)-NSVC(none) NS-STATUS.ind(bvci=00000): cause=NSVC failure, transfer=0, first=0, mtu=119
+NSE(01004)-NSVC(none) NS-STATUS.ind(bvci=00000): cause=NSVC failure, transfer=0, first=0, mtu=119
+NSE(01004)-NSVC(none) Tx NS-RESET cause=O&M intervention
+NSE(01004)-NSVC(none) Rx NS-RESET
+NSE(01004)-NSVC(none) Tx NS-RESET-ACK
+NSE(01004)-NSVC(none) Tx NS-ALIVE
+NSE(01004)-NSVC(none) Tx NS-UNBLOCK
+NSE(01004)-NSVC(none) Rx NS-UNBLOCK
+NSE(01004)-NSVC(none) Tx NS-UNBLOCK-ACK
+NSE(01004) NS-STATUS.ind(bvci=00000): cause=NSE recovery, transfer=42, first=1, mtu=119
+NSE(01004)-NSVC(none) NS-STATUS.ind(bvci=00000): cause=NSVC recovery, transfer=42, first=0, mtu=119
+NSE(01004)-NSVC(none) Tx NS-RESET cause=O&M intervention
+NSE(01004)-NSVC(none) Rx NS-RESET
+NSE(01004)-NSVC(none) Tx NS-RESET-ACK
+NSE(01004)-NSVC(none) Tx NS-ALIVE
+NSE(01004)-NSVC(none) Tx NS-UNBLOCK
+NSE(01004)-NSVC(none) Rx NS-UNBLOCK
+NSE(01004)-NSVC(none) Tx NS-UNBLOCK-ACK
+NSE(01004)-NSVC(none) NS-STATUS.ind(bvci=00000): cause=NSVC recovery, transfer=84, first=0, mtu=119
+NSE(01004)-NSVC(none) Rx NS-UNITDATA
+NSE(01004)-NSVC(none) Rx NS-UNITDATA
+NSE(01004) NS-STATUS.ind(bvci=00000): cause=NSE MTU changed, transfer=84, first=0, mtu=96
+NSE(01004) NS-STATUS.ind(bvci=00000): cause=NSE failure, transfer=0, first=0, mtu=96
+NSE(01004)-NSVC(none) NS-STATUS.ind(bvci=00000): cause=NSVC failure, transfer=0, first=0, mtu=96
+NSE(01004)-NSVC(none) NS-STATUS.ind(bvci=00000): cause=NSVC failure, transfer=0, first=0, mtu=96

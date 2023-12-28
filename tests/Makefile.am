@@ -414,10 +414,13 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
              gsm0408/gsm0408_test.ok gsm0408/gsm0408_test.err		\
              gsm0808/gsm0808_test.ok gb/bssgp_fc_tests.err		\
              gb/bssgp_fc_tests.ok gb/bssgp_fc_tests.sh			\
-             gb/gprs_bssgp_test.ok gb/gprs_ns_test.ok gea/gea_test.ok	\
+             gb/gprs_bssgp_test.ok gea/gea_test.ok			\
 	     gb/gprs_bssgp_rim_test.ok					\
              gb/gprs_ns2_vty.vty gb/osmoappdesc.py gb/osmo-ns-dummy.cfg \
+             gb/gprs_ns_test.ok						\
+             gb/gprs_ns_test.err					\
              gb/gprs_ns2_test.ok					\
+             gb/gprs_ns2_test.err					\
              gprs/gprs_test.ok kasumi/kasumi_test.ok			\
              msgfile/msgfile_test.ok msgfile/msgconfig.cfg		\
              logging/logging_test.ok logging/logging_test.err		\
@@ -483,6 +486,7 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
 	     gsm48/rest_octets_test.ok \
 	     base64/base64_test.ok \
 	     iuup/iuup_test.ok \
+	     iuup/iuup_test.err \
 	     smscb/smscb_test.ok \
 	     smscb/gsm0341_test.ok \
 	     smscb/cbsp_test.ok \
@@ -605,9 +609,11 @@ if ENABLE_GB
 	gb/gprs_bssgp_rim_test \
 		>$(srcdir)/gb/gprs_bssgp_rim_test.ok
 	gb/gprs_ns_test \
-		>$(srcdir)/gb/gprs_ns_test.ok
+		>$(srcdir)/gb/gprs_ns_test.ok \
+		2>$(srcdir)/gb/gprs_ns_test.err
 	gb/gprs_ns2_test \
-		>$(srcdir)/gb/gprs_ns2_test.ok
+		>$(srcdir)/gb/gprs_ns2_test.ok \
+		2>$(srcdir)/gb/gprs_ns2_test.err
 endif
 if ENABLE_UTILITIES
 	utils/utils_test \
@@ -698,7 +704,8 @@ endif
 	time_cc/time_cc_test \
 		>$(srcdir)/time_cc/time_cc_test.ok
 	iuup/iuup_test \
-		>$(srcdir)/iuup/iuup_test.ok
+		>$(srcdir)/iuup/iuup_test.ok \
+		2>$(srcdir)/iuup/iuup_test.err
 	v110/frame_test \
 		>$(srcdir)/v110/frame_test.ok
 	v110/ra1_test \
