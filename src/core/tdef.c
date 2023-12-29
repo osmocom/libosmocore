@@ -337,26 +337,37 @@ int _osmo_tdef_fsm_inst_state_chg(struct osmo_fsm_inst *fi, uint32_t state,
 				  const char *file, int line)
 {
 	const struct osmo_tdef_state_timeout *t = osmo_tdef_get_state_timeout(state, timeouts_array);
-	unsigned long val = 0;
+	unsigned long val_ms = 0;
 
 	/* No timeout defined for this state? */
 	if (!t)
 		return _osmo_fsm_inst_state_chg(fi, state, 0, 0, file, line);
 
-	if (t->T)
-		val = osmo_tdef_get(tdefs, t->T, OSMO_TDEF_S, default_timeout);
+	if (t->T) {
+		const struct osmo_tdef *tdef = osmo_tdef_get_entry((struct osmo_tdef *)tdefs, t->T);
+		if (tdef == NULL) {
+			/* emulate the old behavior: treat default_timeout as OSMO_TDEF_S */
+			OSMO_ASSERT(default_timeout >= 0);
+			val_ms = default_timeout * 1000;
+		} else {
+			val_ms = osmo_tdef_round(tdef->val, tdef->unit, OSMO_TDEF_MS);
+			/* emulate the old behavior: treat OSMO_TDEF_CUSTOM as OSMO_TDEF_S */
+			if (tdef->unit == OSMO_TDEF_CUSTOM)
+				val_ms *= 1000;
+		}
+	}
 
 	if (t->keep_timer) {
 		if (t->T)
-			return _osmo_fsm_inst_state_chg_keep_or_start_timer(fi, state, val, t->T, file, line);
+			return _osmo_fsm_inst_state_chg_keep_or_start_timer_ms(fi, state, val_ms, t->T, file, line);
 		else
 			return _osmo_fsm_inst_state_chg_keep_timer(fi, state, file, line);
 	}
 
-	/* val is always initialized here, because if t->keep_timer is false, t->T must be != 0.
+	/* val_ms is always initialized here, because if t->keep_timer is false, t->T must be != 0.
 	 * Otherwise osmo_tdef_get_state_timeout() would have returned NULL. */
 	OSMO_ASSERT(t->T);
-	return _osmo_fsm_inst_state_chg(fi, state, val, t->T, file, line);
+	return _osmo_fsm_inst_state_chg_ms(fi, state, val_ms, t->T, file, line);
 }
 
 const struct value_string osmo_tdef_unit_names[] = {

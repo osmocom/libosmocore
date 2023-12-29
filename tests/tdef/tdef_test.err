@@ -1,10 +1,10 @@
 DLGLOBAL DEBUG tdef_test(test_tdef_state_timeout){A}: Allocated
 DLGLOBAL DEBUG tdef_test(test_tdef_state_timeout){A}: State change to A (T1, 100s)
-DLGLOBAL DEBUG tdef_test(test_tdef_state_timeout){A}: State change to B (T2, 1s)
+DLGLOBAL DEBUG tdef_test(test_tdef_state_timeout){A}: State change to B (T2, 100ms)
 DLGLOBAL DEBUG tdef_test(test_tdef_state_timeout){B}: State change to C (T3, 3000s)
 DLGLOBAL DEBUG tdef_test(test_tdef_state_timeout){C}: State change to D (T4, 100s)
-DLGLOBAL DEBUG tdef_test(test_tdef_state_timeout){D}: State change to E (X5, 1s)
-DLGLOBAL DEBUG tdef_test(test_tdef_state_timeout){E}: State change to F (X6, 1s)
+DLGLOBAL DEBUG tdef_test(test_tdef_state_timeout){D}: State change to E (X5, 100ms)
+DLGLOBAL DEBUG tdef_test(test_tdef_state_timeout){E}: State change to F (X6, 1ms)
 DLGLOBAL DEBUG tdef_test(test_tdef_state_timeout){F}: State change to G (T7, 50s)
 DLGLOBAL DEBUG tdef_test(test_tdef_state_timeout){G}: State change to H (T8, 300s)
 DLGLOBAL DEBUG tdef_test(test_tdef_state_timeout){H}: State change to I (T9, 300s)

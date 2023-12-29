@@ -121,11 +121,13 @@ struct osmo_tdef_state_timeout {
 const struct osmo_tdef_state_timeout *osmo_tdef_get_state_timeout(uint32_t state,
 								  const struct osmo_tdef_state_timeout *timeouts_array);
 
-/*! Call osmo_fsm_inst_state_chg() or osmo_fsm_inst_state_chg_keep_timer(), depending on the timeouts_array, tdefs and
- * default_timeout.
+/*! Call osmo_fsm_inst_state_chg[_ms]() or osmo_fsm_inst_state_chg_keep_timer[_ms](),
+ * depending on the timeouts_array, tdefs and default_timeout.
  *
- * A T timer configured in sub-second precision is rounded up to the next full second. A timer in unit =
- * OSMO_TDEF_CUSTOM is applied as if the unit is in seconds (i.e. this macro does not make sense for custom units!).
+ * A timer defined with sub-millisecond precision (e.g OSMO_TDEF_US) is rounded up to the next full millisecond.
+ * A timer value defined in units higher than millisecond (e.g. OSMO_TDEF_S, OSMO_TDEF_M) is converted to milliseconds.
+ * A timer in unit = OSMO_TDEF_CUSTOM is applied as if the unit is in seconds (i.e. this macro does not make sense
+ * for custom units!).
  *
  * See osmo_tdef_get_state_timeout() and osmo_tdef_get().
  *
@@ -153,9 +155,10 @@ const struct osmo_tdef_state_timeout *osmo_tdef_get_state_timeout(uint32_t state
  * \param[in] state  State number to transition to.
  * \param[in] timeouts_array  Array of struct osmo_tdef_state_timeout[32] to look up state in.
  * \param[in] tdefs  Array of struct osmo_tdef (last entry zero initialized) to look up T in.
- * \param[in] default_timeout  If a T is set in timeouts_array, but no timeout value is configured for T, then use this
- *                             default timeout value as fallback, or pass -1 to abort the program.
- * \return Return value from osmo_fsm_inst_state_chg() or osmo_fsm_inst_state_chg_keep_timer().
+ * \param[in] default_timeout  If a T is set in timeouts_array, but no timeout value is configured for T,
+ *                             then use this default timeout value (in seconds) as fallback,
+ *                             or pass a negative number to abort the program.
+ * \return Return value from osmo_fsm_inst_state_chg[_ms]() or osmo_fsm_inst_state_chg_keep_timer[_ms]().
  */
 #define osmo_tdef_fsm_inst_state_chg(fi, state, timeouts_array, tdefs, default_timeout) \
 	_osmo_tdef_fsm_inst_state_chg(fi, state, timeouts_array, tdefs, default_timeout, \
