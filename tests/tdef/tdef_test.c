@@ -37,6 +37,9 @@ static struct osmo_tdef tdefs[] = {
 	{ .T=3, .default_val=50, .unit=OSMO_TDEF_M, .desc="50m" },
 	{ .T=4, .default_val=100, .unit=OSMO_TDEF_CUSTOM, .desc="100 potatoes" },
 
+	{ .T=-5, .default_val=100, .unit=OSMO_TDEF_MS, .desc="X-100ms" },
+	{ .T=-6, .default_val=100, .unit=OSMO_TDEF_US, .desc="X-100us" },
+
 	{ .T=7, .default_val=50, .desc="Water Boiling Timeout", .min_val=20, .max_val=800 },  // default is .unit=OSMO_TDEF_S == 0
 	{ .T=8, .default_val=300, .desc="Tea brewing" },
 	{ .T=9, .default_val=5, .unit=OSMO_TDEF_M, .desc="Let tea cool down before drinking" },
@@ -196,6 +199,8 @@ enum test_tdef_fsm_states {
 	S_B,
 	S_C,
 	S_D,
+	S_E,
+	S_F,
 	S_G,
 	S_H,
 	S_I,
@@ -205,6 +210,7 @@ enum test_tdef_fsm_states {
 	S_M,
 	S_N,
 	S_O,
+	/* ... gap ... */
 	S_X,
 	S_Y,
 	S_Z,
@@ -215,6 +221,9 @@ static const struct osmo_tdef_state_timeout test_tdef_state_timeouts[32] = {
 	[S_B] = { .T = 2 },
 	[S_C] = { .T = 3 },
 	[S_D] = { .T = 4 },
+
+	[S_E] = { .T = -5 },
+	[S_F] = { .T = -6 },
 
 	[S_G] = { .T = 7 },
 	[S_H] = { .T = 8 },
@@ -246,31 +255,15 @@ static const struct osmo_fsm_state test_tdef_fsm_states[] = {
 #define DEF_STATE(NAME) \
 	[S_##NAME] = { \
 		.name = #NAME, \
-		.out_state_mask = 0 \
-			| S(S_A) \
-			| S(S_B) \
-			| S(S_C) \
-			| S(S_D) \
-			| S(S_G) \
-			| S(S_H) \
-			| S(S_I) \
-			| S(S_J) \
-			| S(S_K) \
-			| S(S_L) \
-			| S(S_M) \
-			| S(S_N) \
-			| S(S_O) \
-			| S(S_X) \
-			| S(S_Y) \
-			| S(S_Z) \
-			, \
+		.out_state_mask = 0xffffffff, \
 	}
 
 	DEF_STATE(A),
 	DEF_STATE(B),
 	DEF_STATE(C),
 	DEF_STATE(D),
-
+	DEF_STATE(E),
+	DEF_STATE(F),
 	DEF_STATE(G),
 	DEF_STATE(H),
 	DEF_STATE(I),
@@ -383,7 +376,8 @@ static void test_tdef_state_timeout(bool test_range)
 	test_tdef_fsm_state_chg(tdefs, S_B);
 	test_tdef_fsm_state_chg(tdefs, S_C);
 	test_tdef_fsm_state_chg(tdefs, S_D);
-
+	test_tdef_fsm_state_chg(tdefs, S_E);
+	test_tdef_fsm_state_chg(tdefs, S_F);
 	test_tdef_fsm_state_chg(tdefs, S_G);
 	test_tdef_fsm_state_chg(tdefs, S_H);
 	test_tdef_fsm_state_chg(tdefs, S_I);
