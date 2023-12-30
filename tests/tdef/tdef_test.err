@@ -1,0 +1,25 @@
+DLGLOBAL DEBUG tdef_test(test_tdef_state_timeout){A}: Allocated
+DLGLOBAL DEBUG tdef_test(test_tdef_state_timeout){A}: State change to A (T1, 100s)
+DLGLOBAL DEBUG tdef_test(test_tdef_state_timeout){A}: State change to B (T2, 1s)
+DLGLOBAL DEBUG tdef_test(test_tdef_state_timeout){B}: State change to C (T3, 3000s)
+DLGLOBAL DEBUG tdef_test(test_tdef_state_timeout){C}: State change to D (T4, 100s)
+DLGLOBAL DEBUG tdef_test(test_tdef_state_timeout){D}: State change to E (X5, 1s)
+DLGLOBAL DEBUG tdef_test(test_tdef_state_timeout){E}: State change to F (X6, 1s)
+DLGLOBAL DEBUG tdef_test(test_tdef_state_timeout){F}: State change to G (T7, 50s)
+DLGLOBAL DEBUG tdef_test(test_tdef_state_timeout){G}: State change to H (T8, 300s)
+DLGLOBAL DEBUG tdef_test(test_tdef_state_timeout){H}: State change to I (T9, 300s)
+DLGLOBAL DEBUG tdef_test(test_tdef_state_timeout){I}: State change to J (T10, 1200s)
+DLGLOBAL DEBUG tdef_test(test_tdef_state_timeout){J}: State change to K (keeping T10, 1076.954s remaining)
+DLGLOBAL DEBUG tdef_test(test_tdef_state_timeout){K}: State change to A (T1, 100s)
+DLGLOBAL DEBUG tdef_test(test_tdef_state_timeout){A}: State change to K (keeping T1, 76.954s remaining)
+DLGLOBAL DEBUG tdef_test(test_tdef_state_timeout){K}: State change to A (T1, 100s)
+DLGLOBAL DEBUG tdef_test(test_tdef_state_timeout){A}: State change to L (keeping T1, 76.954s remaining)
+DLGLOBAL DEBUG tdef_test(test_tdef_state_timeout){L}: State change to O (no timeout)
+DLGLOBAL DEBUG tdef_test(test_tdef_state_timeout){O}: State change to L (T123, 1s)
+DLGLOBAL DEBUG tdef_test(test_tdef_state_timeout){L}: State change to O (no timeout)
+DLGLOBAL DEBUG tdef_test(test_tdef_state_timeout){O}: State change to X (no timeout)
+DLGLOBAL DEBUG tdef_test(test_tdef_state_timeout){X}: State change to Y (T666, 999s)
+DLGLOBAL DEBUG tdef_test(test_tdef_state_timeout){Y}: State change to Z (no timeout)
+DLGLOBAL ERROR tdef_test(test_tdef_state_timeout){Z}: transition to state B not permitted!
+DLGLOBAL ERROR tdef_test(test_tdef_state_timeout){Z}: transition to state C not permitted!
+DLGLOBAL ERROR tdef_test(test_tdef_state_timeout){Z}: transition to state D not permitted!

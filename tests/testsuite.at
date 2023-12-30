@@ -414,7 +414,8 @@ AT_CLEANUP
 AT_SETUP([tdef])
 AT_KEYWORDS([tdef])
 cat $abs_srcdir/tdef/tdef_test.ok > expout
-AT_CHECK([$abs_top_builddir/tests/tdef/tdef_test], [0], [expout], [ignore])
+cat $abs_srcdir/tdef/tdef_test.err > experr
+AT_CHECK([$abs_top_builddir/tests/tdef/tdef_test], [0], [expout], [experr])
 AT_CLEANUP
 
 AT_SETUP([sockaddr_str])

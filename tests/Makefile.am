@@ -466,6 +466,7 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
 	     oap/oap_client_test.ok oap/oap_client_test.err		\
 	     vty/vty_transcript_test.vty				\
 	     tdef/tdef_test.ok \
+	     tdef/tdef_test.err \
 	     tdef/tdef_test_range_64bit.ok \
 	     tdef/tdef_vty_config_root_test.vty	\
 	     tdef/tdef_vty_config_subnode_test.vty \
@@ -676,7 +677,8 @@ endif
 	gsm23236/gsm23236_test \
 		>$(srcdir)/gsm23236/gsm23236_test.ok
 	tdef/tdef_test \
-		>$(srcdir)/tdef/tdef_test.ok
+		>$(srcdir)/tdef/tdef_test.ok \
+		2>$(srcdir)/tdef/tdef_test.err
 	sockaddr_str/sockaddr_str_test \
 		>$(srcdir)/sockaddr_str/sockaddr_str_test.ok
 	use_count/use_count_test \
