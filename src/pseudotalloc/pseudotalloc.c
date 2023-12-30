@@ -55,21 +55,21 @@ void talloc_set_name_const(const void *ptr, const char *name)
 {
 }
 
-char *talloc_strdup(const void *context, const char *p)
+void *talloc_memdup(const void *ctx, const void *p, size_t size)
 {
-	char *ptr;
-	size_t len;
+	void *ptr;
 
+	ptr = talloc_size(ctx, size);
+	if (ptr && p)
+		memcpy(ptr, p, size);
+	return ptr;
+}
+
+char *talloc_strdup(const void *ctx, const char *p)
+{
 	if (!p)
 		return NULL;
-	len = strlen(p);
-
-	ptr = talloc_size(context, len+1);
-	if (!ptr)
-		return NULL;
-	memcpy(ptr, p, len+1);
-
-	return ptr;
+	return talloc_memdup(ctx, p, strlen(p) + 1);
 }
 
 void *talloc_pool(const void *context, size_t size)

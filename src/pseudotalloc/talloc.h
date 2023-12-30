@@ -50,7 +50,8 @@ int _talloc_free(void *ptr, const char *location);
 void *talloc_named_const(const void *context, size_t size, const char *name);
 void *talloc_named(const void *context, size_t size, const char *fmt, ...);
 void talloc_set_name_const(const void *ptr, const char *name);
-char *talloc_strdup(const void *t, const char *p);
+void *talloc_memdup(const void *ctx, const void *p, size_t size);
+char *talloc_strdup(const void *ctx, const char *p);
 void *talloc_pool(const void *context, size_t size);
 #define talloc_array(ctx, type, count) (type *)_talloc_array(ctx, sizeof(type), count, #type)
 void *_talloc_array(const void *ctx, size_t el_size, unsigned count, const char *name);
