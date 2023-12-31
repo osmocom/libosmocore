@@ -306,7 +306,7 @@ static inline size_t _osmo_strbuf_char_count(const struct osmo_strbuf *sb)
 		return 0;
 	if (sb->pos == NULL || sb->pos <= sb->buf)
 		return 0;
-	return OSMO_MIN(sb->pos - sb->buf, sb->len - 1);
+	return OSMO_MIN((size_t)(sb->pos - sb->buf), sb->len - 1);
 }
 
 /*! Return number of actual characters contained in struct osmo_strbuf (without terminating nul). */
