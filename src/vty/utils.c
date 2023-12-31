@@ -415,6 +415,7 @@ char *vty_cmd_string_from_valstr(void *ctx, const struct value_string *vals,
 	if (ret < 0)
 		goto err;
 	OSMO_SNPRINTF_RET(ret, rem, offset, len);
+	(void)len; /* suppress warnings about len being set but not used */
 err:
 	str[size-1] = '\0';
 	return str;
