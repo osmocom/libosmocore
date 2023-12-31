@@ -540,13 +540,11 @@ char bit_value_to_char(enum bit_value v)
  */
 void bitvec_to_string_r(const struct bitvec *bv, char *str)
 {
-	unsigned i, pos = 0;
 	char *cur = str;
-	for (i = 0; i < bv->cur_bit; i++) {
+	for (unsigned int i = 0; i < bv->cur_bit; i++) {
 		if (0 == i % 8)
 			*cur++ = ' ';
 		*cur++ = bit_value_to_char(bitvec_get_bit_pos(bv, i));
-		pos++;
 	}
 	*cur = 0;
 }
