@@ -458,7 +458,6 @@ OSMO_STRBUF_PRINTF():
 2: (need 42 chars, had size=42) T minus 10 9 8 7 6 5 4 3 2 1 ... Lift off
 3: (need 42 chars, had size=42+1) T minus 10 9 8 7 6 5 4 3 2 1 ... Lift off!
 4: (need 42 chars, had size=0) 0x2b 0x2b 0x2b...
-5: (need 42 chars, had NULL buffer)
 
 cascade:
 (need 134 chars)

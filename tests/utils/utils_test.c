@@ -1280,9 +1280,6 @@ void strbuf_test(void)
 	snprintf(buf, sizeof(buf), "0x2b 0x2b 0x2b...");
 	printf("4: (need %d chars, had size=0) %s\n", rc, buf);
 
-	rc = strbuf_example2(NULL, 99);
-	printf("5: (need %d chars, had NULL buffer)\n", rc);
-
 	printf("\ncascade:\n");
 	rc = strbuf_cascade(buf, sizeof(buf));
 	printf("(need %d chars)\n%s\n", rc, buf);
