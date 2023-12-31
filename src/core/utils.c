@@ -147,12 +147,14 @@ uint8_t osmo_char2bcd(char c)
  */
 int osmo_bcd2str(char *dst, size_t dst_size, const uint8_t *bcd, int start_nibble, int end_nibble, bool allow_hex)
 {
-	char *dst_end = dst + dst_size - 1;
+	char *dst_end;
 	int nibble_i;
 	int rc = 0;
 
 	if (!dst || dst_size < 1 || start_nibble < 0)
 		return -ENOMEM;
+
+	dst_end = dst + dst_size - 1;
 
 	for (nibble_i = start_nibble; nibble_i < end_nibble && dst < dst_end; nibble_i++, dst++) {
 		uint8_t nibble = bcd[nibble_i >> 1];
