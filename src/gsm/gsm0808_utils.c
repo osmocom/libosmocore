@@ -2075,25 +2075,12 @@ const struct value_string gsm0808_cell_id_discr_names[] = {
 	{ 0, NULL }
 };
 
-#define APPEND_THING(func, args...) do { \
-		int remain = buflen - (pos - buf); \
-		int l = func(pos, remain, ##args); \
-		if (l < 0 || l > remain) \
-			pos = buf + buflen; \
-		else \
-			pos += l; \
-		if (l > 0) \
-			total_len += l; \
-	} while(0)
-#define APPEND_STR(fmt, args...) APPEND_THING(snprintf, fmt, ##args)
-#define APPEND_CELL_ID_U(DISCR, U) APPEND_THING(gsm0808_cell_id_u_name, DISCR, U)
-
 char *gsm0808_cell_id_name_buf(char *buf, size_t buflen, const struct gsm0808_cell_id *cid)
 {
-	char *pos = buf;
-	int total_len = 0;
-	APPEND_STR("%s:", gsm0808_cell_id_discr_name(cid->id_discr));
-	APPEND_CELL_ID_U(cid->id_discr, &cid->id);
+	struct osmo_strbuf sb = { .buf = buf, .len = buflen };
+
+	OSMO_STRBUF_PRINTF(sb, "%s:", gsm0808_cell_id_discr_name(cid->id_discr));
+	OSMO_STRBUF_APPEND(sb, gsm0808_cell_id_u_name, cid->id_discr, &cid->id);
 	return buf;
 }
 
@@ -2140,30 +2127,31 @@ char *gsm0808_cell_id_name_c(const void *ctx, const struct gsm0808_cell_id *cid)
  */
 int gsm0808_cell_id_list_name_buf(char *buf, size_t buflen, const struct gsm0808_cell_id_list2 *cil)
 {
-	char *pos = buf;
-	int total_len = 0;
-	int i;
+	struct osmo_strbuf sb = { .buf = buf, .len = buflen };
 
-	APPEND_STR("%s[%u]", gsm0808_cell_id_discr_name(cil->id_discr), cil->id_list_len);
+	OSMO_STRBUF_PRINTF(sb, "%s[%u]",
+			   gsm0808_cell_id_discr_name(cil->id_discr),
+			   cil->id_list_len);
 
 	switch (cil->id_discr) {
 	case CELL_IDENT_BSS:
 	case CELL_IDENT_NO_CELL:
-		return total_len;
+		return sb.chars_needed;
 	default:
 		break;
 	}
 
-	APPEND_STR(":{");
+	OSMO_STRBUF_PRINTF(sb, ":{");
 
-	for (i = 0; i < cil->id_list_len; i++) {
+	for (unsigned int i = 0; i < cil->id_list_len; i++) {
 		if (i)
-			APPEND_STR(", ");
-		APPEND_CELL_ID_U(cil->id_discr, &cil->id_list[i]);
+			OSMO_STRBUF_PRINTF(sb, ", ");
+		OSMO_STRBUF_APPEND(sb, gsm0808_cell_id_u_name,
+				   cil->id_discr, &cil->id_list[i]);
 	}
 
-	APPEND_STR("}");
-	return total_len;
+	OSMO_STRBUF_PRINTF(sb, "}");
+	return sb.chars_needed;
 }
 
 /*! Return a human-readable representation of \a cil in a static buffer.
@@ -2184,9 +2172,6 @@ char *gsm0808_cell_id_list_name_c(const void *ctx, const struct gsm0808_cell_id_
 	gsm0808_cell_id_list_name_buf(buf, 1024, cil);
 	return buf;
 }
-
-#undef APPEND_STR
-#undef APPEND_CELL_ID_U
 
 char *gsm0808_channel_type_name_buf(char *buf, size_t buf_len, const struct gsm0808_channel_type *ct)
 {
