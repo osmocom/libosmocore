@@ -86,14 +86,15 @@ static struct osmo_tdef tdefs_range[] = {
 		printf("osmo_tdef_get(%d, %s)\t= %lu\n", T, osmo_tdef_unit_name(AS_UNIT), val); \
 	} while (0)
 
-void print_tdef_info(unsigned int T)
+void print_tdef_info(int T)
 {
 	const struct osmo_tdef *t = osmo_tdef_get_entry(tdefs, T);
 	if (!t) {
-		printf("T%d=NULL", T);
+		printf(OSMO_T_FMT "=NULL", OSMO_T_FMT_ARGS(T));
 		return;
 	}
-	printf("T%d=%lu%s", T, t->val, osmo_tdef_unit_name(t->unit));
+	printf(OSMO_T_FMT "=%lu%s",
+	       OSMO_T_FMT_ARGS(T), t->val, osmo_tdef_unit_name(t->unit));
 	if (t->val != t->default_val)
 		printf("(def=%lu)", t->default_val);
 	printf("\n");
@@ -109,7 +110,7 @@ static void test_tdef_get(bool test_range)
 	osmo_tdefs_reset(tdefs); // make all values the default
 
 	for (i = 0; i < ARRAY_SIZE(tdefs)-1; i++) {
-		unsigned int T = tdefs[i].T;
+		int T = tdefs[i].T;
 		print_tdef_info(T);
 		for (as_unit = OSMO_TDEF_S; as_unit <= OSMO_TDEF_US; as_unit++) {
 			print_tdef_get_short(tdefs, T, as_unit);
@@ -120,7 +121,7 @@ static void test_tdef_get(bool test_range)
 		return;
 
 	for (i = 0; i < ARRAY_SIZE(tdefs_range)-1; i++) {
-		unsigned int T = tdefs_range[i].T;
+		int T = tdefs_range[i].T;
 		print_tdef_info(T);
 		for (as_unit = OSMO_TDEF_S; as_unit <= OSMO_TDEF_US; as_unit++) {
 			print_tdef_get_short(tdefs_range, T, as_unit);
@@ -347,9 +348,9 @@ static void print_fsm_state(struct osmo_fsm_inst *fi)
 			       osmo_fsm_state_name(&test_tdef_fsm, NEXT_STATE), rc); \
 		} else { \
 			struct osmo_tdef *t = osmo_tdef_get_entry(tdefs, st->T); \
-			printf(" --> %s (configured as T%d%s %lu %s) rc=%d;\t", \
+			printf(" --> %s (configured as " OSMO_T_FMT "%s %lu %s) rc=%d;\t", \
 			       osmo_fsm_state_name(&test_tdef_fsm, NEXT_STATE), \
-			       st->T, st->keep_timer ? "(keep_timer)" : "", \
+			       OSMO_T_FMT_ARGS(st->T), st->keep_timer ? " (keep_timer)" : "", \
 			       t? t->val : 0, t? osmo_tdef_unit_name(t->unit) : "-", \
 			       rc); \
 		} \
