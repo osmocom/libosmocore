@@ -44,10 +44,11 @@ static const char bcd_num_digits[] = {
 };
 
 /*! Like gsm48_decode_bcd_number2() but with less airtight bounds checking.
- *  \param[out] Caller-provided output buffer
+ *  \param[out] output Caller-provided output buffer
+ *  \param[in] output_len sizeof(output)
  *  \param[in] bcd_lv Length-Value portion of to-be-decoded IE
  *  \param[in] h_len Length of an optional heder between L and V portion
- *  \returns - in case of success; negative on error */
+ *  \returns 0 in case of success; negative on error */
 int gsm48_decode_bcd_number(char *output, int output_len,
 			    const uint8_t *bcd_lv, int h_len)
 {
@@ -139,7 +140,7 @@ static int asc_to_bcd(const char asc)
  *  \param[in] max_len Maximum Length of \a bcd_lv
  *  \param[in] h_len Length of an optional heder between L and V portion
  *  \param[in] input phone number as 0-terminated ASCII
- *  \returns number of bytes used in \a bcd_lv
+ *  \returns number of bytes used in \a bcd_lv; negative on error
  *
  * Depending on a context (e.g. called or calling party BCD number), the
  * optional header between L and V parts can contain TON (Type Of Number),
@@ -179,8 +180,8 @@ int gsm48_encode_bcd_number(uint8_t *bcd_lv, uint8_t max_len,
 }
 
 /*! Decode TS 04.08 Bearer Capability IE (10.5.4.5)
- *  \param[out] Caller-provided memory for decoded output
- *  \[aram[in] LV portion of TS 04.08 Bearer Capability
+ *  \param[out] bcap Caller-provided memory for decoded output
+ *  \param[in] lv LV portion of TS 04.08 Bearer Capability
  *  \returns 0 on success; negative on error */
 int gsm48_decode_bearer_cap(struct gsm_mncc_bearer_cap *bcap,
 			     const uint8_t *lv)
@@ -371,7 +372,7 @@ int gsm48_encode_bearer_cap(struct msgb *msg, int lv_only,
 }
 
 /*! Decode TS 04.08 Call Control Capabilities IE (10.5.4.5a)
- *  \param[out] Caller-provided memory for decoded CC capabilities
+ *  \param[out] ccap Caller-provided memory for decoded CC capabilities
  *  \param[in] lv Length-Value of IE
  *  \returns 0 on success; negative on error */
 int gsm48_decode_cccap(struct gsm_mncc_cccap *ccap, const uint8_t *lv)
@@ -457,7 +458,7 @@ int gsm48_encode_called(struct msgb *msg,
 }
 
 /*! Decode TS 04.08 Caller ID
- *  \param[out] called Caller-provided memory for decoded number
+ *  \param[out] callerid Caller-provided memory for decoded number
  *  \param[in] lv Length-Value portion of IE
  *  \returns 0 on success; negative on error */
 int gsm48_decode_callerid(struct gsm_mncc_number *callerid,
