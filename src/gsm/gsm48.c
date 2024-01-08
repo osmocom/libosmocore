@@ -641,8 +641,10 @@ int osmo_mobile_identity_decode(struct osmo_mobile_identity *mi, const uint8_t *
 	char *str = NULL; /* initialize to avoid uninitialized false warnings on some gcc versions (11.1.0) */
 	size_t str_size = 0; /* initialize to avoid uninitialized false warnings on some gcc versions (11.1.0) */
 
-	if (!mi_data || mi_len < 1)
-		return -EBADMSG;
+	if (!mi_data || mi_len < 1) {
+		rc = -EBADMSG;
+		goto return_error;
+	}
 
 	nibbles_len = (mi_len - 1) * 2 + ((mi_data[0] & GSM_MI_ODD) ? 1 : 0);
 
