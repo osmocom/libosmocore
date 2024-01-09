@@ -382,10 +382,6 @@ DEFUN(logging_level,
 	tgt->categories[category].enabled = 1;
 	tgt->categories[category].loglevel = level;
 
-#if !defined(EMBEDDED)
-	log_cache_update(category, 1, level);
-#endif
-
 	RET_WITH_UNLOCK(CMD_SUCCESS);
 }
 
@@ -410,9 +406,6 @@ DEFUN(logging_level_set_all, logging_level_set_all_cmd,
 
 		cat->enabled = 1;
 		cat->loglevel = level;
-#if !defined(EMBEDDED)
-		log_cache_update(i, 1, level);
-#endif
 	}
 	RET_WITH_UNLOCK(CMD_SUCCESS);
 }
