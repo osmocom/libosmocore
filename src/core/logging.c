@@ -93,6 +93,80 @@ LLIST_HEAD(osmo_log_target_list);
 static __thread long int logging_tid;
 
 #if (!EMBEDDED)
+/*! One global copy that contains the union of log levels for all targets
+*  for all categories, used for quick lock free checks of log targets. */
+static volatile uint8_t *log_level_lookup_cache;
+
+/*! Updates cache for all targets for all categies, caller must hold osmo_log_tgt_mutex. */
+static void log_cache_update_all(void)
+{
+	struct log_target *tgt;
+	uint8_t tmp_en[osmo_log_info->num_cat];
+	uint8_t tmp_level[osmo_log_info->num_cat];
+
+	if (!log_level_lookup_cache)
+		return;
+
+	memset(tmp_en, 0, osmo_log_info->num_cat);
+	memset(tmp_level, UINT8_MAX, osmo_log_info->num_cat);
+
+	/* values can also decrease.. */
+	llist_for_each_entry(tgt, &osmo_log_target_list, entry) {
+		for (int i = 0; i < osmo_log_info->num_cat; i++) {
+			struct log_category *cat = &tgt->categories[i];
+			tmp_en[i] = OSMO_MAX(tmp_en[i], cat->enabled);
+			tmp_level[i] = OSMO_MIN(tmp_level[i], cat->loglevel);
+			tmp_level[i] = tgt->loglevel ? OSMO_MIN(tmp_level[i], tgt->loglevel) : tmp_level[i];
+		}
+	}
+
+	for (int i = 0; i < osmo_log_info->num_cat; i++)
+		log_level_lookup_cache[i] = tmp_en[i] ? tmp_level[i] : UINT8_MAX;
+}
+
+/*! Updates single cache entry, caller must hold osmo_log_tgt_mutex.
+ *
+ *  \param[in] mapped_subsys plain category index (after mapping)
+ *  \param[in] enabled log category enabled?
+ *  \param[in] level log level
+ */
+void log_cache_update(int mapped_subsys, uint8_t enabled, uint8_t level)
+{
+	struct log_target *tgt;
+	struct log_category tmp = { UINT8_MAX, 0 };
+
+	if (!log_level_lookup_cache)
+		return;
+
+	/* values can also decrease.. */
+	llist_for_each_entry(tgt, &osmo_log_target_list, entry) {
+		struct log_category *cat = &tgt->categories[mapped_subsys];
+		tmp.enabled = OSMO_MAX(tmp.enabled, cat->enabled);
+		tmp.loglevel = OSMO_MIN(tmp.loglevel, cat->loglevel);
+		tmp.loglevel = tgt->loglevel ? OSMO_MIN(tmp.loglevel, tgt->loglevel) : tmp.loglevel;
+	}
+	tmp.enabled = OSMO_MAX(tmp.enabled, enabled);
+	tmp.loglevel = OSMO_MIN(tmp.loglevel, level);
+
+	log_level_lookup_cache[mapped_subsys] = tmp.enabled ? tmp.loglevel : UINT8_MAX;
+}
+
+/*! Queries log level cache.
+ *
+ *  \param[in] mapped_subsys plain category index (after mapping)
+ *  \param[in] level log level
+ *  \returns true if logging should happen for at least one log target
+*/
+static bool log_cache_check(int mapped_subsys, int level)
+{
+	if (!log_level_lookup_cache) {
+		/* log-cache is not enabled, so we simply behave like we did before the cache */
+		return true;
+	}
+
+	return (level < log_level_lookup_cache[mapped_subsys]) ? false : true;
+}
+
 /*! This mutex must be held while using osmo_log_target_list or any of its
   log_targets in a multithread program. Prevents race conditions between threads
   like producing unordered timestamps or VTY deleting a target while another
@@ -426,6 +500,10 @@ void log_parse_category_mask(struct log_target* target, const char *_mask)
 		}
 	} while ((category_token = strtok(NULL, ":")));
 
+#if !defined(EMBEDDED)
+	log_cache_update_all();
+#endif
+
 	free(mask);
 }
 
@@ -680,6 +758,11 @@ void osmo_vlogp(int subsys, int level, const char *file, int line,
 
 	subsys = map_subsys(subsys);
 
+#if !defined(EMBEDDED)
+	if (!log_cache_check(subsys, level))
+		return;
+#endif
+
 	log_tgt_mutex_lock();
 
 	llist_for_each_entry(tar, &osmo_log_target_list, entry) {
@@ -754,6 +837,9 @@ void logp_stub(const char *file, int line, int cont, const char *format, ...)
 void log_add_target(struct log_target *target)
 {
 	llist_add_tail(&target->entry, &osmo_log_target_list);
+#if (!EMBEDDED)
+	log_cache_update_all();
+#endif
 }
 
 /*! Unregister a log target from the logging core
@@ -762,6 +848,9 @@ void log_add_target(struct log_target *target)
 void log_del_target(struct log_target *target)
 {
 	llist_del(&target->entry);
+#if (!EMBEDDED)
+	log_cache_update_all();
+#endif
 }
 
 /*! Reset (clear) the logging context */
@@ -922,6 +1011,9 @@ void log_set_print_level(struct log_target *target, int print_level)
 void log_set_log_level(struct log_target *target, int log_level)
 {
 	target->loglevel = log_level;
+#if !defined(EMBEDDED)
+	log_cache_update_all();
+#endif
 }
 
 /*! Set a category filter on a given log target
@@ -938,6 +1030,10 @@ void log_set_category_filter(struct log_target *target, int category,
 	category = map_subsys(category);
 	target->categories[category].enabled = !!enable;
 	target->categories[category].loglevel = level;
+
+#if !defined(EMBEDDED)
+	log_cache_update(category, !!enable, level);
+#endif
 }
 
 #if (!EMBEDDED)
@@ -1046,6 +1142,15 @@ struct log_target *log_target_create(void)
 
 	/* global log level */
 	target->loglevel = 0;
+
+#if !defined(EMBEDDED)
+	/* update cache */
+	for (i = 0; i < osmo_log_info->num_cat; i++) {
+		const struct log_info_cat *c = &osmo_log_info->cat[i];
+		log_cache_update(i, c->enabled, c->loglevel);
+	}
+#endif
+
 	return target;
 }
 
@@ -1393,6 +1498,31 @@ int log_targets_reopen(void)
 	return rc;
 }
 
+/*! Enable the log level lookup cache to bypass string formatting and other code for log statements which are
+ *  not actually enabled/needed by any existing log target.
+ *  \retruns 0 in case of success, negative -errno in case of error. */
+int log_cache_enable(void)
+{
+#if !defined(EMBEDDED)
+	if (log_level_lookup_cache)
+		return -EEXIST;
+
+	log_level_lookup_cache = talloc_zero_array(osmo_log_info, uint8_t, osmo_log_info->num_cat);
+	if (!log_level_lookup_cache)
+		return -ENOMEM;
+
+	/* copy everything for level lookup cache */
+	log_tgt_mutex_lock();
+	log_cache_update_all();
+	log_tgt_mutex_unlock();
+
+	return 0;
+#else
+	return -ENOTSUP;
+#endif
+}
+
+
 /*! Initialize the Osmocom logging core
  *  \param[in] inf Information regarding logging categories, could be NULL
  *  \param[in] ctx talloc context for logging allocations
@@ -1485,6 +1615,11 @@ int log_check_level(int subsys, unsigned int level)
 	assert_loginfo(__func__);
 
 	subsys = map_subsys(subsys);
+
+#if !defined(EMBEDDED)
+	if (!log_cache_check(subsys, level))
+		return 0;
+#endif
 
 	/* TODO: The following could/should be cached (update on config) */
 
