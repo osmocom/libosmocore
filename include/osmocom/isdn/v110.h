@@ -39,6 +39,13 @@ enum osmo_v100_sync_ra1_rate {
 	_NUM_OSMO_V110_SYNC_RA1
 };
 
+extern const ubit_t osmo_v110_e1e2e3[_NUM_OSMO_V110_SYNC_RA1][3];
+
+#define osmo_v110_e1e2e3_set(e_bits, rate) \
+	memcpy(e_bits, osmo_v110_e1e2e3[rate], 3)
+#define osmo_v110_e1e2e3_cmp(e_bits, rate) \
+	memcmp(e_bits, osmo_v110_e1e2e3[rate], 3)
+
 int osmo_v110_sync_ra1_get_user_data_chunk_bitlen(enum osmo_v100_sync_ra1_rate rate);
 int osmo_v110_sync_ra1_get_user_data_rate(enum osmo_v100_sync_ra1_rate rate);
 int osmo_v110_sync_ra1_get_intermediate_rate(enum osmo_v100_sync_ra1_rate rate);

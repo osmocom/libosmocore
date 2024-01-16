@@ -27,6 +27,7 @@ osmo_i460_ts_init;
 osmo_v110_decode_frame;
 osmo_v110_encode_frame;
 osmo_v110_ubit_dump;
+osmo_v110_e1e2e3;
 osmo_v110_sync_ra1_get_user_data_chunk_bitlen;
 osmo_v110_sync_ra1_get_user_data_rate;
 osmo_v110_sync_ra1_get_intermediate_rate;

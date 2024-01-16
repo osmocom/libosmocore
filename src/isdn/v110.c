@@ -143,6 +143,22 @@ void osmo_v110_ubit_dump(FILE *outf, const ubit_t *fr, size_t in_len)
 /* I actually couldn't find any reference as to the value of F(ill) bits */
 #define F 1
 
+/*! E1/E2/E3 bit values as per Table 5/V.110 */
+const ubit_t osmo_v110_e1e2e3[_NUM_OSMO_V110_SYNC_RA1][3] = {
+	[OSMO_V110_SYNC_RA1_600]	= { 1, 0, 0 },
+	[OSMO_V110_SYNC_RA1_1200]	= { 0, 1, 0 },
+	[OSMO_V110_SYNC_RA1_2400]	= { 1, 1, 0 },
+	[OSMO_V110_SYNC_RA1_4800]	= { 0, 1, 1 },
+	[OSMO_V110_SYNC_RA1_7200]	= { 1, 0, 1 },
+	[OSMO_V110_SYNC_RA1_9600]	= { 0, 1, 1 },
+	[OSMO_V110_SYNC_RA1_12000]	= { 0, 0, 1 },
+	[OSMO_V110_SYNC_RA1_14400]	= { 1, 0, 1 },
+	[OSMO_V110_SYNC_RA1_19200]	= { 0, 1, 1 },
+	[OSMO_V110_SYNC_RA1_24000]	= { 0, 0, 1 },
+	[OSMO_V110_SYNC_RA1_28800]	= { 1, 0, 1 },
+	[OSMO_V110_SYNC_RA1_38400]	= { 0, 1, 1 },
+};
+
 /*! Adapt from 6 synchronous 600bit/s input bits to a decoded V.110 frame.
  *  \param[out] fr caller-allocated output frame to which E+D bits are stored
  *  \param[in] d_in input user bits
@@ -154,9 +170,7 @@ static int v110_adapt_600_to_IR8000(struct osmo_v110_decoded_frame *fr, const ub
 		return -EINVAL;
 
 	/* Table 6a / V.110 */
-	fr->e_bits[0] = 1;
-	fr->e_bits[1] = 0;
-	fr->e_bits[2] = 0;
+	osmo_v110_e1e2e3_set(fr->e_bits, OSMO_V110_SYNC_RA1_600);
 	for (int i = 0; i < 6; i++)
 		memset(fr->d_bits + i*8, d_in[i], 8);
 
@@ -168,7 +182,7 @@ static int v110_adapt_IR8000_to_600(ubit_t *d_out, size_t out_len, const struct 
 	if (out_len < 6)
 		return -ENOSPC;
 
-	if (fr->e_bits[0] != 1 || fr->e_bits[1] != 0 || fr->e_bits[2] != 0)
+	if (osmo_v110_e1e2e3_cmp(fr->e_bits, OSMO_V110_SYNC_RA1_600))
 		return -EINVAL;
 
 	for (int i = 0; i < 6; i++) {
@@ -190,9 +204,7 @@ static int v110_adapt_1200_to_IR8000(struct osmo_v110_decoded_frame *fr, const u
 		return -EINVAL;
 
 	/* Table 6b / V.110 */
-	fr->e_bits[0] = 0;
-	fr->e_bits[1] = 1;
-	fr->e_bits[2] = 0;
+	osmo_v110_e1e2e3_set(fr->e_bits, OSMO_V110_SYNC_RA1_1200);
 	for (int i = 0; i < 12; i++)
 		memset(fr->d_bits + i*4, d_in[i], 4);
 
@@ -204,7 +216,7 @@ static int v110_adapt_IR8000_to_1200(ubit_t *d_out, size_t out_len, const struct
 	if (out_len < 12)
 		return -ENOSPC;
 
-	if (fr->e_bits[0] != 0 || fr->e_bits[1] != 1 || fr->e_bits[2] != 0)
+	if (osmo_v110_e1e2e3_cmp(fr->e_bits, OSMO_V110_SYNC_RA1_1200))
 		return -EINVAL;
 
 	for (int i = 0; i < 12; i++) {
@@ -226,9 +238,7 @@ static int v110_adapt_2400_to_IR8000(struct osmo_v110_decoded_frame *fr, const u
 		return -EINVAL;
 
 	/* Table 6c / V.110 */
-	fr->e_bits[0] = 1;
-	fr->e_bits[1] = 1;
-	fr->e_bits[2] = 0;
+	osmo_v110_e1e2e3_set(fr->e_bits, OSMO_V110_SYNC_RA1_2400);
 	for (int i = 0; i < 24; i++) {
 		fr->d_bits[i*2 + 0] = d_in[i];
 		fr->d_bits[i*2 + 1] = d_in[i];
@@ -243,7 +253,7 @@ static int v110_adapt_IR8000_to_2400(ubit_t *d_out, size_t out_len, const struct
 		return -ENOSPC;
 
 	/* Table 6c / V.110 */
-	if (fr->e_bits[0] != 1 || fr->e_bits[1] != 1 || fr->e_bits[2] != 0)
+	if (osmo_v110_e1e2e3_cmp(fr->e_bits, OSMO_V110_SYNC_RA1_2400))
 		return -EINVAL;
 
 	for (int i = 0; i < 24; i++) {
@@ -266,10 +276,8 @@ static int v110_adapt_Nx3600_to_IR(struct osmo_v110_decoded_frame *fr, const ubi
 	if (in_len != 36)
 		return -EINVAL;
 
-	/* Table 6d / V.110 */
-	fr->e_bits[0] = 1;
-	fr->e_bits[1] = 0;
-	fr->e_bits[2] = 1;
+	/* Table 6d / V.110 (7200 is one of Nx3600) */
+	osmo_v110_e1e2e3_set(fr->e_bits, OSMO_V110_SYNC_RA1_7200);
 
 	memcpy(fr->d_bits + d_idx, d_in + 0, 10); d_idx += 10;	/* D1..D10 */
 	memset(fr->d_bits + d_idx, F, 2); d_idx += 2;
@@ -297,7 +305,8 @@ static int v110_adapt_IR_to_Nx3600(ubit_t *d_out, size_t out_len, const struct o
 	if (out_len < 36)
 		return -ENOSPC;
 
-	if (fr->e_bits[0] != 1 || fr->e_bits[1] != 0 || fr->e_bits[2] != 1)
+	/* Table 6d / V.110 (7200 is one of Nx3600) */
+	if (osmo_v110_e1e2e3_cmp(fr->e_bits, OSMO_V110_SYNC_RA1_7200))
 		return -EINVAL;
 
 	memcpy(d_out + 0, fr->d_bits + d_idx, 10); d_idx += 10;	/* D1..D10 */
@@ -330,10 +339,8 @@ static int v110_adapt_Nx4800_to_IR(struct osmo_v110_decoded_frame *fr, const ubi
 	if (in_len != 48)
 		return -EINVAL;
 
-	/* Table 6e / V.110 */
-	fr->e_bits[0] = 0;
-	fr->e_bits[1] = 1;
-	fr->e_bits[2] = 1;
+	/* Table 6e / V.110 (4800 is one of Nx4800) */
+	osmo_v110_e1e2e3_set(fr->e_bits, OSMO_V110_SYNC_RA1_4800);
 
 	memcpy(fr->d_bits, d_in, 48);
 
@@ -345,7 +352,8 @@ static int v110_adapt_IR_to_Nx4800(ubit_t *d_out, size_t out_len, const struct o
 	if (out_len < 48)
 		return -ENOSPC;
 
-	if (fr->e_bits[0] != 0 || fr->e_bits[1] != 1 || fr->e_bits[2] != 1)
+	/* Table 6e / V.110 (4800 is one of Nx4800) */
+	if (osmo_v110_e1e2e3_cmp(fr->e_bits, OSMO_V110_SYNC_RA1_4800))
 		return -EINVAL;
 
 	memcpy(d_out, fr->d_bits, 48);
@@ -365,10 +373,8 @@ static int v110_adapt_Nx12000_to_IR(struct osmo_v110_decoded_frame *fr, const ub
 	if (in_len != 30)
 		return -EINVAL;
 
-	/* Table 6f / V.110 */
-	fr->e_bits[0] = 0;
-	fr->e_bits[1] = 0;
-	fr->e_bits[2] = 1;
+	/* Table 6f / V.110 (12000 is one of Nx12000) */
+	osmo_v110_e1e2e3_set(fr->e_bits, OSMO_V110_SYNC_RA1_12000);
 
 	memcpy(fr->d_bits + d_idx, d_in + 0, 10); d_idx += 10;	/* D1..D10 */
 	memset(fr->d_bits + d_idx, F, 2); d_idx += 2;
@@ -399,7 +405,8 @@ static int v110_adapt_IR_to_Nx12000(ubit_t *d_out, size_t out_len, const struct 
 	if (out_len < 30)
 		return -ENOSPC;
 
-	if (fr->e_bits[0] != 0 || fr->e_bits[1] != 0 || fr->e_bits[2] != 1)
+	/* Table 6f / V.110 (12000 is one of Nx12000) */
+	if (osmo_v110_e1e2e3_cmp(fr->e_bits, OSMO_V110_SYNC_RA1_12000))
 		return -EINVAL;
 
 	memcpy(d_out + 0, fr->d_bits + d_idx, 10); d_idx += 10;	/* D1..D10 */
