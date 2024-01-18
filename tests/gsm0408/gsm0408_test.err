@@ -1,3 +1,6 @@
+Incorrect encoded result of CSD 2400/V.22bis/transparent:
+ should: 07 a2 b8 81 21 13 43 83 
+ is:     07 a2 88 81 21 13 43 83 
 Incorrect encoded result of Speech, without octet 3a:
  should: 01 a0 
  is:     02 20 80 

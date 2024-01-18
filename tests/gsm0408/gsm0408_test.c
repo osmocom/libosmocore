@@ -53,6 +53,50 @@ static const struct gsm_mncc_bearer_cap bcap_csd_9600_v110 = {
 	},
 };
 
+static const uint8_t csd_4800_rlp_lv[] = { 0x07, 0xa1, 0x88, 0x89, 0x21, 0x14, 0x63, 0xa0 };
+
+static const struct gsm_mncc_bearer_cap bcap_csd_4800_rlp = {
+	.transfer	= GSM48_BCAP_ITCAP_UNR_DIG_INF,
+	.mode		= GSM48_BCAP_TMOD_CIRCUIT,
+	.coding		= GSM48_BCAP_CODING_GSM_STD,
+	.radio		= GSM48_BCAP_RRQ_FR_ONLY,
+	.speech_ver[0]	= -1,
+	.data = {
+		.rate_adaption	= GSM48_BCAP_RA_V110_X30,
+		.sig_access	= GSM48_BCAP_SA_I440_I450,
+		.async		= 1,
+		.nr_stop_bits	= 1,
+		.nr_data_bits	= 8,
+		.user_rate	= GSM48_BCAP_UR_4800,
+		.parity		= GSM48_BCAP_PAR_NONE,
+		.interm_rate	= GSM48_BCAP_IR_16k,
+		.transp		= GSM48_BCAP_TR_RLP,
+		.modem_type	= GSM48_BCAP_MT_NONE,
+	},
+};
+
+static const uint8_t csd_2400_v22bis_lv[] = { 0x07, 0xa2, 0xb8, 0x81, 0x21, 0x13, 0x43, 0x83 };
+
+static const struct gsm_mncc_bearer_cap bcap_csd_2400_v22bis = {
+	.transfer	= GSM48_BCAP_ITCAP_3k1_AUDIO,
+	.mode		= GSM48_BCAP_TMOD_CIRCUIT,
+	.coding		= GSM48_BCAP_CODING_GSM_STD,
+	.radio		= GSM48_BCAP_RRQ_FR_ONLY,
+	.speech_ver[0]	= -1,
+	.data = {
+		.rate_adaption	= GSM48_BCAP_RA_NONE,
+		.sig_access	= GSM48_BCAP_SA_I440_I450,
+		.async		= 1,
+		.nr_stop_bits	= 1,
+		.nr_data_bits	= 8,
+		.user_rate	= GSM48_BCAP_UR_2400,
+		.parity		= GSM48_BCAP_PAR_NONE,
+		.interm_rate	= GSM48_BCAP_IR_8k,
+		.transp		= GSM48_BCAP_TR_TRANSP,
+		.modem_type	= GSM48_BCAP_MT_V22bis,
+	},
+};
+
 static const uint8_t speech_all_lv[] = { 0x06, 0x60, 0x04, 0x02, 0x00, 0x05, 0x81 };
 
 static const struct gsm_mncc_bearer_cap bcap_speech_all = {
@@ -86,6 +130,10 @@ struct bcap_test {
 
 static const struct bcap_test bcap_tests[] = {
 	{ csd_9600_v110_lv, &bcap_csd_9600_v110, "CSD 9600/V.110/transparent" },
+	{ csd_4800_rlp_lv, &bcap_csd_4800_rlp, "CSD 4800/RLP/non-transparent" },
+	{ /* XXX: this testcase is expected to fail because octet 4 is not represented in
+	   * 'struct gsm_mncc_bearer_cap' and the encoder unconditionally hard-codes it to 0x88. */
+	  csd_2400_v22bis_lv, &bcap_csd_2400_v22bis, "CSD 2400/V.22bis/transparent" },
 	{ speech_all_lv, &bcap_speech_all, "Speech, all codecs" },
 	{ speech_no3a_lv, &bcap_speech_no3a, "Speech, without octet 3a" },
 };
