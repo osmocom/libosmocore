@@ -34,32 +34,32 @@
 static const uint8_t csd_9600_v110_lv[] = { 0x07, 0xa1, 0x88, 0x89, 0x21, 0x15, 0x63, 0x80 };
 
 static const struct gsm_mncc_bearer_cap bcap_csd_9600_v110 = {
-	.transfer =	GSM48_BCAP_ITCAP_UNR_DIG_INF,
-	.mode =		GSM48_BCAP_TMOD_CIRCUIT,
-	.coding =	GSM48_BCAP_CODING_GSM_STD,
-	.radio =	GSM48_BCAP_RRQ_FR_ONLY,
-	.speech_ver[0]=	-1,
+	.transfer	= GSM48_BCAP_ITCAP_UNR_DIG_INF,
+	.mode		= GSM48_BCAP_TMOD_CIRCUIT,
+	.coding		= GSM48_BCAP_CODING_GSM_STD,
+	.radio		= GSM48_BCAP_RRQ_FR_ONLY,
+	.speech_ver[0]	= -1,
 	.data = {
-		.rate_adaption =	GSM48_BCAP_RA_V110_X30,
-		.sig_access =		GSM48_BCAP_SA_I440_I450,
-		.async =		1,
-		.nr_stop_bits =		1,
-		.nr_data_bits =		8,
-		.user_rate =		GSM48_BCAP_UR_9600,
-		.parity =		GSM48_BCAP_PAR_NONE,
-		.interm_rate =		GSM48_BCAP_IR_16k,
-		.transp =		GSM48_BCAP_TR_TRANSP,
-		.modem_type =		GSM48_BCAP_MT_NONE,
+		.rate_adaption	= GSM48_BCAP_RA_V110_X30,
+		.sig_access	= GSM48_BCAP_SA_I440_I450,
+		.async		= 1,
+		.nr_stop_bits	= 1,
+		.nr_data_bits	= 8,
+		.user_rate	= GSM48_BCAP_UR_9600,
+		.parity		= GSM48_BCAP_PAR_NONE,
+		.interm_rate	= GSM48_BCAP_IR_16k,
+		.transp		= GSM48_BCAP_TR_TRANSP,
+		.modem_type	= GSM48_BCAP_MT_NONE,
 	},
 };
 
 static const uint8_t speech_all_lv[] = { 0x06, 0x60, 0x04, 0x02, 0x00, 0x05, 0x81 };
 
 static const struct gsm_mncc_bearer_cap bcap_speech_all = {
-	.transfer =	GSM48_BCAP_ITCAP_SPEECH,
-	.mode =		GSM48_BCAP_TMOD_CIRCUIT,
-	.coding =	GSM48_BCAP_CODING_GSM_STD,
-	.radio =	GSM48_BCAP_RRQ_DUAL_FR,
+	.transfer	= GSM48_BCAP_ITCAP_SPEECH,
+	.mode		= GSM48_BCAP_TMOD_CIRCUIT,
+	.coding		= GSM48_BCAP_CODING_GSM_STD,
+	.radio		= GSM48_BCAP_RRQ_DUAL_FR,
 	.speech_ver = {
 		4, 2, 0, 5, 1, -1,
 	},
@@ -68,10 +68,10 @@ static const struct gsm_mncc_bearer_cap bcap_speech_all = {
 static const uint8_t speech_no3a_lv[] = { 0x01, 0xa0 };
 
 static const struct gsm_mncc_bearer_cap bcap_speech_no3a = {
-	.transfer =	GSM48_BCAP_ITCAP_SPEECH,
-	.mode =		GSM48_BCAP_TMOD_CIRCUIT,
-	.coding =	GSM48_BCAP_CODING_GSM_STD,
-	.radio =	GSM48_BCAP_RRQ_FR_ONLY,
+	.transfer	= GSM48_BCAP_ITCAP_SPEECH,
+	.mode		= GSM48_BCAP_TMOD_CIRCUIT,
+	.coding		= GSM48_BCAP_CODING_GSM_STD,
+	.radio		= GSM48_BCAP_RRQ_FR_ONLY,
 	.speech_ver = {
 		0, -1,
 	},
