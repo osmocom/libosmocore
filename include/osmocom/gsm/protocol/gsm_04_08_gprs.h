@@ -294,10 +294,11 @@ enum gsm48_pdp_state {
 	PDP_S_MODIFY_PENDING,
 };
 
-/* Table 10.5.155/3GPP TS 24.008 */
+/* TS 24.008 Table 10.5.155/3GPP */
 enum gsm48_pdp_type_org {
 	PDP_TYPE_ORG_ETSI		= 0x00,
 	PDP_TYPE_ORG_IETF		= 0x01,
+	PDP_TYPE_ORG_EMPTY		= 0x0f,
 };
 enum gsm48_pdp_type_nr {
 	PDP_TYPE_N_ETSI_RESERVED	= 0x00,
@@ -306,6 +307,39 @@ enum gsm48_pdp_type_nr {
 	PDP_TYPE_N_IETF_IPv6		= 0x57,
 	PDP_TYPE_N_IETF_IPv4v6		= 0x8D,
 };
+/* TS 24.008 10.5.6.4 "Packet data protocol address" value
+ * Note: This can be reused for 3GPP TS 29.060 7.7.27 "End User Address"
+ * with minor changes in the values, like spare being 1111 instead.
+*/
+struct gsm48_pdp_address {
+#if OSMO_IS_LITTLE_ENDIAN
+uint8_t organization:4, /* enum gsm48_pdp_type_org */
+	spare:4; /* 0000 */
+#elif OSMO_IS_BIG_ENDIAN
+/* auto-generated from the little endian part above (libosmocore/contrib/struct_endianness.py) */
+uint8_t spare:4, organization:4;
+#endif
+uint8_t type; /* enum gsm48_pdp_type_nr */
+	union {
+		/* PDP_TYPE_ORG_ETSI */
+		union {
+		} etsi;
+		/* PDP_TYPE_ORG_IETF */
+		union {
+			/* PDP_TYPE_N_IETF_IPv4 */
+			uint32_t v4;
+
+			/* PDP_TYPE_N_IETF_IPv6 */
+			uint8_t v6[16];
+
+			/* PDP_TYPE_N_IETF_IPv4v6 */
+			struct {
+				uint32_t v4;
+				uint8_t v6[16];
+			} __attribute__ ((packed)) v4v6;
+		} ietf;
+	};
+} __attribute__ ((packed));
 
 /* Figure 10.5.138/24.008 / Chapter 10.5.6.5 */
 enum gsm48_qos_reliab_class {
