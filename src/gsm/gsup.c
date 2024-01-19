@@ -150,6 +150,8 @@ static int decode_pdp_info(uint8_t *data, size_t data_len,
 			break;
 
 		case OSMO_GSUP_PDP_TYPE_IE:
+			if (value_len < 2)
+				return -GMM_CAUSE_PROTO_ERR_UNSPEC;
 			pdp_info->pdp_type =
 				osmo_decode_big_endian(value, value_len) & 0x0fff;
 			break;
