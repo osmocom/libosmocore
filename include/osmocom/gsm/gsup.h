@@ -37,11 +37,13 @@
  *
  */
 #pragma once
+#if (!EMBEDDED)
 
 #include <stdint.h>
 #include <osmocom/core/msgb.h>
 #include <osmocom/core/defs.h>
 #include <osmocom/core/endian.h>
+#include <osmocom/core/socket.h>
 #include <osmocom/gsm/gsup_sms.h>
 #include <osmocom/gsm/protocol/gsm_23_003.h>
 #include <osmocom/gsm/protocol/gsm_03_40.h>
@@ -60,8 +62,6 @@
 #define OSMO_GSUP_MAX_MSISDN_LEN		9
 #define OSMO_GSUP_MAX_CALLED_PARTY_BCD_LEN	43 /* TS 24.008 10.5.4.7 */
 
-#define OSMO_GSUP_PDP_TYPE_SIZE			2
-
 /*! Information Element Identifiers for GSUP IEs */
 enum osmo_gsup_iei {
 	OSMO_GSUP_IMSI_IE			= 0x01,
@@ -75,7 +75,8 @@ enum osmo_gsup_iei {
 	OSMO_GSUP_HLR_NUMBER_IE			= 0x09,
 	OSMO_GSUP_MESSAGE_CLASS_IE		= 0x0a,
 	OSMO_GSUP_PDP_CONTEXT_ID_IE		= 0x10,
-	OSMO_GSUP_PDP_TYPE_IE			= 0x11,
+	OSMO_GSUP_PDP_ADDRESS_IE		= 0x11,
+#define OSMO_GSUP_PDP_TYPE_IE			OSMO_GSUP_PDP_ADDRESS_IE /* Backward compat */
 	OSMO_GSUP_ACCESS_POINT_NAME_IE		= 0x12,
 	OSMO_GSUP_PDP_QOS_IE			= 0x13,
 	OSMO_GSUP_CHARG_CHAR_IE			= 0x14,
@@ -275,6 +276,7 @@ struct osmo_gsup_pdp_info {
 #endif
 		};
 	};
+	struct osmo_sockaddr		pdp_address[2];
 	/*! APN information, still in encoded form. Can be NULL if no
 	 * APN information included */
 	const uint8_t			*apn_enc;
@@ -412,4 +414,5 @@ int osmo_gsup_encode(struct msgb *msg, const struct osmo_gsup_message *gsup_msg)
 int osmo_gsup_get_err_msg_type(enum osmo_gsup_message_type type_in)
 	OSMO_DEPRECATED("Use OSMO_GSUP_TO_MSGT_ERROR() instead");
 
+#endif /* (!EMBEDDED) */
 /*! @} */

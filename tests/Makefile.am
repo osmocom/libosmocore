@@ -20,7 +20,7 @@ check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
 		 comp128/comp128_test                         		\
 		 bitvec/bitvec_test msgb/msgb_test bits/bitcomp_test	\
 		 bits/bitfield_test					\
-		 tlv/tlv_test gsup/gsup_test oap/oap_test		\
+		 tlv/tlv_test oap/oap_test				\
 		 write_queue/wqueue_test socket/socket_test		\
 		 coding/coding_test conv/conv_gsm0503_test		\
 		 abis/abis_test endian/endian_test sercomm/sercomm_test	\
@@ -87,9 +87,11 @@ endif
 
 if !EMBEDDED
 check_PROGRAMS += \
+	gsup/gsup_test \
 	stats/stats_test \
 	stats/stats_vty_test \
-	exec/exec_test
+	exec/exec_test \
+	$(NULL)
 endif
 
 if ENABLE_GB
@@ -647,9 +649,11 @@ endif
 		>$(srcdir)/timer/clk_override_test.ok
 	tlv/tlv_test \
 		>$(srcdir)/tlv/tlv_test.ok
+if !EMBEDDED
 	gsup/gsup_test \
 		>$(srcdir)/gsup/gsup_test.ok \
 		2>$(srcdir)/gsup/gsup_test.err
+endif
 if ENABLE_CTRL
 	fsm/fsm_test \
 		>$(srcdir)/fsm/fsm_test.ok \

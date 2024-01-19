@@ -126,6 +126,62 @@ int osmo_gsup_get_err_msg_type(enum osmo_gsup_message_type type_in)
 	return OSMO_GSUP_TO_MSGT_ERROR(type_in);
 }
 
+static int decode_pdp_address(const uint8_t *data, size_t data_len, struct osmo_gsup_pdp_info *pdp_info)
+{
+	const struct gsm48_pdp_address *pdp_addr = (const struct gsm48_pdp_address *)data;
+	/* Explicitly pre-nitialize them to AF_UNSPEC to signal they are empty: */
+	pdp_info->pdp_address[0].u.sa.sa_family = AF_UNSPEC;
+	pdp_info->pdp_address[1].u.sa.sa_family = AF_UNSPEC;
+
+	if (data_len < 2)
+		return -GMM_CAUSE_PROTO_ERR_UNSPEC;
+
+	pdp_info->pdp_type_org = pdp_addr->organization;
+	pdp_info->pdp_type_nr = pdp_addr->type;
+
+	if (pdp_info->pdp_type_org != PDP_TYPE_ORG_IETF)
+		return -GMM_CAUSE_PROTO_ERR_UNSPEC;
+
+	/* Skip type-org + type-nr for easy calculations below: */
+	data_len -= 2;
+
+	switch (pdp_info->pdp_type_nr) {
+	case PDP_TYPE_N_IETF_IPv4:
+		if (data_len == 0)
+			return 0; /* empty, marked as AF_UNSET. */
+		if (data_len != sizeof(pdp_addr->ietf.v4))
+			return -GMM_CAUSE_PROTO_ERR_UNSPEC;
+		pdp_info->pdp_address[0].u.sa.sa_family = AF_INET;
+		pdp_info->pdp_address[0].u.sin.sin_addr.s_addr = pdp_addr->ietf.v4;
+		return 0;
+	case PDP_TYPE_N_IETF_IPv6:
+		if (data_len == 0)
+			return 0; /* empty, marked as AF_UNSET. */
+		if (data_len != sizeof(pdp_addr->ietf.v6))
+			return -GMM_CAUSE_PROTO_ERR_UNSPEC;
+		pdp_info->pdp_address[0].u.sa.sa_family = AF_INET6;
+		memcpy(&pdp_info->pdp_address[0].u.sin6.sin6_addr,
+			pdp_addr->ietf.v6,
+			sizeof(pdp_addr->ietf.v6));
+		return 0;
+	case PDP_TYPE_N_IETF_IPv4v6:
+		if (data_len == 0)
+			return 0; /* empty, marked as AF_UNSET. */
+		if (data_len != sizeof(pdp_addr->ietf.v4v6))
+			return -GMM_CAUSE_PROTO_ERR_UNSPEC;
+		pdp_info->pdp_address[0].u.sa.sa_family = AF_INET;
+		pdp_info->pdp_address[0].u.sin.sin_addr.s_addr = pdp_addr->ietf.v4v6.v4;
+		pdp_info->pdp_address[1].u.sa.sa_family = AF_INET6;
+		memcpy(&pdp_info->pdp_address[1].u.sin6.sin6_addr,
+			pdp_addr->ietf.v4v6.v6,
+			sizeof(pdp_addr->ietf.v4v6.v6));
+		return 0;
+	default:
+		/* reserved, both pdp_info->pdp_address are preinitialied to AF_UNSET. */
+		return 0;
+	}
+}
+
 static int decode_pdp_info(uint8_t *data, size_t data_len,
 			  struct osmo_gsup_pdp_info *pdp_info)
 {
@@ -149,11 +205,9 @@ static int decode_pdp_info(uint8_t *data, size_t data_len,
 			pdp_info->context_id = osmo_decode_big_endian(value, value_len);
 			break;
 
-		case OSMO_GSUP_PDP_TYPE_IE:
-			if (value_len < 2)
-				return -GMM_CAUSE_PROTO_ERR_UNSPEC;
-			pdp_info->pdp_type_org = value[0] & 0x0f;
-			pdp_info->pdp_type_nr = value[1];
+		case OSMO_GSUP_PDP_ADDRESS_IE:
+			if ((rc = decode_pdp_address(value, value_len, pdp_info)) < 0)
+				return rc;
 			break;
 
 		case OSMO_GSUP_ACCESS_POINT_NAME_IE:
@@ -359,7 +413,7 @@ int osmo_gsup_decode(const uint8_t *const_data, size_t data_len,
 
 		switch (iei) {
 		case OSMO_GSUP_IMSI_IE:
-		case OSMO_GSUP_PDP_TYPE_IE:
+		case OSMO_GSUP_PDP_ADDRESS_IE:
 		case OSMO_GSUP_ACCESS_POINT_NAME_IE:
 		case OSMO_GSUP_SRES_IE:
 		case OSMO_GSUP_KC_IE:
@@ -605,12 +659,42 @@ static void encode_pdp_info(struct msgb *msg, enum osmo_gsup_iei iei,
 
 	if (pdp_info->pdp_type_org == PDP_TYPE_ORG_IETF) {
 		struct gsm48_pdp_address pdp_addr;
+		uint8_t pdp_addr_len = 2;
 		pdp_addr.spare = 0x0f;
 		pdp_addr.organization = pdp_info->pdp_type_org;
 		pdp_addr.type = pdp_info->pdp_type_nr;
 
-		msgb_tlv_put(msg, OSMO_GSUP_PDP_TYPE_IE,
-			     OSMO_GSUP_PDP_TYPE_SIZE,
+		switch (pdp_info->pdp_type_nr) {
+		case PDP_TYPE_N_IETF_IPv4:
+			if (pdp_info->pdp_address[0].u.sa.sa_family == AF_INET) {
+				pdp_addr.ietf.v4 = pdp_info->pdp_address[0].u.sin.sin_addr.s_addr;
+				pdp_addr_len += sizeof(pdp_addr.ietf.v4);
+			}
+			break;
+		case PDP_TYPE_N_IETF_IPv6:
+			if (pdp_info->pdp_address[0].u.sa.sa_family == AF_INET6) {
+				memcpy(pdp_addr.ietf.v6,
+				       &pdp_info->pdp_address[0].u.sin6.sin6_addr,
+				       sizeof(pdp_addr.ietf.v6));
+				pdp_addr_len += sizeof(pdp_addr.ietf.v6);
+			}
+			break;
+		case PDP_TYPE_N_IETF_IPv4v6:
+			if (pdp_info->pdp_address[0].u.sa.sa_family == AF_INET) {
+				pdp_addr.ietf.v4v6.v4 = pdp_info->pdp_address[0].u.sin.sin_addr.s_addr;
+				pdp_addr_len += sizeof(pdp_addr.ietf.v4v6.v4);
+			}
+			if (pdp_info->pdp_address[0].u.sa.sa_family == AF_INET6) {
+				memcpy(pdp_addr.ietf.v4v6.v6,
+				       &pdp_info->pdp_address[1].u.sin6.sin6_addr,
+				       sizeof(pdp_addr.ietf.v4v6.v6));
+				pdp_addr_len += sizeof(pdp_addr.ietf.v4v6.v6);
+			}
+			break;
+		}
+
+		msgb_tlv_put(msg, OSMO_GSUP_PDP_ADDRESS_IE,
+			     pdp_addr_len,
 			     (const uint8_t *)&pdp_addr);
 	}
 
