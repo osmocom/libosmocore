@@ -16,3 +16,4 @@ isdn		ABI change		add states and flags for external T200 handling
 isdn      ADD				initial implementation of the V.110 Terminal Adapter
 gsm		ABI change		add T200 timer states to lapdm_datalink
 gsm		ABI change		add UI queue to struct lapdm_datalink
+gsm		ADD			gsup.h: struct osmo_gsup_pdp_info fields pdp_type_nr, pdp_type_org, deprecate pdp_type.

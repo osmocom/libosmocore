@@ -40,6 +40,8 @@
 
 #include <stdint.h>
 #include <osmocom/core/msgb.h>
+#include <osmocom/core/defs.h>
+#include <osmocom/core/endian.h>
 #include <osmocom/gsm/gsup_sms.h>
 #include <osmocom/gsm/protocol/gsm_23_003.h>
 #include <osmocom/gsm/protocol/gsm_03_40.h>
@@ -260,8 +262,19 @@ osmo_gsup_session_state_name(enum osmo_gsup_session_state val)
 struct osmo_gsup_pdp_info {
 	unsigned int			context_id;
 	int				have_info;
-	/*! Type of PDP context */
-	uint16_t			pdp_type;
+	/*! Type of PDP context, 3GPP TS 29.060, 7.7.27 */
+	union {
+		uint16_t pdp_type OSMO_DEPRECATED("use pdp_type_org and pdp_type_nr instead");
+		struct {
+#if OSMO_IS_LITTLE_ENDIAN
+			uint8_t	pdp_type_nr; /* enum gsm48_pdp_type_nr */
+			uint8_t	pdp_type_org; /* enum gsm48_pdp_type_org */
+#elif OSMO_IS_BIG_ENDIAN
+			uint8_t	pdp_type_org; /* enum gsm48_pdp_type_org */
+			uint8_t	pdp_type_nr; /* enum gsm48_pdp_type_nr */
+#endif
+		};
+	};
 	/*! APN information, still in encoded form. Can be NULL if no
 	 * APN information included */
 	const uint8_t			*apn_enc;

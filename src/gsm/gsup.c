@@ -152,8 +152,8 @@ static int decode_pdp_info(uint8_t *data, size_t data_len,
 		case OSMO_GSUP_PDP_TYPE_IE:
 			if (value_len < 2)
 				return -GMM_CAUSE_PROTO_ERR_UNSPEC;
-			pdp_info->pdp_type =
-				osmo_decode_big_endian(value, value_len) & 0x0fff;
+			pdp_info->pdp_type_org = value[0] & 0x0f;
+			pdp_info->pdp_type_nr = value[1];
 			break;
 
 		case OSMO_GSUP_ACCESS_POINT_NAME_IE:
@@ -603,11 +603,15 @@ static void encode_pdp_info(struct msgb *msg, enum osmo_gsup_iei iei,
 	u8 = pdp_info->context_id;
 	msgb_tlv_put(msg, OSMO_GSUP_PDP_CONTEXT_ID_IE, sizeof(u8), &u8);
 
-	if (pdp_info->pdp_type) {
+	if (pdp_info->pdp_type_org == PDP_TYPE_ORG_IETF) {
+		struct gsm48_pdp_address pdp_addr;
+		pdp_addr.spare = 0x0f;
+		pdp_addr.organization = pdp_info->pdp_type_org;
+		pdp_addr.type = pdp_info->pdp_type_nr;
+
 		msgb_tlv_put(msg, OSMO_GSUP_PDP_TYPE_IE,
 			     OSMO_GSUP_PDP_TYPE_SIZE,
-			     osmo_encode_big_endian(pdp_info->pdp_type | 0xf000,
-					       OSMO_GSUP_PDP_TYPE_SIZE));
+			     (const uint8_t *)&pdp_addr);
 	}
 
 	if (pdp_info->apn_enc) {
