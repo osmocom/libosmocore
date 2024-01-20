@@ -247,12 +247,15 @@ static void v110_ta_build_frame(const struct osmo_v110_ta *ta,
 	}
 }
 
-static void v110_ta_flags_updated(const struct osmo_v110_ta *ta)
+static void v110_ta_flags_update(struct osmo_v110_ta *ta, unsigned int v24_flags)
 {
-	const struct osmo_v110_ta_cfg *cfg = ta->cfg;
+	struct osmo_v110_ta_cfg *cfg = ta->cfg;
 
+	if (ta->state.v24_flags == v24_flags)
+		return;
 	if (cfg->status_update_cb != NULL)
-		cfg->status_update_cb(cfg->priv, ta->state.v24_flags);
+		cfg->status_update_cb(cfg->priv, v24_flags);
+	ta->state.v24_flags = v24_flags;
 }
 
 static const struct osmo_tdef_state_timeout v110_ta_fsm_timeouts[32] = {
@@ -272,6 +275,7 @@ static void v110_ta_fsm_idle_ready_onenter(struct osmo_fsm_inst *fi, uint32_t pr
 {
 	struct osmo_v110_ta *ta = (struct osmo_v110_ta *)fi->priv;
 	struct v110_ta_state *ts = &ta->state;
+	unsigned int v24_flags = ta->state.v24_flags;
 
 	/* 7.1.1.2 During the idle (or ready) state the TA will transmit continuous binary 1s into the B-channel */
 	ts->tx.d_bit_mode = V110_TA_DBIT_M_ALL_ONE; /* circuit 103: continuous binary '1' */
@@ -282,10 +286,10 @@ static void v110_ta_fsm_idle_ready_onenter(struct osmo_fsm_inst *fi, uint32_t pr
 	/* - circuit 104: continuous binary '1' */
 	ts->rx.d_bit_mode = V110_TA_DBIT_M_ALL_ONE;
 	/* - circuits 107, 106, 109 = OFF */
-	V24_FLAGMASK_SET_OFF(ts->v24_flags, OSMO_V110_TA_C_106);
-	V24_FLAGMASK_SET_OFF(ts->v24_flags, OSMO_V110_TA_C_107);
-	V24_FLAGMASK_SET_OFF(ts->v24_flags, OSMO_V110_TA_C_109);
-	v110_ta_flags_updated(ta);
+	V24_FLAGMASK_SET_OFF(v24_flags, OSMO_V110_TA_C_106);
+	V24_FLAGMASK_SET_OFF(v24_flags, OSMO_V110_TA_C_107);
+	V24_FLAGMASK_SET_OFF(v24_flags, OSMO_V110_TA_C_109);
+	v110_ta_flags_update(ta, v24_flags);
 }
 
 /* ITU-T V.110 Section 7.1.1 */
@@ -354,24 +358,25 @@ static void v110_ta_fsm_connect_ta_to_line(struct osmo_fsm_inst *fi, uint32_t ev
 	case V110_TA_EV_RX_FRAME_IND:
 	{
 		const struct osmo_v110_decoded_frame *df = data;
+		unsigned int v24_flags = ta->state.v24_flags;
 
 		/* 7.1.2.4 When the receiver recognizes that the status of bits S and X are ON */
 		if (v110_df_s_bits_are(df, V110_SX_BIT_ON) &&
 		    v110_df_x_bits_are(df, V110_SX_BIT_ON)) {
 			/* ... it will perform the following functions: */
 			/*  a) Turn ON circuit 107 toward the DTE and stop timer T1 */
-			V24_FLAGMASK_SET_ON(ts->v24_flags, OSMO_V110_TA_C_107);
+			V24_FLAGMASK_SET_ON(v24_flags, OSMO_V110_TA_C_107);
 			osmo_timer_del(&fi->timer);
 			/*  b) Then, circuit 103 may be connected to the data bits in the frame; however, the
 			 *  DTE must maintain a binary 1 condition on circuit 103 until circuit 106 is turned
 			 *  ON in the next portion of the sequence. */
 			/*  c) Turn ON circuit 109 and connect the data bits to circuit 104. */
-			V24_FLAGMASK_SET_ON(ts->v24_flags, OSMO_V110_TA_C_109);
+			V24_FLAGMASK_SET_ON(v24_flags, OSMO_V110_TA_C_109);
 			ts->rx.d_bit_mode = V110_TA_DBIT_M_FORWARD;
 			/*  d) After an interval of N bits (see 6.3), it will turn ON circuit 106. */
-			V24_FLAGMASK_SET_ON(ts->v24_flags, OSMO_V110_TA_C_106);
+			V24_FLAGMASK_SET_ON(v24_flags, OSMO_V110_TA_C_106);
 			ts->tx.d_bit_mode = V110_TA_DBIT_M_FORWARD;
-			v110_ta_flags_updated(ta);
+			v110_ta_flags_update(ta, v24_flags);
 			/*  Circuit 106 transitioning from OFF to ON will cause the transmitted data to
 			 *  transition from binary 1 to the data mode. */
 			v110_ta_fsm_state_chg(V110_TA_ST_DATA_TRANSFER);
@@ -396,13 +401,14 @@ static void v110_ta_fsm_data_transfer_onenter(struct osmo_fsm_inst *fi, uint32_t
 {
 	struct osmo_v110_ta *ta = (struct osmo_v110_ta *)fi->priv;
 	struct v110_ta_state *ts = &ta->state;
+	unsigned int v24_flags = ta->state.v24_flags;
 
 	/* 7.1.3.1 While in the data transfer state, the following circuit conditions exist:
 	 *  a): 105, 107, 108, and 109 are in the ON condition */
 	/* XXX: OSMO_ASSERT(V24_FLAGMASK_IS_ON(ts->v24_flags, OSMO_V110_TA_C_105)); */
-	V24_FLAGMASK_SET_ON(ts->v24_flags, OSMO_V110_TA_C_107);
+	V24_FLAGMASK_SET_ON(v24_flags, OSMO_V110_TA_C_107);
 	/* XXX: OSMO_ASSERT(V24_FLAGMASK_IS_ON(ts->v24_flags, OSMO_V110_TA_C_108)); */
-	V24_FLAGMASK_SET_ON(ts->v24_flags, OSMO_V110_TA_C_109);
+	V24_FLAGMASK_SET_ON(v24_flags, OSMO_V110_TA_C_109);
 	/*  b) data is being transmitted on circuit 103 and received on circuit 104 */
 	ts->rx.d_bit_mode = V110_TA_DBIT_M_FORWARD;
 	ts->tx.d_bit_mode = V110_TA_DBIT_M_FORWARD;
@@ -410,9 +416,9 @@ static void v110_ta_fsm_data_transfer_onenter(struct osmo_fsm_inst *fi, uint32_t
 	 *  flow control is being used, either or both circuits may be in the ON or the OFF condition. */
 	if (!ta->cfg->flow_ctrl.end_to_end) {
 		/* XXX: OSMO_ASSERT(V24_FLAGMASK_IS_ON(ts->v24_flags, OSMO_V110_TA_C_133)); */
-		V24_FLAGMASK_SET_ON(ts->v24_flags, OSMO_V110_TA_C_106);
+		V24_FLAGMASK_SET_ON(v24_flags, OSMO_V110_TA_C_106);
 	}
-	v110_ta_flags_updated(ta);
+	v110_ta_flags_update(ta, v24_flags);
 
 	/* 7.1.3.2 While in the data transfer state, the following status bit conditions exist: */
 	/*  a) status bits S in both directions are in the ON condition; */
@@ -453,14 +459,15 @@ static void v110_ta_fsm_data_transfer(struct osmo_fsm_inst *fi, uint32_t event, 
 	case V110_TA_EV_RX_FRAME_IND:
 	{
 		const struct osmo_v110_decoded_frame *df = data;
+		unsigned int v24_flags = ta->state.v24_flags;
 
 		/* 7.1.4.2 ... this TA will recognize the transition of the status bits S from
 		 * ON to OFF and the data bits from data to binary 0 as a disconnect request */
 		if (v110_df_s_bits_are(df, V110_SX_BIT_OFF) && v110_df_d_bits_are(df, 0)) {
 			/* ... and it will turn OFF circuits 107 and 109. */
-			V24_FLAGMASK_SET_OFF(ts->v24_flags, OSMO_V110_TA_C_107);
-			V24_FLAGMASK_SET_OFF(ts->v24_flags, OSMO_V110_TA_C_109);
-			v110_ta_flags_updated(ta);
+			V24_FLAGMASK_SET_OFF(v24_flags, OSMO_V110_TA_C_107);
+			V24_FLAGMASK_SET_OFF(v24_flags, OSMO_V110_TA_C_109);
+			v110_ta_flags_update(ta, v24_flags);
 			/* DTE should respond by turning OFF circuit 108 */
 			break; /* XXX: shall we forward D-bits to DTE anyway? */
 		}
@@ -478,14 +485,15 @@ static void v110_ta_fsm_disconnect_onenter(struct osmo_fsm_inst *fi, uint32_t pr
 {
 	struct osmo_v110_ta *ta = (struct osmo_v110_ta *)fi->priv;
 	struct v110_ta_state *ts = &ta->state;
+	unsigned int v24_flags = ta->state.v24_flags;
 
 	/* 7.1.4.1 At the completion of the data transfer phase, the local DTE will indicate a
 	 * disconnect request by turning OFF circuit 108. This will cause the following to occur: */
 	/*  a) the status bits S in the frame toward ISDN will turn OFF, status bits X are kept ON */
 	ts->tx.s_bits = V110_SX_BIT_OFF;
 	/*  b) circuit 106 will be turned OFF */
-	V24_FLAGMASK_SET_OFF(ts->v24_flags, OSMO_V110_TA_C_106);
-	v110_ta_flags_updated(ta);
+	V24_FLAGMASK_SET_OFF(v24_flags, OSMO_V110_TA_C_106);
+	v110_ta_flags_update(ta, v24_flags);
 	/*  c) the data bits in the frame will be set to binary 0. */
 	ts->tx.d_bit_mode = V110_TA_DBIT_M_ALL_ZERO;
 
@@ -554,6 +562,7 @@ static void v110_ta_fsm_resyncing(struct osmo_fsm_inst *fi, uint32_t event, void
 {
 	struct osmo_v110_ta *ta = (struct osmo_v110_ta *)fi->priv;
 	struct v110_ta_state *ts = &ta->state;
+	unsigned int v24_flags = ta->state.v24_flags;
 
 	switch (event) {
 	case V110_TA_EV_V24_STATUS_CHG:
@@ -575,8 +584,8 @@ static void v110_ta_fsm_resyncing(struct osmo_fsm_inst *fi, uint32_t event, void
 		ts->tx.x_bits = V110_SX_BIT_OFF;
 		ts->tx.d_bit_mode = V110_TA_DBIT_M_ALL_ZERO;
 		/* TODO: actually Tx those frames (delay state transition) */
-		V24_FLAGMASK_SET_OFF(ts->v24_flags, OSMO_V110_TA_C_107);
-		v110_ta_flags_updated(ta);
+		V24_FLAGMASK_SET_OFF(v24_flags, OSMO_V110_TA_C_107);
+		v110_ta_flags_update(ta, v24_flags);
 		v110_ta_fsm_state_chg(V110_TA_ST_DISCONNECTING);
 		break;
 	default:

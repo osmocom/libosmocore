@@ -2,7 +2,6 @@
 ==== Running test_idle_ready()
 DLGLOBAL DEBUG V110-TA(test_idle_ready){IDLE_READY}: Allocated
 DLGLOBAL DEBUG V110-TA(test_idle_ready){IDLE_READY}: State change to IDLE_READY (no timeout)
-v110_ta_test_status_update_cb(status=0x00000000)
 Initial status: 0x00000000
 circuit 106/CTS (Clear to Send) is OFF (expected to be OFF)
 circuit 107/DSR (Data Set Ready) is OFF (expected to be OFF)
@@ -29,7 +28,6 @@ osmo_v110_ta_set_circuit() returns 0
 setting circuit 108/DTR (Data Terminal Ready) OFF
 DLGLOBAL DEBUG V110-TA(test_idle_ready){CONNECT_TA_TO_LINE}: Received Event V24_STATUS_CHG
 DLGLOBAL DEBUG V110-TA(test_idle_ready){CONNECT_TA_TO_LINE}: State change to IDLE_READY (no timeout)
-v110_ta_test_status_update_cb(status=0x00000000)
 osmo_v110_ta_set_circuit() returns 0
 setting circuit 108/DTR (Data Terminal Ready) ON
 DLGLOBAL DEBUG V110-TA(test_idle_ready){IDLE_READY}: Received Event V24_STATUS_CHG
@@ -40,7 +38,6 @@ DLGLOBAL DEBUG V110-TA(test_idle_ready){CONNECT_TA_TO_LINE}: Deallocated
 ==== Running test_conn_ta_line()
 DLGLOBAL DEBUG V110-TA(test_conn_ta_line){IDLE_READY}: Allocated
 DLGLOBAL DEBUG V110-TA(test_conn_ta_line){IDLE_READY}: State change to IDLE_READY (no timeout)
-v110_ta_test_status_update_cb(status=0x00000000)
 setting circuit 108/DTR (Data Terminal Ready) ON
 DLGLOBAL DEBUG V110-TA(test_conn_ta_line){IDLE_READY}: Received Event V24_STATUS_CHG
 DLGLOBAL DEBUG V110-TA(test_conn_ta_line){IDLE_READY}: State change to CONNECT_TA_TO_LINE (T1, 10s)
@@ -79,7 +76,6 @@ osmo_v110_ta_frame_in(): S-/X-bits are ON, expect state change
 DLGLOBAL DEBUG V110-TA(test_conn_ta_line){CONNECT_TA_TO_LINE}: Received Event RX_FRAME_IND
 v110_ta_test_status_update_cb(status=0x0000001e)
 DLGLOBAL DEBUG V110-TA(test_conn_ta_line){CONNECT_TA_TO_LINE}: State change to DATA_TRANSFER (no timeout)
-v110_ta_test_status_update_cb(status=0x0000001e)
 v110_ta_test_rx_cb(buf_size=48): 010101010101010101010101010101010101010101010101
 osmo_v110_ta_frame_in() returns 0
 DLGLOBAL DEBUG V110-TA(test_conn_ta_line){DATA_TRANSFER}: Deallocated
@@ -87,7 +83,6 @@ DLGLOBAL DEBUG V110-TA(test_conn_ta_line){DATA_TRANSFER}: Deallocated
 ==== Running test_data_transfer()
 DLGLOBAL DEBUG V110-TA(test_data_transfer){IDLE_READY}: Allocated
 DLGLOBAL DEBUG V110-TA(test_data_transfer){IDLE_READY}: State change to IDLE_READY (no timeout)
-v110_ta_test_status_update_cb(status=0x00000000)
 setting circuit 108/DTR (Data Terminal Ready) ON
 DLGLOBAL DEBUG V110-TA(test_data_transfer){IDLE_READY}: Received Event V24_STATUS_CHG
 DLGLOBAL DEBUG V110-TA(test_data_transfer){IDLE_READY}: State change to CONNECT_TA_TO_LINE (T1, 10s)
@@ -102,7 +97,6 @@ osmo_v110_ta_frame_in(): S-/X-bits are ON, expect state change
 DLGLOBAL DEBUG V110-TA(test_data_transfer){CONNECT_TA_TO_LINE}: Received Event RX_FRAME_IND
 v110_ta_test_status_update_cb(status=0x0000001e)
 DLGLOBAL DEBUG V110-TA(test_data_transfer){CONNECT_TA_TO_LINE}: State change to DATA_TRANSFER (no timeout)
-v110_ta_test_status_update_cb(status=0x0000001e)
 v110_ta_test_rx_cb(buf_size=48): 010101010101010101010101010101010101010101010101
 osmo_v110_ta_frame_in() returns 0
 circuit 106/CTS (Clear to Send) is ON (expected to be ON)
@@ -127,7 +121,6 @@ DLGLOBAL DEBUG V110-TA(test_data_transfer){DATA_TRANSFER}: Deallocated
 ==== Running test_data_transfer_disc_local()
 DLGLOBAL DEBUG V110-TA(test_data_transfer_disc_local){IDLE_READY}: Allocated
 DLGLOBAL DEBUG V110-TA(test_data_transfer_disc_local){IDLE_READY}: State change to IDLE_READY (no timeout)
-v110_ta_test_status_update_cb(status=0x00000000)
 setting circuit 108/DTR (Data Terminal Ready) ON
 DLGLOBAL DEBUG V110-TA(test_data_transfer_disc_local){IDLE_READY}: Received Event V24_STATUS_CHG
 DLGLOBAL DEBUG V110-TA(test_data_transfer_disc_local){IDLE_READY}: State change to CONNECT_TA_TO_LINE (T1, 10s)
@@ -142,7 +135,6 @@ osmo_v110_ta_frame_in(): S-/X-bits are ON, expect state change
 DLGLOBAL DEBUG V110-TA(test_data_transfer_disc_local){CONNECT_TA_TO_LINE}: Received Event RX_FRAME_IND
 v110_ta_test_status_update_cb(status=0x0000001e)
 DLGLOBAL DEBUG V110-TA(test_data_transfer_disc_local){CONNECT_TA_TO_LINE}: State change to DATA_TRANSFER (no timeout)
-v110_ta_test_status_update_cb(status=0x0000001e)
 v110_ta_test_rx_cb(buf_size=48): 010101010101010101010101010101010101010101010101
 osmo_v110_ta_frame_in() returns 0
 local TE initiates disconnection
@@ -189,7 +181,6 @@ DLGLOBAL DEBUG V110-TA(test_data_transfer_disc_local){IDLE_READY}: Deallocated
 ==== Running test_data_transfer_disc_remote()
 DLGLOBAL DEBUG V110-TA(test_data_transfer_disc_remote){IDLE_READY}: Allocated
 DLGLOBAL DEBUG V110-TA(test_data_transfer_disc_remote){IDLE_READY}: State change to IDLE_READY (no timeout)
-v110_ta_test_status_update_cb(status=0x00000000)
 setting circuit 108/DTR (Data Terminal Ready) ON
 DLGLOBAL DEBUG V110-TA(test_data_transfer_disc_remote){IDLE_READY}: Received Event V24_STATUS_CHG
 DLGLOBAL DEBUG V110-TA(test_data_transfer_disc_remote){IDLE_READY}: State change to CONNECT_TA_TO_LINE (T1, 10s)
@@ -204,7 +195,6 @@ osmo_v110_ta_frame_in(): S-/X-bits are ON, expect state change
 DLGLOBAL DEBUG V110-TA(test_data_transfer_disc_remote){CONNECT_TA_TO_LINE}: Received Event RX_FRAME_IND
 v110_ta_test_status_update_cb(status=0x0000001e)
 DLGLOBAL DEBUG V110-TA(test_data_transfer_disc_remote){CONNECT_TA_TO_LINE}: State change to DATA_TRANSFER (no timeout)
-v110_ta_test_status_update_cb(status=0x0000001e)
 v110_ta_test_rx_cb(buf_size=48): 010101010101010101010101010101010101010101010101
 osmo_v110_ta_frame_in() returns 0
 remote TE initiates disconnection
@@ -227,7 +217,6 @@ v110_ta_test_status_update_cb(status=0x00000000)
 osmo_v110_ta_set_circuit() returns 0
 DLGLOBAL DEBUG V110-TA(test_data_transfer_disc_remote){DISCONNECTING}: Received Event DESYNC_IND
 DLGLOBAL DEBUG V110-TA(test_data_transfer_disc_remote){DISCONNECTING}: State change to IDLE_READY (no timeout)
-v110_ta_test_status_update_cb(status=0x00000000)
 circuit 106/CTS (Clear to Send) is OFF (expected to be OFF)
 circuit 107/DSR (Data Set Ready) is OFF (expected to be OFF)
 circuit 109/DCD (Data Carrier Detect) is OFF (expected to be OFF)
@@ -236,7 +225,6 @@ DLGLOBAL DEBUG V110-TA(test_data_transfer_disc_remote){IDLE_READY}: Deallocated
 ==== Running test_syncing()
 DLGLOBAL DEBUG V110-TA(test_syncing){IDLE_READY}: Allocated
 DLGLOBAL DEBUG V110-TA(test_syncing){IDLE_READY}: State change to IDLE_READY (no timeout)
-v110_ta_test_status_update_cb(status=0x00000000)
 setting circuit 108/DTR (Data Terminal Ready) ON
 DLGLOBAL DEBUG V110-TA(test_syncing){IDLE_READY}: Received Event V24_STATUS_CHG
 DLGLOBAL DEBUG V110-TA(test_syncing){IDLE_READY}: State change to CONNECT_TA_TO_LINE (T1, 10s)
@@ -251,7 +239,6 @@ osmo_v110_ta_frame_in(): S-/X-bits are ON, expect state change
 DLGLOBAL DEBUG V110-TA(test_syncing){CONNECT_TA_TO_LINE}: Received Event RX_FRAME_IND
 v110_ta_test_status_update_cb(status=0x0000001e)
 DLGLOBAL DEBUG V110-TA(test_syncing){CONNECT_TA_TO_LINE}: State change to DATA_TRANSFER (no timeout)
-v110_ta_test_status_update_cb(status=0x0000001e)
 v110_ta_test_rx_cb(buf_size=48): 010101010101010101010101010101010101010101010101
 osmo_v110_ta_frame_in() returns 0
 osmo_v110_ta_sync_ind(): the lower layer indicates out-of-sync event
@@ -270,7 +257,6 @@ osmo_v110_ta_frame_out() returns 0
 osmo_v110_ta_sync_ind(): the lower layer indicates sync event
 DLGLOBAL DEBUG V110-TA(test_syncing){RESYNCING}: Received Event SYNC_IND
 DLGLOBAL DEBUG V110-TA(test_syncing){RESYNCING}: State change to DATA_TRANSFER (no timeout)
-v110_ta_test_status_update_cb(status=0x0000001e)
 osmo_v110_ta_frame_out(): S-bits are expected to be 0 (ON)
 osmo_v110_ta_frame_out(): X-bits are expected to be 0 (ON)
 osmo_v110_ta_frame_out(): D-bits are to be set by .tx_cb()
