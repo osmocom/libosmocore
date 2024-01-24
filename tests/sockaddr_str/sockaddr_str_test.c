@@ -68,21 +68,16 @@ const char *af_name(int af)
 	}
 }
 
-static const struct value_string err_names[] = {
-	{ -EINVAL, "-EINVAL" },
-	{}
-};
-
-static inline const char *err_name(int err)
-{ return get_value_string(err_names, err); }
-
 static inline const char *rc_name(int rc)
 {
-	if (!rc)
+	switch (rc) {
+	case -EINVAL:
+		return "rc == -EINVAL";
+	case 0:
 		return "rc == 0";
-	if (rc < 0)
-		return "rc < 0";
-	return "rc > 0";
+	default:
+		return rc < 0 ? "rc < 0" : "rc > 0";
+	}
 }
 
 void dump_oip(const struct osmo_sockaddr_str *oip)
