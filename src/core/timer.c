@@ -191,7 +191,16 @@ int osmo_timers_nearest_ms(void)
 		return -1;
 
 	nearest_ms = nearest_p->tv_sec * 1000;
+#ifndef EMBEDDED
+	/* By adding 999 milliseconds, we ensure rounding up to the nearest
+	 * whole millisecond. This approach prevents the return of 0 when the
+	 * timer is still active, and it guarantees that the calling process
+	 * does not wait for a duration shorter than the time remaining on the
+	 * timer. */
+	nearest_ms += (nearest_p->tv_usec + 999) / 1000;
+#else
 	nearest_ms += nearest_p->tv_usec / 1000;
+#endif
 
 	return nearest_ms;
 }
