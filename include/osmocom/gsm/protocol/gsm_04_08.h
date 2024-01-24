@@ -2210,6 +2210,28 @@ enum gsm48_bcap_modem_type {
 	GSM48_BCAP_MT_AUTO_1	= 8,
 };
 
+/*! Table 10.5.112/3GPP TS 24.008: Other modem type (octet 6d) */
+enum gsm48_bcap_other_modem_type {
+	GSM48_BCAP_OTHER_MT_NONE	= 0,	/*!< No other modem type specified */
+	GSM48_BCAP_OTHER_MT_V34		= 2,	/*!< According to ITU-T Rec. V.34 */
+};
+
+/*! Table 10.5.112/3GPP TS 24.008: Fixed network user rate (octet 6d) */
+enum gsm48_bcap_fixed_net_user_rate {
+	GSM48_BCAP_FNUR_NONE		= 0,	/*!< FNUR not applicable / No meaning associated */
+	GSM48_BCAP_FNUR_X1_V110_9600	= 1,	/*!< 9.6 kbit/s (according to ITU-T Rec. X.1 and V.110) */
+	GSM48_BCAP_FNUR_X1_V110_14400	= 2,	/*!< 14.4 kbit/s (according to ITU-T Rec. X.1 and V.110) */
+	GSM48_BCAP_FNUR_X1_V110_19200	= 3,	/*!< 19.2 kbit/s (according to ITU-T Rec. X.1 and V.110) */
+	GSM48_BCAP_FNUR_X1_V110_28800	= 4,	/*!< 28.8 kbit/s (according to ITU-T Rec. X.1 and V.110) */
+	GSM48_BCAP_FNUR_X1_V110_38400	= 5,	/*!< 38.4 kbit/s (according to ITU-T Rec. X.1 and V.110) */
+	GSM48_BCAP_FNUR_X1_V110_48000	= 6,	/*!< 48.0 kbit/s (according to ITU-T Rec. X.1 and V.110) */
+	GSM48_BCAP_FNUR_X1_V110_56000	= 7,	/*!< 56.0 kbit/s (according to ITU-T Rec. X.1 and V.110) */
+	GSM48_BCAP_FNUR_BT_64000	= 8,	/*!< 64.0 kbit/s bit transparent */
+	GSM48_BCAP_FNUR_BT_33600	= 9,	/*!< 33.6 kbit/s bit transparent */
+	GSM48_BCAP_FNUR_I460_32000	= 10,	/*!< 32.0 kbit/s (according to ITU-T Rec. I.460) */
+	GSM48_BCAP_FNUR_V34_31200	= 11,	/*!< 31.2 kbit/s (according to ITU-T Rec. V.34) */
+};
+
 /*! GSM 04.08 Bearer Capability: Speech Version Indication
  *  (See also 3GPP TS 24.008, Table 10.5.103) */
 enum gsm48_bcap_speech_ver {
