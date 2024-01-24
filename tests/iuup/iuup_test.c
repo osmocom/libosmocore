@@ -26,7 +26,6 @@ static struct osmo_iuup_rnl_config def_configure_req = {
 		{.used = 1, .id = 2, .IPTI = 1, .subflow_sizes = {0, 0, 0} },
 	},
 	/* .delivery_err_sdu = All set to 0 (YES) by default, */
-	.IPTIs_present = true,
 	.t_init = { .t_ms = IUUP_TIMER_INIT_T_DEFAULT, .n_max = IUUP_TIMER_INIT_N_DEFAULT },
 	.t_ta = { .t_ms = IUUP_TIMER_TA_T_DEFAULT, .n_max = IUUP_TIMER_TA_N_DEFAULT },
 	.t_rc = { .t_ms = IUUP_TIMER_RC_T_DEFAULT, .n_max = IUUP_TIMER_RC_N_DEFAULT },
