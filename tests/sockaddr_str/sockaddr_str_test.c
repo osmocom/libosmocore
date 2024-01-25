@@ -73,6 +73,8 @@ static inline const char *rc_name(int rc)
 	switch (rc) {
 	case -EINVAL:
 		return "rc == -EINVAL";
+	case -EAFNOSUPPORT:
+		return "rc == -EAFNOSUPPORT";
 	case 0:
 		return "rc == 0";
 	default:
