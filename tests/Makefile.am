@@ -504,11 +504,11 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
 	     osmo_io/osmo_io_test.ok osmo_io/osmo_io_test.err \
 	     soft_uart/soft_uart_test.ok \
 	     rlp/rlp_test.ok \
+	     socket/socket_sctp_test.ok socket/socket_sctp_test.err \
 	     $(NULL)
 
 if ENABLE_LIBSCTP
 if ENABLE_SCTP_TESTS
-EXTRA_DIST += socket/socket_sctp_test.ok socket/socket_sctp_test.err
 check_PROGRAMS += socket/socket_sctp_test
 socket_socket_sctp_test_SOURCES = socket/socket_sctp_test.c
 endif
