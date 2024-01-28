@@ -235,7 +235,9 @@ check_debian_patch_apply
 
 if [ "z$LIBVERS" != "z" ]; then
 	if [ "z$MAKEMOD" = "z" ] && [ "z$ALLOW_NO_LIBVERSION_CHANGE" = "z0" ]; then
-		echo "ERROR: Before releasing, please modify some of the libversions: $LIBVERS"
+		echo "ERROR: Before releasing, please modify some of the libversions:"
+		for l in $LIBVERS; do echo "    $l"; done
+		echo "After making changes, add modified file(s) to the index using git-add."
 		echo "You should NOT be doing this unless you've read and understood following article:"
 		echo "https://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html#Updating-version-info"
 		exit 1
