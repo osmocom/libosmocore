@@ -24,6 +24,7 @@ enum ctrl_node_type {
 	CTRL_NODE_TS,	/* TS specific (net.btsN.trxM.tsI.) */
 	CTRL_NODE_FSM,	/* Finite State Machine (description) */
 	CTRL_NODE_FSM_INST,	/* Finite State Machine (instance) */
+	CTRL_NODE_LCHAN,	/* LCHAN specific (net.btsN.trxM.tsI.lchanL) */
 	_LAST_CTRL_NODE
 };
 
