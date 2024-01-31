@@ -536,7 +536,7 @@ static int osmo_conv_decode_ber_punctured(const struct osmo_conv_code *code,
 	int *n_errors, int *n_bits_total,
 	const uint8_t *data_punc)
 {
-	int res, i, coded_len;
+	int res, coded_len;
 	ubit_t recoded[EGPRS_DATA_C_MAX];
 
 	res = osmo_conv_decode(code, input, output);
@@ -550,11 +550,15 @@ static int osmo_conv_decode_ber_punctured(const struct osmo_conv_code *code,
 	/* Count bit errors */
 	if (n_errors) {
 		*n_errors = 0;
-		for (i = 0; i < coded_len; i++) {
-			if (((!data_punc) || (data_punc && !data_punc[i])) &&
-				!((recoded[i] && input[i] < 0) ||
-					(!recoded[i] && input[i] > 0)) )
-						*n_errors += 1;
+		for (unsigned int i = 0; i < coded_len; i++) {
+			/* punctured bits do not count as bit errors */
+			if (data_punc != NULL && data_punc[i])
+				continue;
+			if (recoded[i] == 1 && input[i] < 0)
+				continue;
+			if (recoded[i] == 0 && input[i] > 0)
+				continue;
+			*n_errors += 1;
 		}
 	}
 
