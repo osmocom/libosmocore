@@ -1059,6 +1059,7 @@ int gsm0503_pdtch_decode(uint8_t *l2_data, const sbit_t *bursts, uint8_t *usf_p,
 
 		return 23;
 	case 2:
+		/* reorder, set punctured bits to 0 (unknown state) */
 		for (i = 587, j = 455; i >= 0; i--) {
 			if (!gsm0503_puncture_cs2[i])
 				cB[i] = cB[j--];
@@ -1066,10 +1067,13 @@ int gsm0503_pdtch_decode(uint8_t *l2_data, const sbit_t *bursts, uint8_t *usf_p,
 				cB[i] = 0;
 		}
 
+		/* decode as if puncturing was not employed (note '_np') */
 		osmo_conv_decode_ber_punctured(&gsm0503_cs2_np, cB, conv,
-					       n_errors, n_bits_total,
+					       n_errors, NULL,
 					       gsm0503_puncture_cs2);
-
+		/* indicate the actual amount of coded bits (excluding punctured ones) */
+		if (n_bits_total != NULL)
+			*n_bits_total = 456;
 
 		/* 5.1.2.2 a) the three USF bits d(0),d(1),d(2) are precoded into six bits */
 		for (i = 0; i < 8; i++) {
@@ -1097,6 +1101,7 @@ int gsm0503_pdtch_decode(uint8_t *l2_data, const sbit_t *bursts, uint8_t *usf_p,
 
 		return 34;
 	case 3:
+		/* reorder, set punctured bits to 0 (unknown state) */
 		for (i = 675, j = 455; i >= 0; i--) {
 			if (!gsm0503_puncture_cs3[i])
 				cB[i] = cB[j--];
@@ -1104,9 +1109,13 @@ int gsm0503_pdtch_decode(uint8_t *l2_data, const sbit_t *bursts, uint8_t *usf_p,
 				cB[i] = 0;
 		}
 
+		/* decode as if puncturing was not employed (note '_np') */
 		osmo_conv_decode_ber_punctured(&gsm0503_cs3_np, cB, conv,
-					       n_errors, n_bits_total,
+					       n_errors, NULL,
 					       gsm0503_puncture_cs3);
+		/* indicate the actual amount of coded bits (excluding punctured ones) */
+		if (n_bits_total != NULL)
+			*n_bits_total = 456;
 
 		/* 5.1.3.2 a) the three USF bits d(0),d(1),d(2) are precoded into six bits */
 		for (i = 0; i < 8; i++) {
