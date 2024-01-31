@@ -1012,7 +1012,7 @@ int gsm0503_pdtch_egprs_decode(uint8_t *l2_data, const sbit_t *bursts, uint16_t 
  *  \param[in] bursts burst input data as soft unpacked bits
  *  \param[out] usf_p Uplink State Flag, only relevant for DL blocks
  *  \param[out] n_errors number of detected bit-errors
- *  \param[out] n_bits_total total number of dcoded bits
+ *  \param[out] n_bits_total total number of decoded bits
  *  \returns number of bytes decoded; negative on error */
 int gsm0503_pdtch_decode(uint8_t *l2_data, const sbit_t *bursts, uint8_t *usf_p,
 	int *n_errors, int *n_bits_total)
