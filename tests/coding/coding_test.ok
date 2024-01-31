@@ -270,7 +270,7 @@ S-Bits:
 7f 7f 7f 81 7f 81 81 81 81 81 81 81 81 81 7f 7f 7f 7f 7f 81 81 81 81 7f 81 81 7f 7f 7f 7f 7f 81 81 7f 7f 7f 7f 7f 7f 81 7f 7f 81 81 7f 7f 7f 81 81 7f 81 7f 7f 7f 81 81 7f  81  7f  7f 81 81 7f 81 7f 7f 81 81 7f 81 7f 7f 81 7f 7f 81 7f 81 81 7f 7f 7f 7f 7f 81 7f 81 7f 7f 7f 7f 81 81 7f 7f 81 81 7f 7f 7f 7f 81 81 7f 81 81 7f 81 81 7f 7f 81 81 7f 81 81 
 7f 81 81 81 81 7f 81 7f 7f 7f 81 81 7f 7f 7f 7f 81 81 81 7f 7f 7f 81 7f 81 7f 7f 7f 81 81 81 7f 81 81 81 7f 7f 7f 81 81 81 7f 81 81 7f 81 81 7f 7f 81 81 7f 81 81 81 81 81  7f  7f  7f 7f 7f 81 81 81 81 7f 7f 7f 81 81 81 7f 7f 7f 81 81 7f 81 7f 7f 7f 81 81 7f 81 81 81 7f 7f 81 7f 81 81 81 7f 81 81 81 81 81 7f 81 7f 81 81 81 81 81 7f 81 81 7f 7f 81 81 
 Decoded: a3 af 5f c6 36 43 44 ab d9 6d 7d 62 24 c9 d2 92 fa 27 5d 71 7a 59 a8 42 a3 af 5f c6 36 43 44 ab a3 2f 
-pdtch_decode: n_errors=132 n_bits_total=588 ber=0.22
+pdtch_decode: n_errors=0 n_bits_total=588 ber=0.00
 
 Encoding: a3 af 5f c6 36 43 44 ab d9 6d 7d 62 24 c9 d2 92 fa 27 5d 71 7a 59 a8 42 a3 af 5f c6 36 43 44 ab a3 af 5f c6 36 43 44 03 
 U-Bits:
@@ -284,7 +284,7 @@ S-Bits:
 81 81 7f 7f 7f 81 81 7f 7f 7f 7f 7f 7f 7f 81 7f 7f 7f 7f 81 7f 81 7f 81 7f 81 81 81 81 81 81 7f 81 7f 81 81 7f 7f 7f 81 81 81 7f 81 7f 81 81 81 81 81 7f 7f 81 81 81 81 7f  7f  7f  81 7f 7f 7f 7f 81 81 7f 81 81 7f 7f 7f 81 81 7f 7f 81 81 7f 81 81 7f 7f 81 81 7f 81 81 7f 7f 7f 7f 81 7f 81 7f 7f 7f 7f 7f 81 7f 7f 7f 7f 7f 81 7f 81 81 7f 7f 81 81 81 7f 
 7f 81 81 81 7f 7f 7f 7f 81 7f 81 7f 7f 7f 7f 81 7f 7f 81 7f 7f 81 7f 81 7f 7f 81 7f 7f 7f 81 7f 7f 81 81 7f 81 7f 7f 81 81 81 7f 81 7f 7f 7f 7f 81 7f 81 81 81 7f 7f 7f 7f  7f  81  81 81 81 81 7f 7f 81 81 7f 7f 7f 7f 7f 81 81 7f 7f 81 7f 7f 81 81 7f 81 81 81 7f 81 7f 7f 81 81 81 81 7f 81 7f 7f 81 7f 81 7f 7f 81 81 81 81 7f 81 7f 7f 81 81 7f 7f 81 81 
 Decoded: a3 af 5f c6 36 43 44 ab d9 6d 7d 62 24 c9 d2 92 fa 27 5d 71 7a 59 a8 42 a3 af 5f c6 36 43 44 ab a3 af 5f c6 36 43 44 03 
-pdtch_decode: n_errors=220 n_bits_total=676 ber=0.33
+pdtch_decode: n_errors=0 n_bits_total=676 ber=0.00
 
 Encoding: a3 af 5f c6 36 43 44 ab d9 6d 7d 62 24 c9 d2 92 fa 27 5d 71 7a 59 a8 42 a3 af 5f c6 36 43 44 ab a3 af 5f c6 36 43 44 ab d9 6d 7d 62 24 c9 d2 92 fa 27 5d 71 7a 28 
 U-Bits:
@@ -326,7 +326,7 @@ S-Bits:
 7f 7f 81 7f 81 81 7f 7f 7f 81 7f 7f 7f 81 81 7f 81 7f 81 7f 7f 7f 7f 7f 81 7f 81 81 81 7f 81 7f 7f 7f 81 7f 7f 81 7f 7f 81 7f 7f 7f 81 7f 81 81 81 81 7f 81 7f 81 7f 7f 81  81  7f  7f 7f 7f 81 81 7f 7f 7f 7f 7f 81 81 7f 7f 7f 81 7f 7f 7f 81 81 7f 7f 7f 81 7f 7f 81 7f 81 7f 7f 7f 81 7f 7f 7f 7f 81 7f 7f 7f 7f 7f 7f 81 7f 7f 81 7f 81 7f 7f 81 7f 81 81 
 81 7f 81 7f 7f 81 7f 7f 81 81 7f 7f 81 7f 81 7f 7f 81 81 81 7f 81 7f 81 81 7f 81 7f 81 7f 81 7f 81 7f 7f 7f 7f 7f 7f 81 81 7f 81 7f 7f 7f 81 7f 7f 7f 7f 7f 81 7f 81 7f 81  7f  7f  7f 81 7f 81 7f 7f 81 7f 81 81 81 7f 7f 81 7f 7f 7f 81 7f 7f 7f 7f 81 81 7f 81 81 81 7f 7f 7f 81 7f 7f 7f 7f 81 81 81 7f 7f 7f 7f 81 7f 7f 81 7f 81 7f 7f 81 81 7f 7f 81 7f 
 Decoded: 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f 10 11 12 13 14 15 16 17 00 00 00 00 00 00 00 00 00 00 00 
-pdtch_decode: n_errors=132 n_bits_total=588 ber=0.22
+pdtch_decode: n_errors=0 n_bits_total=588 ber=0.00
 
 Encoding: 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f 10 11 12 13 14 15 16 17 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
 U-Bits:
@@ -340,7 +340,7 @@ S-Bits:
 81 7f 81 7f 81 81 7f 7f 7f 81 7f 81 7f 7f 81 7f 7f 7f 81 7f 7f 81 7f 7f 7f 7f 81 7f 7f 7f 7f 7f 81 81 7f 7f 7f 7f 7f 81 81 81 7f 7f 7f 7f 81 81 7f 81 7f 7f 7f 7f 7f 81 7f  7f  7f  7f 81 7f 81 81 7f 7f 7f 81 7f 81 81 7f 81 7f 7f 7f 81 7f 7f 7f 7f 81 7f 7f 7f 81 7f 7f 81 7f 7f 7f 7f 81 7f 81 7f 81 7f 7f 81 7f 81 7f 7f 7f 7f 7f 7f 7f 7f 81 81 81 7f 7f 
 7f 7f 81 7f 7f 7f 7f 81 7f 81 7f 7f 81 7f 7f 7f 7f 81 7f 81 7f 7f 7f 81 7f 7f 81 7f 7f 7f 81 81 7f 81 7f 7f 7f 81 7f 81 7f 7f 7f 7f 81 81 7f 81 7f 81 7f 7f 81 7f 81 7f 81  7f  81  7f 7f 7f 7f 7f 7f 81 7f 81 81 81 81 7f 7f 7f 7f 7f 7f 81 7f 7f 7f 81 81 7f 81 7f 81 7f 7f 7f 81 7f 7f 81 7f 81 81 7f 81 7f 81 7f 7f 7f 7f 81 7f 7f 7f 81 81 81 81 7f 7f 7f 
 Decoded: 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f 10 11 12 13 14 15 16 17 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
-pdtch_decode: n_errors=220 n_bits_total=676 ber=0.33
+pdtch_decode: n_errors=0 n_bits_total=676 ber=0.00
 
 Encoding: 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f 10 11 12 13 14 15 16 17 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 
 U-Bits:

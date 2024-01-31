@@ -1066,8 +1066,10 @@ int gsm0503_pdtch_decode(uint8_t *l2_data, const sbit_t *bursts, uint8_t *usf_p,
 				cB[i] = 0;
 		}
 
-		osmo_conv_decode_ber(&gsm0503_cs2_np, cB,
-			conv, n_errors, n_bits_total);
+		osmo_conv_decode_ber_punctured(&gsm0503_cs2_np, cB, conv,
+					       n_errors, n_bits_total,
+					       gsm0503_puncture_cs2);
+
 
 		/* 5.1.2.2 a) the three USF bits d(0),d(1),d(2) are precoded into six bits */
 		for (i = 0; i < 8; i++) {
@@ -1102,8 +1104,9 @@ int gsm0503_pdtch_decode(uint8_t *l2_data, const sbit_t *bursts, uint8_t *usf_p,
 				cB[i] = 0;
 		}
 
-		osmo_conv_decode_ber(&gsm0503_cs3_np, cB,
-			conv, n_errors, n_bits_total);
+		osmo_conv_decode_ber_punctured(&gsm0503_cs3_np, cB, conv,
+					       n_errors, n_bits_total,
+					       gsm0503_puncture_cs3);
 
 		/* 5.1.3.2 a) the three USF bits d(0),d(1),d(2) are precoded into six bits */
 		for (i = 0; i < 8; i++) {
