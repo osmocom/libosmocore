@@ -155,11 +155,11 @@ conv_codes = [
 		description = ["RACH convolutional code"]
 	),
 
-        # Extended RACH definition from 3GPP TS 45.003 §5.3.2
+	# Extended RACH definition from 3GPP TS 45.003 §5.3.2
 	ConvolutionalCode(
 		17,
 		shared_polys["xcch"],
-                puncture = [ 0, 2, 5, 37, 39, 41, -1 ],
+		puncture = [ 0, 2, 5, 37, 39, 41, -1 ],
 		name = "rach_ext",
 		description = ["Extended RACH (11 bit) convolutional code"]
 	),
