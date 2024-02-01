@@ -2233,7 +2233,8 @@ enum gsm48_bcap_fixed_net_user_rate {
 };
 
 /*! GSM 04.08 Bearer Capability: Speech Version Indication
- *  (See also 3GPP TS 24.008, Table 10.5.103) */
+ *  (See also 3GPP TS 24.008, Table 10.5.103
+ *  and 3GPP TS 26.103, Table 4.1 "Support of Codec Types in Radio Access Technologies") */
 enum gsm48_bcap_speech_ver {
 	GSM48_BCAP_SV_FR	= 0,	/*!< GSM FR V1 (GSM FR) */
 	GSM48_BCAP_SV_HR	= 1,	/*!< GSM HR V1 (GSM HR) */
