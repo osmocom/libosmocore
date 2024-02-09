@@ -409,6 +409,11 @@ int osmo_iofd_write_msgb(struct osmo_io_fd *iofd, struct msgb *msg)
 {
 	int rc;
 
+	if (OSMO_UNLIKELY(msgb_length(msg) == 0)) {
+		LOGPIO(iofd, LOGL_ERROR, "Length is 0, rejecting msgb.\n");
+		return -EINVAL;
+	}
+
 	OSMO_ASSERT(iofd->mode == OSMO_IO_FD_MODE_READ_WRITE);
 	if (OSMO_UNLIKELY(!iofd->io_ops.write_cb)) {
 		LOGPIO(iofd, LOGL_ERROR, "write_cb not set, Rejecting msgb\n");
@@ -450,6 +455,11 @@ int osmo_iofd_write_msgb(struct osmo_io_fd *iofd, struct msgb *msg)
 int osmo_iofd_sendto_msgb(struct osmo_io_fd *iofd, struct msgb *msg, int sendto_flags, const struct osmo_sockaddr *dest)
 {
 	int rc;
+
+	if (OSMO_UNLIKELY(msgb_length(msg) == 0)) {
+		LOGPIO(iofd, LOGL_ERROR, "Length is 0, rejecting msgb.\n");
+		return -EINVAL;
+	}
 
 	OSMO_ASSERT(iofd->mode == OSMO_IO_FD_MODE_RECVFROM_SENDTO);
 	if (OSMO_UNLIKELY(!iofd->io_ops.sendto_cb)) {
@@ -498,6 +508,11 @@ int osmo_iofd_sendmsg_msgb(struct osmo_io_fd *iofd, struct msgb *msg, int sendms
 {
 	int rc;
 	struct iofd_msghdr *msghdr;
+
+	if (OSMO_UNLIKELY(msgb_length(msg) == 0)) {
+		LOGPIO(iofd, LOGL_ERROR, "Length is 0, rejecting msgb.\n");
+		return -EINVAL;
+	}
 
 	OSMO_ASSERT(iofd->mode == OSMO_IO_FD_MODE_RECVMSG_SENDMSG);
 	if (OSMO_UNLIKELY(!iofd->io_ops.sendmsg_cb)) {
