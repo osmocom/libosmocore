@@ -421,6 +421,11 @@ int osmo_iofd_write_msgb(struct osmo_io_fd *iofd, struct msgb *msg)
 {
 	int rc;
 
+	if (OSMO_UNLIKELY(msgb_length(msg) == 0)) {
+		LOGPIO(iofd, LOGL_ERROR, "Length is 0, rejecting msgb.\n");
+		return -EINVAL;
+	}
+
 	OSMO_ASSERT(iofd->mode == OSMO_IO_FD_MODE_READ_WRITE);
 	if (OSMO_UNLIKELY(!iofd->io_ops.write_cb)) {
 		LOGPIO(iofd, LOGL_ERROR, "write_cb not set, Rejecting msgb\n");
@@ -462,6 +467,11 @@ int osmo_iofd_write_msgb(struct osmo_io_fd *iofd, struct msgb *msg)
 int osmo_iofd_sendto_msgb(struct osmo_io_fd *iofd, struct msgb *msg, int sendto_flags, const struct osmo_sockaddr *dest)
 {
 	int rc;
+
+	if (OSMO_UNLIKELY(msgb_length(msg) == 0)) {
+		LOGPIO(iofd, LOGL_ERROR, "Length is 0, rejecting msgb.\n");
+		return -EINVAL;
+	}
 
 	OSMO_ASSERT(iofd->mode == OSMO_IO_FD_MODE_RECVFROM_SENDTO);
 	if (OSMO_UNLIKELY(!iofd->io_ops.sendto_cb)) {
@@ -510,6 +520,11 @@ int osmo_iofd_sctp_send_msgb(struct osmo_io_fd *iofd, struct msgb *msg, int send
 	int rc;
 	struct cmsghdr *cmsg;
 	struct sctp_sndrcvinfo *sinfo;
+
+	if (OSMO_UNLIKELY(msgb_length(msg) == 0)) {
+		LOGPIO(iofd, LOGL_ERROR, "Length is 0, rejecting msgb.\n");
+		return -EINVAL;
+	}
 
 	OSMO_ASSERT(iofd->mode == OSMO_IO_FD_MODE_SCTP_RECVMSG_SEND);
 	if (OSMO_UNLIKELY(!iofd->io_ops.write_cb)) {
