@@ -31,12 +31,14 @@ struct iofd_backend_ops {
 	void (*write_disable)(struct osmo_io_fd *iofd);
 	void (*read_enable)(struct osmo_io_fd *iofd);
 	void (*read_disable)(struct osmo_io_fd *iofd);
+	void (*notify_connected)(struct osmo_io_fd *iofd);
 };
 
 #define IOFD_FLAG_CLOSED (1<<0)
 #define IOFD_FLAG_IN_CALLBACK (1<<1)
 #define IOFD_FLAG_TO_FREE (1<<2)
 #define IOFD_FLAG_NOTIFY_CONNECTED (1<<3)
+#define IOFD_FLAG_FD_REGISTERED (1<<4)
 
 #define IOFD_FLAG_SET(iofd, flag) \
 	(iofd)->flags |= (flag)

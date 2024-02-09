@@ -781,7 +781,8 @@ int osmo_iofd_set_ioops(struct osmo_io_fd *iofd, const struct osmo_io_ops *ioops
 void osmo_iofd_notify_connected(struct osmo_io_fd *iofd)
 {
 	OSMO_ASSERT(iofd->mode == OSMO_IO_FD_MODE_READ_WRITE);
-	osmo_iofd_ops.write_enable(iofd);
+	OSMO_ASSERT(osmo_iofd_ops.notify_connected);
+	osmo_iofd_ops.notify_connected(iofd);
 }
 
 

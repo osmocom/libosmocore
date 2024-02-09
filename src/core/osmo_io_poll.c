@@ -119,20 +119,32 @@ static int iofd_poll_ofd_cb_dispatch(struct osmo_fd *ofd, unsigned int what)
 int iofd_poll_register(struct osmo_io_fd *iofd)
 {
 	struct osmo_fd *ofd = &iofd->u.poll.ofd;
+	int rc;
+
+	if (IOFD_FLAG_ISSET(iofd, IOFD_FLAG_FD_REGISTERED))
+		return 0;
 	osmo_fd_setup(ofd, iofd->fd, 0, &iofd_poll_ofd_cb_dispatch, iofd, 0);
-	return osmo_fd_register(ofd);
+	rc = osmo_fd_register(ofd);
+	if (!rc)
+		IOFD_FLAG_SET(iofd, IOFD_FLAG_FD_REGISTERED);
+	return rc;
 }
 
 int iofd_poll_unregister(struct osmo_io_fd *iofd)
 {
 	struct osmo_fd *ofd = &iofd->u.poll.ofd;
+
+	if (!IOFD_FLAG_ISSET(iofd, IOFD_FLAG_FD_REGISTERED))
+		return 0;
 	osmo_fd_unregister(ofd);
+	IOFD_FLAG_UNSET(iofd, IOFD_FLAG_FD_REGISTERED);
 
 	return 0;
 }
 
 int iofd_poll_close(struct osmo_io_fd *iofd)
 {
+	iofd_poll_unregister(iofd);
 	osmo_fd_close(&iofd->u.poll.ofd);
 
 	return 0;
@@ -158,6 +170,16 @@ void iofd_poll_write_disable(struct osmo_io_fd *iofd)
 	osmo_fd_write_disable(&iofd->u.poll.ofd);
 }
 
+void iofd_poll_notify_connected(struct osmo_io_fd *iofd)
+{
+	int rc;
+
+	rc = iofd_poll_register(iofd);
+	if (rc < 0)
+		return;
+	osmo_fd_write_enable(&iofd->u.poll.ofd);
+}
+
 const struct iofd_backend_ops iofd_poll_ops = {
 	.register_fd = iofd_poll_register,
 	.unregister_fd = iofd_poll_unregister,
@@ -166,6 +188,7 @@ const struct iofd_backend_ops iofd_poll_ops = {
 	.write_disable = iofd_poll_write_disable,
 	.read_enable = iofd_poll_read_enable,
 	.read_disable = iofd_poll_read_disable,
+	.notify_connected = iofd_poll_notify_connected,
 };
 
 #endif /* defined(__linux__) */
