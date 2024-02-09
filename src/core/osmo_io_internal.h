@@ -104,6 +104,8 @@ struct osmo_io_fd {
 			void *read_msghdr;
 			void *write_msghdr;
 			/* TODO: index into array of registered fd's? */
+			/* osmo_fd for non-blocking connect handling */
+			struct osmo_fd connect_ofd;
 		} uring;
 	} u;
 };
