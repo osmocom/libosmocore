@@ -402,6 +402,7 @@ const struct iofd_backend_ops iofd_uring_ops = {
 	.write_disable = iofd_uring_write_disable,
 	.read_enable = iofd_uring_read_enable,
 	.read_disable = iofd_uring_read_disable,
+	.notify_connected = iofd_uring_write_enable,
 };
 
 #endif /* defined(__linux__) */
