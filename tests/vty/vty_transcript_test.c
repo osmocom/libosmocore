@@ -207,6 +207,17 @@ DEFUN(multi2, multi2_cmd,
 	return CMD_SUCCESS;
 }
 
+DEFUN(multi3, multi3_cmd,
+      "multi3 (foo|bar) [(one|two|three)]",
+      "multi3 test command\n" "foo\nbar\n" "1\n2\n3\n")
+{
+	OSMO_ASSERT(argc > 0);
+	vty_out(vty, "ok argc=%d %s%s%s%s", argc, argv[0],
+		argc > 1 ? " " : "", argc > 1 ? argv[1] : "",
+		VTY_NEWLINE);
+	return CMD_SUCCESS;
+}
+
 #define X(f) (1 << f)
 
 enum {
@@ -380,6 +391,7 @@ static void init_vty_cmds(void)
 	install_element_ve(&multi0_cmd);
 	install_element_ve(&multi1_cmd);
 	install_element_ve(&multi2_cmd);
+	install_element_ve(&multi3_cmd);
 
 	install_element(CONFIG_NODE, &cfg_attr_test_cmd);
 	install_node(&attr_test_node, NULL);
