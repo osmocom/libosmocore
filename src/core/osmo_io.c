@@ -330,6 +330,7 @@ void iofd_handle_segmented_read(struct osmo_io_fd *iofd, struct msgb *msg, int r
 /*! completion handler: Called by osmo_io backend after a given I/O operation has completed
  *  \param[in] iofd I/O file-descriptor on which I/O has completed
  *  \param[in] msg message buffer containing data related to completed I/O
+ *  \param[in] rc result code with read size or error (-errno)
  *  \param[in] hdr serialized msghdr containing state of completed I/O */
 void iofd_handle_recv(struct osmo_io_fd *iofd, struct msgb *msg, int rc, struct iofd_msghdr *hdr)
 {

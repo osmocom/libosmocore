@@ -74,7 +74,7 @@ static void iofd_poll_ofd_cb_recvmsg_sendmsg(struct osmo_fd *ofd, unsigned int w
 		if (rc > 0)
 			msgb_put(msg, rc);
 
-		iofd_handle_recv(iofd, msg, rc, &hdr);
+		iofd_handle_recv(iofd, msg, (rc < 0 && errno > 0) ? -errno : rc, &hdr);
 	}
 
 	if (IOFD_FLAG_ISSET(iofd, IOFD_FLAG_CLOSED))
