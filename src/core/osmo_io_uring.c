@@ -230,8 +230,7 @@ static void iofd_uring_handle_completion(struct iofd_msghdr *msghdr, int res)
 		OSMO_ASSERT(0)
 	}
 
-	if (!iofd->u.uring.read_msghdr && !iofd->u.uring.write_msghdr)
-		IOFD_FLAG_UNSET(iofd, IOFD_FLAG_IN_CALLBACK);
+	IOFD_FLAG_UNSET(iofd, IOFD_FLAG_IN_CALLBACK);
 
 	if (IOFD_FLAG_ISSET(iofd, IOFD_FLAG_TO_FREE) && !iofd->u.uring.read_msghdr && !iofd->u.uring.write_msghdr)
 		talloc_free(iofd);
@@ -250,6 +249,11 @@ static void iofd_uring_cqe(struct io_uring *ring)
 		if (!msghdr) {
 			LOGP(DLIO, LOGL_DEBUG, "Cancellation returned\n");
 			io_uring_cqe_seen(ring, cqe);
+			continue;
+		}
+		if (!msghdr->iofd) {
+			io_uring_cqe_seen(ring, cqe);
+			iofd_msghdr_free(msghdr);
 			continue;
 		}
 
@@ -307,20 +311,31 @@ static int iofd_uring_register(struct osmo_io_fd *iofd)
 static int iofd_uring_unregister(struct osmo_io_fd *iofd)
 {
 	struct io_uring_sqe *sqe;
+	struct iofd_msghdr *msghdr;
+
 	if (iofd->u.uring.read_msghdr) {
+		msghdr = iofd->u.uring.read_msghdr;
 		sqe = io_uring_get_sqe(&g_ring.ring);
 		OSMO_ASSERT(sqe != NULL);
 		io_uring_sqe_set_data(sqe, NULL);
 		LOGPIO(iofd, LOGL_DEBUG, "Cancelling read\n");
-		io_uring_prep_cancel(sqe, iofd->u.uring.read_msghdr, 0);
+		iofd->u.uring.read_msghdr = NULL;
+		talloc_steal(OTC_GLOBAL, msghdr);
+		msghdr->iofd = NULL;
+		io_uring_prep_cancel(sqe, msghdr, 0);
 	}
 
 	if (iofd->u.uring.write_msghdr) {
+		msghdr = iofd->u.uring.write_msghdr;
 		sqe = io_uring_get_sqe(&g_ring.ring);
 		OSMO_ASSERT(sqe != NULL);
 		io_uring_sqe_set_data(sqe, NULL);
 		LOGPIO(iofd, LOGL_DEBUG, "Cancelling write\n");
-		io_uring_prep_cancel(sqe, iofd->u.uring.write_msghdr, 0);
+		iofd->u.uring.write_msghdr = NULL;
+		talloc_steal(OTC_GLOBAL, msghdr);
+		msgb_free(msghdr->msg);
+		msghdr->iofd = NULL;
+		io_uring_prep_cancel(sqe, msghdr, 0);
 	}
 	io_uring_submit(&g_ring.ring);
 
