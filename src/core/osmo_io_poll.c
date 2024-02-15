@@ -118,7 +118,7 @@ static int iofd_poll_ofd_cb_dispatch(struct osmo_fd *ofd, unsigned int what)
 	return 0;
 }
 
-int iofd_poll_register(struct osmo_io_fd *iofd)
+static int iofd_poll_register(struct osmo_io_fd *iofd)
 {
 	struct osmo_fd *ofd = &iofd->u.poll.ofd;
 	int rc;
@@ -132,7 +132,7 @@ int iofd_poll_register(struct osmo_io_fd *iofd)
 	return rc;
 }
 
-int iofd_poll_unregister(struct osmo_io_fd *iofd)
+static int iofd_poll_unregister(struct osmo_io_fd *iofd)
 {
 	struct osmo_fd *ofd = &iofd->u.poll.ofd;
 
@@ -144,7 +144,7 @@ int iofd_poll_unregister(struct osmo_io_fd *iofd)
 	return 0;
 }
 
-int iofd_poll_close(struct osmo_io_fd *iofd)
+static int iofd_poll_close(struct osmo_io_fd *iofd)
 {
 	iofd_poll_unregister(iofd);
 	osmo_fd_close(&iofd->u.poll.ofd);
@@ -152,27 +152,27 @@ int iofd_poll_close(struct osmo_io_fd *iofd)
 	return 0;
 }
 
-void iofd_poll_read_enable(struct osmo_io_fd *iofd)
+static void iofd_poll_read_enable(struct osmo_io_fd *iofd)
 {
 	osmo_fd_read_enable(&iofd->u.poll.ofd);
 }
 
-void iofd_poll_read_disable(struct osmo_io_fd *iofd)
+static void iofd_poll_read_disable(struct osmo_io_fd *iofd)
 {
 	osmo_fd_read_disable(&iofd->u.poll.ofd);
 }
 
-void iofd_poll_write_enable(struct osmo_io_fd *iofd)
+static void iofd_poll_write_enable(struct osmo_io_fd *iofd)
 {
 	osmo_fd_write_enable(&iofd->u.poll.ofd);
 }
 
-void iofd_poll_write_disable(struct osmo_io_fd *iofd)
+static void iofd_poll_write_disable(struct osmo_io_fd *iofd)
 {
 	osmo_fd_write_disable(&iofd->u.poll.ofd);
 }
 
-void iofd_poll_notify_connected(struct osmo_io_fd *iofd)
+static void iofd_poll_notify_connected(struct osmo_io_fd *iofd)
 {
 	int rc;
 
