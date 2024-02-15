@@ -282,6 +282,11 @@ AC_ARG_ENABLE([sctp-tests], [AS_HELP_STRING([--disable-sctp-tests], [Do not run 
 	[ENABLE_SCTP_TESTS=$enableval], [ENABLE_SCTP_TESTS="yes"])
 AM_CONDITIONAL(ENABLE_SCTP_TESTS, test x"$ENABLE_SCTP_TESTS" = x"yes")
 
+AC_ARG_ENABLE([uring-tests], [AS_HELP_STRING([--disable-uring-tests], [Do not run io_uring tests])],
+	[ENABLE_URING_TESTS=$enableval], [ENABLE_URING_TESTS="yes"])
+AM_CONDITIONAL(ENABLE_URING_TESTS, test x"$ENABLE_URING_TESTS" = x"yes")
+AC_SUBST(ENABLE_URING_TESTS)
+
 AC_ARG_ENABLE(plugin,
 	[AS_HELP_STRING(
 		[--disable-plugin],

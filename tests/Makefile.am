@@ -737,12 +737,12 @@ endif
 
 check-local: atconfig $(TESTSUITE)
 	[ -e /proc/cpuinfo ] && cat /proc/cpuinfo
-	$(SHELL) '$(TESTSUITE)' $(TESTSUITEFLAGS)
+	$(SHELL) '$(TESTSUITE)' $(TESTSUITEFLAGS) ENABLE_URING=$(ENABLE_URING) ENABLE_URING_TESTS=$(ENABLE_URING_TESTS)
 	$(MAKE) $(AM_MAKEFLAGS) ext-tests
 
 installcheck-local: atconfig $(TESTSUITE)
 	$(SHELL) '$(TESTSUITE)' AUTOTEST_PATH='$(bindir)' \
-		$(TESTSUITEFLAGS)
+		$(TESTSUITEFLAGS) ENABLE_URING=$(ENABLE_URING) ENABLE_URING_TESTS=$(ENABLE_URING_TESTS)
 
 clean-local:
 	test ! -f '$(TESTSUITE)' || \
