@@ -195,6 +195,15 @@ static void iofd_uring_handle_tx(struct iofd_msghdr *msghdr, int rc)
 {
 	struct osmo_io_fd *iofd = msghdr->iofd;
 
+	/* Detach msghdr from iofd. It might get freed here or it is freed during iofd_handle_send_completion().
+	 * If there is pending data to send, iofd_uring_submit_tx() will attach it again.
+	 * iofd_handle_send_completion() will invoke a callback function to signal the possibility of write/send.
+	 * This callback function might close iofd, leading to the potential freeing of iofd->u.uring.write_msghdr if
+	 * still attached. Since iofd_handle_send_completion() frees msghdr at the end of the function, detaching
+	 * msghdr here prevents a double-free bug. */
+	if (iofd->u.uring.write_msghdr == msghdr)
+		iofd->u.uring.write_msghdr = NULL;
+
 	if (OSMO_UNLIKELY(IOFD_FLAG_ISSET(iofd, IOFD_FLAG_CLOSED))) {
 		msgb_free(msghdr->msg);
 		iofd_msghdr_free(msghdr);
@@ -202,7 +211,6 @@ static void iofd_uring_handle_tx(struct iofd_msghdr *msghdr, int rc)
 		iofd_handle_send_completion(iofd, rc, msghdr);
 	}
 
-	iofd->u.uring.write_msghdr = NULL;
 	/* submit the next to-be-transmitted message for this file descriptor */
 	if (iofd->u.uring.write_enabled && !IOFD_FLAG_ISSET(iofd, IOFD_FLAG_CLOSED))
 		iofd_uring_submit_tx(iofd);
