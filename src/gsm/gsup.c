@@ -506,6 +506,11 @@ int osmo_gsup_decode(const uint8_t *const_data, size_t data_len,
 			gsup_msg->rand = value;
 			break;
 
+		case OSMO_GSUP_PCO_IE:
+			gsup_msg->pco = value;
+			gsup_msg->pco_len = value_len;
+			break;
+
 		case OSMO_GSUP_MSISDN_IE:
 			gsup_msg->msisdn_enc = value;
 			gsup_msg->msisdn_enc_len = value_len;
@@ -872,6 +877,11 @@ int osmo_gsup_encode(struct msgb *msg, const struct osmo_gsup_message *gsup_msg)
 	if (gsup_msg->rand)
 		msgb_tlv_put(msg, OSMO_GSUP_RAND_IE, 16, gsup_msg->rand);
 
+	if (gsup_msg->pco && gsup_msg->pco_len > 0) {
+		if (gsup_msg->pco_len > OSMO_GSUP_MAX_PCO_LEN)
+			return -EINVAL;
+		msgb_tlv_put(msg, OSMO_GSUP_PCO_IE, gsup_msg->pco_len, gsup_msg->pco);
+	}
 	if (gsup_msg->cn_domain) {
 		uint8_t dn = gsup_msg->cn_domain;
 		msgb_tlv_put(msg, OSMO_GSUP_CN_DOMAIN_IE, 1, &dn);
