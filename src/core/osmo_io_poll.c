@@ -64,10 +64,12 @@ static void iofd_poll_ofd_cb_recvmsg_sendmsg(struct osmo_fd *ofd, unsigned int w
 			.msg_name = &hdr.osa.u.sa,
 			.msg_namelen = sizeof(struct osmo_sockaddr),
 		};
+#ifdef HAVE_LIBSCTP
 		if (iofd->mode == OSMO_IO_FD_MODE_SCTP_RECVMSG_SEND) {
 			hdr.hdr.msg_control = hdr.cmsg;
 			hdr.hdr.msg_controllen = sizeof(hdr.cmsg);
 		}
+#endif
 
 		rc = recvmsg(ofd->fd, &hdr.hdr, flags);
 		if (rc > 0)

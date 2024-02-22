@@ -330,7 +330,6 @@ void iofd_handle_segmented_read(struct osmo_io_fd *iofd, struct msgb *msg, int r
  *  \param[in] hdr serialized msghdr containing state of completed I/O */
 void iofd_handle_recv(struct osmo_io_fd *iofd, struct msgb *msg, int rc, struct iofd_msghdr *hdr)
 {
-	struct cmsghdr *cmsg = NULL;
 
 	talloc_steal(iofd->msgb_alloc.ctx, msg);
 	switch (iofd->mode) {
@@ -340,11 +339,13 @@ void iofd_handle_recv(struct osmo_io_fd *iofd, struct msgb *msg, int rc, struct 
 	case OSMO_IO_FD_MODE_RECVFROM_SENDTO:
 		iofd->io_ops.recvfrom_cb(iofd, rc, msg, &hdr->osa);
 		break;
+#ifdef HAVE_LIBSCTP
 	case OSMO_IO_FD_MODE_SCTP_RECVMSG_SEND:
 		msgb_sctp_msg_flags(msg) = 0;
 		if (hdr->hdr.msg_flags & MSG_NOTIFICATION) {
 			msgb_sctp_msg_flags(msg) = OSMO_STREAM_SCTP_MSG_FLAGS_NOTIFICATION;
 		} else {
+			struct cmsghdr *cmsg = NULL;
 			for (cmsg = CMSG_FIRSTHDR(&hdr->hdr); cmsg != NULL;
 			     cmsg = CMSG_NXTHDR(&hdr->hdr, cmsg)) {
 				if (cmsg->cmsg_level == IPPROTO_SCTP && cmsg->cmsg_type == SCTP_SNDRCV) {
@@ -359,6 +360,7 @@ void iofd_handle_recv(struct osmo_io_fd *iofd, struct msgb *msg, int rc, struct 
 		}
 		iofd->io_ops.read_cb(iofd, rc, msg);
 		break;
+#endif
 	default:
 		OSMO_ASSERT(false);
 		break;
@@ -505,6 +507,7 @@ int osmo_iofd_sendto_msgb(struct osmo_io_fd *iofd, struct msgb *msg, int sendto_
 	return 0;
 }
 
+#ifdef HAVE_LIBSCTP
 /*! Send a message through a connected SCTP socket, similar to sctp_sendmsg().
  *
  *  Appends the message to the internal transmit queue.
@@ -566,6 +569,7 @@ int osmo_iofd_sctp_send_msgb(struct osmo_io_fd *iofd, struct msgb *msg, int send
 	return 0;
 
 }
+#endif
 
 /*! Allocate and setup a new iofd.
  *  \param[in] ctx the parent context from which to allocate
@@ -585,7 +589,9 @@ struct osmo_io_fd *osmo_iofd_setup(const void *ctx, int fd, const char *name, en
 	switch (mode) {
 	case OSMO_IO_FD_MODE_READ_WRITE:
 	case OSMO_IO_FD_MODE_RECVFROM_SENDTO:
+#ifdef HAVE_LIBSCTP
 	case OSMO_IO_FD_MODE_SCTP_RECVMSG_SEND:
+#endif
 		break;
 	default:
 		return NULL;

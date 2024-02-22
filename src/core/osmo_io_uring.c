@@ -37,7 +37,6 @@
 #include <errno.h>
 
 #include <netinet/in.h>
-#include <netinet/sctp.h>
 #include <sys/eventfd.h>
 #include <liburing.h>
 
@@ -129,10 +128,12 @@ static void iofd_uring_submit_recv(struct osmo_io_fd *iofd, enum iofd_msg_action
 	switch (action) {
 	case IOFD_ACT_READ:
 		break;
+#ifdef HAVE_LIBSCTP
 	case IOFD_ACT_SCTP_RECVMSG:
 		msghdr->hdr.msg_control = msghdr->cmsg;
 		msghdr->hdr.msg_controllen = sizeof(msghdr->cmsg);
 		/* fall-through */
+#endif
 	case IOFD_ACT_RECVFROM:
 		msghdr->hdr.msg_iov = &msghdr->iov[0];
 		msghdr->hdr.msg_iovlen = 1;

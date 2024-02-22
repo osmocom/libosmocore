@@ -4,7 +4,9 @@
 
 #include <unistd.h>
 #include <stdbool.h>
+#ifdef HAVE_LIBSCTP
 #include <netinet/sctp.h>
+#endif
 
 #include <osmocom/core/osmo_io.h>
 #include <osmocom/core/linuxlist.h>
@@ -129,8 +131,10 @@ struct iofd_msghdr {
 	/*! io-vector we need to pass as argument to sendmsg/recvmsg; is set up
 	 * to point into msg below */
 	struct iovec iov[1];
+#ifdef HAVE_LIBSCTP
 	/*! control message buffer for passing sctp_sndrcvinfo along */
 	char cmsg[CMSG_SPACE(sizeof(struct sctp_sndrcvinfo))];
+#endif
 	/*! flags we pass as argument to sendmsg / recvmsg */
 	int flags;
 
