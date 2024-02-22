@@ -1868,6 +1868,7 @@ int osmo_sock_get_ip_and_port(int fd, char *ip, size_t ip_len, char *port, size_
 	return 0;
 }
 
+#ifdef HAVE_LIBSCTP
 /*! Get multiple IP addresses and/or port number on socket in separate string buffers
  *  \param[in] fd file descriptor of socket.
  *  \param[out] ip_proto IPPROTO of the socket, eg: IPPROTO_SCTP.
@@ -1956,6 +1957,7 @@ free_addrs_ret:
 	local ? sctp_freeladdrs(addrs) : sctp_freepaddrs(addrs);
 	return rc;
 }
+#endif
 
 /*! Get local IP address on socket
  *  \param[in] fd file descriptor of socket
@@ -2018,6 +2020,7 @@ char *osmo_sock_get_name(const void *ctx, int fd)
 	return talloc_asprintf(ctx, "(%s)", str);
 }
 
+#ifdef HAVE_LIBSCTP
 /*! Format multiple IP addresses and/or port number into a combined string buffer
  *  \param[out] str  Destination string buffer.
  *  \param[in] str_len  sizeof(str), usually OSMO_SOCK_MULTIADDR_PEER_STR_MAXLEN.
@@ -2123,6 +2126,7 @@ int osmo_sock_multiaddr_get_name_buf(char *str, size_t str_len, int fd, int sk_p
 
 	return sb.chars_needed;
 }
+#endif
 
 /*! Get address/port information on socket in provided string buffer, like "r=1.2.3.4:5<->l=6.7.8.9:10".
  * This does not include braces like osmo_sock_get_name().
