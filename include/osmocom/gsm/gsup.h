@@ -61,6 +61,7 @@
 /*! Maximum number of octets encoding MSISDN in BCD format */
 #define OSMO_GSUP_MAX_MSISDN_LEN		9
 #define OSMO_GSUP_MAX_CALLED_PARTY_BCD_LEN	43 /* TS 24.008 10.5.4.7 */
+#define OSMO_GSUP_MAX_PCO_LEN			251
 
 /*! Information Element Identifiers for GSUP IEs */
 enum osmo_gsup_iei {
@@ -80,6 +81,7 @@ enum osmo_gsup_iei {
 	OSMO_GSUP_ACCESS_POINT_NAME_IE		= 0x12,
 	OSMO_GSUP_PDP_QOS_IE			= 0x13,
 	OSMO_GSUP_CHARG_CHAR_IE			= 0x14,
+	OSMO_GSUP_PCO_IE			= 0x15,
 	OSMO_GSUP_RAND_IE			= 0x20,
 	OSMO_GSUP_SRES_IE			= 0x21,
 	OSMO_GSUP_KC_IE				= 0x22,
@@ -406,6 +408,12 @@ struct osmo_gsup_message {
 	enum osmo_rat_type		current_rat_type;
 	enum osmo_rat_type		supported_rat_types[8]; /*!< arbitrary choice */
 	size_t				supported_rat_types_len;
+
+	/*! PCO protocol option 3GPP TS 24.008 10.5.6.3 / Table 10.5.136. PCO contains Octet 3-ZA */
+	const uint8_t			*pco;
+	/*! Number of bytes of the PCO. */
+	size_t				pco_len;
+
 };
 
 int osmo_gsup_decode(const uint8_t *data, size_t data_len,
