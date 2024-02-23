@@ -47,7 +47,9 @@ static void iofd_poll_ofd_cb_recvmsg_sendmsg(struct osmo_fd *ofd, unsigned int w
 	struct msgb *msg;
 	int rc, flags = 0;
 
+	LOGPIO(iofd, LOGL_INFO, "POLL: got event\n");
 	if (what & OSMO_FD_READ) {
+		LOGPIO(iofd, LOGL_INFO, "POLL: got read event\n");
 		struct iofd_msghdr hdr;
 		msg = iofd_msgb_pending_or_alloc(iofd);
 		if (!msg) {
@@ -78,10 +80,13 @@ static void iofd_poll_ofd_cb_recvmsg_sendmsg(struct osmo_fd *ofd, unsigned int w
 		iofd_handle_recv(iofd, msg, (rc < 0 && errno > 0) ? -errno : rc, &hdr);
 	}
 
-	if (IOFD_FLAG_ISSET(iofd, IOFD_FLAG_CLOSED))
+	if (IOFD_FLAG_ISSET(iofd, IOFD_FLAG_CLOSED)) {
+		LOGPIO(iofd, LOGL_INFO, "POLL: got event, but close flag is set\n");
 		return;
+	}
 
 	if (what & OSMO_FD_WRITE) {
+		LOGPIO(iofd, LOGL_INFO, "POLL: got write event\n");
 		struct iofd_msghdr *msghdr = iofd_txqueue_dequeue(iofd);
 		if (msghdr) {
 			rc = sendmsg(ofd->fd, &msghdr->hdr, msghdr->flags);
@@ -125,8 +130,11 @@ static int iofd_poll_register(struct osmo_io_fd *iofd)
 	struct osmo_fd *ofd = &iofd->u.poll.ofd;
 	int rc;
 
-	if (IOFD_FLAG_ISSET(iofd, IOFD_FLAG_FD_REGISTERED))
+	if (IOFD_FLAG_ISSET(iofd, IOFD_FLAG_FD_REGISTERED)) {
+		LOGPIO(iofd, LOGL_INFO, "POLL already registered, ignore this one.\n");
 		return 0;
+	}
+	LOGPIO(iofd, LOGL_INFO, "POLL: register our fd=%d, iofd=%p\n", iofd->fd, iofd);
 	osmo_fd_setup(ofd, iofd->fd, 0, &iofd_poll_ofd_cb_dispatch, iofd, 0);
 	rc = osmo_fd_register(ofd);
 	if (!rc)
@@ -138,8 +146,11 @@ static int iofd_poll_unregister(struct osmo_io_fd *iofd)
 {
 	struct osmo_fd *ofd = &iofd->u.poll.ofd;
 
-	if (!IOFD_FLAG_ISSET(iofd, IOFD_FLAG_FD_REGISTERED))
+	if (!IOFD_FLAG_ISSET(iofd, IOFD_FLAG_FD_REGISTERED)) {
+		LOGPIO(iofd, LOGL_INFO, "POLL already unregistered, ignore this one.\n");
 		return 0;
+	}
+	LOGPIO(iofd, LOGL_INFO, "POLL: unregister\n");
 	osmo_fd_unregister(ofd);
 	IOFD_FLAG_UNSET(iofd, IOFD_FLAG_FD_REGISTERED);
 
@@ -148,6 +159,7 @@ static int iofd_poll_unregister(struct osmo_io_fd *iofd)
 
 static int iofd_poll_close(struct osmo_io_fd *iofd)
 {
+	LOGPIO(iofd, LOGL_INFO, "POLL: close\n");
 	iofd_poll_unregister(iofd);
 	osmo_fd_close(&iofd->u.poll.ofd);
 
@@ -156,21 +168,25 @@ static int iofd_poll_close(struct osmo_io_fd *iofd)
 
 static void iofd_poll_read_enable(struct osmo_io_fd *iofd)
 {
+	LOGPIO(iofd, LOGL_INFO, "POLL: read enable\n");
 	osmo_fd_read_enable(&iofd->u.poll.ofd);
 }
 
 static void iofd_poll_read_disable(struct osmo_io_fd *iofd)
 {
+	LOGPIO(iofd, LOGL_INFO, "POLL: read disable\n");
 	osmo_fd_read_disable(&iofd->u.poll.ofd);
 }
 
 static void iofd_poll_write_enable(struct osmo_io_fd *iofd)
 {
+	LOGPIO(iofd, LOGL_INFO, "POLL: write enable\n");
 	osmo_fd_write_enable(&iofd->u.poll.ofd);
 }
 
 static void iofd_poll_write_disable(struct osmo_io_fd *iofd)
 {
+	LOGPIO(iofd, LOGL_INFO, "POLL: write disable\n");
 	osmo_fd_write_disable(&iofd->u.poll.ofd);
 }
 
@@ -178,6 +194,7 @@ static void iofd_poll_notify_connected(struct osmo_io_fd *iofd)
 {
 	int rc;
 
+	LOGPIO(iofd, LOGL_INFO, "POLL: request connect notification\n");
 	rc = iofd_poll_register(iofd);
 	if (rc < 0)
 		return;

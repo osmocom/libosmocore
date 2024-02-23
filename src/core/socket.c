@@ -870,13 +870,17 @@ int osmo_sock_init2_multiaddr2(uint16_t family, uint16_t type, uint8_t proto,
 	struct sockaddr_in6 addrs_buf[OSMO_SOCK_MAX_ADDRS];
 	char strbuf[512];
 
+//	printf("%s(family=%u, type=%u, proto=%u, flags=0x%x)\n", __func__, family, type, proto, flags);
+
 	/* TODO: So far this function is only aimed for SCTP, but could be
 	   reused in the future for other protocols with multi-addr support */
 	if (proto != IPPROTO_SCTP)
 		return -ENOTSUP;
 
-	if (pars && pars->sctp.version != 0)
+	if (pars && pars->sctp.version != 0) {
+		LOGP(DLGLOBAL, LOGL_ERROR, "illegal sctp_version\n");
 		return -EINVAL;
+	}
 
 	if ((flags & (OSMO_SOCK_F_BIND | OSMO_SOCK_F_CONNECT)) == 0) {
 		LOGP(DLGLOBAL, LOGL_ERROR, "invalid: you have to specify either "
@@ -887,8 +891,11 @@ int osmo_sock_init2_multiaddr2(uint16_t family, uint16_t type, uint8_t proto,
 	if (((flags & OSMO_SOCK_F_BIND) && !local_hosts_cnt) ||
 	    ((flags & OSMO_SOCK_F_CONNECT) && !remote_hosts_cnt) ||
 	    local_hosts_cnt > OSMO_SOCK_MAX_ADDRS ||
-	    remote_hosts_cnt > OSMO_SOCK_MAX_ADDRS)
+	    remote_hosts_cnt > OSMO_SOCK_MAX_ADDRS) {
+		LOGP(DLGLOBAL, LOGL_ERROR, "illegal local_hosts_cnt=%zu / remote_hosts_cnt=%zu\n",
+		     local_hosts_cnt, remote_hosts_cnt);
 		return -EINVAL;
+	}
 
 	/* figure out local side of socket */
 	if (flags & OSMO_SOCK_F_BIND) {

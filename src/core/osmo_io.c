@@ -307,14 +307,17 @@ void iofd_handle_segmented_read(struct osmo_io_fd *iofd, struct msgb *msg, int r
 	struct msgb *pending = NULL;
 
 	if (rc <= 0) {
+		LOGPIO(iofd, LOGL_ERROR, "error read, so forward rc=%d\n", rc);
 		iofd->io_ops.read_cb(iofd, rc, msg);
 		return;
 	}
 
 	do {
 		res = iofd_handle_segmentation(iofd, msg, &pending);
-		if (res != IOFD_SEG_ACT_DEFER || rc < 0)
+		if (res != IOFD_SEG_ACT_DEFER || rc < 0) {
+			LOGPIO(iofd, LOGL_ERROR, "JOLLY now doing segmented read\n");
 			iofd->io_ops.read_cb(iofd, rc, msg);
+		}
 		if (res == IOFD_SEG_ACT_HANDLE_MORE)
 			msg = pending;
 	} while (res == IOFD_SEG_ACT_HANDLE_MORE);
@@ -334,13 +337,16 @@ void iofd_handle_recv(struct osmo_io_fd *iofd, struct msgb *msg, int rc, struct 
 	talloc_steal(iofd->msgb_alloc.ctx, msg);
 	switch (iofd->mode) {
 	case OSMO_IO_FD_MODE_READ_WRITE:
+		LOGPIO(iofd, LOGL_ERROR, "fd mode\n");
 		iofd_handle_segmented_read(iofd, msg, rc);
 		break;
 	case OSMO_IO_FD_MODE_RECVFROM_SENDTO:
+		LOGPIO(iofd, LOGL_ERROR, "fd mode to/from\n");
 		iofd->io_ops.recvfrom_cb(iofd, rc, msg, &hdr->osa);
 		break;
 #ifdef HAVE_LIBSCTP
 	case OSMO_IO_FD_MODE_SCTP_RECVMSG_SEND:
+		LOGPIO(iofd, LOGL_ERROR, "fd mode sctp\n");
 		msgb_sctp_msg_flags(msg) = 0;
 		if (hdr->hdr.msg_flags & MSG_NOTIFICATION) {
 			msgb_sctp_msg_flags(msg) = OSMO_STREAM_SCTP_MSG_FLAGS_NOTIFICATION;
@@ -358,6 +364,7 @@ void iofd_handle_recv(struct osmo_io_fd *iofd, struct msgb *msg, int rc, struct 
 			if (rc > 0 && !cmsg)
 				LOGPIO(iofd, LOGL_ERROR, "sctp_recvmsg without SNDRCV cmsg?!?\n");
 		}
+		LOGPIO(iofd, LOGL_ERROR, "JOLLY now doing normal read rc=%d\n", rc);
 		iofd->io_ops.read_cb(iofd, rc, msg);
 		break;
 #endif
@@ -598,6 +605,7 @@ struct osmo_io_fd *osmo_iofd_setup(const void *ctx, int fd, const char *name, en
 	}
 
 	iofd = talloc_zero(ctx, struct osmo_io_fd);
+printf("alloc=%p\n", iofd);
 	if (!iofd)
 		return NULL;
 
@@ -621,6 +629,7 @@ struct osmo_io_fd *osmo_iofd_setup(const void *ctx, int fd, const char *name, en
 
 	iofd->tx_queue.max_length = 32;
 	INIT_LLIST_HEAD(&iofd->tx_queue.msg_queue);
+	LOGPIO(iofd, LOGL_INFO, "iofd bekommt nun fd=%d\n", iofd->fd);
 
 	return iofd;
 }
@@ -701,6 +710,7 @@ void osmo_iofd_free(struct osmo_io_fd *iofd)
 	if (!iofd)
 		return;
 
+printf("free=%p\n", iofd);
 	osmo_iofd_close(iofd);
 
 	if (!IOFD_FLAG_ISSET(iofd, IOFD_FLAG_IN_CALLBACK)) {

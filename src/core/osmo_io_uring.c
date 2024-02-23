@@ -121,6 +121,7 @@ static void iofd_uring_submit_recv(struct osmo_io_fd *iofd, enum iofd_msg_action
 		LOGPIO(iofd, LOGL_ERROR, "Could not allocate msghdr for reading\n");
 		OSMO_ASSERT(0);
 	}
+	LOGP(DLIO, LOGL_DEBUG, "neuer msghdr=%p als rx\n", msghdr);
 
 	msghdr->iov[0].iov_base = msg->tail;
 	msghdr->iov[0].iov_len = msgb_tailroom(msg);
@@ -174,6 +175,8 @@ static void iofd_uring_handle_recv(struct iofd_msghdr *msghdr, int rc)
 	struct osmo_io_fd *iofd = msghdr->iofd;
 	struct msgb *msg = msghdr->msg;
 
+	LOGP(DLIO, LOGL_DEBUG, "%s: handle recv, rc=%d\n", iofd->name, rc);
+
 	if (rc > 0)
 		msgb_put(msg, rc);
 
@@ -186,6 +189,7 @@ static void iofd_uring_handle_recv(struct iofd_msghdr *msghdr, int rc)
 		iofd->u.uring.read_msghdr = NULL;
 
 
+	LOGP(DLIO, LOGL_DEBUG, "free msghdr=%p\n", msghdr);
 	iofd_msghdr_free(msghdr);
 }
 
@@ -195,6 +199,7 @@ static int iofd_uring_submit_tx(struct osmo_io_fd *iofd);
 static void iofd_uring_handle_tx(struct iofd_msghdr *msghdr, int rc)
 {
 	struct osmo_io_fd *iofd = msghdr->iofd;
+	LOGP(DLIO, LOGL_DEBUG, "%s: tx_completion(rc=%d, msg=%s)\n", iofd->name, rc, msghdr->msg ? msgb_hexdump(msghdr->msg) : "NULL");
 
 	/* Detach msghdr from iofd. It might get freed here or it will be freed at iofd_handle_send_completion().
 	 * If there is pending data to send, iofd_uring_submit_tx() will attach it again.
@@ -204,11 +209,11 @@ static void iofd_uring_handle_tx(struct iofd_msghdr *msghdr, int rc)
 		iofd->u.uring.write_msghdr = NULL;
 
 	if (OSMO_UNLIKELY(IOFD_FLAG_ISSET(iofd, IOFD_FLAG_CLOSED))) {
+		LOGP(DLIO, LOGL_DEBUG, "free msghdr=%p\n", msghdr);
 		msgb_free(msghdr->msg);
 		iofd_msghdr_free(msghdr);
-	} else {
+	} else
 		iofd_handle_send_completion(iofd, rc, msghdr);
-	}
 
 	/* submit the next to-be-transmitted message for this file descriptor */
 	if (iofd->u.uring.write_enabled && !IOFD_FLAG_ISSET(iofd, IOFD_FLAG_CLOSED))
@@ -219,6 +224,7 @@ static void iofd_uring_handle_tx(struct iofd_msghdr *msghdr, int rc)
 static void iofd_uring_handle_completion(struct iofd_msghdr *msghdr, int res)
 {
 	struct osmo_io_fd *iofd = msghdr->iofd;
+	LOGP(DLIO, LOGL_DEBUG, "%s: %s(res=%d, action=%u)\n", iofd->name, __func__, res, msghdr->action);
 
 	IOFD_FLAG_SET(iofd, IOFD_FLAG_IN_CALLBACK);
 
@@ -226,6 +232,7 @@ static void iofd_uring_handle_completion(struct iofd_msghdr *msghdr, int res)
 	case IOFD_ACT_READ:
 	case IOFD_ACT_RECVFROM:
 	case IOFD_ACT_SCTP_RECVMSG:
+		LOGP(DLIO, LOGL_DEBUG, "%s: %s : read action: got res=%d\n", iofd->name, __func__, res);
 		iofd_uring_handle_recv(msghdr, res);
 		break;
 	case IOFD_ACT_WRITE:
@@ -250,25 +257,33 @@ static void iofd_uring_cqe(struct io_uring *ring)
 	struct io_uring_cqe *cqe;
 	struct iofd_msghdr *msghdr;
 
+LOGP(DLIO, LOGL_DEBUG, "bum 1\n");
 	while (io_uring_peek_cqe(ring, &cqe) == 0) {
 
 		msghdr = io_uring_cqe_get_data(cqe);
+LOGP(DLIO, LOGL_DEBUG, "bum 2 cqe returns msghdr=%p\n", msghdr);
 		if (!msghdr) {
 			LOGP(DLIO, LOGL_DEBUG, "Cancellation returned\n");
 			io_uring_cqe_seen(ring, cqe);
+LOGP(DLIO, LOGL_DEBUG, "bum 3\n");
 			continue;
 		}
 		if (!msghdr->iofd) {
+			LOGP(DLIO, LOGL_DEBUG, "jolly free cancelled msghdr\n");
 			io_uring_cqe_seen(ring, cqe);
+			LOGP(DLIO, LOGL_DEBUG, "free msghdr=%p\n", msghdr);
 			iofd_msghdr_free(msghdr);
 			continue;
 		}
 
 		rc = cqe->res;
 		/* Hand the entry back to the kernel before */
+LOGP(DLIO, LOGL_DEBUG, "bum 4 msghdr=%p\n", msghdr);
 		io_uring_cqe_seen(ring, cqe);
 
+LOGP(DLIO, LOGL_DEBUG, "bum 5\n");
 		iofd_uring_handle_completion(msghdr, rc);
+LOGP(DLIO, LOGL_DEBUG, "bum 6\n");
 
 	}
 }
@@ -357,6 +372,7 @@ static int iofd_uring_unregister(struct osmo_io_fd *iofd)
 static void iofd_uring_write_enable(struct osmo_io_fd *iofd)
 {
 	iofd->u.uring.write_enabled = true;
+	LOGPIO(iofd, LOGL_DEBUG, "jolly: something enables write\n");
 
 	if (iofd->u.uring.write_msghdr)
 		return;
@@ -368,6 +384,7 @@ static void iofd_uring_write_enable(struct osmo_io_fd *iofd)
 	if (osmo_iofd_txqueue_len(iofd) > 0)
 		iofd_uring_submit_tx(iofd);
 	else if (iofd->mode == OSMO_IO_FD_MODE_READ_WRITE) {
+		LOGP(DLIO, LOGL_DEBUG, "%s: dummy write request for detecting connection\n", iofd->name);
 		/* Empty write request to check when the socket is connected */
 		struct iofd_msghdr *msghdr;
 		struct io_uring_sqe *sqe;
@@ -407,6 +424,7 @@ static void iofd_uring_write_disable(struct osmo_io_fd *iofd)
 static void iofd_uring_read_enable(struct osmo_io_fd *iofd)
 {
 	iofd->u.uring.read_enabled = true;
+	LOGPIO(iofd, LOGL_DEBUG, "jolly: something enables read\n");
 
 	if (iofd->u.uring.read_msghdr)
 		return;
@@ -439,7 +457,9 @@ static int iofd_uring_close(struct osmo_io_fd *iofd)
 {
 	iofd_uring_read_disable(iofd);
 	iofd_uring_write_disable(iofd);
+	LOGPIO(iofd, LOGL_DEBUG, "jolly: close called\n");
 	iofd_uring_unregister(iofd);
+
 	return close(iofd->fd);
 }
 
@@ -456,6 +476,8 @@ static int iofd_uring_connected_cb(struct osmo_fd *ofd, unsigned int what)
 	/* Unregister from poll/select handling. */
 	osmo_fd_unregister(ofd);
 	IOFD_FLAG_UNSET(iofd, IOFD_FLAG_NOTIFY_CONNECTED);
+
+	LOGPIO(iofd, LOGL_DEBUG, "jolly: (connect event)\n");
 
 	/* Notify the application about this via a zero-length write completion call-back. */
 	IOFD_FLAG_SET(iofd, IOFD_FLAG_IN_CALLBACK);
@@ -475,10 +497,13 @@ static int iofd_uring_connected_cb(struct osmo_fd *ofd, unsigned int what)
 
 static void iofd_uring_notify_connected(struct osmo_io_fd *iofd)
 {
+	LOGP(DLIO, LOGL_DEBUG, "%s: %s (%d)\n", iofd->name, __func__, osmo_fd_is_registered(&iofd->u.uring.connect_ofd));
+
 	if (iofd->mode == OSMO_IO_FD_MODE_SCTP_RECVMSG_SEND) {
 		/* Don't call this function after enabling read or write. */
 		OSMO_ASSERT(!iofd->u.uring.write_enabled && !iofd->u.uring.read_enabled);
 
+		LOGP(DLIO, LOGL_DEBUG, "do the fd thing\n");
 		/* Use a temporary osmo_fd which we can use to notify us once the connection is established
 		 * or failed (indicated by FD becoming writable).
 		 * This is needed as (at least for SCTP sockets) one cannot submit a zero-length writev/sendmsg
@@ -489,8 +514,11 @@ static void iofd_uring_notify_connected(struct osmo_io_fd *iofd)
 			osmo_fd_register(&iofd->u.uring.connect_ofd);
 			IOFD_FLAG_SET(iofd, IOFD_FLAG_NOTIFY_CONNECTED);
 		}
-	} else
+	} else {
+		LOGP(DLIO, LOGL_DEBUG, "do the uring\n");
 		iofd_uring_write_enable(iofd);
+	}
+
 }
 
 const struct iofd_backend_ops iofd_uring_ops = {
