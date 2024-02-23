@@ -258,6 +258,7 @@ osmo_io_backend_names;
 osmo_iofd_close;
 osmo_iofd_free;
 osmo_iofd_get_data;
+osmo_iofd_get_ioops;
 osmo_iofd_get_fd;
 osmo_iofd_get_name;
 osmo_iofd_set_name;

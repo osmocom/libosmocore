@@ -896,6 +896,14 @@ int osmo_iofd_set_ioops(struct osmo_io_fd *iofd, const struct osmo_io_ops *ioops
 	return 0;
 }
 
+/*! Get the osmo_io_ops for an iofd.
+ *  \param[in] iofd Target iofd file descriptor
+ *  \param[in] ioops caller-allocated osmo_io_ops structure to be filled */
+void osmo_iofd_get_ioops(struct osmo_io_fd *iofd, struct osmo_io_ops *ioops)
+{
+	*ioops = iofd->io_ops;
+}
+
 /*! Notify the user if/when the socket is connected.
  *  When the socket is connected the write_cb will be called.
  *  \param[in] iofd the file descriptor */

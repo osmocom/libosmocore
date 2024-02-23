@@ -109,3 +109,4 @@ const char *osmo_iofd_get_name(const struct osmo_io_fd *iofd);
 void osmo_iofd_set_name(struct osmo_io_fd *iofd, const char *name);
 
 int osmo_iofd_set_ioops(struct osmo_io_fd *iofd, const struct osmo_io_ops *ioops);
+void osmo_iofd_get_ioops(struct osmo_io_fd *iofd, struct osmo_io_ops *ioops);
