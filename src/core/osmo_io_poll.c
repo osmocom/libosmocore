@@ -81,10 +81,18 @@ static void iofd_poll_ofd_cb_recvmsg_sendmsg(struct osmo_fd *ofd, unsigned int w
 			rc = sendmsg(ofd->fd, &msghdr->hdr, msghdr->flags);
 			iofd_handle_send_completion(iofd, rc, msghdr);
 		} else {
-			if (iofd->mode == OSMO_IO_FD_MODE_READ_WRITE)
-				/* Socket is writable, but we have no data to send. A non-blocking/async
-				   connect() is signalled this way. */
+			/* Socket is writable, but we have no data to send. A non-blocking/async
+			   connect() is signalled this way. */
+			switch (iofd->mode) {
+			case OSMO_IO_FD_MODE_READ_WRITE:
 				iofd->io_ops.write_cb(iofd, 0, NULL);
+				break;
+			case OSMO_IO_FD_MODE_RECVFROM_SENDTO:
+				iofd->io_ops.sendto_cb(iofd, 0, NULL, NULL);
+				break;
+			default:
+				break;
+			}
 			if (osmo_iofd_txqueue_len(iofd) == 0)
 				iofd_poll_ops.write_disable(iofd);
 		}

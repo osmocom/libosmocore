@@ -12,6 +12,8 @@ core      ADD       osmo_sock_multiaddr_get_ip_and_port(), osmo_multiaddr_ip_and
 core      ADD       osmo_sock_sctp_get_peer_addr_info()
 core      ADD       gsmtap_inst_fd2() core, DEPRECATE gsmtap_inst_fd()
 core		behavior change		osmo_tdef_fsm_inst_state_chg(): allow millisecond precision
+core		ABI change		osmo_io_ops now contains a struct of structs, not union of structs
+core		ABI change		osmo_iofd_set_ioops() now returns a value (error code)
 isdn		ABI change		add states and flags for external T200 handling
 isdn      ADD				initial implementation of the V.110 Terminal Adapter
 gsm		ABI change		add T200 timer states to lapdm_datalink

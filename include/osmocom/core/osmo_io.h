@@ -35,37 +35,35 @@ static inline const char *osmo_io_backend_name(enum osmo_io_backend val)
 { return get_value_string(osmo_io_backend_names, val); }
 
 struct osmo_io_ops {
-	union {
-		/* mode OSMO_IO_FD_MODE_READ_WRITE: */
-		struct {
-			/*! call-back function when something was read from fd */
-			void (*read_cb)(struct osmo_io_fd *iofd, int res, struct msgb *msg);
-			/*! call-back function when write has completed on fd */
-			void (*write_cb)(struct osmo_io_fd *iofd, int res,
-					 struct msgb *msg);
-			/*! call-back function to segment the data at message boundaries.
-			 *  Needs to return the size of the next message. If it returns
-			 *  -EAGAIN or a value larger than msgb_length() (message is incomplete)
-			 *  osmo_io will wait for more data to be read. Other negative values
-			 *  cause the msg to be discarded.
-			 *  If a full message was received (segmentation_cb() returns a value <= msgb_length())
-			 *  the msgb will be trimmed to size by osmo_io and forwarded to the read call-back. Any
-			 *  parsing done to the msgb by segmentation_cb() will be preserved for the read_cb()
-			 *  (e.g. setting lxh or msgb->cb). */
-			int (*segmentation_cb)(struct msgb *msg);
-		};
+	/* mode OSMO_IO_FD_MODE_READ_WRITE: */
+	struct {
+		/*! call-back function when something was read from fd */
+		void (*read_cb)(struct osmo_io_fd *iofd, int res, struct msgb *msg);
+		/*! call-back function when write has completed on fd */
+		void (*write_cb)(struct osmo_io_fd *iofd, int res,
+				 struct msgb *msg);
+		/*! call-back function to segment the data at message boundaries.
+		 *  Needs to return the size of the next message. If it returns
+		 *  -EAGAIN or a value larger than msgb_length() (message is incomplete)
+		 *  osmo_io will wait for more data to be read. Other negative values
+		 *  cause the msg to be discarded.
+		 *  If a full message was received (segmentation_cb() returns a value <= msgb_length())
+		 *  the msgb will be trimmed to size by osmo_io and forwarded to the read call-back. Any
+		 *  parsing done to the msgb by segmentation_cb() will be preserved for the read_cb()
+		 *  (e.g. setting lxh or msgb->cb). */
+		int (*segmentation_cb)(struct msgb *msg);
+	};
 
-		/* mode OSMO_IO_FD_MODE_RECVFROM_SENDTO: */
-		struct {
-			/*! call-back function emulating recvfrom */
-			void (*recvfrom_cb)(struct osmo_io_fd *iofd, int res,
-					    struct msgb *msg,
-					    const struct osmo_sockaddr *saddr);
-			/*! call-back function emulating sendto */
-			void (*sendto_cb)(struct osmo_io_fd *iofd, int res,
-					  struct msgb *msg,
-					  const struct osmo_sockaddr *daddr);
-		};
+	/* mode OSMO_IO_FD_MODE_RECVFROM_SENDTO: */
+	struct {
+		/*! call-back function emulating recvfrom */
+		void (*recvfrom_cb)(struct osmo_io_fd *iofd, int res,
+				    struct msgb *msg,
+				    const struct osmo_sockaddr *saddr);
+		/*! call-back function emulating sendto */
+		void (*sendto_cb)(struct osmo_io_fd *iofd, int res,
+				  struct msgb *msg,
+				  const struct osmo_sockaddr *daddr);
 	};
 };
 
@@ -98,4 +96,4 @@ int osmo_iofd_get_fd(const struct osmo_io_fd *iofd);
 const char *osmo_iofd_get_name(const struct osmo_io_fd *iofd);
 void osmo_iofd_set_name(struct osmo_io_fd *iofd, const char *name);
 
-void osmo_iofd_set_ioops(struct osmo_io_fd *iofd, const struct osmo_io_ops *ioops);
+int osmo_iofd_set_ioops(struct osmo_io_fd *iofd, const struct osmo_io_ops *ioops);

@@ -306,6 +306,8 @@ void iofd_handle_segmented_read(struct osmo_io_fd *iofd, struct msgb *msg, int r
 	int res;
 	struct msgb *pending = NULL;
 
+	OSMO_ASSERT(iofd->mode == OSMO_IO_FD_MODE_READ_WRITE);
+
 	if (rc <= 0) {
 		iofd->io_ops.read_cb(iofd, rc, msg);
 		return;
@@ -473,6 +475,24 @@ int osmo_iofd_sendto_msgb(struct osmo_io_fd *iofd, struct msgb *msg, int sendto_
 	return 0;
 }
 
+static int check_mode_callback_compat(enum osmo_io_fd_mode mode, const struct osmo_io_ops *ops)
+{
+	switch (mode) {
+	case OSMO_IO_FD_MODE_READ_WRITE:
+		if (ops->recvfrom_cb || ops->sendto_cb)
+			return false;
+		break;
+	case OSMO_IO_FD_MODE_RECVFROM_SENDTO:
+		if (ops->read_cb || ops->write_cb)
+			return false;
+		break;
+	default:
+		break;
+	}
+
+	return true;
+}
+
 /*! Allocate and setup a new iofd.
  *  \param[in] ctx the parent context from which to allocate
  *  \param[in] fd the underlying system file descriptor
@@ -495,6 +515,9 @@ struct osmo_io_fd *osmo_iofd_setup(const void *ctx, int fd, const char *name, en
 	default:
 		return NULL;
 	}
+
+	if (!check_mode_callback_compat(mode, ioops))
+		return NULL;
 
 	iofd = talloc_zero(ctx, struct osmo_io_fd);
 	if (!iofd)
@@ -543,8 +566,10 @@ int osmo_iofd_register(struct osmo_io_fd *iofd, int fd)
 		return rc;
 
 	IOFD_FLAG_UNSET(iofd, IOFD_FLAG_CLOSED);
-	if (iofd->io_ops.read_cb)
+	if ((iofd->mode == OSMO_IO_FD_MODE_READ_WRITE && iofd->io_ops.read_cb) ||
+	    (iofd->mode == OSMO_IO_FD_MODE_RECVFROM_SENDTO && iofd->io_ops.recvfrom_cb)) {
 		osmo_iofd_ops.read_enable(iofd);
+	}
 
 	if (iofd->tx_queue.current_length > 0)
 		osmo_iofd_ops.write_enable(iofd);
@@ -722,8 +747,11 @@ void osmo_iofd_set_name(struct osmo_io_fd *iofd, const char *name)
 /*! Set the osmo_io_ops for an iofd.
  *  \param[in] iofd Target iofd file descriptor
  *  \param[in] ioops osmo_io_ops structure to be set */
-void osmo_iofd_set_ioops(struct osmo_io_fd *iofd, const struct osmo_io_ops *ioops)
+int osmo_iofd_set_ioops(struct osmo_io_fd *iofd, const struct osmo_io_ops *ioops)
 {
+	if (!check_mode_callback_compat(iofd->mode, ioops))
+		return -EINVAL;
+
 	iofd->io_ops = *ioops;
 
 	switch (iofd->mode) {
@@ -743,6 +771,8 @@ void osmo_iofd_set_ioops(struct osmo_io_fd *iofd, const struct osmo_io_ops *ioop
 	default:
 		OSMO_ASSERT(0);
 	}
+
+	return 0;
 }
 
 /*! Notify the user if/when the socket is connected.
