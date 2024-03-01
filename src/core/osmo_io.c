@@ -619,7 +619,7 @@ struct osmo_io_fd *osmo_iofd_setup(const void *ctx, int fd, const char *name, en
 		return NULL;
 	}
 
-	if (!check_mode_callback_compat(mode, ioops))
+	if (ioops && !check_mode_callback_compat(mode, ioops))
 		return NULL;
 
 	iofd = talloc_zero(ctx, struct osmo_io_fd);
