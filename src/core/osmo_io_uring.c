@@ -496,8 +496,10 @@ static void iofd_uring_notify_connected(struct osmo_io_fd *iofd)
 		if (!IOFD_FLAG_ISSET(iofd, IOFD_FLAG_NOTIFY_CONNECTED)) {
 			osmo_fd_setup(&iofd->u.uring.connect_ofd, iofd->fd, OSMO_FD_WRITE,
 				      iofd_uring_connected_cb, iofd, 0);
-			osmo_fd_register(&iofd->u.uring.connect_ofd);
-			IOFD_FLAG_SET(iofd, IOFD_FLAG_NOTIFY_CONNECTED);
+			if (osmo_fd_register(&iofd->u.uring.connect_ofd) < 0)
+				LOGPIO(iofd, LOGL_ERROR, "Failed to register FD for connect event.\n");
+			else
+				IOFD_FLAG_SET(iofd, IOFD_FLAG_NOTIFY_CONNECTED);
 		}
 	} else
 		iofd_uring_write_enable(iofd);
