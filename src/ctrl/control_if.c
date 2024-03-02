@@ -3,7 +3,7 @@
 /*
  * (C) 2010-2011 by Daniel Willmann <daniel@totalueberwachung.de>
  * (C) 2010-2011 by On-Waves
- * (C) 2014 by Harald Welte <laforge@gnumonks.org>
+ * (C) 2014-2024 by Harald Welte <laforge@gnumonks.org>
  * (C) 2016-2017 by sysmocom - s.f.m.c. GmbH
  *
  * All Rights Reserved
@@ -56,6 +56,7 @@
 #include <osmocom/core/counter.h>
 #include <osmocom/core/talloc.h>
 #include <osmocom/core/socket.h>
+#include <osmocom/core/osmo_io.h>
 
 #include <osmocom/gsm/protocol/ipaccess.h>
 #include <osmocom/gsm/ipa.h>
@@ -140,7 +141,7 @@ int ctrl_cmd_send2(struct ctrl_connection *ccon, struct ctrl_cmd *cmd)
 	ipa_prepend_header_ext(msg, IPAC_PROTO_EXT_CTRL);
 	ipa_prepend_header(msg, IPAC_PROTO_OSMO);
 
-	ret = osmo_wqueue_enqueue(&ccon->write_queue, msg);
+	ret = osmo_iofd_write_msgb(ccon->iofd, msg);
 	if (ret != 0) {
 		LOGP(DLCTRL, LOGL_ERROR, "Failed to enqueue the command.\n");
 		msgb_free(msg);
@@ -188,14 +189,12 @@ struct ctrl_cmd *ctrl_cmd_trap(struct ctrl_cmd *cmd)
 static void control_close_conn(struct ctrl_connection *ccon)
 {
 	struct ctrl_cmd_def *cd, *cd2;
-	char *name = osmo_sock_get_name(ccon, ccon->write_queue.bfd.fd);
 
-	LOGP(DLCTRL, LOGL_INFO, "close()d CTRL connection %s\n", name);
-	talloc_free(name);
+	LOGP(DLCTRL, LOGL_INFO, "close()d CTRL connection %s\n", osmo_iofd_get_name(ccon->iofd));
 
-	osmo_wqueue_clear(&ccon->write_queue);
-	close(ccon->write_queue.bfd.fd);
-	osmo_fd_unregister(&ccon->write_queue.bfd);
+	osmo_iofd_free(ccon->iofd);
+	ccon->iofd = NULL;
+
 	llist_del(&ccon->list_entry);
 	if (ccon->closed_cb)
 		ccon->closed_cb(ccon);
@@ -349,40 +348,28 @@ err:
 }
 
 
-static int handle_control_read(struct osmo_fd * bfd)
+static void control_read_cb(struct osmo_io_fd *iofd, int res, struct msgb *msg)
 {
+	struct ctrl_connection *ccon = osmo_iofd_get_data(iofd);
 	int ret;
-	struct osmo_wqueue *queue;
-	struct ctrl_connection *ccon;
-	struct msgb *msg = NULL;
-	struct ctrl_handle *ctrl = bfd->data;
 
-	queue = container_of(bfd, struct osmo_wqueue, bfd);
-	ccon = container_of(queue, struct ctrl_connection, write_queue);
-
-	ret = ipa_msg_recv_buffered(bfd->fd, &msg, &ccon->pending_msg);
-	if (ret == 0) {
+	if (res == 0) {
 		/* msg was already discarded. */
-		goto close_fd;
-	} else if (ret == -EAGAIN) {
+		control_close_conn(ccon);
+		return;
+	} else if (res == -EAGAIN) {
 		/* received part of a message, it is stored in ccon->pending_msg and there's
 		 * nothing left to do now. */
-		return 0;
-	} else if (ret < 0) {
+		return;
+	} else if (res < 0) {
 		LOGP(DLCTRL, LOGL_ERROR, "Failed to parse ip access message: %d (%s)\n", ret, strerror(-ret));
-		return 0;
+		return;
 	}
 
-	ret = ctrl_handle_msg(ctrl, ccon, msg);
+	ret = ctrl_handle_msg(ccon->ctrl, ccon, msg);
 	msgb_free(msg);
 	if (ret)
-		goto close_fd;
-
-	return 0;
-
-close_fd:
-	control_close_conn(ccon);
-	return -EBADF;
+		control_close_conn(ccon);
 }
 
 /*! Handle a received CTRL command contained in a \ref msgb.
@@ -480,31 +467,24 @@ just_free:
 	return 0;
 }
 
-static int control_write_cb(struct osmo_fd *bfd, struct msgb *msg)
+static void control_write_cb(struct osmo_io_fd *iofd, int rc, struct msgb *msg)
 {
-	struct osmo_wqueue *queue;
-	struct ctrl_connection *ccon;
-	int rc;
+	struct ctrl_connection *ccon = osmo_iofd_get_data(iofd);
 
-	queue = container_of(bfd, struct osmo_wqueue, bfd);
-	ccon = container_of(queue, struct ctrl_connection, write_queue);
-
-	rc = write(bfd->fd, msg->data, msg->len);
 	if (rc == 0) {
 		control_close_conn(ccon);
-		return -EBADF;
-	}
-	if (rc < 0) {
+	} else if (rc < 0) {
 		LOGP(DLCTRL, LOGL_ERROR, "Failed to write message to the CTRL connection.\n");
-		return 0;
-	}
-	if (rc < msg->len) {
-		msgb_pull(msg, rc);
-		return -EAGAIN;
 	}
 
-	return 0;
+	msgb_free(msg);
 }
+
+static const struct osmo_io_ops ctrl_srv_ioops = {
+	.read_cb = control_read_cb,
+	.write_cb = control_write_cb,
+	.segmentation_cb = FIXME_osmo_ipa_segmentation_cb,
+};
 
 /*! Allocate CTRL connection
  *  \param[in] ctx Context from which talloc should allocate it
@@ -518,16 +498,9 @@ struct ctrl_connection *osmo_ctrl_conn_alloc(void *ctx, void *data)
 	if (!ccon)
 		return NULL;
 
-	osmo_wqueue_init(&ccon->write_queue, 100);
-	/* Error handling here? */
-
+	ccon->ctrl = (struct ctrl_handle *) data;
 	INIT_LLIST_HEAD(&ccon->cmds);
 	INIT_LLIST_HEAD(&ccon->def_cmds);
-
-	ccon->write_queue.bfd.data = data;
-	ccon->write_queue.bfd.fd = -1;
-	ccon->write_queue.write_cb = control_write_cb;
-	ccon->write_queue.read_cb = handle_control_read;
 
 	return ccon;
 }
@@ -562,26 +535,34 @@ static int listen_fd_cb(struct osmo_fd *listen_bfd, unsigned int what)
 	ccon = osmo_ctrl_conn_alloc(listen_bfd->data, ctrl);
 	if (!ccon) {
 		LOGP(DLCTRL, LOGL_ERROR, "Failed to allocate.\n");
-		close(fd);
-		return -1;
+		goto out_close;
 	}
 
 	name = osmo_sock_get_name(ccon, fd);
+	ccon->iofd = osmo_iofd_setup(ccon, fd, name, OSMO_IO_FD_MODE_READ_WRITE, &ctrl_srv_ioops, ccon);
+	if (!ccon->iofd)
+		goto out_free_ccon;
+
+	ret = osmo_iofd_register(ccon->iofd, -1);
+	if (ret < 0)
+		goto out_free_iofd;
+
+	osmo_iofd_set_alloc_info(ccon->iofd, 1024, 0);
+	osmo_iofd_set_txqueue_max_length(ccon->iofd, 100);
+
 	LOGP(DLCTRL, LOGL_INFO, "accept()ed new CTRL connection from %s\n", name);
-
-	ccon->write_queue.bfd.fd = fd;
-	ccon->write_queue.bfd.when = OSMO_FD_READ;
-
-	ret = osmo_fd_register(&ccon->write_queue.bfd);
-	if (ret < 0) {
-		LOGP(DLCTRL, LOGL_ERROR, "Could not register FD.\n");
-		close(ccon->write_queue.bfd.fd);
-		talloc_free(ccon);
-	}
 
 	llist_add(&ccon->list_entry, &ctrl->ccon_list);
 
 	return ret;
+
+out_free_iofd:
+	osmo_iofd_free(ccon->iofd);
+out_free_ccon:
+	talloc_free(ccon);
+out_close:
+	close(fd);
+	return -1;
 }
 
 static uint64_t get_rate_ctr_value(const struct rate_ctr *ctr, int intv, const char *grp)

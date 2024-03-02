@@ -4,6 +4,7 @@
 
 #include <osmocom/core/msgb.h>
 #include <osmocom/core/talloc.h>
+#include <osmocom/core/osmo_io.h>
 #include <osmocom/core/write_queue.h>
 #include <osmocom/core/logging.h>
 #include <osmocom/core/utils.h>
@@ -45,9 +46,15 @@ extern const struct value_string ctrl_type_vals[];
 /*! Represents a single ctrl connection */
 struct ctrl_connection {
 	struct llist_head list_entry;
+	/*! back-pointer to parent ctrl_handle */
+	struct ctrl_handle *ctrl;
 
-	/*! The queue for sending data back */
-	struct osmo_wqueue write_queue;
+	union {
+		/*! The io_fd for sending data back */
+		struct osmo_io_fd *iofd;
+		/* backwards-compatibility (ctrl_cmd_send) */
+		struct osmo_wqueue write_queue;
+	};
 
 	/*! Buffer for partial input data */
 	struct msgb *pending_msg;
