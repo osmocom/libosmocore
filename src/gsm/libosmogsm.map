@@ -793,6 +793,7 @@ osmo_cbsp_encode;
 osmo_cbsp_decode;
 osmo_cbsp_recv_buffered;
 osmo_cbsp_errstr;
+osmo_cbsp_segmentation_cb;
 
 osmo_i460_demux_in;
 osmo_i460_mux_enqueue;

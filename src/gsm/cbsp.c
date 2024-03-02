@@ -1567,6 +1567,26 @@ discard_msg:
 	return rc;
 }
 
+/*! call-back function to segment the data at message boundaries.
+ * Returns  the size of the next message. If it returns -EAGAIN or a value larger than msgb_length() (message
+ * is incomplete), the caller (e.g. osmo_io) has to wait for more data to be read. */
+int osmo_cbsp_segmentation_cb(struct msgb *msg)
+{
+	const struct cbsp_header *h;
+	int len;
+
+	if (msgb_length(msg) < sizeof(*h))
+		return -EAGAIN;
+
+	h = (const struct cbsp_header *) msg->data;
+	msg->l1h = msg->data;
+	msg->l2h = msg->data + sizeof(*h);
+	/* then read the length as specified in the header */
+	len = h->len[0] << 16 | h->len[1] << 8 | h->len[2];
+
+	return sizeof(*h) + len;
+}
+
 /*! value_string[] for enum osmo_cbsp_cause. */
 const struct value_string osmo_cbsp_cause_names[] = {
 	{ OSMO_CBSP_CAUSE_PARAM_NOT_RECOGNISED, "Parameter-not-recognised" },

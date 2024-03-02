@@ -312,3 +312,4 @@ void osmo_cbsp_init_struct(struct osmo_cbsp_decoded *cbsp, enum cbsp_msg_type ms
 struct osmo_cbsp_decoded *osmo_cbsp_decoded_alloc(void *ctx,  enum cbsp_msg_type msg_type);
 
 int osmo_cbsp_recv_buffered(void *ctx, int fd, struct msgb **rmsg, struct msgb **tmp_msg);
+int osmo_cbsp_segmentation_cb(struct msgb *msg);
