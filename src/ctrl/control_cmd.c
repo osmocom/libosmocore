@@ -31,6 +31,7 @@
 #include <unistd.h>
 
 #include <osmocom/ctrl/control_cmd.h>
+#include <osmocom/ctrl/control_if.h>
 
 #include <osmocom/core/msgb.h>
 #include <osmocom/core/talloc.h>
@@ -647,7 +648,7 @@ int ctrl_cmd_def_send(struct ctrl_cmd_def *cd)
 		cmd->type = CTRL_TYPE_ERROR;
 	}
 
-	rc = ctrl_cmd_send(&cmd->ccon->write_queue, cmd);
+	rc = ctrl_cmd_send2(cmd->ccon, cmd);
 
 	talloc_free(cmd);
 	llist_del(&cd->list);

@@ -124,7 +124,6 @@ int ctrl_cmd_def_send(struct ctrl_cmd_def *cd);
 
 int ctrl_cmd_exec(vector vline, struct ctrl_cmd *command, vector node, void *data);
 int ctrl_cmd_install(enum ctrl_node_type node, struct ctrl_cmd_element *cmd);
-int ctrl_cmd_send(struct osmo_wqueue *queue, struct ctrl_cmd *cmd);
 int ctrl_cmd_send_to_all(struct ctrl_handle *ctrl, struct ctrl_cmd *cmd);
 struct ctrl_cmd *ctrl_cmd_parse3(void *ctx, struct msgb *msg, bool *parse_failed);
 struct ctrl_cmd *ctrl_cmd_parse2(void *ctx, struct msgb *msg);

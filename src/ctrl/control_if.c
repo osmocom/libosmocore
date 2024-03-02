@@ -106,17 +106,27 @@ int ctrl_cmd_send_to_all(struct ctrl_handle *ctrl, struct ctrl_cmd *cmd)
 	llist_for_each_entry(ccon, &ctrl->ccon_list, list_entry) {
 		if (ccon == cmd->ccon)
 			continue;
-		if (ctrl_cmd_send(&ccon->write_queue, cmd))
+		if (ctrl_cmd_send2(ccon, cmd))
 			ret++;
 	}
 	return ret;
 }
 
-/*! Encode a CTRL command and append it to the given write queue
+/*! Encode a CTRL command and append it to the given ctrl_connection
  *  \param[inout] queue write queue to which encoded \a cmd shall be appended
  *  \param[in] cmd decoded command representation
  *  \returns 0 in case of success; negative on error */
 int ctrl_cmd_send(struct osmo_wqueue *queue, struct ctrl_cmd *cmd)
+{
+	struct ctrl_connection *ccon = container_of(queue, struct ctrl_connection, write_queue);
+	return ctrl_cmd_send2(ccon, cmd);
+}
+
+/*! Encode a CTRL command and append it to the given ctrl_connection
+ *  \param[inout] queue write queue to which encoded \a cmd shall be appended
+ *  \param[in] cmd decoded command representation
+ *  \returns 0 in case of success; negative on error */
+int ctrl_cmd_send2(struct ctrl_connection *ccon, struct ctrl_cmd *cmd)
 {
 	int ret;
 	struct msgb *msg;
@@ -130,7 +140,7 @@ int ctrl_cmd_send(struct osmo_wqueue *queue, struct ctrl_cmd *cmd)
 	ipa_prepend_header_ext(msg, IPAC_PROTO_EXT_CTRL);
 	ipa_prepend_header(msg, IPAC_PROTO_OSMO);
 
-	ret = osmo_wqueue_enqueue(queue, msg);
+	ret = osmo_wqueue_enqueue(&ccon->write_queue, msg);
 	if (ret != 0) {
 		LOGP(DLCTRL, LOGL_ERROR, "Failed to enqueue the command.\n");
 		msgb_free(msg);
@@ -464,7 +474,7 @@ int ctrl_handle_msg(struct ctrl_handle *ctrl, struct ctrl_connection *ccon, stru
 
 send_reply:
 	/* There is a reply or error that should be reported back to the sender. */
-	ctrl_cmd_send(&ccon->write_queue, cmd);
+	ctrl_cmd_send2(ccon, cmd);
 just_free:
 	talloc_free(cmd);
 	return 0;

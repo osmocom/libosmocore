@@ -28,7 +28,8 @@ struct ctrl_handle {
 };
 
 
-int ctrl_cmd_send(struct osmo_wqueue *queue, struct ctrl_cmd *cmd);
+int ctrl_cmd_send(struct osmo_wqueue *queue, struct ctrl_cmd *cmd) OSMO_DEPRECATED("Use ctrl_cmd_send2() instead.");
+int ctrl_cmd_send2(struct ctrl_connection *ccon, struct ctrl_cmd *cmd);
 int ctrl_cmd_send_trap(struct ctrl_handle *ctrl, const char *name, char *value);
 struct ctrl_handle *ctrl_handle_alloc(void *ctx, void *data, ctrl_cmd_lookup lookup);
 struct ctrl_handle *ctrl_handle_alloc2(void *ctx, void *data,
