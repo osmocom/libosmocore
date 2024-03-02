@@ -557,13 +557,13 @@ static int _output_buf(char *buf, int buf_len, struct log_target *target, unsign
 			if (get_timestamp(&tv, &tm, target) == 0) {
 				/* Get human-readable representation of time.
 				   man ctime: we need at least 26 bytes in buf */
-				if (OSMO_STRBUF_REMAIN(sb) < 26 || !ctime_r(&tm, sb.pos))
+				if (OSMO_STRBUF_REMAIN(sb) < 26 || !asctime_r(&tm, sb.pos))
 					goto err;
 				ret = strnlen(sb.pos, 26);
 				if (ret <= 0)
 					goto err;
 				OSMO_STRBUF_ADDED_TAIL(sb, ret);
-				/* Get rid of useless final '\n' added by ctime_r. We want a space instead. */
+				/* Get rid of useless final '\n' added by asctime_r. We want a space instead. */
 				OSMO_STRBUF_DROP_TAIL(sb, 1);
 				OSMO_STRBUF_PRINTF(sb, " ");
 			}
