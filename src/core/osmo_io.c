@@ -105,6 +105,13 @@ static __attribute__((constructor(103))) void on_dso_load_osmo_io(void)
 		exit(1);
 	}
 
+	OSMO_ASSERT(osmo_iofd_ops.close);
+	OSMO_ASSERT(osmo_iofd_ops.write_enable);
+	OSMO_ASSERT(osmo_iofd_ops.write_disable);
+	OSMO_ASSERT(osmo_iofd_ops.read_enable);
+	OSMO_ASSERT(osmo_iofd_ops.read_disable);
+	OSMO_ASSERT(osmo_iofd_ops.notify_connected);
+
 	osmo_iofd_init();
 }
 
@@ -787,7 +794,6 @@ int osmo_iofd_close(struct osmo_io_fd *iofd)
 
 	iofd->pending = NULL;
 
-	OSMO_ASSERT(osmo_iofd_ops.close);
 	rc = osmo_iofd_ops.close(iofd);
 	iofd->fd = -1;
 	return rc;
@@ -927,7 +933,6 @@ void osmo_iofd_notify_connected(struct osmo_io_fd *iofd)
 {
 	OSMO_ASSERT(iofd->mode == OSMO_IO_FD_MODE_READ_WRITE ||
 		    iofd->mode == OSMO_IO_FD_MODE_RECVMSG_SENDMSG);
-	OSMO_ASSERT(osmo_iofd_ops.notify_connected);
 	osmo_iofd_ops.notify_connected(iofd);
 }
 
