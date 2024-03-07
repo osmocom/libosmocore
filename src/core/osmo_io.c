@@ -672,6 +672,11 @@ int osmo_iofd_register(struct osmo_io_fd *iofd, int fd)
 
 	if (fd >= 0)
 		iofd->fd = fd;
+	else if (iofd->fd < 0) {
+		/* this might happen if both osmo_iofd_setup() and osmo_iofd_register() are called with -1 */
+		LOGPIO(iofd, LOGL_ERROR, "Cannot register io_fd using invalid fd == %d\n", iofd->fd);
+		return -EBADF;
+	}
 
 	if (osmo_iofd_ops.register_fd)
 		rc = osmo_iofd_ops.register_fd(iofd);
