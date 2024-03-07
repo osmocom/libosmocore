@@ -36,6 +36,10 @@ extern const struct value_string osmo_io_backend_names[];
 static inline const char *osmo_io_backend_name(enum osmo_io_backend val)
 { return get_value_string(osmo_io_backend_names, val); }
 
+extern const struct value_string osmo_iofd_mode_names[];
+static inline const char *osmo_iofd_mode_name(enum osmo_io_fd_mode val)
+{ return get_value_string(osmo_iofd_mode_names, val); }
+
 struct osmo_io_ops {
 	/* mode OSMO_IO_FD_MODE_READ_WRITE: */
 	struct {

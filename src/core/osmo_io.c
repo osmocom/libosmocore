@@ -51,6 +51,13 @@ const struct value_string osmo_io_backend_names[] = {
 	{ 0, NULL }
 };
 
+const struct value_string osmo_iofd_mode_names[] = {
+	{ OSMO_IO_FD_MODE_READ_WRITE, "read/write" },
+	{ OSMO_IO_FD_MODE_RECVFROM_SENDTO, "recvfrom/sendto" },
+	{ OSMO_IO_FD_MODE_RECVMSG_SENDMSG, "recvmsg/sendmsg" },
+	{ 0, NULL }
+};
+
 static enum osmo_io_backend g_io_backend;
 
 /* Used by some tests, can't be static */
@@ -619,8 +626,11 @@ struct osmo_io_fd *osmo_iofd_setup(const void *ctx, int fd, const char *name, en
 		return NULL;
 	}
 
-	if (ioops && !check_mode_callback_compat(mode, ioops))
+	if (ioops && !check_mode_callback_compat(mode, ioops)) {
+		LOGP(DLIO, LOGL_ERROR, "iofd(%s): rejecting call-backs incompatible with mode %s\n",
+			name ? name : "unknown", osmo_iofd_mode_name(mode));
 		return NULL;
+	}
 
 	iofd = talloc_zero(ctx, struct osmo_io_fd);
 	if (!iofd)
@@ -868,8 +878,11 @@ void osmo_iofd_set_name(struct osmo_io_fd *iofd, const char *name)
  *  \param[in] ioops osmo_io_ops structure to be set */
 int osmo_iofd_set_ioops(struct osmo_io_fd *iofd, const struct osmo_io_ops *ioops)
 {
-	if (!check_mode_callback_compat(iofd->mode, ioops))
+	if (!check_mode_callback_compat(iofd->mode, ioops)) {
+		LOGPIO(iofd, LOGL_ERROR, "rejecting call-backs incompatible with mode %s\n",
+			osmo_iofd_mode_name(iofd->mode));
 		return -EINVAL;
+	}
 
 	iofd->io_ops = *ioops;
 

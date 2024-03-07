@@ -264,6 +264,7 @@ osmo_iofd_get_name;
 osmo_iofd_set_name;
 osmo_iofd_get_priv_nr;
 osmo_iofd_init;
+osmo_iofd_mode_names;
 osmo_iofd_ops;
 osmo_iofd_register;
 osmo_iofd_sendto_msgb;
