@@ -106,6 +106,8 @@ static __attribute__((constructor(103))) void on_dso_load_osmo_io(void)
 	}
 
 	OSMO_ASSERT(osmo_iofd_ops.close);
+	OSMO_ASSERT(osmo_iofd_ops.register_fd);
+	OSMO_ASSERT(osmo_iofd_ops.unregister_fd);
 	OSMO_ASSERT(osmo_iofd_ops.write_enable);
 	OSMO_ASSERT(osmo_iofd_ops.write_disable);
 	OSMO_ASSERT(osmo_iofd_ops.read_enable);
@@ -695,8 +697,7 @@ int osmo_iofd_register(struct osmo_io_fd *iofd, int fd)
 		return -EBADF;
 	}
 
-	if (osmo_iofd_ops.register_fd)
-		rc = osmo_iofd_ops.register_fd(iofd);
+	rc = osmo_iofd_ops.register_fd(iofd);
 	if (rc)
 		return rc;
 
@@ -720,11 +721,7 @@ int osmo_iofd_register(struct osmo_io_fd *iofd, int fd)
  */
 int osmo_iofd_unregister(struct osmo_io_fd *iofd)
 {
-	if (osmo_iofd_ops.unregister_fd)
-		return osmo_iofd_ops.unregister_fd(iofd);
-	IOFD_FLAG_SET(iofd, IOFD_FLAG_CLOSED);
-
-	return 0;
+	return osmo_iofd_ops.unregister_fd(iofd);
 }
 
 /*! Get the number of messages in the tx queue.
