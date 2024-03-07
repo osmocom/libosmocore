@@ -84,7 +84,7 @@ static void iofd_poll_ofd_cb_recvmsg_sendmsg(struct osmo_fd *ofd, unsigned int w
 		struct iofd_msghdr *msghdr = iofd_txqueue_dequeue(iofd);
 		if (msghdr) {
 			rc = sendmsg(ofd->fd, &msghdr->hdr, msghdr->flags);
-			iofd_handle_send_completion(iofd, rc, msghdr);
+			iofd_handle_send_completion(iofd, (rc < 0 && errno > 0) ? -errno : rc, msghdr);
 		} else {
 			/* Socket is writable, but we have no data to send. A non-blocking/async
 			   connect() is signalled this way. */
