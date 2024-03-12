@@ -26,6 +26,7 @@
  * \file socket.c */
 
 #ifdef HAVE_SYS_SOCKET_H
+#define _GNU_SOURCE /* for struct ucred on glibc >= 2.8 */
 
 #include <osmocom/core/logging.h>
 #include <osmocom/core/select.h>
@@ -2137,8 +2138,6 @@ int osmo_sock_multiaddr_get_name_buf(char *str, size_t str_len, int fd, int sk_p
  */
 int osmo_sock_get_name_buf(char *str, size_t str_len, int fd)
 {
-	char hostbuf_l[INET6_ADDRSTRLEN], hostbuf_r[INET6_ADDRSTRLEN];
-	char portbuf_l[6], portbuf_r[6];
 	struct osmo_strbuf sb = { .buf = str, .len = str_len };
 	struct osmo_sockaddr osa;
 	struct sockaddr_un *sun;
@@ -2161,6 +2160,10 @@ int osmo_sock_get_name_buf(char *str, size_t str_len, int fd)
 	switch (osa.u.sa.sa_family) {
 	case AF_INET:
 	case AF_INET6:
+	{
+		char hostbuf_l[INET6_ADDRSTRLEN], hostbuf_r[INET6_ADDRSTRLEN];
+		char portbuf_l[6], portbuf_r[6];
+
 		len = sizeof(osa.u.sas);
 		rc = getnameinfo(&osa.u.sa, len, hostbuf_l, sizeof(hostbuf_l),
 				 portbuf_l, sizeof(portbuf_l),
@@ -2186,12 +2189,34 @@ int osmo_sock_get_name_buf(char *str, size_t str_len, int fd)
 		}
 		OSMO_STRBUF_PRINTF(sb, "r=%s:%s<->l=%s:%s", hostbuf_r, portbuf_r, hostbuf_l, portbuf_l);
 		return sb.chars_needed;
+	}
 	case AF_UNIX:
+	{
+		unsigned long long remote_pid;
+		bool have_remote_pid;
+#if defined(SO_PEERCRED)
+		struct ucred ucred;
+		len = sizeof(struct ucred);
+		if (getsockopt(fd, SOL_SOCKET, SO_PEERCRED, &ucred, &len) == -1) {
+			have_remote_pid = false;
+		} else {
+			have_remote_pid = true;
+			remote_pid = (unsigned long long)ucred.pid;
+		}
+#else
+		#pragma message "SO_PEERCRED not available"
+		have_remote_pid = false;
+#endif
 		/* Make sure sun_path is NULL terminated: */
 		sun = (struct sockaddr_un *)&osa.u.sa;
 		sun->sun_path[sizeof(sun->sun_path) - 1] = '\0';
-		OSMO_STRBUF_PRINTF(sb, "%s:%d", sun->sun_path, fd);
+		if (have_remote_pid)
+			OSMO_STRBUF_PRINTF(sb, "r=%llu<->", remote_pid);
+		else
+			OSMO_STRBUF_PRINTF(sb, "r=NULL<->");
+		OSMO_STRBUF_PRINTF(sb, "l=%s:%d", sun->sun_path, fd);
 		return sb.chars_needed;
+	}
 	default:
 		osmo_strlcpy(str, "<socket-family-no-supported>", str_len);
 		return -ENOTSUP;
