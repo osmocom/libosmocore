@@ -2139,6 +2139,10 @@ int osmo_sock_get_name_buf(char *str, size_t str_len, int fd)
 {
 	char hostbuf_l[INET6_ADDRSTRLEN], hostbuf_r[INET6_ADDRSTRLEN];
 	char portbuf_l[6], portbuf_r[6];
+	struct osmo_strbuf sb = { .buf = str, .len = str_len };
+	struct osmo_sockaddr osa;
+	struct sockaddr_un *sun;
+	socklen_t len;
 	int rc;
 
 	if (fd < 0) {
@@ -2146,17 +2150,52 @@ int osmo_sock_get_name_buf(char *str, size_t str_len, int fd)
 		return -EBADF;
 	}
 
-	/* get local */
-	if ((rc = osmo_sock_get_ip_and_port(fd, hostbuf_l, sizeof(hostbuf_l), portbuf_l, sizeof(portbuf_l), true))) {
+
+	len = sizeof(osa.u.sas);
+	rc = getsockname(fd, &osa.u.sa, &len);
+	if (rc < 0) {
 		osmo_strlcpy(str, "<error-in-getsockname>", str_len);
 		return rc;
 	}
 
-	/* get remote */
-	if (osmo_sock_get_ip_and_port(fd, hostbuf_r, sizeof(hostbuf_r), portbuf_r, sizeof(portbuf_r), false) != 0)
-		return snprintf(str, str_len, "r=NULL<->l=%s:%s", hostbuf_l, portbuf_l);
-
-	return snprintf(str, str_len, "r=%s:%s<->l=%s:%s", hostbuf_r, portbuf_r, hostbuf_l, portbuf_l);
+	switch (osa.u.sa.sa_family) {
+	case AF_INET:
+	case AF_INET6:
+		len = sizeof(osa.u.sas);
+		rc = getnameinfo(&osa.u.sa, len, hostbuf_l, sizeof(hostbuf_l),
+				 portbuf_l, sizeof(portbuf_l),
+				 NI_NUMERICHOST | NI_NUMERICSERV);
+		if (rc < 0) {
+			osmo_strlcpy(str, "<error-in-getnameinfo>", str_len);
+			return rc;
+		}
+		/* Now attempt to get remote: */
+		len = sizeof(osa.u.sas);
+		rc = getpeername(fd, &osa.u.sa, &len);
+		if (rc < 0) {
+			OSMO_STRBUF_PRINTF(sb, "r=NULL<->l=%s:%s", hostbuf_l, portbuf_l);
+			return sb.chars_needed;
+		}
+		len = sizeof(osa.u.sas);
+		rc = getnameinfo(&osa.u.sa, len, hostbuf_r, sizeof(hostbuf_r),
+				 portbuf_r, sizeof(portbuf_r),
+				 NI_NUMERICHOST | NI_NUMERICSERV);
+		if (rc < 0) {
+			OSMO_STRBUF_PRINTF(sb, "r=NULL<->l=%s:%s", hostbuf_l, portbuf_l);
+			return sb.chars_needed;
+		}
+		OSMO_STRBUF_PRINTF(sb, "r=%s:%s<->l=%s:%s", hostbuf_r, portbuf_r, hostbuf_l, portbuf_l);
+		return sb.chars_needed;
+	case AF_UNIX:
+		/* Make sure sun_path is NULL terminated: */
+		sun = (struct sockaddr_un *)&osa.u.sa;
+		sun->sun_path[sizeof(sun->sun_path) - 1] = '\0';
+		OSMO_STRBUF_PRINTF(sb, "%s:%d", sun->sun_path, fd);
+		return sb.chars_needed;
+	default:
+		osmo_strlcpy(str, "<socket-family-no-supported>", str_len);
+		return -ENOTSUP;
+	}
 }
 
 /*! Get address/port information on socket in static string, like "r=1.2.3.4:5<->l=6.7.8.9:10".
