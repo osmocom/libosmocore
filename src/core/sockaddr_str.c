@@ -33,6 +33,7 @@
 #include <osmocom/core/sockaddr_str.h>
 #include <osmocom/core/utils.h>
 #include <osmocom/core/byteswap.h>
+#include <osmocom/core/socket.h>
 
 /*! \addtogroup sockaddr_str
  *
@@ -359,6 +360,17 @@ int osmo_sockaddr_str_from_sockaddr(struct osmo_sockaddr_str *sockaddr_str, cons
 	return -EINVAL;
 }
 
+/*! Convert IPv4 or IPv6 address and port to osmo_sockaddr_str.
+ * \param[out] sockaddr_str  The instance to copy to.
+ * \param[in] src  IPv4 or IPv6 address and port data.
+ * \return 0 on success, negative if src does not indicate AF_INET nor AF_INET6 (or if the conversion fails, which
+ *         should not be possible in practice).
+ */
+int osmo_sockaddr_str_from_osa(struct osmo_sockaddr_str *sockaddr_str, const struct osmo_sockaddr *src)
+{
+	return osmo_sockaddr_str_from_sockaddr(sockaddr_str, &src->u.sas);
+}
+
 /*! Convert osmo_sockaddr_str address string to IPv4 address data.
  * \param[in] sockaddr_str  The instance to convert the IP of.
  * \param[out] dst  IPv4 address data to write to.
@@ -507,6 +519,16 @@ int osmo_sockaddr_str_to_sockaddr(const struct osmo_sockaddr_str *sockaddr_str, 
 	default:
 		return -EINVAL;
 	}
+}
+
+/*! Convert osmo_sockaddr_str address string and port to IPv4 or IPv6 address and port data.
+ * \param[in] sockaddr_str  The instance to convert the IP and port of.
+ * \param[out] dst  IPv4/IPv6 address and port data to write to.
+ * \return 0 on success, negative on error (e.g. invalid IP address string for the family indicated by sockaddr_str->af).
+ */
+int osmo_sockaddr_str_to_osa(const struct osmo_sockaddr_str *sockaddr_str, struct osmo_sockaddr *dst)
+{
+	return osmo_sockaddr_str_to_sockaddr(sockaddr_str, &dst->u.sas);
 }
 
 /*! @} */

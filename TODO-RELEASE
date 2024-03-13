@@ -11,6 +11,7 @@ core      ADD       osmo_sock_multiaddr_{add,del}_local_addr()
 core      ADD       osmo_sock_multiaddr_get_ip_and_port(), osmo_multiaddr_ip_and_port_snprintf(), osmo_sock_multiaddr_get_name_buf()
 core      ADD       osmo_sock_sctp_get_peer_addr_info()
 core      ADD       gsmtap_inst_fd2() core, DEPRECATE gsmtap_inst_fd()
+core      ADD       osmo_sockaddr_str_from_osa() osmo_sockaddr_str_to_osa()
 core		behavior change		osmo_tdef_fsm_inst_state_chg(): allow millisecond precision
 core		ABI change		osmo_io_ops now contains a struct of structs, not union of structs
 core		ABI change		osmo_iofd_set_ioops() now returns a value (error code)
