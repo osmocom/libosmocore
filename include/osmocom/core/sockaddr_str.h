@@ -34,6 +34,7 @@ struct in6_addr;
 struct sockaddr_storage;
 struct sockaddr_in;
 struct sockaddr_in6;
+struct osmo_sockaddr;
 
 /*! \defgroup sockaddr_str  IP address/port utilities.
  * @{
@@ -84,6 +85,7 @@ int osmo_sockaddr_str_from_32h(struct osmo_sockaddr_str *sockaddr_str, uint32_t 
 int osmo_sockaddr_str_from_sockaddr_in(struct osmo_sockaddr_str *sockaddr_str, const struct sockaddr_in *src);
 int osmo_sockaddr_str_from_sockaddr_in6(struct osmo_sockaddr_str *sockaddr_str, const struct sockaddr_in6 *src);
 int osmo_sockaddr_str_from_sockaddr(struct osmo_sockaddr_str *sockaddr_str, const struct sockaddr_storage *src);
+int osmo_sockaddr_str_from_osa(struct osmo_sockaddr_str *sockaddr_str, const struct osmo_sockaddr *src);
 
 int osmo_sockaddr_str_to_in_addr(const struct osmo_sockaddr_str *sockaddr_str, struct in_addr *dst);
 int osmo_sockaddr_str_to_in6_addr(const struct osmo_sockaddr_str *sockaddr_str, struct in6_addr *dst);
@@ -92,6 +94,7 @@ int osmo_sockaddr_str_to_32h(const struct osmo_sockaddr_str *sockaddr_str, uint3
 int osmo_sockaddr_str_to_sockaddr_in(const struct osmo_sockaddr_str *sockaddr_str, struct sockaddr_in *dst);
 int osmo_sockaddr_str_to_sockaddr_in6(const struct osmo_sockaddr_str *sockaddr_str, struct sockaddr_in6 *dst);
 int osmo_sockaddr_str_to_sockaddr(const struct osmo_sockaddr_str *sockaddr_str, struct sockaddr_storage *dst);
+int osmo_sockaddr_str_to_osa(const struct osmo_sockaddr_str *sockaddr_str, struct osmo_sockaddr *dst);
 
 int osmo_sockaddr_str_from_32n(struct osmo_sockaddr_str *sockaddr_str, uint32_t ip, uint16_t port)
 	OSMO_DEPRECATED("osmo_sockaddr_str_from_32n() actually uses *host* byte order. Use osmo_sockaddr_str_from_32h() instead");
