@@ -1,4 +1,4 @@
-/*! \file osmo_io.c
+/*
  * New osmocom async I/O API.
  *
  * (C) 2022-2024 by Harald Welte <laforge@osmocom.org>
@@ -41,6 +41,11 @@
 #include <osmocom/core/utils.h>
 
 #include "osmo_io_internal.h"
+
+/*! \addtogroup osmo_io
+ *  @{
+ *
+ * \file osmo_io.c */
 
 /*! This environment variable can be set to manually set the backend used in osmo_io */
 #define OSMO_IO_BACKEND_ENV "LIBOSMO_IO_BACKEND"
@@ -341,7 +346,7 @@ void iofd_handle_segmented_read(struct osmo_io_fd *iofd, struct msgb *msg, int r
 	iofd->pending = pending;
 }
 
-/*! completion handler: Called by osmo_io backend after a given I/O operation has completed
+/*! completion handler: Internal function called by osmo_io_backend after a given I/O operation has completed
  *  \param[in] iofd I/O file-descriptor on which I/O has completed
  *  \param[in] msg message buffer containing data related to completed I/O
  *  \param[in] rc result code with read size or error (-errno)
@@ -365,7 +370,7 @@ void iofd_handle_recv(struct osmo_io_fd *iofd, struct msgb *msg, int rc, struct 
 	}
 }
 
-/*! completion handler: Calld by osmo_io backend after a given I/O operation has completed
+/*! completion handler: Internal function called by osmo_io_backend after a given I/O operation has completed
  *  \param[in] iofd I/O file-descriptor on which I/O has completed
  *  \param[in] rc return value of the I/O operation
  *  \param[in] msghdr serialized msghdr containing state of completed I/O
@@ -410,14 +415,18 @@ void iofd_handle_send_completion(struct osmo_io_fd *iofd, int rc, struct iofd_ms
 
 /* Public functions */
 
-/*! Send a message through a connected socket.
+/*! Write a message to a file descriptor / connected socket.
+ *  The osmo_io_fd must be using OSMO_IO_FD_MODE_READ_WRITE.
  *
- *  Appends the message to the internal transmit queue.
+ *  Appends the message to the internal transmit queue for eventual non-blocking
+ *  write to the underlying socket/file descriptor.
+ *
  *  If the function returns success (0) it will take ownership of the msgb and
  *  internally call msgb_free() after the write request completes.
- *  In case of an error the msgb needs to be freed by the caller.
- *  \param[in] iofd file descriptor to write to
- *  \param[in] msg message buffer to write
+ *  In case of an error, the msgb needs to be freed by the caller.
+ *
+ *  \param[in] iofd osmo_io_fd file descriptor to write data to
+ *  \param[in] msg message buffer containing the data to write
  *  \returns 0 in case of success; a negative value in case of error
  */
 int osmo_iofd_write_msgb(struct osmo_io_fd *iofd, struct msgb *msg)
@@ -456,11 +465,15 @@ int osmo_iofd_write_msgb(struct osmo_io_fd *iofd, struct msgb *msg)
 }
 
 /*! Send a message through an unconnected socket.
+ *  The osmo_io_fd must be using OSMO_IO_FD_MODE_RECVFROM_SENDTO.
  *
- *  Appends the message to the internal transmit queue.
+ *  Appends the message to the internal transmit queue for eventual non-blocking
+ *  sendto on the underlying socket/file descriptor.
+ *
  *  If the function returns success (0), it will take ownership of the msgb and
- *  internally call msgb_free() after the write request completes.
+ *  internally call msgb_free() after the sendto request completes.
  *  In case of an error the msgb needs to be freed by the caller.
+ *
  *  \param[in] iofd file descriptor to write to
  *  \param[in] msg message buffer to send
  *  \param[in] sendto_flags Flags to pass to the send call
@@ -507,12 +520,16 @@ int osmo_iofd_sendto_msgb(struct osmo_io_fd *iofd, struct msgb *msg, int sendto_
 	return 0;
 }
 
-/*! ismo_io equivalent of the sendmsg(2) socket API call
+/*! osmo_io equivalent of the sendmsg(2) socket API call.
+ *  The osmo_io_fd must be using OSMO_IO_FD_MODE_RECVMSG_SENDMSG.
  *
- *  Appends the message to the internal transmit queue.
+ *  Appends the message to the internal transmit queue for eventual non-blocking
+ *  sendmsg on the underlying socket/file descriptor.
+ *
  *  If the function returns success (0), it will take ownership of the msgb and
- *  internally call msgb_free() after the write request completes.
+ *  internally call msgb_free() after the sendmsg request completes.
  *  In case of an error the msgb needs to be freed by the caller.
+ *
  *  \param[in] iofd file descriptor to write to
  *  \param[in] msg message buffer to send; is used to fill msgh->iov[]
  *  \param[in] sendmsg_flags Flags to pass to the send call
@@ -612,12 +629,31 @@ static int check_mode_callback_compat(enum osmo_io_fd_mode mode, const struct os
 }
 
 /*! Allocate and setup a new iofd.
+ *
+ *  Use this to create a new osmo_io_fd, specifying the osmo_io_fd_mode and osmo_io_ops, as well as optionally
+ *  the file-descriptor number and a human-readable name.  This is the first function you call for any
+ *  osmo_io_fd.
+ *
+ *  The created osmo_io_fd is not yet registered, and hence can not be used for any I/O until a subsequent
+ *  call to osmo_iofd_register().
+ *
+ *  The created osmo_io_fd is initialized with some default settings:
+ *  * msgb allocations size: OSMO_IO_DEFAULT_MSGB_SIZE (1024)
+ *  * msgb headroom: OSMO_IO_DEFAULT_MSGB_HEADROOM (128)
+ *  * tx_queue depth: 32
+ *
+ *  Those values may be adjusted from their defaults by using osmo_iofd_set_alloc_info() and
+ *  osmo_iofd_set_txqueue_max_length() on the osmo_io_fd.
+ *
  *  \param[in] ctx the parent context from which to allocate
- *  \param[in] fd the underlying system file descriptor
- *  \param[in] name the name of the iofd
- *  \param[in] mode the mode of the iofd, whether it should use read()/write(), sendto()/recvfrom()
- *  \param[in] ioops structure with read/write/send/recv callbacks
- *  \param[in] data user data pointer accessible by the ioops callbacks
+ *  \param[in] fd the underlying system file descriptor. May be -1 if not known yet; must then be specified
+ *  at subsequent osmo_iofd_register() time.
+ *  \param[in] name the optional human-readable name of the iofd; may be NULL
+ *  \param[in] mode the osmo_io_fd_mode of the iofd, whether it should use read()/write(), sendto()/recvfrom()
+ *  semantics.
+ *  \param[in] ioops structure specifying the read/write/send/recv callbacks. Will be copied to the iofd, so
+ *  the caller does not have to keep it around after issuing the osmo_iofd_setup call.
+ *  \param[in] data opaque user data pointer accessible by the ioops callbacks
  *  \returns The newly allocated osmo_io_fd struct or NULL on failure
  */
 struct osmo_io_fd *osmo_iofd_setup(const void *ctx, int fd, const char *name, enum osmo_io_fd_mode mode,
@@ -669,7 +705,11 @@ struct osmo_io_fd *osmo_iofd_setup(const void *ctx, int fd, const char *name, en
 	return iofd;
 }
 
-/*! Set the size of the control message buffer allocated when submitting recvmsg */
+/*! Set the size of the control message buffer allocated when submitting recvmsg.
+ *
+ * If your osmo_io_fd is in OSMO_IO_FD_MODE_RECVMSG_SENDMSG mode, this API function can be used to tell the
+ * osmo_io code how much memory should be allocated for the cmsg (control message) buffer when performing
+ * recvmsg(). */
 int osmo_iofd_set_cmsg_size(struct osmo_io_fd *iofd, size_t cmsg_size)
 {
 	if (iofd->mode != OSMO_IO_FD_MODE_RECVMSG_SENDMSG)
@@ -679,10 +719,20 @@ int osmo_iofd_set_cmsg_size(struct osmo_io_fd *iofd, size_t cmsg_size)
 	return 0;
 }
 
-/*! Register the fd with the underlying backend.
+/*! Register the osmo_io_fd for active I/O.
+ *
+ *  Calling this function will register a previously initialized osmo_io_fd for performing I/O.
+ *
+ *  If the osmo_iofd has a read_cb/recvfrom_cb_recvmsg_cb set in its osmo_io_ops, read/receive will be
+ *  automatically enabled and the respective call-back is called at any time data becomes available.
+ *
+ *  If there is to-be-transmitted data in the transmit queue, write will be automatically enabled, allowing
+ *  the transmit queue to be drained as soon as the fd/socket becomes writable.
  *
  *  \param[in] iofd the iofd file descriptor
- *  \param[in] fd the system fd number that will be registeres. If negative will use the one already set.
+ *  \param[in] fd the system fd number that will be registered. If you did not yet specify the file descriptor
+ *  number during osmo_fd_setup(), or if it has changed since then, you can state the [new] file descriptor
+ *  number as argument.  If you wish to proceed with the previously specified file descriptor number, pass -1.
  *  \returns zero on success, a negative value on error
 */
 int osmo_iofd_register(struct osmo_io_fd *iofd, int fd)
@@ -714,7 +764,10 @@ int osmo_iofd_register(struct osmo_io_fd *iofd, int fd)
 	return rc;
 }
 
-/*! Unregister the fd from the underlying backend.
+/*! Unregister the given osmo_io_fd from osmo_io.
+ *
+ *  After an osmo_io_fd has been successfully unregistered, it can no longer perform any I/O via osmo_io.
+ *  However, it can be subsequently re-registered using osmo_iofd_register().
  *
  *  \param[in] iofd the file descriptor
  *  \returns zero on success, a negative value on error
@@ -724,7 +777,7 @@ int osmo_iofd_unregister(struct osmo_io_fd *iofd)
 	return osmo_iofd_ops.unregister_fd(iofd);
 }
 
-/*! Get the number of messages in the tx queue.
+/*! Retrieve the number of messages pending in the transmit queue.
  *
  *  \param[in] iofd the file descriptor
  */
@@ -733,7 +786,7 @@ unsigned int osmo_iofd_txqueue_len(struct osmo_io_fd *iofd)
 	return iofd->tx_queue.current_length;
 }
 
-/*! Clear the transmit queue of the the iofd.
+/*! Clear the transmit queue of the given osmo_io_fd.
  *
  *  This function frees all messages currently pending in the transmit queue
  *  \param[in] iofd the file descriptor
@@ -747,10 +800,13 @@ void osmo_iofd_txqueue_clear(struct osmo_io_fd *iofd)
 	}
 }
 
-/*! Free the iofd.
+/*! Free the given osmo_io_fd.
  *
- *  This function is safe to use in the read/write callbacks and will defer freeing it until safe to do so.
- *  The iofd will be closed before.
+ *  The iofd will be automatically closed before via osmo_iofd_close() [which in turn will unregister
+ *  it and clear any pending transmit queue items].  You must not reference the iofd
+ *  after calling this function.  However, it is safe to call this function from any of osmo_io
+ *  call-backs; in this case, actual free will be internally delayed until that call-back completes.
+ *
  *  \param[in] iofd the file descriptor
  */
 void osmo_iofd_free(struct osmo_io_fd *iofd)
@@ -769,12 +825,12 @@ void osmo_iofd_free(struct osmo_io_fd *iofd)
 	}
 }
 
-/*! Close the iofd.
+/*! Close the given osmo_io_fd.
  *
- *  This function closes the underlying fd and clears any messages in the tx queue
- *  The iofd is not freed and can be assigned a new file descriptor with osmo_iofd_register()
+ *  This function closes the underlying fd, unregisters it from osmo_io and clears any messages in the tx
+ *  queue.  The iofd itself is not freed and can be assigned a new file descriptor with osmo_iofd_register()
  *  \param[in] iofd the file descriptor
- *  \ returns 0 on success, a negative value otherwise
+ *  \returns 0 on success, a negative value otherwise
  */
 int osmo_iofd_close(struct osmo_io_fd *iofd)
 {
@@ -816,7 +872,11 @@ void osmo_iofd_set_txqueue_max_length(struct osmo_io_fd *iofd, unsigned int max_
 	iofd->tx_queue.max_length = max_length;
 }
 
-/*! Get the associated user-data from an iofd.
+/*! Retrieve the associated user-data from an osmo_io_fd.
+ *
+ *  A call to this function will return the opaque user data pointer which was specified previously
+ *  via osmo_iofd_setup() or via osmo_iofd_set_data().
+ *
  *  \param[in] iofd the file descriptor
  *  \returns the data that was previously set with \ref osmo_iofd_setup()
  */
@@ -825,7 +885,11 @@ void *osmo_iofd_get_data(const struct osmo_io_fd *iofd)
 	return iofd->data;
 }
 
-/*! Set the associated user-data from an iofd.
+/*! Set the associated user-data from an osmo_io_fd.
+ *
+ *  Calling this function will set/overwrite the opaque user data pointer, which can later be retrieved using
+ *  osmo_iofd_get_data().
+ *
  *  \param[in] iofd the file descriptor
  *  \param[in] data the data to set
  */
@@ -834,7 +898,8 @@ void osmo_iofd_set_data(struct osmo_io_fd *iofd, void *data)
 	iofd->data = data;
 }
 
-/*! Get the private number from an iofd.
+/*! Retrieve the private number from an osmo_io_fd.
+ *  Calling this function will retrieve the private user number previously set via osmo_iofd_set_priv_nr().
  *  \param[in] iofd the file descriptor
  *  \returns the private number that was previously set with \ref osmo_iofd_set_priv_nr()
  */
@@ -843,7 +908,9 @@ unsigned int osmo_iofd_get_priv_nr(const struct osmo_io_fd *iofd)
 	return iofd->priv_nr;
 }
 
-/*! Set the private number from an iofd.
+/*! Set the private number of an osmo_io_fd.
+ *  The priv_nr passed in via this call can later be retrieved via osmo_iofd_get_priv_nr().  It provides
+ *  a way how additional context can be stored in the osmo_io_fd beyond the opaque 'data' pointer.
  *  \param[in] iofd the file descriptor
  *  \param[in] priv_nr the private number to set
  */
@@ -852,7 +919,7 @@ void osmo_iofd_set_priv_nr(struct osmo_io_fd *iofd, unsigned int priv_nr)
 	iofd->priv_nr = priv_nr;
 }
 
-/*! Get the underlying file descriptor from an iofd.
+/*! Retrieve the underlying file descriptor from an osmo_io_fd.
  *  \param[in] iofd the file descriptor
  *  \returns the underlying file descriptor number */
 int osmo_iofd_get_fd(const struct osmo_io_fd *iofd)
@@ -860,7 +927,7 @@ int osmo_iofd_get_fd(const struct osmo_io_fd *iofd)
 	return iofd->fd;
 }
 
-/*! Get the name of the file descriptor.
+/*! Retrieve the human-readable name of the given osmo_io_fd.
  *  \param[in] iofd the file descriptor
  *  \returns the name of the iofd as given in \ref osmo_iofd_setup() */
 const char *osmo_iofd_get_name(const struct osmo_io_fd *iofd)
@@ -868,7 +935,8 @@ const char *osmo_iofd_get_name(const struct osmo_io_fd *iofd)
 	return iofd->name;
 }
 
-/*! Set the name of the file descriptor.
+/*! Set the human-readable name of the file descriptor.
+ *  The given name will be used as context by all related logging and future calls to osmo_iofd_get_name().
  *  \param[in] iofd the file descriptor
  *  \param[in] name the name to set on the file descriptor */
 void osmo_iofd_set_name(struct osmo_io_fd *iofd, const char *name)
@@ -876,9 +944,13 @@ void osmo_iofd_set_name(struct osmo_io_fd *iofd, const char *name)
 	osmo_talloc_replace_string(iofd, &iofd->name, name);
 }
 
-/*! Set the osmo_io_ops for an iofd.
+/*! Set the osmo_io_ops calbacks for an osmo_io_fd.
+ *  This function can be used to update/overwrite the call-back functions for the given osmo_io_fd; it
+ *  replaces the currently-set call-back function pointers from a previous call to osmo_iofd_set_ioops()
+ *  or the original osmo_iofd_setup().
  *  \param[in] iofd Target iofd file descriptor
- *  \param[in] ioops osmo_io_ops structure to be set */
+ *  \param[in] ioops osmo_io_ops structure to be copied to the osmo_io_fd.
+ *  \returns 0 on success, negative on error */
 int osmo_iofd_set_ioops(struct osmo_io_fd *iofd, const struct osmo_io_ops *ioops)
 {
 	if (!check_mode_callback_compat(iofd->mode, ioops)) {
@@ -915,7 +987,7 @@ int osmo_iofd_set_ioops(struct osmo_io_fd *iofd, const struct osmo_io_ops *ioops
 	return 0;
 }
 
-/*! Get the osmo_io_ops for an iofd.
+/*! Retrieve the osmo_io_ops for an iofd.
  *  \param[in] iofd Target iofd file descriptor
  *  \param[in] ioops caller-allocated osmo_io_ops structure to be filled */
 void osmo_iofd_get_ioops(struct osmo_io_fd *iofd, struct osmo_io_ops *ioops)
@@ -923,8 +995,14 @@ void osmo_iofd_get_ioops(struct osmo_io_fd *iofd, struct osmo_io_ops *ioops)
 	*ioops = iofd->io_ops;
 }
 
-/*! Notify the user if/when the socket is connected.
- *  When the socket is connected the write_cb will be called.
+/*! Request notification of the user if/when a client socket is connected.
+ *  Calling this function will request osmo_io to notify the user (via
+ *  write call-back) once a non-blocking outbound connect() of the
+ *  socket completes.
+ *
+ *  This only works for connection oriented sockets in either
+ *  OSMO_IO_FD_MODE_READ_WRITE or OSMO_IO_FD_MODE_RECVMSG_SENDMSG mode.
+ *
  *  \param[in] iofd the file descriptor */
 void osmo_iofd_notify_connected(struct osmo_io_fd *iofd)
 {
@@ -933,5 +1011,6 @@ void osmo_iofd_notify_connected(struct osmo_io_fd *iofd)
 	osmo_iofd_ops.notify_connected(iofd);
 }
 
+/*! @} */
 
 #endif /* ifndef(EMBEDDED) */
