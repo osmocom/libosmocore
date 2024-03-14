@@ -88,7 +88,8 @@ static int iofd_uring_poll_cb(struct osmo_fd *ofd, unsigned int what)
 /*! initialize the uring and tie it into our event loop */
 void osmo_iofd_uring_init(void)
 {
-	int rc;
+	int rc, evfd;
+
 	rc = io_uring_queue_init(IOFD_URING_ENTRIES, &g_ring.ring, 0);
 	if (rc < 0)
 		osmo_panic("failure during io_uring_queue_init(): %s\n", strerror(-rc));
@@ -98,10 +99,22 @@ void osmo_iofd_uring_init(void)
 		io_uring_queue_exit(&g_ring.ring);
 		osmo_panic("failure creating eventfd(0, 0) for io_uring: %s\n", strerror(-rc));
 	}
+	evfd = rc;
 
-	osmo_fd_setup(&g_ring.event_ofd, rc, OSMO_FD_READ, iofd_uring_poll_cb, &g_ring.ring, 0);
-	osmo_fd_register(&g_ring.event_ofd);
-	io_uring_register_eventfd(&g_ring.ring, rc);
+	osmo_fd_setup(&g_ring.event_ofd, evfd, OSMO_FD_READ, iofd_uring_poll_cb, &g_ring.ring, 0);
+	rc = osmo_fd_register(&g_ring.event_ofd);
+	if (rc < 0) {
+		close(evfd);
+		io_uring_queue_exit(&g_ring.ring);
+		osmo_panic("failure registering io_uring-eventfd as osmo_fd: %d\n", rc);
+	}
+	rc = io_uring_register_eventfd(&g_ring.ring, rc);
+	if (rc < 0) {
+		osmo_fd_unregister(&g_ring.event_ofd);
+		close(evfd);
+		io_uring_queue_exit(&g_ring.ring);
+		osmo_panic("failure registering eventfd with io_uring: %s\n", strerror(-rc));
+	}
 }
 
 
