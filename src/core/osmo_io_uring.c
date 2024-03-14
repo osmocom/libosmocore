@@ -91,12 +91,12 @@ void osmo_iofd_uring_init(void)
 	int rc;
 	rc = io_uring_queue_init(IOFD_URING_ENTRIES, &g_ring.ring, 0);
 	if (rc < 0)
-		OSMO_ASSERT(0);
+		osmo_panic("failure during io_uring_queue_init(): %s\n", strerror(-rc));
 
 	rc = eventfd(0, 0);
 	if (rc < 0) {
 		io_uring_queue_exit(&g_ring.ring);
-		OSMO_ASSERT(0);
+		osmo_panic("failure creating eventfd(0, 0) for io_uring: %s\n", strerror(-rc));
 	}
 
 	osmo_fd_setup(&g_ring.event_ofd, rc, OSMO_FD_READ, iofd_uring_poll_cb, &g_ring.ring, 0);
