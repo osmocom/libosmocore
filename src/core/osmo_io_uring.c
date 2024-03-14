@@ -461,7 +461,7 @@ static int iofd_uring_connected_cb(struct osmo_fd *ofd, unsigned int what)
 {
 	struct osmo_io_fd *iofd = ofd->data;
 
-	LOGPIO(iofd, LOGL_DEBUG, "Socket connected or failed.");
+	LOGPIO(iofd, LOGL_DEBUG, "Socket connected or failed.\n");
 
 	if (!(what & OSMO_FD_WRITE))
 		return 0;
