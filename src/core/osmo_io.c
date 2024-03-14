@@ -21,7 +21,7 @@
  */
 
 #include "../config.h"
-#if defined(__linux__)
+#ifndef EMBEDDED
 
 #include <fcntl.h>
 #include <stdio.h>
@@ -934,4 +934,4 @@ void osmo_iofd_notify_connected(struct osmo_io_fd *iofd)
 }
 
 
-#endif /* defined(__linux__) */
+#endif /* ifndef(EMBEDDED) */

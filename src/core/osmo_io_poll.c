@@ -21,7 +21,7 @@
  */
 
 #include "../config.h"
-#if defined(__linux__)
+#ifndef EMBEDDED
 
 #include <errno.h>
 #include <stdio.h>
@@ -198,4 +198,4 @@ const struct iofd_backend_ops iofd_poll_ops = {
 	.notify_connected = iofd_poll_notify_connected,
 };
 
-#endif /* defined(__linux__) */
+#endif /* ifndef EMBEDDED */
