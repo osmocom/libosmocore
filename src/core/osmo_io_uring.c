@@ -108,7 +108,7 @@ void osmo_iofd_uring_init(void)
 		io_uring_queue_exit(&g_ring.ring);
 		osmo_panic("failure registering io_uring-eventfd as osmo_fd: %d\n", rc);
 	}
-	rc = io_uring_register_eventfd(&g_ring.ring, rc);
+	rc = io_uring_register_eventfd(&g_ring.ring, evfd);
 	if (rc < 0) {
 		osmo_fd_unregister(&g_ring.event_ofd);
 		close(evfd);
