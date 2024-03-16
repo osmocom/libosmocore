@@ -397,13 +397,16 @@ void iofd_handle_send_completion(struct osmo_io_fd *iofd, int rc, struct iofd_ms
 	/* All other failure and success cases are handled here */
 	switch (msghdr->action) {
 	case IOFD_ACT_WRITE:
-		iofd->io_ops.write_cb(iofd, rc, msg);
+		if (iofd->io_ops.write_cb)
+			iofd->io_ops.write_cb(iofd, rc, msg);
 		break;
 	case IOFD_ACT_SENDTO:
-		iofd->io_ops.sendto_cb(iofd, rc, msg, &msghdr->osa);
+		if (iofd->io_ops.sendto_cb)
+			iofd->io_ops.sendto_cb(iofd, rc, msg, &msghdr->osa);
 		break;
 	case IOFD_ACT_SENDMSG:
-		iofd->io_ops.sendmsg_cb(iofd, rc, msg);
+		if (iofd->io_ops.sendmsg_cb)
+			iofd->io_ops.sendmsg_cb(iofd, rc, msg);
 		break;
 	default:
 		OSMO_ASSERT(0);
@@ -439,10 +442,6 @@ int osmo_iofd_write_msgb(struct osmo_io_fd *iofd, struct msgb *msg)
 	}
 
 	OSMO_ASSERT(iofd->mode == OSMO_IO_FD_MODE_READ_WRITE);
-	if (OSMO_UNLIKELY(!iofd->io_ops.write_cb)) {
-		LOGPIO(iofd, LOGL_ERROR, "write_cb not set, Rejecting msgb\n");
-		return -EINVAL;
-	}
 
 	struct iofd_msghdr *msghdr = iofd_msghdr_alloc(iofd, IOFD_ACT_WRITE, msg, 0);
 	if (!msghdr)
@@ -490,10 +489,6 @@ int osmo_iofd_sendto_msgb(struct osmo_io_fd *iofd, struct msgb *msg, int sendto_
 	}
 
 	OSMO_ASSERT(iofd->mode == OSMO_IO_FD_MODE_RECVFROM_SENDTO);
-	if (OSMO_UNLIKELY(!iofd->io_ops.sendto_cb)) {
-		LOGPIO(iofd, LOGL_ERROR, "sendto_cb not set, Rejecting msgb\n");
-		return -EINVAL;
-	}
 
 	struct iofd_msghdr *msghdr = iofd_msghdr_alloc(iofd, IOFD_ACT_SENDTO, msg, 0);
 	if (!msghdr)
@@ -547,10 +542,6 @@ int osmo_iofd_sendmsg_msgb(struct osmo_io_fd *iofd, struct msgb *msg, int sendms
 	}
 
 	OSMO_ASSERT(iofd->mode == OSMO_IO_FD_MODE_RECVMSG_SENDMSG);
-	if (OSMO_UNLIKELY(!iofd->io_ops.sendmsg_cb)) {
-		LOGPIO(iofd, LOGL_ERROR, "sendmsg_cb not set, Rejecting msgb\n");
-		return -EINVAL;
-	}
 
 	if (OSMO_UNLIKELY(msgh->msg_namelen > sizeof(msghdr->osa))) {
 		LOGPIO(iofd, LOGL_ERROR, "osmo_iofd_sendmsg msg_namelen (%u) > supported %zu bytes\n",
