@@ -356,6 +356,11 @@ struct msgb *msgb_copy_resize_c(const void *ctx, const struct msgb *msg, uint16_
 	if (msg->l4h)
 		new_msg->l4h = new_msg->_data + (msg->l4h - msg->_data);
 
+	/* copy other metadata like cb */
+	new_msg->dst = msg->dst;
+	new_msg->lchan = msg->lchan;
+	memcpy(new_msg->cb, msg->cb, sizeof(new_msg->cb));
+
 	return new_msg;
 }
 
