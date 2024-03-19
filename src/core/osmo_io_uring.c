@@ -60,6 +60,7 @@ struct osmo_io_uring {
 };
 
 static __thread struct osmo_io_uring g_ring;
+static bool g_batch = false;
 
 static void iofd_uring_cqe(struct io_uring *ring);
 
@@ -89,6 +90,9 @@ static int iofd_uring_poll_cb(struct osmo_fd *ofd, unsigned int what)
 void osmo_iofd_uring_init(void)
 {
 	int rc, evfd;
+
+	if (getenv("LIBOSMO_IO_URING_BATCH"))
+		g_batch = true;
 
 	rc = io_uring_queue_init(IOFD_URING_ENTRIES, &g_ring.ring, 0);
 	if (rc < 0)
@@ -175,7 +179,8 @@ static void iofd_uring_submit_recv(struct osmo_io_fd *iofd, enum iofd_msg_action
 	}
 	io_uring_sqe_set_data(sqe, msghdr);
 
-	io_uring_submit(&g_ring.ring);
+	if (!g_batch)
+		io_uring_submit(&g_ring.ring);
 	/* NOTE: This only works if we have one read per fd */
 	iofd->u.uring.read_msghdr = msghdr;
 }
@@ -315,7 +320,8 @@ static int iofd_uring_submit_tx(struct osmo_io_fd *iofd)
 		OSMO_ASSERT(0);
 	}
 
-	io_uring_submit(&g_ring.ring);
+	if (!g_batch)
+		io_uring_submit(&g_ring.ring);
 	iofd->u.uring.write_msghdr = msghdr;
 
 	return 0;
@@ -528,5 +534,11 @@ const struct iofd_backend_ops iofd_uring_ops = {
 	.read_disable = iofd_uring_read_disable,
 	.notify_connected = iofd_uring_notify_connected,
 };
+
+void osmo_io_uring_submit(void)
+{
+	if (g_batch)
+		io_uring_submit(&g_ring.ring);
+}
 
 #endif /* defined(__linux__) */

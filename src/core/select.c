@@ -426,11 +426,15 @@ static int poll_disp_fds(unsigned int n_fd)
 	return work;
 }
 
+void osmo_io_uring_submit(void);
+
 static int _osmo_select_main(int polling)
 {
 	unsigned int n_poll;
 	int rc;
 	int timeout = 0;
+
+	osmo_io_uring_submit();
 
 	/* prepare read and write fdsets */
 	n_poll = poll_fill_fds();
