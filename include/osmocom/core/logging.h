@@ -11,6 +11,8 @@
 #include <osmocom/core/defs.h>
 #include <osmocom/core/linuxlist.h>
 
+struct osmo_io_fd;
+
 extern struct log_info *osmo_log_info;
 
 #ifndef DEBUG
@@ -332,7 +334,7 @@ struct log_target {
 			FILE *out;
 			const char *fname;
 			/* indirect output via write_queue and osmo_select_main() */
-			struct osmo_wqueue *wqueue;
+			struct osmo_io_fd *iofd;
 		} tgt_file;
 
 		struct {
