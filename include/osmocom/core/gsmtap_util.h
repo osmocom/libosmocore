@@ -1,5 +1,6 @@
 #pragma once
 
+#include <stdbool.h>
 #include <stdint.h>
 #include <osmocom/core/write_queue.h>
 #include <osmocom/core/select.h>
@@ -30,6 +31,8 @@ int gsmtap_inst_fd(struct gsmtap_inst *gti)
 	OSMO_DEPRECATED("Use gsmtap_inst_fd2() instead");
 
 int gsmtap_inst_fd2(const struct gsmtap_inst *gti);
+
+bool gsmtap_inst_get_osmo_io_mode(const struct gsmtap_inst *gti);
 
 int gsmtap_source_init_fd(const char *host, uint16_t port);
 int gsmtap_source_init_fd2(const char *local_host, uint16_t local_port, const char *rem_host, uint16_t rem_port);

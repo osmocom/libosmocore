@@ -38,6 +38,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include <string.h>
 #include <errno.h>
 
@@ -83,6 +84,12 @@ int gsmtap_inst_fd(struct gsmtap_inst *gti)
 int gsmtap_inst_fd2(const struct gsmtap_inst *gti)
 {
 	return gti->wq.bfd.fd;
+}
+
+/*! determine whether the gsmtap_inst is in osmo_io mode or not. */
+bool gsmtap_inst_get_osmo_io_mode(const struct gsmtap_inst *gti)
+{
+	return gti->osmo_io_mode;
 }
 
 /*! convert RSL channel number to GSMTAP channel type

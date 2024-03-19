@@ -29,6 +29,7 @@
 #include <osmocom/core/strrb.h>
 #include <osmocom/core/loggingrb.h>
 #include <osmocom/core/gsmtap.h>
+#include <osmocom/core/gsmtap_util.h>
 #include <osmocom/core/application.h>
 
 #include <osmocom/vty/command.h>
@@ -803,18 +804,24 @@ DEFUN(cfg_no_log_systemd_journal, cfg_no_log_systemd_journal_cmd,
 }
 
 DEFUN(cfg_log_gsmtap, cfg_log_gsmtap_cmd,
-	"log gsmtap [HOSTNAME]",
+	"log gsmtap [HOSTNAME] [sync-io]",
 	LOG_STR "Logging via GSMTAP\n"
 	"Host name to send the GSMTAP logging to (UDP port 4729)\n")
 {
-	const char *hostname = argc ? argv[0] : "127.0.0.1";
+	const char *hostname = "127.0.0.1";
+	bool async_io = true;
 	struct log_target *tgt;
+
+	if (argc >= 1)
+		hostname = argv[0];
+	if (argc >= 2 && !strcmp(argv[1], "sync-io"))
+		async_io = false;
 
 	log_tgt_mutex_lock();
 	tgt = log_target_find(LOG_TGT_TYPE_GSMTAP, hostname);
 	if (!tgt) {
 		tgt = log_target_create_gsmtap(hostname, GSMTAP_UDP_PORT,
-					       host.app_info->name, false,
+					       host.app_info->name, async_io,
 					       true);
 		if (!tgt) {
 			vty_out(vty, "%% Unable to create GSMTAP log for %s%s",
@@ -1032,8 +1039,9 @@ static int config_write_log_single(struct vty *vty, struct log_target *tgt)
 			log_target_rb_avail_size(tgt), VTY_NEWLINE);
 		break;
 	case LOG_TGT_TYPE_GSMTAP:
-		vty_out(vty, "log gsmtap %s%s",
-			tgt->tgt_gsmtap.hostname, VTY_NEWLINE);
+		vty_out(vty, "log gsmtap %s%s%s", tgt->tgt_gsmtap.hostname,
+			gsmtap_inst_get_osmo_io_mode(tgt->tgt_gsmtap.gsmtap_inst) ? "" : " sync-io",
+			VTY_NEWLINE);
 		break;
 	case LOG_TGT_TYPE_SYSTEMD:
 		vty_out(vty, "log systemd-journal%s%s",

@@ -41,6 +41,7 @@ get_value_string_or_null;
 gsmtap_gsm_channel_names;
 gsmtap_inst_fd;
 gsmtap_inst_fd2;
+gsmtap_inst_get_osmo_io_mode;
 gsmtap_makemsg;
 gsmtap_makemsg_ex;
 gsmtap_send;
