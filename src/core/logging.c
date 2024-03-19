@@ -968,6 +968,7 @@ static void _file_raw_output(struct log_target *target, int subsys, unsigned int
 	rc = _output_buf((char *)msgb_data(msg), msgb_tailroom(msg), target, subsys, level, file, line, cont, format, ap);
 	msgb_put(msg, rc);
 
+	printf("writing msgb");
 	rc = osmo_iofd_write_msgb(target->tgt_file.iofd, msg);
 	if (rc < 0)
 		msgb_free(msg);
@@ -1121,6 +1122,7 @@ int log_target_file_switch_to_wqueue(struct log_target *target)
 	struct osmo_io_fd *iofd;
 	const char *name;
 	int rc;
+	printf("%s\n", __func__);
 
 	if (!target)
 		return -ENODEV;
@@ -1146,8 +1148,10 @@ int log_target_file_switch_to_wqueue(struct log_target *target)
 	osmo_wqueue_init(wq, LOG_WQUEUE_LEN);
 #endif
 	iofd = osmo_iofd_setup(target, -1, name, OSMO_IO_FD_MODE_READ_WRITE, &log_file_ioops, target);
-	if (!iofd)
+	if (!iofd) {
+		printf("unable to setup");
 		return -ENOMEM;
+	}
 	osmo_iofd_set_txqueue_max_length(iofd, LOG_WQUEUE_LEN);
 
 	fflush(target->tgt_file.out);
@@ -1156,12 +1160,14 @@ int log_target_file_switch_to_wqueue(struct log_target *target)
 	else
 		rc = dup(STDERR_FILENO);
 	if (rc < 0) {
+		printf("unable to open");
 		osmo_iofd_free(iofd);
 		return -errno;
 	}
 
 	rc = osmo_iofd_register(iofd, rc);
 	if (rc < 0) {
+		printf("unable to register");
 		osmo_iofd_free(iofd);
 		return -EIO;
 	}

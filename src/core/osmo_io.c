@@ -209,14 +209,18 @@ struct msgb *iofd_msgb_pending_or_alloc(struct osmo_io_fd *iofd)
  */
 int iofd_txqueue_enqueue(struct osmo_io_fd *iofd, struct iofd_msghdr *msghdr)
 {
-	if (iofd->tx_queue.current_length >= iofd->tx_queue.max_length)
+	if (iofd->tx_queue.current_length >= iofd->tx_queue.max_length) {
+		printf("ENOSPC");
 		return -ENOSPC;
+	}
 
 	llist_add_tail(&msghdr->list, &iofd->tx_queue.msg_queue);
 	iofd->tx_queue.current_length++;
 
-	if (iofd->tx_queue.current_length == 1 && !IOFD_FLAG_ISSET(iofd, IOFD_FLAG_CLOSED))
+	if (iofd->tx_queue.current_length == 1 && !IOFD_FLAG_ISSET(iofd, IOFD_FLAG_CLOSED)) {
+		printf("===== ENABLE\n");
 		osmo_iofd_ops.write_enable(iofd);
+	}
 
 	return 0;
 }
@@ -435,17 +439,21 @@ void iofd_handle_send_completion(struct osmo_io_fd *iofd, int rc, struct iofd_ms
 int osmo_iofd_write_msgb(struct osmo_io_fd *iofd, struct msgb *msg)
 {
 	int rc;
+	printf("%s\n", __func__);
 
 	if (OSMO_UNLIKELY(msgb_length(msg) == 0)) {
 		LOGPIO(iofd, LOGL_ERROR, "Length is 0, rejecting msgb.\n");
+		printf("%s: EINVAL\n", __func__);
 		return -EINVAL;
 	}
 
 	OSMO_ASSERT(iofd->mode == OSMO_IO_FD_MODE_READ_WRITE);
 
 	struct iofd_msghdr *msghdr = iofd_msghdr_alloc(iofd, IOFD_ACT_WRITE, msg, 0);
-	if (!msghdr)
+	if (!msghdr) {
+		printf("%s: ENOMEM\n", __func__);
 		return -ENOMEM;
+	}
 
 	msghdr->flags = MSG_NOSIGNAL;
 	msghdr->iov[0].iov_base = msgb_data(msghdr->msg);
@@ -456,6 +464,7 @@ int osmo_iofd_write_msgb(struct osmo_io_fd *iofd, struct msgb *msg)
 	rc = iofd_txqueue_enqueue(iofd, msghdr);
 	if (rc < 0) {
 		iofd_msghdr_free(msghdr);
+		printf("%s: ERRENQ\n", __func__);
 		LOGPIO(iofd, LOGL_ERROR, "enqueueing message failed (%d). Rejecting msgb\n", rc);
 		return rc;
 	}
