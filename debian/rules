@@ -30,6 +30,7 @@ override_dh_auto_configure:
 	set -x && \
 	CONFIGURE_FLAGS=" \
 		--disable-sctp-tests \
+		--disable-uring-tests \
 		--enable-static \
 		--enable-systemd-logging \
 	"; \

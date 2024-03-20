@@ -532,7 +532,7 @@ AT_CLEANUP
 
 AT_SETUP([osmo_io (uring)])
 AT_KEYWORDS([osmo_io (uring)])
-AT_SKIP_IF([ test "$ENABLE_URING" != "yes" ])
+AT_SKIP_IF([ test "$ENABLE_URING" != "yes" || test "$ENABLE_URING_TESTS" != "yes" ])
 cat $abs_srcdir/osmo_io/osmo_io_test.ok > expout
 cat $abs_srcdir/osmo_io/osmo_io_test.err > experr
 AT_CHECK([LIBOSMO_IO_BACKEND=IO_URING $abs_top_builddir/tests/osmo_io/osmo_io_test], [0], [expout], [experr])
