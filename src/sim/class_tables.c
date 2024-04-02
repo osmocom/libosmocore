@@ -187,6 +187,16 @@ static int gp_cla_ins_helper(const struct osim_cla_ins_case *cic,
 		default:
 			return 3;
 		}
+		break;
+	case 0xF2:
+		/* in their infinite wisdom, GlobalPlatform re-defined the CLA 8x / INS F2 command, so one can
+		 * take a guess if it's GlobalPlatform or ETSI.  Lucikly, the P1 coding of ETSI [so far]
+		 * states all the four upper bits must be 0, while GP always has one of those bits set */
+		if (p1 & 0xF0)
+			return 4; /* GlobalPlatform v2.2 11.4.2 */
+		else
+			return 2; /* ETSI TS 102 221 V16.2.0 11.1.2 */
+		break;
 	}
 	return 0;
 }
@@ -217,7 +227,7 @@ static const uint8_t gp_ins_tbl_8ce[256] = {
 	[0xE2]		= 0x80,	/* STORE DATA */
 	[0xCA]		= 4,	/* GET DATA */
 	[0xCB]		= 4,	/* GET DATA */
-	[0xF2]		= 4,	/* GET STATUS */
+	[0xF2]		= 0x80,	/* GET STATUS */
 	[0xE6]		= 4,	/* INSTALL */
 	[0xE8]		= 4,	/* LOAD */
 	[0xD8]		= 4,	/* PUT KEY */
@@ -246,6 +256,12 @@ static const struct osim_cla_ins_case uicc_ins_case[] = {
 		.helper		= uicc046_cla_ins_helper,
 		.ins_tbl	= uicc_ins_tbl_046,
 	}, {
+		/* must be before uicc_ins_tbl_8ce below with same CLA+mask */
+		.cla		= 0x80,
+		.cla_mask	= 0xF0,
+		.helper		= gp_cla_ins_helper,
+		.ins_tbl	= gp_ins_tbl_8ce,
+	}, {
 		.cla		= 0x80,
 		.cla_mask	= 0xF0,
 		.ins_tbl	= uicc_ins_tbl_8ce,
@@ -257,11 +273,6 @@ static const struct osim_cla_ins_case uicc_ins_case[] = {
 		.cla		= 0xE0,
 		.cla_mask	= 0xF0,
 		.ins_tbl	= uicc_ins_tbl_8ce,
-	}, {
-		.cla		= 0x80,
-		.cla_mask	= 0xF0,
-		.helper		= gp_cla_ins_helper,
-		.ins_tbl	= gp_ins_tbl_8ce,
 	}, {
 		.cla		= 0xC0,
 		.cla_mask	= 0xF0,
@@ -307,6 +318,12 @@ static const struct osim_cla_ins_case uicc_sim_ins_case[] = {
 		.cla_mask	= 0xF0,
 		.helper		= uicc046_cla_ins_helper,
 		.ins_tbl	= uicc_ins_tbl_046,
+	}, {
+		/* must be before uicc_ins_tbl_8ce below with same CLA+mask */
+		.cla		= 0x80,
+		.cla_mask	= 0xF0,
+		.helper		= gp_cla_ins_helper,
+		.ins_tbl	= gp_ins_tbl_8ce,
 	}, {
 		.cla		= 0x80,
 		.cla_mask	= 0xF0,
