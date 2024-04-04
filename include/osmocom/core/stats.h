@@ -109,6 +109,9 @@ extern struct osmo_stats_config *osmo_stats_config;
 
 void osmo_stats_init(void *ctx);
 int osmo_stats_report(void);
+void osmo_stats_report_use_lock(bool enable);
+void osmo_stats_report_lock(void);
+void osmo_stats_report_unlock(void);
 
 int osmo_stats_set_interval(int interval);
 

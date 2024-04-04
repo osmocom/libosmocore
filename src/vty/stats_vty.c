@@ -426,7 +426,9 @@ DEFUN(show_stats,
 	if (argc > 0)
 		skip_zero = true;
 
+	osmo_stats_report_lock();
 	vty_out_statistics_full2(vty, "", skip_zero);
+	osmo_stats_report_unlock();
 
 	return CMD_SUCCESS;
 }
@@ -444,7 +446,9 @@ DEFUN(show_stats_level,
 	bool skip_zero = false;
 	if (argc > 1)
 		skip_zero = true;
+	osmo_stats_report_lock();
 	vty_out_statistics_partial2(vty, "", level, skip_zero);
+	osmo_stats_report_unlock();
 
 	return CMD_SUCCESS;
 }
@@ -632,7 +636,9 @@ DEFUN(show_rate_counters,
 	struct rctr_vty_ctx rctx = { .vty = vty, .skip_zero = false };
 	if (argc > 0)
 		rctx.skip_zero = true;
+	osmo_stats_report_lock();
 	rate_ctr_for_each_group(rate_ctr_group_handler, &rctx);
+	osmo_stats_report_unlock();
 	return CMD_SUCCESS;
 }
 
