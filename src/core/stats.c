@@ -71,6 +71,7 @@
 #include <stdio.h>
 #include <sys/types.h>
 #include <inttypes.h>
+#include <pthread.h>
 
 #ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
@@ -787,13 +788,89 @@ static void flush_all_reporters(void)
 	}
 }
 
+static pthread_mutex_t *g_report_lock = NULL;
+
+/*! Enable osmo_stats_report() mutex locking with osmo_stats_report_lock().
+ *
+ * By default, osmo_stats_report() does no locking / is not thread safe,
+ * and osmo_stats_report_lock() and osmo_stats_report_unlock() have no effect.
+ *
+ * Calling osmo_stats_report_use_lock(true) initializes a mutex, which is then internally locked during
+ * osmo_stats_report(). The same mutex can then also be locked and unlocked by osmo_stats_report_lock() and
+ * osmo_stats_report_unlock().
+ *
+ * Calling osmo_stats_report_use_lock(false) destroys the mutex again, if any.
+ *
+ * The usual multi-threading pitfalls apply, IOW, the caller must ensure that this function is only called when
+ * - osmo_stats_report() is not running, and
+ * - the mutex is not in use.
+ *
+ * It is always safe to run osmo_stats_report_use_lock() while the application is single-threaded.
+ *
+ * For example:
+ * - call osmo_stats_report_use_lock(true) once during application startup, before creating any additional threads.
+ * - During application teardown, first join all threads, and finally call osmo_stats_report_use_lock(false) to destroy
+ *   any mutex resources.
+ */
+void osmo_stats_report_use_lock(bool enable)
+{
+	static pthread_mutex_t report_lock;
+	if (enable) {
+		/* enable locking */
+		if (!g_report_lock) {
+			pthread_mutex_init(&report_lock, NULL);
+			g_report_lock = &report_lock;
+		}
+		return;
+	}
+	/* disable locking */
+	if (g_report_lock) {
+		pthread_mutex_destroy(g_report_lock);
+		g_report_lock = NULL;
+	}
+}
+
+/*! After osmo_stats_report_use_lock(true), lock a mutex to avoid concurrency with osmo_stats_report() reading from
+ * stats.
+ * The caller must ensure to call osmo_stats_report_unlock() as soon as possible, or the application will lock up.
+ *
+ * This function has no effect with osmo_stats_report_use_lock(false).
+ *
+ * Useful in multi-threaded applications:
+ * - To allow writing to stats/counters/rate_ctrs directly from various threads, ensuring that given sets of updates are
+ *   reported in sync.
+ * - To lock during addition/removal of stats groups, making it safe to traverse stats from multiple threads.
+ */
+void osmo_stats_report_lock(void)
+{
+	if (!g_report_lock)
+		return;
+	pthread_mutex_lock(g_report_lock);
+}
+
+/*! Unlock the mutex that was before locked via osmo_stats_report_lock().
+ * Do not call without a prior call to osmo_stats_report_lock().
+ *
+ * This function has no effect with osmo_stats_report_use_lock(false).
+ */
+void osmo_stats_report_unlock(void)
+{
+	if (!g_report_lock)
+		return;
+	pthread_mutex_unlock(g_report_lock);
+}
+
 int osmo_stats_report(void)
 {
 	/* per group actions */
 	TRACE(LIBOSMOCORE_STATS_START());
+	osmo_stats_report_lock();
+	/* { */
 	osmo_counters_for_each(handle_counter, NULL);
 	rate_ctr_for_each_group(rate_ctr_group_handler, NULL);
 	osmo_stat_item_for_each_group(osmo_stat_item_group_handler, NULL);
+	/* } */
+	osmo_stats_report_unlock();
 
 	/* global actions */
 	flush_all_reporters();
