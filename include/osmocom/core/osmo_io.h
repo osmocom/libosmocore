@@ -100,6 +100,7 @@ struct osmo_io_ops {
 		 *  \param[in] msg message buffer containing the read data. Ownership is transferred to the
 		 *  call-back, and it must make sure to msgb_free() it eventually! */
 		void (*read_cb)(struct osmo_io_fd *iofd, int res, struct msgb *msg);
+
 		/*! completion call-back function when write issued via osmo_iofd_write_msgb() has completed
 		 * on fd. Only valid in OSMO_IO_FD_MODE_READ_WRITE.
 		 *  \param[in] iofd on which a write() has completed.
@@ -108,9 +109,14 @@ struct osmo_io_ops {
 		 *  call-back; it is automatically freed after the call-back terminates! */
 		void (*write_cb)(struct osmo_io_fd *iofd, int res,
 				 struct msgb *msg);
-		/*! optional call-back function to segment the data at message boundaries. This is useful when
-		 *  message boundaries are to be preserved over a SOCK_STREAM transport socket like TCP.  Can
-		 *  be NULL for any application not requiring de-segmentation of received data.
+
+		/*! optional call-back function to segment the data at message boundaries.
+		 *  \param[in] msg message buffer whose data is to be segmented
+		 *  \returns See full function description.
+		 *
+		 *  This is useful when message boundaries are to be preserved over a SOCK_STREAM transport
+		 *  socket like TCP.  Can be NULL for any application not requiring de-segmentation of
+		 *  received data.
 		 *
 		 *  The call-back needs to return the size of the next message. If it returns
 		 *  -EAGAIN or a value larger than msgb_length() (message is incomplete)
@@ -119,8 +125,26 @@ struct osmo_io_ops {
 		 *  If a full message was received (segmentation_cb() returns a value <= msgb_length())
 		 *  the msgb will be trimmed to size by osmo_io and forwarded to the read call-back. Any
 		 *  parsing done to the msgb by segmentation_cb() will be preserved for the read_cb()
-		 *  (e.g. setting lxh or msgb->cb). */
+		 *  (e.g. setting lxh or msgb->cb).
+		 *
+		 * Only one (or none) of both segmentation_cb and segmentation_cb2 shall be set.
+		 * Having both set will be considered an error during iofd setup. */
 		int (*segmentation_cb)(struct msgb *msg);
+
+		/*! optional call-back function to segment the data at message boundaries.
+		 *  \param[in] iofd handling msg
+		 *  \param[in] msg message buffer whose data is to be segmented
+		 *  \returns See full function description.
+		 *
+		 *  Same as segmentation_cb above, with an extra parameter to have access to the iofd and its
+		 *  related functionalities (eg data pointer). This is useful for users requiring to store
+		 *  global state or access external objects while segmenting.
+		 *
+		 * The provided iofd shall not be freed by the user during the callback.
+		 *
+		 * Only one (or none) of both segmentation_cb and segmentation_cb2 shall be set.
+		 * Having both set will be considered an error during iofd setup. */
+		int (*segmentation_cb2)(struct osmo_io_fd *iofd, struct msgb *msg);
 	};
 
 	/* mode OSMO_IO_FD_MODE_RECVFROM_SENDTO: */

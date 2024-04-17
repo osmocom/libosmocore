@@ -267,7 +267,7 @@ struct iofd_msghdr *iofd_txqueue_dequeue(struct osmo_io_fd *iofd)
 */
 static enum iofd_seg_act iofd_handle_segmentation(struct osmo_io_fd *iofd, struct msgb *msg, struct msgb **pending_out)
 {
-	int extra_len, received_len;
+	int extra_len, received_len, expected_len;
 	struct msgb *msg_pending;
 
 	/* Save the start of message before segmentation_cb (which could change it) */
@@ -275,12 +275,15 @@ static enum iofd_seg_act iofd_handle_segmentation(struct osmo_io_fd *iofd, struc
 
 	received_len = msgb_length(msg);
 
-	if (!iofd->io_ops.segmentation_cb) {
+	if (iofd->io_ops.segmentation_cb2) {
+		expected_len = iofd->io_ops.segmentation_cb2(iofd, msg);
+	} else if (iofd->io_ops.segmentation_cb) {
+		expected_len = iofd->io_ops.segmentation_cb(msg);
+	} else {
 		*pending_out = NULL;
 		return IOFD_SEG_ACT_HANDLE_ONE;
 	}
 
-	int expected_len = iofd->io_ops.segmentation_cb(msg);
 	if (expected_len == -EAGAIN) {
 		goto defer;
 	} else if (expected_len < 0) {
@@ -598,6 +601,9 @@ static int check_mode_callback_compat(enum osmo_io_fd_mode mode, const struct os
 		if (ops->recvfrom_cb || ops->sendto_cb)
 			return false;
 		if (ops->recvmsg_cb || ops->sendmsg_cb)
+			return false;
+		/* Forbid both segementation_cb set, something is wrong: */
+		if (ops->segmentation_cb && ops->segmentation_cb2)
 			return false;
 		break;
 	case OSMO_IO_FD_MODE_RECVFROM_SENDTO:
