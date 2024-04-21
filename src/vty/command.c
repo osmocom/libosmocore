@@ -4297,7 +4297,7 @@ DEFUN(no_banner_motd,
 /* Set config filename.  Called from vty.c */
 void host_config_set(const char *filename)
 {
-	host.config = talloc_strdup(tall_vty_cmd_ctx, filename);
+	osmo_talloc_replace_string(tall_vty_cmd_ctx, &host.config, filename);
 }
 
 const char *host_config_file(void)
