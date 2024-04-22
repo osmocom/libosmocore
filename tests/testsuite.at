@@ -202,8 +202,8 @@ AT_CLEANUP
 
 AT_SETUP([logging_gsmtap])
 AT_KEYWORDS([logging_gsmtap])
-cat $abs_srcdir/logging/logging_test_gsmtap.err > experr
-AT_CHECK([$abs_top_builddir/tests/logging/logging_test_gsmtap 3>&1 1>&2 2>&3 |grep -v "enqueueing message failed" 3>&1 1>&2 2>&3 ], [], [ignore], [experr])
+cat $abs_srcdir/logging/logging_gsmtap_test.err > experr
+AT_CHECK([$abs_top_builddir/tests/logging/logging_gsmtap_test 3>&1 1>&2 2>&3 |grep -v "enqueueing message failed" 3>&1 1>&2 2>&3 ], [], [ignore], [experr])
 AT_CLEANUP
 
 AT_SETUP([codec])
