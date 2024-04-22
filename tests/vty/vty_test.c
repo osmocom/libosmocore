@@ -39,6 +39,7 @@
 #include <osmocom/vty/stats.h>
 
 static enum event last_vty_connection_event = -1;
+static const char *cfg_path = NULL;
 void *ctx = NULL;
 
 static void test_cmd_string_from_valstr(void)
@@ -292,9 +293,12 @@ static void test_stats_vty(void)
 
 void test_exit_by_indent(const char *fname, int expect_rc)
 {
+	char fpath[PATH_MAX];
 	int rc;
+
 	printf("reading file %s, expecting rc=%d\n", fname, expect_rc);
-	rc = vty_read_config_file(fname, NULL);
+	snprintf(&fpath[0], sizeof(fpath), "%s/%s", cfg_path, fname);
+	rc = vty_read_config_file(fpath, NULL);
 	printf("got rc=%d\n", rc);
 	OSMO_ASSERT(rc == expect_rc);
 }
@@ -617,6 +621,12 @@ int main(int argc, char **argv)
 		.num_cat = ARRAY_SIZE(default_categories),
 	};
 	void *stats_ctx;
+
+	if (argc < 2) {
+		fprintf(stderr, "Usage: %s CFG_PATH\n", argv[0]);
+		return 1;
+	}
+	cfg_path = argv[1];
 
 	ctx = talloc_named_const(NULL, 0, "stats test context");
 	stats_ctx = talloc_named_const(ctx, 1, "stats test context");

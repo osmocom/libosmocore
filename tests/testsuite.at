@@ -84,9 +84,8 @@ AT_CLEANUP
 if ENABLE_MSGFILE
 AT_SETUP([msgfile])
 AT_KEYWORDS([msgfile])
-cp $abs_srcdir/msgfile/msgconfig.cfg .
 cat $abs_srcdir/msgfile/msgfile_test.ok > expout
-AT_CHECK([$abs_top_builddir/tests/msgfile/msgfile_test], [0], [expout])
+AT_CHECK([$abs_top_builddir/tests/msgfile/msgfile_test $abs_srcdir/msgfile/msgconfig.cfg], [0], [expout])
 AT_CLEANUP
 endif
 
@@ -243,8 +242,7 @@ AT_SETUP([vty])
 AT_KEYWORDS([vty])
 cat $abs_srcdir/vty/vty_test.ok > expout
 cat $abs_srcdir/vty/vty_test.err > experr
-cp $abs_srcdir/vty/*.cfg .
-AT_CHECK([$abs_top_builddir/tests/vty/vty_test], [0], [expout], [experr])
+AT_CHECK([$abs_top_builddir/tests/vty/vty_test $abs_srcdir/vty], [0], [expout], [experr])
 AT_CLEANUP
 
 AT_SETUP([gprs-bssgp])

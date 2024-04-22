@@ -17,6 +17,7 @@
 
 #include <osmocom/core/msgfile.h>
 #include <osmocom/core/talloc.h>
+#include <osmocom/core/utils.h>
 
 #include <stdio.h>
 
@@ -39,8 +40,8 @@ int main(int argc, char **argv)
 {
 	struct osmo_config_list *entries;
 
-	/* todo use msgfile_test.c.in and replace the path */
-	entries = osmo_config_list_parse(NULL, "msgconfig.cfg");
+	OSMO_ASSERT(argc > 1);
+	entries = osmo_config_list_parse(NULL, argv[1]);
 	dump_entries(entries);
 	talloc_free(entries);
 

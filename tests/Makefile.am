@@ -550,8 +550,7 @@ endif
 	gea/gea_test \
 		>$(srcdir)/gea/gea_test.ok
 if ENABLE_MSGFILE
-	cp $(srcdir)/msgfile/msgconfig.cfg .
-	msgfile/msgfile_test \
+	msgfile/msgfile_test $(srcdir)/msgfile/msgconfig.cfg \
 		>$(srcdir)/msgfile/msgfile_test.ok
 endif
 	sms/sms_test \
@@ -606,8 +605,7 @@ endif
 	strrb/strrb_test \
 		>$(srcdir)/strrb/strrb_test.ok
 if ENABLE_VTY
-	cp $(srcdir)/vty/*.cfg .
-	vty/vty_test \
+	vty/vty_test $(srcdir)/vty \
 		>$(srcdir)/vty/vty_test.ok \
 		2>$(srcdir)/vty/vty_test.err
 endif
