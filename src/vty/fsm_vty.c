@@ -158,6 +158,44 @@ DEFUN(show_fsm, show_fsm_cmd,
 	return CMD_SUCCESS;
 }
 
+DEFUN(show_fsm_state_graph, show_fsm_state_graph_cmd,
+	"show fsm-state-graph NAME",
+	SHOW_STR "Generate a state transition graph (using DOT language)\n"
+	"FSM name\n")
+{
+	const struct osmo_fsm *fsm;
+
+	fsm = osmo_fsm_find_by_name(argv[0]);
+	if (!fsm) {
+		vty_out(vty, "Error: FSM with name '%s' doesn't exist!%s",
+			argv[0], VTY_NEWLINE);
+		return CMD_WARNING;
+	}
+
+	vty_out(vty, "digraph \"%s\" {%s", fsm->name, VTY_NEWLINE);
+
+	for (unsigned int i = 0; i < fsm->num_states; i++) {
+		const struct osmo_fsm_state *st = &fsm->states[i];
+
+		vty_out(vty, "\t\"%s\";  # out_state_mask=0x%08x%s",
+			st->name, st->out_state_mask, VTY_NEWLINE);
+
+		for (unsigned int j = 0; j < sizeof(st->out_state_mask) * 8; j++) {
+			if (~st->out_state_mask & (1 << j))
+				continue;
+			vty_out(vty, "\t\"%s\" -> \"%s\";%s",
+				st->name, osmo_fsm_state_name(fsm, j),
+				VTY_NEWLINE);
+		}
+
+		vty_out(vty, "%s", VTY_NEWLINE);
+	}
+
+	vty_out(vty, "}%s", VTY_NEWLINE);
+
+	return CMD_SUCCESS;
+}
+
 DEFUN(show_fsm_insts, show_fsm_insts_cmd,
 	"show fsm-instances all",
 	SH_FSMI_STR
@@ -214,6 +252,7 @@ void osmo_fsm_vty_add_cmds(void)
 
 	install_lib_element_ve(&show_fsm_cmd);
 	install_lib_element_ve(&show_fsms_cmd);
+	install_lib_element_ve(&show_fsm_state_graph_cmd);
 	install_lib_element_ve(&show_fsm_inst_cmd);
 	install_lib_element_ve(&show_fsm_insts_cmd);
 	osmo_fsm_vty_cmds_installed = true;
