@@ -2310,9 +2310,10 @@ static const struct tlv_definition bss_att_tlvdef = {
 		[GSM0808_IE_PS_REGISTERED_OPERATOR]	= { TLV_TYPE_FIXED, 3 },
 		[GSM0808_IE_CS_REGISTERED_OPERATOR]	= { TLV_TYPE_FIXED, 3 },
 
-		/* Osmocom extensions */
+		/* Osmocom and Themyscira extensions */
 		[GSM0808_IE_OSMO_OSMUX_SUPPORT]		= { TLV_TYPE_T },
 		[GSM0808_IE_OSMO_OSMUX_CID]		= { TLV_TYPE_TV },
+		[GSM0808_IE_THEMWI_RTP_EXTENSIONS]	= { TLV_TYPE_TLV },
 	},
 };
 

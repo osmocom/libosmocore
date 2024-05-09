@@ -332,9 +332,10 @@ enum GSM0808_IE_CODING {
 	GSM0808_IE_PS_REGISTERED_OPERATOR	= 0x99,
 	GSM0808_IE_CS_REGISTERED_OPERATOR	= 0x9a,
 
-	/* Osmocom extensions: */
+	/* Osmocom and Themyscira extensions: */
 	GSM0808_IE_OSMO_OSMUX_SUPPORT		= 0xf0,
 	GSM0808_IE_OSMO_OSMUX_CID		= 0xf1,
+	GSM0808_IE_THEMWI_RTP_EXTENSIONS	= 0xf2,
 };
 
 /* 3GPP TS 48.008 3.2.3 Signalling Field Element Coding.
