@@ -36,6 +36,8 @@ enum osmo_bts_features {
 	BTS_FEAT_OSMUX, /* Osmux (Osmocom RTP muxing) support */
 	BTS_FEAT_VBS, /* Voice Broadcast Service support, 3GPP TS 43.069 */
 	BTS_FEAT_VGCS, /* Voice Group Call Service support, 3GPP TS 44.068 */
+	BTS_FEAT_TWTS001, /* TW-TS-001: enhanced RTP transport for FR & EFR */
+	BTS_FEAT_TWTS002, /* TW-TS-002: enhanced RTP transport for HRv1 */
 	_NUM_BTS_FEAT
 };
 
