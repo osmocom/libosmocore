@@ -19,6 +19,14 @@
 #include <osmocom/core/utils.h>
 #include <osmocom/sim/class_tables.h>
 
+/* Quick reminder about the "cases" as per ISO7816-3 / ETSI TS 102 221 Section 7.3.1.1
+ *
+ * Case 1: Command Length 0, Response Length 0
+ * Case 2: Command Length 0, Response Length from P3
+ * Case 3: Command Length P3, Response Length 0
+ * Case 4: Command Length P3, followed by 61xx for response length + GET RESPONSE
+ */
+
 static const uint8_t iso7816_ins_tbl[256] = {
 	[0xB0]	= 2,	/* READ BIN */
 	[0xD0]	= 3,	/* WRITE BIN */
