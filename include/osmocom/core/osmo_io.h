@@ -55,7 +55,7 @@
  *  \param[in] args arguments to the format string
  */
 #define LOGPIO(iofd, level, fmt, args...) \
-	LOGP(DLIO, level, "iofd(%s)" fmt, iofd->name, ## args)
+	LOGP(DLIO, level, "iofd(%s) " fmt, iofd->name, ## args)
 
 struct osmo_io_fd;
 
