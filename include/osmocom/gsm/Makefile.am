@@ -50,6 +50,7 @@ osmogsm_HEADERS = \
 	oap_client.h \
 	rlp.h \
 	rsl.h \
+	rtp_extensions.h \
 	rxlev_stat.h \
 	sysinfo.h \
 	tlv.h \
