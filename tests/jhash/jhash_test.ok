@@ -1,0 +1,25 @@
+add:
+- adding items[0]#b286bb61 = blob one
+- adding items[1]#ad4eb7b = blob two and five are the same
+- adding items[2]#6b8eae61 = third blob
+- adding items[3]#24a546dc = fourth blob
+- adding items[4]#ad4eb7b = blob two and five are the same
+list:
+- blob two and five are the same [4]
+- blob two and five are the same [1]
+- blob one [0]
+- fourth blob [3]
+- third blob [2]
+find:
+- looking up items[0]#b286bb61 = blob one
+  - found items[0]
+- looking up items[1]#ad4eb7b = blob two and five are the same
+  - not items[4]
+  - found items[1]
+- looking up items[2]#6b8eae61 = third blob
+  - found items[2]
+- looking up items[3]#24a546dc = fourth blob
+  - found items[3]
+- looking up items[4]#ad4eb7b = blob two and five are the same
+  - found items[4]
+  - not items[1]

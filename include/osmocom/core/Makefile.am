@@ -27,6 +27,7 @@ osmocore_HEADERS = \
 	hashtable.h \
 	isdnhdlc.h \
 	it_q.h \
+	jhash.h \
 	linuxlist.h \
 	linuxrbtree.h \
 	log2.h \

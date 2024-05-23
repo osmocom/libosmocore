@@ -547,3 +547,9 @@ AT_KEYWORDS([rlp])
 cat $abs_srcdir/rlp/rlp_test.ok > expout
 AT_CHECK([$abs_top_builddir/tests/rlp/rlp_test], [0], [expout], [ignore])
 AT_CLEANUP
+
+AT_SETUP([jhash])
+AT_KEYWORDS([jhash])
+cat $abs_srcdir/jhash/jhash_test.ok > expout
+AT_CHECK([$abs_top_builddir/tests/jhash/jhash_test], [0], [expout], [ignore])
+AT_CLEANUP
