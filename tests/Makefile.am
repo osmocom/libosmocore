@@ -59,6 +59,7 @@ check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
 		 osmo_io/osmo_io_test					\
 		 soft_uart/soft_uart_test				\
 		 rlp/rlp_test						\
+		 jhash/jhash_test					\
 		 $(NULL)
 
 if ENABLE_MSGFILE
@@ -391,6 +392,7 @@ soft_uart_soft_uart_test_SOURCES = soft_uart/soft_uart_test.c
 rlp_rlp_test_SOURCES = rlp/rlp_test.c
 rlp_rlp_test_LDADD = $(top_builddir)/src/gsm/libosmogsm.la $(LDADD)
 
+jhash_jhash_test_SOURCES = jhash/jhash_test.c
 
 # The `:;' works around a Bash 3.2 bug when the output is not writeable.
 $(srcdir)/package.m4: $(top_srcdir)/configure.ac
@@ -505,6 +507,7 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
 	     soft_uart/soft_uart_test.ok \
 	     rlp/rlp_test.ok \
 	     socket/socket_sctp_test.ok socket/socket_sctp_test.err \
+	     jhash/jhash_test.ok \
 	     $(NULL)
 
 if ENABLE_LIBSCTP
@@ -729,8 +732,9 @@ endif
 	soft_uart/soft_uart_test \
 		>$(srcdir)/soft_uart/soft_uart_test.ok
 	rlp/rlp_test \
-		>$(srcdir)/rlp/rlp_test.ok \
-	$(NULL)
+		>$(srcdir)/rlp/rlp_test.ok
+	jhash/jhash_test \
+		>$(srcdir)/jhash/jhash_test.ok
 
 
 check-local: atconfig $(TESTSUITE)
