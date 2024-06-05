@@ -6,3 +6,5 @@ Testing uicc_read
 Testing uicc_upd
 Testing uicc_get_status
 Testing euicc_m2m_get_status
+Testing gp_get_data2
+Testing gp_get_data4

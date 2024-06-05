@@ -178,6 +178,7 @@ static int gp_cla_ins_helper(const struct osim_cla_ins_case *cic,
 {
 	uint8_t ins = hdr[1];
 	uint8_t p1 = hdr[2];
+	uint8_t p3 = hdr[4];
 
 	switch (ins) {
 	case 0xE2:	/* STORE DATA */
@@ -196,6 +197,16 @@ static int gp_cla_ins_helper(const struct osim_cla_ins_case *cic,
 			return 4; /* GlobalPlatform v2.2 11.4.2 */
 		else
 			return 2; /* ETSI TS 102 221 V16.2.0 11.1.2 */
+		break;
+	case 0xCA:
+	case 0xCB:
+		/* in their infinite wisdom, GlobalPlatform made GET DATA a command that can be either APDU
+		 * case 2 or case 4.  As the specify Le must be 0x00, we can conclude that P3 == 0x00 must be
+		 * Le, while P3 != 0x00 must be Lc and hence case 4 */
+		if (p3 == 0x00)
+			return 2;
+		else
+			return 4;
 		break;
 	}
 	return 0;
@@ -225,8 +236,8 @@ static const uint8_t uicc_ins_tbl_80[256] = {
 static const uint8_t gp_ins_tbl_8ce[256] = {
 	[0xE4]		= 4,	/* DELETE */
 	[0xE2]		= 0x80,	/* STORE DATA */
-	[0xCA]		= 4,	/* GET DATA */
-	[0xCB]		= 4,	/* GET DATA */
+	[0xCA]		= 0x80,	/* GET DATA */
+	[0xCB]		= 0x80,	/* GET DATA */
 	[0xF2]		= 0x80,	/* GET STATUS */
 	[0xE6]		= 4,	/* INSTALL */
 	[0xE8]		= 4,	/* LOAD */
