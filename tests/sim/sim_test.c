@@ -29,6 +29,8 @@ const uint8_t uicc_read[] = { 0x00, 0xB0, 0x00, 0x00, 0x10 };
 const uint8_t uicc_upd[] = { 0x00, 0xD6, 0x00, 0x00, 0x02, 0x01, 0x02 };
 const uint8_t uicc_get_status[] = { 0x80, 0xf2, 0x00, 0x02, 0x10 };
 const uint8_t euicc_m2m_get_status[] = { 0x81, 0xf2, 0x40, 0x02, 0x02, 0x4f, 0x00 };
+const uint8_t gp_get_data2[] = { 0x81, 0xCA, 0x00, 0x5A, 0x00 };
+const uint8_t gp_get_data4[] = { 0x81, 0xCA, 0x00, 0x5A, 0x12 };
 
 #define APDU_CASE_ASSERT(x, y)				\
 	do {						\
@@ -49,6 +51,8 @@ static void test_cla_ins_tbl(void)
 	APDU_CASE_ASSERT(uicc_upd, 3);
 	APDU_CASE_ASSERT(uicc_get_status, 2);
 	APDU_CASE_ASSERT(euicc_m2m_get_status, 4);
+	APDU_CASE_ASSERT(gp_get_data2, 2);
+	APDU_CASE_ASSERT(gp_get_data4, 4);
 }
 
 int main(int argc, char **argv)
