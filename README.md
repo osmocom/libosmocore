@@ -70,7 +70,7 @@ Contributing
 Our coding standards are described at
 <https://osmocom.org/projects/cellular-infrastructure/wiki/Coding_standards>
 
-We us a gerrit based patch submission/review process for managing
+We use a Gerrit based patch submission/review process for managing
 contributions.  Please see
 <https://osmocom.org/projects/cellular-infrastructure/wiki/Gerrit> for
 more details
