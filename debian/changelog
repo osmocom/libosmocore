@@ -1,3 +1,10 @@
+libosmocore (1.9.3) unstable; urgency=medium
+
+  * libosmosim: class_tables: Resolve conflicting CLA=8x INS=F2 definitions
+  * libosmosim: class_tables: Fix GlobalPlatform CLA=8x INS=CA/CB GET DATA
+
+ -- Harald Welte <laforge@osmocom.org>  Thu, 06 Jun 2024 19:40:40 +0200
+
 libosmocore (1.9.2) unstable; urgency=medium
 
   [ Pau Espin Pedrol ]
