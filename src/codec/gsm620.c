@@ -23,8 +23,6 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include <osmocom/core/bitvec.h>
-#include <osmocom/core/utils.h>
 #include <osmocom/codec/codec.h>
 
 /* GSM HR unvoiced (mode=0) frames - subjective importance bit ordering */
@@ -270,21 +268,32 @@ const uint16_t gsm620_voiced_bitorder[112] = {
  *  \param[in] rtp_payload Buffer with RTP payload
  *  \param[in] payload_len Length of payload
  *  \returns true if code word is found, false otherwise
+ *
+ *  Note that this function checks only for a perfect, error-free SID.
+ *  Unlike GSM 06.31 for FR or GSM 06.81 for EFR, GSM 06.41 spec for HR
+ *  does not prescribe exact bit counting rules, hence detection of
+ *  partially corrupted SID frames in downstream network elements
+ *  without out-of-band indication is not possible.
  */
 bool osmo_hr_check_sid(const uint8_t *rtp_payload, size_t payload_len)
 {
-	struct bitvec bv = {
-		.data = (uint8_t *)rtp_payload,
-		.data_len = payload_len,
-	};
+	static const uint8_t all_ff_bytes[9] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+						0xFF, 0xFF, 0xFF, 0xFF};
 
-	/* A SID frame is identified by a SID codeword consisting of 79 bits which are all 1,
-	 * so we basically check if all bits in range r34..r112 (inclusive) are 1. */
-	for (bv.cur_bit = 33; bv.cur_bit < bv.data_len * 8; bv.cur_bit++)
-		if (bitvec_get_bit_pos(&bv, bv.cur_bit) != ONE)
-			return false;
+	if (payload_len < GSM_HR_BYTES)
+		return false;
 
-	return true;
+	/* A SID frame is identified by a SID codeword consisting of 79 bits
+	 * which are all 1, so we basically check if all bits in range
+	 * r34..r112 (inclusive) are 1.  However, given the position of
+	 * these bits in the frame, the most efficient way to perform
+	 * this check does not use any bit-level operations. */
+	if ((rtp_payload[4] & 0x7F) != 0x7F)
+		return false;
+	if (memcmp(rtp_payload + 5, all_ff_bytes, 9) == 0)
+		return true;
+	else
+		return false;
 }
 
 /*! Reset the SID field of a potentially corrupted, but still valid GSM-HR
