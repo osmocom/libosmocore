@@ -3,8 +3,17 @@ VERSION=$1
 REL=$2
 
 if [ "z$REL" = "z" ]; then
-	echo "No REL value specified, defaulting to 'patch' release"
-	REL="patch"
+	echo "usage: make REL=patch|minor|major release"
+	echo
+	echo "optional environment variables:"
+	echo "  DRY_RUN=1                        run checks but make no modifications"
+	echo "  ALLOW_NO_LIBVERSION_CHANGE=1     skip LIBVERSION in Makefile.am fchecks"
+	echo "  ALLOW_NO_LIBVERSION_DEB_MATCH=1  skip LIBVERSION in debian packaging checks"
+	echo "  ALLOW_NO_LIBVERSION_RPM_MATCH=1  skip LIBVERSION in rpm packaging checks"
+	echo
+	echo "See also:"
+	echo "https://osmocom.org/projects/cellular-infrastructure/wiki/Make_a_new_release"
+	exit 1
 fi
 
 ALLOW_NO_LIBVERSION_CHANGE="${ALLOW_NO_LIBVERSION_CHANGE:-0}"
