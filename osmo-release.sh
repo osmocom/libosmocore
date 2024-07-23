@@ -244,7 +244,7 @@ clean_todo_release() {
 	echo "# In short: https://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html#Updating-version-info" >> TODO-RELEASE
 	echo "# LIBVERSION=c:r:a" >> TODO-RELEASE
 	echo "# If the library source code has changed at all since the last update, then increment revision: c:r + 1:a." >> TODO-RELEASE
-	echo "# If any interfaces have been added, removed, or changed since the last update: c + 1:0:0." >> TODO-RELEASE
+	echo "# If any interfaces have been added, removed, or changed since the last update: c + 1:0:a." >> TODO-RELEASE
 	echo "# If any interfaces have been added since the last public release: c:r:a + 1." >> TODO-RELEASE
 	echo "# If any interfaces have been removed or changed since the last public release: c:r:0." >> TODO-RELEASE
 	echo "#library	what			description / commit summary line" >> TODO-RELEASE
