@@ -237,6 +237,20 @@ libversion_rpmspecin_match() {
 	fi
 }
 
+clean_todo_release() {
+	rm -f TODO-RELEASE
+	echo "# When cleaning up this file: bump API version in corresponding Makefile.am and rename corresponding debian/lib*.install" >> TODO-RELEASE
+	echo "# according to https://osmocom.org/projects/cellular-infrastructure/wiki/Make_a_new_release" >> TODO-RELEASE
+	echo "# In short: https://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html#Updating-version-info" >> TODO-RELEASE
+	echo "# LIBVERSION=c:r:a" >> TODO-RELEASE
+	echo "# If the library source code has changed at all since the last update, then increment revision: c:r + 1:a." >> TODO-RELEASE
+	echo "# If any interfaces have been added, removed, or changed since the last update: c + 1:0:0." >> TODO-RELEASE
+	echo "# If any interfaces have been added since the last public release: c:r:a + 1." >> TODO-RELEASE
+	echo "# If any interfaces have been removed or changed since the last public release: c:r:0." >> TODO-RELEASE
+	echo "#library	what			description / commit summary line" >> TODO-RELEASE
+	git add TODO-RELEASE
+}
+
 
 BUMPVER=`command -v bumpversion`
 if [ "z$BUMPVER" = "z" ]; then
@@ -281,10 +295,9 @@ if [ "z$DRY_RUN" != "z0" ]; then
 fi
 
 set -e
+
 if [ -f "TODO-RELEASE" ]; then
-	grep '#' TODO-RELEASE > TODO-RELEASE.clean || true
-	mv TODO-RELEASE.clean TODO-RELEASE
-	git add TODO-RELEASE
+	clean_todo_release
 fi
 
 # Add missing epoch (OS#5046)
