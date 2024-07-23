@@ -22,6 +22,23 @@ ALLOW_NO_LIBVERSION_RPM_MATCH="${ALLOW_NO_LIBVERSION_RPM_MATCH:-0}"
 # Test stuff but don't modify stuff:
 DRY_RUN="${DRY_RUN:-0}"
 
+RESET="\033[1;0m"
+RED="\033[1;31m"
+GREEN="\033[1;32m"
+YELLOW="\033[1;33m"
+
+ok() {
+	echo "${GREEN}OK:${RESET} $@"
+}
+
+warn() {
+	echo "${YELLOW}WARN:${RESET} $@"
+}
+
+error() {
+	echo "${RED}ERROR:${RESET} $@"
+}
+
 libversion_to_lib_major() {
 	libversion="$1"
 	current="$(echo "$libversion" | cut -d ":" -f 1)"
@@ -52,16 +69,16 @@ check_configureac_debctrl_deps_match() {
 		if [ "z$debctrl_match_count" != "z0" ]; then
 			#echo "Dependency <$dep, $ver> from configure.ac matched in debian/control! ($debctrl_match_count)"
 			if [ "z$debctrl_match_count" != "z1" ]; then
-				echo "WARN: configure.ac <$dep, $ver> matches debian/control $debctrl_match_count times, manual check required!"
+				warn "configure.ac <$dep, $ver> matches debian/control $debctrl_match_count times, manual check required!"
 			else # 1 match:
 				parsed_match=$(echo "$debctrl_match" | tr -d "(" | tr -d ")" | tr -d "," | tr -d " " | tr -d "\t" | sed "s/>=/ /g")
 				debctrl_dep=$(echo "$parsed_match" | cut -d " " -f 1 | sed "s/-dev//g")
 				debctrl_ver=$(echo "$parsed_match" | cut -d " " -f 2)
 				if [ "z$dep" != "z$debctrl_dep" ] || [ "z$ver" != "z$debctrl_ver" ]; then
-					echo "ERROR: configure.ac <$dep, $ver> does NOT match debian/control <$debctrl_dep, $debctrl_ver>!"
+					error "configure.ac <$dep, $ver> does NOT match debian/control <$debctrl_dep, $debctrl_ver>!"
 					return_error=1
 				#else
-				#	echo "OK: configure.ac <$dep, $ver> matches debian/control <$debctrl_dep, $debctrl_ver>"
+				#	ok "configure.ac <$dep, $ver> matches debian/control <$debctrl_dep, $debctrl_ver>"
 				fi
 			fi
 		fi
@@ -73,10 +90,10 @@ check_configureac_debctrl_deps_match() {
 
 	# catch and forward exit from pipe subshell "while read":
 	if [ $? -ne 0 ]; then
-		echo "ERROR: exiting due to previous errors"
+		error "exiting due to previous errors"
 		exit 1
 	fi
-	echo "OK: dependency specific versions in configure.ac and debian/control match"
+	ok "dependency specific versions in configure.ac and debian/control match"
 }
 
 # Make sure that depedency requirement versions match in configure.ac vs contrib/*.spec.in.
@@ -97,16 +114,16 @@ check_configureac_rpmspecin_deps_match() {
 		if [ "z$rpmspecin_match_count" != "z0" ]; then
 			#echo "Dependency <$dep, $ver> from configure.ac matched in contrib/*.spec.in! ($rpmspecin_match_count)"
 			if [ "z$rpmspecin_match_count" != "z1" ]; then
-				echo "WARN: configure.ac <$dep, $ver> matches contrib/*.spec.in $rpmspecin_match_count times, manual check required!"
+				warn "configure.ac <$dep, $ver> matches contrib/*.spec.in $rpmspecin_match_count times, manual check required!"
 			else # 1 match:
 				parsed_match=$(echo "$rpmspecin_match" | tr -d "(" | tr -d ")" | tr -d ":" | tr -d " " | tr -d "\t" | sed "s/BuildRequires//g" | sed "s/pkgconfig//g" |sed "s/>=/ /g")
 				rpmspecin_dep=$(echo "$parsed_match" | cut -d " " -f 1)
 				rpmspecin_ver=$(echo "$parsed_match" | cut -d " " -f 2)
 				if [ "z$dep" != "z$rpmspecin_dep" ] || [ "z$ver" != "z$rpmspecin_ver" ]; then
-					echo "ERROR: configure.ac <$dep, $ver> does NOT match contrib/*.spec.in <$rpmspecin_dep, $rpmspecin_ver>!"
+					error "configure.ac <$dep, $ver> does NOT match contrib/*.spec.in <$rpmspecin_dep, $rpmspecin_ver>!"
 					return_error=1
 				#else
-				#	echo "OK: configure.ac <$dep, $ver> matches contrib/*.spec.in <$debctrl_dep, $debctrl_ver>"
+				#	ok "configure.ac <$dep, $ver> matches contrib/*.spec.in <$debctrl_dep, $debctrl_ver>"
 				fi
 			fi
 		fi
@@ -118,10 +135,10 @@ check_configureac_rpmspecin_deps_match() {
 
 	# catch and forward exit from pipe subshell "while read":
 	if [ $? -ne 0 ]; then
-		echo "ERROR: exiting due to previous errors"
+		error "exiting due to previous errors"
 		exit 1
 	fi
-	echo "OK: dependency specific versions in configure.ac and contrib/*.spec.in match"
+	ok "dependency specific versions in configure.ac and contrib/*.spec.in match"
 }
 
 # Make sure that patches under debian/patches/ apply:
@@ -132,10 +149,10 @@ check_debian_patch_apply() {
 	for patch in ${GIT_TOPDIR}/debian/patches/*.patch; do
 		git apply --check $patch
 		if [ $? -ne 0 ]; then
-			echo "ERROR: patch no longer applies! $patch"
+			error "patch no longer applies! $patch"
 			exit 1
 		else
-			echo "OK: patch applies: $patch"
+			ok "patch applies: $patch"
 		fi
 	done
 }
@@ -146,34 +163,34 @@ libversion_deb_match() {
 		major="$(libversion_to_lib_major "$libversion")"
 		file_matches="$(find "${GIT_TOPDIR}/debian" -name "lib*${major}.install" | wc -l)"
 		if [ "z$file_matches" = "z0" ]; then
-			echo "ERROR: Found no matching debian/lib*$major.install file for LIBVERSION=$libversion"
+			error "Found no matching debian/lib*$major.install file for LIBVERSION=$libversion"
 			exit 1
 		elif [ "z$file_matches" = "z1" ]; then
-			echo "OK: Found matching debian/lib*$major.install for LIBVERSION=$libversion"
+			ok "Found matching debian/lib*$major.install for LIBVERSION=$libversion"
 		else
-			echo "WARN: Found $file_matches files matching debian/lib*$major.install for LIBVERSION=$libversion, manual check required!"
+			warn "Found $file_matches files matching debian/lib*$major.install for LIBVERSION=$libversion, manual check required!"
 		fi
 
 		control_matches="$(grep -e "Package" "${GIT_TOPDIR}/debian/control" | grep "lib" | grep "$major$" | wc -l)"
 		if [ "z$control_matches" = "z0" ]; then
-			echo "ERROR: Found no matching Package lib*$major in debian/control for LIBVERSION=$libversion"
+			error "Found no matching Package lib*$major in debian/control for LIBVERSION=$libversion"
 			exit 1
 		elif [ "z$control_matches" = "z1" ]; then
-			echo "OK: Found 'Package: lib*$major' in debian/control for LIBVERSION=$libversion"
+			ok "Found 'Package: lib*$major' in debian/control for LIBVERSION=$libversion"
 		else
-			echo "WARN: Found $file_matches files matching 'Package: lib*$major' in debian/control for LIBVERSION=$libversion, manual check required!"
+			warn "Found $file_matches files matching 'Package: lib*$major' in debian/control for LIBVERSION=$libversion, manual check required!"
 		fi
 
 		dhstrip_lib_total="$(grep -e "dh_strip" "${GIT_TOPDIR}/debian/rules" | grep "\-plib" | wc -l)"
 		dhstrip_lib_matches="$(grep -e "dh_strip" "${GIT_TOPDIR}/debian/rules" | grep "\-plib" | grep "$major" | wc -l)"
 		if [ "z$dhstrip_lib_total" != "z0" ]; then
 			if [ "z$dhstrip_lib_matches" = "z0" ] ; then
-				echo "ERROR: Found no matching 'dh_strip -plib*$major' line in debian/rules for LIBVERSION=$libversion"
+				error "Found no matching 'dh_strip -plib*$major' line in debian/rules for LIBVERSION=$libversion"
 				exit 1
 			elif [ "z$dhstrip_lib_total" = "z1" ]; then
-				echo "OK: Found 'dh_strip -plib*$major' in debian/rules for LIBVERSION=$libversion"
+				ok "Found 'dh_strip -plib*$major' in debian/rules for LIBVERSION=$libversion"
 			else
-				echo "WARN: Found $dhstrip_lib_matches/$dhstrip_lib_total dh_strip matches 'dh_strip -plib*$major' in debian/rules for LIBVERSION=$libversion, manual check required!"
+				warn "Found $dhstrip_lib_matches/$dhstrip_lib_total dh_strip matches 'dh_strip -plib*$major' in debian/rules for LIBVERSION=$libversion, manual check required!"
 			fi
 		fi
 	done
@@ -196,22 +213,22 @@ libversion_rpmspecin_match() {
 
 		control_matches="$(grep -e "%files" "${GIT_TOPDIR}/contrib/"*.spec.in | grep "lib" | grep "$major$" | wc -l)"
 		if [ "z$control_matches" = "z0" ]; then
-			echo "ERROR: Found no matching '%files -n lib*$major' in contrib/*.spec.in for LIBVERSION=$libversion"
+			error "Found no matching '%files -n lib*$major' in contrib/*.spec.in for LIBVERSION=$libversion"
 			exit 1
 		elif [ "z$control_matches" = "z1" ]; then
-			echo "OK: Found '%files -n lib*$major' in contrib/*.spec.in for LIBVERSION=$libversion"
+			ok "Found '%files -n lib*$major' in contrib/*.spec.in for LIBVERSION=$libversion"
 		else
-			echo "WARN: Found $file_matches files matching '%files -n lib*$major' in contrib/*.spec.in for LIBVERSION=$libversion, manual check required!"
+			warn "Found $file_matches files matching '%files -n lib*$major' in contrib/*.spec.in for LIBVERSION=$libversion, manual check required!"
 		fi
 
 		control_matches="$(grep -e "_libdir" "${GIT_TOPDIR}/contrib/"*.spec.in | grep "/lib" | grep "so.$major" | wc -l)"
 		if [ "z$control_matches" = "z0" ]; then
-			echo "ERROR: Found no matching '%_libdir/lib*.so.$major*' in contrib/*.spec.in for LIBVERSION=$libversion"
+			error "Found no matching '%_libdir/lib*.so.$major*' in contrib/*.spec.in for LIBVERSION=$libversion"
 			exit 1
 		elif [ "z$control_matches" = "z1" ]; then
-			echo "OK: Found '%_libdir/lib*.so.$major*' in contrib/*.spec.in for LIBVERSION=$libversion"
+			ok "Found '%_libdir/lib*.so.$major*' in contrib/*.spec.in for LIBVERSION=$libversion"
 		else
-			echo "WARN: Found $file_matches files matching '%_libdir/lib*.so.$major*' in contrib/*.spec.in for LIBVERSION=$libversion, manual check required!"
+			warn "Found $file_matches files matching '%_libdir/lib*.so.$major*' in contrib/*.spec.in for LIBVERSION=$libversion, manual check required!"
 		fi
 	done
 	# catch and forward exit from pipe subshell "while read":
@@ -244,7 +261,7 @@ check_debian_patch_apply
 
 if [ "z$LIBVERS" != "z" ]; then
 	if [ "z$MAKEMOD" = "z" ] && [ "z$ALLOW_NO_LIBVERSION_CHANGE" = "z0" ]; then
-		echo "ERROR: Before releasing, please modify some of the libversions:"
+		error "Before releasing, please modify some of the libversions:"
 		for l in $LIBVERS; do echo "    $l"; done
 		echo "After making changes, add modified file(s) to the index using git-add."
 		echo "You should NOT be doing this unless you've read and understood following article:"
