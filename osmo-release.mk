@@ -1,2 +1,2 @@
 release:
-	@osmo-release.sh $(VERSION) $(REL)
+	@PATH="$$PWD:$$PATH" osmo-release.sh $(VERSION) $(REL)
