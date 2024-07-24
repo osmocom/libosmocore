@@ -3,22 +3,7 @@
 # In short: https://www.gnu.org/software/libtool/manual/html_node/Updating-version-info.html#Updating-version-info
 # LIBVERSION=c:r:a
 # If the library source code has changed at all since the last update, then increment revision: c:r + 1:a.
-# If any interfaces have been added, removed, or changed since the last update: c + 1:0:0.
+# If any interfaces have been added, removed, or changed since the last update: c + 1:0:a.
 # If any interfaces have been added since the last public release: c:r:a + 1.
 # If any interfaces have been removed or changed since the last public release: c:r:0.
 #library	what			description / commit summary line
-core      ADD       osmo_sock_multiaddr_{add,del}_local_addr()
-core      ADD       osmo_sock_multiaddr_get_ip_and_port(), osmo_multiaddr_ip_and_port_snprintf(), osmo_sock_multiaddr_get_name_buf()
-core      ADD       osmo_sock_sctp_get_peer_addr_info()
-core      ADD       gsmtap_inst_fd2() core, DEPRECATE gsmtap_inst_fd()
-core      ADD       osmo_sockaddr_str_from_osa() osmo_sockaddr_str_to_osa()
-core		behavior change		osmo_tdef_fsm_inst_state_chg(): allow millisecond precision
-core		ABI change		osmo_io_ops now contains a struct of structs, not union of structs
-core		ABI change		osmo_iofd_set_ioops() now returns a value (error code)
-isdn		ABI change		add states and flags for external T200 handling
-isdn      ADD				initial implementation of the V.110 Terminal Adapter
-gsm		ABI change		add T200 timer states to lapdm_datalink
-gsm		ABI change		add UI queue to struct lapdm_datalink
-gsm		ADD			gsup.h: struct osmo_gsup_pdp_info fields pdp_type_nr, pdp_type_org, deprecate pdp_type.
-gsm		ABI change			gsup.h: Add field pdp_address in struct osmo_gsup_pdp_info shifts the struct, and in turn fields in struct osmo_gsup_message.
-gsm		ABI change		gsup.h: Add field pco in struct osmo_gsup_message. Length of the struct osmo_gsup_message increase.

@@ -1,3 +1,253 @@
+libosmocore (1.10.0) unstable; urgency=medium
+
+  [ Mychaela N. Falconia ]
+  * gsm/protocol/gsm_04_11.h: add SMSC-address length limit definitions
+  * gsm0808: add knowledge of TW-TS-003 BSSMAP IE
+  * bts_features: add feature flags for TWTS001 and TWTS002
+  * rsl: define RSL_IE_OSMO_RTP_EXTENSIONS
+  * include/osmocom/gsm: add rtp_extensions.h
+  * codec: make osmo_hr_check_sid() more efficient
+
+  [ arehbein ]
+  * write_queue: Enable updating max_length field
+  * osmo_io: Clean up code
+  * gsmtap: Hide implementation of gsmtap_inst
+  * osmo_io_poll: Handle -EAGAIN in case of OSMO_FD_WRITE
+  * write_queue: Fix Doxygen comment
+  * gsmtap_util: Use Osmo IO instead of Osmo write queues
+  * gsmtap_util: Simplify sink
+  * gmstap_util: Fix sending out gsmtap messages
+  * ns2: Improve code consistency
+
+  [ Manawyrm ]
+  * gsmtap.h: Add definitions for ISDN PPP sub-type
+  * gsm48_ie.c: add 3.1kHz audio bearer capability for CSD calls
+  * gsm48_ie.c: change bearer cap structure in outgoing CSD calls
+  * logging: ensure ANSI color escape is sent in same line/before newline
+
+  [ Karsten Ohme ]
+  * APDU parsing support for GlobalPlatform GET RESPONSE
+
+  [ Vadim Yanitskiy ]
+  * gsm: add gsm0502_fn_compare() for comparing TDMA FNs
+  * gsm: rename s/gsm0502_fn_compare/gsm0502_fncmp/
+  * msgb: fix doxygen docs for msgb_pull_u{8,16,32): end -> front
+  * coding: gsm0503_tch_a[fh]s_encode(): improve cmr/ft checks
+  * coding: gsm0503_tch_a[fh]s_encode(): make *codec const
+  * tests/testsuite.at: remove copy-pasted 'touch experr'
+  * soft_uart: add osmo_soft_uart_free()
+  * soft_uart: add doxygen documentation
+  * soft_uart: split osmo_soft_uart_enable()
+  * soft_uart: make osmo_soft_uart_alloc() accept *cfg
+  * soft_uart: rework osmo_uart_rx_bit() to use flow state
+  * soft_uart: implement parity checking for the receiver
+  * soft_uart: implement the transmitter
+  * soft_uart: allow manually flushing the receive buffer
+  * soft_uart: add unit tests for the receiver and transmitter
+  * soft_uart: fix Rx buffer flushing logic in suart_rx_ch()
+  * soft_uart: fix handling of num_data_bits < 8
+  * soft_uart: implement OSMO_SUART_PARITY_{MARK,SPACE}
+  * soft_uart: demonstrate a problem with osmo_soft_uart_tx_ubits()
+  * soft_uart: fix pulling a small number of Tx bits
+  * soft_uart: check n_bits against 0 in osmo_soft_uart_tx_ubits()
+  * soft_uart: fix spelling in doxygen docs
+  * soft_uart: add osmo_soft_uart_{get,set}_name()
+  * soft_uart: fix doxygen doc for osmo_soft_uart_tx_ubits()
+  * soft_uart: check Rx/Tx state once in osmo_soft_uart_{rx,tx}_ubits()
+  * soft_uart: cosmetic: do not use 'osmo_' prefix for static symbols
+  * soft_uart: improve doxygen documentation
+  * soft_uart: osmo_soft_uart_tx_ubits(): return number of bits pulled
+  * soft_uart: implement modem status lines and flow control
+  * coding: fix doxygen docs for gsm0503_pdtch[_egprs]_decode()
+  * coding: clarify the USF decoding for PDCH blocks
+  * coding: gsm0503_pdtch_decode(): implement USF decoding for CS1
+  * tests/coding: fix -Wmaybe-uninitialized in test_pdtch()
+  * tests/it_q: add tc_enqueue/dequeue testcase
+  * core: fix wrong logic in _osmo_it_q_dequeue()
+  * tests/soft_uart: assert that osmo_soft_uart_rx_ubits() returns 0
+  * tests/soft_uart: cosmetic: improve readability of the test output
+  * soft_uart: cosmetic: use consistent naming for the Rx buffer msgb
+  * logging: fix NULL pointer dereference in _output_buf()
+  * soft_uart: fix the Rx flushing logic, add a unit test
+  * soft_uart: demonstrate a problem with manual flush()ing
+  * soft_uart: demonstrate a problem with inefficient polling
+  * tests/lapd: fix wrong size passed in test_lapdm_contention_resolution()
+  * tests/gsm0808: fix assert()s in test_gsm0808_dec_cell_id_list_srvcc()
+  * tests/iuup: fix assert()s in test_decode_passive_init_2_rfci_no_iptis()
+  * tests/fsm: also test .onenter and .onleave callbacks
+  * tests: fix update-exp: soft_uart_test overwrites rlp_test.ok
+  * utils: fix OSMO_STRBUF_REMAIN to handle sb.pos == NULL correctly
+  * utils: improve readability of OSMO_STRBUF_CHAR_COUNT
+  * utils: fix -Wsign-compare in definition of OSMO_STRBUF_CHAR_COUNT
+  * utils: osmo_bcd2str(): fix applying non-zero offset to null pointer
+  * tests/utils: do not test strbuf_example2() with buf=NULL
+  * bitvec: bitvec_to_string_r(): drop unused variable
+  * tests/{gb,iuup}: also match stderr
+  * tests/tdef: also test OSMO_TDEF_US and negative T values
+  * tests/tdef: tune logging, also match stderr
+  * pseudotalloc: add talloc_memdup(), use it in talloc_strdup()
+  * gsm0808_utils: use osmo_strbuf API, drop APPEND_{THING,STR,CELL_ID_U}
+  * vty: suppress warnings about len being set but not used
+  * gsm48_ie: fix various issues in doxygen docs
+  * gsm: fix osmo_mobile_identity_decode(): init *mi on error
+  * core: osmo_tdef_fsm_inst_state_chg(): allow millisecond precision
+  * tests/tdef: improve test output (use OSMO_T_FMT[_ARGS])
+  * fsm: fix OSMO_T_FMT_ARGS: add missing braces
+  * isdn: initial implementation of the V.110 TA
+  * isdn: add a lookup table with E1/E2/E3 bits from Table 5/V.110
+  * tests/gsm0408: cosmetic: adjust coding style (make linter happy)
+  * tests/gsm0408: add two more samples to bcap_tests[]
+  * isdn/v110_ta: avoid redundant .status_update_cb() calls
+  * gsm: add more definitions from Table 10.5.112/3GPP TS 24.008
+  * tests/iuup: fix duplicate assignment in def_configure_req
+  * tests/a5: fix bit-wise vs logical and in test_a5[34]()
+  * tests/sockaddr_str: fix dead code, print some errno values
+  * tests/sockaddr_str: rc_name(): also handle -EAFNOSUPPORT
+  * osmo-release.sh: make it a bit more user friendly
+  * tests/Makefile.am: do not add files to EXTRA_DIST conditionally
+  * utils/conv_codes_gsm.py: fix inconsistent formatting
+  * coding: fix a typo in docs for gsm0503_pdtch_decode()
+  * coding: improve readability in osmo_conv_decode_ber_punctured()
+  * coding: fix artificial bit errors for PDTCH CS2 and CS3
+  * coding: fix wrong n_bits_total reported for PDTCH CS2 and CS3
+  * core: fix missing '\n' in iofd_uring_connected_cb()
+  * tests: do not copy *.cfg files to the build directory
+  * tests: rename logging_test_gsmtap -> logging_gsmtap_test
+  * vty: fix memleak in host_config_set()
+  * {fsm,vty}: add a VTY command to generate FSM state graphs
+  * core: fix LOGPIO(): add missing space after 'iofd(...)'
+  * README.md: cosmetic: fix a typo
+
+  [ Pau Espin Pedrol ]
+  * sockaddr_str.h Fix OSMO_SOCKADDR_STR_FMT_ARGS_NOT_NULL syntax error
+  * socket: Introduce APIs osmo_sock_multiaddr_{add,del}_local_addr()
+  * Fix typo in libosmocore.map
+  * socket.c: Fix compilation with --disable-libsctp
+  * tests/socket: Avoid keeping unneeded sockets open during next test cases
+  * socket: Reimplement osmo_sock_init2_multiaddr()
+  * socket: osmo_sock_init2_multiaddr2(): Apply params too if no OSMO_SOCK_F_BIND flag set
+  * socket: Introduce API osmo_sock_multiaddr_get_ip_and_port()
+  * socket: Introduce API osmo_sock_multiaddr_get_name_buf()
+  * socket: Fix uninitialized mem ptr free in osmo_sock_init2_multiaddr2()
+  * socket: Introduce API osmo_sock_sctp_get_peer_addr_info()
+  * socket: Introduce defines OSMO_SOCK_MULTIADDR_{PEER_STR,NAME}_MAXLEN
+  * ipa_ccm_tlv_to_unitdata(): free previous string if present before allocating new one
+  * cosmetic: gsup.h: fix whitespace formatting
+  * gsm_04_08_gprs.h: Introduce packed struct gsm48_pdp_address
+  * gsup: Fail decoding if len of PDP Type IE is less than 2 bytes
+  * gsup: Deprecate field pdp_type in favour of pdp_type_nr and pdp_type_org
+  * gsup: Convert PDP-Type IE to PDP-Address IE
+  * cosmetic: tests/gsup/gsup_test: Move send_e_send_end_signal_res to correct place
+  * socket: Support AF_UNIX in osmo_sock_get_name_buf()
+  * socket: Add remote PID and local FD to AF_UNIX sockname
+  * osmo_io: Add iofd param to segmentation_cb
+
+  [ Daniel Willmann ]
+  * osmo_io: Init struct msghdr to zero
+  * osmo_io: Only allow reading/writing if the relevant callback is set
+  * logging_gsmtap: Temporarily disable logging when sending the logs
+  * osmo_io: Assert that iofd mode is correct when calling *_write_msgb
+  * Disable uring when building for embedded
+  * osmo_io: Factor out and use common send function from backend
+  * tests: Test gsmtap logging if write queue fills up
+
+  [ Andreas Eversberg ]
+  * LAPDm: Correctly count expiry of T200 during estabishment/release
+  * ASCI: Add primitive to L1-SAP to switch uplink access detection on or off
+  * LAPD: Prepare lapd_send_i() for RTS support
+  * LAPD: Flush TX queue, if remote peer enters busy condition or rejects
+  * LAPD: Always update N(R) in pending TX frames if V(R) is incremented
+  * LAPD: Add support for RTS based polling and T200
+  * LAPDm: Add support for RTS based polling
+  * LAPDm: Add an extra queue for UI frames
+  * LAPDm: Add a flag to enable suppression of subsequent REJ frame
+  * LAPD: Indicate sequence error after indicating received data
+  * coding: gsm0503_tch_{afs,ahs}_encode(): add ability to emit BFI
+  * Fix union abis_rsl_chan_nr and abis_rsl_link_id
+  * Add flag to enable RTS based polling
+  * Prevent poll() in select.c to timeout too early
+  * Make socket.c compile without libsctp support (--disable-libsctp)
+  * osmo_io: Move notify_connected function to backend
+  * osmo_io: Use poll/select to notify socket connection at osmo_io_uring.c
+  * osmo_io: Reject writing messages with length of 0
+  * osmo_io_poll: Use -errno as result on read error
+  * osmo_io_uring: Cancel pending request, free msghdr on completion
+  * osmo_io_uring: Detach msghdr from iofd before calling iofd_handle_send_completion()
+  * osmo_io_poll: Declare local functions "static"
+  * osmo_io: Assign const name when stealing TX msg from iofd ctx
+  * osmo_io_uring: Check if osmo_fd_register fails at iofd_uring_notify_connected()
+  * osmo_io: do check_mode_callback_compat() only if ioops is set at osmo_iofd_setup()
+  * osmo_io_poll: Use -errno as result on write error
+  * Fix file descriptor that is passed to io_uring_register_eventfd()
+  * osmo_io_uring: Run check of tests/osmo_io with io_uring also
+
+  [ Harald Welte ]
+  * core: Add software UART implementation
+  * add new osmo_sockaddr_from_str_and_uint() function
+  * io_uring: add some more source code comments/docs
+  * osmo_io: rename unsupported SCTP mode to OSMO_IO_FD_MODE_SCTP_RECVMSG_SEND
+  * osmo_io: Reject unknown/unsupported modes in osmo_iofd_setup()
+  * sim/class_tables: Prevent out-of-bounds access
+  * libosmosim: Support Microsoft smart card discovery process
+  * Add a GSM RLP decoder and encoder
+  * rlp: Add support for 576bit RLP frames
+  * osmo_io: Change struct osmo_io_ops to contain struct, not union
+  * osmo_io: sendmsg/recvmsg support
+  * osmo_io: Add osmo_io_get_ioops() function
+  * ctrl: Don't expose write_queue in ctrl_cmd_send() api
+  * cbsp: Add osmo_cbsp_segmentation_cb for message segmentation
+  * osmo_io: Guard osmo_iofd_register() with invalid file descriptor
+  * osmo_io: Log error message in case call-backs incompatible with mode
+  * osmo_io: Don't pretend to support backends without close_cb
+  * osmo_io: avoid OSMO_ASSERT one each API call
+  * osmo_io: Avoid implementing non-existant situations
+  * ctrl: re-introduce duplicate declaration of ctrl_cmd_send()
+  * io_uring: more verbose error messages if io_uring setup fails
+  * io_uring: check all operations in osmo_iofd_uring_init()
+  * osmo_io: Dont use __linux__ but !EMBEDDED
+  * osmo_io: Massive improvement of API documentation
+  * osmo_io: Make {write,sendto,sendmsg} completion callback optional
+  * Add funding link to github mirror
+  * libosmosim: class_tables: Resolve conflicting CLA=8x INS=F2 definitions
+  * libosmosim: class_tables: Fix GlobalPlatform CLA=8x INS=CA/CB GET DATA
+  * [cosmetic] libosmosim/class_tables: Add a quick reminder about the cases
+
+  [ Alexander Couzens ]
+  * gsup: add message type for osmo-epdg CEAI interface
+  * gsup: fix error log message
+  * gsup.h: define newly added PCO IE
+
+  [ Neels Hofmeyr ]
+  * util: add OSMO_STRBUF_REMAIN()
+  * util: add osmo_strbuf macros to manipulate the strbuf tail
+  * logging: fix nul octets in log output / use osmo_strbuf
+  * comment: gsm_04_08.h: add a spec hint
+  * sockaddr_str: add conversion to,from osmo_sockaddr
+  * fix update_exp: s/soft_uart.ok/soft_uart_test.ok
+  * add jhash.h, copied from linux/jhash.h
+
+  [ Philipp Maier ]
+  * ecu: fix alignment of fr_ecu_state
+
+  [ Eric ]
+  * logging: add log level cache
+
+  [ Hoernchen ]
+  * Revert "logging: add log level cache"
+  * Revert "Revert "logging: add log level cache""
+
+  [ Matan Perelman ]
+  * ctrl: Add lchan node
+
+  [ Oliver Smith ]
+  * osmo-release: don't default to REL=patch
+  * osmo-release: use script from PWD if available
+  * osmo-release: use colored output
+  * osmo-release: rework cleaning of TODO-RELEASE
+  * osmo-release: fix libversion updating comment
+
+ -- Oliver Smith <osmith@sysmocom.de>  Wed, 24 Jul 2024 10:19:45 +0200
+
 libosmocore (1.9.0) unstable; urgency=medium
 
   [ Oliver Smith ]

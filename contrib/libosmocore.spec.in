@@ -115,13 +115,13 @@ transcoding routines.
 This subpackage contains libraries and header files for developing
 applications that want to make use of libosmocoding.
 
-%package -n libosmocore21
+%package -n libosmocore22
 Summary:        Osmocom core library
 # crc16.c has GPL2-only clauses, the rest (*.c) is GPL-2.0+
 License:        GPL-2.0-only AND GPL-2.0-or-later
 Group:          System/Libraries
 
-%description -n libosmocore21
+%description -n libosmocore22
 libosmocore is a library with various utility functions shared
 between OpenBSC and OsmocomBB.
 
@@ -130,7 +130,7 @@ Summary:        Development files for the Osmocom core library
 # crc16.h has GPL2-only clauses, the rest (*.h) is GPL-2.0+
 License:        GPL-2.0-only AND GPL-2.0-or-later
 Group:          Development/Libraries/C and C++
-Requires:       libosmocore21 = %version
+Requires:       libosmocore22 = %version
 Requires:       libtalloc-devel
 Requires:       lksctp-tools-devel
 
@@ -367,8 +367,8 @@ make %{?_smp_mflags} check || (find . -name testsuite.log -exec cat {} +)
 %postun -n libosmocodec4 -p /sbin/ldconfig
 %post   -n libosmocoding0 -p /sbin/ldconfig
 %postun -n libosmocoding0 -p /sbin/ldconfig
-%post   -n libosmocore21 -p /sbin/ldconfig
-%postun -n libosmocore21 -p /sbin/ldconfig
+%post   -n libosmocore22 -p /sbin/ldconfig
+%postun -n libosmocore22 -p /sbin/ldconfig
 %post   -n libosmoctrl0 -p /sbin/ldconfig
 %postun -n libosmoctrl0 -p /sbin/ldconfig
 %post   -n libosmogb14 -p /sbin/ldconfig
@@ -412,9 +412,9 @@ make %{?_smp_mflags} check || (find . -name testsuite.log -exec cat {} +)
 %_libdir/libosmocoding.so
 %_libdir/pkgconfig/libosmocoding.pc
 
-%files -n libosmocore21
+%files -n libosmocore22
 %defattr(-,root,root)
-%_libdir/libosmocore.so.21*
+%_libdir/libosmocore.so.22*
 
 %files -n libosmocore-devel
 %defattr(-,root,root)
