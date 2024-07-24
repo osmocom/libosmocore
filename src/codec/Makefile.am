@@ -18,6 +18,7 @@ libosmocodec_la_SOURCES = \
 	gsm620.c \
 	gsm660.c \
 	gsm690.c \
+	hr_sid_class.c \
 	ecu.c \
 	ecu_fr.c \
 	ecu_fr_old.c \

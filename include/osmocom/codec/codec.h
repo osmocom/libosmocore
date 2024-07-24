@@ -100,6 +100,9 @@ bool osmo_efr_check_sid(const uint8_t *rtp_payload, size_t payload_len);
 
 enum osmo_gsm631_sid_class osmo_fr_sid_classify(const uint8_t *rtp_payload);
 enum osmo_gsm631_sid_class osmo_efr_sid_classify(const uint8_t *rtp_payload);
+enum osmo_gsm631_sid_class osmo_hr_sid_classify(const uint8_t *rtp_payload,
+						bool bci_flag,
+						bool *bfi_from_bci);
 
 /*! Check if given FR codec frame is any kind of SID, valid or invalid
  *  \param[in] rtp_payload Buffer with RTP payload
