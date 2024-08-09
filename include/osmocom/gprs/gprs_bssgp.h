@@ -182,6 +182,12 @@ uint16_t bssgp_parse_cell_id(struct gprs_ra_id *raid, const uint8_t *buf);
 int bssgp_create_cell_id(uint8_t *buf, const struct gprs_ra_id *raid,
 			 uint16_t cid);
 
+int bssgp_parse_cell_id2(struct osmo_routing_area_id *raid, uint16_t *cid,
+			 const uint8_t *buf, size_t buf_len);
+int bssgp_create_cell_id2(uint8_t *buf, size_t buf_len,
+			  const struct osmo_routing_area_id *raid,
+			  uint16_t cid);
+
 /* Wrapper around TLV parser to parse BSSGP IEs */
 static inline int bssgp_tlv_parse(struct tlv_parsed *tp, const uint8_t *buf, int len)
 {

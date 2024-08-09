@@ -354,6 +354,24 @@ uint16_t bssgp_parse_cell_id(struct gprs_ra_id *raid, const uint8_t *buf)
 	return osmo_load16be(buf+6);
 }
 
+/*! Parse the value of a BSSGP Cell identity (04.08 RAI + Cell Id) */
+int bssgp_parse_cell_id2(struct osmo_routing_area_id *raid, uint16_t *cid,
+			 const uint8_t *buf, size_t buf_len)
+{
+	if (buf_len < 8)
+		return -EINVAL;
+
+	/* 6 octets RAC */
+	if (raid)
+		osmo_routing_area_id_decode(raid, buf, buf_len);
+
+	/* 2 octets CID */
+	if (cid)
+		*cid = osmo_load16be(buf + sizeof(struct gsm48_ra_id));
+
+	return 0;
+}
+
 int bssgp_create_cell_id(uint8_t *buf, const struct gprs_ra_id *raid,
 			 uint16_t cid)
 {
@@ -361,6 +379,23 @@ int bssgp_create_cell_id(uint8_t *buf, const struct gprs_ra_id *raid,
 	gsm48_encode_ra((struct gsm48_ra_id *)buf, raid);
 	/* 2 octets CID */
 	osmo_store16be(cid, buf+6);
+
+	return 8;
+}
+
+/*! Encode the 04.08 RAI, Cell Id into BSSGP Cell identity */
+int bssgp_create_cell_id2(uint8_t *buf, size_t buf_len,
+			  const struct osmo_routing_area_id *raid,
+			  const uint16_t cid)
+{
+	if (buf_len < 8)
+		return -ENOMEM;
+
+	/* 6 octets RAC */
+	osmo_routing_area_id_encode_buf(buf, buf_len, raid);
+
+	/* 2 octets CID */
+	osmo_store16be(cid, buf + sizeof(struct gsm48_ra_id));
 
 	return 8;
 }
