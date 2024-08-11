@@ -1,0 +1,61 @@
+# This file is input for the HR SID classifier test program.  All TCH/HS
+# Rx bit strings contained in this file have been taken from hr-test1.dl
+# or hr-test2.dl, attached to this wiki page:
+#
+# https://osmocom.org/projects/retro-gsm/wiki/HRv1_error_flags
+#
+# Each Rx bit string (15 hex bytes) is from TI DSP; the 0 or 1 that follows
+# is the BCI flag to be fed to the SID classifier.  The original DSP status
+# word is noted in the comments; running the unit test program will show
+# whether or not our SID classification agrees with that produced by
+# TI Calypso DSP.
+
+# perfect, error-free SID: hr-test2.dl line 171, C010
+FFFFFFFFFFFFFFFFFFFFFFFE1FFFF0 0
+
+# mode bits cleared to 0, all other bits still 1s
+FFFFFFFFFFFFFFFFFFFFFFF81FFFF0 0
+
+# selected error lines
+FFFFFFFFFFFFFFFFFFFFFFFE0FFF70 0	# hr-test2.dl line 4226, C010
+FFFFFFFFFFFFFFFFFFFFFFFE13FFF0 1	# hr-test2.dl line 4256, C012
+FFFFFFFFFFFFFFFFFFFFFFFE17FFF0 1	# hr-test2.dl line 4258, C012
+FFFD01FFFFFFFFFFFFFFFFFE0FFFF0 1	# hr-test2.dl line 4598, C00A
+FFFFFFFFFFFCC296452940FE1FFEF0 1	# hr-test2.dl line 5141, C00F
+FFFFFFFFFFFCC296452940FE1FFEF0 0	# same bits without BCI
+FF6E76F40C276FFFFFFFFFFE0FFFF0 1	# hr-test2.dl line 5173, C003
+FF6E76F40C276FFFFFFFFFFE0FFFF0 0	# same bits without BCI
+FFFFFFFFFDFFFFFFFFFFFFFE0FFFF0 1	# hr-test2.dl line 5206, C012
+FFFFFFFFFDFFFFFFFFFFFFFE0FFFF0 0	# same bits without BCI
+FFFFFFFFFFD0DFFFFFFFFFFE07FEF0 1	# hr-test2.dl line 5261, C00A
+FFFFFFFFFFD0DFFFFFFFFFFE07FEF0 0	# same bits without BCI
+FFFFFFFFFFFF41EAC9676FFE1F7DF0 1	# hr-test2.dl line 5738, C00F
+FFFFFFFFFFFF41EAC9676FFE1F7DF0 0	# same bits without BCI
+
+FFFFFFFFFFFF847D5B9DBFFE1937B0 1	# hr-test2.dl line 6175, C00F
+FFFFFFFFFFFF847D5B9DBFFE1937B0 0	# same bits without BCI
+FFFFFFFFFFFFFFFFFFFFFFD01FFEB0 1	# hr-test2.dl line 6188, C017
+FFFFFFFFFFFFFFFFFFFFFFD01FFEB0 0	# same bits without BCI
+FDBD7D552CB25FFFFFFFFFFE1DFBB0 1	# hr-test2.dl line 6191, C002
+FDBD7D552CB25FFFFFFFFFFE1DFBB0 0	# same bits without BCI
+FFD2F0A52B8FFFFFFFFEDE600FFDF0 1	# hr-test2.dl line 6195, C007
+FFD2F0A52B8FFFFFFFFEDE600FFDF0 0	# same bits without BCI
+FFFFFFFFCC7FFFFFFFF4EE601C31D0 1	# hr-test2.dl line 6318, C007
+FFFFFFFFCC7FFFFFFFF4EE601C31D0 0	# same bits without BCI
+FFFFFFFFFFFFFFFFFFFFA5901BEFD0 1	# hr-test2.dl line 6545, C00F
+FFFFFFFFFFFFFFFFFFFFA5901BEFD0 0	# same bits without BCI
+FFFFFFFFEA97FFFFFFE765901FFFB0 1	# hr-test2.dl line 6973, C00F
+FFFFFFFFEA97FFFFFFE765901FFFB0 0	# same bits without BCI
+
+FFFFFFFFF8C8A5E29DA0DFFE07FFF0 1	# hr-test2.dl line 7158, C00F
+FFFFFFFFF8C8A5E29DA0DFFE07FFF0 0	# same bits without BCI
+FFFD01853B7206E63FFFFFFE1FBFD0 1	# hr-test2.dl line 7175, C003
+FFFD01853B7206E63FFFFFFE1FBFD0 0	# same bits without BCI
+E6ACC7FFFF40FFFFFFFFFFFE1FF770 1	# hr-test2.dl line 7195, C00B
+E6ACC7FFFF40FFFFFFFFFFFE1FF770 0	# same bits without BCI
+
+# hr-test1.dl, PRBS without major errors
+55A5404BFAED58A3BE33A978092A40 0	# hr-test1.dl line 1051, C000
+CFE44B516ED5D1F54E4615AA101260 0	# hr-test1.dl line 2710, C000
+D7881D40AA0F68106195DCD41568C0 0	# hr-test1.dl line 4306, C000
+D4CFB4961F8F9F11313454560690E0 1	# hr-test1.dl line 4631, C002
