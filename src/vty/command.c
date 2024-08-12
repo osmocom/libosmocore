@@ -3451,7 +3451,6 @@ static int write_config_file(const char *config_file, char **outpath)
 			unlink(config_file_tmp);
 			return -3;
 		}
-		sync();
 		if (unlink(config_file) != 0) {
 			*outpath = talloc_strdup(tall_vty_cmd_ctx, config_file);
 			talloc_free(config_file_sav);
@@ -3468,7 +3467,6 @@ static int write_config_file(const char *config_file, char **outpath)
 		return -5;
 	}
 	unlink(config_file_tmp);
-	sync();
 
 	talloc_free(config_file_sav);
 	talloc_free(config_file_tmp);
