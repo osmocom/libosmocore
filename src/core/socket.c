@@ -172,8 +172,8 @@ static int socket_helper(const struct addrinfo *rp, unsigned int flags)
 
 	sfd = socket(rp->ai_family, rp->ai_socktype, rp->ai_protocol);
 	if (sfd == -1) {
-		LOGP(DLGLOBAL, LOGL_ERROR,
-			"unable to create socket: %s\n", strerror(errno));
+		LOGP(DLGLOBAL, LOGL_ERROR, "unable to create socket(%d, %d, %d): %s\n",
+		     rp->ai_family, rp->ai_socktype, rp->ai_protocol, strerror(errno));
 		return sfd;
 	}
 
