@@ -222,6 +222,34 @@ char *osmo_rai_name_c(const void *ctx, const struct gprs_ra_id *rai)
 	return osmo_rai_name_buf(buf, 32, rai);
 }
 
+/*! Convert osmo_routing_area_id (new) into gprs_ra_id (old) */
+void osmo_rai_to_gprs(struct gprs_ra_id *dest, const struct osmo_routing_area_id *src)
+{
+	OSMO_ASSERT(src);
+	OSMO_ASSERT(dest);
+
+	dest->mcc = src->lac.plmn.mcc;
+	dest->mnc = src->lac.plmn.mnc;
+	dest->mnc_3_digits = src->lac.plmn.mnc_3_digits;
+
+	dest->lac = src->lac.lac;
+	dest->rac = src->rac;
+}
+
+/*! Convert gprs_ra_id (old) into osmo_routing_area_id (new) */
+void gprs_rai_to_osmo(struct osmo_routing_area_id *dest, const struct gprs_ra_id *src)
+{
+	OSMO_ASSERT(src);
+	OSMO_ASSERT(dest);
+
+	dest->lac.plmn.mcc = src->mcc;
+	dest->lac.plmn.mnc = src->mnc;
+	dest->lac.plmn.mnc_3_digits = src->mnc_3_digits;
+
+	dest->lac.lac = src->lac;
+	dest->rac = src->rac;
+}
+
 /* FIXME: convert to value_string */
 static const char *cc_state_names[32] = {
 	"NULL",

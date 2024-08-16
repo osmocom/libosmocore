@@ -487,6 +487,8 @@ osmo_rai_name_c;
 osmo_rai_name2;
 osmo_rai_name2_buf;
 osmo_rai_name2_c;
+osmo_rai_to_gprs;
+gprs_rai_to_osmo;
 osmo_cgi_cmp;
 osmo_cgi_name;
 osmo_cgi_name_buf;

@@ -42,6 +42,8 @@ const char *rr_cause_name(uint8_t cause);
 const char *osmo_rai_name(const struct gprs_ra_id *rai);
 char *osmo_rai_name_buf(char *buf, size_t buf_len, const struct gprs_ra_id *rai);
 char *osmo_rai_name_c(const void *ctx, const struct gprs_ra_id *rai);
+void osmo_rai_to_gprs(struct gprs_ra_id *dest, const struct osmo_routing_area_id *src);
+void gprs_rai_to_osmo(struct osmo_routing_area_id *dest, const struct gprs_ra_id *src);
 
 int gsm48_decode_lai(struct gsm48_loc_area_id *lai, uint16_t *mcc,
 		     uint16_t *mnc, uint16_t *lac)
