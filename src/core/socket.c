@@ -572,6 +572,20 @@ int osmo_sock_init_osa(uint16_t type, uint8_t proto,
 			}
 		}
 
+		if (proto == IPPROTO_UDP) {
+			int a_lot = 64 * (1024*1024);
+			rc = setsockopt(sfd, SOL_SOCKET, SO_RCVBUF, &a_lot, sizeof(a_lot));
+			if (rc < 0) {
+				int err = errno;
+				_SOCKADDR_TO_STR(sastr, local);
+				LOGP(DLGLOBAL, LOGL_ERROR,
+				     "cannot setsockopt socket: " OSMO_SOCKADDR_STR_FMT ": %s\n",
+				     OSMO_SOCKADDR_STR_FMT_ARGS(sastr), strerror(err));
+				close(sfd);
+				return rc;
+			}
+		}
+
 		if ((flags & OSMO_SOCK_F_RCVBUFFORCE)) {
 			rc = setsockopt(sfd, SOL_SOCKET, SO_RCVBUFFORCE, &on, sizeof(on));
 			if (rc < 0) {
