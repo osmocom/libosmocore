@@ -572,6 +572,33 @@ int osmo_sock_init_osa(uint16_t type, uint8_t proto,
 			}
 		}
 
+		if ((flags & OSMO_SOCK_F_RCVBUFFORCE)) {
+			rc = setsockopt(sfd, SOL_SOCKET, SO_RCVBUFFORCE, &on, sizeof(on));
+			if (rc < 0) {
+				int err = errno;
+				_SOCKADDR_TO_STR(sastr, local);
+				LOGP(DLGLOBAL, LOGL_ERROR,
+				     "cannot setsockopt socket: " OSMO_SOCKADDR_STR_FMT ": %s\n",
+				     OSMO_SOCKADDR_STR_FMT_ARGS(sastr), strerror(err));
+				close(sfd);
+				return rc;
+			}
+		}
+
+		if (proto == IPPROTO_UDP && (flags & OSMO_SOCK_F_UDP_REUSEPORT)) {
+			rc = setsockopt(sfd, SOL_SOCKET, SO_REUSEPORT,
+					&on, sizeof(on));
+			if (rc < 0) {
+				int err = errno;
+				_SOCKADDR_TO_STR(sastr, local);
+				LOGP(DLGLOBAL, LOGL_ERROR,
+				     "cannot setsockopt socket: " OSMO_SOCKADDR_STR_FMT ": %s\n",
+				     OSMO_SOCKADDR_STR_FMT_ARGS(sastr), strerror(err));
+				close(sfd);
+				return rc;
+			}
+		}
+
 		if (bind(sfd, &local->u.sa, sizeof(struct osmo_sockaddr)) == -1) {
 			int err = errno;
 			_SOCKADDR_TO_STR(sastr, local);

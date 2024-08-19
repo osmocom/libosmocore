@@ -109,6 +109,9 @@ char *osmo_sockaddr_to_str_c(void *ctx, const struct osmo_sockaddr *sockaddr);
 #define OSMO_SOCK_F_NO_MCAST_ALL  (1 << 4)
 /*! use SO_REUSEADDR on UDP ports (required for multicast) */
 #define OSMO_SOCK_F_UDP_REUSEADDR (1 << 5)
+/*! use SO_REUSEPORT on UDP ports (allows multiple listeners) */
+#define OSMO_SOCK_F_UDP_REUSEPORT (1 << 6)
+#define OSMO_SOCK_F_RCVBUFFORCE (1 << 7)
 
 /*! use OSMO_SOCK_F_DSCP(x) to set IP DSCP 'x' for packets transmitted on the socket */
 #define OSMO_SOCK_F_DSCP(x)	(((x)&0x3f) << 24)
