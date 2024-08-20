@@ -346,23 +346,23 @@ int osmo_sock_init2(uint16_t family, uint16_t type, uint8_t proto,
 	if (family == AF_UNSPEC) {
 		for (rp = local; rp != NULL; rp = rp->ai_next) {
 			switch (rp->ai_family) {
-				case AF_INET:
-					local_ipv4 = true;
-					break;
-				case AF_INET6:
-					local_ipv6 = true;
-					break;
+			case AF_INET:
+				local_ipv4 = true;
+				break;
+			case AF_INET6:
+				local_ipv6 = true;
+				break;
 			}
 		}
 
 		for (rp = remote; rp != NULL; rp = rp->ai_next) {
 			switch (rp->ai_family) {
-				case AF_INET:
-					remote_ipv4 = true;
-					break;
-				case AF_INET6:
-					remote_ipv6 = true;
-					break;
+			case AF_INET:
+				remote_ipv4 = true;
+				break;
+			case AF_INET6:
+				remote_ipv6 = true;
+				break;
 			}
 		}
 
