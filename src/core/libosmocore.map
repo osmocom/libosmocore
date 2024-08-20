@@ -607,6 +607,7 @@ rate_ctr_for_each_counter;
 rate_ctr_for_each_group;
 rate_ctr_get_by_name;
 rate_ctr_get_group_by_name_idx;
+rate_ctr_get_group_by_name_name;
 rate_ctr_group_alloc;
 rate_ctr_group_free;
 rate_ctr_group_get_ctr;

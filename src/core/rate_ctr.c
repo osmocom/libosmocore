@@ -279,6 +279,9 @@ struct rate_ctr *rate_ctr_group_get_ctr(struct rate_ctr_group *grp, unsigned int
  */
 void rate_ctr_group_set_name(struct rate_ctr_group *grp, const char *name)
 {
+	if (!osmo_identifier_valid(name))
+		LOGP(DLGLOBAL, LOGL_ERROR, "The application is setting an invalid rate counter group name: %s\n",
+		     osmo_quote_str(name, -1));
 	osmo_talloc_replace_string(grp, &grp->name, name);
 }
 
@@ -390,10 +393,10 @@ int rate_ctr_init(void *tall_ctx)
 	return 0;
 }
 
-/*! Search for counter group based on group name and index
- *  \param[in] name Name of the counter group you're looking for
- *  \param[in] idx Index inside the counter group
- *  \returns \ref rate_ctr_group or NULL in case of error */
+/*! Search for counter group based on group name and index.
+ *  \param[in] group_name Name of the counter group family (like a "bsc", "hnb", ...).
+ *  \param[in] idx Instance index inside the counter group (like 23 in "bsc.23").
+ *  \returns \ref rate_ctr_group or NULL in case of error. */
 struct rate_ctr_group *rate_ctr_get_group_by_name_idx(const char *name, const unsigned int idx)
 {
 	struct rate_ctr_group *ctrg;
@@ -406,6 +409,29 @@ struct rate_ctr_group *rate_ctr_get_group_by_name_idx(const char *name, const un
 				ctrg->idx == idx) {
 			return ctrg;
 		}
+	}
+	return NULL;
+}
+
+/*! Search for counter group based on group name and instance name.
+ *  \param[in] group_name Name of the counter group family (like a "bsc", "hnb", ...).
+ *  \param[in] instance_name Name given to the specific instance of the counter group (something like a cell ID string,
+ *             it is up to the calling application to set rate_ctr_group_set_name() on each created instance).
+ *  \returns \ref rate_ctr_group or NULL in case of error */
+struct rate_ctr_group *rate_ctr_get_group_by_name_name(const char *group_name, const char *instance_name)
+{
+	struct rate_ctr_group *ctrg;
+
+	llist_for_each_entry(ctrg, &rate_ctr_groups, list) {
+		if (!ctrg->desc)
+			continue;
+
+		if (strcmp(ctrg->desc->group_name_prefix, group_name))
+			continue;
+
+		if (strcmp(ctrg->name, instance_name))
+			continue;
+		return ctrg;
 	}
 	return NULL;
 }

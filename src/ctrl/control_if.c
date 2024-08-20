@@ -633,8 +633,8 @@ CTRL_CMD_DEFINE(rate_ctr, "rate_ctr *");
 static int get_rate_ctr(struct ctrl_cmd *cmd, void *data)
 {
 	int intv;
-	unsigned int idx;
-	char *ctr_group, *ctr_idx, *tmp, *dup, *saveptr, *interval;
+	int idx;
+	char *ctr_group, *ctr_idx_or_name, *tmp, *dup, *saveptr, *interval;
 	struct rate_ctr_group *ctrg;
 	const struct rate_ctr *ctr;
 
@@ -680,21 +680,30 @@ static int get_rate_ctr(struct ctrl_cmd *cmd, void *data)
 	}
 
 	ctr_group = strtok_r(NULL, ".", &saveptr);
-	ctr_idx = strtok_r(NULL, ".", &saveptr);
-	if (!ctr_group || !ctr_idx) {
+	ctr_idx_or_name = strtok_r(NULL, ".", &saveptr);
+	if (!ctr_group || !ctr_idx_or_name) {
 		talloc_free(dup);
 		cmd->reply = "Counter group must be of name.index form e. g. "
 			"e1inp.0";
 		goto err;
 	}
 
-	idx = atoi(ctr_idx);
-
-	ctrg = rate_ctr_get_group_by_name_idx(ctr_group, idx);
-	if (!ctrg) {
-		talloc_free(dup);
-		cmd->reply = "Counter group with given name and index not found";
-		goto err;
+	/* If the token is a valid integer, osmo_str_to_int() returns success, and we interpret it as an index. If not,
+	 * try to look up a counter group instance name instead. */
+	if (osmo_str_to_int(&idx, ctr_idx_or_name, 10, 0, INT_MAX) == 0) {
+		ctrg = rate_ctr_get_group_by_name_idx(ctr_group, idx);
+		if (!ctrg) {
+			talloc_free(dup);
+			cmd->reply = "Counter group with given name and index not found";
+			goto err;
+		}
+	} else {
+		ctrg = rate_ctr_get_group_by_name_name(ctr_group, ctr_idx_or_name);
+		if (!ctrg) {
+			talloc_free(dup);
+			cmd->reply = "Counter group with given name and instance ID not found";
+			goto err;
+		}
 	}
 
 	if (!strlen(saveptr)) {

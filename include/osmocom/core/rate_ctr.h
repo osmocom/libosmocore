@@ -117,6 +117,7 @@ int64_t rate_ctr_difference(struct rate_ctr *ctr);
 int rate_ctr_init(void *tall_ctx);
 
 struct rate_ctr_group *rate_ctr_get_group_by_name_idx(const char *name, const unsigned int idx);
+struct rate_ctr_group *rate_ctr_get_group_by_name_name(const char *group_name, const char *instance_name);
 const struct rate_ctr *rate_ctr_get_by_name(const struct rate_ctr_group *ctrg, const char *name);
 
 typedef int (*rate_ctr_handler_t)(
