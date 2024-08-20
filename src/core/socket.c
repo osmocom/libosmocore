@@ -278,6 +278,24 @@ static int osmo_sock_init_tail(int fd, uint16_t type, unsigned int flags)
 	return 0;
 }
 
+/*! Determine if the system supports AF_INET6 sockets at all.
+ * We call socket(AF_INET6) once and cache the result value. */
+static bool system_supports_inet6(void)
+{
+	static int cached_val = -1;
+
+	if (cached_val < 0) {
+		int rc = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
+		if (rc < 0 && errno == EAFNOSUPPORT) {
+			cached_val = 0;
+		} else {
+			cached_val = 1;
+			close(rc);
+		}
+	}
+	return cached_val == 1;
+}
+
 /*! Initialize a socket (including bind and/or connect)
  *  \param[in] family Address Family like AF_INET, AF_INET6, AF_UNSPEC
  *  \param[in] type Socket type like SOCK_DGRAM, SOCK_STREAM
@@ -343,7 +361,12 @@ int osmo_sock_init2(uint16_t family, uint16_t type, uint8_t proto,
 	/* It must do a full run to ensure AF_UNSPEC does not fail.
 	 * In case first local valid entry is IPv4 and only remote valid entry
 	 * is IPv6 or vice versa */
-	if (family == AF_UNSPEC) {
+	if (!system_supports_inet6()) {
+		/* if no AF_INET6 is supported, then the decision is easy...*/
+		local_ipv4 = true;
+		remote_ipv4 = true;
+		family = AF_INET;
+	} else if (family == AF_UNSPEC) {
 		for (rp = local; rp != NULL; rp = rp->ai_next) {
 			switch (rp->ai_family) {
 			case AF_INET:
