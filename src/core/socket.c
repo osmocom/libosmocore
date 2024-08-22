@@ -288,7 +288,7 @@ static bool system_supports_inet6(void)
 		int rc = socket(AF_INET6, SOCK_DGRAM, IPPROTO_UDP);
 		if (rc < 0 && errno == EAFNOSUPPORT) {
 			cached_val = 0;
-		} else {
+		} else if (rc >= 0) {
 			cached_val = 1;
 			close(rc);
 		}
