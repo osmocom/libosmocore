@@ -224,6 +224,12 @@ cat $abs_srcdir/codec/codec_efr_sid_test.ok > expout
 AT_CHECK([$abs_top_builddir/tests/codec/codec_efr_sid_test $abs_srcdir/codec/codec_efr_sid_test.in], [0], [expout], [ignore])
 AT_CLEANUP
 
+AT_SETUP([codec_fr_sid])
+AT_KEYWORDS([codec_fr_sid])
+cat $abs_srcdir/codec/codec_fr_sid_test.ok > expout
+AT_CHECK([$abs_top_builddir/tests/codec/codec_fr_sid_test $abs_srcdir/codec/codec_fr_sid_test.in], [0], [expout], [ignore])
+AT_CLEANUP
+
 AT_SETUP([codec_hr_sid])
 AT_KEYWORDS([codec_hr_sid])
 cat $abs_srcdir/codec/codec_hr_sid_test.ok > expout

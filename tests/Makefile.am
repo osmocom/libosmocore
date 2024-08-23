@@ -27,7 +27,7 @@ check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
 		 prbs/prbs_test gsm23003/gsm23003_test 			\
 		 gsm23236/gsm23236_test                                 \
 		 codec/codec_ecu_fr_test codec/codec_efr_sid_test	\
-		 codec/codec_hr_sid_test				\
+		 codec/codec_fr_sid_test codec/codec_hr_sid_test	\
 		 timer/clk_override_test				\
 		 oap/oap_client_test gsm29205/gsm29205_test		\
 		 logging/logging_vty_test				\
@@ -270,6 +270,9 @@ codec_codec_ecu_fr_test_LDADD = $(top_builddir)/src/codec/libosmocodec.la $(LDAD
 codec_codec_efr_sid_test_SOURCES = codec/codec_efr_sid_test.c
 codec_codec_efr_sid_test_LDADD = $(top_builddir)/src/codec/libosmocodec.la $(LDADD)
 
+codec_codec_fr_sid_test_SOURCES = codec/codec_fr_sid_test.c
+codec_codec_fr_sid_test_LDADD = $(top_builddir)/src/codec/libosmocodec.la $(LDADD)
+
 codec_codec_hr_sid_test_SOURCES = codec/codec_hr_sid_test.c
 codec_codec_hr_sid_test_LDADD = $(top_builddir)/src/codec/libosmocodec.la $(LDADD)
 
@@ -447,6 +450,7 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
              codec/codec_test.ok \
              codec/codec_ecu_fr_test.ok \
              codec/codec_efr_sid_test.ok codec/codec_efr_sid_test.in \
+             codec/codec_fr_sid_test.ok codec/codec_fr_sid_test.in \
              codec/codec_hr_sid_test.ok codec/codec_hr_sid_test.in \
 	     vty/vty_test.ok vty/vty_test.err \
 	     vty/fail_not_de-indented.cfg \
@@ -610,6 +614,8 @@ endif
 		>$(srcdir)/codec/codec_ecu_fr_test.ok
 	codec/codec_efr_sid_test $(srcdir)/codec/codec_efr_sid_test.in \
 		>$(srcdir)/codec/codec_efr_sid_test.ok
+	codec/codec_fr_sid_test $(srcdir)/codec/codec_fr_sid_test.in \
+		>$(srcdir)/codec/codec_fr_sid_test.ok
 	codec/codec_hr_sid_test $(srcdir)/codec/codec_hr_sid_test.in \
 		>$(srcdir)/codec/codec_hr_sid_test.ok
 if ENABLE_GB
