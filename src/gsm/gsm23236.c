@@ -523,7 +523,7 @@ int osmo_nri_ranges_vty_add(const char **message, struct osmo_nri_range *added_r
 int osmo_nri_ranges_vty_del(const char **message, struct osmo_nri_range *removed_range,
 			    struct osmo_nri_ranges *nri_ranges, int argc, const char **argv)
 {
-	struct osmo_nri_range del_range;
+	struct osmo_nri_range del_range = {};
 	if (osmo_nri_parse_range(&del_range, argv[0], argc > 1 ? argv[1] : NULL)) {
 		*message = "Error: cannot parse NRI range";
 		return -1;
