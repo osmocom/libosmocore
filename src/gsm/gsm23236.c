@@ -487,7 +487,7 @@ static int osmo_nri_parse_range(struct osmo_nri_range *nri_range, const char *fi
 int osmo_nri_ranges_vty_add(const char **message, struct osmo_nri_range *added_range,
 			    struct osmo_nri_ranges *nri_ranges, int argc, const char **argv, uint8_t nri_bitlen)
 {
-	struct osmo_nri_range add_range;
+	struct osmo_nri_range add_range = {};
 	if (osmo_nri_parse_range(&add_range, argv[0], argc > 1 ? argv[1] : NULL)) {
 		*message = "Error: cannot parse NRI range";
 		return -1;
