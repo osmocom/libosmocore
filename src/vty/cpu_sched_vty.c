@@ -23,7 +23,9 @@
  * SPDX-License-Identifier: GPLv2+
  */
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 
 #include "config.h"
 

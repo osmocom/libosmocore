@@ -26,7 +26,9 @@
  * \file socket.c */
 
 #ifdef HAVE_SYS_SOCKET_H
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE /* for struct ucred on glibc >= 2.8 */
+#endif
 
 #include <osmocom/core/logging.h>
 #include <osmocom/core/select.h>

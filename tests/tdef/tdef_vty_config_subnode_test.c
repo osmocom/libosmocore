@@ -19,7 +19,9 @@
  * GNU General Public License for more details.
  */
 
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
+#endif
 #include <getopt.h>
 #include <signal.h>
 #include <limits.h>

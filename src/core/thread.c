@@ -28,8 +28,10 @@
 
 /* If HAVE_GETTID, then "_GNU_SOURCE" may need to be defined to use gettid() */
 #if HAVE_GETTID
+#ifndef _GNU_SOURCE
 #define _GNU_SOURCE
-#endif
+#endif /* ifndef _GNU_SOURCE */
+#endif /* if HAVE_GETTID */
 #include <unistd.h>
 #include <sys/types.h>
 
