@@ -116,6 +116,7 @@ static inline const char *sgsap_imsi_det_noneps_type_name(enum sgsap_imsi_det_no
 enum sgsap_service_ind {
 	SGSAP_SERV_IND_CS_CALL		= 0x01,
 	SGSAP_SERV_IND_SMS		= 0x02,
+	SGSAP_SERV_IND_PAGING_TIMEOUT	= 0xfe, /* Osmocom specific to drop the paging */
 };
 extern const struct value_string sgsap_service_ind_names[];
 static inline const char *sgsap_service_ind_name(enum sgsap_service_ind si) {
