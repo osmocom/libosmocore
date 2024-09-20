@@ -1,5 +1,9 @@
 /*! \file iu_up.c
- * IuUP (Iu User Plane) according to 3GPP TS 25.415 */
+ * IuUP (Iu User Plane) according to 3GPP TS 25.415
+ * See also 3GPP TS 25.414 regarding data transport.
+ * See also 3GPP TS 29.414 and 3GPP TS 29.415 regarding Nb counterparts
+ * of the above specs.
+ */
 /*
  * (C) 2017 by Harald Welte <laforge@gnumonks.org>
  *
