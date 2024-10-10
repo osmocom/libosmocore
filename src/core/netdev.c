@@ -750,9 +750,9 @@ void *osmo_netdev_get_priv_data(struct osmo_netdev *netdev)
 	return netdev->priv_data;
 }
 
-/*! Set data_ind_cb callback, called when a new packet is received on the network interface.
+/*! Set ifupdown_ind_cb callback, called when the link status (UP/DOWN) changes.
  *  \param[in] netdev The netdev object where the field is set
- *  \param[in] data_ind_cb the user provided function to be called when the link status (UP/DOWN) changes
+ *  \param[in] ifupdown_ind_cb the user provided function to be called when the link status (UP/DOWN) changes
  */
 void osmo_netdev_set_ifupdown_ind_cb(struct osmo_netdev *netdev, osmo_netdev_ifupdown_ind_cb_t ifupdown_ind_cb)
 {
