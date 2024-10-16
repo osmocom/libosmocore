@@ -25,6 +25,14 @@
 #include <stdint.h>
 #include <errno.h>
 #include <stdio.h>
+#if !defined(PRId64) || !defined(PRIu64)
+/*
+it gets lost every few years..
+https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=953844
+https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=1067692
+*/
+#include <sys/types.h>
+#endif
 #include <inttypes.h>
 #include <limits.h>
 
