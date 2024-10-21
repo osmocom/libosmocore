@@ -556,7 +556,7 @@ struct osmo_netdev *osmo_tundev_get_netdev(struct osmo_tundev *tundev)
 /*! Submit a packet to the tunnel device managed by the tundev object
  *  \param[in] tundev The tundev object owning the tunnel device where to inject the packet
  *  \param[in] msg The msgb containg the packet to transfer
- *  \returns The current value of the configured network namespace
+ *  \returns 0 on success; negative on error
  *
  * This function takes the ownership of msg in all cases.
  */
