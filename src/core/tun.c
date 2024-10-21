@@ -489,6 +489,15 @@ const char *osmo_tundev_get_name(const struct osmo_tundev *tundev)
 	return tundev->name;
 }
 
+/*! Get FD associated to the tundev object.
+ *  \param[in] tundev The tundev object from where to retrieve the field
+ *  \returns The fd of the currently open tundev, negative otherwise
+ */
+int osmo_tundev_get_fd(const struct osmo_tundev *tundev)
+{
+	return tundev->wqueue.bfd.fd;
+}
+
 /*! Set name used to name the tunnel interface created by the tundev object.
  *  \param[in] tundev The tundev object where the field is set
  *  \param[in] dev_name The tunnel interface name to use

@@ -569,6 +569,7 @@ osmo_tundev_alloc;
 osmo_tundev_close;
 osmo_tundev_free;
 osmo_tundev_get_dev_name;
+osmo_tundev_get_fd;
 osmo_tundev_get_name;
 osmo_tundev_get_netdev;
 osmo_tundev_get_netns_name;

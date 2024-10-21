@@ -29,6 +29,8 @@ void osmo_tundev_set_data_ind_cb(struct osmo_tundev *tundev, osmo_tundev_data_in
 
 const char *osmo_tundev_get_name(const struct osmo_tundev *tundev);
 
+int osmo_tundev_get_fd(const struct osmo_tundev *tundev);
+
 int osmo_tundev_set_dev_name(struct osmo_tundev *tundev, const char *dev_name);
 const char *osmo_tundev_get_dev_name(const struct osmo_tundev *tundev);
 
