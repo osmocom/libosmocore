@@ -321,6 +321,7 @@ osmo_netdev_register;
 osmo_netdev_set_dev_name_chg_cb;
 osmo_netdev_set_ifindex;
 osmo_netdev_set_ifupdown_ind_cb;
+osmo_netdev_set_mtu;
 osmo_netdev_set_mtu_chg_cb;
 osmo_netdev_set_netns_name;
 osmo_netdev_set_priv_data;

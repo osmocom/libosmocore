@@ -68,7 +68,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdio.h>
+#include <inttypes.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
@@ -531,6 +531,35 @@ static int netdev_mnl_set_ifupdown(struct osmo_mnl *omnl, unsigned int if_index,
 	return 0;
 }
 
+static int netdev_mnl_set_mtu(struct osmo_mnl *omnl, unsigned int if_index,
+			      const char *dev_name, uint32_t mtu)
+{
+	char buf[MNL_SOCKET_BUFFER_SIZE];
+	struct nlmsghdr *nlh = mnl_nlmsg_put_header(buf);
+	struct ifinfomsg *ifm;
+	unsigned int change = 0;
+	unsigned int flags = 0;
+
+	nlh->nlmsg_type	= RTM_NEWLINK;
+	nlh->nlmsg_flags = NLM_F_REQUEST | NLM_F_ACK;
+	nlh->nlmsg_seq = time(NULL);
+
+	ifm = mnl_nlmsg_put_extra_header(nlh, sizeof(*ifm));
+	ifm->ifi_family = AF_UNSPEC;
+	ifm->ifi_change = change;
+	ifm->ifi_flags = flags;
+	ifm->ifi_index = if_index;
+
+	mnl_attr_put_u32(nlh, IFLA_MTU, mtu);
+
+	if (mnl_socket_sendto(omnl->mnls, nlh, nlh->nlmsg_len) < 0) {
+		LOGP(DLGLOBAL, LOGL_ERROR, "mnl_socket_sendto\n");
+		return -EIO;
+	}
+
+	return 0;
+}
+
 static int netdev_mnl_add_addr(struct osmo_mnl *omnl, unsigned int if_index, const struct osmo_sockaddr *osa, uint8_t prefix)
 {
 	char buf[MNL_SOCKET_BUFFER_SIZE];
@@ -855,6 +884,38 @@ const char *osmo_netdev_get_netns_name(const struct osmo_netdev *netdev)
 const char *osmo_netdev_get_dev_name(const struct osmo_netdev *netdev)
 {
 	return netdev->dev_name;
+}
+
+/*! Set the MTU of the network interface
+ *  \param[in] netdev The netdev object where the field is set
+ *  \param[in] mtu The MTU to be set on the network interface
+ *  \returns 0 on success; negative on error
+ *
+ */
+int osmo_netdev_set_mtu(struct osmo_netdev *netdev, uint32_t mtu)
+{
+	struct osmo_netns_switch_state switch_state;
+	int rc;
+
+	if (!netdev->registered)
+		return -ENODEV;
+
+	LOGNETDEV(netdev, LOGL_NOTICE, "Setting dev %s MTU %" PRIu32 "\n",
+		  netdev->dev_name, mtu);
+
+	NETDEV_NETNS_ENTER(netdev, &switch_state, "set_mtu");
+
+#if ENABLE_LIBMNL
+	rc = netdev_mnl_set_mtu(netdev->netns_ctx->omnl, netdev->ifindex,
+				netdev->dev_name, mtu);
+#else
+	LOGNETDEV(netdev, LOGL_ERROR, "%s: NOT SUPPORTED. Build libosmocore with --enable-libmnl.\n", __func__);
+	rc = -ENOTSUP;
+#endif
+
+	NETDEV_NETNS_EXIT(netdev, &switch_state, "set_mtu");
+
+	return rc;
 }
 
 /*! Bring netdev interface UP or DOWN.

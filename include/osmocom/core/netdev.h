@@ -36,6 +36,8 @@ const char *osmo_netdev_get_dev_name(const struct osmo_netdev *netdev);
 int osmo_netdev_set_netns_name(struct osmo_netdev *netdev, const char *netns);
 const char *osmo_netdev_get_netns_name(const struct osmo_netdev *netdev);
 
+int osmo_netdev_set_mtu(struct osmo_netdev *netdev, uint32_t mtu);
+
 void osmo_netdev_set_ifupdown_ind_cb(struct osmo_netdev *netdev, osmo_netdev_ifupdown_ind_cb_t ifupdown_ind_cb);
 void osmo_netdev_set_dev_name_chg_cb(struct osmo_netdev *netdev, osmo_netdev_dev_name_chg_cb_t dev_name_chg_cb);
 void osmo_netdev_set_mtu_chg_cb(struct osmo_netdev *netdev, osmo_netdev_mtu_chg_cb_t mtu_chg_cb);

@@ -10,3 +10,4 @@
 gb		ADD			add bssgp_parse_cell_id2/bssgp_create_cell_id2
 gsm		ADD			add osmo_rai_to_gprs/gprs_rai_to_osmo
 core  ADD     add API osmo_tundev_get_fd()
+core  ADD     add API osmo_netdev_set_mtu()
