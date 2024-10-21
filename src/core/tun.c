@@ -268,7 +268,7 @@ void osmo_tundev_free(struct osmo_tundev *tundev)
 /*! Open and configure fd of the tunnel device.
  *  \param[in] tundev The tundev object whose tunnel interface to open
  *  \param[in] flags internal linux flags to pass when creating the device (not used yet)
- *  \returns 0 on success; negative on error
+ *  \returns tun fd on success; negative on error
  */
 static int tundev_open_fd(struct osmo_tundev *tundev, int flags)
 {
