@@ -479,7 +479,7 @@ static int netdev_mnl_request_initial_dump(struct osmo_mnl *omnl, unsigned int i
 
 	nlh->nlmsg_type	= RTM_GETLINK;
 	nlh->nlmsg_flags = NLM_F_REQUEST | NLM_F_ACK;
-	nlh->nlmsg_seq = time(NULL);
+	nlh->nlmsg_seq = (uint32_t)time(NULL);
 
 	ifm = mnl_nlmsg_put_extra_header(nlh, sizeof(*ifm));
 	ifm->ifi_family = AF_UNSPEC;
@@ -512,7 +512,7 @@ static int netdev_mnl_set_ifupdown(struct osmo_mnl *omnl, unsigned int if_index,
 
 	nlh->nlmsg_type	= RTM_NEWLINK;
 	nlh->nlmsg_flags = NLM_F_REQUEST | NLM_F_ACK;
-	nlh->nlmsg_seq = time(NULL);
+	nlh->nlmsg_seq = (uint32_t)time(NULL);
 
 	ifm = mnl_nlmsg_put_extra_header(nlh, sizeof(*ifm));
 	ifm->ifi_family = AF_UNSPEC;
@@ -542,7 +542,7 @@ static int netdev_mnl_set_mtu(struct osmo_mnl *omnl, unsigned int if_index,
 
 	nlh->nlmsg_type	= RTM_NEWLINK;
 	nlh->nlmsg_flags = NLM_F_REQUEST | NLM_F_ACK;
-	nlh->nlmsg_seq = time(NULL);
+	nlh->nlmsg_seq = (uint32_t)time(NULL);
 
 	ifm = mnl_nlmsg_put_extra_header(nlh, sizeof(*ifm));
 	ifm->ifi_family = AF_UNSPEC;
@@ -568,7 +568,7 @@ static int netdev_mnl_add_addr(struct osmo_mnl *omnl, unsigned int if_index, con
 
 	nlh->nlmsg_type	= RTM_NEWADDR;
 	nlh->nlmsg_flags = NLM_F_REQUEST | NLM_F_CREATE | NLM_F_REPLACE | NLM_F_ACK;
-	nlh->nlmsg_seq = time(NULL);
+	nlh->nlmsg_seq = (uint32_t)time(NULL);
 
 	ifm = mnl_nlmsg_put_extra_header(nlh, sizeof(*ifm));
 	ifm->ifa_family = osa->u.sa.sa_family;
@@ -616,7 +616,7 @@ static int netdev_mnl_add_route(struct osmo_mnl *omnl,
 
 	nlh->nlmsg_type	= RTM_NEWROUTE;
 	nlh->nlmsg_flags = NLM_F_REQUEST | NLM_F_CREATE | NLM_F_ACK;
-	nlh->nlmsg_seq = time(NULL);
+	nlh->nlmsg_seq = (uint32_t)time(NULL);
 
 	rtm = mnl_nlmsg_put_extra_header(nlh, sizeof(*rtm));
 	rtm->rtm_family = dst_osa->u.sa.sa_family;
