@@ -571,7 +571,10 @@ struct osmo_netdev *osmo_tundev_get_netdev(struct osmo_tundev *tundev)
  */
 int osmo_tundev_send(struct osmo_tundev *tundev, struct msgb *msg)
 {
-	int rc = osmo_wqueue_enqueue(&tundev->wqueue, msg);
+	int rc;
+
+	OSMO_ASSERT(tundev);
+	rc = osmo_wqueue_enqueue(&tundev->wqueue, msg);
 	if (rc < 0) {
 		LOGTUN(tundev, LOGL_ERROR, "Failed to enqueue the packet\n");
 		msgb_free(msg);
