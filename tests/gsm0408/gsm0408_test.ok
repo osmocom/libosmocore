@@ -1,6 +1,6 @@
 Test `CSD 9600/V.110/transparent' passed
 Test `CSD 4800/RLP/non-transparent' passed
-Test `CSD 2400/V.22bis/transparent' failed
+Test `CSD 2400/V.22bis/transparent' passed
 Test `Speech, all codecs' passed
 Test `Speech, without octet 3a' failed
 Simple TMSI encoding test....passed
