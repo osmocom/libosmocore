@@ -339,8 +339,23 @@ int gsm48_encode_bearer_cap(struct msgb *msg, int lv_only,
 	case GSM48_BCAP_ITCAP_3k1_AUDIO:
 	case GSM48_BCAP_ITCAP_FAX_G3:
 		lv[i++] |= 0x80; /* last IE of octet 3 etc */
-		/* octet 4 */
-		lv[i++] = 0x88;
+		/* octet 4
+		 * 1... .... = Extension: No Extension
+		 * .0.. .... = Compression: Not Allowed
+		 * ..xx .... = Structure: (see below)
+		 * .... 1... = Duplex mode: Full
+		 * .... .0.. = Configuration: Point-to-point
+		 * .... ..0. = NIRR: No meaning is associated with this value
+		 * .... ...0 = Establishment: Demand
+		 *
+		 * For connection element "non transparent":
+		 * ..00 .... = Structure: Service data unit integrity (0)
+		 * For connection element "transparent":
+		 * ..11 .... = Structure: Unstructured (3) */
+		if ((bcap->data.transp & 0x01) == 0)
+			lv[i++] = 0x88 | (0x03 << 4);
+		else
+			lv[i++] = 0x88;
 		/* octet 5 */
 		lv[i++] = 0x80 | ((bcap->data.rate_adaption & 3) << 3)
 			  | (bcap->data.sig_access & 7);
