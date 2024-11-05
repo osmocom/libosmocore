@@ -87,6 +87,8 @@ enum gsm48_gprs_ie_mm {
 	GSM48_IE_GMM_TIMER_READY	= 0x17,	/* 10.5.7.3 */
 	GSM48_IE_GMM_ALLOC_PTMSI	= 0x18,	/* 10.5.1.4 */
 	GSM48_IE_GMM_PTMSI_SIG		= 0x19,	/* 10.5.5.8 */
+	GSM48_IE_GMM_ADD_IDENTITY	= 0x1a,	/* 10.5.1.4 */
+	GSM48_IE_GMM_RAI2		= 0x1b,	/* 10.5.5.15a */
 	GSM48_IE_GMM_AUTH_RAND		= 0x21,	/* 10.5.3.1 */
 	GSM48_IE_GMM_AUTH_SRES		= 0x22,	/* 10.5.3.2 */
 	GSM48_IE_GMM_IMEISV		= 0x23,	/* 10.5.1.4 */
