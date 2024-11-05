@@ -514,3 +514,10 @@ struct gsm48_qos {
 	/* octet 16 */
 	uint8_t guar_bitrate_down_ext;
 };
+
+/* TS 24.008 Table 10.5.5.29 */
+enum gsm48_ptsmi_type {
+	PTMSI_TYPE_NATIVE		= 0x00,
+	PTMSI_TYPE_MAPPED		= 0x01,
+};
+
