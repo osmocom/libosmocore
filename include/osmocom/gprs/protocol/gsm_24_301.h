@@ -3,6 +3,10 @@
 #pragma once
 
 /*! Tracking area TS 24.301, section 9.9.3.32 */
+
+#include <stdbool.h>
+#include <stdint.h>
+
 struct osmo_eutran_tai {
 	uint16_t mcc;
 	uint16_t mnc;
