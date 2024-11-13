@@ -73,6 +73,7 @@ gprs_cipher_supported;
 gprs_cipher_key_length;
 gprs_tlli_type;
 gprs_tmsi2tlli;
+gprs_tlli2tmsi;
 gprs_ms_net_cap_gea_supported;
 gprs_msgt_gmm_names;
 

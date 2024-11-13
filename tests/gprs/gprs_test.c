@@ -7,6 +7,7 @@
 #include <osmocom/core/utils.h>
 #include <osmocom/core/logging.h>
 #include <osmocom/gsm/apn.h>
+#include <osmocom/gsm/gsm_utils.h>
 
 static void apn_round_trip(const uint8_t *input, size_t len, const char *wanted_output)
 {
@@ -110,6 +111,16 @@ static void test_gsm_03_03_apn(void)
 	}
 }
 
+static void test_ptmsi_tlli(void)
+{
+	OSMO_ASSERT(gprs_tlli2tmsi(0xc0010203) == 0xc0010203);
+	OSMO_ASSERT(gprs_tlli2tmsi(0x80010203) == 0xc0010203);
+	OSMO_ASSERT(gprs_tlli2tmsi(0x00010203) == 0xffffffff);
+
+	OSMO_ASSERT(gprs_tmsi2tlli(0xc0010203, TLLI_LOCAL) == 0xc0010203);
+	OSMO_ASSERT(gprs_tmsi2tlli(0xc0010203, TLLI_FOREIGN) == 0x80010203);
+}
+
 const struct log_info_cat default_categories[] = {
 };
 
@@ -124,6 +135,7 @@ int main(int argc, char **argv)
 	osmo_init_logging2(ctx, &info);
 
 	test_gsm_03_03_apn();
+	test_ptmsi_tlli();
 
 	printf("Done.\n");
 	return EXIT_SUCCESS;

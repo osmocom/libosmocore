@@ -211,6 +211,7 @@ enum gprs_tlli_type {
 int gprs_tlli_type(uint32_t tlli);
 
 uint32_t gprs_tmsi2tlli(uint32_t p_tmsi, enum gprs_tlli_type type);
+uint32_t gprs_tlli2tmsi(uint32_t tlli);
 
 /* Osmocom internal, not part of any gsm spec */
 enum gsm_phys_chan_config {

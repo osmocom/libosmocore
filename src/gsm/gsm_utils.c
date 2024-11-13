@@ -1019,6 +1019,27 @@ int gprs_tlli_type(uint32_t tlli)
 	return TLLI_RESERVED;
 }
 
+/*! Determine P-TMSI from foreign and local TLLIs
+ *
+ *  \param[in] tlli P-TMSI
+ *  \param[in] type TLLI Type we want to derive from \a p_tmsi
+ *  \returns P-TMSI or 0xffffffff on error. */
+uint32_t gprs_tlli2tmsi(uint32_t tlli)
+{
+	uint32_t ptmsi = 0xc0000000;
+
+	switch (gprs_tlli_type(tlli)) {
+	case TLLI_LOCAL:
+	case TLLI_FOREIGN:
+		break;
+	default:
+		return 0xffffffff;
+	}
+
+	ptmsi |= tlli;
+	return ptmsi;
+}
+
 /*! Determine TLLI from P-TMSI
  *  \param[in] p_tmsi P-TMSI
  *  \param[in] type TLLI Type we want to derive from \a p_tmsi
