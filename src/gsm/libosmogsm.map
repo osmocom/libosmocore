@@ -502,6 +502,8 @@ osmo_cgi_ps_name2;
 osmo_gummei_name;
 osmo_gummei_name_buf;
 osmo_gummei_name_c;
+osmo_gummei_cmp;
+osmo_mme_id_cmp;
 osmo_mnc_from_str;
 osmo_mnc_cmp;
 osmo_plmn_cmp;

@@ -167,6 +167,8 @@ int osmo_lai_cmp(const struct osmo_location_area_id *a, const struct osmo_locati
 int osmo_rai_cmp(const struct osmo_routing_area_id *a, const struct osmo_routing_area_id *b);
 int osmo_cgi_cmp(const struct osmo_cell_global_id *a, const struct osmo_cell_global_id *b);
 int osmo_cgi_ps_cmp(const struct osmo_cell_global_id_ps *a, const struct osmo_cell_global_id_ps *b);
+int osmo_mme_id_cmp(const struct osmo_mme_id *a, const struct osmo_mme_id *b);
+int osmo_gummei_cmp(const struct osmo_gummei *a, const struct osmo_gummei *b);
 
 int osmo_gen_home_network_domain(char *out, const struct osmo_plmn_id *plmn);
 int osmo_parse_home_network_domain(struct osmo_plmn_id *out, const char *in);

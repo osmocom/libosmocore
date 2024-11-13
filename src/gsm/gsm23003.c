@@ -656,6 +656,40 @@ int osmo_cgi_ps_cmp(const struct osmo_cell_global_id_ps *a, const struct osmo_ce
 	return 0;
 }
 
+/* Compare two MME Ids
+ * The order of comparison is MME GroupId, MME Code.
+ * \param a[in]  "Left" side MME Id.
+ * \param b[in]  "Right" side MME Id.
+ * \returns 0 if the MME Ids are equal, -1 if a < b, 1 if a > b. */
+int osmo_mme_id_cmp(const struct osmo_mme_id *a, const struct osmo_mme_id *b)
+{
+	if (a->group_id < b->group_id)
+		return -1;
+	if (a->group_id > b->group_id)
+		return 1;
+
+	if (a->code < b->code)
+		return -1;
+	if (a->code > b->code)
+		return 1;
+
+	return 0;
+}
+
+/* Compare two GUMMEI
+ * The order of comparison is MCC, MNC, MME GroupId, MME Code.
+ * \param a[in]  "Left" side GUMMEI.
+ * \param b[in]  "Right" side GUMMEI.
+ * \returns 0 if the GUMMEI are equal, -1 if a < b, 1 if a > b. */
+int osmo_gummei_cmp(const struct osmo_gummei *a, const struct osmo_gummei *b)
+{
+	int rc = osmo_plmn_cmp(&a->plmn, &b->plmn);
+	if (rc)
+		return rc;
+
+	return osmo_mme_id_cmp(&a->mme, &b->mme);
+}
+
 /*! Generate TS 23.003 Section 19.2 Home Network Realm/Domain (text form)
  *  \param out[out] caller-provided output buffer, at least 33 bytes long
  *  \param plmn[in] Osmocom representation of PLMN ID (MCC + MNC)
