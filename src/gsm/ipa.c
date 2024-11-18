@@ -404,7 +404,7 @@ struct msgb *ipa_ccm_make_id_resp(const struct ipaccess_unit *dev,
 	return msg;
 }
 
-/*! Generate IPA CCM ID RESP based on requets payload
+/*! Generate IPA CCM ID RESP based on request payload
  *  \param[in] dev Descriptor describing identity data for response
  *  \param[in] data Payload of the IPA CCM ID GET request
  *  \param[in] len Length of \a data in octets
