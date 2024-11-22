@@ -496,8 +496,8 @@ struct gsmtap_inst *gsmtap_source_init2(const char *local_host, uint16_t local_p
 		if (osmo_iofd_register(gti->out, gti->wq.bfd.fd) < 0)
 			goto err_cleanup;
 
-		/* osmo write queue previously used was set up with value of 64 */
-		osmo_iofd_set_txqueue_max_length(gti->out, 64);
+		/* Use a big enough tx queue to avoid gsmtap messages being dropped: */
+		osmo_iofd_set_txqueue_max_length(gti->out, 1024);
 	}
 
 	return gti;
