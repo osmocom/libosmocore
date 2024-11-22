@@ -637,7 +637,7 @@ static int check_mode_callback_compat(enum osmo_io_fd_mode mode, const struct os
  *  The created osmo_io_fd is initialized with some default settings:
  *  * msgb allocations size: OSMO_IO_DEFAULT_MSGB_SIZE (1024)
  *  * msgb headroom: OSMO_IO_DEFAULT_MSGB_HEADROOM (128)
- *  * tx_queue depth: 32
+ *  * tx_queue depth: 1024
  *
  *  Those values may be adjusted from their defaults by using osmo_iofd_set_alloc_info() and
  *  osmo_iofd_set_txqueue_max_length() on the osmo_io_fd.
@@ -696,7 +696,7 @@ struct osmo_io_fd *osmo_iofd_setup(const void *ctx, int fd, const char *name, en
 	iofd->msgb_alloc.size = OSMO_IO_DEFAULT_MSGB_SIZE;
 	iofd->msgb_alloc.headroom = OSMO_IO_DEFAULT_MSGB_HEADROOM;
 
-	iofd->tx_queue.max_length = 32;
+	iofd->tx_queue.max_length = 1024;
 	INIT_LLIST_HEAD(&iofd->tx_queue.msg_queue);
 
 	return iofd;
