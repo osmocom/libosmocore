@@ -425,7 +425,7 @@ struct ctrl_cmd *ctrl_cmd_parse3(void *ctx, struct msgb *msg, bool *parse_failed
 				     osmo_escape_str(var, -1));
 				goto err;
 			}
-			LOGP(DLCTRL, LOGL_DEBUG, "Command: GET %s\n", cmd->variable);
+			LOGP(DLCTRL, LOGL_DEBUG, "Command: GET %s %s\n", cmd->id, cmd->variable);
 			break;
 		case CTRL_TYPE_SET:
 			var = strtok_r(NULL, " ", &saveptr);
@@ -457,7 +457,7 @@ struct ctrl_cmd *ctrl_cmd_parse3(void *ctx, struct msgb *msg, bool *parse_failed
 				goto err;
 			}
 
-			LOGP(DLCTRL, LOGL_DEBUG, "Command: SET %s = \"%s\"\n", cmd->variable,
+			LOGP(DLCTRL, LOGL_DEBUG, "Command: SET %s %s = \"%s\"\n", cmd->id, cmd->variable,
 			     osmo_escape_str(cmd->value, -1));
 			break;
 #define REPLY_CASE(TYPE, NAME)  \
@@ -481,11 +481,11 @@ struct ctrl_cmd *ctrl_cmd_parse3(void *ctx, struct msgb *msg, bool *parse_failed
 			cmd->reply = talloc_strdup(cmd, val); \
 			if (!cmd->variable || !cmd->reply) \
 				goto oom; \
-			LOGP(DLCTRL, LOGL_DEBUG, "Command: " NAME " %s: %s\n", cmd->variable, \
+			LOGP(DLCTRL, LOGL_DEBUG, "Command: " NAME " %s %s: %s\n", cmd->id, cmd->variable, \
 			     osmo_escape_str(cmd->reply, -1)); \
 			break
-		REPLY_CASE(CTRL_TYPE_GET_REPLY, "GET REPLY");
-		REPLY_CASE(CTRL_TYPE_SET_REPLY, "SET REPLY");
+		REPLY_CASE(CTRL_TYPE_GET_REPLY, "GET_REPLY");
+		REPLY_CASE(CTRL_TYPE_SET_REPLY, "SET_REPLY");
 		REPLY_CASE(CTRL_TYPE_TRAP, "TRAP");
 #undef REPLY_CASE
 		case CTRL_TYPE_ERROR:

@@ -445,10 +445,10 @@ int ctrl_handle_msg(struct ctrl_handle *ctrl, struct ctrl_connection *ccon, stru
 
 	if (!cmd) {
 		/* should never happen */
+		LOGP(DLCTRL, LOGL_ERROR, "Command parser error: %s\n", msgb_hexdump(msg));
 		cmd = talloc_zero(ccon, struct ctrl_cmd);
 		if (!cmd)
 			return -ENOMEM;
-		LOGP(DLCTRL, LOGL_ERROR, "Command parser error.\n");
 		cmd->type = CTRL_TYPE_ERROR;
 		cmd->id = "err";
 		cmd->reply = "Command parser error.";
@@ -474,6 +474,8 @@ int ctrl_handle_msg(struct ctrl_handle *ctrl, struct ctrl_connection *ccon, stru
 
 send_reply:
 	/* There is a reply or error that should be reported back to the sender. */
+	LOGP(DLCTRL, LOGL_DEBUG, "Tx Command reply: %s %s %s %s\n",
+	     get_value_string(ctrl_type_vals, cmd->type), cmd->id, cmd->variable, cmd->reply);
 	ctrl_cmd_send2(ccon, cmd);
 just_free:
 	talloc_free(cmd);
