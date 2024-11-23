@@ -131,9 +131,7 @@ struct bcap_test {
 static const struct bcap_test bcap_tests[] = {
 	{ csd_9600_v110_lv, &bcap_csd_9600_v110, "CSD 9600/V.110/transparent" },
 	{ csd_4800_rlp_lv, &bcap_csd_4800_rlp, "CSD 4800/RLP/non-transparent" },
-	{ /* XXX: this testcase is expected to fail because octet 4 is not represented in
-	   * 'struct gsm_mncc_bearer_cap' and the encoder unconditionally hard-codes it to 0x88. */
-	  csd_2400_v22bis_lv, &bcap_csd_2400_v22bis, "CSD 2400/V.22bis/transparent" },
+	{ csd_2400_v22bis_lv, &bcap_csd_2400_v22bis, "CSD 2400/V.22bis/transparent" },
 	{ speech_all_lv, &bcap_speech_all, "Speech, all codecs" },
 	{ speech_no3a_lv, &bcap_speech_no3a, "Speech, without octet 3a" },
 };
