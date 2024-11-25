@@ -357,6 +357,44 @@ const char *osmo_cgi_ps_name2(const struct osmo_cell_global_id_ps *cgi_ps)
 	return osmo_cgi_ps_name_buf(buf, sizeof(buf), cgi_ps);
 }
 
+/*! Return string representation of RNC in caller-provided output buffer.
+ * \param[out] buf pointer to caller-provided output buffer
+ * \param[in] buf_len size of buf in bytes
+ * \param[in] rnc RNC to be stringified
+ * \returns buf
+ */
+char *osmo_rnc_id_name_buf(char *buf, size_t buf_len, const struct osmo_rnc_id *rnc)
+{
+	char plmn[16];
+	snprintf(buf, buf_len, "%s-%d", osmo_plmn_name_buf(plmn, sizeof(plmn), &rnc->plmn),
+		 rnc->rnc_id);
+	return buf;
+}
+
+/*! Return string representation of RNC in static output buffer.
+ * \param[in] rnc RNC to be stringified
+ * \returns pointer to static output buffer
+ */
+const char *osmo_rnc_id_name(const struct osmo_rnc_id *rnc)
+{
+	static __thread char buf[32];
+	return osmo_rnc_id_name_buf(buf, sizeof(buf), rnc);
+}
+
+/*! Return string representation of RNC in static output buffer.
+ * \param[out] buf pointer to caller-provided output buffer
+ * \param[in] buf_len size of buf in bytes
+ * \param[in] rnc RNC to be stringified
+ * \returns pointer to static output buffer
+ */
+char *osmo_rnc_id_name_c(const void *ctx, const struct osmo_rnc_id *rnc)
+{
+	char *buf = talloc_size(ctx, 32);
+	if (!buf)
+		return NULL;
+	return osmo_rnc_id_name_buf(buf, 32, rnc);
+}
+
 /*! Return MCC-MNC-LAC-RAC-CI as string, in a talloc-allocated output buffer.
  * \param[in] ctx talloc context from which to allocate output buffer
  * \param[in] cgi_ps  CGI-PS to encode.
@@ -652,6 +690,24 @@ int osmo_cgi_ps_cmp(const struct osmo_cell_global_id_ps *a, const struct osmo_ce
 	if (a->cell_identity < b->cell_identity)
 		return -1;
 	if (a->cell_identity > b->cell_identity)
+		return 1;
+	return 0;
+}
+
+/* Compare two RNC Ids
+ * The order of comparison is PLMN, RNCId.
+ * \param a[in]  "Left" side RNC Id.
+ * \param b[in]  "Right" side RNC Id.
+ * \returns 0 if the RNC Ids are equal, -1 if a < b, 1 if a > b. */
+int osmo_rnc_id_cmp(const struct osmo_rnc_id *a, const struct osmo_rnc_id *b)
+{
+	int rc = osmo_plmn_cmp(&a->plmn, &b->plmn);
+	if (rc)
+		return rc;
+
+	if (a->rnc_id < b->rnc_id)
+		return -1;
+	if (a->rnc_id > b->rnc_id)
 		return 1;
 	return 0;
 }

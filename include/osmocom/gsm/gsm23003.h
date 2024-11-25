@@ -55,6 +55,12 @@ struct osmo_lac_and_ci_id {
 	uint16_t ci;
 };
 
+/* 12.4 */
+struct osmo_rnc_id {
+	struct osmo_plmn_id plmn;
+	uint16_t rnc_id;
+};
+
 /* 12.5 */
 struct osmo_service_area_id {
 	struct osmo_location_area_id lai;
@@ -137,6 +143,9 @@ const char *osmo_cgi_ps_name(const struct osmo_cell_global_id_ps *cgi_ps);
 const char *osmo_cgi_ps_name2(const struct osmo_cell_global_id_ps *cgi_ps);
 char *osmo_cgi_ps_name_buf(char *buf, size_t buf_len, const struct osmo_cell_global_id_ps *cgi_ps);
 char *osmo_cgi_ps_name_c(const void *ctx, const struct osmo_cell_global_id_ps *cgi_ps);
+const char *osmo_rnc_id_name(const struct osmo_rnc_id *rnc_id);
+char *osmo_rnc_id_name_buf(char *buf, size_t buf_len, const struct osmo_rnc_id *rnc_id);
+char *osmo_rnc_id_name_c(const void *ctx, const struct osmo_rnc_id *rnc_id);
 const char *osmo_sai_name(const struct osmo_service_area_id *sai);
 const char *osmo_sai_name2(const struct osmo_service_area_id *sai);
 char *osmo_sai_name_buf(char *buf, size_t buf_len, const struct osmo_service_area_id *sai);
@@ -167,6 +176,7 @@ int osmo_lai_cmp(const struct osmo_location_area_id *a, const struct osmo_locati
 int osmo_rai_cmp(const struct osmo_routing_area_id *a, const struct osmo_routing_area_id *b);
 int osmo_cgi_cmp(const struct osmo_cell_global_id *a, const struct osmo_cell_global_id *b);
 int osmo_cgi_ps_cmp(const struct osmo_cell_global_id_ps *a, const struct osmo_cell_global_id_ps *b);
+int osmo_rnc_id_cmp(const struct osmo_rnc_id *a, const struct osmo_rnc_id *b);
 int osmo_mme_id_cmp(const struct osmo_mme_id *a, const struct osmo_mme_id *b);
 int osmo_gummei_cmp(const struct osmo_gummei *a, const struct osmo_gummei *b);
 
