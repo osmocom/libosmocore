@@ -994,11 +994,21 @@ void osmo_iofd_get_ioops(struct osmo_io_fd *iofd, struct osmo_io_ops *ioops)
 
 /*! Request notification of the user if/when a client socket is connected.
  *  Calling this function will request osmo_io to notify the user (via
- *  write call-back) once a non-blocking outbound connect() of the
- *  socket completes.
+ *  write call-back with res=0 and msgb=NULL) once a non-blocking outbound
+ *  connect() of the socket completes.
  *
  *  This only works for connection oriented sockets in either
  *  OSMO_IO_FD_MODE_READ_WRITE or OSMO_IO_FD_MODE_RECVMSG_SENDMSG mode.
+ *
+ * The fact that the write call-back is called with msgb=NULL can be used to
+ * distinguish before this "connected" notification and a socket write failure.
+ *
+ * If the server transmits data quick enough after accepting the connection,
+ * it may happen that a read call-back is triggered towards the user before this
+ * special write-callback, since both events may come together from the kernel.
+ * Hence under those scenarios where server starts the communication, it is
+ * important not to assume or require that the write-callback(res=0, msgb=NULL)
+ * will be the first one triggered.
  *
  *  \param[in] iofd the file descriptor */
 void osmo_iofd_notify_connected(struct osmo_io_fd *iofd)
