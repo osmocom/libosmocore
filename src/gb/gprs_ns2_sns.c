@@ -501,7 +501,8 @@ static int add_ip4_elem(struct ns2_sns_state *gss, struct ns2_sns_elems *elems,
 {
 	/* check for duplicates */
 	for (unsigned int i = 0; i < elems->num_ip4; i++) {
-		if (memcmp(&elems->ip4[i], ip4, sizeof(*ip4)))
+		if (elems->ip4[i].ip_addr != ip4->ip_addr ||
+		    elems->ip4[i].udp_port != ip4->udp_port)
 			continue;
 		return -1;
 	}
@@ -520,8 +521,10 @@ static int remove_ip4_elem(struct ns2_sns_state *gss, struct ns2_sns_elems *elem
 	unsigned int i;
 
 	for (i = 0; i < elems->num_ip4; i++) {
-		if (memcmp(&elems->ip4[i], ip4, sizeof(*ip4)))
+		if (elems->ip4[i].ip_addr != ip4->ip_addr ||
+		    elems->ip4[i].udp_port != ip4->udp_port)
 			continue;
+
 		/* all array elements < i remain as they are; all > i are shifted left by one */
 		memmove(&elems->ip4[i], &elems->ip4[i+1], elems->num_ip4-i-1);
 		elems->num_ip4 -= 1;
@@ -574,7 +577,8 @@ static int remove_ip6_elem(struct ns2_sns_state *gss, struct ns2_sns_elems *elem
 	unsigned int i;
 
 	for (i = 0; i < elems->num_ip6; i++) {
-		if (memcmp(&elems->ip6[i], ip6, sizeof(*ip6)))
+		if (memcmp(&elems->ip6[i].ip_addr, &ip6->ip_addr, sizeof(ip6->ip_addr)) ||
+		    elems->ip6[i].udp_port != ip6->udp_port)
 			continue;
 		/* all array elements < i remain as they are; all > i are shifted left by one */
 		memmove(&elems->ip6[i], &elems->ip6[i+1], elems->num_ip6-i-1);
