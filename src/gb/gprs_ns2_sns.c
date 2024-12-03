@@ -1241,7 +1241,7 @@ static void ns2_sns_st_configured_add(struct osmo_fsm_inst *fi,
 					do_sns_delete(fi, &v4_list[j], NULL);
 				cause = -rc;
 				ns2_tx_sns_ack(gss->sns_nsvc, trans_id, &cause, NULL, 0, NULL, 0);
-				break;
+				return;
 			}
 		}
 	} else { /* IPv6 */
@@ -1262,7 +1262,7 @@ static void ns2_sns_st_configured_add(struct osmo_fsm_inst *fi,
 					do_sns_delete(fi, NULL, &v6_list[j]);
 				cause = -rc;
 				ns2_tx_sns_ack(gss->sns_nsvc, trans_id, &cause, NULL, 0, NULL, 0);
-				break;
+				return;
 			}
 		}
 	}
