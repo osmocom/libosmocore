@@ -745,12 +745,16 @@ static int do_sns_add(struct osmo_fsm_inst *fi,
 	case AF_INET:
 		if (gss->remote.num_ip4 >= gss->num_max_ip4_remote)
 			return -NS_CAUSE_INVAL_NR_NS_VC;
+		if (!ip4)
+			return -NS_CAUSE_PROTO_ERR_UNSPEC;
 		/* TODO: log message duplicate */
 		rc = add_ip4_elem(gss, &gss->remote, ip4);
 		break;
 	case AF_INET6:
 		if (gss->remote.num_ip6 >= gss->num_max_ip6_remote)
 			return -NS_CAUSE_INVAL_NR_NS_VC;
+		if (!ip6)
+			return -NS_CAUSE_PROTO_ERR_UNSPEC;
 		/* TODO: log message duplicate */
 		rc = add_ip6_elem(gss, &gss->remote, ip6);
 		break;
