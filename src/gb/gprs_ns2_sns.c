@@ -792,8 +792,6 @@ static int do_sns_add(struct osmo_fsm_inst *fi,
 		break;
 	}
 
-	gprs_ns2_start_alive_all_nsvcs(nse);
-
 	return 0;
 }
 
@@ -1267,6 +1265,8 @@ static void ns2_sns_st_configured_add(struct osmo_fsm_inst *fi,
 
 	/* TODO: correct behaviour is to answer to the *same* NSVC from which the SNS_ADD was received */
 	ns2_tx_sns_ack(gss->sns_nsvc, trans_id, NULL, v4_list, num_v4, v6_list, num_v6);
+
+	gprs_ns2_start_alive_all_nsvcs(gss->nse);
 }
 
 static void ns2_sns_st_configured_delete(struct osmo_fsm_inst *fi,
