@@ -328,7 +328,7 @@ defer:
 void iofd_handle_segmented_read(struct osmo_io_fd *iofd, struct msgb *msg, int rc)
 {
 	int res;
-	struct msgb *pending = NULL;
+	struct msgb *pending;
 
 	OSMO_ASSERT(iofd->mode == OSMO_IO_FD_MODE_READ_WRITE);
 
@@ -338,6 +338,7 @@ void iofd_handle_segmented_read(struct osmo_io_fd *iofd, struct msgb *msg, int r
 	}
 
 	do {
+		pending = NULL;
 		res = iofd_handle_segmentation(iofd, msg, &pending);
 		if (res != IOFD_SEG_ACT_DEFER || rc < 0)
 			iofd->io_ops.read_cb(iofd, rc, msg);
