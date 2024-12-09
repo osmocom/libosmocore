@@ -737,12 +737,20 @@ int osmo_iofd_register(struct osmo_io_fd *iofd, int fd)
 {
 	int rc = 0;
 
-	if (fd >= 0)
-		iofd->fd = fd;
-	else if (iofd->fd < 0) {
+	if (fd < 0 && iofd->fd < 0) {
 		/* this might happen if both osmo_iofd_setup() and osmo_iofd_register() are called with -1 */
 		LOGPIO(iofd, LOGL_ERROR, "Cannot register io_fd using invalid fd == %d\n", iofd->fd);
 		return -EBADF;
+	}
+	if (fd < 0)
+		fd = iofd->fd;
+	else if (iofd->fd < 0)
+		iofd->fd = fd;
+
+	if (IOFD_FLAG_ISSET(iofd, IOFD_FLAG_FD_REGISTERED)) {
+		/* If re-registering same fd, handle as NO-OP.
+		 * New FD should go through unregister() first. */
+		return iofd->fd == fd ? 0 : -ENOTSUP;
 	}
 
 	rc = osmo_iofd_ops.register_fd(iofd);
@@ -750,6 +758,8 @@ int osmo_iofd_register(struct osmo_io_fd *iofd, int fd)
 		return rc;
 
 	IOFD_FLAG_UNSET(iofd, IOFD_FLAG_CLOSED);
+	IOFD_FLAG_SET(iofd, IOFD_FLAG_FD_REGISTERED);
+
 	if ((iofd->mode == OSMO_IO_FD_MODE_READ_WRITE && iofd->io_ops.read_cb) ||
 	    (iofd->mode == OSMO_IO_FD_MODE_RECVFROM_SENDTO && iofd->io_ops.recvfrom_cb) ||
 	    (iofd->mode == OSMO_IO_FD_MODE_RECVMSG_SENDMSG && iofd->io_ops.recvmsg_cb)) {
@@ -772,7 +782,14 @@ int osmo_iofd_register(struct osmo_io_fd *iofd, int fd)
  */
 int osmo_iofd_unregister(struct osmo_io_fd *iofd)
 {
-	return osmo_iofd_ops.unregister_fd(iofd);
+	int rc;
+
+	if (!IOFD_FLAG_ISSET(iofd, IOFD_FLAG_FD_REGISTERED))
+		return 0;
+
+	rc = osmo_iofd_ops.unregister_fd(iofd);
+	IOFD_FLAG_UNSET(iofd, IOFD_FLAG_FD_REGISTERED);
+	return rc;
 }
 
 /*! Retrieve the number of messages pending in the transmit queue.

@@ -128,29 +128,18 @@ static int iofd_poll_register(struct osmo_io_fd *iofd)
 	struct osmo_fd *ofd = &iofd->u.poll.ofd;
 	int rc;
 
-	if (IOFD_FLAG_ISSET(iofd, IOFD_FLAG_FD_REGISTERED))
-		return 0;
-
 	osmo_fd_setup(ofd, iofd->fd, 0, &iofd_poll_ofd_cb_dispatch, iofd, 0);
 	if (IOFD_FLAG_ISSET(iofd, IOFD_FLAG_NOTIFY_CONNECTED))
 		osmo_fd_write_enable(&iofd->u.poll.ofd);
 
 	rc = osmo_fd_register(ofd);
-	if (!rc)
-		IOFD_FLAG_SET(iofd, IOFD_FLAG_FD_REGISTERED);
-
 	return rc;
 }
 
 static int iofd_poll_unregister(struct osmo_io_fd *iofd)
 {
 	struct osmo_fd *ofd = &iofd->u.poll.ofd;
-
-	if (!IOFD_FLAG_ISSET(iofd, IOFD_FLAG_FD_REGISTERED))
-		return 0;
 	osmo_fd_unregister(ofd);
-	IOFD_FLAG_UNSET(iofd, IOFD_FLAG_FD_REGISTERED);
-
 	return 0;
 }
 
