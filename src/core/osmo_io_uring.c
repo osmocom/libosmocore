@@ -498,24 +498,26 @@ static int iofd_uring_connected_cb(struct osmo_fd *ofd, unsigned int what)
 
 static void iofd_uring_notify_connected(struct osmo_io_fd *iofd)
 {
-	if (iofd->mode == OSMO_IO_FD_MODE_RECVMSG_SENDMSG) {
-		/* Don't call this function after enabling read or write. */
-		OSMO_ASSERT(!iofd->u.uring.write_enabled && !iofd->u.uring.read_enabled);
-
-		/* Use a temporary osmo_fd which we can use to notify us once the connection is established
-		 * or failed (indicated by FD becoming writable).
-		 * This is needed as (at least for SCTP sockets) one cannot submit a zero-length writev/sendmsg
-		 * in order to get notification when the socekt is writable.*/
-		if (!IOFD_FLAG_ISSET(iofd, IOFD_FLAG_NOTIFY_CONNECTED)) {
-			osmo_fd_setup(&iofd->u.uring.connect_ofd, iofd->fd, OSMO_FD_WRITE,
-				      iofd_uring_connected_cb, iofd, 0);
-			if (osmo_fd_register(&iofd->u.uring.connect_ofd) < 0)
-				LOGPIO(iofd, LOGL_ERROR, "Failed to register FD for connect event.\n");
-			else
-				IOFD_FLAG_SET(iofd, IOFD_FLAG_NOTIFY_CONNECTED);
-		}
-	} else
+	if (iofd->mode != OSMO_IO_FD_MODE_RECVMSG_SENDMSG) {
 		iofd_uring_write_enable(iofd);
+		return;
+	}
+
+	/* OSMO_IO_FD_MODE_RECVMSG_SENDMSG: Don't call this function after enabling read or write. */
+	OSMO_ASSERT(!iofd->u.uring.write_enabled && !iofd->u.uring.read_enabled);
+
+	/* Use a temporary osmo_fd which we can use to notify us once the connection is established
+	 * or failed (indicated by FD becoming writable).
+	 * This is needed as (at least for SCTP sockets) one cannot submit a zero-length writev/sendmsg
+	 * in order to get notification when the socekt is writable.*/
+	if (!IOFD_FLAG_ISSET(iofd, IOFD_FLAG_NOTIFY_CONNECTED)) {
+		osmo_fd_setup(&iofd->u.uring.connect_ofd, iofd->fd, OSMO_FD_WRITE,
+				iofd_uring_connected_cb, iofd, 0);
+		if (osmo_fd_register(&iofd->u.uring.connect_ofd) < 0)
+			LOGPIO(iofd, LOGL_ERROR, "Failed to register FD for connect event.\n");
+		else
+			IOFD_FLAG_SET(iofd, IOFD_FLAG_NOTIFY_CONNECTED);
+	}
 }
 
 const struct iofd_backend_ops iofd_uring_ops = {
