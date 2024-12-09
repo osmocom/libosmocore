@@ -340,8 +340,16 @@ void iofd_handle_segmented_read(struct osmo_io_fd *iofd, struct msgb *msg, int r
 	do {
 		pending = NULL;
 		res = iofd_handle_segmentation(iofd, msg, &pending);
-		if (res != IOFD_SEG_ACT_DEFER || rc < 0)
+		if (res != IOFD_SEG_ACT_DEFER || rc < 0) {
 			iofd->io_ops.read_cb(iofd, rc, msg);
+			/* The user could unregister/close the iofd during read_cb() above.
+			 * Once that's done, it doesn't expect to receive any more events,
+			 * so discard it: */
+			if (!IOFD_FLAG_ISSET(iofd, IOFD_FLAG_FD_REGISTERED)) {
+				msgb_free(pending);
+				return;
+			}
+		}
 		if (res == IOFD_SEG_ACT_HANDLE_MORE)
 			msg = pending;
 	} while (res == IOFD_SEG_ACT_HANDLE_MORE);
