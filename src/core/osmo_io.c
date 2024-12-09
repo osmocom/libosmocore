@@ -845,6 +845,10 @@ int osmo_iofd_close(struct osmo_io_fd *iofd)
 
 	iofd->pending = NULL;
 
+	osmo_iofd_ops.read_disable(iofd);
+	osmo_iofd_ops.write_disable(iofd);
+	osmo_iofd_unregister(iofd);
+
 	rc = osmo_iofd_ops.close(iofd);
 	iofd->fd = -1;
 	return rc;

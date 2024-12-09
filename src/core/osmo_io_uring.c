@@ -507,9 +507,6 @@ static void iofd_uring_read_disable(struct osmo_io_fd *iofd)
 
 static int iofd_uring_close(struct osmo_io_fd *iofd)
 {
-	iofd_uring_read_disable(iofd);
-	iofd_uring_write_disable(iofd);
-	iofd_uring_unregister(iofd);
 	return close(iofd->fd);
 }
 

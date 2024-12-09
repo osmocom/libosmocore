@@ -156,9 +156,7 @@ static int iofd_poll_unregister(struct osmo_io_fd *iofd)
 
 static int iofd_poll_close(struct osmo_io_fd *iofd)
 {
-	iofd_poll_unregister(iofd);
 	osmo_fd_close(&iofd->u.poll.ofd);
-
 	return 0;
 }
 
