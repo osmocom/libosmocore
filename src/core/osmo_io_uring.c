@@ -324,8 +324,65 @@ static int iofd_uring_submit_tx(struct osmo_io_fd *iofd)
 static void iofd_uring_write_enable(struct osmo_io_fd *iofd);
 static void iofd_uring_read_enable(struct osmo_io_fd *iofd);
 
+
+/* called via osmocom poll/select main handling once outbound non-blocking connect() completes */
+static int iofd_uring_connected_cb(struct osmo_fd *ofd, unsigned int what)
+{
+	struct osmo_io_fd *iofd = ofd->data;
+
+	LOGPIO(iofd, LOGL_DEBUG, "Socket connected or failed.\n");
+
+	if (!(what & OSMO_FD_WRITE))
+		return 0;
+
+	/* Unregister from poll/select handling. */
+	osmo_fd_unregister(ofd);
+	IOFD_FLAG_UNSET(iofd, IOFD_FLAG_NOTIFY_CONNECTED);
+
+	/* Notify the application about this via a zero-length write completion call-back. */
+	IOFD_FLAG_SET(iofd, IOFD_FLAG_IN_CALLBACK);
+	switch (iofd->mode) {
+	case OSMO_IO_FD_MODE_READ_WRITE:
+		iofd->io_ops.write_cb(iofd, 0, NULL);
+		break;
+	case OSMO_IO_FD_MODE_RECVFROM_SENDTO:
+		iofd->io_ops.sendto_cb(iofd, 0, NULL, NULL);
+		break;
+	case OSMO_IO_FD_MODE_RECVMSG_SENDMSG:
+		iofd->io_ops.sendmsg_cb(iofd, 0, NULL);
+		break;
+	}
+	IOFD_FLAG_UNSET(iofd, IOFD_FLAG_IN_CALLBACK);
+
+	/* If write/read notifications are pending, enable it now. */
+	if (iofd->u.uring.write_enabled && !IOFD_FLAG_ISSET(iofd, IOFD_FLAG_CLOSED))
+		iofd_uring_write_enable(iofd);
+	if (iofd->u.uring.read_enabled && !IOFD_FLAG_ISSET(iofd, IOFD_FLAG_CLOSED))
+		iofd_uring_read_enable(iofd);
+
+	if (IOFD_FLAG_ISSET(iofd, IOFD_FLAG_TO_FREE) && !iofd->u.uring.read_msghdr && !iofd->u.uring.write_msghdr)
+		talloc_free(iofd);
+	return 0;
+}
+
 static int iofd_uring_register(struct osmo_io_fd *iofd)
 {
+	if (iofd->mode != OSMO_IO_FD_MODE_RECVMSG_SENDMSG)
+		return 0; /* Nothing to be done */
+
+	/* OSMO_IO_FD_MODE_RECVMSG_SENDMSG:
+	 * Use a temporary osmo_fd which we can use to notify us once the connection is established
+	 * or failed (indicated by FD becoming writable). This is needed as (at least for SCTP sockets)
+	 * one cannot submit a zero-length writev/sendmsg in order to get notification when the socekt
+	 * is writable.*/
+	if (IOFD_FLAG_ISSET(iofd, IOFD_FLAG_NOTIFY_CONNECTED)) {
+		osmo_fd_setup(&iofd->u.uring.connect_ofd, iofd->fd, OSMO_FD_WRITE,
+			      iofd_uring_connected_cb, iofd, 0);
+		if (osmo_fd_register(&iofd->u.uring.connect_ofd) < 0) {
+			LOGPIO(iofd, LOGL_ERROR, "Failed to register FD for connect event.\n");
+			return -EBADFD;
+		}
+	}
 	return 0;
 }
 
@@ -456,46 +513,6 @@ static int iofd_uring_close(struct osmo_io_fd *iofd)
 	return close(iofd->fd);
 }
 
-/* called via osmocom poll/select main handling once outbound non-blocking connect() completes */
-static int iofd_uring_connected_cb(struct osmo_fd *ofd, unsigned int what)
-{
-	struct osmo_io_fd *iofd = ofd->data;
-
-	LOGPIO(iofd, LOGL_DEBUG, "Socket connected or failed.\n");
-
-	if (!(what & OSMO_FD_WRITE))
-		return 0;
-
-	/* Unregister from poll/select handling. */
-	osmo_fd_unregister(ofd);
-	IOFD_FLAG_UNSET(iofd, IOFD_FLAG_NOTIFY_CONNECTED);
-
-	/* Notify the application about this via a zero-length write completion call-back. */
-	IOFD_FLAG_SET(iofd, IOFD_FLAG_IN_CALLBACK);
-	switch (iofd->mode) {
-	case OSMO_IO_FD_MODE_READ_WRITE:
-		iofd->io_ops.write_cb(iofd, 0, NULL);
-		break;
-	case OSMO_IO_FD_MODE_RECVFROM_SENDTO:
-		iofd->io_ops.sendto_cb(iofd, 0, NULL, NULL);
-		break;
-	case OSMO_IO_FD_MODE_RECVMSG_SENDMSG:
-		iofd->io_ops.sendmsg_cb(iofd, 0, NULL);
-		break;
-	}
-	IOFD_FLAG_UNSET(iofd, IOFD_FLAG_IN_CALLBACK);
-
-	/* If write/read notifications are pending, enable it now. */
-	if (iofd->u.uring.write_enabled && !IOFD_FLAG_ISSET(iofd, IOFD_FLAG_CLOSED))
-		iofd_uring_write_enable(iofd);
-	if (iofd->u.uring.read_enabled && !IOFD_FLAG_ISSET(iofd, IOFD_FLAG_CLOSED))
-		iofd_uring_read_enable(iofd);
-
-	if (IOFD_FLAG_ISSET(iofd, IOFD_FLAG_TO_FREE) && !iofd->u.uring.read_msghdr && !iofd->u.uring.write_msghdr)
-		talloc_free(iofd);
-	return 0;
-}
-
 static void iofd_uring_notify_connected(struct osmo_io_fd *iofd)
 {
 	if (iofd->mode != OSMO_IO_FD_MODE_RECVMSG_SENDMSG) {
@@ -506,18 +523,8 @@ static void iofd_uring_notify_connected(struct osmo_io_fd *iofd)
 	/* OSMO_IO_FD_MODE_RECVMSG_SENDMSG: Don't call this function after enabling read or write. */
 	OSMO_ASSERT(!iofd->u.uring.write_enabled && !iofd->u.uring.read_enabled);
 
-	/* Use a temporary osmo_fd which we can use to notify us once the connection is established
-	 * or failed (indicated by FD becoming writable).
-	 * This is needed as (at least for SCTP sockets) one cannot submit a zero-length writev/sendmsg
-	 * in order to get notification when the socekt is writable.*/
-	if (!IOFD_FLAG_ISSET(iofd, IOFD_FLAG_NOTIFY_CONNECTED)) {
-		osmo_fd_setup(&iofd->u.uring.connect_ofd, iofd->fd, OSMO_FD_WRITE,
-				iofd_uring_connected_cb, iofd, 0);
-		if (osmo_fd_register(&iofd->u.uring.connect_ofd) < 0)
-			LOGPIO(iofd, LOGL_ERROR, "Failed to register FD for connect event.\n");
-		else
-			IOFD_FLAG_SET(iofd, IOFD_FLAG_NOTIFY_CONNECTED);
-	}
+	/* Set flag to enable temporary osmo_fd during register() time: */
+	IOFD_FLAG_SET(iofd, IOFD_FLAG_NOTIFY_CONNECTED);
 }
 
 const struct iofd_backend_ops iofd_uring_ops = {
