@@ -1268,7 +1268,7 @@ static void ns2_sns_st_configured_add(struct osmo_fsm_inst *fi,
 	}
 
 	/* TODO: correct behaviour is to answer to the *same* NSVC from which the SNS_ADD was received */
-	ns2_tx_sns_ack(gss->sns_nsvc, trans_id, NULL, v4_list, num_v4, v6_list, num_v6);
+	ns2_tx_sns_ack(gss->sns_nsvc, trans_id, NULL, NULL, 0, NULL, 0);
 
 	gprs_ns2_start_alive_all_nsvcs(gss->nse);
 }
@@ -1440,7 +1440,8 @@ static void ns2_sns_st_configured_change(struct osmo_fsm_inst *fi,
 		ns2_tx_sns_ack(gss->sns_nsvc, trans_id, &cause, NULL, 0, NULL, 0);
 		return;
 	}
-	ns2_tx_sns_ack(gss->sns_nsvc, trans_id, NULL, v4_list, num_v4, v6_list, num_v6);
+
+	ns2_tx_sns_ack(gss->sns_nsvc, trans_id, NULL, NULL, 0, NULL, 0);
 }
 
 static void ns2_sns_st_configured(struct osmo_fsm_inst *fi, uint32_t event, void *data)
