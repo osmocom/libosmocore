@@ -209,8 +209,11 @@ struct msgb *iofd_msgb_pending_or_alloc(struct osmo_io_fd *iofd)
  */
 int iofd_txqueue_enqueue(struct osmo_io_fd *iofd, struct iofd_msghdr *msghdr)
 {
-	if (iofd->tx_queue.current_length >= iofd->tx_queue.max_length)
+	if (iofd->tx_queue.current_length >= iofd->tx_queue.max_length) {
+		LOGPIO(iofd, LOGL_ERROR, "enqueueing message failed (queue full, %u msgs). Rejecting msgb\n",
+		       iofd->tx_queue.current_length);
 		return -ENOSPC;
+	}
 
 	llist_add_tail(&msghdr->list, &iofd->tx_queue.msg_queue);
 	iofd->tx_queue.current_length++;
@@ -520,7 +523,6 @@ int osmo_iofd_sendto_msgb(struct osmo_io_fd *iofd, struct msgb *msg, int sendto_
 	rc = iofd_txqueue_enqueue(iofd, msghdr);
 	if (rc < 0) {
 		iofd_msghdr_free(msghdr);
-		LOGPIO(iofd, LOGL_ERROR, "enqueueing message failed (%d). Rejecting msgb\n", rc);
 		return rc;
 	}
 
@@ -596,7 +598,6 @@ int osmo_iofd_sendmsg_msgb(struct osmo_io_fd *iofd, struct msgb *msg, int sendms
 	rc = iofd_txqueue_enqueue(iofd, msghdr);
 	if (rc < 0) {
 		iofd_msghdr_free(msghdr);
-		LOGPIO(iofd, LOGL_ERROR, "enqueueing message failed (%d). Rejecting msgb\n", rc);
 		return rc;
 	}
 
