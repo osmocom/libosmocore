@@ -746,20 +746,22 @@ int osmo_iofd_register(struct osmo_io_fd *iofd, int fd)
 {
 	int rc = 0;
 
-	if (fd < 0 && iofd->fd < 0) {
+	if (IOFD_FLAG_ISSET(iofd, IOFD_FLAG_FD_REGISTERED)) {
+		/* If re-registering same fd, handle as NO-OP.
+		 * And it is an even more explicit NO-OP
+		 * if the caller passed in -1. */
+		if (fd < 0 || fd == iofd->fd)
+			return 0;
+		/* New FD should go through unregister() first. */
+		return -ENOTSUP;
+	}
+
+	if (fd >= 0)
+		iofd->fd = fd;
+	if (iofd->fd < 0) {
 		/* this might happen if both osmo_iofd_setup() and osmo_iofd_register() are called with -1 */
 		LOGPIO(iofd, LOGL_ERROR, "Cannot register io_fd using invalid fd == %d\n", iofd->fd);
 		return -EBADF;
-	}
-	if (fd < 0)
-		fd = iofd->fd;
-	else if (iofd->fd < 0)
-		iofd->fd = fd;
-
-	if (IOFD_FLAG_ISSET(iofd, IOFD_FLAG_FD_REGISTERED)) {
-		/* If re-registering same fd, handle as NO-OP.
-		 * New FD should go through unregister() first. */
-		return iofd->fd == fd ? 0 : -ENOTSUP;
 	}
 
 	rc = osmo_iofd_ops.register_fd(iofd);
