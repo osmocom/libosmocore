@@ -172,7 +172,7 @@ struct msgb *iofd_msgb_alloc(struct osmo_io_fd *iofd)
 {
 	uint16_t headroom = iofd->msgb_alloc.headroom;
 
-	OSMO_ASSERT(iofd->msgb_alloc.size < 0xffff - headroom);
+	OSMO_ASSERT(iofd->msgb_alloc.size <= 0xffff - headroom);
 	return msgb_alloc_headroom_c(iofd, iofd->msgb_alloc.size + headroom, headroom, "osmo_io_msgb");
 }
 
