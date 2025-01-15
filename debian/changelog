@@ -1,3 +1,17 @@
+libosmocore (1.10.1) unstable; urgency=medium
+
+  [ Vadim Yanitskiy ]
+  * gsm48_encode_bearer_cap(): properly set 'Structure' in octet 4
+
+  [ Pau Espin Pedrol ]
+  * osmo_io: Increase default queue max_length from 32 to 1024
+  * gsmtap: Increase txqueue max_length from 64 to 1024
+  * osmo_io: Improve osmo_iofd_notify_connected() documentation
+  * osmo_io: segmentation cb: Initialize null ptr every iteration
+  * osmo_io: iofd_msgb_alloc(): Allow allocating msgb of len=0xffff
+
+ -- Pau Espin Pedrol <pespin@sysmocom.de>  Wed, 15 Jan 2025 17:31:58 +0100
+
 libosmocore (1.10.0) unstable; urgency=medium
 
   [ Mychaela N. Falconia ]
