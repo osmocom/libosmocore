@@ -45,6 +45,87 @@ static uint8_t TESTDATA[] = {
 
 static void *ctx = NULL;
 
+static unsigned file_read_wr_compl_counter = 0;
+static void file_read_cb(struct osmo_io_fd *iofd, int rc, struct msgb *msg)
+{
+	printf("%s: read() msg with rc=%d\n", osmo_iofd_get_name(iofd), rc);
+	if (rc < 0)
+		printf("%s: error: %s\n", osmo_iofd_get_name(iofd), strerror(-rc));
+	if (msg)
+		printf("%s\n", osmo_hexdump(msgb_data(msg), msgb_length(msg)));
+	file_read_wr_compl_counter++;
+	talloc_free(msg);
+	if (rc == 0)
+		osmo_iofd_close(iofd);
+}
+
+static void file_write_cb(struct osmo_io_fd *iofd, int rc, struct msgb *msg)
+{
+	printf("%s: write() returned rc=%d\n", osmo_iofd_get_name(iofd), rc);
+	if (rc < 0)
+		printf("%s: error: %s\n", osmo_iofd_get_name(iofd), strerror(-rc));
+	if (msg)
+		printf("%s\n", osmo_hexdump(msgb_data(msg), msgb_length(msg)));
+	file_read_wr_compl_counter++;
+}
+
+static void test_file(void)
+{
+	struct osmo_io_fd *iofd;
+	struct msgb *msg;
+	uint8_t *buf;
+	int fd;
+	int rc;
+	struct osmo_io_ops ioops;
+
+	TEST_START();
+
+	/* Create temporary file and pass fd to iofd: */
+	FILE *fp = tmpfile();
+	OSMO_ASSERT(fp);
+	fd = fileno(fp);
+
+	/* First test writing to the file: */
+	printf("Enable write\n");
+	ioops = (struct osmo_io_ops){ .write_cb = file_write_cb };
+	iofd = osmo_iofd_setup(ctx, fd, "file-iofd", OSMO_IO_FD_MODE_READ_WRITE, &ioops, NULL);
+	osmo_iofd_register(iofd, fd);
+
+	msg = msgb_alloc(1024, "Test data");
+	buf = msgb_put(msg, sizeof(TESTDATA));
+	memcpy(buf, TESTDATA, sizeof(TESTDATA));
+	osmo_iofd_write_msgb(iofd, msg);
+	/* Allow enough cycles to handle the messages */
+	for (int i = 0; i < 128; i++) {
+		OSMO_ASSERT(file_read_wr_compl_counter <= 1);
+		if (file_read_wr_compl_counter == 1)
+			break;
+		osmo_select_main(1);
+	}
+	OSMO_ASSERT(file_read_wr_compl_counter == 1);
+
+	/* Now, re-configure iofd to only read from the fd. Adjust the read/write offset beforehand: */
+	printf("Enable read\n");
+	rc = lseek(fd, 0, SEEK_SET);
+	OSMO_ASSERT(rc == 0);
+	ioops = (struct osmo_io_ops){ .read_cb = file_read_cb };
+	rc = osmo_iofd_set_ioops(iofd, &ioops);
+	OSMO_ASSERT(rc == 0);
+	/* Allow enough cycles to handle the message. We expect 2 reads, 2nd read will return 0. */
+	for (int i = 0; i < 128; i++) {
+		OSMO_ASSERT(file_read_wr_compl_counter <= 3);
+		if (file_read_wr_compl_counter == 3)
+			break;
+		osmo_select_main(1);
+	}
+	OSMO_ASSERT(file_read_wr_compl_counter == 3);
+
+	osmo_iofd_free(iofd);
+
+	for (int i = 0; i < 128; i++)
+		osmo_select_main(1);
+}
+
 static void read_cb(struct osmo_io_fd *iofd, int rc, struct msgb *msg)
 {
 	printf("%s: read() msg with len=%d\n", osmo_iofd_get_name(iofd), rc);
@@ -171,6 +252,7 @@ int main(int argc, char *argv[])
 	log_set_print_category(osmo_stderr_target, 0);
 	log_set_print_category_hex(osmo_stderr_target, 0);
 
+	test_file();
 	test_connected();
 	test_unconnected();
 

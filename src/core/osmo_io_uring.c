@@ -140,17 +140,17 @@ static void iofd_uring_submit_recv(struct osmo_io_fd *iofd, enum iofd_msg_action
 	msghdr->iov[0].iov_len = msgb_tailroom(msg);
 
 	switch (action) {
-	case IOFD_ACT_READ:
-		break;
 	case IOFD_ACT_RECVMSG:
 		msghdr->hdr.msg_control = msghdr->cmsg;
 		msghdr->hdr.msg_controllen = iofd->cmsg_size;
 		/* fall-through */
 	case IOFD_ACT_RECVFROM:
-		msghdr->hdr.msg_iov = &msghdr->iov[0];
-		msghdr->hdr.msg_iovlen = 1;
 		msghdr->hdr.msg_name = &msghdr->osa.u.sa;
 		msghdr->hdr.msg_namelen = osmo_sockaddr_size(&msghdr->osa);
+		/* fall-through */
+	case IOFD_ACT_READ:
+		msghdr->hdr.msg_iov = &msghdr->iov[0];
+		msghdr->hdr.msg_iovlen = 1;
 		break;
 	default:
 		OSMO_ASSERT(0);
@@ -164,7 +164,7 @@ static void iofd_uring_submit_recv(struct osmo_io_fd *iofd, enum iofd_msg_action
 
 	switch (action) {
 	case IOFD_ACT_READ:
-		io_uring_prep_readv(sqe, iofd->fd, msghdr->iov, 1, 0);
+		io_uring_prep_readv(sqe, iofd->fd, msghdr->iov, 1, -1);
 		break;
 	case IOFD_ACT_RECVMSG:
 	case IOFD_ACT_RECVFROM:
@@ -307,6 +307,8 @@ static int iofd_uring_submit_tx(struct osmo_io_fd *iofd)
 
 	switch (msghdr->action) {
 	case IOFD_ACT_WRITE:
+		io_uring_prep_writev(sqe, msghdr->iofd->fd, msghdr->iov, 1, -1);
+		break;
 	case IOFD_ACT_SENDTO:
 	case IOFD_ACT_SENDMSG:
 		io_uring_prep_sendmsg(sqe, msghdr->iofd->fd, &msghdr->hdr, msghdr->flags);

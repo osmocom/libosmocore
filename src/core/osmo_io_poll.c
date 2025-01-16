@@ -56,25 +56,36 @@ static void iofd_poll_ofd_cb_recvmsg_sendmsg(struct osmo_fd *ofd, unsigned int w
 			OSMO_ASSERT(0);
 		}
 
-		hdr.msg = msg;
-		hdr.iov[0].iov_base = msg->tail;
-		hdr.iov[0].iov_len = msgb_tailroom(msg);
-		hdr.hdr = (struct msghdr) {
-			.msg_iov = &hdr.iov[0],
-			.msg_iovlen = 1,
-			.msg_name = &hdr.osa.u.sa,
-			.msg_namelen = sizeof(struct osmo_sockaddr),
-		};
-		if (iofd->mode == OSMO_IO_FD_MODE_RECVMSG_SENDMSG) {
-			hdr.hdr.msg_control = alloca(iofd->cmsg_size);
-			hdr.hdr.msg_controllen = iofd->cmsg_size;
+		switch (iofd->mode) {
+		case OSMO_IO_FD_MODE_READ_WRITE:
+			rc = read(ofd->fd, msg->tail, msgb_tailroom(msg));
+			if (rc > 0)
+				msgb_put(msg, rc);
+			iofd_handle_recv(iofd, msg, (rc < 0 && errno > 0) ? -errno : rc, NULL);
+			break;
+		case OSMO_IO_FD_MODE_RECVFROM_SENDTO:
+		case OSMO_IO_FD_MODE_RECVMSG_SENDMSG:
+			hdr.msg = msg;
+			hdr.iov[0].iov_base = msg->tail;
+			hdr.iov[0].iov_len = msgb_tailroom(msg);
+			hdr.hdr = (struct msghdr) {
+				.msg_iov = &hdr.iov[0],
+				.msg_iovlen = 1,
+				.msg_name = &hdr.osa.u.sa,
+				.msg_namelen = sizeof(struct osmo_sockaddr),
+			};
+			if (iofd->mode == OSMO_IO_FD_MODE_RECVMSG_SENDMSG) {
+				hdr.hdr.msg_control = alloca(iofd->cmsg_size);
+				hdr.hdr.msg_controllen = iofd->cmsg_size;
+			}
+			rc = recvmsg(ofd->fd, &hdr.hdr, flags);
+			if (rc > 0)
+				msgb_put(msg, rc);
+			iofd_handle_recv(iofd, msg, (rc < 0 && errno > 0) ? -errno : rc, &hdr);
+			break;
+		default:
+			OSMO_ASSERT(0);
 		}
-
-		rc = recvmsg(ofd->fd, &hdr.hdr, flags);
-		if (rc > 0)
-			msgb_put(msg, rc);
-
-		iofd_handle_recv(iofd, msg, (rc < 0 && errno > 0) ? -errno : rc, &hdr);
 	}
 
 	if (IOFD_FLAG_ISSET(iofd, IOFD_FLAG_CLOSED))
@@ -83,7 +94,17 @@ static void iofd_poll_ofd_cb_recvmsg_sendmsg(struct osmo_fd *ofd, unsigned int w
 	if (what & OSMO_FD_WRITE) {
 		struct iofd_msghdr *msghdr = iofd_txqueue_dequeue(iofd);
 		if (msghdr) {
-			rc = sendmsg(ofd->fd, &msghdr->hdr, msghdr->flags);
+			switch (iofd->mode) {
+			case OSMO_IO_FD_MODE_READ_WRITE:
+				rc = write(ofd->fd, msghdr->iov[0].iov_base, msghdr->iov[0].iov_len);
+				break;
+			case OSMO_IO_FD_MODE_RECVFROM_SENDTO:
+			case OSMO_IO_FD_MODE_RECVMSG_SENDMSG:
+				rc = sendmsg(ofd->fd, &msghdr->hdr, msghdr->flags);
+				break;
+			default:
+				OSMO_ASSERT(0);
+			}
 			iofd_handle_send_completion(iofd, (rc < 0 && errno > 0) ? -errno : rc, msghdr);
 		} else {
 			/* Socket is writable, but we have no data to send. A non-blocking/async
