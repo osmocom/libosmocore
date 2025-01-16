@@ -98,7 +98,11 @@ struct osmo_io_ops {
 		 *  \param[in] iofd osmo_io_fd for which read() has completed.
 		 *  \param[in] res return value of the read() call, or -errno in case of error.
 		 *  \param[in] msg message buffer containing the read data. Ownership is transferred to the
-		 *  call-back, and it must make sure to msgb_free() it eventually! */
+		 *  call-back, and it must make sure to msgb_free() it eventually!
+		 *
+		 *  NOTE: If segmentation_cb is in use, the bytes read in res value
+		 *        may be different than those provided in the msg parameter!
+		 */
 		void (*read_cb)(struct osmo_io_fd *iofd, int res, struct msgb *msg);
 
 		/*! completion call-back function when write issued via osmo_iofd_write_msgb() has completed
