@@ -327,10 +327,10 @@ struct msgb *msgb_copy_resize_c(const void *ctx, const struct msgb *msg, uint16_
 {
 	struct msgb *new_msg;
 
-	if (new_len < msgb_length(msg)) {
+	if (new_len < (msg->data - msg->_data) + msgb_length(msg)) {
 		LOGP(DLGLOBAL, LOGL_ERROR,
-			 "Data from old msgb (%u bytes) won't fit into new msgb (%u bytes) after reallocation\n",
-			 msgb_length(msg), new_len);
+			 "Data from old msgb (%u bytes at offset %u) won't fit into new msgb (%u total bytes) after reallocation\n",
+			 msgb_length(msg), (uint16_t)(msg->data - msg->_data), new_len);
 		return NULL;
 	}
 
