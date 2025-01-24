@@ -20,6 +20,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
@@ -45,18 +46,23 @@ static uint8_t TESTDATA[] = {
 
 static void *ctx = NULL;
 
-static unsigned file_read_wr_compl_counter = 0;
+static unsigned file_bytes_read = 0;
+static unsigned file_bytes_write_compl = 0;
+static bool file_eof_read = false;
 static void file_read_cb(struct osmo_io_fd *iofd, int rc, struct msgb *msg)
 {
 	printf("%s: read() msg with rc=%d\n", osmo_iofd_get_name(iofd), rc);
 	if (rc < 0)
 		printf("%s: error: %s\n", osmo_iofd_get_name(iofd), strerror(-rc));
-	if (msg)
+	if (msg) {
 		printf("%s\n", osmo_hexdump(msgb_data(msg), msgb_length(msg)));
-	file_read_wr_compl_counter++;
-	talloc_free(msg);
-	if (rc == 0)
+		file_bytes_read += msgb_length(msg);
+		talloc_free(msg);
+	}
+	if (rc == 0) {
+		file_eof_read = true;
 		osmo_iofd_close(iofd);
+	}
 }
 
 static void file_write_cb(struct osmo_io_fd *iofd, int rc, struct msgb *msg)
@@ -64,9 +70,10 @@ static void file_write_cb(struct osmo_io_fd *iofd, int rc, struct msgb *msg)
 	printf("%s: write() returned rc=%d\n", osmo_iofd_get_name(iofd), rc);
 	if (rc < 0)
 		printf("%s: error: %s\n", osmo_iofd_get_name(iofd), strerror(-rc));
-	if (msg)
+	if (msg) {
 		printf("%s\n", osmo_hexdump(msgb_data(msg), msgb_length(msg)));
-	file_read_wr_compl_counter++;
+		file_bytes_write_compl += msgb_length(msg);
+	}
 }
 
 static void test_file(void)
@@ -97,12 +104,13 @@ static void test_file(void)
 	osmo_iofd_write_msgb(iofd, msg);
 	/* Allow enough cycles to handle the messages */
 	for (int i = 0; i < 128; i++) {
-		OSMO_ASSERT(file_read_wr_compl_counter <= 1);
-		if (file_read_wr_compl_counter == 1)
+		OSMO_ASSERT(file_bytes_write_compl <= sizeof(TESTDATA));
+		if (file_bytes_write_compl == sizeof(TESTDATA))
 			break;
 		osmo_select_main(1);
 	}
-	OSMO_ASSERT(file_read_wr_compl_counter == 1);
+	fflush(stdout);
+	OSMO_ASSERT(file_bytes_write_compl == sizeof(TESTDATA));
 
 	/* Now, re-configure iofd to only read from the fd. Adjust the read/write offset beforehand: */
 	printf("Enable read\n");
@@ -113,12 +121,14 @@ static void test_file(void)
 	OSMO_ASSERT(rc == 0);
 	/* Allow enough cycles to handle the message. We expect 2 reads, 2nd read will return 0. */
 	for (int i = 0; i < 128; i++) {
-		OSMO_ASSERT(file_read_wr_compl_counter <= 3);
-		if (file_read_wr_compl_counter == 3)
+		OSMO_ASSERT(file_bytes_read <= sizeof(TESTDATA));
+		if (file_bytes_read == sizeof(TESTDATA) && file_eof_read)
 			break;
 		osmo_select_main(1);
 	}
-	OSMO_ASSERT(file_read_wr_compl_counter == 3);
+	fflush(stdout);
+	OSMO_ASSERT(file_bytes_read == sizeof(TESTDATA));
+	OSMO_ASSERT(file_eof_read);
 
 	osmo_iofd_free(iofd);
 
