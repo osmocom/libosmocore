@@ -405,6 +405,7 @@ Package: libosmocore-utils
 Architecture: any
 Section: utils
 Depends: ${shlibs:Depends},
+         python3,
          libosmocore,
          ${misc:Depends}
 Multi-Arch: same

@@ -17,8 +17,12 @@ export DEB_LDFLAGS_MAINT_STRIP = -Wl,-Bsymbolic-functions
 override_dh_strip:
 	dh_strip --dbg-package=libosmocore-dbg
 
+# osmo-install-dbg-pkgs: the script gets installed here and not in
+# debian/libosmocore-utils.install, so the '.py' at the end can be removed
 override_dh_install:
 	sed -i "/dependency_libs/ s/'.*'/''/" `find . -name '*.la'`
+	install -Dm755 utils/osmo-install-dbg-pkgs.py \
+		debian/libosmocore-utils/usr/bin/osmo-install-dbg-pkgs
 	dh_install
 
 # Print test results in case of a failure
