@@ -126,6 +126,7 @@ static void test_file(void)
 		if (file_bytes_read == sizeof(TESTDATA) && file_eof_read)
 			break;
 		osmo_select_main(1);
+		usleep(100 * 1000);
 	}
 	fflush(stdout);
 	OSMO_ASSERT(file_bytes_read == sizeof(TESTDATA));
