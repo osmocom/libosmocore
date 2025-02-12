@@ -1,3 +1,93 @@
+libosmocore (1.11.0) unstable; urgency=medium
+
+  [ Mychaela N. Falconia ]
+  * codec: add osmo_hr_sid_classify()
+  * tests: add unit test for osmo_hr_sid_classify()
+  * tests: add unit test for osmo_efr_sid_classify()
+  * tests: add unit test for osmo_fr_sid_classify()
+  * osmo_iofd_register: fix the case of changing fd
+
+  [ Alexander Couzens ]
+  * gb: add bssgp_parse_cell_id2/bssgp_create_cell_id2
+  * add convert functions for old gprs_ra_id and the new osmo_routing_area_id
+  * gsm_04_08: define missing reject info causes
+  * protocol: gsm 29.118: add SGSAP_SERV_IND_PAGING_TIMEOUT (osmocom specific)
+  * gsm 04.08: add GSM48 IE GMM_ADD_IDENTITY/RAI2
+  * gsm 04.08: add P-TMSI type values
+  * gprs/gsm_24_301: add include to be self contained
+  * gprs/gsm23003: add osmo_mme_id_cmp & osmo_gummei_cmp
+  * gsm_utils: add gprs_tlli2tmsi()
+  * gsm23.003: add RNC Id
+  * gsm23.003: make the header self-contained
+  * gprs_ns2_sns: add include osmocom/core/talloc.h
+  * gprs_ns2_sns: do_sns_add: ensure ip4/ip6 pointer is set
+  * gprs_ns2_sns: move the NS-ALIVE PDU of a new NS-VC after the SNS-ACK
+  * gprs_ns2_sns: improve search for same NS-VC
+  * gprs_ns2_sns: fix error cases of SNS_ADD
+  * gsm48: add additional GSM 24.008 IE for GMM
+  * Gb/NS: SNS: SNS Ack don't add List of IP4/6 Elements on success.
+
+  [ Harald Welte ]
+  * core/socket.c: Provide more context when printing error message
+  * [cosmetic] core/socket.c: Fix indent of 'case' within 'switch'
+  * core/socket.c: Fix socket binding on IPv4-only hosts
+  * src/core/socket.c: Fix close of negative fd in system_supports_inet6()
+  * Fix building in environments that define _GNU_SOURCE
+
+  [ Neels Hofmeyr ]
+  * coverity CID#272974
+  * coverity CID#272951
+
+  [ Pau Espin Pedrol ]
+  * iuup.c: Add more relevant spec references to the file
+  * netdev: osmo_netdev_set_ifupdown_ind_cb(): Fix documentation copy-paste error
+  * core/tun.c: Fix documentation in ret of osmo_tundev_send
+  * core/tun: Add API osmo_tundev_get_fd
+  * core/netdev: Add API osmo_netdev_set_mtu()
+  * core/tun.c: Fix wrong documentation ret type in tundev_open_fd()
+  * netdev: Explicit cast time() to uint32_t seq_nr
+  * tun: assert tundev!=NULL in osmo_tundev_send
+  * cosmetic: ipa: fix typo in documentation
+  * ctrl: logging improvements
+  * osmo_io: Increase default queue max_length from 32 to 1024
+  * gsmtap: Increase txqueue max_length from 64 to 1024
+  * osmo_io: Improve osmo_iofd_notify_connected() documentation
+  * osmo_io: segmentation cb: Initialize null ptr every iteration
+  * osmo_io: Use early return to simplify code
+  * osmo_io: uring: Setup connect_notify internal ofd during register() op
+  * osmo_io: poll: connect_notify: Avoid calling register
+  * osmo_io: close() op in backend only takes care of closing
+  * osmo_io: Track IOFD_FLAG_FD_REGISTERED in all backends
+  * osmo_io: segmented_read: Avoid triggering read events if user unregisters
+  * osmo_io: Log current queue length upon enqueue failure
+  * osmo_io: iofd_msgb_alloc(): Allow allocating msgb of len=0xffff
+  * osmo_io: segmentation: Remove unneeded impossible check
+  * cosmetic: osmo_io: Improvde documentation of read_cb when segmentation is used
+  * msgb: msgb_copy_resize_c: Fix validation check to avoid memcpy buffer overflow
+  * osmo_io: Support writing to files with mode OSMO_IO_FD_MODE_READ_WRITE
+  * tests/osmo_io: Rework test_file()
+  * tests/osmo_io: Introduce small sleeps waiting for write completion
+  * tests/osmo_io: Introduce small sleeps waiting for read completion
+
+  [ Andreas Eversberg ]
+  * Remove sync() after writing VTY config
+
+  [ Vadim Yanitskiy ]
+  * gsm_12_21.h: fix values for NM_IPAC_F_GPRS_CODING_MCS[1-9]
+  * gsm48_encode_bearer_cap(): properly set 'Structure' in octet 4
+  * tests/gsm0408: remove outdated comment for bcap_csd_2400_v22bis
+
+  [ Eric Wild ]
+  * utils: fix lost inttypes mess for embedded builds
+
+  [ Daniel Willmann ]
+  * gsm_04_08: Add IEs seen during 4G->2G RAU
+
+  [ Oliver Smith ]
+  * utils/osmo-install-dbg-pkgs: new script
+
+ -- Oliver Smith <osmith@sysmocom.de>  Wed, 12 Feb 2025 09:51:49 +0100
+
 libosmocore (1.10.0) unstable; urgency=medium
 
   [ Mychaela N. Falconia ]
