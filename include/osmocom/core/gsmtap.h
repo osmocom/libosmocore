@@ -303,7 +303,7 @@ enum {
 /* ====== DO NOT MAKE UNAPPROVED MODIFICATIONS HERE ===== */
 /*! Structure of the GSMTAP pseudo-header */
 struct gsmtap_hdr {
-	uint8_t version;	/*!< version, set to 0x01 currently */
+	uint8_t version;	/*!< version, set to GSMTAP_VERSION */
 	uint8_t hdr_len;	/*!< length in number of 32bit words */
 	uint8_t type;		/*!< see GSMTAP_TYPE_* */
 	uint8_t timeslot;	/*!< timeslot (0..7 on Um) */
