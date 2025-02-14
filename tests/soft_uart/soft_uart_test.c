@@ -389,14 +389,14 @@ static void test_tx_rx_pull_n(unsigned int n)
 	g_tx_cb_cfg.data = (void *)"\x55";
 	g_tx_cb_cfg.data_len = 1;
 
-	printf("======== pulling %lu bits (%u at a time)\n", sizeof(tx_buf), n);
+	printf("======== pulling %zu bits (%u at a time)\n", sizeof(tx_buf), n);
 	for (unsigned int i = 0; i < sizeof(tx_buf); i += n) {
 		rc = osmo_soft_uart_tx_ubits(suart, &tx_buf[i], n);
 		OSMO_ASSERT(rc == n);
 	}
 	printf("%s\n", osmo_ubit_dump(&tx_buf[0], sizeof(tx_buf)));
 
-	printf("======== feeding %lu bits into the receiver\n", sizeof(tx_buf));
+	printf("======== feeding %zu bits into the receiver\n", sizeof(tx_buf));
 	rc = osmo_soft_uart_rx_ubits(suart, &tx_buf[0], sizeof(tx_buf));
 	OSMO_ASSERT(rc == 0);
 	osmo_soft_uart_flush_rx(suart);
