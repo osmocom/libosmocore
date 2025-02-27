@@ -258,6 +258,21 @@ const uint16_t gsm660_bitorder[260] = {
 	246,					/* 259 -> PULSE 4_10: b0    */
 };
 
+/*
+ * GSM 06.60 defines (in Table 7) a special frame of codec parameters called
+ * the decoder homing frame (DHF).  When a spec-compliant speech decoder
+ * processes this frame, it resets itself to the spec-defined home state.
+ *
+ * The following const datum is GSM-EFR DHF in the packed RTP format of
+ * TS 101 318 or RFC 3551.
+ */
+const uint8_t osmo_gsm660_homing_frame[GSM_EFR_BYTES] = {
+	0xC0, 0x85, 0xEB, 0x49, 0x0F, 0xAA, 0xD6, 0x03,
+	0xE3, 0xA1, 0x86, 0x07, 0xB0, 0xC4, 0x2C, 0x08,
+	0x04, 0x80, 0x55, 0x80, 0x00, 0x00, 0x00, 0x00,
+	0x03, 0x6B, 0x00, 0x00, 0x00, 0x00, 0x00
+};
+
 static const uint8_t sid_code_word_bits[95] = {
 	/* bit numbers are relative to "pure" EFR frame beginning,
 	 * not counting the signature bits. */
