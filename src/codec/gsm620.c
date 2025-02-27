@@ -263,6 +263,37 @@ const uint16_t gsm620_voiced_bitorder[112] = {
 	81,	/* Code 3:7 */
 };
 
+/*
+ * There is no officially defined silence frame for GSM-HR codec like there is
+ * for GSM-FR.  However, if one feeds all-zeros (complete silence) linear PCM
+ * input to the official GSM-HR encoder, the result will be an endless stream
+ * of these frames:
+ *
+ * R0=00 LPC=164,171,cb Int=0 Mode=0
+ * s1=00,00,00 s2=00,00,00 s3=00,00,00 s4=00,00,00
+ *
+ * The following const datum is the above unofficial GSM-HR silence frame in
+ * the packed RTP format of TS 101 318.
+ */
+const uint8_t osmo_gsm620_silence_frame[GSM_HR_BYTES] = {
+	0x01, 0x64, 0xB8, 0xE5, 0x80, 0x00, 0x00,
+	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
+};
+
+/*
+ * GSM 06.20 defines, by reference to GSM 06.06 C code and GSM 06.07 test
+ * sequences, a special frame of codec parameters called the decoder homing
+ * frame (DHF).  When a spec-compliant speech decoder processes this frame,
+ * it resets itself to the spec-defined home state.
+ *
+ * The following const datum is GSM-HR DHF in the packed RTP format of
+ * TS 101 318.
+ */
+const uint8_t osmo_gsm620_homing_frame[GSM_HR_BYTES] = {
+	0x03, 0x71, 0xAF, 0x61, 0xC8, 0xF2, 0x80,
+	0x25, 0x31, 0xC0, 0x00, 0x00, 0x00, 0x00
+};
+
 /*! Check whether RTP frame contains HR SID code word according to
  *  TS 101 318 §5.2.2
  *  \param[in] rtp_payload Buffer with RTP payload
