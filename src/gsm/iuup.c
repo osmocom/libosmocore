@@ -714,6 +714,13 @@ static void iuup_fsm_init(struct osmo_fsm_inst *fi, uint32_t event, void *data)
 		/* the only permitted 'config req' type is the request to release the instance */
 		osmo_fsm_inst_state_chg(fi, IUUP_FSM_ST_NULL, 0, 0);
 		break;
+	case IUUP_FSM_EVT_IUUP_DATA_REQ:
+		/* Data coming down from RNL (user) towards TNL (transport).
+		 * Discard since we are still not in Data Transfer Ready State. */
+		irp = data;
+		LOGPFSML(fi, LOGL_INFO, "Iu-UP-DATA.req while still initializing, discarding\n");
+		msgb_free(irp->oph.msg);
+		break;
 	case IUUP_FSM_EVT_INIT:
 		itp = data;
 		if (iuup_rx_initialization(iui, itp))
@@ -825,6 +832,7 @@ static const struct osmo_fsm_state iuup_fsm_states[] = {
 	},
 	[IUUP_FSM_ST_INIT] = {
 		.in_event_mask =  S(IUUP_FSM_EVT_IUUP_CONFIG_REQ) |
+				  S(IUUP_FSM_EVT_IUUP_DATA_REQ) |
 				  S(IUUP_FSM_EVT_INIT) |
 				  S(IUUP_FSM_EVT_LAST_INIT_ACK) |
 				  S(IUUP_FSM_EVT_INIT_NACK),
