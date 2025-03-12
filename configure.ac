@@ -173,6 +173,10 @@ ARG_ENABLE_DETECT_TLS_GCC_ARM_BUG
 dnl Generate the output
 AC_CONFIG_HEADER(config.h)
 
+dnl Search for a Python interpreter on the system
+dnl python is needed at built-time for auto-generating code
+AM_PATH_PYTHON([3.6])
+
 PKG_CHECK_MODULES(TALLOC, [talloc >= 2.1.0])
 
 AC_ARG_ENABLE([uring], [AS_HELP_STRING([--disable-uring], [Build without io_uring support])],
@@ -463,7 +467,6 @@ AC_ARG_ENABLE([external_tests],
 				[Include the VTY/CTRL tests in make check [default=no]]),
 		[enable_ext_tests="$enableval"],[enable_ext_tests="no"])
 if test "x$enable_ext_tests" = "xyes" ; then
-	AM_PATH_PYTHON
 	AC_CHECK_PROG(OSMOTESTEXT_CHECK,osmo_verify_transcript_vty.py,yes)
 	 if test "x$OSMOTESTEXT_CHECK" != "xyes" ; then
 		AC_MSG_ERROR([Please install https://gitea.osmocom.org/cellular-infrastructure/osmo-python-tests to run the VTY/CTRL tests.])
