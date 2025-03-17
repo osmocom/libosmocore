@@ -176,7 +176,8 @@ AC_CONFIG_HEADER(config.h)
 dnl Search for a Python interpreter on the system
 dnl python is needed at built-time for auto-generating code
 dnl Don't require a newer version than 3.5 for now, as poky 201705 ships that
-AM_PATH_PYTHON([3.5])
+dnl Don't require a newer version than 3.4, we build poky 201705 on debian 8
+AM_PATH_PYTHON([3.4])
 
 PKG_CHECK_MODULES(TALLOC, [talloc >= 2.1.0])
 
