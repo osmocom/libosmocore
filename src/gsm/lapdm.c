@@ -136,6 +136,7 @@ static void lapdm_dl_init(struct lapdm_datalink *dl,
 			  const char *name)
 {
 	memset(dl, 0, sizeof(*dl));
+	INIT_LLIST_HEAD(&dl->tx_ui_queue);
 	dl->entity = entity;
 	lapd_dl_init2(&dl->dl, 1, 8, 251, name); /* Section 5.8.5 of TS 04.06 */
 	dl->dl.reestablish = 0; /* GSM uses no reestablish */
@@ -200,7 +201,6 @@ void lapdm_entity_init3(struct lapdm_entity *le, enum lapdm_mode mode,
 			lapdm_dl_init(&le->datalink[i], le, (t200_ms) ? t200_ms[i] : 0, n200, name);
 		} else
 			lapdm_dl_init(&le->datalink[i], le, (t200_ms) ? t200_ms[i] : 0, n200, NULL);
-		INIT_LLIST_HEAD(&le->datalink[i].tx_ui_queue);
 	}
 
 	lapdm_entity_set_mode(le, mode);
