@@ -376,6 +376,8 @@ static int tx_ph_data_enqueue(struct lapdm_datalink *dl, struct msgb *msg,
 		*msgb_push(msg, 1) = pad;
 		*msgb_push(msg, 1) = link_id;
 		*msgb_push(msg, 1) = chan_nr;
+		/* Take ownership of msg, since we are keeping it around in this layer: */
+		talloc_steal(tall_lapd_ctx, msg);
 		msgb_enqueue(&dl->dl.tx_queue, msg);
 		return 0;
 	}
@@ -403,6 +405,8 @@ static int tx_ph_data_enqueue_ui(struct lapdm_datalink *dl, struct msgb *msg,
 		*msgb_push(msg, 1) = pad;
 		*msgb_push(msg, 1) = link_id;
 		*msgb_push(msg, 1) = chan_nr;
+		/* Take ownership of msg, since we are keeping it around in this layer: */
+		talloc_steal(tall_lapd_ctx, msg);
 		msgb_enqueue(&dl->tx_ui_queue, msg);
 		return 0;
 	}
