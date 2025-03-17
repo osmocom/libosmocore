@@ -301,7 +301,7 @@ void lapdm_entity_exit(struct lapdm_entity *le)
 	}
 }
 
-/* lfush and release all resources in LAPDm channel
+/* flush and release all resources in LAPDm channel
  *
  * A convenience wrapper calling \ref lapdm_entity_exit on both
  * entities inside the \ref lapdm_channel
