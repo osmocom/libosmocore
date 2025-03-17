@@ -1922,6 +1922,8 @@ static int lapd_data_req(struct osmo_dlsap_prim *dp, struct lapd_msg_ctx *lctx)
 
 	LOGDL(dl, LOGL_INFO, "writing message to send-queue: l3len: %d\n", msgb_l3len(msg));
 
+	/* Take ownership of msg, since we are keeping it around in this layer: */
+	talloc_steal(tall_lapd_ctx, msg);
 	/* Write data into the send queue */
 	msgb_enqueue(&dl->send_queue, msg);
 
