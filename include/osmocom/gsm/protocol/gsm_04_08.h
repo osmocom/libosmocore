@@ -1617,6 +1617,11 @@ void gsm48_set_dtx(struct gsm48_cell_options *op, enum gsm48_dtx_mode full,
 #define GSM48_MT_RR_SYSINFO_18		0x40
 #define GSM48_MT_RR_SYSINFO_19		0x41
 #define GSM48_MT_RR_SYSINFO_20		0x42
+#define GSM48_MT_RR_SYSINFO_13alt	0x44
+#define GSM48_MT_RR_SYSINFO_2n		0x45
+#define GSM48_MT_RR_SYSINFO_21		0x46
+#define GSM48_MT_RR_SYSINFO_22		0x47
+#define GSM48_MT_RR_SYSINFO_23		0x4f
 
 #define GSM48_MT_RR_CHAN_MODE_MODIF	0x10
 #define GSM48_MT_RR_STATUS		0x12
