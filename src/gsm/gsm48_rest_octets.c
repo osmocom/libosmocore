@@ -605,7 +605,7 @@ int osmo_gsm48_rest_octets_si2quater_encode(uint8_t *data, uint8_t si2q_index, u
 	return bv.data_len;
 }
 
-/* Append selection parameters to bitvec */
+/* 3GPP TS 44.018 Table 10.5.2.34.1 (Optional) "Selection Parameters", append to bitvec */
 static void append_selection_params(struct bitvec *bv,
 				    const struct osmo_gsm48_si_selection_params *sp)
 {
@@ -620,7 +620,7 @@ static void append_selection_params(struct bitvec *bv,
 	}
 }
 
-/* Append power offset to bitvec */
+/* 3GPP TS 44.018 Table 10.5.2.34.1 "Optional Power offset", append to bitvec */
 static void append_power_offset(struct bitvec *bv,
 				const struct osmo_gsm48_si_power_offset *po)
 {
@@ -632,7 +632,7 @@ static void append_power_offset(struct bitvec *bv,
 	}
 }
 
-/* Append GPRS indicator to bitvec */
+/* 3GPP TS 44.018 Table 10.5.2.34.1 "GPRS Indicator", append bitvec */
 static void append_gprs_ind(struct bitvec *bv,
 			    const struct osmo_gsm48_si3_gprs_ind *gi)
 {

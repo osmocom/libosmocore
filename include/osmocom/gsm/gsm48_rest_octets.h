@@ -60,30 +60,34 @@ struct osmo_gsm48_si6_ro_info {
 
 int osmo_gsm48_rest_octets_si6_encode(uint8_t *data, const struct osmo_gsm48_si6_ro_info *in);
 
+/* 3GPP TS 44.018 Table 10.5.2.34.1 (Optional) "Selection Parameters" */
 struct osmo_gsm48_si_selection_params {
-	uint16_t penalty_time:5,
-		  temp_offs:3,
-		  cell_resel_off:6,
-		  cbq:1,
+	uint16_t penalty_time:5, /* PENALTY_TIME */
+		  temp_offs:3, /* TEMPORARY_OFFSET */
+		  cell_resel_off:6, /* CELL_RESELECT_OFFSET */
+		  cbq:1, /* CELL_BAR_QUALIFY (CBQ) */
 		  present:1;
 };
 
+/* 3GPP TS 44.018 Table 10.5.2.34.1 "Optional Power offset" */
 struct osmo_gsm48_si_power_offset {
-	uint8_t power_offset:2,
+	uint8_t power_offset:2, /* POWER OFFSET */
 		 present:1;
 };
 
+/* 3GPP TS 44.018 Table 10.5.2.34.1 "GPRS Indicator" */
 struct osmo_gsm48_si3_gprs_ind {
-	uint8_t si13_position:1,
-		 ra_colour:3,
+	uint8_t si13_position:1, /* SI13 POSITION */
+		 ra_colour:3, /* RA COLOUR */
 		 present:1;
 };
 
+/* 3GPP TS 44.018 Table 10.5.2.35.1 "LSA Parameters" */
 struct osmo_gsm48_lsa_params {
-	uint32_t prio_thr:3,
-		 lsa_offset:3,
-		 mcc:12,
-		 mnc:12;
+	uint32_t prio_thr:3, /* PRIO_THR */
+		 lsa_offset:3, /* LSA_OFFSET */
+		 mcc:12, /* MCC */
+		 mnc:12; /* MNC */
 	unsigned int present;
 };
 
