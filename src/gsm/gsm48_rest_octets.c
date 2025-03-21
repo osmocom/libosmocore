@@ -748,6 +748,11 @@ int osmo_gsm48_rest_octets_si4_encode(uint8_t *data, const struct osmo_gsm48_si_
 		} else {
 			bitvec_set_bit(&bv, L);
 		}
+
+		/* TODO:
+		 * {L | H < CBQ3 : bit (2) >  "Cell Bar Qualify 3" in TS 44.018 Table 10.5.2.11.1
+		 * {0 | 1 < SI13alt Position : bit >}} ;
+		 */
 	} else {
 		/* L and break indicator */
 		bitvec_set_bit(&bv, L);
