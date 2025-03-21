@@ -634,13 +634,13 @@ struct gsm48_power_cmd {
 #endif
 } __attribute__((packed));
 
-/* Chapter 10.5.2.29 */
+/* 3GPP TS 44.018 Chapter 10.5.2.29 "RACH Control Parameters" */
 struct gsm48_rach_control {
 #if OSMO_IS_LITTLE_ENDIAN
-	uint8_t re :1,
-		 cell_bar :1,
-		 tx_integer :4,
-		 max_trans :2;
+	uint8_t re :1, /* RE, Call reestablishment allowed */
+		 cell_bar :1, /* CELL_BAR_ACCESS */
+		 tx_integer :4, /* Tx-integer */
+		 max_trans :2; /* Max_Retrans */
 	uint8_t t2; /* ACC 8-15 barred flags */
 	uint8_t t3; /* ACC 0-7 barred flags */
 #elif OSMO_IS_BIG_ENDIAN
