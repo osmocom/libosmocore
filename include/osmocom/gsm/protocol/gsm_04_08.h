@@ -973,12 +973,12 @@ struct gsm48_system_information_type_header {
 #endif
 } __attribute__ ((packed));
 
-/* Section 10.5.2.4 Cell Selection Parameters */
+/* 3GPP TS 44.018 Section 10.5.2.4 Cell Selection Parameters */
 struct gsm48_cell_sel_par {
 #if OSMO_IS_LITTLE_ENDIAN
-	uint8_t ms_txpwr_max_ccch:5,	/* GSM 05.08 MS-TXPWR-MAX-CCCH */
-		 cell_resel_hyst:3;	/* GSM 05.08 CELL-RESELECT-HYSTERESIS */
-	uint8_t rxlev_acc_min:6,	/* GSM 05.08 RXLEV-ACCESS-MIN */
+	uint8_t ms_txpwr_max_ccch:5,	/* MS-TXPWR-MAX-CCH, 3GPP TS 45.008 MS_TXPWR_MAX_CCH */
+		 cell_resel_hyst:3;	/* CELL-RESELECT-HYSTERESIS, 3GPP TS 45.008 CELL_RESELECT_HYSTERESIS */
+	uint8_t rxlev_acc_min:6,	/* RXLEV-ACCESS-MIN, 3GPP TS 45.008 RXLEV_ACCESS_MIN */
 		 neci:1,
 		 acs:1;
 #elif OSMO_IS_BIG_ENDIAN
