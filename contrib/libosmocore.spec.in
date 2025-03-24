@@ -170,7 +170,7 @@ applications that want to make use of libosmoctrl.
 
 %package -n libosmogb14
 Summary:        Osmocom GPRS Gb Interface (NS/BSSGP) library
-License:        AGPL-3.0-or-later
+License:        GPL-2.0-or-later
 Group:          System/Libraries
 
 %description -n libosmogb14
@@ -181,7 +181,7 @@ The libosmogb library contains a GPRS BSSGP protocol implementation.
 
 %package -n libosmogb-devel
 Summary:        Development files for the Osmocom GPRS Gb interface library
-License:        AGPL-3.0-or-later
+License:        GPL-2.0-or-later
 Group:          Development/Libraries/C and C++
 Requires:       libosmocore-devel = %version
 Requires:       libosmogb14 = %version
