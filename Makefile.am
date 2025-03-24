@@ -115,6 +115,7 @@ $(top_builddir)/doc/libosmovty.tag.prep: $(top_builddir)/Doxyfile.vty \
 		$(top_srcdir)/src/vty/*.c
 	rm -rf $(top_builddir)/doc/vty/html $(top_builddir)/doc/vty/latex
 	rm -rf $(top_builddir)/doc/libosmovty.map
+	mkdir -p $(top_builddir)/doc/vty
 	-$(DOXYGEN) $(top_builddir)/Doxyfile.vty
 	touch "$@"
 
