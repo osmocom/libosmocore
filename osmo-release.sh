@@ -2,7 +2,7 @@
 VERSION=$1
 REL=$2
 
-if [ "z$REL" = "z" ]; then
+help() {
 	echo "usage: make REL=patch|minor|major release"
 	echo
 	echo "optional environment variables:"
@@ -14,7 +14,15 @@ if [ "z$REL" = "z" ]; then
 	echo "See also:"
 	echo "https://osmocom.org/projects/cellular-infrastructure/wiki/Make_a_new_release"
 	exit 1
-fi
+}
+
+case "$REL" in
+	patch|minor|major)
+		;;
+	*)
+		help
+		;;
+esac
 
 ALLOW_NO_LIBVERSION_CHANGE="${ALLOW_NO_LIBVERSION_CHANGE:-0}"
 ALLOW_NO_LIBVERSION_DEB_MATCH="${ALLOW_NO_LIBVERSION_DEB_MATCH:-0}"
