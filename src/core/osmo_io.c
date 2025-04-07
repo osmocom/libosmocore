@@ -122,6 +122,13 @@ static __attribute__((constructor(103))) void on_dso_load_osmo_io(void)
 	osmo_iofd_init();
 }
 
+/*! Obtain the osmo_io_backend in use by the process
+ *  \returns The osmo_io backend which was configured at startup time */
+enum osmo_io_backend osmo_io_get_backend(void)
+{
+	return g_io_backend;
+}
+
 /*! Allocate the msghdr.
  *  \param[in] iofd the osmo_io file structure
  *  \param[in] action the action this msg(hdr) is for (read, write, ..)

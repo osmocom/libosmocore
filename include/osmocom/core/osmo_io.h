@@ -79,6 +79,8 @@ enum osmo_io_backend {
 	OSMO_IO_BACKEND_IO_URING,
 };
 
+enum osmo_io_backend osmo_io_get_backend(void);
+
 extern const struct value_string osmo_io_backend_names[];
 /*! return the string name of an osmo_io_backend */
 static inline const char *osmo_io_backend_name(enum osmo_io_backend val)

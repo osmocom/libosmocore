@@ -256,6 +256,7 @@ osmo_init_logging;
 osmo_init_logging2;
 osmo_int_to_float_str_buf;
 osmo_int_to_float_str_c;
+osmo_io_get_backend;
 osmo_io_backend_names;
 osmo_iofd_close;
 osmo_iofd_free;
