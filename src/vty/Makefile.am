@@ -23,6 +23,7 @@ libosmovty_la_SOURCES = \
 	cpu_sched_vty.c \
 	fsm_vty.c \
 	logging_vty.c \
+	misc_vty.c \
 	stats_vty.c \
 	talloc_ctx_vty.c \
 	tdef_vty.c \

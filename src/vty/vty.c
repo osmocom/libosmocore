@@ -65,6 +65,7 @@
 #include <osmocom/vty/vty.h>
 #include <osmocom/vty/command.h>
 #include <osmocom/vty/buffer.h>
+#include <osmocom/vty/vty_internal.h>
 #include <osmocom/core/talloc.h>
 #include <osmocom/core/timer.h>
 #include <osmocom/core/utils.h>
@@ -1902,6 +1903,8 @@ void vty_init(struct vty_app_info *app_info)
 	install_lib_element(VTY_NODE, &vty_login_cmd);
 	install_lib_element(VTY_NODE, &no_vty_login_cmd);
 	install_lib_element(VTY_NODE, &vty_bind_cmd);
+
+	vty_misc_init();
 }
 
 /*! Read the configuration file using the VTY code

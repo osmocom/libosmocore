@@ -12,6 +12,10 @@ osmovty_HEADERS = \
 	cpu_sched_vty.h \
 	tdef_vty.h \
 	$(NULL)
+
+noinst_HEADERS = \
+	vty_internal.h \
+	$(NULL)
 endif
 
 osmovtydir = $(includedir)/osmocom/vty
