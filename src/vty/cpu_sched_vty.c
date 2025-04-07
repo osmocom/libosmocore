@@ -45,12 +45,10 @@
 
 #include <osmocom/vty/vty.h>
 #include <osmocom/vty/command.h>
-#include <osmocom/vty/tdef_vty.h>
-#include <osmocom/core/tdef.h>
 #include <osmocom/core/fsm.h>
 #include <osmocom/core/linuxlist.h>
 
-/*! \addtogroup Tdef_VTY
+/*! \addtogroup cpu_sched_vty
  *
  * CPU Scheduling related VTY API.
  *
