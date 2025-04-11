@@ -66,6 +66,11 @@ AC_SUBST(LTLDFLAGS_OSMOCODING)
 AC_SUBST(LTLDFLAGS_OSMOCORE)
 AC_SUBST(LTLDFLAGS_OSMOCTRL)
 
+AC_C_BIGENDIAN(
+	       [AC_MSG_ERROR([Unfortunately, big endian hosts are currently not supported anymore due to lack of development resources. Contributions welcome.])],
+	       [],
+	       [AC_MSG_WARN([Byte order could not be determined. Strange.])])
+
 dnl checks for header files
 AC_HEADER_STDC
 AC_CHECK_HEADERS(execinfo.h poll.h sys/select.h sys/socket.h sys/signalfd.h sys/eventfd.h sys/timerfd.h syslog.h ctype.h netinet/tcp.h netinet/in.h)
