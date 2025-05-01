@@ -218,8 +218,8 @@ struct desc {
     .string = cmdstr, \
     .func = funcname, \
     .doc = helpstr, \
-    .attr = attrs, \
     .daemon = dnum, \
+    .attr = attrs, \
   };
 
 /* global (non static) cmd_element */
@@ -229,8 +229,8 @@ struct desc {
     .string = cmdstr, \
     .func = funcname, \
     .doc = helpstr, \
-    .attr = attrs, \
     .daemon = dnum, \
+    .attr = attrs, \
   };
 
 #define DEFUN_CMD_ELEMENT_ATTR_USRATTR(funcname, cmdname, cmdstr, helpstr, attrs, usrattrs) \
