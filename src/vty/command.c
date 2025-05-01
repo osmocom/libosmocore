@@ -3555,13 +3555,13 @@ ALIAS(config_write_file,
       config_write_cmd,
       "write", "Write running configuration to memory, network, or terminal\n")
 
-    ALIAS(config_write_file,
+ALIAS(config_write_file,
       config_write_memory_cmd,
       "write memory",
       "Write running configuration to memory, network, or terminal\n"
       "Write configuration to the file (same as write file)\n")
 
-    ALIAS(config_write_file,
+ALIAS(config_write_file,
       copy_runningconfig_startupconfig_cmd,
       "copy running-config startup-config",
       "Copy configuration\n"
@@ -3569,7 +3569,7 @@ ALIAS(config_write_file,
       "Copy running config to startup config (same as write file)\n")
 
 /* Write current configuration into the terminal. */
-    DEFUN(config_write_terminal,
+DEFUN(config_write_terminal,
       config_write_terminal_cmd,
       "write terminal",
       "Write running configuration to memory, network, or terminal\n"
@@ -3606,7 +3606,7 @@ ALIAS(config_write_terminal,
       "show running-config", SHOW_STR "running configuration\n")
 
 /* Write startup configuration into the terminal. */
-    DEFUN(show_startup_config,
+DEFUN(show_startup_config,
       show_startup_config_cmd,
       "show startup-config", SHOW_STR "Contentes of startup configuration\n")
 {
@@ -3722,7 +3722,7 @@ ALIAS(config_password, password_text_cmd,
       "The UNENCRYPTED (cleartext) line password\n")
 
 /* VTY enable password set. */
-    DEFUN(config_enable_password, enable_password_cmd,
+DEFUN(config_enable_password, enable_password_cmd,
       "enable password (8|) WORD",
       "Modify enable password parameters\n"
       "Assign the privileged level password\n"
@@ -3785,7 +3785,7 @@ ALIAS(config_enable_password,
       "The UNENCRYPTED (cleartext) 'enable' password\n")
 
 /* VTY enable password delete. */
-    DEFUN(no_config_enable_password, no_enable_password_cmd,
+DEFUN(no_config_enable_password, no_enable_password_cmd,
       "no enable password",
       NO_STR
       "Modify enable password parameters\n"
