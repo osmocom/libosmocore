@@ -1,3 +1,12 @@
+libosmocore (1.11.1) unstable; urgency=medium
+
+  [ Pau Espin Pedrol ]
+  * tests: soft_uart: Fix printf int type format
+  * lapd: Take talloc msgb ownership when enqueueing it
+  * lapdm: Take talloc msgb ownership when enqueueing it
+
+ -- Vadim Yanitskiy <vyanitskiy@sysmocom.de>  Tue, 06 May 2025 16:24:20 +0700
+
 libosmocore (1.11.0) unstable; urgency=medium
 
   [ Mychaela N. Falconia ]
