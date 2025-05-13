@@ -1,0 +1,20 @@
+AT_INIT
+AT_BANNER([osmo-config-merge regression tests.])
+
+AT_SETUP([testA])
+AT_KEYWORDS([testA])
+cat $abs_srcdir/testA.ok > expout
+AT_CHECK([$abs_top_builddir/utils/osmo-config-merge $abs_srcdir/testA.cfg $abs_srcdir/testA.confmerge], [0], [expout])
+AT_CLEANUP
+
+AT_SETUP([testB])
+AT_KEYWORDS([testB])
+cat $abs_srcdir/testB.ok > expout
+AT_CHECK([$abs_top_builddir/utils/osmo-config-merge $abs_srcdir/testB.cfg $abs_srcdir/testB.confmerge], [0], [expout])
+AT_CLEANUP
+
+AT_SETUP([testB2])
+AT_KEYWORDS([testB2])
+cat $abs_srcdir/testB2.ok > expout
+AT_CHECK([$abs_top_builddir/utils/osmo-config-merge $abs_srcdir/testB2.cfg $abs_srcdir/testB2.confmerge], [0], [expout])
+AT_CLEANUP

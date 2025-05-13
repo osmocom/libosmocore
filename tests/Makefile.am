@@ -1,3 +1,6 @@
+# Putting '.' first to run tests/osmo-config-merge/ testsuite after the one under tests/:
+SUBDIRS = . osmo-config-merge
+
 AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_builddir)/include -I$(top_builddir)
 AM_CFLAGS = -Wall $(TALLOC_CFLAGS) $(PTHREAD_CFLAGS)
 AM_LDFLAGS = -no-install

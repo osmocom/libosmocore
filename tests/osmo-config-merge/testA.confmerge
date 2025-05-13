@@ -1,0 +1,10 @@
+bts 0
+ oml remote-ip 127.0.0.1
+ trx 0
+  power-ramp step-size 2000 mdB
+ trx 1
+  power-ramp step-size 2000 mdB
+ trx 2
+  power-ramp step-size 2000 mdB
+ trx 3
+  power-ramp step-size 2000 mdB
