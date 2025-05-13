@@ -1,0 +1,72 @@
+cs7 instance 0
+ !
+ ! IPA AS/ASP:
+ !
+ asp ipa-asp-loadshare-sender0 20000 5000 ipa
+  local-ip 127.0.0.1
+  remote-ip 127.0.0.1
+ asp ipa-asp-loadshare-sender1 20001 5000 ipa
+  local-ip 127.0.0.1
+  remote-ip 127.0.0.1
+ as ipa-as-loadshare-sender ipa
+  routing-key 0 6
+  point-code override dpc 31
+  asp ipa-asp-loadshare-sender0
+  asp ipa-asp-loadshare-sender1
+ asp ipa-asp-loadshare-receiver0 20002 5000 ipa
+  local-ip 127.0.0.1
+  remote-ip 127.0.0.1
+  role sg
+  sctp-role server
+ asp ipa-asp-loadshare-receiver1 20003 5000 ipa
+  local-ip 127.0.0.1
+  remote-ip 127.0.0.1
+  role sg
+  sctp-role server
+ as ipa-as-loadshare-receiver ipa
+  traffic-mode loadshare
+  routing-key 0 7
+  point-code override dpc 32
+  asp ipa-asp-loadshare-receiver0
+  asp ipa-asp-loadshare-receiver1
+ ! Port 2004 is reserved for use with ipa-as-dynamic-asp in TTCN-3.
+ ! OVERRIDE:
+ asp ipa-asp-override-sender 20005 5000 ipa
+  local-ip 127.0.0.1
+  remote-ip 127.0.0.1
+ as ipa-as-override-sender ipa
+  routing-key 0 6
+  point-code override dpc 33
+  asp ipa-asp-override-sender
+ asp ipa-asp-override-receiver0 20006 5000 ipa
+  local-ip 127.0.0.1
+  remote-ip 127.0.0.1
+  role sg
+  sctp-role server
+ asp ipa-asp-override-receiver1 20007 5000 ipa
+  local-ip 127.0.0.1
+  remote-ip 127.0.0.1
+  role sg
+  sctp-role server
+ as ipa-as-override-receiver ipa
+  traffic-mode override
+  routing-key 0 8
+  point-code override dpc 34
+  asp ipa-asp-override-receiver0
+  asp ipa-asp-override-receiver1
+ ! DYNAMIC AS:
+ as ipa-as-dynamic-asp ipa
+  routing-key 0 5
+  point-code override dpc 23
+ !
+ ! ROUTING TABLE:
+ !
+ route-table system
+  update route 31 16777215 linkset ipa-as-loadshare-receiver
+  update route 33 16777215 linkset ipa-as-override-receiver
+  update route 5  16777215 linkset ipa-as-dynamic-asp
+ !
+ !SERVERS:
+ !
+ listen ipa 5000
+  accept-asp-connections dynamic-permitted

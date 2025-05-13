@@ -7,6 +7,7 @@ AC_CONFIG_AUX_DIR([.])
 
 AM_INIT_AUTOMAKE([foreign dist-bzip2 no-dist-gzip 1.6 subdir-objects])
 AC_CONFIG_TESTDIR(tests)
+AC_CONFIG_TESTDIR(tests/osmo-config-merge)
 
 CFLAGS="$CFLAGS -std=gnu11"
 
@@ -650,6 +651,7 @@ AC_OUTPUT(
 	tapset/Makefile
 	tests/Makefile
 	tests/atlocal
+	tests/osmo-config-merge/Makefile
 	utils/Makefile
 	utils/osmo-stat-dummy/Makefile
 	Doxyfile.core

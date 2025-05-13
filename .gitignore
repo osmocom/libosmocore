@@ -69,6 +69,13 @@ tests/testsuite.dir/
 tests/testsuite.log
 tests/*/*_test
 
+tests/osmo-config-merge/atconfig
+tests/osmo-config-merge/osmo-test
+tests/osmo-config-merge/package.m4
+tests/osmo-config-merge/testsuite
+tests/osmo-config-merge/testsuite.dir/
+tests/osmo-config-merge/testsuite.log
+
 utils/osmo-arfcn
 utils/osmo-auc-gen
 utils/osmo-config-merge
