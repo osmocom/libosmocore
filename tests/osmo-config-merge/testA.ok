@@ -15,7 +15,6 @@ log stderr
  logging print level 1
  logging timestamp 1
  logging color 1
-!
  logging level set-all notice
  logging level rsl info
  logging level meas info
@@ -27,6 +26,7 @@ log stderr
  logging level osmux info
  logging level lmib info
  logging level lmux info
+!
 !
 line vty
  no login

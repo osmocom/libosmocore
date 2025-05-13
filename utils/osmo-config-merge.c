@@ -39,6 +39,7 @@
  */
 
 #include <stdio.h>
+#include <stdbool.h>
 #include <string.h>
 #include <errno.h>
 
@@ -89,16 +90,35 @@ static struct node *node_find_child(struct node *parent, const char *line)
 	return NULL;
 }
 
+/* Return pointer to line content, or empty string if only whitspace is found */
+static const char *line_lstrip(const char *line)
+{
+	OSMO_ASSERT(line);
+	unsigned int len = strlen(line);
+	for (unsigned int i = 0; i < len; i++) {
+		if (line[i] == ' ')
+			continue;
+		return &line[i];
+	}
+	/* points to empty string '\0' */
+	return &line[len];
+}
+
 /* count the number of spaces / indent level */
 static int count_indent(const char *line)
 {
-	int i;
+	const char *content = line_lstrip(line);
+	return content - line;
+}
 
-	for (i = 0; i < strlen(line); i++) {
-		if (line[i] != ' ')
-			return i;
-	}
-	return i;
+static bool line_is_comment(const char *line)
+{
+	const char *content = line_lstrip(line);
+	if (content[0] == '\0')
+		return true;
+	if (content[0] == '!' || line[0] == '#')
+		return true;
+	return false;
 }
 
 /* strip any triling CR / LF */
@@ -141,7 +161,9 @@ static struct node *file_read(void *ctx, const char *fname)
 		line_num++;
 		chomp(line);
 		int indent = count_indent(line);
+		bool coment = line_is_comment(&line[indent]);
 		struct node *n;
+
 		if (indent > cur_indent) {
 			if (indent > cur_indent+1) {
 				fprintf(stderr, "File '%s' isn't well-formed in line %u, aborting!\n",
@@ -153,20 +175,25 @@ static struct node *file_read(void *ctx, const char *fname)
 			n = node_alloc_child(last);
 		} else if (indent < cur_indent) {
 			int i;
+			struct node *par = last;
 			for (i = 0; i < cur_indent - indent; i++) {
 				/* go to parent, add another sibling */
-				if (last->parent)
-					last = last->parent;
+				if (par->parent)
+					par = par->parent;
 			}
-			n = node_alloc_child(last->parent);
+			n = node_alloc_child(par->parent);
 		} else {
 			/* add a new sibling (child of parent) */
 			n = node_alloc_child(last->parent);
 		}
 		n->line = talloc_strdup(n, line);
 
-		last = n;
-		cur_indent = indent;
+		/* comments are not part of the indentation structure of the
+		 * file, hence commands after it are not to be affected by them: */
+		if (!coment) {
+			last = n;
+			cur_indent = indent;
+		}
 	}
 
 	fclose(infile);
