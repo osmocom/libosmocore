@@ -81,6 +81,9 @@ struct msgb *msgb_alloc_c(const void *ctx, uint16_t size, const char *name)
 		return NULL;
 	}
 
+	LOGP(DLGLOBAL, LOGL_FATAL, "compiler should complain here: %d\n", msg->data[1337]);
+	LOGP(DLGLOBAL, LOGL_FATAL, "compiler should complain here: %d\n", msg->data[0]);
+
 	/* Manually zero-initialize allocated memory */
 	memset(msg, 0x00, sizeof(*msg) + size);
 
