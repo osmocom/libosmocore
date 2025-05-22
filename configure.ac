@@ -9,7 +9,7 @@ AM_INIT_AUTOMAKE([foreign dist-bzip2 no-dist-gzip 1.6 subdir-objects])
 AC_CONFIG_TESTDIR(tests)
 AC_CONFIG_TESTDIR(tests/osmo-config-merge)
 
-CFLAGS="$CFLAGS -std=gnu11"
+CFLAGS="$CFLAGS -std=gnu11 -fsanitize=bounds -fsanitize=bounds-strict"
 
 dnl kernel style compile messages
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
