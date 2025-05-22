@@ -53,7 +53,7 @@ struct msgb {
 	unsigned char *head;	/*!< start of underlying memory buffer */
 	unsigned char *tail;	/*!< end of message in buffer */
 	unsigned char *data;	/*!< start of message in buffer */
-	unsigned char _data[0]; /*!< optional immediate data array */
+	unsigned char _data[] OSMO_COUNTED_BY(data_len); /*!< optional immediate data array */
 };
 
 extern struct msgb *msgb_alloc_c(const void *ctx, uint16_t size, const char *name);

@@ -49,6 +49,12 @@
 # define OSMO_DEPRECATED_OUTSIDE(text) OSMO_DEPRECATED(text)
 #endif
 
+#if __has_attribute(__counted_by__)
+# define OSMO_COUNTED_BY(member)  __attribute__((__counted_by__(member)))
+#else
+# define OSMO_COUNTED_BY(member)
+#endif
+
 #undef _OSMO_HAS_ATTRIBUTE_DEPRECATED_WITH_MESSAGE
 #undef _OSMO_HAS_ATTRIBUTE_DEPRECATED
 
