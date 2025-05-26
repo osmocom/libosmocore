@@ -343,6 +343,7 @@ void iofd_handle_segmented_read(struct osmo_io_fd *iofd, struct msgb *msg, int r
 	OSMO_ASSERT(iofd->mode == OSMO_IO_FD_MODE_READ_WRITE);
 
 	if (rc <= 0) {
+		talloc_steal(iofd->msgb_alloc.ctx, msg);
 		iofd->io_ops.read_cb(iofd, rc, msg);
 		return;
 	}
@@ -354,6 +355,7 @@ void iofd_handle_segmented_read(struct osmo_io_fd *iofd, struct msgb *msg, int r
 			/* It it expected as per API spec that we return the
 			 * return value of read here. The amount of bytes in msg is
 			 * available to the user in msg itself. */
+			talloc_steal(iofd->msgb_alloc.ctx, msg);
 			iofd->io_ops.read_cb(iofd, rc, msg);
 			/* The user could unregister/close the iofd during read_cb() above.
 			 * Once that's done, it doesn't expect to receive any more events,
@@ -378,15 +380,16 @@ void iofd_handle_segmented_read(struct osmo_io_fd *iofd, struct msgb *msg, int r
  *  \param[in] hdr serialized msghdr containing state of completed I/O */
 void iofd_handle_recv(struct osmo_io_fd *iofd, struct msgb *msg, int rc, struct iofd_msghdr *hdr)
 {
-	talloc_steal(iofd->msgb_alloc.ctx, msg);
 	switch (iofd->mode) {
 	case OSMO_IO_FD_MODE_READ_WRITE:
 		iofd_handle_segmented_read(iofd, msg, rc);
 		break;
 	case OSMO_IO_FD_MODE_RECVFROM_SENDTO:
+		talloc_steal(iofd->msgb_alloc.ctx, msg);
 		iofd->io_ops.recvfrom_cb(iofd, rc, msg, &hdr->osa);
 		break;
 	case OSMO_IO_FD_MODE_RECVMSG_SENDMSG:
+		talloc_steal(iofd->msgb_alloc.ctx, msg);
 		iofd->io_ops.recvmsg_cb(iofd, rc, msg, &hdr->hdr);
 		break;
 	default:
