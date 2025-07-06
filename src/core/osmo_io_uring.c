@@ -139,6 +139,7 @@ static void iofd_uring_submit_recv(struct osmo_io_fd *iofd, enum iofd_msg_action
 	struct msgb *msg;
 	struct iofd_msghdr *msghdr;
 	struct io_uring_sqe *sqe;
+	uint8_t idx;
 
 	msg = iofd_msgb_alloc(iofd);
 	if (!msg) {
@@ -152,8 +153,10 @@ static void iofd_uring_submit_recv(struct osmo_io_fd *iofd, enum iofd_msg_action
 		OSMO_ASSERT(0);
 	}
 
-	msghdr->iov[0].iov_base = msg->tail;
-	msghdr->iov[0].iov_len = msgb_tailroom(msg);
+	for (idx = 0; idx < msghdr->io_len; idx++) {
+		msghdr->iov[idx].iov_base = msghdr->msg[idx]->tail;
+		msghdr->iov[idx].iov_len = msgb_tailroom(msghdr->msg[idx]);
+	}
 
 	switch (action) {
 	case IOFD_ACT_RECVMSG:
@@ -166,7 +169,7 @@ static void iofd_uring_submit_recv(struct osmo_io_fd *iofd, enum iofd_msg_action
 		/* fall-through */
 	case IOFD_ACT_READ:
 		msghdr->hdr.msg_iov = &msghdr->iov[0];
-		msghdr->hdr.msg_iovlen = 1;
+		msghdr->hdr.msg_iovlen = msghdr->io_len;
 		break;
 	default:
 		OSMO_ASSERT(0);
@@ -180,7 +183,7 @@ static void iofd_uring_submit_recv(struct osmo_io_fd *iofd, enum iofd_msg_action
 
 	switch (action) {
 	case IOFD_ACT_READ:
-		io_uring_prep_readv(sqe, iofd->fd, msghdr->iov, 1, -1);
+		io_uring_prep_readv(sqe, iofd->fd, msghdr->iov, msghdr->hdr.msg_iovlen, -1);
 		break;
 	case IOFD_ACT_RECVMSG:
 	case IOFD_ACT_RECVFROM:
@@ -201,13 +204,37 @@ static void iofd_uring_submit_recv(struct osmo_io_fd *iofd, enum iofd_msg_action
 static void iofd_uring_handle_recv(struct iofd_msghdr *msghdr, int rc)
 {
 	struct osmo_io_fd *iofd = msghdr->iofd;
-	struct msgb *msg = msghdr->msg[0];
+	uint8_t idx;
 
-	if (rc > 0)
-		msgb_put(msg, rc);
+	for (idx = 0; idx < msghdr->io_len; idx++) {
+		struct msgb *msg = msghdr->msg[idx];
+		int chunk;
 
-	if (!IOFD_FLAG_ISSET(iofd, IOFD_FLAG_CLOSED))
-		iofd_handle_recv(iofd, msg, rc, msghdr);
+		msghdr->msg[idx] = NULL;
+		if (rc > 0) {
+			if (rc > msghdr->iov[idx].iov_len)
+				chunk = msghdr->iov[idx].iov_len;
+			else
+				chunk = rc;
+			rc -= chunk;
+			msgb_put(msg, chunk);
+		} else {
+			chunk = rc;
+		}
+
+		/* Check for every iteration, because iofd might get unregistered/closed during receive function. */
+		if (iofd->u.uring.read_enabled && !IOFD_FLAG_ISSET(iofd, IOFD_FLAG_CLOSED))
+			iofd_handle_recv(iofd, msg, chunk, msghdr);
+		else
+			msgb_free(msg);
+
+		if (rc <= 0)
+			break;
+	}
+	while (++idx < msghdr->io_len) {
+		msgb_free(msghdr->msg[idx]);
+		msghdr->msg[idx] = NULL;
+	}
 
 	if (iofd->u.uring.read_enabled && !IOFD_FLAG_ISSET(iofd, IOFD_FLAG_CLOSED))
 		iofd_uring_submit_recv(iofd, msghdr->action);
