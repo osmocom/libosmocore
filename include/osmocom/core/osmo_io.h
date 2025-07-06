@@ -213,6 +213,7 @@ struct osmo_io_fd *osmo_iofd_setup(const void *ctx, int fd, const char *name,
 		  enum osmo_io_fd_mode mode, const struct osmo_io_ops *ioops, void *data);
 int osmo_iofd_set_cmsg_size(struct osmo_io_fd *iofd, size_t cmsg_size);
 int osmo_iofd_set_io_buffers(struct osmo_io_fd *iofd, enum osmo_io_op op, uint8_t buffers);
+int osmo_iofd_set_sqes(struct osmo_io_fd *iofd, enum osmo_io_op op, uint8_t sqes);
 int osmo_iofd_register(struct osmo_io_fd *iofd, int fd);
 int osmo_iofd_unregister(struct osmo_io_fd *iofd);
 unsigned int osmo_iofd_txqueue_len(struct osmo_io_fd *iofd);

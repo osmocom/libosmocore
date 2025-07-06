@@ -816,6 +816,14 @@ struct osmo_io_fd *osmo_iofd_setup(const void *ctx, int fd, const char *name, en
 	iofd->io_read_buffers = 1;
 	iofd->io_write_buffers = 1;
 
+	if (osmo_iofd_ops.setup) {
+		int rc = osmo_iofd_ops.setup(iofd);
+		if (rc < 0)  {
+			osmo_iofd_free(iofd);
+			return NULL;
+		}
+	}
+
 	return iofd;
 }
 
@@ -865,6 +873,35 @@ int osmo_iofd_set_io_buffers(struct osmo_io_fd *iofd, enum osmo_io_op op, uint8_
 	default:
 		return -EINVAL;
 	}
+	return 0;
+}
+
+/*! Set the number of SQEs that are submitted to an io_unring before completion is received.
+ *
+ *  If the io_using backend is selected, this API function can be used to tell the osmo_io process how many SQE are
+ *  scheduled in advance.
+ *  The feature is currently supports scheduling read SQEs only.
+ *
+ *  \param[in] iofd the iofd file descriptor
+ *  \param[in] op the osmo_io_op (read) to set the number of IO buffers for
+ *  \param[in] number of scheduled SQEs
+ *  \returns zero on success, a negative value on error
+ */
+int osmo_iofd_set_sqes(struct osmo_io_fd *iofd, enum osmo_io_op op, uint8_t sqes)
+{
+	if (iofd->mode != OSMO_IO_FD_MODE_READ_WRITE)
+		return -EINVAL;
+
+	if (g_io_backend != OSMO_IO_BACKEND_IO_URING)
+		return -EINVAL;
+
+	if (op != OSMO_IO_OP_READ)
+		return -EINVAL;
+
+	if (sqes < 1 || sqes > IOFD_MSGHDR_MAX_READ_SQES)
+		return -EINVAL;
+
+	iofd->u.uring.num_read_sqes = sqes;
 	return 0;
 }
 
