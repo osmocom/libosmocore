@@ -49,6 +49,8 @@ struct iofd_backend_ops {
 
 #define IOFD_FLAG_ISSET(iofd, flag) ((iofd)->flags & (flag))
 
+#define IOFD_MSGHDR_MAX_READ_SQES	32
+
 struct osmo_io_fd {
 	/*! linked list for internal management */
 	struct llist_head list;
@@ -107,7 +109,12 @@ struct osmo_io_fd {
 		struct {
 			bool read_enabled;
 			bool write_enabled;
-			void *read_msghdr;
+			/* ! requested number of simultaniously submitted read SQEs */
+			uint8_t num_read_sqes;
+			/* ! array of simultaniously submitted read SQEs */
+			void *read_msghdr[IOFD_MSGHDR_MAX_READ_SQES];
+			/* ! current number of simultaniously submitted read SQEs */
+			uint8_t reads_submitted;
 			void *write_msghdr;
 			/* TODO: index into array of registered fd's? */
 			/* osmo_fd for non-blocking connect handling */
