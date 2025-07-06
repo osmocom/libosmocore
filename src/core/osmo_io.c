@@ -159,7 +159,8 @@ struct iofd_msghdr *iofd_msghdr_alloc(struct osmo_io_fd *iofd, enum iofd_msg_act
 
 	hdr->action = action;
 	hdr->iofd = iofd;
-	hdr->msg = msg;
+	hdr->msg[0] = msg;
+	hdr->io_len = 1;
 
 	return hdr;
 }
@@ -407,7 +408,7 @@ void iofd_handle_recv(struct osmo_io_fd *iofd, struct msgb *msg, int rc, struct 
  */
 void iofd_handle_send_completion(struct osmo_io_fd *iofd, int rc, struct iofd_msghdr *msghdr)
 {
-	struct msgb *msg = msghdr->msg;
+	struct msgb *msg = msghdr->msg[0];
 
 	/* Incomplete write */
 	if (rc > 0 && rc < msgb_length(msg)) {
@@ -442,7 +443,7 @@ void iofd_handle_send_completion(struct osmo_io_fd *iofd, int rc, struct iofd_ms
 		OSMO_ASSERT(0);
 	}
 
-	msgb_free(msghdr->msg);
+	msgb_free(msghdr->msg[0]);
 	iofd_msghdr_free(msghdr);
 }
 
@@ -478,8 +479,8 @@ int osmo_iofd_write_msgb(struct osmo_io_fd *iofd, struct msgb *msg)
 		return -ENOMEM;
 
 	msghdr->flags = MSG_NOSIGNAL;
-	msghdr->iov[0].iov_base = msgb_data(msghdr->msg);
-	msghdr->iov[0].iov_len = msgb_length(msghdr->msg);
+	msghdr->iov[0].iov_base = msgb_data(msghdr->msg[0]);
+	msghdr->iov[0].iov_len = msgb_length(msghdr->msg[0]);
 	msghdr->hdr.msg_iov = &msghdr->iov[0];
 	msghdr->hdr.msg_iovlen = 1;
 
@@ -530,8 +531,8 @@ int osmo_iofd_sendto_msgb(struct osmo_io_fd *iofd, struct msgb *msg, int sendto_
 		msghdr->hdr.msg_namelen = osmo_sockaddr_size(&msghdr->osa);
 	}
 	msghdr->flags = sendto_flags;
-	msghdr->iov[0].iov_base = msgb_data(msghdr->msg);
-	msghdr->iov[0].iov_len = msgb_length(msghdr->msg);
+	msghdr->iov[0].iov_base = msgb_data(msghdr->msg[0]);
+	msghdr->iov[0].iov_len = msgb_length(msghdr->msg[0]);
 	msghdr->hdr.msg_iov = &msghdr->iov[0];
 	msghdr->hdr.msg_iovlen = 1;
 
@@ -595,8 +596,8 @@ int osmo_iofd_sendmsg_msgb(struct osmo_io_fd *iofd, struct msgb *msg, int sendms
 	}
 
 	/* build iov from msgb */
-	msghdr->iov[0].iov_base = msgb_data(msghdr->msg);
-	msghdr->iov[0].iov_len = msgb_length(msghdr->msg);
+	msghdr->iov[0].iov_base = msgb_data(msghdr->msg[0]);
+	msghdr->iov[0].iov_len = msgb_length(msghdr->msg[0]);
 	msghdr->hdr.msg_iov = &msghdr->iov[0];
 	msghdr->hdr.msg_iovlen = 1;
 
@@ -724,6 +725,9 @@ struct osmo_io_fd *osmo_iofd_setup(const void *ctx, int fd, const char *name, en
 	iofd->tx_queue.max_length = 1024;
 	INIT_LLIST_HEAD(&iofd->tx_queue.msg_queue);
 
+	iofd->io_read_buffers = 1;
+	iofd->io_write_buffers = 1;
+
 	return iofd;
 }
 
@@ -738,6 +742,41 @@ int osmo_iofd_set_cmsg_size(struct osmo_io_fd *iofd, size_t cmsg_size)
 		return -EINVAL;
 
 	iofd->cmsg_size = cmsg_size;
+	return 0;
+}
+
+/*! Set the number of buffers that can be used in a single read or write operation.
+ *
+ *  If the osmo_io_fd is in OSMO_IO_FD_MODE_READ_WRITE mode, this API function can be used to tell the
+ *  osmo_io proecess how many buffers should be read or written with a single read or write operation.
+ *  This feature is supported with io_uring backend only.
+ *
+ *  \param[in] iofd the iofd file descriptor
+ *  \param[in] op the osmo_io_op (read or write) to set the number of IO buffers for
+ *  \param[in] buffers the number of IO buffer for each specified operation
+ *  \returns zero on success, a negative value on error
+ */
+int osmo_iofd_set_io_buffers(struct osmo_io_fd *iofd, enum osmo_io_op op, uint8_t buffers)
+{
+	if (iofd->mode != OSMO_IO_FD_MODE_READ_WRITE)
+		return -EINVAL;
+
+	if (g_io_backend != OSMO_IO_BACKEND_IO_URING)
+		return -EINVAL;
+
+	if (buffers < 1 || buffers > IOFD_MSGHDR_IO_BUFFERS)
+		return -EINVAL;
+
+	switch (op) {
+	case OSMO_IO_OP_READ:
+		iofd->io_read_buffers = buffers;
+		break;
+	case OSMO_IO_OP_WRITE:
+		iofd->io_write_buffers = buffers;
+		break;
+	default:
+		return -EINVAL;
+	}
 	return 0;
 }
 
@@ -836,7 +875,7 @@ void osmo_iofd_txqueue_clear(struct osmo_io_fd *iofd)
 {
 	struct iofd_msghdr *hdr;
 	while ((hdr = iofd_txqueue_dequeue(iofd))) {
-		msgb_free(hdr->msg);
+		msgb_free(hdr->msg[0]);
 		iofd_msghdr_free(hdr);
 	}
 }
