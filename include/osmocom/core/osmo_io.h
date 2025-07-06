@@ -70,6 +70,14 @@ enum osmo_io_fd_mode {
 	OSMO_IO_FD_MODE_RECVMSG_SENDMSG,
 };
 
+/*! The _operation_ of an osmo_io_fd determines if read or write operation are to be configured used. */
+enum osmo_io_op {
+	/*! change parameters for read() */
+	OSMO_IO_OP_READ,
+	/*! change parameters for write() */
+	OSMO_IO_OP_WRITE,
+};
+
 /*! The back-end used by osmo_io.  There can be multiple different back-ends available on a given system;
  * only one of it is used for all I/O performed via osmo_io in one given process. */
 enum osmo_io_backend {
@@ -204,6 +212,7 @@ void osmo_iofd_init(void);
 struct osmo_io_fd *osmo_iofd_setup(const void *ctx, int fd, const char *name,
 		  enum osmo_io_fd_mode mode, const struct osmo_io_ops *ioops, void *data);
 int osmo_iofd_set_cmsg_size(struct osmo_io_fd *iofd, size_t cmsg_size);
+int osmo_iofd_set_io_buffers(struct osmo_io_fd *iofd, enum osmo_io_op op, uint8_t buffers);
 int osmo_iofd_register(struct osmo_io_fd *iofd, int fd);
 int osmo_iofd_unregister(struct osmo_io_fd *iofd);
 unsigned int osmo_iofd_txqueue_len(struct osmo_io_fd *iofd);

@@ -275,6 +275,7 @@ osmo_iofd_sctp_send_msgb;
 osmo_iofd_sendmsg_msgb;
 osmo_iofd_set_alloc_info;
 osmo_iofd_set_cmsg_size;
+osmo_iofd_set_io_buffers;
 osmo_iofd_set_data;
 osmo_iofd_set_ioops;
 osmo_iofd_set_priv_nr;
