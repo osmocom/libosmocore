@@ -56,8 +56,12 @@
 
 #define OSMO_IO_URING_BATCH "LIBOSMO_IO_URING_BATCH"
 
+#define OSMO_IO_URING_READ_SQE "LIBOSMO_IO_URING_READ_SQE"
+
 bool g_io_uring_batch = false;
 bool g_io_uring_submit_needed = false;
+
+static int g_io_uring_read_sqes = 1;
 
 struct osmo_io_uring {
 	struct osmo_fd event_ofd;
@@ -103,6 +107,15 @@ void osmo_iofd_uring_init(void)
 	if (rc < 0)
 		osmo_panic("failure during io_uring_queue_init(): %s\n", strerror(-rc));
 
+	if ((env = getenv(OSMO_IO_URING_READ_SQE))) {
+		g_io_uring_read_sqes = atoi(env);
+		if (g_io_uring_read_sqes < 1 || g_io_uring_read_sqes > IOFD_MSGHDR_MAX_READ_SQES) {
+			fprintf(stderr, "Invalid osmo_uring read SQEs requested: \"%s\"\n Allowed range: 1..%d\n",
+				env, IOFD_MSGHDR_MAX_READ_SQES);
+			exit(1);
+		}
+	}
+
 	rc = eventfd(0, 0);
 	if (rc < 0) {
 		io_uring_queue_exit(&g_ring.ring);
@@ -134,7 +147,7 @@ static inline void iofd_io_uring_submit(void)
 		g_io_uring_submit_needed = true;
 }
 
-static void iofd_uring_submit_recv(struct osmo_io_fd *iofd, enum iofd_msg_action action)
+static void iofd_uring_submit_recv_sqe(struct osmo_io_fd *iofd, enum iofd_msg_action action)
 {
 	struct msgb *msg;
 	struct iofd_msghdr *msghdr;
@@ -196,15 +209,37 @@ static void iofd_uring_submit_recv(struct osmo_io_fd *iofd, enum iofd_msg_action
 
 	iofd_io_uring_submit();
 
-	/* NOTE: This only works if we have one read per fd */
-	iofd->u.uring.read_msghdr = msghdr;
+	iofd->u.uring.read_msghdr[iofd->u.uring.reads_submitted] = msghdr;
+	iofd->u.uring.reads_submitted++;
+}
+
+static void iofd_uring_submit_recv(struct osmo_io_fd *iofd, enum iofd_msg_action action)
+{
+	/* Submit more read SQEs in advance, if requested. */
+	while (iofd->u.uring.reads_submitted < iofd->u.uring.num_read_sqes)
+		iofd_uring_submit_recv_sqe(iofd, action);
 }
 
 /*! completion call-back for READ/RECVFROM */
 static void iofd_uring_handle_recv(struct iofd_msghdr *msghdr, int rc)
 {
 	struct osmo_io_fd *iofd = msghdr->iofd;
-	uint8_t idx;
+	uint8_t idx, i;
+
+	/* Find which read_msghdr is completed and remove from list. */
+	for (idx = 0; idx < iofd->u.uring.reads_submitted; idx++) {
+		if (iofd->u.uring.read_msghdr[idx] == msghdr)
+			break;
+	}
+	if (idx == iofd->u.uring.reads_submitted) {
+		LOGP(DLIO, LOGL_FATAL, "Read SQE completion, but msghdr not found, please fix!\n");
+		return;
+	}
+	/* Remove entry at idx. */
+	iofd->u.uring.reads_submitted--;
+	for (i = idx; i < iofd->u.uring.reads_submitted; i++)
+		iofd->u.uring.read_msghdr[i] = iofd->u.uring.read_msghdr[i + 1];
+	iofd->u.uring.read_msghdr[i] = NULL;
 
 	for (idx = 0; idx < msghdr->io_len; idx++) {
 		struct msgb *msg = msghdr->msg[idx];
@@ -238,9 +273,6 @@ static void iofd_uring_handle_recv(struct iofd_msghdr *msghdr, int rc)
 
 	if (iofd->u.uring.read_enabled && !IOFD_FLAG_ISSET(iofd, IOFD_FLAG_CLOSED))
 		iofd_uring_submit_recv(iofd, msghdr->action);
-	else
-		iofd->u.uring.read_msghdr = NULL;
-
 
 	iofd_msghdr_free(msghdr);
 }
@@ -300,7 +332,7 @@ static void iofd_uring_handle_completion(struct iofd_msghdr *msghdr, int res)
 
 	IOFD_FLAG_UNSET(iofd, IOFD_FLAG_IN_CALLBACK);
 
-	if (IOFD_FLAG_ISSET(iofd, IOFD_FLAG_TO_FREE) && !iofd->u.uring.read_msghdr && !iofd->u.uring.write_msghdr)
+	if (IOFD_FLAG_ISSET(iofd, IOFD_FLAG_TO_FREE) && !iofd->u.uring.reads_submitted && !iofd->u.uring.write_msghdr)
 		talloc_free(iofd);
 }
 
@@ -410,8 +442,15 @@ static int iofd_uring_connected_cb(struct osmo_fd *ofd, unsigned int what)
 	if (iofd->u.uring.read_enabled && !IOFD_FLAG_ISSET(iofd, IOFD_FLAG_CLOSED))
 		iofd_uring_read_enable(iofd);
 
-	if (IOFD_FLAG_ISSET(iofd, IOFD_FLAG_TO_FREE) && !iofd->u.uring.read_msghdr && !iofd->u.uring.write_msghdr)
+	if (IOFD_FLAG_ISSET(iofd, IOFD_FLAG_TO_FREE) && !iofd->u.uring.reads_submitted && !iofd->u.uring.write_msghdr)
 		talloc_free(iofd);
+	return 0;
+}
+
+static int iofd_uring_setup(struct osmo_io_fd *iofd)
+{
+	iofd->u.uring.num_read_sqes = g_io_uring_read_sqes;
+
 	return 0;
 }
 
@@ -440,18 +479,20 @@ static int iofd_uring_unregister(struct osmo_io_fd *iofd)
 {
 	struct io_uring_sqe *sqe;
 	struct iofd_msghdr *msghdr;
+	uint8_t idx;
 
-	if (iofd->u.uring.read_msghdr) {
-		msghdr = iofd->u.uring.read_msghdr;
+	for (idx = 0; idx < iofd->u.uring.reads_submitted; idx++) {
+		msghdr = iofd->u.uring.read_msghdr[idx];
+		iofd->u.uring.read_msghdr[idx] = NULL;
 		sqe = io_uring_get_sqe(&g_ring.ring);
 		OSMO_ASSERT(sqe != NULL);
 		io_uring_sqe_set_data(sqe, NULL);
 		LOGPIO(iofd, LOGL_DEBUG, "Cancelling read\n");
-		iofd->u.uring.read_msghdr = NULL;
 		talloc_steal(OTC_GLOBAL, msghdr);
 		msghdr->iofd = NULL;
 		io_uring_prep_cancel(sqe, msghdr, 0);
 	}
+	iofd->u.uring.reads_submitted = 0;
 
 	if (iofd->u.uring.write_msghdr) {
 		msghdr = iofd->u.uring.write_msghdr;
@@ -533,7 +574,7 @@ static void iofd_uring_read_enable(struct osmo_io_fd *iofd)
 {
 	iofd->u.uring.read_enabled = true;
 
-	if (iofd->u.uring.read_msghdr)
+	if (iofd->u.uring.reads_submitted)
 		return;
 
 	/* This function is called again, once the socket is connected. */
@@ -580,6 +621,7 @@ static void iofd_uring_notify_connected(struct osmo_io_fd *iofd)
 }
 
 const struct iofd_backend_ops iofd_uring_ops = {
+	.setup = iofd_uring_setup,
 	.register_fd = iofd_uring_register,
 	.unregister_fd = iofd_uring_unregister,
 	.close = iofd_uring_close,
