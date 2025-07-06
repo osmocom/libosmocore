@@ -193,11 +193,13 @@ int osmo_fd_register(struct osmo_fd *fd)
 	if (g_poll.num_registered + 1 > g_poll.poll_size) {
 		struct pollfd *p;
 		unsigned int new_size = g_poll.poll_size ? g_poll.poll_size * 2 : 1024;
+		printf("poll vorher=%p\n", g_poll.poll);
 		p = talloc_realloc(OTC_GLOBAL, g_poll.poll, struct pollfd, new_size);
 		if (!p)
 			return -ENOMEM;
 		memset(p + g_poll.poll_size, 0, new_size - g_poll.poll_size);
 		g_poll.poll = p;
+		printf("poll=%p\n", p);
 		g_poll.poll_size = new_size;
 	}
 	g_poll.num_registered++;

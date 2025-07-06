@@ -135,6 +135,7 @@ void osmo_iofd_uring_init(void)
 	rc = io_uring_queue_init(g_io_uring_size, &g_ring->ring, 0);
 	if (rc < 0)
 		osmo_panic("failure during io_uring_queue_init(): %s\n", strerror(-rc));
+LOGP(DLIO, LOGL_ERROR, "new ring=%p size=%d\n", &g_ring->ring, g_io_uring_size);
 
 	if ((env = getenv(OSMO_IO_URING_READ_SQE))) {
 		g_io_uring_read_sqes = atoi(env);
@@ -171,6 +172,7 @@ void osmo_iofd_uring_init(void)
 static void osmo_iofd_uring_exit(struct osmo_io_uring *ring)
 {
 	LOGP(DLIO, LOGL_DEBUG, "Old empty io_uring will be destroyed.");
+	LOGP(DLIO, LOGL_ERROR, "Old empty io_uring will be destroyed.");
 
 	io_uring_queue_exit(&ring->ring);
 
@@ -196,8 +198,10 @@ static struct io_uring_sqe *iofd_uring_get_sqe(struct osmo_io_fd *iofd, bool rea
 	struct io_uring_sqe *sqe;
 
 	/* All subsequent read SQEs must be on the same ring. */
+	if (read) LOGP(DLIO, LOGL_ERROR, "trying to submit for iofd %p with current reads=%d\n", iofd, iofd->u.uring.read.sqes_submitted);
 	if (read && iofd->u.uring.read.sqes_submitted > 0 && iofd->u.uring.read.ring != &g_ring->ring)
 		return NULL;
+	if (read) LOGP(DLIO, LOGL_ERROR, "we have these number of reads: %d and the read ring %p equals current ring %p\n", iofd->u.uring.read.sqes_submitted, iofd->u.uring.read.ring, &g_ring->ring);
 
 	sqe = io_uring_get_sqe_and_count(g_ring);
 	if (sqe)
@@ -268,6 +272,7 @@ static inline int iofd_uring_submit_recv_sqe(struct osmo_io_fd *iofd, enum iofd_
 		msghdr->iov[idx].iov_base = msghdr->msg[idx]->tail;
 		msghdr->iov[idx].iov_len = msgb_tailroom(msghdr->msg[idx]);
 	}
+		LOGP(DLIO, LOGL_ERROR, "submit %d iov for read SQE fd=%d (to ring %p)\n", msghdr->io_len, iofd->fd, &g_ring->ring);
 
 	switch (action) {
 	case IOFD_ACT_RECVMSG:
@@ -346,6 +351,7 @@ static void iofd_uring_handle_recv(struct iofd_msghdr *msghdr, int rc)
 		struct msgb *msg = msghdr->msg[idx];
 		int chunk;
 
+		LOGP(DLIO, LOGL_ERROR, "rc beim read ist %d fd=%d, idx=%d\n", rc, iofd->fd, idx);
 		msghdr->msg[idx] = NULL;
 		if (rc > 0) {
 			if (rc > msghdr->iov[idx].iov_len)
@@ -354,11 +360,13 @@ static void iofd_uring_handle_recv(struct iofd_msghdr *msghdr, int rc)
 				chunk = rc;
 			rc -= chunk;
 			msgb_put(msg, chunk);
+			LOGP(DLIO, LOGL_ERROR, "received chunk #%d, chunk-len=%d, iov_len = %d\n", idx, chunk, (int)msghdr->iov[idx].iov_len);
 		} else {
 			chunk = rc;
 		}
 
 		/* Check for every iteration, because iofd might get unregistered/closed during receive function. */
+		LOGP(DLIO, LOGL_ERROR, "receive-function: read_enabled=%d, closed=%d, rc=%d\n", iofd->u.uring.read.enabled, IOFD_FLAG_ISSET(iofd, IOFD_FLAG_CLOSED), chunk);
 		if (iofd->u.uring.read.enabled && !IOFD_FLAG_ISSET(iofd, IOFD_FLAG_CLOSED))
 			iofd_handle_recv(iofd, msg, chunk, msghdr);
 		else
@@ -472,6 +480,8 @@ static void iofd_uring_cqe(struct io_uring *ring)
 
 	}
 
+	if (llist_empty(&orig_ring->cancel_queue) && orig_ring != g_ring && orig_ring->num_pending_submissions == 0)
+		LOGP(DLIO, LOGL_ERROR, "there is no cancel queue, old ring is empty: orig = %p, current = %p (%p %p %d)\n", ring, &g_ring->ring, orig_ring, g_ring, orig_ring->num_pending_submissions);
 	/* If there are unsubmitted cancel SQEs, try to queue them now. */
 	if (OSMO_LIKELY(llist_empty(&orig_ring->cancel_queue))) {
 		/* Old ring is empty, remove it. */
@@ -479,6 +489,7 @@ static void iofd_uring_cqe(struct io_uring *ring)
 			osmo_iofd_uring_exit(orig_ring);
 		return;
 	}
+	LOGP(DLIO, LOGL_ERROR, "end\n");
 	llist_for_each_entry_safe(msghdr, msghdr2, &orig_ring->cancel_queue, list) {
 		struct io_uring_sqe *sqe;
 		sqe = io_uring_get_sqe_and_count(orig_ring);
@@ -498,6 +509,11 @@ static int iofd_uring_submit_tx(struct osmo_io_fd *iofd)
 {
 	struct io_uring_sqe *sqe;
 	struct iofd_msghdr *msghdr;
+
+	if (iofd->u.uring.write.msghdr) {
+		LOGP(DLIO, LOGL_ERROR, "now busy, write is already in the ring\n");
+		OSMO_ASSERT(0);
+	}
 
 	msghdr = iofd_txqueue_dequeue(iofd);
 	if (!msghdr)
@@ -584,6 +600,7 @@ static int iofd_uring_setup(struct osmo_io_fd *iofd)
 
 static int iofd_uring_register(struct osmo_io_fd *iofd)
 {
+LOGP(DLIO, LOGL_ERROR, "register fd=%d\n", iofd->fd);
 	if (iofd->mode != OSMO_IO_FD_MODE_RECVMSG_SENDMSG)
 		return 0; /* Nothing to be done */
 
@@ -608,11 +625,13 @@ static int iofd_uring_unregister(struct osmo_io_fd *iofd)
 	struct io_uring_sqe *sqe;
 	struct iofd_msghdr *msghdr;
 	uint8_t idx;
+LOGP(DLIO, LOGL_ERROR, "unregister fd=%d\n", iofd->fd);
 
 	for (idx = 0; idx < iofd->u.uring.read.sqes_submitted; idx++) {
 		struct osmo_io_uring *ring = container_of(iofd->u.uring.read.ring, struct osmo_io_uring, ring);
 		msghdr = iofd->u.uring.read.msghdr[idx];
 		iofd->u.uring.read.msghdr[idx] = NULL;
+LOGP(DLIO, LOGL_ERROR, "old ring=%p\n", &ring->ring);
 		/* Submit SQEs of the current ring, if needed. */
 		if (&ring->ring == &g_ring->ring)
 			osmo_io_uring_submit();
@@ -624,6 +643,7 @@ static int iofd_uring_unregister(struct osmo_io_fd *iofd)
 			io_uring_prep_cancel(sqe, msghdr, 0);
 			io_uring_submit(&ring->ring);
 		} else {
+			LOGPIO(iofd, LOGL_DEBUG, "Enqueue read to cancel queue\n");
 			llist_add_tail(&msghdr->list, &ring->cancel_queue);
 			msghdr->in_cancel_queue = true;
 		}
@@ -643,6 +663,7 @@ static int iofd_uring_unregister(struct osmo_io_fd *iofd)
 			msgb_free(msghdr->msg[idx]);
 			msghdr->msg[idx] = NULL;
 		}
+LOGP(DLIO, LOGL_ERROR, "old ring=%p\n", &ring->ring);
 		/* Submit SQEs of the current ring, if needed. */
 		if (&ring->ring == &g_ring->ring)
 			osmo_io_uring_submit();
@@ -654,6 +675,7 @@ static int iofd_uring_unregister(struct osmo_io_fd *iofd)
 			io_uring_prep_cancel(sqe, msghdr, 0);
 			io_uring_submit(&ring->ring);
 		} else {
+			LOGPIO(iofd, LOGL_DEBUG, "Enqueue write to cancel queue\n");
 			llist_add_tail(&msghdr->list, &ring->cancel_queue);
 			msghdr->in_cancel_queue = true;
 		}
@@ -672,6 +694,7 @@ static int iofd_uring_unregister(struct osmo_io_fd *iofd)
 
 static void iofd_uring_write_enable(struct osmo_io_fd *iofd)
 {
+LOGP(DLIO, LOGL_ERROR, "write_enable fd=%d\n", iofd->fd);
 	iofd->u.uring.write.enabled = true;
 
 	if (iofd->u.uring.write.msghdr)
@@ -718,11 +741,13 @@ static void iofd_uring_write_enable(struct osmo_io_fd *iofd)
 
 static void iofd_uring_write_disable(struct osmo_io_fd *iofd)
 {
+LOGP(DLIO, LOGL_ERROR, "write_disable fd=%d\n", iofd->fd);
 	iofd->u.uring.write.enabled = false;
 }
 
 static void iofd_uring_read_enable(struct osmo_io_fd *iofd)
 {
+LOGP(DLIO, LOGL_ERROR, "read_enable fd=%d\n", iofd->fd);
 	iofd->u.uring.read.enabled = true;
 
 	if (iofd->u.uring.read.sqes_submitted)
@@ -749,6 +774,7 @@ static void iofd_uring_read_enable(struct osmo_io_fd *iofd)
 
 static void iofd_uring_read_disable(struct osmo_io_fd *iofd)
 {
+LOGP(DLIO, LOGL_ERROR, "read_disable fd=%d\n", iofd->fd);
 	iofd->u.uring.read.enabled = false;
 }
 

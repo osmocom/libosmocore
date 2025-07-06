@@ -376,6 +376,7 @@ void iofd_handle_segmented_read(struct osmo_io_fd *iofd, struct msgb *msg, int r
 	 * If the pending message is not large enough, create a larger message. */
 	if (OSMO_UNLIKELY(iofd->pending)) {
 		if (OSMO_UNLIKELY(msgb_tailroom(iofd->pending) < msgb_length(msg))) {
+			LOGPIO(iofd, LOGL_ERROR, "Jolly: overflow %u %u\n", msgb_length(iofd->pending), msgb_length(msg));
 			/* Data of msg does not fit into pending message. Allocate a new message that is larger.
 			 * This implies that msgb_length(iofd->pending) + msgb_length(msg) > iofd.msgb_alloc.size. */
 			pending = iofd_msgb_alloc2(iofd, msgb_length(iofd->pending) + msgb_length(msg));
@@ -399,6 +400,7 @@ void iofd_handle_segmented_read(struct osmo_io_fd *iofd, struct msgb *msg, int r
 			 * return value of read here. The amount of bytes in msg is
 			 * available to the user in msg itself. */
 			talloc_steal(iofd->msgb_alloc.ctx, msg);
+//			msg->data_len = iofd->msgb_alloc.size + iofd->msgb_alloc.headroom;
 			iofd->io_ops.read_cb(iofd, rc, msg);
 			/* The user could unregister/close the iofd during read_cb() above.
 			 * Once that's done, it doesn't expect to receive any more events,
@@ -568,6 +570,7 @@ int osmo_iofd_write_msgb(struct osmo_io_fd *iofd, struct msgb *msg)
 	msghdr->iov[idx].iov_base = msgb_data(msg);
 	msghdr->iov[idx].iov_len = msgb_length(msg);
 	msghdr->hdr.msg_iovlen = msghdr->io_len;
+	printf("write chunk #%d with %d bytes\n", idx, (int)msghdr->iov[idx].iov_len);
 
 	/* Only new msghdr will be enqueued. */
 	if (msghdr->io_len == 1) {
@@ -815,6 +818,11 @@ struct osmo_io_fd *osmo_iofd_setup(const void *ctx, int fd, const char *name, en
 
 	iofd->io_read_buffers = 1;
 	iofd->io_write_buffers = 1;
+// hacking
+	if (g_io_backend == OSMO_IO_BACKEND_IO_URING && mode == OSMO_IO_FD_MODE_READ_WRITE) {
+		iofd->io_read_buffers = 8;
+		iofd->io_write_buffers = 8;
+	}
 
 	if (osmo_iofd_ops.setup) {
 		int rc = osmo_iofd_ops.setup(iofd);
