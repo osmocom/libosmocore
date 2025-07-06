@@ -426,11 +426,21 @@ static int poll_disp_fds(unsigned int n_fd)
 	return work;
 }
 
+#if defined(HAVE_URING)
+void osmo_io_uring_submit(void);
+extern bool g_io_uring_batch;
+#endif
+
 static int _osmo_select_main(int polling)
 {
 	unsigned int n_poll;
 	int rc;
 	int timeout = 0;
+
+#if defined(HAVE_URING)
+	if (OSMO_UNLIKELY(g_io_uring_batch))
+		osmo_io_uring_submit();
+#endif
 
 	/* prepare read and write fdsets */
 	n_poll = poll_fill_fds();
@@ -463,6 +473,11 @@ static int _osmo_select_main(int polling)
 	fd_set readset, writeset, exceptset;
 	int rc;
 	struct timeval no_time = {0, 0};
+
+#if defined(HAVE_URING)
+	if (OSMO_UNLIKELY(g_io_uring_batch))
+		osmo_io_uring_submit();
+#endif
 
 	FD_ZERO(&readset);
 	FD_ZERO(&writeset);
