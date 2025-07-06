@@ -50,7 +50,7 @@ static void iofd_poll_ofd_cb_recvmsg_sendmsg(struct osmo_fd *ofd, unsigned int w
 	if (what & OSMO_FD_READ) {
 		struct iofd_msghdr hdr;
 
-		msg = iofd_msgb_pending_or_alloc(iofd);
+		msg = iofd_msgb_alloc(iofd);
 		if (!msg) {
 			LOGPIO(iofd, LOGL_ERROR, "Could not allocate msgb for reading\n");
 			OSMO_ASSERT(0);

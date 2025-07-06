@@ -153,9 +153,8 @@ enum iofd_seg_act {
 struct iofd_msghdr *iofd_msghdr_alloc(struct osmo_io_fd *iofd, enum iofd_msg_action action, struct msgb *msg, size_t cmsg_size);
 void iofd_msghdr_free(struct iofd_msghdr *msghdr);
 
+struct msgb *iofd_msgb_alloc2(struct osmo_io_fd *iofd, size_t size);
 struct msgb *iofd_msgb_alloc(struct osmo_io_fd *iofd);
-struct msgb *iofd_msgb_pending(struct osmo_io_fd *iofd);
-struct msgb *iofd_msgb_pending_or_alloc(struct osmo_io_fd *iofd);
 
 void iofd_handle_recv(struct osmo_io_fd *iofd, struct msgb *msg, int rc, struct iofd_msghdr *msghdr);
 void iofd_handle_send_completion(struct osmo_io_fd *iofd, int rc, struct iofd_msghdr *msghdr);

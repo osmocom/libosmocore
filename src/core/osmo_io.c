@@ -174,36 +174,19 @@ void iofd_msghdr_free(struct iofd_msghdr *msghdr)
 	talloc_free(msghdr);
 }
 
-/*! convenience wrapper to call msgb_alloc with parameters from osmo_io_fd */
-struct msgb *iofd_msgb_alloc(struct osmo_io_fd *iofd)
+/*! convenience wrapper to call msgb_alloc with parameters from osmo_io_fd (of given size) */
+struct msgb *iofd_msgb_alloc2(struct osmo_io_fd *iofd, size_t size)
 {
 	uint16_t headroom = iofd->msgb_alloc.headroom;
 
-	OSMO_ASSERT(iofd->msgb_alloc.size <= 0xffff - headroom);
-	return msgb_alloc_headroom_c(iofd, iofd->msgb_alloc.size + headroom, headroom, "osmo_io_msgb");
+	OSMO_ASSERT(size <= 0xffff - headroom);
+	return msgb_alloc_headroom_c(iofd, size + headroom, headroom, "osmo_io_msgb");
 }
 
-/*! return the pending msgb in iofd or NULL if there is none*/
-struct msgb *iofd_msgb_pending(struct osmo_io_fd *iofd)
+/*! convenience wrapper to call msgb_alloc with parameters from osmo_io_fd */
+struct msgb *iofd_msgb_alloc(struct osmo_io_fd *iofd)
 {
-	struct msgb *msg = NULL;
-
-	msg = iofd->pending;
-	iofd->pending = NULL;
-
-	return msg;
-}
-
-/*! Return the pending msgb or allocate and return a new one */
-struct msgb *iofd_msgb_pending_or_alloc(struct osmo_io_fd *iofd)
-{
-	struct msgb *msg = NULL;
-
-	msg = iofd_msgb_pending(iofd);
-	if (!msg)
-		msg = iofd_msgb_alloc(iofd);
-
-	return msg;
+	return iofd_msgb_alloc2(iofd, iofd->msgb_alloc.size);
 }
 
 /*! Enqueue a message to be sent.
@@ -346,6 +329,25 @@ void iofd_handle_segmented_read(struct osmo_io_fd *iofd, struct msgb *msg, int r
 		talloc_steal(iofd->msgb_alloc.ctx, msg);
 		iofd->io_ops.read_cb(iofd, rc, msg);
 		return;
+	}
+
+	/* If we have a pending message, append the received message.
+	 * If the pending message is not large enough, create a larger message. */
+	if (OSMO_UNLIKELY(iofd->pending)) {
+		if (OSMO_UNLIKELY(msgb_tailroom(iofd->pending) < msgb_length(msg))) {
+			/* Data of msg does not fit into pending message. Allocate a new message that is larger.
+			 * This implies that msgb_length(iofd->pending) + msgb_length(msg) > iofd.msgb_alloc.size. */
+			pending = iofd_msgb_alloc2(iofd, msgb_length(iofd->pending) + msgb_length(msg));
+			OSMO_ASSERT(pending);
+			memcpy(msgb_put(pending, msgb_length(iofd->pending)), msgb_data(iofd->pending),
+			       msgb_length(iofd->pending));
+			msgb_free(iofd->pending);
+			iofd->pending = pending;
+		}
+		memcpy(msgb_put(iofd->pending, msgb_length(msg)), msgb_data(msg), msgb_length(msg));
+		msgb_free(msg);
+		msg = iofd->pending;
+		iofd->pending = NULL;
 	}
 
 	do {

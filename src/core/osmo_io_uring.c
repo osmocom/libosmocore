@@ -140,7 +140,7 @@ static void iofd_uring_submit_recv(struct osmo_io_fd *iofd, enum iofd_msg_action
 	struct iofd_msghdr *msghdr;
 	struct io_uring_sqe *sqe;
 
-	msg = iofd_msgb_pending_or_alloc(iofd);
+	msg = iofd_msgb_alloc(iofd);
 	if (!msg) {
 		LOGPIO(iofd, LOGL_ERROR, "Could not allocate msgb for reading\n");
 		OSMO_ASSERT(0);
