@@ -76,6 +76,12 @@ struct osmo_io_fd {
 	/*! size of iofd_msghdr.cmsg[] when allocated in recvmsg path */
 	size_t cmsg_size;
 
+	/*! maximum number of message-buffers per read operation */
+	uint8_t io_read_buffers;
+
+	/*! maximum number of message-buffers per write operation */
+	uint8_t io_write_buffers;
+
 	struct {
 		/*! talloc context from which to allocate msgb when reading */
 		const void *ctx;
@@ -119,6 +125,7 @@ enum iofd_msg_action {
 	IOFD_ACT_SENDMSG,
 };
 
+#define IOFD_MSGHDR_IO_BUFFERS	8
 
 /*! serialized version of 'struct msghdr' employed by sendmsg/recvmsg */
 struct iofd_msghdr {
@@ -131,12 +138,14 @@ struct iofd_msghdr {
 	struct osmo_sockaddr osa;
 	/*! io-vector we need to pass as argument to sendmsg/recvmsg; is set up
 	 * to point into msg below */
-	struct iovec iov[1];
+	struct iovec iov[IOFD_MSGHDR_IO_BUFFERS];
 	/*! flags we pass as argument to sendmsg / recvmsg */
 	int flags;
 
+	/*! current number of message-buffers that are stored */
+	uint8_t io_len;
 	/*! message-buffer containing data for this I/O operation */
-	struct msgb *msg;
+	struct msgb *msg[IOFD_MSGHDR_IO_BUFFERS];
 	/*! I/O file descriptor on which we perform this I/O operation */
 	struct osmo_io_fd *iofd;
 
