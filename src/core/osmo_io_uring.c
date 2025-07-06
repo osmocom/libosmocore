@@ -262,7 +262,10 @@ static void iofd_uring_handle_tx(struct iofd_msghdr *msghdr, int rc)
 		iofd->u.uring.write_msghdr = NULL;
 
 	if (OSMO_UNLIKELY(IOFD_FLAG_ISSET(iofd, IOFD_FLAG_CLOSED))) {
-		msgb_free(msghdr->msg[0]);
+		for (int idx = 0; idx < msghdr->io_len; idx++) {
+			msgb_free(msghdr->msg[idx]);
+			msghdr->msg[idx] = NULL;
+		}
 		iofd_msghdr_free(msghdr);
 	} else {
 		iofd_handle_send_completion(iofd, rc, msghdr);
@@ -351,7 +354,7 @@ static int iofd_uring_submit_tx(struct osmo_io_fd *iofd)
 
 	switch (msghdr->action) {
 	case IOFD_ACT_WRITE:
-		io_uring_prep_writev(sqe, msghdr->iofd->fd, msghdr->iov, 1, -1);
+		io_uring_prep_writev(sqe, msghdr->iofd->fd, msghdr->iov, msghdr->io_len, -1);
 		break;
 	case IOFD_ACT_SENDTO:
 	case IOFD_ACT_SENDMSG:
@@ -458,7 +461,10 @@ static int iofd_uring_unregister(struct osmo_io_fd *iofd)
 		LOGPIO(iofd, LOGL_DEBUG, "Cancelling write\n");
 		iofd->u.uring.write_msghdr = NULL;
 		talloc_steal(OTC_GLOBAL, msghdr);
-		msgb_free(msghdr->msg[0]);
+		for (int idx = 0; idx < msghdr->io_len; idx++) {
+			msgb_free(msghdr->msg[idx]);
+			msghdr->msg[idx] = NULL;
+		}
 		msghdr->iofd = NULL;
 		io_uring_prep_cancel(sqe, msghdr, 0);
 	}
