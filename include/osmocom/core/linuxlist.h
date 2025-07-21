@@ -254,6 +254,16 @@ static inline void llist_splice_init(struct llist_head *llist,
 #define llist_first_entry_or_null(ptr, type, member) \
 	(!llist_empty(ptr) ? llist_first_entry(ptr, type, member) : NULL)
 
+/*! Get the last element from a list, or NULL.
+ *  \param ptr    the list head to take the element from.
+ *  \param type   the type of the struct this is embedded in.
+ *  \param member the name of the list_head within the struct.
+ *
+ * Note that if the list is empty, it returns NULL.
+ */
+#define llist_last_entry_or_null(ptr, type, member) \
+	(!llist_empty(ptr) ? llist_last_entry(ptr, type, member) : NULL)
+
 /*! Iterate over a linked list.
  *  \param pos  the llist_head to use as a loop counter.
  *  \param head the head of the list over which to iterate.
