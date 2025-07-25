@@ -247,21 +247,52 @@ void iofd_txqueue_enqueue_front(struct osmo_io_fd *iofd, struct iofd_msghdr *msg
  */
 struct iofd_msghdr *iofd_txqueue_dequeue(struct osmo_io_fd *iofd)
 {
-	struct llist_head *lh;
+	struct iofd_msghdr *msghdr;
 
 	if (iofd->tx_queue.current_length == 0)
 		return NULL;
 
-	lh = iofd->tx_queue.msg_queue.next;
+	msghdr = llist_first_entry_or_null(&iofd->tx_queue.msg_queue, struct iofd_msghdr, list);
 
-	OSMO_ASSERT(lh);
+	OSMO_ASSERT(msghdr);
 	iofd->tx_queue.current_length--;
-	llist_del(lh);
+	llist_del(&msghdr->list);
+
+	/* Fill up empty buffers in dequeued msghdr with buffers from the next msghdr.
+	 * There can be empty buffers, when a msghdr is queued to the front with incomplete write. */
+	while (OSMO_UNLIKELY(msghdr->io_len < iofd->io_write_buffers)) {
+		struct iofd_msghdr *next;
+		int i;
+
+		if (iofd->tx_queue.current_length == 0)
+			break;
+		next = llist_first_entry_or_null(&iofd->tx_queue.msg_queue, struct iofd_msghdr, list);
+		OSMO_ASSERT(next->io_len > 0);
+		/* Get first message buffer from next msghdr and store them in the dequeued one. */
+		msghdr->iov[msghdr->io_len] = next->iov[0];
+		msghdr->msg[msghdr->io_len] = next->msg[0];
+		msghdr->hdr.msg_iovlen = ++msghdr->io_len;
+		/* Remove the message buffer from the next msghdr and free, if empty. */
+		next->io_len--;
+		for (i = 0; i < next->io_len; i++) {
+			next->iov[i] = next->iov[i + 1];
+			next->msg[i] = next->msg[i + 1];
+		}
+		if (next->io_len == 0) {
+			iofd->tx_queue.current_length--;
+			llist_del(&next->list);
+			iofd_msghdr_free(next);
+		} else {
+			memset(&next->iov[next->io_len], 0, sizeof(struct iovec));
+			next->msg[next->io_len] = NULL;
+			next->hdr.msg_iovlen = --next->io_len;
+		}
+	}
 
 	if (iofd->tx_queue.current_length == 0)
 		osmo_iofd_ops.write_disable(iofd);
 
-	return llist_entry(lh, struct iofd_msghdr, list);
+	return msghdr;
 }
 
 /*! Handle segmentation of the msg. If this function returns *_HANDLE_ONE or MORE then the data in msg will contain
