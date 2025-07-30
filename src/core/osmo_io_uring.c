@@ -52,14 +52,20 @@
 
 #include "osmo_io_internal.h"
 
-#define IOFD_URING_ENTRIES 4096
+#define IOFD_URING_INITIAL_SIZE 4096
+/* 32768 refers to the IORING_MAX_ENTRIES of the kernel (io_uring/io_uring.h). */
+#define IOFD_URING_MAXIMUM_SIZE 32768
 
 #define OSMO_IO_URING_BATCH "LIBOSMO_IO_URING_BATCH"
+
+#define OSMO_IO_URING_INITIAL_SIZE "LIBOSMO_IO_URING_INITIAL_SIZE"
 
 #define OSMO_IO_URING_READ_SQE "LIBOSMO_IO_URING_READ_SQE"
 
 bool g_io_uring_batch = false;
 bool g_io_uring_submit_needed = false;
+
+static unsigned int g_io_uring_size = IOFD_URING_INITIAL_SIZE;
 
 static int g_io_uring_read_sqes = 1;
 
@@ -103,7 +109,22 @@ void osmo_iofd_uring_init(void)
 	if ((env = getenv(OSMO_IO_URING_BATCH)))
 		g_io_uring_batch = true;
 
-	rc = io_uring_queue_init(IOFD_URING_ENTRIES, &g_ring.ring, 0);
+	if ((env = getenv(OSMO_IO_URING_INITIAL_SIZE))) {
+		int env_value;
+		rc = osmo_str_to_int(&env_value, env, 10, 1, IOFD_URING_MAXIMUM_SIZE);
+		if (rc < 0) {
+			fprintf(stderr, "Error: Initial io_uring size out of range (1..%d).\n",
+				IOFD_URING_MAXIMUM_SIZE);
+			exit(1);
+		}
+		if ((env_value & (env_value - 1))) {
+			fprintf(stderr, "Error: Initial io_uring size must be a positive power of two.\n");
+			exit(1);
+		}
+		g_io_uring_size = env_value;
+	}
+
+	rc = io_uring_queue_init(g_io_uring_size, &g_ring.ring, 0);
 	if (rc < 0)
 		osmo_panic("failure during io_uring_queue_init(): %s\n", strerror(-rc));
 
