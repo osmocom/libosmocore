@@ -114,9 +114,13 @@ struct osmo_io_fd {
 			uint8_t num_read_sqes;
 			/*! array of simultaneously submitted read SQEs */
 			void *read_msghdr[IOFD_MSGHDR_MAX_READ_SQES];
+			/*! ring the read SQEs have been submitted to */
+			struct io_uring *read_ring;
 			/*! current number of simultaneously submitted read SQEs */
 			uint8_t reads_submitted;
 			void *write_msghdr;
+			/*! ring the write SQE has been submitted to */
+			struct io_uring *write_ring;
 			/* TODO: index into array of registered fd's? */
 			/* osmo_fd for non-blocking connect handling */
 			struct osmo_fd connect_ofd;
@@ -156,6 +160,9 @@ struct iofd_msghdr {
 	struct msgb *msg[IOFD_MSGHDR_IO_BUFFERS];
 	/*! I/O file descriptor on which we perform this I/O operation */
 	struct osmo_io_fd *iofd;
+
+	/*! msghdr is in the cancel_queue list */
+	bool in_cancel_queue;
 
 	/*! control message buffer for passing sctp_sndrcvinfo along */
 	char cmsg[0]; /* size is determined by iofd->cmsg_size on recvmsg, and by mcghdr->msg_controllen on sendmsg */
