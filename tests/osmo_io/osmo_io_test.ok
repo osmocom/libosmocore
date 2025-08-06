@@ -16,3 +16,22 @@ Running test_unconnected
 ep1: sendto() returned rc=16
 ep2: recvfrom() msg with len=16
 01 02 03 04 05 06 07 08 09 0a 0b 0c 0d 0e 0f 10 
+Running test_segmentation
+Enable write
+seg_iofd: write() returned rc=12
+01 02 03 04 05 06 07 08 09 0a 0b 0c 
+Enable read
+seg_iofd: segmentation_cb() returning 4
+seg_iofd: read() msg with rc=6
+01 02 03 04 
+tailroom = 2
+seg_iofd: segmentation_cb() returning 4
+seg_iofd: segmentation_cb() returning 4
+seg_iofd: read() msg with rc=6
+05 06 07 08 
+tailroom = 4
+seg_iofd: segmentation_cb() returning 4
+seg_iofd: read() msg with rc=6
+09 0a 0b 0c 
+tailroom = 2
+seg_iofd: read() msg with rc=0
