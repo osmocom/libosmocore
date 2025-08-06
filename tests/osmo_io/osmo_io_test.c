@@ -247,6 +247,112 @@ static void test_unconnected(void)
 	for (int i = 0; i < 128; i++)
 		osmo_select_main(1);
 }
+
+int segmentation_cb(struct osmo_io_fd *iofd, struct msgb *msg)
+{
+	printf("%s: segmentation_cb() returning %d\n", osmo_iofd_get_name(iofd), 4);
+	return 4;
+}
+
+static void segment_read_cb(struct osmo_io_fd *iofd, int rc, struct msgb *msg)
+{
+	static int seg_number = 0;
+
+	printf("%s: read() msg with rc=%d\n", osmo_iofd_get_name(iofd), rc);
+	if (rc < 0) {
+		printf("%s: error: %s\n", osmo_iofd_get_name(iofd), strerror(-rc));
+		OSMO_ASSERT(0);
+	}
+	OSMO_ASSERT(msg);
+	if (seg_number < 3) {
+		printf("%s\n", osmo_hexdump(msgb_data(msg), msgb_length(msg)));
+		printf("tailroom = %d\n", msgb_tailroom(msg));
+		/* Our read buffer is 6 bytes, Our segment is 4 bytes, this results in tailroom of 2 bytes.
+		 * When the pending 2 bytes are combined with subsequent read of 6 bytes, an extra buffer
+		 * with 8 bytes is allocated. Our segment is 4 byte, then this results in a tailroom of 4
+		 * bytes. */
+		if (seg_number == 1)
+			OSMO_ASSERT(msgb_tailroom(msg) == 4)
+		else
+			OSMO_ASSERT(msgb_tailroom(msg) == 2)
+		OSMO_ASSERT(msgb_length(msg) == sizeof(TESTDATA) / 4);
+		seg_number++;
+	} else {
+		OSMO_ASSERT(rc == 0);
+		file_eof_read = true;
+	}
+	talloc_free(msg);
+}
+
+static void test_segmentation(void)
+{
+	struct osmo_io_fd *iofd;
+	struct msgb *msg;
+	uint8_t *buf;
+	int fd[2] = { 0, 0 };
+	int rc;
+	struct osmo_io_ops ioops;
+
+	TEST_START();
+
+	/* Create pipe */
+	rc = pipe(fd);
+	OSMO_ASSERT(rc == 0);
+	OSMO_ASSERT(fd[0]);
+	OSMO_ASSERT(fd[1]);
+
+	/* First test writing to the pipe: */
+	printf("Enable write\n");
+	ioops = (struct osmo_io_ops){ .write_cb = file_write_cb };
+	iofd = osmo_iofd_setup(ctx, fd[1], "seg_iofd", OSMO_IO_FD_MODE_READ_WRITE, &ioops, NULL);
+	osmo_iofd_register(iofd, fd[1]);
+
+	msg = msgb_alloc(12, "Test data");
+	buf = msgb_put(msg, 12);
+	memcpy(buf, TESTDATA, 12);
+	osmo_iofd_write_msgb(iofd, msg);
+	/* Allow enough cycles to handle the messages */
+	file_bytes_write_compl = 0;
+	for (int i = 0; i < 128; i++) {
+		OSMO_ASSERT(file_bytes_write_compl <= 12);
+		if (file_bytes_write_compl == 12)
+			break;
+		osmo_select_main(1);
+		usleep(100 * 1000);
+	}
+	fflush(stdout);
+	OSMO_ASSERT(file_bytes_write_compl == 12);
+
+	osmo_iofd_unregister(iofd);
+	close(fd[1]);
+
+	/* Now, re-configure iofd to only read from the pipe.
+	 * Reduce the read buffer size, to verify correct segmentation operation: */
+	printf("Enable read\n");
+	osmo_iofd_set_alloc_info(iofd, 6, 0);
+	osmo_iofd_register(iofd, fd[0]);
+	ioops = (struct osmo_io_ops){ .read_cb = segment_read_cb, .segmentation_cb2 = segmentation_cb };
+	rc = osmo_iofd_set_ioops(iofd, &ioops);
+	OSMO_ASSERT(rc == 0);
+	/* Allow enough cycles to handle the message. We expect 3 reads, 4th read will return 0. */
+	file_bytes_read = 0;
+	file_eof_read = false;
+	for (int i = 0; i < 128; i++) {
+		if (file_eof_read)
+			break;
+		osmo_select_main(1);
+		usleep(100 * 1000);
+	}
+	fflush(stdout);
+	OSMO_ASSERT(file_eof_read);
+
+	osmo_iofd_free(iofd);
+
+	for (int i = 0; i < 128; i++)
+		osmo_select_main(1);
+}
+
+
 static const struct log_info_cat default_categories[] = {
 };
 
@@ -267,6 +373,7 @@ int main(int argc, char *argv[])
 	test_file();
 	test_connected();
 	test_unconnected();
+	test_segmentation();
 
 	return EXIT_SUCCESS;
 }
