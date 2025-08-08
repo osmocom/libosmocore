@@ -901,7 +901,7 @@ int osmo_iofd_set_sqes(struct osmo_io_fd *iofd, enum osmo_io_op op, uint8_t sqes
 	if (sqes < 1 || sqes > IOFD_MSGHDR_MAX_READ_SQES)
 		return -EINVAL;
 
-	iofd->u.uring.num_read_sqes = sqes;
+	iofd->u.uring.read.num_sqes = sqes;
 	return 0;
 }
 

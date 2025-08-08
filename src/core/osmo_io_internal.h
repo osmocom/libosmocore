@@ -108,19 +108,26 @@ struct osmo_io_fd {
 			struct osmo_fd ofd;
 		} poll;
 		struct {
-			bool read_enabled;
-			bool write_enabled;
-			/*! requested number of simultaniously submitted read SQEs */
-			uint8_t num_read_sqes;
-			/*! array of simultaneously submitted read SQEs */
-			void *read_msghdr[IOFD_MSGHDR_MAX_READ_SQES];
-			/*! ring the read SQEs have been submitted to */
-			struct io_uring *read_ring;
-			/*! current number of simultaneously submitted read SQEs */
-			uint8_t reads_submitted;
-			void *write_msghdr;
-			/*! ring the write SQE has been submitted to */
-			struct io_uring *write_ring;
+			struct {
+				/*! read is enabled, due to registration of callback function */
+				bool enabled;
+				/*! requested number of simultaniously submitted read SQEs */
+				uint8_t num_sqes;
+				/*! array of simultaneously submitted read SQEs */
+				void *msghdr[IOFD_MSGHDR_MAX_READ_SQES];
+				/*! ring the read SQEs have been submitted to */
+				struct io_uring *ring;
+				/*! current number of simultaneously submitted read SQEs */
+				uint8_t sqes_submitted;
+			} read;
+			struct {
+				/*! write is enabled, due to pending msghdr in tx_queue */
+				bool enabled;
+				/*! submitted write SQE */
+				void *msghdr;
+				/*! ring the write SQE has been submitted to */
+				struct io_uring *ring;
+			} write;
 			/* TODO: index into array of registered fd's? */
 			/* osmo_fd for non-blocking connect handling */
 			struct osmo_fd connect_ofd;
