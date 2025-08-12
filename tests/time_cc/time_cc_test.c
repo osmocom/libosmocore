@@ -165,7 +165,7 @@ int main(int argc, char **argv)
 		osmo_clock_override_add(CLOCK_MONOTONIC, ms / 1000, (uint64_t)(ms % 1000) * 1000000); \
 		osmo_gettimeofday_override_add(ms / 1000, (uint64_t)(ms % 1000) * 1000); \
 		printf("%d ADD_MILLISECS(" #ms ") --> %ld.%03ld", my_obj.flag_cc_round.flag_state, \
-		       now->tv_sec, now->tv_nsec/1000000); \
+		       (unsigned int long) now->tv_sec, now->tv_nsec/1000000); \
 		printf("\n"); \
 	} while (0)
 

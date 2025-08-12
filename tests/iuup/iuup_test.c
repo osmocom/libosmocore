@@ -163,8 +163,8 @@ static void clock_override_set(long sec, long usec)
 {
 	osmo_gettimeofday_override_time.tv_sec = sec + usec / (1000*1000);
 	osmo_gettimeofday_override_time.tv_usec = usec % (1000*1000);
-	printf("sys={%lu.%06lu}, %s\n", osmo_gettimeofday_override_time.tv_sec,
-		osmo_gettimeofday_override_time.tv_usec, __func__);
+	printf("sys={%lu.%06lu}, %s\n", (unsigned int long) osmo_gettimeofday_override_time.tv_sec,
+		(unsigned int long) osmo_gettimeofday_override_time.tv_usec, __func__);
 }
 
 void test_crc(void)
