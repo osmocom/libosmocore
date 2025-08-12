@@ -335,7 +335,8 @@ static void print_fsm_state(struct osmo_fsm_inst *fi)
 	}
 
 	osmo_timer_remaining(&fi->timer, &osmo_gettimeofday_override_time, &remaining);
-	printf(", %lu.%06lu s remaining\n", remaining.tv_sec, remaining.tv_usec);
+	printf(", %lu.%06lu s remaining\n", (unsigned int long) remaining.tv_sec,
+	       (unsigned int long) remaining.tv_usec);
 }
 
 
