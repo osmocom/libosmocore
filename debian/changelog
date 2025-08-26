@@ -1,3 +1,14 @@
+libosmocore (1.11.2) unstable; urgency=medium
+
+  [ Oliver Smith ]
+  * Makefile: fix doc/vty race condition
+  * tests: fix for debian 13 armv7l
+
+  [ Andreas Eversberg ]
+  * VTY: Initialize fields of struct cmd_element in order of declaration
+
+ -- Oliver Smith <osmith@sysmocom.de>  Tue, 26 Aug 2025 15:31:46 +0200
+
 libosmocore (1.11.1) unstable; urgency=medium
 
   [ Pau Espin Pedrol ]
