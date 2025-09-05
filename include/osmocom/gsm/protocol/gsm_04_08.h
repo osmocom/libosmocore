@@ -2154,6 +2154,9 @@ enum gsm48_bcap_rrq {
 	GSM48_BCAP_RRQ_FR_ONLY	= 1,
 	GSM48_BCAP_RRQ_DUAL_HR	= 2,
 	GSM48_BCAP_RRQ_DUAL_FR	= 3,
+/* GSM 04.08 Table 10.72: In network to MS direction, the network must send
+ * spare bits that are encoded the same as FR_ONLY. */
+#define GSM48_BCAP_RRQ_SPARE_NETWORK_TO_MS GSM48_BCAP_RRQ_FR_ONLY
 };
 
 /* GSM 04.08 Bearer Capability: Rate Adaption */
