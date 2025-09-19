@@ -187,10 +187,10 @@ void iofd_msghdr_free(struct iofd_msghdr *msghdr)
 /*! convenience wrapper to call msgb_alloc with parameters from osmo_io_fd (of given size) */
 struct msgb *iofd_msgb_alloc2(struct osmo_io_fd *iofd, size_t size)
 {
-	uint16_t headroom = iofd->msgb_alloc.headroom;
+	size_t headroom = iofd->msgb_alloc.headroom;
 
-	OSMO_ASSERT(size <= 0xffff - headroom);
-	return msgb_alloc_headroom_c(iofd, size + headroom, headroom, "osmo_io_msgb");
+	OSMO_ASSERT(size + headroom <= 0xffff);
+	return msgb_alloc_headroom_c(iofd, (uint16_t)(size + headroom), (uint16_t)headroom, "osmo_io_msgb");
 }
 
 /*! convenience wrapper to call msgb_alloc with parameters from osmo_io_fd */
