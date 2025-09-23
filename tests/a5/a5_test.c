@@ -44,6 +44,11 @@ static const uint8_t ul[] = {
 static inline bool print_a5(int n, int k, const char * dir, const ubit_t * out, const char * block)
 {
 	uint8_t len = 114 / 8 + 1, buf[len], res[len];
+
+	/* segfault here */
+	int *ptr = NULL;
+	*ptr = 123;
+
 	printf("A5/%d - %s: %s => ", n, dir, osmo_ubit_dump(out, 114));
 	osmo_hexparse(block, res, len);
 	osmo_ubit2pbit(buf, out, 114);

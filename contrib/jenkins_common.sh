@@ -59,5 +59,5 @@ prep_build() {
 }
 
 run_make() {
-    $MAKE $PARALLEL_MAKE check || cat-testlogs.sh
+    $MAKE V=1 $PARALLEL_MAKE check || cat-testlogs.sh
 }
