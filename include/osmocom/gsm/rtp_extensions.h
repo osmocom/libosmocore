@@ -11,7 +11,7 @@
  * namely, GSM0808_IE_THEMWI_RTP_EXTENSIONS and RSL_IE_OSMO_RTP_EXTENSIONS.
  * It is based on this authoritative definition:
  *
- * https://www.freecalypso.org/specs/tw-ts-003-v010002.txt
+ * https://www.freecalypso.org/specs/tw-ts-003-v010100.txt
  *
  * Section 5.3 in the above specification defines the assignment of
  * individual bits in the single value octet.
@@ -21,3 +21,5 @@
 
 #define	OSMO_RTP_EXT_TWTS001	0x01
 #define	OSMO_RTP_EXT_TWTS002	0x02
+#define	OSMO_RTP_EXT_TWTS006	0x04
+#define	OSMO_RTP_EXT_TWTS007	0x08
