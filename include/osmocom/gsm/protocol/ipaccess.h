@@ -40,6 +40,7 @@ enum ipaccess_proto_ext {
 	IPAC_PROTO_EXT_OAP	= 0x06,		/* Osmocom Authn Protocol */
 	IPAC_PROTO_EXT_RSPRO	= 0x07,		/* Remote SIM protocol */
 	IPAC_PROTO_EXT_PCU	= 0x08,		/* BSC<->BTS<->PCU communication */
+	IPAC_PROTO_EXT_TCAP_ROUTING	= 0x09,		/* TCAP Routing Protocol */
 };
 
 enum ipaccess_msgtype {
