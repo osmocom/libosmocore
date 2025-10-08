@@ -22,6 +22,7 @@ osmogsmproto_HEADERS = \
 	gsm_44_318.h \
 	gsm_48_049.h \
 	gsm_48_071.h \
+	gsm_48_103.h \
 	gsm_49_031.h \
 	ipaccess.h \
 	smpp34_osmocom.h \
