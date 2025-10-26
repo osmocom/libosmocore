@@ -90,6 +90,14 @@ static inline bool osmo_amr_is_speech(enum osmo_amr_type ft)
 	}
 }
 
+extern const uint8_t osmo_amr_sbits_per_mode[AMR_NO_DATA+1];
+extern const uint8_t osmo_amr_params_per_mode[AMR_NO_DATA+1];
+
+int osmo_amr_param_to_sbits(ubit_t *s_bits, const uint16_t *param,
+				enum osmo_amr_type mode);
+int osmo_amr_sbits_to_param(uint16_t *param, const ubit_t *s_bits,
+				enum osmo_amr_type mode);
+
 /* SID ternary classification per GSM 06.31 & 06.81 section 6.1.1 */
 enum osmo_gsm631_sid_class {
        OSMO_GSM631_SID_CLASS_SPEECH  = 0,

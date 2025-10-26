@@ -322,6 +322,196 @@ int osmo_amr_d_to_s(ubit_t *out, const ubit_t *in, uint16_t n_bits, enum osmo_am
 	return n_bits;
 }
 
+/*! This table provides the number of s-bits (as defined in TS 26.090 and
+ *  TS 26.092, clause 7 in each spec) for every possible speech or SID mode
+ *  in AMR.  It differs from gsm690_bitlength[] in the case of SID: there are
+ *  35 s-bits in the original 2G definition that started out as GSM 06.92,
+ *  captured in this table, whereas 3G-oriented TS 26.101 AMR Core Frame
+ *  definition captured in gsm690_bitlength[] has 39 d-bits for SID instead.
+ *
+ *  The array is allocated up to AMR_NO_DATA in order to reduce the probability
+ *  of buggy code making an out-of-bounds read access.
+ */
+const uint8_t osmo_amr_sbits_per_mode[AMR_NO_DATA+1] = {
+	[AMR_4_75] = 95,
+	[AMR_5_15] = 103,
+	[AMR_5_90] = 118,
+	[AMR_6_70] = 134,
+	[AMR_7_40] = 148,
+	[AMR_7_95] = 159,
+	[AMR_10_2] = 204,
+	[AMR_12_2] = 244,
+	[AMR_SID]  = 35,
+};
+
+/*! This table provides the number of distinct codec parameters (groupings
+ *  of s-bits into 16-bit parameter words as implemented in 3GPP reference
+ *  C code and assumed in TS 26.073 definition of decoder homing frames)
+ *  that exist for every possible speech or SID mode in AMR.
+ *
+ *  The array is allocated up to AMR_NO_DATA in order to reduce the probability
+ *  of buggy code making an out-of-bounds read access.
+ */
+const uint8_t osmo_amr_params_per_mode[AMR_NO_DATA+1] = {
+	[AMR_4_75] = 17,
+	[AMR_5_15] = 19,
+	[AMR_5_90] = 19,
+	[AMR_6_70] = 19,
+	[AMR_7_40] = 19,
+	[AMR_7_95] = 23,
+	[AMR_10_2] = 39,
+	[AMR_12_2] = 57,
+	[AMR_SID]  = 5,
+};
+
+/* parameter sizes (# of bits), one table per mode */
+
+static const uint8_t bit_counts_4_75[17] = {
+	8, 8, 7,				/* LSP VQ */
+	8, 7, 2, 8,				/* 1st subframe */
+	4, 7, 2,				/* 2nd subframe */
+	4, 7, 2, 8,				/* 3rd subframe */
+	4, 7, 2,				/* 4th subframe */
+};
+
+static const uint8_t bit_counts_5_15[19] = {
+	8, 8, 7,				/* LSP VQ */
+	8, 7, 2, 6,				/* 1st subframe */
+	4, 7, 2, 6,				/* 2nd subframe */
+	4, 7, 2, 6,				/* 3rd subframe */
+	4, 7, 2, 6,				/* 4th subframe */
+};
+
+static const uint8_t bit_counts_5_90[19] = {
+	8, 9, 9,				/* LSP VQ */
+	8, 9, 2, 6,				/* 1st subframe */
+	4, 9, 2, 6,				/* 2nd subframe */
+	8, 9, 2, 6,				/* 3rd subframe */
+	4, 9, 2, 6,				/* 4th subframe */
+};
+
+static const uint8_t bit_counts_6_70[19] = {
+	8, 9, 9,				/* LSP VQ */
+	8, 11, 3, 7,				/* 1st subframe */
+	4, 11, 3, 7,				/* 2nd subframe */
+	8, 11, 3, 7,				/* 3rd subframe */
+	4, 11, 3, 7,				/* 4th subframe */
+};
+
+static const uint8_t bit_counts_7_40[19] = {
+	8, 9, 9,				/* LSP VQ */
+	8, 13, 4, 7,				/* 1st subframe */
+	5, 13, 4, 7,				/* 2nd subframe */
+	8, 13, 4, 7,				/* 3rd subframe */
+	5, 13, 4, 7,				/* 4th subframe */
+};
+
+static const uint8_t bit_counts_7_95[23] = {
+	9, 9, 9,				/* LSP VQ */
+	8, 13, 4, 4, 5,				/* 1st subframe */
+	6, 13, 4, 4, 5,				/* 2nd subframe */
+	8, 13, 4, 4, 5,				/* 3rd subframe */
+	6, 13, 4, 4, 5,				/* 4th subframe */
+};
+
+static const uint8_t bit_counts_10_2[39] = {
+	8, 9, 9,				/* LSP VQ */
+	8, 1, 1, 1, 1, 10, 10, 7, 7,		/* 1st subframe */
+	5, 1, 1, 1, 1, 10, 10, 7, 7,		/* 2nd subframe */
+	8, 1, 1, 1, 1, 10, 10, 7, 7,		/* 3rd subframe */
+	5, 1, 1, 1, 1, 10, 10, 7, 7,		/* 4th subframe */
+};
+
+static const uint8_t bit_counts_12_2[57] = {
+	7, 8, 9, 8, 6,				/* LSP VQ */
+	9, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 5,	/* 1st subframe */
+	6, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 5,	/* 2nd subframe */
+	9, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 5,	/* 3rd subframe */
+	6, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 5,	/* 4th subframe */
+};
+
+static const uint8_t bit_counts_sid[5] = { 3, 8, 9, 9, 6 };
+
+/* overall table with all parameter sizes for all modes */
+static const uint8_t * const bit_counts_per_mode[AMR_SID + 1] = {
+	bit_counts_4_75,
+	bit_counts_5_15,
+	bit_counts_5_90,
+	bit_counts_6_70,
+	bit_counts_7_40,
+	bit_counts_7_95,
+	bit_counts_10_2,
+	bit_counts_12_2,
+	bit_counts_sid,
+};
+
+/*! Convert AMR codec frame from parameters to s-bits
+ *
+ * \param[out] s_bits Caller-provided array of unpacked bits to be filled
+ * with s-bits of the converted codec frame.
+ * \param[in] param Array of AMR codec speech or SID parameters.
+ * \param[in] mode Speech or SID mode according to which conversion shall
+ * be performed.
+ * \returns 0 if successful, or negative if \ref mode is invalid.
+ */
+int osmo_amr_param_to_sbits(ubit_t *s_bits, const uint16_t *param,
+				enum osmo_amr_type mode)
+{
+	if (mode > AMR_SID)
+		return -EINVAL;
+
+	const uint8_t *table = bit_counts_per_mode[mode];
+	unsigned nparam = osmo_amr_params_per_mode[mode];
+	unsigned n, p, mask;
+	ubit_t *b = s_bits;
+
+	for (n = 0; n < nparam; n++) {
+		p = param[n];
+		mask = 1 << (*table++ - 1);
+		for (; mask; mask >>= 1) {
+			if (p & mask)
+				*b++ = 1;
+			else
+				*b++ = 0;
+		}
+	}
+	return 0;
+}
+
+/*! Convert AMR codec frame from s-bits to parameters
+ *
+ * \param[out] param Caller-provided buffer for array of AMR codec speech
+ * or SID parameters.
+ * \param[in] s_bits Unpacked s-bits of the frame to be converted.
+ * \param[in] mode Speech or SID mode according to which conversion shall
+ * be performed.
+ * \returns 0 if successful, or negative if \ref mode is invalid.
+ */
+int osmo_amr_sbits_to_param(uint16_t *param, const ubit_t *s_bits,
+				enum osmo_amr_type mode)
+{
+	if (mode > AMR_SID)
+		return -EINVAL;
+
+	const ubit_t *bit = s_bits;
+	const uint8_t *table = bit_counts_per_mode[mode];
+	unsigned nparam = osmo_amr_params_per_mode[mode];
+	unsigned n, m, acc;
+
+	for (n = 0; n < nparam; n++) {
+		acc = 0;
+		for (m = 0; m < *table; m++) {
+			acc <<= 1;
+			if (*bit)
+				acc |= 1;
+			bit++;
+		}
+		param[n] = acc;
+		table++;
+	}
+	return 0;
+}
+
 /* See also RFC 4867 §3.6, Table 1, Column "Total speech bits" */
 static const uint8_t amr_len_by_ft[16] = {
 	12, 13, 15, 17, 19, 20, 26, 31, 5,  0,  0,  0,  0,  0,  0,  0
