@@ -739,7 +739,7 @@ int gsm_arfcn2band_rc(uint16_t arfcn, enum gsm_band *band)
 	} else if (arfcn <= 124) {
 		*band = GSM_BAND_900;
 		return 0;
-	} else if (arfcn >= 955 && arfcn <= 1023) {
+	} else if (arfcn >= 940 && arfcn <= 1023) {
 		*band = GSM_BAND_900;
 		return 0;
 	} else if (arfcn >= 128 && arfcn <= 251) {
@@ -787,10 +787,11 @@ struct gsm_freq_range {
 	uint16_t flags;
 };
 
+/* See 3GPP TS 45.005 Section 2 Table 2-2 */
 static struct gsm_freq_range gsm_ranges[] = {
 	{ 512,  810, 18502, 800, ARFCN_PCS },	/* PCS 1900 */
 	{   0,  124,  8900, 450, 0 },		/* P-GSM + E-GSM ARFCN 0 */
-	{ 955, 1023,  8762, 450, 0 },		/* E-GSM + R-GSM */
+	{ 940, 1023,  8732, 450, 0 },		/* E-GSM + R-GSM + ER-GSM */
 	{ 128,  251,  8242, 450, 0 },		/* GSM 850  */
 	{ 512,  885, 17102, 950, 0 },		/* DCS 1800 */
 	{ 259,  293,  4506, 100, 0 },		/* GSM 450  */
