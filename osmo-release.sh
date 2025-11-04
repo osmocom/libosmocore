@@ -151,10 +151,10 @@ check_configureac_rpmspecin_deps_match() {
 
 # Make sure that patches under debian/patches/ apply:
 check_debian_patch_apply() {
-	if [ ! -d "${GIT_TOPDIR}/debian/patches" ]; then
-		return
-	fi
 	for patch in ${GIT_TOPDIR}/debian/patches/*.patch; do
+		if ! [ -e "$patch" ]; then
+			continue
+		fi
 		git apply --check $patch
 		if [ $? -ne 0 ]; then
 			error "patch no longer applies! $patch"
