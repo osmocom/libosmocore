@@ -280,6 +280,7 @@ static void segment_read_cb(struct osmo_io_fd *iofd, int rc, struct msgb *msg)
 	} else {
 		OSMO_ASSERT(rc == 0);
 		file_eof_read = true;
+		osmo_iofd_close(iofd);
 	}
 	talloc_free(msg);
 }
