@@ -359,7 +359,7 @@ static void iofd_uring_handle_recv(struct iofd_msghdr *msghdr, int rc)
 		}
 
 		/* Check for every iteration, because iofd might get unregistered/closed during receive function. */
-		if (iofd->u.uring.read.enabled && !IOFD_FLAG_ISSET(iofd, IOFD_FLAG_CLOSED))
+		if (IOFD_FLAG_ISSET(iofd, IOFD_FLAG_FD_REGISTERED) && iofd->u.uring.read.enabled)
 			iofd_handle_recv(iofd, msg, chunk, msghdr);
 		else
 			msgb_free(msg);
@@ -372,7 +372,7 @@ static void iofd_uring_handle_recv(struct iofd_msghdr *msghdr, int rc)
 		msghdr->msg[idx] = NULL;
 	}
 
-	if (iofd->u.uring.read.enabled && !IOFD_FLAG_ISSET(iofd, IOFD_FLAG_CLOSED))
+	if (IOFD_FLAG_ISSET(iofd, IOFD_FLAG_FD_REGISTERED) && iofd->u.uring.read.enabled)
 		iofd_uring_submit_recv(iofd, msghdr->action);
 
 	iofd_msghdr_free(msghdr);
