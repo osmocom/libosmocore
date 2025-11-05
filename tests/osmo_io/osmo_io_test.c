@@ -323,8 +323,7 @@ static void test_segmentation(void)
 	fflush(stdout);
 	OSMO_ASSERT(file_bytes_write_compl == 12);
 
-	osmo_iofd_unregister(iofd);
-	close(fd[1]);
+	osmo_iofd_close(iofd);
 
 	/* Now, re-configure iofd to only read from the pipe.
 	 * Reduce the read buffer size, to verify correct segmentation operation: */
