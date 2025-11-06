@@ -1,3 +1,13 @@
+libosmocore (1.11.3) unstable; urgency=medium
+
+  [ Harald Welte ]
+  * gsm/gsm_utils: Support the ER-GSM band (ARFCN 940..954)
+
+  [ Pau Espin Pedrol ]
+  * io_uring: Avoid extra reads if iofd becomes unregistered by user
+
+ -- Oliver Smith <osmith@sysmocom.de>  Thu, 06 Nov 2025 14:31:02 +0100
+
 libosmocore (1.11.2) unstable; urgency=medium
 
   [ Oliver Smith ]
