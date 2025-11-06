@@ -17,6 +17,7 @@ AT_CLEANUP
 
 AT_SETUP([ctrl])
 AT_KEYWORDS([ctrl])
+AT_SKIP_IF([test ! -e $abs_top_builddir/tests/ctrl/ctrl_test])
 cat $abs_srcdir/ctrl/ctrl_test.ok > expout
 AT_CHECK([$abs_top_builddir/tests/ctrl/ctrl_test], [0], [expout], [ignore])
 AT_CLEANUP
@@ -237,6 +238,7 @@ AT_CLEANUP
 
 AT_SETUP([fr])
 AT_KEYWORDS([fr])
+AT_SKIP_IF([test ! -e $abs_top_builddir/tests/fr/fr_test])
 cat $abs_srcdir/fr/fr_test.ok > expout
 cat $abs_srcdir/fr/fr_test.err > experr
 AT_CHECK([$abs_top_builddir/tests/fr/fr_test], [0], [expout], [experr])
@@ -257,6 +259,7 @@ AT_CLEANUP
 
 AT_SETUP([vty])
 AT_KEYWORDS([vty])
+AT_SKIP_IF([test ! -e $abs_top_builddir/tests/vty/vty_test])
 cat $abs_srcdir/vty/vty_test.ok > expout
 cat $abs_srcdir/vty/vty_test.err > experr
 AT_CHECK([$abs_top_builddir/tests/vty/vty_test $abs_srcdir/vty], [0], [expout], [experr])
@@ -264,18 +267,21 @@ AT_CLEANUP
 
 AT_SETUP([gprs-bssgp])
 AT_KEYWORDS([gprs-bssgp])
+AT_SKIP_IF([test ! -e $abs_top_builddir/tests/gb/gprs_bssgp_test])
 cat $abs_srcdir/gb/gprs_bssgp_test.ok > expout
 AT_CHECK([$abs_top_builddir/tests/gb/gprs_bssgp_test], [0], [expout], [ignore])
 AT_CLEANUP
 
 AT_SETUP([gprs-bssgp-rim])
 AT_KEYWORDS([gprs-bssgp-rim])
+AT_SKIP_IF([test ! -e $abs_top_builddir/tests/gb/gprs_bssgp_rim_test])
 cat $abs_srcdir/gb/gprs_bssgp_rim_test.ok > expout
 AT_CHECK([$abs_top_builddir/tests/gb/gprs_bssgp_rim_test], [0], [expout], [ignore])
 AT_CLEANUP
 
 AT_SETUP([gprs-ns])
 AT_KEYWORDS([gprs-ns])
+AT_SKIP_IF([test ! -e $abs_top_builddir/tests/gb/gprs_ns_test])
 cat $abs_srcdir/gb/gprs_ns_test.ok > expout
 cat $abs_srcdir/gb/gprs_ns_test.err > experr
 AT_CHECK([$abs_top_builddir/tests/gb/gprs_ns_test], [0], [expout], [experr])
@@ -283,6 +289,7 @@ AT_CLEANUP
 
 AT_SETUP([gprs-ns2])
 AT_KEYWORDS([gprs-ns2])
+AT_SKIP_IF([test ! -e $abs_top_builddir/tests/gb/gprs_ns2_test])
 cat $abs_srcdir/gb/gprs_ns2_test.ok > expout
 cat $abs_srcdir/gb/gprs_ns2_test.err > experr
 AT_CHECK([$abs_top_builddir/tests/gb/gprs_ns2_test], [0], [expout], [experr])
@@ -290,6 +297,7 @@ AT_CLEANUP
 
 AT_SETUP([utils])
 AT_KEYWORDS([utils])
+AT_SKIP_IF([test ! -e $abs_top_builddir/tests/utils/utils_test])
 cat $abs_srcdir/utils/utils_test.ok > expout
 cat $abs_srcdir/utils/utils_test.err > experr
 AT_CHECK([$abs_top_builddir/tests/utils/utils_test], [0], [expout], [experr])
@@ -297,6 +305,7 @@ AT_CLEANUP
 
 AT_SETUP([stats])
 AT_KEYWORDS([stats])
+AT_SKIP_IF([test ! -e $abs_top_builddir/tests/stats/stats_test])
 cat $abs_srcdir/stats/stats_test.ok > expout
 cat $abs_srcdir/stats/stats_test.err > experr
 AT_CHECK([$abs_top_builddir/tests/stats/stats_test], [0], [expout], [experr])
@@ -310,6 +319,7 @@ AT_CLEANUP
 
 AT_SETUP([bssgp-fc])
 AT_KEYWORDS([bssgp-fc])
+AT_SKIP_IF([test ! -e $abs_top_builddir/tests/gb/bssgp_fc_test])
 cat $abs_srcdir/gb/bssgp_fc_tests.ok > expout
 cat $abs_srcdir/gb/bssgp_fc_tests.err > experr
 AT_CHECK([$abs_top_srcdir/tests/gb/bssgp_fc_tests.sh $abs_top_builddir/tests/gb], [0], [expout], [experr])
@@ -342,6 +352,7 @@ AT_CLEANUP
 
 AT_SETUP([gsup])
 AT_KEYWORDS([gsup])
+AT_SKIP_IF([test ! -e $abs_top_builddir/tests/gsup/gsup_test])
 cat $abs_srcdir/gsup/gsup_test.ok > expout
 cat $abs_srcdir/gsup/gsup_test.err > experr
 AT_CHECK([$abs_top_builddir/tests/gsup/gsup_test], [0], [expout], [experr])
@@ -349,6 +360,7 @@ AT_CLEANUP
 
 AT_SETUP([fsm])
 AT_KEYWORDS([fsm])
+AT_SKIP_IF([test ! -e $abs_top_builddir/tests/fsm/fsm_test])
 cat $abs_srcdir/fsm/fsm_test.ok > expout
 cat $abs_srcdir/fsm/fsm_test.err > experr
 AT_CHECK([$abs_top_builddir/tests/fsm/fsm_test], [0], [expout], [experr])
@@ -356,6 +368,7 @@ AT_CLEANUP
 
 AT_SETUP([fsm_dealloc])
 AT_KEYWORDS([fsm_dealloc])
+AT_SKIP_IF([test ! -e $abs_top_builddir/tests/fsm/fsm_dealloc_test])
 cat $abs_srcdir/fsm/fsm_dealloc_test.err > experr
 AT_CHECK([$abs_top_builddir/tests/fsm/fsm_dealloc_test], [0], [ignore], [experr])
 AT_CLEANUP
@@ -383,7 +396,7 @@ AT_CLEANUP
 
 AT_SETUP([socket_sctp])
 AT_KEYWORDS([socket_sctp])
-AT_SKIP_IF([! test -e $abs_top_builddir/tests/socket/socket_sctp_test])
+AT_SKIP_IF([test ! -e $abs_top_builddir/tests/socket/socket_sctp_test])
 cat $abs_srcdir/socket/socket_sctp_test.ok > expout
 cat $abs_srcdir/socket/socket_sctp_test.err > experr
 AT_CHECK([$abs_top_builddir/tests/socket/socket_sctp_test], [0], [expout], [experr])
@@ -454,6 +467,7 @@ AT_CLEANUP
 
 AT_SETUP([exec])
 AT_KEYWORDS([exec])
+AT_SKIP_IF([test ! -e $abs_top_builddir/tests/exec/exec_test])
 cat $abs_srcdir/exec/exec_test.ok > expout
 cat $abs_srcdir/exec/exec_test.err > experr
 AT_CHECK([$abs_top_builddir/tests/exec/exec_test], [0], [expout], [experr])
