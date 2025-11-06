@@ -650,7 +650,6 @@ AC_OUTPUT(
 	src/pseudotalloc/Makefile
 	tapset/Makefile
 	tests/Makefile
-	tests/atlocal
 	tests/osmo-config-merge/Makefile
 	utils/Makefile
 	utils/osmo-stat-dummy/Makefile

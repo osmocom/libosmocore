@@ -61,7 +61,6 @@ debian/libosmocore.post*.debhelper
 #gnu autotest
 tests/package.m4
 tests/atconfig
-tests/atlocal
 tests/osmo-test
 tests/package.m4
 tests/testsuite

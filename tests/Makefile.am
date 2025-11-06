@@ -534,7 +534,7 @@ socket_socket_sctp_test_SOURCES = socket/socket_sctp_test.c
 endif
 endif
 
-DISTCLEANFILES = atconfig atlocal conv/gsm0503_test_vectors.c
+DISTCLEANFILES = atconfig conv/gsm0503_test_vectors.c
 BUILT_SOURCES = conv/gsm0503_test_vectors.c
 noinst_HEADERS = conv/conv.h
 
