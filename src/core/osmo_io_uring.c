@@ -189,10 +189,10 @@ static void iofd_uring_handle_recv(struct iofd_msghdr *msghdr, int rc)
 	if (rc > 0)
 		msgb_put(msg, rc);
 
-	if (!IOFD_FLAG_ISSET(iofd, IOFD_FLAG_CLOSED))
+	if (IOFD_FLAG_ISSET(iofd, IOFD_FLAG_FD_REGISTERED))
 		iofd_handle_recv(iofd, msg, rc, msghdr);
 
-	if (iofd->u.uring.read_enabled && !IOFD_FLAG_ISSET(iofd, IOFD_FLAG_CLOSED))
+	if (IOFD_FLAG_ISSET(iofd, IOFD_FLAG_FD_REGISTERED) && iofd->u.uring.read_enabled)
 		iofd_uring_submit_recv(iofd, msghdr->action);
 	else
 		iofd->u.uring.read_msghdr = NULL;
