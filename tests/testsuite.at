@@ -81,13 +81,12 @@ cat $abs_srcdir/gea/gea_test.ok > expout
 AT_CHECK([$abs_top_builddir/tests/gea/gea_test], [0], [expout])
 AT_CLEANUP
 
-if ENABLE_MSGFILE
 AT_SETUP([msgfile])
 AT_KEYWORDS([msgfile])
+AT_SKIP_IF([test ! -e $abs_top_builddir/tests/msgfile/msgfile_test])
 cat $abs_srcdir/msgfile/msgfile_test.ok > expout
 AT_CHECK([$abs_top_builddir/tests/msgfile/msgfile_test $abs_srcdir/msgfile/msgconfig.cfg], [0], [expout])
 AT_CLEANUP
-endif
 
 AT_SETUP([sms])
 AT_KEYWORDS([sms])
