@@ -40,14 +40,17 @@
 /*! Wrapper around Linux's gettid() to make it easily accessible on different system versions.
  * If the gettid() API cannot be found, it will use the syscall directly if
  * available. If no syscall is found available, then getpid() is called as
- * fallback. See 'man 2 gettid' for further and details information.
+ * fallback. See 'man 2 gettid' for further and details information. When
+ * building libosmocore with --enable-embedded, this function returns 0.
  * \returns This call is always successful and returns returns the thread ID of
  *          the calling thread (or the process ID of the current process if
  *          gettid() or its syscall are unavailable in the system).
  */
 pid_t osmo_gettid(void)
 {
-#if HAVE_GETTID
+#if (EMBEDDED)
+	return 0;
+#elif HAVE_GETTID
 	return gettid();
 #elif defined(LINUX) && defined(__NR_gettid)
 	return (pid_t) syscall(__NR_gettid);
