@@ -426,6 +426,7 @@ then
 	AM_CONDITIONAL(EMBEDDED, true)
 	AC_DEFINE([USE_GNUTLS], [0])
 	AC_DEFINE([PANIC_INFLOOP],[1],[Use infinite loop on panic rather than fprintf/abort])
+	CFLAGS="$CFLAGS -D__thread='' "
 fi
 
 AC_ARG_ENABLE(log_macros,
