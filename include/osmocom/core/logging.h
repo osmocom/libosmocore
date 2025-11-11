@@ -4,6 +4,8 @@
  *  @{
  * \file logging.h */
 
+#include "config.h"
+
 #include <stdio.h>
 #include <stdint.h>
 #include <stdarg.h>
@@ -15,6 +17,10 @@ extern struct log_info *osmo_log_info;
 
 #ifndef DEBUG
 #define DEBUG
+#endif
+
+#if (EMBEDDED)
+#define logp_stub(file, line, cont, fmt, args...) printf(fmt, ## args)
 #endif
 
 #ifdef LIBOSMOCORE_NO_LOGGING
@@ -398,7 +404,9 @@ struct log_target {
 void logp2(int subsys, unsigned int level, const char *file,
 	   int line, int cont, const char *format, ...)
 				__attribute__ ((format (printf, 6, 7)));
+#if (!EMBEDDED)
 void logp_stub(const char *file, int line, int cont, const char *format, ...);
+#endif
 int log_init(const struct log_info *inf, void *talloc_ctx);
 void log_fini(void);
 int log_check_level(int subsys, unsigned int level);

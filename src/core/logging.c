@@ -397,9 +397,15 @@ static const struct log_info_cat internal_cat[OSMO_NUM_DLIB] = {
 
 void assert_loginfo(const char *src)
 {
+	const char *error_msg = "ERROR: osmo_log_info == NULL! "
+		"You must call log_init() before using logging in %s()!\n";
+
 	if (!osmo_log_info) {
-		fprintf(stderr, "ERROR: osmo_log_info == NULL! "
-			"You must call log_init() before using logging in %s()!\n", src);
+#if EMBEDDED
+		printf(error_msg, src);
+#else
+		fprintf(stderr, error_msg, src);
+#endif
 		OSMO_ASSERT(osmo_log_info);
 	}
 }
@@ -564,7 +570,6 @@ static int _output_buf(char *buf, int buf_len, struct log_target *target, unsign
 			unsigned int level, const char *file, int line, int cont,
 			const char *format, va_list ap)
 {
-	int ret;
 	const char *c_subsys = NULL;
 	struct osmo_strbuf sb = { .buf = buf, .pos = buf, .len = buf_len };
 
@@ -590,6 +595,8 @@ static int _output_buf(char *buf, int buf_len, struct log_target *target, unsign
 					   (int)(tv.tv_usec / 1000));
 #endif
 		} else if (target->print_timestamp) {
+#if (!EMBEDDED)
+			int ret;
 			time_t tm;
 			if ((tm = time(NULL)) == (time_t) -1)
 				goto err;
@@ -604,6 +611,7 @@ static int _output_buf(char *buf, int buf_len, struct log_target *target, unsign
 			/* Get rid of useless final '\n' added by ctime_r. We want a space instead. */
 			OSMO_STRBUF_DROP_TAIL(sb, 1);
 			OSMO_STRBUF_PRINTF(sb, " ");
+#endif
 		}
 		if (target->print_tid) {
 			if (logging_tid == 0)
@@ -669,7 +677,9 @@ static int _output_buf(char *buf, int buf_len, struct log_target *target, unsign
 			OSMO_STRBUF_PRINTF(sb, OSMO_LOGCOLOR_END);
 		}
 	}
+#if (!EMBEDDED)
 err:
+#endif
 	return OSMO_STRBUF_CHAR_COUNT(sb);
 }
 
@@ -819,6 +829,7 @@ void logp2(int subsys, unsigned int level, const char *file, int line, int cont,
 	TRACE(LIBOSMOCORE_LOG_DONE());
 }
 
+#if (!EMBEDDED)
 /* This logging function is used as a fallback when the logging framework is
  * not is not properly initialized. */
 void logp_stub(const char *file, int line, int cont, const char *format, ...)
@@ -830,6 +841,7 @@ void logp_stub(const char *file, int line, int cont, const char *format, ...)
 	vfprintf(stderr, format, ap);
 	va_end(ap);
 }
+#endif
 
 /*! Register a new log target with the logging core
  *  \param[in] target Log target to be registered
