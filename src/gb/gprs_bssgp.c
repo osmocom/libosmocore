@@ -216,8 +216,7 @@ struct bssgp_bvc_ctx *btsctx_alloc(uint16_t bvci, uint16_t nsei)
 	ctx->bvci = bvci;
 	ctx->nsei = nsei;
 	ctx->is_sgsn = true;
-	/* FIXME: BVCI is not unique, only BVCI+NSEI ?!? */
-	ctx->ctrg = rate_ctr_group_alloc(ctx, &bssgp_ctrg_desc, bvci);
+	ctx->ctrg = rate_ctr_group_alloc(ctx, &bssgp_ctrg_desc, ((uint32_t)nsei << 16) | bvci);
 	if (!ctx->ctrg)
 		goto err_ctrg;
 
