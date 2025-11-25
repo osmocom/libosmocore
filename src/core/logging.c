@@ -393,6 +393,12 @@ static const struct log_info_cat internal_cat[OSMO_NUM_DLIB] = {
 		.enabled = 1, .loglevel = LOGL_NOTICE,
 		.color = "\033[38;5;67m",
 	},
+	[INT2IDX(DLTCAP)] = {
+		.name = "DLTCAP",
+		.description = "TCAP",
+		.enabled = 1, .loglevel = LOGL_NOTICE,
+		.color = "\033[38;5;69m",
+	},
 };
 
 void assert_loginfo(const char *src)
