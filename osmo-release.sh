@@ -36,15 +36,15 @@ GREEN="\033[1;32m"
 YELLOW="\033[1;33m"
 
 ok() {
-	echo "${GREEN}OK:${RESET} $@"
+	printf "${GREEN}OK:${RESET} %s\n" "$1"
 }
 
 warn() {
-	echo "${YELLOW}WARN:${RESET} $@"
+	printf "${YELLOW}WARN:${RESET} %s\n" "$1"
 }
 
 error() {
-	echo "${RED}ERROR:${RESET} $@"
+	printf "${RED}ERROR:${RESET} %s\n" "$1"
 }
 
 libversion_to_lib_major() {
