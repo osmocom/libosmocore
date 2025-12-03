@@ -1,3 +1,84 @@
+libosmocore (1.12.0) unstable; urgency=medium
+
+  [ Vadim Yanitskiy ]
+  * gsmtap: fix outdated header version in comment
+  * configure.ac: check for Python interpreter unconditionally
+  * libosmocore.spec.in: correct license for libosmogb
+  * vty: cosmetic: fix code formatting
+  * tests/testsuite.at: fix invalid if-endif syntax
+  * tests/testsuite.at: use AT_SKIP_IF for sim_test
+  * tests/testsuite.at: properly skip disabled tests
+
+  [ Pau Espin Pedrol ]
+  * tests: soft_uart: Fix printf int type format
+  * iuup: Explicitly discard Iu-UP-DATA.req in Initialization state
+  * cosmetic: lapd: Fix typo in comment
+  * lapd: Take talloc msgb ownership when enqueueing it
+  * lapdm: Take talloc msgb ownership when enqueueing it
+  * lapdm: Move queue initialization to specific init function
+  * cosmetic: Improve comment with spec references in Cell Selection Parameters
+  * cosmetic: Improve comment with spec ref in RACH Control Parameters
+  * cosmetic: Improve spec references of fields/structs related to SI3ro and SI4ro
+  * cosmetic: Document missing CBQ3 optional field in SI4ro
+  * cosmetic: vty/Makefile.am: Split items one per line
+  * vty: cpu_sched_vty.c: remove tdef references
+  * core: osmo_io: Introduce API osmo_io_get_backend()
+  * vty: Add 'show runtime' command
+  * Introduce tests/osmo-config-merge testsuite
+  * osmo-config-merge: Fix comments with different indentation creating merge problems
+  * osmo_io: Keep msgb ownership internal during segmentation until read_cb
+  * tests/osmo_io_test: test_segmentation: Use osmo_iofd_close() API
+  * tests/osmo_io_test (io_uring): test_segmentation: Fix infinite loop in read_cb rc=0
+  * io_uring: Avoid extra reads if iofd becomes unregistered by user
+  * bssgp: Fix non-uniqe rate_ctr ids
+
+  [ Mychaela N. Falconia ]
+  * codec: add some constant frames for HR and EFR
+  * rtp_extensions.h: update for TW-TS-003 version 1.1.0
+  * gsm/protocol/gsm_48_103.h: new header file
+  * AMR codec: add conversion between s-bits and codec parameters
+  * AMR codec: add decoder homing frame const patterns
+
+  [ Oliver Smith ]
+  * configure: set min python version check to 3.5
+  * configure: set min python version check to 3.4
+  * Makefile: fix doc/vty race condition
+  * osmo-release: improve check for REL argument
+  * Generate a version.h file
+  * tests: fix for debian 13 armv7l
+  * gsm_04_08: add GSM48_BCAP_RRQ_SPARE_NETWORK_TO_MS
+  * osmo-release: debian_patch_apply: handle empty dir
+
+  [ Harald Welte ]
+  * protocol/gsm_04_08.h: Add GSM 04.08 message types for SI21/22/23
+  * Allow io_uring_submit batching just ahead of poll/select
+  * gsm/gsm_utils: Support the ER-GSM band (ARFCN 940..954)
+
+  [ Alexander Huemer ]
+  * Abort configure run on big endian hosts
+
+  [ Andreas Eversberg ]
+  * VTY: Initialize fields of struct cmd_element in order of declaration
+  * linuxlist.h: add llist_last_entry_or_null macro
+  * Avoid reusing pending buffer; append incoming data instead
+  * osmo_io: Add unit test to verify segmentation process
+  * Add multiple messages buffers to struct iofd_msghdr
+  * Add multiple messages buffers to io_uring read operations
+  * Add multiple messages buffers to io_uring write operations
+  * osmo-io: Put together message buffers when dequeued from tx queue
+  * Send multiple read/recvfrom/recvmsg SQEs in advance
+  * Add environment variable to set io_uring size
+  * Automatically increase io_uring, if too small.
+  * Remove old empty io_uring
+  * Put all io_uring related read and write states into sub structures
+  * Correctly calculate size iofd_msgb_alloc2()
+
+  [ Daniel Willmann ]
+  * Register OSMO_EXT protocol number for TCAP routing
+  * Add DLTCAP log category
+
+ -- Pau Espin Pedrol <pespin@sysmocom.de>  Wed, 03 Dec 2025 16:49:11 +0100
+
 libosmocore (1.11.0) unstable; urgency=medium
 
   [ Mychaela N. Falconia ]
