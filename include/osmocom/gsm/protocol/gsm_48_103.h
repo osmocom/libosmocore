@@ -19,3 +19,6 @@
 /* circuit-switched data */
 #define	OSMO_AOIP_RTP_PT_CSD		120	/* without redundancy */
 #define	OSMO_AOIP_RTP_PT_CSD_RED	121	/* with    redundancy */
+
+/* Osmocom and Themyscira extensions */
+#define	OSMO_AOIP_RTP_PT_TWTS007	127	/* compressed form of CSD */
