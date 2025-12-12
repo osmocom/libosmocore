@@ -133,12 +133,12 @@ static int addrinfo_helper_multi(struct addrinfo **addrinfo, uint16_t family, ui
 
 static int socket_helper_tail(int sfd, unsigned int flags)
 {
-	int rc, on = 1;
+	int rc;
 	uint8_t dscp = GET_OSMO_SOCK_F_DSCP(flags);
 	uint8_t prio = GET_OSMO_SOCK_F_PRIO(flags);
 
 	if (flags & OSMO_SOCK_F_NONBLOCK) {
-		if (ioctl(sfd, FIONBIO, (unsigned char *)&on) < 0) {
+		if (osmo_sock_set_nonblock(sfd, 1) < 0) {
 			LOGP(DLGLOBAL, LOGL_ERROR,
 				"cannot set this socket unblocking: %s\n",
 				strerror(errno));
@@ -2744,6 +2744,16 @@ int osmo_sock_set_priority(int fd, int prio)
 {
 	/* and write it back to the kernel */
 	return setsockopt(fd, SOL_SOCKET, SO_PRIORITY, &prio, sizeof(prio));
+}
+
+/*! Set the socket as non-blocking or blocking.
+ *  \param[in] fd File descriptor of the socket
+ *  \param[in] on set to 1 to set as non-blocking, 0 to set as blocking.
+ *  \returns 0 on success; negative on error. */
+int osmo_sock_set_nonblock(int fd, int on)
+{
+	/* and write it back to the kernel */
+	return ioctl(fd, FIONBIO, (unsigned char *)&on);
 }
 
 #ifdef HAVE_LIBSCTP
