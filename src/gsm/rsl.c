@@ -121,6 +121,7 @@ const struct tlv_definition rsl_att_tlvdef = {
 		[RSL_IE_RTD]			= { TLV_TYPE_TV },
 		[RSL_IE_TFO_STATUS]		= { TLV_TYPE_TV },
 		[RSL_IE_LLP_APDU]		= { TLV_TYPE_TLV },
+		[RSL_IE_TFO_XPAR_CONT]		= { TLV_TYPE_TLV },
 		[RSL_IE_SIEMENS_MRPCI]		= { TLV_TYPE_TV },
 		[RSL_IE_OSMO_REP_ACCH_CAP]	= { TLV_TYPE_TLV },
 		[RSL_IE_OSMO_TRAINING_SEQUENCE]	= { TLV_TYPE_TLV },

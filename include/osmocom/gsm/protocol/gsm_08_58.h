@@ -358,6 +358,7 @@ enum abis_rsl_ie {
 	RSL_IE_RTD,
 	RSL_IE_TFO_STATUS,
 	RSL_IE_LLP_APDU,
+	RSL_IE_TFO_XPAR_CONT,
 	/* Siemens vendor-specific */
 	RSL_IE_SIEMENS_MRPCI		= 0x40,
 	RSL_IE_SIEMENS_PREF_AREA_TYPE	= 0x43,
