@@ -590,7 +590,7 @@ static int iofd_uring_register(struct osmo_io_fd *iofd)
 	/* OSMO_IO_FD_MODE_RECVMSG_SENDMSG:
 	 * Use a temporary osmo_fd which we can use to notify us once the connection is established
 	 * or failed (indicated by FD becoming writable). This is needed as (at least for SCTP sockets)
-	 * one cannot submit a zero-length writev/sendmsg in order to get notification when the socekt
+	 * one cannot submit a zero-length writev/sendmsg in order to get notification when the socket
 	 * is writable.*/
 	if (IOFD_FLAG_ISSET(iofd, IOFD_FLAG_NOTIFY_CONNECTED)) {
 		osmo_fd_setup(&iofd->u.uring.connect_ofd, iofd->fd, OSMO_FD_WRITE,
