@@ -34,6 +34,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <stdbool.h>
+#include <fcntl.h>
 #include <errno.h>
 #include <limits.h>
 
@@ -534,6 +535,23 @@ static int iofd_uring_submit_tx(struct osmo_io_fd *iofd)
 static void iofd_uring_write_enable(struct osmo_io_fd *iofd);
 static void iofd_uring_read_enable(struct osmo_io_fd *iofd);
 
+/* make an FD blockig:
+ * osmo_fd_register(ofd) did set fd flag O_NONBLOCK previously. We don't
+ * want to keep the fd as O_NONBLOCK once we start using io_uring,
+ * otherwise we'd end up getting cqes with -EAGAIN; better let the kernel
+ * wait internally for the sqe to complete. */
+static int iofd_reset_fd_blocking(int fd)
+{
+	int flags;
+
+	/* make FD nonblocking */
+	flags = fcntl(fd, F_GETFL);
+	if (flags < 0)
+		return flags;
+	flags &= ~O_NONBLOCK;
+	flags = fcntl(fd, F_SETFL, flags);
+	return flags;
+}
 
 /* called via osmocom poll/select main handling once outbound non-blocking connect() completes */
 static int iofd_uring_connected_cb(struct osmo_fd *ofd, unsigned int what)
@@ -547,6 +565,7 @@ static int iofd_uring_connected_cb(struct osmo_fd *ofd, unsigned int what)
 
 	/* Unregister from poll/select handling. */
 	osmo_fd_unregister(ofd);
+	iofd_reset_fd_blocking(ofd->fd);
 	IOFD_FLAG_UNSET(iofd, IOFD_FLAG_NOTIFY_CONNECTED);
 
 	/* Notify the application about this via a zero-length write completion call-back. */
@@ -591,7 +610,8 @@ static int iofd_uring_register(struct osmo_io_fd *iofd)
 	 * Use a temporary osmo_fd which we can use to notify us once the connection is established
 	 * or failed (indicated by FD becoming writable). This is needed as (at least for SCTP sockets)
 	 * one cannot submit a zero-length writev/sendmsg in order to get notification when the socket
-	 * is writable.*/
+	 * is writable.
+	 * NOTE: osmo_fd_register() sets iofd->fd as O_NONBLOCK. */
 	if (IOFD_FLAG_ISSET(iofd, IOFD_FLAG_NOTIFY_CONNECTED)) {
 		osmo_fd_setup(&iofd->u.uring.connect_ofd, iofd->fd, OSMO_FD_WRITE,
 			      iofd_uring_connected_cb, iofd, 0);
@@ -664,6 +684,7 @@ static int iofd_uring_unregister(struct osmo_io_fd *iofd)
 
 	if (IOFD_FLAG_ISSET(iofd, IOFD_FLAG_NOTIFY_CONNECTED)) {
 		osmo_fd_unregister(&iofd->u.uring.connect_ofd);
+		iofd_reset_fd_blocking(iofd->u.uring.connect_ofd.fd);
 		IOFD_FLAG_UNSET(iofd, IOFD_FLAG_NOTIFY_CONNECTED);
 	}
 
