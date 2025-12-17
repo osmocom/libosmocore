@@ -47,27 +47,13 @@
  *
  * \file gsmtap_util.c */
 
-/*! one gsmtap instance
- *  Until gsmtap_inst_fd() is removed from the API at some point in the future, we have to keep the first member as
- *  'int' and the second as 'struct osmo_wqueue' (this effectively makes sure that the struct member wq.bfd.fd maintains
- *  the same memory offset from the start of the struct) to ensure that inlined static 'instances' of gsmtap_inst_fd() in
- *  old binaries keep working the way they used to even with gsmtap_inst objects obtained from newer versions of libosmocore */
+/*! one gsmtap instance */
 struct gsmtap_inst {
-	int osmo_io_mode;	  /*!< Indicates whether or not to use Osmo IO mode for message output (thus enabling use of tx queues).
-				   *   This field member may not be changed or moved (backwards compatibility) */
-	struct osmo_wqueue wq;	  /*!< the wait queue. This field member may not be changed or moved (backwards compatibility) */
-
-	struct osmo_io_fd *out;	  /*!< Used when osmo_io_mode is nonzero */
+	int osmo_io_mode;	 /*!< Indicates whether or not to use Osmo IO mode for message output (thus enabling use of tx queues) */
+	int source_fd;		/*!< the gsmtap source FD */
+	struct osmo_io_fd *out;	/*!< Used when osmo_io_mode is nonzero */
 	int sink_fd;
 };
-
-struct _gsmtap_inst_legacy {
-	int ofd_wq_mode;
-	struct osmo_wqueue wq;
-	struct osmo_fd sink_ofd;
-};
-osmo_static_assert(offsetof(struct gsmtap_inst, wq) == offsetof(struct _gsmtap_inst_legacy, wq),
-		   gsmtap_inst_new_wq_offset_equals_legacy_wq_offset);
 
 /*! Deprecated, use gsmtap_inst_fd2() instead
  *  \param[in] gti GSMTAP instance
@@ -82,7 +68,7 @@ int gsmtap_inst_fd(struct gsmtap_inst *gti)
  *  \returns file descriptor of GSMTAP instance */
 int gsmtap_inst_fd2(const struct gsmtap_inst *gti)
 {
-	return gti->wq.bfd.fd;
+	return gti->source_fd;
 }
 
 /*! convert RSL channel number to GSMTAP channel type
@@ -485,15 +471,14 @@ struct gsmtap_inst *gsmtap_source_init2(const char *local_host, uint16_t local_p
 
 	gti = talloc_zero(NULL, struct gsmtap_inst);
 	gti->osmo_io_mode = ofd_wq_mode;
-	/* Still using the wq member for its 'fd' field only, since we are keeping it for now, anyways  */
-	gti->wq.bfd.fd = fd;
+	gti->source_fd = fd;
 	gti->sink_fd = -1;
 
 	if (ofd_wq_mode) {
-		gti->out = osmo_iofd_setup(gti, gti->wq.bfd.fd, "gsmtap_inst.io_fd", OSMO_IO_FD_MODE_READ_WRITE, &gsmtap_ops, NULL);
+		gti->out = osmo_iofd_setup(gti, gti->source_fd, "gsmtap_inst.io_fd", OSMO_IO_FD_MODE_READ_WRITE, &gsmtap_ops, NULL);
 		if (gti->out == NULL)
 			goto err_cleanup;
-		if (osmo_iofd_register(gti->out, gti->wq.bfd.fd) < 0)
+		if (osmo_iofd_register(gti->out, gti->source_fd) < 0)
 			goto err_cleanup;
 
 		/* Use a big enough tx queue to avoid gsmtap messages being dropped: */
