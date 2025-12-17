@@ -366,8 +366,8 @@ struct log_target {
 	 *  \param[in] level log level of currnet message
 	 *  \param[in] string the string that is to be written to the log
 	 */
-        void (*output) (struct log_target *target, unsigned int level,
-			const char *string);
+	void (*output)(struct log_target *target, unsigned int level,
+		       const char *string);
 
 	/*! alternative call-back function to which the logging
 	 *	   framework passes the unfortmatted input arguments,
