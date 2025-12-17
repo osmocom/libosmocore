@@ -815,13 +815,13 @@ DEFUN(cfg_log_gsmtap, cfg_log_gsmtap_cmd,
 	"log gsmtap [HOSTNAME] [(nonblocking-io|blocking-io|wq)]",
 	LOG_STR "Logging via GSMTAP\n"
 	"Host name to send the GSMTAP logging to (UDP port 4729)\n"
-	"Use non-blocking, synchronous I/O (may lose msgs if UDP socket send buffer becomes full)\n"
-	"Use blocking, synchronous I/O (only for debug purposes or when blocking is acceptable) (default)\n"
+	"Use non-blocking, synchronous I/O (may lose msgs if UDP socket send buffer becomes full) (default)\n"
+	"Use blocking, synchronous I/O (only for debug purposes or when blocking is acceptable)\n"
 	"Use Tx workqueue, asynchronous I/O (may lose msgs if queue becomes full)\n")
 {
 	const char *hostname = argc > 0 ? argv[0] : "127.0.0.1";
 	bool ofd_wq_mode = argc > 1 && (strcmp(argv[1], "wq") == 0);
-	bool nonblocking_io = argc > 1 && (strcmp(argv[1], "nonblocking-io") == 0);
+	bool blocking_io = argc > 1 && (strcmp(argv[1], "blocking-io") == 0);
 	struct log_target *tgt;
 
 	log_tgt_mutex_lock();
@@ -835,7 +835,7 @@ DEFUN(cfg_log_gsmtap, cfg_log_gsmtap_cmd,
 				hostname, VTY_NEWLINE);
 			RET_WITH_UNLOCK(CMD_WARNING);
 		}
-		if (!ofd_wq_mode && nonblocking_io) {
+		if (!ofd_wq_mode && !blocking_io) {
 			int rc = gsmtap_source_set_nonblock(tgt->tgt_gsmtap.gsmtap_inst, 1);
 			if (rc != 0)
 				vty_out(vty, "%% Unable to configure GSMTAP log for %s as nonblocking-io%s",
@@ -850,7 +850,7 @@ DEFUN(cfg_log_gsmtap, cfg_log_gsmtap_cmd,
 		}
 		if (!ofd_wq_mode) {
 			int fd = gsmtap_inst_fd2(tgt->tgt_gsmtap.gsmtap_inst);
-			if (fd > 0 && osmo_sock_get_nonblock(fd) != nonblocking_io) {
+			if (fd > 0 && !osmo_sock_get_nonblock(fd) != blocking_io) {
 				vty_out(vty, "%% Remove and re-add the log gsmtap target in order to "
 					"change between blocking and non-blocking IO%s", VTY_NEWLINE);
 				RET_WITH_UNLOCK(CMD_WARNING);
@@ -1071,8 +1071,8 @@ static int config_write_log_single(struct vty *vty, struct log_target *tgt)
 			pars = " wq";
 		} else {
 			int fd = gsmtap_inst_fd2(tgt->tgt_gsmtap.gsmtap_inst);
-			if (fd > 0 && osmo_sock_get_nonblock(fd))
-				pars = " nonblocking-io";
+			if (fd > 0 && !osmo_sock_get_nonblock(fd))
+				pars = " blocking-io";
 			else
 				pars = "";
 		}
