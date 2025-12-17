@@ -46,6 +46,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#include <fcntl.h>
 #include <stdio.h>
 #include <unistd.h>
 #include <stdint.h>
@@ -2754,6 +2755,17 @@ int osmo_sock_set_nonblock(int fd, int on)
 {
 	/* and write it back to the kernel */
 	return ioctl(fd, FIONBIO, (unsigned char *)&on);
+}
+
+/*! Find out whether the socket is configured as non-blocking or blocking.
+ *  \param[in] fd File descriptor of the socket
+ *  \returns 1 == nonblocking, 0 == blocking, < 0 error */
+int osmo_sock_get_nonblock(int fd)
+{
+	int flags = fcntl(fd, F_GETFL);
+	if (flags < 0)
+		return flags;
+	return (flags & O_NONBLOCK) ? 1 : 0;
 }
 
 #ifdef HAVE_LIBSCTP

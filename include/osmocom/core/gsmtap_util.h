@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <stdbool.h>
 #include <osmocom/core/write_queue.h>
 #include <osmocom/core/select.h>
 
@@ -43,7 +44,10 @@ struct gsmtap_inst *gsmtap_source_init2(const char *local_host, uint16_t local_p
 
 void gsmtap_source_free(struct gsmtap_inst *gti);
 
+int gsmtap_source_set_nonblock(struct gsmtap_inst *gti, int on);
 int gsmtap_source_add_sink(struct gsmtap_inst *gti);
+
+bool gsmtap_source_using_wq(const struct gsmtap_inst *gti);
 
 int gsmtap_sendmsg(struct gsmtap_inst *gti, struct msgb *msg);
 int gsmtap_sendmsg_free(struct gsmtap_inst *gti, struct msgb *msg);

@@ -29,7 +29,9 @@
 #include <osmocom/core/strrb.h>
 #include <osmocom/core/loggingrb.h>
 #include <osmocom/core/gsmtap.h>
+#include <osmocom/core/gsmtap_util.h>
 #include <osmocom/core/application.h>
+#include <osmocom/core/socket.h>
 
 #include <osmocom/vty/command.h>
 #include <osmocom/vty/buffer.h>
@@ -810,25 +812,50 @@ DEFUN(cfg_no_log_systemd_journal, cfg_no_log_systemd_journal_cmd,
 }
 
 DEFUN(cfg_log_gsmtap, cfg_log_gsmtap_cmd,
-	"log gsmtap [HOSTNAME]",
+	"log gsmtap [HOSTNAME] [(nonblocking-io|blocking-io|wq)]",
 	LOG_STR "Logging via GSMTAP\n"
-	"Host name to send the GSMTAP logging to (UDP port 4729)\n")
+	"Host name to send the GSMTAP logging to (UDP port 4729)\n"
+	"Use non-blocking, synchronous I/O (may lose msgs if UDP socket send buffer becomes full)\n"
+	"Use blocking, synchronous I/O (only for debug purposes or when blocking is acceptable) (default)\n"
+	"Use Tx workqueue, asynchronous I/O (may lose msgs if queue becomes full)\n")
 {
-	const char *hostname = argc ? argv[0] : "127.0.0.1";
+	const char *hostname = argc > 0 ? argv[0] : "127.0.0.1";
+	bool ofd_wq_mode = argc > 1 && (strcmp(argv[1], "wq") == 0);
+	bool nonblocking_io = argc > 1 && (strcmp(argv[1], "nonblocking-io") == 0);
 	struct log_target *tgt;
 
 	log_tgt_mutex_lock();
 	tgt = log_target_find(LOG_TGT_TYPE_GSMTAP, hostname);
 	if (!tgt) {
 		tgt = log_target_create_gsmtap(hostname, GSMTAP_UDP_PORT,
-					       host.app_info->name, false,
+					       host.app_info->name, ofd_wq_mode,
 					       true);
 		if (!tgt) {
 			vty_out(vty, "%% Unable to create GSMTAP log for %s%s",
 				hostname, VTY_NEWLINE);
 			RET_WITH_UNLOCK(CMD_WARNING);
 		}
+		if (!ofd_wq_mode && nonblocking_io) {
+			int rc = gsmtap_source_set_nonblock(tgt->tgt_gsmtap.gsmtap_inst, 1);
+			if (rc != 0)
+				vty_out(vty, "%% Unable to configure GSMTAP log for %s as nonblocking-io%s",
+					hostname, VTY_NEWLINE);
+		}
 		log_add_target(tgt);
+	} else {
+		if (ofd_wq_mode != gsmtap_source_using_wq(tgt->tgt_gsmtap.gsmtap_inst)) {
+			vty_out(vty, "%% Remove and re-add the log gsmtap target in order to "
+				"change between synchronous and asynchronous IO%s", VTY_NEWLINE);
+			RET_WITH_UNLOCK(CMD_WARNING);
+		}
+		if (!ofd_wq_mode) {
+			int fd = gsmtap_inst_fd2(tgt->tgt_gsmtap.gsmtap_inst);
+			if (fd > 0 && osmo_sock_get_nonblock(fd) != nonblocking_io) {
+				vty_out(vty, "%% Remove and re-add the log gsmtap target in order to "
+					"change between blocking and non-blocking IO%s", VTY_NEWLINE);
+				RET_WITH_UNLOCK(CMD_WARNING);
+			}
+		}
 	}
 
 	vty->index = tgt;
@@ -1009,6 +1036,7 @@ static int config_write_log_single(struct vty *vty, struct log_target *tgt)
 {
 	char level_buf[128];
 	int i;
+	char *pars;
 
 	switch (tgt->type) {
 	case LOG_TGT_TYPE_VTY:
@@ -1039,8 +1067,17 @@ static int config_write_log_single(struct vty *vty, struct log_target *tgt)
 			log_target_rb_avail_size(tgt), VTY_NEWLINE);
 		break;
 	case LOG_TGT_TYPE_GSMTAP:
-		vty_out(vty, "log gsmtap %s%s",
-			tgt->tgt_gsmtap.hostname, VTY_NEWLINE);
+		if (gsmtap_source_using_wq(tgt->tgt_gsmtap.gsmtap_inst)) {
+			pars = " wq";
+		} else {
+			int fd = gsmtap_inst_fd2(tgt->tgt_gsmtap.gsmtap_inst);
+			if (fd > 0 && osmo_sock_get_nonblock(fd))
+				pars = " nonblocking-io";
+			else
+				pars = "";
+		}
+		vty_out(vty, "log gsmtap %s%s%s",
+			tgt->tgt_gsmtap.hostname, pars, VTY_NEWLINE);
 		break;
 	case LOG_TGT_TYPE_SYSTEMD:
 		vty_out(vty, "log systemd-journal%s%s",

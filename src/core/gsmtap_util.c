@@ -419,6 +419,20 @@ int gsmtap_send(struct gsmtap_inst *gti, uint16_t arfcn, uint8_t ts,
 		signal_dbm, snr, data, len);
 }
 
+/*! Set the gsmtap source socket as non-blocking (see sockopt O_NONBLOCK).
+ *  \param[in] gti existing GSMTAP source
+ *  \param[in] on set to 1 to set as non-blocking, 0 to set as blocking.
+ *  \returns 0 on success; negative on error
+ *
+ *  This setting is ignored when \ref gti was initialied in ofd_wq_mode=1 mode.
+ */
+int gsmtap_source_set_nonblock(struct gsmtap_inst *gti, int on)
+{
+	if (gti->osmo_io_mode)
+		return 0;
+	return osmo_sock_set_nonblock(gti->source_fd, on);
+}
+
 /*! Add a local sink to an existing GSMTAP source and return fd
  *  \param[in] gti existing GSMTAP source
  *  \returns file descriptor of locally bound receive socket; negative on error
@@ -445,6 +459,15 @@ int gsmtap_source_add_sink(struct gsmtap_inst *gti)
 	if (rc >= 0)
 		gti->sink_fd = rc;
 	return rc;
+}
+
+/*! Was GSMTAP source configured to use a workqueue (ofd_wq_mode=1)?
+ *  \param[in] gti existing GSMTAP source
+ *  \returns Whether GSMTAP source was configured to use a workqueue (ofd_wq_mode=1)
+ */
+bool gsmtap_source_using_wq(const struct gsmtap_inst *gti)
+{
+	return gti->osmo_io_mode;
 }
 
 /* Registered in Osmo IO as a no-op to set the write callback. */
