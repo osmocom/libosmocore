@@ -514,14 +514,15 @@ void gsmtap_source_free(struct gsmtap_inst *gti)
 	if (!gti)
 		return;
 
-	if (gti->osmo_io_mode) {
+	if (gti->osmo_io_mode)
 		osmo_iofd_free(gti->out);
+	else
+		close(gti->source_fd);
 
-		if (gti->sink_fd != -1) {
-			close(gti->sink_fd);
-			gti->sink_fd = -1;
-		}
 
+	if (gti->sink_fd != -1) {
+		close(gti->sink_fd);
+		gti->sink_fd = -1;
 	}
 
 	talloc_free(gti);
