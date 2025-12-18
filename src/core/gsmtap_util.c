@@ -528,6 +528,16 @@ struct gsmtap_inst *gsmtap_source_init2(const char *local_host, uint16_t local_p
 	buflen = 0;
 	setsockopt(gti->source_fd, SOL_SOCKET, SO_RCVBUF, &buflen, sizeof(buflen));
 
+	/* The wmem_default of 212992B is too low for heavy bursty gsmtap transmission (eg. tons of DEBUG logging).
+	 * A full UDP socket send buffer can cause blocks (or drops if sk is later configured non-blocking),
+	 * so let's try to increase it to a safer value of 4MB (newer default net.core.wmem_max in linux kernel since
+	 * 2025 a6d4f25888b83b8300aef28d9ee22765c1cc9b34).
+	 * The kernel will trim the size set to the configured net.core.wmem_max if lower.
+	 * In case you wonder, YES! blocking of 2-4s was seen in osmo-bts gsmtap_log's send() during ttcn3-bts-test execution.
+	 */
+	buflen = 4194304; /* 4 << 20 */
+	setsockopt(fd, SOL_SOCKET, SO_SNDBUF, &buflen, sizeof(buflen));
+
 	return gti;
 
 err_cleanup:
