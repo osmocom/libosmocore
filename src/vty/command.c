@@ -443,6 +443,12 @@ static vector cmd_make_descvec(const char *string, const char *descstr)
 		while (isspace((int)*cp) && *cp != '\0')
 			cp++;
 
+		/* Explicitly detect optional multi-choice braces like [(one|two)]. */
+		if (cp[0] == '[' && cp[1] == '(') {
+			optional_brace = 1;
+			cp++;
+		}
+
 		if (*cp == '(') {
 			multiple = 1;
 			cp++;
