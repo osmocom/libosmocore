@@ -1,3 +1,15 @@
+libosmocore (1.12.1) unstable; urgency=medium
+
+  [ Pau Espin Pedrol ]
+  * gsmtap_util: Fix fds not closed in ofd_wq_mode=0
+  * vty: assert in optional param followed by optional-multi-choice param: Fix [2/2]
+  * gsmtap_util: Avoid sink_fd leak gsmtap_source_add_sinki() called multiple times
+
+  [ Vadim Yanitskiy ]
+  * vty: assert in optional param followed by optional-multi-choice param: Reproduce [1/2]
+
+ -- Pau Espin Pedrol <pespin@sysmocom.de>  Thu, 18 Dec 2025 14:34:32 +0100
+
 libosmocore (1.12.0) unstable; urgency=medium
 
   [ Vadim Yanitskiy ]
