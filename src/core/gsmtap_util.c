@@ -325,12 +325,18 @@ int gsmtap_source_add_sink_fd(int gsmtap_fd)
 		return rc;
 
 	if (osmo_sockaddr_is_local((struct sockaddr *)&ss, ss_len) == 1) {
-		rc = osmo_sock_init_sa((struct sockaddr *)&ss, SOCK_DGRAM,
+		int zero = 0;
+		int fd = osmo_sock_init_sa((struct sockaddr *)&ss, SOCK_DGRAM,
 				       IPPROTO_UDP,
 				       OSMO_SOCK_F_BIND |
 				       OSMO_SOCK_F_UDP_REUSEADDR);
-		if (rc >= 0)
-			return rc;
+		if (fd < 0)
+			return fd;
+		/* We never read nor write from this socket, so tell the kernel
+		 * to set the RCVBUF/SNDBUF to the minimum possible value */
+		setsockopt(fd, SOL_SOCKET, SO_RCVBUF, &zero, sizeof(zero));
+		setsockopt(fd, SOL_SOCKET, SO_SNDBUF, &zero, sizeof(zero));
+		return fd;
 	}
 
 	return -ENODEV;
