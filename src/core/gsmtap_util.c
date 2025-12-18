@@ -501,6 +501,7 @@ struct gsmtap_inst *gsmtap_source_init2(const char *local_host, uint16_t local_p
 {
 	struct gsmtap_inst *gti;
 	int fd;
+	int buflen;
 
 	fd = gsmtap_source_init_fd2(local_host, local_port, rem_host, rem_port);
 	if (fd < 0)
@@ -521,6 +522,11 @@ struct gsmtap_inst *gsmtap_source_init2(const char *local_host, uint16_t local_p
 		/* Use a big enough tx queue to avoid gsmtap messages being dropped: */
 		osmo_iofd_set_txqueue_max_length(gti->out, 1024);
 	}
+
+	/* We never read from this socket, so tell the kernel
+	 * to set the RCVBUF to the minimum possible value */
+	buflen = 0;
+	setsockopt(gti->source_fd, SOL_SOCKET, SO_RCVBUF, &buflen, sizeof(buflen));
 
 	return gti;
 
