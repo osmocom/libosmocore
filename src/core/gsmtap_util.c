@@ -435,7 +435,7 @@ int gsmtap_send(struct gsmtap_inst *gti, uint16_t arfcn, uint8_t ts,
 
 /*! Add a local sink to an existing GSMTAP source and return fd
  *  \param[in] gti existing GSMTAP source
- *  \returns file descriptor of locally bound receive socket
+ *  \returns file descriptor of locally bound receive socket; negative on error
  *
  *  In case the GSMTAP socket is connected to a local destination
  *  IP/port, this function creates a corresponding receiving socket
@@ -450,7 +450,15 @@ int gsmtap_send(struct gsmtap_inst *gti, uint16_t arfcn, uint8_t ts,
  */
 int gsmtap_source_add_sink(struct gsmtap_inst *gti)
 {
-	return gti->sink_fd = gsmtap_source_add_sink_fd(gsmtap_inst_fd2(gti));
+	int rc;
+
+	if (gti->sink_fd >= 0)
+		return -EALREADY;
+
+	rc = gsmtap_source_add_sink_fd(gsmtap_inst_fd2(gti));
+	if (rc >= 0)
+		gti->sink_fd = rc;
+	return rc;
 }
 
 /* Registered in Osmo IO as a no-op to set the write callback. */
@@ -535,7 +543,7 @@ void gsmtap_source_free(struct gsmtap_inst *gti)
 		close(gti->wq.bfd.fd);
 
 
-	if (gti->sink_fd != -1) {
+	if (gti->sink_fd >= 0) {
 		close(gti->sink_fd);
 		gti->sink_fd = -1;
 	}
