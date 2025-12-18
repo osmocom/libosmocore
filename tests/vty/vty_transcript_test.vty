@@ -4,6 +4,7 @@ vty_transcript_test> list
   multi1 ([one]|[two]|[three])
   multi2 [(one|two|three)]
   multi3 (foo|bar) [(one|two|three)]
+  multi4 [(foo|bar)] [(one|two|three)]
 
 vty_transcript_test> multi0 ?
   one    1
@@ -89,6 +90,27 @@ ok argc=2 foo one
 vty_transcript_test> multi3 bar three
 ok argc=2 bar three
 
+vty_transcript_test> multi4 ?
+  [foo]  foo
+  [bar]  bar
+
+vty_transcript_test> multi4 foo ?
+  [one]    1
+  [two]    2
+  [three]  3
+
+vty_transcript_test> multi4 foo
+ok argc=1 foo
+
+vty_transcript_test> multi4 bar
+ok argc=1 bar
+
+vty_transcript_test> multi4 foo one
+ok argc=2 foo one
+
+vty_transcript_test> multi3 bar three
+ok argc=2 bar three
+
 vty_transcript_test> multi0 thr
 ok argc=1 three
 
@@ -99,6 +121,9 @@ vty_transcript_test> multi2 t
 % Ambiguous command.
 
 vty_transcript_test> multi3 foo t
+% Ambiguous command.
+
+vty_transcript_test> multi4 foo t
 % Ambiguous command.
 
 vty_transcript_test> single0 one
