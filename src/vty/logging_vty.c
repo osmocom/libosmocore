@@ -1032,6 +1032,46 @@ DEFUN(cfg_no_log_alarms, cfg_no_log_alarms_cmd,
 	RET_WITH_UNLOCK(CMD_SUCCESS);
 }
 
+#if defined(__EMSCRIPTEN__)
+DEFUN(cfg_log_emscripten, cfg_log_emscripten_cmd,
+	"log emscripten",
+	LOG_STR "Logging via EMSCRIPTEN\n")
+{
+	struct log_target *tgt;
+
+	log_tgt_mutex_lock();
+	tgt = log_target_create_emscripten();
+	if (!tgt) {
+		vty_out(vty, "%% Unable to create EMSCRIPTEN log target%s", VTY_NEWLINE);
+		RET_WITH_UNLOCK(CMD_WARNING);
+	}
+	log_add_target(tgt);
+
+	vty->index = tgt;
+	vty->node = CFG_LOG_NODE;
+
+	RET_WITH_UNLOCK(CMD_SUCCESS);
+}
+
+DEFUN(cfg_no_log_emscripten, cfg_no_log_emscripten_cmd,
+	"no log emscripten",
+	NO_STR LOG_STR "Logging via EMSCRIPTEN\n")
+{
+	struct log_target *tgt;
+
+	log_tgt_mutex_lock();
+	tgt = log_target_find(LOG_TGT_TYPE_EMSCRIPTEN, NULL);
+	if (tgt == NULL) {
+		vty_out(vty, "%% Unable to find EMSCRIPTEN log target%s", VTY_NEWLINE);
+		RET_WITH_UNLOCK(CMD_WARNING);
+	}
+
+	log_target_destroy(tgt);
+
+	RET_WITH_UNLOCK(CMD_SUCCESS);
+}
+#endif /* defined(__EMSCRIPTEN__) */
+
 static int config_write_log_single(struct vty *vty, struct log_target *tgt)
 {
 	char level_buf[128];
@@ -1083,6 +1123,9 @@ static int config_write_log_single(struct vty *vty, struct log_target *tgt)
 		vty_out(vty, "log systemd-journal%s%s",
 			tgt->sd_journal.raw ? " raw" : "",
 			VTY_NEWLINE);
+		break;
+	case LOG_TGT_TYPE_EMSCRIPTEN:
+		vty_out(vty, "log emscripten%s", VTY_NEWLINE);
 		break;
 	}
 
@@ -1311,4 +1354,8 @@ void logging_vty_add_cmds(void)
 	install_lib_element(CONFIG_NODE, &cfg_no_log_systemd_journal_cmd);
 	install_lib_element(CONFIG_NODE, &cfg_log_gsmtap_cmd);
 	install_lib_element(CONFIG_NODE, &cfg_no_log_gsmtap_cmd);
+#if defined(__EMSCRIPTEN__)
+	install_lib_element(CONFIG_NODE, &cfg_log_emscripten_cmd);
+	install_lib_element(CONFIG_NODE, &cfg_no_log_emscripten_cmd);
+#endif /* defined(__EMSCRIPTEN__) */
 }

@@ -101,6 +101,7 @@ log_target_create_rb;
 log_target_create_stderr;
 log_target_create_syslog;
 log_target_create_systemd;
+log_target_create_emscripten;
 log_target_destroy;
 log_target_file_reopen;
 log_target_file_switch_to_stream;

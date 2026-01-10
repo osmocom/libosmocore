@@ -25,6 +25,18 @@ AC_PROG_CC
 AC_PROG_INSTALL
 LT_INIT([pic-only disable-static])
 
+dnl Detect emscripten compiler
+case "$CC" in
+*emcc*)
+	emscripten=yes
+	;;
+*)
+	emscripten=no
+	;;
+esac
+AM_CONDITIONAL(HAVE_EMSCRIPTEN, test "x$emscripten" = "xyes")
+AC_SUBST([HAVE_EMSCRIPTEN], [$emscripten])
+
 AC_CONFIG_MACRO_DIR([m4])
 
 dnl patching ${archive_cmds} to affect generation of file "libtool" to fix linking with clang
@@ -266,6 +278,18 @@ then
 	ENABLE_SYSLOG_LOGGING_DEFAULT="no"
 	ENABLE_PANIC_INFLOOP_DEFAULT="yes"
 	ENABLE_GNUTLS_DEFAULT="no"
+fi
+
+if test "x$emscripten" = "xyes"
+then
+	ENABLE_SERIAL_DEFAULT="no"
+	ENABLE_GNUTLS_DEFAULT="no"
+	ENABLE_GB_DEFAULT="no"
+	ENABLE_LIBMNL_DEFAULT="no"
+	ENABLE_LIBSCTP_DEFAULT="no"
+	ENABLE_LIBUSB_DEFAULT="no"
+	ENABLE_PCSC_DEFAULT="no"
+	ENABLE_URING_DEFAULT="no"
 fi
 
 AC_ARG_ENABLE([uring], [AS_HELP_STRING([--disable-uring], [Build without io_uring support])],

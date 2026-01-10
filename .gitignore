@@ -8,6 +8,7 @@ Makefile.in
 *.la
 *.pc
 *.pyc
+*.wasm
 aclocal.m4
 acinclude.m4
 aminclude.am

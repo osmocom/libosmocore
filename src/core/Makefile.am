@@ -82,6 +82,10 @@ libosmocore_la_SOURCES = \
 	probes.d \
 	$(NULL)
 
+if HAVE_EMSCRIPTEN
+libosmocore_la_SOURCES += logging_emscripten.c
+endif
+
 if HAVE_SSSE3
 libosmocore_la_SOURCES += conv_acc_sse.c
 if HAVE_SSE4_1
