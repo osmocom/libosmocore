@@ -29,6 +29,7 @@
 #include <unistd.h>
 #include <stdbool.h>
 #include <sys/socket.h>
+#include <sys/uio.h>
 
 #include <osmocom/core/osmo_io.h>
 #include <osmocom/core/linuxlist.h>
@@ -41,62 +42,116 @@
 
 #include "osmo_io_internal.h"
 
+/*! completion call-back for READ */
+static void iofd_poll_handle_recv(struct iofd_msghdr *msghdr, int rc)
+{
+	struct osmo_io_fd *iofd = msghdr->iofd;
+	uint8_t idx;
+
+	for (idx = 0; idx < msghdr->io_len; idx++) {
+		struct msgb *msg = msghdr->msg[idx];
+		int chunk;
+
+		msghdr->msg[idx] = NULL;
+		if (rc > 0) {
+			if (rc > msghdr->iov[idx].iov_len)
+				chunk = msghdr->iov[idx].iov_len;
+			else
+				chunk = rc;
+			rc -= chunk;
+			msgb_put(msg, chunk);
+		} else {
+			chunk = rc;
+		}
+
+		/* Check for every iteration, because iofd might get unregistered/closed during receive function. */
+		if (IOFD_FLAG_ISSET(iofd, IOFD_FLAG_FD_REGISTERED) && (iofd->u.poll.ofd.when & OSMO_FD_READ))
+			iofd_handle_recv(iofd, msg, chunk, msghdr);
+		else
+			msgb_free(msg);
+
+		if (rc <= 0)
+			break;
+	}
+	while (++idx < msghdr->io_len) {
+		msgb_free(msghdr->msg[idx]);
+		msghdr->msg[idx] = NULL;
+	}
+
+	iofd_msghdr_free(msghdr);
+}
+
 static void iofd_poll_ofd_cb_recvmsg_sendmsg(struct osmo_fd *ofd, unsigned int what)
 {
 	struct osmo_io_fd *iofd = ofd->data;
-	struct msgb *msg;
-	int rc, flags = 0;
+	enum iofd_msg_action action;
+	struct iofd_msghdr *msghdr;
+	int rc;
+	uint8_t idx;
 
 	if (what & OSMO_FD_READ) {
-		struct iofd_msghdr hdr;
-
-		msg = iofd_msgb_alloc(iofd);
-		if (!msg) {
-			LOGPIO(iofd, LOGL_ERROR, "Could not allocate msgb for reading\n");
-			OSMO_ASSERT(0);
-		}
 
 		switch (iofd->mode) {
 		case OSMO_IO_FD_MODE_READ_WRITE:
-			rc = read(ofd->fd, msg->tail, msgb_tailroom(msg));
-			if (rc > 0)
-				msgb_put(msg, rc);
-			iofd_handle_recv(iofd, msg, (rc < 0 && errno > 0) ? -errno : rc, NULL);
+			action = IOFD_ACT_READ;
 			break;
 		case OSMO_IO_FD_MODE_RECVFROM_SENDTO:
+			action = IOFD_ACT_RECVFROM;
+			break;
 		case OSMO_IO_FD_MODE_RECVMSG_SENDMSG:
-			hdr.msg[0] = msg;
-			hdr.iov[0].iov_base = msg->tail;
-			hdr.iov[0].iov_len = msgb_tailroom(msg);
-			hdr.hdr = (struct msghdr) {
-				.msg_iov = &hdr.iov[0],
-				.msg_iovlen = 1,
-				.msg_name = &hdr.osa.u.sa,
-				.msg_namelen = sizeof(struct osmo_sockaddr),
-			};
-			if (iofd->mode == OSMO_IO_FD_MODE_RECVMSG_SENDMSG) {
-				hdr.hdr.msg_control = alloca(iofd->cmsg_size);
-				hdr.hdr.msg_controllen = iofd->cmsg_size;
-			}
-			rc = recvmsg(ofd->fd, &hdr.hdr, flags);
-			if (rc > 0)
-				msgb_put(msg, rc);
-			iofd_handle_recv(iofd, msg, (rc < 0 && errno > 0) ? -errno : rc, &hdr);
+			action = IOFD_ACT_RECVMSG;
 			break;
 		default:
 			OSMO_ASSERT(0);
 		}
+
+		msghdr = iofd_msghdr_alloc(iofd, action, NULL, iofd->cmsg_size);
+		for (idx = 0; idx < msghdr->io_len; idx++) {
+			msghdr->iov[idx].iov_base = msghdr->msg[idx]->tail;
+			msghdr->iov[idx].iov_len = msgb_tailroom(msghdr->msg[idx]);
+		}
+
+		switch (action) {
+		case IOFD_ACT_RECVMSG:
+			msghdr->hdr.msg_control = msghdr->cmsg;
+			msghdr->hdr.msg_controllen = iofd->cmsg_size;
+			/* fall-through */
+		case IOFD_ACT_RECVFROM:
+			msghdr->hdr.msg_name = &msghdr->osa.u.sa;
+			msghdr->hdr.msg_namelen = osmo_sockaddr_size(&msghdr->osa);
+			/* fall-through */
+		case IOFD_ACT_READ:
+			msghdr->hdr.msg_iov = &msghdr->iov[0];
+			msghdr->hdr.msg_iovlen = msghdr->io_len;
+			break;
+		default:
+			OSMO_ASSERT(0);
+		}
+
+		switch (action) {
+		case IOFD_ACT_READ:
+			rc = readv(ofd->fd, msghdr->hdr.msg_iov, msghdr->hdr.msg_iovlen);
+			break;
+		case IOFD_ACT_RECVFROM:
+		case IOFD_ACT_RECVMSG:
+			rc = recvmsg(ofd->fd, &msghdr->hdr, msghdr->flags);
+			break;
+		default:
+			OSMO_ASSERT(0);
+		}
+
+		iofd_poll_handle_recv(msghdr, (rc < 0 && errno > 0) ? -errno : rc);
 	}
 
 	if (IOFD_FLAG_ISSET(iofd, IOFD_FLAG_CLOSED))
 		return;
 
 	if (what & OSMO_FD_WRITE) {
-		struct iofd_msghdr *msghdr = iofd_txqueue_dequeue(iofd);
+		msghdr = iofd_txqueue_dequeue(iofd);
 		if (msghdr) {
 			switch (iofd->mode) {
 			case OSMO_IO_FD_MODE_READ_WRITE:
-				rc = write(ofd->fd, msghdr->iov[0].iov_base, msghdr->iov[0].iov_len);
+				rc = writev(ofd->fd, msghdr->iov, msghdr->io_len);
 				break;
 			case OSMO_IO_FD_MODE_RECVFROM_SENDTO:
 			case OSMO_IO_FD_MODE_RECVMSG_SENDMSG:

@@ -857,9 +857,6 @@ int osmo_iofd_set_io_buffers(struct osmo_io_fd *iofd, enum osmo_io_op op, uint8_
 	if (iofd->mode != OSMO_IO_FD_MODE_READ_WRITE)
 		return -EINVAL;
 
-	if (g_io_backend != OSMO_IO_BACKEND_IO_URING)
-		return -EINVAL;
-
 	if (buffers < 1 || buffers > IOFD_MSGHDR_IO_BUFFERS)
 		return -EINVAL;
 
