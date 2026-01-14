@@ -106,6 +106,11 @@ static void iofd_poll_ofd_cb_recvmsg_sendmsg(struct osmo_fd *ofd, unsigned int w
 		}
 
 		msghdr = iofd_msghdr_alloc(iofd, action, NULL, iofd->cmsg_size);
+		if (!msghdr) {
+			LOGPIO(iofd, LOGL_ERROR, "Could not allocate msghdr for reading\n");
+			OSMO_ASSERT(0);
+		}
+
 		for (idx = 0; idx < msghdr->io_len; idx++) {
 			msghdr->iov[idx].iov_base = msghdr->msg[idx]->tail;
 			msghdr->iov[idx].iov_len = msgb_tailroom(msghdr->msg[idx]);
