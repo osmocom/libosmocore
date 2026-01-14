@@ -65,7 +65,6 @@
 #define OSMO_IO_URING_READ_SQE "LIBOSMO_IO_URING_READ_SQE"
 
 bool g_io_uring_batch = false;
-bool g_io_uring_submit_needed = false;
 
 static int g_io_uring_size = IOFD_URING_INITIAL_SIZE;
 
@@ -76,6 +75,7 @@ struct osmo_io_uring {
 	struct io_uring ring;
 	struct llist_head cancel_queue;
 	unsigned int num_pending_submissions;
+	bool submit_needed;
 };
 
 static __thread struct osmo_io_uring *g_ring = NULL;
@@ -234,7 +234,7 @@ static inline void iofd_io_uring_submit(void)
 	if (OSMO_LIKELY(!g_io_uring_batch))
 		io_uring_submit(&g_ring->ring);
 	else
-		g_io_uring_submit_needed = true;
+		g_ring->submit_needed = true;
 }
 
 static inline int iofd_uring_submit_recv_sqe(struct osmo_io_fd *iofd, enum iofd_msg_action action)
@@ -806,9 +806,9 @@ const struct iofd_backend_ops iofd_uring_ops = {
 
 void osmo_io_uring_submit(void)
 {
-	if (OSMO_LIKELY(g_io_uring_submit_needed)) {
+	if (OSMO_LIKELY(g_ring->submit_needed)) {
 		io_uring_submit(&g_ring->ring);
-		g_io_uring_submit_needed = false;
+		g_ring->submit_needed = false;
 	}
 }
 
