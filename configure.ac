@@ -74,7 +74,7 @@ AC_C_BIGENDIAN(
 
 dnl checks for header files
 AC_HEADER_STDC
-AC_CHECK_HEADERS(execinfo.h poll.h sys/select.h sys/socket.h sys/signalfd.h sys/eventfd.h sys/timerfd.h syslog.h ctype.h netinet/tcp.h netinet/in.h)
+AC_CHECK_HEADERS(execinfo.h poll.h sys/select.h sys/socket.h sys/signalfd.h sys/eventfd.h sys/timerfd.h ctype.h netinet/tcp.h netinet/in.h)
 AC_CHECK_DECL(HAVE_SYS_SOCKET_H, AC_SUBST(HAVE_SYS_SOCKET_H, 1), AC_SUBST(HAVE_SYS_SOCKET_H, 0))
 # for src/conv.c
 AC_FUNC_ALLOCA
@@ -241,6 +241,21 @@ then
 	AC_SUBST([LIBGNUTLS_LIBS])
 	AC_DEFINE([USE_GNUTLS], [1], [Use GnuTLS as a fallback for missing getrandom()])
 fi
+
+AC_ARG_ENABLE([syslog_logging],
+	[AS_HELP_STRING(
+		[--disable-syslog-logging],
+		[Build without syslog logging support]
+	)],
+	[syslog_logging=$enableval], [syslog_logging="yes"])
+AS_IF([test "x$syslog_logging" = "xyes"], [
+	AC_CHECK_HEADER([syslog.h], [SYSLOG_H_FOUND='yes'],
+			[SYSLOG_H_FOUND='no';
+			AC_MSG_ERROR([syslog logging support needs syslog.h header])])
+	AC_DEFINE([ENABLE_SYSLOG_LOGGING], [1], [Enable syslog logging target])
+])
+AM_CONDITIONAL(ENABLE_SYSLOG_LOGGING, test "x$syslog_logging" = "xyes")
+AC_SUBST(ENABLE_SYSLOG_LOGGING)
 
 AC_ARG_ENABLE([systemd_logging],
 	[AS_HELP_STRING(
@@ -423,6 +438,7 @@ then
 	AM_CONDITIONAL(ENABLE_URING, false)
 	AM_CONDITIONAL(ENABLE_PSEUDOTALLOC, true)
 	AM_CONDITIONAL(ENABLE_SERCOM_STUB, true)
+	AM_CONDITIONAL(ENABLE_SYSLOG_LOGGING, false)
 	AM_CONDITIONAL(EMBEDDED, true)
 	AC_DEFINE([USE_GNUTLS], [0])
 	AC_DEFINE([PANIC_INFLOOP],[1],[Use infinite loop on panic rather than fprintf/abort])

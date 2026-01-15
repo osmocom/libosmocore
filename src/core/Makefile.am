@@ -44,7 +44,6 @@ libosmocore_la_SOURCES = \
 	isdnhdlc.c \
 	it_q.c \
 	logging.c \
-	logging_syslog.c \
 	logging_gsmtap.c \
 	loggingrb.c \
 	macaddr.c \
@@ -135,6 +134,10 @@ endif
 
 if ENABLE_SERIAL
 libosmocore_la_SOURCES += serial.c
+endif
+
+if ENABLE_SYSLOG_LOGGING
+libosmocore_la_SOURCES += logging_syslog.c
 endif
 
 if ENABLE_SYSTEMD_LOGGING

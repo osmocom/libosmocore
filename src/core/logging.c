@@ -37,7 +37,7 @@
 #include <strings.h>
 #endif
 
-#ifdef HAVE_SYSLOG_H
+#ifdef ENABLE_SYSLOG_LOGGING
 #include <syslog.h>
 #endif
 
@@ -1429,11 +1429,11 @@ void log_target_destroy(struct log_target *target)
 	case LOG_TGT_TYPE_GSMTAP:
 		gsmtap_source_free(target->tgt_gsmtap.gsmtap_inst);
 		break;
-#ifdef HAVE_SYSLOG_H
+#ifdef ENABLE_SYSLOG_LOGGING
 	case LOG_TGT_TYPE_SYSLOG:
 		closelog();
 		break;
-#endif /* HAVE_SYSLOG_H */
+#endif /* ENABLE_SYSLOG_LOGGING */
 	default:
 		/* make GCC happy */
 		break;

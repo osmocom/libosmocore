@@ -644,7 +644,7 @@ struct cmd_node cfg_log_node = {
 	1
 };
 
-#ifdef HAVE_SYSLOG_H
+#ifdef ENABLE_SYSLOG_LOGGING
 
 #include <syslog.h>
 
@@ -751,7 +751,7 @@ DEFUN(cfg_no_log_syslog, cfg_no_log_syslog_cmd,
 
 	RET_WITH_UNLOCK(CMD_SUCCESS);
 }
-#endif /* HAVE_SYSLOG_H */
+#endif /* ENABLE_SYSLOG_LOGGING */
 
 DEFUN(cfg_log_systemd_journal, cfg_log_systemd_journal_cmd,
       "log systemd-journal [raw]",
@@ -1049,7 +1049,7 @@ static int config_write_log_single(struct vty *vty, struct log_target *tgt)
 			vty_out(vty, "log stderr blocking-io%s", VTY_NEWLINE);
 		break;
 	case LOG_TGT_TYPE_SYSLOG:
-#ifdef HAVE_SYSLOG_H
+#ifdef ENABLE_SYSLOG_LOGGING
 		vty_out(vty, "log syslog %s%s",
 			get_value_string(sysl_level_names,
 					 tgt->tgt_syslog.facility),
@@ -1302,7 +1302,7 @@ void logging_vty_add_cmds(void)
 	install_lib_element(CONFIG_NODE, &cfg_no_log_file_cmd);
 	install_lib_element(CONFIG_NODE, &cfg_log_alarms_cmd);
 	install_lib_element(CONFIG_NODE, &cfg_no_log_alarms_cmd);
-#ifdef HAVE_SYSLOG_H
+#ifdef ENABLE_SYSLOG_LOGGING
 	install_lib_element(CONFIG_NODE, &cfg_log_syslog_cmd);
 	install_lib_element(CONFIG_NODE, &cfg_log_syslog_local_cmd);
 	install_lib_element(CONFIG_NODE, &cfg_no_log_syslog_cmd);
