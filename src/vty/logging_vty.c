@@ -39,6 +39,9 @@
 #include <osmocom/vty/telnet_interface.h>
 #include <osmocom/vty/logging.h>
 
+/* From VTY core code. Used by gsmtap and syslog targets. */
+extern struct host host;
+
 #define LOG_STR "Configure logging sub-system\n"
 #define LEVEL_STR "Set the log level for a specified category\n"
 
@@ -655,9 +658,6 @@ static const int local_sysl_map[] = {
 	[6] = LOG_LOCAL6,
 	[7] = LOG_LOCAL7
 };
-
-/* From VTY core code */
-extern struct host host;
 
 static int _cfg_log_syslog(struct vty *vty, int facility)
 {
