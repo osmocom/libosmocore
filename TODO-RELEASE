@@ -9,3 +9,4 @@
 #library	what			description / commit summary line
 core      added     osmo_sock_set_nonblock(), osmo_sock_get_nonblock()
 core      added     gsmtap_source_set_nonblock(), gsmtap_source_using_wq()
+core      added     osmo_iofd_set_name_f()

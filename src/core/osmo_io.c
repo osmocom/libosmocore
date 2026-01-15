@@ -1153,6 +1153,24 @@ void osmo_iofd_set_name(struct osmo_io_fd *iofd, const char *name)
 	osmo_talloc_replace_string(iofd, &iofd->name, name);
 }
 
+/*! Set the human-readable name of the file descriptor using arguments like printf()
+ *  \param[in] iofd the file descriptor
+ *  \param[in] fmt the fmt to set on the file descriptor */
+void osmo_iofd_set_name_f(struct osmo_io_fd *iofd, const char *fmt, ...)
+{
+	char *name = NULL;
+
+	if (fmt) {
+		va_list ap;
+
+		va_start(ap, fmt);
+		name = talloc_vasprintf(iofd, fmt, ap);
+		va_end(ap);
+	}
+	talloc_free((void *)iofd->name);
+	iofd->name = name;
+}
+
 /*! Set the osmo_io_ops calbacks for an osmo_io_fd.
  *  This function can be used to update/overwrite the call-back functions for the given osmo_io_fd; it
  *  replaces the currently-set call-back function pointers from a previous call to osmo_iofd_set_ioops()
