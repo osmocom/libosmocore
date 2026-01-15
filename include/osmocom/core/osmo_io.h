@@ -240,6 +240,7 @@ void osmo_iofd_set_priv_nr(struct osmo_io_fd *iofd, unsigned int priv_nr);
 int osmo_iofd_get_fd(const struct osmo_io_fd *iofd);
 const char *osmo_iofd_get_name(const struct osmo_io_fd *iofd);
 void osmo_iofd_set_name(struct osmo_io_fd *iofd, const char *name);
+void osmo_iofd_set_name_f(struct osmo_io_fd *iofd, const char *fmt, ...);
 
 int osmo_iofd_set_ioops(struct osmo_io_fd *iofd, const struct osmo_io_ops *ioops);
 void osmo_iofd_get_ioops(struct osmo_io_fd *iofd, struct osmo_io_ops *ioops);
