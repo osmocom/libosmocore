@@ -50,6 +50,9 @@
 #include <osmocom/core/thread.h>
 
 #define	GSMTAP_LOG_MAX_SIZE 4096
+#define GSMTAP_MSG_MAX_SIZE (sizeof(struct gsmtap_hdr) + \
+			     sizeof(struct gsmtap_osmocore_log_hdr) + \
+			     GSMTAP_LOG_MAX_SIZE)
 
 static __thread uint32_t logging_gsmtap_tid;
 
@@ -70,8 +73,8 @@ static void _gsmtap_raw_output(struct log_target *target, int subsys,
 	/* get timestamp ASAP */
 	osmo_gettimeofday(&tv, NULL);
 
-	msg = msgb_alloc(sizeof(*gh)+sizeof(*golh)+GSMTAP_LOG_MAX_SIZE,
-			 "GSMTAP logging");
+
+	msg = msgb_alloc_c((void *)target->output, GSMTAP_MSG_MAX_SIZE, "GSMTAP logging");
 
 	/* GSMTAP header */
 	gh = (struct gsmtap_hdr *) msgb_put(msg, sizeof(*gh));
@@ -149,6 +152,32 @@ struct log_target *log_target_create_gsmtap(const char *host, uint16_t port,
 		log_target_destroy(target);
 		return NULL;
 	}
+
+#ifndef ENABLE_PSEUDOTALLOC
+	size_t num_pool_objects;
+	if (ofd_wq_mode) {
+		/* Allocate a talloc pool to avoid malloc() on the first 100
+		* concurrently queued msgbs (~400KB per gsmtap_log target).
+		* Once the talloc_pool is full, new normal talloc chunks will be used. */
+		num_pool_objects = 100;
+	} else {
+		/* When in synchronous mode (blocking & non-blocking), there's
+		 * no queueing in gsmtap_sendmsg() so there's no need to have a
+		 * pool with multiple msgbs. */
+		num_pool_objects = 1;
+	}
+	/* XXX: Abuse "output" field to store the talloc_pool, since it's not
+	 * used in gsmtap log target. This can be moved to its own field once we
+	 * make "struct log_target" private.
+	 */
+	target->output = _talloc_pooled_object(target, 0, "gsmtap_log_msgb_pool",
+					       num_pool_objects,
+					       (sizeof(struct msgb) + GSMTAP_MSG_MAX_SIZE) * num_pool_objects);
+#else
+	/* talloc pools not supported by pseudotalloc, allocate on usual msgb ctx instead: */
+	extern void *tall_msgb_ctx;
+	target->output = tall_msgb_ctx;
+#endif /* ifndef ENABLE_PSEUDOTALLOC */
 
 	if (add_sink)
 		gsmtap_source_add_sink(gti);

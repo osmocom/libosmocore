@@ -455,6 +455,9 @@ AC_ARG_ENABLE(pseudotalloc,
         )],
         [enable_pseudotalloc=$enableval], [enable_pseudotalloc=$ENABLE_PSEUDOTALLOC_DEFAULT])
 AM_CONDITIONAL(ENABLE_PSEUDOTALLOC, test x"$enable_pseudotalloc" = x"yes")
+AS_IF([test "x$enable_pseudotalloc" = "xyes"], [
+	AC_DEFINE([ENABLE_PSEUDOTALLOC], [1], [Enable building pseudotalloc library])
+])
 
 AC_ARG_ENABLE(log_macros,
 	[AS_HELP_STRING(
