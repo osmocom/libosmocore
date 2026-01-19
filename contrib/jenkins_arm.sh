@@ -18,10 +18,6 @@ build() {
 	--enable-embedded \
 	--disable-doxygen \
 	--disable-shared \
-	--disable-libsctp \
-	--disable-libusb \
-	--disable-libmnl \
-	--disable-syslog-logging \
 	CFLAGS="-Os -ffunction-sections -fdata-sections -nostartfiles -nodefaultlibs $WERROR_FLAGS"
 
     $MAKE $PARALLEL_MAKE
