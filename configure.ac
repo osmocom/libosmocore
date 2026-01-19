@@ -187,13 +187,69 @@ AM_PATH_PYTHON([3.4])
 
 PKG_CHECK_MODULES(TALLOC, [talloc >= 2.1.0])
 
+ENABLE_URING_DEFAULT="yes"
+ENABLE_PCSC_DEFAULT="yes"
+ENABLE_LIBUSB_DEFAULT="yes"
+ENABLE_GNUTLS_DEFAULT="yes"
+ENABLE_SYSLOG_LOGGING_DEFAULT="yes"
+ENABLE_SYSTEMD_LOGGING_DEFAULT="no"
+ENABLE_LIBMNL_DEFAULT="yes"
+ENABLE_LIBSCTP_DEFAULT="yes"
+ENABLE_SCTP_TESTS_DEFAULT="yes"
+ENABLE_URING_TESTS_DEFAULT="yes"
+ENABLE_PLUGIN_DEFAULT="yes"
+ENABLE_VTY_DEFAULT="yes"
+ENABLE_PANIC_INFLOOP_DEFAULT="no"
+ENABLE_OSMO_FD_CHECK_DEFAULT="no"
+ENABLE_FORCE_IO_SELECT_DEFAULT="no"
+ENABLE_MSGFILE_DEFAULT="yes"
+ENABLE_SERIAL_DEFAULT="yes"
+ENABLE_UTILITIES_DEFAULT="yes"
+ENABLE_GB_DEFAULT="yes"
+ENABLE_CTRL_DEFAULT="yes"
+ENABLE_PSEUDOTALLOC_DEFAULT="no"
+ENABLE_EMBEDDED_DEFAULT="no"
+ENABLE_LIBOSMOCORE_NO_LOGGING_DEFAULT="no"
+ENABLE_SANITIZE_DEFAULT="no"
+ENABLE_WERROR_DEFAULT="no"
+ENABLE_EXT_TESTS_DEFAULT="no"
+ENABLE_SIMD_SUPPORT_DEFAULT="yes"
+ENABLE_NEON_SUPPORT_DEFAULT="no"
+ENABLE_SYSTEMTAP_DEFAULT="no"
+
+AC_ARG_ENABLE(embedded,
+	[AS_HELP_STRING(
+		[--enable-embedded],
+		[Enable building for embedded use and disable unsupported features]
+	)],
+	[embedded=$enableval], [embedded=$ENABLE_EMBEDDED_DEFAULT])
+AM_CONDITIONAL(EMBEDDED, test x"$embedded" = x"yes")
+AM_CONDITIONAL(ENABLE_SERCOM_STUB, test x"$embedded" = x"yes")
+
+if test x"$embedded" = x"yes"
+then
+	AC_DEFINE([EMBEDDED],[1],[Select building for embedded use])
+	ENABLE_PLUGIN_DEFAULT="no"
+	ENABLE_MSGFILE_DEFAULT="no"
+	ENABLE_SERIAL_DEFAULT="no"
+	ENABLE_GNUTLS_DEFAULT="no"
+	ENABLE_VTY_DEFAULT="no"
+	ENABLE_CTRL_DEFAULT="no"
+	ENABLE_UTILITIES_DEFAULT="no"
+	ENABLE_GB_DEFAULT="no"
+	ENABLE_LIBMNL_DEFAULT="no"
+	ENABLE_LIBSCTP_DEFAULT="no"
+	ENABLE_LIBUSB_DEFAULT="no"
+	ENABLE_PCSC_DEFAULT="no"
+	ENABLE_URING_DEFAULT="no"
+	ENABLE_PSEUDOTALLOC_DEFAULT="yes"
+	ENABLE_SYSLOG_LOGGING_DEFAULT="no"
+	ENABLE_PANIC_INFLOOP_DEFAULT="yes"
+	ENABLE_GNUTLS_DEFAULT="no"
+fi
+
 AC_ARG_ENABLE([uring], [AS_HELP_STRING([--disable-uring], [Build without io_uring support])],
-    [
-        ENABLE_URING=$enableval
-    ],
-    [
-        ENABLE_URING="yes"
-    ])
+	[ENABLE_URING=$enableval], [ENABLE_URING=$ENABLE_URING_DEFAULT])
 AS_IF([test "x$ENABLE_URING" = "xyes"], [
 	PKG_CHECK_MODULES(URING, [liburing >= 0.7])
 	AC_DEFINE([HAVE_URING],[1],[Build with io_uring support])
@@ -202,12 +258,7 @@ AM_CONDITIONAL(ENABLE_URING, test "x$ENABLE_URING" = "xyes")
 AC_SUBST(ENABLE_URING)
 
 AC_ARG_ENABLE([pcsc], [AS_HELP_STRING([--disable-pcsc], [Build without PC/SC support])],
-    [
-        ENABLE_PCSC=$enableval
-    ],
-    [
-        ENABLE_PCSC="yes"
-    ])
+	[ENABLE_PCSC=$enableval], [ENABLE_PCSC=$ENABLE_PCSC_DEFAULT])
 AS_IF([test "x$ENABLE_PCSC" = "xyes"], [
 	PKG_CHECK_MODULES(PCSC, libpcsclite)
 	AC_DEFINE([HAVE_PCSC],[1],[Build with PC/SC support])
@@ -216,12 +267,7 @@ AM_CONDITIONAL(ENABLE_PCSC, test "x$ENABLE_PCSC" = "xyes")
 AC_SUBST(ENABLE_PCSC)
 
 AC_ARG_ENABLE([libusb], [AS_HELP_STRING([--disable-libusb], [Build without libusb support])],
-    [
-        ENABLE_LIBUSB=$enableval
-    ],
-    [
-        ENABLE_LIBUSB="yes"
-    ])
+	[ENABLE_LIBUSB=$enableval], [ENABLE_LIBUSB=$ENABLE_LIBUSB_DEFAULT])
 AS_IF([test "x$ENABLE_LIBUSB" = "xyes"], [
 	PKG_CHECK_MODULES(LIBUSB, libusb-1.0)
 ])
@@ -229,7 +275,7 @@ AM_CONDITIONAL(ENABLE_LIBUSB, test "x$ENABLE_LIBUSB" = "xyes")
 AC_SUBST(ENABLE_LIBUSB)
 
 AC_ARG_ENABLE([gnutls], [AS_HELP_STRING([--disable-gnutls], [Do not use GnuTLS fallback for missing getrandom()])],
-	[ENABLE_GNUTLS=$enableval], [ENABLE_GNUTLS="yes"])
+	[ENABLE_GNUTLS=$enableval], [ENABLE_GNUTLS=$ENABLE_GNUTLS_DEFAULT])
 AM_CONDITIONAL(ENABLE_GNUTLS, test x"$ENABLE_GNUTLS" = x"yes")
 AS_IF([test "x$ENABLE_GNUTLS" = "xyes"], [
 	PKG_CHECK_MODULES([LIBGNUTLS], [gnutls >= 2.12.0])
@@ -247,7 +293,7 @@ AC_ARG_ENABLE([syslog_logging],
 		[--disable-syslog-logging],
 		[Build without syslog logging support]
 	)],
-	[syslog_logging=$enableval], [syslog_logging="yes"])
+	[syslog_logging=$enableval], [syslog_logging=$ENABLE_SYSLOG_LOGGING_DEFAULT])
 AS_IF([test "x$syslog_logging" = "xyes"], [
 	AC_CHECK_HEADER([syslog.h], [SYSLOG_H_FOUND='yes'],
 			[SYSLOG_H_FOUND='no';
@@ -262,7 +308,7 @@ AC_ARG_ENABLE([systemd_logging],
 		[--enable-systemd-logging],
 		[Build with systemd-journal logging support]
 	)],
-	[systemd_logging=$enableval], [systemd_logging="no"])
+	[systemd_logging=$enableval], [systemd_logging=$ENABLE_SYSTEMD_LOGGING_DEFAULT])
 AS_IF([test "x$systemd_logging" = "xyes"], [
 	PKG_CHECK_MODULES(SYSTEMD, libsystemd)
 	AC_DEFINE([ENABLE_SYSTEMD_LOGGING], [1], [Enable systemd-journal logging target])
@@ -275,7 +321,7 @@ AC_ARG_ENABLE([libmnl],
 		[--disable-libmnl],
 		[Build without netlink socket support via libmnl]
 	)],
-	[mnl=$enableval], [mnl="yes"])
+	[mnl=$enableval], [mnl=$ENABLE_LIBMNL_DEFAULT])
 AS_IF([test "x$mnl" = "xyes"], [
 	PKG_CHECK_MODULES(LIBMNL, libmnl, [AC_SUBST(LIBMNL_PC, [libmnl])])
 	AC_DEFINE([ENABLE_LIBMNL], [1], [Enable netlink socket support via libmnl])
@@ -284,7 +330,7 @@ AM_CONDITIONAL(ENABLE_LIBMNL, test "x$mnl" = "xyes")
 AC_SUBST(ENABLE_LIBMNL)
 
 AC_ARG_ENABLE([libsctp], [AS_HELP_STRING([--disable-libsctp], [Do not enable socket multiaddr APIs requiring libsctp])],
-	[ENABLE_LIBSCTP=$enableval], [ENABLE_LIBSCTP="yes"])
+	[ENABLE_LIBSCTP=$enableval], [ENABLE_LIBSCTP=$ENABLE_LIBSCTP_DEFAULT])
 AM_CONDITIONAL(ENABLE_LIBSCTP, test x"$ENABLE_LIBSCTP" = x"yes")
 AS_IF([test "x$ENABLE_LIBSCTP" = "xyes"], [
 	AC_DEFINE(HAVE_LIBSCTP, 1, [Define 1 to enable SCTP support])
@@ -306,11 +352,11 @@ AS_IF([test "x$ENABLE_LIBSCTP" = "xyes"], [
 ])
 
 AC_ARG_ENABLE([sctp-tests], [AS_HELP_STRING([--disable-sctp-tests], [Do not run socket tests requiring system SCTP support])],
-	[ENABLE_SCTP_TESTS=$enableval], [ENABLE_SCTP_TESTS="yes"])
+	[ENABLE_SCTP_TESTS=$enableval], [ENABLE_SCTP_TESTS=$ENABLE_SCTP_TESTS_DEFAULT])
 AM_CONDITIONAL(ENABLE_SCTP_TESTS, test x"$ENABLE_SCTP_TESTS" = x"yes")
 
 AC_ARG_ENABLE([uring-tests], [AS_HELP_STRING([--disable-uring-tests], [Do not run io_uring tests])],
-	[ENABLE_URING_TESTS=$enableval], [ENABLE_URING_TESTS="yes"])
+	[ENABLE_URING_TESTS=$enableval], [ENABLE_URING_TESTS=$ENABLE_URING_TESTS_DEFAULT])
 AM_CONDITIONAL(ENABLE_URING_TESTS, test x"$ENABLE_URING_TESTS" = x"yes")
 AC_SUBST(ENABLE_URING_TESTS)
 
@@ -319,7 +365,7 @@ AC_ARG_ENABLE(plugin,
 		[--disable-plugin],
 		[Disable support for dlopen plugins],
 	)],
-	[enable_plugin=$enableval], [enable_plugin="yes"])
+	[enable_plugin=$enableval], [enable_plugin=$ENABLE_PLUGIN_DEFAULT])
 AM_CONDITIONAL(ENABLE_PLUGIN, test x"$enable_plugin" = x"yes")
 
 AC_ARG_ENABLE(vty,
@@ -327,7 +373,7 @@ AC_ARG_ENABLE(vty,
 		[--disable-vty],
 		[Disable building VTY telnet interface]
 	)],
-	[enable_vty=$enableval], [enable_vty="yes"])
+	[enable_vty=$enableval], [enable_vty=$ENABLE_VTY_DEFAULT])
 AM_CONDITIONAL(ENABLE_VTY, test x"$enable_vty" = x"yes")
 
 AC_ARG_ENABLE(panic_infloop,
@@ -335,7 +381,7 @@ AC_ARG_ENABLE(panic_infloop,
 		[--enable-panic-infloop],
 		[Trigger infinite loop on panic rather than fprintf/abort]
 	)],
-	[panic_infloop=$enableval], [panic_infloop="no"])
+	[panic_infloop=$enableval], [panic_infloop=$ENABLE_PANIC_INFLOOP_DEFAULT])
 if test x"$panic_infloop" = x"yes"
 then
 	AC_DEFINE([PANIC_INFLOOP],[1],[Use infinite loop on panic rather than fprintf/abort])
@@ -346,7 +392,7 @@ AC_ARG_ENABLE(bsc_fd_check,
 		[--enable-ofd-check],
 		[Instrument osmo_fd_register to check that the fd is registered]
 	)],
-	[fd_check=$enableval], [fd_check="no"])
+	[fd_check=$enableval], [fd_check=$ENABLE_OSMO_FD_CHECK_DEFAULT])
 if test x"$fd_check" = x"yes"
 then
 	AC_DEFINE([OSMO_FD_CHECK], [1], [Instrument the osmo_fd_register])
@@ -357,7 +403,7 @@ AC_ARG_ENABLE([force_io_select],
 		[--enable-force-io-select],
 		[Build with old select I/O instead of poll]
 	)],
-	[force_io_select=$enableval], [force_io_select="no"])
+	[force_io_select=$enableval], [force_io_select=$ENABLE_FORCE_IO_SELECT_DEFAULT])
 AS_IF([test "x$force_io_select" = "xyes"], [
 	AC_DEFINE([FORCE_IO_SELECT], [1], [Force the use of select() instead of poll()])
 ])
@@ -367,7 +413,7 @@ AC_ARG_ENABLE(msgfile,
 		[--disable-msgfile],
 		[Disable support for the msgfile],
 	)],
-	[enable_msgfile=$enableval], [enable_msgfile="yes"])
+	[enable_msgfile=$enableval], [enable_msgfile=$ENABLE_MSGFILE_DEFAULT])
 AM_CONDITIONAL(ENABLE_MSGFILE, test x"$enable_msgfile" = x"yes")
 
 AC_ARG_ENABLE(serial,
@@ -375,7 +421,7 @@ AC_ARG_ENABLE(serial,
 		[--disable-serial],
 		[Disable support for the serial helpers],
 	)],
-	[enable_serial=$enableval], [enable_serial="yes"])
+	[enable_serial=$enableval], [enable_serial=$ENABLE_SERIAL_DEFAULT])
 AM_CONDITIONAL(ENABLE_SERIAL, test x"$enable_serial" = x"yes")
 
 AC_ARG_ENABLE(utilities,
@@ -383,7 +429,7 @@ AC_ARG_ENABLE(utilities,
                 [--disable-utilities],
                 [Disable building utility programs],
         )],
-        [enable_utilities=$enableval], [enable_utilities="yes"])
+        [enable_utilities=$enableval], [enable_utilities=$ENABLE_UTILITIES_DEFAULT])
 AM_CONDITIONAL(ENABLE_UTILITIES, test x"$enable_utilities" = x"yes")
 
 AC_ARG_ENABLE(gb,
@@ -391,7 +437,7 @@ AC_ARG_ENABLE(gb,
                 [--disable-gb],
                 [Disable building Gb library],
         )],
-        [enable_gb=$enableval], [enable_gb="yes"])
+        [enable_gb=$enableval], [enable_gb=$ENABLE_GB_DEFAULT])
 AM_CONDITIONAL(ENABLE_GB, test x"$enable_gb" = x"yes")
 
 AC_ARG_ENABLE(ctrl,
@@ -399,7 +445,7 @@ AC_ARG_ENABLE(ctrl,
                 [--disable-ctrl],
                 [Disable building CTRL library],
         )],
-        [enable_ctrl=$enableval], [enable_ctrl="yes"])
+        [enable_ctrl=$enableval], [enable_ctrl=$ENABLE_CTRL_DEFAULT])
 AM_CONDITIONAL(ENABLE_CTRL, test x"$enable_ctrl" = x"yes")
 
 AC_ARG_ENABLE(pseudotalloc,
@@ -407,49 +453,15 @@ AC_ARG_ENABLE(pseudotalloc,
                 [--enable-pseudotalloc],
                 [Enable building pseudotalloc library],
         )],
-        [enable_pseudotalloc=$enableval], [enable_pseudotalloc="no"])
+        [enable_pseudotalloc=$enableval], [enable_pseudotalloc=$ENABLE_PSEUDOTALLOC_DEFAULT])
 AM_CONDITIONAL(ENABLE_PSEUDOTALLOC, test x"$enable_pseudotalloc" = x"yes")
-
-AC_ARG_ENABLE(embedded,
-	[AS_HELP_STRING(
-		[--enable-embedded],
-		[Enable building for embedded use and disable unsupported features]
-	)],
-	[embedded=$enableval], [embedded="no"])
-
-AM_CONDITIONAL(EMBEDDED, false)
-AM_CONDITIONAL(ENABLE_SERCOM_STUB, false)
-
-if test x"$embedded" = x"yes"
-then
-	AC_DEFINE([EMBEDDED],[1],[Select building for embedded use])
-	AM_CONDITIONAL(ENABLE_PLUGIN, false)
-	AM_CONDITIONAL(ENABLE_MSGFILE, false)
-	AM_CONDITIONAL(ENABLE_SERIAL, false)
-	AM_CONDITIONAL(ENABLE_GNUTLS, false)
-	AM_CONDITIONAL(ENABLE_VTY, false)
-	AM_CONDITIONAL(ENABLE_CTRL, false)
-	AM_CONDITIONAL(ENABLE_UTILITIES, false)
-	AM_CONDITIONAL(ENABLE_GB, false)
-	AM_CONDITIONAL(ENABLE_LIBMNL, false)
-	AM_CONDITIONAL(ENABLE_LIBSCTP, false)
-	AM_CONDITIONAL(ENABLE_LIBUSB, false)
-	AM_CONDITIONAL(ENABLE_PCSC, false)
-	AM_CONDITIONAL(ENABLE_URING, false)
-	AM_CONDITIONAL(ENABLE_PSEUDOTALLOC, true)
-	AM_CONDITIONAL(ENABLE_SERCOM_STUB, true)
-	AM_CONDITIONAL(ENABLE_SYSLOG_LOGGING, false)
-	AM_CONDITIONAL(EMBEDDED, true)
-	AC_DEFINE([USE_GNUTLS], [0])
-	AC_DEFINE([PANIC_INFLOOP],[1],[Use infinite loop on panic rather than fprintf/abort])
-fi
 
 AC_ARG_ENABLE(log_macros,
 	[AS_HELP_STRING(
 		[--disable-log-macros],
 		[Disable logging macros that are also used internally to print information]
 	)],
-	[log_macros="yes"], [log_macros="no"])
+	[log_macros=$enableval], [log_macros=$ENABLE_LIBOSMOCORE_NO_LOGGING_DEFAULT])
 if test x"$log_macros" == x"yes"
 then
 	AC_DEFINE([LIBOSMOCORE_NO_LOGGING],[1],[Disable logging macros])
@@ -460,7 +472,7 @@ AC_ARG_ENABLE(sanitize,
 		[--enable-sanitize],
 		[Compile with address sanitizer enabled],
 	)],
-	[sanitize=$enableval], [sanitize="no"])
+	[sanitize=$enableval], [sanitize=$ENABLE_SANITIZE_DEFAULT])
 if test x"$sanitize" = x"yes"
 then
 	CFLAGS="$CFLAGS -fsanitize=address -fsanitize=undefined"
@@ -475,7 +487,7 @@ AC_ARG_ENABLE(werror,
 		 b) "#warning" pragmas (allow to remind ourselves of errors without breaking builds)
 		]
 	)],
-	[werror=$enableval], [werror="no"])
+	[werror=$enableval], [werror=$ENABLE_WERROR_DEFAULT])
 if test x"$werror" = x"yes"
 then
 	WERROR_FLAGS="-Werror"
@@ -489,7 +501,7 @@ fi
 AC_ARG_ENABLE([external_tests],
 		AC_HELP_STRING([--enable-external-tests],
 				[Include the VTY/CTRL tests in make check [default=no]]),
-		[enable_ext_tests="$enableval"],[enable_ext_tests="no"])
+		[enable_ext_tests="$enableval"],[enable_ext_tests=$ENABLE_EXT_TESTS_DEFAULT])
 if test "x$enable_ext_tests" = "xyes" ; then
 	AC_CHECK_PROG(OSMOTESTEXT_CHECK,osmo_verify_transcript_vty.py,yes)
 	 if test "x$OSMOTESTEXT_CHECK" != "xyes" ; then
@@ -508,7 +520,7 @@ AC_ARG_ENABLE(simd,
 		[--disable-simd],
 		[Disable SIMD support]
 	)],
-	[simd=$enableval], [simd="yes"])
+	[simd=$enableval], [simd=$ENABLE_SIMD_SUPPORT_DEFAULT])
 if test x"$simd" = x"yes"
 then
 	# Find and define supported SIMD extensions
@@ -524,7 +536,7 @@ AC_ARG_ENABLE(neon,
 		[--enable-neon],
 		[Enable ARM NEON instructions support [default=no]]
 	)],
-	[neon=$enableval], [neon="no"])
+	[neon=$enableval], [neon=$ENABLE_NEON_SUPPORT_DEFAULT])
 AS_IF([test "x$neon" = "xyes"], [
 	AC_DEFINE([HAVE_NEON],, [Support ARM NEON instructions])
 ])
@@ -539,7 +551,7 @@ AC_MSG_CHECKING([whether to include systemtap tracing support])
 AC_ARG_ENABLE([systemtap],
 	      [AS_HELP_STRING([--enable-systemtap],
 			      [Enable inclusion of systemtap trace support])],
-	      [ENABLE_SYSTEMTAP="${enableval}"], [ENABLE_SYSTEMTAP='no'])
+	      [ENABLE_SYSTEMTAP="${enableval}"], [ENABLE_SYSTEMTAP=$ENABLE_SYSTEMTAP_DEFAULT])
 AM_CONDITIONAL([ENABLE_SYSTEMTAP], [test x$ENABLE_SYSTEMTAP = xyes])
 AC_MSG_RESULT(${ENABLE_SYSTEMTAP})
 
