@@ -509,12 +509,12 @@ static int _osmo_select_main(int polling)
 int osmo_select_main(int polling)
 {
 	int rc = _osmo_select_main(polling);
-#ifndef EMBEDDED
+#ifndef ENABLE_PSEUDOTALLOC
 	if (talloc_total_size(osmo_ctx->select) != 0) {
 		osmo_panic("You cannot use the 'select' volatile "
 			   "context if you don't use osmo_select_main_ctx()!\n");
 	}
-#endif
+#endif /* ifndef ENABLE_PSEUDOTALLOC */
 	return rc;
 }
 
