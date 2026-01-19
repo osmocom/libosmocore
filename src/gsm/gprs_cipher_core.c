@@ -66,11 +66,11 @@ int gprs_cipher_register(struct gprs_cipher_impl *ciph)
 /* load all available GPRS cipher plugins */
 int gprs_cipher_load(const char *path)
 {
-#if !defined(EMBEDDED)
+#ifdef ENABLE_PLUGIN
 	/* load all plugins available from path */
 	if (path)
 		return osmo_plugin_load_all(path);
-#endif
+#endif /* ifdef ENABLE_PLUGIN */
 	return 0;
 }
 

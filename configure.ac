@@ -360,13 +360,12 @@ AC_ARG_ENABLE([uring-tests], [AS_HELP_STRING([--disable-uring-tests], [Do not ru
 AM_CONDITIONAL(ENABLE_URING_TESTS, test x"$ENABLE_URING_TESTS" = x"yes")
 AC_SUBST(ENABLE_URING_TESTS)
 
-AC_ARG_ENABLE(plugin,
-	[AS_HELP_STRING(
-		[--disable-plugin],
-		[Disable support for dlopen plugins],
-	)],
+AC_ARG_ENABLE(plugin, [AS_HELP_STRING([--disable-plugin], [Disable support for dlopen plugins],)],
 	[enable_plugin=$enableval], [enable_plugin=$ENABLE_PLUGIN_DEFAULT])
 AM_CONDITIONAL(ENABLE_PLUGIN, test x"$enable_plugin" = x"yes")
+AS_IF([test "x$enable_plugin" = "xyes"], [
+	AC_DEFINE([ENABLE_PLUGIN], [1], [Enable support for dlopen plugins])
+])
 
 AC_ARG_ENABLE(vty,
 	[AS_HELP_STRING(

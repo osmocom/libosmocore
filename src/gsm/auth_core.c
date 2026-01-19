@@ -98,11 +98,11 @@ int osmo_auth_register(struct osmo_auth_impl *impl)
 int osmo_auth_load(const char *path)
 {
 	/* load all plugins available from path */
-#if !defined(EMBEDDED)
+#ifdef ENABLE_PLUGIN
 	return osmo_plugin_load_all(path);
 #else
 	return -1;
-#endif
+#endif /* ifdef ENABLE_PLUGIN */
 }
 
 /*! Determine if a given authentication algorithm is supported
