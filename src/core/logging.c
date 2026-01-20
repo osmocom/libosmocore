@@ -886,7 +886,42 @@ int log_set_context(uint8_t ctx_nr, void *value)
 	return 0;
 }
 
-/*! Enable the \ref LOG_FLT_ALL log filter
+/*! Get the logging context
+ *  \param[in] ctx logging context
+ *  \param[in] ctx_nr logging context number
+ *  \returns value set for the context
+ *
+ * A logging context is something like the subscriber identity to which
+ * the currently processed message relates, or the BTS through which it
+ * was received. The main use of this API is during
+ * (struct log_info)->filter_fn(ctx, log_tgt).
+ */
+void *log_get_context(const struct log_context *ctx, uint8_t ctx_nr)
+{
+	if (ctx_nr > LOG_MAX_CTX)
+		return NULL;
+	return ctx->ctx[ctx_nr];
+}
+
+/*! Query whether a log filter is enabled or disabled
+ *  \param[in] target Log target to be queried
+ *  \param[in] log_filter_index the index of the log filter to query
+ *  \returns whether the filtering is enabled (true) or disabled (false)
+ */
+bool log_get_filter(const struct log_target *target, int log_filter_index)
+{
+	/* TODO: in the future we can support app-specified log filters here,
+	 * similar to how we do dynamic cateogries defined by apps. */
+	if (log_filter_index < 0)
+		return false;
+
+	if (log_filter_index >= LOG_MAX_FILTERS)
+		return false;
+
+	return target->filter_map & (1 << log_filter_index);
+}
+
+/*! Enable/disable the \ref LOG_FLT_ALL log filter
  *  \param[in] target Log target to be affected
  *  \param[in] all enable (1) or disable (0) the ALL filter
  *
@@ -900,6 +935,67 @@ void log_set_all_filter(struct log_target *target, int all)
 		target->filter_map |= (1 << LOG_FLT_ALL);
 	else
 		target->filter_map &= ~(1 << LOG_FLT_ALL);
+}
+
+/*! Enable/disable a log filter
+ *  \param[in] target Log target to be affected
+ *  \param[in] log_filter_index the index of the log filter to set
+ *  \param[in] enable enable (true) or disable (false) the ALL filter
+ *  \returns 0 on success, negative on error.
+ */
+int log_set_filter(struct log_target *target, int log_filter_index, bool enable)
+{
+	/* TODO: in the future we can support app-specified log filters here,
+	 * similar to how we do dynamic cateogries defined by apps. */
+	if (log_filter_index < 0)
+		return -EINVAL;
+
+	if (log_filter_index >= LOG_MAX_FILTERS)
+		return -EINVAL;
+
+	if (enable)
+		target->filter_map |= (1 << log_filter_index);
+	else
+		target->filter_map &= ~(1 << log_filter_index);
+	return 0;
+}
+
+/*! Obtain data associated to a log filter
+ *  \param[in] target Log target to be queried
+ *  \param[in] log_filter_index the index of the log filter to query
+ *  \returns data associated to the log filter
+ */
+void *log_get_filter_data(const struct log_target *target, int log_filter_index)
+{
+	/* TODO: in the future we can support app-specified log filters here,
+	 * similar to how we do dynamic cateogries defined by apps. */
+	if (log_filter_index < 0)
+		return NULL;
+
+	if (log_filter_index >= LOG_MAX_FILTERS)
+		return NULL;
+
+	return target->filter_data[log_filter_index];
+}
+
+/*! Set data associated to a log filter
+ *  \param[in] target Log target to be affected
+ *  \param[in] log_filter_index the index of the log filter to set associate data for
+ *  \param[in] data The user provided data pointer to associate to the log filter
+ *  \returns 0 on success, negative on error.
+ */
+int log_set_filter_data(struct log_target *target, int log_filter_index, void *data)
+{
+	/* TODO: in the future we can support app-specified log filters here,
+	 * similar to how we do dynamic cateogries defined by apps. */
+	if (log_filter_index < 0)
+		return -EINVAL;
+
+	if (log_filter_index >= LOG_MAX_FILTERS)
+		return -EINVAL;
+
+	target->filter_data[log_filter_index] = data;
+	return 0;
 }
 
 /*! Enable or disable the use of colored output

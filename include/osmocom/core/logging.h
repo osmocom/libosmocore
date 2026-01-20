@@ -225,7 +225,7 @@ enum log_filter_index {
 
 /*! Log context information, passed to filter */
 struct log_context {
-	void *ctx[LOG_MAX_CTX+1];
+	void *ctx[LOG_MAX_CTX+1] OSMO_DEPRECATED_OUTSIDE("Accessing struct log_context members directly is deprecated");
 };
 
 /*! Compatibility with older libosmocore versions */
@@ -298,13 +298,15 @@ enum log_filename_pos {
 };
 
 /*! structure representing a logging target */
+#define OSMO_DEPRECATED_OUTSIDE_LIBOSMOCORE_LOG_TARGET \
+	OSMO_DEPRECATED_OUTSIDE("Accessing struct log_target members directly is deprecated")
 struct log_target {
 	struct llist_head entry;		/*!< linked list */
 
 	/*! Internal data for filtering */
-	int filter_map;
+	int filter_map OSMO_DEPRECATED_OUTSIDE_LIBOSMOCORE_LOG_TARGET;
 	/*! Internal data for filtering */
-	void *filter_data[LOG_MAX_FILTERS+1];
+	void *filter_data[LOG_MAX_FILTERS+1] OSMO_DEPRECATED_OUTSIDE_LIBOSMOCORE_LOG_TARGET;
 
 	/*! logging categories */
 	struct log_category *categories;
@@ -406,10 +408,16 @@ int log_check_level(int subsys, unsigned int level);
 
 /* context management */
 void log_reset_context(void);
-int log_set_context(uint8_t ctx, void *value);
+int log_set_context(uint8_t ctx_nr, void *value);
+void *log_get_context(const struct log_context *ctx, uint8_t ctx_nr);
 
 /* filter on the targets */
 void log_set_all_filter(struct log_target *target, int);
+bool log_get_filter(const struct log_target *target, int log_filter_index);
+int log_set_filter(struct log_target *target, int log_filter_index, bool enable);
+void *log_get_filter_data(const struct log_target *target, int log_filter_index);
+int log_set_filter_data(struct log_target *target, int log_filter_index, void *data);
+
 int log_cache_enable(void);
 void log_cache_update(int mapped_subsys, uint8_t enabled, uint8_t level);
 void log_set_use_color(struct log_target *target, int);
