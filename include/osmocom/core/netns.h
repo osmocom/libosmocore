@@ -2,9 +2,6 @@
  *  Network namespace convenience functions. */
 
 #pragma once
-#if (!EMBEDDED)
-
-#if defined(__linux__)
 
 #include <signal.h>
 
@@ -17,8 +14,4 @@ int osmo_netns_open_fd(const char *name);
 int osmo_netns_switch_enter(int nsfd, struct osmo_netns_switch_state *state);
 int osmo_netns_switch_exit(struct osmo_netns_switch_state *state);
 
-
-#endif /* defined(__linux__) */
-
-#endif /* (!EMBEDDED) */
 /*! @} */

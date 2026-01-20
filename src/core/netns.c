@@ -26,8 +26,6 @@
  *
  * \file netns.c */
 
-#if defined(__linux__)
-
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
@@ -36,13 +34,21 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#ifdef HAVE_SCHED_H
 #include <sched.h>
+#endif
 #include <signal.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#ifdef HAVE_SYS_SOCKET_H
 #include <sys/socket.h>
+#endif
+#ifdef HAVE_SYS_MOUNT_H
 #include <sys/mount.h>
+#endif
+#ifdef HAVE_SYS_PARAM_H
 #include <sys/param.h>
+#endif
 #include <fcntl.h>
 #include <errno.h>
 
@@ -52,6 +58,8 @@
 #define NETNS_PREFIX_PATH "/var/run/netns"
 #define NETNS_CURRENT_PATH "/proc/self/ns/net"
 
+// To prevent unused function errors when neither setns nor CLONE_NEWNET are available
+#if (HAVE_SETNS && HAVE_CLONE_NEWNET)
 /*! Open a file descriptor for the current network namespace.
  *  \returns fd of the current network namespace on success; negative in case of error
  */
@@ -63,6 +71,7 @@ static int netns_open_current_fd(void)
 		return -errno;
 	return fd;
 }
+#endif /* HAVE_SETNS && HAVE_CLONE_NEWNET */
 
 /*! switch to a (non-default) namespace, store existing signal mask in oldmask.
  *  \param[in] nsfd file descriptor representing the namespace to which we shall switch
@@ -70,6 +79,7 @@ static int netns_open_current_fd(void)
  *  \returns 0 on success; negative on error */
 int osmo_netns_switch_enter(int nsfd, struct osmo_netns_switch_state *state)
 {
+#if (HAVE_SETNS && HAVE_CLONE_NEWNET)
 	sigset_t intmask;
 	int rc;
 
@@ -89,6 +99,9 @@ int osmo_netns_switch_enter(int nsfd, struct osmo_netns_switch_state *state)
 		return -errno;
 	}
 	return 0;
+#else
+	return -ENOTSUP;
+#endif /* HAVE_SETNS && HAVE_CLONE_NEWNET */
 }
 
 /*! switch back to the previous namespace, restoring signal mask.
@@ -96,6 +109,7 @@ int osmo_netns_switch_enter(int nsfd, struct osmo_netns_switch_state *state)
  *  \returns 0 on successs; negative on error */
 int osmo_netns_switch_exit(struct osmo_netns_switch_state *state)
 {
+#if (HAVE_SETNS && HAVE_CLONE_NEWNET)
 	if (state->prev_nsfd < 0)
 		return -EINVAL;
 
@@ -109,10 +123,14 @@ int osmo_netns_switch_exit(struct osmo_netns_switch_state *state)
 	if ((rc = sigprocmask(SIG_SETMASK, &state->prev_sigmask, NULL)) != 0)
 		return -rc;
 	return 0;
+#else
+	return -ENOTSUP;
+#endif /* HAVE_SETNS && HAVE_CLONE_NEWNET */
 }
 
 static int create_netns(const char *name)
 {
+#if (HAVE_UNSHARE && HAVE_MOUNT && HAVE_SETNS && HAVE_CLONE_NEWNET)
 	char path[MAXPATHLEN];
 	sigset_t intmask, oldmask;
 	int fd, prev_nsfd;
@@ -175,6 +193,9 @@ restore_sigmask:
 		return -errno;
 
 	return fd;
+#else
+	return -ENOTSUP;
+#endif /* HAVE_UNSHARE && HAVE_MOUNT && HAVE_SETNS && HAVE_CLONE_NEWNET */
 }
 
 /*! Open a file descriptor for the network namespace with provided name.
@@ -202,7 +223,5 @@ int osmo_netns_open_fd(const char *name)
 	fd = create_netns(name);
 	return fd;
 }
-
-#endif /* defined(__linux__) */
 
 /*! @} */

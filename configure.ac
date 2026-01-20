@@ -145,6 +145,18 @@ AC_SUBST(SYMBOL_VISIBILITY)
 
 AC_CHECK_FUNCS(localtime_r)
 
+# Check for network namespace related functions and macros
+AC_CHECK_HEADERS([sched.h sys/mount.h sys/param.h])
+AC_CHECK_FUNCS([setns unshare mount])
+
+dnl Check whether CLONE_NEWNET is available
+AC_CHECK_DECL([CLONE_NEWNET],
+  [AC_DEFINE([HAVE_CLONE_NEWNET], [1],
+             [Define if CLONE_NEWNET is available])],
+  [],
+  [[#define _GNU_SOURCE
+    #include <sched.h>]])
+
 AC_DEFUN([CHECK_TM_INCLUDES_TM_GMTOFF], [
   AC_CACHE_CHECK(
     [whether struct tm has tm_gmtoff member],
