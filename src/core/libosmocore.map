@@ -96,7 +96,6 @@ log_set_print_timestamp;
 log_set_use_color;
 log_target_create;
 log_target_create_file;
-log_target_create_file_stream;
 log_target_create_gsmtap;
 log_target_create_rb;
 log_target_create_stderr;
