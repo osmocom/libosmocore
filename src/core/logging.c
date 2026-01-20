@@ -1278,29 +1278,6 @@ struct log_target *log_target_create_stderr(void)
 }
 
 #if (!EMBEDDED)
-/*! Create a new file-based log target using buffered, blocking stream output
- *  \param[in] fname File name of the new log file
- *  \returns Log target in case of success, NULL otherwise
- */
-struct log_target *log_target_create_file_stream(const char *fname)
-{
-	struct log_target *target;
-
-	target = log_target_create();
-	if (!target)
-		return NULL;
-
-	target->type = LOG_TGT_TYPE_FILE;
-	target->tgt_file.out = fopen(fname, "a");
-	if (!target->tgt_file.out) {
-		log_target_destroy(target);
-		return NULL;
-	}
-	target->output = _file_output_stream;
-	target->tgt_file.fname = talloc_strdup(target, fname);
-
-	return target;
-}
 
 /*! switch from non-blocking/write-queue to blocking + buffered stream output
  *  \param[in] target log target which we should switch
