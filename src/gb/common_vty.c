@@ -40,23 +40,23 @@
 int gprs_log_filter_fn(const struct log_context *ctx,
 			struct log_target *tar)
 {
-	const void *nse = ctx->ctx[LOG_CTX_GB_NSE];
-	const void *nsvc = ctx->ctx[LOG_CTX_GB_NSVC];
-	const void *bvc = ctx->ctx[LOG_CTX_GB_BVC];
+	const void *nse = log_get_context(ctx, LOG_CTX_GB_NSE);
+	const void *nsvc = log_get_context(ctx, LOG_CTX_GB_NSVC);
+	const void *bvc = log_get_context(ctx, LOG_CTX_GB_BVC);
 
 	/* Filter on the NS Entity */
-	if ((tar->filter_map & (1 << LOG_FLT_GB_NSE)) != 0
-	    && nse && (nse == tar->filter_data[LOG_FLT_GB_NSE]))
+	if (log_get_filter(tar, LOG_FLT_GB_NSE) &&
+	    nse && (nse == log_get_filter_data(tar, LOG_FLT_GB_NSE)))
 		return 1;
 
 	/* Filter on the NS Virtual Connection */
-	if ((tar->filter_map & (1 << LOG_FLT_GB_NSVC)) != 0
-	    && nsvc && (nsvc == tar->filter_data[LOG_FLT_GB_NSVC]))
+	if (log_get_filter(tar, LOG_FLT_GB_NSVC) &&
+	    nsvc && (nsvc == log_get_filter_data(tar, LOG_FLT_GB_NSVC)))
 		return 1;
 
 	/* Filter on the BSSGP Virtual Connection */
-	if ((tar->filter_map & (1 << LOG_FLT_GB_BVC)) != 0
-	    && bvc && (bvc == tar->filter_data[LOG_FLT_GB_BVC]))
+	if (log_get_filter(tar, LOG_FLT_GB_BVC) &&
+	    bvc && (bvc == log_get_filter_data(tar, LOG_FLT_GB_BVC)))
 		return 1;
 
 	return 0;
