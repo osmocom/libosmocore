@@ -30,7 +30,7 @@
  * \file loggingrb.c */
 
 #include <osmocom/core/strrb.h>
-#include <osmocom/core/logging.h>
+#include <osmocom/core/logging_internal.h>
 #include <osmocom/core/loggingrb.h>
 
 static void _rb_output(struct log_target *target,

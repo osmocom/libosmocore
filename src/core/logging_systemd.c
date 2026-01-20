@@ -30,7 +30,7 @@
 
 #include <osmocom/core/talloc.h>
 #include <osmocom/core/utils.h>
-#include <osmocom/core/logging.h>
+#include <osmocom/core/logging_internal.h>
 
 /* FIXME: copy-pasted from logging_syslog.c */
 static int logp2syslog_level(unsigned int level)

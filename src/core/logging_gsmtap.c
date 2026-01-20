@@ -44,7 +44,7 @@
 #include <osmocom/core/utils.h>
 #include <osmocom/core/gsmtap.h>
 #include <osmocom/core/gsmtap_util.h>
-#include <osmocom/core/logging.h>
+#include <osmocom/core/logging_internal.h>
 #include <osmocom/core/timer.h>
 #include <osmocom/core/byteswap.h>
 #include <osmocom/core/thread.h>
