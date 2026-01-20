@@ -86,6 +86,13 @@ AC_SUBST(LIBRARY_DLSYM)
 AC_CHECK_LIB(execinfo, backtrace, BACKTRACE_LIB=-lexecinfo, BACKTRACE_LIB=)
 AC_SUBST(BACKTRACE_LIB)
 
+# check for struct in6_addr has s6_addr32 field
+AC_CHECK_MEMBER([struct in6_addr.s6_addr32],
+		[AC_DEFINE([HAVE_IN6_ADDR_S6_ADDR32], [1],
+				[Define if struct in6_addr has s6_addr32 field])],
+		[],
+		[[#include <netinet/in.h>]])
+
 # check for pthread (PTHREAD_CFLAGS, PTHREAD_LIBS)
 AX_PTHREAD
 

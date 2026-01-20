@@ -1695,7 +1695,7 @@ void osmo_sockaddr_set_port(struct sockaddr *sa, uint16_t port)
 
 static unsigned int in6_addr_netmask_to_prefixlen(const struct in6_addr *netmask)
 {
-	#if defined(__linux__)
+	#if (HAVE_IN6_ADDR_S6_ADDR32)
 		#define ADDRFIELD(i) s6_addr32[i]
 	#else
 		#define ADDRFIELD(i) __u6_addr.__u6_addr32[i]
