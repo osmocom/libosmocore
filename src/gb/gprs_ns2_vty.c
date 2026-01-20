@@ -2180,11 +2180,11 @@ static void log_set_nse_filter(struct log_target *target,
 				struct gprs_ns2_nse *nse)
 {
 	if (nse) {
-		target->filter_map |= (1 << LOG_FLT_GB_NSE);
-		target->filter_data[LOG_FLT_GB_NSE] = nse;
-	} else if (target->filter_data[LOG_FLT_GB_NSE]) {
-		target->filter_map = ~(1 << LOG_FLT_GB_NSE);
-		target->filter_data[LOG_FLT_GB_NSE] = NULL;
+		log_set_filter(target, LOG_FLT_GB_NSE, true);
+		log_set_filter_data(target, LOG_FLT_GB_NSE, nse);
+	} else if (log_get_filter(target, LOG_FLT_GB_NSE)) {
+		log_set_filter(target, LOG_FLT_GB_NSE, false);
+		log_set_filter_data(target, LOG_FLT_GB_NSE, NULL);
 	}
 }
 
@@ -2192,11 +2192,11 @@ static void log_set_nsvc_filter(struct log_target *target,
 				struct gprs_ns2_vc *nsvc)
 {
 	if (nsvc) {
-		target->filter_map |= (1 << LOG_FLT_GB_NSVC);
-		target->filter_data[LOG_FLT_GB_NSVC] = nsvc;
-	} else if (target->filter_data[LOG_FLT_GB_NSVC]) {
-		target->filter_map = ~(1 << LOG_FLT_GB_NSVC);
-		target->filter_data[LOG_FLT_GB_NSVC] = NULL;
+		log_set_filter(target, LOG_FLT_GB_NSVC, true);
+		log_set_filter_data(target, LOG_FLT_GB_NSVC, nsvc);
+	} else if (log_get_filter(target, LOG_FLT_GB_NSVC)) {
+		log_set_filter(target, LOG_FLT_GB_NSVC, false);
+		log_set_filter_data(target, LOG_FLT_GB_NSVC, NULL);
 	}
 }
 
