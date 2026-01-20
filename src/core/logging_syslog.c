@@ -36,7 +36,7 @@
 
 #include <osmocom/core/talloc.h>
 #include <osmocom/core/utils.h>
-#include <osmocom/core/logging.h>
+#include <osmocom/core/logging_internal.h>
 
 static int logp2syslog_level(unsigned int level)
 {

@@ -62,7 +62,7 @@
 
 #include <osmocom/core/talloc.h>
 #include <osmocom/core/utils.h>
-#include <osmocom/core/logging.h>
+#include <osmocom/core/logging_internal.h>
 #include <osmocom/core/timer.h>
 #include <osmocom/core/thread.h>
 #include <osmocom/core/select.h>

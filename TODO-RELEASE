@@ -11,3 +11,4 @@ core      added     osmo_sock_set_nonblock(), osmo_sock_get_nonblock()
 core      added     gsmtap_source_set_nonblock(), gsmtap_source_using_wq()
 core      added     osmo_iofd_set_name_f()
 core      added     log_{get,set}_filter(_data)(), log_get_context()
+core      deleted   struct log_context, struct log_target members made private

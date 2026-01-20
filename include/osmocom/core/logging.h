@@ -9,7 +9,6 @@
 #include <stdarg.h>
 #include <stdbool.h>
 #include <osmocom/core/defs.h>
-#include <osmocom/core/linuxlist.h>
 
 extern struct log_info *osmo_log_info;
 
@@ -223,11 +222,6 @@ enum log_filter_index {
 /*! Maximum number of logging filters */
 #define LOG_MAX_FILTERS	_LOG_FLT_COUNT
 
-/*! Log context information, passed to filter */
-struct log_context {
-	void *ctx[LOG_MAX_CTX+1] OSMO_DEPRECATED_OUTSIDE("Accessing struct log_context members directly is deprecated");
-};
-
 /*! Compatibility with older libosmocore versions */
 #define LOG_FILTER_ALL (1<<LOG_FLT_ALL)
 /*! Compatibility with older libosmocore versions */
@@ -237,6 +231,10 @@ struct log_context {
 /*! Indexes to indicate the object currently acted upon.
  * Array indexes for the global \a log_context array. */
 
+/*! Log context information, passed to filter */
+struct log_context;
+
+/*! structure representing a logging target */
 struct log_target;
 
 /*! Log filter function */
@@ -297,106 +295,6 @@ enum log_filename_pos {
 	LOG_FILENAME_POS_LINE_END,
 };
 
-/*! structure representing a logging target */
-#define OSMO_DEPRECATED_OUTSIDE_LIBOSMOCORE_LOG_TARGET \
-	OSMO_DEPRECATED_OUTSIDE("Accessing struct log_target members directly is deprecated")
-struct log_target {
-	struct llist_head entry;		/*!< linked list */
-
-	/*! Internal data for filtering */
-	int filter_map OSMO_DEPRECATED_OUTSIDE_LIBOSMOCORE_LOG_TARGET;
-	/*! Internal data for filtering */
-	void *filter_data[LOG_MAX_FILTERS+1] OSMO_DEPRECATED_OUTSIDE_LIBOSMOCORE_LOG_TARGET;
-
-	/*! logging categories */
-	struct log_category *categories;
-
-	/*! global log level */
-	uint8_t loglevel;
-	/*! should color be used when printing log messages? */
-	unsigned int use_color:1;
-	/*! should log messages be prefixed with a timestamp? */
-	unsigned int print_timestamp:1;
-	/*! should log messages be prefixed with the logger Thread ID? */
-	unsigned int print_tid:1;
-	/*! DEPRECATED: use print_filename2 instead. */
-	unsigned int print_filename:1;
-	/*! should log messages be prefixed with a category name? */
-	unsigned int print_category:1;
-	/*! should log messages be prefixed with an extended timestamp? */
-	unsigned int print_ext_timestamp:1;
-
-	/*! the type of this log taget */
-	enum log_target_type type;
-
-	union {
-		struct {
-			/* direct, blocking output via stdio */
-			FILE *out;
-			const char *fname;
-			/* indirect output via write_queue and osmo_select_main() */
-			struct osmo_wqueue *wqueue;
-		} tgt_file;
-
-		struct {
-			int priority;
-			int facility;
-		} tgt_syslog;
-
-		struct {
-			void *vty;
-		} tgt_vty;
-
-		struct {
-			void *rb;
-		} tgt_rb;
-
-		struct {
-			struct gsmtap_inst *gsmtap_inst;
-			const char *ident;
-			const char *hostname;
-		} tgt_gsmtap;
-
-		struct {
-			bool raw;
-		} sd_journal;
-	};
-
-	/*! call-back function to be called when the logging framework
-	 *	   wants to log a fully formatted string
-	 *  \param[in] target logging target
-	 *  \param[in] level log level of currnet message
-	 *  \param[in] string the string that is to be written to the log
-	 */
-	void (*output)(struct log_target *target, unsigned int level,
-		       const char *string);
-
-	/*! alternative call-back function to which the logging
-	 *	   framework passes the unfortmatted input arguments,
-	 *	   i.e. bypassing the internal string formatter
-	 *  \param[in] target logging target
-	 *  \param[in] subsys logging sub-system
-	 *  \param[in] level logging level
-	 *  \param[in] file soure code file name
-	 *  \param[in] line source code file line number
-	 *  \param[in] cont continuation of previous statement?
-	 *  \param[in] format format string
-	 *  \param[in] ap vararg list of printf arguments
-	 */
-	void (*raw_output)(struct log_target *target, int subsys,
-			   unsigned int level, const char *file, int line,
-			   int cont, const char *format, va_list ap);
-
-	/* Should the log level be printed? */
-	bool print_level;
-	/* Should we print the subsys in hex like '<000b>'? */
-	bool print_category_hex;
-	/* Should we print the source file and line, and in which way? */
-	enum log_filename_type print_filename2;
-	/* Where on a log line to put the source file info. */
-	enum log_filename_pos print_filename_pos;
-};
-
 /* use the above macros */
 void logp2(int subsys, unsigned int level, const char *file,
 	   int line, int cont, const char *format, ...)
@@ -406,7 +304,6 @@ int log_init(const struct log_info *inf, void *talloc_ctx);
 void log_fini(void);
 int log_check_level(int subsys, unsigned int level);
 
-/* context management */
 void log_reset_context(void);
 int log_set_context(uint8_t ctx_nr, void *value);
 void *log_get_context(const struct log_context *ctx, uint8_t ctx_nr);
