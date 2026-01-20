@@ -44,6 +44,7 @@ libosmocore_la_SOURCES = \
 	isdnhdlc.c \
 	it_q.c \
 	logging.c \
+	logging_file.c \
 	logging_gsmtap.c \
 	loggingrb.c \
 	macaddr.c \
