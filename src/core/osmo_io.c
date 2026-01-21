@@ -31,6 +31,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <errno.h>
+#include <inttypes.h>
 
 #include <osmocom/core/osmo_io.h>
 #include <osmocom/core/linuxlist.h>
@@ -357,63 +358,116 @@ defer:
 	return IOFD_SEG_ACT_DEFER;
 }
 
+static void _call_read_cb(struct osmo_io_fd *iofd, int rc, struct msgb *msg)
+{
+	talloc_steal(iofd->msgb_alloc.ctx, msg);
+	iofd->io_ops.read_cb(iofd, rc, msg);
+}
+
+static inline uint16_t iofd_msgb_length_max(const struct osmo_io_fd *iofd)
+{
+	return UINT16_MAX - iofd->msgb_alloc.headroom;
+}
+
+/* Update iofd->pending copying as much data as possible from in_msg.
+ * Return unprocessed tail of in_msg, or NULL if all in_msg was copied into iofd->pending.
+*/
+static struct msgb *iofd_prepare_handle_segmentation(struct osmo_io_fd *iofd, struct msgb *in_msg)
+{
+	if (OSMO_LIKELY(msgb_tailroom(iofd->pending) >= msgb_length(in_msg))) {
+		/* Append incoming msg into iofd->pending. */
+		memcpy(msgb_put(iofd->pending, msgb_length(in_msg)),
+		       msgb_data(in_msg),
+		       msgb_length(in_msg));
+		msgb_free(in_msg);
+		return NULL;
+	}
+
+	/* Data of msg does not fit into pending message. Allocate a new message that is larger.
+	 * This implies that msgb_length(iofd->pending) + msgb_length(msg) > iofd.msgb_alloc.size.
+	 * Limit allowed segment size to maximum a msgb can contain. */
+	uint16_t append_bytes = OSMO_MIN(msgb_length(in_msg), iofd_msgb_length_max(iofd) - msgb_length(iofd->pending));
+
+	/* Recreate iofd->pending to contain as much data as possible: */
+	struct msgb *new_pending = iofd_msgb_alloc2(iofd, msgb_length(iofd->pending) + append_bytes);
+	OSMO_ASSERT(new_pending);
+	memcpy(msgb_put(new_pending, msgb_length(iofd->pending)),
+	       msgb_data(iofd->pending),
+	       msgb_length(iofd->pending));
+	msgb_free(iofd->pending);
+	iofd->pending = new_pending;
+
+	/* Append as much new data as possible into iofd->pending: */
+	memcpy(msgb_put(iofd->pending, append_bytes),
+	       msgb_data(in_msg),
+	       append_bytes);
+	if (OSMO_LIKELY(msgb_length(in_msg) == 0)) {
+		msgb_free(in_msg);
+		return NULL;
+	}
+	msgb_pull(in_msg, append_bytes);
+	return in_msg;
+}
+
 /*! Restore message boundaries on read() and pass individual messages to the read callback
  */
 static void iofd_handle_segmented_read(struct osmo_io_fd *iofd, int rc, struct msgb *msg)
 {
 	int res;
-	struct msgb *pending;
+	struct msgb *tail_msg;
 
 	OSMO_ASSERT(iofd->mode == OSMO_IO_FD_MODE_READ_WRITE);
 
 	if (rc <= 0) {
-		talloc_steal(iofd->msgb_alloc.ctx, msg);
-		iofd->io_ops.read_cb(iofd, rc, msg);
+		_call_read_cb(iofd, rc, msg);
 		return;
 	}
 
-	/* If we have a pending message, append the received message.
-	 * If the pending message is not large enough, create a larger message. */
-	if (OSMO_UNLIKELY(iofd->pending)) {
-		if (OSMO_UNLIKELY(msgb_tailroom(iofd->pending) < msgb_length(msg))) {
-			/* Data of msg does not fit into pending message. Allocate a new message that is larger.
-			 * This implies that msgb_length(iofd->pending) + msgb_length(msg) > iofd.msgb_alloc.size. */
-			pending = iofd_msgb_alloc2(iofd, msgb_length(iofd->pending) + msgb_length(msg));
-			OSMO_ASSERT(pending);
-			memcpy(msgb_put(pending, msgb_length(iofd->pending)), msgb_data(iofd->pending),
-			       msgb_length(iofd->pending));
-			msgb_free(iofd->pending);
-			iofd->pending = pending;
-		}
-		memcpy(msgb_put(iofd->pending, msgb_length(msg)), msgb_data(msg), msgb_length(msg));
-		msgb_free(msg);
-		msg = iofd->pending;
-		iofd->pending = NULL;
-	}
-
+	/* Base case: our tail msg is the just received chunk */
+	tail_msg = msg;
 	do {
-		pending = NULL;
-		res = iofd_handle_segmentation(iofd, msg, &pending);
+		if (OSMO_UNLIKELY(iofd->pending)) {
+			/* If we have a pending message, append the received message.
+			 * If the pending message is not large enough, create a larger message. */
+			if (tail_msg)
+				tail_msg = iofd_prepare_handle_segmentation(iofd, tail_msg);
+			msg = iofd->pending;
+			iofd->pending = NULL;
+		} else {
+			msg = tail_msg;
+			tail_msg = NULL;
+		}
+
+		/* At this point:
+		 * iofd->pending is NULL.
+		 * "msg" points to the chunk to be segmented.
+		 * "tail_msg" may contain extra data to be appended and processed later (or NULL). */
+
+		res = iofd_handle_segmentation(iofd, msg, &iofd->pending);
 		if (res != IOFD_SEG_ACT_DEFER) {
 			/* It it expected as per API spec that we return the
 			 * return value of read here. The amount of bytes in msg is
 			 * available to the user in msg itself. */
-			talloc_steal(iofd->msgb_alloc.ctx, msg);
-			iofd->io_ops.read_cb(iofd, rc, msg);
+			_call_read_cb(iofd, rc, msg);
 			/* The user could unregister/close the iofd during read_cb() above.
 			 * Once that's done, it doesn't expect to receive any more events,
 			 * so discard it: */
-			if (!IOFD_FLAG_ISSET(iofd, IOFD_FLAG_FD_REGISTERED)) {
-				msgb_free(pending);
+			if (!IOFD_FLAG_ISSET(iofd, IOFD_FLAG_FD_REGISTERED))
+				return;
+
+		} else { /* IOFD_SEG_ACT_DEFER */
+			if (OSMO_UNLIKELY(msgb_length(iofd->pending) == iofd_msgb_length_max(iofd))) {
+				LOGPIO(iofd, LOGL_ERROR,
+				       "Rx segment msgb of > %" PRIu16 " bytes (headroom %u bytes) is unsupported, check your segment_cb!\n",
+				       msgb_length(msg), iofd->msgb_alloc.headroom);
+				/* Pass iofd->Pending to user app for debugging purposes: */
+				msg = iofd->pending;
+				iofd->pending = NULL;
+				_call_read_cb(iofd, -EPROTO, msg);
 				return;
 			}
 		}
-		if (res == IOFD_SEG_ACT_HANDLE_MORE)
-			msg = pending;
-	} while (res == IOFD_SEG_ACT_HANDLE_MORE);
-
-	OSMO_ASSERT(iofd->pending == NULL);
-	iofd->pending = pending;
+	} while (res == IOFD_SEG_ACT_HANDLE_MORE || OSMO_UNLIKELY(tail_msg));
 }
 
 /*! completion handler: Internal function called by osmo_io_backend after a given I/O operation has completed

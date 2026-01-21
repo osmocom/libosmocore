@@ -18,6 +18,9 @@
  *
  */
 
+#define _GNU_SOURCE
+#include <fcntl.h>
+
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
@@ -352,6 +355,208 @@ static void test_segmentation(void)
 		osmo_select_main(1);
 }
 
+static int segmentation_uint16_max_segmentation_cb_return_val = 4;
+int segmentation_uint16_max_segmentation_cb(struct osmo_io_fd *iofd, struct msgb *msg)
+{
+	printf("%s: %s() returning %d\n", osmo_iofd_get_name(iofd), __func__, segmentation_uint16_max_segmentation_cb_return_val);
+	return segmentation_uint16_max_segmentation_cb_return_val;
+}
+
+static int segmentation_uint16_max_read_cb_bytes_read = 0;
+static void segmentation_uint16_max_read_cb(struct osmo_io_fd *iofd, int rc, struct msgb *msg)
+{
+	printf("%s: %s() msg with rc=%d msgb_len=%d completed=%u\n", osmo_iofd_get_name(iofd), __func__, rc,
+	       msg ? msgb_length(msg) : -1, segmentation_uint16_max_read_cb_bytes_read);
+	if (rc < 0) {
+		printf("%s: error: %s\n", osmo_iofd_get_name(iofd), strerror(-rc));
+		OSMO_ASSERT(0);
+	}
+	if (rc == 0) {
+		file_eof_read = true;
+		osmo_iofd_unregister(iofd);
+	}
+	if (msg) {
+		segmentation_uint16_max_read_cb_bytes_read += msgb_length(msg);
+		talloc_free(msg);
+	}
+}
+
+static void test_segmentation_uint16_max(unsigned segment_len, unsigned msgb_alloc_info_len, unsigned msg_alloc_info_headroom)
+{
+	struct osmo_io_fd *iofd;
+	struct msgb *msg;
+	int fd[2] = { 0, 0 };
+	int rc;
+	struct osmo_io_ops ioops;
+
+	const unsigned num_write_msgs = 3;
+	const unsigned num_write_bytes = UINT16_MAX * num_write_msgs;
+
+	TEST_START();
+
+	/* Create pipe */
+	rc = pipe(fd);
+	OSMO_ASSERT(rc == 0);
+	OSMO_ASSERT(fd[0]);
+	OSMO_ASSERT(fd[1]);
+
+	int pipe_size = num_write_bytes;
+	rc = fcntl(fd[0], F_SETPIPE_SZ, pipe_size);
+	OSMO_ASSERT(rc >= num_write_bytes);
+
+	/* First test writing to the pipe: */
+	printf("Enable write\n");
+	ioops = (struct osmo_io_ops){ .write_cb = file_write_cb };
+	iofd = osmo_iofd_setup(ctx, fd[1], "seg_iofd", OSMO_IO_FD_MODE_READ_WRITE, &ioops, NULL);
+	osmo_iofd_register(iofd, fd[1]);
+
+	for (unsigned int i = 0; i < num_write_msgs; i++) {
+		msg = msgb_alloc(UINT16_MAX, "Test data");
+		memset(msgb_put(msg, UINT16_MAX), 0x2b, UINT16_MAX);
+		osmo_iofd_write_msgb(iofd, msg);
+	}
+	/* Allow enough cycles to handle the messages */
+	file_bytes_write_compl = 0;
+	for (int i = 0; i < 128; i++) {
+		OSMO_ASSERT(file_bytes_write_compl <= num_write_bytes);
+		if (file_bytes_write_compl == num_write_bytes)
+			break;
+		osmo_select_main(1);
+		usleep(100 * 1000);
+	}
+	fflush(stdout);
+	OSMO_ASSERT(file_bytes_write_compl == num_write_bytes);
+
+	osmo_iofd_close(iofd);
+
+	/* Now, re-configure iofd to only read from the pipe.
+	 * Reduce the read buffer size, to verify correct segmentation operation: */
+	printf("Enable read\n");
+	osmo_iofd_set_alloc_info(iofd, msgb_alloc_info_len, msg_alloc_info_headroom);
+	osmo_iofd_register(iofd, fd[0]);
+	ioops = (struct osmo_io_ops){ .read_cb = segmentation_uint16_max_read_cb,
+				      .segmentation_cb2 = segmentation_uint16_max_segmentation_cb };
+	rc = osmo_iofd_set_ioops(iofd, &ioops);
+	segmentation_uint16_max_read_cb_bytes_read = 0;
+	segmentation_uint16_max_segmentation_cb_return_val = segment_len;
+	OSMO_ASSERT(rc == 0);
+	/* Allow enough cycles to handle the messages. */
+	file_bytes_read = 0;
+	file_eof_read = false;
+	for (int i = 0; i < 128; i++) {
+		if (file_eof_read)
+			break;
+		for (int j = 0; j < 10; j++)
+			osmo_select_main(1);
+		usleep(100 * 1000);
+	}
+	fflush(stdout);
+	OSMO_ASSERT(file_eof_read);
+
+	osmo_iofd_free(iofd);
+
+	for (int i = 0; i < 128; i++)
+		osmo_select_main(1);
+}
+
+unsigned segmentation_cb_requests_segment_too_big_segmentation_cb_headroom;
+int segmentation_cb_requests_segment_too_big_segmentation_cb(struct osmo_io_fd *iofd, struct msgb *msg)
+{
+	int req_segment_size = UINT16_MAX + 1 - segmentation_cb_requests_segment_too_big_segmentation_cb_headroom;
+	printf("%s: %s() returning %d\n", osmo_iofd_get_name(iofd), __func__, req_segment_size);
+	return req_segment_size;
+}
+
+static void segmentation_cb_requests_segment_too_big_read_cb(struct osmo_io_fd *iofd, int rc, struct msgb *msg)
+{
+	printf("%s: %s() msg with rc=%d msgb_len=%d error: %s\n", osmo_iofd_get_name(iofd), __func__, rc,
+	       msg ? msgb_length(msg) : -1, strerror(-rc));
+	OSMO_ASSERT(rc == -EPROTO);
+	if (msg)
+		talloc_free(msg);
+
+	file_eof_read = true;
+	osmo_iofd_close(iofd);
+}
+
+/* Test that a user's segment_cb requesting segments bigger than what we allow
+* per struct msgb are translated to read_cb(rc=-EPROTO): */
+static void test_segmentation_cb_requests_segment_too_big(unsigned msgb_alloc_info_headroom)
+{
+	struct osmo_io_fd *iofd;
+	struct msgb *msg;
+	int fd[2] = { 0, 0 };
+	int rc;
+	struct osmo_io_ops ioops;
+
+	const unsigned num_write_msgs = 3;
+	const unsigned num_write_bytes = UINT16_MAX * num_write_msgs;
+
+	TEST_START();
+
+	/* Create pipe */
+	rc = pipe(fd);
+	OSMO_ASSERT(rc == 0);
+	OSMO_ASSERT(fd[0]);
+	OSMO_ASSERT(fd[1]);
+
+	int pipe_size = num_write_bytes;
+	rc = fcntl(fd[0], F_SETPIPE_SZ, pipe_size);
+	OSMO_ASSERT(rc >= num_write_bytes);
+
+	/* First test writing to the pipe: */
+	printf("Enable write\n");
+	ioops = (struct osmo_io_ops){ .write_cb = file_write_cb };
+	iofd = osmo_iofd_setup(ctx, fd[1], "seg_iofd", OSMO_IO_FD_MODE_READ_WRITE, &ioops, NULL);
+	osmo_iofd_register(iofd, fd[1]);
+
+	for (unsigned int i = 0; i < num_write_msgs; i++) {
+		msg = msgb_alloc(UINT16_MAX, "Test data");
+		memset(msgb_put(msg, UINT16_MAX), 0x2b, UINT16_MAX);
+		osmo_iofd_write_msgb(iofd, msg);
+	}
+	/* Allow enough cycles to handle the messages */
+	file_bytes_write_compl = 0;
+	for (int i = 0; i < 128; i++) {
+		OSMO_ASSERT(file_bytes_write_compl <= num_write_bytes);
+		if (file_bytes_write_compl == num_write_bytes)
+			break;
+		osmo_select_main(1);
+		usleep(100 * 1000);
+	}
+	fflush(stdout);
+	OSMO_ASSERT(file_bytes_write_compl == num_write_bytes);
+
+	osmo_iofd_close(iofd);
+
+	/* Now, re-configure iofd to only read from the pipe.
+	 * Reduce the read buffer size, to verify correct segmentation operation: */
+	printf("Enable read\n");
+	osmo_iofd_set_alloc_info(iofd, 16000, msgb_alloc_info_headroom);
+	segmentation_cb_requests_segment_too_big_segmentation_cb_headroom = msgb_alloc_info_headroom;
+	osmo_iofd_register(iofd, fd[0]);
+	ioops = (struct osmo_io_ops){ .read_cb = segmentation_cb_requests_segment_too_big_read_cb,
+				      .segmentation_cb2 = segmentation_cb_requests_segment_too_big_segmentation_cb };
+	rc = osmo_iofd_set_ioops(iofd, &ioops);
+	OSMO_ASSERT(rc == 0);
+	/* Allow enough cycles to handle the messages. */
+	file_bytes_read = 0;
+	file_eof_read = false;
+	for (int i = 0; i < 128; i++) {
+		if (file_eof_read)
+			break;
+		for (int j = 0; j < 10; j++)
+			osmo_select_main(1);
+		usleep(100 * 1000);
+	}
+	fflush(stdout);
+	OSMO_ASSERT(file_eof_read);
+
+	osmo_iofd_free(iofd);
+
+	for (int i = 0; i < 128; i++)
+		osmo_select_main(1);
+}
 
 static const struct log_info_cat default_categories[] = {
 };
@@ -369,11 +574,19 @@ int main(int argc, char *argv[])
 	log_set_print_filename2(osmo_stderr_target, LOG_FILENAME_NONE);
 	log_set_print_category(osmo_stderr_target, 0);
 	log_set_print_category_hex(osmo_stderr_target, 0);
+	log_set_print_level(osmo_stderr_target, 1);
+	/* To debug DLIO uncomment line below: */
+	/* log_set_category_filter(osmo_stderr_target, DLIO, 1, LOGL_DEBUG); */
 
 	test_file();
 	test_connected();
 	test_unconnected();
 	test_segmentation();
+	test_segmentation_uint16_max(10000, UINT16_MAX, 0);
+	test_segmentation_uint16_max(10000, UINT16_MAX - 320, 320);
+	test_segmentation_uint16_max(10000, 3000, 0);
+	test_segmentation_cb_requests_segment_too_big(0);
+	test_segmentation_cb_requests_segment_too_big(320);
 
 	return EXIT_SUCCESS;
 }
