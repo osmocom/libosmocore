@@ -16,6 +16,7 @@
  */
 
 #include <osmocom/core/logging.h>
+#include <osmocom/core/select.h>
 #include <osmocom/core/utils.h>
 
 #include <stdlib.h>
@@ -137,6 +138,9 @@ int main(int argc, char **argv)
 	DEBUGP(DLGLOBAL, "A message with source info printed first\n");
 	log_set_print_filename_pos(stderr_target, LOG_FILENAME_POS_LINE_END);
 	DEBUGP(DLGLOBAL, "A message with source info printed last\n");
+
+	for (int i = 0; i < 20; i++)
+		osmo_select_main(1);
 
 	return 0;
 }
