@@ -359,7 +359,7 @@ defer:
 
 /*! Restore message boundaries on read() and pass individual messages to the read callback
  */
-static void iofd_handle_segmented_read(struct osmo_io_fd *iofd, struct msgb *msg, int rc)
+static void iofd_handle_segmented_read(struct osmo_io_fd *iofd, int rc, struct msgb *msg)
 {
 	int res;
 	struct msgb *pending;
@@ -425,7 +425,7 @@ void iofd_handle_recv(struct osmo_io_fd *iofd, struct msgb *msg, int rc, struct 
 {
 	switch (iofd->mode) {
 	case OSMO_IO_FD_MODE_READ_WRITE:
-		iofd_handle_segmented_read(iofd, msg, rc);
+		iofd_handle_segmented_read(iofd, rc, msg);
 		break;
 	case OSMO_IO_FD_MODE_RECVFROM_SENDTO:
 		talloc_steal(iofd->msgb_alloc.ctx, msg);
