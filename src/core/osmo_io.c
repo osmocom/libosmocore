@@ -1068,6 +1068,7 @@ int osmo_iofd_close(struct osmo_io_fd *iofd)
  */
 void osmo_iofd_set_alloc_info(struct osmo_io_fd *iofd, unsigned int size, unsigned int headroom)
 {
+	OSMO_ASSERT(size + headroom <= 0xffff);
 	iofd->msgb_alloc.headroom = headroom;
 	iofd->msgb_alloc.size = size;
 }
