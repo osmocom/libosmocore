@@ -1043,7 +1043,7 @@ static int config_write_log_single(struct vty *vty, struct log_target *tgt)
 		return 1;
 		break;
 	case LOG_TGT_TYPE_STDERR:
-		if (tgt->tgt_file.wqueue)
+		if (tgt->tgt_file.iofd)
 			vty_out(vty, "log stderr%s", VTY_NEWLINE);
 		else
 			vty_out(vty, "log stderr blocking-io%s", VTY_NEWLINE);
@@ -1057,7 +1057,7 @@ static int config_write_log_single(struct vty *vty, struct log_target *tgt)
 #endif
 		break;
 	case LOG_TGT_TYPE_FILE:
-		if (tgt->tgt_file.wqueue)
+		if (tgt->tgt_file.iofd)
 			vty_out(vty, "log file %s%s", tgt->tgt_file.fname, VTY_NEWLINE);
 		else
 			vty_out(vty, "log file %s blocking-io%s", tgt->tgt_file.fname, VTY_NEWLINE);

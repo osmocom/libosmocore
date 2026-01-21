@@ -8,6 +8,7 @@
 
 #include <osmocom/core/linuxlist.h>
 #include <osmocom/core/logging.h>
+#include <osmocom/core/osmo_io.h>
 #include <osmocom/core/utils.h>
 
 /* maximum length of the log string of a single log event (typically  line) */
@@ -52,8 +53,8 @@ struct log_target {
 			/* direct, blocking output via stdio */
 			FILE *out;
 			const char *fname;
-			/* indirect output via write_queue and osmo_select_main() */
-			struct osmo_wqueue *wqueue;
+			/* indirect output via iofd and osmo_select_main() */
+			struct osmo_io_fd *iofd;
 		} tgt_file;
 
 		struct {
