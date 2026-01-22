@@ -297,8 +297,11 @@ struct iofd_msghdr *iofd_txqueue_dequeue(struct osmo_io_fd *iofd)
 }
 
 /*! Handle segmentation of the msg. If this function returns *_HANDLE_ONE or MORE then the data in msg will contain
- *  one complete message.
- *  If there are bytes left over, *pending_out will point to a msgb with the remaining data.
+ * one complete message.
+ * If there are bytes left over, *pending_out will point to a msgb with the remaining data.
+ * Upon IOFD_SEG_ACT_DEFER is returned, errno is set to error value providing reason:
+ * EAGAIN is returned when data is still missing to fill the segment; other error codes are
+ * propagated through read_cb().
 */
 static enum iofd_seg_act iofd_handle_segmentation(struct osmo_io_fd *iofd, struct msgb *msg, struct msgb **pending_out)
 {
@@ -319,15 +322,12 @@ static enum iofd_seg_act iofd_handle_segmentation(struct osmo_io_fd *iofd, struc
 		return IOFD_SEG_ACT_HANDLE_ONE;
 	}
 
-	if (expected_len == -EAGAIN) {
+	if (expected_len < 0) {
+		if (expected_len != -EAGAIN)
+			LOGPIO(iofd, LOGL_ERROR, "segmentation_cb returned error (%d), skipping msg of size %d\n",
+			       expected_len, received_len);
+		errno = -expected_len;
 		goto defer;
-	} else if (expected_len < 0) {
-		/* Something is wrong, skip this msgb */
-		LOGPIO(iofd, LOGL_ERROR, "segmentation_cb returned error (%d), skipping msg of size %d\n",
-		       expected_len, received_len);
-		*pending_out = NULL;
-		msgb_free(msg);
-		return IOFD_SEG_ACT_DEFER;
 	}
 
 	extra_len = received_len - expected_len;
@@ -335,8 +335,11 @@ static enum iofd_seg_act iofd_handle_segmentation(struct osmo_io_fd *iofd, struc
 	if (extra_len == 0) {
 		*pending_out = NULL;
 		return IOFD_SEG_ACT_HANDLE_ONE;
+	}
+
 	/* segment is incomplete */
-	} else if (extra_len < 0) {
+	if (extra_len < 0) {
+		errno = EAGAIN;
 		goto defer;
 	}
 
@@ -456,6 +459,13 @@ static void iofd_handle_segmented_read(struct osmo_io_fd *iofd, int rc, struct m
 				return;
 
 		} else { /* IOFD_SEG_ACT_DEFER */
+			if (OSMO_UNLIKELY(errno != EAGAIN)) {
+				/* Pass iofd->Pending to user app for debugging purposes: */
+				msg = iofd->pending;
+				iofd->pending = NULL;
+				_call_read_cb(iofd, -errno, iofd->pending);
+				return;
+			}
 			if (OSMO_UNLIKELY(msgb_length(iofd->pending) == iofd_msgb_length_max(iofd))) {
 				LOGPIO(iofd, LOGL_ERROR,
 				       "Rx segment msgb of > %" PRIu16 " bytes (headroom %u bytes) is unsupported, check your segment_cb!\n",

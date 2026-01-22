@@ -558,6 +558,93 @@ static void test_segmentation_cb_requests_segment_too_big(unsigned msgb_alloc_in
 		osmo_select_main(1);
 }
 
+
+int _propagate_segmentation_cb(struct osmo_io_fd *iofd, struct msgb *msg)
+{
+	printf("%s: segmentation_cb() returning -ENOBUFS\n", osmo_iofd_get_name(iofd));
+	return -ENOBUFS;
+}
+
+static void propagate_read_cb(struct osmo_io_fd *iofd, int rc, struct msgb *msg)
+{
+	printf("%s: %s() msg with rc=%d msgb_len=%d error: %s\n", osmo_iofd_get_name(iofd), __func__, rc,
+	       msg ? msgb_length(msg) : -1, strerror(-rc));
+	OSMO_ASSERT(rc == -ENOBUFS);
+	if (msg)
+		talloc_free(msg);
+
+	file_eof_read = true;
+	osmo_iofd_close(iofd);
+}
+
+/* Test that errors other than EAGAIN are propagated to the user through the read_cb path. */
+static void test_segmentation_cb_propagate_error_to_read_cb(void)
+{
+	struct osmo_io_fd *iofd;
+	struct msgb *msg;
+	uint8_t *buf;
+	int fd[2] = { 0, 0 };
+	int rc;
+	struct osmo_io_ops ioops;
+
+	TEST_START();
+
+	/* Create pipe */
+	rc = pipe(fd);
+	OSMO_ASSERT(rc == 0);
+	OSMO_ASSERT(fd[0]);
+	OSMO_ASSERT(fd[1]);
+
+	/* First test writing to the pipe: */
+	printf("Enable write\n");
+	ioops = (struct osmo_io_ops){ .write_cb = file_write_cb };
+	iofd = osmo_iofd_setup(ctx, fd[1], "seg_iofd", OSMO_IO_FD_MODE_READ_WRITE, &ioops, NULL);
+	osmo_iofd_register(iofd, fd[1]);
+
+	msg = msgb_alloc(12, "Test data");
+	buf = msgb_put(msg, 12);
+	memcpy(buf, TESTDATA, 12);
+	osmo_iofd_write_msgb(iofd, msg);
+	/* Allow enough cycles to handle the messages */
+	file_bytes_write_compl = 0;
+	for (int i = 0; i < 128; i++) {
+		OSMO_ASSERT(file_bytes_write_compl <= 12);
+		if (file_bytes_write_compl == 12)
+			break;
+		osmo_select_main(1);
+		usleep(100 * 1000);
+	}
+	fflush(stdout);
+	OSMO_ASSERT(file_bytes_write_compl == 12);
+
+	osmo_iofd_close(iofd);
+
+	/* Now, re-configure iofd to only read from the pipe.
+	 * Reduce the read buffer size, to verify correct segmentation operation: */
+	printf("Enable read\n");
+	osmo_iofd_set_alloc_info(iofd, 6, 0);
+	osmo_iofd_register(iofd, fd[0]);
+	ioops = (struct osmo_io_ops){ .read_cb = propagate_read_cb, .segmentation_cb2 = _propagate_segmentation_cb };
+	rc = osmo_iofd_set_ioops(iofd, &ioops);
+	OSMO_ASSERT(rc == 0);
+	/* Allow enough cycles to handle the message. We expect 3 reads, 4th read will return 0. */
+	file_bytes_read = 0;
+	file_eof_read = false;
+	for (int i = 0; i < 128; i++) {
+		if (file_eof_read)
+			break;
+		osmo_select_main(1);
+		usleep(100 * 1000);
+	}
+	fflush(stdout);
+	OSMO_ASSERT(file_eof_read);
+
+	osmo_iofd_free(iofd);
+
+	for (int i = 0; i < 128; i++)
+		osmo_select_main(1);
+}
+
 static const struct log_info_cat default_categories[] = {
 };
 
@@ -587,6 +674,7 @@ int main(int argc, char *argv[])
 	test_segmentation_uint16_max(10000, 3000, 0);
 	test_segmentation_cb_requests_segment_too_big(0);
 	test_segmentation_cb_requests_segment_too_big(320);
+	test_segmentation_cb_propagate_error_to_read_cb();
 
 	return EXIT_SUCCESS;
 }

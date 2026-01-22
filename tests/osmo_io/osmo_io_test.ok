@@ -334,3 +334,10 @@ seg_iofd: segmentation_cb_requests_segment_too_big_segmentation_cb() returning 6
 seg_iofd: segmentation_cb_requests_segment_too_big_segmentation_cb() returning 65216
 seg_iofd: segmentation_cb_requests_segment_too_big_segmentation_cb() returning 65216
 seg_iofd: segmentation_cb_requests_segment_too_big_read_cb() msg with rc=-71 msgb_len=65215 error: Protocol error
+Running test_segmentation_cb_propagate_error_to_read_cb
+Enable write
+seg_iofd: write() returned rc=12
+01 02 03 04 05 06 07 08 09 0a 0b 0c 
+Enable read
+seg_iofd: segmentation_cb() returning -ENOBUFS
+seg_iofd: propagate_read_cb() msg with rc=-105 msgb_len=-1 error: No buffer space available

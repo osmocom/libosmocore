@@ -1,2 +1,3 @@
 ERROR iofd(seg_iofd) Rx segment msgb of > 65535 bytes (headroom 0 bytes) is unsupported, check your segment_cb!
 ERROR iofd(seg_iofd) Rx segment msgb of > 65215 bytes (headroom 320 bytes) is unsupported, check your segment_cb!
+ERROR iofd(seg_iofd) segmentation_cb returned error (-105), skipping msg of size 6
