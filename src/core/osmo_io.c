@@ -359,7 +359,7 @@ defer:
 
 /*! Restore message boundaries on read() and pass individual messages to the read callback
  */
-void iofd_handle_segmented_read(struct osmo_io_fd *iofd, struct msgb *msg, int rc)
+static void iofd_handle_segmented_read(struct osmo_io_fd *iofd, struct msgb *msg, int rc)
 {
 	int res;
 	struct msgb *pending;
