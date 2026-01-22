@@ -2,17 +2,16 @@
 
 #pragma once
 
+#include "../config.h"
+
 #include <unistd.h>
 #include <stdbool.h>
-#include <netinet/sctp.h>
 
 #include <osmocom/core/osmo_io.h>
 #include <osmocom/core/linuxlist.h>
 #include <osmocom/core/msgb.h>
 #include <osmocom/core/select.h>
 #include <osmocom/core/socket.h>
-
-#include "../config.h"
 
 #define OSMO_IO_DEFAULT_MSGB_SIZE 1024
 #define OSMO_IO_DEFAULT_MSGB_HEADROOM 128
