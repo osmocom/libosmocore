@@ -33,7 +33,9 @@ Boston, MA  02110-1301, USA. */
 #include <stdbool.h>
 #include <syslog.h>
 #include <errno.h>
+#ifndef _XOPEN_SOURCE
 #define _XOPEN_SOURCE
+#endif
 #include <unistd.h>
 #include <ctype.h>
 #include <time.h>
