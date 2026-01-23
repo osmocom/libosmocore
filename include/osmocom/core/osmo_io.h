@@ -4,13 +4,15 @@
 
 #pragma once
 
-#include <sys/socket.h>
-
 #include <osmocom/core/linuxlist.h>
 #include <osmocom/core/logging.h>
 #include <osmocom/core/msgb.h>
 #include <osmocom/core/socket.h>
 #include <osmocom/core/utils.h>
+
+/* struct msghdr is defined in sys/socket.h but that header may not be available.
+ * We only really need a forward declaration here: */
+struct msghdr;
 
 /*! \defgroup osmo_io Osmocom I/O interface
  *  @{
