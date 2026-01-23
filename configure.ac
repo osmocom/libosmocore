@@ -628,6 +628,9 @@ dnl Check if the compiler supports runtime SIMD detection
 CHECK_BUILTIN_SUPPORT([__builtin_cpu_supports],
   [Runtime SIMD detection will be disabled])
 
+dnl Check header linux/tcp.h
+AC_CHECK_HEADERS([linux/tcp.h])
+
 dnl There are some members in struct tcp_info that might not exist on all linux versions
 AC_CHECK_MEMBER([struct tcp_info.tcpi_notsent_bytes],
 		AC_DEFINE([HAVE_TCP_INFO_TCPI_NOTSENT_BYTES],

@@ -24,16 +24,21 @@
 #include "config.h"
 #if !defined(EMBEDDED)
 
+#include <errno.h>
+
+#include <osmocom/core/select.h>
+#include <osmocom/core/stats_tcp.h>
+
+#ifdef HAVE_LINUX_TCP_H
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <linux/tcp.h>
-#include <errno.h>
 #include <pthread.h>
 
-#include <osmocom/core/select.h>
 #include <osmocom/core/linuxlist.h>
 #include <osmocom/core/talloc.h>
 #include <osmocom/core/utils.h>
@@ -41,13 +46,16 @@
 #include <osmocom/core/stat_item.h>
 #include <osmocom/core/stats.h>
 #include <osmocom/core/socket.h>
-#include <osmocom/core/stats_tcp.h>
+
+#endif /* HAVE_LINUX_TCP_H */
 
 static struct osmo_tcp_stats_config s_tcp_stats_config = {
 	.interval = TCP_STATS_DEFAULT_INTERVAL,
 };
 
 struct osmo_tcp_stats_config *osmo_tcp_stats_config = &s_tcp_stats_config;
+
+#ifdef HAVE_LINUX_TCP_H
 
 static struct osmo_timer_list stats_tcp_poll_timer;
 
@@ -160,7 +168,6 @@ static void fill_stats(struct stats_tcp_entry *stats_tcp_entry)
 #else
 	osmo_stat_item_set(osmo_stat_item_group_get_item(stats_tcp_entry->stats_tcp, STATS_TCP_REORD_SEEN), -1);
 #endif
-
 }
 
 static bool is_tcp(const struct osmo_fd *fd)
@@ -321,6 +328,27 @@ void on_dso_load_stats_tcp(void)
 
 	osmo_timer_setup(&stats_tcp_poll_timer, stats_tcp_poll_timer_cb, NULL);
 }
+
+#else
+
+/* Stubs for systems that do not have header <linux/tcp.h> and TCP_INFO struct */
+
+int osmo_stats_tcp_osmo_fd_register(const struct osmo_fd *fd, const char *name)
+{
+	return -ENOTSUP;
+}
+
+int osmo_stats_tcp_osmo_fd_unregister(const struct osmo_fd *fd)
+{
+	return -ENOTSUP;
+}
+
+int osmo_stats_tcp_set_interval(int interval)
+{
+	return -ENOTSUP;
+}
+
+#endif /* HAVE_LINUX_TCP_H */
 
 #endif /* !EMBEDDED */
 
