@@ -100,7 +100,9 @@ crc%gen.h: crcXXgen.h.tpl
 
 socket_compat.h: socket_compat.h.tpl
 	$(AM_V_GEN)$(MKDIR_P) $(dir $@)
-	$(AM_V_GEN)sed -e's/XX/$(HAVE_SYS_SOCKET_H)/g' $< > $@
+	$(AM_V_GEN)sed -e's/__LIBOSMOCORE_HAVE_SYS_SOCKET_H XX/__LIBOSMOCORE_HAVE_SYS_SOCKET_H $(HAVE_SYS_SOCKET_H)/g' \
+		       -e's/__LIBOSMOCORE_HAVE_NETINET_IN_H XX/__LIBOSMOCORE_HAVE_NETINET_IN_H $(HAVE_NETINET_IN_H)/g' \
+		       $< > $@
 
 version.h: version.h.tpl
 	$(AM_V_GEN)$(MKDIR_P) $(dir $@)

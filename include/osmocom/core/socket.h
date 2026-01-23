@@ -2,7 +2,6 @@
  *  Osmocom socket convenience functions. */
 
 #pragma once
-#if (!EMBEDDED)
 
 /*! \defgroup socket Socket convenience functions
  *  @{
@@ -12,9 +11,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include <netinet/in.h>
-
 #include <osmocom/core/defs.h>
+#include <osmocom/core/socket_compat.h>
 
 /*! maximum number of local or remote addresses supported by an osmo_sock instance */
 #define OSMO_SOCK_MAX_ADDRS 32
@@ -29,9 +27,6 @@
 /*! maximum length of a multia-address socket name ("r=(::2|1.2.3.4):123<->l=(5.6.7.8|::9):987") */
 #define OSMO_SOCK_MULTIADDR_NAME_MAXLEN (OSMO_SOCK_MULTIADDR_PEER_STR_MAXLEN + 7)
 
-
-struct sockaddr_in;
-struct sockaddr;
 struct osmo_fd;
 struct sctp_paddrinfo;
 
@@ -59,7 +54,7 @@ static inline socklen_t osmo_sockaddr_size(const struct osmo_sockaddr *addr)
 {
 	if (!addr)
 		return 0;
-
+#if __LIBOSMOCORE_HAVE_SYS_SOCKET_H
 	switch (addr->u.sa.sa_family) {
 	case AF_INET:
 		return sizeof(struct sockaddr_in);
@@ -68,6 +63,9 @@ static inline socklen_t osmo_sockaddr_size(const struct osmo_sockaddr *addr)
 	default:
 		return sizeof(struct osmo_sockaddr);
 	}
+#else
+	return 0;
+#endif /* if __LIBOSMOCORE_HAVE_SYS_SOCKET_H */
 }
 
 unsigned int osmo_sockaddr_to_str_and_uint(char *addr, unsigned int addr_len, uint16_t *port,
@@ -224,5 +222,4 @@ int osmo_sock_set_nonblock(int fd, int on);
 
 int osmo_sock_sctp_get_peer_addr_info(int fd, struct sctp_paddrinfo *pinfo, size_t *pinfo_cnt);
 
-#endif /* (!EMBEDDED) */
 /*! @} */
