@@ -37,7 +37,6 @@
  *
  */
 #pragma once
-#if (!EMBEDDED)
 
 #include <stdint.h>
 #include <osmocom/core/msgb.h>
@@ -421,6 +420,4 @@ int osmo_gsup_decode(const uint8_t *data, size_t data_len,
 int osmo_gsup_encode(struct msgb *msg, const struct osmo_gsup_message *gsup_msg);
 int osmo_gsup_get_err_msg_type(enum osmo_gsup_message_type type_in)
 	OSMO_DEPRECATED("Use OSMO_GSUP_TO_MSGT_ERROR() instead");
-
-#endif /* (!EMBEDDED) */
 /*! @} */

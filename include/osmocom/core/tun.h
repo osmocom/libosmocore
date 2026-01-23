@@ -2,7 +2,6 @@
  *  tunnel network device convenience functions. */
 
 #pragma once
-#if (!EMBEDDED)
 
 #include <stddef.h>
 #include <stdint.h>
@@ -40,6 +39,4 @@ const char *osmo_tundev_get_netns_name(const struct osmo_tundev *tundev);
 struct osmo_netdev *osmo_tundev_get_netdev(struct osmo_tundev *tundev);
 
 int osmo_tundev_send(struct osmo_tundev *tundev, struct msgb *msg);
-
-#endif /* (!EMBEDDED) */
 /*! @} */

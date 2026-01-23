@@ -2,7 +2,6 @@
  *  network device (interface) convenience functions. */
 
 #pragma once
-#if (!EMBEDDED)
 
 #include <stddef.h>
 #include <stdint.h>
@@ -47,5 +46,4 @@ int osmo_netdev_add_route(struct osmo_netdev *netdev, const struct osmo_sockaddr
 			  uint8_t dst_prefixlen, const struct osmo_sockaddr *gw_addr);
 int osmo_netdev_ifupdown(struct osmo_netdev *netdev, bool ifupdown);
 
-#endif /* (!EMBEDDED) */
 /*! @} */
