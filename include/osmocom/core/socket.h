@@ -12,7 +12,7 @@
 #include <stdbool.h>
 #include <stddef.h>
 
-#include <arpa/inet.h>
+#include <netinet/in.h>
 
 #include <osmocom/core/defs.h>
 
