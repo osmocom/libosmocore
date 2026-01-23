@@ -120,7 +120,7 @@ static int get_fsm_inst_timer(struct ctrl_cmd *cmd, void *data)
 	if (osmo_timer_remaining(&fi->timer, NULL, &remaining) < 0)
 		cmd->reply = "0,0,0";
 	else
-		cmd->reply = talloc_asprintf(cmd, "%u,%ld,%ld", fi->T, remaining.tv_sec, remaining.tv_usec);
+		cmd->reply = talloc_asprintf(cmd, "%u,%ld,%ld", fi->T, (long) remaining.tv_sec, (long) remaining.tv_usec);
 
 	return CTRL_CMD_REPLY;
 }
@@ -149,7 +149,7 @@ static int get_fsm_inst_dump(struct ctrl_cmd *cmd, void *data)
 		rc = osmo_timer_remaining(&fi->timer, NULL, &remaining);
 		if (rc == 0) {
 			cmd->reply = talloc_asprintf_append(cmd->reply, ",timeout_sec=%ld,timeout_usec=%ld",
-							    remaining.tv_sec, remaining.tv_usec);
+							    (long) remaining.tv_sec, (long) remaining.tv_usec);
 		}
 	}
 
