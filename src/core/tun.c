@@ -84,10 +84,8 @@
 #include <sys/time.h>
 #include <net/if.h>
 
-#if defined(__linux__)
+#ifdef HAVE_LINUX_IF_TUN_H
 #include <linux/if_tun.h>
-#else
-#error "Unknown platform!"
 #endif
 
 #include <osmocom/core/utils.h>
@@ -265,6 +263,7 @@ void osmo_tundev_free(struct osmo_tundev *tundev)
 	talloc_free(tundev);
 }
 
+#ifdef HAVE_LINUX_IF_TUN_H
 /*! Open and configure fd of the tunnel device.
  *  \param[in] tundev The tundev object whose tunnel interface to open
  *  \param[in] flags internal linux flags to pass when creating the device (not used yet)
@@ -337,6 +336,7 @@ close_ret:
 	close(fd);
 	return rc;
 }
+#endif /* HAVE_LINUX_IF_TUN_H */
 
 /*! Open the tunnel device owned by the tundev object.
  *  \param[in] tundev The tundev object to open
@@ -344,6 +344,7 @@ close_ret:
  */
 int osmo_tundev_open(struct osmo_tundev *tundev)
 {
+#ifdef HAVE_LINUX_IF_TUN_H
 	struct osmo_netns_switch_state switch_state;
 	int rc;
 	int netns_fd = -1;
@@ -418,6 +419,9 @@ err_close_netns_fd:
 	if (netns_fd >= 0)
 		close(netns_fd);
 	return rc;
+#else
+	return -ENOTSUP;
+#endif /* HAVE_LINUX_IF_TUN_H */
 }
 
 /*! Close the tunnel device owned by the tundev object.

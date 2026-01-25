@@ -628,6 +628,9 @@ dnl Check if the compiler supports runtime SIMD detection
 CHECK_BUILTIN_SUPPORT([__builtin_cpu_supports],
   [Runtime SIMD detection will be disabled])
 
+dnl Check header linux/if_tun.h
+AC_CHECK_HEADERS([linux/if_tun.h])
+
 dnl Check header linux/tcp.h
 AC_CHECK_HEADERS([linux/tcp.h])
 
