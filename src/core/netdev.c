@@ -82,12 +82,16 @@
 #include <net/if.h>
 #include <net/route.h>
 
+#if ENABLE_LIBMNL
+
 #if defined(__linux__)
 #include <linux/if_link.h>
 #include <linux/rtnetlink.h>
 #else
 #error "Unknown platform!"
 #endif
+
+#endif /* ENABLE_LIBMNL */
 
 #include <osmocom/core/utils.h>
 #include <osmocom/core/select.h>
