@@ -437,6 +437,7 @@ static void iofd_handle_segmented_read(struct osmo_io_fd *iofd, int rc, struct m
 			msg = iofd->pending;
 			iofd->pending = NULL;
 		} else {
+			OSMO_ASSERT(tail_msg);
 			msg = tail_msg;
 			tail_msg = NULL;
 		}
