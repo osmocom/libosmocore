@@ -170,8 +170,11 @@ struct iofd_msghdr {
 	/*! msghdr is in the cancel_queue list */
 	bool in_cancel_queue;
 
-	/*! control message buffer for passing sctp_sndrcvinfo along */
-	char cmsg[0]; /* size is determined by iofd->cmsg_size on recvmsg, and by mcghdr->msg_controllen on sendmsg */
+	/*! control message buffer for passing sctp_sndrcvinfo along.
+	 * Size is determined by iofd->cmsg_size on recvmsg, and by mcghdr->msg_controllen on sendmsg.
+	 * Alignment of the array is required due to cast to  "struct cmsghdr", eg. by CMSG_FIRSTHDR().
+	 */
+	char _Alignas(struct cmsghdr) cmsg[0];
 };
 
 enum iofd_seg_act {
