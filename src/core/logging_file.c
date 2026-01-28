@@ -55,6 +55,9 @@ int log_target_file_reopen(struct log_target *target)
 	OSMO_ASSERT(target->type == LOG_TGT_TYPE_FILE || target->type == LOG_TGT_TYPE_STDERR);
 	OSMO_ASSERT(target->tgt_file.out || target->tgt_file.wqueue);
 
+	if (target->type == LOG_TGT_TYPE_STDERR)
+		return -ENOTSUP;
+
 	if (target->tgt_file.out) {
 		fclose(target->tgt_file.out);
 		target->tgt_file.out = fopen(target->tgt_file.fname, "a");
