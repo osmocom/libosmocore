@@ -52,34 +52,35 @@ int log_target_file_reopen(struct log_target *target)
 	struct osmo_wqueue *wq;
 	int rc;
 
-	OSMO_ASSERT(target->type == LOG_TGT_TYPE_FILE || target->type == LOG_TGT_TYPE_STDERR);
-	OSMO_ASSERT(target->tgt_file.out || target->tgt_file.wqueue);
+	OSMO_ASSERT(target->type == LOG_TGT_TYPE_FILE ||
+		    target->type == LOG_TGT_TYPE_STDERR);
 
 	if (target->type == LOG_TGT_TYPE_STDERR)
 		return -ENOTSUP;
 
-	if (target->tgt_file.out) {
+	if (target->tgt_file.out) { /* stream mode */
 		fclose(target->tgt_file.out);
 		target->tgt_file.out = fopen(target->tgt_file.fname, "a");
 		if (!target->tgt_file.out)
 			return -errno;
-	} else {
-		wq = target->tgt_file.wqueue;
-		if (wq->bfd.fd >= 0) {
-			osmo_fd_unregister(&wq->bfd);
-			close(wq->bfd.fd);
-			wq->bfd.fd = -1;
-		}
-
-		rc = open(target->tgt_file.fname, O_WRONLY|O_APPEND|O_CREAT|O_NONBLOCK, 0660);
-		if (rc < 0)
-			return -errno;
-		wq->bfd.fd = rc;
-		rc = osmo_fd_register(&wq->bfd);
-		if (rc < 0)
-			return rc;
+		return 0;
 	}
 
+	OSMO_ASSERT(target->tgt_file.wqueue);
+	wq = target->tgt_file.wqueue;
+	if (wq->bfd.fd >= 0) {
+		osmo_fd_unregister(&wq->bfd);
+		close(wq->bfd.fd);
+		wq->bfd.fd = -1;
+	}
+
+	rc = open(target->tgt_file.fname, O_WRONLY|O_APPEND|O_CREAT|O_NONBLOCK, 0660);
+	if (rc < 0)
+		return -errno;
+	wq->bfd.fd = rc;
+	rc = osmo_fd_register(&wq->bfd);
+	if (rc < 0)
+		return rc;
 	return 0;
 }
 
