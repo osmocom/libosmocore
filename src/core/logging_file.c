@@ -41,9 +41,6 @@
 #include <osmocom/core/osmo_io.h>
 #include <osmocom/core/logging_internal.h>
 
-/* maximum number of log statements we queue in file/stderr target write queue */
-#define LOG_WQUEUE_LEN	156
-
 /* NOTE: We use target->tgt_file.wqueue->except_cb to store the struct osmo_io_fd, because the
  * struct log_target is public and we cannot add pointers to it under tgt->tgt_file...
  * It can be moved to target->tgt_file.iofd if we are ever able to make struct log_target private... */

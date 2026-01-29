@@ -44,15 +44,14 @@
 #include <osmocom/core/utils.h>
 #include <osmocom/core/gsmtap.h>
 #include <osmocom/core/gsmtap_util.h>
-#include <osmocom/core/logging.h>
+#include <osmocom/core/logging_internal.h>
 #include <osmocom/core/timer.h>
 #include <osmocom/core/byteswap.h>
 #include <osmocom/core/thread.h>
 
-#define	GSMTAP_LOG_MAX_SIZE 4096
 #define GSMTAP_MSG_MAX_SIZE (sizeof(struct gsmtap_hdr) + \
 			     sizeof(struct gsmtap_osmocore_log_hdr) + \
-			     GSMTAP_LOG_MAX_SIZE)
+			     MAX_LOG_SIZE)
 
 static __thread uint32_t logging_gsmtap_tid;
 
@@ -156,10 +155,10 @@ struct log_target *log_target_create_gsmtap(const char *host, uint16_t port,
 #ifndef ENABLE_PSEUDOTALLOC
 	size_t num_pool_objects;
 	if (ofd_wq_mode) {
-		/* Allocate a talloc pool to avoid malloc() on the first 100
-		* concurrently queued msgbs (~400KB per gsmtap_log target).
+		/* Allocate a talloc pool to avoid malloc() on the first 156
+		* concurrently queued msgbs (~624KB per gsmtap_log target).
 		* Once the talloc_pool is full, new normal talloc chunks will be used. */
-		num_pool_objects = 100;
+		num_pool_objects = LOG_WQUEUE_LEN;
 	} else {
 		/* When in synchronous mode (blocking & non-blocking), there's
 		 * no queueing in gsmtap_sendmsg() so there's no need to have a

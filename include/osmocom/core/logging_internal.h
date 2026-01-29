@@ -11,6 +11,9 @@
 /* maximum length of the log string of a single log event (typically  line) */
 #define MAX_LOG_SIZE   4096
 
+/* maximum number of log statements we queue in file/stderr target write queue */
+#define LOG_WQUEUE_LEN	156
+
 struct log_thread_state {
 	/* Whether we are inside a code path to generate logging output: */
 	bool logging_active;
