@@ -4,16 +4,25 @@
  *  @{
  * \file logging_internal.h */
 
+#include <stdbool.h>
 #include <osmocom/core/logging.h>
 #include <osmocom/core/utils.h>
 
 /* maximum length of the log string of a single log event (typically  line) */
 #define MAX_LOG_SIZE   4096
 
+struct log_thread_state {
+	/* Whether we are inside a code path to generate logging output: */
+	bool logging_active;
+	/* Cache TID: */
+	long int tid;
+};
+
 extern void *tall_log_ctx;
 extern struct log_info *osmo_log_info;
 extern const struct value_string loglevel_strs[];
 extern struct llist_head osmo_log_target_list;
+extern __thread struct log_thread_state log_thread_state;
 
 void assert_loginfo(const char *src);
 

@@ -84,7 +84,7 @@ static struct log_context log_context;
 void *tall_log_ctx = NULL;
 LLIST_HEAD(osmo_log_target_list);
 
-static __thread long int logging_tid;
+__thread struct log_thread_state log_thread_state;
 
 #if (!EMBEDDED)
 /*! One global copy that contains the union of log levels for all targets
@@ -606,9 +606,9 @@ int log_output_buf(char *buf, int buf_len, struct log_target *target, unsigned i
 			OSMO_STRBUF_PRINTF(sb, " ");
 		}
 		if (target->print_tid) {
-			if (logging_tid == 0)
-				logging_tid = (long int)osmo_gettid();
-			OSMO_STRBUF_PRINTF(sb, "%ld ", logging_tid);
+			if (log_thread_state.tid == 0)
+				log_thread_state.tid = (long int)osmo_gettid();
+			OSMO_STRBUF_PRINTF(sb, "%ld ", log_thread_state.tid);
 		}
 		if (target->print_category)
 			OSMO_STRBUF_PRINTF(sb, "%s%s%s%s ",
@@ -743,6 +743,14 @@ void osmo_vlogp(int subsys, int level, const char *file, int line,
 {
 	struct log_target *tar;
 
+	if (OSMO_UNLIKELY(log_thread_state.logging_active)) {
+		/* Avoid re-entrant logging: If logging to log target generates
+		 * extra logging (eg. an error log line due to some wqueue being full),
+		 * we may end up in an infinite loop. */
+		return;
+	}
+	log_thread_state.logging_active = true;
+
 	subsys = map_subsys(subsys);
 
 #if !defined(EMBEDDED)
@@ -776,6 +784,7 @@ void osmo_vlogp(int subsys, int level, const char *file, int line,
 	}
 
 	log_tgt_mutex_unlock();
+	log_thread_state.logging_active = false;
 }
 
 /*! logging function used by DEBUGP() macro
