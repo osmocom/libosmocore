@@ -22,7 +22,6 @@
  *  \file stats_tcp.c */
 
 #include "config.h"
-#if !defined(EMBEDDED)
 
 #include <errno.h>
 
@@ -349,7 +348,5 @@ int osmo_stats_tcp_set_interval(int interval)
 }
 
 #endif /* HAVE_LINUX_TCP_H */
-
-#endif /* !EMBEDDED */
 
 /* @} */
