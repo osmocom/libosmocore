@@ -213,11 +213,10 @@ int log_target_file_switch_to_stream(struct log_target *target)
 	}
 
 	/* now that everything succeeded, we can finally close the old output fd */
-	if (target->type == LOG_TGT_TYPE_FILE) {
-		osmo_fd_unregister(&wq->bfd);
+	osmo_fd_unregister(&wq->bfd);
+	if (target->type == LOG_TGT_TYPE_FILE)
 		close(wq->bfd.fd);
-		wq->bfd.fd = -1;
-	}
+	wq->bfd.fd = -1;
 
 	/* release the queue itself */
 	talloc_free(wq);
