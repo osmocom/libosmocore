@@ -743,14 +743,6 @@ void osmo_vlogp(int subsys, int level, const char *file, int line,
 {
 	struct log_target *tar;
 
-	if (OSMO_UNLIKELY(log_thread_state.logging_active)) {
-		/* Avoid re-entrant logging: If logging to log target generates
-		 * extra logging (eg. an error log line due to some wqueue being full),
-		 * we may end up in an infinite loop. */
-		return;
-	}
-	log_thread_state.logging_active = true;
-
 	subsys = map_subsys(subsys);
 
 #if !defined(EMBEDDED)
@@ -758,6 +750,13 @@ void osmo_vlogp(int subsys, int level, const char *file, int line,
 		return;
 #endif
 
+	if (OSMO_UNLIKELY(log_thread_state.logging_active)) {
+		/* Avoid re-entrant logging: If logging to log target generates
+		 * extra logging (eg. an error log line due to some wqueue being full),
+		 * we may end up in an infinite loop. */
+		return;
+	}
+	log_thread_state.logging_active = true;
 	log_tgt_mutex_lock();
 
 	llist_for_each_entry(tar, &osmo_log_target_list, entry) {
