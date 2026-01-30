@@ -253,6 +253,10 @@ int _log_target_file_setup_iofd(struct log_target *target, int fd)
 	_log_target_file_setup_talloc_pool(target);
 	osmo_iofd_set_txqueue_max_length(iofd, OSMO_MAX(osmo_iofd_get_txqueue_max_length(iofd), LOG_WQUEUE_LEN));
 
+	/* Request to use 8 write buffers, or less if not as many are available: */
+	rc = osmo_iofd_set_io_buffers(iofd, OSMO_IO_OP_WRITE, 0);
+	rc = osmo_iofd_set_io_buffers(iofd, OSMO_IO_OP_WRITE, OSMO_MIN(rc, 8));
+
 	rc = osmo_iofd_register(iofd, -1);
 	if (rc < 0) {
 		osmo_iofd_free(iofd);
