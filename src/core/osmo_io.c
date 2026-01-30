@@ -910,7 +910,6 @@ int osmo_iofd_set_cmsg_size(struct osmo_io_fd *iofd, size_t cmsg_size)
  *
  *  If the osmo_io_fd is in OSMO_IO_FD_MODE_READ_WRITE mode, this API function can be used to tell the
  *  osmo_io proecess how many buffers should be read or written with a single read or write operation.
- *  This feature is supported with io_uring backend only.
  *
  *  \param[in] iofd the iofd file descriptor
  *  \param[in] op the osmo_io_op (read or write) to set the number of IO buffers for
