@@ -753,7 +753,8 @@ void osmo_vlogp(int subsys, int level, const char *file, int line,
 	if (OSMO_UNLIKELY(log_thread_state.logging_active)) {
 		/* Avoid re-entrant logging: If logging to log target generates
 		 * extra logging (eg. an error log line due to some wqueue being full),
-		 * we may end up in an infinite loop. */
+		 * we may end up in an infinite loop, or deadlock trying to re-acquire
+		 * this same lock. */
 		return;
 	}
 	log_thread_state.logging_active = true;
@@ -1397,6 +1398,13 @@ int log_check_level(int subsys, unsigned int level)
 
 	/* TODO: The following could/should be cached (update on config) */
 
+	if (OSMO_UNLIKELY(log_thread_state.logging_active)) {
+		/* Avoid re-entrant logging: If logging to log target generates
+		 * extra logging (eg. an error log line due to some wqueue being full),
+		 * we may end up in an infinite loop, or deadlock trying to re-acquire
+		 * this same lock. */
+		return 0;
+	}
 	log_tgt_mutex_lock();
 
 	llist_for_each_entry(tar, &osmo_log_target_list, entry) {
