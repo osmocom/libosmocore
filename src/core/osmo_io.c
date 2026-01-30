@@ -915,14 +915,22 @@ int osmo_iofd_set_cmsg_size(struct osmo_io_fd *iofd, size_t cmsg_size)
  *  \param[in] op the osmo_io_op (read or write) to set the number of IO buffers for
  *  \param[in] buffers the number of IO buffer for each specified operation
  *  \returns zero on success, a negative value on error
+ *
+ * The minimum valid buffers to set is always 1.
+ * The maximum valid buffers is implementation defined, and trying to set a
+ * value greater than the maximum will return an error.
+ * Passing \ref buffers with a value of 0 can be used to fetch the maximum value allowed.
  */
 int osmo_iofd_set_io_buffers(struct osmo_io_fd *iofd, enum osmo_io_op op, uint8_t buffers)
 {
 	if (iofd->mode != OSMO_IO_FD_MODE_READ_WRITE)
 		return -EINVAL;
 
-	if (buffers < 1 || buffers > IOFD_MSGHDR_IO_BUFFERS)
+	if (buffers > IOFD_MSGHDR_IO_BUFFERS)
 		return -EINVAL;
+
+	if (buffers == 0)
+		return IOFD_MSGHDR_IO_BUFFERS;
 
 	switch (op) {
 	case OSMO_IO_OP_READ:
