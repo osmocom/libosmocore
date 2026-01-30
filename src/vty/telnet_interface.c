@@ -248,10 +248,10 @@ void vty_event(enum event event, int sock, struct vty *vty)
 
 	switch (event) {
 	case VTY_READ:
-		bfd->when |= OSMO_FD_READ;
+		osmo_fd_read_enable(bfd);
 		break;
 	case VTY_WRITE:
-		bfd->when |= OSMO_FD_WRITE;
+		osmo_fd_write_enable(bfd);
 		break;
 	case VTY_CLOSED:
 		/* vty layer is about to free() vty */
