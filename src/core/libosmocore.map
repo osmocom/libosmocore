@@ -273,6 +273,7 @@ osmo_iofd_get_name;
 osmo_iofd_set_name;
 osmo_iofd_set_name_f;
 osmo_iofd_get_priv_nr;
+osmo_iofd_get_txqueue_max_length;
 osmo_iofd_init;
 osmo_iofd_mode_names;
 osmo_iofd_ops;

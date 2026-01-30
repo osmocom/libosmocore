@@ -1147,6 +1147,16 @@ void osmo_iofd_set_txqueue_max_length(struct osmo_io_fd *iofd, unsigned int max_
 	iofd->tx_queue.max_length = max_length;
 }
 
+
+/*! Get the maximum number of messages enqueued for sending.
+ *  \param[in] iofd the file descriptor
+ *  \returns the maximum size of the transmit queue
+ */
+unsigned int osmo_iofd_get_txqueue_max_length(const struct osmo_io_fd *iofd)
+{
+	return iofd->tx_queue.max_length;
+}
+
 /*! Retrieve the associated user-data from an osmo_io_fd.
  *
  *  A call to this function will return the opaque user data pointer which was specified previously
