@@ -101,6 +101,7 @@ static __attribute__((constructor(103))) void on_dso_load_osmo_io(void)
 	} else if (!strcmp("IO_URING", backend)) {
 		g_io_backend = OSMO_IO_BACKEND_IO_URING;
 		osmo_iofd_ops = iofd_uring_ops;
+		osmo_iofd_uring_constructor();
 #endif
 	} else {
 		fprintf(stderr, "Invalid osmo_io backend requested: \"%s\"\nCheck the environment variable %s\n", backend, OSMO_IO_BACKEND_ENV);

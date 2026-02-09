@@ -21,6 +21,7 @@ extern const struct iofd_backend_ops iofd_poll_ops;
 
 #if defined(HAVE_URING)
 extern const struct iofd_backend_ops iofd_uring_ops;
+void osmo_iofd_uring_constructor(void);
 void osmo_iofd_uring_init(void);
 #endif
 

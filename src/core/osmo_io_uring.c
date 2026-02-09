@@ -107,15 +107,15 @@ static int iofd_uring_poll_cb(struct osmo_fd *ofd, unsigned int what)
 }
 
 /*! initialize the uring and tie it into our event loop */
-void osmo_iofd_uring_init(void)
+void osmo_iofd_uring_constructor(void)
 {
 	const char *env;
-	int rc, evfd;
+	int rc;
 
 	if ((env = getenv(OSMO_IO_URING_BATCH)))
 		g_io_uring_batch = true;
 
-	if (!g_ring && (env = getenv(OSMO_IO_URING_INITIAL_SIZE))) {
+	if ((env = getenv(OSMO_IO_URING_INITIAL_SIZE))) {
 		int env_value;
 		rc = osmo_str_to_int(&env_value, env, 10, 1, IOFD_URING_MAXIMUM_SIZE);
 		if (rc < 0) {
@@ -130,13 +130,6 @@ void osmo_iofd_uring_init(void)
 		g_io_uring_size = env_value;
 	}
 
-	g_ring = talloc_zero(OTC_GLOBAL, struct osmo_io_uring);
-	INIT_LLIST_HEAD(&g_ring->cancel_queue);
-
-	rc = io_uring_queue_init(g_io_uring_size, &g_ring->ring, 0);
-	if (rc < 0)
-		osmo_panic("failure during io_uring_queue_init(): %s\n", strerror(-rc));
-
 	if ((env = getenv(OSMO_IO_URING_READ_SQE))) {
 		g_io_uring_read_sqes = atoi(env);
 		if (g_io_uring_read_sqes < 1 || g_io_uring_read_sqes > IOFD_MSGHDR_MAX_READ_SQES) {
@@ -145,6 +138,20 @@ void osmo_iofd_uring_init(void)
 			exit(1);
 		}
 	}
+}
+
+/*! Per-thread: initialize the uring and tie it into our event loop */
+void osmo_iofd_uring_init(void)
+{
+	int rc, evfd;
+
+	g_ring = talloc_zero(OTC_GLOBAL, struct osmo_io_uring);
+	OSMO_ASSERT(g_ring);
+	INIT_LLIST_HEAD(&g_ring->cancel_queue);
+
+	rc = io_uring_queue_init(g_io_uring_size, &g_ring->ring, 0);
+	if (rc < 0)
+		osmo_panic("failure during io_uring_queue_init(): %s\n", strerror(-rc));
 
 	rc = eventfd(0, 0);
 	if (rc < 0) {
