@@ -29,6 +29,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -60,10 +61,12 @@ int log_target_file_reopen(struct log_target *target)
 		return -ENOTSUP;
 
 	if (target->tgt_file.out) { /* stream mode */
+		int nonblock_flag = log_target_file_get_nonblock(target) != 0 ? 1 : 0;
 		fclose(target->tgt_file.out);
 		target->tgt_file.out = fopen(target->tgt_file.fname, "a");
 		if (!target->tgt_file.out)
 			return -errno;
+		log_target_file_set_nonblock(target, nonblock_flag);
 		return 0;
 	}
 
@@ -88,6 +91,62 @@ int log_target_file_reopen(struct log_target *target)
 }
 
 #if (!EMBEDDED)
+
+/*! Set the log target fd as non-blocking (see sockopt O_NONBLOCK).
+ *  \param[in] target log target which we should switch
+ *  \param[in] on set to 1 to set as non-blocking, 0 to set as blocking.
+ *  \returns 0 on success; negative on error
+ *
+ *  This setting is ignored when \ref target is in wqueue mode.
+ */
+int log_target_file_set_nonblock(struct log_target *target, int on)
+{
+	int flags;
+	int fd;
+
+	if (!target->tgt_file.out)
+		return 0;
+
+	fd = fileno(target->tgt_file.out);
+	if (fd < 0)
+		return fd;
+
+	flags = fcntl(fd, F_GETFL);
+	if (flags < 0)
+		return flags;
+
+	if (on)
+		flags |= O_NONBLOCK;
+	else
+		flags &= ~O_NONBLOCK;
+
+	flags = fcntl(fd, F_SETFL, flags);
+	if (flags < 0)
+		return flags;
+	return 0;
+}
+
+/*! Find whether the log target fd is configured as non-blocking (see sockopt O_NONBLOCK).
+ *  \param[in] target log target which we should switch
+ *  \returns 1 if set as non-block; 0 otherwise; negative on error
+ */
+int log_target_file_get_nonblock(const struct log_target *target)
+{
+	int flags;
+	int fd;
+
+	if (!target->tgt_file.out)
+		return -1;
+
+	fd = fileno(target->tgt_file.out);
+	if (fd < 0)
+		return fd;
+
+	flags = fcntl(fd, F_GETFL);
+	if (flags < 0)
+		return flags;
+	return (flags & O_NONBLOCK) ? 1 : 0;
+}
 
 /* This is the file-specific subclass destructor logic, called from
  * log_target_destroy(). User should call log_target_destroy() to destroy this
@@ -309,14 +368,13 @@ int log_target_file_switch_to_wqueue(struct log_target *target)
 	return 0;
 }
 
-/*! Create a new file-based log target using non-blocking write_queue
+/*! Create a new file-based log target using a stream
  *  \param[in] fname File name of the new log file
  *  \returns Log target in case of success, NULL otherwise
  */
 struct log_target *log_target_create_file(const char *fname)
 {
 	struct log_target *target;
-	int rc, fd;
 
 	target = log_target_create();
 	if (!target)
@@ -325,14 +383,10 @@ struct log_target *log_target_create_file(const char *fname)
 	target->type = LOG_TGT_TYPE_FILE;
 	target->tgt_file.fname = talloc_strdup(target, fname);
 	OSMO_ASSERT(target->tgt_file.fname);
-	target->raw_output = _file_raw_output;
+	target->output = _file_output_stream;
 
-	fd = open(fname, O_WRONLY|O_APPEND|O_CREAT|O_NONBLOCK, 0660);
-	if (fd < 0)
-		goto free_ret;
-
-	rc = _log_target_file_setup_iofd(target, fd);
-	if (rc < 0)
+	target->tgt_file.out = fopen(target->tgt_file.fname, "a");
+	if (!target->tgt_file.out)
 		goto free_ret;
 
 	return target;

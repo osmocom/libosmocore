@@ -457,6 +457,8 @@ void log_target_systemd_set_raw(struct log_target *target, bool raw);
 int log_target_file_reopen(struct log_target *tgt);
 int log_target_file_switch_to_stream(struct log_target *tgt);
 int log_target_file_switch_to_wqueue(struct log_target *tgt);
+int log_target_file_get_nonblock(const struct log_target *target);
+int log_target_file_set_nonblock(struct log_target *target, int on);
 int log_targets_reopen(void);
 
 void log_add_target(struct log_target *target);

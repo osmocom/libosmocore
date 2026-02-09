@@ -886,11 +886,15 @@ DEFUN(cfg_no_log_gsmtap, cfg_no_log_gsmtap_cmd,
 }
 
 DEFUN(cfg_log_stderr, cfg_log_stderr_cmd,
-	"log stderr [blocking-io]",
+	"log stderr [(nonblocking-io|blocking-io|wq)]",
 	LOG_STR "Logging via STDERR of the process\n"
-	"Use blocking, synchronous I/O\n")
+	"Use non-blocking, synchronous I/O (may lose msgs if file write buffer becomes full) (default)\n"
+	"Use blocking, synchronous I/O (only for debug purposes or when blocking is acceptable)\n"
+	"Use Tx workqueue, asynchronous I/O (may lose msgs if queue becomes full)\n")
 {
 	struct log_target *tgt;
+	bool wq_mode = argc > 0 && (strcmp(argv[0], "wq") == 0);
+	bool blocking_io = argc > 0 && (strcmp(argv[0], "blocking-io") == 0);
 
 	log_tgt_mutex_lock();
 	tgt = log_target_find(LOG_TGT_TYPE_STDERR, NULL);
@@ -904,10 +908,12 @@ DEFUN(cfg_log_stderr, cfg_log_stderr_cmd,
 		log_add_target(tgt);
 	}
 
-	if (argc > 0 && !strcmp(argv[0], "blocking-io"))
-		log_target_file_switch_to_stream(tgt);
-	else
+	if (wq_mode) {
 		log_target_file_switch_to_wqueue(tgt);
+	} else {
+		log_target_file_switch_to_stream(tgt);
+		log_target_file_set_nonblock(tgt, blocking_io ? 0 : 1);
+	}
 
 	vty->index = tgt;
 	vty->node = CFG_LOG_NODE;
@@ -935,11 +941,15 @@ DEFUN(cfg_no_log_stderr, cfg_no_log_stderr_cmd,
 }
 
 DEFUN(cfg_log_file, cfg_log_file_cmd,
-	"log file FILENAME [blocking-io]",
+	"log file FILENAME [(nonblocking-io|blocking-io|wq)]",
 	LOG_STR "Logging to text file\n" "Filename\n"
-	"Use blocking, synchronous I/O\n")
+	"Use non-blocking, synchronous I/O (may lose msgs if file write buffer becomes full) (default)\n"
+	"Use blocking, synchronous I/O (only for debug purposes or when blocking is acceptable)\n"
+	"Use Tx workqueue, asynchronous I/O (may lose msgs if queue becomes full)\n")
 {
 	const char *fname = argv[0];
+	bool wq_mode = argc > 1 && (strcmp(argv[1], "wq") == 0);
+	bool blocking_io = argc > 1 && (strcmp(argv[1], "blocking-io") == 0);
 	struct log_target *tgt;
 
 	log_tgt_mutex_lock();
@@ -954,10 +964,12 @@ DEFUN(cfg_log_file, cfg_log_file_cmd,
 		log_add_target(tgt);
 	}
 
-	if (argc > 1 && !strcmp(argv[1], "blocking-io"))
-		log_target_file_switch_to_stream(tgt);
-	else
+	if (wq_mode) {
 		log_target_file_switch_to_wqueue(tgt);
+	} else {
+		log_target_file_switch_to_stream(tgt);
+		log_target_file_set_nonblock(tgt, blocking_io ? 0 : 1);
+	}
 
 	vty->index = tgt;
 	vty->node = CFG_LOG_NODE;
@@ -1084,9 +1096,10 @@ static int config_write_log_single(struct vty *vty, struct log_target *tgt)
 		break;
 	case LOG_TGT_TYPE_STDERR:
 		if (tgt->tgt_file.wqueue)
-			vty_out(vty, "log stderr%s", VTY_NEWLINE);
+			vty_out(vty, "log stderr wq%s", VTY_NEWLINE);
 		else
-			vty_out(vty, "log stderr blocking-io%s", VTY_NEWLINE);
+			vty_out(vty, "log stderr%s%s",
+				log_target_file_get_nonblock(tgt) == 0 ? " blocking-io" : "", VTY_NEWLINE);
 		break;
 	case LOG_TGT_TYPE_SYSLOG:
 #ifdef ENABLE_SYSLOG_LOGGING
@@ -1098,9 +1111,10 @@ static int config_write_log_single(struct vty *vty, struct log_target *tgt)
 		break;
 	case LOG_TGT_TYPE_FILE:
 		if (tgt->tgt_file.wqueue)
-			vty_out(vty, "log file %s%s", tgt->tgt_file.fname, VTY_NEWLINE);
+			vty_out(vty, "log file %s wq%s", tgt->tgt_file.fname, VTY_NEWLINE);
 		else
-			vty_out(vty, "log file %s blocking-io%s", tgt->tgt_file.fname, VTY_NEWLINE);
+			vty_out(vty, "log file %s%s%s", tgt->tgt_file.fname,
+				log_target_file_get_nonblock(tgt) == 0 ? " blocking-io" : "", VTY_NEWLINE);
 		break;
 	case LOG_TGT_TYPE_STRRB:
 		vty_out(vty, "log alarms %zu%s",

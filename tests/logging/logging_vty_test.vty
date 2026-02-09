@@ -2,7 +2,7 @@ logging_vty_test> enable
 
 logging_vty_test# show running-config
 ...
-log stderr
+log stderr wq
 ... !logging level all
  logging level aa debug
  logging level bb info
