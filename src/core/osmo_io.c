@@ -69,10 +69,6 @@ static enum osmo_io_backend g_io_backend;
 /* Used by some tests, can't be static */
 struct iofd_backend_ops osmo_iofd_ops;
 
-#if defined(HAVE_URING)
-void osmo_iofd_uring_init(void);
-#endif
-
 /*! initialize osmo_io for the current thread */
 void osmo_iofd_init(void)
 {
