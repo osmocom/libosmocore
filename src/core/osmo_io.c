@@ -69,9 +69,14 @@ static enum osmo_io_backend g_io_backend;
 /* Used by some tests, can't be static */
 struct iofd_backend_ops osmo_iofd_ops;
 
+static __thread bool g_thread_initialized = false;
+
 /*! initialize osmo_io for the current thread */
 void osmo_iofd_init(void)
 {
+	if (g_thread_initialized)
+		return;
+
 	switch (g_io_backend) {
 	case OSMO_IO_BACKEND_POLL:
 		break;
@@ -84,6 +89,7 @@ void osmo_iofd_init(void)
 		OSMO_ASSERT(0);
 		break;
 	}
+	g_thread_initialized = true;
 }
 
 /* ensure main thread always has pre-initialized osmo_io
@@ -833,6 +839,7 @@ struct osmo_io_fd *osmo_iofd_setup(const void *ctx, int fd, const char *name, en
 		  const struct osmo_io_ops *ioops, void *data)
 {
 	struct osmo_io_fd *iofd;
+	osmo_iofd_init();
 
 	/* reject unsupported/unknown modes */
 	switch (mode) {
