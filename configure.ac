@@ -241,7 +241,7 @@ ENABLE_GB_DEFAULT="yes"
 ENABLE_CTRL_DEFAULT="yes"
 ENABLE_PSEUDOTALLOC_DEFAULT="no"
 ENABLE_EMBEDDED_DEFAULT="no"
-ENABLE_LIBOSMOCORE_NO_LOGGING_DEFAULT="no"
+ENABLE_LOG_MACROS_DEFAULT="yes"
 ENABLE_SANITIZE_DEFAULT="no"
 ENABLE_WERROR_DEFAULT="no"
 ENABLE_EXT_TESTS_DEFAULT="no"
@@ -261,6 +261,7 @@ AM_CONDITIONAL(ENABLE_SERCOM_STUB, test x"$embedded" = x"yes")
 if test x"$embedded" = x"yes"
 then
 	AC_DEFINE([EMBEDDED],[1],[Select building for embedded use])
+	ENABLE_LOG_MACROS_DEFAULT="no"
 	ENABLE_PLUGIN_DEFAULT="no"
 	ENABLE_MSGFILE_DEFAULT="no"
 	ENABLE_SERIAL_DEFAULT="no"
@@ -507,8 +508,8 @@ AC_ARG_ENABLE(log_macros,
 		[--disable-log-macros],
 		[Disable logging macros that are also used internally to print information]
 	)],
-	[log_macros=$enableval], [log_macros=$ENABLE_LIBOSMOCORE_NO_LOGGING_DEFAULT])
-if test x"$log_macros" == x"yes"
+	[log_macros=$enableval], [log_macros=$ENABLE_LOG_MACROS_DEFAULT])
+if test x"$log_macros" != x"yes"
 then
 	AC_DEFINE([LIBOSMOCORE_NO_LOGGING],[1],[Disable logging macros])
 fi
