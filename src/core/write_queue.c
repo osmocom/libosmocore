@@ -19,6 +19,7 @@
  */
 
 #include <errno.h>
+#include "config.h"
 #include <osmocom/core/write_queue.h>
 #include <osmocom/core/logging.h>
 

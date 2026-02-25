@@ -27,6 +27,7 @@
 #include <limits.h>
 #include <errno.h>
 
+#include "config.h"
 #include <osmocom/core/fsm.h>
 #include <osmocom/core/tdef.h>
 

@@ -27,6 +27,7 @@
 
 #include <stdarg.h>
 #include <stdio.h>
+#include "config.h"
 #include <osmocom/core/utils.h>
 #include <osmocom/core/logging.h>
 #include <osmocom/core/logging_internal.h>

@@ -36,6 +36,7 @@
 #include <linux/serial.h>
 #endif
 
+#include "config.h"
 #include <osmocom/core/serial.h>
 
 

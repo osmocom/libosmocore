@@ -16,6 +16,7 @@
  *  GNU General Public License for more details.
  */
 
+#include "config.h"
 #include <osmocom/core/base64.h>
 
 #include <stdint.h>

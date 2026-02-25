@@ -68,6 +68,7 @@
  * <http://sysmocom.de/>
  */
 
+#include "config.h"
 #include <osmocom/core/application.h>
 #include <osmocom/core/logging.h>
 

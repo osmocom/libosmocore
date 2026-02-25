@@ -41,6 +41,7 @@
 #include <string.h>
 #include <string.h>
 
+#include "config.h"
 #include <osmocom/core/strrb.h>
 #include <osmocom/core/talloc.h>
 

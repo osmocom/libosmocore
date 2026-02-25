@@ -24,6 +24,7 @@
 #include <stdint.h>
 #include <errno.h>
 
+#include "config.h"
 #include <osmocom/core/utils.h>
 #include <osmocom/core/timer.h>
 #include <osmocom/core/soft_uart.h>

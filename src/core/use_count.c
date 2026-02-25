@@ -25,6 +25,7 @@
 #include <inttypes.h>
 #include <string.h>
 
+#include "config.h"
 #include <osmocom/core/linuxlist.h>
 #include <osmocom/core/utils.h>
 #include <osmocom/core/use_count.h>

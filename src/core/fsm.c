@@ -21,6 +21,7 @@
 #include <string.h>
 #include <inttypes.h>
 
+#include "config.h"
 #include <osmocom/core/fsm.h>
 #include <osmocom/core/talloc.h>
 #include <osmocom/core/logging.h>

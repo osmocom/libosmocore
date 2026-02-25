@@ -12,6 +12,7 @@
  * SPDX-License-Identifier: GPL-2.0
  */
 
+#include "config.h"
 #include <osmocom/core/crc16.h>
 
 /*! CRC table for the CRC-16. The poly is 0x8005 (x^16 + x^15 + x^2 + 1) */

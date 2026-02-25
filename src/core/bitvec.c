@@ -38,6 +38,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+#include "config.h"
 #include <osmocom/core/bits.h>
 #include <osmocom/core/bitvec.h>
 #include <osmocom/core/panic.h>

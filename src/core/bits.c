@@ -20,6 +20,7 @@
 
 #include <stdint.h>
 
+#include "config.h"
 #include <osmocom/core/bits.h>
 
 /*! \addtogroup bits

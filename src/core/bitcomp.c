@@ -29,6 +29,7 @@
 #include <errno.h>
 #include <string.h>
 
+#include "config.h"
 #include <osmocom/core/bitvec.h>
 #include <osmocom/core/bitcomp.h>
 

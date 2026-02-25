@@ -56,6 +56,7 @@
 #include <stdarg.h>
 #include <errno.h>
 
+#include "config.h"
 #include <osmocom/core/msgb.h>
 #include <osmocom/core/talloc.h>
 #include <osmocom/core/logging.h>
@@ -202,7 +203,7 @@ uint8_t *msgb_data(const struct msgb *msg)
 bool _msgb_eq(const char *file, size_t line, const char *func, uint8_t level,
 	      const struct msgb *msg, const uint8_t *data, size_t len, bool print)
 {
-	const char *m_dump;
+	const char *m_dump __attribute__((unused));
 	unsigned int m_len, i;
 	uint8_t *m_data;
 

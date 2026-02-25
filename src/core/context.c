@@ -18,6 +18,7 @@
  */
 #include <string.h>
 #include <errno.h>
+#include "config.h"
 #include <osmocom/core/talloc.h>
 #include <osmocom/core/utils.h>
 

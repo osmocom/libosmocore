@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 #include <string.h>
+#include "config.h"
 #include <osmocom/core/bits.h>
 #include <osmocom/core/prbs.h>
 

@@ -24,10 +24,10 @@
  * \file panic.c */
 
 #include <unistd.h>
+#include "config.h"
 #include <osmocom/core/panic.h>
 #include <osmocom/core/backtrace.h>
 
-#include "config.h"
 
 
 static osmo_panic_handler_t osmo_panic_handler = (void*)0;

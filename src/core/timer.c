@@ -31,6 +31,7 @@
 #include <assert.h>
 #include <string.h>
 #include <limits.h>
+#include "config.h"
 #include <osmocom/core/timer.h>
 #include <osmocom/core/timer_compat.h>
 #include <osmocom/core/linuxlist.h>

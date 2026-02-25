@@ -18,6 +18,7 @@
   linux/lib/rbtree.c
 */
 
+#include "config.h"
 #include <osmocom/core/linuxrbtree.h>
 
 static void __rb_rotate_left(struct rb_node *node, struct rb_root *root)

@@ -22,6 +22,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
+#include "config.h"
 
 /* Add-Compare-Select (ACS-Butterfly)
  * Compute 4 accumulated path metrics and 4 path selections. Note that path

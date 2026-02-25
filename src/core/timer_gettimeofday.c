@@ -39,6 +39,7 @@
 
 #include <stdbool.h>
 #include <sys/time.h>
+#include "config.h"
 #include <osmocom/core/timer_compat.h>
 
 bool osmo_gettimeofday_override = false;

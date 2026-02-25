@@ -21,6 +21,7 @@
 
 #include <string.h>
 
+#include "config.h"
 #include <osmocom/core/linuxlist.h>
 #include <osmocom/core/talloc.h>
 #include <osmocom/core/counter.h>

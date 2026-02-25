@@ -29,6 +29,7 @@
  *
  * \file loggingrb.c */
 
+#include "config.h"
 #include <osmocom/core/strrb.h>
 #include <osmocom/core/logging.h>
 #include <osmocom/core/loggingrb.h>

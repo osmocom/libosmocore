@@ -60,6 +60,7 @@
 #include <unistd.h>
 #include <inttypes.h>
 
+#include "config.h"
 #include <osmocom/core/utils.h>
 #include <osmocom/core/linuxlist.h>
 #include <osmocom/core/talloc.h>

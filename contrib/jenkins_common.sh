@@ -43,6 +43,35 @@ verify_gsm_08_05_tlv_definition() {
 }
 verify_gsm_08_05_tlv_definition
 
+# Verify config.h is included before any osmocom header or HAVE_*/LIBOSMOCORE_*
+# guard in src/core/*.c (required for LIBOSMOCORE_NO_LOGGING and feature guards).
+verify_config_h_order() {
+    set +x;
+    rc=0
+    for f in src/core/*.c; do
+        case "$(basename "$f")" in
+            crc*gen.c) continue ;;  # generated files
+        esac
+        config_line=$(grep -n '#include "config.h"\|#include "\.\./config.h"' "$f" | head -1 | cut -d: -f1)
+        dep_line=$(grep -n -E \
+            '^#[[:space:]]*(ifdef|ifndef)[[:space:]]+(HAVE_|LIBOSMOCORE_)|^#[[:space:]]*if[[:space:]].*(HAVE_|LIBOSMOCORE_)|^#include[[:space:]]+<osmocom/' \
+            "$f" | head -1 | cut -d: -f1)
+        if [ -z "$config_line" ] && [ -n "$dep_line" ]; then
+            echo "$f: missing config.h (needed before line $dep_line)"
+            rc=1
+        elif [ -n "$config_line" ] && [ -n "$dep_line" ] && [ "$config_line" -gt "$dep_line" ]; then
+            echo "$f:$config_line: config.h too late (needed before line $dep_line)"
+            rc=1
+        fi
+    done
+    if [ "$rc" -ne 0 ]; then
+        echo "config.h must be included before osmocom headers and HAVE_* guards!"
+        exit 1
+    fi
+    set -x;
+}
+verify_config_h_order
+
 prep_build() {
     _src_dir="$1"
     _build_dir="$2"

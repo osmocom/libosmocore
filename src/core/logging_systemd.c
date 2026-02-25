@@ -28,6 +28,7 @@
 
 #include <systemd/sd-journal.h>
 
+#include "config.h"
 #include <osmocom/core/talloc.h>
 #include <osmocom/core/utils.h>
 #include <osmocom/core/logging.h>

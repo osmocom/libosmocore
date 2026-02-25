@@ -22,9 +22,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include "config.h"
 #include <osmocom/core/utils.h>
 #include <osmocom/core/logging.h>
-#include "config.h"
 
 #ifdef HAVE_EXECINFO_H
 #include <execinfo.h>

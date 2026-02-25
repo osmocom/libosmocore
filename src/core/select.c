@@ -27,6 +27,7 @@
 #include <stdbool.h>
 #include <errno.h>
 
+#include "config.h"
 #include <osmocom/core/select.h>
 #include <osmocom/core/linuxlist.h>
 #include <osmocom/core/timer.h>
@@ -36,7 +37,6 @@
 #include <osmocom/core/stat_item.h>
 #include <osmocom/core/stats_tcp.h>
 
-#include "config.h"
 
 #if defined(HAVE_SYS_SELECT_H) && defined(HAVE_POLL_H)
 #include <sys/select.h>

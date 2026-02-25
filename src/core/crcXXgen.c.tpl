@@ -25,7 +25,7 @@
  *  \file crcXXgen.c.tpl */
 
 #include <stdint.h>
-
+#include "config.h"
 #include <osmocom/core/bits.h>
 #include <osmocom/core/crcXXgen.h>
 

@@ -22,6 +22,7 @@
 
 #include <string.h>
 
+#include "config.h"
 #include <osmocom/core/crc16.h>
 #include <osmocom/core/bits.h>
 #include <osmocom/core/isdnhdlc.h>

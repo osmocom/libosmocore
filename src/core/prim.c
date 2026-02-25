@@ -8,6 +8,7 @@
  *  @{
  *  \file prim.c */
 
+#include "config.h"
 #include <osmocom/core/utils.h>
 #include <osmocom/core/prim.h>
 

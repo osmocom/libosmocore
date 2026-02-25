@@ -23,6 +23,7 @@
  *  GNU General Public License for more details.
  */
 
+#include "config.h"
 #include <osmocom/core/select.h>
 #include <osmocom/core/talloc.h>
 #include <osmocom/core/logging.h>

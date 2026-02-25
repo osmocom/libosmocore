@@ -18,6 +18,7 @@
  *
  */
 
+#include "config.h"
 #include <osmocom/core/signal.h>
 #include <osmocom/core/talloc.h>
 #include <osmocom/core/linuxlist.h>
