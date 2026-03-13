@@ -509,6 +509,26 @@ void iofd_handle_recv(struct osmo_io_fd *iofd, struct msgb *msg, int rc, struct 
 	}
 }
 
+static void iofd_send_completion_cb(struct osmo_io_fd *iofd, int rc, const struct iofd_msghdr *msghdr, struct msgb *msg)
+{
+	switch (msghdr->action) {
+	case IOFD_ACT_WRITE:
+		if (iofd->io_ops.write_cb)
+			iofd->io_ops.write_cb(iofd, rc, msg);
+		break;
+	case IOFD_ACT_SENDTO:
+		if (iofd->io_ops.sendto_cb)
+			iofd->io_ops.sendto_cb(iofd, rc, msg, &msghdr->osa);
+		break;
+	case IOFD_ACT_SENDMSG:
+		if (iofd->io_ops.sendmsg_cb)
+			iofd->io_ops.sendmsg_cb(iofd, rc, msg);
+		break;
+	default:
+		OSMO_ASSERT(0);
+	}
+}
+
 /*! completion handler: Internal function called by osmo_io_backend after a given I/O operation has completed
  *  \param[in] iofd I/O file-descriptor on which I/O has completed
  *  \param[in] rc return value of the I/O operation
@@ -518,18 +538,45 @@ void iofd_handle_send_completion(struct osmo_io_fd *iofd, int rc, struct iofd_ms
 {
 	int idx, i;
 
-	/* Re-enqueue the complete msgb. */
-	if (rc == -EAGAIN) {
-		iofd_txqueue_enqueue_front(iofd, msghdr);
+	if (OSMO_UNLIKELY(rc < 0)) {
+		/* Re-enqueue the complete msgb. */
+		if (rc == -EAGAIN) {
+			iofd_txqueue_enqueue_front(iofd, msghdr);
+			return;
+		}
+
+		/* Propagate error for all msgbs to user cb: */
+		for (idx = 0; idx < msghdr->io_len; idx++) {
+			iofd_send_completion_cb(iofd, rc, msghdr, msghdr->msg[idx]);
+			msgb_free(msghdr->msg[idx]);
+			msghdr->msg[idx] = NULL;
+
+			/* The user can unregister/close the iofd during callback above. */
+			if (!IOFD_FLAG_ISSET(iofd, IOFD_FLAG_FD_REGISTERED))
+				break;
+		}
+		iofd_msghdr_free(msghdr);
 		return;
 	}
 
 	for (idx = 0; idx < msghdr->io_len; idx++) {
 		struct msgb *msg = msghdr->msg[idx];
-		int chunk;
+		int chunk = OSMO_MIN(rc, msgb_length(msg));
+		/* chunk contains write completed bytes of msg */
 
-		/* Incomplete write */
-		if (rc > 0 && rc < msgb_length(msg)) {
+		/* If "rc == 0 and msgb_length(msg) > 0", then we had a partial
+		 * write where OS wrote up to exact start point of current msg.
+		 * In that case, we want to skip notifying the user and continue
+		 * below on the "Incomplete write" path to delay further writing.
+		 * If "rc == 0 and msgb_length(msg) == 0", the user specifically
+		 * requested a write() of 0 bytes and 0 can be returned, which
+		 * has its use cases for regular files. In that case user is
+		 * interested in receiving a cb. */
+		if (OSMO_LIKELY(!(rc == 0 && msgb_length(msg) > 0)))
+			iofd_send_completion_cb(iofd, chunk, msghdr, msg);
+
+		/* Incomplete write: */
+		if (chunk < msgb_length(msg)) {
 			/* Keep msg with unsent data only. */
 			msgb_pull(msg, rc);
 			msghdr->iov[idx].iov_len = msgb_length(msg);
@@ -551,34 +598,11 @@ void iofd_handle_send_completion(struct osmo_io_fd *iofd, int rc, struct iofd_ms
 			return;
 		}
 
-		if (rc >= 0) {
-			chunk = msgb_length(msg);
-			if (rc < chunk)
-				chunk = rc;
-		} else {
-			chunk = rc;
-		}
-
-		/* All other failure and success cases are handled here */
-		switch (msghdr->action) {
-		case IOFD_ACT_WRITE:
-			if (iofd->io_ops.write_cb)
-				iofd->io_ops.write_cb(iofd, chunk, msg);
-			break;
-		case IOFD_ACT_SENDTO:
-			if (iofd->io_ops.sendto_cb)
-				iofd->io_ops.sendto_cb(iofd, chunk, msg, &msghdr->osa);
-			break;
-		case IOFD_ACT_SENDMSG:
-			if (iofd->io_ops.sendmsg_cb)
-				iofd->io_ops.sendmsg_cb(iofd, chunk, msg);
-			break;
-		default:
-			OSMO_ASSERT(0);
-		}
-
 		msgb_free(msghdr->msg[idx]);
 		msghdr->msg[idx] = NULL;
+
+		/* At least current msg (idx) was written, maybe more: rc >= chunk */
+		rc -= chunk;
 
 		/* The user can unregister/close the iofd during callback above. */
 		if (!IOFD_FLAG_ISSET(iofd, IOFD_FLAG_FD_REGISTERED))
