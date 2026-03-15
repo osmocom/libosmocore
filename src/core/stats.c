@@ -471,7 +471,8 @@ int osmo_stats_reporter_udp_open(struct osmo_stats_reporter *srep)
 		static int val = 1;
 
 		rc = setsockopt(sock, SOL_SOCKET, SO_NOSIGPIPE, (void*)&val, sizeof(val));
-		goto failed;
+		if (rc == -1)
+			goto failed;
 	}
 #endif
 	if (srep->bind_addr_len > 0) {
