@@ -689,7 +689,7 @@ static void encode_pdp_info(struct msgb *msg, enum osmo_gsup_iei iei,
 				pdp_addr.ietf.v4v6.v4 = pdp_info->pdp_address[0].u.sin.sin_addr.s_addr;
 				pdp_addr_len += sizeof(pdp_addr.ietf.v4v6.v4);
 			}
-			if (pdp_info->pdp_address[0].u.sa.sa_family == AF_INET6) {
+			if (pdp_info->pdp_address[1].u.sa.sa_family == AF_INET6) {
 				memcpy(pdp_addr.ietf.v4v6.v6,
 				       &pdp_info->pdp_address[1].u.sin6.sin6_addr,
 				       sizeof(pdp_addr.ietf.v4v6.v6));
