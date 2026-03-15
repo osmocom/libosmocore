@@ -1571,7 +1571,6 @@ void gsm48_set_dtx(struct gsm48_cell_options *op, enum gsm48_dtx_mode full,
 #define GSM48_MT_RR_HANDO_COMPL		0x2c
 #define GSM48_MT_RR_HANDO_FAIL		0x28
 #define GSM48_MT_RR_HANDO_INFO		0x2d
-#define GSM48_MT_RR_HANDO_INFO		0x2d
 #define GSM48_MT_RR_DTM_ASS_CMD		0x4c
 
 #define GSM48_MT_RR_CELL_CHG_ORDER	0x08
