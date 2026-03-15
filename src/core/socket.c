@@ -1762,8 +1762,10 @@ int osmo_sockaddr_from_str_and_uint(struct osmo_sockaddr *osa_out, const char *i
 	if (!ai)
 		return -EIO;
 
-	if (ai->ai_addrlen > sizeof(*osa_out))
+	if (ai->ai_addrlen > sizeof(*osa_out)) {
+		freeaddrinfo(ai);
 		return -ENOSPC;
+	}
 
 	memcpy(&osa_out->u.sa, ai->ai_addr, ai->ai_addrlen);
 	freeaddrinfo(ai);
