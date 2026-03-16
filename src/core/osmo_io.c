@@ -553,7 +553,7 @@ void iofd_handle_send_completion(struct osmo_io_fd *iofd, int rc, struct iofd_ms
 
 			/* The user can unregister/close the iofd during callback above. */
 			if (!IOFD_FLAG_ISSET(iofd, IOFD_FLAG_FD_REGISTERED))
-				break;
+				goto free_remaining_idx;
 		}
 		iofd_msghdr_free(msghdr);
 		return;
@@ -606,9 +606,18 @@ void iofd_handle_send_completion(struct osmo_io_fd *iofd, int rc, struct iofd_ms
 
 		/* The user can unregister/close the iofd during callback above. */
 		if (!IOFD_FLAG_ISSET(iofd, IOFD_FLAG_FD_REGISTERED))
-			break;
+			goto free_remaining_idx;
 	}
 	iofd_msghdr_free(msghdr);
+	return;
+
+free_remaining_idx:
+	for (idx = idx + 1; idx < msghdr->io_len; idx++) {
+		msgb_free(msghdr->msg[idx]);
+		msghdr->msg[idx] = NULL;
+	}
+	iofd_msghdr_free(msghdr);
+	return;
 }
 
 /* Public functions */
