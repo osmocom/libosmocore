@@ -323,6 +323,7 @@ osmo_multiaddr_ip_and_port_snprintf;
 osmo_netdev_add_addr;
 osmo_netdev_add_route;
 osmo_netdev_alloc;
+osmo_netdev_del_addr;
 osmo_netdev_free;
 osmo_netdev_get_dev_name;
 osmo_netdev_get_ifindex;

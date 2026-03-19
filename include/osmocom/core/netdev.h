@@ -42,6 +42,8 @@ void osmo_netdev_set_dev_name_chg_cb(struct osmo_netdev *netdev, osmo_netdev_dev
 void osmo_netdev_set_mtu_chg_cb(struct osmo_netdev *netdev, osmo_netdev_mtu_chg_cb_t mtu_chg_cb);
 
 int osmo_netdev_add_addr(struct osmo_netdev *netdev, const struct osmo_sockaddr *addr, uint8_t prefixlen);
+int osmo_netdev_del_addr(struct osmo_netdev *netdev, const struct osmo_sockaddr *addr, uint8_t prefixlen);
+
 int osmo_netdev_add_route(struct osmo_netdev *netdev, const struct osmo_sockaddr *dst_addr,
 			  uint8_t dst_prefixlen, const struct osmo_sockaddr *gw_addr);
 int osmo_netdev_ifupdown(struct osmo_netdev *netdev, bool ifupdown);

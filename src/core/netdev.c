@@ -606,6 +606,50 @@ static int netdev_mnl_add_addr(struct osmo_mnl *omnl, unsigned int if_index, con
 	return 0;
 }
 
+static int netdev_mnl_del_addr(struct osmo_mnl *omnl, unsigned int if_index, const struct osmo_sockaddr *osa, uint8_t prefix)
+{
+	char buf[MNL_SOCKET_BUFFER_SIZE];
+	struct nlmsghdr *nlh = mnl_nlmsg_put_header(buf);
+	struct ifaddrmsg *ifm;
+
+	nlh->nlmsg_type	= RTM_DELADDR;
+	nlh->nlmsg_flags = NLM_F_REQUEST | NLM_F_CREATE | NLM_F_REPLACE | NLM_F_ACK;
+	nlh->nlmsg_seq = (uint32_t)time(NULL);
+
+	ifm = mnl_nlmsg_put_extra_header(nlh, sizeof(*ifm));
+	ifm->ifa_family = osa->u.sa.sa_family;
+	ifm->ifa_prefixlen = prefix;
+	ifm->ifa_flags = IFA_F_PERMANENT;
+	ifm->ifa_scope = RT_SCOPE_UNIVERSE;
+	ifm->ifa_index = if_index;
+
+	/*
+	 * The exact meaning of IFA_LOCAL and IFA_ADDRESS depend
+	 * on the address family being used and the device type.
+	 * For broadcast devices (like the interfaces we use),
+	 * for IPv4 we specify both and they are used interchangeably.
+	 * For IPv6, only IFA_ADDRESS needs to be set.
+	 */
+	switch (osa->u.sa.sa_family) {
+	case AF_INET:
+		mnl_attr_put_u32(nlh, IFA_LOCAL, osa->u.sin.sin_addr.s_addr);
+		mnl_attr_put_u32(nlh, IFA_ADDRESS, osa->u.sin.sin_addr.s_addr);
+		break;
+	case AF_INET6:
+		mnl_attr_put(nlh, IFA_ADDRESS, sizeof(struct in6_addr), &osa->u.sin6.sin6_addr);
+		break;
+	default:
+		return -EINVAL;
+	}
+
+	if (mnl_socket_sendto(omnl->mnls, nlh, nlh->nlmsg_len) < 0) {
+		LOGP(DLGLOBAL, LOGL_ERROR, "mnl_socket_sendto\n");
+		return -EIO;
+	}
+
+	return 0;
+}
+
 static int netdev_mnl_add_route(struct osmo_mnl *omnl,
 				unsigned int if_index,
 				const struct osmo_sockaddr *dst_osa,
@@ -979,6 +1023,38 @@ int osmo_netdev_add_addr(struct osmo_netdev *netdev, const struct osmo_sockaddr 
 #endif
 
 	NETDEV_NETNS_EXIT(netdev, &switch_state, "Add address");
+
+	return rc;
+}
+
+/*! Remove IP address from netdev interface
+ *  \param[in] netdev The netdev object managing the netdev interface
+ *  \param[in] addr The local address to remove from the interface
+ *  \param[in] prefixlen The network prefix of addr
+ *  \returns 0 on succes; negative on error.
+ */
+int osmo_netdev_del_addr(struct osmo_netdev *netdev, const struct osmo_sockaddr *addr, uint8_t prefixlen)
+{
+	struct osmo_netns_switch_state switch_state;
+	char buf[INET6_ADDRSTRLEN];
+	int rc;
+
+	if (!netdev->registered)
+		return -ENODEV;
+
+	LOGNETDEV(netdev, LOGL_NOTICE, "Deleting address %s/%u from dev %s\n",
+		  osmo_sockaddr_ntop(&addr->u.sa, buf), prefixlen, netdev->dev_name);
+
+	NETDEV_NETNS_ENTER(netdev, &switch_state, "Delete address");
+
+#if ENABLE_LIBMNL
+	rc = netdev_mnl_del_addr(netdev->netns_ctx->omnl, netdev->ifindex, addr, prefixlen);
+#else
+	LOGNETDEV(netdev, LOGL_ERROR, "%s: NOT SUPPORTED. Build libosmocore with --enable-libmnl.\n", __func__);
+	rc = -ENOTSUP;
+#endif
+
+	NETDEV_NETNS_EXIT(netdev, &switch_state, "Delete address");
 
 	return rc;
 }
