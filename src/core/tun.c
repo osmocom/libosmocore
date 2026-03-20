@@ -305,11 +305,11 @@ static int tundev_open_fd(struct osmo_tundev *tundev, int flags)
 	 * iface with a given name above and attempting to retrieve its ifindex based
 	 * on that name. Someone (ie udev) could have the iface renamed in
 	 * between here. It's a pity that TUNSETIFF doesn't copy back to us the
-	 * newly allocated ifinidex as it does with ifname)
+	 * newly allocated ifindex as it does with ifname)
 	 */
 	tundev->ifindex = if_nametoindex(tundev->dev_name);
 	if (tundev->ifindex == 0) {
-		LOGTUN(tundev, LOGL_ERROR, "Unable to find ifinidex for dev %s\n",
+		LOGTUN(tundev, LOGL_ERROR, "Unable to find ifindex for dev %s\n",
 		       tundev->dev_name);
 		rc = -ENODEV;
 		goto close_ret;
