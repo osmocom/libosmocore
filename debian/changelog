@@ -1,3 +1,25 @@
+libosmocore (1.14.0) unstable; urgency=medium
+
+  [ Eric Wild ]
+  * core: fix config.h
+
+  [ Vadim Yanitskiy ]
+  * gsup: encode_pdp_info(): fix wrong pdp_address index
+  * socket: osmo_sockaddr_from_str_and_uint(): fix memleak
+  * stats: osmo_stats_reporter_udp_open(): fix unconditional jump
+  * gsm48: fix missing/misspelled value-strings
+  * gsm48: remove duplicate GSM48_MT_RR_HANDO_INFO
+  * gsmtap_util: gsmtap_gsm_channel_names[]: fix PTCCH string
+  * netdev: netdev_mnl_set_mtu(): drop unneeded variables
+
+  [ Pau Espin Pedrol ]
+  * osmo_io: Rewrite iofd_handle_send_completion() to fix multiple issues
+  * osmo_io: Fix msgb memleak if iofd is unregistered during write_cb with >1 io buffers
+  * netdev: Add API osmo_netdev_del_addr()
+  * tun: Fix typo in log line and comment
+
+ -- Oliver Smith <osmith@sysmocom.de>  Wed, 15 Apr 2026 11:48:23 +0200
+
 libosmocore (1.13.1) unstable; urgency=medium
 
   [ Eric Wild ]
