@@ -289,7 +289,7 @@ struct iofd_msghdr *iofd_txqueue_dequeue(struct osmo_io_fd *iofd)
 		} else {
 			memset(&next->iov[next->io_len], 0, sizeof(struct iovec));
 			next->msg[next->io_len] = NULL;
-			next->hdr.msg_iovlen = --next->io_len;
+			next->hdr.msg_iovlen = next->io_len;
 		}
 	}
 

@@ -62,6 +62,7 @@ check_PROGRAMS = timer/timer_test sms/sms_test ussd/ussd_test		\
 		 v110/ta_test                                           \
 		 gsm44021/frame_csd_test                                \
 		 osmo_io/osmo_io_test					\
+		 osmo_io/osmo_io_backpressure_test			\
 		 soft_uart/soft_uart_test				\
 		 rlp/rlp_test						\
 		 jhash/jhash_test					\
@@ -401,6 +402,8 @@ gsm44021_frame_csd_test_LDADD = $(top_builddir)/src/isdn/libosmoisdn.la \
 
 osmo_io_osmo_io_test_SOURCES = osmo_io/osmo_io_test.c
 
+osmo_io_osmo_io_backpressure_test_SOURCES = osmo_io/osmo_io_backpressure_test.c
+
 soft_uart_soft_uart_test_SOURCES = soft_uart/soft_uart_test.c
 
 rlp_rlp_test_SOURCES = rlp/rlp_test.c
@@ -521,6 +524,8 @@ EXTRA_DIST = testsuite.at $(srcdir)/package.m4 $(TESTSUITE)		\
 	     v110/ta_test.err \
 	     gsm44021/frame_csd_test.ok \
 	     osmo_io/osmo_io_test.ok osmo_io/osmo_io_test.err \
+	     osmo_io/osmo_io_backpressure_test.ok \
+	     osmo_io/osmo_io_backpressure_test_uring.ok \
 	     soft_uart/soft_uart_test.ok \
 	     rlp/rlp_test.ok \
 	     socket/socket_sctp_test.ok socket/socket_sctp_test.err \
@@ -752,6 +757,8 @@ endif
 	osmo_io/osmo_io_test \
 		>$(srcdir)/osmo_io/osmo_io_test.ok \
 		2>$(srcdir)/osmo_io/osmo_io_test.err
+	osmo_io/osmo_io_backpressure_test \
+		>$(srcdir)/osmo_io/osmo_io_backpressure_test.ok
 	soft_uart/soft_uart_test \
 		>$(srcdir)/soft_uart/soft_uart_test.ok
 	rlp/rlp_test \
