@@ -331,6 +331,7 @@ static enum sched_vty_thread_id procname2pid(pid_t *res_pid, const char *str, bo
 static int my_sched_setaffinity(enum sched_vty_thread_id tid_type, pid_t pid,
 				cpu_set_t *cpuset, size_t cpuset_size)
 {
+#ifdef HAVE_SCHED_SETAFFINITY
 	DIR *proc_dir;
 	struct dirent *entry;
 	char dirname[100];
@@ -369,7 +370,9 @@ static int my_sched_setaffinity(enum sched_vty_thread_id tid_type, pid_t pid,
 
 	closedir(proc_dir);
 	return rc;
-
+#else /* HAVE_SCHED_SETAFFINITY */
+	return -ENOTSUP;
+#endif /* HAVE_SCHED_SETAFFINITY */
 }
 
 DEFUN_ATTR(cfg_sched_cpu_affinity, cfg_sched_cpu_affinity_cmd,
@@ -464,6 +467,7 @@ DEFUN_ATTR(cfg_sched_cpu_affinity, cfg_sched_cpu_affinity_cmd,
 
 static int set_sched_rr(unsigned int prio)
 {
+#ifdef HAVE_SCHED_SETSCHEDULER
 	struct sched_param param;
 	int rc;
 	memset(&param, 0, sizeof(param));
@@ -476,6 +480,9 @@ static int set_sched_rr(unsigned int prio)
 		return -1;
 	}
 	return 0;
+#else /* HAVE_SCHED_SETSCHEDULER */
+	return -ENOTSUP;
+#endif /* HAVE_SCHED_SETSCHEDULER */
 }
 
 DEFUN_ATTR(cfg_sched_policy, cfg_sched_policy_cmd,
@@ -558,10 +565,12 @@ DEFUN(show_sched_threads, show_sched_threads_cmd,
 		cpuset = CPU_ALLOC(get_num_cpus());
 		cpuset_size = CPU_ALLOC_SIZE(get_num_cpus());
 		CPU_ZERO_S(cpuset_size, cpuset);
+#ifdef HAVE_SCHED_GETAFFINITY
 		if (sched_getaffinity(tid_it, cpuset_size, cpuset) == 0) {
 			if (generate_cpu_hex_mask(str_mask, sizeof(str_mask), cpuset, cpuset_size) < 0)
 				str_mask[0] = '\0';
 		}
+#endif /* HAVE_SCHED_GETAFFINITY */
 		CPU_FREE(cpuset);
 
 		vty_out(vty, " TID: %lu, NAME: '%s', cpu-affinity: %s%s",

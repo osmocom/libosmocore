@@ -162,6 +162,10 @@ AC_CHECK_FUNCS(localtime_r)
 AC_CHECK_HEADERS([sched.h sys/mount.h sys/param.h])
 AC_CHECK_FUNCS([setns unshare mount])
 
+dnl Check the scheduller functions
+AC_CHECK_HEADERS([sched.h])
+AC_CHECK_FUNCS([sched_setaffinity sched_setscheduler sched_getaffinity])
+
 dnl Check whether CLONE_NEWNET is available
 AC_CHECK_DECL([CLONE_NEWNET],
   [AC_DEFINE([HAVE_CLONE_NEWNET], [1],
