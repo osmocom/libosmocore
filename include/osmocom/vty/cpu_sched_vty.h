@@ -31,7 +31,7 @@
  * \file cpu_sched_vty.h
  */
 
-void osmo_cpu_sched_vty_init(void *tall_ctx);
+int osmo_cpu_sched_vty_init(void *tall_ctx);
 int osmo_cpu_sched_vty_apply_localthread(void);
 
 /*! @} */
