@@ -768,7 +768,6 @@ endif
 
 
 check-local: atconfig $(TESTSUITE)
-	[ -e /proc/cpuinfo ] && cat /proc/cpuinfo
 	$(SHELL) '$(TESTSUITE)' $(TESTSUITEFLAGS) ENABLE_URING=$(ENABLE_URING) ENABLE_URING_TESTS=$(ENABLE_URING_TESTS)
 	$(MAKE) $(AM_MAKEFLAGS) ext-tests
 
