@@ -161,7 +161,7 @@ static struct node *file_read(void *ctx, const char *fname)
 		line_num++;
 		chomp(line);
 		int indent = count_indent(line);
-		bool coment = line_is_comment(&line[indent]);
+		bool comment = line_is_comment(&line[indent]);
 		struct node *n;
 
 		if (indent > cur_indent) {
@@ -190,7 +190,7 @@ static struct node *file_read(void *ctx, const char *fname)
 
 		/* comments are not part of the indentation structure of the
 		 * file, hence commands after it are not to be affected by them: */
-		if (!coment) {
+		if (!comment) {
 			last = n;
 			cur_indent = indent;
 		}

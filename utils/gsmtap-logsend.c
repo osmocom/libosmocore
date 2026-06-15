@@ -101,7 +101,7 @@ int main(int argc, char **argv)
 
 	gsmtap_fd = gsmtap_source_init_fd(dest_host, dest_port);
 	if (gsmtap_fd < 0) {
-		fprintf(stderr, "Unable to create GSMTAP soicket: %s\n", strerror(errno));
+		fprintf(stderr, "Unable to create GSMTAP socket: %s\n", strerror(errno));
 		exit(2);
 	}
 
