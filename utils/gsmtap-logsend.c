@@ -50,6 +50,7 @@ int main(int argc, char **argv)
 	FILE *infile;
 	char *line;
 	int rc;
+	int ret = 0;
 
 	while (1) {
 		static const struct option long_options[] = {
@@ -102,7 +103,8 @@ int main(int argc, char **argv)
 	gsmtap_fd = gsmtap_source_init_fd(dest_host, dest_port);
 	if (gsmtap_fd < 0) {
 		fprintf(stderr, "Unable to create GSMTAP socket: %s\n", strerror(errno));
-		exit(2);
+		ret = 2;
+		goto exit_close;
 	}
 
 	/* prepare all the data structures that don't change for each line */
@@ -133,7 +135,13 @@ int main(int argc, char **argv)
 		rc = writev(gsmtap_fd, iov, ARRAY_SIZE(iov));
 		if (rc <= 0) {
 			fprintf(stderr, "Short write on GSMTAP socket: %d (%s)\n", rc, strerror(errno));
-			exit(1);
+			ret = 1;
+			goto exit_close;
 		}
 	}
+
+exit_close:
+	if (infile != stdin)
+		fclose(infile);
+	exit(ret);
 }
