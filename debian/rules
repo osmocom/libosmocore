@@ -37,6 +37,8 @@ override_dh_auto_configure:
 		--disable-uring-tests \
 		--enable-static \
 		--enable-systemd-logging \
+		--disable-doxygen \
+		--disable-pcsc \
 	"; \
 	distro_v=$$(. /etc/os-release && echo $$VERSION_ID); \
 	if [ "$$distro_v" = 10 ] || [ "$$distro_v" = 20.04 ]; then \
