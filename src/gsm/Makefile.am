@@ -52,7 +52,7 @@ if ENABLE_GNUTLS
 AM_CFLAGS += $(LIBGNUTLS_CFLAGS)
 libosmogsm_la_LIBADD += $(LIBGNUTLS_LIBS)
 else
-noinst_HEADERS += kdf/sha1.h kdf/sha256.h kdf/common.h kdf/sha1_i.h kdf/sha256_i.h
+noinst_HEADERS += kdf/sha1.h kdf/sha256.h kdf/common.h kdf/sha1_i.h kdf/sha256_i.h kdf/crypto.h
 libgsmint_la_SOURCES +=  kdf/sha256.c kdf/sha256-internal.c \
                         kdf/sha1.c kdf/sha1-internal.c
 endif
