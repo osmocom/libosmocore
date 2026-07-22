@@ -1,3 +1,21 @@
+libosmocore (1.14.1) unstable; urgency=medium
+
+  [ Vadim Yanitskiy ]
+  * osmo_io: iofd_txqueue_dequeue(): fix double next->io_len decrement
+
+  [ Timur Davydov ]
+  * vty: fix osmo_cpu_sched_vty_init() prototype
+  * vty: make CPU scheduling optional based on platform support
+
+  [ Oliver Smith ]
+  * utils: fix typos
+  * utils/gsmtap-logsend: close infile before exit
+
+  [ Alexander Couzens ]
+  * gsm/Makefile.am: add missing kdf/crypto.h
+
+ -- Oliver Smith <osmith@sysmocom.de>  Wed, 22 Jul 2026 11:30:55 +0200
+
 libosmocore (1.14.0) unstable; urgency=medium
 
   [ Eric Wild ]
