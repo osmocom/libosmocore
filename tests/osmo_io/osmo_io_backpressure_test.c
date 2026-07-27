@@ -106,7 +106,6 @@ static void test_backpressure_queue_handling(void)
 	file_bytes_write_compl = 0;
 
 	char drain_buffer[512];
-	int messages_queued = 0;
 
 	for (int i = 0; i < 10; i++) {
 		/* Add a message */
@@ -114,9 +113,7 @@ static void test_backpressure_queue_handling(void)
 		memset(msgb_put(msg, 1024), 0xAA + (i % 16), 1024);
 
 		rc = osmo_iofd_write_msgb(iofd, msg);
-		if (rc == 0)
-			messages_queued++;
-		else
+		if (rc != 0)
 			msgb_free(msg);
 
 		/* Process events with explicit timeout */
