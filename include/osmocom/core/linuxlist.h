@@ -22,8 +22,6 @@
 #define inline __inline__
 #endif
 
-static inline void prefetch(const void *x) {;}
-
 /*! Cast a member of a structure out to the containing structure.
  *  \param[in] ptr    the pointer to the member.
  *  \param[in] type   the type of the container struct this is embedded in.
@@ -283,15 +281,13 @@ static inline void llist_splice_init(struct llist_head *llist,
  *  \param head the head of the list over which to iterate.
  */
 #define llist_for_each(pos, head) \
-	for (pos = (head)->next, prefetch(pos->next); pos != (head); \
-		pos = pos->next, prefetch(pos->next))
+	for (pos = (head)->next; pos != (head); pos = pos->next)
 
-/*! Iterate over a linked list (no prefetch).
+/*! Iterate over a linked list.
  *  \param pos  the llist_head to use as a loop counter.
  *  \param head the head of the list over which to iterate.
  *
- * This variant differs from llist_for_each() in that it's the
- * simplest possible llist iteration code, no prefetching is done.
+ * Equivalent to llist_for_each(); kept for API compatibility.
  * Use this for code that knows the llist to be very short (empty
  * or 1 entry) most of the time.
  */
@@ -303,8 +299,7 @@ static inline void llist_splice_init(struct llist_head *llist,
  *  \param head the head of the list over which to iterate.
  */
 #define llist_for_each_prev(pos, head) \
-	for (pos = (head)->prev, prefetch(pos->prev); pos != (head); \
-		pos = pos->prev, prefetch(pos->prev))
+	for (pos = (head)->prev; pos != (head); pos = pos->prev)
 
 /*! Iterate over a linked list, safe against removal of llist entry.
  *  \param pos  the llist_head to use as a loop counter.
@@ -321,11 +316,9 @@ static inline void llist_splice_init(struct llist_head *llist,
  *  \param member the name of the llist_head within the struct pos.
  */
 #define llist_for_each_entry(pos, head, member)				\
-	for (pos = llist_entry((head)->next, typeof(*pos), member),	\
-		     prefetch(__llist_member(pos, member)->next);	\
+	for (pos = llist_entry((head)->next, typeof(*pos), member);	\
 	     __llist_member(pos, member) != (head);			\
-	     pos = llist_entry(__llist_member(pos, member)->next, typeof(*pos), member), \
-		     prefetch(__llist_member(pos, member)->next))
+	     pos = llist_entry(__llist_member(pos, member)->next, typeof(*pos), member))
 
 /*! Iterate backwards over a linked list of a given type.
  *  \param pos    the 'type *' to use as a loop counter.
@@ -333,11 +326,9 @@ static inline void llist_splice_init(struct llist_head *llist,
  *  \param member the name of the llist_head within the struct pos.
  */
 #define llist_for_each_entry_reverse(pos, head, member)			\
-	for (pos = llist_entry((head)->prev, typeof(*pos), member),	\
-		     prefetch(__llist_member(pos, member)->prev);	\
+	for (pos = llist_entry((head)->prev, typeof(*pos), member);	\
 	     __llist_member(pos, member) != (head);			\
-	     pos = llist_entry(__llist_member(pos, member)->prev, typeof(*pos), member), \
-		     prefetch(__llist_member(pos, member)->prev))
+	     pos = llist_entry(__llist_member(pos, member)->prev, typeof(*pos), member))
 
 /*! Iterate over a linked list of a given type,
  *  continuing after an existing point.
@@ -346,11 +337,9 @@ static inline void llist_splice_init(struct llist_head *llist,
  *  \param member the name of the llist_head within the struct pos.
  */
 #define llist_for_each_entry_continue(pos, head, member) 		\
-	for (pos = llist_entry(pos->member.next, typeof(*pos), member),	\
-		     prefetch(__llist_member(pos, member)->next);	\
+	for (pos = llist_entry(pos->member.next, typeof(*pos), member);	\
 	     __llist_member(pos, member) != (head);			\
-	     pos = llist_entry(__llist_member(pos, member)->next, typeof(*pos), member), \
-		     prefetch(__llist_member(pos, member)->next))
+	     pos = llist_entry(__llist_member(pos, member)->next, typeof(*pos), member))
 
 /*! Iterate over llist of given type, safe against removal of llist entry.
  *  \param pos    the 'type *' to use as a loop counter.
@@ -369,8 +358,8 @@ static inline void llist_splice_init(struct llist_head *llist,
  *  \param head the head of the list over which to iterate.
  */
 #define llist_for_each_rcu(pos, head) \
-	for (pos = (head)->next, prefetch(pos->next); pos != (head); \
-		pos = pos->next, ({ smp_read_barrier_depends(); 0;}), prefetch(pos->next))
+	for (pos = (head)->next; pos != (head); \
+		pos = pos->next, ({ smp_read_barrier_depends(); 0;}))
 
 #define __llist_for_each_rcu(pos, head) \
 	for (pos = (head)->next; pos != (head); \
@@ -391,12 +380,10 @@ static inline void llist_splice_init(struct llist_head *llist,
  *  \param member the name of the llist_struct within the struct.
  */
 #define llist_for_each_entry_rcu(pos, head, member)			\
-	for (pos = llist_entry((head)->next, typeof(*pos), member),	\
-		     prefetch(__llist_member(pos, member)->next);	\
-	     __llist_member(pos, member) != (head);			\
+	for (pos = llist_entry((head)->next, typeof(*pos), member);	\
+	     __llist_member(pos, member) != (head); 			\
 	     pos = llist_entry(__llist_member(pos, member)->next, typeof(*pos), member), \
-		     ({ smp_read_barrier_depends(); 0;}),		\
-		     prefetch(__llist_member(pos, member)->next))
+		     ({ smp_read_barrier_depends(); 0;}))
 
 
 /*! Iterate over an rcu-protected llist, continuing after existing point.
@@ -404,8 +391,8 @@ static inline void llist_splice_init(struct llist_head *llist,
  *  \param head the head of the list over which to iterate.
  */
 #define llist_for_each_continue_rcu(pos, head) \
-	for ((pos) = (pos)->next, prefetch((pos)->next); (pos) != (head); \
-		(pos) = (pos)->next, ({ smp_read_barrier_depends(); 0;}), prefetch((pos)->next))
+	for ((pos) = (pos)->next; (pos) != (head); \
+		(pos) = (pos)->next, ({ smp_read_barrier_depends(); 0;}))
 
 /*! Count number of llist items by iterating.
  *  \param head the llist head to count items of.
