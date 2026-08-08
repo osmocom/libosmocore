@@ -479,10 +479,7 @@ int bssgp_rx_paging(struct bssgp_paging_info *pinfo,
 	struct bssgp_normal_hdr *bgph =
 			(struct bssgp_normal_hdr *) msgb_bssgph(msg);
 	struct tlv_parsed tp;
-	uint8_t ra[6];
 	int rc, data_len;
-
-	memset(ra, 0, sizeof(ra));
 
 	data_len = msgb_bssgp_len(msg) - sizeof(*bgph);
 	rc = bssgp_tlv_parse(&tp, bgph->data, data_len);
@@ -519,14 +516,10 @@ int bssgp_rx_paging(struct bssgp_paging_info *pinfo,
 		pinfo->scope = BSSGP_PAGING_BSS_AREA;
 	} else if (TLVP_PRES_LEN(&tp, BSSGP_IE_LOCATION_AREA, 5)) {
 		pinfo->scope = BSSGP_PAGING_LOCATION_AREA;
-		memcpy(ra, TLVP_VAL(&tp, BSSGP_IE_LOCATION_AREA),
-			TLVP_LEN(&tp, BSSGP_IE_LOCATION_AREA));
-		gsm48_parse_ra(&pinfo->raid, ra);
+		gsm48_parse_ra(&pinfo->raid, TLVP_VAL(&tp, BSSGP_IE_LOCATION_AREA));
 	} else if (TLVP_PRES_LEN(&tp, BSSGP_IE_ROUTEING_AREA, 6)) {
 		pinfo->scope = BSSGP_PAGING_ROUTEING_AREA;
-		memcpy(ra, TLVP_VAL(&tp, BSSGP_IE_ROUTEING_AREA),
-			TLVP_LEN(&tp, BSSGP_IE_ROUTEING_AREA));
-		gsm48_parse_ra(&pinfo->raid, ra);
+		gsm48_parse_ra(&pinfo->raid, TLVP_VAL(&tp, BSSGP_IE_ROUTEING_AREA));
 	} else if (TLVP_PRES_LEN(&tp, BSSGP_IE_BVCI, 2)) {
 		pinfo->scope = BSSGP_PAGING_BVCI;
 		pinfo->bvci = tlvp_val16be(&tp, BSSGP_IE_BVCI);
