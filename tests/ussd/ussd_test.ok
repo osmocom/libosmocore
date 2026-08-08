@@ -12,6 +12,8 @@
 [?] Data length: expected 0x01, decoded 0x01
 [?] Data: expected 32, decoded 32
 
+[i] Testing parse_process_uss_req() against an oversized USSD-String length
+
 Tested if it still works. Text was: **321#
 interrogateSS CFU text..'' code 33
 Testing parsing a USSD request and truncated versions

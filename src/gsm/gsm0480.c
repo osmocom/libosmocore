@@ -704,6 +704,8 @@ static int parse_process_uss_req(const uint8_t *uss_req_data, uint16_t length,
 	dcs = uss_req_data[4];
 	/* Get the amount of bytes */
 	num_chars = uss_req_data[6];
+	if (num_chars > length - 7)
+		return 0;
 
 	/* Drop messages with incorrect length */
 	if (num_chars > GSM0480_USSD_OCTET_STRING_LEN) {

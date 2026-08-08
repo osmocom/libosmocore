@@ -41,6 +41,16 @@ static const uint8_t ussd_release[] = {
 	0x05, 0x02, 0x01, 0x24
 };
 
+/* Same REGISTER/ProcessUssReq message as ussd_request[], except the
+ * USSD-String octet count (index 18) claims 100 bytes while the message
+ * only ever carries 6.  Must be rejected, not read past the buffer end. */
+static const uint8_t ussd_process_uss_req_overflow[] = {
+	0x0b, 0x7b, 0x1c, 0x15, 0xa1, 0x13, 0x02, 0x01,
+	0x03, 0x02, 0x01, 0x3b, 0x30, 0x0b, 0x04, 0x01,
+	0x0f, 0x04, 0x64, 0x2a, 0xd5, 0x4c, 0x16, 0x1b,
+	0x01, 0x7f, 0x01, 0x00
+};
+
 static const uint8_t interrogate_ss[] = {
 	0x0b, 0x7b, 0x1c, 0x0d, 0xa1, 0x0b, 0x02, 0x01,
 	0x03, 0x02, 0x01, 0x0e, 0x30, 0x03, 0x04, 0x01,
@@ -221,6 +231,23 @@ static void test_parse_facility_ie(void)
 	printf("\n");
 }
 
+/* parse_process_uss_req() must reject a USSD-String octet count that
+ * exceeds the bytes actually remaining in the message, rather than only
+ * capping it against GSM0480_USSD_OCTET_STRING_LEN and reading past the
+ * end of the buffer. */
+static void test_process_uss_req_overflow(void)
+{
+	int rc;
+
+	printf("[i] Testing parse_process_uss_req() against an oversized "
+	       "USSD-String length\n");
+
+	rc = parse_ussd(ussd_process_uss_req_overflow, sizeof(ussd_process_uss_req_overflow));
+	OSMO_ASSERT(rc == 0);
+
+	printf("\n");
+}
+
 int main(int argc, char **argv)
 {
 	struct ss_request req;
@@ -236,6 +263,9 @@ int main(int argc, char **argv)
 
 	/* Test gsm0480_parse_facility_ie() */
 	test_parse_facility_ie();
+
+	/* Test parse_process_uss_req() against an oversized length byte */
+	test_process_uss_req_overflow();
 
 	memset(&req, 0, sizeof(req));
 	gsm0480_decode_ss_request((struct gsm48_hdr *) ussd_request,
