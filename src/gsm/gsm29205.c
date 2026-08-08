@@ -73,6 +73,8 @@ int osmo_dec_gcr(struct osmo_gcr_parsed *gcr, const uint8_t *elem, uint8_t len)
 	gcr->net_len = elem[0];
 	if (gcr->net_len < 3 || gcr->net_len > 5)
 		return -EINVAL;
+	if (len < 10 + gcr->net_len)
+		return -EBADMSG;
 
 	memcpy(gcr->net, elem + parsed, gcr->net_len);
 	/* +1 for ignored Node ID length field */

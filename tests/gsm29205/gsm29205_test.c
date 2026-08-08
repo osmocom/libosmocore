@@ -95,6 +95,34 @@ static void test_gcr(void)
 	msgb_free(msg);
 }
 
+/* osmo_dec_gcr() must reject buffers that are too short for the announced
+ * .net_len (3..5), not just shorter than the 13-byte minimum for
+ * .net_len == 3.  Otherwise it reads past the end of 'elem'. */
+static void test_gcr_dec_short_buf(void)
+{
+	static const uint8_t res[] = {
+		0x05, /* .net_len */
+		0x51, 0x52, 0x53, 0x54, 0x55, /* .net */
+		0x02, /* .node length */
+		0xde, 0xad, /* .node */
+		0x05, /* length of Call. Ref. */
+		0x41, 0x42, 0x43, 0x44, 0x45 /* .cr - Call. Ref. */
+	};
+	struct osmo_gcr_parsed p;
+	uint8_t len;
+	int rc;
+
+	printf("Testing Global Call Reference decoder against short buffers...\n");
+
+	/* net_len == 5 requires 15 bytes, feed it 13 and 14
+	 * the full buffer must still decode successfully */
+	for (len = 13; len <= ARRAY_SIZE(res); len++) {
+		rc = osmo_dec_gcr(&p, res, len);
+		printf("\tosmo_dec_gcr(len=%u) -> %s\n",
+		       len, rc == len ? "OK" : "FAIL");
+	}
+}
+
 int main(int argc, char **argv)
 {
 	osmo_init_logging2(talloc_named_const(NULL, 0, "gsm29205 test"), NULL);
@@ -102,6 +130,7 @@ int main(int argc, char **argv)
 	printf("Testing 3GPP TS 29.205 routines...\n");
 
 	test_gcr();
+	test_gcr_dec_short_buf();
 
 	printf("Done.\n");
 
