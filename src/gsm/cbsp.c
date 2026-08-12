@@ -633,6 +633,7 @@ static uint32_t decode_wperiod(uint8_t in)
 /***********************************************************************
  * Message Decoding
  ***********************************************************************/
+#define MAX_NUM_CBS_PAGES 16 /* max. number of pages in a given CBS message */
 
 /* 8.1.3.1 WRITE REPLACE */
 static int cbsp_dec_write_repl(struct osmo_cbsp_write_replace *out, const struct tlv_parsed *tp,
@@ -684,8 +685,10 @@ static int cbsp_dec_write_repl(struct osmo_cbsp_write_replace *out, const struct
 		out->u.cbs.num_bcast_req = tlvp_val16be(tp, CBSP_IEI_NUM_BCAST_REQ);
 		out->u.cbs.dcs = *TLVP_VAL(tp, CBSP_IEI_DCS);
 		num_of_pages = *TLVP_VAL(tp, CBSP_IEI_NUM_OF_PAGES);
-		if (num_of_pages < 1)
+		if (num_of_pages < 1 || num_of_pages > MAX_NUM_CBS_PAGES) {
+			osmo_cbsp_errstr = "invalid number of pages";
 			return -EINVAL;
+		}
 		/* parse pages */
 		for (i = 0; i < num_of_pages; i++) {
 			const uint8_t *ie = TLVP_VAL(&tp[i], CBSP_IEI_MSG_CONTENT);
@@ -1264,7 +1267,7 @@ struct osmo_cbsp_decoded *osmo_cbsp_decode(void *ctx, struct msgb *in)
 	OSMO_ASSERT(in->l1h != NULL && in->l2h != NULL);
 	struct osmo_cbsp_decoded *out = talloc_zero(ctx, struct osmo_cbsp_decoded);
 	const struct cbsp_header *h = msgb_l1(in);
-	struct tlv_parsed tp[16]; /* max. number of pages in a given CBS message */
+	struct tlv_parsed tp[MAX_NUM_CBS_PAGES];
 	unsigned int len;
 	int rc;
 
