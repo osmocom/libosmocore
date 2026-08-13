@@ -491,6 +491,8 @@ int gsm48_decode_callerid(struct gsm_mncc_number *callerid,
 
 	/* octet 3a */
 	if (!(lv[1] & 0x80)) {
+		if (in_len < 2)
+			return -EINVAL;
 		callerid->screen = lv[2] & 0x03;
 		callerid->present = (lv[2] & 0x60) >> 5;
 		i = 2;
