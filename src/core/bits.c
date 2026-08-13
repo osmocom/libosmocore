@@ -139,6 +139,8 @@ void osmo_sbit2ubit(ubit_t *out, const sbit_t *in, unsigned int num_bits)
  *  \param[in] in input buffer of packed bits
  *  \param[in] num_bits number of bits
  *  \return number of bytes used in \ref out
+ *
+ *  Note: size of out array is expected to be ">= num_bits" bytes.
  */
 int osmo_pbit2ubit(ubit_t *out, const pbit_t *in, unsigned int num_bits)
 {

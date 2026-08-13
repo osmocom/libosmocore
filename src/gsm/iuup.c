@@ -70,9 +70,12 @@ static int iuup_get_payload_offset(const uint8_t *iuup_pdu)
 
 int osmo_iuup_compute_payload_crc(const uint8_t *iuup_pdu, unsigned int pdu_len)
 {
-	ubit_t buf[1024*8];
+	/* Assume no IuUP payloads bigger than a regular ethernet frame: */
+	const unsigned int max_supported_iuup_payload_len_bytes = 1500;
+	ubit_t buf[max_supported_iuup_payload_len_bytes * 8];
 	uint8_t pdu_type;
-	int offset, payload_len_bytes;
+	int offset;
+	unsigned int payload_len_bytes;
 
 	if (pdu_len < 1)
 		return -1;
@@ -91,6 +94,11 @@ int osmo_iuup_compute_payload_crc(const uint8_t *iuup_pdu, unsigned int pdu_len)
 		return -1;
 
 	payload_len_bytes = pdu_len - offset;
+
+	/* Guard against osmo_pbit2ubit writing past buf: */
+	if (payload_len_bytes > max_supported_iuup_payload_len_bytes)
+		return -1;
+
 	osmo_pbit2ubit(buf, iuup_pdu+offset, payload_len_bytes*8);
 	return osmo_crc16gen_compute_bits(&iuup_data_crc_code, buf, payload_len_bytes*8);
 }
@@ -887,6 +895,8 @@ static int iuup_verify_pdu(const uint8_t *data, unsigned int len)
 		t0h = (struct iuup_pdutype0_hdr *) data;
 		payload_crc = ((uint16_t)t0h->payload_crc_hi << 8) | t0h->payload_crc_lo;
 		payload_crc_computed = osmo_iuup_compute_payload_crc(data, len);
+		if (payload_crc_computed < 0)
+			goto payload_crc_err;
 		if (payload_crc != payload_crc_computed)
 			goto payload_crc_err;
 		break;
@@ -901,6 +911,8 @@ static int iuup_verify_pdu(const uint8_t *data, unsigned int len)
 		if (t14h->ack_nack == IUUP_AN_PROCEDURE) {
 			payload_crc = ((uint16_t)t14h->payload_crc_hi << 8) | t14h->payload_crc_lo;
 			payload_crc_computed = osmo_iuup_compute_payload_crc(data, len);
+			if (payload_crc_computed < 0)
+				goto payload_crc_err;
 			if (payload_crc != payload_crc_computed)
 				goto payload_crc_err;
 		}
