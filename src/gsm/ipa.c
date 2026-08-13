@@ -209,7 +209,7 @@ int ipa_ccm_id_get_parse(struct tlv_parsed *dec, const uint8_t *buf, unsigned in
  *  \returns 0 on success; negative on error */
 int ipa_ccm_id_resp_parse(struct tlv_parsed *dec, const uint8_t *buf, unsigned int len)
 {
-	uint8_t t_len;
+	uint16_t t_len;
 	uint8_t t_tag;
 	const uint8_t *cur = buf;
 
