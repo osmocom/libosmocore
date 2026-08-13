@@ -871,7 +871,7 @@ static int iuup_verify_pdu(const uint8_t *data, unsigned int len)
 	struct iuup_pdutype0_hdr *t0h;
 	struct iuup_pdutype14_hdr *t14h;
 
-	if (len < 3)
+	if (len < 3) /* common minimum length for all IuUP packet types */
 		return -EINVAL;
 
 	header_crc_computed = osmo_iuup_compute_header_crc(data, len);
@@ -881,18 +881,22 @@ static int iuup_verify_pdu(const uint8_t *data, unsigned int len)
 		return -EIO;
 	}
 	switch (pdu_type) {
-	case IUUP_PDU_T_DATA_NOCRC:
-		if (len < 4)
+	case IUUP_PDU_T_DATA_CRC: /* PDU Type 0 */
+		if (len < sizeof(struct iuup_pdutype0_hdr))
 			return -EINVAL;
-		break;
-	case IUUP_PDU_T_DATA_CRC:
 		t0h = (struct iuup_pdutype0_hdr *) data;
 		payload_crc = ((uint16_t)t0h->payload_crc_hi << 8) | t0h->payload_crc_lo;
 		payload_crc_computed = osmo_iuup_compute_payload_crc(data, len);
 		if (payload_crc != payload_crc_computed)
 			goto payload_crc_err;
 		break;
-	case IUUP_PDU_T_CONTROL:
+	case IUUP_PDU_T_DATA_NOCRC: /* PDU Type 1 */
+		if (len < sizeof(struct iuup_pdutype1_hdr))
+			return -EINVAL;
+		break;
+	case IUUP_PDU_T_CONTROL: /* PDU Type 14 */
+		if (len < sizeof(struct iuup_pdutype14_hdr))
+			return -EINVAL;
 		t14h = (struct iuup_pdutype14_hdr *) data;
 		if (t14h->ack_nack == IUUP_AN_PROCEDURE) {
 			payload_crc = ((uint16_t)t14h->payload_crc_hi << 8) | t14h->payload_crc_lo;

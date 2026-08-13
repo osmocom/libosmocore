@@ -158,9 +158,9 @@ struct iuup_ctrl_nack {
 
 /* 3GPP TS 25.415 Section 6.6.2 + 6.6.3.1 */
 enum iuup_pdu_type {
-	IUUP_PDU_T_DATA_CRC	= 0,
-	IUUP_PDU_T_DATA_NOCRC	= 1,
-	IUUP_PDU_T_CONTROL	= 14,
+	IUUP_PDU_T_DATA_CRC	= 0, /* PDU Type 0 */
+	IUUP_PDU_T_DATA_NOCRC	= 1, /* PDU Type 1 */
+	IUUP_PDU_T_CONTROL	= 14, /* PDU Type 14 */
 };
 
 /* 3GPP TS 25.415 Section 6.6.3.2 */
