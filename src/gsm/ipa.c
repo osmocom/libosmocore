@@ -174,6 +174,12 @@ int ipa_ccm_id_get_parse(struct tlv_parsed *dec, const uint8_t *buf, unsigned in
 		t_len = *cur++;
 		t_tag = *cur++;
 
+		if (t_len < 1) {
+			LOGPC(DLMI, LOGL_DEBUG, "\n");
+			LOGP(DLMI, LOGL_ERROR, "The tag length is too short: %d < 1\n", t_len);
+			return -EINVAL;
+		}
+
 		if (t_len > len + 1) {
 			LOGPC(DLMI, LOGL_DEBUG, "\n");
 			LOGP(DLMI, LOGL_ERROR, "The tag does not fit: %d > %d\n", t_len, len + 1);
@@ -215,6 +221,12 @@ int ipa_ccm_id_resp_parse(struct tlv_parsed *dec, const uint8_t *buf, unsigned i
 		t_len = osmo_load16be(cur);
 		cur += 2;
 		t_tag = *cur++;
+
+		if (t_len < 1) {
+			LOGPC(DLMI, LOGL_DEBUG, "\n");
+			LOGP(DLMI, LOGL_ERROR, "The tag length is too short: %d < 1\n", t_len);
+			return -EINVAL;
+		}
 
 		if (t_len > len + 1) {
 			LOGPC(DLMI, LOGL_DEBUG, "\n");
