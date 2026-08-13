@@ -548,17 +548,24 @@ static int parse_ss_invoke(const uint8_t *invoke_data, uint16_t length,
 	offset = invoke_data[1] + 2;
 	req->invoke_id = invoke_data[2];
 
-	/* look ahead once */
-	if (offset + 1 > length)
+	/* look ahead once: need invoke_data[offset] and, if it turns out to be
+	 * the optional Linked ID tag, invoke_data[offset+1] as well */
+	if (offset + 2 > length)
 		return 0;
 
 	/* optional part */
-	if (invoke_data[offset] == GSM0480_COMPIDTAG_LINKED_ID)
+	if (invoke_data[offset] == GSM0480_COMPIDTAG_LINKED_ID) {
 		offset += invoke_data[offset+1] + 2;  /* skip over it */
+
+		/* offset moved by an attacker-controlled amount: re-validate */
+		if (offset >= length)
+			return 0;
+	}
 
 	/* mandatory part */
 	if (invoke_data[offset] == GSM0480_OPERATION_CODE) {
-		if (offset + 2 > length)
+		/* need invoke_data[offset+2] below, and length - offset - 3 must not underflow */
+		if (offset + 3 > length)
 			return 0;
 		uint8_t operation_code = invoke_data[offset+2];
 		req->opcode = operation_code;
@@ -624,10 +631,12 @@ static int parse_ss_return_result(const uint8_t *rr_data, uint16_t length,
 	if (rr_data[offset] != GSM_0480_SEQUENCE_TAG)
 		return 0;
 
-	if (offset + 2 > length)
+	offset += 2;
+
+	/* need rr_data[offset+2] below, and length - offset - 3 must not underflow */
+	if (offset + 3 > length)
 		return 0;
 
-	offset += 2;
 	operation_code = rr_data[offset + 2];
 	req->opcode = operation_code;
 
