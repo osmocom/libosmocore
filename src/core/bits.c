@@ -148,7 +148,7 @@ int osmo_pbit2ubit(ubit_t *out, const pbit_t *in, unsigned int num_bits)
 	ubit_t *cur = out;
 	ubit_t *limit = out + num_bits;
 
-	for (i = 0; i < (num_bits/8)+1; i++) {
+	for (i = 0; i < ((num_bits + 7) / 8); i++) {
 		pbit_t byte = in[i];
 		*cur++ = (byte >> 7) & 1;
 		if (cur >= limit)
