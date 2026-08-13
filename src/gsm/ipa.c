@@ -139,7 +139,7 @@ int ipa_ccm_idtag_parse_off(struct tlv_parsed *dec, unsigned char *buf, int len,
 			return -EINVAL;
 		}
 
-		LOGPC(DLMI, LOGL_DEBUG, "%s='%s' ", ipa_ccm_idtag_name(t_tag), cur);
+		LOGPC(DLMI, LOGL_DEBUG, "%s='%.*s' ", ipa_ccm_idtag_name(t_tag), t_len - len_offset, cur);
 
 		dec->lv[t_tag].len = t_len - len_offset;
 		dec->lv[t_tag].val = cur;
@@ -180,7 +180,7 @@ int ipa_ccm_id_get_parse(struct tlv_parsed *dec, const uint8_t *buf, unsigned in
 			return -EINVAL;
 		}
 
-		LOGPC(DLMI, LOGL_DEBUG, "%s='%s' ", ipa_ccm_idtag_name(t_tag), cur);
+		LOGPC(DLMI, LOGL_DEBUG, "%s='%.*s' ", ipa_ccm_idtag_name(t_tag), t_len - 1, cur);
 
 		dec->lv[t_tag].len = t_len-1;
 		dec->lv[t_tag].val = cur;
@@ -222,7 +222,7 @@ int ipa_ccm_id_resp_parse(struct tlv_parsed *dec, const uint8_t *buf, unsigned i
 			return -EINVAL;
 		}
 
-		DEBUGPC(DLMI, "%s='%s' ", ipa_ccm_idtag_name(t_tag), cur);
+		DEBUGPC(DLMI, "%s='%.*s' ", ipa_ccm_idtag_name(t_tag), t_len - 1, cur);
 
 		dec->lv[t_tag].len = t_len-1;
 		dec->lv[t_tag].val = cur;
