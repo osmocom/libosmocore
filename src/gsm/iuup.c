@@ -966,8 +966,13 @@ static int iuup_verify_pdu(const uint8_t *data, unsigned int len)
 	return 0;
 
 payload_crc_err:
-	LOGP(DLIUUP, LOGL_NOTICE, "Payload Checksum error (pdu type %u): rx 0x%04x vs exp 0x%04x\n",
-	     pdu_type, payload_crc, payload_crc_computed);
+	if (payload_crc_computed < 0) {
+		LOGP(DLIUUP, LOGL_NOTICE, "Payload Checksum failed (pdu type %u): Packet too big? length %u\n",
+		     pdu_type, len);
+	} else {
+		LOGP(DLIUUP, LOGL_NOTICE, "Payload Checksum error (pdu type %u): rx 0x%04x vs exp 0x%04x\n",
+		     pdu_type, payload_crc, payload_crc_computed);
+	}
 	return -EIO;
 }
 

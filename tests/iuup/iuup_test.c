@@ -912,6 +912,47 @@ void test_decode_passive_init_malformed_missing_last_byte(void)
 	_test_submit_iuup_initialization_trimmed(sizeof(iuup_initialization_no_iptis) - 1, __func__);
 }
 
+/* Test IUT when a way too big IuUP data packet is received. It should be dropped. */
+void test_data_too_big(void)
+{
+	/* Here we check the passive INIT code path, aka receiving INIT and returning INIT_ACK/NACK */
+	struct osmo_iuup_instance *iui;
+	struct osmo_iuup_rnl_prim *rnp;
+	struct osmo_iuup_tnl_prim *tnp;
+	struct iuup_pdutype0_hdr *hdr0;
+	uint16_t payload_crc;
+	int rc;
+	unsigned int pkt_len = sizeof(struct iuup_pdutype0_hdr) + 1600;
+	OSMO_ASSERT(pkt_len <= IUUP_MSGB_SIZE);
+
+	iui = osmo_iuup_instance_alloc(iuup_test_ctx, __func__);
+	OSMO_ASSERT(iui);
+
+	clock_override_set(0, 0);
+
+	/* Tx CONFIG.req */
+	rnp = osmo_iuup_rnl_prim_alloc(iuup_test_ctx, OSMO_IUUP_RNL_CONFIG, PRIM_OP_REQUEST, IUUP_MSGB_SIZE);
+	rnp->u.config = def_configure_req;
+	rnp->u.config.active = false;
+
+	rc = osmo_iuup_rnl_prim_down(iui, rnp);
+	OSMO_ASSERT(rc == 0);
+
+	/* Send IuUP incoming data to the implementation: */
+	tnp = osmo_iuup_tnl_prim_alloc(iuup_test_ctx, OSMO_IUUP_TNL_UNITDATA, PRIM_OP_INDICATION, IUUP_MSGB_SIZE);
+	tnp->oph.msg->l2h = msgb_put(tnp->oph.msg, pkt_len);
+	hdr0 = (struct iuup_pdutype0_hdr *)msgb_l2(tnp->oph.msg);
+	memcpy(hdr0, iuup_data, sizeof(iuup_data));
+
+	payload_crc = osmo_iuup_compute_payload_crc(msgb_l2(tnp->oph.msg), msgb_l2len(tnp->oph.msg));
+	hdr0->payload_crc_hi = (payload_crc >> 8) & 0x03;
+	hdr0->payload_crc_lo = payload_crc & 0xff;
+
+	OSMO_ASSERT((rc = osmo_iuup_tnl_prim_up(iui, tnp)) == 0);
+
+	osmo_iuup_instance_free(iui);
+}
+
 int main(int argc, char **argv)
 {
 	iuup_test_ctx = talloc_named_const(NULL, 0, "iuup_test");
@@ -937,6 +978,7 @@ int main(int argc, char **argv)
 	test_decode_passive_init_malformed_no_rfci();
 	test_decode_passive_init_malformed_rfci_too_short();
 	test_decode_passive_init_malformed_missing_last_byte();
+	test_data_too_big();
 
 	printf("OK.\n");
 }
