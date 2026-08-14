@@ -238,6 +238,15 @@ static const uint8_t uicc_ins_tbl_80[256] = {
 	[0x14]		= 3,	/* TERMINAL RESPONSE */
 	[0x76]		= 4,	/* SUSPEND UICC */
 	[0x7A]		= 4,	/* EXCHANGE CAPABILITIES */
+	/* EMV (Book 3, Table 3) proprietary CLA=0x80 commands, not covered by any ETSI/GP table */
+	[0xA8]		= 4,	/* GET PROCESSING OPTIONS */
+	[0xAE]		= 4,	/* GENERATE APPLICATION CRYPTOGRAM */
+	/* EMV GET DATA (Book 3, 6.5.7) is always case 2 (Le only, never Lc), unlike
+	 * GlobalPlatform's overloaded 0xCA which gp_cla_ins_helper() disambiguates by
+	 * P3==0 vs !=0 -- that heuristic misclassifies the standard EMV 6Cxx-retry
+	 * pattern (first try Le=00, retry Le=<actual length>) as case 4. Matching here
+	 * (exact CLA=0x80) takes priority over the broader 0xF0-masked GP entries. */
+	[0xCA]		= 2,	/* GET DATA */
 };
 
 /* Card Specification v2.3.1*/
