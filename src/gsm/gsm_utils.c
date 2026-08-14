@@ -90,6 +90,7 @@
 #include <errno.h>
 #include <ctype.h>
 #include <inttypes.h>
+#include <limits.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -317,11 +318,12 @@ int gsm_septet_encode(uint8_t *result, const char *data)
 
 /*! GSM Default Alphabet 7bit to octet packing
  *  \param[out] result Caller-provided output buffer
+ *  \param[in] result_size Caller-provided output buffer size
  *  \param[in] rdata Input data septets
  *  \param[in] septet_len Length of \a rdata
  *  \param[in] padding padding bits at start
- *  \returns number of bytes used in \a result */
-int gsm_septet_pack(uint8_t *result, const uint8_t *rdata, size_t septet_len, uint8_t padding)
+ *  \returns number of bytes used in \a result, negative on error */
+int gsm_septet_pack2(uint8_t *result, size_t result_size, const uint8_t *rdata, size_t septet_len, uint8_t padding)
 {
 	int i = 0, z = 0;
 	uint8_t cb, nb;
@@ -358,6 +360,10 @@ int gsm_septet_pack(uint8_t *result, const uint8_t *rdata, size_t septet_len, ui
 			cb = cb | nb;
 		}
 
+		if (z == result_size) {
+			free(data);
+			return -ENOBUFS;
+		}
 		result[z++] = cb;
 		shift++;
 	}
@@ -367,10 +373,21 @@ int gsm_septet_pack(uint8_t *result, const uint8_t *rdata, size_t septet_len, ui
 	return z;
 }
 
+/*! GSM Default Alphabet 7bit to octet packing
+ *  \param[out] result Caller-provided output buffer
+ *  \param[in] rdata Input data septets
+ *  \param[in] septet_len Length of \a rdata
+ *  \param[in] padding padding bits at start
+ *  \returns number of bytes used in \a result, negative on error */
+int gsm_septet_pack(uint8_t *result, const uint8_t *rdata, size_t septet_len, uint8_t padding)
+{
+	return gsm_septet_pack2(result, INT_MAX, rdata, septet_len, padding);
+}
+
 /*! Backwards compatibility wrapper for gsm_septets_pack(), deprecated. */
 int gsm_septets2octets(uint8_t *result, const uint8_t *rdata, uint8_t septet_len, uint8_t padding)
 {
-	return gsm_septet_pack(result, rdata, septet_len, padding);
+	return gsm_septet_pack2(result, INT_MAX, rdata, septet_len, padding);
 }
 
 /*! GSM 7-bit alphabet TS 03.38 6.2.1 Character packing
@@ -397,7 +414,7 @@ int gsm_7bit_encode_n(uint8_t *result, size_t n, const char *data, int *octets)
 		y = max_septets;
 	}
 
-	o = gsm_septet_pack(result, rdata, y, 0);
+	o = gsm_septet_pack2(result, n, rdata, y, 0);
 
 	if (octets)
 		*octets = o;

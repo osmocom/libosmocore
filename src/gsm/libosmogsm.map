@@ -566,6 +566,7 @@ gsm_rfn2fn;
 gsm_milenage;
 gsm_septet_encode;
 gsm_septet_pack;
+gsm_septet_pack2;
 gsm_septets2octets;
 
 lapd_dl_exit;
