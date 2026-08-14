@@ -1281,10 +1281,14 @@ static void test_gsm0808_enc_dec_encrypt_info(void)
 
 	rc_dec = gsm0808_dec_encrypt_info(&dec_ei, msg->data + 2, msg->len - 2);
 	OSMO_ASSERT(rc_dec == 9);
-
 	OSMO_ASSERT(memcmp(&enc_ei, &dec_ei, sizeof(enc_ei)) == 0);
-
 	msgb_free(msg);
+
+	/* Test decoding of malformed IE with no algo selected: */
+	uint8_t ei_enc_no_algo[] = { GSM0808_IE_ENCRYPTION_INFORMATION, 0x01, 0x00 };
+	rc_dec = gsm0808_dec_encrypt_info(&dec_ei, &ei_enc_no_algo[2], sizeof(ei_enc_no_algo) - 2);
+	OSMO_ASSERT(rc_dec == -EINVAL);
+
 }
 
 static void test_gsm0808_dec_cell_id_list_srvcc(void)

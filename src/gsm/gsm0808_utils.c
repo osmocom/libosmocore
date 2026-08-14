@@ -820,7 +820,7 @@ uint8_t gsm0808_enc_encrypt_info(struct msgb *msg,
 	return *tlv_len + 2;
 }
 
-/*! Decode TS 08.08 Encryption Information IE
+/*! Decode 3GPP TS 48.008 3.2.2.10 Encryption Information IE
  *  \param[out] ei Caller-provided memory to store encryption information
  *  \param[in] elem IE value to be decoded
  *  \param[in] len Length of \a elem in bytes
@@ -842,6 +842,10 @@ int gsm0808_dec_encrypt_info(struct gsm0808_encrypt_info *ei,
 
 	perm_algo = *elem;
 	elem++;
+
+	/* "A permitted algorithms octet containing all bits encoded as 0 shall not be used." */
+	if (perm_algo == 0x00)
+		return -EINVAL;
 
 	for (i = 0; i < ENCRY_INFO_PERM_ALGO_MAXLEN; i++) {
 		if (perm_algo & (1 << i)) {
