@@ -923,7 +923,7 @@ static int iuup_verify_pdu(const uint8_t *data, unsigned int len)
 	return 0;
 
 payload_crc_err:
-	LOGP(DLIUUP, LOGL_NOTICE, "Payload Checksum error (pdu type %u): rx 0x%02x vs exp 0x%02x\n",
+	LOGP(DLIUUP, LOGL_NOTICE, "Payload Checksum error (pdu type %u): rx 0x%04x vs exp 0x%04x\n",
 	     pdu_type, payload_crc, payload_crc_computed);
 	return -EIO;
 }
