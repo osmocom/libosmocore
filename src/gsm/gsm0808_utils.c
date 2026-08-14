@@ -831,7 +831,6 @@ int gsm0808_dec_encrypt_info(struct gsm0808_encrypt_info *ei,
 	uint8_t perm_algo;
 	unsigned int i;
 	unsigned int perm_algo_len = 0;
-	const uint8_t *old_elem = elem;
 
 	if (!elem)
 		return -EINVAL;
@@ -854,14 +853,18 @@ int gsm0808_dec_encrypt_info(struct gsm0808_encrypt_info *ei,
 		}
 	}
 	ei->perm_algo_len = perm_algo_len;
-
-	/* FIXME: 48.008 3.2.2.10 Encryption Information says:
-	 * "When present, the key shall be 8 octets long." */
 	ei->key_len = len - 1;
-	memcpy(ei->key, elem, ei->key_len);
-	elem+=ei->key_len;
 
-	return (int)(elem - old_elem);
+	/* No key present, done */
+	if (ei->key_len == 0)
+		return len;
+
+	/* "When present, the key shall be 8 octets long." */
+	if (ei->key_len != 8)
+		return -EINVAL;
+	OSMO_ASSERT(sizeof(ei->key) >= ei->key_len);
+	memcpy(ei->key, elem, ei->key_len);
+	return len;
 }
 
 /*! Encode TS 48.008 Kc128 IE.

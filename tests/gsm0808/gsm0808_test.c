@@ -1282,11 +1282,39 @@ static void test_gsm0808_enc_dec_encrypt_info(void)
 	rc_dec = gsm0808_dec_encrypt_info(&dec_ei, msg->data + 2, msg->len - 2);
 	OSMO_ASSERT(rc_dec == 9);
 	OSMO_ASSERT(memcmp(&enc_ei, &dec_ei, sizeof(enc_ei)) == 0);
+
+
+	/* Test decoding IE with No Encryption and hence with no Key */
+	struct gsm0808_encrypt_info enc_ei_no_encryption = {
+		.perm_algo = { GSM0808_ALG_ID_A5_0 },
+		.perm_algo_len = 1,
+		.key = { 0 },
+		.key_len = 0,
+	};
+	uint8_t ei_enc_no_encryption_expected[] = { GSM0808_IE_ENCRYPTION_INFORMATION, 0x01, 0x01 };
+
+	msg = msgb_alloc(1024, "output buffer");
+	rc_enc = gsm0808_enc_encrypt_info(msg, &enc_ei_no_encryption);
+	OSMO_ASSERT(rc_enc == 3);
+	OSMO_ASSERT(memcmp(ei_enc_no_encryption_expected, msg->data, msg->len) == 0);
+
+	rc_dec = gsm0808_dec_encrypt_info(&dec_ei, msg->data + 2, msg->len - 2);
+	OSMO_ASSERT(rc_dec == 1);
+	OSMO_ASSERT(memcmp(&enc_ei_no_encryption, &dec_ei, sizeof(enc_ei_no_encryption)) == 0);
 	msgb_free(msg);
 
 	/* Test decoding of malformed IE with no algo selected: */
 	uint8_t ei_enc_no_algo[] = { GSM0808_IE_ENCRYPTION_INFORMATION, 0x01, 0x00 };
 	rc_dec = gsm0808_dec_encrypt_info(&dec_ei, &ei_enc_no_algo[2], sizeof(ei_enc_no_algo) - 2);
+	OSMO_ASSERT(rc_dec == -EINVAL);
+
+	/* Test decoding of malformed IE with wrong key length: */
+	uint8_t ei_enc_wrong_key_len[256] = { GSM0808_IE_ENCRYPTION_INFORMATION, 0xfd, 0x03 };
+	rc_dec = gsm0808_dec_encrypt_info(&dec_ei, &ei_enc_wrong_key_len[2], 0xfd);
+	OSMO_ASSERT(rc_dec == -EINVAL);
+	/* test with another invalid key length: */
+	ei_enc_wrong_key_len[1] = 0x03;
+	rc_dec = gsm0808_dec_encrypt_info(&dec_ei, &ei_enc_wrong_key_len[2], 0x03);
 	OSMO_ASSERT(rc_dec == -EINVAL);
 
 }
