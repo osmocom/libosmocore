@@ -539,7 +539,8 @@ static void retransmit_initialization(struct osmo_iuup_instance *iui)
 /* return: whether the last Init was Acked correctly and hence can transition to next state */
 static bool iuup_rx_initialization(struct osmo_iuup_instance *iui, struct osmo_iuup_tnl_prim *itp)
 {
-	struct iuup_pdutype14_hdr *hdr;
+	struct msgb *msg = itp->oph.msg;
+	struct iuup_pdutype14_hdr *hdr = (struct iuup_pdutype14_hdr *)msgb_l2(msg);
 	struct iuup_ctrl_init_hdr *ihdr;
 	struct iuup_ctrl_init_rfci_hdr *ihdr_rfci;
 	struct iuup_ctrl_init_tail *itail;
@@ -551,9 +552,16 @@ static bool iuup_rx_initialization(struct osmo_iuup_instance *iui, struct osmo_i
 	struct osmo_iuup_rnl_prim *irp;
 	struct osmo_iuup_tnl_prim *resp;
 
-	/* TODO: whenever we check message boundaries, length, etc. and we fail, send NACK */
+	/* We expect at least the INIT header with at least 1 RFCI header: */
+	if (msgb_l2len(msg) < sizeof(struct iuup_pdutype14_hdr) +
+			      sizeof(struct iuup_ctrl_init_hdr) +
+			      sizeof(struct iuup_ctrl_init_rfci_hdr)) {
+		LOGPFSML(iui->fi, LOGL_NOTICE,
+			 "Initialization: Malformed packet, length %u too short\n", msgb_l2len(msg));
+		err_cause = IUUP_ERR_CAUSE_FRAME_TOO_SHORT;
+		goto send_nack;
+	}
 
-	hdr = (struct iuup_pdutype14_hdr *)msgb_l2(itp->oph.msg);
 	ihdr = (struct iuup_ctrl_init_hdr *)hdr->payload;
 	if (ihdr->num_subflows_per_rfci == 0) {
 		LOGPFSML(iui->fi, LOGL_NOTICE, "Initialization: Unexpected num_subflows=0 received\n");
@@ -562,16 +570,33 @@ static bool iuup_rx_initialization(struct osmo_iuup_instance *iui, struct osmo_i
 	}
 	ihdr_rfci = (struct iuup_ctrl_init_rfci_hdr *)ihdr->rfci_data;
 
+	/* Iterate over RFCIs and parse and store its subflow lengths: */
 	do {
 		struct osmo_iuup_rfci *rfci = &iui->config.rfci[num_rfci];
 		uint8_t l_size_bytes = ihdr_rfci->li + 1;
+		struct iuup_ctrl_init_rfci_hdr *next_ihdr_rfci =
+			(struct iuup_ctrl_init_rfci_hdr *)(&ihdr_rfci->subflow_length[0] +
+							   (ihdr->num_subflows_per_rfci * l_size_bytes));
 		is_last = ihdr_rfci->lri;
+
 		if (num_rfci >= IUUP_MAX_RFCIS) {
 			LOGPFSML(iui->fi, LOGL_NOTICE, "Initialization: Too many RFCIs received (%u)\n",
-					 num_rfci);
+				 num_rfci);
 			err_cause = IUUP_ERR_CAUSE_UNEXPECTED_RFCI;
 			goto send_nack;
 		}
+
+		/* Check contents of current RFCI are available in msgb, and if not last RFCI,
+		 * also check for availability of next ihdr_rfci, all in one go: */
+		if ((((uint8_t *)next_ihdr_rfci) + (is_last ? 0 : sizeof(struct iuup_ctrl_init_rfci_hdr))) >
+		    msg->tail) {
+			LOGPFSML(iui->fi, LOGL_NOTICE,
+				"Initialization: Malformed packet, length %u too short\n",
+				msgb_l2len(msg));
+			err_cause = IUUP_ERR_CAUSE_FRAME_TOO_SHORT;
+			goto send_nack;
+		}
+
 		rfci->used = 1;
 		rfci->id = ihdr_rfci->rfci;
 		if (l_size_bytes == 2) {
@@ -588,13 +613,21 @@ static bool iuup_rx_initialization(struct osmo_iuup_instance *iui, struct osmo_i
 			}
 		}
 		num_rfci++;
-		ihdr_rfci++;
-		ihdr_rfci = (struct iuup_ctrl_init_rfci_hdr *)(((uint8_t *)ihdr_rfci) + ihdr->num_subflows_per_rfci * l_size_bytes);
+		ihdr_rfci = next_ihdr_rfci;
 	} while (!is_last);
 
 	if (ihdr->ti) { /* Timing information present */
 		uint8_t *buf = (uint8_t *)ihdr_rfci;
 		uint8_t num_bytes = (num_rfci + 1) / 2;
+
+		if (buf + num_bytes > msg->tail) {
+			LOGPFSML(iui->fi, LOGL_NOTICE,
+				 "Initialization: Malformed packet, length %u too short\n",
+				 msgb_l2len(msg));
+			err_cause = IUUP_ERR_CAUSE_FRAME_TOO_SHORT;
+			goto send_nack;
+		}
+
 		iui->config.IPTIs_present = true;
 		for (i = 0; i < num_bytes - 1; i++) {
 			iui->config.rfci[i*2].IPTI = *buf >> 4;
@@ -610,6 +643,15 @@ static bool iuup_rx_initialization(struct osmo_iuup_instance *iui, struct osmo_i
 		iui->config.IPTIs_present = false;
 		itail = (struct iuup_ctrl_init_tail *)ihdr_rfci;
 	}
+
+	if (((uint8_t *)itail) + sizeof(*itail) > msg->tail) {
+		LOGPFSML(iui->fi, LOGL_NOTICE,
+			 "Initialization: Malformed packet, length %u too short\n",
+			 msgb_l2len(msg));
+		err_cause = IUUP_ERR_CAUSE_FRAME_TOO_SHORT;
+		goto send_nack;
+	}
+
 	if (itail->data_pdu_type > 1) {
 		LOGPFSML(iui->fi, LOGL_NOTICE, "Initialization: Unexpected Data PDU Type %u received\n", itail->data_pdu_type);
 		err_cause = IUUP_ERR_CAUSE_UNEXPECTED_VALUE;
@@ -643,9 +685,10 @@ static bool iuup_rx_initialization(struct osmo_iuup_instance *iui, struct osmo_i
 	resp = itp_ctrl_ack_alloc(iui, IUUP_PROC_INIT, hdr->frame_nr);
 	iui->transport_prim_cb(&resp->oph, iui->transport_prim_priv);
 	return ihdr->chain_ind == 0;
+
 send_nack:
 	LOGPFSML(iui->fi, LOGL_NOTICE, "Tx Initialization NACK cause=%u orig_message=%s\n",
-		 err_cause, osmo_hexdump((const unsigned char *) msgb_l2(itp->oph.msg), msgb_l2len(itp->oph.msg)));
+		 err_cause, osmo_hexdump((const unsigned char *) msgb_l2(msg), msgb_l2len(msg)));
 	resp = tnp_ctrl_nack_alloc(iui, IUUP_PROC_INIT, err_cause, hdr->frame_nr);
 	iui->transport_prim_cb(&resp->oph, iui->transport_prim_priv);
 	return false;

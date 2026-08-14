@@ -53,3 +53,38 @@ DLIUUP IuUP(test_decode_passive_init_2_rfci_no_iptis){Initialisation}: Received 
 DLIUUP IuUP(test_decode_passive_init_2_rfci_no_iptis){Initialisation}: Tx Initialization ACK
 DLIUUP IuUP(test_decode_passive_init_2_rfci_no_iptis){Initialisation}: state_chg to SMpSDU_Data_Transfer_Ready
 DLIUUP IuUP(test_decode_passive_init_2_rfci_no_iptis){SMpSDU_Data_Transfer_Ready}: Deallocated
+DLIUUP IuUP(test_decode_passive_init_malformed_0subflows){NULL}: Allocated
+DLIUUP IuUP(test_decode_passive_init_malformed_0subflows){NULL}: Received Event IuUP-CONFIG-req
+DLIUUP IuUP(test_decode_passive_init_malformed_0subflows){NULL}: state_chg to Initialisation
+DLIUUP IuUP(test_decode_passive_init_malformed_0subflows){Initialisation}: Received Event INIT
+DLIUUP IuUP(test_decode_passive_init_malformed_0subflows){Initialisation}: Initialization: Unexpected num_subflows=0 received
+DLIUUP IuUP(test_decode_passive_init_malformed_0subflows){Initialisation}: Tx Initialization NACK cause=20 orig_message=e0 00 dc 62 00 01 51 67 3c 86 27 00 00 00 01 00 
+DLIUUP IuUP(test_decode_passive_init_malformed_0subflows){Initialisation}: Deallocated
+DLIUUP IuUP(test_decode_passive_init_malformed_ti1_no_iptis){NULL}: Allocated
+DLIUUP IuUP(test_decode_passive_init_malformed_ti1_no_iptis){NULL}: Received Event IuUP-CONFIG-req
+DLIUUP IuUP(test_decode_passive_init_malformed_ti1_no_iptis){NULL}: state_chg to Initialisation
+DLIUUP IuUP(test_decode_passive_init_malformed_ti1_no_iptis){Initialisation}: Received Event INIT
+DLIUUP IuUP(test_decode_passive_init_malformed_ti1_no_iptis){Initialisation}: Initialization: Malformed packet, length 16 too short
+DLIUUP IuUP(test_decode_passive_init_malformed_ti1_no_iptis){Initialisation}: Tx Initialization NACK cause=8 orig_message=e0 00 dc 06 16 01 51 67 3c 86 27 00 00 00 01 00 
+DLIUUP IuUP(test_decode_passive_init_malformed_ti1_no_iptis){Initialisation}: Deallocated
+DLIUUP IuUP(test_decode_passive_init_malformed_no_rfci){NULL}: Allocated
+DLIUUP IuUP(test_decode_passive_init_malformed_no_rfci){NULL}: Received Event IuUP-CONFIG-req
+DLIUUP IuUP(test_decode_passive_init_malformed_no_rfci){NULL}: state_chg to Initialisation
+DLIUUP IuUP(test_decode_passive_init_malformed_no_rfci){Initialisation}: Received Event INIT
+DLIUUP IuUP(test_decode_passive_init_malformed_no_rfci){Initialisation}: Initialization: Malformed packet, length 5 too short
+DLIUUP IuUP(test_decode_passive_init_malformed_no_rfci){Initialisation}: Tx Initialization NACK cause=8 orig_message=e0 00 dc cc 06 
+DLIUUP IuUP(test_decode_passive_init_malformed_no_rfci){Initialisation}: Deallocated
+DLIUUP IuUP(test_decode_passive_init_malformed_rfci_too_short){NULL}: Allocated
+DLIUUP IuUP(test_decode_passive_init_malformed_rfci_too_short){NULL}: Received Event IuUP-CONFIG-req
+DLIUUP IuUP(test_decode_passive_init_malformed_rfci_too_short){NULL}: state_chg to Initialisation
+DLIUUP IuUP(test_decode_passive_init_malformed_rfci_too_short){Initialisation}: Received Event INIT
+DLIUUP IuUP(test_decode_passive_init_malformed_rfci_too_short){Initialisation}: Initialization: Malformed packet, length 7 too short
+DLIUUP IuUP(test_decode_passive_init_malformed_rfci_too_short){Initialisation}: Tx Initialization NACK cause=8 orig_message=e0 00 df 7d 06 01 51 
+DLIUUP IuUP(test_decode_passive_init_malformed_rfci_too_short){Initialisation}: Deallocated
+DLIUUP IuUP(test_decode_passive_init_malformed_missing_last_byte){NULL}: Allocated
+DLIUUP IuUP(test_decode_passive_init_malformed_missing_last_byte){NULL}: Received Event IuUP-CONFIG-req
+DLIUUP IuUP(test_decode_passive_init_malformed_missing_last_byte){NULL}: state_chg to Initialisation
+DLIUUP IuUP(test_decode_passive_init_malformed_missing_last_byte){Initialisation}: Received Event INIT
+DLIUUP IuUP(test_decode_passive_init_malformed_missing_last_byte){Initialisation}: Initialization: Malformed packet, length 15 too short
+DLIUUP IuUP(test_decode_passive_init_malformed_missing_last_byte){Initialisation}: Tx Initialization NACK cause=8 orig_message=e0 00 df f7 06 01 51 67 3c 86 27 00 00 00 01 
+DLIUUP IuUP(test_decode_passive_init_malformed_missing_last_byte){Initialisation}: Deallocated

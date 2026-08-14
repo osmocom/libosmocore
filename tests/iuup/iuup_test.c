@@ -31,6 +31,56 @@ static struct osmo_iuup_rnl_config def_configure_req = {
 	.t_rc = { .t_ms = IUUP_TIMER_RC_T_DEFAULT, .n_max = IUUP_TIMER_RC_N_DEFAULT },
 };
 
+/*  Frame 46, "Initialization",  SYS#5969 call4_Iu_Iuh.pcap
+	1110 .... = PDU Type: Control Procedure (14)
+	.... 00.. = Ack/Nack: Procedure (0)
+	.... ..00 = Frame Number: 0
+	0000 .... = Mode Version: 0x0
+	.... 0000 = Procedure: Initialization (0)
+	1101 11.. = Header CRC: 0x37 [correct]
+	.... ..01 1011 0100 = Payload CRC: 0x1b4
+	000. .... = Spare: 0x0
+	...0 .... = TI: IPTIs not present (0)
+	.... 011. = Subflows: 3
+	.... ...0 = Chain Indicator: this frame is the last frame for the procedure (0)
+	RFCI 1 Initialization
+	0... .... = RFCI 0 LRI: Not last RFCI (0x0)
+	.0.. .... = RFCI 0 LI: one octet used (0x0)
+	..00 0001 = RFCI 0: 1
+	RFCI 0 Flow 0 Len: 81
+	RFCI 0 Flow 1 Len: 103
+	RFCI 0 Flow 2 Len: 60
+	RFCI 6 Initialization
+	1... .... = RFCI 1 LRI: Last RFCI in current frame (0x1)
+	.0.. .... = RFCI 1 LI: one octet used (0x0)
+	..00 0110 = RFCI 1: 6
+	RFCI 1 Flow 0 Len: 39
+	RFCI 1 Flow 1 Len: 0
+	RFCI 1 Flow 2 Len: 0
+	Iu UP Mode Versions Supported: 0x0001
+	0... .... .... .... = Version 16: not supported (0x0)
+	.0.. .... .... .... = Version 15: not supported (0x0)
+	..0. .... .... .... = Version 14: not supported (0x0)
+	...0 .... .... .... = Version 13: not supported (0x0)
+	.... 0... .... .... = Version 12: not supported (0x0)
+	.... .0.. .... .... = Version 11: not supported (0x0)
+	.... ..0. .... .... = Version 10: not supported (0x0)
+	.... ...0 .... .... = Version  9: not supported (0x0)
+	.... .... 0... .... = Version  8: not supported (0x0)
+	.... .... .0.. .... = Version  7: not supported (0x0)
+	.... .... ..0. .... = Version  6: not supported (0x0)
+	.... .... ...0 .... = Version  5: not supported (0x0)
+	.... .... .... 0... = Version  4: not supported (0x0)
+	.... .... .... .0.. = Version  3: not supported (0x0)
+	.... .... .... ..0. = Version  2: not supported (0x0)
+	.... .... .... ...1 = Version  1: supported (0x1)
+	0000 .... = RFCI Data Pdu Type: PDU type 0 (0x0)
+*/
+const uint8_t iuup_initialization_no_iptis[] = {
+	0xe0, 0x00, 0xdd, 0xb4, 0x06, 0x01, 0x51, 0x67, 0x3c, 0x86, 0x27,
+	0x00, 0x00, 0x00, 0x01, 0x00
+};
+
 /*  Frame 33, "Initialization",  OS#4744 3g_call_23112021.pcapng
 IuUP
 	1110 .... = PDU Type: Control Procedure (14)
@@ -665,56 +715,6 @@ void test_decode_passive_init_2_rfci_no_iptis(void)
 	struct iuup_pdutype14_hdr *hdr14;
 	int rc;
 
-	/*  Frame 46, "Initialization",  SYS#5969 call4_Iu_Iuh.pcap
-	1110 .... = PDU Type: Control Procedure (14)
-	.... 00.. = Ack/Nack: Procedure (0)
-	.... ..00 = Frame Number: 0
-	0000 .... = Mode Version: 0x0
-	.... 0000 = Procedure: Initialization (0)
-	1101 11.. = Header CRC: 0x37 [correct]
-	.... ..01 1011 0100 = Payload CRC: 0x1b4
-	000. .... = Spare: 0x0
-	...0 .... = TI: IPTIs not present (0)
-	.... 011. = Subflows: 3
-	.... ...0 = Chain Indicator: this frame is the last frame for the procedure (0)
-	RFCI 1 Initialization
-	0... .... = RFCI 0 LRI: Not last RFCI (0x0)
-	.0.. .... = RFCI 0 LI: one octet used (0x0)
-	..00 0001 = RFCI 0: 1
-	RFCI 0 Flow 0 Len: 81
-	RFCI 0 Flow 1 Len: 103
-	RFCI 0 Flow 2 Len: 60
-	RFCI 6 Initialization
-	1... .... = RFCI 1 LRI: Last RFCI in current frame (0x1)
-	.0.. .... = RFCI 1 LI: one octet used (0x0)
-	..00 0110 = RFCI 1: 6
-	RFCI 1 Flow 0 Len: 39
-	RFCI 1 Flow 1 Len: 0
-	RFCI 1 Flow 2 Len: 0
-	Iu UP Mode Versions Supported: 0x0001
-	0... .... .... .... = Version 16: not supported (0x0)
-	.0.. .... .... .... = Version 15: not supported (0x0)
-	..0. .... .... .... = Version 14: not supported (0x0)
-	...0 .... .... .... = Version 13: not supported (0x0)
-	.... 0... .... .... = Version 12: not supported (0x0)
-	.... .0.. .... .... = Version 11: not supported (0x0)
-	.... ..0. .... .... = Version 10: not supported (0x0)
-	.... ...0 .... .... = Version  9: not supported (0x0)
-	.... .... 0... .... = Version  8: not supported (0x0)
-	.... .... .0.. .... = Version  7: not supported (0x0)
-	.... .... ..0. .... = Version  6: not supported (0x0)
-	.... .... ...0 .... = Version  5: not supported (0x0)
-	.... .... .... 0... = Version  4: not supported (0x0)
-	.... .... .... .0.. = Version  3: not supported (0x0)
-	.... .... .... ..0. = Version  2: not supported (0x0)
-	.... .... .... ...1 = Version  1: supported (0x1)
-	0000 .... = RFCI Data Pdu Type: PDU type 0 (0x0)
-	*/
-	const uint8_t iuup_init[] = {
-		0xe0, 0x00, 0xdd, 0xb4, 0x06, 0x01, 0x51, 0x67, 0x3c, 0x86, 0x27,
-		0x00, 0x00, 0x00, 0x01, 0x00
-	};
-
 	iui = osmo_iuup_instance_alloc(iuup_test_ctx, __func__);
 	OSMO_ASSERT(iui);
 	osmo_iuup_instance_set_user_prim_cb(iui, _decode_passive_init_2_rfci_no_iptis_user_prim_cb, NULL);
@@ -732,14 +732,184 @@ void test_decode_passive_init_2_rfci_no_iptis(void)
 
 	/* Send Init: */
 	tnp = osmo_iuup_tnl_prim_alloc(iuup_test_ctx, OSMO_IUUP_TNL_UNITDATA, PRIM_OP_INDICATION, IUUP_MSGB_SIZE);
-	tnp->oph.msg->l2h = msgb_put(tnp->oph.msg, sizeof(iuup_init));
+	tnp->oph.msg->l2h = msgb_put(tnp->oph.msg, sizeof(iuup_initialization_no_iptis));
 	hdr14 = (struct iuup_pdutype14_hdr *)msgb_l2(tnp->oph.msg);
-	memcpy(hdr14, iuup_init, sizeof(iuup_init));
+	memcpy(hdr14, iuup_initialization_no_iptis, sizeof(iuup_initialization_no_iptis));
 
 	rc = osmo_iuup_tnl_prim_up(iui, tnp);
 	OSMO_ASSERT(rc == 0);
 
 	osmo_iuup_instance_free(iui);
+}
+
+static int _decode_passive_init_exp_nack_transport_prim_cb(struct osmo_prim_hdr *oph, void *ctx)
+{
+	struct osmo_iuup_tnl_prim *itp = (struct osmo_iuup_tnl_prim *)oph;
+	struct msgb *msg;
+	struct iuup_pdutype14_hdr *hdr;
+
+	printf("%s()\n", __func__);
+	msg = oph->msg;
+	OSMO_ASSERT(OSMO_PRIM_HDR(&itp->oph) == OSMO_PRIM(OSMO_IUUP_TNL_UNITDATA, PRIM_OP_REQUEST));
+	printf("Transport: DL len=%u: %s\n", msgb_l2len(msg),
+	       osmo_hexdump((const unsigned char *) msgb_l2(msg), msgb_l2len(msg)));
+	hdr = msgb_l2(msg);
+	OSMO_ASSERT(hdr->pdu_type == IUUP_PDU_T_CONTROL);
+	OSMO_ASSERT(hdr->ack_nack == IUUP_AN_NACK);
+	msgb_free(msg);
+	return 0;
+}
+/* Send a malformed Initialization to UIT containing num_subflows_per_rfci = 0.
+ * It shall be rejected since num_subflows_per_rfci should be at least one accoridng to 3GPP TS 25.415 Figure 24 */
+void test_decode_passive_init_malformed_0subflows(void)
+{
+	/* Here we check the passive INIT code path, aka receiving INIT and returning INIT_ACK/NACK */
+	struct osmo_iuup_instance *iui;
+	struct osmo_iuup_rnl_prim *rnp;
+	struct osmo_iuup_tnl_prim *tnp;
+	struct iuup_pdutype14_hdr *hdr14;
+	struct iuup_ctrl_init_hdr *ihdr;
+	uint16_t payload_crc;
+	int rc;
+
+	iui = osmo_iuup_instance_alloc(iuup_test_ctx, __func__);
+	OSMO_ASSERT(iui);
+	osmo_iuup_instance_set_transport_prim_cb(iui, _decode_passive_init_exp_nack_transport_prim_cb, NULL);
+
+	clock_override_set(0, 0);
+
+	/* Tx CONFIG.req */
+	rnp = osmo_iuup_rnl_prim_alloc(iuup_test_ctx, OSMO_IUUP_RNL_CONFIG, PRIM_OP_REQUEST, IUUP_MSGB_SIZE);
+	rnp->u.config = def_configure_req;
+	rnp->u.config.active = false;
+
+	rc = osmo_iuup_rnl_prim_down(iui, rnp);
+	OSMO_ASSERT(rc == 0);
+
+	/* Prepare and send Init: copy iuup_initialization_no_iptis, modify setting TI=1 (becoming malformed) and dispatch it. */
+	tnp = osmo_iuup_tnl_prim_alloc(iuup_test_ctx, OSMO_IUUP_TNL_UNITDATA, PRIM_OP_INDICATION, IUUP_MSGB_SIZE);
+	tnp->oph.msg->l2h = msgb_put(tnp->oph.msg, sizeof(iuup_initialization_no_iptis));
+	hdr14 = (struct iuup_pdutype14_hdr *)msgb_l2(tnp->oph.msg);
+	memcpy(hdr14, iuup_initialization_no_iptis, sizeof(iuup_initialization_no_iptis));
+
+	ihdr = (struct iuup_ctrl_init_hdr *)hdr14->payload;
+	ihdr->num_subflows_per_rfci = 0;
+	payload_crc = osmo_iuup_compute_payload_crc(msgb_l2(tnp->oph.msg), msgb_l2len(tnp->oph.msg));
+	hdr14->payload_crc_hi = (payload_crc >> 8) & 0x03;
+	hdr14->payload_crc_lo = payload_crc & 0xff;
+
+	rc = osmo_iuup_tnl_prim_up(iui, tnp);
+	OSMO_ASSERT(rc == 0);
+
+	osmo_iuup_instance_free(iui);
+}
+
+/* Send a malformed Initialization to UIT containing TI=1 and no IPTIs encoded.
+ * As a result, the msgb content is too short and should be rejected. */
+void test_decode_passive_init_malformed_ti1_no_iptis(void)
+{
+	/* Here we check the passive INIT code path, aka receiving INIT and returning INIT_ACK/NACK */
+	struct osmo_iuup_instance *iui;
+	struct osmo_iuup_rnl_prim *rnp;
+	struct osmo_iuup_tnl_prim *tnp;
+	struct iuup_pdutype14_hdr *hdr14;
+	struct iuup_ctrl_init_hdr *ihdr;
+	uint16_t payload_crc;
+	int rc;
+
+	iui = osmo_iuup_instance_alloc(iuup_test_ctx, __func__);
+	OSMO_ASSERT(iui);
+	osmo_iuup_instance_set_transport_prim_cb(iui, _decode_passive_init_exp_nack_transport_prim_cb, NULL);
+
+	clock_override_set(0, 0);
+
+	/* Tx CONFIG.req */
+	rnp = osmo_iuup_rnl_prim_alloc(iuup_test_ctx, OSMO_IUUP_RNL_CONFIG, PRIM_OP_REQUEST, IUUP_MSGB_SIZE);
+	rnp->u.config = def_configure_req;
+	rnp->u.config.active = false;
+
+	rc = osmo_iuup_rnl_prim_down(iui, rnp);
+	OSMO_ASSERT(rc == 0);
+
+	/* Prepare and send Init: copy iuup_initialization_no_iptis, modify setting TI=1 (becoming malformed) and dispatch it. */
+	tnp = osmo_iuup_tnl_prim_alloc(iuup_test_ctx, OSMO_IUUP_TNL_UNITDATA, PRIM_OP_INDICATION, IUUP_MSGB_SIZE);
+	tnp->oph.msg->l2h = msgb_put(tnp->oph.msg, sizeof(iuup_initialization_no_iptis));
+	hdr14 = (struct iuup_pdutype14_hdr *)msgb_l2(tnp->oph.msg);
+	memcpy(hdr14, iuup_initialization_no_iptis, sizeof(iuup_initialization_no_iptis));
+
+	ihdr = (struct iuup_ctrl_init_hdr *)hdr14->payload;
+	ihdr->ti = 1;
+	payload_crc = osmo_iuup_compute_payload_crc(msgb_l2(tnp->oph.msg), msgb_l2len(tnp->oph.msg));
+	hdr14->payload_crc_hi = (payload_crc >> 8) & 0x03;
+	hdr14->payload_crc_lo = payload_crc & 0xff;
+
+	rc = osmo_iuup_tnl_prim_up(iui, tnp);
+	OSMO_ASSERT(rc == 0);
+
+	osmo_iuup_instance_free(iui);
+}
+
+/* Send a malformed Initialization to UIT containing no RFCIs.
+ * As a result, the msgb content is too short and should be rejected. */
+void _test_submit_iuup_initialization_trimmed(unsigned int pkt_len, const char *test_name)
+{
+	/* Here we check the passive INIT code path, aka receiving INIT and returning INIT_ACK/NACK */
+	struct osmo_iuup_instance *iui;
+	struct osmo_iuup_rnl_prim *rnp;
+	struct osmo_iuup_tnl_prim *tnp;
+	struct iuup_pdutype14_hdr *hdr14;
+	uint16_t payload_crc;
+	int rc;
+
+	OSMO_ASSERT(pkt_len <= sizeof(iuup_initialization_no_iptis));
+
+	iui = osmo_iuup_instance_alloc(iuup_test_ctx, test_name);
+	OSMO_ASSERT(iui);
+	osmo_iuup_instance_set_transport_prim_cb(iui, _decode_passive_init_exp_nack_transport_prim_cb, NULL);
+
+	/* Tx CONFIG.req */
+	rnp = osmo_iuup_rnl_prim_alloc(iuup_test_ctx, OSMO_IUUP_RNL_CONFIG, PRIM_OP_REQUEST, IUUP_MSGB_SIZE);
+	rnp->u.config = def_configure_req;
+	rnp->u.config.active = false;
+
+	rc = osmo_iuup_rnl_prim_down(iui, rnp);
+	OSMO_ASSERT(rc == 0);
+
+	/* Prepare and send Init: copy iuup_initialization_no_iptis, modify setting TI=1 (becoming malformed) and dispatch it. */
+	tnp = osmo_iuup_tnl_prim_alloc(iuup_test_ctx, OSMO_IUUP_TNL_UNITDATA, PRIM_OP_INDICATION, IUUP_MSGB_SIZE);
+	tnp->oph.msg->l2h = msgb_put(tnp->oph.msg, pkt_len);
+	hdr14 = (struct iuup_pdutype14_hdr *)msgb_l2(tnp->oph.msg);
+	memcpy(hdr14, iuup_initialization_no_iptis, pkt_len);
+
+	payload_crc = osmo_iuup_compute_payload_crc(msgb_l2(tnp->oph.msg), msgb_l2len(tnp->oph.msg));
+	hdr14->payload_crc_hi = (payload_crc >> 8) & 0x03;
+	hdr14->payload_crc_lo = payload_crc & 0xff;
+
+	rc = osmo_iuup_tnl_prim_up(iui, tnp);
+	OSMO_ASSERT(rc == 0);
+
+	osmo_iuup_instance_free(iui);
+}
+void test_decode_passive_init_malformed_no_rfci(void)
+{
+	unsigned int pkt_len = sizeof(struct iuup_pdutype14_hdr) + sizeof(struct iuup_ctrl_init_hdr);
+	clock_override_set(0, 0);
+	_test_submit_iuup_initialization_trimmed(pkt_len, __func__);
+}
+
+/* Send a malformed Initialization to UIT containing malformed RFCIs.
+ * As a result, the msgb content is too short and should be rejected. */
+void test_decode_passive_init_malformed_rfci_too_short(void)
+{
+	unsigned int pkt_len = sizeof(struct iuup_pdutype14_hdr) + sizeof(struct iuup_ctrl_init_hdr) + 2;
+	clock_override_set(0, 0);
+	_test_submit_iuup_initialization_trimmed(pkt_len, __func__);
+}
+
+void test_decode_passive_init_malformed_missing_last_byte(void)
+{
+	clock_override_set(0, 0);
+	_test_submit_iuup_initialization_trimmed(sizeof(iuup_initialization_no_iptis) - 1, __func__);
 }
 
 int main(int argc, char **argv)
@@ -762,6 +932,11 @@ int main(int argc, char **argv)
 	test_passive_init();
 	test_passive_init_retrans();
 	test_decode_passive_init_2_rfci_no_iptis();
+	test_decode_passive_init_malformed_0subflows();
+	test_decode_passive_init_malformed_ti1_no_iptis();
+	test_decode_passive_init_malformed_no_rfci();
+	test_decode_passive_init_malformed_rfci_too_short();
+	test_decode_passive_init_malformed_missing_last_byte();
 
 	printf("OK.\n");
 }
