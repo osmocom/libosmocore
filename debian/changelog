@@ -1,3 +1,35 @@
+libosmocore (1.14.2) unstable; urgency=medium
+
+  [ Pau Espin Pedrol ]
+  * tests/osmo_io: Remove unused variable
+  * iuup: Improve validation of header size
+  * iuup: Avoid stack buffer-overflow rx IuUP with payload >1024 bytes
+  * bits: Fix osmo_pbit2ubit() reading extra input byte on num_bits%8==0
+  * iuup: Fix formatting of log line printing payload checksum error
+  * iuup: Validate msgb input length in rx Initialization path
+  * iuup: test receival of IuUP Data with way too big payload
+  * gsm: Reject BSSMAP Encryption Information IE with no selected algo
+  * gsm: Reject BSSMAP Encryption Information IE with key length != 8
+  * gsm: Introduce gsm_septet_pack2() and deprecate gsm_septet_pack()
+  * tests/sms: Validate gsm_septet_pack2() succeeds
+
+  [ Vadim Yanitskiy ]
+  * gb: fix buffer overflow in bssgp_rx_paging()
+  * gsm0480: fix out-of-bounds read in parse_process_uss_req()
+  * gsm29205: fix out-of-bounds read in osmo_dec_gcr()
+  * gsm/ipa: fix out-of-bounds read in TLV tag logging
+  * gsm/ipa: reject t_len == 0 in ID_GET/ID_RESP TLV parsers
+  * gsm/ipa: fix t_len truncation in ipa_ccm_id_resp_parse()
+  * gsm0480: fix out-of-bounds reads in parse_ss_{invoke,return_result}()
+
+  [ Andreas Eversberg ]
+  * Add missing length check in gsm48_decode_callerid()
+
+  [ Adam Bedard ]
+  * gsm/cbsp: stack OOB read in the CBSP WRITE-REPLACE decoder
+
+ -- Pau Espin Pedrol <pespin@sysmocom.de>  Thu, 20 Aug 2026 10:02:21 +0200
+
 libosmocore (1.14.1) unstable; urgency=medium
 
   [ Vadim Yanitskiy ]
