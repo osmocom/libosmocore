@@ -543,14 +543,14 @@ libusb_device_handle *osmo_libusb_open_claim_interface(void *ctx, libusb_context
 			if (rc < 0) {
 				fprintf(stderr, "Cannot open device: %s\n", libusb_error_name(rc));
 				usb_devh = NULL;
-				break;
+				goto out;
 			}
 			rc = libusb_get_configuration(usb_devh, &config);
 			if (rc < 0) {
 				fprintf(stderr, "Cannot get current configuration: %s\n", libusb_error_name(rc));
 				libusb_close(usb_devh);
 				usb_devh = NULL;
-				break;
+				goto out;
 			}
 			if (config != ifm->configuration) {
 				rc = libusb_set_configuration(usb_devh, ifm->configuration);
@@ -558,7 +558,7 @@ libusb_device_handle *osmo_libusb_open_claim_interface(void *ctx, libusb_context
 					fprintf(stderr, "Cannot set configuration: %s\n", libusb_error_name(rc));
 					libusb_close(usb_devh);
 					usb_devh = NULL;
-					break;
+					goto out;
 				}
 			}
 			rc = libusb_claim_interface(usb_devh, ifm->interface);
@@ -566,7 +566,7 @@ libusb_device_handle *osmo_libusb_open_claim_interface(void *ctx, libusb_context
 				fprintf(stderr, "Cannot claim interface: %s\n", libusb_error_name(rc));
 				libusb_close(usb_devh);
 				usb_devh = NULL;
-				break;
+				goto out;
 			}
 			rc = libusb_set_interface_alt_setting(usb_devh, ifm->interface, ifm->altsetting);
 			if (rc < 0) {
@@ -574,11 +574,14 @@ libusb_device_handle *osmo_libusb_open_claim_interface(void *ctx, libusb_context
 				libusb_release_interface(usb_devh, ifm->interface);
 				libusb_close(usb_devh);
 				usb_devh = NULL;
-				break;
+				goto out;
 			}
 		}
 	}
 
+	if (!usb_devh)
+		fprintf(stderr, "Failed to find a matching usb device\n");
+out:
 	/* unref / free list */
 	for (dev = list; *dev; dev++)
 		libusb_unref_device(*dev);
