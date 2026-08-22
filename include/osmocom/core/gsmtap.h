@@ -17,7 +17,7 @@
 
 /* The GSMTAP format definition is maintained in libosmocore,
  * specifically the latest version can always be obtained from
- * http://cgit.osmocom.org/cgit/libosmocore/tree/include/osmocom/core/gsmtap.h
+ * https://gitea.osmocom.org/osmocom/libosmocore/src/branch/master/include/osmocom/core/gsmtap.h
  *
  * If you want to introduce new protocol/burst/channel types or extend
  * GSMTAP in any way, please contact the GSMTAP maintainer at either the
