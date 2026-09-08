@@ -73,7 +73,7 @@ static inline uint32_t hash_32_generic(uint32_t val, unsigned int bits)
 #ifndef HAVE_ARCH_HASH_64
 #define hash_64 hash_64_generic
 #endif
-static __always_inline uint32_t hash_64_generic(uint64_t val, unsigned int bits)
+static inline __attribute__((always_inline)) uint32_t hash_64_generic(uint64_t val, unsigned int bits)
 {
 #if BITS_PER_LONG == 64
 	/* 64x64-bit multiply is efficient on all 64-bit processors */
