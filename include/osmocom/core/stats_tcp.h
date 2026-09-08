@@ -1,5 +1,7 @@
 #pragma once
 
+struct osmo_fd;
+
 #define TCP_STATS_DEFAULT_INTERVAL 0	/* secs */
 #define TCP_STATS_DEFAULT_BATCH_SIZE 5	/* sockets per interval */
 
