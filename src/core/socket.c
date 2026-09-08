@@ -598,7 +598,9 @@ int osmo_sock_init_osa(uint16_t type, uint8_t proto,
 			}
 		}
 
-		if (bind(sfd, &local->u.sa, sizeof(struct osmo_sockaddr)) == -1) {
+		/* Pass the length of the address family in use, not of the union:
+		 * Darwin and the BSDs reject a longer namelen with EINVAL. */
+		if (bind(sfd, &local->u.sa, osmo_sockaddr_size(local)) == -1) {
 			int err = errno;
 			_SOCKADDR_TO_STR(sastr, local);
 			LOGP(DLGLOBAL, LOGL_ERROR, "unable to bind socket: " OSMO_SOCKADDR_STR_FMT ": %s\n",
@@ -621,7 +623,7 @@ int osmo_sock_init_osa(uint16_t type, uint8_t proto,
 			}
 		}
 
-		rc = connect(sfd, &remote->u.sa, sizeof(struct osmo_sockaddr));
+		rc = connect(sfd, &remote->u.sa, osmo_sockaddr_size(remote));
 		if (rc != 0 && errno != EINPROGRESS) {
 			int err = errno;
 			_SOCKADDR_TO_STR(sastr, remote);
