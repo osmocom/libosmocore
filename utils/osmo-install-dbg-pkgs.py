@@ -20,6 +20,12 @@ def parse_arguments():
         description="Install debug packages for all installed Osmocom packages and dependencies"
     )
     parser.add_argument(
+        "-o",
+        "--open5gs",
+        action="store_true",
+        help="install debug packages for installed Open5GS programs too",
+    )
+    parser.add_argument(
         "-y",
         "--yes",
         action="store_true",
@@ -66,6 +72,9 @@ def get_installed_osmocom_packages():
         "libsmpp34*",
         "osmo-*",
     ]
+
+    if args.open5gs:
+        patterns += ["open5gs-*"]
 
     for line in lines:
         if not line.startswith("ii  "):
