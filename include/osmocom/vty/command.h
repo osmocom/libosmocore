@@ -102,11 +102,13 @@ enum node_type {
 	L_CPU_SCHED_NODE,	/*!< CPU Sched related options node */
 	L_NS_BIND_NODE,		/*!< NS bind node */
 	L_NS_NSE_NODE,		/*!< NS NSE node */
+
+	L_CS7_QOS_CLASS_NODE,	/*!< SS7 QoS Class */
+
 	/*
 	 * When adding new nodes to the libosmocore project, these nodes can be
 	 * used to avoid ABI changes for unrelated projects.
 	 */
-	RESERVED1_NODE,		/*!< Reserved for later extensions */
 	RESERVED2_NODE,		/*!< Reserved for later extensions */
 	RESERVED3_NODE,		/*!< Reserved for later extensions */
 	RESERVED4_NODE,		/*!< Reserved for later extensions */
