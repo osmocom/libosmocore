@@ -486,7 +486,7 @@ static int set_sched_rr(unsigned int prio)
 }
 
 DEFUN_ATTR(cfg_sched_policy, cfg_sched_policy_cmd,
-	"policy rr <1-32>",
+	"policy rr <1-99>",
 	"Set the scheduling policy to use for the process\n"
 	"Use the SCHED_RR real-time scheduling algorithm\n"
 	"Set the SCHED_RR real-time priority\n",
