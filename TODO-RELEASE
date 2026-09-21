@@ -8,3 +8,4 @@
 # If any interfaces have been removed or changed since the last public release: c:r:0.
 #library	what			description / commit summary line
 vty       added     VTY node for libsosmo-sigtran L_CS7_QOS_CLASS_NODE
+vty       added     VTY nodes for libosmo-octoi L_OCTOI_SRV_NODE, L_OCTOI_ACCOUNT_NODE, L_OCTOI_CLNT_NODE, L_OCTOI_CLNT_ACCOUNT_NODE

@@ -105,14 +105,16 @@ enum node_type {
 
 	L_CS7_QOS_CLASS_NODE,	/*!< SS7 QoS Class */
 
+	L_OCTOI_SRV_NODE,	/*!< OCTOI server node */
+	L_OCTOI_ACCOUNT_NODE,	/*!< OCTOI server account node */
+	L_OCTOI_CLNT_NODE,	/*!< OCTOI client node */
+	L_OCTOI_CLNT_ACCOUNT_NODE,
+				/*!< OCTOI client account node */
+
 	/*
 	 * When adding new nodes to the libosmocore project, these nodes can be
 	 * used to avoid ABI changes for unrelated projects.
 	 */
-	RESERVED2_NODE,		/*!< Reserved for later extensions */
-	RESERVED3_NODE,		/*!< Reserved for later extensions */
-	RESERVED4_NODE,		/*!< Reserved for later extensions */
-	RESERVED5_NODE,		/*!< Reserved for later extensions */
 	RESERVED6_NODE,		/*!< Reserved for later extensions */
 	RESERVED7_NODE,		/*!< Reserved for later extensions */
 	RESERVED8_NODE,		/*!< Reserved for later extensions */
