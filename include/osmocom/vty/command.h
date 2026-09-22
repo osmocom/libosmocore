@@ -103,13 +103,18 @@ enum node_type {
 	L_NS_BIND_NODE,		/*!< NS bind node */
 	L_NS_NSE_NODE,		/*!< NS NSE node */
 
-	L_CS7_QOS_CLASS_NODE,	/*!< SS7 QoS Class */
-
+	#define RESERVED1_NODE L_OCTOI_SRV_NODE
 	L_OCTOI_SRV_NODE,	/*!< OCTOI server node */
+	#define RESERVED2_NODE L_OCTOI_ACCOUNT_NODE
 	L_OCTOI_ACCOUNT_NODE,	/*!< OCTOI server account node */
+	#define RESERVED3_NODE L_OCTOI_CLNT_NODE
 	L_OCTOI_CLNT_NODE,	/*!< OCTOI client node */
+	#define RESERVED4_NODE L_OCTOI_CLNT_ACCOUNT_NODE
 	L_OCTOI_CLNT_ACCOUNT_NODE,
 				/*!< OCTOI client account node */
+
+	#define RESERVED5_NODE L_CS7_QOS_CLASS_NODE
+	L_CS7_QOS_CLASS_NODE,	/*!< SS7 QoS Class */
 
 	/*
 	 * When adding new nodes to the libosmocore project, these nodes can be
