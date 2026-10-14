@@ -289,6 +289,49 @@ static void test_bssgp_msgb_copy(void)
 	printf("----- %s END\n", __func__);
 }
 
+
+static struct msgb *_msg_too_big = NULL;
+static int _test_bssgp_tx_status_too_big_gprs_ns_sendmsg(void *ctx, struct msgb *msg)
+{
+	_msg_too_big = msg;
+	return 0;
+}
+
+/* test if bssgp_tx_status() can handle tooo big messages */
+static void test_bssgp_tx_status_too_big(void)
+{
+	struct msgb *msg;
+	struct bssgp_normal_hdr *bgph;
+
+	uint16_t bvci = htons(4);
+
+	bssgp_set_bssgp_callback(_test_bssgp_tx_status_too_big_gprs_ns_sendmsg, NULL);
+
+	printf("----- %s START\n", __func__);
+	msg = msgb_alloc_headroom(8096, 128, "testtoobig");
+	OSMO_ASSERT(msg != NULL);
+
+	/* fill a dummy BSSGP header */
+	msgb_bssgph(msg) = msg->data;
+	bgph = (struct bssgp_normal_hdr *) msgb_put(msg, sizeof(*bgph));
+	msgb_nsei(msg) = 23;
+	msgb_bvci(msg) = 42; /* ns bvci */
+	msgb_tvlv_put(msg, BSSGP_IE_BVCI, 2, (uint8_t *) &bvci);
+	bgph->pdu_type = BSSGP_PDUT_FLUSH_LL;
+	msgb_put(msg, 5120);
+
+	bssgp_tx_status(BSSGP_CAUSE_INV_MAND_INF, &bvci, msg);
+
+	OSMO_ASSERT(_msg_too_big);
+	OSMO_ASSERT(msgb_nsei(_msg_too_big) == 23);
+	OSMO_ASSERT(msgb_bvci(_msg_too_big) == 0); /* BVCI is 0 for STATUS in most cases. see exceptions */
+	msgb_free(msg);
+	msgb_free(_msg_too_big);
+
+	printf("----- %s END\n", __func__);
+}
+
+
 static struct log_info info = {};
 
 int main(int argc, char **argv)
@@ -317,6 +360,7 @@ int main(int argc, char **argv)
 	test_bssgp_bad_reset();
 	test_bssgp_flow_control_bvc();
 	test_bssgp_msgb_copy();
+	test_bssgp_tx_status_too_big();
 	printf("===== BSSGP test END\n\n");
 
 	exit(EXIT_SUCCESS);

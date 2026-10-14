@@ -584,7 +584,8 @@ int bssgp_tx_status(uint8_t cause, uint16_t *bvci, struct msgb *orig_msg)
 		msgb_tvlv_put(msg, BSSGP_IE_BVCI, 2, (uint8_t *) &_bvci);
 	}
 	msgb_tvlv_put(msg, BSSGP_IE_PDU_IN_ERROR,
-		      msgb_bssgp_len(orig_msg), msgb_bssgph(orig_msg));
+		      OSMO_MIN(msgb_bssgp_len(orig_msg), msgb_tailroom(msg) - 3), /* Tag: 1 byte, Length: 2 bytes */
+		      msgb_bssgph(orig_msg));
 
 	return bssgp_ns_send(bssgp_ns_send_data, msg);
 }

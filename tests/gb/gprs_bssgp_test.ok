@@ -17,5 +17,7 @@ Got message: 26 1e 81 2a 05 82 10 22 03 82 c0 40 01 82 08 11 1c 82 60 20 3c 81 7
 Old msgb: [L3]> 22 04 82 00 02 07 81 08 
 New msgb: [L3]> 22 04 82 00 02 07 81 08 
 ----- test_bssgp_msgb_copy END
+----- test_bssgp_tx_status_too_big START
+----- test_bssgp_tx_status_too_big END
 ===== BSSGP test END
 
