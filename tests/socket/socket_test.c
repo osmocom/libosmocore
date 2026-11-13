@@ -455,6 +455,59 @@ static void test_osa_netmask_prefixlen(void)
 	OSMO_ASSERT(rc == 24);
 }
 
+static void test_osa_pton(void)
+{
+	struct osmo_sockaddr osa;
+	struct sockaddr *sa = (struct sockaddr *)&osa;
+	int rc;
+
+	rc = osmo_sockaddr_pton("0.0.0.0", sa);
+	OSMO_ASSERT(rc == 1);
+	OSMO_ASSERT(osa.u.sa.sa_family = AF_INET);
+	OSMO_ASSERT(osa.u.sin.sin_addr.s_addr == 0);
+
+	rc = osmo_sockaddr_pton("255.255.255.255", sa);
+	OSMO_ASSERT(rc == 1);
+	OSMO_ASSERT(osa.u.sa.sa_family == AF_INET);
+	OSMO_ASSERT(osa.u.sin.sin_addr.s_addr == 0xffffffff);
+
+	rc = osmo_sockaddr_pton("::", sa);
+	OSMO_ASSERT(rc == 1);
+	OSMO_ASSERT(osa.u.sa.sa_family == AF_INET6);
+
+	rc = osmo_sockaddr_pton("fe::", sa);
+	OSMO_ASSERT(rc == 1);
+	OSMO_ASSERT(osa.u.sa.sa_family == AF_INET6);
+
+	rc = osmo_sockaddr_pton("ff:ff::ff", sa);
+	OSMO_ASSERT(rc == 1);
+	OSMO_ASSERT(osa.u.sa.sa_family == AF_INET6);
+
+	rc = osmo_sockaddr_pton("", sa);
+	OSMO_ASSERT(rc == 0);
+
+	rc = osmo_sockaddr_pton(".", sa);
+	OSMO_ASSERT(rc == 0);
+
+	rc = osmo_sockaddr_pton(":", sa);
+	OSMO_ASSERT(rc == 0);
+
+	rc = osmo_sockaddr_pton("foobar", sa);
+	OSMO_ASSERT(rc == 0);
+
+	rc = osmo_sockaddr_pton(".com", sa);
+	OSMO_ASSERT(rc == 0);
+
+	rc = osmo_sockaddr_pton("foobar.com", sa);
+	OSMO_ASSERT(rc == 0);
+
+	rc = osmo_sockaddr_pton(NULL, sa);
+	OSMO_ASSERT(rc == 0);
+
+	rc = osmo_sockaddr_pton(NULL, NULL);
+	OSMO_ASSERT(rc == 0);
+}
+
 const struct log_info_cat default_categories[] = {
 };
 
@@ -478,6 +531,7 @@ int main(int argc, char *argv[])
 	test_sockinit_osa();
 	test_osa_str();
 	test_osa_netmask_prefixlen();
+	test_osa_pton();
 
 	return EXIT_SUCCESS;
 }

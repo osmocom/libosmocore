@@ -74,6 +74,7 @@ size_t osmo_sockaddr_in_to_str_and_uint(char *addr, unsigned int addr_len, uint1
 					const struct sockaddr_in *sin);
 
 const char *osmo_sockaddr_ntop(const struct sockaddr *sa, char *dst);
+int osmo_sockaddr_pton(const char *src, struct sockaddr *sa);
 uint16_t osmo_sockaddr_port(const struct sockaddr *sa);
 void osmo_sockaddr_set_port(struct sockaddr *sa, uint16_t port);
 

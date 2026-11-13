@@ -1660,6 +1660,37 @@ const char *osmo_sockaddr_ntop(const struct sockaddr *sa, char *dst)
 			 dst, INET6_ADDRSTRLEN);
 }
 
+/*! inet_pton() wrapper for a struct sockaddr.
+ *  \param[in] src  string buffer containing a potential IPv4 or IPv6 address.
+ *  \param[out] dst  destination sockaddr to store the encoded address
+ *  \returns returns 1 on success (network address was successfully converted).
+ *  0 is returned if src does not contain a character string representing a
+ *  valid IPv4 or IPv6 network address.
+ */
+int osmo_sockaddr_pton(const char *src, struct sockaddr *sa)
+{
+	struct osmo_sockaddr *osa = (struct osmo_sockaddr *)sa;
+	int rc;
+
+	if (!src || !osa)
+		return 0;
+
+	if (!!strchr(&src[0], ':')) { /* IPv6 */
+		rc = inet_pton(AF_INET6, src, (void *)&osa->u.sin6.sin6_addr);
+		if (rc != 1)
+			return rc;
+		osa->u.sin6.sin6_family = AF_INET6;
+		return 1;
+	}
+
+	/* Assume IPv4 or fail */
+	rc = inet_pton(AF_INET, src, (void *)&osa->u.sin.sin_addr);
+	if (rc != 1)
+		return rc;
+	osa->u.sin6.sin6_family = AF_INET;
+	return 1;
+}
+
 /*! Get sockaddr port content (in host byte order)
  *  \param[in] sa  source sockaddr to get the port from.
  *  \returns returns the sockaddr port in host byte order

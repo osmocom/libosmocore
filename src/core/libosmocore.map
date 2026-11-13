@@ -406,6 +406,7 @@ osmo_sockaddr_local_ip;
 osmo_sockaddr_netmask_to_prefixlen;
 osmo_sockaddr_ntop;
 osmo_sockaddr_port;
+osmo_sockaddr_pton;
 osmo_sockaddr_set_port;
 osmo_sockaddr_str_cmp;
 osmo_sockaddr_str_from_32;
