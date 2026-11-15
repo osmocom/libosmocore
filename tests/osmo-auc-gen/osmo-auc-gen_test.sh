@@ -60,3 +60,17 @@ invoke_err -3 -a milenage -r $rand -k $k -o $opc -A $auts --ind 32
 invoke_err -3 -a milenage -r $rand -k $k -o $opc -A $auts --ind 42
 
 invoke_err -3 -a milenage -r $rand -k $k -o $opc -A $auts --ind-len 0 --ind 1
+
+# TUAK resync with a 128-bit and a 256-bit K, using the K, TOP and RAND of
+# 3GPP TS 35.233 test sets 1 and 2
+k="abababababababababababababababab"
+op="5555555555555555555555555555555555555555555555555555555555555555"
+rand="42424242424242424242424242424242"
+auts="e7af6b3d0e2f4f669592ff7d647d" # --> SQN.MS = 23
+invoke -3 -a tuak -r $rand -k $k -O $op -A $auts
+
+k="fffefdfcfbfaf9f8f7f6f5f4f3f2f1f0efeeedecebeae9e8e7e6e5e4e3e2e1e0"
+op="808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9f"
+rand="0123456789abcdef0123456789abcdef"
+auts="f84eb338849bac1fbaf692a06dfb" # --> SQN.MS = 23
+invoke -3 -a tuak -r $rand -k $k -O $op -A $auts

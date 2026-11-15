@@ -179,7 +179,7 @@ static int tuak_gen_vec_auts(struct osmo_auth_vector *vec,
 
 	opc = gen_opc_if_needed(aud, gen_opc);
 
-	rc = tuak_auts(opc, aud->u.umts.k, sizeof(aud->u.umts.k), rand_auts, auts, sqn_out);
+	rc = tuak_auts(opc, aud->u.umts.k, aud->u.umts.k_len, rand_auts, auts, sqn_out);
 	if (rc < 0)
 		return rc;
 
