@@ -174,6 +174,11 @@ AC_CHECK_DECL([CLONE_NEWNET],
   [[#define _GNU_SOURCE
     #include <sched.h>]])
 
+dnl Check whether close_range() is available
+AC_CHECK_DECLS([close_range], [], [],
+  [[#define _GNU_SOURCE
+    #include <unistd.h>]])
+
 AC_DEFUN([CHECK_TM_INCLUDES_TM_GMTOFF], [
   AC_CACHE_CHECK(
     [whether struct tm has tm_gmtoff member],

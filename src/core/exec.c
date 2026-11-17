@@ -165,9 +165,17 @@ int osmo_environment_append(char **out, size_t out_len, char **in)
 /* Iterate over files in /proc/self/fd and close all above lst_fd_to_keep */
 int osmo_close_all_fds_above(int last_fd_to_keep)
 {
+	int rc;
+
+#if HAVE_DECL_CLOSE_RANGE
+	rc = close_range(last_fd_to_keep + 1, ~0U, 0);
+	if (rc)
+		LOGP(DLGLOBAL, LOGL_ERROR, "Error close_range() fds=[%d..%u]: %s\n",
+		     last_fd_to_keep + 1, ~0U, strerror(errno));
+	return 0;
+#else
 	struct dirent *ent;
 	DIR *dir;
-	int rc;
 
 	dir = opendir("/proc/self/fd");
 	if (!dir) {
@@ -187,6 +195,7 @@ int osmo_close_all_fds_above(int last_fd_to_keep)
 	}
 	closedir(dir);
 	return 0;
+#endif
 }
 
 /* Seems like POSIX has no header file for this, and even glibc + __USE_GNU doesn't help */
