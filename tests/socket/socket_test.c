@@ -463,7 +463,7 @@ static void test_osa_pton(void)
 
 	rc = osmo_sockaddr_pton("0.0.0.0", sa);
 	OSMO_ASSERT(rc == 1);
-	OSMO_ASSERT(osa.u.sa.sa_family = AF_INET);
+	OSMO_ASSERT(osa.u.sa.sa_family == AF_INET);
 	OSMO_ASSERT(osa.u.sin.sin_addr.s_addr == 0);
 
 	rc = osmo_sockaddr_pton("255.255.255.255", sa);
