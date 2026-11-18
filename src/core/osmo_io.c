@@ -136,15 +136,13 @@ enum osmo_io_backend osmo_io_get_backend(void)
 /*! Allocate the msghdr.
  *  \param[in] iofd the osmo_io file structure
  *  \param[in] action the action this msg(hdr) is for (read, write, ..)
- *  \param[in] msg the msg buffer to use. Will allocate a new one if NULL
+ *  \param[in] flags Flags to set on the msghdr and be passed on its fd operations.
  *  \param[in] cmsg_size size (in bytes) of iofd_msghdr.cmsg buffer. Can be 0 if cmsg is not used.
  *  \returns the newly allocated msghdr or NULL in case of error */
-struct iofd_msghdr *iofd_msghdr_alloc(struct osmo_io_fd *iofd, enum iofd_msg_action action, struct msgb *msg,
-				      size_t cmsg_size)
+static struct iofd_msghdr *_iofd_msghdr_alloc(struct osmo_io_fd *iofd, enum iofd_msg_action action,
+					      int flags, size_t cmsg_size)
 {
 	struct iofd_msghdr *msghdr;
-	uint8_t idx, io_len;
-
 
 	msghdr = talloc_zero_size(iofd, sizeof(struct iofd_msghdr) + cmsg_size);
 	if (!msghdr)
@@ -152,20 +150,42 @@ struct iofd_msghdr *iofd_msghdr_alloc(struct osmo_io_fd *iofd, enum iofd_msg_act
 
 	msghdr->action = action;
 	msghdr->iofd = iofd;
+	msghdr->flags = flags;
+
+	msghdr->hdr.msg_iov = &msghdr->iov[0];
+
+	if (cmsg_size > 0) {
+		msghdr->hdr.msg_control = msghdr->cmsg;
+		msghdr->hdr.msg_controllen = cmsg_size;
+	}
+	return msghdr;
+}
+
+/*! Allocate the msghdr.
+ *  \param[in] iofd the osmo_io file structure
+ *  \param[in] action the action this msg(hdr) is for (read, write, ..)
+ *  \param[in] flags Flags to set on the msghdr and be passed on its fd operations.
+ *  \param[in] cmsg_size size (in bytes) of iofd_msghdr.cmsg buffer. Can be 0 if cmsg is not used.
+ *  \returns the newly allocated msghdr or NULL in case of error */
+struct iofd_msghdr *iofd_msghdr_alloc_for_reading(struct osmo_io_fd *iofd, enum iofd_msg_action action,
+						  int flags, size_t cmsg_size)
+{
+	struct iofd_msghdr *msghdr;
+	uint8_t idx, io_len;
+
+	msghdr = _iofd_msghdr_alloc(iofd, action, flags, cmsg_size);
+	if (!msghdr)
+		return NULL;
 
 	/* Allocate the number of read buffers, configured by the user. Use msg as first buffer, if not NULL.
 	 * Only READ may have multiple buffers, because packets will only be written to the first buffer. */
 	io_len = (action == IOFD_ACT_READ) ? iofd->io_read_buffers : 1;
 	for (idx = 0; idx < io_len; idx++) {
-		if (msg) {
-			talloc_steal(iofd, msg);
-			msghdr->msg[idx] = msg;
-			msg = NULL;
-		} else {
-			msghdr->msg[idx] = iofd_msgb_alloc(iofd);
-			if (!msghdr->msg[idx])
-				break;
-		}
+		msghdr->msg[idx] = iofd_msgb_alloc(iofd);
+		if (!msghdr->msg[idx])
+			break;
+		msghdr->iov[idx].iov_base = msghdr->msg[idx]->tail;
+		msghdr->iov[idx].iov_len = msgb_tailroom(msghdr->msg[idx]);
 	}
 	/* If at least one msgb is allocated, we can continue with only one msgb, instead of completely failing. */
 	if (idx == 0) {
@@ -174,6 +194,47 @@ struct iofd_msghdr *iofd_msghdr_alloc(struct osmo_io_fd *iofd, enum iofd_msg_act
 	}
 
 	msghdr->io_len = idx;
+	msghdr->hdr.msg_iovlen = idx;
+
+	if (action != IOFD_ACT_READ) {
+		msghdr->hdr.msg_name = &msghdr->osa.u.sa;
+		msghdr->hdr.msg_namelen = sizeof(msghdr->osa.u.sas);
+	}
+
+	return msghdr;
+}
+
+/*! Allocate the msghdr.
+ *  \param[in] iofd the osmo_io file structure
+ *  \param[in] action the action this msg(hdr) is for (read, write, ..)
+ *  \param[in] flags Flags to set on the msghdr and be passed on its fd operations.
+ *  \param[in] cmsg_size size (in bytes) of iofd_msghdr.cmsg buffer. Can be 0 if cmsg is not used.
+ *  \param[in] msg the msg buffer to use. Will allocate a new one if NULL
+ *  \returns the newly allocated msghdr or NULL in case of error */
+struct iofd_msghdr *iofd_msghdr_alloc_for_writing(struct osmo_io_fd *iofd, enum iofd_msg_action action,
+						  int flags, ssize_t cmsg_size, struct msgb *msg)
+{
+	struct iofd_msghdr *msghdr;
+
+	OSMO_ASSERT(msg);
+
+	msghdr = _iofd_msghdr_alloc(iofd, action, flags, cmsg_size);
+	if (!msghdr)
+		return NULL;
+
+	talloc_steal(iofd, msg);
+	msghdr->msg[0] = msg;
+
+	msghdr->iov[0].iov_base = msgb_data(msghdr->msg[0]);
+	msghdr->iov[0].iov_len = msgb_length(msghdr->msg[0]);
+
+	msghdr->io_len = 1;
+	msghdr->hdr.msg_iovlen = 1;
+
+	if (action != IOFD_ACT_WRITE) {
+		msghdr->hdr.msg_name = &msghdr->osa.u.sa;
+		/* msghdr->hdr.msg_namelen to be filled in by user when setting address! */
+	}
 
 	return msghdr;
 }
@@ -640,7 +701,6 @@ int osmo_iofd_write_msgb(struct osmo_io_fd *iofd, struct msgb *msg)
 {
 	int rc;
 	struct iofd_msghdr *msghdr;
-	int idx;
 
 	if (OSMO_UNLIKELY(msgb_length(msg) == 0)) {
 		LOGPIO(iofd, LOGL_ERROR, "Length is 0, rejecting msgb.\n");
@@ -654,30 +714,25 @@ int osmo_iofd_write_msgb(struct osmo_io_fd *iofd, struct msgb *msg)
 	msghdr = llist_last_entry_or_null(&iofd->tx_queue.msg_queue, struct iofd_msghdr, list);
 	if (msghdr && msghdr->io_len < iofd->io_write_buffers) {
 		/* Add msg to existing msghdr. */
-		msghdr->msg[msghdr->io_len++] = msg;
-	} else {
-		/* Create new msghdr with msg. */
-		msghdr = iofd_msghdr_alloc(iofd, IOFD_ACT_WRITE, msg, 0);
-		if (!msghdr)
-			return -ENOMEM;
+		msghdr->msg[msghdr->io_len] = msg;
+		msghdr->iov[msghdr->io_len].iov_base = msgb_data(msg);
+		msghdr->iov[msghdr->io_len].iov_len = msgb_length(msg);
+		msghdr->io_len++;
+		msghdr->hdr.msg_iovlen = msghdr->io_len;
 		msghdr->hdr.msg_iov = &msghdr->iov[0];
-		msghdr->flags = MSG_NOSIGNAL;
+		return 0;
 	}
 
-	/* Add set IO vector to msg. */
-	idx = msghdr->io_len - 1;
-	msghdr->iov[idx].iov_base = msgb_data(msg);
-	msghdr->iov[idx].iov_len = msgb_length(msg);
-	msghdr->hdr.msg_iovlen = msghdr->io_len;
+	/* Create new msghdr with msg and enqueue it. */
+	msghdr = iofd_msghdr_alloc_for_writing(iofd, IOFD_ACT_WRITE, MSG_NOSIGNAL, 0, msg);
+	if (!msghdr)
+		return -ENOMEM;
 
-	/* Only new msghdr will be enqueued. */
-	if (msghdr->io_len == 1) {
-		rc = iofd_txqueue_enqueue(iofd, msghdr);
-		if (rc < 0) {
-			iofd_msghdr_free(msghdr);
-			LOGPIO(iofd, LOGL_ERROR, "enqueueing message failed (%d). Rejecting msgb\n", rc);
-			return rc;
-		}
+	rc = iofd_txqueue_enqueue(iofd, msghdr);
+	if (rc < 0) {
+		iofd_msghdr_free(msghdr);
+		LOGPIO(iofd, LOGL_ERROR, "enqueueing message failed (%d). Rejecting msgb\n", rc);
+		return rc;
 	}
 
 	return 0;
@@ -710,20 +765,14 @@ int osmo_iofd_sendto_msgb(struct osmo_io_fd *iofd, struct msgb *msg, int sendto_
 
 	OSMO_ASSERT(iofd->mode == OSMO_IO_FD_MODE_RECVFROM_SENDTO);
 
-	struct iofd_msghdr *msghdr = iofd_msghdr_alloc(iofd, IOFD_ACT_SENDTO, msg, 0);
+	struct iofd_msghdr *msghdr = iofd_msghdr_alloc_for_writing(iofd, IOFD_ACT_SENDTO, sendto_flags, 0, msg);
 	if (!msghdr)
 		return -ENOMEM;
 
 	if (dest) {
 		msghdr->osa = *dest;
-		msghdr->hdr.msg_name = &msghdr->osa.u.sa;
 		msghdr->hdr.msg_namelen = osmo_sockaddr_size(&msghdr->osa);
 	}
-	msghdr->flags = sendto_flags;
-	msghdr->iov[0].iov_base = msgb_data(msghdr->msg[0]);
-	msghdr->iov[0].iov_len = msgb_length(msghdr->msg[0]);
-	msghdr->hdr.msg_iov = &msghdr->iov[0];
-	msghdr->hdr.msg_iovlen = 1;
 
 	rc = iofd_txqueue_enqueue(iofd, msghdr);
 	if (rc < 0) {
@@ -773,32 +822,19 @@ int osmo_iofd_sendmsg_msgb(struct osmo_io_fd *iofd, struct msgb *msg, int sendms
 		return -EINVAL;
 	}
 
-	msghdr = iofd_msghdr_alloc(iofd, IOFD_ACT_SENDMSG, msg, msgh->msg_controllen);
+	msghdr = iofd_msghdr_alloc_for_writing(iofd, IOFD_ACT_SENDMSG, sendmsg_flags, msgh->msg_controllen, msg);
 	if (!msghdr)
 		return -ENOMEM;
 
 	/* copy over optional address */
 	if (msgh->msg_name) {
 		memcpy(&msghdr->osa, msgh->msg_name, msgh->msg_namelen);
-		msghdr->hdr.msg_name = &msghdr->osa.u.sa;
-		msghdr->hdr.msg_namelen = msgh->msg_namelen;
+		msghdr->hdr.msg_namelen = osmo_sockaddr_size(&msghdr->osa);
 	}
-
-	/* build iov from msgb */
-	msghdr->iov[0].iov_base = msgb_data(msghdr->msg[0]);
-	msghdr->iov[0].iov_len = msgb_length(msghdr->msg[0]);
-	msghdr->hdr.msg_iov = &msghdr->iov[0];
-	msghdr->hdr.msg_iovlen = 1;
 
 	/* copy over the cmsg from the msghdr */
-	if (msgh->msg_control && msgh->msg_controllen) {
-		msghdr->hdr.msg_control = msghdr->cmsg;
-		msghdr->hdr.msg_controllen = msgh->msg_controllen;
+	if (msgh->msg_control && msgh->msg_controllen)
 		memcpy(msghdr->cmsg, msgh->msg_control, msgh->msg_controllen);
-	}
-
-	/* copy over msg_flags */
-	msghdr->hdr.msg_flags = sendmsg_flags;
 
 	rc = iofd_txqueue_enqueue(iofd, msghdr);
 	if (rc < 0) {
