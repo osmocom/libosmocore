@@ -142,16 +142,16 @@ enum osmo_io_backend osmo_io_get_backend(void)
 struct iofd_msghdr *iofd_msghdr_alloc(struct osmo_io_fd *iofd, enum iofd_msg_action action, struct msgb *msg,
 				      size_t cmsg_size)
 {
-	struct iofd_msghdr *hdr;
+	struct iofd_msghdr *msghdr;
 	uint8_t idx, io_len;
 
 
-	hdr = talloc_zero_size(iofd, sizeof(struct iofd_msghdr) + cmsg_size);
-	if (!hdr)
+	msghdr = talloc_zero_size(iofd, sizeof(struct iofd_msghdr) + cmsg_size);
+	if (!msghdr)
 		return NULL;
 
-	hdr->action = action;
-	hdr->iofd = iofd;
+	msghdr->action = action;
+	msghdr->iofd = iofd;
 
 	/* Allocate the number of read buffers, configured by the user. Use msg as first buffer, if not NULL.
 	 * Only READ may have multiple buffers, because packets will only be written to the first buffer. */
@@ -159,23 +159,23 @@ struct iofd_msghdr *iofd_msghdr_alloc(struct osmo_io_fd *iofd, enum iofd_msg_act
 	for (idx = 0; idx < io_len; idx++) {
 		if (msg) {
 			talloc_steal(iofd, msg);
-			hdr->msg[idx] = msg;
+			msghdr->msg[idx] = msg;
 			msg = NULL;
 		} else {
-			hdr->msg[idx] = iofd_msgb_alloc(iofd);
-			if (!hdr->msg[idx])
+			msghdr->msg[idx] = iofd_msgb_alloc(iofd);
+			if (!msghdr->msg[idx])
 				break;
 		}
 	}
 	/* If at least one msgb is allocated, we can continue with only one msgb, instead of completely failing. */
 	if (idx == 0) {
-		talloc_free(hdr);
+		talloc_free(msghdr);
 		return NULL;
 	}
 
-	hdr->io_len = idx;
+	msghdr->io_len = idx;
 
-	return hdr;
+	return msghdr;
 }
 
 /*! Free the msghdr.
