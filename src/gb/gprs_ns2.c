@@ -751,10 +751,21 @@ static int reject_status_msg(struct msgb *orig_msg, struct tlv_parsed *tp, struc
 	case NS_CAUSE_PDU_INCOMP_PSTATE:
 	case NS_CAUSE_PROTO_ERR_UNSPEC:
 	case NS_CAUSE_INVAL_ESSENT_IE:
-	case NS_CAUSE_MISSING_ESSENT_IE:
-		msgb_tvlv_put(msg, NS_IE_PDU, msgb_l2len(orig_msg),
-			      orig_msg->l2h);
+	case NS_CAUSE_MISSING_ESSENT_IE: {
+		/* The original PDU can be larger than what is left in our own
+		 * msgb (NS_ALLOC_SIZE), so clamp it. TvLV header is 3 bytes. */
+		const unsigned int avail = msgb_tailroom(msg);
+		unsigned int embed_len = msgb_l2len(orig_msg);
+
+		if (avail < 3)
+			embed_len = 0;
+		else if (avail < 3 + embed_len)
+			embed_len = avail - 3;
+
+		if (embed_len > 0)
+			msgb_tvlv_put(msg, NS_IE_PDU, embed_len, orig_msg->l2h);
 		break;
+	}
 	default:
 		break;
 	}

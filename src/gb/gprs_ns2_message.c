@@ -426,7 +426,7 @@ int ns2_tx_status(struct gprs_ns2_vc *nsvc, uint8_t cause,
 	struct msgb *msg = ns2_msgb_alloc();
 	struct gprs_ns_hdr *nsh;
 	uint16_t encoded_nsvci;
-	unsigned int orig_len, max_orig_len;
+	unsigned int orig_len, avail;
 
 	log_set_context(LOG_CTX_GB_NSE, nsvc->nse);
 	log_set_context(LOG_CTX_GB_NSVC, nsvc);
@@ -458,12 +458,24 @@ int ns2_tx_status(struct gprs_ns2_vc *nsvc, uint8_t cause,
 	case NS_CAUSE_INVAL_ESSENT_IE:
 	case NS_CAUSE_MISSING_ESSENT_IE:
 		/* Section 9.2.7.2: Static conditions for NS PDU */
-		/* ensure the PDU doesn't exceed the MTU */
+		/* Trim available space to the MTU. bind->mtu can be far larger
+		 * than NS_ALLOC_SIZE (65527 for NS-over-IP), so the msgb
+		 * tailroom is the other bound we need. */
+		avail = msgb_tailroom(msg);
+		if (msgb_length(msg) > nsvc->bind->mtu)
+			avail = 0;
+		else if (nsvc->bind->mtu - msgb_length(msg) < avail)
+			avail = nsvc->bind->mtu - msgb_length(msg);
+
+		/* Figure out how many origin PDU bytes fit; TvLV header is 3 bytes: */
 		orig_len = msgb_l2len(orig_msg);
-		max_orig_len = msgb_length(msg) + TVLV_GROSS_LEN(orig_len);
-		if (max_orig_len > nsvc->bind->mtu)
-			orig_len -= max_orig_len - nsvc->bind->mtu;
-		msgb_tvlv_put(msg, NS_IE_PDU, orig_len, orig_msg->l2h);
+		if (avail < 3)
+			orig_len = 0;
+		else if (avail < 3 + orig_len)
+			orig_len = avail - 3;
+
+		if (orig_len > 0)
+			msgb_tvlv_put(msg, NS_IE_PDU, orig_len, orig_msg->l2h);
 		break;
 	case NS_CAUSE_BVCI_UNKNOWN:
 		/* Section 9.2.7.3: Static conditions for BVCI */
