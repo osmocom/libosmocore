@@ -917,4 +917,7 @@ Testing decoding CONFUSION
   Diagnostics error bit location 15 (Reserved value)
   Diagnostics message that provoked the error: 00 03 25 03 25 
 Testing decoding Perform Location Report SYS#5891
+Testing encoding MSISDN length limits
+- 20 digits: rc=12 IE='7b0a21436587092143658709'
+- 21 digits: rc=0 IE=''
 Done

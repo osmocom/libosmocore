@@ -1496,6 +1496,28 @@ static const struct bcd_number_test {
 		.enc_buf_lim = 9,
 	},
 	{
+		.test_name = "16-digit number, fills the buffer (OS#7126)",
+
+		/* Encoding test (L octet plus 8 octets) */
+		.enc_ascii = "1234567890123456",
+		.enc_hex   = "082143658709214365",
+		.enc_rc    = 9,
+
+		/* Buffer length limitations */
+		.enc_buf_lim = 9,
+	},
+	{
+		.test_name = "17-digit number, one octet over the buffer (OS#7126)",
+
+		/* Encoding test (not enough room in buffer) */
+		.enc_ascii = "12345678901234567",
+		.enc_hex   = "", /* nothing */
+		.enc_rc    = -EIO,
+
+		/* Buffer length limitations */
+		.enc_buf_lim = 9,
+	},
+	{
 		.test_name = "LV incorrect length",
 		.dec_hex   = "05214365", /* should be 0x03 */
 		.dec_ascii = "(none)",
@@ -1583,6 +1605,64 @@ static void test_bcd_number_encode_decode(void)
 		memset(buf_enc, 0xff, sizeof(buf_enc));
 		memset(buf_dec, 0xff, sizeof(buf_dec));
 	}
+
+	printf("\n");
+}
+
+static void test_bcd_number_ie(const char *name,
+			       int (*enc)(struct msgb *msg, const struct gsm_mncc_number *num),
+			       unsigned int num_digits, bool octet_3a)
+{
+	struct gsm_mncc_number num = { .screen = octet_3a ? 1 : 0 };
+	struct msgb *msg = msgb_alloc(128, __func__);
+	int rc;
+
+	OSMO_ASSERT(msg);
+	OSMO_ASSERT(num_digits < sizeof(num.number));
+	memset(num.number, '1', num_digits);
+
+	rc = enc(msg, &num);
+	printf("- %s, %u digits%s: rc=%d IE='%s'\n", name, num_digits,
+	       octet_3a ? " (with octet 3a)" : "", rc,
+	       osmo_hexdump_nospc(msgb_data(msg), msgb_length(msg)));
+
+	msgb_free(msg);
+}
+
+/* OS#7126: neither the L octet nor the IE buffers may overflow */
+static void test_bcd_number_encode_limits(void)
+{
+	/* 508 digits fill buf exactly (L = 254), 509 need one octet more
+	 * (L = 255), and 511 give L = 256, which must not wrap to 0 */
+	static const unsigned int num_digits[] = { 508, 509, 511 };
+	char digits[512];
+	uint8_t buf[255];
+	unsigned int i;
+	int rc;
+
+	printf("BCD number encoding limits test\n");
+
+	for (i = 0; i < ARRAY_SIZE(num_digits); i++) {
+		memset(digits, '1', num_digits[i]);
+		digits[num_digits[i]] = '\0';
+		rc = gsm48_encode_bcd_number(buf, sizeof(buf), 0, digits);
+		printf("- %u digits, max_len=%zu: rc=%d\n", num_digits[i], sizeof(buf), rc);
+	}
+
+	/* TS 24.008 10.5.4.9: Calling party BCD number, at most 14 octets */
+	test_bcd_number_ie("Calling", gsm48_encode_calling, 22, false);
+	test_bcd_number_ie("Calling", gsm48_encode_calling, 23, false);
+	test_bcd_number_ie("Calling", gsm48_encode_calling, 20, true);
+	test_bcd_number_ie("Calling", gsm48_encode_calling, 21, true);
+	/* TS 24.008 10.5.4.13: Connected number, at most 14 octets */
+	test_bcd_number_ie("Connected", gsm48_encode_connected, 22, false);
+	test_bcd_number_ie("Connected", gsm48_encode_connected, 23, false);
+	/* TS 24.008 10.5.4.21b: Redirecting party BCD number, at most 19 octets */
+	test_bcd_number_ie("Redirecting", gsm48_encode_redirecting, 32, false);
+	test_bcd_number_ie("Redirecting", gsm48_encode_redirecting, 30, true);
+	test_bcd_number_ie("Redirecting", gsm48_encode_redirecting, 31, true);
+	/* TS 24.008 10.5.4.7: Called party BCD number, limited by lv[18] */
+	test_bcd_number_ie("Called", gsm48_encode_called, 32, false);
 
 	printf("\n");
 }
@@ -2026,6 +2106,7 @@ int main(int argc, char **argv)
 	test_mid_decode_zero_length();
 	test_struct_mobile_identity();
 	test_bcd_number_encode_decode();
+	test_bcd_number_encode_limits();
 	test_ra_cap();
 	test_lai_encode_decode();
 	test_osmo_routing_area_id();

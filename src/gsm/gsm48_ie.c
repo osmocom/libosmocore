@@ -151,16 +151,22 @@ int gsm48_encode_bcd_number(uint8_t *bcd_lv, uint8_t max_len,
 		      int h_len, const char *input)
 {
 	int in_len = strlen(input);
+	int len;
 	int i;
 	uint8_t *bcd_cur = bcd_lv + 1 + h_len;
 
 	/* two digits per byte, plus type byte */
-	bcd_lv[0] = in_len/2 + h_len;
+	len = in_len/2 + h_len;
 	if (in_len % 2)
-		bcd_lv[0]++;
+		len++;
 
-	if (bcd_lv[0] > max_len)
+	/* the L octet plus len octets must fit into bcd_lv */
+	if (1 + len > max_len)
 		return -EIO;
+	/* Lengths spanning multiple bytes cannot be encoded */
+	if (len > 0xff)
+		return -EIO;
+	bcd_lv[0] = len;
 
 	for (i = 0; i < in_len; i++) {
 		int rc = asc_to_bcd(input[i]);

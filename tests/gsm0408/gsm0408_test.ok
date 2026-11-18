@@ -229,6 +229,14 @@ BSD number encoding / decoding test
   - Decoding HEX (buffer limit=16) '0a21436587092143658709'...
     - Expected: (rc=-28) '123456789012345'
     -   Actual: (rc=-28) '123456789012345'
+- Running test: 16-digit number, fills the buffer (OS#7126)
+  - Encoding ASCII (buffer limit=9) '1234567890123456'...
+    - Expected: (rc=9) '082143658709214365'
+    -   Actual: (rc=9) '082143658709214365'
+- Running test: 17-digit number, one octet over the buffer (OS#7126)
+  - Encoding ASCII (buffer limit=9) '12345678901234567'...
+    - Expected: (rc=-5) ''
+    -   Actual: (rc=-5) ''
 - Running test: LV incorrect length
   - Decoding HEX (buffer limit=0) '05214365'...
     - Expected: (rc=-22) '(none)'
@@ -244,6 +252,21 @@ BSD number encoding / decoding test
   - Decoding HEX (buffer limit=4) '022143'...
     - Expected: (rc=-28) '123'
     -   Actual: (rc=-28) '123'
+
+BCD number encoding limits test
+- 508 digits, max_len=255: rc=255
+- 509 digits, max_len=255: rc=-5
+- 511 digits, max_len=255: rc=-5
+- Calling, 22 digits: rc=0 IE='5c0c801111111111111111111111'
+- Calling, 23 digits: rc=-5 IE=''
+- Calling, 20 digits (with octet 3a): rc=0 IE='5c0c008111111111111111111111'
+- Calling, 21 digits (with octet 3a): rc=-5 IE=''
+- Connected, 22 digits: rc=0 IE='4c0c801111111111111111111111'
+- Connected, 23 digits: rc=-5 IE=''
+- Redirecting, 32 digits: rc=0 IE='74118011111111111111111111111111111111'
+- Redirecting, 30 digits (with octet 3a): rc=0 IE='74110081111111111111111111111111111111'
+- Redirecting, 31 digits (with octet 3a): rc=-5 IE=''
+- Called, 32 digits: rc=0 IE='5e118011111111111111111111111111111111'
 
 Constructed RA:
 077-121-666-5

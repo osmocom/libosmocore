@@ -477,6 +477,29 @@ static void test_dec_perform_location_report_sys5891(void)
 	OSMO_ASSERT(rc == 5);
 }
 
+/* OS#7126: TS 48.008 3.2.2.101 allows at most 10 octets of MSISDN digits */
+static void test_gsm0808_enc_msisdn_limits(void)
+{
+	static const char *msisdns[] = {
+		"12345678901234567890", /* 20 digits, the maximum */
+		"123456789012345678901", /* 21 digits, too long */
+	};
+	unsigned int i;
+
+	printf("Testing encoding MSISDN length limits\n");
+
+	for (i = 0; i < ARRAY_SIZE(msisdns); i++) {
+		struct msgb *msg = msgb_alloc(64, __func__);
+		uint8_t rc;
+
+		OSMO_ASSERT(msg);
+		rc = gsm0808_enc_msisdn(msg, msisdns[i]);
+		printf("- %zu digits: rc=%u IE='%s'\n", strlen(msisdns[i]), rc,
+		       osmo_hexdump_nospc(msgb_data(msg), msgb_length(msg)));
+		msgb_free(msg);
+	}
+}
+
 static void test_create_ass(void)
 {
 	static const uint8_t res1[] =
@@ -2822,6 +2845,7 @@ int main(int argc, char **argv)
 
 	test_dec_confusion();
 	test_dec_perform_location_report_sys5891();
+	test_gsm0808_enc_msisdn_limits();
 
 	printf("Done\n");
 	return EXIT_SUCCESS;
