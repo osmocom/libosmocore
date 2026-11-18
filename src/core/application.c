@@ -78,6 +78,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <sys/stat.h>
+#include <talloc.h>
 
 struct log_target *osmo_stderr_target;
 
@@ -102,6 +103,11 @@ void osmo_init_ignore_signals(void)
 #endif
 }
 
+static void log_talloc_cb(const char *message)
+{
+	LOGP(DLGLOBAL, LOGL_NOTICE, "%s", message);
+}
+
 /*! Initialize the osmocom logging framework
  *  \param[in] log_info Array of available logging sub-systems
  *  \returns 0 on success, -1 in case of error
@@ -113,6 +119,7 @@ int osmo_init_logging(const struct log_info *log_info)
 {
 	return osmo_init_logging2(NULL, log_info);
 }
+
 
 int osmo_init_logging2(void *ctx, const struct log_info *log_info)
 {
@@ -129,6 +136,8 @@ int osmo_init_logging2(void *ctx, const struct log_info *log_info)
 
 	log_add_target(osmo_stderr_target);
 	log_set_all_filter(osmo_stderr_target, 1);
+
+	talloc_set_log_fn(log_talloc_cb);
 	return 0;
 }
 
