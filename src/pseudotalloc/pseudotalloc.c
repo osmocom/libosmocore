@@ -117,3 +117,7 @@ char *talloc_vasprintf(const void *t, const char *fmt, va_list ap)
 	vsnprintf(buf, 128, fmt, ap);
 	return buf;
 }
+
+void talloc_set_log_fn(void (*log_fn)(const char *message))
+{
+}
