@@ -185,7 +185,10 @@ enum iofd_seg_act {
 	IOFD_SEG_ACT_DEFER,
 };
 
-struct iofd_msghdr *iofd_msghdr_alloc(struct osmo_io_fd *iofd, enum iofd_msg_action action, struct msgb *msg, size_t cmsg_size);
+struct iofd_msghdr *iofd_msghdr_alloc_for_reading(struct osmo_io_fd *iofd, enum iofd_msg_action action,
+						  int flags, size_t cmsg_size);
+struct iofd_msghdr *iofd_msghdr_alloc_for_writing(struct osmo_io_fd *iofd, enum iofd_msg_action action,
+						  int flags, ssize_t cmsg_size, struct msgb *msg);
 void iofd_msghdr_free(struct iofd_msghdr *msghdr);
 
 struct msgb *iofd_msgb_alloc2(struct osmo_io_fd *iofd, size_t size);

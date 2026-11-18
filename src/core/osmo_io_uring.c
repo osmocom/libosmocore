@@ -248,7 +248,6 @@ static inline int iofd_uring_submit_recv_sqe(struct osmo_io_fd *iofd, enum iofd_
 {
 	struct iofd_msghdr *msghdr;
 	struct io_uring_sqe *sqe;
-	uint8_t idx;
 
 	/* Tell iofd_uring_get_sqe() not to allocate a new ring, if we want to enqueue multiple read SQEs. */
 	sqe = iofd_uring_get_sqe(iofd, true);
@@ -259,31 +258,9 @@ static inline int iofd_uring_submit_recv_sqe(struct osmo_io_fd *iofd, enum iofd_
 		OSMO_ASSERT(0);
 	}
 
-	msghdr = iofd_msghdr_alloc(iofd, action, NULL, iofd->cmsg_size);
+	msghdr = iofd_msghdr_alloc_for_reading(iofd, action, 0, iofd->cmsg_size);
 	if (!msghdr) {
 		LOGPIO(iofd, LOGL_ERROR, "Could not allocate msghdr for reading\n");
-		OSMO_ASSERT(0);
-	}
-
-	for (idx = 0; idx < msghdr->io_len; idx++) {
-		msghdr->iov[idx].iov_base = msghdr->msg[idx]->tail;
-		msghdr->iov[idx].iov_len = msgb_tailroom(msghdr->msg[idx]);
-	}
-
-	switch (action) {
-	case IOFD_ACT_RECVMSG:
-		msghdr->hdr.msg_control = msghdr->cmsg;
-		msghdr->hdr.msg_controllen = iofd->cmsg_size;
-		/* fall-through */
-	case IOFD_ACT_RECVFROM:
-		msghdr->hdr.msg_name = &msghdr->osa.u.sa;
-		msghdr->hdr.msg_namelen = osmo_sockaddr_size(&msghdr->osa);
-		/* fall-through */
-	case IOFD_ACT_READ:
-		msghdr->hdr.msg_iov = &msghdr->iov[0];
-		msghdr->hdr.msg_iovlen = msghdr->io_len;
-		break;
-	default:
 		OSMO_ASSERT(0);
 	}
 
@@ -713,14 +690,11 @@ static void iofd_uring_write_enable(struct osmo_io_fd *iofd)
 			LOGPIO(iofd, LOGL_ERROR, "Could not allocate msgb for writing\n");
 			OSMO_ASSERT(0);
 		}
-		msghdr = iofd_msghdr_alloc(iofd, IOFD_ACT_WRITE, msg, 0);
+		msghdr = iofd_msghdr_alloc_for_writing(iofd, IOFD_ACT_WRITE, 0, 0, msg);
 		if (!msghdr) {
 			LOGPIO(iofd, LOGL_ERROR, "Could not allocate msghdr for writing\n");
 			OSMO_ASSERT(0);
 		}
-
-		msghdr->iov[0].iov_base = msgb_data(msg);
-		msghdr->iov[0].iov_len = msgb_length(msg);
 
 		sqe = iofd_uring_get_sqe(iofd, false);
 		if (!sqe) {
