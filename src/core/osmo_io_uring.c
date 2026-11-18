@@ -246,7 +246,6 @@ static inline void iofd_io_uring_submit(void)
 
 static inline int iofd_uring_submit_recv_sqe(struct osmo_io_fd *iofd, enum iofd_msg_action action)
 {
-	struct msgb *msg;
 	struct iofd_msghdr *msghdr;
 	struct io_uring_sqe *sqe;
 	uint8_t idx;
@@ -260,13 +259,7 @@ static inline int iofd_uring_submit_recv_sqe(struct osmo_io_fd *iofd, enum iofd_
 		OSMO_ASSERT(0);
 	}
 
-	msg = iofd_msgb_alloc(iofd);
-	if (!msg) {
-		LOGPIO(iofd, LOGL_ERROR, "Could not allocate msgb for reading\n");
-		OSMO_ASSERT(0);
-	}
-
-	msghdr = iofd_msghdr_alloc(iofd, action, msg, iofd->cmsg_size);
+	msghdr = iofd_msghdr_alloc(iofd, action, NULL, iofd->cmsg_size);
 	if (!msghdr) {
 		LOGPIO(iofd, LOGL_ERROR, "Could not allocate msghdr for reading\n");
 		OSMO_ASSERT(0);
