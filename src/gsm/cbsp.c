@@ -509,6 +509,14 @@ static int cbsp_decode_cell_list(struct osmo_cbsp_cell_list *cl, void *ctx,
 	const uint8_t *cur = buf;
 	int rc;
 
+	if (buf == NULL) {
+		osmo_cbsp_errstr = "cell list: missing mandatory IE";
+		return -ENOENT;
+	} else if (len < 1) {
+		osmo_cbsp_errstr = "cell list: too short";
+		return -EINVAL;
+	}
+
 	cl->id_discr = *cur++;
 
 	while (cur < buf + len) {
