@@ -559,6 +559,10 @@ static int cbsp_decode_fail_list(struct llist_head *fl, void *ctx,
 			return rc;
 		}
 		cur += gsm0808_cell_id_size(ent->id_discr);
+		if (cur + 1 > buf + len) {
+			osmo_cbsp_errstr = "fail list: truncated IE";
+			return -EINVAL;
+		}
 		ent->cause = *cur++;
 		llist_add_tail(&ent->list, fl);
 	}
