@@ -507,6 +507,7 @@ static int cbsp_decode_cell_list(struct osmo_cbsp_cell_list *cl, void *ctx,
 				 const uint8_t *buf, unsigned int len)
 {
 	const uint8_t *cur = buf;
+	int cell_id_size;
 	int rc;
 
 	if (buf == NULL) {
@@ -519,6 +520,12 @@ static int cbsp_decode_cell_list(struct osmo_cbsp_cell_list *cl, void *ctx,
 
 	cl->id_discr = *cur++;
 
+	cell_id_size = gsm0808_cell_id_size(cl->id_discr);
+	if (cell_id_size <= 0) {
+		osmo_cbsp_errstr = "cell list: unexpected cell_id_size";
+		return -EINVAL;
+	}
+
 	while (cur < buf + len) {
 		struct osmo_cbsp_cell_ent *ent = talloc_zero(ctx, struct osmo_cbsp_cell_ent);
 		unsigned int len_remain = len - (cur - buf);
@@ -528,7 +535,7 @@ static int cbsp_decode_cell_list(struct osmo_cbsp_cell_list *cl, void *ctx,
 			osmo_cbsp_errstr = "cell list: error decoding cell_id_union";
 			return rc;
 		}
-		cur += gsm0808_cell_id_size(cl->id_discr);
+		cur += cell_id_size;
 		llist_add_tail(&ent->list, &cl->list);
 	}
 	return 0;
