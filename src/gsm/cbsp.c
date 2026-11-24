@@ -1588,6 +1588,7 @@ discard_msg:
 	msgb_free(msg);
 	return rc;
 }
+#endif /* HAVE_SYS_SOCKET_H */
 
 /*! call-back function to segment the data at message boundaries.
  * Returns  the size of the next message. If it returns -EAGAIN or a value larger than msgb_length() (message
@@ -1629,5 +1630,3 @@ const struct value_string osmo_cbsp_cause_names[] = {
 	{ OSMO_CBSP_CAUSE_LAI_OR_LAC_NOT_VALID, "LAI-or-LAC-not-valid"},
 	{ 0, NULL }
 };
-
-#endif /* HAVE_SYS_SOCKET_H */
